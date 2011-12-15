@@ -1,6 +1,6 @@
 /*
- *  guceMyGUIOgre: glue module for the MyGUI+Ogre GUI backend
- *  Copyright (C) 2002 - 2008.  Dinand Vanvelzen
+ *  guidriverRocket: GUI backend using Rocket
+ *  Copyright (C) 2002 - 2011.  Dinand Vanvelzen
  *
  *  This library is free software; you can redistribute it and/or
  *  modify it under the terms of the GNU Lesser General Public
@@ -17,8 +17,8 @@
  *  Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA 
  */
 
-#ifndef GUCE_MYGUIOGRE_CMYGUIINPUTADAPTER_H
-#define GUCE_MYGUIOGRE_CMYGUIINPUTADAPTER_H
+#ifndef GUCEF_GUIDRIVERROCKET_CROCKETVFSINTERFACE_H
+#define GUCEF_GUIDRIVERROCKET_CROCKETVFSINTERFACE_H
 
 /*-------------------------------------------------------------------------//
 //                                                                         //
@@ -26,17 +26,17 @@
 //                                                                         //
 //-------------------------------------------------------------------------*/
 
-#include <MyGUI.h>
+#include <Rocket/Core.h>
 
-#ifndef GUCEF_CORE_COBSERVER_H
-#include "CObserver.h"
-#define GUCEF_CORE_COBSERVER_H
-#endif /* GUCEF_CORE_COBSERVER_H ? */
+#ifndef GUCEF_VFS_CVFS_H
+#include "gucefVFS_CVFS.h"
+#define GUCEF_VFS_CVFS_H
+#endif /* GUCEF_VFS_CVFS_H ? */
 
-#ifndef GUCE_MYGUIOGRE_MACROS_H
-#include "guceMyGUIOgre_macros.h"      /* often used macros */
-#define GUCE_MYGUIOGRE_MACROS_H
-#endif /* GUCE_MYGUIOGRE_MACROS_H ? */
+#ifndef GUCEF_GUIDRIVERROCKET_MACROS_H
+#include "guidriverRocket_macros.h"
+#define GUCEF_GUIDRIVERROCKET_MACROS_H
+#endif /* GUCEF_GUIDRIVERROCKET_MACROS_H ? */
 
 /*-------------------------------------------------------------------------//
 //                                                                         //
@@ -44,8 +44,8 @@
 //                                                                         //
 //-------------------------------------------------------------------------*/
 
-namespace GUCE {
-namespace MYGUIOGRE {
+namespace GUCEF {
+namespace GUIDRIVERROCKET {
 
 /*-------------------------------------------------------------------------//
 //                                                                         //
@@ -53,33 +53,59 @@ namespace MYGUIOGRE {
 //                                                                         //
 //-------------------------------------------------------------------------*/
 
-class GUCE_MYGUIOGRE_EXPORT_CPP CMyGUIInputAdapter : public GUCEF::CORE::CObserver
+/**
+ *  Class which can be used to override Rocket's basic C style file I/O with access to the GUCEF VFS
+ */
+class GUCEF_GUIDRIVERROCKET_PUBLIC_CPP CRocketVFSInterface : public Rocket::Core::FileInterface
 {
     public:
-    
-    CMyGUIInputAdapter( MyGUI::Gui* guiSystem );
 
-    virtual ~CMyGUIInputAdapter();
-    
-    const CString& GetClassTypeName( void ) const;
+	CRocketVFSInterface();
 
-    protected:
-    
-    virtual void OnNotify( GUCEF::CORE::CNotifier* notifier                 ,
-                           const GUCEF::CORE::CEvent& eventid               ,
-                           GUCEF::CORE::CICloneable* eventdata /* = NULL */ );
-    
+	virtual ~CRocketVFSInterface();
+
+	/// Opens a file.
+	/// @param file The file handle to write to.
+	/// @return A valid file handle, or NULL on failure
+	virtual Rocket::Core::FileHandle Open( const Rocket::Core::String& path );
+
+	/// Closes a previously opened file.
+	/// @param file The file handle previously opened through Open().
+	virtual void Close( Rocket::Core::FileHandle file );
+
+	/// Reads data from a previously opened file.
+	/// @param buffer The buffer to be read into.
+	/// @param size The number of bytes to read into the buffer.
+	/// @param file The handle of the file.
+	/// @return The total number of bytes read into the buffer.
+	virtual size_t Read( void* buffer, size_t size, Rocket::Core::FileHandle file );
+
+	/// Seeks to a point in a previously opened file.
+	/// @param file The handle of the file to seek.
+	/// @param offset The number of bytes to seek.
+	/// @param origin One of either SEEK_SET (seek from the beginning of the file), SEEK_END (seek from the end of the file) or SEEK_CUR (seek from the current file position).
+	/// @return True if the operation completed successfully, false otherwise.
+	virtual bool Seek( Rocket::Core::FileHandle file, long offset, int origin );
+
+	/// Returns the current position of the file pointer.
+	/// @param file The handle of the file to be queried.
+	/// @return The number of bytes from the origin of the file.
+	virtual size_t Tell( Rocket::Core::FileHandle file );
+
+	/// Called when this file interface is released.
+	virtual void Release();
+
     private:
-    
-    CMyGUIInputAdapter( void );
-    CMyGUIInputAdapter( const CMyGUIInputAdapter& src );    
-    CMyGUIInputAdapter& operator=( const CMyGUIInputAdapter& src );
 
-    MyGUI::MouseButton ConvertMouseButtonIdex( const UInt32 buttonIndex );
-    
+    Rocket::Core::FileHandle FindOpenHandleSlot( void ) const;
+
     private:
-    
-    MyGUI::Gui* m_guiSystem;
+
+    typedef std::map< Rocket::Core::FileHandle, VFS::CVFS::CVFSHandlePtr > TFileHandleMap;
+    typedef std::set< Rocket::Core::FileHandle > THandleSet;
+
+    VFS::CVFS* m_vfs;
+    TFileHandleMap m_fileHandles;
 };
 
 /*-------------------------------------------------------------------------//
@@ -88,12 +114,12 @@ class GUCE_MYGUIOGRE_EXPORT_CPP CMyGUIInputAdapter : public GUCEF::CORE::CObserv
 //                                                                         //
 //-------------------------------------------------------------------------*/
 
-}; /* namespace MYGUIOGRE */
-}; /* namespace GUCE */
+}; /* namespace GUIDRIVERROCKET */
+}; /* namespace GUCEF */
 
 /*-------------------------------------------------------------------------*/
           
-#endif /* GUCE_MYGUIOGRE_CMYGUIINPUTADAPTER_H ? */
+#endif /* GUCEF_GUIDRIVERROCKET_CROCKETVFSINTERFACE_H ? */
 
 /*-------------------------------------------------------------------------//
 //                                                                         //
@@ -102,6 +128,6 @@ class GUCE_MYGUIOGRE_EXPORT_CPP CMyGUIInputAdapter : public GUCEF::CORE::CObserv
 //-------------------------------------------------------------------------//
 
 - 18-08-2007 :
-        - Initial implementation
+        - Dinand: Initial implementation
 
------------------------------------------------------------------------------*/
+---------------------------------------------------------------------------*/

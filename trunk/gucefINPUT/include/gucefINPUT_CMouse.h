@@ -28,10 +28,10 @@
 
 #include <map>
 
-#ifndef GUCEF_CORE_CNOTIFIER_H
-#include "CNotifier.h"
-#define GUCEF_CORE_CNOTIFIER_H
-#endif /* GUCEF_CORE_CNOTIFIER_H ? */
+#ifndef GUCEF_INPUT_CABSTRACTINPUTDEVICE_H
+#include "gucefINPUT_CAbstractInputDevice.h"
+#define GUCEF_INPUT_CABSTRACTINPUTDEVICE_H
+#endif /* GUCEF_INPUT_CABSTRACTINPUTDEVICE_H ? */
 
 #ifndef GUCEF_INPUT_CMOUSEBUTTONEVENTDATA_H
 #include "gucefINPUT_CMouseButtonEventData.h"
@@ -61,7 +61,7 @@ namespace INPUT {
 /**
  *  In-software representation of a mouse hardware input device
  */
-class GUCEF_INPUT_PUBLIC_CPP CMouse : public CORE::CNotifier
+class GUCEF_INPUT_PUBLIC_CPP CMouse : public CAbstractInputDevice
 {
     public:
     
@@ -72,6 +72,8 @@ class GUCEF_INPUT_PUBLIC_CPP CMouse : public CORE::CNotifier
     static const CORE::CEvent MouseTrippleClickedEvent; /**< send when a mouse button is clicked and released three times within a set interval */
     
     static void RegisterEvents( void );
+
+    static const char* DeviceType;                      /** string representing the type of device */
     
     public:
     
@@ -87,7 +89,9 @@ class GUCEF_INPUT_PUBLIC_CPP CMouse : public CORE::CNotifier
                       
     const TButtonStates& GetButtonStates( void ) const;
     
-    virtual const CString& GetType( void ) const;
+    virtual const char* GetDeviceType( void ) const;
+
+    virtual bool IsDeviceType( const char* deviceType ) const;
     
     virtual const CString& GetClassTypeName( void ) const;
 

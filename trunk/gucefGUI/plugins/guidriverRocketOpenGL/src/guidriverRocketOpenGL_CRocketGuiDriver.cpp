@@ -35,6 +35,11 @@
 #define GUCEF_CORE_CICONFIGURABLE_H
 #endif /* GUCEF_CORE_CICONFIGURABLE_H ? */
 
+#ifndef GUCEF_INPUT_CINPUTCONTROLLER_H
+#include "CInputController.h"
+#define GUCEF_INPUT_CINPUTCONTROLLER_H
+#endif /* GUCEF_INPUT_CINPUTCONTROLLER_H ? */
+
 #ifndef GUCEF_GUIDRIVERROCKET_CGUICONTEXT_H
 #include "guidriverRocket_CGUIContext.h"
 #define GUCEF_GUIDRIVERROCKET_CGUICONTEXT_H
@@ -62,7 +67,8 @@ CRocketGuiDriver::CRocketGuiDriver( void )
       m_rocketRenderer()             ,
       m_systemInterface()            ,
       m_fileInterface()              ,
-      m_isRocketInitialized( false )
+      m_isRocketInitialized( false ) ,
+      m_contextSet()
 {GUCEF_TRACE;
 
 	Rocket::Core::SetRenderInterface( &m_rocketRenderer );
@@ -126,7 +132,15 @@ CRocketGuiDriver::CreateGUIContext( GUI::TWindowContextPtr windowContext )
         return GUI::TGuiContextPtr();
     }
    
-    return new GUIDRIVERROCKET::CGUIContext( this, context, windowContext );
+    // Create an input context for this GUI context so that we can interact with the GUI based on input events
+    CORE::CValueList inputContextParams;
+    INPUT::CInputContext* inputContext = INPUT::CInputController::Instance()->CreateContext( inputContextParams ); 
+    
+    // Add a reference to the context in our set
+    GUI::TGuiContextPtr guiContextPtr = new GUIDRIVERROCKET::CGUIContext( this, context, windowContext, inputContext );    
+    m_contextSet.insert( guiContextPtr );
+    
+    return guiContextPtr;
 }
 
 /*-------------------------------------------------------------------------*/
@@ -135,7 +149,7 @@ GUI::CGUIDriver::TGUIContextSet
 CRocketGuiDriver::GetContextList( void )
 {GUCEF_TRACE;
 
-    return GUI::CGUIDriver::TGUIContextSet();
+    return m_contextSet;
 }
 
 /*-------------------------------------------------------------------------*/
@@ -144,7 +158,7 @@ GUI::UInt32
 CRocketGuiDriver::GetContextCount( void )
 {GUCEF_TRACE;
 
-    return 0;
+    return m_contextSet.size();
 }
 
 /*-------------------------------------------------------------------------*/

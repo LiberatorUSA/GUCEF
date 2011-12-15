@@ -65,6 +65,22 @@ KeyModifierToString( const KeyModifier keyModifier )
         {
             return "ALT";
         }
+        case KEYMOD_META :
+        {
+            return "META";
+        }
+        case KEYMOD_CAPSLOCK :
+        {
+            return "CAPSLOCK";
+        }
+        case KEYMOD_NUMLOCK :
+        {
+            return "NUMLOCK";
+        }
+        case KEYMOD_SCROLLLOCK :
+        {
+            return "SCROLLLOCK";
+        }
 	    case KEYMOD_NONE :
 	    {
 	        return "NONE";
@@ -96,6 +112,26 @@ KeyModifierToString( const CString& keyModStr )
     if ( keyModStr == "ALT" )
     {
         return KEYMOD_ALT;
+    }
+    else
+    if ( keyModStr == "META" )
+    {
+        return KEYMOD_META;
+    }
+    else
+    if ( keyModStr == "CAPSLOCK" )
+    {
+        return KEYMOD_CAPSLOCK;
+    }
+    else
+    if ( keyModStr == "NUMLOCK" )
+    {
+        return KEYMOD_NUMLOCK;
+    }
+    else
+    if ( keyModStr == "SCROLLLOCK" )
+    {
+        return KEYMOD_SCROLLLOCK;
     }
 
     return KEYMOD_NONE;

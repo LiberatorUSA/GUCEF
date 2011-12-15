@@ -96,6 +96,126 @@ using namespace GUCEF;
 //      UTILITIES                                                          //
 //                                                                         //
 //-------------------------------------------------------------------------*/
+
+bool
+LoadPlugins( void )
+{GUCEF_TRACE;
+
+    #if ( GUCEF_PLATFORM == GUCEF_PLATFORM_MSWIN )
+
+    GUCEF_LOG( CORE::LOGLEVEL_NORMAL, "Attempting to load Ms Win drivers" );
+        
+    // Define our windowing backend plugin
+    CORE::CPluginMetaData pluginMetaData;
+    pluginMetaData.SetPluginType( "GucefGenericPlugin" );
+    #ifdef GUCEF_GUI_DEBUG_MODE
+    pluginMetaData.SetModuleFilename( "guidriverWin32GL_d" );
+    #else
+    pluginMetaData.SetModuleFilename( "guidriverWin32GL" );
+    #endif
+    pluginMetaData.SetFullModulePath( CORE::RelativePath( "$MODULEDIR$" ) );
+        
+    // Add plugin metadata and load the plugin
+    if ( CORE::CPluginControl::Instance()->AddPluginMetaData( pluginMetaData ,
+                                                              "GUI"          ,
+                                                              true           ) )
+    {
+        GUCEF_LOG( CORE::LOGLEVEL_NORMAL, "Successfully loaded guidriverWin32GL" );
+    }
+    else
+    {
+        GUCEF_ERROR_LOG( CORE::LOGLEVEL_NORMAL, "Failed to load guidriverWin32GL" );
+        return false;
+    }
+
+    #endif
+
+
+    /*-------------------------------------------------------------*/
+
+    // Define our GUI backend plugin
+    pluginMetaData.Clear();
+    pluginMetaData.SetPluginType( "GucefGenericPlugin" );
+    #ifdef GUCEF_GUI_DEBUG_MODE
+    pluginMetaData.SetModuleFilename( "guidriverRocket_d" );
+    #else
+    pluginMetaData.SetModuleFilename( "guidriverRocket" );
+    #endif
+    pluginMetaData.SetFullModulePath( CORE::RelativePath( "$MODULEDIR$" ) );
+
+    // Add plugin metadata and load the plugin
+    if ( CORE::CPluginControl::Instance()->AddPluginMetaData( pluginMetaData ,
+                                                              "GUI"          ,
+                                                              true           ) )
+    {
+        GUCEF_LOG( CORE::LOGLEVEL_NORMAL, "Successfully loaded guidriverRocketOpenGL" );
+    }
+    else
+    {
+        GUCEF_ERROR_LOG( CORE::LOGLEVEL_NORMAL, "Failed to load guidriverRocketOpenGL" );
+        return false;
+    }
+
+    /*-------------------------------------------------------------*/
+
+    // Define our GUI backend OpenGL plugin
+    pluginMetaData.Clear();
+    pluginMetaData.SetPluginType( "GucefGenericPlugin" );
+    #ifdef GUCEF_GUI_DEBUG_MODE
+    pluginMetaData.SetModuleFilename( "guidriverRocketOpenGL_d" );
+    #else
+    pluginMetaData.SetModuleFilename( "guidriverRocketOpenGL" );
+    #endif
+    pluginMetaData.SetFullModulePath( CORE::RelativePath( "$MODULEDIR$" ) );
+
+    // Add plugin metadata and load the plugin
+    if ( CORE::CPluginControl::Instance()->AddPluginMetaData( pluginMetaData ,
+                                                              "GUI"          ,
+                                                              true           ) )
+    {
+        GUCEF_LOG( CORE::LOGLEVEL_NORMAL, "Successfully loaded guidriverRocketOpenGL" );
+    }
+    else
+    {
+        GUCEF_ERROR_LOG( CORE::LOGLEVEL_NORMAL, "Failed to load guidriverRocketOpenGL" );
+        return false;
+    }
+
+    /*-------------------------------------------------------------*/
+
+    #if ( GUCEF_PLATFORM == GUCEF_PLATFORM_MSWIN )
+    
+    // Define our input plugin for Win32
+    pluginMetaData.Clear();
+    pluginMetaData.SetPluginType( "GucefInputPlugin" );
+    #ifdef GUCEF_GUI_DEBUG_MODE
+    pluginMetaData.SetModuleFilename( "inputdriverMSWINMSG_d" );
+    #else
+    pluginMetaData.SetModuleFilename( "inputdriverMSWINMSG" );
+    #endif
+    pluginMetaData.SetFullModulePath( CORE::RelativePath( "$MODULEDIR$" ) );
+
+    // Add plugin metadata and load the plugin
+    if ( CORE::CPluginControl::Instance()->AddPluginMetaData( pluginMetaData ,
+                                                              "INPUT"        ,
+                                                              true           ) )
+    {
+        GUCEF_LOG( CORE::LOGLEVEL_NORMAL, "Successfully loaded inputdriverMSWINMSG" );
+    }
+    else
+    {
+        GUCEF_ERROR_LOG( CORE::LOGLEVEL_NORMAL, "Failed to load inputdriverMSWINMSG" );
+        return false;
+    }
+
+    #endif
+
+    /*-------------------------------------------------------------*/
+
+    return true;
+}
+
+/*-------------------------------------------------------------------------*/
           
 /*
  *      Application entry point
@@ -125,82 +245,18 @@ GUCEF_OSMAIN_BEGIN
         // flush startup log entries
         CORE::CLogManager::Instance()->FlushBootstrapLogEntriesToLogs();
         
-        #if ( GUCEF_PLATFORM == GUCEF_PLATFORM_MSWIN )
-
-        GUCEF_LOG( CORE::LOGLEVEL_NORMAL, "Attempting to load Ms Win drivers" );
-        
-        // Define our windowing backend plugin
-        CORE::CPluginMetaData pluginMetaData;
-        pluginMetaData.SetPluginType( "GucefGenericPlugin" );
-        #ifdef GUCEF_GUI_DEBUG_MODE
-        pluginMetaData.SetModuleFilename( "guidriverWin32GL_d" );
-        #else
-        pluginMetaData.SetModuleFilename( "guidriverWin32GL" );
-        #endif
-        pluginMetaData.SetFullModulePath( CORE::RelativePath( "$MODULEDIR$" ) );
-        
-        // Add plugin metadata and load the plugin
-        if ( CORE::CPluginControl::Instance()->AddPluginMetaData( pluginMetaData ,
-                                                                  "GUI"          ,
-                                                                  true           ) )
-        {
-            GUCEF_LOG( CORE::LOGLEVEL_NORMAL, "Successfully loaded guidriverWin32GL" );
-
-            // Define our GUI backend plugin
-            pluginMetaData.Clear();
-            pluginMetaData.SetPluginType( "GucefGenericPlugin" );
-            #ifdef GUCEF_GUI_DEBUG_MODE
-            pluginMetaData.SetModuleFilename( "guidriverRocket_d" );
-            #else
-            pluginMetaData.SetModuleFilename( "guidriverRocket" );
-            #endif
-            pluginMetaData.SetFullModulePath( CORE::RelativePath( "$MODULEDIR$" ) );
-
-            // Add plugin metadata and load the plugin
-            if ( CORE::CPluginControl::Instance()->AddPluginMetaData( pluginMetaData ,
-                                                                      "GUI"          ,
-                                                                      true           ) )
-            {
-                GUCEF_LOG( CORE::LOGLEVEL_NORMAL, "Successfully loaded guidriverRocketOpenGL" );
-            }
-            else
-            {
-                GUCEF_ERROR_LOG( CORE::LOGLEVEL_NORMAL, "Failed to load guidriverRocketOpenGL" );
-                return -1;
-            }
-
-            // Define our GUI backend OpenGL plugin
-            pluginMetaData.Clear();
-            pluginMetaData.SetPluginType( "GucefGenericPlugin" );
-            #ifdef GUCEF_GUI_DEBUG_MODE
-            pluginMetaData.SetModuleFilename( "guidriverRocketOpenGL_d" );
-            #else
-            pluginMetaData.SetModuleFilename( "guidriverRocketOpenGL" );
-            #endif
-            pluginMetaData.SetFullModulePath( CORE::RelativePath( "$MODULEDIR$" ) );
-
-            // Add plugin metadata and load the plugin
-            if ( CORE::CPluginControl::Instance()->AddPluginMetaData( pluginMetaData ,
-                                                                      "GUI"          ,
-                                                                      true           ) )
-            {
-                GUCEF_LOG( CORE::LOGLEVEL_NORMAL, "Successfully loaded guidriverRocketOpenGL" );
-            }
-            else
-            {
-                GUCEF_ERROR_LOG( CORE::LOGLEVEL_NORMAL, "Failed to load guidriverRocketOpenGL" );
-                return -1;
-            }
-
+        // Load all the plugins we need for this test
+        if ( LoadPlugins() )
+        {       
             GUI::TWindowManagerBackendPtr windowMngrBackend = GUI::CWindowManager::Instance()->GetBackend( "Win32GL" );
             if ( NULL != windowMngrBackend )
             {
                 GUCEF_LOG( CORE::LOGLEVEL_NORMAL, "Successfully obtained window manager backend Win32GL" );
 
-                GUI::TWindowContextPtr windowContext = windowMngrBackend->CreateWindowContext( "gucefGUI_TestAPP WindowsContext Win32GL" ,
-                                                                                               800                                       ,
-                                                                                               600                                       ,
-                                                                                               false                                     );
+                GUI::TWindowContextPtr windowContext = windowMngrBackend->CreateWindowContext( "gucefGUI_TestAPP Win32GL WindowContext" ,
+                                                                                                800                                     ,
+                                                                                                600                                     ,
+                                                                                                false                                   );
 
                 if ( NULL != windowContext )
                 {
@@ -236,17 +292,18 @@ GUCEF_OSMAIN_BEGIN
                 }
                 else
                 {
+                    GUCEF_ERROR_LOG( CORE::LOGLEVEL_NORMAL, "Failed to obtain window management backend" );
                 }
             }
             else
             {
+                GUCEF_ERROR_LOG( CORE::LOGLEVEL_NORMAL, "Failed to obtain a window context" );
             }
         }
         else
         {
+            GUCEF_ERROR_LOG( CORE::LOGLEVEL_NORMAL, "Failed to load one or more plugins" );
         }
-
-        #endif
 
         return 1;                                                                            
     }

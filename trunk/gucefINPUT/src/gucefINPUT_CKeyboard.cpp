@@ -68,6 +68,8 @@ namespace INPUT {
 const CORE::CEvent CKeyboard::KeyStateChangedEvent = "GUCEF::INPUT::CKeyboard::KeyStateChangedEvent";
 const CORE::CEvent CKeyboard::KeyModStateChangedEvent = "GUCEF::INPUT::CKeyboard::KeyModStateChangedEvent";
 
+const char* CKeyboard::DeviceType = "GUCEF::INPUT::CKeyboard";
+
 /*-------------------------------------------------------------------------//
 //                                                                         //
 //      UTILITIES                                                          //
@@ -86,7 +88,7 @@ CKeyboard::RegisterEvents( void )
 
 CKeyboard::CKeyboard( const UInt32 deviceID        ,
                       CInputController* controller )
-    : CORE::CNotifier()          ,
+    : CAbstractInputDevice()     ,
       m_deviceID( deviceID )     ,
       m_keyState()               ,
       m_keyModStates( 0 )        ,
@@ -177,7 +179,7 @@ CKeyboard::SetKeyModState( const KeyModifier keyMod ,
     
     GUCEF_DEBUG_LOG( CORE::LOGLEVEL_NORMAL, "Setting state of key mod [" + KeyModifierToString( keyMod ) + "] to " + CORE::BoolToString( pressedState ) + " on keyboard " + CORE::Int32ToString(  m_deviceID ) );
     
-    CKeyModStateChangedEventData eventData( keyMod, pressedState );
+    CKeyModStateChangedEventData eventData( keyMod, pressedState, m_keyModStates );
     NotifyObservers( KeyModStateChangedEvent, &eventData );
 }
 
@@ -215,14 +217,22 @@ CKeyboard::GetUnicodeForKeyCode( const KeyCode keyCode     ,
 
 /*-------------------------------------------------------------------------*/
 
-const CString&
-CKeyboard::GetType( void ) const
+const char*
+CKeyboard::GetDeviceType( void ) const
 {GUCEF_TRACE;
-
-    static CString typeName = "GUCEF::INPUT::CKeyboard";
-    return typeName;
+    
+    return DeviceType;
 }
     
+/*-------------------------------------------------------------------------*/
+
+bool
+CKeyboard::IsDeviceType( const char* deviceType ) const
+{GUCEF_TRACE;
+
+    return ( DeviceType == deviceType ) || ( 0 == strcmp( DeviceType, deviceType ) );
+}
+
 /*-------------------------------------------------------------------------//
 //                                                                         //
 //      NAMESPACE                                                          //

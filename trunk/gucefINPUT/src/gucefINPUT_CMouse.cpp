@@ -56,6 +56,8 @@ const CORE::CEvent CMouse::MouseClickedEvent = "GUCEF::INPUT::CMouse::MouseClick
 const CORE::CEvent CMouse::MouseDoubleClickedEvent = "GUCEF::INPUT::CMouse::MouseDoubleClickedEvent";
 const CORE::CEvent CMouse::MouseTrippleClickedEvent = "GUCEF::INPUT::CMouse::MouseTrippleClickedEvent";
 
+const char* CMouse::DeviceType = "GUCEF::INPUT::CMouse";
+
 /*-------------------------------------------------------------------------//
 //                                                                         //
 //      UTILITIES                                                          //
@@ -130,7 +132,7 @@ CMouse::GetButtonStates( void ) const
 /*-------------------------------------------------------------------------*/
 
 CMouse::CMouse( const UInt32 deviceID )
-    : CORE::CNotifier()      ,
+    : CAbstractInputDevice() ,
       m_xPos( 0 )            ,
       m_yPos( 0 )            ,
       m_prevXPos( 0 )        ,
@@ -201,12 +203,20 @@ CMouse::ResetMouseStates( void )
 
 /*-------------------------------------------------------------------------*/
 
-const CString&
-CMouse::GetType( void ) const
+const char*
+CMouse::GetDeviceType( void ) const
 {GUCEF_TRACE;
 
-    static CString typeName = "GUCEF::INPUT::CMouse";
-    return typeName;
+    return DeviceType;
+}
+
+/*-------------------------------------------------------------------------*/
+
+bool
+CMouse::IsDeviceType( const char* deviceType ) const
+{GUCEF_TRACE;
+
+    return ( DeviceType == deviceType ) || ( 0 == strcmp( DeviceType, deviceType ) );
 }
 
 /*-------------------------------------------------------------------------//

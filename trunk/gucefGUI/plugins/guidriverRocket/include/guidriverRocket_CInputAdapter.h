@@ -1,6 +1,6 @@
 /*
- *  gucefINPUT: GUCEF module providing input device interaction
- *  Copyright (C) 2002 - 2007.  Dinand Vanvelzen
+ *  guidriverRocket: GUI backend using Rocket
+ *  Copyright (C) 2002 - 2011.  Dinand Vanvelzen
  *
  *  This library is free software; you can redistribute it and/or
  *  modify it under the terms of the GNU Lesser General Public
@@ -9,7 +9,7 @@
  *
  *  This library is distributed in the hope that it will be useful,
  *  but WITHOUT ANY WARRANTY; without even the implied warranty of
- *  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+ *  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU
  *  Lesser General Public License for more details.
  *
  *  You should have received a copy of the GNU Lesser General Public
@@ -17,8 +17,8 @@
  *  Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA 
  */
 
-#ifndef GUCEF_INPUT_CINPUTDEVICE_H
-#define GUCEF_INPUT_CINPUTDEVICE_H
+#ifndef GUCEF_GUIDRIVERROCKET_CINPUTADAPTER_H
+#define GUCEF_GUIDRIVERROCKET_CINPUTADAPTER_H
 
 /*-------------------------------------------------------------------------//
 //                                                                         //
@@ -26,10 +26,17 @@
 //                                                                         //
 //-------------------------------------------------------------------------*/
 
-#ifndef GUCEF_INPUT_CABSTRACTINPUTDEVICE_H
-#include "gucefINPUT_CAbstractInputDevice.h"
-#define GUCEF_INPUT_CABSTRACTINPUTDEVICE_H
-#endif /* GUCEF_INPUT_CABSTRACTINPUTDEVICE_H ? */
+#include <Rocket/Core.h>
+
+#ifndef GUCEF_INPUT_CINPUTCONTROLLER_H
+#include "CInputController.h"
+#define GUCEF_INPUT_CINPUTCONTROLLER_H
+#endif /* GUCEF_INPUT_CINPUTCONTROLLER_H ? */
+
+#ifndef GUCEF_GUIDRIVERROCKET_MACROS_H
+#include "guidriverRocket_macros.h"
+#define GUCEF_GUIDRIVERROCKET_MACROS_H
+#endif /* GUCEF_GUIDRIVERROCKET_MACROS_H ? */
 
 /*-------------------------------------------------------------------------//
 //                                                                         //
@@ -38,7 +45,7 @@
 //-------------------------------------------------------------------------*/
 
 namespace GUCEF {
-namespace INPUT {
+namespace GUIDRIVERROCKET {
 
 /*-------------------------------------------------------------------------//
 //                                                                         //
@@ -47,45 +54,48 @@ namespace INPUT {
 //-------------------------------------------------------------------------*/
 
 /**
- *  In-software representation of a hardware input device
- *  This representation will typically be used for things like joysticks
+ *  Class which routes input events to Rocket
  */
-class GUCEF_INPUT_PUBLIC_CPP CInputDevice : public CAbstractInputDevice
+class GUCEF_GUIDRIVERROCKET_PUBLIC_CPP CInputAdapter : public CORE::CObserver
 {
     public:
-    
-    static const CORE::CEvent BoolStateChangedEvent; /**< send when a device boolean state changes, data = CInputDeviceBoolStateChangedEventData */
-    static const CORE::CEvent VarStateChangedEvent;  /**< send when a device variable state changes, data = CInputDeviceVarStateChangedEventData */
-    
-    static void RegisterEvents( void );
 
-    static const char* DeviceType;
-    
-    public:
-    
-    typedef std::map< UInt32, bool > TBooleanStates;
-    
-    bool GetBoolState( const UInt32 index ) const;
-    
-    virtual const char* GetDeviceType( void ) const;
+	CInputAdapter();
 
-    virtual bool IsDeviceType( const char* deviceType ) const;
-    
-    private:
-    friend class CInputController;
-    
-    CInputDevice( void );
-    
-    virtual ~CInputDevice();
+	virtual ~CInputAdapter();
 
-       
+    void SetRocketContext( Rocket::Core::Context* rocketContext );
+
+    Rocket::Core::Context* GetRocketContext( void );
+
+    void StartListningForInputEvents( void );
+
+    void StopListningForInputEvents( void );
+
+    protected:
+
+    virtual void OnNotify( CORE::CNotifier* notifier           ,
+                           const CORE::CEvent& eventid         ,
+                           CORE::CICloneable* eventdata = NULL );
+
     private:
-    
-    CInputDevice( const CInputDevice& src );            /**< cannot be used */
-    CInputDevice& operator=( const CInputDevice& src ); /**< cannot be used */
-    
+
+    void OnMouseEvent( INPUT::CMouse* mouse         ,
+                       const CORE::CEvent& eventid  ,
+                       CORE::CICloneable* eventdata );
+
+    void OnKeyboardEvent( INPUT::CKeyboard* mouse      ,
+                          const CORE::CEvent& eventid  ,
+                          CORE::CICloneable* eventdata );
+
+    static int MapKeyModifierState( const INPUT::UInt32 keyModifierState );
+
+    static Rocket::Core::Input::KeyIdentifier MapKeyIdentifier( const INPUT::KeyCode keyCode );
+                           
     private:
- 
+
+    Rocket::Core::Context* m_rocketContext;
+    int m_lastKeyModifierState;
 };
 
 /*-------------------------------------------------------------------------//
@@ -94,12 +104,12 @@ class GUCEF_INPUT_PUBLIC_CPP CInputDevice : public CAbstractInputDevice
 //                                                                         //
 //-------------------------------------------------------------------------*/
 
-}; /* namespace INPUT */
+}; /* namespace GUIDRIVERROCKET */
 }; /* namespace GUCEF */
 
 /*-------------------------------------------------------------------------*/
           
-#endif /* GUCEF_INPUT_CINPUTDEVICE_H ? */
+#endif /* GUCEF_GUIDRIVERROCKET_CINPUTADAPTER_H ? */
 
 /*-------------------------------------------------------------------------//
 //                                                                         //
@@ -107,7 +117,7 @@ class GUCEF_INPUT_PUBLIC_CPP CInputDevice : public CAbstractInputDevice
 //                                                                         //
 //-------------------------------------------------------------------------//
 
-- 28-09-2007 :
-        - Initial implementation
+- 18-08-2007 :
+        - Dinand: Initial implementation
 
------------------------------------------------------------------------------*/
+---------------------------------------------------------------------------*/

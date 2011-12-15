@@ -17,8 +17,8 @@
  *  Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA 
  */
 
-#ifndef CINPUTCONTEXT_H
-#define CINPUTCONTEXT_H
+#ifndef GUCEF_INPUT_CINPUTCONTEXT_H
+#define GUCEF_INPUT_CINPUTCONTEXT_H
 
 /*-------------------------------------------------------------------------//
 //                                                                         //
@@ -91,7 +91,7 @@ class GUCEF_INPUT_PUBLIC_CPP CInputContext
 
 /*-------------------------------------------------------------------------*/
           
-#endif /* CINPUTCONTEXT_H ? */
+#endif /* GUCEF_INPUT_CINPUTCONTEXT_H ? */
 
 /*-------------------------------------------------------------------------//
 //                                                                         //

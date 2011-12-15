@@ -38,7 +38,7 @@ set( MODULE_NAME "vfspluginZIP" )
 add_library( ${MODULE_NAME} ${ALL_FILES} )
 add_dependencies( ${MODULE_NAME} gucefCORE gucefMT gucefVFS zziplib )
 target_link_libraries( ${MODULE_NAME} gucefCORE gucefMT gucefVFS zziplib )
-set_target_properties( ${MODULE_NAME} PROPERTIES COMPILE_DEFINITIONS "GUCEF_VFSPLUGIN_ZIP_BUILD_MODULE;ZZIP_HAVE_STDINT_H" )
+set_target_properties( ${MODULE_NAME} PROPERTIES COMPILE_DEFINITIONS "ZZIP_HAVE_STDINT_H;GUCEF_VFSPLUGIN_ZIP_BUILD_MODULE" )
 
 if ( ANDROID )
   target_link_libraries( ${MODULE_NAME} z )

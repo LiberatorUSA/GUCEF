@@ -212,10 +212,14 @@ typedef enum KeyCode KeyCode;
  */
 enum KeyModifier
 {
-	KEYMOD_SHIFT = 0x0000001 ,
-	KEYMOD_CTRL  = 0x0000010 ,
-	KEYMOD_ALT   = 0x0000100 ,
-	
+	KEYMOD_SHIFT      = 0x0000001 ,
+	KEYMOD_CTRL       = 0x0000010 ,
+	KEYMOD_ALT        = 0x0000100 ,
+    KEYMOD_META       = 0x0001000 ,
+    KEYMOD_CAPSLOCK   = 0x0010000 ,
+    KEYMOD_NUMLOCK    = 0x0100000 ,
+    KEYMOD_SCROLLLOCK = 0x1000000 ,
+
 	KEYMOD_NONE  = 0x0000000
 };
 typedef enum KeyModifier KeyModifier;

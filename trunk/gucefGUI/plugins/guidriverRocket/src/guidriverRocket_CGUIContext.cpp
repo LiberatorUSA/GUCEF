@@ -51,15 +51,20 @@ namespace GUIDRIVERROCKET {
 //-------------------------------------------------------------------------*/
 
 CGUIContext::CGUIContext( GUI::CGUIDriver* guiDriver           ,
-                          Rocket::Core::Context* context       ,
-                          GUI::TWindowContextPtr windowContext )
+                          Rocket::Core::Context* rocketContext ,
+                          GUI::TWindowContextPtr windowContext ,
+                          INPUT::CInputContext* inputContext   )
     : GUI::CIGUIContext()              ,
       m_guiDriver( guiDriver )         ,
-      m_rocketContext( context )       ,
-      m_windowContext( windowContext ) 
+      m_rocketContext( rocketContext ) ,
+      m_windowContext( windowContext ) ,
+      m_inputContext( inputContext )   ,
+      m_inputAdapter()
 {GUCEF_TRACE;
 
     SubscribeTo( m_windowContext.GetPointer() );
+    m_inputAdapter.SetRocketContext( rocketContext );
+    m_inputAdapter.StartListningForInputEvents();
 }
 
 /*-------------------------------------------------------------------------*/
@@ -67,6 +72,8 @@ CGUIContext::CGUIContext( GUI::CGUIDriver* guiDriver           ,
 CGUIContext::~CGUIContext()
 {GUCEF_TRACE;
 
+    m_inputAdapter.StopListningForInputEvents();
+    m_inputAdapter.SetRocketContext( NULL );
     m_rocketContext->RemoveReference();
 }
 
@@ -84,6 +91,8 @@ CGUIContext::CreateWidget( const GUI::CString& widgetName )
 void
 CGUIContext::DestroyWidget( GUI::CWidget* widget )
 {GUCEF_TRACE;
+
+    delete widget;
 }
 
 /*-------------------------------------------------------------------------*/
@@ -221,6 +230,15 @@ CGUIContext::GetWindowContext( void )
 {GUCEF_TRACE;
 
     return m_windowContext;
+}
+
+/*-------------------------------------------------------------------------*/
+
+INPUT::CInputContext*
+CGUIContext::GetInputContext( void )
+{GUCEF_TRACE;
+
+    return m_inputContext;
 }
     
 /*-------------------------------------------------------------------------//

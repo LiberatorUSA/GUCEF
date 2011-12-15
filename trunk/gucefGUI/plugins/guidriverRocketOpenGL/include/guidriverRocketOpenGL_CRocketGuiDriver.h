@@ -128,6 +128,7 @@ class GUIDRIVERROCKETGL_PUBLIC_CPP CRocketGuiDriver : public GUI::CGUIDriver
     GUIDRIVERROCKET::CRocketSystemInterface m_systemInterface;
     GUIDRIVERROCKET::CRocketVFSInterface m_fileInterface;
     bool m_isRocketInitialized;
+    GUI::CGUIDriver::TGUIContextSet m_contextSet;
 };
 
 /*-------------------------------------------------------------------------//

@@ -4,6 +4,8 @@
             <Dependency Name="RocketCore" />
             <Dependency Name="RocketControls" />
             <Dependency Name="gucefGUI" />
+            <Dependency Name="gucefVFS" />
+            <Dependency Name="gucefINPUT" />
             <Dependency Name="gucefCORE" />
             <Dependency Name="gucefMT" />
         </Dependencies>
@@ -11,6 +13,8 @@
             <Dependency Name="RocketCore" />
             <Dependency Name="RocketControls" />
             <Dependency Name="gucefGUI" />
+            <Dependency Name="gucefVFS" />
+            <Dependency Name="gucefINPUT" />
             <Dependency Name="gucefCORE" />
             <Dependency Name="gucefMT" />
         </Linker>
