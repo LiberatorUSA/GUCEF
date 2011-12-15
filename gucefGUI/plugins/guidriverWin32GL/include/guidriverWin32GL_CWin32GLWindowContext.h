@@ -90,6 +90,8 @@ class GUIDRIVERWIN32GL_PUBLIC_CPP CWin32GLWindowContext : public GUI::CWindowCon
     
     virtual GUI::CString GetName( void ) const;
 
+    virtual GUI::CString GetProperty( const GUI::CString& propertyName ) const;
+
     bool Initialize( const GUI::CString& title                ,
                      const GUI::CVideoSettings& videoSettings );
 

@@ -31,6 +31,11 @@
 #define ESTRUCTS_H
 #endif /* ESTRUCTS_H ? */
 
+#ifndef GUCEF_CORE_CTSHAREDPTR_H
+#include "CTSharedPtr.h"
+#define GUCEF_CORE_CTSHAREDPTR_H
+#endif /* GUCEF_CORE_CTSHAREDPTR_H ? */
+
 #ifndef CINPUTCONTEXT_H
 #include "CInputContext.h"
 #define CINPUTCONTEXT_H
@@ -78,6 +83,8 @@ class GUCEF_INPUT_PUBLIC_CPP CInputDriver
     virtual ~CInputDriver();        
     
     virtual const CORE::TVersion* GetVersion( void ) = 0;
+
+    virtual CString GetName( void ) const = 0;
 
     /**
      *  Attempts to convert the given KeyCode into a unicode 
@@ -135,6 +142,10 @@ class GUCEF_INPUT_PUBLIC_CPP CInputDriver
     
     CInputController* m_controller;                              
 };
+
+/*-------------------------------------------------------------------------*/
+
+typedef CORE::CTSharedPtr< CInputDriver > TInputDriverPtr;
 
 /*-------------------------------------------------------------------------//
 //                                                                         //

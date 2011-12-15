@@ -17,8 +17,8 @@
  *  Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA 
  */
 
-#ifndef CGUCEFINPUTMODULE_H
-#define CGUCEFINPUTMODULE_H
+#ifndef GUCEF_INPUT_CGUCEFINPUTMODULE_H
+#define GUCEF_INPUT_CGUCEFINPUTMODULE_H
 
 /*-------------------------------------------------------------------------//
 //                                                                         //
@@ -26,10 +26,10 @@
 //                                                                         //
 //-------------------------------------------------------------------------*/
 
-#ifndef GUCEFINPUT_MACROS_H
+#ifndef GUCEF_INPUT_MACROS_H
 #include "gucefINPUT_macros.h"         /* often used gucefINPUT macros */
-#define GUCEFINPUT_MACROS_H
-#endif /* GUCEFINPUT_MACROS_H ? */
+#define GUCEF_INPUT_MACROS_H
+#endif /* GUCEF_INPUT_MACROS_H ? */
 
 /*-------------------------------------------------------------------------//
 //                                                                         //
@@ -72,7 +72,7 @@ class CGUCEFINPUTModule
 
 /*-------------------------------------------------------------------------*/
           
-#endif /* CGUCEFINPUTMODULE_H ? */
+#endif /* GUCEF_INPUT_CGUCEFINPUTMODULE_H ? */
 
 /*-------------------------------------------------------------------------//
 //                                                                         //

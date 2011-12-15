@@ -25,11 +25,11 @@ set( HEADER_FILES
   include/guidriverRocket_CGridViewImp.h
   include/guidriverRocket_CGUIContext.h
   include/guidriverRocket_CImageFrameImp.h
+  include/guidriverRocket_CInputAdapter.h
   include/guidriverRocket_CLabelImp.h
   include/guidriverRocket_CListBoxImp.h
   include/guidriverRocket_CMemoboxImp.h
   include/guidriverRocket_CMenuBarImp.h
-  include/guidriverRocket_CMyGUIInputAdapter.h
   include/guidriverRocket_config.h
   include/guidriverRocket_CPopupMenuImp.h
   include/guidriverRocket_CProgressBarImp.h
@@ -64,6 +64,7 @@ set( SOURCE_FILES
   src/guidriverRocket_CGridViewImp.cpp
   src/guidriverRocket_CGUIContext.cpp
   src/guidriverRocket_CImageFrameImp.cpp
+  src/guidriverRocket_CInputAdapter.cpp
   src/guidriverRocket_CIOAccessToRocketStreamAdapter.cpp
   src/guidriverRocket_CLabelImp.cpp
   src/guidriverRocket_CListboxImp.cpp

@@ -51,33 +51,41 @@ namespace INPUT {
 //                                                                         //
 //-------------------------------------------------------------------------*/
 
+class CInputDriver;
+
+/*-------------------------------------------------------------------------*/
+
 class GUCEF_INPUT_PUBLIC_CPP CInputContext
 {
-        public:
-                        
-        const CORE::CValueList& GetContextParams( void ) const;      
+    public:
         
-        CInputContext( const CORE::CValueList& params );                
+    CInputContext( CInputDriver& inputDriver      ,
+                   const CORE::CValueList& params );                
         
-        virtual ~CInputContext();       
+    virtual ~CInputContext();       
+
+    const CORE::CValueList& GetContextParams( void ) const;
                 
-        UInt32 GetID( void ) const;
+    UInt32 GetID( void ) const;
+
+    CInputDriver* GetDriver( void );
         
-        private:
-        friend class CInputController;
+    private:
+    friend class CInputController;
         
-        void SetID( const UInt32 id );
+    void SetID( const UInt32 id );
         
-        private:
+    private:
         
-        CInputContext( void );
-        CInputContext( const CInputContext& src );
-        CInputContext& operator=( const CInputContext& src );
+    CInputContext( void );
+    CInputContext( const CInputContext& src );
+    CInputContext& operator=( const CInputContext& src );
         
-        private:
+    private:
         
-        CORE::CValueList m_valuelist;
-        UInt32 m_id;
+    CORE::CValueList m_valuelist;
+    UInt32 m_id;
+    CInputDriver* m_inputDriver;
 };
 
 /*-------------------------------------------------------------------------//

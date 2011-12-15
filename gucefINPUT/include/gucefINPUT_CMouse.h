@@ -92,13 +92,16 @@ class GUCEF_INPUT_PUBLIC_CPP CMouse : public CAbstractInputDevice
     virtual const char* GetDeviceType( void ) const;
 
     virtual bool IsDeviceType( const char* deviceType ) const;
+
+    virtual CInputDriver* GetInputDriver( void );
     
     virtual const CString& GetClassTypeName( void ) const;
 
     private:
     friend class CInputController;
     
-    CMouse( const UInt32 deviceID );
+    CMouse( CInputDriver& inputDriver ,
+            const UInt32 deviceID     );
     
     virtual ~CMouse();
     
@@ -123,6 +126,7 @@ class GUCEF_INPUT_PUBLIC_CPP CMouse : public CAbstractInputDevice
     UInt32 m_prevYPos;    
     TButtonStates m_buttonStates;
     UInt32 m_deviceID;
+    CInputDriver* m_inputDriver;
 };
 
 /*-------------------------------------------------------------------------//

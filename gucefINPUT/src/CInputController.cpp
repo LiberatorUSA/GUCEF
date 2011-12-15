@@ -94,15 +94,15 @@ GUCEF_IMPLEMENT_MSGEXCEPTION( CInputController, EInvalidIndex );
 
 CInputController::CInputController( void )
         : CORE::CObservingNotifier() ,
-          m_driverisplugin( false )  ,
-          m_driver( NULL )           ,
           m_keyboardMap()            ,
           m_mouseMap()               ,
-          m_pulseGenerator( &CORE::CGUCEFApplication::Instance()->GetPulseGenerator() )
+          m_pulseGenerator( &CORE::CGUCEFApplication::Instance()->GetPulseGenerator() ),
           #ifdef GUCEF_MSWIN_BUILD
-          ,
-          m_hinstance(0UL)
+          m_hinstance(0UL),
           #endif
+          m_inputDriverPluginManager() ,
+          m_defaultDriver()            ,
+          m_inputdriverMap()
 {GUCEF_TRACE;
 
     RegisterEvents();
@@ -157,8 +157,22 @@ CInputController::Deinstance( void )
 CInputContext* 
 CInputController::CreateContext( const CORE::CValueList& params )
 {GUCEF_TRACE;
-    if ( m_driver )
+
+    return CreateContext( m_defaultDriver, params );
+}
+
+/*-------------------------------------------------------------------------*/
+        
+CInputContext* 
+CInputController::CreateContext( const CString& driverName      ,
+                                 const CORE::CValueList& params )
+{GUCEF_TRACE;
+
+    TInputDriverMap::iterator i = m_inputdriverMap.find( driverName );
+    if ( i != m_inputdriverMap.end() )
     {
+        TInputDriverPtr driver = (*i).second;
+        
         #ifdef GUCEF_MSWIN_BUILD
         
         CORE::CValueList extraparams( params );
@@ -166,24 +180,24 @@ CInputController::CreateContext( const CORE::CValueList& params )
         hinststr.SetInt( m_hinstance );
         extraparams.Set( "HINSTANCE", hinststr );
         
-        CInputContext* context = m_driver->CreateContext( extraparams );
+        CInputContext* context = driver->CreateContext( extraparams );
         
         #else
         
-        CInputContext* context = m_driver->CreateContext( params );
+        CInputContext* context = driver->CreateContext( params );
         
         #endif
         
-        if ( context )
+        if ( NULL != context )
         {
-            GUCEF_SYSTEM_LOG( CORE::LOGLEVEL_NORMAL, "Created input context" );
+            GUCEF_SYSTEM_LOG( CORE::LOGLEVEL_NORMAL, "Created input context using driver " + driverName );
             
             m_contextSet.insert( context );
             return context;
         }
     }
     
-    GUCEF_ERROR_LOG( CORE::LOGLEVEL_NORMAL, "Failed to created input context" );
+    GUCEF_ERROR_LOG( CORE::LOGLEVEL_NORMAL, "Failed to created input context using driver " + driverName );
     
     return NULL;
 }
@@ -194,16 +208,10 @@ void
 CInputController::DestroyContext( CInputContext* context )
 {GUCEF_TRACE;
 
-    if ( m_driver )
-    {
-        m_contextSet.erase( context );
-        m_driver->DeleteContext( context );
+    m_contextSet.erase( context );
+    context->GetDriver()->DeleteContext( context );
         
-        GUCEF_SYSTEM_LOG( CORE::LOGLEVEL_NORMAL, "Destroyed input context" );
-        return;
-    }
-    
-    GUCEF_ERROR_LOG( CORE::LOGLEVEL_NORMAL, "Attempting to destroy an input context without an input driver" );
+    GUCEF_SYSTEM_LOG( CORE::LOGLEVEL_NORMAL, "Destroyed input context" );
 }
 
 /*-------------------------------------------------------------------------*/
@@ -214,86 +222,7 @@ CInputController::GetContextCount( void ) const
 
     return (UInt32) m_contextSet.size();
 }
-
-/*-------------------------------------------------------------------------*/
-        
-bool 
-CInputController::SetDriver( CInputDriver* driver )
-{GUCEF_TRACE;
-
-    if ( 0 == GetContextCount() )
-    {
-        UnloadDriverModule();
-        
-        m_driver = driver;
-        m_driverisplugin = false;
-        
-        GUCEF_SYSTEM_LOG( CORE::LOGLEVEL_NORMAL, "Input driver has been set" );
-        
-        NotifyObservers( InputDriverLoadedEvent );
-        return true;
-    }
-    
-    GUCEF_ERROR_LOG( CORE::LOGLEVEL_NORMAL, "Failed to set input driver because there are input context objects remaining" );
-    return false;
-}
-        
-/*-------------------------------------------------------------------------*/
-
-const CInputDriver* 
-CInputController::GetDriver( void ) const
-{GUCEF_TRACE;
-        return m_driver;
-}
-                
-/*-------------------------------------------------------------------------*/
-
-bool 
-CInputController::LoadDriverModule( const CORE::CString& filename  ,
-                                    const CORE::CValueList& params )
-{GUCEF_TRACE;
-        CORE::CString path = CORE::RelativePath( filename );
-        
-        GUCEF_SYSTEM_LOG( CORE::LOGLEVEL_NORMAL, "Attempting to load an input driver from module: \"" + filename + "\"" );
-        
-        CInputDriverPlugin* plugin = new CInputDriverPlugin();
-        if ( plugin->LoadModule( path, params ) )
-        {
-                GUCEF_SYSTEM_LOG( CORE::LOGLEVEL_NORMAL, "Successfully loaded an input driver from module: \"" + filename + "\"" );
-                
-                if ( SetDriver( plugin ) )
-                {
-                        m_driverisplugin = true;
-                        NotifyObservers( InputDriverLoadedEvent );
-                        return true;
-                }
-        }
-        
-        GUCEF_ERROR_LOG( CORE::LOGLEVEL_NORMAL, "Failed to load an input driver from module: \"" + filename + "\"" );
-        delete plugin;
-        return false;
-}
-        
-/*-------------------------------------------------------------------------*/
-
-void 
-CInputController::UnloadDriverModule( void )
-{GUCEF_TRACE;
-
-    if ( m_driverisplugin && m_driver )
-    {
-        CInputDriverPlugin* plugin = static_cast<CInputDriverPlugin*>( m_driver );
-        plugin->UnloadModule();
-        
-        m_driver = NULL;
-        delete plugin;
-        
-        GUCEF_SYSTEM_LOG( CORE::LOGLEVEL_NORMAL, "Input driver has unloaded" );
-        
-        NotifyObservers( InputDriverUnloadedEvent );
-    }
-}
-
+                   
 /*-------------------------------------------------------------------------*/
 
 void
@@ -311,18 +240,18 @@ CInputController::OnPulse( CORE::CNotifier* notifier                 ,
     {
         #ifdef GUCEF_INPUT_DEBUG_MODE
 
-        if ( !m_driver->OnUpdate( tickcount              ,
-                                  updateDeltaInMilliSecs ,
-                                  (*i)                   ) )
+        if ( !(*i)->GetDriver()->OnUpdate( tickcount              ,
+                                           updateDeltaInMilliSecs ,
+                                           (*i)                   ) )
         {
             GUCEF_ERROR_LOG( CORE::LOGLEVEL_NORMAL, "Failed to perform an update cycle on the input driver" );
         }                                          
         
         #else
         
-        m_driver->OnUpdate( tickcount              ,
-                            updateDeltaInMilliSecs ,
-                            (*i)                   );
+        (*i)->GetDriver()->->OnUpdate( tickcount              ,
+                                       updateDeltaInMilliSecs ,
+                                       (*i)                   );
 
         #endif
         
@@ -511,13 +440,13 @@ CInputController::GetMouseMap( void ) const
 /*-------------------------------------------------------------------------*/
 
 void
-CInputController::AddMouse( const Int32 deviceID )
+CInputController::AddMouse( CInputDriver* inputDriver, const Int32 deviceID )
 {GUCEF_TRACE;
 
     TMouseMap::iterator i = m_mouseMap.find( deviceID ); 
     if ( i == m_mouseMap.end() )
     {
-        CMouse* mouse = new CMouse( deviceID );
+        CMouse* mouse = new CMouse( *inputDriver, deviceID );
         m_mouseMap.insert( std::pair< UInt32, CMouse* >( deviceID, mouse ) );
         
         GUCEF_SYSTEM_LOG( CORE::LOGLEVEL_NORMAL, "Mouse input device added with device ID " + CORE::Int32ToString( deviceID ) );
@@ -546,13 +475,13 @@ CInputController::RemoveMouse( const Int32 deviceID )
 /*-------------------------------------------------------------------------*/
     
 void
-CInputController::AddKeyboard( const Int32 deviceID )
+CInputController::AddKeyboard( CInputDriver* inputDriver, const Int32 deviceID )
 {GUCEF_TRACE;
 
     TKeyboardMap::iterator i = m_keyboardMap.find( deviceID ); 
     if ( i == m_keyboardMap.end() )
     {
-        CKeyboard* keyboard = new CKeyboard( deviceID, this );
+        CKeyboard* keyboard = new CKeyboard( *inputDriver, deviceID );
         m_keyboardMap.insert( std::pair< UInt32, CKeyboard* >( deviceID, keyboard ) );
         
         GUCEF_SYSTEM_LOG( CORE::LOGLEVEL_NORMAL, "Keyboard input device added with device ID " + CORE::Int32ToString( deviceID ) );
@@ -581,7 +510,7 @@ CInputController::RemoveKeyboard( const Int32 deviceID )
 /*-------------------------------------------------------------------------*/
     
 void
-CInputController::AddDevice( const Int32 deviceID )
+CInputController::AddDevice( CInputDriver* inputDriver, const Int32 deviceID )
 {GUCEF_TRACE;
 
     // @TODO
@@ -622,6 +551,96 @@ CInputController::SubscribeToAllMice( CORE::CObserver* mouseObserver )
         (*i).second->Subscribe( mouseObserver );
         ++i;
     }
+}
+
+/*-------------------------------------------------------------------------*/
+
+CInputDriverPluginManager&
+CInputController::GetInputDriverPluginManager( void )
+{GUCEF_TRACE;
+
+    return m_inputDriverPluginManager;    
+}
+
+/*-------------------------------------------------------------------------*/
+
+void
+CInputController::RegisterDriver( TInputDriverPtr driver )
+{GUCEF_TRACE;
+
+    if ( NULL != driver )
+    {
+        CString driverName = driver->GetName();
+        
+        m_inputdriverMap[ driverName ] = driver;
+        GUCEF_SYSTEM_LOG( CORE::LOGLEVEL_NORMAL, "InputController: A new driver has been registered with name " + driverName );
+
+        if ( m_defaultDriver.IsNULLOrEmpty() )
+        {
+            m_defaultDriver = driverName;
+            GUCEF_SYSTEM_LOG( CORE::LOGLEVEL_NORMAL, "InputController: No default driver was defined so the newly registed driver " + driverName + " will be set as the default driver" );
+        }
+        NotifyObservers( InputDriverLoadedEvent );
+    }
+}
+
+/*-------------------------------------------------------------------------*/
+
+void
+CInputController::UnregisterDriver( const CString& driverName )
+{GUCEF_TRACE;
+
+    m_inputdriverMap.erase( driverName );
+    GUCEF_SYSTEM_LOG( CORE::LOGLEVEL_NORMAL, "InputController: Unregistered driver with name " + driverName );
+    NotifyObservers( InputDriverUnloadedEvent );
+}
+
+/*-------------------------------------------------------------------------*/
+
+void
+CInputController::SetDefaultDriver( const CString& driverName )
+{GUCEF_TRACE;
+
+    m_defaultDriver = driverName;
+}
+
+/*-------------------------------------------------------------------------*/
+
+const CString&
+CInputController::GetDefaultDriver( void ) const
+{GUCEF_TRACE;
+
+    return m_defaultDriver;
+}
+
+/*-------------------------------------------------------------------------*/
+
+CInputController::TStringSet
+CInputController::GetListOfAvailableDriversByName( void ) const
+{GUCEF_TRACE;
+
+    CInputController::TStringSet resultSet;
+    TInputDriverMap::const_iterator i = m_inputdriverMap.begin();
+    while ( i != m_inputdriverMap.end() )
+    {
+        resultSet.insert( (*i).first );
+        ++i;
+    }
+    return resultSet;
+}
+
+/*-------------------------------------------------------------------------*/
+
+TInputDriverPtr
+CInputController::GetDriverByName( const CString& driverName )
+{GUCEF_TRACE;
+    
+    TInputDriverMap::iterator i = m_inputdriverMap.find( driverName );
+    if ( i != m_inputdriverMap.end() )
+    {
+        return (*i).second;
+    }
+    return NULL;
 }
 
 /*-------------------------------------------------------------------------//

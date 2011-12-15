@@ -107,7 +107,7 @@ void
 CInputDriver::AddMouse( const Int32 deviceID )
 {GUCEF_TRACE;
 
-    m_controller->AddMouse( deviceID );
+    m_controller->AddMouse( this, deviceID );
 }
 
 /*-------------------------------------------------------------------------*/
@@ -125,7 +125,7 @@ void
 CInputDriver::AddKeyboard( const Int32 deviceID )
 {GUCEF_TRACE;
 
-    m_controller->AddKeyboard( deviceID );
+    m_controller->AddKeyboard( this, deviceID );
 }
 
 /*-------------------------------------------------------------------------*/
@@ -143,7 +143,7 @@ void
 CInputDriver::AddDevice( const Int32 deviceID )
 {GUCEF_TRACE;
 
-    m_controller->AddDevice( deviceID );
+    m_controller->AddDevice( this, deviceID );
 }
 
 /*-------------------------------------------------------------------------*/

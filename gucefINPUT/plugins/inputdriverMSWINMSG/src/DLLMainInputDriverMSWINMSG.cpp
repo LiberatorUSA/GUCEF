@@ -105,22 +105,52 @@ static TDriverData* driverData = NULL;
 //                                                                         //
 //-------------------------------------------------------------------------*/
 
+const char*
+GetArgListItem( const char*** args ,
+                const char* key    )
+{       
+    UInt32 i=0;
+    while ( args[ i ] )
+    {
+        if ( strcmp( args[ i ][ 0 ], key ) == 0 )
+        {
+            return args[ i ][ 1 ];
+        }
+        ++i;
+    }
+    return 0;
+}
+
+/*---------------------------------------------------------------------------*/
+
 UInt32
 ParseArgListItemUInt32( const char*** args ,
                         const char* key    )
 {       
-        UInt32 i=0;
-        while ( args[ i ] )
-        {
-                if ( strcmp( args[ i ][ 0 ], key ) == 0 )
-                {
-                        UInt32 value = 0UL;
-                        sscanf( args[ i ][ 1 ], "%d", &value );
-                        return value;
-                }
-                ++i;
-        }
-        return 0;
+    const char* value = GetArgListItem( args, key );
+    if ( NULL != value )
+    {
+        UInt32 result = 0UL;
+        sscanf( value, "%d", &result );
+        return result;
+    }
+    return 0;
+}
+
+/*---------------------------------------------------------------------------*/
+
+void*
+ParseArgListItemPointer( const char*** args ,
+                         const char* key    )
+{       
+    const char* value = GetArgListItem( args, key );
+    if ( NULL != value )
+    {
+        void* result = NULL;
+        sscanf( value, "%p", &result );
+        return result;
+    }
+    return 0;
 }
 
 /*---------------------------------------------------------------------------*/
@@ -472,21 +502,21 @@ UInt32 GUCEF_PLUGIN_CALLSPEC_PREFIX
 INPUTDRIVERPLUG_Init( void** plugdata    ,
                       const char*** args ) GUCEF_PLUGIN_CALLSPEC_SUFFIX
 {
-        if ( NULL != driverData )
-        {
-                /* we should not get here, init called more then once ? */
-                return 1;
-        }
-        *plugdata = driverData = ( TDriverData* ) malloc( sizeof( TDriverData ) );
-        
-        if ( NULL == driverData )
-        {
-                /* allocation failed */
-                return 0;
-        }
-        
-        memset( driverData, 0, sizeof( TDriverData ) );
+    if ( NULL != driverData )
+    {
+        /* we should not get here, init called more then once ? */
         return 1;
+    }
+    *plugdata = driverData = ( TDriverData* ) malloc( sizeof( TDriverData ) );
+        
+    if ( NULL == driverData )
+    {
+        /* allocation failed */
+        return 0;
+    }
+        
+    memset( driverData, 0, sizeof( TDriverData ) );
+    return 1;
 }
 
 /*---------------------------------------------------------------------------*/
@@ -576,8 +606,8 @@ INPUTDRIVERPLUG_CreateContext( void* plugdata                   ,
          *      get the window handle, this is always passed for MSWIN input drivers 
          */
         #pragma warning( disable: 4312 )
-        data->hWnd = (HWND) ParseArgListItemUInt32( args     ,
-                                                    "WINDOW" );
+        data->hWnd = (HWND) ParseArgListItemPointer( args     ,
+                                                     "WINDOW" );
                 
         /*
          *      Retrieve a pointer to the current window message handler

@@ -86,13 +86,13 @@ CKeyboard::RegisterEvents( void )
 
 /*-------------------------------------------------------------------------*/
 
-CKeyboard::CKeyboard( const UInt32 deviceID        ,
-                      CInputController* controller )
-    : CAbstractInputDevice()     ,
-      m_deviceID( deviceID )     ,
-      m_keyState()               ,
-      m_keyModStates( 0 )        ,
-      m_controller( controller )
+CKeyboard::CKeyboard( CInputDriver& inputDriver ,
+                      const UInt32 deviceID     )
+    : CAbstractInputDevice()        ,
+      m_deviceID( deviceID )        ,
+      m_keyState()                  ,
+      m_keyModStates( 0 )           ,
+      m_inputDriver( &inputDriver )
 {GUCEF_TRACE;
     
     RegisterEvents();
@@ -155,6 +155,15 @@ CKeyboard::GetKeyModStates( void ) const
 
 /*-------------------------------------------------------------------------*/
 
+CInputDriver*
+CKeyboard::GetInputDriver( void )
+{GUCEF_TRACE;
+
+    return m_inputDriver;
+}
+
+/*-------------------------------------------------------------------------*/
+
 void
 CKeyboard::SetKeyState( const KeyCode key       , 
                         const bool pressedState )
@@ -205,14 +214,9 @@ CKeyboard::GetUnicodeForKeyCode( const KeyCode keyCode     ,
                                  UInt32& unicode           ) const
 {GUCEF_TRACE;
 
-    const CInputDriver* driver = m_controller->GetDriver();
-    if ( NULL != driver )
-    {
-        return driver->GetUnicodeForKeyCode( keyCode      ,
-                                             keyModifiers ,
-                                             unicode      );
-    }
-    return false;
+    return m_inputDriver->GetUnicodeForKeyCode( keyCode      ,
+                                                keyModifiers ,
+                                                unicode      );
 }
 
 /*-------------------------------------------------------------------------*/

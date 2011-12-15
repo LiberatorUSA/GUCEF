@@ -187,7 +187,7 @@ LoadPlugins( void )
     
     // Define our input plugin for Win32
     pluginMetaData.Clear();
-    pluginMetaData.SetPluginType( "GucefInputPlugin" );
+    pluginMetaData.SetPluginType( "GucefInputDriverPlugin" );
     #ifdef GUCEF_GUI_DEBUG_MODE
     pluginMetaData.SetModuleFilename( "inputdriverMSWINMSG_d" );
     #else

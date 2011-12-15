@@ -1,6 +1,6 @@
 /*
  *  gucefINPUT: GUCEF module providing input device interaction
- *  Copyright (C) 2002 - 2007.  Dinand Vanvelzen
+ *  Copyright (C) 2002 - 2011.  Dinand Vanvelzen
  *
  *  This library is free software; you can redistribute it and/or
  *  modify it under the terms of the GNU Lesser General Public
@@ -17,18 +17,24 @@
  *  Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA 
  */
 
+#ifndef GUCEF_INPUT_CINPUTDRIVERPLUGINMANAGER_H
+#define GUCEF_INPUT_CINPUTDRIVERPLUGINMANAGER_H
+
 /*-------------------------------------------------------------------------//
 //                                                                         //
 //      INCLUDES                                                           //
 //                                                                         //
 //-------------------------------------------------------------------------*/
 
-#ifndef GUCEF_CORE_LOGGING_H
-#include "gucefCORE_Logging.h"
-#define GUCEF_CORE_LOGGING_H
-#endif /* GUCEF_CORE_LOGGING_H ? */
+#ifndef GUCEF_CORE_CPLUGINMANAGER_H
+#include "CPluginManager.h"
+#define GUCEF_CORE_CPLUGINMANAGER_H
+#endif /* GUCEF_CORE_CPLUGINMANAGER_H ? */
 
-#include "CInputContext.h"
+#ifndef GUCEF_INPUT_MACROS_H
+#include "gucefINPUT_macros.h"
+#define GUCEF_INPUT_MACROS_H
+#endif /* GUCEF_INPUT_MACROS_H ? */
 
 /*-------------------------------------------------------------------------//
 //                                                                         //
@@ -41,62 +47,37 @@ namespace INPUT {
 
 /*-------------------------------------------------------------------------//
 //                                                                         //
-//      UTILITIES                                                          //
+//      CLASSES                                                            //
 //                                                                         //
 //-------------------------------------------------------------------------*/
 
-CInputContext::CInputContext( CInputDriver& inputDriver      ,
-                              const CORE::CValueList& params )
-        : m_valuelist( params )         ,
-          m_id( 0UL )                   ,
-          m_inputDriver( &inputDriver )
-{GUCEF_TRACE;
-
-}
-
-/*-------------------------------------------------------------------------*/
-
-CInputContext::~CInputContext()
-{GUCEF_TRACE;
-
-}
-
-/*-------------------------------------------------------------------------*/
-
-const CORE::CValueList&
-CInputContext::GetContextParams( void ) const
-{GUCEF_TRACE;
+/**
+ *  Plugin manager capable of handling input driver plugins
+ */
+class GUCEF_INPUT_PUBLIC_CPP CInputDriverPluginManager : public CORE::CPluginManager
+{
+    public:
     
-    return m_valuelist;
-}
+    CInputDriverPluginManager( void );
 
-/*-------------------------------------------------------------------------*/
+    virtual ~CInputDriverPluginManager();
 
-void 
-CInputContext::SetID( const UInt32 id )
-{GUCEF_TRACE;
+    virtual CString GetPluginType( void ) const;
+
+    protected:
+
+    virtual CORE::TPluginPtr RegisterPlugin( void* modulePtr                        ,
+                                            CORE::TPluginMetaDataPtr pluginMetaData );
+
+    virtual void UnregisterPlugin( CORE::TPluginPtr plugin );
     
-    m_id = id;
-}
-
-/*-------------------------------------------------------------------------*/
-
-UInt32 
-CInputContext::GetID( void ) const
-{GUCEF_TRACE;
+    private:
     
-    return m_id;
-}
+    CInputDriverPluginManager( const CInputDriverPluginManager& src );             /**< not implemented, can't use */
+    CInputDriverPluginManager& operator=( const CInputDriverPluginManager& src );  /**< not implemented, no need */
 
-/*-------------------------------------------------------------------------*/
+};
 
-CInputDriver*
-CInputContext::GetDriver( void )
-{GUCEF_TRACE;
-
-    return m_inputDriver;
-}
-       
 /*-------------------------------------------------------------------------//
 //                                                                         //
 //      NAMESPACE                                                          //
@@ -107,3 +88,16 @@ CInputContext::GetDriver( void )
 }; /* namespace GUCEF */
 
 /*-------------------------------------------------------------------------*/
+          
+#endif /* GUCEF_INPUT_CINPUTDRIVERPLUGINMANAGER_H ? */
+
+/*-------------------------------------------------------------------------//
+//                                                                         //
+//      Info & Changes                                                     //
+//                                                                         //
+//-------------------------------------------------------------------------//
+
+- 28-09-2007 :
+        - Initial implementation
+
+---------------------------------------------------------------------------*/

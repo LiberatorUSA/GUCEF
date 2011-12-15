@@ -51,6 +51,8 @@ namespace INPUT {
 //                                                                         //
 //-------------------------------------------------------------------------*/
 
+class CInputDriver;
+
 /**
  *  Abstract base class for all input devices.
  */
@@ -69,6 +71,8 @@ class GUCEF_INPUT_PUBLIC_CPP CAbstractInputDevice : public CORE::CNotifier
     virtual const char* GetDeviceType( void ) const = 0;
 
     virtual bool IsDeviceType( const char* deviceType ) const = 0;
+
+    virtual CInputDriver* GetInputDriver( void ) = 0;
 
 };
 
