@@ -104,7 +104,7 @@ typedef UInt32 ( GUCEF_PLUGIN_CALLSPEC_PREFIX *TINPUTDRIVERPLUGFPTR_DestroyConte
 class CPluginInputContext : public CInputContext
 {
     private:
-    CInputDriverPlugin* m_pluginAPI;
+
     void* m_contextData;
 
     public:
@@ -112,8 +112,7 @@ class CPluginInputContext : public CInputContext
     CPluginInputContext( CInputDriverPlugin* pluginAPI  ,
                          const CORE::CValueList& params ,
                          void* data = NULL              )
-     : CInputContext( params )  ,
-       m_pluginAPI( pluginAPI ) ,
+     : CInputContext( *pluginAPI, params )  ,
        m_contextData( data )
     {GUCEF_TRACE;
     }
@@ -126,7 +125,7 @@ class CPluginInputContext : public CInputContext
     inline CInputDriverPlugin* GetPluginAPI( void )
     {GUCEF_TRACE;
 
-        return m_pluginAPI;
+        return static_cast< CInputDriverPlugin* >( GetDriver() );
     }
 
     inline void* GetContextData( void )
@@ -333,7 +332,8 @@ CInputDriverPlugin::OnDeviceVarChanged( void* userData          ,
 CInputDriverPlugin::CInputDriverPlugin( void )
         : CInputDriver()     ,
           m_sohandle( NULL ) ,
-          m_plugdata( NULL )
+          m_plugdata( NULL ) ,
+          m_metaData()
 {GUCEF_TRACE;
 
     memset( m_fptable, NULL, sizeof( m_fptable ) );
@@ -341,63 +341,32 @@ CInputDriverPlugin::CInputDriverPlugin( void )
 
 /*-------------------------------------------------------------------------*/
 
-CInputDriverPlugin::CInputDriverPlugin( const CInputDriverPlugin& src )
-{GUCEF_TRACE;
-}
-
-/*-------------------------------------------------------------------------*/
-
 CInputDriverPlugin::~CInputDriverPlugin()
 {GUCEF_TRACE;
-}
 
-/*-------------------------------------------------------------------------*/
-
-CInputDriverPlugin&
-CInputDriverPlugin::operator=( const CInputDriverPlugin& src )
-{GUCEF_TRACE;
-        return *this;
+    Unlink();
 }
 
 /*-------------------------------------------------------------------------*/
 
 const CORE::TVersion*
 CInputDriverPlugin::GetVersion( void )
-{
-        return ( (TINPUTDRIVERPLUGFPTR_Version) m_fptable[ INPUTDRIVERPLUG_VERSION ] )( &m_plugdata );
+{GUCEF_TRACE;
+
+    return ( (TINPUTDRIVERPLUGFPTR_Version) m_fptable[ INPUTDRIVERPLUG_VERSION ] )( &m_plugdata );
 }
 
 /*-------------------------------------------------------------------------*/
 
 bool
-CInputDriverPlugin::LoadModule( const CORE::CString& filename  ,
-                                const CORE::CValueList& params )
+CInputDriverPlugin::Link( void* modulePtr                         ,
+                          CORE::TPluginMetaDataPtr pluginMetaData )
 {GUCEF_TRACE;
 
-    #ifdef GUCEF_INPUT_DEBUG_MODE
-    CString filenameExt = CORE::ExtractFileExtention( filename );
-    if ( 0 == filenameExt.Length() )
-    {
-        if ( filename.Length()-2 != filename.HasSubstr( "_d", false ) )
-        {
-            CString debugFilename = filename + "_d";
-            m_sohandle = CORE::LoadModuleDynamicly( debugFilename.C_String() );
-        }
-        else
-        {
-            m_sohandle = CORE::LoadModuleDynamicly( filename.C_String() );
-        }
-    }
-    else
-    {
-        m_sohandle = CORE::LoadModuleDynamicly( filename.C_String() );
-    }
-    #else
-    m_sohandle = CORE::LoadModuleDynamicly( filename.C_String() );
-    #endif
+    if ( NULL == modulePtr ) return false;
 
-
-    if ( !m_sohandle ) return false;
+    Unlink();
+    m_sohandle = modulePtr;
 
     /*
      *      Link up generic module utilities
@@ -444,33 +413,46 @@ CInputDriverPlugin::LoadModule( const CORE::CString& filename  ,
          ( !m_fptable[ INPUTDRIVERPLUG_CREATECONTEXT ] ) ||
          ( !m_fptable[ INPUTDRIVERPLUG_DESTROYCONTEXT ] ) )
     {
-            CORE::UnloadModuleDynamicly( m_sohandle );
             memset( m_fptable, NULL, sizeof(void*) * INPUTDRIVERPLUG_LASTPTR );
             m_sohandle = NULL;
 
-            GUCEF_DEBUG_LOG( CORE::LOGLEVEL_NORMAL, "Invalid input driver module: " + filename );
+            GUCEF_DEBUG_LOG( CORE::LOGLEVEL_NORMAL, "Invalid input driver module: " + CORE::PointerToString( modulePtr ) );
             return false;
     }
 
     /*
      *      Intialize the plugin module
      */
+    CORE::CValueList params;
+    pluginMetaData->GetParams( params );
     char*** argmatrix = CreateArgMatrix( params );
     ( (TINPUTDRIVERPLUGFPTR_Init) m_fptable[ INPUTDRIVERPLUG_INIT ] )( &m_plugdata, const_cast< const char*** >( argmatrix ) );
     DestroyArgMatrix( argmatrix );
+
+    // Fill in the plugin metadata based on what the actual module can tell us
+    CORE::CPluginMetaData* metaData = new CORE::CPluginMetaData( *pluginMetaData );
+    metaData->SetDescription( ( (TINPUTDRIVERPLUGFPTR_Name) m_fptable[ INPUTDRIVERPLUG_NAME ] )( m_plugdata ) );
+    metaData->SetCopyright( ( (TINPUTDRIVERPLUGFPTR_Copyright) m_fptable[ INPUTDRIVERPLUG_COPYRIGHT ] )( m_plugdata ) );
+    metaData->SetVersion( *( ( (TINPUTDRIVERPLUGFPTR_Version) m_fptable[ INPUTDRIVERPLUG_VERSION ] )( m_plugdata ) ) );
+    m_metaData = metaData;
+
     return true;
+
 }
 
 /*-------------------------------------------------------------------------*/
 
 void
-CInputDriverPlugin::UnloadModule( void )
+CInputDriverPlugin::Unlink( void )
 {GUCEF_TRACE;
-        ( (TINPUTDRIVERPLUGFPTR_Shutdown) m_fptable[ INPUTDRIVERPLUG_SHUTDOWN ] )( m_plugdata );
 
-        CORE::UnloadModuleDynamicly( m_sohandle );
-        memset( m_fptable, NULL, sizeof(void*) * INPUTDRIVERPLUG_LASTPTR );
-        m_sohandle = NULL;
+    if ( NULL != m_sohandle )
+    {
+        ( (TINPUTDRIVERPLUGFPTR_Shutdown) m_fptable[ INPUTDRIVERPLUG_SHUTDOWN ] )( m_plugdata );
+    }
+    m_metaData = NULL;
+    memset( m_fptable, NULL, sizeof(void*) * INPUTDRIVERPLUG_LASTPTR );
+    m_sohandle = NULL;
 }
 
 /*-------------------------------------------------------------------------*/
@@ -481,7 +463,11 @@ CInputDriverPlugin::OnUpdate( const UInt64 tickcount               ,
                               CInputContext* context               )
 {GUCEF_TRACE;
 
+    if ( NULL != m_sohandle )
+    {
         return ( (TINPUTDRIVERPLUGFPTR_Update) m_fptable[ INPUTDRIVERPLUG_UPDATE ] )( m_plugdata, static_cast<CPluginInputContext*>( context )->GetContextData() ) > 0;
+    }
+    return true;
 }
 
 /*-------------------------------------------------------------------------*/
@@ -489,22 +475,23 @@ CInputDriverPlugin::OnUpdate( const UInt64 tickcount               ,
 char***
 CInputDriverPlugin::CreateArgMatrix( const CORE::CValueList& params )
 {GUCEF_TRACE;
-        char*** argmatrix = new char**[ params.GetCount()+1 ];
-        CORE::CString value, key;
-        for ( UInt32 i=0; i<params.GetCount(); ++i )
-        {
-                value = params.GetValue( i );
-                key = params.GetKey( i );
 
-                argmatrix[ i ] = new char*[ 2 ];
-                argmatrix[ i ][ 0 ] = new char[ key.Length()+1 ];
-                memcpy( argmatrix[ i ][ 0 ], key.C_String(), key.Length()+1 );
-                argmatrix[ i ][ 1 ] = new char[ value.Length()+1 ];
-                memcpy( argmatrix[ i ][ 1 ], value.C_String(), value.Length()+1 );
-        }
-        argmatrix[ params.GetCount() ] = NULL;
+    char*** argmatrix = new char**[ params.GetCount()+1 ];
+    CORE::CString value, key;
+    for ( UInt32 i=0; i<params.GetCount(); ++i )
+    {
+        value = params.GetValue( i );
+        key = params.GetKey( i );
 
-        return argmatrix;
+        argmatrix[ i ] = new char*[ 2 ];
+        argmatrix[ i ][ 0 ] = new char[ key.Length()+1 ];
+        memcpy( argmatrix[ i ][ 0 ], key.C_String(), key.Length()+1 );
+        argmatrix[ i ][ 1 ] = new char[ value.Length()+1 ];
+        memcpy( argmatrix[ i ][ 1 ], value.C_String(), value.Length()+1 );
+    }
+    argmatrix[ params.GetCount() ] = NULL;
+
+    return argmatrix;
 }
 
 /*-------------------------------------------------------------------------*/
@@ -512,13 +499,14 @@ CInputDriverPlugin::CreateArgMatrix( const CORE::CValueList& params )
 void
 CInputDriverPlugin::DestroyArgMatrix( char*** argmatrix )
 {GUCEF_TRACE;
-        for ( UInt32 i=0; argmatrix[ i ]>NULL; ++i )
-        {
-                delete [](argmatrix[ i ][ 0 ]);
-                delete [](argmatrix[ i ][ 1 ]);
-                delete [](argmatrix[ i ]);
-        }
-        delete []argmatrix;
+
+    for ( UInt32 i=0; argmatrix[ i ]>NULL; ++i )
+    {
+        delete [](argmatrix[ i ][ 0 ]);
+        delete [](argmatrix[ i ][ 1 ]);
+        delete [](argmatrix[ i ]);
+    }
+    delete []argmatrix;
 }
 
 /*-------------------------------------------------------------------------*/
@@ -550,8 +538,8 @@ CInputDriverPlugin::CreateContext( const CORE::CValueList& params )
     char*** argmatrix = CreateArgMatrix( params );
     if ( ( (TINPUTDRIVERPLUGFPTR_CreateContext) m_fptable[ INPUTDRIVERPLUG_CREATECONTEXT ] )( m_plugdata, context->GetContextDataPtr(), const_cast<const char***>( argmatrix ), &callbacks ) )
     {
-            DestroyArgMatrix( argmatrix );
-            return context;
+        DestroyArgMatrix( argmatrix );
+        return context;
     }
     delete context;
     DestroyArgMatrix( argmatrix );
@@ -563,8 +551,40 @@ CInputDriverPlugin::CreateContext( const CORE::CValueList& params )
 void
 CInputDriverPlugin::DeleteContext( CInputContext* context )
 {GUCEF_TRACE;
-        ( (TINPUTDRIVERPLUGFPTR_DestroyContext) m_fptable[ INPUTDRIVERPLUG_DESTROYCONTEXT ] )( m_plugdata, static_cast<CPluginInputContext*>( context )->GetContextData() );
-        delete static_cast<CPluginInputContext*>( context );
+
+    ( (TINPUTDRIVERPLUGFPTR_DestroyContext) m_fptable[ INPUTDRIVERPLUG_DESTROYCONTEXT ] )( m_plugdata, static_cast<CPluginInputContext*>( context )->GetContextData() );
+    delete static_cast<CPluginInputContext*>( context );
+}
+
+/*-------------------------------------------------------------------------*/
+
+CORE::TPluginMetaDataPtr
+CInputDriverPlugin::GetMetaData( void )
+{GUCEF_TRACE;
+
+    return m_metaData;
+}
+
+/*-------------------------------------------------------------------------*/
+
+void*
+CInputDriverPlugin::GetModulePointer( void )
+{GUCEF_TRACE;
+
+    return m_sohandle;
+}
+
+/*-------------------------------------------------------------------------*/
+
+CString
+CInputDriverPlugin::GetName( void ) const
+{GUCEF_TRACE;
+
+    if ( NULL != m_sohandle )
+    {
+        return ( (TINPUTDRIVERPLUGFPTR_Name) m_fptable[ INPUTDRIVERPLUG_NAME ] )( m_plugdata );
+    }
+    return CString();
 }
 
 /*-------------------------------------------------------------------------//

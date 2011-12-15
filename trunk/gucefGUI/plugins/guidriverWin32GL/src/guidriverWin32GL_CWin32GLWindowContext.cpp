@@ -191,6 +191,19 @@ CWin32GLWindowContext::GetHeight( void ) const
 
 /*-------------------------------------------------------------------------*/
 
+GUI::CString
+CWin32GLWindowContext::GetProperty( const GUI::CString& propertyName ) const
+{GUCEF_TRACE;
+
+    if ( propertyName == "WINDOW" )
+    {
+        return CORE::PointerToString( m_window.GetHwnd() );
+    }
+    return GUI::CString(); 
+}
+
+/*-------------------------------------------------------------------------*/
+
 bool
 CWin32GLWindowContext::Initialize( const GUI::CString& title                ,
                                    const GUI::CVideoSettings& videoSettings )

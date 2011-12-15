@@ -132,8 +132,11 @@ CRocketGuiDriver::CreateGUIContext( GUI::TWindowContextPtr windowContext )
         return GUI::TGuiContextPtr();
     }
    
-    // Create an input context for this GUI context so that we can interact with the GUI based on input events
+    // Create an input context using the default driver and set it for this GUI context so that we can interact 
+    // with the GUI based on input events. Note that in order to correctly tie in the input system we have to pass the
+    // correct parameters for the O/S
     CORE::CValueList inputContextParams;
+    inputContextParams.Set( "WINDOW", windowContext->GetProperty( "WINDOW" ) );
     INPUT::CInputContext* inputContext = INPUT::CInputController::Instance()->CreateContext( inputContextParams ); 
     
     // Add a reference to the context in our set

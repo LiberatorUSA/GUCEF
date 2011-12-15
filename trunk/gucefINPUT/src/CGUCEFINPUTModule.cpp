@@ -66,12 +66,12 @@ bool
 CGUCEFINPUTModule::Load( void )
 {GUCEF_TRACE;
         
-        GUCEF_SYSTEM_LOG( CORE::LOGLEVEL_NORMAL, "gucefINPUT Module loaded" );
+    GUCEF_SYSTEM_LOG( CORE::LOGLEVEL_NORMAL, "gucefINPUT Module loaded" );
         
-        CKeyboard::RegisterEvents();
-        CInputController::RegisterEvents();
-        CInputController::Instance();
-        return true;
+    CKeyboard::RegisterEvents();
+    CInputController::RegisterEvents();
+    CInputController::Instance();
+    return true;
 }
 
 /*-------------------------------------------------------------------------*/
@@ -84,41 +84,6 @@ CGUCEFINPUTModule::Unload( void )
         
         CInputController::Deinstance();        
         return true;
-}
-
-/*-------------------------------------------------------------------------*/
-        
-CGUCEFINPUTModule::CGUCEFINPUTModule( void )
-{GUCEF_TRACE;
-        /* dummy, do not use */
-        assert( 0 );
-}
-
-/*-------------------------------------------------------------------------*/
-
-CGUCEFINPUTModule::CGUCEFINPUTModule( const CGUCEFINPUTModule& src )
-{GUCEF_TRACE;
-        /* dummy, do not use */
-        assert( 0 );
-}
-
-/*-------------------------------------------------------------------------*/
-
-CGUCEFINPUTModule::~CGUCEFINPUTModule()
-{GUCEF_TRACE;
-        /* dummy, do not use */
-        assert( 0 );
-}
-
-/*-------------------------------------------------------------------------*/
-
-CGUCEFINPUTModule& 
-CGUCEFINPUTModule::operator=( const CGUCEFINPUTModule& src )
-{GUCEF_TRACE;
-        /* dummy, do not use */
-        assert( 0 );
-        
-        return *this;
 }
 
 /*-------------------------------------------------------------------------//

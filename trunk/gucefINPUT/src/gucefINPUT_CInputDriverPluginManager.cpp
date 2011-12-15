@@ -1,6 +1,6 @@
 /*
  *  gucefINPUT: GUCEF module providing input device interaction
- *  Copyright (C) 2002 - 2007.  Dinand Vanvelzen
+ *  Copyright (C) 2002 - 2011.  Dinand Vanvelzen
  *
  *  This library is free software; you can redistribute it and/or
  *  modify it under the terms of the GNU Lesser General Public
@@ -23,12 +23,17 @@
 //                                                                         //
 //-------------------------------------------------------------------------*/
 
-#ifndef GUCEF_CORE_LOGGING_H
-#include "gucefCORE_Logging.h"
-#define GUCEF_CORE_LOGGING_H
-#endif /* GUCEF_CORE_LOGGING_H ? */
+#ifndef GUCEF_INPUT_CINPUTCONTROLLER_H
+#include "CInputController.h"
+#define GUCEF_INPUT_CINPUTCONTROLLER_H
+#endif /* GUCEF_INPUT_CINPUTCONTROLLER_H ? */
 
-#include "CInputContext.h"
+#ifndef GUCEF_INPUT_CINPUTDRIVERPLUGIN_H
+#include "CInputDriverPlugin.h"
+#define GUCEF_INPUT_CINPUTDRIVERPLUGIN_H
+#endif /* GUCEF_INPUT_CINPUTDRIVERPLUGIN_H ? */
+
+#include "gucefINPUT_CInputDriverPluginManager.h"
 
 /*-------------------------------------------------------------------------//
 //                                                                         //
@@ -45,58 +50,63 @@ namespace INPUT {
 //                                                                         //
 //-------------------------------------------------------------------------*/
 
-CInputContext::CInputContext( CInputDriver& inputDriver      ,
-                              const CORE::CValueList& params )
-        : m_valuelist( params )         ,
-          m_id( 0UL )                   ,
-          m_inputDriver( &inputDriver )
+CInputDriverPluginManager::CInputDriverPluginManager( void )
+    : CORE::CPluginManager()
 {GUCEF_TRACE;
 
 }
 
 /*-------------------------------------------------------------------------*/
 
-CInputContext::~CInputContext()
+CInputDriverPluginManager::~CInputDriverPluginManager()
 {GUCEF_TRACE;
 
 }
 
 /*-------------------------------------------------------------------------*/
 
-const CORE::CValueList&
-CInputContext::GetContextParams( void ) const
+CString
+CInputDriverPluginManager::GetPluginType( void ) const
 {GUCEF_TRACE;
+
+    return "GucefInputDriverPlugin";
+}
+
+/*-------------------------------------------------------------------------*/
+
+CORE::TPluginPtr
+CInputDriverPluginManager::RegisterPlugin( void* modulePtr                         ,
+                                           CORE::TPluginMetaDataPtr pluginMetaData )
+{GUCEF_TRACE;
+
+    CInputDriverPlugin* plugin = new CInputDriverPlugin();
+    if ( plugin->Link( modulePtr      ,
+                       pluginMetaData ) )
+    {
+        TInputDriverPluginPtr pointerToPlugin = plugin;
+        CInputController::Instance()->RegisterDriver( pointerToPlugin );
+        
+        return pointerToPlugin;
+    }
     
-    return m_valuelist;
+    delete plugin;
+    return NULL; 
 }
 
 /*-------------------------------------------------------------------------*/
 
-void 
-CInputContext::SetID( const UInt32 id )
+void
+CInputDriverPluginManager::UnregisterPlugin( CORE::TPluginPtr plugin )
 {GUCEF_TRACE;
+
+    // First unregister from the registry
+    TInputDriverPluginPtr pointerToPlugin = plugin.StaticCast< CInputDriverPlugin >();
+    CInputController::Instance()->UnregisterDriver( pointerToPlugin->GetName() );
+
+    // Now unlink the plugin
+    pointerToPlugin->Unlink();
+}
     
-    m_id = id;
-}
-
-/*-------------------------------------------------------------------------*/
-
-UInt32 
-CInputContext::GetID( void ) const
-{GUCEF_TRACE;
-    
-    return m_id;
-}
-
-/*-------------------------------------------------------------------------*/
-
-CInputDriver*
-CInputContext::GetDriver( void )
-{GUCEF_TRACE;
-
-    return m_inputDriver;
-}
-       
 /*-------------------------------------------------------------------------//
 //                                                                         //
 //      NAMESPACE                                                          //

@@ -110,14 +110,16 @@ class GUCEF_INPUT_PUBLIC_CPP CKeyboard : public CAbstractInputDevice
     virtual const char* GetDeviceType( void ) const;
 
     virtual bool IsDeviceType( const char* deviceType ) const;
+
+    virtual CInputDriver* GetInputDriver( void );
     
     virtual const CString& GetClassTypeName( void ) const;
     
     private:
     friend class CInputController;
     
-    CKeyboard( const UInt32 deviceID        ,
-               CInputController* controller );
+    CKeyboard( CInputDriver& inputDriver ,
+               const UInt32 deviceID     );
     
     virtual ~CKeyboard();
     
@@ -139,7 +141,7 @@ class GUCEF_INPUT_PUBLIC_CPP CKeyboard : public CAbstractInputDevice
     UInt32 m_deviceID;
     TKeyStates m_keyState;
     UInt32 m_keyModStates;
-    CInputController* m_controller;
+    CInputDriver* m_inputDriver;
 };
 
 /*-------------------------------------------------------------------------//

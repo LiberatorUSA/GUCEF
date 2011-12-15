@@ -131,14 +131,16 @@ CMouse::GetButtonStates( void ) const
 
 /*-------------------------------------------------------------------------*/
 
-CMouse::CMouse( const UInt32 deviceID )
-    : CAbstractInputDevice() ,
-      m_xPos( 0 )            ,
-      m_yPos( 0 )            ,
-      m_prevXPos( 0 )        ,
-      m_prevYPos( 0 )        ,
-      m_buttonStates()       ,
-      m_deviceID( deviceID )
+CMouse::CMouse( CInputDriver& inputDriver ,
+                const UInt32 deviceID     )
+    : CAbstractInputDevice()        ,
+      m_xPos( 0 )                   ,
+      m_yPos( 0 )                   ,
+      m_prevXPos( 0 )               ,
+      m_prevYPos( 0 )               ,
+      m_buttonStates()              ,
+      m_deviceID( deviceID )        ,
+      m_inputDriver( &inputDriver )
 {GUCEF_TRACE;
 
     RegisterEvents();
@@ -150,6 +152,15 @@ CMouse::CMouse( const UInt32 deviceID )
 CMouse::~CMouse()
 {GUCEF_TRACE;
 
+}
+
+/*-------------------------------------------------------------------------*/
+
+CInputDriver*
+CMouse::GetInputDriver( void )
+{GUCEF_TRACE;
+
+    return m_inputDriver;
 }
 
 /*-------------------------------------------------------------------------*/

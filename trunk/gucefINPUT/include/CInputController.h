@@ -64,6 +64,16 @@
 #define GUCEF_INPUT_CMOUSE_H
 #endif /* GUCEF_INPUT_CMOUSE_H ? */
 
+#ifndef GUCEF_INPUT_CINPUTDRIVER_H
+#include "gucefINPUT_CInputDriver.h"
+#define GUCEF_INPUT_CINPUTDRIVER_H
+#endif /* GUCEF_INPUT_CINPUTDRIVER_H ? */
+
+#ifndef GUCEF_INPUT_CINPUTDRIVERPLUGINMANAGER_H
+#include "gucefINPUT_CInputDriverPluginManager.h"
+#define GUCEF_INPUT_CINPUTDRIVERPLUGINMANAGER_H
+#endif /* GUCEF_INPUT_CINPUTDRIVERPLUGINMANAGER_H ? */
+
 /*-------------------------------------------------------------------------//
 //                                                                         //
 //      NAMESPACE                                                          //
@@ -108,20 +118,40 @@ class GUCEF_INPUT_PUBLIC_CPP CInputController : public CORE::CObservingNotifier
     
     public:
 
-    typedef std::map< Int32, CMouse* > TMouseMap;  
-    typedef std::map< Int32, CKeyboard* > TKeyboardMap;
+    typedef std::map< Int32, CMouse* >      TMouseMap;  
+    typedef std::map< Int32, CKeyboard* >   TKeyboardMap;
+    typedef std::set< CString >             TStringSet;
     
     static CInputController* Instance( void );                
     
+    /**
+     *  Create the context using the specified driver
+     */
+    CInputContext* CreateContext( const CString& driverName      ,
+                                  const CORE::CValueList& params );
+    
+    /**
+     *  Create the context using the default driver
+     */
     CInputContext* CreateContext( const CORE::CValueList& params );
     
     void DestroyContext( CInputContext* context );
-    
+  
     UInt32 GetContextCount( void ) const;
+
+    void SetDefaultDriver( const CString& driverName );
+
+    const CString& GetDefaultDriver( void ) const;
+
+    TStringSet GetListOfAvailableDriversByName( void ) const;
+
+    void RegisterDriver( TInputDriverPtr driver );
+
+    void UnregisterDriver( const CString& driverName );
     
-    bool SetDriver( CInputDriver* driver );
+    bool SetDriver( TInputDriverPtr driver );
     
-    const CInputDriver* GetDriver( void ) const;
+    TInputDriverPtr GetDriverByName( const CString& driverName );
             
     bool LoadDriverModule( const CORE::CString& filename  ,
                            const CORE::CValueList& params );
@@ -149,6 +179,11 @@ class GUCEF_INPUT_PUBLIC_CPP CInputController : public CORE::CObservingNotifier
      *  currently connected mice which is the typically desired use-case.
      */
     void SubscribeToAllMice( CORE::CObserver* mouseObserver );
+
+    /**
+     *  Provides access to the plugin manager for input driver plugins
+     */
+    CInputDriverPluginManager& GetInputDriverPluginManager( void );
     
     virtual const CString& GetClassTypeName( void ) const;
     
@@ -199,15 +234,15 @@ class GUCEF_INPUT_PUBLIC_CPP CInputController : public CORE::CObservingNotifier
                               const KeyCode keyCode ,
                               const bool keyPressed );
 
-    void AddMouse( const Int32 deviceID );
+    void AddMouse( CInputDriver* inputDriver, const Int32 deviceID );
     
     void RemoveMouse( const Int32 deviceID );
     
-    void AddKeyboard( const Int32 deviceID );
+    void AddKeyboard( CInputDriver* inputDriver, const Int32 deviceID );
     
     void RemoveKeyboard( const Int32 deviceID );
     
-    void AddDevice( const Int32 deviceID );
+    void AddDevice( CInputDriver* inputDriver, const Int32 deviceID );
     
     void RemoveDevice( const Int32 deviceID );
     
@@ -218,24 +253,22 @@ class GUCEF_INPUT_PUBLIC_CPP CInputController : public CORE::CObservingNotifier
     virtual ~CInputController();
     CInputController& operator=( const CInputController& src );
     
-    void UnloadDriverModule( void );
-    
     private:
     typedef std::set< CInputContext* > TContextSet;
-    
-    CInputDriver* m_driver;
-    bool m_driverisplugin;        
-    TContextSet m_contextSet;
-    
+    typedef std::map< CString, TInputDriverPtr >    TInputDriverMap;
+        
     static CInputController* m_instance;
     
+    TContextSet m_contextSet;
     TKeyboardMap m_keyboardMap;
     TMouseMap m_mouseMap;    
-    CORE::CPulseGenerator* m_pulseGenerator;
-    
+    CORE::CPulseGenerator* m_pulseGenerator;    
     #ifdef GUCEF_MSWIN_BUILD
     UInt32 m_hinstance;
     #endif    
+    CInputDriverPluginManager m_inputDriverPluginManager;
+    CString m_defaultDriver;
+    TInputDriverMap m_inputdriverMap;
 };
 
 /*-------------------------------------------------------------------------//

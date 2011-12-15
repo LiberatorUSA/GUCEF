@@ -1,6 +1,6 @@
 /*
- *  gucefVFS: GUCEF module implementing a Virtual File System
- *  Copyright (C) 2002 - 2007.  Dinand Vanvelzen
+ *  gucefINPUT: GUCEF module providing input device interaction
+ *  Copyright (C) 2002 - 2011.  Dinand Vanvelzen
  *
  *  This library is free software; you can redistribute it and/or
  *  modify it under the terms of the GNU Lesser General Public
@@ -28,10 +28,12 @@
 #define GUCEF_MACROS_H
 #endif /* GUCEF_MACROS_H ? */
 
-#ifndef GUCEF_VFS_CMODULE_H
-#include "gucefVFS_CModule.h"
-#define GUCEF_VFS_CMODULE_H
-#endif /* GUCEF_VFS_CMODULE_H ? */
+#ifndef GUCEF_INPUT_CGUCEFINPUTMODULE_H
+#include "CGUCEFINPUTModule.h"
+#define GUCEF_INPUT_CGUCEFINPUTMODULE_H
+#endif /* GUCEF_INPUT_CGUCEFINPUTMODULE_H ? */
+
+#include "gucefINPUT.h"
 
 /*-------------------------------------------------------------------------//
 //                                                                         //
@@ -39,6 +41,6 @@
 //                                                                         //
 //-------------------------------------------------------------------------*/
 
-GUCEF_DLL_INIT_FUNC_BEG_END( GUCEF::VFS::CModule );
+GUCEF_DLL_INIT_FUNC_BEG_END( GUCEF::INPUT::CGUCEFINPUTModule );
 
 /*-------------------------------------------------------------------------*/
