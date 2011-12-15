@@ -23,10 +23,23 @@
 //                                                                         //
 //-------------------------------------------------------------------------*/
 
+#include <windows.h>
+#include <GL/GL.h>
+
 #ifndef GUCEF_CORE_LOGGING_H
 #include "gucefCORE_Logging.h"
 #define GUCEF_CORE_LOGGING_H
 #endif /* GUCEF_CORE_LOGGING_H ? */
+
+#ifndef GUCEF_CORE_CGUCEFAPPLICATION_H
+#include "CGUCEFApplication.h"
+#define GUCEF_CORE_CGUCEFAPPLICATION_H
+#endif /* GUCEF_CORE_CGUCEFAPPLICATION_H ? */
+
+#ifndef GUCEF_CORE_CPULSEGENERATOR_H
+#include "gucefCORE_CPulseGenerator.h"
+#define GUCEF_CORE_CPULSEGENERATOR_H
+#endif /* GUCEF_CORE_CPULSEGENERATOR_H ? */
 
 #ifndef GUCEF_GUI_CWINDOWCONTEXT_H
 #include "gucefGUI_CWindowContext.h"
@@ -60,6 +73,7 @@ CWin32GLWindowContext::CWin32GLWindowContext( void )
       m_deviceContext( NULL )
 {GUCEF_TRACE;
 
+    SubscribeTo( &m_window );
 }
 
 /*-------------------------------------------------------------------------*/
@@ -121,7 +135,11 @@ void
 CWin32GLWindowContext::Shutdown( void )
 {GUCEF_TRACE;
 
-	if ( NULL != m_renderContext )
+	CORE::CPulseGenerator& pulseGenerator = CORE::CGUCEFApplication::Instance()->GetPulseGenerator();
+    pulseGenerator.RequestStopOfPeriodicUpdates( this );
+    UnsubscribeFrom( &pulseGenerator );
+    
+    if ( NULL != m_renderContext )
 	{
 		wglMakeCurrent( NULL, NULL ); 
 		wglDeleteContext( m_renderContext );
@@ -195,6 +213,11 @@ CWin32GLWindowContext::Initialize( const GUI::CString& title                ,
                                 videoSettings.GetResolutionWidthInPixels()  ,
                                 videoSettings.GetResolutionHeightInPixels() ) )
     {
+        // Display the new window
+        m_window.Show();
+        m_window.SendToForegound();
+        m_window.GrabFocus();
+
 	    // Now proceed with setting up the OpenGL specifics
         m_deviceContext = GetDC( m_window.GetHwnd() );
 	    if ( NULL == m_deviceContext )
@@ -248,6 +271,26 @@ CWin32GLWindowContext::Initialize( const GUI::CString& title                ,
             return false;
 	    }
 
+        // Set up the GL state.
+        glClearColor(0, 0, 0, 1);
+        glEnableClientState(GL_VERTEX_ARRAY);
+        glEnableClientState(GL_COLOR_ARRAY);
+
+        glEnable(GL_BLEND);
+        glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
+
+        glMatrixMode(GL_PROJECTION);
+        glLoadIdentity();
+        glOrtho(0, 1024, 768, 0, -1, 1);
+
+        glMatrixMode(GL_MODELVIEW);
+        glLoadIdentity();
+
+        // Grab the main app pulse generator and set the update interval for the context to the desired refresh rate
+        CORE::CPulseGenerator& pulseGenerator = CORE::CGUCEFApplication::Instance()->GetPulseGenerator(); 
+        pulseGenerator.RequestPeriodicPulses( this, 1000 / videoSettings.GetFrequency() );
+        SubscribeTo( &pulseGenerator );
+
         GUCEF_SYSTEM_LOG( CORE::LOGLEVEL_NORMAL, "Win32GLWindowContext: Succesfully created OpenGL rendering context" );
         return true;
     }
@@ -263,6 +306,26 @@ CWin32GLWindowContext::GetClassTypeName( void ) const
     static CORE::CString classTypeName = "GUCEF::GUIDRIVERWIN32GL::CWin32GLWindowContext";
     return classTypeName;
 }
+
+/*-------------------------------------------------------------------------*/
+
+void
+CWin32GLWindowContext::OnNotify( CORE::CNotifier* notifier   ,
+                                 const CORE::CEvent& eventID ,
+                                 CORE::CICloneable* evenData )
+{GUCEF_TRACE;
+
+    if ( ( eventID == CORE::CPulseGenerator::PulseEvent )      ||
+         ( eventID == CORE::CMsWin32Window::WindowPaintEvent ) )
+    {
+        // Notify that we are going to redraw the window
+        NotifyObservers( WindowContextRedrawEvent );        
+        
+        // Swap our front and back buffers
+        ::SwapBuffers( m_deviceContext );
+    }
+}
+
 
 /*-------------------------------------------------------------------------//
 //                                                                         //

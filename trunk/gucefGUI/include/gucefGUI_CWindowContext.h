@@ -65,6 +65,7 @@ class GUCEF_GUI_PUBLIC_CPP CWindowContext : public CORE::CObservingNotifier
 {        
     public:
     
+    static const GUCEF::CORE::CEvent WindowContextRedrawEvent;
     static const GUCEF::CORE::CEvent WindowContextSizeEvent;
     static const GUCEF::CORE::CEvent WindowContextActivateEvent;
 

@@ -73,9 +73,34 @@ namespace MT {
 //                                                                         //
 //-------------------------------------------------------------------------*/
 
-/*
- *      Definitions for types used in the engine code
- */
+#if GUCEF_COMPILER == GUCEF_COMPILER_MSVC
+
+#ifndef Byte
+typedef signed __int8       Byte;     /* 1 byte, signed */
+#endif
+
+typedef unsigned __int8     Ubyte;    /* 1 byte, unsigned */
+
+#undef UByte
+#define UByte               Ubyte
+
+typedef unsigned __int8     UInt8;    /* 1 byte, unsigned */
+typedef signed __int8       Int8;     /* 1 byte, signed */
+
+typedef unsigned __int16    UInt16;   /* 2 bytes, unsigned */
+typedef signed __int16      Int16;    /* 2 bytes, signed */
+
+typedef unsigned __int32    UInt32;   /* 4 bytes, unsigned */
+typedef signed __int32      Int32;    /* 4 bytes, signed */
+
+typedef signed __int64      Int64;   /* 8 bytes, signed */
+typedef unsigned __int64    UInt64;  /* 8 bytes, unsigned */
+
+typedef float               Float32;  /* 4 bytes, signed, decimal */
+typedef double              Float64;  /* 8 bytes, signed, decimal */
+
+#else
+                       
 #ifndef Byte
 typedef signed char     Byte;     /* 1 byte, signed */
 #endif
@@ -109,6 +134,8 @@ typedef unsigned __int64 UInt64;  /* 8 bytes, unsigned */
 
 typedef float           Float32;  /* 4 bytes, signed, decimal */
 typedef double          Float64;  /* 8 bytes, signed, decimal */
+
+#endif
 
 /*--------------------------------------------------------------------------*/
 

@@ -86,9 +86,9 @@ class GUCEF_GUI_PUBLIC_CPP CForm : public CORE::CObservingNotifier
     
     virtual bool SaveLayout( CORE::CIOAccess& layoutStorage );
     
-    void SetContext( TGuiContextPtr& context );
+    void SetContext( CIGUIContext* context );
     
-    TGuiContextPtr GetContext( void );
+    CIGUIContext* GetContext( void );
     
     virtual bool SetParent( CForm* parentForm );
     
@@ -131,7 +131,7 @@ class GUCEF_GUI_PUBLIC_CPP CForm : public CORE::CObservingNotifier
     
     CFormBackend* m_backend;
     CWidget* m_parentWidget;
-    TGuiContextPtr m_context;
+    CIGUIContext* m_context;
 };
 
 /*-------------------------------------------------------------------------//

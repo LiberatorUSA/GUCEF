@@ -129,6 +129,12 @@ class GUCEF_INPUT_PUBLIC_CPP CInputController : public CORE::CObservingNotifier
     CKeyboard& GetKeyboard( const Int32 deviceID );
     
     UInt32 GetKeyboardCount( void ) const;
+
+    /**
+     *  Helper function which allows you to easily subscribe to all
+     *  currently connected keyboards which is the typically desired use-case.
+     */
+    void SubscribeToAllKeyboards( CORE::CObserver* keyboardObserver );
     
     const TKeyboardMap& GetKeyboardMap( void ) const;
     
@@ -137,6 +143,12 @@ class GUCEF_INPUT_PUBLIC_CPP CInputController : public CORE::CObservingNotifier
     UInt32 GetMouseCount( void ) const;
     
     const TMouseMap& GetMouseMap( void ) const;
+
+    /**
+     *  Helper function which allows you to easily subscribe to all
+     *  currently connected mice which is the typically desired use-case.
+     */
+    void SubscribeToAllMice( CORE::CObserver* mouseObserver );
     
     virtual const CString& GetClassTypeName( void ) const;
     

@@ -42,7 +42,10 @@
 #define GUCEF_CORE_LOGGING_H
 #endif /* GUCEF_CORE_LOGGING_H ? */
 
+#ifndef GUCEF_CORE_CGUCEFAPPLICATION_H
 #include "CGUCEFApplication.h"
+#define GUCEF_CORE_CGUCEFAPPLICATION_H
+#endif /* GUCEF_CORE_CGUCEFAPPLICATION_H ? */
 
 /*-------------------------------------------------------------------------//
 //                                                                         //
@@ -63,6 +66,7 @@ const CEvent CMsWin32Window::WindowCloseEvent = "GUCEF::CORE::CMsWin32Window::Wi
 const CEvent CMsWin32Window::WindowDestroyEvent = "GUCEF::CORE::CMsWin32Window::WindowDestroyEvent";
 const CEvent CMsWin32Window::WindowActivationEvent = "GUCEF::CORE::CMsWin32Window::WindowActivationEvent";
 const CEvent CMsWin32Window::WindowResizeEvent = "GUCEF::CORE::CMsWin32Window::WindowResizeEvent";
+const CEvent CMsWin32Window::WindowPaintEvent = "GUCEF::CORE::CMsWin32Window::WindowPaintEvent";
 
 /*-------------------------------------------------------------------------//
 //                                                                         //
@@ -78,6 +82,7 @@ CMsWin32Window::RegisterEvents( void )
     WindowDestroyEvent.Initialize();
     WindowActivationEvent.Initialize();
     WindowResizeEvent.Initialize();
+    WindowPaintEvent.Initialize();
 }
 
 /*-------------------------------------------------------------------------*/
@@ -148,6 +153,14 @@ CMsWin32Window::WindowProc( const HWND hWnd     ,
             NotifyObservers( WindowResizeEvent );
             break;
         }
+        case WM_PAINT:
+        {
+            NotifyObservers( WindowPaintEvent );
+            return GetOriginalWinProc()( hWnd   ,
+                                         nMsg   , 
+                                         wParam ,
+                                         lParam );
+        }
         default:
         {
             return GetOriginalWinProc()( hWnd   ,
@@ -157,6 +170,22 @@ CMsWin32Window::WindowProc( const HWND hWnd     ,
         }
     }
     return 0;
+}
+
+/*-------------------------------------------------------------------------*/
+
+void
+CMsWin32Window::SendToForegound( void )
+{
+    ::SetForegroundWindow( GetHwnd() );
+}
+
+/*-------------------------------------------------------------------------*/
+
+void
+CMsWin32Window::GrabFocus( void )
+{
+    ::SetFocus( GetHwnd() );
 }
 
 /*-------------------------------------------------------------------------*/

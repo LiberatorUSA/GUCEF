@@ -40,6 +40,7 @@ namespace GUI {
 //                                                                         //
 //-------------------------------------------------------------------------*/
 
+const CORE::CEvent CWindowContext::WindowContextRedrawEvent = "GUCEF::GUI::CWindowContext::WindowContextRedrawEvent";
 const CORE::CEvent CWindowContext::WindowContextSizeEvent = "GUCEF::GUI::CWindowContext::WindowContextSizeEvent";
 const CORE::CEvent CWindowContext::WindowContextActivateEvent = "GUCEF::GUI::CWindowContext::WindowContextActivateEvent";
 
@@ -68,6 +69,7 @@ void
 CWindowContext::RegisterEvents( void )
 {GUCEF_TRACE;
 
+    WindowContextRedrawEvent.Initialize();
     WindowContextSizeEvent.Initialize();
     WindowContextActivateEvent.Initialize();
 }

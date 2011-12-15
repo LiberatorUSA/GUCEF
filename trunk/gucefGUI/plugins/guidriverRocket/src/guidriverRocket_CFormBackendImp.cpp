@@ -23,20 +23,9 @@
 //                                                                         //
 //-------------------------------------------------------------------------*/
 
-//#ifndef __Exception_H_
-//#include "OgreException.h"
-//#define __Exception_H_
-//#endif /* __Exception_H_ ? */
-//
-//#ifndef __ROOT__
-//#include "OgreRoot.h"
-//#define __ROOT__
-//#endif /* __ROOT__ ? */
-//
-//#ifndef __MYGUI_XML_DOCUMENT_H__
-//#include "MyGUI_XmlDocument.h"
-//#define __MYGUI_XML_DOCUMENT_H__
-//#endif /* __MYGUI_XML_DOCUMENT_H__ */
+
+#include <Rocket/Core.h>
+
 //
 //#ifndef GUCEF_CORE_DVCPPSTRINGUTILS_H
 //#include "dvcppstringutils.h"
@@ -123,6 +112,16 @@
 //#define GUCE_MYGUIOGRE_CRENDERCONTEXTIMP_H
 //#endif /* GUCE_MYGUIOGRE_CRENDERCONTEXTIMP_H ? */
 
+#ifndef GUCEF_GUIDRIVERROCKET_CGUICONTEXT_H
+#include "guidriverRocket_CGUIContext.h"
+#define GUCEF_GUIDRIVERROCKET_CGUICONTEXT_H
+#endif /* GUCEF_GUIDRIVERROCKET_CGUICONTEXT_H ? */
+
+#ifndef GUCEF_GUIDRIVERROCKET_CROCKETSTREAMADAPTER_H
+#include "guidriverRocket_CRocketStreamAdapter.h"
+#define GUCEF_GUIDRIVERROCKET_CROCKETSTREAMADAPTER_H
+#endif /* GUCEF_GUIDRIVERROCKET_CROCKETSTREAMADAPTER_H ? */
+
 #include "guidriverRocket_CFormBackendImp.h"
 
 /*-------------------------------------------------------------------------//
@@ -140,12 +139,13 @@ namespace GUIDRIVERROCKET {
 //                                                                         //
 //-------------------------------------------------------------------------*/
 
-CFormBackendImp::CFormBackendImp( void )
+CFormBackendImp::CFormBackendImp( CGUIContext* context )
     : CFormBackend()        ,
       m_widgetMap()         ,
       m_rootWindow( NULL )  ,
       m_widgetNamePrefix()  ,
-      m_resourceGroupName() 
+      m_resourceGroupName() ,
+      m_context( context )  
 {GUCEF_TRACE;
 
 
@@ -318,8 +318,18 @@ CFormBackendImp::SaveLayout( const GUCEF::CORE::CString& layoutStoragePath )
 bool
 CFormBackendImp::LoadLayout( GUCEF::CORE::CIOAccess& layoutStorage )
 {GUCEF_TRACE;
+    
+    CRocketStreamAdapter streamAdapter( layoutStorage );
 
-    return false; 
+    // Load and show the document.
+    Rocket::Core::ElementDocument* document = m_context->GetRocketContext()->LoadDocument( &streamAdapter );
+    if ( NULL != document )
+    {
+        document->Show();
+        document->RemoveReference();
+        return true;
+    }
+    return false;
 }
 
 /*-------------------------------------------------------------------------*/

@@ -39,6 +39,10 @@ function FindCygwinCCache {
     fi
 
   fi
+
+  echo "CCache does not work properly under Cygwin at this time due to bad NDK - Cygwin interaction"
+  echo "CCache useage is disabled"
+  CCACHEPATH="undefined"
 }
 
 #------------------------------------------------------------------------------
@@ -98,7 +102,7 @@ FindCCache
 if [ "$CCACHEPATH" != "undefined" ]; then
 
   # Export the variable for child processes
-  export NDK_CCACHE=CCACHEPATH
+  export NDK_CCACHE=$CCACHEPATH
 
 fi
 
