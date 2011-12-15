@@ -596,6 +596,34 @@ CInputController::RemoveDevice( const Int32 deviceID )
     // @TODO
 }
 
+/*-------------------------------------------------------------------------*/
+
+void
+CInputController::SubscribeToAllKeyboards( CORE::CObserver* keyboardObserver )
+{GUCEF_TRACE;
+    
+    TKeyboardMap::iterator i = m_keyboardMap.begin();
+    while ( i != m_keyboardMap.end() )
+    {
+        (*i).second->Subscribe( keyboardObserver );
+        ++i;
+    }
+}
+
+/*-------------------------------------------------------------------------*/
+
+void
+CInputController::SubscribeToAllMice( CORE::CObserver* mouseObserver )
+{GUCEF_TRACE;
+
+    TMouseMap::iterator i = m_mouseMap.begin();
+    while ( i != m_mouseMap.end() )
+    {
+        (*i).second->Subscribe( mouseObserver );
+        ++i;
+    }
+}
+
 /*-------------------------------------------------------------------------//
 //                                                                         //
 //      NAMESPACE                                                          //

@@ -58,6 +58,10 @@ namespace GUIDRIVERROCKET {
 //                                                                         //
 //-------------------------------------------------------------------------*/
 
+class CGUIContext;
+
+/*-------------------------------------------------------------------------*/
+
 /**
  *  Class used by the form class to abstract from the backend.
  *  This allows you to descend from the CForm class as you wish without having
@@ -69,7 +73,7 @@ class GUCEF_GUIDRIVERROCKET_PUBLIC_CPP CFormBackendImp : public GUI::CFormBacken
     
     typedef std::map< CString, GUI::CWidget* > TWidgetMap;
 
-    CFormBackendImp( void );
+    CFormBackendImp( CGUIContext* context );
     
     virtual ~CFormBackendImp();
 
@@ -92,6 +96,7 @@ class GUCEF_GUIDRIVERROCKET_PUBLIC_CPP CFormBackendImp : public GUI::CFormBacken
                                   
     private:
     
+    CFormBackendImp( void );
     CFormBackendImp( const CFormBackendImp& src );
     CFormBackendImp& operator=( const CFormBackendImp& other );
     
@@ -107,6 +112,7 @@ class GUCEF_GUIDRIVERROCKET_PUBLIC_CPP CFormBackendImp : public GUI::CFormBacken
     GUCEF::GUI::CWidget* m_rootWindow;
     CString m_widgetNamePrefix;
     CString m_resourceGroupName;
+    CGUIContext* m_context;
 };
 
 /*-------------------------------------------------------------------------//

@@ -46,6 +46,11 @@
 #define GUCEF_GUIDRIVERROCKET_CROCKETSYSTEMINTERFACE_H
 #endif /* GUCEF_GUIDRIVERROCKET_CROCKETSYSTEMINTERFACE_H ? */
 
+#ifndef GUCEF_GUIDRIVERROCKET_CROCKETVFSINTERFACE_H
+#include "guidriverRocket_CRocketVFSInterface.h"
+#define GUCEF_GUIDRIVERROCKET_CROCKETVFSINTERFACE_H
+#endif /* GUCEF_GUIDRIVERROCKET_CROCKETVFSINTERFACE_H ? */
+
 #ifndef GUCEF_GUIDRIVERROCKETGL_CROCKETRENDERINTERFACEOPENGL_H
 #include "guidriverRocketOpenGL_CRocketRenderInterfaceOpenGL.h"
 #define GUCEF_GUIDRIVERROCKETGL_CROCKETRENDERINTERFACEOPENGL_H
@@ -121,6 +126,7 @@ class GUIDRIVERROCKETGL_PUBLIC_CPP CRocketGuiDriver : public GUI::CGUIDriver
 
     CRocketRenderInterfaceOpenGL m_rocketRenderer;
     GUIDRIVERROCKET::CRocketSystemInterface m_systemInterface;
+    GUIDRIVERROCKET::CRocketVFSInterface m_fileInterface;
     bool m_isRocketInitialized;
 };
 

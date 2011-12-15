@@ -73,6 +73,16 @@
 #define GUCEF_GUI_CWINDOWMANAGER_H
 #endif /* GUCEF_GUI_CWINDOWMANAGER_H ? */
 
+#ifndef GUCEF_GUI_CFORMEX_H
+#include "gucefGUI_CFormEx.h"
+#define GUCEF_GUI_CFORMEX_H
+#endif /* GUCEF_GUI_CFORMEX_H ? */
+
+#ifndef GUCEF_VFS_CVFS_H
+#include "gucefVFS_CVFS.h"
+#define GUCEF_VFS_CVFS_H
+#endif /* GUCEF_VFS_CVFS_H ? */
+
 /*-------------------------------------------------------------------------//
 //                                                                         //
 //      NAMESPACE                                                          //
@@ -202,8 +212,27 @@ GUCEF_OSMAIN_BEGIN
 
                     // create GUI context for our window
                     GUI::TGuiContextPtr guiContext = GUI::CGUIManager::Instance()->CreateGUIContext( "RocketOpenGL", windowContext );
-                    
-                    CORE::CGUCEFApplication::Instance()->main( argc, argv, true );
+
+                    // Create a form to load the layout into
+                    GUI::CFormEx* form = static_cast< GUI::CFormEx* >( guiContext->CreateForm( "FormEx" ) );
+
+                    // The following determines the path to our test data. Note that this makes assumptions about the archive paths
+                    CORE::CString assetDir = CORE::RelativePath( "$MODULEDIR$" );
+                    assetDir = assetDir.SubstrToSubstr( "trunk" );
+                    CORE::AppendToPath( assetDir, "trunk\\dependencies\\libRocket\\Samples\\assets" );
+
+                    VFS::CVFS::Instance()->AddRoot( assetDir, "RocketGUISampleAssets", false, false );
+
+                    // load the test layout resource
+                    if ( form->LoadLayoutUsingVfs( "demo.rml" ) )
+                    {
+                        CORE::CGUCEFApplication::Instance()->main( argc, argv, true );
+                    }
+                    else
+                    {
+                        CORE::ShowErrorMessage( "Initialization error"                                                     ,
+                                                GUI::CString( "Failed to load layout assets from " + assetDir ).C_String() );
+                    }
                 }
                 else
                 {

@@ -23,17 +23,12 @@
 //                                                                         //
 //-------------------------------------------------------------------------*/
 
-#ifndef GUCEF_GUI_CFORMEX_H
-#include "gucefGUI_CFormEx.h"
-#define GUCEF_GUI_CFORMEX_H
-#endif /* GUCEF_GUI_CFORMEX_H ? */
+#ifndef GUCEF_CORE_LOGGING_H
+#include "gucefCORE_Logging.h"
+#define GUCEF_CORE_LOGGING_H
+#endif /* GUCEF_CORE_LOGGING_H ? */
 
-#ifndef GUCEF_GUIDRIVERROCKET_CFORMBACKENDIMP_H
-#include "guidriverRocket_CFormBackendImp.h"
-#define GUCEF_GUIDRIVERROCKET_CFORMBACKENDIMP_H
-#endif /* GUCEF_GUIDRIVERROCKET_CFORMBACKENDIMP_H ? */
-
-#include "guidriverRocket_CGUIContext.h"
+#include "guidriverRocket_CRocketStreamAdapter.h"
 
 /*-------------------------------------------------------------------------//
 //                                                                         //
@@ -46,183 +41,251 @@ namespace GUIDRIVERROCKET {
 
 /*-------------------------------------------------------------------------//
 //                                                                         //
-//      UTILITIES                                                          //
+//      CLASSES                                                            //
 //                                                                         //
 //-------------------------------------------------------------------------*/
 
-CGUIContext::CGUIContext( GUI::CGUIDriver* guiDriver           ,
-                          Rocket::Core::Context* context       ,
-                          GUI::TWindowContextPtr windowContext )
-    : GUI::CIGUIContext()              ,
-      m_guiDriver( guiDriver )         ,
-      m_rocketContext( context )       ,
-      m_windowContext( windowContext ) 
+CRocketStreamAdapter::CRocketStreamAdapter( CORE::CIOAccess& access )
+    : Rocket::Core::Stream() ,
+      m_access( &access )
 {GUCEF_TRACE;
 
-    SubscribeTo( m_windowContext.GetPointer() );
 }
 
 /*-------------------------------------------------------------------------*/
 
-CGUIContext::~CGUIContext()
+CRocketStreamAdapter::~CRocketStreamAdapter()
 {GUCEF_TRACE;
 
-    m_rocketContext->RemoveReference();
-}
-
-/*-------------------------------------------------------------------------*/
-    
-GUI::CWidget*
-CGUIContext::CreateWidget( const GUI::CString& widgetName )
-{GUCEF_TRACE;
-
-    return NULL;
-}
-
-/*-------------------------------------------------------------------------*/
-    
-void
-CGUIContext::DestroyWidget( GUI::CWidget* widget )
-{GUCEF_TRACE;
-}
-
-/*-------------------------------------------------------------------------*/
-    
-GUI::CForm*
-CGUIContext::CreateForm( const GUI::CString& formName )
-{GUCEF_TRACE;
-
-    if ( formName.IsNULLOrEmpty() || formName == "FormEx" )
-    {
-        GUI::CFormEx* form = new GUI::CFormEx();
-        form->SetContext( this );
-        return form;
-    }
-    else
-    if ( formName == "Form" )
-    {
-        GUI::CForm* form = new GUI::CForm();
-        form->SetContext( this );
-        return form;
-    }
-    return NULL;
-}
-
-/*-------------------------------------------------------------------------*/
-    
-void
-CGUIContext::DestroyForm( GUI::CForm* form )
-{GUCEF_TRACE;
-
-    delete form;
-}
-
-/*-------------------------------------------------------------------------*/
-
-GUI::CIGUIContext::TStringSet
-CGUIContext::GetAvailableFormTypes( void )
-{GUCEF_TRACE;
-
-    return TStringSet();
-}
-
-/*-------------------------------------------------------------------------*/
-    
-GUI::CIGUIContext::TStringSet
-CGUIContext::GetAvailableWidgetTypes( void )
-{GUCEF_TRACE;
-
-    return TStringSet();
-}
-
-/*-------------------------------------------------------------------------*/
-    
-GUI::CFormBackend*
-CGUIContext::CreateFormBackend( void )
-{GUCEF_TRACE;
-
-    return new CFormBackendImp( this );
-}
-
-/*-------------------------------------------------------------------------*/
-    
-void
-CGUIContext::DestroyFormBackend( GUI::CFormBackend* formBackend )
-{GUCEF_TRACE;
-
-    delete static_cast< CFormBackendImp* >( formBackend );
-}
-
-/*-------------------------------------------------------------------------*/
-    
-GUI::CGUIDriver*
-CGUIContext::GetDriver( void )
-{GUCEF_TRACE;
-
-    return m_guiDriver;
-}
-
-/*-------------------------------------------------------------------------*/
-    
-GUI::CIGUIContext::TWidgetSet
-CGUIContext::GetOwnedWidgets( void )
-{GUCEF_TRACE;
-
-    return TWidgetSet();
-}
-
-/*-------------------------------------------------------------------------*/
-    
-GUI::CIGUIContext::TFormSet
-CGUIContext::GetOwnedForms( void )
-{GUCEF_TRACE;
-
-    return TFormSet();
-}
-
-/*-------------------------------------------------------------------------*/
-
-Rocket::Core::Context*
-CGUIContext::GetRocketContext( void )
-{GUCEF_TRACE;
-
-    return m_rocketContext;
 }
 
 /*-------------------------------------------------------------------------*/
 
 void
-CGUIContext::OnNotify( CORE::CNotifier* notifier   ,
-                       const CORE::CEvent& eventID ,
-                       CORE::CICloneable* evenData )
+CRocketStreamAdapter::Close()
 {GUCEF_TRACE;
 
-    if ( eventID == GUI::CWindowContext::WindowContextRedrawEvent )
-    {
-        m_rocketContext->Update();
-	    m_rocketContext->Render();
-    }
+    m_access->Close();
 }
 
 /*-------------------------------------------------------------------------*/
 
-const CORE::CString&
-CGUIContext::GetClassTypeName( void ) const
+int
+CRocketStreamAdapter::GetStreamMode() const
 {GUCEF_TRACE;
 
-    static const CString classTypeName = "GUCEF::GUIDRIVERROCKET::CGUIContext";
-    return classTypeName;
+    int mode = 0;
+    if ( m_access->IsWriteable() ) mode &= MODE_WRITE;
+    if ( m_access->IsReadable() ) mode &= MODE_READ;
+    return mode;
 }
 
 /*-------------------------------------------------------------------------*/
 
-GUI::TWindowContextPtr
-CGUIContext::GetWindowContext( void )
+const Rocket::Core::URL&
+CRocketStreamAdapter::GetSourceURL() const
 {GUCEF_TRACE;
 
-    return m_windowContext;
+    static Rocket::Core::URL dummy;
+    return dummy;
 }
+
+/*-------------------------------------------------------------------------*/
+
+bool
+CRocketStreamAdapter::IsEOS() const
+{GUCEF_TRACE;
+
+    return m_access->Eof();
+}
+
+/*-------------------------------------------------------------------------*/
+
+size_t
+CRocketStreamAdapter::Length() const
+{GUCEF_TRACE;
+
+    return m_access->GetSize();
+}
+
+/*-------------------------------------------------------------------------*/
+
+size_t
+CRocketStreamAdapter::Tell() const
+{GUCEF_TRACE;
     
+    return m_access->Tell();
+}
+
+/*-------------------------------------------------------------------------*/
+	
+bool
+CRocketStreamAdapter::Seek( long offset, int origin ) const
+{GUCEF_TRACE;
+
+    return 0 == m_access->Seek( offset, origin );
+}
+
+/*-------------------------------------------------------------------------*/
+
+size_t
+CRocketStreamAdapter::Read( void* buffer, size_t bytes ) const
+{GUCEF_TRACE;
+
+    return m_access->Read( buffer, 1, bytes );
+}
+
+/*-------------------------------------------------------------------------*/
+
+size_t
+CRocketStreamAdapter::Read( Rocket::Core::Stream* stream, size_t bytes ) const
+{GUCEF_TRACE;
+
+    return stream->Write( this, bytes );
+}
+
+/*-------------------------------------------------------------------------*/
+	
+size_t
+CRocketStreamAdapter::Read( Rocket::Core::String& buffer, size_t bytes ) const
+{GUCEF_TRACE;
+
+    GUI::CString strBuffer;
+    char* strBufferPtr = strBuffer.Reserve( bytes+1 );
+    size_t bytesRead = m_access->Read( strBufferPtr, 1, bytes );
+    strBufferPtr[ bytes ] = 0;
+    buffer += strBufferPtr;
+    return bytesRead;
+}
+
+/*-------------------------------------------------------------------------*/
+
+size_t
+CRocketStreamAdapter::Peek( void* buffer, size_t bytes ) const
+{GUCEF_TRACE;
+
+    GUI::Int32 bytesRead = (GUI::Int32) m_access->Read( buffer, 1, bytes );
+    m_access->Seek( -bytesRead,  SEEK_CUR );
+    return bytesRead; 
+}
+
+/*-------------------------------------------------------------------------*/
+
+size_t
+CRocketStreamAdapter::Write( const void* buffer, size_t bytes )
+{GUCEF_TRACE;
+
+    return m_access->Write( buffer, 1, bytes );
+}
+
+/*-------------------------------------------------------------------------*/
+
+size_t
+CRocketStreamAdapter::Write( const Rocket::Core::Stream* stream, size_t bytes )
+{GUCEF_TRACE;
+    
+    return stream->Read( this, bytes );
+}
+
+/*-------------------------------------------------------------------------*/
+
+size_t
+CRocketStreamAdapter::Write( const char* string )
+{GUCEF_TRACE;
+
+    return m_access->Write( GUI::CString( string ) ); 
+}
+
+/*-------------------------------------------------------------------------*/
+
+size_t
+CRocketStreamAdapter::Write( const Rocket::Core::String& string )
+{GUCEF_TRACE;
+
+    return m_access->Write( GUI::CString( string.CString(), string.Length() ) );
+}
+
+/*-------------------------------------------------------------------------*/
+
+size_t
+CRocketStreamAdapter::Truncate( size_t bytes )
+{GUCEF_TRACE;
+    
+    return 0;
+}
+
+/*-------------------------------------------------------------------------*/
+
+size_t
+CRocketStreamAdapter::PushFront( const void* buffer, size_t bytes )
+{GUCEF_TRACE;
+
+    return 0;
+}
+
+/*-------------------------------------------------------------------------*/
+
+size_t
+CRocketStreamAdapter::PushBack( const void* buffer, size_t bytes )
+{GUCEF_TRACE;
+
+    m_access->Seek( 0, SEEK_END );
+    return m_access->Write( buffer, 1, bytes );
+}
+
+/*-------------------------------------------------------------------------*/
+
+size_t
+CRocketStreamAdapter::PopFront( size_t bytes )
+{GUCEF_TRACE;
+
+    return 0;
+}
+
+/*-------------------------------------------------------------------------*/
+
+size_t
+CRocketStreamAdapter::PopBack( size_t bytes )
+{GUCEF_TRACE;
+
+    return 0;
+}
+
+/*-------------------------------------------------------------------------*/
+
+bool
+CRocketStreamAdapter::IsReadReady()
+{GUCEF_TRACE;
+
+    return m_access->IsReadable();
+}
+
+/*-------------------------------------------------------------------------*/
+
+bool
+CRocketStreamAdapter::IsWriteReady()
+{GUCEF_TRACE;
+
+    return m_access->IsWriteable();
+}
+
+/*-------------------------------------------------------------------------*/
+
+void
+CRocketStreamAdapter::SetStreamDetails( const Rocket::Core::URL& url, int stream_mode )
+{GUCEF_TRACE;
+
+}
+
+/*-------------------------------------------------------------------------*/
+
+void
+CRocketStreamAdapter::OnReferenceDeactivate()
+{GUCEF_TRACE;
+
+}
+
+
 /*-------------------------------------------------------------------------//
 //                                                                         //
 //      NAMESPACE                                                          //

@@ -61,11 +61,13 @@ CRocketGuiDriver::CRocketGuiDriver( void )
     : GUI::CGUIDriver()              ,
       m_rocketRenderer()             ,
       m_systemInterface()            ,
+      m_fileInterface()              ,
       m_isRocketInitialized( false )
 {GUCEF_TRACE;
 
 	Rocket::Core::SetRenderInterface( &m_rocketRenderer );
     Rocket::Core::SetSystemInterface( &m_systemInterface );
+    Rocket::Core::SetFileInterface( &m_fileInterface );
 }
 
 /*-------------------------------------------------------------------------*/
@@ -73,9 +75,11 @@ CRocketGuiDriver::CRocketGuiDriver( void )
 CRocketGuiDriver::~CRocketGuiDriver()
 {GUCEF_TRACE;
 
+    Rocket::Core::Shutdown();
+    
     Rocket::Core::SetRenderInterface( NULL );
     Rocket::Core::SetSystemInterface( NULL );
-    Rocket::Core::Shutdown();
+    Rocket::Core::SetFileInterface( NULL );
 }
 
 /*-------------------------------------------------------------------------*/
@@ -121,8 +125,8 @@ CRocketGuiDriver::CreateGUIContext( GUI::TWindowContextPtr windowContext )
         Rocket::Core::Shutdown();
         return GUI::TGuiContextPtr();
     }
-    
-    return new GUIDRIVERROCKET::CGUIContext( this );
+   
+    return new GUIDRIVERROCKET::CGUIContext( this, context, windowContext );
 }
 
 /*-------------------------------------------------------------------------*/

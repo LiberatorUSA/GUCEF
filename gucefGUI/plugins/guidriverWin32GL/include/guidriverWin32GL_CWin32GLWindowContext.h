@@ -96,6 +96,12 @@ class GUIDRIVERWIN32GL_PUBLIC_CPP CWin32GLWindowContext : public GUI::CWindowCon
     void Shutdown( void );
 
     virtual const CORE::CString& GetClassTypeName( void ) const;
+
+    protected:
+   
+    virtual void OnNotify( CORE::CNotifier* notifier          ,
+                           const CORE::CEvent& eventID        ,
+                           CORE::CICloneable* evenData = NULL );
     
     private:
     

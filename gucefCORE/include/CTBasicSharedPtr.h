@@ -355,7 +355,7 @@ CTBasicSharedPtr< T >::Initialize( T* ptr                        ,
     LockData();
 
     m_ptr = ptr;
-    m_refCounter = new unsigned long( 1UL );
+    m_refCounter = new UInt32( 1UL );
     m_objectDestructor = objectDestructor;
     
     UnlockData();
@@ -610,7 +610,7 @@ CTBasicSharedPtr< T >::operator->( void ) const
 /*-------------------------------------------------------------------------*/
 
 template< typename T >
-unsigned long*
+UInt32*
 CTBasicSharedPtr< T >::GetReferenceCounter( void )
 {
     return m_refCounter;
@@ -619,7 +619,7 @@ CTBasicSharedPtr< T >::GetReferenceCounter( void )
 /*-------------------------------------------------------------------------*/
 
 template< typename T >
-const unsigned long*
+const UInt32*
 CTBasicSharedPtr< T >::GetReferenceCounter( void ) const
 {
     return m_refCounter;

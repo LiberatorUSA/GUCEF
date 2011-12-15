@@ -17,8 +17,8 @@
  *  Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA 
  */
 
-#ifndef GUCEF_GUIDRIVERROCKET_CGUICONTEXT_H
-#define GUCEF_GUIDRIVERROCKET_CGUICONTEXT_H
+#ifndef GUCEF_GUIDRIVERROCKET_CROCKETSTREAMADAPTER_H
+#define GUCEF_GUIDRIVERROCKET_CROCKETSTREAMADAPTER_H
 
 /*-------------------------------------------------------------------------//
 //                                                                         //
@@ -26,22 +26,15 @@
 //                                                                         //
 //-------------------------------------------------------------------------*/
 
-#include <Rocket/Core.h>
+#ifndef ROCKETCORESTREAM_H
+#include "Rocket/Core/Stream.h"
+#define ROCKETCORESTREAM_H
+#endif /* ROCKETCORESTREAM_H ? */
 
-#ifndef GUCEF_GUI_CWINDOWCONTEXT_H
-#include "gucefGUI_CWindowContext.h"
-#define GUCEF_GUI_CWINDOWCONTEXT_H
-#endif /* GUCEF_GUI_CWINDOWCONTEXT_H ? */
-
-#ifndef GUCEF_CORE_COBSERVINGNOTIFIER_H
-#include "CObservingNotifier.h"
-#define GUCEF_CORE_COBSERVINGNOTIFIER_H
-#endif /* GUCEF_CORE_COBSERVINGNOTIFIER_H ? */
-
-#ifndef GUCEF_GUI_CIGUICONTEXT_H
-#include "gucefGUI_CIGUIContext.h"
-#define GUCEF_GUI_CIGUICONTEXT_H
-#endif /* GUCEF_GUI_CIGUICONTEXT_H ? */
+#ifndef GUCEF_CORE_CIOACCESS_H
+#include "CIOAccess.h"
+#define GUCEF_CORE_CIOACCESS_H
+#endif /* GUCEF_CORE_CIOACCESS_H ? */
 
 #ifndef GUCEF_GUIDRIVERROCKET_MACROS_H
 #include "guidriverRocket_macros.h"
@@ -63,62 +56,100 @@ namespace GUIDRIVERROCKET {
 //                                                                         //
 //-------------------------------------------------------------------------*/
 
+class GUCEF_GUIDRIVERROCKET_PUBLIC_CPP CRocketStreamAdapter : public Rocket::Core::Stream
+{
+	public:
 
-class GUCEF_GUIDRIVERROCKET_PUBLIC_CPP CGUIContext : public CORE::CObserver   ,
-                                                     public GUI::CIGUIContext
-{    
-    public:
+	CRocketStreamAdapter( CORE::CIOAccess& access );
 
-    CGUIContext( GUI::CGUIDriver* guiDriver           ,
-                 Rocket::Core::Context* context       ,
-                 GUI::TWindowContextPtr windowContext );
+	virtual ~CRocketStreamAdapter();
 
-    virtual ~CGUIContext();
-    
-    virtual GUI::CWidget* CreateWidget( const GUI::CString& widgetName );
-    
-    virtual void DestroyWidget( GUI::CWidget* widget );
-    
-    virtual GUI::CForm* CreateForm( const GUI::CString& formName );
-    
-    virtual void DestroyForm( GUI::CForm* form );   
+	/// Closes the stream.
+	virtual void Close();
 
-    virtual TStringSet GetAvailableFormTypes( void );
-    
-    virtual TStringSet GetAvailableWidgetTypes( void );
-    
-    virtual GUI::CFormBackend* CreateFormBackend( void );
-    
-    virtual void DestroyFormBackend( GUI::CFormBackend* formBackend );
-    
-    virtual GUI::CGUIDriver* GetDriver( void );
-    
-    virtual TWidgetSet GetOwnedWidgets( void );
-    
-    virtual TFormSet GetOwnedForms( void );
+	/// Returns the mode the stream was opened in.
+	int GetStreamMode() const;
 
-    virtual const CORE::CString& GetClassTypeName( void ) const;
+	/// Obtain the source url of this stream (if available)
+	const Rocket::Core::URL& GetSourceURL() const;
 
-    Rocket::Core::Context* GetRocketContext( void );
+	/// Are we at the end of the stream
+	virtual bool IsEOS() const;
 
-    GUI::TWindowContextPtr GetWindowContext( void );
-    
+	/// Returns the size of this stream (in bytes).
+	virtual size_t Length() const;
+
+	/// Returns the position of the stream pointer (in bytes).
+	virtual size_t Tell() const;
+	
+    /// Sets the stream position (in bytes).
+	virtual bool Seek( long offset, int origin ) const;
+
+	/// Read from the stream.
+	virtual size_t Read( void* buffer, size_t bytes ) const;
+	
+    /// Read from the stream into another stream.
+	virtual size_t Read (Rocket::Core::Stream* stream, size_t bytes ) const;
+	
+    /// Read from the stream and append to the string buffer
+	virtual size_t Read( Rocket::Core::String& buffer, size_t bytes ) const;
+
+	/// Read from the stream, without increasing the stream offset.
+	virtual size_t Peek( void* buffer, size_t bytes ) const;
+
+	/// Write to the stream at the current position.
+	virtual size_t Write( const void* buffer, size_t bytes );
+
+	/// Write to this stream from another stream.
+	virtual size_t Write( const Stream* stream, size_t bytes );
+
+	/// Write a character array to the stream.
+	virtual size_t Write( const char* string );
+
+	/// Write a string to the stream
+	virtual size_t Write( const Rocket::Core::String& string );
+
+	/// Truncate the stream to the specified length.
+	virtual size_t Truncate( size_t bytes );
+
+	/// Push onto the front of the stream.
+	virtual size_t PushFront( const void* buffer, size_t bytes );
+
+	/// Push onto the back of the stream.
+	virtual size_t PushBack( const void* buffer, size_t bytes );
+
+	/// Pop from the front of the stream.
+	virtual size_t PopFront( size_t bytes );
+
+	/// Pop from the back of the stream.
+	virtual size_t PopBack( size_t bytes );
+
+	/// Returns true if the stream is ready for reading, false otherwise.
+	/// This is usually only implemented on streams supporting asynchronous
+	/// operations.
+	virtual bool IsReadReady();
+
+	/// Returns true if the stream is ready for writing, false otherwise.
+	/// This is usually only implemented on streams supporting asynchronous
+	/// operations.
+	virtual bool IsWriteReady();
+
     protected:
-   
-    virtual void OnNotify( CORE::CNotifier* notifier          ,
-                           const CORE::CEvent& eventID        ,
-                           CORE::CICloneable* evenData = NULL );
+
+	/// Sets the mode on the stream; should be called by a stream when it is opened.
+	void SetStreamDetails( const Rocket::Core::URL& url, int stream_mode );		
+
+	/// Deletes the stream.
+	virtual void OnReferenceDeactivate();
 
     private:
 
-    CGUIContext( void );                    /**< not implemented */
-    CGUIContext( const CGUIContext& src );  /**< not implemented */
+    CRocketStreamAdapter( void );
+    CRocketStreamAdapter( const CRocketStreamAdapter& src );
 
     private:
 
-    GUI::CGUIDriver* m_guiDriver;
-    Rocket::Core::Context* m_rocketContext;
-    GUI::TWindowContextPtr m_windowContext;
+    CORE::CIOAccess* m_access;
 };
 
 /*-------------------------------------------------------------------------//
@@ -132,7 +163,7 @@ class GUCEF_GUIDRIVERROCKET_PUBLIC_CPP CGUIContext : public CORE::CObserver   ,
 
 /*-------------------------------------------------------------------------*/
           
-#endif /* GUCEF_GUIDRIVERROCKET_CGUICONTEXT_H ? */
+#endif /* GUCEF_GUIDRIVERROCKET_CROCKETSTREAMADAPTER_H ? */
 
 /*-------------------------------------------------------------------------//
 //                                                                         //

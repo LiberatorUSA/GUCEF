@@ -108,7 +108,7 @@ CForm::~CForm()
 /*-------------------------------------------------------------------------*/
 
 void
-CForm::SetContext( TGuiContextPtr& context )
+CForm::SetContext( CIGUIContext* context )
 {GUCEF_TRACE;
 
     m_context = context;
@@ -116,7 +116,7 @@ CForm::SetContext( TGuiContextPtr& context )
 
 /*-------------------------------------------------------------------------*/
     
-TGuiContextPtr
+CIGUIContext*
 CForm::GetContext( void )
 {GUCEF_TRACE;
 

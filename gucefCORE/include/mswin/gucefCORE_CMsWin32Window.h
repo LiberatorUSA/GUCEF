@@ -69,6 +69,7 @@ class GUCEF_CORE_PUBLIC_CPP CMsWin32Window : public CObservingNotifier
     static const CEvent WindowDestroyEvent;
     static const CEvent WindowActivationEvent;
     static const CEvent WindowResizeEvent;
+    static const CEvent WindowPaintEvent;
     
     static void RegisterEvents( void );
     
@@ -113,6 +114,10 @@ class GUCEF_CORE_PUBLIC_CPP CMsWin32Window : public CObservingNotifier
     bool Minimize( void );
     
     void Repaint( void );
+
+    void SendToForegound( void );
+
+    void GrabFocus( void );
     
     bool GetWindowAreaPosition( int& x, int& y ) const;
     

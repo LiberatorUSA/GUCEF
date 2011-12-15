@@ -61,7 +61,7 @@ class GUCEF_GUI_PUBLIC_CPP CVideoOptions
         UInt32 widthInPixels;
         UInt32 heightInPixels;
         UInt32 depthInBits;
-        UInt32 frequency;
+        UInt32 frequency;     /**< display frequency in frames per second */
     };
     typedef struct SDisplayMode TDisplayMode;
     typedef std::vector< TDisplayMode > TDisplayModeVector;

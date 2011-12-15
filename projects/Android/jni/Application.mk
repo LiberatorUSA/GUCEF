@@ -33,12 +33,14 @@ APP_CPPFLAGS += -fexceptions
 #    stlport_static      -> Use STLport built as a static library.
 #    stlport_shared      -> Use STLport built as a shared library.
 #    gnustl_static       -> Use GNU libstdc++ as a static library.
+#    gnustl_shared       -> Use GNU libstdc++ as a shared library. (>NDK7 only)
 # 
 # WARNING: IMPORTANT CAVEAT
 # 
 #     AT THE MOMENT, OUR STLPORT IMPLEMENTATION DOES NOT SUPPORT EXCEPTIONS
 #     AND RTTI. PLEASE BE SURE TO NOT USE -fexceptions OR -frtti IN ALL
-#     MODULES THAT USE IT.
+#     MODULES THAT USE IT. ( NDK7: Added support for RTTI in the STLport C++ 
+#     runtimes (no support for exceptions) )
 #
 #     IF YOU NEED THESE, PLEASE USE "gnustl_static".
 #
@@ -88,4 +90,4 @@ APP_CPPFLAGS += -fexceptions
 # sources/cxx-stl/stlport/README for more details about the library.
 #
 
-APP_STL := gnustl_static
+APP_STL := gnustl_shared
