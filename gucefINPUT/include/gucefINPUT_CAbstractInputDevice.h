@@ -17,8 +17,8 @@
  *  Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA 
  */
 
-#ifndef GUCEF_INPUT_CINPUTDEVICE_H
-#define GUCEF_INPUT_CINPUTDEVICE_H
+#ifndef GUCEF_INPUT_CABSTRACTINPUTDEVICE_H
+#define GUCEF_INPUT_CABSTRACTINPUTDEVICE_H
 
 /*-------------------------------------------------------------------------//
 //                                                                         //
@@ -26,10 +26,15 @@
 //                                                                         //
 //-------------------------------------------------------------------------*/
 
-#ifndef GUCEF_INPUT_CABSTRACTINPUTDEVICE_H
-#include "gucefINPUT_CAbstractInputDevice.h"
-#define GUCEF_INPUT_CABSTRACTINPUTDEVICE_H
-#endif /* GUCEF_INPUT_CABSTRACTINPUTDEVICE_H ? */
+#ifndef GUCEF_CORE_CNOTIFIER_H
+#include "CNotifier.h"
+#define GUCEF_CORE_CNOTIFIER_H
+#endif /* GUCEF_CORE_CNOTIFIER_H ? */
+
+#ifndef GUCEF_INPUT_MACROS_H
+#include "gucefINPUT_macros.h"
+#define GUCEF_INPUT_MACROS_H
+#endif /* GUCEF_INPUT_MACROS_H ? */
 
 /*-------------------------------------------------------------------------//
 //                                                                         //
@@ -47,45 +52,24 @@ namespace INPUT {
 //-------------------------------------------------------------------------*/
 
 /**
- *  In-software representation of a hardware input device
- *  This representation will typically be used for things like joysticks
+ *  Abstract base class for all input devices.
  */
-class GUCEF_INPUT_PUBLIC_CPP CInputDevice : public CAbstractInputDevice
+class GUCEF_INPUT_PUBLIC_CPP CAbstractInputDevice : public CORE::CNotifier
 {
     public:
-    
-    static const CORE::CEvent BoolStateChangedEvent; /**< send when a device boolean state changes, data = CInputDeviceBoolStateChangedEventData */
-    static const CORE::CEvent VarStateChangedEvent;  /**< send when a device variable state changes, data = CInputDeviceVarStateChangedEventData */
-    
-    static void RegisterEvents( void );
 
-    static const char* DeviceType;
+    CAbstractInputDevice( void );
     
-    public:
-    
-    typedef std::map< UInt32, bool > TBooleanStates;
-    
-    bool GetBoolState( const UInt32 index ) const;
-    
-    virtual const char* GetDeviceType( void ) const;
+    CAbstractInputDevice( const CAbstractInputDevice& src );
+        
+    virtual ~CAbstractInputDevice();
 
-    virtual bool IsDeviceType( const char* deviceType ) const;
-    
-    private:
-    friend class CInputController;
-    
-    CInputDevice( void );
-    
-    virtual ~CInputDevice();
+    CAbstractInputDevice& operator=( const CAbstractInputDevice& src );
 
-       
-    private:
-    
-    CInputDevice( const CInputDevice& src );            /**< cannot be used */
-    CInputDevice& operator=( const CInputDevice& src ); /**< cannot be used */
-    
-    private:
- 
+    virtual const char* GetDeviceType( void ) const = 0;
+
+    virtual bool IsDeviceType( const char* deviceType ) const = 0;
+
 };
 
 /*-------------------------------------------------------------------------//
@@ -99,7 +83,7 @@ class GUCEF_INPUT_PUBLIC_CPP CInputDevice : public CAbstractInputDevice
 
 /*-------------------------------------------------------------------------*/
           
-#endif /* GUCEF_INPUT_CINPUTDEVICE_H ? */
+#endif /* GUCEF_INPUT_CABSTRACTINPUTDEVICE_H ? */
 
 /*-------------------------------------------------------------------------//
 //                                                                         //
@@ -110,4 +94,4 @@ class GUCEF_INPUT_PUBLIC_CPP CInputDevice : public CAbstractInputDevice
 - 28-09-2007 :
         - Initial implementation
 
------------------------------------------------------------------------------*/
+---------------------------------------------------------------------------*/

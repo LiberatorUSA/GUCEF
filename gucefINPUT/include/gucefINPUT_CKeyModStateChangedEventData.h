@@ -57,8 +57,9 @@ class GUCEF_INPUT_PUBLIC_CPP CKeyModStateChangedEventData : public CORE::CIClone
 {
     public:
     
-    CKeyModStateChangedEventData( const KeyModifier keyMod ,
-                                  bool pressedState        );
+    CKeyModStateChangedEventData( const KeyModifier keyMod     ,
+                                  bool pressedState            ,
+                                  const UInt32 allKeyModStates );
 
     CKeyModStateChangedEventData( const CKeyModStateChangedEventData& src );
                         
@@ -67,6 +68,8 @@ class GUCEF_INPUT_PUBLIC_CPP CKeyModStateChangedEventData : public CORE::CIClone
     KeyModifier GetModifier( void ) const;
     
     bool GetPressedState( void ) const;
+
+    UInt32 GetAllKeyModStates( void ) const;
     
     virtual CORE::CICloneable* Clone( void ) const;
     
@@ -79,6 +82,7 @@ class GUCEF_INPUT_PUBLIC_CPP CKeyModStateChangedEventData : public CORE::CIClone
     
     KeyModifier m_keyMod;
     bool m_pressedState;
+    UInt32 m_allKeyModStates;
 };
 
 /*-------------------------------------------------------------------------//

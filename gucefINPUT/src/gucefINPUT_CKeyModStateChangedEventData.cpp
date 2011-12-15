@@ -45,11 +45,13 @@ namespace INPUT {
 //                                                                         //
 //-------------------------------------------------------------------------*/
 
-CKeyModStateChangedEventData::CKeyModStateChangedEventData( const KeyModifier keyMod ,
-                                                            const bool pressedState  )
-    : CICloneable()                  ,
-      m_keyMod( keyMod )             ,
-      m_pressedState( pressedState ) 
+CKeyModStateChangedEventData::CKeyModStateChangedEventData( const KeyModifier keyMod     ,
+                                                            const bool pressedState      ,
+                                                            const UInt32 allKeyModStates )
+    : CICloneable()                        ,
+      m_keyMod( keyMod )                   ,
+      m_pressedState( pressedState )       ,
+      m_allKeyModStates( allKeyModStates ) 
 {GUCEF_TRACE;
 
 }
@@ -57,9 +59,10 @@ CKeyModStateChangedEventData::CKeyModStateChangedEventData( const KeyModifier ke
 /*-------------------------------------------------------------------------*/
 
 CKeyModStateChangedEventData::CKeyModStateChangedEventData( const CKeyModStateChangedEventData& src )
-    : CICloneable( src )                 ,
-      m_keyMod( src.m_keyMod )           ,
-      m_pressedState( src.m_pressedState )
+    : CICloneable( src )                         ,
+      m_keyMod( src.m_keyMod )                   ,
+      m_pressedState( src.m_pressedState )       ,
+      m_allKeyModStates( src.m_allKeyModStates )
 {GUCEF_TRACE;
 
 }
@@ -96,6 +99,15 @@ CKeyModStateChangedEventData::Clone( void ) const
 {GUCEF_TRACE;
 
     return new CKeyModStateChangedEventData( *this );
+}
+
+/*-------------------------------------------------------------------------*/
+
+UInt32
+CKeyModStateChangedEventData::GetAllKeyModStates( void ) const
+{GUCEF_TRACE;
+    
+    return m_allKeyModStates;
 }
     
 /*-------------------------------------------------------------------------//

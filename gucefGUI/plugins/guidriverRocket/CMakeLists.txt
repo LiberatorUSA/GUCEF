@@ -25,7 +25,6 @@ set( HEADER_FILES
   include/guidriverRocket_CGridViewImp.h
   include/guidriverRocket_CGUIContext.h
   include/guidriverRocket_CImageFrameImp.h
-  include/guidriverRocket_CIOAccessToMyGuiDataStreamAdapter.h
   include/guidriverRocket_CLabelImp.h
   include/guidriverRocket_CListBoxImp.h
   include/guidriverRocket_CMemoboxImp.h
@@ -36,12 +35,13 @@ set( HEADER_FILES
   include/guidriverRocket_CProgressBarImp.h
   include/guidriverRocket_CPushButtonImp.h
   include/guidriverRocket_CRenderContextImp.h
+  include/guidriverRocket_CRocketStreamAdapter.h
   include/guidriverRocket_CRocketSystemInterface.h
+  include/guidriverRocket_CRocketVFSInterface.h
   include/guidriverRocket_CSpinnerImp.h
   include/guidriverRocket_CTabContentPaneImp.h
   include/guidriverRocket_CTabControlImp.h
   include/guidriverRocket_CTreeviewImp.h
-  include/guidriverRocket_CVFSHandleToMyGuiDataStreamAdapter.h
   include/guidriverRocket_CVFSInfoProvider.h
   include/guidriverRocket_CWidgetImp.h
   include/guidriverRocket_CWindowImp.h
@@ -74,12 +74,13 @@ set( SOURCE_FILES
   src/guidriverRocket_CPushButtonImp.cpp
   src/guidriverRocket_CRenderContextImp.cpp
   src/guidriverRocket_CRocketInputAdapter.cpp
+  src/guidriverRocket_CRocketStreamAdapter.cpp
   src/guidriverRocket_CRocketSystemInterface.cpp
+  src/guidriverRocket_CRocketVFSInterface.cpp
   src/guidriverRocket_CSpinnerImp.cpp
   src/guidriverRocket_CTabContentPaneImp.cpp
   src/guidriverRocket_CTabControlImp.cpp
   src/guidriverRocket_CTreeviewImp.cpp
-  src/guidriverRocket_CVFSHandleToMyGuiDataStreamAdapter.cpp
   src/guidriverRocket_CVFSInfoProvider.cpp
   src/guidriverRocket_CWidgetImp.cpp
   src/guidriverRocket_CWindowImp.cpp
@@ -97,11 +98,11 @@ set( ALL_FILES ${HEADER_FILES} ${SOURCE_FILES} ${PLATFORM_HEADER_FILES} ${PLATFO
 
 set( MODULE_NAME "guidriverRocket" )
 add_library( ${MODULE_NAME} ${ALL_FILES} )
-add_dependencies( ${MODULE_NAME} RocketControls RocketCore gucefCORE gucefGUI gucefMT )
-target_link_libraries( ${MODULE_NAME} RocketControls RocketCore gucefCORE gucefGUI gucefMT )
+add_dependencies( ${MODULE_NAME} RocketControls RocketCore gucefCORE gucefGUI gucefINPUT gucefMT gucefVFS )
+target_link_libraries( ${MODULE_NAME} RocketControls RocketCore gucefCORE gucefGUI gucefINPUT gucefMT gucefVFS )
 set_target_properties( ${MODULE_NAME} PROPERTIES COMPILE_DEFINITIONS "GUCEF_GUIDRIVERROCKET_BUILD_MODULE" )
 
-include_directories( ../../../common/include ../../../dependencies/freetype/include ../../../dependencies/freetype/include/freetype ../../../dependencies/freetype/include/freetype/config ../../../dependencies/freetype/include/freetype/internal ../../../dependencies/freetype/include/freetype/internal/services ../../../dependencies/freetype/src/winfonts ../../../dependencies/libRocket/Include ../../../dependencies/libRocket/Include/Rocket ../../../dependencies/libRocket/Include/Rocket/Controls ../../../dependencies/libRocket/Include/Rocket/Core ../../../dependencies/libRocket/Include/Rocket/Core/Python ../../../dependencies/libRocket/Include/Rocket/Debugger ../../../dependencies/libRocket/Source/Controls ../../../dependencies/libRocket/Source/Core ../../../gucefCORE/include ../../../gucefGUI/include ../../../gucefIMAGE/include ../../../gucefMT/include ../../../gucefVFS/include include )
+include_directories( ../../../common/include ../../../dependencies/freetype/include ../../../dependencies/freetype/include/freetype ../../../dependencies/freetype/include/freetype/config ../../../dependencies/freetype/include/freetype/internal ../../../dependencies/freetype/include/freetype/internal/services ../../../dependencies/freetype/src/winfonts ../../../dependencies/libRocket/Include ../../../dependencies/libRocket/Include/Rocket ../../../dependencies/libRocket/Include/Rocket/Controls ../../../dependencies/libRocket/Include/Rocket/Core ../../../dependencies/libRocket/Include/Rocket/Core/Python ../../../dependencies/libRocket/Include/Rocket/Debugger ../../../dependencies/libRocket/Source/Controls ../../../dependencies/libRocket/Source/Core ../../../gucefCORE/include ../../../gucefGUI/include ../../../gucefIMAGE/include ../../../gucefINPUT/include ../../../gucefMT/include ../../../gucefVFS/include include )
 
 if ( ANDROID )
   include_directories( ../../../gucefCORE/include/android )

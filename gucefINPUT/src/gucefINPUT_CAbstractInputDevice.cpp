@@ -17,19 +17,18 @@
  *  Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA 
  */
 
-#ifndef GUCEF_INPUT_CINPUTDEVICE_H
-#define GUCEF_INPUT_CINPUTDEVICE_H
-
 /*-------------------------------------------------------------------------//
 //                                                                         //
 //      INCLUDES                                                           //
 //                                                                         //
 //-------------------------------------------------------------------------*/
 
-#ifndef GUCEF_INPUT_CABSTRACTINPUTDEVICE_H
+#ifndef GUCEF_CORE_LOGGING_H
+#include "gucefCORE_Logging.h"
+#define GUCEF_CORE_LOGGING_H
+#endif /* GUCEF_CORE_LOGGING_H ? */
+
 #include "gucefINPUT_CAbstractInputDevice.h"
-#define GUCEF_INPUT_CABSTRACTINPUTDEVICE_H
-#endif /* GUCEF_INPUT_CABSTRACTINPUTDEVICE_H ? */
 
 /*-------------------------------------------------------------------------//
 //                                                                         //
@@ -42,51 +41,39 @@ namespace INPUT {
 
 /*-------------------------------------------------------------------------//
 //                                                                         //
-//      CLASSES                                                            //
+//      UTILITIES                                                          //
 //                                                                         //
 //-------------------------------------------------------------------------*/
 
-/**
- *  In-software representation of a hardware input device
- *  This representation will typically be used for things like joysticks
- */
-class GUCEF_INPUT_PUBLIC_CPP CInputDevice : public CAbstractInputDevice
-{
-    public:
-    
-    static const CORE::CEvent BoolStateChangedEvent; /**< send when a device boolean state changes, data = CInputDeviceBoolStateChangedEventData */
-    static const CORE::CEvent VarStateChangedEvent;  /**< send when a device variable state changes, data = CInputDeviceVarStateChangedEventData */
-    
-    static void RegisterEvents( void );
+CAbstractInputDevice::CAbstractInputDevice( void )
+    : CORE::CNotifier()
+{GUCEF_TRACE;
 
-    static const char* DeviceType;
-    
-    public:
-    
-    typedef std::map< UInt32, bool > TBooleanStates;
-    
-    bool GetBoolState( const UInt32 index ) const;
-    
-    virtual const char* GetDeviceType( void ) const;
+}
 
-    virtual bool IsDeviceType( const char* deviceType ) const;
+/*-------------------------------------------------------------------------*/
     
-    private:
-    friend class CInputController;
-    
-    CInputDevice( void );
-    
-    virtual ~CInputDevice();
+CAbstractInputDevice::CAbstractInputDevice( const CAbstractInputDevice& src )
+    : CORE::CNotifier( src )
+{GUCEF_TRACE;
 
-       
-    private:
-    
-    CInputDevice( const CInputDevice& src );            /**< cannot be used */
-    CInputDevice& operator=( const CInputDevice& src ); /**< cannot be used */
-    
-    private:
- 
-};
+}
+        
+/*-------------------------------------------------------------------------*/
+
+CAbstractInputDevice::~CAbstractInputDevice()
+{GUCEF_TRACE;
+
+}
+
+/*-------------------------------------------------------------------------*/
+
+CAbstractInputDevice&
+CAbstractInputDevice::operator=( const CAbstractInputDevice& src )
+{GUCEF_TRACE;
+
+    return *this;
+}
 
 /*-------------------------------------------------------------------------//
 //                                                                         //
@@ -98,16 +85,3 @@ class GUCEF_INPUT_PUBLIC_CPP CInputDevice : public CAbstractInputDevice
 }; /* namespace GUCEF */
 
 /*-------------------------------------------------------------------------*/
-          
-#endif /* GUCEF_INPUT_CINPUTDEVICE_H ? */
-
-/*-------------------------------------------------------------------------//
-//                                                                         //
-//      Info & Changes                                                     //
-//                                                                         //
-//-------------------------------------------------------------------------//
-
-- 28-09-2007 :
-        - Initial implementation
-
------------------------------------------------------------------------------*/

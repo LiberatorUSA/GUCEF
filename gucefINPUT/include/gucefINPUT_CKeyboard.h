@@ -28,10 +28,10 @@
 
 #include <map>
 
-#ifndef GUCEF_CORE_CNOTIFIER_H
-#include "CNotifier.h"
-#define GUCEF_CORE_CNOTIFIER_H
-#endif /* GUCEF_CORE_CNOTIFIER_H ? */
+#ifndef GUCEF_INPUT_CABSTRACTINPUTDEVICE_H
+#include "gucefINPUT_CAbstractInputDevice.h"
+#define GUCEF_INPUT_CABSTRACTINPUTDEVICE_H
+#endif /* GUCEF_INPUT_CABSTRACTINPUTDEVICE_H ? */
 
 #ifndef GUCEF_INPUT_KEYBOARD_H
 #include "gucefINPUT_keyboard.h"
@@ -42,6 +42,11 @@
 #include "gucefINPUT_CKeyStateChangedEventData.h"
 #define GUCEF_INPUT_CKEYSTATECHANGEDEVENTDATA_H
 #endif /* GUCEF_INPUT_CKEYSTATECHANGEDEVENTDATA_H ? */
+
+#ifndef GUCEF_INPUT_CKEYMODSTATECHANGEDEVENTDATA_H
+#include "gucefINPUT_CKeyModStateChangedEventData.h"
+#define GUCEF_INPUT_CKEYMODSTATECHANGEDEVENTDATA_H
+#endif /* GUCEF_INPUT_CKEYMODSTATECHANGEDEVENTDATA_H ? */
 
 /*-------------------------------------------------------------------------//
 //                                                                         //
@@ -65,14 +70,16 @@ class CInputController;
 /**
  *  In-software representation of a keyboard hardware input device
  */
-class GUCEF_INPUT_PUBLIC_CPP CKeyboard : public CORE::CNotifier
+class GUCEF_INPUT_PUBLIC_CPP CKeyboard : public CAbstractInputDevice
 {
     public:
     
-    static const CORE::CEvent KeyStateChangedEvent;
-    static const CORE::CEvent KeyModStateChangedEvent;
+    static const CORE::CEvent KeyStateChangedEvent;      /**< event signaling that the state of a key changed, eventdata = CKeyStateChangedEventData */
+    static const CORE::CEvent KeyModStateChangedEvent;   /**< event signaling that the state of a key modifier changed, eventdata = CKeyModStateChangedEventData */
     
     static void RegisterEvents( void );
+
+    static const char* DeviceType;     /** string representing the type of device */
     
     public:
     
@@ -100,7 +107,9 @@ class GUCEF_INPUT_PUBLIC_CPP CKeyboard : public CORE::CNotifier
                                const UInt32 keyModifiers ,
                                UInt32& unicode           ) const;
 
-    virtual const CString& GetType( void ) const;
+    virtual const char* GetDeviceType( void ) const;
+
+    virtual bool IsDeviceType( const char* deviceType ) const;
     
     virtual const CString& GetClassTypeName( void ) const;
     

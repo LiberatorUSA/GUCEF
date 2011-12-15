@@ -28,6 +28,11 @@
 
 #include <Rocket/Core.h>
 
+#ifndef GUCEF_INPUT_CINPUTCONTEXT_H
+#include "CInputContext.h"
+#define GUCEF_INPUT_CINPUTCONTEXT_H
+#endif /* GUCEF_INPUT_CINPUTCONTEXT_H ? */
+
 #ifndef GUCEF_GUI_CWINDOWCONTEXT_H
 #include "gucefGUI_CWindowContext.h"
 #define GUCEF_GUI_CWINDOWCONTEXT_H
@@ -42,6 +47,11 @@
 #include "gucefGUI_CIGUIContext.h"
 #define GUCEF_GUI_CIGUICONTEXT_H
 #endif /* GUCEF_GUI_CIGUICONTEXT_H ? */
+
+#ifndef GUCEF_GUIDRIVERROCKET_CINPUTADAPTER_H
+#include "guidriverRocket_CInputAdapter.h"
+#define GUCEF_GUIDRIVERROCKET_CINPUTADAPTER_H
+#endif /* GUCEF_GUIDRIVERROCKET_CINPUTADAPTER_H ? */
 
 #ifndef GUCEF_GUIDRIVERROCKET_MACROS_H
 #include "guidriverRocket_macros.h"
@@ -71,7 +81,8 @@ class GUCEF_GUIDRIVERROCKET_PUBLIC_CPP CGUIContext : public CORE::CObserver   ,
 
     CGUIContext( GUI::CGUIDriver* guiDriver           ,
                  Rocket::Core::Context* context       ,
-                 GUI::TWindowContextPtr windowContext );
+                 GUI::TWindowContextPtr windowContext ,
+                 INPUT::CInputContext* inputContext   );
 
     virtual ~CGUIContext();
     
@@ -102,6 +113,8 @@ class GUCEF_GUIDRIVERROCKET_PUBLIC_CPP CGUIContext : public CORE::CObserver   ,
     Rocket::Core::Context* GetRocketContext( void );
 
     GUI::TWindowContextPtr GetWindowContext( void );
+
+    INPUT::CInputContext* GetInputContext( void );
     
     protected:
    
@@ -119,6 +132,8 @@ class GUCEF_GUIDRIVERROCKET_PUBLIC_CPP CGUIContext : public CORE::CObserver   ,
     GUI::CGUIDriver* m_guiDriver;
     Rocket::Core::Context* m_rocketContext;
     GUI::TWindowContextPtr m_windowContext;
+    INPUT::CInputContext* m_inputContext;
+    CInputAdapter m_inputAdapter;
 };
 
 /*-------------------------------------------------------------------------//
