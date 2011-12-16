@@ -211,6 +211,15 @@ CGUIContext::OnNotify( CORE::CNotifier* notifier   ,
         m_rocketContext->Update();
 	    m_rocketContext->Render();
     }
+    else
+    if ( eventID == GUI::CWindowContext::WindowContextSizeEvent )
+    {        
+        GUCEF_DEBUG_LOG( CORE::LOGLEVEL_NORMAL, "GUIContext: Resizing Rocket GUI context to " + CORE::UInt32ToString( m_windowContext->GetWidth() ) + "x" +
+                                                                                                CORE::UInt32ToString( m_windowContext->GetHeight() ) );
+
+        Rocket::Core::Vector2i newSize( m_windowContext->GetWidth(), m_windowContext->GetHeight() );
+        m_rocketContext->SetDimensions( newSize );
+    }
 }
 
 /*-------------------------------------------------------------------------*/

@@ -313,8 +313,15 @@ GUCEF_OSMAIN_BEGIN
                     CORE::CString assetDir = CORE::RelativePath( "$MODULEDIR$" );
                     assetDir = assetDir.SubstrToSubstr( "trunk" );
                     CORE::AppendToPath( assetDir, "trunk\\dependencies\\libRocket\\Samples\\assets" );
-
                     VFS::CVFS::Instance()->AddRoot( assetDir, "RocketGUISampleAssets", false, false );
+                    assetDir = CORE::RelativePath( "$MODULEDIR$" );
+                    assetDir = assetDir.SubstrToSubstr( "trunk" );
+                    CORE::AppendToPath( assetDir, "trunk\\dependencies\\libRocket\\Samples\\invaders\\data" );
+                    VFS::CVFS::Instance()->AddRoot( assetDir, "RocketGUISampleAssets2", false, false );
+                    assetDir = CORE::RelativePath( "$MODULEDIR$" );
+                    assetDir = assetDir.SubstrToSubstr( "trunk" );
+                    CORE::AppendToPath( assetDir, "trunk\\dependencies\\libRocket\\Samples\\basic\\drag\\data" );
+                    VFS::CVFS::Instance()->AddRoot( assetDir, "RocketGUISampleAssets3", false, false );
 
                     // Load some fonts
                     LoadFonts( guiContext );
@@ -323,7 +330,7 @@ GUCEF_OSMAIN_BEGIN
                     GUI::CFormEx* form = static_cast< GUI::CFormEx* >( guiContext->CreateForm( "FormEx" ) );
 
                     // load the test layout resource
-                    if ( form->LoadLayoutUsingVfs( "demo.rml" ) )
+                    if ( form->LoadLayoutUsingVfs( "main_menu.rml" ) )
                     {
                         CORE::CGUCEFApplication::Instance()->main( argc, argv, true );
                     }

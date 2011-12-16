@@ -340,6 +340,16 @@ CWin32GLWindowContext::OnNotify( CORE::CNotifier* notifier   ,
         // Swap our front and back buffers
         ::SwapBuffers( m_deviceContext );
     }
+    else
+    if ( eventID == CORE::CMsWin32Window::WindowResizeEvent )
+    {
+        NotifyObservers( WindowContextSizeEvent );
+    }
+    else
+    if ( eventID == CORE::CMsWin32Window::WindowActivationEvent )
+    {
+        NotifyObservers( WindowContextActivateEvent );
+    }
 }
 
 

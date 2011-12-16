@@ -151,9 +151,9 @@ CRocketRenderInterfaceOpenGL::ReleaseCompiledGeometry(Rocket::Core::CompiledGeom
 void
 CRocketRenderInterfaceOpenGL::EnableScissorRegion(bool enable)
 {
-	if (enable)
-		glEnable(GL_SCISSOR_TEST);
-	else
+	//if (enable)
+	//	glEnable(GL_SCISSOR_TEST);
+	//else
 		glDisable(GL_SCISSOR_TEST);
 }
 
@@ -162,8 +162,8 @@ CRocketRenderInterfaceOpenGL::EnableScissorRegion(bool enable)
 // Called by Rocket when it wants to change the scissor region.		
 void
 CRocketRenderInterfaceOpenGL::SetScissorRegion(int x, int y, int width, int height)
-{
-	glScissor(x, 768 - (y + height), width, height);
+{    
+   // glScissor( x, GetContext()->GetDimensions().y - (y + height), width, height );
 }
 
 /*-------------------------------------------------------------------------*/
@@ -272,7 +272,7 @@ CRocketRenderInterfaceOpenGL::GenerateTexture(Rocket::Core::TextureHandle& textu
 	glGenTextures(1, &texture_id);
 	if (texture_id == 0)
 	{
-		printf("Failed to generate textures\n");
+		Rocket::Core::Log::Message(Rocket::Core::Log::LT_ERROR, "Failed to generate textures");
 		return false;
 	}
 

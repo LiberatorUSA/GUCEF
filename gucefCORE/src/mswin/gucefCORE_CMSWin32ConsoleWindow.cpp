@@ -182,6 +182,16 @@ CMsWin32ConsoleWindow::ConsoleWindowCreate( void )
                                                60        ,
                                                false     ) )
                 { 
+                    // auto-resize the children to stay correctly sized within the window.
+                    m_outputbox.WindowAreaResizeRelativeToParentClientArea( 0.0, 0.0, 1.0, 0.85, false );
+            
+                    // Make sure the input box is correctly placed under the output box even if scrollbars are added
+                    Float32 dummy, outputboxRelWindowHeight;
+                    if ( m_outputbox.GetWindowAreaRelativeToParentClientArea( dummy, dummy, dummy, outputboxRelWindowHeight ) )
+                    {
+                        m_inputbox.WindowAreaResizeRelativeToParentClientArea( 0.0f, outputboxRelWindowHeight, 1.0f, 1.0f - outputboxRelWindowHeight, false );
+                    }
+
                     m_outputbox.Show();
                     m_inputbox.Show();
                     return true;                                 
