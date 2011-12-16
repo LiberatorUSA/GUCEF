@@ -27,9 +27,6 @@ include $(MY_MODULE_PATH)/Android.mk
 MY_MODULE_PATH := $(PROJECT_ROOT_PATH)/dependencies/miniupnpc
 include $(MY_MODULE_PATH)/Android.mk
 
-MY_MODULE_PATH := $(PROJECT_ROOT_PATH)/dependencies/uuid
-include $(MY_MODULE_PATH)/Android.mk
-
 MY_MODULE_PATH := $(PROJECT_ROOT_PATH)/dependencies/zziplib
 include $(MY_MODULE_PATH)/Android.mk
 
