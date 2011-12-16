@@ -23,6 +23,8 @@ function SetGucefHome {
 
 function FindCygwinCCache {
 
+  echo "Detected that we are running in Cygwin"
+
   if [ "$CCACHEPATH" = "undefined" ]; then
   
     echo "CCACHEPATH environment variable not found, checking our default Cygwin location"
@@ -65,6 +67,12 @@ function FindLinuxCCache {
     fi
              
   fi
+
+#  if [ "$CCACHEPATH" = "undefined" ]; then
+#    echo "Setting ccache value to the default detection value"
+#    CCACHEPATH="ccache"
+#  fi
+
 }
 
 #------------------------------------------------------------------------------
@@ -96,7 +104,7 @@ echo "FINDCCACHE_SCRIPTSTARTDIR = $FINDCCACHE_SCRIPTSTARTDIR"
 # Make sure the GUCEF_HOME variable is set
 SetGucefHome
 
-# Locate CCache
+# Locate the optional CCache tooling
 FindCCache
 
 if [ "$CCACHEPATH" != "undefined" ]; then
