@@ -129,7 +129,24 @@ CRocketRenderInterfaceOpenGL::RenderGeometry(Rocket::Core::Vertex* vertices, int
 		glTexCoordPointer(2, GL_FLOAT, sizeof(Rocket::Core::Vertex), &vertices[0].tex_coord);
 	}
 
-	glDrawElements(GL_TRIANGLES, num_indices, GL_UNSIGNED_INT, indices);
+    #if ( GUCEF_PLATFORM == GUCEF_PLATFORM_ANDROID )
+
+    // GL_UNSIGNED_INT is not supported in GLES so we have to convert to GL_UNSIGNED_SHORT
+    unsigned short* shortIndices = new unsigned short[ num_indices ];
+    for ( int i=0; i<num_indices; ++i )
+    {
+        shortIndices[ i ] = (unsigned short) indices[ i ];
+    }
+
+	glDrawElements( GL_TRIANGLES, num_indices, GL_UNSIGNED_SHORT, shortIndices );
+
+    delete []shortIndices;
+
+    #else
+
+    glDrawElements( GL_TRIANGLES, num_indices, GL_UNSIGNED_INT, indices );
+
+    #endif
 
 	glPopMatrix();
 }
