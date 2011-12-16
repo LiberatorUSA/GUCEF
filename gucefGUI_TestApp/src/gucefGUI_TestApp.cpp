@@ -212,7 +212,47 @@ LoadPlugins( void )
 
     /*-------------------------------------------------------------*/
 
+    #if 0
+
+    // Define our optional logging service client plugin 
+    pluginMetaData.Clear();
+    pluginMetaData.SetPluginType( "GucefGenericPlugin" );
+    #ifdef GUCEF_GUI_DEBUG_MODE
+    pluginMetaData.SetModuleFilename( "GucefLogServiceClientPlugin_d" );
+    #else
+    pluginMetaData.SetModuleFilename( "GucefLogServiceClientPlugin" );
+    #endif
+    pluginMetaData.SetFullModulePath( CORE::RelativePath( "$MODULEDIR$" ) );
+
+    // Add plugin metadata and load the plugin
+    if ( CORE::CPluginControl::Instance()->AddPluginMetaData( pluginMetaData ,
+                                                              "LOGGING"      ,
+                                                              true           ) )
+    {
+        GUCEF_LOG( CORE::LOGLEVEL_NORMAL, "Successfully loaded GucefLogServiceClientPlugin" );
+    }
+    else
+    {
+        GUCEF_WARNING_LOG( CORE::LOGLEVEL_NORMAL, "Failed to load GucefLogServiceClientPlugin" );
+    }
+
+    #endif
+
+    /*-------------------------------------------------------------*/
+
     return true;
+}
+
+/*-------------------------------------------------------------------------*/
+
+void
+LoadFonts( GUI::TGuiContextPtr guiContext )
+{GUCEF_TRACE;
+
+	guiContext->GetDriver()->LoadFontFromAsset( "Delicious-Roman.otf" );
+    guiContext->GetDriver()->LoadFontFromAsset( "Delicious-Italic.otf" );
+    guiContext->GetDriver()->LoadFontFromAsset( "Delicious-Bold.otf" );
+    guiContext->GetDriver()->LoadFontFromAsset( "Delicious-BoldItalic.otf" );
 }
 
 /*-------------------------------------------------------------------------*/
@@ -269,15 +309,18 @@ GUCEF_OSMAIN_BEGIN
                     // create GUI context for our window
                     GUI::TGuiContextPtr guiContext = GUI::CGUIManager::Instance()->CreateGUIContext( "RocketOpenGL", windowContext );
 
-                    // Create a form to load the layout into
-                    GUI::CFormEx* form = static_cast< GUI::CFormEx* >( guiContext->CreateForm( "FormEx" ) );
-
                     // The following determines the path to our test data. Note that this makes assumptions about the archive paths
                     CORE::CString assetDir = CORE::RelativePath( "$MODULEDIR$" );
                     assetDir = assetDir.SubstrToSubstr( "trunk" );
                     CORE::AppendToPath( assetDir, "trunk\\dependencies\\libRocket\\Samples\\assets" );
 
                     VFS::CVFS::Instance()->AddRoot( assetDir, "RocketGUISampleAssets", false, false );
+
+                    // Load some fonts
+                    LoadFonts( guiContext );
+
+                    // Create a form to load the layout into
+                    GUI::CFormEx* form = static_cast< GUI::CFormEx* >( guiContext->CreateForm( "FormEx" ) );
 
                     // load the test layout resource
                     if ( form->LoadLayoutUsingVfs( "demo.rml" ) )

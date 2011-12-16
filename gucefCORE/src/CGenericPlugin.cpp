@@ -164,10 +164,10 @@ CGenericPlugin::Link( void* modulePtr                   ,
 
         // Verify that all function pointers are loaded correctly
         if ( ( NULL != m_funcPointers[ GPLUGINFUNCPTR_LOAD ] )        &&
-                ( NULL != m_funcPointers[ GPLUGINFUNCPTR_UNLOAD ] )      &&
-                ( NULL != m_funcPointers[ GPLUGINFUNCPTR_VERSION ] )     &&
-                ( NULL != m_funcPointers[ GPLUGINFUNCPTR_DESCRIPTION ] ) &&
-                ( NULL != m_funcPointers[ GPLUGINFUNCPTR_COPYRIGHT ] )    )
+             ( NULL != m_funcPointers[ GPLUGINFUNCPTR_UNLOAD ] )      &&
+             ( NULL != m_funcPointers[ GPLUGINFUNCPTR_VERSION ] )     &&
+             ( NULL != m_funcPointers[ GPLUGINFUNCPTR_DESCRIPTION ] ) &&
+             ( NULL != m_funcPointers[ GPLUGINFUNCPTR_COPYRIGHT ] )    )
         {
             // Make the module parameter list
             const char** argv = NULL;

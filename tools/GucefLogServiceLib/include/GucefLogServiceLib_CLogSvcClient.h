@@ -128,7 +128,7 @@ class GUCEF_LOGSERVICELIB_EXPORT_CPP CLogSvcClient : public CORE::CILogger      
     
     struct SLogMessage
     {
-        CORE::UInt8 msgHeader[ 15 ];
+        CORE::Int8 msgHeader[ 16 ];
         CORE::CString logMsg;
     };
     typedef struct SLogMessage TLogMessage;

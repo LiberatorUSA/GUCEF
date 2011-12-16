@@ -46,10 +46,10 @@ namespace INPUT {
 //-------------------------------------------------------------------------*/
 
 CMouseMovedEventData::CMouseMovedEventData( const UInt32 deviceID ,
-                                            const UInt32 xPos     ,
-                                            const UInt32 yPos     ,
-                                            const UInt32 prevXPos ,
-                                            const UInt32 prevYPos )
+                                            const Int32 xPos      ,
+                                            const Int32 yPos      ,
+                                            const Int32 prevXPos  ,
+                                            const Int32 prevYPos  )
     : CICloneable()          ,
       m_deviceID( deviceID ) ,
       m_xPos( xPos )         ,
@@ -92,8 +92,8 @@ CMouseMovedEventData::GetDeviceID( void ) const
 /*-------------------------------------------------------------------------*/
 
 void
-CMouseMovedEventData::GetPos( UInt32& xPos ,
-                              UInt32& yPos ) const
+CMouseMovedEventData::GetPos( Int32& xPos ,
+                              Int32& yPos ) const
 {GUCEF_TRACE;
 
     xPos = m_xPos;
@@ -103,8 +103,8 @@ CMouseMovedEventData::GetPos( UInt32& xPos ,
 /*-------------------------------------------------------------------------*/
 
 void
-CMouseMovedEventData::GetPrevPos( UInt32& xPos ,
-                                  UInt32& yPos ) const
+CMouseMovedEventData::GetPrevPos( Int32& xPos ,
+                                  Int32& yPos ) const
 {GUCEF_TRACE;
 
     xPos = m_prevXPos;
@@ -113,7 +113,7 @@ CMouseMovedEventData::GetPrevPos( UInt32& xPos ,
 
 /*-------------------------------------------------------------------------*/
     
-UInt32
+Int32
 CMouseMovedEventData::GetXPos( void ) const
 {GUCEF_TRACE;
 
@@ -122,7 +122,7 @@ CMouseMovedEventData::GetXPos( void ) const
 
 /*-------------------------------------------------------------------------*/
     
-UInt32
+Int32
 CMouseMovedEventData::GetYPos( void ) const
 {GUCEF_TRACE;
 
@@ -131,7 +131,7 @@ CMouseMovedEventData::GetYPos( void ) const
 
 /*-------------------------------------------------------------------------*/
 
-UInt32
+Int32
 CMouseMovedEventData::GetPrevXPos( void ) const
 {GUCEF_TRACE;
     
@@ -140,7 +140,7 @@ CMouseMovedEventData::GetPrevXPos( void ) const
 
 /*-------------------------------------------------------------------------*/
     
-UInt32
+Int32
 CMouseMovedEventData::GetPrevYPos( void ) const
 {GUCEF_TRACE;
 

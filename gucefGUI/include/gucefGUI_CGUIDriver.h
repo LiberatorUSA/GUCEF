@@ -71,6 +71,10 @@ class GUCEF_GUI_PUBLIC_CPP CGUIDriver : public CORE::CObservingNotifier ,
     static const CORE::CEvent WidgetTypeUnregisteredEvent;    
     static const CORE::CEvent FormTypeRegisteredEvent;
     static const CORE::CEvent FormTypeUnregisteredEvent;
+    static const CORE::CEvent FontTypeRegisteredEvent;
+    static const CORE::CEvent FontTypeUnregisteredEvent;
+
+    static void RegisterEvents( void );
 
     public:
     
@@ -94,6 +98,10 @@ class GUCEF_GUI_PUBLIC_CPP CGUIDriver : public CORE::CObservingNotifier ,
     virtual const CString& GetClassTypeName( void ) const;
     
     virtual CString GetDriverProperty( const CString& propertyName ) const = 0;
+
+    virtual TStringSet GetAvailableFonts( void ) = 0;
+
+    virtual bool LoadFontFromAsset( const CString& assetPath ) = 0;
     
     protected:
     

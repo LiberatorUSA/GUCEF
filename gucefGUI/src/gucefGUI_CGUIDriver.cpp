@@ -41,14 +41,42 @@ namespace GUI {
 
 /*-------------------------------------------------------------------------//
 //                                                                         //
+//      GLOBAL VARS                                                        //
+//                                                                         //
+//-------------------------------------------------------------------------*/
+
+const CORE::CEvent CGUIDriver::WidgetTypeRegisteredEvent = "GUCEF::GUI::WidgetTypeRegisteredEvent";
+const CORE::CEvent CGUIDriver::WidgetTypeUnregisteredEvent = "GUCEF::GUI::WidgetTypeUnregisteredEvent";    
+const CORE::CEvent CGUIDriver::FormTypeRegisteredEvent = "GUCEF::GUI::FormTypeRegisteredEvent";
+const CORE::CEvent CGUIDriver::FormTypeUnregisteredEvent = "GUCEF::GUI::FormTypeUnregisteredEvent";
+const CORE::CEvent CGUIDriver::FontTypeRegisteredEvent = "GUCEF::GUI::FontTypeRegisteredEvent";
+const CORE::CEvent CGUIDriver::FontTypeUnregisteredEvent = "GUCEF::GUI::FontTypeUnregisteredEvent";
+
+/*-------------------------------------------------------------------------//
+//                                                                         //
 //      UTILITIES                                                          //
 //                                                                         //
 //-------------------------------------------------------------------------*/
+
+void
+CGUIDriver::RegisterEvents( void )
+{GUCEF_TRACE;
+
+    WidgetTypeRegisteredEvent.Initialize();
+    WidgetTypeUnregisteredEvent.Initialize();
+    FormTypeRegisteredEvent.Initialize();
+    FormTypeUnregisteredEvent.Initialize();
+    FontTypeRegisteredEvent.Initialize();
+    FontTypeUnregisteredEvent.Initialize();
+}
+
+/*-------------------------------------------------------------------------*/
 
 CGUIDriver::CGUIDriver( void )
     : CObservingNotifier()
 {GUCEF_TRACE;
 
+    RegisterEvents();
 }
 
 /*-------------------------------------------------------------------------*/
