@@ -499,7 +499,7 @@ GUCEFGetTickCount( void )
     #if 1
     struct timespec now;
     clock_gettime( CLOCK_MONOTONIC, &now );
-    return (UInt32) ( (u8)now.tv_sec*1000000000LL + now.tv_nsec );
+    return (UInt32) ( now.tv_sec*1000000000LL + now.tv_nsec );
     #else
     struct tms timeStorage;
     return (UInt32) times( &timeStorage );

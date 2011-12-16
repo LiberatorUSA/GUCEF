@@ -51,6 +51,35 @@
 
 #include "gucefLOADER.h"
 
+#if ( GUCEF_PLATFORM == GUCEF_PLATFORM_ANDROID )
+
+#include <android/log.h>
+
+void
+android_syslog(int level, const char *format, ...)
+{
+    va_list arglist;
+    va_start( arglist, format );
+    __android_log_vprint( level, "GalaxyUnlimitedPlatform", format, arglist );
+    va_end( arglist );
+    return;
+}
+
+
+#define FLOGI( format, ... ) ( (void) android_syslog( ANDROID_LOG_INFO, format, __VA_ARGS__) )
+#define FLOGW( format, ... ) ( (void) android_syslog( ANDROID_LOG_WARN, format, __VA_ARGS__) )
+#define FLOGF( format, ... ) ( (void) android_syslog( ANDROID_LOG_FATAL, format, __VA_ARGS__) )
+#define FLOGE( format, ... ) ( (void) android_syslog( ANDROID_LOG_ERROR, format, __VA_ARGS__) )
+#define FLOGD( format, ... ) ( (void) android_syslog( ANDROID_LOG_DEBUG, format, __VA_ARGS__) )
+
+#define LOGI(...) ((void)__android_log_print(ANDROID_LOG_INFO, "GalaxyUnlimitedPlatform", __VA_ARGS__))
+#define LOGW(...) ((void)__android_log_print(ANDROID_LOG_WARN, "GalaxyUnlimitedPlatform", __VA_ARGS__))
+#define LOGF(...) ((void)__android_log_print(ANDROID_LOG_FATAL, "GalaxyUnlimitedPlatform", __VA_ARGS__))
+#define LOGE(...) ((void)__android_log_print(ANDROID_LOG_ERROR, "GalaxyUnlimitedPlatform", __VA_ARGS__))
+#define LOGD(...) ((void)__android_log_print(ANDROID_LOG_DEBUG, "GalaxyUnlimitedPlatform", __VA_ARGS__))
+
+#endif
+
 /*-------------------------------------------------------------------------//
 //                                                                         //
 //      NAMESPACE                                                          //
@@ -1022,6 +1051,8 @@ ProcessFirstTimeInitialization( const CORE::CString& resRootDir ,
         CORE::CString firstRunFile;
         if ( CORE::LoadTextFileAsString( firstRunFilePath, firstRunFile, true, "\n" ) )
         {
+            LOGD( "loaded text file" );
+
             // Seperate the different lines for easy processing
             TStringVector lines = firstRunFile.ParseElements( '\n', false );
             firstRunFile.Clear();
@@ -1036,9 +1067,19 @@ ProcessFirstTimeInitialization( const CORE::CString& resRootDir ,
                 {
                     CORE::CString remainder = lineText.CutChars( 9, true );
                     CORE::CString srcPath = rootDir;
-                    CORE::AppendToPath( srcPath, remainder.SubstrToChar( ' ', true ) );
+                    CORE::CString srcPathSeg = remainder.SubstrToChar( ' ', true );
+                    CORE::AppendToPath( srcPath, srcPathSeg );
                     CORE::CString destPath = rootDir;
-                    CORE::AppendToPath( destPath, remainder.CutChars( srcPath.Length()+1, true ) );
+                    CORE::AppendToPath( destPath, remainder.CutChars( srcPathSeg.Length()+1, true ) );
+
+                    // make sure the target location is not obstructed, delete if needed
+                    if ( CORE::FileExists( destPath ) )
+                    {
+                        if ( 0 == CORE::Delete_File( destPath.C_String() ) )
+                        {
+                            return false;
+                        }
+                    }
 
                     if ( 0 == CORE::Move_File( destPath.C_String(), srcPath.C_String() ) )
                     {
@@ -1051,9 +1092,19 @@ ProcessFirstTimeInitialization( const CORE::CString& resRootDir ,
                 {
                     CORE::CString remainder = lineText.CutChars( 9, true );
                     CORE::CString srcPath = rootDir;
-                    CORE::AppendToPath( srcPath, remainder.SubstrToChar( ' ', true ) );
+                    CORE::CString srcPathSeg = remainder.SubstrToChar( ' ', true );
+                    CORE::AppendToPath( srcPath, srcPathSeg );
                     CORE::CString destPath = rootDir;
-                    CORE::AppendToPath( destPath, remainder.CutChars( srcPath.Length()+1, true ) );
+                    CORE::AppendToPath( destPath, remainder.CutChars( srcPathSeg.Length()+1, true ) );
+
+                    // make sure the target location is not obstructed, delete if needed
+                    if ( CORE::FileExists( destPath ) )
+                    {
+                        if ( 0 == CORE::Delete_File( destPath.C_String() ) )
+                        {
+                            return false;
+                        }
+                    }
 
                     if ( 0 == CORE::Copy_File( destPath.C_String(), srcPath.C_String() ) )
                     {
@@ -1136,7 +1187,7 @@ LoadAndRunGucefPlatformAppEx( const char* appName    ,
     // Sanity check on the path
     if ( appDir.IsNULLOrEmpty() )
     {
-        return 0;
+        return -2;
     }
 
     // Get the application config file
@@ -1147,7 +1198,7 @@ LoadAndRunGucefPlatformAppEx( const char* appName    ,
     {
         // Failed to load a loader config for this app
         // Now we dont know what to do which is a fatal error
-        return 0;
+        return -3;
     }
 
     // First try to load the platform version required for this application
@@ -1155,7 +1206,7 @@ LoadAndRunGucefPlatformAppEx( const char* appName    ,
     if ( !LoadMultipleModuleGroups( libRootDir, loaderAppData, NULL ) )
     {
         // Failed to load prereq modules for this app
-        return 0;
+        return -4;
     }
 
     TModuleGroup* coreModuleGroup = GetModuleGroup( &loaderAppData, "GUCEF" );
@@ -1163,7 +1214,7 @@ LoadAndRunGucefPlatformAppEx( const char* appName    ,
     {
         // Since this is a GUCEF App loader we don't support apps not using GUCEF
         UnloadModules( loaderAppData );
-        return 0;
+        return -5;
     }
 
     // Link the GUCEF::CORE C interface so we can invoke functions
@@ -1173,7 +1224,7 @@ LoadAndRunGucefPlatformAppEx( const char* appName    ,
                                    cInterface       ) )
     {
         UnloadModules( loaderAppData );
-        return 0;
+        return -6;
     }
 
     // Before we load anything else we want to make sure that the application can load plugins on its own
@@ -1196,7 +1247,7 @@ LoadAndRunGucefPlatformAppEx( const char* appName    ,
     {
         // There was an error loading the application module
         UnloadModules( loaderAppData );
-        return 0;
+        return -7;
     }
 
     // Now load the app config if so desired
@@ -1230,6 +1281,8 @@ LoadAndRunGucefPlatformAppEx( const char* appName    ,
             paramArray[ n ] = loaderAppData.gucefMainConfig.params[ i ].C_String();
             ++i; ++n;
         }
+
+        LOGD( "calling cInterface.gucefMain" );
 
         int mainReturnValue = cInterface.gucefMain( paramCount                                       ,
                                                     paramArray                                       ,

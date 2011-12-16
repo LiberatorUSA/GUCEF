@@ -249,9 +249,9 @@ CInputController::OnPulse( CORE::CNotifier* notifier                 ,
         
         #else
         
-        (*i)->GetDriver()->->OnUpdate( tickcount              ,
-                                       updateDeltaInMilliSecs ,
-                                       (*i)                   );
+        (*i)->GetDriver()->OnUpdate( tickcount              ,
+                                     updateDeltaInMilliSecs ,
+                                     (*i)                   );
 
         #endif
         
