@@ -659,6 +659,7 @@ CMsWin32Window::WindowCreate( const CString& windowClassName ,
         GUCEF_SYSTEM_LOG( LOGLEVEL_IMPORTANT, "CMsWin32Window::WindowCreate(): Failed to create a window" );
         return false;
     }
+
     HookWndProc();
     
     Show();
