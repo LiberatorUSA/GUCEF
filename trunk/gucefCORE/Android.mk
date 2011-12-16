@@ -152,6 +152,7 @@ LOCAL_SRC_FILES := \
   src/gucefCORE_CLoggingTask.cpp \
   src/gucefCORE_CObserverSwitch.cpp \
   src/gucefCORE_CPlatformNativeConsoleLogger.cpp \
+  src/gucefCORE_CPlatformNativeConsoleWindow.cpp \
   src/gucefCORE_CPluginGroup.cpp \
   src/gucefCORE_CPluginMetaData.cpp \
   src/gucefCORE_CPulseData.cpp \
