@@ -153,6 +153,15 @@ CMsWin32Window::WindowProc( const HWND hWnd     ,
             NotifyObservers( WindowResizeEvent );
             break;
         }
+        case WM_ACTIVATE :
+        {
+            if ( ( WA_ACTIVE == LOWORD( wParam ) )      ||
+                 ( WA_CLICKACTIVE == LOWORD( wParam ) ) )
+            {
+                NotifyObservers( WindowActivationEvent );
+            }
+            break;
+        }
         case WM_PAINT:
         {
             NotifyObservers( WindowPaintEvent );
