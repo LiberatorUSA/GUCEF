@@ -34,24 +34,25 @@ LOCAL_SRC_FILES := \
   src/guidriverRocket_CFormBackendImp.cpp \
   src/guidriverRocket_CGridViewImp.cpp \
   src/guidriverRocket_CGUIContext.cpp \
-  src/guidriverRocket_CGUIDriver.cpp \
   src/guidriverRocket_CImageFrameImp.cpp \
+  src/guidriverRocket_CInputAdapter.cpp \
   src/guidriverRocket_CIOAccessToRocketStreamAdapter.cpp \
   src/guidriverRocket_CLabelImp.cpp \
   src/guidriverRocket_CListboxImp.cpp \
   src/guidriverRocket_CMemoboxImp.cpp \
   src/guidriverRocket_CMenuBarImp.cpp \
-  src/guidriverRocket_CModule.cpp \
   src/guidriverRocket_CPopupMenuImp.cpp \
   src/guidriverRocket_CProgressBarImp.cpp \
   src/guidriverRocket_CPushButtonImp.cpp \
   src/guidriverRocket_CRenderContextImp.cpp \
   src/guidriverRocket_CRocketInputAdapter.cpp \
+  src/guidriverRocket_CRocketStreamAdapter.cpp \
+  src/guidriverRocket_CRocketSystemInterface.cpp \
+  src/guidriverRocket_CRocketVFSInterface.cpp \
   src/guidriverRocket_CSpinnerImp.cpp \
   src/guidriverRocket_CTabContentPaneImp.cpp \
   src/guidriverRocket_CTabControlImp.cpp \
   src/guidriverRocket_CTreeviewImp.cpp \
-  src/guidriverRocket_CVFSHandleToMyGuiDataStreamAdapter.cpp \
   src/guidriverRocket_CVFSInfoProvider.cpp \
   src/guidriverRocket_CWidgetImp.cpp \
   src/guidriverRocket_CWindowImp.cpp \
@@ -78,10 +79,11 @@ LOCAL_C_INCLUDES := \
   $(MY_MODULE_PATH)/../../../gucefCORE/include/android \
   $(MY_MODULE_PATH)/../../../gucefGUI/include \
   $(MY_MODULE_PATH)/../../../gucefIMAGE/include \
+  $(MY_MODULE_PATH)/../../../gucefINPUT/include \
   $(MY_MODULE_PATH)/../../../gucefMT/include \
   $(MY_MODULE_PATH)/../../../gucefVFS/include
 
-LOCAL_CFLAGS := -DGUIDRIVERROCKET_BUILD_MODULE
+LOCAL_CFLAGS := -DGUCEF_GUIDRIVERROCKET_BUILD_MODULE
 
 
 LOCAL_SHARED_LIBRARIES := \
@@ -89,7 +91,9 @@ LOCAL_SHARED_LIBRARIES := \
   RocketCore \
   gucefCORE \
   gucefGUI \
-  gucefMT
+  gucefINPUT \
+  gucefMT \
+  gucefVFS
 
 include $(BUILD_SHARED_LIBRARY)
 

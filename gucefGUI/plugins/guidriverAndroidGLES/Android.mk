@@ -54,8 +54,6 @@ LOCAL_LDLIBS := \
   -lGLESv1_CM \
   -landroid
 
-
 include $(BUILD_SHARED_LIBRARY)
 
 $(call import-module,android/native_app_glue)
-

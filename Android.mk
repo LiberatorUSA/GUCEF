@@ -27,6 +27,9 @@ include $(MY_MODULE_PATH)/Android.mk
 MY_MODULE_PATH := $(PROJECT_ROOT_PATH)/dependencies/miniupnpc
 include $(MY_MODULE_PATH)/Android.mk
 
+MY_MODULE_PATH := $(PROJECT_ROOT_PATH)/dependencies/uuid
+include $(MY_MODULE_PATH)/Android.mk
+
 MY_MODULE_PATH := $(PROJECT_ROOT_PATH)/dependencies/zziplib
 include $(MY_MODULE_PATH)/Android.mk
 
@@ -135,6 +138,9 @@ include $(MY_MODULE_PATH)/Android.mk
 MY_MODULE_PATH := $(PROJECT_ROOT_PATH)/gucefGUI
 include $(MY_MODULE_PATH)/Android.mk
 
+MY_MODULE_PATH := $(PROJECT_ROOT_PATH)/gucefGUI_TestApp
+include $(MY_MODULE_PATH)/Android.mk
+
 MY_MODULE_PATH := $(PROJECT_ROOT_PATH)/gucefGUI/plugins/guidriverAndroidGLES
 include $(MY_MODULE_PATH)/Android.mk
 
@@ -159,9 +165,6 @@ include $(MY_MODULE_PATH)/Android.mk
 MY_MODULE_PATH := $(PROJECT_ROOT_PATH)/tools/SVNMagicMerge
 include $(MY_MODULE_PATH)/Android.mk
 
-#MY_MODULE_PATH := $(PROJECT_ROOT_PATH)/gucefGUI/plugins/guidriverRocket
-#include $(MY_MODULE_PATH)/Android.mk
-
 MY_MODULE_PATH := $(PROJECT_ROOT_PATH)/gucefSMDRN
 include $(MY_MODULE_PATH)/Android.mk
 
@@ -171,9 +174,12 @@ include $(MY_MODULE_PATH)/Android.mk
 MY_MODULE_PATH := $(PROJECT_ROOT_PATH)/tools/GucefLogServiceClientPlugin
 include $(MY_MODULE_PATH)/Android.mk
 
-#MY_MODULE_PATH := $(PROJECT_ROOT_PATH)/gucefGUI/plugins/guidriverRocketOpenGL
-#include $(MY_MODULE_PATH)/Android.mk
+MY_MODULE_PATH := $(PROJECT_ROOT_PATH)/gucefGUI/plugins/guidriverRocketOpenGL
+include $(MY_MODULE_PATH)/Android.mk
 
 MY_MODULE_PATH := $(PROJECT_ROOT_PATH)/gucefPRODMAN
+include $(MY_MODULE_PATH)/Android.mk
+
+MY_MODULE_PATH := $(PROJECT_ROOT_PATH)/gucefGUI/plugins/guidriverRocket
 include $(MY_MODULE_PATH)/Android.mk
 

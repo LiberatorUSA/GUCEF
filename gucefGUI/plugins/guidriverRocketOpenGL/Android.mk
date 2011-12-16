@@ -22,7 +22,9 @@ LOCAL_MODULE_FILENAME := libguidriverRocketOpenGL
 @echo Module name: $(LOCAL_MODULE)
 
 LOCAL_SRC_FILES := \
-  src/guidriverRocketOpenGL_CRocketGuiDriver.cpp
+  src/guidriverRocketOpenGL_CRocketGuiDriver.cpp \
+  src/guidriverRocketOpenGL_CRocketRenderInterfaceOpenGL.cpp \
+  src/guidriverRocketOpenGL_pluginAPI.cpp
 
 LOCAL_C_INCLUDES := \
   $(MY_MODULE_PATH)/include \
@@ -45,11 +47,12 @@ LOCAL_C_INCLUDES := \
   $(MY_MODULE_PATH)/../../../gucefCORE/include/android \
   $(MY_MODULE_PATH)/../../../gucefGUI/include \
   $(MY_MODULE_PATH)/../../../gucefIMAGE/include \
+  $(MY_MODULE_PATH)/../../../gucefINPUT/include \
   $(MY_MODULE_PATH)/../../../gucefMT/include \
   $(MY_MODULE_PATH)/../../../gucefVFS/include \
   $(MY_MODULE_PATH)/../guidriverRocket/include
 
-LOCAL_CFLAGS := -DGUIDRIVERROCKETOPENGL_BUILD_MODULE
+LOCAL_CFLAGS := -DGUIDRIVERROCKETGL_BUILD_MODULE
 
 
 LOCAL_SHARED_LIBRARIES := \
@@ -59,6 +62,11 @@ LOCAL_SHARED_LIBRARIES := \
   gucefGUI \
   gucefMT \
   guidriverRocket
+
+
+LOCAL_LDLIBS := \
+  -lEGL \
+  -lGLESv1_CM
 
 include $(BUILD_SHARED_LIBRARY)
 
