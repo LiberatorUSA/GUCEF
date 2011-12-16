@@ -566,15 +566,14 @@ ProcessKeyboardDI8( TDI8Data* data )
         
         if ( SUCCEEDED( data->hr ) )
         {
-
-
                 for ( i=0; i<dwItems; ++i )
                 {
+                        UINT scanCode(0);
                         eventptr = &data->keyboardBuffer[ i ];
+                        MapDIKeyToScancode( eventptr->dwOfs, &scanCode );
+
                         if ( KEYBOOL( eventptr->dwData ) )
-                        {
-                              //  UINT scanCode(0);
-                              //  MapDIKeyToScancode( eventptr->dwOfs, &scanCode ); 
+                        { 
                               //  data->callbacks.onKeyboardKeyDown( data->callbacks.userData, scanCode );
                               
                            /*     UINT scanCode(0);
@@ -588,7 +587,7 @@ ProcessKeyboardDI8( TDI8Data* data )
                                 } */
                                                             
                                
-                              data->callbacks.onKeyboardKeyDown( data->callbacks.userData, eventptr->dwOfs, (KeyCode)data->keyModState );
+                              data->callbacks.onKeyboardKeyDown( data->callbacks.userData, 0, (KeyCode)scanCode, data->keyModState );
                         }
                         else
                         {
@@ -596,7 +595,7 @@ ProcessKeyboardDI8( TDI8Data* data )
                               //  MapDIKeyToScancode( eventptr->dwOfs, &scanCode );                                 
                               //  data->callbacks.onKeyboardKeyUp( data->callbacks.userData, scanCode );
                               
-                              data->callbacks.onKeyboardKeyUp( data->callbacks.userData, eventptr->dwOfs, (KeyCode)data->keyModState );
+                              data->callbacks.onKeyboardKeyUp( data->callbacks.userData, 0, (KeyCode)scanCode, data->keyModState );
                         }
                 }
                 return S_OK;
@@ -631,12 +630,12 @@ ProcessKeyboardDI8( TDI8Data* data )
                                                 if ( KEYBOOL( keystatebuffer[ i ] ) )
                                                 {
                                                         data->keybuffer[ i ] = 1;
-                                                        data->callbacks.onKeyboardKeyDown( data->callbacks.userData, i, (KeyCode)data->keyModState );        
+                                                        data->callbacks.onKeyboardKeyDown( data->callbacks.userData, 0, (KeyCode)i, data->keyModState );        
                                                 }
                                                 else
                                                 {
                                                         data->keybuffer[ i ] = 0;
-                                                        data->callbacks.onKeyboardKeyUp( data->callbacks.userData, i, (KeyCode)data->keyModState );
+                                                        data->callbacks.onKeyboardKeyUp( data->callbacks.userData, 0, (KeyCode)i, data->keyModState );
                                                 }                                                        
                                         }
                                 }          

@@ -270,9 +270,10 @@ CInputDriverPlugin::OnMouseVarChanged( void* userData         ,
 /*-------------------------------------------------------------------------*/
 
 void GUCEF_PLUGIN_CALLSPEC_PREFIX
-CInputDriverPlugin::OnKeyboardKeyDown( void* userData        ,
-                                       const Int32 deviceID  ,
-                                       const KeyCode keyCode ) GUCEF_PLUGIN_CALLSPEC_SUFFIX
+CInputDriverPlugin::OnKeyboardKeyDown( void* userData            ,
+                                       const Int32 deviceID      ,
+                                       const KeyCode keyCode     ,
+                                       const UInt32 keyModStates ) GUCEF_PLUGIN_CALLSPEC_SUFFIX
 {GUCEF_TRACE;
 
     static_cast<CPluginInputContext*>( userData )->GetPluginAPI()->InjectKeyboardKeyChange( deviceID ,
@@ -283,9 +284,10 @@ CInputDriverPlugin::OnKeyboardKeyDown( void* userData        ,
 /*-------------------------------------------------------------------------*/
 
 void GUCEF_PLUGIN_CALLSPEC_PREFIX
-CInputDriverPlugin::OnKeyboardKeyUp( void* userData        ,
-                                     const Int32 deviceID  ,
-                                     const KeyCode keyCode ) GUCEF_PLUGIN_CALLSPEC_SUFFIX
+CInputDriverPlugin::OnKeyboardKeyUp( void* userData            ,
+                                     const Int32 deviceID      ,
+                                     const KeyCode keyCode     ,
+                                     const UInt32 keyModStates ) GUCEF_PLUGIN_CALLSPEC_SUFFIX
 {GUCEF_TRACE;
 
     static_cast<CPluginInputContext*>( userData )->GetPluginAPI()->InjectKeyboardKeyChange( deviceID ,

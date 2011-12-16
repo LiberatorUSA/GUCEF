@@ -172,7 +172,7 @@ enum KeyCode
 	KEYCODE_WEBHOME     = 0xB2,    /* Web home */
 	KEYCODE_NUMPADCOMMA = 0xB3,    /* , on numeric keypad (NEC PC98) */
 	KEYCODE_DIVIDE      = 0xB5,    /* / on numeric keypad */
-	KEYCODE_SYSRQ       = 0xB7,
+	KEYCODE_SYSRQ       = 0xB7,    /* print screen */
 	KEYCODE_RMENU       = 0xB8,    /* right Alt */
 	KEYCODE_PAUSE       = 0xC5,    /* Pause */
 	KEYCODE_HOME        = 0xC7,    /* Home on arrow keypad */
@@ -219,6 +219,14 @@ enum KeyModifier
     KEYMOD_CAPSLOCK   = 0x0010000 ,
     KEYMOD_NUMLOCK    = 0x0100000 ,
     KEYMOD_SCROLLLOCK = 0x1000000 ,
+
+    KEYMOD_SHIFT_BIT      = 1     ,
+    KEYMOD_CTRL_BIT       = 2     ,
+    KEYMOD_ALT_BIT        = 3     ,
+    KEYMOD_META_BIT       = 4     ,
+    KEYMOD_CAPSLOCK_BIT   = 5     ,
+    KEYMOD_NUMLOCK_BIT    = 6     ,
+    KEYMOD_SCROLLLOCK_BIT = 7     ,
 
 	KEYMOD_NONE  = 0x0000000
 };

@@ -68,7 +68,8 @@ CRocketGuiDriver::CRocketGuiDriver( void )
       m_systemInterface()            ,
       m_fileInterface()              ,
       m_isRocketInitialized( false ) ,
-      m_contextSet()
+      m_contextSet()                 ,
+      m_fontTypes()
 {GUCEF_TRACE;
 
 	Rocket::Core::SetRenderInterface( &m_rocketRenderer );
@@ -189,6 +190,33 @@ CRocketGuiDriver::GetAvailableWidgetTypes( void )
 {GUCEF_TRACE;
 
     return GUI::CGUIDriver::TStringSet();
+}
+
+/*-------------------------------------------------------------------------*/
+
+GUI::CGUIDriver::TStringSet
+CRocketGuiDriver::GetAvailableFonts( void )
+{GUCEF_TRACE;
+    
+    return m_fontTypes;
+}
+
+/*-------------------------------------------------------------------------*/
+
+bool
+CRocketGuiDriver::LoadFontFromAsset( const GUI::CString& assetPath )
+{GUCEF_TRACE;
+
+    // Simple pass on the load request to Rocket, all the callback inerfaces will take
+    // care of integrating with GUCEF
+    if ( Rocket::Core::FontDatabase::LoadFontFace( assetPath.C_String() ) )
+    {
+        // @TODO: fix somehow
+        // This is not correct but at present Rocket cant give you the name of the font back
+        m_fontTypes.insert( assetPath );
+        return true;
+    }
+    return false;
 }
 
 /*-------------------------------------------------------------------------*/

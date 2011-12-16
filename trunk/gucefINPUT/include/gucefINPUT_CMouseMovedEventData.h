@@ -56,10 +56,10 @@ class GUCEF_INPUT_PUBLIC_CPP CMouseMovedEventData : public CORE::CICloneable
     public:
     
     CMouseMovedEventData( const UInt32 deviceID ,
-                          const UInt32 xPos     ,
-                          const UInt32 yPos     ,
-                          const UInt32 prevXPos ,
-                          const UInt32 prevYPos );
+                          const Int32 xPos      ,
+                          const Int32 yPos      ,
+                          const Int32 prevXPos  ,
+                          const Int32 prevYPos  );
     
     CMouseMovedEventData( const CMouseMovedEventData& src );
                         
@@ -67,17 +67,17 @@ class GUCEF_INPUT_PUBLIC_CPP CMouseMovedEventData : public CORE::CICloneable
     
     UInt32 GetDeviceID( void ) const;
         
-    void GetPos( UInt32& xPos, UInt32& yPos ) const;
+    void GetPos( Int32& xPos, Int32& yPos ) const;
     
-    void GetPrevPos( UInt32& xPos, UInt32& yPos ) const;
+    void GetPrevPos( Int32& xPos, Int32& yPos ) const;
     
-    UInt32 GetXPos( void ) const;
+    Int32 GetXPos( void ) const;
     
-    UInt32 GetYPos( void ) const;
+    Int32 GetYPos( void ) const;
 
-    UInt32 GetPrevXPos( void ) const;
+    Int32 GetPrevXPos( void ) const;
     
-    UInt32 GetPrevYPos( void ) const;
+    Int32 GetPrevYPos( void ) const;
     
     virtual CORE::CICloneable* Clone( void ) const;
     
@@ -89,10 +89,10 @@ class GUCEF_INPUT_PUBLIC_CPP CMouseMovedEventData : public CORE::CICloneable
     private:
     
     UInt32 m_deviceID;
-    UInt32 m_xPos;
-    UInt32 m_yPos;
-    UInt32 m_prevXPos;
-    UInt32 m_prevYPos;
+    Int32 m_xPos;
+    Int32 m_yPos;
+    Int32 m_prevXPos;
+    Int32 m_prevYPos;
 };
 
 /*-------------------------------------------------------------------------//

@@ -57,8 +57,8 @@ typedef void ( GUCEF_PLUGIN_CALLSPEC_PREFIX *TINPUTCALLBACK_OnMouseButtonDown ) 
 typedef void ( GUCEF_PLUGIN_CALLSPEC_PREFIX *TINPUTCALLBACK_OnMouseButtonUp )    ( void* userData, const Int32 deviceID, const UInt32 buttonindex ) GUCEF_PLUGIN_CALLSPEC_SUFFIX;
 typedef void ( GUCEF_PLUGIN_CALLSPEC_PREFIX *TINPUTCALLBACK_OnMouseMove )        ( void* userData, const Int32 deviceID, const Int32 xPos, const Int32 yPos, const Int32 xDelta, const Int32 yDelta ) GUCEF_PLUGIN_CALLSPEC_SUFFIX;
 typedef void ( GUCEF_PLUGIN_CALLSPEC_PREFIX *TINPUTCALLBACK_OnMouseVarChanged )  ( void* userData, const Int32 deviceID, const UInt32 varIndex, const Int32 value, const Int32 valueDelta ) GUCEF_PLUGIN_CALLSPEC_SUFFIX;
-typedef void ( GUCEF_PLUGIN_CALLSPEC_PREFIX *TINPUTCALLBACK_OnKeyboardKeyDown )  ( void* userData, const Int32 deviceID, const KeyCode keyCode ) GUCEF_PLUGIN_CALLSPEC_SUFFIX;
-typedef void ( GUCEF_PLUGIN_CALLSPEC_PREFIX *TINPUTCALLBACK_OnKeyboardKeyUp )    ( void* userData, const Int32 deviceID, const KeyCode keyCode ) GUCEF_PLUGIN_CALLSPEC_SUFFIX;
+typedef void ( GUCEF_PLUGIN_CALLSPEC_PREFIX *TINPUTCALLBACK_OnKeyboardKeyDown )  ( void* userData, const Int32 deviceID, const KeyCode keyCode, const UInt32 keyModStates ) GUCEF_PLUGIN_CALLSPEC_SUFFIX;
+typedef void ( GUCEF_PLUGIN_CALLSPEC_PREFIX *TINPUTCALLBACK_OnKeyboardKeyUp )    ( void* userData, const Int32 deviceID, const KeyCode keyCode, const UInt32 keyModStates ) GUCEF_PLUGIN_CALLSPEC_SUFFIX;
 typedef void ( GUCEF_PLUGIN_CALLSPEC_PREFIX *TINPUTCALLBACK_OnDeviceBooleanOn )  ( void* userData, const Int32 deviceID, const UInt32 stateindex ) GUCEF_PLUGIN_CALLSPEC_SUFFIX;
 typedef void ( GUCEF_PLUGIN_CALLSPEC_PREFIX *TINPUTCALLBACK_OnDeviceBooleanOff ) ( void* userData, const Int32 deviceID, const UInt32 stateindex ) GUCEF_PLUGIN_CALLSPEC_SUFFIX;
 typedef void ( GUCEF_PLUGIN_CALLSPEC_PREFIX *TINPUTCALLBACK_OnDeviceVarChanged ) ( void* userData, const Int32 deviceID, const UInt32 stateindex, const Float32 value ) GUCEF_PLUGIN_CALLSPEC_SUFFIX;
@@ -73,22 +73,22 @@ typedef void ( GUCEF_PLUGIN_CALLSPEC_PREFIX *TINPUTCALLBACK_OnDeviceDetached ) (
 
 struct SInputCallbacks
 {
-        TINPUTCALLBACK_OnMouseButtonDown  onMouseButtonDown;
-        TINPUTCALLBACK_OnMouseButtonUp    onMouseButtonUp;
-        TINPUTCALLBACK_OnMouseMove        onMouseMove;
-        TINPUTCALLBACK_OnMouseVarChanged  onMouseVarChanged;
-        TINPUTCALLBACK_OnKeyboardKeyDown  onKeyboardKeyDown;
-        TINPUTCALLBACK_OnKeyboardKeyUp    onKeyboardKeyUp;
-        TINPUTCALLBACK_OnDeviceBooleanOn  onDeviceBooleanOn;
-        TINPUTCALLBACK_OnDeviceBooleanOff onDeviceBooleanOff;
-        TINPUTCALLBACK_OnDeviceVarChanged onDeviceVarChanged;
-        TINPUTCALLBACK_OnMouseAttached    onMouseAttached;
-        TINPUTCALLBACK_OnKeyboardAttached onKeyboardAttached;
-        TINPUTCALLBACK_OnDeviceAttached   onDeviceAttached;
-        TINPUTCALLBACK_OnMouseDetached    onMouseDetached;
-        TINPUTCALLBACK_OnKeyboardDetached onKeyboardDetached;
-        TINPUTCALLBACK_OnDeviceDetached   onDeviceDetached;        
-        void* userData;
+    TINPUTCALLBACK_OnMouseButtonDown  onMouseButtonDown;
+    TINPUTCALLBACK_OnMouseButtonUp    onMouseButtonUp;
+    TINPUTCALLBACK_OnMouseMove        onMouseMove;
+    TINPUTCALLBACK_OnMouseVarChanged  onMouseVarChanged;
+    TINPUTCALLBACK_OnKeyboardKeyDown  onKeyboardKeyDown;
+    TINPUTCALLBACK_OnKeyboardKeyUp    onKeyboardKeyUp;
+    TINPUTCALLBACK_OnDeviceBooleanOn  onDeviceBooleanOn;
+    TINPUTCALLBACK_OnDeviceBooleanOff onDeviceBooleanOff;
+    TINPUTCALLBACK_OnDeviceVarChanged onDeviceVarChanged;
+    TINPUTCALLBACK_OnMouseAttached    onMouseAttached;
+    TINPUTCALLBACK_OnKeyboardAttached onKeyboardAttached;
+    TINPUTCALLBACK_OnDeviceAttached   onDeviceAttached;
+    TINPUTCALLBACK_OnMouseDetached    onMouseDetached;
+    TINPUTCALLBACK_OnKeyboardDetached onKeyboardDetached;
+    TINPUTCALLBACK_OnDeviceDetached   onDeviceDetached;        
+    void* userData;
 };
 typedef struct SInputCallbacks TInputCallbacks;
 

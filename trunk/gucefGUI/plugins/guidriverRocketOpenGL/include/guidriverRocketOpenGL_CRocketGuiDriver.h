@@ -95,6 +95,10 @@ class GUIDRIVERROCKETGL_PUBLIC_CPP CRocketGuiDriver : public GUI::CGUIDriver
     virtual TStringSet GetAvailableFormTypes( void );
     
     virtual TStringSet GetAvailableWidgetTypes( void );
+
+    virtual TStringSet GetAvailableFonts( void );
+
+    virtual bool LoadFontFromAsset( const GUI::CString& assetPath );
     
     virtual const GUI::CString& GetClassTypeName( void ) const;
     
@@ -129,6 +133,7 @@ class GUIDRIVERROCKETGL_PUBLIC_CPP CRocketGuiDriver : public GUI::CGUIDriver
     GUIDRIVERROCKET::CRocketVFSInterface m_fileInterface;
     bool m_isRocketInitialized;
     GUI::CGUIDriver::TGUIContextSet m_contextSet;
+    TStringSet m_fontTypes;
 };
 
 /*-------------------------------------------------------------------------//

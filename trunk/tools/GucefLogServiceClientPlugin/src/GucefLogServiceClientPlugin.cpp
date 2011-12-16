@@ -83,7 +83,7 @@ ParseParams( const int argc                 ,
 /*--------------------------------------------------------------------------*/
 
 CORE::Int32 GUCEF_PLUGIN_CALLSPEC_PREFIX 
-GUCEFPlugin_Load( CORE::Int32 argc, const char** argv ) GUCEF_PLUGIN_CALLSPEC_SUFFIX
+GUCEFPlugin_Load( CORE::UInt32 argc, const char** argv ) GUCEF_PLUGIN_CALLSPEC_SUFFIX
 {GUCEF_TRACE;
 
     // Parse the plugin parameters

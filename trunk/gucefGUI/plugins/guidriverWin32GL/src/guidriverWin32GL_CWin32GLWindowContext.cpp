@@ -331,6 +331,9 @@ CWin32GLWindowContext::OnNotify( CORE::CNotifier* notifier   ,
     if ( ( eventID == CORE::CPulseGenerator::PulseEvent )      ||
          ( eventID == CORE::CMsWin32Window::WindowPaintEvent ) )
     {
+        // Clear the screen in preparation for the redraw
+        glClear( GL_COLOR_BUFFER_BIT );
+        
         // Notify that we are going to redraw the window
         NotifyObservers( WindowContextRedrawEvent );        
         
