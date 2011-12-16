@@ -714,6 +714,11 @@ InputDriverProcessMSWINMSG( HWND whnd     ,
         }
         case WM_KEYUP :
         {
+            if ( ::GetFocus() != data->hWnd )
+            {
+                break;
+            }
+
             /* 
              *      In non-ASCII mode we should only use this and ignore WM_CHAR
              */
@@ -734,6 +739,28 @@ InputDriverProcessMSWINMSG( HWND whnd     ,
                 {
                     GUCEF_SETBITXOFF( data->keyModState, KEYMOD_CTRL_BIT );
                     break;                                        
+                }
+                case VK_XBUTTON1 :
+                {
+                    UInt32 xPos = GET_X_LPARAM( lparam );
+                    UInt32 yPos = GET_Y_LPARAM( lparam );
+                    data->callbacks.onMouseMove( data->callbacks.userData, MOUSE_DEVICEID, xPos, yPos, xPos - data->mouseXPos, yPos - data->mouseYPos );
+                    data->mouseXPos = xPos;
+                    data->mouseYPos = yPos;  
+                        
+                    data->callbacks.onMouseButtonUp( data->callbacks.userData, MOUSE_DEVICEID, 4 );
+                    break;
+                }
+                case VK_XBUTTON2 :
+                {
+                    UInt32 xPos = GET_X_LPARAM( lparam );
+                    UInt32 yPos = GET_Y_LPARAM( lparam );
+                    data->callbacks.onMouseMove( data->callbacks.userData, MOUSE_DEVICEID, xPos, yPos, xPos - data->mouseXPos, yPos - data->mouseYPos );
+                    data->mouseXPos = xPos;
+                    data->mouseYPos = yPos;  
+                        
+                    data->callbacks.onMouseButtonUp( data->callbacks.userData, MOUSE_DEVICEID, 5 );
+                    break;
                 }                                                               
                 default :
                 {
@@ -747,6 +774,11 @@ InputDriverProcessMSWINMSG( HWND whnd     ,
         }
         case WM_KEYDOWN :
         {
+            if ( ::GetFocus() != data->hWnd )
+            {
+                break;
+            }
+
             switch ( wparam )
             {
                 case VK_CAPITAL :
@@ -782,6 +814,28 @@ InputDriverProcessMSWINMSG( HWND whnd     ,
                     GUCEF_SETBITXON( data->keyModState, KEYMOD_CTRL_BIT );
                     break;                                        
                 }                                                               
+                case VK_XBUTTON1 :
+                {
+                    UInt32 xPos = GET_X_LPARAM( lparam );
+                    UInt32 yPos = GET_Y_LPARAM( lparam );
+                    data->callbacks.onMouseMove( data->callbacks.userData, MOUSE_DEVICEID, xPos, yPos, xPos - data->mouseXPos, yPos - data->mouseYPos );
+                    data->mouseXPos = xPos;
+                    data->mouseYPos = yPos;  
+                        
+                    data->callbacks.onMouseButtonDown( data->callbacks.userData, MOUSE_DEVICEID, 4 );
+                    break;
+                }
+                case VK_XBUTTON2 :
+                {
+                    UInt32 xPos = GET_X_LPARAM( lparam );
+                    UInt32 yPos = GET_Y_LPARAM( lparam );
+                    data->callbacks.onMouseMove( data->callbacks.userData, MOUSE_DEVICEID, xPos, yPos, xPos - data->mouseXPos, yPos - data->mouseYPos );
+                    data->mouseXPos = xPos;
+                    data->mouseYPos = yPos;  
+                        
+                    data->callbacks.onMouseButtonDown( data->callbacks.userData, MOUSE_DEVICEID, 5 );
+                    break;
+                }
                 default :
                 {
                     break;
@@ -793,30 +847,32 @@ InputDriverProcessMSWINMSG( HWND whnd     ,
         }
         case WM_MOUSEMOVE :
         {
-            UInt32 xPos = GET_X_LPARAM( lparam );
-            UInt32 yPos = GET_Y_LPARAM( lparam );
-            data->callbacks.onMouseMove( data->callbacks.userData, MOUSE_DEVICEID, xPos, yPos, xPos - data->mouseXPos, yPos - data->mouseYPos );
-            data->mouseXPos = xPos;
-            data->mouseYPos = yPos;  
+            if ( ::GetFocus() == data->hWnd )
+            {
+                UInt32 xPos = GET_X_LPARAM( lparam );
+                UInt32 yPos = GET_Y_LPARAM( lparam );
+                data->callbacks.onMouseMove( data->callbacks.userData, MOUSE_DEVICEID, xPos, yPos, xPos - data->mouseXPos, yPos - data->mouseYPos );
+                data->mouseXPos = xPos;
+                data->mouseYPos = yPos;  
+            }
             break;
         }
-        #if ( _WIN32_WINNT >= 0x0400) || ( _WIN32_WINDOWS > 0x0400 )
         case WM_MOUSEWHEEL :
-        #else
-        case 0x020A : // WM_MOUSEWHEEL :
-        #endif
         {
-            UInt32 zDelta = (short)HIWORD(wparam);
+            if ( ::GetFocus() == data->hWnd )
+            {
+                UInt32 zDelta = (short)HIWORD(wparam);
                         
-            UInt32 xPos = GET_X_LPARAM( lparam );
-            UInt32 yPos = GET_Y_LPARAM( lparam );
-            data->callbacks.onMouseMove( data->callbacks.userData, MOUSE_DEVICEID, xPos, yPos, xPos - data->mouseXPos, yPos - data->mouseYPos );
-            data->mouseXPos = xPos;
-            data->mouseYPos = yPos;  
+                UInt32 xPos = GET_X_LPARAM( lparam );
+                UInt32 yPos = GET_Y_LPARAM( lparam );
+                data->callbacks.onMouseMove( data->callbacks.userData, MOUSE_DEVICEID, xPos, yPos, xPos - data->mouseXPos, yPos - data->mouseYPos );
+                data->mouseXPos = xPos;
+                data->mouseYPos = yPos;  
 
-            //zDelta = GET_WHEEL_DELTA_WPARAM( wParam ); // macro in MSDN but unknown                        
-            data->callbacks.onMouseVarChanged( data->callbacks.userData, MOUSE_DEVICEID, 0, data->mouseWheelPos, zDelta );
-            data->mouseWheelPos += zDelta;
+                //zDelta = GET_WHEEL_DELTA_WPARAM( wParam ); // macro in MSDN but unknown                        
+                data->callbacks.onMouseVarChanged( data->callbacks.userData, MOUSE_DEVICEID, 0, data->mouseWheelPos, zDelta );
+                data->mouseWheelPos += zDelta;
+            }
             break;
         }
         case WM_LBUTTONDOWN :
@@ -887,7 +943,19 @@ InputDriverProcessMSWINMSG( HWND whnd     ,
         }                
         case WM_ACTIVATE :
         {
-            ::ShowCursor( data->showCursor );
+            if ( ( WA_ACTIVE == LOWORD( wparam ) )      ||
+                 ( WA_CLICKACTIVE == LOWORD( wparam ) ) )
+            {
+                GrabWindowCursorInput( data, data->doGrab );
+                ::ShowCursor( data->showCursor );
+            }
+            else
+            {
+                // WA_INACTIVE
+                GrabWindowCursorInput( data, 0 );
+                ::ShowCursor( 1 );
+            }
+            break;
         }
         default : 
         {
@@ -930,9 +998,9 @@ INPUTDRIVERPLUG_Init( void** plugdata    ,
 UInt32 GUCEF_PLUGIN_CALLSPEC_PREFIX
 INPUTDRIVERPLUG_Shutdown( void* plugdata ) GUCEF_PLUGIN_CALLSPEC_SUFFIX
 {
-        free( driverData );
-        driverData = NULL;
-        return 1;                        
+    free( driverData );
+    driverData = NULL;
+    return 1;                        
 }
 
 /*---------------------------------------------------------------------------*/
@@ -940,7 +1008,7 @@ INPUTDRIVERPLUG_Shutdown( void* plugdata ) GUCEF_PLUGIN_CALLSPEC_SUFFIX
 const char* GUCEF_PLUGIN_CALLSPEC_PREFIX
 INPUTDRIVERPLUG_Name( void* plugdata ) GUCEF_PLUGIN_CALLSPEC_SUFFIX
 {
-        return DRIVER_NAME;
+    return DRIVER_NAME;
 }
 
 /*---------------------------------------------------------------------------*/
@@ -948,7 +1016,7 @@ INPUTDRIVERPLUG_Name( void* plugdata ) GUCEF_PLUGIN_CALLSPEC_SUFFIX
 const char* GUCEF_PLUGIN_CALLSPEC_PREFIX
 INPUTDRIVERPLUG_Copyright( void* plugdata ) GUCEF_PLUGIN_CALLSPEC_SUFFIX
 {
-        return DRIVER_COPYRIGHT;
+    return DRIVER_COPYRIGHT;
 }
 
 /*---------------------------------------------------------------------------*/
@@ -956,7 +1024,7 @@ INPUTDRIVERPLUG_Copyright( void* plugdata ) GUCEF_PLUGIN_CALLSPEC_SUFFIX
 const TVersion* GUCEF_PLUGIN_CALLSPEC_PREFIX
 INPUTDRIVERPLUG_Version( void* plugdata ) GUCEF_PLUGIN_CALLSPEC_SUFFIX
 {
-        return &version;
+    return &version;
 }
 
 /*---------------------------------------------------------------------------*/
@@ -965,28 +1033,28 @@ UInt32 GUCEF_PLUGIN_CALLSPEC_PREFIX
 INPUTDRIVERPLUG_Update( void* plugdata    , 
                         void* contextdata ) GUCEF_PLUGIN_CALLSPEC_SUFFIX
 {
-        if ( plugdata && contextdata )
-        {
-                TContextData* data = (TContextData*) contextdata;
-                
-                //OpenInputDesktop(
-                
-                POINT cursorPos;
-                if ( GetCursorPos( &cursorPos ) )
-                {                        
-                        if ( ScreenToClient( data->hWnd, &cursorPos ) )
-                        {
-                                if ( ( cursorPos.x != data->mouseXPos ) ||
-                                     ( cursorPos.y != data->mouseYPos )  )
-                                {                             
-                                        data->callbacks.onMouseMove( data->callbacks.userData, MOUSE_DEVICEID, cursorPos.x, cursorPos.y, cursorPos.x - data->mouseXPos, cursorPos.y - data->mouseYPos );
-                                        data->mouseXPos = cursorPos.x;
-                                        data->mouseYPos = cursorPos.y;                        
-                                }
-                        }                                                                
-                }
-                
-        }
+        //if ( plugdata && contextdata )
+        //{
+        //        TContextData* data = (TContextData*) contextdata;
+        //        
+        //        //OpenInputDesktop(
+        //        
+        //        POINT cursorPos;
+        //        if ( GetCursorPos( &cursorPos ) )
+        //        {                        
+        //                if ( ScreenToClient( data->hWnd, &cursorPos ) )
+        //                {
+        //                        if ( ( cursorPos.x != data->mouseXPos ) ||
+        //                             ( cursorPos.y != data->mouseYPos )  )
+        //                        {                             
+        //                                data->callbacks.onMouseMove( data->callbacks.userData, MOUSE_DEVICEID, cursorPos.x, cursorPos.y, cursorPos.x - data->mouseXPos, cursorPos.y - data->mouseYPos );
+        //                                data->mouseXPos = cursorPos.x;
+        //                                data->mouseYPos = cursorPos.y;                        
+        //                        }
+        //                }                                                                
+        //        }
+        //        
+        //}
         return 1;
 }
 
@@ -1034,7 +1102,7 @@ INPUTDRIVERPLUG_CreateContext( void* plugdata                   ,
                    GWL_WNDPROC                           ,
                    (LONG_PTR) InputDriverProcessMSWINMSG );
 
-    /*
+       /*
         *  Set mouse confinement and mouse visibility
         */
     GrabWindowCursorInput( data, grabCursor );
