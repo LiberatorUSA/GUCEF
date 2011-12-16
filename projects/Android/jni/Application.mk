@@ -90,4 +90,4 @@ APP_CPPFLAGS += -fexceptions
 # sources/cxx-stl/stlport/README for more details about the library.
 #
 
-APP_STL := gnustl_shared
+APP_STL := gnustl_static

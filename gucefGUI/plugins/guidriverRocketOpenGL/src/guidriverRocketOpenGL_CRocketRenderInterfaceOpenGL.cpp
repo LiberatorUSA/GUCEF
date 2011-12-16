@@ -14,7 +14,7 @@
  *
  *  You should have received a copy of the GNU Lesser General Public
  *  License along with this library; if not, write to the Free Software
- *  Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA 
+ *  Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA
  */
 
 /*
@@ -37,7 +37,7 @@
  *
  * The above copyright notice and this permission notice shall be included in
  * all copies or substantial portions of the Software.
- * 
+ *
  * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
  * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
  * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
@@ -61,7 +61,21 @@
 #include <windows.h>
 #endif
 
-#include <GL/GL.h>
+#if ( GUCEF_PLATFORM == GUCEF_PLATFORM_ANDROID )
+  #include <GLES/gl.h>
+  /* This isn't defined in the GLES headers */
+  #ifndef GL_UNSIGNED_INT
+  #define GL_UNSIGNED_INT 0x1405
+  #endif
+  #ifndef GL_RGB8
+  #define GL_RGB8 GL_RGB
+  #endif
+  #ifndef GL_RGBA8
+  #define GL_RGBA8 GL_RGBA
+  #endif
+#else
+  #include <GL/GL.h>
+#endif
 
 /*-------------------------------------------------------------------------//
 //                                                                         //
@@ -122,7 +136,7 @@ CRocketRenderInterfaceOpenGL::RenderGeometry(Rocket::Core::Vertex* vertices, int
 
 /*-------------------------------------------------------------------------*/
 
-// Called by Rocket when it wants to compile geometry it believes will be static for the forseeable future.		
+// Called by Rocket when it wants to compile geometry it believes will be static for the forseeable future.
 Rocket::Core::CompiledGeometryHandle
 CRocketRenderInterfaceOpenGL::CompileGeometry(Rocket::Core::Vertex* ROCKET_UNUSED(vertices), int ROCKET_UNUSED(num_vertices), int* ROCKET_UNUSED(indices), int ROCKET_UNUSED(num_indices), const Rocket::Core::TextureHandle ROCKET_UNUSED(texture))
 {
@@ -131,7 +145,7 @@ CRocketRenderInterfaceOpenGL::CompileGeometry(Rocket::Core::Vertex* ROCKET_UNUSE
 
 /*-------------------------------------------------------------------------*/
 
-// Called by Rocket when it wants to render application-compiled geometry.		
+// Called by Rocket when it wants to render application-compiled geometry.
 void
 CRocketRenderInterfaceOpenGL::RenderCompiledGeometry(Rocket::Core::CompiledGeometryHandle ROCKET_UNUSED(geometry), const Rocket::Core::Vector2f& ROCKET_UNUSED(translation))
 {
@@ -139,7 +153,7 @@ CRocketRenderInterfaceOpenGL::RenderCompiledGeometry(Rocket::Core::CompiledGeome
 
 /*-------------------------------------------------------------------------*/
 
-// Called by Rocket when it wants to release application-compiled geometry.		
+// Called by Rocket when it wants to release application-compiled geometry.
 void
 CRocketRenderInterfaceOpenGL::ReleaseCompiledGeometry(Rocket::Core::CompiledGeometryHandle ROCKET_UNUSED(geometry))
 {
@@ -147,7 +161,7 @@ CRocketRenderInterfaceOpenGL::ReleaseCompiledGeometry(Rocket::Core::CompiledGeom
 
 /*-------------------------------------------------------------------------*/
 
-// Called by Rocket when it wants to enable or disable scissoring to clip content.		
+// Called by Rocket when it wants to enable or disable scissoring to clip content.
 void
 CRocketRenderInterfaceOpenGL::EnableScissorRegion(bool enable)
 {
@@ -159,18 +173,18 @@ CRocketRenderInterfaceOpenGL::EnableScissorRegion(bool enable)
 
 /*-------------------------------------------------------------------------*/
 
-// Called by Rocket when it wants to change the scissor region.		
+// Called by Rocket when it wants to change the scissor region.
 void
 CRocketRenderInterfaceOpenGL::SetScissorRegion(int x, int y, int width, int height)
-{    
+{
    // glScissor( x, GetContext()->GetDimensions().y - (y + height), width, height );
 }
 
 /*-------------------------------------------------------------------------*/
 
 // Set to byte packing, or the compiler will expand our struct, which means it won't read correctly from file
-#pragma pack(1) 
-struct TGAHeader 
+#pragma pack(1)
+struct TGAHeader
 {
 	char  idLength;
 	char  colourMapType;
@@ -190,7 +204,7 @@ struct TGAHeader
 
 /*-------------------------------------------------------------------------*/
 
-// Called by Rocket when a texture is required by the library.		
+// Called by Rocket when a texture is required by the library.
 bool
 CRocketRenderInterfaceOpenGL::LoadTexture(Rocket::Core::TextureHandle& texture_handle, Rocket::Core::Vector2i& texture_dimensions, const Rocket::Core::String& source)
 {
@@ -200,37 +214,37 @@ CRocketRenderInterfaceOpenGL::LoadTexture(Rocket::Core::TextureHandle& texture_h
 	{
 		return false;
 	}
-	
+
 	file_interface->Seek(file_handle, 0, SEEK_END);
 	size_t buffer_size = file_interface->Tell(file_handle);
 	file_interface->Seek(file_handle, 0, SEEK_SET);
-	
+
 	char* buffer = new char[buffer_size];
 	file_interface->Read(buffer, buffer_size, file_handle);
 	file_interface->Close(file_handle);
 
 	TGAHeader header;
 	memcpy(&header, buffer, sizeof(TGAHeader));
-	
+
 	int color_mode = header.bitsPerPixel / 8;
-	int image_size = header.width * header.height * 4; // We always make 32bit textures 
-	
+	int image_size = header.width * header.height * 4; // We always make 32bit textures
+
 	if (header.dataType != 2)
 	{
 		Rocket::Core::Log::Message(Rocket::Core::Log::LT_ERROR, "Only 24/32bit uncompressed TGAs are supported.");
 		return false;
 	}
-	
+
 	// Ensure we have at least 3 colors
 	if (color_mode < 3)
 	{
 		Rocket::Core::Log::Message(Rocket::Core::Log::LT_ERROR, "Only 24 and 32bit textures are supported");
 		return false;
 	}
-	
+
 	const char* image_src = buffer + sizeof(TGAHeader);
 	unsigned char* image_dest = new unsigned char[image_size];
-	
+
 	// Targa is BGR, swap to RGB and flip Y axis
 	for (long y = 0; y < header.height; y++)
 	{
@@ -245,7 +259,7 @@ CRocketRenderInterfaceOpenGL::LoadTexture(Rocket::Core::TextureHandle& texture_h
 				image_dest[write_index+3] = image_src[read_index+3];
 			else
 				image_dest[write_index+3] = 255;
-			
+
 			write_index += 4;
 			read_index += color_mode;
 		}
@@ -253,12 +267,12 @@ CRocketRenderInterfaceOpenGL::LoadTexture(Rocket::Core::TextureHandle& texture_h
 
 	texture_dimensions.x = header.width;
 	texture_dimensions.y = header.height;
-	
+
 	bool success = GenerateTexture(texture_handle, image_dest, texture_dimensions);
-	
+
 	delete [] image_dest;
 	delete [] buffer;
-	
+
 	return success;
 }
 
@@ -292,7 +306,7 @@ CRocketRenderInterfaceOpenGL::GenerateTexture(Rocket::Core::TextureHandle& textu
 
 /*-------------------------------------------------------------------------*/
 
-// Called by Rocket when a loaded texture is no longer required.		
+// Called by Rocket when a loaded texture is no longer required.
 void
 CRocketRenderInterfaceOpenGL::ReleaseTexture(Rocket::Core::TextureHandle texture_handle)
 {

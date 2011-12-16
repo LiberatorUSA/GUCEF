@@ -70,6 +70,12 @@ class GUIDRIVERANDROIDGLES_PUBLIC_CPP CAndroidGLESWindowContext : public GUI::CW
     CAndroidGLESWindowContext( void );
     
     virtual ~CAndroidGLESWindowContext();
+
+    virtual GUI::UInt32 GetWidth( void ) const;
+
+    virtual GUI::UInt32 GetHeight( void ) const;
+
+    virtual GUI::CString GetProperty( const GUI::CString& propertyName ) const;
     
     virtual void SetGuiContext( GUI::TGuiContextPtr& context );
     

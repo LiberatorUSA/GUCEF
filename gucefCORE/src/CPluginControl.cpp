@@ -722,7 +722,7 @@ CPluginControl::GetSupportedPluginTypes( TStringVector& supportedTypes ) const
 {GUCEF_TRACE;
 
     g_mutex.Lock();
-    TPluginManagerSet::iterator i = m_pluginManagers.begin();
+    TPluginManagerSet::const_iterator i = m_pluginManagers.begin();
     while ( i != m_pluginManagers.end() )
     {
         supportedTypes.push_back( (*i)->GetPluginType() );        

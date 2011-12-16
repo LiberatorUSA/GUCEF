@@ -14,7 +14,7 @@
  *
  *  You should have received a copy of the GNU Lesser General Public
  *  License along with this library; if not, write to the Free Software
- *  Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA 
+ *  Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA
  */
 
 /*-------------------------------------------------------------------------//
@@ -72,6 +72,42 @@ CAndroidGLESWindowContext::~CAndroidGLESWindowContext()
 
 /*-------------------------------------------------------------------------*/
 
+GUI::UInt32
+CAndroidGLESWindowContext::GetWidth( void ) const
+{GUCEF_TRACE;
+
+    EGLint width = 0;
+    eglQuerySurface( m_display, m_surface, EGL_WIDTH, &width );
+    return width;
+}
+
+/*-------------------------------------------------------------------------*/
+
+GUI::UInt32
+CAndroidGLESWindowContext::GetHeight( void ) const
+{GUCEF_TRACE;
+
+    EGLint height = 0;
+    eglQuerySurface( m_display, m_surface, EGL_HEIGHT, &height );
+    return height;
+}
+
+/*-------------------------------------------------------------------------*/
+
+GUI::CString
+CAndroidGLESWindowContext::GetProperty( const GUI::CString& propertyName ) const
+{GUCEF_TRACE;
+
+    if ( propertyName == "WINDOW" )
+    {
+        return CORE::PointerToString( m_display );
+    }
+
+    return GUI::CString();
+}
+
+/*-------------------------------------------------------------------------*/
+
 void
 CAndroidGLESWindowContext::SetGuiContext( GUI::TGuiContextPtr& context )
 {GUCEF_TRACE;
@@ -103,6 +139,10 @@ bool
 CAndroidGLESWindowContext::IsActive( void ) const
 {GUCEF_TRACE;
 
+    if ( EGL_NO_CONTEXT != m_context )
+    {
+        return m_context == eglGetCurrentContext();
+    }
     return false;
 }
 
@@ -148,7 +188,7 @@ CAndroidGLESWindowContext::Initialize( const GUI::CVideoSettings& videoSettings 
     // Do not initialize twice
     Shutdown();
 
-    // @TODO: get the app from somewhere    
+    // @TODO: get the app from somewhere
     struct android_app* app = NULL;
     EGLint bitDepth = (EGLint) videoSettings.GetResolutionDepthInBits() / 3;
 

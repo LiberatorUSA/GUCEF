@@ -62,6 +62,31 @@
 #define GUCEF_CORE_GUCEF_ESSENTIALS_H
 #endif /* GUCEF_CORE_GUCEF_ESSENTIALS_H ? */
 
+#include <android/log.h>
+
+void
+android_syslog(int level, const char *format, ...)
+{
+    va_list arglist;
+    va_start( arglist, format );
+    __android_log_vprint( level, "GalaxyUnlimitedPlatform", format, arglist );
+    va_end( arglist );
+    return;
+}
+
+
+#define FLOGI( format, ... ) ( (void) android_syslog( ANDROID_LOG_INFO, format, __VA_ARGS__) )
+#define FLOGW( format, ... ) ( (void) android_syslog( ANDROID_LOG_WARN, format, __VA_ARGS__) )
+#define FLOGF( format, ... ) ( (void) android_syslog( ANDROID_LOG_FATAL, format, __VA_ARGS__) )
+#define FLOGE( format, ... ) ( (void) android_syslog( ANDROID_LOG_ERROR, format, __VA_ARGS__) )
+#define FLOGD( format, ... ) ( (void) android_syslog( ANDROID_LOG_DEBUG, format, __VA_ARGS__) )
+
+#define LOGI(...) ((void)__android_log_print(ANDROID_LOG_INFO, "GalaxyUnlimitedPlatform", __VA_ARGS__))
+#define LOGW(...) ((void)__android_log_print(ANDROID_LOG_WARN, "GalaxyUnlimitedPlatform", __VA_ARGS__))
+#define LOGF(...) ((void)__android_log_print(ANDROID_LOG_FATAL, "GalaxyUnlimitedPlatform", __VA_ARGS__))
+#define LOGE(...) ((void)__android_log_print(ANDROID_LOG_ERROR, "GalaxyUnlimitedPlatform", __VA_ARGS__))
+#define LOGD(...) ((void)__android_log_print(ANDROID_LOG_DEBUG, "GalaxyUnlimitedPlatform", __VA_ARGS__))
+
 /*-------------------------------------------------------------------------//
 //                                                                         //
 //      NAMESPACE                                                          //
@@ -577,11 +602,25 @@ recursive_mkdir( const char* dir, int accessPerms )
         {
             *p = 0;
             retValue = mkdir( tmp, accessPerms );
-            if ( 0 != retValue ) return retValue;
+            if ( 0 != retValue )
+            {
+                if ( EEXIST != errno )
+                {
+                    return retValue;
+                }
+            }
             *p = '/';
         }
     }
     retValue = mkdir( tmp, accessPerms );
+    if ( 0 != retValue )
+    {
+        if ( EEXIST != errno )
+        {
+            return retValue;
+        }
+        else return 0;
+    }
     return retValue;
 }
 
@@ -672,7 +711,7 @@ Create_Directory( const char *new_dir )
     /*
      *	Use posix function. returns -1 on failure and 0 on sucess
      */
-    return recursive_mkdir( new_dir, 0777 )+1;
+    return (UInt32) ( recursive_mkdir( new_dir, 0777 )+1 );
 
     #else
 
@@ -706,7 +745,6 @@ Create_Path_Directories( const char* path )
             }
             --i;
         }
-
         returnValue = Create_Directory( pathBuffer );
         free( pathBuffer );
         return returnValue;
@@ -907,6 +945,37 @@ Delete_File( const char *filename )
 
 /*-------------------------------------------------------------------------*/
 
+#if ( ( GUCEF_PLATFORM == GUCEF_PLATFORM_LINUX ) || ( GUCEF_PLATFORM == GUCEF_PLATFORM_ANDROID ) )
+
+ssize_t
+do_sendfile( int out_fd, int in_fd, off_t offset, size_t count )
+{
+    ssize_t bytes_sent;
+    size_t total_bytes_sent = 0;
+    while ( total_bytes_sent < count )
+    {
+        if ( ( bytes_sent = sendfile( out_fd,
+                                      in_fd,
+                                      &offset,
+                                      count - total_bytes_sent ) ) <= 0 )
+        {
+            if ( errno == EINTR || errno == EAGAIN )
+            {
+                // Interrupted system call/try again
+                // Just skip to the top of the loop and try again
+                continue;
+            }
+            return -1;
+        }
+        total_bytes_sent += bytes_sent;
+    }
+    return total_bytes_sent;
+}
+
+#endif
+
+/*-------------------------------------------------------------------------*/
+
 UInt32
 Copy_File( const char *dst, const char *src )
 {
@@ -927,18 +996,25 @@ Copy_File( const char *dst, const char *src )
 
     /* Open the input file. */
     read_fd = open( src, O_RDONLY );
+    if ( read_fd == -1 ) return 0;
 
     /* Stat the input file to obtain its size. */
-    fstat( read_fd, &stat_buf );
+    if ( fstat( read_fd, &stat_buf ) == -1 )  return 0;
 
     /*
      *  Open the output file for writing, with the same permissions as the
      *  source file.
      */
     write_fd = open( dst, O_WRONLY | O_CREAT, stat_buf.st_mode );
+    if ( write_fd == -1 )  return 0;
 
     /* Blast the bytes from one file to the other. */
-    sendfile( write_fd, read_fd, &offset, stat_buf.st_size );
+    if ( -1 == do_sendfile( write_fd, read_fd, offset, stat_buf.st_size ) )
+    {
+        close( read_fd );
+        close( write_fd );
+        return 0;
+    }
 
     /* Close up. */
     close( read_fd );
@@ -946,7 +1022,11 @@ Copy_File( const char *dst, const char *src )
 
     }
 
+    return 1;
+
     #else
+
+    {
 
     char buffer[ 1024*512 ];
     UInt32 rbytes = 1;
@@ -972,6 +1052,9 @@ Copy_File( const char *dst, const char *src )
                 return 0;
             }
     }
+
+    }
+
     return 1;
 
     #endif
@@ -993,8 +1076,22 @@ Move_File( const char *dst, const char *src )
     return MoveFile( src, dst );
 
     #elif ( ( GUCEF_PLATFORM == GUCEF_PLATFORM_LINUX ) || ( GUCEF_PLATFORM == GUCEF_PLATFORM_ANDROID ) )
+            FLOGD( "rename %s %s", src, dst );
+    //return 0 == rename( src, dst ) ? 1 : 0;
 
-    return 0 == rename( src, dst ) ? 1 : 0;
+    struct stat originalPermissions;
+    if ( 0 != stat( src, &originalPermissions ) ) return 0;
+
+    chmod( src, 0777 );
+
+    if ( 0 != rename( src, dst ) )
+    {
+        FLOGD( "rename errno %i", errno );
+        return 0;
+    }
+
+    chmod( dst, originalPermissions.st_mode );
+    return 1;
 
     #else
 
