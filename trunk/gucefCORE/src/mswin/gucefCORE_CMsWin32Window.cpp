@@ -647,18 +647,23 @@ CMsWin32Window::WindowCreate( const CString& windowClassName ,
         DestroyWindow( m_hwnd );
         m_hwnd = 0;
     }
-    
-    m_hwnd = CreateWindowEx( WS_EX_CLIENTEDGE,
+
+    m_hwnd = CreateWindowEx( WS_EX_APPWINDOW,
                              windowClassName.C_String(),
                              windowTitle.C_String(),
                              WS_OVERLAPPEDWINDOW,
                              xPosition, yPosition, (int)width, (int)height,
                              hWndParent, NULL, GetCurrentModuleHandle(), (LPVOID)this );
+    
     if ( 0 == m_hwnd )
     {
         GUCEF_SYSTEM_LOG( LOGLEVEL_IMPORTANT, "CMsWin32Window::WindowCreate(): Failed to create a window" );
         return false;
     }
+
+    // Resize the client area to match the requested size by default. This is desired because in situations where 
+    // a specific resolution is most impportant (rendering) it tends to always relate to the client area not the window area
+    ClientAreaResize( width, height );
 
     HookWndProc();
     
