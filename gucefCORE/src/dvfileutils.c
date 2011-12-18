@@ -56,36 +56,14 @@
 #else
   #error Unsupported OS
 #endif
+#if ( GUCEF_PLATFORM == GUCEF_PLATFORM_ANDROID ) 
+  #include <android/log.h>
+#endif
 
 #ifndef GUCEF_CORE_GUCEF_ESSENTIALS_H
 #include "gucef_essentials.h"
 #define GUCEF_CORE_GUCEF_ESSENTIALS_H
 #endif /* GUCEF_CORE_GUCEF_ESSENTIALS_H ? */
-
-#include <android/log.h>
-
-void
-android_syslog(int level, const char *format, ...)
-{
-    va_list arglist;
-    va_start( arglist, format );
-    __android_log_vprint( level, "GalaxyUnlimitedPlatform", format, arglist );
-    va_end( arglist );
-    return;
-}
-
-
-#define FLOGI( format, ... ) ( (void) android_syslog( ANDROID_LOG_INFO, format, __VA_ARGS__) )
-#define FLOGW( format, ... ) ( (void) android_syslog( ANDROID_LOG_WARN, format, __VA_ARGS__) )
-#define FLOGF( format, ... ) ( (void) android_syslog( ANDROID_LOG_FATAL, format, __VA_ARGS__) )
-#define FLOGE( format, ... ) ( (void) android_syslog( ANDROID_LOG_ERROR, format, __VA_ARGS__) )
-#define FLOGD( format, ... ) ( (void) android_syslog( ANDROID_LOG_DEBUG, format, __VA_ARGS__) )
-
-#define LOGI(...) ((void)__android_log_print(ANDROID_LOG_INFO, "GalaxyUnlimitedPlatform", __VA_ARGS__))
-#define LOGW(...) ((void)__android_log_print(ANDROID_LOG_WARN, "GalaxyUnlimitedPlatform", __VA_ARGS__))
-#define LOGF(...) ((void)__android_log_print(ANDROID_LOG_FATAL, "GalaxyUnlimitedPlatform", __VA_ARGS__))
-#define LOGE(...) ((void)__android_log_print(ANDROID_LOG_ERROR, "GalaxyUnlimitedPlatform", __VA_ARGS__))
-#define LOGD(...) ((void)__android_log_print(ANDROID_LOG_DEBUG, "GalaxyUnlimitedPlatform", __VA_ARGS__))
 
 /*-------------------------------------------------------------------------//
 //                                                                         //
@@ -134,6 +112,35 @@ struct SDI_Data
 //      UTILITIES                                                          //
 //                                                                         //
 //-------------------------------------------------------------------------*/
+
+#if ( GUCEF_PLATFORM == GUCEF_PLATFORM_ANDROID )
+
+void
+android_syslog(int level, const char *format, ...)
+{
+    va_list arglist;
+    va_start( arglist, format );
+    __android_log_vprint( level, "GalaxyUnlimitedPlatform", format, arglist );
+    va_end( arglist );
+    return;
+}
+
+
+#define FLOGI( format, ... ) ( (void) android_syslog( ANDROID_LOG_INFO, format, __VA_ARGS__) )
+#define FLOGW( format, ... ) ( (void) android_syslog( ANDROID_LOG_WARN, format, __VA_ARGS__) )
+#define FLOGF( format, ... ) ( (void) android_syslog( ANDROID_LOG_FATAL, format, __VA_ARGS__) )
+#define FLOGE( format, ... ) ( (void) android_syslog( ANDROID_LOG_ERROR, format, __VA_ARGS__) )
+#define FLOGD( format, ... ) ( (void) android_syslog( ANDROID_LOG_DEBUG, format, __VA_ARGS__) )
+
+#define LOGI(...) ((void)__android_log_print(ANDROID_LOG_INFO, "GalaxyUnlimitedPlatform", __VA_ARGS__))
+#define LOGW(...) ((void)__android_log_print(ANDROID_LOG_WARN, "GalaxyUnlimitedPlatform", __VA_ARGS__))
+#define LOGF(...) ((void)__android_log_print(ANDROID_LOG_FATAL, "GalaxyUnlimitedPlatform", __VA_ARGS__))
+#define LOGE(...) ((void)__android_log_print(ANDROID_LOG_ERROR, "GalaxyUnlimitedPlatform", __VA_ARGS__))
+#define LOGD(...) ((void)__android_log_print(ANDROID_LOG_DEBUG, "GalaxyUnlimitedPlatform", __VA_ARGS__))
+
+#endif
+
+/*-------------------------------------------------------------------------*/
 
 struct SDI_Data*
 DI_First_Dir_Entry( const char *path )
