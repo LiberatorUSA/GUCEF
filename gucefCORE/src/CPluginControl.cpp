@@ -14,7 +14,7 @@
  *
  *  You should have received a copy of the GNU Lesser General Public
  *  License along with this library; if not, write to the Free Software
- *  Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA 
+ *  Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA
  */
 
 /*-------------------------------------------------------------------------//
@@ -34,7 +34,7 @@
 #endif /* GUCEF_CORE_CDVSTRING_H ? */
 
 #ifndef GUCEF_CORE_DVCPPSTRINGUTILS_H
-#include "dvcppstringutils.h"   /* Additional utilities for manipulating string class objects */ 
+#include "dvcppstringutils.h"   /* Additional utilities for manipulating string class objects */
 #define GUCEF_CORE_DVCPPSTRINGUTILS_H
 #endif /* GUCEF_CORE_DVCPPSTRINGUTILS_H ? */
 
@@ -63,7 +63,7 @@
 #ifndef GUCEF_CORE_GUCEF_ESSENTIALS_H
 #include "gucef_essentials.h"
 #define GUCEF_CORE_GUCEF_ESSENTIALS_H
-#endif /* GUCEF_CORE_GUCEF_ESSENTIALS_H ? */  
+#endif /* GUCEF_CORE_GUCEF_ESSENTIALS_H ? */
 
 /*-------------------------------------------------------------------------//
 //                                                                         //
@@ -98,7 +98,7 @@ const CEvent CPluginControl::PluginUnloadedEvent = "GUCEF::CORE::CPluginControl:
 void
 CPluginControl::RegisterEvents( void )
 {GUCEF_TRACE;
-        
+
     PluginLoadedEvent.Initialize();
     PluginUnloadedEvent.Initialize();
 }
@@ -108,7 +108,7 @@ CPluginControl::RegisterEvents( void )
 CPluginControl*
 CPluginControl::Instance( void )
 {GUCEF_TRACE;
-    
+
     if ( NULL == g_instance )
     {
         g_mutex.Lock();
@@ -119,12 +119,12 @@ CPluginControl::Instance( void )
         }
         g_mutex.Unlock();
     }
-    return g_instance; 
+    return g_instance;
 }
 
 /*-------------------------------------------------------------------------*/
 
-void 
+void
 CPluginControl::Deinstance( void )
 {GUCEF_TRACE;
 
@@ -151,7 +151,7 @@ CPluginControl::CPluginControl( void )
       m_defaultPluginLoadLogicType( "Simplistic" ) ,
       m_pluginGroups()                             ,
       m_rootDirs()                                 ,
-      m_pluginManagers()                           
+      m_pluginManagers()
 {GUCEF_TRACE;
 
     // Register the load logic implementations available by default
@@ -169,9 +169,9 @@ CPluginControl::LoadAllPluginsOfType( const CString& pluginTypeToLoad )
 
     g_mutex.Lock();
     bool success = true;
-    
+
     GUCEF_SYSTEM_LOG( LOGLEVEL_NORMAL, "PluginControl: Loading all modules of type \"" + pluginTypeToLoad + '\"' );
-    
+
     // Loop trough groups looking for modules of the given type
     TPluginGroupMap::iterator i = m_pluginGroups.begin();
     while ( i != m_pluginGroups.end() )
@@ -183,7 +183,7 @@ CPluginControl::LoadAllPluginsOfType( const CString& pluginTypeToLoad )
         while ( n != pluginMetaDataSet.end() )
         {
             TPluginMetaDataPtr pluginMetaData = (*n);
-            
+
             if ( pluginTypeToLoad == pluginMetaData->GetPluginType() )
             {
                 // Try to load this module since it is of the type we are looking for
@@ -211,7 +211,7 @@ CPluginControl::LoadAllPluginsOfTypeInGroup( const CString& pluginTypeToLoad ,
     bool success = true;
 
     GUCEF_SYSTEM_LOG( LOGLEVEL_NORMAL, "PluginControl: Loading all modules in group \"" + groupName + "\" of type \"" + pluginTypeToLoad + '\"' );
-    
+
     // Loop trough groups looking for modules of the given type
     TPluginGroupMap::iterator i = m_pluginGroups.find( groupName );
     if ( i != m_pluginGroups.end() )
@@ -223,7 +223,7 @@ CPluginControl::LoadAllPluginsOfTypeInGroup( const CString& pluginTypeToLoad ,
         while ( n != pluginMetaDataSet.end() )
         {
             TPluginMetaDataPtr pluginMetaData = (*n);
-            
+
             if ( pluginTypeToLoad == pluginMetaData->GetPluginType() )
             {
                 // Try to load this module since it is of the type we are looking for
@@ -235,13 +235,13 @@ CPluginControl::LoadAllPluginsOfTypeInGroup( const CString& pluginTypeToLoad ,
         }
     }
     g_mutex.Unlock();
-    
-    return success;    
+
+    return success;
 }
 
 /*-------------------------------------------------------------------------*/
 
-bool 
+bool
 CPluginControl::LoadPluginGroup( const CString& groupName )
 {GUCEF_TRACE;
 
@@ -249,7 +249,7 @@ CPluginControl::LoadPluginGroup( const CString& groupName )
     bool success = true;
 
     GUCEF_SYSTEM_LOG( LOGLEVEL_NORMAL, "PluginControl: Loading all modules in group \"" + groupName + '\"' );
-    
+
     // Loop trough groups looking for modules of the given type
     TPluginGroupMap::iterator i = m_pluginGroups.find( groupName );
     if ( i != m_pluginGroups.end() )
@@ -270,8 +270,8 @@ CPluginControl::LoadPluginGroup( const CString& groupName )
         }
     }
     g_mutex.Unlock();
-    
-    return success; 
+
+    return success;
 }
 
 /*-------------------------------------------------------------------------*/
@@ -307,8 +307,8 @@ CPluginControl::LoadAll( void )
         ++i;
     }
     g_mutex.Unlock();
-    
-    return success; 
+
+    return success;
 }
 
 /*-------------------------------------------------------------------------*/
@@ -321,9 +321,9 @@ CPluginControl::LoadPlugin( TPluginMetaDataPtr& pluginMetaData ,
 
     // Check to see whether the module has a specific loader logic type defined
     // if not we will use the default.
-    CString pluginLoaderLogicToUse = pluginMetaData->GetLoaderLogicTypeName().IsNULLOrEmpty() ? 
+    CString pluginLoaderLogicToUse = pluginMetaData->GetLoaderLogicTypeName().IsNULLOrEmpty() ?
             m_defaultPluginLoadLogicType :  pluginMetaData->GetLoaderLogicTypeName();
-                
+
     TPluginLoadLogicMap::iterator m = m_pluginLoadLogicProviders.find( pluginLoaderLogicToUse );
     if ( m != m_pluginLoadLogicProviders.end() )
     {
@@ -374,10 +374,10 @@ CPluginControl::LoadPlugin( TPluginMetaDataPtr& pluginMetaData ,
         if ( pluginType.IsNULLOrEmpty() )
         {
             // Without a plugin type predefined we will have to use trial and error
-            
+
             GUCEF_SYSTEM_LOG( LOGLEVEL_NORMAL, "PluginControl: Module with name \"" +
                                     pluginMetaData->GetModuleFilename() + "\" and group \"" + groupName + "\" and version " +
-                                    VersionToString( pluginMetaData->GetVersion() ) + 
+                                    VersionToString( pluginMetaData->GetVersion() ) +
                                     " does not have a plugin type defined, an attempt will be made to register at any of the available plugin managers via trial and error" );
 
             TPluginManagerSet::iterator w = m_pluginManagers.begin();
@@ -386,10 +386,10 @@ CPluginControl::LoadPlugin( TPluginMetaDataPtr& pluginMetaData ,
                 // This plugin manager can handle a module of this type.
                 // We will try to register the module here as a plugin
                 TPluginPtr pluginPtr = (*w)->RegisterPlugin( modulePtr, pluginMetaData );
-                if ( NULL != pluginPtr )
+                if ( 0 != pluginPtr )
                 {
                     // Remove the metadata entry and instead add a plugin entry
-                    // Note that it is the plugin managers responsibility to correctly transfer 
+                    // Note that it is the plugin managers responsibility to correctly transfer
                     // metadata to the plugin object
                     pluginGroup.GetPluginMetaData().erase( pluginMetaData );
                     pluginGroup.GetPlugins().insert( pluginPtr );
@@ -421,10 +421,10 @@ CPluginControl::LoadPlugin( TPluginMetaDataPtr& pluginMetaData ,
                 // This plugin manager can handle a module of this type.
                 // We will try to register the module here as a plugin
                 TPluginPtr pluginPtr = pluginManager->RegisterPlugin( modulePtr, pluginMetaData );
-                if ( NULL != pluginPtr )
+                if ( 0 != pluginPtr )
                 {
                     // Remove the metadata entry and instead add a plugin entry
-                    // Note that it is the plugin managers responsibility to correctly transfer 
+                    // Note that it is the plugin managers responsibility to correctly transfer
                     // metadata to the plugin object
                     pluginGroup.GetPluginMetaData().erase( pluginMetaData );
                     pluginGroup.GetPlugins().insert( pluginPtr );
@@ -477,7 +477,7 @@ CPluginControl::UnloadPlugin( TPluginPtr& pluginPtr     ,
 {GUCEF_TRACE;
 
     TPluginMetaDataPtr pluginMetaData =  pluginPtr->GetMetaData();
-    if ( NULL == pluginMetaData )
+    if ( 0 == pluginMetaData )
     {
         // This plugin does not have any meta data set thus we cannot unload it
         // It will have to stay in process memmory
@@ -512,12 +512,12 @@ CPluginControl::UnloadPlugin( TPluginPtr& pluginPtr     ,
     TPluginMetaDataPtr metaDataCopyPtr = new CPluginMetaData( *pluginMetaData );
     pluginGroup.GetPlugins().erase( pluginPtr );
     pluginGroup.GetPluginMetaData().insert( metaDataCopyPtr );
-    
+
     // Check to see whether the module has a specific loader logic type defined
     // if not we will use the default.
-    CString pluginLoaderLogicToUse = metaDataCopyPtr->GetLoaderLogicTypeName().IsNULLOrEmpty() ? 
+    CString pluginLoaderLogicToUse = metaDataCopyPtr->GetLoaderLogicTypeName().IsNULLOrEmpty() ?
             m_defaultPluginLoadLogicType :  metaDataCopyPtr->GetLoaderLogicTypeName();
-                
+
     TPluginLoadLogicMap::iterator m = m_pluginLoadLogicProviders.find( pluginLoaderLogicToUse );
     if ( m != m_pluginLoadLogicProviders.end() )
     {
@@ -531,7 +531,7 @@ CPluginControl::UnloadPlugin( TPluginPtr& pluginPtr     ,
     }
 
     GUCEF_ERROR_LOG( LOGLEVEL_NORMAL, "PluginControl: Failed to find plugin loader logic of type \"" + pluginLoaderLogicToUse + "\" for unloading a plugn of type \"" + pluginType + "\" and name \"" +
-                        metaDataCopyPtr->GetModuleFilename() + "\" and group \"" + groupName + "\" and version " + VersionToString( metaDataCopyPtr->GetVersion() ) );    
+                        metaDataCopyPtr->GetModuleFilename() + "\" and group \"" + groupName + "\" and version " + VersionToString( metaDataCopyPtr->GetVersion() ) );
     return false;
 }
 
@@ -546,7 +546,7 @@ CPluginControl::UnloadAllPluginsOfTypeInGroup( const CString& pluginTypeToLoad ,
     bool success = true;
 
     GUCEF_SYSTEM_LOG( LOGLEVEL_NORMAL, "PluginControl: Unloading all modules in group \"" + groupName + "\" of type \"" + pluginTypeToLoad + '\"' );
-    
+
     // Find the groups specified
     TPluginGroupMap::iterator i = m_pluginGroups.find( groupName );
     if ( i != m_pluginGroups.end() )
@@ -560,8 +560,8 @@ CPluginControl::UnloadAllPluginsOfTypeInGroup( const CString& pluginTypeToLoad ,
         {
             TPluginPtr plugin = (*n);
             TPluginMetaDataPtr pluginMetaData = plugin->GetMetaData();
-            
-            if ( NULL != pluginMetaData )
+
+            if ( 0 != pluginMetaData )
             {
                 if ( pluginTypeToLoad == pluginMetaData->GetPluginType() )
                 {
@@ -575,7 +575,7 @@ CPluginControl::UnloadAllPluginsOfTypeInGroup( const CString& pluginTypeToLoad ,
         }
     }
     g_mutex.Unlock();
-    
+
     return success;
 }
 
@@ -587,9 +587,9 @@ CPluginControl::UnloadAllPluginsOfType( const CString& pluginTypeToUnload )
 
     g_mutex.Lock();
     bool success = true;
-    
+
     GUCEF_SYSTEM_LOG( LOGLEVEL_NORMAL, "PluginControl: Unloading all modules of type \"" + pluginTypeToUnload + '\"' );
-    
+
     // Loop trough groups looking for modules of the given type
     TPluginGroupMap::iterator i = m_pluginGroups.begin();
     while ( i != m_pluginGroups.end() )
@@ -602,8 +602,8 @@ CPluginControl::UnloadAllPluginsOfType( const CString& pluginTypeToUnload )
         {
             TPluginPtr plugin = (*n);
             TPluginMetaDataPtr pluginMetaData = plugin->GetMetaData();
-            
-            if ( NULL != pluginMetaData )
+
+            if ( 0 != pluginMetaData )
             {
                 if ( pluginTypeToUnload == pluginMetaData->GetPluginType() )
                 {
@@ -623,7 +623,7 @@ CPluginControl::UnloadAllPluginsOfType( const CString& pluginTypeToUnload )
 }
 
 /*-------------------------------------------------------------------------*/
-    
+
 bool
 CPluginControl::UnloadPluginGroup( const CString& groupName )
 {GUCEF_TRACE;
@@ -632,7 +632,7 @@ CPluginControl::UnloadPluginGroup( const CString& groupName )
     bool success = true;
 
     GUCEF_SYSTEM_LOG( LOGLEVEL_NORMAL, "PluginControl: Unloading all modules in group \"" + groupName + '\"' );
-    
+
     // Loop trough groups looking for modules of the given type
     TPluginGroupMap::iterator i = m_pluginGroups.find( groupName );
     if ( i != m_pluginGroups.end() )
@@ -653,13 +653,13 @@ CPluginControl::UnloadPluginGroup( const CString& groupName )
         }
     }
     g_mutex.Unlock();
-    
-    return success; 
+
+    return success;
 }
 
 /*-------------------------------------------------------------------------*/
-        
-bool 
+
+bool
 CPluginControl::UnloadAll( void )
 {GUCEF_TRACE;
 
@@ -689,7 +689,7 @@ CPluginControl::UnloadAll( void )
         ++i;
     }
     g_mutex.Unlock();
-    
+
     return success;
 }
 
@@ -705,7 +705,7 @@ CPluginControl::ClearMetaDataFromGroup( const CString& groupName )
     {
         CPluginGroup& pluginGroup = (*i).second;
         pluginGroup.GetPluginMetaData().clear();
-        
+
         // If no plugins are loaded & we have no metadata then get rid of the group alltogether
         if ( pluginGroup.GetPlugins().empty() )
         {
@@ -725,15 +725,15 @@ CPluginControl::GetSupportedPluginTypes( TStringVector& supportedTypes ) const
     TPluginManagerSet::const_iterator i = m_pluginManagers.begin();
     while ( i != m_pluginManagers.end() )
     {
-        supportedTypes.push_back( (*i)->GetPluginType() );        
+        supportedTypes.push_back( (*i)->GetPluginType() );
         ++i;
     }
-    g_mutex.Unlock();    
+    g_mutex.Unlock();
 }
 
 /*-------------------------------------------------------------------------*/
 
-void 
+void
 CPluginControl::Register( CPluginManager* pman )
 {GUCEF_TRACE;
 
@@ -743,8 +743,8 @@ CPluginControl::Register( CPluginManager* pman )
 }
 
 /*-------------------------------------------------------------------------*/
-        
-void 
+
+void
 CPluginControl::Unregister( CPluginManager* pman )
 {GUCEF_TRACE;
 
@@ -795,7 +795,7 @@ CPluginControl::SetDefaultPluginLoadLogicType( const CString& loaderLogicTypeNam
 CString
 CPluginControl::GetDefaultPluginLoadLogicType( void ) const
 {GUCEF_TRACE;
-    
+
     g_mutex.Lock();
     CString returnValue = m_defaultPluginLoadLogicType;
     g_mutex.Unlock();
@@ -833,7 +833,7 @@ CPluginControl::AddPluginFromDir( const CString& pluginPath ,
 {GUCEF_TRACE;
 
     CString pathToPlugin = RelativePath( pluginPath );
-    
+
     GUCEF_SYSTEM_LOG( LOGLEVEL_NORMAL, "PluginControl: Defining file " + pathToPlugin + " as a plugin" );
 
     // All we can define using this method is the directory and the filename
@@ -842,15 +842,15 @@ CPluginControl::AddPluginFromDir( const CString& pluginPath ,
     CPluginMetaData pluginMetaData;
     pluginMetaData.SetFullModulePath( pathToPlugin.CutChars( filename.Length(), false ) );
     pluginMetaData.SetModuleFilename( filename );
-                 
-    return AddPluginMetaData( pluginMetaData , 
+
+    return AddPluginMetaData( pluginMetaData ,
                               groupName      ,
                               loadImmediatly );
 }
 
 /*-------------------------------------------------------------------------*/
 
-bool 
+bool
 CPluginControl::AddAllPluginsFromDir( const CString& pluginDir ,
                                       const CString& groupName ,
                                       bool loadImmediatly      )
@@ -860,8 +860,8 @@ CPluginControl::AddAllPluginsFromDir( const CString& pluginDir ,
     struct SDI_Data* did = DI_First_Dir_Entry( pluginDir.C_String() );
     if ( did )
     {
-        do 
-        {                
+        do
+        {
             if ( DI_Is_It_A_File( did ) == 1 )
             {
                 CString filename = DI_Name( did );
@@ -872,25 +872,25 @@ CPluginControl::AddAllPluginsFromDir( const CString& pluginDir ,
                 #elif ( ( GUCEF_PLATFORM == GUCEF_PLATFORM_LINUX ) || ( GUCEF_PLATFORM == GUCEF_PLATFORM_ANDROID ) )
                 if ( fileExt.Lowercase() == "so" )
                 #elif ( GUCEF_PLATFORM == GUCEF_PLATFORM_MACOS )
-                if ( fileExt.Lowercase() == "dynlib" ) 
+                if ( fileExt.Lowercase() == "dynlib" )
                 #endif
                 {
                     GUCEF_SYSTEM_LOG( LOGLEVEL_NORMAL, "PluginControl: Defining file " + filename + " as a plugin" );
-                    
+
                     // All we can define using this method is the directory and the filename
                     // The module will have to be matched to a plugin manager via trial and error
                     CPluginMetaData pluginMetaData;
                     pluginMetaData.SetFullModulePath( pluginDir );
                     pluginMetaData.SetModuleFilename( filename );
-                 
-                    success = success && AddPluginMetaData( pluginMetaData , 
+
+                    success = success && AddPluginMetaData( pluginMetaData ,
                                                             groupName      ,
                                                             loadImmediatly );
                 }
             }
         }
         while ( DI_Next_Dir_Entry( did ) != 0 );
-        
+
         DI_Cleanup( did );
     }
 
@@ -906,13 +906,13 @@ CPluginControl::AddPluginMetaData( const CIPluginMetaData& pluginMetaData ,
 {GUCEF_TRACE;
 
     bool success = true;
-    
+
     // Add the metadata
     g_mutex.Lock();
     TPluginMetaDataPtr pluginMetaDataCopy = new CPluginMetaData( pluginMetaData );
     CPluginGroup& pluginGroup = m_pluginGroups[ groupName ];
     pluginGroup.GetPluginMetaData().insert( pluginMetaDataCopy );
-    
+
     // If an immediate load is desired we invoke the load function as well
     if ( loadImmediatly )
     {

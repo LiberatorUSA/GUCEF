@@ -100,7 +100,7 @@ class CTSharedPtr : public CTBasicSharedPtr< T >
      */
     CTSharedPtr( void );
 
-    CTSharedPtr( const int NULLvalue );
+    explicit CTSharedPtr( const int NULLvalue );
 
     CTSharedPtr( T* ptr                                                ,
                  CTDynamicDestructorBase< T >* objectDestructor = NULL );

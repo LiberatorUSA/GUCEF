@@ -14,7 +14,7 @@
  *
  *  You should have received a copy of the GNU Lesser General Public
  *  License along with this library; if not, write to the Free Software
- *  Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA 
+ *  Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA
  */
 
 /*-------------------------------------------------------------------------//
@@ -34,6 +34,7 @@
   #include <Ws2tcpip.h>
   #include <Wspiapi.h>
 #elif ( ( GUCEF_PLATFORM == GUCEF_PLATFORM_LINUX ) || ( GUCEF_PLATFORM == GUCEF_PLATFORM_ANDROID ) )
+  #include <fcntl.h>
   #include <unistd.h>
   #include <sys/socket.h>
   #include <sys/types.h>
@@ -66,7 +67,7 @@ SetBlockingMode( SOCKET sock ,
 	opts = fcntl( sock,F_GETFL);
 	if ( opts < 0 )
 	{
-        return false;    
+        return false;
 	}
 	if ( block )
 	{
@@ -76,28 +77,28 @@ SetBlockingMode( SOCKET sock ,
 	{
 	    opts = (opts | O_NONBLOCK);
     }
-    
+
 	if ( fcntl( sock, F_SETFL, opts ) < 0 )
 	{
         return false;
 	}
 	return true;
-	
+
 	#endif /* GUCEF_LINUX_BUILD ? */
-	
-	#ifdef GUCEF_MSWIN_BUILD	
+
+	#ifdef GUCEF_MSWIN_BUILD
 
     // About ioctlsocket():
     // *argp value       Nonblocking mode
     // 0                 Disabled
     // nonzero           Enabled
-    
+
 	u_long blockmode = ( block ? 0 : 1 );
-    return ioctlsocket( sock                    , 
-                        FIONBIO                 , 
+    return ioctlsocket( sock                    ,
+                        FIONBIO                 ,
                         (u_long FAR*)&blockmode ) != SOCKET_ERROR;
     #endif /* GUCEF_MSWIN_BUILD ? */
-    
+
 }
 
 /*-------------------------------------------------------------------------//

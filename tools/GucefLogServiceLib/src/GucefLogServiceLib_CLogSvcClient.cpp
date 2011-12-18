@@ -14,7 +14,7 @@
  *
  *  You should have received a copy of the GNU Lesser General Public
  *  License along with this library; if not, write to the Free Software
- *  Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA 
+ *  Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA
  */
 
 /*-------------------------------------------------------------------------//
@@ -22,6 +22,8 @@
 //      INCLUDES                                                           //
 //                                                                         //
 //-------------------------------------------------------------------------*/
+
+#include <string.h>
 
 #ifndef GUCEF_CORE_CDYNAMICBUFFER_H
 #include "CDynamicBuffer.h"
@@ -74,7 +76,7 @@ CLogSvcClient::RegisterEvents( void )
     DisconnectedEvent.Initialize();
     SocketErrorEvent.Initialize();
     ConnectionInitializedEvent.Initialize();
-    IncompatibleWithServerEvent.Initialize();    
+    IncompatibleWithServerEvent.Initialize();
 }
 
 /*-------------------------------------------------------------------------*/
@@ -88,7 +90,7 @@ CLogSvcClient::CLogSvcClient( void )
 
     RegisterEvents();
 }
-    
+
 /*-------------------------------------------------------------------------*/
 
 CLogSvcClient::CLogSvcClient( CORE::CPulseGenerator& pulseGenerator )
@@ -102,7 +104,7 @@ CLogSvcClient::CLogSvcClient( CORE::CPulseGenerator& pulseGenerator )
 }
 
 /*-------------------------------------------------------------------------*/
-    
+
 CLogSvcClient::~CLogSvcClient()
 {GUCEF_TRACE;
 
@@ -111,7 +113,7 @@ CLogSvcClient::~CLogSvcClient()
 /*-------------------------------------------------------------------------*/
 
 bool
-CLogSvcClient::ConnectTo( const CORE::CString& address , 
+CLogSvcClient::ConnectTo( const CORE::CString& address ,
                           CORE::UInt16 port            )
 {GUCEF_TRACE;
 
@@ -140,7 +142,7 @@ CLogSvcClient::Reconnect( void )
 }
 
 /*-------------------------------------------------------------------------*/
-    
+
 void
 CLogSvcClient::Close( void )
 {GUCEF_TRACE;
@@ -165,7 +167,7 @@ CLogSvcClient::LogWithoutFormatting( const TLogMsgType logMsgType    ,
 }
 
 /*-------------------------------------------------------------------------*/
-    
+
 void
 CLogSvcClient::Log( const TLogMsgType logMsgType    ,
                     const CORE::Int32 logLevel      ,
@@ -176,22 +178,22 @@ CLogSvcClient::Log( const TLogMsgType logMsgType    ,
     CORE::Int16 logMsgTypeValue = logMsgType;
     CORE::Int8 msgHeader[ 16 ];  // 16 = 1+4+1+2+4+4
     CORE::UInt32 logMsgLength = logMessage.Length() + 16;
-    
-    
-    msgHeader[ 0 ] = LOGSVCMSGTYPE_DELIMITER;   // set delimiter for message: 1 byte 
+
+
+    msgHeader[ 0 ] = LOGSVCMSGTYPE_DELIMITER;   // set delimiter for message: 1 byte
     memcpy( msgHeader+1, &logMsgLength, 4 );    // set the total message length : 4 bytes
     msgHeader[ 5 ] = LOGSVCMSGTYPE_LOGMSG;      // set TCP msg type: 1 byte
     memcpy( msgHeader+6, &logMsgTypeValue, 2 ); // set log msg type: 2 bytes
     memcpy( msgHeader+8, &logLevel, 4 );        // set log level: 4 bytes
     memcpy( msgHeader+14, &threadId, 4 );       // set thread id: 4 bytes
-    
+
     if ( m_connectionInitialized )
     {
         // Send the logging msg header
         if ( m_tcpClient.Send( msgHeader, 16 ) )
         {
             // Now send the logging text
-            m_tcpClient.Send( logMessage.C_String() , 
+            m_tcpClient.Send( logMessage.C_String() ,
                               logMessage.Length()   );
         }
     }
@@ -199,11 +201,11 @@ CLogSvcClient::Log( const TLogMsgType logMsgType    ,
     {
         // The logging connection is not initialized yet
         // queue the msg until the connection is initialized
-        
+
         TLogMessage queueItem;
         memcpy( queueItem.msgHeader, msgHeader, 16 );
         queueItem.logMsg = logMessage;
-        
+
         m_logQueue.push_back( queueItem );
     }
 }
@@ -230,12 +232,12 @@ CLogSvcClient::FlushLog( void )
 void
 CLogSvcClient::SetApplicationName( const CORE::CString& applicationName )
 {GUCEF_TRACE;
-    
+
     m_appName = applicationName;
 }
 
 /*-------------------------------------------------------------------------*/
-    
+
 const CORE::CString&
 CLogSvcClient::GetApplicationName( void ) const
 {GUCEF_TRACE;
@@ -252,23 +254,23 @@ CLogSvcClient::SendAllQueuedItems( void )
     // We will copy the queue because the actual sending of the log
     // messages can cause more items to be queued
     TLogMsgStack logQueueCopy = m_logQueue;
-    
+
     // Go through queue and send all items
     TLogMsgStack::reverse_iterator i = logQueueCopy.rbegin();
     while ( i != logQueueCopy.rend() )
     {
         TLogMessage& logMessage = (*i);
-        
+
         // Send the logging msg header
         if ( m_tcpClient.Send( logMessage.msgHeader, 15 ) )
         {
             // Now send the logging text
-            m_tcpClient.Send( logMessage.logMsg.C_String() , 
+            m_tcpClient.Send( logMessage.logMsg.C_String() ,
                               logMessage.logMsg.Length()   );
-        }  
+        }
         ++i;
     }
-    
+
     // Clear the queue.
     // Any log messages that where added while sending will be dropped
     m_logQueue.clear();
@@ -282,7 +284,7 @@ CLogSvcClient::OnNotify( CORE::CNotifier* notifier    ,
                          CORE::CICloneable* eventdata )
 {GUCEF_TRACE;
 
-    
+
     if ( &m_tcpClient == notifier )
     {
         if ( COMCORE::CTCPClientSocket::ConnectedEvent == eventid )
@@ -294,15 +296,15 @@ CLogSvcClient::OnNotify( CORE::CNotifier* notifier    ,
             static const CORE::UInt8 msgType = LOGSVCMSGTYPE_CLIENTINFO;
             CORE::CString processName = "Unknown";   // @TODO
             CORE::CString processId = "Unknown";
-            
-            CORE::UInt32 totalMsgSize = processName.Length()   + 
-                                        processId.Length()     + 
+
+            CORE::UInt32 totalMsgSize = processName.Length()   +
+                                        processId.Length()     +
                                         m_appName.Length()     +
                                         ClientVersion.Length() +
                                         17;   // 1 + str lengths + 4 bytes for size per str
-            
+
             CORE::CDynamicBuffer buffer( totalMsgSize, true );
-            
+
             // Construct the message
             CORE::UInt32 strLength = 0;
             CORE::UInt32 offset = 0;
@@ -314,12 +316,12 @@ CLogSvcClient::OnNotify( CORE::CNotifier* notifier    ,
             buffer.CopyFrom( offset, 4, &strLength );
             offset += 4;
             buffer.CopyFrom( offset, strLength, ClientVersion.C_String() );
-            offset += strLength; 
+            offset += strLength;
             strLength = m_appName.Length();
             buffer.CopyFrom( offset, 4, &strLength );
             offset += 4;
             buffer.CopyFrom( offset, strLength, m_appName.C_String() );
-            offset += strLength; 
+            offset += strLength;
             strLength = processName.Length();
             buffer.CopyFrom( offset, 4, &strLength );
             offset += 4;
@@ -327,10 +329,10 @@ CLogSvcClient::OnNotify( CORE::CNotifier* notifier    ,
             offset += strLength;
             strLength = processId.Length();
             buffer.CopyFrom( offset, 4, &strLength );
-            offset += 4; 
+            offset += 4;
             buffer.CopyFrom( offset, strLength, processId.C_String() );
 
-            // Now that we contructed the whole message write the message length itself into 
+            // Now that we contructed the whole message write the message length itself into
             // its reserved slot
             CORE::UInt32 msgSize = buffer.GetDataSize();
             buffer.CopyFrom( 1, 4, &msgSize );
@@ -350,20 +352,20 @@ CLogSvcClient::OnNotify( CORE::CNotifier* notifier    ,
         // Get access to the data from the event
         COMCORE::CTCPClientSocket::TDataRecievedEventData* eData = static_cast< COMCORE::CTCPClientSocket::TDataRecievedEventData* >( eventdata );
         const CORE::CDynamicBuffer& buffer = eData->GetData();
-        
+
         // The only reponse we expect back from the server is a 1 byte status code
         // thus we just check 1 byte for that code
         CORE::UInt8 code = buffer.AsConstType< CORE::UInt8 >( 0 );
         if ( LOGSVCMSGTYPE_INITIALIZED == code )
-        {           
+        {
             SendAllQueuedItems();
-            NotifyObservers( ConnectionInitializedEvent );            
+            NotifyObservers( ConnectionInitializedEvent );
             m_connectionInitialized = true;
         }
         else
         if ( LOGSVCMSGTYPE_INCOMPATIBLE == code )
-        {            
-            NotifyObservers( IncompatibleWithServerEvent );                        
+        {
+            NotifyObservers( IncompatibleWithServerEvent );
             m_tcpClient.Close();
         }
     }
@@ -377,7 +379,7 @@ CLogSvcClient::OnNotify( CORE::CNotifier* notifier    ,
     {
         NotifyObservers( SocketErrorEvent );
     }
-}                          
+}
 
 /*-------------------------------------------------------------------------//
 //                                                                         //

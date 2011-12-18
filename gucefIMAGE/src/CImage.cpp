@@ -14,7 +14,7 @@
  *
  *  You should have received a copy of the GNU Lesser General Public
  *  License along with this library; if not, write to the Free Software
- *  Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA 
+ *  Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA
  */
 
 /*-------------------------------------------------------------------------//
@@ -69,7 +69,7 @@ CImage::CImage( const TFrameList& frameList )
 }
 
 /*--------------------------------------------------------------------------*/
-    
+
 CImage::CImage( const TMipMapList& mipmapList )
     : m_frameList()
 {GUCEF_TRACE;
@@ -78,7 +78,7 @@ CImage::CImage( const TMipMapList& mipmapList )
 }
 
 /*--------------------------------------------------------------------------*/
-    
+
 CImage::CImage( const TPixelMapPtr& pixelMapPtr )
     : m_frameList()
 {GUCEF_TRACE;
@@ -96,36 +96,36 @@ CImage::Assign( const TFrameList& frameList )
 
     // First we clean up our toys
     Clear();
-    
+
     // Assign the image data
     m_frameList = frameList;
 }
 
 /*--------------------------------------------------------------------------*/
-    
+
 void
 CImage::Assign( const TMipMapList& mipmapList )
 {GUCEF_TRACE;
 
     // First we clean up our toys
     Clear();
-    
+
     // Assign the image data
     m_frameList.push_back( mipmapList );
 }
 
 /*--------------------------------------------------------------------------*/
-    
+
 void
 CImage::Assign( const TPixelMapPtr& pixelMapPtr )
 {GUCEF_TRACE;
 
     // First we clean up our toys
     Clear();
-    
+
     // Assign the image data
     TMipMapList mipmapList;
-    mipmapList.push_back( pixelMapPtr );    
+    mipmapList.push_back( pixelMapPtr );
     m_frameList.push_back( mipmapList );
 }
 
@@ -158,7 +158,7 @@ CImage::SetFrame( TPixelMapPtr& imageFrame          ,
 
     TMipMapList mipMapList;
     mipMapList.push_back( imageFrame );
-    SetFrame( mipMapList, frameIndex );    
+    SetFrame( mipMapList, frameIndex );
 }
 
 /*--------------------------------------------------------------------------*/
@@ -167,7 +167,7 @@ void
 CImage::SetFrame( TMipMapList& imageFrame           ,
                   const UInt32 frameIndex /* = 0 */ )
 {GUCEF_TRACE;
-    
+
     if ( frameIndex < m_frameList.size() )
     {
         m_frameList[ frameIndex ] = imageFrame;
@@ -209,7 +209,7 @@ CImage::GetMipmapLevels( const UInt32 frameIndex /* = 0 */ ) const
     {
         return static_cast< UInt32 >( m_frameList[ frameIndex ].size() );
     }
-    
+
     GUCEF_EMSGTHROW( EInvalidIndex, "CImage::GetMipmapLevels(): Invalid frame index" );
 }
 
@@ -238,8 +238,8 @@ CImage::GetPixelMap( const UInt32 frameIndex /* = 0 */  ,
             return mipmapList[ mipMapLevel ];
         }
     }
-    
-    GUCEF_EMSGTHROW( EInvalidIndex, "CImage::GetFrame(): Invalid frame or mipmap index" );    
+
+    GUCEF_EMSGTHROW( EInvalidIndex, "CImage::GetFrame(): Invalid frame or mipmap index" );
 }
 
 /*-------------------------------------------------------------------------*/
@@ -252,8 +252,8 @@ CImage::GetFrame( const UInt32 frameIndex /* = 0 */ )
     {
         return m_frameList[ frameIndex ];
     }
-    
-    GUCEF_EMSGTHROW( EInvalidIndex, "CImage::GetFrame(): Invalid frame or mipmap index" );    
+
+    GUCEF_EMSGTHROW( EInvalidIndex, "CImage::GetFrame(): Invalid frame or mipmap index" );
 }
 
 /*-------------------------------------------------------------------------*/
@@ -266,8 +266,8 @@ CImage::GetFrame( const UInt32 frameIndex /* = 0 */ ) const
     {
         return m_frameList[ frameIndex ];
     }
-    
-    GUCEF_EMSGTHROW( EInvalidIndex, "CImage::GetFrame(): Invalid frame or mipmap index" );    
+
+    GUCEF_EMSGTHROW( EInvalidIndex, "CImage::GetFrame(): Invalid frame or mipmap index" );
 }
 
 /*-------------------------------------------------------------------------*/
@@ -298,7 +298,7 @@ CImage::GetTotalPixelStorageSize( void ) const
         }
         ++i;
     }
-    
+
     return totalBytes;
 }
 
@@ -309,12 +309,12 @@ CImage::Load( CORE::CIOAccess& data         ,
               const CORE::CString& dataType )
 {GUCEF_TRACE;
 
-    // Find an image codec using the file extension       
+    // Find an image codec using the file extension
     CORE::CCodecRegistry::TCodecFamilyRegistryPtr codecRegistry = CORE::CCodecRegistry::Instance()->Lookup( "ImageCodec" );
-    if ( NULL != codecRegistry )
+    if ( 0 != codecRegistry )
     {
         CORE::CCodecRegistry::TICodecPtr codec = codecRegistry->Lookup( dataType );
-        if ( NULL != codec )
+        if ( 0 != codec )
         {
             // We have found a codec we can use, now try to load the data
             CIMGCodec codecUtil( codec );

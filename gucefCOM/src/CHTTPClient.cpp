@@ -1,5 +1,5 @@
 /*
- *  gucefCOM: GUCEF module providing communication 
+ *  gucefCOM: GUCEF module providing communication
  *  implementations for standardized protocols.
  *  Copyright (C) 2002 - 2007.  Dinand Vanvelzen
  *
@@ -15,9 +15,9 @@
  *
  *  You should have received a copy of the GNU Lesser General Public
  *  License along with this library; if not, write to the Free Software
- *  Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA 
+ *  Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA
  */
- 
+
 /*-------------------------------------------------------------------------//
 //                                                                         //
 //      INCLUDES                                                           //
@@ -25,6 +25,8 @@
 //-------------------------------------------------------------------------*/
 
 #include <stdlib.h>
+#include <string.h>
+#include <stdio.h>
 
 #ifndef GUCEF_COMCORE_CCOM_H
 #include "CCom.h"
@@ -81,12 +83,12 @@ namespace COM {
 const CORE::CEvent CHTTPClient::ConnectingEvent = "GUCEF::COM::CHTTPClient::ConnectingEvent";
 const CORE::CEvent CHTTPClient::ConnectedEvent = "GUCEF::COM::CHTTPClient::ConnectedEvent";
 const CORE::CEvent CHTTPClient::DisconnectedEvent = "GUCEF::COM::CHTTPClient::DisconnectedEvent";
-const CORE::CEvent CHTTPClient::ConnectionErrorEvent = "GUCEF::COM::CHTTPClient::ConnectionErrorEvent";        
+const CORE::CEvent CHTTPClient::ConnectionErrorEvent = "GUCEF::COM::CHTTPClient::ConnectionErrorEvent";
 const CORE::CEvent CHTTPClient::HTTPErrorEvent = "GUCEF::COM::CHTTPClient::HTTPErrorEvent";
 const CORE::CEvent CHTTPClient::HTTPRedirectEvent = "GUCEF::COM::CHTTPClient::HTTPRedirectEvent";
-const CORE::CEvent CHTTPClient::HTTPContentEvent = "GUCEF::COM::CHTTPClient::HTTPContentEvent";                
+const CORE::CEvent CHTTPClient::HTTPContentEvent = "GUCEF::COM::CHTTPClient::HTTPContentEvent";
 const CORE::CEvent CHTTPClient::HTTPDataRecievedEvent = "GUCEF::COM::CHTTPClient::HTTPDataRecievedEvent";
-const CORE::CEvent CHTTPClient::HTTPDataSendEvent = "GUCEF::COM::CHTTPClient::HTTPDataSendEvent";        
+const CORE::CEvent CHTTPClient::HTTPDataSendEvent = "GUCEF::COM::CHTTPClient::HTTPDataSendEvent";
 const CORE::CEvent CHTTPClient::HTTPTransferFinishedEvent = "GUCEF::COM::CHTTPClient::HTTPTransferFinishedEvent";
 
 /*-------------------------------------------------------------------------//
@@ -103,7 +105,7 @@ CHTTPClient::CHTTPClient( void )
           m_filesize( 0 )        ,
           m_proxyHost()          ,
           m_proxyPort( 80 )      ,
-          m_sendBuffer( true )          
+          m_sendBuffer( true )
 {GUCEF_TRACE;
 
     SubscribeTo( &m_socket );
@@ -113,21 +115,21 @@ CHTTPClient::CHTTPClient( void )
 
 CHTTPClient::CHTTPClient( CORE::CPulseGenerator& pulseGenerator )
         : CObservingNotifier()       ,
-          m_socket( pulseGenerator , 
+          m_socket( pulseGenerator ,
                     false          ) ,
           m_downloading( false )     ,
           m_recieved( 0 )            ,
           m_filesize( 0 )            ,
           m_proxyHost()              ,
           m_proxyPort( 80 )          ,
-          m_sendBuffer( true )          
+          m_sendBuffer( true )
 {GUCEF_TRACE;
 
     SubscribeTo( &m_socket );
 }
 
 /*-------------------------------------------------------------------------*/
-        
+
 CHTTPClient::~CHTTPClient()
 {GUCEF_TRACE;
 
@@ -135,7 +137,7 @@ CHTTPClient::~CHTTPClient()
 
 /*-------------------------------------------------------------------------*/
 
-void 
+void
 CHTTPClient::Close( void )
 {GUCEF_TRACE;
 
@@ -145,22 +147,22 @@ CHTTPClient::Close( void )
     m_recieved = 0;
     m_sendBuffer.Clear();
 }
-        
+
 /*-------------------------------------------------------------------------*/
 
 bool
 CHTTPClient::Post( const CORE::CString& host                      ,
                    UInt16 port                                    ,
-                   const CORE::CString& path                      , 
+                   const CORE::CString& path                      ,
                    const CORE::CValueList* valuelist /* = NULL */ )
 {GUCEF_TRACE;
 
         m_socket.Close();
-        
+
         // reset our counters because we are beginning a new transfer
         m_recieved = 0;
         m_filesize = 0;
-        
+
         UInt32 contentsize( 0 );
         if ( valuelist )
         {
@@ -168,12 +170,12 @@ CHTTPClient::Post( const CORE::CString& host                      ,
                 {
                         contentsize += valuelist->GetPair( i ).Length()+1;
                 }
-        }                
-                
-        UInt32 mainmsglength = 97 + host.Length() + path.Length(); 
+        }
+
+        UInt32 mainmsglength = 97 + host.Length() + path.Length();
         char* sendbuffer = new char[ mainmsglength + contentsize ];
         sprintf( sendbuffer, "POST %s HTTP/1.1\r\nAccept: */*\r\nUser-Agent: gucefCOM-HTTP/1.0\r\n\r\nHost: %s\r\nContent-Length: %d\r\n\r\n", path.ReplaceChar( '\\', '/' ).C_String(), host.C_String(), contentsize );
-        
+
         UInt32 offset( mainmsglength );
         if ( valuelist )
         {
@@ -187,23 +189,23 @@ CHTTPClient::Post( const CORE::CString& host                      ,
                         {
                                 sendbuffer[ offset ] = '&';
                                 ++offset;
-                        }                                        
+                        }
                 }
-        }                
-        
+        }
+
         if ( m_socket.ConnectTo( host ,
                                  port ) )
-        {                                         
+        {
             m_sendBuffer.Append( sendbuffer, mainmsglength + contentsize );
             delete []sendbuffer;
             return true;
         }
-        return false;                
+        return false;
 }
 
 /*-------------------------------------------------------------------------*/
 
-bool 
+bool
 CHTTPClient::Post( const CORE::CString& urlstring                 ,
                    const CORE::CValueList* valuelist /* = NULL */ )
 {GUCEF_TRACE;
@@ -215,43 +217,43 @@ CHTTPClient::Post( const CORE::CString& urlstring                 ,
                        host      ,
                        port      ,
                        path      ) )
-        {      
+        {
                 return Post( host       ,
                              port       ,
                              path       ,
-                             valuelist  );        
-        }                       
+                             valuelist  );
+        }
         return false;
-}                
+}
 
 /*-------------------------------------------------------------------------*/
-                   
-bool 
+
+bool
 CHTTPClient::Get( const CORE::CString& host                      ,
                   UInt16 port                                    ,
                   const CORE::CString& path                      ,
                   const UInt32 byteoffset /* = 0 */              ,
                   const CORE::CValueList* valuelist /* = NULL */ )
 {GUCEF_TRACE;
-        
+
     GUCEF_DEBUG_LOG( CORE::LOGLEVEL_NORMAL, "CHTTPClient(" + CORE::PointerToString( this ) + "): Performing GET on http://" + host + ":" + CORE::Int32ToString( port ) + "/" + path );
-    
+
     m_socket.Close();
-    
+
     // reset our counters because we are beginning a new transfer
     m_recieved = 0;
     m_filesize = 0;
-    
+
     UInt32 contentsize( 0 );
     CORE::CString valuepath( path );
-    
+
     if ( NULL != valuelist )
     {
         for ( UInt32 i=0; i<valuelist->GetCount(); ++i )
         {
             contentsize += valuelist->GetPair( i ).Length()+1;
         }
-                
+
         if ( valuelist->GetCount() )
         {
             valuepath += '?';
@@ -263,11 +265,11 @@ CHTTPClient::Get( const CORE::CString& host                      ,
                         valuepath += '&';
                 }
             }
-        }                
+        }
     }
-    
+
     valuepath = valuepath.ReplaceChar( '\\', '/' );
-    
+
     if ( valuepath.Length() )
     {
         if ( valuepath[ 0 ] != '/' )
@@ -276,7 +278,7 @@ CHTTPClient::Get( const CORE::CString& host                      ,
             valuepath = tmp + valuepath;
         }
     }
-    
+
     // Check if a system wide proxy server has been enabled
     CORE::CString proxyHost;
     UInt16 proxyPort = 80;
@@ -291,7 +293,7 @@ CHTTPClient::Get( const CORE::CString& host                      ,
         GUCEF_DEBUG_LOG( CORE::LOGLEVEL_NORMAL, "CHTTPClient: No system wide HTTP proxy has been set to active" );
         proxyHost = m_proxyHost;
         proxyPort = m_proxyPort;
-    }        
+    }
     else
     {
         // Allow a local proxy setting to override
@@ -299,37 +301,37 @@ CHTTPClient::Get( const CORE::CString& host                      ,
         {
             GUCEF_DEBUG_LOG( CORE::LOGLEVEL_NORMAL, "CHTTPClient(" + CORE::PointerToString( this ) + "): A system wide HTTP proxy has been set AND a client HTTP proxy, overriding system wide proxy with the local proxy settings" );
             proxyHost = m_proxyHost;
-            proxyPort = m_proxyPort;            
+            proxyPort = m_proxyPort;
         }
         else
         {
             GUCEF_DEBUG_LOG( CORE::LOGLEVEL_NORMAL, "CHTTPClient(" + CORE::PointerToString( this ) + "): A system wide HTTP proxy has been set and will be used by the client" );
         }
     }
-    
+
     char* buffer( NULL );
     if ( proxyHost.Length() > 0 )
     {
         GUCEF_DEBUG_LOG( CORE::LOGLEVEL_NORMAL, "CHTTPClient(" + CORE::PointerToString( this ) + "): Using proxy server: " + proxyHost + CORE::UInt16ToString( proxyPort ) );
-        
+
         // Forward our request to the proxy
         CORE::CString remoteHost( host + ":" + CORE::Int32ToString( port ) + "/" + valuepath );
         buffer = new char[ 32 + valuepath.Length() + remoteHost.Length() ];
         sprintf( buffer, "GET %s HTTP/1.1\r\n\r\n", remoteHost.C_String() );
-        
+
         if ( m_socket.ConnectTo( proxyHost ,
                                  proxyPort ) )
-        {                                         
+        {
             GUCEF_DEBUG_LOG( CORE::LOGLEVEL_NORMAL, "CHTTPClient(" + CORE::PointerToString( this ) + "): Perpared HTTP header for transmission: " + CORE::CString( buffer ) );
             m_sendBuffer.Append( buffer, (UInt32)strlen( buffer ) );
             delete []buffer;
             return true;
-        }            
+        }
     }
     else
     {
         GUCEF_DEBUG_LOG( CORE::LOGLEVEL_NORMAL, "CHTTPClient(" + CORE::PointerToString( this ) + "): Not using proxy server, connecting to: " + host + ":" + CORE::Int32ToString( port ) );
-        
+
         if ( byteoffset == 0 )
         {
             buffer = new char[ 100 + valuepath.Length() + host.Length() ];
@@ -338,33 +340,33 @@ CHTTPClient::Get( const CORE::CString& host                      ,
         else
         {
             CORE::CString intstr;
-            intstr.SetInt( byteoffset );                
-            
+            intstr.SetInt( byteoffset );
+
             buffer = new char[ 100 + valuepath.Length() + host.Length() + intstr.Length() ];
-            sprintf( buffer, "GET %s HTTP/1.1\r\nHost: %s\r\nRange: bytes=%d-\r\nUser-Agent: gucefCOM-HTTP/1.0 (Linux;)\r\n\r\n", valuepath.C_String(), host.C_String(), byteoffset );        
+            sprintf( buffer, "GET %s HTTP/1.1\r\nHost: %s\r\nRange: bytes=%d-\r\nUser-Agent: gucefCOM-HTTP/1.0 (Linux;)\r\n\r\n", valuepath.C_String(), host.C_String(), byteoffset );
         }
-        
+
         if ( m_socket.ConnectTo( host ,
                                  port ) )
-        {                                         
+        {
             GUCEF_DEBUG_LOG( CORE::LOGLEVEL_NORMAL, "CHTTPClient(" + CORE::PointerToString( this ) + "): Perpared HTTP header for transmission: " + CORE::CString( buffer ) );
             m_sendBuffer.Append( buffer, (UInt32)strlen( buffer ) );
             delete []buffer;
             return true;
-        }            
+        }
     }
 
-    return false;                       
+    return false;
 }
 
-/*-------------------------------------------------------------------------*/                  
+/*-------------------------------------------------------------------------*/
 
-bool 
+bool
 CHTTPClient::Get( const CORE::CString& urlstring                 ,
                   const UInt32 byteoffset /* = 0 */              ,
                   const CORE::CValueList* valuelist /* = NULL */ )
 {GUCEF_TRACE;
-        
+
     CORE::CString host;
     UInt16 port;
     CORE::CString path;
@@ -373,13 +375,13 @@ CHTTPClient::Get( const CORE::CString& urlstring                 ,
                    host      ,
                    port      ,
                    path      ) )
-    {      
+    {
         return Get( host       ,
                     port       ,
                     path       ,
                     byteoffset ,
-                    valuelist  );        
-    }                       
+                    valuelist  );
+    }
     return false;
 }
 
@@ -391,22 +393,22 @@ CHTTPClient::ParseURL( const CORE::CString& urlstring ,
                        UInt16& port                   ,
                        CORE::CString& path            )
 {GUCEF_TRACE;
-        
+
     GUCEF_DEBUG_LOG( CORE::LOGLEVEL_NORMAL, "CHTTPClient(" + CORE::PointerToString( this ) + "): Parsing URL: " + urlstring );
-    
+
     if ( urlstring.Length() < 10 ) return false;
-    
+
     CORE::CString urlStr = urlstring.ReplaceChar( '\\', '/' );
     CORE::CString lowcaseurl( urlStr.Lowercase() );
-            
+
     if ( 0 != lowcaseurl.HasSubstr( "http://", true ) )
-    {       
+    {
         /*
          *      This client only accepts http URL's,.. D'oh
          */
         return false;
     }
-    
+
     /*
      *      Parse till the end of the domain segment and get the port
      *      if it is included
@@ -415,7 +417,7 @@ CHTTPClient::ParseURL( const CORE::CString& urlstring ,
     remainder.Set( urlStr.C_String()+7, urlStr.Length()-7 );
     CORE::CString segmenta( remainder.SubstrToChar( '/' ) );
     CORE::CString segmentb( remainder.SubstrToChar( ':' ) );
-    port = 80; 
+    port = 80;
     if ( segmenta.Length() < segmentb.Length() )
     {
         host = segmenta;
@@ -424,14 +426,14 @@ CHTTPClient::ParseURL( const CORE::CString& urlstring ,
     else
     {
         host = segmentb;
-        
+
         remainder = remainder.C_String() + segmentb.Length()+1;
         segmenta = remainder.SubstrToChar( '/' );
         port = (UInt16)segmenta.GetInt();
         path = remainder.C_String() + segmenta.Length()+1;
     }
     return true;
-}                       
+}
 
 /*-------------------------------------------------------------------------*/
 
@@ -444,26 +446,26 @@ CHTTPClient::GetBytesRecieved( void ) const
 
 /*-------------------------------------------------------------------------*/
 
-void 
+void
 CHTTPClient::OnRead( COMCORE::CTCPClientSocket &socket    ,
                      const char* data                     ,
                      const UInt32 bufferLength            )
-{GUCEF_TRACE;       
+{GUCEF_TRACE;
 
     THTTPCODE http_code = HTTPCODE_DEFAULT;
     UInt32 size( 0 ), length( bufferLength );
     bool resumeable( false );
-    
+
     GUCEF_DEBUG_LOG( CORE::LOGLEVEL_NORMAL, "CHTTPClient(" + CORE::PointerToString( this ) + "): Received " + CORE::Int32ToString( length ) + " bytes" );
-    
+
     if( !m_downloading )
     {
         if ( length < 13 )
         {
             GUCEF_DEBUG_LOG( CORE::LOGLEVEL_NORMAL, "Invalid HTTP header received" );
             return;
-        }                
-        
+        }
+
         UInt32 i, i2, i3;
         char *headers, *tempChar;
 
@@ -476,14 +478,14 @@ CHTTPClient::OnRead( COMCORE::CTCPClientSocket &socket    ,
             GUCEF_DEBUG_LOG( CORE::LOGLEVEL_NORMAL, "CHTTPClient(" + CORE::PointerToString( this ) + "): Doesn't look like HTTP protocol" );
             return;
         }
-            
+
         /*
          *      Parse the error code from the string.
          */
         char codestr[ 4 ];
         codestr[ 3 ] = '\0';
         strncpy( codestr, data+9, 4 );
-        http_code = (THTTPCODE) CORE::Str_To_Int( codestr );                        
+        http_code = (THTTPCODE) CORE::Str_To_Int( codestr );
 
         /*
          *      Check if an error occurred.
@@ -494,12 +496,12 @@ CHTTPClient::OnRead( COMCORE::CTCPClientSocket &socket    ,
         if( http_code >= 400 )
         {
             GUCEF_DEBUG_LOG( CORE::LOGLEVEL_NORMAL, "CHTTPClient(" + CORE::PointerToString( this ) + "): HTTP Error: " + CORE::Int32ToString( http_code ) );
-            
+
             THTTPErrorEventData eventData( http_code );
-            NotifyObservers( HTTPErrorEvent, &eventData );                        
+            NotifyObservers( HTTPErrorEvent, &eventData );
             return;
         }
-        
+
         /*
          *      Move to the next segment end delimiter
          *      This will give use the size of the header segment
@@ -514,15 +516,15 @@ CHTTPClient::OnRead( COMCORE::CTCPClientSocket &socket    ,
         headers = new char[i+1];
         strncpy(headers, data, i);
         headers[i] = '\0';
-        
+
         GUCEF_DEBUG_LOG( CORE::LOGLEVEL_NORMAL, "header size: " + CORE::Int32ToString( i ) );
-        GUCEF_DEBUG_LOG( CORE::LOGLEVEL_NORMAL, headers );                
-            
+        GUCEF_DEBUG_LOG( CORE::LOGLEVEL_NORMAL, headers );
+
         /*
          *      Check whether we are being told to look somewhere else for
          *      the requested resource
-         */                 
-        if( http_code == HTTPCODE_302_FOUND ) 
+         */
+        if( http_code == HTTPCODE_302_FOUND )
         {
             m_recieved = size = 0;
 
@@ -540,9 +542,9 @@ CHTTPClient::OnRead( COMCORE::CTCPClientSocket &socket    ,
             socket.Close();
 
             tempChar = &tempChar[i2];
-            
+
             THTTPRedirectEventData eventData( tempChar );
-            NotifyObservers( HTTPRedirectEvent, &eventData );                        
+            NotifyObservers( HTTPRedirectEvent, &eventData );
 
             Get( tempChar, 0 );
 
@@ -550,12 +552,12 @@ CHTTPClient::OnRead( COMCORE::CTCPClientSocket &socket    ,
 
             return ;
         }
-        
+
         /*
          *      Parse the content-length integer
          */
         tempChar = strstr(headers, "\nContent-Length");
-        if( tempChar != NULL ) 
+        if( tempChar != NULL )
         {
             char *tempChar2;
             UInt32 length2;
@@ -577,7 +579,7 @@ CHTTPClient::OnRead( COMCORE::CTCPClientSocket &socket    ,
 
             delete[] tempChar2;
         }
-        else 
+        else
         {
             size = 0;
         }
@@ -588,8 +590,8 @@ CHTTPClient::OnRead( COMCORE::CTCPClientSocket &socket    ,
          *      Check whether the transfer is resumeable
          */
         tempChar = strstr( headers, "\nAccept-Ranges" );
-        
-        if( tempChar != NULL ) 
+
+        if( tempChar != NULL )
         {
             i2 = 14;
 
@@ -617,7 +619,7 @@ CHTTPClient::OnRead( COMCORE::CTCPClientSocket &socket    ,
         i += 2;
         length -= i;
         data = &data[i];
-        
+
         if ( 0 == size )
         {
             /*
@@ -626,15 +628,15 @@ CHTTPClient::OnRead( COMCORE::CTCPClientSocket &socket    ,
              *      content-length if there is any.
              */
             UInt32 i;
-            char *tempChar;                
-            
-            while( m_filesize < length ) 
+            char *tempChar;
+
+            while( m_filesize < length )
             {
-                if( m_filesize == 0 ) 
+                if( m_filesize == 0 )
                 {
                     for( i = 0; (data[i] == '\r' || data[i] == '\n') && i < length; i++ ) {}
 
-                    if( i != 0 ) 
+                    if( i != 0 )
                     {
                         length -= i;
                         data = &data[i];
@@ -644,7 +646,7 @@ CHTTPClient::OnRead( COMCORE::CTCPClientSocket &socket    ,
 
                     for( i = 0; data[i] != '\r' && data[i] != '\n' && i < length; i++) {}
 
-                    if( i >= length ) 
+                    if( i >= length )
                     {
                         m_recieved = size = 0;
                         socket.Close();
@@ -662,7 +664,7 @@ CHTTPClient::OnRead( COMCORE::CTCPClientSocket &socket    ,
 
                     GUCEF_DEBUG_LOG( CORE::LOGLEVEL_NORMAL, CORE::UInt32ToString( m_filesize ) );
 
-                    if( m_filesize == 0 ) 
+                    if( m_filesize == 0 )
                     {
                         m_recieved = size;
                         socket.Close();
@@ -677,8 +679,8 @@ CHTTPClient::OnRead( COMCORE::CTCPClientSocket &socket    ,
                     data = &data[i];
                 }
 
-                if( m_filesize <= length ) 
-                {                                
+                if( m_filesize <= length )
+                {
                     m_recieved += m_filesize;
                     length -= m_filesize;
 
@@ -687,7 +689,7 @@ CHTTPClient::OnRead( COMCORE::CTCPClientSocket &socket    ,
                     linkBuffer.LinkTo( data, m_filesize );
                     THTTPDataRecievedEventData cBuffer( &linkBuffer );
                     NotifyObservers( HTTPDataRecievedEvent, &cBuffer );
-                    
+
                     data = &data[m_filesize];
                     m_filesize = 0;
                 }
@@ -698,72 +700,72 @@ CHTTPClient::OnRead( COMCORE::CTCPClientSocket &socket    ,
             // Set the file size based on the given content size in the header
             m_filesize = size;
         }
-        
+
         // Set the download flag so that we can process the next data burst we receive
-        // as part of the same file and skip the header parsing    
-        m_downloading = true;        
-        
+        // as part of the same file and skip the header parsing
+        m_downloading = true;
+
         // Notify observers about the HTTP payload content info we received
         struct SHTTPContentEventData cedStruct;
         cedStruct.contentSize = m_filesize;
         cedStruct.resumeSupported = resumeable;
         cedStruct.HTTPcode = http_code;
         THTTPContentEventData contentEventData( cedStruct );
-        NotifyObservers( HTTPContentEvent, &contentEventData );                    
+        NotifyObservers( HTTPContentEvent, &contentEventData );
 
         // Check if there is more data in the buffer then just the content header
-        if ( m_filesize >= length && length != 0 ) 
-        {    
+        if ( m_filesize >= length && length != 0 )
+        {
             // Notify observers about the HTTP transfer payload contents we received
             CORE::CDynamicBuffer linkBuffer;
             linkBuffer.LinkTo( data, length );
             THTTPDataRecievedEventData cBuffer( &linkBuffer );
             NotifyObservers( HTTPDataRecievedEvent, &cBuffer );
-                                                  
+
             m_recieved += length;
             m_filesize -= length;
-            
+
             // Check if we are already finished
             if ( m_filesize == 0 )
             {
                 GUCEF_DEBUG_LOG( CORE::LOGLEVEL_NORMAL, "CHTTPClient: Received all the desired data thus closing the TCP socket" );
                 m_socket.Close();
-                
-                NotifyObservers( HTTPTransferFinishedEvent );                
+
+                NotifyObservers( HTTPTransferFinishedEvent );
             }
-        }        
+        }
     }
-    else 
+    else
     {
         // if we get here then we are busy with an ongoing download and the header was already
-        // processed in a previous data burst.        
+        // processed in a previous data burst.
         // Sanity check on data, make sure we are expecting more data to arrive
         if ( m_filesize >= length )
         {
             m_recieved += length;
-            m_filesize -= length;  
-            
+            m_filesize -= length;
+
             // Notify observers about the HTTP transfer payload contents we received
             CORE::CDynamicBuffer linkBuffer;
             linkBuffer.LinkTo( data, length );
             THTTPDataRecievedEventData cBuffer( &linkBuffer );
             NotifyObservers( HTTPDataRecievedEvent, &cBuffer );
-            
+
             // Check if we are finished
             if ( m_filesize == 0 )
             {
                 GUCEF_DEBUG_LOG( CORE::LOGLEVEL_NORMAL, "CHTTPClient: Received all the desired data thus closing the TCP socket" );
                 m_socket.Close();
-                
-                NotifyObservers( HTTPTransferFinishedEvent );                
-            }            
+
+                NotifyObservers( HTTPTransferFinishedEvent );
+            }
         }
-    }                                    
+    }
 }
 
 /*-------------------------------------------------------------------------*/
 
-void 
+void
 CHTTPClient::OnDisconnect( COMCORE::CTCPClientSocket &socket )
 {GUCEF_TRACE;
 
@@ -776,21 +778,21 @@ CHTTPClient::OnDisconnect( COMCORE::CTCPClientSocket &socket )
 
 /*-------------------------------------------------------------------------*/
 
-void 
+void
 CHTTPClient::OnWrite( COMCORE::CTCPClientSocket &socket                   ,
                       COMCORE::CTCPClientSocket::TDataSentEventData& data )
 {GUCEF_TRACE;
-        
+
     // Notify observers about the data dispatch
     NotifyObservers( HTTPDataSendEvent, &data );
-}                      
+}
 
 /*-------------------------------------------------------------------------*/
 
 bool
 CHTTPClient::IsConnected( void ) const
 {GUCEF_TRACE;
-    
+
     return m_socket.IsActive();
 }
 
@@ -829,12 +831,12 @@ CHTTPClient::RegisterEvents( void )
     ConnectingEvent.Initialize();
     ConnectedEvent.Initialize();
     DisconnectedEvent.Initialize();
-    ConnectionErrorEvent.Initialize();        
+    ConnectionErrorEvent.Initialize();
     HTTPErrorEvent.Initialize();
     HTTPRedirectEvent.Initialize();
-    HTTPContentEvent.Initialize();                
+    HTTPContentEvent.Initialize();
     HTTPDataRecievedEvent.Initialize();
-    HTTPDataSendEvent.Initialize();        
+    HTTPDataSendEvent.Initialize();
     HTTPTransferFinishedEvent.Initialize();
 }
 
@@ -852,7 +854,7 @@ CHTTPClient::OnNotify( CORE::CNotifier* notifier                 ,
         {
             // Transmit data we have queued for transmission
             GUCEF_DEBUG_LOG( CORE::LOGLEVEL_NORMAL, "CHTTPClient(" + CORE::PointerToString( this ) + "): TCP Socket connected to server, sending " + CORE::UInt32ToString( m_sendBuffer.GetDataSize() ) + " bytes to the server" );
-            
+
             m_socket.Send( m_sendBuffer.GetConstBufferPtr(), m_sendBuffer.GetDataSize() );
             m_sendBuffer.Clear( true );
 
@@ -861,7 +863,7 @@ CHTTPClient::OnNotify( CORE::CNotifier* notifier                 ,
         else
         if ( eventid == COMCORE::CTCPClientSocket::ConnectingEvent )
         {
-            GUCEF_DEBUG_LOG( CORE::LOGLEVEL_NORMAL, "CHTTPClient(" + CORE::PointerToString( this ) + "): TCP Socket is connecting to the server" );            
+            GUCEF_DEBUG_LOG( CORE::LOGLEVEL_NORMAL, "CHTTPClient(" + CORE::PointerToString( this ) + "): TCP Socket is connecting to the server" );
             NotifyObservers( ConnectingEvent );
         }
         else
@@ -884,7 +886,7 @@ CHTTPClient::OnNotify( CORE::CNotifier* notifier                 ,
             OnRead( m_socket                                                          ,
                     static_cast< const char*>( eData->GetData().GetConstBufferPtr() ) ,
                     eData->GetData().GetDataSize()                                    );
-        }                                      
+        }
         else
         if ( eventid == COMCORE::CTCPClientSocket::DataSentEvent )
         {

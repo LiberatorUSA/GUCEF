@@ -29,6 +29,7 @@
 #include <map>                  /* standard variable mapping template */
 #include <string>               /* standard string template implementation */
 #include <vector>               /* standard dynamic array implementation */
+#include "gucef_macros.h"
 #include "CTracer.h"            /* stack tracing */
 #include "gucefCORE_ETypes.h"   /* some basic libary types */
 #include "CDVString.h"          /* GUCEF platform string implementation */

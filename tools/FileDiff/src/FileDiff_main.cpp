@@ -15,14 +15,16 @@
  *
  *  You should have received a copy of the GNU Lesser General Public
  *  License along with this library; if not, write to the Free Software
- *  Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA 
+ *  Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA
  */
- 
+
 /*-------------------------------------------------------------------------//
 //                                                                         //
 //      INCLUDES                                                           //
 //                                                                         //
 //-------------------------------------------------------------------------*/
+
+#include <string.h>
 
 #ifndef GUCEF_OSMAIN_H
 #include "gucef_osmain.h"
@@ -85,7 +87,7 @@ struct SBlockMatch
 {
     size_t sizeOfBlock;
     unsigned long offsetInFile;
-    unsigned long subBlockCount;        
+    unsigned long subBlockCount;
 };
 
 struct SSourceBlock
@@ -101,7 +103,7 @@ typedef std::map< unsigned long, TBlockMatch > TBlockMatchMap;
 struct SBlockMatchCombo
 {
     TSourceBlock sourceBlock;
-    TBlockMatchVector matchedBlocks;    
+    TBlockMatchVector matchedBlocks;
 };
 typedef struct SBlockMatchCombo TBlockMatchCombo;
 
@@ -112,9 +114,9 @@ struct SSamsungDeltaHeader
     CORE::UInt16 field1[ 3 ];
     CORE::UInt32 field2;
     CORE::UInt32 field3;
-    
+
     CORE::UInt8 field4[ 6 ];
-    
+
 };
 typedef struct SSamsungDeltaHeader TSamsungDeltaHeader;
 
@@ -125,11 +127,11 @@ typedef struct SSamsungDeltaHeader TSamsungDeltaHeader;
 //-------------------------------------------------------------------------*/
 
 void
-ParseParams( const int argc                 , 
+ParseParams( const int argc                 ,
              char* argv[]                   ,
              CORE::CValueList& keyValueList )
 {GUCEF_TRACE;
-    
+
     keyValueList.DeleteAll();
     GUCEF::CORE::CString argString;
     if ( argc > 0 )
@@ -142,7 +144,7 @@ ParseParams( const int argc                 ,
         {
             argString += ' ' + CORE::CString( argv[ i ] );
         }
-        
+
         // Parse the param list based on the ' symbol
         keyValueList.SetMultiple( argString, '*' );
     }
@@ -161,7 +163,7 @@ FindIdenticalBlock( CORE::MFILE* file                   ,
     void* fileBlock = new unsigned char[ blockSize ];
     memset( fileBlock, 0, blockSize );
     size_t actuallyRead = 0;
-    
+
     mfseek( file, 0, SEEK_SET );
     while ( 0 == CORE::mfeof( file ) )
     {
@@ -175,28 +177,28 @@ FindIdenticalBlock( CORE::MFILE* file                   ,
                 blockMatch.sizeOfBlock = actuallyRead;
                 blockMatch.subBlockCount = 1;
                 blockMatchVector.push_back( blockMatch );
-                
+
                 //GUCEF_LOG( CORE::LOGLEVEL_NORMAL, "Found matching block at offset " + CORE::UInt32ToString( blockMatch.offsetInFile ) );
             }
         }
         else
-        {            
+        {
             break;
         }
-        
+
         memset( fileBlock, 0, blockSize );
-        
+
         if ( preciseMatching )
         {
-            // Dont just jump at fixed block sized but shift the 
-            // fixed block 1 byte per iteration. This of course takes a lot 
+            // Dont just jump at fixed block sized but shift the
+            // fixed block 1 byte per iteration. This of course takes a lot
             // longer but it can better identify matches
             CORE::UInt32 pos = CORE::mftell( file );
             pos -= ( actuallyRead - 1);
-            CORE::mfsetpos( file, pos ); 
+            CORE::mfsetpos( file, pos );
         }
     }
-    
+
     delete []fileBlock;
     fileBlock = NULL;
 }
@@ -204,7 +206,7 @@ FindIdenticalBlock( CORE::MFILE* file                   ,
 /*-------------------------------------------------------------------------*/
 
 void
-MergeAdjecentBlockMatches( const TBlockMatchVector& blockMatches , 
+MergeAdjecentBlockMatches( const TBlockMatchVector& blockMatches ,
                            TBlockMatchVector& mergedBlockMatches )
 {GUCEF_TRACE;
 
@@ -214,9 +216,9 @@ MergeAdjecentBlockMatches( const TBlockMatchVector& blockMatches ,
         const TBlockMatch& matchedBlock = (*i);
         TBlockMatchVector::const_iterator n = i;
         ++n;
-        
+
         TBlockMatch mergedBlock = matchedBlock;
-        
+
         while ( n != blockMatches.end() )
         {
             const TBlockMatch& matchedBlock2 = (*n);
@@ -235,14 +237,14 @@ MergeAdjecentBlockMatches( const TBlockMatchVector& blockMatches ,
             }
         }
         mergedBlockMatches.push_back( mergedBlock );
-        ++i;            
-    }    
+        ++i;
+    }
 }
 
 /*-------------------------------------------------------------------------*/
 
 void
-FindLongestRepeatingSequence( void* testBuffer       , 
+FindLongestRepeatingSequence( void* testBuffer       ,
                               size_t bufferSize      ,
                               TRepeatValueInfo& info )
 {GUCEF_TRACE;
@@ -250,32 +252,32 @@ FindLongestRepeatingSequence( void* testBuffer       ,
     info.offsetInBlock = 0;
     info.repeatValue = 0;
     info.sequenceLength = 0;
-    
+
     unsigned char* byteBuffer = (unsigned char*) testBuffer;
-    
+
     CORE::UInt32 offset = 0;
     CORE::UInt32 longestSequence = 0;
     CORE::UInt32 repeatValue = 0;
-    
+
     while ( offset < bufferSize )
     {
         unsigned char testValue = byteBuffer[ offset ];
-        CORE::UInt32 thisStartOffset = offset;        
+        CORE::UInt32 thisStartOffset = offset;
 
         ++offset;
-        while ( ( offset < bufferSize )             && 
+        while ( ( offset < bufferSize )             &&
                 ( testValue == byteBuffer[ offset ] ) )
         {
             ++offset;
         }
-        
+
         CORE::UInt32 sequenceLength = offset - thisStartOffset;
         if ( longestSequence < sequenceLength )
         {
             info.sequenceLength = sequenceLength;
             info.repeatValue = testValue;
             info.offsetInBlock = thisStartOffset;
-        }                                                     
+        }
     }
 }
 
@@ -288,10 +290,10 @@ FindIdenticalBlocks( CORE::MFILE* file1                      ,
                      const size_t testBlockSizeInBytes       ,
                      bool preciseMatching                    )
 {GUCEF_TRACE;
-    
+
     void* prevTestBuffer = new char[ testBlockSizeInBytes ];
     size_t prevOffsetInSrcFile = 0;
-    
+
     void* testBuffer = new char[ testBlockSizeInBytes ];
     memset( testBuffer, 0, testBlockSizeInBytes );
     memset( prevTestBuffer, 0, testBlockSizeInBytes );
@@ -299,11 +301,11 @@ FindIdenticalBlocks( CORE::MFILE* file1                      ,
     size_t offsetInSrcFile = 0;
     while ( 0 == CORE::mfeof( file1 ) )
     {           //  if ( a>200)break;++a;
-        size_t actuallyRead = CORE::mfread( testBuffer           , 
-                                            1                    , 
-                                            testBlockSizeInBytes , 
-                                            file1                );         
-        
+        size_t actuallyRead = CORE::mfread( testBuffer           ,
+                                            1                    ,
+                                            testBlockSizeInBytes ,
+                                            file1                );
+
         // only check this after the first cycle
         bool performMatchingWithOtherFile = true;
         if ( 0 != offsetInSrcFile )
@@ -326,11 +328,11 @@ FindIdenticalBlocks( CORE::MFILE* file1                      ,
                         // just grow the previous source block to include this block
                         prevSourceBlock.sizeOfBlock += actuallyRead;
                         ++prevSourceBlock.subBlockCount;
-                        GUCEF_LOG( CORE::LOGLEVEL_NORMAL, "Source block at offset " + CORE::UInt32ToString( offsetInSrcFile ) + 
+                        GUCEF_LOG( CORE::LOGLEVEL_NORMAL, "Source block at offset " + CORE::UInt32ToString( offsetInSrcFile ) +
                             " matches the preceding block, we will grow that block to include this block, skipping matching block search."
                             "The new block is " + CORE::UInt32ToString( prevSourceBlock.sizeOfBlock ) + " bytes in size" );
                         performMatchingWithOtherFile = false;
-                    }                        
+                    }
                     else
                     {
                         // Source blocks are identical but not adjecent
@@ -358,43 +360,43 @@ FindIdenticalBlocks( CORE::MFILE* file1                      ,
         }
         memcpy( prevTestBuffer, testBuffer, actuallyRead );
         prevOffsetInSrcFile = offsetInSrcFile;
-        
+
         if ( performMatchingWithOtherFile )
-        {        
+        {
             TRepeatValueInfo repeatInfo;
-            FindLongestRepeatingSequence( testBuffer   , 
-                                          actuallyRead , 
+            FindLongestRepeatingSequence( testBuffer   ,
+                                          actuallyRead ,
                                           repeatInfo   );
 
             if ( 0 != repeatInfo.sequenceLength )
-            {                                          
-                GUCEF_LOG( CORE::LOGLEVEL_NORMAL, "The longest repeating sequence in this block is " + 
-                       CORE::UInt32ToString( repeatInfo.sequenceLength ) + " with value " + CORE::UInt8ToString( repeatInfo.repeatValue ) + 
+            {
+                GUCEF_LOG( CORE::LOGLEVEL_NORMAL, "The longest repeating sequence in this block is " +
+                       CORE::UInt32ToString( repeatInfo.sequenceLength ) + " with value " + CORE::UInt8ToString( repeatInfo.repeatValue ) +
                        " starting at offset " + CORE::UInt32ToString( repeatInfo.offsetInBlock ) + " in the block" );
-            }            
+            }
             TBlockMatchVector blockMatches;
-            FindIdenticalBlock( file2           , 
-                                testBuffer      , 
-                                actuallyRead    , 
+            FindIdenticalBlock( file2           ,
+                                testBuffer      ,
+                                actuallyRead    ,
                                 blockMatches    ,
                                 preciseMatching );
-                                
+
             if ( !blockMatches.empty() )
             {
                 GUCEF_LOG( CORE::LOGLEVEL_NORMAL, "Found " + CORE::UInt32ToString( blockMatches.size() ) + " matching blocks for block at offset " + CORE::UInt32ToString( offsetInSrcFile ) );
-                
+
                 TBlockMatchVector mergedBlockMatches;
                 MergeAdjecentBlockMatches( blockMatches, mergedBlockMatches );
                 blockMatches.clear();
-                
+
                 GUCEF_LOG( CORE::LOGLEVEL_NORMAL, "The matching blocks where merged where adjecent resulting in " + CORE::UInt32ToString( mergedBlockMatches.size() ) + " merged matching blocks" );
-                
+
                 TBlockMatchCombo newCombo;
                 newCombo.sourceBlock.blockMatch.offsetInFile = offsetInSrcFile;
                 newCombo.sourceBlock.blockMatch.sizeOfBlock = actuallyRead;
                 newCombo.sourceBlock.blockMatch.subBlockCount = 1;
                 newCombo.sourceBlock.repeatValueInfo = repeatInfo;
-                newCombo.matchedBlocks = mergedBlockMatches; 
+                newCombo.matchedBlocks = mergedBlockMatches;
                 blockMatchComboMap[ offsetInSrcFile ] = newCombo;
             }
             else
@@ -404,11 +406,11 @@ FindIdenticalBlocks( CORE::MFILE* file1                      ,
         }
         offsetInSrcFile += actuallyRead;
     }
-    
+
     delete []prevTestBuffer;
     prevTestBuffer = NULL;
-    delete []testBuffer;
-    testBuffer = NULL; 
+    delete [](char*)testBuffer;
+    testBuffer = NULL;
 }
 
 /*-------------------------------------------------------------------------*/
@@ -436,14 +438,14 @@ FindIdenticalBlocks( const CORE::CString& file1         ,
         GUCEF_ERROR_LOG( CORE::LOGLEVEL_NORMAL, "Failed to load file: " + file2 );
         return;
     }
-    
+
     CORE::MFILE* file1Ptr = CORE::mfcreate( file1Buffer.GetBufferPtr(), file1Buffer.GetDataSize() );
     CORE::MFILE* file2Ptr = CORE::mfcreate( file2Buffer.GetBufferPtr(), file2Buffer.GetDataSize() );
 
     if ( NULL != file1Ptr && NULL != file2Ptr )
-    {   
-        FindIdenticalBlocks( file1Ptr             , 
-                             file2Ptr             , 
+    {
+        FindIdenticalBlocks( file1Ptr             ,
+                             file2Ptr             ,
                              blockMatchMap        ,
                              testBlockSizeInBytes ,
                              preciseMatching      );
@@ -455,7 +457,7 @@ FindIdenticalBlocks( const CORE::CString& file1         ,
     if ( NULL != file2Ptr )
     {
         CORE::mfdestroy( file2Ptr );
-    }    
+    }
 }
 
 /*-------------------------------------------------------------------------*/
@@ -466,12 +468,12 @@ WriteBlockMatchesAsTextFile( const TBlockMatchComboMap& blockMatchComboMap ,
 {GUCEF_TRACE;
 
     GUCEF_LOG( CORE::LOGLEVEL_NORMAL, "Writing matched blocks to text file at " + filename );
-    
+
     FILE* fileOut = fopen( filename.C_String(), "w" );
     if ( NULL == fileOut )
     {
         GUCEF_ERROR_LOG( CORE::LOGLEVEL_NORMAL, "Failed to write matched blocks to text file at " + filename );
-        return;    
+        return;
     }
 
     CORE::CString textFileContent;
@@ -481,41 +483,41 @@ WriteBlockMatchesAsTextFile( const TBlockMatchComboMap& blockMatchComboMap ,
         const TRepeatValueInfo& repeatValueInfo = (*i).second.sourceBlock.repeatValueInfo;
         const TBlockMatch& sourceBlock = (*i).second.sourceBlock.blockMatch;
         const TBlockMatchVector& blockMatchVector = (*i).second.matchedBlocks;
-        
+
         textFileContent =
-        
+
         "\n\n#Source block:\n"
         "offset: " + CORE::UInt32ToString( sourceBlock.offsetInFile ) + "\n"
         "block size: " + CORE::UInt32ToString( sourceBlock.sizeOfBlock ) + "\n"
         "sub block count: " + CORE::UInt32ToString( sourceBlock.subBlockCount ) + "\n"
-        "longest repeat value sequence: value=" + CORE::UInt32ToString( repeatValueInfo.repeatValue ) + " length=" 
+        "longest repeat value sequence: value=" + CORE::UInt32ToString( repeatValueInfo.repeatValue ) + " length="
             + CORE::UInt32ToString( repeatValueInfo.sequenceLength ) + " offset=" + CORE::UInt32ToString( repeatValueInfo.offsetInBlock ) + "\n"
         "#Block matches: (match count=" + CORE::UInt32ToString( blockMatchVector.size() ) + ")\n";
-        
+
         fwrite( textFileContent.C_String(), 1, textFileContent.Length(), fileOut );
-        
+
         int m = 1;
         TBlockMatchVector::const_iterator n = blockMatchVector.begin();
         while ( n != blockMatchVector.end() )
         {
             const TBlockMatch& matchedBlock = (*n);
-            
+
             textFileContent =
-            
+
             "-- Match " + CORE::Int32ToString( m ) + "\n"
             "offset: " + CORE::UInt32ToString( matchedBlock.offsetInFile ) + "\n"
             "block size: " + CORE::UInt32ToString( matchedBlock.sizeOfBlock ) + "\n"
             "sub block count: " + CORE::UInt32ToString( matchedBlock.subBlockCount ) + "\n";
-            
+
             fwrite( textFileContent.C_String(), 1, textFileContent.Length(), fileOut );
-            
+
             ++n;++m;
         }
         ++i;
     }
     fclose( fileOut );
 
-    GUCEF_LOG( CORE::LOGLEVEL_NORMAL, "Successfully wrote matched blocks to text file at " + filename );    
+    GUCEF_LOG( CORE::LOGLEVEL_NORMAL, "Successfully wrote matched blocks to text file at " + filename );
 }
 
 /*-------------------------------------------------------------------------*/
@@ -544,7 +546,7 @@ AreBlocksOverlapping( const TBlockMatch& blockA  ,
     {
         // Blocks overlap as:
         //    B
-        //  A  
+        //  A
         combinedBlock.offsetInFile = blockA.offsetInFile;
         combinedBlock.sizeOfBlock = ( blockB.offsetInFile + blockB.sizeOfBlock ) - combinedBlock.offsetInFile;
         combinedBlock.subBlockCount = 1;
@@ -557,7 +559,7 @@ AreBlocksOverlapping( const TBlockMatch& blockA  ,
         combinedBlock = blockA;
         combinedBlock.subBlockCount = 1;
         return true;
-    } 
+    }
     if ( ( blockA.offsetInFile >= blockB.offsetInFile )                                          &&
          ( blockA.offsetInFile + blockA.sizeOfBlock <= blockB.offsetInFile + blockB.sizeOfBlock ) )
     {
@@ -566,7 +568,7 @@ AreBlocksOverlapping( const TBlockMatch& blockA  ,
         combinedBlock.subBlockCount = 1;
         return true;
     }
-    else return false;    
+    else return false;
 }
 
 /*-------------------------------------------------------------------------*/
@@ -581,13 +583,13 @@ MergeBlockMatches( TBlockMatchMap& blocks                   ,
     {
         const TBlockMatch& blockToMergeIn = (*i);
         bool blockNeedsToBeAdded = true;
-        
+
         // We will have to look for matches
         TBlockMatchMap::iterator n = blocks.begin();
         while ( n != blocks.end() )
-        {                
+        {
             TBlockMatch& matchedBlock = (*n).second;
-            
+
             TBlockMatch combinedBlock;
             if ( AreBlocksOverlapping( matchedBlock, blockToMergeIn, combinedBlock ) )
             {
@@ -598,14 +600,14 @@ MergeBlockMatches( TBlockMatchMap& blocks                   ,
             }
             ++n;
         }
-        
+
         if ( blockNeedsToBeAdded )
         {
             blocks[ blockToMergeIn.offsetInFile ] = blockToMergeIn;
         }
-        
+
         ++i;
-    }    
+    }
 }
 
 /*-------------------------------------------------------------------------*/
@@ -620,7 +622,7 @@ MergeAllTargetBlocks( const TBlockMatchComboMap& blockMatchComboMap ,
     {
         MergeBlockMatches( otherBlocks, (*i).second.matchedBlocks );
         ++i;
-    }    
+    }
 }
 
 /*-------------------------------------------------------------------------*/
@@ -638,7 +640,7 @@ DetermineMatchGaps( const TBlockMatchComboMap& blockMatchComboMap ,
         ++i;
         if ( i == blockMatchComboMap.end() ) break;
         const TBlockMatch& sourceBlock = (*i).second.sourceBlock.blockMatch;
-        
+
         if ( prevSourceBlock.offsetInFile + prevSourceBlock.sizeOfBlock != sourceBlock.offsetInFile )
         {
             // We are missing a segment which aparently could not be matched
@@ -649,7 +651,7 @@ DetermineMatchGaps( const TBlockMatchComboMap& blockMatchComboMap ,
                 unmatchedBlock.offsetInFile = prevSourceBlock.offsetInFile + prevSourceBlock.sizeOfBlock;
                 unmatchedBlock.sizeOfBlock = sourceBlock.offsetInFile - unmatchedBlock.offsetInFile;
                 unmatchedBlock.subBlockCount = 1;
-                
+
                 unmatchedSourceBlocks.push_back( unmatchedBlock );
             }
             else
@@ -658,12 +660,12 @@ DetermineMatchGaps( const TBlockMatchComboMap& blockMatchComboMap ,
             }
         }
     }
-    
+
     // Now we merge all the matched blocks in the target file so we can easily
     // locate gaps
     TBlockMatchMap otherBlocks;
-    MergeAllTargetBlocks( blockMatchComboMap, otherBlocks ); 
-    
+    MergeAllTargetBlocks( blockMatchComboMap, otherBlocks );
+
     // Locate the gaps in our list of matched target blocks
     TBlockMatchMap::iterator n = otherBlocks.begin();
     while ( n != otherBlocks.end() )
@@ -672,7 +674,7 @@ DetermineMatchGaps( const TBlockMatchComboMap& blockMatchComboMap ,
         ++n;
         if ( n == otherBlocks.end() ) break;
         const TBlockMatch& block = (*n).second;
-        
+
         if ( prevBlock.offsetInFile + prevBlock.sizeOfBlock != block.offsetInFile )
         {
             // We are missing a segment which aparently could not be matched
@@ -683,7 +685,7 @@ DetermineMatchGaps( const TBlockMatchComboMap& blockMatchComboMap ,
                 unmatchedBlock.offsetInFile = prevBlock.offsetInFile + prevBlock.sizeOfBlock;
                 unmatchedBlock.sizeOfBlock = block.offsetInFile - unmatchedBlock.offsetInFile;
                 unmatchedBlock.subBlockCount = 1;
-                
+
                 unmatchedOtherBlocks.push_back( unmatchedBlock );
             }
             else
@@ -691,23 +693,23 @@ DetermineMatchGaps( const TBlockMatchComboMap& blockMatchComboMap ,
                 GUCEF_ERROR_LOG( CORE::LOGLEVEL_IMPORTANT, "Error while determining target block match gaps, the blocks are not properly merged and/or ordered before entering this phase" );
             }
         }
-    }        
+    }
 }
 
 /*-------------------------------------------------------------------------*/
 
 CORE::CString
-ConvertBytesToHexStringLines( const void* byteBuffer  , 
+ConvertBytesToHexStringLines( const void* byteBuffer  ,
                               CORE::UInt32 bufferSize ,
                               bool addSpaces          )
 {GUCEF_TRACE;
-    
+
     CORE::CString hexString;
     CORE::UInt32 remainingBytes = bufferSize;
     CORE::UInt32 sectionSize = 0;
-    
+
     do
-    {        
+    {
         sectionSize = remainingBytes > 16 ? 16 : remainingBytes;
 
         hexString += CORE::ConvertBytesToHexString( (const char*)byteBuffer + (bufferSize-remainingBytes) ,
@@ -715,8 +717,8 @@ ConvertBytesToHexStringLines( const void* byteBuffer  ,
                                                     true                                                  ) + '\n';
         remainingBytes -= sectionSize;
     }
-    while ( remainingBytes > 0 ); 
-    
+    while ( remainingBytes > 0 );
+
     return hexString;
 }
 
@@ -741,7 +743,7 @@ WriteBlocksAsHexInTextFile( const TBlockMatchVector& blocks ,
         GUCEF_ERROR_LOG( CORE::LOGLEVEL_NORMAL, "Failed to open text file for writing at " + outputFile );
         return;
     }
-    
+
     CORE::UInt32 n=0;
     CORE::UInt32 totalBlockBytes = 0;
     CORE::CString content;
@@ -757,20 +759,20 @@ WriteBlocksAsHexInTextFile( const TBlockMatchVector& blocks ,
         "sub block count: " + CORE::UInt32ToString( blockmatch.subBlockCount ) + "\n"
         "hex:\n" + ConvertBytesToHexStringLines( fileBuffer.GetConstBufferPtr( blockmatch.offsetInFile ) ,
                                                  blockmatch.sizeOfBlock                                  ,
-                                                 true                                                    );        
-                                                  
+                                                 true                                                    );
+
         totalBlockBytes += blockmatch.sizeOfBlock;
         fwrite( content.C_String(), 1, content.Length(), outFile );
-        
+
         ++i;++n;
     }
-    
+
     content = "\n\nTotal bytes for all blocks: " + CORE::UInt32ToString( totalBlockBytes );
     fwrite( content.C_String(), 1, content.Length(), outFile );
-        
+
     fclose( outFile );
-    
-    GUCEF_LOG( CORE::LOGLEVEL_NORMAL, "Successfully wrote block data as hex to text file at " + outputFile ); 
+
+    GUCEF_LOG( CORE::LOGLEVEL_NORMAL, "Successfully wrote block data as hex to text file at " + outputFile );
 }
 
 /*-------------------------------------------------------------------------*/
@@ -781,14 +783,14 @@ WriteBlockMatchGapsAsTextFile( const TBlockMatchVector& unmatchedBlocks ,
 {GUCEF_TRACE;
 
     GUCEF_LOG( CORE::LOGLEVEL_NORMAL, "Writing match gaps to text file at " + outputFile );
-    
+
     FILE* outFile = fopen( outputFile.C_String(), "w" );
     if ( NULL == outFile )
     {
         GUCEF_ERROR_LOG( CORE::LOGLEVEL_NORMAL, "Failed to write unmatched block gaps to text file at " + outputFile );
         return;
     }
-    
+
     CORE::UInt32 n = 0;
     CORE::UInt32 totalBlockBytes = 0;
     CORE::CString content;
@@ -796,25 +798,25 @@ WriteBlockMatchGapsAsTextFile( const TBlockMatchVector& unmatchedBlocks ,
     while ( i != unmatchedBlocks.end() )
     {
         const TBlockMatch& blockmatch = (*i);
-        
+
         content =
         "\n\n#Unmatched block " + CORE::UInt32ToString( n ) + ":\n"
         "offset: " + CORE::UInt32ToString( blockmatch.offsetInFile ) + "\n"
         "block size: " + CORE::UInt32ToString( blockmatch.sizeOfBlock ) + "\n"
-        "sub block count: " + CORE::UInt32ToString( blockmatch.subBlockCount ) + "\n";        
-        
+        "sub block count: " + CORE::UInt32ToString( blockmatch.subBlockCount ) + "\n";
+
         totalBlockBytes += blockmatch.sizeOfBlock;
-        
+
         fwrite( content.C_String(), 1, content.Length(), outFile );
-        
+
         ++i;++n;
     }
-    
+
     content = "\n\nTotal bytes for all blocks: " + CORE::UInt32ToString( totalBlockBytes );
     fwrite( content.C_String(), 1, content.Length(), outFile );
-        
+
     fclose( outFile );
-    
+
     GUCEF_LOG( CORE::LOGLEVEL_NORMAL, "Successfully wrote unmatched block gaps to text file at " + outputFile );
 }
 
@@ -826,9 +828,9 @@ MatchSpecificBlock( void* buffer                     ,
                     CORE::MFILE* searchFile          ,
                     TBlockMatchVector& matchedBlocks )
 {GUCEF_TRACE;
-    
+
     CORE::CDynamicBuffer searchBuffer( bufferSize, true );
-    
+
     CORE::UInt32 offsetInFile = 0;
     while ( 0 == CORE::mfeof( searchFile ) )
     {
@@ -841,11 +843,11 @@ MatchSpecificBlock( void* buffer                     ,
             match.sizeOfBlock = actuallyRead;
             match.subBlockCount = 1;
             matchedBlocks.push_back( match );
-            
-            GUCEF_LOG( CORE::LOGLEVEL_NORMAL, "Found matching block at offset " +  
+
+            GUCEF_LOG( CORE::LOGLEVEL_NORMAL, "Found matching block at offset " +
                   CORE::UInt32ToString( match.offsetInFile ) + " with size " + CORE::UInt32ToString( match.sizeOfBlock ) );
         }
-        
+
         // We want to be very precise in this matching so we will move 1 byte
         // and then compare again
         ++offsetInFile;
@@ -863,25 +865,25 @@ MatchSpecificBlocks( const TBlockMatchVector& blocksToMatch ,
 {GUCEF_TRACE;
 
     CORE::CDynamicBuffer sourceBuffer;
-    
+
     TBlockMatchVector::const_iterator i = blocksToMatch.begin();
     while ( i != blocksToMatch.end() )
     {
         const TBlockMatch& blockMatch = (*i);
-        
-        GUCEF_LOG( CORE::LOGLEVEL_NORMAL, "Attempting to match a specific block at offset " +  
+
+        GUCEF_LOG( CORE::LOGLEVEL_NORMAL, "Attempting to match a specific block at offset " +
               CORE::UInt32ToString( blockMatch.offsetInFile ) + " with size " + CORE::UInt32ToString( blockMatch.sizeOfBlock ) );
-        
+
         sourceBuffer.SetDataSize( blockMatch.sizeOfBlock );
         CORE::mfseek( sourceFile, blockMatch.offsetInFile, SEEK_SET );
-        CORE::mfread( sourceBuffer.GetBufferPtr(), blockMatch.sizeOfBlock, 1, sourceFile ); 
-        
+        CORE::mfread( sourceBuffer.GetBufferPtr(), blockMatch.sizeOfBlock, 1, sourceFile );
+
         TBlockMatchVector matchedBlocks;
         MatchSpecificBlock( sourceBuffer.GetBufferPtr() ,
-                            blockMatch.sizeOfBlock      , 
+                            blockMatch.sizeOfBlock      ,
                             searchFile                  ,
-                            matchedBlocks               );         
-                            
+                            matchedBlocks               );
+
         if ( !matchedBlocks.empty() )
         {
             TBlockMatchCombo& matchCombo = matches[ blockMatch.offsetInFile ];
@@ -891,9 +893,9 @@ MatchSpecificBlocks( const TBlockMatchVector& blocksToMatch ,
                                           matchCombo.sourceBlock.repeatValueInfo );
             matchCombo.sourceBlock.blockMatch = blockMatch;
         }
-        
+
         ++i;
-    }    
+    }
 }
 
 /*-------------------------------------------------------------------------*/
@@ -920,15 +922,15 @@ MatchSpecificBlocks( const TBlockMatchVector& blocksToMatch ,
         GUCEF_ERROR_LOG( CORE::LOGLEVEL_NORMAL, "Failed to load file: " + searchFilePath );
         return;
     }
-    
+
     CORE::MFILE* file1Ptr = CORE::mfcreate( sourceFileBuffer.GetBufferPtr(), sourceFileBuffer.GetDataSize() );
     CORE::MFILE* file2Ptr = CORE::mfcreate( searchFileBuffer.GetBufferPtr(), searchFileBuffer.GetDataSize() );
 
     if ( NULL != file1Ptr && NULL != file2Ptr )
-    {   
+    {
         MatchSpecificBlocks( blocksToMatch ,
-                             file1Ptr      , 
-                             file2Ptr      , 
+                             file1Ptr      ,
+                             file2Ptr      ,
                              matches       );
     }
     if ( NULL != file1Ptr )
@@ -938,7 +940,7 @@ MatchSpecificBlocks( const TBlockMatchVector& blocksToMatch ,
     if ( NULL != file2Ptr )
     {
         CORE::mfdestroy( file2Ptr );
-    }  
+    }
 }
 
 /*-------------------------------------------------------------------------*/
@@ -956,7 +958,7 @@ GetUniqueLogFilename( const CORE::CString& logfileName )
         ++i;
     }
     while ( CORE::FileExists( testPath ) );
-    
+
     return testPath;
 }
 
@@ -974,7 +976,7 @@ LookForValues( const CORE::CString& filename )
         GUCEF_ERROR_LOG( CORE::LOGLEVEL_NORMAL, "Failed to load file: " + filename );
         return;
     }
-    
+
     CORE::Int16 testValue = 0;
     for ( CORE::UInt32 i=0; i<fileBuffer.GetDataSize(); ++i )
     {
@@ -999,8 +1001,8 @@ GenerateDelta( CORE::CDynamicBuffer& file1Buffer  ,
                CORE::CDynamicBuffer& file2Buffer  ,
                const CORE::CString& deltaFilename )
 {GUCEF_TRACE;
-    
-    
+
+
 }
 
 /*-------------------------------------------------------------------------*/
@@ -1015,24 +1017,24 @@ ReadSamsungDeltaHeader( TSamsungDeltaHeader& header   ,
         GUCEF_ERROR_LOG( CORE::LOGLEVEL_NORMAL, "Failed to load file: " + filename );
         return;
     }
-    
+
     const char* dataBuffer = (const char*) fileBuffer.GetConstBufferPtr( 0 );
-    
+
     memcpy( &header.field1[ 0 ], dataBuffer + 0, 2 );
     memcpy( &header.field1[ 1 ], dataBuffer + 2, 2 );
     memcpy( &header.field1[ 2 ], dataBuffer + 4, 2 );
     memcpy( &header.field2,      dataBuffer + 6, 4 );
     memcpy( &header.field3,      dataBuffer + 10, 4 );
     memcpy( &header.field3,      dataBuffer + 10, 4 );
-    
+
     memcpy( &header.field4[ 0 ], dataBuffer + 96, 1 );
     memcpy( &header.field4[ 1 ], dataBuffer + 97, 1 );
     memcpy( &header.field4[ 2 ], dataBuffer + 98, 1 );
     memcpy( &header.field4[ 3 ], dataBuffer + 99, 1 );
     memcpy( &header.field4[ 4 ], dataBuffer + 100, 1 );
     memcpy( &header.field4[ 5 ], dataBuffer + 101, 1 );
-    
-    
+
+
 }
 
 /*-------------------------------------------------------------------------*/
@@ -1055,14 +1057,14 @@ SimpleBlockDiff( TBlockMatchVector& differentBlocks ,
         GUCEF_ERROR_LOG( CORE::LOGLEVEL_NORMAL, "Failed to load file: " + filename2 );
         return;
     }
-    
+
     TBlockMatch mismatchedBlock;
     bool matching = true;
     for ( CORE::UInt32 i=0; i<file1Buffer.GetDataSize(); ++i )
     {
         CORE::UInt8 file1Byte = file1Buffer.AsConstType< CORE::Int8 >( i );
         CORE::UInt8 file2Byte = file2Buffer.AsConstType< CORE::Int8 >( i );
-        
+
         if ( file1Byte != file2Byte && matching )
         {
             matching = false;
@@ -1085,12 +1087,12 @@ GUCEF_OSMAIN_BEGIN
 {GUCEF_TRACE;
 
     GUCEF_LOG( CORE::LOGLEVEL_NORMAL, "This tool was compiled on: " __DATE__ " @ " __TIME__ );
-    
+
     #ifdef GUCEF_CALLSTACK_TRACING
     CORE::GUCEF_LogStackTo( "GucefLogServiceApp_Callstack.cvs" );
     CORE::GUCEF_SetStackLoggingInCvsFormat( 1 );
     CORE::GUCEF_SetStackLogging( 1 );
-    #endif /* GUCEF_CALLSTACK_TRACING ? */    
+    #endif /* GUCEF_CALLSTACK_TRACING ? */
 
     // Parse the application parameters
     CORE::CValueList keyValueList;
@@ -1101,7 +1103,7 @@ GUCEF_OSMAIN_BEGIN
     {
         outputDir = CORE::RelativePath( "$MODULEDIR$" );
     }
-    
+
     CORE::CString logFilename;
     if ( outputDir.IsNULLOrEmpty() )
     {
@@ -1113,13 +1115,13 @@ GUCEF_OSMAIN_BEGIN
     }
     logFilename = GetUniqueLogFilename( logFilename );
     CORE::CFileAccess logFileAccess( logFilename, "w" );
-    
+
     CORE::CStdLogger logger( logFileAccess );
     CORE::CLogManager::Instance()->AddLogger( &logger );
 
     // Do we want to display the console window?
-    CORE::CPlatformNativeConsoleLogger* consoleOut = NULL;    
-    bool showConsole = defaultShowConsoleState;    
+    CORE::CPlatformNativeConsoleLogger* consoleOut = NULL;
+    bool showConsole = defaultShowConsoleState;
     if ( keyValueList.HasKey( "showConsole" ) )
     {
         showConsole = CORE::StringToBool( keyValueList.GetValue( "showConsole" ) );
@@ -1128,19 +1130,19 @@ GUCEF_OSMAIN_BEGIN
     {
         consoleOut = new CORE::CPlatformNativeConsoleLogger();
         CORE::CLogManager::Instance()->AddLogger( consoleOut->GetLogger() );
-        
+
         GUCEF_LOG( CORE::LOGLEVEL_NORMAL, "FileDiff: Enabled console output" );
     }
-    
+
     // Flush bootstrap logging now that we attached all our loggers
     CORE::CLogManager::Instance()->FlushBootstrapLogEntriesToLogs();
-    
+
     CORE::CString file1Path = keyValueList.GetValueAlways( "file1" );
     CORE::CString file2Path = keyValueList.GetValueAlways( "file2" );
 
     TSamsungDeltaHeader header;
     ReadSamsungDeltaHeader( header, file1Path );
-    
+
     if ( !file1Path.IsNULLOrEmpty() && !file2Path.IsNULLOrEmpty() )
     {
         //TBlockMatchVector mismatchedBlocks;
@@ -1157,14 +1159,14 @@ GUCEF_OSMAIN_BEGIN
         //outputfilePath = outputDir;
         //CORE::AppendToPath( outputfilePath, "File2DiffBlocksHex.txt" );
         //WriteBlocksAsHexInTextFile( mismatchedBlocks, file2Path, outputfilePath );
-        
+
         //size_t testBlockSizeInBytes = 128;
         //CORE::CString testBlockSizeStr = keyValueList.GetValueAlways( "testBlockSizeInBytes" );
         //if ( !testBlockSizeStr.IsNULLOrEmpty() )
         //{
         //    testBlockSizeInBytes = CORE::StringToUInt32( testBlockSizeStr );
         //}
-       
+
         //CORE::CString outputMatchfile = keyValueList.GetValueAlways( "outputMatchFile" );
         //if ( outputMatchfile.IsNULLOrEmpty() )
         //{
@@ -1185,16 +1187,16 @@ GUCEF_OSMAIN_BEGIN
         //                     blockMatchComboMap   ,
         //                     testBlockSizeInBytes ,
         //                     preciseMatching      );
-        //                     
+        //
         //WriteBlockMatchesAsTextFile( blockMatchComboMap ,
         //                             outputMatchfile    );
-        //                             
+        //
         //TBlockMatchVector unmatchedSourceBlocks;
         //TBlockMatchVector unmatchedOtherBlocks;
         //DetermineMatchGaps( blockMatchComboMap    ,
         //                    unmatchedSourceBlocks ,
         //                    unmatchedOtherBlocks  );
-        //                    
+        //
         //CORE::CString outputUnmatchedSourcefile = keyValueList.GetValueAlways( "outputUnmatchedSourcefile" );
         //if ( outputUnmatchedSourcefile.IsNULLOrEmpty() )
         //{
@@ -1208,15 +1210,15 @@ GUCEF_OSMAIN_BEGIN
         //    CORE::AppendToPath( outputUnmatchedTargetfile, "UnmatchedTargetBlocks_blockSize(" + CORE::UInt32ToString( testBlockSizeInBytes ) + ").txt" );
         //}
         //
-        //WriteBlockMatchGapsAsTextFile( unmatchedSourceBlocks, outputUnmatchedSourcefile );  
+        //WriteBlockMatchGapsAsTextFile( unmatchedSourceBlocks, outputUnmatchedSourcefile );
         //WriteBlockMatchGapsAsTextFile( unmatchedOtherBlocks, outputUnmatchedTargetfile );
         //
         //CORE::CString deltafilePath = keyValueList.GetValueAlways( "deltafile" );
         //if ( !deltafilePath.IsNULLOrEmpty() )
-        //{   
+        //{
         //    TBlockMatchComboMap matchedSourceBlocks;
-        //    MatchSpecificBlocks( unmatchedSourceBlocks , 
-        //                         file1Path             , 
+        //    MatchSpecificBlocks( unmatchedSourceBlocks ,
+        //                         file1Path             ,
         //                         deltafilePath         ,
         //                         matchedSourceBlocks   );
 
@@ -1229,20 +1231,20 @@ GUCEF_OSMAIN_BEGIN
 
         //    WriteBlockMatchesAsTextFile( matchedSourceBlocks       ,
         //                                 outputUnmatchedSourcefile );
-        //    
+        //
         //    TBlockMatchComboMap matchedTargetBlocks;
-        //    MatchSpecificBlocks( unmatchedOtherBlocks , 
-        //                         file2Path            , 
-        //                         deltafilePath        , 
+        //    MatchSpecificBlocks( unmatchedOtherBlocks ,
+        //                         file2Path            ,
+        //                         deltafilePath        ,
         //                         matchedTargetBlocks  );
-        //    
+        //
         //    CORE::CString outputMatchedTargetfile = keyValueList.GetValueAlways( "outputMatchedTargetfileDelta" );
         //    if ( outputMatchedTargetfile.IsNULLOrEmpty() )
         //    {
         //        outputMatchedTargetfile = outputDir;
         //        CORE::AppendToPath( outputMatchedTargetfile, "MatchedTargetDeltaBlocks_blockSize(" + CORE::UInt32ToString( testBlockSizeInBytes ) + ").txt" );
         //    }
-        //    
+        //
         //    WriteBlockMatchesAsTextFile( matchedTargetBlocks     ,
         //                                 outputMatchedTargetfile );
         //}
@@ -1251,10 +1253,10 @@ GUCEF_OSMAIN_BEGIN
     {
         GUCEF_ERROR_LOG( CORE::LOGLEVEL_IMPORTANT, "input error, file1 and file2 params must be given" );
     }
-    
+
     delete consoleOut;
     consoleOut = NULL;
-    
+
     return 1;
 }
 GUCEF_OSMAIN_END

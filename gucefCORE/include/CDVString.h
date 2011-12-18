@@ -79,9 +79,9 @@ class GUCEF_CORE_PUBLIC_CPP CString
     CString( const char *src ,
              UInt32 length   );
 
-    CString( const char src );
+    explicit CString( const char src );
 
-    CString( const int NULLvalue );
+    explicit CString( const int NULLvalue );
 
     ~CString();
 
@@ -131,9 +131,9 @@ class GUCEF_CORE_PUBLIC_CPP CString
     /* operator const char*() const; */
 
     const char* C_String( void ) const;
-    
+
     char* C_String( void );
-    
+
     /**
      *  If you wish to manipulate characters in a char buffer
      *  while still having containment as a string object this function
@@ -206,7 +206,7 @@ class GUCEF_CORE_PUBLIC_CPP CString
 
     Int32 HasChar( char searchchar         ,
                    bool frontToBack = true ) const;
-                   
+
     Int32 HasChar( char searchchar         ,
                    const UInt32 startIndex ,
                    bool frontToBack        ) const;

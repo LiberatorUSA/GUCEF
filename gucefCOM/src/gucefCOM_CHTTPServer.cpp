@@ -1,5 +1,5 @@
 /*
- *  gucefCOM: GUCEF module providing communication 
+ *  gucefCOM: GUCEF module providing communication
  *  implementations for standardized protocols.
  *  Copyright (C) 2002 - 2007.  Dinand Vanvelzen
  *
@@ -15,7 +15,7 @@
  *
  *  You should have received a copy of the GNU Lesser General Public
  *  License along with this library; if not, write to the Free Software
- *  Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA 
+ *  Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA
  */
 
 /*-------------------------------------------------------------------------//
@@ -66,7 +66,7 @@ CHTTPServer::CHTTPServer( CIHTTPServerRouterController* routerController /* = NU
     {
         m_routerController = routerController;
     }
-    
+
     m_tcpServerSocket.Subscribe( this );
 }
 
@@ -88,12 +88,12 @@ CHTTPServer::CHTTPServer( CORE::CPulseGenerator& pulsGenerator                  
     {
         m_routerController = routerController;
     }
-    
+
     m_tcpServerSocket.Subscribe( this );
 }
 
 /*-------------------------------------------------------------------------*/
-    
+
 CHTTPServer::~CHTTPServer()
 {GUCEF_TRACE;
 
@@ -126,7 +126,7 @@ CHTTPServer::MatchResourceVersion( const CString& resourceVersion  ,
 CHTTPServer::THttpReturnData*
 CHTTPServer::OnRead( const THttpRequestData& request )
 {GUCEF_TRACE;
-    
+
     return PerformReadOperation( request, true );
 }
 
@@ -142,7 +142,7 @@ CHTTPServer::OnReadMetaData( const THttpRequestData& request )
 /*-------------------------------------------------------------------------*/
 
 CHTTPServer::THttpReturnData*
-CHTTPServer::PerformReadOperation( const THttpRequestData& request , 
+CHTTPServer::PerformReadOperation( const THttpRequestData& request ,
                                    bool contentRequested           )
 {GUCEF_TRACE;
 
@@ -157,8 +157,8 @@ CHTTPServer::PerformReadOperation( const THttpRequestData& request ,
     try
     {
         const CString& resourceURI = request.requestUri;
-        m_lastRequestUri = resourceURI; 
-        
+        m_lastRequestUri = resourceURI;
+
         CIHTTPServerRouter* resourceRouter = m_routerController->GetHandler( resourceURI );
         if ( NULL == resourceRouter )
         {
@@ -172,7 +172,7 @@ CHTTPServer::PerformReadOperation( const THttpRequestData& request ,
 
         // Obtain access to the resource based of the relative Uri
         CIHTTPServerRouter::THTTPServerResourcePtr resource = resourceRouter->ResolveUriToResource( uriAfterBaseAddress );
-        if ( NULL == resource )
+        if ( 0 == resource )
         {
             // Not found
             returnData->statusCode = 404;
@@ -209,7 +209,7 @@ CHTTPServer::PerformReadOperation( const THttpRequestData& request ,
                 // Something went wrong in the handler while serializing the resource
                 returnData->statusCode = 415;
                 returnData->acceptedTypes = resource->GetSupportedSerializationRepresentations();
-                return returnData;            
+                return returnData;
             }
         }
 
@@ -238,7 +238,7 @@ CHTTPServer::PerformReadOperation( const THttpRequestData& request ,
 }
 
 /*-------------------------------------------------------------------------*/
-    
+
 CHTTPServer::THttpReturnData*
 CHTTPServer::OnUpdate( const THttpRequestData& request )
 {GUCEF_TRACE;
@@ -252,17 +252,17 @@ CHTTPServer::OnUpdate( const THttpRequestData& request )
         return returnData;
     }
     try
-    {            
+    {
         const CString& resourceURI = request.requestUri;
         m_lastRequestUri = resourceURI;
-        
+
         CIHTTPServerRouter* resourceRouter = m_routerController->GetHandler( resourceURI );
         if ( NULL == resourceRouter )
         {
             // No system has been set for providing handlers
             returnData->statusCode = 500;
             return returnData;
-        } 
+        }
 
         // Check if the client send the content for the update
         if ( request.content.GetDataSize() > 0 )
@@ -271,22 +271,22 @@ CHTTPServer::OnUpdate( const THttpRequestData& request )
             return returnData;
         }
 
-        CString remainderUri = m_routerController->GetUriAfterTheBaseAddress( *resourceRouter, resourceURI );                    
+        CString remainderUri = m_routerController->GetUriAfterTheBaseAddress( *resourceRouter, resourceURI );
         CIHTTPServerRouter::THTTPServerResourcePtr resource = resourceRouter->ResolveUriToResource( remainderUri );
-                                                       
-        if ( NULL == resource )
+
+        if ( 0 == resource )
         {
             // Not found
             returnData->statusCode = 404;
             return returnData;
-        } 
+        }
 
         CString inputRepresentation;
         if ( request.resourceRepresentations.size() > 0 )
         {
             inputRepresentation = request.resourceRepresentations.front();
             bool isSupportedMimeType = false;
-            
+
             const TStringVector& supportedRepresentations = resource->GetSupportedDeserializationRepresentations();
             TStringVector::const_iterator i = supportedRepresentations.begin();
             while ( i != supportedRepresentations.end() )
@@ -309,7 +309,7 @@ CHTTPServer::OnUpdate( const THttpRequestData& request )
 
         // Check if we need to perform a version (concurrency) check
         if ( request.resourceVersions.size() > 0 )
-        {            
+        {
             if ( !MatchResourceVersion( resource->GetResourceVersion(), request.resourceVersions ) )
             {
                 // The resource has been changed while the client was making its changes,..
@@ -318,7 +318,7 @@ CHTTPServer::OnUpdate( const THttpRequestData& request )
                 return returnData;
             }
         }
-        
+
         // Assign to the entry
         CIHTTPServerResource::TDeserializeState deserializeState = resource->Deserialize( request.content, inputRepresentation );
         if ( CIHTTPServerResource::DESERIALIZESTATE_CORRUPTEDINPUT == deserializeState  )
@@ -326,37 +326,37 @@ CHTTPServer::OnUpdate( const THttpRequestData& request )
             // There was a problem in the backend deserializing the content in the negotiated format
             returnData->statusCode = 400; // <- corrupt data,.. bad request
             returnData->acceptedTypes = resource->GetSupportedDeserializationRepresentations();
-            return returnData;                                
+            return returnData;
         }
         else
         if ( CIHTTPServerResource::DESERIALIZESTATE_UNABLETOUPDATE == deserializeState  )
         {
             // There was a problem in the backend actually updating the resource with the deserialized content
-            returnData->statusCode = 304; // <- resource not modified                          
+            returnData->statusCode = 304; // <- resource not modified
         }
         else
         {
             // Update to the existing entry was successfull
-            returnData->statusCode = 200;                    
+            returnData->statusCode = 200;
         }
 
         returnData->eTag = resource->GetResourceVersion();
         returnData->lastModified = resource->GetLastModifiedTime();
-        
+
         // Make sure we only send back absolute Uri's for resource locations
         returnData->location = m_routerController->MakeUriAbsolute( *resourceRouter, resourceURI, resource->GetURL() );
-        
+
         // Send the serverside representation back to the client in the representation of the update
         resource->Serialize( returnData->content, inputRepresentation );
         returnData->contentType = inputRepresentation;
-                                            
+
         return returnData;
     }
     catch ( std::exception& )
     {
         // Unhandled exception during execution
         returnData->statusCode = 500;
-        return returnData;            
+        return returnData;
     }
 }
 
@@ -386,7 +386,7 @@ CHTTPServer::OnCreate( const THttpRequestData& request )
     {
         const CString& resourceURI = request.requestUri;
         m_lastRequestUri = resourceURI;
-        
+
         CIHTTPServerRouter* resourceRouter = m_routerController->GetHandler( resourceURI );
         if ( NULL == resourceRouter )
         {
@@ -394,31 +394,31 @@ CHTTPServer::OnCreate( const THttpRequestData& request )
             // There is nothing the client can do here.
             returnData->statusCode = 500;
             return returnData;
-        } 
+        }
 
         // Get relative collection URI and subsequently the collection itself
         CString containerUri = m_routerController->GetUriAfterTheBaseAddress( *resourceRouter, resourceURI );
         CIHTTPServerRouter::THTTPServerResourcePtr containerResource = resourceRouter->ResolveUriToResource( containerUri );
 
-        if ( NULL == containerResource ) 
+        if ( 0 == containerResource )
         {
             // Unable to locate the collection in which to place the entry
             returnData->statusCode = 404;
-            return returnData;        
-        } 
+            return returnData;
+        }
 
         // create resource in preperation for deserialization
         CIHTTPServerRouter::THTTPServerResourcePtr resource;
         TStringVector supportedRepresentations;
         CString createRepresentation = request.resourceRepresentations.front();
-        
+
         CIHTTPServerResource::TCreateState createState = containerResource->CreateResource( request.transactionID    ,
                                                                                             request.content          ,
-                                                                                            createRepresentation     , 
+                                                                                            createRepresentation     ,
                                                                                             resource                 ,
                                                                                             supportedRepresentations );
 
-        if ( ( CIHTTPServerResource::CREATESTATE_FAILED == createState ) || ( NULL == resource ) )
+        if ( ( CIHTTPServerResource::CREATESTATE_FAILED == createState ) || ( 0 == resource ) )
         {
             // Failed to finalize (thus persist) the data
             returnData->statusCode = 500;
@@ -451,10 +451,10 @@ CHTTPServer::OnCreate( const THttpRequestData& request )
 
             // To comply with protocols like ATOM-pub we need to stream out whatever content is already present
             // as the new resource as part of our reply regardless of whether content was send to the server
-                                                    
+
             // Perform the serialization
             resource->Serialize( returnData->content, createRepresentation );
-            
+
             // Make sure the client gets an absolute path to the resource
             // which may be a placeholder
             returnData->location = m_routerController->MakeUriAbsolute( *resourceRouter, resourceURI, returnData->location );
@@ -468,7 +468,7 @@ CHTTPServer::OnCreate( const THttpRequestData& request )
             returnData->statusCode = 201;
             return returnData;
         }
-        
+
         // We should not be able to get here,.. bad create state
         returnData->statusCode = 500;
         return returnData;
@@ -478,12 +478,12 @@ CHTTPServer::OnCreate( const THttpRequestData& request )
     {
         // Unhandled exception during execution
         returnData->statusCode = 500;
-        return returnData;            
+        return returnData;
     }
 }
 
 /*-------------------------------------------------------------------------*/
-    
+
 CHTTPServer::THttpReturnData*
 CHTTPServer::OnDelete( const THttpRequestData& request )
 {GUCEF_TRACE;
@@ -500,24 +500,24 @@ CHTTPServer::OnDelete( const THttpRequestData& request )
     {
         const CString& resourceURI = request.requestUri;
         m_lastRequestUri = resourceURI;
-        
+
         CIHTTPServerRouter* resourceRouter = m_routerController->GetHandler( resourceURI );
         if ( NULL == resourceRouter )
         {
             // No system has been set for providing handlers
             returnData->statusCode = 404;
             return returnData;
-        } 
+        }
 
         CString remainderUri = m_routerController->GetUriAfterTheBaseAddress( *resourceRouter, resourceURI );
         CIHTTPServerRouter::THTTPServerResourcePtr resource = resourceRouter->ResolveUriToResource( remainderUri );
 
-        if ( NULL == resource )
+        if ( 0 == resource )
         {
             // Not fount
             returnData->statusCode = 404;
             return returnData;
-        } 
+        }
 
         if ( request.resourceVersions.size() > 0 )
         {
@@ -541,7 +541,7 @@ CHTTPServer::OnDelete( const THttpRequestData& request )
         }
         else
         {
-            returnData->statusCode = 405; // 
+            returnData->statusCode = 405; //
             returnData->allowedMethods.push_back( "GET" ); // Hmm, we're not quite sure are we...
             returnData->allowedMethods.push_back( "POST" );
             return returnData;
@@ -551,16 +551,16 @@ CHTTPServer::OnDelete( const THttpRequestData& request )
     {
         // Unhandled exception during execution
         returnData->statusCode = 500;
-        return returnData;            
+        return returnData;
     }
 }
 
 /*-------------------------------------------------------------------------*/
-    
+
 CString
 CHTTPServer::GetLastRequestUri( void ) const
 {GUCEF_TRACE;
-    
+
     return m_lastRequestUri;
 }
 
@@ -583,7 +583,7 @@ CHTTPServer::Close( void )
 }
 
 /*-------------------------------------------------------------------------*/
-    
+
 UInt16
 CHTTPServer::GetPort( void ) const
 {GUCEF_TRACE;
@@ -599,13 +599,13 @@ CHTTPServer::OnNotify( CORE::CNotifier* notifier                 ,
                        CORE::CICloneable* eventdata /* = NULL */ )
 {GUCEF_TRACE;
 
-    if ( COMCORE::CTCPServerSocket::ClientConnectedEvent == eventid )        
+    if ( COMCORE::CTCPServerSocket::ClientConnectedEvent == eventid )
     {
         const COMCORE::CTCPServerSocket::TClientConnectedEventData* eData = static_cast< COMCORE::CTCPServerSocket::TClientConnectedEventData* >( eventdata );
         const COMCORE::CTCPServerSocket::TConnectionInfo& storage = eData->GetData();
-        
+
         GUCEF_DEBUG_LOG( CORE::LOGLEVEL_NORMAL, "CHTTPServer(" + CORE::PointerToString( this ) + "): Client connected" );
-        
+
         // Subscribe to the connection
         storage.connection->Subscribe( this );
     }
@@ -615,14 +615,14 @@ CHTTPServer::OnNotify( CORE::CNotifier* notifier                 ,
         const COMCORE::CTCPServerConnection::TDataRecievedEventData* eData = static_cast< COMCORE::CTCPServerConnection::TDataRecievedEventData* >( eventdata );
         const CORE::CDynamicBuffer& receivedData = eData->GetData();
         COMCORE::CTCPServerConnection* connection = static_cast< COMCORE::CTCPServerConnection* >( notifier );
-        
+
         GUCEF_DEBUG_LOG( CORE::LOGLEVEL_NORMAL, "CHTTPServer(" + CORE::PointerToString( this ) + "): " + CORE::UInt32ToString( receivedData.GetDataSize() ) + " Bytes received from client " + connection->GetRemoteHostName() );
-        
+
         // Process the request
         CORE::CDynamicBuffer responseBuffer;
         ProcessReceivedData( receivedData, responseBuffer );
-        
-        // Send the reponse back to the client        
+
+        // Send the reponse back to the client
         connection->Send( responseBuffer.GetConstBufferPtr(), responseBuffer.GetDataSize() );
         connection->Close();
     }
@@ -639,7 +639,7 @@ CHTTPServer::ExtractCommaSeparatedValues( const CString& stringToExtractFrom ,
     TStringVector elements = stringToExtractFrom.ParseElements( ',' );
     TStringVector::iterator i = elements.begin();
     while ( i != elements.end() )
-    {                    
+    {
         list.push_back( (*i).RemoveChar( ' ' ) );
         ++i;
     }
@@ -656,9 +656,9 @@ CHTTPServer::ProcessReceivedData( const CORE::CDynamicBuffer& inputBuffer ,
     {
         THttpReturnData* returnData = NULL;
         THttpRequestData* requestData = ParseRequest( inputBuffer );
-        
+
         GUCEF_DEBUG_LOG( CORE::LOGLEVEL_NORMAL, "CHTTPServer(" + CORE::PointerToString( this ) + "): About to process request of type: " + requestData->requestType );
-        
+
         if ( NULL != requestData )
         {
             if ( requestData->requestType == "GET" )
@@ -669,7 +669,7 @@ CHTTPServer::ProcessReceivedData( const CORE::CDynamicBuffer& inputBuffer ,
             if ( requestData->requestType == "HEAD" )
             {
                 returnData = OnReadMetaData( *requestData );
-            }         
+            }
             else
             if ( requestData->requestType == "POST" )
             {
@@ -684,9 +684,9 @@ CHTTPServer::ProcessReceivedData( const CORE::CDynamicBuffer& inputBuffer ,
             if ( requestData->requestType == "DELETE" )
             {
                 returnData = OnDelete( *requestData );
-            }                        
+            }
         }
-        
+
         if ( NULL != returnData )
         {
             ParseResponse( *returnData  ,
@@ -710,7 +710,7 @@ CHTTPServer::ParseHeaderFields( const char* bufferPtr       ,
     {
         UInt32 startIndex = 0;
         UInt32 headerSize = 0;
-        
+
         // According to the RFC lines are separated using '\r\n'
         for ( UInt32 i=0; i<bufferSize; ++i )
         {
@@ -727,7 +727,7 @@ CHTTPServer::ParseHeaderFields( const char* bufferPtr       ,
                         {
                             // Add the segment to our list
                             headerFields.push_back( CString( bufferPtr+startIndex, i-1-startIndex ) );
-                            startIndex = i+1; 
+                            startIndex = i+1;
 
                             // Check for empty line which is the end of header delimiter
                             // We start with cariage return
@@ -743,7 +743,7 @@ CHTTPServer::ParseHeaderFields( const char* bufferPtr       ,
                                         headerSize = i+2;
                                         break;
                                     }
-                                    
+
                                     // If we get here:
                                     // Some HTTP1.0 implementations add an extra '/r' after a '/r/n' so we have to be robust
                                     // and tolerate this condition
@@ -753,7 +753,7 @@ CHTTPServer::ParseHeaderFields( const char* bufferPtr       ,
                                     // Not a well formatted HTTP header
                                     headerSize = i;
                                     break;
-                                }                             
+                                }
                             }
                         }
                         else
@@ -761,7 +761,7 @@ CHTTPServer::ParseHeaderFields( const char* bufferPtr       ,
                             // Not a well formatted HTTP header
                             headerSize = i;
                             break;
-                        }                    
+                        }
                     }
                 }
                 else
@@ -785,42 +785,42 @@ CHTTPServer::ParseHeaderFields( const char* bufferPtr       ,
 CHTTPServer::THttpRequestData*
 CHTTPServer::ParseRequest( const CORE::CDynamicBuffer& inputBuffer )
 {GUCEF_TRACE;
- 
+
     try
-    {    
+    {
         if ( inputBuffer.GetDataSize() == 0 )
         {
             // Invalid input
             return NULL;
         }
-        
+
         // Parse all the HTTP Header fields out of the buffer
         TStringVector headerFields;
         UInt32 headerSize = ParseHeaderFields( static_cast< const char* >( inputBuffer.GetConstBufferPtr() ) ,
                                                inputBuffer.GetDataSize()                                     ,
                                                headerFields                                                  );
-        
+
         // Sanity check on the parsed result
         if ( headerSize == 0 || headerFields.size() == 0 )
         {
             return NULL;
         }
-        
+
         GUCEF_DEBUG_LOG( CORE::LOGLEVEL_NORMAL, "CHTTPServer(" + CORE::PointerToString( this ) + "): Finished parsing request header" );
-        
+
         THttpRequestData* request = new THttpRequestData;
-        
+
         CString temp = headerFields.front().CompactRepeatingChar( ' ' );
         headerFields.erase( headerFields.begin() );
 
         // Parse the request type from the first line
         request->requestType = temp.SubstrToChar( ' ', true );
         temp = temp.CutChars( request->requestType.Length()+1, true );
-        
+
         // Parse the request URI
         request->requestUri = temp.SubstrToChar( ' ', true );
-        
-        // Parse all the subsequent HTTP header fields    
+
+        // Parse all the subsequent HTTP header fields
         TStringVector::iterator i = headerFields.begin();
         while ( i != headerFields.end() )
         {
@@ -828,14 +828,14 @@ CHTTPServer::ParseRequest( const CORE::CDynamicBuffer& inputBuffer )
             CString& headerField = (*i);
             CString headerName = headerField.SubstrToChar( ':', true );
             CString headerValue( headerField.C_String() + headerName.Length(), headerField.Length() - headerName.Length() );
-            
+
             // Remove additional spaces and lowercase the headername for easy comparison
             headerName = headerName.RemoveChar( ' ' ).Lowercase();
             headerValue = headerValue.RemoveChar( ' ' );
-            
+
             //  Remove the ':' prefix
             headerValue = headerValue.CutChars( 1, true );
-            
+
             // Now that we have formatted the header name + value we can use them
             if ( headerName == "accept" )
             {
@@ -846,34 +846,34 @@ CHTTPServer::ParseRequest( const CORE::CDynamicBuffer& inputBuffer )
             if ( headerName == "content-type" )
             {
                 ExtractCommaSeparatedValues( headerValue               ,
-                                             request->resourceVersions );            
+                                             request->resourceVersions );
             }
             else
             if ( headerName == "if-match" )
             {
                 ExtractCommaSeparatedValues( headerValue               ,
-                                             request->resourceVersions );            
+                                             request->resourceVersions );
             }
             else
             if ( headerName == "cookie" )
             {
-                request->transactionID = headerValue;            
+                request->transactionID = headerValue;
             }
             else
             if ( headerName == "host" )
             {
-                request->requestHost = headerValue;            
-            }                        
+                request->requestHost = headerValue;
+            }
             ++i;
         }
-        
+
         // Set the content as a sub-segment of our data buffer
         if ( inputBuffer.GetDataSize() - headerSize > 0 )
         {
-            request->content.LinkTo( inputBuffer.GetConstBufferPtr( headerSize ) , 
+            request->content.LinkTo( inputBuffer.GetConstBufferPtr( headerSize ) ,
                                      inputBuffer.GetDataSize() - headerSize      );
         }
-        
+
         return request;
     }
     catch ( std::exception& )
@@ -887,7 +887,7 @@ CHTTPServer::ParseRequest( const CORE::CDynamicBuffer& inputBuffer )
 void
 CHTTPServer::ParseResponse( const THttpReturnData& returnData  ,
                             CORE::CDynamicBuffer& outputBuffer )
-{GUCEF_TRACE;  
+{GUCEF_TRACE;
 
     CString response = "HTTP/1.1 " + CORE::Int32ToString( returnData.statusCode ) + "\r\nServer: gucefCOM\r\nConnection: close\r\n";
     if ( !returnData.location.IsNULLOrEmpty() )
@@ -897,13 +897,13 @@ CHTTPServer::ParseResponse( const THttpReturnData& returnData  ,
     if ( !returnData.eTag.IsNULLOrEmpty() )
     {
         response += "ETag: " + returnData.eTag + "\r\n";
-    }    
+    }
     if ( !returnData.cacheability.IsNULLOrEmpty() )
     {
         response += "Cache-Control: " + returnData.cacheability + "\r\n";
     }
     if ( !returnData.lastModified.IsNULLOrEmpty() )
-    {    
+    {
         response += "Last-Modified: " + returnData.lastModified + "\r\n";
     }
     if ( returnData.content.GetDataSize() > 0 )
@@ -911,7 +911,7 @@ CHTTPServer::ParseResponse( const THttpReturnData& returnData  ,
         response += "Content-Length: " + CORE::UInt32ToString( returnData.content.GetDataSize() ) + "\r\n";
         response += "Content-Type: " + returnData.contentType + "\r\n";
     }
-    
+
     // You cannot send back accept types to the client using a standard HTTP header since
     // it is a HTTP request only header. We don't want the client to aimlessly retry different
     // representations either on PUT/POST so we do want to inform the client of the accepted types.
@@ -926,7 +926,7 @@ CHTTPServer::ParseResponse( const THttpReturnData& returnData  ,
         }
         response += "\r\n";
     }
-    
+
     // If the operation was and a subset of allowed operations where specified
     // we will send those to the client.
     if ( returnData.statusCode == 405 && returnData.allowedMethods.size() > 0 )
@@ -937,17 +937,17 @@ CHTTPServer::ParseResponse( const THttpReturnData& returnData  ,
         {
             response += (*i) + ',';
         }
-        response += "\r\n";        
-    } 
-    
+        response += "\r\n";
+    }
+
     // Add the end of HTTP header delimiter
     response += "\r\n";
-    
+
     GUCEF_DEBUG_LOG( CORE::LOGLEVEL_NORMAL, "CHTTPServer(" + CORE::PointerToString( this ) + "): Finished building response header: " + response );
 
     // Copy the HTTP header into the buffer
     outputBuffer.CopyFrom( response.Length(), response.C_String() );
-    
+
     // Copy the HTTP message body into the buffer
     if ( returnData.content.GetDataSize() > 0 )
     {

@@ -14,7 +14,7 @@
  *
  *  You should have received a copy of the GNU Lesser General Public
  *  License along with this library; if not, write to the Free Software
- *  Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA 
+ *  Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA
  */
 
 #ifndef GUCEF_MACROS_H
@@ -231,7 +231,7 @@
 /*-------------------------------------------------------------------------*/
 
 /*
- *  Macros that defines the correct end of line string to be used 
+ *  Macros that defines the correct end of line string to be used
  *  depending on the platform we are building for.
  */
 #if ( GUCEF_PLATFORM == GUCEF_PLATFORM_MSWIN )
@@ -334,7 +334,7 @@
 /*-------------------------------------------------------------------------*/
 
 /*
- *  now we include some dynamicly linked module macro's 
+ *  now we include some dynamicly linked module macro's
  */
 #ifndef GUCEF_DLLINIT_H
 #include "gucef_DLLInit.h"
@@ -363,10 +363,18 @@
 /*-------------------------------------------------------------------------*/
 
 #undef NULL
-#ifndef __CPP09NULLPTRSUPPORTED
-  #define NULL (0)
+#if defined(__cplusplus)
+  #ifndef __CPP09NULLPTRSUPPORTED
+    #if GUCEF_COMPILER == GUCEF_COMPILER_GNUC
+      #define NULL __null
+    #else
+      #define NULL (0)
+    #endif
+  #else
+    #define NULL (nullptr)
+  #endif
 #else
-  #define NULL (nullptr)
+  #define NULL ((void*)0)
 #endif
 
 /*-------------------------------------------------------------------------*/

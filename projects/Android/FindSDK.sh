@@ -73,10 +73,41 @@ function FindAndroidSdkx86Linux {
 
 #------------------------------------------------------------------------------
 
+function FindAndroidSdkLinux {
+
+  # Check for ANDROIDSDK variable, if undefined set it to a copy in depencencies, we will just have to guess
+  ANDROIDSDK=${ANDROIDSDK:=undefined}
+  if [ "$ANDROIDSDK" = "undefined" ]; then
+    echo "ANDROIDSDK environment variable not found, setting it to our default location"
+    ANDROIDSDK="$GUCEF_HOME/dependencies/android-sdk-linux"
+
+    # We also check for the android script
+    TEST_PATH="$ANDROIDSDK/tools/android"
+    echo "Testing for sdk android script existance @ $TEST_PATH"
+    if [ -x "$TEST_PATH" ];
+    then
+      echo "Found SDK build script"
+      ANDROIDSDKSCRIPT=$TEST_PATH
+    else
+      echo "Unable to locate SDK android script, invalid SDK location"
+      ANDROIDSDK="undefined"   
+    fi
+
+  fi
+  
+}
+
+#------------------------------------------------------------------------------
+
 function FindAndroidSdk {
 
   ANDROIDSDK=${ANDROIDSDK:=undefined}
   ANDROIDSDKBUILD=${ANDROIDSDKBUILD:=undefined}
+
+  if [ "$ANDROIDSDK" = "undefined" ]; then
+
+  # Check for linux SDK
+  FindAndroidSdkLinux
 
   if [ "$ANDROIDSDK" = "undefined" ]; then
 
@@ -94,6 +125,7 @@ function FindAndroidSdk {
 
   echo "Unable to locate windows SDK for x86" 
         
+  fi
   fi
   fi
   fi
