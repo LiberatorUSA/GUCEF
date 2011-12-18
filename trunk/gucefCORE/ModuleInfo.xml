@@ -13,6 +13,7 @@
     <Module Platform="Linux">
         <Linker>
             <Dependency Name="dl" />
+            <Dependency Name="X11" />
         </Linker>
     </Module>
     <Module Platform="Android">

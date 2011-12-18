@@ -14,7 +14,7 @@
  *
  *  You should have received a copy of the GNU Lesser General Public
  *  License along with this library; if not, write to the Free Software
- *  Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA 
+ *  Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA
  */
 
 /*-------------------------------------------------------------------------//
@@ -33,7 +33,7 @@
 #ifndef GUCEF_CORE_GUCEF_ESSENTIALS_H
 #include "gucef_essentials.h"
 #define GUCEF_CORE_GUCEF_ESSENTIALS_H
-#endif /* GUCEF_CORE_GUCEF_ESSENTIALS_H ? */ 
+#endif /* GUCEF_CORE_GUCEF_ESSENTIALS_H ? */
 
 #include "CNotifier.h"
 
@@ -43,7 +43,7 @@
 //                                                                         //
 //-------------------------------------------------------------------------*/
 
-namespace GUCEF { 
+namespace GUCEF {
 namespace CORE {
 
 /*-------------------------------------------------------------------------//
@@ -69,7 +69,7 @@ CNotifier::CNotifier( void )
 {GUCEF_TRACE;
 
     RegisterEvents();
-    
+
     m_imp = CNotifierImplementor::Create( this );
     assert( m_imp != NULL );
 }
@@ -82,7 +82,7 @@ CNotifier::CNotifier( const CNotifier& src )
 {GUCEF_TRACE;
 
     RegisterEvents();
-   
+
     m_imp = CNotifierImplementor::Create( this, src );
     assert( m_imp != NULL );
 }
@@ -104,8 +104,8 @@ CNotifier::operator=( const CNotifier& src )
             m_imp = NULL;
         }
     }
-    return *this; 
-}    
+    return *this;
+}
 
 /*-------------------------------------------------------------------------*/
 
@@ -121,7 +121,7 @@ CNotifier::~CNotifier()
 
 /*-------------------------------------------------------------------------*/
 
-void 
+void
 CNotifier::RegisterEvents( void )
 {GUCEF_TRACE;
 
@@ -133,7 +133,7 @@ CNotifier::RegisterEvents( void )
 
 /*-------------------------------------------------------------------------*/
 
-void 
+void
 CNotifier::Subscribe( CObserver* observer )
 {GUCEF_TRACE;
 
@@ -145,7 +145,7 @@ CNotifier::Subscribe( CObserver* observer )
 
 /*-------------------------------------------------------------------------*/
 
-void 
+void
 CNotifier::Subscribe( CObserver* observer                              ,
                       const CEvent& eventid                            ,
                       CIEventHandlerFunctorBase* callback /* = NULL */ )
@@ -171,9 +171,9 @@ CNotifier::Unsubscribe( CObserver* observer )
     }
 }
 
-/*-------------------------------------------------------------------------*/                
- 
-void 
+/*-------------------------------------------------------------------------*/
+
+void
 CNotifier::Unsubscribe( CObserver* observer   ,
                         const CEvent& eventid )
 {GUCEF_TRACE;
@@ -182,7 +182,7 @@ CNotifier::Unsubscribe( CObserver* observer   ,
     {
         m_imp->Unsubscribe( observer ,
                             eventid  );
-    }                            
+    }
 }
 
 /*-------------------------------------------------------------------------*/
@@ -194,12 +194,12 @@ CNotifier::UnsubscribeAllFromNotifier( void )
     if ( NULL != m_imp )
     {
         m_imp->UnsubscribeAllFromNotifier();
-    }        
+    }
 }
 
-/*-------------------------------------------------------------------------*/                        
+/*-------------------------------------------------------------------------*/
 
-bool 
+bool
 CNotifier::NotifyObservers( void )
 {GUCEF_TRACE;
 
@@ -211,8 +211,8 @@ CNotifier::NotifyObservers( void )
 }
 
 /*-------------------------------------------------------------------------*/
-    
-bool 
+
+bool
 CNotifier::NotifyObservers( const CEvent& eventid  ,
                             CICloneable* eventData )
 {GUCEF_TRACE;
@@ -222,7 +222,7 @@ CNotifier::NotifyObservers( const CEvent& eventid  ,
         return m_imp->NotifyObservers( eventid   ,
                                        eventData );
     }
-    return false;   
+    return false;
 }
 
 /*-------------------------------------------------------------------------*/
@@ -280,7 +280,7 @@ CNotifier::NotifySpecificObserver( CObserver& specificObserver ,
 
 /*-------------------------------------------------------------------------*/
 
-void 
+void
 CNotifier::OnObserverDestroy( CObserver* observer )
 {GUCEF_TRACE;
 
@@ -314,7 +314,16 @@ CNotifier::ScheduleForDestruction( void )
 
 /*-------------------------------------------------------------------------*/
 
-void 
+void
+CNotifier::OnObserverDestruction( CObserver* observer )
+{GUCEF_TRACE;
+
+    /* can be implemented in a descending class to add observer destruction handling */
+}
+
+/*-------------------------------------------------------------------------*/
+
+void
 CNotifier::LockData( void ) const
 {GUCEF_TRACE;
 
@@ -322,8 +331,8 @@ CNotifier::LockData( void ) const
 }
 
 /*-------------------------------------------------------------------------*/
-    
-void 
+
+void
 CNotifier::UnlockData( void ) const
 {GUCEF_TRACE;
 
