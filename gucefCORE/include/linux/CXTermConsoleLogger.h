@@ -50,7 +50,7 @@ namespace CORE {
 //-------------------------------------------------------------------------*/
 
 /**
- *  GUCEF logger implementation for Linux's X-Widows environment which
+ *  GUCEF logger implementation for Linux's X11 environment which
  *  displays log output in a console window.
  */
 class GUCEF_CORE_PUBLIC_CPP CXTermConsoleLogger : public CILogger
