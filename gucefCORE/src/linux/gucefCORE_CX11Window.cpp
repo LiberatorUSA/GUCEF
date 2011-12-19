@@ -129,7 +129,7 @@ CX11Window::WindowDestroy( void )
     if ( NULL != m_display && 0 != m_window )
     {
         // Since we are getting rid of the window we don't need to listnen to events for it anymore
-        CX11EventDispatcher::Instance()->UnsubscribeOnBehalfOfWindow( GetObserver(), m_window );
+        CX11EventDispatcher::Instance()->UnsubscribeOnBehalfOfWindow( AsObserver(), m_window );
 
         ::XDestroyWindow( m_display, m_window );
         m_window = 0;

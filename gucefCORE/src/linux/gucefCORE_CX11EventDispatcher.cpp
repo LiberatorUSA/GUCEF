@@ -73,15 +73,14 @@ CX11EventDispatcher::CX11EventDispatcher( void )
 {GUCEF_TRACE;
 
     CPulseGenerator& pulseGenerator = CGUCEFApplication::Instance()->GetPulseGenerator();
-    SubscribeTo( pulseGenerator, CPulseGenerator::PulseEvent );
-    pulseGenerator.RequestPeriodicUpdates( this, 10 );
+    SubscribeTo( &pulseGenerator, CPulseGenerator::PulseEvent );
+    pulseGenerator.RequestPeriodicPulses( this, 10 );
 
     // Open the connection to the X client
     m_display = ::XOpenDisplay( NULL );
     if ( NULL == m_display )
     {
         GUCEF_ERROR_LOG( LOGLEVEL_IMPORTANT, "CX11Window::WindowCreate(): Failed to open display" );
-        return false;
     }
 }
 
@@ -90,7 +89,7 @@ CX11EventDispatcher::CX11EventDispatcher( void )
 CX11EventDispatcher::~CX11EventDispatcher()
 {GUCEF_TRACE;
 
-    m_windowObserverMap.erase();
+    m_windowObserverMap.clear();
 }
 
 /*-------------------------------------------------------------------------*/
@@ -194,11 +193,11 @@ CX11EventDispatcher::UnlockData( void ) const
 /*-------------------------------------------------------------------------*/
 
 void
-CX11EventDispatcher::DispatchEventToWindow( ::XEvent& event )
+CX11EventDispatcher::DispatchEventToWindow( ::XEvent& event ,
                                             ::Window window )
 {GUCEF_TRACE;
 
-    TWindowObserverMap::iterator i = m_windowObserverMap.find( window )
+    TWindowObserverMap::iterator i = m_windowObserverMap.find( window );
     if ( i != m_windowObserverMap.end() )
     {
         TX11EventData eventData( event );
@@ -216,146 +215,146 @@ CX11EventDispatcher::ProcessEvent( ::XEvent& event )
 
     switch( event.type )
     {
-        case ::KeyRelease :
-        case ::KeyPress :
+        case KeyRelease :
+        case KeyPress :
         {
             DispatchEventToWindow( event, event.xkey.window );
             break;
         }
-        case ::ButtonRelease :
-        case ::ButtonPress :
+        case ButtonRelease :
+        case ButtonPress :
         {
             DispatchEventToWindow( event, event.xbutton.window );
             break;
         }
-        case ::MotionNotify :
+        case MotionNotify :
         {
             DispatchEventToWindow( event, event.xmotion.window );
             break;
         }
-        case ::ResizeRequest :
+        case ResizeRequest :
         {
             DispatchEventToWindow( event, event.xresizerequest.window );
             break;
         }
-        case ::EnterNotify :
-        case ::LeaveNotify :
+        case EnterNotify :
+        case LeaveNotify :
         {
             DispatchEventToWindow( event, event.xcrossing.window );
             break;
         }
-        case ::FocusIn :
-        case ::FocusOut :
+        case FocusIn :
+        case FocusOut :
         {
             DispatchEventToWindow( event, event.xfocus.window );
             break;
         }
-        case ::Expose :
+        case Expose :
         {
             DispatchEventToWindow( event, event.xexpose.window );
             break;
         }
-        case ::GraphicsExpose :
+        case GraphicsExpose :
         {
             //DispatchEventToWindow( event, event.xgraphicsexpose.window );
             break;
         }
-        case ::NoExpose :
+        case NoExpose :
         {
             //DispatchEventToWindow( event, event.xnoexpose.window );
             break;
         }
-        case ::VisibiltyNotify :
+        case VisibilityNotify :
         {
             DispatchEventToWindow( event, event.xvisibility.window );
             break;
         }
-        case ::CreateNotify :
+        case CreateNotify :
         {
             DispatchEventToWindow( event, event.xcreatewindow.window );
             break;
         }
-        case ::DestroyNotify :
+        case DestroyNotify :
         {
             DispatchEventToWindow( event, event.xdestroywindow.window );
             break;
         }
-        case ::UnmapNotify :
+        case UnmapNotify :
         {
             DispatchEventToWindow( event, event.xunmap.window );
             break;
         }
-        case ::MapNotify :
+        case MapNotify :
         {
             DispatchEventToWindow( event, event.xmap.window );
             break;
         }
-        case ::MapRequest :
+        case MapRequest :
         {
             DispatchEventToWindow( event, event.xmaprequest.window );
             break;
         }
-        case ::ReparentNotify :
+        case ReparentNotify :
         {
             DispatchEventToWindow( event, event.xreparent.window );
             break;
         }
-        case ::ConfigureNotify :
+        case ConfigureNotify :
         {
             DispatchEventToWindow( event, event.xconfigure.window );
             break;
         }
-        case ::GravityNotify :
+        case GravityNotify :
         {
             DispatchEventToWindow( event, event.xgravity.window );
             break;
         }
-        case ::ConfigureRequest :
+        case ConfigureRequest :
         {
             DispatchEventToWindow( event, event.xconfigurerequest.window );
             break;
         }
-        case ::CirculateNotify :
+        case CirculateNotify :
         {
             DispatchEventToWindow( event, event.xcirculate.window );
             break;
         }
-        case ::CirculateRequest :
+        case CirculateRequest :
         {
             DispatchEventToWindow( event, event.xcirculaterequest.window );
             break;
         }
-        case ::PropertyNotify :
+        case PropertyNotify :
         {
             DispatchEventToWindow( event, event.xproperty.window );
             break;
         }
-        case ::SelectionClear :
+        case SelectionClear :
         {
             DispatchEventToWindow( event, event.xselectionclear.window );
             break;
         }
-        case ::SelectionRequest :
+        case SelectionRequest :
         {
             DispatchEventToWindow( event, event.xselectionrequest.owner );
             break;
         }
-        case ::SelectionNotify :
+        case SelectionNotify :
         {
             DispatchEventToWindow( event, event.xselection.requestor );
             break;
         }
-        case ::ColormapNotify :
+        case ColormapNotify :
         {
             DispatchEventToWindow( event, event.xcolormap.window );
             break;
         }
-        case ::ClientMessage :
+        case ClientMessage :
         {
             DispatchEventToWindow( event, event.xclient.window );
             break;
         }
-        case ::MappingNotify :
+        case MappingNotify :
         {
             DispatchEventToWindow( event, event.xmapping.window );
             break;
@@ -365,7 +364,7 @@ CX11EventDispatcher::ProcessEvent( ::XEvent& event )
             //DispatchEventToWindow( event, event.xerror.window );
             //break;
         //}
-        case ::KeymapNotify :
+        case KeymapNotify :
         {
             DispatchEventToWindow( event, event.xkeymap.window );
             break;
