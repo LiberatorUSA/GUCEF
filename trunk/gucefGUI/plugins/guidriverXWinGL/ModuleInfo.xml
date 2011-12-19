@@ -9,7 +9,8 @@
             <Dependency Name="gucefGUI" />
             <Dependency Name="gucefCORE" />
             <Dependency Name="gucefMT" />
-            <Dependency Name="Opengl32" />
+            <Dependency Name="X11" />
+            <Dependency Name="GL" />
         </Linker>
         <Preprocessor>
             <Define String="GUIDRIVERXWINGL_BUILD_MODULE" />

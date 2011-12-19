@@ -74,7 +74,7 @@
   #define GL_RGBA8 GL_RGBA
   #endif
 #else
-  #include <GL/GL.h>
+  #include <GL/gl.h>
 #endif
 
 /*-------------------------------------------------------------------------//

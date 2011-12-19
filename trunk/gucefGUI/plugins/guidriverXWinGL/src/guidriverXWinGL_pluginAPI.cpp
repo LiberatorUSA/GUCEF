@@ -28,12 +28,12 @@
 #define GUCEF_GUI_CWINDOWMANAGER_H
 #endif /* GUCEF_GUI_CWINDOWMANAGER_H ? */
 
-#ifndef GUIDRIVERWIN32GL_CWIN32GLWINDOWMANAGERIMP_H
-#include "guidriverWin32GL_CWin32GLWindowManagerImp.h"
-#define GUIDRIVERWIN32GL_CWIN32GLWINDOWMANAGERIMP_H
-#endif /* GUIDRIVERWIN32GL_CWIN32GLWINDOWMANAGERIMP_H ? */
+#ifndef GUIDRIVERXWINGL_CXWINGLWINDOWMANAGERIMP_H
+#include "guidriverXWinGL_CXWinGLWindowManagerImp.h"
+#define GUIDRIVERXWINGL_CXWINGLWINDOWMANAGERIMP_H
+#endif /* GUIDRIVERXWINGL_CXWINGLWINDOWMANAGERIMP_H ? */
 
-#include "guidriverWin32GL_pluginAPI.h"
+#include "guidriverXWinGL_pluginAPI.h"
 
 /*-------------------------------------------------------------------------//
 //                                                                         //
@@ -42,7 +42,7 @@
 //-------------------------------------------------------------------------*/
 
 namespace GUCEF {
-namespace GUIDRIVERWIN32GL {
+namespace GUIDRIVERXWINGL {
 
 /*-------------------------------------------------------------------------//
 //                                                                         //
@@ -50,7 +50,7 @@ namespace GUIDRIVERWIN32GL {
 //                                                                         //
 //-------------------------------------------------------------------------*/
 
-static TWin32GLWindowManagerImpPtr win32GlWindowManager = new CWin32GLWindowManagerImp();
+static TXWinGLWindowManagerImpPtr xwinGlWindowManager = new CXWinGLWindowManagerImp();
 
 /*-------------------------------------------------------------------------//
 //                                                                         //
@@ -62,7 +62,7 @@ CORE::Int32 GUCEF_PLUGIN_CALLSPEC_PREFIX
 GUCEFPlugin_Load( CORE::UInt32 argc, const char** argv ) GUCEF_PLUGIN_CALLSPEC_SUFFIX
 {GUCEF_TRACE;
 
-    GUI::CWindowManager::Instance()->RegisterBackend( "Win32GL", win32GlWindowManager );
+    GUI::CWindowManager::Instance()->RegisterBackend( "XWinGL", xwinGlWindowManager );
     return 1;
 }
 
@@ -72,7 +72,7 @@ void GUCEF_PLUGIN_CALLSPEC_PREFIX
 GUCEFPlugin_Unload( void ) GUCEF_PLUGIN_CALLSPEC_SUFFIX
 {GUCEF_TRACE;
 
-    GUI::CWindowManager::Instance()->UnregisterBackend( "Win32GL" );
+    GUI::CWindowManager::Instance()->UnregisterBackend( "XWinGL" );
 }
 
 /*--------------------------------------------------------------------------*/
@@ -102,7 +102,7 @@ const char* GUCEF_PLUGIN_CALLSPEC_PREFIX
 GUCEFPlugin_GetDescription( void ) GUCEF_PLUGIN_CALLSPEC_SUFFIX
 {GUCEF_TRACE;
 
-    return "Window management backend for Win32 using OpenGL";
+    return "Window management backend for X11 using OpenGL";
 }
 
 /*-------------------------------------------------------------------------//
@@ -111,7 +111,7 @@ GUCEFPlugin_GetDescription( void ) GUCEF_PLUGIN_CALLSPEC_SUFFIX
 //                                                                         //
 //-------------------------------------------------------------------------*/
 
-}; /* namespace GUIDRIVERWIN32GL */
+}; /* namespace GUIDRIVERXWINGL */
 }; /* namespace GUCEF */
 
 /*--------------------------------------------------------------------------*/

@@ -93,7 +93,7 @@ class GUCEF_CORE_PUBLIC_CPP CX11EventDispatcher : public CObservingNotifier
     void UnsubscribeOnBehalfOfWindow( CObserver& observer ,
                                       ::Window window     );
 
-    ::Display* GetDisplay( void );
+    ::Display* GetDisplay( void ) const;
 
     protected:
 

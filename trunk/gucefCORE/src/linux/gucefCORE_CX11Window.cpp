@@ -122,7 +122,7 @@ CX11Window::SetDisplay( ::Display* display )
 /*-------------------------------------------------------------------------*/
 
 ::Display*
-CX11Window::GetDisplay( void )
+CX11Window::GetDisplay( void ) const
 {GUCEF_TRACE;
 
     return m_display;

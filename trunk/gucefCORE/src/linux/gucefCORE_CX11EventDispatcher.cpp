@@ -394,7 +394,7 @@ CX11EventDispatcher::OnNotify( CNotifier* notifier    ,
 /*-------------------------------------------------------------------------*/
 
 ::Display*
-CX11EventDispatcher::GetDisplay( void )
+CX11EventDispatcher::GetDisplay( void ) const
 {GUCEF_TRACE;
 
     return m_display;
