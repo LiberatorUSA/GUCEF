@@ -221,8 +221,11 @@ add_subdirectory( gucefGUI/plugins/guidriverRocketOpenGL )
 if ( WIN32 )
   add_subdirectory( gucefINPUT/plugins/inputdriverMSWINMSG )
   add_subdirectory( gucefINPUT/plugins/inputdriverDIRECTINPUT8 )
+
   add_subdirectory( gucefGUI/plugins/guidriverWin32GL )
-elif( LINUX )
+
+elseif ( LINUX )
+
   add_subdirectory( gucefGUI/plugins/guidriverXWinGL )
 endif ()
 
