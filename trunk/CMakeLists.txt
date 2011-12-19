@@ -218,10 +218,12 @@ add_subdirectory( gucefIMAGE/plugins/imgpluginFreeImage )
 add_subdirectory( gucefINPUT/plugins/inputdriverOIS )
 add_subdirectory( gucefGUI/plugins/guidriverRocket )
 add_subdirectory( gucefGUI/plugins/guidriverRocketOpenGL )
-add_subdirectory( gucefGUI/plugins/guidriverWin32GL )
 if ( WIN32 )
   add_subdirectory( gucefINPUT/plugins/inputdriverMSWINMSG )
   add_subdirectory( gucefINPUT/plugins/inputdriverDIRECTINPUT8 )
+  add_subdirectory( gucefGUI/plugins/guidriverWin32GL )
+elif( LINUX )
+  add_subdirectory( gucefGUI/plugins/guidriverXWinGL )
 endif ()
 
 # Setup GUCEF Test applications

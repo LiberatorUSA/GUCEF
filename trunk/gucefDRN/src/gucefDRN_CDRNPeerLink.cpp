@@ -14,7 +14,7 @@
  *
  *  You should have received a copy of the GNU Lesser General Public
  *  License along with this library; if not, write to the Free Software
- *  Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA 
+ *  Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA
  */
 
 /*-------------------------------------------------------------------------//
@@ -22,6 +22,8 @@
 //      INCLUDES                                                           //
 //                                                                         //
 //-------------------------------------------------------------------------*/
+
+#include <string.h>
 
 #ifndef GUCEF_CORE_CSTREAMEREVENTS_H
 #include "CStreamerEvents.h"
@@ -83,10 +85,10 @@ namespace DRN {
 const CORE::CEvent CDRNPeerLink::ConnectedEvent = "GUCEF::DRN::CDRNPeerLink::ConnectedEvent";
 const CORE::CEvent CDRNPeerLink::DisconnectedEvent = "GUCEF::DRN::CDRNPeerLink::DisconnectedEvent";
 const CORE::CEvent CDRNPeerLink::SocketErrorEvent = "GUCEF::DRN::CDRNPeerLink::SocketErrorEvent";
-const CORE::CEvent CDRNPeerLink::LinkCorruptionEvent = "GUCEF::DRN::CDRNPeerLink::LinkCorruptionEvent"; 
-const CORE::CEvent CDRNPeerLink::LinkProtocolMismatchEvent = "GUCEF::DRN::CDRNPeerLink::LinkProtocolMismatchEvent"; 
-const CORE::CEvent CDRNPeerLink::LinkProtocolMatchEvent = "GUCEF::DRN::CDRNPeerLink::LinkProtocolMatchEvent"; 
-const CORE::CEvent CDRNPeerLink::LinkIncompatibleEvent = "GUCEF::DRN::CDRNPeerLink::LinkIncompatibleEvent"; 
+const CORE::CEvent CDRNPeerLink::LinkCorruptionEvent = "GUCEF::DRN::CDRNPeerLink::LinkCorruptionEvent";
+const CORE::CEvent CDRNPeerLink::LinkProtocolMismatchEvent = "GUCEF::DRN::CDRNPeerLink::LinkProtocolMismatchEvent";
+const CORE::CEvent CDRNPeerLink::LinkProtocolMatchEvent = "GUCEF::DRN::CDRNPeerLink::LinkProtocolMatchEvent";
+const CORE::CEvent CDRNPeerLink::LinkIncompatibleEvent = "GUCEF::DRN::CDRNPeerLink::LinkIncompatibleEvent";
 const CORE::CEvent CDRNPeerLink::LinkOperationalForPeerEvent = "GUCEF::DRN::CDRNPeerLink::LinkOperationalForPeerEvent";
 const CORE::CEvent CDRNPeerLink::LinkOperationalForUsEvent = "GUCEF::DRN::CDRNPeerLink::LinkOperationalForUsEvent";
 const CORE::CEvent CDRNPeerLink::IllegalRequestEvent = "GUCEF::DRN::CDRNPeerLink::IllegalRequestEvent";
@@ -102,7 +104,7 @@ const CORE::CEvent CDRNPeerLink::DataGroupListReceivedFromPeerEvent = "GUCEF::DR
 const CORE::CEvent CDRNPeerLink::SubscribedToDataGroupEvent = "GUCEF::DRN::CDRNPeerLink::SubscribedToDataGroupEvent";
 const CORE::CEvent CDRNPeerLink::SubscribedToDataStreamEvent = "GUCEF::DRN::CDRNPeerLink::SubscribedToDataStreamEvent";
 const CORE::CEvent CDRNPeerLink::UnsubscribedFromDataGroupEvent = "GUCEF::DRN::CDRNPeerLink::UnsubscribedFromDataGroupEvent";
-const CORE::CEvent CDRNPeerLink::UnsubscribedFromDataStreamEvent = "GUCEF::DRN::CDRNPeerLink::UnsubscribedFromDataStreamEvent";    
+const CORE::CEvent CDRNPeerLink::UnsubscribedFromDataStreamEvent = "GUCEF::DRN::CDRNPeerLink::UnsubscribedFromDataStreamEvent";
 
 /*-------------------------------------------------------------------------//
 //                                                                         //
@@ -113,7 +115,7 @@ const CORE::CEvent CDRNPeerLink::UnsubscribedFromDataStreamEvent = "GUCEF::DRN::
 void
 CDRNPeerLink::RegisterEvents( void )
 {GUCEF_TRACE;
-    
+
     ConnectedEvent.Initialize();
     DisconnectedEvent.Initialize();
     SocketErrorEvent.Initialize();
@@ -161,22 +163,22 @@ CDRNPeerLink::CDRNPeerLink( CDRNNode& parentNode                   ,
 
     assert( m_udpSocket != NULL );
     assert( m_parentNode != NULL );
-    assert( m_tcpConnection != NULL );    
+    assert( m_tcpConnection != NULL );
     RegisterEvents();
-    
+
     // Verify that we are connected
     if ( tcpConnection.IsActive() )
     {
-        m_linkData = new CDRNPeerLinkData( *this );        
+        m_linkData = new CDRNPeerLinkData( *this );
         SubscribeTo( &tcpConnection );
-        
+
         // Init the connect back settings based on what we have available
         // Small chance these values allow for a connection to be established but it's
         // the best we have until we get connect back info from the peer itself
         m_peerTCPConnectBackInfo.SetHostname( tcpConnection.GetRemoteHostName() );
         m_peerTCPConnectBackInfo.SetPortInHostByteOrder( tcpConnection.GetRemoteTCPPort() );
-                
-        NotifyObservers( ConnectedEvent );        
+
+        NotifyObservers( ConnectedEvent );
         SendGreetingMessage();
     }
 }
@@ -211,7 +213,7 @@ CDRNPeerLink::SendGreetingMessage( void )
     char sendBuffer[ 8 ] = { DRN_TRANSMISSION_START, 0, 0, DRN_PEERCOMM_GREETING, DRN_PROTOCOL_MAYOR_VERION, DRN_PROTOCOL_MINOR_VERION, DRN_PROTOCOL_PATCH_VERION, DRN_TRANSMISSION_END };
     UInt16 payloadSize = 4;
     memcpy( sendBuffer+1, &payloadSize, 2 );
-    
+
     if ( !SendData( sendBuffer, 8, false ) )
     {
         // Failed to send data, something is very wrong
@@ -250,11 +252,11 @@ CDRNPeerLink::GetPeerHostName( void ) const
 }
 
 /*-------------------------------------------------------------------------*/
-    
+
 UInt16
 CDRNPeerLink::GetPeerTCPPort( void ) const
-{GUCEF_TRACE;    
-    
+{GUCEF_TRACE;
+
     if ( NULL != m_tcpConnection )
     {
         return m_tcpConnection->GetRemoteTCPPort();
@@ -263,12 +265,12 @@ CDRNPeerLink::GetPeerTCPPort( void ) const
 }
 
 /*-------------------------------------------------------------------------*/
-    
+
 bool
 CDRNPeerLink::IsUDPPossible( void ) const
 {GUCEF_TRACE;
 
-    return m_peerUDPPortOpened             && 
+    return m_peerUDPPortOpened             &&
            m_parentNode->IsUDPPortOpened() &&
            m_udpSocket != NULL;
 }
@@ -326,7 +328,7 @@ CDRNPeerLink::SendData( const void* dataSource                   ,
                         const bool allowUnreliable /* = false */ )
 {GUCEF_TRACE;
 
-    if ( allowUnreliable && 
+    if ( allowUnreliable &&
          IsUDPPossible()  )
     {
         // Send the data using UDP
@@ -335,11 +337,11 @@ CDRNPeerLink::SendData( const void* dataSource                   ,
         return m_udpSocket->SendPacketTo( ip         ,
                                           dataSource ,
                                           dataSize   ) >= 0;
-                                   
+
     }
     else
     if ( m_tcpConnection != NULL )
-    {        
+    {
         // Send the data using TCP
         return m_tcpConnection->Send( dataSource ,
                                       dataSize   );
@@ -361,25 +363,25 @@ CDRNPeerLink::SendServiceTypeMessage( void )
     {
         serviceName = validator->GetServiceName( *this );
     }
-    
+
     // Compose the service type message
     CORE::CDynamicBuffer sendBuffer( serviceName.Length() + 5 , true );
     sendBuffer[ 0 ] = DRN_TRANSMISSION_START;
     sendBuffer[ 3 ] = DRN_PEERCOMM_SERVICE;
     sendBuffer[ serviceName.Length() + 4 ] = DRN_TRANSMISSION_END;
-    
+
     UInt16 payloadSize = (UInt16)serviceName.Length()+1;
     sendBuffer.CopyFrom( 1, 2, &payloadSize );
-    sendBuffer.CopyFrom( 4, serviceName.Length(), serviceName.C_String() );    
-    
+    sendBuffer.CopyFrom( 4, serviceName.Length(), serviceName.C_String() );
+
     // Send the service name message
-    if ( !SendData( sendBuffer.GetConstBufferPtr()   , 
-                    (UInt16)sendBuffer.GetDataSize() , 
+    if ( !SendData( sendBuffer.GetConstBufferPtr()   ,
+                    (UInt16)sendBuffer.GetDataSize() ,
                     false                            ) )
     {
         // Failed to send data, something is very wrong
         CloseLink();
-    }    
+    }
 }
 
 /*-------------------------------------------------------------------------*/
@@ -405,7 +407,7 @@ CDRNPeerLink::OnPeerConnectBackInfo( const char* data      ,
         m_peerUDPPortOpened = *(data+1) == 1;
         m_peerUDPPort = *reinterpret_cast< const UInt16* >( data+2 );
         m_peerTCPConnectBackInfo.SetPortInHostByteOrder( *reinterpret_cast< const UInt16* >( data+4 ) );
-        
+
         CORE::CString hostname;
         hostname.Scan( data+6, dataSize-6 );
         m_peerTCPConnectBackInfo.SetHostname( hostname );
@@ -433,7 +435,7 @@ CDRNPeerLink::SendConnectBackInfo( void )
         m_parentNode->GetListenAddress( hostAddress );
         udpPort = m_parentNode->GetUDPPort();
     }
-    
+
     // Compose the message
     UInt16 tcpPort = hostAddress.GetPortInHostByteOrder();
     UInt32 hostnameLength = hostAddress.GetHostname().Length();
@@ -450,8 +452,8 @@ CDRNPeerLink::SendConnectBackInfo( void )
     sendBuffer.CopyFrom( 1, 2, &payloadSize );
 
     // Send the connect back info
-    SendData( sendBuffer.GetConstBufferPtr()  , 
-             (UInt16)sendBuffer.GetDataSize() , 
+    SendData( sendBuffer.GetConstBufferPtr()  ,
+             (UInt16)sendBuffer.GetDataSize() ,
              false                            );
 }
 
@@ -460,12 +462,12 @@ CDRNPeerLink::SendConnectBackInfo( void )
 void
 CDRNPeerLink::SendIncompatibleLinkMessage( void )
 {GUCEF_TRACE;
-    
+
     // Compose the message
     char sendBuffer[ 5 ] = { DRN_TRANSMISSION_START, 0, 0, DRN_PEERCOMM_INCOMPATIBLE_LINK, DRN_TRANSMISSION_END };
     UInt16 payloadSize = 1;
     memcpy( sendBuffer+1, &payloadSize, 2 );
-    
+
     if ( !SendData( sendBuffer, 5, false ) )
     {
         // Failed to send data, something is very wrong
@@ -483,7 +485,7 @@ CDRNPeerLink::SendLinkOperationalMessage( void )
     char sendBuffer[ 5 ] = { DRN_TRANSMISSION_START, 0, 0, DRN_PEERCOMM_LINK_OPERATIONAL, DRN_TRANSMISSION_END };
     UInt16 payloadSize = 1;
     memcpy( sendBuffer+1, &payloadSize, 2 );
-    
+
     if ( !SendData( sendBuffer, 5, false ) )
     {
         // Failed to send data, something is very wrong
@@ -502,12 +504,12 @@ CDRNPeerLink::SendAuthenticationRequiredMessage( void )
     char sendBuffer[ 5 ] = { DRN_TRANSMISSION_START, 0, 0, DRN_PEERCOMM_AUTHENTICATION_REQUIRED, DRN_TRANSMISSION_END };
     UInt16 payloadSize = 1;
     memcpy( sendBuffer+1, &payloadSize, 2 );
-    
+
     if ( !SendData( sendBuffer, 5, false ) )
     {
         // Failed to send data, something is very wrong
         CloseLink();
-    }    
+    }
 }
 
 /*-------------------------------------------------------------------------*/
@@ -530,7 +532,7 @@ CDRNPeerLink::OnPeerServicesCompatible( void )
             return;
         }
     }
-    
+
     // Peer authentication is optional, we can proceed without it
     m_isLinkOperationalForPeer = true;
     SendLinkOperationalMessage();
@@ -546,7 +548,7 @@ CDRNPeerLink::OnPeerServiceType( const char* data      ,
 
     // Obtain the local service name
     CORE::CString localService;
-    CIDRNPeerValidator* validator = m_parentNode->GetPeervalidator();        
+    CIDRNPeerValidator* validator = m_parentNode->GetPeervalidator();
     if ( NULL != validator )
     {
         localService = validator->GetServiceName( *this );
@@ -558,7 +560,7 @@ CDRNPeerLink::OnPeerServiceType( const char* data      ,
         // Build the remote service string
         UInt32 serviceStringSize = dataSize - 1;
         CORE::CString remoteService( data+1, serviceStringSize );
-        
+
         bool isValidService = false;
         if ( NULL != validator )
         {
@@ -570,7 +572,7 @@ CDRNPeerLink::OnPeerServiceType( const char* data      ,
             // Simply compare the service names
             isValidService = remoteService == localService;
         }
-                
+
         if ( isValidService )
         {
             // The service names match, the link is compatible
@@ -597,9 +599,9 @@ CDRNPeerLink::OnPeerServiceType( const char* data      ,
         NotifyObservers( LinkIncompatibleEvent );
         SendIncompatibleLinkMessage();
         CloseLink();
-        return;        
+        return;
     }
-    
+
     //Both services are without a name: always considered compatible
     OnPeerServicesCompatible();
 }
@@ -609,9 +611,9 @@ CDRNPeerLink::OnPeerServiceType( const char* data      ,
 void
 CDRNPeerLink::OnPeerLinkOperational( void )
 {GUCEF_TRACE;
-   
-    m_isLinkOperationalForUs = true;       
-    NotifyObservers( LinkOperationalForUsEvent );       
+
+    m_isLinkOperationalForUs = true;
+    NotifyObservers( LinkOperationalForUsEvent );
 
     SendConnectBackInfo();
 }
@@ -628,12 +630,12 @@ CDRNPeerLink::OnPeerDataGroupRequest( void )
         // Obtain a list of streams publicized on this link
         CDRNPeerLinkData::TDRNDataGroupList dataGroupList;
         m_linkData->GetPublicizedDataGroups( dataGroupList );
-        
-        // Compose the list message 
+
+        // Compose the list message
         CORE::CDynamicBuffer streamBuffer( 4, true );
         streamBuffer[ 0 ] = DRN_TRANSMISSION_START;
         streamBuffer[ 3 ] = DRN_PEERCOMM_DATAGROUPLIST;
-        
+
         // Copy the list into the buffer
         CDRNPeerLinkData::TDRNDataGroupList::iterator i = dataGroupList.begin();
         while ( i != dataGroupList.end() )
@@ -642,15 +644,15 @@ CDRNPeerLink::OnPeerDataGroupRequest( void )
             streamBuffer.Append( (*i)->GetName().C_String(), (*i)->GetName().Length()+1 );
             ++i;
         }
-        
+
         // Fill in the payload size segment
         UInt16 payloadSize = (UInt16) streamBuffer.GetDataSize() - 3;
         streamBuffer.CopyFrom( 1, 2, &payloadSize );
-        
+
         // Add the transmission delimiter
         UInt8 delimiter = DRN_TRANSMISSION_END;
         streamBuffer.Append( &delimiter, 1 );
-        
+
         if ( !SendData( streamBuffer.GetBufferPtr()        ,
                         (UInt16)streamBuffer.GetDataSize() ,
                         false                              ) )
@@ -677,12 +679,12 @@ CDRNPeerLink::OnPeerStreamListRequest( void )
         // Obtain a list of streams publicized on this link
         CDRNPeerLinkData::TDRNDataStreamList dataStreamList;
         m_linkData->GetPublicizedDataStreams( dataStreamList );
-        
-        // Compose the list message 
+
+        // Compose the list message
         CORE::CDynamicBuffer streamBuffer( 4, true );
         streamBuffer[ 0 ] = DRN_TRANSMISSION_START;
         streamBuffer[ 3 ] = DRN_PEERCOMM_STREAMLIST;
-        
+
         // Copy the list into the buffer
         CDRNPeerLinkData::TDRNDataStreamList::iterator i = dataStreamList.begin();
         while ( i != dataStreamList.end() )
@@ -691,15 +693,15 @@ CDRNPeerLink::OnPeerStreamListRequest( void )
             streamBuffer.Append( (*i)->GetName().C_String(), (*i)->GetName().Length()+1 );
             ++i;
         }
-        
+
         // Fill in the payload size segment
         UInt16 payloadSize = (UInt16) streamBuffer.GetDataSize() - 3;
         streamBuffer.CopyFrom( 1, 2, &payloadSize );
-        
+
         // Add the transmission delimiter
         UInt8 delimiter = DRN_TRANSMISSION_END;
         streamBuffer.Append( &delimiter, 1 );
-        
+
         if ( !SendData( streamBuffer.GetBufferPtr()        ,
                         (UInt16)streamBuffer.GetDataSize() ,
                         false                              ) )
@@ -742,14 +744,14 @@ CDRNPeerLink::OnPeerStreamListReceived( const char* data      ,
     if ( m_isLinkOperationalForUs )
     {
         TStringList streamNameList;
-        
+
         CORE::CString tmpStr;
         UInt32 i=1;
         while ( i < dataSize )
-        {                
+        {
             tmpStr.Scan( data+i, dataSize-i );
             i += tmpStr.Length();
-            
+
             if ( tmpStr.Length() > 0 )
             {
                 streamNameList.push_back( tmpStr );
@@ -759,7 +761,7 @@ CDRNPeerLink::OnPeerStreamListReceived( const char* data      ,
                 break;
             }
         }
-        
+
         StreamListReceivedFromPeerEventData eData( &streamNameList );
         NotifyObservers( StreamListReceivedFromPeerEvent, &eData );
     }
@@ -767,7 +769,7 @@ CDRNPeerLink::OnPeerStreamListReceived( const char* data      ,
     {
         // We should not get here
         NotifyObservers( LinkCorruptionEvent );
-        
+
         // Terminate the link
         CloseLink();
     }
@@ -784,14 +786,14 @@ CDRNPeerLink::OnPeerPeerListReceived( const char* data      ,
     if ( m_isLinkOperationalForUs )
     {
         TStringList peerNameList;
-        
+
         CORE::CString tmpStr;
         UInt32 i=1;
         while ( i < dataSize )
-        {                
+        {
             tmpStr.Scan( data+i, dataSize-i );
             i += tmpStr.Length();
-            
+
             if ( tmpStr.Length() > 0 )
             {
                 peerNameList.push_back( tmpStr );
@@ -801,7 +803,7 @@ CDRNPeerLink::OnPeerPeerListReceived( const char* data      ,
                 break;
             }
         }
-        
+
         PeerListReceivedFromPeerEventData eData( &peerNameList );
         NotifyObservers( PeerListReceivedFromPeerEvent, &eData );
     }
@@ -809,10 +811,10 @@ CDRNPeerLink::OnPeerPeerListReceived( const char* data      ,
     {
         // We should not get here
         NotifyObservers( LinkCorruptionEvent );
-        
+
         // Terminate the link
         CloseLink();
-    }    
+    }
 }
 
 /*-------------------------------------------------------------------------*/
@@ -826,14 +828,14 @@ CDRNPeerLink::OnPeerDataGroupListReceived( const char* data      ,
     if ( m_isLinkOperationalForUs )
     {
         TStringList dataGroupNameList;
-        
+
         CORE::CString tmpStr;
         UInt32 i=1;
         while ( i < dataSize )
-        {                
+        {
             tmpStr.Scan( data+i, dataSize-i );
             i += tmpStr.Length();
-            
+
             if ( tmpStr.Length() > 0 )
             {
                 dataGroupNameList.push_back( tmpStr );
@@ -843,7 +845,7 @@ CDRNPeerLink::OnPeerDataGroupListReceived( const char* data      ,
                 break;
             }
         }
-        
+
         DataGroupListReceivedFromPeerEventData eData( &dataGroupNameList );
         NotifyObservers( DataGroupListReceivedFromPeerEvent, &eData );
     }
@@ -851,10 +853,10 @@ CDRNPeerLink::OnPeerDataGroupListReceived( const char* data      ,
     {
         // We should not get here
         NotifyObservers( LinkCorruptionEvent );
-        
+
         // Terminate the link
         CloseLink();
-    }    
+    }
 }
 
 /*-------------------------------------------------------------------------*/
@@ -873,16 +875,16 @@ CDRNPeerLink::OnPeerDataGroupItemMutation( const char* data             ,
         {
             UInt16 dataGroupID = *reinterpret_cast< const UInt16* >( data+1 );
             UInt16 itemIDSize = *reinterpret_cast< const UInt16* >( data+3 );
-            
+
             // Sanity check on the item ID size
             if ( itemIDSize > 0 )
             {
                 CORE::CDynamicBuffer itemID;
                 CORE::CDynamicBuffer itemValue;
-                
+
                 itemID.LinkTo( data+5, itemIDSize );
                 itemValue.LinkTo( data+5+itemIDSize, dataSize-itemIDSize-5 );
-                
+
                 // Try to find the data group, we should only get this type of
                 // update if we are already subscribed to the given data group
                 CDRNPeerLinkData::TDRNDataGroupPtr dataGroup = m_linkData->GetSubscribedDataGroupWithID( dataGroupID );
@@ -895,16 +897,16 @@ CDRNPeerLink::OnPeerDataGroupItemMutation( const char* data             ,
                             // First check to make sure no item has already been added with the given ID
                             if ( dataGroup->HasItem( itemID ) )
                             {
-                                // An item with the given ID already exists, we will delete 
+                                // An item with the given ID already exists, we will delete
                                 // the item first
                                 dataGroup->RemoveItem( itemID );
-                            }    
-                            
+                            }
+
                             // Add the item to the data group
                             dataGroup->SetItem( itemID    ,
                                                 itemValue ,
                                                 true      );
-                            return;                        
+                            return;
                         }
                         case DATAGROUPDELTA_UPDATE :
                         {
@@ -912,20 +914,20 @@ CDRNPeerLink::OnPeerDataGroupItemMutation( const char* data             ,
                             dataGroup->SetItem( itemID    ,
                                                 itemValue ,
                                                 true      );
-                            return;                        
+                            return;
                         }
                         case DATAGROUPDELTA_REMOVE :
                         {
                             // Overwrite or add the item to the data group
                             dataGroup->RemoveItem( itemID );
-                            return;                        
+                            return;
                         }
                         default :
                         {
                             // If we get here you forgot to add support for a new mutation type
                             GUCEF_ASSERT_ALWAYS;
                             return;
-                        }                                                
+                        }
                     }
                 }
             }
@@ -934,7 +936,7 @@ CDRNPeerLink::OnPeerDataGroupItemMutation( const char* data             ,
 
     // We should not get here
     NotifyObservers( LinkCorruptionEvent );
-    
+
     // Terminate the link
     CloseLink();
 }
@@ -948,12 +950,12 @@ CDRNPeerLink::OnPeerAuthenticationSuccess( void )
     // We have successfully authenticated with the peer
     m_isAuthenticated = true;
     NotifyObservers( AuthenticationSuccessEvent );
-    
+
     if ( !m_isLinkOperationalForPeer )
     {
-        // Check if the link is now operational,..    
+        // Check if the link is now operational,..
         if ( !m_isPeerAuthenticated )
-        {    
+        {
             // Check if a validator mechanism has been provided to the node
             CIDRNPeerValidator* validator = m_parentNode->GetPeervalidator();
             if ( validator != NULL )
@@ -967,7 +969,7 @@ CDRNPeerLink::OnPeerAuthenticationSuccess( void )
                 }
             }
         }
-        
+
         // The link is now operational for the peer
         m_isLinkOperationalForPeer = true;
         NotifyObservers( LinkOperationalForPeerEvent );
@@ -976,7 +978,7 @@ CDRNPeerLink::OnPeerAuthenticationSuccess( void )
 }
 
 /*-------------------------------------------------------------------------*/
-    
+
 void
 CDRNPeerLink::OnPeerAuthenticationFailed( void )
 {GUCEF_TRACE;
@@ -995,7 +997,7 @@ CDRNPeerLink::SendAuthenticationSuccess( void )
     char sendBuffer[ 5 ] = { DRN_TRANSMISSION_START, 0, 0, DRN_PEERCOMM_AUTHENTICATION_SUCCESS, DRN_TRANSMISSION_END };
     UInt16 payloadSize = 1;
     memcpy( sendBuffer+1, &payloadSize, 2 );
-    
+
     if ( !SendData( sendBuffer, 5, false ) )
     {
         // Failed to send data, something is very wrong
@@ -1005,7 +1007,7 @@ CDRNPeerLink::SendAuthenticationSuccess( void )
 }
 
 /*-------------------------------------------------------------------------*/
-    
+
 void
 CDRNPeerLink::SendAuthenticationFailed( void )
 {GUCEF_TRACE;
@@ -1014,7 +1016,7 @@ CDRNPeerLink::SendAuthenticationFailed( void )
     char sendBuffer[ 5 ] = { DRN_TRANSMISSION_START, 0, 0, DRN_PEERCOMM_AUTHENTICATION_FAILED, DRN_TRANSMISSION_END };
     UInt16 payloadSize = 1;
     memcpy( sendBuffer+1, &payloadSize, 2 );
-    
+
     if ( !SendData( sendBuffer, 5, false ) )
     {
         // Failed to send data, something is very wrong
@@ -1035,27 +1037,27 @@ CDRNPeerLink::SendAuthentication( const CORE::CString& ourAccountName ,
     sendBuffer[ 0 ] = DRN_TRANSMISSION_START;
     sendBuffer[ 3 ] = DRN_PEERCOMM_AUTHENTICATION;
     sendBuffer[ ourAccountName.Length() + ourPassword.Length() + 5 ] = DRN_TRANSMISSION_END;
-    
+
     UInt16 payloadSize = (UInt16) ( 2 + ourAccountName.Length() + ourPassword.Length() );
     sendBuffer.CopyFrom( 1, 2, &payloadSize );
     if ( ourAccountName.Length() > 0 )
     {
-        sendBuffer.CopyFrom( 4, ourAccountName.Length()+1, ourAccountName.C_String() );    
+        sendBuffer.CopyFrom( 4, ourAccountName.Length()+1, ourAccountName.C_String() );
     }
     else
     {
         sendBuffer[ 4 ] = '\0';
     }
     sendBuffer.CopyFrom( 5 + ourAccountName.Length(), ourPassword.Length(), ourPassword.C_String() );
-    
+
     // Send the authentication message
-    if ( !SendData( sendBuffer.GetConstBufferPtr()   , 
-                    (UInt16)sendBuffer.GetDataSize() , 
+    if ( !SendData( sendBuffer.GetConstBufferPtr()   ,
+                    (UInt16)sendBuffer.GetDataSize() ,
                     false                            ) )
     {
         // Failed to send data, something is very wrong
         CloseLink();
-    }    
+    }
 }
 
 /*-------------------------------------------------------------------------*/
@@ -1071,20 +1073,20 @@ CDRNPeerLink::OnPeerAuthentication( const char* data      ,
         CIDRNPeerValidator* validator = m_parentNode->GetPeervalidator();
         if ( validator != NULL )
         {
-            // A validator is available for use,..            
+            // A validator is available for use,..
             // Sanity check on the payload size
             if ( dataSize > 2 )
             {
                 CORE::CString peerAccount;
                 CORE::CString peerPassword;
-                
+
                 peerAccount.Scan( data+1, dataSize-1 );
                 if ( peerAccount.Length() < dataSize-1 )
                 {
-                    peerPassword.Set( data+2+peerAccount.Length()     , 
+                    peerPassword.Set( data+2+peerAccount.Length()     ,
                                       dataSize-2-peerAccount.Length() );
                 }
-                
+
                 if ( validator->IsPeerLoginValid( *this        ,
                                                   peerAccount  ,
                                                   peerPassword ) )
@@ -1092,33 +1094,33 @@ CDRNPeerLink::OnPeerAuthentication( const char* data      ,
                     // The peer has successfully authenticated
                     m_isPeerAuthenticated = true;
                     SendAuthenticationSuccess();
-                    NotifyObservers( PeerAuthenticationSuccessEvent ); 
-                    
+                    NotifyObservers( PeerAuthenticationSuccessEvent );
+
                     // The link has now become operational for the peer
                     m_isLinkOperationalForPeer = true;
-                    SendLinkOperationalMessage();                   
+                    SendLinkOperationalMessage();
                     NotifyObservers( LinkOperationalForPeerEvent );
                     return;
                 }
                 else
                 {
                     // Invalid authentication info has been provided by the peer
-                    m_isPeerAuthenticated = false;                    
-                    SendAuthenticationFailed();                    
+                    m_isPeerAuthenticated = false;
+                    SendAuthenticationFailed();
                     NotifyObservers( PeerAuthenticationFailureEvent );
                     return;
-                }                                
-            }            
+                }
+            }
         }
     }
     else
     {
         // We should not get here
         NotifyObservers( LinkCorruptionEvent );
-        
+
         // Terminate the link
         CloseLink();
-    }    
+    }
 }
 
 /*-------------------------------------------------------------------------*/
@@ -1149,15 +1151,15 @@ CDRNPeerLink::OnPeerAuthenticationRequest( void )
         // This is a problem,.. we do not have any login info. This means we
         // cannot send any authentication even though the peer requires it.
         NotifyObservers( AuthenticationFailureEvent );
-        
+
         // Terminate the link
-        CloseLink();     
+        CloseLink();
     }
     else
     {
         // We should not get here
         NotifyObservers( LinkCorruptionEvent );
-        
+
         // Terminate the link
         CloseLink();
     }
@@ -1173,13 +1175,13 @@ CDRNPeerLink::SendNotAllowed( void )
     char sendBuffer[ 5 ] = { DRN_TRANSMISSION_START, 0, 0, DRN_PEERCOMM_NOT_ALLOWED, DRN_TRANSMISSION_END };
     UInt16 payloadSize = 1;
     memcpy( sendBuffer+1, &payloadSize, 2 );
-    
+
     if ( !SendData( sendBuffer, 5, false ) )
     {
         // Failed to send data, something is very wrong
         CloseLink();
         return;
-    }    
+    }
 }
 
 /*-------------------------------------------------------------------------*/
@@ -1194,20 +1196,20 @@ CDRNPeerLink::SendSubscribedToDataGroup( const CORE::CString& groupName ,
     sendBuffer[ 0 ] = DRN_TRANSMISSION_START;
     sendBuffer[ 3 ] = DRN_PEERCOMM_SUBSCRIBED_TO_DATAGROUP;
     sendBuffer[ groupName.Length() + 6 ] = DRN_TRANSMISSION_END;
-	sendBuffer.CopyFrom( 6, groupName.Length(), groupName.C_String() );    
+	sendBuffer.CopyFrom( 6, groupName.Length(), groupName.C_String() );
     sendBuffer.CopyFrom( 4, 2, &id );
 
     UInt16 payloadSize = (UInt16) ( 3 + groupName.Length() );
     sendBuffer.CopyFrom( 1, 2, &payloadSize );
-    
+
     // Send the authentication message
-    if ( !SendData( sendBuffer.GetConstBufferPtr()   , 
-                    (UInt16)sendBuffer.GetDataSize() , 
+    if ( !SendData( sendBuffer.GetConstBufferPtr()   ,
+                    (UInt16)sendBuffer.GetDataSize() ,
                     false                            ) )
     {
         // Failed to send data, something is very wrong
         CloseLink();
-    }  
+    }
 }
 
 /*-------------------------------------------------------------------------*/
@@ -1222,20 +1224,20 @@ CDRNPeerLink::SendSubscribedToDataStream( const CORE::CString& streamName ,
     sendBuffer[ 0 ] = DRN_TRANSMISSION_START;
     sendBuffer[ 3 ] = DRN_PEERCOMM_SUBSCRIBED_TO_DATASTREAM;
     sendBuffer[ streamName.Length() + 6 ] = DRN_TRANSMISSION_END;
-	sendBuffer.CopyFrom( 6, streamName.Length(), streamName.C_String() );    
+	sendBuffer.CopyFrom( 6, streamName.Length(), streamName.C_String() );
     sendBuffer.CopyFrom( 4, 2, &id );
 
     UInt16 payloadSize = (UInt16) ( 3 + streamName.Length() );
     sendBuffer.CopyFrom( 1, 2, &payloadSize );
-    
+
     // Send the authentication message
-    if ( !SendData( sendBuffer.GetConstBufferPtr()   , 
-                    (UInt16)sendBuffer.GetDataSize() , 
+    if ( !SendData( sendBuffer.GetConstBufferPtr()   ,
+                    (UInt16)sendBuffer.GetDataSize() ,
                     false                            ) )
     {
         // Failed to send data, something is very wrong
         CloseLink();
-    }  
+    }
 }
 
 /*-------------------------------------------------------------------------*/
@@ -1251,17 +1253,17 @@ CDRNPeerLink::OnSubscribedToPeerDataGroup( const char* data      ,
         // Extract the data group ID
         UInt16 dataGroupID = 0;
         memcpy( &dataGroupID, data+1, 2 );
-        
+
         // Extract the data group name
         CORE::CString dataGroupName;
         dataGroupName.Scan( data+3, dataSize-3 );
 
         if ( dataGroupName.Length() > 0 )
-        {                
+        {
             // Apply the subscription in the administration
             TDRNDataGroupPtr dataGroup = m_linkData->AddSubscribedDataGroup( dataGroupName ,
                                                                              dataGroupID   );
-            
+
             SubscribedToDataGroupEventData eData( dataGroup );
             NotifyObservers( SubscribedToDataGroupEvent, &eData );
         }
@@ -1270,7 +1272,7 @@ CDRNPeerLink::OnSubscribedToPeerDataGroup( const char* data      ,
     {
         // We should not get here
         NotifyObservers( LinkCorruptionEvent );
-        
+
         // Terminate the link
         CloseLink();
     }
@@ -1289,17 +1291,17 @@ CDRNPeerLink::OnSubscribedToPeerDataStream( const char* data      ,
         // Extract the data group ID
         UInt16 dataStreamID = 0;
         memcpy( &dataStreamID, data+1, 2 );
-        
+
         // Extract the data group name
         CORE::CString dataStreamName;
         dataStreamName.Scan( data+3, dataSize-3 );
-        
+
         if ( dataStreamName.Length() > 0 )
         {
             // Apply the subscription in the administration
             TDRNDataStreamPtr dataStream = m_linkData->AddSubscribedDataStream( dataStreamName ,
                                                                                 dataStreamID   );
-            
+
             SubscribedToDataStreamEventData eData( dataStream );
             NotifyObservers( SubscribedToDataStreamEvent, &eData );
         }
@@ -1308,7 +1310,7 @@ CDRNPeerLink::OnSubscribedToPeerDataStream( const char* data      ,
     {
         // We should not get here
         NotifyObservers( LinkCorruptionEvent );
-        
+
         // Terminate the link
         CloseLink();
     }
@@ -1329,7 +1331,7 @@ CDRNPeerLink::OnPeerSubscribeToDataGroupRequest( const char* data      ,
             // First we extract a name
             CORE::CString dataGroupName;
             dataGroupName.Scan( data+1, dataSize-1 );
-            
+
             // Sanity check on the name
             if ( dataGroupName.Length() > 0 )
             {
@@ -1346,14 +1348,14 @@ CDRNPeerLink::OnPeerSubscribeToDataGroupRequest( const char* data      ,
 					UInt16 id;
 					m_linkData->GetPublicizedDataGroupID( dataGroupName, id );
 					SendSubscribedToDataGroup( dataGroupName, id );
-					
+
 					// Send all the current data group values to the peer so the remote
-					// and local data groups are in-sync. This initial dispatch will be send 
+					// and local data groups are in-sync. This initial dispatch will be send
 					// in a reliable fashion regardless of the settings
                     const CORE::CDynamicBuffer* itemID = NULL;
                     const CORE::CDynamicBuffer* itemData = NULL;
                     UInt32 items = dataPtr->GetItemCount();
-                    
+
                     for ( UInt32 i=0; i<items; ++i )
                     {
                         if ( dataPtr->GetIDAndDataAtIndex( i         ,
@@ -1364,7 +1366,7 @@ CDRNPeerLink::OnPeerSubscribeToDataGroupRequest( const char* data      ,
                                                            *itemID            ,
                                                            *itemData          ,
                                                            false              ,
-                                                           DATAGROUPDELTA_ADD );            
+                                                           DATAGROUPDELTA_ADD );
                         }
                     }
                 }
@@ -1379,7 +1381,7 @@ CDRNPeerLink::OnPeerSubscribeToDataGroupRequest( const char* data      ,
 }
 
 /*-------------------------------------------------------------------------*/
-    
+
 void
 CDRNPeerLink::OnPeerSubscribeToStreamRequest( const char* data      ,
                                               const UInt32 dataSize )
@@ -1393,7 +1395,7 @@ CDRNPeerLink::OnPeerSubscribeToStreamRequest( const char* data      ,
             // First we extract a name
             CORE::CString dataStreamName;
             dataStreamName.Scan( data+1, dataSize-1 );
-            
+
             // Sanity check on the name
             if ( dataStreamName.Length() > 0 )
             {
@@ -1409,10 +1411,10 @@ CDRNPeerLink::OnPeerSubscribeToStreamRequest( const char* data      ,
 					// data group in the future
 					UInt16 id;
 					m_linkData->GetPublicizedDataStreamID( dataStreamName, id );
-					SendSubscribedToDataStream( dataStreamName, id );                    
+					SendSubscribedToDataStream( dataStreamName, id );
                 }
             }
-        } 
+        }
     }
     else
     {
@@ -1436,12 +1438,12 @@ CDRNPeerLink::OnPeerGreeting( const char* data      ,
         char drnProtocolMayorVersion = data[ 1 ];
         char drnProtocolMinorVersion = data[ 2 ];
         char drnProtocolPatchVersion = data[ 3 ];
-        
+
         if ( ( drnProtocolMayorVersion == DRN_PROTOCOL_MAYOR_VERION ) &&
              ( drnProtocolMinorVersion == DRN_PROTOCOL_MINOR_VERION ) &&
              ( drnProtocolPatchVersion == DRN_PROTOCOL_PATCH_VERION )  )
         {
-            // We now know we have a peer that is using a compatible 
+            // We now know we have a peer that is using a compatible
             // DRN protocol version.
             NotifyObservers( LinkProtocolMatchEvent );
             SendServiceTypeMessage();
@@ -1452,20 +1454,20 @@ CDRNPeerLink::OnPeerGreeting( const char* data      ,
             // The peer is using a different version of the DRN protocol.
             NotifyObservers( LinkProtocolMismatchEvent );
             NotifyObservers( LinkIncompatibleEvent );
-            
+
             // Notify the peer that we consider the link to be incompatible
             SendIncompatibleLinkMessage();
-            
+
             // Terminate the link
             CloseLink();
-            return;            
+            return;
         }
     }
     else
     {
         // We should not get here
         NotifyObservers( LinkCorruptionEvent );
-        
+
         // Terminate the link
         CloseLink();
     }
@@ -1497,7 +1499,7 @@ CDRNPeerLink::OnPeerStreamDataReceived( const char* data      ,
         {
             // Extract the stream ID
             UInt16 streamID = *reinterpret_cast< const UInt16* >( data+1 );
-            
+
             // Try to find a stream with the given ID among the stream subscriptions
             TDRNDataStreamPtr dataStream = m_linkData->GetSubscribedDataStreamWithID( streamID );
             if ( NULL != dataStream )
@@ -1505,13 +1507,13 @@ CDRNPeerLink::OnPeerStreamDataReceived( const char* data      ,
                 // Pass the data along to the stream's handler
                 dataStream->OnDataReceived( data+3     ,
                                             dataSize-3 );
-                return;                     
+                return;
             }
         }
     }
-    
+
     // Tell the peer his action is not allowed at this time
-    SendNotAllowed(); 
+    SendNotAllowed();
 }
 
 /*-------------------------------------------------------------------------*/
@@ -1541,7 +1543,7 @@ CDRNPeerLink::OnPeerDataReceived( const char* data      ,
         case DRN_PEERCOMM_AUTHENTICATION :
         {
             OnPeerAuthentication( data, dataSize );
-            return;        
+            return;
         }
         case DRN_PEERCOMM_AUTHENTICATION_REQUIRED :
         {
@@ -1567,7 +1569,7 @@ CDRNPeerLink::OnPeerDataReceived( const char* data      ,
         {
             OnPeerDataGroupItemMutation( data, dataSize, DATAGROUPDELTA_ADD );
             return;
-        }        
+        }
         case DRN_PEERCOMM_DATAGROUP_ITEM_UPDATE :
         {
             OnPeerDataGroupItemMutation( data, dataSize, DATAGROUPDELTA_UPDATE );
@@ -1577,7 +1579,7 @@ CDRNPeerLink::OnPeerDataReceived( const char* data      ,
         {
             OnPeerDataGroupItemMutation( data, dataSize, DATAGROUPDELTA_REMOVE );
             return;
-        }        
+        }
         case DRN_PEERCOMM_STREAM_DATA :
         {
             OnPeerStreamDataReceived( data, dataSize );
@@ -1603,7 +1605,7 @@ CDRNPeerLink::OnPeerDataReceived( const char* data      ,
             OnPeerStreamListRequest();
             return;
         }
-        case DRN_PEERCOMM_STREAMLIST :        
+        case DRN_PEERCOMM_STREAMLIST :
         {
             OnPeerStreamListReceived( data, dataSize );
             return;
@@ -1627,7 +1629,7 @@ CDRNPeerLink::OnPeerDataReceived( const char* data      ,
         {
             OnPeerSubscribeToStreamRequest( data, dataSize );
             return;
-        } 
+        }
         case DRN_PEERCOMM_SUBSCRIBED_TO_DATAGROUP :
         {
             OnSubscribedToPeerDataGroup( data, dataSize );
@@ -1643,12 +1645,12 @@ CDRNPeerLink::OnPeerDataReceived( const char* data      ,
             OnPeerConnectBackInfo( data, dataSize );
             return;
         }
-        default:        
+        default:
         {
             // If we get here then an unexpected value was found as the command
             // This is not something that should happen or something that is allowed
             NotifyObservers( LinkCorruptionEvent );
-            
+
             // Terminate the link
             CloseLink();
         }
@@ -1699,7 +1701,7 @@ CDRNPeerLink::OnTCPDataReceived( const GUCEF::CORE::CDynamicBuffer& buffer )
                     // We will now process the buffer
                     OnPeerDataReceived( static_cast< const char* >( m_tcpStreamBuffer.GetConstBufferPtr() ) ,
                                         m_tcpStreamBuffer.GetDataSize()                                     );
-                                    
+
                     // We must now empty the buffer to make room for a new segmented message
                     // We only perform a logical clear to avoid unnecessary reallocations
                     m_tcpStreamBuffer.Clear( true );
@@ -1708,21 +1710,21 @@ CDRNPeerLink::OnTCPDataReceived( const GUCEF::CORE::CDynamicBuffer& buffer )
                 {
                     // We should not get here, the transmission has been corrupted somehow
                     // Even though we have all the data needed we did not find the end
-                    // delimiter as expected. 
+                    // delimiter as expected.
                     NotifyObservers( LinkCorruptionEvent );
-                    
+
                     // Terminate the link
                     CloseLink();
                     return;
                 }
             }
-            
+
             // Sanity check on the buffer size versus payload info offset
             if ( i+2 < dataSize )
             {
                 // Get the transmission size
                 UInt16 transmissionSize = buffer.AsConstType< UInt16 >( i+1 );
-                
+
                 // Sanity check on the buffer size versus reported payload size
                 if ( i+2+transmissionSize < dataSize )
                 {
@@ -1733,11 +1735,11 @@ CDRNPeerLink::OnTCPDataReceived( const GUCEF::CORE::CDynamicBuffer& buffer )
                         // out. We can now proceed with processing the transmission.
                         OnPeerDataReceived( static_cast< const char* >( buffer.GetConstBufferPtr() )+i+3 ,
                                             transmissionSize                                             );
-                                            
+
                         // We must now check to see if there is any data left to be processed.
                         if ( i+4+transmissionSize < dataSize )
                         {
-                            // We have more data, it seems multiple transmissions have been 
+                            // We have more data, it seems multiple transmissions have been
                             // concatenated into a single transmission.
                             GUCEF::CORE::CDynamicBuffer subBuffer;
                             subBuffer.LinkTo( static_cast< const char* >( buffer.GetConstBufferPtr() )+(i+4+transmissionSize) ,
@@ -1749,12 +1751,12 @@ CDRNPeerLink::OnTCPDataReceived( const GUCEF::CORE::CDynamicBuffer& buffer )
                     {
                         // We should not get here, the transmission has been corrupted somehow
                         // Even though we have all the data needed we did not find the end
-                        // delimiter as expected. 
+                        // delimiter as expected.
                         NotifyObservers( LinkCorruptionEvent );
-                        
+
                         // Terminate the link
                         CloseLink();
-                        return;                        
+                        return;
                     }
                 }
                 else
@@ -1765,7 +1767,7 @@ CDRNPeerLink::OnTCPDataReceived( const GUCEF::CORE::CDynamicBuffer& buffer )
                     m_tcpStreamKeepBytes = transmissionSize - ( dataSize-i );
                     m_tcpStreamBuffer.Append( buffer.GetConstBufferPtr( i ) ,
                                               dataSize-i                    ,
-                                              true                          );                        
+                                              true                          );
                 }
             }
             else
@@ -1801,7 +1803,7 @@ CDRNPeerLink::OnTCPConnectionEvent( CORE::CNotifier* notifier    ,
         // Prepare access to the data buffer
         GUCEF::CORE::TLinkedCloneableBuffer* bufferLink = static_cast< GUCEF::CORE::TLinkedCloneableBuffer* >( eventdata );
         const GUCEF::CORE::CDynamicBuffer& buffer = bufferLink->GetData();
-        
+
         // Call the event handler
         OnTCPDataReceived( buffer );
         return;
@@ -1816,7 +1818,7 @@ CDRNPeerLink::OnTCPConnectionEvent( CORE::CNotifier* notifier    ,
     if ( GUCEF::COMCORE::CTCPConnection::SocketErrorEvent == eventid )
     {
         NotifyObservers( SocketErrorEvent );
-        return;    
+        return;
     }
     else
     if ( GUCEF::COMCORE::CTCPConnection::DisconnectedEvent == eventid )
@@ -1851,7 +1853,7 @@ CDRNPeerLink::OnNotify( CORE::CNotifier* notifier                 ,
         OnUDPChannelEvent( notifier  ,
                            eventid   ,
                            eventdata );
-    }  
+    }
 }
 
 /*-------------------------------------------------------------------------*/
@@ -1866,14 +1868,14 @@ CDRNPeerLink::RequestPeerList( void )
         char sendBuffer[ 5 ] = { DRN_TRANSMISSION_START, 0, 0, DRN_PEERCOMM_PEERLIST_REQUEST, DRN_TRANSMISSION_END };
         UInt16 payloadSize = 1;
         memcpy( sendBuffer+1, &payloadSize, 2 );
-        
+
         return SendData( sendBuffer, 5, false );
     }
     return false;
 }
 
 /*-------------------------------------------------------------------------*/
-    
+
 bool
 CDRNPeerLink::RequestStreamList( void )
 {GUCEF_TRACE;
@@ -1884,14 +1886,14 @@ CDRNPeerLink::RequestStreamList( void )
         char sendBuffer[ 5 ] = { DRN_TRANSMISSION_START, 0, 0, DRN_PEERCOMM_STREAMLIST_REQUEST, DRN_TRANSMISSION_END };
         UInt16 payloadSize = 1;
         memcpy( sendBuffer+1, &payloadSize, 2 );
-            
+
         return SendData( sendBuffer, 5, false );
     }
     return false;
 }
 
 /*-------------------------------------------------------------------------*/
-    
+
 bool
 CDRNPeerLink::RequestDataGroupList( void )
 {GUCEF_TRACE;
@@ -1902,7 +1904,7 @@ CDRNPeerLink::RequestDataGroupList( void )
         char sendBuffer[ 5 ] = { DRN_TRANSMISSION_START, 0, 0, DRN_PEERCOMM_DATAGROUPLIST_REQUEST, DRN_TRANSMISSION_END };
         UInt16 payloadSize = 1;
         memcpy( sendBuffer+1, &payloadSize, 2 );
-            
+
         return SendData( sendBuffer, 5, false );
     }
     return false;
@@ -1915,7 +1917,7 @@ CDRNPeerLink::RequestDataGroupSubscription( const CORE::CString& dataGroupName )
 {GUCEF_TRACE;
 
     if ( m_isLinkOperationalForUs )
-    {    
+    {
         // Compose the message
         CORE::CDynamicBuffer sendBuffer( dataGroupName.Length() + 5, true );
         sendBuffer[ 0 ] = DRN_TRANSMISSION_START;
@@ -1927,16 +1929,16 @@ CDRNPeerLink::RequestDataGroupSubscription( const CORE::CString& dataGroupName )
         sendBuffer.CopyFrom( 1, 2, &payloadSize );
 
         // Send the subscription request
-        if ( SendData( sendBuffer.GetConstBufferPtr()   , 
-                       (UInt16)sendBuffer.GetDataSize() , 
+        if ( SendData( sendBuffer.GetConstBufferPtr()   ,
+                       (UInt16)sendBuffer.GetDataSize() ,
                        false                            ) )
         {
             return true;
         }
-        
+
         // Failed to send data, something is very wrong
         CloseLink();
-        return false;        
+        return false;
     }
     return false;
 }
@@ -1948,7 +1950,7 @@ CDRNPeerLink::RequestStreamSubscription( const CORE::CString& dataStreamName )
 {GUCEF_TRACE;
 
     if ( m_isLinkOperationalForUs )
-    {    
+    {
         // Compose the message
         CORE::CDynamicBuffer sendBuffer( dataStreamName.Length() + 5, true );
         sendBuffer[ 0 ] = DRN_TRANSMISSION_START;
@@ -1960,16 +1962,16 @@ CDRNPeerLink::RequestStreamSubscription( const CORE::CString& dataStreamName )
         sendBuffer.CopyFrom( 1, 2, &payloadSize );
 
         // Send the subscription request
-        if ( SendData( sendBuffer.GetConstBufferPtr()   , 
-                       (UInt16)sendBuffer.GetDataSize() , 
+        if ( SendData( sendBuffer.GetConstBufferPtr()   ,
+                       (UInt16)sendBuffer.GetDataSize() ,
                        false                            ) )
         {
             return true;
         }
-        
+
         // Failed to send data, something is very wrong
         CloseLink();
-        return false;        
+        return false;
     }
     return false;
 }
@@ -1988,7 +1990,7 @@ CDRNPeerLink::GetParentNode( void )
 CDRNPeerLinkData&
 CDRNPeerLink::GetLinkData( void )
 {GUCEF_TRACE;
-    
+
     return *m_linkData;
 }
 
@@ -2001,8 +2003,8 @@ CDRNPeerLink::SendStreamDataToPeer( const UInt16 id                        ,
 {GUCEF_TRACE;
 
     if ( m_isLinkOperationalForUs )
-    {    
-        // Sanity check on the data, no need to send anything if there 
+    {
+        // Sanity check on the data, no need to send anything if there
         // is nothing to send
         if ( data.GetDataSize() > 0 )
         {
@@ -2018,13 +2020,13 @@ CDRNPeerLink::SendStreamDataToPeer( const UInt16 id                        ,
             sendBuffer.CopyFrom( 1, 2, &payloadSize );
 
             // Send the stream data
-            if ( SendData( sendBuffer.GetConstBufferPtr()   , 
-                           (UInt16)sendBuffer.GetDataSize() , 
+            if ( SendData( sendBuffer.GetConstBufferPtr()   ,
+                           (UInt16)sendBuffer.GetDataSize() ,
                            allowUnreliableTransmission      ) )
             {
                 return;
             }
-            
+
             // Failed to send data, something is very wrong
             CloseLink();
             return;
@@ -2043,11 +2045,11 @@ CDRNPeerLink::SendDataGroupItemUpdateToPeer( const UInt16 id                    
 {GUCEF_TRACE;
 
     if ( m_isLinkOperationalForUs )
-    {    
+    {
         // Cache some values
         UInt16 itemIDSize = (UInt16) itemID.GetDataSize();
         UInt32 itemValueSize = itemValue.GetDataSize();
-        
+
         // Sanity check on the data, we do not send anything if there is nothing to send
         // Note that an empty itemValue is allowed
         if ( itemIDSize > 0 )
@@ -2076,9 +2078,9 @@ CDRNPeerLink::SendDataGroupItemUpdateToPeer( const UInt16 id                    
                     // If we get here you forgot to add support for a new mutation type
                     GUCEF_ASSERT_ALWAYS;
                     return;
-                }                                
+                }
             }
-            
+
             // Compose the message
             CORE::CDynamicBuffer sendBuffer( itemIDSize + itemValueSize + 9, true );
             sendBuffer[ 0 ] = DRN_TRANSMISSION_START;
@@ -2093,17 +2095,17 @@ CDRNPeerLink::SendDataGroupItemUpdateToPeer( const UInt16 id                    
             sendBuffer.CopyFrom( 1, 2, &payloadSize );
 
             // Send the data group item data
-            if ( SendData( sendBuffer.GetConstBufferPtr()   , 
-                           (UInt16)sendBuffer.GetDataSize() , 
+            if ( SendData( sendBuffer.GetConstBufferPtr()   ,
+                           (UInt16)sendBuffer.GetDataSize() ,
                            allowUnreliableTransmission      ) )
             {
                 return;
             }
-            
+
             // Failed to send data, something is very wrong
             CloseLink();
             return;
-        }        
+        }
     }
 }
 
@@ -2119,25 +2121,25 @@ CDRNPeerLink::SendDataGroupItemUpdateToPeer( const CDRNDataGroup& dataGroup     
 
     CDRNDataGroup::CDRNDataGroupPropertiesPtr settings = dataGroup.GetGroupProperties();
     bool allowUnreliableTransmission = settings->GetAllowUnreliableTransmission();
-    
+
     if ( settings->GetEmitEntireGroupOnChange() )
     {
         const CORE::CDynamicBuffer* itemIDValue = NULL;
         const CORE::CDynamicBuffer* itemDataValue = NULL;
         UInt32 items = dataGroup.GetItemCount();
-        
+
         for ( UInt32 i=0; i<items; ++i )
         {
             if ( dataGroup.GetIDAndDataAtIndex( i              ,
                                                 &itemIDValue   ,
                                                 &itemDataValue ) )
             {
-                TDataGroupDelta change = *itemIDValue == itemID ? deltaChange : DATAGROUPDELTA_UPDATE;                
+                TDataGroupDelta change = *itemIDValue == itemID ? deltaChange : DATAGROUPDELTA_UPDATE;
                 SendDataGroupItemUpdateToPeer( id                          ,
                                                *itemIDValue                ,
                                                *itemDataValue              ,
                                                allowUnreliableTransmission ,
-                                               change                      );            
+                                               change                      );
             }
         }
     }

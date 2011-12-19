@@ -14,7 +14,7 @@
  *
  *  You should have received a copy of the GNU Lesser General Public
  *  License along with this library; if not, write to the Free Software
- *  Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA 
+ *  Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA
  */
 
 /*-------------------------------------------------------------------------//
@@ -23,8 +23,10 @@
 //                                                                         //
 //-------------------------------------------------------------------------*/
 
+#include <string.h>
+
 #ifndef GUCEF_CORE_DVCPPSTRINGUTILS_H
-#include "dvcppstringutils.h"           /* C++ string utils */ 
+#include "dvcppstringutils.h"           /* C++ string utils */
 #define GUCEF_CORE_DVCPPSTRINGUTILS_H
 #endif /* GUCEF_CORE_DVCPPSTRINGUTILS_H ? */
 
@@ -52,7 +54,7 @@ namespace INPUT {
 
 const CORE::CEvent CMouse::MouseButtonEvent = "GUCEF::INPUT::CMouse::MouseButtonEvent";
 const CORE::CEvent CMouse::MouseMovedEvent = "GUCEF::INPUT::CMouse::MouseMovedEvent";
-const CORE::CEvent CMouse::MouseClickedEvent = "GUCEF::INPUT::CMouse::MouseClickedEvent"; 
+const CORE::CEvent CMouse::MouseClickedEvent = "GUCEF::INPUT::CMouse::MouseClickedEvent";
 const CORE::CEvent CMouse::MouseDoubleClickedEvent = "GUCEF::INPUT::CMouse::MouseDoubleClickedEvent";
 const CORE::CEvent CMouse::MouseTrippleClickedEvent = "GUCEF::INPUT::CMouse::MouseTrippleClickedEvent";
 
@@ -148,7 +150,7 @@ CMouse::CMouse( CInputDriver& inputDriver ,
 }
 
 /*-------------------------------------------------------------------------*/
-    
+
 CMouse::~CMouse()
 {GUCEF_TRACE;
 
@@ -164,16 +166,16 @@ CMouse::GetInputDriver( void )
 }
 
 /*-------------------------------------------------------------------------*/
-    
+
 void
-CMouse::SetButtonState( const UInt32 buttonIndex , 
+CMouse::SetButtonState( const UInt32 buttonIndex ,
                         const bool pressedState  )
 {GUCEF_TRACE;
 
     m_buttonStates[ buttonIndex ] = pressedState;
-    
+
     GUCEF_DEBUG_LOG( CORE::LOGLEVEL_NORMAL, "Setting state of button " + CORE::Int32ToString( buttonIndex ) + " to " + CORE::BoolToString( pressedState ) + " on mouse " + CORE::Int32ToString( m_deviceID ) );
-    
+
     CMouseButtonEventData eData( m_deviceID, buttonIndex, pressedState, m_xPos, m_yPos );
     NotifyObservers( MouseButtonEvent, &eData );
 }
@@ -190,12 +192,12 @@ CMouse::SetMousePos( const UInt32 xPos ,
 
     m_xPos = xPos;
     m_yPos = yPos;
-    
+
     CMouseMovedEventData eData( m_deviceID, m_xPos, m_yPos, m_prevXPos, m_prevYPos );
     NotifyObservers( MouseMovedEvent, &eData );
 }
 
-/*-------------------------------------------------------------------------*/                         
+/*-------------------------------------------------------------------------*/
 
 void
 CMouse::ResetMouseStates( void )
@@ -207,7 +209,7 @@ CMouse::ResetMouseStates( void )
     {
         m_buttonStates[ i ] = false;
     }
-    
+
     m_xPos = 0;
     m_yPos = 0;
 }
