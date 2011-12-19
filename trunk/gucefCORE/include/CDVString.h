@@ -100,9 +100,11 @@ class GUCEF_CORE_PUBLIC_CPP CString
 
     CString& operator+=( char lastchar );
 
-    CString operator+( const CString& addition );
+    CString operator+( const CString& addition ) const;
 
-    CString operator+( const char* addition );
+    CString operator+( const char* addition ) const;
+
+    CString operator+( const char addition ) const;
 
     bool operator==( const CString &other ) const;
 
@@ -252,8 +254,6 @@ class GUCEF_CORE_PUBLIC_CPP CString
 
 GUCEF_CORE_PUBLIC_CPP bool operator!=( const char* lhs, const CString& rhs );
 GUCEF_CORE_PUBLIC_CPP bool operator==( const char* lhs, const CString& rhs );
-GUCEF_CORE_PUBLIC_CPP CString operator+( const CString& lhs, const CString& rhs );
-GUCEF_CORE_PUBLIC_CPP CString operator+( const CString& lhs, const char* rhs );
 GUCEF_CORE_PUBLIC_CPP CString operator+( const char* lhs, const CString& rhs );
 GUCEF_CORE_PUBLIC_CPP CString operator+( const char lhs, const CString& rhs );
 

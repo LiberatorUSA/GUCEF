@@ -14,7 +14,7 @@
  *
  *  You should have received a copy of the GNU Lesser General Public
  *  License along with this library; if not, write to the Free Software
- *  Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA 
+ *  Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA
  */
 
 /*-------------------------------------------------------------------------//
@@ -32,7 +32,7 @@
 #ifndef GUCEF_CORE_GUCEF_ESSENTIALS_H
 #include "gucef_essentials.h"
 #define GUCEF_CORE_GUCEF_ESSENTIALS_H
-#endif /* GUCEF_CORE_GUCEF_ESSENTIALS_H ? */  
+#endif /* GUCEF_CORE_GUCEF_ESSENTIALS_H ? */
 
 /*-------------------------------------------------------------------------//
 //                                                                         //
@@ -183,7 +183,7 @@ String_To_Boolint( const char *teststr )
                 if ( 7 < max ) max = 7;
                 memcpy( tests, teststr, max );
                 Lowercase( tests );
-                
+
                 return( ( strcmp( tests, "enable"  ) == 0 ) ||
                         ( strcmp( tests, "true"  ) == 0 )   ||
                         ( strcmp( tests, "yes"  ) == 0 )    ||
@@ -572,7 +572,7 @@ File_Ext_Length( const char *filename )
          *      return the file extension length
          */
         int length = (int)strlen( filename );
-        int i; 
+        int i;
         for ( i=length; i>=0; i-- )
         {
                 if ( filename[i] == '.' ) // '.' = ASCII 46
@@ -621,7 +621,7 @@ Str_To_Int( const char *digits )
          *      Converts an null-terminated string to a int
          */
         int i, num;
-        if ( digits == NULL ) return 0; 
+        if ( digits == NULL ) return 0;
 
         /*
          *      Convert each digit char and add into result.
@@ -659,7 +659,7 @@ Str_To_Float( const char *digits )
         /*
          *      Converts an null-terminated string to a float
          */
-        UInt32 len = (UInt32)strlen( digits ); 
+        UInt32 len = (UInt32)strlen( digits );
         char *num;
         float flt;
 
@@ -688,7 +688,7 @@ Str_To_Float( const char *digits )
         num = Get_Substr( idx, len-1, digits );
         flt += ( Str_To_Int( num ) / ( len * 10 ) );
         free( num );
-        
+
         return( flt );
 }
 
@@ -802,7 +802,7 @@ Tab_To_Space( char *buffer, UInt32 numspace )
          *      Change all tabs into chars
          */
         UInt32 length = (UInt32)strlen( buffer )                                   ;
-        int count = Count_Char( buffer, length, 9 )                     ;        
+        int count = Count_Char( buffer, length, 9 )                     ;
         char aux[ 2 ]                                                   ;
         UInt32 i,n, last = 0                                               ;
         char *newbuf = ( char* ) calloc( count*numspace -count + length+1, sizeof( char ) );
@@ -909,7 +909,7 @@ Count_Char( const char *buffer, UInt32 buffer_size, char t )
 
 /**
  *      Converts any dir seperators that may be present in the given path string
- *      to a seperator which is valid for the current O/S. 
+ *      to a seperator which is valid for the current O/S.
  */
 void
 Convert_Dir_Seperators( char *path )
@@ -933,18 +933,18 @@ Convert_Dir_Seperators( char *path )
 
 /*--------------------------------------------------------------------------*/
 
-void 
+void
 Append_To_Path( char *path           ,
                 const char *addition )
 {
         UInt32 offset = 0, len = 0;
-        
+
         /*
          *  Sanity checks
          */
         if ( ( addition == NULL ) || ( path == NULL ) ) return;
         if ( *addition == '\0' ) return;
-        
+
         /*
          *      Take care of any seperator that may be prefixed to
          *      the addition string.
@@ -1014,7 +1014,7 @@ Find_Null( UInt32 start_at_front ,
 UInt32
 _Strip_Filename( char *dest, const char *src_filepath )
 {
-        strcpy( dest, src_filepath ); 
+        strcpy( dest, src_filepath );
         return Strip_Filename( dest );
 }
 
@@ -1023,14 +1023,9 @@ _Strip_Filename( char *dest, const char *src_filepath )
 UInt32
 Strip_Filename( char* filepath )
 {
-	#ifdef GUCEF_MSWIN_BUILD
-        #define SEP_CHAR        '\\'
-        #else
-        #define SEP_CHAR        '/'
-        #endif
 
         Int32 idx;
-        idx = (UInt32)_Find_Char( 0, 0, SEP_CHAR, filepath, (UInt32)strlen( filepath ) );
+        idx = (UInt32)_Find_Char( 0, 0, GUCEF_DIRSEPCHAR, filepath, (UInt32)strlen( filepath ) );
         if ( idx > 0 )
         {
                 filepath[ idx ] = '\0';

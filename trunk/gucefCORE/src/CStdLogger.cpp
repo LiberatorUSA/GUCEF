@@ -133,7 +133,7 @@ CStdLogger::LogWithoutFormatting( const TLogMsgType logMsgType ,
     {
         if ( logLevel >= m_minimalLogLevel )
         {
-            CString actualLogMsg( logMessage + "\n" );
+            CString actualLogMsg( logMessage.operator+( "\n" ) );
             m_output->Write( actualLogMsg.C_String() ,
                              actualLogMsg.Length()   ,
                              1                       );

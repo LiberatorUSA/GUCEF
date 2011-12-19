@@ -447,7 +447,7 @@ if ( ANDROID )
 endif( ANDROID )
 
 if ( LINUX )
-  target_link_libraries( ${MODULE_NAME} dl )
+  target_link_libraries( ${MODULE_NAME} dl rt )
 endif( LINUX )
 
 include_directories( ../common/include ../gucefMT/include include )
