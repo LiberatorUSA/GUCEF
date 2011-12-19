@@ -20,7 +20,7 @@ function SetGucefHome {
 #------------------------------------------------------------------------------
 
 function FindGucefDebugProjectGenerator {
-  
+
   TEST_PATH="$GUCEF_HOME/common/bin/CBNIX/bin/ProjectGenerator"
   echo "Testing for executable binary @ $TEST_PATH"
   if [ -x "$TEST_PATH" ];
@@ -34,7 +34,7 @@ function FindGucefDebugProjectGenerator {
 #------------------------------------------------------------------------------
 
 function FindGucefReleaseProjectGenerator {
-  
+
   TEST_PATH="$GUCEF_HOME/tools/ProjectGenerator/bin/ReleasedBins/Linux/6September2011/ProjectGenerator"
   echo "Testing for executable binary @ $TEST_PATH"
   if [ -x "$TEST_PATH" ];
@@ -51,7 +51,7 @@ function FindProjectGenerator {
 
   GENERATORPATH=${GENERATORPATH:=undefined}
   FindGucefDebugProjectGenerator
-  if [ "$GUCEF_HOME" = "undefined" ]; 
+  if [ "$GUCEF_HOME" = "undefined" ];
   then
     FindGucefReleaseProjectGenerator
   fi
@@ -77,7 +77,7 @@ fi
 echo "GENERATORPATH = $TEST_PATH"
 
 # invoke the generator
-$GENERATORPATH *rootDir=$GUCEF_HOME* *dirsToIgnore=.svn;_svn*
+$GENERATORPATH *rootDir=$GUCEF_HOME* *dirsToIgnore=.svn;_svn* *projectName=GUCEF* *generators=cmake* *outputDir=$GUCEF_HOME* *cmakgen:TemplateDir=$GUCEF_HOME/projects/CMake/ProjectGenTemplates*
 
 
 
