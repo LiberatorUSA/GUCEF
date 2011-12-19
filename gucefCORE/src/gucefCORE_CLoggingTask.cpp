@@ -68,7 +68,7 @@ CLoggingTask::CLoggingTask( CILogger& loggerBackend )
 
 CLoggingTask::~CLoggingTask()
 {GUCEF_TRACE;
-    
+
 }
 
 /*-------------------------------------------------------------------------*/
@@ -85,7 +85,7 @@ CLoggingTask::Log( const TLogMsgType logMsgType ,
     logMsg.logMessage = logMessage;
     logMsg.logMsgType = logMsgType;
     logMsg.threadId = threadId;
-    
+
     m_mailbox.AddMail( MAILTYPE_NEWLOGMSG, &logMsg );
 }
 
@@ -124,23 +124,23 @@ CLoggingTask::OnTaskCycle( void* taskdata )
 {GUCEF_TRACE;
 
     CLoggingMail* loggingMail = NULL;
-    if ( m_mailbox.GetMailList( m_mailList           , 
+    if ( m_mailbox.GetMailList( m_mailList           ,
                                 MAXMAILITEMSPERCYCLE ) )
     {
         while ( !m_mailList.empty() )
         {
             TLoggingMailBox::TMailElement& mailEntry = m_mailList[ m_mailList.size()-1 ];
             loggingMail = static_cast< CLoggingMail* >( mailEntry.data );
-            
+
             switch ( mailEntry.eventid )
             {
                 case MAILTYPE_NEWLOGMSG :
                 {
-                    m_loggerBackend->Log( loggingMail->logMsgType , 
+                    m_loggerBackend->Log( loggingMail->logMsgType ,
                                           loggingMail->logLevel   ,
-                                          loggingMail->logMsgType ,
+                                          loggingMail->logMessage ,
                                           loggingMail->threadId   );
-                    
+
                     break;
                 }
                 case MAILTYPE_FLUSHLOG :
@@ -148,16 +148,16 @@ CLoggingTask::OnTaskCycle( void* taskdata )
                     m_loggerBackend->FlushLog();
                     break;
                 }
-                
+
             }
-            
+
             delete loggingMail;
             loggingMail = NULL;
-            
+
             m_mailList.pop_back();
         }
     }
-    
+
     // This is an infinate task so we always return false
     //  which indicates we are not done.
     return false;
@@ -207,7 +207,7 @@ CLoggingTask::CLoggingMail::CLoggingMail( void )
       logMessage()                               ,
       threadId( 0 )
 {GUCEF_TRACE;
-    
+
 }
 
 /*-------------------------------------------------------------------------*/
@@ -219,7 +219,7 @@ CLoggingTask::CLoggingMail::CLoggingMail( const CLoggingMail& src )
       logMessage( src.logMessage ) ,
       threadId( src.threadId )
 {GUCEF_TRACE;
-    
+
 }
 
 /*-------------------------------------------------------------------------*/
