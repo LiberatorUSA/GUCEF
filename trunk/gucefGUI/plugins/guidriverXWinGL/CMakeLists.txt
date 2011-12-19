@@ -14,7 +14,7 @@
 
 
 if (LINUX)
-  set( PLATFORM_HEADER_FILES
+  set( PLATFORM_HEADER_FILES 
     include/guidriverXWinGL.h
     include/guidriverXWinGL_config.h
     include/guidriverXWinGL_CXWinGLWindowContext.h
@@ -26,7 +26,7 @@ if (LINUX)
   set( PLATFORM_HEADER_INSTALL "LINUX" )
   source_group( "Platform Header Files" FILES ${PLATFORM_HEADER_FILES} )
 
-  set( PLATFORM_SOURCE_FILES
+  set( PLATFORM_SOURCE_FILES 
     src/guidriverXWinGL_CXWinGLWindowContext.cpp
     src/guidriverXWinGL_CXWinGLWindowManagerImp.cpp
     src/guidriverXWinGL_pluginAPI.cpp
@@ -59,7 +59,6 @@ include_directories( ../../../common/include ../../../gucefCORE/include ../../..
 if ( LINUX )
   include_directories( ../../../gucefCORE/include/linux include )
 endif( LINUX )
-
 
 
 

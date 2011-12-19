@@ -363,6 +363,8 @@ if (ANDROID)
 elseif (LINUX)
   set( PLATFORM_HEADER_FILES 
     include/linux/CXTermConsoleLogger.h
+    include/linux/gucefCORE_CX11EventDispatcher.h
+    include/linux/gucefCORE_CX11Window.h
     include/linux/gucefCORE_pty.h
   )
 
@@ -371,6 +373,8 @@ elseif (LINUX)
 
   set( PLATFORM_SOURCE_FILES 
     src/linux/CXTermConsoleLogger.cpp
+    src/linux/gucefCORE_CX11EventDispatcher.cpp
+    src/linux/gucefCORE_CX11Window.cpp
     src/linux/gucefCORE_pty.c
   )
 
@@ -447,7 +451,7 @@ if ( ANDROID )
 endif( ANDROID )
 
 if ( LINUX )
-  target_link_libraries( ${MODULE_NAME} dl rt )
+  target_link_libraries( ${MODULE_NAME} X11 dl rt )
 endif( LINUX )
 
 include_directories( ../common/include ../gucefMT/include include )
