@@ -1,5 +1,5 @@
 /*
- *  guidriverWin32GL: module implementing GL based window management for Win32
+ *  guidriverXWinGL: module implementing GL based window management for X11
  *  Copyright (C) 2002 - 2011.  Dinand Vanvelzen
  *
  *  This library is free software; you can redistribute it and/or
@@ -58,7 +58,7 @@ static TWin32GLWindowManagerImpPtr win32GlWindowManager = new CWin32GLWindowMana
 //                                                                         //
 //-------------------------------------------------------------------------*/
 
-CORE::Int32 GUCEF_PLUGIN_CALLSPEC_PREFIX 
+CORE::Int32 GUCEF_PLUGIN_CALLSPEC_PREFIX
 GUCEFPlugin_Load( CORE::UInt32 argc, const char** argv ) GUCEF_PLUGIN_CALLSPEC_SUFFIX
 {GUCEF_TRACE;
 
@@ -68,7 +68,7 @@ GUCEFPlugin_Load( CORE::UInt32 argc, const char** argv ) GUCEF_PLUGIN_CALLSPEC_S
 
 /*--------------------------------------------------------------------------*/
 
-void GUCEF_PLUGIN_CALLSPEC_PREFIX 
+void GUCEF_PLUGIN_CALLSPEC_PREFIX
 GUCEFPlugin_Unload( void ) GUCEF_PLUGIN_CALLSPEC_SUFFIX
 {GUCEF_TRACE;
 
@@ -77,11 +77,11 @@ GUCEFPlugin_Unload( void ) GUCEF_PLUGIN_CALLSPEC_SUFFIX
 
 /*--------------------------------------------------------------------------*/
 
-void GUCEF_PLUGIN_CALLSPEC_PREFIX 
+void GUCEF_PLUGIN_CALLSPEC_PREFIX
 GUCEFPlugin_GetVersion( CORE::TVersion* versionInfo ) GUCEF_PLUGIN_CALLSPEC_SUFFIX
 {GUCEF_TRACE;
 
-    versionInfo->major = 0; 
+    versionInfo->major = 0;
     versionInfo->minor = 1;
     versionInfo->patch = 0;
     versionInfo->release = 0;
@@ -89,16 +89,16 @@ GUCEFPlugin_GetVersion( CORE::TVersion* versionInfo ) GUCEF_PLUGIN_CALLSPEC_SUFF
 
 /*--------------------------------------------------------------------------*/
 
-const char* GUCEF_PLUGIN_CALLSPEC_PREFIX 
+const char* GUCEF_PLUGIN_CALLSPEC_PREFIX
 GUCEFPlugin_GetCopyright( void ) GUCEF_PLUGIN_CALLSPEC_SUFFIX
 {GUCEF_TRACE;
-    
+
     return "Copyright (C) Dinand Vanvelzen, released under LGPLv3";
 }
 
 /*--------------------------------------------------------------------------*/
 
-const char* GUCEF_PLUGIN_CALLSPEC_PREFIX 
+const char* GUCEF_PLUGIN_CALLSPEC_PREFIX
 GUCEFPlugin_GetDescription( void ) GUCEF_PLUGIN_CALLSPEC_SUFFIX
 {GUCEF_TRACE;
 

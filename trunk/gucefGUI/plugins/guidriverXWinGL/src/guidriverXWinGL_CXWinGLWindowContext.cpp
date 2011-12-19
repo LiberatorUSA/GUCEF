@@ -1,5 +1,5 @@
 /*
- *  guidriverWin32GL: module implementing GL based window management for Win32
+ *  guidriverXWinGL: module implementing GL based window management for X11
  *  Copyright (C) 2002 - 2011.  Dinand Vanvelzen
  *
  *  This library is free software; you can redistribute it and/or
@@ -23,8 +23,7 @@
 //                                                                         //
 //-------------------------------------------------------------------------*/
 
-#include <windows.h>
-#include <GL/GL.h>
+#include <GL/glx.h>
 
 #ifndef GUCEF_CORE_LOGGING_H
 #include "gucefCORE_Logging.h"
@@ -46,7 +45,7 @@
 #define GUCEF_GUI_CWINDOWCONTEXT_H
 #endif /* GUCEF_GUI_CWINDOWCONTEXT_H ? */
 
-#include "guidriverWin32GL_CWin32GLWindowContext.h"
+#include "guidriverXWinGL_CXWinGLWindowContext.h"
 
 /*-------------------------------------------------------------------------//
 //                                                                         //
@@ -55,7 +54,7 @@
 //-------------------------------------------------------------------------*/
 
 namespace GUCEF {
-namespace GUIDRIVERWIN32GL {
+namespace GUIDRIVERXWINGL {
 
 /*-------------------------------------------------------------------------//
 //                                                                         //
@@ -63,14 +62,14 @@ namespace GUIDRIVERWIN32GL {
 //                                                                         //
 //-------------------------------------------------------------------------*/
 
-CWin32GLWindowContext::CWin32GLWindowContext( void )
+CXWinGLWindowContext::CXWinGLWindowContext( void )
     : CWindowContext()         ,
       m_guiContext()           ,
       m_id()                   ,
       m_name()                 ,
-      m_window()               ,
-      m_renderContext( NULL )  ,
-      m_deviceContext( NULL )
+      m_window()              // ,
+      //m_renderContext( NULL )  ,
+      //m_deviceContext( NULL )
 {GUCEF_TRACE;
 
     SubscribeTo( &m_window );
@@ -78,7 +77,7 @@ CWin32GLWindowContext::CWin32GLWindowContext( void )
 
 /*-------------------------------------------------------------------------*/
 
-CWin32GLWindowContext::~CWin32GLWindowContext()
+CXWinGLWindowContext::~CXWinGLWindowContext()
 {GUCEF_TRACE;
 
     Shutdown();
@@ -87,7 +86,7 @@ CWin32GLWindowContext::~CWin32GLWindowContext()
 /*-------------------------------------------------------------------------*/
 
 void
-CWin32GLWindowContext::SetGuiContext( GUI::TGuiContextPtr& context )
+CXWinGLWindowContext::SetGuiContext( GUI::TGuiContextPtr& context )
 {GUCEF_TRACE;
 
     m_guiContext = context;
@@ -96,7 +95,7 @@ CWin32GLWindowContext::SetGuiContext( GUI::TGuiContextPtr& context )
 /*-------------------------------------------------------------------------*/
 
 GUI::TGuiContextPtr
-CWin32GLWindowContext::GetGuiContext( void )
+CXWinGLWindowContext::GetGuiContext( void )
 {GUCEF_TRACE;
 
     return m_guiContext;
@@ -105,7 +104,7 @@ CWin32GLWindowContext::GetGuiContext( void )
 /*-------------------------------------------------------------------------*/
 
 GUI::UInt32
-CWin32GLWindowContext::GetID( void ) const
+CXWinGLWindowContext::GetID( void ) const
 {GUCEF_TRACE;
 
     return m_id;
@@ -114,7 +113,7 @@ CWin32GLWindowContext::GetID( void ) const
 /*-------------------------------------------------------------------------*/
 
 bool
-CWin32GLWindowContext::IsActive( void ) const
+CXWinGLWindowContext::IsActive( void ) const
 {GUCEF_TRACE;
 
     return false;
@@ -123,7 +122,7 @@ CWin32GLWindowContext::IsActive( void ) const
 /*-------------------------------------------------------------------------*/
 
 GUI::CString
-CWin32GLWindowContext::GetName( void ) const
+CXWinGLWindowContext::GetName( void ) const
 {GUCEF_TRACE;
 
     return m_name;
@@ -132,37 +131,37 @@ CWin32GLWindowContext::GetName( void ) const
 /*-------------------------------------------------------------------------*/
 
 void
-CWin32GLWindowContext::Shutdown( void )
+CXWinGLWindowContext::Shutdown( void )
 {GUCEF_TRACE;
 
 	CORE::CPulseGenerator& pulseGenerator = CORE::CGUCEFApplication::Instance()->GetPulseGenerator();
     pulseGenerator.RequestStopOfPeriodicUpdates( this );
     UnsubscribeFrom( &pulseGenerator );
-    
-    if ( NULL != m_renderContext )
-	{
-		wglMakeCurrent( NULL, NULL ); 
-		wglDeleteContext( m_renderContext );
-		m_renderContext = NULL;
-	}
 
-	if ( NULL != m_deviceContext )
-	{
-		ReleaseDC( m_window.GetHwnd(), m_deviceContext );
-		m_deviceContext = NULL;
-	}
-
-    if ( NULL != m_window.GetHwnd() )
-    {
-        CORE::CMsWin32Window::UnregisterWindowClass( m_window.GetText() );
-        m_window.WindowDestroy();
-    }
+//    if ( NULL != m_renderContext )
+//	{
+//		wglMakeCurrent( NULL, NULL );
+//		wglDeleteContext( m_renderContext );
+//		m_renderContext = NULL;
+//	}
+//
+//	if ( NULL != m_deviceContext )
+//	{
+//		ReleaseDC( m_window.GetHwnd(), m_deviceContext );
+//		m_deviceContext = NULL;
+//	}
+//
+//    if ( NULL != m_window.GetHwnd() )
+//    {
+//        CORE::CMsWin32Window::UnregisterWindowClass( m_window.GetText() );
+//        m_window.WindowDestroy();
+//    }
 }
 
 /*-------------------------------------------------------------------------*/
 
 GUI::UInt32
-CWin32GLWindowContext::GetWidth( void ) const
+CXWinGLWindowContext::GetWidth( void ) const
 {GUCEF_TRACE;
 
     int dummy;
@@ -177,9 +176,9 @@ CWin32GLWindowContext::GetWidth( void ) const
 /*-------------------------------------------------------------------------*/
 
 GUI::UInt32
-CWin32GLWindowContext::GetHeight( void ) const
+CXWinGLWindowContext::GetHeight( void ) const
 {GUCEF_TRACE;
-    
+
     int dummy;
     int height;
     if ( m_window.GetClientArea( dummy, dummy, dummy, height ) )
@@ -192,164 +191,162 @@ CWin32GLWindowContext::GetHeight( void ) const
 /*-------------------------------------------------------------------------*/
 
 GUI::CString
-CWin32GLWindowContext::GetProperty( const GUI::CString& propertyName ) const
+CXWinGLWindowContext::GetProperty( const GUI::CString& propertyName ) const
 {GUCEF_TRACE;
 
     if ( propertyName == "WINDOW" )
     {
-        return CORE::PointerToString( m_window.GetHwnd() );
+        return CORE::UInt32ToString( m_window.GetWindow() );
     }
-    return GUI::CString(); 
+    if ( propertyName == "DISPLAY" )
+    {
+        return CORE::PointerToString( m_window.GetDisplay() );
+    }
+    return GUI::CString();
 }
 
 /*-------------------------------------------------------------------------*/
 
 bool
-CWin32GLWindowContext::Initialize( const GUI::CString& title                ,
-                                   const GUI::CVideoSettings& videoSettings )
+CXWinGLWindowContext::Initialize( const GUI::CString& title                ,
+                                  const GUI::CVideoSettings& videoSettings )
 {GUCEF_TRACE;
 
     // Do not initialize twice
     Shutdown();
 
-    if ( !CORE::CMsWin32Window::RegisterWindowClass( GetClassTypeName() ) )
-    {
-        GUCEF_ERROR_LOG( CORE::LOGLEVEL_NORMAL, "Win32GLWindowContext: Could not register window class" );
-        return false;
-    }
-
-    // First create a regular Win32 window
-    if ( m_window.WindowCreate( GetClassTypeName()                          ,
-                                title                                       ,
-                                0                                           ,
-                                0                                           ,
-                                videoSettings.GetResolutionWidthInPixels()  ,
-                                videoSettings.GetResolutionHeightInPixels() ) )
-    {
-        // Display the new window
-        m_window.Show();
-        m_window.SendToForegound();
-        m_window.GrabFocus();
-
-	    // Now proceed with setting up the OpenGL specifics
-        m_deviceContext = GetDC( m_window.GetHwnd() );
-	    if ( NULL == m_deviceContext )
-	    {
-		    GUCEF_ERROR_LOG( CORE::LOGLEVEL_NORMAL, "Win32GLWindowContext: Could not obtain window device context" );
-            Shutdown();
-		    return false;
-	    }
-
-	    PIXELFORMATDESCRIPTOR pixelFormatDescriptor;
-	    memset( &pixelFormatDescriptor, 0, sizeof(pixelFormatDescriptor) );
-	    pixelFormatDescriptor.nSize = sizeof(PIXELFORMATDESCRIPTOR);
-	    pixelFormatDescriptor.nVersion = 1;
-	    pixelFormatDescriptor.dwFlags = PFD_DRAW_TO_WINDOW | PFD_SUPPORT_OPENGL | PFD_DOUBLEBUFFER;
-	    pixelFormatDescriptor.iPixelType = PFD_TYPE_RGBA;
-	    pixelFormatDescriptor.cColorBits = 32;
-	    pixelFormatDescriptor.cRedBits = 8;
-	    pixelFormatDescriptor.cGreenBits = 8;
-	    pixelFormatDescriptor.cBlueBits = 8;
-	    pixelFormatDescriptor.cAlphaBits = 8;
-	    pixelFormatDescriptor.cDepthBits = 24;
-	    pixelFormatDescriptor.cStencilBits = 8;
-
-	    int pixelFormat = ChoosePixelFormat( m_deviceContext, &pixelFormatDescriptor );
-	    if ( 0 == pixelFormat )
-	    {
-		    GUCEF_ERROR_LOG( CORE::LOGLEVEL_NORMAL, "Win32GLWindowContext: Failed to get the desired pixel format" );
-		    Shutdown();
-            return false;
-	    }
-
-	    if ( FALSE == SetPixelFormat( m_deviceContext, pixelFormat, &pixelFormatDescriptor ) )
-	    {
-		    GUCEF_ERROR_LOG( CORE::LOGLEVEL_NORMAL, "Win32GLWindowContext: Could not set pixel format" );
-		    Shutdown();
-            return false;
-	    }
-
-	    m_renderContext = wglCreateContext( m_deviceContext );
-	    if ( NULL == m_renderContext )
-	    { 
-		    GUCEF_ERROR_LOG( CORE::LOGLEVEL_NORMAL, "Win32GLWindowContext: Could not create OpenGL rendering context" );
-		    Shutdown();
-            return false;
-	    }
-
-	    if ( wglMakeCurrent( m_deviceContext, m_renderContext ) == FALSE )
-	    {
-		    GUCEF_ERROR_LOG( CORE::LOGLEVEL_NORMAL, "Win32GLWindowContext: Could not make OpenGL rendering context current" );
-		    Shutdown();
-            return false;
-	    }
-
-        // Set up the GL state.
-        glClearColor(0, 0, 0, 1);
-        glEnableClientState(GL_VERTEX_ARRAY);
-        glEnableClientState(GL_COLOR_ARRAY);
-
-        glEnable(GL_BLEND);
-        glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
-
-        glMatrixMode(GL_PROJECTION);
-        glLoadIdentity();
-        glOrtho(0, 1024, 768, 0, -1, 1);
-
-        glMatrixMode(GL_MODELVIEW);
-        glLoadIdentity();
-
-        // Grab the main app pulse generator and set the update interval for the context to the desired refresh rate
-        CORE::CPulseGenerator& pulseGenerator = CORE::CGUCEFApplication::Instance()->GetPulseGenerator(); 
-        pulseGenerator.RequestPeriodicPulses( this, 1000 / videoSettings.GetFrequency() );
-        SubscribeTo( &pulseGenerator );
-
-        GUCEF_SYSTEM_LOG( CORE::LOGLEVEL_NORMAL, "Win32GLWindowContext: Succesfully created OpenGL rendering context" );
-        return true;
-    }
+//    // First create a regular Win32 window
+//    if ( m_window.WindowCreate( GetClassTypeName()                          ,
+//                                title                                       ,
+//                                0                                           ,
+//                                0                                           ,
+//                                videoSettings.GetResolutionWidthInPixels()  ,
+//                                videoSettings.GetResolutionHeightInPixels() ) )
+//    {
+//        // Display the new window
+//        m_window.Show();
+//        m_window.SendToForegound();
+//        m_window.GrabFocus();
+//
+//	    // Now proceed with setting up the OpenGL specifics
+//        m_deviceContext = GetDC( m_window.GetHwnd() );
+//	    if ( NULL == m_deviceContext )
+//	    {
+//		    GUCEF_ERROR_LOG( CORE::LOGLEVEL_NORMAL, "Win32GLWindowContext: Could not obtain window device context" );
+//            Shutdown();
+//		    return false;
+//	    }
+//
+//	    PIXELFORMATDESCRIPTOR pixelFormatDescriptor;
+//	    memset( &pixelFormatDescriptor, 0, sizeof(pixelFormatDescriptor) );
+//	    pixelFormatDescriptor.nSize = sizeof(PIXELFORMATDESCRIPTOR);
+//	    pixelFormatDescriptor.nVersion = 1;
+//	    pixelFormatDescriptor.dwFlags = PFD_DRAW_TO_WINDOW | PFD_SUPPORT_OPENGL | PFD_DOUBLEBUFFER;
+//	    pixelFormatDescriptor.iPixelType = PFD_TYPE_RGBA;
+//	    pixelFormatDescriptor.cColorBits = 32;
+//	    pixelFormatDescriptor.cRedBits = 8;
+//	    pixelFormatDescriptor.cGreenBits = 8;
+//	    pixelFormatDescriptor.cBlueBits = 8;
+//	    pixelFormatDescriptor.cAlphaBits = 8;
+//	    pixelFormatDescriptor.cDepthBits = 24;
+//	    pixelFormatDescriptor.cStencilBits = 8;
+//
+//	    int pixelFormat = ChoosePixelFormat( m_deviceContext, &pixelFormatDescriptor );
+//	    if ( 0 == pixelFormat )
+//	    {
+//		    GUCEF_ERROR_LOG( CORE::LOGLEVEL_NORMAL, "Win32GLWindowContext: Failed to get the desired pixel format" );
+//		    Shutdown();
+//            return false;
+//	    }
+//
+//	    if ( FALSE == SetPixelFormat( m_deviceContext, pixelFormat, &pixelFormatDescriptor ) )
+//	    {
+//		    GUCEF_ERROR_LOG( CORE::LOGLEVEL_NORMAL, "Win32GLWindowContext: Could not set pixel format" );
+//		    Shutdown();
+//            return false;
+//	    }
+//
+//	    m_renderContext = wglCreateContext( m_deviceContext );
+//	    if ( NULL == m_renderContext )
+//	    {
+//		    GUCEF_ERROR_LOG( CORE::LOGLEVEL_NORMAL, "Win32GLWindowContext: Could not create OpenGL rendering context" );
+//		    Shutdown();
+//            return false;
+//	    }
+//
+//	    if ( wglMakeCurrent( m_deviceContext, m_renderContext ) == FALSE )
+//	    {
+//		    GUCEF_ERROR_LOG( CORE::LOGLEVEL_NORMAL, "Win32GLWindowContext: Could not make OpenGL rendering context current" );
+//		    Shutdown();
+//            return false;
+//	    }
+//
+//        // Set up the GL state.
+//        glClearColor(0, 0, 0, 1);
+//        glEnableClientState(GL_VERTEX_ARRAY);
+//        glEnableClientState(GL_COLOR_ARRAY);
+//
+//        glEnable(GL_BLEND);
+//        glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
+//
+//        glMatrixMode(GL_PROJECTION);
+//        glLoadIdentity();
+//        glOrtho(0, 1024, 768, 0, -1, 1);
+//
+//        glMatrixMode(GL_MODELVIEW);
+//        glLoadIdentity();
+//
+//        // Grab the main app pulse generator and set the update interval for the context to the desired refresh rate
+//        CORE::CPulseGenerator& pulseGenerator = CORE::CGUCEFApplication::Instance()->GetPulseGenerator();
+//        pulseGenerator.RequestPeriodicPulses( this, 1000 / videoSettings.GetFrequency() );
+//        SubscribeTo( &pulseGenerator );
+//
+//        GUCEF_SYSTEM_LOG( CORE::LOGLEVEL_NORMAL, "Win32GLWindowContext: Succesfully created OpenGL rendering context" );
+//        return true;
+//    }
     return false;
 }
 
 /*-------------------------------------------------------------------------*/
 
 const CORE::CString&
-CWin32GLWindowContext::GetClassTypeName( void ) const
+CXWinGLWindowContext::GetClassTypeName( void ) const
 {GUCEF_TRACE;
 
-    static CORE::CString classTypeName = "GUCEF::GUIDRIVERWIN32GL::CWin32GLWindowContext";
+    static CORE::CString classTypeName = "GUCEF::GUIDRIVERWIN32GL::CXWinGLWindowContext";
     return classTypeName;
 }
 
 /*-------------------------------------------------------------------------*/
 
 void
-CWin32GLWindowContext::OnNotify( CORE::CNotifier* notifier   ,
+CXWinGLWindowContext::OnNotify( CORE::CNotifier* notifier   ,
                                  const CORE::CEvent& eventID ,
                                  CORE::CICloneable* evenData )
 {GUCEF_TRACE;
 
-    if ( ( eventID == CORE::CPulseGenerator::PulseEvent )      ||
-         ( eventID == CORE::CMsWin32Window::WindowPaintEvent ) )
-    {
-        // Clear the screen in preparation for the redraw
-        glClear( GL_COLOR_BUFFER_BIT );
-        
-        // Notify that we are going to redraw the window
-        NotifyObservers( WindowContextRedrawEvent );        
-        
-        // Swap our front and back buffers
-        ::SwapBuffers( m_deviceContext );
-    }
-    else
-    if ( eventID == CORE::CMsWin32Window::WindowResizeEvent )
-    {
-        NotifyObservers( WindowContextSizeEvent );
-    }
-    else
-    if ( eventID == CORE::CMsWin32Window::WindowActivationEvent )
-    {
-        NotifyObservers( WindowContextActivateEvent );
-    }
+//    if ( ( eventID == CORE::CPulseGenerator::PulseEvent )      ||
+//         ( eventID == CORE::CMsWin32Window::WindowPaintEvent ) )
+//    {
+//        // Clear the screen in preparation for the redraw
+//        glClear( GL_COLOR_BUFFER_BIT );
+//
+//        // Notify that we are going to redraw the window
+//        NotifyObservers( WindowContextRedrawEvent );
+//
+//        // Swap our front and back buffers
+//        ::SwapBuffers( m_deviceContext );
+//    }
+//    else
+//    if ( eventID == CORE::CMsWin32Window::WindowResizeEvent )
+//    {
+//        NotifyObservers( WindowContextSizeEvent );
+//    }
+//    else
+//    if ( eventID == CORE::CMsWin32Window::WindowActivationEvent )
+//    {
+//        NotifyObservers( WindowContextActivateEvent );
+//    }
 }
 
 
@@ -359,7 +356,7 @@ CWin32GLWindowContext::OnNotify( CORE::CNotifier* notifier   ,
 //                                                                         //
 //-------------------------------------------------------------------------*/
 
-} /* namespace GUIDRIVERWIN32GL */
+} /* namespace GUIDRIVERXWINGL */
 } /* namespace GUCEF */
 
 /*-------------------------------------------------------------------------*/

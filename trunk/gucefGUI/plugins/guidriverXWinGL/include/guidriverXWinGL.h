@@ -1,5 +1,5 @@
 /*
- *  guidriverWin32GL: module implementing GL based window management for Win32
+ *  guidriverXWinGL: module implementing GL based window management for X11
  *  Copyright (C) 2002 - 2011.  Dinand Vanvelzen
  *
  *  This library is free software; you can redistribute it and/or
@@ -17,8 +17,8 @@
  *  Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA
  */
 
-#ifndef GUIDRIVERWIN32GL_H
-#define GUIDRIVERWIN32GL_H
+#ifndef GUIDRIVERXWINGL_H
+#define GUIDRIVERXWINGL_H
 
 /*-------------------------------------------------------------------------//
 //                                                                         //
@@ -26,29 +26,29 @@
 //                                                                         //
 //-------------------------------------------------------------------------*/
 
-#ifndef GUIDRIVERWIN32GL_CONFIG_H
-#include "guidriverWin32GL_config.h"
-#define GUIDRIVERWIN32GL_CONFIG_H
-#endif /* GUIDRIVERWIN32GL_CONFIG_H ? */
+#ifndef GUIDRIVERXWINGL_CONFIG_H
+#include "guidriverXWinGL_config.h"
+#define GUIDRIVERXWINGL_CONFIG_H
+#endif /* GUIDRIVERXWINGL_CONFIG_H ? */
 
-#ifndef GUIDRIVERWIN32GL_MACROS_H
-#include "guidriverWin32GL_macros.h"
-#define GUIDRIVERWIN32GL_MACROS_H
-#endif /* GUIDRIVERWIN32GL_MACROS_H ? */
+#ifndef GUIDRIVERXWINGL_MACROS_H
+#include "guidriverXWinGL_macros.h"
+#define GUIDRIVERXWINGL_MACROS_H
+#endif /* GUIDRIVERXWINGL_MACROS_H ? */
 
-#ifndef GUIDRIVERWIN32GL_CWIN32GLWINDOWMANAGERIMP_H
-#include "guidriverWin32GL_CWin32GLWindowManagerImp.h"
-#define GUIDRIVERWIN32GL_CWIN32GLWINDOWMANAGERIMP_H
-#endif /* GUIDRIVERWIN32GL_CWIN32GLWINDOWMANAGERIMP_H ? */
+#ifndef GUIDRIVERXWINGL_CXWINGLWINDOWMANAGERIMP_H
+#include "guidriverXWinGL_CXWinGLWindowManagerImp.h"
+#define GUIDRIVERXWINGL_CXWINGLWINDOWMANAGERIMP_H
+#endif /* GUIDRIVERXWINGL_CXWINGLWINDOWMANAGERIMP_H ? */
 
-#ifndef GUIDRIVERWIN32GL_CWIN32GLGLESWINDOWCONTEXT_H
-#include "guidriverWin32GL_CWin32GLWindowContext.h"
-#define GUIDRIVERWIN32GL_CWIN32GLGLESWINDOWCONTEXT_H
-#endif /* GUIDRIVERWIN32GL_CWIN32GLGLESWINDOWCONTEXT_H ? */
+#ifndef GUIDRIVERXWINGL_CXWINGLWINDOWCONTEXT_H
+#include "guidriverXWinGL_CXWinGLWindowContext.h"
+#define GUIDRIVERXWINGL_CXWINGLWINDOWCONTEXT_H
+#endif /* GUIDRIVERXWINGL_CXWINGLWINDOWCONTEXT_H ? */
 
 /*-------------------------------------------------------------------------*/
 
-#endif /* GUIDRIVERWIN32GL_H ? */
+#endif /* GUIDRIVERXWINGL_H ? */
 
 /*-------------------------------------------------------------------------//
 //                                                                         //
