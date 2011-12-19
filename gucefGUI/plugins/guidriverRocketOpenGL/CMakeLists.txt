@@ -37,8 +37,8 @@ set( ALL_FILES ${HEADER_FILES} ${SOURCE_FILES} ${PLATFORM_HEADER_FILES} ${PLATFO
 
 set( MODULE_NAME "guidriverRocketOpenGL" )
 add_library( ${MODULE_NAME} ${ALL_FILES} )
-add_dependencies( ${MODULE_NAME} RocketControls RocketCore gucefCORE gucefGUI gucefMT guidriverRocket )
-target_link_libraries( ${MODULE_NAME} RocketControls RocketCore gucefCORE gucefGUI gucefMT guidriverRocket )
+add_dependencies( ${MODULE_NAME} RocketControls RocketCore gucefCORE gucefGUI gucefINPUT gucefMT guidriverRocket )
+target_link_libraries( ${MODULE_NAME} RocketControls RocketCore gucefCORE gucefGUI gucefINPUT gucefMT guidriverRocket )
 set_target_properties( ${MODULE_NAME} PROPERTIES COMPILE_DEFINITIONS "GUIDRIVERROCKETGL_BUILD_MODULE" )
 
 if ( ANDROID )
