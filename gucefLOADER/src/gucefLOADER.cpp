@@ -78,6 +78,20 @@ android_syslog(int level, const char *format, ...)
 #define LOGE(...) ((void)__android_log_print(ANDROID_LOG_ERROR, "GalaxyUnlimitedPlatform", __VA_ARGS__))
 #define LOGD(...) ((void)__android_log_print(ANDROID_LOG_DEBUG, "GalaxyUnlimitedPlatform", __VA_ARGS__))
 
+#else
+
+#define FLOGI( format, ... )
+#define FLOGW( format, ... )
+#define FLOGF( format, ... )
+#define FLOGE( format, ... )
+#define FLOGD( format, ... )
+
+#define LOGI(...)
+#define LOGW(...)
+#define LOGF(...)
+#define LOGE(...)
+#define LOGD(...)
+
 #endif
 
 /*-------------------------------------------------------------------------//

@@ -14,7 +14,7 @@
  *
  *  You should have received a copy of the GNU Lesser General Public
  *  License along with this library; if not, write to the Free Software
- *  Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA 
+ *  Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA
  */
 
 /*-------------------------------------------------------------------------//
@@ -240,7 +240,7 @@ CProductInfo::GetProductType( void ) const
 void
 CProductInfo::SetVersion( const GUCEF::CORE::TVersion& version )
 {GUCEF_TRACE;
-    
+
     m_version = version;
 }
 
@@ -323,7 +323,7 @@ CProductInfo::StringToProductType( const CString& productType )
 CString
 CProductInfo::DeploymentStateToString( TDeploymentStatus deploymentState )
 {GUCEF_TRACE;
-    
+
     switch ( deploymentState )
     {
         case DEPLOYMENTSTATE_INSTALLED :
@@ -371,7 +371,7 @@ CProductInfo::StringToDeploymentState( const CString& deploymentState )
     {
         return DEPLOYMENTSTATE_AVAILABLEFORDOWNLOAD;
     }
-    return DEPLOYMENTSTATE_UNKNOWN;    
+    return DEPLOYMENTSTATE_UNKNOWN;
 }
 
 /*-------------------------------------------------------------------------*/
@@ -382,7 +382,7 @@ CProductInfo::SaveConfig( GUCEF::CORE::CDataNode& node )
 
     GUCEF::CORE::CDataNode newNode( "ProductInfo" );
     newNode.SetAttribute( "Name", m_name );
-    newNode.SetAttribute( "Description", m_description ); 
+    newNode.SetAttribute( "Description", m_description );
     newNode.SetAttribute( "Version", GUCEF::CORE::VersionToString( m_version ) );
     newNode.SetAttribute( "ProductType", ProductTypeToString( m_productType ) );
     newNode.SetAttribute( "DeploymentState", DeploymentStateToString( m_deploymentState ) );
@@ -393,52 +393,52 @@ CProductInfo::SaveConfig( GUCEF::CORE::CDataNode& node )
 }
 
 /*-------------------------------------------------------------------------*/
-                                
+
 bool
 CProductInfo::LoadConfig( const GUCEF::CORE::CDataNode& node )
 {GUCEF_TRACE;
 
-    const GUCEF::CORE::CDataNode* infoNode = node.Find( "ProductInfo" );
-    if ( NULL != infoNode )
-    {
-        const GUCEF::CORE::CDataNode::TKeyValuePair* att = NULL;
-        att = infoNode->GetAttribute( "Name" );
-        if ( NULL != att )
-        {
-            m_name = att->second;
-        }
-        att = infoNode->GetAttribute( "Version" );
-        if ( NULL != att )
-        {
-            m_version = GUCEF::CORE::StringToVersion( att->second );
-        }
-        att = infoNode->GetAttribute( "Description" );
-        if ( NULL != att )
-        {
-            m_name = att->second;
-        }
-        att = infoNode->GetAttribute( "ProductType" );
-        if ( NULL != att )
-        {
-            m_name = StringToProductType( att->second );
-        }
-        att = infoNode->GetAttribute( "DeploymentState" );
-        if ( NULL != att )
-        {
-            m_name = StringToDeploymentState( att->second );
-        }        
-        att = infoNode->GetAttribute( "PatchListURL" );
-        if ( NULL != att )
-        {
-            m_patchListURL = att->second;
-        }
-        att = infoNode->GetAttribute( "InfoURL" );
-        if ( NULL != att )
-        {
-            m_infoURL = att->second;
-        }
-        return true;
-    }
+//    const GUCEF::CORE::CDataNode* infoNode = node.Find( "ProductInfo" );
+//    if ( NULL != infoNode )
+//    {
+//        const GUCEF::CORE::CDataNode::TKeyValuePair* att = NULL;
+//        att = infoNode->GetAttribute( "Name" );
+//        if ( NULL != att )
+//        {
+//            m_name = att->second;
+//        }
+//        att = infoNode->GetAttribute( "Version" );
+//        if ( NULL != att )
+//        {
+//            m_version = GUCEF::CORE::StringToVersion( att->second );
+//        }
+//        att = infoNode->GetAttribute( "Description" );
+//        if ( NULL != att )
+//        {
+//            m_name = att->second;
+//        }
+//        att = infoNode->GetAttribute( "ProductType" );
+//        if ( NULL != att )
+//        {
+//            m_name = StringToProductType( att->second );
+//        }
+//        att = infoNode->GetAttribute( "DeploymentState" );
+//        if ( NULL != att )
+//        {
+//            m_name = StringToDeploymentState( att->second );
+//        }
+//        att = infoNode->GetAttribute( "PatchListURL" );
+//        if ( NULL != att )
+//        {
+//            m_patchListURL = att->second;
+//        }
+//        att = infoNode->GetAttribute( "InfoURL" );
+//        if ( NULL != att )
+//        {
+//            m_infoURL = att->second;
+//        }
+//        return true;
+//    }
     return false;
 }
 
@@ -447,10 +447,10 @@ CProductInfo::LoadConfig( const GUCEF::CORE::CDataNode& node )
 CString
 CProductInfo::GetCombinedProductString( void ) const
 {GUCEF_TRACE;
-    
+
     const CString& mainName = m_parentName.Length() > 0 ? m_parentName : m_name;
     CString path = mainName + '/' + GUCEF::CORE::VersionToString( m_version ) + '/';
-  
+
     if ( ( m_productType != CProductInfo::PRODUCTTYPE_UNKNOWN )     &&
          ( m_productType != CProductInfo::PRODUCTTYPE_INDEPENDANT )  )
     {

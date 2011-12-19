@@ -14,7 +14,7 @@
  *
  *  You should have received a copy of the GNU Lesser General Public
  *  License along with this library; if not, write to the Free Software
- *  Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA 
+ *  Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA
  */
 
 /*-------------------------------------------------------------------------//
@@ -23,8 +23,10 @@
 //                                                                         //
 //-------------------------------------------------------------------------*/
 
+#include <string.h>
+
 #ifndef GUCEF_CORE_DVCPPSTRINGUTILS_H
-#include "dvcppstringutils.h"           /* C++ string utils */ 
+#include "dvcppstringutils.h"           /* C++ string utils */
 #define GUCEF_CORE_DVCPPSTRINGUTILS_H
 #endif /* GUCEF_CORE_DVCPPSTRINGUTILS_H ? */
 
@@ -94,13 +96,13 @@ CKeyboard::CKeyboard( CInputDriver& inputDriver ,
       m_keyModStates( 0 )           ,
       m_inputDriver( &inputDriver )
 {GUCEF_TRACE;
-    
+
     RegisterEvents();
     //ResetKeyboardState();
 }
 
 /*-------------------------------------------------------------------------*/
-                        
+
 CKeyboard::~CKeyboard()
 {GUCEF_TRACE;
 
@@ -127,7 +129,7 @@ CKeyboard::IsKeyDown( const KeyCode key ) const
 }
 
 /*-------------------------------------------------------------------------*/
-    
+
 bool
 CKeyboard::IsKeyModifierActive( const KeyModifier keyMod ) const
 {GUCEF_TRACE;
@@ -136,7 +138,7 @@ CKeyboard::IsKeyModifierActive( const KeyModifier keyMod ) const
 }
 
 /*-------------------------------------------------------------------------*/
-    
+
 const CKeyboard::TKeyStates&
 CKeyboard::GetKeyStates( void ) const
 {GUCEF_TRACE;
@@ -145,7 +147,7 @@ CKeyboard::GetKeyStates( void ) const
 }
 
 /*-------------------------------------------------------------------------*/
-    
+
 UInt32
 CKeyboard::GetKeyModStates( void ) const
 {GUCEF_TRACE;
@@ -165,14 +167,14 @@ CKeyboard::GetInputDriver( void )
 /*-------------------------------------------------------------------------*/
 
 void
-CKeyboard::SetKeyState( const KeyCode key       , 
+CKeyboard::SetKeyState( const KeyCode key       ,
                         const bool pressedState )
 {GUCEF_TRACE;
 
     m_keyState[ key ] = pressedState;
-    
+
     GUCEF_DEBUG_LOG( CORE::LOGLEVEL_NORMAL, "Setting state of key [" + KeyCodeToString( key ) + "] to " + CORE::BoolToString( pressedState ) + " on keyboard " + CORE::Int32ToString(  m_deviceID ) );
-    
+
     CKeyStateChangedEventData eventData( m_deviceID, key, pressedState, m_keyModStates );
     NotifyObservers( KeyStateChangedEvent, &eventData );
 }
@@ -180,20 +182,20 @@ CKeyboard::SetKeyState( const KeyCode key       ,
 /*-------------------------------------------------------------------------*/
 
 void
-CKeyboard::SetKeyModState( const KeyModifier keyMod , 
+CKeyboard::SetKeyModState( const KeyModifier keyMod ,
                            const bool pressedState  )
 {GUCEF_TRACE;
 
     m_keyModStates = m_keyModStates | keyMod;
-    
+
     GUCEF_DEBUG_LOG( CORE::LOGLEVEL_NORMAL, "Setting state of key mod [" + KeyModifierToString( keyMod ) + "] to " + CORE::BoolToString( pressedState ) + " on keyboard " + CORE::Int32ToString(  m_deviceID ) );
-    
+
     CKeyModStateChangedEventData eventData( keyMod, pressedState, m_keyModStates );
     NotifyObservers( KeyModStateChangedEvent, &eventData );
 }
 
 /*-------------------------------------------------------------------------*/
-                         
+
 void
 CKeyboard::ResetKeyboardState( void )
 {GUCEF_TRACE;
@@ -202,7 +204,7 @@ CKeyboard::ResetKeyboardState( void )
     {
         m_keyState[ (KeyCode) i ] = false;
     }
-    
+
     m_keyModStates = 0;
 }
 
@@ -224,10 +226,10 @@ CKeyboard::GetUnicodeForKeyCode( const KeyCode keyCode     ,
 const char*
 CKeyboard::GetDeviceType( void ) const
 {GUCEF_TRACE;
-    
+
     return DeviceType;
 }
-    
+
 /*-------------------------------------------------------------------------*/
 
 bool
