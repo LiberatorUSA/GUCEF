@@ -14,7 +14,7 @@
  *
  *  You should have received a copy of the GNU Lesser General Public
  *  License along with this library; if not, write to the Free Software
- *  Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA 
+ *  Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA
  */
 
 /*-------------------------------------------------------------------------//
@@ -101,12 +101,13 @@ bool
 LoadPlugins( void )
 {GUCEF_TRACE;
 
+    CORE::CPluginMetaData pluginMetaData;
+
     #if ( GUCEF_PLATFORM == GUCEF_PLATFORM_MSWIN )
 
     GUCEF_LOG( CORE::LOGLEVEL_NORMAL, "Attempting to load Ms Win drivers" );
-        
+
     // Define our windowing backend plugin
-    CORE::CPluginMetaData pluginMetaData;
     pluginMetaData.SetPluginType( "GucefGenericPlugin" );
     #ifdef GUCEF_GUI_DEBUG_MODE
     pluginMetaData.SetModuleFilename( "guidriverWin32GL_d" );
@@ -114,7 +115,7 @@ LoadPlugins( void )
     pluginMetaData.SetModuleFilename( "guidriverWin32GL" );
     #endif
     pluginMetaData.SetFullModulePath( CORE::RelativePath( "$MODULEDIR$" ) );
-        
+
     // Add plugin metadata and load the plugin
     if ( CORE::CPluginControl::Instance()->AddPluginMetaData( pluginMetaData ,
                                                               "GUI"          ,
@@ -125,6 +126,37 @@ LoadPlugins( void )
     else
     {
         GUCEF_ERROR_LOG( CORE::LOGLEVEL_NORMAL, "Failed to load guidriverWin32GL" );
+        return false;
+    }
+
+    #endif
+
+
+    /*-------------------------------------------------------------*/
+
+    #if ( GUCEF_PLATFORM == GUCEF_PLATFORM_LINUX )
+
+    GUCEF_LOG( CORE::LOGLEVEL_NORMAL, "Attempting to load X11 drivers" );
+
+    // Define our windowing backend plugin
+    pluginMetaData.SetPluginType( "GucefGenericPlugin" );
+    #ifdef GUCEF_GUI_DEBUG_MODE
+    pluginMetaData.SetModuleFilename( "guidriverXWinGL_d" );
+    #else
+    pluginMetaData.SetModuleFilename( "guidriverXWinGL" );
+    #endif
+    pluginMetaData.SetFullModulePath( CORE::RelativePath( "$MODULEDIR$" ) );
+
+    // Add plugin metadata and load the plugin
+    if ( CORE::CPluginControl::Instance()->AddPluginMetaData( pluginMetaData ,
+                                                              "GUI"          ,
+                                                              true           ) )
+    {
+        GUCEF_LOG( CORE::LOGLEVEL_NORMAL, "Successfully loaded guidriverXWinGL" );
+    }
+    else
+    {
+        GUCEF_ERROR_LOG( CORE::LOGLEVEL_NORMAL, "Failed to load guidriverXWinGL" );
         return false;
     }
 
@@ -184,7 +216,7 @@ LoadPlugins( void )
     /*-------------------------------------------------------------*/
 
     #if ( GUCEF_PLATFORM == GUCEF_PLATFORM_MSWIN )
-    
+
     // Define our input plugin for Win32
     pluginMetaData.Clear();
     pluginMetaData.SetPluginType( "GucefInputDriverPlugin" );
@@ -214,7 +246,7 @@ LoadPlugins( void )
 
     #if 0
 
-    // Define our optional logging service client plugin 
+    // Define our optional logging service client plugin
     pluginMetaData.Clear();
     pluginMetaData.SetPluginType( "GucefGenericPlugin" );
     #ifdef GUCEF_GUI_DEBUG_MODE
@@ -256,7 +288,7 @@ LoadFonts( GUI::TGuiContextPtr guiContext )
 }
 
 /*-------------------------------------------------------------------------*/
-          
+
 /*
  *      Application entry point
  */
@@ -267,27 +299,27 @@ GUCEF_OSMAIN_BEGIN
     //CORE::GUCEF_LogStackToStdOut();
     //CORE::GUCEF_SetStackLogging( 1 );
     #endif /* GUCEF_GUI_DEBUG_MODE ? */
-               
-    try 
-    {                               
+
+    try
+    {
         // setup file logger
         CORE::CString logFilename = GUCEF::CORE::RelativePath( "$CURWORKDIR$" );
         CORE::AppendToPath( logFilename, "gucefGUI_TestApp_Log.txt" );
         CORE::CFileAccess logFileAccess( logFilename, "w" );
-        
+
         CORE::CStdLogger logger( logFileAccess );
         CORE::CLogManager::Instance()->AddLogger( &logger );
-        
+
         // setup console logger
         CORE::CPlatformNativeConsoleLogger consoleOut;
         CORE::CLogManager::Instance()->AddLogger( consoleOut.GetLogger() );
 
         // flush startup log entries
         CORE::CLogManager::Instance()->FlushBootstrapLogEntriesToLogs();
-        
+
         // Load all the plugins we need for this test
         if ( LoadPlugins() )
-        {       
+        {
             GUI::TWindowManagerBackendPtr windowMngrBackend = GUI::CWindowManager::Instance()->GetBackend( "Win32GL" );
             if ( NULL != windowMngrBackend )
             {
@@ -355,7 +387,7 @@ GUCEF_OSMAIN_BEGIN
             GUCEF_ERROR_LOG( CORE::LOGLEVEL_NORMAL, "Failed to load one or more plugins" );
         }
 
-        return 1;                                                                            
+        return 1;
     }
     catch ( ... )
     {
@@ -363,11 +395,11 @@ GUCEF_OSMAIN_BEGIN
         CORE::GUCEF_PrintCallstack();
         CORE::GUCEF_DumpCallstack( "gucefGUI_TestApp_callstack.txt" );
         #endif /* GUCEF_GUI_DEBUG_MODE ? */
-        
+
         CORE::ShowErrorMessage( "Unknown exception"                                                                 ,
-                                "Unhandled exception during program execution, the application will now terminate"  );                                                         
+                                "Unhandled exception during program execution, the application will now terminate"  );
     }
-    return 1;                                                                                                                              
+    return 1;
 }
 GUCEF_OSMAIN_END
 
