@@ -386,6 +386,19 @@ operator!=( const int ptr, const CTSharedPtr< T >& other )
 
 /*-------------------------------------------------------------------------*/
 
+/*
+ *  workaround for comparison to NULL, since NULL is a integer by default
+ */
+template< typename T >
+inline bool
+operator!=( const long ptr, const CTSharedPtr< T >& other )
+{GUCEF_TRACE;
+
+    return ptr != static_cast< const CTBasicSharedPtr< T >& >( other);
+}
+
+/*-------------------------------------------------------------------------*/
+
 template< typename T >
 inline T&
 CTSharedPtr< T >::operator*( void )
