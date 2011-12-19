@@ -23,12 +23,12 @@
 //                                                                         //
 //-------------------------------------------------------------------------*/
 
-#ifndef GUIDRIVERWIN32GL_CWIN32GLWINDOWCONTEXT_H
-#include "guidriverWin32GL_CWin32GLWindowContext.h"
-#define GUIDRIVERWIN32GL_CWIN32GLWINDOWCONTEXT_H
-#endif /* GUIDRIVERWIN32GL_CWIN32GLWINDOWCONTEXT_H ? */
+#ifndef GUIDRIVERXWINGL_CXWINGLWINDOWCONTEXT_H
+#include "guidriverXWinGL_CXWinGLWindowContext.h"
+#define GUIDRIVERXWINGL_CXWINGLWINDOWCONTEXT_H
+#endif /* GUIDRIVERXWINGL_CXWINGLWINDOWCONTEXT_H ? */
 
-#include "guidriverWin32GL_CWin32GLWindowManagerImp.h"
+#include "guidriverXWinGL_CXWinGLWindowManagerImp.h"
 
 /*-------------------------------------------------------------------------//
 //                                                                         //
@@ -37,7 +37,7 @@
 //-------------------------------------------------------------------------*/
 
 namespace GUCEF {
-namespace GUIDRIVERWIN32GL {
+namespace GUIDRIVERXWINGL {
 
 /*-------------------------------------------------------------------------//
 //                                                                         //
@@ -45,14 +45,14 @@ namespace GUIDRIVERWIN32GL {
 //                                                                         //
 //-------------------------------------------------------------------------*/
 
-CWin32GLWindowManagerImp::CWin32GLWindowManagerImp( void )
+CXWinGLWindowManagerImp::CXWinGLWindowManagerImp( void )
 {GUCEF_TRACE;
 
 }
 
 /*-------------------------------------------------------------------------*/
 
-CWin32GLWindowManagerImp::~CWin32GLWindowManagerImp()
+CXWinGLWindowManagerImp::~CXWinGLWindowManagerImp()
 {GUCEF_TRACE;
 
 }
@@ -60,10 +60,10 @@ CWin32GLWindowManagerImp::~CWin32GLWindowManagerImp()
 /*-------------------------------------------------------------------------*/
 
 GUI::TWindowContextPtr
-CWin32GLWindowManagerImp::CreateWindowContext( const GUI::CString& title ,
-                                               const GUI::UInt32 width   ,
-                                               const GUI::UInt32 height  ,
-                                               const bool fullscreen     )
+CXWinGLWindowManagerImp::CreateWindowContext( const GUI::CString& title ,
+                                              const GUI::UInt32 width   ,
+                                              const GUI::UInt32 height  ,
+                                              const bool fullscreen     )
 {GUCEF_TRACE;
 
     GUI::CVideoSettings videoSettings;
@@ -78,12 +78,12 @@ CWin32GLWindowManagerImp::CreateWindowContext( const GUI::CString& title ,
 /*-------------------------------------------------------------------------*/
 
 GUI::TWindowContextPtr
-CWin32GLWindowManagerImp::CreateWindowContext( const GUI::CString& title           ,
-                                               const GUI::CVideoSettings& settings ,
-                                               const CORE::CValueList* params      )
+CXWinGLWindowManagerImp::CreateWindowContext( const GUI::CString& title           ,
+                                              const GUI::CVideoSettings& settings ,
+                                              const CORE::CValueList* params      )
 {GUCEF_TRACE;
 
-    TWin32GLWindowContextPtr windowContext = new CWin32GLWindowContext();
+    TXWinGLWindowContextPtr windowContext = new CXWinGLWindowContext();
     if ( windowContext->Initialize( title    ,
                                     settings ) )
     {
@@ -95,11 +95,11 @@ CWin32GLWindowManagerImp::CreateWindowContext( const GUI::CString& title        
 /*-------------------------------------------------------------------------*/
 
 GUI::TWindowContextPtr
-CWin32GLWindowManagerImp::CreateWindowContext( const GUI::CString& title      ,
-                                               const GUI::UInt32 width        ,
-                                               const GUI::UInt32 height       ,
-                                               const bool fullscreen          ,
-                                               const CORE::CValueList& params )
+CXWinGLWindowManagerImp::CreateWindowContext( const GUI::CString& title      ,
+                                              const GUI::UInt32 width        ,
+                                              const GUI::UInt32 height       ,
+                                              const bool fullscreen          ,
+                                              const CORE::CValueList& params )
 {GUCEF_TRACE;
 
     GUI::CVideoSettings videoSettings;
@@ -114,10 +114,10 @@ CWin32GLWindowManagerImp::CreateWindowContext( const GUI::CString& title      ,
 /*-------------------------------------------------------------------------*/
 
 void
-CWin32GLWindowManagerImp::DestroyWindowContext( GUI::TWindowContextPtr& windowContext )
+CXWinGLWindowManagerImp::DestroyWindowContext( GUI::TWindowContextPtr& windowContext )
 {GUCEF_TRACE;
 
-    CWin32GLWindowContext* glContext = static_cast<CWin32GLWindowContext*>( windowContext.GetPointerAlways() );
+    CXWinGLWindowContext* glContext = static_cast<CXWinGLWindowContext*>( windowContext.GetPointerAlways() );
     if ( NULL != glContext )
     {
         glContext->Shutdown();
@@ -127,7 +127,7 @@ CWin32GLWindowManagerImp::DestroyWindowContext( GUI::TWindowContextPtr& windowCo
 /*-------------------------------------------------------------------------*/
 
 bool
-CWin32GLWindowManagerImp::ApplyVideoSettings( GUI::TWindowContextPtr& windowContext ,
+CXWinGLWindowManagerImp::ApplyVideoSettings( GUI::TWindowContextPtr& windowContext ,
                                               const GUI::CVideoSettings& settings   )
 {GUCEF_TRACE;
 
@@ -140,7 +140,7 @@ CWin32GLWindowManagerImp::ApplyVideoSettings( GUI::TWindowContextPtr& windowCont
 //                                                                         //
 //-------------------------------------------------------------------------*/
 
-} /* namespace GUIDRIVERWIN32GL */
+} /* namespace GUIDRIVERXWINGL */
 } /* namespace GUCEF */
 
 /*-------------------------------------------------------------------------*/

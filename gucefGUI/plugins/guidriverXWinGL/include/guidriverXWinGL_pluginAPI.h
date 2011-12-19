@@ -31,10 +31,10 @@
 #define GUCEF_CORE_ESTRUCTS_H
 #endif /* GUCEF_CORE_ESTRUCTS_H ? */
 
-#ifndef GUIDRIVERWIN32GL_MACROS_H
-#include "guidriverWin32GL_macros.h"
-#define GUIDRIVERWIN32GL_MACROS_H
-#endif /* GUIDRIVERWIN32GL_MACROS_H ? */
+#ifndef GUIDRIVERXWINGL_MACROS_H
+#include "guidriverXWinGL_macros.h"
+#define GUIDRIVERXWINGL_MACROS_H
+#endif /* GUIDRIVERXWINGL_MACROS_H ? */
 
 /*-------------------------------------------------------------------------//
 //                                                                         //

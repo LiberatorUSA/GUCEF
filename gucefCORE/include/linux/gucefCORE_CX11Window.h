@@ -89,7 +89,7 @@ class GUCEF_CORE_PUBLIC_CPP CX11Window : public CObservingNotifier
 
     void SetDisplay( ::Display* display );
 
-    ::Display* GetDisplay( void );
+    ::Display* GetDisplay( void ) const;
 
     ::Window GetWindow( void ) const;
 
