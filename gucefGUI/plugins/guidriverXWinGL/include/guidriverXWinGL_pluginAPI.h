@@ -1,5 +1,5 @@
 /*
- *  guidriverWin32GL: module implementing GL based window management for Win32
+ *  guidriverXWinGL: module implementing GL based window management for X11
  *  Copyright (C) 2002 - 2011.  Dinand Vanvelzen
  *
  *  This library is free software; you can redistribute it and/or
@@ -17,8 +17,8 @@
  *  Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA
  */
 
-#ifndef GUIDRIVERANDROIDGLES_PLUGINAPI_H
-#define GUIDRIVERANDROIDGLES_PLUGINAPI_H
+#ifndef GUIDRIVERXWINGL_PLUGINAPI_H
+#define GUIDRIVERXWINGL_PLUGINAPI_H
 
 /*-------------------------------------------------------------------------//
 //                                                                         //
@@ -44,7 +44,7 @@
 
 #ifdef __cplusplus
 namespace GUCEF {
-namespace GUIDRIVERWIN32GL {
+namespace GUIDRIVERXWINGL {
 #endif
 
 /*-------------------------------------------------------------------------//
@@ -62,30 +62,30 @@ extern "C" {
 
 /*-------------------------------------------------------------------------*/
 
-GUIDRIVERWIN32GL_PUBLIC_C CORE::Int32 GUCEF_PLUGIN_CALLSPEC_PREFIX 
+GUIDRIVERXWINGL_PUBLIC_C CORE::Int32 GUCEF_PLUGIN_CALLSPEC_PREFIX
 GUCEFPlugin_Load( CORE::UInt32 argc, const char** argv ) GUCEF_PLUGIN_CALLSPEC_SUFFIX;
 
 /*-------------------------------------------------------------------------*/
 
-GUIDRIVERWIN32GL_PUBLIC_C void GUCEF_PLUGIN_CALLSPEC_PREFIX 
+GUIDRIVERXWINGL_PUBLIC_C void GUCEF_PLUGIN_CALLSPEC_PREFIX
 GUCEFPlugin_Unload( void ) GUCEF_PLUGIN_CALLSPEC_SUFFIX;
 
 /*-------------------------------------------------------------------------*/
 
-GUIDRIVERWIN32GL_PUBLIC_C void GUCEF_PLUGIN_CALLSPEC_PREFIX 
+GUIDRIVERXWINGL_PUBLIC_C void GUCEF_PLUGIN_CALLSPEC_PREFIX
 GUCEFPlugin_GetVersion( CORE::TVersion* versionInfo ) GUCEF_PLUGIN_CALLSPEC_SUFFIX;
 
 /*-------------------------------------------------------------------------*/
 
-GUIDRIVERWIN32GL_PUBLIC_C const char* GUCEF_PLUGIN_CALLSPEC_PREFIX 
+GUIDRIVERXWINGL_PUBLIC_C const char* GUCEF_PLUGIN_CALLSPEC_PREFIX
 GUCEFPlugin_GetCopyright( void ) GUCEF_PLUGIN_CALLSPEC_SUFFIX;
 
 /*-------------------------------------------------------------------------*/
 
-GUIDRIVERWIN32GL_PUBLIC_C const char* GUCEF_PLUGIN_CALLSPEC_PREFIX 
+GUIDRIVERXWINGL_PUBLIC_C const char* GUCEF_PLUGIN_CALLSPEC_PREFIX
 GUCEFPlugin_GetDescription( void ) GUCEF_PLUGIN_CALLSPEC_SUFFIX;
 
-/*-------------------------------------------------------------------------*/                 
+/*-------------------------------------------------------------------------*/
 
 #ifdef __cplusplus
    };
@@ -98,13 +98,13 @@ GUCEFPlugin_GetDescription( void ) GUCEF_PLUGIN_CALLSPEC_SUFFIX;
 //-------------------------------------------------------------------------*/
 
 #ifdef __cplusplus
-}; /* namespace GUIDRIVERWIN32GL */
+}; /* namespace GUIDRIVERXWINGL */
 }; /* namespace GUCEF */
 #endif /* __cplusplus */
 
 /*-------------------------------------------------------------------------*/
 
-#endif /* GUIDRIVERANDROIDGLES_PLUGINAPI_H ? */
+#endif /* GUIDRIVERXWINGL_PLUGINAPI_H ? */
 
 /*-------------------------------------------------------------------------//
 //                                                                         //

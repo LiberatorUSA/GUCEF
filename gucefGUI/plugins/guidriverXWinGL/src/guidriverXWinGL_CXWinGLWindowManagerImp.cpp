@@ -1,5 +1,5 @@
 /*
- *  guidriverWin32GL: module implementing GL based window management for Win32
+ *  guidriverXWinGL: module implementing GL based window management for X11
  *  Copyright (C) 2002 - 2011.  Dinand Vanvelzen
  *
  *  This library is free software; you can redistribute it and/or

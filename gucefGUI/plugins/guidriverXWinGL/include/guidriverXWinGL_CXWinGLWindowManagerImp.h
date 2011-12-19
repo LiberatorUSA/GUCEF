@@ -1,5 +1,5 @@
 /*
- *  guidriverWin32GL: module implementing GL based window management for Win32
+ *  guidriverXWinGL: module implementing GL based window management for X11
  *  Copyright (C) 2002 - 2011.  Dinand Vanvelzen
  *
  *  This library is free software; you can redistribute it and/or
@@ -16,9 +16,9 @@
  *  License along with this library; if not, write to the Free Software
  *  Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA
  */
- 
-#ifndef GUIDRIVERWIN32GL_CWIN32GLWINDOWMANAGERIMP_H
-#define GUIDRIVERWIN32GL_CWIN32GLWINDOWMANAGERIMP_H 
+
+#ifndef GUIDRIVERXWINGL_CXWINGLWINDOWMANAGERIMP_H
+#define GUIDRIVERXWINGL_CXWINGLWINDOWMANAGERIMP_H
 
 /*-------------------------------------------------------------------------//
 //                                                                         //
@@ -36,10 +36,10 @@
 #define GUCEF_GUI_CWINDOWMANAGERBACKEND_H
 #endif /* GUCEF_GUI_CWINDOWMANAGERBACKEND_H ? */
 
-#ifndef GUIDRIVERWIN32GL_MACROS_H
-#include "guidriverWin32GL_macros.h"
-#define GUIDRIVERWIN32GL_MACROS_H
-#endif /* GUIDRIVERWIN32GL_MACROS_H ? */
+#ifndef GUIDRIVERXWINGL_MACROS_H
+#include "guidriverXWinGL_macros.h"
+#define GUIDRIVERXWINGL_MACROS_H
+#endif /* GUIDRIVERXWINGL_MACROS_H ? */
 
 /*-------------------------------------------------------------------------//
 //                                                                         //
@@ -48,22 +48,22 @@
 //-------------------------------------------------------------------------*/
 
 namespace GUCEF {
-namespace GUIDRIVERWIN32GL {
-         
+namespace GUIDRIVERXWINGL {
+
 /*-------------------------------------------------------------------------//
 //                                                                         //
 //      CLASSES                                                            //
 //                                                                         //
 //-------------------------------------------------------------------------*/
 
-class GUIDRIVERWIN32GL_PUBLIC_CPP CWin32GLWindowManagerImp : public GUI::CWindowManagerBackend
+class GUIDRIVERXWINGL_PUBLIC_CPP CXWinGLWindowManagerImp : public GUI::CWindowManagerBackend
 {
     public:
-    
-    CWin32GLWindowManagerImp( void );
-    
-    virtual ~CWin32GLWindowManagerImp();
-    
+
+    CXWinGLWindowManagerImp( void );
+
+    virtual ~CXWinGLWindowManagerImp();
+
     virtual GUI::TWindowContextPtr CreateWindowContext( const GUI::CString& title ,
                                                         const GUI::UInt32 width   ,
                                                         const GUI::UInt32 height  ,
@@ -78,21 +78,21 @@ class GUIDRIVERWIN32GL_PUBLIC_CPP CWin32GLWindowManagerImp : public GUI::CWindow
                                                         const GUI::UInt32 height       ,
                                                         const bool fullscreen          ,
                                                         const CORE::CValueList& params );
-    
+
     virtual void DestroyWindowContext( GUI::TWindowContextPtr& windowContext );
-    
+
     virtual bool ApplyVideoSettings( GUI::TWindowContextPtr& windowContext ,
                                      const GUI::CVideoSettings& settings   );
 
     private:
 
-    CWin32GLWindowManagerImp( const CWin32GLWindowManagerImp& src );
-    CWin32GLWindowManagerImp& operator=( const CWin32GLWindowManagerImp& src );        
+    CXWinGLWindowManagerImp( const CXWinGLWindowManagerImp& src );
+    CXWinGLWindowManagerImp& operator=( const CXWinGLWindowManagerImp& src );
 };
 
 /*-------------------------------------------------------------------------*/
 
-typedef CORE::CTSharedPtr< CWin32GLWindowManagerImp > TWin32GLWindowManagerImpPtr;
+typedef CORE::CTSharedPtr< CXWinGLWindowManagerImp > TXWinGLWindowManagerImpPtr;
 
 /*-------------------------------------------------------------------------//
 //                                                                         //
@@ -100,12 +100,12 @@ typedef CORE::CTSharedPtr< CWin32GLWindowManagerImp > TWin32GLWindowManagerImpPt
 //                                                                         //
 //-------------------------------------------------------------------------*/
 
-} /* namespace GUIDRIVERWIN32GL */
+} /* namespace GUIDRIVERXWINGL */
 } /* namespace GUCEF */
 
 /*-------------------------------------------------------------------------*/
 
-#endif /* GUIDRIVERWIN32GL_CWIN32GLWINDOWMANAGERIMP_H ? */
+#endif /* GUIDRIVERXWINGL_CXWINGLWINDOWMANAGERIMP_H ? */
 
 /*-------------------------------------------------------------------------//
 //                                                                         //

@@ -1,5 +1,5 @@
 /*
- *  guidriverWin32GL: module implementing GL based window management for Win32
+ *  guidriverXWinGL: module implementing GL based window management for X11
  *  Copyright (C) 2002 - 2011.  Dinand Vanvelzen
  *
  *  This library is free software; you can redistribute it and/or
@@ -17,8 +17,8 @@
  *  Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA
  */
 
-#ifndef GUIDRIVERWIN32GL_CWIN32GLWINDOWCONTEXT_H
-#define GUIDRIVERWIN32GL_CWIN32GLWINDOWCONTEXT_H 
+#ifndef GUIDRIVERXWINGL_CXWINGLWINDOWCONTEXT_H
+#define GUIDRIVERXWINGL_CXWINGLWINDOWCONTEXT_H
 
 /*-------------------------------------------------------------------------//
 //                                                                         //
@@ -26,12 +26,10 @@
 //                                                                         //
 //-------------------------------------------------------------------------*/
 
-#include <Windows.h>
-
-#ifndef GUCEF_CORE_CMSWIN32WINDOW_H
-#include "gucefCORE_CMsWin32Window.h"
-#define GUCEF_CORE_CMSWIN32WINDOW_H
-#endif /* GUCEF_CORE_CMSWIN32WINDOW_H ? */
+#ifndef GUCEF_CORE_CX11WINDOW_H
+#include "gucefCORE_CX11Window.h"
+#define GUCEF_CORE_CX11WINDOW_H
+#endif /* GUCEF_CORE_CX11WINDOW_H ? */
 
 #ifndef GUCEF_CORE_CTSHAREDPTR_H
 #include "CTSharedPtr.h"
@@ -48,10 +46,10 @@
 #define GUCEF_GUI_CVIDEOSETTINGS_H
 #endif /* GUCEF_GUI_CVIDEOSETTINGS_H ? */
 
-#ifndef GUIDRIVERWIN32GL_MACROS_H
-#include "guidriverWin32GL_macros.h"
-#define GUIDRIVERWIN32GL_MACROS_H
-#endif /* GUIDRIVERWIN32GL_MACROS_H ? */
+#ifndef GUIDRIVERXWINGL_MACROS_H
+#include "guidriverXWinGL_macros.h"
+#define GUIDRIVERXWINGL_MACROS_H
+#endif /* GUIDRIVERXWINGL_MACROS_H ? */
 
 /*-------------------------------------------------------------------------//
 //                                                                         //
@@ -60,7 +58,7 @@
 //-------------------------------------------------------------------------*/
 
 namespace GUCEF {
-namespace GUIDRIVERWIN32GL {
+namespace GUIDRIVERXWINGL {
 
 /*-------------------------------------------------------------------------//
 //                                                                         //
@@ -68,26 +66,26 @@ namespace GUIDRIVERWIN32GL {
 //                                                                         //
 //-------------------------------------------------------------------------*/
 
-class GUIDRIVERWIN32GL_PUBLIC_CPP CWin32GLWindowContext : public GUI::CWindowContext
-{        
+class GUIDRIVERXWINGL_PUBLIC_CPP CXWinGLWindowContext : public GUI::CWindowContext
+{
     public:
-    
-    CWin32GLWindowContext( void );
-    
-    virtual ~CWin32GLWindowContext();
-    
+
+    CXWinGLWindowContext( void );
+
+    virtual ~CXWinGLWindowContext();
+
     virtual void SetGuiContext( GUI::TGuiContextPtr& context );
-    
+
     virtual GUI::TGuiContextPtr GetGuiContext( void );
 
     virtual GUI::UInt32 GetWidth( void ) const;
 
     virtual GUI::UInt32 GetHeight( void ) const;
-    
+
     virtual GUI::UInt32 GetID( void ) const;
-    
+
     virtual bool IsActive( void ) const;
-    
+
     virtual GUI::CString GetName( void ) const;
 
     virtual GUI::CString GetProperty( const GUI::CString& propertyName ) const;
@@ -100,29 +98,29 @@ class GUIDRIVERWIN32GL_PUBLIC_CPP CWin32GLWindowContext : public GUI::CWindowCon
     virtual const CORE::CString& GetClassTypeName( void ) const;
 
     protected:
-   
+
     virtual void OnNotify( CORE::CNotifier* notifier          ,
                            const CORE::CEvent& eventID        ,
                            CORE::CICloneable* evenData = NULL );
-    
+
     private:
-    
-    CWin32GLWindowContext( const CWin32GLWindowContext& src );            /**< private because: must be unique */ 
-    CWin32GLWindowContext& operator=( const CWin32GLWindowContext& src ); /**< private because: must be unique */
+
+    CXWinGLWindowContext( const CXWinGLWindowContext& src );            /**< private because: must be unique */
+    CXWinGLWindowContext& operator=( const CXWinGLWindowContext& src ); /**< private because: must be unique */
 
     private:
 
     GUI::TGuiContextPtr m_guiContext;
     GUI::UInt32 m_id;
     GUI::CString m_name;
-    CORE::CMsWin32Window m_window;
-    HGLRC m_renderContext;
-    HDC m_deviceContext;
+    CORE::CX11Window m_window;
+    //HGLRC m_renderContext;
+    //HDC m_deviceContext;
 };
 
 /*-------------------------------------------------------------------------*/
 
-typedef CORE::CTSharedPtr< CWin32GLWindowContext >  TWin32GLWindowContextPtr;
+typedef CORE::CTSharedPtr< CXWinGLWindowContext >  TXWinGLWindowContextPtr;
 
 /*-------------------------------------------------------------------------//
 //                                                                         //
@@ -130,12 +128,12 @@ typedef CORE::CTSharedPtr< CWin32GLWindowContext >  TWin32GLWindowContextPtr;
 //                                                                         //
 //-------------------------------------------------------------------------*/
 
-} /* namespace GUIDRIVERWIN32GL */
+} /* namespace GUIDRIVERXWINGL */
 } /* namespace GUCEF */
 
 /*-------------------------------------------------------------------------*/
 
-#endif /* GUIDRIVERWIN32GL_CWIN32GLWINDOWCONTEXT_H ? */
+#endif /* GUIDRIVERXWINGL_CXWINGLWINDOWCONTEXT_H ? */
 
 /*-------------------------------------------------------------------------//
 //                                                                         //

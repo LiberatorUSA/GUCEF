@@ -1,5 +1,5 @@
 /*
- *  guidriverWin32GL: module implementing GL based window management for Win32
+ *  guidriverXWinGL: module implementing GL based window management for X11
  *  Copyright (C) 2002 - 2011.  Dinand Vanvelzen
  *
  *  This library is free software; you can redistribute it and/or
@@ -17,8 +17,8 @@
  *  Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA
  */
 
-#ifndef GUIDRIVERWIN32GL_MACROS_H
-#define GUIDRIVERWIN32GL_MACROS_H
+#ifndef GUIDRIVERXWINGL_MACROS_H
+#define GUIDRIVERXWINGL_MACROS_H
 
 /*
  *      Build configuration specific macros.
@@ -36,10 +36,10 @@
 #define GUCEF_GUI_MACROS_H
 #endif /* GUCEF_GUI_MACROS_H ? */
 
-#ifndef GUIDRIVERWIN32GL_CONFIG_H
-#include "guidriverWin32GL_config.h"
-#define GUIDRIVERWIN32GL_CONFIG_H
-#endif /* GUIDRIVERWIN32GL_CONFIG_H ? */
+#ifndef GUIDRIVERXWINGL_CONFIG_H
+#include "guidriverXWinGL_config.h"
+#define GUIDRIVERXWINGL_CONFIG_H
+#endif /* GUIDRIVERXWINGL_CONFIG_H ? */
 
 /*-------------------------------------------------------------------------//
 //                                                                         //
@@ -52,34 +52,34 @@
  *      config file to control the export type.
  */
 
-#undef GUIDRIVERWIN32GL_EXPORTSPEC
-#ifdef GUIDRIVERWIN32GL_BUILD_MODULE
-  #define GUIDRIVERWIN32GL_EXPORTSPEC GUCEF_EXPORT
+#undef GUIDRIVERXWINGL_EXPORTSPEC
+#ifdef GUIDRIVERXWINGL_BUILD_MODULE
+  #define GUIDRIVERXWINGL_EXPORTSPEC GUCEF_EXPORT
 #else
-  #define GUIDRIVERWIN32GL_EXPORTSPEC GUCEF_IMPORT
-#endif /* GUIDRIVERWIN32GL_BUILD_MODULE ? */
+  #define GUIDRIVERXWINGL_EXPORTSPEC GUCEF_IMPORT
+#endif /* GUIDRIVERXWINGL_BUILD_MODULE ? */
 
-#undef GUIDRIVERWIN32GL_PUBLIC_CPP
-#ifdef GUIDRIVERWIN32GL_PUBLIC_CPP_CODE
-  #define GUIDRIVERWIN32GL_PUBLIC_CPP GUIDRIVERWIN32GL_EXPORTSPEC
+#undef GUIDRIVERXWINGL_PUBLIC_CPP
+#ifdef GUIDRIVERXWINGL_PUBLIC_CPP_CODE
+  #define GUIDRIVERXWINGL_PUBLIC_CPP GUIDRIVERXWINGL_EXPORTSPEC
 #else
-  #define GUIDRIVERWIN32GL_PUBLIC_CPP GUCEF_HIDDEN
-#endif /* GUIDRIVERWIN32GL_EXPORT_CPP_CODE */
+  #define GUIDRIVERXWINGL_PUBLIC_CPP GUCEF_HIDDEN
+#endif /* GUIDRIVERXWINGL_EXPORT_CPP_CODE */
 
-#define GUIDRIVERWIN32GL_PRIVATE_CPP GUCEF_HIDDEN
+#define GUIDRIVERXWINGL_PRIVATE_CPP GUCEF_HIDDEN
 
-#undef GUIDRIVERWIN32GL_PUBLIC_C
-#ifdef GUIDRIVERWIN32GL_PUBLIC_C_CODE
-  #define GUIDRIVERWIN32GL_PUBLIC_C GUIDRIVERWIN32GL_EXPORTSPEC
+#undef GUIDRIVERXWINGL_PUBLIC_C
+#ifdef GUIDRIVERXWINGL_PUBLIC_C_CODE
+  #define GUIDRIVERXWINGL_PUBLIC_C GUIDRIVERXWINGL_EXPORTSPEC
 #else
-  #define GUIDRIVERWIN32GL_PUBLIC_C GUCEF_HIDDEN
-#endif /* GUIDRIVERWIN32GL_PUBLIC_C_CODE */
+  #define GUIDRIVERXWINGL_PUBLIC_C GUCEF_HIDDEN
+#endif /* GUIDRIVERXWINGL_PUBLIC_C_CODE */
 
-#define GUIDRIVERWIN32GL_PRIVATE_C GUCEF_HIDDEN
+#define GUIDRIVERXWINGL_PRIVATE_C GUCEF_HIDDEN
 
 /*-------------------------------------------------------------------------*/
 
-#endif /* GUIDRIVERWIN32GL_MACROS_H ? */
+#endif /* GUIDRIVERXWINGL_MACROS_H ? */
 
 /*-------------------------------------------------------------------------//
 //                                                                         //

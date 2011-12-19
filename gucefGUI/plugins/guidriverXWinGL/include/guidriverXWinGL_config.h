@@ -1,5 +1,5 @@
 /*
- *  guidriverWin32GL: module implementing GL based window management for Win32
+ *  guidriverXWinGL: module implementing GL based window management for X11
  *  Copyright (C) 2002 - 2011.  Dinand Vanvelzen
  *
  *  This library is free software; you can redistribute it and/or
@@ -17,8 +17,8 @@
  *  Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA
  */
 
-#ifndef GUIDRIVERWIN32GL_CONFIG_H
-#define GUIDRIVERWIN32GL_CONFIG_H
+#ifndef GUIDRIVERXWINGL_CONFIG_H
+#define GUIDRIVERXWINGL_CONFIG_H
 
 /*
  *      Build configuration specific macros.
@@ -43,12 +43,12 @@
 //-------------------------------------------------------------------------*/
 
 /* Switches for the export of C++ and/or C code */
-#define GUIDRIVERWIN32GL_PUBLIC_CPP_CODE
-#define GUIDRIVERWIN32GL_PUBLIC_C_CODE
+#define GUIDRIVERXWINGL_PUBLIC_CPP_CODE
+#define GUIDRIVERXWINGL_PUBLIC_C_CODE
 
 /*-------------------------------------------------------------------------*/
 
-#endif /* GUIDRIVERWIN32GL_CONFIG_H ? */
+#endif /* GUIDRIVERXWINGL_CONFIG_H ? */
 
 /*-------------------------------------------------------------------------//
 //                                                                         //
