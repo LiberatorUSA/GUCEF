@@ -35,6 +35,11 @@
 
 #include <X11/Xlib.h>
 
+#ifndef GUCEF_MT_CMUTEX_H
+#include "gucefMT_CMutex.h"
+#define GUCEF_MT_CMUTEX_H
+#endif /* GUCEF_MT_CMUTEX_H ? */
+
 #ifndef GUCEF_CORE_COBSERVINGNOTIFIER_H
 #include "CObservingNotifier.h"
 #define GUCEF_CORE_COBSERVINGNOTIFIER_H
@@ -122,7 +127,7 @@ class GUCEF_CORE_PUBLIC_CPP CX11EventDispatcher : public CObservingNotifier
     typedef std::map< ::Window, CObserver* >  TWindowObserverMap;
 
     static CX11EventDispatcher* g_instance;
-    MT::CMutex g_mutex;
+    static MT::CMutex g_mutex;
     TWindowObserverMap m_windowObserverMap;
     ::Display* m_display;
 };
