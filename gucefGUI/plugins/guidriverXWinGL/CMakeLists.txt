@@ -50,7 +50,7 @@ endif()
 
 if ( LINUX )
   add_dependencies( ${MODULE_NAME} gucefCORE gucefGUI gucefMT )
-  target_link_libraries( ${MODULE_NAME} Opengl32 x11 gucefCORE gucefGUI gucefMT )
+  target_link_libraries( ${MODULE_NAME} GL X11 gucefCORE gucefGUI gucefMT )
   set_target_properties( ${MODULE_NAME} PROPERTIES COMPILE_DEFINITIONS "GUIDRIVERXWINGL_BUILD_MODULE" )
 endif( LINUX )
 
