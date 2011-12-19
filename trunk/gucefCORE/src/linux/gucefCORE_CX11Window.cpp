@@ -28,6 +28,14 @@
 #ifdef GUCEF_LINUX_BUILD
 
 #include <X11/Xatom.h>
+#include <X11/Xutil.h>
+#include <X11/keysym.h>
+#include <X11/cursorfont.h>
+
+#ifndef GUCEF_CORE_CPULSEGENERATOR_H
+#include "gucefCORE_CPulseGenerator.h"
+#define GUCEF_CORE_CPULSEGENERATOR_H
+#endif /* GUCEF_CORE_CPULSEGENERATOR_H ? */
 
 #ifndef GUCEF_CORE_LOGGING_H
 #include "gucefCORE_Logging.h"
@@ -140,7 +148,8 @@ CX11Window::WindowDestroy( void )
 
 void
 CX11Window::SendToForegound( void )
-{
+{GUCEF_TRACE;
+
     if ( NULL != m_display && 0 != m_window )
     {
         ::XRaiseWindow( m_display, m_window );
@@ -151,10 +160,11 @@ CX11Window::SendToForegound( void )
 
 void
 CX11Window::GrabFocus( void )
-{
-    if ( NULL != m_display && 0 != m_window )
+{GUCEF_TRACE;
+
+    if ( ( NULL != m_display ) && ( 0 != m_window ) )
     {
-        ::XSetInputFocus( m_display, m_window, ::RevertToNone, ::CurrentTime );
+        XSetInputFocus( m_display, m_window, RevertToNone, CurrentTime );
     }
 }
 
@@ -558,7 +568,7 @@ CX11Window::SetText( const CString& text )
         // Tell X to ask the window manager to set the window title.
         // X11 itself doesn't provide window title functionality.
         ::XSetWMName( m_display, m_window, &windowName );
-    ]
+    }
 }
 
 /*-------------------------------------------------------------------------*/
@@ -574,7 +584,7 @@ CX11Window::GetText( void ) const
         ::XTextProperty windowName;
         ::XGetWMName( m_display, m_window, &windowName );
 
-        return windowName.value;
+        return (const char*) windowName.value;
     }
 }
 
@@ -600,22 +610,22 @@ CX11Window::WindowCreate( const Int32 xPosition ,
         GUCEF_ERROR_LOG( LOGLEVEL_IMPORTANT, "CX11Window::WindowCreate(): Failed to open display" );
         return false;
     }
-    m_screenNr = ::DefaultScreen( m_display );
+    m_screenNr = DefaultScreen( m_display );
 
     if ( 0 == parentWindow )
     {
         // no parent window was provided so we will make this window a child of the default display's root
-        parentWindow = ::RootWindow( m_display, m_screenNr )
+        parentWindow = RootWindow( m_display, m_screenNr );
     }
 
     m_window = ::XCreateSimpleWindow( m_display,
                                       parentWindow,
                                       xPosition, yPosition, width, height, 1,
-                                      ::BlackPixel( m_display, m_screenNr ),
-                                      ::WhitePixel( m_display, m_screenNr ) );
+                                      BlackPixel( m_display, m_screenNr ),
+                                      WhitePixel( m_display, m_screenNr ) );
 
     // Subscribe to window events at the centralized dispatcher
-    CX11EventDispatcher::Instance()->SubscribeOnBehalfOfWindow( GetObserver(), m_window );
+    CX11EventDispatcher::Instance()->SubscribeOnBehalfOfWindow( AsObserver(), m_window );
 
     // register interest in the delete window message
     ::Atom wmDeleteMessage = ::XInternAtom( m_display, "WM_DELETE_WINDOW", False );
