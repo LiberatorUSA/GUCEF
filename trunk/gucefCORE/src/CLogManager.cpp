@@ -71,7 +71,7 @@ namespace CORE {
 //                                                                         //
 //-------------------------------------------------------------------------*/
 
-CLogManager CLogManager::g_instance;
+CLogManager* CLogManager::g_instance = NULL;
 
 extern "C" {
 
@@ -132,7 +132,21 @@ CLogManager*
 CLogManager::Instance( void )
 {GUCEF_TRACE;
 
-    return &g_instance;
+    if ( NULL == g_instance )
+    {
+        g_instance = new CLogManager();
+    }
+    return g_instance;
+}
+
+/*-------------------------------------------------------------------------*/
+
+void
+CLogManager::Deinstance( void )
+{GUCEF_TRACE;
+
+    delete g_instance;
+    g_instance = NULL;
 }
 
 /*-------------------------------------------------------------------------*/

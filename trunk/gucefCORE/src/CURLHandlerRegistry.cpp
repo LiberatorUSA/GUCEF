@@ -96,15 +96,9 @@ CURLHandlerRegistry::Instance( void )
 
     if ( NULL == _instance )
     {
-        _datalock.Lock();
-        if ( NULL == _instance )        
-        {
-            _instance = new CURLHandlerRegistry();
-            CHECKMEM( _instance, sizeof(CURLHandlerRegistry) ); 
+        _instance = new CURLHandlerRegistry();
+        GUCEF_SYSTEM_LOG( LOGLEVEL_NORMAL, "GUCEF::CORE::CURLHandlerRegistry Singleton created" );
 
-            GUCEF_SYSTEM_LOG( LOGLEVEL_NORMAL, "GUCEF::CORE::CURLHandlerRegistry Singleton created" );
-        }
-        _datalock.Unlock();
     }
     return _instance;
 }

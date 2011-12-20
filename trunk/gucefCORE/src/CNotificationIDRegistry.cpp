@@ -88,14 +88,6 @@ CNotificationIDRegistry::CNotificationIDRegistry( void )
 
 /*-------------------------------------------------------------------------*/
 
-CNotificationIDRegistry::CNotificationIDRegistry( const CNotificationIDRegistry& src )
-{GUCEF_TRACE;
-
-    /* dummy, do not use */
-}
-
-/*-------------------------------------------------------------------------*/
-
 CNotificationIDRegistry::~CNotificationIDRegistry()
 {GUCEF_TRACE;
 
@@ -104,25 +96,9 @@ CNotificationIDRegistry::~CNotificationIDRegistry()
 
 /*-------------------------------------------------------------------------*/
 
-CNotificationIDRegistry&
-CNotificationIDRegistry::operator=( const CNotificationIDRegistry& src )
-{GUCEF_TRACE;
-
-    /* dummy, do not use */
-
-    if ( this != &src )
-    {
-    }
-    return *this;
-}
-
-/*-------------------------------------------------------------------------*/
-
 CNotificationIDRegistry* 
 CNotificationIDRegistry::Instance( void )
 {GUCEF_TRACE;
-
-    m_dataLock.Lock();
 
     if ( m_instance == NULL )
     {
@@ -130,7 +106,6 @@ CNotificationIDRegistry::Instance( void )
         GUCEF_SYSTEM_LOG( LOGLEVEL_NORMAL, "GUCEF::CORE::CNotificationIDRegistry Singleton created" );
     }
 
-    m_dataLock.Unlock();
     return m_instance;
 }
 
