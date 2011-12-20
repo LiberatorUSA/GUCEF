@@ -342,6 +342,15 @@ CPluginControl::LoadPlugin( TPluginMetaDataPtr& pluginMetaData ,
                                                      &versionInfo                        );
                 ++i;
             }
+
+            if ( NULL == modulePtr )
+            {
+                // We were not able to load the module, no point in proceeding
+                GUCEF_ERROR_LOG( LOGLEVEL_NORMAL, "PluginControl: Failed to load module with name \"" +
+                                        pluginMetaData->GetModuleFilename() + "\" and group \"" + groupName + "\" and version " +
+                                        VersionToString( pluginMetaData->GetVersion() ) );
+                return false;
+            }
         }
         else
         {
@@ -351,15 +360,15 @@ CPluginControl::LoadPlugin( TPluginMetaDataPtr& pluginMetaData ,
                                                  pluginMetaData->GetModuleFilename() ,
                                                  groupName                           ,
                                                  &versionInfo                        );
-        }
 
-        if ( NULL == modulePtr )
-        {
-            // We were not able to load the module, no point in proceeding
-            GUCEF_ERROR_LOG( LOGLEVEL_NORMAL, "PluginControl: Failed to load module with name \"" +
-                                    pluginMetaData->GetModuleFilename() + "\" and group \"" + groupName + "\" and version " +
-                                    VersionToString( pluginMetaData->GetVersion() ) );
-            return false;
+            if ( NULL == modulePtr )
+            {
+                // We were not able to load the module, no point in proceeding
+                GUCEF_ERROR_LOG( LOGLEVEL_NORMAL, "PluginControl: Failed to load module with name \"" +
+                                        pluginMetaData->GetModuleFilename() + "\" and group \"" + groupName + "\" and version " +
+                                        VersionToString( pluginMetaData->GetVersion() ) + " using provided path " + pluginMetaData->GetFullModulePath() );
+                return false;
+            }
         }
 
         // We loaded the module

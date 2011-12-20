@@ -82,8 +82,8 @@ class GUCEF_CORE_PUBLIC_CPP CLogManager
         LOG_CALLSTACK, /**< typically used for logging the call stack of a running application for debugging purposes */
         LOG_EXCEPTION, /**< typically used for logging exception details just before throwing an exception, see exception macros */
         LOG_CONSOLE,   /**< typically used for logging input/output of the system console */
-        
-        LOG_UNKNOWNTYPE /**< reserved for initialization of a ELogMsgType variable with a debug value */ 
+
+        LOG_UNKNOWNTYPE /**< reserved for initialization of a ELogMsgType variable with a debug value */
     };
     typedef enum ELogMsgType TLogMsgType;
 
@@ -154,8 +154,9 @@ class GUCEF_CORE_PUBLIC_CPP CLogManager
     Int32 m_maxLogLevel;
     TBootstrapLogVector m_bootstrapLog;
     bool m_busyLogging;
-    static CLogManager* g_instance;
+
     static MT::CMutex g_dataLock;
+    static CLogManager* g_instance;
 };
 
 /*-------------------------------------------------------------------------*/

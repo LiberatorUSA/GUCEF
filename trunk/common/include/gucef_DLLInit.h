@@ -107,8 +107,78 @@
                 return 1;                                      \
         }
 
+#elif ( ( GUCEF_PLATFORM == GUCEF_PLATFORM_LINUX ) || ( GUCEF_PLATFORM == GUCEF_PLATFORM_ANDROID ) )
+
+#if ( GUCEF_COMPILER == GUCEF_COMPILER_GNUC )
+
+  #define GUCEF_DLL_INIT_FUNC( ns )                               \
+                                                                  \
+        void __attribute__ ((constructor)) _moduleInit( void )    \
+        {                                                         \
+                                                                  \
+        }                                                         \
+                                                                  \
+        void __attribute__ ((destructor)) _moduleShutdown( void ) \
+        {                                                         \
+                                                                  \
+        }
+
+
+  #define GUCEF_DLL_INIT_FUNC_BEG( ns )                           \
+                                                                  \
+        void __attribute__ ((constructor)) _moduleInit( void )    \
+        {                                                         \
+                if ( !ns::Load() )                                \
+                {                                                 \
+                        return;                                   \
+                }                                                 \
+                return;                                           \
+        }                                                         \
+                                                                  \
+        void __attribute__ ((destructor)) _moduleShutdown( void ) \
+        {                                                         \
+                return;                                           \
+        }
+
+
+  #define GUCEF_DLL_INIT_FUNC_END( ns )                           \
+                                                                  \
+        void __attribute__ ((constructor)) _moduleInit( void )    \
+        {                                                         \
+                return;                                           \
+        }                                                         \
+                                                                  \
+        void __attribute__ ((destructor)) _moduleShutdown( void ) \
+        {                                                         \
+                if ( !ns::Unload() )                              \
+                {                                                 \
+                        return;                                   \
+                }                                                 \
+                return;                                           \
+        }
+
+
+  #define GUCEF_DLL_INIT_FUNC_BEG_END( ns )                       \
+                                                                  \
+        void __attribute__ ((constructor)) _moduleInit( void )    \
+        {                                                         \
+                if ( !ns::Load() )                                \
+                {                                                 \
+                        return;                                   \
+                }                                                 \
+                return;                                           \
+        }                                                         \
+                                                                  \
+        void __attribute__ ((destructor)) _moduleShutdown( void ) \
+        {                                                         \
+                if ( !ns::Unload() )                              \
+                {                                                 \
+                        return;                                   \
+                }                                                 \
+                return;                                           \
+        }
+
 #else
-#if ( ( GUCEF_PLATFORM == GUCEF_PLATFORM_LINUX ) || ( GUCEF_PLATFORM == GUCEF_PLATFORM_ANDROID ) )
 
   #define GUCEF_DLL_INIT_FUNC( ns ) \
                                     \
@@ -177,10 +247,10 @@
                 return 1;                   \
         }
 
+#endif
 
 #else
   #error No DLL entry points available for the target platform
-#endif
 #endif
 
 /*-------------------------------------------------------------------------*/

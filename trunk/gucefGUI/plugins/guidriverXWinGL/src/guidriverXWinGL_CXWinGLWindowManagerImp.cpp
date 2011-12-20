@@ -128,7 +128,7 @@ CXWinGLWindowManagerImp::DestroyWindowContext( GUI::TWindowContextPtr& windowCon
 
 bool
 CXWinGLWindowManagerImp::ApplyVideoSettings( GUI::TWindowContextPtr& windowContext ,
-                                              const GUI::CVideoSettings& settings   )
+                                             const GUI::CVideoSettings& settings   )
 {GUCEF_TRACE;
 
     return false;
