@@ -132,6 +132,10 @@ class GUCEF_CORE_PUBLIC_CPP CLogManager
 
     private:
 
+    static void Deinstance( void );
+
+    private:
+
     typedef std::set< CILogger* > TLoggerList;
 
     struct SBootstrapLogEntry
@@ -151,7 +155,7 @@ class GUCEF_CORE_PUBLIC_CPP CLogManager
     bool m_busyLogging;
     MT::CMutex m_dataLock;
 
-    static CLogManager g_instance;
+    static CLogManager* g_instance;
 };
 
 /*-------------------------------------------------------------------------*/

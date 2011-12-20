@@ -227,14 +227,8 @@ CTaskManager::Instance( void )
 
     if ( NULL == g_instance )
     {
-        g_mutex.Lock();
-        if ( NULL == g_instance )
-        {
-            g_instance = new CTaskManager();
-
-            GUCEF_SYSTEM_LOG( LOGLEVEL_NORMAL, "TaskManager Singleton created" );
-        }
-        g_mutex.Unlock();
+        g_instance = new CTaskManager();
+        GUCEF_SYSTEM_LOG( LOGLEVEL_NORMAL, "TaskManager Singleton created" );
     }
     return g_instance;
 }
