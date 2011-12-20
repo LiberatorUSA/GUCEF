@@ -140,12 +140,12 @@ LoadPlugins( void )
 
     // Define our windowing backend plugin
     pluginMetaData.SetPluginType( "GucefGenericPlugin" );
-    #ifdef GUCEF_GUI_DEBUG_MODE
-    pluginMetaData.SetModuleFilename( "guidriverXWinGL_d" );
-    #else
-    pluginMetaData.SetModuleFilename( "guidriverXWinGL" );
-    #endif
-    pluginMetaData.SetFullModulePath( CORE::RelativePath( "$MODULEDIR$" ) );
+    //#ifdef GUCEF_GUI_DEBUG_MODE
+    pluginMetaData.SetModuleFilename( "libguidriverXWinGL_d" );
+    //#else
+    //pluginMetaData.SetModuleFilename( "guidriverXWinGL" );
+    //#endif
+    pluginMetaData.SetFullModulePath( CORE::RelativePath( "$MODULEDIR$/../lib" ) );
 
     // Add plugin metadata and load the plugin
     if ( CORE::CPluginControl::Instance()->AddPluginMetaData( pluginMetaData ,
@@ -173,7 +173,11 @@ LoadPlugins( void )
     #else
     pluginMetaData.SetModuleFilename( "guidriverRocket" );
     #endif
+    #if ( GUCEF_PLATFORM == GUCEF_PLATFORM_LINUX )
+    pluginMetaData.SetFullModulePath( CORE::RelativePath( "$MODULEDIR$/../lib" ) );
+    #else
     pluginMetaData.SetFullModulePath( CORE::RelativePath( "$MODULEDIR$" ) );
+    #endif
 
     // Add plugin metadata and load the plugin
     if ( CORE::CPluginControl::Instance()->AddPluginMetaData( pluginMetaData ,
@@ -198,7 +202,11 @@ LoadPlugins( void )
     #else
     pluginMetaData.SetModuleFilename( "guidriverRocketOpenGL" );
     #endif
+    #if ( GUCEF_PLATFORM == GUCEF_PLATFORM_LINUX )
+    pluginMetaData.SetFullModulePath( CORE::RelativePath( "$MODULEDIR$/../lib" ) );
+    #else
     pluginMetaData.SetFullModulePath( CORE::RelativePath( "$MODULEDIR$" ) );
+    #endif
 
     // Add plugin metadata and load the plugin
     if ( CORE::CPluginControl::Instance()->AddPluginMetaData( pluginMetaData ,
@@ -254,7 +262,11 @@ LoadPlugins( void )
     #else
     pluginMetaData.SetModuleFilename( "GucefLogServiceClientPlugin" );
     #endif
+    #if ( GUCEF_PLATFORM == GUCEF_PLATFORM_LINUX )
+    pluginMetaData.SetFullModulePath( CORE::RelativePath( "$MODULEDIR$/../lib" ) );
+    #else
     pluginMetaData.SetFullModulePath( CORE::RelativePath( "$MODULEDIR$" ) );
+    #endif
 
     // Add plugin metadata and load the plugin
     if ( CORE::CPluginControl::Instance()->AddPluginMetaData( pluginMetaData ,

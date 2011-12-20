@@ -46,6 +46,10 @@ namespace MT {
 //                                                                         //
 //-------------------------------------------------------------------------*/
 
+struct SMutexData;
+
+/*-------------------------------------------------------------------------*/
+
 /**
  *      O/S Mutex wrapper
  */
@@ -80,7 +84,7 @@ class GUCEF_MT_PUBLIC_CPP CMutex
     private:
     friend class CCondition;
 
-    void* _mutexdata;
+    struct SMutexData* _mutexdata;
 
     CMutex( const CMutex& src );      /* Copying doesnt make sense */
     CMutex& operator=( const CMutex& src );   /* Copying doesnt make sense */

@@ -48,12 +48,12 @@
 #endif /* GUCEF_CORE_ESSENTIALS_H ? */
 
 #if ( GUCEF_PLATFORM == GUCEF_PLATFORM_ANDROID )
- 
+
   #ifndef GUCEF_CORE_CANDROIDSYSTEMLOGGER_H
   #include "gucefCORE_CAndroidSystemLogger.h"
   #define GUCEF_CORE_CANDROIDSYSTEMLOGGER_H
   #endif /* GUCEF_CORE_CANDROIDSYSTEMLOGGER_H ? */
-  
+
 #endif /* GUCEF_PLATFORM == GUCEF_PLATFORM_ANDROID ? */
 
 /*-------------------------------------------------------------------------//
@@ -71,8 +71,8 @@ namespace CORE {
 //                                                                         //
 //-------------------------------------------------------------------------*/
 
-CLogManager* CLogManager::g_instance = NULL;
 MT::CMutex CLogManager::g_dataLock;
+CLogManager* CLogManager::g_instance = NULL;
 
 extern "C" {
 
@@ -111,12 +111,12 @@ CLogManager::CLogManager( void )
     m_msgTypeEnablers[ LOG_CALLSTACK ] = true;
     m_msgTypeEnablers[ LOG_EXCEPTION ] = true;
     m_msgTypeEnablers[ LOG_CONSOLE ] = true;
-    
-    #if ( GUCEF_PLATFORM == GUCEF_PLATFORM_ANDROID )    
-    
+
+    #if ( GUCEF_PLATFORM == GUCEF_PLATFORM_ANDROID )
+
     static CAndroidSystemLogger androidSystemLogger;
     AddLogger( &androidSystemLogger);
-    
+
     #endif /* GUCEF_PLATFORM == GUCEF_PLATFORM_ANDROID ? */
 }
 
@@ -286,13 +286,13 @@ CLogManager::Log( const TLogMsgType logMsgType ,
 {GUCEF_TRACE;
 
     g_dataLock.Lock();
-    
+
     // The loglevel must be such so that the message given falls under the global logging
-    // cut off. 
-    // Additionally if a thread generates log message via logging logic then this 
-    // would result in a endless loop. To this end the "m_busyLogging" flag is used 
+    // cut off.
+    // Additionally if a thread generates log message via logging logic then this
+    // would result in a endless loop. To this end the "m_busyLogging" flag is used
     // if this flag is true then log messages will be dropped since the thread is within
-    // the logger->Log() call and thus the message is generated due to the logging 
+    // the logger->Log() call and thus the message is generated due to the logging
     // activity itself.
     if ( logLevel < m_maxLogLevel && !m_busyLogging )
     {
@@ -307,12 +307,12 @@ CLogManager::Log( const TLogMsgType logMsgType ,
                     if ( NULL != logger )
                     {
                         m_busyLogging = true;
-                        
+
                         logger->Log( logMsgType ,
                                      logLevel   ,
                                      logMessage ,
                                      threadId   );
-                                     
+
                         m_busyLogging = false;
                     }
                     ++i;
