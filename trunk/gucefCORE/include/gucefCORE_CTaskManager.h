@@ -245,8 +245,8 @@ class GUCEF_CORE_PUBLIC_CPP CTaskManager : public CObservingNotifier
     TTaskIdGenerator m_taskIdGenerator;
     TTaskConsumerMap m_taskConsumerMap;
     TTaskDelegatorSet m_taskDelegators;
+    MT::CMutex g_mutex;
 
-    static MT::CMutex g_mutex;
     static CTaskManager* g_instance;
 };
 

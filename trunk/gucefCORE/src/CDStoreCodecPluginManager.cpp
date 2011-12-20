@@ -14,17 +14,17 @@
  *
  *  You should have received a copy of the GNU Lesser General Public
  *  License along with this library; if not, write to the Free Software
- *  Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA 
+ *  Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA
  */
- 
+
 /*-------------------------------------------------------------------------//
 //                                                                         //
 //      INCLUDES                                                           //
 //                                                                         //
-//-------------------------------------------------------------------------*/ 
+//-------------------------------------------------------------------------*/
 
 #ifndef GUCEF_CORE_DVCPPSTRINGUTILS_H
-#include "dvcppstringutils.h"           /* C++ string utils */ 
+#include "dvcppstringutils.h"           /* C++ string utils */
 #define GUCEF_CORE_DVCPPSTRINGUTILS_H
 #endif /* GUCEF_CORE_DVCPPSTRINGUTILS_H ? */
 
@@ -63,7 +63,7 @@
 #ifndef GUCEF_CORE_GUCEF_ESSENTIALS_H
 #include "gucef_essentials.h"
 #define GUCEF_CORE_GUCEF_ESSENTIALS_H
-#endif /* GUCEF_CORE_GUCEF_ESSENTIALS_H ? */ 
+#endif /* GUCEF_CORE_GUCEF_ESSENTIALS_H ? */
 
 /*-------------------------------------------------------------------------//
 //                                                                         //
@@ -80,7 +80,6 @@ namespace CORE {
 //                                                                         //
 //-------------------------------------------------------------------------*/
 
-MT::CMutex CDStoreCodecPluginManager::_datalock;
 CDStoreCodecPluginManager* CDStoreCodecPluginManager::_instance = NULL;
 
 /*-------------------------------------------------------------------------//
@@ -106,28 +105,24 @@ CDStoreCodecPluginManager::~CDStoreCodecPluginManager()
 CDStoreCodecPluginManager*
 CDStoreCodecPluginManager::Instance( void )
 {GUCEF_TRACE;
-        _datalock.Lock();
-        if ( !_instance )
-        {
-                _instance = new CDStoreCodecPluginManager();
-                CHECKMEM( _instance, sizeof(CDStoreCodecPluginManager) );
-                GUCEF_SYSTEM_LOG( LOGLEVEL_NORMAL, "GUCEF::CORE::CDStoreCodecPluginManager Singleton created" );
-        }
-        _datalock.Unlock();
-        return _instance;
+
+    if ( NULL == _instance )
+    {
+        _instance = new CDStoreCodecPluginManager();
+        GUCEF_SYSTEM_LOG( LOGLEVEL_NORMAL, "GUCEF::CORE::CDStoreCodecPluginManager Singleton created" );
+    }
+    return _instance;
 }
 
 /*-------------------------------------------------------------------------*/
 
-void 
+void
 CDStoreCodecPluginManager::Deinstance( void )
 {GUCEF_TRACE;
-        _datalock.Lock();
-        CHECKMEM( _instance, sizeof(CDStoreCodecPluginManager) );
-        delete _instance;
-        _instance = NULL;
-        GUCEF_SYSTEM_LOG( LOGLEVEL_NORMAL, "GUCEF::CORE::CDStoreCodecPluginManager Singleton destroyed" );
-        _datalock.Unlock();
+
+    delete _instance;
+    _instance = NULL;
+    GUCEF_SYSTEM_LOG( LOGLEVEL_NORMAL, "GUCEF::CORE::CDStoreCodecPluginManager Singleton destroyed" );
 }
 
 /*-------------------------------------------------------------------------*/
@@ -140,8 +135,8 @@ CDStoreCodecPluginManager::GetPluginType( void ) const
 }
 
 /*-------------------------------------------------------------------------*/
-        
-CDStoreCodecPluginManager::TDStoreCodecPluginPtr 
+
+CDStoreCodecPluginManager::TDStoreCodecPluginPtr
 CDStoreCodecPluginManager::GetCodec( const CString& codectype ) const
 {GUCEF_TRACE;
 
@@ -162,19 +157,19 @@ CDStoreCodecPluginManager::GetCodec( const CString& codectype ) const
 
 /*-------------------------------------------------------------------------*/
 //
-//bool 
+//bool
 //CDStoreCodecPluginManager::SaveConfig( CDataNode& tree )
 //{GUCEF_TRACE;
 //
 //    _datalock.Lock();
 //    CDataNode* n = tree.Structure( "GUCEF%CORE%CDStoreCodecPluginManager" ,
 //                                   '%'                                    );
-//                              
-//    n->SetAttribute( "plugincount", UInt32ToString( _codecs.size() ) );                                        
-//                           
+//
+//    n->SetAttribute( "plugincount", UInt32ToString( _codecs.size() ) );
+//
 //    n->DelSubTree();
 //    CDataNode plugin( "CDStoreCodecPlugin" );
-//    TDStoreCodecPluginPtr cp;        
+//    TDStoreCodecPluginPtr cp;
 //
 //    TDStoreCodecPluginSet::const_iterator i = _codecs.begin();
 //    while ( i != _codecs.end() )
@@ -186,24 +181,24 @@ CDStoreCodecPluginManager::GetCodec( const CString& codectype ) const
 //        plugin.SetAttribute( "path", cp->GetModulePath() );
 //        plugin.SetAttribute( "copyright", cp->GetCopyright() );
 //        n->AddChild( plugin );
-//        
+//
 //        ++i;
 //    }
 //
-//    _datalock.Unlock();                         
+//    _datalock.Unlock();
 //    return true;
 //}
 //
 ///*-------------------------------------------------------------------------*/
-//                   
-//bool 
+//
+//bool
 //CDStoreCodecPluginManager::LoadConfig( const CDataNode& tree )
 //{GUCEF_TRACE;
-//        
+//
 //    GUCEF_SYSTEM_LOG( LOGLEVEL_BELOW_NORMAL, "CDStoreCodecPluginManager: Loading config" );
-//    
+//
 //    _datalock.Lock();
-//    CDataNode* n = tree.Search( "GUCEF%CORE%CDStoreCodecPluginManager", 
+//    CDataNode* n = tree.Search( "GUCEF%CORE%CDStoreCodecPluginManager",
 //                                '%'                                   ,
 //                                false                                 );
 //    if ( n )
@@ -211,7 +206,7 @@ CDStoreCodecPluginManager::GetCodec( const CString& codectype ) const
 //        CString cmpstr( "CDStoreCodecPlugin" );
 //        CString path( "path" );
 //        const CDataNode* c;
-//        const CDataNode::TKeyValuePair* att; 
+//        const CDataNode::TKeyValuePair* att;
 //        CDataNode::const_iterator i = n->ConstBegin();
 //        while ( i != n->ConstEnd() )
 //        {
@@ -229,11 +224,11 @@ CDStoreCodecPluginManager::GetCodec( const CString& codectype ) const
 //                    while ( i != _codecs.end() )
 //                    {
 //                        if ( att->second == (*i)->GetModulePath() )
-//                        {       
-//                            found = true;                                                 
-//                            break;        
+//                        {
+//                            found = true;
+//                            break;
 //                        }
-//                        ++i;                                                                                                
+//                        ++i;
 //                    }
 //                    if ( !found )
 //                    {
@@ -241,13 +236,13 @@ CDStoreCodecPluginManager::GetCodec( const CString& codectype ) const
 //                         *      This module is not loaded yet.
 //                         *      We will do so now.
 //                         */
-//                        LoadPlugin( att->second ); 
-//                    }                                                
-//                }       
+//                        LoadPlugin( att->second );
+//                    }
+//                }
 //            }
 //            ++i;
 //        }
-//    }                                     
+//    }
 //    _datalock.Unlock();
 //    return true;
 //}
@@ -265,12 +260,12 @@ CDStoreCodecPluginManager::RegisterPlugin( void* modulePtr                   ,
     {
         TDStoreCodecPluginPtr pointerToPlugin = plugin;
         CDStoreCodecRegistry::Instance()->Register( plugin->GetTypeName(), pointerToPlugin );
-        
+
         return pointerToPlugin;
     }
-    
+
     delete plugin;
-    return NULL; 
+    return NULL;
 }
 
 /*-------------------------------------------------------------------------*/

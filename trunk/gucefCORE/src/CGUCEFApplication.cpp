@@ -91,7 +91,6 @@ const CEvent CGUCEFApplication::AppInitEvent = "GUCEF::CORE::CGUCEFApplication::
 const CEvent CGUCEFApplication::AppShutdownEvent = "GUCEF::CORE::CGUCEFApplication::AppShutdownEvent";
 
 CGUCEFApplication* CGUCEFApplication::_instance = NULL;
-MT::CMutex CGUCEFApplication::m_mutex;
 
 /*-------------------------------------------------------------------------//
 //                                                                         //
@@ -103,18 +102,14 @@ CGUCEFApplication*
 CGUCEFApplication::Instance( void )
 {GUCEF_TRACE;
 
-    m_mutex.Lock();
-    if ( !_instance )
+    if ( NULL == _instance )
     {
-             /*
-              *     Instantiate the GUCEF application class
-              */
-            _instance = new CGUCEFApplication();
-            CHECKMEM( _instance, sizeof( CGUCEFApplication ) );
-
-            GUCEF_SYSTEM_LOG( LOGLEVEL_NORMAL, "GUCEF::CORE::CGUCEFApplication Singleton created" );
+         /*
+          *     Instantiate the GUCEF application class
+          */
+        _instance = new CGUCEFApplication();
+        GUCEF_SYSTEM_LOG( LOGLEVEL_NORMAL, "GUCEF::CORE::CGUCEFApplication Singleton created" );
     }
-    m_mutex.Unlock();
     return _instance;
 }
 
@@ -124,12 +119,9 @@ void
 CGUCEFApplication::Deinstance( void )
 {GUCEF_TRACE;
 
-    m_mutex.Lock();
-    CHECKMEM( _instance, sizeof( CGUCEFApplication ) );
     delete _instance;
     _instance = NULL;
     GUCEF_SYSTEM_LOG( LOGLEVEL_NORMAL, "GUCEF::CORE::CGUCEFApplication Singleton destroyed" );
-    m_mutex.Unlock();
 }
 
 /*-------------------------------------------------------------------------*/

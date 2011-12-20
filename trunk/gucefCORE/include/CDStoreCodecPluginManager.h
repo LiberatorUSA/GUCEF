@@ -74,7 +74,7 @@ namespace CORE {
 class GUCEF_CORE_PUBLIC_CPP CDStoreCodecPluginManager : public CPluginManager
 {
     public:
-    
+
     typedef CTSharedPtr< CDStoreCodecPlugin > TDStoreCodecPluginPtr;
 
     static CDStoreCodecPluginManager* Instance( void );
@@ -101,9 +101,6 @@ class GUCEF_CORE_PUBLIC_CPP CDStoreCodecPluginManager : public CPluginManager
 
     typedef std::set< TDStoreCodecPluginPtr > TDStoreCodecPluginSet;
 
-    static MT::CMutex _datalock;
-    static CDStoreCodecPluginManager* _instance;
-
     bool IsPluginLoaded( const CString& path );
 
     CDStoreCodecPluginManager( void );
@@ -112,6 +109,9 @@ class GUCEF_CORE_PUBLIC_CPP CDStoreCodecPluginManager : public CPluginManager
     CDStoreCodecPluginManager& operator=( const CDStoreCodecPluginManager& src );
 
     TDStoreCodecPluginSet _codecs;
+    MT::CMutex _datalock;
+
+    static CDStoreCodecPluginManager* _instance;
 };
 
 /*-------------------------------------------------------------------------//

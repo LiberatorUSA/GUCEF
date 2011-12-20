@@ -14,7 +14,7 @@
  *
  *  You should have received a copy of the GNU Lesser General Public
  *  License along with this library; if not, write to the Free Software
- *  Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA 
+ *  Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA
  */
 
 /*-------------------------------------------------------------------------//
@@ -33,7 +33,7 @@
 #ifndef GUCEF_CORE_GUCEF_ESSENTIALS_H
 #include "gucef_essentials.h"
 #define GUCEF_CORE_GUCEF_ESSENTIALS_H
-#endif /* GUCEF_CORE_GUCEF_ESSENTIALS_H ? */ 
+#endif /* GUCEF_CORE_GUCEF_ESSENTIALS_H ? */
 
 /*-------------------------------------------------------------------------//
 //                                                                         //
@@ -50,7 +50,6 @@ namespace CORE {
 //                                                                         //
 //-------------------------------------------------------------------------*/
 
-MT::CMutex CDStoreCodecRegistry::_datalock;
 CDStoreCodecRegistry* CDStoreCodecRegistry::_instance = NULL;
 
 /*-------------------------------------------------------------------------//
@@ -84,61 +83,42 @@ CDStoreCodecRegistry::~CDStoreCodecRegistry()
 
 /*-------------------------------------------------------------------------*/
 
-CDStoreCodecRegistry& 
-CDStoreCodecRegistry::operator=( const CDStoreCodecRegistry& src )
-{
-        GUCEF_BEGIN;
-        /* dummy, do not use */
-        GUCEF_END;
-        return *this;
-}
-
-/*-------------------------------------------------------------------------*/
-
 CDStoreCodecRegistry*
 CDStoreCodecRegistry::Instance( void )
-{
-        GUCEF_BEGIN;
-        _datalock.Lock();
-        if ( !_instance )        
-        {
-                _instance = new CDStoreCodecRegistry();
-                CHECKMEM( _instance, sizeof(CDStoreCodecRegistry) );
-                GUCEF_SYSTEM_LOG( LOGLEVEL_NORMAL, "GUCEF::CORE::CDStoreCodecRegistry Singleton created" );
-        }
-        _datalock.Unlock();
-        GUCEF_END;
-        return _instance;
+{GUCEF_TRACE;
+
+    if ( NULL == _instance )
+    {
+        _instance = new CDStoreCodecRegistry();
+        GUCEF_SYSTEM_LOG( LOGLEVEL_NORMAL, "GUCEF::CORE::CDStoreCodecRegistry Singleton created" );
+    }
+    return _instance;
 }
 
 /*-------------------------------------------------------------------------*/
 
-void 
+void
 CDStoreCodecRegistry::Deinstance( void )
+{GUCEF_TRACE;
+
+    delete _instance;
+    _instance = NULL;
+    GUCEF_SYSTEM_LOG( LOGLEVEL_NORMAL, "GUCEF::CORE::CDStoreCodecRegistry Singleton destroyed" );
+}
+
+/*-------------------------------------------------------------------------*/
+
+void
+CDStoreCodecRegistry::LockData( void ) const
 {
         GUCEF_BEGIN;
         _datalock.Lock();
-        CHECKMEM( _instance, sizeof(CDStoreCodecRegistry) );
-        delete _instance;
-        _instance = NULL;
-        GUCEF_SYSTEM_LOG( LOGLEVEL_NORMAL, "GUCEF::CORE::CDStoreCodecRegistry Singleton destroyed" );
-        _datalock.Unlock();
         GUCEF_END;
 }
 
 /*-------------------------------------------------------------------------*/
 
-void 
-CDStoreCodecRegistry::LockData( void ) const
-{                  
-        GUCEF_BEGIN;
-        _datalock.Lock();
-        GUCEF_END;
-}
-
-/*-------------------------------------------------------------------------*/
-
-void 
+void
 CDStoreCodecRegistry::UnlockData( void ) const
 {
         GUCEF_BEGIN;

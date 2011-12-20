@@ -14,9 +14,9 @@
  *
  *  You should have received a copy of the GNU Lesser General Public
  *  License along with this library; if not, write to the Free Software
- *  Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA 
+ *  Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA
  */
- 
+
 /*-------------------------------------------------------------------------//
 //                                                                         //
 //      INCLUDES                                                           //
@@ -44,7 +44,7 @@
 #endif /* GUCEF_CORE_CDSTORECODECREGISTRY_H ? */
 
 #ifndef GUCEF_CORE_DVCPPSTRINGUTILS_H
-#include "dvcppstringutils.h"           /* C++ string utils */ 
+#include "dvcppstringutils.h"           /* C++ string utils */
 #define GUCEF_CORE_DVCPPSTRINGUTILS_H
 #endif /* GUCEF_CORE_DVCPPSTRINGUTILS_H ? */
 
@@ -71,27 +71,18 @@ namespace CORE {
 //-------------------------------------------------------------------------*/
 
 CConfigStore* CConfigStore::_instance = NULL;
-MT::CMutex CConfigStore::_datalock;
 
 /*-------------------------------------------------------------------------//
 //                                                                         //
 //      UTILITIES                                                          //
 //                                                                         //
-//-------------------------------------------------------------------------*/ 
+//-------------------------------------------------------------------------*/
 
 CConfigStore::CConfigStore( void )
         : _codectype()  ,
           _configfile()
 {GUCEF_TRACE;
 
-}
-
-/*-------------------------------------------------------------------------*/
-
-CConfigStore::CConfigStore( const CConfigStore& src )
-{GUCEF_TRACE;
-       
-        /* dummy, should not be used */
 }
 
 /*-------------------------------------------------------------------------*/
@@ -103,57 +94,45 @@ CConfigStore::~CConfigStore()
 
 /*-------------------------------------------------------------------------*/
 
-CConfigStore& 
-CConfigStore::operator=( const CConfigStore& src )
-{GUCEF_TRACE;       
-        /* dummy, should not be used */
-        return *this;
-}
-
-/*-------------------------------------------------------------------------*/
-
 CConfigStore*
 CConfigStore::Instance( void )
-{GUCEF_TRACE;              
-        _datalock.Lock();
-        if ( !_instance )
-        {
-                _instance = new CConfigStore();
-                CHECKMEM( _instance, sizeof(CConfigStore) );
-                GUCEF_SYSTEM_LOG( LOGLEVEL_NORMAL, "GUCEF::CORE::CConfigStore Singleton created" );
-        }
-        _datalock.Unlock();
-        return _instance;
+{GUCEF_TRACE;
+
+    if ( NULL == _instance )
+    {
+        _instance = new CConfigStore();
+        GUCEF_SYSTEM_LOG( LOGLEVEL_NORMAL, "GUCEF::CORE::CConfigStore Singleton created" );
+    }
+    return _instance;
 }
 
 /*-------------------------------------------------------------------------*/
 
 void
 CConfigStore::Deinstance( void )
-{GUCEF_TRACE;        
-        _datalock.Lock();
-        delete _instance;
-        _instance = NULL;
-        GUCEF_SYSTEM_LOG( LOGLEVEL_NORMAL, "GUCEF::CORE::CConfigStore Singleton destroyed" );
-        _datalock.Unlock();
-}        
+{GUCEF_TRACE;
+
+    delete _instance;
+    _instance = NULL;
+    GUCEF_SYSTEM_LOG( LOGLEVEL_NORMAL, "GUCEF::CORE::CConfigStore Singleton destroyed" );
+}
 
 /*-------------------------------------------------------------------------*/
 
-void 
+void
 CConfigStore::SetConfigFile( const CString& filepath )
 {GUCEF_TRACE;
         _datalock.Lock();
-        _configfile = RelativePath( filepath );        
+        _configfile = RelativePath( filepath );
         _datalock.Unlock();
 }
 
 /*-------------------------------------------------------------------------*/
-        
-CString 
+
+CString
 CConfigStore::GetConfigFile( void ) const
 {GUCEF_TRACE;
-        
+
     _datalock.Lock();
     CString file( _configfile );
     _datalock.Unlock();
@@ -162,7 +141,7 @@ CConfigStore::GetConfigFile( void ) const
 
 /*-------------------------------------------------------------------------*/
 
-void 
+void
 CConfigStore::Register( CIConfigurable* configobj )
 {GUCEF_TRACE;
 
@@ -172,8 +151,8 @@ CConfigStore::Register( CIConfigurable* configobj )
 }
 
 /*-------------------------------------------------------------------------*/
-        
-void 
+
+void
 CConfigStore::Unregister( CIConfigurable* configobj )
 {GUCEF_TRACE;
 
@@ -184,12 +163,12 @@ CConfigStore::Unregister( CIConfigurable* configobj )
 
 /*-------------------------------------------------------------------------*/
 
-bool 
+bool
 CConfigStore::SaveConfig( const CString& name ,
                           bool preserve       )
 {GUCEF_TRACE;
         _datalock.Lock();
-        
+
         /*
          *      If the preserve flag is set then the old data tree
          *      will be loaded first to prevent any data loss.
@@ -205,7 +184,7 @@ CConfigStore::SaveConfig( const CString& name ,
                         CDStoreCodecRegistry::TDStoreCodecPtr codec = CDStoreCodecRegistry::Instance()->Lookup( _codectype.C_String() );
                         if ( codec->BuildDataTree( &oldtree    ,
                                                    _configfile ) )
-                        {                
+                        {
                                 rootnode.CopySubTree( oldtree );
                         }
                 }
@@ -213,26 +192,26 @@ CConfigStore::SaveConfig( const CString& name ,
                 {
                         _datalock.Unlock();
                         return false;
-                }                        
+                }
         }
-        
+
         TConfigurableSet::iterator i = _configobjs.begin();
         while ( i != _configobjs.end() )
         {
             if ( !(*i)->SaveConfig( rootnode ) )
             {
                 _datalock.Unlock();
-                return false;                
+                return false;
             }
             ++i;
         }
-        
+
         try
         {
                 CDStoreCodecRegistry::TDStoreCodecPtr codec = CDStoreCodecRegistry::Instance()->Lookup( _codectype.C_String() );
                 if ( codec->BuildDataTree( &rootnode    ,
                                            _configfile  ) )
-                {                
+                {
                         rootnode.CopySubTree( oldtree );
                         return true;
                 }
@@ -244,60 +223,60 @@ CConfigStore::SaveConfig( const CString& name ,
         }
 
         _datalock.Unlock();
-        return false;                
+        return false;
 }
 
 /*-------------------------------------------------------------------------*/
-        
-bool 
+
+bool
 CConfigStore::LoadConfig( void )
-{GUCEF_TRACE;        
-        
+{GUCEF_TRACE;
+
         GUCEF_SYSTEM_LOG( LOGLEVEL_NORMAL, "CConfigStore: Loading all config" );
-        
+
         if ( !FileExists( _configfile ) )
         {
             GUCEF_ERROR_LOG( LOGLEVEL_IMPORTANT, "CConfigStore: Failed to load config because the config file does not exist: " + _configfile );
             return false;
         }
-        
-        _datalock.Lock();        
-        
+
+        _datalock.Lock();
+
         if ( _codectype.Length() == 0 )
         {
             _codectype = Extract_File_Ext( _configfile.C_String() );
         }
         GUCEF_SYSTEM_LOG( LOGLEVEL_BELOW_NORMAL, "CConfigStore: Will try to use codec " + _codectype + " for the config information in file " + _configfile );
-        
-        try 
+
+        try
         {
                 CDStoreCodecRegistry::TDStoreCodecPtr codec = CDStoreCodecRegistry::Instance()->Lookup( _codectype.C_String() );
                 CDataNode rootnode;
                 if ( codec->BuildDataTree( &rootnode   ,
                                            _configfile ) )
-                {                        
+                {
                         GUCEF_SYSTEM_LOG( LOGLEVEL_BELOW_NORMAL, "CConfigStore: Used codec " + _codectype + " to successfully build a config data tree from file " + _configfile );
-                        
+
                         TConfigurableSet::iterator i = _configobjs.begin();
                         while ( i != _configobjs.end() )
                         {
                             if ( !(*i)->LoadConfig( rootnode ) )
                             {
                                     _datalock.Unlock();
-                                    return false;                
+                                    return false;
                             }
                             ++i;
                         }
                         _datalock.Unlock();
-                        
+
                         GUCEF_SYSTEM_LOG( LOGLEVEL_BELOW_NORMAL, "CConfigStore: Successfully loaded all config using codec " + _codectype + " to successfully build a config data tree from file " + _configfile );
                         return true;
                 }
                 else
                 {
                     GUCEF_ERROR_LOG( LOGLEVEL_IMPORTANT, "CConfigStore: Failed to build a config data tree using codec " + _codectype + " from file " + _configfile );
-                }                      
-        }                
+                }
+        }
         catch ( CDStoreCodecRegistry::EUnregisteredName& )
         {
             GUCEF_ERROR_LOG( LOGLEVEL_IMPORTANT, "CConfigStore: Failed to retrieve codec " + _codectype + " for the config information" );
@@ -308,15 +287,15 @@ CConfigStore::LoadConfig( void )
 
 /*-------------------------------------------------------------------------*/
 
-void 
+void
 CConfigStore::SetCodec( const CString& codectype )
-{GUCEF_TRACE;        
+{GUCEF_TRACE;
         _codectype = codectype;
 }
 
 /*-------------------------------------------------------------------------*/
-        
-CString 
+
+CString
 CConfigStore::GetCodec( void ) const
 {GUCEF_TRACE;
         return _codectype;
