@@ -71,8 +71,7 @@ namespace CORE {
 //                                                                         //
 //-------------------------------------------------------------------------*/
 
-MT::CMutex CLogManager::g_dataLock;
-CLogManager* CLogManager::g_instance = NULL;
+CLogManager CLogManager::g_instance;
 
 extern "C" {
 
@@ -133,31 +132,7 @@ CLogManager*
 CLogManager::Instance( void )
 {GUCEF_TRACE;
 
-    if ( g_instance == NULL )
-    {
-        g_dataLock.Lock();
-        if ( g_instance == NULL )
-        {
-            g_instance = new CLogManager();
-        }
-        g_dataLock.Unlock();
-    }
-
-    return g_instance;
-}
-
-/*-------------------------------------------------------------------------*/
-
-void
-CLogManager::Deinstance( void )
-{GUCEF_TRACE;
-
-    g_dataLock.Lock();
-
-    delete g_instance;
-    g_instance = NULL;
-
-    g_dataLock.Unlock();
+    return &g_instance;
 }
 
 /*-------------------------------------------------------------------------*/
@@ -168,7 +143,7 @@ CLogManager::FlushBootstrapLogEntriesToLogs( void )
 
     Log( LOG_SYSTEM, LOGLEVEL_NORMAL, "LogManager: Flushing all bootstrap log entries to the currently registered loggers" );
 
-    g_dataLock.Lock();
+    m_dataLock.Lock();
 
     if ( m_loggers.size() > 0 )
     {
@@ -192,7 +167,7 @@ CLogManager::FlushBootstrapLogEntriesToLogs( void )
         Log( LOG_ERROR, LOGLEVEL_NORMAL, "LogManager: Unable to flush bootstrap log entries since no loggers are currently registered" );
     }
 
-    g_dataLock.Unlock();
+    m_dataLock.Unlock();
 }
 
 /*-------------------------------------------------------------------------*/
@@ -204,9 +179,9 @@ CLogManager::AddLogger( CILogger* loggerImp )
     // Do not add bogus loggers
     if ( NULL != loggerImp )
     {
-        g_dataLock.Lock();
+        m_dataLock.Lock();
         m_loggers.insert( loggerImp );
-        g_dataLock.Unlock();
+        m_dataLock.Unlock();
 
         GUCEF_SYSTEM_LOG( LOGLEVEL_NORMAL, "Added logger" );
     }
@@ -227,9 +202,9 @@ CLogManager::RemoveLogger( CILogger* loggerImp )
 
     GUCEF_SYSTEM_LOG( LOGLEVEL_NORMAL, "Removing logger" );
 
-    g_dataLock.Lock();
+    m_dataLock.Lock();
     m_loggers.erase( loggerImp );
-    g_dataLock.Unlock();
+    m_dataLock.Unlock();
 }
 
 /*-------------------------------------------------------------------------*/
@@ -238,9 +213,9 @@ void
 CLogManager::ClearLoggers( void )
 {GUCEF_TRACE;
 
-    g_dataLock.Lock();
+    m_dataLock.Lock();
     m_loggers.clear();
-    g_dataLock.Unlock();
+    m_dataLock.Unlock();
 }
 
 /*-------------------------------------------------------------------------*/
@@ -250,7 +225,7 @@ CLogManager::ClearLoggers( void )
                                 const Int32 logLevel         ) const
 {GUCEF_TRACE;
 
-    g_dataLock.Lock();
+    m_dataLock.Lock();
 
     bool retValue = false;
     if ( logLevel < m_maxLogLevel )
@@ -258,7 +233,7 @@ CLogManager::ClearLoggers( void )
         retValue = (*m_msgTypeEnablers.find( logMsgType )).second;
     }
 
-    g_dataLock.Unlock();
+    m_dataLock.Unlock();
     return retValue;
 }
 
@@ -285,7 +260,7 @@ CLogManager::Log( const TLogMsgType logMsgType ,
                   const UInt32 threadId        )
 {GUCEF_TRACE;
 
-    g_dataLock.Lock();
+    m_dataLock.Lock();
 
     // The loglevel must be such so that the message given falls under the global logging
     // cut off.
@@ -342,7 +317,7 @@ CLogManager::Log( const TLogMsgType logMsgType ,
 
 
 
-    g_dataLock.Unlock();
+    m_dataLock.Unlock();
 }
 
 /*-------------------------------------------------------------------------*/
@@ -427,7 +402,7 @@ void
 CLogManager::FlushLogs( void )
 {GUCEF_TRACE;
 
-    g_dataLock.Lock();
+    m_dataLock.Lock();
 
     TLoggerList::const_iterator i = m_loggers.begin();
     while ( i != m_loggers.end() )
@@ -440,7 +415,7 @@ CLogManager::FlushLogs( void )
         ++i;
     }
 
-    g_dataLock.Unlock();
+    m_dataLock.Unlock();
 }
 
 /*-------------------------------------------------------------------------*/
