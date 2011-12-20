@@ -119,11 +119,6 @@ class GUCEF_CORE_PUBLIC_CPP CLogManager
     static const CString& GetLogMsgTypeString( const TLogMsgType logMsgType );
 
     private:
-    friend class CGUCEFCOREModule;
-
-    static void Deinstance( void );
-
-    private:
 
     CLogManager( void );
     ~CLogManager();
@@ -154,9 +149,9 @@ class GUCEF_CORE_PUBLIC_CPP CLogManager
     Int32 m_maxLogLevel;
     TBootstrapLogVector m_bootstrapLog;
     bool m_busyLogging;
+    MT::CMutex m_dataLock;
 
-    static MT::CMutex g_dataLock;
-    static CLogManager* g_instance;
+    static CLogManager g_instance;
 };
 
 /*-------------------------------------------------------------------------*/
