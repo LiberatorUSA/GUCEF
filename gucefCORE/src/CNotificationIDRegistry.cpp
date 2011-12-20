@@ -14,7 +14,7 @@
  *
  *  You should have received a copy of the GNU Lesser General Public
  *  License along with this library; if not, write to the Free Software
- *  Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA 
+ *  Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA
  */
 
 /*-------------------------------------------------------------------------//
@@ -53,7 +53,7 @@
 //                                                                         //
 //-------------------------------------------------------------------------*/
 
-namespace GUCEF { 
+namespace GUCEF {
 namespace CORE {
 
 /*-------------------------------------------------------------------------//
@@ -63,7 +63,6 @@ namespace CORE {
 //-------------------------------------------------------------------------*/
 
 CNotificationIDRegistry* CNotificationIDRegistry::m_instance = NULL;
-MT::CMutex               CNotificationIDRegistry::m_dataLock;
 
 /*-------------------------------------------------------------------------//
 //                                                                         //
@@ -91,12 +90,12 @@ CNotificationIDRegistry::CNotificationIDRegistry( void )
 CNotificationIDRegistry::~CNotificationIDRegistry()
 {GUCEF_TRACE;
 
-    /* nothing to do here */    
+    /* nothing to do here */
 }
 
 /*-------------------------------------------------------------------------*/
 
-CNotificationIDRegistry* 
+CNotificationIDRegistry*
 CNotificationIDRegistry::Instance( void )
 {GUCEF_TRACE;
 
@@ -111,45 +110,41 @@ CNotificationIDRegistry::Instance( void )
 
 /*-------------------------------------------------------------------------*/
 
-void 
+void
 CNotificationIDRegistry::Deinstance( void )
 {GUCEF_TRACE;
-
-    m_dataLock.Lock();
 
     delete m_instance;
     m_instance = NULL;
 
     GUCEF_SYSTEM_LOG( LOGLEVEL_NORMAL, "GUCEF::CORE::CNotificationIDRegistry Singleton destroyed" );
-
-    m_dataLock.Unlock();
 }
 
 /*-------------------------------------------------------------------------*/
 
-CEvent 
+CEvent
 CNotificationIDRegistry::Register( const CString& keyvalue                       ,
                                    const bool okIfAlreadyRegisterd /* = false */ )
 {GUCEF_TRACE;
-    
+
     m_dataLock.Lock();
-    
+
     if ( keyvalue.Length() > 0 )
-    {    
+    {
         TRegistryList::const_iterator i = m_list.find( keyvalue );
         if ( i == m_list.end() )
         {
             if ( GUCEFCORE_UINT32MAX > m_lastid )
-            {                
+            {
                 m_list[ keyvalue ] = m_lastid;
                 ++m_lastid;
                 m_dataLock.Unlock();
-                
+
                 GUCEF_SYSTEM_LOG( LOGLEVEL_NORMAL, "Event registered with ID " + UInt32ToString( m_lastid-1 ) + " and name \"" + keyvalue + "\"" );
-                
+
                 return CEvent( m_lastid-1, keyvalue );
             }
-        
+
             /*
              *  Because all event id's have been used at least once we
              *  now have to perform a linear search for available event id's
@@ -157,7 +152,7 @@ CNotificationIDRegistry::Register( const CString& keyvalue                      
              *  amount of event registration actions required.
              */
             for ( UInt32 n=0; n<ULONG_MAX; ++n )
-            {                     
+            {
                 bool found = false;
                 i = m_list.begin();
                 while ( i != m_list.end() )
@@ -167,7 +162,7 @@ CNotificationIDRegistry::Register( const CString& keyvalue                      
                         found = true;
                         break;
                     }
-                    ++i;    
+                    ++i;
                 }
                 if ( !found )
                 {
@@ -177,7 +172,7 @@ CNotificationIDRegistry::Register( const CString& keyvalue                      
                 }
             }
         }
-    
+
         if ( !okIfAlreadyRegisterd )
         {
             m_dataLock.Unlock();
@@ -189,15 +184,15 @@ CNotificationIDRegistry::Register( const CString& keyvalue                      
     else
     {
         m_dataLock.Unlock();
-        GUCEF_EMSGTHROW( EEmptyKeyString, "CNotificationIDRegistry: Empty key string" );        
+        GUCEF_EMSGTHROW( EEmptyKeyString, "CNotificationIDRegistry: Empty key string" );
     }
 
     m_dataLock.Unlock();
 }
 
 /*-------------------------------------------------------------------------*/
-    
-void 
+
+void
 CNotificationIDRegistry::Unregister( const CString& keyvalue                      ,
                                      const bool okIfUnknownKeyGiven /* = false */ )
 {GUCEF_TRACE;
@@ -209,7 +204,7 @@ CNotificationIDRegistry::Unregister( const CString& keyvalue                    
         TRegistryList::iterator i = m_list.find( keyvalue );
         if ( i != m_list.end() )
         {
-            m_list.erase( i );    
+            m_list.erase( i );
         }
         else
         {
@@ -228,12 +223,12 @@ CNotificationIDRegistry::Unregister( const CString& keyvalue                    
 
 /*-------------------------------------------------------------------------*/
 
-CEvent 
+CEvent
 CNotificationIDRegistry::Lookup( const CString& keyvalue     ,
                                  const bool registerUnknown  )
 {GUCEF_TRACE;
 
-    m_dataLock.Unlock();
+    m_dataLock.Lock();
 
     TRegistryList::iterator i = m_list.find( keyvalue );
     if ( i != m_list.end() )
@@ -241,7 +236,7 @@ CNotificationIDRegistry::Lookup( const CString& keyvalue     ,
         m_dataLock.Unlock();
         return CEvent( (*i).second, keyvalue );
     }
-    
+
     if ( registerUnknown )
     {
         Register( keyvalue );
@@ -251,19 +246,19 @@ CNotificationIDRegistry::Lookup( const CString& keyvalue     ,
 
     m_dataLock.Unlock();
 
-    GUCEF_EMSGTHROW( EInvalidKey, "CNotificationIDRegistry::Lookup(): invalid notification key identifier" );    
+    GUCEF_EMSGTHROW( EInvalidKey, "CNotificationIDRegistry::Lookup(): invalid notification key identifier" );
 }
 
 /*-------------------------------------------------------------------------*/
 
-CString 
+CString
 CNotificationIDRegistry::Lookup( const CEvent& eventID ) const
 {GUCEF_TRACE;
 
     m_dataLock.Lock();
-    
+
     UInt32 id( eventID.GetID() );
-    
+
     if ( id > 0 )
     {
         TRegistryList::const_iterator i = m_list.begin();
@@ -274,10 +269,10 @@ CNotificationIDRegistry::Lookup( const CEvent& eventID ) const
                 m_dataLock.Unlock();
                 return (*i).first;
             }
-            ++i;            
+            ++i;
         }
     }
-    
+
     m_dataLock.Unlock();
 
     GUCEF_EMSGTHROW( EInvalidEventID, "CNotificationIDRegistry::Lookup(): invalid eventID" );

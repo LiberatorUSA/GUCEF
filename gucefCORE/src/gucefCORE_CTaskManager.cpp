@@ -70,7 +70,6 @@ namespace CORE {
 //                                                                         //
 //-------------------------------------------------------------------------*/
 
-MT::CMutex CTaskManager::g_mutex;
 CTaskManager* CTaskManager::g_instance = NULL;
 
 const CEvent CTaskManager::ThreadKilledEvent = "GUCEF::CORE::CTaskManager::ThreadKilledEvent";
@@ -239,13 +238,10 @@ void
 CTaskManager::Deinstance( void )
 {GUCEF_TRACE;
 
-    g_mutex.Lock();
     delete g_instance;
     g_instance = NULL;
 
     GUCEF_SYSTEM_LOG( LOGLEVEL_NORMAL, "TaskManager Singleton destroyed" );
-
-    g_mutex.Unlock();
 }
 
 /*-------------------------------------------------------------------------*/

@@ -83,10 +83,6 @@ namespace CORE {
 //                                                                         //
 //-------------------------------------------------------------------------*/
 
-class CIGUCEFApplicationDriver;
-
-/*-------------------------------------------------------------------------*/
-
 /**
  *
  *      Dispatches the following events:
@@ -197,9 +193,9 @@ class GUCEF_CORE_PUBLIC_CPP CGUCEFApplication : public CNotifier             ,
     CString _appdir;
     CPulseGenerator m_pulseGenerator;
     CBusyWaitPulseGeneratorDriver m_busyWaitPulseDriver;
+    MT::CMutex m_mutex;
 
     static CGUCEFApplication* _instance;
-    static MT::CMutex m_mutex;
 };
 
 

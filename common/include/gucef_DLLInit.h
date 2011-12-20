@@ -113,7 +113,7 @@
 
   #define GUCEF_DLL_INIT_FUNC( ns )                               \
                                                                   \
-        void __attribute__ ((constructor)) _moduleInit( void )    \
+        void __attribute__ ((constructor(65535))) _moduleInit( void )    \
         {                                                         \
                                                                   \
         }                                                         \
@@ -126,7 +126,7 @@
 
   #define GUCEF_DLL_INIT_FUNC_BEG( ns )                           \
                                                                   \
-        void __attribute__ ((constructor)) _moduleInit( void )    \
+        void __attribute__ ((constructor(65535))) _moduleInit( void )    \
         {                                                         \
                 if ( !ns::Load() )                                \
                 {                                                 \
@@ -143,7 +143,7 @@
 
   #define GUCEF_DLL_INIT_FUNC_END( ns )                           \
                                                                   \
-        void __attribute__ ((constructor)) _moduleInit( void )    \
+        void __attribute__ ((constructor(65535))) _moduleInit( void )    \
         {                                                         \
                 return;                                           \
         }                                                         \
@@ -160,7 +160,7 @@
 
   #define GUCEF_DLL_INIT_FUNC_BEG_END( ns )                       \
                                                                   \
-        void __attribute__ ((constructor)) _moduleInit( void )    \
+        void __attribute__ ((constructor(65535))) _moduleInit( void )    \
         {                                                         \
                 if ( !ns::Load() )                                \
                 {                                                 \

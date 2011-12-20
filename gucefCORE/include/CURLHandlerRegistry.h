@@ -77,8 +77,8 @@ class GUCEF_CORE_PUBLIC_CPP CURLHandlerRegistry : public CTRegistry< CURLHandler
         virtual ~CURLHandlerRegistry();
         CURLHandlerRegistry& operator=( const CURLHandlerRegistry& src );
 
+        MT::CMutex _datalock;
         static CURLHandlerRegistry* _instance;
-        static MT::CMutex _datalock;
 };
 
 /*-------------------------------------------------------------------------//

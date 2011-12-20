@@ -28,15 +28,21 @@
 
 #include <string>
 #include <map>
+
+#ifndef GUCEF_MT_CMUTEX_H
 #include "gucefMT_CMutex.h"
+#define GUCEF_MT_CMUTEX_H
+#endif /* GUCEF_MT_CMUTEX_H ? */
 
 #ifndef GUCEF_CORE_CEVENT_H
 #include "CEvent.h"
 #define GUCEF_CORE_CEVENT_H
 #endif /* GUCEF_CORE_CEVENT_H ? */
 
-#include "gucefCORE_macros.h"
+#ifndef GUCEF_CORE_EXCEPTIONMACROS_H
 #include "ExceptionMacros.h"
+#define GUCEF_CORE_EXCEPTIONMACROS_H
+#endif /* GUCEF_CORE_EXCEPTIONMACROS_H ? */
 
 /*-------------------------------------------------------------------------//
 //                                                                         //
@@ -146,13 +152,13 @@ class GUCEF_CORE_PUBLIC_CPP CNotificationIDRegistry
     CNotificationIDRegistry& operator=( const CNotificationIDRegistry& src );
 
     private:
+    typedef std::map<const CString,UInt32> TRegistryList;
 
     static CNotificationIDRegistry* m_instance;
-    static MT::CMutex m_dataLock;
 
-    typedef std::map<const CString,UInt32> TRegistryList;
     TRegistryList m_list;
     UInt32 m_lastid;
+    MT::CMutex m_dataLock;
 };
 
 /*-------------------------------------------------------------------------//

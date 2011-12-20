@@ -14,7 +14,7 @@
  *
  *  You should have received a copy of the GNU Lesser General Public
  *  License along with this library; if not, write to the Free Software
- *  Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA 
+ *  Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA
  */
 
 /*-------------------------------------------------------------------------//
@@ -28,7 +28,7 @@
 #ifndef GUCEF_CORE_GUCEF_ESSENTIALS_H
 #include "gucef_essentials.h"
 #define GUCEF_CORE_GUCEF_ESSENTIALS_H
-#endif /* GUCEF_CORE_GUCEF_ESSENTIALS_H ? */ 
+#endif /* GUCEF_CORE_GUCEF_ESSENTIALS_H ? */
 
 /*-------------------------------------------------------------------------//
 //                                                                         //
@@ -45,7 +45,6 @@ namespace CORE {
 //                                                                         //
 //-------------------------------------------------------------------------*/
 
-MT::CMutex CURLHandlerRegistry::_datalock;
 CURLHandlerRegistry* CURLHandlerRegistry::_instance = NULL;
 
 /*-------------------------------------------------------------------------//
@@ -62,30 +61,10 @@ CURLHandlerRegistry::CURLHandlerRegistry( void )
 
 /*-------------------------------------------------------------------------*/
 
-CURLHandlerRegistry::CURLHandlerRegistry( const CURLHandlerRegistry& src )
-{
-        GUCEF_BEGIN;
-        /* dummy, do not use */
-        GUCEF_END;
-}
-
-/*-------------------------------------------------------------------------*/
-
 CURLHandlerRegistry::~CURLHandlerRegistry()
 {
         GUCEF_BEGIN;
         GUCEF_END;
-}
-
-/*-------------------------------------------------------------------------*/
-
-CURLHandlerRegistry& 
-CURLHandlerRegistry::operator=( const CURLHandlerRegistry& src )
-{
-        GUCEF_BEGIN;
-        /* dummy, do not use */
-        GUCEF_END;
-        return *this;
 }
 
 /*-------------------------------------------------------------------------*/
@@ -105,23 +84,21 @@ CURLHandlerRegistry::Instance( void )
 
 /*-------------------------------------------------------------------------*/
 
-void 
+void
 CURLHandlerRegistry::Deinstance( void )
 {GUCEF_TRACE;
 
-    _datalock.Lock();
     CHECKMEM( _instance, sizeof(CURLHandlerRegistry) );
     delete _instance;
     _instance = NULL;
     GUCEF_SYSTEM_LOG( LOGLEVEL_NORMAL, "GUCEF::CORE::CURLHandlerRegistry Singleton destroyed" );
-    _datalock.Unlock();
 }
 
 /*-------------------------------------------------------------------------*/
 
-void 
+void
 CURLHandlerRegistry::LockData( void ) const
-{                  
+{
         GUCEF_BEGIN;
         _datalock.Lock();
         GUCEF_END;
@@ -129,7 +106,7 @@ CURLHandlerRegistry::LockData( void ) const
 
 /*-------------------------------------------------------------------------*/
 
-void 
+void
 CURLHandlerRegistry::UnlockData( void ) const
 {
         GUCEF_BEGIN;

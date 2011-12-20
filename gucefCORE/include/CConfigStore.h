@@ -72,53 +72,53 @@ class CIConfigurable;
  */
 class GUCEF_CORE_PUBLIC_CPP CConfigStore
 {
-        public:
+    public:
 
-        static CConfigStore* Instance( void );
+    static CConfigStore* Instance( void );
 
-        void SetConfigFile( const CString& filepath );
+    void SetConfigFile( const CString& filepath );
 
-        CString GetConfigFile( void ) const;
+    CString GetConfigFile( void ) const;
 
-        bool SaveConfig( const CString& name  ,
-                         bool preserve = true );
+    bool SaveConfig( const CString& name  ,
+                     bool preserve = true );
 
-        bool LoadConfig( void );
+    bool LoadConfig( void );
 
-        void SetCodec( const CString& codectype );
+    void SetCodec( const CString& codectype );
 
-        CString GetCodec( void ) const;
+    CString GetCodec( void ) const;
 
-        private:
+    private:
 
-        friend class CIConfigurable;
+    friend class CIConfigurable;
 
-        void Register( CIConfigurable* configobj );
+    void Register( CIConfigurable* configobj );
 
-        void Unregister( CIConfigurable* configobj );
+    void Unregister( CIConfigurable* configobj );
 
-        private:
-        friend class CGUCEFCOREModule;
+    private:
+    friend class CGUCEFCOREModule;
 
-        static void Deinstance( void );
+    static void Deinstance( void );
 
-        private:
+    private:
 
-        CConfigStore( void );
-        CConfigStore( const CConfigStore& src );
-        CConfigStore& operator=( const CConfigStore& src );
-        ~CConfigStore();
+    CConfigStore( void );
+    CConfigStore( const CConfigStore& src );
+    CConfigStore& operator=( const CConfigStore& src );
+    ~CConfigStore();
 
-        private:
+    private:
 
-        typedef std::set< CIConfigurable* > TConfigurableSet;
+    typedef std::set< CIConfigurable* > TConfigurableSet;
 
-        static MT::CMutex _datalock;
-        static CConfigStore* _instance;
+    static CConfigStore* _instance;
 
-        CString _codectype;
-        CString _configfile;
-        TConfigurableSet _configobjs;
+    CString _codectype;
+    CString _configfile;
+    TConfigurableSet _configobjs;
+    MT::CMutex _datalock;
 };
 
 /*-------------------------------------------------------------------------//
