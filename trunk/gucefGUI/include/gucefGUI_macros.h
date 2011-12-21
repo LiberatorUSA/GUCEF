@@ -14,7 +14,7 @@
  *
  *  You should have received a copy of the GNU Lesser General Public
  *  License along with this library; if not, write to the Free Software
- *  Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA 
+ *  Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA
  */
 
 #ifndef GUCEF_GUI_MACROS_H
@@ -66,7 +66,10 @@
  *      Auto detection of debug mode
  */
 #ifndef GUCEF_MANUAL_DEBUG_MODE_DEFINE
-  #if defined( _DEBUG )
+  #if defined( NDEBUG )
+    #define _DEBUG
+  #endif
+  #if defined( _DEBUG ) || defined( __DEBUG ) || defined( __DEBUG__ )
     #define GUCEF_GUI_DEBUG_MODE
   #else
     #undef GUCEF_GUI_DEBUG_MODE
