@@ -25,10 +25,10 @@
 
 #include <stdio.h>                    /* needed for FILE* utils */
 
-#ifndef GUCEF_CORE_CGUCEFAPPLICATION_H
-#include "CGUCEFApplication.h"
-#define GUCEF_CORE_CGUCEFAPPLICATION_H
-#endif /* GUCEF_CORE_CGUCEFAPPLICATION_H ? */
+#ifndef GUCEF_CORE_CCOREGLOBAL_H
+#include "gucefCORE_CCoreGlobal.h"
+#define GUCEF_CORE_CCOREGLOBAL_H
+#endif /* GUCEF_CORE_CCOREGLOBAL_H ? */
 
 #ifndef GUCEF_CORE_CURLHANDLERREGISTRY_H
 #include "CURLHandlerRegistry.h"      /* central registry for URL handlers */
@@ -67,7 +67,7 @@ CURL::CURL( void )
       CIURLEvents()         ,
       m_handler( NULL )     ,
       m_url()               ,
-      m_pulseGenerator( &CGUCEFApplication::Instance()->GetPulseGenerator() )
+      m_pulseGenerator( &CCoreGlobal::Instance()->GetApplication().GetPulseGenerator() )
 {GUCEF_TRACE;
         
     Initialize();  

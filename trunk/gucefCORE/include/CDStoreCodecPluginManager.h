@@ -77,8 +77,6 @@ class GUCEF_CORE_PUBLIC_CPP CDStoreCodecPluginManager : public CPluginManager
 
     typedef CTSharedPtr< CDStoreCodecPlugin > TDStoreCodecPluginPtr;
 
-    static CDStoreCodecPluginManager* Instance( void );
-
     TDStoreCodecPluginPtr GetCodec( const CString& codectype ) const;
 
     virtual CString GetPluginType( void ) const;
@@ -93,9 +91,11 @@ class GUCEF_CORE_PUBLIC_CPP CDStoreCodecPluginManager : public CPluginManager
     void RegisterCodecPlugin( CDStoreCodecPlugin* plugin );
 
     private:
-    friend class CGUCEFCOREModule;
+    friend class CCoreGlobal;
 
-    static void Deinstance( void );
+    CDStoreCodecPluginManager( void );
+
+    virtual ~CDStoreCodecPluginManager();
 
     private:
 
@@ -103,15 +103,12 @@ class GUCEF_CORE_PUBLIC_CPP CDStoreCodecPluginManager : public CPluginManager
 
     bool IsPluginLoaded( const CString& path );
 
-    CDStoreCodecPluginManager( void );
     CDStoreCodecPluginManager( const CDStoreCodecPluginManager& src );
-    ~CDStoreCodecPluginManager();
+    
     CDStoreCodecPluginManager& operator=( const CDStoreCodecPluginManager& src );
 
     TDStoreCodecPluginSet _codecs;
     MT::CMutex _datalock;
-
-    static CDStoreCodecPluginManager* _instance;
 };
 
 /*-------------------------------------------------------------------------//

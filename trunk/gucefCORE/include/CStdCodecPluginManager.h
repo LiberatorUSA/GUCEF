@@ -53,8 +53,6 @@ class GUCEF_CORE_PUBLIC_CPP CStdCodecPluginManager : public CPluginManager
 {
     public:
 
-    static CStdCodecPluginManager* Instance( void );
-
     virtual CString GetPluginType( void ) const;
 
     protected:
@@ -65,19 +63,17 @@ class GUCEF_CORE_PUBLIC_CPP CStdCodecPluginManager : public CPluginManager
     virtual void UnregisterPlugin( TPluginPtr plugin );
 
     private:
-    friend class CGUCEFCOREModule;
+    friend class CCoreGlobal;
 
-    static void Deinstance( void );
-
-    private:
     CStdCodecPluginManager( void );
-    CStdCodecPluginManager( const CStdCodecPluginManager& src );
+
     virtual ~CStdCodecPluginManager();
-    CStdCodecPluginManager& operator=( const CStdCodecPluginManager& src );
 
     private:
 
-    static CStdCodecPluginManager* m_instance;
+    CStdCodecPluginManager( const CStdCodecPluginManager& src );
+
+    CStdCodecPluginManager& operator=( const CStdCodecPluginManager& src );
 };
 
 /*-------------------------------------------------------------------------//

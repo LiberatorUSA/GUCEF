@@ -537,6 +537,33 @@ CGUCEFApplication::UnlockData( void )
     m_mutex.Unlock();
 }
 
+/*-------------------------------------------------------------------------*/
+
+CTaskManager&
+CGUCEFApplication::GetTaskManager( void )
+{GUCEF_TRACE;
+
+    return m_taskManager;
+}
+
+/*-------------------------------------------------------------------------*/
+
+CURLHandlerRegistry&
+CGUCEFApplication::GetUrlHandlerRegistry( void )
+{GUCEF_TRACE;
+
+    return m_urlHandlerRegistry;
+}
+
+/*-------------------------------------------------------------------------*/
+
+CExclusiveActivationManager&
+CGUCEFApplication::GetExclusiveActivationManager( void )
+{GUCEF_TRACE;
+
+    return m_exclusiveActivationManager;
+}
+
 /*-------------------------------------------------------------------------//
 //                                                                         //
 //      NAMESPACE                                                          //

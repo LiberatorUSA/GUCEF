@@ -29,13 +29,31 @@
 #include <map>                  /* standard variable mapping template */
 #include <string>               /* standard string template implementation */
 #include <vector>               /* standard dynamic array implementation */
-#include "gucef_macros.h"
-#include "CTracer.h"            /* stack tracing */
-#include "gucefCORE_ETypes.h"   /* some basic libary types */
+
+#ifndef GUCEF_CORE_LOGGING_H
+#include "gucefCORE_Logging.h"
+#define GUCEF_CORE_LOGGING_H
+#endif /* GUCEF_CORE_LOGGING_H ? */
+
+#ifndef GUCEF_CORE_CDVSTRING_H
 #include "CDVString.h"          /* GUCEF platform string implementation */
+#define GUCEF_CORE_CDVSTRING_H
+#endif /* GUCEF_CORE_CDVSTRING_H ? */
+
+#ifndef GUCEF_CORE_EXCEPTIONMACROS_H
 #include "ExceptionMacros.h"    /* macros for dealing with scope typed exceptions */
+#define GUCEF_CORE_EXCEPTIONMACROS_H
+#endif /* GUCEF_CORE_EXCEPTIONMACROS_H ? */
+
+#ifndef GUCEF_CORE_CINAMEDINSTANCE_H
 #include "CINamedInstance.h"    /* basic name retrieval interface */
+#define GUCEF_CORE_CINAMEDINSTANCE_H
+#endif /* GUCEF_CORE_CINAMEDINSTANCE_H ? */
+
+#ifndef GUCEF_CORE_CTSHAREDPTR_H
 #include "CTSharedPtr.h"        /* pointer to the shared object */
+#define GUCEF_CORE_CTSHAREDPTR_H
+#endif /* GUCEF_CORE_CTSHAREDPTR_H ? */
 
 /*-------------------------------------------------------------------------//
 //                                                                         //

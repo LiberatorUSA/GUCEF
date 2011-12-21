@@ -45,14 +45,6 @@ namespace CORE {
 
 /*-------------------------------------------------------------------------//
 //                                                                         //
-//      GLOBAL VARS                                                        //
-//                                                                         //
-//-------------------------------------------------------------------------*/
-
-CExclusiveActivationManager* CExclusiveActivationManager::m_instance = NULL;
-
-/*-------------------------------------------------------------------------//
-//                                                                         //
 //      UTILITIES                                                          //
 //                                                                         //
 //-------------------------------------------------------------------------*/
@@ -69,20 +61,6 @@ CExclusiveActivationManager::~CExclusiveActivationManager()
 
 }
 
-/*-------------------------------------------------------------------------*/
-
-CExclusiveActivationManager* 
-CExclusiveActivationManager::Instance( void )
-{GUCEF_TRACE;
-
-    if ( !m_instance )
-    {
-        m_instance = new CExclusiveActivationManager();
-        GUCEF_SYSTEM_LOG( LOGLEVEL_NORMAL, "GUCEF::CORE::CExclusiveActivationManager Singleton created" );
-    }
-    return m_instance;
-}
-    
 /*-------------------------------------------------------------------------*/
 
 bool 
@@ -216,17 +194,6 @@ CExclusiveActivationManager::GetActiveObject( const CString& objTypeName ) const
         return (*typeItterator).second.activeObj;
     }
     return NULL;
-}
-
-/*-------------------------------------------------------------------------*/
-    
-void 
-CExclusiveActivationManager::Deinstance( void )
-{GUCEF_TRACE;
-
-    delete m_instance;
-    m_instance = NULL;
-    GUCEF_SYSTEM_LOG( LOGLEVEL_NORMAL, "GUCEF::CORE::CExclusiveActivationManager Singleton destroyed" );
 }
 
 /*-------------------------------------------------------------------------*/

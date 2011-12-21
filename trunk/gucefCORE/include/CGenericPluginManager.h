@@ -65,13 +65,11 @@ namespace CORE {
  *  These are typicly C++ modules that link back to the GUCEF modules and
  *  uppon load integrate themselves in the framework. This allows a generic plugin
  *  to be/do just about anything but with the drawback that it has to link to the GUCEF
- *  modules and as such has a more limited lifespan as a C-interface plugin.
+ *  modules and as such has a more limited lifespan than a C-interface plugin.
  */
 class GUCEF_CORE_PUBLIC_CPP CGenericPluginManager : public CPluginManager
 {
     public:
-
-    static CGenericPluginManager* Instance( void );
 
     virtual CString GetPluginType( void ) const;
 
@@ -83,20 +81,17 @@ class GUCEF_CORE_PUBLIC_CPP CGenericPluginManager : public CPluginManager
     virtual void UnregisterPlugin( TPluginPtr plugin );
 
     private:
-    friend class CGUCEFCOREModule;
+    friend class CCoreGlobal;
 
-    static void Deinstance( void );
-
-    private:
     CGenericPluginManager( void );
-    CGenericPluginManager( const CGenericPluginManager& src );
-    CGenericPluginManager& operator=( const CGenericPluginManager& src );
 
     virtual ~CGenericPluginManager();
 
     private:
+    
+    CGenericPluginManager( const CGenericPluginManager& src );
 
-    static CGenericPluginManager* m_instance;
+    CGenericPluginManager& operator=( const CGenericPluginManager& src );
 };
 
 

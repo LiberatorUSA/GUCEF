@@ -73,8 +73,8 @@ CExclusiveActiveObj::Activate( void )
 
     if ( m_registered )
     {
-        return CExclusiveActivationManager::Instance()->SetActivateObj( m_objTypeName ,
-                                                                        GetObjName()  );
+        return CCoreGlobal::Instance()->GetExclusiveActivationManager().SetActivateObj( m_objTypeName ,
+                                                                                        GetObjName()  );
     }
     return false;                                                                        
 }
@@ -87,7 +87,7 @@ CExclusiveActiveObj::Deactivate( void )
 
     if ( m_registered && m_active )
     {
-        return CExclusiveActivationManager::Instance()->DisableActivateObj( m_objTypeName );
+        return CCoreGlobal::Instance()->GetExclusiveActivationManager().DisableActivateObj( m_objTypeName );
     }
     return false;   
 }
@@ -125,7 +125,7 @@ void
 CExclusiveActiveObj::RegisterAsExclusiveActiveObj( void )
 {GUCEF_TRACE;
 
-    CExclusiveActivationManager::Instance()->RegisterObj( this );
+    CCoreGlobal::Instance()->GetExclusiveActivationManager().RegisterObj( this );
     m_registered = true;
 }
 
@@ -135,7 +135,7 @@ void
 CExclusiveActiveObj::UnregisterAsExclusiveActiveObj( void )
 {GUCEF_TRACE;
 
-    CExclusiveActivationManager::Instance()->UnregisterObj( this );
+    CCoreGlobal::Instance()->GetExclusiveActivationManager().UnregisterObj( this );
     m_registered = false;
 }
 
@@ -156,8 +156,8 @@ CExclusiveActiveObj::SetAsDefault( void )
 
     if ( m_registered )
     {
-        return CExclusiveActivationManager::Instance()->SetDefaultObjForType( m_objTypeName ,
-                                                                              GetObjName()  );
+        return CCoreGlobal::Instance()->GetExclusiveActivationManager().SetDefaultObjForType( m_objTypeName ,
+                                                                                              GetObjName()  );
     }
     return false;
 }
@@ -171,8 +171,8 @@ CExclusiveActiveObj::IsTheDefault( void ) const
     if ( m_registered )
     {
         CString defaultObj;
-        CExclusiveActivationManager::Instance()->GetDefaultObjForType( m_objTypeName ,
-                                                                       defaultObj    );
+        CCoreGlobal::Instance()->GetExclusiveActivationManager().GetDefaultObjForType( m_objTypeName ,
+                                                                                       defaultObj    );
         return defaultObj == GetObjName();
     }
     return false;

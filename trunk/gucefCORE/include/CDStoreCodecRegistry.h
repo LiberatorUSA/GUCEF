@@ -58,28 +58,31 @@ namespace CORE {
 
 class GUCEF_CORE_PUBLIC_CPP CDStoreCodecRegistry : public CTRegistry< CDStoreCodec >
 {
-        public:
-        typedef TRegisteredObjPtr TDStoreCodecPtr;
+    public:
+    typedef TRegisteredObjPtr TDStoreCodecPtr;
 
-        static CDStoreCodecRegistry* Instance( void );
+    protected:
+    
+    virtual void LockData( void ) const;
+    
+    virtual void UnlockData( void ) const;
 
-        protected:
-        virtual void LockData( void ) const;
-        virtual void UnlockData( void ) const;
+    private:
+    friend class CCoreGlobal;
 
-        private:
-        friend class CGUCEFCOREModule;
+    CDStoreCodecRegistry( void );
 
-        static void Deinstance( void );
+    virtual ~CDStoreCodecRegistry();
 
-        private:
-        CDStoreCodecRegistry( void );
-        CDStoreCodecRegistry( const CDStoreCodecRegistry& src );
-        virtual ~CDStoreCodecRegistry();
-        CDStoreCodecRegistry& operator=( const CDStoreCodecRegistry& src );
+    private:
+    
+    CDStoreCodecRegistry( const CDStoreCodecRegistry& src );
+    
+    CDStoreCodecRegistry& operator=( const CDStoreCodecRegistry& src );
 
-        static CDStoreCodecRegistry* _instance;
-        static MT::CMutex _datalock;
+    private:
+    
+    MT::CMutex _datalock;
 };
 
 /*-------------------------------------------------------------------------//

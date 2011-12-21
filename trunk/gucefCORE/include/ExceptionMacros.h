@@ -26,7 +26,12 @@
 //                                                                         //
 //-------------------------------------------------------------------------*/
 
-#ifdef GUCEF_CORE_CEXCEPTION_H
+#ifndef GUCEF_CORE_LOGGING_H
+#include "gucefCORE_Logging.h"
+#define GUCEF_CORE_LOGGING_H
+#endif /* GUCEF_CORE_LOGGING_H ? */
+
+#ifndef GUCEF_CORE_CEXCEPTION_H
 #include "CException.h"
 #define GUCEF_CORE_CEXCEPTION_H
 #endif /* GUCEF_CORE_CEXCEPTION_H ? */
@@ -35,11 +40,6 @@
 #include "CMsgException.h"
 #define GUCEF_CORE_CMSGEXCEPTION_H
 #endif /* GUCEF_CORE_CMSGEXCEPTION_H ? */
-
-#ifndef GUCEF_CORE_CLOGMANAGER_H
-#include "CLogManager.h"
-#define GUCEF_CORE_CLOGMANAGER_H
-#endif /* GUCEF_CORE_CLOGMANAGER_H ? */
 
 #ifndef GUCEF_CORE_DVCPPSTRINGUTILS_H
 #include "dvcppstringutils.h"
@@ -206,7 +206,7 @@ ownerScopeClass::exceptionName::~exceptionName() throw()                    \
 #undef GUCEF_ETHROW
 #define GUCEF_ETHROW( exceptionName )                                        \
 {                                                                            \
-    GUCEF_EXCEPTION_LOG( ::GUCEF::CORE::LOGLEVEL_EVERYTHING,                 \
+    GUCEF_EXCEPTION_LOG( ::GUCEF::CORE::LOGLEVEL_NORMAL,                     \
                          ::GUCEF::CORE::CString( "Throwing exception @ " ) + \
                          __FILE__                                          + \
                          ::GUCEF::CORE::Int32ToString( __LINE__ )         ); \
@@ -218,7 +218,7 @@ ownerScopeClass::exceptionName::~exceptionName() throw()                    \
 #undef GUCEF_EMSGTHROW
 #define GUCEF_EMSGTHROW( exceptionName, errorMsg )                                       \
 {                                                                                        \
-    GUCEF_EXCEPTION_LOG( ::GUCEF::CORE::LOGLEVEL_EVERYTHING,                             \
+    GUCEF_EXCEPTION_LOG( ::GUCEF::CORE::LOGLEVEL_NORMAL,                                 \
                          ::GUCEF::CORE::CString( "Throwing exception with message: " ) + \
                          ::GUCEF::CORE::CString( errorMsg )                            + \
                          ::GUCEF::CORE::CString( " @ " )                               + \

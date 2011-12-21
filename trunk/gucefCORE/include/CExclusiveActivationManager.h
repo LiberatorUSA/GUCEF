@@ -57,7 +57,9 @@ class GUCEF_CORE_PUBLIC_CPP CExclusiveActivationManager
 {
     public:
 
-    static CExclusiveActivationManager* Instance( void );
+    CExclusiveActivationManager( void );
+
+    ~CExclusiveActivationManager();
 
     bool SetActivateObj( const CString& objTypeName ,
                          const CString& objName     );
@@ -82,15 +84,8 @@ class GUCEF_CORE_PUBLIC_CPP CExclusiveActivationManager
     void UnregisterObj( CExclusiveActiveObj* theObj );
 
     private:
-    friend class CGUCEFCOREModule;
 
-    static void Deinstance( void );
-
-    private:
-
-    CExclusiveActivationManager( void );
     CExclusiveActivationManager( const CExclusiveActivationManager& src );
-    ~CExclusiveActivationManager();
     CExclusiveActivationManager& operator=( const CExclusiveActivationManager& src );
 
     private:
