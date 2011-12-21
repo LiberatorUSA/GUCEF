@@ -14,9 +14,9 @@
  *
  *  You should have received a copy of the GNU Lesser General Public
  *  License along with this library; if not, write to the Free Software
- *  Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA 
+ *  Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
  */
- 
+
 /*-------------------------------------------------------------------------//
 //                                                                         //
 //      INCLUDES                                                           //
@@ -60,7 +60,7 @@ const CORE::CEvent CPatchManager::PatchTaskStoppedEvent = "GUCEF::PATCHER::CPatc
 const CORE::CEvent CPatchManager::PatchTaskStopRequestedEvent = "GUCEF::PATCHER::CPatchManager::PatchTaskStopRequestedEvent";
 const CORE::CEvent CPatchManager::PatchTaskFinishedEvent = "GUCEF::PATCHER::CPatchManager::PatchTaskFinishedEvent";
 const CORE::CEvent CPatchManager::PatchTaskPausedEvent = "GUCEF::PATCHER::CPatchManager::PatchTaskPausedEvent";
-const CORE::CEvent CPatchManager::PatchTaskResumedEvent = "GUCEF::PATCHER::CPatchManager::PatchTaskResumedEvent";    
+const CORE::CEvent CPatchManager::PatchTaskResumedEvent = "GUCEF::PATCHER::CPatchManager::PatchTaskResumedEvent";
 const CORE::CEvent CPatchManager::PatchTaskEventReceivedEvent = "GUCEF::PATCHER::CPatchManager::PatchTaskEventReceivedEvent";
 
 /*-------------------------------------------------------------------------//
@@ -85,8 +85,8 @@ CPatchManager::RegisterEvents( void )
 /*-------------------------------------------------------------------------*/
 
 CPatchManager::CPatchManager( void )
-    : CTSGNotifier( CORE::CGUCEFApplication::Instance()->GetPulseGenerator() ) ,
-      m_taskManager( CORE::CTaskManager::Instance() )
+    : CTSGNotifier( CORE::CCoreGlobal::Instance()->GetPulseGenerator() ) ,
+      m_taskManager( &CORE::CCoreGlobal::Instance()->GetTaskManager() )
 {GUCEF_TRACE;
 
     RegisterEvents();
@@ -96,16 +96,16 @@ CPatchManager::CPatchManager( void )
 
 CPatchManager::CPatchManager( CORE::CPulseGenerator& pulseGenerator )
     : CTSGNotifier( pulseGenerator )                  ,
-      m_taskManager( CORE::CTaskManager::Instance() )
+      m_taskManager( &CORE::CCoreGlobal::Instance()->GetTaskManager() )
 {GUCEF_TRACE;
-    
+
     RegisterEvents();
 }
 
 /*-------------------------------------------------------------------------*/
-    
+
 CPatchManager::CPatchManager( const CPatchManager& src  )
-    : CTSGNotifier( src )  
+    : CTSGNotifier( src )
 {GUCEF_TRACE;
 
 }
@@ -128,13 +128,13 @@ CPatchManager::GetClassTypeName( void ) const
 }
 
 /*-------------------------------------------------------------------------*/
-    
+
 bool
 CPatchManager::StartTask( const CString& taskName                  ,
                           const CORE::CDataNode& patchEngineConfig )
 
 {GUCEF_TRACE;
-                          
+
     LockData();
     if ( m_taskMap.find( taskName ) == m_taskMap.end() )
     {
@@ -153,14 +153,14 @@ CPatchManager::StartTask( const CString& taskName                  ,
 bool
 CPatchManager::PauseTask( const CString& taskName )
 {GUCEF_TRACE;
-    
+
     LockData();
     TTaskMap::iterator i = m_taskMap.find( taskName );
     if ( i != m_taskMap.end() )
     {
         UInt32 taskID = (*i).second->GetTaskId();
         UnlockData();
-        
+
         if ( m_taskManager->PauseTask( taskID, false ) )
         {
             TPatchTaskPausedEventData eData( taskName );
@@ -178,19 +178,19 @@ CPatchManager::PauseTask( const CString& taskName )
 bool
 CPatchManager::ResumeTask( const CString& taskName )
 {GUCEF_TRACE;
-    
+
     LockData();
     TTaskMap::iterator i = m_taskMap.find( taskName );
     if ( i != m_taskMap.end() )
     {
         UInt32 taskID = (*i).second->GetTaskId();
         UnlockData();
-        
+
         if ( m_taskManager->ResumeTask( taskID ) )
         {
             TPatchTaskResumedEventData eData( taskName );
             NotifyObserversFromThread( PatchTaskResumedEvent, &eData );
-            return true;            
+            return true;
         }
         return false;
     }
@@ -199,7 +199,7 @@ CPatchManager::ResumeTask( const CString& taskName )
 }
 
 /*-------------------------------------------------------------------------*/
-    
+
 bool
 CPatchManager::RequestTaskToStop( const CString& taskName )
 {GUCEF_TRACE;
@@ -208,9 +208,9 @@ CPatchManager::RequestTaskToStop( const CString& taskName )
     TTaskMap::iterator i = m_taskMap.find( taskName );
     if ( i != m_taskMap.end() )
     {
-        UInt32 taskID = (*i).second->GetTaskId();        
+        UInt32 taskID = (*i).second->GetTaskId();
         UnlockData();
-        
+
         if ( m_taskManager->RequestTaskToStop( taskID ) )
         {
             TPatchTaskStopRequestedEventData eData( taskName );
@@ -224,7 +224,7 @@ CPatchManager::RequestTaskToStop( const CString& taskName )
 }
 
 /*-------------------------------------------------------------------------*/
-        
+
 void
 CPatchManager::GetTaskList( TStringVector& list ) const
 {GUCEF_TRACE;
@@ -248,15 +248,15 @@ CPatchManager::RegisterTask( CPatchTaskConsumer* task )
     LockData();
     m_taskMap[ task->GetTaskName() ] = task;
     UnlockData();
-    
+
     SubscribeTo( &task->GetPatchEngine() );
-    
+
     TPatchTaskStartedEventData eData( task->GetTaskName() );
-    NotifyObserversFromThread( PatchTaskStartedEvent, &eData );    
+    NotifyObserversFromThread( PatchTaskStartedEvent, &eData );
 }
 
 /*-------------------------------------------------------------------------*/
-    
+
 void
 CPatchManager::UnregisterTask( CPatchTaskConsumer* task )
 {GUCEF_TRACE;
@@ -264,9 +264,9 @@ CPatchManager::UnregisterTask( CPatchTaskConsumer* task )
     LockData();
     m_taskMap.erase( task->GetTaskName() );
     UnlockData();
-    
+
     UnsubscribeFrom( &task->GetPatchEngine() );
-    
+
     TPatchTaskFinishedEventData eData( task->GetTaskName() );
     NotifyObserversFromThread( PatchTaskFinishedEvent, &eData );
 }
@@ -279,7 +279,7 @@ CPatchManager::OnPumpedNotify( CORE::CNotifier* notifier    ,
                                CORE::CICloneable* eventdata )
 
 {GUCEF_TRACE;
-                               
+
     // @todo: finish
     //PatchTaskEventReceivedEvent
 }

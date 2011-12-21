@@ -15,9 +15,9 @@
  *
  *  You should have received a copy of the GNU Lesser General Public
  *  License along with this library; if not, write to the Free Software
- *  Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA 
+ *  Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA
  */
- 
+
 /*-------------------------------------------------------------------------//
 //                                                                         //
 //      INCLUDES                                                           //
@@ -65,12 +65,12 @@ InitializeFileStatus( TFileStatus& fileStatus )
 {GUCEF_TRACE;
 
     fileStatus.resourceState = RESOURCESTATE_UNKNOWN;
-    
+
     fileStatus.templateArchiveInfo.name.Clear();
     fileStatus.templateArchiveInfo.hash.Clear();
     fileStatus.templateArchiveInfo.sizeInBytes = 0;
     fileStatus.templateArchiveInfo.fileLocations.clear();
-    
+
     fileStatus.mainSvnArchiveInfo.name.Clear();
     fileStatus.mainSvnArchiveInfo.hash.Clear();
     fileStatus.mainSvnArchiveInfo.sizeInBytes = 0;
@@ -82,7 +82,7 @@ InitializeFileStatus( TFileStatus& fileStatus )
 CORE::CString
 CreatePathToUnchangedFileDiff( const CORE::CString& dir )
 {GUCEF_TRACE;
-    
+
     CORE::CString path = dir;
     CORE::AppendToPath( path, "UnchangedFiles.xml" );
     return path;
@@ -93,7 +93,7 @@ CreatePathToUnchangedFileDiff( const CORE::CString& dir )
 CORE::CString
 CreatePathToChangedFileDiff( const CORE::CString& dir )
 {GUCEF_TRACE;
-    
+
     CORE::CString path = dir;
     CORE::AppendToPath( path, "ChangedFiles.xml" );
     return path;
@@ -104,7 +104,7 @@ CreatePathToChangedFileDiff( const CORE::CString& dir )
 CORE::CString
 CreatePathToAddedFileDiff( const CORE::CString& dir )
 {GUCEF_TRACE;
-    
+
     CORE::CString path = dir;
     CORE::AppendToPath( path, "AddedFiles.xml" );
     return path;
@@ -115,7 +115,7 @@ CreatePathToAddedFileDiff( const CORE::CString& dir )
 CORE::CString
 CreatePathToMissingFileDiff( const CORE::CString& dir )
 {GUCEF_TRACE;
-    
+
     CORE::CString path = dir;
     CORE::AppendToPath( path, "MissingFiles.xml" );
     return path;
@@ -131,7 +131,7 @@ GetXmlDStoreCodec( void )
     static CORE::CDStoreCodecRegistry::TDStoreCodecPtr codecPtr;
     if ( codecPtr.IsNULL() )
     {
-        CORE::CDStoreCodecRegistry* registry = CORE::CDStoreCodecRegistry::Instance();
+        CORE::CDStoreCodecRegistry* registry = &CORE::CCoreGlobal::Instance()->GetDStoreCodecRegistry();
         if ( !registry->TryLookup( "XML", codecPtr, false ) )
         {
             // No codec is registered to handle XML, try and load a plugin for it
@@ -180,9 +180,9 @@ GetXmlDStoreCodec( void )
             }
 
             #else
-            
+
             // Plugin loading not supported
-            GUCEF_ERROR_LOG( CORE::LOGVEL_NORMAL, "Plugin loading is not supported for this platform via the ProjectGenerator" );  
+            GUCEF_ERROR_LOG( CORE::LOGVEL_NORMAL, "Plugin loading is not supported for this platform via the ProjectGenerator" );
 
             #endif
 
@@ -212,7 +212,7 @@ BuildSortedFileEntryMaps( PATCHER::CPatchSetParser::TFileEntry& patchsetFileEntr
 
     CORE::CString relFilePath = relativePath;
     CORE::AppendToPath( relFilePath, patchsetFileEntry.name );
-    
+
     // Add the relative path to the file as a file location
     // If we put the entry in a flat sorted list we need to still be able to know
     // where the entry came from
@@ -220,10 +220,10 @@ BuildSortedFileEntryMaps( PATCHER::CPatchSetParser::TFileEntry& patchsetFileEntr
     diskLocation.codec = "FILE";
     diskLocation.URL = relFilePath;
     patchsetFileEntry.fileLocations.push_back( diskLocation );
-    
+
     sortedFileMaps.hashMap[ patchsetFileEntry.hash ].insert( &patchsetFileEntry );
-    sortedFileMaps.nameMap[ patchsetFileEntry.name ].insert( &patchsetFileEntry );        
-    
+    sortedFileMaps.nameMap[ patchsetFileEntry.name ].insert( &patchsetFileEntry );
+
     GUCEF_LOG( CORE::LOGLEVEL_EVERYTHING, "Added relative path file location to file entry and added entry to sorting maps for file at " + relFilePath );
 
 }
@@ -237,25 +237,25 @@ BuildSortedFileEntryMaps( PATCHER::CPatchSetParser::TDirEntry& patchsetDirEntry 
 {GUCEF_TRACE;
 
     PATCHER::CPatchSetParser::TFileEntryList::iterator i = patchsetDirEntry.files.begin();
-    while ( i != patchsetDirEntry.files.end() )       
+    while ( i != patchsetDirEntry.files.end() )
     {
         BuildSortedFileEntryMaps( (*i)           ,
                                   sortedFileMaps ,
                                   relativePath   );
-        
+
         ++i;
     }
-    
-    PATCHER::CPatchSetParser::TPatchSet::iterator n = patchsetDirEntry.subDirs.begin(); 
-    while ( n != patchsetDirEntry.subDirs.end() )        
+
+    PATCHER::CPatchSetParser::TPatchSet::iterator n = patchsetDirEntry.subDirs.begin();
+    while ( n != patchsetDirEntry.subDirs.end() )
     {
         CORE::CString subDirPath = relativePath;
         CORE::AppendToPath( subDirPath, (*n).name );
-        
+
         BuildSortedFileEntryMaps( (*n)           ,
                                   sortedFileMaps ,
                                   subDirPath     );
-        
+
         ++n;
     }
 }
@@ -269,7 +269,7 @@ BuildSortedFileEntryMaps( PATCHER::CPatchSetParser::TPatchSet& patchSet ,
 {GUCEF_TRACE;
 
     PATCHER::CPatchSetParser::TPatchSet::iterator i = patchSet.begin();
-    while ( i != patchSet.end() )        
+    while ( i != patchSet.end() )
     {
         CORE::CString subDirPath = relativePath;
         CORE::AppendToPath( subDirPath, (*i).name );
@@ -277,7 +277,7 @@ BuildSortedFileEntryMaps( PATCHER::CPatchSetParser::TPatchSet& patchSet ,
         BuildSortedFileEntryMaps( (*i)           ,
                                   sortedFileMaps ,
                                   subDirPath     );
-        
+
         ++i;
     }
     return true;
@@ -314,7 +314,7 @@ SetPathForFile( GUCEF::PATCHER::CPatchSetParser::TFileEntry& fileEntry ,
         }
         ++i;
     }
-    
+
     // no entry found, create one
     PATCHER::CPatchSetParser::TFileLocation fileLocation;
     fileLocation.codec = "FILE";
@@ -346,7 +346,7 @@ GetPathForFile( const PATCHER::CPatchSetParser::TFileEntry& fileEntry )
 const char*
 ResourceStateToString( TResourceState state )
 {GUCEF_TRACE;
-    
+
     switch ( state )
     {
         case RESOURCESTATE_FILE_UNCHANGED : return "Unchanged";
@@ -392,8 +392,8 @@ GetPathForFileMinusRoot( const PATCHER::CPatchSetParser::TFileEntry& fileEntry )
     }
     else
     {
-        return filePath.CutChars( firstSlashIndex+1, true ); 
-    }    
+        return filePath.CutChars( firstSlashIndex+1, true );
+    }
 }
 
 /*---------------------------------------------------------------------------*/
@@ -406,7 +406,7 @@ PerformArchiveDiffTemplateToMain( const PATCHER::CPatchSetParser::TFileEntry& te
 {GUCEF_TRACE;
 
     CORE::CString pathOfEntry = GetPathForFileMinusRoot( templateFileEntry );
-    
+
     TFileEntryPtrMap::const_iterator i = mainPatchsetSearchMap.hashMap.find( templateFileEntry.hash );
     if ( i != mainPatchsetSearchMap.hashMap.end() )
     {
@@ -415,7 +415,7 @@ PerformArchiveDiffTemplateToMain( const PATCHER::CPatchSetParser::TFileEntry& te
         while ( n != entries.end() )
         {
             const PATCHER::CPatchSetParser::TFileEntry* otherEntry = (*n);
-            
+
             // We already know any entry here will have the same hash.
             // what else do they have in common?
             CORE::CString pathOfOtherEntry = GetPathForFileMinusRoot( *otherEntry );
@@ -430,19 +430,19 @@ PerformArchiveDiffTemplateToMain( const PATCHER::CPatchSetParser::TFileEntry& te
                 fileStatus.mainSvnArchiveInfo = *otherEntry;
 
                 // Patch files include the root dir, diff files should not
-                SetPathForFile( fileStatus.templateArchiveInfo, pathOfEntry ); 
+                SetPathForFile( fileStatus.templateArchiveInfo, pathOfEntry );
                 SetPathForFile( fileStatus.mainSvnArchiveInfo, pathOfOtherEntry );
 
                 GUCEF_LOG( CORE::LOGLEVEL_NORMAL, "Determined that file \"" + pathOfOtherEntry + "\" was unchanged" );
-                
+
                 matchedEntriesInMain.insert( otherEntry );
                 fileStatusList.push_back( fileStatus );
                 return true;
             }
-            
+
             ++n;
         }
-        
+
         // If we get here then although files where found with the same hash they do not have the same path
         // So perhaps the file was moved but not changed. Note that if there are multiple entries with the same
         // hash this won't suffice since then the risk is too great that we might confuse different files.
@@ -458,11 +458,11 @@ PerformArchiveDiffTemplateToMain( const PATCHER::CPatchSetParser::TFileEntry& te
             fileStatus.mainSvnArchiveInfo = *otherEntry;
 
             // Patch files include the root dir, diff files should not
-            SetPathForFile( fileStatus.templateArchiveInfo, pathOfEntry ); 
+            SetPathForFile( fileStatus.templateArchiveInfo, pathOfEntry );
             SetPathForFile( fileStatus.mainSvnArchiveInfo, GetPathForFileMinusRoot( *otherEntry ) );
 
             GUCEF_LOG( CORE::LOGLEVEL_NORMAL, "Determined that file \"" + pathOfEntry + "\" was unchanged but its path changed from " + GetPathForFileMinusRoot( *otherEntry ) );
-            
+
             matchedEntriesInMain.insert( otherEntry );
             fileStatusList.push_back( fileStatus );
             return true;
@@ -477,7 +477,7 @@ PerformArchiveDiffTemplateToMain( const PATCHER::CPatchSetParser::TFileEntry& te
             while ( n != entries.end() )
             {
                 const PATCHER::CPatchSetParser::TFileEntry* otherEntry = (*n);
-                
+
                 // We already know any entry here will have the same hash.
                 // We also know they won't have the same path. We want to find exactly 1 name match
                 if ( templateFileEntry.name == otherEntry->name )
@@ -497,7 +497,7 @@ PerformArchiveDiffTemplateToMain( const PATCHER::CPatchSetParser::TFileEntry& te
                 }
                 ++n;
             }
-            
+
             // remember we only want 1 match
             if ( 1 == matchCount )
             {
@@ -508,27 +508,27 @@ PerformArchiveDiffTemplateToMain( const PATCHER::CPatchSetParser::TFileEntry& te
                 fileStatus.resourceState = RESOURCESTATE_FILE_UNCHANGED_BUT_MOVED;
                 fileStatus.templateArchiveInfo = templateFileEntry;
                 fileStatus.mainSvnArchiveInfo = *entryWithSameName;
-                
+
                 // Patch files include the root dir, diff files should not
-                SetPathForFile( fileStatus.templateArchiveInfo, pathOfEntry ); 
+                SetPathForFile( fileStatus.templateArchiveInfo, pathOfEntry );
                 SetPathForFile( fileStatus.mainSvnArchiveInfo, GetPathForFileMinusRoot( *entryWithSameName ) );
 
                 GUCEF_LOG( CORE::LOGLEVEL_NORMAL, "Determined that file \"" + pathOfEntry + "\" was unchanged but its path changed from " + GetPathForFileMinusRoot( *entryWithSameName ) );
-                
+
                 matchedEntriesInMain.insert( entryWithSameName );
                 fileStatusList.push_back( fileStatus );
                 return true;
             }
         }
     }
-    
+
     // If we get here then it's going to be harder to find a match
-    // Aparently using hash equavalancy did not yield a match so if the file is in the other 
-    // archive then it must have been changed. 
+    // Aparently using hash equavalancy did not yield a match so if the file is in the other
+    // archive then it must have been changed.
     i = mainPatchsetSearchMap.nameMap.find( templateFileEntry.name );
     if ( i != mainPatchsetSearchMap.nameMap.end() )
     {
-        // We know that all entries in here will be files with the same name, 
+        // We know that all entries in here will be files with the same name,
         // we also know we can't count on the hash to help us.
         // We can grab onto path equavalancy,..
         // If the file was altered but kept in the same location then we can still find it
@@ -538,7 +538,7 @@ PerformArchiveDiffTemplateToMain( const PATCHER::CPatchSetParser::TFileEntry& te
         {
             const PATCHER::CPatchSetParser::TFileEntry* otherEntry = (*n);
             CORE::CString pathToOtherFile = GetPathForFileMinusRoot( *otherEntry );
-            
+
             if ( pathOfEntry.Equals( pathToOtherFile, false ) )
             {
                 // found altered file in same location, bingo
@@ -549,19 +549,19 @@ PerformArchiveDiffTemplateToMain( const PATCHER::CPatchSetParser::TFileEntry& te
                 fileStatus.mainSvnArchiveInfo = *otherEntry;
 
                 // Patch files include the root dir, diff files should not
-                SetPathForFile( fileStatus.templateArchiveInfo, pathOfEntry ); 
+                SetPathForFile( fileStatus.templateArchiveInfo, pathOfEntry );
                 SetPathForFile( fileStatus.mainSvnArchiveInfo, pathToOtherFile );
 
                 GUCEF_LOG( CORE::LOGLEVEL_NORMAL, "Determined that file \"" + pathOfEntry + "\" was changed" );
-                
+
                 matchedEntriesInMain.insert( otherEntry );
                 fileStatusList.push_back( fileStatus );
                 return true;
             }
-            
+
             ++n;
         }
-        
+
         // What if there is only 1 file in the other archive with the same name?
         // If thats the case then we might be able to guess that this is in fact the same file
         // but it was moved and altered,.. lets hope they used unique names...
@@ -569,26 +569,26 @@ PerformArchiveDiffTemplateToMain( const PATCHER::CPatchSetParser::TFileEntry& te
         {
             // Few that was a close one, we have a match
             const PATCHER::CPatchSetParser::TFileEntry* otherEntry = (*entries.begin());
-            
+
             TFileStatus fileStatus;
             InitializeFileStatus( fileStatus );
             fileStatus.resourceState = RESOURCESTATE_FILE_CHANGED;
             fileStatus.templateArchiveInfo = templateFileEntry;
             fileStatus.mainSvnArchiveInfo = *otherEntry;
-            
+
             // Patch files include the root dir, diff files should not
-            SetPathForFile( fileStatus.templateArchiveInfo, pathOfEntry ); 
+            SetPathForFile( fileStatus.templateArchiveInfo, pathOfEntry );
             SetPathForFile( fileStatus.mainSvnArchiveInfo, GetPathForFileMinusRoot( *otherEntry ) );
 
             GUCEF_LOG( CORE::LOGLEVEL_NORMAL, "Determined that file \"" + pathOfEntry + "\" was changed and moved from " + GetPathForFileMinusRoot( *otherEntry ) );
-            
+
             matchedEntriesInMain.insert( otherEntry );
             fileStatusList.push_back( fileStatus );
-            return true;            
+            return true;
         }
-        
+
     }
-    
+
     // If we get here then we are out of ideas on how to match files and this one will
     // need human intervention
     TFileStatus fileStatus;
@@ -620,8 +620,8 @@ PerformArchiveDiffTemplateToMain( const TSortedFileEntryMaps& templateArchivePat
         const TFileEntrySet& entries = (*i).second;
         TFileEntrySet::const_iterator n = entries.begin();
         while ( n != entries.end() )
-        {        
-            PerformArchiveDiffTemplateToMain( *(*n)                        , 
+        {
+            PerformArchiveDiffTemplateToMain( *(*n)                        ,
                                               mainArchivePatchsetSearchMap ,
                                               fileStatusList               ,
                                               matchedEntriesInMain         );
@@ -646,9 +646,9 @@ BuildListOfUnmatchedItemsInMain( const TSortedFileEntryMaps& mainArchivePatchset
         const TFileEntrySet& entries = (*i).second;
         TFileEntrySet::const_iterator n = entries.begin();
         while ( n != entries.end() )
-        {        
+        {
             const PATCHER::CPatchSetParser::TFileEntry* entryInMain = (*n);
-            
+
             if ( matchedEntriesInMain.find( entryInMain ) == matchedEntriesInMain.end() )
             {
                 // This entry is not in the list of items in main that where matched up against
@@ -685,10 +685,10 @@ PerformArchiveDiffMainToTemplate( const TSortedFileEntryMaps& templateArchivePat
         SetPathForFile( fileStatus.mainSvnArchiveInfo, GetPathForFileMinusRoot( fileStatus.mainSvnArchiveInfo ) );
 
         fileStatusList.push_back( fileStatus );
-        
+
         ++i;
     }
-    
+
     return true;
 }
 
@@ -701,18 +701,18 @@ PerformArchiveDiff( PATCHER::CPatchSetParser::TPatchSet& templatePatchset    ,
 {GUCEF_TRACE;
 
     GUCEF_LOG( CORE::LOGLEVEL_NORMAL, "Commencing creation of a sorted map for the template patch set" );
-    
+
     TSortedFileEntryMaps templateArchivePatchsetSearchMap;
     BuildSortedFileEntryMaps( templatePatchset, templateArchivePatchsetSearchMap );
 
     GUCEF_LOG( CORE::LOGLEVEL_NORMAL, "Sucessfully finished creation of a sorted map for the template patch set" );
     GUCEF_LOG( CORE::LOGLEVEL_NORMAL, "Commencing creation of a sorted map for the main patch set" );
-    
+
     TSortedFileEntryMaps mainArchivePatchsetSearchMap;
     BuildSortedFileEntryMaps( mainArchivePatchset, mainArchivePatchsetSearchMap );
-    
+
     GUCEF_LOG( CORE::LOGLEVEL_NORMAL, "Sucessfully finished creation of a sorted map for the template patch set" );
-        
+
     TConstFileEntrySet matchedEntriesInMain;
     if ( PerformArchiveDiffTemplateToMain( templateArchivePatchsetSearchMap ,
                                            mainArchivePatchsetSearchMap     ,
@@ -720,13 +720,13 @@ PerformArchiveDiff( PATCHER::CPatchSetParser::TPatchSet& templatePatchset    ,
                                            matchedEntriesInMain             ) )
     {
         GUCEF_LOG( CORE::LOGLEVEL_NORMAL, "Finished perfoming a diff between two patchs sets, commencing search entries in main that where not matched" );
-        
+
         TConstFileEntrySet unmatchedEntriesInMain;
         BuildListOfUnmatchedItemsInMain( mainArchivePatchsetSearchMap ,
                                          matchedEntriesInMain         ,
                                          unmatchedEntriesInMain       );
         matchedEntriesInMain.clear();
-                
+
         if ( PerformArchiveDiffMainToTemplate( templateArchivePatchsetSearchMap ,
                                                mainArchivePatchsetSearchMap     ,
                                                fileStatusList                   ,
@@ -766,7 +766,7 @@ SaveXmlFile( const CORE::CString& filePath   ,
     if ( !codecPtr.IsNULL() )
     {
         GUCEF_LOG( CORE::LOGLEVEL_NORMAL, "Successfully located codec: " + codecPtr->GetTypeName() );
-        
+
         if ( codecPtr->StoreDataTree( &dataTree ,
                                       filePath  ) )
         {
@@ -788,12 +788,12 @@ LoadXmlFile( const CORE::CString& filePath  ,
     if ( CORE::FileExists( filePath ) )
     {
         GUCEF_LOG( CORE::LOGLEVEL_NORMAL, "Successfully located file: " + filePath );
-        
+
         CORE::CDStoreCodecRegistry::TDStoreCodecPtr codecPtr = GetXmlDStoreCodec();
         if ( !codecPtr.IsNULL() )
         {
             GUCEF_LOG( CORE::LOGLEVEL_NORMAL, "Successfully located codec: " + codecPtr->GetTypeName() );
-            
+
             if ( codecPtr->BuildDataTree( &dataTree ,
                                           filePath  ) )
             {
@@ -833,7 +833,7 @@ GetFileCount( const PATCHER::CPatchSetParser::TPatchSet& patchSet )
         count += GetFileCount( (*i) );
         ++i;
     }
-    return count;    
+    return count;
 }
 
 /*---------------------------------------------------------------------------*/
@@ -847,16 +847,16 @@ LoadPatchSet( const CORE::CString& filePath                 ,
     if ( LoadXmlFile( filePath     ,
                       patchSetTree ) )
     {
-        GUCEF_LOG( CORE::LOGLEVEL_NORMAL, "Successfully loaded the xml data from file totalling " + 
-                                          CORE::UInt32ToString( patchSetTree.GetNrOfTreeNodes() ) + 
+        GUCEF_LOG( CORE::LOGLEVEL_NORMAL, "Successfully loaded the xml data from file totalling " +
+                                          CORE::UInt32ToString( patchSetTree.GetNrOfTreeNodes() ) +
                                           " nodes, parsing data into strongly typed data structures" );
-        
+
         PATCHER::CPatchSetParser parser;
         if ( parser.ParsePatchSet( patchSetTree ,
                                    patchSet     ) )
         {
             GUCEF_LOG( CORE::LOGLEVEL_NORMAL, "Successfully parsed the data tree into " +
-                                              CORE::UInt32ToString( GetFileCount( patchSet ) ) + 
+                                              CORE::UInt32ToString( GetFileCount( patchSet ) ) +
                                               " patch set entries" );
             return true;
         }
@@ -872,26 +872,26 @@ SerializeFileStatus( const TFileStatus& fileStatus ,
 {GUCEF_TRACE;
 
     static PATCHER::CPatchSetParser parser;
-    
+
     CORE::CDataNode fileStatusNode;
     fileStatusNode.SetName( "FileStatus" );
     fileStatusNode.SetAttribute( "State", ResourceStateToString( fileStatus.resourceState ) );
-    
+
     CORE::CDataNode templateFileInfo;
-    templateFileInfo.SetName( "TemplateInfo" );    
+    templateFileInfo.SetName( "TemplateInfo" );
     parser.SerializeFileEntry( fileStatus.templateArchiveInfo ,
                                templateFileInfo               );
     fileStatusNode.AddChild( templateFileInfo );
     templateFileInfo.Clear();
-    
+
     CORE::CDataNode mainFileInfo;
-    mainFileInfo.SetName( "MainInfo" );    
+    mainFileInfo.SetName( "MainInfo" );
     parser.SerializeFileEntry( fileStatus.mainSvnArchiveInfo ,
                                mainFileInfo                  );
     fileStatusNode.AddChild( mainFileInfo );
     mainFileInfo.Clear();
-    
-    parentNode.AddChild( fileStatusNode );    
+
+    parentNode.AddChild( fileStatusNode );
     return true;
 }
 
@@ -903,7 +903,7 @@ DeserializeFileInfo( const CORE::CDataNode& fileStatusNode           ,
                      PATCHER::CPatchSetParser::TFileEntry& fileEntry )
 {GUCEF_TRACE;
 
-    static PATCHER::CPatchSetParser parser;    
+    static PATCHER::CPatchSetParser parser;
     const CORE::CDataNode* infoNodeParent = fileStatusNode.FindChild( name );
     if ( NULL != infoNodeParent )
     {
@@ -940,7 +940,7 @@ DeserializeFileStatus( const CORE::CDataNode& fileStatusNode ,
     {
         // This is an actual file status entry
         fileStatus.resourceState = StringToResourceState( fileStatusNode.GetAttributeValue( "State" ) );
-        
+
         if ( DeserializeFileInfo( fileStatusNode                 ,
                                   "TemplateInfo"                 ,
                                   fileStatus.templateArchiveInfo ) )
@@ -966,7 +966,7 @@ DeserializeFileStatus( const CORE::CDataNode& fileStatusNode ,
     {
         GUCEF_ERROR_LOG( CORE::LOGLEVEL_NORMAL, "The given node in the XML document is not a file status node" );
     }
-    
+
     return false;
 }
 
@@ -981,7 +981,7 @@ SaveFileStatusList( const CORE::CString& filePath           ,
     CORE::CDataNode fileStatusTree;
     fileStatusTree.SetName( "FileStatusList" );
     fileStatusTree.SetAttribute( "TotalItemCount", CORE::UInt32ToString( fileStatusList.size() ) );
-    
+
     CORE::UInt32 fileCounter = 1;
     CORE::UInt32 nrOfFiles = 1;
     if ( maxEntriesPerFile >= 0 )
@@ -992,11 +992,11 @@ SaveFileStatusList( const CORE::CString& filePath           ,
         {
             nrOfFiles++;
         }
-        GUCEF_LOG( CORE::LOGLEVEL_NORMAL, "A maximum number of entries per file has been specified, as a result " + CORE::UInt32ToString( nrOfFiles ) + " files be created instead of 1" );       
+        GUCEF_LOG( CORE::LOGLEVEL_NORMAL, "A maximum number of entries per file has been specified, as a result " + CORE::UInt32ToString( nrOfFiles ) + " files be created instead of 1" );
     }
     fileStatusTree.SetAttribute( "TotalNrOfFileStatusListFiles", CORE::UInt32ToString( nrOfFiles ) );
     fileStatusTree.SetAttribute( "IndexOfFileStatusListFile", CORE::UInt32ToString( fileCounter ) );
-    
+
     CORE::CString actualFilePath;
     CORE::Int32 entryCount = 0;
     TFileStatusVector::const_iterator i = fileStatusList.begin();
@@ -1005,25 +1005,25 @@ SaveFileStatusList( const CORE::CString& filePath           ,
         const TFileStatus& fileStatus = (*i);
         SerializeFileStatus( fileStatus, fileStatusTree );
         ++entryCount;
-        
+
         if ( ( maxEntriesPerFile >= 0 )         &&
-             ( entryCount >= maxEntriesPerFile ) )        
+             ( entryCount >= maxEntriesPerFile ) )
         {
-            actualFilePath = filePath + ".(part" + CORE::UInt32ToString( fileCounter ) + 
+            actualFilePath = filePath + ".(part" + CORE::UInt32ToString( fileCounter ) +
                              "of" + CORE::UInt32ToString( nrOfFiles ) + ").xml";
-            
+
             if ( !SaveXmlFile( actualFilePath ,
                                fileStatusTree ) )
-            {   
-                GUCEF_ERROR_LOG( CORE::LOGLEVEL_NORMAL, "Failed to save the generated data tree (part " + CORE::UInt32ToString( fileCounter ) + 
+            {
+                GUCEF_ERROR_LOG( CORE::LOGLEVEL_NORMAL, "Failed to save the generated data tree (part " + CORE::UInt32ToString( fileCounter ) +
                                                         " of " + CORE::UInt32ToString( nrOfFiles ) + ") to file " + filePath );
                 return false;
             }
-            
+
             // reset counter and tree
             fileStatusTree.DelSubTree();
             entryCount = 0;
-            
+
             // Prepare for next file
             ++fileCounter;
             fileStatusTree.SetAttribute( "IndexOfFileStatusListFile", CORE::UInt32ToString( fileCounter ) );
@@ -1033,23 +1033,23 @@ SaveFileStatusList( const CORE::CString& filePath           ,
 
     if ( nrOfFiles > 1 )
     {
-        actualFilePath = filePath + ".(part" + CORE::UInt32ToString( fileCounter ) + 
+        actualFilePath = filePath + ".(part" + CORE::UInt32ToString( fileCounter ) +
                          "of" + CORE::UInt32ToString( nrOfFiles ) + ").xml";
     }
     else
-    {   
+    {
         actualFilePath = filePath;
     }
-        
+
     // Save the remaining entries
     if ( SaveXmlFile( actualFilePath ,
                       fileStatusTree ) )
-    {   
+    {
         GUCEF_LOG( CORE::LOGLEVEL_NORMAL, "Successfully saved the generated data tree to file " + filePath );
         return true;
     }
     GUCEF_ERROR_LOG( CORE::LOGLEVEL_NORMAL, "Failed to save the generated data tree to file " + filePath );
-    return false;    
+    return false;
 }
 
 /*-------------------------------------------------------------------------*/
@@ -1062,18 +1062,18 @@ SaveFileStatusListRelativePaths( const CORE::CString& filePath           ,
 
     CORE::CFileAccess file( filePath, "w" );
     file.Open();
-    
+
     if ( !file.IsValid() )
     {
         return false;
     }
-    
+
     TFileStatusVector::const_iterator i = fileStatusList.begin();
     while ( i != fileStatusList.end() )
     {
         const TFileStatus& fileStatus = (*i);
         CORE::CString relativePath;
-        
+
         if ( templateInsteadOfMainPaths )
         {
             relativePath = GetPathForFile( fileStatus.templateArchiveInfo );
@@ -1103,7 +1103,7 @@ LoadFileStatusListSegment( const CORE::CString& filePath     ,
     if ( LoadXmlFile( filePath       ,
                       fileStatusTree ) )
     {
-        GUCEF_LOG( CORE::LOGLEVEL_NORMAL, "Successfully loaded the xml data from file totalling " + CORE::UInt32ToString( fileStatusTree.GetNrOfTreeNodes() ) + 
+        GUCEF_LOG( CORE::LOGLEVEL_NORMAL, "Successfully loaded the xml data from file totalling " + CORE::UInt32ToString( fileStatusTree.GetNrOfTreeNodes() ) +
                                           " nodes, parsing data into strongly typed data structures" );
 
         const CORE::CDataNode* rootNode = fileStatusTree.Find( "FileStatusList" );
@@ -1126,7 +1126,7 @@ LoadFileStatusListSegment( const CORE::CString& filePath     ,
                 }
                 ++i;
             }
-            return true; 
+            return true;
         }
         else
         {
@@ -1145,11 +1145,11 @@ GetListOfMultiPartFiles( const CORE::CString& filePath ,
 
     CORE::CString rootDir = CORE::StripFilename( filePath );
     CORE::CString rootFilename = CORE::ExtractFilename( filePath );
-    
+
     struct CORE::SDI_Data* dirEntry = CORE::DI_First_Dir_Entry( rootDir.C_String() );
-    if ( dirEntry != NULL )    
+    if ( dirEntry != NULL )
     {
-        do 
+        do
         {
             CORE::CString entryName = CORE::DI_Name( dirEntry );
             if ( ( entryName != "." )  &&
@@ -1163,17 +1163,17 @@ GetListOfMultiPartFiles( const CORE::CString& filePath ,
                         // This file has our rootFilename it it's name
                         CORE::CString fullPathToSegmentFile = rootDir;
                         CORE::AppendToPath( fullPathToSegmentFile, entryName );
-                        
+
                         multiPartFiles.insert( fullPathToSegmentFile );
                     }
                 }
-            }            
-        } 
+            }
+        }
         while ( CORE::DI_Next_Dir_Entry( dirEntry ) != 0 );
-        
+
         // clean up our toys
         CORE::DI_Cleanup( dirEntry );
-        
+
         // If this is a correct multi-part set we should have 2 files or more
         return multiPartFiles.size() > 1;
     }
@@ -1194,19 +1194,19 @@ GetMultiPartFileInfoFromPath( const CORE::CString& filePath ,
     // Cut such that we get the 'partXofY' segment
     CORE::CString remainder = filePath.CutChars( 5, false );
     remainder = remainder.SubstrToSubstr( ".(part", false );
-    
+
     // remainder should now be 'XofY'
     CORE::CString indexStr = remainder.SubstrToSubstr( "of", true );
     CORE::CString totalStr = remainder.SubstrToSubstr( "of", false );
-    
-    if ( ( indexStr.Length() > 0 ) && 
+
+    if ( ( indexStr.Length() > 0 ) &&
          ( totalStr.Length() > 0 )  )
     {
         fileIndex = CORE::StringToUInt32( indexStr );
         totalFiles = CORE::StringToUInt32( totalStr );
         return true;
     }
-    return false;    
+    return false;
 }
 
 /*-------------------------------------------------------------------------*/
@@ -1223,7 +1223,7 @@ LoadFileStatusList( const CORE::CString& filePath     ,
         return LoadFileStatusListSegment( filePath       ,
                                           fileStatusList );
     }
-    
+
     // If we get here we have to test for a multi-part diff list
     TStringSet multiPartFiles;
     if ( GetListOfMultiPartFiles( filePath       ,
@@ -1237,11 +1237,11 @@ LoadFileStatusList( const CORE::CString& filePath     ,
                                            totalFiles   ) )
         {
             GUCEF_LOG( CORE::LOGLEVEL_NORMAL, "Successfully located a set of file status files consisting of " + CORE::UInt32ToString( totalFiles ) + " files total" );
-            
+
             for ( CORE::UInt32 i=1; i<=totalFiles; ++i )
             {
                 // first create file path to segment
-                CORE::CString segmentFilePath = filePath + ".(part" + CORE::UInt32ToString( i ) + "of" + CORE::UInt32ToString( totalFiles ) + ").xml";                
+                CORE::CString segmentFilePath = filePath + ".(part" + CORE::UInt32ToString( i ) + "of" + CORE::UInt32ToString( totalFiles ) + ").xml";
                 if ( !LoadFileStatusListSegment( segmentFilePath ,
                                                  fileStatusList  ) )
                 {
@@ -1250,13 +1250,13 @@ LoadFileStatusList( const CORE::CString& filePath     ,
                     return false;
                 }
             }
-            GUCEF_LOG( CORE::LOGLEVEL_NORMAL, "Successfully loaded a set of file status files consisting of " + 
+            GUCEF_LOG( CORE::LOGLEVEL_NORMAL, "Successfully loaded a set of file status files consisting of " +
                                         CORE::UInt32ToString( totalFiles ) + " files total containing a combined total of " +
                                         CORE::UInt32ToString( fileStatusList.size() ) + " status entries" );
             return true;
         }
     }
-    
+
     GUCEF_ERROR_LOG( CORE::LOGLEVEL_NORMAL, "Failed to load file as either a single file of a multi-part set: \"" + filePath + "\"" );
     return false;
 }
@@ -1266,16 +1266,16 @@ LoadFileStatusList( const CORE::CString& filePath     ,
 bool
 IsFileStatusListOnDisk( const CORE::CString& filePath )
 {GUCEF_TRACE;
-    
+
     // single file?
     if ( CORE::FileExists( filePath ) )
     {
         return true;
     }
-    
+
     // maybe a multi-part set?
     TStringSet multiPartFiles;
-    return GetListOfMultiPartFiles( filePath       , 
+    return GetListOfMultiPartFiles( filePath       ,
                                     multiPartFiles );
 }
 

@@ -71,8 +71,6 @@ namespace CORE {
 //                                                                         //
 //-------------------------------------------------------------------------*/
 
-CLogManager* CLogManager::g_instance = NULL;
-
 extern "C" {
 
 const Int32 LOGLEVEL_CRITICAL = GUCEFCORE_INT32MAX - 1;
@@ -124,29 +122,6 @@ CLogManager::CLogManager( void )
 CLogManager::~CLogManager()
 {GUCEF_TRACE;
 
-}
-
-/*-------------------------------------------------------------------------*/
-
-CLogManager*
-CLogManager::Instance( void )
-{GUCEF_TRACE;
-
-    if ( NULL == g_instance )
-    {
-        g_instance = new CLogManager();
-    }
-    return g_instance;
-}
-
-/*-------------------------------------------------------------------------*/
-
-void
-CLogManager::Deinstance( void )
-{GUCEF_TRACE;
-
-    delete g_instance;
-    g_instance = NULL;
 }
 
 /*-------------------------------------------------------------------------*/

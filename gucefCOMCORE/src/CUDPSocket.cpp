@@ -118,7 +118,7 @@ CUDPSocket::CUDPSocket( bool blocking )
       m_port( 0 )           ,
       _data( NULL )         ,
       m_buffer()            ,
-      m_pulseGenerator( &CORE::CGUCEFApplication::Instance()->GetPulseGenerator() )
+      m_pulseGenerator( &CORE::CCoreGlobal::Instance()->GetPulseGenerator() )
 {GUCEF_TRACE;
 
     RegisterEvents();

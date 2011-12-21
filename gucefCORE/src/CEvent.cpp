@@ -214,7 +214,7 @@ CEvent::Initialize( void ) const
      *  The fact that we cannot initialize objects right from the start
      *  while allowing event objects to be defined globally is an implementation level problem.
      */
-    const_cast< CEvent& >( *this ) = CNotificationIDRegistry::Instance()->Lookup( m_eventName, true );
+    const_cast< CEvent& >( *this ) = CORE::CCoreGlobal::Instance()->GetNotificationIDRegistry().Lookup( m_eventName, true );
 }
 
 /*-------------------------------------------------------------------------*/

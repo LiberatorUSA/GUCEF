@@ -14,7 +14,7 @@
  *
  *  You should have received a copy of the GNU Lesser General Public
  *  License along with this library; if not, write to the Free Software
- *  Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA 
+ *  Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA
  */
 
 /*-------------------------------------------------------------------------//
@@ -56,17 +56,17 @@ namespace VFS {
 //-------------------------------------------------------------------------*/
 
 CVFSURLHandler::CVFSURLHandler( void )
-        : m_vfs( CVFS::Instance() )           
+        : m_vfs( CVFS::Instance() )
 {GUCEF_TRACE;
-        
+
 }
-        
-/*-------------------------------------------------------------------------*/        
-        
+
+/*-------------------------------------------------------------------------*/
+
 CVFSURLHandler::CVFSURLHandler( const CVFSURLHandler& src )
-        : m_vfs( CVFS::Instance() ) 
+        : m_vfs( CVFS::Instance() )
 {GUCEF_TRACE;
-  
+
 }
 
 /*-------------------------------------------------------------------------*/
@@ -85,7 +85,7 @@ CVFSURLHandler::operator=( const CVFSURLHandler& src )
 
 /*-------------------------------------------------------------------------*/
 
-CORE::CICloneable* 
+CORE::CICloneable*
 CVFSURLHandler::Clone( void ) const
 {GUCEF_TRACE;
         return new CVFSURLHandler( *this );
@@ -93,22 +93,24 @@ CVFSURLHandler::Clone( void ) const
 
 /*-------------------------------------------------------------------------*/
 
-void 
+void
 CVFSURLHandler::Register( void )
 {GUCEF_TRACE;
-        CORE::CURLHandlerRegistry* registry = CORE::CURLHandlerRegistry::Instance();
-        if ( !registry->IsRegistered( "vfs" ) )
-        {
-                registry->Register( "vfs", new CVFSURLHandler() );
-        }
+
+    CORE::CURLHandlerRegistry* registry = &CORE::CCoreGlobal::Instance()->GetUrlHandlerRegistry();
+    if ( !registry->IsRegistered( "vfs" ) )
+    {
+        registry->Register( "vfs", new CVFSURLHandler() );
+    }
 }
 
 /*-------------------------------------------------------------------------*/
-        
-void 
+
+void
 CVFSURLHandler::Unregister( void )
 {GUCEF_TRACE;
-        CORE::CURLHandlerRegistry::Instance()->Unregister( "vfs" );
+
+    CORE::CCoreGlobal::Instance()->GetUrlHandlerRegistry().Unregister( "vfs" );
 }
 
 /*-------------------------------------------------------------------------*/
@@ -117,14 +119,14 @@ bool
 CVFSURLHandler::Activate( CORE::CURL& url )
 {GUCEF_TRACE;
         assert( &url );
-        
+
         // Tell the data handlers we have begun our activation sequence
         NotifyObservers( URLActivateEvent );
-        
+
         // Obtain the file
-        CVFS::CVFSHandlePtr handle = m_vfs->GetFile( url.GetURL().SubstrToSubstr( "://" ), "rb", false );        
+        CVFS::CVFSHandlePtr handle = m_vfs->GetFile( url.GetURL().SubstrToSubstr( "://" ), "rb", false );
         if ( NULL != handle )
-        {                
+        {
                 CORE::CIOAccess* access = handle->GetAccess();
                 if ( NULL == access )
                 {
@@ -135,21 +137,21 @@ CVFSURLHandler::Activate( CORE::CURL& url )
                 {
                     // Pass the file data on to the data handlers
                     NotifyObservers( URLDataRecievedEvent, access );
-                    
+
                     NotifyObservers( URLAllDataRecievedEvent );
                 }
-                
+
                 return true;
         }
         else
         {
             NotifyObservers( URLDataRetrievalErrorEvent );
-            return false;        
-        } 
+            return false;
+        }
 }
 
 /*-------------------------------------------------------------------------*/
-        
+
 void
 CVFSURLHandler::Deactivate( CORE::CURL& url )
 {GUCEF_TRACE;
@@ -159,8 +161,8 @@ CVFSURLHandler::Deactivate( CORE::CURL& url )
 }
 
 /*-------------------------------------------------------------------------*/
-                         
-bool 
+
+bool
 CVFSURLHandler::IsActive( const CORE::CURL& url ) const
 {GUCEF_TRACE;
         return false;

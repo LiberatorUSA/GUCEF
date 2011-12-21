@@ -1,5 +1,5 @@
 /*
- *  gucefCOM: GUCEF module providing communication 
+ *  gucefCOM: GUCEF module providing communication
  *  implementations for standardized protocols.
  *  Copyright (C) 2002 - 2007.  Dinand Vanvelzen
  *
@@ -15,7 +15,7 @@
  *
  *  You should have received a copy of the GNU Lesser General Public
  *  License along with this library; if not, write to the Free Software
- *  Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA 
+ *  Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA
  */
 
 /*-------------------------------------------------------------------------//
@@ -70,7 +70,7 @@ CHTTPURLHandler::CHTTPURLHandler( void )
 }
 
 /*-------------------------------------------------------------------------*/
-        
+
 CHTTPURLHandler::CHTTPURLHandler( const CHTTPURLHandler& src )
     : CURLHandler( src )          ,
       m_httpClient( NULL )        ,
@@ -80,7 +80,7 @@ CHTTPURLHandler::CHTTPURLHandler( const CHTTPURLHandler& src )
 }
 
 /*-------------------------------------------------------------------------*/
-        
+
 CHTTPURLHandler::~CHTTPURLHandler()
 {GUCEF_TRACE;
 
@@ -93,7 +93,7 @@ CHTTPURLHandler::~CHTTPURLHandler()
 }
 
 /*-------------------------------------------------------------------------*/
-        
+
 CHTTPURLHandler&
 CHTTPURLHandler::operator=( const CHTTPURLHandler& src )
 {GUCEF_TRACE;
@@ -107,25 +107,25 @@ bool
 CHTTPURLHandler::Activate( CORE::CURL& url )
 {GUCEF_TRACE;
 
-    GUCEF_DEBUG_LOG( CORE::LOGLEVEL_NORMAL, "CHTTPURLHandler(" + CORE::PointerToString( this ) + "): Activating using URL: " + url.GetURL() ); 
-    
+    GUCEF_DEBUG_LOG( CORE::LOGLEVEL_NORMAL, "CHTTPURLHandler(" + CORE::PointerToString( this ) + "): Activating using URL: " + url.GetURL() );
+
     m_transferFinished = false;
-    
+
     delete m_httpClient;
     m_httpClient = new CHTTPClient( url.GetPulseGenerator() );
     SubscribeTo( m_httpClient );
-    
+
     return m_httpClient->Get( url.GetURL() );
 }
 
 /*-------------------------------------------------------------------------*/
-        
+
 void
 CHTTPURLHandler::Deactivate( CORE::CURL& url )
 {GUCEF_TRACE;
 
     GUCEF_DEBUG_LOG( CORE::LOGLEVEL_NORMAL, "CHTTPURLHandler(" + CORE::PointerToString( this ) + "): Deactivating" );
-    
+
     if ( NULL != m_httpClient )
     {
         m_httpClient->Close();
@@ -133,7 +133,7 @@ CHTTPURLHandler::Deactivate( CORE::CURL& url )
 }
 
 /*-------------------------------------------------------------------------*/
-                         
+
 bool
 CHTTPURLHandler::IsActive( const CORE::CURL& url ) const
 {GUCEF_TRACE;
@@ -146,7 +146,7 @@ CHTTPURLHandler::IsActive( const CORE::CURL& url ) const
 }
 
 /*-------------------------------------------------------------------------*/
-        
+
 CORE::CICloneable*
 CHTTPURLHandler::Clone( void ) const
 {GUCEF_TRACE;
@@ -168,7 +168,7 @@ CHTTPURLHandler::OnNotify( CORE::CNotifier* notifier                 ,
         if ( ( eventid == CHTTPClient::HTTPErrorEvent )       ||
              ( eventid == CHTTPClient::ConnectionErrorEvent )  )
         {
-            
+
             GUCEF_DEBUG_LOG( CORE::LOGLEVEL_NORMAL, "CHTTPURLHandler(" + CORE::PointerToString( this ) + "): Data retrieval error" );
             NotifyObservers( CIURLEvents::URLDataRetrievalErrorEvent );
             return;
@@ -196,27 +196,27 @@ CHTTPURLHandler::OnNotify( CORE::CNotifier* notifier                 ,
         if ( eventid == CHTTPClient::DisconnectedEvent )
         {
             GUCEF_DEBUG_LOG( CORE::LOGLEVEL_NORMAL, "CHTTPURLHandler(" + CORE::PointerToString( this ) + "): Disconnected" );
-            
-            // Check if the transfer has already been completed. If so then the URLAllDataRecievedEvent event was the 
-            // final event and we don't have to send anything. If we where still expecting data then we will send the 
+
+            // Check if the transfer has already been completed. If so then the URLAllDataRecievedEvent event was the
+            // final event and we don't have to send anything. If we where still expecting data then we will send the
             // URLDeactivateEvent event to notify that we deactivated prematurely.
             if ( !m_transferFinished )
-            {                
+            {
                 GUCEF_DEBUG_LOG( CORE::LOGLEVEL_NORMAL, "CHTTPURLHandler(" + CORE::PointerToString( this ) + "): The transfer was not finished when we where disconnected!" );
                 NotifyObservers( CIURLEvents::URLDeactivateEvent );
             }
             return;
-        }        
+        }
     }
 }
 
 /*-------------------------------------------------------------------------*/
 
-void 
+void
 CHTTPURLHandler::Register( void )
 {GUCEF_TRACE;
 
-    CORE::CURLHandlerRegistry* registry = CORE::CURLHandlerRegistry::Instance();
+    CORE::CURLHandlerRegistry* registry = &CORE::CCoreGlobal::Instance()->GetUrlHandlerRegistry();
     if ( !registry->IsRegistered( "http" ) )
     {
         registry->Register( "http", new CHTTPURLHandler() );

@@ -15,9 +15,9 @@
  *
  *  You should have received a copy of the GNU Lesser General Public
  *  License along with this library; if not, write to the Free Software
- *  Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA 
+ *  Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA
  */
- 
+
 /*-------------------------------------------------------------------------//
 //                                                                         //
 //      INCLUDES                                                           //
@@ -56,7 +56,7 @@
 #ifndef GUCEF_LOGSERVICELIB_H
 #include "GucefLogServiceLib.h"
 #define GUCEF_LOGSERVICELIB_H
-#endif /* GUCEF_LOGSERVICELIB_H ? */ 
+#endif /* GUCEF_LOGSERVICELIB_H ? */
 
 using namespace GUCEF;
 
@@ -76,11 +76,11 @@ CORE::UInt16 defaultListnenPort = 43557;
 //-------------------------------------------------------------------------*/
 
 void
-ParseParams( const int argc                 , 
+ParseParams( const int argc                 ,
              char* argv[]                   ,
              CORE::CValueList& keyValueList )
 {GUCEF_TRACE;
-    
+
     keyValueList.DeleteAll();
     GUCEF::CORE::CString argString;
     if ( argc > 0 )
@@ -93,7 +93,7 @@ ParseParams( const int argc                 ,
         {
             argString += ' ' + CORE::CString( argv[ i ] );
         }
-        
+
         // Parse the param list based on the ' symbol
         keyValueList.SetMultiple( argString, '\'' );
     }
@@ -109,22 +109,22 @@ main( int argc, char* argv[] )
     CORE::GUCEF_LogStackTo( "GucefLogServiceApp_Callstack.cvs" );
     CORE::GUCEF_SetStackLoggingInCvsFormat( 1 );
     CORE::GUCEF_SetStackLogging( 1 );
-    #endif /* GUCEF_CALLSTACK_TRACING ? */    
-    
+    #endif /* GUCEF_CALLSTACK_TRACING ? */
+
     CORE::CString logFilename = GUCEF::CORE::RelativePath( "$CURWORKDIR$" );
     CORE::AppendToPath( logFilename, "GucefLogServiceApp_Log.txt" );
     CORE::CFileAccess logFileAccess( logFilename, "w" );
-    
+
     CORE::CStdLogger logger( logFileAccess );
-    CORE::CLogManager::Instance()->AddLogger( &logger );
-    
+    CORE::CCoreGlobal::Instance()->GetLogManager().AddLogger( &logger );
+
     // Parse the application parameters
     CORE::CValueList keyValueList;
     ParseParams( argc, argv, keyValueList );
 
     // Do we want to display the console window?
-    CORE::CPlatformNativeConsoleLogger* consoleOut = NULL;    
-    bool showConsole = defaultShowConsoleState;    
+    CORE::CPlatformNativeConsoleLogger* consoleOut = NULL;
+    bool showConsole = defaultShowConsoleState;
     if ( keyValueList.HasKey( "showConsole" ) )
     {
         showConsole = CORE::StringToBool( keyValueList.GetValue( "showConsole" ) );
@@ -132,14 +132,14 @@ main( int argc, char* argv[] )
     if ( showConsole )
     {
         consoleOut = new CORE::CPlatformNativeConsoleLogger();
-        CORE::CLogManager::Instance()->AddLogger( consoleOut->GetLogger() );
-        
+        CORE::CCoreGlobal::Instance()->GetLogManager().AddLogger( consoleOut->GetLogger() );
+
         GUCEF_LOG( CORE::LOGLEVEL_NORMAL, "GucefLogServiceApp: Enabled console output" );
     }
-    
+
     // Flush bootstrap logging now that we attached all our loggers
-    CORE::CLogManager::Instance()->FlushBootstrapLogEntriesToLogs();
-    
+    CORE::CCoreGlobal::Instance()->GetLogManager().FlushBootstrapLogEntriesToLogs();
+
     // Get the desired listnen port for the server
     CORE::UInt16 serverListnenPort = defaultListnenPort;
     if ( keyValueList.HasKey( "port" ) )
@@ -159,24 +159,24 @@ main( int argc, char* argv[] )
         logFilesOutputDir = CORE::RelativePath( "$MODULEDIR$" );
     }
     GUCEF_LOG( CORE::LOGLEVEL_NORMAL, "GucefLogServiceApp: Setting server output dir for log files to " + logFilesOutputDir );
-        
+
     int appRetValue = 0;
     LOGSERVICELIB::CLogSvcServerFileLogger fileLogger( logFilesOutputDir );
-    LOGSERVICELIB::CLogSvcServer logServiceServer;    
+    LOGSERVICELIB::CLogSvcServer logServiceServer;
     logServiceServer.RegisterLogger( &fileLogger );
-    
+
     if ( logServiceServer.ListenOnPort( serverListnenPort ) )
     {
         GUCEF_LOG( CORE::LOGLEVEL_NORMAL, "GucefLogServiceApp: Server set to listnen on port " + CORE::UInt16ToString( serverListnenPort ) );
-        
-        appRetValue = CORE::CGUCEFApplication::Instance()->main( argc, argv, true );
+
+        appRetValue = CORE::CCoreGlobal::Instance()->GetApplication().main( argc, argv, true );
     }
-    
+
     logServiceServer.UnregisterLogger( &fileLogger );
-    
+
     delete consoleOut;
     consoleOut = NULL;
-    
+
     return appRetValue;
 }
 

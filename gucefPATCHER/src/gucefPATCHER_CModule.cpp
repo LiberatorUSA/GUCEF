@@ -14,9 +14,9 @@
  *
  *  You should have received a copy of the GNU Lesser General Public
  *  License along with this library; if not, write to the Free Software
- *  Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA 
+ *  Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
  */
- 
+
 /*-------------------------------------------------------------------------//
 //                                                                         //
 //      INCLUDES                                                           //
@@ -70,7 +70,7 @@ namespace PATCHER {
 //                                                                         //
 //-------------------------------------------------------------------------*/
 
-typedef CORE::CTFactory< CORE::CTaskConsumer, CPatchTaskConsumer > TPatchTaskConsumerFactory; 
+typedef CORE::CTFactory< CORE::CTaskConsumer, CPatchTaskConsumer > TPatchTaskConsumerFactory;
 
 /*-------------------------------------------------------------------------//
 //                                                                         //
@@ -83,30 +83,30 @@ CModule::Load( void )
 {GUCEF_TRACE;
 
     GUCEF_SYSTEM_LOG( CORE::LOGLEVEL_NORMAL, "gucefPATCHER Module loaded" );
-    
+
     CPatchEngine::RegisterEvents();
     CPatchSetDirEngineEvents::RegisterEvents();
     CPatchSetFileEngineEvents::RegisterEvents();
     CPatchSetEngineEvents::RegisterEvents();
     CPatchListEngineEvents::RegisterEvents();
     CPatchManager::RegisterEvents();
-    
-    // Make the task manager capable of handling patch tasks    
-    CORE::CTaskManager::Instance()->RegisterTaskConsumerFactory( CPatchTaskConsumer::GetTypeString() ,
-                                                                 new TPatchTaskConsumerFactory()     );
-                                                                 
-    return true;                                                                 
+
+    // Make the task manager capable of handling patch tasks
+    CORE::CCoreGlobal::Instance()->GetTaskManager().RegisterTaskConsumerFactory( CPatchTaskConsumer::GetTypeString() ,
+                                                                                 new TPatchTaskConsumerFactory()     );
+
+    return true;
 }
 
 /*-------------------------------------------------------------------------*/
-    
+
 bool
 CModule::Unload( void )
 {GUCEF_TRACE;
 
     GUCEF_SYSTEM_LOG( CORE::LOGLEVEL_NORMAL, "gucefPATCHER Module unloading" );
-    
-    CORE::CTaskManager::Instance()->UnregisterTaskConsumerFactory( CPatchTaskConsumer::GetTypeString() );
+
+    CORE::CCoreGlobal::Instance()->GetTaskManager().UnregisterTaskConsumerFactory( CPatchTaskConsumer::GetTypeString() );
     return true;
 }
 

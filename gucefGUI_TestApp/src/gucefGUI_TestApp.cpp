@@ -320,14 +320,14 @@ GUCEF_OSMAIN_BEGIN
         CORE::CFileAccess logFileAccess( logFilename, "w" );
 
         CORE::CStdLogger logger( logFileAccess );
-        CORE::CLogManager::Instance()->AddLogger( &logger );
+        CORE::CCoreGlobal::Instance()->GetLogManager().AddLogger( &logger );
 
         // setup console logger
         CORE::CPlatformNativeConsoleLogger consoleOut;
-        CORE::CLogManager::Instance()->AddLogger( consoleOut.GetLogger() );
+        CORE::CCoreGlobal::Instance()->GetLogManager().AddLogger( consoleOut.GetLogger() );
 
         // flush startup log entries
-        CORE::CLogManager::Instance()->FlushBootstrapLogEntriesToLogs();
+        CORE::CCoreGlobal::Instance()->GetLogManager().FlushBootstrapLogEntriesToLogs();
 
         // Load all the plugins we need for this test
         if ( LoadPlugins() )
@@ -376,7 +376,7 @@ GUCEF_OSMAIN_BEGIN
                     // load the test layout resource
                     if ( form->LoadLayoutUsingVfs( "main_menu.rml" ) )
                     {
-                        CORE::CGUCEFApplication::Instance()->main( argc, argv, true );
+                        CORE::CCoreGlobal::Instance()->GetApplication().main( argc, argv, true );
                     }
                     else
                     {

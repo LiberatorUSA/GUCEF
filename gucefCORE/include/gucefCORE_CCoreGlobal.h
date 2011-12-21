@@ -115,6 +115,8 @@ class GUCEF_CORE_PUBLIC_CPP CCoreGlobal
 
     ~CCoreGlobal();
 
+    void Initialize( void );
+
     private:
 
     CTaskManager* m_taskManager;

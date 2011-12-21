@@ -14,9 +14,9 @@
  *
  *  You should have received a copy of the GNU Lesser General Public
  *  License along with this library; if not, write to the Free Software
- *  Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA 
+ *  Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA
  */
- 
+
 /*-------------------------------------------------------------------------//
 //                                                                         //
 //      INCLUDES                                                           //
@@ -89,9 +89,9 @@ CPatchSetGenerator::GeneratePatchSet( const CORE::CString& localRoot      ,
 {GUCEF_TRACE;
 
     CORE::CString subDir = CORE::LastSubDir( localRoot );
-    
+
     if ( NULL != dirsToIgnore )
-    {       
+    {
         if ( dirsToIgnore->find( subDir ) != dirsToIgnore->end() )
         {
             // the current subDir is a dir we are instructed to ignore
@@ -99,9 +99,9 @@ CPatchSetGenerator::GeneratePatchSet( const CORE::CString& localRoot      ,
             return false;
         }
     }
-    
+
     CORE::CString URLRootDir = URLRoot + '/' + subDir.ReplaceSubstr( " ", "%20" );
-    
+
     TDirEntry dirEntry;
     dirEntry.name = subDir;
     if ( GeneratePatchSet( localRoot         ,
@@ -113,7 +113,7 @@ CPatchSetGenerator::GeneratePatchSet( const CORE::CString& localRoot      ,
         patchSet.push_back( dirEntry );
         return true;
     }
-    
+
     return false;
 }
 
@@ -129,11 +129,11 @@ CPatchSetGenerator::GeneratePatchSet( const CORE::CString& localRoot      ,
 
     currentDir.sizeInBytes = 0;
     currentDir.hash = currentDir.name;
-    
+
     struct CORE::SDI_Data* dirEntry = CORE::DI_First_Dir_Entry( localRoot.C_String() );
-    if ( dirEntry != NULL )    
+    if ( dirEntry != NULL )
     {
-        do 
+        do
         {
             CORE::CString entryName = CORE::DI_Name( dirEntry );
             if ( ( entryName != "." )  &&
@@ -141,9 +141,9 @@ CPatchSetGenerator::GeneratePatchSet( const CORE::CString& localRoot      ,
             {
                 if ( 0 == CORE::DI_Is_It_A_File( dirEntry ) )
                 {
-                    // We found a sub-dir                    
+                    // We found a sub-dir
                     if ( NULL != dirsToIgnore )
-                    {       
+                    {
                         if ( dirsToIgnore->find( entryName ) != dirsToIgnore->end() )
                         {
                             // the current subDir is a dir we are instructed to ignore
@@ -155,13 +155,13 @@ CPatchSetGenerator::GeneratePatchSet( const CORE::CString& localRoot      ,
                     // We can process this sub-dir
                     TDirEntry subDirs;
                     subDirs.name = entryName;
-                    
+
                     CORE::CString subDirPath = localRoot;
                     CORE::AppendToPath( subDirPath, subDirs.name );
                     CORE::CString URLRootPlusDir = URLRoot + '/' + subDirs.name.ReplaceSubstr( " ", "%20" );
-                    
+
                     GUCEF_LOG( CORE::LOGLEVEL_NORMAL, "PatchSetGenerator: Found sub-dir to generate patch set entries from: " + subDirPath );
-                    
+
                     if ( GeneratePatchSet( subDirPath        ,
                                            URLRootPlusDir    ,
                                            subDirs           ,
@@ -171,7 +171,7 @@ CPatchSetGenerator::GeneratePatchSet( const CORE::CString& localRoot      ,
                         currentDir.sizeInBytes += subDirs.sizeInBytes;
                         currentDir.hash += subDirs.hash;
                         currentDir.subDirs.push_back( subDirs );
-                    }               
+                    }
                 }
                 else
                 {
@@ -185,23 +185,23 @@ CPatchSetGenerator::GeneratePatchSet( const CORE::CString& localRoot      ,
                             GUCEF_LOG( CORE::LOGLEVEL_NORMAL, "PatchSetGenerator: Ignoring file based on it's type as instructed: " + entryName );
                             continue;
                         }
-                    }                    
-                    
+                    }
+
                     TFileEntry fileEntry;
                     fileEntry.name = entryName;
                     fileEntry.sizeInBytes = CORE::DI_Size( dirEntry );
                     CORE::CString filePath = localRoot;
                     CORE::AppendToPath( filePath, fileEntry.name );
-                    
+
                     GUCEF_LOG( CORE::LOGLEVEL_NORMAL, "PatchSetGenerator: Found file to generate patch set entries from: " + filePath );
-                    
+
                     CORE::CFileAccess fileAccess( filePath, "rb" );
                     fileAccess.Open();
-                    
+
                     if ( fileAccess.IsValid() )
                     {
                         GUCEF_LOG( CORE::LOGLEVEL_NORMAL, "PatchSetGenerator: Opened file and commencing MD5 generation from: " + filePath );
-                        
+
                         UInt8 md5Digest[ 16 ];
                         if ( 0 == CORE::md5fromfile( fileAccess.CStyleAccess() ,
                                                      md5Digest                 ) )
@@ -210,34 +210,34 @@ CPatchSetGenerator::GeneratePatchSet( const CORE::CString& localRoot      ,
                             CORE::DI_Cleanup( dirEntry );
                             return false;
                         }
-                        
+
                         fileEntry.hash = CORE::MD5ToString( md5Digest );
-                        GUCEF_LOG( CORE::LOGLEVEL_NORMAL, "PatchSetGenerator: Finished MD5 generation, producing " + fileEntry.hash + " from: " + filePath );                        
+                        GUCEF_LOG( CORE::LOGLEVEL_NORMAL, "PatchSetGenerator: Finished MD5 generation, producing " + fileEntry.hash + " from: " + filePath );
                         currentDir.hash += fileEntry.hash;
                     }
                     else
                     {
                         GUCEF_ERROR_LOG( CORE::LOGLEVEL_NORMAL, "PatchSetGenerator: Failed to open file for MD5 generation: " + filePath );
-                    }                    
+                    }
                     currentDir.sizeInBytes += fileEntry.sizeInBytes;
-                    
+
                     TFileLocation location;
                     location.URL = URLRoot + '/' + fileEntry.name.ReplaceSubstr( " ", "%20" );
-                    fileEntry.fileLocations.push_back( location );                
+                    fileEntry.fileLocations.push_back( location );
                     currentDir.files.push_back( fileEntry );
                 }
-            }            
-        } 
+            }
+        }
         while ( CORE::DI_Next_Dir_Entry( dirEntry ) != 0 );
-        
+
         // clean up our toys
         CORE::DI_Cleanup( dirEntry );
-        
+
         currentDir.hash = CORE::StringToMD5String( currentDir.hash );
-        
+
         return true;
     }
-    
+
     return false;
 }
 
@@ -259,7 +259,7 @@ CPatchSetGenerator::GeneratePatchSet( const CORE::CString& localRoot      ,
                            fileTypesToIgnore ) )
     {
         GUCEF_LOG( CORE::LOGLEVEL_NORMAL, "PatchSetGenerator: Successfully completed patch set generation, generating data tree from raw data" );
-        
+
         CPatchSetParser parser;
         return parser.ParsePatchSet( patchSetData ,
                                      patchSet     );
@@ -273,16 +273,16 @@ bool
 CPatchSetGenerator::GeneratePatchSet( const CORE::CString& localRoot      ,
                                       const CORE::CString& URLRoot        ,
                                       const CORE::CString& storageCodec   ,
-                                      CORE::CIOAccess& patchSetStorage    , 
+                                      CORE::CIOAccess& patchSetStorage    ,
                                       const TStringSet* dirsToIgnore      ,
                                       const TStringSet* fileTypesToIgnore ) const
 {GUCEF_TRACE;
-        
+
     // Get the required codec for the patch set storage conversion
     GUCEF_LOG( CORE::LOGLEVEL_NORMAL, "PatchSetGenerator: Attempting to find storage codec \"" + storageCodec + "\"" );
-    CORE::CDStoreCodecRegistry* codecRegistry = CORE::CDStoreCodecRegistry::Instance();
+    CORE::CDStoreCodecRegistry* codecRegistry = &CORE::CCoreGlobal::Instance()->GetDStoreCodecRegistry();
     if ( codecRegistry->IsRegistered( storageCodec ) )
-    { 
+    {
         CORE::CDStoreCodecRegistry::TDStoreCodecPtr codecPtr = codecRegistry->Lookup( storageCodec );
         if ( NULL != codecPtr )
         {
@@ -296,7 +296,7 @@ CPatchSetGenerator::GeneratePatchSet( const CORE::CString& localRoot      ,
                                    fileTypesToIgnore ) )
             {
                 GUCEF_LOG( CORE::LOGLEVEL_NORMAL, "PatchSetGenerator: Successfully completed patch set generation, serializing patch set" );
-                
+
                 // decode the data in our buffer into a data tree
                 return codecPtr->StoreDataTree( &patchSet        ,
                                                 &patchSetStorage );
@@ -315,7 +315,7 @@ CPatchSetGenerator::GeneratePatchSet( const CORE::CString& localRoot      ,
     {
         GUCEF_ERROR_LOG( CORE::LOGLEVEL_NORMAL, "PatchSetGenerator: Found storage codec \"" + storageCodec + "\", serializing patch set" );
     }
-    
+
     return false;
 }
 

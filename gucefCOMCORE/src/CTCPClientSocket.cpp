@@ -154,7 +154,7 @@ CTCPClientSocket::CTCPClientSocket( bool blocking )
           m_maxreadbytes( 0 )      ,
           m_hostAddress()          ,
           m_isConnecting( false )  ,
-          m_pulseGenerator( &CORE::CGUCEFApplication::Instance()->GetPulseGenerator() )
+          m_pulseGenerator( &CORE::CCoreGlobal::Instance()->GetPulseGenerator() )
 {GUCEF_TRACE;
 
     RegisterEvents();

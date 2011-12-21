@@ -14,7 +14,7 @@
  *
  *  You should have received a copy of the GNU Lesser General Public
  *  License along with this library; if not, write to the Free Software
- *  Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA 
+ *  Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA
  */
 
 /*-------------------------------------------------------------------------//
@@ -23,10 +23,10 @@
 //                                                                         //
 //-------------------------------------------------------------------------*/
 
-#ifndef GUCEF_CORE_CLOGMANAGER_H
-#include "CLogManager.h"
-#define GUCEF_CORE_CLOGMANAGER_H
-#endif /* GUCEF_CORE_CLOGMANAGER_H ? */
+#ifndef GUCEF_CORE_LOGGING_H
+#include "gucefCORE_Logging.h"
+#define GUCEF_CORE_LOGGING_H
+#endif /* GUCEF_CORE_LOGGING_H ? */
 
 #ifndef GUCEF_CORE_DVCPPSTRINGUTILS_H
 #include "dvcppstringutils.h"
@@ -64,7 +64,7 @@ CPatchConfig::CPatchConfig( void )
 }
 
 /*-------------------------------------------------------------------------*/
-    
+
 CPatchConfig::CPatchConfig( const CPatchConfig& src )
     : CIConfigurable( src )                      ,
       m_patchListURL( src.m_patchListURL )       ,
@@ -79,14 +79,14 @@ CPatchConfig::CPatchConfig( const CPatchConfig& src )
 }
 
 /*-------------------------------------------------------------------------*/
-    
+
 CPatchConfig::~CPatchConfig()
 {GUCEF_TRACE;
 
 }
 
 /*-------------------------------------------------------------------------*/
-    
+
 CPatchConfig&
 CPatchConfig::operator=( const CPatchConfig& src )
 {GUCEF_TRACE;
@@ -114,7 +114,7 @@ CPatchConfig::SetStopOnFileReplacementFailure( const bool stopOnFailure )
 }
 
 /*-------------------------------------------------------------------------*/
-    
+
 bool
 CPatchConfig::GetStopOnFileReplacementFailure( void ) const
 {GUCEF_TRACE;
@@ -145,19 +145,19 @@ CPatchConfig::HasEngineStopTriggerEvent( const CORE::CEvent& triggerEvent )
 bool
 CPatchConfig::SaveConfig( CORE::CDataNode& tree )
 {GUCEF_TRACE;
-    
+
     //@TODO
     return false;
 }
 
 /*-------------------------------------------------------------------------*/
-                                   
+
 bool
 CPatchConfig::LoadConfig( const CORE::CDataNode& treeroot )
 {GUCEF_TRACE;
 
     GUCEF_DEBUG_LOG( CORE::LOGLEVEL_NORMAL, "CPatchConfig: Loading configuration" );
-    
+
     const CORE::CDataNode* infoNode = treeroot.Find( "CPatchConfig" );
     if ( infoNode != NULL )
     {
@@ -165,11 +165,11 @@ CPatchConfig::LoadConfig( const CORE::CDataNode& treeroot )
         const CORE::CDataNode::TKeyValuePair* att = infoNode->GetAttribute( "LocalRootDir" );
         if ( att == NULL ) return false;
         SetLocalRootDir( att->second );
-        
+
         att = infoNode->GetAttribute( "TempStorageRoot" );
         if ( att == NULL ) return false;
         SetLocalTempStorageRootDir( att->second );
-        
+
         att = infoNode->GetAttribute( "PatchListURL" );
         if ( att == NULL ) return false;
         SetPatchListURL( att->second );
@@ -177,7 +177,7 @@ CPatchConfig::LoadConfig( const CORE::CDataNode& treeroot )
         att = infoNode->GetAttribute( "PatchListCodec" );
         if ( att == NULL ) return false;
         SetPatchListCodec( att->second );
-        
+
         // Load optional attributes
         att = infoNode->GetAttribute( "StopOnFileReplacementFailure" );
         if ( att == NULL )
@@ -188,7 +188,7 @@ CPatchConfig::LoadConfig( const CORE::CDataNode& treeroot )
         {
             SetStopOnFileReplacementFailure( CORE::StringToBool( att->second ) );
         }
-        
+
         // Try and find some optional engine trigger events
         const CORE::CDataNode* childNode = NULL;
         CORE::CDataNode::const_iterator i = infoNode->ConstBegin();
@@ -211,16 +211,16 @@ CPatchConfig::LoadConfig( const CORE::CDataNode& treeroot )
                 {
                     AddEngineStopTriggerEvent( att->second );
                 }
-            }            
+            }
             ++i;
         }
         return true;
-    }  
+    }
     return false;
 }
 
 /*-------------------------------------------------------------------------*/
-    
+
 bool
 CPatchConfig::AddEngineStartTriggerEvent( const CORE::CEvent& triggerEvent )
 {GUCEF_TRACE;
@@ -230,7 +230,7 @@ CPatchConfig::AddEngineStartTriggerEvent( const CORE::CEvent& triggerEvent )
 }
 
 /*-------------------------------------------------------------------------*/
-    
+
 bool
 CPatchConfig::RemoveEngineStartTriggerEvent( const CORE::CEvent& triggerEvent )
 {GUCEF_TRACE;
@@ -240,7 +240,7 @@ CPatchConfig::RemoveEngineStartTriggerEvent( const CORE::CEvent& triggerEvent )
 }
 
 /*-------------------------------------------------------------------------*/
-    
+
 bool
 CPatchConfig::AddEngineStopTriggerEvent( const CORE::CEvent& triggerEvent )
 {GUCEF_TRACE;
@@ -250,7 +250,7 @@ CPatchConfig::AddEngineStopTriggerEvent( const CORE::CEvent& triggerEvent )
 }
 
 /*-------------------------------------------------------------------------*/
-    
+
 bool
 CPatchConfig::RemoveEngineStopTriggerEvent( const CORE::CEvent& triggerEvent )
 {GUCEF_TRACE;
@@ -270,7 +270,7 @@ CPatchConfig::SetLocalRootDir( const CORE::CString& localRoot )
 }
 
 /*-------------------------------------------------------------------------*/
-    
+
 const CORE::CString&
 CPatchConfig::GetLocalRootDir( void ) const
 {GUCEF_TRACE;
@@ -279,7 +279,7 @@ CPatchConfig::GetLocalRootDir( void ) const
 }
 
 /*-------------------------------------------------------------------------*/
-    
+
 bool
 CPatchConfig::SetLocalTempStorageRootDir( const CORE::CString& tempStorageRoot )
 {GUCEF_TRACE;
@@ -289,16 +289,16 @@ CPatchConfig::SetLocalTempStorageRootDir( const CORE::CString& tempStorageRoot )
 }
 
 /*-------------------------------------------------------------------------*/
-    
+
 const CORE::CString&
 CPatchConfig::GetLocalTempStorageRootDir( void ) const
 {GUCEF_TRACE;
 
     return m_tempStorageRoot;
 }
-    
+
 /*-------------------------------------------------------------------------*/
-    
+
 bool
 CPatchConfig::SetPatchListURL( const CORE::CString& patchListURL )
 {GUCEF_TRACE;
@@ -308,7 +308,7 @@ CPatchConfig::SetPatchListURL( const CORE::CString& patchListURL )
 }
 
 /*-------------------------------------------------------------------------*/
-    
+
 const CORE::CString&
 CPatchConfig::GetPatchListURL( void ) const
 {GUCEF_TRACE;
@@ -325,7 +325,7 @@ CPatchConfig::SetPatchListCodec( const CORE::CString& patchListCodec )
     m_patchListCodec = patchListCodec;
     return true;
 }
-    
+
 /*-------------------------------------------------------------------------*/
 
 const CORE::CString&

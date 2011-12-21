@@ -14,7 +14,7 @@
  *
  *  You should have received a copy of the GNU Lesser General Public
  *  License along with this library; if not, write to the Free Software
- *  Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA 
+ *  Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA
  */
 
 /*-------------------------------------------------------------------------//
@@ -25,15 +25,10 @@
 
 #include <assert.h>
 
-#ifndef GUCEF_CORE_CTRACER_H
-#include "CTracer.h"
-#define GUCEF_CORE_CTRACER_H
-#endif /* GUCEF_CORE_CTRACER_H ? */
-
-#ifndef GUCEF_CORE_CLOGMANAGER_H
-#include "CLogManager.h"
-#define GUCEF_CORE_CLOGMANAGER_H
-#endif /* GUCEF_CORE_CLOGMANAGER_H ? */
+#ifndef GUCEF_CORE_LOGGING_H
+#include "gucefCORE_Logging.h"
+#define GUCEF_CORE_LOGGING_H
+#endif /* GUCEF_CORE_LOGGING ? */
 
 #ifndef GUCEF_CORE_DVCPPSTRINGUTILS_H
 #include "dvcppstringutils.h"
@@ -76,7 +71,7 @@ CPatchSetEngine::CPatchSetEngine( void )
       m_processedDataSizeInBytes( 0 )                 ,
       m_totalDataSizeInBytes( 0 )                     ,
       m_stopOnFileReplacementFailure( false )
-      
+
 {GUCEF_TRACE;
 
     Initialize();
@@ -98,7 +93,7 @@ CPatchSetEngine::CPatchSetEngine( CORE::CPulseGenerator& pulseGenerator )
       m_processedDataSizeInBytes( 0 )                                 ,
       m_totalDataSizeInBytes( 0 )                                     ,
       m_stopOnFileReplacementFailure( false )
-      
+
 {GUCEF_TRACE;
 
     Initialize();
@@ -111,14 +106,14 @@ CPatchSetEngine::Initialize( void )
 {GUCEF_TRACE;
 
     assert( m_patchSetDirEngine != NULL );
-    
+
     // Forward events from the dir engines
     AddForwardingForEvent( DirProcessingStartedEvent, EVENTORIGINFILTER_UNMODIFIED );
     AddForwardingForEvent( DirProcessingProgressEvent, EVENTORIGINFILTER_UNMODIFIED );
     AddForwardingForEvent( DirProcessingCompletedEvent, EVENTORIGINFILTER_UNMODIFIED );
     AddForwardingForEvent( SubDirProcessingStartedEvent, EVENTORIGINFILTER_UNMODIFIED );
     AddForwardingForEvent( SubDirProcessingCompletedEvent, EVENTORIGINFILTER_UNMODIFIED );
-    
+
     // Forward file engine events
     AddForwardingForEvent( FileListProcessingStartedEvent, EVENTORIGINFILTER_UNMODIFIED );
     AddForwardingForEvent( LocalFileSizeMismatchEvent, EVENTORIGINFILTER_UNMODIFIED );
@@ -132,9 +127,9 @@ CPatchSetEngine::Initialize( void )
     AddForwardingForEvent( FileRetrievalErrorEvent, EVENTORIGINFILTER_UNMODIFIED );
     AddForwardingForEvent( FileStorageErrorEvent, EVENTORIGINFILTER_UNMODIFIED );
     AddForwardingForEvent( FileListProcessingCompleteEvent, EVENTORIGINFILTER_UNMODIFIED );
-    AddForwardingForEvent( FileListProcessingAbortedEvent, EVENTORIGINFILTER_UNMODIFIED );    
-    
-    SubscribeTo( m_patchSetDirEngine );    
+    AddForwardingForEvent( FileListProcessingAbortedEvent, EVENTORIGINFILTER_UNMODIFIED );
+
+    SubscribeTo( m_patchSetDirEngine );
 }
 
 /*-------------------------------------------------------------------------*/
@@ -150,7 +145,7 @@ CPatchSetEngine::~CPatchSetEngine()
 CPatchSetEngine::TPatchSetEngineEventData*
 CPatchSetEngine::CreateEventStatusObj( void ) const
 {GUCEF_TRACE;
-    
+
     TPatchSetEngineEventDataStorage storage;
     storage.processedDataSizeInBytes = m_processedDataSizeInBytes;
     storage.totalDataSizeInBytes = m_totalDataSizeInBytes;
@@ -167,12 +162,12 @@ CPatchSetEngine::Start( const TPatchSet& patchSet               ,
 {GUCEF_TRACE;
 
     assert( &patchSet != NULL );
-    
+
     // The user should explicitly stop first if we are already busy
     if ( !IsActive() )
     {
         GUCEF_DEBUG_LOG( CORE::LOGLEVEL_NORMAL, "CPatchSetEngine(" + CORE::PointerToString( this ) + "): Start called while inactive,.. starting" );
-        
+
         // parameter sanity check
         if ( ( patchSet.size() > 0 )     &&
              ( localRoot.Length() > 0 )  )
@@ -192,23 +187,23 @@ CPatchSetEngine::Start( const TPatchSet& patchSet               ,
             m_processedDataSizeInBytes = 0;
             m_currentSubDirProcessedDataSizeInBytes = 0;
             m_stopOnFileReplacementFailure = stopOnFileReplacementFailure;
-            
+
             m_patchSet = patchSet;
 
             m_localRoot = localRoot;
             m_tempStorageRoot = tempStorageRoot;
             m_dirIndex = 0;
-            
-            NotifyObservers( PatchSetProcessingStartedEvent, CreateEventStatusObj() );            
+
+            NotifyObservers( PatchSetProcessingStartedEvent, CreateEventStatusObj() );
             m_patchSetDirEngine->Start( m_patchSet[ m_dirIndex ]     ,
                                         m_localRoot                  ,
                                         m_tempStorageRoot            ,
                                         stopOnFileReplacementFailure );
-            
+
             return true;
         }
     }
-    
+
     return false;
 }
 
@@ -219,17 +214,17 @@ CPatchSetEngine::Stop( void )
 {GUCEF_TRACE;
 
     GUCEF_DEBUG_LOG( CORE::LOGLEVEL_NORMAL, "CPatchSetEngine(" + CORE::PointerToString( this ) + "): Stop called" );
-    
-    m_stopSignalGiven = true;    
+
+    m_stopSignalGiven = true;
     m_patchSetDirEngine->Stop();
 }
 
 /*-------------------------------------------------------------------------*/
-    
+
 bool
 CPatchSetEngine::IsActive( void ) const
 {GUCEF_TRACE;
-    
+
     return m_isActive;
 }
 
@@ -247,29 +242,29 @@ CPatchSetEngine::OnNotify( CORE::CNotifier* notifier                 ,
         CORE::CForwardingNotifier::OnNotify( notifier  ,
                                              eventid   ,
                                              eventdata );
-        
+
         if ( notifier == m_patchSetDirEngine )
-        {         
+        {
             if ( eventid == CPatchSetDirEngineEvents::DirProcessingProgressEvent )
-            {                
+            {
                 const TPatchSetDirEngineEventData* eData = static_cast< TPatchSetDirEngineEventData* >( eventdata );
                 const TPatchSetDirEngineEventDataStorage& storage = eData->GetData();
-                
+
                 // Update the progress byte counter with the byte delta
                 m_processedDataSizeInBytes = ( m_processedDataSizeInBytes - m_currentSubDirProcessedDataSizeInBytes ) + storage.processedDataSizeInBytes;
                 m_currentSubDirProcessedDataSizeInBytes = storage.processedDataSizeInBytes;
-                
+
                 NotifyObservers( PatchSetProcessingProgressEvent, CreateEventStatusObj() );
                 return;
             }
-            else            
+            else
             if ( eventid == CPatchSetDirEngineEvents::DirProcessingCompletedEvent )
             {
                 GUCEF_DEBUG_LOG( CORE::LOGLEVEL_NORMAL, "CPatchSetEngine(" + CORE::PointerToString( this ) + "): Completed processing the current directory" );
-                
+
                 const TPatchSetDirEngineEventData* eData = static_cast< TPatchSetDirEngineEventData* >( eventdata );
                 const TPatchSetDirEngineEventDataStorage& storage = eData->GetData();
-                
+
                 // Update the progress byte counter with the byte delta
                 m_processedDataSizeInBytes = ( m_processedDataSizeInBytes - m_currentSubDirProcessedDataSizeInBytes ) + storage.processedDataSizeInBytes;
                 m_currentSubDirProcessedDataSizeInBytes = 0;
@@ -278,11 +273,11 @@ CPatchSetEngine::OnNotify( CORE::CNotifier* notifier                 ,
                 if ( m_dirIndex+1 < m_patchSet.size() )
                 {
                     GUCEF_DEBUG_LOG( CORE::LOGLEVEL_NORMAL, "CPatchSetEngine(" + CORE::PointerToString( this ) + "): Moving on to the next directory in the patch set" );
-                    
+
                     // Since we are not finished yet make sure we propegate the data counter progress we calculated above to our observers
                     NotifyObservers( PatchSetProcessingProgressEvent, CreateEventStatusObj() );
-                    
-                    ++m_dirIndex;                    
+
+                    ++m_dirIndex;
                     m_patchSetDirEngine->Start( m_patchSet[ m_dirIndex ]       ,
                                                 m_localRoot                    ,
                                                 m_tempStorageRoot              ,
@@ -298,7 +293,7 @@ CPatchSetEngine::OnNotify( CORE::CNotifier* notifier                 ,
             else
             if ( eventid == DirProcessingAbortedEvent )
             {
-                GUCEF_DEBUG_LOG( CORE::LOGLEVEL_NORMAL, "CPatchSetEngine(" + CORE::PointerToString( this ) + "): Directory processing has been aborted, aborting patch set processing" );                
+                GUCEF_DEBUG_LOG( CORE::LOGLEVEL_NORMAL, "CPatchSetEngine(" + CORE::PointerToString( this ) + "): Directory processing has been aborted, aborting patch set processing" );
                 NotifyObservers( PatchSetProcessingAbortedEvent, CreateEventStatusObj() );
                 return;
             }

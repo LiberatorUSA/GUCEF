@@ -15,9 +15,9 @@
  *
  *  You should have received a copy of the GNU Lesser General Public
  *  License along with this library; if not, write to the Free Software
- *  Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA 
+ *  Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA
  */
- 
+
 /*-------------------------------------------------------------------------//
 //                                                                         //
 //      INCLUDES                                                           //
@@ -50,7 +50,7 @@ using namespace ARCHIVEDIFF;
 
 #ifdef GUCEF_MSWIN_BUILD
 
-void 
+void
 cls( void )
 {GUCEF_TRACE;
 
@@ -61,22 +61,22 @@ cls( void )
 
     /* get the output console handle */
     HANDLE hConsole=GetStdHandle(STD_OUTPUT_HANDLE);
-    
+
     /* get the number of character cells in the current buffer */
-    GetConsoleScreenBufferInfo(hConsole, &csbi);    
+    GetConsoleScreenBufferInfo(hConsole, &csbi);
     dwConSize = csbi.dwSize.X * csbi.dwSize.Y;
-    
+
     /* fill the entire screen with blanks */
     FillConsoleOutputCharacter(hConsole, (TCHAR) ' ',
       dwConSize, coordScreen, &cCharsWritten);
-      
+
     /* get the current text attribute */
     GetConsoleScreenBufferInfo(hConsole, &csbi);
-    
+
     /* now set the buffer's attributes accordingly */
     FillConsoleOutputAttribute(hConsole, csbi.wAttributes,
       dwConSize, coordScreen, &cCharsWritten);
-      
+
     /* put the cursor at (0, 0) */
     SetConsoleCursorPosition(hConsole, coordScreen);
     return;
@@ -87,21 +87,21 @@ cls( void )
 class CMSWin32ConsoleWindow
 {
     public:
-    
+
     CMSWin32ConsoleWindow( void )
     {
         AllocConsole();
-        
+
         /* reopen stdin handle as console window input */
         freopen( "CONIN$", "rb", stdin );
-        
+
         /* reopen stout handle as console window output */
         freopen( "CONOUT$", "wb", stdout );
-        
+
         /* reopen stderr handle as console window output */
-        freopen( "CONOUT$", "wb", stderr );        
+        freopen( "CONOUT$", "wb", stderr );
     }
-    
+
     ~CMSWin32ConsoleWindow()
     {
         FreeConsole();
@@ -110,16 +110,23 @@ class CMSWin32ConsoleWindow
 
 #endif /* GUCEF_MSWIN_BUILD ? */
 
+#ifdef GUCEF_LINUX_BUILD
+void cls()
+{
+    system("cls");
+}
+#endif
+
 /*-------------------------------------------------------------------------*/
 
 void
-ParseParams( const int argc                        , 
+ParseParams( const int argc                        ,
              char* argv[]                          ,
              GUCEF::CORE::CValueList& keyValueList )
 {GUCEF_TRACE;
-    
+
     GUCEF_LOG( CORE::LOGLEVEL_NORMAL, "Parsing parameters" );
-    
+
     keyValueList.DeleteAll();
     GUCEF::CORE::CString argString;
     if ( argc > 0 )
@@ -130,7 +137,7 @@ ParseParams( const int argc                        ,
         {
             argString += ( ' ' + argv[ i ] );
         }
-        
+
         keyValueList.SetMultiple( argString, '\'' );
     }
 }
@@ -151,7 +158,7 @@ PrintHeader( void )
     printf( "*                                       *\n" );
     printf( "*****************************************\n" );
     printf( "\n" );
-    printf( " - Tool Version %f\n" , VERSION_NUMBER );    
+    printf( " - Tool Version %f\n" , VERSION_NUMBER );
 }
 
 /*---------------------------------------------------------------------------*/
@@ -163,7 +170,7 @@ PrintHelp( void )
     printf( "\n" );
     printf( " - Program arguments:\n" );
     printf( "  Arguments should be passed in the form \'key=value\'\n" );
-    printf( "    'TemplateArchiveIndex'  : path to patch set containing the index of the\n" ); 
+    printf( "    'TemplateArchiveIndex'  : path to patch set containing the index of the\n" );
     printf( "                              template archive\n" );
     printf( "    'MainArchiveIndex'      : path to patch set containing the index of the\n" );
     printf( "                              main SVN archive\n" );
@@ -195,7 +202,7 @@ WinMain( HINSTANCE hinstance     ,
             argc = 1;
         }
     }
-    
+
 #else
 
 int
@@ -209,12 +216,12 @@ main( int argc , char* argv[] )
     CORE::CFileAccess logFileAccess( logFilename, "w" );
 
     CORE::CStdLogger logger( logFileAccess );
-    CORE::CLogManager::Instance()->AddLogger( &logger );
+    CORE::CCoreGlobal::Instance()->GetLogManager().AddLogger( &logger );
 
     CORE::CPlatformNativeConsoleLogger nativeConsoleLogger;
-    CORE::CLogManager::Instance()->AddLogger( nativeConsoleLogger.GetLogger() );
-    
-    CORE::CLogManager::Instance()->FlushBootstrapLogEntriesToLogs();
+    CORE::CCoreGlobal::Instance()->GetLogManager().AddLogger( nativeConsoleLogger.GetLogger() );
+
+    CORE::CCoreGlobal::Instance()->GetLogManager().FlushBootstrapLogEntriesToLogs();
 
     GUCEF_LOG( CORE::LOGLEVEL_NORMAL, "This tool was compiled on: " __DATE__ " @ " __TIME__ );
 
@@ -223,7 +230,7 @@ main( int argc , char* argv[] )
 	    #ifdef GUCEF_MSWIN_BUILD
 	    CMSWin32ConsoleWindow console;
 	    #endif
-	    
+
 	    PrintHeader();
 	    PrintHelp();
 	    getchar();
@@ -233,8 +240,8 @@ main( int argc , char* argv[] )
 	    GUCEF::CORE::CValueList argList;
 	    ParseParams( argc    ,
 	                 argv    ,
-	                 argList ); 
-	                 
+	                 argList );
+
         if ( !argList.HasKey( "TemplateArchiveIndex" ) ||
              !argList.HasKey( "MainArchiveIndex" )      )
         {
@@ -243,7 +250,7 @@ main( int argc , char* argv[] )
             getchar();
             return 1;
         }
-        
+
         CORE::CString templateArchiveIndex = argList[ "TemplateArchiveIndex" ];
         CORE::CString mainArchiveIndex = argList[ "MainArchiveIndex" ];
         CORE::CString pluginsListStr = argList.GetValueAlways( "Plugins" );
@@ -253,37 +260,37 @@ main( int argc , char* argv[] )
         {
             diffOutputDir = CORE::RelativePath( "$MODULEDIR$" );
         }
-        
+
         CORE::Int32 maxEntriesPerDiffFile = -1;
         if ( 0 != maxEntriesPerDiffFileStr )
         {
             maxEntriesPerDiffFile = CORE::StringToInt32( maxEntriesPerDiffFileStr );
-        }        
-        
+        }
+
         PATCHER::CPatchSetParser::TPatchSet templatePatchset;
         PATCHER::CPatchSetParser::TPatchSet mainArchivePatchset;
-        
-        if ( LoadPatchSet( templateArchiveIndex , 
+
+        if ( LoadPatchSet( templateArchiveIndex ,
                            templatePatchset     ) )
         {
             GUCEF_LOG( CORE::LOGLEVEL_NORMAL, "Successfully loaded and parsed the index for the template archive" );
-            
-            if ( LoadPatchSet( mainArchiveIndex    , 
+
+            if ( LoadPatchSet( mainArchiveIndex    ,
                                mainArchivePatchset ) )
             {
                 GUCEF_LOG( CORE::LOGLEVEL_NORMAL, "Successfully loaded and parsed the index for the main SVN archive" );
-                
+
                 TFileStatusVector fileStatusList;
                 if ( PerformArchiveDiff( templatePatchset    ,
                                          mainArchivePatchset ,
                                          fileStatusList      ) )
                 {
-                    GUCEF_LOG( CORE::LOGLEVEL_NORMAL, "Successfully completed determination of differences between the two archives" );    
-                    
+                    GUCEF_LOG( CORE::LOGLEVEL_NORMAL, "Successfully completed determination of differences between the two archives" );
+
                     CORE::CString diffFilePath = diffOutputDir;
                     CORE::AppendToPath( diffFilePath, "ArchiveDiff.xml" );
-                    
-                    if ( SaveFileStatusList( diffFilePath          , 
+
+                    if ( SaveFileStatusList( diffFilePath          ,
                                              fileStatusList        ,
                                              maxEntriesPerDiffFile ) )
                     {
@@ -309,7 +316,7 @@ main( int argc , char* argv[] )
         {
             GUCEF_ERROR_LOG( CORE::LOGLEVEL_NORMAL, "Failed to load and parse the index for the template archive" );
         }
-        
+
     }
 	return 0;
 }
