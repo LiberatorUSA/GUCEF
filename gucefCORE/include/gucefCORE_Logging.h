@@ -36,6 +36,11 @@
 #define GUCEF_CORE_CLOGMANAGER_H
 #endif /* GUCEF_CORE_CLOGMANAGER_H ? */
 
+#ifndef GUCEF_CORE_LOGGINGMACROS_H
+#include "gucefCORE_LoggingMacros.h"
+#define GUCEF_CORE_LOGGINGMACROS_H
+#endif /* GUCEF_CORE_LOGGINGMACROS_H ? */
+
 #ifndef GUCEF_CORE_CSTDLOGGER_H
 #include "CStdLogger.h"
 #define GUCEF_CORE_CSTDLOGGER_H

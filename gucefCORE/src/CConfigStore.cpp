@@ -23,6 +23,11 @@
 //                                                                         //
 //-------------------------------------------------------------------------*/
 
+#ifndef GUCEF_CORE_CCOREGLOBAL_H
+#include "gucefCORE_CCoreGlobal.h"
+#define GUCEF_CORE_CCOREGLOBAL_H
+#endif /* GUCEF_CORE_CCOREGLOBAL_H ? */
+
 #ifndef GUCEF_CORE_CLOGMANAGER_H
 #include "CLogManager.h"
 #define GUCEF_CORE_CLOGMANAGER_H
@@ -181,7 +186,7 @@ CConfigStore::SaveConfig( const CString& name ,
         {
                 try
                 {
-                        CDStoreCodecRegistry::TDStoreCodecPtr codec = CDStoreCodecRegistry::Instance()->Lookup( _codectype.C_String() );
+                        CDStoreCodecRegistry::TDStoreCodecPtr codec = CCoreGlobal::Instance()->GetDStoreCodecRegistry().Lookup( _codectype.C_String() );
                         if ( codec->BuildDataTree( &oldtree    ,
                                                    _configfile ) )
                         {
@@ -208,7 +213,7 @@ CConfigStore::SaveConfig( const CString& name ,
 
         try
         {
-                CDStoreCodecRegistry::TDStoreCodecPtr codec = CDStoreCodecRegistry::Instance()->Lookup( _codectype.C_String() );
+                CDStoreCodecRegistry::TDStoreCodecPtr codec = CCoreGlobal::Instance()->GetDStoreCodecRegistry().Lookup( _codectype.C_String() );
                 if ( codec->BuildDataTree( &rootnode    ,
                                            _configfile  ) )
                 {
@@ -250,7 +255,7 @@ CConfigStore::LoadConfig( void )
 
         try
         {
-                CDStoreCodecRegistry::TDStoreCodecPtr codec = CDStoreCodecRegistry::Instance()->Lookup( _codectype.C_String() );
+                CDStoreCodecRegistry::TDStoreCodecPtr codec = CCoreGlobal::Instance()->GetDStoreCodecRegistry().Lookup( _codectype.C_String() );
                 CDataNode rootnode;
                 if ( codec->BuildDataTree( &rootnode   ,
                                            _configfile ) )

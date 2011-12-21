@@ -103,8 +103,6 @@ class GUCEF_CORE_PUBLIC_CPP CTaskManager : public CObservingNotifier
 
     typedef CTFactoryBase< CTaskConsumer > TTaskConsumerFactory;
 
-    static CTaskManager* Instance( void );
-
     /**
      *  Queues a task for execution as soon as a thread is available
      *  to execute it.
@@ -190,6 +188,13 @@ class GUCEF_CORE_PUBLIC_CPP CTaskManager : public CObservingNotifier
                                  CTaskConsumer::TTaskId& taskId );
 
     private:
+    friend class CCoreGlobal;
+
+    CTaskManager( void );
+
+    virtual ~CTaskManager();
+
+    private:
 
     class CTaskQueueItem : public CICloneable
     {
@@ -214,21 +219,15 @@ class GUCEF_CORE_PUBLIC_CPP CTaskManager : public CObservingNotifier
     };
 
     private:
-    friend class CGUCEFCOREModule;
-
-    static void Deinstance( void );
-
-    private:
 
     void EnforceDesiredNrOfThreads( UInt32 desiredNrOfThreads ,
                                     bool gracefullEnforcement );
 
     void RemoveConsumerFromQueue( CTaskConsumer* consumer );
 
-    CTaskManager( void );
     CTaskManager( const CTaskManager& src );
+
     CTaskManager& operator=( const CTaskManager& src );
-    virtual ~CTaskManager();
 
     private:
 
@@ -246,8 +245,6 @@ class GUCEF_CORE_PUBLIC_CPP CTaskManager : public CObservingNotifier
     TTaskConsumerMap m_taskConsumerMap;
     TTaskDelegatorSet m_taskDelegators;
     MT::CMutex g_mutex;
-
-    static CTaskManager* g_instance;
 };
 
 /*-------------------------------------------------------------------------//

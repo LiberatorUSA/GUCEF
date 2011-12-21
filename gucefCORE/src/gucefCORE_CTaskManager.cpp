@@ -70,8 +70,6 @@ namespace CORE {
 //                                                                         //
 //-------------------------------------------------------------------------*/
 
-CTaskManager* CTaskManager::g_instance = NULL;
-
 const CEvent CTaskManager::ThreadKilledEvent = "GUCEF::CORE::CTaskManager::ThreadKilledEvent";
 const CEvent CTaskManager::ThreadStartedEvent = "GUCEF::CORE::CTaskManager::ThreadStartedEvent";
 const CEvent CTaskManager::ThreadPausedEvent = "GUCEF::CORE::CTaskManager::ThreadPausedEvent";

@@ -140,6 +140,7 @@ set( HEADER_FILES
   include/gucefCORE.h
   include/gucefCORE_CAbstractFactoryBase.h
   include/gucefCORE_CBusyWaitPulseGeneratorDriver.h
+  include/gucefCORE_CCoreGlobal.h
   include/gucefCORE_CEventBasedTaskConsumer.h
   include/gucefCORE_CForwardingNotifier.h
   include/gucefCORE_CIEventHandlerFunctorBase.h
@@ -171,6 +172,7 @@ set( HEADER_FILES
   include/gucefCORE_ETypes.h
   include/gucefCORE_GenericPluginAPI.h
   include/gucefCORE_Logging.h
+  include/gucefCORE_LoggingMacros.h
   include/gucefCORE_macros.h
   include/gucef_essentials.h
   include/gucef_new_off.h
@@ -305,6 +307,7 @@ set( SOURCE_FILES
   src/gucefCORE.cpp
   src/gucefCORE_CAbstractFactoryBase.cpp
   src/gucefCORE_CBusyWaitPulseGeneratorDriver.cpp
+  src/gucefCORE_CCoreGlobal.cpp
   src/gucefCORE_CForwardingNotifier.cpp
   src/gucefCORE_CIEventHandlerFunctorBase.cpp
   src/gucefCORE_CIniDataStoreCodec.cpp

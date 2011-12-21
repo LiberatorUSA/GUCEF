@@ -46,14 +46,6 @@ namespace CORE {
 
 /*-------------------------------------------------------------------------//
 //                                                                         //
-//      GLOBAL VARS                                                        //
-//                                                                         //
-//-------------------------------------------------------------------------*/
-
-CDStoreCodecRegistry* CDStoreCodecRegistry::_instance = NULL;
-
-/*-------------------------------------------------------------------------//
-//                                                                         //
 //      CLASSES                                                            //
 //                                                                         //
 //-------------------------------------------------------------------------*/
@@ -66,44 +58,10 @@ CDStoreCodecRegistry::CDStoreCodecRegistry( void )
 
 /*-------------------------------------------------------------------------*/
 
-CDStoreCodecRegistry::CDStoreCodecRegistry( const CDStoreCodecRegistry& src )
-{
-        GUCEF_BEGIN;
-        /* dummy, do not use */
-        GUCEF_END;
-}
-
-/*-------------------------------------------------------------------------*/
-
 CDStoreCodecRegistry::~CDStoreCodecRegistry()
 {
         GUCEF_BEGIN;
         GUCEF_END;
-}
-
-/*-------------------------------------------------------------------------*/
-
-CDStoreCodecRegistry*
-CDStoreCodecRegistry::Instance( void )
-{GUCEF_TRACE;
-
-    if ( NULL == _instance )
-    {
-        _instance = new CDStoreCodecRegistry();
-        GUCEF_SYSTEM_LOG( LOGLEVEL_NORMAL, "GUCEF::CORE::CDStoreCodecRegistry Singleton created" );
-    }
-    return _instance;
-}
-
-/*-------------------------------------------------------------------------*/
-
-void
-CDStoreCodecRegistry::Deinstance( void )
-{GUCEF_TRACE;
-
-    delete _instance;
-    _instance = NULL;
-    GUCEF_SYSTEM_LOG( LOGLEVEL_NORMAL, "GUCEF::CORE::CDStoreCodecRegistry Singleton destroyed" );
 }
 
 /*-------------------------------------------------------------------------*/

@@ -25,15 +25,10 @@
 
 #include <assert.h>
 
-#ifndef GUCEF_CORE_CGUCEFAPPLICATION_H
-#include "CGUCEFApplication.h"
-#define GUCEF_CORE_CGUCEFAPPLICATION_H
-#endif /* GUCEF_CORE_CGUCEFAPPLICATION_H ? */
-
-#ifndef GUCEF_CORE_CTRACER_H
-#include "CTracer.h"
-#define GUCEF_CORE_CTRACER_H
-#endif /* GUCEF_CORE_CTRACER_H ? */
+#ifndef GUCEF_CORE_CCOREGLOBAL_H
+#include "gucefCORE_CCoreGlobal.h"
+#define GUCEF_CORE_CCOREGLOBAL_H
+#endif /* GUCEF_CORE_CCOREGLOBAL_H ? */
 
 #include "CTSGNotifier.h"
 
@@ -54,7 +49,7 @@ namespace CORE {
 
 CTSGNotifier::CTSGNotifier( void )
     : CNotifier()                    ,
-      m_tsgObserver( CGUCEFApplication::Instance()->GetPulseGenerator() )
+      m_tsgObserver( CCoreGlobal::Instance()->GetApplication().GetPulseGenerator() )
 {GUCEF_TRACE;
 
     m_tsgObserver.SetParent( this );

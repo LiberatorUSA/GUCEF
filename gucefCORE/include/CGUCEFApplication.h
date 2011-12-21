@@ -120,8 +120,6 @@ class GUCEF_CORE_PUBLIC_CPP CGUCEFApplication : public CNotifier             ,
 
     public:
 
-    static CGUCEFApplication* Instance( void );
-
     #ifdef GUCEF_MSWIN_BUILD
     int Main( HINSTANCE hinstance     ,
               LPSTR lpcmdline         ,
@@ -161,8 +159,6 @@ class GUCEF_CORE_PUBLIC_CPP CGUCEFApplication : public CNotifier             ,
 
     CPulseGenerator& GetPulseGenerator( void );
 
-    CBusyWaitPulseGeneratorDriver& GetBusyWaitPulseGeneratorDriver( void );
-
     protected:
 
     virtual bool OnSysConsoleCommand( const CString& path                ,
@@ -175,15 +171,16 @@ class GUCEF_CORE_PUBLIC_CPP CGUCEFApplication : public CNotifier             ,
     virtual void UnlockData( void );
 
     private:
-    friend class CGUCEFCOREModule;
-
-    static void Deinstance( void );
-
-    private:
+    friend class CCoreGlobal;
 
     CGUCEFApplication( void );
-    CGUCEFApplication( const CGUCEFApplication& src );
+
     virtual ~CGUCEFApplication();
+    
+    private:
+
+    CGUCEFApplication( const CGUCEFApplication& src );            /**< not implemented */
+    
     CGUCEFApplication& operator=( const CGUCEFApplication& src ); /**< not implemented */
 
     private:
@@ -194,8 +191,6 @@ class GUCEF_CORE_PUBLIC_CPP CGUCEFApplication : public CNotifier             ,
     CPulseGenerator m_pulseGenerator;
     CBusyWaitPulseGeneratorDriver m_busyWaitPulseDriver;
     MT::CMutex m_mutex;
-
-    static CGUCEFApplication* _instance;
 };
 
 

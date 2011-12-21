@@ -76,14 +76,6 @@ namespace CORE {
 
 /*-------------------------------------------------------------------------//
 //                                                                         //
-//      GLOBAL VARS                                                        //
-//                                                                         //
-//-------------------------------------------------------------------------*/
-
-CDStoreCodecPluginManager* CDStoreCodecPluginManager::_instance = NULL;
-
-/*-------------------------------------------------------------------------//
-//                                                                         //
 //      UTILITIES                                                          //
 //                                                                         //
 //-------------------------------------------------------------------------*/
@@ -98,31 +90,7 @@ CDStoreCodecPluginManager::CDStoreCodecPluginManager( void )
 
 CDStoreCodecPluginManager::~CDStoreCodecPluginManager()
 {GUCEF_TRACE;
-}
 
-/*-------------------------------------------------------------------------*/
-
-CDStoreCodecPluginManager*
-CDStoreCodecPluginManager::Instance( void )
-{GUCEF_TRACE;
-
-    if ( NULL == _instance )
-    {
-        _instance = new CDStoreCodecPluginManager();
-        GUCEF_SYSTEM_LOG( LOGLEVEL_NORMAL, "GUCEF::CORE::CDStoreCodecPluginManager Singleton created" );
-    }
-    return _instance;
-}
-
-/*-------------------------------------------------------------------------*/
-
-void
-CDStoreCodecPluginManager::Deinstance( void )
-{GUCEF_TRACE;
-
-    delete _instance;
-    _instance = NULL;
-    GUCEF_SYSTEM_LOG( LOGLEVEL_NORMAL, "GUCEF::CORE::CDStoreCodecPluginManager Singleton destroyed" );
 }
 
 /*-------------------------------------------------------------------------*/
@@ -259,7 +227,7 @@ CDStoreCodecPluginManager::RegisterPlugin( void* modulePtr                   ,
                        pluginMetaData ) )
     {
         TDStoreCodecPluginPtr pointerToPlugin = plugin;
-        CDStoreCodecRegistry::Instance()->Register( plugin->GetTypeName(), pointerToPlugin );
+        CCoreGlobal::Instance()->GetDStoreCodecRegistry().Register( plugin->GetTypeName(), pointerToPlugin );
 
         return pointerToPlugin;
     }
@@ -276,7 +244,7 @@ CDStoreCodecPluginManager::UnregisterPlugin( TPluginPtr plugin )
 
     // First unregister from the registry
     TDStoreCodecPluginPtr pointerToPlugin = plugin.StaticCast< CDStoreCodecPlugin >();
-    CDStoreCodecRegistry::Instance()->Unregister( pointerToPlugin->GetTypeName() );
+    CCoreGlobal::Instance()->GetDStoreCodecRegistry().Unregister( pointerToPlugin->GetTypeName() );
 
     // Now unlink the plugin
     pointerToPlugin->Unlink();

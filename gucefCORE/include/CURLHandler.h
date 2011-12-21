@@ -74,36 +74,36 @@ class CIURLDataHandler;
  *      notifications as declared in CIURLEvents
  */
 class GUCEF_CORE_PUBLIC_CPP CURLHandler : public CObservingNotifier   ,
-                                         public CICloneable          ,
-                                         public CIURLEvents
+                                          public CICloneable          ,
+                                          public CIURLEvents
 {
-        public:
+    public:
 
-        /**
-         *      Doesn't do anything special atm.
-         */
-        CURLHandler( void );
+    /**
+     *      Doesn't do anything special atm.
+     */
+    CURLHandler( void );
 
-        /**
-         *      Doesn't do anything special atm.
-         */
-        CURLHandler( const CURLHandler& src );
+    /**
+     *      Doesn't do anything special atm.
+     */
+    CURLHandler( const CURLHandler& src );
 
-        /**
-         *      Doesn't do anything special atm.
-         */
-        virtual ~CURLHandler();
+    /**
+     *      Doesn't do anything special atm.
+     */
+    virtual ~CURLHandler();
 
-        /**
-         *      Doesn't do anything special atm.
-         */
-        CURLHandler& operator=( const CURLHandler& src );
+    /**
+     *      Doesn't do anything special atm.
+     */
+    CURLHandler& operator=( const CURLHandler& src );
 
-        virtual bool Activate( CURL& url ) = 0;
+    virtual bool Activate( CURL& url ) = 0;
 
-        virtual void Deactivate( CURL& url ) = 0;
+    virtual void Deactivate( CURL& url ) = 0;
 
-        virtual bool IsActive( const CURL& url ) const = 0;
+    virtual bool IsActive( const CURL& url ) const = 0;
 };
 
 /*-------------------------------------------------------------------------//
