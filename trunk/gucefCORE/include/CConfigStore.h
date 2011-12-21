@@ -74,8 +74,6 @@ class GUCEF_CORE_PUBLIC_CPP CConfigStore
 {
     public:
 
-    static CConfigStore* Instance( void );
-
     void SetConfigFile( const CString& filepath );
 
     CString GetConfigFile( void ) const;
@@ -113,8 +111,6 @@ class GUCEF_CORE_PUBLIC_CPP CConfigStore
     private:
 
     typedef std::set< CIConfigurable* > TConfigurableSet;
-
-    static CConfigStore* _instance;
 
     CString _codectype;
     CString _configfile;

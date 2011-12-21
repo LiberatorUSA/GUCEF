@@ -85,8 +85,6 @@ class GUCEF_CORE_PUBLIC_CPP CSysConsole : public CIConfigurable         ,
 {
     public:
 
-    static CSysConsole* Instance( void );
-
     bool RegisterCmd( const CString& path                ,
                       const CString& command             ,
                       const std::vector< CString >& args ,
@@ -197,8 +195,6 @@ class GUCEF_CORE_PUBLIC_CPP CSysConsole : public CIConfigurable         ,
     struct SCmdChannel* _root;
     TAliasList _aliases;
     MT::CMutex _datalock;
-
-    static CSysConsole* _instance;
 };
 
 /*-------------------------------------------------------------------------//

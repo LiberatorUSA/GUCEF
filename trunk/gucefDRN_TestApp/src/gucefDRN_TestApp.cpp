@@ -14,7 +14,7 @@
  *
  *  You should have received a copy of the GNU Lesser General Public
  *  License along with this library; if not, write to the Free Software
- *  Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA 
+ *  Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA
  */
 
 /*-------------------------------------------------------------------------//
@@ -43,7 +43,7 @@
 //      UTILITIES                                                          //
 //                                                                         //
 //-------------------------------------------------------------------------*/
-          
+
 /*
  *      Application entry point
  */
@@ -55,23 +55,23 @@ GUCEF_OSMAIN_BEGIN
     //GUCEF::CORE::GUCEF_SetStackLogging( 1 );
     #endif /* GUCE_CORE_DEBUG_MODE ? */
 
-    try 
-    {                               
+    try
+    {
         GUCEF::CORE::CString logFilename = GUCEF::CORE::RelativePath( "$CURWORKDIR$" );
         GUCEF::CORE::AppendToPath( logFilename, "gucefDRN_TestApp_Log.txt" );
         GUCEF::CORE::CFileAccess logFileAccess( logFilename, "w" );
-        
+
         GUCEF::CORE::CStdLogger logger( logFileAccess );
-        GUCEF::CORE::CLogManager::Instance()->AddLogger( &logger );
-        
+        GUCEF::CORE::CCoreGlobal::Instance()->GetLogManager().AddLogger( &logger );
+
         GUCEF::CORE::CPlatformNativeConsoleLogger consoleOut;
-        GUCEF::CORE::CLogManager::Instance()->AddLogger( consoleOut.GetLogger() );
-        
-        GUCEF::CORE::CLogManager::Instance()->FlushBootstrapLogEntriesToLogs();
+        GUCEF::CORE::CCoreGlobal::Instance()->GetLogManager().AddLogger( consoleOut.GetLogger() );
+
+        GUCEF::CORE::CCoreGlobal::Instance()->GetLogManager().FlushBootstrapLogEntriesToLogs();
 
         PerformPeerToPeerTest();
-        
-        return 1;                                                                            
+
+        return 1;
     }
     catch ( ... )
     {
@@ -79,11 +79,11 @@ GUCEF_OSMAIN_BEGIN
         GUCEF::CORE::GUCEF_PrintCallstack();
         GUCEF::CORE::GUCEF_DumpCallstack( "gucefDRN_TestApp_callstack.txt" );
         #endif /* GUCEF_DRN_DEBUG_MODE ? */
-        
+
         GUCEF::CORE::ShowErrorMessage( "Unknown exception"                                                                 ,
-                                       "Unhandled exception during program execution, the application will now terminate"  );                                                         
+                                       "Unhandled exception during program execution, the application will now terminate"  );
     }
-    return 1;                                                                                                                              
+    return 1;
 }
 GUCEF_OSMAIN_END
 

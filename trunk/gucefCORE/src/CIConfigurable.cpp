@@ -14,9 +14,9 @@
  *
  *  You should have received a copy of the GNU Lesser General Public
  *  License along with this library; if not, write to the Free Software
- *  Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA 
+ *  Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA
  */
- 
+
 /*-------------------------------------------------------------------------//
 //                                                                         //
 //      INCLUDES                                                           //
@@ -33,7 +33,7 @@
 #ifndef GUCEF_CORE_GUCEF_ESSENTIALS_H
 #include "gucef_essentials.h"
 #define GUCEF_CORE_GUCEF_ESSENTIALS_H
-#endif /* GUCEF_CORE_GUCEF_ESSENTIALS_H ? */  
+#endif /* GUCEF_CORE_GUCEF_ESSENTIALS_H ? */
 
 /*-------------------------------------------------------------------------//
 //                                                                         //
@@ -49,7 +49,7 @@ namespace CORE {
 //      UTILITIES                                                          //
 //                                                                         //
 //-------------------------------------------------------------------------*/
- 
+
 CIConfigurable::CIConfigurable( void )
         : _useglobal( false ) ,
           _configid( 0 )
@@ -81,14 +81,14 @@ CIConfigurable::CIConfigurable( bool useglobalconfig )
 }
 
 /*-------------------------------------------------------------------------*/
- 
+
 CIConfigurable::~CIConfigurable()
 {
         GUCEF_BEGIN;
         if ( _useglobal )
         {
-                CConfigStore::Instance()->Unregister( this );        
-        }       
+                CORE::CCoreGlobal::Instance()->GetConfigStore().Unregister( this );
+        }
         GUCEF_END;
 }
 
@@ -108,27 +108,27 @@ CIConfigurable::operator=( const CIConfigurable& src )
 
 /*-------------------------------------------------------------------------*/
 
-void 
+void
 CIConfigurable::SetUseGlobalConfig( bool use )
 {
         GUCEF_BEGIN;
         if ( use == _useglobal ) return;
-        
+
         if ( use )
         {
-                CConfigStore::Instance()->Register( this );
+                CORE::CCoreGlobal::Instance()->GetConfigStore().Register( this );
                 _useglobal = true;
                 GUCEF_END;
-                return;                
+                return;
         }
-        CConfigStore::Instance()->Unregister( this );
+        CORE::CCoreGlobal::Instance()->GetConfigStore().Unregister( this );
         _useglobal = false;
         GUCEF_END;
 }
 
 /*-------------------------------------------------------------------------*/
-        
-bool 
+
+bool
 CIConfigurable::GetUseGlobalConfig( void ) const
 {
         GUCEF_BEGIN;
@@ -146,4 +146,3 @@ CIConfigurable::GetUseGlobalConfig( void ) const
 }; /* namespace GUCEF */
 
 /*-------------------------------------------------------------------------*/
- 

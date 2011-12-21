@@ -1117,7 +1117,7 @@ GUCEF_OSMAIN_BEGIN
     CORE::CFileAccess logFileAccess( logFilename, "w" );
 
     CORE::CStdLogger logger( logFileAccess );
-    CORE::CLogManager::Instance()->AddLogger( &logger );
+    CORE::CCoreGlobal::Instance()->GetLogManager().AddLogger( &logger );
 
     // Do we want to display the console window?
     CORE::CPlatformNativeConsoleLogger* consoleOut = NULL;
@@ -1129,13 +1129,13 @@ GUCEF_OSMAIN_BEGIN
     if ( showConsole )
     {
         consoleOut = new CORE::CPlatformNativeConsoleLogger();
-        CORE::CLogManager::Instance()->AddLogger( consoleOut->GetLogger() );
+        CORE::CCoreGlobal::Instance()->GetLogManager().AddLogger( consoleOut->GetLogger() );
 
         GUCEF_LOG( CORE::LOGLEVEL_NORMAL, "FileDiff: Enabled console output" );
     }
 
     // Flush bootstrap logging now that we attached all our loggers
-    CORE::CLogManager::Instance()->FlushBootstrapLogEntriesToLogs();
+    CORE::CCoreGlobal::Instance()->GetLogManager().FlushBootstrapLogEntriesToLogs();
 
     CORE::CString file1Path = keyValueList.GetValueAlways( "file1" );
     CORE::CString file2Path = keyValueList.GetValueAlways( "file2" );

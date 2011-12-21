@@ -14,7 +14,7 @@
  *
  *  You should have received a copy of the GNU Lesser General Public
  *  License along with this library; if not, write to the Free Software
- *  Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA 
+ *  Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA
  */
 
 //-------------------------------------------------------------------------//
@@ -59,7 +59,7 @@
 #endif /* GUCEF_COMCORE_CSOCKET_H ? */
 
 #ifndef GUCEF_COMCORE_DVSOCKET_H
-#include "dvwinsock.h"  
+#include "dvwinsock.h"
 #define GUCEF_COMCORE_DVSOCKET_H
 #endif /* GUCEF_COMCORE_DVSOCKET_H ? */
 
@@ -67,13 +67,13 @@
 
 #if ( GUCEF_PLATFORM == GUCEF_PLATFORM_MSWIN )
 
-  /* #include <Icmpapi.h> -> this is the header for the functions that we dynamicly link */ 
-   
+  /* #include <Icmpapi.h> -> this is the header for the functions that we dynamicly link */
+
   #ifndef GUCEF_COMCORE_ICMPAPI_H
   #include "gucefCOMCORE_icmpApi.h"
   #define GUCEF_COMCORE_ICMPAPI_H
   #endif /* GUCEF_COMCORE_ICMPAPI_H ? */
-  
+
   #ifndef GUCEF_COMCORE_CPINGTASKCONSUMER_H
   #include "gucefCOMCORE_CPingTaskConsumer.h"
   #define GUCEF_COMCORE_CPINGTASKCONSUMER_H
@@ -113,7 +113,7 @@ bool icmpLinked = false;
 void
 CPing::RegisterEvents( void )
 {GUCEF_TRACE;
-    
+
     PingStartedEvent.Initialize();
     PingReponseEvent.Initialize();
     PingTimeoutEvent.Initialize();
@@ -122,7 +122,7 @@ CPing::RegisterEvents( void )
 }
 
 /*-------------------------------------------------------------------------*/
-    
+
 CPing::CPingEventData::CPingEventData( const CHostAddress& host   ,
                                        const UInt32 echoSize      ,
                                        const UInt32 roundTripTime )
@@ -131,7 +131,7 @@ CPing::CPingEventData::CPingEventData( const CHostAddress& host   ,
       m_echoSize( echoSize )           ,
       m_roundTripTime( roundTripTime )
 {GUCEF_TRACE;
-    
+
 }
 
 /*-------------------------------------------------------------------------*/
@@ -141,19 +141,19 @@ CPing::CPingEventData::CPingEventData( const CPingEventData& src )
       m_hostAddress( src.m_hostAddress )     ,
       m_echoSize( src.m_echoSize )           ,
       m_roundTripTime( src.m_roundTripTime )
-{GUCEF_TRACE;    
+{GUCEF_TRACE;
 
 }
 
 /*-------------------------------------------------------------------------*/
-        
+
 CPing::CPingEventData::~CPingEventData()
 {GUCEF_TRACE;
 
 }
 
 /*-------------------------------------------------------------------------*/
-                
+
 CORE::CICloneable*
 CPing::CPingEventData::Clone( void ) const
 {GUCEF_TRACE;
@@ -162,7 +162,7 @@ CPing::CPingEventData::Clone( void ) const
 }
 
 /*-------------------------------------------------------------------------*/
-        
+
 const CHostAddress&
 CPing::CPingEventData::GetHostAddress( void ) const
 {GUCEF_TRACE;
@@ -171,7 +171,7 @@ CPing::CPingEventData::GetHostAddress( void ) const
 }
 
 /*-------------------------------------------------------------------------*/
-        
+
 UInt32
 CPing::CPingEventData::GetEchoSize( void ) const
 {GUCEF_TRACE;
@@ -180,7 +180,7 @@ CPing::CPingEventData::GetEchoSize( void ) const
 }
 
 /*-------------------------------------------------------------------------*/
-        
+
 UInt32
 CPing::CPingEventData::GetRoundTripTime( void ) const
 {GUCEF_TRACE;
@@ -202,11 +202,11 @@ CPing::CPing( CORE::CPulseGenerator& pulsGenerator )
       m_pingTaskConsumer()
 {GUCEF_TRACE;
 
-    RegisterEvents();    
-    
+    RegisterEvents();
+
     #if ( GUCEF_PLATFORM == GUCEF_PLATFORM_MSWIN )
     icmpLinked = LinkICMP() > 0;
-    #endif /* GUCEF_PLATFORM_MSWIN ? */    
+    #endif /* GUCEF_PLATFORM_MSWIN ? */
 }
 
 /*-------------------------------------------------------------------------*/
@@ -222,20 +222,20 @@ CPing::CPing( void )
       m_taskId( 0 )
 {GUCEF_TRACE;
 
-    RegisterEvents();    
-    
+    RegisterEvents();
+
     #if ( GUCEF_PLATFORM == GUCEF_PLATFORM_MSWIN )
     icmpLinked = LinkICMP() > 0;
-    #endif /* GUCEF_PLATFORM_MSWIN ? */    
+    #endif /* GUCEF_PLATFORM_MSWIN ? */
 }
 
 /*-------------------------------------------------------------------------*/
-    
+
 CPing::~CPing()
 {GUCEF_TRACE;
 
     Stop();
-    
+
     #if ( GUCEF_PLATFORM == GUCEF_PLATFORM_MSWIN )
     UnlinkICMP();
     #endif /* GUCEF_PLATFORM_MSWIN ? */
@@ -258,7 +258,7 @@ CPing::Start( const CORE::CString& remoteHost           ,
                   bytesToSend      ,
                   timeout          ,
                   minimalPingDelta );
-}              
+}
 
 /*-------------------------------------------------------------------------*/
 
@@ -277,10 +277,10 @@ CPing::Start( const TStringVector& remoteHosts          ,
         m_timeout = timeout;
         m_bytesToSend = bytesToSend;
         m_minimalPingDelta = minimalPingDelta;
-        
-        CPingTaskConsumer::CPingTaskData taskData( remoteHosts, maxPings, bytesToSend, timeout, minimalPingDelta ); 
-        return CORE::CTaskManager::Instance()->StartTask( m_pingTaskConsumer , 
-                                                          &taskData          );
+
+        CPingTaskConsumer::CPingTaskData taskData( remoteHosts, maxPings, bytesToSend, timeout, minimalPingDelta );
+        return CORE::CCoreGlobal::Instance()->GetTaskManager().StartTask( m_pingTaskConsumer ,
+                                                                          &taskData          );
     }
     return false;
 }
@@ -290,10 +290,10 @@ CPing::Start( const TStringVector& remoteHosts          ,
 void
 CPing::Stop( void )
 {GUCEF_TRACE;
-    
+
     if ( m_isActive )
     {
-       CORE::CTaskManager::Instance()->RequestTaskToStop( m_taskId );
+       CORE::CCoreGlobal::Instance()->GetTaskManager().RequestTaskToStop( m_taskId );
     }
 }
 
@@ -338,20 +338,20 @@ CPing::OnPumpedNotify( CORE::CNotifier* notifier    ,
         CPingTaskConsumer::CEchoReceivedEventData* taskData = static_cast< CPingTaskConsumer::CEchoReceivedEventData* >( eventdata );
         CPingEventData eventData( taskData->GetHostAddress(), taskData->GetEchoSize(), taskData->GetRoundTripTime() );
         NotifyObservers( PingStoppedEvent, &eventData );
-    }        
+    }
 }
 
 /*-------------------------------------------------------------------------*/
-    
+
 bool
 CPing::IsActive( void ) const
 {GUCEF_TRACE;
-    
+
     return m_isActive;
 }
 
 /*-------------------------------------------------------------------------*/
-    
+
 const CPing::TStringVector&
 CPing::GetRemoteHosts( void ) const
 {GUCEF_TRACE;
@@ -360,7 +360,7 @@ CPing::GetRemoteHosts( void ) const
 }
 
 /*-------------------------------------------------------------------------*/
-    
+
 Int32
 CPing::GetMaxPings( void ) const
 {GUCEF_TRACE;
@@ -373,7 +373,7 @@ CPing::GetMaxPings( void ) const
 void
 CPing::SetUserData( void* userData )
 {
-    m_userData = userData; 
+    m_userData = userData;
 }
 
 /*-------------------------------------------------------------------------*/

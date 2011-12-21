@@ -14,7 +14,7 @@
  *
  *  You should have received a copy of the GNU Lesser General Public
  *  License along with this library; if not, write to the Free Software
- *  Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA 
+ *  Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA
  */
 
 /*-------------------------------------------------------------------------//
@@ -66,7 +66,7 @@ CPassiveURLServerListProvider::CPassiveURLServerListProvider( void )
 }
 
 /*-------------------------------------------------------------------------*/
-    
+
 CPassiveURLServerListProvider::~CPassiveURLServerListProvider()
 {GUCEF_TRACE;
 
@@ -74,24 +74,24 @@ CPassiveURLServerListProvider::~CPassiveURLServerListProvider()
 }
 
 /*-------------------------------------------------------------------------*/
-    
+
 bool
 CPassiveURLServerListProvider::Start( const CORE::CValueList& params )
 {GUCEF_TRACE;
 
     if ( !m_isBusy )
     {
-        // See if we have a URL param which will override any URL that 
+        // See if we have a URL param which will override any URL that
         // may have already been set
         if ( params.HasKey( "URL" ) )
         {
             m_url.SetURL( params.GetValue( "URL" ) );
-        } 
+        }
         if ( params.HasKey( "CodecType" ) )
         {
             m_codecType = params.GetValue( "CodecType" );
         }
-                
+
         // Active the URL mechanism
         m_isBusy = m_url.Activate();
         return m_isBusy;
@@ -100,16 +100,16 @@ CPassiveURLServerListProvider::Start( const CORE::CValueList& params )
 }
 
 /*-------------------------------------------------------------------------*/
-    
+
 bool
 CPassiveURLServerListProvider::IsBusy( void )
 {GUCEF_TRACE;
-    
+
     return m_isBusy;
 }
 
 /*-------------------------------------------------------------------------*/
-    
+
 void
 CPassiveURLServerListProvider::Stop( void )
 {GUCEF_TRACE;
@@ -118,7 +118,7 @@ CPassiveURLServerListProvider::Stop( void )
     {
         m_url.Deactivate();
         m_isBusy = false;
-        
+
         NotifyObservers( ServerListProviderAbortEvent );
     }
 }
@@ -131,7 +131,7 @@ CPassiveURLServerListProvider::OnNotify( CORE::CNotifier* notifier              
                                          CORE::CICloneable* eventdata /* = NULL */ )
 {GUCEF_TRACE;
 
-    if ( notifier == &m_url )    
+    if ( notifier == &m_url )
     {
         if ( CORE::CURL::URLActivateEvent == eventid )
         {
@@ -155,7 +155,7 @@ CPassiveURLServerListProvider::OnNotify( CORE::CNotifier* notifier              
             m_buffer.Clear( true );
             m_isBusy = false;
             NotifyObservers( ServerListProviderErrorEvent );
-        }  
+        }
     }
 }
 
@@ -173,7 +173,7 @@ CPassiveURLServerListProvider::ParseList( const CORE::CDataNode& listRoot )
         CORE::CDataNode::const_iterator i = root->ConstBegin();
         const CORE::CDataNode* entryNode = NULL;
         CORE::CValueList valueList;
-        
+
         while ( i != root->ConstEnd() )
         {
             entryNode = (*i);
@@ -191,7 +191,7 @@ CPassiveURLServerListProvider::ParseList( const CORE::CDataNode& listRoot )
                         if ( NULL != att )
                         {
                             serverInfo.hostAddress.SetPortInHostByteOrder( CORE::StringToUInt16( att->second ) );
-                            
+
                             // We now have enough info to consider this a valid entry
                             // We will add the rest to the optional parameter list
                             valueList.DeleteAll();
@@ -206,7 +206,7 @@ CPassiveURLServerListProvider::ParseList( const CORE::CDataNode& listRoot )
                                                    att->second );
                                 }
                             }
-                            
+
                             ServerInfoEventData eData( serverInfo );
                             NotifyObservers( ServerInfoEvent, &eData );
                         }
@@ -216,7 +216,7 @@ CPassiveURLServerListProvider::ParseList( const CORE::CDataNode& listRoot )
             ++i;
         }
     }
-    
+
     NotifyObservers( ServerListProviderFinisedEvent );
 }
 
@@ -227,19 +227,19 @@ CPassiveURLServerListProvider::ProcessRetrievedList( void )
 {GUCEF_TRACE;
 
     // Try to obtain the list codec
-    CORE::CDStoreCodecRegistry::TDStoreCodecPtr codec = CORE::CDStoreCodecRegistry::Instance()->Lookup( m_codecType );
+    CORE::CDStoreCodecRegistry::TDStoreCodecPtr codec = CORE::CCoreGlobal::Instance()->GetDStoreCodecRegistry().Lookup( m_codecType );
     if ( codec != NULL )
     {
         CORE::CDynamicBufferAccess bufferAccess( &m_buffer, false );
         CORE::CDataNode serverList;
-        if ( codec->BuildDataTree( &serverList   , 
+        if ( codec->BuildDataTree( &serverList   ,
                                    &bufferAccess ) )
         {
             ParseList( serverList );
             return;
-        } 
+        }
     }
-    
+
     // No codec of the given type was found
     NotifyObservers( ServerListProviderErrorEvent );
 }
@@ -257,7 +257,7 @@ CPassiveURLServerListProvider::SetListCodecType( const CORE::CString& codecType 
     }
     return false;
 }
-    
+
 /*-------------------------------------------------------------------------*/
 
 const CORE::CString&
@@ -277,7 +277,7 @@ CPassiveURLServerListProvider::SetURL( const CORE::CString& url )
 }
 
 /*-------------------------------------------------------------------------*/
-    
+
 const CORE::CString&
 CPassiveURLServerListProvider::GetURL( void ) const
 {GUCEF_TRACE;

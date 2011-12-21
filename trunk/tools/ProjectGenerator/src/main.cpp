@@ -131,15 +131,15 @@ GUCEF_OSMAIN_BEGIN
 
     CORE::CString logFilename = outputDir;
     CORE::AppendToPath( logFilename, "ProjectGenerator_Log.txt" );
-    
-    keyValueList.Set( "logfile", logFilename ); 
-    
+
+    keyValueList.Set( "logfile", logFilename );
+
     CORE::CFileAccess logFileAccess( logFilename, "w" );
     CORE::CStdLogger logger( logFileAccess );
-    CORE::CLogManager::Instance()->AddLogger( &logger );
+    CORE::CCoreGlobal::Instance()->GetLogManager().AddLogger( &logger );
 
     CORE::CPlatformNativeConsoleLogger console;
-    CORE::CLogManager::Instance()->AddLogger( console.GetLogger() );
+    CORE::CCoreGlobal::Instance()->GetLogManager().AddLogger( console.GetLogger() );
 
     TStringVector rootDirs;
     try
@@ -152,9 +152,9 @@ GUCEF_OSMAIN_BEGIN
         rootDirs.push_back( CORE::RelativePath( "$CURWORKDIR$" ) );
         GUCEF_LOG( CORE::LOGLEVEL_NORMAL, "Using current working directory since no rootDir arguments where passed from the command line" );
     }
-    
+
     bool addToolCompileTimeToOutput = CORE::StringToBool( keyValueList.GetValueAlways( "addToolCompileTimeToOutput" ) );
-    
+
     // Get the generators to use
     TStringVector generatorList = keyValueList.GetValueAlways( "generators" ).ParseElements( ';', false );
     if ( generatorList.size() == 0  )
@@ -171,10 +171,10 @@ GUCEF_OSMAIN_BEGIN
     projectInfo.projectName = keyValueList.GetValueAlways( "projectName" );
 
     // Use an info gatherer to get all the project information for us
-    CDirCrawlingProjectInfoGatherer infoGatherer;    
+    CDirCrawlingProjectInfoGatherer infoGatherer;
     infoGatherer.GatherInfo( rootDirs    ,
                              projectInfo );
-                             
+
     // Now we output the project info using all generators specified
     TStringVector::iterator i = generatorList.begin();
     while ( i != generatorList.end() )
@@ -207,7 +207,7 @@ GUCEF_OSMAIN_BEGIN
         }
         ++i;
     }
-    
+
     GUCEF_LOG( CORE::LOGLEVEL_NORMAL, "Wrote log file to: " + logFilename );
 
     return 0;

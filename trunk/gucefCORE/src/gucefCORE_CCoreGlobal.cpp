@@ -159,7 +159,8 @@ CCoreGlobal::Instance()
 
     if ( NULL == g_instance )
     {
-        return new CCoreGlobal();
+        g_instance = new CCoreGlobal();
+        g_instance->Initialize();
     }
     return g_instance;
 }
@@ -176,19 +177,8 @@ CCoreGlobal::Deinstance( void )
 
 /*-------------------------------------------------------------------------*/
 
-CCoreGlobal::CCoreGlobal( void )
-    : m_taskManager( NULL )                ,
-      m_urlHandlerRegistry( NULL )         ,
-      m_dstoreCodecRegistry( NULL )        ,
-      m_exclusiveActivationManager( NULL ) ,
-      m_application( NULL )                ,
-      m_logManager( NULL )                 ,
-      m_dstoreCodecPluginManager( NULL )   ,
-      m_genericPluginManager( NULL )       ,
-      m_pluginControl( NULL )              ,
-      m_sysConsole( NULL )                 ,
-      m_notificationIdRegistry( NULL )     ,
-      m_stdCodecPluginManager( NULL )
+void
+CCoreGlobal::Initialize( void )
 {GUCEF_TRACE;
 
     // it is important to initialize the call stack tracer at an early stage
@@ -231,15 +221,15 @@ CCoreGlobal::CCoreGlobal( void )
      *  Instantiate the rest of the singletons
      */
     m_configStore = new CConfigStore();
-    m_taskManager = new CTaskManager();
-    m_pluginControl = new CPluginControl();
     m_dstoreCodecRegistry = new CDStoreCodecRegistry();
-    m_dstoreCodecPluginManager = new CDStoreCodecPluginManager();
-    m_genericPluginManager = new CGenericPluginManager();
-    m_stdCodecPluginManager = new CStdCodecPluginManager();
     m_urlHandlerRegistry = new CURLHandlerRegistry();
     m_sysConsole = new CSysConsole();
     m_application = new CGUCEFApplication();
+    m_taskManager = new CTaskManager();
+    m_pluginControl = new CPluginControl();
+    m_dstoreCodecPluginManager = new CDStoreCodecPluginManager();
+    m_genericPluginManager = new CGenericPluginManager();
+    m_stdCodecPluginManager = new CStdCodecPluginManager();
 
     #ifdef GUCEF_MSWIN_BUILD
     CWndMsgHookNotifier::RegisterEvents();
@@ -252,6 +242,24 @@ CCoreGlobal::CCoreGlobal( void )
     m_dstoreCodecRegistry->Register( "ini", new CIniDataStoreCodec() );
 
     GUCEF_SYSTEM_LOG( LOGLEVEL_NORMAL, "gucefCORE Global systems initialized" );
+}
+
+/*-------------------------------------------------------------------------*/
+
+CCoreGlobal::CCoreGlobal( void )
+    : m_taskManager( NULL )                ,
+      m_urlHandlerRegistry( NULL )         ,
+      m_dstoreCodecRegistry( NULL )        ,
+      m_exclusiveActivationManager( NULL ) ,
+      m_application( NULL )                ,
+      m_logManager( NULL )                 ,
+      m_dstoreCodecPluginManager( NULL )   ,
+      m_genericPluginManager( NULL )       ,
+      m_pluginControl( NULL )              ,
+      m_sysConsole( NULL )                 ,
+      m_notificationIdRegistry( NULL )     ,
+      m_stdCodecPluginManager( NULL )
+{GUCEF_TRACE;
 
 }
 

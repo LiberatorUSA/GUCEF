@@ -120,7 +120,7 @@ CGUCEFApplication::CGUCEFApplication( void )
     /*
      *      Register some functionality at the system console
      */
-    CSysConsole* sysconsole = CSysConsole::Instance();
+    CSysConsole* sysconsole = &CORE::CCoreGlobal::Instance()->GetSysConsole();
     std::vector< CString > args;
     sysconsole->RegisterCmd( "GUCEF\\CORE\\CGUCEFApplication" ,
                              "Stop"                           ,

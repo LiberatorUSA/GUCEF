@@ -74,14 +74,6 @@ class GUCEF_CORE_PUBLIC_CPP CNotificationIDRegistry
     public:
 
     /**
-     *  Standard singleton Instance()
-     *  creates the singleton object if it does not exist yet
-     *
-     *  @return pointer to the singleton object
-     */
-    static CNotificationIDRegistry* Instance( void );
-
-    /**
      *  Registers string identifiers and returns a unique event ID which can be used
      *  in it's place.
      *

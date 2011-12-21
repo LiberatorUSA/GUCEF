@@ -87,8 +87,6 @@ class GUCEF_CORE_PUBLIC_CPP CLogManager
     };
     typedef enum ELogMsgType TLogMsgType;
 
-    static CLogManager* Instance( void );
-
     void AddLogger( CILogger* loggerImp );
 
     void RemoveLogger( CILogger* loggerImp );
@@ -137,10 +135,6 @@ class GUCEF_CORE_PUBLIC_CPP CLogManager
 
     private:
 
-    static void Deinstance( void );
-
-    private:
-
     typedef std::set< CILogger* > TLoggerList;
 
     struct SBootstrapLogEntry
@@ -159,8 +153,6 @@ class GUCEF_CORE_PUBLIC_CPP CLogManager
     TBootstrapLogVector m_bootstrapLog;
     bool m_busyLogging;
     MT::CMutex m_dataLock;
-
-    static CLogManager* g_instance;
 };
 
 /*-------------------------------------------------------------------------*/

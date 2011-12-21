@@ -14,7 +14,7 @@
  *
  *  You should have received a copy of the GNU Lesser General Public
  *  License along with this library; if not, write to the Free Software
- *  Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA 
+ *  Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA
  */
 
 /*-------------------------------------------------------------------------//
@@ -23,9 +23,14 @@
 //                                                                         //
 //-------------------------------------------------------------------------*/
 
+#ifndef GUCEF_CORE_CCOREGLOBAL_H
+#include "gucefCORE_CCoreGlobal.h"
+#define GUCEF_CORE_CCOREGLOBAL_H
+#endif /* GUCEF_CORE_CCOREGLOBAL_H ? */
+
 #ifndef GUCEF_CORE_CSYSCONSOLE_H
 #include "CSysConsole.h"
-#define GUCEF_CORE_CSYSCONSOLE_H 
+#define GUCEF_CORE_CSYSCONSOLE_H
 #endif /* GUCEF_CORE_CSYSCONSOLE_H ? */
 
 #ifndef GUCEF_CORE_CTRACER_H
@@ -51,10 +56,10 @@ namespace CORE {
 //-------------------------------------------------------------------------*/
 
 CSysConsoleClient::CSysConsoleClient( void )
-        : _system( CSysConsole::Instance() )
+        : _system( &CORE::CCoreGlobal::Instance()->GetSysConsole() )
 {GUCEF_TRACE;
 
-        _system->InitClient( this );        
+        _system->InitClient( this );
 }
 
 /*-------------------------------------------------------------------------*/
@@ -67,22 +72,22 @@ CSysConsoleClient::~CSysConsoleClient()
 
 /*-------------------------------------------------------------------------*/
 
-bool 
+bool
 CSysConsoleClient::RegisterCmd( const CString& path                ,
                                 const CString& command             ,
                                 const std::vector< CString >& args ,
                                 CISysConsoleCmdHandler* cmdhandler )
 {GUCEF_TRACE;
-                                          
+
         return _system->RegisterCmd( path       ,
                                      command    ,
                                      args       ,
                                      cmdhandler );
 }
 
-/*-------------------------------------------------------------------------*/                          
+/*-------------------------------------------------------------------------*/
 
-void 
+void
 CSysConsoleClient::UnregisterCmd( const CString& path    ,
                                   const CString& command )
 {GUCEF_TRACE;
@@ -91,9 +96,9 @@ CSysConsoleClient::UnregisterCmd( const CString& path    ,
                                 command );
 }
 
-/*-------------------------------------------------------------------------*/                            
+/*-------------------------------------------------------------------------*/
 
-void 
+void
 CSysConsoleClient::LeaveDir( void )
 {GUCEF_TRACE;
 
@@ -102,26 +107,26 @@ CSysConsoleClient::LeaveDir( void )
 
 /*-------------------------------------------------------------------------*/
 
-bool 
+bool
 CSysConsoleClient::EnterDir( const CString& dirname )
 {GUCEF_TRACE;
 
         return _system->EnterDir( this, dirname );
 }
 
-/*-------------------------------------------------------------------------*/                       
+/*-------------------------------------------------------------------------*/
 
-bool 
+bool
 CSysConsoleClient::JumpTo( const CString& path )
 {GUCEF_TRACE;
 
-        return _system->JumpTo( this , 
+        return _system->JumpTo( this ,
                                 path );
 }
 
-/*-------------------------------------------------------------------------*/                     
+/*-------------------------------------------------------------------------*/
 
-const CString& 
+const CString&
 CSysConsoleClient::GetPath( void ) const
 {GUCEF_TRACE;
 
@@ -130,21 +135,21 @@ CSysConsoleClient::GetPath( void ) const
 
 /*-------------------------------------------------------------------------*/
 
-bool 
+bool
 CSysConsoleClient::Execute( const CString& functionname            ,
                             const std::vector< CString >& arglist  ,
                             std::vector< CString >& resultdata     )
 {GUCEF_TRACE;
 
-        return _system->Execute( this         , 
+        return _system->Execute( this         ,
                                  functionname ,
                                  arglist      ,
-                                 resultdata   );     
+                                 resultdata   );
 }
 
-/*-------------------------------------------------------------------------*/                      
+/*-------------------------------------------------------------------------*/
 
-std::vector< CString > 
+std::vector< CString >
 CSysConsoleClient::GetDirList( void ) const
 {GUCEF_TRACE;
 
@@ -153,7 +158,7 @@ CSysConsoleClient::GetDirList( void ) const
 
 /*-------------------------------------------------------------------------*/
 
-std::vector< CString > 
+std::vector< CString >
 CSysConsoleClient::GetCmdList( void ) const
 {GUCEF_TRACE;
 
@@ -172,14 +177,14 @@ CSysConsoleClient::ProcessUserInput( const CString& userInput  ,
     {
          CString dirString = userInput.CutChars( 3, true );
          if ( dirString.Length() > 0 )
-         {  
+         {
             if ( 0 == dirString.HasSubstr( "..", true ) )
             {
                 LeaveDir();
                 return true;
             }
             dirString = dirString.ReplaceChar( '/', '\\' );
-            return JumpTo( dirString );           
+            return JumpTo( dirString );
          }
     }
     else
@@ -200,7 +205,7 @@ CSysConsoleClient::ProcessUserInput( const CString& userInput  ,
             }
         }
     }
-    
+
     TStringVector elements = userInput.ParseElements( ' ', false );
     if ( elements.size() > 0 )
     {
@@ -215,11 +220,11 @@ CSysConsoleClient::ProcessUserInput( const CString& userInput  ,
 
 /*-------------------------------------------------------------------------*/
 
-void 
+void
 CSysConsoleClient::OnReturnData( const TStringVector& data )
 {GUCEF_TRACE;
 
-    /* dummy, to avoid mandatory implementation for descending classes */        
+    /* dummy, to avoid mandatory implementation for descending classes */
 }
 
 /*-------------------------------------------------------------------------//

@@ -230,7 +230,7 @@ GetXmlDStoreCodec( void )
     static CORE::CDStoreCodecRegistry::TDStoreCodecPtr codecPtr;
     if ( codecPtr.IsNULL() )
     {
-        CORE::CDStoreCodecRegistry* registry = CORE::CDStoreCodecRegistry::Instance();
+        CORE::CDStoreCodecRegistry* registry = &CORE::CCoreGlobal::Instance()->GetDStoreCodecRegistry();
         if ( !registry->TryLookup( "XML", codecPtr, false ) )
         {
             // No codec is registered to handle XML, try and load a plugin for it

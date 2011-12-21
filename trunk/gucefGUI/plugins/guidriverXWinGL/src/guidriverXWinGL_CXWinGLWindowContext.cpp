@@ -134,7 +134,7 @@ void
 CXWinGLWindowContext::Shutdown( void )
 {GUCEF_TRACE;
 
-	CORE::CPulseGenerator& pulseGenerator = CORE::CGUCEFApplication::Instance()->GetPulseGenerator();
+	CORE::CPulseGenerator& pulseGenerator = CORE::CCoreGlobal::Instance()->GetPulseGenerator();
     pulseGenerator.RequestStopOfPeriodicUpdates( this );
     UnsubscribeFrom( &pulseGenerator );
 

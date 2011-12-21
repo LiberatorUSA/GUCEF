@@ -35,15 +35,10 @@
 #define GUCEF_CORE_DVSTRUTILS_H
 #endif /* GUCEF_CORE_DVSTRUTILS_H ? */
 
-#ifndef GUCEF_CORE_CTRACER_H
-#include "CTracer.h"
-#define GUCEF_CORE_CTRACER_H
-#endif /* GUCEF_CORE_CTRACER_H ? */
-
-#ifndef GUCEF_CORE_CLOGMANAGER_H
-#include "CLogManager.h"
-#define GUCEF_CORE_CLOGMANAGER_H
-#endif /* GUCEF_CORE_CLOGMANAGER_H ? */
+#ifndef GUCEF_CORE_LOGGING_H
+#include "gucefCORE_Logging.h"
+#define GUCEF_CORE_LOGGING_H
+#endif /* GUCEF_CORE_LOGGING_H ? */
 
 #ifndef GUCEF_COMCORE_DVSOCKET_H
 #include "dvwinsock.h"
@@ -165,7 +160,7 @@ CIPAddress::ResolveDNS( const CORE::CString& address ,
         struct hostent* retval = dvsocket_gethostbyname( address.C_String(), &errorCode );
         if ( retval != NULL )
         {
-            GUCEF_DEBUG_LOG( 1, CORE::CString( "CIPAddress::CIPAddress() DNS resolution: gethostbyname(): full name: " ) + retval->h_name );
+            GUCEF_DEBUG_LOG( CORE::LOGLEVEL_NORMAL, CORE::CString( "CIPAddress::CIPAddress() DNS resolution: gethostbyname(): full name: " ) + retval->h_name );
             char* addrStr = inet_ntoa( *( struct ::in_addr*)( retval->h_addr_list[0] ) );
             Int32 netaddr = inet_addr( addrStr );
             if ( netaddr >= 0 )

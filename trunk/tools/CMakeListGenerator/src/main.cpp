@@ -295,7 +295,7 @@ GetXmlDStoreCodec( void )
     static CORE::CDStoreCodecRegistry::TDStoreCodecPtr codecPtr;
     if ( codecPtr.IsNULL() )
     {
-        CORE::CDStoreCodecRegistry* registry = CORE::CDStoreCodecRegistry::Instance();
+        CORE::CDStoreCodecRegistry* registry = &CORE::CCoreGlobal::Instance()->GetDStoreCodecRegistry();
         if ( !registry->TryLookup( "XML", codecPtr, false ) )
         {
             // No codec is registered to handle XML, try and load a plugin for it
@@ -344,9 +344,9 @@ GetXmlDStoreCodec( void )
             }
 
             #else
-            
+
             // Plugin loading not supported
-            GUCEF_ERROR_LOG( CORE::LOGVEL_NORMAL, "Plugin loading is not supported for this platform via the ProjectGenerator" );  
+            GUCEF_ERROR_LOG( CORE::LOGVEL_NORMAL, "Plugin loading is not supported for this platform via the ProjectGenerator" );
 
             #endif
 
@@ -3290,14 +3290,14 @@ main( int argc , char* argv[] )
     CORE::CFileAccess logFileAccess( logFilename, "w" );
 
     CORE::CStdLogger logger( logFileAccess );
-    CORE::CLogManager::Instance()->AddLogger( &logger );
+    CORE::CCoreGlobal::Instance()->GetLogManager().AddLogger( &logger );
 
     #if ( GUCEF_PLATFORM == GUCEF_PLATFORM_MSWIN )
     CORE::CMSWinConsoleLogger consoleOut;
     CORE::CLogManager::Instance()->AddLogger( &consoleOut );
     #elif ( GUCEF_PLATFORM == GUCEF_PLATFORM_LINUX )
     CORE::CXTermConsoleLogger consoleOut;
-    CORE::CLogManager::Instance()->AddLogger( &consoleOut );
+    CORE::CCoreGlobal::Instance()->GetLogManager().AddLogger( &consoleOut );
     #endif
 
     GUCEF_LOG( CORE::LOGLEVEL_NORMAL, "This tool was compiled on: " __DATE__ " @ " __TIME__ );

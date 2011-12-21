@@ -14,7 +14,7 @@
  *
  *  You should have received a copy of the GNU Lesser General Public
  *  License along with this library; if not, write to the Free Software
- *  Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA 
+ *  Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA
  */
 
 /*-------------------------------------------------------------------------//
@@ -105,15 +105,15 @@ typedef CORE::CTFactory< CORE::CTaskConsumer, CPingTaskConsumer > TPingTaskConsu
 //                                                                         //
 //-------------------------------------------------------------------------*/
 
-bool 
+bool
 CGUCEFCOMCOREModule::Load( void )
 {
     GUCEF_SYSTEM_LOG( CORE::LOGLEVEL_NORMAL, "gucefCOMCORE Module loaded" );
-    
+
     #if ( GUCEF_PLATFORM == GUCEF_PLATFORM_MSWIN )
     InitWinsock( 1 );
     #endif
-    
+
     CTCPConnection::RegisterEvents();
     CTCPServerSocket::RegisterEvents();
     CTCPClientSocket::RegisterEvents();
@@ -122,31 +122,31 @@ CGUCEFCOMCOREModule::Load( void )
     CPingTaskConsumer::RegisterEvents();
     CUDPMasterSocket::RegisterEvents();
     CUDPChannel::RegisterEvents();
-    
-    // Make the task manager capable of handling ping tasks    
-    CORE::CTaskManager::Instance()->RegisterTaskConsumerFactory( CPingTaskConsumer::GetTypeString() ,
-                                                                 new TPingTaskConsumerFactory()     );
-    
+
+    // Make the task manager capable of handling ping tasks
+    CORE::CCoreGlobal::Instance()->GetTaskManager().RegisterTaskConsumerFactory( CPingTaskConsumer::GetTypeString() ,
+                                                                                 new TPingTaskConsumerFactory()     );
+
     CCom::Instance();
-    
+
     return true;
 }
 
 /*-------------------------------------------------------------------------*/
-        
-bool 
+
+bool
 CGUCEFCOMCOREModule::Unload( void )
 {
     GUCEF_SYSTEM_LOG( CORE::LOGLEVEL_NORMAL, "gucefCOMCORE Module unloading" );
-    
+
     CCom::Deinstance();
 
-    CORE::CTaskManager::Instance()->UnregisterTaskConsumerFactory( CPingTaskConsumer::GetTypeString() );
-    
+    CORE::CCoreGlobal::Instance()->GetTaskManager().UnregisterTaskConsumerFactory( CPingTaskConsumer::GetTypeString() );
+
     #if ( GUCEF_PLATFORM == GUCEF_PLATFORM_MSWIN )
     ShutdownWinsock();
     #endif
-            
+
     return true;
 }
 

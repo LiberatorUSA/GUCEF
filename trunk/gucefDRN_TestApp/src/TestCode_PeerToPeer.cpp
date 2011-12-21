@@ -14,9 +14,9 @@
  *
  *  You should have received a copy of the GNU Lesser General Public
  *  License along with this library; if not, write to the Free Software
- *  Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA 
+ *  Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA
  */
- 
+
 /*-------------------------------------------------------------------------//
 //                                                                         //
 //      INCLUDES                                                           //
@@ -89,23 +89,23 @@ class CTestPeerValidator : public DRN::CIDRNPeerValidator
 
     virtual bool IsPeerAddressValid( const CHostAddress& hostAddress ) const
     {GUCEF_TRACE;
-    
+
 	GUCEF_LOG( GUCEF::CORE::LOGLEVEL_NORMAL, "Question received: is peer address valid" );
         return ( hostAddress.GetHostname() == "localhost" ) || ( hostAddress.GetHostname() == "127.0.0.1" );
     }
-    
+
     virtual bool IsPeerLoginRequired( const DRN::CDRNPeerLink& peerLink ) const
     {GUCEF_TRACE;
-    
+
         GUCEF_LOG( GUCEF::CORE::LOGLEVEL_NORMAL, "Question received: is peer login required" );
         return true;
     }
-    
+
     virtual bool IsPeerLoginValid( const DRN::CDRNPeerLink& peerLink ,
                                    const CORE::CString& accountName  ,
                                    const CORE::CString& password     ) const
     {GUCEF_TRACE;
-    
+
         GUCEF_LOG( GUCEF::CORE::LOGLEVEL_NORMAL, "Question received: is peer login valid" );
         return  ( ( accountName == "ValidPeer" ) && ( password == "Password" ) );
     }
@@ -113,7 +113,7 @@ class CTestPeerValidator : public DRN::CIDRNPeerValidator
     virtual bool IsPeerServiceValid( const CORE::CString& serviceName     ,
                                      const CORE::TVersion& serviceVersion ) const
     {GUCEF_TRACE;
-    
+
         if ( serviceName == "TestPeerToPeer" )
         {
             CORE::TVersion correctVersion;
@@ -121,46 +121,46 @@ class CTestPeerValidator : public DRN::CIDRNPeerValidator
             correctVersion.minor = 1;
             correctVersion.patch = 0;
             correctVersion.release = 0;
-            
+
             return ( memcmp( &serviceVersion, &correctVersion, sizeof( CORE::TVersion ) ) == 0 );
-        }        
+        }
         return false;
-    }    
+    }
 
     virtual bool IsPeerDataStreamSubscriptionAllowed( const DRN::CDRNPeerLink& peerLink   ,
                                                       const CORE::CString& dataStreamName ) const
     {GUCEF_TRACE;
-    
+
         return true;
     }
 
     virtual bool IsPeerDataGroupSubscriptionAllowed( const DRN::CDRNPeerLink& peerLink  ,
                                                      const CORE::CString& dataGroupName ) const
     {GUCEF_TRACE;
-    
+
         return true;
     }
 
     virtual bool IsPeerServiceCompatible( const DRN::CDRNPeerLink& peerLink    ,
                                           const CORE::CString& peerServiceName ) const
     {GUCEF_TRACE;
-    
+
         return peerServiceName == "ValidService";
     }
-                                                      
+
     virtual CORE::CString GetServiceName( const DRN::CDRNPeerLink& peerLink ) const
     {GUCEF_TRACE;
-    
+
         return "ValidService";
     }
-    
+
     virtual bool GetLoginForPeer( const DRN::CDRNPeerLink& peerLink ,
                                   CORE::CString& ourAccountName     ,
                                   CORE::CString& ourPassword        )
     {GUCEF_TRACE;
-    
+
         GUCEF_LOG( GUCEF::CORE::LOGLEVEL_NORMAL, "Question received: What is the login for the given peer" );
-        
+
         ourAccountName = "ValidPeer";
         ourPassword = "Password";
         return true;
@@ -173,24 +173,24 @@ class CTestPeerToPeer : public CORE::CObservingNotifier
 {
     private:
 
-    CTestPeerValidator testValidator;        
+    CTestPeerValidator testValidator;
     DRN::CDRNNode nodeA;
-    DRN::CDRNNode nodeB; 
+    DRN::CDRNNode nodeB;
     DRN::CDRNNode::CDRNPeerLinkPtr m_linkA;
     DRN::CDRNNode::CDRNPeerLinkPtr m_linkB;
     DRN::CDRNPeerLinkData::TDRNDataStreamPtr m_streamA;
     DRN::CDRNPeerLinkData::TDRNDataStreamPtr m_streamB;
     std::vector< CORE::CDynamicBuffer > m_streamAOutput;
-    std::vector< CORE::CDynamicBuffer > m_streamBOutput;    
+    std::vector< CORE::CDynamicBuffer > m_streamBOutput;
     DRN::CDRNPeerLinkData::TDRNDataGroupPtr  m_dataGroupA;
     DRN::CDRNPeerLinkData::TDRNDataGroupPtr  m_dataGroupB;
     DRN::CDRNDataGroup::CDRNDataGroupPropertiesPtr m_groupProperties;
     CORE::TStreamerStringString m_streamerA;
     CORE::TStreamerStringString m_streamerB;
-    
+
     public:
-    
-    CTestPeerToPeer( void )    
+
+    CTestPeerToPeer( void )
         : CObservingNotifier() ,
           m_streamA( new DRN::CDRNDataStream( "TestStream" ) )      ,
           m_streamB( new DRN::CDRNDataStream( "TestStream" ) )      ,
@@ -200,41 +200,41 @@ class CTestPeerToPeer : public CORE::CObservingNotifier
           m_streamAOutput()                                         ,
           m_streamBOutput()
     {GUCEF_TRACE;
-    
+
         m_groupProperties->SetAcceptNewPeerItems( true );
         m_groupProperties->SetAcceptNewStreamerItems( true );
         m_groupProperties->SetAcceptUpdatesFromStreamers( true );
         m_groupProperties->SetAllowUnreliableTransmission( false );
         m_groupProperties->SetEmitEntireGroupOnChange( false );
-        
+
         m_dataGroupA->SetGroupProperties( m_groupProperties );
         m_dataGroupB->SetGroupProperties( m_groupProperties );
-        
+
         m_streamerA.SetID( "StreamerID" );
         m_streamerB.SetID( "StreamerID" );
         m_streamerA.SetValue( "InitialString" );
         m_streamerB.SetValue( "InitialString" );
-        
+
         CORE::CDynamicBuffer itemName;
         CORE::CDynamicBuffer itemValue;
-        
+
         itemName.CopyFrom( 15, "DataGroupItem1" );
         itemValue.CopyFrom( 13, "InitialValue" );
-        
+
         m_dataGroupA->SetItem( itemName, itemValue );
         m_dataGroupB->SetItem( itemName, itemValue );
-        
+
         itemName.CopyFrom( 15, "DataGroupItem2" );
 
         m_dataGroupA->SetItem( itemName, itemValue );
         m_dataGroupB->SetItem( itemName, itemValue );
-        
+
         m_dataGroupA->SubscribeTo( &m_streamerA );
         m_dataGroupB->SubscribeTo( &m_streamerB );
 
-		SubscribeTo( CORE::CGUCEFApplication::Instance() );
+		SubscribeTo( &CORE::CCoreGlobal::Instance()->GetApplication() );
     }
-    
+
     bool IsDataGroupTestComplete( DRN::CDRNPeerLinkData::TDRNDataGroupPtr dataGroup )
     {
         if ( NULL != dataGroup )
@@ -243,15 +243,15 @@ class CTestPeerToPeer : public CORE::CObservingNotifier
             {
                 CORE::CDynamicBuffer itemID;
                 CORE::CDynamicBuffer itemValue;
-                
-                itemID.LinkTo( "DataGroupItem1", 15 );                
+
+                itemID.LinkTo( "DataGroupItem1", 15 );
                 if ( dataGroup->GetItem( itemID    ,
                                          itemValue ) )
                 {
                     CORE::CString valueStr = static_cast< const char* >( itemValue.GetConstBufferPtr() );
                     if ( valueStr == "InitialValue" )
                     {
-                        itemID.LinkTo( "DataGroupItem2", 15 );                
+                        itemID.LinkTo( "DataGroupItem2", 15 );
                         if ( dataGroup->GetItem( itemID    ,
                                                  itemValue ) )
                         {
@@ -261,7 +261,7 @@ class CTestPeerToPeer : public CORE::CObservingNotifier
                                 itemID.LinkTo( "StreamerID", 11 );
                                 if ( dataGroup->GetItem( itemID    ,
                                                          itemValue ) )
-                                {                            
+                                {
                                     valueStr = static_cast< const char* >( itemValue.GetConstBufferPtr() );
                                     if ( valueStr == "ValueChange1" )
                                     {
@@ -270,14 +270,14 @@ class CTestPeerToPeer : public CORE::CObservingNotifier
                                     }
                                 }
                             }
-                        }                                                                        
+                        }
                     }
                 }
             }
         }
-        return false;    
+        return false;
     }
-    
+
     bool IsStreamTestComplete( std::vector< CORE::CDynamicBuffer >& output )
     {
         if ( output.size() > 0 )
@@ -292,7 +292,7 @@ class CTestPeerToPeer : public CORE::CObservingNotifier
         }
         return false;
     }
-    
+
     bool IsTheTestComplete( void )
     {
         if ( ( NULL != m_linkA ) &&
@@ -302,7 +302,7 @@ class CTestPeerToPeer : public CORE::CObservingNotifier
                             IsDataGroupTestComplete( m_linkB->GetLinkData().GetSubscribedDataGroupWithName( "TestDataGroup" ) ) &&
                             IsStreamTestComplete( m_streamAOutput ) &&
                             IsStreamTestComplete( m_streamBOutput );
-            
+
             if ( complete )
             {
                 GUCEF_LOG( GUCEF::CORE::LOGLEVEL_NORMAL, "Yay! The test complete condition has been reached for all tests" );
@@ -311,28 +311,28 @@ class CTestPeerToPeer : public CORE::CObservingNotifier
             {
                 GUCEF_LOG( GUCEF::CORE::LOGLEVEL_NORMAL, "The test complete condition has not yet been reached for all tests" );
             }
-            return complete;                            
+            return complete;
         }
-        return false;                   
+        return false;
     }
-    
+
     void SetupTestUtils( void )
     {GUCEF_TRACE;
-    
+
         GUCEF_LOG( GUCEF::CORE::LOGLEVEL_NORMAL, "Setting Node Peer validators" );
-        
+
         nodeA.SetPeerValidator( &testValidator );
         nodeB.SetPeerValidator( &testValidator );
-        
+
         SubscribeTo( &nodeA );
         SubscribeTo( &nodeB );
-        
+
         if ( nodeA.GetPeervalidator() != &testValidator )
         {
             GUCEF_ERROR_LOG( GUCEF::CORE::LOGLEVEL_NORMAL, "Setting Node Peer validators failed" );
             ERRORHERE;
         }
-        
+
         if ( nodeB.GetPeervalidator() != &testValidator )
         {
             GUCEF_ERROR_LOG( GUCEF::CORE::LOGLEVEL_NORMAL, "Setting Node Peer validators failed" );
@@ -347,7 +347,7 @@ class CTestPeerToPeer : public CORE::CObservingNotifier
             ERRORHERE;
         }
         GUCEF_LOG( GUCEF::CORE::LOGLEVEL_NORMAL, "Successfully opened listen port" );
-        
+
         GUCEF_LOG( GUCEF::CORE::LOGLEVEL_NORMAL, "Attempting to connect to node on port " + GUCEF::CORE::Int32ToString( DRN_PEERCOMM_PORT ) );
         if ( !nodeB.ConnectToPeer( "127.0.0.1", DRN_PEERCOMM_PORT ) )
         {
@@ -369,12 +369,12 @@ class CTestPeerToPeer : public CORE::CObservingNotifier
         {
             return "Node B";
         }
-        return "Unknown Source";              
+        return "Unknown Source";
     }
-    
+
     CORE::CString GetLinkNodeName( CORE::CNotifier* notifier )
     {GUCEF_TRACE;
-    
+
         DRN::CDRNPeerLink* link = static_cast< DRN::CDRNPeerLink* >( notifier );
         if ( &link->GetParentNode() == &nodeA )
         {
@@ -384,14 +384,14 @@ class CTestPeerToPeer : public CORE::CObservingNotifier
         {
             return "Node B";
         }
-        return "Unknown Source";              
+        return "Unknown Source";
     }
 
     virtual void OnNotify( CORE::CNotifier* notifier           ,
                            const CORE::CEvent& eventid         ,
                            CORE::CICloneable* eventdata = NULL )
     {GUCEF_TRACE;
-    
+
         if ( CORE::CGUCEFApplication::AppInitEvent == eventid )
         {
             SetupTestUtils();
@@ -400,14 +400,14 @@ class CTestPeerToPeer : public CORE::CObservingNotifier
         if ( DRN::CDRNNode::LinkEstablishedEvent == eventid )
         {
             GUCEF_LOG( GUCEF::CORE::LOGLEVEL_NORMAL, GetNodeName( notifier ) + ": Link established" );
-            
+
             DRN::CDRNNode::LinkEstablishedEventData* eData = static_cast< DRN::CDRNNode::LinkEstablishedEventData* >( eventdata );
-            
+
             if ( notifier == &nodeA )
             {
-                m_linkA = eData->GetData();            
-                SubscribeTo( &(*m_linkA) );                
-                
+                m_linkA = eData->GetData();
+                SubscribeTo( &(*m_linkA) );
+
                 // Publicize directly for this link instead of a global publicize
                 // not the standard method/conveinient method but good for testing
                 m_linkA->GetLinkData().PublicizeStream( m_streamA );
@@ -416,14 +416,14 @@ class CTestPeerToPeer : public CORE::CObservingNotifier
             else
             if ( notifier == &nodeB )
             {
-                m_linkB = eData->GetData();            
+                m_linkB = eData->GetData();
                 SubscribeTo( &(*m_linkB) );
-                
+
                 // Publicize directly for this link instead of a global publicize
-                // not the standard method/conveinient method but good for testing                
+                // not the standard method/conveinient method but good for testing
                 m_linkB->GetLinkData().PublicizeStream( m_streamB );
                 m_linkB->GetLinkData().PublicizeDataGroup( m_dataGroupB );
-            }            
+            }
         }
         else
         if ( DRN::CDRNPeerLink::ConnectedEvent == eventid )
@@ -435,21 +435,21 @@ class CTestPeerToPeer : public CORE::CObservingNotifier
         {
             // We should not get here with our test app
             GUCEF_ERROR_LOG( GUCEF::CORE::LOGLEVEL_NORMAL, GetLinkNodeName( notifier ) + ": Link error" );
-            ERRORHERE;            
+            ERRORHERE;
         }
         else
         if ( DRN::CDRNPeerLink::LinkCorruptionEvent == eventid )
         {
             // We should not get here with our test app
             GUCEF_ERROR_LOG( GUCEF::CORE::LOGLEVEL_NORMAL, GetLinkNodeName( notifier ) + ": Link corruption" );
-            ERRORHERE;            
-        }        
+            ERRORHERE;
+        }
         else
         if ( DRN::CDRNPeerLink::LinkProtocolMismatchEvent == eventid )
         {
             // We should not get here with our test app
             GUCEF_ERROR_LOG( GUCEF::CORE::LOGLEVEL_NORMAL, GetLinkNodeName( notifier ) + ": Link protocol mismatch" );
-            ERRORHERE;            
+            ERRORHERE;
         }
         else
         if ( DRN::CDRNPeerLink::LinkIncompatibleEvent == eventid )
@@ -467,7 +467,7 @@ class CTestPeerToPeer : public CORE::CObservingNotifier
         if ( DRN::CDRNPeerLink::PeerAuthenticationSuccessEvent == eventid )
         {
             GUCEF_LOG( GUCEF::CORE::LOGLEVEL_NORMAL, GetLinkNodeName( notifier ) + ": A peer successfully authenticated with our node" );
-        }        
+        }
         else
         if ( DRN::CDRNPeerLink::PeerAuthenticationFailureEvent == eventid )
         {
@@ -479,8 +479,8 @@ class CTestPeerToPeer : public CORE::CObservingNotifier
         {
             GUCEF_ERROR_LOG( GUCEF::CORE::LOGLEVEL_NORMAL, GetLinkNodeName( notifier ) + ": A peer failed to authenticate with our node" );
             ERRORHERE;
-        }        
-        else        
+        }
+        else
         if ( DRN::CDRNPeerLink::CompatibleServiceEvent == eventid )
         {
             GUCEF_LOG( GUCEF::CORE::LOGLEVEL_NORMAL, GetLinkNodeName( notifier ) + ": The peer is hosting a compatible service" );
@@ -489,44 +489,44 @@ class CTestPeerToPeer : public CORE::CObservingNotifier
         if ( DRN::CDRNPeerLink::IllegalRequestEvent == eventid )
         {
             GUCEF_ERROR_LOG( GUCEF::CORE::LOGLEVEL_NORMAL, GetLinkNodeName( notifier ) + ": The peer claims we made an illegal request" );
-            ERRORHERE;            
+            ERRORHERE;
         }
         else
         if ( DRN::CDRNPeerLink::IncompatibleServiceEvent == eventid )
         {
             GUCEF_ERROR_LOG( GUCEF::CORE::LOGLEVEL_NORMAL, GetLinkNodeName( notifier ) + ": The peer is hosting a Incompatible service" );
             ERRORHERE;
-        }        
+        }
         else
         if ( DRN::CDRNPeerLink::LinkProtocolMatchEvent == eventid )
         {
             GUCEF_LOG( GUCEF::CORE::LOGLEVEL_NORMAL, GetLinkNodeName( notifier ) + ": The peer is using a compatible version of the DRN protocol" );
-        }        
+        }
         else
         if ( DRN::CDRNPeerLink::LinkOperationalForPeerEvent == eventid )
         {
             GUCEF_LOG( GUCEF::CORE::LOGLEVEL_NORMAL, GetLinkNodeName( notifier ) + ": The link is now operational for the peer" );
         }
-        else        
+        else
         if ( DRN::CDRNPeerLink::LinkOperationalForUsEvent == eventid )
         {
             GUCEF_LOG( GUCEF::CORE::LOGLEVEL_NORMAL, GetLinkNodeName( notifier ) + ": The link is now operational for us" );
-            
+
             DRN::CDRNNode::CDRNPeerLinkPtr link = notifier == m_linkA ? m_linkA : m_linkB;
 
             if ( !link->RequestDataGroupList() )
             {
                 // We should not get here with our test app
                 GUCEF_ERROR_LOG( GUCEF::CORE::LOGLEVEL_NORMAL, GetLinkNodeName( notifier ) + ": Failed to request the peer data group list" );
-                ERRORHERE;                
-            }            
+                ERRORHERE;
+            }
             GUCEF_LOG( GUCEF::CORE::LOGLEVEL_NORMAL, GetLinkNodeName( notifier ) + ": Requested data group list from peer" );
 
             if ( !link->RequestStreamList() )
             {
                 // We should not get here with our test app
                 GUCEF_ERROR_LOG( GUCEF::CORE::LOGLEVEL_NORMAL, GetLinkNodeName( notifier ) + ": Failed to request the peer data stream list" );
-                ERRORHERE;                
+                ERRORHERE;
             }
             GUCEF_LOG( GUCEF::CORE::LOGLEVEL_NORMAL, GetLinkNodeName( notifier ) + ": Requested data stream list from peer" );
 
@@ -534,10 +534,10 @@ class CTestPeerToPeer : public CORE::CObservingNotifier
             {
                 // We should not get here with our test app
                 GUCEF_ERROR_LOG( GUCEF::CORE::LOGLEVEL_NORMAL, GetLinkNodeName( notifier ) + ": Failed to request the peer's peer list" );
-                ERRORHERE;                
+                ERRORHERE;
             }
             GUCEF_LOG( GUCEF::CORE::LOGLEVEL_NORMAL, GetLinkNodeName( notifier ) + ": Requested peer list from peer" );
-        }        
+        }
         else
         if ( DRN::CDRNPeerLink::PeerListReceivedFromPeerEvent == eventid )
         {
@@ -547,70 +547,70 @@ class CTestPeerToPeer : public CORE::CObservingNotifier
         if ( DRN::CDRNPeerLink::StreamListReceivedFromPeerEvent == eventid )
         {
             GUCEF_LOG( GUCEF::CORE::LOGLEVEL_NORMAL, GetLinkNodeName( notifier ) + ": received data stream list from peer" );
-            
+
             DRN::CDRNNode::CDRNPeerLinkPtr link = notifier == m_linkA ? m_linkA : m_linkB;
-            
+
             if ( !link->RequestStreamSubscription( "TestStream" ) )
             {
                 // We should not get here with our test app
                 GUCEF_ERROR_LOG( GUCEF::CORE::LOGLEVEL_NORMAL, GetLinkNodeName( notifier ) + ": Failed to request stream subscription" );
-                ERRORHERE;  
+                ERRORHERE;
             }
         }
         else
         if ( DRN::CDRNPeerLink::DataGroupListReceivedFromPeerEvent == eventid )
         {
             GUCEF_LOG( GUCEF::CORE::LOGLEVEL_NORMAL, GetLinkNodeName( notifier ) + ": received data group list from peer" );
-            
+
             DRN::CDRNNode::CDRNPeerLinkPtr link = notifier == m_linkA ? m_linkA : m_linkB;
-            
+
             if ( !link->RequestDataGroupSubscription( "TestDataGroup" ) )
             {
                 // We should not get here with our test app
                 GUCEF_ERROR_LOG( GUCEF::CORE::LOGLEVEL_NORMAL, GetLinkNodeName( notifier ) + ": Failed to request data group subscription" );
-                ERRORHERE;  
-            }            
-        }                
+                ERRORHERE;
+            }
+        }
         else
         if ( DRN::CDRNPeerLink::SubscribedToDataStreamEvent == eventid )
         {
             GUCEF_LOG( GUCEF::CORE::LOGLEVEL_NORMAL, GetLinkNodeName( notifier ) + ": Successfully subscribed to peer data stream" );
-            
+
             DRN::CDRNPeerLink::SubscribedToDataStreamEventData* eData = static_cast< DRN::CDRNPeerLink::SubscribedToDataStreamEventData* >( eventdata );
             if ( NULL == eData )
             {
                 GUCEF_ERROR_LOG( GUCEF::CORE::LOGLEVEL_NORMAL, GetLinkNodeName( notifier ) + ": Failed to obtain name of the subscribed data stream" );
-                ERRORHERE; 
+                ERRORHERE;
             }
-            
+
             CORE::CString streamName = eData->GetData()->GetName();
             if ( streamName.Length() == 0 )
             {
                 GUCEF_ERROR_LOG( GUCEF::CORE::LOGLEVEL_NORMAL, GetLinkNodeName( notifier ) + ": Failed to obtain a proper name for the subscribed data stream" );
-                ERRORHERE;             
+                ERRORHERE;
             }
-            
+
             DRN::CDRNNode::CDRNPeerLinkPtr link = notifier == m_linkA ? m_linkA : m_linkB;
             DRN::CDRNPeerLinkData::TDRNDataStreamPtr stream = link->GetLinkData().GetSubscribedDataStreamWithName( streamName );
-            
+
             if ( NULL == stream )
             {
                 GUCEF_ERROR_LOG( GUCEF::CORE::LOGLEVEL_NORMAL, GetLinkNodeName( notifier ) + ": Failed to obtain the subscribed data stream" );
-                ERRORHERE;                 
+                ERRORHERE;
             }
-            
-            // Now we subscribe this test object to the subscribed stream 
-            SubscribeTo( stream.GetPointer() );            
+
+            // Now we subscribe this test object to the subscribed stream
+            SubscribeTo( stream.GetPointer() );
 
             CORE::UInt16 streamID = 0;
             if ( !link->GetLinkData().GetSubscribedDataStreamID( streamName ,
                                                                  streamID   ) )
             {
                 GUCEF_ERROR_LOG( GUCEF::CORE::LOGLEVEL_NORMAL, GetLinkNodeName( notifier ) + ": Failed to obtain the ID for the subscribed data stream " + streamName );
-                ERRORHERE;            
+                ERRORHERE;
             }
             GUCEF_LOG( GUCEF::CORE::LOGLEVEL_NORMAL, GetLinkNodeName( notifier ) + ": The subscribed data stream has ID " + CORE::UInt16ToString( streamID ) + " and name: " + streamName );
-            
+
             // Simulate sending some data from the peer side using the stream
             DRN::CDRNNode::CDRNPeerLinkPtr peerLink = notifier == m_linkA ? m_linkB : m_linkA;
             DRN::CDRNPeerLinkData::TDRNDataStreamPtr peerStream = peerLink->GetLinkData().GetPublicizedDataStreamWithName( streamName );
@@ -618,49 +618,49 @@ class CTestPeerToPeer : public CORE::CObservingNotifier
             {
                 peerStream->SendData( "TESTDATA", 9 );
             }
-        }        
+        }
         else
         if ( DRN::CDRNPeerLink::SubscribedToDataGroupEvent == eventid )
         {
-            GUCEF_LOG( GUCEF::CORE::LOGLEVEL_NORMAL, GetLinkNodeName( notifier ) + ": Successfully subscribed to peer data group" );   
-            
+            GUCEF_LOG( GUCEF::CORE::LOGLEVEL_NORMAL, GetLinkNodeName( notifier ) + ": Successfully subscribed to peer data group" );
+
             DRN::CDRNPeerLink::SubscribedToDataGroupEventData* eData = static_cast< DRN::CDRNPeerLink::SubscribedToDataGroupEventData* >( eventdata );
             if ( NULL == eData )
             {
                 GUCEF_ERROR_LOG( GUCEF::CORE::LOGLEVEL_NORMAL, GetLinkNodeName( notifier ) + ": Failed to obtain name of the subscribed data group" );
-                ERRORHERE; 
+                ERRORHERE;
             }
-            
+
             CORE::CString groupName = eData->GetData()->GetName();
             if ( groupName.Length() == 0 )
             {
                 GUCEF_ERROR_LOG( GUCEF::CORE::LOGLEVEL_NORMAL, GetLinkNodeName( notifier ) + ": Failed to obtain a proper name for the subscribed data group" );
-                ERRORHERE;             
+                ERRORHERE;
             }
-            
+
             DRN::CDRNNode::CDRNPeerLinkPtr link = notifier == m_linkA ? m_linkA : m_linkB;
             DRN::CDRNPeerLinkData::TDRNDataGroupPtr dataGroup = link->GetLinkData().GetSubscribedDataGroupWithName( groupName );
-            
+
             if ( NULL == dataGroup )
             {
                 GUCEF_ERROR_LOG( GUCEF::CORE::LOGLEVEL_NORMAL, GetLinkNodeName( notifier ) + ": Failed to obtain the subscribed data group " + groupName );
-                ERRORHERE;                 
+                ERRORHERE;
             }
-            
+
             CORE::UInt16 groupID = 0;
             if ( !link->GetLinkData().GetSubscribedDataGroupID( groupName ,
                                                                 groupID   ) )
             {
                 GUCEF_ERROR_LOG( GUCEF::CORE::LOGLEVEL_NORMAL, GetLinkNodeName( notifier ) + ": Failed to obtain the ID for the subscribed data group " + groupName );
-                ERRORHERE;            
+                ERRORHERE;
             }
             GUCEF_LOG( GUCEF::CORE::LOGLEVEL_NORMAL, GetLinkNodeName( notifier ) + ": The subscribed data group has ID " + CORE::UInt16ToString( groupID ) + " and name: " + groupName );
-            
-            // Now we subscribe this test object to the subscribed stream 
-            SubscribeTo( dataGroup.GetPointer() );                    
-            
-            GUCEF_LOG( GUCEF::CORE::LOGLEVEL_NORMAL, GetLinkNodeName( notifier ) + ": Changing value of a streamer" ); 
-            
+
+            // Now we subscribe this test object to the subscribed stream
+            SubscribeTo( dataGroup.GetPointer() );
+
+            GUCEF_LOG( GUCEF::CORE::LOGLEVEL_NORMAL, GetLinkNodeName( notifier ) + ": Changing value of a streamer" );
+
             m_streamerA.SetValue( "ValueChange1" );
             m_streamerB.SetValue( "ValueChange1" );
         }
@@ -669,59 +669,59 @@ class CTestPeerToPeer : public CORE::CObservingNotifier
         {
             DRN::CDRNDataGroup* dataGroup = static_cast< DRN::CDRNDataGroup* >( notifier );
             GUCEF_LOG( GUCEF::CORE::LOGLEVEL_NORMAL, "Data was added to a data group with name: " + dataGroup->GetName() );
-            
+
             if ( IsTheTestComplete() )
             {
                 nodeA.Disconnect();
                 nodeB.Disconnect();
-            }            
+            }
         }
-        else           
+        else
         if ( DRN::CDRNDataGroup::ItemChangedEvent == eventid )
         {
             DRN::CDRNDataGroup* dataGroup = static_cast< DRN::CDRNDataGroup* >( notifier );
             GUCEF_LOG( GUCEF::CORE::LOGLEVEL_NORMAL, "Data was altered for a data group with name: " + dataGroup->GetName() );
-            
+
             if ( IsTheTestComplete() )
             {
                 nodeA.Disconnect();
                 nodeB.Disconnect();
-            }            
-        }        
-        else   
+            }
+        }
+        else
         if ( DRN::CDRNDataGroup::ItemRemovedEvent == eventid )
         {
             DRN::CDRNDataGroup* dataGroup = static_cast< DRN::CDRNDataGroup* >( notifier );
             GUCEF_LOG( GUCEF::CORE::LOGLEVEL_NORMAL, "Data was removed from a data group with name: " + dataGroup->GetName() );
-            
+
             if ( IsTheTestComplete() )
             {
                 nodeA.Disconnect();
                 nodeB.Disconnect();
-            }            
-        }        
-        else        
+            }
+        }
+        else
         if ( DRN::CDRNDataStream::DataTransmittedEvent == eventid )
         {
             DRN::CDRNDataStream* stream = static_cast< DRN::CDRNDataStream* >( notifier );
             GUCEF_LOG( GUCEF::CORE::LOGLEVEL_NORMAL, "Data was transmitted on data stream with name: " + stream->GetName() );
         }
-        else   
+        else
         if ( DRN::CDRNDataStream::DataReceivedEvent == eventid )
         {
             DRN::CDRNDataStream* stream = static_cast< DRN::CDRNDataStream* >( notifier );
             GUCEF_LOG( GUCEF::CORE::LOGLEVEL_NORMAL, "Data was recieved from a data stream with name: " + stream->GetName() );
-            
+
             // First we test what stream we are dealing with and when we know we also grab the output stream
             // for so we can send something back
             std::vector< CORE::CDynamicBuffer >* outputBuffers = NULL;
             DRN::CDRNPeerLinkData::TDRNDataStreamPtr publicizedStream;
-            DRN::CDRNPeerLinkData::TDRNDataStreamPtr subscribedStream = m_linkA->GetLinkData().GetSubscribedDataStreamWithName( stream->GetName() ); 
+            DRN::CDRNPeerLinkData::TDRNDataStreamPtr subscribedStream = m_linkA->GetLinkData().GetSubscribedDataStreamWithName( stream->GetName() );
             if ( subscribedStream == (void*)(stream) )
-            {                
+            {
                 publicizedStream = m_linkA->GetLinkData().GetPublicizedDataStreamWithName( "TestStream" );
-                outputBuffers = &m_streamAOutput; 
-                
+                outputBuffers = &m_streamAOutput;
+
                 GUCEF_LOG( GUCEF::CORE::LOGLEVEL_NORMAL, "The subscribed data stream receiving data belongs to node A" );
             }
             else
@@ -730,19 +730,19 @@ class CTestPeerToPeer : public CORE::CObservingNotifier
                 if ( subscribedStream != (void*)(stream) )
                 {
                     GUCEF_ERROR_LOG( GUCEF::CORE::LOGLEVEL_NORMAL, "Received data on unknown input stream: " + stream->GetName() );
-                    ERRORHERE;                
+                    ERRORHERE;
                 }
-                
+
                 publicizedStream = m_linkB->GetLinkData().GetPublicizedDataStreamWithName( "TestStream" );
                 outputBuffers = &m_streamBOutput;
-                
+
                 GUCEF_LOG( GUCEF::CORE::LOGLEVEL_NORMAL, "The subscribed data stream receiving data belongs to node B" );
             }
-            
+
             // Write the stream output to a buffer so we can verify the results later
-            DRN::CDRNDataStream::DataReceivedEventData* eData = static_cast< DRN::CDRNDataStream::DataReceivedEventData* >( eventdata );                        
+            DRN::CDRNDataStream::DataReceivedEventData* eData = static_cast< DRN::CDRNDataStream::DataReceivedEventData* >( eventdata );
             outputBuffers->push_back( eData->GetData() );
-            
+
             if ( IsTheTestComplete() )
             {
                 nodeA.Disconnect();
@@ -754,26 +754,26 @@ class CTestPeerToPeer : public CORE::CObservingNotifier
                 // required for our test
                 publicizedStream->SendData( "TESTDATA", 9 );
             }
-        }        
-        else         
+        }
+        else
         if ( DRN::CDRNPeerLink::DisconnectedEvent == eventid )
         {
             GUCEF_LOG( GUCEF::CORE::LOGLEVEL_NORMAL, GetNodeName( notifier ) + ": The link has been disconnected, shutting down" );
-            
+
             // The following should end our test by shutting down the test application system and allowing the test
             // function to return to the invoker.
-            CORE::CGUCEFApplication::Instance()->Stop();
+            CORE::CCoreGlobal::Instance()->GetApplication().Stop();
         }
-        else          
+        else
         if ( CORE::CNotifier::SubscribeEvent == eventid )
         {
             // Don't do anything,.. ignore
-        }        
+        }
         else
         {
             GUCEF_LOG( GUCEF::CORE::LOGLEVEL_NORMAL, GetLinkNodeName( notifier ) + ": Unhandled event: " + eventid.GetName() );
-        }        
-    }      
+        }
+    }
 };
 
 /*-------------------------------------------------------------------------//
@@ -785,20 +785,20 @@ class CTestPeerToPeer : public CORE::CObservingNotifier
 void
 PerformPeerToPeerTest( void )
 {GUCEF_TRACE;
-  
+
     try
     {
 		GUCEF_LOG( GUCEF::CORE::LOGLEVEL_NORMAL, "*** Commencing gucefDRN Peer to Peer test ***" );
-        
+
         CTestPeerToPeer test;
-        CORE::CGUCEFApplication::Instance()->main( 0, NULL, true );
+        CORE::CCoreGlobal::Instance()->GetApplication().main( 0, NULL, true );
     }
     catch ( ... )
     {
         GUCEF_ERROR_LOG( GUCEF::CORE::LOGLEVEL_NORMAL, "unhandled exception during PerformPeerToPeerTest()" );
         ERRORHERE;
-    } 
-    
+    }
+
     GUCEF_LOG( GUCEF::CORE::LOGLEVEL_NORMAL, "*** Completed gucefDRN Peer to Peer test ***" );
 }
 

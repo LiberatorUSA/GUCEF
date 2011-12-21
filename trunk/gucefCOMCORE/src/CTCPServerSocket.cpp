@@ -14,7 +14,7 @@
  *
  *  You should have received a copy of the GNU Lesser General Public
  *  License along with this library; if not, write to the Free Software
- *  Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA 
+ *  Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA
  */
 
 /*-------------------------------------------------------------------------//
@@ -71,7 +71,7 @@ namespace COMCORE {
  */
 #define BUFFER_READ_SIZE        25
 
-#define DEFAULT_MAX_CONNECTIONS 100UL 
+#define DEFAULT_MAX_CONNECTIONS 100UL
 #define HEAP_RESIZE_AMOUNT	5UL
 
 /*-------------------------------------------------------------------------//
@@ -113,7 +113,7 @@ struct STCPServerSockData
     UInt32 maxcon;           /* maximum number of connections for this server socket */
     bool blocking;           /* is this a blocking or non-blocking server ? */
     SOCKADDR_IN serverinfo;  /* winsock info on the listening socket */
-    struct timeval timeout;  /* timeout for blocking operations */                
+    struct timeval timeout;  /* timeout for blocking operations */
 };
 typedef struct STCPServerSockData TTCPServerSockData;
 
@@ -124,7 +124,7 @@ typedef struct STCPServerSockData TTCPServerSockData;
 //-------------------------------------------------------------------------*/
 
 CTCPServerSocket::CTCPServerSocket( CORE::CPulseGenerator& pulseGenerator ,
-                                    bool blocking                         ) 
+                                    bool blocking                         )
         : CSocket()                               ,
           _connections( DEFAULT_MAX_CONNECTIONS ) ,
           _active( false )                        ,
@@ -132,48 +132,48 @@ CTCPServerSocket::CTCPServerSocket( CORE::CPulseGenerator& pulseGenerator ,
           m_port( 0 )                             ,
           m_pulseGenerator( &pulseGenerator )
 {GUCEF_TRACE;
-        
+
     _data = new TTCPServerSockData;
     _data->blocking = blocking;
     _data->sockid = 0;
     _data->connectcount = 0;
     _data->maxcon = DEFAULT_MAX_CONNECTIONS;
-            
+
     _connections.reserve( DEFAULT_MAX_CONNECTIONS );
     for ( UInt32 i=0; i<DEFAULT_MAX_CONNECTIONS; ++i )
     {
         _connections[ i ] = new CTCPServerConnection( this, i );
     }
-        
-    SubscribeTo( m_pulseGenerator                                    , 
+
+    SubscribeTo( m_pulseGenerator                                    ,
                  CORE::CPulseGenerator::PulseEvent                   ,
                  &TEventCallback( this, &CTCPServerSocket::OnPulse ) );
 }
 
 /*-------------------------------------------------------------------------*/
 
-CTCPServerSocket::CTCPServerSocket( bool blocking ) 
+CTCPServerSocket::CTCPServerSocket( bool blocking )
         : CSocket()                               ,
           _connections( DEFAULT_MAX_CONNECTIONS ) ,
           _active( false )                        ,
           _blocking( blocking )                   ,
           m_port( 0 )                             ,
-          m_pulseGenerator( &CORE::CGUCEFApplication::Instance()->GetPulseGenerator() )
+          m_pulseGenerator( &CORE::CCoreGlobal::Instance()->GetPulseGenerator() )
 {GUCEF_TRACE;
-        
+
     _data = new TTCPServerSockData;
     _data->blocking = blocking;
     _data->sockid = 0;
     _data->connectcount = 0;
     _data->maxcon = DEFAULT_MAX_CONNECTIONS;
-            
+
     _connections.reserve( DEFAULT_MAX_CONNECTIONS );
     for ( UInt32 i=0; i<DEFAULT_MAX_CONNECTIONS; ++i )
     {
         _connections[ i ] = new CTCPServerConnection( this, i );
     }
-        
-    SubscribeTo( m_pulseGenerator                                    , 
+
+    SubscribeTo( m_pulseGenerator                                    ,
                  CORE::CPulseGenerator::PulseEvent                   ,
                  &TEventCallback( this, &CTCPServerSocket::OnPulse ) );
 }
@@ -186,11 +186,11 @@ CTCPServerSocket::~CTCPServerSocket()
     /*
      *      Clean everything up
      */
-    Close();       
+    Close();
 
     /*
      *      Cleanup connection data
-     */ 
+     */
     for ( UInt32 i=0; i<_connections.size(); ++i )
     {
         delete _connections[ i ];
@@ -216,7 +216,7 @@ CTCPServerSocket::RegisterEvents( void )
 
 /*-------------------------------------------------------------------------*/
 
-CTCPServerConnection* 
+CTCPServerConnection*
 CTCPServerSocket::GetConnectionBySocketId( UInt32 socketId )
 {GUCEF_TRACE;
 
@@ -232,7 +232,7 @@ CTCPServerSocket::GetConnectionBySocketId( UInt32 socketId )
 
 /*-------------------------------------------------------------------------*/
 
-CTCPServerConnection* 
+CTCPServerConnection*
 CTCPServerSocket::GetConnection( UInt32 index )
 {GUCEF_TRACE;
 
@@ -241,19 +241,19 @@ CTCPServerSocket::GetConnection( UInt32 index )
 
 /*-------------------------------------------------------------------------*/
 
-void 
+void
 CTCPServerSocket::OnPulse( CORE::CNotifier* notifier                 ,
                            const CORE::CEvent& eventid               ,
                            CORE::CICloneable* eventdata /* = NULL */ )
 {GUCEF_TRACE;
-    
+
     if ( _active )
     {
         /*
          *      Accept new incoming connections
          */
         AcceptClients();
-        
+
         /*
          *      Update the client connections
          */
@@ -262,12 +262,12 @@ CTCPServerSocket::OnPulse( CORE::CNotifier* notifier                 ,
             for ( UInt32 i=0; i<_connections.size(); ++i )
             {
                 _connections[ i ]->Update();
-            } 
+            }
         }
-    }                                       
+    }
 }
 
-/*-------------------------------------------------------------------------*/   
+/*-------------------------------------------------------------------------*/
 
 void
 CTCPServerSocket::AcceptClients( void )
@@ -276,34 +276,34 @@ CTCPServerSocket::AcceptClients( void )
     int s;          /* s is where the data is stored from the select function */
     int nfds;       /* This is used for Compatibility */
     fd_set conn;    /* Setup the read variable for the Select function */
-    
+
     if ( _data->connectcount < _data->maxcon )
     {
         FD_ZERO( &conn ); // Set the data in conn to nothing
-        FD_SET( _data->sockid , 
+        FD_SET( _data->sockid ,
                 &conn         ); // Tell it to get the data from the Listening Socket
-                    
-        s = 0;        
-        if ( !_data->blocking )                        
+
+        s = 0;
+        if ( !_data->blocking )
         {
             /*
              *  Because we are in non-blocking mode we must make sure the timeout
              *  structure is zero'd or it will block
              */
             memset( &_data->timeout, 0, sizeof( struct timeval ) );
-            
-            /* 
+
+            /*
              *      Up the nfds value by one, shouldnt be the same for each
              *      client that connects for compatibility reasons
              *      Doing a select first will ensure that we don't block on accept()
              */
             nfds = (int)_data->sockid+1;
-            s = select( nfds            , 
-                        &conn           , 
-                        NULL            , 
-                        NULL            , 
+            s = select( nfds            ,
+                        &conn           ,
+                        NULL            ,
+                        NULL            ,
                         &_data->timeout ); // Is there any data coming in?
-                                                    
+
             if ( s > 0 ) /* Someone is trying to Connect */
             {
                 CTCPServerConnection* clientcon;
@@ -311,7 +311,7 @@ CTCPServerSocket::AcceptClients( void )
                 for ( UInt32 i=0; i<_data->maxcon; ++i )
                 {
                     clientcon = (CTCPServerConnection*)(_connections[ i ]);
-                    if ( !clientcon->IsActive() )                                
+                    if ( !clientcon->IsActive() )
                     {
                         int error = 0;
                         aint = sizeof( struct sockaddr );
@@ -326,9 +326,9 @@ CTCPServerSocket::AcceptClients( void )
                          */
                         char clientip[ 20 ];
                         dvsocket_inet_ntoa( clientcon->_data->clientaddr.sin_addr ,
-                                            clientip                              );                                                        
+                                            clientip                              );
                         clientcon->_data->clientip = clientip;
-                        
+
                         /*
                          *      Set the socket into the desired mode of operation
                          *      ie blocking or non-blocking mode
@@ -338,8 +338,8 @@ CTCPServerSocket::AcceptClients( void )
                         {
                             clientcon->_data->sockid = 0;
                             return;
-                        }	                                         
-                        clientcon->_blocking = _blocking;             	                                                
+                        }
+                        clientcon->_blocking = _blocking;
                         if ( !_blocking )
                         {
                             /*
@@ -348,12 +348,12 @@ CTCPServerSocket::AcceptClients( void )
                              */
                             memset( &clientcon->_data->timeout, 0, sizeof( struct timeval ) );
                         }
-                        
+
                         ++_data->connectcount;
                         clientcon->_active = true;
-                                                            
+
                         /*
-                         *      Call the on client connect event handler      
+                         *      Call the on client connect event handler
                          */
                         struct SConnectionInfo eData;
                         eData.hostAddress.SetHostname( clientcon->_data->clientip );
@@ -366,20 +366,20 @@ CTCPServerSocket::AcceptClients( void )
                         eData.connection = clientcon;
                         eData.connectionIndex = i;
                         TClientConnectedEventData cloneableEventData( eData );
-                        NotifyObservers( ClientConnectedEvent, &cloneableEventData );                                                                                 
+                        NotifyObservers( ClientConnectedEvent, &cloneableEventData );
 
                         return;
-                    }                                        
-                }   
+                    }
+                }
             }
-        }                        
-    }        
-} 
+        }
+    }
+}
 
 /*-------------------------------------------------------------------------*/
 
 bool
-CTCPServerSocket::IsActive( void ) const 
+CTCPServerSocket::IsActive( void ) const
 {GUCEF_TRACE;
 
     return _active;
@@ -387,13 +387,13 @@ CTCPServerSocket::IsActive( void ) const
 
 /*-------------------------------------------------------------------------*/
 
-bool 
+bool
 CTCPServerSocket::IsBlocking( void ) const
 {GUCEF_TRACE;
 
     return _blocking;
 }
-                        
+
 /*-------------------------------------------------------------------------*/
 
 bool
@@ -407,19 +407,19 @@ CTCPServerSocket::ListenOnPort( UInt16 servport )
     {
             Close();
     }
-    
+
     int error = 0;
     _data->sockid = dvsocket_socket( AF_INET     ,    /* Go over TCP/IP */
                                      SOCK_STREAM ,    /* This is a stream-oriented socket */
                                      IPPROTO_TCP ,    /* Use TCP rather than UDP */
-                                     &error      );   
-            
-    if ( _data->sockid == INVALID_SOCKET ) 
+                                     &error      );
+
+    if ( _data->sockid == INVALID_SOCKET )
     {
         GUCEF_ERROR_LOG( 1, "CTCPServerSocket: Socket error: " + CORE::Int32ToString( error ) );
         TServerSocketErrorEventData eData( error );
-        NotifyObservers( ServerSocketErrorEvent, &eData );                                                      
-        return false;			
+        NotifyObservers( ServerSocketErrorEvent, &eData );
+        return false;
     }
 
     /* Set the desired blocking mode */
@@ -428,37 +428,37 @@ CTCPServerSocket::ListenOnPort( UInt16 servport )
     {
             NotifyObservers( ServerSocketErrorEvent );
             return false;
-    }	    
-	
+    }
+
 	/*
 	 *      We set the protocol family to TCP/IP
 	 */
 	_data->serverinfo.sin_family = AF_INET;
-	
-	/* 
+
+	/*
 	 *      Since this socket is listening for connections, any local address will do
 	 */
-	_data->serverinfo.sin_addr.s_addr = INADDR_ANY;	
-	
-        /* 
-         *      Convert integer servport to network-byte order
-         *      and insert into the port field	
-         */
-	_data->serverinfo.sin_port = htons( servport );		    
+	_data->serverinfo.sin_addr.s_addr = INADDR_ANY;
 
-        /* 
+        /*
+         *      Convert integer servport to network-byte order
+         *      and insert into the port field
+         */
+	_data->serverinfo.sin_port = htons( servport );
+
+        /*
          *      Bind the socket to our local server address
          */
-	int retval = dvsocket_bind( _data->sockid                  , 
-	                            (LPSOCKADDR)&_data->serverinfo , 
+	int retval = dvsocket_bind( _data->sockid                  ,
+	                            (LPSOCKADDR)&_data->serverinfo ,
 	                            sizeof( _data->serverinfo )    ,
 	                            &error                         );
 
-	if ( retval == SOCKET_ERROR ) 
+	if ( retval == SOCKET_ERROR )
 	{
 		GUCEF_ERROR_LOG( 1, "CTCPServerSocket: Socket error: " + CORE::Int32ToString( error ) );
 		TServerSocketErrorEventData eData( error );
-		NotifyObservers( ServerSocketErrorEvent, &eData );		
+		NotifyObservers( ServerSocketErrorEvent, &eData );
 		return false;
 	}
     /*
@@ -467,46 +467,46 @@ CTCPServerSocket::ListenOnPort( UInt16 servport )
      *      Up to maxcon connections may wait at any
      *      one time to be accept()'ed
      */
-	retval = dvsocket_listen( _data->sockid      , 
+	retval = dvsocket_listen( _data->sockid      ,
 	                          _data->maxcon      ,
-	                          &error             );		
+	                          &error             );
 
-	if ( retval == SOCKET_ERROR ) 
+	if ( retval == SOCKET_ERROR )
 	{
 		TServerSocketErrorEventData eData( error );
-		NotifyObservers( ServerSocketErrorEvent, &eData );                
+		NotifyObservers( ServerSocketErrorEvent, &eData );
 		return false;
 	}
 	_active = true;
-	
+
     NotifyObservers( ServerSocketOpenedEvent );
-	
+
 	m_port = servport;
-	
+
 	/*
 	 *      Accept new connections if there are any.
 	 */
     AcceptClients();
-                             
-    return true;              
+
+    return true;
 }
 
 /*-------------------------------------------------------------------------*/
 
-UInt32 
+UInt32
 CTCPServerSocket::GetMaxConnections( void ) const
-{GUCEF_TRACE; 
+{GUCEF_TRACE;
 
-    return (UInt32) _connections.size(); 
+    return (UInt32) _connections.size();
 }
 
 /*-------------------------------------------------------------------------*/
 
-UInt32 
+UInt32
 CTCPServerSocket::GetActiveCount( void ) const
-{GUCEF_TRACE; 
+{GUCEF_TRACE;
 
-    return _acount; 
+    return _acount;
 }
 
 /*-------------------------------------------------------------------------*/
@@ -520,21 +520,21 @@ CTCPServerSocket::Close( void )
      *      By setting active to false the thread will terminate
      */
     _datalock.Lock();
-    
+
     if ( IsActive() )
-    {        	
+    {
 	    //StopAndWait();
-	
+
         int errorCode;
-        dvsocket_closesocket( _data->sockid, &errorCode );                    
-                        
+        dvsocket_closesocket( _data->sockid, &errorCode );
+
         NotifyObservers( ServerSocketClosedEvent );
-                           
+
         for( UInt32 i=0; i<_connections.size(); ++i )
         {
             _connections[ i ]->Close();
         }
-    }                
+    }
     _datalock.Unlock();
 }
 
@@ -545,19 +545,19 @@ UInt16
 CTCPServerSocket::GetPort( void ) const
 {GUCEF_TRACE;
 
-    return m_port;        
+    return m_port;
 }
 
 /*-------------------------------------------------------------------------*/
 
-void 
+void
 CTCPServerSocket::OnClientConnectionClosed( CTCPServerConnection* connection ,
                                             const UInt32 connectionid        ,
                                             bool closedbyclient              )
 {GUCEF_TRACE;
 
-    NotifyObservers( ClientDisconnectedEvent );     
-}                                            
+    NotifyObservers( ClientDisconnectedEvent );
+}
 
 /*-------------------------------------------------------------------------*/
 
@@ -567,7 +567,7 @@ CTCPServerSocket::GetListenAddress( CHostAddress& listenAddress ) const
 
     _datalock.Lock();
     listenAddress.SetPortInHostByteOrder( m_port );
-    listenAddress.SetHostname( "localhost" );    
+    listenAddress.SetHostname( "localhost" );
     _datalock.Unlock();
 }
 

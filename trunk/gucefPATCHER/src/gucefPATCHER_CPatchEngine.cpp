@@ -14,7 +14,7 @@
  *
  *  You should have received a copy of the GNU Lesser General Public
  *  License along with this library; if not, write to the Free Software
- *  Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA 
+ *  Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA
  */
 
 /*-------------------------------------------------------------------------//
@@ -88,7 +88,7 @@ CPatchEngine::CPatchEngine( CORE::CPulseGenerator& pulseGenerator )
       m_listDataBuffer()                                          ,
       m_isActive( false )                                         ,
       m_stopSignalGiven( false )                                  ,
-      m_config()      
+      m_config()
 {GUCEF_TRACE;
 
     Initialize();
@@ -108,7 +108,7 @@ CPatchEngine::CPatchEngine( void )
       m_isActive( false )                         ,
       m_stopSignalGiven( false )                  ,
       m_config()
-      
+
 {GUCEF_TRACE;
 
     Initialize();
@@ -121,9 +121,9 @@ CPatchEngine::Initialize( void )
 {GUCEF_TRACE;
 
     assert( m_patchListEngine != NULL );
-    
-    RegisterEvents();    
-  
+
+    RegisterEvents();
+
     // Forward events from the list engine
     AddForwardingForEvent( PatchListProcessingStartedEvent, EVENTORIGINFILTER_UNMODIFIED );
     AddForwardingForEvent( PatchListProcessingProgressEvent, EVENTORIGINFILTER_UNMODIFIED );
@@ -143,14 +143,14 @@ CPatchEngine::Initialize( void )
     AddForwardingForEvent( PatchSetProcessingCompletedEvent, EVENTORIGINFILTER_UNMODIFIED );
     AddForwardingForEvent( PatchSetProcessingAbortedEvent, EVENTORIGINFILTER_UNMODIFIED );
     AddForwardingForEvent( PatchSetProcessingFailedEvent, EVENTORIGINFILTER_UNMODIFIED );
-    
+
     // Forward events from the dir engines
     AddForwardingForEvent( DirProcessingStartedEvent, EVENTORIGINFILTER_UNMODIFIED );
     AddForwardingForEvent( DirProcessingProgressEvent, EVENTORIGINFILTER_UNMODIFIED );
     AddForwardingForEvent( DirProcessingCompletedEvent, EVENTORIGINFILTER_UNMODIFIED );
     AddForwardingForEvent( SubDirProcessingStartedEvent, EVENTORIGINFILTER_UNMODIFIED );
     AddForwardingForEvent( SubDirProcessingCompletedEvent, EVENTORIGINFILTER_UNMODIFIED );
-    
+
     // Forward file engine events
     AddForwardingForEvent( FileListProcessingStartedEvent, EVENTORIGINFILTER_UNMODIFIED );
     AddForwardingForEvent( LocalFileIsOKEvent, EVENTORIGINFILTER_UNMODIFIED );
@@ -164,10 +164,10 @@ CPatchEngine::Initialize( void )
     AddForwardingForEvent( FileRetrievalErrorEvent, EVENTORIGINFILTER_UNMODIFIED );
     AddForwardingForEvent( FileStorageErrorEvent, EVENTORIGINFILTER_UNMODIFIED );
     AddForwardingForEvent( FileListProcessingCompleteEvent, EVENTORIGINFILTER_UNMODIFIED );
-    AddForwardingForEvent( FileListProcessingAbortedEvent, EVENTORIGINFILTER_UNMODIFIED );    
-    
+    AddForwardingForEvent( FileListProcessingAbortedEvent, EVENTORIGINFILTER_UNMODIFIED );
+
     SubscribeTo( &m_url );
-    
+
     // Subscribe to all events from the patch list engine
     // This should allow us to receive all events that we wish to forward
     SubscribeTo( m_patchListEngine );
@@ -179,7 +179,7 @@ CPatchEngine::~CPatchEngine()
 {GUCEF_TRACE;
 
     Stop();
-    
+
     delete m_patchListEngine;
     m_patchListEngine = NULL;
 }
@@ -189,7 +189,7 @@ CPatchEngine::~CPatchEngine()
 void
 CPatchEngine::RegisterEvents( void )
 {GUCEF_TRACE;
-    
+
     PatchProcessStartedEvent.Initialize();
     PatchProcessCompletedEvent.Initialize();
     PatchProcessAbortedEvent.Initialize();
@@ -212,7 +212,7 @@ CPatchEngine::GetConfig( void )
 }
 
 /*-------------------------------------------------------------------------*/
-    
+
 const CPatchConfig&
 CPatchEngine::GetConfig( void ) const
 {GUCEF_TRACE;
@@ -229,7 +229,7 @@ CPatchEngine::Start( void )
 {GUCEF_TRACE;
 
     GUCEF_DEBUG_LOG( CORE::LOGLEVEL_NORMAL, "CPatchEngine: Starting" );
-    
+
     // The user should explicitly stop first if we are already busy
     if ( !m_isActive )
     {
@@ -241,11 +241,11 @@ CPatchEngine::Start( void )
             m_isActive = true;
             m_stopSignalGiven = false;
             m_listDataBuffer.Clear();
-            
+
             NotifyObservers( PatchProcessStartedEvent );
-            
+
             // We must obtain the patch list before we can use it,..
-            // Set the URL for the list location        
+            // Set the URL for the list location
             if ( m_url.SetURL( m_config.GetPatchListURL() ) )
             {
                 // Now we try and obtain it
@@ -256,13 +256,13 @@ CPatchEngine::Start( void )
                     NotifyObservers( PatchProcessFailedEvent );
                     return false;
                 }
-                
+
                 // Now we wait
                 return true;
-            }                                 
+            }
         }
     }
-    
+
     NotifyObservers( PatchProcessFailedEvent );
     return false;
 }
@@ -272,24 +272,24 @@ CPatchEngine::Start( void )
 void
 CPatchEngine::Stop( void )
 {GUCEF_TRACE;
-    
+
     GUCEF_DEBUG_LOG( CORE::LOGLEVEL_NORMAL, "CPatchEngine: Stopping" );
-    
+
     if ( !m_stopSignalGiven && m_isActive )
     {
         m_stopSignalGiven = true;
-        
+
         m_url.Deactivate();
         m_patchListEngine->Stop();
     }
 }
 
 /*-------------------------------------------------------------------------*/
-    
+
 bool
 CPatchEngine::IsActive( void ) const
 {GUCEF_TRACE;
-    
+
     return m_isActive;
 }
 
@@ -300,27 +300,27 @@ CPatchEngine::ProcessRecievedPatchList( void )
 {GUCEF_TRACE;
 
     GUCEF_DEBUG_LOG( CORE::LOGLEVEL_NORMAL, "CPatchEngine: Processing patch list" );
-    
+
     // Now we must process the raw patch set data to turn it into something we can use
     // Get the required codec for the current raw patch set data type
-    CORE::CDStoreCodecRegistry::TDStoreCodecPtr codecPtr = CORE::CDStoreCodecRegistry::Instance()->Lookup( m_config.GetPatchListCodec() );
+    CORE::CDStoreCodecRegistry::TDStoreCodecPtr codecPtr = CORE::CCoreGlobal::Instance()->GetDStoreCodecRegistry().Lookup( m_config.GetPatchListCodec() );
     if ( NULL != codecPtr )
     {
         // Prepare vars for the decoding process
         CORE::CDataNode rootNode;
-        CORE::CMFileAccess dataAccess( m_listDataBuffer.GetConstBufferPtr() , 
+        CORE::CMFileAccess dataAccess( m_listDataBuffer.GetConstBufferPtr() ,
                                        m_listDataBuffer.GetDataSize()       );
-                                       
+
         // decode the data in our buffer into a data tree
         if ( codecPtr->BuildDataTree( &rootNode   ,
                                       &dataAccess ) )
         {
             // Now we have to parse the data tree into something more familiar
             CPatchListParser::TPatchList patchList;
-            CPatchListParser listParser;                        
+            CPatchListParser listParser;
             listParser.ParsePatchList( rootNode  ,
                                        patchList );
-                                       
+
             // Now that the raw data has been processed into a real patch list we can commence
             // with the patching process for this patch list
             return m_patchListEngine->Start( patchList                                  ,
@@ -329,9 +329,9 @@ CPatchEngine::ProcessRecievedPatchList( void )
                                              m_config.GetStopOnFileReplacementFailure() );
         }
     }
-    
+
     GUCEF_DEBUG_LOG( CORE::LOGLEVEL_NORMAL, "CPatchEngine: Error while processing patch list" );
-    
+
     // If we get here then we failed to decode the raw data into a patch set
     NotifyObservers( PatchListDecodingFailedEvent );
     return false;
@@ -351,7 +351,7 @@ CPatchEngine::OnNotify( CORE::CNotifier* notifier                 ,
         CORE::CForwardingNotifier::OnNotify( notifier  ,
                                              eventid   ,
                                              eventdata );
-        
+
         if ( notifier == m_patchListEngine )
         {
             if ( eventid == PatchListProcessingCompletedEvent )
@@ -366,7 +366,7 @@ CPatchEngine::OnNotify( CORE::CNotifier* notifier                 ,
             {
                 // Cascade failure
                 m_stopSignalGiven = false;
-                m_isActive = false;                
+                m_isActive = false;
                 NotifyObservers( PatchProcessFailedEvent );
             }
         }
@@ -376,14 +376,14 @@ CPatchEngine::OnNotify( CORE::CNotifier* notifier                 ,
             if ( eventid == CORE::CURL::URLDataRecievedEvent )
             {
                 GUCEF_DEBUG_LOG( CORE::LOGLEVEL_NORMAL, "CPatchEngine: Patch list data received" );
-                
+
                 // Translate event data
                 const CORE::CDynamicBuffer& buffer = ( static_cast< CORE::CURL::TURLDataRecievedEventData* >( eventdata ) )->GetData();
-                
+
                 // Append the data to our buffer
-                m_listDataBuffer.Append( buffer.GetConstBufferPtr() , 
+                m_listDataBuffer.Append( buffer.GetConstBufferPtr() ,
                                          buffer.GetDataSize()       );
-                                        
+
                 NotifyObservers( PatchListDataReceivedEvent );
             }
             else
@@ -391,7 +391,7 @@ CPatchEngine::OnNotify( CORE::CNotifier* notifier                 ,
             {
                 // The retrieval process of the patch list has been completed
                 NotifyObservers( PatchListRetrievalCompletedEvent );
-                
+
                 // Now we must process the received patch list
                 if ( !ProcessRecievedPatchList() )
                 {
@@ -402,17 +402,17 @@ CPatchEngine::OnNotify( CORE::CNotifier* notifier                 ,
             if ( eventid == CORE::CURL::URLDeactivateEvent )
             {
                 GUCEF_DEBUG_LOG( CORE::LOGLEVEL_NORMAL, "CPatchEngine: Aborting patch list retrieval" );
-                
+
                 // Someone has called Stop() while we where busy with our data retrieval
                 m_stopSignalGiven = false;
                 m_isActive = false;
-                NotifyObservers( PatchProcessAbortedEvent );            
+                NotifyObservers( PatchProcessAbortedEvent );
             }
             else
             if ( eventid == CORE::CURL::URLDataRetrievalErrorEvent )
             {
                 GUCEF_DEBUG_LOG( CORE::LOGLEVEL_NORMAL, "CPatchEngine: Patch list data retrieval error" );
-                
+
                 // We failed to obtain the patch list data using the URL
                  m_stopSignalGiven = false;
                  m_isActive = false;
@@ -442,7 +442,7 @@ CPatchEngine::OnNotify( CORE::CNotifier* notifier                 ,
             if ( m_config.HasEngineStopTriggerEvent( eventid ) )
             {
                 Stop();
-            }             
+            }
         }
     }
 }

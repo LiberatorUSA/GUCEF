@@ -14,9 +14,9 @@
  *
  *  You should have received a copy of the GNU Lesser General Public
  *  License along with this library; if not, write to the Free Software
- *  Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA 
+ *  Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA
  */
- 
+
 /*-------------------------------------------------------------------------//
 //                                                                         //
 //      INCLUDES                                                           //
@@ -74,22 +74,22 @@ void cls( void )
 
     /* get the output console handle */
     HANDLE hConsole=GetStdHandle(STD_OUTPUT_HANDLE);
-    
+
     /* get the number of character cells in the current buffer */
-    GetConsoleScreenBufferInfo(hConsole, &csbi);    
+    GetConsoleScreenBufferInfo(hConsole, &csbi);
     dwConSize = csbi.dwSize.X * csbi.dwSize.Y;
-    
+
     /* fill the entire screen with blanks */
     FillConsoleOutputCharacter(hConsole, (TCHAR) ' ',
       dwConSize, coordScreen, &cCharsWritten);
-      
+
     /* get the current text attribute */
     GetConsoleScreenBufferInfo(hConsole, &csbi);
-    
+
     /* now set the buffer's attributes accordingly */
     FillConsoleOutputAttribute(hConsole, csbi.wAttributes,
       dwConSize, coordScreen, &cCharsWritten);
-      
+
     /* put the cursor at (0, 0) */
     SetConsoleCursorPosition(hConsole, coordScreen);
     return;
@@ -100,21 +100,21 @@ void cls( void )
 class CMSWin32ConsoleWindow
 {
     public:
-    
+
     CMSWin32ConsoleWindow( void )
     {
         AllocConsole();
-        
+
         /* reopen stdin handle as console window input */
         freopen( "CONIN$", "rb", stdin );
-        
+
         /* reopen stout handle as console window output */
         freopen( "CONOUT$", "wb", stdout );
-        
+
         /* reopen stderr handle as console window output */
-        freopen( "CONOUT$", "wb", stderr );        
+        freopen( "CONOUT$", "wb", stderr );
     }
-    
+
     ~CMSWin32ConsoleWindow()
     {
         FreeConsole();
@@ -122,6 +122,13 @@ class CMSWin32ConsoleWindow
 };
 
 #endif /* GUCEF_MSWIN_BUILD ? */
+
+#if ( GUCEF_PLATFORM == GUCEF_PLATFORM_LINUX )
+void cls( void )
+{
+    system( "cls" );
+}
+#endif
 
 /*---------------------------------------------------------------------------*/
 
@@ -143,7 +150,7 @@ PrintHeader( void )
     printf( "*                                       *\n" );
     printf( "*****************************************\n" );
     printf( "\n" );
-    printf( " - Tool Version %f\n" , VERSION_NUMBER );    
+    printf( " - Tool Version %f\n" , VERSION_NUMBER );
 }
 
 /*---------------------------------------------------------------------------*/
@@ -166,11 +173,11 @@ PrintHelp( void )
 /*---------------------------------------------------------------------------*/
 
 void
-ParseParams( const int argc                        , 
+ParseParams( const int argc                        ,
              char* argv[]                          ,
              GUCEF::CORE::CValueList& keyValueList )
 {GUCEF_TRACE;
-    
+
     keyValueList.DeleteAll();
     GUCEF::CORE::CString argString;
     if ( argc > 0 )
@@ -183,7 +190,7 @@ ParseParams( const int argc                        ,
         {
             argString += ( ' ' + GUCEF::CORE::CString( argv[ i ] ) );
         }
-        
+
         // Parse the param list based on the " symbol
         keyValueList.SetMultiple( argString, '"' );
     }
@@ -200,26 +207,26 @@ GUCEF_OSMAIN_BEGIN
 	if ( 0 == argc )
 	{
 	    #if GUCEF_PLATFORM == GUCEF_PLATFORM_MSWIN
-	    
+
 	    CMSWin32ConsoleWindow console;
-	    
+
 	    #endif
 
         #if ( GUCEF_PLATFORM != GUCEF_PLATFORM_ANDROID )
-	    
+
 	    PrintHeader();
 	    PrintHelp();
 	    getchar();
-	    
-        #endif	    
+
+        #endif
 	}
 	else
 	{
 	    GUCEF::CORE::CValueList argList;
 	    ParseParams( argc    ,
 	                 argv    ,
-	                 argList ); 
-	                 
+	                 argList );
+
         for ( GUCEF::CORE::UInt32 i=0; i<argList.GetCount(); ++i )
         {
             GUCEF::CORE::CString destPath = argList.GetKey( i );
@@ -228,37 +235,37 @@ GUCEF_OSMAIN_BEGIN
                 if ( 0 == GUCEF::CORE::Delete_File( destPath.C_String() ) )
                 {
                     printf( GUCEF::CORE::CString( "ERROR: Failed to delete file: " + destPath ).C_String() );
-                    
+
                     #if ( GUCEF_PLATFORM != GUCEF_PLATFORM_ANDROID )
                     getchar();
                     #endif
-                    
-                    continue;                           
+
+                    continue;
                 }
                 else
                 {
                     printf( GUCEF::CORE::CString( "Deleted file: " + destPath ).C_String() );
                 }
             }
-            
+
             // Move the new file to the desired final location
             GUCEF::CORE::CString originPath = argList.GetValue( i );
             if ( 0 == GUCEF::CORE::Move_File( destPath.C_String(), originPath.C_String() ) )
             {
                 printf( GUCEF::CORE::CString( "ERROR: Failed to move file: " + originPath + " -> " + destPath ).C_String() );
-                
+
                 #if ( GUCEF_PLATFORM != GUCEF_PLATFORM_ANDROID )
                 getchar();
-                #endif                          
+                #endif
             }
             else
             {
                 printf( GUCEF::CORE::CString( "Moved file: " + originPath + " -> " + destPath ).C_String() );
             }
-        } 
+        }
 
 	}
-	
+
 	return 0;
 }
 GUCEF_OSMAIN_END

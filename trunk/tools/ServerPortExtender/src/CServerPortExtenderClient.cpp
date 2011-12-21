@@ -16,7 +16,7 @@
  *
  *  You should have received a copy of the GNU Lesser General Public
  *  License along with this library; if not, write to the Free Software
- *  Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA 
+ *  Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA
  */
 
 /*-------------------------------------------------------------------------//
@@ -74,7 +74,7 @@ CServerPortExtenderClient::CServerPortExtenderClient( CORE::CPulseGenerator& pul
     m_remoteSPEServerControl.SetPortInHostByteOrder( 10236 );
     m_remoteSPEReversedServer.SetPortInHostByteOrder( 10235 );
     m_localServer.SetPortInHostByteOrder( 10234 );
-    
+
     // Subscribe to control client events
     SubscribeTo( &m_controlClient                                                              ,
                  COMCORE::CTCPClientSocket::ConnectedEvent                                     ,
@@ -91,22 +91,22 @@ CServerPortExtenderClient::CServerPortExtenderClient( CORE::CPulseGenerator& pul
     SubscribeTo( &m_controlClient                                                                 ,
                  COMCORE::CTCPClientSocket::DataRecievedEvent                                     ,
                  &TEventCallback( this, &CServerPortExtenderClient::OnControlClientDataRecieved ) );
-                 
+
     // Subscribe to Pulse
     SubscribeTo( &pulseGenerator                                              ,
                  CORE::CPulseGenerator::PulseEvent                            ,
                  &TEventCallback( this, &CServerPortExtenderClient::OnPulse ) );
-                 
+
     // Request to be periodicly updated
     pulseGenerator.RequestPeriodicPulses( this, 10 );
-    
+
     // Subscribe to timer
     SubscribeTo( &m_reconnectTimer                                                           ,
                  CORE::CTimer::TimerUpdateEvent                                              ,
                  &TEventCallback( this, &CServerPortExtenderClient::OnReconnectTimerUpdate ) );
-                 
+
     // Subscribe to application
-    SubscribeTo( CORE::CGUCEFApplication::Instance()                                ,
+    SubscribeTo( &CORE::CCoreGlobal::Instance()->GetApplication()                   ,
                  CORE::CGUCEFApplication::AppShutdownEvent                          ,
                  &TEventCallback( this, &CServerPortExtenderClient::OnAppShutdown ) );
 }
@@ -135,7 +135,7 @@ CServerPortExtenderClient::ConnectToSPEControlSocket( const COMCORE::CHostAddres
 /*-------------------------------------------------------------------------*/
 
 bool
-CServerPortExtenderClient::ConnectToSPEControlSocket( const CORE::CString& hostname , 
+CServerPortExtenderClient::ConnectToSPEControlSocket( const CORE::CString& hostname ,
                                                       CORE::UInt16 controlPort      )
 {GUCEF_TRACE;
 
@@ -153,22 +153,22 @@ CServerPortExtenderClient::SetLocalServer( const COMCORE::CHostAddress& host )
 }
 
 /*-------------------------------------------------------------------------*/
-    
+
 void
-CServerPortExtenderClient::SetLocalServer( const CORE::CString& hostname , 
+CServerPortExtenderClient::SetLocalServer( const CORE::CString& hostname ,
                                            CORE::UInt16 port             )
 {GUCEF_TRACE;
-    
+
     COMCORE::CHostAddress host( hostname, port );
     SetLocalServer( host );
 }
 
 /*-------------------------------------------------------------------------*/
-    
+
 void
 CServerPortExtenderClient::SetRemoteServerSocket( CORE::UInt16 port )
 {GUCEF_TRACE;
-    
+
     m_remoteSPEReversedServer = m_remoteSPEServerControl;
     m_remoteSPEReversedServer.SetPortInHostByteOrder( port );
 }
@@ -181,7 +181,7 @@ CServerPortExtenderClient::RemoveConnectionUsingLocalClient( COMCORE::CTCPClient
 
     COMCORE::CTCPClientSocket* speClientSocket = m_localToRemoteConnectionMap[ localSocket->GetSocketID() ];
     m_localToRemoteConnectionMap.erase( localSocket->GetSocketID() );
-        
+
     if ( NULL != speClientSocket )
     {
         m_remoteToLocalConnectionMap.erase( speClientSocket->GetSocketID() );
@@ -189,14 +189,14 @@ CServerPortExtenderClient::RemoveConnectionUsingLocalClient( COMCORE::CTCPClient
         m_rsClientConnections.erase( speClientSocket );
         m_clientGarbageHeap.insert( speClientSocket );
     }
-    
+
     localSocket->Close();
-    m_localClientConnections.erase( localSocket );    
-    m_clientGarbageHeap.insert( localSocket );    
+    m_localClientConnections.erase( localSocket );
+    m_clientGarbageHeap.insert( localSocket );
 }
 
 /*-------------------------------------------------------------------------*/
-    
+
 void
 CServerPortExtenderClient::RemoveConnectionUsingSPEClient( COMCORE::CTCPClientSocket* speClientSocket )
 {GUCEF_TRACE;
@@ -211,7 +211,7 @@ CServerPortExtenderClient::RemoveConnectionUsingSPEClient( COMCORE::CTCPClientSo
         m_localClientConnections.erase( localSocket );
         m_clientGarbageHeap.insert( localSocket );
     }
-    
+
     speClientSocket->Close();
     m_rsClientConnections.erase( speClientSocket );
     m_clientGarbageHeap.insert( speClientSocket );
@@ -227,13 +227,13 @@ CServerPortExtenderClient::CleanupGarbage( void )
     {
         GUCEF_LOG( CORE::LOGLEVEL_NORMAL, "ServerPortExtenderClient: Cleaning up discarded client sockets" );
     }
-    
+
     TSocketSet::iterator i = m_clientGarbageHeap.begin();
     while ( i != m_clientGarbageHeap.end() )
     {
         delete (*i);
         m_clientGarbageHeap.erase( i );
-        
+
         i = m_clientGarbageHeap.begin();
     }
 }
@@ -245,22 +245,22 @@ CServerPortExtenderClient::Disconnect( void )
 {GUCEF_TRACE;
 
     GUCEF_LOG( CORE::LOGLEVEL_NORMAL, "ServerPortExtenderClient: Disconnecting,.." );
-    
+
     m_disconnectRequested = true;
     m_controlClient.Close();
-    
+
     TClientConnectionBufferMap::iterator i = m_localClientConnections.begin();
     while ( i != m_localClientConnections.end() )
     {
         RemoveConnectionUsingLocalClient( (*i).first );
         i = m_localClientConnections.begin();
     }
-    
+
     m_localClientConnections.clear();
-    m_rsClientConnections.clear(); 
+    m_rsClientConnections.clear();
     m_remoteToLocalConnectionMap.clear();
     m_localToRemoteConnectionMap.clear();
-    
+
     CleanupGarbage();
 }
 
@@ -273,7 +273,7 @@ CServerPortExtenderClient::OnAppShutdown( CORE::CNotifier* notifier    ,
 {GUCEF_TRACE;
 
     GUCEF_LOG( CORE::LOGLEVEL_NORMAL, "ServerPortExtenderClient: Disconnecting because the application is shutting down" );
-    
+
     Disconnect();
 }
 
@@ -307,14 +307,14 @@ CServerPortExtenderClient::OnPulse( CORE::CNotifier* notifier    ,
 {GUCEF_TRACE;
 
     // transfer data buffered from local clients to the remote SPE server
-    CORE::CDynamicBuffer transferBuffer;    
+    CORE::CDynamicBuffer transferBuffer;
     TClientConnectionBufferMap::iterator i = m_localClientConnections.begin();
     while ( i != m_localClientConnections.end() )
     {
         // Check to see if we need to transfer data for this connection to its linked connection
         CORE::CCyclicDynamicBuffer& cBuffer = (*i).second;
         if ( cBuffer.HasBufferedData() )
-        {        
+        {
             // Since we have data to transfer check if the corresponding connection is available for transfer
             COMCORE::CTCPClientSocket* connection = GetRemoteConnectionForLocalConnection( (*i).first->GetSocketID() );
             if ( NULL != connection )
@@ -322,8 +322,8 @@ CServerPortExtenderClient::OnPulse( CORE::CNotifier* notifier    ,
                 // transfer the data
                 CORE::UInt32 bytesRead;
                 do
-                {        
-                    bytesRead = (*i).second.ReadBlockTo( transferBuffer );                
+                {
+                    bytesRead = (*i).second.ReadBlockTo( transferBuffer );
                     if ( bytesRead > 0 )
                     {
                         GUCEF_DEBUG_LOG( CORE::LOGLEVEL_NORMAL, "ServerPortExtenderClient: Fowarding buffered client data to remote SPE server" );
@@ -332,10 +332,10 @@ CServerPortExtenderClient::OnPulse( CORE::CNotifier* notifier    ,
                 }
                 while ( bytesRead > 0 );
             }
-        }        
+        }
         ++i;
     }
-    
+
     // transfer data buffered from the remote SPE server to local clients
     i = m_rsClientConnections.begin();
     while ( i != m_rsClientConnections.end() )
@@ -343,7 +343,7 @@ CServerPortExtenderClient::OnPulse( CORE::CNotifier* notifier    ,
         // Check to see if we need to transfer data for this connection to its linked connection
         CORE::CCyclicDynamicBuffer& cBuffer = (*i).second;
         if ( cBuffer.HasBufferedData() )
-        {        
+        {
             // Since we have data to transfer check if the corresponding connection is available for transfer
             COMCORE::CTCPClientSocket* connection = GetLocalConnectionForRemoteConnection( (*i).first->GetSocketID() );
             if ( NULL != connection )
@@ -351,8 +351,8 @@ CServerPortExtenderClient::OnPulse( CORE::CNotifier* notifier    ,
                 // transfer the data
                 CORE::UInt32 bytesRead;
                 do
-                {        
-                    bytesRead = (*i).second.ReadBlockTo( transferBuffer );                
+                {
+                    bytesRead = (*i).second.ReadBlockTo( transferBuffer );
                     if ( bytesRead > 0 )
                     {
                         GUCEF_DEBUG_LOG( CORE::LOGLEVEL_NORMAL, "ServerPortExtenderClient: Fowarding buffered remote SPE server data to local client" );
@@ -361,10 +361,10 @@ CServerPortExtenderClient::OnPulse( CORE::CNotifier* notifier    ,
                 }
                 while ( bytesRead > 0 );
             }
-        }        
+        }
         ++i;
     }
-    
+
     CleanupGarbage();
 }
 
@@ -380,51 +380,51 @@ CServerPortExtenderClient::OnClientToActualServerConnected( CORE::CNotifier* not
 }
 
 /*-------------------------------------------------------------------------*/
-                                      
+
 void
 CServerPortExtenderClient::OnClientToActualServerDisconnected( CORE::CNotifier* notifier    ,
                                                                const CORE::CEvent& eventid  ,
                                                                CORE::CICloneable* eventdata )
 {GUCEF_TRACE;
-    
+
     GUCEF_LOG( CORE::LOGLEVEL_NORMAL, "ServerPortExtenderClient: A connection to the actual server has been disconnected" );
-    
+
     // make sure we dismantle our connection links
     RemoveConnectionUsingLocalClient( static_cast< COMCORE::CTCPClientSocket* >( notifier ) );
 }
 
 /*-------------------------------------------------------------------------*/
-                                               
+
 void
 CServerPortExtenderClient::OnClientToActualServerDataRecieved( CORE::CNotifier* notifier    ,
                                                                const CORE::CEvent& eventid  ,
                                                                CORE::CICloneable* eventdata )
 {GUCEF_TRACE;
-    
+
     // received data from the actual server on this client connection.
     // we have to forward it to remote SPE server
     COMCORE::CTCPClientSocket* localClientConnection = static_cast< COMCORE::CTCPClientSocket* >( notifier );
     COMCORE::CTCPClientSocket* remoteClientConnection = GetRemoteConnectionForLocalConnection( localClientConnection->GetSocketID() );
-    
+
     if ( NULL != remoteClientConnection )
     {
         // get the received data
         COMCORE::CTCPClientSocket::TDataRecievedEventData* receivedDataObj = static_cast< COMCORE::CTCPClientSocket::TDataRecievedEventData* >( eventdata );
         const CORE::CDynamicBuffer& receivedData = receivedDataObj->GetData();
-        
+
         GUCEF_LOG( CORE::LOGLEVEL_NORMAL, "ServerPortExtenderClient: Received " + CORE::UInt32ToString( receivedData.GetDataSize() ) + " bytes of data from the actual server, forwarding it" );
-        
+
         // write the received data into our data buffer for this socket
         CORE::CCyclicDynamicBuffer& buffer = m_rsClientConnections[ remoteClientConnection ];
         buffer.Write( receivedData.GetConstBufferPtr(), receivedData.GetDataSize(), 1 );
-        
+
         // send all data from the data buffer
         SendAllDataInBuffer( buffer, *remoteClientConnection );
     }
 }
 
 /*-------------------------------------------------------------------------*/
-                                               
+
 void
 CServerPortExtenderClient::OnClientToActualServerDataSent( CORE::CNotifier* notifier    ,
                                                            const CORE::CEvent& eventid  ,
@@ -435,7 +435,7 @@ CServerPortExtenderClient::OnClientToActualServerDataSent( CORE::CNotifier* noti
 }
 
 /*-------------------------------------------------------------------------*/
-                                           
+
 void
 CServerPortExtenderClient::OnClientToActualServerSocketError( CORE::CNotifier* notifier    ,
                                                               const CORE::CEvent& eventid  ,
@@ -444,7 +444,7 @@ CServerPortExtenderClient::OnClientToActualServerSocketError( CORE::CNotifier* n
 
     CORE::Int32 socketErrorCode = static_cast< COMCORE::CTCPClientSocket::TSocketErrorEventData* >( eventdata )->GetData();
     GUCEF_ERROR_LOG( CORE::LOGLEVEL_IMPORTANT, "ServerPortExtenderClient: Socket error on a connection with the actual server: " + CORE::Int32ToString( socketErrorCode ) );
-    
+
     // Remove the corresponding remote connection
     COMCORE::CTCPClientSocket* localClientConnection = static_cast< COMCORE::CTCPClientSocket* >( notifier );
     RemoveConnectionUsingLocalClient( localClientConnection );
@@ -460,11 +460,11 @@ CServerPortExtenderClient::OnClientToRemoteSPEConnected( CORE::CNotifier* notifi
 
     // We just managed to connect to the remote SPE server
     // Now we should connect to the real server to complete the connection
-    
+
     // initiate a new connection to the local server
     // we create the client socket and add it to our list of connections
     COMCORE::CTCPClientSocket* clientSocket = new COMCORE::CTCPClientSocket( *m_pulseGenerator, false );
-    
+
     // Subscribe to client events
     SubscribeTo( clientSocket                                                                         ,
                  COMCORE::CTCPClientSocket::ConnectedEvent                                            ,
@@ -481,27 +481,27 @@ CServerPortExtenderClient::OnClientToRemoteSPEConnected( CORE::CNotifier* notifi
     SubscribeTo( clientSocket                                                                            ,
                  COMCORE::CTCPClientSocket::DataRecievedEvent                                            ,
                  &TEventCallback( this, &CServerPortExtenderClient::OnClientToActualServerDataRecieved ) );
-    
+
     // add to list of connections and create buffer
-    m_localClientConnections[ clientSocket ];    
-    
+    m_localClientConnections[ clientSocket ];
+
     // map the local to remote client connections
-    MapLocalToRemoteConnection( clientSocket, static_cast< COMCORE::CTCPClientSocket* >( notifier ) ); 
-    
-    clientSocket->ConnectTo( m_localServer );    
+    MapLocalToRemoteConnection( clientSocket, static_cast< COMCORE::CTCPClientSocket* >( notifier ) );
+
+    clientSocket->ConnectTo( m_localServer );
     GUCEF_DEBUG_LOG( CORE::LOGLEVEL_NORMAL, "Received request for a new connection to remote SPE server, created client and attempting to connect" );
 }
 
 /*-------------------------------------------------------------------------*/
-                                      
+
 void
 CServerPortExtenderClient::OnClientToRemoteSPEDisconnected( CORE::CNotifier* notifier    ,
                                                             const CORE::CEvent& eventid  ,
                                                             CORE::CICloneable* eventdata )
 {GUCEF_TRACE;
-    
+
     // make sure we dismantle our connection links
-    RemoveConnectionUsingSPEClient( static_cast< COMCORE::CTCPClientSocket* >( notifier ) );    
+    RemoveConnectionUsingSPEClient( static_cast< COMCORE::CTCPClientSocket* >( notifier ) );
 }
 
 /*-------------------------------------------------------------------------*/
@@ -519,7 +519,7 @@ CServerPortExtenderClient::SendAllDataInBuffer( CORE::CCyclicDynamicBuffer& buff
 }
 
 /*-------------------------------------------------------------------------*/
-                                               
+
 void
 CServerPortExtenderClient::OnClientToRemoteSPEDataRecieved( CORE::CNotifier* notifier    ,
                                                             const CORE::CEvent& eventid  ,
@@ -527,7 +527,7 @@ CServerPortExtenderClient::OnClientToRemoteSPEDataRecieved( CORE::CNotifier* not
 {GUCEF_TRACE;
 
     GUCEF_DEBUG_LOG( CORE::LOGLEVEL_NORMAL, "ServerPortExtenderClient: Received data from remote SPE server" );
-    
+
     // received data from the SPE server on this client connection.
     // we have to forward it to our local server
     COMCORE::CTCPClientSocket* remoteConnection = static_cast< COMCORE::CTCPClientSocket* >( notifier );
@@ -541,7 +541,7 @@ CServerPortExtenderClient::OnClientToRemoteSPEDataRecieved( CORE::CNotifier* not
     buffer.Write( receivedData.GetConstBufferPtr(), receivedData.GetDataSize(), 1 );
 
     // See if we can already forward the data to the local connection
-    COMCORE::CTCPClientSocket* localClientConnection = GetLocalConnectionForRemoteConnection( remoteConnection->GetSocketID() );    
+    COMCORE::CTCPClientSocket* localClientConnection = GetLocalConnectionForRemoteConnection( remoteConnection->GetSocketID() );
     if ( NULL != localClientConnection )
     {
         // send all data from the data buffer
@@ -551,7 +551,7 @@ CServerPortExtenderClient::OnClientToRemoteSPEDataRecieved( CORE::CNotifier* not
 }
 
 /*-------------------------------------------------------------------------*/
-                                               
+
 void
 CServerPortExtenderClient::OnClientToRemoteSPEDataSent( CORE::CNotifier* notifier    ,
                                                         const CORE::CEvent& eventid  ,
@@ -562,16 +562,16 @@ CServerPortExtenderClient::OnClientToRemoteSPEDataSent( CORE::CNotifier* notifie
 }
 
 /*-------------------------------------------------------------------------*/
-                                           
+
 void
 CServerPortExtenderClient::OnClientToRemoteSPESocketError( CORE::CNotifier* notifier    ,
                                                            const CORE::CEvent& eventid  ,
                                                            CORE::CICloneable* eventdata )
 {GUCEF_TRACE;
 
-    CORE::Int32 socketErrorCode = static_cast< COMCORE::CTCPClientSocket::TSocketErrorEventData* >( eventdata )->GetData();    
+    CORE::Int32 socketErrorCode = static_cast< COMCORE::CTCPClientSocket::TSocketErrorEventData* >( eventdata )->GetData();
     GUCEF_ERROR_LOG( CORE::LOGLEVEL_IMPORTANT, "ServerPortExtenderClient: socket error on a connection to the remote SPE server: " + CORE::Int32ToString( socketErrorCode ) );
-    
+
     // make sure we dismantle our connection links
     RemoveConnectionUsingSPEClient( static_cast< COMCORE::CTCPClientSocket* >( notifier ) );
 }
@@ -591,7 +591,7 @@ CServerPortExtenderClient::OnControlMsg( TServerPortExtenderProtocolEnum msgType
             m_controlConnectionInitialized = true;
             break;
         }
-        case SPEP_CONTROL_SERVER_MSG_CREATE_CONNECTION_REQUEST : 
+        case SPEP_CONTROL_SERVER_MSG_CREATE_CONNECTION_REQUEST :
         {
             if ( m_controlConnectionInitialized )
             {
@@ -599,7 +599,7 @@ CServerPortExtenderClient::OnControlMsg( TServerPortExtenderProtocolEnum msgType
                 // we create the client socket and add it to our list of connections
                 COMCORE::CTCPClientSocket* clientSocket = new COMCORE::CTCPClientSocket( *m_pulseGenerator, false );
                 clientSocket->ConnectTo( m_remoteSPEReversedServer );
-                
+
                 // Subscribe to client events
                 SubscribeTo( clientSocket                                                                      ,
                              COMCORE::CTCPClientSocket::ConnectedEvent                                         ,
@@ -616,9 +616,9 @@ CServerPortExtenderClient::OnControlMsg( TServerPortExtenderProtocolEnum msgType
                 SubscribeTo( clientSocket                                                                         ,
                              COMCORE::CTCPClientSocket::DataRecievedEvent                                         ,
                              &TEventCallback( this, &CServerPortExtenderClient::OnClientToRemoteSPEDataRecieved ) );
-                
-                m_rsClientConnections[ clientSocket ]; 
-                
+
+                m_rsClientConnections[ clientSocket ];
+
                 GUCEF_LOG( CORE::LOGLEVEL_NORMAL, "Received request for a new connection to remote SPE server, created client and attempting to connect" );
             }
             else
@@ -646,10 +646,10 @@ CServerPortExtenderClient::OnControlClientConnected( CORE::CNotifier* notifier  
     GUCEF_LOG( CORE::LOGLEVEL_NORMAL, "ServerPortExtenderClient: Control connection established, sending initial handshake,.." );
 
     COMCORE::CTCPClientSocket* clientSocket = static_cast< COMCORE::CTCPClientSocket* >( notifier );
-    
+
     // Send welcome handshake with protocol version so the server can determine
     // whether it is compatible with this client
-    
+
     char msg[ 3 ];
     msg[ 0 ] = (char) SPEP_INITIAL_CONTROL_CLIENT_MSG;
     msg[ 1 ] = 45; // magic number, additional sanity check
@@ -666,7 +666,7 @@ CServerPortExtenderClient::OnControlClientDisconnected( CORE::CNotifier* notifie
 {GUCEF_TRACE;
 
     GUCEF_LOG( CORE::LOGLEVEL_NORMAL, "ServerPortExtenderClient: Control connection disconnected" );
-    
+
     // Make sure the control connection is always up and running unless explicitly asked to disconnect
     if ( !m_disconnectRequested )
     {
@@ -676,7 +676,7 @@ CServerPortExtenderClient::OnControlClientDisconnected( CORE::CNotifier* notifie
 }
 
 /*-------------------------------------------------------------------------*/
-                                               
+
 void
 CServerPortExtenderClient::OnControlClientDataRecieved( CORE::CNotifier* notifier    ,
                                                         const CORE::CEvent& eventid  ,
@@ -684,11 +684,11 @@ CServerPortExtenderClient::OnControlClientDataRecieved( CORE::CNotifier* notifie
 {GUCEF_TRACE;
 
     GUCEF_DEBUG_LOG( CORE::LOGLEVEL_NORMAL, "ServerPortExtenderClient: Data received on the control connection" );
-    
+
     // Get the data buffer
     COMCORE::CTCPClientSocket::TDataRecievedEventData* eData = static_cast< COMCORE::CTCPClientSocket::TDataRecievedEventData* >( eventdata );
     const CORE::CDynamicBuffer& data = eData->GetData();
-    
+
     CORE::UInt32 dataSize = data.GetDataSize();
     if ( dataSize > 0 )
     {
@@ -699,7 +699,7 @@ CServerPortExtenderClient::OnControlClientDataRecieved( CORE::CNotifier* notifie
 }
 
 /*-------------------------------------------------------------------------*/
-                                               
+
 void
 CServerPortExtenderClient::OnControlClientDataSent( CORE::CNotifier* notifier    ,
                                                     const CORE::CEvent& eventid  ,
@@ -710,7 +710,7 @@ CServerPortExtenderClient::OnControlClientDataSent( CORE::CNotifier* notifier   
 }
 
 /*-------------------------------------------------------------------------*/
-                                           
+
 void
 CServerPortExtenderClient::OnControlClientSocketError( CORE::CNotifier* notifier    ,
                                                        const CORE::CEvent& eventid  ,
@@ -719,12 +719,12 @@ CServerPortExtenderClient::OnControlClientSocketError( CORE::CNotifier* notifier
 
     CORE::Int32 socketErrorCode = static_cast< COMCORE::CTCPClientSocket::TSocketErrorEventData* >( eventdata )->GetData();
     GUCEF_ERROR_LOG( CORE::LOGLEVEL_IMPORTANT, "ServerPortExtenderClient: Socket error on the control connection: " + CORE::Int32ToString( socketErrorCode ) );
-    
+
     // Make sure the control connection is always up and running unless explicitly asked to disconnect
     if ( !m_disconnectRequested )
     {
         GUCEF_LOG( CORE::LOGLEVEL_NORMAL, "ServerPortExtenderClient: Starting control connection reconnect timer with interval " + CORE::UInt32ToString( m_reconnectTimer.GetInterval() ) );
-        
+
         m_reconnectTimer.SetEnabled( true );
     }
 }
@@ -737,7 +737,7 @@ CServerPortExtenderClient::MapLocalToRemoteConnection( COMCORE::CTCPClientSocket
 {GUCEF_TRACE;
 
     GUCEF_LOG( CORE::LOGLEVEL_NORMAL, "ServerPortExtenderClient: Mapped connection to the actual server to a connection to the remote SPE server" );
-    
+
     m_remoteToLocalConnectionMap[ remoteSocket->GetSocketID() ] = localSocket;
     m_localToRemoteConnectionMap[ localSocket->GetSocketID() ] = remoteSocket;
 }
@@ -757,7 +757,7 @@ CServerPortExtenderClient::GetRemoteConnectionForLocalConnection( const CORE::UI
 }
 
 /*-------------------------------------------------------------------------*/
-    
+
 COMCORE::CTCPClientSocket*
 CServerPortExtenderClient::GetLocalConnectionForRemoteConnection( const CORE::UInt32 socketId )
 {GUCEF_TRACE;

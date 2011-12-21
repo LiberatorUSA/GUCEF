@@ -14,19 +14,19 @@
  *
  *  You should have received a copy of the GNU Lesser General Public
  *  License along with this library; if not, write to the Free Software
- *  Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA 
+ *  Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA
  */
- 
+
 /*-------------------------------------------------------------------------//
 //                                                                         //
 //      INCLUDES                                                           //
 //                                                                         //
 //-------------------------------------------------------------------------*/
 
-#ifndef GUCEF_CORE_CLOGMANAGER_H
-#include "CLogManager.h"
-#define GUCEF_CORE_CLOGMANAGER_H
-#endif /* GUCEF_CORE_CLOGMANAGER_H ? */
+#ifndef GUCEF_CORE_LOGGING_H
+#include "gucefCORE_Logging.h"
+#define GUCEF_CORE_LOGGING_H
+#endif /* GUCEF_CORE_LOGGING_H ? */
 
 #ifndef GUCEF_CORE_DVCPPSTRINGUTILS_H
 #include "dvcppstringutils.h"
@@ -74,10 +74,10 @@ CPatchListParser::ParsePatchList( const CORE::CDataNode& patchListData ,
                                   TPatchList& patchList                ) const
 {GUCEF_TRACE;
 
-    GUCEF_DEBUG_LOG( CORE::LOGLEVEL_NORMAL, "CPatchListParser(" + CORE::PointerToString( this ) + "): Parsing patch list" );    
-    
+    GUCEF_DEBUG_LOG( CORE::LOGLEVEL_NORMAL, "CPatchListParser(" + CORE::PointerToString( this ) + "): Parsing patch list" );
+
     const CORE::CDataNode* patchListNode = patchListData.Find( "PatchList" );
-    
+
     if ( patchListNode != NULL )
     {
         const CORE::CDataNode* patchListEntry( NULL );
@@ -93,7 +93,7 @@ CPatchListParser::ParsePatchList( const CORE::CDataNode& patchListData ,
                 {
                     // A name was found, we can continue on to parse the patch set's locations
                     const CORE::CString& patchSetName = attData->second;
-                    
+
                     const CORE::CDataNode* patchSetLocEntry( NULL );
                     CORE::CDataNode::const_iterator n = patchListEntry->ConstBegin();
                     while ( n != patchListEntry->ConstEnd() )
@@ -108,14 +108,14 @@ CPatchListParser::ParsePatchList( const CORE::CDataNode& patchListData ,
                             {
                                 // We have a URL
                                 const CORE::CString& patchSetLocURL = attData->second;
-                                
+
                                 // Get the codec name for the patch set data
-                                attData = patchSetLocEntry->GetAttribute( "Codec" ); 
+                                attData = patchSetLocEntry->GetAttribute( "Codec" );
                                 if ( attData != NULL )
                                 {
                                     // We have the codec name
                                     const CORE::CString& patchSetDataCodec = attData->second;
-                                    
+
                                     // We have all the info we need for this location
                                     // we can now add the location to the list
                                     TPatchSetLocation location;
@@ -126,15 +126,15 @@ CPatchListParser::ParsePatchList( const CORE::CDataNode& patchListData ,
                                 }
                             }
                         }
-                        
+
                         ++n;
                     }
                 }
             }
-                           
+
             ++i;
         }
-    } 
+    }
 }
 
 /*-------------------------------------------------------------------------//
