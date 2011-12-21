@@ -14,9 +14,9 @@
  *
  *  You should have received a copy of the GNU Lesser General Public
  *  License along with this library; if not, write to the Free Software
- *  Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA 
+ *  Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA
  */
- 
+
 /*-------------------------------------------------------------------------//
 //                                                                         //
 //      INCLUDES                                                           //
@@ -41,7 +41,7 @@
 //                                                                         //
 //-------------------------------------------------------------------------*/
 
-namespace GUCEF { 
+namespace GUCEF {
 namespace CORE {
 
 /*-------------------------------------------------------------------------//
@@ -82,9 +82,8 @@ CTaskDelegator::CTaskDelegator( void )
 {GUCEF_TRACE;
 
     RegisterEvents();
-    
-    CTaskManager::Instance()->RegisterTaskDelegator( *this );
 
+    CCoreGlobal::Instance()->GetTaskManager().RegisterTaskDelegator( *this );
 }
 
 /*-------------------------------------------------------------------------*/
@@ -92,7 +91,7 @@ CTaskDelegator::CTaskDelegator( void )
 CTaskDelegator::~CTaskDelegator()
 {GUCEF_TRACE;
 
-    CTaskManager::Instance()->UnregisterTaskDelegator( *this );
+    CCoreGlobal::Instance()->GetTaskManager().UnregisterTaskDelegator( *this );
 }
 
 /*-------------------------------------------------------------------------*/
@@ -120,9 +119,9 @@ CTaskDelegator::TaskCleanup( CTaskConsumer* taskConsumer ,
                              CICloneable* taskData       )
 {GUCEF_TRACE;
 
-    CTaskManager::Instance()->TaskCleanup( taskConsumer ,
-                                           taskData     );
-                                
+    CCoreGlobal::Instance()->GetTaskManager().TaskCleanup( taskConsumer ,
+                                                           taskData     );
+
     m_taskConsumer = NULL;
 }
 
@@ -134,17 +133,17 @@ CTaskDelegator::OnTaskCycle( void* taskdata )
 
     CICloneable* taskData = NULL;
 
-    if ( CTaskManager::Instance()->GetQueuedTask( &m_taskConsumer ,
-                                                  &taskData       ) )
+    if ( CCoreGlobal::Instance()->GetTaskManager().GetQueuedTask( &m_taskConsumer ,
+                                                                  &taskData       ) )
     {
         ProcessTask( *m_taskConsumer ,
                      taskData        );
-                     
+
         TaskCleanup( m_taskConsumer ,
-                     taskData       );                                    
+                     taskData       );
         m_taskConsumer = NULL;
     }
-    
+
     // Return false, this is an infinate task processing thread
     return false;
 }
@@ -157,26 +156,26 @@ CTaskDelegator::ProcessTask( CTaskConsumer& taskConsumer ,
 {GUCEF_TRACE;
 
     bool returnStatus = false;
-    
+
     // first establish the bi-directional link
     // this delegator is going to be the one to execute this task
     taskConsumer.SetTaskDelegator( this );
-    
-    // Now we go through the execution sequence within a cycle as if this 
+
+    // Now we go through the execution sequence within a cycle as if this
     // where a thread sequence
     m_consumerBusy = true;
     if ( taskConsumer.OnTaskStart( taskData ) )
     {
         taskConsumer.OnTaskStarted( taskData );
-        
+
         // cycle the task as long as it is not "done"
         while ( !taskConsumer.OnTaskCycle( taskData ) )
         {
-            
+
         }
-        
+
         taskConsumer.OnTaskEnd( taskData );
-        taskConsumer.OnTaskEnded( taskData, false );            
+        taskConsumer.OnTaskEnded( taskData, false );
         returnStatus = true;
     }
     else
@@ -221,7 +220,7 @@ CTaskDelegator::OnTaskPausedForcibly( void* taskdata )
 }
 
 /*-------------------------------------------------------------------------*/
-    
+
 void
 CTaskDelegator::OnTaskResumed( void* taskdata )
 {GUCEF_TRACE;
@@ -234,14 +233,14 @@ CTaskDelegator::OnTaskResumed( void* taskdata )
         }
     }
 }
-    
+
 /*-------------------------------------------------------------------------*/
-    
+
 void
 CTaskDelegator::OnTaskEnded( void* taskdata ,
                              bool forced    )
 {GUCEF_TRACE;
-    
+
     // if we get here and the m_consumerBusy flag is set then the task was killed
     // and we did not finish whatever the consumer was doing gracefully
     // We should give the consume a chance to cleanup

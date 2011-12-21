@@ -14,9 +14,9 @@
  *
  *  You should have received a copy of the GNU Lesser General Public
  *  License along with this library; if not, write to the Free Software
- *  Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA 
+ *  Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA
  */
- 
+
 /*-------------------------------------------------------------------------//
 //                                                                         //
 //      INCLUDES                                                           //
@@ -38,7 +38,7 @@
 //                                                                         //
 //-------------------------------------------------------------------------*/
 
-namespace GUCEF { 
+namespace GUCEF {
 namespace CORE {
 
 /*-------------------------------------------------------------------------//
@@ -49,7 +49,7 @@ namespace CORE {
 
 CTSGNotifier::CTSGNotifier( void )
     : CNotifier()                    ,
-      m_tsgObserver( CCoreGlobal::Instance()->GetApplication().GetPulseGenerator() )
+      m_tsgObserver( CCoreGlobal::Instance()->GetPulseGenerator() )
 {GUCEF_TRACE;
 
     m_tsgObserver.SetParent( this );
@@ -79,7 +79,7 @@ CTSGNotifier::CTSGNotifier( const CTSGNotifier& src )
 
 CTSGNotifier::~CTSGNotifier()
 {GUCEF_TRACE;
-    
+
     m_tsgObserver.SetParent( NULL );
 }
 
@@ -94,7 +94,7 @@ CTSGNotifier::operator=( const CTSGNotifier& src )
 
 /*-------------------------------------------------------------------------*/
 
-void 
+void
 CTSGNotifier::SubscribeTo( CNotifier* threadedNotifier )
 {GUCEF_TRACE;
 
@@ -102,8 +102,8 @@ CTSGNotifier::SubscribeTo( CNotifier* threadedNotifier )
 }
 
 /*-------------------------------------------------------------------------*/
-    
-void 
+
+void
 CTSGNotifier::UnsubscribeFrom( CNotifier* threadedNotifier )
 {GUCEF_TRACE;
 
@@ -112,7 +112,7 @@ CTSGNotifier::UnsubscribeFrom( CNotifier* threadedNotifier )
 
 /*-------------------------------------------------------------------------*/
 
-void 
+void
 CTSGNotifier::SubscribeTo( CNotifier* threadedNotifier ,
                            const CEvent& eventid       )
 {GUCEF_TRACE;
@@ -121,28 +121,28 @@ CTSGNotifier::SubscribeTo( CNotifier* threadedNotifier ,
                                  eventid        );
 }
 
-/*-------------------------------------------------------------------------*/                           
-                      
-void 
+/*-------------------------------------------------------------------------*/
+
+void
 CTSGNotifier::UnsubscribeFrom( CNotifier* threadedNotifier ,
                                const CEvent& eventid       )
 {GUCEF_TRACE;
 
     threadedNotifier->Unsubscribe( &m_tsgObserver ,
                                    eventid        );
-}                           
+}
 
 /*-------------------------------------------------------------------------*/
 
-void 
+void
 CTSGNotifier::OnPumpedNotify( CNotifier* notifier                 ,
                               const CEvent& eventid               ,
                               CICloneable* eventdata /* = NULL */ )
 {GUCEF_TRACE;
 
     NotifyObservers( eventid   ,
-                     eventdata );       
-}                              
+                     eventdata );
+}
 
 /*-------------------------------------------------------------------------*/
 
@@ -156,12 +156,12 @@ CTSGNotifier::NotifyObserversFromThread( void )
 }
 
 /*-------------------------------------------------------------------------*/
-    
+
 void
 CTSGNotifier::NotifyObserversFromThread( const CEvent& eventid               ,
                                          CICloneable* eventData /* = NULL */ )
 {GUCEF_TRACE;
-    
+
     m_tsgObserver.AddEventToMailbox( this      ,
                                      eventid   ,
                                      eventData );
@@ -182,16 +182,16 @@ CTSGNotifier::GetClassTypeName( void ) const
 void
 CTSGNotifier::LockData( void ) const
 {GUCEF_TRACE;
-    
+
     m_tsgObserver.DoLockData();
 }
 
 /*-------------------------------------------------------------------------*/
-    
+
 void
 CTSGNotifier::UnlockData( void ) const
 {GUCEF_TRACE;
-    
+
     m_tsgObserver.DoUnlockData();
 }
 

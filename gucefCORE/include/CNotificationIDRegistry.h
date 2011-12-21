@@ -137,24 +137,20 @@ class GUCEF_CORE_PUBLIC_CPP CNotificationIDRegistry
     GUCEF_DEFINE_MSGEXCEPTION( GUCEF_CORE_PUBLIC_CPP, EInvalidEventID );
 
     private:
-    friend class CGUCEFCOREModule;
-
-    static void Deinstance( void );
-
-    private:
+    friend class CCoreGlobal;
 
     CNotificationIDRegistry( void );
 
-    CNotificationIDRegistry( const CNotificationIDRegistry& src );
-
     virtual ~CNotificationIDRegistry();
+
+    private:
+
+    CNotificationIDRegistry( const CNotificationIDRegistry& src );
 
     CNotificationIDRegistry& operator=( const CNotificationIDRegistry& src );
 
     private:
     typedef std::map<const CString,UInt32> TRegistryList;
-
-    static CNotificationIDRegistry* m_instance;
 
     TRegistryList m_list;
     UInt32 m_lastid;

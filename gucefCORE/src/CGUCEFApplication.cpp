@@ -90,41 +90,11 @@ namespace CORE {
 const CEvent CGUCEFApplication::AppInitEvent = "GUCEF::CORE::CGUCEFApplication::AppInitEvent";
 const CEvent CGUCEFApplication::AppShutdownEvent = "GUCEF::CORE::CGUCEFApplication::AppShutdownEvent";
 
-CGUCEFApplication* CGUCEFApplication::_instance = NULL;
-
 /*-------------------------------------------------------------------------//
 //                                                                         //
 //      UTILITIES                                                          //
 //                                                                         //
 //-------------------------------------------------------------------------*/
-
-CGUCEFApplication*
-CGUCEFApplication::Instance( void )
-{GUCEF_TRACE;
-
-    if ( NULL == _instance )
-    {
-         /*
-          *     Instantiate the GUCEF application class
-          */
-        _instance = new CGUCEFApplication();
-        GUCEF_SYSTEM_LOG( LOGLEVEL_NORMAL, "GUCEF::CORE::CGUCEFApplication Singleton created" );
-    }
-    return _instance;
-}
-
-/*-------------------------------------------------------------------------*/
-
-void
-CGUCEFApplication::Deinstance( void )
-{GUCEF_TRACE;
-
-    delete _instance;
-    _instance = NULL;
-    GUCEF_SYSTEM_LOG( LOGLEVEL_NORMAL, "GUCEF::CORE::CGUCEFApplication Singleton destroyed" );
-}
-
-/*-------------------------------------------------------------------------*/
 
 CGUCEFApplication::CGUCEFApplication( void )
     : CIConfigurable( true )                                 ,
@@ -183,15 +153,6 @@ CGUCEFApplication::GetPulseGenerator( void )
 {GUCEF_TRACE;
 
     return m_pulseGenerator;
-}
-
-/*-------------------------------------------------------------------------*/
-
-CBusyWaitPulseGeneratorDriver&
-CGUCEFApplication::GetBusyWaitPulseGeneratorDriver( void )
-{GUCEF_TRACE;
-
-    return m_busyWaitPulseDriver;
 }
 
 /*-------------------------------------------------------------------------*/
@@ -320,13 +281,6 @@ CGUCEFApplication::main( int argc    ,
      *      ensure that we have an instance of this class
      */
     m_mutex.Lock();
-    if ( !_instance )
-    {
-        int retval = Instance()->main( argc ,
-                                       argv ,
-                                       run  );
-        return retval;
-    }
 
     /*
      *      Set the given values as environment vars
@@ -535,33 +489,6 @@ CGUCEFApplication::UnlockData( void )
 {GUCEF_TRACE;
 
     m_mutex.Unlock();
-}
-
-/*-------------------------------------------------------------------------*/
-
-CTaskManager&
-CGUCEFApplication::GetTaskManager( void )
-{GUCEF_TRACE;
-
-    return m_taskManager;
-}
-
-/*-------------------------------------------------------------------------*/
-
-CURLHandlerRegistry&
-CGUCEFApplication::GetUrlHandlerRegistry( void )
-{GUCEF_TRACE;
-
-    return m_urlHandlerRegistry;
-}
-
-/*-------------------------------------------------------------------------*/
-
-CExclusiveActivationManager&
-CGUCEFApplication::GetExclusiveActivationManager( void )
-{GUCEF_TRACE;
-
-    return m_exclusiveActivationManager;
 }
 
 /*-------------------------------------------------------------------------//

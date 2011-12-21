@@ -14,9 +14,9 @@
  *
  *  You should have received a copy of the GNU Lesser General Public
  *  License along with this library; if not, write to the Free Software
- *  Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA 
+ *  Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA
  */
- 
+
 /*-------------------------------------------------------------------------//
 //                                                                         //
 //      INCLUDES                                                           //
@@ -46,7 +46,7 @@
 //                                                                         //
 //-------------------------------------------------------------------------*/
 
-namespace GUCEF { 
+namespace GUCEF {
 namespace CORE {
 
 /*-------------------------------------------------------------------------//
@@ -90,15 +90,15 @@ CTaskConsumer::CTaskConsumer( void )
 {GUCEF_TRACE;
 
     RegisterEvents();
-    CTaskManager::Instance()->RegisterTaskConsumer( *this, m_taskId );
+    CCoreGlobal::Instance()->GetTaskManager().RegisterTaskConsumer( *this, m_taskId );
 }
-    
-/*-------------------------------------------------------------------------*/    
-    
+
+/*-------------------------------------------------------------------------*/
+
 CTaskConsumer::~CTaskConsumer()
 {GUCEF_TRACE;
 
-    CTaskManager::Instance()->UnregisterTaskConsumer( *this, m_taskId );
+    CCoreGlobal::Instance()->GetTaskManager().UnregisterTaskConsumer( *this, m_taskId );
 }
 
 /*-------------------------------------------------------------------------*/
@@ -185,20 +185,20 @@ CTaskConsumer::OnTaskPaused( CICloneable* taskdata ,
 }
 
 /*-------------------------------------------------------------------------*/
-    
+
 void
 CTaskConsumer::OnTaskResumed( CICloneable* taskdata )
 {GUCEF_TRACE;
-    
+
     NotifyObservers( TaskResumedEvent );
 }
 
 /*-------------------------------------------------------------------------*/
-    
+
 void
 CTaskConsumer::OnTaskEnded( CICloneable* taskdata ,
                             bool forced           )
-{GUCEF_TRACE;                             
+{GUCEF_TRACE;
 
     NotifyObservers( TaskFinishedEvent );
 }

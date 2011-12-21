@@ -14,7 +14,7 @@
  *
  *  You should have received a copy of the GNU Lesser General Public
  *  License along with this library; if not, write to the Free Software
- *  Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA 
+ *  Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA
  */
 
 /*-------------------------------------------------------------------------//
@@ -46,14 +46,6 @@ namespace CORE {
 
 /*-------------------------------------------------------------------------//
 //                                                                         //
-//      GLOBAL VARS                                                        //
-//                                                                         //
-//-------------------------------------------------------------------------*/
-
-CStdCodecPluginManager* CStdCodecPluginManager::m_instance = NULL;
-
-/*-------------------------------------------------------------------------//
-//                                                                         //
 //      UTILITIES                                                          //
 //                                                                         //
 //-------------------------------------------------------------------------*/
@@ -61,7 +53,7 @@ CStdCodecPluginManager* CStdCodecPluginManager::m_instance = NULL;
 CStdCodecPluginManager::CStdCodecPluginManager( void )
     : CPluginManager()
 {GUCEF_TRACE;
-    
+
 }
 
 /*-------------------------------------------------------------------------*/
@@ -69,32 +61,6 @@ CStdCodecPluginManager::CStdCodecPluginManager( void )
 CStdCodecPluginManager::~CStdCodecPluginManager()
 {GUCEF_TRACE;
 
-}
-
-/*-------------------------------------------------------------------------*/
-
-CStdCodecPluginManager*
-CStdCodecPluginManager::Instance( void )
-{GUCEF_TRACE;
-    
-    if ( NULL == m_instance )
-    {
-        m_instance = new CStdCodecPluginManager();
-        GUCEF_SYSTEM_LOG( LOGLEVEL_NORMAL, "GUCEF::CORE::CStdCodecPluginManager Singleton created" );
-    }
-    return m_instance;
-}
-
-/*-------------------------------------------------------------------------*/
-
-void
-CStdCodecPluginManager::Deinstance( void )
-{GUCEF_TRACE;
-
-    delete m_instance;
-    m_instance = NULL;
-    
-    GUCEF_SYSTEM_LOG( LOGLEVEL_NORMAL, "GUCEF::CORE::CStdCodecPluginManager Singleton destroyed" );
 }
 
 /*-------------------------------------------------------------------------*/
@@ -119,7 +85,7 @@ CStdCodecPluginManager::RegisterPlugin( void* modulePtr                   ,
     {
         return plugin;
     }
-    
+
     delete plugin;
     return NULL;
 }

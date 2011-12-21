@@ -149,31 +149,6 @@ CSysConsole::~CSysConsole()
 
 /*-------------------------------------------------------------------------*/
 
-CSysConsole*
-CSysConsole::Instance( void )
-{GUCEF_TRACE;
-
-    if ( NULL == _instance )
-    {
-        _instance = new CSysConsole();
-        GUCEF_SYSTEM_LOG( LOGLEVEL_NORMAL, "GUCEF::CORE::CSysConsole Singleton created" );
-    }
-    return _instance;
-}
-
-/*-------------------------------------------------------------------------*/
-
-void
-CSysConsole::Deinstance( void )
-{GUCEF_TRACE;
-
-    delete _instance;
-    _instance = NULL;
-    GUCEF_SYSTEM_LOG( LOGLEVEL_NORMAL, "GUCEF::CORE::CSysConsole Singleton destroyed" );
-}
-
-/*-------------------------------------------------------------------------*/
-
 void
 CSysConsole::DelTree( TCmdChannel* tree )
 {GUCEF_TRACE;

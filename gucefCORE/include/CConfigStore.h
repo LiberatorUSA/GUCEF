@@ -98,16 +98,17 @@ class GUCEF_CORE_PUBLIC_CPP CConfigStore
     void Unregister( CIConfigurable* configobj );
 
     private:
-    friend class CGUCEFCOREModule;
+    friend class CCoreGlobal;
 
-    static void Deinstance( void );
+    CConfigStore( void );
+
+    ~CConfigStore();
 
     private:
 
-    CConfigStore( void );
     CConfigStore( const CConfigStore& src );
+
     CConfigStore& operator=( const CConfigStore& src );
-    ~CConfigStore();
 
     private:
 

@@ -152,9 +152,11 @@ class GUCEF_CORE_PUBLIC_CPP CSysConsole : public CIConfigurable         ,
     void UnregClient( CSysConsoleClient* client );
 
     private:
-    friend class CGUCEFCOREModule;
+    friend class CCoreGlobal;
 
-    static void Deinstance( void );
+    CSysConsole( void );
+
+    ~CSysConsole();
 
     private:
 
@@ -166,9 +168,8 @@ class GUCEF_CORE_PUBLIC_CPP CSysConsole : public CIConfigurable         ,
     typedef struct SAliasData TAliasData;
     typedef std::map< CString, TAliasData > TAliasList;
 
-    CSysConsole( void );
     CSysConsole( const CSysConsole& src );
-    ~CSysConsole();
+
     CSysConsole& operator=( const CSysConsole& src );
 
     struct SCmdChannel* FindChannel( struct SCmdChannel* curchannel ,

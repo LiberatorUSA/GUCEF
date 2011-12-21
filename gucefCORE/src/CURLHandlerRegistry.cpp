@@ -41,14 +41,6 @@ namespace CORE {
 
 /*-------------------------------------------------------------------------//
 //                                                                         //
-//      GLOBAL VARS                                                        //
-//                                                                         //
-//-------------------------------------------------------------------------*/
-
-CURLHandlerRegistry* CURLHandlerRegistry::_instance = NULL;
-
-/*-------------------------------------------------------------------------//
-//                                                                         //
 //      CLASSES                                                            //
 //                                                                         //
 //-------------------------------------------------------------------------*/
@@ -69,38 +61,11 @@ CURLHandlerRegistry::~CURLHandlerRegistry()
 
 /*-------------------------------------------------------------------------*/
 
-CURLHandlerRegistry*
-CURLHandlerRegistry::Instance( void )
-{GUCEF_TRACE;
-
-    if ( NULL == _instance )
-    {
-        _instance = new CURLHandlerRegistry();
-        GUCEF_SYSTEM_LOG( LOGLEVEL_NORMAL, "GUCEF::CORE::CURLHandlerRegistry Singleton created" );
-
-    }
-    return _instance;
-}
-
-/*-------------------------------------------------------------------------*/
-
-void
-CURLHandlerRegistry::Deinstance( void )
-{GUCEF_TRACE;
-
-    CHECKMEM( _instance, sizeof(CURLHandlerRegistry) );
-    delete _instance;
-    _instance = NULL;
-    GUCEF_SYSTEM_LOG( LOGLEVEL_NORMAL, "GUCEF::CORE::CURLHandlerRegistry Singleton destroyed" );
-}
-
-/*-------------------------------------------------------------------------*/
-
 void
 CURLHandlerRegistry::LockData( void ) const
 {
         GUCEF_BEGIN;
-        _datalock.Lock();
+        m_datalock.Lock();
         GUCEF_END;
 }
 
@@ -110,7 +75,7 @@ void
 CURLHandlerRegistry::UnlockData( void ) const
 {
         GUCEF_BEGIN;
-        _datalock.Unlock();
+        m_datalock.Unlock();
         GUCEF_END;
 }
 

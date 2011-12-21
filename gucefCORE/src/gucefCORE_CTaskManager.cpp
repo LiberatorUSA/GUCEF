@@ -183,7 +183,7 @@ CTaskManager::CTaskManager( void )
 
     RegisterEvents();
 
-    CGUCEFApplication::Instance()->Subscribe( &AsObserver(), CGUCEFApplication::AppShutdownEvent );
+    CCoreGlobal::Instance()->GetApplication().Subscribe( &AsObserver(), CGUCEFApplication::AppShutdownEvent );
 }
 
 /*-------------------------------------------------------------------------*/
@@ -214,32 +214,6 @@ CTaskManager::GetClassTypeName( void ) const
 
     static const CString typeName = "GUCEF::CORE::CTaskManager";
     return typeName;
-}
-
-/*-------------------------------------------------------------------------*/
-
-CTaskManager*
-CTaskManager::Instance( void )
-{GUCEF_TRACE;
-
-    if ( NULL == g_instance )
-    {
-        g_instance = new CTaskManager();
-        GUCEF_SYSTEM_LOG( LOGLEVEL_NORMAL, "TaskManager Singleton created" );
-    }
-    return g_instance;
-}
-
-/*-------------------------------------------------------------------------*/
-
-void
-CTaskManager::Deinstance( void )
-{GUCEF_TRACE;
-
-    delete g_instance;
-    g_instance = NULL;
-
-    GUCEF_SYSTEM_LOG( LOGLEVEL_NORMAL, "TaskManager Singleton destroyed" );
 }
 
 /*-------------------------------------------------------------------------*/

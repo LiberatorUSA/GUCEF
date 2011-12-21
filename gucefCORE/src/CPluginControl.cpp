@@ -124,19 +124,6 @@ CPluginControl::Instance( void )
 
 /*-------------------------------------------------------------------------*/
 
-void
-CPluginControl::Deinstance( void )
-{GUCEF_TRACE;
-
-    g_mutex.Lock();
-    delete g_instance;
-    g_instance = NULL;
-    GUCEF_SYSTEM_LOG( LOGLEVEL_NORMAL, "GUCEF::CORE::CPluginControl Singleton destroyed" );
-    g_mutex.Unlock();
-}
-
-/*-------------------------------------------------------------------------*/
-
 CPluginControl::~CPluginControl()
 {GUCEF_TRACE;
 
