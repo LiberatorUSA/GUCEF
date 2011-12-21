@@ -26,70 +26,10 @@
 //                                                                         //
 //-------------------------------------------------------------------------*/
 
-#ifndef GUCEF_CORE_CGUCEFAPPLICATION_H
-#include "CGUCEFApplication.h"
-#define GUCEF_CORE_CGUCEFAPPLICATION_H
-#endif /* GUCEF_CORE_CGUCEFAPPLICATION_H ? */
-
-#ifndef GUCEF_CORE_CTASKMANAGER_H
-#include "gucefCORE_CTaskManager.h"
-#define GUCEF_CORE_CTASKMANAGER_H
-#endif /* GUCEF_CORE_CTASKMANAGER_H ? */
-
-#ifndef GUCEF_CORE_CLOGMANAGER_H
-#include "CLogManager.h"
-#define GUCEF_CORE_CLOGMANAGER_H
-#endif /* GUCEF_CORE_CLOGMANAGER_H ? */
-
-#ifndef GUCEF_CORE_CPLUGINCONTROL_H
-#include "CPluginControl.h"
-#define GUCEF_CORE_CPLUGINCONTROL_H
-#endif /* GUCEF_CORE_CPLUGINCONTROL_H ? */
-
-#ifndef GUCEF_CORE_CSYSCONSOLE_H
-#include "CSysConsole.h"
-#define GUCEF_CORE_CSYSCONSOLE_H
-#endif /* GUCEF_CORE_CSYSCONSOLE_H ? */
-
-#ifndef GUCEF_CORE_CNOTIFICATIONIDREGISTRY_H
-#include "CNotificationIDRegistry.h"
-#define GUCEF_CORE_CNOTIFICATIONIDREGISTRY_H
-#endif /* GUCEF_CORE_CNOTIFICATIONIDREGISTRY_H ? */
-
-#ifndef GUCEF_CORE_CURLHANDLERREGISTRY_H
-#include "CURLHandlerRegistry.h"
-#define GUCEF_CORE_CURLHANDLERREGISTRY_H
-#endif /* GUCEF_CORE_CURLHANDLERREGISTRY_H ? */
-
-#ifndef GUCEF_CORE_CDSTORECODECREGISTRY_H
-#include "CDStoreCodecRegistry.h"
-#define GUCEF_CORE_CDSTORECODECREGISTRY_H
-#endif /* GUCEF_CORE_CDSTORECODECREGISTRY_H ? */
-
-#ifndef GUCEF_CORE_CDSTORECODECPLUGINMANAGER_H
-#include "CDStoreCodecPluginManager.h"
-#define GUCEF_CORE_CDSTORECODECPLUGINMANAGER_H
-#endif /* GUCEF_CORE_CDSTORECODECPLUGINMANAGER_H ? */
-
-#ifndef GUCEF_CORE_CGENERICPLUGINMANAGER_H
-#include "CGenericPluginManager.h"
-#define GUCEF_CORE_CGENERICPLUGINMANAGER_H
-#endif /* GUCEF_CORE_CGENERICPLUGINMANAGER_H ? */
-
-#ifndef GUCEF_CORE_CSTDCODECPLUGINMANAGER_H
-#include "CStdCodecPluginManager.h"
-#define GUCEF_CORE_CSTDCODECPLUGINMANAGER_H
-#endif /* GUCEF_CORE_CSTDCODECPLUGINMANAGER_H ? */
-
-#ifndef GUCEF_CORE_CEXCLUSIVEACTIVATIONMANAGER_H
-#include "CExclusiveActivationManager.h"
-#define GUCEF_CORE_CEXCLUSIVEACTIVATIONMANAGER_H
-#endif /* GUCEF_CORE_CEXCLUSIVEACTIVATIONMANAGER_H ? */
-
-#ifndef GUCEF_CORE_CONFIGSTORE_H
-#include "CConfigStore.h"
-#define GUCEF_CORE_CONFIGSTORE_H
-#endif /* GUCEF_CORE_CONFIGSTORE_H ? */
+#ifndef GUCEF_CORE_MACROS_H
+#include "gucefCORE_macros.h"
+#define GUCEF_CORE_MACROS_H
+#endif /* GUCEF_CORE_MACROS_H ? */
 
 /*-------------------------------------------------------------------------//
 //                                                                         //
@@ -106,6 +46,23 @@ namespace CORE {
 //                                                                         //
 //-------------------------------------------------------------------------*/
 
+class CTaskManager;
+class CURLHandlerRegistry;
+class CDStoreCodecRegistry;
+class CExclusiveActivationManager;
+class CGUCEFApplication;
+class CLogManager;
+class CDStoreCodecPluginManager;
+class CGenericPluginManager;
+class CPluginControl;
+class CSysConsole;
+class CNotificationIDRegistry;
+class CStdCodecPluginManager;
+class CConfigStore;
+class CPulseGenerator;
+
+/*-------------------------------------------------------------------------*/
+
 /**
  *  Singular singleton providing access to all global Core systems
  */
@@ -116,7 +73,7 @@ class GUCEF_CORE_PUBLIC_CPP CCoreGlobal
     static CCoreGlobal* Instance( void );
 
     CGUCEFApplication& GetApplication( void );
-    
+
     /**
      *  Convenience function providing access to the Application
      *  pulse generator
@@ -151,6 +108,12 @@ class GUCEF_CORE_PUBLIC_CPP CCoreGlobal
     friend class CGUCEFCOREModule;
 
     static void Deinstance( void );
+
+    private:
+
+    CCoreGlobal( void );
+
+    ~CCoreGlobal();
 
     private:
 

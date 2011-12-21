@@ -14,7 +14,7 @@
  *
  *  You should have received a copy of the GNU Lesser General Public
  *  License along with this library; if not, write to the Free Software
- *  Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA 
+ *  Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA
  */
 
 /*-------------------------------------------------------------------------//
@@ -33,7 +33,7 @@
 #ifndef GUCEF_CORE_CURLHANDLERREGISTRY_H
 #include "CURLHandlerRegistry.h"      /* central registry for URL handlers */
 #define GUCEF_CORE_CURLHANDLERREGISTRY_H
-#endif /* GUCEF_CORE_CURLHANDLERREGISTRY_H ? */ 
+#endif /* GUCEF_CORE_CURLHANDLERREGISTRY_H ? */
 
 #ifndef GUCEF_CORE_CURLHANDLER_H
 #include "CURLHandler.h"              /* handler for the url protocol */
@@ -45,7 +45,7 @@
 #ifndef GUCEF_CORE_GUCEF_ESSENTIALS_H
 #include "gucef_essentials.h"
 #define GUCEF_CORE_GUCEF_ESSENTIALS_H
-#endif /* GUCEF_CORE_GUCEF_ESSENTIALS_H ? */ 
+#endif /* GUCEF_CORE_GUCEF_ESSENTIALS_H ? */
 
 /*-------------------------------------------------------------------------//
 //                                                                         //
@@ -67,10 +67,10 @@ CURL::CURL( void )
       CIURLEvents()         ,
       m_handler( NULL )     ,
       m_url()               ,
-      m_pulseGenerator( &CCoreGlobal::Instance()->GetApplication().GetPulseGenerator() )
+      m_pulseGenerator( &CCoreGlobal::Instance()->GetPulseGenerator() )
 {GUCEF_TRACE;
-        
-    Initialize();  
+
+    Initialize();
 }
 
 /*-------------------------------------------------------------------------*/
@@ -82,25 +82,25 @@ CURL::CURL( CPulseGenerator& pulseGenerator )
       m_url()                             ,
       m_pulseGenerator( &pulseGenerator )
 {GUCEF_TRACE;
-        
-    Initialize();  
+
+    Initialize();
 }
 
-/*-------------------------------------------------------------------------*/        
-        
+/*-------------------------------------------------------------------------*/
+
 CURL::CURL( const CString& url )
     : CForwardingNotifier()                ,
       CIURLEvents()                        ,
       m_handler( GetHandlerForURL( url ) ) ,
       m_url( url )                         ,
-      m_pulseGenerator( &CGUCEFApplication::Instance()->GetPulseGenerator() )
+      m_pulseGenerator( &CCoreGlobal::Instance()->GetPulseGenerator() )
 {GUCEF_TRACE;
 
     Initialize();
 }
-        
-/*-------------------------------------------------------------------------*/        
-        
+
+/*-------------------------------------------------------------------------*/
+
 CURL::CURL( const CString& url              ,
             CPulseGenerator& pulseGenerator )
     : CForwardingNotifier()                ,
@@ -118,12 +118,12 @@ CURL::CURL( const CString& url              ,
 void
 CURL::Initialize( void )
 {GUCEF_TRACE;
-    
+
     if ( m_handler == NULL )
     {
         m_url = NULL;
     }
-    
+
     AddForwardingForEvent( URLActivateEvent, EVENTORIGINFILTER_TRANSFER );
     AddForwardingForEvent( URLDeactivateEvent, EVENTORIGINFILTER_TRANSFER );
     AddForwardingForEvent( URLDataRecievedEvent, EVENTORIGINFILTER_TRANSFER );
@@ -134,7 +134,7 @@ CURL::Initialize( void )
 /*-------------------------------------------------------------------------*/
 
 CURL::~CURL()
-{GUCEF_TRACE;        
+{GUCEF_TRACE;
 
     if ( m_handler )
     {
@@ -145,7 +145,7 @@ CURL::~CURL()
 
 /*-------------------------------------------------------------------------*/
 
-CURL& 
+CURL&
 CURL::operator=( const CURL& src )
 {GUCEF_TRACE;
 
@@ -156,10 +156,10 @@ CURL::operator=( const CURL& src )
 
         m_url = src.m_url;
         m_pulseGenerator = src.m_pulseGenerator;
-        
+
         // We clone the handler, we want one exclusive to ourselves
         m_handler = static_cast< CURLHandler* >( src.m_handler->Clone() );
-        
+
         SubscribeTo( m_handler );
     }
     return *this;
@@ -194,46 +194,46 @@ CURL::operator==( const CURL& other ) const
 }
 
 /*-------------------------------------------------------------------------*/
-        
+
 bool
 CURL::operator!=( const CURL& other ) const
 {GUCEF_TRACE;
 
     return !( (*this) == other );
 }
-        
-/*-------------------------------------------------------------------------*/        
 
-bool 
+/*-------------------------------------------------------------------------*/
+
+bool
 CURL::SetURL( const CString& url )
-{GUCEF_TRACE; 
+{GUCEF_TRACE;
 
     CORE::CString lowerCaseURL( url.Lowercase() );
     lowerCaseURL = lowerCaseURL.ReplaceChar( '\\', '/' );
-    
+
     CURLHandler* newHandler = GetHandlerForURL( lowerCaseURL );
     if ( NULL != newHandler )
     {
         m_url = url;
-        
+
         if ( m_handler )
         {
             UnsubscribeFrom( m_handler );
             delete m_handler;
             m_handler = NULL;
         }
-        
+
         m_handler = newHandler;
         SubscribeTo( m_handler );
-        
-        return true;            
+
+        return true;
     }
-    
+
     return false;
 }
 
 /*-------------------------------------------------------------------------*/
-        
+
 const CString&
 CURL::GetURL( void ) const
 {GUCEF_TRACE;
@@ -245,7 +245,7 @@ CURL::GetURL( void ) const
 bool
 CURL::Activate( void )
 {GUCEF_TRACE;
-        
+
     if ( m_handler != NULL )
     {
         return m_handler->Activate( *this );
@@ -254,7 +254,7 @@ CURL::Activate( void )
 }
 
 /*-------------------------------------------------------------------------*/
-        
+
 void
 CURL::Deactivate( void )
 {GUCEF_TRACE;
@@ -280,21 +280,21 @@ CURL::IsActive( void ) const
 
 /*-------------------------------------------------------------------------*/
 
-CURLHandler* 
+CURLHandler*
 CURL::GetHandlerForURL( const CString& url ) const
 {GUCEF_TRACE;
 
     CORE::CString protocolName( url.SubstrToSubstr( "://" ) );
     if ( protocolName.Length() )
     {
-        CURLHandlerRegistry* registry = CURLHandlerRegistry::Instance();
+        CURLHandlerRegistry* registry = &CCoreGlobal::Instance()->GetUrlHandlerRegistry();
         if ( registry->IsRegistered( protocolName ) )
         {
             // We clone the handler stored in the registry, we want one exclusive to ourselves
             return static_cast<CURLHandler*>( registry->Lookup( protocolName )->Clone() );
         }
     }
-    
+
     return NULL;
 }
 
@@ -305,7 +305,7 @@ CURL::OnNotify( CNotifier* notifier                 ,
                 const CEvent& eventid               ,
                 CICloneable* eventdata /* = NULL */ )
 {GUCEF_TRACE;
-    
+
     // Mandatory: call the base-class implementation
     CForwardingNotifier::OnNotify( notifier  ,
                                    eventid   ,

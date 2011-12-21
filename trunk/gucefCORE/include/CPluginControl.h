@@ -85,7 +85,7 @@ class GUCEF_CORE_PUBLIC_CPP CPluginControl : public CNotifier      ,
                                              public CIConfigurable
 {
     public:
-    
+
     static const CEvent PluginLoadedEvent;
     static const CEvent PluginUnloadedEvent;
 
@@ -110,9 +110,9 @@ class GUCEF_CORE_PUBLIC_CPP CPluginControl : public CNotifier      ,
                                         const CString& groupName        );
 
     bool UnloadAllPluginsOfType( const CString& pluginTypeToUnload );
-    
+
     bool UnloadPluginGroup( const CString& groupName );
-    
+
     bool UnloadAll( void );
 
     void ClearMetaDataFromGroup( const CString& groupName );
@@ -124,11 +124,11 @@ class GUCEF_CORE_PUBLIC_CPP CPluginControl : public CNotifier      ,
     bool AddAllPluginsFromDir( const CString& pluginDir ,
                                const CString& groupName ,
                                bool loadImmediatly      );
-    
+
     /**
      *  Utility function: defines limited plugin meta data from the limited information
      *  available and then performs a trial and error load.
-     *  If you have more information regarding the plugin you should use 
+     *  If you have more information regarding the plugin you should use
      *      AddPluginMetaData() instead and pass that information
      */
     bool AddPluginFromDir( const CString& pluginPath ,
@@ -136,14 +136,14 @@ class GUCEF_CORE_PUBLIC_CPP CPluginControl : public CNotifier      ,
                            bool loadImmediatly       );
 
     /**
-     *  Adds a plugin root dir to the dirs that will be used to load 
+     *  Adds a plugin root dir to the dirs that will be used to load
      *  modules from if the plugin metadata does not already specify a directory to use
      *  Variables in the path are automatically resolved.
      */
     void AddPluginDir( const CString& path );
 
     /**
-     *  Removes a plugin root dir to the dirs that will be used to load 
+     *  Removes a plugin root dir to the dirs that will be used to load
      *  modules from if the plugin metadata does not already specify a directory to use
      *  Variables in the path are automatically resolved.
      */
@@ -159,7 +159,7 @@ class GUCEF_CORE_PUBLIC_CPP CPluginControl : public CNotifier      ,
     /**
      *  Registers the given loader with the plugin controller.
      *  Note that ownership is not assumed and the given object is assumed to be
-     *  alive for the duration of its registration. 
+     *  alive for the duration of its registration.
      */
     void RegisterPluginLoadLogic( CIPluginLoadLogic* pluginLoaderLogic );
 
@@ -207,9 +207,11 @@ class GUCEF_CORE_PUBLIC_CPP CPluginControl : public CNotifier      ,
     void Unregister( CPluginManager* pman );
 
     private:
-    friend class CGUCEFCOREModule;
+    friend class CCoreGlobal;
 
-    static void Deinstance( void );
+    CPluginControl( void );
+
+    ~CPluginControl();
 
     private:
 
@@ -218,9 +220,8 @@ class GUCEF_CORE_PUBLIC_CPP CPluginControl : public CNotifier      ,
     typedef std::set< CPluginManager* > TPluginManagerSet;
     typedef std::set< CString > TStringSet;
 
-    CPluginControl( void );
     CPluginControl( const CPluginControl& src );
-    ~CPluginControl();
+
     CPluginControl& operator=( const CPluginControl& src );
 
     bool LoadPlugin( TPluginMetaDataPtr& pluginMetaData ,

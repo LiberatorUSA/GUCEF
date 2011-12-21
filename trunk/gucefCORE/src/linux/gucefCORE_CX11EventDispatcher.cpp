@@ -72,7 +72,7 @@ CX11EventDispatcher::CX11EventDispatcher( void )
       m_display( NULL )
 {GUCEF_TRACE;
 
-    CPulseGenerator& pulseGenerator = CGUCEFApplication::Instance()->GetPulseGenerator();
+    CPulseGenerator& pulseGenerator = CCoreGlobal::Instance()->GetPulseGenerator();
     SubscribeTo( &pulseGenerator, CPulseGenerator::PulseEvent );
     pulseGenerator.RequestPeriodicPulses( this, 10 );
 

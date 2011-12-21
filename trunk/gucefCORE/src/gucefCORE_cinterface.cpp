@@ -66,7 +66,7 @@ GUCEF_CORE_GucefMain( int argc       ,
 {GUCEF_TRACE;
 
     GUCEF_SYSTEM_LOG( LOGLEVEL_NORMAL, "Invoking Main via C interface" );
-    return CGUCEFApplication::Instance()->main( argc, argv, runAppBool > 0 ); 
+    return CCoreGlobal::Instance()->GetApplication().main( argc, argv, runAppBool > 0 );
 }
 
 /*-------------------------------------------------------------------------*/
@@ -83,15 +83,15 @@ GUCEF_CORE_GucefLoadConfig( const char* configPath ,
 /*-------------------------------------------------------------------------*/
 
 int
-GUCEF_CORE_GucefLoadPlugin( const char* pluginPath , 
+GUCEF_CORE_GucefLoadPlugin( const char* pluginPath ,
                             const char* pluginType ,
                             const char* groupName  ,
-                            int argc               , 
+                            int argc               ,
                             char** argv            )
 {GUCEF_TRACE;
 
     GUCEF_SYSTEM_LOG( LOGLEVEL_NORMAL, "Invoking LoadGenericPlugin via C interface" );
-    
+
     CPluginMetaData pluginMetaData;
     pluginMetaData.SetLoaderLogicTypeName( "gucefLOADER" );
     pluginMetaData.SetPluginType( pluginType );
@@ -104,9 +104,9 @@ GUCEF_CORE_GucefLoadPlugin( const char* pluginPath ,
     pluginParams.SetMultiple( argc, argv );
     pluginMetaData.SetParams( pluginParams );
 
-    if ( CPluginControl::Instance()->AddPluginMetaData( pluginMetaData ,
-                                                        groupName      ,
-                                                        true           ) )
+    if ( CCoreGlobal::Instance()->GetPluginControl().AddPluginMetaData( pluginMetaData ,
+                                                                        groupName      ,
+                                                                        true           ) )
     {
         GUCEF_SYSTEM_LOG( LOGLEVEL_NORMAL, "Successfully loaded plugin via C interface" );
         return 1;
@@ -122,9 +122,9 @@ GUCEF_CORE_GucefAddPluginDir( const char* pluginDir )
 {GUCEF_TRACE;
 
     GUCEF_SYSTEM_LOG( LOGLEVEL_NORMAL, "Invoking AddPluginDir via C interface" );
-    
+
     CString pluginDirStr( pluginDir );
-    CPluginControl::Instance()->AddPluginDir( pluginDirStr );
+    CCoreGlobal::Instance()->GetPluginControl().AddPluginDir( pluginDirStr );
 }
 
 /*-------------------------------------------------------------------------*/
@@ -132,7 +132,7 @@ GUCEF_CORE_GucefAddPluginDir( const char* pluginDir )
 GUCEF_CORE_PUBLIC_C void
 GUCEF_CORE_GucefSetDefaultPluginLoaderLogicType( const char* defaultLoaderLogicType )
 {GUCEF_TRACE;
-    
+
     GUCEF_SYSTEM_LOG( LOGLEVEL_NORMAL, "Invoking SetDefaultPluginLoaderLogicType via C interface" );
 
     CString defaultLoaderLogicTypeStr( defaultLoaderLogicType );

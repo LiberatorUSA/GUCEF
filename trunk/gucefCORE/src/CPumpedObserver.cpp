@@ -14,9 +14,9 @@
  *
  *  You should have received a copy of the GNU Lesser General Public
  *  License along with this library; if not, write to the Free Software
- *  Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA 
+ *  Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA
  */
- 
+
 /*-------------------------------------------------------------------------//
 //                                                                         //
 //      INCLUDES                                                           //
@@ -24,6 +24,11 @@
 //-------------------------------------------------------------------------*/
 
 #include <assert.h>
+
+#ifndef GUCEF_CORE_CCOREGLOBAL_H
+#include "gucefCORE_CCoreGlobal.h"
+#define GUCEF_CORE_CCOREGLOBAL_H
+#endif /* GUCEF_CORE_CCOREGLOBAL_H ? */
 
 #ifndef GUCEF_CORE_CICLONEABLE_H
 #include "CICloneable.h"
@@ -53,7 +58,7 @@
 //                                                                         //
 //-------------------------------------------------------------------------*/
 
-namespace GUCEF { 
+namespace GUCEF {
 namespace CORE {
 
 /*-------------------------------------------------------------------------//
@@ -70,65 +75,65 @@ class CMailElement : public CICloneable
 {
     private:
     friend class CPumpedObserver;
-    
-    CMailElement( CNotifier* notifier , 
+
+    CMailElement( CNotifier* notifier ,
                   CICloneable* eventdata )
         : m_notifier( notifier )  ,
-          m_eventdata( eventdata )                 
+          m_eventdata( eventdata )
     {GUCEF_TRACE;
-    
+
     }
-    
+
     CMailElement( const CMailElement& src )
         : m_notifier( src.m_notifier )  ,
-          m_eventdata( src.m_eventdata )       
+          m_eventdata( src.m_eventdata )
     {GUCEF_TRACE;
-        
+
     }
-    
-    virtual ~CMailElement()    
+
+    virtual ~CMailElement()
     {GUCEF_TRACE;
-    
+
     }
-    
+
     CMailElement& operator=( const CMailElement& src )
     {GUCEF_TRACE;
-    
+
         if ( this != &src )
         {
             m_notifier = src.m_notifier;
-            m_eventdata = src.m_eventdata;    
+            m_eventdata = src.m_eventdata;
         }
-        return *this;    
+        return *this;
     }
-    
+
     inline CNotifier* GetNotifier( void ) const
     {GUCEF_TRACE;
-    
+
         return m_notifier;
     }
-    
+
     inline CICloneable* GetData( void ) const
     {GUCEF_TRACE;
-    
+
         return m_eventdata;
     }
-    
+
     virtual CICloneable* Clone( void ) const
     {GUCEF_TRACE;
-    
+
         return new CMailElement( *this );
     }
-    
+
     private:
-    
+
     CMailElement( void )
     {GUCEF_TRACE;
-    
+
         assert( 0 );
         /* dummy, do not use */
     }
-    
+
     CICloneable* m_eventdata;
     CNotifier* m_notifier;
 };
@@ -140,15 +145,15 @@ class CMailElement : public CICloneable
 //-------------------------------------------------------------------------*/
 
 CPumpedObserver::CPumpedObserver( void )
-    : CObserver()                                                            ,
-      m_pulsGenerator( &CGUCEFApplication::Instance()->GetPulseGenerator() ) ,
+    : CObserver()                                                      ,
+      m_pulsGenerator( &CCoreGlobal::Instance()->GetPulseGenerator() ) ,
       m_mutex()
 {GUCEF_TRACE;
 
-    SubscribeTo( m_pulsGenerator                                    , 
+    SubscribeTo( m_pulsGenerator                                    ,
                  CPulseGenerator::PulseEvent                        ,
                  &TEventCallback( this, &CPumpedObserver::OnPulse ) );
-    SubscribeTo( m_pulsGenerator                                                        , 
+    SubscribeTo( m_pulsGenerator                                                        ,
                  CPulseGenerator::DestructionEvent                                      ,
                  &TEventCallback( this, &CPumpedObserver::OnPulseGeneratorDestruction ) );
 }
@@ -161,12 +166,12 @@ CPumpedObserver::CPumpedObserver( CPulseGenerator& pulsGenerator )
       m_mutex()
 {GUCEF_TRACE;
 
-    SubscribeTo( m_pulsGenerator                                    , 
+    SubscribeTo( m_pulsGenerator                                    ,
                  CPulseGenerator::PulseEvent                        ,
                  &TEventCallback( this, &CPumpedObserver::OnPulse ) );
-    SubscribeTo( m_pulsGenerator                                                        , 
+    SubscribeTo( m_pulsGenerator                                                        ,
                  CPulseGenerator::DestructionEvent                                      ,
-                 &TEventCallback( this, &CPumpedObserver::OnPulseGeneratorDestruction ) );                 
+                 &TEventCallback( this, &CPumpedObserver::OnPulseGeneratorDestruction ) );
 }
 
 /*-------------------------------------------------------------------------*/
@@ -180,14 +185,14 @@ CPumpedObserver::CPumpedObserver( const CPumpedObserver& src )
     // This is an aggregate relationship that does not affect the source object
     // thus a const cast is acceptable.
     m_pulsGenerator = const_cast< CPumpedObserver& >( src ).m_pulsGenerator;
-    
+
     // The source should not be in a state of destruction causing this
     assert( NULL != m_pulsGenerator );
-    
-    SubscribeTo( m_pulsGenerator                                    , 
+
+    SubscribeTo( m_pulsGenerator                                    ,
                  CPulseGenerator::PulseEvent                        ,
                  &TEventCallback( this, &CPumpedObserver::OnPulse ) );
-    SubscribeTo( m_pulsGenerator                                                        , 
+    SubscribeTo( m_pulsGenerator                                                        ,
                  CPulseGenerator::DestructionEvent                                      ,
                  &TEventCallback( this, &CPumpedObserver::OnPulseGeneratorDestruction ) );
 }
@@ -222,15 +227,15 @@ CPumpedObserver::OnPulse( CNotifier* notifier                 ,
     CMailElement* maildata( NULL );
     while ( m_mailbox.GetMail( mailEventID ,
                                &dataptr    ) )
-    {        
+    {
         maildata = static_cast< CMailElement* >( dataptr );
         OnPumpedNotify( maildata->GetNotifier() ,
                         mailEventID             ,
                         maildata->GetData()     );
-                        
+
         delete maildata->GetData();
-        delete maildata;                        
-    }                          
+        delete maildata;
+    }
 }
 
 /*-------------------------------------------------------------------------*/
@@ -250,7 +255,7 @@ CPumpedObserver::OnPulseGeneratorDestruction( CNotifier* notifier               
 
 /*-------------------------------------------------------------------------*/
 
-void 
+void
 CPumpedObserver::OnNotify( CNotifier* notifier                 ,
                            const CEvent& eventid               ,
                            CICloneable* eventdata /* = NULL */ )
@@ -261,12 +266,12 @@ CPumpedObserver::OnNotify( CNotifier* notifier                 ,
         eventdata = eventdata->Clone();
     }
 
-    CMailElement maildata( notifier  ,  
+    CMailElement maildata( notifier  ,
                            eventdata );
 
     m_mailbox.AddMail( eventid   ,
                        &maildata );
-                       
+
     if ( NULL != m_pulsGenerator )
     {
         m_pulsGenerator->RequestPulse();
@@ -281,7 +286,7 @@ CPumpedObserver::OnPumpedNotify( CNotifier* notifier                 ,
                                  CICloneable* eventdata /* = NULL */ )
 
 {GUCEF_TRACE;
-                                 
+
 }
 
 /*-------------------------------------------------------------------------*/
@@ -294,7 +299,7 @@ CPumpedObserver::LockData( void ) const
 }
 
 /*-------------------------------------------------------------------------*/
-    
+
 void
 CPumpedObserver::UnlockData( void ) const
 {GUCEF_TRACE;
@@ -307,7 +312,7 @@ CPumpedObserver::UnlockData( void ) const
 const CString&
 CPumpedObserver::GetClassTypeName( void ) const
 {GUCEF_TRACE;
-    
+
     static const CString typeName = "GUCEF::CORE::CPumpedObserver";
     return typeName;
 }

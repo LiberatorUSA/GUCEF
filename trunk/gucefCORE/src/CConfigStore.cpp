@@ -99,31 +99,6 @@ CConfigStore::~CConfigStore()
 
 /*-------------------------------------------------------------------------*/
 
-CConfigStore*
-CConfigStore::Instance( void )
-{GUCEF_TRACE;
-
-    if ( NULL == _instance )
-    {
-        _instance = new CConfigStore();
-        GUCEF_SYSTEM_LOG( LOGLEVEL_NORMAL, "GUCEF::CORE::CConfigStore Singleton created" );
-    }
-    return _instance;
-}
-
-/*-------------------------------------------------------------------------*/
-
-void
-CConfigStore::Deinstance( void )
-{GUCEF_TRACE;
-
-    delete _instance;
-    _instance = NULL;
-    GUCEF_SYSTEM_LOG( LOGLEVEL_NORMAL, "GUCEF::CORE::CConfigStore Singleton destroyed" );
-}
-
-/*-------------------------------------------------------------------------*/
-
 void
 CConfigStore::SetConfigFile( const CString& filepath )
 {GUCEF_TRACE;

@@ -14,7 +14,7 @@
  *
  *  You should have received a copy of the GNU Lesser General Public
  *  License along with this library; if not, write to the Free Software
- *  Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA 
+ *  Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA
  */
 
 /*-------------------------------------------------------------------------//
@@ -66,20 +66,12 @@ namespace CORE {
 
 /*-------------------------------------------------------------------------//
 //                                                                         //
-//      GLOBAL VARS                                                        //
-//                                                                         //
-//-------------------------------------------------------------------------*/
-
-CGenericPluginManager* CGenericPluginManager::m_instance = NULL;
-
-/*-------------------------------------------------------------------------//
-//                                                                         //
 //      UTILITIES                                                          //
 //                                                                         //
 //-------------------------------------------------------------------------*/
 
 CGenericPluginManager::CGenericPluginManager( void )
-    : CPluginManager() 
+    : CPluginManager()
 {GUCEF_TRACE;
 
 }
@@ -89,33 +81,6 @@ CGenericPluginManager::CGenericPluginManager( void )
 CGenericPluginManager::~CGenericPluginManager()
 {GUCEF_TRACE;
 
-}
-
-/*-------------------------------------------------------------------------*/
-
-CGenericPluginManager*
-CGenericPluginManager::Instance( void )
-{GUCEF_TRACE;
-
-    if ( NULL == m_instance )
-    {
-        m_instance = new CGenericPluginManager();
-        GUCEF_SYSTEM_LOG( LOGLEVEL_NORMAL, "GUCEF::CORE::CGenericPluginManager Singleton created" );
-    }
-    
-    return m_instance;
-}
-
-/*-------------------------------------------------------------------------*/
-
-void
-CGenericPluginManager::Deinstance( void )
-{GUCEF_TRACE;
-    
-    delete m_instance;
-    m_instance = NULL;
-
-    GUCEF_SYSTEM_LOG( LOGLEVEL_NORMAL, "GUCEF::CORE::CGenericPluginManager Singleton destroyed" );
 }
 
 /*-------------------------------------------------------------------------*/
@@ -131,9 +96,9 @@ CGenericPluginManager::RegisterPlugin( void* modulePtr                   ,
     {
         return plugin;
     }
-    
+
     delete plugin;
-    return NULL; 
+    return NULL;
 }
 
 /*-------------------------------------------------------------------------*/

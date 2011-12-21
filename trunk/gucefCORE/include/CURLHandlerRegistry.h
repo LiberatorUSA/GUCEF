@@ -56,7 +56,30 @@ namespace CORE {
 //                                                                         //
 //-------------------------------------------------------------------------*/
 
-typedef CTRegistry< CURLHandler > CURLHandlerRegistry;
+class GUCEF_CORE_PUBLIC_CPP CURLHandlerRegistry : public CTRegistry< CURLHandler >
+{
+    public:
+
+    CURLHandlerRegistry( void );
+
+    virtual ~CURLHandlerRegistry();
+
+    protected:
+
+    virtual void LockData( void ) const;
+
+    virtual void UnlockData( void ) const;
+
+    private:
+
+    CURLHandlerRegistry( const CURLHandlerRegistry& src );
+
+    CURLHandlerRegistry& operator=( const CURLHandlerRegistry& src );
+
+    private:
+
+    MT::CMutex m_datalock;
+};
 
 /*-------------------------------------------------------------------------//
 //                                                                         //

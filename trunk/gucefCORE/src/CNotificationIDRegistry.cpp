@@ -58,14 +58,6 @@ namespace CORE {
 
 /*-------------------------------------------------------------------------//
 //                                                                         //
-//      GLOBAL VARS                                                        //
-//                                                                         //
-//-------------------------------------------------------------------------*/
-
-CNotificationIDRegistry* CNotificationIDRegistry::m_instance = NULL;
-
-/*-------------------------------------------------------------------------//
-//                                                                         //
 //      UTILITIES                                                          //
 //                                                                         //
 //-------------------------------------------------------------------------*/
@@ -91,33 +83,6 @@ CNotificationIDRegistry::~CNotificationIDRegistry()
 {GUCEF_TRACE;
 
     /* nothing to do here */
-}
-
-/*-------------------------------------------------------------------------*/
-
-CNotificationIDRegistry*
-CNotificationIDRegistry::Instance( void )
-{GUCEF_TRACE;
-
-    if ( m_instance == NULL )
-    {
-        m_instance = new CNotificationIDRegistry();
-        GUCEF_SYSTEM_LOG( LOGLEVEL_NORMAL, "GUCEF::CORE::CNotificationIDRegistry Singleton created" );
-    }
-
-    return m_instance;
-}
-
-/*-------------------------------------------------------------------------*/
-
-void
-CNotificationIDRegistry::Deinstance( void )
-{GUCEF_TRACE;
-
-    delete m_instance;
-    m_instance = NULL;
-
-    GUCEF_SYSTEM_LOG( LOGLEVEL_NORMAL, "GUCEF::CORE::CNotificationIDRegistry Singleton destroyed" );
 }
 
 /*-------------------------------------------------------------------------*/

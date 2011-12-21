@@ -108,7 +108,7 @@ class GUCEF_CORE_PUBLIC_CPP CLogManager
      *  About the bootstrap log:
      *  At application startup there will be log messages entered before any logger
      *  is actually attached to the LogManager. Such log messages are stored in the bootstrap
-     *  Log which is kept in-memory in the LogManager itself. Log entried will continue to be logged
+     *  Log which is kept in-memory in the LogManager itself. Log entries will continue to be logged
      *  to the bootstrap log untill the first Logger is registered with the LogManager.
      *
      *  This function will flush all the bootstrap log entries to the attached loggers and clear
@@ -119,9 +119,14 @@ class GUCEF_CORE_PUBLIC_CPP CLogManager
     static const CString& GetLogMsgTypeString( const TLogMsgType logMsgType );
 
     private:
+    friend class CCoreGlobal;
 
     CLogManager( void );
+
     ~CLogManager();
+
+    private:
+
     CLogManager( const CLogManager& src );              /**< not implemented, don't use */
     CLogManager& operator=( const CLogManager& src );   /**< not implemented, don't use */
 

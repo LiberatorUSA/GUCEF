@@ -95,7 +95,7 @@ bool
 CLoggingTask::StartTask( void )
 {GUCEF_TRACE;
 
-    return CTaskManager::Instance()->StartTask( *this );
+    return CCoreGlobal::Instance()->GetTaskManager().StartTask( *this );
 }
 
 /*-------------------------------------------------------------------------*/

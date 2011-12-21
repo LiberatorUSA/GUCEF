@@ -23,6 +23,111 @@
 //                                                                         //
 //-------------------------------------------------------------------------*/
 
+#ifndef GUCEF_CORE_CSTREAMEREVENTS_H
+#include "CStreamerEvents.h"
+#define GUCEF_CORE_CSTREAMEREVENTS_H
+#endif /* GUCEF_CORE_CSTREAMEREVENTS_H ? */
+
+#ifndef GUCEF_CORE_CNOTIFYINGMAPEVENTS_H
+#include "CNotifyingMapEvents.h"
+#define GUCEF_CORE_CNOTIFYINGMAPEVENTS_H
+#endif /* GUCEF_CORE_CNOTIFYINGMAPEVENTS_H ? */
+
+#ifndef GUCEF_CORE_CFILEURLHANDLER_H
+#include "CFileURLHandler.h"
+#define GUCEF_CORE_CFILEURLHANDLER_H
+#endif /* GUCEF_CORE_CFILEURLHANDLER_H ? */
+
+#ifndef GUCEF_CORE_CONFIGSTORE_H
+#include "CConfigStore.h"               /* centralized configuration management */
+#define GUCEF_CORE_CONFIGSTORE_H
+#endif /* GUCEF_CORE_CONFIGSTORE_H ? */
+
+#ifndef GUCEF_CORE_CTASKDELEGATOR_H
+#include "gucefCORE_CTaskDelegator.h"
+#define GUCEF_CORE_CTASKDELEGATOR_H
+#endif /* GUCEF_CORE_CTASKDELEGATOR_H ? */
+
+#ifndef GUCEF_CORE_CTASKCONSUMER_H
+#include "gucefCORE_CITaskConsumer.h"
+#define GUCEF_CORE_CTASKCONSUMER_H
+#endif /* GUCEF_CORE_CTASKCONSUMER_H ? */
+
+#ifndef GUCEF_CORE_CINIDATASTORECODEC_H
+#include "gucefCORE_CIniDataStoreCodec.h"
+#define GUCEF_CORE_CINIDATASTORECODEC_H
+#endif /* GUCEF_CORE_CINIDATASTORECODEC_H ? */
+
+#ifndef GUCEF_CORE_CGUCEFAPPLICATION_H
+#include "CGUCEFApplication.h"
+#define GUCEF_CORE_CGUCEFAPPLICATION_H
+#endif /* GUCEF_CORE_CGUCEFAPPLICATION_H ? */
+
+#ifndef GUCEF_CORE_CTASKMANAGER_H
+#include "gucefCORE_CTaskManager.h"
+#define GUCEF_CORE_CTASKMANAGER_H
+#endif /* GUCEF_CORE_CTASKMANAGER_H ? */
+
+#ifndef GUCEF_CORE_CTIMER_H
+#include "CTimer.h"
+#define GUCEF_CORE_CTIMER_H
+#endif /* GUCEF_CORE_CTIMER_H ? */
+
+#ifndef GUCEF_CORE_CLOGMANAGER_H
+#include "CLogManager.h"
+#define GUCEF_CORE_CLOGMANAGER_H
+#endif /* GUCEF_CORE_CLOGMANAGER_H ? */
+
+#ifndef GUCEF_CORE_CPLUGINCONTROL_H
+#include "CPluginControl.h"
+#define GUCEF_CORE_CPLUGINCONTROL_H
+#endif /* GUCEF_CORE_CPLUGINCONTROL_H ? */
+
+#ifndef GUCEF_CORE_CSYSCONSOLE_H
+#include "CSysConsole.h"
+#define GUCEF_CORE_CSYSCONSOLE_H
+#endif /* GUCEF_CORE_CSYSCONSOLE_H ? */
+
+#ifndef GUCEF_CORE_CNOTIFICATIONIDREGISTRY_H
+#include "CNotificationIDRegistry.h"
+#define GUCEF_CORE_CNOTIFICATIONIDREGISTRY_H
+#endif /* GUCEF_CORE_CNOTIFICATIONIDREGISTRY_H ? */
+
+#ifndef GUCEF_CORE_CURLHANDLERREGISTRY_H
+#include "CURLHandlerRegistry.h"
+#define GUCEF_CORE_CURLHANDLERREGISTRY_H
+#endif /* GUCEF_CORE_CURLHANDLERREGISTRY_H ? */
+
+#ifndef GUCEF_CORE_CDSTORECODECREGISTRY_H
+#include "CDStoreCodecRegistry.h"
+#define GUCEF_CORE_CDSTORECODECREGISTRY_H
+#endif /* GUCEF_CORE_CDSTORECODECREGISTRY_H ? */
+
+#ifndef GUCEF_CORE_CDSTORECODECPLUGINMANAGER_H
+#include "CDStoreCodecPluginManager.h"
+#define GUCEF_CORE_CDSTORECODECPLUGINMANAGER_H
+#endif /* GUCEF_CORE_CDSTORECODECPLUGINMANAGER_H ? */
+
+#ifndef GUCEF_CORE_CGENERICPLUGINMANAGER_H
+#include "CGenericPluginManager.h"
+#define GUCEF_CORE_CGENERICPLUGINMANAGER_H
+#endif /* GUCEF_CORE_CGENERICPLUGINMANAGER_H ? */
+
+#ifndef GUCEF_CORE_CSTDCODECPLUGINMANAGER_H
+#include "CStdCodecPluginManager.h"
+#define GUCEF_CORE_CSTDCODECPLUGINMANAGER_H
+#endif /* GUCEF_CORE_CSTDCODECPLUGINMANAGER_H ? */
+
+#ifndef GUCEF_CORE_CEXCLUSIVEACTIVATIONMANAGER_H
+#include "CExclusiveActivationManager.h"
+#define GUCEF_CORE_CEXCLUSIVEACTIVATIONMANAGER_H
+#endif /* GUCEF_CORE_CEXCLUSIVEACTIVATIONMANAGER_H ? */
+
+#ifndef GUCEF_CORE_CONFIGSTORE_H
+#include "CConfigStore.h"
+#define GUCEF_CORE_CONFIGSTORE_H
+#endif /* GUCEF_CORE_CONFIGSTORE_H ? */
+
 #include "gucefCORE_CCoreGlobal.h"
 
 /*-------------------------------------------------------------------------//
@@ -78,9 +183,8 @@ CCoreGlobal::CCoreGlobal( void )
       m_exclusiveActivationManager( NULL ) ,
       m_application( NULL )                ,
       m_logManager( NULL )                 ,
-      m_application( NULL )                ,
       m_dstoreCodecPluginManager( NULL )   ,
-      m_genericPluginManager( NULL )       , 
+      m_genericPluginManager( NULL )       ,
       m_pluginControl( NULL )              ,
       m_sysConsole( NULL )                 ,
       m_notificationIdRegistry( NULL )     ,
@@ -89,30 +193,21 @@ CCoreGlobal::CCoreGlobal( void )
 
     // it is important to initialize the call stack tracer at an early stage
     GUCEF_InitCallstackUtility();
-    
+
     /*
      *      Very important: Initialize the memory manager before anything else !!!!!
      */
-    #ifdef ADD_MEMORY_MANAGER        
+    #ifdef ADD_MEMORY_MANAGER
     MEMMAN_SetLogFile( "GUCEFMemoryLog.txt" );
-    MEMMAN_SetExhaustiveTesting( 0 ); 
+    MEMMAN_SetExhaustiveTesting( 0 );
     MEMMAN_SetPaddingSize( 0 );
-    MEMMAN_Initialize();       
-    #endif 
-    
-    /*
-     *      Initialize centralized output
-     */
-    tspinit();
-    #ifdef GUCEF_CORE_DEBUG_MODE        
-    tssetcoutfile( "GUCEFLog.txt" );
-    tsusecoutfile( 1 );
+    MEMMAN_Initialize();
     #endif
 
     /*
      *  Instantiate all the singletons
      *  We start with the log manager so that it is possible to log everything from that point on
-     *  if a logger is registered at an early stage      
+     *  if a logger is registered at an early stage
      */
     m_logManager = new CLogManager();
     m_notificationIdRegistry = new CNotificationIDRegistry();
@@ -130,7 +225,7 @@ CCoreGlobal::CCoreGlobal( void )
     CGUCEFApplication::RegisterEvents();
     CTaskDelegator::RegisterEvents();
     CTaskConsumer::RegisterEvents();
-    CTaskManager::RegisterEvents();        
+    CTaskManager::RegisterEvents();
 
     /*
      *  Instantiate the rest of the singletons
@@ -148,14 +243,14 @@ CCoreGlobal::CCoreGlobal( void )
 
     #ifdef GUCEF_MSWIN_BUILD
     CWndMsgHookNotifier::RegisterEvents();
-    #endif /* GUCEF_MSWIN_BUILD ? */ 
-    
+    #endif /* GUCEF_MSWIN_BUILD ? */
+
     /*
-     *      Register some default codecs/handlers 
+     *      Register some default codecs/handlers
      */
     m_urlHandlerRegistry->Register( "file", new CFileURLHandler() );
     m_dstoreCodecRegistry->Register( "ini", new CIniDataStoreCodec() );
-    
+
     GUCEF_SYSTEM_LOG( LOGLEVEL_NORMAL, "gucefCORE Global systems initialized" );
 
 }
@@ -166,7 +261,7 @@ CCoreGlobal::~CCoreGlobal()
 {GUCEF_TRACE;
 
     GUCEF_SYSTEM_LOG( LOGLEVEL_NORMAL, "Shutting down gucefCORE global systems" );
-           
+
     /*
      *      cleanup all singletons
      *      Take care to deinstance them in the correct order !!!
@@ -195,19 +290,14 @@ CCoreGlobal::~CCoreGlobal()
     m_notificationIdRegistry = NULL;
     delete m_stdCodecPluginManager;
     m_stdCodecPluginManager = NULL;
-    
-    /*
-     *      Shutdown centralized output last
-     */
-    tspshutdown();
-          
+
     /*
      *      Very important: Shutdown the memory manager last !!!!!
      */
-    #ifdef ADD_MEMORY_MANAGER 
+    #ifdef ADD_MEMORY_MANAGER
     MEMMAN_Shutdown();
     #endif
-    
+
     // it important to shutdown the call stack tracer as the last
     GUCEF_ShutdowntCallstackUtility();
 }
@@ -231,7 +321,7 @@ CCoreGlobal::GetApplication( void )
 }
 
 /*-------------------------------------------------------------------------*/
-    
+
 CPulseGenerator&
 CCoreGlobal::GetPulseGenerator( void )
 {GUCEF_TRACE;
@@ -271,7 +361,7 @@ CCoreGlobal::GetPluginControl( void )
 CSysConsole&
 CCoreGlobal::GetSysConsole( void )
 {GUCEF_TRACE;
-    
+
     return *m_sysConsole;
 }
 
@@ -348,16 +438,3 @@ CCoreGlobal::GetExclusiveActivationManager( void )
 }; /* namespace GUCEF */
 
 /*-------------------------------------------------------------------------*/
-
-#endif /* GUCEF_CORE_CCOREGLOBAL_H ? */
-
-/*-------------------------------------------------------------------------//
-//                                                                         //
-//      Info & Changes                                                     //
-//                                                                         //
-//-------------------------------------------------------------------------//
-
-- 16-02-2007 :
-        - Dinand: Added this class
-
----------------------------------------------------------------------------*/
