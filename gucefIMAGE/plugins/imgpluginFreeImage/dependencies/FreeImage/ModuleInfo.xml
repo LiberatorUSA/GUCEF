@@ -1,7 +1,19 @@
 <ModuleInfoEntry>
     <Module Name="FreeImage" Type="SharedLibrary" Platform="mswin;linux">
         <Preprocessor>
-            <Define String="_CRT_SECURE_NO_WARNINGS;FREEIMAGE_EXPORTS;OPJ_EXPORTS;OPJ_STATIC;OPENEXR_DLL;ZENO_STATIC;HALF_EXPORTS;IMATH_EXPORTS;ILMIMF_EXPORTS" />
+            <Define String="FREEIMAGE_EXPORTS" />
+            <Define String="OPJ_EXPORTS" />
+            <Define String="OPJ_STATIC" />
+            <Define String="ZENO_STATIC" />
+            <Define String="HALF_EXPORTS" />
+            <Define String="IMATH_EXPORTS" />
+            <Define String="ILMIMF_EXPORTS" />
+        </Preprocessor>
+    </Module>
+    <Module Platform="mswin">
+        <Preprocessor>
+            <Define String="_CRT_SECURE_NO_WARNINGS" />
+            <Define String="OPENEXR_DLL" />
         </Preprocessor>
     </Module>
 </ModuleInfoEntry>
