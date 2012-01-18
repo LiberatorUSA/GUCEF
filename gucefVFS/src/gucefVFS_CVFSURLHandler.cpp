@@ -38,6 +38,11 @@
 #define GUCEF_VFS_CVFS_H
 #endif /* GUCEF_VFS_CVFS_H ? */
 
+#ifndef GUCEF_VFS_CVFSGLOBAL_H
+#include "gucefVFS_CVfsGlobal.h"
+#define GUCEF_VFS_CVFSGLOBAL_H
+#endif /* GUCEF_VFS_CVFSGLOBAL_H ? */
+
 #include "gucefVFS_CVFSURLHandler.h"
 
 /*-------------------------------------------------------------------------//
@@ -56,7 +61,7 @@ namespace VFS {
 //-------------------------------------------------------------------------*/
 
 CVFSURLHandler::CVFSURLHandler( void )
-        : m_vfs( CVFS::Instance() )
+        : m_vfs( &CVfsGlobal::Instance()->GetVfs() )
 {GUCEF_TRACE;
 
 }
@@ -64,7 +69,7 @@ CVFSURLHandler::CVFSURLHandler( void )
 /*-------------------------------------------------------------------------*/
 
 CVFSURLHandler::CVFSURLHandler( const CVFSURLHandler& src )
-        : m_vfs( CVFS::Instance() )
+        : m_vfs( &CVfsGlobal::Instance()->GetVfs() )
 {GUCEF_TRACE;
 
 }

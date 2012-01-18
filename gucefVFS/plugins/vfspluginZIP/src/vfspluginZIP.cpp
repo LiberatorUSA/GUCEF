@@ -33,6 +33,11 @@
 #define GUCEF_VFS_CVFS_H
 #endif /* GUCEF_VFS_CVFS_H ? */
 
+#ifndef GUCEF_VFS_CVFSGLOBAL_H
+#include "gucefVFS_CVfsGlobal.h"
+#define GUCEF_VFS_CVFSGLOBAL_H
+#endif /* GUCEF_VFS_CVFSGLOBAL_H ? */
+
 #ifndef GUCEF_VFSPLUGIN_ZIP_CZIPARCHIVE_H
 #include "vfspluginZIP_CZIPArchive.h"
 #define GUCEF_VFSPLUGIN_ZIP_CZIPARCHIVE_H
@@ -76,9 +81,9 @@ void GUCEF_PLUGIN_CALLSPEC_PREFIX
 GUCEFPlugin_Load( void ) GUCEF_PLUGIN_CALLSPEC_SUFFIX
 {GUCEF_TRACE;
 
-    VFS::CVFS::Instance()->RegisterArchiveFactory( "zip", zipArchiveFactory );
-    VFS::CVFS::Instance()->RegisterArchiveFactory( "pk3", zipArchiveFactory );
-    VFS::CVFS::Instance()->RegisterArchiveFactory( "jar", zipArchiveFactory );
+    VFS::CVfsGlobal::Instance()->GetVfs().RegisterArchiveFactory( "zip", zipArchiveFactory );
+    VFS::CVfsGlobal::Instance()->GetVfs().RegisterArchiveFactory( "pk3", zipArchiveFactory );
+    VFS::CVfsGlobal::Instance()->GetVfs().RegisterArchiveFactory( "jar", zipArchiveFactory );
 }
 
 /*--------------------------------------------------------------------------*/
@@ -87,9 +92,9 @@ void GUCEF_PLUGIN_CALLSPEC_PREFIX
 GUCEFPlugin_Unload( void ) GUCEF_PLUGIN_CALLSPEC_SUFFIX
 {GUCEF_TRACE;
 
-    VFS::CVFS::Instance()->UnregisterArchiveFactory( "zip" );
-    VFS::CVFS::Instance()->UnregisterArchiveFactory( "pk3" );
-    VFS::CVFS::Instance()->UnregisterArchiveFactory( "jar" );
+    VFS::CVfsGlobal::Instance()->GetVfs().UnregisterArchiveFactory( "zip" );
+    VFS::CVfsGlobal::Instance()->GetVfs().UnregisterArchiveFactory( "pk3" );
+    VFS::CVfsGlobal::Instance()->GetVfs().UnregisterArchiveFactory( "jar" );
 }
 
 /*--------------------------------------------------------------------------*/

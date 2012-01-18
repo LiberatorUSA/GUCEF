@@ -325,7 +325,7 @@ main( int argc, char* argv[] )
     if ( showConsole )
     {
         consoleOut = new CORE::CMSWinConsoleLogger();
-        CORE::CLogManager::Instance()->AddLogger( consoleOut );
+        CORE::CCoreGlobal::Instance()->GetLogManager().AddLogger( consoleOut );
 
         GUCEF_LOG( CORE::LOGLEVEL_NORMAL, "SPE: Enabled console output" );
     }

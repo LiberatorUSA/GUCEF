@@ -97,7 +97,6 @@ namespace VFS {
 //                                                                         //
 //-------------------------------------------------------------------------*/
 
-CVFS* CVFS::_instance = NULL;
 MT::CMutex CVFS::m_datalock;
 
 /*-------------------------------------------------------------------------//
@@ -119,33 +118,6 @@ CVFS::CVFS( void )
 CVFS::~CVFS()
 {GUCEF_TRACE;
         
-}
-
-/*-------------------------------------------------------------------------*/
-
-CVFS* 
-CVFS::Instance( void )
-{GUCEF_TRACE;
-        
-    m_datalock.Lock();
-    if ( NULL == _instance ) 
-    {
-        _instance = new CVFS();
-    }
-    m_datalock.Unlock();
-    return _instance;
-}
-
-/*-------------------------------------------------------------------------*/
-
-void 
-CVFS::Deinstance( void )
-{GUCEF_TRACE;
-        
-    m_datalock.Lock();
-    delete _instance;
-    _instance = NULL;
-    m_datalock.Unlock();
 }
 
 /*-------------------------------------------------------------------------*/

@@ -23,6 +23,11 @@
 //                                                                         //
 //-------------------------------------------------------------------------*/
 
+#ifndef GUCEF_VFS_CVFSGLOBAL_H
+#include "gucefVFS_CVfsGlobal.h"
+#define GUCEF_VFS_CVFSGLOBAL_H
+#endif /* GUCEF_VFS_CVFSGLOBAL_H ? */
+
 #ifndef GUCEF_VFS_CVFS_H
 #include "gucefVFS_CVFS.h"
 #define GUCEF_VFS_CVFS_H
@@ -108,7 +113,7 @@ bool
 CFormEx::LoadLayoutUsingVfs( const CString& filename )
 {GUCEF_TRACE;
 
-    VFS::CVFS::CVFSHandlePtr file = VFS::CVFS::Instance()->GetFile( filename );
+    VFS::CVFS::CVFSHandlePtr file = VFS::CVfsGlobal::Instance()->GetVfs().GetFile( filename );
     if ( NULL != file )
     {
         if ( LoadLayout( *file->GetAccess() ) )
@@ -128,7 +133,7 @@ bool
 CFormEx::SaveLayoutUsingVfs( const CString& filename )
 {GUCEF_TRACE;
 
-    VFS::CVFS::CVFSHandlePtr file = VFS::CVFS::Instance()->GetFile( filename, "wb", true );
+    VFS::CVFS::CVFSHandlePtr file = VFS::CVfsGlobal::Instance()->GetVfs().GetFile( filename, "wb", true );
     if ( NULL != file )
     {
         return CForm::SaveLayout( *file->GetAccess() );

@@ -349,10 +349,10 @@ GUCEF_OSMAIN_BEGIN
         GUCEF::CORE::CFileAccess logFileAccess( logFilename, "w" );
         
         GUCEF::CORE::CStdLogger logger( logFileAccess );
-        GUCEF::CORE::CLogManager::Instance()->AddLogger( &logger );
+        GUCEF::CORE::CCoreGlobal::Instance()->GetLogManager().AddLogger( &logger );
 
         GUCEF::CORE::CPlatformNativeConsoleLogger console;
-        GUCEF::CORE::CLogManager::Instance()->AddLogger( console.GetLogger() );
+        GUCEF::CORE::CCoreGlobal::Instance()->GetLogManager().AddLogger( console.GetLogger() );
 
 	    if ( 0 == argc )
 	    {
@@ -405,7 +405,7 @@ GUCEF_OSMAIN_BEGIN
             }
             
             // Attempt to obtain the code
-            codecPtr = GUCEF::CORE::CDStoreCodecRegistry::Instance()->Lookup( listCodec );
+            codecPtr = GUCEF::CORE::CCoreGlobal::Instance()->GetDStoreCodecRegistry().Lookup( listCodec );
             if ( codecPtr == NULL )
             {
                 // No point in proceeding if we don't have a valid codec with which we can

@@ -1296,14 +1296,14 @@ GUCEF_OSMAIN_BEGIN
     CORE::CFileAccess logFileAccess( logFilename, "w" );
 
     CORE::CStdLogger logger( logFileAccess );
-    CORE::CLogManager::Instance()->AddLogger( &logger );
+    CORE::CCoreGlobal::Instance()->GetLogManager().AddLogger( &logger );
 
     #ifdef GUCEF_MSWIN_BUILD
     CORE::CMSWinConsoleLogger consoleOut;
-    CORE::CLogManager::Instance()->AddLogger( &consoleOut );
+    CORE::CCoreGlobal::Instance()->GetLogManager().AddLogger( &consoleOut );
     #endif /* GUCEF_MSWIN_BUILD ? */
     
-    CORE::CLogManager::Instance()->FlushBootstrapLogEntriesToLogs();
+    CORE::CCoreGlobal::Instance()->GetLogManager().FlushBootstrapLogEntriesToLogs();
 
     GUCEF_LOG( CORE::LOGLEVEL_NORMAL, "This tool was compiled on: " __DATE__ " @ " __TIME__ );
 

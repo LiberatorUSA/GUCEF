@@ -1,6 +1,6 @@
 /*
- *  vfspluginVP: Generic GUCEF VFS plugin for "Violation Pack" archives
- *  Copyright (C) 2002 - 2008.  Dinand Vanvelzen
+ *  gucefVFS: GUCEF module implementing a Virtual File System
+ *  Copyright (C) 2002 - 2007.  Dinand Vanvelzen
  *
  *  This library is free software; you can redistribute it and/or
  *  modify it under the terms of the GNU Lesser General Public
@@ -23,27 +23,27 @@
 //                                                                         //
 //-------------------------------------------------------------------------*/
 
-#ifndef GUCEF_CORE_CTFACTORY_H
-#include "CTFactory.h"
-#define GUCEF_CORE_CTFACTORY_H
-#endif /* GUCEF_CORE_CTFACTORY_H ? */
+#ifndef GUCEF_CORE_CCOREGLOBAL_H
+#include "gucefCORE_CCoreGlobal.h"
+#define GUCEF_CORE_CCOREGLOBAL_H
+#endif /* GUCEF_CORE_CCOREGLOBAL_H ? */
+
+#ifndef GUCEF_CORE_CCODECREGISTRY_H
+#include "CCodecRegistry.h"
+#define GUCEF_CORE_CCODECREGISTRY_H
+#endif /* GUCEF_CORE_CCODECREGISTRY_H ? */
 
 #ifndef GUCEF_VFS_CVFS_H
 #include "gucefVFS_CVFS.h"
 #define GUCEF_VFS_CVFS_H
 #endif /* GUCEF_VFS_CVFS_H ? */
 
-#ifndef GUCEF_VFS_CVFSGLOBAL_H
+#ifndef GUCEF_VFS_CVFSURLHANDLER_H
+#include "gucefVFS_CVFSURLHandler.h"     /* URL handler for URL's with protocol "vfs" */
+#define GUCEF_VFS_CVFSURLHANDLER_H
+#endif /* GUCEF_VFS_CVFSURLHANDLER_H ? */
+
 #include "gucefVFS_CVfsGlobal.h"
-#define GUCEF_VFS_CVFSGLOBAL_H
-#endif /* GUCEF_VFS_CVFSGLOBAL_H ? */
-
-#ifndef GUCEF_VFSPLUGIN_VP_CVPARCHIVE_H
-#include "vfspluginVP_CVPArchive.h"
-#define GUCEF_VFSPLUGIN_VP_CVPARCHIVE_H
-#endif /* GUCEF_VFSPLUGIN_VP_CVPARCHIVE_H ? */
-
-#include "vfspluginVP.h"
 
 /*-------------------------------------------------------------------------//
 //                                                                         //
@@ -52,16 +52,7 @@
 //-------------------------------------------------------------------------*/
 
 namespace GUCEF {
-namespace VFSPLUGIN {
-namespace VP {
-
-/*-------------------------------------------------------------------------//
-//                                                                         //
-//      TYPES                                                              //
-//                                                                         //
-//-------------------------------------------------------------------------*/
-
-typedef CORE::CTFactory< VFS::CIArchive, CVPArchive > TVPArchiveFactory;
+namespace VFS {
 
 /*-------------------------------------------------------------------------//
 //                                                                         //
@@ -69,7 +60,7 @@ typedef CORE::CTFactory< VFS::CIArchive, CVPArchive > TVPArchiveFactory;
 //                                                                         //
 //-------------------------------------------------------------------------*/
 
-TVPArchiveFactory vpArchiveFactory;
+CVfsGlobal* CVfsGlobal::g_instance = NULL;
 
 /*-------------------------------------------------------------------------//
 //                                                                         //
@@ -77,51 +68,96 @@ TVPArchiveFactory vpArchiveFactory;
 //                                                                         //
 //-------------------------------------------------------------------------*/
 
-CORE::Int32 GUCEF_PLUGIN_CALLSPEC_PREFIX 
-GUCEFPlugin_Load( CORE::UInt32 argc, const char** argv ) GUCEF_PLUGIN_CALLSPEC_SUFFIX
+CVfsGlobal*
+CVfsGlobal::Instance()
 {GUCEF_TRACE;
 
-    VFS::CVfsGlobal::Instance()->GetVfs().RegisterArchiveFactory( "vp", vpArchiveFactory );
-    return 1;
+    if ( NULL == g_instance )
+    {
+        g_instance = new CVfsGlobal();
+        g_instance->Initialize();
+    }
+    return g_instance;
 }
 
-/*--------------------------------------------------------------------------*/
+/*-------------------------------------------------------------------------*/
 
-void GUCEF_PLUGIN_CALLSPEC_PREFIX 
-GUCEFPlugin_Unload( void ) GUCEF_PLUGIN_CALLSPEC_SUFFIX
+void
+CVfsGlobal::Deinstance( void )
 {GUCEF_TRACE;
 
-    VFS::CVfsGlobal::Instance()->GetVfs().UnregisterArchiveFactory( "vp" );
+    delete g_instance;
+    g_instance = NULL;
 }
 
-/*--------------------------------------------------------------------------*/
+/*-------------------------------------------------------------------------*/
 
-void GUCEF_PLUGIN_CALLSPEC_PREFIX 
-GUCEFPlugin_GetVersion( CORE::TVersion* versionInfo ) GUCEF_PLUGIN_CALLSPEC_SUFFIX
+void
+CVfsGlobal::Initialize( void )
 {GUCEF_TRACE;
 
-    versionInfo->major = 1; 
-    versionInfo->minor = 0;
-    versionInfo->patch = 0;
-    versionInfo->release = 0;
-}
+    // Ensure the Core systems are initialzed first since this module depends on Core
+    CORE::CCoreGlobal::Instance();
 
-/*--------------------------------------------------------------------------*/
+    GUCEF_SYSTEM_LOG( CORE::LOGLEVEL_NORMAL, "Initializing gucefVFS Global systems" );
 
-const char* GUCEF_PLUGIN_CALLSPEC_PREFIX 
-GUCEFPlugin_GetCopyright( void ) GUCEF_PLUGIN_CALLSPEC_SUFFIX
-{GUCEF_TRACE;
+    try
+    {
+        CORE::CCodecRegistry::Instance()->Register( "VFSPackCodec", new CORE::CCodecRegistry::TCodecFamilyRegistry() );
+    }
+    catch ( CORE::CCodecRegistry::EAlreadyRegistered& )
+    {
+    }
     
-    return "Copyright (C) 2002 - 2008.  Dinand Vanvelzen";
+    /*
+     *      Instantiate all singletons
+     */
+    m_vfs = new CVFS();
+    
+    /*
+     *      register all codecs/handlers/notifiers
+     */
+    CVFSURLHandler::Register();
+
+    GUCEF_SYSTEM_LOG( CORE::LOGLEVEL_NORMAL, "gucefVFS Global systems initialized" );
 }
 
-/*--------------------------------------------------------------------------*/
+/*-------------------------------------------------------------------------*/
 
-const char* GUCEF_PLUGIN_CALLSPEC_PREFIX 
-GUCEFPlugin_GetDescription( void ) GUCEF_PLUGIN_CALLSPEC_SUFFIX
+CVfsGlobal::CVfsGlobal( void )
+    : m_vfs( NULL )
 {GUCEF_TRACE;
 
-    return "Generic GUCEF plugin for VFS \"Violation Pack\" archives";
+}
+
+/*-------------------------------------------------------------------------*/
+
+CVfsGlobal::~CVfsGlobal()
+{GUCEF_TRACE;
+
+    GUCEF_SYSTEM_LOG( CORE::LOGLEVEL_NORMAL, "Shutting down gucefVFS global systems" );
+
+    /* 
+     *  Unregister handlers
+     */
+    CVFSURLHandler::Unregister();
+
+    /*
+     *      cleanup all singletons
+     *      Take care to deinstance them in the correct order !!!
+     */
+
+    delete m_vfs;
+    m_vfs = NULL;
+}
+
+/*-------------------------------------------------------------------------*/
+
+CVFS&
+CVfsGlobal::GetVfs( void )
+{GUCEF_TRACE;
+
+    return *m_vfs;
 }
 
 /*-------------------------------------------------------------------------//
@@ -130,8 +166,7 @@ GUCEFPlugin_GetDescription( void ) GUCEF_PLUGIN_CALLSPEC_SUFFIX
 //                                                                         //
 //-------------------------------------------------------------------------*/
 
-}; /* namespace VP */
-}; /* namespace VFSPLUGIN */
+}; /* namespace CORE */
 }; /* namespace GUCEF */
 
-/*--------------------------------------------------------------------------*/
+/*-------------------------------------------------------------------------*/

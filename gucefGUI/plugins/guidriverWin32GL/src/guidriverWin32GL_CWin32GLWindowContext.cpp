@@ -135,7 +135,7 @@ void
 CWin32GLWindowContext::Shutdown( void )
 {GUCEF_TRACE;
 
-	CORE::CPulseGenerator& pulseGenerator = CORE::CGUCEFApplication::Instance()->GetPulseGenerator();
+	CORE::CPulseGenerator& pulseGenerator = CORE::CCoreGlobal::Instance()->GetPulseGenerator();
     pulseGenerator.RequestStopOfPeriodicUpdates( this );
     UnsubscribeFrom( &pulseGenerator );
     
@@ -300,7 +300,7 @@ CWin32GLWindowContext::Initialize( const GUI::CString& title                ,
         glLoadIdentity();
 
         // Grab the main app pulse generator and set the update interval for the context to the desired refresh rate
-        CORE::CPulseGenerator& pulseGenerator = CORE::CGUCEFApplication::Instance()->GetPulseGenerator(); 
+        CORE::CPulseGenerator& pulseGenerator = CORE::CCoreGlobal::Instance()->GetPulseGenerator(); 
         pulseGenerator.RequestPeriodicPulses( this, 1000 / videoSettings.GetFrequency() );
         SubscribeTo( &pulseGenerator );
 

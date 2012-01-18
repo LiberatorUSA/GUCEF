@@ -225,14 +225,14 @@ GUCEF_OSMAIN_BEGIN
     GUCEF::CORE::CFileAccess logFileAccess( logFilename, "w" );
 
     GUCEF::CORE::CStdLogger logger( logFileAccess );
-    GUCEF::CORE::CLogManager::Instance()->AddLogger( &logger );
+    GUCEF::CORE::CCoreGlobal::Instance()->GetLogManager().AddLogger( &logger );
 
     #ifdef GUCEF_MSWIN_BUILD
     GUCEF::CORE::CMSWinConsoleLogger consoleOut;
-    GUCEF::CORE::CLogManager::Instance()->AddLogger( &consoleOut );
+    GUCEF::CORE::CCoreGlobal::Instance()->GetLogManager().AddLogger( &consoleOut );
     #endif /* GUCEF_MSWIN_BUILD ? */
     
-    GUCEF::CORE::CLogManager::Instance()->FlushBootstrapLogEntriesToLogs();
+    GUCEF::CORE::CCoreGlobal::Instance()->GetLogManager().FlushBootstrapLogEntriesToLogs();
 
     GUCEF_LOG( GUCEF::CORE::LOGLEVEL_NORMAL, "This tool was compiled on: " __DATE__ " @ " __TIME__ );
     
@@ -328,7 +328,7 @@ GUCEF_OSMAIN_BEGIN
 
         // Validate in advance that we have a codec loaded of the desired type
         // This will save us some work if it is not available
-        if ( GUCEF::CORE::CDStoreCodecRegistry::Instance()->IsRegistered( patchSetOutCodec ) )
+        if ( GUCEF::CORE::CCoreGlobal::Instance()->GetDStoreCodecRegistry().IsRegistered( patchSetOutCodec ) )
         {
             GUCEF::CORE::CFileAccess fileAccess( patchSetOutFile, "wb" );
             if ( fileAccess.Opened() && fileAccess.IsValid() )

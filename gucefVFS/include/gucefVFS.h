@@ -25,8 +25,8 @@
  *      It houses the generic toolkits.
  */
 
-#ifndef GUCEFVFS_H
-#define GUCEFVFS_H
+#ifndef GUCEF_VFS_H
+#define GUCEF_VFS_H
 
 /*-------------------------------------------------------------------------//
 //                                                                         //
@@ -70,10 +70,25 @@
 #define GUCEF_VFS_CVFS_H
 #endif /* GUCEF_VFS_CVFS_H ? */
 
+#ifndef GUCEF_VFS_CIARCHIVE_H
+#include "gucefVFS_CIArchive.h"
+#define GUCEF_VFS_CIARCHIVE_H
+#endif /* GUCEF_VFS_CIARCHIVE_H ? */
+
+#ifndef GUCEF_VFS_CVFSHANDLE_H
+#include "gucefVFS_CVFSHandle.h"
+#define GUCEF_VFS_CVFSHANDLE_H
+#endif /* GUCEF_VFS_CVFSHANDLE_H ? */
+
+#ifndef GUCEF_VFS_CVFSGLOBAL_H
+#include "gucefVFS_CVfsGlobal.h"
+#define GUCEF_VFS_CVFSGLOBAL_H
+#endif /* GUCEF_VFS_CVFSGLOBAL_H ? */
+
 #endif /* __cplusplus ? */
 /*--------------------------------------------------------------------------*/
 
-#endif /* GUCEFCORE_H ? */
+#endif /* GUCEF_VFS_H ? */
 
 /*-------------------------------------------------------------------------//
 //                                                                         //

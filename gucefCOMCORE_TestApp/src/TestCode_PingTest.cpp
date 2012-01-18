@@ -180,7 +180,7 @@ class CPingTester : public CORE::CObserver
             // If we got here without any errors then we are finished
             GUCEF_LOG( CORE::LOGLEVEL_NORMAL, "CPingTester: Stopped pinging" );
             GUCEF_LOG( CORE::LOGLEVEL_NORMAL, "**** SUCCESSFULLY COMPLETED THE PING TEST ****" );
-            CORE::CGUCEFApplication::Instance()->Stop();
+            CORE::CCoreGlobal::Instance()->GetApplication().Stop();
             GUCEF_LOG( CORE::LOGLEVEL_NORMAL, "CPingTester: Application stopping" );
         }                
         else
@@ -209,7 +209,7 @@ PerformPingTest( void )
 {   
     try
     {
-        CORE::CGUCEFApplication* app = CORE::CGUCEFApplication::Instance();
+        CORE::CGUCEFApplication* app = &CORE::CCoreGlobal::Instance()->GetApplication();
         CPingTester pingTester;
         pingTester.SubscribeTo( app );
         app->main( 0, NULL, true );

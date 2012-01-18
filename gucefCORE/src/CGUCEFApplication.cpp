@@ -165,19 +165,7 @@ CGUCEFApplication::Main( HINSTANCE hinstance     ,
                          bool run                )
 {GUCEF_TRACE;
 
-    /*
-     *      ensure that we have an instance of this class
-     */
     m_mutex.Lock();
-    if ( !_instance )
-    {
-        int retval = Instance()->Main( hinstance     ,
-                                       lpcmdline     ,
-                                       ncmdshow      ,
-                                       run           );
-        m_mutex.Unlock();
-        return retval;
-    }
 
     /*
      *      Set the application dir

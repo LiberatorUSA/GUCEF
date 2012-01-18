@@ -23,6 +23,11 @@
 //                                                                         //
 //-------------------------------------------------------------------------*/
 
+#ifndef GUCEF_VFS_CVFSGLOBAL_H
+#include "gucefVFS_CVfsGlobal.h"
+#define GUCEF_VFS_CVFSGLOBAL_H
+#endif /* GUCEF_VFS_CVFSGLOBAL_H ? */
+
 #include "guidriverRocket_CRocketVFSInterface.h"
 
 /*-------------------------------------------------------------------------//
@@ -42,7 +47,7 @@ namespace GUIDRIVERROCKET {
 
 CRocketVFSInterface::CRocketVFSInterface()
     : Rocket::Core::FileInterface()  ,
-      m_vfs( VFS::CVFS::Instance() ) ,
+      m_vfs( &VFS::CVfsGlobal::Instance()->GetVfs() ) ,
       m_fileHandles()
 {GUCEF_TRACE;
 

@@ -17,23 +17,19 @@
  *  Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA 
  */
 
+#ifndef GUCEF_VFS_CVFSGLOBAL_H
+#define GUCEF_VFS_CVFSGLOBAL_H
+
 /*-------------------------------------------------------------------------//
 //                                                                         //
 //      INCLUDES                                                           //
 //                                                                         //
 //-------------------------------------------------------------------------*/
 
-#ifndef GUCEF_CORE_LOGGING_H
-#include "gucefCORE_Logging.h"
-#define GUCEF_CORE_LOGGING_H
-#endif /* GUCEF_CORE_LOGGING_H ? */
-
-#ifndef GUCEF_VFS_CVFSGLOBAL_H
-#include "gucefVFS_CVfsGlobal.h"
-#define GUCEF_VFS_CVFSGLOBAL_H
-#endif /* GUCEF_VFS_CVFSGLOBAL_H ? */
-
-#include "gucefVFS_CModule.h"  /* definition of the class implemented here */
+#ifndef GUCEF_VFS_MACROS_H
+#include "gucefVFS_macros.h"
+#define GUCEF_VFS_MACROS_H
+#endif /* GUCEF_VFS_MACROS_H ? */
 
 /*-------------------------------------------------------------------------//
 //                                                                         //
@@ -46,28 +42,44 @@ namespace VFS {
 
 /*-------------------------------------------------------------------------//
 //                                                                         //
-//      UTILITIES                                                          //
+//      CLASSES                                                            //
 //                                                                         //
 //-------------------------------------------------------------------------*/
 
-bool 
-CModule::Load( void )
-{GUCEF_TRACE;
-
-    GUCEF_SYSTEM_LOG( CORE::LOGLEVEL_NORMAL, "gucefVFS Module loaded" );
-    return true;
-}
+class CVFS;
 
 /*-------------------------------------------------------------------------*/
-        
-bool 
-CModule::Unload( void )
-{GUCEF_TRACE;
 
-    GUCEF_SYSTEM_LOG( CORE::LOGLEVEL_NORMAL, "gucefVFS Module unloading" );    
-    CVfsGlobal::Deinstance();
-    return true;
-}
+/**
+ *  Singular singleton providing access to all global Vfs systems
+ */
+class GUCEF_VFS_PUBLIC_CPP CVfsGlobal
+{
+    public:
+
+    static CVfsGlobal* Instance( void );
+
+    CVFS& GetVfs( void );
+
+    private:
+    friend class CModule;
+
+    static void Deinstance( void );
+
+    private:
+
+    CVfsGlobal( void );
+
+    ~CVfsGlobal();
+
+    void Initialize( void );
+
+    private:
+
+    CVFS* m_vfs;
+
+    static CVfsGlobal* g_instance;
+};
 
 /*-------------------------------------------------------------------------//
 //                                                                         //
@@ -79,3 +91,16 @@ CModule::Unload( void )
 }; /* namespace GUCEF */
 
 /*-------------------------------------------------------------------------*/
+
+#endif /* GUCEF_VFS_CVFSGLOBAL_H ? */
+
+/*-------------------------------------------------------------------------//
+//                                                                         //
+//      Info & Changes                                                     //
+//                                                                         //
+//-------------------------------------------------------------------------//
+
+- 16-02-2007 :
+        - Dinand: Added this class
+
+---------------------------------------------------------------------------*/

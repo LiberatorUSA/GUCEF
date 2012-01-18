@@ -79,8 +79,6 @@ class GUCEF_VFS_PUBLIC_CPP CVFS : public CORE::CIConfigurable
     typedef CIArchive::TStringList                        TStringList;
     typedef CIArchive::TStringSet                         TStringSet;
     
-    static CVFS* Instance( void );
-    
     void AddRoot( const CString& rootdir               ,
                   const CString& archiveName           ,
                   const bool writeable = false         ,
@@ -181,9 +179,11 @@ class GUCEF_VFS_PUBLIC_CPP CVFS : public CORE::CIConfigurable
                                   const CString& filter   );
 
     private:
-    friend class CModule;
-    
-    static void Deinstance( void );
+    friend class CVfsGlobal;
+
+    CVFS( void );
+
+    virtual ~CVFS();
     
     private:
 
@@ -208,13 +208,10 @@ class GUCEF_VFS_PUBLIC_CPP CVFS : public CORE::CIConfigurable
     typedef std::vector< TConstMountLink >               TConstMountLinkVector;
     typedef CORE::CTSharedPtr< CORE::CDynamicBuffer >    TDynamicBufferPtr;
     
-    static CVFS* _instance;
     static MT::CMutex m_datalock;
     
-    CVFS( void );
-    CVFS( const CVFS& src );
-    virtual ~CVFS();
-    CVFS& operator=( const CVFS& src );
+    CVFS( const CVFS& src );                /**< not implemented, must be unique */
+    CVFS& operator=( const CVFS& src );     /**< not implemented, must be unique */
 
     void GetEligableMounts( const CString& location                ,
                             TConstMountLinkVector& mountLinkVector ) const;

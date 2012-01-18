@@ -78,13 +78,13 @@ RunHTTPServerTest( int argc    ,
     #if defined( GUCEF_MSWIN_BUILD ) && defined( GUCEF_CORE_DEBUG_MODE )
     CMSWinConsoleLogger consoleLogger;
     consoleLogger.SetMinimalLogLevel( LOGLEVEL_BELOW_NORMAL );
-    CLogManager::Instance()->AddLogger( &consoleLogger );
+    CCoreGlobal::Instance()->GetLogManager().AddLogger( &consoleLogger );
     #endif
 
     CHTTPServer httpServer;
     if ( httpServer.ListenOnPort( 45678 ) )
     {
-        CGUCEFApplication::Instance()->main( argc, argv, true );
+        CCoreGlobal::Instance()->GetApplication().main( argc, argv, true );
     }
     else
     {
@@ -93,7 +93,7 @@ RunHTTPServerTest( int argc    ,
     }
     
     #if defined( GUCEF_MSWIN_BUILD ) && defined( GUCEF_CORE_DEBUG_MODE )
-    CLogManager::Instance()->RemoveLogger( &consoleLogger );    
+    CCoreGlobal::Instance()->GetLogManager().RemoveLogger( &consoleLogger );    
     #endif
 }
 

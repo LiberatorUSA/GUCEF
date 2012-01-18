@@ -33,6 +33,11 @@
 #define GUCEF_VFS_CVFS_H
 #endif /* GUCEF_VFS_CVFS_H ? */
 
+#ifndef GUCEF_VFS_CVFSGLOBAL_H
+#include "gucefVFS_CVfsGlobal.h"
+#define GUCEF_VFS_CVFSGLOBAL_H
+#endif /* GUCEF_VFS_CVFSGLOBAL_H ? */
+
 #include "vfspluginDVP_CDVPArchive.h"
 
 #include "vfspluginDVP.h"
@@ -73,7 +78,7 @@ CORE::Int32 GUCEF_PLUGIN_CALLSPEC_PREFIX
 GUCEFPlugin_Load( CORE::UInt32 argc, const char** argv ) GUCEF_PLUGIN_CALLSPEC_SUFFIX
 {GUCEF_TRACE;
 
-    VFS::CVFS::Instance()->RegisterArchiveFactory( "dvp", dvpArchiveFactory );
+    VFS::CVfsGlobal::Instance()->GetVfs().RegisterArchiveFactory( "dvp", dvpArchiveFactory );
     return 1;
 }
 
@@ -83,7 +88,7 @@ void GUCEF_PLUGIN_CALLSPEC_PREFIX
 GUCEFPlugin_Unload( void ) GUCEF_PLUGIN_CALLSPEC_SUFFIX
 {GUCEF_TRACE;
 
-    VFS::CVFS::Instance()->UnregisterArchiveFactory( "dvp" );
+    VFS::CVfsGlobal::Instance()->GetVfs().UnregisterArchiveFactory( "dvp" );
 }
 
 /*--------------------------------------------------------------------------*/
