@@ -19,6 +19,7 @@
     </Module>
     <Module Platform="Android">
         <Linker>
+            <Dependency Name="dl" />
             <Dependency Name="log" />
         </Linker>
     </Module>
