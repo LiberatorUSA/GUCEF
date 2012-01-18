@@ -349,6 +349,10 @@ if ( ANDROID )
   target_link_libraries( ${MODULE_NAME} dl log )
 endif( ANDROID )
 
+if ( LINUX )
+  target_link_libraries( ${MODULE_NAME} dl rt )
+endif( LINUX )
+
 include_directories( ../common/include ../gucefCORE/include ../gucefMT/include ../gucefCORE/include/ include )
 
 if ( ANDROID )
