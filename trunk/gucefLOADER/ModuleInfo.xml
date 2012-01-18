@@ -11,9 +11,16 @@
             <Define String="GUCEF_LOADER_BUILD_MODULE" />
         </Preprocessor>
     </Module>
+    <Module Platform="Linux">
+        <Linker>
+            <Dependency Name="dl" />
+            <Dependency Name="rt" />
+        </Linker>
+    </Module>
     <Module Platform="Android">
         <Linker>
             <Dependency Name="dl" />
+
             <Dependency Name="log" />
         </Linker>
     </Module>
