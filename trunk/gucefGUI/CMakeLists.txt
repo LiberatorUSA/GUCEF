@@ -24,6 +24,7 @@ set( HEADER_FILES
   include/gucefGUI_CFormFactory.h
   include/gucefGUI_CGridView.h
   include/gucefGUI_CGUIDriver.h
+  include/gucefGUI_CGuiGlobal.h
   include/gucefGUI_CGUIManager.h
   include/gucefGUI_CIFileSystemInfoProvider.h
   include/gucefGUI_CIGUIContext.h
@@ -69,6 +70,7 @@ set( SOURCE_FILES
   src/gucefGUI_CFormFactory.cpp
   src/gucefGUI_CGridView.cpp
   src/gucefGUI_CGUIDriver.cpp
+  src/gucefGUI_CGuiGlobal.cpp
   src/gucefGUI_CGUIManager.cpp
   src/gucefGUI_CIFileSystemInfoProvider.cpp
   src/gucefGUI_CIGUIContext.cpp

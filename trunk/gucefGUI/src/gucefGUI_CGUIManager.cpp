@@ -45,8 +45,6 @@ namespace GUI {
 //                                                                         //
 //-------------------------------------------------------------------------*/
 
-CGUIManager* CGUIManager::g_instance = NULL;
-
 const CORE::CEvent CGUIManager::DriverRegisteredEvent = "GUCEF::GUI::CGUIManager::DriverRegisteredEvent";
 const CORE::CEvent CGUIManager::DriverUnregisteredEvent = "GUCEF::GUI::CGUIManager::DriverUnregisteredEvent";
 const CORE::CEvent CGUIManager::FormFactoryRegisteredEvent = "GUCEF::GUI::CGUIManager::FormFactoryRegisteredEvent";
@@ -57,29 +55,6 @@ const CORE::CEvent CGUIManager::FormFactoryUnregisteredEvent = "GUCEF::GUI::CGUI
 //      UTILITIES                                                          //
 //                                                                         //
 //-------------------------------------------------------------------------*/
-
-CGUIManager*
-CGUIManager::Instance( void )
-{GUCEF_TRACE;
-
-    if ( g_instance == NULL )
-    {
-        g_instance = new CGUIManager();
-    }
-    return g_instance;
-}
-
-/*-------------------------------------------------------------------------*/
-
-void
-CGUIManager::Deinstance( void )
-{GUCEF_TRACE;
-
-    delete g_instance;
-    g_instance = NULL; 
-}
-
-/*-------------------------------------------------------------------------*/
 
 void
 CGUIManager::RegisterEvents( void )

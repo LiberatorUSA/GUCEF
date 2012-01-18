@@ -1,6 +1,6 @@
 /*
  *  gucefGUI: GUCEF module providing a uniform interface towards GUI backends
- *  Copyright (C) 2002 - 2011.  Dinand Vanvelzen
+ *  Copyright (C) 2002 - 2007.  Dinand Vanvelzen
  *
  *  This library is free software; you can redistribute it and/or
  *  modify it under the terms of the GNU Lesser General Public
@@ -14,11 +14,11 @@
  *
  *  You should have received a copy of the GNU Lesser General Public
  *  License along with this library; if not, write to the Free Software
- *  Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA 
+ *  Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA
  */
- 
-#ifndef GUCEF_GUI_CWINDOWMANAGER_H
-#define GUCEF_GUI_CWINDOWMANAGER_H 
+
+#ifndef GUCEF_GUI_CGUIGLOBAL_H
+#define GUCEF_GUI_CGUIGLOBAL_H
 
 /*-------------------------------------------------------------------------//
 //                                                                         //
@@ -26,15 +26,10 @@
 //                                                                         //
 //-------------------------------------------------------------------------*/
 
-#ifndef GUCEF_MT_CMUTEX_H
-#include "gucefMT_CMutex.h"
-#define GUCEF_MT_CMUTEX_H
-#endif /* GUCEF_MT_CMUTEX_H ? */
-
-#ifndef GUCEF_GUI_CWINDOWMANAGERBACKEND_H
-#include "gucefGUI_CWindowManagerBackend.h"
-#define GUCEF_GUI_CWINDOWMANAGERBACKEND_H
-#endif /* GUCEF_GUI_CWINDOWMANAGERBACKEND_H ? */
+#ifndef GUCEF_GUI_MACROS_H
+#include "gucefGUI_macros.h"
+#define GUCEF_GUI_MACROS_H
+#endif /* GUCEF_GUI_MACROS_H ? */
 
 /*-------------------------------------------------------------------------//
 //                                                                         //
@@ -44,47 +39,50 @@
 
 namespace GUCEF {
 namespace GUI {
-         
+
 /*-------------------------------------------------------------------------//
 //                                                                         //
 //      CLASSES                                                            //
 //                                                                         //
 //-------------------------------------------------------------------------*/
 
+class CWindowManager;
+class CGUIManager;
+
+/*-------------------------------------------------------------------------*/
+
 /**
- *  Central location were window manager backends can be obtained.
+ *  Singular singleton providing access to all global Vfs systems
  */
-class GUCEF_GUI_PUBLIC_CPP CWindowManager : public CORE::CObservingNotifier
-{    
+class GUCEF_GUI_PUBLIC_CPP CGuiGlobal
+{
     public:
 
-    typedef std::map< CORE::CString, TWindowManagerBackendPtr > TWindowManagerBackendMap;
+    static CGuiGlobal* Instance( void );
 
-    TWindowManagerBackendPtr GetBackend( const CORE::CString& typeName );
+    CWindowManager& GetWindowManager( void );
 
-    void RegisterBackend( const CORE::CString& typeName    ,
-                          TWindowManagerBackendPtr backend );
-
-    void UnregisterBackend( const CORE::CString& typeName );
-
-    void GetListOfAvailableBackends( TWindowManagerBackendMap& map );
+    CGUIManager& GetGuiManager( void );
 
     private:
-    friend class CGuiGlobal;
+    friend class CModule;
 
-    CWindowManager( void );
-
-    ~CWindowManager();
+    static void Deinstance( void );
 
     private:
 
-    CWindowManager( const CWindowManager& src );            /**< not implemented: singleton */
-    CWindowManager& operator=( const CWindowManager& src ); /**< not implemented: singleton */
+    CGuiGlobal( void );
+
+    ~CGuiGlobal();
+
+    void Initialize( void );
 
     private:
 
-    TWindowManagerBackendMap m_backends;
-    MT::CMutex m_lock;
+    CWindowManager* m_windowManager;
+    CGUIManager* m_guiManager;
+
+    static CGuiGlobal* g_instance;
 };
 
 /*-------------------------------------------------------------------------//
@@ -93,12 +91,12 @@ class GUCEF_GUI_PUBLIC_CPP CWindowManager : public CORE::CObservingNotifier
 //                                                                         //
 //-------------------------------------------------------------------------*/
 
-} /* namespace GUI */
-} /* namespace GUCEF */
+}; /* namespace GUI */
+}; /* namespace GUCEF */
 
 /*-------------------------------------------------------------------------*/
 
-#endif /* GUCEF_GUI_CWINDOWMANAGER_H ? */
+#endif /* GUCEF_GUI_CGUIGLOBAL_H ? */
 
 /*-------------------------------------------------------------------------//
 //                                                                         //
@@ -106,7 +104,7 @@ class GUCEF_GUI_PUBLIC_CPP CWindowManager : public CORE::CObservingNotifier
 //                                                                         //
 //-------------------------------------------------------------------------//
 
-- 02-04-2005 :
-       - Initial version of this file.
+- 16-02-2007 :
+        - Dinand: Added this class
 
 ---------------------------------------------------------------------------*/

@@ -88,9 +88,7 @@ class GUCEF_GUI_PUBLIC_CPP CGUIManager : public CORE::CObservingNotifier
     
     typedef CFormFactory::TConcreteFactory TConcreteFormFactory;
     typedef std::set< CString > TFormTypeSet;
-    
-    static CGUIManager* Instance( void );
-    
+        
     TGuiContextPtr CreateGUIContext( const CString& guiDriverName    ,
                                      TWindowContextPtr windowContext );
     
@@ -119,18 +117,18 @@ class GUCEF_GUI_PUBLIC_CPP CGUIManager : public CORE::CObservingNotifier
     CGUIDriver* GetGuiDriver( const CString& guiDriverName );
     
     private:
-    friend class CModule;    
+    friend class CGuiGlobal;    
     
-    static void Deinstance( void );
+    CGUIManager( void );
+    
+    virtual ~CGUIManager();
     
     private:
     
     typedef CORE::CTEventHandlerFunctor< CGUIManager > TEventCallback;
-    
-    CGUIManager( void );
-    CGUIManager( const CGUIManager& src );
-    virtual ~CGUIManager();
-    CGUIManager& operator=( const CGUIManager& src );
+        
+    CGUIManager( const CGUIManager& src );                 /**< not implemented, must be unique */
+    CGUIManager& operator=( const CGUIManager& src );      /**< not implemented, must be unique */
     
     void OnFormFactoryRegistered( CORE::CNotifier* notifier           ,
                                   const CORE::CEvent& eventid         ,
@@ -146,8 +144,6 @@ class GUCEF_GUI_PUBLIC_CPP CGUIManager : public CORE::CObservingNotifier
     
     CFormFactory m_genericFormFactory;
     TGUIDriverMap m_guiDrivers;
-    
-    static CGUIManager* g_instance;
 };
 
 /*-------------------------------------------------------------------------//

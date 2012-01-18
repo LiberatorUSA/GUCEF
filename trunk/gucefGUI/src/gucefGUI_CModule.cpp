@@ -58,27 +58,6 @@ namespace GUI {
 bool
 CModule::Load( void )
 {GUCEF_TRACE;
-
-    GUCEF_SYSTEM_LOG( CORE::LOGLEVEL_NORMAL, "gucefGUI Module loaded" );
-    
-    CWidget::RegisterEvents();
-    CForm::RegisterEvents();
-    CButton::RegisterEvents();
-    CCheckbox::RegisterEvents();
-    CCombobox::RegisterEvents();
-    CEditbox::RegisterEvents();
-    CFileSystemDialog::RegisterEvents();
-    CGridView::RegisterEvents();
-    CLabel::RegisterEvents();
-    CListbox::RegisterEvents();
-    CPushButton::RegisterEvents();
-    CSpinner::RegisterEvents();
-    CTabControl::RegisterEvents();
-    CTextbox::RegisterEvents();
-    CGUIManager::RegisterEvents();
-    
-    CWindowManager::Instance();
-    CGUIManager::Instance();
         
     return true;
 }
@@ -91,9 +70,7 @@ CModule::Unload( void )
     
     GUCEF_SYSTEM_LOG( CORE::LOGLEVEL_NORMAL, "gucefGUI Module unloading" );
     
-    CGUIManager::Deinstance();
-    CWindowManager::Deinstance();
-    
+    CGuiGlobal::Deinstance();    
     return true;
 }
 

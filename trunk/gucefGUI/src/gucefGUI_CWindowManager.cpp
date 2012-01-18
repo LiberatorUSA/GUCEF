@@ -33,16 +33,7 @@
 
 namespace GUCEF {
 namespace GUI {
-
-/*-------------------------------------------------------------------------//
-//                                                                         //
-//      GLOBAL VARS                                                        //
-//                                                                         //
-//-------------------------------------------------------------------------*/
-
-MT::CMutex CWindowManager::g_lock;
-CWindowManager* CWindowManager::g_instance = NULL;
-         
+       
 /*-------------------------------------------------------------------------//
 //                                                                         //
 //      UTILITIES                                                          //
@@ -50,7 +41,8 @@ CWindowManager* CWindowManager::g_instance = NULL;
 //-------------------------------------------------------------------------*/
 
 CWindowManager::CWindowManager( void )
-    : m_backends()
+    : m_backends() ,
+      m_lock()
 {GUCEF_TRACE;
 
 }
@@ -64,48 +56,18 @@ CWindowManager::~CWindowManager()
 
 /*-------------------------------------------------------------------------*/
 
-CWindowManager* 
-CWindowManager::Instance( void )
-{GUCEF_TRACE;
-
-    if ( NULL == g_instance )
-    {
-        g_lock.Lock();
-        if ( NULL == g_instance )
-        {
-            g_instance = new CWindowManager();
-        }
-        g_lock.Unlock();
-    }
-    return g_instance;
-}
-
-/*-------------------------------------------------------------------------*/
-
-void
-CWindowManager::Deinstance( void )
-{GUCEF_TRACE;
-
-    g_lock.Lock();
-    delete g_instance;
-    g_instance = NULL;
-    g_lock.Unlock();
-}
-
-/*-------------------------------------------------------------------------*/
-
 TWindowManagerBackendPtr 
 CWindowManager::GetBackend( const CORE::CString& typeName )
 {GUCEF_TRACE;
 
-    g_lock.Lock();
+    m_lock.Lock();
     TWindowManagerBackendMap::iterator i = m_backends.find( typeName );
     if ( i != m_backends.end() )
     {
-        g_lock.Unlock();
+        m_lock.Unlock();
         return (*i).second;
     }
-    g_lock.Unlock();
+    m_lock.Unlock();
     return TWindowManagerBackendPtr();
 }
 
@@ -116,9 +78,9 @@ CWindowManager::RegisterBackend( const CORE::CString& typeName    ,
                                  TWindowManagerBackendPtr backend )
 {GUCEF_TRACE;
 
-    g_lock.Lock();
+    m_lock.Lock();
     m_backends[ typeName ] = backend;
-    g_lock.Unlock();
+    m_lock.Unlock();
 }
 
 /*-------------------------------------------------------------------------*/
@@ -127,9 +89,9 @@ void
 CWindowManager::UnregisterBackend( const CORE::CString& typeName )
 {GUCEF_TRACE;
 
-    g_lock.Lock();
+    m_lock.Lock();
     m_backends.erase( typeName );
-    g_lock.Unlock();
+    m_lock.Unlock();
 }
 
 /*-------------------------------------------------------------------------*/
@@ -138,9 +100,9 @@ void
 CWindowManager::GetListOfAvailableBackends( TWindowManagerBackendMap& map )
 {GUCEF_TRACE;
 
-    g_lock.Lock();
+    m_lock.Lock();
     map = m_backends;
-    g_lock.Unlock();
+    m_lock.Unlock();
 }
 
 /*-------------------------------------------------------------------------//
