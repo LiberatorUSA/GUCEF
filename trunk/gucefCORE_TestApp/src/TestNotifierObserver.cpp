@@ -157,7 +157,7 @@ public:
         }
         else
         {
-            printf( "This is observer %d calling: Recieved event \"%s\" with id %d\n", m_index, CNotificationIDRegistry::Instance()->Lookup(eventid).C_String(), eventid );
+            printf( "This is observer %d calling: Recieved event \"%s\" with id %d\n", m_index, CCoreGlobal::Instance()->GetNotificationIDRegistry().Lookup(eventid).C_String(), eventid );
             m_eventCache[ m_index ] = eventid;        
         }            
     }   
@@ -229,7 +229,7 @@ PerformNotifierObserverTests( void )
         CMyObserver* observers[ 100 ];
         CEvent observerECache[ 100 ];
         SETARRAYMEM( observerECache, 100, CEvent() );
-        CNotificationIDRegistry* registry = CNotificationIDRegistry::Instance();                
+        CNotificationIDRegistry* registry = &CCoreGlobal::Instance()->GetNotificationIDRegistry();
         
         /*
          *  The default notifier events should now be registered

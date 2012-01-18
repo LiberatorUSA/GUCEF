@@ -64,14 +64,14 @@ GUCEF_OSMAIN_BEGIN
         GUCEF::CORE::CFileAccess logFileAccess( logFilename, "w" );
         
         GUCEF::CORE::CStdLogger logger( logFileAccess );
-        GUCEF::CORE::CLogManager::Instance()->AddLogger( &logger );
+        GUCEF::CORE::CCoreGlobal::Instance()->GetLogManager().AddLogger( &logger );
         
         #ifdef GUCEF_MSWIN_BUILD
         GUCEF::CORE::CMSWinConsoleLogger consoleOut;
-        GUCEF::CORE::CLogManager::Instance()->AddLogger( &consoleOut );
+        GUCEF::CORE::CCoreGlobal::Instance()->GetLogManager().AddLogger( &consoleOut );
         #endif /* GUCEF_MSWIN_BUILD ? */
         
-        GUCEF::CORE::CLogManager::Instance()->FlushBootstrapLogEntriesToLogs();
+        GUCEF::CORE::CCoreGlobal::Instance()->GetLogManager().FlushBootstrapLogEntriesToLogs();
 
         PerformPingTest();
         //SetupClientServerTest();

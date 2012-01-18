@@ -78,6 +78,11 @@
 #define GUCEF_GUI_CFORMEX_H
 #endif /* GUCEF_GUI_CFORMEX_H ? */
 
+#ifndef GUCEF_VFS_CVFSGLOBAL_H
+#include "gucefVFS_CVfsGlobal.h"
+#define GUCEF_VFS_CVFSGLOBAL_H
+#endif /* GUCEF_VFS_CVFSGLOBAL_H ? */
+
 #ifndef GUCEF_VFS_CVFS_H
 #include "gucefVFS_CVFS.h"
 #define GUCEF_VFS_CVFS_H
@@ -398,15 +403,15 @@ GUCEF_OSMAIN_BEGIN
                     CORE::CString assetDir = CORE::RelativePath( "$MODULEDIR$" );
                     assetDir = assetDir.SubstrToSubstr( "trunk" );
                     CORE::AppendToPath( assetDir, "trunk\\dependencies\\libRocket\\Samples\\assets" );
-                    VFS::CVFS::Instance()->AddRoot( assetDir, "RocketGUISampleAssets", false, false );
+                    VFS::CVfsGlobal::Instance()->GetVfs().AddRoot( assetDir, "RocketGUISampleAssets", false, false );
                     assetDir = CORE::RelativePath( "$MODULEDIR$" );
                     assetDir = assetDir.SubstrToSubstr( "trunk" );
                     CORE::AppendToPath( assetDir, "trunk\\dependencies\\libRocket\\Samples\\invaders\\data" );
-                    VFS::CVFS::Instance()->AddRoot( assetDir, "RocketGUISampleAssets2", false, false );
+                    VFS::CVfsGlobal::Instance()->GetVfs().AddRoot( assetDir, "RocketGUISampleAssets2", false, false );
                     assetDir = CORE::RelativePath( "$MODULEDIR$" );
                     assetDir = assetDir.SubstrToSubstr( "trunk" );
                     CORE::AppendToPath( assetDir, "trunk\\dependencies\\libRocket\\Samples\\basic\\drag\\data" );
-                    VFS::CVFS::Instance()->AddRoot( assetDir, "RocketGUISampleAssets3", false, false );
+                    VFS::CVfsGlobal::Instance()->GetVfs().AddRoot( assetDir, "RocketGUISampleAssets3", false, false );
 
                     // Load some fonts
                     LoadFonts( guiContext );

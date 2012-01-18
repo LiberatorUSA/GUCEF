@@ -105,7 +105,7 @@ GUCEFPlugin_Load( CORE::UInt32 argc, const char** argv ) GUCEF_PLUGIN_CALLSPEC_S
     
     svcClient.ConnectTo( addressOfService, logServicePort );
 
-    CORE::CLogManager::Instance()->AddLogger( &svcClient );
+    CORE::CCoreGlobal::Instance()->GetLogManager().AddLogger( &svcClient );
     
     return 1;
 }
@@ -116,7 +116,7 @@ void GUCEF_PLUGIN_CALLSPEC_PREFIX
 GUCEFPlugin_Unload( void ) GUCEF_PLUGIN_CALLSPEC_SUFFIX
 {GUCEF_TRACE;
 
-    CORE::CLogManager::Instance()->RemoveLogger( &svcClient );
+    CORE::CCoreGlobal::Instance()->GetLogManager().RemoveLogger( &svcClient );
 }
 
 /*--------------------------------------------------------------------------*/

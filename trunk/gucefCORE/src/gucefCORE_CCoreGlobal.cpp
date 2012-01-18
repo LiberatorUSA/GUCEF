@@ -128,6 +128,15 @@
 #define GUCEF_CORE_CONFIGSTORE_H
 #endif /* GUCEF_CORE_CONFIGSTORE_H ? */
 
+#if GUCEF_PLATFORM == GUCEF_PLATFORM_MSWIN
+
+  #ifndef GUCEF_CORE_CWNDMSGHOOKNOTIFIER_H
+  #include "CWndMsgHookNotifier.h"
+  #define GUCEF_CORE_CWNDMSGHOOKNOTIFIER_H
+  #endif /* GUCEF_CORE_CWNDMSGHOOKNOTIFIER_H ? */
+
+#endif /* GUCEF_PLATFORM == GUCEF_PLATFORM_MSWIN ? */
+
 #include "gucefCORE_CCoreGlobal.h"
 
 /*-------------------------------------------------------------------------//
@@ -231,9 +240,9 @@ CCoreGlobal::Initialize( void )
     m_genericPluginManager = new CGenericPluginManager();
     m_stdCodecPluginManager = new CStdCodecPluginManager();
 
-    #ifdef GUCEF_MSWIN_BUILD
+    #if GUCEF_PLATFORM == GUCEF_PLATFORM_MSWIN
     CWndMsgHookNotifier::RegisterEvents();
-    #endif /* GUCEF_MSWIN_BUILD ? */
+    #endif /* GUCEF_PLATFORM == GUCEF_PLATFORM_MSWIN ? */
 
     /*
      *      Register some default codecs/handlers

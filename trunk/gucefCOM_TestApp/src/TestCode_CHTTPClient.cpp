@@ -144,7 +144,7 @@ class CMyPumpClient : public CORE::CObserver
     
     CMyPumpClient( void )
     {
-            SubscribeTo( GUCEF::CORE::CGUCEFApplication::Instance(), GUCEF::CORE::CGUCEFApplication::AppInitEvent );       
+            SubscribeTo( &GUCEF::CORE::CCoreGlobal::Instance()->GetApplication(), GUCEF::CORE::CGUCEFApplication::AppInitEvent );       
     }
     
     protected:

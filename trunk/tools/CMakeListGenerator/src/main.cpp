@@ -3294,7 +3294,7 @@ main( int argc , char* argv[] )
 
     #if ( GUCEF_PLATFORM == GUCEF_PLATFORM_MSWIN )
     CORE::CMSWinConsoleLogger consoleOut;
-    CORE::CLogManager::Instance()->AddLogger( &consoleOut );
+    CORE::CCoreGlobal::Instance()->GetLogManager().AddLogger( &consoleOut );
     #elif ( GUCEF_PLATFORM == GUCEF_PLATFORM_LINUX )
     CORE::CXTermConsoleLogger consoleOut;
     CORE::CCoreGlobal::Instance()->GetLogManager().AddLogger( &consoleOut );

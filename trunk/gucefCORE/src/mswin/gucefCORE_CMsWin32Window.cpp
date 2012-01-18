@@ -92,7 +92,7 @@ CMsWin32Window::CMsWin32Window( void )
       m_orgWinProc( 0 )
 {GUCEF_TRACE;
 
-    SubscribeTo( &CGUCEFApplication::Instance()->GetPulseGenerator(), CPulseGenerator::PulseEvent );
+    SubscribeTo( &CCoreGlobal::Instance()->GetPulseGenerator(), CPulseGenerator::PulseEvent );
 
     RegisterEvents();
 }
