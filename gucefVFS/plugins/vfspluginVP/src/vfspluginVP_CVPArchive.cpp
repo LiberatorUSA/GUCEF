@@ -14,7 +14,7 @@
  *
  *  You should have received a copy of the GNU Lesser General Public
  *  License along with this library; if not, write to the Free Software
- *  Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA 
+ *  Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA
  */
 
 /*-------------------------------------------------------------------------//
@@ -22,6 +22,8 @@
 //      INCLUDES                                                           //
 //                                                                         //
 //-------------------------------------------------------------------------*/
+
+#include <string.h>
 
 #ifndef GUCEF_CORE_DVMD5UTILS_H
 #include "dvmd5utils.h"
@@ -71,7 +73,7 @@ struct SVPFileIndexEntry
     VFS::UInt32 offset;
     VFS::UInt32 size;
     char filename[ 32 ];
-    VFS::Int32 timestamp;        
+    VFS::Int32 timestamp;
 };
 typedef struct SVPFileIndexEntry TVPFileIndexEntry;
 
@@ -101,7 +103,7 @@ CVPArchive::CVPArchive( void )
 }
 
 /*-------------------------------------------------------------------------*/
-    
+
 CVPArchive::~CVPArchive()
 {GUCEF_TRACE;
 
@@ -109,7 +111,7 @@ CVPArchive::~CVPArchive()
 }
 
 /*-------------------------------------------------------------------------*/
-    
+
 VFS::CIArchive::CVFSHandlePtr
 CVPArchive::GetFile( const VFS::CString& file      ,
                      const char* mode              ,
@@ -118,14 +120,14 @@ CVPArchive::GetFile( const VFS::CString& file      ,
 {GUCEF_TRACE;
 
     GUCEF_DEBUG_LOG( CORE::LOGLEVEL_NORMAL, "CVPArchive: request to get file: " +  file );
-    
+
     // We only support read only modes
     if ( *mode != 'r' )
     {
         GUCEF_DEBUG_LOG( CORE::LOGLEVEL_NORMAL, "CVPArchive: Unable to support requested file access mode for file: " + file );
         return CVFSHandlePtr();
     }
-    
+
     // load the file
     CORE::CIOAccess* fileAccess = LoadFile( file, memLoadSize );
     if ( NULL != fileAccess )
@@ -134,14 +136,14 @@ CVPArchive::GetFile( const VFS::CString& file      ,
         VFS::CString filePath = m_archivePath;
         CORE::AppendToPath( filePath, file );
 
-        VFS::CVFSHandle* fileHandle = new VFS::CVFSHandle( fileAccess , 
+        VFS::CVFSHandle* fileHandle = new VFS::CVFSHandle( fileAccess ,
                                                            file       ,
                                                            filePath   );
-                                                           
-        GUCEF_DEBUG_LOG( CORE::LOGLEVEL_NORMAL, "CVPArchive: providing access to file: " + file );        
+
+        GUCEF_DEBUG_LOG( CORE::LOGLEVEL_NORMAL, "CVPArchive: providing access to file: " + file );
         return CVFSHandlePtr( fileHandle, this );
     }
-    
+
     GUCEF_DEBUG_LOG( CORE::LOGLEVEL_NORMAL, "CVPArchive: Unable to provide access to file: " + file );
     return CVFSHandlePtr();
 }
@@ -150,7 +152,7 @@ CVPArchive::GetFile( const VFS::CString& file      ,
 
 void
 CVPArchive::GetList( TStringSet& outputList       ,
-                     const VFS::CString& location , 
+                     const VFS::CString& location ,
                      bool recursive               ,
                      bool includePathInFilename   ,
                      const VFS::CString& filter   ,
@@ -160,21 +162,21 @@ CVPArchive::GetList( TStringSet& outputList       ,
 
     TFileIndexMap::const_iterator i = m_index.begin();
     while ( i != m_index.end() )
-    {        
+    {
         // Check if the starting path matches
         const VFS::CString& filePath = (*i).first;
-        
+
         if ( filePath == location )
         {
             // Don't add the location itself to the list
             ++i;
             continue;
         }
-        
+
         if ( 0 == filePath.HasSubstr( location, true ) )
-        {   
+        {
             const TVPIndexEntry& indexEntry = (*i).second;
-            
+
             // Check if the entry is a directory
             if ( indexEntry.size == 0 || indexEntry.offset == 0 )
             {
@@ -191,21 +193,21 @@ CVPArchive::GetList( TStringSet& outputList       ,
                 {
                     // Skip this item
                     ++i;
-                    continue;                    
+                    continue;
                 }
             }
-            
+
             if ( !recursive )
             {
                 // Check if we have multiple subdirs beyond the "location" to get to
-                // the archive. If so then we cannot add this archive because recursive 
+                // the archive. If so then we cannot add this archive because recursive
                 // searching is not allowed.
                 if ( !CORE::IsFileInDir( location, filePath ) )
                 {
                     // The directory seperator was not the last character so we have multiple
                     // sub-dirs which is not allowed, we cannot add this item
                     ++i;
-                    continue;                
+                    continue;
                 }
             }
 
@@ -221,13 +223,13 @@ CVPArchive::GetList( TStringSet& outputList       ,
                     outputList.insert( filename );
                 }
             }
-        }        
+        }
         ++i;
     }
 }
 
 /*-------------------------------------------------------------------------*/
-    
+
 bool
 CVPArchive::FileExists( const VFS::CString& filePath ) const
 {GUCEF_TRACE;
@@ -261,29 +263,29 @@ CVPArchive::LoadFile( const VFS::CString& file      ,
     if ( i != m_index.end() )
     {
         const TVPIndexEntry& entry = (*i).second;
-        
+
         if ( memLoadSize >= entry.size )
         {
             FILE* fptr = fopen( m_archivePath.C_String(), "rb" );
             if ( NULL == fptr ) return NULL;
-            
+
             if ( 0 == fseek( fptr, entry.offset, SEEK_CUR ) )
             {
                 // prepare a memory buffer for the file
                 CORE::CDynamicBuffer* fileBuffer = new CORE::CDynamicBuffer();
                 fileBuffer->SetDataSize( entry.size );
-            
+
                 if ( 1 == fread( fileBuffer->GetBufferPtr(), entry.size, 1, fptr ) )
                 {
                     // Successfully read file into memory
                     fclose( fptr );
                     return new CORE::CDynamicBufferAccess( fileBuffer, true );
                 }
-                
+
                 // unable to read entire file
-                delete fileBuffer;                
+                delete fileBuffer;
             }
-            
+
             fclose( fptr );
         }
         else
@@ -298,11 +300,11 @@ CVPArchive::LoadFile( const VFS::CString& file      ,
             delete fileAccess;
         }
     }
-    return NULL;    
+    return NULL;
 }
 
 /*-------------------------------------------------------------------------*/
-    
+
 VFS::CString
 CVPArchive::GetFileHash( const VFS::CString& file ) const
 {GUCEF_TRACE;
@@ -315,15 +317,15 @@ CVPArchive::GetFileHash( const VFS::CString& file ) const
                                      digest                     ) )
         {
             delete fileAccess;
-            
+
             char md5_str[ 48 ];
             CORE::md5tostring( digest, md5_str );
             VFS::CString md5Str;
             md5Str.Set( md5_str, 48 );
             return md5Str;
         }
-        
-        delete fileAccess; 
+
+        delete fileAccess;
     }
     return VFS::CString();
 }
@@ -343,7 +345,7 @@ CVPArchive::GetFileModificationTime( const VFS::CString& filePath ) const
 }
 
 /*-------------------------------------------------------------------------*/
-    
+
 const VFS::CString&
 CVPArchive::GetArchiveName( void ) const
 {GUCEF_TRACE;
@@ -361,7 +363,7 @@ CVPArchive::IsWriteable( void ) const
 }
 
 /*-------------------------------------------------------------------------*/
-    
+
 bool
 CVPArchive::LoadArchive( const VFS::CString& archiveName ,
                          const VFS::CString& archivePath ,
@@ -370,16 +372,16 @@ CVPArchive::LoadArchive( const VFS::CString& archiveName ,
 
     // We do not support writable VP archives
     if ( writableRequest ) return false;
-    
+
     FILE* fptr = fopen( archivePath.C_String(), "rb" );
     if ( NULL == fptr ) return false;
-    
+
     if ( fread( &m_header, VP_HEADER_SIZE, 1, fptr ) == 1 )
     {
         if ( ( memcmp( m_header.sig, "VPVP", 4 ) == 0 ) &&
              ( m_header.version == 2 ) )
         {
-            
+
             // Move to the index location at the end of the file
             if ( 0 != fseek( fptr, m_header.indexoffset, SEEK_SET ) )
             {
@@ -387,18 +389,18 @@ CVPArchive::LoadArchive( const VFS::CString& archiveName ,
                 fclose( fptr );
                 return false;
             }
-            
+
             GUCEF_DEBUG_LOG( CORE::LOGLEVEL_NORMAL, "VFSPLUGIN VP: Successfully read the archive header" );
-            
+
             // read the index
             VFS::CString path;
             TVPFileIndexEntry fileEntry;
             for ( VFS::UInt32 i=0; i<m_header.idxentries; ++i )
-            {             
+            {
                 if ( fread( &fileEntry, VP_INDEX_ENTRY_SIZE, 1, fptr ) != 1 )
-                {                                
+                {
                     GUCEF_DEBUG_LOG( CORE::LOGLEVEL_NORMAL, "VFSPLUGIN VP: Error: unable to read index entry" );
-                    m_header.idxentries = i;                    
+                    m_header.idxentries = i;
                     break;
                 }
 
@@ -407,7 +409,7 @@ CVPArchive::LoadArchive( const VFS::CString& archiveName ,
                     // directory entry
                     VFS::CString dirName;
                     dirName.Scan( fileEntry.filename, 32 );
-                    
+
                     GUCEF_DEBUG_LOG( CORE::LOGLEVEL_NORMAL, "VFSPLUGIN VP: Found directory entry: " +  dirName);
                     if ( dirName == ".." )
                     {
@@ -419,13 +421,13 @@ CVPArchive::LoadArchive( const VFS::CString& archiveName ,
                         CORE::AppendToPath( path, dirName );
                         GUCEF_DEBUG_LOG( CORE::LOGLEVEL_NORMAL, "VFSPLUGIN VP: Entering directory: " + dirName );
                     }
-                    
+
                     // Add the entry for the directory to our index
                     TVPIndexEntry entry;
                     entry.offset = 0;
                     entry.size = 0;
-                    entry.timestamp = 0;                    
-                    m_index[ path.Lowercase().ReplaceChar( '/', '\\' ) ] = entry;                                        
+                    entry.timestamp = 0;
+                    m_index[ path.Lowercase().ReplaceChar( '/', '\\' ) ] = entry;
                 }
                 else
                 {
@@ -434,24 +436,24 @@ CVPArchive::LoadArchive( const VFS::CString& archiveName ,
                     entry.offset = fileEntry.offset;
                     entry.size = fileEntry.size;
                     entry.timestamp = fileEntry.timestamp;
-                   
+
                     VFS::CString filenameBuffer;
                     filenameBuffer.Scan( fileEntry.filename, 32 );
-                    
+
                     VFS::CString filename = path;
                     CORE::AppendToPath( filename, filenameBuffer );
-                    
+
                     GUCEF_DEBUG_LOG( CORE::LOGLEVEL_NORMAL, "VFSPLUGIN VP: Found file entry: " +  filenameBuffer );
-                    
+
                     m_index[ filename.Lowercase().ReplaceChar( '/', '\\' ) ] = entry;
                 }
             }
-            
+
             fclose( fptr );
-            
+
             m_archiveName = archiveName;
             m_archivePath = archivePath;
-            
+
             GUCEF_DEBUG_LOG( CORE::LOGLEVEL_NORMAL, "VFSPLUGIN VP: Successfully finished reading the index" );
             return true;
         }
@@ -459,7 +461,7 @@ CVPArchive::LoadArchive( const VFS::CString& archiveName ,
         {
             GUCEF_DEBUG_LOG( CORE::LOGLEVEL_NORMAL, "VFSPLUGIN VP: Error: Archive header not recognized" );
             fclose( fptr );
-        }     
+        }
     }
     return false;
 }

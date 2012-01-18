@@ -593,7 +593,7 @@ class CTestPeerToPeer : public CORE::CObservingNotifier
             DRN::CDRNNode::CDRNPeerLinkPtr link = notifier == m_linkA ? m_linkA : m_linkB;
             DRN::CDRNPeerLinkData::TDRNDataStreamPtr stream = link->GetLinkData().GetSubscribedDataStreamWithName( streamName );
 
-            if ( NULL == stream )
+            if ( stream == NULL )
             {
                 GUCEF_ERROR_LOG( GUCEF::CORE::LOGLEVEL_NORMAL, GetLinkNodeName( notifier ) + ": Failed to obtain the subscribed data stream" );
                 ERRORHERE;
@@ -641,7 +641,7 @@ class CTestPeerToPeer : public CORE::CObservingNotifier
             DRN::CDRNNode::CDRNPeerLinkPtr link = notifier == m_linkA ? m_linkA : m_linkB;
             DRN::CDRNPeerLinkData::TDRNDataGroupPtr dataGroup = link->GetLinkData().GetSubscribedDataGroupWithName( groupName );
 
-            if ( NULL == dataGroup )
+            if ( dataGroup == NULL )
             {
                 GUCEF_ERROR_LOG( GUCEF::CORE::LOGLEVEL_NORMAL, GetLinkNodeName( notifier ) + ": Failed to obtain the subscribed data group " + groupName );
                 ERRORHERE;

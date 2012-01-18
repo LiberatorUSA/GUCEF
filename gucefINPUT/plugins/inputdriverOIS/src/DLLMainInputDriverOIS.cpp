@@ -14,15 +14,17 @@
  *
  *  You should have received a copy of the GNU Lesser General Public
  *  License along with this library; if not, write to the Free Software
- *  Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA 
+ *  Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA
  */
 
 /*-------------------------------------------------------------------------//
 //                                                                         //
 //      INCLUDES                                                           //
 //                                                                         //
-//-------------------------------------------------------------------------*/ 
+//-------------------------------------------------------------------------*/
 
+#include <string.h>
+#include <stdio.h>
 #include <vector>
 
 #ifndef OIS_OISALL_H
@@ -94,7 +96,7 @@ typedef struct SContextData TContextData;
 UInt32
 ParseArgListItemUInt32( const char*** args ,
                         const char* key    )
-{       
+{
     UInt32 i=0;
     while ( 0 != args[ i ] )
     {
@@ -143,7 +145,7 @@ UInt32 GUCEF_PLUGIN_CALLSPEC_PREFIX
 INPUTDRIVERPLUG_Shutdown( void* plugdata ) GUCEF_PLUGIN_CALLSPEC_SUFFIX
 {
     // no special driver wide shutdown needed
-    return 1;                        
+    return 1;
 }
 
 /*---------------------------------------------------------------------------*/
@@ -173,7 +175,7 @@ INPUTDRIVERPLUG_Version( void* plugdata ) GUCEF_PLUGIN_CALLSPEC_SUFFIX
 /*---------------------------------------------------------------------------*/
 
 UInt32 GUCEF_PLUGIN_CALLSPEC_PREFIX
-INPUTDRIVERPLUG_Update( void* plugdata    , 
+INPUTDRIVERPLUG_Update( void* plugdata    ,
                         void* contextdata ) GUCEF_PLUGIN_CALLSPEC_SUFFIX
 {
     TContextData* data = static_cast< TContextData* >( contextdata );
@@ -182,7 +184,7 @@ INPUTDRIVERPLUG_Update( void* plugdata    ,
     for ( UInt32 i=0; i<miceCount; ++i )
     {
         data->mice[ i ]->capture();
-    }    
+    }
     UInt32 keyboardCount = (UInt32) data->keyboards.size();
     for ( UInt32 i=0; i<keyboardCount; ++i )
     {
@@ -192,7 +194,7 @@ INPUTDRIVERPLUG_Update( void* plugdata    ,
     for ( UInt32 i=0; i<joystickCount; ++i )
     {
         data->joysticks[ i ]->capture();
-    }    
+    }
     return 1;
 }
 
@@ -214,13 +216,13 @@ INPUTDRIVERPLUG_CreateContext( void* plugdata                   ,
         try
         {
             data->inputManager = OIS::InputManager::createInputSystem( handle );
-        }            
+        }
         catch ( OIS::Exception& )
         {
             delete data;
             return 0;
         }
-        
+
         data->joystickListener = new CJoyStickListener( *callbacks );
         data->mouseListener = new CMouseListener( *callbacks );
         data->keyboardListener = new CKeyboardListener( *callbacks );
@@ -248,7 +250,7 @@ INPUTDRIVERPLUG_CreateContext( void* plugdata                   ,
             {
                 OIS::Mouse* mouse = static_cast< OIS::Mouse* >( data->inputManager->createInputObject( OIS::OISMouse, true ) );
                 const OIS::MouseState& mouseState = mouse->getMouseState();
-                
+
                 mouse->setEventCallback( data->mouseListener );
                 mouseState.width = windowWidth;
                 mouseState.height = windowHeight;
@@ -283,14 +285,14 @@ INPUTDRIVERPLUG_CreateContext( void* plugdata                   ,
 /*---------------------------------------------------------------------------*/
 
 UInt32 GUCEF_PLUGIN_CALLSPEC_PREFIX
-INPUTDRIVERPLUG_DestroyContext( void* plugdata    , 
+INPUTDRIVERPLUG_DestroyContext( void* plugdata    ,
                                 void* contextData ) GUCEF_PLUGIN_CALLSPEC_SUFFIX
 {
     TContextData* data = (TContextData*) contextData;
     if ( NULL != data )
     {
         if ( NULL != data->inputManager )
-        {   
+        {
             for ( UInt32 i=0; i<data->keyboards.size(); ++i )
             {
                 OIS::Keyboard* keyboard = data->keyboards[ i ];
@@ -298,7 +300,7 @@ INPUTDRIVERPLUG_DestroyContext( void* plugdata    ,
                 data->inputManager->destroyInputObject( keyboard );
             }
             data->keyboards.clear();
-            
+
             for ( UInt32 i=0; i<data->mice.size(); ++i )
             {
                 OIS::Mouse* mouse = data->mice[ i ];
@@ -306,7 +308,7 @@ INPUTDRIVERPLUG_DestroyContext( void* plugdata    ,
                 data->inputManager->destroyInputObject( mouse );
             }
             data->mice.clear();
-            
+
             for ( UInt32 i=0; i<data->joysticks.size(); ++i )
             {
                 OIS::JoyStick* joystick = data->joysticks[ i ];
@@ -314,18 +316,18 @@ INPUTDRIVERPLUG_DestroyContext( void* plugdata    ,
                 data->inputManager->destroyInputObject( joystick );
             }
             data->joysticks.clear();
-            
+
             delete data->joystickListener;
             data->joystickListener = NULL;
             delete data->mouseListener;
             data->mouseListener = NULL;
             delete data->keyboardListener;
             data->keyboardListener = NULL;
-            
+
             OIS::InputManager::destroyInputSystem( data->inputManager );
             data->inputManager = NULL;
         }
-        
+
         delete data;
     }
     return 1;
