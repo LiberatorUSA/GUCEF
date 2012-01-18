@@ -63,6 +63,11 @@
 #define GUCEF_CORE_CPLATFORMNATIVECONSOLEWINDOW_H
 #endif /* GUCEF_CORE_CPLATFORMNATIVECONSOLEWINDOW_H ? */
 
+#ifndef GUCEF_GUI_CGUIGLOBAL_H
+#include "gucefGUI_CGuiGlobal.h"
+#define GUCEF_GUI_CGUIGLOBAL_H
+#endif /* GUCEF_GUI_CGUIGLOBAL_H ? */
+
 #ifndef GUCEF_GUI_CGUIMANAGER_H
 #include "gucefGUI_CGUIManager.h"
 #define GUCEF_GUI_CGUIMANAGER_H
@@ -378,7 +383,7 @@ GUCEF_OSMAIN_BEGIN
         // Load all the plugins we need for this test
         if ( LoadPlugins() )
         {
-            GUI::TWindowManagerBackendPtr windowMngrBackend = GUI::CWindowManager::Instance()->GetBackend( "Win32GL" );
+            GUI::TWindowManagerBackendPtr windowMngrBackend = GUI::CGuiGlobal::Instance()->GetWindowManager().GetBackend( "Win32GL" );
             if ( NULL != windowMngrBackend )
             {
                 GUCEF_LOG( CORE::LOGLEVEL_NORMAL, "Successfully obtained window manager backend Win32GL" );
@@ -397,7 +402,7 @@ GUCEF_OSMAIN_BEGIN
                     consoleWindow.CreateConsole();
 
                     // create GUI context for our window
-                    GUI::TGuiContextPtr guiContext = GUI::CGUIManager::Instance()->CreateGUIContext( "RocketOpenGL", windowContext );
+                    GUI::TGuiContextPtr guiContext = GUI::CGuiGlobal::Instance()->GetGuiManager().CreateGUIContext( "RocketOpenGL", windowContext );
 
                     // The following determines the path to our test data. Note that this makes assumptions about the archive paths
                     CORE::CString assetDir = CORE::RelativePath( "$MODULEDIR$" );

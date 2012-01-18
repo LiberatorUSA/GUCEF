@@ -199,6 +199,11 @@
 #define GUCEF_GUI_CVIDEOOPTIONS_H
 #endif /* GUCEF_GUI_CVIDEOOPTIONS_H ? */
 
+#ifndef GUCEF_GUI_CGUIGLOBAL_H
+#include "gucefGUI_CGuiGlobal.h"
+#define GUCEF_GUI_CGUIGLOBAL_H
+#endif /* GUCEF_GUI_CGUIGLOBAL_H ? */
+
 #endif /* __cplusplus ? */
 
 /*-------------------------------------------------------------------------//

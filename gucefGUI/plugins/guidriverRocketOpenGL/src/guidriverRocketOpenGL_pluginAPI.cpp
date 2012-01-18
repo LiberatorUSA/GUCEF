@@ -28,6 +28,11 @@
 #define GUCEF_GUI_CGUIMANAGER_H
 #endif /* GUCEF_GUI_CGUIMANAGER_H ? */
 
+#ifndef GUCEF_GUI_CGUIGLOBAL_H
+#include "gucefGUI_CGuiGlobal.h"
+#define GUCEF_GUI_CGUIGLOBAL_H
+#endif /* GUCEF_GUI_CGUIGLOBAL_H ? */
+
 #ifndef GUCEF_GUIDRIVERROCKETGL_CROCKETGUIDRIVER_H
 #include "guidriverRocketOpenGL_CRocketGuiDriver.h"
 #define GUCEF_GUIDRIVERROCKETGL_CROCKETGUIDRIVER_H
@@ -63,7 +68,7 @@ GUCEFPlugin_Load( CORE::UInt32 argc, const char** argv ) GUCEF_PLUGIN_CALLSPEC_S
 {GUCEF_TRACE;
 
     g_guiDriver = new CRocketGuiDriver();
-    GUI::CGUIManager::Instance()->RegisterGUIDriver( "RocketOpenGL", g_guiDriver );
+    GUI::CGuiGlobal::Instance()->GetGuiManager().RegisterGUIDriver( "RocketOpenGL", g_guiDriver );
     return 1;
 }
 
@@ -73,7 +78,7 @@ void GUCEF_PLUGIN_CALLSPEC_PREFIX
 GUCEFPlugin_Unload( void ) GUCEF_PLUGIN_CALLSPEC_SUFFIX
 {GUCEF_TRACE;
 
-    GUI::CGUIManager::Instance()->UnregisterGUIDriverByName( "RocketOpenGL" );
+    GUI::CGuiGlobal::Instance()->GetGuiManager().UnregisterGUIDriverByName( "RocketOpenGL" );
     delete g_guiDriver;
     g_guiDriver = NULL;
 }
