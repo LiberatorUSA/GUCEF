@@ -14,10 +14,19 @@
 #ifdef NEED_SIGNAL_CATCHER
 #include <signal.h>		/* to declare signal() */
 #endif
+
+#ifdef __GNUC__
+#undef USE_SETMODE
+#endif
+
 #ifdef USE_SETMODE
 #include <fcntl.h>		/* to declare setmode()'s parameter macros */
 /* If you have setmode() but not <io.h>, just delete this line: */
-#include <io.h>			/* to declare setmode() */
+  #ifdef __GNUC__     /* DV edit for Linux */
+  #include <sys/io.h>
+  #else
+  #include <io.h>			/* to declare setmode() */
+  #endif
 #endif
 
 
