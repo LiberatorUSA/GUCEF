@@ -35,11 +35,11 @@ function FindGucefDebugProjectGenerator {
 
 function FindGucefReleaseProjectGenerator {
 
-  TEST_PATH="$GUCEF_HOME/tools/ProjectGenerator/bin/ReleasedBins/Linux/6September2011/ProjectGenerator"
+  TEST_PATH="$GUCEF_HOME/tools/ProjectGenerator/bin/ReleasedBins/Linux/20January2012/ProjectGenerator"
   echo "Testing for executable binary @ $TEST_PATH"
   if [ -x "$TEST_PATH" ];
   then
-    echo "Found Release version of GUCEF ProjectGenerator dated 6th of September 2011"
+    echo "Found Release version of GUCEF ProjectGenerator dated 20th of January 2012"
     GENERATORPATH=$TEST_PATH
   fi
 
@@ -51,7 +51,7 @@ function FindProjectGenerator {
 
   GENERATORPATH=${GENERATORPATH:=undefined}
   FindGucefDebugProjectGenerator
-  if [ "$GUCEF_HOME" = "undefined" ];
+  if [ "$GENERATORPATH" = "undefined" ];
   then
     FindGucefReleaseProjectGenerator
   fi

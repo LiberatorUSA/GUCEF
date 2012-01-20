@@ -14,7 +14,7 @@
  *
  *  You should have received a copy of the GNU Lesser General Public
  *  License along with this library; if not, write to the Free Software
- *  Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA 
+ *  Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA
  */
 
 /*-------------------------------------------------------------------------//
@@ -50,21 +50,19 @@ namespace VFS {
 //                                                                         //
 //-------------------------------------------------------------------------*/
 
-bool 
+bool
 CModule::Load( void )
 {GUCEF_TRACE;
 
-    GUCEF_SYSTEM_LOG( CORE::LOGLEVEL_NORMAL, "gucefVFS Module loaded" );
     return true;
 }
 
 /*-------------------------------------------------------------------------*/
-        
-bool 
+
+bool
 CModule::Unload( void )
 {GUCEF_TRACE;
 
-    GUCEF_SYSTEM_LOG( CORE::LOGLEVEL_NORMAL, "gucefVFS Module unloading" );    
     CVfsGlobal::Deinstance();
     return true;
 }

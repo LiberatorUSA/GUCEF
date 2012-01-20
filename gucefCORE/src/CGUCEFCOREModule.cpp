@@ -61,7 +61,6 @@ CGUCEFCOREModule::Load( void )
 bool
 CGUCEFCOREModule::Unload( void )
 {
-    GUCEF_SYSTEM_LOG( LOGLEVEL_NORMAL, "Unloading gucefCORE module" );
     CCoreGlobal::Deinstance();
     return true;
 }
