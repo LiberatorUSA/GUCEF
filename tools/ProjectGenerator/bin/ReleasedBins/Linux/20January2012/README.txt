@@ -537,7 +537,7 @@ History:
 ----------------------------------------------
 
 - 20'th January 2012:
-     - There was a symbol error in the previous binary release. This is a new build from the new trunk code.
+     - Linux only: There was a symbol error in the previous binary release. This is a new build from the new trunk code.
        No new ProjectGenerator specific features were added.
 - 6'th September 2011:
      - Added support for module type "CodeIncludeLocation". This had to be implemented to support 
