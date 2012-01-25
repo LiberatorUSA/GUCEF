@@ -32,6 +32,11 @@
 #define GUCEFCORE_MACROS_H
 #endif /* GUCEFCORE_MACROS_H ? */
 
+#ifndef GUCEF_CORE_LOGGING_H
+#include "gucefCORE_Logging.h"
+#define GUCEF_CORE_LOGGING_H
+#endif /* GUCEF_CORE_LOGGING_H ? */
+
 #if ( GUCEF_PLATFORM == GUCEF_PLATFORM_MSWIN )
 
   /* Do not use WIN32_LEAN_AND_MEAN because it will remove timeBeginPeriod() etc. */
@@ -92,7 +97,7 @@ LoadModuleDynamicly( const char* filename )
     if ( fileExt == NULL )
     {
         UInt32 sLen = (UInt32) strlen( filename );
-        fName = malloc( sLen + 7 );
+        fName = (char*) malloc( sLen + 7 );
         memcpy( fName, filename, sLen );
 
         #if ( GUCEF_PLATFORM == GUCEF_PLATFORM_MSWIN )
@@ -139,6 +144,11 @@ LoadModuleDynamicly( const char* filename )
 
             free( newFilePath );
         }
+    }
+
+    if ( NULL == modulePtr )
+    {
+        GUCEF_DEBUG_LOG( LOGLEVEL_NORMAL, dlerror() );
     }
 
     #elif ( GUCEF_PLATFORM == GUCEF_PLATFORM_MSWIN )
@@ -312,7 +322,7 @@ GetCurrentHWND( void )
         hwndstr = GUCEFGetEnv( "HWND" );
         if ( hwndstr )
         {
-                whandle = Str_To_Int( hwndstr );
+                whandle = (HWND) Str_To_Int( hwndstr );
         }
         else
         {
@@ -375,7 +385,7 @@ StringToClipboard( const char *str )
          *      windows keeps it's paws off of it. After that we can copy
          *      our text into the global memory buffer
          */
-        lptstrcopy = GlobalLock( hglbcopy );
+        lptstrcopy = (LPTSTR) GlobalLock( hglbcopy );
         memcpy( lptstrcopy, str, strlength+1 );
         GlobalUnlock( hglbcopy );
 
@@ -454,7 +464,7 @@ StringFromClipboard( char *dest     ,
                 hglb = GetClipboardData( CF_TEXT );
                 if ( hglb != NULL )
                 {
-                        LPTSTR lptstr = GlobalLock( hglb );
+                        LPTSTR lptstr = (LPTSTR) GlobalLock( hglb );
                         if ( lptstr != NULL )
                         {
                                 UInt32 offset = *wbytes;
@@ -501,7 +511,7 @@ GUCEFSetEnv( const char* key   ,
         #ifdef GUCEF_MSWIN_BUILD
 
         UInt32 retval;
-        char* envstr = malloc( strlen( key ) + strlen( value )+2 );
+        char* envstr = (char*) malloc( strlen( key ) + strlen( value )+2 );
         sprintf( envstr, "%s=%s", key, value );
         retval = _putenv( envstr );
         free( envstr );
