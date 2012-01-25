@@ -301,7 +301,7 @@ set( SOURCE_FILES
   src/dvcppstringutils.cpp
   src/dvfileutils.c
   src/dvmd5utils.c
-  src/DVOSWRAP.c
+  src/DVOSWRAP.cpp
   src/dvstrutils.c
   src/ExceptionMacros.cpp
   src/gucefCORE.cpp
