@@ -23,6 +23,11 @@
 //                                                                         //
 //-------------------------------------------------------------------------*/
 
+#ifndef GUCEF_GUI_CGUIGLOBAL_H
+#include "gucefGUI_CGuiGlobal.h"
+#define GUCEF_GUI_CGUIGLOBAL_H
+#endif /* GUCEF_GUI_CGUIGLOBAL_H ? */
+
 #ifndef GUCEF_GUI_CWINDOWMANAGER_H
 #include "gucefGUI_CWindowManager.h"
 #define GUCEF_GUI_CWINDOWMANAGER_H
@@ -62,7 +67,7 @@ CORE::Int32 GUCEF_PLUGIN_CALLSPEC_PREFIX
 GUCEFPlugin_Load( CORE::UInt32 argc, const char** argv ) GUCEF_PLUGIN_CALLSPEC_SUFFIX
 {GUCEF_TRACE;
 
-    GUI::CWindowManager::Instance()->RegisterBackend( "XWinGL", xwinGlWindowManager );
+    GUI::CGuiGlobal::Instance()->GetWindowManager().RegisterBackend( "XWinGL", xwinGlWindowManager );
     return 1;
 }
 
@@ -72,7 +77,7 @@ void GUCEF_PLUGIN_CALLSPEC_PREFIX
 GUCEFPlugin_Unload( void ) GUCEF_PLUGIN_CALLSPEC_SUFFIX
 {GUCEF_TRACE;
 
-    GUI::CWindowManager::Instance()->UnregisterBackend( "XWinGL" );
+    GUI::CGuiGlobal::Instance()->GetWindowManager().UnregisterBackend( "XWinGL" );
 }
 
 /*--------------------------------------------------------------------------*/
