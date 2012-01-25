@@ -105,9 +105,46 @@ LoadModuleDynamicly( const char* filename )
     }
 
     #if ( ( GUCEF_PLATFORM == GUCEF_PLATFORM_LINUX ) || ( GUCEF_PLATFORM == GUCEF_PLATFORM_ANDROID ) )
+    
     modulePtr = (void*) dlopen( fName, RTLD_NOW );
+    if ( NULL == modulePtr )
+    {   
+        /*
+         *  It is possible the load failed due to missing "lib" prefix on linux/android.
+         *  Check for this and compensate as needed
+         */
+        char hasLibPrefix = 0;
+        const char* fileOnly = Extract_Filename( fName );
+        UInt32 sLength = strlen( fileOnly );
+        if ( sLength >= 3 )
+        {
+            if ( 0 == memcmp( "lib", fileOnly, 3 ) )
+            {
+                hasLibPrefix = 1;
+            }
+        }
+
+        if ( 0 == hasLibPrefix )
+        {
+            /*
+             *  No previous "lib" prefix was found, we will add one and try to load again
+             */
+            UInt32 fNameLen = strlen( fName );
+            char* newFilePath = (char*) malloc( fNameLen+3+1 );
+            memcpy( newFilePath, fName, fNameLen-sLength );
+            memcpy( newFilePath+(fNameLen-sLength), "lib", 3 );
+            memcpy( newFilePath+(fNameLen-sLength)+3, fileOnly, sLength+1 );
+
+            modulePtr = (void*) dlopen( fName, RTLD_NOW );
+
+            free( newFilePath );
+        }
+    }
+
     #elif ( GUCEF_PLATFORM == GUCEF_PLATFORM_MSWIN )
+
     modulePtr = (void*) LoadLibrary( fName );
+    
     #endif
 
     if ( fileExt == NULL )
