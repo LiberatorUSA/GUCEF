@@ -105,10 +105,10 @@ LoadModuleDynamicly( const char* filename )
     }
 
     #if ( ( GUCEF_PLATFORM == GUCEF_PLATFORM_LINUX ) || ( GUCEF_PLATFORM == GUCEF_PLATFORM_ANDROID ) )
-    
+
     modulePtr = (void*) dlopen( fName, RTLD_NOW );
     if ( NULL == modulePtr )
-    {   
+    {
         /*
          *  It is possible the load failed due to missing "lib" prefix on linux/android.
          *  Check for this and compensate as needed
@@ -135,7 +135,7 @@ LoadModuleDynamicly( const char* filename )
             memcpy( newFilePath+(fNameLen-sLength), "lib", 3 );
             memcpy( newFilePath+(fNameLen-sLength)+3, fileOnly, sLength+1 );
 
-            modulePtr = (void*) dlopen( fName, RTLD_NOW );
+            modulePtr = (void*) dlopen( newFilePath, RTLD_NOW );
 
             free( newFilePath );
         }
@@ -144,7 +144,7 @@ LoadModuleDynamicly( const char* filename )
     #elif ( GUCEF_PLATFORM == GUCEF_PLATFORM_MSWIN )
 
     modulePtr = (void*) LoadLibrary( fName );
-    
+
     #endif
 
     if ( fileExt == NULL )
@@ -161,19 +161,19 @@ GUCEF_CORE_PUBLIC_C void*
 GetModulePointer( const char* moduleName )
 {
     // If no module name is passed we get the pointer to the main process module
-   
+
     #if ( ( GUCEF_PLATFORM == GUCEF_PLATFORM_LINUX ) || ( GUCEF_PLATFORM == GUCEF_PLATFORM_ANDROID ) )
-    
+
     // On linux the reference could is always incremented so we must decrement again right away to get
     // the same behaviour as the windows version
     void* modulePtr = (void*) dlopen( moduleName, RTLD_NOW );
     dlclose( modulePtr );
     return modulePtr;
-    
+
     #elif ( GUCEF_PLATFORM == GUCEF_PLATFORM_MSWIN )
-    
+
     return (void*) GetModuleHandleA( moduleName );
-    
+
     #else
     #error Unsupported target platform
     #endif
@@ -185,15 +185,15 @@ void
 UnloadModuleDynamicly( void *sohandle )
 {
     if ( NULL == sohandle ) return;
-    
+
     #if ( ( GUCEF_PLATFORM == GUCEF_PLATFORM_LINUX ) || ( GUCEF_PLATFORM == GUCEF_PLATFORM_ANDROID ) )
-    
+
     dlclose( sohandle );
-    
+
     #elif ( GUCEF_PLATFORM == GUCEF_PLATFORM_MSWIN )
-    
+
     FreeLibrary( (HMODULE)sohandle );
-    
+
     #else
     #error Unsupported target platform
     #endif
@@ -219,11 +219,11 @@ GetFunctionAddress( void *sohandle           ,
     }
 
     #if ( ( GUCEF_PLATFORM == GUCEF_PLATFORM_LINUX ) || ( GUCEF_PLATFORM == GUCEF_PLATFORM_ANDROID ) )
-    
+
     fptr.objPtr = dlsym( sohandle     ,
                          functionname );
     return fptr;
-    
+
     #elif ( GUCEF_PLATFORM == GUCEF_PLATFORM_MSWIN )
 
     /*
@@ -528,11 +528,11 @@ UInt32
 GUCEFGetTickCount( void )
 {
     #if ( GUCEF_PLATFORM == GUCEF_PLATFORM_MSWIN )
-    
+
     return GetTickCount();
-    
+
     #elif ( ( GUCEF_PLATFORM == GUCEF_PLATFORM_LINUX ) || ( GUCEF_PLATFORM == GUCEF_PLATFORM_ANDROID ) )
-    
+
     #if 1
     struct timespec now;
     clock_gettime( CLOCK_MONOTONIC, &now );

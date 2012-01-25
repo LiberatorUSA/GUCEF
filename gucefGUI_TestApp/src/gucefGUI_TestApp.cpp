@@ -174,7 +174,7 @@ LoadPlugins( void )
     {
         GUCEF_ERROR_LOG( CORE::LOGLEVEL_NORMAL, "Failed to load guidriverXWinGL" );
 
-        pluginMetaData.SetModuleFilename( "libguidriverXWinGL_d" );
+        pluginMetaData.SetModuleFilename( "guidriverXWinGL_d" );
 
         // Add plugin metadata and load the plugin
         if ( CORE::CCoreGlobal::Instance()->GetPluginControl().AddPluginMetaData( pluginMetaData ,
