@@ -343,10 +343,10 @@ CPluginControl::LoadPlugin( TPluginMetaDataPtr& pluginMetaData ,
         {
             // Use the path defined with the plugin as the root to load the module from
             TVersion versionInfo = pluginMetaData->GetVersion();
-            modulePtr = (*m).second->LoadPlugin( pluginMetaData->GetFullModulePath() ,
-                                                 pluginMetaData->GetModuleFilename() ,
-                                                 groupName                           ,
-                                                 &versionInfo                        );
+            modulePtr = (*m).second->LoadPlugin( RelativePath( pluginMetaData->GetFullModulePath() ) ,
+                                                 pluginMetaData->GetModuleFilename()                 ,
+                                                 groupName                                           ,
+                                                 &versionInfo                                        );
 
             if ( NULL == modulePtr )
             {
