@@ -58,7 +58,7 @@ namespace CORE {
 CPluginManager::CPluginManager( void )
 {GUCEF_TRACE;
     
-    CPluginControl::Instance()->Register( this );       
+    CCoreGlobal::Instance()->GetPluginControl().Register( this );       
 }
 
 /*-------------------------------------------------------------------------*/
@@ -66,7 +66,7 @@ CPluginManager::CPluginManager( void )
 CPluginManager::CPluginManager( const CPluginManager& src )
 {GUCEF_TRACE;
 
-    CPluginControl::Instance()->Register( this );
+    CCoreGlobal::Instance()->GetPluginControl().Register( this );
 }
 
 /*-------------------------------------------------------------------------*/
@@ -74,7 +74,7 @@ CPluginManager::CPluginManager( const CPluginManager& src )
 CPluginManager::~CPluginManager()
 {GUCEF_TRACE;
     
-    CPluginControl::Instance()->Unregister( this );
+    CCoreGlobal::Instance()->GetPluginControl().Unregister( this );
 }
        
 /*-------------------------------------------------------------------------//

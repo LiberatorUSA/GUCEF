@@ -123,9 +123,9 @@ LoadPlugins( void )
     pluginMetaData.SetFullModulePath( CORE::RelativePath( "$MODULEDIR$" ) );
 
     // Add plugin metadata and load the plugin
-    if ( CORE::CPluginControl::Instance()->AddPluginMetaData( pluginMetaData ,
-                                                              "GUI"          ,
-                                                              true           ) )
+    if ( CORE::CCoreGlobal::Instance()->GetPluginControl().AddPluginMetaData( pluginMetaData ,
+                                                                              "GUI"          ,
+                                                                              true           ) )
     {
         GUCEF_LOG( CORE::LOGLEVEL_NORMAL, "Successfully loaded guidriverWin32GL" );
     }
@@ -136,9 +136,9 @@ LoadPlugins( void )
         pluginMetaData.SetModuleFilename( "guidriverWin32GL_d" );
 
         // Add plugin metadata and load the plugin
-        if ( CORE::CPluginControl::Instance()->AddPluginMetaData( pluginMetaData ,
-                                                                  "GUI"          ,
-                                                                  true           ) )
+        if ( CORE::CCoreGlobal::Instance()->GetPluginControl().AddPluginMetaData( pluginMetaData ,
+                                                                                  "GUI"          ,
+                                                                                  true           ) )
         {
             GUCEF_LOG( CORE::LOGLEVEL_NORMAL, "Successfully loaded guidriverWin32GL_d" );
         }
@@ -164,9 +164,9 @@ LoadPlugins( void )
     pluginMetaData.SetFullModulePath( CORE::RelativePath( "$MODULEDIR$/../lib" ) );
 
     // Add plugin metadata and load the plugin
-    if ( CORE::CPluginControl::Instance()->AddPluginMetaData( pluginMetaData ,
-                                                              "GUI"          ,
-                                                              true           ) )
+    if ( CORE::CCoreGlobal::Instance()->GetPluginControl().AddPluginMetaData( pluginMetaData ,
+                                                                              "GUI"          ,
+                                                                              true           ) )
     {
         GUCEF_LOG( CORE::LOGLEVEL_NORMAL, "Successfully loaded guidriverXWinGL" );
     }
@@ -177,9 +177,9 @@ LoadPlugins( void )
         pluginMetaData.SetModuleFilename( "libguidriverXWinGL_d" );
 
         // Add plugin metadata and load the plugin
-        if ( CORE::CPluginControl::Instance()->AddPluginMetaData( pluginMetaData ,
-                                                                  "GUI"          ,
-                                                                  true           ) )
+        if ( CORE::CCoreGlobal::Instance()->GetPluginControl().AddPluginMetaData( pluginMetaData ,
+                                                                                  "GUI"          ,
+                                                                                  true           ) )
         {
             GUCEF_LOG( CORE::LOGLEVEL_NORMAL, "Successfully loaded guidriverXWinGL" );
         }
@@ -206,9 +206,9 @@ LoadPlugins( void )
     #endif
 
     // Add plugin metadata and load the plugin
-    if ( CORE::CPluginControl::Instance()->AddPluginMetaData( pluginMetaData ,
-                                                              "GUI"          ,
-                                                              true           ) )
+    if ( CORE::CCoreGlobal::Instance()->GetPluginControl().AddPluginMetaData( pluginMetaData ,
+                                                                              "GUI"          ,
+                                                                              true           ) )
     {
         GUCEF_LOG( CORE::LOGLEVEL_NORMAL, "Successfully loaded guidriverRocket" );
     }
@@ -219,9 +219,9 @@ LoadPlugins( void )
         pluginMetaData.SetModuleFilename( "guidriverRocket_d" );
 
         // Add plugin metadata and load the plugin
-        if ( CORE::CPluginControl::Instance()->AddPluginMetaData( pluginMetaData ,
-                                                                  "GUI"          ,
-                                                                  true           ) )
+        if ( CORE::CCoreGlobal::Instance()->GetPluginControl().AddPluginMetaData( pluginMetaData ,
+                                                                                  "GUI"          ,
+                                                                                  true           ) )
         {
             GUCEF_LOG( CORE::LOGLEVEL_NORMAL, "Successfully loaded guidriverRocket_d" );
         }
@@ -246,9 +246,9 @@ LoadPlugins( void )
     #endif
 
     // Add plugin metadata and load the plugin
-    if ( CORE::CPluginControl::Instance()->AddPluginMetaData( pluginMetaData ,
-                                                              "GUI"          ,
-                                                              true           ) )
+    if ( CORE::CCoreGlobal::Instance()->GetPluginControl().AddPluginMetaData( pluginMetaData ,
+                                                                              "GUI"          ,
+                                                                              true           ) )
     {
         GUCEF_LOG( CORE::LOGLEVEL_NORMAL, "Successfully loaded guidriverRocketOpenGL" );
     }
@@ -259,9 +259,9 @@ LoadPlugins( void )
         pluginMetaData.SetModuleFilename( "guidriverRocketOpenGL_d" );
 
         // Add plugin metadata and load the plugin
-        if ( CORE::CPluginControl::Instance()->AddPluginMetaData( pluginMetaData ,
-                                                                  "GUI"          ,
-                                                                  true           ) )
+        if ( CORE::CCoreGlobal::Instance()->GetPluginControl().AddPluginMetaData( pluginMetaData ,
+                                                                                  "GUI"          ,
+                                                                                  true           ) )
         {
             GUCEF_LOG( CORE::LOGLEVEL_NORMAL, "Successfully loaded guidriverRocketOpenGL_d" );
         }
@@ -287,9 +287,9 @@ LoadPlugins( void )
     pluginMetaData.SetFullModulePath( CORE::RelativePath( "$MODULEDIR$" ) );
 
     // Add plugin metadata and load the plugin
-    if ( CORE::CPluginControl::Instance()->AddPluginMetaData( pluginMetaData ,
-                                                              "INPUT"        ,
-                                                              true           ) )
+    if ( CORE::CCoreGlobal::Instance()->GetPluginControl().AddPluginMetaData( pluginMetaData ,
+                                                                              "INPUT"        ,
+                                                                              true           ) )
     {
         GUCEF_LOG( CORE::LOGLEVEL_NORMAL, "Successfully loaded inputdriverMSWINMSG" );
     }
@@ -320,9 +320,9 @@ LoadPlugins( void )
     #endif
 
     // Add plugin metadata and load the plugin
-    if ( CORE::CPluginControl::Instance()->AddPluginMetaData( pluginMetaData ,
-                                                              "LOGGING"      ,
-                                                              true           ) )
+    if ( CORE::CCoreGlobal::Instance()->GetPluginControl().AddPluginMetaData( pluginMetaData ,
+                                                                              "LOGGING"      ,
+                                                                              true           ) )
     {
         GUCEF_LOG( CORE::LOGLEVEL_NORMAL, "Successfully loaded GucefLogServiceClientPlugin" );
     }

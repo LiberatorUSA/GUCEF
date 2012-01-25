@@ -136,7 +136,7 @@ GUCEF_CORE_GucefSetDefaultPluginLoaderLogicType( const char* defaultLoaderLogicT
     GUCEF_SYSTEM_LOG( LOGLEVEL_NORMAL, "Invoking SetDefaultPluginLoaderLogicType via C interface" );
 
     CString defaultLoaderLogicTypeStr( defaultLoaderLogicType );
-    CPluginControl::Instance()->SetDefaultPluginLoadLogicType( defaultLoaderLogicTypeStr );
+    CCoreGlobal::Instance()->GetPluginControl().SetDefaultPluginLoadLogicType( defaultLoaderLogicTypeStr );
 }
 
 /*-------------------------------------------------------------------------*/

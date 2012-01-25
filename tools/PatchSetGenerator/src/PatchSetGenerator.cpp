@@ -67,6 +67,11 @@
 #define GUCEF_PATCHER_CPATCHSETGENERATOR_H
 #endif /* GUCEF_PATCHER_CPATCHSETGENERATOR_H ? */
 
+#ifndef GUCEF_CORE_CCOREGLOBAL_H
+#include "gucefCORE_CCoreGlobal.h"
+#define GUCEF_CORE_CCOREGLOBAL_H
+#endif /* GUCEF_CORE_CCOREGLOBAL_H ? */
+
 /*-------------------------------------------------------------------------//
 //                                                                         //
 //      TYPES                                                              //
@@ -309,14 +314,13 @@ GUCEF_OSMAIN_BEGIN
         {
             // Load all plugins, this allows us to support multiple codec's
             // with our minimal console interface
-            GUCEF::CORE::CPluginControl* pluginControl = GUCEF::CORE::CPluginControl::Instance();
-            pluginControl->AddAllPluginsFromDir( pluginDir, GUCEF::CORE::CString(), true );
+            GUCEF::CORE::CCoreGlobal::Instance()->GetPluginControl().AddAllPluginsFromDir( pluginDir, GUCEF::CORE::CString(), true );
         }
         if ( plugins.Length() != 0 )
         {
             // Load all plugins that where specifically specified
             TStringVector pluginList = plugins.ParseElements( ';', false );
-            GUCEF::CORE::CPluginControl* pluginControl = GUCEF::CORE::CPluginControl::Instance();
+            GUCEF::CORE::CPluginControl* pluginControl = &GUCEF::CORE::CCoreGlobal::Instance()->GetPluginControl();
             TStringVector::iterator i = pluginList.begin();
             while ( i != pluginList.end() )
             {
