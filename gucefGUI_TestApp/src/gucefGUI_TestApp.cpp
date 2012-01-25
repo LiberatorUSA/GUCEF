@@ -160,7 +160,7 @@ LoadPlugins( void )
 
     // Define our windowing backend plugin
     pluginMetaData.SetPluginType( "GucefGenericPlugin" );
-    pluginMetaData.SetModuleFilename( "libguidriverXWinGL" );
+    pluginMetaData.SetModuleFilename( "guidriverXWinGL" );
     pluginMetaData.SetFullModulePath( CORE::RelativePath( "$MODULEDIR$/../lib" ) );
 
     // Add plugin metadata and load the plugin

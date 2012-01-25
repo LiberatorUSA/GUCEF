@@ -61,7 +61,6 @@ CGUCEFCOREModule::Load( void )
 bool
 CGUCEFCOREModule::Unload( void )
 {
-    CCoreGlobal::Deinstance();
     return true;
 }
 
