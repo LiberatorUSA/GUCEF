@@ -66,7 +66,7 @@
  *      Auto detection of debug mode
  */
 #ifndef GUCEF_MANUAL_DEBUG_MODE_DEFINE
-  #if defined( NDEBUG )
+  #if !defined( NDEBUG )
     #define _DEBUG
   #endif
   #if defined( _DEBUG ) || defined( __DEBUG ) || defined( __DEBUG__ )
