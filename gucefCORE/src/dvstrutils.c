@@ -697,37 +697,21 @@ Str_To_Float( const char *digits )
 UInt32
 Last_Subdir( const char *path )
 {
-        /*
-         *	set index such that we strip out any directories that this dir
-         *	is a subdir of. The return value is the index.
-         *	This function basicly returns the index of the section that would get stripped
-         *	by Strip_Last_Subdir()
-         */
-        Int32 max = (Int32)strlen( path );
-        #ifdef GUCEF_MSWIN_BUILD
-        Int32 index = _Find_Char( 0, 0, '\\', path, max );
-	if ( index < 0 ) return 0;
-        if ( index == (max-1) )
-        {
-        	index = _Find_Char( 1, 0, '\\', path, max );
-
-        }
-        if ( index < max ) index++;
-        return index;
-        #else
-        #ifdef GUCEF_LINUX_BUILD
-        Int32 index = _Find_Char( 0, 0, '/', path, max );
-        if ( index < 0 ) return 0;
-        if ( index == max )
-        {
-        	index = _Find_Char( 1, 0, '/', path, max );
-        }
-        if ( index < max ) index++;
-        return index;
-        #else
-        return 0;
-        #endif /* GUCEF_LINUX_BUILD */
-        #endif /* WIN32_BUILD */
+    /*
+     *	set index such that we strip out any directories that this dir
+     *	is a subdir of. The return value is the index.
+     *	This function basicly returns the index of the section that would get stripped
+     *	by Strip_Last_Subdir()
+     */
+    Int32 max = (Int32)strlen( path );
+    Int32 index = _Find_Char( 0, 0, GUCEF_DIRSEPCHAR, path, max );
+    if ( index < 0 ) return 0;
+    if ( index == (max-1) )
+    {
+        index = _Find_Char( 1, 0, GUCEF_DIRSEPCHAR, path, max );
+    }
+    if ( index < max ) index++;
+    return index;
 }
 
 /*---------------------------------------------------------------------------*/
@@ -735,62 +719,42 @@ Last_Subdir( const char *path )
 UInt32
 Strip_Last_Subdir( char *path )
 {
-        /*
-         *	removes last subdir from path. If the path includes a filename then the
-         *	filename will be removed aswell. Removal is done by changing chars into
-         * 	'\0' and does not effect the actual string buffer size. The return value
-         *	is the last non-zero char in the string.
-         */
-        Int32 index, findex, i, max;
+    /*
+     *	removes last subdir from path. If the path includes a filename then the
+     *	filename will be removed aswell. Removal is done by changing chars into
+     * 	'\0' and does not effect the actual string buffer size. The return value
+     *	is the last non-zero char in the string.
+     */
+    Int32 index, findex, i, max;
 
-        max = (Int32)strlen( path );
+    max = (Int32)strlen( path );
 
-        /*
-         *	First remove any filename if present
-         */
-        findex = _Find_Char( 0, 0, '.', path, max );
-        if ( findex >= 0 )
+    /*
+     *	First remove any filename if present
+     */
+    findex = _Find_Char( 0, 0, '.', path, max );
+    if ( findex >= 0 )
+    {
+        findex = _Find_Char( 0, 0, GUCEF_DIRSEPCHAR, path, max );
+        for ( i=findex; i<max; i++ )
         {
-        	/*
-                 *	Char we seek depends on OS since Linux and Win32 use
-                 *      different seperation chars.
-                 */
-        	#ifdef GUCEF_MSWIN_BUILD
-        	findex = _Find_Char( 0, 0, '\\', path, max );
-                #else
-                #ifdef GUCEF_LINUX_BUILD
-                findex = _Find_Char( 0, 0, '/', path, max );
-                #else
-                return max;
-                #endif /* GUCEF_LINUX_BUILD */
-                #endif /* WIN32_BUILD */
-                for ( i=findex; i<max; i++ )
-                {
-                	path[ i ] = '\0';
-                }
+            path[ i ] = '\0';
         }
-        else findex = max-1;
+    }
+    else findex = max-1;
 
-        /*
-         *	Remove last subdir
-         *	Char we seek depends on OS since Linux and Win32 use
-         *      different seperation chars.
-         */
-        #ifdef GUCEF_MSWIN_BUILD
-        index = _Find_Char( 0, 0, '\\', path, max );
-        #else
-        #ifdef GUCEF_LINUX_BUILD
-        index = _Find_Char( 0, 0, '/', path, max );
-        #else
-        return max;
-        #endif /* GUCEF_LINUX_BUILD */
-        #endif /* WIN32_BUILD */
-        if ( index < 0 ) return findex;
-        for ( i=index; i<findex; i++ )
-        {
-                path[ i ] = '\0';
-        }
-        return index-1;
+    /*
+     *	Remove last subdir
+     *	Char we seek depends on OS since Linux and Win32 use
+     *      different seperation chars.
+     */
+    index = _Find_Char( 0, 0, GUCEF_DIRSEPCHAR, path, max );
+    if ( index < 0 ) return findex;
+    for ( i=index; i<findex; i++ )
+    {
+            path[ i ] = '\0';
+    }
+    return index-1;
 }
 
 /*---------------------------------------------------------------------------*/
