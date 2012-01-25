@@ -26,7 +26,7 @@ set( HEADER_FILES
 )
 
 set( SOURCE_FILES 
-  ../gucefCORE/src/DVOSWRAP.c
+  ../gucefCORE/src/DVOSWRAP.cpp
   ../gucefCORE/src/dvstrutils.c
   ../gucefCORE/src/CDVString.cpp
   ../gucefCORE/src/dvfileutils.c
@@ -53,7 +53,7 @@ if (ANDROID)
   source_group( "Platform Header Files" FILES ${PLATFORM_HEADER_FILES} )
 
   set( PLATFORM_SOURCE_FILES 
-    ../gucefCORE/src/DVOSWRAP.c
+    ../gucefCORE/src/DVOSWRAP.cpp
     ../gucefCORE/src/dvstrutils.c
     ../gucefCORE/src/CDVString.cpp
     ../gucefCORE/src/dvfileutils.c
@@ -80,7 +80,7 @@ elseif (GLX)
   source_group( "Platform Header Files" FILES ${PLATFORM_HEADER_FILES} )
 
   set( PLATFORM_SOURCE_FILES 
-    ../gucefCORE/src/DVOSWRAP.c
+    ../gucefCORE/src/DVOSWRAP.cpp
     ../gucefCORE/src/dvstrutils.c
     ../gucefCORE/src/CDVString.cpp
     ../gucefCORE/src/dvfileutils.c
@@ -107,7 +107,7 @@ elseif (GTK)
   source_group( "Platform Header Files" FILES ${PLATFORM_HEADER_FILES} )
 
   set( PLATFORM_SOURCE_FILES 
-    ../gucefCORE/src/DVOSWRAP.c
+    ../gucefCORE/src/DVOSWRAP.cpp
     ../gucefCORE/src/dvstrutils.c
     ../gucefCORE/src/CDVString.cpp
     ../gucefCORE/src/dvfileutils.c
@@ -134,7 +134,7 @@ elseif (IPHONEOS)
   source_group( "Platform Header Files" FILES ${PLATFORM_HEADER_FILES} )
 
   set( PLATFORM_SOURCE_FILES 
-    ../gucefCORE/src/DVOSWRAP.c
+    ../gucefCORE/src/DVOSWRAP.cpp
     ../gucefCORE/src/dvstrutils.c
     ../gucefCORE/src/CDVString.cpp
     ../gucefCORE/src/dvfileutils.c
@@ -161,7 +161,7 @@ elseif (LINUX)
   source_group( "Platform Header Files" FILES ${PLATFORM_HEADER_FILES} )
 
   set( PLATFORM_SOURCE_FILES 
-    ../gucefCORE/src/DVOSWRAP.c
+    ../gucefCORE/src/DVOSWRAP.cpp
     ../gucefCORE/src/dvstrutils.c
     ../gucefCORE/src/CDVString.cpp
     ../gucefCORE/src/dvfileutils.c
@@ -188,7 +188,7 @@ elseif (OSX)
   source_group( "Platform Header Files" FILES ${PLATFORM_HEADER_FILES} )
 
   set( PLATFORM_SOURCE_FILES 
-    ../gucefCORE/src/DVOSWRAP.c
+    ../gucefCORE/src/DVOSWRAP.cpp
     ../gucefCORE/src/dvstrutils.c
     ../gucefCORE/src/CDVString.cpp
     ../gucefCORE/src/dvfileutils.c
@@ -215,7 +215,7 @@ elseif (SDL)
   source_group( "Platform Header Files" FILES ${PLATFORM_HEADER_FILES} )
 
   set( PLATFORM_SOURCE_FILES 
-    ../gucefCORE/src/DVOSWRAP.c
+    ../gucefCORE/src/DVOSWRAP.cpp
     ../gucefCORE/src/dvstrutils.c
     ../gucefCORE/src/CDVString.cpp
     ../gucefCORE/src/dvfileutils.c
@@ -242,7 +242,7 @@ elseif (SYMBIAN)
   source_group( "Platform Header Files" FILES ${PLATFORM_HEADER_FILES} )
 
   set( PLATFORM_SOURCE_FILES 
-    ../gucefCORE/src/DVOSWRAP.c
+    ../gucefCORE/src/DVOSWRAP.cpp
     ../gucefCORE/src/dvstrutils.c
     ../gucefCORE/src/CDVString.cpp
     ../gucefCORE/src/dvfileutils.c
@@ -269,7 +269,7 @@ elseif (UNIX)
   source_group( "Platform Header Files" FILES ${PLATFORM_HEADER_FILES} )
 
   set( PLATFORM_SOURCE_FILES 
-    ../gucefCORE/src/DVOSWRAP.c
+    ../gucefCORE/src/DVOSWRAP.cpp
     ../gucefCORE/src/dvstrutils.c
     ../gucefCORE/src/CDVString.cpp
     ../gucefCORE/src/dvfileutils.c
@@ -296,7 +296,7 @@ elseif (WIN32)
   source_group( "Platform Header Files" FILES ${PLATFORM_HEADER_FILES} )
 
   set( PLATFORM_SOURCE_FILES 
-    ../gucefCORE/src/DVOSWRAP.c
+    ../gucefCORE/src/DVOSWRAP.cpp
     ../gucefCORE/src/dvstrutils.c
     ../gucefCORE/src/CDVString.cpp
     ../gucefCORE/src/dvfileutils.c
@@ -323,7 +323,7 @@ elseif (WIN64)
   source_group( "Platform Header Files" FILES ${PLATFORM_HEADER_FILES} )
 
   set( PLATFORM_SOURCE_FILES 
-    ../gucefCORE/src/DVOSWRAP.c
+    ../gucefCORE/src/DVOSWRAP.cpp
     ../gucefCORE/src/dvstrutils.c
     ../gucefCORE/src/CDVString.cpp
     ../gucefCORE/src/dvfileutils.c
