@@ -450,6 +450,7 @@ GUCEF_OSMAIN_BEGIN
             GUCEF_ERROR_LOG( CORE::LOGLEVEL_NORMAL, "Failed to load one or more plugins" );
         }
 
+        CORE::CCoreGlobal::Instance()->GetLogManager().ClearLoggers();
         return 1;
     }
     catch ( ... )
