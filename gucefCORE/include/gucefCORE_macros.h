@@ -56,7 +56,10 @@
  *      Auto detection of debug mode
  */
 #ifndef MANUAL_DEBUG_MODE_DEFINE
-  #if defined( _DEBUG )
+  #if !defined( NDEBUG )
+    #define _DEBUG
+  #endif
+  #if defined( _DEBUG ) || defined( __DEBUG ) || defined( __DEBUG__ )
     #define GUCEF_CORE_DEBUG_MODE
   #else
     #undef GUCEF_CORE_DEBUG_MODE
@@ -79,7 +82,7 @@
 #if defined( GUCEF_CORE_BUILD_MODULE )
   #define GUCEF_CORE_EXPORTSPEC GUCEF_EXPORT
 #elif defined( GUCEF_CORE_EMBED_CODE )
-  #define GUCEF_CORE_EXPORTSPEC  
+  #define GUCEF_CORE_EXPORTSPEC
 #else
   #define GUCEF_CORE_EXPORTSPEC GUCEF_IMPORT
 #endif /* GUCEF_CORE_BUILD_MODULE ? */

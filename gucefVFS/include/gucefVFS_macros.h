@@ -14,7 +14,7 @@
  *
  *  You should have received a copy of the GNU Lesser General Public
  *  License along with this library; if not, write to the Free Software
- *  Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA 
+ *  Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
  */
 
 #ifndef GUCEF_VFS_MACROS_H
@@ -56,8 +56,13 @@
  *      Auto detection of debug mode
  */
 #ifndef GUCEF_VFS_DEBUG_MODE
-  #if defined( _DEBUG ) || !defined( NDEBUG )
+  #if !defined( NDEBUG )
+    #define _DEBUG
+  #endif
+  #if defined( _DEBUG ) || defined( __DEBUG ) || defined( __DEBUG__ )
     #define GUCEF_VFS_DEBUG_MODE
+  #else
+    #undef GUCEF_VFS_DEBUG_MODE
   #endif /* compiler DEBUG switches */
 #endif /* GUCEF_INPUT_DEBUG_MODE ? */
 
@@ -92,7 +97,7 @@
   #define GUCEF_VFS_PUBLIC_CPP GUCEF_HIDDEN
 #endif /* GUCEF_VFS_PUBLIC_CPP_CODE */
 
-#undef GUCEF_VFS_PUBLIC_C 
+#undef GUCEF_VFS_PUBLIC_C
 #ifdef GUCEF_VFS_PUBLIC_C_CODE
   #define GUCEF_VFS_PUBLIC_C GUCEF_VFS_EXPORTSPEC
 #else
@@ -111,7 +116,7 @@
   #define GUCEF_VFS_PLUGIN_PUBLIC_CPP GUCEF_HIDDEN
 #endif /* GUCEF_VFS_PLUGIN_PUBLIC_CPP_CODE */
 
-#undef GUCEF_VFS_PLUGIN_PUBLIC_C 
+#undef GUCEF_VFS_PLUGIN_PUBLIC_C
 #ifdef GUCEF_VFS_PLUGIN_PUBLIC_C_CODE
   #define GUCEF_VFS_PLUGIN_PUBLIC_C GUCEF_VFS_PLUGIN_EXPORTSPEC
 #else

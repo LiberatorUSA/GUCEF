@@ -148,7 +148,7 @@ LoadModuleDynamicly( const char* filename )
 
     if ( NULL == modulePtr )
     {
-        GUCEF_DEBUG_LOG( LOGLEVEL_NORMAL, dlerror() );
+        GUCEF_DEBUG_LOG( LOGLEVEL_NORMAL, "LoadModuleDynamicly() reports error: " + CString( dlerror() ) );
     }
 
     #elif ( GUCEF_PLATFORM == GUCEF_PLATFORM_MSWIN )
