@@ -3,6 +3,7 @@
         <Preprocessor>
             <Define String="FT2_BUILD_LIBRARY" />
             <Define String="FT_CONFIG_OPTION_SYSTEM_ZLIB" />
+            <Define String="FT_CONFIG_OPTION_USE_ZLIB" />
             <Define String="FT_DVEDIT_DLL_API" />
             <Define String="FT_DVEDIT_BUILD_DLL" />
         </Preprocessor>
