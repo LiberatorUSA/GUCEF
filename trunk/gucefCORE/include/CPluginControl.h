@@ -95,8 +95,6 @@ class GUCEF_CORE_PUBLIC_CPP CPluginControl : public CNotifier      ,
 
     typedef std::vector< CString > TStringVector;
 
-    static CPluginControl* Instance( void );
-
     bool LoadAll( void );
 
     bool LoadAllPluginsOfType( const CString& pluginTypeToLoad );
@@ -234,9 +232,7 @@ class GUCEF_CORE_PUBLIC_CPP CPluginControl : public CNotifier      ,
 
     CPluginManager* GetPluginManagerForType( const CString& pluginType );
 
-    static MT::CMutex g_mutex;
-    static CPluginControl* g_instance;
-
+    MT::CMutex m_mutex;
     TPluginLoadLogicMap m_pluginLoadLogicProviders;
     CString m_defaultPluginLoadLogicType;
     TPluginGroupMap m_pluginGroups;

@@ -80,9 +80,6 @@ namespace CORE {
 //                                                                         //
 //-------------------------------------------------------------------------*/
 
-MT::CMutex CPluginControl::g_mutex;
-CPluginControl* CPluginControl::g_instance = NULL;
-
 static CLoaderDelegatedPluginLoadLogic loaderDelegatedPluginLoadLogic;
 static CSimplisticPluginLoadLogic simplisticPluginLoadLogic;
 
@@ -101,25 +98,6 @@ CPluginControl::RegisterEvents( void )
 
     PluginLoadedEvent.Initialize();
     PluginUnloadedEvent.Initialize();
-}
-
-/*-------------------------------------------------------------------------*/
-
-CPluginControl*
-CPluginControl::Instance( void )
-{GUCEF_TRACE;
-
-    if ( NULL == g_instance )
-    {
-        g_mutex.Lock();
-        if ( NULL == g_instance )
-        {
-            g_instance = new CPluginControl();
-            GUCEF_SYSTEM_LOG( LOGLEVEL_NORMAL, "GUCEF::CORE::CPluginControl Singleton created" );
-        }
-        g_mutex.Unlock();
-    }
-    return g_instance;
 }
 
 /*-------------------------------------------------------------------------*/
@@ -154,7 +132,7 @@ bool
 CPluginControl::LoadAllPluginsOfType( const CString& pluginTypeToLoad )
 {GUCEF_TRACE;
 
-    g_mutex.Lock();
+    m_mutex.Lock();
     bool success = true;
 
     GUCEF_SYSTEM_LOG( LOGLEVEL_NORMAL, "PluginControl: Loading all modules of type \"" + pluginTypeToLoad + '\"' );
@@ -182,7 +160,7 @@ CPluginControl::LoadAllPluginsOfType( const CString& pluginTypeToLoad )
         }
         ++i;
     }
-    g_mutex.Unlock();
+    m_mutex.Unlock();
 
     return success;
 }
@@ -194,7 +172,7 @@ CPluginControl::LoadAllPluginsOfTypeInGroup( const CString& pluginTypeToLoad ,
                                              const CString& groupName        )
 {GUCEF_TRACE;
 
-    g_mutex.Lock();
+    m_mutex.Lock();
     bool success = true;
 
     GUCEF_SYSTEM_LOG( LOGLEVEL_NORMAL, "PluginControl: Loading all modules in group \"" + groupName + "\" of type \"" + pluginTypeToLoad + '\"' );
@@ -221,7 +199,7 @@ CPluginControl::LoadAllPluginsOfTypeInGroup( const CString& pluginTypeToLoad ,
             ++n;
         }
     }
-    g_mutex.Unlock();
+    m_mutex.Unlock();
 
     return success;
 }
@@ -232,7 +210,7 @@ bool
 CPluginControl::LoadPluginGroup( const CString& groupName )
 {GUCEF_TRACE;
 
-    g_mutex.Lock();
+    m_mutex.Lock();
     bool success = true;
 
     GUCEF_SYSTEM_LOG( LOGLEVEL_NORMAL, "PluginControl: Loading all modules in group \"" + groupName + '\"' );
@@ -256,7 +234,7 @@ CPluginControl::LoadPluginGroup( const CString& groupName )
             ++n;
         }
     }
-    g_mutex.Unlock();
+    m_mutex.Unlock();
 
     return success;
 }
@@ -267,7 +245,7 @@ bool
 CPluginControl::LoadAll( void )
 {GUCEF_TRACE;
 
-    g_mutex.Lock();
+    m_mutex.Lock();
     bool success = true;
 
     GUCEF_SYSTEM_LOG( LOGLEVEL_NORMAL, "PluginControl: Loading all modules" );
@@ -293,7 +271,7 @@ CPluginControl::LoadAll( void )
         }
         ++i;
     }
-    g_mutex.Unlock();
+    m_mutex.Unlock();
 
     return success;
 }
@@ -538,7 +516,7 @@ CPluginControl::UnloadAllPluginsOfTypeInGroup( const CString& pluginTypeToLoad ,
                                                const CString& groupName        )
 {GUCEF_TRACE;
 
-    g_mutex.Lock();
+    m_mutex.Lock();
     bool success = true;
 
     GUCEF_SYSTEM_LOG( LOGLEVEL_NORMAL, "PluginControl: Unloading all modules in group \"" + groupName + "\" of type \"" + pluginTypeToLoad + '\"' );
@@ -570,7 +548,7 @@ CPluginControl::UnloadAllPluginsOfTypeInGroup( const CString& pluginTypeToLoad ,
             ++n;
         }
     }
-    g_mutex.Unlock();
+    m_mutex.Unlock();
 
     return success;
 }
@@ -581,7 +559,7 @@ bool
 CPluginControl::UnloadAllPluginsOfType( const CString& pluginTypeToUnload )
 {GUCEF_TRACE;
 
-    g_mutex.Lock();
+    m_mutex.Lock();
     bool success = true;
 
     GUCEF_SYSTEM_LOG( LOGLEVEL_NORMAL, "PluginControl: Unloading all modules of type \"" + pluginTypeToUnload + '\"' );
@@ -613,7 +591,7 @@ CPluginControl::UnloadAllPluginsOfType( const CString& pluginTypeToUnload )
         }
         ++i;
     }
-    g_mutex.Unlock();
+    m_mutex.Unlock();
 
     return success;
 }
@@ -624,7 +602,7 @@ bool
 CPluginControl::UnloadPluginGroup( const CString& groupName )
 {GUCEF_TRACE;
 
-    g_mutex.Lock();
+    m_mutex.Lock();
     bool success = true;
 
     GUCEF_SYSTEM_LOG( LOGLEVEL_NORMAL, "PluginControl: Unloading all modules in group \"" + groupName + '\"' );
@@ -648,7 +626,7 @@ CPluginControl::UnloadPluginGroup( const CString& groupName )
             ++n;
         }
     }
-    g_mutex.Unlock();
+    m_mutex.Unlock();
 
     return success;
 }
@@ -659,7 +637,7 @@ bool
 CPluginControl::UnloadAll( void )
 {GUCEF_TRACE;
 
-    g_mutex.Lock();
+    m_mutex.Lock();
     bool success = true;
 
     GUCEF_SYSTEM_LOG( LOGLEVEL_NORMAL, "PluginControl: Unloading all modules" );
@@ -684,7 +662,7 @@ CPluginControl::UnloadAll( void )
         }
         ++i;
     }
-    g_mutex.Unlock();
+    m_mutex.Unlock();
 
     return success;
 }
@@ -695,7 +673,7 @@ void
 CPluginControl::ClearMetaDataFromGroup( const CString& groupName )
 {GUCEF_TRACE;
 
-    g_mutex.Lock();
+    m_mutex.Lock();
     TPluginGroupMap::iterator i = m_pluginGroups.find( groupName );
     if ( i != m_pluginGroups.end() )
     {
@@ -708,7 +686,7 @@ CPluginControl::ClearMetaDataFromGroup( const CString& groupName )
             m_pluginGroups.erase( i );
         }
     }
-    g_mutex.Unlock();
+    m_mutex.Unlock();
 }
 
 /*-------------------------------------------------------------------------*/
@@ -717,14 +695,14 @@ void
 CPluginControl::GetSupportedPluginTypes( TStringVector& supportedTypes ) const
 {GUCEF_TRACE;
 
-    g_mutex.Lock();
+    m_mutex.Lock();
     TPluginManagerSet::const_iterator i = m_pluginManagers.begin();
     while ( i != m_pluginManagers.end() )
     {
         supportedTypes.push_back( (*i)->GetPluginType() );
         ++i;
     }
-    g_mutex.Unlock();
+    m_mutex.Unlock();
 }
 
 /*-------------------------------------------------------------------------*/
@@ -733,9 +711,9 @@ void
 CPluginControl::Register( CPluginManager* pman )
 {GUCEF_TRACE;
 
-    g_mutex.Lock();
+    m_mutex.Lock();
     m_pluginManagers.insert( pman );
-    g_mutex.Unlock();
+    m_mutex.Unlock();
 }
 
 /*-------------------------------------------------------------------------*/
@@ -744,9 +722,9 @@ void
 CPluginControl::Unregister( CPluginManager* pman )
 {GUCEF_TRACE;
 
-    g_mutex.Lock();
+    m_mutex.Lock();
     m_pluginManagers.erase( pman );
-    g_mutex.Unlock();
+    m_mutex.Unlock();
 }
 
 /*-------------------------------------------------------------------------*/
@@ -755,9 +733,9 @@ void
 CPluginControl::RegisterPluginLoadLogic( CIPluginLoadLogic* pluginLoaderLogic )
 {GUCEF_TRACE;
 
-    g_mutex.Lock();
+    m_mutex.Lock();
     m_pluginLoadLogicProviders[ pluginLoaderLogic->GetLoaderLogicTypeName() ] = pluginLoaderLogic;
-    g_mutex.Unlock();
+    m_mutex.Unlock();
 }
 
 /*-------------------------------------------------------------------------*/
@@ -766,13 +744,13 @@ void
 CPluginControl::UnregisterPluginLoadLogic( const CString& loaderLogicTypeName )
 {GUCEF_TRACE;
 
-    g_mutex.Lock();
+    m_mutex.Lock();
     TPluginLoadLogicMap::iterator i = m_pluginLoadLogicProviders.find( loaderLogicTypeName );
     if ( i != m_pluginLoadLogicProviders.end() )
     {
         m_pluginLoadLogicProviders.erase( i );
     }
-    g_mutex.Unlock();
+    m_mutex.Unlock();
 }
 
 /*-------------------------------------------------------------------------*/
@@ -781,9 +759,9 @@ void
 CPluginControl::SetDefaultPluginLoadLogicType( const CString& loaderLogicTypeName )
 {GUCEF_TRACE;
 
-    g_mutex.Lock();
+    m_mutex.Lock();
     m_defaultPluginLoadLogicType = loaderLogicTypeName;
-    g_mutex.Unlock();
+    m_mutex.Unlock();
 }
 
 /*-------------------------------------------------------------------------*/
@@ -792,9 +770,9 @@ CString
 CPluginControl::GetDefaultPluginLoadLogicType( void ) const
 {GUCEF_TRACE;
 
-    g_mutex.Lock();
+    m_mutex.Lock();
     CString returnValue = m_defaultPluginLoadLogicType;
-    g_mutex.Unlock();
+    m_mutex.Unlock();
     return returnValue;
 }
 
@@ -804,9 +782,9 @@ void
 CPluginControl::AddPluginDir( const CString& path )
 {GUCEF_TRACE;
 
-    g_mutex.Lock();
+    m_mutex.Lock();
     m_rootDirs.insert( RelativePath( path ) );
-    g_mutex.Unlock();
+    m_mutex.Unlock();
 }
 
 /*-------------------------------------------------------------------------*/
@@ -815,9 +793,9 @@ void
 CPluginControl::RemovePluginDir( const CString& path )
 {GUCEF_TRACE;
 
-    g_mutex.Lock();
+    m_mutex.Lock();
     m_rootDirs.erase( RelativePath( path ) );
-    g_mutex.Unlock();
+    m_mutex.Unlock();
 }
 
 /*-------------------------------------------------------------------------*/
@@ -904,7 +882,7 @@ CPluginControl::AddPluginMetaData( const CIPluginMetaData& pluginMetaData ,
     bool success = true;
 
     // Add the metadata
-    g_mutex.Lock();
+    m_mutex.Lock();
     TPluginMetaDataPtr pluginMetaDataCopy = new CPluginMetaData( pluginMetaData );
     CPluginGroup& pluginGroup = m_pluginGroups[ groupName ];
     pluginGroup.GetPluginMetaData().insert( pluginMetaDataCopy );
@@ -917,7 +895,7 @@ CPluginControl::AddPluginMetaData( const CIPluginMetaData& pluginMetaData ,
                               groupName          );
     }
 
-    g_mutex.Unlock();
+    m_mutex.Unlock();
     return success;
 }
 

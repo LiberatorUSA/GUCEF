@@ -113,11 +113,6 @@ CGUCEFApplication::CGUCEFApplication( void )
     _appdir = RelativePath( "$MODULEDIR$" );
 
     /*
-     *      Initialize our plugin control center
-     */
-    CPluginControl::Instance();
-
-    /*
      *      Register some functionality at the system console
      */
     CSysConsole* sysconsole = &CORE::CCoreGlobal::Instance()->GetSysConsole();

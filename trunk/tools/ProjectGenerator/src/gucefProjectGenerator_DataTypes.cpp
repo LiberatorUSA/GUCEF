@@ -242,9 +242,9 @@ GetXmlDStoreCodec( void )
               const char* pathToPlugin = "$MODULEDIR$/dstorepluginPARSIFALXML";
               #endif
 
-            if ( !CORE::CPluginControl::Instance()->AddPluginFromDir( pathToPlugin    ,
-                                                                      CORE::CString() ,
-                                                                      true            ) )
+            if ( !CORE::CCoreGlobal::Instance()->GetPluginControl().AddPluginFromDir( pathToPlugin    ,
+                                                                                      CORE::CString() ,
+                                                                                      true            ) )
             {
                 GUCEF_ERROR_LOG( CORE::LOGLEVEL_NORMAL, "Unable to load plugin from " + CORE::CString( pathToPlugin ) );
                 return NULL;
@@ -258,9 +258,9 @@ GetXmlDStoreCodec( void )
               const char* pathToPlugin = "$MODULEDIR$/dstorepluginPARSIFALXML";
               #endif
 
-            if ( !CORE::CPluginControl::Instance()->AddPluginFromDir( pathToPlugin    ,
-                                                                      CORE::CString() ,
-                                                                      true            ) )
+            if ( !CORE::CCoreGlobal::Instance()->GetPluginControl().AddPluginFromDir( pathToPlugin    ,
+                                                                                      CORE::CString() ,
+                                                                                      true            ) )
             {
                 GUCEF_SYSTEM_LOG( CORE::LOGLEVEL_NORMAL, "Unable to load plugin from " + CORE::CString( pathToPlugin ) + " attempting alternate location" );
 
@@ -270,9 +270,9 @@ GetXmlDStoreCodec( void )
                 const char* pathToPlugin = "$MODULEDIR$/../lib/dstorepluginPARSIFALXML";
                 #endif
 
-                if ( !CORE::CPluginControl::Instance()->AddPluginFromDir( pathToPlugin    ,
-                                                                          CORE::CString() ,
-                                                                          true            ) )
+                if ( !CORE::CCoreGlobal::Instance()->GetPluginControl().AddPluginFromDir( pathToPlugin    ,
+                                                                                          CORE::CString() ,
+                                                                                          true            ) )
                 {
                     GUCEF_ERROR_LOG( CORE::LOGLEVEL_NORMAL, "Unable to load plugin from " + CORE::CString( pathToPlugin ) );
                 }
