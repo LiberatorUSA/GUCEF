@@ -56,7 +56,7 @@
  *      Auto detection of debug mode
  */
 #ifndef MANUAL_DEBUG_MODE_DEFINE
-  #if !defined( NDEBUG )
+  #if !defined( NDEBUG ) && !( defined( _DEBUG ) || defined( __DEBUG ) || defined( __DEBUG__ ) )
     #define _DEBUG
   #endif
   #if defined( _DEBUG ) || defined( __DEBUG ) || defined( __DEBUG__ )
