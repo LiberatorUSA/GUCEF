@@ -121,15 +121,15 @@ LoadModuleDynamicly( const char* filename )
         char hasLibPrefix = 0;
         const char* fileOnly = Extract_Filename( fName );
         UInt32 sLength = strlen( fileOnly );
-        if ( sLength >= 3 )
-        {
-            if ( 0 == memcmp( "lib", fileOnly, 3 ) )
-            {
-                hasLibPrefix = 1;
-            }
-        }
+        //if ( sLength >= 3 )
+        //{
+        //    if ( 0 == memcmp( "lib", fileOnly, 3 ) )
+        //    {
+        //        hasLibPrefix = 1;
+        //    }
+        //}
 
-        if ( 0 == hasLibPrefix )
+        //if ( 0 == hasLibPrefix )
         {
             /*
              *  No previous "lib" prefix was found, we will add one and try to load again
