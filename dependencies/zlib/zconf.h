@@ -243,6 +243,17 @@
 #  endif
 #endif
 
+/* DV edit: for later GCC versions we have to explicitly export */
+#if defined( __GNUC__ )
+#  ifdef ZLIB_DLL
+#    if ( __GNUC__ >= 4 )
+#      if defined( ZLIB_INTERNAL )
+#        define ZEXTERN __attribute__ ((__visibility__("default")))
+#      endif
+#    endif
+#  endif
+#endif
+
 #ifndef ZEXTERN
 #  define ZEXTERN extern
 #endif
