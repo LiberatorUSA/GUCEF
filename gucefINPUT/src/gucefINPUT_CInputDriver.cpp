@@ -23,6 +23,11 @@
 //                                                                         //
 //-------------------------------------------------------------------------*/
 
+#ifndef GUCEF_INPUT_CINPUTGLOBAL_H
+#include "gucefINPUT_CInputGlobal.h"
+#define GUCEF_INPUT_CINPUTGLOBAL_H
+#endif /* GUCEF_INPUT_CINPUTGLOBAL_H ? */
+
 #ifndef GUCEF_INPUT_CINPUTCONTROLLER_H
 #include "CInputController.h"
 #define GUCEF_INPUT_CINPUTCONTROLLER_H
@@ -46,7 +51,7 @@ namespace INPUT {
 //-------------------------------------------------------------------------*/
 
 CInputDriver::CInputDriver( void )
-    : m_controller( CInputController::Instance() )
+    : m_controller( &CInputGlobal::Instance()->GetInputController() )
 {GUCEF_TRACE;
 
 }

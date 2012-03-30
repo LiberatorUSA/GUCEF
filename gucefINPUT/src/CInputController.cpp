@@ -131,29 +131,6 @@ CInputController::GetClassTypeName( void ) const
 
 /*-------------------------------------------------------------------------*/
 
-CInputController*
-CInputController::Instance( void )
-{GUCEF_TRACE;
-
-    if ( !m_instance )
-    {
-        m_instance = new CInputController();
-    }
-    return m_instance;
-}
-
-/*-------------------------------------------------------------------------*/
-
-void
-CInputController::Deinstance( void )
-{GUCEF_TRACE;
-
-    delete m_instance;
-    m_instance = NULL;
-}
-
-/*-------------------------------------------------------------------------*/
-
 CInputContext*
 CInputController::CreateContext( const CORE::CValueList& params )
 {GUCEF_TRACE;

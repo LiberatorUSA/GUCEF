@@ -23,6 +23,11 @@
 //                                                                         //
 //-------------------------------------------------------------------------*/
 
+#ifndef GUCEF_INPUT_CINPUTGLOBAL_H
+#include "gucefINPUT_CInputGlobal.h"
+#define GUCEF_INPUT_CINPUTGLOBAL_H
+#endif /* GUCEF_INPUT_CINPUTGLOBAL_H ? */
+
 #ifndef GUCEF_INPUT_CINPUTCONTROLLER_H
 #include "CInputController.h"
 #define GUCEF_INPUT_CINPUTCONTROLLER_H
@@ -48,7 +53,7 @@ namespace INPUT {
 CInputObserverSwitch::CInputObserverSwitch( void )
 {GUCEF_TRACE;
 
-    CInputController::Instance()->Subscribe( &AsObserver() );
+    CInputGlobal::Instance()->GetInputController().Subscribe( &AsObserver() );
 }
 
 /*-------------------------------------------------------------------------*/
@@ -56,7 +61,7 @@ CInputObserverSwitch::CInputObserverSwitch( void )
 CInputObserverSwitch::CInputObserverSwitch( const CInputObserverSwitch& src )
 {GUCEF_TRACE;
 
-    CInputController::Instance()->Subscribe( &AsObserver() );
+    CInputGlobal::Instance()->GetInputController().Subscribe( &AsObserver() );
 }
 
 /*-------------------------------------------------------------------------*/
@@ -100,9 +105,8 @@ CInputObserverSwitch::OnNotify( CORE::CNotifier* notifier    ,
     if ( CInputController::MouseAttachedEvent == eventid )
     {
         // Get access to the mouse object
-        CInputController* controller = CInputController::Instance();
         Int32 deviceID = (*static_cast< CORE::TCloneableInt32* >( eventdata )).GetData();
-        CMouse& mouse = controller->GetMouse( deviceID );
+        CMouse& mouse = CInputGlobal::Instance()->GetInputController().GetMouse( deviceID );
         
         // Subscribe to all mouse events
         mouse.Subscribe( &AsObserver() ); 
@@ -111,9 +115,8 @@ CInputObserverSwitch::OnNotify( CORE::CNotifier* notifier    ,
     if ( CInputController::KeyboardAttachedEvent == eventid )
     {
         // Get access to the keyboard object
-        CInputController* controller = CInputController::Instance();
         Int32 deviceID = (*static_cast< CORE::TCloneableInt32* >( eventdata )).GetData();
-        CKeyboard& keyboard = controller->GetKeyboard( deviceID );
+        CKeyboard& keyboard = CInputGlobal::Instance()->GetInputController().GetKeyboard( deviceID );
         
         // Subscribe to all keyboard events
         keyboard.Subscribe( &AsObserver() );    

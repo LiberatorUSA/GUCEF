@@ -25,6 +25,7 @@ set( HEADER_FILES
   include/gucefINPUT_CInputDevice.h
   include/gucefINPUT_CInputDriver.h
   include/gucefINPUT_CInputDriverPluginManager.h
+  include/gucefINPUT_CInputGlobal.h
   include/gucefINPUT_CInputObserverSwitch.h
   include/gucefINPUT_CKeyboard.h
   include/gucefINPUT_CKeyModStateChangedEventData.h
@@ -51,6 +52,7 @@ set( SOURCE_FILES
   src/gucefINPUT_CActionEventData.cpp
   src/gucefINPUT_CInputDriver.cpp
   src/gucefINPUT_CInputDriverPluginManager.cpp
+  src/gucefINPUT_CInputGlobal.cpp
   src/gucefINPUT_CInputObserverSwitch.cpp
   src/gucefINPUT_CKeyboard.cpp
   src/gucefINPUT_CKeyModStateChangedEventData.cpp

@@ -77,9 +77,17 @@ const CORE::CEvent CInputActionMap::ActionEvent = "GUCEF::INPUT::CInputActionMap
 
 /*-------------------------------------------------------------------------//
 //                                                                         //
-//      CLASSES                                                            //
+//      UTILITIES                                                          //
 //                                                                         //
 //-------------------------------------------------------------------------*/
+
+void
+CInputActionMap::RegisterEvents( void )
+{
+    ActionEvent.Initialize();
+}
+
+/*-------------------------------------------------------------------------*/
 
 CInputActionMap::CInputActionMap( const CORE::CString& name )
     : CORE::CObservingNotifier() ,

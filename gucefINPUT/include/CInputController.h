@@ -120,9 +120,7 @@ class GUCEF_INPUT_PUBLIC_CPP CInputController : public CORE::CObservingNotifier
 
     typedef std::map< Int32, CMouse* >      TMouseMap;  
     typedef std::map< Int32, CKeyboard* >   TKeyboardMap;
-    typedef std::set< CString >             TStringSet;
-    
-    static CInputController* Instance( void );                
+    typedef std::set< CString >             TStringSet;              
     
     /**
      *  Create the context using the specified driver
@@ -211,9 +209,11 @@ class GUCEF_INPUT_PUBLIC_CPP CInputController : public CORE::CObservingNotifier
                   CORE::CICloneable* eventdata = NULL );
 
     private:
-    friend class CGUCEFINPUTModule;
+    friend class CInputGlobal;
     
-    static void Deinstance( void );        
+    CInputController( void );        
+
+    virtual ~CInputController();
 
     private:
     friend class CInputDriver;
@@ -246,12 +246,10 @@ class GUCEF_INPUT_PUBLIC_CPP CInputController : public CORE::CObservingNotifier
     
     void RemoveDevice( const Int32 deviceID );
     
-    private:
+    private:    
     
-    CInputController( void );
-    CInputController( const CInputController& src );
-    virtual ~CInputController();
-    CInputController& operator=( const CInputController& src );
+    CInputController( const CInputController& src );            /** <- not implemented */
+    CInputController& operator=( const CInputController& src ); /** <- not implemented */
     
     private:
     typedef std::set< CInputContext* > TContextSet;
