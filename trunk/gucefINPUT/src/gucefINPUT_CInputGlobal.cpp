@@ -1,6 +1,6 @@
 /*
  *  gucefINPUT: GUCEF module providing input device interaction
- *  Copyright (C) 2002 - 2011.  Dinand Vanvelzen
+ *  Copyright (C) 2002 - 2007.  Dinand Vanvelzen
  *
  *  This library is free software; you can redistribute it and/or
  *  modify it under the terms of the GNU Lesser General Public
@@ -23,22 +23,37 @@
 //                                                                         //
 //-------------------------------------------------------------------------*/
 
-#ifndef GUCEF_INPUT_CINPUTGLOBAL_H
-#include "gucefINPUT_CInputGlobal.h"
-#define GUCEF_INPUT_CINPUTGLOBAL_H
-#endif /* GUCEF_INPUT_CINPUTGLOBAL_H ? */
+#ifndef GUCEF_CORE_CCOREGLOBAL_H
+#include "gucefCORE_CCoreGlobal.h"
+#define GUCEF_CORE_CCOREGLOBAL_H
+#endif /* GUCEF_CORE_CCOREGLOBAL_H ? */
+
+#ifndef GUCEF_INPUT_CINPUTACTIONMAP_H
+#include "CInputActionMap.h"
+#define GUCEF_INPUT_CINPUTACTIONMAP_H
+#endif /* GUCEF_INPUT_CINPUTACTIONMAP_H ? */
+
+#ifndef GUCEF_INPUT_CKEYBOARD_H
+#include "gucefINPUT_CKeyboard.h"
+#define GUCEF_INPUT_CKEYBOARD_H
+#endif /* GUCEF_INPUT_CKEYBOARD_H ? */
+
+#ifndef GUCEF_INPUT_CMOUSE_H
+#include "gucefINPUT_CMouse.h"
+#define GUCEF_INPUT_CMOUSE_H
+#endif /* GUCEF_INPUT_CMOUSE_H ? */
+
+#ifndef GUCEF_INPUT_CINPUTDEVICE_H
+#include "gucefINPUT_CInputDevice.h"
+#define GUCEF_INPUT_CINPUTDEVICE_H
+#endif /* GUCEF_INPUT_CINPUTDEVICE_H ? */
 
 #ifndef GUCEF_INPUT_CINPUTCONTROLLER_H
 #include "CInputController.h"
 #define GUCEF_INPUT_CINPUTCONTROLLER_H
 #endif /* GUCEF_INPUT_CINPUTCONTROLLER_H ? */
 
-#ifndef GUCEF_INPUT_CINPUTDRIVERPLUGIN_H
-#include "CInputDriverPlugin.h"
-#define GUCEF_INPUT_CINPUTDRIVERPLUGIN_H
-#endif /* GUCEF_INPUT_CINPUTDRIVERPLUGIN_H ? */
-
-#include "gucefINPUT_CInputDriverPluginManager.h"
+#include "gucefINPUT_CInputGlobal.h"
 
 /*-------------------------------------------------------------------------//
 //                                                                         //
@@ -51,67 +66,102 @@ namespace INPUT {
 
 /*-------------------------------------------------------------------------//
 //                                                                         //
+//      GLOBAL VARS                                                        //
+//                                                                         //
+//-------------------------------------------------------------------------*/
+
+CInputGlobal* CInputGlobal::g_instance = NULL;
+
+/*-------------------------------------------------------------------------//
+//                                                                         //
 //      UTILITIES                                                          //
 //                                                                         //
 //-------------------------------------------------------------------------*/
 
-CInputDriverPluginManager::CInputDriverPluginManager( void )
-    : CORE::CPluginManager()
+CInputGlobal*
+CInputGlobal::Instance()
 {GUCEF_TRACE;
 
-}
-
-/*-------------------------------------------------------------------------*/
-
-CInputDriverPluginManager::~CInputDriverPluginManager()
-{GUCEF_TRACE;
-
-}
-
-/*-------------------------------------------------------------------------*/
-
-CString
-CInputDriverPluginManager::GetPluginType( void ) const
-{GUCEF_TRACE;
-
-    return "GucefInputDriverPlugin";
-}
-
-/*-------------------------------------------------------------------------*/
-
-CORE::TPluginPtr
-CInputDriverPluginManager::RegisterPlugin( void* modulePtr                         ,
-                                           CORE::TPluginMetaDataPtr pluginMetaData )
-{GUCEF_TRACE;
-
-    CInputDriverPlugin* plugin = new CInputDriverPlugin();
-    if ( plugin->Link( modulePtr      ,
-                       pluginMetaData ) )
+    if ( NULL == g_instance )
     {
-        TInputDriverPluginPtr pointerToPlugin = plugin;
-        CInputGlobal::Instance()->GetInputController().RegisterDriver( pointerToPlugin );
-        
-        return pointerToPlugin;
+        g_instance = new CInputGlobal();
+        g_instance->Initialize();
     }
-    
-    delete plugin;
-    return NULL; 
+    return g_instance;
 }
 
 /*-------------------------------------------------------------------------*/
 
 void
-CInputDriverPluginManager::UnregisterPlugin( CORE::TPluginPtr plugin )
+CInputGlobal::Deinstance( void )
 {GUCEF_TRACE;
 
-    // First unregister from the registry
-    TInputDriverPluginPtr pointerToPlugin = plugin.StaticCast< CInputDriverPlugin >();
-    CInputGlobal::Instance()->GetInputController().UnregisterDriver( pointerToPlugin->GetName() );
-
-    // Now unlink the plugin
-    pointerToPlugin->Unlink();
+    delete g_instance;
+    g_instance = NULL;
 }
+
+/*-------------------------------------------------------------------------*/
+
+void
+CInputGlobal::Initialize( void )
+{GUCEF_TRACE;
+
+    // Ensure the Core systems are initialzed first since this module depends on Core
+    CORE::CCoreGlobal::Instance();
+
+    GUCEF_SYSTEM_LOG( CORE::LOGLEVEL_NORMAL, "Initializing gucefINPUT Global systems" );
+
+    /*
+     *      register all events
+     */
+    CKeyboard::RegisterEvents();
+    CMouse::RegisterEvents();
+    //CInputDevice::RegisterEvents();
+    CInputActionMap::RegisterEvents();
+    CInputController::RegisterEvents();
     
+    /*
+     *      Instantiate all singletons
+     */
+    m_inputController = new CInputController();
+
+    GUCEF_SYSTEM_LOG( CORE::LOGLEVEL_NORMAL, "gucefINPUT Global systems initialized" );
+}
+
+/*-------------------------------------------------------------------------*/
+
+CInputGlobal::CInputGlobal( void )
+    : m_inputController( NULL )
+{GUCEF_TRACE;
+
+}
+
+/*-------------------------------------------------------------------------*/
+
+CInputGlobal::~CInputGlobal()
+{GUCEF_TRACE;
+
+    GUCEF_SYSTEM_LOG( CORE::LOGLEVEL_NORMAL, "Shutting down gucefINPUT global systems" );
+
+
+    /*
+     *      cleanup all singletons
+     *      Take care to deinstance them in the correct order !!!
+     */
+
+    delete m_inputController;
+    m_inputController = NULL;
+}
+
+/*-------------------------------------------------------------------------*/
+
+CInputController&
+CInputGlobal::GetInputController( void )
+{GUCEF_TRACE;
+
+    return *m_inputController;
+}
+
 /*-------------------------------------------------------------------------//
 //                                                                         //
 //      NAMESPACE                                                          //
