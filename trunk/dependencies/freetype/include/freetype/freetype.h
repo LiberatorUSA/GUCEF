@@ -53,14 +53,20 @@ FT_BEGIN_HEADER
     #if defined( _WIN32 ) || defined( WIN32 ) || defined( _WINDOWS )
       #ifdef FT_DVEDIT_BUILD_DLL
         #define FT_DVEDIT_EXPORT __declspec(dllexport)
-      #else  
+      #else
         #define FT_DVEDIT_EXPORT __declspec(dllimport)
-      #endif 
+      #endif
+    #elif defined( __GNUC__ )
+      #if ( __GNUC__ >= 4 )
+        #if defined( FT_DVEDIT_BUILD_DLL )
+          #define FT_DVEDIT_EXPORT __attribute__ ((__visibility__("default")))
+        #endif
+      #endif
     #else
       #define FT_DVEDIT_EXPORT
-    #endif 
+    #endif
 #else
-  #define FT_DVEDIT_EXPORT
+    #define FT_DVEDIT_EXPORT
 #endif
 
 #undef FT_EXPORT
