@@ -120,19 +120,21 @@
 
 #else /* GUCEF_NO_LOGGING ? */
 
-#define GUCEF_ERROR_LOG
-#define GUCEF_LOG
-#define GUCEF_STANDARD_LOG GUCEF_LOG
-#define GUCEF_USER_LOG
-#define GUCEF_SYSTEM_LOG
-#define GUCEF_DEV_LOG
-#define GUCEF_SERVICE_LOG
-#define GUCEF_PROTECTED_LOG
-#define GUCEF_CALLSTACK_LOG
-#define GUCEF_EXCEPTION_LOG
-#define GUCEF_CONSOLE_LOG
-#define GUCEF_WARNING_LOG
-#define GUCEF_DEBUG_LOG
+#define GUCEF_TRACE
+
+#define GUCEF_ERROR_LOG( logLevel, logMessage ) { }
+#define GUCEF_LOG( logLevel, logMessage ) { }
+#define GUCEF_STANDARD_LOG( logLevel, logMessage ) { }
+#define GUCEF_USER_LOG( logLevel, logMessage ) { }
+#define GUCEF_SYSTEM_LOG( logLevel, logMessage ) { }
+#define GUCEF_DEV_LOG( logLevel, logMessage ) { }
+#define GUCEF_SERVICE_LOG( logLevel, logMessage ) { }
+#define GUCEF_PROTECTED_LOG( logLevel, logMessage ) { }
+#define GUCEF_CALLSTACK_LOG( logLevel, logMessage ) { }
+#define GUCEF_EXCEPTION_LOG( logLevel, logMessage ) { }
+#define GUCEF_CONSOLE_LOG( logLevel, logMessage ) { }
+#define GUCEF_WARNING_LOG( logLevel, logMessage ) { }
+#define GUCEF_DEBUG_LOG( logLevel, logMessage ) { }
 
 /*
  *  We use a typedef to ensure any logging macro statements that have namespaced
@@ -140,12 +142,12 @@
  *  as seen above. The typedef's are not the same as the actual values but it
  *  is acceptable for the preprocessor as a param since the macro has no content anyway.
  */
-typedef Int32 LOGLEVEL_CRITICAL;
-typedef Int32 LOGLEVEL_VERY_IMPORTANT;
-typedef Int32 LOGLEVEL_IMPORTANT;
-typedef Int32 LOGLEVEL_NORMAL;
-typedef Int32 LOGLEVEL_BELOW_NORMAL;
-typedef Int32 LOGLEVEL_EVERYTHING;
+typedef int LOGLEVEL_CRITICAL;
+typedef int LOGLEVEL_VERY_IMPORTANT;
+typedef int LOGLEVEL_IMPORTANT;
+typedef int LOGLEVEL_NORMAL;
+typedef int LOGLEVEL_BELOW_NORMAL;
+typedef int LOGLEVEL_EVERYTHING;
 
 #endif /* GUCEF_NO_LOGGING ? */
 
