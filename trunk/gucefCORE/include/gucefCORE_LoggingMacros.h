@@ -134,6 +134,19 @@
 #define GUCEF_WARNING_LOG
 #define GUCEF_DEBUG_LOG
 
+/*
+ *  We use a typedef to ensure any logging macro statements that have namespaced
+ *  log level variable references are still valid syntax with the macro voided
+ *  as seen above. The typedef's are not the same as the actual values but it
+ *  is acceptable for the preprocessor as a param since the macro has no content anyway.
+ */
+typedef Int32 LOGLEVEL_CRITICAL;
+typedef Int32 LOGLEVEL_VERY_IMPORTANT;
+typedef Int32 LOGLEVEL_IMPORTANT;
+typedef Int32 LOGLEVEL_NORMAL;
+typedef Int32 LOGLEVEL_BELOW_NORMAL;
+typedef Int32 LOGLEVEL_EVERYTHING;
+
 #endif /* GUCEF_NO_LOGGING ? */
 
 /*-------------------------------------------------------------------------*/
