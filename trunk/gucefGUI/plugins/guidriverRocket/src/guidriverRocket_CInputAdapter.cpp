@@ -14,7 +14,7 @@
  *
  *  You should have received a copy of the GNU Lesser General Public
  *  License along with this library; if not, write to the Free Software
- *  Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA 
+ *  Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA
  */
 
 /*-------------------------------------------------------------------------//
@@ -22,6 +22,11 @@
 //      INCLUDES                                                           //
 //                                                                         //
 //-------------------------------------------------------------------------*/
+
+#ifndef GUCEF_INPUT_CINPUTGLOBAL_H
+#include "gucefINPUT_CInputGlobal.h"
+#define GUCEF_INPUT_CINPUTGLOBAL_H
+#endif /* GUCEF_INPUT_CINPUTGLOBAL_H ? */
 
 #include "guidriverRocket_CInputAdapter.h"
 
@@ -41,7 +46,7 @@ namespace GUIDRIVERROCKET {
 //-------------------------------------------------------------------------*/
 
 CInputAdapter::CInputAdapter( void )
-    : CORE::CObserver()           , 
+    : CORE::CObserver()           ,
       m_rocketContext( NULL )     ,
       m_lastKeyModifierState( 0 )
 {GUCEF_TRACE;
@@ -81,10 +86,10 @@ CInputAdapter::StartListningForInputEvents( void )
 {GUCEF_TRACE;
 
     StopListningForInputEvents();
-    
-    INPUT::CInputController* inputController = INPUT::CInputController::Instance();
-    inputController->SubscribeToAllKeyboards( this );
-    inputController->SubscribeToAllMice( this );
+
+    INPUT::CInputController& inputController = INPUT::CInputGlobal::Instance()->GetInputController();
+    inputController.SubscribeToAllKeyboards( this );
+    inputController.SubscribeToAllMice( this );
 }
 
 /*-------------------------------------------------------------------------*/
@@ -104,9 +109,9 @@ CInputAdapter::MapKeyModifierState( const INPUT::UInt32 keyModifierState )
 {GUCEF_TRACE;
 
     int resultKeymodState = 0;
-    if ( keyModifierState & INPUT::KEYMOD_SHIFT ) resultKeymodState |= Rocket::Core::Input::KM_SHIFT; 
-    if ( keyModifierState & INPUT::KEYMOD_CTRL ) resultKeymodState |= Rocket::Core::Input::KM_CTRL; 
-    if ( keyModifierState & INPUT::KEYMOD_ALT ) resultKeymodState |= Rocket::Core::Input::KM_ALT; 
+    if ( keyModifierState & INPUT::KEYMOD_SHIFT ) resultKeymodState |= Rocket::Core::Input::KM_SHIFT;
+    if ( keyModifierState & INPUT::KEYMOD_CTRL ) resultKeymodState |= Rocket::Core::Input::KM_CTRL;
+    if ( keyModifierState & INPUT::KEYMOD_ALT ) resultKeymodState |= Rocket::Core::Input::KM_ALT;
     if ( keyModifierState & INPUT::KEYMOD_META ) resultKeymodState |= Rocket::Core::Input::KM_META;
     if ( keyModifierState & INPUT::KEYMOD_CAPSLOCK ) resultKeymodState |= Rocket::Core::Input::KM_CAPSLOCK;
     if ( keyModifierState & INPUT::KEYMOD_NUMLOCK ) resultKeymodState |= Rocket::Core::Input::KM_NUMLOCK;
@@ -121,7 +126,7 @@ CInputAdapter::MapKeyIdentifier( const INPUT::KeyCode keyCode )
 {
     switch ( keyCode )
     {
-        case INPUT::KEYCODE_UNASSIGNED : return Rocket::Core::Input::KI_UNKNOWN; 
+        case INPUT::KEYCODE_UNASSIGNED : return Rocket::Core::Input::KI_UNKNOWN;
         case INPUT::KEYCODE_ESCAPE : return Rocket::Core::Input::KI_ESCAPE;
         case INPUT::KEYCODE_1 : return Rocket::Core::Input::KI_1;
         case INPUT::KEYCODE_2 : return Rocket::Core::Input::KI_2;
@@ -161,10 +166,10 @@ CInputAdapter::MapKeyIdentifier( const INPUT::KeyCode keyCode )
         case INPUT::KEYCODE_K : return Rocket::Core::Input::KI_K;
         case INPUT::KEYCODE_L : return Rocket::Core::Input::KI_L;
         case INPUT::KEYCODE_SEMICOLON : return Rocket::Core::Input::KI_OEM_1;
-        case INPUT::KEYCODE_APOSTROPHE : return Rocket::Core::Input::KI_OEM_7; 
-        case INPUT::KEYCODE_GRAVE : return Rocket::Core::Input::KI_OEM_7; 
-        case INPUT::KEYCODE_LSHIFT : return Rocket::Core::Input::KI_LSHIFT; 
-        case INPUT::KEYCODE_BACKSLASH : return Rocket::Core::Input::KI_OEM_5; 
+        case INPUT::KEYCODE_APOSTROPHE : return Rocket::Core::Input::KI_OEM_7;
+        case INPUT::KEYCODE_GRAVE : return Rocket::Core::Input::KI_OEM_7;
+        case INPUT::KEYCODE_LSHIFT : return Rocket::Core::Input::KI_LSHIFT;
+        case INPUT::KEYCODE_BACKSLASH : return Rocket::Core::Input::KI_OEM_5;
         case INPUT::KEYCODE_Z : return Rocket::Core::Input::KI_Z;
         case INPUT::KEYCODE_X : return Rocket::Core::Input::KI_X;
         case INPUT::KEYCODE_C : return Rocket::Core::Input::KI_C;
@@ -202,7 +207,7 @@ CInputAdapter::MapKeyIdentifier( const INPUT::KeyCode keyCode )
         case INPUT::KEYCODE_ADD : return Rocket::Core::Input::KI_ADD;
         case INPUT::KEYCODE_NUMPAD1 : return Rocket::Core::Input::KI_NUMPAD1;
         case INPUT::KEYCODE_NUMPAD2 : return Rocket::Core::Input::KI_NUMPAD2;
-        case INPUT::KEYCODE_NUMPAD3 : return Rocket::Core::Input::KI_NUMPAD3;   
+        case INPUT::KEYCODE_NUMPAD3 : return Rocket::Core::Input::KI_NUMPAD3;
         case INPUT::KEYCODE_NUMPAD0 : return Rocket::Core::Input::KI_NUMPAD0;
         case INPUT::KEYCODE_DECIMAL : return Rocket::Core::Input::KI_DECIMAL;
         case INPUT::KEYCODE_LEFTWINKEY : return Rocket::Core::Input::KI_LWIN;
@@ -340,7 +345,7 @@ CInputAdapter::OnKeyboardEvent( INPUT::CKeyboard* keyboard   ,
         INPUT::CKeyStateChangedEventData* keyboardEventData = static_cast< INPUT::CKeyStateChangedEventData* >( eventdata );
         m_lastKeyModifierState = MapKeyModifierState( keyboardEventData->GetKeyModPressedStates() );
         Rocket::Core::Input::KeyIdentifier rocketKeyIdentifier = MapKeyIdentifier( keyboardEventData->GetKeyCode() );
-        
+
         if ( keyboardEventData->GetKeyPressedState() )
         {
             m_rocketContext->ProcessKeyDown( rocketKeyIdentifier, m_lastKeyModifierState );

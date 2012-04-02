@@ -14,7 +14,7 @@
  *
  *  You should have received a copy of the GNU Lesser General Public
  *  License along with this library; if not, write to the Free Software
- *  Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA 
+ *  Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA
  */
 
 /*-------------------------------------------------------------------------//
@@ -34,6 +34,11 @@
 #include "CIConfigurable.h"
 #define GUCEF_CORE_CICONFIGURABLE_H
 #endif /* GUCEF_CORE_CICONFIGURABLE_H ? */
+
+#ifndef GUCEF_INPUT_CINPUTGLOBAL_H
+#include "gucefINPUT_CInputGlobal.h"
+#define GUCEF_INPUT_CINPUTGLOBAL_H
+#endif /* GUCEF_INPUT_CINPUTGLOBAL_H ? */
 
 #ifndef GUCEF_INPUT_CINPUTCONTROLLER_H
 #include "CInputController.h"
@@ -83,14 +88,14 @@ CRocketGuiDriver::~CRocketGuiDriver()
 {GUCEF_TRACE;
 
     Rocket::Core::Shutdown();
-    
+
     Rocket::Core::SetRenderInterface( NULL );
     Rocket::Core::SetSystemInterface( NULL );
     Rocket::Core::SetFileInterface( NULL );
 }
 
 /*-------------------------------------------------------------------------*/
-    
+
 GUI::TGuiContextPtr
 CRocketGuiDriver::CreateGUIContext( GUI::TWindowContextPtr windowContext )
 {GUCEF_TRACE;
@@ -102,7 +107,7 @@ CRocketGuiDriver::CreateGUIContext( GUI::TWindowContextPtr windowContext )
         if ( !m_isRocketInitialized )
         {
             GUCEF_ERROR_LOG( CORE::LOGLEVEL_IMPORTANT, "Failed to initialize Rocket" );
-            return GUI::TGuiContextPtr(); 
+            return GUI::TGuiContextPtr();
         }
         else
         {
@@ -132,23 +137,23 @@ CRocketGuiDriver::CreateGUIContext( GUI::TWindowContextPtr windowContext )
         Rocket::Core::Shutdown();
         return GUI::TGuiContextPtr();
     }
-   
-    // Create an input context using the default driver and set it for this GUI context so that we can interact 
+
+    // Create an input context using the default driver and set it for this GUI context so that we can interact
     // with the GUI based on input events. Note that in order to correctly tie in the input system we have to pass the
     // correct parameters for the O/S
     CORE::CValueList inputContextParams;
     inputContextParams.Set( "WINDOW", windowContext->GetProperty( "WINDOW" ) );
-    INPUT::CInputContext* inputContext = INPUT::CInputController::Instance()->CreateContext( inputContextParams ); 
-    
+    INPUT::CInputContext* inputContext = INPUT::CInputGlobal::Instance()->GetInputController().CreateContext( inputContextParams );
+
     // Add a reference to the context in our set
-    GUI::TGuiContextPtr guiContextPtr = new GUIDRIVERROCKET::CGUIContext( this, context, windowContext, inputContext );    
+    GUI::TGuiContextPtr guiContextPtr = new GUIDRIVERROCKET::CGUIContext( this, context, windowContext, inputContext );
     m_contextSet.insert( guiContextPtr );
-    
+
     return guiContextPtr;
 }
 
 /*-------------------------------------------------------------------------*/
-    
+
 GUI::CGUIDriver::TGUIContextSet
 CRocketGuiDriver::GetContextList( void )
 {GUCEF_TRACE;
@@ -157,7 +162,7 @@ CRocketGuiDriver::GetContextList( void )
 }
 
 /*-------------------------------------------------------------------------*/
-    
+
 GUI::UInt32
 CRocketGuiDriver::GetContextCount( void )
 {GUCEF_TRACE;
@@ -166,16 +171,16 @@ CRocketGuiDriver::GetContextCount( void )
 }
 
 /*-------------------------------------------------------------------------*/
-    
+
 GUI::CString
 CRocketGuiDriver::GetDriverName( void )
 {GUCEF_TRACE;
-    
+
     return "RocketOpenGL";
 }
 
 /*-------------------------------------------------------------------------*/
-    
+
 GUI::CGUIDriver::TStringSet
 CRocketGuiDriver::GetAvailableFormTypes( void )
 {GUCEF_TRACE;
@@ -197,7 +202,7 @@ CRocketGuiDriver::GetAvailableWidgetTypes( void )
 GUI::CGUIDriver::TStringSet
 CRocketGuiDriver::GetAvailableFonts( void )
 {GUCEF_TRACE;
-    
+
     return m_fontTypes;
 }
 
@@ -220,7 +225,7 @@ CRocketGuiDriver::LoadFontFromAsset( const GUI::CString& assetPath )
 }
 
 /*-------------------------------------------------------------------------*/
-    
+
 const GUI::CString&
 CRocketGuiDriver::GetClassTypeName( void ) const
 {GUCEF_TRACE;
@@ -230,7 +235,7 @@ CRocketGuiDriver::GetClassTypeName( void ) const
 }
 
 /*-------------------------------------------------------------------------*/
-    
+
 GUI::CString
 CRocketGuiDriver::GetDriverProperty( const GUI::CString& propertyName ) const
 {GUCEF_TRACE;
@@ -243,7 +248,7 @@ CRocketGuiDriver::GetDriverProperty( const GUI::CString& propertyName ) const
 bool
 CRocketGuiDriver::SaveConfig( CORE::CDataNode& tree )
 {GUCEF_TRACE;
-    
+
     return false;
 }
 
