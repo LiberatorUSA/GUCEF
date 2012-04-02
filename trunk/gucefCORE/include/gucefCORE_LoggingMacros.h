@@ -26,6 +26,8 @@
 //                                                                         //
 //-------------------------------------------------------------------------*/
 
+#ifndef GUCEF_NO_LOGGING
+
 #ifndef GUCEF_CORE_CLOGMANAGER_H
 #include "CLogManager.h"
 #define GUCEF_CORE_CLOGMANAGER_H
@@ -36,11 +38,20 @@
 #define GUCEF_CORE_CCOREGLOBAL_H
 #endif /* GUCEF_CORE_CCOREGLOBAL_H ? */
 
+#endif / * GUCEF_NO_LOGGING ? */
+
 /*-------------------------------------------------------------------------//
 //                                                                         //
 //      MACROS                                                             //
 //                                                                         //
 //-------------------------------------------------------------------------*/
+
+/*
+ *  We allow all logging calls to be removed with the define 'GUCEF_NO_LOGGING'
+ */
+#ifndef GUCEF_NO_LOGGING
+
+/*-------------------------------------------------------------------------*/
 
 #undef GUCEF_ERROR_LOG
 #define GUCEF_ERROR_LOG( logLevel, logMessage ) ::GUCEF::CORE::CCoreGlobal::Instance()->GetLogManager().Log( GUCEF::CORE::CLogManager::LOG_ERROR, logLevel, logMessage );
@@ -104,6 +115,26 @@
 #else
 #define GUCEF_DEBUG_LOG
 #endif
+
+/*-------------------------------------------------------------------------*/
+
+#else /* GUCEF_NO_LOGGING ? */
+
+#define GUCEF_ERROR_LOG
+#define GUCEF_LOG
+#define GUCEF_STANDARD_LOG GUCEF_LOG
+#define GUCEF_USER_LOG
+#define GUCEF_SYSTEM_LOG
+#define GUCEF_DEV_LOG
+#define GUCEF_SERVICE_LOG
+#define GUCEF_PROTECTED_LOG
+#define GUCEF_CALLSTACK_LOG
+#define GUCEF_EXCEPTION_LOG
+#define GUCEF_CONSOLE_LOG
+#define GUCEF_WARNING_LOG
+#define GUCEF_DEBUG_LOG
+
+#endif /* GUCEF_NO_LOGGING ? */
 
 /*-------------------------------------------------------------------------*/
 

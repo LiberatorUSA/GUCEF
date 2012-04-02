@@ -26,15 +26,12 @@
 //                                                                         //
 //-------------------------------------------------------------------------*/
 
+#ifndef GUCEF_NO_LOGGING
+
 #ifndef GUCEF_CORE_CTRACER_H
 #include "CTracer.h"
 #define GUCEF_CORE_CTRACER_H
 #endif /* GUCEF_CORE_CTRACER_H ? */
-
-#ifndef GUCEF_CORE_LOGGINGMACROS_H
-#include "gucefCORE_LoggingMacros.h"
-#define GUCEF_CORE_LOGGINGMACROS_H
-#endif /* GUCEF_CORE_LOGGINGMACROS_H ? */
 
 #ifndef GUCEF_CORE_CLOGMANAGER_H
 #include "CLogManager.h"
@@ -73,6 +70,13 @@
   #endif /* GUCEF_CORE_CXTERMCONSOLELOGGER_H ? */
 
 #endif
+
+#endif /* GUCEF_NO_LOGGING ? */
+
+#ifndef GUCEF_CORE_LOGGINGMACROS_H
+#include "gucefCORE_LoggingMacros.h"
+#define GUCEF_CORE_LOGGINGMACROS_H
+#endif /* GUCEF_CORE_LOGGINGMACROS_H ? */
 
 /*--------------------------------------------------------------------------*/
 
