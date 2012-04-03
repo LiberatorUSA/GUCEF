@@ -138,24 +138,10 @@ CXWinGLWindowContext::Shutdown( void )
     pulseGenerator.RequestStopOfPeriodicUpdates( this );
     UnsubscribeFrom( &pulseGenerator );
 
-//    if ( NULL != m_renderContext )
-//	{
-//		wglMakeCurrent( NULL, NULL );
-//		wglDeleteContext( m_renderContext );
-//		m_renderContext = NULL;
-//	}
-//
-//	if ( NULL != m_deviceContext )
-//	{
-//		ReleaseDC( m_window.GetHwnd(), m_deviceContext );
-//		m_deviceContext = NULL;
-//	}
-//
-//    if ( NULL != m_window.GetHwnd() )
-//    {
-//        CORE::CMsWin32Window::UnregisterWindowClass( m_window.GetText() );
-//        m_window.WindowDestroy();
-//    }
+    if ( 0 != m_window.GetWindow() )
+    {
+        m_window.WindowDestroy();
+    }
 }
 
 /*-------------------------------------------------------------------------*/
