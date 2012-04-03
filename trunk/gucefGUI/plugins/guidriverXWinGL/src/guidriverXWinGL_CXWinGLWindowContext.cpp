@@ -215,96 +215,107 @@ CXWinGLWindowContext::Initialize( const GUI::CString& title                ,
     // Do not initialize twice
     Shutdown();
 
-//    // First create a regular Win32 window
-//    if ( m_window.WindowCreate( GetClassTypeName()                          ,
-//                                title                                       ,
-//                                0                                           ,
-//                                0                                           ,
-//                                videoSettings.GetResolutionWidthInPixels()  ,
-//                                videoSettings.GetResolutionHeightInPixels() ) )
-//    {
-//        // Display the new window
-//        m_window.Show();
-//        m_window.SendToForegound();
-//        m_window.GrabFocus();
-//
-//	    // Now proceed with setting up the OpenGL specifics
-//        m_deviceContext = GetDC( m_window.GetHwnd() );
-//	    if ( NULL == m_deviceContext )
-//	    {
-//		    GUCEF_ERROR_LOG( CORE::LOGLEVEL_NORMAL, "Win32GLWindowContext: Could not obtain window device context" );
-//            Shutdown();
-//		    return false;
-//	    }
-//
-//	    PIXELFORMATDESCRIPTOR pixelFormatDescriptor;
-//	    memset( &pixelFormatDescriptor, 0, sizeof(pixelFormatDescriptor) );
-//	    pixelFormatDescriptor.nSize = sizeof(PIXELFORMATDESCRIPTOR);
-//	    pixelFormatDescriptor.nVersion = 1;
-//	    pixelFormatDescriptor.dwFlags = PFD_DRAW_TO_WINDOW | PFD_SUPPORT_OPENGL | PFD_DOUBLEBUFFER;
-//	    pixelFormatDescriptor.iPixelType = PFD_TYPE_RGBA;
-//	    pixelFormatDescriptor.cColorBits = 32;
-//	    pixelFormatDescriptor.cRedBits = 8;
-//	    pixelFormatDescriptor.cGreenBits = 8;
-//	    pixelFormatDescriptor.cBlueBits = 8;
-//	    pixelFormatDescriptor.cAlphaBits = 8;
-//	    pixelFormatDescriptor.cDepthBits = 24;
-//	    pixelFormatDescriptor.cStencilBits = 8;
-//
-//	    int pixelFormat = ChoosePixelFormat( m_deviceContext, &pixelFormatDescriptor );
-//	    if ( 0 == pixelFormat )
-//	    {
-//		    GUCEF_ERROR_LOG( CORE::LOGLEVEL_NORMAL, "Win32GLWindowContext: Failed to get the desired pixel format" );
-//		    Shutdown();
-//            return false;
-//	    }
-//
-//	    if ( FALSE == SetPixelFormat( m_deviceContext, pixelFormat, &pixelFormatDescriptor ) )
-//	    {
-//		    GUCEF_ERROR_LOG( CORE::LOGLEVEL_NORMAL, "Win32GLWindowContext: Could not set pixel format" );
-//		    Shutdown();
-//            return false;
-//	    }
-//
-//	    m_renderContext = wglCreateContext( m_deviceContext );
-//	    if ( NULL == m_renderContext )
-//	    {
-//		    GUCEF_ERROR_LOG( CORE::LOGLEVEL_NORMAL, "Win32GLWindowContext: Could not create OpenGL rendering context" );
-//		    Shutdown();
-//            return false;
-//	    }
-//
-//	    if ( wglMakeCurrent( m_deviceContext, m_renderContext ) == FALSE )
-//	    {
-//		    GUCEF_ERROR_LOG( CORE::LOGLEVEL_NORMAL, "Win32GLWindowContext: Could not make OpenGL rendering context current" );
-//		    Shutdown();
-//            return false;
-//	    }
-//
-//        // Set up the GL state.
-//        glClearColor(0, 0, 0, 1);
-//        glEnableClientState(GL_VERTEX_ARRAY);
-//        glEnableClientState(GL_COLOR_ARRAY);
-//
-//        glEnable(GL_BLEND);
-//        glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
-//
-//        glMatrixMode(GL_PROJECTION);
-//        glLoadIdentity();
-//        glOrtho(0, 1024, 768, 0, -1, 1);
-//
-//        glMatrixMode(GL_MODELVIEW);
-//        glLoadIdentity();
-//
-//        // Grab the main app pulse generator and set the update interval for the context to the desired refresh rate
-//        CORE::CPulseGenerator& pulseGenerator = CORE::CGUCEFApplication::Instance()->GetPulseGenerator();
-//        pulseGenerator.RequestPeriodicPulses( this, 1000 / videoSettings.GetFrequency() );
-//        SubscribeTo( &pulseGenerator );
-//
-//        GUCEF_SYSTEM_LOG( CORE::LOGLEVEL_NORMAL, "Win32GLWindowContext: Succesfully created OpenGL rendering context" );
-//        return true;
-//    }
-    return false;
+    // First get access to the display
+    ::Display* display = ::XOpenDisplay( NULL );
+    if ( NULL == display )
+    {
+        GUCEF_ERROR_LOG( CORE::LOGLEVEL_NORMAL, "CXWinGLWindowContext: Could not open display" );
+        return false;
+    }
+
+    // Now proceed with setting up the OpenGL specifics
+    int dummy = 0;
+    if ( 0 == glXQueryExtension( display, &dummy, &dummy ) )
+    {
+        GUCEF_ERROR_LOG( CORE::LOGLEVEL_NORMAL, "CXWinGLWindowContext: X server has no OpenGL GLX extension" );
+        Shutdown();
+        return false;
+    }
+
+    // find an OpenGL-capable Color Index visual with depth buffer
+    static int attributes[] = {GLX_RGBA, GLX_DOUBLEBUFFER, None};
+    //static int attributes[] = {GLX_DEPTH_SIZE, 16, GLX_DOUBLEBUFFER, None};
+    XVisualInfo* vi = glXChooseVisual( display, DefaultScreen( display ), attributes );
+    if ( NULL == vi )
+    {
+        GUCEF_ERROR_LOG( CORE::LOGLEVEL_NORMAL, "CXWinGLWindowContext: Could not get visual info for display" );
+        Shutdown();
+        return false;
+    }
+
+    // create an OpenGL rendering context
+    GLXContext cx = glXCreateContext( display, vi,  None, GL_TRUE );
+    if ( NULL == cx )
+    {
+        GUCEF_ERROR_LOG( CORE::LOGLEVEL_NORMAL, "CXWinGLWindowContext: Could not create rendering context" );
+        XFree( vi );
+        Shutdown();
+        return false;
+    }
+    GUCEF_DEBUG_LOG( CORE::LOGLEVEL_NORMAL, "CXWinGLWindowContext: Created GL context using GLX" );
+
+    // create an X colormap since probably not using default visual
+    ::Colormap cmap = ::XCreateColormap( display, RootWindow( display, vi->screen),
+                                vi->visual, AllocNone);
+
+    ::XSetWindowAttributes swa;
+    swa.colormap = cmap;
+    swa.border_pixel = 0;
+    swa.event_mask = ExposureMask | KeyPressMask | StructureNotifyMask;
+    ::Window glwin = ::XCreateWindow(display, RootWindow(display, vi->screen), 0, 0, videoSettings.GetResolutionWidthInPixels(),
+                        videoSettings.GetResolutionHeightInPixels(), 0, vi->depth, InputOutput, vi->visual,
+                        CWBorderPixel | CWColormap | CWEventMask, &swa);
+    if ( 0 == glwin )
+    {
+        GUCEF_ERROR_LOG( CORE::LOGLEVEL_NORMAL, "CXWinGLWindowContext: Failed to create X11 window" );
+        ::XFree( vi );
+        Shutdown();
+        return false;
+    }
+    GUCEF_DEBUG_LOG( CORE::LOGLEVEL_NORMAL, "CXWinGLWindowContext: Created X11 Window" );
+
+//    ::XSetStandardProperties(display, glwin, "xogl", "xogl", None, 0,
+//                                0, NULL);
+
+    glXMakeCurrent( display, glwin, cx );
+
+    // Set up the default GL state.
+    glClearColor(0, 0, 0, 1);
+    glEnableClientState( GL_VERTEX_ARRAY );
+    glEnableClientState( GL_COLOR_ARRAY );
+
+    glEnable( GL_BLEND );
+    glBlendFunc( GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA );
+
+    glMatrixMode( GL_PROJECTION );
+    glLoadIdentity();
+    glOrtho( 0, 1024, 768, 0, -1, 1 );
+
+    glMatrixMode( GL_MODELVIEW );
+    glLoadIdentity();
+
+    // Hook up our window object to re-use its eventing capabilities
+    m_window.SetDisplay( display );
+    m_window.SetScreen( vi->screen );
+    m_window.SetWindow( glwin );
+    m_window.SetText( title );
+
+    // cleanup
+    ::XFree( vi );
+
+    // Display the new window
+    m_window.Show();
+    m_window.SendToForegound();
+    //m_window.GrabFocus();
+
+    // Grab the main app pulse generator and set the update interval for the context to the desired refresh rate
+    CORE::CPulseGenerator& pulseGenerator = CORE::CCoreGlobal::Instance()->GetPulseGenerator();
+    pulseGenerator.RequestPeriodicPulses( this, 1000 / videoSettings.GetFrequency() );
+    SubscribeTo( &pulseGenerator, CORE::CPulseGenerator::PulseEvent );
+
+    GUCEF_SYSTEM_LOG( CORE::LOGLEVEL_NORMAL, "CXWinGLWindowContext: Succesfully created OpenGL rendering context" );
+
+    return true;
 }
 
 /*-------------------------------------------------------------------------*/
@@ -313,7 +324,7 @@ const CORE::CString&
 CXWinGLWindowContext::GetClassTypeName( void ) const
 {GUCEF_TRACE;
 
-    static CORE::CString classTypeName = "GUCEF::GUIDRIVERWIN32GL::CXWinGLWindowContext";
+    static CORE::CString classTypeName = "GUCEF::GUIDRIVERXWINGL::CXWinGLWindowContext";
     return classTypeName;
 }
 
@@ -321,32 +332,32 @@ CXWinGLWindowContext::GetClassTypeName( void ) const
 
 void
 CXWinGLWindowContext::OnNotify( CORE::CNotifier* notifier   ,
-                                 const CORE::CEvent& eventID ,
-                                 CORE::CICloneable* evenData )
+                                const CORE::CEvent& eventID ,
+                                CORE::CICloneable* evenData )
 {GUCEF_TRACE;
 
-//    if ( ( eventID == CORE::CPulseGenerator::PulseEvent )      ||
-//         ( eventID == CORE::CMsWin32Window::WindowPaintEvent ) )
-//    {
-//        // Clear the screen in preparation for the redraw
-//        glClear( GL_COLOR_BUFFER_BIT );
-//
-//        // Notify that we are going to redraw the window
-//        NotifyObservers( WindowContextRedrawEvent );
-//
-//        // Swap our front and back buffers
-//        ::SwapBuffers( m_deviceContext );
-//    }
-//    else
-//    if ( eventID == CORE::CMsWin32Window::WindowResizeEvent )
-//    {
-//        NotifyObservers( WindowContextSizeEvent );
-//    }
-//    else
-//    if ( eventID == CORE::CMsWin32Window::WindowActivationEvent )
-//    {
-//        NotifyObservers( WindowContextActivateEvent );
-//    }
+    if ( ( eventID == CORE::CPulseGenerator::PulseEvent )  ||
+         ( eventID == CORE::CX11Window::WindowPaintEvent ) )
+    {
+        // Clear the screen in preparation for the redraw
+        glClear( GL_COLOR_BUFFER_BIT );
+
+        // Notify that we are going to redraw the window
+        NotifyObservers( WindowContextRedrawEvent );
+
+        // Swap our front and back buffers
+        ::glXSwapBuffers( m_window.GetDisplay(), m_window.GetWindow() );
+    }
+    else
+    if ( eventID == CORE::CX11Window::WindowResizeEvent )
+    {
+        NotifyObservers( WindowContextSizeEvent );
+    }
+    else
+    if ( eventID == CORE::CX11Window::WindowActivationEvent )
+    {
+        NotifyObservers( WindowContextActivateEvent );
+    }
 }
 
 

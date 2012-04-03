@@ -38,7 +38,7 @@
 #define GUCEF_CORE_CCOREGLOBAL_H
 #endif /* GUCEF_CORE_CCOREGLOBAL_H ? */
 
-#endif / * GUCEF_NO_LOGGING ? */
+#endif /* GUCEF_NO_LOGGING ? */
 
 /*-------------------------------------------------------------------------//
 //                                                                         //

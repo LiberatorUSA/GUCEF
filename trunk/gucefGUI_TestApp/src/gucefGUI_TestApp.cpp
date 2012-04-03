@@ -383,19 +383,27 @@ GUCEF_OSMAIN_BEGIN
         // Load all the plugins we need for this test
         if ( LoadPlugins() )
         {
-            GUI::TWindowManagerBackendPtr windowMngrBackend = GUI::CGuiGlobal::Instance()->GetWindowManager().GetBackend( "Win32GL" );
+            #if ( GUCEF_PLATFORM == GUCEF_PLATFORM_MSWIN )
+            CORE::CString windowMngrBackendName( "WIN32GL" );
+            #elif ( GUCEF_PLATFORM == GUCEF_PLATFORM_LINUX )
+            CORE::CString windowMngrBackendName( "XWinGL" );
+            #else
+            GUCEF_ERROR_LOG( CORE::LOGLEVEL_CRITICAL, "There is no window manager defined for the current platform in the test application" );
+            #endif
+
+            GUI::TWindowManagerBackendPtr windowMngrBackend = GUI::CGuiGlobal::Instance()->GetWindowManager().GetBackend( windowMngrBackendName );
             if ( NULL != windowMngrBackend )
             {
-                GUCEF_LOG( CORE::LOGLEVEL_NORMAL, "Successfully obtained window manager backend Win32GL" );
+                GUCEF_LOG( CORE::LOGLEVEL_NORMAL, "Successfully obtained window manager backend " + windowMngrBackendName );
 
-                GUI::TWindowContextPtr windowContext = windowMngrBackend->CreateWindowContext( "gucefGUI_TestAPP Win32GL WindowContext" ,
-                                                                                                800                                     ,
-                                                                                                600                                     ,
-                                                                                                false                                   );
+                GUI::TWindowContextPtr windowContext = windowMngrBackend->CreateWindowContext( "gucefGUI_TestAPP " + windowMngrBackendName + " WindowContext" ,
+                                                                                                800                                                           ,
+                                                                                                600                                                           ,
+                                                                                                false                                                         );
 
                 if ( NULL != windowContext )
                 {
-                    GUCEF_LOG( CORE::LOGLEVEL_NORMAL, "Successfully created window context using backend Win32GL" );
+                    GUCEF_LOG( CORE::LOGLEVEL_NORMAL, "Successfully created window context using backend " + windowMngrBackendName );
 
                     // Create console window for easy test interaction
                     CORE::CPlatformNativeConsoleWindow consoleWindow;
@@ -437,12 +445,12 @@ GUCEF_OSMAIN_BEGIN
                 }
                 else
                 {
-                    GUCEF_ERROR_LOG( CORE::LOGLEVEL_NORMAL, "Failed to obtain window management backend" );
+                    GUCEF_ERROR_LOG( CORE::LOGLEVEL_NORMAL, "Failed to obtain a window context" );
                 }
             }
             else
             {
-                GUCEF_ERROR_LOG( CORE::LOGLEVEL_NORMAL, "Failed to obtain a window context" );
+                GUCEF_ERROR_LOG( CORE::LOGLEVEL_NORMAL, "Failed to obtain window management backend" );
             }
         }
         else
