@@ -268,6 +268,12 @@ PrecisionTickCount( void )
     }
     #elif ( ( GUCEF_PLATFORM == GUCEF_PLATFORM_LINUX ) || ( GUCEF_PLATFORM == GUCEF_PLATFORM_ANDROID ) )
 
+    struct timeval time;
+    gettimeofday( &time, NULL );
+
+    return time.tv_usec +    /* Microseconds. */
+           time.tv_sec * 1000000; /* Seconds. */
+
     #else
     #error unsupported target platform
     #endif
@@ -289,6 +295,8 @@ PrecisionTimerResolution( void )
         return 100; /* this is the WIN32 resolution of GetTickCount(); which has a time-slice size of about 10 ms */
     }
     #elif ( ( GUCEF_PLATFORM == GUCEF_PLATFORM_LINUX ) || ( GUCEF_PLATFORM == GUCEF_PLATFORM_ANDROID ) )
+
+    return 1000000;
 
     #else
     #error unsupported target platform
@@ -376,6 +384,8 @@ PrecisionDelay( UInt32 delay )
     m_prev_end_of_frame = t;
 
     #elif ( ( GUCEF_PLATFORM == GUCEF_PLATFORM_LINUX ) || ( GUCEF_PLATFORM == GUCEF_PLATFORM_ANDROID ) )
+
+    usleep( delay * 1000 );
 
     #else
     #error unsupported target platform
