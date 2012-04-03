@@ -91,7 +91,13 @@ class GUCEF_CORE_PUBLIC_CPP CX11Window : public CObservingNotifier
 
     ::Display* GetDisplay( void ) const;
 
+    void SetWindow( ::Window window );
+
     ::Window GetWindow( void ) const;
+
+    void SetScreen( int screenNr );
+
+    int GetScreen( void ) const;
 
     ::Window GetParentWindow( void ) const;
 
@@ -157,8 +163,6 @@ class GUCEF_CORE_PUBLIC_CPP CX11Window : public CObservingNotifier
                                                      bool repaint = true );
 
     protected:
-
-    void SetWindow( ::Window window );
 
     virtual void OnNotify( CNotifier* notifier           ,
                            const CEvent& eventid         ,

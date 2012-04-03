@@ -112,10 +112,13 @@ void
 CX11Window::SetDisplay( ::Display* display )
 {GUCEF_TRACE;
 
+    // Cleanup whatever we have already
+    WindowDestroy();
     if ( NULL != m_display )
     {
         ::XCloseDisplay( m_display );
     }
+
     m_display = display;
 }
 
@@ -126,6 +129,24 @@ CX11Window::GetDisplay( void ) const
 {GUCEF_TRACE;
 
     return m_display;
+}
+
+/*-------------------------------------------------------------------------*/
+
+void
+CX11Window::SetScreen( int screenNr )
+{GUCEF_TRACE;
+
+    m_screenNr = screenNr;
+}
+
+/*-------------------------------------------------------------------------*/
+
+int
+CX11Window::GetScreen( void ) const
+{GUCEF_TRACE;
+
+    return m_screenNr;
 }
 
 /*-------------------------------------------------------------------------*/
@@ -216,11 +237,24 @@ void
 CX11Window::SetWindow( ::Window window )
 {GUCEF_TRACE;
 
-    if ( NULL != m_display && 0 != m_window )
-    {
-        ::XDestroyWindow( m_display, m_window );
-    }
+    // Cleanup whatever we have already
+    WindowDestroy();
+
     m_window = window;
+
+    // Setup the new window
+    if ( 0 != m_window )
+    {
+        // Subscribe to window events at the centralized dispatcher
+        CX11EventDispatcher::Instance()->SubscribeOnBehalfOfWindow( AsObserver(), m_window );
+
+        // register interest in the delete window message
+        ::Atom wmDeleteMessage = ::XInternAtom( m_display, "WM_DELETE_WINDOW", False );
+        ::XSetWMProtocols( m_display, m_window, &wmDeleteMessage, 1 );
+
+        Show();
+        Repaint();
+    }
 }
 
 /*-------------------------------------------------------------------------*/
