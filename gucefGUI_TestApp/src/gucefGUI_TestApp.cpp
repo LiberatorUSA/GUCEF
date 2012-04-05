@@ -308,11 +308,7 @@ LoadPlugins( void )
     // Define our input plugin for Linux
     pluginMetaData.Clear();
     pluginMetaData.SetPluginType( "GucefInputDriverPlugin" );
-    #ifdef GUCEF_GUI_DEBUG_MODE
-    pluginMetaData.SetModuleFilename( "inputdriverIOS_d" );
-    #else
     pluginMetaData.SetModuleFilename( "inputdriverIOS" );
-    #endif
     pluginMetaData.SetFullModulePath( CORE::RelativePath( "$MODULEDIR$/../lib" ) );
 
     // Add plugin metadata and load the plugin
