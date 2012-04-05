@@ -12,6 +12,9 @@
         </Linker>
     </Module>
     <Module Platform="linux">
+        <Linker>
+            <Dependency Name="X11" />
+        </Linker>
         <Preprocessor>
             <Define String="OIS_LINUX_PLATFORM" />
         </Preprocessor>
