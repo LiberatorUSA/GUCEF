@@ -494,7 +494,7 @@ SerializeModuleInfo( const TModuleInfoEntry& moduleEntry ,
     {
         CORE::CDataNode preprocessorNode;
         preprocessorNode.SetName( "Preprocessor" );
-        TStringVector::const_iterator m = moduleInfo.preprocessorSettings.defines.begin();
+        TStringSet::const_iterator m = moduleInfo.preprocessorSettings.defines.begin();
         while ( m != moduleInfo.preprocessorSettings.defines.end() )
         {
             CORE::CDataNode defineNode;
@@ -826,7 +826,7 @@ DeserializeModuleInfo( TModuleInfo& moduleInfo           ,
             CORE::CString defineValue = defineNode->GetAttributeValue( "String" );
             if ( !defineValue.IsNULLOrEmpty() )
             {
-                moduleInfo.preprocessorSettings.defines.push_back( defineValue );
+                moduleInfo.preprocessorSettings.defines.insert( defineValue );
             }
             ++i;
         }
@@ -845,7 +845,7 @@ DeserializeModuleInfo( TModuleInfo& moduleInfo           ,
             CORE::CString name = languageNode->GetAttributeValue( "Name" );
             if ( !name.IsNULLOrEmpty() )
             {
-                moduleInfo.compilerSettings.languagesUsed.push_back( name );
+                moduleInfo.compilerSettings.languagesUsed.insert( name );
             }
             ++i;
         }
@@ -1062,12 +1062,12 @@ MergeModuleInfo( TModuleInfo& targetModuleInfo          ,
     }
 
     // Now combine the other items without overwriting
-    MergeStringVector( targetModuleInfo.compilerSettings.languagesUsed    ,
-                       moduleInfoToMergeIn.compilerSettings.languagesUsed ,
-                       false                                              );
-    MergeStringVector( targetModuleInfo.preprocessorSettings.defines    ,
-                       moduleInfoToMergeIn.preprocessorSettings.defines ,
-                       true                                             );
+    MergeStringSet( targetModuleInfo.compilerSettings.languagesUsed    ,
+                    moduleInfoToMergeIn.compilerSettings.languagesUsed ,
+                    false                                              );
+    MergeStringSet( targetModuleInfo.preprocessorSettings.defines    ,
+                    moduleInfoToMergeIn.preprocessorSettings.defines ,
+                    true                                             );
     MergeModuleTypeMap( targetModuleInfo.linkerSettings.linkedLibraries    ,
                         moduleInfoToMergeIn.linkerSettings.linkedLibraries );
     MergeStringVector( targetModuleInfo.dependencies    ,
