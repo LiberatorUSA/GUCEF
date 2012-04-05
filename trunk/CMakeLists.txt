@@ -224,6 +224,7 @@ if ( WIN32 )
   add_subdirectory( gucefGUI/plugins/guidriverWin32GL )
 elseif ( LINUX )
   add_subdirectory( gucefGUI/plugins/guidriverXWinGL )
+  add_subdirectory( gucefINPUT/plugins/inputdriverXWINMSG )
 endif ()
 
 # Setup GUCEF Test applications
