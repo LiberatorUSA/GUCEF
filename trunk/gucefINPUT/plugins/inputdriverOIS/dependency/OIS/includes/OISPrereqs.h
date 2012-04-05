@@ -89,6 +89,17 @@ restrictions:
 #   define _OISExport __attribute__((visibility("default")))
 #else //Probably Linux
 #	define OIS_LINUX_PLATFORM
+// DV Edit: modification to properly export on Linux on later GCC versions
+#		if defined( OIS_DYNAMIC_LIB )
+#			undef _OISExport
+#			if defined( OIS_NONCLIENT_BUILD )
+#                ifdef __GNUC__
+#                    if ( __GNUC__ >= 4 )
+#                        define _OISExport __attribute__ ((__visibility__("default")))
+#                    endif
+#                endif
+#			endif
+#		endif
 #endif
 
 //Is Processor 32 or 64 bits...
@@ -206,10 +217,10 @@ namespace OIS
 	public:
 		Vector3() {}
 		Vector3(float _x, float _y, float _z) : Component(OIS_Vector3), x(_x), y(_y), z(_z) {};
-		
+
 		//! X component of vector
 		float x;
-		
+
 		//! Y component of vector
 		float y;
 
