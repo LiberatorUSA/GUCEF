@@ -103,7 +103,7 @@ typedef struct SLinkerSettings TLinkerSettings;
  */
 struct SCompilerSettings
 {
-    TStringVector languagesUsed;                // list of all programming languages used within this module
+    TStringSet languagesUsed;                // list of all programming languages used within this module
 };
 typedef struct SCompilerSettings TCompilerSettings;
 
@@ -114,7 +114,7 @@ typedef struct SCompilerSettings TCompilerSettings;
  */
 struct SPreprocessorSettings
 {
-    TStringVector defines;                       // list of all precompiler definitions for this module
+    TStringSet defines;                       // list of all precompiler definitions for this module
 };
 typedef struct SPreprocessorSettings TPreprocessorSettings;
 

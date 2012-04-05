@@ -205,11 +205,8 @@ GenerateContentForAndroidMakefile( const TModuleInfoEntryPairVector& mergeLinks 
     {
         preprocessorSection = "LOCAL_CFLAGS :=";
 
-        // copy vector to a set so we order them alphabetically
-        TStringSet defines = StringVectorToStringSet( moduleInfo.preprocessorSettings.defines );
-
-        TStringSet::const_iterator m = defines.begin();
-        while ( m != defines.end() )
+        TStringSet::const_iterator m = moduleInfo.preprocessorSettings.defines.begin();
+        while ( m != moduleInfo.preprocessorSettings.defines.end() )
         {
             preprocessorSection += " -D" + (*m);
             ++m;

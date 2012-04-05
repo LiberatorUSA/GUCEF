@@ -835,7 +835,7 @@ GenerateCMakeModuleDefinesLine( const TModuleInfo& moduleInfo     ,
         CORE::CString sectionContent = "set_target_properties( ${MODULE_NAME} PROPERTIES COMPILE_DEFINITIONS \"";
         
         bool first = true;
-        TStringVector::const_iterator i = moduleInfo.preprocessorSettings.defines.begin();
+        TStringSet::const_iterator i = moduleInfo.preprocessorSettings.defines.begin();
         while ( i != moduleInfo.preprocessorSettings.defines.end() )
         {
             if ( first )
