@@ -294,6 +294,7 @@ elseif( WIN64 )
 endif()
 
 if ( LINUX )
+  target_link_libraries( ${MODULE_NAME} X11 )
   set_target_properties( ${MODULE_NAME} PROPERTIES COMPILE_DEFINITIONS "OIS_DYNAMIC_LIB;OIS_LINUX_PLATFORM;OIS_NONCLIENT_BUILD" )
 endif( LINUX )
 
