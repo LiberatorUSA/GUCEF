@@ -303,6 +303,49 @@ LoadPlugins( void )
 
     /*-------------------------------------------------------------*/
 
+    #if ( GUCEF_PLATFORM == GUCEF_PLATFORM_LINUX )
+
+    // Define our input plugin for Linux
+    pluginMetaData.Clear();
+    pluginMetaData.SetPluginType( "GucefInputDriverPlugin" );
+    #ifdef GUCEF_GUI_DEBUG_MODE
+    pluginMetaData.SetModuleFilename( "inputdriverIOS_d" );
+    #else
+    pluginMetaData.SetModuleFilename( "inputdriverIOS" );
+    #endif
+    pluginMetaData.SetFullModulePath( CORE::RelativePath( "$MODULEDIR$/../lib" ) );
+
+    // Add plugin metadata and load the plugin
+    if ( CORE::CCoreGlobal::Instance()->GetPluginControl().AddPluginMetaData( pluginMetaData ,
+                                                                              "INPUT"        ,
+                                                                              true           ) )
+    {
+        GUCEF_LOG( CORE::LOGLEVEL_NORMAL, "Successfully loaded inputdriverIOS" );
+    }
+    else
+    {
+        GUCEF_ERROR_LOG( CORE::LOGLEVEL_NORMAL, "Failed to load inputdriverIOS" );
+
+        pluginMetaData.SetModuleFilename( "inputdriverIOS_d" );
+
+        // Add plugin metadata and load the plugin
+        if ( CORE::CCoreGlobal::Instance()->GetPluginControl().AddPluginMetaData( pluginMetaData ,
+                                                                                  "INPUT"        ,
+                                                                                  true           ) )
+        {
+            GUCEF_LOG( CORE::LOGLEVEL_NORMAL, "Successfully loaded inputdriverIOS_d" );
+        }
+        else
+        {
+            GUCEF_ERROR_LOG( CORE::LOGLEVEL_NORMAL, "Failed to load inputdriverIOS_d" );
+            return false;
+        }
+    }
+
+    #endif
+
+    /*-------------------------------------------------------------*/
+
     #if 0
 
     // Define our optional logging service client plugin
