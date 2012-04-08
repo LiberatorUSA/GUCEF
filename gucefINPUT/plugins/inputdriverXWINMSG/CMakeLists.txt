@@ -43,6 +43,7 @@ endif()
 
 if ( LINUX )
   add_dependencies( ${MODULE_NAME} gucefCORE gucefINPUT gucefMT )
+  target_link_libraries( ${MODULE_NAME} gucefCORE gucefINPUT gucefMT )
   set_target_properties( ${MODULE_NAME} PROPERTIES COMPILE_DEFINITIONS "BUILD_GUCEF_INPUT_PLUGIN_DLL;INPUTDRIVERXWINMSG_BUILD_MODULE" )
 endif( LINUX )
 
