@@ -1,10 +1,15 @@
 <ModuleInfoEntry>
     <Module Name="inputdriverXWINMSG" Type="SharedLibrary" Platform="linux">
-	    <Dependencies>
-		    <Dependency Name="gucefINPUT" />
+        <Dependencies>
+            <Dependency Name="gucefINPUT" />
             <Dependency Name="gucefCORE" />
             <Dependency Name="gucefMT" />
-	    </Dependencies>
+        </Dependencies>
+        <Linker>
+            <Dependency Name="gucefINPUT" />
+            <Dependency Name="gucefCORE" />
+            <Dependency Name="gucefMT" />
+        </Linker>
         <Preprocessor>
             <Define String="INPUTDRIVERXWINMSG_BUILD_MODULE" />
             <Define String="BUILD_GUCEF_INPUT_PLUGIN_DLL" />
