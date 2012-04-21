@@ -124,7 +124,8 @@ class GUCEF_CORE_PUBLIC_CPP CX11EventDispatcher : public CObservingNotifier
 
     private:
 
-    typedef std::map< ::Window, CObserver* >  TWindowObserverMap;
+    typedef std::set< CObserver* > TObserverSet;
+    typedef std::map< ::Window, TObserverSet >  TWindowObserverMap;
 
     static CX11EventDispatcher* g_instance;
     static MT::CMutex g_mutex;

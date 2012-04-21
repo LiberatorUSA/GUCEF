@@ -134,7 +134,7 @@ CX11EventDispatcher::SubscribeOnBehalfOfWindow( CObserver& observer ,
 
     // Now update our local map which we use to filter who to send event to
     g_mutex.Lock();
-    m_windowObserverMap[ window ] = &observer;
+    m_windowObserverMap[ window ].insert( &observer );
     g_mutex.Unlock();
 }
 
@@ -146,7 +146,15 @@ CX11EventDispatcher::UnsubscribeOnBehalfOfWindow( CObserver& observer ,
 {GUCEF_TRACE;
 
     g_mutex.Lock();
-    m_windowObserverMap.erase( window );
+    TWindowObserverMap::iterator i = m_windowObserverMap.find( window );
+    if ( i != m_windowObserverMap.end() )
+    {
+        (*i).second.erase( &observer );
+        if ( (*i).second.empty() )
+        {
+            m_windowObserverMap.erase( i );
+        }
+    }
     g_mutex.Unlock();
 }
 
@@ -161,10 +169,20 @@ CX11EventDispatcher::OnObserverDestruction( CObserver* observer )
     TWindowObserverMap::iterator i = m_windowObserverMap.begin();
     while ( i != m_windowObserverMap.end() )
     {
-        if ( (*i).second == observer )
+        TObserverSet& observerSet = (*i).second;
+        TObserverSet::iterator n = observerSet.begin();
+        while ( n != observerSet.end() )
         {
-            m_windowObserverMap.erase( i );
-            break;
+            if ( (*n) == observer )
+            {
+                observerSet.erase( n );
+                if ( observerSet.empty() )
+                {
+                    m_windowObserverMap.erase( i );
+                }
+                break;
+            }
+            ++n;
         }
         ++i;
     }
@@ -201,9 +219,15 @@ CX11EventDispatcher::DispatchEventToWindow( ::XEvent& event ,
     if ( i != m_windowObserverMap.end() )
     {
         TX11EventData eventData( event );
-        NotifySpecificObserver( *(*i).second ,
-                                X11Event     ,
-                                &eventData   );
+        TObserverSet& observerSet = (*i).second;
+        TObserverSet::iterator n = observerSet.begin();
+        while ( n != observerSet.end() )
+        {
+            NotifySpecificObserver( *(*n)      ,
+                                    X11Event   ,
+                                    &eventData );
+            ++n;
+        }
     }
 }
 
