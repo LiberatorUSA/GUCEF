@@ -93,6 +93,11 @@
 #define GUCEF_VFS_CVFS_H
 #endif /* GUCEF_VFS_CVFS_H ? */
 
+#ifndef GUCEF_INPUT_CINPUTGLOBAL_H
+#include "gucefINPUT_CInputGlobal.h"
+#define GUCEF_INPUT_CINPUTGLOBAL_H
+#endif /* GUCEF_INPUT_CINPUTGLOBAL_H ? */
+
 /*-------------------------------------------------------------------------//
 //                                                                         //
 //      NAMESPACE                                                          //
@@ -308,7 +313,7 @@ LoadPlugins( void )
     // Define our input plugin for Linux
     pluginMetaData.Clear();
     pluginMetaData.SetPluginType( "GucefInputDriverPlugin" );
-    pluginMetaData.SetModuleFilename( "inputdriverIOS" );
+    pluginMetaData.SetModuleFilename( "inputdriverXWINMSG" );
     pluginMetaData.SetFullModulePath( CORE::RelativePath( "$MODULEDIR$/../lib" ) );
 
     // Add plugin metadata and load the plugin
@@ -316,24 +321,24 @@ LoadPlugins( void )
                                                                               "INPUT"        ,
                                                                               true           ) )
     {
-        GUCEF_LOG( CORE::LOGLEVEL_NORMAL, "Successfully loaded inputdriverIOS" );
+        GUCEF_LOG( CORE::LOGLEVEL_NORMAL, "Successfully loaded inputdriverXWINMSG" );
     }
     else
     {
-        GUCEF_ERROR_LOG( CORE::LOGLEVEL_NORMAL, "Failed to load inputdriverIOS" );
+        GUCEF_ERROR_LOG( CORE::LOGLEVEL_NORMAL, "Failed to load inputdriverXWINMSG" );
 
-        pluginMetaData.SetModuleFilename( "inputdriverIOS_d" );
+        pluginMetaData.SetModuleFilename( "inputdriverXWINMSG_d" );
 
         // Add plugin metadata and load the plugin
         if ( CORE::CCoreGlobal::Instance()->GetPluginControl().AddPluginMetaData( pluginMetaData ,
                                                                                   "INPUT"        ,
                                                                                   true           ) )
         {
-            GUCEF_LOG( CORE::LOGLEVEL_NORMAL, "Successfully loaded inputdriverIOS_d" );
+            GUCEF_LOG( CORE::LOGLEVEL_NORMAL, "Successfully loaded inputdriverXWINMSG_d" );
         }
         else
         {
-            GUCEF_ERROR_LOG( CORE::LOGLEVEL_NORMAL, "Failed to load inputdriverIOS_d" );
+            GUCEF_ERROR_LOG( CORE::LOGLEVEL_NORMAL, "Failed to load inputdriverXWINMSG_d" );
             return false;
         }
     }
@@ -404,6 +409,12 @@ GUCEF_OSMAIN_BEGIN
 
     try
     {
+        // Initialize systems
+        CORE::CCoreGlobal::Instance();
+        VFS::CVfsGlobal::Instance();
+        GUI::CGuiGlobal::Instance();
+        INPUT::CInputGlobal::Instance();
+
         // setup file logger
         CORE::CString logFilename = GUCEF::CORE::RelativePath( "$CURWORKDIR$" );
         CORE::AppendToPath( logFilename, "gucefGUI_TestApp_Log.txt" );

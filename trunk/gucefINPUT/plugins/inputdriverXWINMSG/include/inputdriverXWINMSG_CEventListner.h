@@ -33,6 +33,11 @@
 
 #ifdef GUCEF_LINUX_BUILD
 
+#ifndef GUCEF_INPUT_INPUTDRIVERPLUGINSTRUCTS_H
+#include "inputdriverpluginstructs.h"   /* plugin API structures */
+#define GUCEF_INPUT_INPUTDRIVERPLUGINSTRUCTS_H
+#endif /* GUCEF_INPUT_INPUTDRIVERPLUGINSTRUCTS_H ? */
+
 #ifndef GUCEF_CORE_CX11EVENTDISPATCHER_H
 #include "gucefCORE_CX11EventDispatcher.h"
 #define GUCEF_CORE_CX11EVENTDISPATCHER_H
@@ -78,8 +83,14 @@ class CEventListner : public CORE::CObserver
 
     private:
 
+    void OnX11Event( ::XEvent eventData );
+
+    private:
+
     ::Window m_window;
     const TInputCallbacks* m_callbacks;
+    Int32 m_mouseX;
+    Int32 m_mouseY;
 };
 
 /*-------------------------------------------------------------------------//

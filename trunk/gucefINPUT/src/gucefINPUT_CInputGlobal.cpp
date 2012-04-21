@@ -14,7 +14,7 @@
  *
  *  You should have received a copy of the GNU Lesser General Public
  *  License along with this library; if not, write to the Free Software
- *  Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA 
+ *  Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA
  */
 
 /*-------------------------------------------------------------------------//
@@ -52,6 +52,11 @@
 #include "CInputController.h"
 #define GUCEF_INPUT_CINPUTCONTROLLER_H
 #endif /* GUCEF_INPUT_CINPUTCONTROLLER_H ? */
+
+#ifndef GUCEF_INPUT_CINPUTDRIVERPLUGINMANAGER_H
+#include "gucefINPUT_CInputDriverPluginManager.h"
+#define GUCEF_INPUT_CINPUTDRIVERPLUGINMANAGER_H
+#endif /* GUCEF_INPUT_CINPUTDRIVERPLUGINMANAGER_H ? */
 
 #include "gucefINPUT_CInputGlobal.h"
 
@@ -119,11 +124,12 @@ CInputGlobal::Initialize( void )
     //CInputDevice::RegisterEvents();
     CInputActionMap::RegisterEvents();
     CInputController::RegisterEvents();
-    
+
     /*
      *      Instantiate all singletons
      */
     m_inputController = new CInputController();
+    m_inputDriverPluginManager = new CInputDriverPluginManager();
 
     GUCEF_SYSTEM_LOG( CORE::LOGLEVEL_NORMAL, "gucefINPUT Global systems initialized" );
 }
@@ -131,7 +137,8 @@ CInputGlobal::Initialize( void )
 /*-------------------------------------------------------------------------*/
 
 CInputGlobal::CInputGlobal( void )
-    : m_inputController( NULL )
+    : m_inputController( NULL )          ,
+      m_inputDriverPluginManager( NULL )
 {GUCEF_TRACE;
 
 }
@@ -149,6 +156,8 @@ CInputGlobal::~CInputGlobal()
      *      Take care to deinstance them in the correct order !!!
      */
 
+    delete m_inputDriverPluginManager;
+    m_inputDriverPluginManager = NULL;
     delete m_inputController;
     m_inputController = NULL;
 }
@@ -160,6 +169,15 @@ CInputGlobal::GetInputController( void )
 {GUCEF_TRACE;
 
     return *m_inputController;
+}
+
+/*-------------------------------------------------------------------------*/
+
+CInputDriverPluginManager&
+CInputGlobal::GetInputDriverPluginManager( void )
+{GUCEF_TRACE;
+
+    return m_inputDriverPluginManager;
 }
 
 /*-------------------------------------------------------------------------//
