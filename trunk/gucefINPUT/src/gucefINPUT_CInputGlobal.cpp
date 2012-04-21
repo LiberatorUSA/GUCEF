@@ -177,7 +177,7 @@ CInputDriverPluginManager&
 CInputGlobal::GetInputDriverPluginManager( void )
 {GUCEF_TRACE;
 
-    return m_inputDriverPluginManager;
+    return *m_inputDriverPluginManager;
 }
 
 /*-------------------------------------------------------------------------//
