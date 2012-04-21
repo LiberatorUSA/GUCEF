@@ -14,7 +14,7 @@
  *
  *  You should have received a copy of the GNU Lesser General Public
  *  License along with this library; if not, write to the Free Software
- *  Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA 
+ *  Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA
  */
 
 /*-------------------------------------------------------------------------//
@@ -100,7 +100,7 @@ CGuiGlobal::Initialize( void )
     CORE::CCoreGlobal::Instance();
 
     // Ensure the Vfs systems are initialzed first since this module depends on Vfs
-    CORE::CCoreGlobal::Instance();
+    VFS::CVfsGlobal::Instance();
 
     GUCEF_SYSTEM_LOG( CORE::LOGLEVEL_NORMAL, "Initializing gucefGUI Global systems" );
 
@@ -122,7 +122,7 @@ CGuiGlobal::Initialize( void )
     CTabControl::RegisterEvents();
     CTextbox::RegisterEvents();
     CGUIManager::RegisterEvents();
-   
+
     /*
      *      Instantiate all singletons
      */

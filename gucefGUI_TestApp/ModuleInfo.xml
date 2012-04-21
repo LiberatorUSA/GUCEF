@@ -3,12 +3,16 @@
         <Dependencies>
             <Dependency Name="gucefMT" />
             <Dependency Name="gucefCORE" />
+            <Dependency Name="gucefVFS" />
             <Dependency Name="gucefGUI" />
+            <Dependency Name="gucefINPUT" />
         </Dependencies>
         <Linker>
             <Dependency Name="gucefMT" />
             <Dependency Name="gucefCORE" />
+            <Dependency Name="gucefVFS" />
             <Dependency Name="gucefGUI" />
+            <Dependency Name="gucefINPUT" />
         </Linker>
         <Preprocessor>
             <Define String="GUCEF_GUI_TESTAPP_BUILD_MODULE" />

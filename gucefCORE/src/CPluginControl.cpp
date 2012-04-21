@@ -416,6 +416,14 @@ CPluginControl::LoadPlugin( TPluginMetaDataPtr& pluginMetaData ,
                                         pluginMetaData->GetModuleFilename() + "\" and group \"" + groupName + "\" and version " +
                                         VersionToString( pluginMetaData->GetVersion() ) + " with plugin manager of type \"" + pluginType + "\"" );
             }
+            else
+            {
+                GUCEF_ERROR_LOG( LOGLEVEL_NORMAL, "PluginControl: Failed to register module with name \"" +
+                                        pluginMetaData->GetModuleFilename() + "\" and group \"" + groupName + "\" and version " +
+                                        VersionToString( pluginMetaData->GetVersion() ) + " with plugin manager of type \"" + pluginType +
+                                        "\", no plugin manager is registered capable of handeling the given type" );
+
+            }
 
             (*m).second->UnloadPlugin( modulePtr);
             return false;
