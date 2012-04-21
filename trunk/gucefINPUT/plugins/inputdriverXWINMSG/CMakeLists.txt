@@ -16,6 +16,7 @@
 if (LINUX)
   set( PLATFORM_HEADER_FILES 
     include/inputdriverXWINMSG.h
+    include/inputdriverXWINMSG_CEventListner.h
   )
 
   set( PLATFORM_HEADER_INSTALL "LINUX" )
@@ -23,6 +24,7 @@ if (LINUX)
 
   set( PLATFORM_SOURCE_FILES 
     src/inputdriverXWINMSG.cpp
+    src/inputdriverXWINMSG_CEventListner.cpp
   )
 
   set( PLATFORM_SOURCE_INSTALL "LINUX" )
