@@ -27,6 +27,16 @@
 #include <stdlib.h>
 #include <set>
 
+#ifndef GUCEF_CORE_LOGGING_H
+#include "gucefCORE_Logging.h"
+#define GUCEF_CORE_LOGGING_H
+#endif /* GUCEF_CORE_LOGGING_H ? */
+
+#ifndef GUCEF_CORE_DVCPPSTRINGUTILS_H
+#include "dvcppstringutils.h"
+#define GUCEF_CORE_DVCPPSTRINGUTILS_H
+#endif /* GUCEF_CORE_DVCPPSTRINGUTILS_H ? */
+
 #ifndef GUCEF_INPUT_XWINMSG_CEVENTLISTNER_H
 #include "inputdriverXWINMSG_CEventListner.h"
 #define GUCEF_INPUT_XWINMSG_CEVENTLISTNER_H
@@ -192,6 +202,8 @@ INPUTDRIVERPLUG_CreateContext( void* plugdata                   ,
     eventListnerSet->insert( eventListner );
 
     *contextdata = eventListner;
+
+    GUCEF_SYSTEM_LOG( CORE::LOGLEVEL_NORMAL, "Created X11 input context for window " + CORE::UInt32ToString( window ) );
 
     return 1;
 }

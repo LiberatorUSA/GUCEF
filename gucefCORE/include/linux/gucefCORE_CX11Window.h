@@ -173,6 +173,8 @@ class GUCEF_CORE_PUBLIC_CPP CX11Window : public CObservingNotifier
     CX11Window( const CX11Window& src );            /**< cannot be copied */
     CX11Window& operator=( const CX11Window& src ); /**< cannot be copied */
 
+    void OnX11Event( const ::XEvent& event );
+
     private:
 
     ::Display* m_display;
