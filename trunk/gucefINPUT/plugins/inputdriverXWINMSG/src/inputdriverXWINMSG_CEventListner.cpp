@@ -106,22 +106,38 @@ CEventListner::OnX11Event( ::XEvent event )
     {
         case KeyRelease:
         {
-            m_callbacks->onKeyboardKeyUp( 0, 0, (GUCEF::INPUT::KeyCode) event.xkey.keycode, 0 );
+            m_callbacks->onKeyboardKeyUp( m_callbacks->userData, 0, (GUCEF::INPUT::KeyCode) event.xkey.keycode, 0 );
             return;
         }
         case KeyPress:
         {
-            m_callbacks->onKeyboardKeyDown( 0, 0, (GUCEF::INPUT::KeyCode) event.xkey.keycode, 0 );
+            m_callbacks->onKeyboardKeyDown( m_callbacks->userData, 0, (GUCEF::INPUT::KeyCode) event.xkey.keycode, 0 );
             return;
         }
         case ButtonPress:
         {
-            m_callbacks->onMouseButtonDown( 0, 0, event.xbutton.button );
+            Int32 deltaX = event.xbutton.x - m_mouseX;
+            Int32 deltaY = event.xbutton.y - m_mouseY;
+
+            m_mouseX = event.xbutton.x;
+            m_mouseY = event.xbutton.y;
+
+            m_callbacks->onMouseMove( m_callbacks->userData, 0, m_mouseX, m_mouseY, deltaX, deltaY );
+
+            m_callbacks->onMouseButtonDown( m_callbacks->userData, 0, event.xbutton.button );
             return;
         }
         case ButtonRelease:
         {
-            m_callbacks->onMouseButtonUp( 0, 0, event.xbutton.button );
+            Int32 deltaX = event.xbutton.x - m_mouseX;
+            Int32 deltaY = event.xbutton.y - m_mouseY;
+
+            m_mouseX = event.xbutton.x;
+            m_mouseY = event.xbutton.y;
+
+            m_callbacks->onMouseMove( m_callbacks->userData, 0, m_mouseX, m_mouseY, deltaX, deltaY );
+
+            m_callbacks->onMouseButtonUp( m_callbacks->userData, 0, event.xbutton.button );
             return;
         }
         case MotionNotify:
@@ -132,7 +148,7 @@ CEventListner::OnX11Event( ::XEvent event )
             m_mouseX = event.xmotion.x;
             m_mouseY = event.xmotion.y;
 
-            m_callbacks->onMouseMove( 0, 0, m_mouseX, m_mouseY, deltaX, deltaY );
+            m_callbacks->onMouseMove( m_callbacks->userData, 0, m_mouseX, m_mouseY, deltaX, deltaY );
             return;
         }
     }

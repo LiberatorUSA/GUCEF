@@ -14,17 +14,17 @@
  *
  *  You should have received a copy of the GNU Lesser General Public
  *  License along with this library; if not, write to the Free Software
- *  Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA 
+ *  Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA
  */
- 
+
 #ifndef GUCEF_INPUT_OISKEYBOARDLISTENER_H
 #define GUCEF_INPUT_OISKEYBOARDLISTENER_H
- 
+
 /*-------------------------------------------------------------------------//
 //                                                                         //
 //      INCLUDES                                                           //
 //                                                                         //
-//-------------------------------------------------------------------------*/ 
+//-------------------------------------------------------------------------*/
 
 #ifndef OIS_Keyboard_H
 #include "OISKeyboard.h"
@@ -34,8 +34,8 @@
 #ifndef GUCEF_INPUT_INPUTDRIVERPLUGINSTRUCTS_H
 #include "inputdriverpluginstructs.h"           /* plugin API structures */
 #define GUCEF_INPUT_INPUTDRIVERPLUGINSTRUCTS_H
-#endif /* GUCEF_INPUT_INPUTDRIVERPLUGINSTRUCTS_H ? */ 
- 
+#endif /* GUCEF_INPUT_INPUTDRIVERPLUGINSTRUCTS_H ? */
+
 /*-------------------------------------------------------------------------//
 //                                                                         //
 //      NAMESPACE                                                          //
@@ -51,26 +51,26 @@ namespace INPUT {
 //                                                                         //
 //-------------------------------------------------------------------------*/
 
-class CKeyboardListener : public OIS::KeyListener
+class GUCEF_INPUT_PLUGIN_PRIVATE_CPP CKeyboardListener : public OIS::KeyListener
 {
     public:
-    
+
     CKeyboardListener( const TInputCallbacks& callbacks );
-    
+
     virtual ~CKeyboardListener();
-    
+
     virtual bool keyPressed( const OIS::KeyEvent &arg );
-    
+
     virtual bool keyReleased( const OIS::KeyEvent &arg );
 
     private:
-    
+
     CKeyboardListener( void );
     CKeyboardListener( const CKeyboardListener& src );
     CKeyboardListener& operator=( const CKeyboardListener& src );
 
     private:
-    
+
     TInputCallbacks m_callbacks;
 };
 

@@ -14,17 +14,17 @@
  *
  *  You should have received a copy of the GNU Lesser General Public
  *  License along with this library; if not, write to the Free Software
- *  Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA 
+ *  Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA
  */
- 
+
 #ifndef GUCEF_INPUT_OISMOUSELISTENER_H
 #define GUCEF_INPUT_OISMOUSELISTENER_H
- 
+
 /*-------------------------------------------------------------------------//
 //                                                                         //
 //      INCLUDES                                                           //
 //                                                                         //
-//-------------------------------------------------------------------------*/ 
+//-------------------------------------------------------------------------*/
 
 #ifndef OIS_Mouse_H
 #include "OISMouse.h"
@@ -34,8 +34,8 @@
 #ifndef GUCEF_INPUT_INPUTDRIVERPLUGINSTRUCTS_H
 #include "inputdriverpluginstructs.h"           /* plugin API structures */
 #define GUCEF_INPUT_INPUTDRIVERPLUGINSTRUCTS_H
-#endif /* GUCEF_INPUT_INPUTDRIVERPLUGINSTRUCTS_H ? */ 
- 
+#endif /* GUCEF_INPUT_INPUTDRIVERPLUGINSTRUCTS_H ? */
+
 /*-------------------------------------------------------------------------//
 //                                                                         //
 //      NAMESPACE                                                          //
@@ -51,28 +51,28 @@ namespace INPUT {
 //                                                                         //
 //-------------------------------------------------------------------------*/
 
-class CMouseListener : public OIS::MouseListener
+class GUCEF_INPUT_PLUGIN_PRIVATE_CPP CMouseListener : public OIS::MouseListener
 {
     public:
-    
+
     CMouseListener( const TInputCallbacks& callbacks );
-    
+
     virtual ~CMouseListener();
-    
+
     virtual bool mouseMoved( const OIS::MouseEvent &arg );
-    
+
     virtual bool mousePressed( const OIS::MouseEvent &arg, OIS::MouseButtonID id );
-    
+
     virtual bool mouseReleased( const OIS::MouseEvent &arg, OIS::MouseButtonID id );
 
     private:
-    
+
     CMouseListener( void );
     CMouseListener( const CMouseListener& src );
     CMouseListener& operator=( const CMouseListener& src );
 
     private:
-    
+
     TInputCallbacks m_callbacks;
 };
 
