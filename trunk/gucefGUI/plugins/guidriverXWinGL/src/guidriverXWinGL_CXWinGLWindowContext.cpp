@@ -30,6 +30,11 @@
 #define GUCEF_CORE_LOGGING_H
 #endif /* GUCEF_CORE_LOGGING_H ? */
 
+#ifndef GUCEF_CORE_CX11EVENTDISPATCHER_H
+#include "gucefCORE_CX11EventDispatcher.h"
+#define GUCEF_CORE_CX11EVENTDISPATCHER_H
+#endif /* GUCEF_CORE_CX11EVENTDISPATCHER_H ? */
+
 #ifndef GUCEF_CORE_CGUCEFAPPLICATION_H
 #include "CGUCEFApplication.h"
 #define GUCEF_CORE_CGUCEFAPPLICATION_H
@@ -202,7 +207,7 @@ CXWinGLWindowContext::Initialize( const GUI::CString& title                ,
     Shutdown();
 
     // First get access to the display
-    ::Display* display = ::XOpenDisplay( NULL );
+    ::Display* display = CORE::CX11EventDispatcher::Instance()->GetDisplay();
     if ( NULL == display )
     {
         GUCEF_ERROR_LOG( CORE::LOGLEVEL_NORMAL, "CXWinGLWindowContext: Could not open display" );

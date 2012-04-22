@@ -114,11 +114,6 @@ CX11Window::SetDisplay( ::Display* display )
 
     // Cleanup whatever we have already
     WindowDestroy();
-    if ( NULL != m_display )
-    {
-        ::XCloseDisplay( m_display );
-    }
-
     m_display = display;
 }
 
@@ -637,7 +632,7 @@ CX11Window::WindowCreate( const Int32 xPosition ,
 
     if ( NULL == m_display )
     {
-        m_display = ::XOpenDisplay( NULL );
+        m_display = CX11EventDispatcher::Instance()->GetDisplay();
     }
     if ( NULL == m_display )
     {
@@ -683,15 +678,46 @@ CX11Window::GetClassTypeName( void ) const
 /*-------------------------------------------------------------------------*/
 
 void
-CX11Window::OnNotify( CNotifier* notifier    ,
-                          const CEvent& eventid  ,
-                          CICloneable* eventdata )
+CX11Window::OnX11Event( const ::XEvent& event )
 {
-    if ( eventid == CPulseGenerator::PulseEvent )
+    switch ( event.type )
     {
-
+        case Expose:
+        {
+            NotifyObservers( WindowPaintEvent );
+            return;
+        }
+        case MapNotify:
+        {
+            NotifyObservers( WindowActivationEvent );
+            return;
+        }
+        case ConfigureNotify:
+        case GravityNotify:
+        {
+            NotifyObservers( WindowResizeEvent );
+            return;
+        }
+        case DestroyNotify:
+        {
+            NotifyObservers( WindowDestroyEvent );
+            return;
+        }
     }
+}
 
+/*-------------------------------------------------------------------------*/
+
+void
+CX11Window::OnNotify( CNotifier* notifier    ,
+                      const CEvent& eventid  ,
+                      CICloneable* eventdata )
+{
+    if ( CX11EventDispatcher::X11Event == eventid )
+    {
+        CX11EventDispatcher::TX11EventData* eData = (CX11EventDispatcher::TX11EventData*) eventdata;
+        OnX11Event( eData->GetData() );
+    }
 }
 
 /*-------------------------------------------------------------------------//

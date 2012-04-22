@@ -129,6 +129,10 @@ CX11EventDispatcher::SubscribeOnBehalfOfWindow( CObserver& observer ,
                                                 ::Window window     )
 {GUCEF_TRACE;
 
+    GUCEF_DEBUG_LOG( CORE::LOGLEVEL_NORMAL, "Subscribing observer (" +
+             CORE::PointerToString( &observer ) + ") to X11 events on behalf of window " +
+             CORE::UInt32ToString( window ) );
+
     // First create the actual subscription
     Subscribe( &observer );
 
@@ -406,8 +410,10 @@ CX11EventDispatcher::OnNotify( CNotifier* notifier    ,
 
     if ( eventid == CPulseGenerator::PulseEvent )
     {
+        XSync( m_display, False );
+
         ::XEvent event;
-        while ( 0 != ::XQLength( m_display ) )
+        while ( 0 != ::XEventsQueued( m_display, QueuedAlready ) )
         {
             ::XNextEvent( m_display, &event );
             ProcessEvent( event );
