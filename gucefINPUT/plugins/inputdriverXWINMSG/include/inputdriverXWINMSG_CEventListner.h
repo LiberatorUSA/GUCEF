@@ -1,6 +1,6 @@
 /*
- *  gucefCORE: GUCEF module providing O/S abstraction and generic solutions
- *  Copyright (C) 2002 - 2007.  Dinand Vanvelzen
+ *  inputdriverXWINMSG: GUCEF input driver module for X11
+ *  Copyright (C) 2002 - 2012.  Dinand Vanvelzen
  *
  *  This library is free software; you can redistribute it and/or
  *  modify it under the terms of the GNU Lesser General Public
@@ -9,7 +9,7 @@
  *
  *  This library is distributed in the hope that it will be useful,
  *  but WITHOUT ANY WARRANTY; without even the implied warranty of
- *  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+ *  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU
  *  Lesser General Public License for more details.
  *
  *  You should have received a copy of the GNU Lesser General Public
@@ -62,7 +62,7 @@ namespace XWINMSG {
 /**
  *
  */
-class CEventListner : public CORE::CObserver
+class GUCEF_INPUT_PLUGIN_PRIVATE_CPP CEventListner : public CORE::CObserver
 {
     public:
 

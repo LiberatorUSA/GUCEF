@@ -137,6 +137,15 @@
 
 #endif /* GUCEF_PLATFORM == GUCEF_PLATFORM_MSWIN ? */
 
+#if ( GUCEF_PLATFORM == GUCEF_PLATFORM_LINUX )
+
+  #ifndef GUCEF_CORE_CX11EVENTDISPATCHER_H
+  #include "gucefCORE_CX11EventDispatcher.h"
+  #define GUCEF_CORE_CX11EVENTDISPATCHER_H
+  #endif /* GUCEF_CORE_CX11EVENTDISPATCHER_H ? */
+
+#endif /* GUCEF_PLATFORM == GUCEF_PLATFORM_LINUX ? */
+
 #include "gucefCORE_CCoreGlobal.h"
 
 /*-------------------------------------------------------------------------//
@@ -225,6 +234,10 @@ CCoreGlobal::Initialize( void )
     CTaskDelegator::RegisterEvents();
     CTaskConsumer::RegisterEvents();
     CTaskManager::RegisterEvents();
+
+    #if ( GUCEF_PLATFORM == GUCEF_PLATFORM_LINUX )
+    CX11EventDispatcher::RegisterEvents();
+    #endif
 
     /*
      *  Instantiate the rest of the singletons

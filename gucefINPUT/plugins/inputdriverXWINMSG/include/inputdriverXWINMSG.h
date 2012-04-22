@@ -1,48 +1,50 @@
 /*
- * Copyright (C) Dinand Vanvelzen. 2002 - 2005.  All rights reserved.
+ *  inputdriverXWINMSG: GUCEF input driver module for X11
+ *  Copyright (C) 2002 - 2012.  Dinand Vanvelzen
  *
- * All source code herein is the property of Dinand Vanvelzen. You may not sell
- * or otherwise commercially exploit the source or things you created based on
- * the source.
+ *  This library is free software; you can redistribute it and/or
+ *  modify it under the terms of the GNU Lesser General Public
+ *  License as published by the Free Software Foundation; either
+ *  version 2.1 of the License, or (at your option) any later version.
  *
- * THE SOFTWARE IS PROVIDED "AS-IS" AND WITHOUT WARRANTY OF ANY KIND,
- * EXPRESS, IMPLIED OR OTHERWISE, INCLUDING WITHOUT LIMITATION, ANY 
- * WARRANTY OF MERCHANTABILITY OR FITNESS FOR A PARTICULAR PURPOSE.
- * IN NO EVENT SHALL DINAND VANVELZEN BE LIABLE FOR ANY SPECIAL, INCIDENTAL, 
- * INDIRECT OR CONSEQUENTIAL DAMAGES OF ANY KIND, OR ANY DAMAGES WHATSOEVER 
- * RESULTING FROM LOSS OF USE, DATA OR PROFITS, WHETHER OR NOT ADVISED OF 
- * THE POSSIBILITY OF DAMAGE, AND ON ANY THEORY OF LIABILITY, ARISING OUT 
- * OF OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE. 
+ *  This library is distributed in the hope that it will be useful,
+ *  but WITHOUT ANY WARRANTY; without even the implied warranty of
+ *  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU
+ *  Lesser General Public License for more details.
+ *
+ *  You should have received a copy of the GNU Lesser General Public
+ *  License along with this library; if not, write to the Free Software
+ *  Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA
  */
- 
-#ifndef DLLMAININPUTDRIVERMSWINMSG_H
-#define DLLMAININPUTDRIVERMSWINMSG_H
+
+#ifndef GUCEF_INPUT_INPUTDRIVERXWINMSG_H
+#define GUCEF_INPUT_INPUTDRIVERXWINMSG_H
 
 /*
  *      API for a Input driver plugin module
  */
- 
+
 /*-------------------------------------------------------------------------//
 //                                                                         //
 //      INCLUDES                                                           //
 //                                                                         //
-//-------------------------------------------------------------------------*/ 
+//-------------------------------------------------------------------------*/
 
-#ifndef ESTRUCTS_H
+#ifndef GUCEF_CORE_ESTRUCTS_H
 #include "EStructs.h"                   /* gucefCORE structures, needed for TVersion */
-#define ESTRUCTS_H
-#endif /* ESTRUCTS_H ? */
+#define GUCEF_CORE_ESTRUCTS_H
+#endif /* GUCEF_CORE_ESTRUCTS_H ? */
 
-#ifndef INPUTDRIVERPLUGINSTRUCTS_H
+#ifndef GUCEF_INPUT_INPUTDRIVERPLUGINSTRUCTS_H
 #include "inputdriverpluginstructs.h"   /* plugin API structures */
-#define INPUTDRIVERPLUGINSTRUCTS_H
-#endif /* INPUTDRIVERPLUGINSTRUCTS_H ? */
+#define GUCEF_INPUT_INPUTDRIVERPLUGINSTRUCTS_H
+#endif /* GUCEF_INPUT_INPUTDRIVERPLUGINSTRUCTS_H ? */
 
-#ifndef GUCEFINPUT_MACROS_H
+#ifndef GUCEF_INPUT_MACROS_H
 #include "gucefINPUT_macros.h"          /* gucefINPUT macros, used here for the export and callspec macros */
-#define GUCEFINPUT_MACROS_H
-#endif /* GUCEFINPUT_MACROS_H ? */ 
- 
+#define GUCEF_INPUT_MACROS_H
+#endif /* GUCEF_INPUT_MACROS_H ? */
+
 /*-------------------------------------------------------------------------//
 //                                                                         //
 //      NAMESPACE                                                          //
@@ -52,9 +54,10 @@
 #ifdef __cplusplus
 namespace GUCEF {
 namespace INPUT {
+namespace XWINMSG {
 
 // import struct into namespace for C API compatibility
-typedef CORE::TVersion TVersion; 
+typedef CORE::TVersion TVersion;
 
 #endif /* __cplusplus */
 
@@ -74,7 +77,7 @@ extern "C" {
 /*---------------------------------------------------------------------------*/
 
 GUCEF_INPUT_PLUGIN_PUBLIC_C UInt32 GUCEF_PLUGIN_CALLSPEC_PREFIX
-INPUTDRIVERPLUG_Init( void** plugdata    , 
+INPUTDRIVERPLUG_Init( void** plugdata    ,
                       const char*** args ) GUCEF_PLUGIN_CALLSPEC_SUFFIX;
 
 /*---------------------------------------------------------------------------*/
@@ -100,7 +103,7 @@ INPUTDRIVERPLUG_Version( void* plugdata ) GUCEF_PLUGIN_CALLSPEC_SUFFIX;
 /*---------------------------------------------------------------------------*/
 
 GUCEF_INPUT_PLUGIN_PUBLIC_C UInt32 GUCEF_PLUGIN_CALLSPEC_PREFIX
-INPUTDRIVERPLUG_Update( void* plugdata    , 
+INPUTDRIVERPLUG_Update( void* plugdata    ,
                         void* contextdata ) GUCEF_PLUGIN_CALLSPEC_SUFFIX;
 
 /*---------------------------------------------------------------------------*/
@@ -114,51 +117,51 @@ INPUTDRIVERPLUG_CreateContext( void* plugdata                   ,
 /*---------------------------------------------------------------------------*/
 
 GUCEF_INPUT_PLUGIN_PUBLIC_C UInt32 GUCEF_PLUGIN_CALLSPEC_PREFIX
-INPUTDRIVERPLUG_DestroyContext( void* plugdata    , 
+INPUTDRIVERPLUG_DestroyContext( void* plugdata    ,
                                 void* contextdata ) GUCEF_PLUGIN_CALLSPEC_SUFFIX;
 
 /*---------------------------------------------------------------------------*/
 
 GUCEF_INPUT_PLUGIN_PUBLIC_C UInt32 GUCEF_PLUGIN_CALLSPEC_PREFIX
-INPUTDRIVERPLUG_GetMousePos( void* plugdata    , 
-                             void* contextdata , 
-                             UInt32* xpos      , 
+INPUTDRIVERPLUG_GetMousePos( void* plugdata    ,
+                             void* contextdata ,
+                             UInt32* xpos      ,
                              UInt32* ypos      ) GUCEF_PLUGIN_CALLSPEC_SUFFIX;
 
 /*---------------------------------------------------------------------------*/
 
 GUCEF_INPUT_PLUGIN_PUBLIC_C UInt8* GUCEF_PLUGIN_CALLSPEC_PREFIX
-INPUTDRIVERPLUG_GetKeyBoardKeyStates( void* plugdata    , 
+INPUTDRIVERPLUG_GetKeyBoardKeyStates( void* plugdata    ,
                                       void* contextdata ) GUCEF_PLUGIN_CALLSPEC_SUFFIX;
 
 /*---------------------------------------------------------------------------*/
 
 GUCEF_INPUT_PLUGIN_PUBLIC_C UInt32 GUCEF_PLUGIN_CALLSPEC_PREFIX
-INPUTDRIVERPLUG_GetMouseButtonPressedState( void* plugdata           , 
-                                            void* contextdata        , 
+INPUTDRIVERPLUG_GetMouseButtonPressedState( void* plugdata           ,
+                                            void* contextdata        ,
                                             const UInt32 buttonindex ) GUCEF_PLUGIN_CALLSPEC_SUFFIX;
 
 /*---------------------------------------------------------------------------*/
 
 GUCEF_INPUT_PLUGIN_PUBLIC_C UInt32 GUCEF_PLUGIN_CALLSPEC_PREFIX
-INPUTDRIVERPLUG_GetKeyboardKeyPressedState( void* plugdata        , 
-                                            void* contextdata     , 
+INPUTDRIVERPLUG_GetKeyboardKeyPressedState( void* plugdata        ,
+                                            void* contextdata     ,
                                             const UInt32 keyindex ) GUCEF_PLUGIN_CALLSPEC_SUFFIX;
 
 /*---------------------------------------------------------------------------*/
 
 GUCEF_INPUT_PLUGIN_PUBLIC_C UInt32 GUCEF_PLUGIN_CALLSPEC_PREFIX
-INPUTDRIVERPLUG_GetDeviceBoolState( void* plugdata          , 
-                                    void* contextdata       , 
-                                    const UInt32 deviceid   , 
+INPUTDRIVERPLUG_GetDeviceBoolState( void* plugdata          ,
+                                    void* contextdata       ,
+                                    const UInt32 deviceid   ,
                                     const UInt32 stateindex ) GUCEF_PLUGIN_CALLSPEC_SUFFIX;
 
 /*---------------------------------------------------------------------------*/
 
 GUCEF_INPUT_PLUGIN_PUBLIC_C UInt32 GUCEF_PLUGIN_CALLSPEC_PREFIX
-INPUTDRIVERPLUG_GetDeviceVarState( void* plugdata          , 
-                                   void* contextdata       , 
-                                   const UInt32 deviceid   , 
+INPUTDRIVERPLUG_GetDeviceVarState( void* plugdata          ,
+                                   void* contextdata       ,
+                                   const UInt32 deviceid   ,
                                    const UInt32 stateindex ) GUCEF_PLUGIN_CALLSPEC_SUFFIX;
 
 /*---------------------------------------------------------------------------*/
@@ -174,13 +177,14 @@ INPUTDRIVERPLUG_GetDeviceVarState( void* plugdata          ,
 //-------------------------------------------------------------------------*/
 
 #ifdef __cplusplus
+}; /* namespace XWINMSG */
 }; /* namespace INPUT */
 }; /* namespace GUCEF */
 #endif /* __cplusplus */
 
 /*-------------------------------------------------------------------------*/
 
-#endif /* DLLMAININPUTDRIVERMSWINMSG_H ? */
+#endif /* GUCEF_INPUT_INPUTDRIVERXWINMSG_H ? */
 
 /*--------------------------------------------------------------------------//
 //                                                                          //
