@@ -252,7 +252,9 @@ CXWinGLWindowContext::Initialize( const GUI::CString& title                ,
     ::XSetWindowAttributes swa;
     swa.colormap = cmap;
     swa.border_pixel = 0;
-    swa.event_mask = ExposureMask | KeyPressMask | StructureNotifyMask;
+    swa.event_mask = ExposureMask | KeyPressMask | KeyReleaseMask | ButtonPressMask | ButtonReleaseMask |
+                     PointerMotionHintMask | EnterWindowMask | StructureNotifyMask;
+
     ::Window glwin = ::XCreateWindow(display, RootWindow(display, vi->screen), 0, 0, videoSettings.GetResolutionWidthInPixels(),
                         videoSettings.GetResolutionHeightInPixels(), 0, vi->depth, InputOutput, vi->visual,
                         CWBorderPixel | CWColormap | CWEventMask, &swa);
