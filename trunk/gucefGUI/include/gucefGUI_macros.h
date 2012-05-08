@@ -66,14 +66,15 @@
  *      Auto detection of debug mode
  */
 #ifndef GUCEF_MANUAL_DEBUG_MODE_DEFINE
-  #if !defined( NDEBUG )
-    #define _DEBUG
-  #endif
-  #if defined( _DEBUG ) || defined( __DEBUG ) || defined( __DEBUG__ )
-    #define GUCEF_GUI_DEBUG_MODE
-  #else
+  #if defined( NDEBUG )
     #undef GUCEF_GUI_DEBUG_MODE
-  #endif /* compiler DEBUG switches */
+  #else
+    #if defined( _DEBUG ) || defined( __DEBUG ) || defined( __DEBUG__ )
+      #define GUCEF_GUI_DEBUG_MODE
+    #else
+      #undef GUCEF_GUI_DEBUG_MODE
+    #endif /* compiler DEBUG switches */
+  #endif /* NDEBUG ? */
 #endif /* GUCEF_MANUAL_DEBUG_MODE_DEFINE ? */
 
 /*-------------------------------------------------------------------------*/

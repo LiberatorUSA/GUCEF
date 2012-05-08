@@ -1,0 +1,15 @@
+<ModuleInfoEntry>
+    <Module Name="MyGUI.Engine" Type="SharedLibrary" Platform="All">
+        <Dependencies>
+            <Dependency Name="freetype" />
+        </Dependencies>
+        <Linker>
+            <Dependency Name="freetype" />
+        </Linker>
+        <Preprocessor>
+            <Define String="MYGUI_BUILD" />
+            <Define String="MYGUI_BUILD_DLL" />
+            <Define String="MYGUI_USE_FREETYPE" />
+        </Preprocessor>
+    </Module>
+</ModuleInfoEntry>

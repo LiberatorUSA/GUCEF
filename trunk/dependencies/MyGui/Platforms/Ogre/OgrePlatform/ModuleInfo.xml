@@ -1,0 +1,13 @@
+<ModuleInfoEntry>
+    <Module Name="MyGUI.OgrePlatform" Type="SharedLibrary" Platform="All">
+        <Dependencies>
+            <Dependency Name="MyGUI.Engine" />
+            <Dependency Name="MyGUI.Common.FileSystemInfo" />
+            <Dependency Name="OgreMain" />
+        </Dependencies>
+        <Linker>
+            <Dependency Name="MyGUI.Engine" />
+            <Dependency Name="OgreMain" />
+        </Linker>
+    </Module>
+</ModuleInfoEntry>

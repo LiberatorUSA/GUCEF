@@ -1,0 +1,3 @@
+<ModuleInfoEntry>
+    <Module Name="MyGUI.Common.Base.OpenGL" Type="CodeIncludeLocation" Platform="All"/>
+</ModuleInfoEntry>
