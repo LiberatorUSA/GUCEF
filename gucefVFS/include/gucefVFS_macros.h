@@ -56,14 +56,15 @@
  *      Auto detection of debug mode
  */
 #ifndef GUCEF_VFS_DEBUG_MODE
-  #if !defined( NDEBUG )
-    #define _DEBUG
-  #endif
-  #if defined( _DEBUG ) || defined( __DEBUG ) || defined( __DEBUG__ )
-    #define GUCEF_VFS_DEBUG_MODE
-  #else
+  #if defined( NDEBUG )
     #undef GUCEF_VFS_DEBUG_MODE
-  #endif /* compiler DEBUG switches */
+  #else
+    #if defined( _DEBUG ) || defined( __DEBUG ) || defined( __DEBUG__ )
+      #define GUCEF_VFS_DEBUG_MODE
+    #else
+      #undef GUCEF_VFS_DEBUG_MODE
+    #endif /* compiler DEBUG switches */
+  #endif /* NDEBUG ? */
 #endif /* GUCEF_INPUT_DEBUG_MODE ? */
 
 /*-------------------------------------------------------------------------*/

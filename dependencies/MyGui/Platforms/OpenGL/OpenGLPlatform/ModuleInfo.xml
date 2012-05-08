@@ -1,0 +1,21 @@
+<ModuleInfoEntry>
+    <Module Name="MyGUI.OpenGLPlatform" Type="SharedLibrary" Platform="All">
+        <Dependencies>
+            <Dependency Name="MyGUI.Engine" />
+            <Dependency Name="MyGUI.Common.FileSystemInfo" />
+        </Dependencies>
+        <Linker>
+            <Dependency Name="MyGUI.Engine" />
+        </Linker>
+    </Module>
+    <Module Platform="mswin;linux">
+        <Linker>
+            <Dependency Name="opengl32" />
+        </Linker>
+    </Module>
+    <Module Platform="android">
+        <Linker>
+            <Dependency Name="gl" />
+        </Linker>
+    </Module>
+</ModuleInfoEntry>

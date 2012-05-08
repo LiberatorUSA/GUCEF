@@ -61,7 +61,7 @@ CWindowManager::GetBackend( const CORE::CString& typeName )
 {GUCEF_TRACE;
 
     m_lock.Lock();
-    TWindowManagerBackendMap::iterator i = m_backends.find( typeName );
+    TWindowManagerBackendMap::iterator i = m_backends.find( typeName.Lowercase() );
     if ( i != m_backends.end() )
     {
         m_lock.Unlock();
@@ -79,7 +79,7 @@ CWindowManager::RegisterBackend( const CORE::CString& typeName    ,
 {GUCEF_TRACE;
 
     m_lock.Lock();
-    m_backends[ typeName ] = backend;
+    m_backends[ typeName.Lowercase() ] = backend;
     m_lock.Unlock();
 }
 
@@ -90,7 +90,7 @@ CWindowManager::UnregisterBackend( const CORE::CString& typeName )
 {GUCEF_TRACE;
 
     m_lock.Lock();
-    m_backends.erase( typeName );
+    m_backends.erase( typeName.Lowercase() );
     m_lock.Unlock();
 }
 

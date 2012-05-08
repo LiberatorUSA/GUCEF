@@ -410,10 +410,10 @@ GUCEF_OSMAIN_BEGIN
     try
     {
         // Initialize systems
-        CORE::CCoreGlobal::Instance();
-        VFS::CVfsGlobal::Instance();
-        GUI::CGuiGlobal::Instance();
-        INPUT::CInputGlobal::Instance();
+        GUCEF::CORE::CCoreGlobal::Instance();
+        GUCEF::VFS::CVfsGlobal::Instance();
+        GUCEF::GUI::CGuiGlobal::Instance();
+        GUCEF::INPUT::CInputGlobal::Instance();
 
         // setup file logger
         CORE::CString logFilename = GUCEF::CORE::RelativePath( "$CURWORKDIR$" );
@@ -434,7 +434,7 @@ GUCEF_OSMAIN_BEGIN
         if ( LoadPlugins() )
         {
             #if ( GUCEF_PLATFORM == GUCEF_PLATFORM_MSWIN )
-            CORE::CString windowMngrBackendName( "WIN32GL" );
+            CORE::CString windowMngrBackendName( "Win32GL" );
             #elif ( GUCEF_PLATFORM == GUCEF_PLATFORM_LINUX )
             CORE::CString windowMngrBackendName( "XWinGL" );
             #else
