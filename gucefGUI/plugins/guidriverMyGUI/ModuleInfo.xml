@@ -1,0 +1,23 @@
+<ModuleInfoEntry>
+    <Module Name="guidriverMyGUI" Type="SharedLibrary" Platform="win32;linux">
+        <Dependencies>
+            <Dependency Name="gucefINPUT" />
+            <Dependency Name="gucefGUI" />
+            <Dependency Name="gucefCORE" />
+            <Dependency Name="gucefMT" />
+            <Dependency Name="FreeType" />
+            <Dependency Name="MyGUIEngine" />
+        </Dependencies>
+        <Linker>
+            <Dependency Name="gucefINPUT" />
+            <Dependency Name="gucefGUI" />
+            <Dependency Name="gucefCORE" />
+            <Dependency Name="gucefMT" />
+            <Dependency Name="FreeType" />
+            <Dependency Name="MyGUIEngine" />
+        </Linker>
+        <Preprocessor>
+            <Define String="GUIDRIVERMYGUI_BUILD_MODULE" />
+        </Preprocessor>
+    </Module>
+</ModuleInfoEntry>
