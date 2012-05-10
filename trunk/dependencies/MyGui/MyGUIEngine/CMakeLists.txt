@@ -9,7 +9,7 @@
 #-------------------------------------------------------------------
 #
 
-# Configuration for module: MyGUI.Engine
+# Configuration for module: MyGUIEngine
 
 set( HEADER_FILES 
   include/MyGUI.h
@@ -289,7 +289,7 @@ set( SOURCE_FILES
 # For ease of use make a variable that has all files for this module
 set( ALL_FILES ${HEADER_FILES} ${SOURCE_FILES} ${PLATFORM_HEADER_FILES} ${PLATFORM_SOURCE_FILES} )
 
-set( MODULE_NAME "MyGUI.Engine" )
+set( MODULE_NAME "MyGUIEngine" )
 add_library( ${MODULE_NAME} ${ALL_FILES} )
 add_dependencies( ${MODULE_NAME} freetype )
 target_link_libraries( ${MODULE_NAME} freetype )
