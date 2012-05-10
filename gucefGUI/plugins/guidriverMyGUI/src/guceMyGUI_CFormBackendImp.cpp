@@ -54,76 +54,76 @@
 #endif /* GUCE_CORE_CIOACCESSARCHIVEFACTORY_H ? */
 
 #ifndef GUCEF_MYGUI_CIOACCESSTOMYGUIDATASTREAMADAPTER_H
-#include "guceMyGUIOgre_CIOAccessToMyGUIDataStreamAdapter.h"
+#include "guceMyGUI_CIOAccessToMyGUIDataStreamAdapter.h"
 #define GUCEF_MYGUI_CIOACCESSTOMYGUIDATASTREAMADAPTER_H
 #endif /* GUCEF_MYGUI_CIOACCESSTOMYGUIDATASTREAMADAPTER_H ? */
 
 #ifndef GUCEF_MYGUI_CBUTTONIMP_H
-#include "guceMyGUIOgre_CButtonImp.h"
+#include "guceMyGUI_CButtonImp.h"
 #define GUCEF_MYGUI_CBUTTONIMP_H
 #endif /* GUCEF_MYGUI_CBUTTONIMP_H ? */
 
 #ifndef GUCEF_MYGUI_CEDITBOXIMP_H
-#include "guceMyGUIOgre_CEditboxImp.h"
+#include "guceMyGUI_CEditboxImp.h"
 #define GUCEF_MYGUI_CEDITBOXIMP_H
 #endif /* GUCEF_MYGUI_CEDITBOXIMP_H ? */
 
 #ifndef GUCEF_MYGUI_CLISTBOXIMP_H
-#include "guceMyGUIOgre_CListboxImp.h"
+#include "guceMyGUI_CListboxImp.h"
 #define GUCEF_MYGUI_CLISTBOXIMP_H
 #endif /* GUCEF_MYGUI_CLISTBOXIMP_H ? */
 
 #ifndef GUCEF_MYGUI_CWINDOWIMP_H
-#include "guceMyGUIOgre_CWindowImp.h"
+#include "guceMyGUI_CWindowImp.h"
 #define GUCEF_MYGUI_CWINDOWIMP_H
 #endif /* GUCEF_MYGUI_CWINDOWIMP_H ? */
 
 #ifndef GUCEF_MYGUI_CIMAGEFRAMEIMP_H
-#include "guceMyGUIOgre_CImageFrameImp.h"
+#include "guceMyGUI_CImageFrameImp.h"
 #define GUCEF_MYGUI_CIMAGEFRAMEIMP_H
 #endif /* GUCEF_MYGUI_CIMAGEFRAMEIMP_H ? */
 
 #ifndef GUCEF_MYGUI_CHECKBOXIMP_H
-#include "guceMyGUIOgre_CCheckboxImp.h"
+#include "guceMyGUI_CCheckboxImp.h"
 #define GUCEF_MYGUI_CHECKBOXIMP_H
 #endif /* GUCEF_MYGUI_CHECKBOXIMP_H ? */
 
 #ifndef GUCEF_MYGUI_CCOMBOBOXIMP_H
-#include "guceMyGUIOgre_CComboboxImp.h"
+#include "guceMyGUI_CComboboxImp.h"
 #define GUCEF_MYGUI_CCOMBOBOXIMP_H
 #endif /* GUCEF_MYGUI_CCOMBOBOXIMP_H ? */
 
 #ifndef GUCEF_MYGUI_CTABCONTROLIMP_H
-#include "guceMyGUIOgre_CTabControlImp.h"
+#include "guceMyGUI_CTabControlImp.h"
 #define GUCEF_MYGUI_CTABCONTROLIMP_H
 #endif /* GUCEF_MYGUI_CTABCONTROLIMP_H ? */
 
 #ifndef GUCEF_MYGUI_CTABCONTENTPANEIMP_H
-#include "guceMyGUIOgre_CTabContentPaneImp.h"
+#include "guceMyGUI_CTabContentPaneImp.h"
 #define GUCEF_MYGUI_CTABCONTENTPANEIMP_H
 #endif /* GUCEF_MYGUI_CTABCONTENTPANEIMP_H ? */
 
 #ifndef GUCEF_MYGUI_CGRIDVIEWIMP_H
-#include "guceMyGUIOgre_CGridViewImp.h"
+#include "guceMyGUI_CGridViewImp.h"
 #define GUCEF_MYGUI_CGRIDVIEWIMP_H
 #endif /* GUCEF_MYGUI_CGRIDVIEWIMP_H ? */
 
 #ifndef GUCEF_MYGUI_CLABELIMP_H
-#include "guceMyGUIOgre_CLabelImp.h"
+#include "guceMyGUI_CLabelImp.h"
 #define GUCEF_MYGUI_CLABELIMP_H
 #endif /* GUCEF_MYGUI_CLABELIMP_H ? */
 
 #ifndef GUCEF_MYGUI_CSPINNERIMP_H
-#include "guceMyGUIOgre_CSpinnerImp.h"
+#include "guceMyGUI_CSpinnerImp.h"
 #define GUCEF_MYGUI_CSPINNERIMP_H
 #endif /* GUCEF_MYGUI_CSPINNERIMP_H ? */
 
 #ifndef GUCEF_MYGUI_CRENDERCONTEXTIMP_H
-#include "guceMyGUIOgre_CRenderContextImp.h"
+#include "guceMyGUI_CRenderContextImp.h"
 #define GUCEF_MYGUI_CRENDERCONTEXTIMP_H
 #endif /* GUCEF_MYGUI_CRENDERCONTEXTIMP_H ? */
 
-#include "guceMyGUIOgre_CFormBackendImp.h"
+#include "guceMyGUI_CFormBackendImp.h"
 
 /*-------------------------------------------------------------------------//
 //                                                                         //

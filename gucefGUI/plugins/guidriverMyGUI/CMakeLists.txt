@@ -221,18 +221,18 @@ elseif( WIN32 )
 endif()
 
 if ( LINUX )
-  add_dependencies( ${MODULE_NAME} FreeType MyGUIEngine gucefCORE gucefGUI gucefMT )
-  target_link_libraries( ${MODULE_NAME} FreeType MyGUIEngine gucefCORE gucefGUI gucefMT )
+  add_dependencies( ${MODULE_NAME} FreeType MyGUIEngine gucefCORE gucefGUI gucefINPUT gucefMT )
+  target_link_libraries( ${MODULE_NAME} FreeType MyGUIEngine gucefCORE gucefGUI gucefINPUT gucefMT )
   set_target_properties( ${MODULE_NAME} PROPERTIES COMPILE_DEFINITIONS "GUIDRIVERMYGUI_BUILD_MODULE" )
 endif( LINUX )
 
 if ( WIN32 )
-  add_dependencies( ${MODULE_NAME} FreeType MyGUIEngine gucefCORE gucefGUI gucefMT )
-  target_link_libraries( ${MODULE_NAME} FreeType MyGUIEngine gucefCORE gucefGUI gucefMT )
+  add_dependencies( ${MODULE_NAME} FreeType MyGUIEngine gucefCORE gucefGUI gucefINPUT gucefMT )
+  target_link_libraries( ${MODULE_NAME} FreeType MyGUIEngine gucefCORE gucefGUI gucefINPUT gucefMT )
   set_target_properties( ${MODULE_NAME} PROPERTIES COMPILE_DEFINITIONS "GUIDRIVERMYGUI_BUILD_MODULE" )
 endif( WIN32 )
 
-include_directories( ../../../common/include ../../../dependencies/MyGui/MyGUIEngine/include ../../../dependencies/freetype/include ../../../dependencies/freetype/include/freetype ../../../dependencies/freetype/include/freetype/config ../../../dependencies/freetype/include/freetype/internal ../../../dependencies/freetype/include/freetype/internal/services ../../../dependencies/freetype/src/winfonts ../../../gucefCORE/include ../../../gucefGUI/include ../../../gucefIMAGE/include ../../../gucefMT/include ../../../gucefVFS/include )
+include_directories( ../../../common/include ../../../dependencies/MyGui/MyGUIEngine/include ../../../dependencies/freetype/include ../../../dependencies/freetype/include/freetype ../../../dependencies/freetype/include/freetype/config ../../../dependencies/freetype/include/freetype/internal ../../../dependencies/freetype/include/freetype/internal/services ../../../dependencies/freetype/src/winfonts ../../../gucefCORE/include ../../../gucefGUI/include ../../../gucefIMAGE/include ../../../gucefINPUT/include ../../../gucefMT/include ../../../gucefVFS/include )
 
 if ( LINUX )
   include_directories( ../../../gucefCORE/include/linux include )
