@@ -14,7 +14,7 @@
  *
  *  You should have received a copy of the GNU Lesser General Public
  *  License along with this library; if not, write to the Free Software
- *  Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA 
+ *  Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA
  */
 
 /*-------------------------------------------------------------------------//
@@ -49,7 +49,7 @@
 #endif /* GUCEF_CORE_CLOGMANAGER_H ? */
 
 #ifndef GUCEF_MYGUI_CIOACCESSTOMYGUIDATASTREAMADAPTER_H
-#include "guceMyGUI_CIOAccessToMyGUIDataStreamAdapter.h"
+#include "guceMyGUI_CIOAccessToMyGuiDataStreamAdapter.h"
 #define GUCEF_MYGUI_CIOACCESSTOMYGUIDATASTREAMADAPTER_H
 #endif /* GUCEF_MYGUI_CIOACCESSTOMYGUIDATASTREAMADAPTER_H ? */
 
@@ -64,7 +64,7 @@
 #endif /* GUCEF_MYGUI_CEDITBOXIMP_H ? */
 
 #ifndef GUCEF_MYGUI_CLISTBOXIMP_H
-#include "guceMyGUI_CListboxImp.h"
+#include "guceMyGUI_CListBoxImp.h"
 #define GUCEF_MYGUI_CLISTBOXIMP_H
 #endif /* GUCEF_MYGUI_CLISTBOXIMP_H ? */
 
@@ -145,17 +145,17 @@ CFormBackendImp::CFormBackendImp( void )
 {GUCEF_TRACE;
 
     //m_resourceGroupName = "GUCE::MYGUIOGRE::CFormBackendImp::" + GUCEF::CORE::PointerToString( this );
-    m_widgetNamePrefix = m_resourceGroupName + '/';    
-    
+    m_widgetNamePrefix = m_resourceGroupName + '/';
+
     //// provide hacky access to data we get in the CFormBackend API
-    //Ogre::Root::getSingletonPtr()->addResourceLocation( m_resourceGroupName      , 
+    //Ogre::Root::getSingletonPtr()->addResourceLocation( m_resourceGroupName      ,
     //                                                    "GUCEF::CORE::CIOAccess" ,
     //                                                    m_resourceGroupName      );
     //m_dummyArchive = (*CORE::CIOAccessArchiveFactory::Instance()->GetArchiveMap().find( m_resourceGroupName )).second;
 }
 
 /*-------------------------------------------------------------------------*/
-    
+
 CFormBackendImp::~CFormBackendImp()
 {GUCEF_TRACE;
 
@@ -177,7 +177,7 @@ CFormBackendImp::CreateAndHookWrapperForWindow( MyGUI::Widget* widget )
         widgetWrapper = new TBasicWidgetImp();
         static_cast< TBasicWidgetImp* >( widgetWrapper )->Hook( widget );
     }
-    else    
+    else
     if ( "Button" == typeName )
     {
         widgetWrapper = new CButtonImp();
@@ -187,19 +187,19 @@ CFormBackendImp::CreateAndHookWrapperForWindow( MyGUI::Widget* widget )
     //if ( "Editbox" == typeName )
     //{
     //    widgetWrapper = new CEditboxImp();
-    //    static_cast< CEditboxImp* >( widgetWrapper )->Hook( static_cast< CEGUI::Editbox* >( widget ) );        
+    //    static_cast< CEditboxImp* >( widgetWrapper )->Hook( static_cast< CEGUI::Editbox* >( widget ) );
     //}
     //else
     //if ( "Listbox" == typeName )
     //{
     //    widgetWrapper = new CListboxImp();
-    //    static_cast< CListboxImp* >( widgetWrapper )->Hook( static_cast< CEGUI::Listbox* >( widget ) );        
+    //    static_cast< CListboxImp* >( widgetWrapper )->Hook( static_cast< CEGUI::Listbox* >( widget ) );
     //}
     //else
     //if ( "StaticImage" == typeName )
     //{
     //    CString widgetName( CString( window->getName().c_str() ).SubstrToChar( '/', false ) );
-    //    
+    //
     //    if ( widgetName == "RenderContext" )
     //    {
     //        widgetWrapper = new CRenderContextImp();
@@ -211,53 +211,53 @@ CFormBackendImp::CreateAndHookWrapperForWindow( MyGUI::Widget* widget )
     //        static_cast< CImageFrameImp* >( widgetWrapper )->Hook( window );
     //    }
     //}
-    //else    
+    //else
     //if ( "StaticText" == typeName )
     //{
     //    widgetWrapper = new CLabelImp();
     //    static_cast< CLabelImp* >( widgetWrapper )->Hook( window );
-    //}    
-    //else    
+    //}
+    //else
     //if ( "Checkbox" == typeName )
     //{
     //    widgetWrapper = new CCheckboxImp();
-    //    static_cast< CCheckboxImp* >( widgetWrapper )->Hook( static_cast< CEGUI::Checkbox* >( window ) );        
+    //    static_cast< CCheckboxImp* >( widgetWrapper )->Hook( static_cast< CEGUI::Checkbox* >( window ) );
     //}
-    //else    
+    //else
     //if ( "Combobox" == typeName )
     //{
     //    widgetWrapper = new CComboboxImp();
-    //    static_cast< CComboboxImp* >( widgetWrapper )->Hook( static_cast< CEGUI::Combobox* >( window ) );        
+    //    static_cast< CComboboxImp* >( widgetWrapper )->Hook( static_cast< CEGUI::Combobox* >( window ) );
     //}
     //if ( "TabControl" == typeName )
     //{
     //    widgetWrapper = new CTabControlImp();
-    //    static_cast< CTabControlImp* >( widgetWrapper )->Hook( static_cast< CEGUI::TabControl* >( window ) );        
-    //}        
+    //    static_cast< CTabControlImp* >( widgetWrapper )->Hook( static_cast< CEGUI::TabControl* >( window ) );
+    //}
     //else
     //if ( "TabContentPane" == typeName )
     //{
     //    widgetWrapper = new CTabContentPaneImp();
-    //    static_cast< CTabContentPaneImp* >( widgetWrapper )->Hook( window );        
-    //}        
-    else        
+    //    static_cast< CTabContentPaneImp* >( widgetWrapper )->Hook( window );
+    //}
+    else
     if ( "Window" == typeName )
     {
         widgetWrapper = new CWindowImp();
-        static_cast< CWindowImp* >( widgetWrapper )->Hook( static_cast< MyGUI::Window* >( widget ) );        
+        static_cast< CWindowImp* >( widgetWrapper )->Hook( static_cast< MyGUI::Window* >( widget ) );
     }
-    //else        
+    //else
     //if ( "MultiColumnList" == typeName )
     //{
     //    widgetWrapper = new CGridViewImp();
-    //    static_cast< CGridViewImp* >( widgetWrapper )->Hook( static_cast< CEGUI::MultiColumnList* >( window ) );        
+    //    static_cast< CGridViewImp* >( widgetWrapper )->Hook( static_cast< CEGUI::MultiColumnList* >( window ) );
     //}
-    //else        
+    //else
     //if ( "Spinner" == typeName )
     //{
     //    widgetWrapper = new CSpinnerImp();
-    //    static_cast< CSpinnerImp* >( widgetWrapper )->Hook( static_cast< CEGUI::Spinner* >( window ) );        
-    //}        
+    //    static_cast< CSpinnerImp* >( widgetWrapper )->Hook( static_cast< CEGUI::Spinner* >( window ) );
+    //}
     //else
     //if ( "DefaultWindow" == typeName )
     //{
@@ -267,8 +267,8 @@ CFormBackendImp::CreateAndHookWrapperForWindow( MyGUI::Widget* widget )
     else
     {
         GUCEF_ERROR_LOG( GUCEF::CORE::LOGLEVEL_IMPORTANT, "CFormBackendImp(" + GUCEF::CORE::PointerToString( this ) + "): Unable match widget type to wrapper for widget type: " + typeName );
-    }    
-    
+    }
+
     if ( NULL != widgetWrapper )
     {
         GUCEF_DEBUG_LOG( GUCEF::CORE::LOGLEVEL_NORMAL, "CFormBackendImp(" + GUCEF::CORE::PointerToString( this ) + "): Wrapped and hooked GUI widget of type " + widgetWrapper->GetType() + " for MyGUI widget of type " + typeName );
@@ -284,7 +284,7 @@ CFormBackendImp::WrapAndHookChildWindows( MyGUI::Widget* widget )
 
     GUCEF::GUI::CWidget* wrappedWidget = NULL;
     MyGUI::Widget* childWidget = NULL;
-    
+
     MyGUI::EnumeratorWidgetPtr childWidgets = widget->getEnumerator();
     while ( childWidgets.next() )
     {
@@ -295,8 +295,8 @@ CFormBackendImp::WrapAndHookChildWindows( MyGUI::Widget* widget )
             CString localWidgetName = wrappedWidget->GetName().SubstrToChar( '/', false );
             m_widgetMap[ localWidgetName ] = wrappedWidget;
         }
-        
-        WrapAndHookChildWindows( childWidget );                     
+
+        WrapAndHookChildWindows( childWidget );
     }
 }
 
@@ -308,13 +308,13 @@ CFormBackendImp::LoadLayout( const GUCEF::CORE::CString& layoutStoragePath )
 
     MyGUI::VectorWidgetPtr rootWidgets;
     MyGUI::LayoutManager* lmgr = MyGUI::LayoutManager::getInstancePtr();
-    
+
     GUCEF_DEBUG_LOG( 0, "CFormBackendImp(" + GUCEF::CORE::PointerToString( this ) + "): Starting layout load for a GUI Form" );
-    
+
     try
     {
-        rootWidgets = lmgr->loadLayout( layoutStoragePath.STL_String()  , 
-                                        m_widgetNamePrefix.STL_String() , 
+        rootWidgets = lmgr->loadLayout( layoutStoragePath.STL_String()  ,
+                                        m_widgetNamePrefix.STL_String() ,
                                         nullptr                         );
     }
     catch ( std::exception& e )
@@ -322,9 +322,9 @@ CFormBackendImp::LoadLayout( const GUCEF::CORE::CString& layoutStoragePath )
         GUCEF_ERROR_LOG( GUCEF::CORE::LOGLEVEL_IMPORTANT, CString( "CFormBackendImp(" + GUCEF::CORE::PointerToString( this ) + "): exception while attempting to load form layout: " ) + e.what() );
         return false;
     }
-    
+
     // Now that we completed loading lets see what we got from MyGUI
-    m_rootWindow = NULL;    
+    m_rootWindow = NULL;
     MyGUI::VectorWidgetPtr::iterator i = rootWidgets.begin();
     while ( i != rootWidgets.end() )
     {
@@ -342,15 +342,15 @@ CFormBackendImp::LoadLayout( const GUCEF::CORE::CString& layoutStoragePath )
             WrapAndHookChildWindows( rootWidget );
         }
         rootWidget->setVisible( false );
-        ++i;        
+        ++i;
     }
-    
+
     GUCEF_DEBUG_LOG( 0, "CFormBackendImp(" + GUCEF::CORE::PointerToString( this ) + "): Successfully loaded a GUI Form layout" );
-    return true;        
+    return true;
 }
 
 /*-------------------------------------------------------------------------*/
-    
+
 bool
 CFormBackendImp::SaveLayout( const GUCEF::CORE::CString& layoutStoragePath )
 {GUCEF_TRACE;
@@ -364,11 +364,11 @@ bool
 CFormBackendImp::LoadLayout( GUCEF::CORE::CIOAccess& layoutStorage )
 {GUCEF_TRACE;
 
-    return false; 
+    return false;
 }
 
 /*-------------------------------------------------------------------------*/
-    
+
 bool
 CFormBackendImp::SaveLayout( GUCEF::CORE::CIOAccess& layoutStorage )
 {GUCEF_TRACE;
@@ -377,7 +377,7 @@ CFormBackendImp::SaveLayout( GUCEF::CORE::CIOAccess& layoutStorage )
 }
 
 /*-------------------------------------------------------------------------*/
-    
+
 GUCEF::GUI::CWidget*
 CFormBackendImp::GetRootWidget( void )
 {GUCEF_TRACE;
@@ -386,14 +386,14 @@ CFormBackendImp::GetRootWidget( void )
 }
 
 /*-------------------------------------------------------------------------*/
-    
+
 const GUCEF::GUI::CWidget*
 CFormBackendImp::GetRootWidget( void ) const
 {GUCEF_TRACE;
 
     return m_rootWindow;
 }
-    
+
 /*-------------------------------------------------------------------------*/
 
 GUCEF::GUI::CWidget*
@@ -405,12 +405,12 @@ CFormBackendImp::GetWidget( const CString& widgetName )
     {
         return (*i).second;
     }
-    
+
     return NULL;
 }
 
 /*-------------------------------------------------------------------------*/
-    
+
 void
 CFormBackendImp::GetWidgetVector( const CString& widgetName   ,
                                   TWidgetVector& widgetVector )

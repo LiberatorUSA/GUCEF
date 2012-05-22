@@ -14,7 +14,7 @@
  *
  *  You should have received a copy of the GNU Lesser General Public
  *  License along with this library; if not, write to the Free Software
- *  Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA 
+ *  Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA
  */
 
 #ifndef GUCEF_MYGUI_CVFSHANDLETOMYGUIDATASTREAMADAPTER_H
@@ -27,7 +27,7 @@
 //-------------------------------------------------------------------------*/
 
 #ifndef GUCEF_MYGUI_CIOACCESSTOMYGUIDATASTREAMADAPTER_H
-#include "guceMyGUI_CIOAccessToMyGUIDataStreamAdapter.h"
+#include "guceMyGUI_CIOAccessToMyGuiDataStreamAdapter.h"
 #define GUCEF_MYGUI_CIOACCESSTOMYGUIDATASTREAMADAPTER_H
 #endif /* GUCEF_MYGUI_CIOACCESSTOMYGUIDATASTREAMADAPTER_H ? */
 
@@ -55,18 +55,18 @@ namespace MYGUI {
 class CVfsHandleToMyGUIDataStreamAdapter : public CIOAccessToMyGUIDataStreamAdapter
 {
     public:
-    
+
     CVfsHandleToMyGUIDataStreamAdapter( GUCEF::VFS::CVFS::CVFSHandlePtr filePtr );
-    
+
     virtual ~CVfsHandleToMyGUIDataStreamAdapter();
-    
+
     private:
-    
+
     CVfsHandleToMyGUIDataStreamAdapter( const CVfsHandleToMyGUIDataStreamAdapter& src );
     CVfsHandleToMyGUIDataStreamAdapter& operator=( const CVfsHandleToMyGUIDataStreamAdapter& src );
-    
+
     private:
-    
+
     GUCEF::VFS::CVFS::CVFSHandlePtr m_filePtr;
 };
 
@@ -80,7 +80,7 @@ class CVfsHandleToMyGUIDataStreamAdapter : public CIOAccessToMyGUIDataStreamAdap
 }; /* namespace GUCE */
 
 /*-------------------------------------------------------------------------*/
-          
+
 #endif /* GUCEF_MYGUI_CVFSHANDLETOMYGUIDATASTREAMADAPTER_H ? */
 
 /*-------------------------------------------------------------------------//
