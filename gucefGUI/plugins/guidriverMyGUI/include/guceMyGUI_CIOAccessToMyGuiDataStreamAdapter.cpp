@@ -14,7 +14,7 @@
  *
  *  You should have received a copy of the GNU Lesser General Public
  *  License along with this library; if not, write to the Free Software
- *  Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA 
+ *  Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA
  */
 
 /*-------------------------------------------------------------------------//
@@ -23,7 +23,7 @@
 //                                                                         //
 //-------------------------------------------------------------------------*/
 
-#include "guceMyGUI_CIOAccessToMyGUIDataStreamAdapter.h"
+#include "guceMyGUI_CIOAccessToMyGuiDataStreamAdapter.h"
 
 /*-------------------------------------------------------------------------//
 //                                                                         //
@@ -47,7 +47,7 @@ CIOAccessToMyGUIDataStreamAdapter::CIOAccessToMyGUIDataStreamAdapter( GUCEF::COR
 }
 
 /*-------------------------------------------------------------------------*/
-    
+
 CIOAccessToMyGUIDataStreamAdapter::~CIOAccessToMyGUIDataStreamAdapter()
 {
 }
@@ -61,7 +61,7 @@ CIOAccessToMyGUIDataStreamAdapter::eof()
 }
 
 /*-------------------------------------------------------------------------*/
-    
+
 std::size_t
 CIOAccessToMyGUIDataStreamAdapter::size()
 {
@@ -69,7 +69,7 @@ CIOAccessToMyGUIDataStreamAdapter::size()
 }
 
 /*-------------------------------------------------------------------------*/
-    
+
 void
 CIOAccessToMyGUIDataStreamAdapter::readline( std::string& _source, MyGUI::Char _delim )
 {
@@ -78,7 +78,7 @@ CIOAccessToMyGUIDataStreamAdapter::readline( std::string& _source, MyGUI::Char _
 }
 
 /*-------------------------------------------------------------------------*/
-    
+
 std::size_t
 CIOAccessToMyGUIDataStreamAdapter::read( void* _buf, std::size_t _count )
 {

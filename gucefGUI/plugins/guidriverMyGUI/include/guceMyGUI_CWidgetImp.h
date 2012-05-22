@@ -14,7 +14,7 @@
  *
  *  You should have received a copy of the GNU Lesser General Public
  *  License along with this library; if not, write to the Free Software
- *  Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA 
+ *  Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA
  */
 
 #ifndef GUCEF_MYGUI_CWIDGETIMP_H
@@ -40,7 +40,7 @@
 
 #ifndef GUCEF_GUI_CWIDGET_H
 #include "gucefGUI_CWidget.h"
-#define GUCEF_GUI_CWIDGET_H  
+#define GUCEF_GUI_CWIDGET_H
 #endif /* GUCEF_GUI_CWIDGET_H ? */
 
 #ifndef GUCEF_MYGUI_MACROS_H
@@ -71,49 +71,49 @@ template < class BaseClass >
 class CWidgetImp : public BaseClass
 {
     public:
-    
+
     typedef GUCEF::GUI::CWidget::TWidgetSet TWidgetSet;
-    
+
     CWidgetImp( void );
-    
+
     virtual ~CWidgetImp();
-    
+
     virtual bool ShowModal( void );
-    
+
     virtual bool SetVisibility( const bool isVisible );
-    
+
     virtual bool IsVisible( void ) const;
-    
+
     virtual bool SetEnabled( const bool isEnabled );
-     
+
     virtual bool IsEnabled( void ) const;
-    
+
     virtual bool SetPosition( const GUCEF::GUI::CUVector& newPos );
-    
+
     virtual bool GetPosition( GUCEF::GUI::CUVector& pos );
-    
+
     virtual bool SetSize( const GUCEF::GUI::CUVector& newSize );
-    
+
     virtual bool GetSize( GUCEF::GUI::CUVector& size ) const;
-    
+
     virtual bool SetWidth( const GUCEF::GUI::CUDim& newWidth );
-    
+
     virtual bool GetWidth( GUCEF::GUI::CUDim& width );
-    
+
     virtual bool SetHeight( const GUCEF::GUI::CUDim& newHeight );
-    
-    virtual bool GetHeight( GUCEF::GUI::CUDim& height );    
-    
+
+    virtual bool GetHeight( GUCEF::GUI::CUDim& height );
+
     virtual bool SetParentWidget( GUCEF::GUI::CWidget* parentWidget );
-    
+
     virtual GUCEF::GUI::CWidget* GetParentWidget( void );
-    
+
     virtual GUCEF::GUI::CWidget* GetChildWidget( const CString& widgetName );
-    
+
     virtual bool GetChildWidgetSet( TWidgetSet& childSet );
-    
+
     virtual CString GetName( void ) const;
-    
+
     virtual bool SetPropertyValue( const CString& widgetProperty ,
                                    const CString& propertyValue  );
 
@@ -123,77 +123,77 @@ class CWidgetImp : public BaseClass
     virtual bool SetProperties( const GUCEF::CORE::CValueList& list );
 
     virtual bool GetProperties( GUCEF::CORE::CValueList& list ) const;
-    
+
     virtual bool HasProperty( const CString& widgetProperty ) const;
-    
+
     virtual bool LoadProperties( GUCEF::CORE::CIOAccess& propertyStorage );
-    
+
     virtual bool SaveProperties( GUCEF::CORE::CIOAccess& propertyStorage ) const;
-    
-    virtual void Hook( MyGUI::Widget* widget );   
+
+    virtual void Hook( MyGUI::Widget* widget );
 
     virtual const CString& GetClassTypeName( void ) const;
-    
+
     MyGUI::Widget* GetMyGUIWidget( void );
-    
+
     MyGUI::IntPoint ConvertVectorToPoint( const GUCEF::GUI::CUVector& vector ) const;
-    
+
     MyGUI::IntSize ConvertVectorToSize( const GUCEF::GUI::CUVector& vector ) const;
-   
+
     GUCEF::GUI::CUVector ConvertVector( const MyGUI::IntPoint& vector ) const;
-    
+
     GUCEF::GUI::CUVector ConvertVector( const MyGUI::IntSize& vector ) const;
-    
+
     int ConvertXDim( const GUCEF::GUI::CUDim& x ) const;
-    
+
     int ConvertYDim( const GUCEF::GUI::CUDim& x ) const;
-   
+
     protected:
-    
-    virtual void OnMouseLostFocus( MyGUI::Widget* sender           , 
+
+    virtual void OnMouseLostFocus( MyGUI::Widget* sender           ,
                                    MyGUI::Widget* newFocusedWidget );
 
-    virtual void OnMouseReceivedFocus( MyGUI::Widget* sender           , 
+    virtual void OnMouseReceivedFocus( MyGUI::Widget* sender           ,
                                        MyGUI::Widget* newFocusedWidget );
 
-    virtual void OnMouseButtonPressed( MyGUI::Widget* sender     , 
+    virtual void OnMouseButtonPressed( MyGUI::Widget* sender     ,
                                        int left                  ,
                                        int top                   ,
                                        MyGUI::MouseButton button );
-                                       
-    virtual void OnMouseButtonReleased( MyGUI::Widget* sender     , 
+
+    virtual void OnMouseButtonReleased( MyGUI::Widget* sender     ,
                                         int left                  ,
                                         int top                   ,
                                         MyGUI::MouseButton button );
 
-    virtual void OnMouseMove( MyGUI::Widget* sender , 
+    virtual void OnMouseMove( MyGUI::Widget* sender ,
                               int left              ,
                               int top               );
-    
+
     virtual void OnMouseClick( MyGUI::Widget* sender );
-    
+
     virtual void OnMouseDoubleClick( MyGUI::Widget* sender );
 
-    virtual void OnKeyboardFocusLost( MyGUI::Widget* sender           , 
+    virtual void OnKeyboardFocusLost( MyGUI::Widget* sender           ,
                                       MyGUI::Widget* newFocusedWidget );
 
-    virtual void OnKeyboardFocusReceived( MyGUI::Widget* sender           , 
+    virtual void OnKeyboardFocusReceived( MyGUI::Widget* sender           ,
                                           MyGUI::Widget* newFocusedWidget );
 
-    virtual void OnKeyPressed( MyGUI::Widget* sender  , 
+    virtual void OnKeyPressed( MyGUI::Widget* sender  ,
                                MyGUI::KeyCode keyCode ,
                                MyGUI::Char keyChar    );
 
-    virtual void OnKeyReleased( MyGUI::Widget* sender  , 
+    virtual void OnKeyReleased( MyGUI::Widget* sender  ,
                                 MyGUI::KeyCode keyCode );
-                               
+
     private:
-    
+
     CWidgetImp( const CWidgetImp& src );
     CWidgetImp& operator=( const CWidgetImp& src );
-    
+
     private:
-    
+
     MyGUI::Widget* m_widget;
 };
 
@@ -244,82 +244,82 @@ CWidgetImp< BaseClass >::ShowModal( void )
 
 template < class BaseClass >
 void
-CWidgetImp< BaseClass >::OnMouseLostFocus( MyGUI::Widget* sender           , 
+CWidgetImp< BaseClass >::OnMouseLostFocus( MyGUI::Widget* sender           ,
                                            MyGUI::Widget* newFocusedWidget )
 {GUCEF_TRACE;
 
-    NotifyObservers( MouseFocusLostEvent );
+    GUI::CWidget::NotifyObservers( GUI::CWidget::MouseFocusLostEvent );
 }
 
 /*-------------------------------------------------------------------------*/
 
 template < class BaseClass >
 void
-CWidgetImp< BaseClass >::OnMouseReceivedFocus( MyGUI::Widget* sender           , 
+CWidgetImp< BaseClass >::OnMouseReceivedFocus( MyGUI::Widget* sender           ,
                                                MyGUI::Widget* newFocusedWidget )
 {GUCEF_TRACE;
 
-    NotifyObservers( MouseFocusReceivedEvent );
+    GUI::CWidget::NotifyObservers( GUI::CWidget::MouseFocusReceivedEvent );
 }
 
 /*-------------------------------------------------------------------------*/
 
 template < class BaseClass >
 void
-CWidgetImp< BaseClass >::OnKeyboardFocusReceived( MyGUI::Widget* sender           , 
+CWidgetImp< BaseClass >::OnKeyboardFocusReceived( MyGUI::Widget* sender           ,
                                                   MyGUI::Widget* newFocusedWidget )
 {GUCEF_TRACE;
 
-    NotifyObservers( KeyboardFocusReceivedEvent );
+    GUI::CWidget::NotifyObservers( GUI::CWidget::KeyboardFocusReceivedEvent );
 }
 
 /*-------------------------------------------------------------------------*/
 
 template < class BaseClass >
 void
-CWidgetImp< BaseClass >::OnKeyboardFocusLost( MyGUI::Widget* sender           , 
+CWidgetImp< BaseClass >::OnKeyboardFocusLost( MyGUI::Widget* sender           ,
                                               MyGUI::Widget* newFocusedWidget )
 {GUCEF_TRACE;
 
-    NotifyObservers( KeyboardFocusLostEvent );
+    GUI::CWidget::NotifyObservers( GUI::CWidget::KeyboardFocusLostEvent );
 }
 
 /*-------------------------------------------------------------------------*/
 
 template < class BaseClass >
 void
-CWidgetImp< BaseClass >::OnMouseButtonPressed( MyGUI::Widget* sender     , 
+CWidgetImp< BaseClass >::OnMouseButtonPressed( MyGUI::Widget* sender     ,
                                                int left                  ,
                                                int top                   ,
                                                MyGUI::MouseButton button )
 {GUCEF_TRACE;
 
-    NotifyObservers( MouseDownEvent );
+    GUI::CWidget::NotifyObservers( GUI::CWidget::MouseDownEvent );
 }
 
 /*-------------------------------------------------------------------------*/
 
 template < class BaseClass >
 void
-CWidgetImp< BaseClass >::OnMouseButtonReleased( MyGUI::Widget* sender     , 
+CWidgetImp< BaseClass >::OnMouseButtonReleased( MyGUI::Widget* sender     ,
                                                 int left                  ,
                                                 int top                   ,
                                                 MyGUI::MouseButton button )
 {GUCEF_TRACE;
 
-    NotifyObservers( MouseUpEvent );
+    GUI::CWidget::NotifyObservers( GUI::CWidget::MouseUpEvent );
 }
 
 /*-------------------------------------------------------------------------*/
 
 template < class BaseClass >
 void
-CWidgetImp< BaseClass >::OnMouseMove( MyGUI::Widget* sender , 
+CWidgetImp< BaseClass >::OnMouseMove( MyGUI::Widget* sender ,
                                       int left              ,
                                       int top               )
 {GUCEF_TRACE;
 
-    NotifyObservers( MouseMoveEvent );
+    GUI::CWidget::NotifyObservers( GUI::CWidget::MouseMoveEvent );
 }
 
 /*-------------------------------------------------------------------------*/
@@ -329,7 +329,7 @@ void
 CWidgetImp< BaseClass >::OnMouseClick( MyGUI::Widget* sender )
 {GUCEF_TRACE;
 
-    NotifyObservers( MouseClickEvent );
+    GUI::CWidget::NotifyObservers( GUI::CWidget::MouseClickEvent );
 }
 
 /*-------------------------------------------------------------------------*/
@@ -339,30 +339,30 @@ void
 CWidgetImp< BaseClass >::OnMouseDoubleClick( MyGUI::Widget* sender )
 {GUCEF_TRACE;
 
-    NotifyObservers( MouseDoubleClickEvent );
+    GUI::CWidget::NotifyObservers( GUI::CWidget::MouseDoubleClickEvent );
 }
 
 /*-------------------------------------------------------------------------*/
 
 template < class BaseClass >
 void
-CWidgetImp< BaseClass >::OnKeyPressed( MyGUI::Widget* sender  , 
+CWidgetImp< BaseClass >::OnKeyPressed( MyGUI::Widget* sender  ,
                                        MyGUI::KeyCode keyCode ,
                                        MyGUI::Char keyChar    )
 {GUCEF_TRACE;
 
-    NotifyObservers( KeyDownEvent );
+    GUI::CWidget::NotifyObservers( GUI::CWidget::KeyDownEvent );
 }
 
 /*-------------------------------------------------------------------------*/
 
 template < class BaseClass >
 void
-CWidgetImp< BaseClass >::OnKeyReleased( MyGUI::Widget* sender  , 
+CWidgetImp< BaseClass >::OnKeyReleased( MyGUI::Widget* sender  ,
                                         MyGUI::KeyCode keyCode )
 {GUCEF_TRACE;
 
-    NotifyObservers( KeyUpEvent );
+    GUI::CWidget::NotifyObservers( GUI::CWidget::KeyUpEvent );
 }
 
 /*-------------------------------------------------------------------------*/
@@ -373,12 +373,12 @@ CWidgetImp< BaseClass >::Hook( MyGUI::Widget* widget )
 {GUCEF_TRACE;
 
     m_widget = widget;
-    SetImplementationPtr( m_widget );
-    
+    GUI::CWidget::SetImplementationPtr( m_widget );
+
     if ( NULL != m_widget )
     {
         m_widget->setUserData( this );
-                
+
         m_widget->eventMouseSetFocus = MyGUI::newDelegate( this, &CWidgetImp< BaseClass >::OnMouseReceivedFocus );
         m_widget->eventMouseLostFocus = MyGUI::newDelegate( this, &CWidgetImp< BaseClass >::OnMouseLostFocus );
         m_widget->eventMouseButtonPressed = MyGUI::newDelegate( this, &CWidgetImp< BaseClass >::OnMouseButtonPressed );
@@ -401,7 +401,7 @@ CWidgetImp< BaseClass >::ConvertXDim( const GUCEF::GUI::CUDim& x ) const
 {GUCEF_TRACE;
 
     MyGUI::Widget* parent = m_widget->getParent();
-    if ( NULL != parent )        
+    if ( NULL != parent )
     {
         return ( x.GetRelativeValue() * parent->getWidth() ) + x.GetPixelValue();
     }
@@ -417,7 +417,7 @@ CWidgetImp< BaseClass >::ConvertYDim( const GUCEF::GUI::CUDim& y ) const
 {GUCEF_TRACE;
 
     MyGUI::Widget* parent = m_widget->getParent();
-    if ( NULL != parent )        
+    if ( NULL != parent )
     {
         return ( y.GetRelativeValue() * parent->getHeight() ) + y.GetPixelValue();
     }
@@ -450,19 +450,19 @@ CWidgetImp< BaseClass >::ConvertVector( const MyGUI::IntPoint& vector ) const
 /*-------------------------------------------------------------------------*/
 
 template < class BaseClass >
-MyGUI::IntPoint 
+MyGUI::IntPoint
 CWidgetImp< BaseClass >::ConvertVectorToPoint( const GUCEF::GUI::CUVector& vector ) const
 {GUCEF_TRACE;
 
     MyGUI::IntPoint convertedValue;
     MyGUI::Widget* parent = m_widget->getParent();
-    if ( NULL != parent )        
+    if ( NULL != parent )
     {
         convertedValue.left = ( vector.GetX().GetRelativeValue() * parent->getWidth() ) + vector.GetX().GetPixelValue();
         convertedValue.top = ( vector.GetY().GetRelativeValue() * parent->getHeight() ) + vector.GetY().GetPixelValue();
         return convertedValue;
     }
-    
+
     convertedValue.left = vector.GetX().GetPixelValue();
     convertedValue.top = vector.GetY().GetPixelValue();
     return convertedValue;
@@ -471,19 +471,19 @@ CWidgetImp< BaseClass >::ConvertVectorToPoint( const GUCEF::GUI::CUVector& vecto
 /*-------------------------------------------------------------------------*/
 
 template < class BaseClass >
-MyGUI::IntSize 
+MyGUI::IntSize
 CWidgetImp< BaseClass >::ConvertVectorToSize( const GUCEF::GUI::CUVector& vector ) const
 {GUCEF_TRACE;
 
     MyGUI::IntSize convertedValue;
     MyGUI::Widget* parent = m_widget->getParent();
-    if ( NULL != parent )        
+    if ( NULL != parent )
     {
         convertedValue.width = ( vector.GetX().GetRelativeValue() * parent->getWidth() ) + vector.GetX().GetPixelValue();
         convertedValue.height = ( vector.GetY().GetRelativeValue() * parent->getHeight() ) + vector.GetY().GetPixelValue();
         return convertedValue;
     }
-    
+
     convertedValue.width = vector.GetX().GetPixelValue();
     convertedValue.height = vector.GetY().GetPixelValue();
     return convertedValue;
@@ -523,13 +523,13 @@ CWidgetImp< BaseClass >::GetChildWidget( const CString& widgetName )
         if ( NULL != childWidget )
         {
             return *childWidget->getUserData< GUCEF::GUI::CWidget* >( false );
-        }    
+        }
     }
-    catch ( Ogre::Exception& )
+    catch ( std::exception& )
     {
         return NULL;
     }
-    
+
     return NULL;
 }
 
@@ -580,7 +580,7 @@ CWidgetImp< BaseClass >::SetEnabled( const bool isEnabled )
 }
 
 /*-------------------------------------------------------------------------*/
-     
+
 template < class BaseClass >
 bool
 CWidgetImp< BaseClass >::IsEnabled( void ) const
@@ -590,7 +590,7 @@ CWidgetImp< BaseClass >::IsEnabled( void ) const
 }
 
 /*-------------------------------------------------------------------------*/
-    
+
 template < class BaseClass >
 bool
 CWidgetImp< BaseClass >::SetPosition( const GUCEF::GUI::CUVector& newPos )
@@ -601,7 +601,7 @@ CWidgetImp< BaseClass >::SetPosition( const GUCEF::GUI::CUVector& newPos )
 }
 
 /*-------------------------------------------------------------------------*/
-    
+
 template < class BaseClass >
 bool
 CWidgetImp< BaseClass >::GetPosition( GUCEF::GUI::CUVector& pos )
@@ -623,7 +623,7 @@ CWidgetImp< BaseClass >::SetSize( const GUCEF::GUI::CUVector& newSize )
 }
 
 /*-------------------------------------------------------------------------*/
-    
+
 template < class BaseClass >
 bool
 CWidgetImp< BaseClass >::GetSize( GUCEF::GUI::CUVector& size ) const
@@ -634,18 +634,18 @@ CWidgetImp< BaseClass >::GetSize( GUCEF::GUI::CUVector& size ) const
 }
 
 /*-------------------------------------------------------------------------*/
-    
+
 template < class BaseClass >
 bool
 CWidgetImp< BaseClass >::SetWidth( const GUCEF::GUI::CUDim& newWidth )
 {GUCEF_TRACE;
-        
+
     m_widget->setSize( ConvertXDim( newWidth ), m_widget->getHeight() );
     return true;
 }
 
 /*-------------------------------------------------------------------------*/
-    
+
 template < class BaseClass >
 bool
 CWidgetImp< BaseClass >::GetWidth( GUCEF::GUI::CUDim& width )
@@ -657,12 +657,12 @@ CWidgetImp< BaseClass >::GetWidth( GUCEF::GUI::CUDim& width )
 
 /*-------------------------------------------------------------------------*/
 
-template < class BaseClass >    
+template < class BaseClass >
 bool
 CWidgetImp< BaseClass >::SetHeight( const GUCEF::GUI::CUDim& newHeight )
 {GUCEF_TRACE;
 
-    m_widget->setSize( m_widget->getWidth(), ConvertYDim( newHeight ) );    
+    m_widget->setSize( m_widget->getWidth(), ConvertYDim( newHeight ) );
     return true;
 }
 
@@ -714,13 +714,13 @@ CWidgetImp< BaseClass >::GetParentWidget( void )
     MyGUI::Widget* parent = m_widget->getParent();
     if ( NULL != parent )
     {
-        return *parent->getUserData< CWidget* >( false );
+        return *parent->getUserData< GUI::CWidget* >( false );
     }
     return NULL;
 }
-    
+
 /*-------------------------------------------------------------------------*/
-    
+
 template < class BaseClass >
 bool
 CWidgetImp< BaseClass >::GetChildWidgetSet( TWidgetSet& childSet )
@@ -730,7 +730,7 @@ CWidgetImp< BaseClass >::GetChildWidgetSet( TWidgetSet& childSet )
     while ( childrenEnumerator.next() )
     {
         MyGUI::WidgetPtr child = childrenEnumerator.current();
-        GUCEF::GUI::CWidget* wrapWindow = *child->getUserData< CWidget* >( false );
+        GUCEF::GUI::CWidget* wrapWindow = *child->getUserData< GUI::CWidget* >( false );
         if ( NULL != wrapWindow )
         {
             childSet.insert( wrapWindow );
@@ -740,7 +740,7 @@ CWidgetImp< BaseClass >::GetChildWidgetSet( TWidgetSet& childSet )
 }
 
 /*-------------------------------------------------------------------------*/
-    
+
 template < class BaseClass >
 bool
 CWidgetImp< BaseClass >::SetPropertyValue( const CString& widgetProperty ,
@@ -780,7 +780,7 @@ CWidgetImp< BaseClass >::GetProperties( GUCEF::CORE::CValueList& list ) const
 
     return false;
 }
-    
+
 /*-------------------------------------------------------------------------*/
 
 template < class BaseClass >
@@ -792,7 +792,7 @@ CWidgetImp< BaseClass >::HasProperty( const CString& widgetProperty ) const
 }
 
 /*-------------------------------------------------------------------------*/
-    
+
 template < class BaseClass >
 bool
 CWidgetImp< BaseClass >::LoadProperties( GUCEF::CORE::CIOAccess& propertyStorage )
@@ -803,7 +803,7 @@ CWidgetImp< BaseClass >::LoadProperties( GUCEF::CORE::CIOAccess& propertyStorage
 }
 
 /*-------------------------------------------------------------------------*/
-    
+
 template < class BaseClass >
 bool
 CWidgetImp< BaseClass >::SaveProperties( GUCEF::CORE::CIOAccess& propertyStorage ) const
@@ -822,7 +822,7 @@ CWidgetImp< BaseClass >::SaveProperties( GUCEF::CORE::CIOAccess& propertyStorage
 }; /* namespace GUCE */
 
 /*-------------------------------------------------------------------------*/
-          
+
 #endif /* GUCEF_MYGUI_CWIDGETIMP_H ? */
 
 /*-------------------------------------------------------------------------//
