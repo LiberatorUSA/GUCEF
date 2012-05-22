@@ -24,7 +24,7 @@
 //-------------------------------------------------------------------------*/
 
 #ifndef GUCEF_MYGUI_CVFSHANDLETOMYGUIDATASTREAMADAPTER_H
-#include "guceMyGUI_CVfsHandleToMyGUIDataStreamAdapter.h"
+#include "guceMyGUI_CVFSHandleToMyGuiDataStreamAdapter.h"
 #define GUCEF_MYGUI_CVFSHANDLETOMYGUIDATASTREAMADAPTER_H
 #endif /* GUCEF_MYGUI_CVFSHANDLETOMYGUIDATASTREAMADAPTER_H ? */
 
@@ -137,12 +137,12 @@ CDataManager::getDataListNames( const std::string& pattern, bool fullpath )
     result.clear();
 
     GUCEF::VFS::CVFS::TStringSet vfsResultSet;
-    VFS::CVfsGlobal::Instance()->GetVfs().GetList( vfsResultSet , 
-                                                   ""           , 
-                                                   true         , 
-                                                   fullpath     , 
-                                                   pattern      , 
-                                                   true         , 
+    VFS::CVfsGlobal::Instance()->GetVfs().GetList( vfsResultSet ,
+                                                   ""           ,
+                                                   true         ,
+                                                   fullpath     ,
+                                                   pattern      ,
+                                                   true         ,
                                                    false        );
 
 
