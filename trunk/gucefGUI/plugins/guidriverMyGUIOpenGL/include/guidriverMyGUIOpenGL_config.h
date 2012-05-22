@@ -17,13 +17,8 @@
  *  Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA 
  */
 
-#ifndef GUCEF_MYGUI_MACROS_H
-#define GUCEF_MYGUI_MACROS_H
-
-/*
- *      Build configuration specific macros.
- *      Also includes the generic macros which are build config independant.
- */
+#ifndef GUCEF_MYGUI_CONFIG_H
+#define GUCEF_MYGUI_CONFIG_H
 
 /*-------------------------------------------------------------------------//
 //                                                                         //
@@ -31,50 +26,24 @@
 //                                                                         //
 //-------------------------------------------------------------------------*/
 
-#ifndef GUCEF_MYGUI_ETYPES_H
-#include "guceMyGUI_ETypes.h"        /* simple types */
-#define GUCEF_MYGUI_ETYPES_H
-#endif /* GUCEF_MYGUI_ETYPES_H ? */
-
-#ifndef GUCEF_MYGUI_CONFIG_H
-#include "guceMyGUI_config.h"        /* Module build configuration */
-#define GUCEF_MYGUI_CONFIG_H
-#endif /* GUCEF_MYGUI_CONFIG_H ? */
+#ifndef GUCEF_CORE_MACROS_H
+#include "gucefCORE_macros.h"
+#define GUCEF_CORE_MACROS_H
+#endif /* GUCEF_CORE_MACROS_H ? */
 
 /*-------------------------------------------------------------------------//
 //                                                                         //
-//      GENERAL MACROS                                                     //
+//      BUILD DEFINES                                                      //
 //                                                                         //
 //-------------------------------------------------------------------------*/
 
-/*
- *      Macros for dynamic linking or static linking. Use the switches in the
- *      config file to control the export type.
- */
-#undef GUCEF_EXPORTSPEC
-#ifdef GUIDRIVERMYGUI_BUILD_MODULE
-  #define GUCEF_EXPORTSPEC GUCEF_EXPORT
-#else
-  #define GUCEF_EXPORTSPEC GUCEF_IMPORT
-#endif /* GUCEF_MYGUI_BUILD_MODULE ? */
-
-#undef GUCEF_MYGUI_EXPORT_CPP
-#ifdef GUCEF_MYGUI_EXPORT_CPP_CODE
-  #define GUCEF_MYGUI_EXPORT_CPP GUCEF_EXPORTSPEC
-#else
-  #define GUCEF_MYGUI_EXPORT_CPP
-#endif /* GUCEF_GUI_EXPORT_CPP_CODE */
-
-#undef GUCEF_MYGUI_EXPORT_C
-#ifdef GUCEF_MYGUI_EXPORT_C_CODE
-  #define GUCEF_MYGUI_EXPORT_C GUCEF_EXPORTSPEC
-#else
-  #define GUCEF_MYGUI_EXPORT_C
-#endif /* GUCEF_MYGUI_EXPORT_C_CODE */
+/* Switches for the export of C++ and/or C code */
+#define GUCEF_MYGUI_EXPORT_CPP_CODE
+#define GUCEF_MYGUI_EXPORT_C_CODE
 
 /*-------------------------------------------------------------------------*/
 
-#endif /* GUCEF_MYGUI_MACROS_H ? */
+#endif /* GUCEF_MYGUI_CONFIG_H */
 
 /*-------------------------------------------------------------------------//
 //                                                                         //
@@ -82,7 +51,8 @@
 //                                                                         //
 //-------------------------------------------------------------------------//
 
-- 02-03-2007 :
-        - Dinand: re-added this header
+- 18-08-2007 :
+       - Initial version of this file.
 
 -----------------------------------------------------------------------------*/
+ 

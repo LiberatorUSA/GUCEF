@@ -1,5 +1,5 @@
 <ModuleInfoEntry>
-    <Module Name="guidriverMyGUI" Type="SharedLibrary" Platform="All">
+    <Module Name="guidriverMyGUIOpenGL" Type="SharedLibrary" Platform="All">
         <Dependencies>
             <Dependency Name="gucefINPUT" />
             <Dependency Name="gucefGUI" />
@@ -7,6 +7,7 @@
             <Dependency Name="gucefMT" />
             <Dependency Name="freetype" />
             <Dependency Name="MyGUIEngine" />
+            <Dependency Name="guidriverMyGUI" />
         </Dependencies>
         <Linker>
             <Dependency Name="gucefINPUT" />
@@ -15,9 +16,10 @@
             <Dependency Name="gucefMT" />
             <Dependency Name="freetype" />
             <Dependency Name="MyGUIEngine" />
+            <Dependency Name="guidriverMyGUI" />
         </Linker>
         <Preprocessor>
-            <Define String="GUIDRIVERMYGUI_BUILD_MODULE" />
+            <Define String="GUIDRIVERMYGUIOPENGL_BUILD_MODULE" />
         </Preprocessor>
     </Module>
 </ModuleInfoEntry>

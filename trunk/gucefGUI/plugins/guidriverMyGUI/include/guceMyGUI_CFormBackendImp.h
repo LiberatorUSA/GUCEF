@@ -41,7 +41,7 @@
 #endif /* GUCEF_MYGUI_CWIDGETIMP_H ? */
 
 #ifndef GUCEF_MYGUI_MACROS_H
-#include "guceMyGUI_macros.h"     /* often used guceMYGUIOGRE macros */
+#include "guceMyGUI_macros.h"     /* often used guceMYGUI macros */
 #define GUCEF_MYGUI_MACROS_H
 #endif /* GUCEF_MYGUI_MACROS_H ? */
 
@@ -106,7 +106,7 @@ class GUCEF_MYGUI_EXPORT_CPP CFormBackendImp : public GUCEF::GUI::CFormBackend
     private:
 
     TWidgetMap m_widgetMap;
-    GUCEF::GUI::CWidget* m_rootWindow;
+    GUI::CWidget* m_rootWindow;
     CString m_widgetNamePrefix;
     CString m_resourceGroupName;
 };
@@ -117,8 +117,8 @@ class GUCEF_MYGUI_EXPORT_CPP CFormBackendImp : public GUCEF::GUI::CFormBackend
 //                                                                         //
 //-------------------------------------------------------------------------*/
 
-}; /* namespace MYGUIOGRE */
-}; /* namespace GUCE */
+}; /* namespace MYGUI */
+}; /* namespace GUCEF */
 
 /*-------------------------------------------------------------------------*/
 

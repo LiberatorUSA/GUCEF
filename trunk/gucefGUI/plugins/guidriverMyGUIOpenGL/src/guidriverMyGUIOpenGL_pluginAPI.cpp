@@ -22,23 +22,18 @@
 //      INCLUDES                                                           //
 //                                                                         //
 //-------------------------------------------------------------------------*/
+          
+#ifndef GUCEF_CORE_LOGGING_H
+#include "gucefCORE_Logging.h"
+#define GUCEF_CORE_LOGGING_H
+#endif /* GUCEF_CORE_LOGGING_H ? */
 
-#ifndef GUCEF_GUI_CGUIMANAGER_H
-#include "gucefGUI_CGUIManager.h"
-#define GUCEF_GUI_CGUIMANAGER_H
-#endif /* GUCEF_GUI_CGUIMANAGER_H ? */
-
-#ifndef GUCEF_GUI_CGUIMANAGER_H
-#include "gucefGUI_CGUIManager.h"
-#define GUCEF_GUI_CGUIMANAGER_H
-#endif /* GUCEF_GUI_CGUIMANAGER_H ? */
-
-#ifndef GUCEF_MYGUI_H
-#include "guceMyGUI.h"
-#define GUCEF_MYGUI_H
-#endif /* GUCEF_MYGUI_H ? */
-
+#ifndef GUCEF_MYGUI_CMODULE_H
 #include "guceMyGUI_CModule.h"
+#define GUCEF_MYGUI_CMODULE_H
+#endif /* GUCEF_MYGUI_CMODULE_H ? */
+
+#include "guceMyGUI_pluginAPI.h"
 
 /*-------------------------------------------------------------------------//
 //                                                                         //
@@ -55,27 +50,54 @@ namespace MYGUI {
 //                                                                         //
 //-------------------------------------------------------------------------*/
 
-bool
-CModule::Load( void )
+CORE::Int32 GUCEF_PLUGIN_CALLSPEC_PREFIX 
+GUCEFPlugin_Load( UInt32 argc, const char** argv ) GUCEF_PLUGIN_CALLSPEC_SUFFIX
 {GUCEF_TRACE;
-
-    //// Register the GUI Driver at the GUCEF level
-    //GUCEF::GUI::CGUIManager& guiManager = *GUCEF::GUI::CGUIManager::Instance();
-    //guiManager.RegisterGUIDriver( "MyGUIOgre", CGUIDriver::Instance() );    
-    return true;
+    
+    GUCEF_SYSTEM_LOG( GUCEF::CORE::LOGLEVEL_NORMAL, "Load called on plugin guceMyGUIOgre" );    
+    
+    return CModule::Load() ? 1 : 0;
 }
 
-/*-------------------------------------------------------------------------*/
+/*--------------------------------------------------------------------------*/
+
+void GUCEF_PLUGIN_CALLSPEC_PREFIX 
+GUCEFPlugin_Unload( void ) GUCEF_PLUGIN_CALLSPEC_SUFFIX
+{GUCEF_TRACE;
+
+    GUCEF_SYSTEM_LOG( GUCEF::CORE::LOGLEVEL_NORMAL, "Unload called on plugin guceMyGUIOgre" );
     
-bool
-CModule::Unload( void )
+    CModule::Unload();
+}
+
+/*--------------------------------------------------------------------------*/
+
+void GUCEF_PLUGIN_CALLSPEC_PREFIX 
+GUCEFPlugin_GetVersion( GUCEF::CORE::TVersion* versionInfo ) GUCEF_PLUGIN_CALLSPEC_SUFFIX
+{GUCEF_TRACE;
+
+    versionInfo->major = 1; 
+    versionInfo->minor = 0;
+    versionInfo->patch = 0;
+    versionInfo->release = 0;
+}
+
+/*--------------------------------------------------------------------------*/
+
+const char* GUCEF_PLUGIN_CALLSPEC_PREFIX 
+GUCEFPlugin_GetCopyright( void ) GUCEF_PLUGIN_CALLSPEC_SUFFIX
 {GUCEF_TRACE;
     
-    //// Unregister the GUI Driver at the GUCEF level
-    //GUCEF::GUI::CGUIManager& guiManager = *GUCEF::GUI::CGUIManager::Instance();
-    //guiManager.UnregisterGUIDriverByName( "MyGUIOgre" );    
-    //CGUIDriver::Deinstance();        
-    return true;
+    return "Copyright (C) Dinand Vanvelzen, LGPL license";
+}
+
+/*--------------------------------------------------------------------------*/
+
+const char* GUCEF_PLUGIN_CALLSPEC_PREFIX 
+GUCEFPlugin_GetDescription( void ) GUCEF_PLUGIN_CALLSPEC_SUFFIX
+{GUCEF_TRACE;
+
+    return "Generic GUCEF plugin which provides a GUI driver using MyGUI as the backend";
 }
 
 /*-------------------------------------------------------------------------//
@@ -84,7 +106,7 @@ CModule::Unload( void )
 //                                                                         //
 //-------------------------------------------------------------------------*/
 
-}; /* namespace MYGUI */
+}; /* namespace MYGUIOGRE */
 }; /* namespace GUCE */
 
-/*-------------------------------------------------------------------------*/
+/*--------------------------------------------------------------------------*/

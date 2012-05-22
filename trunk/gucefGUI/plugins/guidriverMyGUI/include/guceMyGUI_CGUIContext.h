@@ -32,7 +32,7 @@
 #endif /* GUCEF_GUI_CIGUICONTEXT_H ? */
 
 #ifndef GUCEF_MYGUI_MACROS_H
-#include "guceMyGUIOgre_macros.h"     /* often used guceMYGUIOGRE macros */
+#include "guceMyGUI_macros.h"     /* often used guceMYGUIOGRE macros */
 #define GUCEF_MYGUI_MACROS_H
 #endif /* GUCEF_MYGUI_MACROS_H ? */
 
@@ -58,7 +58,7 @@ class CGUIDriver;
 /**
  *  Implementation of the GUI context for the MyGUI&Ogre combo
  */
-class GUCEF_MYGUI_EXPORT_CPP CGUIContext : public GUCEF::GUI::CIGUIContext
+class GUCEF_MYGUI_EXPORT_CPP CGUIContext : public GUI::CIGUIContext
 {
     public:    
     
@@ -68,11 +68,11 @@ class GUCEF_MYGUI_EXPORT_CPP CGUIContext : public GUCEF::GUI::CIGUIContext
     
     virtual GUCEF::GUI::CWidget* CreateWidget( const CString& widgetName );
     
-    virtual void DestroyWidget( GUCEF::GUI::CWidget* widget );
+    virtual void DestroyWidget( GUI::CWidget* widget );
     
     virtual GUCEF::GUI::CForm* CreateForm( const CString& formName );
     
-    virtual void DestroyForm( GUCEF::GUI::CForm* form );   
+    virtual void DestroyForm( GUI::CForm* form );   
 
     virtual TStringSet GetAvailableFormTypes( void );
     
@@ -80,7 +80,7 @@ class GUCEF_MYGUI_EXPORT_CPP CGUIContext : public GUCEF::GUI::CIGUIContext
     
     virtual GUCEF::GUI::CFormBackend* CreateFormBackend( void );
     
-    virtual void DestroyFormBackend( GUCEF::GUI::CFormBackend* formBackend );
+    virtual void DestroyFormBackend( GUI::CFormBackend* formBackend );
     
     virtual GUCEF::GUI::CGUIDriver* GetDriver( void );
     
@@ -106,8 +106,8 @@ class GUCEF_MYGUI_EXPORT_CPP CGUIContext : public GUCEF::GUI::CIGUIContext
 //                                                                         //
 //-------------------------------------------------------------------------*/
 
-} /* namespace MYGUIOGRE */
-} /* namespace GUCE */
+} /* namespace MYGUI */
+} /* namespace GUCEF */
 
 /*-------------------------------------------------------------------------*/
 

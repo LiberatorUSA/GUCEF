@@ -164,9 +164,11 @@ class GUCEF_CORE_PUBLIC_CPP CDataNode
 
     CDataNode* FindChild( const CString& name ) const;
 
-    TConstDataNodeSet FindChildrenOfType( const CString& name ) const;
+    TConstDataNodeSet FindChildrenOfType( const CString& name          ,
+                                          const bool recursive = false ) const;
 
-    TDataNodeSet FindChildrenOfType( const CString& name );
+    TDataNodeSet FindChildrenOfType( const CString& name          ,
+                                     const bool recursive = false );
 
     CDataNode* FindChild( const CString& name        ,
                           const CString& attribName  ,

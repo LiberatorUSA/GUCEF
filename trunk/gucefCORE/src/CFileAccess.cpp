@@ -114,18 +114,25 @@ CString
 CFileAccess::ReadLine( void )
 {GUCEF_TRACE;
 
- /*       char* str;
-        UInt32 length = mfreadl( &str    , 
-                                 &_mfile );
-        if ( length && str )
+    if ( NULL != m_file )
+    {
+        CString resultStr;
+        while ( feof( m_file ) == 0 )
         {
-                CString fstr( str );
-                mfree( str );
-                return fstr;
-        }         */        
+            char currentChar = (char) fgetc( m_file );
+            if ( currentChar == '\0' ||
+                 currentChar == '\n' || 
+                 currentChar == '\r'  )
+            {
+                break;
+            }
+
+            resultStr += currentChar;
+        }
+        return resultStr;
+    }     
         
-        CString emptystr;
-        return emptystr;
+    return CString();
 }
 
 /*-------------------------------------------------------------------------*/
@@ -133,18 +140,28 @@ CFileAccess::ReadLine( void )
 CString 
 CFileAccess::ReadString( void )
 {GUCEF_TRACE;
- /*       char* str;
-        UInt32 length = mfreads( &str    , 
-                                 &_mfile );
-        if ( length && str )
+
+    if ( NULL != m_file )
+    {
+        CString resultStr;
+        while ( feof( m_file ) != 0 )
         {
-                CString fstr( str );
-                mfree( str );
-                return fstr;
-        }       */          
+            char currentChar = (char) fgetc( m_file );
+            if ( currentChar == '\0' ||
+                 currentChar == '\n' || 
+                 currentChar == '\r' ||
+                 currentChar == '\t' ||
+                 currentChar == ' '   )
+            {
+                break;
+            }
+
+            resultStr += currentChar;
+        }
+        return resultStr;
+    }     
         
-        CString emptystr;
-        return emptystr;
+    return CString();
 }
 
 /*-------------------------------------------------------------------------*/

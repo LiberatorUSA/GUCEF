@@ -378,58 +378,60 @@ CIniParser::LoadFrom( CIOAccess& fileAccess )
         {
             // Get the current line from the file, trimming white space on both ends
             CString line = fileAccess.ReadLine().Trim( true ).Trim( false );
-            
-            // Get rid of any trailing commentary on this line
-            Int32 commentaryIndex = line.HasChar( ';', false );
-            if ( commentaryIndex > -1 )
-            {
-                Int32 dummy = 0;
-                if ( !IsCharIndexWithinQuotes( line, commentaryIndex, dummy, dummy ) )
-                {
-                    // we found a semicolon which is not contained within a quotation
-                    // thus this is a commentary section which we should remove
-                    line = line.CutChars( line.Length()-(commentaryIndex+1), false ).Trim( false );
-                }
-            }
-            
             if( line.Length() > 0 )
             {
-                // Check if this is a section tag line
-                if ( ( line[ 0 ] == '[' ) && ( line[ line.Length()-1 ] == ']' ) )
+                // Get rid of any trailing commentary on this line
+                Int32 commentaryIndex = line.HasChar( ';', false );
+                if ( commentaryIndex > -1 )
                 {
-                    sectionName = line.SubstrFromRange( 1, line.Length()-2 );
-                }
-                else
-                {
-                    Int32 equalsIndex = FindIndexOfNonQuotedEquals( line );
-                    if ( equalsIndex > -1 )
+                    Int32 dummy = 0;
+                    if ( !IsCharIndexWithinQuotes( line, commentaryIndex, dummy, dummy ) )
                     {
-                        // get the key and value strings
-                        CString sectionBeforeEquals = StripQuotation( line.SubstrFromRange( 0, equalsIndex-1 ) );
-                        CString sectionAfterEquals = StripQuotation( line.SubstrFromRange( equalsIndex+1, line.Length()-1 ) );
-                        
-                        if ( ( sectionBeforeEquals.Length() > 0 ) &&
-                             ( sectionAfterEquals.Length() > 0 )   )
-                        {
-                            CValueList* valueList = NULL;
-                            TIniMap::iterator i = m_iniData.find( sectionName );
-                            if ( i == m_iniData.end() )
-                            {
-                                valueList = &m_iniData[ sectionName ];
-                                valueList->SetAllowDuplicates( true );
-                                valueList->SetAllowMultipleValues( true );
-                            }
-                            else
-                            {
-                                valueList = &(*i).second;
-                            }
-                            
-                            valueList->Set( sectionBeforeEquals, sectionAfterEquals );
-                        }
+                        // we found a semicolon which is not contained within a quotation
+                        // thus this is a commentary section which we should remove
+                        line = line.CutChars( line.Length()-(commentaryIndex+1), false ).Trim( false );
                     }
-                    // else:
-                    // Line with junk on it we do not support
-                    // we will try and be robust and ignore this line
+                }
+            
+                if( line.Length() > 0 )
+                {
+                    // Check if this is a section tag line
+                    if ( ( line[ 0 ] == '[' ) && ( line[ line.Length()-1 ] == ']' ) )
+                    {
+                        sectionName = line.SubstrFromRange( 1, line.Length()-2 );
+                    }
+                    else
+                    {
+                        Int32 equalsIndex = FindIndexOfNonQuotedEquals( line );
+                        if ( equalsIndex > -1 )
+                        {
+                            // get the key and value strings
+                            CString sectionBeforeEquals = StripQuotation( line.SubstrFromRange( 0, equalsIndex-1 ) );
+                            CString sectionAfterEquals = StripQuotation( line.SubstrFromRange( equalsIndex+1, line.Length()-1 ) );
+                        
+                            if ( ( sectionBeforeEquals.Length() > 0 ) &&
+                                 ( sectionAfterEquals.Length() > 0 )   )
+                            {
+                                CValueList* valueList = NULL;
+                                TIniMap::iterator i = m_iniData.find( sectionName );
+                                if ( i == m_iniData.end() )
+                                {
+                                    valueList = &m_iniData[ sectionName ];
+                                    valueList->SetAllowDuplicates( true );
+                                    valueList->SetAllowMultipleValues( true );
+                                }
+                                else
+                                {
+                                    valueList = &(*i).second;
+                                }
+                            
+                                valueList->Set( sectionBeforeEquals, sectionAfterEquals );
+                            }
+                        }
+                        // else:
+                        // Line with junk on it we do not support
+                        // we will try and be robust and ignore this line
+                    }
                 }
             }
         }

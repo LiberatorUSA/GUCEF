@@ -11,236 +11,114 @@
 
 # Configuration for module: guidriverMyGUI
 
+set( HEADER_FILES 
+  include/guceMyGUI.h
+  include/guceMyGUI_CButtonImp.h
+  include/guceMyGUI_CCheckboxImp.h
+  include/guceMyGUI_CComboboxImp.h
+  include/guceMyGUI_CDataManager.h
+  include/guceMyGUI_CEditboxImp.h
+  include/guceMyGUI_CFileOpenDialogImp.h
+  include/guceMyGUI_CFileSaveDialogImp.h
+  include/guceMyGUI_CFileSystemDialogImp.h
+  include/guceMyGUI_CFormBackendImp.h
+  include/guceMyGUI_CGridViewImp.h
+  include/guceMyGUI_CGUIContext.h
+  include/guceMyGUI_CImageFrameImp.h
+  include/guceMyGUI_CIOAccessToMyGuiDataStreamAdapter.h
+  include/guceMyGUI_CLabelImp.h
+  include/guceMyGUI_CListBoxImp.h
+  include/guceMyGUI_CMemoboxImp.h
+  include/guceMyGUI_CMenuBarImp.h
+  include/guceMyGUI_CModule.h
+  include/guceMyGUI_CMyGUIInputAdapter.h
+  include/guceMyGUI_config.h
+  include/guceMyGUI_CPopupMenuImp.h
+  include/guceMyGUI_CProgressBarImp.h
+  include/guceMyGUI_CPushButtonImp.h
+  include/guceMyGUI_CRenderContextImp.h
+  include/guceMyGUI_CSpinnerImp.h
+  include/guceMyGUI_CTabContentPaneImp.h
+  include/guceMyGUI_CTabControlImp.h
+  include/guceMyGUI_CTreeviewImp.h
+  include/guceMyGUI_CVFSHandleToMyGuiDataStreamAdapter.h
+  include/guceMyGUI_CVFSInfoProvider.h
+  include/guceMyGUI_CWidgetImp.h
+  include/guceMyGUI_CWindowImp.h
+  include/guceMyGUI_ETypes.h
+  include/guceMyGUI_macros.h
+  include/guceMyGUI_pluginAPI.h
+  include/MyGUI_LastHeader.h
+)
 
+set( SOURCE_FILES 
+  include/guceMyGUI_CIOAccessToMyGuiDataStreamAdapter.cpp
+  src/guceMyGUI.cpp
+  src/guceMyGUI_CButtonImp.cpp
+  src/guceMyGUI_CCheckboxImp.cpp
+  src/guceMyGUI_CComboboxImp.cpp
+  src/guceMyGUI_CDataManager.cpp
+  src/guceMyGUI_CEditboxImp.cpp
+  src/guceMyGUI_CFileOpenDialogImp.cpp
+  src/guceMyGUI_CFileSaveDialogImp.cpp
+  src/guceMyGUI_CFileSystemDialogImp.cpp
+  src/guceMyGUI_CFormBackendImp.cpp
+  src/guceMyGUI_CGridViewImp.cpp
+  src/guceMyGUI_CGUIContext.cpp
+  src/guceMyGUI_CImageFrameImp.cpp
+  src/guceMyGUI_CLabelImp.cpp
+  src/guceMyGUI_CListboxImp.cpp
+  src/guceMyGUI_CMemoboxImp.cpp
+  src/guceMyGUI_CMenuBarImp.cpp
+  src/guceMyGUI_CModule.cpp
+  src/guceMyGUI_CMyGUIInputAdapter.cpp
+  src/guceMyGUI_CPopupMenuImp.cpp
+  src/guceMyGUI_CProgressBarImp.cpp
+  src/guceMyGUI_CPushButtonImp.cpp
+  src/guceMyGUI_CRenderContextImp.cpp
+  src/guceMyGUI_CSpinnerImp.cpp
+  src/guceMyGUI_CTabContentPaneImp.cpp
+  src/guceMyGUI_CTabControlImp.cpp
+  src/guceMyGUI_CTreeviewImp.cpp
+  src/guceMyGUI_CVFSHandleToMyGuiDataStreamAdapter.cpp
+  src/guceMyGUI_CVFSInfoProvider.cpp
+  src/guceMyGUI_CWidgetImp.cpp
+  src/guceMyGUI_CWindowImp.cpp
+  src/guceMyGUI_pluginAPI.cpp
+)
 
-if (LINUX)
-  set( PLATFORM_HEADER_FILES 
-    include/guceMyGUI.h
-    include/guceMyGUI_CButtonImp.h
-    include/guceMyGUI_CCheckboxImp.h
-    include/guceMyGUI_CComboboxImp.h
-    include/guceMyGUI_CDataManager.h
-    include/guceMyGUI_CEditboxImp.h
-    include/guceMyGUI_CFileOpenDialogImp.h
-    include/guceMyGUI_CFileSaveDialogImp.h
-    include/guceMyGUI_CFileSystemDialogImp.h
-    include/guceMyGUI_CFormBackendImp.h
-    include/guceMyGUI_CGridViewImp.h
-    include/guceMyGUI_CGUIContext.h
-    include/guceMyGUI_CGUIDriver.h
-    include/guceMyGUI_CImageFrameImp.h
-    include/guceMyGUI_CIOAccessToMyGuiDataStreamAdapter.h
-    include/guceMyGUI_CLabelImp.h
-    include/guceMyGUI_CListBoxImp.h
-    include/guceMyGUI_CMemoboxImp.h
-    include/guceMyGUI_CMenuBarImp.h
-    include/guceMyGUI_CModule.h
-    include/guceMyGUI_CMyGUIInputAdapter.h
-    include/guceMyGUI_config.h
-    include/guceMyGUI_CPopupMenuImp.h
-    include/guceMyGUI_CProgressBarImp.h
-    include/guceMyGUI_CPushButtonImp.h
-    include/guceMyGUI_CRenderContextImp.h
-    include/guceMyGUI_CSpinnerImp.h
-    include/guceMyGUI_CTabContentPaneImp.h
-    include/guceMyGUI_CTabControlImp.h
-    include/guceMyGUI_CTreeviewImp.h
-    include/guceMyGUI_CVFSHandleToMyGuiDataStreamAdapter.h
-    include/guceMyGUI_CVFSInfoProvider.h
-    include/guceMyGUI_CWidgetImp.h
-    include/guceMyGUI_CWindowImp.h
-    include/guceMyGUI_ETypes.h
-    include/guceMyGUI_macros.h
-    include/guceMyGUI_pluginAPI.h
-    include/MyGUI.OgrePlatform.h
-    include/MyGUI_LastHeader.h
-    include/MyGUI_OgreDiagnostic.h
-    include/MyGUI_OgreRenderManager.h
-    include/MyGUI_OgreRTTexture.h
-    include/MyGUI_OgreTexture.h
-    include/MyGUI_OgreVertexBuffer.h
-  )
+# Make sure the PLATFORM_HEADER_FILES variable is always defined
+ set( PLATFORM_HEADER_FILES "" )
 
-  set( PLATFORM_HEADER_INSTALL "LINUX" )
-  source_group( "Platform Header Files" FILES ${PLATFORM_HEADER_FILES} )
-
-  set( PLATFORM_SOURCE_FILES 
-    include/guceMyGUI_CIOAccessToMyGuiDataStreamAdapter.cpp
-    src/guceMyGUI.cpp
-    src/guceMyGUI_CButtonImp.cpp
-    src/guceMyGUI_CCheckboxImp.cpp
-    src/guceMyGUI_CComboboxImp.cpp
-    src/guceMyGUI_CDataManager.cpp
-    src/guceMyGUI_CEditboxImp.cpp
-    src/guceMyGUI_CFileOpenDialogImp.cpp
-    src/guceMyGUI_CFileSaveDialogImp.cpp
-    src/guceMyGUI_CFileSystemDialogImp.cpp
-    src/guceMyGUI_CFormBackendImp.cpp
-    src/guceMyGUI_CGridViewImp.cpp
-    src/guceMyGUI_CGUIContext.cpp
-    src/guceMyGUI_CGUIDriver.cpp
-    src/guceMyGUI_CImageFrameImp.cpp
-    src/guceMyGUI_CLabelImp.cpp
-    src/guceMyGUI_CListboxImp.cpp
-    src/guceMyGUI_CMemoboxImp.cpp
-    src/guceMyGUI_CMenuBarImp.cpp
-    src/guceMyGUI_CModule.cpp
-    src/guceMyGUI_CMyGUIInputAdapter.cpp
-    src/guceMyGUI_CPopupMenuImp.cpp
-    src/guceMyGUI_CProgressBarImp.cpp
-    src/guceMyGUI_CPushButtonImp.cpp
-    src/guceMyGUI_CRenderContextImp.cpp
-    src/guceMyGUI_CSpinnerImp.cpp
-    src/guceMyGUI_CTabContentPaneImp.cpp
-    src/guceMyGUI_CTabControlImp.cpp
-    src/guceMyGUI_CTreeviewImp.cpp
-    src/guceMyGUI_CVFSHandleToMyGuiDataStreamAdapter.cpp
-    src/guceMyGUI_CVFSInfoProvider.cpp
-    src/guceMyGUI_CWidgetImp.cpp
-    src/guceMyGUI_CWindowImp.cpp
-    src/guceMyGUI_pluginAPI.cpp
-    src/MyGUI_OgreRenderManager.cpp
-    src/MyGUI_OgreRTTexture.cpp
-    src/MyGUI_OgreTexture.cpp
-    src/MyGUI_OgreVertexBuffer.cpp
-  )
-
-  set( PLATFORM_SOURCE_INSTALL "LINUX" )
-  source_group( "Platform Source Files" FILES ${PLATFORM_SOURCE_FILES} )
-
-elseif (WIN32)
-  set( PLATFORM_HEADER_FILES 
-    include/guceMyGUI.h
-    include/guceMyGUI_CButtonImp.h
-    include/guceMyGUI_CCheckboxImp.h
-    include/guceMyGUI_CComboboxImp.h
-    include/guceMyGUI_CDataManager.h
-    include/guceMyGUI_CEditboxImp.h
-    include/guceMyGUI_CFileOpenDialogImp.h
-    include/guceMyGUI_CFileSaveDialogImp.h
-    include/guceMyGUI_CFileSystemDialogImp.h
-    include/guceMyGUI_CFormBackendImp.h
-    include/guceMyGUI_CGridViewImp.h
-    include/guceMyGUI_CGUIContext.h
-    include/guceMyGUI_CGUIDriver.h
-    include/guceMyGUI_CImageFrameImp.h
-    include/guceMyGUI_CIOAccessToMyGuiDataStreamAdapter.h
-    include/guceMyGUI_CLabelImp.h
-    include/guceMyGUI_CListBoxImp.h
-    include/guceMyGUI_CMemoboxImp.h
-    include/guceMyGUI_CMenuBarImp.h
-    include/guceMyGUI_CModule.h
-    include/guceMyGUI_CMyGUIInputAdapter.h
-    include/guceMyGUI_config.h
-    include/guceMyGUI_CPopupMenuImp.h
-    include/guceMyGUI_CProgressBarImp.h
-    include/guceMyGUI_CPushButtonImp.h
-    include/guceMyGUI_CRenderContextImp.h
-    include/guceMyGUI_CSpinnerImp.h
-    include/guceMyGUI_CTabContentPaneImp.h
-    include/guceMyGUI_CTabControlImp.h
-    include/guceMyGUI_CTreeviewImp.h
-    include/guceMyGUI_CVFSHandleToMyGuiDataStreamAdapter.h
-    include/guceMyGUI_CVFSInfoProvider.h
-    include/guceMyGUI_CWidgetImp.h
-    include/guceMyGUI_CWindowImp.h
-    include/guceMyGUI_ETypes.h
-    include/guceMyGUI_macros.h
-    include/guceMyGUI_pluginAPI.h
-    include/MyGUI.OgrePlatform.h
-    include/MyGUI_LastHeader.h
-    include/MyGUI_OgreDiagnostic.h
-    include/MyGUI_OgreRenderManager.h
-    include/MyGUI_OgreRTTexture.h
-    include/MyGUI_OgreTexture.h
-    include/MyGUI_OgreVertexBuffer.h
-  )
-
-  set( PLATFORM_HEADER_INSTALL "WIN32" )
-  source_group( "Platform Header Files" FILES ${PLATFORM_HEADER_FILES} )
-
-  set( PLATFORM_SOURCE_FILES 
-    include/guceMyGUI_CIOAccessToMyGuiDataStreamAdapter.cpp
-    src/guceMyGUI.cpp
-    src/guceMyGUI_CButtonImp.cpp
-    src/guceMyGUI_CCheckboxImp.cpp
-    src/guceMyGUI_CComboboxImp.cpp
-    src/guceMyGUI_CDataManager.cpp
-    src/guceMyGUI_CEditboxImp.cpp
-    src/guceMyGUI_CFileOpenDialogImp.cpp
-    src/guceMyGUI_CFileSaveDialogImp.cpp
-    src/guceMyGUI_CFileSystemDialogImp.cpp
-    src/guceMyGUI_CFormBackendImp.cpp
-    src/guceMyGUI_CGridViewImp.cpp
-    src/guceMyGUI_CGUIContext.cpp
-    src/guceMyGUI_CGUIDriver.cpp
-    src/guceMyGUI_CImageFrameImp.cpp
-    src/guceMyGUI_CLabelImp.cpp
-    src/guceMyGUI_CListboxImp.cpp
-    src/guceMyGUI_CMemoboxImp.cpp
-    src/guceMyGUI_CMenuBarImp.cpp
-    src/guceMyGUI_CModule.cpp
-    src/guceMyGUI_CMyGUIInputAdapter.cpp
-    src/guceMyGUI_CPopupMenuImp.cpp
-    src/guceMyGUI_CProgressBarImp.cpp
-    src/guceMyGUI_CPushButtonImp.cpp
-    src/guceMyGUI_CRenderContextImp.cpp
-    src/guceMyGUI_CSpinnerImp.cpp
-    src/guceMyGUI_CTabContentPaneImp.cpp
-    src/guceMyGUI_CTabControlImp.cpp
-    src/guceMyGUI_CTreeviewImp.cpp
-    src/guceMyGUI_CVFSHandleToMyGuiDataStreamAdapter.cpp
-    src/guceMyGUI_CVFSInfoProvider.cpp
-    src/guceMyGUI_CWidgetImp.cpp
-    src/guceMyGUI_CWindowImp.cpp
-    src/guceMyGUI_pluginAPI.cpp
-    src/MyGUI_OgreRenderManager.cpp
-    src/MyGUI_OgreRTTexture.cpp
-    src/MyGUI_OgreTexture.cpp
-    src/MyGUI_OgreVertexBuffer.cpp
-  )
-
-  set( PLATFORM_SOURCE_INSTALL "WIN32" )
-  source_group( "Platform Source Files" FILES ${PLATFORM_SOURCE_FILES} )
-
-endif ()
+# Make sure the PLATFORM_SOURCE_FILES variable is always defined
+ set( PLATFORM_SOURCE_FILES "" )
 
 # For ease of use make a variable that has all files for this module
 set( ALL_FILES ${HEADER_FILES} ${SOURCE_FILES} ${PLATFORM_HEADER_FILES} ${PLATFORM_SOURCE_FILES} )
 
+set( MODULE_NAME "guidriverMyGUI" )
+add_library( ${MODULE_NAME} ${ALL_FILES} )
+add_dependencies( ${MODULE_NAME} MyGUIEngine freetype gucefCORE gucefGUI gucefINPUT gucefMT )
+target_link_libraries( ${MODULE_NAME} MyGUIEngine freetype gucefCORE gucefGUI gucefINPUT gucefMT )
+set_target_properties( ${MODULE_NAME} PROPERTIES COMPILE_DEFINITIONS "GUIDRIVERMYGUI_BUILD_MODULE" )
 
-if( LINUX )
-  set( MODULE_NAME "guidriverMyGUI" )
-elseif( WIN32 )
-  set( MODULE_NAME "guidriverMyGUI" )
-endif()
-if( LINUX )
-  add_library( ${MODULE_NAME} ${ALL_FILES} )
-elseif( WIN32 )
-  add_library( ${MODULE_NAME} ${ALL_FILES} )
-endif()
+include_directories( ../../../common/include ../../../dependencies/MyGui/MyGUIEngine/include ../../../dependencies/freetype/include ../../../dependencies/freetype/include/freetype ../../../dependencies/freetype/include/freetype/config ../../../dependencies/freetype/include/freetype/internal ../../../dependencies/freetype/include/freetype/internal/services ../../../dependencies/freetype/src/winfonts ../../../gucefCORE/include ../../../gucefGUI/include ../../../gucefIMAGE/include ../../../gucefINPUT/include ../../../gucefMT/include ../../../gucefVFS/include include )
+
+if ( ANDROID )
+  include_directories( ../../../gucefCORE/include/android )
+endif( ANDROID )
 
 if ( LINUX )
-  add_dependencies( ${MODULE_NAME} FreeType MyGUIEngine gucefCORE gucefGUI gucefINPUT gucefMT )
-  target_link_libraries( ${MODULE_NAME} FreeType MyGUIEngine gucefCORE gucefGUI gucefINPUT gucefMT )
-  set_target_properties( ${MODULE_NAME} PROPERTIES COMPILE_DEFINITIONS "GUIDRIVERMYGUI_BUILD_MODULE" )
+  include_directories( ../../../gucefCORE/include/linux )
 endif( LINUX )
 
 if ( WIN32 )
-  add_dependencies( ${MODULE_NAME} FreeType MyGUIEngine gucefCORE gucefGUI gucefINPUT gucefMT )
-  target_link_libraries( ${MODULE_NAME} FreeType MyGUIEngine gucefCORE gucefGUI gucefINPUT gucefMT )
-  set_target_properties( ${MODULE_NAME} PROPERTIES COMPILE_DEFINITIONS "GUIDRIVERMYGUI_BUILD_MODULE" )
+  include_directories( ../../../gucefCORE/include/mswin )
 endif( WIN32 )
 
-include_directories( ../../../common/include ../../../dependencies/MyGui/MyGUIEngine/include ../../../dependencies/freetype/include ../../../dependencies/freetype/include/freetype ../../../dependencies/freetype/include/freetype/config ../../../dependencies/freetype/include/freetype/internal ../../../dependencies/freetype/include/freetype/internal/services ../../../dependencies/freetype/src/winfonts ../../../gucefCORE/include ../../../gucefGUI/include ../../../gucefIMAGE/include ../../../gucefINPUT/include ../../../gucefMT/include ../../../gucefVFS/include )
-
-if ( LINUX )
-  include_directories( ../../../gucefCORE/include/linux include )
-endif( LINUX )
-
-if ( WIN32 )
-  include_directories( ../../../gucefCORE/include/mswin include )
-endif( WIN32 )
+if ( WIN64 )
+  include_directories( ../../../gucefCORE/include/mswin )
+endif( WIN64 )
 
 
 
@@ -249,9 +127,17 @@ endif( WIN32 )
 
 
 
-if (LINUX)
+if (ANDROID)
+GUCEF_config_lib( ${MODULE_NAME} )
+elseif (LINUX)
+GUCEF_config_lib( ${MODULE_NAME} )
+elseif (OSX)
 GUCEF_config_lib( ${MODULE_NAME} )
 elseif (WIN32)
+GUCEF_config_lib( ${MODULE_NAME} )
+elseif (WIN64)
+GUCEF_config_lib( ${MODULE_NAME} )
+else()
 GUCEF_config_lib( ${MODULE_NAME} )
 endif()
 

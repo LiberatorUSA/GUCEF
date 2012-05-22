@@ -379,17 +379,17 @@ CWidgetImp< BaseClass >::Hook( MyGUI::Widget* widget )
     {
         m_widget->setUserData( this );
 
-        m_widget->eventMouseSetFocus = MyGUI::newDelegate( this, &CWidgetImp< BaseClass >::OnMouseReceivedFocus );
-        m_widget->eventMouseLostFocus = MyGUI::newDelegate( this, &CWidgetImp< BaseClass >::OnMouseLostFocus );
-        m_widget->eventMouseButtonPressed = MyGUI::newDelegate( this, &CWidgetImp< BaseClass >::OnMouseButtonPressed );
-        m_widget->eventMouseButtonReleased = MyGUI::newDelegate( this, &CWidgetImp< BaseClass >::OnMouseButtonReleased );
-        m_widget->eventMouseMove = MyGUI::newDelegate( this, &CWidgetImp< BaseClass >::OnMouseMove );
-        m_widget->eventMouseButtonClick = MyGUI::newDelegate( this, &CWidgetImp< BaseClass >::OnMouseClick );
-        m_widget->eventMouseButtonDoubleClick = MyGUI::newDelegate( this, &CWidgetImp< BaseClass >::OnMouseDoubleClick );
-        m_widget->eventKeySetFocus = MyGUI::newDelegate( this, &CWidgetImp< BaseClass >::OnKeyboardFocusReceived );
-        m_widget->eventKeyLostFocus = MyGUI::newDelegate( this, &CWidgetImp< BaseClass >::OnKeyboardFocusLost );
-        m_widget->eventKeyButtonPressed = MyGUI::newDelegate( this, &CWidgetImp< BaseClass >::OnKeyPressed );
-        m_widget->eventKeyButtonReleased = MyGUI::newDelegate( this, &CWidgetImp< BaseClass >::OnKeyReleased );
+        m_widget->eventMouseSetFocus += MyGUI::newDelegate( this, &CWidgetImp< BaseClass >::OnMouseReceivedFocus );
+        m_widget->eventMouseLostFocus += MyGUI::newDelegate( this, &CWidgetImp< BaseClass >::OnMouseLostFocus );
+        m_widget->eventMouseButtonPressed += MyGUI::newDelegate( this, &CWidgetImp< BaseClass >::OnMouseButtonPressed );
+        m_widget->eventMouseButtonReleased += MyGUI::newDelegate( this, &CWidgetImp< BaseClass >::OnMouseButtonReleased );
+        m_widget->eventMouseMove += MyGUI::newDelegate( this, &CWidgetImp< BaseClass >::OnMouseMove );
+        m_widget->eventMouseButtonClick += MyGUI::newDelegate( this, &CWidgetImp< BaseClass >::OnMouseClick );
+        m_widget->eventMouseButtonDoubleClick += MyGUI::newDelegate( this, &CWidgetImp< BaseClass >::OnMouseDoubleClick );
+        m_widget->eventKeySetFocus += MyGUI::newDelegate( this, &CWidgetImp< BaseClass >::OnKeyboardFocusReceived );
+        m_widget->eventKeyLostFocus += MyGUI::newDelegate( this, &CWidgetImp< BaseClass >::OnKeyboardFocusLost );
+        m_widget->eventKeyButtonPressed += MyGUI::newDelegate( this, &CWidgetImp< BaseClass >::OnKeyPressed );
+        m_widget->eventKeyButtonReleased += MyGUI::newDelegate( this, &CWidgetImp< BaseClass >::OnKeyReleased );
     }
 }
 
@@ -403,7 +403,7 @@ CWidgetImp< BaseClass >::ConvertXDim( const GUCEF::GUI::CUDim& x ) const
     MyGUI::Widget* parent = m_widget->getParent();
     if ( NULL != parent )
     {
-        return ( x.GetRelativeValue() * parent->getWidth() ) + x.GetPixelValue();
+        return (int) ( x.GetRelativeValue() * parent->getWidth() ) + x.GetPixelValue();
     }
 
     return x.GetPixelValue();
@@ -419,7 +419,7 @@ CWidgetImp< BaseClass >::ConvertYDim( const GUCEF::GUI::CUDim& y ) const
     MyGUI::Widget* parent = m_widget->getParent();
     if ( NULL != parent )
     {
-        return ( y.GetRelativeValue() * parent->getHeight() ) + y.GetPixelValue();
+        return (int) ( y.GetRelativeValue() * parent->getHeight() ) + y.GetPixelValue();
     }
 
     return y.GetPixelValue();
@@ -458,8 +458,8 @@ CWidgetImp< BaseClass >::ConvertVectorToPoint( const GUCEF::GUI::CUVector& vecto
     MyGUI::Widget* parent = m_widget->getParent();
     if ( NULL != parent )
     {
-        convertedValue.left = ( vector.GetX().GetRelativeValue() * parent->getWidth() ) + vector.GetX().GetPixelValue();
-        convertedValue.top = ( vector.GetY().GetRelativeValue() * parent->getHeight() ) + vector.GetY().GetPixelValue();
+        convertedValue.left = (int) ( vector.GetX().GetRelativeValue() * parent->getWidth() ) + vector.GetX().GetPixelValue();
+        convertedValue.top = (int) ( vector.GetY().GetRelativeValue() * parent->getHeight() ) + vector.GetY().GetPixelValue();
         return convertedValue;
     }
 
@@ -479,8 +479,8 @@ CWidgetImp< BaseClass >::ConvertVectorToSize( const GUCEF::GUI::CUVector& vector
     MyGUI::Widget* parent = m_widget->getParent();
     if ( NULL != parent )
     {
-        convertedValue.width = ( vector.GetX().GetRelativeValue() * parent->getWidth() ) + vector.GetX().GetPixelValue();
-        convertedValue.height = ( vector.GetY().GetRelativeValue() * parent->getHeight() ) + vector.GetY().GetPixelValue();
+        convertedValue.width = (int) ( vector.GetX().GetRelativeValue() * parent->getWidth() ) + vector.GetX().GetPixelValue();
+        convertedValue.height = (int) ( vector.GetY().GetRelativeValue() * parent->getHeight() ) + vector.GetY().GetPixelValue();
         return convertedValue;
     }
 
@@ -565,7 +565,7 @@ bool
 CWidgetImp< BaseClass >::IsVisible( void ) const
 {GUCEF_TRACE;
 
-    return m_widget->isVisible();
+    return m_widget->getVisible();
 }
 
 /*-------------------------------------------------------------------------*/
@@ -586,7 +586,7 @@ bool
 CWidgetImp< BaseClass >::IsEnabled( void ) const
 {GUCEF_TRACE;
 
-    return m_widget->isEnabled();
+    return m_widget->getEnabled();
 }
 
 /*-------------------------------------------------------------------------*/

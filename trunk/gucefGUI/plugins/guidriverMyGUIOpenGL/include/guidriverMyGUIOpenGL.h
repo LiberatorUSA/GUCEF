@@ -14,7 +14,7 @@
  *
  *  You should have received a copy of the GNU Lesser General Public
  *  License along with this library; if not, write to the Free Software
- *  Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA
+ *  Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA 
  */
 
 /*
@@ -34,7 +34,7 @@
 //-------------------------------------------------------------------------*/
 
 /*
- *      Library build configuration
+ *      Library build configuration      
  */
 #ifndef GUCEF_MYGUI_CONFIG_H
 #include "guceMyGUI_config.h"
@@ -90,7 +90,7 @@
 #endif /* GUCEF_MYGUI_CEDITBOXIMP_H ? */
 
 #ifndef GUCEF_MYGUI_CLISTBOXIMP_H
-#include "guceMyGUI_CListBoxImp.h"
+#include "guceMyGUI_CListboxImp.h"
 #define GUCEF_MYGUI_CLISTBOXIMP_H
 #endif /* GUCEF_MYGUI_CLISTBOXIMP_H ? */
 

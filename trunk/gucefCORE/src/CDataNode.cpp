@@ -481,17 +481,28 @@ CDataNode::FindChild( const CString& name ) const
 /*-------------------------------------------------------------------------*/
 
 CDataNode::TConstDataNodeSet
-CDataNode::FindChildrenOfType( const CString& name ) const
+CDataNode::FindChildrenOfType( const CString& name  ,
+                               const bool recursive ) const
 {GUCEF_TRACE;
 
     TConstDataNodeSet children;
-    CDataNode* child = _pfchild;
+    const CDataNode* child = _pfchild;
     
     while ( 0 != child )
     {
         if ( child->_name == name )
         {
             children.insert( child );            
+        }
+        if ( recursive )
+        {
+            TConstDataNodeSet subSet( child->FindChildrenOfType( name, recursive ) );
+            TConstDataNodeSet::const_iterator i = subSet.begin();
+            while ( i != subSet.end() )
+            {
+                children.insert( (*i) );
+                ++i;
+            }
         }        
         child = child->_pnext;
     }
@@ -501,7 +512,8 @@ CDataNode::FindChildrenOfType( const CString& name ) const
 /*-------------------------------------------------------------------------*/
 
 CDataNode::TDataNodeSet
-CDataNode::FindChildrenOfType( const CString& name )
+CDataNode::FindChildrenOfType( const CString& name  ,
+                               const bool recursive )
 {GUCEF_TRACE;
 
     TDataNodeSet children;
@@ -512,7 +524,17 @@ CDataNode::FindChildrenOfType( const CString& name )
         if ( child->_name == name )
         {
             children.insert( child );            
-        }        
+        }
+        if ( recursive )
+        {
+            TDataNodeSet subSet( child->FindChildrenOfType( name, recursive ) );
+            TDataNodeSet::const_iterator i = subSet.begin();
+            while ( i != subSet.end() )
+            {
+                children.insert( (*i) );
+                ++i;
+            }
+        }                
         child = child->_pnext;
     }
     return children;
