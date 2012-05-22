@@ -58,6 +58,11 @@
 #define GUCEF_CORE_DVFILEUTILS_H
 #endif /* GUCEF_CORE_DVFILEUTILS_H ? */
 
+#ifndef GUCEF_CORE_CDATANODE_H
+#include "CDataNode.h"
+#define GUCEF_CORE_CDATANODE_H
+#endif /* GUCEF_CORE_CDATANODE_H ? */
+
 #include "CPluginControl.h"     /* definition of the class implemented here */
 
 #ifndef GUCEF_CORE_GUCEF_ESSENTIALS_H
@@ -922,7 +927,39 @@ bool
 CPluginControl::LoadConfig( const CDataNode& treeroot )
 {GUCEF_TRACE;
 
-    return false;
+    CDataNode::TConstDataNodeSet pluginGroupNodes( treeroot.FindChildrenOfType( "PluginGroup", true ) );
+    CDataNode::TConstDataNodeSet::iterator i = pluginGroupNodes.begin();
+    while ( i != pluginGroupNodes.end() ) 
+    {
+        const CDataNode* groupNode = (*i);
+        
+        bool loadPlugins = false;
+        CString loadImBoolStr = groupNode->GetAttributeValue( "LoadImmediately" );
+        if ( !loadImBoolStr.IsNULLOrEmpty() )
+        {
+             loadPlugins = StringToBool( loadImBoolStr );
+        }
+        CString groupName = groupNode->GetAttributeValue( "GroupName" );
+
+        CDataNode::TConstDataNodeSet pluginMetaDataNodes( groupNode->FindChildrenOfType( "PluginMetaData", true ) );
+        CDataNode::TConstDataNodeSet::iterator n = pluginMetaDataNodes.begin();
+        while ( n != pluginMetaDataNodes.end() ) 
+        {
+            CPluginMetaData metaData;
+            if ( metaData.LoadConfig( *(*n ) ) )
+            {                
+                if ( !AddPluginMetaData( metaData, groupName, loadPlugins ) )
+                {
+                    GUCEF_ERROR_LOG( LOGLEVEL_NORMAL, "Failed to load plugin meta data based on info in config" );
+                }
+            }
+            ++n;
+        }
+
+        ++i;
+    }
+
+    return true;
 }
 
 /*-------------------------------------------------------------------------//

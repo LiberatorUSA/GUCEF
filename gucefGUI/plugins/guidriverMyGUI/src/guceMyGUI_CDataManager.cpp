@@ -33,6 +33,11 @@
 #define GUCEF_VFS_CVFS_H
 #endif /* GUCEF_VFS_CVFS_H ? */
 
+#ifndef GUCEF_VFS_CVFSGLOBAL_H
+#include "gucefVFS_CVfsGlobal.h"
+#define GUCEF_VFS_CVFSGLOBAL_H
+#endif /* GUCEF_VFS_CVFSGLOBAL_H ? */
+
 #include "guceMyGUI_CDataManager.h"
 
 /*-------------------------------------------------------------------------//
@@ -91,9 +96,9 @@ CDataManager::getData( const std::string& name )
 {GUCEF_TRACE;
 
     CORE::CString pathToResource = m_guiDataRoot;
-    GUCEF::CORE::AppendToPath( pathToResource, name.c_str() );
+    CORE::AppendToPath( pathToResource, name.c_str() );
 
-    GUCEF::VFS::CVFS::CVFSHandlePtr filePtr = GUCEF::VFS::CVFS::Instance()->GetFile( pathToResource );
+    VFS::CVFS::CVFSHandlePtr filePtr = VFS::CVfsGlobal::Instance()->GetVfs().GetFile( pathToResource );
     if ( NULL != filePtr )
     {
         return new CVfsHandleToMyGUIDataStreamAdapter( filePtr );
@@ -110,7 +115,7 @@ CDataManager::isDataExist( const std::string& name )
     CORE::CString pathToResource = m_guiDataRoot;
     GUCEF::CORE::AppendToPath( pathToResource, name.c_str() );
 
-    return GUCEF::VFS::CVfsGlobal::Instance()->GetVfs().FileExists( pathToResource );
+    return VFS::CVfsGlobal::Instance()->GetVfs().FileExists( pathToResource );
 }
 
 /*-------------------------------------------------------------------------*/
@@ -132,13 +137,13 @@ CDataManager::getDataListNames( const std::string& pattern, bool fullpath )
     result.clear();
 
     GUCEF::VFS::CVFS::TStringSet vfsResultSet;
-    GUCEF::VFS::CVFS::Instance()->GetList( vfsResultSet ,
-                                           ""           ,
-                                           true         ,
-                                           fullpath     ,
-                                           pattern      ,
-                                           true         ,
-                                           false        );
+    VFS::CVfsGlobal::Instance()->GetVfs().GetList( vfsResultSet , 
+                                                   ""           , 
+                                                   true         , 
+                                                   fullpath     , 
+                                                   pattern      , 
+                                                   true         , 
+                                                   false        );
 
 
     GUCEF::VFS::CVFS::TStringSet::iterator i = vfsResultSet.begin();

@@ -25,12 +25,7 @@
 
 #include <assert.h>
 
-#ifndef GUCEF_MYGUI_CGUIDRIVER_H
-#include "guceMyGUI_CGUIDriver.h"
-#define GUCEF_MYGUI_CGUIDRIVER_H
-#endif /* GUCEF_MYGUI_CGUIDRIVER_H ? */
-
-#include "guceMyGUIOgre_CGUIContext.h"
+#include "guceMyGUI_CGUIContext.h"
 
 /*-------------------------------------------------------------------------//
 //                                                                         //
@@ -70,12 +65,12 @@ GUCEF::GUI::CWidget*
 CGUIContext::CreateWidget( const CString& widgetName )
 {GUCEF_TRACE;
 
-    GUCEF::GUI::CWidget* widget = m_driver->CreateWidget( widgetName );
-    if ( NULL != widget )
-    {
-        m_widgetSet.insert( widget );
-        return widget;
-    }
+    //GUCEF::GUI::CWidget* widget = m_driver->CreateWidget( widgetName );
+    //if ( NULL != widget )
+    //{
+    //    m_widgetSet.insert( widget );
+    //    return widget;
+    //}
     return NULL;
 }
 
@@ -86,7 +81,7 @@ CGUIContext::DestroyWidget( GUCEF::GUI::CWidget* widget )
 {GUCEF_TRACE;
 
     m_widgetSet.erase( widget );
-    m_driver->DestroyWidget( widget );
+    //m_driver->DestroyWidget( widget );
 }
 
 /*-------------------------------------------------------------------------*/
@@ -95,12 +90,12 @@ GUCEF::GUI::CForm*
 CGUIContext::CreateForm( const CString& formName )
 {GUCEF_TRACE;
 
-    GUCEF::GUI::CForm* form = m_driver->CreateForm( formName );
-    if ( NULL != form )
-    {
-        m_formSet.insert( form );
-        return form;
-    }
+    //GUCEF::GUI::CForm* form = m_driver->CreateForm( formName );
+    //if ( NULL != form )
+    //{
+    //    m_formSet.insert( form );
+    //    return form;
+    //}
     return NULL;
 }
 
@@ -111,7 +106,7 @@ CGUIContext::DestroyForm( GUCEF::GUI::CForm* form )
 {GUCEF_TRACE;
 
     m_formSet.erase( form );
-    m_driver->DestroyForm( form ); 
+    //m_driver->DestroyForm( form ); 
 }
 
 /*-------------------------------------------------------------------------*/
@@ -120,7 +115,7 @@ CGUIContext::TStringSet
 CGUIContext::GetAvailableFormTypes( void )
 {GUCEF_TRACE;
 
-    return m_driver->GetAvailableFormTypes();
+    return CGUIContext::TStringSet(); //m_driver->GetAvailableFormTypes();
 }
 
 /*-------------------------------------------------------------------------*/
@@ -129,7 +124,7 @@ CGUIContext::TStringSet
 CGUIContext::GetAvailableWidgetTypes( void )
 {GUCEF_TRACE;
 
-    return m_driver->GetAvailableWidgetTypes();
+    return CGUIContext::TStringSet(); //m_driver->GetAvailableWidgetTypes();
 }
 
 /*-------------------------------------------------------------------------*/
@@ -138,7 +133,7 @@ GUCEF::GUI::CFormBackend*
 CGUIContext::CreateFormBackend( void )
 {GUCEF_TRACE;
 
-    return m_driver->CreateFormBackend();
+    return NULL; //m_driver->CreateFormBackend();
 }
 
 /*-------------------------------------------------------------------------*/
@@ -147,7 +142,7 @@ void
 CGUIContext::DestroyFormBackend( GUCEF::GUI::CFormBackend* formBackend )
 {GUCEF_TRACE;
 
-    m_driver->DestroyFormBackend( formBackend );
+    //m_driver->DestroyFormBackend( formBackend );
 }
 
 /*-------------------------------------------------------------------------*/
@@ -156,7 +151,7 @@ GUCEF::GUI::CGUIDriver*
 CGUIContext::GetDriver( void )
 {GUCEF_TRACE;
 
-    return m_driver;
+    return NULL; //m_driver;
 }
 
 /*-------------------------------------------------------------------------*/

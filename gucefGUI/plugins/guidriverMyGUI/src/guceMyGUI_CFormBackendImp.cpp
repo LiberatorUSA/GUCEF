@@ -48,11 +48,6 @@
 #define GUCEF_CORE_CLOGMANAGER_H
 #endif /* GUCEF_CORE_CLOGMANAGER_H ? */
 
-#ifndef GUCE_CORE_CIOACCESSARCHIVEFACTORY_H
-#include "CIOAccessArchiveFactory.h"
-#define GUCE_CORE_CIOACCESSARCHIVEFACTORY_H
-#endif /* GUCE_CORE_CIOACCESSARCHIVEFACTORY_H ? */
-
 #ifndef GUCEF_MYGUI_CIOACCESSTOMYGUIDATASTREAMADAPTER_H
 #include "guceMyGUI_CIOAccessToMyGUIDataStreamAdapter.h"
 #define GUCEF_MYGUI_CIOACCESSTOMYGUIDATASTREAMADAPTER_H
@@ -145,18 +140,18 @@ CFormBackendImp::CFormBackendImp( void )
       m_widgetMap()         ,
       m_rootWindow( NULL )  ,
       m_widgetNamePrefix()  ,
-      m_resourceGroupName() ,
-      m_dummyArchive( NULL )
+      m_resourceGroupName() //,
+      //m_dummyArchive( NULL )
 {GUCEF_TRACE;
 
-    m_resourceGroupName = "GUCE::MYGUIOGRE::CFormBackendImp::" + GUCEF::CORE::PointerToString( this );
+    //m_resourceGroupName = "GUCE::MYGUIOGRE::CFormBackendImp::" + GUCEF::CORE::PointerToString( this );
     m_widgetNamePrefix = m_resourceGroupName + '/';    
     
-    // provide hacky access to data we get in the CFormBackend API
-    Ogre::Root::getSingletonPtr()->addResourceLocation( m_resourceGroupName      , 
-                                                        "GUCEF::CORE::CIOAccess" ,
-                                                        m_resourceGroupName      );
-    m_dummyArchive = (*CORE::CIOAccessArchiveFactory::Instance()->GetArchiveMap().find( m_resourceGroupName )).second;
+    //// provide hacky access to data we get in the CFormBackend API
+    //Ogre::Root::getSingletonPtr()->addResourceLocation( m_resourceGroupName      , 
+    //                                                    "GUCEF::CORE::CIOAccess" ,
+    //                                                    m_resourceGroupName      );
+    //m_dummyArchive = (*CORE::CIOAccessArchiveFactory::Instance()->GetArchiveMap().find( m_resourceGroupName )).second;
 }
 
 /*-------------------------------------------------------------------------*/
@@ -164,8 +159,8 @@ CFormBackendImp::CFormBackendImp( void )
 CFormBackendImp::~CFormBackendImp()
 {GUCEF_TRACE;
 
-    Ogre::Root::getSingletonPtr()->removeResourceLocation( m_resourceGroupName, m_resourceGroupName );
-    m_dummyArchive = NULL;
+    //Ogre::Root::getSingletonPtr()->removeResourceLocation( m_resourceGroupName, m_resourceGroupName );
+    //m_dummyArchive = NULL;
 }
 
 /*-------------------------------------------------------------------------*/
@@ -322,9 +317,9 @@ CFormBackendImp::LoadLayout( const GUCEF::CORE::CString& layoutStoragePath )
                                         m_widgetNamePrefix.STL_String() , 
                                         nullptr                         );
     }
-    catch ( Ogre::Exception& e )
+    catch ( std::exception& e )
     {
-        GUCEF_ERROR_LOG( GUCEF::CORE::LOGLEVEL_IMPORTANT, CString( "CFormBackendImp(" + GUCEF::CORE::PointerToString( this ) + "): Ogre Exception while attempting to load form layout: " ) + e.getFullDescription().c_str() );
+        GUCEF_ERROR_LOG( GUCEF::CORE::LOGLEVEL_IMPORTANT, CString( "CFormBackendImp(" + GUCEF::CORE::PointerToString( this ) + "): exception while attempting to load form layout: " ) + e.what() );
         return false;
     }
     

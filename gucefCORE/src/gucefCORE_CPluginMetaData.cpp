@@ -28,6 +28,11 @@
 #define GUCEF_CORE_LOGGING_H
 #endif /* GUCEF_CORE_LOGGING_H ? */
 
+#ifndef GUCEF_CORE_CDATANODE_H
+#include "CDataNode.h"
+#define GUCEF_CORE_CDATANODE_H
+#endif /* GUCEF_CORE_CDATANODE_H ? */
+
 #include "gucefCORE_CPluginMetaData.h"
 
 /*-------------------------------------------------------------------------//
@@ -62,6 +67,8 @@ CPluginMetaData::CPluginMetaData( void )
     m_version.minor = -1;
     m_version.patch = -1;
     m_version.release = -1;
+
+    m_params.SetAllowMultipleValues( true );
 }
 
 /*-------------------------------------------------------------------------*/
@@ -97,6 +104,7 @@ CPluginMetaData::CPluginMetaData( const CIPluginMetaData& src )
 {GUCEF_TRACE;
 
     src.GetParams( m_params );
+    m_params.SetAllowMultipleValues( true );
 }
 
 /*-------------------------------------------------------------------------*/
@@ -285,6 +293,59 @@ bool
 CPluginMetaData::LoadConfig( const CDataNode& treeroot )
 {GUCEF_TRACE;
 
+    CDataNode* node = treeroot.Search( "PluginMetaData", '/', true );
+    if ( 0 != node )
+    {
+        CString value = node->GetAttributeValue( "Description" );
+        if ( value.IsNULLOrEmpty() )
+        {
+            m_description = value;
+        }
+        value = node->GetAttributeValue( "Copyright" );
+        if ( value.IsNULLOrEmpty() )
+        {
+            m_copyright = value;
+        }
+        value = node->GetAttributeValue( "Path" );
+        if ( value.IsNULLOrEmpty() )
+        {
+            m_modulePath = value;
+        }
+        value = node->GetAttributeValue( "Filename" );
+        if ( value.IsNULLOrEmpty() )
+        {
+            m_moduleFilename = value;
+        }
+        value = node->GetAttributeValue( "Version" );
+        if ( value.IsNULLOrEmpty() )
+        {
+            m_version = StringToVersion( value );
+        }
+        value = node->GetAttributeValue( "Type" );
+        if ( value.IsNULLOrEmpty() )
+        {
+            m_pluginType = value;
+        }
+        value = node->GetAttributeValue( "LoaderLogicType" );
+        if ( value.IsNULLOrEmpty() )
+        {
+            m_loaderLogicTypeName = value;
+        }
+        CDataNode::TDataNodeSet nodeSet = node->FindChildrenOfType( "Param" );
+        CDataNode::TDataNodeSet::iterator i = nodeSet.begin();
+        while ( i != nodeSet.end() )
+        {
+            CDataNode* childNode = (*i);
+            value = childNode->GetAttributeValue( "Key" );
+            if ( value.IsNULLOrEmpty() )
+            {
+                CString value2 = childNode->GetAttributeValue( "Value" );
+                m_params.Set( value, value2 );
+            }
+            ++i;
+        }
+        return true;
+    }                                       
     return false;
 }
 

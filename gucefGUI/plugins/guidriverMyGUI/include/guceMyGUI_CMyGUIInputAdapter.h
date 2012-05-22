@@ -34,7 +34,7 @@
 #endif /* GUCEF_CORE_COBSERVER_H ? */
 
 #ifndef GUCEF_MYGUI_MACROS_H
-#include "guceMyGUIOgre_macros.h"      /* often used macros */
+#include "guceMyGUI_macros.h"      /* often used macros */
 #define GUCEF_MYGUI_MACROS_H
 #endif /* GUCEF_MYGUI_MACROS_H ? */
 

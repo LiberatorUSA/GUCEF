@@ -52,17 +52,17 @@
 #define GUCEF_INPUT_CMOUSEMOVEDEVENTDATA_H
 #endif /* GUCEF_INPUT_CMOUSEMOVEDEVENTDATA_H ? */
 
-#ifndef GUCE_CORE_CGUCEAPPLICATION_H
-#include "CGUCEApplication.h"
-#define GUCE_CORE_CGUCEAPPLICATION_H
-#endif /* GUCE_CORE_CGUCEAPPLICATION_H ? */
+//#ifndef GUCE_CORE_CGUCEAPPLICATION_H
+//#include "CGUCEApplication.h"
+//#define GUCE_CORE_CGUCEAPPLICATION_H
+//#endif /* GUCE_CORE_CGUCEAPPLICATION_H ? */
 
-#ifndef GUCE_GUI_MACROS_H
-#include "guceGUI_macros.h"
-#define GUCE_GUI_MACROS_H
-#endif /* GUCE_GUI_MACROS_H ? */
+#ifndef GUCEF_GUI_MACROS_H
+#include "gucefGUI_macros.h"
+#define GUCEF_GUI_MACROS_H
+#endif /* GUCEF_GUI_MACROS_H ? */
 
-#include "guceMyGUIOgre_CMyGUIInputAdapter.h"
+#include "guceMyGUI_CMyGUIInputAdapter.h"
 
 /*-------------------------------------------------------------------------//
 //                                                                         //
@@ -86,13 +86,13 @@ CMyGUIInputAdapter::CMyGUIInputAdapter( MyGUI::Gui* guiSystem )
 
     assert( NULL != m_guiSystem );
     
-    // Add this input event consumer to the GUI input observer group
-    // This allows external agents to redirect input elsewhere when needed
-    GUCE::CORE::CGUCEApplication* app = GUCE::CORE::CGUCEApplication::Instance();
-    app->GetInputObserverSwitch().AddObserverToGroup( "GUI", *this );
-    
-    // Subscribe to all input events the input switch can forward
-    SubscribeTo( &app->GetInputObserverSwitch() );
+    //// Add this input event consumer to the GUI input observer group
+    //// This allows external agents to redirect input elsewhere when needed
+    //GUCE::CORE::CGUCEApplication* app = GUCE::CORE::CGUCEApplication::Instance();
+    //app->GetInputObserverSwitch().AddObserverToGroup( "GUI", *this );
+    //
+    //// Subscribe to all input events the input switch can forward
+    //SubscribeTo( &app->GetInputObserverSwitch() );
 }
 
 /*-------------------------------------------------------------------------*/

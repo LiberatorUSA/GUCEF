@@ -43,6 +43,11 @@
 #define GUCEF_CORE_DVOSWRAP_H
 #endif /* GUCEF_CORE_DVOSWRAP_H ? */
 
+#ifndef GUCEF_CORE_CONFIGSTORE_H
+#include "CConfigStore.h"
+#define GUCEF_CORE_CONFIGSTORE_H
+#endif /* GUCEF_CORE_CONFIGSTORE_H ? */
+
 #ifndef GUCEF_CORE_CPLUGINCONTROL_H
 #include "CPluginControl.h"
 #define GUCEF_CORE_CPLUGINCONTROL_H
@@ -384,6 +389,16 @@ LoadPlugins( void )
 
 /*-------------------------------------------------------------------------*/
 
+bool
+LoadConfig( void )
+{
+    CORE::CConfigStore& configStore = CORE::CCoreGlobal::Instance()->GetConfigStore();
+    configStore.SetConfigFile( "$MODULEDIR$/bootstrap.ini" );
+    return configStore.LoadConfig();
+}
+
+/*-------------------------------------------------------------------------*/
+
 void
 LoadFonts( GUI::TGuiContextPtr guiContext )
 {GUCEF_TRACE;
@@ -430,8 +445,23 @@ GUCEF_OSMAIN_BEGIN
         // flush startup log entries
         CORE::CCoreGlobal::Instance()->GetLogManager().FlushBootstrapLogEntriesToLogs();
 
-        // Load all the plugins we need for this test
-        if ( LoadPlugins() )
+        bool errorOccured = false;
+
+        // Load the config for this test
+        if ( !LoadConfig() )
+        {
+            GUCEF_ERROR_LOG( CORE::LOGLEVEL_NORMAL, "Failed to load config, will try hardcoded plugins for test fallback" );
+            
+            // Load all the plugins we need for this test
+            if ( !LoadPlugins() )
+            {
+                GUCEF_ERROR_LOG( CORE::LOGLEVEL_NORMAL, "Failed to load one or more plugins" );
+                errorOccured = true;
+            }
+        }
+
+        
+        if ( !errorOccured )
         {
             #if ( GUCEF_PLATFORM == GUCEF_PLATFORM_MSWIN )
             CORE::CString windowMngrBackendName( "Win32GL" );
@@ -505,7 +535,7 @@ GUCEF_OSMAIN_BEGIN
         }
         else
         {
-            GUCEF_ERROR_LOG( CORE::LOGLEVEL_NORMAL, "Failed to load one or more plugins" );
+            GUCEF_ERROR_LOG( CORE::LOGLEVEL_NORMAL, "Failed to start test due to failed preconditions" );
         }
 
         CORE::CCoreGlobal::Instance()->GetLogManager().ClearLoggers();

@@ -218,14 +218,16 @@ CConfigStore::LoadConfig( void )
         {
             _codectype = Extract_File_Ext( _configfile.C_String() );
         }
-        GUCEF_SYSTEM_LOG( LOGLEVEL_BELOW_NORMAL, "CConfigStore: Will try to use codec " + _codectype + " for the config information in file " + _configfile );
+        GUCEF_SYSTEM_LOG( LOGLEVEL_BELOW_NORMAL, "CConfigStore: Will try to use codec \"" + _codectype + "\" for the config information in file " + _configfile );
 
         try
         {
-                CDStoreCodecRegistry::TDStoreCodecPtr codec = CCoreGlobal::Instance()->GetDStoreCodecRegistry().Lookup( _codectype.C_String() );
+            CDStoreCodecRegistry::TDStoreCodecPtr codec = CCoreGlobal::Instance()->GetDStoreCodecRegistry().Lookup( _codectype.C_String() );
+            if ( 0 != codec )
+            {
                 CDataNode rootnode;
                 if ( codec->BuildDataTree( &rootnode   ,
-                                           _configfile ) )
+                                            _configfile ) )
                 {
                         GUCEF_SYSTEM_LOG( LOGLEVEL_BELOW_NORMAL, "CConfigStore: Used codec " + _codectype + " to successfully build a config data tree from file " + _configfile );
 
@@ -248,6 +250,11 @@ CConfigStore::LoadConfig( void )
                 {
                     GUCEF_ERROR_LOG( LOGLEVEL_IMPORTANT, "CConfigStore: Failed to build a config data tree using codec " + _codectype + " from file " + _configfile );
                 }
+            }
+            else
+            {
+                GUCEF_ERROR_LOG( LOGLEVEL_IMPORTANT, "CConfigStore: Failed to load config since no codec is available for representation \"" + _codectype + "\" in file " + _configfile );
+            }
         }
         catch ( CDStoreCodecRegistry::EUnregisteredName& )
         {
