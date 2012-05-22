@@ -14,7 +14,7 @@
  *
  *  You should have received a copy of the GNU Lesser General Public
  *  License along with this library; if not, write to the Free Software
- *  Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA 
+ *  Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA
  */
 
 /*-------------------------------------------------------------------------//
@@ -49,10 +49,6 @@ namespace MYGUI {
 //      UTILITIES                                                          //
 //                                                                         //
 //-------------------------------------------------------------------------*/
-
-MYGUI_INSTANCE_IMPLEMENT( CDataManager )
-
-/*-------------------------------------------------------------------------*/
 
 void
 CDataManager::SetGuiDataRoot( const CORE::CString& guiDataRootPath )
@@ -90,13 +86,13 @@ CDataManager::GetResourceGroup( void ) const
 
 /*-------------------------------------------------------------------------*/
 
-MyGUI::IDataStream* 
+MyGUI::IDataStream*
 CDataManager::getData( const std::string& name )
 {GUCEF_TRACE;
 
     CORE::CString pathToResource = m_guiDataRoot;
     GUCEF::CORE::AppendToPath( pathToResource, name.c_str() );
-        
+
     GUCEF::VFS::CVFS::CVFSHandlePtr filePtr = GUCEF::VFS::CVFS::Instance()->GetFile( pathToResource );
     if ( NULL != filePtr )
     {
@@ -107,19 +103,19 @@ CDataManager::getData( const std::string& name )
 
 /*-------------------------------------------------------------------------*/
 
-bool 
+bool
 CDataManager::isDataExist( const std::string& name )
 {GUCEF_TRACE;
 
     CORE::CString pathToResource = m_guiDataRoot;
     GUCEF::CORE::AppendToPath( pathToResource, name.c_str() );
 
-    return GUCEF::VFS::CVFS::Instance()->FileExists( pathToResource );
+    return GUCEF::VFS::CVfsGlobal::Instance()->GetVfs().FileExists( pathToResource );
 }
 
 /*-------------------------------------------------------------------------*/
 
-const MyGUI::VectorString& 
+const MyGUI::VectorString&
 CDataManager::getDataListNames( const std::string& _pattern )
 {GUCEF_TRACE;
 
@@ -128,7 +124,7 @@ CDataManager::getDataListNames( const std::string& _pattern )
 
 /*-------------------------------------------------------------------------*/
 
-const MyGUI::VectorString& 
+const MyGUI::VectorString&
 CDataManager::getDataListNames( const std::string& pattern, bool fullpath )
 {GUCEF_TRACE;
 
@@ -136,19 +132,19 @@ CDataManager::getDataListNames( const std::string& pattern, bool fullpath )
     result.clear();
 
     GUCEF::VFS::CVFS::TStringSet vfsResultSet;
-    GUCEF::VFS::CVFS::Instance()->GetList( vfsResultSet , 
-                                           ""           , 
-                                           true         , 
-                                           fullpath     , 
-                                           pattern      , 
-                                           true         , 
+    GUCEF::VFS::CVFS::Instance()->GetList( vfsResultSet ,
+                                           ""           ,
+                                           true         ,
+                                           fullpath     ,
+                                           pattern      ,
+                                           true         ,
                                            false        );
 
-    
+
     GUCEF::VFS::CVFS::TStringSet::iterator i = vfsResultSet.begin();
     while ( i != vfsResultSet.end() )
     {
-        result.push_back( (*i) );        
+        result.push_back( (*i) );
         ++i;
     }
     return result;

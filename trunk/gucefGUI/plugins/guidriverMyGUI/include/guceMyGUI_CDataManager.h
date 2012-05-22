@@ -14,22 +14,17 @@
  *
  *  You should have received a copy of the GNU Lesser General Public
  *  License along with this library; if not, write to the Free Software
- *  Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA 
+ *  Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA
  */
 
 #ifndef GUCEF_MYGUI_CDATAMANAGER_H
-#define GUCEF_MYGUI_CDATAMANAGER_H 
+#define GUCEF_MYGUI_CDATAMANAGER_H
 
 /*-------------------------------------------------------------------------//
 //                                                                         //
 //      INCLUDES                                                           //
 //                                                                         //
 //-------------------------------------------------------------------------*/
-
-#ifndef __MYGUI_INSTANCE_H__
-#include "MyGUI_Instance.h"
-#define __MYGUI_INSTANCE_H__
-#endif /* __MYGUI_INSTANCE_H__ ? */
 
 #ifndef __MYGUI_DATA_MANAGER_H__
 #include "MyGUI_DataManager.h"
@@ -48,7 +43,7 @@
 //-------------------------------------------------------------------------*/
 
 /*
- *      Forward declarations of classes used here 
+ *      Forward declarations of classes used here
  */
 namespace Ogre { class RenderWindow; class RenderTexture; class Root; }
 namespace MyGUI { class Gui; class OgrePlatform; class OgreRenderManager; }
@@ -72,8 +67,6 @@ namespace MYGUI {
 class CDataManager : public MyGUI::DataManager
 {
     public:
-
-    MYGUI_INSTANCE_HEADER( CDataManager )    
 
     virtual MyGUI::IDataStream* getData( const std::string& _name );
 
