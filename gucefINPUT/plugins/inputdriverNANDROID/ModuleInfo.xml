@@ -1,0 +1,18 @@
+<ModuleInfoEntry>
+    <Module Name="inputdriverNANDROID" Type="SharedLibrary" Platform="android">
+        <Dependencies>
+            <Dependency Name="gucefINPUT" />
+            <Dependency Name="gucefCORE" />
+            <Dependency Name="gucefMT" />
+        </Dependencies>
+        <Linker>
+            <Dependency Name="gucefINPUT" />
+            <Dependency Name="gucefCORE" />
+            <Dependency Name="gucefMT" />
+        </Linker>
+        <Preprocessor>
+            <Define String="INPUTDRIVERANDROID_BUILD_MODULE" />
+            <Define String="BUILD_GUCEF_INPUT_PLUGIN_DLL" />
+        </Preprocessor>
+    </Module>
+</ModuleInfoEntry>

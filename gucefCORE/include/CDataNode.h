@@ -129,6 +129,20 @@ class GUCEF_CORE_PUBLIC_CPP CDataNode
      */
     const CString& GetName( void ) const;
 
+    /**
+     *      Sets the new node simplistic value
+     *
+     *      @param name the new node name
+     */
+    void SetValue( const CString& value );
+
+    /**
+     *      Gets the current node value
+     *
+     *      @return the current simplistic node value
+     */
+    const CString& GetValue( void ) const;
+
     bool IsAttribute( const CString& name ) const;
 
     const TKeyValuePair* operator[]( UInt32 index ) const;
@@ -159,6 +173,30 @@ class GUCEF_CORE_PUBLIC_CPP CDataNode
     void Clear( void );
 
     UInt32 GetAttCount( void ) const;
+
+    /**
+     *  Attempts to locate a child node with the given name
+     *  and return its value. If no such child node exists then
+     *  an empty string is returned. Also note that if multiple children exist
+     *  with the given name the first located one's value will be used.
+     *  In such a case you may wish to use GetChildValuesByName() instead.
+     *
+     *  @param name the name of the child node
+     *  @return the value of the first child located with the given name
+     */
+    CString GetChildValueByName( const CString& name ) const;
+
+    /**
+     *  Attempts to locate a child node with the given name
+     *  and return its value. If no such child node exists then
+     *  an empty string is returned. Also note that if multiple children exist
+     *  with the given name the first located one's value will be used.
+     *  In such a case you may wish to use GetChildValuesByName() instead.
+     *
+     *  @param name the name of the child node
+     *  @return the value of the first child located with the given name
+     */
+    TStringVector GetChildrenValuesByName( const CString& name ) const;
 
     CDataNode* FindRoot( void ) const;
 
@@ -268,6 +306,15 @@ class GUCEF_CORE_PUBLIC_CPP CDataNode
      *  @return pointer to the new child.
      */
     CDataNode* AddChild( const CDataNode& newnode );
+
+    /**
+     *  Adds an child node to the given node using the
+     *  given name as the child node's name
+     *
+     *  @param nodeName name of the new child node
+     *  @return pointer to the new child.
+     */
+    CDataNode* AddChild( const CString& nodeName );
 
     bool DelChild( const CString& name );
 
@@ -414,6 +461,7 @@ class GUCEF_CORE_PUBLIC_CPP CDataNode
     
 
     CString _name;        /**< name of the node */
+    CString m_value;      /**< simplistic value field of the node */
     TAttributeMap _atts;  /**< list of node attributes */
     CDataNode* _pparent;  /**< parent node */
     CDataNode* _pfchild;  /**< first child node */

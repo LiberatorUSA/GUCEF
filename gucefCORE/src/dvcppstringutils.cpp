@@ -337,6 +337,17 @@ AppendToPath( CString& path           ,
 
 /*-------------------------------------------------------------------------*/
 
+CString
+CombinePath( const CString& path     ,
+             const CString& addition )
+{
+    CString newPath( path );
+    AppendToPath( newPath, addition );
+    return newPath;
+}
+
+/*-------------------------------------------------------------------------*/
+
 const TVersion
 StringToVersion( const CString& versionStr )
 {GUCEF_TRACE;

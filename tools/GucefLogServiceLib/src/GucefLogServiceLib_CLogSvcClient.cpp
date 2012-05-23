@@ -180,12 +180,12 @@ CLogSvcClient::Log( const TLogMsgType logMsgType    ,
     CORE::UInt32 logMsgLength = logMessage.Length() + 16;
 
 
-    msgHeader[ 0 ] = LOGSVCMSGTYPE_DELIMITER;   // set delimiter for message: 1 byte
-    memcpy( msgHeader+1, &logMsgLength, 4 );    // set the total message length : 4 bytes
-    msgHeader[ 5 ] = LOGSVCMSGTYPE_LOGMSG;      // set TCP msg type: 1 byte
-    memcpy( msgHeader+6, &logMsgTypeValue, 2 ); // set log msg type: 2 bytes
-    memcpy( msgHeader+8, &logLevel, 4 );        // set log level: 4 bytes
-    memcpy( msgHeader+14, &threadId, 4 );       // set thread id: 4 bytes
+    msgHeader[ 0 ] = (CORE::Int8) LOGSVCMSGTYPE_DELIMITER;   // set delimiter for message: 1 byte
+    memcpy( msgHeader+1, &logMsgLength, 4 );                 // set the total message length : 4 bytes
+    msgHeader[ 5 ] = (CORE::Int8) LOGSVCMSGTYPE_LOGMSG;      // set TCP msg type: 1 byte
+    memcpy( msgHeader+6, &logMsgTypeValue, 2 );              // set log msg type: 2 bytes
+    memcpy( msgHeader+8, &logLevel, 4 );                     // set log level: 4 bytes
+    memcpy( msgHeader+12, &threadId, 4 );                    // set thread id: 4 bytes
 
     if ( m_connectionInitialized )
     {

@@ -106,23 +106,35 @@ bool
 CIniParser::SaveTo( CDataNode& rootNode ) const
 {GUCEF_TRACE;
 
-    TIniMap::const_iterator i = m_iniData.begin();
+    TIniData::const_iterator i = m_iniData.begin();
     while ( i != m_iniData.end() )
     {
-        const CValueList& sectionData = (*i).second;
+        const TIniSection& iniSection = (*i);        
+        const CValueList& sectionData = iniSection.sectionData;
         
-        CString nodeName = (*i).first.SubstrToChar( '\\', false );
-        CString sectionName = (*i).first.CutChars( (*i).first.Length() - nodeName.Length(), false );
+        CString nodeName = iniSection.sectionName.SubstrToChar( '\\', false );
+        CString sectionName;
         
-        CDataNode* sectionNode = NULL;
+        if ( nodeName.Length()+1 < iniSection.sectionName.Length() )
+        {
+            sectionName = iniSection.sectionName.CutChars( nodeName.Length()+1, false );
+        }
+
+        CDataNode* sectionNodeParent = NULL;
         if ( !sectionName.IsNULLOrEmpty() )
         {
-            sectionNode = rootNode.Structure( sectionName, '\\' );
+            sectionNodeParent = rootNode.Structure( sectionName, '\\' );
         }
         else
         {
-            sectionNode = &rootNode;
+            sectionNodeParent = &rootNode;
         }
+
+        // Make a new child node symbolizing the end of the sequence of the section name
+        // for example [My/New/Sequence] as a section name in the ini would result in
+        // the whole sequence creates as nodes with Sequence being the parent node
+        // where we add the key/value pairs from the ini section
+        CDataNode* sectionNode = sectionNodeParent->AddChild( nodeName );
                 
         CValueList::TValueMap::const_iterator n = sectionData.GetDataBeginIterator();
         while ( n != sectionData.GetDataEndIterator() )
@@ -130,13 +142,14 @@ CIniParser::SaveTo( CDataNode& rootNode ) const
             const CString& key = (*n).first;
             const CValueList::TStringVector& values = (*n).second;
             
+            // Since key/value pairs in an ini section have no uniqueness constraint we cannot
+            // set the pairs as attributes. Instead they are child nodes using the simplistic value representation
             CValueList::TStringVector::const_iterator m = values.begin();
             while ( m != values.end() )
             {
-                CDataNode sectionEntryNode( nodeName );
-                sectionEntryNode.SetAttribute( key, (*m) );
+                CDataNode* keyValueNode = sectionNode->AddChild( key );
+                keyValueNode->SetValue( (*m) );
 
-                sectionNode->AddChild( sectionEntryNode );
                 ++m;
             }            
             ++n;
@@ -155,11 +168,12 @@ CIniParser::SaveTo( CIOAccess& file ) const
     if ( file.IsValid() && file.IsWriteable() )
     {
         const CString valueSepStr = GUCEF_EOL;
-        TIniMap::const_iterator i = m_iniData.begin();
+
+        TIniData::const_iterator i = m_iniData.begin();
         while ( i != m_iniData.end() )
         {
-            CString keyString = GUCEF_EOL "[" + (*i).first + "]" GUCEF_EOL;
-            CString values = (*i).second.GetAllPairs( valueSepStr );
+            CString keyString = GUCEF_EOL "[" + (*i).sectionName + "]" GUCEF_EOL;
+            CString values = (*i).sectionData.GetAllPairs( valueSepStr );
             
             file.Write( keyString );
             file.Write( values );
@@ -178,11 +192,12 @@ CIniParser::SaveTo( CString& outputIniString ) const
 {GUCEF_TRACE;
 
     const CString valueSepStr = GUCEF_EOL;
-    TIniMap::const_iterator i = m_iniData.begin();
+
+    TIniData::const_iterator i = m_iniData.begin();
     while ( i != m_iniData.end() )
     {
-        outputIniString += GUCEF_EOL "[" + (*i).first + "]" GUCEF_EOL;
-        outputIniString += (*i).second.GetAllPairs( valueSepStr );
+        outputIniString += GUCEF_EOL "[" + (*i).sectionName + "]" GUCEF_EOL;
+        outputIniString += (*i).sectionData.GetAllPairs( valueSepStr );
         ++i;
     }        
     return true;
@@ -193,28 +208,89 @@ CIniParser::SaveTo( CString& outputIniString ) const
 bool
 CIniParser::LoadFrom( const CDataNode& rootNode )
 {GUCEF_TRACE;
-   
-    // Add this section if there are attributes for this section
-    if ( rootNode.GetAttCount() > 0 )
-    {
-        // Base the section path off of the path to the root node
-        CString sectionName = rootNode.GetPathToRoot( '\\', true );
 
-        // Add each attribute as a key value pair is this section
-        CValueList& sectionList = m_iniData[ sectionName ];
-        CDataNode::TAttributeMap::const_iterator i = rootNode.AttributeBegin();
-        while ( i != rootNode.AttributeEnd() )
+    return LoadFrom( rootNode, NULL );
+}
+
+/*-------------------------------------------------------------------------*/
+
+bool
+CIniParser::HasChildWithValueOrAttribs( const CDataNode& node ) 
+{GUCEF_TRACE;
+    
+    CDataNode::const_iterator n = node.Begin();
+    while ( n != node.End() )
+    {
+        bool childHasValue = (*n)->GetValue().Length() > 0;
+        bool childHasAttribs = (*n)->GetAttCount() > 0;
+
+        if ( childHasValue || childHasAttribs )
         {
-            sectionList.Set( (*i).first, (*i).second );
-            ++i;
+            return true;
+        }
+        ++n;
+    }
+    return false;
+}
+
+/*-------------------------------------------------------------------------*/
+
+bool
+CIniParser::LoadFrom( const CDataNode& node       ,
+                      TIniSection* currentSection )
+{GUCEF_TRACE;   
+
+    TIniSection* iniSection = currentSection;
+        
+    // A node is a section node if it has no value set and no attributes
+    const CString& value = node.GetValue();
+    if ( node.GetAttCount() == 0 && value.IsNULLOrEmpty() )
+    {
+        // Check if this is just an link node which or the end delimiter of a section identifier
+        // We do this by checking if the node has 1 or more children with a value or attributes.
+
+        if ( HasChildWithValueOrAttribs( node ) )
+        {
+            // Base the new section path off of the path to the root node
+            CString sectionName = node.GetPathToRoot( '\\', true );
+
+            // Add each attribute as a key value pair is this section
+            TIniSection dummySection;
+            m_iniData.push_back( dummySection );
+            iniSection = &(*m_iniData.rbegin());
+            iniSection->sectionName = sectionName;
+        }
+    }
+    else
+    {
+        if ( NULL != iniSection )
+        {
+            if ( !value.IsNULLOrEmpty() )
+            {
+                iniSection->sectionData.Set( node.GetName(), node.GetValue() );
+            }
+
+            // Add this section if there are attributes for this section
+            if ( node.GetAttCount() > 0 )
+            {
+                // Add all attributes as key/value pairs in the ini
+                // Note that the ini has no uniqueness constraint so that constraint on the data
+                // stored as attributes is lost when representing the data via the ini format
+                CDataNode::TAttributeMap::const_iterator i = node.AttributeBegin();
+                while ( i != node.AttributeEnd() )
+                {
+                    iniSection->sectionData.Set( (*i).first, (*i).second );
+                    ++i;
+                }
+            }
         }
     }
 
     // Repeat recursively for all the children
-    CDataNode::const_iterator n = rootNode.Begin();
-    while ( n != rootNode.End() )
+    CDataNode::const_iterator n = node.Begin();
+    while ( n != node.End() )
     {
-        if ( !LoadFrom( *(*n) ) )
+        if ( !LoadFrom( *(*n), iniSection ) )
         {
             return false;
         }
@@ -336,7 +412,7 @@ CIniParser::StripQuotation( const CString& testString )
 
 /*-------------------------------------------------------------------------*/
 
-CIniParser::TIniMap&
+CIniParser::TIniData&
 CIniParser::GetData( void )
 {GUCEF_TRACE;
 
@@ -345,7 +421,7 @@ CIniParser::GetData( void )
 
 /*-------------------------------------------------------------------------*/
     
-const CIniParser::TIniMap& 
+const CIniParser::TIniData& 
 CIniParser::GetData( void ) const
 {GUCEF_TRACE;
    
@@ -373,6 +449,7 @@ CIniParser::LoadFrom( CIOAccess& fileAccess )
     // @TODO: take escape sequences into account
     if ( fileAccess.IsValid() )
     {
+        bool isNewSection = true;
         CString sectionName;
         while ( !fileAccess.Eof() )
         {
@@ -399,6 +476,7 @@ CIniParser::LoadFrom( CIOAccess& fileAccess )
                     if ( ( line[ 0 ] == '[' ) && ( line[ line.Length()-1 ] == ']' ) )
                     {
                         sectionName = line.SubstrFromRange( 1, line.Length()-2 );
+                        isNewSection = true;
                     }
                     else
                     {
@@ -412,20 +490,20 @@ CIniParser::LoadFrom( CIOAccess& fileAccess )
                             if ( ( sectionBeforeEquals.Length() > 0 ) &&
                                  ( sectionAfterEquals.Length() > 0 )   )
                             {
-                                CValueList* valueList = NULL;
-                                TIniMap::iterator i = m_iniData.find( sectionName );
-                                if ( i == m_iniData.end() )
+                                if ( isNewSection )
                                 {
-                                    valueList = &m_iniData[ sectionName ];
-                                    valueList->SetAllowDuplicates( true );
-                                    valueList->SetAllowMultipleValues( true );
+                                    TIniSection dummySection;
+                                    m_iniData.push_back( dummySection );
+                                    TIniSection& newSection = (*m_iniData.rbegin());
+                                    newSection.sectionName = sectionName;
+                                    newSection.sectionData.SetAllowDuplicates( true );
+                                    newSection.sectionData.SetAllowMultipleValues( true );
+
+                                    isNewSection = false;
                                 }
-                                else
-                                {
-                                    valueList = &(*i).second;
-                                }
-                            
-                                valueList->Set( sectionBeforeEquals, sectionAfterEquals );
+
+                                TIniSection& newSection = (*m_iniData.rbegin());
+                                newSection.sectionData.Set( sectionBeforeEquals, sectionAfterEquals ); 
                             }
                         }
                         // else:

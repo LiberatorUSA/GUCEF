@@ -51,30 +51,30 @@ CDataNode::CDataNode( void )
           _pfchild( NULL ) ,
           _plchild( NULL ) ,
           _pnext( NULL )   ,
-          _pprev( NULL )
-{
-        GUCEF_BEGIN;
-        GUCEF_END;
+          _pprev( NULL )   ,
+          _name()          ,
+          m_value()
+{GUCEF_TRACE;
 }
 
 /*-------------------------------------------------------------------------*/
 
 CDataNode::CDataNode( const CString& name )
         : _name( name )    ,
+          m_value()        ,
           _pparent( NULL ) ,
           _pfchild( NULL ) ,
           _plchild( NULL ) ,
           _pnext( NULL )   ,
           _pprev( NULL )
-{
-        GUCEF_BEGIN;
-        GUCEF_END;
+{GUCEF_TRACE;
 }
 
 /*-------------------------------------------------------------------------*/
 
 CDataNode::CDataNode( const CDataNode& src )
         : _name( src._name )       ,
+          m_value( src.m_value )   ,
           _atts( src._atts )       ,
           _pparent( src._pparent ) ,
           _pnext( src._pnext )     ,
@@ -106,7 +106,8 @@ void
 CDataNode::Clear( void )
 {GUCEF_TRACE;
 
-    SetName( "" );
+    _name.Clear();
+    m_value.Clear();
     DelSubTree();
     ClearAttributes();
 }
@@ -186,6 +187,7 @@ CDataNode::operator=( const CDataNode& src )
         DelSubTree();
         
         _name = src._name;
+        m_value = src.m_value;
         _atts = src._atts;
 
     }               
@@ -218,6 +220,23 @@ CDataNode::GetName( void ) const
 {GUCEF_TRACE;
 
     return _name;
+}
+
+/*-------------------------------------------------------------------------*/
+
+void
+CDataNode::SetValue( const CString& value )
+{GUCEF_TRACE;
+
+    m_value = value;
+}
+
+/*-------------------------------------------------------------------------*/
+
+const CString& 
+CDataNode::GetValue( void ) const
+{
+    return m_value;
 }
 
 /*-------------------------------------------------------------------------*/
@@ -1077,6 +1096,50 @@ CDataNode::AddChild( const CDataNode& newnode )
         n->_pparent = this;
         GUCEF_END;
         return n;                                  
+}
+
+/*-------------------------------------------------------------------------*/
+
+CDataNode*
+CDataNode::AddChild( const CString& nodeName )
+{
+    CDataNode newNode( nodeName );
+    return AddChild( newNode );
+}
+
+/*-------------------------------------------------------------------------*/
+
+CString
+CDataNode::GetChildValueByName( const CString& name ) const
+{
+    CDataNode* childNode = FindChild( name );
+    if ( NULL != childNode )
+    {
+        return childNode->GetValue();
+    }
+    return CString();
+}
+
+/*-------------------------------------------------------------------------*/
+
+CDataNode::TStringVector
+CDataNode::GetChildrenValuesByName( const CString& name ) const
+{
+    TStringVector results;
+    
+    TConstDataNodeSet childNodes = FindChildrenOfType( name, false );
+    TConstDataNodeSet::iterator i = childNodes.begin();
+    while ( i != childNodes.end() )
+    {
+        const CString& childValue = (*i)->GetValue();
+        if ( !childValue.IsNULLOrEmpty() )
+        {
+            results.push_back( childValue );
+        }
+        ++i;
+    }
+
+    return results;
 }
 
 /*-------------------------------------------------------------------------*/

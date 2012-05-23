@@ -26,7 +26,7 @@
 //                                                                         //
 //-------------------------------------------------------------------------*/
 
-#include <map>
+#include <vector>
 
 #ifndef GUCEF_CORE_CDATANODE_H
 #include "CDataNode.h"
@@ -72,7 +72,14 @@ class GUCEF_CORE_PUBLIC_CPP CIniParser
 {
     public:
     
-    typedef std::map< CString, CValueList > TIniMap;
+    struct SIniSection
+    {
+        CString sectionName;
+        CValueList sectionData;
+    };
+    typedef struct SIniSection TIniSection;
+    
+    typedef std::vector< TIniSection > TIniData;
     
     CIniParser( void );
     
@@ -96,11 +103,14 @@ class GUCEF_CORE_PUBLIC_CPP CIniParser
     
     void Clear( void );
     
-    TIniMap& GetData( void );
+    TIniData& GetData( void );
     
-    const TIniMap& GetData( void ) const;
+    const TIniData& GetData( void ) const;
 
     private:
+
+    bool LoadFrom( const CDataNode& node       ,
+                   TIniSection* currentSection );
     
     static bool IsCharIndexWithinQuotes( const CString& testString , 
                                          UInt32 charIndex          ,
@@ -111,11 +121,11 @@ class GUCEF_CORE_PUBLIC_CPP CIniParser
     
     static CString StripQuotation( const CString& testString );
 
+    static bool HasChildWithValueOrAttribs( const CDataNode& node );
+
     private:
     
-    
-    
-    TIniMap m_iniData;
+    TIniData m_iniData;
 };
 
 /*-------------------------------------------------------------------------//

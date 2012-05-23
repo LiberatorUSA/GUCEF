@@ -117,6 +117,7 @@ CPluginControl::~CPluginControl()
 
 CPluginControl::CPluginControl( void )
     : CNotifier()                                  ,
+      CIConfigurable( true )                       ,
       m_pluginLoadLogicProviders()                 ,
       m_defaultPluginLoadLogicType( "Simplistic" ) ,
       m_pluginGroups()                             ,
@@ -934,12 +935,12 @@ CPluginControl::LoadConfig( const CDataNode& treeroot )
         const CDataNode* groupNode = (*i);
         
         bool loadPlugins = false;
-        CString loadImBoolStr = groupNode->GetAttributeValue( "LoadImmediately" );
+        CString loadImBoolStr = groupNode->GetChildValueByName( "LoadImmediately" );
         if ( !loadImBoolStr.IsNULLOrEmpty() )
         {
              loadPlugins = StringToBool( loadImBoolStr );
         }
-        CString groupName = groupNode->GetAttributeValue( "GroupName" );
+        CString groupName = groupNode->GetChildValueByName( "GroupName" );
 
         CDataNode::TConstDataNodeSet pluginMetaDataNodes( groupNode->FindChildrenOfType( "PluginMetaData", true ) );
         CDataNode::TConstDataNodeSet::iterator n = pluginMetaDataNodes.begin();
