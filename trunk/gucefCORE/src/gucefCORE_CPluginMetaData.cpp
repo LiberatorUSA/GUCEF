@@ -296,52 +296,46 @@ CPluginMetaData::LoadConfig( const CDataNode& treeroot )
     CDataNode* node = treeroot.Search( "PluginMetaData", '/', true );
     if ( 0 != node )
     {
-        CString value = node->GetAttributeValue( "Description" );
-        if ( value.IsNULLOrEmpty() )
+        CString value = node->GetChildValueByName( "Description" );
+        if ( !value.IsNULLOrEmpty() )
         {
             m_description = value;
         }
-        value = node->GetAttributeValue( "Copyright" );
-        if ( value.IsNULLOrEmpty() )
+        value = node->GetChildValueByName( "Copyright" );
+        if ( !value.IsNULLOrEmpty() )
         {
             m_copyright = value;
         }
-        value = node->GetAttributeValue( "Path" );
-        if ( value.IsNULLOrEmpty() )
+        value = node->GetChildValueByName( "Path" );
+        if ( !value.IsNULLOrEmpty() )
         {
             m_modulePath = value;
         }
-        value = node->GetAttributeValue( "Filename" );
-        if ( value.IsNULLOrEmpty() )
+        value = node->GetChildValueByName( "Filename" );
+        if ( !value.IsNULLOrEmpty() )
         {
             m_moduleFilename = value;
         }
-        value = node->GetAttributeValue( "Version" );
-        if ( value.IsNULLOrEmpty() )
+        value = node->GetChildValueByName( "Version" );
+        if ( !value.IsNULLOrEmpty() )
         {
             m_version = StringToVersion( value );
         }
-        value = node->GetAttributeValue( "Type" );
-        if ( value.IsNULLOrEmpty() )
+        value = node->GetChildValueByName( "Type" );
+        if ( !value.IsNULLOrEmpty() )
         {
             m_pluginType = value;
         }
-        value = node->GetAttributeValue( "LoaderLogicType" );
-        if ( value.IsNULLOrEmpty() )
+        value = node->GetChildValueByName( "LoaderLogicType" );
+        if ( !value.IsNULLOrEmpty() )
         {
             m_loaderLogicTypeName = value;
         }
-        CDataNode::TDataNodeSet nodeSet = node->FindChildrenOfType( "Param" );
-        CDataNode::TDataNodeSet::iterator i = nodeSet.begin();
-        while ( i != nodeSet.end() )
+        CDataNode::TStringVector paramList = node->GetChildrenValuesByName( "Param" );
+        CDataNode::TStringVector::iterator i = paramList.begin();
+        while ( i != paramList.end() )
         {
-            CDataNode* childNode = (*i);
-            value = childNode->GetAttributeValue( "Key" );
-            if ( value.IsNULLOrEmpty() )
-            {
-                CString value2 = childNode->GetAttributeValue( "Value" );
-                m_params.Set( value, value2 );
-            }
+            m_params.Set( (*i) );
             ++i;
         }
         return true;

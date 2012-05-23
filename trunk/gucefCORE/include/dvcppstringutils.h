@@ -82,6 +82,12 @@ AppendToPath( CString& path           ,
 /*-------------------------------------------------------------------------*/
 
 GUCEF_CORE_PUBLIC_CPP CString
+CombinePath( const CString& path     ,
+             const CString& addition );
+
+/*-------------------------------------------------------------------------*/
+
+GUCEF_CORE_PUBLIC_CPP CString
 StripFilename( const CString& pathPlusFilename );
 
 /*-------------------------------------------------------------------------*/

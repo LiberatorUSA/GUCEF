@@ -392,8 +392,34 @@ LoadPlugins( void )
 bool
 LoadConfig( void )
 {
+    #ifdef GUCEF_GUI_DEBUG_MODE
+    const CORE::CString configFile = "bootstrap_d.ini";
+    #else
+    const CORE::CString configFile = "bootstrap.ini";
+    #endif
+
+    CORE::CString configFilePath = CORE::CombinePath( "$MODULEDIR$", configFile );
+    configFilePath = CORE::RelativePath( configFilePath );
+
+    if ( !FileExists( configFilePath ) )
+    {
+        configFilePath = CORE::CombinePath( "$CURWORKDIR$", configFile );
+        configFilePath = CORE::RelativePath( configFilePath );
+
+        if ( !FileExists( configFilePath ) )
+        {
+            // hardcoded relative path from compiler output bin to testdata folder in the archive
+            #if GUCEF_PLATFORM == GUCEF_PLATFORM_MSWIN
+            configFilePath = CORE::CombinePath( "$MODULEDIR$/../../../TestData/gucefGUI_TestApp/mswin", configFile );
+            #elif GUCEF_PLATFORM == GUCEF_PLATFORM_LINUX
+            configFilePath = CORE::CombinePath( "$MODULEDIR$/../../../TestData/gucefGUI_TestApp/linux", configFile );
+            #endif
+            configFilePath = CORE::RelativePath( configFilePath );
+        }
+    }
+    
     CORE::CConfigStore& configStore = CORE::CCoreGlobal::Instance()->GetConfigStore();
-    configStore.SetConfigFile( "$MODULEDIR$/bootstrap.ini" );
+    configStore.SetConfigFile( configFilePath );
     return configStore.LoadConfig();
 }
 
