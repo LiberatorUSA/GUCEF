@@ -412,12 +412,12 @@ LoadConfig( void )
             #if GUCEF_PLATFORM == GUCEF_PLATFORM_MSWIN
             configFilePath = CORE::CombinePath( "$MODULEDIR$/../../../TestData/gucefGUI_TestApp/mswin", configFile );
             #elif GUCEF_PLATFORM == GUCEF_PLATFORM_LINUX
-            configFilePath = CORE::CombinePath( "$MODULEDIR$/../../../TestData/gucefGUI_TestApp/linux", configFile );
+            configFilePath = CORE::CombinePath( "$MODULEDIR$/../../TestData/gucefGUI_TestApp/linux", configFile );
             #endif
             configFilePath = CORE::RelativePath( configFilePath );
         }
     }
-    
+
     CORE::CConfigStore& configStore = CORE::CCoreGlobal::Instance()->GetConfigStore();
     configStore.SetConfigFile( configFilePath );
     return configStore.LoadConfig();
@@ -477,7 +477,7 @@ GUCEF_OSMAIN_BEGIN
         if ( !LoadConfig() )
         {
             GUCEF_ERROR_LOG( CORE::LOGLEVEL_NORMAL, "Failed to load config, will try hardcoded plugins for test fallback" );
-            
+
             // Load all the plugins we need for this test
             if ( !LoadPlugins() )
             {
@@ -486,7 +486,7 @@ GUCEF_OSMAIN_BEGIN
             }
         }
 
-        
+
         if ( !errorOccured )
         {
             #if ( GUCEF_PLATFORM == GUCEF_PLATFORM_MSWIN )
