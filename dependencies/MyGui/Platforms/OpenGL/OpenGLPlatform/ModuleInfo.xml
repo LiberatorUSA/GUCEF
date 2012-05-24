@@ -8,14 +8,19 @@
             <Dependency Name="MyGUI.Engine" />
         </Linker>
     </Module>
-    <Module Platform="mswin;linux">
+    <Module Platform="mswin">
         <Linker>
             <Dependency Name="opengl32" />
         </Linker>
     </Module>
+    <Module Platform="linux">
+        <Linker>
+            <Dependency Name="GL" />
+        </Linker>
+    </Module>
     <Module Platform="android">
         <Linker>
-            <Dependency Name="gl" />
+            <Dependency Name="GLESv1_CM" />
         </Linker>
     </Module>
 </ModuleInfoEntry>

@@ -14,7 +14,7 @@
  *
  *  You should have received a copy of the GNU Lesser General Public
  *  License along with this library; if not, write to the Free Software
- *  Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA 
+ *  Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA
  */
 
 /*-------------------------------------------------------------------------//
@@ -23,12 +23,22 @@
 //                                                                         //
 //-------------------------------------------------------------------------*/
 
-#ifndef GUCEF_MYGUIGL_CGUIDRIVERGL_H
-#include "guidriverMyGUIOpenGL_CGUIDriverGL.h"
-#define GUCEF_MYGUIGL_CGUIDRIVERGL_H
-#endif /* GUCEF_MYGUIGL_CGUIDRIVERGL_H ? */
+#ifndef GUCEF_VFS_CVFSGLOBAL_H
+#include "gucefVFS_CVfsGlobal.h"
+#define GUCEF_VFS_CVFSGLOBAL_H
+#endif /* GUCEF_VFS_CVFSGLOBAL_H ? */
 
-#include "guidriverMyGUIOpenGL_CGUIContextGL.h"
+#ifndef GUCEF_VFS_CVFS_H
+#include "gucefVFS_CVFS.h"
+#define GUCEF_VFS_CVFS_H
+#endif /* GUCEF_VFS_CVFS_H ? */
+
+#ifndef GUCEF_IMAGE_CIMAGE_H
+#include "CImage.h"
+#define GUCEF_IMAGE_CIMAGE_H
+#endif /* GUCEF_IMAGE_CIMAGE_H ? */
+
+#include "guidriverMyGUIOpenGL_CImageLoader.h"
 
 /*-------------------------------------------------------------------------//
 //                                                                         //
@@ -45,57 +55,53 @@ namespace MYGUIGL {
 //                                                                         //
 //-------------------------------------------------------------------------*/
 
-CGUIContextGL::CGUIContextGL( CGUIDriverGL& guiDriver               ,
-                              MyGUI::OpenGLImageLoader* imageLoader ,
-                              GUI::TWindowContextPtr windowContext  ,
-                              INPUT::CInputContext* inputContext    )
-    : MYGUI::CGUIContext( guiDriver    ,
-                          inputContext )  ,
-      m_myGuiPlatform()                   ,
-      m_windowContext( windowContext ) 
-{GUCEF_TRACE;
-
-    m_myGuiPlatform.initialise( imageLoader );
-}
-
-/*-------------------------------------------------------------------------*/
-
-CGUIContextGL::~CGUIContextGL()
+CImageLoader::CImageLoader( void )
 {GUCEF_TRACE;
 
 }
 
 /*-------------------------------------------------------------------------*/
 
-const CORE::CString&
-CGUIContextGL::GetClassTypeName( void ) const
+CImageLoader::~CImageLoader()
 {GUCEF_TRACE;
 
-    static const CORE::CString classTypeName = "GUCEF::MYGUIGL::CGUIContextGL";
-    return classTypeName;
+}
+
+/*-------------------------------------------------------------------------*/
+
+void*
+CImageLoader::loadImage( int& _width                  ,
+                         int& _height                 ,
+                         MyGUI::PixelFormat& _format  ,
+                         const std::string& _filename )
+{GUCEF_TRACE;
+
+    VFS::CVFS& vfs = VFS::CVfsGlobal::Instance()->GetVfs();
+    VFS::CVFS::CVFSHandlePtr filePtr = vfs.GetFile( _filename );
+
+    if ( 0 != filePtr )
+    {
+        IMAGE::CImage image;
+        if ( image.Load( *filePtr->GetAccess() ,
+                         ""                    ) )
+        {
+
+        }
+    }
+
+    return NULL;
 }
 
 /*-------------------------------------------------------------------------*/
 
 void
-CGUIContextGL::OnNotify( CORE::CNotifier* notifier   ,
-                         const CORE::CEvent& eventID ,
-                         CORE::CICloneable* evenData )
-{GUCEF_TRACE;
+CImageLoader::saveImage( int _width                   ,
+                         int _height                  ,
+                         MyGUI::PixelFormat _format   ,
+                         void* _texture               ,
+                         const std::string& _filename )
+{
 
-    if ( eventID == GUI::CWindowContext::WindowContextRedrawEvent )
-    {
-        m_myGuiPlatform.getRenderManagerPtr()->drawOneFrame();
-    }
-    else
-    if ( eventID == GUI::CWindowContext::WindowContextSizeEvent )
-    {        
-        GUCEF_DEBUG_LOG( CORE::LOGLEVEL_NORMAL, "GUIContext: Resizing MyGUI GUI context to " + CORE::UInt32ToString( m_windowContext->GetWidth() ) + "x" +
-                                                                                               CORE::UInt32ToString( m_windowContext->GetHeight() ) );
-
-		m_myGuiPlatform.getRenderManagerPtr()->setViewSize( m_windowContext->GetWidth(), m_windowContext->GetHeight() );
-        m_myGuiPlatform.getRenderManagerPtr()->drawOneFrame();
-    }
 }
 
 /*-------------------------------------------------------------------------//

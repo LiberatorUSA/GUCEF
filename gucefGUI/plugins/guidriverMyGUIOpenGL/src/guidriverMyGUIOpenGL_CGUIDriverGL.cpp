@@ -14,7 +14,7 @@
  *
  *  You should have received a copy of the GNU Lesser General Public
  *  License along with this library; if not, write to the Free Software
- *  Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA 
+ *  Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA
  */
 
 /*-------------------------------------------------------------------------//
@@ -69,10 +69,11 @@ CGUIDriverGL::CGUIDriverGL( void )
     : GUI::CGUIDriver()  ,
       m_contextSet()     ,
       m_fontTypes()      ,
-      m_myGUI()
+      m_myGUI()          ,
+      m_imageLoader()
 {GUCEF_TRACE;
 
-    //m_myGUI.initialise( );
+    m_myGUI.initialise();
 }
 
 /*-------------------------------------------------------------------------*/
@@ -97,10 +98,10 @@ CGUIDriverGL::CreateGUIContext( GUI::TWindowContextPtr windowContext )
     INPUT::CInputContext* inputContext = INPUT::CInputGlobal::Instance()->GetInputController().CreateContext( inputContextParams );
 
     // Add a reference to the context in our set
-    GUI::TGuiContextPtr guiContextPtr = new CGUIContextGL( *this         , 
-                                                               ,
-                                                           windowContext , 
-                                                           inputContext  );
+    GUI::TGuiContextPtr guiContextPtr = new CGUIContextGL( *this          ,
+                                                           &m_imageLoader ,
+                                                           windowContext  ,
+                                                           inputContext   );
     m_contextSet.insert( guiContextPtr );
 
     return guiContextPtr;

@@ -14,7 +14,7 @@
  *
  *  You should have received a copy of the GNU Lesser General Public
  *  License along with this library; if not, write to the Free Software
- *  Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA 
+ *  Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA
  */
 
 #ifndef GUCEF_MYGUIGL_CGUIDRIVERGL_H
@@ -46,10 +46,10 @@
 #define GUCEF_GUI_CGUIDRIVER_H
 #endif /* GUCEF_GUI_CGUIDRIVER_H ? */
 
-#ifndef GUCEF_GUIDRIVERROCKETGL_MACROS_H
-#include "guidriverMyGUIOpenGL_macros.h"
-#define GUCEF_GUIDRIVERROCKETGL_MACROS_H
-#endif /* GUCEF_GUIDRIVERROCKETGL_MACROS_H ? */
+#ifndef GUCEF_MYGUIGL_CIMAGELOADER_H
+#include "guidriverMyGUIOpenGL_CImageLoader.h"
+#define GUCEF_MYGUIGL_CIMAGELOADER_H
+#endif /* GUCEF_MYGUIGL_CIMAGELOADER_H ? */
 
 /*-------------------------------------------------------------------------//
 //                                                                         //
@@ -67,31 +67,31 @@ namespace MYGUIGL {
 //-------------------------------------------------------------------------*/
 
 class GUCEF_MYGUIGL_EXPORT_CPP CGUIDriverGL : public GUI::CGUIDriver
-{    
+{
     public:
 
     CGUIDriverGL( void );
 
     virtual ~CGUIDriverGL();
-    
+
     virtual GUI::TGuiContextPtr CreateGUIContext( GUI::TWindowContextPtr windowContext );
-    
+
     virtual TGUIContextSet GetContextList( void );
-    
+
     virtual GUI::UInt32 GetContextCount( void );
-    
+
     virtual GUI::CString GetDriverName( void );
-    
+
     virtual TStringSet GetAvailableFormTypes( void );
-    
+
     virtual TStringSet GetAvailableWidgetTypes( void );
 
     virtual TStringSet GetAvailableFonts( void );
 
     virtual bool LoadFontFromAsset( const GUI::CString& assetPath );
-    
+
     virtual const GUI::CString& GetClassTypeName( void ) const;
-    
+
     virtual GUI::CString GetDriverProperty( const GUI::CString& propertyName ) const;
 
     /**
@@ -111,9 +111,9 @@ class GUCEF_MYGUIGL_EXPORT_CPP CGUIDriverGL : public GUI::CGUIDriver
      *      @param treeroot pointer to the node that is to act as root of the data tree
      *      @return whether building the tree from the given file was successfull.
      */
-    virtual bool LoadConfig( const CORE::CDataNode& treeroot );    
+    virtual bool LoadConfig( const CORE::CDataNode& treeroot );
     private:
-    
+
     CGUIDriverGL( const CGUIDriverGL& src );
 
     private:
@@ -121,6 +121,7 @@ class GUCEF_MYGUIGL_EXPORT_CPP CGUIDriverGL : public GUI::CGUIDriver
     GUI::CGUIDriver::TGUIContextSet m_contextSet;
     TStringSet m_fontTypes;
     MyGUI::Gui m_myGUI;
+    CImageLoader m_imageLoader;
 };
 
 /*-------------------------------------------------------------------------//
@@ -133,7 +134,7 @@ class GUCEF_MYGUIGL_EXPORT_CPP CGUIDriverGL : public GUI::CGUIDriver
 }; /* namespace GUCEF */
 
 /*-------------------------------------------------------------------------*/
-          
+
 #endif /* GUCEF_MYGUIGL_CGUIDRIVERGL_H ? */
 
 /*-------------------------------------------------------------------------//

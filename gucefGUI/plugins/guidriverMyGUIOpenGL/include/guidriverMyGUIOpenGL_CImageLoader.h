@@ -14,11 +14,11 @@
  *
  *  You should have received a copy of the GNU Lesser General Public
  *  License along with this library; if not, write to the Free Software
- *  Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA 
+ *  Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA
  */
 
 #ifndef GUCEF_MYGUIGL_CIMAGELOADER_H
-#define GUCEF_MYGUIGL_CIMAGELOADER_H 
+#define GUCEF_MYGUIGL_CIMAGELOADER_H
 
 /*-------------------------------------------------------------------------//
 //                                                                         //
@@ -51,37 +51,35 @@ namespace MYGUIGL {
 //                                                                         //
 //-------------------------------------------------------------------------*/
 
-class CGUIDriverGL;
-
-/*-------------------------------------------------------------------------*/
-
 /**
  *  Implementation of the GUI context for the MyGUI & OpenGL combo
  */
 class GUCEF_MYGUIGL_EXPORT_CPP CImageLoader : public MyGUI::OpenGLImageLoader
 {
-    public:    
-    
-    virtual void* loadImage( int& _width                  , 
-                             int& _height                 , 
-                             MyGUI::PixelFormat& _format  , 
+    public:
+
+    CImageLoader( void );
+
+    virtual ~CImageLoader();
+
+    virtual void* loadImage( int& _width                  ,
+                             int& _height                 ,
+                             MyGUI::PixelFormat& _format  ,
                              const std::string& _filename );
 
-    virtual void saveImage( int _width                   , 
+    virtual void saveImage( int _width                   ,
                             int _height                  ,
-                            MyGUI::PixelFormat _format   , 
-                            void* _texture               , 
+                            MyGUI::PixelFormat _format   ,
+                            void* _texture               ,
                             const std::string& _filename );
-                               
-    private:
-    
-    CImageLoader( const CImageLoader& src );            
-    CImageLoader& operator=( const CImageLoader& src );
-    
+
     private:
 
-    MyGUI::OpenGLPlatform m_myGuiPlatform;
-    GUI::TWindowContextPtr m_windowContext;
+    CImageLoader( const CImageLoader& src );
+    CImageLoader& operator=( const CImageLoader& src );
+
+    private:
+
 };
 
 /*-------------------------------------------------------------------------//
