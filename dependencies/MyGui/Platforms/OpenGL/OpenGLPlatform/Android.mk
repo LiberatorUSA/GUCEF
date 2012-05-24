@@ -9,7 +9,7 @@
 #-------------------------------------------------------------------
 
 
-ifndef $(MY_MODULE_PATH)
+ifndef MY_MODULE_PATH
   MY_MODULE_PATH := $(call my-dir)
 endif
 LOCAL_PATH := $(MY_MODULE_PATH)
@@ -18,6 +18,7 @@ include $(CLEAR_VARS)
 
 @echo Module path: $(MY_MODULE_PATH)
 LOCAL_MODULE := MyGUI.OpenGLPlatform
+LOCAL_MODULE_FILENAME := libMyGUI.OpenGLPlatform
 @echo Module name: $(LOCAL_MODULE)
 
 LOCAL_SRC_FILES := \
@@ -47,7 +48,7 @@ LOCAL_SHARED_LIBRARIES := \
 
 
 LOCAL_LDLIBS := \
-  -lgl
+  -lGLESv1_CM
 
 include $(BUILD_SHARED_LIBRARY)
 
