@@ -231,20 +231,21 @@ CConfigStore::LoadConfig( void )
                 {
                         GUCEF_SYSTEM_LOG( LOGLEVEL_BELOW_NORMAL, "CConfigStore: Used codec " + _codectype + " to successfully build a config data tree from file " + _configfile );
 
+                        bool errorOccured = false;
                         TConfigurableSet::iterator i = _configobjs.begin();
                         while ( i != _configobjs.end() )
                         {
                             if ( !(*i)->LoadConfig( rootnode ) )
                             {
-                                    _datalock.Unlock();
-                                    return false;
+                                errorOccured = true;
+                                GUCEF_ERROR_LOG( LOGLEVEL_IMPORTANT, "CConfigStore: Loading of config failed for a configureable" );
                             }
                             ++i;
                         }
                         _datalock.Unlock();
 
                         GUCEF_SYSTEM_LOG( LOGLEVEL_BELOW_NORMAL, "CConfigStore: Successfully loaded all config using codec " + _codectype + " to successfully build a config data tree from file " + _configfile );
-                        return true;
+                        return errorOccured;
                 }
                 else
                 {

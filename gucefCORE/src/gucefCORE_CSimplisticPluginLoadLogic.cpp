@@ -48,7 +48,7 @@
 
 namespace GUCEF {
 namespace CORE {
-                      
+
 /*-------------------------------------------------------------------------//
 //                                                                         //
 //      UTILITIES                                                          //
@@ -62,9 +62,8 @@ CSimplisticPluginLoadLogic::LoadPlugin( const CString& rootDir        ,
                                         const TVersion* pluginVersion )
 {GUCEF_TRACE;
 
-    CString fullPluginPath = rootDir;
-    AppendToPath( fullPluginPath, moduleName );
-    
+    CString fullPluginPath = CombinePath( rootDir, moduleName );
+    fullPluginPath = RelativePath( fullPluginPath );
     return LoadModuleDynamicly( fullPluginPath.C_String() );
 }
 
@@ -73,7 +72,7 @@ CSimplisticPluginLoadLogic::LoadPlugin( const CString& rootDir        ,
 void
 CSimplisticPluginLoadLogic::UnloadPlugin( void* modulePtr )
 {GUCEF_TRACE;
-    
+
     UnloadModuleDynamicly( modulePtr );
 }
 
@@ -81,14 +80,14 @@ CSimplisticPluginLoadLogic::UnloadPlugin( void* modulePtr )
 
 CSimplisticPluginLoadLogic::CSimplisticPluginLoadLogic( void )
 {GUCEF_TRACE;
-    
+
 }
 
 /*-------------------------------------------------------------------------*/
 
 CSimplisticPluginLoadLogic::~CSimplisticPluginLoadLogic()
 {GUCEF_TRACE;
-    
+
 }
 
 /*-------------------------------------------------------------------------*/
