@@ -131,12 +131,13 @@ LOCAL_SRC_FILES := \
   src/dvcppstringutils.cpp \
   src/dvfileutils.c \
   src/dvmd5utils.c \
-  src/DVOSWRAP.c \
+  src/DVOSWRAP.cpp \
   src/dvstrutils.c \
   src/ExceptionMacros.cpp \
   src/gucefCORE.cpp \
   src/gucefCORE_CAbstractFactoryBase.cpp \
   src/gucefCORE_CBusyWaitPulseGeneratorDriver.cpp \
+  src/gucefCORE_CCoreGlobal.cpp \
   src/gucefCORE_CForwardingNotifier.cpp \
   src/gucefCORE_CIEventHandlerFunctorBase.cpp \
   src/gucefCORE_CIniDataStoreCodec.cpp \
@@ -189,6 +190,7 @@ LOCAL_SHARED_LIBRARIES := \
 
 
 LOCAL_LDLIBS := \
+  -ldl \
   -llog
 
 include $(BUILD_SHARED_LIBRARY)

@@ -27,6 +27,7 @@ LOCAL_SRC_FILES := \
   src/gucefVFS_CIArchive.cpp \
   src/gucefVFS_CModule.cpp \
   src/gucefVFS_CVFS.cpp \
+  src/gucefVFS_CVfsGlobal.cpp \
   src/gucefVFS_CVFSHandle.cpp \
   src/gucefVFS_CVFSURLHandler.cpp
 

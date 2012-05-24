@@ -34,6 +34,7 @@ LOCAL_SRC_FILES := \
   src/gucefGUI_CFormFactory.cpp \
   src/gucefGUI_CGridView.cpp \
   src/gucefGUI_CGUIDriver.cpp \
+  src/gucefGUI_CGuiGlobal.cpp \
   src/gucefGUI_CGUIManager.cpp \
   src/gucefGUI_CIFileSystemInfoProvider.cpp \
   src/gucefGUI_CIGUIContext.cpp \

@@ -9,7 +9,7 @@
 #-------------------------------------------------------------------
 
 
-ifndef $(MY_MODULE_PATH)
+ifndef MY_MODULE_PATH
   MY_MODULE_PATH := $(call my-dir)
 endif
 LOCAL_PATH := $(MY_MODULE_PATH)
@@ -17,87 +17,73 @@ LOCAL_PATH := $(MY_MODULE_PATH)
 include $(CLEAR_VARS)
 
 @echo Module path: $(MY_MODULE_PATH)
-LOCAL_MODULE := guidriverMyGUIOgre
+LOCAL_MODULE := guidriverMyGUI
+LOCAL_MODULE_FILENAME := libguidriverMyGUI
 @echo Module name: $(LOCAL_MODULE)
 
 LOCAL_SRC_FILES := \
-  include/guceMyGUIOgre_CIOAccessToMyGuiDataStreamAdapter.cpp \
-  src/guceMyGUIOgre.cpp \
-  src/guceMyGUIOgre_CButtonImp.cpp \
-  src/guceMyGUIOgre_CCheckboxImp.cpp \
-  src/guceMyGUIOgre_CComboboxImp.cpp \
-  src/guceMyGUIOgre_CDataManager.cpp \
-  src/guceMyGUIOgre_CEditboxImp.cpp \
-  src/guceMyGUIOgre_CFileOpenDialogImp.cpp \
-  src/guceMyGUIOgre_CFileSaveDialogImp.cpp \
-  src/guceMyGUIOgre_CFileSystemDialogImp.cpp \
-  src/guceMyGUIOgre_CFormBackendImp.cpp \
-  src/guceMyGUIOgre_CGridViewImp.cpp \
-  src/guceMyGUIOgre_CGUIContext.cpp \
-  src/guceMyGUIOgre_CGUIDriver.cpp \
-  src/guceMyGUIOgre_CImageFrameImp.cpp \
-  src/guceMyGUIOgre_CLabelImp.cpp \
-  src/guceMyGUIOgre_CListboxImp.cpp \
-  src/guceMyGUIOgre_CMemoboxImp.cpp \
-  src/guceMyGUIOgre_CMenuBarImp.cpp \
-  src/guceMyGUIOgre_CModule.cpp \
-  src/guceMyGUIOgre_CMyGUIInputAdapter.cpp \
-  src/guceMyGUIOgre_CPopupMenuImp.cpp \
-  src/guceMyGUIOgre_CProgressBarImp.cpp \
-  src/guceMyGUIOgre_CPushButtonImp.cpp \
-  src/guceMyGUIOgre_CRenderContextImp.cpp \
-  src/guceMyGUIOgre_CSpinnerImp.cpp \
-  src/guceMyGUIOgre_CTabContentPaneImp.cpp \
-  src/guceMyGUIOgre_CTabControlImp.cpp \
-  src/guceMyGUIOgre_CTreeviewImp.cpp \
-  src/guceMyGUIOgre_CVFSHandleToMyGuiDataStreamAdapter.cpp \
-  src/guceMyGUIOgre_CVFSInfoProvider.cpp \
-  src/guceMyGUIOgre_CWidgetImp.cpp \
-  src/guceMyGUIOgre_CWindowImp.cpp \
-  src/guceMyGUIOgre_pluginAPI.cpp \
-  src/MyGUI_OgreRenderManager.cpp \
-  src/MyGUI_OgreRTTexture.cpp \
-  src/MyGUI_OgreTexture.cpp \
-  src/MyGUI_OgreVertexBuffer.cpp
+  include/guceMyGUI_CIOAccessToMyGuiDataStreamAdapter.cpp \
+  src/guceMyGUI.cpp \
+  src/guceMyGUI_CButtonImp.cpp \
+  src/guceMyGUI_CCheckboxImp.cpp \
+  src/guceMyGUI_CComboboxImp.cpp \
+  src/guceMyGUI_CDataManager.cpp \
+  src/guceMyGUI_CEditboxImp.cpp \
+  src/guceMyGUI_CFileOpenDialogImp.cpp \
+  src/guceMyGUI_CFileSaveDialogImp.cpp \
+  src/guceMyGUI_CFileSystemDialogImp.cpp \
+  src/guceMyGUI_CFormBackendImp.cpp \
+  src/guceMyGUI_CGridViewImp.cpp \
+  src/guceMyGUI_CGUIContext.cpp \
+  src/guceMyGUI_CImageFrameImp.cpp \
+  src/guceMyGUI_CLabelImp.cpp \
+  src/guceMyGUI_CListboxImp.cpp \
+  src/guceMyGUI_CMemoboxImp.cpp \
+  src/guceMyGUI_CMenuBarImp.cpp \
+  src/guceMyGUI_CModule.cpp \
+  src/guceMyGUI_CMyGUIInputAdapter.cpp \
+  src/guceMyGUI_CPopupMenuImp.cpp \
+  src/guceMyGUI_CProgressBarImp.cpp \
+  src/guceMyGUI_CPushButtonImp.cpp \
+  src/guceMyGUI_CRenderContextImp.cpp \
+  src/guceMyGUI_CSpinnerImp.cpp \
+  src/guceMyGUI_CTabContentPaneImp.cpp \
+  src/guceMyGUI_CTabControlImp.cpp \
+  src/guceMyGUI_CTreeviewImp.cpp \
+  src/guceMyGUI_CVFSHandleToMyGuiDataStreamAdapter.cpp \
+  src/guceMyGUI_CVFSInfoProvider.cpp \
+  src/guceMyGUI_CWidgetImp.cpp \
+  src/guceMyGUI_CWindowImp.cpp \
+  src/guceMyGUI_pluginAPI.cpp
 
 LOCAL_C_INCLUDES := \
   $(MY_MODULE_PATH)/include \
-  $(MY_MODULE_PATH)/../../../GUCEF/trunk/common/include \
-  $(MY_MODULE_PATH)/../../../GUCEF/trunk/gucefCOM/include \
-  $(MY_MODULE_PATH)/../../../GUCEF/trunk/gucefCOMCORE/include \
-  $(MY_MODULE_PATH)/../../../GUCEF/trunk/gucefCORE/include \
-  $(MY_MODULE_PATH)/../../../GUCEF/trunk/gucefCORE/include/android \
-  $(MY_MODULE_PATH)/../../../GUCEF/trunk/gucefDRN/include \
-  $(MY_MODULE_PATH)/../../../GUCEF/trunk/gucefGUI/include \
-  $(MY_MODULE_PATH)/../../../GUCEF/trunk/gucefIMAGE/include \
-  $(MY_MODULE_PATH)/../../../GUCEF/trunk/gucefINPUT/include \
-  $(MY_MODULE_PATH)/../../../GUCEF/trunk/gucefMT/include \
-  $(MY_MODULE_PATH)/../../../GUCEF/trunk/gucefPATCHER/include \
-  $(MY_MODULE_PATH)/../../../GUCEF/trunk/gucefVFS/include \
-  $(MY_MODULE_PATH)/../../../GUCEF/trunk/gucefVFS/plugins/vfspluginZIP/dependencies/zziplib \
-  $(MY_MODULE_PATH)/../../../GUCEF/trunk/gucefVFS/plugins/vfspluginZIP/dependencies/zziplib/zzip \
-  $(MY_MODULE_PATH)/../dependencies/Ogre/OgreMain/include \
-  $(MY_MODULE_PATH)/../dependencies/Ogre/OgreMain/src \
-  $(MY_MODULE_PATH)/../dependencies/Ogre/OgreMain/src/nedmalloc \
-  $(MY_MODULE_PATH)/../dependencies/freetype/include \
-  $(MY_MODULE_PATH)/../dependencies/freetype/include/freetype \
-  $(MY_MODULE_PATH)/../dependencies/freetype/include/freetype/config \
-  $(MY_MODULE_PATH)/../dependencies/freetype/include/freetype/internal \
-  $(MY_MODULE_PATH)/../dependencies/freetype/include/freetype/internal/services \
-  $(MY_MODULE_PATH)/../dependencies/freetype/src/winfonts \
-  $(MY_MODULE_PATH)/../guceCORE/include \
-  $(MY_MODULE_PATH)/../guceGUI/include
+  $(MY_MODULE_PATH)/../../../common/include \
+  $(MY_MODULE_PATH)/../../../dependencies/MyGui/MyGUIEngine/include \
+  $(MY_MODULE_PATH)/../../../dependencies/freetype/include \
+  $(MY_MODULE_PATH)/../../../dependencies/freetype/include/freetype \
+  $(MY_MODULE_PATH)/../../../dependencies/freetype/include/freetype/config \
+  $(MY_MODULE_PATH)/../../../dependencies/freetype/include/freetype/internal \
+  $(MY_MODULE_PATH)/../../../dependencies/freetype/include/freetype/internal/services \
+  $(MY_MODULE_PATH)/../../../dependencies/freetype/src/winfonts \
+  $(MY_MODULE_PATH)/../../../gucefCORE/include \
+  $(MY_MODULE_PATH)/../../../gucefCORE/include/android \
+  $(MY_MODULE_PATH)/../../../gucefGUI/include \
+  $(MY_MODULE_PATH)/../../../gucefIMAGE/include \
+  $(MY_MODULE_PATH)/../../../gucefINPUT/include \
+  $(MY_MODULE_PATH)/../../../gucefMT/include \
+  $(MY_MODULE_PATH)/../../../gucefVFS/include
+
+LOCAL_CFLAGS := -DGUIDRIVERMYGUI_BUILD_MODULE
 
 
 LOCAL_SHARED_LIBRARIES := \
-  guceCORE \
-  guceGUI \
+  MyGUI.Engine \
+  freetype \
   gucefCORE \
+  gucefGUI \
+  gucefINPUT \
   gucefMT
-
-
-LOCAL_LDLIBS := \
-  -lMyGUIEngine
 
 include $(BUILD_SHARED_LIBRARY)
 
