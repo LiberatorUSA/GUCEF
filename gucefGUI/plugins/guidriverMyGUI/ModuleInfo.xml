@@ -6,7 +6,7 @@
             <Dependency Name="gucefCORE" />
             <Dependency Name="gucefMT" />
             <Dependency Name="freetype" />
-            <Dependency Name="MyGUIEngine" />
+            <Dependency Name="MyGUI.Engine" />
         </Dependencies>
         <Linker>
             <Dependency Name="gucefINPUT" />
@@ -14,7 +14,7 @@
             <Dependency Name="gucefCORE" />
             <Dependency Name="gucefMT" />
             <Dependency Name="freetype" />
-            <Dependency Name="MyGUIEngine" />
+            <Dependency Name="MyGUI.Engine" />
         </Linker>
         <Preprocessor>
             <Define String="GUIDRIVERMYGUI_BUILD_MODULE" />

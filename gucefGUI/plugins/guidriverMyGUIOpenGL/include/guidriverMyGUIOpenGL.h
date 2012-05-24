@@ -1,6 +1,6 @@
 /*
- *  guidriverMyGUI: glue module for the MyGUI GUI backend
- *  Copyright (C) 2002 - 2007.  Dinand Vanvelzen
+ *  guidriverMyGUIOpenGL: glue module for the MyGUI GUI backend using OpenGL
+ *  Copyright (C) 2002 - 2008.  Dinand Vanvelzen
  *
  *  This library is free software; you can redistribute it and/or
  *  modify it under the terms of the GNU Lesser General Public
@@ -24,8 +24,8 @@
  *      based on CEGUI with Ogre doing the rendering.
  */
 
-#ifndef GUCEF_MYGUI_H
-#define GUCEF_MYGUI_H
+#ifndef GUCEF_MYGUIGL_H
+#define GUCEF_MYGUIGL_H
 
 /*-------------------------------------------------------------------------//
 //                                                                         //
@@ -36,26 +36,18 @@
 /*
  *      Library build configuration      
  */
-#ifndef GUCEF_MYGUI_CONFIG_H
-#include "guceMyGUI_config.h"
-#define GUCEF_MYGUI_CONFIG_H
-#endif /* GUCEF_MYGUI_CONFIG_H ? */
+#ifndef GUCEF_MYGUIGL_CONFIG_H
+#include "guidriverMyGUIOpenGL_config.h"
+#define GUCEF_MYGUIGL_CONFIG_H
+#endif /* GUCEF_MYGUIGL_CONFIG_H ? */
 
 /*
  *      Library specific macros and generic macros
  */
-#ifndef GUCEF_MYGUI_MACROS_H
-#include "guceMyGUI_macros.h"
-#define GUCEF_MYGUI_MACROS_H
-#endif /* GUCEF_MYGUI_MACROS_H ? */
-
-/*
- *      Simple types
- */
-#ifndef GUCEF_MYGUI_ETYPES_H
-#include "guceMyGUI_ETypes.h"
-#define GUCEF_MYGUI_ETYPES_H
-#endif /* GUCEF_MYGUI_ETYPES_H ? */
+#ifndef GUCEF_MYGUIGL_MACROS_H
+#include "guidriverMyGUIOpenGL_macros.h"
+#define GUCEF_MYGUIGL_MACROS_H
+#endif /* GUCEF_MYGUIGL_MACROS_H ? */
 
 /*---------------------------------------------------------------------------/
 
@@ -64,100 +56,15 @@
 /---------------------------------------------------------------------------*/
 #ifdef __cplusplus
 
-#ifndef GUCEF_MYGUI_CFORMBACKENDIMP_H
-#include "guceMyGUI_CFormBackendImp.h"
-#define GUCEF_MYGUI_CFORMBACKENDIMP_H
-#endif /* GUCEF_MYGUI_CFORMBACKENDIMP_H ? */
+#ifndef GUCEF_MYGUIGL_CGUIDRIVERGL_H
+#include "guidriverMyGUIOpenGL_CGUIDriverGL.h"
+#define GUCEF_MYGUIGL_CGUIDRIVERGL_H
+#endif /* GUCEF_MYGUIGL_CGUIDRIVERGL_H ? */
 
-#ifndef GUCEF_MYGUI_CWIDGETIMP_H
-#include "guceMyGUI_CWidgetImp.h"
-#define GUCEF_MYGUI_CWIDGETIMP_H
-#endif /* GUCEF_MYGUI_CWIDGETIMP_H ? */
-
-#ifndef GUCEF_MYGUI_CBUTTONIMP_H
-#include "guceMyGUI_CButtonImp.h"
-#define GUCEF_MYGUI_CBUTTONIMP_H
-#endif /* GUCEF_MYGUI_CBUTTONIMP_H ? */
-
-#ifndef GUCEF_MYGUI_CPUSHBUTTONIMP_H
-#include "guceMyGUI_CPushButtonImp.h"
-#define GUCEF_MYGUI_CPUSHBUTTONIMP_H
-#endif /* GUCEF_MYGUI_CPUSHBUTTONIMP_H ? */
-
-#ifndef GUCEF_MYGUI_CEDITBOXIMP_H
-#include "guceMyGUI_CEditboxImp.h"
-#define GUCEF_MYGUI_CEDITBOXIMP_H
-#endif /* GUCEF_MYGUI_CEDITBOXIMP_H ? */
-
-#ifndef GUCEF_MYGUI_CLISTBOXIMP_H
-#include "guceMyGUI_CListboxImp.h"
-#define GUCEF_MYGUI_CLISTBOXIMP_H
-#endif /* GUCEF_MYGUI_CLISTBOXIMP_H ? */
-
-#ifndef GUCEF_MYGUI_CWINDOWIMP_H
-#include "guceMyGUI_CWindowImp.h"
-#define GUCEF_MYGUI_CWINDOWIMP_H
-#endif /* GUCEF_MYGUI_CWINDOWIMP_H ? */
-
-#ifndef GUCEF_MYGUI_CIMAGEFRAMEIMP_H
-#include "guceMyGUI_CImageFrameImp.h"
-#define GUCEF_MYGUI_CIMAGEFRAMEIMP_H
-#endif /* GUCEF_MYGUI_CIMAGEFRAMEIMP_H ? */
-
-#ifndef GUCEF_MYGUI_CHECKBOXIMP_H
-#include "guceMyGUI_CCheckboxImp.h"
-#define GUCEF_MYGUI_CHECKBOXIMP_H
-#endif /* GUCEF_MYGUI_CHECKBOXIMP_H ? */
-
-#ifndef GUCEF_MYGUI_CLABELIMP_H
-#include "guceMyGUI_CLabelImp.h"
-#define GUCEF_MYGUI_CLABELIMP_H
-#endif /* GUCEF_MYGUI_CLABELIMP_H ? */
-
-#ifndef GUCEF_MYGUI_CCOMBOBOXIMP_H
-#include "guceMyGUI_CComboboxImp.h"
-#define GUCEF_MYGUI_CCOMBOBOXIMP_H
-#endif /* GUCEF_MYGUI_CCOMBOBOXIMP_H ? */
-
-#ifndef GUCEF_MYGUI_CTABCONTROLIMP_H
-#include "guceMyGUI_CTabControlImp.h"
-#define GUCEF_MYGUI_CTABCONTROLIMP_H
-#endif /* GUCEF_MYGUI_CTABCONTROLIMP_H ? */
-
-#ifndef GUCEF_MYGUI_CTABCONTENTPANEIMP_H
-#include "guceMyGUI_CTabContentPaneImp.h"
-#define GUCEF_MYGUI_CTABCONTENTPANEIMP_H
-#endif /* GUCEF_MYGUI_CTABCONTENTPANEIMP_H ? */
-
-#ifndef GUCEF_MYGUI_CSPINNERIMP_H
-#include "guceMyGUI_CSpinnerImp.h"
-#define GUCEF_MYGUI_CSPINNERIMP_H
-#endif /* GUCEF_MYGUI_CSPINNERIMP_H ? */
-
-#ifndef GUCEF_MYGUI_CGRIDVIEWIMP_H
-#include "guceMyGUI_CGridViewImp.h"
-#define GUCEF_MYGUI_CGRIDVIEWIMP_H
-#endif /* GUCEF_MYGUI_CGRIDVIEWIMP_H ? */
-
-#ifndef GUCEF_MYGUI_CFILEOPENDIALOGIMP_H
-#include "guceMyGUI_CFileOpenDialogImp.h"
-#define GUCEF_MYGUI_CFILEOPENDIALOGIMP_H
-#endif /* GUCEF_MYGUI_CFILEOPENDIALOGIMP_H ? */
-
-#ifndef GUCEF_MYGUI_CFILESAVEDIALOGIMP_H
-#include "guceMyGUI_CFileSaveDialogImp.h"
-#define GUCEF_MYGUI_CFILESAVEDIALOGIMP_H
-#endif /* GUCEF_MYGUI_CFILESAVEDIALOGIMP_H ? */
-
-#ifndef GUCEF_MYGUI_CFILESYSTEMDIALOGIMP_H
-#include "guceMyGUI_CFileSystemDialogImp.h"
-#define GUCEF_MYGUI_CFILESYSTEMDIALOGIMP_H
-#endif /* GUCEF_MYGUI_CFILESYSTEMDIALOGIMP_H ? */
-
-#ifndef GUCEF_MYGUI_CRENDERCONTEXTIMP_H
-#include "guceMyGUI_CRenderContextImp.h"
-#define GUCEF_MYGUI_CRENDERCONTEXTIMP_H
-#endif /* GUCEF_MYGUI_CRENDERCONTEXTIMP_H ? */
+#ifndef GUCEF_MYGUIGL_CGUICONTEXTGL_H
+#include "guidriverMyGUIOpenGL_CGUIContextGL.h"
+#define GUCEF_MYGUIGL_CGUICONTEXTGL_H
+#endif /* GUCEF_MYGUIGL_CGUICONTEXTGL_H ? */
 
 #endif /* __cplusplus ? */
 
@@ -167,11 +74,11 @@
 //                                                                         //
 //-------------------------------------------------------------------------*/
 
-GUCEF_MYGUI_EXPORT_C const char* GUCEF_MYGUI_ModuleCompileTimeStamp( void );
+GUCEF_MYGUIGL_EXPORT_C const char* GUCEF_MYGUIGL_ModuleCompileTimeStamp( void );
 
 /*--------------------------------------------------------------------------*/
 
-#endif /* GUCEF_MYGUI_H ? */
+#endif /* GUCEF_MYGUIGL_H ? */
 
 /*-------------------------------------------------------------------------//
 //                                                                         //

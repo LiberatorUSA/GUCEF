@@ -6,7 +6,8 @@
             <Dependency Name="gucefCORE" />
             <Dependency Name="gucefMT" />
             <Dependency Name="freetype" />
-            <Dependency Name="MyGUIEngine" />
+            <Dependency Name="MyGUI.Engine" />
+            <Dependency Name="MyGUI.OpenGLPlatform" />
             <Dependency Name="guidriverMyGUI" />
         </Dependencies>
         <Linker>
@@ -15,7 +16,8 @@
             <Dependency Name="gucefCORE" />
             <Dependency Name="gucefMT" />
             <Dependency Name="freetype" />
-            <Dependency Name="MyGUIEngine" />
+            <Dependency Name="MyGUI.Engine" />
+            <Dependency Name="MyGUI.OpenGLPlatform" />
             <Dependency Name="guidriverMyGUI" />
         </Linker>
         <Preprocessor>

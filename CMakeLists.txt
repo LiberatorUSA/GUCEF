@@ -208,6 +208,7 @@ add_subdirectory( dependencies/libRocket/Source/Core )
 add_subdirectory( dependencies/libRocket/Source/Controls )
 add_subdirectory( dependencies/libRocket/Source/Debugger )
 add_subdirectory( dependencies/MyGui/MyGUIEngine )
+add_subdirectory( dependencies/MyGui/Platforms/OpenGL/OpenGLPlatform )
 
 # Setup GUCEF Plugin modules
 add_subdirectory( gucefCORE/plugins/dstorepluginPARSIFALXML )
@@ -259,5 +260,5 @@ add_subdirectory(docs)
 #include(Packaging)
 
 # Show feature summary
-include(FeatureSummary)
+#include(FeatureSummary)
 
