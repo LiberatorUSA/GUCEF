@@ -26,4 +26,19 @@
             <Define String="GUIDRIVERMYGUIOPENGL_BUILD_MODULE" />
         </Preprocessor>
     </Module>
+    <Module Platform="mswin">
+        <Linker>
+            <Dependency Name="OpenGL32" />
+        </Linker>
+    </Module>
+    <Module Platform="linux">
+        <Linker>
+            <Dependency Name="GL" />
+        </Linker>
+    </Module>
+    <Module Platform="android">
+        <Linker>
+            <Dependency Name="GLESv1_CM" />
+        </Linker>
+    </Module>
 </ModuleInfoEntry>

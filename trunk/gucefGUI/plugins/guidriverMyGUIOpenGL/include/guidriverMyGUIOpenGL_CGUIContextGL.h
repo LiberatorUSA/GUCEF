@@ -14,11 +14,11 @@
  *
  *  You should have received a copy of the GNU Lesser General Public
  *  License along with this library; if not, write to the Free Software
- *  Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA 
+ *  Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA
  */
 
 #ifndef GUCEF_MYGUIGL_CGUICONTEXTGL_H
-#define GUCEF_MYGUIGL_CGUICONTEXTGL_H 
+#define GUCEF_MYGUIGL_CGUICONTEXTGL_H
 
 /*-------------------------------------------------------------------------//
 //                                                                         //
@@ -76,28 +76,28 @@ class CGUIDriverGL;
 class GUCEF_MYGUIGL_EXPORT_CPP CGUIContextGL : public MYGUI::CGUIContext ,
                                                public CORE::CObserver
 {
-    public:    
-    
+    public:
+
     CGUIContextGL( CGUIDriverGL& guiDriver               ,
                    MyGUI::OpenGLImageLoader* imageLoader ,
                    GUI::TWindowContextPtr windowContext  ,
                    INPUT::CInputContext* inputContext    );
-    
+
     virtual ~CGUIContextGL();
 
     virtual const CORE::CString& GetClassTypeName( void ) const;
 
     protected:
-   
+
     virtual void OnNotify( CORE::CNotifier* notifier          ,
                            const CORE::CEvent& eventID        ,
                            CORE::CICloneable* evenData = NULL );
-                               
+
     private:
-    
-    CGUIContextGL( const CGUIContextGL& src );            
+
+    CGUIContextGL( const CGUIContextGL& src );
     CGUIContextGL& operator=( const CGUIContextGL& src );
-    
+
     private:
 
     MyGUI::OpenGLPlatform m_myGuiPlatform;

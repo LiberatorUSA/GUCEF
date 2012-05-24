@@ -14,7 +14,7 @@
  *
  *  You should have received a copy of the GNU Lesser General Public
  *  License along with this library; if not, write to the Free Software
- *  Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA 
+ *  Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA
  */
 
 #ifndef GUCEF_IMAGE_IMAGEDATA_H
@@ -40,7 +40,7 @@
 #ifdef __cplusplus
 namespace GUCEF {
 namespace IMAGE {
-#endif /* __cplusplus ? */ 
+#endif /* __cplusplus ? */
 
 /*-------------------------------------------------------------------------//
 //                                                                         //
@@ -69,10 +69,10 @@ namespace IMAGE {
 /**
  *      Image Storage formats
  */
-typedef enum TPixelStorageFormat
+enum EPixelStorageFormat
 {
     PSF_UNKNOWN = 0              ,
-    
+
     PSF_RGB = 1                  ,
     PSF_RGBA                     ,
     PSF_BGR                      ,
@@ -83,9 +83,10 @@ typedef enum TPixelStorageFormat
     PSF_SINGLE_CHANNEL_BLUE      ,
     PSF_SINGLE_CHANNEL_ALPHA     ,
     PSF_SINGLE_CHANNEL_LUMINANCE ,
-    
+
     PSF_COUNT
 };
+typedef enum EPixelStorageFormat TPixelStorageFormat;
 
 /*-------------------------------------------------------------------------*/
 
@@ -165,7 +166,7 @@ typedef struct SImageFrame TImageFrame;
 struct SImage
 {
     UInt32 version;             /**< version of the TImage definition */
-    TImageInfo imageInfo;       /**< basic image information */ 
+    TImageInfo imageInfo;       /**< basic image information */
     TImageFrame* frames;        /**< array of image frames */
 };
 
@@ -196,11 +197,11 @@ typedef struct SImage TImage;
         - Dinand: refactored the type definitions to allow for a more flexible
           linking of image information
         - Dinand: removed support in the definition for compression, it simply does not
-          belong here at this technical level.       
+          belong here at this technical level.
 - 29-08-2004 :
         - Dinand: Added the mipmaps field.
 - 25-08-2004 :
-        - Dinand: Added support for image compression: 
+        - Dinand: Added support for image compression:
           An OpenGL compressed pixmap and an S3TC compressed pixmap.
         - Dinand: ISF_SINGLE_CHANNEL has been split into several formats so that the
           channel type can be preserved.
