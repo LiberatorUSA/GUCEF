@@ -17,8 +17,8 @@
  *  Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA 
  */
 
-#ifndef GUCEF_MYGUIGL_PLUGINAPI_H
-#define GUCEF_MYGUIGL_PLUGINAPI_H
+#ifndef GUCEF_MYGUIGL_CGUICONTEXTGL_H
+#define GUCEF_MYGUIGL_CGUICONTEXTGL_H 
 
 /*-------------------------------------------------------------------------//
 //                                                                         //
@@ -26,10 +26,25 @@
 //                                                                         //
 //-------------------------------------------------------------------------*/
 
-#ifndef GUCEF_CORE_ESTRUCTS_H
-#include "EStructs.h"
-#define GUCEF_CORE_ESTRUCTS_H
-#endif /* GUCEF_CORE_ESTRUCTS_H ? */
+#ifndef GUCEF_CORE_COBSERVINGNOTIFIER_H
+#include "CObservingNotifier.h"
+#define GUCEF_CORE_COBSERVINGNOTIFIER_H
+#endif /* GUCEF_CORE_COBSERVINGNOTIFIER_H ? */
+
+#ifndef GUCEF_GUI_CWINDOWCONTEXT_H
+#include "gucefGUI_CWindowContext.h"
+#define GUCEF_GUI_CWINDOWCONTEXT_H
+#endif /* GUCEF_GUI_CWINDOWCONTEXT_H ? */
+
+#ifndef __MYGUI_OPENGL_PLATFORM_H__
+#include "MyGUI_OpenGLPlatform.h"
+#define __MYGUI_OPENGL_PLATFORM_H__
+#endif /* __MYGUI_OPENGL_PLATFORM_H__ ? */
+
+#ifndef GUCEF_MYGUI_CGUICONTEXT_H
+#include "guceMyGUI_CGUIContext.h"
+#define GUCEF_MYGUI_CGUICONTEXT_H
+#endif /* GUCEF_MYGUI_CGUICONTEXT_H ? */
 
 #ifndef GUCEF_MYGUIGL_MACROS_H
 #include "guidriverMyGUIOpenGL_macros.h"
@@ -47,47 +62,47 @@ namespace MYGUIGL {
 
 /*-------------------------------------------------------------------------//
 //                                                                         //
-//      UTILITIES                                                          //
+//      CLASSES                                                            //
 //                                                                         //
 //-------------------------------------------------------------------------*/
 
-/*
- *      Prevent C++ name mangling
+class CGUIDriverGL;
+
+/*-------------------------------------------------------------------------*/
+
+/**
+ *  Implementation of the GUI context for the MyGUI & OpenGL combo
  */
-#ifdef __cplusplus
-extern "C" {
-#endif
+class GUCEF_MYGUIGL_EXPORT_CPP CGUIContextGL : public MYGUI::CGUIContext ,
+                                               public CORE::CObserver
+{
+    public:    
+    
+    CGUIContextGL( CGUIDriverGL& guiDriver               ,
+                   MyGUI::OpenGLImageLoader* imageLoader ,
+                   GUI::TWindowContextPtr windowContext  ,
+                   INPUT::CInputContext* inputContext    );
+    
+    virtual ~CGUIContextGL();
 
-/*---------------------------------------------------------------------------*/
+    virtual const CORE::CString& GetClassTypeName( void ) const;
 
-GUCEF_MYGUIGL_EXPORT_C GUCEF::CORE::Int32 GUCEF_PLUGIN_CALLSPEC_PREFIX 
-GUCEFPlugin_Load( GUCEF::CORE::UInt32 argc, const char** argv ) GUCEF_PLUGIN_CALLSPEC_SUFFIX;
+    protected:
+   
+    virtual void OnNotify( CORE::CNotifier* notifier          ,
+                           const CORE::CEvent& eventID        ,
+                           CORE::CICloneable* evenData = NULL );
+                               
+    private:
+    
+    CGUIContextGL( const CGUIContextGL& src );            
+    CGUIContextGL& operator=( const CGUIContextGL& src );
+    
+    private:
 
-/*--------------------------------------------------------------------------*/
-
-GUCEF_MYGUIGL_EXPORT_C void GUCEF_PLUGIN_CALLSPEC_PREFIX 
-GUCEFPlugin_Unload( void ) GUCEF_PLUGIN_CALLSPEC_SUFFIX;
-
-/*--------------------------------------------------------------------------*/
-
-GUCEF_MYGUIGL_EXPORT_C void GUCEF_PLUGIN_CALLSPEC_PREFIX 
-GUCEFPlugin_GetVersion( GUCEF::CORE::TVersion* versionInfo ) GUCEF_PLUGIN_CALLSPEC_SUFFIX;
-
-/*--------------------------------------------------------------------------*/
-
-GUCEF_MYGUIGL_EXPORT_C const char* GUCEF_PLUGIN_CALLSPEC_PREFIX 
-GUCEFPlugin_GetCopyright( void ) GUCEF_PLUGIN_CALLSPEC_SUFFIX;
-
-/*--------------------------------------------------------------------------*/
-
-GUCEF_MYGUIGL_EXPORT_C const char* GUCEF_PLUGIN_CALLSPEC_PREFIX 
-GUCEFPlugin_GetDescription( void ) GUCEF_PLUGIN_CALLSPEC_SUFFIX;
-
-/*---------------------------------------------------------------------------*/                 
-
-#ifdef __cplusplus
-   }
-#endif /* __cplusplus */
+    MyGUI::OpenGLPlatform m_myGuiPlatform;
+    GUI::TWindowContextPtr m_windowContext;
+};
 
 /*-------------------------------------------------------------------------//
 //                                                                         //
@@ -95,12 +110,12 @@ GUCEFPlugin_GetDescription( void ) GUCEF_PLUGIN_CALLSPEC_SUFFIX;
 //                                                                         //
 //-------------------------------------------------------------------------*/
 
-}; /* namespace MYGUIGL */
-}; /* namespace GUCE */
+} /* namespace MYGUIGL */
+} /* namespace GUCEF */
 
-/*--------------------------------------------------------------------------*/
+/*-------------------------------------------------------------------------*/
 
-#endif /* GUCEF_MYGUIGL_PLUGINAPI_H ? */
+#endif /* GUCEF_MYGUIGL_CGUICONTEXTGL_H ? */
 
 /*-------------------------------------------------------------------------//
 //                                                                         //
@@ -108,7 +123,7 @@ GUCEFPlugin_GetDescription( void ) GUCEF_PLUGIN_CALLSPEC_SUFFIX;
 //                                                                         //
 //-------------------------------------------------------------------------//
 
-- 04-05-2005 :
-        - Dinand: Initial version.
+- 08-04-2007 :
+        - Initial implementation
 
------------------------------------------------------------------------------*/
+---------------------------------------------------------------------------*/

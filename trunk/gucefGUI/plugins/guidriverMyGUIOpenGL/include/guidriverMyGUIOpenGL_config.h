@@ -1,6 +1,6 @@
 /*
- *  guidriverMyGUI: glue module for the MyGUI GUI backend
- *  Copyright (C) 2002 - 2007.  Dinand Vanvelzen
+ *  guidriverMyGUIOpenGL: glue module for the MyGUI GUI backend using OpenGL
+ *  Copyright (C) 2002 - 2008.  Dinand Vanvelzen
  *
  *  This library is free software; you can redistribute it and/or
  *  modify it under the terms of the GNU Lesser General Public
@@ -17,8 +17,8 @@
  *  Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA 
  */
 
-#ifndef GUCEF_MYGUI_CONFIG_H
-#define GUCEF_MYGUI_CONFIG_H
+#ifndef GUCEF_MYGUIGL_CONFIG_H
+#define GUCEF_MYGUIGL_CONFIG_H
 
 /*-------------------------------------------------------------------------//
 //                                                                         //
@@ -38,12 +38,12 @@
 //-------------------------------------------------------------------------*/
 
 /* Switches for the export of C++ and/or C code */
-#define GUCEF_MYGUI_EXPORT_CPP_CODE
-#define GUCEF_MYGUI_EXPORT_C_CODE
+#define GUCEF_MYGUIGL_EXPORT_CPP_CODE
+#define GUCEF_MYGUIGL_EXPORT_C_CODE
 
 /*-------------------------------------------------------------------------*/
 
-#endif /* GUCEF_MYGUI_CONFIG_H */
+#endif /* GUCEF_MYGUIGL_CONFIG_H */
 
 /*-------------------------------------------------------------------------//
 //                                                                         //

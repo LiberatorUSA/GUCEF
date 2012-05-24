@@ -928,6 +928,7 @@ bool
 CPluginControl::LoadConfig( const CDataNode& treeroot )
 {GUCEF_TRACE;
 
+    bool errorOccured = false;
     CDataNode::TConstDataNodeSet pluginGroupNodes( treeroot.FindChildrenOfType( "PluginGroup", true ) );
     CDataNode::TConstDataNodeSet::iterator i = pluginGroupNodes.begin();
     while ( i != pluginGroupNodes.end() ) 
@@ -952,6 +953,7 @@ CPluginControl::LoadConfig( const CDataNode& treeroot )
                 if ( !AddPluginMetaData( metaData, groupName, loadPlugins ) )
                 {
                     GUCEF_ERROR_LOG( LOGLEVEL_NORMAL, "Failed to load plugin meta data based on info in config" );
+                    errorOccured = true;
                 }
             }
             ++n;
@@ -960,7 +962,7 @@ CPluginControl::LoadConfig( const CDataNode& treeroot )
         ++i;
     }
 
-    return true;
+    return errorOccured;
 }
 
 /*-------------------------------------------------------------------------//

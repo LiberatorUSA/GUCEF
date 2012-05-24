@@ -22,28 +22,13 @@
 //      INCLUDES                                                           //
 //                                                                         //
 //-------------------------------------------------------------------------*/
-          
-#ifndef GUCEF_CORE_LOGGING_H
-#include "gucefCORE_Logging.h"
-#define GUCEF_CORE_LOGGING_H
-#endif /* GUCEF_CORE_LOGGING_H ? */
-
-#ifndef GUCEF_GUI_CGUIMANAGER_H
-#include "gucefGUI_CGUIManager.h"
-#define GUCEF_GUI_CGUIMANAGER_H
-#endif /* GUCEF_GUI_CGUIMANAGER_H ? */
-
-#ifndef GUCEF_GUI_CGUIGLOBAL_H
-#include "gucefGUI_CGuiGlobal.h"
-#define GUCEF_GUI_CGUIGLOBAL_H
-#endif /* GUCEF_GUI_CGUIGLOBAL_H ? */
 
 #ifndef GUCEF_MYGUIGL_CGUIDRIVERGL_H
 #include "guidriverMyGUIOpenGL_CGUIDriverGL.h"
 #define GUCEF_MYGUIGL_CGUIDRIVERGL_H
 #endif /* GUCEF_MYGUIGL_CGUIDRIVERGL_H ? */
 
-#include "guidriverMyGUIOpenGL_pluginAPI.h"
+#include "guidriverMyGUIOpenGL_CGUIContextGL.h"
 
 /*-------------------------------------------------------------------------//
 //                                                                         //
@@ -56,71 +41,61 @@ namespace MYGUIGL {
 
 /*-------------------------------------------------------------------------//
 //                                                                         //
-//      GLOBAL VARS                                                        //
-//                                                                         //
-//-------------------------------------------------------------------------*/
-
-static CGUIDriverGL* g_guiDriver = NULL;
-
-/*-------------------------------------------------------------------------//
-//                                                                         //
 //      UTILITIES                                                          //
 //                                                                         //
 //-------------------------------------------------------------------------*/
 
-CORE::Int32 GUCEF_PLUGIN_CALLSPEC_PREFIX 
-GUCEFPlugin_Load( CORE::UInt32 argc, const char** argv ) GUCEF_PLUGIN_CALLSPEC_SUFFIX
+CGUIContextGL::CGUIContextGL( CGUIDriverGL& guiDriver               ,
+                              MyGUI::OpenGLImageLoader* imageLoader ,
+                              GUI::TWindowContextPtr windowContext  ,
+                              INPUT::CInputContext* inputContext    )
+    : MYGUI::CGUIContext( guiDriver    ,
+                          inputContext )  ,
+      m_myGuiPlatform()                   ,
+      m_windowContext( windowContext ) 
 {GUCEF_TRACE;
-    
-    GUCEF_SYSTEM_LOG( GUCEF::CORE::LOGLEVEL_NORMAL, "Load called on plugin guidriverMyGUIOpenGL" );    
-    
-    g_guiDriver = new CGUIDriverGL();
-    GUI::CGuiGlobal::Instance()->GetGuiManager().RegisterGUIDriver( "MyGUIOpenGL", g_guiDriver );
 
-    return 1;
+    m_myGuiPlatform.initialise( imageLoader );
 }
 
-/*--------------------------------------------------------------------------*/
+/*-------------------------------------------------------------------------*/
 
-void GUCEF_PLUGIN_CALLSPEC_PREFIX 
-GUCEFPlugin_Unload( void ) GUCEF_PLUGIN_CALLSPEC_SUFFIX
+CGUIContextGL::~CGUIContextGL()
 {GUCEF_TRACE;
 
-    GUCEF_SYSTEM_LOG( GUCEF::CORE::LOGLEVEL_NORMAL, "Unload called on plugin guidriverMyGUIOpenGL" );
-    
-    GUI::CGuiGlobal::Instance()->GetGuiManager().UnregisterGUIDriverByName( "MyGUIOpenGL" );
-    delete g_guiDriver;
-    g_guiDriver = NULL;
 }
 
-/*--------------------------------------------------------------------------*/
+/*-------------------------------------------------------------------------*/
 
-void GUCEF_PLUGIN_CALLSPEC_PREFIX 
-GUCEFPlugin_GetVersion( GUCEF::CORE::TVersion* versionInfo ) GUCEF_PLUGIN_CALLSPEC_SUFFIX
+const CORE::CString&
+CGUIContextGL::GetClassTypeName( void ) const
 {GUCEF_TRACE;
 
-    versionInfo->major = 1; 
-    versionInfo->minor = 0;
-    versionInfo->patch = 0;
-    versionInfo->release = 0;
+    static const CORE::CString classTypeName = "GUCEF::MYGUIGL::CGUIContextGL";
+    return classTypeName;
 }
 
-/*--------------------------------------------------------------------------*/
+/*-------------------------------------------------------------------------*/
 
-const char* GUCEF_PLUGIN_CALLSPEC_PREFIX 
-GUCEFPlugin_GetCopyright( void ) GUCEF_PLUGIN_CALLSPEC_SUFFIX
-{GUCEF_TRACE;
-    
-    return "Copyright (C) Dinand Vanvelzen, LGPL license";
-}
-
-/*--------------------------------------------------------------------------*/
-
-const char* GUCEF_PLUGIN_CALLSPEC_PREFIX 
-GUCEFPlugin_GetDescription( void ) GUCEF_PLUGIN_CALLSPEC_SUFFIX
+void
+CGUIContextGL::OnNotify( CORE::CNotifier* notifier   ,
+                         const CORE::CEvent& eventID ,
+                         CORE::CICloneable* evenData )
 {GUCEF_TRACE;
 
-    return "Generic GUCEF plugin which provides a GUI driver using MyGUI and OpenGL as the backend";
+    if ( eventID == GUI::CWindowContext::WindowContextRedrawEvent )
+    {
+        m_myGuiPlatform.getRenderManagerPtr()->drawOneFrame();
+    }
+    else
+    if ( eventID == GUI::CWindowContext::WindowContextSizeEvent )
+    {        
+        GUCEF_DEBUG_LOG( CORE::LOGLEVEL_NORMAL, "GUIContext: Resizing MyGUI GUI context to " + CORE::UInt32ToString( m_windowContext->GetWidth() ) + "x" +
+                                                                                               CORE::UInt32ToString( m_windowContext->GetHeight() ) );
+
+		m_myGuiPlatform.getRenderManagerPtr()->setViewSize( m_windowContext->GetWidth(), m_windowContext->GetHeight() );
+        m_myGuiPlatform.getRenderManagerPtr()->drawOneFrame();
+    }
 }
 
 /*-------------------------------------------------------------------------//
@@ -129,7 +104,7 @@ GUCEFPlugin_GetDescription( void ) GUCEF_PLUGIN_CALLSPEC_SUFFIX
 //                                                                         //
 //-------------------------------------------------------------------------*/
 
-}; /* namespace MYGUIGL */
+}; /* namespace MYGUI */
 }; /* namespace GUCE */
 
-/*--------------------------------------------------------------------------*/
+/*-------------------------------------------------------------------------*/

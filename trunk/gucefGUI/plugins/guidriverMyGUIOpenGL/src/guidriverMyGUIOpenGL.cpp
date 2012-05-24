@@ -23,17 +23,7 @@
 //                                                                         //
 //-------------------------------------------------------------------------*/
 
-#ifndef GUCEF_DLLINIT_H
-#include "gucef_DLLInit.h"
-#define GUCEF_DLLINIT_H
-#endif /* GUCEF_DLLINIT_H ? */
-
-#ifndef GUCE_MYGUI_CMODULE_H
-#include "guceMyGUI_CModule.h"
-#define GUCEF_MYGUI_CMODULE_H
-#endif /* GUCEF_MYGUI_CMODULE_H ? */
-
-#include "guceMyGUI.h"
+#include "guidriverMyGUIOpenGL.h"
 
 /*-------------------------------------------------------------------------//
 //                                                                         //
@@ -41,12 +31,8 @@
 //                                                                         //
 //-------------------------------------------------------------------------*/
 
-//GUCEF_DLL_INIT_FUNC_BEG_END( GUCE::MYGUIOGRE::CModule );
-
-/*-------------------------------------------------------------------------*/
-
 const char*
-GUCE_MYGUIOGRE_ModuleCompileTimeStamp( void )
+GUCEF_MYGUIGL_ModuleCompileTimeStamp( void )
 {
     return __TIMESTAMP__;
 }

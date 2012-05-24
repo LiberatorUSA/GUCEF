@@ -47,7 +47,7 @@ add_library( ${MODULE_NAME} ${ALL_FILES} )
 add_dependencies( ${MODULE_NAME} MyGUI.Engine OgreMain )
 target_link_libraries( ${MODULE_NAME} MyGUI.Engine OgreMain )
 
-include_directories( ../../../Common/FileSystemInfo include )
+include_directories( ../../../../freetype/include ../../../../freetype/include/freetype ../../../../freetype/include/freetype/config ../../../../freetype/include/freetype/internal ../../../../freetype/include/freetype/internal/services ../../../../freetype/src/winfonts ../../../MyGUIEngine/include ../../../Common/FileSystemInfo include )
 
 
 

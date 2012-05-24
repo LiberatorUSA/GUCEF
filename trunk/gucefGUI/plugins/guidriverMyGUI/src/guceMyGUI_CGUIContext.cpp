@@ -25,6 +25,16 @@
 
 #include <assert.h>
 
+#ifndef GUCEF_GUI_CFORMEX_H
+#include "gucefGUI_CFormEx.h"
+#define GUCEF_GUI_CFORMEX_H
+#endif /* GUCEF_GUI_CFORMEX_H ? */
+
+#ifndef GUCEF_GUIDRIVERMYGUI_CFORMBACKENDIMP_H
+#include "guceMyGUI_CFormBackendImp.h"
+#define GUCEF_GUIDRIVERMYGUI_CFORMBACKENDIMP_H
+#endif /* GUCEF_GUIDRIVERMYGUI_CFORMBACKENDIMP_H ? */
+
 #include "guceMyGUI_CGUIContext.h"
 
 /*-------------------------------------------------------------------------//
@@ -42,11 +52,13 @@ namespace MYGUI {
 //                                                                         //
 //-------------------------------------------------------------------------*/
 
-CGUIContext::CGUIContext( CGUIDriver& myGuiDriver )
-    : GUCEF::GUI::CIGUIContext() ,
-      m_driver( &myGuiDriver )   ,
-      m_widgetSet()              ,
-      m_formSet()
+CGUIContext::CGUIContext( GUI::CGUIDriver& myGuiDriver       ,
+                          INPUT::CInputContext* inputContext )
+    : GUCEF::GUI::CIGUIContext()     ,
+      m_driver( &myGuiDriver )       ,
+      m_widgetSet()                  ,
+      m_formSet()                    ,
+      m_inputContext( inputContext )
 {GUCEF_TRACE;
 
     assert( NULL != m_driver );
@@ -178,7 +190,7 @@ CGUIContext::GetOwnedForms( void )
 //                                                                         //
 //-------------------------------------------------------------------------*/
 
-}; /* namespace MYGUIOGRE */
+}; /* namespace MYGUI */
 }; /* namespace GUCE */
 
 /*-------------------------------------------------------------------------*/
