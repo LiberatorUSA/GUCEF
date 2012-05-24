@@ -1,6 +1,6 @@
 /*
- *  gucefCORE: GUCEF module providing O/S abstraction and generic solutions
- *  Copyright (C) 2002 - 2007.  Dinand Vanvelzen
+ *  guidriverMyGUIOpenGL: glue module for the MyGUI GUI backend using OpenGL
+ *  Copyright (C) 2002 - 2008.  Dinand Vanvelzen
  *
  *  This library is free software; you can redistribute it and/or
  *  modify it under the terms of the GNU Lesser General Public
@@ -9,16 +9,16 @@
  *
  *  This library is distributed in the hope that it will be useful,
  *  but WITHOUT ANY WARRANTY; without even the implied warranty of
- *  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+ *  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU
  *  Lesser General Public License for more details.
  *
  *  You should have received a copy of the GNU Lesser General Public
  *  License along with this library; if not, write to the Free Software
- *  Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA
+ *  Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA 
  */
 
-#ifndef GUCEF_CORE_CCODECREGISTRY_H
-#define GUCEF_CORE_CCODECREGISTRY_H
+#ifndef GUCEF_MYGUIGL_CIMAGELOADER_H
+#define GUCEF_MYGUIGL_CIMAGELOADER_H 
 
 /*-------------------------------------------------------------------------//
 //                                                                         //
@@ -26,15 +26,15 @@
 //                                                                         //
 //-------------------------------------------------------------------------*/
 
-#ifndef GUCEF_CORE_CTONREGISTRY_H
-#include "CTONRegistry.h"
-#define GUCEF_CORE_CTONREGISTRY_H
-#endif /* GUCEF_CORE_CTONREGISTRY_H ? */
+#ifndef __MYGUI_OPENGL_IMAGE_LOADER_H__
+#include "MyGUI_OpenGLImageLoader.h"
+#define __MYGUI_OPENGL_IMAGE_LOADER_H__
+#endif /* __MYGUI_OPENGL_IMAGE_LOADER_H__ ? */
 
-#ifndef GUCEF_CORE_CICODEC_H
-#include "CICodec.h"
-#define GUCEF_CORE_CICODEC_H
-#endif /* GUCEF_CORE_CICODEC_H ? */
+#ifndef GUCEF_MYGUIGL_MACROS_H
+#include "guidriverMyGUIOpenGL_macros.h"
+#define GUCEF_MYGUIGL_MACROS_H
+#endif /* GUCEF_MYGUIGL_MACROS_H ? */
 
 /*-------------------------------------------------------------------------//
 //                                                                         //
@@ -43,7 +43,7 @@
 //-------------------------------------------------------------------------*/
 
 namespace GUCEF {
-namespace CORE {
+namespace MYGUIGL {
 
 /*-------------------------------------------------------------------------//
 //                                                                         //
@@ -51,32 +51,37 @@ namespace CORE {
 //                                                                         //
 //-------------------------------------------------------------------------*/
 
-class GUCEF_CORE_PUBLIC_CPP CCodecRegistry : public CTONRegistry< CTONRegistry< CICodec > >
+class CGUIDriverGL;
+
+/*-------------------------------------------------------------------------*/
+
+/**
+ *  Implementation of the GUI context for the MyGUI & OpenGL combo
+ */
+class GUCEF_MYGUIGL_EXPORT_CPP CImageLoader : public MyGUI::OpenGLImageLoader
 {
-    public:
+    public:    
+    
+    virtual void* loadImage( int& _width                  , 
+                             int& _height                 , 
+                             MyGUI::PixelFormat& _format  , 
+                             const std::string& _filename );
 
-    typedef CTONRegistry< CICodec > TCodecFamilyRegistry;
-    typedef CTSharedPtr< TCodecFamilyRegistry > TCodecFamilyRegistryPtr;
-    typedef CTONRegistry< CICodec >::TStringList TStringList;
-    typedef CTONRegistry< CICodec >::TRegisteredObjPtr TICodecPtr;
-
-    static CCodecRegistry* Instance( void );
-
+    virtual void saveImage( int _width                   , 
+                            int _height                  ,
+                            MyGUI::PixelFormat _format   , 
+                            void* _texture               , 
+                            const std::string& _filename );
+                               
     private:
-    friend class CGUCEFCOREModule;
-
-    static void Deinstance( void );
-
-    private:
-
-    CCodecRegistry( void );
-    virtual ~CCodecRegistry();
-    CCodecRegistry( const CCodecRegistry& src );              /**< not implemented, don't use */
-    CCodecRegistry& operator=( const CCodecRegistry& src );   /**< not implemented, don't use */
-
+    
+    CImageLoader( const CImageLoader& src );            
+    CImageLoader& operator=( const CImageLoader& src );
+    
     private:
 
-    static CCodecRegistry* m_instance;
+    MyGUI::OpenGLPlatform m_myGuiPlatform;
+    GUI::TWindowContextPtr m_windowContext;
 };
 
 /*-------------------------------------------------------------------------//
@@ -85,12 +90,12 @@ class GUCEF_CORE_PUBLIC_CPP CCodecRegistry : public CTONRegistry< CTONRegistry< 
 //                                                                         //
 //-------------------------------------------------------------------------*/
 
-}; /* namespace CORE */
-}; /* namespace GUCEF */
+} /* namespace MYGUIGL */
+} /* namespace GUCEF */
 
 /*-------------------------------------------------------------------------*/
 
-#endif /* GUCEF_CORE_CCODECREGISTRY_H ? */
+#endif /* GUCEF_MYGUIGL_CIMAGELOADER_H ? */
 
 /*-------------------------------------------------------------------------//
 //                                                                         //
@@ -98,7 +103,7 @@ class GUCEF_CORE_PUBLIC_CPP CCodecRegistry : public CTONRegistry< CTONRegistry< 
 //                                                                         //
 //-------------------------------------------------------------------------//
 
-- 20-07-2005 :
-        - Dinand: Added this class
+- 08-04-2007 :
+        - Initial implementation
 
------------------------------------------------------------------------------*/
+---------------------------------------------------------------------------*/

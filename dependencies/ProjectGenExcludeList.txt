@@ -5,6 +5,9 @@ android-ndk-r5c
 android-ndk-r6
 android-ndk-r6b
 android-ndk-r7
+android-ndk-r7b
+android-ndk-r7c
+android-ndk-r8
 android-sdk-windows
 android-sdk-linux_x86
 ant
