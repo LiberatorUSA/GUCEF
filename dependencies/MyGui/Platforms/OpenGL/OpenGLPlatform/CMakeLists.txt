@@ -51,11 +51,11 @@ add_dependencies( ${MODULE_NAME} MyGUI.Engine )
 target_link_libraries( ${MODULE_NAME} MyGUI.Engine )
 
 if ( ANDROID )
-  target_link_libraries( ${MODULE_NAME} gl )
+  target_link_libraries( ${MODULE_NAME} GLESv1_CM )
 endif( ANDROID )
 
 if ( LINUX )
-  target_link_libraries( ${MODULE_NAME} opengl32 )
+  target_link_libraries( ${MODULE_NAME} GL )
 endif( LINUX )
 
 if ( WIN32 )
