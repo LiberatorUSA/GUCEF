@@ -2,6 +2,7 @@
     <Module Name="guidriverMyGUIOpenGL" Type="SharedLibrary" Platform="All">
         <Dependencies>
             <Dependency Name="gucefINPUT" />
+            <Dependency Name="gucefIMAGE" />
             <Dependency Name="gucefGUI" />
             <Dependency Name="gucefCORE" />
             <Dependency Name="gucefMT" />
@@ -12,6 +13,7 @@
         </Dependencies>
         <Linker>
             <Dependency Name="gucefINPUT" />
+            <Dependency Name="gucefIMAGE" />
             <Dependency Name="gucefGUI" />
             <Dependency Name="gucefCORE" />
             <Dependency Name="gucefMT" />

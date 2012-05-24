@@ -15,6 +15,7 @@ set( HEADER_FILES
   include/guidriverMyGUIOpenGL.h
   include/guidriverMyGUIOpenGL_CGUIContextGL.h
   include/guidriverMyGUIOpenGL_CGUIDriverGL.h
+  include/guidriverMyGUIOpenGL_CImageLoader.h
   include/guidriverMyGUIOpenGL_config.h
   include/guidriverMyGUIOpenGL_macros.h
   include/guidriverMyGUIOpenGL_pluginAPI.h
@@ -24,6 +25,7 @@ set( SOURCE_FILES
   src/guidriverMyGUIOpenGL.cpp
   src/guidriverMyGUIOpenGL_CGUIContextGL.cpp
   src/guidriverMyGUIOpenGL_CGUIDriverGL.cpp
+  src/guidriverMyGUIOpenGL_CImageLoader.cpp
   src/guidriverMyGUIOpenGL_pluginAPI.cpp
 )
 
@@ -38,8 +40,8 @@ set( ALL_FILES ${HEADER_FILES} ${SOURCE_FILES} ${PLATFORM_HEADER_FILES} ${PLATFO
 
 set( MODULE_NAME "guidriverMyGUIOpenGL" )
 add_library( ${MODULE_NAME} ${ALL_FILES} )
-add_dependencies( ${MODULE_NAME} MyGUI.Engine MyGUI.OpenGLPlatform freetype gucefCORE gucefGUI gucefINPUT gucefMT guidriverMyGUI )
-target_link_libraries( ${MODULE_NAME} MyGUI.Engine MyGUI.OpenGLPlatform freetype gucefCORE gucefGUI gucefINPUT gucefMT guidriverMyGUI )
+add_dependencies( ${MODULE_NAME} MyGUI.Engine MyGUI.OpenGLPlatform freetype gucefCORE gucefGUI gucefIMAGE gucefINPUT gucefMT guidriverMyGUI )
+target_link_libraries( ${MODULE_NAME} MyGUI.Engine MyGUI.OpenGLPlatform freetype gucefCORE gucefGUI gucefIMAGE gucefINPUT gucefMT guidriverMyGUI )
 set_target_properties( ${MODULE_NAME} PROPERTIES COMPILE_DEFINITIONS "GUIDRIVERMYGUIOPENGL_BUILD_MODULE" )
 
 include_directories( ../../../common/include ../../../dependencies/MyGui/Common/FileSystemInfo ../../../dependencies/MyGui/MyGUIEngine/include ../../../dependencies/MyGui/Platforms/OpenGL/OpenGLPlatform/include ../../../dependencies/MyGui/Platforms/OpenGL/OpenGLPlatform/include/GL ../../../dependencies/freetype/include ../../../dependencies/freetype/include/freetype ../../../dependencies/freetype/include/freetype/config ../../../dependencies/freetype/include/freetype/internal ../../../dependencies/freetype/include/freetype/internal/services ../../../dependencies/freetype/src/winfonts ../../../gucefCORE/include ../../../gucefGUI/include ../../../gucefIMAGE/include ../../../gucefINPUT/include ../../../gucefMT/include ../../../gucefVFS/include ../guidriverMyGUI/include include )

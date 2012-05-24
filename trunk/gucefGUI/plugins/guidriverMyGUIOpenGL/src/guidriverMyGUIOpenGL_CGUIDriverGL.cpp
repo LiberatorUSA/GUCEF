@@ -89,44 +89,6 @@ GUI::TGuiContextPtr
 CGUIDriverGL::CreateGUIContext( GUI::TWindowContextPtr windowContext )
 {GUCEF_TRACE;
 
-    // Lazy initialize Rocket as needed
-    if ( !m_isRocketInitialized )
-    {
-        m_isRocketInitialized = Rocket::Core::Initialise();
-        if ( !m_isRocketInitialized )
-        {
-            GUCEF_ERROR_LOG( CORE::LOGLEVEL_IMPORTANT, "Failed to initialize Rocket" );
-            return GUI::TGuiContextPtr();
-        }
-        else
-        {
-            GUCEF_SYSTEM_LOG( CORE::LOGLEVEL_NORMAL, "Initialized Rocket" );
-        }
-    }
-
-    Rocket::Core::Context* context = NULL;
-    if ( NULL != windowContext )
-    {
-        // Create the main Rocket context using the parameters of the windowContext
-        context = Rocket::Core::CreateContext( CORE::PointerToString( windowContext.GetPointer() ).C_String()                  ,
-                                               Rocket::Core::Vector2i( windowContext->GetWidth(), windowContext->GetHeight() ) );
-    }
-    else
-    {
-        // Create the main Rocket context using defaults, it is expected to be altered later
-        GUCEF_SYSTEM_LOG( CORE::LOGLEVEL_NORMAL, "Initialized Rocket context with defaults since no window context was provided" );
-        context = Rocket::Core::CreateContext( "default"                      ,
-                                               Rocket::Core::Vector2i( 2, 2 ) );
-    }
-
-    if ( NULL == context )
-    {
-        // Unable to create a Rocket context
-        GUCEF_ERROR_LOG( CORE::LOGLEVEL_IMPORTANT, "Failed to create Rocket GUI context" );
-        Rocket::Core::Shutdown();
-        return GUI::TGuiContextPtr();
-    }
-
     // Create an input context using the default driver and set it for this GUI context so that we can interact
     // with the GUI based on input events. Note that in order to correctly tie in the input system we have to pass the
     // correct parameters for the O/S
@@ -135,7 +97,10 @@ CGUIDriverGL::CreateGUIContext( GUI::TWindowContextPtr windowContext )
     INPUT::CInputContext* inputContext = INPUT::CInputGlobal::Instance()->GetInputController().CreateContext( inputContextParams );
 
     // Add a reference to the context in our set
-    GUI::TGuiContextPtr guiContextPtr = new GUIDRIVERROCKET::CGUIContext( this, context, windowContext, inputContext );
+    GUI::TGuiContextPtr guiContextPtr = new CGUIContextGL( *this         , 
+                                                               ,
+                                                           windowContext , 
+                                                           inputContext  );
     m_contextSet.insert( guiContextPtr );
 
     return guiContextPtr;
