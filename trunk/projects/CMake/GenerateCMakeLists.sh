@@ -77,7 +77,7 @@ fi
 echo "GENERATORPATH = $TEST_PATH"
 
 # invoke the generator
-$GENERATORPATH *rootDir=$GUCEF_HOME* *dirsToIgnore=.svn;_svn* *projectName=GUCEF* *generators=cmake* *outputDir=$GUCEF_HOME* *cmakgen:TemplateDir=$GUCEF_HOME/projects/CMake/ProjectGenTemplates*
+#$GENERATORPATH *rootDir=$GUCEF_HOME* *dirsToIgnore=.svn* *projectName=GUCEF* *generators=cmake* *outputDir=$GUCEF_HOME* *cmakgen:TemplateDir=$GUCEF_HOME/projects/CMake/ProjectGenTemplates*
 
 
 

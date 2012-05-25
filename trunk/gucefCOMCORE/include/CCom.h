@@ -14,7 +14,7 @@
  *
  *  You should have received a copy of the GNU Lesser General Public
  *  License along with this library; if not, write to the Free Software
- *  Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA 
+ *  Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA
  */
 
 #ifndef GUCEF_COMCORE_CCOM_H
@@ -68,14 +68,14 @@ class CGUCEFCOMCOREModule;
 /*-------------------------------------------------------------------------*/
 
 /**
- *      Singleton communication manager for sockets. 
+ *      Singleton communication manager for sockets.
  *      Provides a global control point for all sockets.
  */
 class GUCEF_COMCORE_EXPORT_CPP CCom
 {
     public:
-    
-    struct SSocketStats 
+
+    struct SSocketStats
     {
             UInt32 bytes_sent;       /** the total number of bytes sent by all sockets */
             UInt32 bytes_recieved;   /** the total number of bytes received by all sockets */
@@ -83,15 +83,6 @@ class GUCEF_COMCORE_EXPORT_CPP CCom
             UInt32 bps_recieved;     /** current received bytes per second ratio of this update cycle */
     };
     typedef struct SSocketStats TSocketStats;
-   
-    /**
-     *      return an instance pointer of the singleton CCom manager.
-     *      This creates the manager object if it doesnt exist yet
-     *      as standard for a singleton. 
-     *
-     *      @return the global CCom manager object        
-     */
-    static CCom* Instance( void );
 
     /**
      *	returns the total number of sockets that are currently registered
@@ -100,28 +91,28 @@ class GUCEF_COMCORE_EXPORT_CPP CCom
      *      @return the current number of registered sockets
      */
     UInt32 GetSocketCount( void ) const;
-    
+
     /**
-     *      
+     *
      */
     void SetUseGlobalStats( bool keep_gstats );
-    
+
     /**
-     *      
-     */        
+     *
+     */
     bool GetUseGlobalStats( void ) const;
-                 
+
     /**
-     *      
-     */                     
+     *
+     */
     void ResetGlobalStats( void );
-    
+
     /**
-     *      
-     */        
+     *
+     */
     const TSocketStats& GetGlobalStats( void ) const;
-    
-    
+
+
     /**
      *  Attempts to set the active state of a proxy server for the given protocol
      *  If no proxy server is defined for the given protocol the call will fail
@@ -152,7 +143,7 @@ class GUCEF_COMCORE_EXPORT_CPP CCom
                                    CORE::CString& remoteHost     ,
                                    UInt16& remotePort            ,
                                    bool& active                  ) const;
-    
+
    /**
      *  Attempts to retrieve the active state of a proxy server for the given protocol
      *  If no proxy server is defined for the given protocol the call will return false
@@ -160,39 +151,41 @@ class GUCEF_COMCORE_EXPORT_CPP CCom
      *  @return the active state for the given protocol proxy, false if no proxy is defined
      */
     bool IsSystemWideProxyServerActive( const CORE::CString& protocol ) const;
-                                                    
+
     private:
-    friend class CGUCEFCOMCOREModule;
-    
-    static void Deinstance( void );                              
-            
+    friend class CComCoreGlobal;
+
+    CCom( void );
+
+    ~CCom();
+
     private:
-    friend class CSocket;      
+    friend class CSocket;
 
     /**
      *      Registers a socket at the manager to receive update events.
      *      Should be used when creating a socket object by the socket object.
      *
-     *      @param socket the socket object that you wish to register      
+     *      @param socket the socket object that you wish to register
      */
     void RegisterSocketObject( CSocket* socket );
-                     
+
     /**
      *      Unregisters a socket at the manager to receive update events
-     *      Should be used when destroying a socket object by the socket object.         
+     *      Should be used when destroying a socket object by the socket object.
      *
-     *      @param socket the socket object that you wish to unregister      
-     */                                  
+     *      @param socket the socket object that you wish to unregister
+     */
     void UnregisterSocketObject( const CSocket* socket );
 
     private:
     friend class CActiveComPump;
-          
+
     CORE::CDynamicArray _sockets;       /** our socket object heap */
-    static MT::CMutex _mutex;           /** global CCom mutex */ 
-            
+    static MT::CMutex _mutex;           /** global CCom mutex */
+
     private:
-    
+
     struct SProxyServer
     {
         CORE::CString host;
@@ -201,16 +194,13 @@ class GUCEF_COMCORE_EXPORT_CPP CCom
     };
     typedef struct SProxyServer TProxyServer;
     typedef std::map< CORE::CString, TProxyServer > TProxyList;
-             
-    static CCom* _instance;             /** global CCom instance pointer */
-    CCom( void );                       /** does nothing atm */
+
     CCom( const CCom& src );            /** dummy implementation */
-    ~CCom();                            /** does nothing atm */
     CCom& operator=( const CCom& src ); /** dummy implementation */
     TSocketStats _stats;                /** global socket traffic stats */
     bool _keep_gstats;                  /** whether or not to keep track of global stats */
     UInt32 _scount;                     /** current number of registered sockets */
-            
+
     TProxyList m_proxyList;
 };
 
@@ -236,11 +226,11 @@ class GUCEF_COMCORE_EXPORT_CPP CCom
 - 03-03-2007 :
         - Dinand: Added a timer to allow socket updates if an application driver
           is used. not the most efficient solution but it will do for now.
-        - Dinand: Added system wide proxy settings, com systems can retrieve 
+        - Dinand: Added system wide proxy settings, com systems can retrieve
           settings here if so desired. The mswin O/S proxy read is implemented
           for HTTP using the registry.
 - 30-12-2004 :
-        - Dinand: Rewrote this class to use my own event system and back-end 
+        - Dinand: Rewrote this class to use my own event system and back-end
           networking code. As such this class no longer depends on SDL_net
           or NET2.
 - 12-06-2004 :
@@ -261,7 +251,7 @@ class GUCEF_COMCORE_EXPORT_CPP CCom
           socket heap sizes and access sockets though the manager, this way
           access rights to sockets can be determined by the user.
 - 01-09-2003 :
-        - Dinand: Added USE_NETWORK_COM switch to remove all networking code.  
+        - Dinand: Added USE_NETWORK_COM switch to remove all networking code.
 - 05-08-2003 :
         - Dinand: Added const keyword here and there.
         - Dinand: Added a new Wait_Untill_All_Done()
@@ -303,7 +293,7 @@ class GUCEF_COMCORE_EXPORT_CPP CCom
         - Dinand: Added build defines to remove either TCP or UDP if desired, this is
           done to reduce code bloat.
 - 05-04-2003 :
-        - Dinand: No longer a descendant of CNode 
+        - Dinand: No longer a descendant of CNode
 - 21-02-2003 :
         - Dinand: Modified NET2 further to give me the ability to get rid of delay
           caused by linking the NET2 socket to my socket handling class.

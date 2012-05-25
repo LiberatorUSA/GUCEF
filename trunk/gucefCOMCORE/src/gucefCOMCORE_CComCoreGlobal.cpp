@@ -138,7 +138,7 @@ CComCoreGlobal::Initialize( void )
     CORE::CCoreGlobal::Instance()->GetTaskManager().RegisterTaskConsumerFactory( CPingTaskConsumer::GetTypeString() ,
                                                                                  new TPingTaskConsumerFactory()     );
 
-    CCom::Instance();
+    m_com = new CCom();
 }
 
 /*-------------------------------------------------------------------------*/
@@ -148,7 +148,8 @@ CComCoreGlobal::~CComCoreGlobal()
 
     GUCEF_SYSTEM_LOG( CORE::LOGLEVEL_NORMAL, "gucefCOMCORE Global systems shutting down" );
 
-    //CCom::Deinstance();
+    delete m_com;
+    m_com = NULL;
 
     CORE::CCoreGlobal::Instance()->GetTaskManager().UnregisterTaskConsumerFactory( CPingTaskConsumer::GetTypeString() );
 
@@ -179,6 +180,14 @@ CComCoreGlobal::Deinstance( void )
 
     delete g_instance;
     g_instance = NULL;
+}
+
+/*-------------------------------------------------------------------------*/
+
+CCom&
+CComCoreGlobal::GetCom( void )
+{
+    return *m_com;
 }
 
 /*-------------------------------------------------------------------------//

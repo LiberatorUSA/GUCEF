@@ -14,7 +14,7 @@
  *
  *  You should have received a copy of the GNU Lesser General Public
  *  License along with this library; if not, write to the Free Software
- *  Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA 
+ *  Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA
  */
 
 /*-------------------------------------------------------------------------//
@@ -43,7 +43,7 @@
 #ifndef GUCEF_COMCORE_CSOCKET_H
 #include "CSocket.h"            /* base class for all sockets */
 #define GUCEF_COMCORE_CSOCKET_H
-#endif /* GUCEF_COMCORE_CSOCKET_H ? */  
+#endif /* GUCEF_COMCORE_CSOCKET_H ? */
 
 #include "CCom.h"               /* definition of CCom class */
 
@@ -52,7 +52,7 @@
   #include "gucef_new_on.h"   /* Use the GUCEF memory manager instead of the standard manager ? */
   #define GUCEF_NEW_ON_H
   #endif /* GUCEF_NEW_ON_H ? */
-#endif /* ACTIVATE_MEMORY_MANAGER ? */ 
+#endif /* ACTIVATE_MEMORY_MANAGER ? */
 
 /*-------------------------------------------------------------------------//
 //                                                                         //
@@ -78,15 +78,6 @@ namespace COMCORE {
 
 /*-------------------------------------------------------------------------//
 //                                                                         //
-//      GLOBAL VARS                                                        //
-//                                                                         //
-//-------------------------------------------------------------------------*/
-
-CCom* CCom::_instance = NULL;
-MT::CMutex CCom::_mutex;
-
-/*-------------------------------------------------------------------------//
-//                                                                         //
 //      UTILITIES                                                          //
 //                                                                         //
 //-------------------------------------------------------------------------*/
@@ -104,17 +95,17 @@ GetMSWinInternetProxyFromRegistry( CORE::CString& remoteHost ,
     DWORD dwType = REG_SZ;
     DWORD dwSize = 255;
 
-    if( ERROR_SUCCESS == RegOpenKeyEx( HKEY_CURRENT_USER                                                 , 
+    if( ERROR_SUCCESS == RegOpenKeyEx( HKEY_CURRENT_USER                                                 ,
                                        "SOFTWARE\\MICROSOFT\\WINDOWS\\CURRENTVERSION\\INTERNET SETTINGS" ,
                                        0L                                                                ,
                                        KEY_ALL_ACCESS                                                    ,
                                        &hKey                                                             ) )
     {
-        if ( ERROR_SUCCESS == RegQueryValueEx( hKey              , 
-                                               "ProxyServer"     , 
-                                               NULL              , 
+        if ( ERROR_SUCCESS == RegQueryValueEx( hKey              ,
+                                               "ProxyServer"     ,
+                                               NULL              ,
                                                &dwType           ,
-                                               (LPBYTE)&lszValue , 
+                                               (LPBYTE)&lszValue ,
                                                &dwSize           ) )
         {
             CORE::CString regValue( lszValue );
@@ -126,13 +117,13 @@ GetMSWinInternetProxyFromRegistry( CORE::CString& remoteHost ,
             {
                 port = static_cast< UInt16 >( CORE::StringToInt32( portStr ) );
             }
-            
+
             active = false;
-            if ( ERROR_SUCCESS == RegQueryValueEx( hKey              , 
-                                                   "ProxyEnable"     , 
-                                                   NULL              , 
+            if ( ERROR_SUCCESS == RegQueryValueEx( hKey              ,
+                                                   "ProxyEnable"     ,
+                                                   NULL              ,
                                                    &dwType           ,
-                                                   (LPBYTE)&lszValue , 
+                                                   (LPBYTE)&lszValue ,
                                                    &dwSize           ) )
             {
                 active = CORE::StringToBool( lszValue );
@@ -148,55 +139,27 @@ GetMSWinInternetProxyFromRegistry( CORE::CString& remoteHost ,
 
 /*-------------------------------------------------------------------------*/
 
-CCom*
-CCom::Instance( void )
-{GUCEF_TRACE;
-        _mutex.Lock();
-        if ( !_instance ) 
-        {
-                _instance = new CCom();
-                GUCEF_SYSTEM_LOG( CORE::LOGLEVEL_NORMAL, "GUCEF::COMCORE::CCom Singleton created" );
-        }
-        _mutex.Unlock();
-        return _instance;
-}
-
-/*-------------------------------------------------------------------------*/
-
-void 
-CCom::Deinstance( void )
-{GUCEF_TRACE;
-
-    _mutex.Lock();
-    delete _instance;
-    _instance = NULL;
-    GUCEF_SYSTEM_LOG( CORE::LOGLEVEL_NORMAL, "GUCEF::COMCORE::CCom Singleton destroyed" );
-    _mutex.Unlock();                
-}
-
-/*-------------------------------------------------------------------------*/
-
 CCom::CCom()
     : _keep_gstats( false )                ,
       _scount( 0 )
 {GUCEF_TRACE;
 
     _sockets.SetResizeChange( HEAP_RESIZE_AMOUNT );
-    memset( &_stats, 0, sizeof(TSocketStats) );   
-    
+    memset( &_stats, 0, sizeof(TSocketStats) );
+
     #if ( GUCEF_PLATFORM == GUCEF_PLATFORM_MSWIN )
 
 // @TODO use InternetQueryOption
 // http://msdn2.microsoft.com/en-us/library/aa385101.aspx
-    
+
     /*
-     *  Read the O/S proxy server settings 
+     *  Read the O/S proxy server settings
      */
-    
+
     CORE::CString remoteHost;
     UInt16 port;
     bool active;
-    
+
     if ( GetMSWinInternetProxyFromRegistry( remoteHost ,
                                             port       ,
                                             active     ) )
@@ -206,7 +169,7 @@ CCom::CCom()
                                   port       ,
                                   active     );
     }
-    
+
     #endif /* GUCEF_PLATFORM_MSWIN ? */
 }
 
@@ -214,18 +177,18 @@ CCom::CCom()
 
 CCom::~CCom()
 {GUCEF_TRACE;
-                     
+
 }
 
 /*-------------------------------------------------------------------------*/
 
-void                       
+void
 CCom::RegisterSocketObject( CSocket* socket )
 {GUCEF_TRACE;
 
     _mutex.Lock();
-    socket->SetSocketID( _sockets.AddEntry( socket ) );        
-    ++_scount;        
+    socket->SetSocketID( _sockets.AddEntry( socket ) );
+    ++_scount;
     _mutex.Unlock();
 }
 
@@ -236,14 +199,14 @@ CCom::UnregisterSocketObject( const CSocket* socket )
 {GUCEF_TRACE;
 
     _mutex.Lock();
-    _sockets.SetEntry( socket->GetSocketID(), NULL );        
+    _sockets.SetEntry( socket->GetSocketID(), NULL );
     --_scount;
     _mutex.Unlock();
-}            
+}
 
 /*-------------------------------------------------------------------------*/
 
-UInt32 
+UInt32
 CCom::GetSocketCount( void ) const
 {GUCEF_TRACE;
 
@@ -252,7 +215,7 @@ CCom::GetSocketCount( void ) const
 
 /*-------------------------------------------------------------------------*/
 
-void 
+void
 CCom::SetUseGlobalStats( bool keep_gstats )
 {GUCEF_TRACE;
 
@@ -260,8 +223,8 @@ CCom::SetUseGlobalStats( bool keep_gstats )
 }
 
 /*-------------------------------------------------------------------------*/
-        
-bool 
+
+bool
 CCom::GetUseGlobalStats( void ) const
 {GUCEF_TRACE;
 
@@ -269,15 +232,15 @@ CCom::GetUseGlobalStats( void ) const
 }
 
 /*-------------------------------------------------------------------------*/
-        
-void 
+
+void
 CCom::ResetGlobalStats( void )
 {GUCEF_TRACE;
 }
 
 /*-------------------------------------------------------------------------*/
-        
-const CCom::TSocketStats& 
+
+const CCom::TSocketStats&
 CCom::GetGlobalStats( void ) const
 {GUCEF_TRACE;
 
@@ -290,7 +253,7 @@ bool
 CCom::SetSystemWideProxyServer( const CORE::CString& protocol ,
                                 const bool active             )
 {GUCEF_TRACE;
-    
+
     TProxyList::iterator i = m_proxyList.find( protocol );
     if ( i != m_proxyList.end() )
     {
@@ -308,10 +271,10 @@ CCom::SetSystemWideProxyServer( const CORE::CString& protocol   ,
                                 const UInt16 remotePort         ,
                                 const bool active               )
 {GUCEF_TRACE;
-    
-    GUCEF_SYSTEM_LOG( CORE::LOGLEVEL_NORMAL, "Setting system wide proxy server for protocol " + protocol + 
+
+    GUCEF_SYSTEM_LOG( CORE::LOGLEVEL_NORMAL, "Setting system wide proxy server for protocol " + protocol +
                           " to " + remoteHost + ":" + CORE::UInt16ToString( remotePort ) + " and active state " + CORE::BoolToString( active ) );
-    
+
     TProxyServer& proxyServer = m_proxyList[ protocol ];
     proxyServer.host = remoteHost;
     proxyServer.port = remotePort;
@@ -351,7 +314,7 @@ CCom::IsSystemWideProxyServerActive( const CORE::CString& protocol ) const
     {
         return (*i).second.active;
     }
-    return false;    
+    return false;
 }
 
 /*-------------------------------------------------------------------------//

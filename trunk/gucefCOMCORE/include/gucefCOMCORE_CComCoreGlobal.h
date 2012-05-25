@@ -46,11 +46,17 @@ namespace COMCORE {
 //                                                                         //
 //-------------------------------------------------------------------------*/
 
+class CCom;
+
+/*-------------------------------------------------------------------------*/
+
 class GUCEF_COMCORE_EXPORT_CPP CComCoreGlobal
 {
     public:
 
     static CComCoreGlobal* Instance( void );
+
+    CCom& GetCom( void );
 
     private:
 
@@ -64,6 +70,8 @@ class GUCEF_COMCORE_EXPORT_CPP CComCoreGlobal
     CComCoreGlobal& operator=( const CComCoreGlobal& src );
 
     private:
+
+    CCom* m_com;
 
     static CComCoreGlobal* g_instance;
 };
