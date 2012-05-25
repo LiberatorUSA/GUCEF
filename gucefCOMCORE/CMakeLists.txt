@@ -33,6 +33,7 @@ set( HEADER_FILES
   include/gucefCOMCORE_macros.h
   include/socketerrors.h
   include/socketutils.h
+  include/gucefCOMCORE_CComCoreGlobal.h
 )
 
 set( SOURCE_FILES 
@@ -53,6 +54,7 @@ set( SOURCE_FILES
   src/gucefCOMCORE.cpp
   src/gucefCOMCORE_CPingTaskConsumer.cpp
   src/socketutils.cpp
+  src/gucefCOMCORE_CComCoreGlobal.cpp
 )
 
 

@@ -14,7 +14,7 @@
  *
  *  You should have received a copy of the GNU Lesser General Public
  *  License along with this library; if not, write to the Free Software
- *  Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA 
+ *  Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA
  */
 
 #ifndef GUCEF_MYGUIGL_MACROS_H
@@ -71,7 +71,6 @@
 #else
   #define GUCEF_MYGUIGL_EXPORT_C GUCEF_HIDDEN
 #endif /* GUCEF_MYGUIGL_EXPORT_C_CODE */
-#undef GUCEF_MYGUIGL_EXPORTSPEC
 
 /*-------------------------------------------------------------------------*/
 

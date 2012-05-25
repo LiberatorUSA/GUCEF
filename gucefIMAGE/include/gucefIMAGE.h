@@ -14,7 +14,7 @@
  *
  *  You should have received a copy of the GNU Lesser General Public
  *  License along with this library; if not, write to the Free Software
- *  Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA 
+ *  Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA
  */
 
 /*
@@ -42,7 +42,7 @@ namespace GUCEF
      *  All classes in this namespace have to do with image manipulation and
      *  loading saving of image data into/from a generic storage structure.
      */
-    namespace IMAGE 
+    namespace IMAGE
     {
     }
 }
@@ -66,10 +66,10 @@ namespace GUCEF
 /*
  *      Image data storage structure
  */
-#ifndef IMAGEDATA_H
-#include "imagedata.h"
-#define IMAGEDATA_H
-#endif /* IMAGEDATA_H ? */
+#ifndef GUCEF_IMAGE_IMAGEDATA_H
+#include "gucefIMAGE_imagedata.h"
+#define GUCEF_IMAGE_IMAGEDATA_H
+#endif /* GUCEF_IMAGE_IMAGEDATA_H ? */
 
 /*---------------------------------------------------------------------------/
 
@@ -82,7 +82,7 @@ namespace GUCEF
  *  class that represents an image
  */
 #ifndef GUCEF_IMAGE_CIMAGE_H
-#include "CImage.h"
+#include "gucefIMAGE_CImage.h"
 #define GUCEF_IMAGE_CIMAGE_H
 #endif /* GUCEF_IMAGE_CIMAGE_H ? */
 
@@ -90,7 +90,7 @@ namespace GUCEF
  *  class that represents an 2D pixel grid called a pixelmap
  */
 #ifndef GUCEF_IMAGE_CPIXELMAP_H
-#include "CPixelMap.h"
+#include "gucefIMAGE_CPixelMap.h"
 #define GUCEF_IMAGE_CPIXELMAP_H
 #endif /* GUCEF_IMAGE_CPIXELMAP_H ? */
 
@@ -99,7 +99,7 @@ namespace GUCEF
  *  serves as an abstract base class for implementations of image codecs
  */
 #ifndef GUCEF_IMAGE_CIMGCODEC_H
-#include "CIMGCodec.h"
+#include "gucefIMAGE_CIMGCodec.h"
 #define GUCEF_IMAGE_CIMGCODEC_H
 #endif /* GUCEF_IMAGE_CIMGCODEC_H ? */
 
@@ -125,4 +125,4 @@ namespace GUCEF
 -----------------------------------------------------------------------------*/
 
 
- 
+
