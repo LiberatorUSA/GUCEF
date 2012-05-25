@@ -342,6 +342,20 @@ CPixelMap::Clear( void )
 
 /*--------------------------------------------------------------------------*/
 
+void*
+CPixelMap::RelinquishPixelDataOwnership( void )
+{GUCEF_TRACE;
+
+    m_widthInPixels = 0;
+    m_heightInPixels = 0;
+
+    void* pixelData = m_pixelMapData;    
+    m_pixelMapData = NULL;
+    return pixelData;
+}
+
+/*--------------------------------------------------------------------------*/
+
 void
 CPixelMap::ConvertPixelComponentDataTypeTo( const TBuildinDataType pixelComponentDataType )
 {GUCEF_TRACE;
