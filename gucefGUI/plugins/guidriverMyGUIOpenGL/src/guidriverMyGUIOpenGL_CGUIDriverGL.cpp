@@ -66,14 +66,17 @@ namespace MYGUIGL {
 //-------------------------------------------------------------------------*/
 
 CGUIDriverGL::CGUIDriverGL( void )
-    : GUI::CGUIDriver()  ,
-      m_contextSet()     ,
-      m_fontTypes()      ,
-      m_myGUI()          ,
-      m_imageLoader()
+    : GUI::CGUIDriver()           ,
+      m_contextSet()              ,
+      m_fontTypes()               ,
+      m_myGUI()                   ,
+      m_renderManager()           ,
+      m_imageLoader()             ,
+      m_logAdapter()              ,
+      m_dataManager()             ,
+      m_myGuiInitialized( false )
 {GUCEF_TRACE;
 
-    m_myGUI.initialise();
 }
 
 /*-------------------------------------------------------------------------*/
@@ -90,6 +93,15 @@ GUI::TGuiContextPtr
 CGUIDriverGL::CreateGUIContext( GUI::TWindowContextPtr windowContext )
 {GUCEF_TRACE;
 
+    // Lazy initialize if needed
+    if ( !m_myGuiInitialized )
+    {
+        m_myGUI.initialise();
+        m_renderManager.initialise( &m_imageLoader );
+
+        m_myGuiInitialized = true;
+    }
+    
     // Create an input context using the default driver and set it for this GUI context so that we can interact
     // with the GUI based on input events. Note that in order to correctly tie in the input system we have to pass the
     // correct parameters for the O/S
@@ -98,10 +110,10 @@ CGUIDriverGL::CreateGUIContext( GUI::TWindowContextPtr windowContext )
     INPUT::CInputContext* inputContext = INPUT::CInputGlobal::Instance()->GetInputController().CreateContext( inputContextParams );
 
     // Add a reference to the context in our set
-    GUI::TGuiContextPtr guiContextPtr = new CGUIContextGL( *this          ,
-                                                           &m_imageLoader ,
-                                                           windowContext  ,
-                                                           inputContext   );
+    GUI::TGuiContextPtr guiContextPtr = new CGUIContextGL( *this            ,
+                                                           &m_renderManager ,
+                                                           windowContext    ,
+                                                           inputContext     );
     m_contextSet.insert( guiContextPtr );
 
     return guiContextPtr;

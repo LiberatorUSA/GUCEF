@@ -1,5 +1,5 @@
 /*
- *  guidriverMyGUIOpenGL: glue module for the MyGUI GUI backend using OpenGL
+ *  guidriverMyGUI: glue module for the MyGUI GUI backend
  *  Copyright (C) 2002 - 2008.  Dinand Vanvelzen
  *
  *  This library is free software; you can redistribute it and/or
@@ -14,11 +14,11 @@
  *
  *  You should have received a copy of the GNU Lesser General Public
  *  License along with this library; if not, write to the Free Software
- *  Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA
+ *  Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA 
  */
 
-#ifndef GUCEF_MYGUIGL_CGUICONTEXTGL_H
-#define GUCEF_MYGUIGL_CGUICONTEXTGL_H
+#ifndef GUCEF_MYGUI_CLOGADAPTER_H
+#define GUCEF_MYGUI_CLOGADAPTER_H
 
 /*-------------------------------------------------------------------------//
 //                                                                         //
@@ -26,30 +26,20 @@
 //                                                                         //
 //-------------------------------------------------------------------------*/
 
-#ifndef GUCEF_CORE_COBSERVINGNOTIFIER_H
-#include "CObservingNotifier.h"
-#define GUCEF_CORE_COBSERVINGNOTIFIER_H
-#endif /* GUCEF_CORE_COBSERVINGNOTIFIER_H ? */
+#ifndef __MYGUI_LOG_MANAGER_H__
+#include "MyGUI_LogManager.h"
+#define __MYGUI_LOG_MANAGER_H__
+#endif /* __MYGUI_LOG_MANAGER_H__ ? */
 
-#ifndef GUCEF_GUI_CWINDOWCONTEXT_H
-#include "gucefGUI_CWindowContext.h"
-#define GUCEF_GUI_CWINDOWCONTEXT_H
-#endif /* GUCEF_GUI_CWINDOWCONTEXT_H ? */
+#ifndef GUCEF_CORE_LOGGING_H
+#include "gucefCORE_Logging.h"
+#define GUCEF_CORE_LOGGING_H
+#endif /* GUCEF_CORE_LOGGING_H ? */
 
-#ifndef __MYGUI_OPENGL_RENDER_MANAGER_H__
-#include "MyGUI_OpenGLRenderManager.h"
-#define __MYGUI_OPENGL_RENDER_MANAGER_H__
-#endif /* __MYGUI_OPENGL_RENDER_MANAGER_H__ ? */
-
-#ifndef GUCEF_MYGUI_CGUICONTEXT_H
-#include "guceMyGUI_CGUIContext.h"
-#define GUCEF_MYGUI_CGUICONTEXT_H
-#endif /* GUCEF_MYGUI_CGUICONTEXT_H ? */
-
-#ifndef GUCEF_MYGUIGL_MACROS_H
-#include "guidriverMyGUIOpenGL_macros.h"
-#define GUCEF_MYGUIGL_MACROS_H
-#endif /* GUCEF_MYGUIGL_MACROS_H ? */
+#ifndef GUCEF_MYGUI_MACROS_H
+#include "guceMyGUI_macros.h"     /* often used guceMyGUIOGRE macros */
+#define GUCEF_MYGUI_MACROS_H
+#endif /* GUCEF_MYGUI_MACROS_H ? */
 
 /*-------------------------------------------------------------------------//
 //                                                                         //
@@ -58,7 +48,7 @@
 //-------------------------------------------------------------------------*/
 
 namespace GUCEF {
-namespace MYGUIGL {
+namespace MYGUI {
 
 /*-------------------------------------------------------------------------//
 //                                                                         //
@@ -66,42 +56,29 @@ namespace MYGUIGL {
 //                                                                         //
 //-------------------------------------------------------------------------*/
 
-class CGUIDriverGL;
-
-/*-------------------------------------------------------------------------*/
-
-/**
- *  Implementation of the GUI context for the MyGUI & OpenGL combo
- */
-class GUCEF_MYGUIGL_EXPORT_CPP CGUIContextGL : public MYGUI::CGUIContext ,
-                                               public CORE::CObserver
+class GUCEF_MYGUI_EXPORT_CPP CLogAdapter : public MyGUI::LogManager
 {
-    public:
+	public:
+	
+    CLogAdapter();
+	
+    virtual ~CLogAdapter();
 
-    CGUIContextGL( CGUIDriverGL& guiDriver                   ,
-                   MyGUI::OpenGLRenderManager* renderManager ,
-                   GUI::TWindowContextPtr windowContext      ,
-                   INPUT::CInputContext* inputContext        );
+	/** Call LogSource::flush() for all log sources. */
+	virtual void flush();
 
-    virtual ~CGUIContextGL();
-
-    virtual const CORE::CString& GetClassTypeName( void ) const;
-
-    protected:
-
-    virtual void OnNotify( CORE::CNotifier* notifier          ,
-                           const CORE::CEvent& eventID        ,
-                           CORE::CICloneable* evenData = NULL );
+	/** Call LogSource::log for all log sources. */
+	virtual void log(const std::string& _section, MyGUI::LogLevel _level, const std::string& _message, const char* _file, int _line);
 
     private:
 
-    CGUIContextGL( const CGUIContextGL& src );
-    CGUIContextGL& operator=( const CGUIContextGL& src );
+    void ConvertLogLevel( MyGUI::LogLevel myGuilevel              ,
+                          CORE::CLogManager::TLogMsgType& msgType ,
+                          CORE::Int32& logLevel                   );
 
     private:
 
-    MyGUI::OpenGLRenderManager* m_renderManager;
-    GUI::TWindowContextPtr m_windowContext;
+    CORE::CLogManager* m_logManager;
 };
 
 /*-------------------------------------------------------------------------//
@@ -110,12 +87,12 @@ class GUCEF_MYGUIGL_EXPORT_CPP CGUIContextGL : public MYGUI::CGUIContext ,
 //                                                                         //
 //-------------------------------------------------------------------------*/
 
-} /* namespace MYGUIGL */
-} /* namespace GUCEF */
+}; /* namespace MYGUIOGRE */
+}; /* namespace GUCE */
 
 /*-------------------------------------------------------------------------*/
-
-#endif /* GUCEF_MYGUIGL_CGUICONTEXTGL_H ? */
+          
+#endif /* GUCEF_MYGUI_CLOGADAPTER_H ? */
 
 /*-------------------------------------------------------------------------//
 //                                                                         //
@@ -123,7 +100,7 @@ class GUCEF_MYGUIGL_EXPORT_CPP CGUIContextGL : public MYGUI::CGUIContext ,
 //                                                                         //
 //-------------------------------------------------------------------------//
 
-- 08-04-2007 :
-        - Initial implementation
+- 18-08-2007 :
+        - Dinand: Initial implementation
 
 ---------------------------------------------------------------------------*/

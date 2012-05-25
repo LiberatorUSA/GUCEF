@@ -182,7 +182,7 @@ class GUCEF_COMCORE_EXPORT_CPP CCom
     friend class CActiveComPump;
 
     CORE::CDynamicArray _sockets;       /** our socket object heap */
-    static MT::CMutex _mutex;           /** global CCom mutex */
+    MT::CMutex _mutex;  
 
     private:
 

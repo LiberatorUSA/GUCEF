@@ -48,6 +48,7 @@ set( HEADER_FILES
   include/guceMyGUI_ETypes.h
   include/guceMyGUI_macros.h
   include/guceMyGUI_pluginAPI.h
+  include/guidriverMyGUI_CLogAdapter.h
   include/MyGUI_LastHeader.h
 )
 
@@ -85,6 +86,7 @@ set( SOURCE_FILES
   src/guceMyGUI_CWidgetImp.cpp
   src/guceMyGUI_CWindowImp.cpp
   src/guceMyGUI_pluginAPI.cpp
+  src/guidriverMyGUI_CLogAdapter.cpp
 )
 
 # Make sure the PLATFORM_HEADER_FILES variable is always defined

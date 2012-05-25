@@ -55,6 +55,19 @@ namespace MYGUI {
 //                                                                         //
 //-------------------------------------------------------------------------*/
 
+CDataManager::CDataManager( void )
+    : MyGUI::DataManager()
+{
+}
+
+/*-------------------------------------------------------------------------*/
+
+CDataManager::~CDataManager()
+{
+}
+
+/*-------------------------------------------------------------------------*/
+
 void
 CDataManager::SetGuiDataRoot( const CORE::CString& guiDataRootPath )
 {GUCEF_TRACE;
