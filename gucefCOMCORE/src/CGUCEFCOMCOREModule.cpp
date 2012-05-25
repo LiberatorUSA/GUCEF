@@ -23,64 +23,7 @@
 //                                                                         //
 //-------------------------------------------------------------------------*/
 
-#ifndef GUCEF_CORE_CTASKMANAGER_H
-#include "gucefCORE_CTaskManager.h"
-#define GUCEF_CORE_CTASKMANAGER_H
-#endif /* GUCEF_CORE_CTASKMANAGER_H ? */
-
-#ifndef CCOM_H
-#include "CCom.h"      /* header for the main communication manager */
-#define CCOM_H
-#endif /* CCOM_H ? */
-
-#ifndef CTCPCLIENTSOCKET_H
-#include "CTCPClientSocket.h"
-#define CTCPCLIENTSOCKET_H
-#endif /* CTCPCLIENTSOCKET_H ? */
-
-#ifndef GUCEF_COMCORE_CUDPSOCKET_H
-#include "CUDPSocket.h"
-#define GUCEF_COMCORE_CUDPSOCKET_H
-#endif /* GUCEF_COMCORE_CUDPSOCKET_H ? */
-
-#ifndef GUCEF_COMCORE_CTCPSERVERSOCKET_H
-#include "CTCPServerSocket.h"
-#define GUCEF_COMCORE_CTCPSERVERSOCKET_H
-#endif /* GUCEF_COMCORE_CTCPSERVERSOCKET_H ? */
-
-#ifndef GUCEF_COMCORE_CPING_H
-#include "CPing.h"
-#define GUCEF_COMCORE_CPING_H
-#endif /* GUCEF_COMCORE_CPING_H ? */
-
-#ifndef GUCEF_COMCORE_CUDPMASTERSOCKET_H
-#include "CUDPMasterSocket.h"
-#define GUCEF_COMCORE_CUDPMASTERSOCKET_H
-#endif /* GUCEF_COMCORE_CUDPMASTERSOCKET_H ? */
-
-#ifndef GUCEF_COMCORE_CUDPCHANNEL_H
-#include "CUDPChannel.h"
-#define GUCEF_COMCORE_CUDPCHANNEL_H
-#endif /* GUCEF_COMCORE_CUDPCHANNEL_H ? */
-
-#ifndef GUCEF_COMCORE_DVSOCKET_H
-#include "dvwinsock.h"
-#define GUCEF_COMCORE_DVSOCKET_H
-#endif /* GUCEF_COMCORE_DVSOCKET_H */
-
-#ifndef GUCEF_COMCORE_CPINGTASKCONSUMER_H
-#include "gucefCOMCORE_CPingTaskConsumer.h"
-#define GUCEF_COMCORE_CPINGTASKCONSUMER_H
-#endif /* GUCEF_COMCORE_CPINGTASKCONSUMER_H ? */
-
 #include "CGUCEFCOMCOREModule.h"  /* definition of the class implemented here */
-
-#ifdef ACTIVATE_MEMORY_MANAGER
-  #ifndef GUCEF_NEW_ON_H
-  #include "gucef_new_on.h"   /* Use the GUCEF memory manager instead of the standard manager ? */
-  #define GUCEF_NEW_ON_H
-  #endif /* GUCEF_NEW_ON_H ? */
-#endif /* ACTIVATE_MEMORY_MANAGER ? */
 
 /*-------------------------------------------------------------------------//
 //                                                                         //
@@ -93,14 +36,6 @@ namespace COMCORE {
 
 /*-------------------------------------------------------------------------//
 //                                                                         //
-//      TYPES                                                              //
-//                                                                         //
-//-------------------------------------------------------------------------*/
-
-typedef CORE::CTFactory< CORE::CTaskConsumer, CPingTaskConsumer > TPingTaskConsumerFactory;
-
-/*-------------------------------------------------------------------------//
-//                                                                         //
 //      CLASSES                                                            //
 //                                                                         //
 //-------------------------------------------------------------------------*/
@@ -108,26 +43,6 @@ typedef CORE::CTFactory< CORE::CTaskConsumer, CPingTaskConsumer > TPingTaskConsu
 bool
 CGUCEFCOMCOREModule::Load( void )
 {
-    GUCEF_SYSTEM_LOG( CORE::LOGLEVEL_NORMAL, "gucefCOMCORE Module loaded" );
-
-    #if ( GUCEF_PLATFORM == GUCEF_PLATFORM_MSWIN )
-    InitWinsock( 1 );
-    #endif
-
-    CTCPConnection::RegisterEvents();
-    CTCPServerSocket::RegisterEvents();
-    CTCPClientSocket::RegisterEvents();
-    CUDPSocket::RegisterEvents();
-    CPing::RegisterEvents();
-    CPingTaskConsumer::RegisterEvents();
-    CUDPMasterSocket::RegisterEvents();
-    CUDPChannel::RegisterEvents();
-
-    // Make the task manager capable of handling ping tasks
-    CORE::CCoreGlobal::Instance()->GetTaskManager().RegisterTaskConsumerFactory( CPingTaskConsumer::GetTypeString() ,
-                                                                                 new TPingTaskConsumerFactory()     );
-
-    CCom::Instance();
 
     return true;
 }
@@ -137,15 +52,6 @@ CGUCEFCOMCOREModule::Load( void )
 bool
 CGUCEFCOMCOREModule::Unload( void )
 {
-    GUCEF_SYSTEM_LOG( CORE::LOGLEVEL_NORMAL, "gucefCOMCORE Module unloading" );
-
-    CCom::Deinstance();
-
-    CORE::CCoreGlobal::Instance()->GetTaskManager().UnregisterTaskConsumerFactory( CPingTaskConsumer::GetTypeString() );
-
-    #if ( GUCEF_PLATFORM == GUCEF_PLATFORM_MSWIN )
-    ShutdownWinsock();
-    #endif
 
     return true;
 }

@@ -14,7 +14,7 @@
  *
  *  You should have received a copy of the GNU Lesser General Public
  *  License along with this library; if not, write to the Free Software
- *  Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA 
+ *  Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA
  */
 
 /*-------------------------------------------------------------------------//
@@ -43,7 +43,7 @@
 #endif /* GUCEF_CORE_DVCPPSTRINGUTILS_H ? */
 
 #ifndef GUCEF_COMCORE_DVSOCKET_H
-#include "dvwinsock.h"  
+#include "dvwinsock.h"
 #define GUCEF_COMCORE_DVSOCKET_H
 #endif /* GUCEF_COMCORE_DVSOCKET_H ? */
 
@@ -51,6 +51,11 @@
 #include "CCom.h"		  /* network manager */
 #define CCOM_H
 #endif /* CCOM_H ? */
+
+#ifndef GUCEF_COMCORE_CCOMCOREGLOBAL_H
+#include "gucefCOMCORE_CComCoreGlobal.h"
+#define GUCEF_COMCORE_CCOMCOREGLOBAL_H
+#endif /* GUCEF_COMCORE_CCOMCOREGLOBAL_H ? */
 
 #if ( GUCEF_PLATFORM == GUCEF_PLATFORM_MSWIN )
 
@@ -89,18 +94,10 @@ CSocket::CSocket( void )
 {GUCEF_TRACE;
 
         /*
-         *      Register the socket object so that it's capable of 
+         *      Register the socket object so that it's capable of
          *      receiving update events.
          */
-        CCom::Instance()->RegisterSocketObject( this );
-}
-
-/*-------------------------------------------------------------------------*/
-
-CSocket::CSocket( const CSocket& src )
-{GUCEF_TRACE;
-
-        /* dummy, do not use */
+        CComCoreGlobal::Instance()->GetCom().RegisterSocketObject( this );
 }
 
 /*-------------------------------------------------------------------------*/
@@ -110,32 +107,22 @@ CSocket::~CSocket()
 
         /*
          *      Unregister the socket object so that it's removed
-         *      from the update event notification list 
+         *      from the update event notification list
          */
-        CCom::Instance()->UnregisterSocketObject( this );
+        CComCoreGlobal::Instance()->GetCom().UnregisterSocketObject( this );
 }
 
 /*-------------------------------------------------------------------------*/
 
-CSocket&
-CSocket::operator=( const CSocket& src )
-{GUCEF_TRACE;
-       
-        /* dummy, do not use */ 
-        return *this;       
-}
-
-/*-------------------------------------------------------------------------*/
-
-void 
+void
 CSocket::SetSocketID( UInt32 sid )
 {GUCEF_TRACE;
-        _sid = sid; 
+        _sid = sid;
 }
 
 /*-------------------------------------------------------------------------*/
 
-UInt32 
+UInt32
 CSocket::GetSocketID( void ) const
 {GUCEF_TRACE;
 
@@ -144,43 +131,43 @@ CSocket::GetSocketID( void ) const
 
 /*-------------------------------------------------------------------------*/
 
-bool 
+bool
 CSocket::ConvertToIPAddress( const CORE::CString& destaddrstr ,
-                             const UInt16 destport            ,  
+                             const UInt16 destport            ,
                              CIPAddress& resolvedDest         )
 {GUCEF_TRACE;
 
     if ( CORE::Check_If_IP( destaddrstr.C_String() ) )
     {
         resolvedDest.SetAddress( inet_addr( destaddrstr.C_String() ) );
-        if ( resolvedDest.GetAddress() == INADDR_NONE ) return false;                
+        if ( resolvedDest.GetAddress() == INADDR_NONE ) return false;
         resolvedDest.SetPort( destport );
         return true;
     }
     else
-    {              
+    {
         #if 1
 
         int errorCode = 0;
-        struct hostent* retval = dvsocket_gethostbyname( destaddrstr.C_String(), &errorCode );        
+        struct hostent* retval = dvsocket_gethostbyname( destaddrstr.C_String(), &errorCode );
         if ( retval != NULL )
         {
             GUCEF_DEBUG_LOG( 1, CORE::CString( "CSocket::ConvertToIPAddress(): gethostbyname(): full name: " ) + retval->h_name );
             char* addrStr = inet_ntoa( *( struct ::in_addr*)( retval->h_addr_list[0] ) );
             Int32 netaddr = inet_addr( addrStr );
-            if ( netaddr >= 0 ) 
-            {   
+            if ( netaddr >= 0 )
+            {
                 resolvedDest.SetAddress( netaddr );
-                resolvedDest.SetPort( destport );             
+                resolvedDest.SetPort( destport );
                 return true;
-            }            
+            }
         }
         return false;
-        
+
         #else
-        
+
         /* Alternate method */
-        
+
         struct addrinfo* info = NULL;
         CORE::CString portString( CORE::Int32ToString( destport ) );
         int retval = getaddrinfo( destaddrstr.C_String() ,
@@ -199,27 +186,27 @@ CSocket::ConvertToIPAddress( const CORE::CString& destaddrstr ,
         DEBUGOUTPUTsi( "CSocket::ConvertToIPAddress(): gethostbyname() failed with code ", retval );
         #endif
         return false;
-        
+
         #endif
     }
 }
 
 /*-------------------------------------------------------------------------*/
 
-bool 
+bool
 CSocket::ConvertFromIPAddress( const CIPAddress& src     ,
                                CORE::CString& srcaddrstr ,
                                UInt16& srcport           )
-{GUCEF_TRACE;                   
+{GUCEF_TRACE;
 
     ::in_addr addrStruct;
-    
+
     #if ( GUCEF_PLATFORM == GUCEF_PLATFORM_MSWIN )
     addrStruct.S_un.S_addr = src.GetAddress();
     #elif ( ( GUCEF_PLATFORM == GUCEF_PLATFORM_LINUX ) || ( GUCEF_PLATFORM == GUCEF_PLATFORM_ANDROID ) )
     addrStruct.s_addr = src.GetAddress();
     #endif
-    
+
     const char* addrStr = inet_ntoa( addrStruct );
     if ( addrStr != NULL )
     {
@@ -227,8 +214,8 @@ CSocket::ConvertFromIPAddress( const CIPAddress& src     ,
         srcport = ntohs( src.GetPort() );
         return true;
     }
-    return false;        
-}  
+    return false;
+}
 
 /*-------------------------------------------------------------------------//
 //                                                                         //
