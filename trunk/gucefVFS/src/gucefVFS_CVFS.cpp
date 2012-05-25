@@ -637,38 +637,32 @@ CVFS::LoadConfig( const CORE::CDataNode& tree )
                                              
     if ( n )
     {
-        const CORE::CDataNode::TKeyValuePair* att = n->GetAttribute( "maxmemload" );
-        if ( att )
+        CString value = n->GetAttributeValueOrChildValueByName( "maxmemload" );
+        if ( 0 < value.Length() )
         {
-            SetMemloadSize( att->second.GetInt() );
+            SetMemloadSize( StringToUInt32( value ) );
         }
-        
-        CORE::CString vfsroot( "vfsroot" );
-        const CORE::CDataNode* c;
-        CORE::CDataNode::const_iterator i = n->ConstBegin();
-        bool writeable;
-        
-        while( i != n->ConstEnd() )
+
+        CORE::CDataNode::TConstDataNodeSet rootNodeList = n->FindChildrenOfType( "VfsRoot" );
+        CORE::CDataNode::TConstDataNodeSet::iterator i = rootNodeList.begin();
+        while( i != rootNodeList.end() )
         {
-            c = (*i);
-            if ( c->GetName() == vfsroot )
+            const CORE::CDataNode* rootNode = (*i);
+            CString path = rootNode->GetAttributeValueOrChildValueByName( "Path" );
+            if ( !path.IsNULLOrEmpty() )
             {
-                CString path = c->GetAttributeValue( "Path" );
-                if ( !path.IsNULLOrEmpty() )
+                CString archiveName = rootNode->GetAttributeValueOrChildValueByName( "ArchiveName" );
+                if ( archiveName.IsNULLOrEmpty() )
                 {
-                    CString archiveName = c->GetAttributeValue( "ArchiveName" );
-                    if ( archiveName.IsNULLOrEmpty() )
-                    {
-                        archiveName = path;
-                    }
-                    
-                    bool mountArchives = CORE::StringToBool( c->GetAttributeValue( "MountArchives" ) ); 
-                    writeable = CORE::StringToBool( c->GetAttributeValue( "Writeable" ) );                        
-                    AddRoot( path          ,
-                             archiveName   ,
-                             writeable     ,
-                             mountArchives );
+                    archiveName = path;
                 }
+                    
+                bool mountArchives = CORE::StringToBool( rootNode->GetAttributeValueOrChildValueByName( "MountArchives" ) ); 
+                bool writeable = CORE::StringToBool( rootNode->GetAttributeValueOrChildValueByName( "Writeable" ) );                        
+                AddRoot( path          ,
+                         archiveName   ,
+                         writeable     ,
+                         mountArchives );
             }
             ++i;
         }

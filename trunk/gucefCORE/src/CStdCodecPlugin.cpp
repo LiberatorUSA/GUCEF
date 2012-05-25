@@ -145,7 +145,7 @@ CStdCodecPlugin::LinkCodecSet( void )
 
     if ( IsLoaded() )
     {
-        CCodecRegistry* codecRegistry = CCodecRegistry::Instance();
+        CCodecRegistry& codecRegistry = CCoreGlobal::Instance()->GetCodecRegistry();
         void* iterator = NULL;
         if ( ( (TCODECPLUGFPTR_GetCodecSetBegin) m_fpTable[ STDCODEC_CODECSETBEGIN ] )( m_pluginData, &iterator ) != 0 )
         {
@@ -164,12 +164,12 @@ CStdCodecPlugin::LinkCodecSet( void )
                     // Now we register the codecs from this plugin in the GUCEF codec registry
                     // First we check if we have to add a new registry for this family
                     CCodecRegistry::TCodecFamilyRegistryPtr familyRegistry;
-                    if ( !codecRegistry->TryLookup( codecLink->codecFamily ,
-                                                    familyRegistry         ,
-                                                    true                   ) )
+                    if ( !codecRegistry.TryLookup( codecLink->codecFamily ,
+                                                   familyRegistry         ,
+                                                   true                   ) )
                     {
                         familyRegistry = new CCodecRegistry::TCodecFamilyRegistry();
-                        codecRegistry->Register( codecLink->codecFamily, familyRegistry );
+                        codecRegistry.Register( codecLink->codecFamily, familyRegistry );
                     }
 
                     // we now have access to a registry for this codec family
@@ -195,7 +195,7 @@ CStdCodecPlugin::UnlinkCodecSet( void )
 
     if ( IsLoaded() )
     {
-        CCodecRegistry* codecRegistry = CCodecRegistry::Instance();
+        CCodecRegistry& codecRegistry = CCoreGlobal::Instance()->GetCodecRegistry();
         CStdCodecPluginItem* pluginItem = NULL;
         CCodecSet::iterator i = m_codecSet.begin();
         while ( i != m_codecSet.end() )
@@ -209,11 +209,11 @@ CStdCodecPlugin::UnlinkCodecSet( void )
 
                 // Now we unregister the codecs from this plugin from the GUCEF codec registry
                 // First we check if family registry still exists
-                if ( codecRegistry->IsRegistered( codecLink->codecFamily ) )
+                if ( codecRegistry.IsRegistered( codecLink->codecFamily ) )
                 {
                     // we now have access to a registry for this codec family
                     // We will add this codec if there no codec already registered with such a name
-                    CCodecRegistry::TCodecFamilyRegistryPtr familyRegistry = codecRegistry->Lookup( codecLink->codecFamily );
+                    CCodecRegistry::TCodecFamilyRegistryPtr familyRegistry = codecRegistry.Lookup( codecLink->codecFamily );
                     if ( !familyRegistry->IsRegistered( codecLink->codecType ) )
                     {
                         familyRegistry->Unregister( codecLink->codecType );
@@ -368,37 +368,37 @@ CStdCodecPlugin::Link( void* modulePtr                   ,
 {GUCEF_TRACE;
 
     // make sure no module is already loaded
-    if ( m_soHandle != NULL ) return false;
+    if ( modulePtr == NULL ) return false;
 
     // let's see if it is a codec plugin
-    m_fpTable[ STDCODEC_DESCRIPTION ] = GetFunctionAddress( m_soHandle                ,
+    m_fpTable[ STDCODEC_DESCRIPTION ] = GetFunctionAddress( modulePtr                 ,
                                                             "CODECPLUGIN_Description" ,
                                                             sizeof(void*)             ).funcPtr;
-    m_fpTable[ STDCODEC_COPYRIGHT ] = GetFunctionAddress( m_soHandle              ,
+    m_fpTable[ STDCODEC_COPYRIGHT ] = GetFunctionAddress( modulePtr               ,
                                                           "CODECPLUGIN_Copyright" ,
                                                           sizeof(void*)           ).funcPtr;
-    m_fpTable[ STDCODEC_VERSION ] = GetFunctionAddress( m_soHandle            ,
+    m_fpTable[ STDCODEC_VERSION ] = GetFunctionAddress( modulePtr             ,
                                                         "CODECPLUGIN_Version" ,
                                                         sizeof(void*)         ).funcPtr;
-    m_fpTable[ STDCODEC_INIT ] = GetFunctionAddress( m_soHandle                      ,
+    m_fpTable[ STDCODEC_INIT ] = GetFunctionAddress( modulePtr                       ,
                                                      "CODECPLUGIN_Init"              ,
                                                      2*sizeof(void*)+sizeof(char***) ).funcPtr;
-    m_fpTable[ STDCODEC_SHUTDOWN ] = GetFunctionAddress( m_soHandle             ,
+    m_fpTable[ STDCODEC_SHUTDOWN ] = GetFunctionAddress( modulePtr              ,
                                                          "CODECPLUGIN_Shutdown" ,
                                                          sizeof(void*)          ).funcPtr;
-    m_fpTable[ STDCODEC_CODECSETBEGIN ] = GetFunctionAddress( m_soHandle                     ,
+    m_fpTable[ STDCODEC_CODECSETBEGIN ] = GetFunctionAddress( modulePtr                      ,
                                                               "CODECPLUGIN_GetCodecSetBegin" ,
                                                               sizeof(void*)+sizeof(void**)   ).funcPtr;
-    m_fpTable[ STDCODEC_CODECLINK ] = GetFunctionAddress( m_soHandle                                 ,
+    m_fpTable[ STDCODEC_CODECLINK ] = GetFunctionAddress( modulePtr                                  ,
                                                           "CODECPLUGIN_GetCodecLink"                 ,
                                                           2*sizeof(void*)+sizeof(TCodecPluginLink**) ).funcPtr;
-    m_fpTable[ STDCODEC_FREECODECLINK ] = GetFunctionAddress( m_soHandle                              ,
+    m_fpTable[ STDCODEC_FREECODECLINK ] = GetFunctionAddress( modulePtr                               ,
                                                               "CODECPLUGIN_FreeCodecLink"             ,
                                                               sizeof(void*)+sizeof(TCodecPluginLink*) ).funcPtr;
-    m_fpTable[ STDCODEC_FREECODECITERATOR ] = GetFunctionAddress( m_soHandle                      ,
+    m_fpTable[ STDCODEC_FREECODECITERATOR ] = GetFunctionAddress( modulePtr                       ,
                                                                   "CODECPLUGIN_FreeCodecIterator" ,
                                                                   2*sizeof(void*)                 ).funcPtr;
-    m_fpTable[ STDCODEC_CODECSETNEXT ] = GetFunctionAddress( m_soHandle                        ,
+    m_fpTable[ STDCODEC_CODECSETNEXT ] = GetFunctionAddress( modulePtr                         ,
                                                              "CODECPLUGIN_GetCodecSetNextItem" ,
                                                              2*sizeof(void*)                   ).funcPtr;
 
@@ -418,6 +418,8 @@ CStdCodecPlugin::Link( void* modulePtr                   ,
             memset( m_fpTable, 0, STDCODEC_FUNCTIONTABLESIZE );
             return false;
     }
+
+    m_soHandle = modulePtr;
 
     // We will now try to initialize the module
     if ( ( (TCODECPLUGFPTR_Init) m_fpTable[ STDCODEC_INIT ] )( &m_pluginData, NULL ) == 0 )

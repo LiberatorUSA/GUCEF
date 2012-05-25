@@ -33,7 +33,7 @@
 #define GUCEF_CORE_CIOACCESS_H
 #endif /* GUCEF_CORE_CIOACCESS_H ? */
 
-#include "CGUIImageCodec.h"
+#include "gucefIMAGE_CGUIImageCodec.h"
 
 /*-------------------------------------------------------------------------//
 //                                                                         //

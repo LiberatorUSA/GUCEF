@@ -46,7 +46,7 @@ set( SOURCE_FILES
 set( ALL_FILES ${HEADER_FILES} ${SOURCE_FILES} ${PLATFORM_HEADER_FILES} ${PLATFORM_SOURCE_FILES} )
 
 set( MODULE_NAME "MyGUI.OpenGLPlatform" )
-add_library( ${MODULE_NAME} ${ALL_FILES} )
+add_library( ${MODULE_NAME} STATIC ${ALL_FILES} )
 add_dependencies( ${MODULE_NAME} MyGUI.Engine )
 target_link_libraries( ${MODULE_NAME} MyGUI.Engine )
 

@@ -57,7 +57,6 @@
 /*---------------------------------------------------------------------------*/
 
 static FreeImageIO io;
-static const UInt32 codecCount = 33;
 
 static char* supportedTypes[] = { 
     "bmp"    , 
@@ -93,6 +92,8 @@ static char* supportedTypes[] = {
     "faxg3"  ,
     "sgi"
 };
+
+static const UInt32 codecCount = sizeof( supportedTypes ) / sizeof(char*); // 32;
 
 /*-------------------------------------------------------------------------//
 //                                                                         //
@@ -384,6 +385,7 @@ CODECPLUGIN_Init( void** plugdata    ,
     io.seek_proc  = mySeekProc;
     io.tell_proc  = myTellProc;    
 
+    *plugdata = NULL;    
     return 1;
 }
 

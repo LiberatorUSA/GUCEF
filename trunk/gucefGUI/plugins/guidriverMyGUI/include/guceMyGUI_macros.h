@@ -62,14 +62,14 @@
 #ifdef GUCEF_MYGUI_EXPORT_CPP_CODE
   #define GUCEF_MYGUI_EXPORT_CPP GUCEF_EXPORTSPEC
 #else
-  #define GUCEF_MYGUI_EXPORT_CPP
+  #define GUCEF_MYGUI_EXPORT_CPP GUCEF_HIDDEN
 #endif /* GUCEF_GUI_EXPORT_CPP_CODE */
 
 #undef GUCEF_MYGUI_EXPORT_C
 #ifdef GUCEF_MYGUI_EXPORT_C_CODE
   #define GUCEF_MYGUI_EXPORT_C GUCEF_EXPORTSPEC
 #else
-  #define GUCEF_MYGUI_EXPORT_C
+  #define GUCEF_MYGUI_EXPORT_C GUCEF_HIDDEN
 #endif /* GUCEF_MYGUI_EXPORT_C_CODE */
 
 /*-------------------------------------------------------------------------*/

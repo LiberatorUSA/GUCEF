@@ -36,10 +36,10 @@
 #define GUCEF_MYGUI_ETYPES_H
 #endif /* GUCEF_MYGUI_ETYPES_H ? */
 
-#ifndef GUCEF_MYGUI_CONFIG_H
-#include "guceMyGUI_config.h"        /* Module build configuration */
-#define GUCEF_MYGUI_CONFIG_H
-#endif /* GUCEF_MYGUI_CONFIG_H ? */
+#ifndef GUCEF_MYGUIGL_CONFIG_H
+#include "guidriverMyGUIOpenGL_config.h"        /* Module build configuration */
+#define GUCEF_MYGUIGL_CONFIG_H
+#endif /* GUCEF_MYGUIGL_CONFIG_H ? */
 
 /*-------------------------------------------------------------------------//
 //                                                                         //
@@ -51,26 +51,27 @@
  *      Macros for dynamic linking or static linking. Use the switches in the
  *      config file to control the export type.
  */
-#undef GUCEF_EXPORTSPEC
-#ifdef GUIDRIVERMYGUIGL_BUILD_MODULE
-  #define GUCEF_EXPORTSPEC GUCEF_EXPORT
+#undef GUCEF_MYGUIGL_EXPORTSPEC
+#ifdef GUIDRIVERMYGUIOPENGL_BUILD_MODULE
+  #define GUCEF_MYGUIGL_EXPORTSPEC GUCEF_EXPORT
 #else
-  #define GUCEF_EXPORTSPEC GUCEF_IMPORT
-#endif /* GUCEF_MYGUIGL_BUILD_MODULE ? */
+  #define GUCEF_MYGUIGL_EXPORTSPEC GUCEF_IMPORT
+#endif /* GUIDRIVERMYGUIOPENGL_BUILD_MODULE ? */
 
 #undef GUCEF_MYGUIGL_EXPORT_CPP
 #ifdef GUCEF_MYGUIGL_EXPORT_CPP_CODE
-  #define GUCEF_MYGUIGL_EXPORT_CPP GUCEF_EXPORTSPEC
+  #define GUCEF_MYGUIGL_EXPORT_CPP GUCEF_MYGUIGL_EXPORTSPEC
 #else
-  #define GUCEF_MYGUIGL_EXPORT_CPP
+  #define GUCEF_MYGUIGL_EXPORT_CPP GUCEF_HIDDEN
 #endif /* GUCEF_MYGUIGL_EXPORT_CPP_CODE */
 
 #undef GUCEF_MYGUIGL_EXPORT_C
 #ifdef GUCEF_MYGUIGL_EXPORT_C_CODE
-  #define GUCEF_MYGUIGL_EXPORT_C GUCEF_EXPORTSPEC
+  #define GUCEF_MYGUIGL_EXPORT_C GUCEF_MYGUIGL_EXPORTSPEC
 #else
-  #define GUCEF_MYGUIGL_EXPORT_C
+  #define GUCEF_MYGUIGL_EXPORT_C GUCEF_HIDDEN
 #endif /* GUCEF_MYGUIGL_EXPORT_C_CODE */
+#undef GUCEF_MYGUIGL_EXPORTSPEC
 
 /*-------------------------------------------------------------------------*/
 

@@ -1122,6 +1122,19 @@ CDataNode::GetChildValueByName( const CString& name ) const
 
 /*-------------------------------------------------------------------------*/
 
+CString
+CDataNode::GetAttributeValueOrChildValueByName( const CString& name ) const
+{
+    CString value = GetAttributeValue( name );
+    if ( 0 == value.Length() )
+    {
+        value = GetChildValueByName( name );
+    }
+    return value;
+}
+
+/*-------------------------------------------------------------------------*/
+
 CDataNode::TStringVector
 CDataNode::GetChildrenValuesByName( const CString& name ) const
 {

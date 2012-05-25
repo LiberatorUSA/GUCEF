@@ -1,5 +1,5 @@
 <ModuleInfoEntry>
-    <Module Name="MyGUI.OpenGLPlatform" Type="SharedLibrary" Platform="All">
+    <Module Name="MyGUI.OpenGLPlatform" Type="StaticLibrary" Platform="All">
         <Dependencies>
             <Dependency Name="MyGUI.Engine" />
             <Dependency Name="MyGUI.Common.FileSystemInfo" />

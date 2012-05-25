@@ -34,7 +34,7 @@
 #endif /* GUCEF_CORE_CLOGMANAGER_H ? */
 
 #ifndef GUCEF_IMAGE_CGUIIMAGECODEC_H
-#include "CGUIImageCodec.h"
+#include "gucefIMAGE_CGUIImageCodec.h"
 #define GUCEF_IMAGE_CGUIIMAGECODEC_H
 #endif /* GUCEF_IMAGE_CGUIIMAGECODEC_H ? */
 
@@ -59,25 +59,7 @@ bool
 CGUCEFIMAGEModule::Load( void )
 {GUCEF_TRACE;
         
-        GUCEF_SYSTEM_LOG( CORE::LOGLEVEL_NORMAL, "gucefIMAGE Module loaded" );
-        
-        CORE::CCodecRegistry* codecRegistry = CORE::CCodecRegistry::Instance();
-        CORE::CCodecRegistry::TCodecFamilyRegistryPtr registry; 
-        
-        if ( !codecRegistry->IsRegistered( "ImageCodec" ) )
-        {
-            registry = new CORE::CCodecRegistry::TCodecFamilyRegistry();
-            codecRegistry->Register( "ImageCodec", registry );
-        }
-        else
-        {
-            registry = codecRegistry->Lookup( "ImageCodec" );
-        }
-
-        // Register the dummy codec for our native format
-        registry->Register( "gui", new CGUIImageCodec() );
-        
-        return true;
+    return true;
 }
 
 /*-------------------------------------------------------------------------*/
@@ -86,18 +68,6 @@ bool
 CGUCEFIMAGEModule::Unload( void )
 {GUCEF_TRACE;
 
-    GUCEF_SYSTEM_LOG( CORE::LOGLEVEL_NORMAL, "gucefIMAGE Module unloading" );
-    
-    CORE::CCodecRegistry* codecRegistry = CORE::CCodecRegistry::Instance();
-    CORE::CCodecRegistry::TCodecFamilyRegistryPtr registry;
-    
-    if ( codecRegistry->IsRegistered( "ImageCodec" ) )
-    {
-        registry = codecRegistry->Lookup( "ImageCodec" );
-        
-        // unregister the dummy codec for our native format
-        registry->Unregister( "gui" );
-    }
     return true;
 }
 

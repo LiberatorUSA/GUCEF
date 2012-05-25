@@ -60,6 +60,7 @@ class CNotificationIDRegistry;
 class CStdCodecPluginManager;
 class CConfigStore;
 class CPulseGenerator;
+class CCodecRegistry;
 
 /*-------------------------------------------------------------------------*/
 
@@ -104,6 +105,8 @@ class GUCEF_CORE_PUBLIC_CPP CCoreGlobal
 
     CExclusiveActivationManager& GetExclusiveActivationManager( void );
 
+    CCodecRegistry& GetCodecRegistry( void );
+
     private:
     friend class CGUCEFCOREModule;
 
@@ -132,6 +135,7 @@ class GUCEF_CORE_PUBLIC_CPP CCoreGlobal
     CNotificationIDRegistry* m_notificationIdRegistry;
     CStdCodecPluginManager* m_stdCodecPluginManager;
     CConfigStore* m_configStore;
+    CCodecRegistry* m_codecRegistry;
 
     static CCoreGlobal* g_instance;
 };
