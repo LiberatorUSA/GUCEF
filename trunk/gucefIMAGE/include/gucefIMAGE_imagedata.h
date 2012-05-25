@@ -83,6 +83,7 @@ enum EPixelStorageFormat
     PSF_SINGLE_CHANNEL_BLUE      ,
     PSF_SINGLE_CHANNEL_ALPHA     ,
     PSF_SINGLE_CHANNEL_LUMINANCE ,
+    PSF_LUMINANCE_ALPHA          ,
 
     PSF_COUNT
 };

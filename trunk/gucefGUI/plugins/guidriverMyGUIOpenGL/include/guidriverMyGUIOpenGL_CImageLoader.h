@@ -31,6 +31,11 @@
 #define __MYGUI_OPENGL_IMAGE_LOADER_H__
 #endif /* __MYGUI_OPENGL_IMAGE_LOADER_H__ ? */
 
+#ifndef GUCEF_IMAGE_CIMAGE_H
+#include "gucefIMAGE_CImage.h"
+#define GUCEF_IMAGE_CIMAGE_H
+#endif /* GUCEF_IMAGE_CIMAGE_H ? */
+
 #ifndef GUCEF_MYGUIGL_MACROS_H
 #include "guidriverMyGUIOpenGL_macros.h"
 #define GUCEF_MYGUIGL_MACROS_H
@@ -78,8 +83,7 @@ class GUCEF_MYGUIGL_EXPORT_CPP CImageLoader : public MyGUI::OpenGLImageLoader
     CImageLoader( const CImageLoader& src );
     CImageLoader& operator=( const CImageLoader& src );
 
-    private:
-
+    MyGUI::PixelFormat ConvertPixelFormat( IMAGE::CImage::TPixelMapPtr pixelMap );
 };
 
 /*-------------------------------------------------------------------------//

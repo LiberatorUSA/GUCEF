@@ -96,8 +96,8 @@ CGUIDriverGL::CreateGUIContext( GUI::TWindowContextPtr windowContext )
     // Lazy initialize if needed
     if ( !m_myGuiInitialized )
     {
-        m_myGUI.initialise();
         m_renderManager.initialise( &m_imageLoader );
+        m_myGUI.initialise();        
 
         m_myGuiInitialized = true;
     }

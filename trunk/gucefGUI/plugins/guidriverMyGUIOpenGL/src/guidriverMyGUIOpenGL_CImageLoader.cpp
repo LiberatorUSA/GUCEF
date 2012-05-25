@@ -23,6 +23,11 @@
 //                                                                         //
 //-------------------------------------------------------------------------*/
 
+#ifndef GUCEF_CORE_DVCPPSTRINGUTILS_H
+#include "dvcppstringutils.h"
+#define GUCEF_CORE_DVCPPSTRINGUTILS_H
+#endif /* GUCEF_CORE_DVCPPSTRINGUTILS_H ? */
+
 #ifndef GUCEF_VFS_CVFSGLOBAL_H
 #include "gucefVFS_CVfsGlobal.h"
 #define GUCEF_VFS_CVFSGLOBAL_H
@@ -32,11 +37,6 @@
 #include "gucefVFS_CVFS.h"
 #define GUCEF_VFS_CVFS_H
 #endif /* GUCEF_VFS_CVFS_H ? */
-
-#ifndef GUCEF_IMAGE_CIMAGE_H
-#include "gucefIMAGE_CImage.h"
-#define GUCEF_IMAGE_CIMAGE_H
-#endif /* GUCEF_IMAGE_CIMAGE_H ? */
 
 #include "guidriverMyGUIOpenGL_CImageLoader.h"
 
@@ -69,6 +69,46 @@ CImageLoader::~CImageLoader()
 
 /*-------------------------------------------------------------------------*/
 
+MyGUI::PixelFormat
+CImageLoader::ConvertPixelFormat( IMAGE::CImage::TPixelMapPtr pixelMap )
+{
+    if ( pixelMap->GetPixelChannelSize() == 1 )
+    {
+        switch ( pixelMap->GetPixelStorageFormat() )
+        {
+            case IMAGE::PSF_RGB : return MyGUI::PixelFormat( MyGUI::PixelFormat::R8G8B8 );
+            case IMAGE::PSF_RGBA : return MyGUI::PixelFormat( MyGUI::PixelFormat::R8G8B8A8 );
+            case IMAGE::PSF_BGR :
+            {
+                pixelMap->ConvertPixelStorageFormatTo( IMAGE::PSF_RGB );
+                return MyGUI::PixelFormat( MyGUI::PixelFormat::R8G8B8 );
+            }
+            case IMAGE::PSF_BGRA :
+            {
+                pixelMap->ConvertPixelStorageFormatTo( IMAGE::PSF_RGBA );
+                return MyGUI::PixelFormat( MyGUI::PixelFormat::R8G8B8A8 );
+            }
+            case IMAGE::PSF_SINGLE_CHANNEL : return MyGUI::PixelFormat( MyGUI::PixelFormat::L8 );
+            case IMAGE::PSF_SINGLE_CHANNEL_RED : return MyGUI::PixelFormat( MyGUI::PixelFormat::L8 );
+            case IMAGE::PSF_SINGLE_CHANNEL_GREEN : return MyGUI::PixelFormat( MyGUI::PixelFormat::L8 );
+            case IMAGE::PSF_SINGLE_CHANNEL_BLUE : return MyGUI::PixelFormat( MyGUI::PixelFormat::L8 );
+            case IMAGE::PSF_SINGLE_CHANNEL_ALPHA : return MyGUI::PixelFormat( MyGUI::PixelFormat::L8 );
+            case IMAGE::PSF_SINGLE_CHANNEL_LUMINANCE : return MyGUI::PixelFormat( MyGUI::PixelFormat::L8 );
+
+            case IMAGE::PSF_LUMINANCE_ALPHA : return MyGUI::PixelFormat( MyGUI::PixelFormat::L8A8 );
+
+            default:
+            {
+                return MyGUI::PixelFormat( MyGUI::PixelFormat::Unknow );
+            }
+        }
+    }
+    // else: MyGui cannot handle multi-byte channels
+    return MyGUI::PixelFormat( MyGUI::PixelFormat::Unknow );
+}
+
+/*-------------------------------------------------------------------------*/
+
 void*
 CImageLoader::loadImage( int& _width                  ,
                          int& _height                 ,
@@ -76,6 +116,8 @@ CImageLoader::loadImage( int& _width                  ,
                          const std::string& _filename )
 {GUCEF_TRACE;
 
+    CORE::CString dataType = CORE::ExtractFileExtention( _filename ).Lowercase();
+    
     VFS::CVFS& vfs = VFS::CVfsGlobal::Instance()->GetVfs();
     VFS::CVFS::CVFSHandlePtr filePtr = vfs.GetFile( _filename );
 
@@ -83,9 +125,23 @@ CImageLoader::loadImage( int& _width                  ,
     {
         IMAGE::CImage image;
         if ( image.Load( *filePtr->GetAccess() ,
-                         ""                    ) )
+                         dataType              ) )
         {
+            // We don't care about mipmapping or frames, get 0,0
+            IMAGE::CImage::TPixelMapPtr pixelMap = image.GetPixelMap( 0, 0 );
+            if ( 0 != pixelMap )
+            {
+                // Translate pixel format enum and convert as needed
+                _format = ConvertPixelFormat( pixelMap );
+                if ( _format != MyGUI::PixelFormat( MyGUI::PixelFormat::Unknow ) )
+                {
+                    // We have our data, release to MyGui, it takes ownership
+                    _width = (int) pixelMap->GetWidthInPixels();
+                    _height = (int) pixelMap->GetHeightInBytes();
 
+                    return pixelMap->RelinquishPixelDataOwnership();
+                }
+            }
         }
     }
 

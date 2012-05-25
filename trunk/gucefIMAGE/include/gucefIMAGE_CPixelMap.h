@@ -100,6 +100,8 @@ class GUCEF_IMAGE_EXPORT_CPP CPixelMap
     
     const void* GetDataPtr( const UInt32 pixelOffset = 0 ) const;
 
+    void* RelinquishPixelDataOwnership( void );
+
     TBuildinDataType GetPixelComponentDataType( void ) const;
    
     void* GetDataAtScanLine( const UInt32 scanLineIndex );
