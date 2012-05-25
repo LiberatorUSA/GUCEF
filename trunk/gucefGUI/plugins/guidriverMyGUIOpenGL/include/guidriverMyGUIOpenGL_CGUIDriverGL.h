@@ -31,6 +31,11 @@
 #define __MYGUI_H__
 #endif /* __MYGUI_H__ ? */
 
+#ifndef __MYGUI_OPENGL_RENDER_MANAGER_H__
+#include "MyGUI_OpenGLRenderManager.h"
+#define __MYGUI_OPENGL_RENDER_MANAGER_H__
+#endif /* __MYGUI_OPENGL_RENDER_MANAGER_H__ ? */
+
 #ifndef GUCEF_CORE_COBSERVINGNOTIFIER_H
 #include "CObservingNotifier.h"
 #define GUCEF_CORE_COBSERVINGNOTIFIER_H
@@ -45,6 +50,16 @@
 #include "gucefGUI_CGUIDriver.h"
 #define GUCEF_GUI_CGUIDRIVER_H
 #endif /* GUCEF_GUI_CGUIDRIVER_H ? */
+
+#ifndef GUCEF_MYGUI_CDATAMANAGER_H
+#include "guceMyGUI_CDataManager.h"
+#define GUCEF_MYGUI_CDATAMANAGER_H
+#endif /* GUCEF_MYGUI_CDATAMANAGER_H ? */
+
+#ifndef GUCEF_MYGUI_CLOGADAPTER_H
+#include "guidriverMyGUI_CLogAdapter.h"
+#define GUCEF_MYGUI_CLOGADAPTER_H
+#endif /* GUCEF_MYGUI_CLOGADAPTER_H ? */
 
 #ifndef GUCEF_MYGUIGL_CIMAGELOADER_H
 #include "guidriverMyGUIOpenGL_CImageLoader.h"
@@ -121,7 +136,11 @@ class GUCEF_MYGUIGL_EXPORT_CPP CGUIDriverGL : public GUI::CGUIDriver
     GUI::CGUIDriver::TGUIContextSet m_contextSet;
     TStringSet m_fontTypes;
     MyGUI::Gui m_myGUI;
+    MyGUI::OpenGLRenderManager m_renderManager;
     CImageLoader m_imageLoader;
+    MYGUI::CLogAdapter m_logAdapter;
+    MYGUI::CDataManager m_dataManager;
+    bool m_myGuiInitialized;
 };
 
 /*-------------------------------------------------------------------------//

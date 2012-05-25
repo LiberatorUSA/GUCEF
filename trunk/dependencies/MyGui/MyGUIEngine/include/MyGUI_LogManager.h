@@ -42,15 +42,16 @@ namespace MyGUI
 	{
 	public:
 		LogManager();
-		~LogManager();
+		virtual ~LogManager();
 
 		static LogManager& getInstance();
 		static LogManager* getInstancePtr();
 
 		/** Call LogSource::flush() for all log sources. */
-		void flush();
+		virtual void flush();
+
 		/** Call LogSource::log for all log sources. */
-		void log(const std::string& _section, LogLevel _level, const std::string& _message, const char* _file, int _line);
+		virtual void log(const std::string& _section, LogLevel _level, const std::string& _message, const char* _file, int _line);
 
 		/** Create default LevelLogFilter, FileLogListener and ConsoleLogListener. */
 		void createDefaultSource(const std::string& _logname);

@@ -1,5 +1,5 @@
 /*
- *  guidriverMyGUIOpenGL: glue module for the MyGUI GUI backend using OpenGL
+ *  guidriverMyGUI: glue module for the MyGUI GUI backend
  *  Copyright (C) 2002 - 2008.  Dinand Vanvelzen
  *
  *  This library is free software; you can redistribute it and/or
@@ -23,12 +23,7 @@
 //                                                                         //
 //-------------------------------------------------------------------------*/
 
-#ifndef GUCEF_MYGUIGL_CGUIDRIVERGL_H
-#include "guidriverMyGUIOpenGL_CGUIDriverGL.h"
-#define GUCEF_MYGUIGL_CGUIDRIVERGL_H
-#endif /* GUCEF_MYGUIGL_CGUIDRIVERGL_H ? */
-
-#include "guidriverMyGUIOpenGL_CGUIContextGL.h"
+#include "guidriverMyGUI_CLogAdapter.h"
 
 /*-------------------------------------------------------------------------//
 //                                                                         //
@@ -37,7 +32,7 @@
 //-------------------------------------------------------------------------*/
 
 namespace GUCEF {
-namespace MYGUIGL {
+namespace MYGUI {
 
 /*-------------------------------------------------------------------------//
 //                                                                         //
@@ -45,56 +40,76 @@ namespace MYGUIGL {
 //                                                                         //
 //-------------------------------------------------------------------------*/
 
-CGUIContextGL::CGUIContextGL( CGUIDriverGL& guiDriver                   ,
-                              MyGUI::OpenGLRenderManager* renderManager ,
-                              GUI::TWindowContextPtr windowContext      ,
-                              INPUT::CInputContext* inputContext        )
-    : MYGUI::CGUIContext( guiDriver    ,
-                          inputContext )  ,
-      m_renderManager( renderManager )    ,
-      m_windowContext( windowContext ) 
-{GUCEF_TRACE;
-
+CLogAdapter::CLogAdapter()
+    : MyGUI::LogManager() ,
+      m_logManager( &CORE::CCoreGlobal::Instance()->GetLogManager() )
+{
 }
 
 /*-------------------------------------------------------------------------*/
-
-CGUIContextGL::~CGUIContextGL()
-{GUCEF_TRACE;
-
-}
-
-/*-------------------------------------------------------------------------*/
-
-const CORE::CString&
-CGUIContextGL::GetClassTypeName( void ) const
-{GUCEF_TRACE;
-
-    static const CORE::CString classTypeName = "GUCEF::MYGUIGL::CGUIContextGL";
-    return classTypeName;
+	
+CLogAdapter::~CLogAdapter()
+{
+    m_logManager = NULL;
 }
 
 /*-------------------------------------------------------------------------*/
 
 void
-CGUIContextGL::OnNotify( CORE::CNotifier* notifier   ,
-                         const CORE::CEvent& eventID ,
-                         CORE::CICloneable* evenData )
-{GUCEF_TRACE;
+CLogAdapter::flush()
+{
+    m_logManager->FlushLogs();
+}
 
-    if ( eventID == GUI::CWindowContext::WindowContextRedrawEvent )
+/*-------------------------------------------------------------------------*/
+
+void
+CLogAdapter::ConvertLogLevel( MyGUI::LogLevel myGuilevel              ,
+                              CORE::CLogManager::TLogMsgType& msgType ,
+                              CORE::Int32& logLevel                   )
+{
+    if ( myGuilevel == MyGUI::LogLevel( MyGUI::LogLevel::Info ) )
     {
-        m_renderManager->drawOneFrame();
+        msgType = CORE::CLogManager::LOG_SYSTEM;
+        logLevel = CORE::LOGLEVEL_NORMAL;
     }
     else
-    if ( eventID == GUI::CWindowContext::WindowContextSizeEvent )
-    {        
-        GUCEF_DEBUG_LOG( CORE::LOGLEVEL_NORMAL, "GUIContext: Resizing MyGUI GUI context to " + CORE::UInt32ToString( m_windowContext->GetWidth() ) + "x" +
-                                                                                               CORE::UInt32ToString( m_windowContext->GetHeight() ) );
-
-		m_renderManager->setViewSize( m_windowContext->GetWidth(), m_windowContext->GetHeight() );
-        m_renderManager->drawOneFrame();
+    if ( myGuilevel == MyGUI::LogLevel( MyGUI::LogLevel::Warning ) )
+    {
+        msgType = CORE::CLogManager::LOG_WARNING;
+        logLevel = CORE::LOGLEVEL_NORMAL;
     }
+    else
+    if ( myGuilevel == MyGUI::LogLevel( MyGUI::LogLevel::Error ) )
+    {
+        msgType = CORE::CLogManager::LOG_ERROR;
+        logLevel = CORE::LOGLEVEL_NORMAL;
+    } 
+    else
+    if ( myGuilevel == MyGUI::LogLevel( MyGUI::LogLevel::Critical ) )
+    {
+        msgType = CORE::CLogManager::LOG_ERROR;
+        logLevel = CORE::LOGLEVEL_IMPORTANT;
+    }
+}
+
+/*-------------------------------------------------------------------------*/
+
+void
+CLogAdapter::log( const std::string& _section , 
+                  MyGUI::LogLevel _level      , 
+                  const std::string& _message ,
+                  const char* _file           ,
+                  int _line                   )
+{
+    CORE::CString newMessage( "MyGUI: " + _message );
+
+    CORE::CLogManager::TLogMsgType msgType;
+    CORE::Int32 logLevel;
+
+    ConvertLogLevel( _level, msgType, logLevel );
+
+    m_logManager->Log( msgType, logLevel, newMessage );
 }
 
 /*-------------------------------------------------------------------------//
@@ -104,6 +119,6 @@ CGUIContextGL::OnNotify( CORE::CNotifier* notifier   ,
 //-------------------------------------------------------------------------*/
 
 }; /* namespace MYGUI */
-}; /* namespace GUCE */
+}; /* namespace GUCEF */
 
 /*-------------------------------------------------------------------------*/

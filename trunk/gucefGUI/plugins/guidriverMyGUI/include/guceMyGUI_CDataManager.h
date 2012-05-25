@@ -38,19 +38,6 @@
 
 /*-------------------------------------------------------------------------//
 //                                                                         //
-//      CLASSES                                                            //
-//                                                                         //
-//-------------------------------------------------------------------------*/
-
-/*
- *      Forward declarations of classes used here
- */
-namespace Ogre { class RenderWindow; class RenderTexture; class Root; }
-namespace MyGUI { class Gui; class OgrePlatform; class OgreRenderManager; }
-namespace GUCEF { namespace CORE { class CDataNode; } }
-
-/*-------------------------------------------------------------------------//
-//                                                                         //
 //      NAMESPACE                                                          //
 //                                                                         //
 //-------------------------------------------------------------------------*/
@@ -64,9 +51,13 @@ namespace MYGUI {
 //                                                                         //
 //-------------------------------------------------------------------------*/
 
-class CDataManager : public MyGUI::DataManager
+class GUCEF_MYGUI_EXPORT_CPP CDataManager : public MyGUI::DataManager
 {
     public:
+
+    CDataManager( void );
+
+    virtual ~CDataManager();
 
     virtual MyGUI::IDataStream* getData( const std::string& _name );
 

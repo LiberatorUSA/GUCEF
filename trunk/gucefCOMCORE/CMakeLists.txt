@@ -27,13 +27,13 @@ set( HEADER_FILES
   include/CUDPSocket.h
   include/dvwinsock.h
   include/gucefCOMCORE.h
+  include/gucefCOMCORE_CComCoreGlobal.h
   include/gucefCOMCORE_config.h
   include/gucefCOMCORE_CPingTaskConsumer.h
   include/gucefCOMCORE_ETypes.h
   include/gucefCOMCORE_macros.h
   include/socketerrors.h
   include/socketutils.h
-  include/gucefCOMCORE_CComCoreGlobal.h
 )
 
 set( SOURCE_FILES 
@@ -52,9 +52,9 @@ set( SOURCE_FILES
   src/CUDPSocket.cpp
   src/dvwinsock.c
   src/gucefCOMCORE.cpp
+  src/gucefCOMCORE_CComCoreGlobal.cpp
   src/gucefCOMCORE_CPingTaskConsumer.cpp
   src/socketutils.cpp
-  src/gucefCOMCORE_CComCoreGlobal.cpp
 )
 
 
