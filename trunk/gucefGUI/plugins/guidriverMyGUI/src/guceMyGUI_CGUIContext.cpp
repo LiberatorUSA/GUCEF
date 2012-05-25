@@ -163,7 +163,7 @@ GUCEF::GUI::CGUIDriver*
 CGUIContext::GetDriver( void )
 {GUCEF_TRACE;
 
-    return NULL; //m_driver;
+    return m_driver;
 }
 
 /*-------------------------------------------------------------------------*/

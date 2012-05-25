@@ -488,9 +488,11 @@ SetupWindowContext( GUI::TWindowManagerBackendPtr windowMngrBackend ,
 
             // Create a form to load the layout into
             GUI::CFormEx* form = static_cast< GUI::CFormEx* >( guiContext->CreateForm( "FormEx" ) );
-
-            // load the test layout resource
-            return form->LoadLayoutUsingVfs( "main_menu.rml" );
+            if ( NULL != form )
+            {
+                // load the test layout resource
+                return form->LoadLayoutUsingVfs( "main_menu.rml" );
+            }
         }
     }
     else
