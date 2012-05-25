@@ -694,24 +694,34 @@ CMsWin32Window::RegisterWindowClass( const CString& windowClassName )
 {GUCEF_TRACE;
 
     WNDCLASSEX wc;
-    wc.cbSize        = sizeof(WNDCLASSEX);
-    wc.style         = 0;
-    wc.lpfnWndProc   = (WNDPROC)WndProc;
-    wc.cbClsExtra    = 0;
-    wc.cbWndExtra    = 0;
-    wc.hInstance     = GetCurrentModuleHandle();
-    wc.hIcon         = LoadIcon(NULL, IDI_APPLICATION);
-    wc.hCursor       = LoadCursor(NULL, IDC_ARROW);
-    wc.hbrBackground = (HBRUSH)(COLOR_WINDOW+1);
-    wc.lpszMenuName  = NULL;
-    wc.lpszClassName = windowClassName.C_String();
-    wc.hIconSm       = LoadIcon(NULL, IDI_APPLICATION);
-
-    if ( 0 == RegisterClassEx( &wc ) )
+    if ( FALSE == ::GetClassInfoEx( GetCurrentModuleHandle()   ,
+                                    windowClassName.C_String() ,
+                                    &wc                        ) )
     {
-        GUCEF_SYSTEM_LOG( LOGLEVEL_IMPORTANT, "CMsWin32Window::RegisterWindowClass(): Failed to register a window class with name \"" + windowClassName + "\"" );
-        return false;
+        wc.cbSize        = sizeof(WNDCLASSEX);
+        wc.style         = 0;
+        wc.lpfnWndProc   = (WNDPROC)WndProc;
+        wc.cbClsExtra    = 0;
+        wc.cbWndExtra    = 0;
+        wc.hInstance     = GetCurrentModuleHandle();
+        wc.hIcon         = LoadIcon(NULL, IDI_APPLICATION);
+        wc.hCursor       = LoadCursor(NULL, IDC_ARROW);
+        wc.hbrBackground = (HBRUSH)(COLOR_WINDOW+1);
+        wc.lpszMenuName  = NULL;
+        wc.lpszClassName = windowClassName.C_String();
+        wc.hIconSm       = LoadIcon(NULL, IDI_APPLICATION);
+
+        if ( 0 == RegisterClassEx( &wc ) )
+        {
+            GUCEF_SYSTEM_LOG( LOGLEVEL_IMPORTANT, "CMsWin32Window::RegisterWindowClass(): Failed to register a window class with name \"" + windowClassName + "\"" );
+            return false;
+        }        
     }
+    else
+    {
+        GUCEF_DEBUG_LOG( LOGLEVEL_NORMAL, "CMsWin32Window::RegisterWindowClass(): A window class is already registered with name \"" + windowClassName + "\", skipping registration" );
+    }
+
     return true;
 }
 
