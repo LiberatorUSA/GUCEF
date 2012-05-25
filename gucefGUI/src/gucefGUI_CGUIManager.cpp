@@ -143,6 +143,31 @@ CGUIManager::GetGuiDriver( const CString& guiDriverName )
 
 /*-------------------------------------------------------------------------*/
 
+UInt32
+CGUIManager::GetGuiDriverCount( void ) const
+{GUCEF_TRACE;
+
+    return (UInt32) m_guiDrivers.size();
+}
+
+/*-------------------------------------------------------------------------*/
+
+CGUIManager::TDriverNameSet
+CGUIManager::GetGuiDriverList( void ) const
+{GUCEF_TRACE;
+
+    TDriverNameSet driverList;
+    TGUIDriverMap::const_iterator i = m_guiDrivers.begin();    
+    while ( i != m_guiDrivers.end() )
+    {
+        driverList.insert( (*i).first );
+        ++i;
+    }
+    return driverList;
+}
+
+/*-------------------------------------------------------------------------*/
+
 void
 CGUIManager::RegisterGenericFormFactory( const CString& formTypeName   ,
                                          TConcreteFormFactory* factory )

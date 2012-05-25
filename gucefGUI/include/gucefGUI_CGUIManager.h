@@ -87,7 +87,9 @@ class GUCEF_GUI_PUBLIC_CPP CGUIManager : public CORE::CObservingNotifier
     public:
     
     typedef CFormFactory::TConcreteFactory TConcreteFormFactory;
-    typedef std::set< CString > TFormTypeSet;
+    typedef std::set< CString > TStringSet;
+    typedef TStringSet TFormTypeSet;
+    typedef TStringSet TDriverNameSet;
         
     TGuiContextPtr CreateGUIContext( const CString& guiDriverName    ,
                                      TWindowContextPtr windowContext );
@@ -115,6 +117,10 @@ class GUCEF_GUI_PUBLIC_CPP CGUIManager : public CORE::CObservingNotifier
     void UnregisterGUIDriverByName( const CString& guiDriverName );
     
     CGUIDriver* GetGuiDriver( const CString& guiDriverName );
+    
+    TDriverNameSet GetGuiDriverList( void ) const;
+
+    UInt32 GetGuiDriverCount( void ) const;
     
     private:
     friend class CGuiGlobal;    

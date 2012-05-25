@@ -34,7 +34,7 @@
 #endif /* GUCEF_CORE_CTSHAREDPTR_H ? */
 
 #ifndef GUCEF_IMAGE_CPIXELMAP_H
-#include "CPixelMap.h"
+#include "gucefIMAGE_CPixelMap.h"
 #define GUCEF_IMAGE_CPIXELMAP_H
 #endif /* GUCEF_IMAGE_CPIXELMAP_H ? */
 

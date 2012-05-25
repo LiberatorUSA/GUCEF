@@ -31,10 +31,10 @@
 #define GUCEF_IMAGE_MACROS_H
 #endif /* GUCEF_IMAGE_MACROS_H ? */
 
-#ifndef IMAGEDATA_H
-#include "imagedata.h"               /* C-style shared header for image related types */
-#define IMAGEDATA_H
-#endif /* IMAGEDATA_H ? */
+#ifndef GUCEF_IMAGE_IMAGEDATA_H
+#include "gucefIMAGE_imagedata.h"               /* C-style shared header for image related types */
+#define GUCEF_IMAGE_IMAGEDATA_H
+#endif /* GUCEF_IMAGE_IMAGEDATA_H ? */
 
 /*-------------------------------------------------------------------------//
 //                                                                         //

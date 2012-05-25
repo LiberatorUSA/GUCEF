@@ -36,7 +36,7 @@
 #define GUCEF_CORE_CMFILEACCESS_H
 #endif /* GUCEF_CORE_CMFILEACCESS_H ? */
 
-#include "CPixelMap.h"
+#include "gucefIMAGE_CPixelMap.h"
 
 /*-------------------------------------------------------------------------//
 //                                                                         //

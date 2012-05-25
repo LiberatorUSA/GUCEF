@@ -29,11 +29,11 @@
 #endif /* GUCEF_CORE_CCODECREGISTRY_H ? */
 
 #ifndef GUCEF_IMAGE_CIMGCODEC_H
-#include "CIMGCodec.h"
+#include "gucefIMAGE_CIMGCodec.h"
 #define GUCEF_IMAGE_CIMGCODEC_H
 #endif /* GUCEF_IMAGE_CIMGCODEC_H ? */
 
-#include "CImage.h"       /* Header for this class */
+#include "gucefIMAGE_CImage.h"       /* Header for this class */
 
 /*-------------------------------------------------------------------------//
 //                                                                         //
@@ -310,7 +310,7 @@ CImage::Load( CORE::CIOAccess& data         ,
 {GUCEF_TRACE;
 
     // Find an image codec using the file extension
-    CORE::CCodecRegistry::TCodecFamilyRegistryPtr codecRegistry = CORE::CCodecRegistry::Instance()->Lookup( "ImageCodec" );
+    CORE::CCodecRegistry::TCodecFamilyRegistryPtr codecRegistry = CORE::CCoreGlobal::Instance()->GetCodecRegistry().Lookup( "ImageCodec" );
     if ( 0 != codecRegistry )
     {
         CORE::CCodecRegistry::TICodecPtr codec = codecRegistry->Lookup( dataType );

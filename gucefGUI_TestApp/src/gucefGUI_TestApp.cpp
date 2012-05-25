@@ -103,6 +103,11 @@
 #define GUCEF_INPUT_CINPUTGLOBAL_H
 #endif /* GUCEF_INPUT_CINPUTGLOBAL_H ? */
 
+#ifndef GUCEF_IMAGE_CIMAGEGLOBAL_H
+#include "gucefIMAGE_CImageGlobal.h"
+#define GUCEF_IMAGE_CIMAGEGLOBAL_H
+#endif /* GUCEF_IMAGE_CIMAGEGLOBAL_H ? */
+
 /*-------------------------------------------------------------------------//
 //                                                                         //
 //      NAMESPACE                                                          //
@@ -437,6 +442,67 @@ LoadFonts( GUI::TGuiContextPtr guiContext )
 
 /*-------------------------------------------------------------------------*/
 
+void
+ConfigAssets( void )
+{
+    // The following determines the path to our test data. Note that this makes assumptions about the archive paths
+    CORE::CString assetDir = CORE::RelativePath( "$MODULEDIR$" );
+    assetDir = assetDir.SubstrToSubstr( "trunk" );
+    CORE::AppendToPath( assetDir, "trunk\\dependencies\\libRocket\\Samples\\assets" );
+    VFS::CVfsGlobal::Instance()->GetVfs().AddRoot( assetDir, "RocketGUISampleAssets", false, false );
+    assetDir = CORE::RelativePath( "$MODULEDIR$" );
+    assetDir = assetDir.SubstrToSubstr( "trunk" );
+    CORE::AppendToPath( assetDir, "trunk\\dependencies\\libRocket\\Samples\\invaders\\data" );
+    VFS::CVfsGlobal::Instance()->GetVfs().AddRoot( assetDir, "RocketGUISampleAssets2", false, false );
+    assetDir = CORE::RelativePath( "$MODULEDIR$" );
+    assetDir = assetDir.SubstrToSubstr( "trunk" );
+    CORE::AppendToPath( assetDir, "trunk\\dependencies\\libRocket\\Samples\\basic\\drag\\data" );
+    VFS::CVfsGlobal::Instance()->GetVfs().AddRoot( assetDir, "RocketGUISampleAssets3", false, false );
+}
+
+/*-------------------------------------------------------------------------*/
+
+bool
+SetupWindowContext( GUI::TWindowManagerBackendPtr windowMngrBackend ,
+                    const GUI::CString& windowMngrBackendName       ,
+                    const GUI::CString& guiDriverToUse              )
+{
+    GUI::CString windowTitle( "gucefGUI_TestAPP " + windowMngrBackendName + " - " + guiDriverToUse + " WindowContext" );
+    GUI::TWindowContextPtr windowContext = windowMngrBackend->CreateWindowContext( windowTitle ,
+                                                                                   800         ,
+                                                                                   600         ,
+                                                                                   false       );
+
+    if ( NULL != windowContext )
+    {
+        GUCEF_LOG( CORE::LOGLEVEL_NORMAL, "Successfully created window context using backend " + windowMngrBackendName );
+
+        // create GUI context for our window
+        GUI::TGuiContextPtr guiContext = GUI::CGuiGlobal::Instance()->GetGuiManager().CreateGUIContext( guiDriverToUse, windowContext );
+        if ( NULL != guiContext )
+        {
+            GUCEF_LOG( CORE::LOGLEVEL_NORMAL, "Successfully created GUI context using backend " + guiDriverToUse );
+
+            // Load some fonts
+            LoadFonts( guiContext );
+
+            // Create a form to load the layout into
+            GUI::CFormEx* form = static_cast< GUI::CFormEx* >( guiContext->CreateForm( "FormEx" ) );
+
+            // load the test layout resource
+            return form->LoadLayoutUsingVfs( "main_menu.rml" );
+        }
+    }
+    else
+    {
+        GUCEF_ERROR_LOG( CORE::LOGLEVEL_NORMAL, "Failed to obtain a window context" );
+    }
+
+    return false;
+}
+
+/*-------------------------------------------------------------------------*/
+
 /*
  *      Application entry point
  */
@@ -455,6 +521,7 @@ GUCEF_OSMAIN_BEGIN
         GUCEF::VFS::CVfsGlobal::Instance();
         GUCEF::GUI::CGuiGlobal::Instance();
         GUCEF::INPUT::CInputGlobal::Instance();
+        GUCEF::IMAGE::CImageGlobal::Instance();
 
         // setup file logger
         CORE::CString logFilename = GUCEF::CORE::RelativePath( "$CURWORKDIR$" );
@@ -471,11 +538,18 @@ GUCEF_OSMAIN_BEGIN
         // flush startup log entries
         CORE::CCoreGlobal::Instance()->GetLogManager().FlushBootstrapLogEntriesToLogs();
 
+        // Create console window for easy test interaction
+        CORE::CPlatformNativeConsoleWindow consoleWindow;
+        consoleWindow.CreateConsole();
+
         bool errorOccured = false;
 
         // Load the config for this test
         if ( !LoadConfig() )
         {
+            CORE::ShowErrorMessage( "Initialization error"                                              ,
+                                    "Failures occured loading the config, will use hardcoded fallbacks" );
+            
             GUCEF_ERROR_LOG( CORE::LOGLEVEL_NORMAL, "Failed to load config, will try hardcoded plugins for test fallback" );
 
             // Load all the plugins we need for this test
@@ -484,6 +558,8 @@ GUCEF_OSMAIN_BEGIN
                 GUCEF_ERROR_LOG( CORE::LOGLEVEL_NORMAL, "Failed to load one or more plugins" );
                 errorOccured = true;
             }
+
+            ConfigAssets();
         }
 
 
@@ -501,57 +577,29 @@ GUCEF_OSMAIN_BEGIN
             if ( NULL != windowMngrBackend )
             {
                 GUCEF_LOG( CORE::LOGLEVEL_NORMAL, "Successfully obtained window manager backend " + windowMngrBackendName );
-
-                GUI::TWindowContextPtr windowContext = windowMngrBackend->CreateWindowContext( "gucefGUI_TestAPP " + windowMngrBackendName + " WindowContext" ,
-                                                                                                800                                                           ,
-                                                                                                600                                                           ,
-                                                                                                false                                                         );
-
-                if ( NULL != windowContext )
+                
+                // Now get a list of all registered GUI drivers
+                bool allFailed = true;
+                GUI::CGUIManager::TDriverNameSet guiDriverList = GUI::CGuiGlobal::Instance()->GetGuiManager().GetGuiDriverList();
+                GUI::CGUIManager::TDriverNameSet::iterator i = guiDriverList.begin();
+                while ( i != guiDriverList.end() )
                 {
-                    GUCEF_LOG( CORE::LOGLEVEL_NORMAL, "Successfully created window context using backend " + windowMngrBackendName );
-
-                    // Create console window for easy test interaction
-                    CORE::CPlatformNativeConsoleWindow consoleWindow;
-                    consoleWindow.CreateConsole();
-
-                    // create GUI context for our window
-                    GUI::TGuiContextPtr guiContext = GUI::CGuiGlobal::Instance()->GetGuiManager().CreateGUIContext( "RocketOpenGL", windowContext );
-
-                    // The following determines the path to our test data. Note that this makes assumptions about the archive paths
-                    CORE::CString assetDir = CORE::RelativePath( "$MODULEDIR$" );
-                    assetDir = assetDir.SubstrToSubstr( "trunk" );
-                    CORE::AppendToPath( assetDir, "trunk\\dependencies\\libRocket\\Samples\\assets" );
-                    VFS::CVfsGlobal::Instance()->GetVfs().AddRoot( assetDir, "RocketGUISampleAssets", false, false );
-                    assetDir = CORE::RelativePath( "$MODULEDIR$" );
-                    assetDir = assetDir.SubstrToSubstr( "trunk" );
-                    CORE::AppendToPath( assetDir, "trunk\\dependencies\\libRocket\\Samples\\invaders\\data" );
-                    VFS::CVfsGlobal::Instance()->GetVfs().AddRoot( assetDir, "RocketGUISampleAssets2", false, false );
-                    assetDir = CORE::RelativePath( "$MODULEDIR$" );
-                    assetDir = assetDir.SubstrToSubstr( "trunk" );
-                    CORE::AppendToPath( assetDir, "trunk\\dependencies\\libRocket\\Samples\\basic\\drag\\data" );
-                    VFS::CVfsGlobal::Instance()->GetVfs().AddRoot( assetDir, "RocketGUISampleAssets3", false, false );
-
-                    // Load some fonts
-                    LoadFonts( guiContext );
-
-                    // Create a form to load the layout into
-                    GUI::CFormEx* form = static_cast< GUI::CFormEx* >( guiContext->CreateForm( "FormEx" ) );
-
-                    // load the test layout resource
-                    if ( form->LoadLayoutUsingVfs( "main_menu.rml" ) )
+                    // Setup a window context for each GUI driver
+                    if ( SetupWindowContext( windowMngrBackend, windowMngrBackendName, (*i) ) )
                     {
-                        CORE::CCoreGlobal::Instance()->GetApplication().main( argc, argv, true );
+                        allFailed = false;
                     }
                     else
                     {
-                        CORE::ShowErrorMessage( "Initialization error"                                                     ,
-                                                GUI::CString( "Failed to load layout assets from " + assetDir ).C_String() );
+                        GUCEF_ERROR_LOG( CORE::LOGLEVEL_IMPORTANT, "Failed to setup a window context for GUI driver " + (*i) );
                     }
+                    ++i;
                 }
-                else
+
+                if ( !allFailed )
                 {
-                    GUCEF_ERROR_LOG( CORE::LOGLEVEL_NORMAL, "Failed to obtain a window context" );
+                    // Run the test app with what we have
+                    CORE::CCoreGlobal::Instance()->GetApplication().main( argc, argv, true );
                 }
             }
             else

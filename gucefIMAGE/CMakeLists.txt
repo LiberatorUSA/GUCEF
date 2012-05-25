@@ -13,25 +13,27 @@
 
 set( HEADER_FILES 
   include/CGUCEFIMAGEModule.h
-  include/CGUIImageCodec.h
-  include/CImage.h
-  include/CIMGCodec.h
-  include/CPixelMap.h
   include/gucefIMAGE.h
   include/gucefIMAGEDLLInit.h
+  include/gucefIMAGE_CGUIImageCodec.h
+  include/gucefIMAGE_CImage.h
+  include/gucefIMAGE_CImageGlobal.h
+  include/gucefIMAGE_CIMGCodec.h
   include/gucefIMAGE_config.h
+  include/gucefIMAGE_CPixelMap.h
   include/gucefIMAGE_ETypes.h
+  include/gucefIMAGE_imagedata.h
   include/gucefIMAGE_macros.h
-  include/imagedata.h
 )
 
 set( SOURCE_FILES 
   src/CGUCEFIMAGEModule.cpp
-  src/CGUIImageCodec.cpp
-  src/CImage.cpp
-  src/CIMGCodec.cpp
-  src/CPixelMap.cpp
   src/gucefIMAGE.cpp
+  src/gucefIMAGE_CGUIImageCodec.cpp
+  src/gucefIMAGE_CImage.cpp
+  src/gucefIMAGE_CImageGlobal.cpp
+  src/gucefIMAGE_CIMGCodec.cpp
+  src/gucefIMAGE_CPixelMap.cpp
 )
 
 # Make sure the PLATFORM_HEADER_FILES variable is always defined

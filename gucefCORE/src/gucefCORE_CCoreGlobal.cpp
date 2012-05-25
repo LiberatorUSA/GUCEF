@@ -128,6 +128,11 @@
 #define GUCEF_CORE_CONFIGSTORE_H
 #endif /* GUCEF_CORE_CONFIGSTORE_H ? */
 
+#ifndef GUCEF_CORE_CCODECREGISTRY_H 
+#include "CCodecRegistry.h"
+#define GUCEF_CORE_CCODECREGISTRY_H
+#endif /* GUCEF_CORE_CCODECREGISTRY_H ? */
+
 #if GUCEF_PLATFORM == GUCEF_PLATFORM_MSWIN
 
   #ifndef GUCEF_CORE_CWNDMSGHOOKNOTIFIER_H
@@ -234,11 +239,17 @@ CCoreGlobal::Initialize( void )
     CTaskDelegator::RegisterEvents();
     CTaskConsumer::RegisterEvents();
     CTaskManager::RegisterEvents();
+    CTONRegistryEvents::RegisterEvents();
 
     #if ( GUCEF_PLATFORM == GUCEF_PLATFORM_LINUX )
-    CX11EventDispatcher::RegisterEvents();
-    #endif
 
+    CX11EventDispatcher::RegisterEvents();
+    
+    #elif ( GUCEF_PLATFORM == GUCEF_PLATFORM_MSWIN )
+    
+    CWndMsgHookNotifier::RegisterEvents();
+    
+    #endif /* GUCEF_PLATFORM == ? */
     /*
      *  Instantiate the rest of the singletons
      */
@@ -252,10 +263,7 @@ CCoreGlobal::Initialize( void )
     m_dstoreCodecPluginManager = new CDStoreCodecPluginManager();
     m_genericPluginManager = new CGenericPluginManager();
     m_stdCodecPluginManager = new CStdCodecPluginManager();
-
-    #if GUCEF_PLATFORM == GUCEF_PLATFORM_MSWIN
-    CWndMsgHookNotifier::RegisterEvents();
-    #endif /* GUCEF_PLATFORM == GUCEF_PLATFORM_MSWIN ? */
+    m_codecRegistry = new CCodecRegistry();
 
     /*
      *      Register some default codecs/handlers
@@ -280,7 +288,9 @@ CCoreGlobal::CCoreGlobal( void )
       m_pluginControl( NULL )              ,
       m_sysConsole( NULL )                 ,
       m_notificationIdRegistry( NULL )     ,
-      m_stdCodecPluginManager( NULL )
+      m_stdCodecPluginManager( NULL )      ,
+      m_configStore( NULL )                ,
+      m_codecRegistry( NULL )
 {GUCEF_TRACE;
 
 }
@@ -320,6 +330,10 @@ CCoreGlobal::~CCoreGlobal()
     m_notificationIdRegistry = NULL;
     delete m_stdCodecPluginManager;
     m_stdCodecPluginManager = NULL;
+    delete m_configStore;
+    m_configStore = NULL;
+    delete m_codecRegistry;
+    m_codecRegistry = NULL;
 
     /*
      *      Very important: Shutdown the memory manager last !!!!!
@@ -456,6 +470,15 @@ CCoreGlobal::GetExclusiveActivationManager( void )
 {GUCEF_TRACE;
 
     return *m_exclusiveActivationManager;
+}
+
+/*-------------------------------------------------------------------------*/
+
+CCodecRegistry&
+CCoreGlobal::GetCodecRegistry( void )
+{GUCEF_TRACE;
+
+    return *m_codecRegistry;
 }
 
 /*-------------------------------------------------------------------------//

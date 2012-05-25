@@ -175,6 +175,20 @@ class GUCEF_CORE_PUBLIC_CPP CDataNode
     UInt32 GetAttCount( void ) const;
 
     /**
+     *  Attempts to locate a named value which can come from either a attribute on the current node
+     *  or from a value field of a child node with the given name and return its value. 
+     *  If value can be found using either method then an empty string is returned.
+     *
+     *  Note that attributes have priority over child value fields. 
+     *  Also note that if multiple children exist with the given name the first located one's value will be used.
+     *  Only use this function if you expect the key/value combo to have a uniqueness constraint.
+     *
+     *  @param name the name of the attribute or child node
+     *  @return the value located using the given name
+     */
+    CString GetAttributeValueOrChildValueByName( const CString& name ) const;
+
+    /**
      *  Attempts to locate a child node with the given name
      *  and return its value. If no such child node exists then
      *  an empty string is returned. Also note that if multiple children exist

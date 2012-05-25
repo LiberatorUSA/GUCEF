@@ -296,37 +296,37 @@ CPluginMetaData::LoadConfig( const CDataNode& treeroot )
     CDataNode* node = treeroot.Search( "PluginMetaData", '/', true );
     if ( 0 != node )
     {
-        CString value = node->GetChildValueByName( "Description" );
+        CString value = node->GetAttributeValueOrChildValueByName( "Description" );
         if ( !value.IsNULLOrEmpty() )
         {
             m_description = value;
         }
-        value = node->GetChildValueByName( "Copyright" );
+        value = node->GetAttributeValueOrChildValueByName( "Copyright" );
         if ( !value.IsNULLOrEmpty() )
         {
             m_copyright = value;
         }
-        value = node->GetChildValueByName( "Path" );
+        value = node->GetAttributeValueOrChildValueByName( "Path" );
         if ( !value.IsNULLOrEmpty() )
         {
             m_modulePath = value;
         }
-        value = node->GetChildValueByName( "Filename" );
+        value = node->GetAttributeValueOrChildValueByName( "Filename" );
         if ( !value.IsNULLOrEmpty() )
         {
             m_moduleFilename = value;
         }
-        value = node->GetChildValueByName( "Version" );
+        value = node->GetAttributeValueOrChildValueByName( "Version" );
         if ( !value.IsNULLOrEmpty() )
         {
             m_version = StringToVersion( value );
         }
-        value = node->GetChildValueByName( "Type" );
+        value = node->GetAttributeValueOrChildValueByName( "Type" );
         if ( !value.IsNULLOrEmpty() )
         {
             m_pluginType = value;
         }
-        value = node->GetChildValueByName( "LoaderLogicType" );
+        value = node->GetAttributeValueOrChildValueByName( "LoaderLogicType" );
         if ( !value.IsNULLOrEmpty() )
         {
             m_loaderLogicTypeName = value;

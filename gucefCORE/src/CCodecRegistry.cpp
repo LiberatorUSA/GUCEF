@@ -41,14 +41,6 @@ namespace CORE {
 
 /*-------------------------------------------------------------------------//
 //                                                                         //
-//      GLOBAL VARS                                                        //
-//                                                                         //
-//-------------------------------------------------------------------------*/
-
-CCodecRegistry* CCodecRegistry::m_instance = NULL;
-
-/*-------------------------------------------------------------------------//
-//                                                                         //
 //      UTILITIES                                                          //
 //                                                                         //
 //-------------------------------------------------------------------------*/
@@ -64,33 +56,6 @@ CCodecRegistry::CCodecRegistry( void )
 CCodecRegistry::~CCodecRegistry()
 {GUCEF_TRACE;
 
-}
-
-/*-------------------------------------------------------------------------*/
-
-CCodecRegistry*
-CCodecRegistry::Instance( void )
-{GUCEF_TRACE;
-    
-    if ( m_instance == NULL )
-    {
-        m_instance = new CCodecRegistry();
-        GUCEF_SYSTEM_LOG( LOGLEVEL_NORMAL, "GUCEF::CORE::CCodecRegistry Singleton created" );
-    }
-    
-    return m_instance;
-}
-
-/*-------------------------------------------------------------------------*/
-
-void
-CCodecRegistry::Deinstance( void )
-{GUCEF_TRACE;
-
-    delete m_instance;
-    m_instance = NULL;
-    
-    GUCEF_SYSTEM_LOG( LOGLEVEL_NORMAL, "GUCEF::CORE::CCodecRegistry Singleton destroyed" );
 }
 
 /*-------------------------------------------------------------------------//

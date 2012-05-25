@@ -39,11 +39,16 @@
 #endif /* GUCEF_CORE_CIOACCESS_H ? */
 
 #ifndef GUCEF_IMAGE_CIMAGE_H
-#include "CImage.h"
+#include "gucefIMAGE_CImage.h"
 #define GUCEF_IMAGE_CIMAGE_H
 #endif /* GUCEF_IMAGE_CIMAGE_H ? */
+
+#ifndef GUCEF_CORE_CFILEACCESS_H
 #include "CFileAccess.h"
-#include "CIMGCodec.h"
+#define GUCEF_CORE_CFILEACCESS_H
+#endif /* GUCEF_CORE_CFILEACCESS_H ? */
+
+#include "gucefIMAGE_CIMGCodec.h"
 
 /*-------------------------------------------------------------------------//
 //                                                                         //

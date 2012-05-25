@@ -1,5 +1,5 @@
 /*
- *  gucefVFS: GUCEF module implementing a Virtual File System
+ *  gucefIMAGE: GUCEF module providing image utilities
  *  Copyright (C) 2002 - 2007.  Dinand Vanvelzen
  *
  *  This library is free software; you can redistribute it and/or
@@ -33,17 +33,12 @@
 #define GUCEF_CORE_CCODECREGISTRY_H
 #endif /* GUCEF_CORE_CCODECREGISTRY_H ? */
 
-#ifndef GUCEF_VFS_CVFS_H
-#include "gucefVFS_CVFS.h"
-#define GUCEF_VFS_CVFS_H
-#endif /* GUCEF_VFS_CVFS_H ? */
+#ifndef GUCEF_IMAGE_CGUIIMAGECODEC_H
+#include "gucefIMAGE_CGUIImageCodec.h"
+#define GUCEF_IMAGE_CGUIIMAGECODEC_H
+#endif /* GUCEF_IMAGE_CGUIIMAGECODEC_H ? */
 
-#ifndef GUCEF_VFS_CVFSURLHANDLER_H
-#include "gucefVFS_CVFSURLHandler.h"     /* URL handler for URL's with protocol "vfs" */
-#define GUCEF_VFS_CVFSURLHANDLER_H
-#endif /* GUCEF_VFS_CVFSURLHANDLER_H ? */
-
-#include "gucefVFS_CVfsGlobal.h"
+#include "gucefIMAGE_CImageGlobal.h"
 
 /*-------------------------------------------------------------------------//
 //                                                                         //
@@ -52,7 +47,7 @@
 //-------------------------------------------------------------------------*/
 
 namespace GUCEF {
-namespace VFS {
+namespace IMAGE {
 
 /*-------------------------------------------------------------------------//
 //                                                                         //
@@ -60,7 +55,7 @@ namespace VFS {
 //                                                                         //
 //-------------------------------------------------------------------------*/
 
-CVfsGlobal* CVfsGlobal::g_instance = NULL;
+CImageGlobal* CImageGlobal::g_instance = NULL;
 
 /*-------------------------------------------------------------------------//
 //                                                                         //
@@ -68,13 +63,13 @@ CVfsGlobal* CVfsGlobal::g_instance = NULL;
 //                                                                         //
 //-------------------------------------------------------------------------*/
 
-CVfsGlobal*
-CVfsGlobal::Instance()
+CImageGlobal*
+CImageGlobal::Instance()
 {GUCEF_TRACE;
 
     if ( NULL == g_instance )
     {
-        g_instance = new CVfsGlobal();
+        g_instance = new CImageGlobal();
         g_instance->Initialize();
     }
     return g_instance;
@@ -83,7 +78,7 @@ CVfsGlobal::Instance()
 /*-------------------------------------------------------------------------*/
 
 void
-CVfsGlobal::Deinstance( void )
+CImageGlobal::Deinstance( void )
 {GUCEF_TRACE;
 
     delete g_instance;
@@ -93,71 +88,57 @@ CVfsGlobal::Deinstance( void )
 /*-------------------------------------------------------------------------*/
 
 void
-CVfsGlobal::Initialize( void )
+CImageGlobal::Initialize( void )
 {GUCEF_TRACE;
 
     // Ensure the Core systems are initialzed first since this module depends on Core
     CORE::CCoreGlobal::Instance();
 
-    GUCEF_SYSTEM_LOG( CORE::LOGLEVEL_NORMAL, "Initializing gucefVFS Global systems" );
+    GUCEF_SYSTEM_LOG( CORE::LOGLEVEL_NORMAL, "Initializing gucefIMAGE Global systems" );
 
-    try
+    CORE::CCodecRegistry& codecRegistry = CORE::CCoreGlobal::Instance()->GetCodecRegistry();
+    CORE::CCodecRegistry::TCodecFamilyRegistryPtr registry; 
+        
+    if ( !codecRegistry.IsRegistered( "ImageCodec" ) )
     {
-        CORE::CCoreGlobal::Instance()->GetCodecRegistry().Register( "VFSPackCodec", new CORE::CCodecRegistry::TCodecFamilyRegistry() );
+        registry = new CORE::CCodecRegistry::TCodecFamilyRegistry();
+        codecRegistry.Register( "ImageCodec", registry );
     }
-    catch ( CORE::CCodecRegistry::EAlreadyRegistered& )
+    else
     {
+        registry = codecRegistry.Lookup( "ImageCodec" );
     }
+
+    // Register the dummy codec for our native format
+    registry->Register( "gui", new CGUIImageCodec() );
+
+    GUCEF_SYSTEM_LOG( CORE::LOGLEVEL_NORMAL, "gucefIMAGE Global systems initialized" );
+}
+
+/*-------------------------------------------------------------------------*/
+
+CImageGlobal::CImageGlobal( void )
+{GUCEF_TRACE;
+
+}
+
+/*-------------------------------------------------------------------------*/
+
+CImageGlobal::~CImageGlobal()
+{GUCEF_TRACE;
+
+    GUCEF_SYSTEM_LOG( CORE::LOGLEVEL_NORMAL, "Shutting down gucefIMAGE global systems" );
+        
+    CORE::CCodecRegistry& codecRegistry = CORE::CCoreGlobal::Instance()->GetCodecRegistry();
+    CORE::CCodecRegistry::TCodecFamilyRegistryPtr registry;
     
-    /*
-     *      Instantiate all singletons
-     */
-    m_vfs = new CVFS();
-    
-    /*
-     *      register all codecs/handlers/notifiers
-     */
-    CVFSURLHandler::Register();
-
-    GUCEF_SYSTEM_LOG( CORE::LOGLEVEL_NORMAL, "gucefVFS Global systems initialized" );
-}
-
-/*-------------------------------------------------------------------------*/
-
-CVfsGlobal::CVfsGlobal( void )
-    : m_vfs( NULL )
-{GUCEF_TRACE;
-
-}
-
-/*-------------------------------------------------------------------------*/
-
-CVfsGlobal::~CVfsGlobal()
-{GUCEF_TRACE;
-
-    GUCEF_SYSTEM_LOG( CORE::LOGLEVEL_NORMAL, "Shutting down gucefVFS global systems" );
-
-    /* 
-     *  Unregister handlers
-     */
-    CVFSURLHandler::Unregister();
-
-    /*
-     *      cleanup all singletons
-     *      Take care to deinstance them in the correct order !!!
-     */
-
-    delete m_vfs;
-    m_vfs = NULL;
-}
-
-/*-------------------------------------------------------------------------*/
-
-CVFS&
-CVfsGlobal::GetVfs( void )
-{GUCEF_TRACE;
-
-    return *m_vfs;
+    if ( codecRegistry.IsRegistered( "ImageCodec" ) )
+    {
+        registry = codecRegistry.Lookup( "ImageCodec" );
+        
+        // unregister the dummy codec for our native format
+        registry->Unregister( "gui" );
+    }
 }
 
 /*-------------------------------------------------------------------------//
@@ -166,7 +147,7 @@ CVfsGlobal::GetVfs( void )
 //                                                                         //
 //-------------------------------------------------------------------------*/
 
-}; /* namespace CORE */
+}; /* namespace IMAGE */
 }; /* namespace GUCEF */
 
 /*-------------------------------------------------------------------------*/

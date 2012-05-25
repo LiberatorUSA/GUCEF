@@ -1,5 +1,5 @@
 /*
- *  gucefCORE: GUCEF module providing O/S abstraction and generic solutions
+ *  gucefIMAGE: GUCEF module providing image utilities
  *  Copyright (C) 2002 - 2007.  Dinand Vanvelzen
  *
  *  This library is free software; you can redistribute it and/or
@@ -14,11 +14,11 @@
  *
  *  You should have received a copy of the GNU Lesser General Public
  *  License along with this library; if not, write to the Free Software
- *  Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA
+ *  Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA 
  */
 
-#ifndef GUCEF_CORE_CCODECREGISTRY_H
-#define GUCEF_CORE_CCODECREGISTRY_H
+#ifndef GUCEF_IMAGE_CIMAGEGLOBAL_H
+#define GUCEF_IMAGE_CIMAGEGLOBAL_H
 
 /*-------------------------------------------------------------------------//
 //                                                                         //
@@ -26,15 +26,10 @@
 //                                                                         //
 //-------------------------------------------------------------------------*/
 
-#ifndef GUCEF_CORE_CTONREGISTRY_H
-#include "CTONRegistry.h"
-#define GUCEF_CORE_CTONREGISTRY_H
-#endif /* GUCEF_CORE_CTONREGISTRY_H ? */
-
-#ifndef GUCEF_CORE_CICODEC_H
-#include "CICodec.h"
-#define GUCEF_CORE_CICODEC_H
-#endif /* GUCEF_CORE_CICODEC_H ? */
+#ifndef GUCEF_IMAGE_MACROS_H
+#include "gucefIMAGE_macros.h"
+#define GUCEF_IMAGE_MACROS_H
+#endif /* GUCEF_IMAGE_MACROS_H ? */
 
 /*-------------------------------------------------------------------------//
 //                                                                         //
@@ -43,7 +38,7 @@
 //-------------------------------------------------------------------------*/
 
 namespace GUCEF {
-namespace CORE {
+namespace IMAGE {
 
 /*-------------------------------------------------------------------------//
 //                                                                         //
@@ -51,31 +46,31 @@ namespace CORE {
 //                                                                         //
 //-------------------------------------------------------------------------*/
 
-class CCoreGlobal;
-
-/*-------------------------------------------------------------------------*/
-
-class GUCEF_CORE_PUBLIC_CPP CCodecRegistry : public CTONRegistry< CTONRegistry< CICodec > >
+/**
+ *  Singular singleton providing access to all global Image systems
+ */
+class GUCEF_IMAGE_EXPORT_CPP CImageGlobal
 {
     public:
 
-    typedef CTONRegistry< CICodec > TCodecFamilyRegistry;
-    typedef CTSharedPtr< TCodecFamilyRegistry > TCodecFamilyRegistryPtr;
-    typedef CTONRegistry< CICodec >::TStringList TStringList;
-    typedef CTONRegistry< CICodec >::TRegisteredObjPtr TICodecPtr;
-
+    static CImageGlobal* Instance( void );
 
     private:
-    friend class CCoreGlobal;
+    friend class CModule;
 
-    CCodecRegistry( void );
-
-    virtual ~CCodecRegistry();
+    static void Deinstance( void );
 
     private:
-    
-    CCodecRegistry( const CCodecRegistry& src );              /**< not implemented, don't use */
-    CCodecRegistry& operator=( const CCodecRegistry& src );   /**< not implemented, don't use */
+
+    CImageGlobal( void );
+
+    ~CImageGlobal();
+
+    void Initialize( void );
+
+    private:
+
+    static CImageGlobal* g_instance;
 };
 
 /*-------------------------------------------------------------------------//
@@ -84,12 +79,12 @@ class GUCEF_CORE_PUBLIC_CPP CCodecRegistry : public CTONRegistry< CTONRegistry< 
 //                                                                         //
 //-------------------------------------------------------------------------*/
 
-}; /* namespace CORE */
+}; /* namespace IMAGE */
 }; /* namespace GUCEF */
 
 /*-------------------------------------------------------------------------*/
 
-#endif /* GUCEF_CORE_CCODECREGISTRY_H ? */
+#endif /* GUCEF_IMAGE_CIMAGEGLOBAL_H ? */
 
 /*-------------------------------------------------------------------------//
 //                                                                         //
@@ -97,7 +92,7 @@ class GUCEF_CORE_PUBLIC_CPP CCodecRegistry : public CTONRegistry< CTONRegistry< 
 //                                                                         //
 //-------------------------------------------------------------------------//
 
-- 20-07-2005 :
+- 16-02-2007 :
         - Dinand: Added this class
 
------------------------------------------------------------------------------*/
+---------------------------------------------------------------------------*/
