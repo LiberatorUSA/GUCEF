@@ -58,6 +58,7 @@ set( ALL_FILES ${HEADER_FILES} ${SOURCE_FILES} ${PLATFORM_HEADER_FILES} ${PLATFO
 set( MODULE_NAME "gucefIMAGE" )
 add_library( ${MODULE_NAME} ${ALL_FILES} )
 add_dependencies( ${MODULE_NAME} gucefCORE gucefMT )
+target_link_libraries( ${MODULE_NAME} gucefCORE gucefMT )
 set_target_properties( ${MODULE_NAME} PROPERTIES COMPILE_DEFINITIONS "GUCEFIMAGE_BUILD_MODULE" )
 
 include_directories( ../common/include ../gucefCORE/include ../gucefMT/include include )

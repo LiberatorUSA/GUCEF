@@ -63,6 +63,11 @@
 #define GUCEF_CORE_DVSTRUTILS_H
 #endif /* GUCEF_CORE_DVSTRUTILS_H ? */
 
+#ifndef GUCEF_COMCORE_CCOMCOREGLOBAL_H
+#include "gucefCOMCORE_CComCoreGlobal.h"
+#define GUCEF_COMCORE_CCOMCOREGLOBAL_H
+#endif /* GUCEF_COMCORE_CCOMCOREGLOBAL_H ? */
+
 #include "CHTTPClient.h"
 
 /*-------------------------------------------------------------------------//
@@ -283,10 +288,10 @@ CHTTPClient::Get( const CORE::CString& host                      ,
     CORE::CString proxyHost;
     UInt16 proxyPort = 80;
     bool systemWideProxyActive = false;
-    COMCORE::CCom::Instance()->GetSystemWideProxyServer( "HTTP"                ,
-                                                         proxyHost             ,
-                                                         proxyPort             ,
-                                                         systemWideProxyActive );
+    COMCORE::CComCoreGlobal::Instance()->GetCom().GetSystemWideProxyServer( "HTTP"                ,
+                                                                            proxyHost             ,
+                                                                            proxyPort             ,
+                                                                            systemWideProxyActive );
     if ( !systemWideProxyActive )
     {
         // no system wide proxy has been set,.. use the local settings

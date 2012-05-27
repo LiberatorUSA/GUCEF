@@ -99,8 +99,11 @@ CImageCodecPluginManager::RegisterPlugin( void* modulePtr                       
         CORE::CStdCodecPlugin::CCodecFamilyList::iterator n = imageCodecList.begin();
         while ( n != imageCodecList.end() )
         {
-            TPluginImageCodecItemPtr codecItem = new CPluginImageCodecItem( plugin, (*n) );
-            registry.Register( codecItem->GetType(), codecItem );
+            if ( !registry.IsRegistered( *n ) )
+            {
+                TPluginImageCodecItemPtr codecItem = new CPluginImageCodecItem( plugin, (*n) );
+                registry.Register( codecItem->GetType(), codecItem );
+            }
             ++n;
         }
 

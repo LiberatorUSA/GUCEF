@@ -313,13 +313,28 @@ CIniParser::IsCharIndexWithinQuotes( const CString& testString ,
     
     // go through string identifying quoted sections as we go and checking whether
     // this encompasses the char given
-    Int32 firstQuoteIndex = -1;
+    Int32 quoteIndex = -1;
     bool firstQuoteFound = false;
+    bool quoteFound = false;
     for ( UInt32 i=0; i<testString.Length(); ++i )
     {
+        if ( charIndex >= i && !firstQuoteFound )
+        {
+            // there was no quotation char until now and we are at
+            // the search char thus it logically cannot be between quotes
+            quotationStartIndex = -1;
+            quotationEndIndex = -1;
+            return false;
+        }
+        
         if ( testString[ i ] == '\"' )
         {
             if ( !firstQuoteFound )
+            {
+                firstQuoteFound = true;
+            }
+            
+            if ( !quoteFound )
             {
                 if ( i > charIndex )
                 {
@@ -329,8 +344,8 @@ CIniParser::IsCharIndexWithinQuotes( const CString& testString ,
                     quotationEndIndex = -1;
                     return false;
                 }                
-                firstQuoteFound = true;
-                firstQuoteIndex = i;
+                quoteFound = true;
+                quoteIndex = i;
             }
             else
             {
@@ -338,11 +353,11 @@ CIniParser::IsCharIndexWithinQuotes( const CString& testString ,
                 if ( i > charIndex )
                 {
                     // this is an enclosing quotation section
-                    quotationStartIndex = firstQuoteIndex;
+                    quotationStartIndex = quoteIndex;
                     quotationEndIndex = i;
                     return true;
                 }
-                firstQuoteFound = false;
+                quoteFound = false;
             }
         }
     }
@@ -466,7 +481,7 @@ CIniParser::LoadFrom( CIOAccess& fileAccess )
                     {
                         // we found a semicolon which is not contained within a quotation
                         // thus this is a commentary section which we should remove
-                        line = line.CutChars( line.Length()-(commentaryIndex+1), false ).Trim( false );
+                        line = line.CutChars( line.Length()-commentaryIndex, false ).Trim( false );
                     }
                 }
             
