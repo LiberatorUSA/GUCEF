@@ -92,7 +92,7 @@ class GUCEF_CORE_PUBLIC_CPP CStdCodecPlugin : public CICodecPlugin
 
     virtual const CString& GetClassTypeName( void ) const;
 
-    private:
+    protected:
 
     CStdCodecPlugin( const CStdCodecPlugin& src );            /**< not implemented */
     CStdCodecPlugin& operator=( const CStdCodecPlugin& src ); /**< not implemented */
