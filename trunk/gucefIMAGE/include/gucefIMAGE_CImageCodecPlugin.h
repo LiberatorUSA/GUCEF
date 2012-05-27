@@ -78,11 +78,11 @@ class GUCEF_IMAGE_EXPORT_CPP CImageCodecPlugin : public CORE::CStdCodecPlugin
     virtual bool Encode( const CImage& inputImage       ,
                          CORE::CIOAccess& encodedOutput ,
                          const CString& typeName        );
-                     
+
     virtual bool Decode( CORE::CIOAccess& encodedInput ,
                          CImage& outputImage           ,
                          const CString& typeName       );
-                 
+
     virtual bool Encode( CORE::CIOAccess& source ,
                          CORE::CIOAccess& dest   ,
                          const CString& typeName );
@@ -92,11 +92,9 @@ class GUCEF_IMAGE_EXPORT_CPP CImageCodecPlugin : public CORE::CStdCodecPlugin
                          const CString& typeName );
 
     private:
-    
+
     CImageCodecPlugin( const CImageCodecPlugin& src );            /**< not implemented */
     CImageCodecPlugin& operator=( const CImageCodecPlugin& src ); /**< not implemented */
-
-    bool IsLoaded( void ) const;
 
     private:
 
