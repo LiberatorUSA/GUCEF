@@ -108,6 +108,7 @@ CLogSvcClient::CLogSvcClient( CORE::CPulseGenerator& pulseGenerator )
 CLogSvcClient::~CLogSvcClient()
 {GUCEF_TRACE;
 
+    Close();
 }
 
 /*-------------------------------------------------------------------------*/

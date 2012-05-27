@@ -192,11 +192,11 @@ CImageCodecPlugin::Encode( const CImage& inputImage       ,
    
     TImage* cStyleImage = inputImage.CreateCStyleAccess();
     
-    bool success = ( 0 != ( (TIMGCODECPLUGFPTR_EncodeImage) m_fpTable[ ICPLUGINFUNCPTR_ENCODEIMAGE ] )( m_pluginData                 , 
-                                                                                                        NULL                         , 
-                                                                                                        typeName.C_String()          ,
-                                                                                                        cStyleImage                  ,
-                                                                                                        encodedOutput.CStyleAccess() ) );
+    bool success = ( 0 != ( (TIMGCODECPLUGFPTR_EncodeImage) m_icFuncPointers[ ICPLUGINFUNCPTR_ENCODEIMAGE ] )( m_pluginData                 , 
+                                                                                                               NULL                         , 
+                                                                                                               typeName.C_String()          ,
+                                                                                                               cStyleImage                  ,
+                                                                                                               encodedOutput.CStyleAccess() ) );
     inputImage.FreeCStyleAccess( cStyleImage );
 
     return success;
@@ -213,16 +213,16 @@ CImageCodecPlugin::Decode( CORE::CIOAccess& encodedInput ,
      TImage* cStyleImage = NULL;
      void* cStyleImageData = NULL;
 
-     if ( 0 != ( (TIMGCODECPLUGFPTR_DecodeImage) m_fpTable[ ICPLUGINFUNCPTR_DECODEIMAGE ] )( m_pluginData                 , 
-                                                                                             NULL                         , 
-                                                                                             typeName.C_String()          ,
-                                                                                             encodedInput.CStyleAccess()  ,
-                                                                                             &cStyleImage                 ,
-                                                                                             &cStyleImageData             ) )
+     if ( 0 != ( (TIMGCODECPLUGFPTR_DecodeImage) m_icFuncPointers[ ICPLUGINFUNCPTR_DECODEIMAGE ] )( m_pluginData                 , 
+                                                                                                    NULL                         , 
+                                                                                                    typeName.C_String()          ,
+                                                                                                    encodedInput.CStyleAccess()  ,
+                                                                                                    &cStyleImage                 ,
+                                                                                                    &cStyleImageData             ) )
     {
         outputImage.Assign( *cStyleImage );
 
-        ( (TIMGCODECPLUGFPTR_FreeImageStorage) m_fpTable[ ICPLUGINFUNCPTR_FREEIMAGESTORAGE ] )( cStyleImage, cStyleImageData );
+        ( (TIMGCODECPLUGFPTR_FreeImageStorage) m_icFuncPointers[ ICPLUGINFUNCPTR_FREEIMAGESTORAGE ] )( cStyleImage, cStyleImageData );
 
         return true;
     }

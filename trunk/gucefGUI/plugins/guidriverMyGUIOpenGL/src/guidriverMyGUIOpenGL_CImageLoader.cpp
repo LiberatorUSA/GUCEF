@@ -70,7 +70,7 @@ CImageLoader::~CImageLoader()
 /*-------------------------------------------------------------------------*/
 
 MyGUI::PixelFormat
-CImageLoader::ConvertPixelFormat( IMAGE::CImage::TPixelMapPtr pixelMap )
+CImageLoader::ConvertPixelFormat( IMAGE::TPixelMapPtr pixelMap )
 {
     if ( pixelMap->GetPixelChannelSize() == 1 )
     {
@@ -116,13 +116,6 @@ CImageLoader::loadImage( int& _width                  ,
                          const std::string& _filename )
 {GUCEF_TRACE;
 
-    char* bla = new char[ 256*256*3 ];
-    memset( bla, 255, 256*256*3 );
-_width = 256;
-                    _height = 256;
-    _format = MyGUI::PixelFormat( MyGUI::PixelFormat::R8G8B8 );
-    return bla;
-
     CORE::CString dataType = CORE::ExtractFileExtention( _filename ).Lowercase();
     
     VFS::CVFS& vfs = VFS::CVfsGlobal::Instance()->GetVfs();
@@ -135,7 +128,7 @@ _width = 256;
                          dataType              ) )
         {
             // We don't care about mipmapping or frames, get 0,0
-            IMAGE::CImage::TPixelMapPtr pixelMap = image.GetPixelMap( 0, 0 );
+            IMAGE::TPixelMapPtr pixelMap = image.GetPixelMap( 0, 0 );
             if ( 0 != pixelMap )
             {
                 // Translate pixel format enum and convert as needed
@@ -144,7 +137,7 @@ _width = 256;
                 {
                     // We have our data, release to MyGui, it takes ownership
                     _width = (int) pixelMap->GetWidthInPixels();
-                    _height = (int) pixelMap->GetHeightInBytes();
+                    _height = (int) pixelMap->GetHeightInPixels();
 
                     return pixelMap->RelinquishPixelDataOwnership();
                 }

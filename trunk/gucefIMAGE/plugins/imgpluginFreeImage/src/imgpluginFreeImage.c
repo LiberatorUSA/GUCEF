@@ -106,7 +106,6 @@ static char* supportedTypes[] = {
     "targa"  ,
     "tiff"   ,
     "wbmp"   ,
-    "bmp"    ,
     "psd"    ,
     "cut"    ,
     "xbm"    ,
@@ -117,7 +116,7 @@ static char* supportedTypes[] = {
     "sgi"
 };
 
-static const UInt32 codecCount = sizeof( supportedTypes ) / sizeof(char*); // 32;
+static const UInt32 codecCount = sizeof( supportedTypes ) / sizeof(char*); // 31;
 
 /*-------------------------------------------------------------------------//
 //                                                                         //
@@ -622,7 +621,8 @@ IMGCODECPLUGIN_FreeImageStorage( TImage* image   ,
 
         /* free the image access structures */
         UInt32 i;
-        for ( i=0; i<image->imageInfo.nrOfFramesInImage; ++i )
+        UInt32 frameCount = image->imageInfo.nrOfFramesInImage;
+        for ( i=0; i<frameCount; ++i )
         {
             TImageFrame* frame = &image->frames[ i ];
             free( frame->mipmapLevel );
@@ -631,7 +631,7 @@ IMGCODECPLUGIN_FreeImageStorage( TImage* image   ,
         free( image );
 
         /* free the actual FreeImage image storage */
-        for ( i=0; i<image->imageInfo.nrOfFramesInImage; ++i )
+        for ( i=0; i<frameCount; ++i )
         {
             TFreeImageDataLink* imageDataLink = &allImageDataLinks->links[ i ];
             FreeImage_Unload( imageDataLink->fiData );
@@ -740,6 +740,7 @@ IMGCODECPLUGIN_DecodeImage( void* pluginData      ,
             image = (TImage*) malloc( sizeof( TImage ) );
 
             /* build the TImageInfo section */
+            image->version = GUCEF_IMAGE_TIMAGE_VERSION;
             image->imageInfo.version = GUCEF_IMAGE_TIMAGEINFO_VERSION;
             image->imageInfo.nrOfFramesInImage = frameCount = (UInt32) 1; /* @TODO: multiple frames are not supported atm */
 
@@ -748,6 +749,7 @@ IMGCODECPLUGIN_DecodeImage( void* pluginData      ,
             for ( i=0; i<frameCount; ++i )
             {
                 TImageFrame* frame = &image->frames[ i ];
+                frame->version = GUCEF_IMAGE_TIMAGEFRAME_VERSION;
                 frame->frameInfo.version = GUCEF_IMAGE_TIMAGEFRAMEINFO_VERSION;
                 frame->frameInfo.nrOfMipmapLevels = mipmapCount = (UInt32) 1; /* @TODO: mip-mapping is not supported atm */
 
@@ -756,11 +758,14 @@ IMGCODECPLUGIN_DecodeImage( void* pluginData      ,
                 for ( n=0; n<mipmapCount; ++n )
                 {
                     TImageMipMapLevel* mipmapLevel = &frame->mipmapLevel[ n ];
+                    mipmapLevel->version = GUCEF_IMAGE_TIMAGEMIPMAPLEVEL_VERSION;
                     mipmapLevel->mipLevelInfo.version = GUCEF_IMAGE_TIMAGEMIPMAPLEVELINFO_VERSION;
                     mipmapLevel->mipLevelInfo.frameHeight = FreeImage_GetHeight( dib );
                     mipmapLevel->mipLevelInfo.frameWidth = FreeImage_GetWidth( dib );
                     mipmapLevel->mipLevelInfo.pixelComponentDataType = ConvertToPCDT( fit );
                     mipmapLevel->mipLevelInfo.pixelStorageFormat = ConvertToPSF( fit, colourType );
+                    mipmapLevel->pixelData = NULL;
+                    mipmapLevel->pixelDataSizeInBytes = 0;
                 }
             }
 
@@ -783,6 +788,7 @@ IMGCODECPLUGIN_DecodeImage( void* pluginData      ,
 
                     /* @TODO: note that GetBits/dib needs to be something else once we support frames/mipmapping */
                     mipmapLevel->pixelData = FreeImage_GetBits( dib );
+                    mipmapLevel->pixelDataSizeInBytes = ( FreeImage_GetBPP( dib ) / 8 ) * mipmapLevel->mipLevelInfo.frameWidth * mipmapLevel->mipLevelInfo.frameHeight; 
                     dataLink->pixelData = mipmapLevel->pixelData;
                     dataLink->fiData = dib;
 
@@ -791,6 +797,8 @@ IMGCODECPLUGIN_DecodeImage( void* pluginData      ,
             }
 
             /* we successfully loaded and processed the image */
+            *imageOutput = image;
+            *imageData = imageDataLinks;
             return 1;
         }
     }
