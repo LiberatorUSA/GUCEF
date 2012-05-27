@@ -109,6 +109,18 @@ CImageLoader::ConvertPixelFormat( IMAGE::TPixelMapPtr pixelMap )
 
 /*-------------------------------------------------------------------------*/
 
+IMAGE::TPixelStorageFormat
+CImageLoader::TranslatePixelFormat( const MyGUI::PixelFormat myGuiPixelFormat )
+{
+    if ( myGuiPixelFormat == MyGUI::PixelFormat( MyGUI::PixelFormat::R8G8B8 ) ) return IMAGE::PSF_RGB;
+    if ( myGuiPixelFormat == MyGUI::PixelFormat( MyGUI::PixelFormat::R8G8B8A8 ) ) return IMAGE::PSF_RGBA;
+    if ( myGuiPixelFormat == MyGUI::PixelFormat( MyGUI::PixelFormat::L8 ) ) return IMAGE::PSF_SINGLE_CHANNEL_LUMINANCE;
+    if ( myGuiPixelFormat == MyGUI::PixelFormat( MyGUI::PixelFormat::L8A8 ) ) return IMAGE::PSF_LUMINANCE_ALPHA;
+    return IMAGE::PSF_UNKNOWN;
+}
+
+/*-------------------------------------------------------------------------*/
+
 void*
 CImageLoader::loadImage( int& _width                  ,
                          int& _height                 ,
@@ -157,7 +169,24 @@ CImageLoader::saveImage( int _width                   ,
                          void* _texture               ,
                          const std::string& _filename )
 {
+    CORE::CString dataType = CORE::ExtractFileExtention( _filename ).Lowercase();
+    
+    VFS::CVFS& vfs = VFS::CVfsGlobal::Instance()->GetVfs();
+    VFS::CVFS::CVFSHandlePtr filePtr = vfs.GetFile( _filename, "wb" );
 
+    if ( 0 != filePtr )
+    {
+        IMAGE::TPixelMapPtr pixelMap = new IMAGE::CPixelMap( _texture                         , 
+                                                             _width                           ,
+                                                             _height                          ,
+                                                             TranslatePixelFormat( _format )  ,
+                                                             MT::DATATYPE_UINT8               );
+        
+        IMAGE::CImage image;
+        image.Assign( pixelMap );
+        image.Save( *filePtr->GetAccess() ,
+                    dataType              );
+    }
 }
 
 /*-------------------------------------------------------------------------//

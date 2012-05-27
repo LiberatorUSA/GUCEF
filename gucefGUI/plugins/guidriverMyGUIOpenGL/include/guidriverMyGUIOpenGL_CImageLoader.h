@@ -83,6 +83,8 @@ class GUCEF_MYGUIGL_EXPORT_CPP CImageLoader : public MyGUI::OpenGLImageLoader
     CImageLoader( const CImageLoader& src );
     CImageLoader& operator=( const CImageLoader& src );
 
+    IMAGE::TPixelStorageFormat TranslatePixelFormat( const MyGUI::PixelFormat myGuiPixelFormat );
+
     MyGUI::PixelFormat ConvertPixelFormat( IMAGE::TPixelMapPtr pixelMap );
 };
 
