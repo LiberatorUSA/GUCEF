@@ -436,6 +436,37 @@ CImage::Load( CORE::CIOAccess& data         ,
     return false;
 }
 
+/*-------------------------------------------------------------------------*/
+
+bool
+CImage::Save( CORE::CIOAccess& data         ,
+              const CORE::CString& dataType )
+{GUCEF_TRACE;
+
+    CImageCodecRegistry::TImageCodecPtr imageCodec;
+    if ( CImageGlobal::Instance()->GetImageCodecRegistry().TryLookup( dataType, imageCodec, false ) )
+    {
+        // We have found a codec we can use, now try to save the data
+        return imageCodec->Encode( *this ,
+                                   data  );
+    }
+
+    // Since no codec was found with the extended image interface we will see if we can use a codec with the basic interface
+    CORE::CCodecRegistry::TCodecFamilyRegistryPtr codecRegistry;
+    if ( CORE::CCoreGlobal::Instance()->GetCodecRegistry().TryLookup( "ImageCodec", codecRegistry, true ) )
+    {
+        CORE::CCodecRegistry::TICodecPtr codec;
+        if ( codecRegistry->TryLookup( dataType, codec, false ) )
+        {
+            // We have found a codec we can use, now try to save the data
+            CIMGCodec codecUtil( codec );
+            return codecUtil.Encode( *this ,
+                                     data  );
+        }
+    }
+    return false;
+}
+
 /*-------------------------------------------------------------------------//
 //                                                                         //
 //      NAMESPACE                                                          //
