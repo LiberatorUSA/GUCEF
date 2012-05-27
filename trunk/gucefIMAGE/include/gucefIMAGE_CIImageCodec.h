@@ -14,12 +14,12 @@
  *
  *  You should have received a copy of the GNU Lesser General Public
  *  License along with this library; if not, write to the Free Software
- *  Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA 
+ *  Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA
  */
 
 #ifndef GUCEF_IMAGE_CIIMAGECODEC_H
 #define GUCEF_IMAGE_CIIMAGECODEC_H
- 
+
 /*-------------------------------------------------------------------------//
 //                                                                         //
 //      INCLUDES                                                           //
@@ -30,6 +30,11 @@
 #include "CICodec.h"
 #define GUCEF_CORE_CICODEC_H
 #endif /* GUCEF_CORE_CICODEC_H ? */
+
+#ifndef GUCEF_CORE_CTSHAREDPTR_H
+#include "CTSharedPtr.h"
+#define GUCEF_CORE_CTSHAREDPTR_H
+#endif /* GUCEF_CORE_CTSHAREDPTR_H ? */
 
 #ifndef GUCEFIMAGE_MACROS_H
 #include "gucefIMAGE_macros.h"       /* module macro's */
@@ -63,18 +68,18 @@ class ::GUCEF::CORE::CIOAccess;
 class GUCEF_IMAGE_EXPORT_CPP CIImageCodec : public CORE::CICodec
 {
     public:
-    
+
     CIImageCodec( void );
-    
+
     CIImageCodec( const CIImageCodec& src );
-    
+
     virtual ~CIImageCodec();
-    
+
     CIImageCodec& operator=( const CIImageCodec& src );
 
     virtual bool Encode( const CImage& inputImage       ,
                          CORE::CIOAccess& encodedOutput ) = 0;
-                     
+
     virtual bool Decode( CORE::CIOAccess& encodedInput ,
                          CImage& outputImage           ) = 0;
 };

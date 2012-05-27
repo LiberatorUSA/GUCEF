@@ -153,7 +153,7 @@ CImage::Assign( const TImage& cStyleImage )
     for ( UInt32 i=0; i<frameCount; ++i )
     {
         const TImageFrame* frame = &cStyleImage.frames[ i ];
-        
+
         UInt32 mipMapCount = frame->frameInfo.nrOfMipmapLevels;
         TMipMapList mipmapList;
         mipmapList.reserve( mipMapCount );
@@ -176,6 +176,41 @@ CImage::CreateCStyleAccess( void ) const
 {GUCEF_TRACE;
 
     TImage* cStyleImage = new TImage;
+    cStyleImage->version = GUCEF_IMAGE_TIMAGE_VERSION;
+    cStyleImage->imageInfo.nrOfFramesInImage = m_frameList.size();
+    cStyleImage->imageInfo.version = GUCEF_IMAGE_TIMAGEINFO_VERSION;
+    cStyleImage->frames = new TImageFrame[ m_frameList.size() ];
+
+    TFrameList::const_iterator n = m_frameList.begin();
+    for ( UInt32 i=0; i<m_frameList.size(); ++i )
+    {
+        TImageFrame* frame = &cStyleImage->frames[ i ];
+        const TMipMapList& cppFrame = (*n);
+
+        frame->version = GUCEF_IMAGE_TIMAGEFRAME_VERSION;
+        frame->frameInfo.version = GUCEF_IMAGE_TIMAGEFRAMEINFO_VERSION;
+        frame->frameInfo.nrOfMipmapLevels = cppFrame.size();
+        frame->mipmapLevel = new TImageMipMapLevel[ frame->frameInfo.nrOfMipmapLevels ];
+
+        TMipMapList::const_iterator m = cppFrame.begin();
+        for ( UInt32 p=0; p<cppFrame.size(); ++p )
+        {
+            TImageMipMapLevel* mipmapLevel = &frame->mipmapLevel[ p ];
+            TPixelMapPtr pixelMap = (*m);
+
+            mipmapLevel->version = GUCEF_IMAGE_TIMAGEMIPMAPLEVEL_VERSION;
+            mipmapLevel->mipLevelInfo.version = GUCEF_IMAGE_TIMAGEMIPMAPLEVELINFO_VERSION;
+            mipmapLevel->mipLevelInfo.pixelComponentDataType = (Int32) pixelMap->GetPixelComponentDataType();
+            mipmapLevel->mipLevelInfo.pixelStorageFormat = (Int32) pixelMap->GetPixelStorageFormat();
+            mipmapLevel->mipLevelInfo.frameWidth = pixelMap->GetWidthInPixels();
+            mipmapLevel->mipLevelInfo.frameHeight = pixelMap->GetHeightInPixels();
+            mipmapLevel->pixelDataSizeInBytes = pixelMap->GetTotalSizeInBytes();
+            mipmapLevel->pixelData = pixelMap->GetDataPtr();
+
+            ++m;
+        }
+        ++n;
+    }
 
 
     return cStyleImage;
@@ -189,8 +224,8 @@ CImage::FreeCStyleAccess( TImage* cStyleImage ) const
 
     for ( UInt32 i=0; i<cStyleImage->imageInfo.nrOfFramesInImage; ++i )
     {
-        TImageFrame* frame = &cStyleImage->frames[ i ];      
-        delete frame->mipmapLevel;    
+        TImageFrame* frame = &cStyleImage->frames[ i ];
+        delete frame->mipmapLevel;
     }
     delete cStyleImage->frames;
     delete cStyleImage;
@@ -254,7 +289,8 @@ CImage::SetFrame( TMipMapList& imageFrame           ,
 
 CImage::~CImage()
 {GUCEF_TRACE;
-        Clear();
+
+    Clear();
 }
 
 /*-------------------------------------------------------------------------*/
