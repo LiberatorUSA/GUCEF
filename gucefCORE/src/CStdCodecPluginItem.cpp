@@ -170,6 +170,16 @@ CStdCodecPluginItem::GetFamilyName( void ) const
     return m_codecLink->codecFamily;
 }
 
+/*-------------------------------------------------------------------------*/
+
+const CString&
+CStdCodecPluginItem::GetClassTypeName( void ) const
+{GUCEF_TRACE;
+
+    static CString classTypeName = "GUCEF::CORE::CStdCodecPluginItem";
+    return classTypeName;
+}
+
 /*-------------------------------------------------------------------------//
 //                                                                         //
 //      NAMESPACE                                                          //

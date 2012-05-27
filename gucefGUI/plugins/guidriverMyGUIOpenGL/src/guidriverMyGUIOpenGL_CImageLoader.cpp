@@ -116,6 +116,13 @@ CImageLoader::loadImage( int& _width                  ,
                          const std::string& _filename )
 {GUCEF_TRACE;
 
+    char* bla = new char[ 256*256*3 ];
+    memset( bla, 255, 256*256*3 );
+_width = 256;
+                    _height = 256;
+    _format = MyGUI::PixelFormat( MyGUI::PixelFormat::R8G8B8 );
+    return bla;
+
     CORE::CString dataType = CORE::ExtractFileExtention( _filename ).Lowercase();
     
     VFS::CVFS& vfs = VFS::CVfsGlobal::Instance()->GetVfs();

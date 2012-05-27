@@ -103,6 +103,21 @@ namespace GUCEF
 #define GUCEF_IMAGE_CIMGCODEC_H
 #endif /* GUCEF_IMAGE_CIMGCODEC_H ? */
 
+#ifndef GUCEF_IMAGE_CIMAGECODECPLUGINMANAGER_H
+#include "gucefIMAGE_CImageCodecPluginManager.h"
+#define GUCEF_IMAGE_CIMAGECODECPLUGINMANAGER_H
+#endif /* GUCEF_IMAGE_CIMAGECODECPLUGINMANAGER_H ? */
+
+#ifndef GUCEF_IMAGE_CIMAGECODECREGISTRY_H
+#include "gucefIMAGE_CImageCodecRegistry.h"
+#define GUCEF_IMAGE_CIMAGECODECREGISTRY_H
+#endif /* GUCEF_IMAGE_CIMAGECODECREGISTRY_H ? */
+
+#ifndef GUCEF_IMAGE_CIMAGEGLOBAL_H
+#include "gucefIMAGE_CImageGlobal.h"
+#define GUCEF_IMAGE_CIMAGEGLOBAL_H
+#endif /* GUCEF_IMAGE_CIMAGEGLOBAL_H ? */
+
 #endif /* __cplusplus ? */
 /*--------------------------------------------------------------------------*/
 

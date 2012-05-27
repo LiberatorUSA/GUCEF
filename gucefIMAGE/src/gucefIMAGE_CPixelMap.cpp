@@ -53,6 +53,20 @@ namespace IMAGE {
 //                                                                         //
 //-------------------------------------------------------------------------*/
 
+CPixelMap::CPixelMap( const TImageMipMapLevel& mipmapLevel )
+    : m_pixelComponentDataType( (TBuildinDataType) mipmapLevel.mipLevelInfo.pixelComponentDataType ) ,
+      m_pixelStorageFormat( (TPixelStorageFormat) mipmapLevel.mipLevelInfo.pixelStorageFormat )      ,
+      m_heightInPixels( mipmapLevel.mipLevelInfo.frameHeight )                                       ,
+      m_widthInPixels( mipmapLevel.mipLevelInfo.frameWidth )                                         ,
+      m_pixelMapData( NULL )
+{GUCEF_TRACE;
+
+    m_pixelMapData = new UInt8[ mipmapLevel.pixelDataSizeInBytes ];
+    memcpy( m_pixelMapData, mipmapLevel.pixelData, mipmapLevel.pixelDataSizeInBytes );
+}
+
+/*------------------------------------------------------------------------*/
+
 CPixelMap::CPixelMap( const void* pixelMapData                      , 
                       const UInt32 widthInPixels                    ,
                       const UInt32 heightInPixels                   ,

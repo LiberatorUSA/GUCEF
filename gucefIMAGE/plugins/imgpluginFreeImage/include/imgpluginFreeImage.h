@@ -89,11 +89,17 @@ namespace IMAGE {
 extern "C" {
 #endif
 
+/*
+ *  This module has the generic codec API as well as the expanded image codec API
+ *  We start with the generic codec API below.
+ */
+
 /*---------------------------------------------------------------------------*/
 
 GUCEF_CODEC_EXPORT_C UInt32 GUCEF_PLUGIN_CALLSPEC_PREFIX
-CODECPLUGIN_Init( void** plugdata    , 
-                  const char*** args ) GUCEF_PLUGIN_CALLSPEC_SUFFIX;
+CODECPLUGIN_Init( void** plugdata   , 
+                  const int argc    ,
+                  const char** argv ) GUCEF_PLUGIN_CALLSPEC_SUFFIX;
 
 /*---------------------------------------------------------------------------*/
 
@@ -145,6 +151,52 @@ CODECPLUGIN_FreeCodecIterator( void* plugdata ,
 GUCEF_CODEC_EXPORT_C UInt32 GUCEF_PLUGIN_CALLSPEC_PREFIX
 CODECPLUGIN_GetCodecSetNextItem( void* plugdata ,
                                  void* iterator ) GUCEF_PLUGIN_CALLSPEC_SUFFIX;
+
+/*---------------------------------------------------------------------------*/
+
+/*
+ *  Below is the image codec API which expands upon the generic codec API
+ */
+
+/*---------------------------------------------------------------------------*/
+
+/*
+ *  
+ *  Note that when using this image codec API the Codec Family is always "ImageCodec"
+ *  For images decoded using this function you need to use 
+ *      IMGCODECPLUGIN_FreeImageStorage
+ *  to deallocate the memory after you are done with the image
+ */
+GUCEF_CODEC_EXPORT_C UInt32 GUCEF_PLUGIN_CALLSPEC_PREFIX
+IMGCODECPLUGIN_DecodeImage( void* pluginData      ,
+                            void* codecData       ,
+                            const char* codecType ,   
+                            TIOAccess* input      ,
+                            TImage** imageOutput  ,
+                            void** imageData      );
+
+/*---------------------------------------------------------------------------*/
+
+/*
+ *  
+ *  Note that when using this image codec API the Codec Family is always "ImageCodec"
+ */
+GUCEF_CODEC_EXPORT_C UInt32 GUCEF_PLUGIN_CALLSPEC_PREFIX
+IMGCODECPLUGIN_EncodeImage( void* pluginData      ,
+                            void* codecData       ,
+                            const char* codecType ,
+                            TImage* inputImage    ,
+                            TIOAccess* output     );
+
+/*---------------------------------------------------------------------------*/
+
+/*
+ *  
+ *  Note that when using this image codec API the Codec Family is always "ImageCodec"
+ */
+GUCEF_CODEC_EXPORT_C UInt32 GUCEF_PLUGIN_CALLSPEC_PREFIX
+IMGCODECPLUGIN_FreeImageStorage( TImage* image   ,
+                                 void* imageData );
 
 /*---------------------------------------------------------------------------*/
 

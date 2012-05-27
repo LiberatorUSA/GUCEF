@@ -139,6 +139,16 @@ CStdCodecPlugin::GetModulePointer( void )
 
 /*-------------------------------------------------------------------------*/
 
+const CString&
+CStdCodecPlugin::GetClassTypeName( void ) const
+{GUCEF_TRACE;
+
+    static const CString classTypeName = "GUCEF::CORE::CStdCodecPlugin";
+    return classTypeName;
+}
+
+/*-------------------------------------------------------------------------*/
+
 void
 CStdCodecPlugin::LinkCodecSet( void )
 {GUCEF_TRACE;

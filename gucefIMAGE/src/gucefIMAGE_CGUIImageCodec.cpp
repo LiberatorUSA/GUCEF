@@ -137,6 +137,16 @@ CGUIImageCodec::Clone( void ) const
     return new CGUIImageCodec( *this );
 }
 
+/*-------------------------------------------------------------------------*/
+
+const CString&
+CGUIImageCodec::GetClassTypeName( void ) const
+{GUCEF_TRACE;
+
+    static CString classTypeName = "GUCEF::IMAGE::CGUIImageCodec";
+    return classTypeName;
+}
+
 /*-------------------------------------------------------------------------//
 //                                                                         //
 //      NAMESPACE                                                          //

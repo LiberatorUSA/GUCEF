@@ -46,6 +46,11 @@ namespace IMAGE {
 //                                                                         //
 //-------------------------------------------------------------------------*/
 
+class CImageCodecPluginManager;
+class CImageCodecRegistry;
+
+/*-------------------------------------------------------------------------*/
+
 /**
  *  Singular singleton providing access to all global Image systems
  */
@@ -54,6 +59,10 @@ class GUCEF_IMAGE_EXPORT_CPP CImageGlobal
     public:
 
     static CImageGlobal* Instance( void );
+
+    CImageCodecPluginManager& GetImageCodecPluginManager( void );
+
+    CImageCodecRegistry& GetImageCodecRegistry( void );
 
     private:
     friend class CModule;
@@ -70,6 +79,9 @@ class GUCEF_IMAGE_EXPORT_CPP CImageGlobal
 
     private:
 
+    CImageCodecPluginManager* m_imageCodecPluginManager;
+    CImageCodecRegistry* m_imageCodecRegistry;
+    
     static CImageGlobal* g_instance;
 };
 

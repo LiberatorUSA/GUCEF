@@ -1,0 +1,12 @@
+<ModuleInfoEntry>
+    <Module Name="gucefIMAGE" Type="SharedLibrary" Platform="All">
+        <Dependencies>
+            <Dependency Name="gucefHeaders" />
+            <Dependency Name="gucefMT" />
+            <Dependency Name="gucefCORE" />
+        </Dependencies>
+        <Preprocessor>
+            <Define String="GUCEFIMAGE_BUILD_MODULE" />
+        </Preprocessor>
+    </Module>
+</ModuleInfoEntry>

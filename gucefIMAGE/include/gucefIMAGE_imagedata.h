@@ -141,6 +141,7 @@ struct SImageMipMapLevel
     UInt32 version;                     /**< version of the TImageInfo definition */
     TImageMipMapLevelInfo mipLevelInfo; /**< information about the mipmap level and it's data */
     void* pixelData;                    /**< array with the actual pixel data */
+    UInt32 pixelDataSizeInBytes;        /**< size of the pixel data buffer in bytes */
 };
 
 typedef struct SImageMipMapLevel TImageMipMapLevel;

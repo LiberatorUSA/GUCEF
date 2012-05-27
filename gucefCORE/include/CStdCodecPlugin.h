@@ -90,6 +90,8 @@ class GUCEF_CORE_PUBLIC_CPP CStdCodecPlugin : public CICodecPlugin
 
     virtual bool Unlink( void );
 
+    virtual const CString& GetClassTypeName( void ) const;
+
     private:
 
     CStdCodecPlugin( const CStdCodecPlugin& src );            /**< not implemented */
@@ -109,7 +111,7 @@ class GUCEF_CORE_PUBLIC_CPP CStdCodecPlugin : public CICodecPlugin
 
     bool Unlink( bool forceEvenIfInUse );
 
-    private:
+    protected:
 
     CCodecSet m_codecSet;
     CCodecList m_codecList;
