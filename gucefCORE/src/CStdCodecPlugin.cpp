@@ -82,7 +82,7 @@ enum
 
 /*-------------------------------------------------------------------------*/
 
-typedef UInt32 ( GUCEF_PLUGIN_CALLSPEC_PREFIX *TCODECPLUGFPTR_Init ) ( void** plugdata, const char*** args ) GUCEF_PLUGIN_CALLSPEC_SUFFIX;
+typedef UInt32 ( GUCEF_PLUGIN_CALLSPEC_PREFIX *TCODECPLUGFPTR_Init ) ( void** plugdata, const int argc, const char** argv ) GUCEF_PLUGIN_CALLSPEC_SUFFIX;
 typedef UInt32 ( GUCEF_PLUGIN_CALLSPEC_PREFIX *TCODECPLUGFPTR_Shutdown ) ( void* plugdata ) GUCEF_PLUGIN_CALLSPEC_SUFFIX;
 typedef const char* ( GUCEF_PLUGIN_CALLSPEC_PREFIX *TCODECPLUGFPTR_Copyright ) ( void* plugdata ) GUCEF_PLUGIN_CALLSPEC_SUFFIX;
 typedef TVersion ( GUCEF_PLUGIN_CALLSPEC_PREFIX *TCODECPLUGFPTR_Version ) ( void* plugdata ) GUCEF_PLUGIN_CALLSPEC_SUFFIX;
@@ -133,7 +133,7 @@ CStdCodecPlugin::GetMetaData( void )
 void*
 CStdCodecPlugin::GetModulePointer( void )
 {GUCEF_TRACE;
-    
+
     return m_soHandle;
 }
 
@@ -357,7 +357,7 @@ CStdCodecPlugin::GetVersion( void ) const
         return ( (TCODECPLUGFPTR_Version) m_fpTable[ STDCODEC_VERSION ] )( m_pluginData );
     }
 
-    TVersion defaultVersion = { -1, -1, -1, -1 }; 
+    TVersion defaultVersion = { -1, -1, -1, -1 };
     return defaultVersion;
 }
 
@@ -432,7 +432,7 @@ CStdCodecPlugin::Link( void* modulePtr                   ,
     m_soHandle = modulePtr;
 
     // We will now try to initialize the module
-    if ( ( (TCODECPLUGFPTR_Init) m_fpTable[ STDCODEC_INIT ] )( &m_pluginData, NULL ) == 0 )
+    if ( ( (TCODECPLUGFPTR_Init) m_fpTable[ STDCODEC_INIT ] )( &m_pluginData, 0, NULL ) == 0 )
     {
         m_soHandle = NULL;
         memset( m_fpTable, 0, STDCODEC_FUNCTIONTABLESIZE );
@@ -443,7 +443,7 @@ CStdCodecPlugin::Link( void* modulePtr                   ,
     GUCEF_SYSTEM_LOG( LOGLEVEL_NORMAL, "StdCodecPlugin: Successfully loaded module and invoked Init() using module: " + PointerToString( modulePtr ) );
 
     // Copy the given metadata and update it with info from the actual module
-    m_metaData = new CPluginMetaData( *pluginMetaData );                 
+    m_metaData = new CPluginMetaData( *pluginMetaData );
     m_metaData->SetDescription( GetDescription() );
     m_metaData->SetCopyright( GetCopyright() );
     m_metaData->SetVersion( GetVersion() );
@@ -472,7 +472,7 @@ CStdCodecPlugin::Unlink( bool forceEvenIfInUse )
 
     // Check if we have something to unload
     if ( m_soHandle == NULL ) return true;
-    
+
     if ( !forceEvenIfInUse )
     {
         // Check for outstanding references to our codec's

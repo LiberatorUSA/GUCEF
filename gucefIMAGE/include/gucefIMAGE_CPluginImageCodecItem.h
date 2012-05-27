@@ -14,12 +14,12 @@
  *
  *  You should have received a copy of the GNU Lesser General Public
  *  License along with this library; if not, write to the Free Software
- *  Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA 
+ *  Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA
  */
 
 #ifndef GUCEF_IMAGE_CPLUGINIMAGECODECITEM_H
 #define GUCEF_IMAGE_CPLUGINIMAGECODECITEM_H
- 
+
 /*-------------------------------------------------------------------------//
 //                                                                         //
 //      INCLUDES                                                           //
@@ -27,9 +27,14 @@
 //-------------------------------------------------------------------------*/
 
 #ifndef GUCEF_IMAGE_CIIMAGECODEC_H
-#include "gucefIMAGE_CIImageCodec.h" 
+#include "gucefIMAGE_CIImageCodec.h"
 #define GUCEF_IMAGE_CIIMAGECODEC_H
 #endif /* GUCEF_IMAGE_CIIMAGECODEC_H ? */
+
+#ifndef GUCEF_IMAGE_CIMAGECODECPLUGIN_H
+#include "gucefIMAGE_CImageCodecPlugin.h"
+#define GUCEF_IMAGE_CIMAGECODECPLUGIN_H
+#endif /* GUCEF_IMAGE_CIMAGECODECPLUGIN_H ? */
 
 /*-------------------------------------------------------------------------//
 //                                                                         //
@@ -47,49 +52,52 @@ namespace IMAGE {
 //-------------------------------------------------------------------------*/
 
 /**
- *  Implemented the IImageCodec interface by redirecting the calls to 
- *  an GucefImageCodecPlugin plugin module
+ *  Implements the IImageCodec interface by redirecting the calls to
+ *  a GucefImageCodecPlugin plugin module
  */
-class GUCEF_IMAGE_EXPORT_CPP CPluginImageCodecItem : public CIImageCodec
+class CPluginImageCodecItem : public CIImageCodec
 {
     public:
-    
+
     /**
-     *  Constructs and links the conversion object
      *
-     *  @throw EInvalidCodec thrown if the given codec is not of the "ImageCodec" family
      */
-    CPluginImageCodecItem( const CCodecPtr& codecPtr );
-    
+    CPluginImageCodecItem( TImageCodecPluginPtr pluginPtr ,
+                           const CString& codecTypeName   );
+
     CPluginImageCodecItem( const CPluginImageCodecItem& src );
-    
+
     virtual ~CPluginImageCodecItem();
-    
-    CPluginImageCodecItem& operator=( const CPluginImageCodecItem& src );
 
     virtual bool Encode( const CImage& inputImage       ,
                          CORE::CIOAccess& encodedOutput );
-                     
+
     virtual bool Decode( CORE::CIOAccess& encodedInput ,
                          CImage& outputImage           );
-                 
+
     virtual bool Encode( CORE::CIOAccess& source ,
                          CORE::CIOAccess& dest   );
 
     virtual bool Decode( CORE::CIOAccess& source ,
                          CORE::CIOAccess& dest   );
-                 
+
     virtual CORE::CString GetFamilyName( void ) const;
-    
+
     virtual CORE::CString GetType( void ) const;
-    
+
+    virtual const CString& GetClassTypeName( void ) const;
+
+    virtual CORE::CICloneable* Clone( void ) const;
+
     private:
-    
+
     CPluginImageCodecItem( void );
-    
+    CPluginImageCodecItem& operator=( const CPluginImageCodecItem& src );
+
     private:
-    
-    CCodecPtr m_codecPtr;
+
+    TImageCodecPluginPtr m_pluginPtr;
+    CString m_codecTypeName;
 };
 
 /*-------------------------------------------------------------------------*/

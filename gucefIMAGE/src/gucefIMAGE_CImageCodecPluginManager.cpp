@@ -33,6 +33,21 @@
 #define GUCEF_IMAGE_CIMAGECODECPLUGIN_H
 #endif /* GUCEF_IMAGE_CIMAGECODECPLUGIN_H ? */
 
+#ifndef GUCEF_IMAGE_CPLUGINIMAGECODECITEM_H
+#include "gucefIMAGE_CPluginImageCodecItem.h"
+#define GUCEF_IMAGE_CPLUGINIMAGECODECITEM_H
+#endif /* GUCEF_IMAGE_CPLUGINIMAGECODECITEM_H ? */
+
+#ifndef GUCEF_IMAGE_CIMAGECODECREGISTRY_H
+#include "gucefIMAGE_CImageCodecRegistry.h"
+#define GUCEF_IMAGE_CIMAGECODECREGISTRY_H
+#endif /* GUCEF_IMAGE_CIMAGECODECREGISTRY_H ? */
+
+#ifndef GUCEF_IMAGE_CIMAGEGLOBAL_H
+#include "gucefIMAGE_CImageGlobal.h"
+#define GUCEF_IMAGE_CIMAGEGLOBAL_H
+#endif /* GUCEF_IMAGE_CIMAGEGLOBAL_H ? */
+
 #include "gucefIMAGE_CImageCodecPluginManager.h"
 
 /*-------------------------------------------------------------------------//
@@ -70,14 +85,27 @@ CImageCodecPluginManager::RegisterPlugin( void* modulePtr                       
                                           CORE::TPluginMetaDataPtr pluginMetaData )
 {GUCEF_TRACE;
 
-    CImageCodecPlugin* plugin = new CImageCodecPlugin();
+    TImageCodecPluginPtr plugin = new CImageCodecPlugin();
     if ( plugin->Link( modulePtr      ,
                        pluginMetaData ) )
     {
+        CImageCodecRegistry& registry = CImageGlobal::Instance()->GetImageCodecRegistry();
+        CORE::CStdCodecPlugin::CCodecList codecList;
+        plugin->GetCodecList( codecList );
+
+        CORE::CStdCodecPlugin::CCodecList::iterator i = codecList.find( CImageCodecPlugin::ImageCodecFamilyName );
+        CORE::CStdCodecPlugin::CCodecFamilyList imageCodecList = (*i).second;
+
+        CORE::CStdCodecPlugin::CCodecFamilyList::iterator n = imageCodecList.begin();
+        while ( n != imageCodecList.end() )
+        {
+            TPluginImageCodecItemPtr codecItem = new CPluginImageCodecItem( plugin, (*n) );
+            registry.Register( codecItem->GetType(), codecItem );
+            ++n;
+        }
+
         return plugin;
     }
-
-    delete plugin;
     return NULL;
 }
 
@@ -87,6 +115,21 @@ void
 CImageCodecPluginManager::UnregisterPlugin( CORE::TPluginPtr plugin )
 {GUCEF_TRACE;
 
+    TImageCodecPluginPtr imageCodecPlugin = plugin.StaticCast< CImageCodecPlugin >();
+
+    CImageCodecRegistry& registry = CImageGlobal::Instance()->GetImageCodecRegistry();
+    CORE::CStdCodecPlugin::CCodecList codecList;
+    imageCodecPlugin->GetCodecList( codecList );
+
+    CORE::CStdCodecPlugin::CCodecList::iterator i = codecList.find( CImageCodecPlugin::ImageCodecFamilyName );
+    CORE::CStdCodecPlugin::CCodecFamilyList imageCodecList = (*i).second;
+
+    CORE::CStdCodecPlugin::CCodecFamilyList::iterator n = imageCodecList.begin();
+    while ( n != imageCodecList.end() )
+    {
+        registry.Unregister( (*n) );
+        ++n;
+    }
 }
 
 /*-------------------------------------------------------------------------*/
