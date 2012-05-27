@@ -17,8 +17,8 @@
  *  Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA
  */
 
-#ifndef GUCEF_CORE_CICODEC_H
-#define GUCEF_CORE_CICODEC_H
+#ifndef GUCEF_IMAGE_CIMAGECODECPLUGINMANAGER_H
+#define GUCEF_IMAGE_CIMAGECODECPLUGINMANAGER_H
 
 /*-------------------------------------------------------------------------//
 //                                                                         //
@@ -28,20 +28,25 @@
 
 #include <vector>
 
-#ifndef GUCEF_CORE_CICLONEABLE_H
-#include "CICloneable.h"
-#define GUCEF_CORE_CICLONEABLE_H
-#endif /* GUCEF_CORE_CICLONEABLE_H ? */
+#ifndef GUCEF_CORE_CPLUGINMANAGER_H
+#include "CPluginManager.h"
+#define GUCEF_CORE_CPLUGINMANAGER_H
+#endif /* GUCEF_CORE_CPLUGINMANAGER_H ? */
 
-#ifndef GUCEF_CORE_CITYPENAMED_H
-#include "CITypeNamed.h"
-#define GUCEF_CORE_CITYPENAMED_H
-#endif /* GUCEF_CORE_CITYPENAMED_H ? */
+#ifndef GUCEF_CORE_CICONFIGURABLE_H
+#include "CIConfigurable.h"
+#define GUCEF_CORE_CICONFIGURABLE_H
+#endif /* GUCEF_CORE_CICONFIGURABLE_H ? */
 
-#ifndef GUCEF_CORE_CDVSTRING_H
-#include "CDVString.h"
-#define GUCEF_CORE_CDVSTRING_H
-#endif /* GUCEF_CORE_CDVSTRING_H ? */
+#ifndef GUCEF_CORE_CVALUELIST_H
+#include "CValueList.h"
+#define GUCEF_CORE_CVALUELIST_H
+#endif /* GUCEF_CORE_CVALUELIST_H ? */
+
+#ifndef GUCEFIMAGE_MACROS_H
+#include "gucefIMAGE_macros.h"       /* module macro's */
+#define GUCEFIMAGE_MACROS_H
+#endif /* GUCEFIMAGE_MACROS_H ? */
 
 /*-------------------------------------------------------------------------//
 //                                                                         //
@@ -50,7 +55,7 @@
 //-------------------------------------------------------------------------*/
 
 namespace GUCEF {
-namespace CORE {
+namespace IMAGE {
 
 /*-------------------------------------------------------------------------//
 //                                                                         //
@@ -58,33 +63,36 @@ namespace CORE {
 //                                                                         //
 //-------------------------------------------------------------------------*/
 
-class CIOAccess;
-
-/*-------------------------------------------------------------------------*/
-
-class GUCEF_CORE_PUBLIC_CPP CICodec : public CICloneable ,
-                                      public CITypeNamed
+/**
+ *  Plugin manager for image codec plugins
+ *  These plugins are a specialization of codec plugins offering an additional API
+ */
+class GUCEF_IMAGE_EXPORT_CPP CImageCodecPluginManager : public CORE::CPluginManager
 {
     public:
 
-    CICodec( void );
+    virtual CString GetPluginType( void ) const;
 
-    CICodec( const CICodec& src );
+    protected:
 
-    CICodec& operator=( const CICodec& src );
+    virtual CORE::TPluginPtr RegisterPlugin( void* modulePtr                         ,
+                                             CORE::TPluginMetaDataPtr pluginMetaData );
 
-    virtual ~CICodec();
+    virtual void UnregisterPlugin( CORE::TPluginPtr plugin );
 
-    virtual bool Encode( CIOAccess& source ,
-                         CIOAccess& dest   ) = 0;
+    private:
+    friend class CImageGlobal;
 
-    virtual bool Decode( CIOAccess& source ,
-                         CIOAccess& dest   ) = 0;
+    CImageCodecPluginManager( void );
 
-    virtual CString GetType( void ) const = 0;
+    virtual ~CImageCodecPluginManager();
 
-    virtual CString GetFamilyName( void ) const = 0;
+    private:
+    
+    CImageCodecPluginManager( const CImageCodecPluginManager& src );            /**< not implemented */
+    CImageCodecPluginManager& operator=( const CImageCodecPluginManager& src ); /**< not implemented */
 };
+
 
 /*-------------------------------------------------------------------------//
 //                                                                         //
@@ -92,12 +100,12 @@ class GUCEF_CORE_PUBLIC_CPP CICodec : public CICloneable ,
 //                                                                         //
 //-------------------------------------------------------------------------*/
 
-}; /* namespace CORE */
+}; /* namespace IMAGE */
 }; /* namespace GUCEF */
 
 /*-------------------------------------------------------------------------*/
 
-#endif /* GUCEF_CORE_CICODEC_H ? */
+#endif /* GUCEF_IMAGE_CIMAGECODECPLUGINMANAGER_H ? */
 
 /*-------------------------------------------------------------------------//
 //                                                                         //
@@ -105,7 +113,7 @@ class GUCEF_CORE_PUBLIC_CPP CICodec : public CICloneable ,
 //                                                                         //
 //-------------------------------------------------------------------------//
 
-- 20-07-2005 :
-        - Dinand: Added this class
+- 27-11-2004 :
+        - Dinand: Initial implementation
 
 -----------------------------------------------------------------------------*/

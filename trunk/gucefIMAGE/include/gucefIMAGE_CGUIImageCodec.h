@@ -79,6 +79,8 @@ class GUCEF_IMAGE_EXPORT_CPP CGUIImageCodec : public CORE::CICodec
     virtual CORE::CString GetType( void ) const;
     
     virtual CORE::CICloneable* Clone( void ) const;
+
+    virtual const CString& GetClassTypeName( void ) const;
 };
 
 /*-------------------------------------------------------------------------//

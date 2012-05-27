@@ -17,8 +17,8 @@
  *  Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA
  */
 
-#ifndef GUCEF_CORE_CICODEC_H
-#define GUCEF_CORE_CICODEC_H
+#ifndef GUCEF_IMAGE_CIMAGECODECPLUGIN_H
+#define GUCEF_IMAGE_CIMAGECODECPLUGIN_H
 
 /*-------------------------------------------------------------------------//
 //                                                                         //
@@ -26,22 +26,15 @@
 //                                                                         //
 //-------------------------------------------------------------------------*/
 
-#include <vector>
+#ifndef GUCEF_CORE_CSTDCODECPLUGIN_H
+#include "CStdCodecPlugin.h"
+#define GUCEF_CORE_CSTDCODECPLUGIN_H
+#endif /* GUCEF_CORE_CSTDCODECPLUGIN_H ? */
 
-#ifndef GUCEF_CORE_CICLONEABLE_H
-#include "CICloneable.h"
-#define GUCEF_CORE_CICLONEABLE_H
-#endif /* GUCEF_CORE_CICLONEABLE_H ? */
-
-#ifndef GUCEF_CORE_CITYPENAMED_H
-#include "CITypeNamed.h"
-#define GUCEF_CORE_CITYPENAMED_H
-#endif /* GUCEF_CORE_CITYPENAMED_H ? */
-
-#ifndef GUCEF_CORE_CDVSTRING_H
-#include "CDVString.h"
-#define GUCEF_CORE_CDVSTRING_H
-#endif /* GUCEF_CORE_CDVSTRING_H ? */
+#ifndef GUCEFIMAGE_MACROS_H
+#include "gucefIMAGE_macros.h"       /* module macro's */
+#define GUCEFIMAGE_MACROS_H
+#endif /* GUCEFIMAGE_MACROS_H ? */
 
 /*-------------------------------------------------------------------------//
 //                                                                         //
@@ -50,7 +43,7 @@
 //-------------------------------------------------------------------------*/
 
 namespace GUCEF {
-namespace CORE {
+namespace IMAGE {
 
 /*-------------------------------------------------------------------------//
 //                                                                         //
@@ -58,33 +51,61 @@ namespace CORE {
 //                                                                         //
 //-------------------------------------------------------------------------*/
 
-class CIOAccess;
+class CImage;
 
 /*-------------------------------------------------------------------------*/
 
-class GUCEF_CORE_PUBLIC_CPP CICodec : public CICloneable ,
-                                      public CITypeNamed
+/**
+ *  Class wrapping the interface towards Image codec plugins
+ *  Image codec plugins provide an additional interface for more efficient
+ *  image based data access.
+ */
+class GUCEF_IMAGE_EXPORT_CPP CImageCodecPlugin : public CORE::CStdCodecPlugin
 {
     public:
 
-    CICodec( void );
+    static const CString ImageCodecFamilyName;
 
-    CICodec( const CICodec& src );
+    CImageCodecPlugin( void );
 
-    CICodec& operator=( const CICodec& src );
+    virtual ~CImageCodecPlugin();
 
-    virtual ~CICodec();
+    virtual bool Link( void* modulePtr                         ,
+                       CORE::TPluginMetaDataPtr pluginMetaData );
 
-    virtual bool Encode( CIOAccess& source ,
-                         CIOAccess& dest   ) = 0;
+    virtual bool Unlink( void );
 
-    virtual bool Decode( CIOAccess& source ,
-                         CIOAccess& dest   ) = 0;
+    virtual bool Encode( const CImage& inputImage       ,
+                         CORE::CIOAccess& encodedOutput ,
+                         const CString& typeName        );
+                     
+    virtual bool Decode( CORE::CIOAccess& encodedInput ,
+                         CImage& outputImage           ,
+                         const CString& typeName       );
+                 
+    virtual bool Encode( CORE::CIOAccess& source ,
+                         CORE::CIOAccess& dest   ,
+                         const CString& typeName );
 
-    virtual CString GetType( void ) const = 0;
+    virtual bool Decode( CORE::CIOAccess& source ,
+                         CORE::CIOAccess& dest   ,
+                         const CString& typeName );
 
-    virtual CString GetFamilyName( void ) const = 0;
+    private:
+    
+    CImageCodecPlugin( const CImageCodecPlugin& src );            /**< not implemented */
+    CImageCodecPlugin& operator=( const CImageCodecPlugin& src ); /**< not implemented */
+
+    bool IsLoaded( void ) const;
+
+    private:
+
+    CORE::TDefaultFuncPtr m_icFuncPointers[ 3 ];
 };
+
+/*-------------------------------------------------------------------------*/
+
+typedef CORE::CTSharedPtr< CImageCodecPlugin > TImageCodecPluginPtr;
 
 /*-------------------------------------------------------------------------//
 //                                                                         //
@@ -92,12 +113,12 @@ class GUCEF_CORE_PUBLIC_CPP CICodec : public CICloneable ,
 //                                                                         //
 //-------------------------------------------------------------------------*/
 
-}; /* namespace CORE */
+}; /* namespace IMAGE */
 }; /* namespace GUCEF */
 
 /*-------------------------------------------------------------------------*/
 
-#endif /* GUCEF_CORE_CICODEC_H ? */
+#endif /* GUCEF_IMAGE_CIMAGECODECPLUGIN_H ? */
 
 /*-------------------------------------------------------------------------//
 //                                                                         //
@@ -105,7 +126,7 @@ class GUCEF_CORE_PUBLIC_CPP CICodec : public CICloneable ,
 //                                                                         //
 //-------------------------------------------------------------------------//
 
-- 20-07-2005 :
-        - Dinand: Added this class
+- 27-11-2004 :
+        - Dinand: Initial implementation
 
 -----------------------------------------------------------------------------*/

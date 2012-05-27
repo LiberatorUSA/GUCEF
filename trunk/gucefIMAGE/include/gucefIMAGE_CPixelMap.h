@@ -26,6 +26,11 @@
 //                                                                         //
 //-------------------------------------------------------------------------*/
 
+#ifndef GUCEF_CORE_CTSHAREDPTR_H
+#include "CTSharedPtr.h"
+#define GUCEF_CORE_CTSHAREDPTR_H
+#endif /* GUCEF_CORE_CTSHAREDPTR_H ? */
+
 #ifndef GUCEF_IMAGE_MACROS_H
 #include "gucefIMAGE_macros.h"       /* module macro's */
 #define GUCEF_IMAGE_MACROS_H
@@ -63,6 +68,8 @@ namespace IMAGE {
 class GUCEF_IMAGE_EXPORT_CPP CPixelMap
 {
     public:
+
+    CPixelMap( const TImageMipMapLevel& mipmapLevel );
     
     CPixelMap( const void* pixelMapData                      , 
                const UInt32 widthInPixels                    ,
@@ -209,6 +216,10 @@ class GUCEF_IMAGE_EXPORT_CPP CPixelMap
     UInt8* m_pixelMapData; 
 };
 
+/*-------------------------------------------------------------------------*/
+
+typedef CORE::CTSharedPtr< CPixelMap > TPixelMapPtr;
+
 /*-------------------------------------------------------------------------//
 //                                                                         //
 //      NAMESPACE                                                          //
@@ -227,6 +238,6 @@ class GUCEF_IMAGE_EXPORT_CPP CPixelMap
 - 16-11-2006 :
         - Dinand: designed and implemented CPixelMap class
 
------------------------------------------------------------------------------*/
+---------------------------------------------------------------------------*/
 
 #endif /* GUCEF_IMAGE_CPIXELMAP_H ? */

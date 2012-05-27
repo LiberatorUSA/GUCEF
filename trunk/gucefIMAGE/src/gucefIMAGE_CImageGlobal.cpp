@@ -38,6 +38,16 @@
 #define GUCEF_IMAGE_CGUIIMAGECODEC_H
 #endif /* GUCEF_IMAGE_CGUIIMAGECODEC_H ? */
 
+#ifndef GUCEF_IMAGE_CIMAGECODECREGISTRY_H
+#include "gucefIMAGE_CImageCodecRegistry.h"
+#define GUCEF_IMAGE_CIMAGECODECREGISTRY_H
+#endif /* GUCEF_IMAGE_CIMAGECODECREGISTRY_H ? */
+
+#ifndef GUCEF_IMAGE_CIMAGECODECPLUGINMANAGER_H
+#include "gucefIMAGE_CImageCodecPluginManager.h"
+#define GUCEF_IMAGE_CIMAGECODECPLUGINMANAGER_H
+#endif /* GUCEF_IMAGE_CIMAGECODECPLUGINMANAGER_H ? */
+
 #include "gucefIMAGE_CImageGlobal.h"
 
 /*-------------------------------------------------------------------------//
@@ -112,12 +122,17 @@ CImageGlobal::Initialize( void )
     // Register the dummy codec for our native format
     registry->Register( "gui", new CGUIImageCodec() );
 
+    m_imageCodecRegistry = new CImageCodecRegistry();
+    m_imageCodecPluginManager = new CImageCodecPluginManager();
+
     GUCEF_SYSTEM_LOG( CORE::LOGLEVEL_NORMAL, "gucefIMAGE Global systems initialized" );
 }
 
 /*-------------------------------------------------------------------------*/
 
 CImageGlobal::CImageGlobal( void )
+    : m_imageCodecPluginManager( NULL ) ,
+      m_imageCodecRegistry( NULL )
 {GUCEF_TRACE;
 
 }
@@ -139,6 +154,29 @@ CImageGlobal::~CImageGlobal()
         // unregister the dummy codec for our native format
         registry->Unregister( "gui" );
     }
+
+    delete m_imageCodecPluginManager;
+    m_imageCodecPluginManager = NULL;
+    delete m_imageCodecRegistry;
+    m_imageCodecRegistry = NULL;
+}
+
+/*-------------------------------------------------------------------------*/
+
+CImageCodecPluginManager&
+CImageGlobal::GetImageCodecPluginManager( void )
+{GUCEF_TRACE;
+
+    return *m_imageCodecPluginManager;
+}
+
+/*-------------------------------------------------------------------------*/
+
+CImageCodecRegistry&
+CImageGlobal::GetImageCodecRegistry( void )
+{GUCEF_TRACE;
+
+    return *m_imageCodecRegistry;
 }
 
 /*-------------------------------------------------------------------------//

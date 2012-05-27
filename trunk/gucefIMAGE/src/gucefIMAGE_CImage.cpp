@@ -33,6 +33,16 @@
 #define GUCEF_IMAGE_CIMGCODEC_H
 #endif /* GUCEF_IMAGE_CIMGCODEC_H ? */
 
+#ifndef GUCEF_IMAGE_CIMAGEGLOBAL_H
+#include "gucefIMAGE_CImageGlobal.h"
+#define GUCEF_IMAGE_CIMAGEGLOBAL_H
+#endif /* GUCEF_IMAGE_CIMAGEGLOBAL_H ? */
+
+#ifndef GUCEF_IMAGE_CIMAGECODECREGISTRY_H
+#include "gucefIMAGE_CImageCodecRegistry.h"
+#define GUCEF_IMAGE_CIMAGECODECREGISTRY_H
+#endif /* GUCEF_IMAGE_CIMAGECODECREGISTRY_H ? */
+
 #include "gucefIMAGE_CImage.h"       /* Header for this class */
 
 /*-------------------------------------------------------------------------//
@@ -132,6 +142,63 @@ CImage::Assign( const TPixelMapPtr& pixelMapPtr )
 /*--------------------------------------------------------------------------*/
 
 void
+CImage::Assign( const TImage& cStyleImage )
+{GUCEF_TRACE;
+
+    // First we clean up our toys
+    Clear();
+
+    // Assign the image data
+    UInt32 frameCount = cStyleImage.imageInfo.nrOfFramesInImage;
+    for ( UInt32 i=0; i<frameCount; ++i )
+    {
+        const TImageFrame* frame = &cStyleImage.frames[ i ];
+        
+        UInt32 mipMapCount = frame->frameInfo.nrOfMipmapLevels;
+        TMipMapList mipmapList;
+        mipmapList.reserve( mipMapCount );
+
+        for ( UInt32 n=0; n<mipMapCount; ++n )
+        {
+            const TImageMipMapLevel* mipMapLevel = &frame->mipmapLevel[ n ];
+            TPixelMapPtr pixelMap = new CPixelMap( *mipMapLevel );
+            mipmapList.push_back( pixelMap );
+        }
+
+        m_frameList.push_back( mipmapList );
+    }
+}
+
+/*--------------------------------------------------------------------------*/
+
+TImage*
+CImage::CreateCStyleAccess( void ) const
+{GUCEF_TRACE;
+
+    TImage* cStyleImage = new TImage;
+
+
+    return cStyleImage;
+}
+
+/*--------------------------------------------------------------------------*/
+
+void
+CImage::FreeCStyleAccess( TImage* cStyleImage ) const
+{GUCEF_TRACE;
+
+    for ( UInt32 i=0; i<cStyleImage->imageInfo.nrOfFramesInImage; ++i )
+    {
+        TImageFrame* frame = &cStyleImage->frames[ i ];      
+        delete frame->mipmapLevel;    
+    }
+    delete cStyleImage->frames;
+    delete cStyleImage;
+}
+
+/*--------------------------------------------------------------------------*/
+
+void
 CImage::AddFrame( TMipMapList& imageFrame )
 {GUCEF_TRACE;
 
@@ -225,7 +292,7 @@ CImage::Clear( void )
 
 /*-------------------------------------------------------------------------*/
 
-CImage::TPixelMapPtr
+TPixelMapPtr
 CImage::GetPixelMap( const UInt32 frameIndex /* = 0 */  ,
                      const UInt32 mipMapLevel /* = 0 */ ) const
 {GUCEF_TRACE;
@@ -309,7 +376,15 @@ CImage::Load( CORE::CIOAccess& data         ,
               const CORE::CString& dataType )
 {GUCEF_TRACE;
 
-    // Find an image codec using the file extension
+    CImageCodecRegistry::TImageCodecPtr imageCodec = CImageGlobal::Instance()->GetImageCodecRegistry().Lookup( dataType );
+    if ( 0 != imageCodec )
+    {
+        // We have found a codec we can use, now try to load the data
+        return imageCodec->Decode( data  ,
+                                   *this );
+    }
+
+    // Since no codec was found with the extended image interface we will see if we can use a codec with the basic interface
     CORE::CCodecRegistry::TCodecFamilyRegistryPtr codecRegistry = CORE::CCoreGlobal::Instance()->GetCodecRegistry().Lookup( "ImageCodec" );
     if ( 0 != codecRegistry )
     {

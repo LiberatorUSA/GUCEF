@@ -67,8 +67,6 @@ class GUCEF_IMAGE_EXPORT_CPP CImage
 {
     public :
 
-    typedef CORE::CTSharedPtr< CImage >    TImagePtr;
-    typedef CORE::CTSharedPtr< CPixelMap > TPixelMapPtr;
     typedef std::vector< TPixelMapPtr >    TMipMapList;
     typedef TMipMapList                    TFrame;
     typedef std::vector< TMipMapList >     TFrameList;
@@ -88,6 +86,8 @@ class GUCEF_IMAGE_EXPORT_CPP CImage
 
     ~CImage();
 
+    void Assign( const TImage& cStyleImage );
+    
     void Assign( const TFrameList& frameList );
     
     void Assign( const TMipMapList& mipmapList );
@@ -135,6 +135,10 @@ class GUCEF_IMAGE_EXPORT_CPP CImage
      *      Unloads image data if needed and resets values to there defaults
      */
     void Clear( void );
+
+    TImage* CreateCStyleAccess( void ) const;
+
+    void FreeCStyleAccess( TImage* cStyleImage ) const;
     
     GUCEF_DEFINE_MSGEXCEPTION( GUCEF_IMAGE_EXPORT_CPP, EInvalidIndex );
 
@@ -146,6 +150,10 @@ class GUCEF_IMAGE_EXPORT_CPP CImage
 
     TFrameList m_frameList;
 };
+
+/*--------------------------------------------------------------------------*/
+
+typedef CORE::CTSharedPtr< CImage >    TImagePtr;
 
 /*-------------------------------------------------------------------------//
 //                                                                         //

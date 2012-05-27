@@ -1,5 +1,5 @@
 /*
- *  gucefCORE: GUCEF module providing O/S abstraction and generic solutions
+ *  gucefIMAGE: GUCEF module providing image utilities
  *  Copyright (C) 2002 - 2007.  Dinand Vanvelzen
  *
  *  This library is free software; you can redistribute it and/or
@@ -14,34 +14,22 @@
  *
  *  You should have received a copy of the GNU Lesser General Public
  *  License along with this library; if not, write to the Free Software
- *  Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA
+ *  Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA 
  */
 
-#ifndef GUCEF_CORE_CICODEC_H
-#define GUCEF_CORE_CICODEC_H
-
+#ifndef GUCEF_IMAGE_CPLUGINIMAGECODECITEM_H
+#define GUCEF_IMAGE_CPLUGINIMAGECODECITEM_H
+ 
 /*-------------------------------------------------------------------------//
 //                                                                         //
 //      INCLUDES                                                           //
 //                                                                         //
 //-------------------------------------------------------------------------*/
 
-#include <vector>
-
-#ifndef GUCEF_CORE_CICLONEABLE_H
-#include "CICloneable.h"
-#define GUCEF_CORE_CICLONEABLE_H
-#endif /* GUCEF_CORE_CICLONEABLE_H ? */
-
-#ifndef GUCEF_CORE_CITYPENAMED_H
-#include "CITypeNamed.h"
-#define GUCEF_CORE_CITYPENAMED_H
-#endif /* GUCEF_CORE_CITYPENAMED_H ? */
-
-#ifndef GUCEF_CORE_CDVSTRING_H
-#include "CDVString.h"
-#define GUCEF_CORE_CDVSTRING_H
-#endif /* GUCEF_CORE_CDVSTRING_H ? */
+#ifndef GUCEF_IMAGE_CIIMAGECODEC_H
+#include "gucefIMAGE_CIImageCodec.h" 
+#define GUCEF_IMAGE_CIIMAGECODEC_H
+#endif /* GUCEF_IMAGE_CIIMAGECODEC_H ? */
 
 /*-------------------------------------------------------------------------//
 //                                                                         //
@@ -50,7 +38,7 @@
 //-------------------------------------------------------------------------*/
 
 namespace GUCEF {
-namespace CORE {
+namespace IMAGE {
 
 /*-------------------------------------------------------------------------//
 //                                                                         //
@@ -58,33 +46,55 @@ namespace CORE {
 //                                                                         //
 //-------------------------------------------------------------------------*/
 
-class CIOAccess;
+/**
+ *  Implemented the IImageCodec interface by redirecting the calls to 
+ *  an GucefImageCodecPlugin plugin module
+ */
+class GUCEF_IMAGE_EXPORT_CPP CPluginImageCodecItem : public CIImageCodec
+{
+    public:
+    
+    /**
+     *  Constructs and links the conversion object
+     *
+     *  @throw EInvalidCodec thrown if the given codec is not of the "ImageCodec" family
+     */
+    CPluginImageCodecItem( const CCodecPtr& codecPtr );
+    
+    CPluginImageCodecItem( const CPluginImageCodecItem& src );
+    
+    virtual ~CPluginImageCodecItem();
+    
+    CPluginImageCodecItem& operator=( const CPluginImageCodecItem& src );
+
+    virtual bool Encode( const CImage& inputImage       ,
+                         CORE::CIOAccess& encodedOutput );
+                     
+    virtual bool Decode( CORE::CIOAccess& encodedInput ,
+                         CImage& outputImage           );
+                 
+    virtual bool Encode( CORE::CIOAccess& source ,
+                         CORE::CIOAccess& dest   );
+
+    virtual bool Decode( CORE::CIOAccess& source ,
+                         CORE::CIOAccess& dest   );
+                 
+    virtual CORE::CString GetFamilyName( void ) const;
+    
+    virtual CORE::CString GetType( void ) const;
+    
+    private:
+    
+    CPluginImageCodecItem( void );
+    
+    private:
+    
+    CCodecPtr m_codecPtr;
+};
 
 /*-------------------------------------------------------------------------*/
 
-class GUCEF_CORE_PUBLIC_CPP CICodec : public CICloneable ,
-                                      public CITypeNamed
-{
-    public:
-
-    CICodec( void );
-
-    CICodec( const CICodec& src );
-
-    CICodec& operator=( const CICodec& src );
-
-    virtual ~CICodec();
-
-    virtual bool Encode( CIOAccess& source ,
-                         CIOAccess& dest   ) = 0;
-
-    virtual bool Decode( CIOAccess& source ,
-                         CIOAccess& dest   ) = 0;
-
-    virtual CString GetType( void ) const = 0;
-
-    virtual CString GetFamilyName( void ) const = 0;
-};
+typedef CORE::CTSharedPtr< CPluginImageCodecItem > TPluginImageCodecItemPtr;
 
 /*-------------------------------------------------------------------------//
 //                                                                         //
@@ -92,12 +102,12 @@ class GUCEF_CORE_PUBLIC_CPP CICodec : public CICloneable ,
 //                                                                         //
 //-------------------------------------------------------------------------*/
 
-}; /* namespace CORE */
+}; /* namespace IMAGE */
 }; /* namespace GUCEF */
 
 /*-------------------------------------------------------------------------*/
 
-#endif /* GUCEF_CORE_CICODEC_H ? */
+#endif /* GUCEF_IMAGE_CPLUGINIMAGECODECITEM_H ? */
 
 /*-------------------------------------------------------------------------//
 //                                                                         //
@@ -108,4 +118,4 @@ class GUCEF_CORE_PUBLIC_CPP CICodec : public CICloneable ,
 - 20-07-2005 :
         - Dinand: Added this class
 
------------------------------------------------------------------------------*/
+---------------------------------------------------------------------------*/

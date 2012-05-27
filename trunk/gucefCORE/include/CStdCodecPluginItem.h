@@ -57,10 +57,10 @@ class CStdCodecPlugin;
 /*-------------------------------------------------------------------------*/
 
 /**
- *  Private class used to redirect from the codec interface to a codec plugin
+ *  class used to redirect from the codec interface to a codec plugin
  *  interface. 
  */
-class CStdCodecPluginItem : public CICodec
+class GUCEF_CORE_PUBLIC_CPP CStdCodecPluginItem : public CICodec
 {
     public:
     
@@ -76,21 +76,24 @@ class CStdCodecPluginItem : public CICodec
     
     virtual CString GetFamilyName( void ) const;
 
-    private:    
+    virtual const CString& GetClassTypeName( void ) const;
+
+    protected:    
     friend class CStdCodecPlugin;
     
     CStdCodecPluginItem( void* pluginData             ,
                          TCodecPluginLink* pluginLink );
-    
-    CStdCodecPluginItem( const CStdCodecPluginItem& src );
-    
-    CStdCodecPluginItem& operator=( const CStdCodecPluginItem& src );
     
     virtual ~CStdCodecPluginItem();
     
     TCodecPluginLink* GetCodecPluginLink( void ) const;
     
     void* GetPluginData( void ) const;
+
+    private:
+
+    CStdCodecPluginItem( const CStdCodecPluginItem& src );              /**< not implemented */
+    CStdCodecPluginItem& operator=( const CStdCodecPluginItem& src );   /**< not implemented */
     
     private:
     

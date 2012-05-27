@@ -17,31 +17,23 @@
  *  Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA
  */
 
-#ifndef GUCEF_CORE_CICODEC_H
-#define GUCEF_CORE_CICODEC_H
-
 /*-------------------------------------------------------------------------//
 //                                                                         //
 //      INCLUDES                                                           //
 //                                                                         //
 //-------------------------------------------------------------------------*/
 
-#include <vector>
+#ifndef GUCEF_CORE_LOGGING_H
+#include "gucefCORE_Logging.h"
+#define GUCEF_CORE_LOGGING_H
+#endif /* GUCEF_CORE_LOGGING_H ? */
 
-#ifndef GUCEF_CORE_CICLONEABLE_H
-#include "CICloneable.h"
-#define GUCEF_CORE_CICLONEABLE_H
-#endif /* GUCEF_CORE_CICLONEABLE_H ? */
+#ifndef GUCEF_IMAGE_CIMAGECODECPLUGIN_H
+#include "gucefIMAGE_CImageCodecPlugin.h"
+#define GUCEF_IMAGE_CIMAGECODECPLUGIN_H
+#endif /* GUCEF_IMAGE_CIMAGECODECPLUGIN_H ? */
 
-#ifndef GUCEF_CORE_CITYPENAMED_H
-#include "CITypeNamed.h"
-#define GUCEF_CORE_CITYPENAMED_H
-#endif /* GUCEF_CORE_CITYPENAMED_H ? */
-
-#ifndef GUCEF_CORE_CDVSTRING_H
-#include "CDVString.h"
-#define GUCEF_CORE_CDVSTRING_H
-#endif /* GUCEF_CORE_CDVSTRING_H ? */
+#include "gucefIMAGE_CImageCodecPluginManager.h"
 
 /*-------------------------------------------------------------------------//
 //                                                                         //
@@ -50,41 +42,61 @@
 //-------------------------------------------------------------------------*/
 
 namespace GUCEF {
-namespace CORE {
+namespace IMAGE {
 
 /*-------------------------------------------------------------------------//
 //                                                                         //
-//      CLASSES                                                            //
+//      UTILITIES                                                          //
 //                                                                         //
 //-------------------------------------------------------------------------*/
 
-class CIOAccess;
+CImageCodecPluginManager::CImageCodecPluginManager( void )
+    : CPluginManager()
+{GUCEF_TRACE;
+
+}
 
 /*-------------------------------------------------------------------------*/
 
-class GUCEF_CORE_PUBLIC_CPP CICodec : public CICloneable ,
-                                      public CITypeNamed
-{
-    public:
+CImageCodecPluginManager::~CImageCodecPluginManager()
+{GUCEF_TRACE;
 
-    CICodec( void );
+}
 
-    CICodec( const CICodec& src );
+/*-------------------------------------------------------------------------*/
 
-    CICodec& operator=( const CICodec& src );
+CORE::TPluginPtr
+CImageCodecPluginManager::RegisterPlugin( void* modulePtr                         ,
+                                          CORE::TPluginMetaDataPtr pluginMetaData )
+{GUCEF_TRACE;
 
-    virtual ~CICodec();
+    CImageCodecPlugin* plugin = new CImageCodecPlugin();
+    if ( plugin->Link( modulePtr      ,
+                       pluginMetaData ) )
+    {
+        return plugin;
+    }
 
-    virtual bool Encode( CIOAccess& source ,
-                         CIOAccess& dest   ) = 0;
+    delete plugin;
+    return NULL;
+}
 
-    virtual bool Decode( CIOAccess& source ,
-                         CIOAccess& dest   ) = 0;
+/*-------------------------------------------------------------------------*/
 
-    virtual CString GetType( void ) const = 0;
+void
+CImageCodecPluginManager::UnregisterPlugin( CORE::TPluginPtr plugin )
+{GUCEF_TRACE;
 
-    virtual CString GetFamilyName( void ) const = 0;
-};
+}
+
+/*-------------------------------------------------------------------------*/
+
+CString
+CImageCodecPluginManager::GetPluginType( void ) const
+{GUCEF_TRACE;
+
+    return "GucefImageCodecPlugin";
+}
 
 /*-------------------------------------------------------------------------//
 //                                                                         //
@@ -92,20 +104,7 @@ class GUCEF_CORE_PUBLIC_CPP CICodec : public CICloneable ,
 //                                                                         //
 //-------------------------------------------------------------------------*/
 
-}; /* namespace CORE */
-}; /* namespace GUCEF */
+} /* namespace IMAGE */
+} /* namespace GUCEF */
 
 /*-------------------------------------------------------------------------*/
-
-#endif /* GUCEF_CORE_CICODEC_H ? */
-
-/*-------------------------------------------------------------------------//
-//                                                                         //
-//      Info & Changes                                                     //
-//                                                                         //
-//-------------------------------------------------------------------------//
-
-- 20-07-2005 :
-        - Dinand: Added this class
-
------------------------------------------------------------------------------*/

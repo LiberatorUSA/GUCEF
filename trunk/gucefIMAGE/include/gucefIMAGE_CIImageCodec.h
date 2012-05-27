@@ -1,5 +1,5 @@
 /*
- *  gucefCORE: GUCEF module providing O/S abstraction and generic solutions
+ *  gucefIMAGE: GUCEF module providing image utilities
  *  Copyright (C) 2002 - 2007.  Dinand Vanvelzen
  *
  *  This library is free software; you can redistribute it and/or
@@ -14,34 +14,27 @@
  *
  *  You should have received a copy of the GNU Lesser General Public
  *  License along with this library; if not, write to the Free Software
- *  Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA
+ *  Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA 
  */
 
-#ifndef GUCEF_CORE_CICODEC_H
-#define GUCEF_CORE_CICODEC_H
-
+#ifndef GUCEF_IMAGE_CIIMAGECODEC_H
+#define GUCEF_IMAGE_CIIMAGECODEC_H
+ 
 /*-------------------------------------------------------------------------//
 //                                                                         //
 //      INCLUDES                                                           //
 //                                                                         //
 //-------------------------------------------------------------------------*/
 
-#include <vector>
+#ifndef GUCEF_CORE_CICODEC_H
+#include "CICodec.h"
+#define GUCEF_CORE_CICODEC_H
+#endif /* GUCEF_CORE_CICODEC_H ? */
 
-#ifndef GUCEF_CORE_CICLONEABLE_H
-#include "CICloneable.h"
-#define GUCEF_CORE_CICLONEABLE_H
-#endif /* GUCEF_CORE_CICLONEABLE_H ? */
-
-#ifndef GUCEF_CORE_CITYPENAMED_H
-#include "CITypeNamed.h"
-#define GUCEF_CORE_CITYPENAMED_H
-#endif /* GUCEF_CORE_CITYPENAMED_H ? */
-
-#ifndef GUCEF_CORE_CDVSTRING_H
-#include "CDVString.h"
-#define GUCEF_CORE_CDVSTRING_H
-#endif /* GUCEF_CORE_CDVSTRING_H ? */
+#ifndef GUCEFIMAGE_MACROS_H
+#include "gucefIMAGE_macros.h"       /* module macro's */
+#define GUCEFIMAGE_MACROS_H
+#endif /* GUCEFIMAGE_MACROS_H ? */
 
 /*-------------------------------------------------------------------------//
 //                                                                         //
@@ -50,7 +43,7 @@
 //-------------------------------------------------------------------------*/
 
 namespace GUCEF {
-namespace CORE {
+namespace IMAGE {
 
 /*-------------------------------------------------------------------------//
 //                                                                         //
@@ -58,33 +51,37 @@ namespace CORE {
 //                                                                         //
 //-------------------------------------------------------------------------*/
 
-class CIOAccess;
+class CImage;
+class ::GUCEF::CORE::CIOAccess;
 
 /*-------------------------------------------------------------------------*/
 
-class GUCEF_CORE_PUBLIC_CPP CICodec : public CICloneable ,
-                                      public CITypeNamed
+/**
+ *  Interface class providing additional functionality expanding upon
+ *  the basic codec functionality
+ */
+class GUCEF_IMAGE_EXPORT_CPP CIImageCodec : public CORE::CICodec
 {
     public:
+    
+    CIImageCodec( void );
+    
+    CIImageCodec( const CIImageCodec& src );
+    
+    virtual ~CIImageCodec();
+    
+    CIImageCodec& operator=( const CIImageCodec& src );
 
-    CICodec( void );
-
-    CICodec( const CICodec& src );
-
-    CICodec& operator=( const CICodec& src );
-
-    virtual ~CICodec();
-
-    virtual bool Encode( CIOAccess& source ,
-                         CIOAccess& dest   ) = 0;
-
-    virtual bool Decode( CIOAccess& source ,
-                         CIOAccess& dest   ) = 0;
-
-    virtual CString GetType( void ) const = 0;
-
-    virtual CString GetFamilyName( void ) const = 0;
+    virtual bool Encode( const CImage& inputImage       ,
+                         CORE::CIOAccess& encodedOutput ) = 0;
+                     
+    virtual bool Decode( CORE::CIOAccess& encodedInput ,
+                         CImage& outputImage           ) = 0;
 };
+
+/*-------------------------------------------------------------------------*/
+
+typedef CORE::CTSharedPtr< CIImageCodec > TImageCodecPtr;
 
 /*-------------------------------------------------------------------------//
 //                                                                         //
@@ -92,12 +89,12 @@ class GUCEF_CORE_PUBLIC_CPP CICodec : public CICloneable ,
 //                                                                         //
 //-------------------------------------------------------------------------*/
 
-}; /* namespace CORE */
+}; /* namespace IMAGE */
 }; /* namespace GUCEF */
 
 /*-------------------------------------------------------------------------*/
 
-#endif /* GUCEF_CORE_CICODEC_H ? */
+#endif /* GUCEF_IMAGE_CIMAGECODEC_H ? */
 
 /*-------------------------------------------------------------------------//
 //                                                                         //
