@@ -118,6 +118,133 @@ using namespace GUCEF;
 
 /*-------------------------------------------------------------------------//
 //                                                                         //
+//      CLASSES                                                            //
+//                                                                         //
+//-------------------------------------------------------------------------*/
+
+class CGucefGuiTestAppSettings : public CORE::CIConfigurable
+{
+    public:
+
+    struct SFormInfo
+    {
+        GUI::CString formTypeName;
+        GUI::CString formResourcePath;
+    };
+    typedef struct SFormInfo TFormInfo;
+
+    private:
+    typedef std::map< GUI::CString, TFormInfo > TFormInfoMap;
+
+
+    GUI::CString m_windowManagerName;
+    TFormInfoMap m_formInfoPerGuiBackend;
+
+    static CGucefGuiTestAppSettings* g_instance;
+    
+    public:
+    
+    const GUI::CString& GetWindowManagerName( void ) const
+    {
+        return m_windowManagerName;
+    }
+
+    TFormInfo GetInitialFormInfoForGuiBackend( const GUI::CString& guiBackendName ) const
+    {
+        TFormInfoMap::const_iterator i = m_formInfoPerGuiBackend.find( guiBackendName );
+        if ( i != m_formInfoPerGuiBackend.end() )
+        {
+            return (*i).second;
+        }
+        
+        return TFormInfo();
+    }
+    
+    static CGucefGuiTestAppSettings* Instance( void )
+    {
+        if ( NULL == g_instance )
+        {
+            g_instance = new CGucefGuiTestAppSettings();
+        }
+        return g_instance;
+    }
+
+    static void Deinstance( void )
+    {
+        delete g_instance;
+        g_instance = NULL;
+    }
+
+    /*-------------------------------------------------------------*/
+
+    virtual bool SaveConfig( CORE::CDataNode& tree ) 
+    {
+        return true;
+    }
+
+    /*-------------------------------------------------------------*/
+
+    virtual bool LoadConfig( const CORE::CDataNode& treeroot )
+    {
+        CORE::CDataNode::TConstDataNodeSet configNodes( treeroot.FindChildrenOfType( "GucefGuiTestAppSettings", true ) );
+        CORE::CDataNode::TConstDataNodeSet::iterator i = configNodes.begin();
+        while ( i != configNodes.end() ) 
+        {
+            const CORE::CDataNode* configNode = (*i);
+        
+            CORE::CString windowManagerName = configNode->GetAttributeValueOrChildValueByName( "WindowManager" );
+            if ( !windowManagerName.IsNULLOrEmpty() )
+            {
+                 m_windowManagerName = windowManagerName;
+            }
+
+            CORE::CDataNode::TConstDataNodeSet formDataNodes( configNode->FindChildrenOfType( "InitialForm", true ) );
+            CORE::CDataNode::TConstDataNodeSet::iterator n = formDataNodes.begin();
+            while ( n != formDataNodes.end() ) 
+            {                
+                const CORE::CDataNode* formInfoNode = (*n);
+                
+                CORE::CString guiBackendName = formInfoNode->GetAttributeValueOrChildValueByName( "GuiBackend" );
+                if ( !guiBackendName.IsNULLOrEmpty() )
+                {
+                     TFormInfo& formInfo = m_formInfoPerGuiBackend[ guiBackendName ];
+                    
+                     formInfo.formTypeName = formInfoNode->GetChildValueByName( "FormTypeName" );
+                     formInfo.formResourcePath = formInfoNode->GetChildValueByName( "FormResource" );
+
+                }
+                ++n;
+            }
+
+            ++i;
+        }
+        return true;
+    }
+
+    /*-------------------------------------------------------------*/
+
+    private:
+
+    CGucefGuiTestAppSettings( void )
+        : CORE::CIConfigurable( true ) 
+    {
+    }
+    
+    virtual ~CGucefGuiTestAppSettings()
+    {
+    }
+};
+
+/*-------------------------------------------------------------------------//
+//                                                                         //
+//      GLOBAL VARS                                                        //
+//                                                                         //
+//-------------------------------------------------------------------------*/
+
+CGucefGuiTestAppSettings* CGucefGuiTestAppSettings::g_instance = NULL;
+
+/*-------------------------------------------------------------------------//
+//                                                                         //
 //      UTILITIES                                                          //
 //                                                                         //
 //-------------------------------------------------------------------------*/
@@ -486,12 +613,14 @@ SetupWindowContext( GUI::TWindowManagerBackendPtr windowMngrBackend ,
             // Load some fonts
             LoadFonts( guiContext );
 
+            CGucefGuiTestAppSettings::TFormInfo formInfo = CGucefGuiTestAppSettings::Instance()->GetInitialFormInfoForGuiBackend( guiDriverToUse );
+
             // Create a form to load the layout into
-            GUI::CFormEx* form = static_cast< GUI::CFormEx* >( guiContext->CreateForm( "FormEx" ) );
+            GUI::CFormEx* form = static_cast< GUI::CFormEx* >( guiContext->CreateForm( formInfo.formTypeName ) );
             if ( NULL != form )
-            {
+            {                             
                 // load the test layout resource
-                return form->LoadLayoutUsingVfs( "main_menu.rml" );
+                return form->LoadLayoutUsingVfs( formInfo.formResourcePath );      
             }
         }
     }
@@ -524,6 +653,7 @@ GUCEF_OSMAIN_BEGIN
         GUCEF::GUI::CGuiGlobal::Instance();
         GUCEF::INPUT::CInputGlobal::Instance();
         GUCEF::IMAGE::CImageGlobal::Instance();
+        CGucefGuiTestAppSettings::Instance();
 
         // setup file logger
         CORE::CString logFilename = GUCEF::CORE::RelativePath( "$CURWORKDIR$" );

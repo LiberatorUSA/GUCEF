@@ -17,8 +17,8 @@
  *  Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA 
  */
 
-#ifndef GUCEF_MYGUI_CGUICONTEXT_H
-#define GUCEF_MYGUI_CGUICONTEXT_H 
+#ifndef GUCEF_GUIDRIVERMYGUI_CGUIDRIVER_H
+#define GUCEF_GUIDRIVERMYGUI_CGUIDRIVER_H
 
 /*-------------------------------------------------------------------------//
 //                                                                         //
@@ -26,25 +26,22 @@
 //                                                                         //
 //-------------------------------------------------------------------------*/
 
-#ifndef GUCEF_INPUT_CINPUTCONTEXT_H
-#include "CInputContext.h"
-#define GUCEF_INPUT_CINPUTCONTEXT_H
-#endif /* GUCEF_INPUT_CINPUTCONTEXT_H ? */
+#include <assert.h>
 
-#ifndef GUCEF_GUI_CIGUICONTEXT_H
-#include "gucefGUI_CIGUIContext.h"
-#define GUCEF_GUI_CIGUICONTEXT_H
-#endif /* GUCEF_GUI_CIGUICONTEXT_H ? */
+#ifndef GUCEF_GUI_CFORMEX_H
+#include "gucefGUI_CFormEx.h"
+#define GUCEF_GUI_CFORMEX_H
+#endif /* GUCEF_GUI_CFORMEX_H ? */
 
 #ifndef GUCEF_GUI_CGUIDRIVER_H
 #include "gucefGUI_CGUIDriver.h"
 #define GUCEF_GUI_CGUIDRIVER_H
 #endif /* GUCEF_GUI_CGUIDRIVER_H ? */
 
-#ifndef GUCEF_MYGUI_MACROS_H
-#include "guceMyGUI_macros.h"     /* often used guceMYGUIOGRE macros */
-#define GUCEF_MYGUI_MACROS_H
-#endif /* GUCEF_MYGUI_MACROS_H ? */
+#ifndef GUCEF_GUIDRIVERMYGUI_CFORMBACKENDIMP_H
+#include "guceMyGUI_CFormBackendImp.h"
+#define GUCEF_GUIDRIVERMYGUI_CFORMBACKENDIMP_H
+#endif /* GUCEF_GUIDRIVERMYGUI_CFORMBACKENDIMP_H ? */
 
 /*-------------------------------------------------------------------------//
 //                                                                         //
@@ -61,17 +58,19 @@ namespace MYGUI {
 //                                                                         //
 //-------------------------------------------------------------------------*/
 
-/**
- *  Implementation of the GUI context for MyGUI
- */
-class GUCEF_MYGUI_EXPORT_CPP CGUIContext : public GUI::CIGUIContext
+class GUCEF_MYGUIGL_EXPORT_CPP CGUIDriver : public GUI::CGUIDriver
 {
-    public:    
+    public:
+
+    CGUIDriver( void );
+
+    virtual ~CGUIDriver();
+  
+    virtual TStringSet GetAvailableFormTypes( void );
     
-    CGUIContext( GUI::CGUIDriver& myGuiDriver       ,
-                 INPUT::CInputContext* inputContext );
+    virtual TStringSet GetAvailableWidgetTypes( void );
     
-    virtual ~CGUIContext();
+    virtual const CString& GetClassTypeName( void ) const;
     
     virtual GUCEF::GUI::CWidget* CreateWidget( const CString& widgetName );
     
@@ -94,18 +93,11 @@ class GUCEF_MYGUI_EXPORT_CPP CGUIContext : public GUI::CIGUIContext
     virtual TWidgetSet GetOwnedWidgets( void );
     
     virtual TFormSet GetOwnedForms( void );
-                               
-    private:
-    
-    CGUIContext( const CGUIContext& src );            
-    CGUIContext& operator=( const CGUIContext& src );
-    
-    private:
 
-    CGUIDriver* m_driver;
-    TWidgetSet m_widgetSet;
-    TFormSet m_formSet;
-    INPUT::CInputContext* m_inputContext;
+    protected:
+
+    TWidgetSet m_widgets;
+    TFormSet m_forms;
 };
 
 /*-------------------------------------------------------------------------//
@@ -114,12 +106,12 @@ class GUCEF_MYGUI_EXPORT_CPP CGUIContext : public GUI::CIGUIContext
 //                                                                         //
 //-------------------------------------------------------------------------*/
 
-} /* namespace MYGUI */
-} /* namespace GUCEF */
+}; /* namespace MYGUI */
+}; /* namespace GUCEF */
 
 /*-------------------------------------------------------------------------*/
 
-#endif /* GUCEF_MYGUI_CGUICONTEXT_H ? */
+#endif /* GUCEF_MYGUIGL_CGUIDRIVERGL_H ? */
 
 /*-------------------------------------------------------------------------//
 //                                                                         //
@@ -127,7 +119,7 @@ class GUCEF_MYGUI_EXPORT_CPP CGUIContext : public GUI::CIGUIContext
 //                                                                         //
 //-------------------------------------------------------------------------//
 
-- 08-04-2007 :
-        - Initial implementation
+- 18-08-2010 :
+        - Dinand: Initial implementation
 
 ---------------------------------------------------------------------------*/

@@ -23,24 +23,12 @@
 //                                                                         //
 //-------------------------------------------------------------------------*/
 
-#include <assert.h>
-
-#ifndef GUCEF_GUI_CFORMEX_H
-#include "gucefGUI_CFormEx.h"
-#define GUCEF_GUI_CFORMEX_H
-#endif /* GUCEF_GUI_CFORMEX_H ? */
-
-#ifndef GUCEF_GUIDRIVERMYGUI_CFORMBACKENDIMP_H
+#ifndef GUCEF_MYGUI_CFORMBACKENDIMP_H
 #include "guceMyGUI_CFormBackendImp.h"
-#define GUCEF_GUIDRIVERMYGUI_CFORMBACKENDIMP_H
-#endif /* GUCEF_GUIDRIVERMYGUI_CFORMBACKENDIMP_H ? */
+#define GUCEF_MYGUI_CFORMBACKENDIMP_H
+#endif /* GUCEF_MYGUI_CFORMBACKENDIMP_H ? */
 
-#ifndef GUCEF_GUIDRIVERMYGUI_CGUIDRIVER_H
 #include "guidriverMyGUI_CGuiDriver.h"
-#define GUCEF_GUIDRIVERMYGUI_CGUIDRIVER_H
-#endif /* GUCEF_GUIDRIVERMYGUI_CGUIDRIVER_H ? */
-
-#include "guceMyGUI_CGUIContext.h"
 
 /*-------------------------------------------------------------------------//
 //                                                                         //
@@ -53,140 +41,110 @@ namespace MYGUI {
 
 /*-------------------------------------------------------------------------//
 //                                                                         //
-//      UTILITIES                                                          //
+//      CLASSES                                                            //
 //                                                                         //
 //-------------------------------------------------------------------------*/
 
-CGUIContext::CGUIContext( CGUIDriver& myGuiDriver            ,
-                          INPUT::CInputContext* inputContext )
-    : GUCEF::GUI::CIGUIContext()     ,
-      m_driver( &myGuiDriver )       ,
-      m_widgetSet()                  ,
-      m_formSet()                    ,
-      m_inputContext( inputContext )
-{GUCEF_TRACE;
-
-    assert( NULL != m_driver );
+CGUIDriver::CGUIDriver( void )
+    : GUI::CGUIDriver() ,
+      m_widgets()       ,
+      m_forms()         ,
+{GUCEF_TRACE;   
 }
 
 /*-------------------------------------------------------------------------*/
 
-CGUIContext::~CGUIContext()
+CGUIDriver::~CGUIDriver()
 {GUCEF_TRACE;
-
 }
 
 /*-------------------------------------------------------------------------*/
+  
+CGUIDriver::TStringSet
+CGUIDriver::GetAvailableFormTypes( void )
+{GUCEF_TRACE;
+}
 
+/*-------------------------------------------------------------------------*/
+    
+TStringSet
+CGUIDriver::GetAvailableWidgetTypes( void )
+{GUCEF_TRACE;
+}
+
+/*-------------------------------------------------------------------------*/
+    
+const GUI::CString&
+CGUIDriver::GetClassTypeName( void ) const
+{GUCEF_TRACE;
+
+    static GUI::CString classTypeName = "GUCEF::MYGUI::CGUIDriver";
+}
+
+/*-------------------------------------------------------------------------*/
+    
 GUCEF::GUI::CWidget*
-CGUIContext::CreateWidget( const CString& widgetName )
+CGUIDriver::CreateWidget( const GUI::CString& widgetName )
 {GUCEF_TRACE;
 
-    GUCEF::GUI::CWidget* widget = m_driver->CreateWidget( widgetName );
-    if ( NULL != widget )
-    {
-        m_widgetSet.insert( widget );
-        return widget;
-    }
-    return NULL;
+    CButtonImp();
 }
 
 /*-------------------------------------------------------------------------*/
     
 void
-CGUIContext::DestroyWidget( GUCEF::GUI::CWidget* widget )
+CGUIDriver::DestroyWidget( GUI::CWidget* widget )
 {GUCEF_TRACE;
-
-    m_widgetSet.erase( widget );
-    //m_driver->DestroyWidget( widget );
 }
 
 /*-------------------------------------------------------------------------*/
     
 GUCEF::GUI::CForm*
-CGUIContext::CreateForm( const CString& formName )
+CGUIDriver::CreateForm( const CString& formName )
 {GUCEF_TRACE;
-
-    GUCEF::GUI::CForm* form = m_driver->CreateForm( formName );
-    if ( NULL != form )
-    {
-        m_formSet.insert( form );
-        return form;
-    }
-    return NULL;
 }
-
+    
 /*-------------------------------------------------------------------------*/
 
 void
-CGUIContext::DestroyForm( GUCEF::GUI::CForm* form )
+CGUIDriver::DestroyForm( GUI::CForm* form )
 {GUCEF_TRACE;
-
-    m_formSet.erase( form );
-    m_driver->DestroyForm( form ); 
-}
-
-/*-------------------------------------------------------------------------*/
-
-CGUIContext::TStringSet
-CGUIContext::GetAvailableFormTypes( void )
-{GUCEF_TRACE;
-
-    return m_driver->GetAvailableFormTypes();
-}
-
-/*-------------------------------------------------------------------------*/
-    
-CGUIContext::TStringSet
-CGUIContext::GetAvailableWidgetTypes( void )
-{GUCEF_TRACE;
-
-    return m_driver->GetAvailableWidgetTypes();
 }
 
 /*-------------------------------------------------------------------------*/
     
 GUCEF::GUI::CFormBackend*
-CGUIContext::CreateFormBackend( void )
+CGUIDriver::CreateFormBackend( void )
 {GUCEF_TRACE;
 
-    return m_driver->CreateFormBackend();
+    return new CFormBackendImp();
 }
 
 /*-------------------------------------------------------------------------*/
     
 void
-CGUIContext::DestroyFormBackend( GUCEF::GUI::CFormBackend* formBackend )
+CGUIDriver::DestroyFormBackend( GUI::CFormBackend* formBackend )
 {GUCEF_TRACE;
 
-    m_driver->DestroyFormBackend( formBackend );
-}
-
-/*-------------------------------------------------------------------------*/
-    
-GUCEF::GUI::CGUIDriver*
-CGUIContext::GetDriver( void )
-{GUCEF_TRACE;
-
-    return m_driver;
+    delete static_cast< CFormBackendImp* >( formBackend );
 }
 
 /*-------------------------------------------------------------------------*/
 
-CGUIContext::TWidgetSet
-CGUIContext::GetOwnedWidgets( void )
+CGUIDriver::TWidgetSet
+CGUIDriver::GetOwnedWidgets( void )
 {GUCEF_TRACE;
-    
-    return m_widgetSet;
+
+    return m_widgets;
 }
 
 /*-------------------------------------------------------------------------*/
     
-CGUIContext::TFormSet
-CGUIContext::GetOwnedForms( void )
+CGUIDriver::TFormSet
+CGUIDriver::GetOwnedForms( void )
 {GUCEF_TRACE;
 
-    return m_formSet;
+    return m_forms;
 }
 
 /*-------------------------------------------------------------------------//
@@ -196,6 +154,6 @@ CGUIContext::GetOwnedForms( void )
 //-------------------------------------------------------------------------*/
 
 }; /* namespace MYGUI */
-}; /* namespace GUCE */
+}; /* namespace GUCEF */
 
 /*-------------------------------------------------------------------------*/
