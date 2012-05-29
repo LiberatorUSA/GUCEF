@@ -46,10 +46,10 @@
 #define GUCEF_CORE_CICONFIGURABLE_H
 #endif /* GUCEF_CORE_CICONFIGURABLE_H ? */
 
-#ifndef GUCEF_GUI_CGUIDRIVER_H
-#include "gucefGUI_CGUIDriver.h"
-#define GUCEF_GUI_CGUIDRIVER_H
-#endif /* GUCEF_GUI_CGUIDRIVER_H ? */
+#ifndef GUCEF_GUIDRIVERMYGUI_CGUIDRIVER_H
+#include "guidriverMyGUI_CGuiDriver.h"
+#define GUCEF_GUIDRIVERMYGUI_CGUIDRIVER_H
+#endif /* GUCEF_GUIDRIVERMYGUI_CGUIDRIVER_H ? */
 
 #ifndef GUCEF_MYGUI_CDATAMANAGER_H
 #include "guceMyGUI_CDataManager.h"
@@ -81,7 +81,7 @@ namespace MYGUIGL {
 //                                                                         //
 //-------------------------------------------------------------------------*/
 
-class GUCEF_MYGUIGL_EXPORT_CPP CGUIDriverGL : public GUI::CGUIDriver
+class GUCEF_MYGUIGL_EXPORT_CPP CGUIDriverGL : public MYGUI::CGUIDriver
 {
     public:
 
