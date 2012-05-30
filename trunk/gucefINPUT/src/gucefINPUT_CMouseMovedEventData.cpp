@@ -45,16 +45,18 @@ namespace INPUT {
 //                                                                         //
 //-------------------------------------------------------------------------*/
 
-CMouseMovedEventData::CMouseMovedEventData( const UInt32 deviceID ,
+CMouseMovedEventData::CMouseMovedEventData( const Int32 contextId ,
+                                            const UInt32 deviceID ,
                                             const Int32 xPos      ,
                                             const Int32 yPos      ,
                                             const Int32 prevXPos  ,
                                             const Int32 prevYPos  )
-    : CICloneable()          ,
-      m_deviceID( deviceID ) ,
-      m_xPos( xPos )         ,
-      m_yPos( yPos )         ,
-      m_prevXPos( prevXPos ) ,
+    : CICloneable()            ,
+      m_contextId( contextId ) ,
+      m_deviceID( deviceID )   ,
+      m_xPos( xPos )           ,
+      m_yPos( yPos )           ,
+      m_prevXPos( prevXPos )   ,
       m_prevYPos( prevYPos )
 {GUCEF_TRACE;
 
@@ -63,11 +65,12 @@ CMouseMovedEventData::CMouseMovedEventData( const UInt32 deviceID ,
 /*-------------------------------------------------------------------------*/
 
 CMouseMovedEventData::CMouseMovedEventData( const CMouseMovedEventData& src )
-    : CICloneable( src )           ,
-      m_deviceID( src.m_deviceID ) ,
-      m_xPos( m_xPos )             ,
-      m_yPos( m_yPos )             ,
-      m_prevXPos( m_prevXPos )     ,
+    : CICloneable( src )             ,
+      m_contextId( src.m_contextId ) ,
+      m_deviceID( src.m_deviceID )   ,
+      m_xPos( m_xPos )               ,
+      m_yPos( m_yPos )               ,
+      m_prevXPos( m_prevXPos )       ,
       m_prevYPos( m_prevYPos )
 {GUCEF_TRACE;
 
@@ -78,6 +81,15 @@ CMouseMovedEventData::CMouseMovedEventData( const CMouseMovedEventData& src )
 CMouseMovedEventData::~CMouseMovedEventData()
 {GUCEF_TRACE;
 
+}
+
+/*-------------------------------------------------------------------------*/
+
+Int32
+CMouseMovedEventData::GetContextId( void ) const
+{GUCEF_TRACE;
+    
+    return m_contextId;
 }
 
 /*-------------------------------------------------------------------------*/

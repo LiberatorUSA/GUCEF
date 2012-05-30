@@ -48,7 +48,8 @@ namespace GUIDRIVERROCKET {
 CInputAdapter::CInputAdapter( void )
     : CORE::CObserver()           ,
       m_rocketContext( NULL )     ,
-      m_lastKeyModifierState( 0 )
+      m_lastKeyModifierState( 0 ) ,
+      m_inputContext( NULL )
 {GUCEF_TRACE;
 
 }
@@ -77,6 +78,24 @@ CInputAdapter::GetRocketContext( void )
 {GUCEF_TRACE;
 
     return m_rocketContext;
+}
+
+/*-------------------------------------------------------------------------*/
+
+void
+CInputAdapter::SetInputContext( INPUT::CInputContext* inputContext )
+{GUCEF_TRACE;
+    
+    m_inputContext = inputContext;
+}
+
+/*-------------------------------------------------------------------------*/
+
+INPUT::CInputContext*
+CInputAdapter::GetInputContext( void ) const
+{GUCEF_TRACE;
+
+    return m_inputContext;
 }
 
 /*-------------------------------------------------------------------------*/
@@ -293,15 +312,18 @@ CInputAdapter::OnMouseEvent( INPUT::CMouse* mouse         ,
     {
         // send when a mouse button is pressed or released
         INPUT::CMouseButtonEventData* mouseEventData = static_cast< INPUT::CMouseButtonEventData* >( eventdata );
-        if ( mouseEventData->GetPressedState() )
+        if ( m_inputContext->GetID() == mouseEventData->GetContextId() )
         {
-            m_rocketContext->ProcessMouseButtonDown( mouseEventData->GetButtonIndex(), m_lastKeyModifierState );
-            GUCEF_DEBUG_LOG( CORE::LOGLEVEL_BELOW_NORMAL, "GUIDRIVERROCKET::CInputAdapter: injected mouse button down buttonIndex=" + CORE::Int32ToString( mouseEventData->GetButtonIndex() ) +
-                                                                                                                    " key modifier states=" + CORE::Int32ToString( m_lastKeyModifierState )   );
-        }
-        else
-        {
-            m_rocketContext->ProcessMouseButtonUp( mouseEventData->GetButtonIndex(), m_lastKeyModifierState );
+            if ( mouseEventData->GetPressedState() )
+            {
+                m_rocketContext->ProcessMouseButtonDown( mouseEventData->GetButtonIndex(), m_lastKeyModifierState );
+                GUCEF_DEBUG_LOG( CORE::LOGLEVEL_BELOW_NORMAL, "GUIDRIVERROCKET::CInputAdapter: injected mouse button down buttonIndex=" + CORE::Int32ToString( mouseEventData->GetButtonIndex() ) +
+                                                                                                                        " key modifier states=" + CORE::Int32ToString( m_lastKeyModifierState )   );
+            }
+            else
+            {
+                m_rocketContext->ProcessMouseButtonUp( mouseEventData->GetButtonIndex(), m_lastKeyModifierState );
+            }
         }
     }
     else
@@ -309,10 +331,13 @@ CInputAdapter::OnMouseEvent( INPUT::CMouse* mouse         ,
     {
         // send when the mouse moved
         INPUT::CMouseMovedEventData* mouseEventData = static_cast< INPUT::CMouseMovedEventData* >( eventdata );
-        m_rocketContext->ProcessMouseMove( mouseEventData->GetXPos(), mouseEventData->GetYPos(), m_lastKeyModifierState );
-        GUCEF_DEBUG_LOG( CORE::LOGLEVEL_BELOW_NORMAL, "GUIDRIVERROCKET::CInputAdapter: injected mouse move x=" + CORE::Int32ToString( mouseEventData->GetXPos() )                 +
-                                                                                                         " y=" + CORE::Int32ToString( mouseEventData->GetYPos() )                 +
-                                                                                                         " key modifier states=" + CORE::UInt32ToString( m_lastKeyModifierState ) );
+        if ( m_inputContext->GetID() == mouseEventData->GetContextId() )
+        {
+            m_rocketContext->ProcessMouseMove( mouseEventData->GetXPos(), mouseEventData->GetYPos(), m_lastKeyModifierState );
+            GUCEF_DEBUG_LOG( CORE::LOGLEVEL_BELOW_NORMAL, "GUIDRIVERROCKET::CInputAdapter: injected mouse move x=" + CORE::Int32ToString( mouseEventData->GetXPos() )                 +
+                                                                                                             " y=" + CORE::Int32ToString( mouseEventData->GetYPos() )                 +
+                                                                                                             " key modifier states=" + CORE::UInt32ToString( m_lastKeyModifierState ) );
+        }
     }
     else
     if ( eventid == INPUT::CMouse::MouseClickedEvent )

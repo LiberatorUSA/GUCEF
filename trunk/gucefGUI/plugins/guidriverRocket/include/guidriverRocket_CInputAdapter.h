@@ -72,6 +72,10 @@ class GUCEF_GUIDRIVERROCKET_PUBLIC_CPP CInputAdapter : public CORE::CObserver
 
     void StopListningForInputEvents( void );
 
+    void SetInputContext( INPUT::CInputContext* inputContext );
+
+    INPUT::CInputContext* GetInputContext( void ) const;
+
     protected:
 
     virtual void OnNotify( CORE::CNotifier* notifier           ,
@@ -94,6 +98,7 @@ class GUCEF_GUIDRIVERROCKET_PUBLIC_CPP CInputAdapter : public CORE::CObserver
                            
     private:
 
+    INPUT::CInputContext* m_inputContext;
     Rocket::Core::Context* m_rocketContext;
     int m_lastKeyModifierState;
 };

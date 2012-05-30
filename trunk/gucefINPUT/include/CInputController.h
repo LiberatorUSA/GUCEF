@@ -49,6 +49,11 @@
 #define GUCEF_CORE_CPULSEGENERATOR_H
 #endif /* GUCEF_CORE_CPULSEGENERATOR_H ? */
 
+#ifndef GUCEF_CORE_CTNUMERICIDGENERATOR_H
+#include "CTNumericIDGenerator.h"
+#define GUCEF_CORE_CTNUMERICIDGENERATOR_H
+#endif /* GUCEF_CORE_CTNUMERICIDGENERATOR_H ? */
+
 #ifndef GUCEF_CORE_CLONEABLES_H
 #include "cloneables.h"
 #define GUCEF_CORE_CLONEABLES_H
@@ -218,19 +223,22 @@ class GUCEF_INPUT_PUBLIC_CPP CInputController : public CORE::CObservingNotifier
     private:
     friend class CInputDriver;
     
-    void SetMouseButtonState( const Int32 deviceID     ,
+    void SetMouseButtonState( const Int32 contextId    ,
+                              const Int32 deviceID     ,
                               const UInt32 buttonIndex , 
                               const bool pressedState  );
 
-    void SetMousePos( const Int32 deviceID ,
-                      const UInt32 xPos    ,
-                      const UInt32 yPos    ,
-                      const Int32 xDelta   ,
-                      const Int32 yDelta   );
+    void SetMousePos( const Int32 contextId ,
+                      const Int32 deviceID  ,
+                      const UInt32 xPos     ,
+                      const UInt32 yPos     ,
+                      const Int32 xDelta    ,
+                      const Int32 yDelta    );
                          
     void ResetMouseStates( const Int32 deviceID );    
 
-    void SetKeyboardKeyState( const Int32 deviceID ,
+    void SetKeyboardKeyState( const Int32 contextId ,
+                              const Int32 deviceID  ,
                               const KeyCode keyCode ,
                               const bool keyPressed );
 
@@ -254,9 +262,11 @@ class GUCEF_INPUT_PUBLIC_CPP CInputController : public CORE::CObservingNotifier
     private:
     typedef std::set< CInputContext* > TContextSet;
     typedef std::map< CString, TInputDriverPtr >    TInputDriverMap;
+    typedef CORE::CTNumericIDGenerator< CORE::Int32 > TIdGenerator;
         
     static CInputController* m_instance;
     
+    TIdGenerator m_idGenerator;
     TContextSet m_contextSet;
     TKeyboardMap m_keyboardMap;
     TMouseMap m_mouseMap;    

@@ -28,7 +28,12 @@
 #define GUCEF_MYGUI_CFORMBACKENDIMP_H
 #endif /* GUCEF_MYGUI_CFORMBACKENDIMP_H ? */
 
-#include "guidriverMyGUI_CGuiDriver.h"
+#ifndef GUIDRIVER_MYGUI_WIDGETS_H
+#include "guidriverMyGUI_widgets.h"
+#define GUIDRIVER_MYGUI_WIDGETS_H
+#endif /* GUIDRIVER_MYGUI_WIDGETS_H ? */
+
+#include "guidriverMyGUI_CMyGUIDriver.h"
 
 /*-------------------------------------------------------------------------//
 //                                                                         //
@@ -45,76 +50,103 @@ namespace MYGUI {
 //                                                                         //
 //-------------------------------------------------------------------------*/
 
-CGUIDriver::CGUIDriver( void )
-    : GUI::CGUIDriver() ,
-      m_widgets()       ,
-      m_forms()         ,
+CMyGUIDriver::CMyGUIDriver( void )
+    : GUI::CGUIDriver()        
 {GUCEF_TRACE;   
+
 }
 
 /*-------------------------------------------------------------------------*/
 
-CGUIDriver::~CGUIDriver()
+CMyGUIDriver::~CMyGUIDriver()
 {GUCEF_TRACE;
 }
 
 /*-------------------------------------------------------------------------*/
   
-CGUIDriver::TStringSet
-CGUIDriver::GetAvailableFormTypes( void )
+CMyGUIDriver::TStringSet
+CMyGUIDriver::GetAvailableFormTypes( void )
 {GUCEF_TRACE;
+
+    TStringSet formsAvailable;
+
+    formsAvailable.insert( "Form" );
+    formsAvailable.insert( "FormEx" );
+
+    return formsAvailable;
 }
 
 /*-------------------------------------------------------------------------*/
     
-TStringSet
-CGUIDriver::GetAvailableWidgetTypes( void )
+CMyGUIDriver::TStringSet
+CMyGUIDriver::GetAvailableWidgetTypes( void )
 {GUCEF_TRACE;
+
+    TStringSet widgetsAvailable;
+
+    widgetsAvailable.insert( "Widget" );
+    widgetsAvailable.insert( "Window" );
+    widgetsAvailable.insert( "Button" );
+
+    return widgetsAvailable;
 }
 
 /*-------------------------------------------------------------------------*/
     
 const GUI::CString&
-CGUIDriver::GetClassTypeName( void ) const
+CMyGUIDriver::GetClassTypeName( void ) const
 {GUCEF_TRACE;
 
-    static GUI::CString classTypeName = "GUCEF::MYGUI::CGUIDriver";
+    static GUI::CString classTypeName = "GUCEF::MYGUI::CMyGUIDriver";
+    return classTypeName;
 }
 
 /*-------------------------------------------------------------------------*/
     
 GUCEF::GUI::CWidget*
-CGUIDriver::CreateWidget( const GUI::CString& widgetName )
+CMyGUIDriver::CreateWidget( const GUI::CString& widgetName )
 {GUCEF_TRACE;
 
-    CButtonImp();
+    if ( "Widget" == widgetName )
+    {
+        MyGUI::Widget* widget = new MyGUI::Widget();
+        TBasicWidgetImp* widgetWrapper = new TBasicWidgetImp();
+        widgetWrapper->Hook( widget );
+        return widgetWrapper;
+    }
+    else
+    if ( "Window" == widgetName )
+    {
+        MyGUI::Window* widget = new MyGUI::Window();
+        CWindowImp* widgetWrapper = new CWindowImp();
+        widgetWrapper->Hook( widget );
+        return widgetWrapper;
+    }
+    else
+    if ( "Button" == widgetName )
+    {
+        MyGUI::Button* widget = new MyGUI::Button();
+        CButtonImp* widgetWrapper = new CButtonImp();
+        widgetWrapper->Hook( widget );
+        return widgetWrapper;
+    }
+
+    return NULL;
 }
 
 /*-------------------------------------------------------------------------*/
     
 void
-CGUIDriver::DestroyWidget( GUI::CWidget* widget )
+CMyGUIDriver::DestroyWidget( GUI::CWidget* widget )
 {GUCEF_TRACE;
-}
 
-/*-------------------------------------------------------------------------*/
-    
-GUCEF::GUI::CForm*
-CGUIDriver::CreateForm( const CString& formName )
-{GUCEF_TRACE;
-}
-    
-/*-------------------------------------------------------------------------*/
-
-void
-CGUIDriver::DestroyForm( GUI::CForm* form )
-{GUCEF_TRACE;
+    delete widget;
 }
 
 /*-------------------------------------------------------------------------*/
     
 GUCEF::GUI::CFormBackend*
-CGUIDriver::CreateFormBackend( void )
+CMyGUIDriver::CreateFormBackend( void )
 {GUCEF_TRACE;
 
     return new CFormBackendImp();
@@ -123,28 +155,10 @@ CGUIDriver::CreateFormBackend( void )
 /*-------------------------------------------------------------------------*/
     
 void
-CGUIDriver::DestroyFormBackend( GUI::CFormBackend* formBackend )
+CMyGUIDriver::DestroyFormBackend( GUI::CFormBackend* formBackend )
 {GUCEF_TRACE;
 
     delete static_cast< CFormBackendImp* >( formBackend );
-}
-
-/*-------------------------------------------------------------------------*/
-
-CGUIDriver::TWidgetSet
-CGUIDriver::GetOwnedWidgets( void )
-{GUCEF_TRACE;
-
-    return m_widgets;
-}
-
-/*-------------------------------------------------------------------------*/
-    
-CGUIDriver::TFormSet
-CGUIDriver::GetOwnedForms( void )
-{GUCEF_TRACE;
-
-    return m_forms;
 }
 
 /*-------------------------------------------------------------------------//

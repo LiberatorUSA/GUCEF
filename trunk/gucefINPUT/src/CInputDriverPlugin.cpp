@@ -212,9 +212,11 @@ CInputDriverPlugin::OnMouseButtonDown( void* userData           ,
                                        const UInt32 buttonindex ) GUCEF_PLUGIN_CALLSPEC_SUFFIX
 {GUCEF_TRACE;
 
-    static_cast<CPluginInputContext*>( userData )->GetPluginAPI()->InjectMouseButtonChange( deviceID    ,
-                                                                                            buttonindex ,
-                                                                                            true        );
+    CPluginInputContext* context = static_cast<CPluginInputContext*>( userData );
+    context->GetPluginAPI()->InjectMouseButtonChange( context->GetID() ,
+                                                      deviceID         ,
+                                                      buttonindex      ,
+                                                      true             );
 }
 
 /*-------------------------------------------------------------------------*/
@@ -225,9 +227,11 @@ CInputDriverPlugin::OnMouseButtonUp( void* userData           ,
                                      const UInt32 buttonindex ) GUCEF_PLUGIN_CALLSPEC_SUFFIX
 {GUCEF_TRACE;
 
-    static_cast<CPluginInputContext*>( userData )->GetPluginAPI()->InjectMouseButtonChange( deviceID    ,
-                                                                                            buttonindex ,
-                                                                                            false       );
+    CPluginInputContext* context = static_cast<CPluginInputContext*>( userData );
+    context->GetPluginAPI()->InjectMouseButtonChange( context->GetID() ,
+                                                      deviceID         ,
+                                                      buttonindex      ,
+                                                      false            );
 }
 
 /*-------------------------------------------------------------------------*/
@@ -241,11 +245,13 @@ CInputDriverPlugin::OnMouseMove( void* userData        ,
                                  const Int32 yDelta    ) GUCEF_PLUGIN_CALLSPEC_SUFFIX
 {GUCEF_TRACE;
 
-    static_cast<CPluginInputContext*>( userData )->GetPluginAPI()->InjectMouseMove( deviceID ,
-                                                                                    xPos     ,
-                                                                                    yPos     ,
-                                                                                    xDelta   ,
-                                                                                    yDelta   );
+    CPluginInputContext* context = static_cast<CPluginInputContext*>( userData );
+    context->GetPluginAPI()->InjectMouseMove( context->GetID() ,
+                                              deviceID         ,
+                                              xPos             ,      
+                                              yPos             ,
+                                              xDelta           ,
+                                              yDelta           );
 }
 
 /*-------------------------------------------------------------------------*/
@@ -276,9 +282,11 @@ CInputDriverPlugin::OnKeyboardKeyDown( void* userData            ,
                                        const UInt32 keyModStates ) GUCEF_PLUGIN_CALLSPEC_SUFFIX
 {GUCEF_TRACE;
 
-    static_cast<CPluginInputContext*>( userData )->GetPluginAPI()->InjectKeyboardKeyChange( deviceID ,
-                                                                                            keyCode  ,
-                                                                                            true     );
+    CPluginInputContext* context = static_cast<CPluginInputContext*>( userData );
+    context->GetPluginAPI()->InjectKeyboardKeyChange( context->GetID() ,
+                                                      deviceID         ,
+                                                      keyCode          ,
+                                                      true             );
 }
 
 /*-------------------------------------------------------------------------*/
@@ -290,9 +298,11 @@ CInputDriverPlugin::OnKeyboardKeyUp( void* userData            ,
                                      const UInt32 keyModStates ) GUCEF_PLUGIN_CALLSPEC_SUFFIX
 {GUCEF_TRACE;
 
-    static_cast<CPluginInputContext*>( userData )->GetPluginAPI()->InjectKeyboardKeyChange( deviceID ,
-                                                                                            keyCode  ,
-                                                                                            false    );
+    CPluginInputContext* context = static_cast<CPluginInputContext*>( userData );
+    context->GetPluginAPI()->InjectKeyboardKeyChange( context->GetID() ,
+                                                      deviceID         ,
+                                                      keyCode          ,
+                                                      false            );
 }
 
 /*-------------------------------------------------------------------------*/

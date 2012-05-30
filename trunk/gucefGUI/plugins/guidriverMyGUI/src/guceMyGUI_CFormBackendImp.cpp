@@ -53,70 +53,10 @@
 #define GUCEF_MYGUI_CIOACCESSTOMYGUIDATASTREAMADAPTER_H
 #endif /* GUCEF_MYGUI_CIOACCESSTOMYGUIDATASTREAMADAPTER_H ? */
 
-#ifndef GUCEF_MYGUI_CBUTTONIMP_H
-#include "guceMyGUI_CButtonImp.h"
-#define GUCEF_MYGUI_CBUTTONIMP_H
-#endif /* GUCEF_MYGUI_CBUTTONIMP_H ? */
-
-#ifndef GUCEF_MYGUI_CEDITBOXIMP_H
-#include "guceMyGUI_CEditboxImp.h"
-#define GUCEF_MYGUI_CEDITBOXIMP_H
-#endif /* GUCEF_MYGUI_CEDITBOXIMP_H ? */
-
-#ifndef GUCEF_MYGUI_CLISTBOXIMP_H
-#include "guceMyGUI_CListBoxImp.h"
-#define GUCEF_MYGUI_CLISTBOXIMP_H
-#endif /* GUCEF_MYGUI_CLISTBOXIMP_H ? */
-
-#ifndef GUCEF_MYGUI_CWINDOWIMP_H
-#include "guceMyGUI_CWindowImp.h"
-#define GUCEF_MYGUI_CWINDOWIMP_H
-#endif /* GUCEF_MYGUI_CWINDOWIMP_H ? */
-
-#ifndef GUCEF_MYGUI_CIMAGEFRAMEIMP_H
-#include "guceMyGUI_CImageFrameImp.h"
-#define GUCEF_MYGUI_CIMAGEFRAMEIMP_H
-#endif /* GUCEF_MYGUI_CIMAGEFRAMEIMP_H ? */
-
-#ifndef GUCEF_MYGUI_CHECKBOXIMP_H
-#include "guceMyGUI_CCheckboxImp.h"
-#define GUCEF_MYGUI_CHECKBOXIMP_H
-#endif /* GUCEF_MYGUI_CHECKBOXIMP_H ? */
-
-#ifndef GUCEF_MYGUI_CCOMBOBOXIMP_H
-#include "guceMyGUI_CComboboxImp.h"
-#define GUCEF_MYGUI_CCOMBOBOXIMP_H
-#endif /* GUCEF_MYGUI_CCOMBOBOXIMP_H ? */
-
-#ifndef GUCEF_MYGUI_CTABCONTROLIMP_H
-#include "guceMyGUI_CTabControlImp.h"
-#define GUCEF_MYGUI_CTABCONTROLIMP_H
-#endif /* GUCEF_MYGUI_CTABCONTROLIMP_H ? */
-
-#ifndef GUCEF_MYGUI_CTABCONTENTPANEIMP_H
-#include "guceMyGUI_CTabContentPaneImp.h"
-#define GUCEF_MYGUI_CTABCONTENTPANEIMP_H
-#endif /* GUCEF_MYGUI_CTABCONTENTPANEIMP_H ? */
-
-#ifndef GUCEF_MYGUI_CGRIDVIEWIMP_H
-#include "guceMyGUI_CGridViewImp.h"
-#define GUCEF_MYGUI_CGRIDVIEWIMP_H
-#endif /* GUCEF_MYGUI_CGRIDVIEWIMP_H ? */
-
-#ifndef GUCEF_MYGUI_CLABELIMP_H
-#include "guceMyGUI_CLabelImp.h"
-#define GUCEF_MYGUI_CLABELIMP_H
-#endif /* GUCEF_MYGUI_CLABELIMP_H ? */
-
-#ifndef GUCEF_MYGUI_CSPINNERIMP_H
-#include "guceMyGUI_CSpinnerImp.h"
-#define GUCEF_MYGUI_CSPINNERIMP_H
-#endif /* GUCEF_MYGUI_CSPINNERIMP_H ? */
-
-#ifndef GUCEF_MYGUI_CRENDERCONTEXTIMP_H
-#include "guceMyGUI_CRenderContextImp.h"
-#define GUCEF_MYGUI_CRENDERCONTEXTIMP_H
-#endif /* GUCEF_MYGUI_CRENDERCONTEXTIMP_H ? */
+#ifndef GUIDRIVER_MYGUI_WIDGETS_H
+#include "guidriverMyGUI_widgets.h"
+#define GUIDRIVER_MYGUI_WIDGETS_H
+#endif /* GUIDRIVER_MYGUI_WIDGETS_H ? */
 
 #include "guceMyGUI_CFormBackendImp.h"
 
@@ -290,7 +230,7 @@ CFormBackendImp::WrapAndHookChildWindows( MyGUI::Widget* widget )
     {
         childWidget = childWidgets.current();
         wrappedWidget = CreateAndHookWrapperForWindow( childWidget );
-        if ( NULL != widget )
+        if ( NULL != wrappedWidget )
         {
             CString localWidgetName = wrappedWidget->GetName().SubstrToChar( '/', false );
             m_widgetMap[ localWidgetName ] = wrappedWidget;

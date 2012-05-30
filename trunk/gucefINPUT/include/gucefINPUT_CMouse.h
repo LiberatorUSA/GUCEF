@@ -105,11 +105,13 @@ class GUCEF_INPUT_PUBLIC_CPP CMouse : public CAbstractInputDevice
     
     virtual ~CMouse();
     
-    void SetButtonState( const UInt32 buttonIndex , 
-                         const bool pressedState );
+    void SetButtonState( const Int32 contextId    ,
+                         const UInt32 buttonIndex , 
+                         const bool pressedState  );
 
-    void SetMousePos( const UInt32 xPos ,
-                      const UInt32 yPos );
+    void SetMousePos( const Int32 contextId ,
+                      const UInt32 xPos     ,
+                      const UInt32 yPos     );
                          
     void ResetMouseStates( void );
        

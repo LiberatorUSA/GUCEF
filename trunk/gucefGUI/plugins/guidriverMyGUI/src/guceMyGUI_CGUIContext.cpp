@@ -35,10 +35,10 @@
 #define GUCEF_GUIDRIVERMYGUI_CFORMBACKENDIMP_H
 #endif /* GUCEF_GUIDRIVERMYGUI_CFORMBACKENDIMP_H ? */
 
-#ifndef GUCEF_GUIDRIVERMYGUI_CGUIDRIVER_H
-#include "guidriverMyGUI_CGuiDriver.h"
-#define GUCEF_GUIDRIVERMYGUI_CGUIDRIVER_H
-#endif /* GUCEF_GUIDRIVERMYGUI_CGUIDRIVER_H ? */
+#ifndef GUCEF_GUIDRIVERMYGUI_CMYGUIDRIVER_H
+#include "guidriverMyGUI_CMyGuiDriver.h"
+#define GUCEF_GUIDRIVERMYGUI_CMYGUIDRIVER_H
+#endif /* GUCEF_GUIDRIVERMYGUI_CMYGUIDRIVER_H ? */
 
 #include "guceMyGUI_CGUIContext.h"
 
@@ -57,16 +57,19 @@ namespace MYGUI {
 //                                                                         //
 //-------------------------------------------------------------------------*/
 
-CGUIContext::CGUIContext( CGUIDriver& myGuiDriver            ,
+CGUIContext::CGUIContext( CMyGUIDriver& myGuiDriver          ,
                           INPUT::CInputContext* inputContext )
-    : GUCEF::GUI::CIGUIContext()     ,
-      m_driver( &myGuiDriver )       ,
-      m_widgetSet()                  ,
-      m_formSet()                    ,
-      m_inputContext( inputContext )
+    : GUCEF::GUI::CIGUIContext()                ,
+      m_driver( &myGuiDriver )                  ,
+      m_widgetSet()                             ,
+      m_formSet()                               ,
+      m_inputContext( inputContext )            ,
+      m_inputAdapter( myGuiDriver.GetMyGui() )
 {GUCEF_TRACE;
 
     assert( NULL != m_driver );
+    m_inputAdapter.SetInputContext( inputContext );
+    m_inputAdapter.StartListningForInputEvents();
 }
 
 /*-------------------------------------------------------------------------*/
@@ -74,6 +77,23 @@ CGUIContext::CGUIContext( CGUIDriver& myGuiDriver            ,
 CGUIContext::~CGUIContext()
 {GUCEF_TRACE;
 
+    m_inputAdapter.StopListningForInputEvents();
+    
+    TFormSet::iterator i = m_formSet.begin();
+    while ( i != m_formSet.end() )
+    {
+        delete (*i);        
+        ++i;
+    }
+    m_formSet.clear();
+
+    TWidgetSet::iterator n = m_widgetSet.begin();
+    while ( n != m_widgetSet.end() )
+    {
+        delete (*n);        
+        ++n;
+    }
+    m_widgetSet.clear();
 }
 
 /*-------------------------------------------------------------------------*/
@@ -98,7 +118,7 @@ CGUIContext::DestroyWidget( GUCEF::GUI::CWidget* widget )
 {GUCEF_TRACE;
 
     m_widgetSet.erase( widget );
-    //m_driver->DestroyWidget( widget );
+    m_driver->DestroyWidget( widget );
 }
 
 /*-------------------------------------------------------------------------*/
@@ -107,12 +127,13 @@ GUCEF::GUI::CForm*
 CGUIContext::CreateForm( const CString& formName )
 {GUCEF_TRACE;
 
-    GUCEF::GUI::CForm* form = m_driver->CreateForm( formName );
-    if ( NULL != form )
+    if ( "Form" == formName || "FormEx" == formName )
     {
+        GUCEF::GUI::CForm* form = new GUCEF::GUI::CFormEx( this );
         m_formSet.insert( form );
         return form;
     }
+    
     return NULL;
 }
 
@@ -123,7 +144,7 @@ CGUIContext::DestroyForm( GUCEF::GUI::CForm* form )
 {GUCEF_TRACE;
 
     m_formSet.erase( form );
-    m_driver->DestroyForm( form ); 
+    delete form;
 }
 
 /*-------------------------------------------------------------------------*/

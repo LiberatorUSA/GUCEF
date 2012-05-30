@@ -46,10 +46,10 @@
 #define GUCEF_CORE_CICONFIGURABLE_H
 #endif /* GUCEF_CORE_CICONFIGURABLE_H ? */
 
-#ifndef GUCEF_GUIDRIVERMYGUI_CGUIDRIVER_H
-#include "guidriverMyGUI_CGuiDriver.h"
-#define GUCEF_GUIDRIVERMYGUI_CGUIDRIVER_H
-#endif /* GUCEF_GUIDRIVERMYGUI_CGUIDRIVER_H ? */
+#ifndef GUCEF_GUIDRIVERMYGUI_CMYGUIDRIVER_H
+#include "guidriverMyGUI_CMyGuiDriver.h"
+#define GUCEF_GUIDRIVERMYGUI_CMYGUIDRIVER_H
+#endif /* GUCEF_GUIDRIVERMYGUI_CMYGUIDRIVER_H ? */
 
 #ifndef GUCEF_MYGUI_CDATAMANAGER_H
 #include "guceMyGUI_CDataManager.h"
@@ -81,7 +81,7 @@ namespace MYGUIGL {
 //                                                                         //
 //-------------------------------------------------------------------------*/
 
-class GUCEF_MYGUIGL_EXPORT_CPP CGUIDriverGL : public MYGUI::CGUIDriver
+class GUCEF_MYGUIGL_EXPORT_CPP CGUIDriverGL : public GUCEF::MYGUI::CMyGUIDriver
 {
     public:
 
@@ -96,10 +96,6 @@ class GUCEF_MYGUIGL_EXPORT_CPP CGUIDriverGL : public MYGUI::CGUIDriver
     virtual GUI::UInt32 GetContextCount( void );
 
     virtual GUI::CString GetDriverName( void );
-
-    virtual TStringSet GetAvailableFormTypes( void );
-
-    virtual TStringSet GetAvailableWidgetTypes( void );
 
     virtual TStringSet GetAvailableFonts( void );
 
@@ -127,6 +123,9 @@ class GUCEF_MYGUIGL_EXPORT_CPP CGUIDriverGL : public MYGUI::CGUIDriver
      *      @return whether building the tree from the given file was successfull.
      */
     virtual bool LoadConfig( const CORE::CDataNode& treeroot );
+
+    virtual MyGUI::Gui* GetMyGui( void );
+
     private:
 
     CGUIDriverGL( const CGUIDriverGL& src );

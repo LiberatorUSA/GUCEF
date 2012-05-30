@@ -37,6 +37,16 @@
 #define GUCEF_CORE_LOGGING_H
 #endif /* GUCEF_CORE_LOGGING_H ? */
 
+#ifndef GUCEF_VFS_CVFSGLOBAL_H
+#include "gucefVFS_CVfsGlobal.h"
+#define GUCEF_VFS_CVFSGLOBAL_H
+#endif /* GUCEF_VFS_CVFSGLOBAL_H ? */
+
+#ifndef GUCEF_VFS_CVFS_H
+#include "gucefVFS_CVFS.h"
+#define GUCEF_VFS_CVFS_H
+#endif /* GUCEF_VFS_CVFS_H ? */
+
 //#ifndef GUCE_CORE_CIOACCESSARCHIVEFACTORY_H
 //#include "CIOAccessArchiveFactory.h"
 //#define GUCE_CORE_CIOACCESSARCHIVEFACTORY_H
@@ -301,6 +311,11 @@ bool
 CFormBackendImp::LoadLayout( const GUCEF::CORE::CString& layoutStoragePath )
 {GUCEF_TRACE;
 
+    VFS::CVFS::CVFSHandlePtr filePtr = VFS::CVfsGlobal::Instance()->GetVfs().GetFile( layoutStoragePath );
+    if ( NULL != filePtr )
+    {
+        return LoadLayout( *filePtr->GetAccess() );
+    }
     return false;        
 }
 

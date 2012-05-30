@@ -32,6 +32,11 @@
 #define GUCEF_CORE_CLOGMANAGER_H
 #endif /* GUCEF_CORE_CLOGMANAGER_H ? */
 
+#ifndef GUCEF_INPUT_CINPUTGLOBAL_H
+#include "gucefINPUT_CInputGlobal.h"
+#define GUCEF_INPUT_CINPUTGLOBAL_H
+#endif /* GUCEF_INPUT_CINPUTGLOBAL_H ? */
+
 #ifndef GUCEF_INPUT_CINPUTCONTROLLER_H
 #include "CInputController.h"
 #define GUCEF_INPUT_CINPUTCONTROLLER_H
@@ -51,11 +56,6 @@
 #include "gucefINPUT_CMouseMovedEventData.h"
 #define GUCEF_INPUT_CMOUSEMOVEDEVENTDATA_H
 #endif /* GUCEF_INPUT_CMOUSEMOVEDEVENTDATA_H ? */
-
-//#ifndef GUCE_CORE_CGUCEAPPLICATION_H
-//#include "CGUCEApplication.h"
-//#define GUCE_CORE_CGUCEAPPLICATION_H
-//#endif /* GUCE_CORE_CGUCEAPPLICATION_H ? */
 
 #ifndef GUCEF_GUI_MACROS_H
 #include "gucefGUI_macros.h"
@@ -81,18 +81,12 @@ namespace MYGUI {
 
 CMyGUIInputAdapter::CMyGUIInputAdapter( MyGUI::Gui* guiSystem )
     : GUCEF::CORE::CObserver()  ,
+      m_inputContext( NULL )    ,
       m_guiSystem( guiSystem )
 {GUCEF_TRACE;
 
     assert( NULL != m_guiSystem );
     
-    //// Add this input event consumer to the GUI input observer group
-    //// This allows external agents to redirect input elsewhere when needed
-    //GUCE::CORE::CGUCEApplication* app = GUCE::CORE::CGUCEApplication::Instance();
-    //app->GetInputObserverSwitch().AddObserverToGroup( "GUI", *this );
-    //
-    //// Subscribe to all input events the input switch can forward
-    //SubscribeTo( &app->GetInputObserverSwitch() );
 }
 
 /*-------------------------------------------------------------------------*/
@@ -100,7 +94,48 @@ CMyGUIInputAdapter::CMyGUIInputAdapter( MyGUI::Gui* guiSystem )
 CMyGUIInputAdapter::~CMyGUIInputAdapter()
 {GUCEF_TRACE;
 
+    m_inputContext = NULL;
     m_guiSystem = NULL;
+}
+
+/*-------------------------------------------------------------------------*/
+
+void
+CMyGUIInputAdapter::StartListningForInputEvents( void )
+{GUCEF_TRACE;
+
+    StopListningForInputEvents();
+
+    INPUT::CInputController& inputController = INPUT::CInputGlobal::Instance()->GetInputController();
+    inputController.SubscribeToAllKeyboards( this );
+    inputController.SubscribeToAllMice( this );
+}
+
+/*-------------------------------------------------------------------------*/
+
+void
+CMyGUIInputAdapter::StopListningForInputEvents( void )
+{GUCEF_TRACE;
+
+    UnsubscribeAllFromObserver();
+}
+
+/*-------------------------------------------------------------------------*/
+
+void
+CMyGUIInputAdapter::SetInputContext( INPUT::CInputContext* inputContext )
+{GUCEF_TRACE;
+    
+    m_inputContext = inputContext;
+}
+
+/*-------------------------------------------------------------------------*/
+
+INPUT::CInputContext*
+CMyGUIInputAdapter::GetInputContext( void ) const
+{GUCEF_TRACE;
+
+    return m_inputContext;
 }
 
 /*-------------------------------------------------------------------------*/
@@ -109,7 +144,7 @@ const CString&
 CMyGUIInputAdapter::GetClassTypeName( void ) const
 {GUCEF_TRACE;
 
-    static const CString classTypeName = "GUCE::MYGUIOGRE::CMyGUIInputAdapter";
+    static const CString classTypeName = "GUCEF::MYGUI::CMyGUIInputAdapter";
     return classTypeName;
 }
 
@@ -150,42 +185,58 @@ CMyGUIInputAdapter::OnNotify( GUCEF::CORE::CNotifier* notifier                 ,
         if ( GUCEF::INPUT::CMouse::MouseButtonEvent == eventid )
         {
             GUCEF::INPUT::CMouseButtonEventData* eData = static_cast< GUCEF::INPUT::CMouseButtonEventData* >( eventdata );
-            if ( eData->GetPressedState() )
+            if ( m_inputContext->GetID() == eData->GetContextId() )
             {
-                m_guiSystem->injectMousePress( (int)eData->GetXPos()                             , 
-                                               (int)eData->GetYPos()                             , 
-                                               ConvertMouseButtonIdex( eData->GetButtonIndex() ) );
-            }
-            else
-            {
-                m_guiSystem->injectMouseRelease( (int)eData->GetXPos()                           ,
-                                                 (int)eData->GetYPos()                           ,
-                                                 ConvertMouseButtonIdex( eData->GetButtonIndex() ) );
+                if ( eData->GetPressedState() )
+                {
+                    m_guiSystem->injectMousePress( (int)eData->GetXPos()                             , 
+                                                   (int)eData->GetYPos()                             , 
+                                                   ConvertMouseButtonIdex( eData->GetButtonIndex() ) );
+
+                    GUCEF_DEBUG_LOG( CORE::LOGLEVEL_BELOW_NORMAL, "GUIDRIVERMYGUI::CMyGUIInputAdapter: injected mouse button down. buttonIndex=" + CORE::Int32ToString( eData->GetButtonIndex() ) );
+                }
+                else
+                {
+                    m_guiSystem->injectMouseRelease( (int)eData->GetXPos()                           ,
+                                                     (int)eData->GetYPos()                           ,
+                                                     ConvertMouseButtonIdex( eData->GetButtonIndex() ) );
+                    
+                    GUCEF_DEBUG_LOG( CORE::LOGLEVEL_BELOW_NORMAL, "GUIDRIVERMYGUI::CMyGUIInputAdapter: injected mouse button up. buttonIndex=" + CORE::Int32ToString( eData->GetButtonIndex() ) );
+                }
             }
             return;
         }
         if ( GUCEF::INPUT::CMouse::MouseMovedEvent == eventid )
         {
             GUCEF::INPUT::CMouseMovedEventData* eData = static_cast< GUCEF::INPUT::CMouseMovedEventData* >( eventdata );
-            m_guiSystem->injectMouseMove( (int) eData->GetXPos() ,
-                                          (int) eData->GetYPos() ,
-                                          0                      );
+            if ( m_inputContext->GetID() == eData->GetContextId() )
+            {
+                m_guiSystem->injectMouseMove( (int) eData->GetXPos() ,
+                                              (int) eData->GetYPos() ,
+                                              0                      );
+
+                GUCEF_DEBUG_LOG( CORE::LOGLEVEL_BELOW_NORMAL, "GUIDRIVERMYGUI::CMyGUIInputAdapter: injected mouse move x=" + CORE::Int32ToString( eData->GetXPos() ) +
+                                                                                                                     " y=" + CORE::Int32ToString( eData->GetYPos() ) );
+            }
             return;
         }
         if ( GUCEF::INPUT::CKeyboard::KeyStateChangedEvent == eventid )
         {
             GUCEF::INPUT::CKeyStateChangedEventData* eData = static_cast< GUCEF::INPUT::CKeyStateChangedEventData* >( eventdata );
-            if ( eData->GetKeyPressedState() )
-            {   
-                // The MyGUI scancode values are the same as those used by gucefINPUT
-                // as such a simple cast is sufficient to perform the translation
-                m_guiSystem->injectKeyPress( (MyGUI::KeyCode::Enum) eData->GetKeyCode() );
-            }
-            else
+            //if ( m_inputContext->GetID() == eData->GetContextId() )
             {
-                // The MyGUI scancode values are the same as those used by gucefINPUT
-                // as such a simple cast is sufficient to perform the translation
-                m_guiSystem->injectKeyRelease( (MyGUI::KeyCode::Enum) eData->GetKeyCode() );
+                if ( eData->GetKeyPressedState() )
+                {   
+                    // The MyGUI scancode values are the same as those used by gucefINPUT
+                    // as such a simple cast is sufficient to perform the translation
+                    m_guiSystem->injectKeyPress( (MyGUI::KeyCode::Enum) eData->GetKeyCode() );
+                }
+                else
+                {
+                    // The MyGUI scancode values are the same as those used by gucefINPUT
+                    // as such a simple cast is sufficient to perform the translation
+                    m_guiSystem->injectKeyRelease( (MyGUI::KeyCode::Enum) eData->GetKeyCode() );
+                }
             }                
             return;
         }

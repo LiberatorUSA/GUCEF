@@ -33,6 +33,11 @@
 #define GUCEF_CORE_COBSERVER_H
 #endif /* GUCEF_CORE_COBSERVER_H ? */
 
+#ifndef GUCEF_INPUT_CINPUTCONTROLLER_H
+#include "CInputController.h"
+#define GUCEF_INPUT_CINPUTCONTROLLER_H
+#endif /* GUCEF_INPUT_CINPUTCONTROLLER_H ? */
+
 #ifndef GUCEF_MYGUI_MACROS_H
 #include "guceMyGUI_macros.h"      /* often used macros */
 #define GUCEF_MYGUI_MACROS_H
@@ -63,6 +68,14 @@ class GUCEF_MYGUI_EXPORT_CPP CMyGUIInputAdapter : public GUCEF::CORE::CObserver
     
     const CString& GetClassTypeName( void ) const;
 
+    void StartListningForInputEvents( void );
+
+    void StopListningForInputEvents( void );
+
+    void SetInputContext( INPUT::CInputContext* inputContext );
+
+    INPUT::CInputContext* GetInputContext( void ) const;
+
     protected:
     
     virtual void OnNotify( GUCEF::CORE::CNotifier* notifier                 ,
@@ -79,6 +92,7 @@ class GUCEF_MYGUI_EXPORT_CPP CMyGUIInputAdapter : public GUCEF::CORE::CObserver
     
     private:
     
+    INPUT::CInputContext* m_inputContext;
     MyGUI::Gui* m_guiSystem;
 };
 

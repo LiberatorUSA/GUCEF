@@ -17,8 +17,8 @@
  *  Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA 
  */
 
-#ifndef GUCEF_GUIDRIVERMYGUI_CGUIDRIVER_H
-#define GUCEF_GUIDRIVERMYGUI_CGUIDRIVER_H
+#ifndef GUCEF_GUIDRIVERMYGUI_CMYGUIDRIVER_H
+#define GUCEF_GUIDRIVERMYGUI_CMYGUIDRIVER_H
 
 /*-------------------------------------------------------------------------//
 //                                                                         //
@@ -26,7 +26,15 @@
 //                                                                         //
 //-------------------------------------------------------------------------*/
 
-#include <assert.h>
+#ifndef __MYGUI_H__
+#include "MyGUI.h"
+#define __MYGUI_H__
+#endif /* __MYGUI_H__ ? */
+
+#ifndef GUCEF_GUI_CWIDGET_H
+#include "gucefGUI_CWidget.h"
+#define GUCEF_GUI_CWIDGET_H
+#endif /* GUCEF_GUI_CWIDGET_H ? */
 
 #ifndef GUCEF_GUI_CFORMEX_H
 #include "gucefGUI_CFormEx.h"
@@ -58,46 +66,29 @@ namespace MYGUI {
 //                                                                         //
 //-------------------------------------------------------------------------*/
 
-class GUCEF_MYGUIGL_EXPORT_CPP CGUIDriver : public GUI::CGUIDriver
+class GUCEF_MYGUI_EXPORT_CPP CMyGUIDriver : public GUI::CGUIDriver
 {
     public:
 
-    CGUIDriver( void );
+    CMyGUIDriver( void );
 
-    virtual ~CGUIDriver();
-  
-    virtual TStringSet GetAvailableFormTypes( void );
-    
-    virtual TStringSet GetAvailableWidgetTypes( void );
-    
+    virtual ~CMyGUIDriver();
+     
     virtual const CString& GetClassTypeName( void ) const;
     
     virtual GUCEF::GUI::CWidget* CreateWidget( const CString& widgetName );
     
     virtual void DestroyWidget( GUI::CWidget* widget );
-    
-    virtual GUCEF::GUI::CForm* CreateForm( const CString& formName );
-    
-    virtual void DestroyForm( GUI::CForm* form );   
 
-    virtual TStringSet GetAvailableFormTypes( void );
+    virtual GUI::CGUIDriver::TStringSet GetAvailableFormTypes( void );
     
-    virtual TStringSet GetAvailableWidgetTypes( void );
+    virtual GUI::CGUIDriver::TStringSet GetAvailableWidgetTypes( void );
     
     virtual GUCEF::GUI::CFormBackend* CreateFormBackend( void );
     
     virtual void DestroyFormBackend( GUI::CFormBackend* formBackend );
-    
-    virtual GUCEF::GUI::CGUIDriver* GetDriver( void );
-    
-    virtual TWidgetSet GetOwnedWidgets( void );
-    
-    virtual TFormSet GetOwnedForms( void );
 
-    protected:
-
-    TWidgetSet m_widgets;
-    TFormSet m_forms;
+    virtual MyGUI::Gui* GetMyGui( void ) = 0;
 };
 
 /*-------------------------------------------------------------------------//
@@ -111,7 +102,7 @@ class GUCEF_MYGUIGL_EXPORT_CPP CGUIDriver : public GUI::CGUIDriver
 
 /*-------------------------------------------------------------------------*/
 
-#endif /* GUCEF_MYGUIGL_CGUIDRIVERGL_H ? */
+#endif /* GUCEF_GUIDRIVERMYGUI_CMYGUIDRIVER_H ? */
 
 /*-------------------------------------------------------------------------//
 //                                                                         //
