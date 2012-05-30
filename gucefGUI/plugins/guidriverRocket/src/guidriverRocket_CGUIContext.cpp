@@ -65,6 +65,7 @@ CGUIContext::CGUIContext( GUI::CGUIDriver* guiDriver           ,
     SubscribeTo( m_windowContext.GetPointer() );
     m_inputAdapter.SetRocketContext( rocketContext );
     m_inputAdapter.StartListningForInputEvents();
+    m_inputAdapter.SetInputContext( m_inputContext );
 }
 
 /*-------------------------------------------------------------------------*/

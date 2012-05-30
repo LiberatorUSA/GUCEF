@@ -51,6 +51,8 @@ class GUCEF_GUI_PUBLIC_CPP CFormEx : public CForm
     public:
     
     CFormEx( void );
+
+    CFormEx( CIGUIContext* context );
     
     virtual ~CFormEx();
 

@@ -45,12 +45,14 @@ namespace INPUT {
 //                                                                         //
 //-------------------------------------------------------------------------*/
 
-CMouseButtonEventData::CMouseButtonEventData( const UInt32 deviceID    ,
+CMouseButtonEventData::CMouseButtonEventData( const Int32 contextId    ,
+                                              const UInt32 deviceID    ,
                                               const UInt32 buttonIndex ,
                                               const bool pressedState  ,
                                               const Int32 xPos         ,
                                               const Int32 yPos         )
     : CICloneable()                  ,
+      m_contextId( contextId )       ,
       m_deviceID( deviceID )         ,
       m_buttonIndex( buttonIndex )   ,
       m_pressedState( pressedState ) ,
@@ -64,6 +66,7 @@ CMouseButtonEventData::CMouseButtonEventData( const UInt32 deviceID    ,
 
 CMouseButtonEventData::CMouseButtonEventData( const CMouseButtonEventData& src )
     : CICloneable( src )                   ,
+      m_contextId( src.m_contextId )       ,
       m_deviceID( src.m_deviceID )         ,
       m_buttonIndex( src.m_buttonIndex )   ,
       m_pressedState( src.m_pressedState ) ,
@@ -78,6 +81,15 @@ CMouseButtonEventData::CMouseButtonEventData( const CMouseButtonEventData& src )
 CMouseButtonEventData::~CMouseButtonEventData()
 {GUCEF_TRACE;
 
+}
+
+/*-------------------------------------------------------------------------*/
+
+Int32
+CMouseButtonEventData::GetContextId( void ) const
+{GUCEF_TRACE;
+    
+    return m_contextId;
 }
 
 /*-------------------------------------------------------------------------*/

@@ -55,6 +55,7 @@ CGUIContextGL::CGUIContextGL( CGUIDriverGL& guiDriver                   ,
       m_windowContext( windowContext ) 
 {GUCEF_TRACE;
 
+    SubscribeTo( m_windowContext.GetPointer() );
 }
 
 /*-------------------------------------------------------------------------*/
@@ -82,7 +83,8 @@ CGUIContextGL::OnNotify( CORE::CNotifier* notifier   ,
                          CORE::CICloneable* evenData )
 {GUCEF_TRACE;
 
-    if ( eventID == GUI::CWindowContext::WindowContextRedrawEvent )
+    if ( eventID == GUI::CWindowContext::WindowContextRedrawEvent   ||
+         eventID == GUI::CWindowContext::WindowContextActivateEvent  )
     {
         m_renderManager->drawOneFrame();
     }

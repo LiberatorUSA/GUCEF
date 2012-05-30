@@ -112,17 +112,20 @@ class GUCEF_INPUT_PUBLIC_CPP CInputDriver
 
     protected:
     
-    void InjectMouseButtonChange( const Int32 deviceIndex  ,
+    void InjectMouseButtonChange( const Int32 contextId    ,  
+                                  const Int32 deviceIndex  ,
                                   const UInt32 buttonIndex ,
                                   const bool buttonPressed );
 
-    void InjectMouseMove( const Int32 deviceIndex ,
+    void InjectMouseMove( const Int32 contextId   ,
+                          const Int32 deviceIndex ,
                           const Int32 xPos        ,
                           const Int32 yPos        ,
                           const Int32 xDelta      ,
                           const Int32 yDelta      );
 
-    void InjectKeyboardKeyChange( const Int32 deviceIndex ,
+    void InjectKeyboardKeyChange( const Int32 contextId   ,
+                                  const Int32 deviceIndex ,
                                   const KeyCode keyCode   ,
                                   const bool keyPressed   );
 

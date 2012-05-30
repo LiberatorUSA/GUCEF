@@ -41,6 +41,11 @@
 #define GUCEF_GUI_CGUIDRIVER_H
 #endif /* GUCEF_GUI_CGUIDRIVER_H ? */
 
+#ifndef GUCEF_MYGUI_CMYGUIINPUTADAPTER_H
+#include "guceMyGUI_CMyGUIInputAdapter.h"
+#define GUCEF_MYGUI_CMYGUIINPUTADAPTER_H
+#endif /* GUCEF_MYGUI_CMYGUIINPUTADAPTER_H ? */
+
 #ifndef GUCEF_MYGUI_MACROS_H
 #include "guceMyGUI_macros.h"     /* often used guceMYGUIOGRE macros */
 #define GUCEF_MYGUI_MACROS_H
@@ -61,6 +66,10 @@ namespace MYGUI {
 //                                                                         //
 //-------------------------------------------------------------------------*/
 
+class CMyGUIDriver;
+
+/*-------------------------------------------------------------------------*/
+
 /**
  *  Implementation of the GUI context for MyGUI
  */
@@ -68,7 +77,7 @@ class GUCEF_MYGUI_EXPORT_CPP CGUIContext : public GUI::CIGUIContext
 {
     public:    
     
-    CGUIContext( GUI::CGUIDriver& myGuiDriver       ,
+    CGUIContext( CMyGUIDriver& myGuiDriver          ,
                  INPUT::CInputContext* inputContext );
     
     virtual ~CGUIContext();
@@ -102,10 +111,11 @@ class GUCEF_MYGUI_EXPORT_CPP CGUIContext : public GUI::CIGUIContext
     
     private:
 
-    CGUIDriver* m_driver;
+    CMyGUIDriver* m_driver;
     TWidgetSet m_widgetSet;
     TFormSet m_formSet;
     INPUT::CInputContext* m_inputContext;
+    CMyGUIInputAdapter m_inputAdapter;
 };
 
 /*-------------------------------------------------------------------------//

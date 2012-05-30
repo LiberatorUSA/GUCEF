@@ -94,6 +94,7 @@ GUCEF_IMPLEMENT_MSGEXCEPTION( CInputController, EInvalidIndex );
 
 CInputController::CInputController( void )
         : CORE::CObservingNotifier() ,
+          m_idGenerator()            ,
           m_keyboardMap()            ,
           m_mouseMap()               ,
           m_pulseGenerator( &CORE::CCoreGlobal::Instance()->GetPulseGenerator() ),
@@ -169,6 +170,7 @@ CInputController::CreateContext( const CString& driverName      ,
         {
             GUCEF_SYSTEM_LOG( CORE::LOGLEVEL_NORMAL, "Created input context using driver " + driverName );
 
+            context->SetID( m_idGenerator.GenerateID() );
             m_contextSet.insert( context );
             return context;
         }
@@ -273,7 +275,8 @@ CInputController::RegisterEvents( void )
 /*-------------------------------------------------------------------------*/
 
 void
-CInputController::SetMouseButtonState( const Int32 deviceID     ,
+CInputController::SetMouseButtonState( const Int32 contextId    ,
+                                       const Int32 deviceID     ,
                                        const UInt32 buttonIndex ,
                                        const bool pressedState  )
 {GUCEF_TRACE;
@@ -281,7 +284,8 @@ CInputController::SetMouseButtonState( const Int32 deviceID     ,
     TMouseMap::iterator i = m_mouseMap.find( deviceID );
     if ( i != m_mouseMap.end() )
     {
-        (*i).second->SetButtonState( buttonIndex  ,
+        (*i).second->SetButtonState( contextId    ,
+                                     buttonIndex  ,
                                      pressedState );
     }
     else
@@ -293,18 +297,20 @@ CInputController::SetMouseButtonState( const Int32 deviceID     ,
 /*-------------------------------------------------------------------------*/
 
 void
-CInputController::SetMousePos( const Int32 deviceID ,
-                               const UInt32 xPos    ,
-                               const UInt32 yPos    ,
-                               const Int32 xDelta   ,
-                               const Int32 yDelta   )
+CInputController::SetMousePos( const Int32 contextId ,
+                               const Int32 deviceID  ,
+                               const UInt32 xPos     ,
+                               const UInt32 yPos     ,
+                               const Int32 xDelta    ,
+                               const Int32 yDelta    )
 {GUCEF_TRACE;
 
     TMouseMap::iterator i = m_mouseMap.find( deviceID );
     if ( i != m_mouseMap.end() )
     {
-        (*i).second->SetMousePos( xPos  ,
-                                  yPos );
+        (*i).second->SetMousePos( contextId ,
+                                  xPos      ,
+                                  yPos      );
     }
     else
     {
@@ -332,7 +338,8 @@ CInputController::ResetMouseStates( const Int32 deviceID )
 /*-------------------------------------------------------------------------*/
 
 void
-CInputController::SetKeyboardKeyState( const Int32 deviceID  ,
+CInputController::SetKeyboardKeyState( const Int32 contextId ,
+                                       const Int32 deviceID  ,
                                        const KeyCode keyCode ,
                                        const bool keyPressed )
 {GUCEF_TRACE;

@@ -55,7 +55,8 @@ class GUCEF_INPUT_PUBLIC_CPP CMouseMovedEventData : public CORE::CICloneable
 {
     public:
     
-    CMouseMovedEventData( const UInt32 deviceID ,
+    CMouseMovedEventData( const Int32 contextId ,
+                          const UInt32 deviceID ,
                           const Int32 xPos      ,
                           const Int32 yPos      ,
                           const Int32 prevXPos  ,
@@ -64,6 +65,8 @@ class GUCEF_INPUT_PUBLIC_CPP CMouseMovedEventData : public CORE::CICloneable
     CMouseMovedEventData( const CMouseMovedEventData& src );
                         
     virtual ~CMouseMovedEventData();
+    
+    Int32 GetContextId( void ) const;
     
     UInt32 GetDeviceID( void ) const;
         
@@ -88,6 +91,7 @@ class GUCEF_INPUT_PUBLIC_CPP CMouseMovedEventData : public CORE::CICloneable
     
     private:
     
+    Int32 m_contextId;
     UInt32 m_deviceID;
     Int32 m_xPos;
     Int32 m_yPos;

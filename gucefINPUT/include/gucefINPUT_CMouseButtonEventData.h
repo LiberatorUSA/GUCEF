@@ -55,7 +55,8 @@ class GUCEF_INPUT_PUBLIC_CPP CMouseButtonEventData : public CORE::CICloneable
 {
     public:
     
-    CMouseButtonEventData( const UInt32 deviceID    ,
+    CMouseButtonEventData( const Int32 contextId    ,
+                           const UInt32 deviceID    ,
                            const UInt32 buttonIndex ,
                            const bool pressedState  ,
                            const Int32 xPos         ,
@@ -64,6 +65,8 @@ class GUCEF_INPUT_PUBLIC_CPP CMouseButtonEventData : public CORE::CICloneable
     CMouseButtonEventData( const CMouseButtonEventData& src );
                         
     virtual ~CMouseButtonEventData();
+    
+    Int32 GetContextId( void ) const;
     
     UInt32 GetDeviceID( void ) const;
         
@@ -84,6 +87,7 @@ class GUCEF_INPUT_PUBLIC_CPP CMouseButtonEventData : public CORE::CICloneable
     
     private:
     
+    Int32 m_contextId;
     UInt32 m_deviceID;
     UInt32 m_buttonIndex;
     bool m_pressedState;

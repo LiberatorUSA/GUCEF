@@ -48,7 +48,7 @@ namespace INPUT {
 CInputContext::CInputContext( CInputDriver& inputDriver      ,
                               const CORE::CValueList& params )
         : m_valuelist( params )         ,
-          m_id( 0UL )                   ,
+          m_id()                        ,
           m_inputDriver( &inputDriver )
 {GUCEF_TRACE;
 
@@ -73,7 +73,7 @@ CInputContext::GetContextParams( void ) const
 /*-------------------------------------------------------------------------*/
 
 void 
-CInputContext::SetID( const UInt32 id )
+CInputContext::SetID( TContextId& id )
 {GUCEF_TRACE;
     
     m_id = id;
@@ -81,7 +81,7 @@ CInputContext::SetID( const UInt32 id )
 
 /*-------------------------------------------------------------------------*/
 
-UInt32 
+Int32 
 CInputContext::GetID( void ) const
 {GUCEF_TRACE;
     

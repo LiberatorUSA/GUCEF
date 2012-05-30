@@ -66,7 +66,7 @@ namespace MYGUIGL {
 //-------------------------------------------------------------------------*/
 
 CGUIDriverGL::CGUIDriverGL( void )
-    : GUI::CGUIDriver()           ,
+    : MYGUI::CMyGUIDriver()       ,
       m_contextSet()              ,
       m_fontTypes()               ,
       m_myGUI()                   ,
@@ -84,7 +84,16 @@ CGUIDriverGL::CGUIDriverGL( void )
 CGUIDriverGL::~CGUIDriverGL()
 {GUCEF_TRACE;
 
+    m_contextSet.clear();
     m_myGUI.shutdown();
+}
+
+/*-------------------------------------------------------------------------*/
+
+MyGUI::Gui*
+CGUIDriverGL::GetMyGui( void )
+{
+    return &m_myGUI;
 }
 
 /*-------------------------------------------------------------------------*/
@@ -144,24 +153,6 @@ CGUIDriverGL::GetDriverName( void )
 {GUCEF_TRACE;
 
     return "MyGUIOpenGL";
-}
-
-/*-------------------------------------------------------------------------*/
-
-GUI::CGUIDriver::TStringSet
-CGUIDriverGL::GetAvailableFormTypes( void )
-{GUCEF_TRACE;
-
-    return GUI::CGUIDriver::TStringSet();
-}
-
-/*-------------------------------------------------------------------------*/
-
-GUI::CGUIDriver::TStringSet
-CGUIDriverGL::GetAvailableWidgetTypes( void )
-{GUCEF_TRACE;
-
-    return GUI::CGUIDriver::TStringSet();
 }
 
 /*-------------------------------------------------------------------------*/

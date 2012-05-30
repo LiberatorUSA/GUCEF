@@ -620,7 +620,10 @@ SetupWindowContext( GUI::TWindowManagerBackendPtr windowMngrBackend ,
             if ( NULL != form )
             {                             
                 // load the test layout resource
-                return form->LoadLayoutUsingVfs( formInfo.formResourcePath );      
+                if ( form->LoadLayout( formInfo.formResourcePath ) )
+                {
+                    return form->Show();
+                }
             }
         }
     }

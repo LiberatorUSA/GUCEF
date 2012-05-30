@@ -26,10 +26,15 @@
 //                                                                         //
 //-------------------------------------------------------------------------*/
 
-#ifndef CVALUELIST_H
+#ifndef GUCEF_CORE_CVALUELIST_H
 #include "CValueList.h"
-#define CVALUELIST_H
-#endif /* CVALUELIST_H ? */
+#define GUCEF_CORE_CVALUELIST_H
+#endif /* GUCEF_CORE_CVALUELIST_H ? */
+
+#ifndef GUCEF_CORE_CTNUMERICID_H
+#include "CTNumericID.h"
+#define GUCEF_CORE_CTNUMERICID_H
+#endif /* GUCEF_CORE_CTNUMERICID_H ? */
 
 #ifndef GUCEFINPUT_MACROS_H
 #include "gucefINPUT_macros.h"
@@ -66,14 +71,16 @@ class GUCEF_INPUT_PUBLIC_CPP CInputContext
 
     const CORE::CValueList& GetContextParams( void ) const;
                 
-    UInt32 GetID( void ) const;
+    Int32 GetID( void ) const;
 
     CInputDriver* GetDriver( void );
         
     private:
     friend class CInputController;
+
+    typedef CORE::CTNumericID< CORE::Int32 > TContextId;
         
-    void SetID( const UInt32 id );
+    void SetID( TContextId& id );
         
     private:
         
@@ -84,7 +91,7 @@ class GUCEF_INPUT_PUBLIC_CPP CInputContext
     private:
         
     CORE::CValueList m_valuelist;
-    UInt32 m_id;
+    TContextId m_id;
     CInputDriver* m_inputDriver;
 };
 

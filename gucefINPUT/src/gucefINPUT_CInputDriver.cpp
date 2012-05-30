@@ -66,12 +66,14 @@ CInputDriver::~CInputDriver()
 /*-------------------------------------------------------------------------*/
 
 void
-CInputDriver::InjectMouseButtonChange( const Int32 deviceIndex  ,
+CInputDriver::InjectMouseButtonChange( const Int32 contextId    ,
+                                       const Int32 deviceIndex  ,
                                        const UInt32 buttonIndex ,
                                        const bool buttonPressed )
 {GUCEF_TRACE;
 
-    m_controller->SetMouseButtonState( deviceIndex   ,
+    m_controller->SetMouseButtonState( contextId     ,
+                                       deviceIndex   ,
                                        buttonIndex   ,
                                        buttonPressed );
 }
@@ -79,14 +81,16 @@ CInputDriver::InjectMouseButtonChange( const Int32 deviceIndex  ,
 /*-------------------------------------------------------------------------*/
 
 void
-CInputDriver::InjectMouseMove( const Int32 deviceIndex ,
+CInputDriver::InjectMouseMove( const Int32 contextId   ,
+                               const Int32 deviceIndex ,
                                const Int32 xPos        ,
                                const Int32 yPos        ,
                                const Int32 xDelta      ,
                                const Int32 yDelta      )
 {GUCEF_TRACE;
 
-    m_controller->SetMousePos( deviceIndex ,
+    m_controller->SetMousePos( contextId   ,
+                               deviceIndex ,
                                xPos        ,
                                yPos        ,
                                xDelta      ,
@@ -96,12 +100,14 @@ CInputDriver::InjectMouseMove( const Int32 deviceIndex ,
 /*-------------------------------------------------------------------------*/
 
 void
-CInputDriver::InjectKeyboardKeyChange( const Int32 deviceIndex ,
+CInputDriver::InjectKeyboardKeyChange( const Int32 contextId   ,
+                                       const Int32 deviceIndex ,
                                        const KeyCode keyCode   ,
                                        const bool keyPressed   )
 {GUCEF_TRACE;
 
-    m_controller->SetKeyboardKeyState( deviceIndex ,
+    m_controller->SetKeyboardKeyState( contextId   ,
+                                       deviceIndex ,
                                        keyCode     ,
                                        keyPressed  );    
 }

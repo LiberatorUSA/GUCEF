@@ -54,9 +54,19 @@ CFormEx::CFormEx( void )
     : CForm()                 ,
       m_isReloadable( false ) ,
       m_layoutFile()          ,
-      m_useVfsDirect( false)
+      m_useVfsDirect( false )
 {GUCEF_TRACE;
 
+}
+
+/*-------------------------------------------------------------------------*/
+
+CFormEx::CFormEx( CIGUIContext* context )
+    : CForm( context )        ,
+      m_isReloadable( false ) ,
+      m_layoutFile()          ,
+      m_useVfsDirect( false )
+{GUCEF_TRACE;
 }
 
 /*-------------------------------------------------------------------------*/
