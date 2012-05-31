@@ -5,6 +5,7 @@
 	@module
 */
 
+#include "MyGUI_DataManager.h"
 #include "ResourceW32Pointer.h"
 #include <windows.h>
 

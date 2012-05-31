@@ -347,7 +347,8 @@ CInputController::SetKeyboardKeyState( const Int32 contextId ,
     TKeyboardMap::iterator i = m_keyboardMap.find( deviceID );
     if ( i != m_keyboardMap.end() )
     {
-        (*i).second->SetKeyState( keyCode    ,
+        (*i).second->SetKeyState( contextId  ,
+                                  keyCode    ,
                                   keyPressed );
     }
     else

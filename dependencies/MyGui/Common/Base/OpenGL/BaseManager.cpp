@@ -201,9 +201,39 @@ namespace base
 		UnregisterClass(WND_CLASS_NAME, hInstance);
 	}
 
+    std::string GetExePath()
+    {
+        #if WIN32
+        
+        char exePath[ MAX_PATH*2 ];
+        ::GetModuleFileName( NULL, exePath, MAX_PATH*2 );
+        int len = strlen( exePath );
+        for ( int i=len; len>=0; --i )
+        {
+            if ( exePath[ i ] == '\\' )
+            {
+                exePath[ i ] = '\0';
+                break;
+            }
+        }
+        return exePath;
+
+        #endif
+    }
+
+    std::string GetGucefArchiveMyGuiPath()
+    {
+        return GetExePath() + "\\..\\..\\..\\..\\..\\dependencies\\MyGui\\Media";
+    }
+
 	void BaseManager::setupResources()
 	{
-		MyGUI::xml::Document doc;
+		/*
+         *  DV edit: need it to load files 
+         */
+        mRootMedia = GetGucefArchiveMyGuiPath();
+        
+        MyGUI::xml::Document doc;
 
 		if (!doc.open(std::string("resources.xml")))
 			doc.getLastError();

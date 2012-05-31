@@ -45,11 +45,13 @@ namespace INPUT {
 //                                                                         //
 //-------------------------------------------------------------------------*/
 
-CKeyStateChangedEventData::CKeyStateChangedEventData( const UInt32 deviceID     ,
+CKeyStateChangedEventData::CKeyStateChangedEventData( const Int32 contextId     ,
+                                                      const UInt32 deviceID     ,
                                                       const KeyCode keyCode     ,
                                                       const bool pressedState   ,
                                                       const UInt32 keyModStates )
     : CICloneable()                  ,
+      m_contextId( contextId )       ,
       m_deviceID( deviceID )         ,
       m_keyCode( keyCode )           ,
       m_pressedState( pressedState ) ,
@@ -62,6 +64,7 @@ CKeyStateChangedEventData::CKeyStateChangedEventData( const UInt32 deviceID     
 
 CKeyStateChangedEventData::CKeyStateChangedEventData( const CKeyStateChangedEventData& src )
     : CICloneable( src )                   ,
+      m_contextId( src.m_contextId )       ,
       m_deviceID( src.m_deviceID )         ,
       m_keyCode( src.m_keyCode )           ,
       m_pressedState( src.m_pressedState ) ,
@@ -75,6 +78,15 @@ CKeyStateChangedEventData::CKeyStateChangedEventData( const CKeyStateChangedEven
 CKeyStateChangedEventData::~CKeyStateChangedEventData()
 {GUCEF_TRACE;
 
+}
+
+/*-------------------------------------------------------------------------*/
+
+Int32
+CKeyStateChangedEventData::GetContextId( void ) const
+{GUCEF_TRACE;
+
+    return m_contextId;
 }
 
 /*-------------------------------------------------------------------------*/

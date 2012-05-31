@@ -52,6 +52,8 @@ elseif (WIN32)
     ../../Common/Base/StatisticInfo.h
     ../../Common/Base/OpenGL/BaseManager.h
     ../../Common/Input/InputConverter.h
+    ../../Common/Input/Win32API/InputManager.h
+    ../../Common/Input/Win32API/PointerManager.h
   )
 
   set( PLATFORM_HEADER_INSTALL "WIN32" )
@@ -62,6 +64,8 @@ elseif (WIN32)
     View.cpp
     ../../Common/Precompiled.cpp
     ../../Common/Base/OpenGL/BaseManager.cpp
+    ../../Common/Input/Win32API/InputManager.cpp
+    ../../Common/Input/Win32API/PointerManager.cpp
   )
 
   set( PLATFORM_SOURCE_INSTALL "WIN32" )
@@ -77,6 +81,8 @@ elseif (WIN64)
     ../../Common/Base/StatisticInfo.h
     ../../Common/Base/OpenGL/BaseManager.h
     ../../Common/Input/InputConverter.h
+    ../../Common/Input/Win32API/InputManager.h
+    ../../Common/Input/Win32API/PointerManager.h
   )
 
   set( PLATFORM_HEADER_INSTALL "WIN64" )
@@ -87,6 +93,8 @@ elseif (WIN64)
     View.cpp
     ../../Common/Precompiled.cpp
     ../../Common/Base/OpenGL/BaseManager.cpp
+    ../../Common/Input/Win32API/InputManager.cpp
+    ../../Common/Input/Win32API/PointerManager.cpp
   )
 
   set( PLATFORM_SOURCE_INSTALL "WIN64" )
@@ -138,11 +146,11 @@ if ( LINUX )
 endif( LINUX )
 
 if ( WIN32 )
-  include_directories( ../ImageSetViewer ../../Common ../../Common/Base ../../Common/Base/OpenGL ../../Common/Input )
+  include_directories( ../ImageSetViewer ../../Common ../../Common/Base ../../Common/Base/OpenGL ../../Common/Input ../../Common/Input/Win32API )
 endif( WIN32 )
 
 if ( WIN64 )
-  include_directories( ../ImageSetViewer ../../Common ../../Common/Base ../../Common/Base/OpenGL ../../Common/Input )
+  include_directories( ../ImageSetViewer ../../Common ../../Common/Base ../../Common/Base/OpenGL ../../Common/Input ../../Common/Input/Win32API )
 endif( WIN64 )
 
 

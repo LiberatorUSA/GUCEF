@@ -167,7 +167,8 @@ CKeyboard::GetInputDriver( void )
 /*-------------------------------------------------------------------------*/
 
 void
-CKeyboard::SetKeyState( const KeyCode key       ,
+CKeyboard::SetKeyState( const Int32 contextId   ,
+                        const KeyCode key       ,
                         const bool pressedState )
 {GUCEF_TRACE;
 
@@ -175,7 +176,7 @@ CKeyboard::SetKeyState( const KeyCode key       ,
 
     GUCEF_DEBUG_LOG( CORE::LOGLEVEL_NORMAL, "Setting state of key [" + KeyCodeToString( key ) + "] to " + CORE::BoolToString( pressedState ) + " on keyboard " + CORE::Int32ToString(  m_deviceID ) );
 
-    CKeyStateChangedEventData eventData( m_deviceID, key, pressedState, m_keyModStates );
+    CKeyStateChangedEventData eventData( contextId, m_deviceID, key, pressedState, m_keyModStates );
     NotifyObservers( KeyStateChangedEvent, &eventData );
 }
 
