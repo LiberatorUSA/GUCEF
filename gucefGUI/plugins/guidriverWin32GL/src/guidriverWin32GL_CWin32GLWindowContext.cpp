@@ -277,9 +277,8 @@ CWin32GLWindowContext::Initialize( const GUI::CString& title                ,
             return false;
 	    }
 
-	    if ( wglMakeCurrent( m_deviceContext, m_renderContext ) == FALSE )
+	    if ( !MakeCurrent() )
 	    {
-		    GUCEF_ERROR_LOG( CORE::LOGLEVEL_NORMAL, "Win32GLWindowContext: Could not make OpenGL rendering context current" );
 		    Shutdown();
             return false;
 	    }
@@ -299,6 +298,8 @@ CWin32GLWindowContext::Initialize( const GUI::CString& title                ,
         glMatrixMode(GL_MODELVIEW);
         glLoadIdentity();
 
+        glClear( GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT );
+
         // Grab the main app pulse generator and set the update interval for the context to the desired refresh rate
         CORE::CPulseGenerator& pulseGenerator = CORE::CCoreGlobal::Instance()->GetPulseGenerator(); 
         pulseGenerator.RequestPeriodicPulses( this, 1000 / videoSettings.GetFrequency() );
@@ -308,6 +309,19 @@ CWin32GLWindowContext::Initialize( const GUI::CString& title                ,
         return true;
     }
     return false;
+}
+
+/*-------------------------------------------------------------------------*/
+
+bool
+CWin32GLWindowContext::MakeCurrent( void )
+{
+	if ( wglMakeCurrent( m_deviceContext, m_renderContext ) == FALSE )
+	{
+		GUCEF_ERROR_LOG( CORE::LOGLEVEL_IMPORTANT, "Win32GLWindowContext: Could not make OpenGL rendering context current" );
+        return false;
+	}
+    return true;
 }
 
 /*-------------------------------------------------------------------------*/
@@ -331,23 +345,29 @@ CWin32GLWindowContext::OnNotify( CORE::CNotifier* notifier   ,
     if ( ( eventID == CORE::CPulseGenerator::PulseEvent )      ||
          ( eventID == CORE::CMsWin32Window::WindowPaintEvent ) )
     {
-        // Clear the screen in preparation for the redraw
-        glClear( GL_COLOR_BUFFER_BIT );
+        // Make sure this context is the current context
+        if ( MakeCurrent() )
+        {
+            // Clear the screen in preparation for the redraw
+            glClear( GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT );
+
+            // Notify that we are going to redraw the window
+            NotifyObservers( WindowContextRedrawEvent );        
         
-        // Notify that we are going to redraw the window
-        NotifyObservers( WindowContextRedrawEvent );        
-        
-        // Swap our front and back buffers
-        ::SwapBuffers( m_deviceContext );
+            // Swap our front and back buffers
+            ::SwapBuffers( m_deviceContext );
+        }
     }
     else
     if ( eventID == CORE::CMsWin32Window::WindowResizeEvent )
     {
+        MakeCurrent();
         NotifyObservers( WindowContextSizeEvent );
     }
     else
     if ( eventID == CORE::CMsWin32Window::WindowActivationEvent )
     {
+        MakeCurrent();
         NotifyObservers( WindowContextActivateEvent );
     }
 }
