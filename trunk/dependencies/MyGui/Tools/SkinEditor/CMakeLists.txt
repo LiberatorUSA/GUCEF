@@ -271,6 +271,8 @@ elseif (WIN32)
     ../../Common/Base/StatisticInfo.h
     ../../Common/Base/OpenGL/BaseManager.h
     ../../Common/Input/InputConverter.h
+    ../../Common/Input/Win32API/InputManager.h
+    ../../Common/Input/Win32API/PointerManager.h
     ../../Common/ItemBox/BaseCellView.h
     ../../Common/ItemBox/BaseItemBox.h
     ../../Common/ItemBox/ItemDropInfo.h
@@ -352,6 +354,8 @@ elseif (WIN32)
     VerticalSelectorControl.cpp
     ../../Common/Precompiled.cpp
     ../../Common/Base/OpenGL/BaseManager.cpp
+    ../../Common/Input/Win32API/InputManager.cpp
+    ../../Common/Input/Win32API/PointerManager.cpp
   )
 
   set( PLATFORM_SOURCE_INSTALL "WIN32" )
@@ -441,6 +445,8 @@ elseif (WIN64)
     ../../Common/Base/StatisticInfo.h
     ../../Common/Base/OpenGL/BaseManager.h
     ../../Common/Input/InputConverter.h
+    ../../Common/Input/Win32API/InputManager.h
+    ../../Common/Input/Win32API/PointerManager.h
     ../../Common/ItemBox/BaseCellView.h
     ../../Common/ItemBox/BaseItemBox.h
     ../../Common/ItemBox/ItemDropInfo.h
@@ -522,6 +528,8 @@ elseif (WIN64)
     VerticalSelectorControl.cpp
     ../../Common/Precompiled.cpp
     ../../Common/Base/OpenGL/BaseManager.cpp
+    ../../Common/Input/Win32API/InputManager.cpp
+    ../../Common/Input/Win32API/PointerManager.cpp
   )
 
   set( PLATFORM_SOURCE_INSTALL "WIN64" )
@@ -573,11 +581,11 @@ if ( LINUX )
 endif( LINUX )
 
 if ( WIN32 )
-  include_directories( ../SkinEditor ../../Common ../../Common/Base ../../Common/Base/OpenGL ../../Common/Input ../../Common/ItemBox )
+  include_directories( ../SkinEditor ../../Common ../../Common/Base ../../Common/Base/OpenGL ../../Common/Input ../../Common/Input/Win32API ../../Common/ItemBox )
 endif( WIN32 )
 
 if ( WIN64 )
-  include_directories( ../SkinEditor ../../Common ../../Common/Base ../../Common/Base/OpenGL ../../Common/Input ../../Common/ItemBox )
+  include_directories( ../SkinEditor ../../Common ../../Common/Base ../../Common/Base/OpenGL ../../Common/Input ../../Common/Input/Win32API ../../Common/ItemBox )
 endif( WIN64 )
 
 

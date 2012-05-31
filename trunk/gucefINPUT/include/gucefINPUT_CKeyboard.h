@@ -123,7 +123,8 @@ class GUCEF_INPUT_PUBLIC_CPP CKeyboard : public CAbstractInputDevice
     
     virtual ~CKeyboard();
     
-    void SetKeyState( const KeyCode key       , 
+    void SetKeyState( const Int32 contextId   ,
+                      const KeyCode key       , 
                       const bool pressedState );
 
     void SetKeyModState( const KeyModifier keyMod , 
@@ -138,6 +139,7 @@ class GUCEF_INPUT_PUBLIC_CPP CKeyboard : public CAbstractInputDevice
     
     private:
     
+    Int32 m_contextId;
     UInt32 m_deviceID;
     TKeyStates m_keyState;
     UInt32 m_keyModStates;
