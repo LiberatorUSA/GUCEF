@@ -110,6 +110,8 @@ class GUIDRIVERWIN32GL_PUBLIC_CPP CWin32GLWindowContext : public GUI::CWindowCon
     CWin32GLWindowContext( const CWin32GLWindowContext& src );            /**< private because: must be unique */ 
     CWin32GLWindowContext& operator=( const CWin32GLWindowContext& src ); /**< private because: must be unique */
 
+    bool MakeCurrent( void );
+
     private:
 
     GUI::TGuiContextPtr m_guiContext;
