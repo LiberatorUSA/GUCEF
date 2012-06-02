@@ -737,6 +737,13 @@ IMGCODECPLUGIN_DecodeImage( void* pluginData      ,
 			    /* At this point images are always greyscale or RGB or RGBA and BBP is always >= 8 */
             }
 
+            if ( bpp == 32 && colourType == FIC_RGB )
+            {
+                /* This is 32bpp thus it is actually RGBA but the Alpha layer has no values thus FreeImage says its RGB 
+                   This screws up usage, correct here */
+                colourType = FIC_RGBALPHA;
+            }
+
             image = (TImage*) malloc( sizeof( TImage ) );
 
             /* build the TImageInfo section */

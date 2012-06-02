@@ -287,13 +287,14 @@ CWin32GLWindowContext::Initialize( const GUI::CString& title                ,
         glClearColor(0, 0, 0, 1);
         glEnableClientState(GL_VERTEX_ARRAY);
         glEnableClientState(GL_COLOR_ARRAY);
+        glViewport( 0, 0, videoSettings.GetResolutionWidthInPixels(), videoSettings.GetResolutionHeightInPixels() );
 
         glEnable(GL_BLEND);
         glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
 
         glMatrixMode(GL_PROJECTION);
         glLoadIdentity();
-        glOrtho(0, 1024, 768, 0, -1, 1);
+        glOrtho(0, GetWidth(), GetHeight(), 0, -1, 1);
 
         glMatrixMode(GL_MODELVIEW);
         glLoadIdentity();
@@ -321,6 +322,7 @@ CWin32GLWindowContext::MakeCurrent( void )
 		GUCEF_ERROR_LOG( CORE::LOGLEVEL_IMPORTANT, "Win32GLWindowContext: Could not make OpenGL rendering context current" );
         return false;
 	}
+    GUCEF_DEBUG_LOG( CORE::LOGLEVEL_EVERYTHING, "Win32GLWindowContext: Made context " + CORE::PointerToString( m_renderContext ) + " active for device context " + CORE::PointerToString( m_deviceContext ) );
     return true;
 }
 
@@ -349,11 +351,12 @@ CWin32GLWindowContext::OnNotify( CORE::CNotifier* notifier   ,
         if ( MakeCurrent() )
         {
             // Clear the screen in preparation for the redraw
-            glClear( GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT );
+           // glClear( GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT );
+           // glViewport( 0, 0, GetWidth(), GetHeight() );
 
             // Notify that we are going to redraw the window
             NotifyObservers( WindowContextRedrawEvent );        
-        
+            
             // Swap our front and back buffers
             ::SwapBuffers( m_deviceContext );
         }
@@ -361,14 +364,24 @@ CWin32GLWindowContext::OnNotify( CORE::CNotifier* notifier   ,
     else
     if ( eventID == CORE::CMsWin32Window::WindowResizeEvent )
     {
+        GUCEF_DEBUG_LOG( CORE::LOGLEVEL_NORMAL, "Win32GLWindowContext: Window resize event received" );
         MakeCurrent();
+        glViewport( 0, 0, GetWidth(), GetHeight() );
         NotifyObservers( WindowContextSizeEvent );
     }
     else
     if ( eventID == CORE::CMsWin32Window::WindowActivationEvent )
     {
+        GUCEF_DEBUG_LOG( CORE::LOGLEVEL_NORMAL, "Win32GLWindowContext: Window activation event received" );
         MakeCurrent();
         NotifyObservers( WindowContextActivateEvent );
+    }
+    else
+    if ( ( eventID == CORE::CMsWin32Window::WindowCloseEvent )    ||
+         ( eventID == CORE::CMsWin32Window::WindowDestroyEvent )  )
+    {
+        GUCEF_DEBUG_LOG( CORE::LOGLEVEL_NORMAL, "Win32GLWindowContext: Window close/destroy event received" );
+        Shutdown();
     }
 }
 
