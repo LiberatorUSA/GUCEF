@@ -314,8 +314,24 @@ bool
 CPixelMap::FlipHorizontal( void )
 {GUCEF_TRACE;
 
-    assert( 0 ); // @TODO makeme
-    return false;
+    UInt32 scanLineSize = GetWidthInBytes(); 
+    void* scanLineBuffer = new UInt8[ scanLineSize ]; 
+
+    UInt32 centerLine = m_heightInPixels / 2;
+    for ( UInt32 i=0; i<centerLine; ++i )
+    {
+        void* frontScanLine = GetDataAtScanLine( i );
+        void* backScanLine =  GetDataAtScanLine( (m_heightInPixels-1)-i );
+        
+        // swap the rows
+        memcpy( scanLineBuffer, frontScanLine, scanLineSize );
+        memcpy( frontScanLine, backScanLine, scanLineSize );
+        memcpy( backScanLine, scanLineBuffer, scanLineSize );
+    }
+    
+    delete []scanLineBuffer;
+
+    return true;
 }
     
 /*--------------------------------------------------------------------------*/

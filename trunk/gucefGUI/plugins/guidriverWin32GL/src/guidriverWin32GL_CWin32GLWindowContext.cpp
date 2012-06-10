@@ -285,12 +285,12 @@ CWin32GLWindowContext::Initialize( const GUI::CString& title                ,
 
         // Set up the GL state.
         glClearColor(0, 0, 0, 1);
-        glEnableClientState(GL_VERTEX_ARRAY);
-        glEnableClientState(GL_COLOR_ARRAY);
+        //glEnableClientState(GL_VERTEX_ARRAY);
+        //glEnableClientState(GL_COLOR_ARRAY);
         glViewport( 0, 0, videoSettings.GetResolutionWidthInPixels(), videoSettings.GetResolutionHeightInPixels() );
 
-        glEnable(GL_BLEND);
-        glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
+        //glEnable(GL_BLEND);
+        //glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
 
         glMatrixMode(GL_PROJECTION);
         glLoadIdentity();
@@ -351,8 +351,8 @@ CWin32GLWindowContext::OnNotify( CORE::CNotifier* notifier   ,
         if ( MakeCurrent() )
         {
             // Clear the screen in preparation for the redraw
-           // glClear( GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT );
-           // glViewport( 0, 0, GetWidth(), GetHeight() );
+            glClear( GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT );
+            glViewport( 0, 0, GetWidth(), GetHeight() );
 
             // Notify that we are going to redraw the window
             NotifyObservers( WindowContextRedrawEvent );        
