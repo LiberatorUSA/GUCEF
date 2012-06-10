@@ -1,0 +1,15 @@
+﻿<?xml version="1.0" encoding="UTF-8"?>
+<MyGUI type="Layout" version="3.2.0">
+    <Widget type="Window" skin="WindowCSX" position="168 72 150 200" layer="Overlapped" name="MainMenuWindow">
+        <Property key="Caption" value="Main Menu"/>
+        <Property key="MinSize" value="200 100"/>
+        <Widget type="Button" skin="Button" position="75 15 130 25" name="Example1Button">
+            <Property key="Caption" value="Submit"/>
+        </Widget>
+        <Widget type="Button" skin="Button" position="75 80 130 25" name="Example2Button"/>
+        <Widget type="Button" skin="Button" position="75 140 130 25" name="ExitButton">
+            <Property key="Caption" value="Exit"/>
+        </Widget>
+    </Widget>
+    <CodeGeneratorSettings/>
+</MyGUI>

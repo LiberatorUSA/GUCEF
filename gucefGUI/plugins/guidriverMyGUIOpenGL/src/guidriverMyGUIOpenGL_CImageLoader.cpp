@@ -147,6 +147,8 @@ CImageLoader::loadImage( int& _width                  ,
                 _format = ConvertPixelFormat( pixelMap );
                 if ( _format != MyGUI::PixelFormat( MyGUI::PixelFormat::Unknow ) )
                 {
+                    pixelMap->FlipHorizontal();
+                    
                     // We have our data, release to MyGui, it takes ownership
                     _width = (int) pixelMap->GetWidthInPixels();
                     _height = (int) pixelMap->GetHeightInPixels();
