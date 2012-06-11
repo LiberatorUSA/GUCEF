@@ -14,7 +14,7 @@
  *
  *  You should have received a copy of the GNU Lesser General Public
  *  License along with this library; if not, write to the Free Software
- *  Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA 
+ *  Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA
  */
 
 /*-------------------------------------------------------------------------//
@@ -79,14 +79,11 @@ namespace MYGUI {
 //                                                                         //
 //-------------------------------------------------------------------------*/
 
-CMyGUIInputAdapter::CMyGUIInputAdapter( MyGUI::Gui* guiSystem )
+CMyGUIInputAdapter::CMyGUIInputAdapter( void )
     : GUCEF::CORE::CObserver()  ,
-      m_inputContext( NULL )    ,
-      m_guiSystem( guiSystem )
+      m_inputContext( NULL )
 {GUCEF_TRACE;
 
-    assert( NULL != m_guiSystem );
-    
 }
 
 /*-------------------------------------------------------------------------*/
@@ -95,7 +92,6 @@ CMyGUIInputAdapter::~CMyGUIInputAdapter()
 {GUCEF_TRACE;
 
     m_inputContext = NULL;
-    m_guiSystem = NULL;
 }
 
 /*-------------------------------------------------------------------------*/
@@ -125,7 +121,7 @@ CMyGUIInputAdapter::StopListningForInputEvents( void )
 void
 CMyGUIInputAdapter::SetInputContext( INPUT::CInputContext* inputContext )
 {GUCEF_TRACE;
-    
+
     m_inputContext = inputContext;
 }
 
@@ -139,7 +135,7 @@ CMyGUIInputAdapter::GetInputContext( void ) const
 }
 
 /*-------------------------------------------------------------------------*/
-    
+
 const CString&
 CMyGUIInputAdapter::GetClassTypeName( void ) const
 {GUCEF_TRACE;
@@ -151,7 +147,7 @@ CMyGUIInputAdapter::GetClassTypeName( void ) const
 /*-------------------------------------------------------------------------*/
 
 MyGUI::MouseButton
-CMyGUIInputAdapter::ConvertMouseButtonIdex( const UInt32 buttonIndex )
+CMyGUIInputAdapter::ConvertMouseButtonIndex( const UInt32 buttonIndex )
 {GUCEF_TRACE;
 
     switch ( buttonIndex )
@@ -180,7 +176,8 @@ CMyGUIInputAdapter::OnNotify( GUCEF::CORE::CNotifier* notifier                 ,
                               GUCEF::CORE::CICloneable* eventdata /* = NULL */ )
 {GUCEF_TRACE;
 
-    if ( NULL != m_guiSystem )
+    MyGUI::InputManager* inputManager = MyGUI::InputManager::getInstancePtr();
+    if ( NULL != inputManager )
     {
         if ( GUCEF::INPUT::CMouse::MouseButtonEvent == eventid )
         {
@@ -189,18 +186,18 @@ CMyGUIInputAdapter::OnNotify( GUCEF::CORE::CNotifier* notifier                 ,
             {
                 if ( eData->GetPressedState() )
                 {
-                    m_guiSystem->injectMousePress( (int)eData->GetXPos()                             , 
-                                                   (int)eData->GetYPos()                             , 
-                                                   ConvertMouseButtonIdex( eData->GetButtonIndex() ) );
+                    inputManager->injectMousePress( (int)eData->GetXPos()                              ,
+                                                    (int)eData->GetYPos()                              ,
+                                                    ConvertMouseButtonIndex( eData->GetButtonIndex() ) );
 
                     GUCEF_DEBUG_LOG( CORE::LOGLEVEL_BELOW_NORMAL, "GUIDRIVERMYGUI::CMyGUIInputAdapter: injected mouse button down. buttonIndex=" + CORE::Int32ToString( eData->GetButtonIndex() ) );
                 }
                 else
                 {
-                    m_guiSystem->injectMouseRelease( (int)eData->GetXPos()                           ,
-                                                     (int)eData->GetYPos()                           ,
-                                                     ConvertMouseButtonIdex( eData->GetButtonIndex() ) );
-                    
+                    inputManager->injectMouseRelease( (int)eData->GetXPos()                            ,
+                                                      (int)eData->GetYPos()                            ,
+                                                      ConvertMouseButtonIndex( eData->GetButtonIndex() ) );
+
                     GUCEF_DEBUG_LOG( CORE::LOGLEVEL_BELOW_NORMAL, "GUIDRIVERMYGUI::CMyGUIInputAdapter: injected mouse button up. buttonIndex=" + CORE::Int32ToString( eData->GetButtonIndex() ) );
                 }
             }
@@ -211,9 +208,9 @@ CMyGUIInputAdapter::OnNotify( GUCEF::CORE::CNotifier* notifier                 ,
             GUCEF::INPUT::CMouseMovedEventData* eData = static_cast< GUCEF::INPUT::CMouseMovedEventData* >( eventdata );
             if ( m_inputContext->GetID() == eData->GetContextId() )
             {
-                m_guiSystem->injectMouseMove( (int) eData->GetXPos() ,
-                                              (int) eData->GetYPos() ,
-                                              0                      );
+                inputManager->injectMouseMove( (int) eData->GetXPos() ,
+                                               (int) eData->GetYPos() ,
+                                               0                      );
 
                 GUCEF_DEBUG_LOG( CORE::LOGLEVEL_BELOW_NORMAL, "GUIDRIVERMYGUI::CMyGUIInputAdapter: injected mouse move x=" + CORE::Int32ToString( eData->GetXPos() ) +
                                                                                                                      " y=" + CORE::Int32ToString( eData->GetYPos() ) );
@@ -226,18 +223,18 @@ CMyGUIInputAdapter::OnNotify( GUCEF::CORE::CNotifier* notifier                 ,
             //if ( m_inputContext->GetID() == eData->GetContextId() )
             {
                 if ( eData->GetKeyPressedState() )
-                {   
+                {
                     // The MyGUI scancode values are the same as those used by gucefINPUT
                     // as such a simple cast is sufficient to perform the translation
-                    m_guiSystem->injectKeyPress( (MyGUI::KeyCode::Enum) eData->GetKeyCode() );
+                    inputManager->injectKeyPress( (MyGUI::KeyCode::Enum) eData->GetKeyCode() );
                 }
                 else
                 {
                     // The MyGUI scancode values are the same as those used by gucefINPUT
                     // as such a simple cast is sufficient to perform the translation
-                    m_guiSystem->injectKeyRelease( (MyGUI::KeyCode::Enum) eData->GetKeyCode() );
+                    inputManager->injectKeyRelease( (MyGUI::KeyCode::Enum) eData->GetKeyCode() );
                 }
-            }                
+            }
             return;
         }
     }
@@ -249,7 +246,7 @@ CMyGUIInputAdapter::OnNotify( GUCEF::CORE::CNotifier* notifier                 ,
 //                                                                         //
 //-------------------------------------------------------------------------*/
 
-}; /* namespace MYGUIOGRE */
-}; /* namespace GUCE */
+}; /* namespace MYGUI */
+}; /* namespace GUCEF */
 
 /*-------------------------------------------------------------------------*/

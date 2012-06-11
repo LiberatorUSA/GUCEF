@@ -99,7 +99,7 @@ enum EImageCodecPluginFuncPtrType
 //      TYPES                                                              //
 //                                                                         //
 //-------------------------------------------------------------------------*/
-                                                 
+
 typedef UInt32 ( GUCEF_PLUGIN_CALLSPEC_PREFIX *TIMGCODECPLUGFPTR_EncodeImage ) ( void* pluginData, void* codecData, const char* codecType, TImage* imageInput, CORE::TIOAccess* output ) GUCEF_PLUGIN_CALLSPEC_SUFFIX;
 typedef UInt32 ( GUCEF_PLUGIN_CALLSPEC_PREFIX *TIMGCODECPLUGFPTR_DecodeImage ) ( void* pluginData, void* codecData, const char* codecType, CORE::TIOAccess* input, TImage** imageOutput, void** imageData ) GUCEF_PLUGIN_CALLSPEC_SUFFIX;
 typedef UInt32 ( GUCEF_PLUGIN_CALLSPEC_PREFIX *TIMGCODECPLUGFPTR_FreeImageStorage ) ( TImage* image, void* imageData ) GUCEF_PLUGIN_CALLSPEC_SUFFIX;
@@ -111,7 +111,7 @@ typedef UInt32 ( GUCEF_PLUGIN_CALLSPEC_PREFIX *TIMGCODECPLUGFPTR_FreeImageStorag
 //-------------------------------------------------------------------------*/
 
 CImageCodecPlugin::CImageCodecPlugin( void )
-    : CORE::CStdCodecPlugin()     
+    : CORE::CStdCodecPlugin()
 {GUCEF_TRACE;
 
     memset( m_icFuncPointers, 0, ICPLUGINFUNCPTR_COUNT );
@@ -134,12 +134,12 @@ CImageCodecPlugin::Link( void* modulePtr                        ,
 
     // Unloading->Loading must be done explicitly
     if ( IsLoaded() ) return false;
-    
+
     // First try and load the basic codec interface
     if ( !CORE::CStdCodecPlugin::Link( modulePtr, pluginMetaData ) ) return false;
 
     GUCEF_SYSTEM_LOG( CORE::LOGLEVEL_NORMAL, "ImageCodecPlugin: Linking API using module pointer: " + CORE::PointerToString( modulePtr ) );
-            
+
     // We have now successfully loaded the module itself
     // We will now try to lookup the function pointers
     m_icFuncPointers[ ICPLUGINFUNCPTR_ENCODEIMAGE ] = CORE::GetFunctionAddress( modulePtr                    ,
@@ -189,11 +189,11 @@ CImageCodecPlugin::Encode( const CImage& inputImage       ,
                            CORE::CIOAccess& encodedOutput ,
                            const CString& typeName        )
 {GUCEF_TRACE;
-   
+
     TImage* cStyleImage = inputImage.CreateCStyleAccess();
-    
-    bool success = ( 0 != ( (TIMGCODECPLUGFPTR_EncodeImage) m_icFuncPointers[ ICPLUGINFUNCPTR_ENCODEIMAGE ] )( m_pluginData                 , 
-                                                                                                               NULL                         , 
+
+    bool success = ( 0 != ( (TIMGCODECPLUGFPTR_EncodeImage) m_icFuncPointers[ ICPLUGINFUNCPTR_ENCODEIMAGE ] )( m_pluginData                 ,
+                                                                                                               NULL                         ,
                                                                                                                typeName.C_String()          ,
                                                                                                                cStyleImage                  ,
                                                                                                                encodedOutput.CStyleAccess() ) );
@@ -203,7 +203,7 @@ CImageCodecPlugin::Encode( const CImage& inputImage       ,
 }
 
 /*-------------------------------------------------------------------------*/
-                     
+
 bool
 CImageCodecPlugin::Decode( CORE::CIOAccess& encodedInput ,
                            CImage& outputImage           ,
@@ -213,25 +213,26 @@ CImageCodecPlugin::Decode( CORE::CIOAccess& encodedInput ,
      TImage* cStyleImage = NULL;
      void* cStyleImageData = NULL;
 
-     if ( 0 != ( (TIMGCODECPLUGFPTR_DecodeImage) m_icFuncPointers[ ICPLUGINFUNCPTR_DECODEIMAGE ] )( m_pluginData                 , 
-                                                                                                    NULL                         , 
+     if ( 0 != ( (TIMGCODECPLUGFPTR_DecodeImage) m_icFuncPointers[ ICPLUGINFUNCPTR_DECODEIMAGE ] )( m_pluginData                 ,
+                                                                                                    NULL                         ,
                                                                                                     typeName.C_String()          ,
                                                                                                     encodedInput.CStyleAccess()  ,
                                                                                                     &cStyleImage                 ,
                                                                                                     &cStyleImageData             ) )
     {
-        outputImage.Assign( *cStyleImage );
-
-        ( (TIMGCODECPLUGFPTR_FreeImageStorage) m_icFuncPointers[ ICPLUGINFUNCPTR_FREEIMAGESTORAGE ] )( cStyleImage, cStyleImageData );
-
-        return true;
+        if ( NULL != cStyleImage )
+        {
+            outputImage.Assign( *cStyleImage );
+            ( (TIMGCODECPLUGFPTR_FreeImageStorage) m_icFuncPointers[ ICPLUGINFUNCPTR_FREEIMAGESTORAGE ] )( cStyleImage, cStyleImageData );
+            return true;
+        }
     }
-     
-    return false;     
+
+    return false;
 }
 
 /*-------------------------------------------------------------------------*/
-                 
+
 bool
 CImageCodecPlugin::Encode( CORE::CIOAccess& source ,
                            CORE::CIOAccess& dest   ,
