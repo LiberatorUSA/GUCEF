@@ -14,7 +14,7 @@
  *
  *  You should have received a copy of the GNU Lesser General Public
  *  License along with this library; if not, write to the Free Software
- *  Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA 
+ *  Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA
  */
 
 /*-------------------------------------------------------------------------//
@@ -33,7 +33,7 @@
 #define GUIDRIVER_MYGUI_WIDGETS_H
 #endif /* GUIDRIVER_MYGUI_WIDGETS_H ? */
 
-#include "guidriverMyGUI_CMyGUIDriver.h"
+#include "guidriverMyGUI_CMyGuiDriver.h"
 
 /*-------------------------------------------------------------------------//
 //                                                                         //
@@ -51,8 +51,8 @@ namespace MYGUI {
 //-------------------------------------------------------------------------*/
 
 CMyGUIDriver::CMyGUIDriver( void )
-    : GUI::CGUIDriver()        
-{GUCEF_TRACE;   
+    : GUI::CGUIDriver()
+{GUCEF_TRACE;
 
 }
 
@@ -63,7 +63,7 @@ CMyGUIDriver::~CMyGUIDriver()
 }
 
 /*-------------------------------------------------------------------------*/
-  
+
 CMyGUIDriver::TStringSet
 CMyGUIDriver::GetAvailableFormTypes( void )
 {GUCEF_TRACE;
@@ -77,7 +77,7 @@ CMyGUIDriver::GetAvailableFormTypes( void )
 }
 
 /*-------------------------------------------------------------------------*/
-    
+
 CMyGUIDriver::TStringSet
 CMyGUIDriver::GetAvailableWidgetTypes( void )
 {GUCEF_TRACE;
@@ -92,7 +92,7 @@ CMyGUIDriver::GetAvailableWidgetTypes( void )
 }
 
 /*-------------------------------------------------------------------------*/
-    
+
 const GUI::CString&
 CMyGUIDriver::GetClassTypeName( void ) const
 {GUCEF_TRACE;
@@ -102,7 +102,7 @@ CMyGUIDriver::GetClassTypeName( void ) const
 }
 
 /*-------------------------------------------------------------------------*/
-    
+
 GUCEF::GUI::CWidget*
 CMyGUIDriver::CreateWidget( const GUI::CString& widgetName )
 {GUCEF_TRACE;
@@ -135,7 +135,7 @@ CMyGUIDriver::CreateWidget( const GUI::CString& widgetName )
 }
 
 /*-------------------------------------------------------------------------*/
-    
+
 void
 CMyGUIDriver::DestroyWidget( GUI::CWidget* widget )
 {GUCEF_TRACE;
@@ -144,7 +144,7 @@ CMyGUIDriver::DestroyWidget( GUI::CWidget* widget )
 }
 
 /*-------------------------------------------------------------------------*/
-    
+
 GUCEF::GUI::CFormBackend*
 CMyGUIDriver::CreateFormBackend( void )
 {GUCEF_TRACE;
@@ -153,7 +153,7 @@ CMyGUIDriver::CreateFormBackend( void )
 }
 
 /*-------------------------------------------------------------------------*/
-    
+
 void
 CMyGUIDriver::DestroyFormBackend( GUI::CFormBackend* formBackend )
 {GUCEF_TRACE;
