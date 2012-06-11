@@ -141,9 +141,9 @@ class CGucefGuiTestAppSettings : public CORE::CIConfigurable
     TFormInfoMap m_formInfoPerGuiBackend;
 
     static CGucefGuiTestAppSettings* g_instance;
-    
+
     public:
-    
+
     const GUI::CString& GetWindowManagerName( void ) const
     {
         return m_windowManagerName;
@@ -156,10 +156,10 @@ class CGucefGuiTestAppSettings : public CORE::CIConfigurable
         {
             return (*i).second;
         }
-        
+
         return TFormInfo();
     }
-    
+
     static CGucefGuiTestAppSettings* Instance( void )
     {
         if ( NULL == g_instance )
@@ -177,7 +177,7 @@ class CGucefGuiTestAppSettings : public CORE::CIConfigurable
 
     /*-------------------------------------------------------------*/
 
-    virtual bool SaveConfig( CORE::CDataNode& tree ) 
+    virtual bool SaveConfig( CORE::CDataNode& tree )
     {
         return true;
     }
@@ -188,10 +188,10 @@ class CGucefGuiTestAppSettings : public CORE::CIConfigurable
     {
         CORE::CDataNode::TConstDataNodeSet configNodes( treeroot.FindChildrenOfType( "GucefGuiTestAppSettings", true ) );
         CORE::CDataNode::TConstDataNodeSet::iterator i = configNodes.begin();
-        while ( i != configNodes.end() ) 
+        while ( i != configNodes.end() )
         {
             const CORE::CDataNode* configNode = (*i);
-        
+
             CORE::CString windowManagerName = configNode->GetAttributeValueOrChildValueByName( "WindowManager" );
             if ( !windowManagerName.IsNULLOrEmpty() )
             {
@@ -200,15 +200,15 @@ class CGucefGuiTestAppSettings : public CORE::CIConfigurable
 
             CORE::CDataNode::TConstDataNodeSet formDataNodes( configNode->FindChildrenOfType( "InitialForm", true ) );
             CORE::CDataNode::TConstDataNodeSet::iterator n = formDataNodes.begin();
-            while ( n != formDataNodes.end() ) 
-            {                
+            while ( n != formDataNodes.end() )
+            {
                 const CORE::CDataNode* formInfoNode = (*n);
-                
+
                 CORE::CString guiBackendName = formInfoNode->GetAttributeValueOrChildValueByName( "GuiBackend" );
                 if ( !guiBackendName.IsNULLOrEmpty() )
                 {
                      TFormInfo& formInfo = m_formInfoPerGuiBackend[ guiBackendName ];
-                    
+
                      formInfo.formTypeName = formInfoNode->GetChildValueByName( "FormTypeName" );
                      formInfo.formResourcePath = formInfoNode->GetChildValueByName( "FormResource" );
 
@@ -226,10 +226,10 @@ class CGucefGuiTestAppSettings : public CORE::CIConfigurable
     private:
 
     CGucefGuiTestAppSettings( void )
-        : CORE::CIConfigurable( true ) 
+        : CORE::CIConfigurable( true )
     {
     }
-    
+
     virtual ~CGucefGuiTestAppSettings()
     {
     }
@@ -618,10 +618,13 @@ SetupWindowContext( GUI::TWindowManagerBackendPtr windowMngrBackend ,
             // Create a form to load the layout into
             GUI::CFormEx* form = static_cast< GUI::CFormEx* >( guiContext->CreateForm( formInfo.formTypeName ) );
             if ( NULL != form )
-            {                             
+            {
+                GUCEF_LOG( CORE::LOGLEVEL_NORMAL, "Successfully created form object of type: " + formInfo.formTypeName );
+
                 // load the test layout resource
                 if ( form->LoadLayout( formInfo.formResourcePath ) )
                 {
+                    GUCEF_LOG( CORE::LOGLEVEL_NORMAL, "Successfully loaded form from resource: " + formInfo.formResourcePath );
                     return form->Show();
                 }
             }
@@ -684,7 +687,7 @@ GUCEF_OSMAIN_BEGIN
         {
             CORE::ShowErrorMessage( "Initialization error"                                              ,
                                     "Failures occured loading the config, will use hardcoded fallbacks" );
-            
+
             GUCEF_ERROR_LOG( CORE::LOGLEVEL_NORMAL, "Failed to load config, will try hardcoded plugins for test fallback" );
 
             // Load all the plugins we need for this test
@@ -712,7 +715,7 @@ GUCEF_OSMAIN_BEGIN
             if ( NULL != windowMngrBackend )
             {
                 GUCEF_LOG( CORE::LOGLEVEL_NORMAL, "Successfully obtained window manager backend " + windowMngrBackendName );
-                
+
                 // Now get a list of all registered GUI drivers
                 bool allFailed = true;
                 GUI::CGUIManager::TDriverNameSet guiDriverList = GUI::CGuiGlobal::Instance()->GetGuiManager().GetGuiDriverList();

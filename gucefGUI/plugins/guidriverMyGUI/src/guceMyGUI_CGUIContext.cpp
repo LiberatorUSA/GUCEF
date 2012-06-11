@@ -14,7 +14,7 @@
  *
  *  You should have received a copy of the GNU Lesser General Public
  *  License along with this library; if not, write to the Free Software
- *  Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA 
+ *  Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA
  */
 
 /*-------------------------------------------------------------------------//
@@ -64,7 +64,7 @@ CGUIContext::CGUIContext( CMyGUIDriver& myGuiDriver          ,
       m_widgetSet()                             ,
       m_formSet()                               ,
       m_inputContext( inputContext )            ,
-      m_inputAdapter( myGuiDriver.GetMyGui() )
+      m_inputAdapter()
 {GUCEF_TRACE;
 
     assert( NULL != m_driver );
@@ -78,11 +78,11 @@ CGUIContext::~CGUIContext()
 {GUCEF_TRACE;
 
     m_inputAdapter.StopListningForInputEvents();
-    
+
     TFormSet::iterator i = m_formSet.begin();
     while ( i != m_formSet.end() )
     {
-        delete (*i);        
+        delete (*i);
         ++i;
     }
     m_formSet.clear();
@@ -90,7 +90,7 @@ CGUIContext::~CGUIContext()
     TWidgetSet::iterator n = m_widgetSet.begin();
     while ( n != m_widgetSet.end() )
     {
-        delete (*n);        
+        delete (*n);
         ++n;
     }
     m_widgetSet.clear();
@@ -112,7 +112,7 @@ CGUIContext::CreateWidget( const CString& widgetName )
 }
 
 /*-------------------------------------------------------------------------*/
-    
+
 void
 CGUIContext::DestroyWidget( GUCEF::GUI::CWidget* widget )
 {GUCEF_TRACE;
@@ -122,7 +122,7 @@ CGUIContext::DestroyWidget( GUCEF::GUI::CWidget* widget )
 }
 
 /*-------------------------------------------------------------------------*/
-    
+
 GUCEF::GUI::CForm*
 CGUIContext::CreateForm( const CString& formName )
 {GUCEF_TRACE;
@@ -133,7 +133,7 @@ CGUIContext::CreateForm( const CString& formName )
         m_formSet.insert( form );
         return form;
     }
-    
+
     return NULL;
 }
 
@@ -157,7 +157,7 @@ CGUIContext::GetAvailableFormTypes( void )
 }
 
 /*-------------------------------------------------------------------------*/
-    
+
 CGUIContext::TStringSet
 CGUIContext::GetAvailableWidgetTypes( void )
 {GUCEF_TRACE;
@@ -166,7 +166,7 @@ CGUIContext::GetAvailableWidgetTypes( void )
 }
 
 /*-------------------------------------------------------------------------*/
-    
+
 GUCEF::GUI::CFormBackend*
 CGUIContext::CreateFormBackend( void )
 {GUCEF_TRACE;
@@ -175,7 +175,7 @@ CGUIContext::CreateFormBackend( void )
 }
 
 /*-------------------------------------------------------------------------*/
-    
+
 void
 CGUIContext::DestroyFormBackend( GUCEF::GUI::CFormBackend* formBackend )
 {GUCEF_TRACE;
@@ -184,7 +184,7 @@ CGUIContext::DestroyFormBackend( GUCEF::GUI::CFormBackend* formBackend )
 }
 
 /*-------------------------------------------------------------------------*/
-    
+
 GUCEF::GUI::CGUIDriver*
 CGUIContext::GetDriver( void )
 {GUCEF_TRACE;
@@ -197,12 +197,12 @@ CGUIContext::GetDriver( void )
 CGUIContext::TWidgetSet
 CGUIContext::GetOwnedWidgets( void )
 {GUCEF_TRACE;
-    
+
     return m_widgetSet;
 }
 
 /*-------------------------------------------------------------------------*/
-    
+
 CGUIContext::TFormSet
 CGUIContext::GetOwnedForms( void )
 {GUCEF_TRACE;

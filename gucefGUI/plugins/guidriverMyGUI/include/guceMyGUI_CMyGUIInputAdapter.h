@@ -14,7 +14,7 @@
  *
  *  You should have received a copy of the GNU Lesser General Public
  *  License along with this library; if not, write to the Free Software
- *  Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA 
+ *  Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA
  */
 
 #ifndef GUCEF_MYGUI_CMYGUIINPUTADAPTER_H
@@ -61,11 +61,11 @@ namespace MYGUI {
 class GUCEF_MYGUI_EXPORT_CPP CMyGUIInputAdapter : public GUCEF::CORE::CObserver
 {
     public:
-    
-    CMyGUIInputAdapter( MyGUI::Gui* guiSystem );
+
+    CMyGUIInputAdapter( void );
 
     virtual ~CMyGUIInputAdapter();
-    
+
     const CString& GetClassTypeName( void ) const;
 
     void StartListningForInputEvents( void );
@@ -77,23 +77,21 @@ class GUCEF_MYGUI_EXPORT_CPP CMyGUIInputAdapter : public GUCEF::CORE::CObserver
     INPUT::CInputContext* GetInputContext( void ) const;
 
     protected:
-    
+
     virtual void OnNotify( GUCEF::CORE::CNotifier* notifier                 ,
                            const GUCEF::CORE::CEvent& eventid               ,
                            GUCEF::CORE::CICloneable* eventdata /* = NULL */ );
-    
+
     private:
-    
-    CMyGUIInputAdapter( void );
-    CMyGUIInputAdapter( const CMyGUIInputAdapter& src );    
+
+    CMyGUIInputAdapter( const CMyGUIInputAdapter& src );
     CMyGUIInputAdapter& operator=( const CMyGUIInputAdapter& src );
 
-    MyGUI::MouseButton ConvertMouseButtonIdex( const UInt32 buttonIndex );
-    
+    MyGUI::MouseButton ConvertMouseButtonIndex( const UInt32 buttonIndex );
+
     private:
-    
+
     INPUT::CInputContext* m_inputContext;
-    MyGUI::Gui* m_guiSystem;
 };
 
 /*-------------------------------------------------------------------------//
@@ -106,7 +104,7 @@ class GUCEF_MYGUI_EXPORT_CPP CMyGUIInputAdapter : public GUCEF::CORE::CObserver
 }; /* namespace GUCE */
 
 /*-------------------------------------------------------------------------*/
-          
+
 #endif /* GUCEF_MYGUI_CMYGUIINPUTADAPTER_H ? */
 
 /*-------------------------------------------------------------------------//

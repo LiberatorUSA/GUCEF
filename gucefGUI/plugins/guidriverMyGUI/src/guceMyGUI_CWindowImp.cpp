@@ -14,7 +14,7 @@
  *
  *  You should have received a copy of the GNU Lesser General Public
  *  License along with this library; if not, write to the Free Software
- *  Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA 
+ *  Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA
  */
 
 /*-------------------------------------------------------------------------//
@@ -46,14 +46,14 @@ CWindowImp::CWindowImp( void )
 }
 
 /*-------------------------------------------------------------------------*/
-    
+
 CWindowImp::~CWindowImp()
 {GUCEF_TRACE;
 
 }
 
 /*-------------------------------------------------------------------------*/
-    
+
 bool
 CWindowImp::SetTitleBarText( const CString& title )
 {GUCEF_TRACE;
@@ -81,7 +81,7 @@ CWindowImp::GetTitleBarText( CString& title ) const
 }
 
 /*-------------------------------------------------------------------------*/
-    
+
 bool
 CWindowImp::SetTitleBarVisible( const bool isVisible )
 {GUCEF_TRACE;
@@ -97,7 +97,7 @@ CWindowImp::SetTitleBarVisible( const bool isVisible )
     }
     return false;
 }
-    
+
 /*-------------------------------------------------------------------------*/
 
 bool
@@ -109,8 +109,7 @@ CWindowImp::GetTitleBarVisible( bool& isVisible )
         MyGUI::Widget* captionWidget = m_window->getCaptionWidget();
         if ( NULL != captionWidget )
         {
-            captionWidget->isVisible();
-            return true;
+            return captionWidget->getVisible();
         }
     }
     return false;
@@ -144,7 +143,7 @@ CWindowImp::Hide( void )
 }
 
 /*-------------------------------------------------------------------------*/
-    
+
 void
 CWindowImp::Hook( MyGUI::Window* window )
 {GUCEF_TRACE;
