@@ -14,7 +14,7 @@
  *
  *  You should have received a copy of the GNU Lesser General Public
  *  License along with this library; if not, write to the Free Software
- *  Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA 
+ *  Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA
  */
 
 #ifndef GUCEF_INPUT_CINPUTCONTEXT_H
@@ -31,10 +31,10 @@
 #define GUCEF_CORE_CVALUELIST_H
 #endif /* GUCEF_CORE_CVALUELIST_H ? */
 
-#ifndef GUCEF_CORE_CTNUMERICID_H
-#include "CTNumericID.h"
-#define GUCEF_CORE_CTNUMERICID_H
-#endif /* GUCEF_CORE_CTNUMERICID_H ? */
+#ifndef GUCEF_CORE_CTNUMERICIDGENERATOR_H
+#include "CTNumericIDGenerator.h"
+#define GUCEF_CORE_CTNUMERICIDGENERATOR_H
+#endif /* GUCEF_CORE_CTNUMERICIDGENERATOR_H ? */
 
 #ifndef GUCEFINPUT_MACROS_H
 #include "gucefINPUT_macros.h"
@@ -63,33 +63,33 @@ class CInputDriver;
 class GUCEF_INPUT_PUBLIC_CPP CInputContext
 {
     public:
-        
+
     CInputContext( CInputDriver& inputDriver      ,
-                   const CORE::CValueList& params );                
-        
-    virtual ~CInputContext();       
+                   const CORE::CValueList& params );
+
+    virtual ~CInputContext();
 
     const CORE::CValueList& GetContextParams( void ) const;
-                
+
     Int32 GetID( void ) const;
 
     CInputDriver* GetDriver( void );
-        
+
     private:
     friend class CInputController;
 
-    typedef CORE::CTNumericID< CORE::Int32 > TContextId;
-        
+    typedef CORE::CTNumericIDGenerator< CORE::Int32 >::TNumericID TContextId;
+
     void SetID( TContextId& id );
-        
+
     private:
-        
+
     CInputContext( void );
     CInputContext( const CInputContext& src );
     CInputContext& operator=( const CInputContext& src );
-        
+
     private:
-        
+
     CORE::CValueList m_valuelist;
     TContextId m_id;
     CInputDriver* m_inputDriver;
@@ -105,7 +105,7 @@ class GUCEF_INPUT_PUBLIC_CPP CInputContext
 }; /* namespace GUCEF */
 
 /*-------------------------------------------------------------------------*/
-          
+
 #endif /* GUCEF_INPUT_CINPUTCONTEXT_H ? */
 
 /*-------------------------------------------------------------------------//

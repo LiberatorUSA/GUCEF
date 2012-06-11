@@ -274,15 +274,15 @@ CXWinGLWindowContext::Initialize( const GUI::CString& title                ,
 
     // Set up the default GL state.
     glClearColor(0, 0, 0, 1);
-    glEnableClientState( GL_VERTEX_ARRAY );
-    glEnableClientState( GL_COLOR_ARRAY );
+    //glEnableClientState( GL_VERTEX_ARRAY );
+    //glEnableClientState( GL_COLOR_ARRAY );
 
-    glEnable( GL_BLEND );
-    glBlendFunc( GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA );
+    //glEnable( GL_BLEND );
+    //glBlendFunc( GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA );
 
     glMatrixMode( GL_PROJECTION );
     glLoadIdentity();
-    glOrtho( 0, 1024, 768, 0, -1, 1 );
+    glOrtho( 0, GetWidth(), GetHeight(), 0, -1, 1 );
 
     glMatrixMode( GL_MODELVIEW );
     glLoadIdentity();

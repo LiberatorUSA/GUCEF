@@ -169,8 +169,8 @@ CInputController::CreateContext( const CString& driverName      ,
         if ( NULL != context )
         {
             GUCEF_SYSTEM_LOG( CORE::LOGLEVEL_NORMAL, "Created input context using driver " + driverName );
-
-            context->SetID( m_idGenerator.GenerateID() );
+            TIdGenerator::TNumericID id = m_idGenerator.GenerateID();
+            context->SetID( id );
             m_contextSet.insert( context );
             return context;
         }
