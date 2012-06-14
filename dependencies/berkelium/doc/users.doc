@@ -1,0 +1,10 @@
+/** \page users Projects Using Berkelium
+ *
+ * The following is a list of projects currently using Berkelium and how they
+ * are using them.
+ *  - <a href="http://sirikata.com">Sirikata</a> is the project that originally
+ *    created Berkelium.  It is a platform for building shared virtual worlds.
+ *    Berkelium is used to embed browsers for user interfaces, browsers
+ *    controlled by single users, and shared browser virtual world objects which
+ *    gather input from many users.
+ */

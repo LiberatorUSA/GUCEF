@@ -1,0 +1,30 @@
+/** \page faq Frequently Asked Questions
+ *
+ * <h3> Q: What can Berkelium be used for? </h3>
+ * \em A: Berkelium can be used anywhere you want to embed a web browser and
+ * need to control exactly how display or input are handled.  As opposed to
+ * standard browser solutions, the browser is rendered off screen, into any
+ * buffer you like, and input is provided by you. In all other respects it is
+ * like a normal browser.
+ *
+ * Berkelium can be used in a number of applications.  Examples include
+ * embedding documentation into a game, using local web pages as UI elements, or
+ * even mapping browsers onto 3D objects to embed 2D pages directly into your
+ * 3D application. See \ref users for a full list of current uses.
+ *
+ * <h3> Q: Which operating systems does Berkelium run under? </h3>
+ * \em A: Windows, Mac & Linux.
+ *
+ * <h3> Q: Are plugins supported? </h3>
+ * \em A: Berkelium should support plugins, but currently that support is
+ * limited to Flash (supported on all platforms). Development effort is not
+ * focused on supporting additional plugins because standards based approaches
+ * are preferred and Flash support covers a large fraction applications that
+ * require plugins.
+ *
+ * For the curious with some spare time, it may be possible to use
+ * a hooked HDC on Windows, and to use the X11 Composite extension to render
+ * plugins to OpenGL on Linux. However, we suspect enabling arbitrary plugins
+ * and programs in this way would take a good month of work to get right.
+ *
+ */

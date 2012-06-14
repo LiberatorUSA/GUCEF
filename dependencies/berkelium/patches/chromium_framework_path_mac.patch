@@ -1,0 +1,34 @@
+Index: chrome/common/chrome_paths_mac.mm
+===================================================================
+--- chrome/common/chrome_paths_mac.mm	(revision 70359)
++++ chrome/common/chrome_paths_mac.mm	(working copy)
+@@ -79,26 +79,20 @@
+ }
+ 
+ FilePath GetVersionedDirectory() {
+-  if (g_override_versioned_directory)
+-    return *g_override_versioned_directory;
+-
+   // Start out with the path to the running executable.
+   FilePath path;
+   PathService::Get(base::FILE_EXE, &path);
+-
+   // One step up to MacOS, another to Contents.
+   path = path.DirName().DirName();
+-  DCHECK_EQ(path.BaseName().value(), "Contents");
+ 
+-  if (base::mac::IsBackgroundOnlyProcess()) {
++  if (false && base::mac::IsBackgroundOnlyProcess()) {
+     // path identifies the helper .app's Contents directory in the browser
+     // .app's versioned directory.  Go up two steps to get to the browser
+     // .app's versioned directory.
+     path = path.DirName().DirName();
+-    DCHECK_EQ(path.BaseName().value(), kChromeVersion);
+   } else {
+-    // Go into the versioned directory.
+-    path = path.Append("Versions").Append(kChromeVersion);
++    // Go into the berkelium lib directory.
++    path = path.Append("lib");
+   }
+ 
+   return path;

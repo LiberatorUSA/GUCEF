@@ -1,0 +1,128 @@
+Index: webkit/glue/webthemeengine_impl_win.cc
+===================================================================
+--- webkit/glue/webthemeengine_impl_win.cc	(revision 73890)
++++ webkit/glue/webthemeengine_impl_win.cc	(working copy)
+@@ -24,6 +24,19 @@
+   return result;
+ }
+ 
++// Add 255 to the region's alpha channel to compensate for how GDI sets it to 0
++static void fixAlpha(WebCanvas *canvas, const WebRect& rect) {
++  SkRect fillRect;
++  SkPaint fillPaint;
++  fillPaint.setXfermodeMode(SkXfermode::kPlus_Mode);
++  fillPaint.setColor(SkColorSetARGB(255, 0, 0, 0));
++  fillRect.set(
++	  SkIntToScalar(rect.x), SkIntToScalar(rect.y), 
++      SkIntToScalar(rect.width + rect.x), SkIntToScalar(rect.height + rect.y)
++  );
++  canvas->drawRect(fillRect, fillPaint);
++}
++
+ void WebThemeEngineImpl::paintButton(
+     WebCanvas* canvas, int part, int state, int classic_state,
+     const WebRect& rect) {
+@@ -34,6 +47,8 @@
+       hdc, part, state, classic_state, &native_rect);
+ 
+   canvas->endPlatformPaint();
++
++  fixAlpha(canvas, rect);
+ }
+ 
+ void WebThemeEngineImpl::paintMenuList(
+@@ -46,6 +61,8 @@
+       hdc, part, state, classic_state, &native_rect);
+ 
+   canvas->endPlatformPaint();
++
++  fixAlpha(canvas, rect);
+ }
+ 
+ void WebThemeEngineImpl::paintScrollbarArrow(
+@@ -58,6 +75,8 @@
+       hdc, state, classic_state, &native_rect);
+ 
+   canvas->endPlatformPaint();
++
++  fixAlpha(canvas, rect);
+ }
+ 
+ void WebThemeEngineImpl::paintScrollbarThumb(
+@@ -70,6 +89,8 @@
+       hdc, part, state, classic_state, &native_rect);
+ 
+   canvas->endPlatformPaint();
++
++  fixAlpha(canvas, rect);
+ }
+ 
+ void WebThemeEngineImpl::paintScrollbarTrack(
+@@ -84,6 +105,8 @@
+       canvas);
+ 
+   canvas->endPlatformPaint();
++
++  fixAlpha(canvas, rect);
+ }
+ 
+ void WebThemeEngineImpl::paintSpinButton(
+@@ -96,6 +119,8 @@
+       hdc, part, state, classic_state, &native_rect);
+ 
+   canvas->endPlatformPaint();
++
++  fixAlpha(canvas, rect);
+ }
+ 
+ void WebThemeEngineImpl::paintTextField(
+@@ -112,6 +137,8 @@
+       draw_edges);
+ 
+   canvas->endPlatformPaint();
++
++  fixAlpha(canvas, rect);
+ }
+ 
+ void WebThemeEngineImpl::paintTrackbar(
+@@ -124,6 +151,8 @@
+       hdc, part, state, classic_state, &native_rect, canvas);
+ 
+   canvas->endPlatformPaint();
++
++  fixAlpha(canvas, rect);
+ }
+ 
+ void WebThemeEngineImpl::paintProgressBar(
+@@ -137,6 +166,9 @@
+       hdc, &native_bar_rect,
+       &native_value_rect, determinate, animatedSeconds, canvas);
+   canvas->endPlatformPaint();
++
++  fixAlpha(canvas, barRect);
++  fixAlpha(canvas, valueRect);
+ }
+ 
+ }  // namespace webkit_glue
+Index: ui/gfx/native_theme_win.cc
+===================================================================
+--- ui/gfx/native_theme_win.cc	(revision 49003)
++++ ui/gfx/native_theme_win.cc	(working copy)
+@@ -646,11 +646,14 @@
+     }
+ 
+     // TODO(maruel): Need to be fixed if get_theme_content_rect_ is NULL.
+-    if (fill_content_area && get_theme_content_rect_) {
++    if (get_theme_content_rect_) {
+       RECT content_rect;
+       hr = get_theme_content_rect_(handle, hdc, part_id, state_id, rect,
+                                    &content_rect);
+-      FillRect(hdc, &content_rect, bg_brush);
++      if (fill_content_area)
++        FillRect(hdc, &content_rect, bg_brush);
++      else
++        *rect = content_rect;
+     }
+   } else {
+     // Draw it manually.
+

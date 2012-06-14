@@ -1,0 +1,84 @@
+#Sirikata Build Script
+#CMakeLists.txt
+#
+#Copyright (c) 2011, Ewen Cheslack-Postava
+#All rights reserved.
+#
+#Redistribution and use in source and binary forms, with or without
+#modification, are permitted provided that the following conditions are met:
+#
+#    * Redistributions of source code must retain the above copyright notice,
+#      this list of conditions and the following disclaimer.
+#    * Redistributions in binary form must reproduce the above copyright notice,
+#      this list of conditions and the following disclaimer in the documentation
+#      and/or other materials provided with the distribution.
+#    * Neither the name of the Sirikata nor the names of its contributors
+#      may be used to endorse or promote products derived from this software
+#      without specific prior written permission.
+#
+#THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND
+#ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED
+#WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE
+#DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT OWNER OR CONTRIBUTORS BE LIABLE FOR
+#ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES
+#(INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES;
+#LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON
+#ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
+#(INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
+#SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+
+#cmake options
+
+MACRO(ADD_CXXTEST_CPP_TARGET)
+  PARSE_ARGUMENTS(CXXTEST "DEPENDS;LIBRARYDIR;TESTS;RUNNER" "" ${ARGN})
+  CAR(CXXTEST_EXECUTABLE ${CXXTEST_DEFAULT_ARGS})
+  SET(CXXTEST_CPP_FILE cxxtest_${CXXTEST_EXECUTABLE}.cc)
+  #CDR(CXXTEST_FILES ${CXXTEST_DEFAULT_ARGS})
+
+  SET(CXXTEST_TEST_FILES)
+  SET(CXXTEST_H_FILES)
+  SET(CXXTEST_OPTIONS)
+  SET(CXXTEST_TEMP_CPP_FILE ${CXXTEST_CPP_FILE})
+
+  IF(PYTHON_EXECUTABLE)
+    SET(CXXTEST_COMPILER ${PYTHON_EXECUTABLE})
+    SET(CXXTEST_GEN ${CXXTEST_LIBRARYDIR}/cxxtestgen.py)
+  ELSE()
+    FIND_PACKAGE(Perl)
+    IF(PERL_EXECUTABLE)
+      GET_FILENAME_COMPONENT(CXXTEST_TEMP_CPP_FILE ${CXXTEST_CPP_FILE} NAME) #perl cannot output to a full path.
+      SET(CXXTEST_COMPILER ${PERL_EXECUTABLE})
+      SET(CXXTEST_GEN ${CXXTEST_LIBRARYDIR}/cxxtestgen.pl)
+    ELSE()
+      MESSAGE(STATUS "!!! Cannot locate python or perl -- tests will not be compiled.")
+    ENDIF()
+  ENDIF()
+  FOREACH(FILE ${CXXTEST_TESTS})
+    SET(CXXTEST_H_FILE ${FILE})
+    SET(CXXTEST_TEST_FILES ${CXXTEST_TEST_FILES} ${CXXTEST_H_FILE})
+  ENDFOREACH()
+  IF (CXXTEST_COMPILER)
+    SET(FINAL_CXXTEST_COMMAND ${CXXTEST_COMPILER} ${CXXTEST_GEN} ${CXXTEST_OPTIONS} -o ${CXXTEST_TEMP_CPP_FILE} ${CXXTEST_TEST_FILES})
+    ADD_CUSTOM_COMMAND(OUTPUT ${CXXTEST_CPP_FILE}
+                       COMMAND ${CXXTEST_COMPILER} ${CXXTEST_GEN} ${CXXTEST_OPTIONS} -o ${CXXTEST_TEMP_CPP_FILE} ${CXXTEST_TEST_FILES}
+                       DEPENDS ${CXXTEST_TEST_FILES} ${CXXTEST_DEPENDS}
+                       COMMENT "Building ${CXXTEST_TEST_FILES} -> ${CXXTEST_CPP_FILE}")
+  ELSE()
+    ADD_CUSTOM_COMMAND(OUTPUT ${CXXTEST_CPP_FILE}
+                       COMMAND exit 1
+                       COMMENT "Unable to build ${CXXTEST_CPP_FILE} because python and perl were not found.")
+  ENDIF()
+  #SET(CXXTEST_TARGETNAME "cxxtest_${CXXTEST_EXECUTABLE}.cc") # NAME_WE)
+  #ADD_CUSTOM_TARGET("${CXXTEST_TARGETNAME}" ALL DEPENDS ${CXXTEST_CPP_FILE})
+  #FILE(GLOB CXXTEST_INTERNAL_FILES ${CXXTEST_LIBRARYDIR}/cxxtest/*.cpp)
+  ADD_EXECUTABLE(
+    ${CXXTEST_EXECUTABLE}
+    ${CXXTEST_CPP_FILE}
+    ${CXXTEST_RUNNER}
+    ${CXXTEST_INTERNAL_FILES}
+  )
+
+  SET_DIRECTORY_PROPERTIES(PROPERTIES ADDITIONAL_MAKE_CLEAN_FILES ${CXXTEST_CPP_FILE})
+
+ENDMACRO(ADD_CXXTEST_CPP_TARGET)
+

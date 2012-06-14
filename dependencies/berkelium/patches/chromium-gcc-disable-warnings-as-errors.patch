@@ -1,0 +1,21 @@
+Index: build/common.gypi
+===================================================================
+--- build/common.gypi	(revision 70801)
++++ build/common.gypi	(working copy)
+@@ -568,7 +568,6 @@
+             'cflags!': [
+               '-Wall',
+               '-Wextra',
+-              '-Werror',
+             ],
+           }],
+           [ 'OS=="win"', {
+@@ -846,7 +845,7 @@
+           # there is some 4.4 test infrastructure in place and existing
+           # aliasing issues have been fixed.
+           'no_strict_aliasing%': 1,
+-          'conditions': [['OS=="linux"', {'werror%': '-Werror',}],
++          'conditions': [['OS=="linux"', {'werror%': '',}],
+                          ['OS=="freebsd"', {'werror%': '',}],
+                          ['OS=="openbsd"', {'werror%': '',}],
+           ],

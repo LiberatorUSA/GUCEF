@@ -1,0 +1,255 @@
+Index: third_party/WebKit/Source/WebCore/platform/graphics/chromium/FontChromiumWin.cpp
+===================================================================
+--- third_party/WebKit/Source/WebCore/platform/graphics/chromium/FontChromiumWin.cpp	(revision 81530)
++++ third_party/WebKit/Source/WebCore/platform/graphics/chromium/FontChromiumWin.cpp	(working copy)
+@@ -48,6 +48,167 @@
+ 
+ #include <windows.h>
+ 
++namespace {
++
++__declspec( thread ) static HDC hTextScratchDC = 0;
++__declspec( thread ) static HBITMAP hTextScratchBitmap = 0;
++__declspec( thread ) static int textScratchWidth = 0;
++__declspec( thread ) static int textScratchHeight = 0;
++__declspec( thread ) static unsigned char * textScratchPixels = 0;
++__declspec( thread ) static unsigned char * compositeScratchBuffer = 0;
++__declspec( thread ) static unsigned char * gammaLookupTable = 0;
++
++static const double gammaFactor = (1.0 / 2.2);
++
++static __forceinline unsigned char ClampByte (int value) {
++  value &= (-(int)!(value < 0));
++  return ((255 & (-(int)(value > 255))) | (value)) & 0xFF;
++}
++
++static __forceinline unsigned char ClampByteHigh(int value) {
++  return ((255 & (-(int)(value > 255))) | (value)) & 0xFF;
++}
++
++static void CreateTextScratchDC () {
++  HWND deskWnd = GetDesktopWindow();
++  HDC deskDC = GetDC(deskWnd);
++  hTextScratchDC = CreateCompatibleDC(deskDC);
++  ReleaseDC(deskWnd, deskDC);
++
++  if (gammaLookupTable != 0)
++    return;
++
++  gammaLookupTable = new unsigned char[256];
++  for (int i = 0; i < 256; i++) {
++    double a = i / 255.0;
++    a = pow(a, gammaFactor);
++    gammaLookupTable[i] = ClampByte((int)(a * 255.0));
++  }
++}
++
++static void FreeTextScratchBitmap () {
++  if (hTextScratchBitmap)
++    DeleteObject(hTextScratchBitmap);
++  
++  if (compositeScratchBuffer)
++    delete[] compositeScratchBuffer;
++
++  hTextScratchBitmap = 0;
++  textScratchPixels = 0;
++  compositeScratchBuffer = 0;
++  textScratchWidth = textScratchHeight = 0;
++}
++
++static void CreateTextScratchBitmap (int width, int height) {
++  if ((width < textScratchWidth) && (height < textScratchHeight) && (hTextScratchBitmap != 0))
++    return;
++
++  FreeTextScratchBitmap();
++
++  BITMAPINFO bmi;
++  memset(&bmi, 0, sizeof(bmi));
++  bmi.bmiHeader.biSize = sizeof(BITMAPINFOHEADER);
++  bmi.bmiHeader.biWidth = width;
++  bmi.bmiHeader.biHeight = -height;
++  bmi.bmiHeader.biBitCount = 32;
++  bmi.bmiHeader.biPlanes = 1;
++
++  textScratchWidth = width;
++  textScratchHeight = height;
++  hTextScratchBitmap = CreateDIBSection(hTextScratchDC, &bmi, 0, (void **)&textScratchPixels, 0, 0);
++
++  compositeScratchBuffer = new unsigned char[width * height * 4];
++
++  SelectObject(hTextScratchDC, hTextScratchBitmap);
++}
++
++static __forceinline unsigned char AlphaBlend(int sourceValue, int destValue, int alpha) {
++  return ClampByteHigh(
++    (
++      (alpha * sourceValue) + 
++      (destValue * (alpha ^ 0xFF))
++    ) / 255
++  );
++}
++
++static __forceinline unsigned char GammaCorrectAlphaBlend(int sourceValue, int destValue, int alpha) {
++  if (alpha <= 0)
++    return destValue;
++  else if (alpha >= 255)
++    return sourceValue;
++
++  if (sourceValue < destValue)
++    alpha = 255 - gammaLookupTable[255 - alpha];
++
++  return AlphaBlend(
++    sourceValue, destValue, alpha
++  );
++}
++
++BOOL __stdcall AlphaAwareExtTextOut(
++  __in  HDC hdc,
++  __in  int x,
++  __in  int y,
++  __in  UINT options,
++  __in  const RECT *lpRect,
++  __in  LPCWSTR lpString,
++  __in  UINT count,
++  __in  const INT *lpDx
++) {
++  if (hTextScratchDC == 0)
++    CreateTextScratchDC();
++
++  ASSERT(lpRect);
++  int width = lpRect->right - lpRect->left, height = lpRect->bottom - lpRect->top;
++
++  CreateTextScratchBitmap(width, height);
++
++  int scratchSizeBytes = textScratchWidth * textScratchHeight * 4;
++
++  SelectObject(hTextScratchDC, GetCurrentObject(hdc, OBJ_FONT));
++  SetBkColor(hTextScratchDC, RGB(0, 0, 0));
++  SetBkMode(hTextScratchDC, OPAQUE);
++  SetTextColor(hTextScratchDC, RGB(255, 255, 255));
++
++  BitBlt(hTextScratchDC, 0, 0, width, height, hdc, x, y, SRCCOPY);
++  GdiFlush();
++
++  memcpy(compositeScratchBuffer, textScratchPixels, scratchSizeBytes);
++  memset(textScratchPixels, 0, scratchSizeBytes);
++
++  BOOL result = ExtTextOut(hTextScratchDC, 0, 0, options, lpRect, lpString, count, lpDx);
++  GdiFlush();
++
++  COLORREF savedTextColor = GetTextColor(hdc);
++  int colorR = GetRValue(savedTextColor), colorG = GetGValue(savedTextColor), colorB = GetBValue(savedTextColor);
++
++  for (int cur_y = 0; cur_y < height; cur_y++) {
++    uint32_t* text_row = (uint32_t*)(textScratchPixels + (cur_y * textScratchWidth * 4));
++    uint32_t* bkg_row = (uint32_t*)(compositeScratchBuffer + (cur_y * textScratchWidth * 4));
++
++    for (int cur_x = 0; cur_x < width; cur_x++) {
++      uint32_t & text = text_row[cur_x];
++      uint32_t bkg = bkg_row[cur_x];
++
++      int sourceR = SkColorGetR(text), sourceG = SkColorGetG(text), sourceB = SkColorGetB(text);
++      int destR = SkColorGetR(bkg), destG = SkColorGetG(bkg), destB = SkColorGetB(bkg), destA = SkColorGetA(bkg);
++
++      destB = GammaCorrectAlphaBlend(colorB, destB, sourceB);
++      destG = GammaCorrectAlphaBlend(colorG, destG, sourceG);
++      destR = GammaCorrectAlphaBlend(colorR, destR, sourceR);
++      destA = ClampByteHigh(destA + (sourceR + sourceG + sourceB) / 3);
++
++      text = SkColorSetARGB(destA, destR, destG, destB);
++    }
++  }
++
++  BitBlt(hdc, x, y, width, height, hTextScratchDC, 0, 0, SRCCOPY);
++
++  return result;
++}
++
++}
++
+ namespace WebCore {
+ 
+ namespace {
+@@ -70,7 +231,7 @@
+     // construction (it calls virtual functions).
+     void init();
+ 
+-    virtual IntRect estimateTextBounds() = 0;
++    virtual IntRect estimateTextBounds() const = 0;
+ 
+     // Use the context from the transparency helper when drawing with GDI. It
+     // may point to a temporary one.
+@@ -199,7 +360,7 @@
+     bool drawGlyphs(int numGlyphs, const WORD* glyphs, const int* advances, float startAdvance) const;
+ 
+  private:
+-    virtual IntRect estimateTextBounds();
++    virtual IntRect estimateTextBounds() const;
+ 
+     const SimpleFontData* m_font;
+     const GlyphBuffer& m_glyphBuffer;
+@@ -240,7 +401,7 @@
+ // Estimates the bounding box of the given text. This is copied from
+ // FontCGWin.cpp, it is possible, but a lot more work, to get the precide
+ // bounds.
+-IntRect TransparencyAwareGlyphPainter::estimateTextBounds()
++IntRect TransparencyAwareGlyphPainter::estimateTextBounds() const
+ {
+     int totalWidth = 0;
+     for (int i = 0; i < m_numGlyphs; i++)
+@@ -273,6 +434,12 @@
+     int x = lroundf(m_point.x() + startAdvance);
+     int y = lroundf(m_point.y() - m_font->fontMetrics().ascent());
+ 
++    COLORREF savedTextColor = GetTextColor(m_hdc);
++
++    IntRect estBounds = estimateTextBounds();
++    RECT boundsRect = { estBounds.x(), estBounds.y(), estBounds.maxX(), estBounds.maxY() };
++    bool preserveAlpha = true;
++
+     // If there is a non-blur shadow and both the fill color and shadow color 
+     // are opaque, handle without skia. 
+     FloatSize shadowOffset;
+@@ -280,19 +447,21 @@
+     Color shadowColor;
+     ColorSpace shadowColorSpace;
+     if (m_graphicsContext->getShadow(shadowOffset, shadowBlur, shadowColor, shadowColorSpace)) {
++        boundsRect.right += shadowOffset.width();
++        boundsRect.bottom += shadowOffset.height();
++
+         // If there is a shadow and this code is reached, windowsCanHandleDrawTextShadow()
+         // will have already returned true during the ctor initiatization of m_useGDI
+         ASSERT(shadowColor.alpha() == 255);
+         ASSERT(m_graphicsContext->fillColor().alpha() == 255);
+         ASSERT(shadowBlur == 0);
+         COLORREF textColor = skia::SkColorToCOLORREF(SkColorSetARGB(255, shadowColor.red(), shadowColor.green(), shadowColor.blue()));
+-        COLORREF savedTextColor = GetTextColor(m_hdc);
+         SetTextColor(m_hdc, textColor);
+-        ExtTextOut(m_hdc, x + shadowOffset.width(), y + shadowOffset.height(), ETO_GLYPH_INDEX, 0, reinterpret_cast<const wchar_t*>(&glyphs[0]), numGlyphs, &advances[0]);
++        AlphaAwareExtTextOut(m_hdc, x + shadowOffset.width(), y + shadowOffset.height(), ETO_GLYPH_INDEX, &boundsRect, reinterpret_cast<const wchar_t*>(&glyphs[0]), numGlyphs, &advances[0]);
+         SetTextColor(m_hdc, savedTextColor);
+     }
+     
+-    return !!ExtTextOut(m_hdc, x, y, ETO_GLYPH_INDEX, 0, reinterpret_cast<const wchar_t*>(&glyphs[0]), numGlyphs, &advances[0]);
++    return !!AlphaAwareExtTextOut(m_hdc, x, y, ETO_GLYPH_INDEX, &boundsRect, reinterpret_cast<const wchar_t*>(&glyphs[0]), numGlyphs, &advances[0]);
+ }
+ 
+ class TransparencyAwareUniscribePainter : public TransparencyAwareFontPainter {
+@@ -308,7 +477,7 @@
+     HDC hdc() const { return m_hdc; }
+ 
+  private:
+-    virtual IntRect estimateTextBounds();
++    virtual IntRect estimateTextBounds() const;
+ 
+     const Font* m_font;
+     const TextRun& m_run;
+@@ -335,7 +504,7 @@
+ {
+ }
+ 
+-IntRect TransparencyAwareUniscribePainter::estimateTextBounds()
++IntRect TransparencyAwareUniscribePainter::estimateTextBounds() const
+ {
+     // This case really really sucks. There is no convenient way to estimate
+     // the bounding box. So we run Uniscribe twice. If we find this happens a
