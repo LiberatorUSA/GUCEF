@@ -1,0 +1,24 @@
+Index: sandbox/src/Wow64.cc
+===================================================================
+--- sandbox/src/Wow64.cc	(revision 76854)
++++ sandbox/src/Wow64.cc	(working copy)
+@@ -137,9 +137,17 @@
+ bool Wow64::RunWowHelper(void* buffer) {
+   COMPILE_ASSERT(sizeof(buffer) <= sizeof DWORD, unsupported_64_bits);
+ 
+-  // Get the path to the helper (beside the exe).
++  // Get the path to the helper (beside this module).
++  HMODULE hCurrentModule;
++  {
++    MEMORY_BASIC_INFORMATION mbi;
++    static int dummy;
++    VirtualQuery( &dummy, &mbi, sizeof(mbi) );
++    hCurrentModule = (HMODULE)mbi.AllocationBase;
++  }
++
+   wchar_t prog_name[MAX_PATH];
+-  GetModuleFileNameW(NULL, prog_name, MAX_PATH);
++  GetModuleFileNameW(hCurrentModule, prog_name, MAX_PATH);
+   std::wstring path(prog_name);
+   size_t name_pos = path.find_last_of(L"\\");
+   if (std::wstring::npos == name_pos)

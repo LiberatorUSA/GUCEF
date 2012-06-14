@@ -1,0 +1,49 @@
+# Executables
+/chromium*
+/berkelium*
+/glut_demo*
+/glut_input*
+/liblibberkelium*.so*
+/ppmrender
+/tests
+
+cxxtest_*.cc
+
+# CMake files
+CMakeCache.txt
+CMakeFiles
+Makefile
+cmake_install.cmake
+
+# Chrome-related files
+locales
+resources
+Debug
+Release
+*.pak
+*.dSYM
+chrome_debug.log
+*.exp
+*.lib
+*.dll
+*.exe
+*.user
+*.pdb
+*.lib
+*.ncb
+*.suo
+*.ilk
+chrome.log
+First Run
+/win32/resources
+installed-chromium
+
+# generated documentation
+berkelium_docs
+
+# eclipse files
+.project
+.cproject
+
+
+install_manifest.txt

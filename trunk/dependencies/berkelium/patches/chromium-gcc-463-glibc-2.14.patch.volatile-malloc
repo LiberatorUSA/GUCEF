@@ -1,0 +1,83 @@
+Index: net/third_party/mozilla_security_manager/nsNSSCertTrust.cpp
+===================================================================
+--- net/third_party/mozilla_security_manager/nsNSSCertTrust.cpp	(revision 70801)
++++ net/third_party/mozilla_security_manager/nsNSSCertTrust.cpp	(working copy)
+@@ -102,7 +102,7 @@
+ {
+   mTrust.sslFlags = 0;
+   if (peer || tPeer)
+-    addTrust(&mTrust.sslFlags, CERTDB_VALID_PEER);
++    addTrust(&mTrust.sslFlags, CERTDB_TERMINAL_RECORD);
+   if (tPeer)
+     addTrust(&mTrust.sslFlags, CERTDB_TRUSTED);
+   if (ca || tCA)
+@@ -124,7 +124,7 @@
+ {
+   mTrust.emailFlags = 0;
+   if (peer || tPeer)
+-    addTrust(&mTrust.emailFlags, CERTDB_VALID_PEER);
++    addTrust(&mTrust.emailFlags, CERTDB_TERMINAL_RECORD);
+   if (tPeer)
+     addTrust(&mTrust.emailFlags, CERTDB_TRUSTED);
+   if (ca || tCA)
+@@ -146,7 +146,7 @@
+ {
+   mTrust.objectSigningFlags = 0;
+   if (peer || tPeer)
+-    addTrust(&mTrust.objectSigningFlags, CERTDB_VALID_PEER);
++    addTrust(&mTrust.objectSigningFlags, CERTDB_TERMINAL_RECORD);
+   if (tPeer)
+     addTrust(&mTrust.objectSigningFlags, CERTDB_TRUSTED);
+   if (ca || tCA)
+@@ -288,11 +288,11 @@
+                         PRBool checkEmail,  
+                         PRBool checkObjSign)
+ {
+-  if (checkSSL && !hasTrust(mTrust.sslFlags, CERTDB_VALID_PEER))
++  if (checkSSL && !hasTrust(mTrust.sslFlags, CERTDB_TERMINAL_RECORD))
+     return PR_FALSE;
+-  if (checkEmail && !hasTrust(mTrust.emailFlags, CERTDB_VALID_PEER))
++  if (checkEmail && !hasTrust(mTrust.emailFlags, CERTDB_TERMINAL_RECORD))
+     return PR_FALSE;
+-  if (checkObjSign && !hasTrust(mTrust.objectSigningFlags, CERTDB_VALID_PEER))
++  if (checkObjSign && !hasTrust(mTrust.objectSigningFlags, CERTDB_TERMINAL_RECORD))
+     return PR_FALSE;
+   return PR_TRUE;
+ }
+Index: third_party/tcmalloc/chromium/src/tcmalloc.cc
+===================================================================
+--- third_party/tcmalloc/chromium/src/tcmalloc.cc	(revision 70801)
++++ third_party/tcmalloc/chromium/src/tcmalloc.cc	(working copy)
+@@ -367,7 +367,7 @@
+   return tc_malloc(size);
+ }
+ 
+-void* (*__malloc_hook)(
++void* (*volatile __malloc_hook)(
+     size_t size, const void* caller) = tc_ptmalloc_malloc_hook;
+ 
+ static void* tc_ptmalloc_realloc_hook(
+@@ -375,14 +375,14 @@
+   return tc_realloc(ptr, size);
+ }
+ 
+-void* (*__realloc_hook)(
++void* (*volatile __realloc_hook)(
+     void* ptr, size_t size, const void* caller) = tc_ptmalloc_realloc_hook;
+ 
+ static void tc_ptmalloc_free_hook(void* ptr, const void* caller) {
+   tc_free(ptr);
+ }
+ 
+-void (*__free_hook)(void* ptr, const void* caller) = tc_ptmalloc_free_hook;
++void (*volatile __free_hook)(void* ptr, const void* caller) = tc_ptmalloc_free_hook;
+ 
+ #endif
+ 
+@@ -1562,5 +1562,5 @@
+   MallocHook::InvokeNewHook(result, size);
+   return result;
+ }
+-void *(*__memalign_hook)(size_t, size_t, const void *) = MemalignOverride;
++void *(*volatile __memalign_hook)(size_t, size_t, const void *) = MemalignOverride;
+ #endif  // #ifndef TCMALLOC_FOR_DEBUGALLOCATION

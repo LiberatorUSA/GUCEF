@@ -1,0 +1,123 @@
+/** \page dev_guide Development Guide
+ *
+ *  <h3>Initialization and Destruction</h3>
+ *
+ *  Berkelium has some global initialization and destruction code that needs to
+ *  be run once inside the process instantiating new windows (or web pages).
+ *  \code
+ *  if (!Berkelium::init(Berkelium::FileString::empty()))
+ *    std::cout << "Couldn't initialize Berkelium." << std::endl;
+ *  \endcode
+ *  The parameter is the directory for user data, and defaults to a temporary
+ *  directory if it is empty.
+ *
+ *  To allow the pages to update, you need to periodically pass control the
+ *  Berkelium:
+ *  \code
+ *  Berkelium::update();
+ *  \endcode
+ *
+ *  When the process is exiting, to ensure all resources are cleanly released,
+ *  just call the cleanup function.
+ *  \code
+ *  Berkelium::destroy();
+ *  \endcode
+ *
+ *  Ideally by the time you call the cleanup function, all windows would be
+ *  destroyed, but if they aren't Berkelium will clean up their resources.
+ *  However, be sure that WindowDelegates that are registered exist until the
+ *  parent window they are listening to is destroyed or until after the cleanup
+ *  method is called.
+ *
+ *  <h3>Creating and Interacting with Windows</h3>
+ *
+ *  Interaction with a web page (the equivalent of a tab in a regular browser)
+ *  is performed via the Berkelium::Window class.  Simply instantiate the class,
+ *  set its size, and point it to a location:
+ *  \code
+ *    Berkelium::Context* context = Berkelium::Context::create();
+ *    Berkelium::Window* window = Berkelium::Window::create(context);
+ *    delete context;
+ *    window->resize(512, 512);
+ *    std::string url = "http://berkelium.org";
+ *    window->navigateTo(Berkelium::URLString::point_to(url.data(), url.length()));
+ *  \endcode
+ *  This creates a web browser instance and loads the specified page, but
+ *  doesn't do anything to display it -- that's your responsibility.  In order
+ *  to display it, as well as receive other events, you'll set up a
+ *  WindowDelegate.
+ *
+ *  Berkelium::WindowDelegate is an interface for listening for all types of
+ *  events from a web page -- navigation, paint events, load progress, and so
+ *  on. Default implementations that ignore events or handle them with sane
+ *  defaults are provided, so you can implement a subclass which only handles
+ *  the events you care about.  For instance, if you are only concerned with
+ *  display, then implementing only Berkelium::WindowDelegate::onPaint is
+ *  sufficient.
+ *
+ *  For instance, you might define the following class to handle paint events
+ *  and pass them onto your drawing layer
+ *  \code
+ *  class MyDelegate : public Berkelium::WindowDelegate {
+ *    virtual void onPaint(Berkelium::Window* wini,
+ *        const unsigned char *bitmap_in, const Berkelium::Rect &bitmap_rect,
+ *        size_t num_copy_rects, const Berkelium::Rect* copy_rects,
+ *        int dx, int dy, const Berkelium::Rect& scroll_rect) {
+ *      // handle paint events...
+ *    }
+ *  };
+ *  \endcode
+ *  and attach an instance to the Berkelium window created earlier (before
+ *  calling navigateTo):
+ *  \code
+ *    class MyDelegate : public Berkelium::WindowDelegate { ... }
+ *    MyDelegate delegate = new MyDelegate();
+ *    window->setDelegate(delegate);
+ *  \endcode
+ *  which adds a delegate to handle drawing.  The delegate would be invoked as
+ *  necessary, passing the new display information into your application.
+ *
+ *  <h3>Injecting Input</h3>
+ *
+ *  Injecting input is simple: just call one of Window::textEvent,
+ *  Window::keyEvent, Window::mouseMoved, Window::mouseButton, or
+ *  Window::mouseWheel when input is received. For example, in a very simple
+ *  GLUT application, the following code handles mouse movements (where the
+ *  mouse() function has been registered with glutMouseFunc()).
+ *  \code
+ *    void mouse(int button, int state, int x, int y) {
+ *      // Make sure Berkelium knows the mouse has moved over the where the
+ *      // event is happening
+ *      bk_window->mouseMoved(x, y);
+ *      // And inject the actual mouse button
+ *      bk_window->mouseButton(
+ *        button,
+ *        (state == GLUT_DOWN)
+ *      );
+ *    }
+ *  \endcode
+ *  There are two important points to remember when injecting input: the values
+ *  Berkelium expects may not match those you receive from your input layer, and
+ *  you must perform any transformations to get input into Berkelium's
+ *  coordinate system.
+ *
+ *  The mismatch of values is particularly common if you are using a
+ *  cross-platform input library such as GLUT or SDL. Most keyboard input can be
+ *  sent through Window::textEvent, but special keys (e.g. Backspace, Delete,
+ *  Escape) must use Window::keyEvent and must use Berkelium's constants.  Since
+ *  Berkelium does not perform translation, these are the same as Chromium's
+ *  constants and may vary by platform.
+ *
+ *  Coordinate transformations are usually straitforward, but there are multiple
+ *  steps to remember: from your input system's coordinates to your display
+ *  system's coordinates, and from your display's coordinates to Berkelium's
+ *  coordinates.
+ *
+ *  For an example showing how to use all the input methods, see glut_input in
+ *  the demo directory.
+ *
+ *  <h3>Javascript Interaction</h3>
+ *
+ *  (To come: injecting javascript, receiving callbacks from javascript)
+ *
+ */

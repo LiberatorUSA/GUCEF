@@ -1,0 +1,67 @@
+Index: third_party/WebKit/Source/WebCore/platform/image-encoders/skia/PNGImageEncoder.cpp
+===================================================================
+--- third_party/WebKit/Source/WebCore/platform/image-encoders/skia/PNGImageEncoder.cpp	(revision 86868)
++++ third_party/WebKit/Source/WebCore/platform/image-encoders/skia/PNGImageEncoder.cpp	(working copy)
+@@ -43,7 +43,7 @@
+ 
+ static void writeOutput(png_structp png, png_bytep data, png_size_t size)
+ {
+-    static_cast<Vector<unsigned char>*>(png->io_ptr)->append(data, size);
++    static_cast<Vector<unsigned char>*>(png_get_io_ptr(png))->append(data, size);
+ }
+ 
+ static void preMultipliedBGRAtoRGBA(const SkPMColor* input, int pixels, unsigned char* output)
+Index: /home/matt/src/berkelium/build/chromium/src/third_party/WebKit/Source/WebCore/platform/image-decoders/png/PNGImageDecoder.cpp
+===================================================================
+--- /home/matt/src/berkelium/build/chromium/src/third_party/WebKit/Source/WebCore/platform/image-decoders/png/PNGImageDecoder.cpp	(revision 86868)
++++ /home/matt/src/berkelium/build/chromium/src/third_party/WebKit/Source/WebCore/platform/image-decoders/png/PNGImageDecoder.cpp	(working copy)
+@@ -228,7 +228,11 @@
+     int compressionType;
+     char* profile;
+     png_uint_32 profileLength;
++#if PNG_LIBPNG_VER_MAJOR >= 1 && PNG_LIBPNG_VER_MINOR >= 5
++    if (png_get_iCCP(png, info, &profileName, &compressionType, (png_byte **)&profile, &profileLength)) {
++#else
+     if (png_get_iCCP(png, info, &profileName, &compressionType, &profile, &profileLength)) {
++#endif
+         ColorProfile colorProfile;
+         colorProfile.append(profile, profileLength);
+         return colorProfile;
+@@ -241,11 +245,11 @@
+ {
+     png_structp png = m_reader->pngPtr();
+     png_infop info = m_reader->infoPtr();
+-    png_uint_32 width = png->width;
+-    png_uint_32 height = png->height;
++    png_uint_32 width = png_get_image_width(png, info);
++    png_uint_32 height = png_get_image_height(png, info);
+     
+     // Protect against large images.
+-    if (png->width > cMaxPNGSize || png->height > cMaxPNGSize) {
++    if (width > cMaxPNGSize || height > cMaxPNGSize) {
+         longjmp(JMPBUF(png), 1);
+         return;
+     }
+@@ -319,8 +323,12 @@
+ 
+     if (m_reader->decodingSizeOnly()) {
+         // If we only needed the size, halt the reader.     
++#if PNG_LIBPNG_VER_MAJOR >= 1 && PNG_LIBPNG_VER_MINOR >= 5
++        m_reader->setReadOffset(m_reader->currentBufferSize() - png_process_data_pause(png, 0/*do not save the data*/));
++#else
+         m_reader->setReadOffset(m_reader->currentBufferSize() - png->buffer_size);
+         png->buffer_size = 0;
++#endif
+     }
+ }
+ 
+@@ -343,7 +351,8 @@
+         // For PNGs, the frame always fills the entire image.
+         buffer.setOriginalFrameRect(IntRect(IntPoint(), size()));
+ 
+-        if (m_reader->pngPtr()->interlaced)
++        if (png_get_interlace_type(m_reader->pngPtr(), m_reader->infoPtr())
++		!= PNG_INTERLACE_NONE)
+             m_reader->createInterlaceBuffer((m_reader->hasAlpha() ? 4 : 3) * size().width() * size().height());
+     }
+

@@ -1,0 +1,30 @@
+Index: sandbox/src/interception.h
+===================================================================
+--- sandbox/src/interception.h	(revision 38681)
++++ sandbox/src/interception.h	(working copy)
+@@ -9,6 +9,10 @@
+ #ifndef SANDBOX_SRC_INTERCEPTION_H_
+ #define SANDBOX_SRC_INTERCEPTION_H_
+ 
++#ifndef SANDBOX_EXPORTS
++#define SANDBOX_EXPORTS 1
++#endif
++
+ #include <list>
+ #include <string>
+ 
+Index: sandbox/src/sandbox_types.h
+===================================================================
+--- sandbox/src/sandbox_types.h	(revision 28890)
++++ sandbox/src/sandbox_types.h	(working copy)
+@@ -5,6 +5,10 @@
+ #ifndef SANDBOX_SRC_SANDBOX_TYPES_H_
+ #define SANDBOX_SRC_SANDBOX_TYPES_H_
+ 
++#ifndef SANDBOX_EXPORTS
++#define SANDBOX_EXPORTS 1
++#endif
++
+ namespace sandbox {
+ 
+ // Operation result codes returned by the sandbox API.

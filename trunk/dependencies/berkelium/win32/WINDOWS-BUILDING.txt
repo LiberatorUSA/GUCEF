@@ -1,0 +1,78 @@
+Here's how you should lay out your directory tree:
+
+build\
+      chromium\
+               depot_tools\
+               chromium\
+                        .gclient
+                        6.0.543.2\
+                        src\
+      berkelium\
+                win32\
+
+I would recommend having a copy of cygwin so that you can use it if necessary.
+If you use Cygwin, it may reset your permissions whenever you do anything, so watch out
+
+Download depot_tools:
+http://www.chromium.org/developers/how-tos/install-depot-tools
+
+The instructions for building Chromium on windows can be found here:
+http://www.chromium.org/developers/how-tos/get-the-code#TOC-Windows
+
+Look in VERSION.txt in berkelium to see which version to check out.
+
+Check out Chromium using gclient.
+If it's a release version (e.g. 6.0.543.2), then use this command:
+  gclient config http://src.chromium.org/svn/releases/CHROMIUM_VERSION
+If it's a subversion version (e.g. 65432), then use:
+  gclient config http://src.chromium.org/svn/trunk/src 
+
+Next, disable LayoutTests. They take 2 hours just to download for me. :-p
+Open up .gclient in an editor and add: (see Reducing the size of your checkout)
+    "custom_deps" : {
+      "src/third_party/WebKit/LayoutTests": None,
+      "third_party/WebKit/LayoutTests": None,
+    }
+
+If it's a release version (e.g. 6.0.543.2), then use this command:
+  gclient sync
+If it's a subversion version (e.g. 65432), then use:
+  gclient sync -r 'src@CHROMIUM_VERSION'
+
+Next, you need to patch Chromium. Otherwise, it can't be linked to berkelium.
+It is best to apply all the patches from berkelium/patches -- those that do not apply to windows won't cause any harm, so apply them anyway.
+If you use Cygwin, locate yourself in the chromium/chromium/src directory and you can do:
+  for p in ../../../berkelium/patches/*.patch; do patch -p0 < $p || echo FAIL $p; done
+You can also use a Win32 native version of patch.exe.
+
+Make sure you have the right version of Visual Studio installed.
+As of this writing (Jan 2011), only VS 2008 and 2005 are supported--not 2010. I advise using VS 2008 if at all possible. VS 2005 is old, slow, has more bugs, and requires more patches.
+
+Now, follow the directions here to build Chromium:
+http://www.chromium.org/developers/how-tos/build-instructions-windows
+Make sure to choose whether you want a Debug or Release build. I recommend Release unless you're trying to modify chromium internals.
+
+You only need to build the "chrome" target, not the whole solution.
+
+Last step, assuming that Chromium built successfully is to build Berkelium's project files.
+If all went well, berkelium should find the chrome files and link to them.
+
+Finally, after Berkelium built, you will need to copy some files from your chrome checkout:
+chromium\src\chrome\Release\ or chromium\src\chrome\Debug\
+
+Currently, the files you need to copy are:
+        avcodec-52.dll
+        avformat-52.dll
+        avutil-50.dll
+        icudt46.dll
+        libEGL.dll
+        libGLESv2.dll
+        locales\
+                en-US.dll
+        resources.pak
+        wow_helper.exe
+
+Put one copy into your binary package, since you need to ship these with your executable.
+
+I recommend making an extra copy directly into berkelium/win32 so you can debug the berkelium library and related programs directly from Visual Studio
+

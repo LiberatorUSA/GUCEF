@@ -1,0 +1,4 @@
+tested = win linux
+win = 11.0.696.77
+mac = 11.0.696.77
+linux = 11.0.696.77
