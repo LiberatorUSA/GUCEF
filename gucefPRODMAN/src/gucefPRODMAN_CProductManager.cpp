@@ -14,7 +14,7 @@
  *
  *  You should have received a copy of the GNU Lesser General Public
  *  License along with this library; if not, write to the Free Software
- *  Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA 
+ *  Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA
  */
 
 /*-------------------------------------------------------------------------//
@@ -52,11 +52,32 @@ namespace PRODMAN {
 
 CProductManager* CProductManager::g_instance = NULL;
 
+const GUCEF::CORE::CEvent CProductManager::ProductInfoListRetrievalStartedEvent = "GUCEF::PRODMAN::CProductManager::ProductInfoListRetrievalStartedEvent";
+const GUCEF::CORE::CEvent CProductManager::ProductInfoListRetrievedEvent = "GUCEF::PRODMAN::CProductManager::ProductInfoListRetrievedEvent";
+const GUCEF::CORE::CEvent CProductManager::ProductInfoListRetrievalErrorEvent = "GUCEF::PRODMAN::CProductManager::ProductInfoListRetrievalErrorEvent";
+const GUCEF::CORE::CEvent CProductManager::ProductInfoListRefreshStartedEvent = "GUCEF::PRODMAN::CProductManager::ProductInfoListRefreshStartedEvent";
+const GUCEF::CORE::CEvent CProductManager::ProductInfoListRefreshedEvent = "GUCEF::PRODMAN::CProductManager::ProductInfoListRefreshedEvent";
+const GUCEF::CORE::CEvent CProductManager::ProductInfoListRefreshFailedEvent = "GUCEF::PRODMAN::CProductManager::ProductInfoListRefreshFailedEvent";
+
 /*-------------------------------------------------------------------------//
 //                                                                         //
 //      UTILITIES                                                          //
 //                                                                         //
 //-------------------------------------------------------------------------*/
+
+void
+CProductManager::RegisterEvents( void )
+{GUCEF_TRACE;
+
+    ProductInfoListRetrievalStartedEvent.Initialize();
+    ProductInfoListRetrievedEvent.Initialize();
+    ProductInfoListRetrievalErrorEvent.Initialize();
+    ProductInfoListRefreshStartedEvent.Initialize();
+    ProductInfoListRefreshedEvent.Initialize();
+    ProductInfoListRefreshFailedEvent.Initialize();
+}
+
+/*-------------------------------------------------------------------------*/
 
 CProductManager*
 CProductManager::Instance( void )
@@ -66,7 +87,7 @@ CProductManager::Instance( void )
     {
         g_instance = new CProductManager();
     }
-    return g_instance;    
+    return g_instance;
 }
 
 /*-------------------------------------------------------------------------*/
@@ -113,7 +134,7 @@ CProductManager::GetDownloadsManager( void )
 void
 CProductManager::RetrieveProductList( CProductInfoList& productList ) const
 {GUCEF_TRACE;
-    
+
     RetrieveProductList( CProductInfo::DEPLOYMENTSTATE_UNKNOWN ,
                          CProductInfo::PRODUCTTYPE_UNKNOWN     ,
                          productList                           );
@@ -129,7 +150,7 @@ CProductManager::RetrieveProductList( const TDeploymentStatus deploymentState ,
 
     m_productList.RetrieveListSubSet( deploymentState ,
                                       productType     ,
-                                      productList     );  
+                                      productList     );
 }
 
 /*-------------------------------------------------------------------------*/
@@ -139,7 +160,7 @@ CProductManager::RetrieveProductInfo( const CString& combinedProductName ,
                                       CProductInfo& productInfo          ) const
 
 {GUCEF_TRACE;
-                                      
+
     const CProductInfo* foundProductInfo = m_productList.RetrieveProductInfo( combinedProductName );
     if ( NULL != foundProductInfo )
     {
@@ -174,7 +195,7 @@ CProductManager::SaveConfig( GUCEF::CORE::CDataNode& node )
 {GUCEF_TRACE;
 
     GUCEF_SYSTEM_LOG( 0, "Saving the product manager configuration" );
-    
+
     GUCEF::CORE::CDataNode* n = node.Structure( "GU%CORE%CProductManager", '%' );
     n->SetAttribute( "ProductListPath", m_productListPath );
     n->SetAttribute( "ProductListCodec", m_productListCodec );
@@ -184,7 +205,7 @@ CProductManager::SaveConfig( GUCEF::CORE::CDataNode& node )
 }
 
 /*-------------------------------------------------------------------------*/
-                                
+
 bool
 CProductManager::LoadConfig( const GUCEF::CORE::CDataNode& node )
 {GUCEF_TRACE;
@@ -212,19 +233,33 @@ CProductManager::LoadConfig( const GUCEF::CORE::CDataNode& node )
             m_productRoot = att->second;
         }
 
-        //GUCEF::CORE::CDataNode productList;        
+        //GUCEF::CORE::CDataNode productList;
         //if ( GUCE::CORE::VFSLoadDataTree( m_productListPath  ,
         //                                  m_productListCodec ,
         //                                  &productList       ) )
         //{
         //    m_productList.LoadConfig( productList );
         //}
-        
+
         m_downloadsManager.LoadConfig( node );
         return true;
     }
     return false;
 }
+
+/*-------------------------------------------------------------------------*/
+
+void
+CProductManager::RefreshProductInfoList( void )
+{
+    NotifyObservers( ProductInfoListRefreshStartedEvent );
+
+    // Load the already installed product list
+
+    // Download the available products which are to be merged into our existing list
+    NotifyObservers( ProductInfoListRetrievalStartedEvent );
+}
+
 
 /*-------------------------------------------------------------------------*/
 
@@ -257,6 +292,44 @@ CProductManager::GetProductRoot( const CProductInfo& product ) const
     }
     path += CString( "Products" ) + '/' + product.GetCombinedProductString();
     return path;
+}
+
+/*-------------------------------------------------------------------------*/
+
+void
+CProductManager::OnProductInfoListRetrievalEvent( GUCEF::CORE::CNotifier* notifier    ,
+                                                  const GUCEF::CORE::CEvent& eventid  ,
+                                                  GUCEF::CORE::CICloneable* eventdata )
+{GUCEF_TRACE;
+
+    if ( GUCEF::CORE::CURLDataRetriever::URLAllDataRecievedEvent == eventid )
+    {
+        GUCEF::CORE::CIOAccess* access = m_urlDataRetiever.GetIOAccess();
+        access->Setpos( 0 );
+
+        CORE::CDStoreCodecRegistry::TDStoreCodecPtr codec;
+        CORE::CDStoreCodecRegistry& codecRegistry = CORE::CCoreGlobal::Instance()->GetDStoreCodecRegistry();
+        if ( codecRegistry.TryLookup( m_productListCodec, codec, false ) )
+        {
+            // we found a codec of the given type, use it to deserialize the data received
+            CORE::CDataNode dataRootNode;
+            if ( codec->BuildDataTree( dataRootNode, access ) )
+            {
+                CORE::CDataNode::TDataNodeSet productLists = dataRootNode.FindChildrenOfType( "ProductList", true );
+                CORE::CDataNode::TDataNodeSet::iterator i = productLists.begin();
+                while ( i != productLists.end() )
+                {
+                    m_productList.LoadConfig( *(*i) )
+                    ++i;
+                }
+            }
+        }
+    }
+    else
+    if ( GUCEF::CORE::CURLDataRetriever::URLDataRetrievalErrorEvent == eventid )
+    {
+        NotifyObservers( ProductInfoListRetrievalErrorEvent );
+    }
 }
 
 /*-------------------------------------------------------------------------//
