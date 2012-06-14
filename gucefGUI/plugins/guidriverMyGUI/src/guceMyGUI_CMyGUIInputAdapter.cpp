@@ -220,7 +220,7 @@ CMyGUIInputAdapter::OnNotify( GUCEF::CORE::CNotifier* notifier                 ,
         if ( GUCEF::INPUT::CKeyboard::KeyStateChangedEvent == eventid )
         {
             GUCEF::INPUT::CKeyStateChangedEventData* eData = static_cast< GUCEF::INPUT::CKeyStateChangedEventData* >( eventdata );
-            //if ( m_inputContext->GetID() == eData->GetContextId() )
+            if ( m_inputContext->GetID() == eData->GetContextId() )
             {
                 if ( eData->GetKeyPressedState() )
                 {
