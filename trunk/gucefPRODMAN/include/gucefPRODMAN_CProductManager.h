@@ -14,7 +14,7 @@
  *
  *  You should have received a copy of the GNU Lesser General Public
  *  License along with this library; if not, write to the Free Software
- *  Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA 
+ *  Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA
  */
 
 #ifndef GUCEF_PRODMAN_CPRODUCTMANAGER_H
@@ -56,13 +56,24 @@ namespace PRODMAN {
 class GUCEF_PRODMAN_PUBLIC_CPP CProductManager : public CORE::CIConfigurable
 {
     public:
-    
+
+    static const CORE::CEvent ProductInfoListRetrievalStartedEvent;
+    static const CORE::CEvent ProductInfoListRetrievedEvent;
+    static const CORE::CEvent ProductInfoListRetrievalErrorEvent;
+    static const CORE::CEvent ProductInfoListRefreshStartedEvent;
+    static const CORE::CEvent ProductInfoListRefreshedEvent;
+    static const CORE::CEvent ProductInfoListRefreshFailedEvent;
+
+    static void RegisterEvents( void );
+
+    public:
+
     typedef CProductInfo::TDeploymentStatus  TDeploymentStatus;
     typedef CProductInfo::TProductType       TProductType;
-    typedef std::set< CProductInfo >         TProductList; 
+    typedef std::set< CProductInfo >         TProductList;
 
     static CProductManager* Instance( void );
-    
+
     bool RetrieveProductInfo( const CString& combinedProductName ,
                               CProductInfo& productInfo          ) const;
 
@@ -73,11 +84,11 @@ class GUCEF_PRODMAN_PUBLIC_CPP CProductManager : public CORE::CIConfigurable
                               CProductInfoList& productList           ) const;
 
     bool MergeProductList( const CProductInfoList& productList );
-    
+
     bool MergeProduct( const CProductInfo& productInfo );
-    
+
     virtual bool SaveConfig( GUCEF::CORE::CDataNode& node );
-                                
+
     virtual bool LoadConfig( const GUCEF::CORE::CDataNode& node );
 
     CString GetProductRoot( const CProductInfo& product ) const;
@@ -85,30 +96,30 @@ class GUCEF_PRODMAN_PUBLIC_CPP CProductManager : public CORE::CIConfigurable
     void SetCommonProductRoot( const CString commonProductRoot );
 
     CString GetCommonProductRoot( void ) const;
-    
+
     CDownloadsManager& GetDownloadsManager( void );
-    
+
     private:
     friend class CGUCOREModule;
-    
+
     static void Deinstance( void );
-    
+
     private:
-    
+
     CProductManager( void );
     CProductManager( const CProductManager& src );
     virtual ~CProductManager();
     CProductManager& operator=( const CProductManager& src );
-    
+
     private:
-    
+
     CProductInfoList m_productList;
     CString m_productListPath;
     CString m_productListCodec;
     CString m_productRoot;
     CDownloadsManager m_downloadsManager;
     static CProductManager* g_instance;
-    
+
 };
 
 /*-------------------------------------------------------------------------//
@@ -132,5 +143,5 @@ class GUCEF_PRODMAN_PUBLIC_CPP CProductManager : public CORE::CIConfigurable
 
 - 11-02-2008 :
         - Initial implementation
-          
+
 ---------------------------------------------------------------------------*/
