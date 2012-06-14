@@ -55,7 +55,20 @@ CEventListner::CEventListner( ::Window window                  ,
       m_mouseY( 0 )
 {GUCEF_TRACE;
 
-    CORE::CX11EventDispatcher::Instance()->SubscribeOnBehalfOfWindow( *this, window );
+    CORE::CX11EventDispatcher* eventDispatcher = CORE::CX11EventDispatcher::Instance();
+    ::Display* display = eventDispatcher->GetDisplay();
+
+    eventDispatcher->SubscribeOnBehalfOfWindow( *this, window );
+
+    ::XWindowAttributes windowAttributes;
+    ::XGetWindowAttributes( display, window, &windowAttributes );
+
+    long eventMask = windowAttributes.your_event_mask |
+                          KeyPressMask | KeyReleaseMask |
+                          ButtonPressMask | ButtonReleaseMask |
+                          PointerMotionMask | Button1MotionMask;
+
+    ::XSelectInput( display, window, eventMask );
 }
 
 /*--------------------------------------------------------------------------*/
@@ -263,7 +276,7 @@ CEventListner::MapKeyCode( int x11KeyCode )
 /*--------------------------------------------------------------------------*/
 
 void
-CEventListner::OnX11Event( ::XEvent event )
+CEventListner::OnX11Event( ::XEvent& event )
 {GUCEF_TRACE;
 
     // We only care about input related events
@@ -271,12 +284,12 @@ CEventListner::OnX11Event( ::XEvent event )
     {
         case KeyRelease:
         {
-            m_callbacks.onKeyboardKeyUp( m_callbacks.userData, 0, MapKeyCode( event.xkey.keycode ), 0 );
+            m_callbacks.onKeyboardKeyUp( m_callbacks.userData, 0, MapKeyCode( ::XLookupKeysym( &event.xkey, 0 ) ), 0 );
             return;
         }
         case KeyPress:
         {
-            m_callbacks.onKeyboardKeyDown( m_callbacks.userData, 0, MapKeyCode( event.xkey.keycode ), 0 );
+            m_callbacks.onKeyboardKeyDown( m_callbacks.userData, 0, MapKeyCode( ::XLookupKeysym( &event.xkey, 0 ) ), 0 );
             return;
         }
         case ButtonPress:
@@ -303,6 +316,18 @@ CEventListner::OnX11Event( ::XEvent event )
             m_callbacks.onMouseMove( m_callbacks.userData, 0, m_mouseX, m_mouseY, deltaX, deltaY );
 
             m_callbacks.onMouseButtonUp( m_callbacks.userData, 0, event.xbutton.button );
+            return;
+        }
+        case LeaveNotify :
+        case EnterNotify :
+        {
+            Int32 deltaX = event.xcrossing.x - m_mouseX;
+            Int32 deltaY = event.xcrossing.y - m_mouseY;
+
+            m_mouseX = event.xbutton.x;
+            m_mouseY = event.xbutton.y;
+
+            m_callbacks.onMouseMove( m_callbacks.userData, 0, m_mouseX, m_mouseY, deltaX, deltaY );
             return;
         }
         case MotionNotify:

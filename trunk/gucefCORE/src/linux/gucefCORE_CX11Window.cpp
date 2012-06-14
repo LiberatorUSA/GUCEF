@@ -186,6 +186,60 @@ CX11Window::GrabFocus( void )
 
 /*-------------------------------------------------------------------------*/
 
+void
+CX11Window::SetFullscreenStatus( bool fullscreen )
+{
+//   XSetWindowAttributes  xattr;
+//   Atom  atom;
+//   int   one = 1;
+//
+//   xattr.override_redirect = False;
+//   XChangeWindowAttributes ( x_display, win, CWOverrideRedirect, &xattr );
+//
+//   atom = XInternAtom ( x_display, "_NET_WM_STATE_FULLSCREEN", True );
+//   XChangeProperty (
+//      x_display, win,
+//      XInternAtom ( x_display, "_NET_WM_STATE", True ),
+//      XA_ATOM,  32,  PropModeReplace,
+//      (unsigned char*) &atom,  1 );
+//
+//   XChangeProperty (
+//      x_display, win,
+//      XInternAtom ( x_display, "_HILDON_NON_COMPOSITED_WINDOW", True ),
+//      XA_INTEGER,  32,  PropModeReplace,
+//      (unsigned char*) &one,  1);
+//
+//   XWMHints hints;
+//   hints.input = True;
+//   hints.flags = InputHint;
+//   XSetWMHints(x_display, win, &hints);
+
+    // get identifiers for the provided atom name strings
+//    ::Atom wmState   = ::XInternAtom ( x_display, "_NET_WM_STATE", False );
+//    ::Atom wmFullscreenState = ::XInternAtom ( x_display, "_NET_WM_STATE_FULLSCREEN", False );
+//
+//    int fullscreenState = fullscreen ? 1 : 0;
+//
+//    ::XEvent xev;
+//    memset ( &xev, 0, sizeof(xev) );
+//
+//    xev.type                 = ClientMessage;
+//    xev.xclient.window       = win;
+//    xev.xclient.message_type = wmState;
+//    xev.xclient.format       = 32;
+//    xev.xclient.data.l[0]    = fullscreenState;
+//    xev.xclient.data.l[1]    = wmFullscreenState;
+//
+//    // send an event mask to the X-server
+//    ::XSendEvent( x_display,
+//                  DefaultRootWindow ( x_display ),
+//                  False,
+//                  SubstructureNotifyMask,
+//                  &xev );
+}
+
+/*-------------------------------------------------------------------------*/
+
 bool
 CX11Window::Show( void )
 {
@@ -657,8 +711,8 @@ CX11Window::WindowCreate( const Int32 xPosition ,
     CX11EventDispatcher::Instance()->SubscribeOnBehalfOfWindow( AsObserver(), m_window );
 
     // register interest in the delete window message
-    ::Atom wmDeleteMessage = ::XInternAtom( m_display, "WM_DELETE_WINDOW", False );
-    ::XSetWMProtocols( m_display, m_window, &wmDeleteMessage, 1 );
+//    m_wmDeleteWindow = ::XInternAtom( m_display, "WM_DELETE_WINDOW", False );
+//    ::XSetWMProtocols( m_display, m_window, &m_wmDeleteWindow, 1 );
 
     Show();
     Repaint();
@@ -702,6 +756,14 @@ CX11Window::OnX11Event( const ::XEvent& event )
         {
             NotifyObservers( WindowDestroyEvent );
             return;
+        }
+        case ClientMessage:
+        {
+            if ( m_wmDeleteWindow == event.xclient.message_type )
+            {
+                NotifyObservers( WindowCloseEvent );
+                return;
+            }
         }
     }
 }

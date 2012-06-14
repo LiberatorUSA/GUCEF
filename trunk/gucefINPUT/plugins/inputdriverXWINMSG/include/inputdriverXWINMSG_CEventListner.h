@@ -83,7 +83,7 @@ class GUCEF_INPUT_PLUGIN_PRIVATE_CPP CEventListner : public CORE::CObserver
 
     private:
 
-    void OnX11Event( ::XEvent eventData );
+    void OnX11Event( ::XEvent& eventData );
 
     INPUT::KeyCode MapKeyCode( int x11KeyCode );
 

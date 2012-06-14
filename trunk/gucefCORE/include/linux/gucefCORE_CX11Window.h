@@ -125,6 +125,8 @@ class GUCEF_CORE_PUBLIC_CPP CX11Window : public CObservingNotifier
 
     void GrabFocus( void );
 
+    void SetFullscreenStatus( bool fullscreen );
+
     int GetWidthOfClientAreaBorder( void ) const;
 
     bool SetWindowAreaPosition( int x, int y );
