@@ -229,12 +229,76 @@ function FindAndroidNdkR7b {
 
 #------------------------------------------------------------------------------
 
+function FindAndroidNdkR7c {
+
+  # Check for ANDROIDNDK variable, if undefined set it to a copy in depencencies, we will just have to guess
+  ANDROIDNDK=${ANDROIDNDK:=undefined}
+  if [ "$ANDROIDNDK" = "undefined" ]; then
+    echo "ANDROIDNDK environment variable not found, setting it to our default location"
+    ANDROIDNDK="$GUCEF_HOME/dependencies/android-ndk-r7c"
+
+    # For NDK r7b we also check for the build script
+    TEST_PATH="$ANDROIDNDK/ndk-build"
+    echo "Testing for ndk-build existance @ $TEST_PATH"
+    if [ -x "$TEST_PATH" ];
+    then
+      echo "Found NDK build script"
+      ANDROIDNDKBUILD=$TEST_PATH
+    else
+      echo "Unable to locate NDK build script, invalid NDK location"
+      ANDROIDNDK="undefined"   
+    fi
+
+  fi
+  
+}
+
+#------------------------------------------------------------------------------
+
+function FindAndroidNdkR8 {
+
+  # Check for ANDROIDNDK variable, if undefined set it to a copy in depencencies, we will just have to guess
+  ANDROIDNDK=${ANDROIDNDK:=undefined}
+  if [ "$ANDROIDNDK" = "undefined" ]; then
+    echo "ANDROIDNDK environment variable not found, setting it to our default location"
+    ANDROIDNDK="$GUCEF_HOME/dependencies/android-ndk-r8"
+
+    # For NDK r7b we also check for the build script
+    TEST_PATH="$ANDROIDNDK/ndk-build"
+    echo "Testing for ndk-build existance @ $TEST_PATH"
+    if [ -x "$TEST_PATH" ];
+    then
+      echo "Found NDK build script"
+      ANDROIDNDKBUILD=$TEST_PATH
+    else
+      echo "Unable to locate NDK build script, invalid NDK location"
+      ANDROIDNDK="undefined"   
+    fi
+
+  fi
+  
+}
+
+#------------------------------------------------------------------------------
+
 function FindAndroidNdk {
 
   ANDROIDNDK=${ANDROIDNDK:=undefined}
   ANDROIDNDKBUILD=${ANDROIDNDKBUILD:=undefined}
 
+  # Check for NDK release 8
+  FindAndroidNdkR8
+
   if [ "$ANDROIDNDK" = "undefined" ]; then
+
+  echo "Unable to locate NDK release 8, will try release 7c"
+
+  # Check for NDK release 7c
+  FindAndroidNdkR7c
+
+  if [ "$ANDROIDNDK" = "undefined" ]; then
+
+  echo "Unable to locate NDK release 7c, will try release 7b"
 
   # Check for NDK release 7b
   FindAndroidNdkR7b
@@ -291,6 +355,8 @@ function FindAndroidNdk {
   FindAndroidNdkR4
         
   fi  
+  fi
+  fi
   fi
   fi
   fi
