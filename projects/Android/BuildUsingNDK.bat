@@ -13,51 +13,79 @@ IF NOT DEFINED GUCEF_HOME (
 )
 REM ECHO GUCEF_HOME="%GUCEF_HOME%"
 
-ECHO Script location for FindCygwin: %GUCEF_HOME%\projects\Android\FindCygwin.bat
-
-ECHO Invoking FindCygwin script
-ECHO.
-
 SET OLD_NOPAUSE=%NOPAUSE%
 SET NOPAUSE="true"
 
-CALL %GUCEF_HOME%\projects\Android\FindCygwin.bat
+CALL %GUCEF_HOME%\projects\Android\FindNDK.bat
 
 SET NOPAUSE=%OLD_NOPAUSE%
 
-IF NOT DEFINED CYGWIN_ROOT (
+IF DEFINED CMDCAPABLE_NDK (
 
-  ECHO.
-  ECHO Failure: The FindCygwin script was unable to locate cygwin, we cannot proceed!
+    ECHO.
+    ECHO Changing current directory to Android project dir relative to GUCEF_HOME
+    ECHO.
+
+    CD %GUCEF_HOME%\projects\Android\jni
+
+    ECHO.
+    ECHO *** Invoking build ***
+    ECHO.
+
+    CALL %CMDCAPABLE_NDK%\ndk-build.cmd
+
+    PAUSE
 )
 
-echo woop
+IF NOT DEFINED CMDCAPABLE_NDK (
 
-rem IF DEFINED CYGWIN_ROOT (
+    ECHO.
+    ECHO Unable to locate a NDK package which supports .cmd based compilation, Falling back to Cygwin ...
+    ECHO.
+
+    ECHO Script location for FindCygwin: %GUCEF_HOME%\projects\Android\FindCygwin.bat
+
+    ECHO Invoking FindCygwin script
+    ECHO.
+
+    SET OLD_NOPAUSE=%NOPAUSE%
+    SET NOPAUSE="true"
+
+    CALL %GUCEF_HOME%\projects\Android\FindCygwin.bat
+
+    SET NOPAUSE=%OLD_NOPAUSE%
+
+    IF NOT DEFINED CYGWIN_ROOT (
+
+      ECHO.
+      ECHO Failure: The FindCygwin script was unable to locate cygwin, we cannot proceed!
+    )
+
+    rem IF DEFINED CYGWIN_ROOT (
   
-  ECHO.
-  ECHO *** Invoking BuildUsingNDK.sh using bash ***
-  ECHO.
+      ECHO.
+      ECHO *** Invoking BuildUsingNDK.sh using bash ***
+      ECHO.
   
-  REM Cygwin needs its bin dirs to be able to execute commands
-  REM /usr/local/bin;/usr/bin;/bin
+      REM Cygwin needs its bin dirs to be able to execute commands
+      REM /usr/local/bin;/usr/bin;/bin
   
-  ECHO Adding Cygwin binary paths to PATH
-  SET PATH="%CYGWIN_ROOT%\local\bin;%CYGWIN_ROOT%\usr\bin;%CYGWIN_ROOT%\bin;%PATH%"
+      ECHO Adding Cygwin binary paths to PATH
+      SET PATH="%CYGWIN_ROOT%\local\bin;%CYGWIN_ROOT%\usr\bin;%CYGWIN_ROOT%\bin;%PATH%"
 
-  ECHO Undefining GUCEF_HOME so we don't mess up the bash version
-  SET GUCEF_HOME=
-  REM SET GNUMAKE=
+      ECHO Undefining GUCEF_HOME so we don't mess up the bash version
+      SET GUCEF_HOME=
+      REM SET GNUMAKE=
 
-  SET WIN32_BASH_PATH=%CYGWIN_ROOT%\bin
-  REM SET CYGWIN_ROOT=
+      SET WIN32_BASH_PATH=%CYGWIN_ROOT%\bin
+      REM SET CYGWIN_ROOT=
 
-  CD /D %BUIDUSINGNDK_THEBATCHDIR%
+      CD /D %BUIDUSINGNDK_THEBATCHDIR%
 
-  REM echo %WIN32_BASH_PATH%
-  %CYGWIN_ROOT%\bin\bash "%BUIDUSINGNDK_THEBATCHDIR%\BuildUsingNDK.sh" --login -i
-rem )
-
+      REM echo %WIN32_BASH_PATH%
+      %CYGWIN_ROOT%\bin\bash "%BUIDUSINGNDK_THEBATCHDIR%\BuildUsingNDK.sh" --login -i
+    rem )
+)
 
 IF NOT DEFINED NOPAUSE (
   PAUSE
