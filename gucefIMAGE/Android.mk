@@ -23,11 +23,17 @@ LOCAL_MODULE_FILENAME := libgucefIMAGE
 
 LOCAL_SRC_FILES := \
   src/CGUCEFIMAGEModule.cpp \
-  src/CGUIImageCodec.cpp \
-  src/CImage.cpp \
-  src/CIMGCodec.cpp \
-  src/CPixelMap.cpp \
-  src/gucefIMAGE.cpp
+  src/gucefIMAGE.cpp \
+  src/gucefIMAGE_CCPluginImageCodecItem.cpp \
+  src/gucefIMAGE_CGUIImageCodec.cpp \
+  src/gucefIMAGE_CIImageCodec.cpp \
+  src/gucefIMAGE_CImage.cpp \
+  src/gucefIMAGE_CImageCodecPlugin.cpp \
+  src/gucefIMAGE_CImageCodecPluginManager.cpp \
+  src/gucefIMAGE_CImageCodecRegistry.cpp \
+  src/gucefIMAGE_CImageGlobal.cpp \
+  src/gucefIMAGE_CIMGCodec.cpp \
+  src/gucefIMAGE_CPixelMap.cpp
 
 LOCAL_C_INCLUDES := \
   $(MY_MODULE_PATH)/include \
@@ -35,6 +41,8 @@ LOCAL_C_INCLUDES := \
   $(MY_MODULE_PATH)/../gucefCORE/include \
   $(MY_MODULE_PATH)/../gucefCORE/include/android \
   $(MY_MODULE_PATH)/../gucefMT/include
+
+LOCAL_CFLAGS := -DGUCEFIMAGE_BUILD_MODULE
 
 
 LOCAL_SHARED_LIBRARIES := \

@@ -216,6 +216,20 @@ GenerateContentForAndroidMakefile( const TModuleInfoEntryPairVector& mergeLinks 
         preprocessorSection += "\n\n";
     }
 
+    // Now we add the compiler flags, if any
+    // For Android we only support the GCC compilers
+    CORE::CString compilerSection;
+    TStringMap::const_iterator p = moduleInfo.compilerSettings.compilerFlags.find( "GCC" );
+    if ( p != moduleInfo.compilerSettings.compilerFlags.end() )
+    {
+        compilerSection = "LOCAL_CFLAGS +=" + (*p).second + "\n\n";
+    }
+    p = moduleInfo.compilerSettings.compilerFlags.find( "G++" );
+    if ( p != moduleInfo.compilerSettings.compilerFlags.end() )
+    {
+        compilerSection = "LOCAL_CPPFLAGS +=" + (*p).second + "\n\n";
+    }
+
     // Now we will add all the dependency linking instructions.
     // For some reason it matters, at specification time, to Android's build
     // system whether the module you are linking to is a dynamically linked module
@@ -458,7 +472,7 @@ GenerateContentForAndroidMakefile( const TModuleInfoEntryPairVector& mergeLinks 
         }
     }
 
-    return contentPrefix + srcFilesSection + includeFilesSection + preprocessorSection + linkingSection + manualContent + contentSuffix;
+    return contentPrefix + srcFilesSection + includeFilesSection + preprocessorSection + compilerSection + linkingSection + manualContent + contentSuffix;
 }
 
 /*-------------------------------------------------------------------------*/

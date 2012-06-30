@@ -54,7 +54,10 @@ LOCAL_SRC_FILES := \
   src/guceMyGUI_CVFSInfoProvider.cpp \
   src/guceMyGUI_CWidgetImp.cpp \
   src/guceMyGUI_CWindowImp.cpp \
-  src/guceMyGUI_pluginAPI.cpp
+  src/guceMyGUI_pluginAPI.cpp \
+  src/guidriverMyGUI_CLogAdapter.cpp \
+  src/guidriverMyGUI_CMyGuiDriver.cpp \
+  src/guidriverMyGUI_widgets.cpp
 
 LOCAL_C_INCLUDES := \
   $(MY_MODULE_PATH)/include \

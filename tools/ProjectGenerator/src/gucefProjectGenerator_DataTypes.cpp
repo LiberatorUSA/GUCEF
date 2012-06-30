@@ -836,7 +836,7 @@ DeserializeModuleInfo( TModuleInfo& moduleInfo           ,
     const CORE::CDataNode* compilerNode = moduleInfoNode->Find( "Compiler" );
     if ( NULL != compilerNode )
     {
-        // Find all the preprocessor definitions
+        // Find all the code languages defined for the compiler
         CORE::CDataNode::TConstDataNodeSet languages = compilerNode->FindChildrenOfType( "Language" );
         i = languages.begin();
         while ( i != languages.end() )
@@ -846,6 +846,21 @@ DeserializeModuleInfo( TModuleInfo& moduleInfo           ,
             if ( !name.IsNULLOrEmpty() )
             {
                 moduleInfo.compilerSettings.languagesUsed.insert( name );
+            }
+            ++i;
+        }
+
+        // Find all the compiler flags defined per compiler
+        CORE::CDataNode::TConstDataNodeSet flagNodes = compilerNode->FindChildrenOfType( "CompilerFlags" );
+        i = flagNodes.begin();
+        while ( i != flagNodes.end() )
+        {
+            const CORE::CDataNode* flagsNode = (*i);
+            CORE::CString compilerName = flagsNode->GetAttributeValue( "CompilerName" );
+            CORE::CString flags = flagsNode->GetAttributeValue( "Flags" );
+            if ( !compilerName.IsNULLOrEmpty() && !flags.IsNULLOrEmpty() )
+            {
+                moduleInfo.compilerSettings.compilerFlags[ compilerName ] = flags;
             }
             ++i;
         }
