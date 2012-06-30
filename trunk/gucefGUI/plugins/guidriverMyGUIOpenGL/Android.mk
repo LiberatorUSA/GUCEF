@@ -55,7 +55,6 @@ LOCAL_CFLAGS := -DGUIDRIVERMYGUIOPENGL_BUILD_MODULE
 
 LOCAL_SHARED_LIBRARIES := \
   MyGUI.Engine \
-  MyGUI.OpenGLPlatform \
   freetype \
   gucefCORE \
   gucefGUI \
@@ -63,6 +62,10 @@ LOCAL_SHARED_LIBRARIES := \
   gucefINPUT \
   gucefMT \
   guidriverMyGUI
+
+
+LOCAL_STATIC_LIBRARIES := \
+  MyGUI.OpenGLPlatform
 
 
 LOCAL_LDLIBS := \

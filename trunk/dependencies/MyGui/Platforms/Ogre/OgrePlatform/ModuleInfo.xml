@@ -1,5 +1,5 @@
 <ModuleInfoEntry>
-    <Module Name="MyGUI.OgrePlatform" Type="SharedLibrary" Platform="All">
+    <Module Name="MyGUI.OgrePlatform" Type="SharedLibrary" Platform="win32;linux">
         <Dependencies>
             <Dependency Name="MyGUI.Engine" />
             <Dependency Name="MyGUI.Common.FileSystemInfo" />

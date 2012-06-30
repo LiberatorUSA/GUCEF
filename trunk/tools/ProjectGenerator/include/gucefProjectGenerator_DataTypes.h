@@ -104,6 +104,7 @@ typedef struct SLinkerSettings TLinkerSettings;
 struct SCompilerSettings
 {
     TStringSet languagesUsed;                // list of all programming languages used within this module
+    TStringMap compilerFlags;                // map of flags to pass to the specific compilers
 };
 typedef struct SCompilerSettings TCompilerSettings;
 

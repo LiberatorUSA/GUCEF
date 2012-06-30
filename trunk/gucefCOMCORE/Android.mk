@@ -37,6 +37,7 @@ LOCAL_SRC_FILES := \
   src/CUDPSocket.cpp \
   src/dvwinsock.c \
   src/gucefCOMCORE.cpp \
+  src/gucefCOMCORE_CComCoreGlobal.cpp \
   src/gucefCOMCORE_CPingTaskConsumer.cpp \
   src/socketutils.cpp
 
