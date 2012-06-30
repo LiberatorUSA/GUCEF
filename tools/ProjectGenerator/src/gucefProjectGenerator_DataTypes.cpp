@@ -142,6 +142,58 @@ MergeStringVector( TStringVector& targetList          ,
 
 /*---------------------------------------------------------------------------*/
 
+static bool
+IsKeyStringInMap( const TStringMap& testMap       ,
+                  bool caseSensitive              ,
+                  const CORE::CString& testString )
+{
+    if ( !caseSensitive )
+    {
+        TStringMap::const_iterator i = testMap.find( testString );
+        return i != testMap.end();
+    }
+    
+    TStringMap::const_iterator i = testMap.begin();
+    while ( i != testMap.end() )
+    {
+        if ( (*i).first.Equals( testString, caseSensitive )  )
+        {
+            return true;
+        }
+        ++i;
+    }  
+    return false;
+}
+
+/*---------------------------------------------------------------------------*/
+
+static void
+MergeStringMap( TStringMap& targetMap          ,
+                const TStringMap& mapToMergeIn ,
+                bool caseSensitive             ,
+                bool concatExistingEntries     )
+{GUCEF_TRACE;
+
+    TStringMap::const_iterator i = mapToMergeIn.begin();
+    while ( i != mapToMergeIn.end() )
+    {
+        if ( !IsKeyStringInMap( targetMap, caseSensitive, (*i).first ) )
+        {
+            targetMap.insert( (*i) );
+        }
+        else
+        {
+            if ( concatExistingEntries )
+            {
+                targetMap[ (*i).first ] += (*i).second;
+            }
+        }
+        ++i;
+    }
+}
+
+/*---------------------------------------------------------------------------*/
+
 static void
 MergeStringSet( TStringSet& targetList          ,
                 const TStringSet& listToMergeIn ,
@@ -1080,6 +1132,10 @@ MergeModuleInfo( TModuleInfo& targetModuleInfo          ,
     MergeStringSet( targetModuleInfo.compilerSettings.languagesUsed    ,
                     moduleInfoToMergeIn.compilerSettings.languagesUsed ,
                     false                                              );
+    MergeStringMap( targetModuleInfo.compilerSettings.compilerFlags    ,
+                    moduleInfoToMergeIn.compilerSettings.compilerFlags ,
+                    false                                              ,
+                    true                                               );
     MergeStringSet( targetModuleInfo.preprocessorSettings.defines    ,
                     moduleInfoToMergeIn.preprocessorSettings.defines ,
                     true                                             );

@@ -172,6 +172,8 @@ LOCAL_C_INCLUDES := \
 
 LOCAL_CFLAGS := -DRocketCore_EXPORTS
 
+LOCAL_CPPFLAGS +=-frtti
+
 
 LOCAL_SHARED_LIBRARIES := \
   freetype

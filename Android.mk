@@ -12,7 +12,7 @@
 #
 # This is the project makefile which includes all modules which are part of this project
 #
-# PROJECT: "GUCEF"
+# PROJECT: "GUCE"
 #
 
 ifndef PROJECT_ROOT_PATH
