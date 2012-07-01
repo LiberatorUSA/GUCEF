@@ -1,5 +1,5 @@
 <ModuleInfoEntry>
-    <Module Name="gucefGUI_TestApp" Type="Executable" Platform="All">
+    <Module Name="gucefGUI_TestApp" Type="Executable" Platform="mswin;linux">
         <Dependencies>
             <Dependency Name="gucefMT" />
             <Dependency Name="gucefCORE" />

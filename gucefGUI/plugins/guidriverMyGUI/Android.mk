@@ -86,7 +86,8 @@ LOCAL_SHARED_LIBRARIES := \
   gucefCORE \
   gucefGUI \
   gucefINPUT \
-  gucefMT
+  gucefMT \
+  gucefVFS
 
 include $(BUILD_SHARED_LIBRARY)
 

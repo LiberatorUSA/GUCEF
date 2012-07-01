@@ -75,8 +75,6 @@ LOCAL_C_INCLUDES := \
   $(MY_MODULE_PATH)/../../Include/Rocket/Debugger \
   $(MY_MODULE_PATH)/../Core
 
-LOCAL_CPPFLAGS +=-frtti
-
 
 LOCAL_SHARED_LIBRARIES := \
   RocketCore \

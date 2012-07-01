@@ -1,6 +1,7 @@
 <ModuleInfoEntry>
     <Module Name="guidriverMyGUI" Type="SharedLibrary" Platform="All">
         <Dependencies>
+            <Dependency Name="gucefVFS" />
             <Dependency Name="gucefINPUT" />
             <Dependency Name="gucefGUI" />
             <Dependency Name="gucefCORE" />
@@ -9,6 +10,7 @@
             <Dependency Name="MyGUI.Engine" />
         </Dependencies>
         <Linker>
+            <Dependency Name="gucefVFS" />
             <Dependency Name="gucefINPUT" />
             <Dependency Name="gucefGUI" />
             <Dependency Name="gucefCORE" />

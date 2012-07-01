@@ -14,7 +14,7 @@ APP_CPPFLAGS += -fexceptions
 # compatibility reasons. To enable it, add the following to your module
 # declarations:
 
-#APP_CPPFLAGS += -frtti
+APP_CPPFLAGS += -frtti
 
 # STL
 #

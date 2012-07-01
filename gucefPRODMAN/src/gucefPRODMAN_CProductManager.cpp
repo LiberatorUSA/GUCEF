@@ -23,6 +23,11 @@
 //                                                                         //
 //-------------------------------------------------------------------------*/
 
+#ifndef GUCEF_CORE_CDSTORECODECREGISTRY_H
+#include "CDStoreCodecRegistry.h"
+#define GUCEF_CORE_CDSTORECODECREGISTRY_H
+#endif /* GUCEF_CORE_CDSTORECODECREGISTRY_H ? */
+
 #ifndef GUCEF_CORE_DVCPPSTRINGUTILS_H
 #include "dvcppstringutils.h"
 #define GUCEF_CORE_DVCPPSTRINGUTILS_H
@@ -103,7 +108,8 @@ CProductManager::Deinstance( void )
 /*-------------------------------------------------------------------------*/
 
 CProductManager::CProductManager( void )
-    : CIConfigurable( true )      ,
+    : CObservingNotifier()        ,
+      CIConfigurable( true )      ,
       m_productList()             ,
       m_productListPath()         ,
       m_productListCodec( "xml" ) ,
@@ -297,14 +303,14 @@ CProductManager::GetProductRoot( const CProductInfo& product ) const
 /*-------------------------------------------------------------------------*/
 
 void
-CProductManager::OnProductInfoListRetrievalEvent( GUCEF::CORE::CNotifier* notifier    ,
-                                                  const GUCEF::CORE::CEvent& eventid  ,
-                                                  GUCEF::CORE::CICloneable* eventdata )
+CProductManager::OnProductInfoListRetrievalEvent( CORE::CNotifier* notifier    ,
+                                                  const CORE::CEvent& eventid  ,
+                                                  CORE::CICloneable* eventdata )
 {GUCEF_TRACE;
 
-    if ( GUCEF::CORE::CURLDataRetriever::URLAllDataRecievedEvent == eventid )
+    if ( CORE::CURLDataRetriever::URLAllDataRecievedEvent == eventid )
     {
-        GUCEF::CORE::CIOAccess* access = m_urlDataRetiever.GetIOAccess();
+        CORE::CIOAccess* access = m_urlDataRetriever.GetIOAccess();
         access->Setpos( 0 );
 
         CORE::CDStoreCodecRegistry::TDStoreCodecPtr codec;
@@ -313,13 +319,13 @@ CProductManager::OnProductInfoListRetrievalEvent( GUCEF::CORE::CNotifier* notifi
         {
             // we found a codec of the given type, use it to deserialize the data received
             CORE::CDataNode dataRootNode;
-            if ( codec->BuildDataTree( dataRootNode, access ) )
+            if ( codec->BuildDataTree( &dataRootNode, access ) )
             {
                 CORE::CDataNode::TDataNodeSet productLists = dataRootNode.FindChildrenOfType( "ProductList", true );
                 CORE::CDataNode::TDataNodeSet::iterator i = productLists.begin();
                 while ( i != productLists.end() )
                 {
-                    m_productList.LoadConfig( *(*i) )
+                    m_productList.LoadConfig( *(*i) );
                     ++i;
                 }
             }
