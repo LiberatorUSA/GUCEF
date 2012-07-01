@@ -10,9 +10,7 @@
 #include "MyGUI_OpenGLPlatform.h"
 #include "MyGUI_OpenGLRTTexture.h"
 
-#define GLEW_STATIC
-#define GL_GLEXT_PROTOTYPES
-#include "GL/glew.h"
+#include <GLES/gl.h>
 
 namespace MyGUI
 {
@@ -194,10 +192,10 @@ namespace MyGUI
 		if (!_data)
 		{
 			//создаем текстурнный буфер
-			glGenBuffersARB(1, &mPboID);
-			glBindBufferARB(GL_PIXEL_UNPACK_BUFFER_ARB, mPboID);
-			glBufferDataARB(GL_PIXEL_UNPACK_BUFFER_ARB, mDataSize, 0, mUsage);
-			glBindBufferARB(GL_PIXEL_UNPACK_BUFFER_ARB, 0);
+			glGenBuffers(1, &mPboID);
+			glBindBuffer(GL_PIXEL_UNPACK_BUFFER_ARB, mPboID);
+			glBufferData(GL_PIXEL_UNPACK_BUFFER_ARB, mDataSize, 0, mUsage);
+			glBindBuffer(GL_PIXEL_UNPACK_BUFFER_ARB, 0);
 		}
 	}
 

@@ -8,9 +8,7 @@
 #include "MyGUI_OpenGLRenderManager.h"
 #include "MyGUI_OpenGLDiagnostic.h"
 
-#define GLEW_STATIC
-#define GL_GLEXT_PROTOTYPES
-#include "GL/glew.h"
+#include <GLES/gl.h>
 
 namespace MyGUI
 {
@@ -45,16 +43,16 @@ namespace MyGUI
 		// the rendering output will be corrupted because of missing depth test.
 		// If you also need stencil test for your rendering, then you must
 		// attach additional image to the stencil attachement point, too.
-		glGenRenderbuffersEXT(1, &mRBOID);
-		glBindRenderbufferEXT(GL_RENDERBUFFER_EXT, mRBOID);
-		glRenderbufferStorageEXT(GL_RENDERBUFFER_EXT, GL_DEPTH_COMPONENT, mWidth, mHeight);
-		glBindRenderbufferEXT(GL_RENDERBUFFER_EXT, 0);
+		glGenRenderbuffers(1, &mRBOID);
+		glBindRenderbuffer(GL_RENDERBUFFER_EXT, mRBOID);
+		glRenderbufferStorage(GL_RENDERBUFFER_EXT, GL_DEPTH_COMPONENT, mWidth, mHeight);
+		glBindRenderbuffer(GL_RENDERBUFFER_EXT, 0);
 
 		// attach a texture to FBO color attachement point
-		glFramebufferTexture2DEXT(GL_FRAMEBUFFER_EXT, GL_COLOR_ATTACHMENT0_EXT, GL_TEXTURE_2D, mTextureID, 0);
+		glFramebufferTexture2D(GL_FRAMEBUFFER_EXT, GL_COLOR_ATTACHMENT0_EXT, GL_TEXTURE_2D, mTextureID, 0);
 
 		// attach a renderbuffer to depth attachment point
-		glFramebufferRenderbufferEXT(GL_FRAMEBUFFER_EXT, GL_DEPTH_ATTACHMENT_EXT, GL_RENDERBUFFER_EXT, mRBOID);
+		glFramebufferRenderbuffer(GL_FRAMEBUFFER_EXT, GL_DEPTH_ATTACHMENT_EXT, GL_RENDERBUFFER_EXT, mRBOID);
 
 		glBindFramebufferEXT(GL_FRAMEBUFFER_EXT, 0);
 	}

@@ -12,9 +12,7 @@
 #include "MyGUI_Gui.h"
 #include "MyGUI_Timer.h"
 
-#define GLEW_STATIC
-#define GL_GLEXT_PROTOTYPES
-#include "GL/glew.h"
+#include <GLES/gl.h>
 
 namespace MyGUI
 {
@@ -79,7 +77,7 @@ namespace MyGUI
 
 		glBindTexture(GL_TEXTURE_2D, texture_id);
 
-		glBindBufferARB(GL_ARRAY_BUFFER_ARB, buffer_id);
+		glBindBuffer(GL_ARRAY_BUFFER_ARB, buffer_id);
 
 		// enable vertex arrays
 		glEnableClientState(GL_VERTEX_ARRAY);
@@ -100,7 +98,7 @@ namespace MyGUI
 		glDisableClientState(GL_COLOR_ARRAY);
 		glDisableClientState(GL_VERTEX_ARRAY);
 
-		glBindBufferARB(GL_ARRAY_BUFFER_ARB, 0);
+		glBindBuffer(GL_ARRAY_BUFFER_ARB, 0);
 		glBindTexture(GL_TEXTURE_2D, 0);
 	}
 
