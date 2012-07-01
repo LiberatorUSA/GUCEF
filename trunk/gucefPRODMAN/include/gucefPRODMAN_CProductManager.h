@@ -28,6 +28,16 @@
 
 #include <set>
 
+#ifndef GUCEF_CORE_CURLDATARETRIEVER_H
+#include "CURLDataRetriever.h"
+#define GUCEF_CORE_CURLDATARETRIEVER_H
+#endif /* GUCEF_CORE_CURLDATARETRIEVER_H ? */
+
+#ifndef GUCEF_CORE_COBSERVINGNOTIFIER_H
+#include "CObservingNotifier.h"
+#define GUCEF_CORE_COBSERVINGNOTIFIER_H
+#endif /* GUCEF_CORE_COBSERVINGNOTIFIER_H ? */
+
 #ifndef GUCEF_PRODMAN_CDOWNLOADSMANAGER_H
 #include "gucefPRODMAN_CDownloadsManager.h"
 #define GUCEF_PRODMAN_CDOWNLOADSMANAGER_H
@@ -53,7 +63,8 @@ namespace PRODMAN {
 //                                                                         //
 //-------------------------------------------------------------------------*/
 
-class GUCEF_PRODMAN_PUBLIC_CPP CProductManager : public CORE::CIConfigurable
+class GUCEF_PRODMAN_PUBLIC_CPP CProductManager : public CORE::CObservingNotifier ,
+                                                 public CORE::CIConfigurable
 {
     public:
 
@@ -83,6 +94,8 @@ class GUCEF_PRODMAN_PUBLIC_CPP CProductManager : public CORE::CIConfigurable
                               const TProductType productType          ,
                               CProductInfoList& productList           ) const;
 
+    void RefreshProductInfoList( void );
+
     bool MergeProductList( const CProductInfoList& productList );
 
     bool MergeProduct( const CProductInfo& productInfo );
@@ -111,6 +124,10 @@ class GUCEF_PRODMAN_PUBLIC_CPP CProductManager : public CORE::CIConfigurable
     virtual ~CProductManager();
     CProductManager& operator=( const CProductManager& src );
 
+    void OnProductInfoListRetrievalEvent( CORE::CNotifier* notifier    ,
+                                          const CORE::CEvent& eventid  ,
+                                          CORE::CICloneable* eventdata );
+
     private:
 
     CProductInfoList m_productList;
@@ -118,8 +135,8 @@ class GUCEF_PRODMAN_PUBLIC_CPP CProductManager : public CORE::CIConfigurable
     CString m_productListCodec;
     CString m_productRoot;
     CDownloadsManager m_downloadsManager;
+    CORE::CURLDataRetriever m_urlDataRetriever;
     static CProductManager* g_instance;
-
 };
 
 /*-------------------------------------------------------------------------//

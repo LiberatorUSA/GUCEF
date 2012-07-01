@@ -8,7 +8,6 @@
             <Dependency Name="gucefMT" />
             <Dependency Name="freetype" />
             <Dependency Name="MyGUI.Engine" />
-            <Dependency Name="MyGUI.OpenGLPlatform" />
             <Dependency Name="guidriverMyGUI" />
         </Dependencies>
         <Linker>
@@ -19,7 +18,6 @@
             <Dependency Name="gucefMT" />
             <Dependency Name="freetype" />
             <Dependency Name="MyGUI.Engine" />
-            <Dependency Name="MyGUI.OpenGLPlatform" />
             <Dependency Name="guidriverMyGUI" />
         </Linker>
         <Preprocessor>
@@ -27,18 +25,30 @@
         </Preprocessor>
     </Module>
     <Module Platform="mswin">
+        <Dependencies>
+            <Dependency Name="MyGUI.OpenGLPlatform" />
+        </Dependencies>
         <Linker>
             <Dependency Name="OpenGL32" />
+            <Dependency Name="MyGUI.OpenGLPlatform" />
         </Linker>
     </Module>
     <Module Platform="linux">
+        <Dependencies>
+            <Dependency Name="MyGUI.OpenGLPlatform" />
+        </Dependencies>
         <Linker>
             <Dependency Name="GL" />
+            <Dependency Name="MyGUI.OpenGLPlatform" />
         </Linker>
     </Module>
     <Module Platform="android">
+        <Dependencies>
+            <Dependency Name="MyGUI.OpenGLESPlatform" />
+        </Dependencies>
         <Linker>
             <Dependency Name="GLESv1_CM" />
+            <Dependency Name="MyGUI.OpenGLESPlatform" />
         </Linker>
     </Module>
 </ModuleInfoEntry>

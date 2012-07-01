@@ -826,7 +826,7 @@ ParseProcessingInstructions( const CORE::CString& instructionsDir           ,
                 if ( curNode->GetName() == excludesNodeName )
                 {
                     // Store whether the instructions apply to a particular platform
-                    CORE::CString platformName = curNode->GetAttributeValue( platformNodeName );
+                    CORE::CString platformName = curNode->GetAttributeValue( platformNodeName ).Lowercase();
 
                     // Parse instructions
                     const CORE::CDataNode* excludesNode = curNode;

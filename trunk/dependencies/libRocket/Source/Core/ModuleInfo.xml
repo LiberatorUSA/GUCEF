@@ -11,9 +11,4 @@
             <Dependency Name="freetype" />
         </Linker>
     </Module>
-    <Module Platform="Android">
-        <Compiler>
-            <CompilerFlags CompilerName="G++" Flags="-frtti" />
-        </Compiler>
-    </Module>
 </ModuleInfoEntry>
