@@ -60,6 +60,7 @@ LOCAL_SHARED_LIBRARIES := \
   gucefIMAGE \
   gucefINPUT \
   gucefMT \
+  gucefVFS \
   guidriverMyGUI
 
 
