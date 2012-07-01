@@ -34,8 +34,6 @@ namespace MyGUI
 		mUpdate = false;
 		mImageLoader = _loader;
 
-		glewInit();
-
 		MYGUI_LOG(Info, getClassTypeName() << " successfully initialized");
 		mIsInitialise = true;
 	}
@@ -77,7 +75,7 @@ namespace MyGUI
 
 		glBindTexture(GL_TEXTURE_2D, texture_id);
 
-		glBindBuffer(GL_ARRAY_BUFFER_ARB, buffer_id);
+		glBindBuffer(GL_ARRAY_BUFFER, buffer_id);
 
 		// enable vertex arrays
 		glEnableClientState(GL_VERTEX_ARRAY);
@@ -98,21 +96,21 @@ namespace MyGUI
 		glDisableClientState(GL_COLOR_ARRAY);
 		glDisableClientState(GL_VERTEX_ARRAY);
 
-		glBindBuffer(GL_ARRAY_BUFFER_ARB, 0);
+		glBindBuffer(GL_ARRAY_BUFFER, 0);
 		glBindTexture(GL_TEXTURE_2D, 0);
 	}
 
 	void OpenGLRenderManager::begin()
 	{
 		//save current attributes
-		glPushClientAttrib(GL_CLIENT_ALL_ATTRIB_BITS);
-		glPushAttrib(GL_ALL_ATTRIB_BITS);
+		//glPushClientAttrib(GL_CLIENT_ALL_ATTRIB_BITS);  // Unsupported by OpenGL ES
+		//glPushAttrib(GL_ALL_ATTRIB_BITS); // Unsupported by OpenGL ES
 
-		glPolygonMode(GL_FRONT, GL_FILL);
+		//glPolygonMode(GL_FRONT, GL_FILL);  // Unsupported by OpenGL ES
 		glMatrixMode(GL_PROJECTION);
 		glPushMatrix();
 		glLoadIdentity();
-		glOrtho(-1, 1, -1, 1, -1, 1);
+		glOrthox(-1, 1, -1, 1, -1, 1);
 
 		glMatrixMode(GL_MODELVIEW);
 		glPushMatrix();
@@ -121,9 +119,9 @@ namespace MyGUI
 		glDisable(GL_LIGHTING);
 		glDisable(GL_DEPTH_TEST);
 		glDisable(GL_FOG);
-		glDisable(GL_TEXTURE_GEN_S);
-		glDisable(GL_TEXTURE_GEN_T);
-		glDisable(GL_TEXTURE_GEN_R);
+		//glDisable(GL_TEXTURE_GEN_S);  // Unsupported by OpenGL ES
+		//glDisable(GL_TEXTURE_GEN_T);  // Unsupported by OpenGL ES
+		//glDisable(GL_TEXTURE_GEN_R);  // Unsupported by OpenGL ES
 
 		//glFrontFace(GL_CW);
 		//glCullFace(GL_BACK);
@@ -144,8 +142,8 @@ namespace MyGUI
 		glMatrixMode(GL_MODELVIEW);
 
 		//restore former attributes
-		glPopAttrib();
-		glPopClientAttrib();
+		//glPopAttrib();
+		//glPopClientAttrib();
 	}
 
 	const RenderTargetInfo& OpenGLRenderManager::getInfo()
