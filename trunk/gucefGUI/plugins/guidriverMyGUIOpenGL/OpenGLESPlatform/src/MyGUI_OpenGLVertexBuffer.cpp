@@ -8,8 +8,7 @@
 #include "MyGUI_VertexData.h"
 #include "MyGUI_OpenGLDiagnostic.h"
 
-#define GLEW_STATIC
-#include "GL/glew.h"
+#include <GLES/gl.h>
 
 namespace MyGUI
 {
@@ -50,12 +49,12 @@ namespace MyGUI
 		MYGUI_PLATFORM_ASSERT(mBufferID, "Vertex buffer in not created");
 
 		// Use glMapBuffer
-		glBindBufferARB(GL_ARRAY_BUFFER_ARB, mBufferID);
+		glBindBuffer(GL_ARRAY_BUFFER_ARB, mBufferID);
 
 		// Discard the buffer
-		glBufferDataARB(GL_ARRAY_BUFFER_ARB, mSizeInBytes, 0, GL_STREAM_DRAW_ARB);
+		glBufferData(GL_ARRAY_BUFFER_ARB, mSizeInBytes, 0, GL_STREAM_DRAW_ARB);
 
-		Vertex* pBuffer = (Vertex*)glMapBufferARB(GL_ARRAY_BUFFER_ARB, GL_WRITE_ONLY_ARB);
+		Vertex* pBuffer = (Vertex*)glMapBuffer(GL_ARRAY_BUFFER_ARB, GL_WRITE_ONLY_ARB);
 
 		MYGUI_PLATFORM_ASSERT(pBuffer, "Error lock vertex buffer");
 
@@ -66,8 +65,8 @@ namespace MyGUI
 	{
 		MYGUI_PLATFORM_ASSERT(mBufferID, "Vertex buffer in not created");
 
-		glBindBufferARB(GL_ARRAY_BUFFER_ARB, mBufferID);
-		GLboolean result = glUnmapBufferARB(GL_ARRAY_BUFFER_ARB);
+		glBindBuffer(GL_ARRAY_BUFFER_ARB, mBufferID);
+		GLboolean result = glUnmapBuffer(GL_ARRAY_BUFFER_ARB);
 
 		MYGUI_PLATFORM_ASSERT(result, "Error unlock vertex buffer");
 	}
@@ -76,7 +75,7 @@ namespace MyGUI
 	{
 		if (mBufferID != 0)
 		{
-			glDeleteBuffersARB(1, &mBufferID);
+			glDeleteBuffers(1, &mBufferID);
 			mBufferID = 0;
 		}
 	}
@@ -88,13 +87,13 @@ namespace MyGUI
 		mSizeInBytes = mNeedVertexCount * sizeof(MyGUI::Vertex);
 		void* data = 0;
 
-		glGenBuffersARB(1, &mBufferID);
-		glBindBufferARB(GL_ARRAY_BUFFER_ARB, mBufferID);
-		glBufferDataARB(GL_ARRAY_BUFFER_ARB, mSizeInBytes, data, GL_STREAM_DRAW_ARB);
+		glGenBuffers(1, &mBufferID);
+		glBindBuffer(GL_ARRAY_BUFFER_ARB, mBufferID);
+		glBufferData(GL_ARRAY_BUFFER_ARB, mSizeInBytes, data, GL_STREAM_DRAW_ARB);
 
 		// check data size in VBO is same as input array, if not return 0 and delete VBO
 		int bufferSize = 0;
-		glGetBufferParameterivARB(GL_ARRAY_BUFFER_ARB, GL_BUFFER_SIZE_ARB, &bufferSize);
+		glGetBufferParameteriv(GL_ARRAY_BUFFER_ARB, GL_BUFFER_SIZE_ARB, &bufferSize);
 		if (mSizeInBytes != bufferSize)
 		{
 			destroy();
