@@ -19,7 +19,7 @@ namespace MyGUI
 		public IRenderTarget
 	{
 	public:
-		OpenGLRTTexture(unsigned int _texture);
+		OpenGLRTTexture(unsigned int _texture, int width, int height);
 		virtual ~OpenGLRTTexture();
 
 		virtual void begin();

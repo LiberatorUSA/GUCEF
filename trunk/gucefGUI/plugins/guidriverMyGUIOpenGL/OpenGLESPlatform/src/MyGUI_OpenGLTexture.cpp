@@ -4,10 +4,9 @@
 	@date		07/2009
 */
 
+#include "MyGUI.h"
 #include "MyGUI_OpenGLTexture.h"
-#include "MyGUI_DataManager.h"
 #include "MyGUI_OpenGLDiagnostic.h"
-#include "MyGUI_OpenGLPlatform.h"
 #include "MyGUI_OpenGLRTTexture.h"
 
 #include <GLES/gl.h>
@@ -48,7 +47,7 @@ namespace MyGUI
 	{
 		mAccess = 0;
 		mUsage = 0;
-
+   /*
 		if (_usage == TextureUsage::Default)
 		{
 			mUsage = GL_STATIC_READ_ARB;
@@ -117,6 +116,8 @@ namespace MyGUI
 				mAccess = GL_WRITE_ONLY_ARB;
 			}
 		}
+        */
+
 	}
 
 	void OpenGLTexture::createManual(int _width, int _height, TextureUsage _usage, PixelFormat _format)
@@ -134,26 +135,26 @@ namespace MyGUI
 		mNumElemBytes = 0;
 		if (_format == PixelFormat::L8)
 		{
-			mInternalPixelFormat = GL_LUMINANCE8;
+			mInternalPixelFormat = GL_LUMINANCE;
 			mPixelFormat = GL_LUMINANCE;
 			mNumElemBytes = 1;
 		}
 		else if (_format == PixelFormat::L8A8)
 		{
-			mInternalPixelFormat = GL_LUMINANCE8_ALPHA8;
+			mInternalPixelFormat = GL_LUMINANCE_ALPHA;
 			mPixelFormat = GL_LUMINANCE_ALPHA;
 			mNumElemBytes = 2;
 		}
 		else if (_format == PixelFormat::R8G8B8)
 		{
-			mInternalPixelFormat = GL_RGB8;
-			mPixelFormat = GL_BGR;
+			mInternalPixelFormat = GL_RGB;
+			mPixelFormat = GL_RGB;
 			mNumElemBytes = 3;
 		}
 		else if (_format == PixelFormat::R8G8B8A8)
 		{
-			mInternalPixelFormat = GL_RGBA8;
-			mPixelFormat = GL_BGRA;
+			mInternalPixelFormat = GL_RGBA;
+			mPixelFormat = GL_RGBA;
 			mNumElemBytes = 4;
 		}
 		else
@@ -190,12 +191,13 @@ namespace MyGUI
 		glPixelStorei( GL_UNPACK_ALIGNMENT, alignment );
 
 		if (!_data)
-		{
+		{   /*       Not supported by OpenGL ES
 			//создаем текстурнный буфер
-			glGenBuffers(1, &mPboID);
-			glBindBuffer(GL_PIXEL_UNPACK_BUFFER_ARB, mPboID);
-			glBufferData(GL_PIXEL_UNPACK_BUFFER_ARB, mDataSize, 0, mUsage);
-			glBindBuffer(GL_PIXEL_UNPACK_BUFFER_ARB, 0);
+			glGenBuffersOES(1, &mPboID);
+			glBindBufferOES(GL_PIXEL_UNPACK_BUFFER_ARB, mPboID);
+			glBufferDataOES(GL_PIXEL_UNPACK_BUFFER_ARB, mDataSize, 0, mUsage);
+			glBindBufferOES(GL_PIXEL_UNPACK_BUFFER_ARB, 0);
+            */
 		}
 	}
 
@@ -214,7 +216,7 @@ namespace MyGUI
 		}
 		if (mPboID != 0)
 		{
-			glDeleteBuffersARB(1, &mPboID);
+			glDeleteBuffers(1, &mPboID);
 			mPboID = 0;
 		}
 
@@ -236,21 +238,21 @@ namespace MyGUI
 	{
 		MYGUI_PLATFORM_ASSERT(mTextureID, "Texture is not created");
 
-		if (_access == TextureUsage::Read)
+		//if (_access == TextureUsage::Read)
 		{
 			glBindTexture(GL_TEXTURE_2D, mTextureID);
 
 			mBuffer = new unsigned char[mDataSize];
-			glGetTexImage(GL_TEXTURE_2D, 0, mPixelFormat, GL_UNSIGNED_BYTE, mBuffer);
+			//glGetTexImage(GL_TEXTURE_2D, 0, mPixelFormat, GL_UNSIGNED_BYTE, mBuffer);
 
-			mLock = false;
+			mLock = true;
 
 			return mBuffer;
 		}
-
+/*
 		// bind the texture and PBO
 		glBindTexture(GL_TEXTURE_2D, mTextureID);
-		glBindBufferARB(GL_PIXEL_UNPACK_BUFFER_ARB, mPboID);
+		glBindBuffer(GL_PIXEL_UNPACK_BUFFER, mPboID);
 
 		// Note that glMapBufferARB() causes sync issue.
 		// If GPU is working with this buffer, glMapBufferARB() will wait(stall)
@@ -259,14 +261,14 @@ namespace MyGUI
 		// If you do that, the previous data in PBO will be discarded and
 		// glMapBufferARB() returns a new allocated pointer immediately
 		// even if GPU is still working with the previous data.
-		glBufferDataARB(GL_PIXEL_UNPACK_BUFFER_ARB, mDataSize, 0, mUsage);
+		glBufferData(GL_PIXEL_UNPACK_BUFFER, mDataSize, 0, mUsage);
 
 		// map the buffer object into client's memory
-		mBuffer = (GLubyte*)glMapBufferARB(GL_PIXEL_UNPACK_BUFFER_ARB, mAccess);
+		mBuffer = (GLubyte*)glMapBuffer(GL_PIXEL_UNPACK_BUFFER, mAccess);
 
 		if (!mBuffer)
 		{
-			glBindBufferARB(GL_PIXEL_UNPACK_BUFFER_ARB, 0);
+			glBindBuffer(GL_PIXEL_UNPACK_BUFFER, 0);
 			glBindTexture(GL_TEXTURE_2D, 0);
 
 			MYGUI_PLATFORM_EXCEPT("Error texture lock");
@@ -275,13 +277,14 @@ namespace MyGUI
 		mLock = true;
 
 		return mBuffer;
+*/
 	}
 
 	void OpenGLTexture::unlock()
 	{
 		if (!mLock && mBuffer)
 		{
-			delete mBuffer;
+			delete[] mBuffer;
 			mBuffer = 0;
 
 			glBindTexture(GL_TEXTURE_2D, 0);
@@ -292,17 +295,22 @@ namespace MyGUI
 		MYGUI_PLATFORM_ASSERT(mLock, "Texture is not locked");
 
 		// release the mapped buffer
-		glUnmapBufferARB(GL_PIXEL_UNPACK_BUFFER_ARB);
+		//glUnmapBufferARB(GL_PIXEL_UNPACK_BUFFER_ARB);
 
 		// copy pixels from PBO to texture object
 		// Use offset instead of ponter.
-		glTexSubImage2D(GL_TEXTURE_2D, 0, 0, 0, mWidth, mHeight, mPixelFormat, GL_UNSIGNED_BYTE, 0);
+		glTexSubImage2D(GL_TEXTURE_2D, 0, 0, 0, mWidth, mHeight, mPixelFormat, GL_UNSIGNED_BYTE, mBuffer);
 
 		// it is good idea to release PBOs with ID 0 after use.
 		// Once bound with 0, all pixel operations are back to normal ways.
-		glBindBufferARB(GL_PIXEL_UNPACK_BUFFER_ARB, 0);
+		//glBindBufferARB(GL_PIXEL_UNPACK_BUFFER_ARB, 0);
 
 		glBindTexture(GL_TEXTURE_2D, 0);
+
+        if ( mBuffer )
+        {
+            delete[] mBuffer;
+        }
 
 		mBuffer = 0;
 		mLock = false;
@@ -340,7 +348,7 @@ namespace MyGUI
 	IRenderTarget* OpenGLTexture::getRenderTarget()
 	{
 		if (mRenderTarget == nullptr)
-			mRenderTarget = new OpenGLRTTexture(mTextureID);
+			mRenderTarget = new OpenGLRTTexture(mTextureID, mWidth, mHeight );
 
 		return mRenderTarget;
 	}
