@@ -2,6 +2,7 @@
 	@file
 	@author		George Evmenov
 	@date		07/2009
+	@module
 */
 
 #include "MyGUI_OpenGLVertexBuffer.h"
@@ -20,7 +21,8 @@ namespace MyGUI
 		mNeedVertexCount(0),
 		mVertexCount(RENDER_ITEM_STEEP_REALLOCK),
 		mBufferID(0),
-		mSizeInBytes(0)
+		mSizeInBytes(0),
+        m_pData(NULL)
 	{
 	}
 
@@ -29,7 +31,7 @@ namespace MyGUI
 		destroy();
 	}
 
-	void OpenGLVertexBuffer::setVertexCount(size_t _count)
+	void OpenGLVertexBuffer::setVertextCount(size_t _count)
 	{
 		if (_count != mNeedVertexCount)
 		{
@@ -39,43 +41,40 @@ namespace MyGUI
 		}
 	}
 
-	size_t OpenGLVertexBuffer::getVertexCount()
+	size_t OpenGLVertexBuffer::getVertextCount()
 	{
 		return mNeedVertexCount;
 	}
 
 	Vertex* OpenGLVertexBuffer::lock()
 	{
-		MYGUI_PLATFORM_ASSERT(mBufferID, "Vertex buffer in not created");
-
-		// Use glMapBuffer
-		glBindBuffer(GL_ARRAY_BUFFER_ARB, mBufferID);
-
-		// Discard the buffer
-		glBufferData(GL_ARRAY_BUFFER_ARB, mSizeInBytes, 0, GL_STREAM_DRAW_ARB);
-
-		Vertex* pBuffer = (Vertex*)glMapBuffer(GL_ARRAY_BUFFER_ARB, GL_WRITE_ONLY_ARB);
-
-		MYGUI_PLATFORM_ASSERT(pBuffer, "Error lock vertex buffer");
-
-		return pBuffer;
+		return (Vertex*)m_pData;
 	}
 
 	void OpenGLVertexBuffer::unlock()
 	{
 		MYGUI_PLATFORM_ASSERT(mBufferID, "Vertex buffer in not created");
 
-		glBindBuffer(GL_ARRAY_BUFFER_ARB, mBufferID);
-		GLboolean result = glUnmapBuffer(GL_ARRAY_BUFFER_ARB);
+		glBindBuffer(GL_ARRAY_BUFFER, mBufferID);
 
-		MYGUI_PLATFORM_ASSERT(result, "Error unlock vertex buffer");
+        glBufferData(GL_ARRAY_BUFFER, mSizeInBytes, m_pData, GL_DYNAMIC_DRAW);
+
+		glBindBuffer(GL_ARRAY_BUFFER, 0);
+		//GLboolean result = glUnmapBufferARB(GL_ARRAY_BUFFER_ARB);
+
+		//MYGUI_PLATFORM_ASSERT(result, "Error unlock vertex buffer");
 	}
 
 	void OpenGLVertexBuffer::destroy()
 	{
 		if (mBufferID != 0)
 		{
-			glDeleteBuffers(1, &mBufferID);
+            if ( m_pData )
+            {
+                delete[] m_pData;
+                m_pData = NULL;
+            }
+		    glDeleteBuffers(1, &mBufferID);
 			mBufferID = 0;
 		}
 	}
@@ -85,20 +84,23 @@ namespace MyGUI
 		MYGUI_PLATFORM_ASSERT(!mBufferID, "Vertex buffer already exist");
 
 		mSizeInBytes = mNeedVertexCount * sizeof(MyGUI::Vertex);
-		void* data = 0;
+		//void* data = 0;
+        m_pData = new unsigned char[mSizeInBytes];
 
 		glGenBuffers(1, &mBufferID);
-		glBindBuffer(GL_ARRAY_BUFFER_ARB, mBufferID);
-		glBufferData(GL_ARRAY_BUFFER_ARB, mSizeInBytes, data, GL_STREAM_DRAW_ARB);
+		glBindBuffer(GL_ARRAY_BUFFER, mBufferID);
+		glBufferData(GL_ARRAY_BUFFER, mSizeInBytes, m_pData, GL_DYNAMIC_DRAW);
 
 		// check data size in VBO is same as input array, if not return 0 and delete VBO
 		int bufferSize = 0;
-		glGetBufferParameteriv(GL_ARRAY_BUFFER_ARB, GL_BUFFER_SIZE_ARB, &bufferSize);
+		glGetBufferParameteriv(GL_ARRAY_BUFFER, GL_BUFFER_SIZE, &bufferSize);
 		if (mSizeInBytes != bufferSize)
 		{
 			destroy();
 			MYGUI_PLATFORM_EXCEPT("Data size is mismatch with input array");
 		}
+
+		glBindBuffer(GL_ARRAY_BUFFER, 0);
 	}
 
 } // namespace MyGUI

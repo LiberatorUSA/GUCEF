@@ -110,7 +110,7 @@ namespace MyGUI
 		glMatrixMode(GL_PROJECTION);
 		glPushMatrix();
 		glLoadIdentity();
-		glOrthox(-1, 1, -1, 1, -1, 1);
+		glOrthof(-1, 1, -1, 1, -1, 1);
 
 		glMatrixMode(GL_MODELVIEW);
 		glPushMatrix();
