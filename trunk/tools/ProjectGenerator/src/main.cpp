@@ -173,6 +173,8 @@ GUCEF_OSMAIN_BEGIN
     CORE::CPlatformNativeConsoleLogger console;
     CORE::CCoreGlobal::Instance()->GetLogManager().AddLogger( console.GetLogger() );
 
+    LoadConfig();
+
     TStringVector rootDirs;
     try
     {
