@@ -438,7 +438,7 @@ IsFirstRun( const char* packageDir )
 {
     // We know the gucefLOADER relies on a text file named firstrun.completed.txt
     // we will use the same convention here to keep things consistent
-    char* firstrunFile = GetAssetPath( packageDir, "firstrun.completed.txt" );
+    char* firstrunFile = GetAssetPath( packageDir, "firstrun.completed" );
     int existsBool = FileExists( firstrunFile );
     free( firstrunFile );
     return existsBool;
@@ -451,7 +451,7 @@ SetFirstRunCompleted( const char* packageDir )
 {
     // We know the gucefLOADER relies on a text file named firstrun.completed.txt
     // we will use the same convention here to keep things consistent
-    char* firstrunFile = GetAssetPath( packageDir, "firstrun.completed.txt" );
+    char* firstrunFile = GetAssetPath( packageDir, "firstrun.completed" );
     int existsBool = FileExists( firstrunFile );
     if ( 0 == existsBool )
     {
@@ -478,7 +478,7 @@ UnSetFirstRunCompleted( const char* packageDir )
 {
     // We know the gucefLOADER relies on a text file named firstrun.completed.txt
     // we will use the same convention here to keep things consistent
-    char* firstrunFile = GetAssetPath( packageDir, "firstrun.completed.txt" );
+    char* firstrunFile = GetAssetPath( packageDir, "firstrun.completed" );
     remove( firstrunFile );
     free( firstrunFile );
 

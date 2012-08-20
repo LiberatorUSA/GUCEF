@@ -57,23 +57,23 @@ namespace CORE {
  */
 class GUCEF_CORE_PUBLIC_CPP CIURLEvents
 {
-        public:
+    public:
 
-        static const CEvent URLActivateEvent;
-        static const CEvent URLDeactivateEvent;
-        static const CEvent URLDataRecievedEvent;
-        static const CEvent URLAllDataRecievedEvent;
-        static const CEvent URLDataRetrievalErrorEvent;
+    static const CEvent URLActivateEvent;
+    static const CEvent URLDeactivateEvent;
+    static const CEvent URLDataRecievedEvent;
+    static const CEvent URLAllDataRecievedEvent;
+    static const CEvent URLDataRetrievalErrorEvent;
 
-        typedef CLinkedTransferBuffer    TURLDataRecievedEventData;
+    typedef CLinkedTransferBuffer    TURLDataRecievedEventData;
 
-        static void RegisterEvents( void );
+    static void RegisterEvents( void );
 
-        protected:
+    protected:
 
-        CIURLEvents( void );
-        CIURLEvents( const CIURLEvents& src );
-        virtual ~CIURLEvents();
+    CIURLEvents( void );
+    CIURLEvents( const CIURLEvents& src );
+    virtual ~CIURLEvents();
 };
 
 /*-------------------------------------------------------------------------//

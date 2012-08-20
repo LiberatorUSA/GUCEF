@@ -446,7 +446,7 @@ GenerateContentForAndroidMakefile( const TModuleInfoEntryPairVector& mergeLinks 
         {
             contentSuffix +=
               "# *** ERROR *** Finish me\n"
-              "# Unable to determing module type from the source information\n"
+              "# Unable to determine module type from the source information\n"
               "# Please edit the line below to manually set the correct module type to build\n"
               "#include $(BUILD_???)\n\n";
 
