@@ -11,34 +11,75 @@
 
 # Configuration for module: gucefGUI_TestApp
 
-set( SOURCE_FILES 
-  src/gucefGUI_TestApp.cpp
-)
+
+
+if (LINUX)
+  set( PLATFORM_SOURCE_FILES 
+    src/gucefGUI_TestApp.cpp
+  )
+
+  set( PLATFORM_SOURCE_INSTALL "LINUX" )
+  source_group( "Platform Source Files" FILES ${PLATFORM_SOURCE_FILES} )
+
+elseif (WIN32)
+  set( PLATFORM_SOURCE_FILES 
+    src/gucefGUI_TestApp.cpp
+  )
+
+  set( PLATFORM_SOURCE_INSTALL "WIN32" )
+  source_group( "Platform Source Files" FILES ${PLATFORM_SOURCE_FILES} )
+
+elseif (WIN64)
+  set( PLATFORM_SOURCE_FILES 
+    src/gucefGUI_TestApp.cpp
+  )
+
+  set( PLATFORM_SOURCE_INSTALL "WIN64" )
+  source_group( "Platform Source Files" FILES ${PLATFORM_SOURCE_FILES} )
+
+endif ()
 
 # Make sure the PLATFORM_HEADER_FILES variable is always defined
  set( PLATFORM_HEADER_FILES "" )
 
-# Make sure the PLATFORM_SOURCE_FILES variable is always defined
- set( PLATFORM_SOURCE_FILES "" )
-
 # For ease of use make a variable that has all files for this module
 set( ALL_FILES ${HEADER_FILES} ${SOURCE_FILES} ${PLATFORM_HEADER_FILES} ${PLATFORM_SOURCE_FILES} )
 
-set( MODULE_NAME "gucefGUI_TestApp" )
-if ( WIN32 )
-  add_executable( ${MODULE_NAME} WIN32 ${ALL_FILES} )
-else()
-  add_executable( ${MODULE_NAME} ${ALL_FILES} )
+
+if( LINUX )
+  set( MODULE_NAME "gucefGUI_TestApp" )
+elseif( WIN32 )
+  set( MODULE_NAME "gucefGUI_TestApp" )
+elseif( WIN64 )
+  set( MODULE_NAME "gucefGUI_TestApp" )
 endif()
-add_dependencies( ${MODULE_NAME} gucefCORE gucefGUI gucefIMAGE gucefINPUT gucefMT gucefVFS )
-target_link_libraries( ${MODULE_NAME} gucefCORE gucefGUI gucefIMAGE gucefINPUT gucefMT gucefVFS )
-set_target_properties( ${MODULE_NAME} PROPERTIES COMPILE_DEFINITIONS "GUCEF_GUI_TESTAPP_BUILD_MODULE" )
+if( LINUX )
+  add_executable( ${MODULE_NAME} ${ALL_FILES} )
+elseif( WIN32 )
+  add_executable( ${MODULE_NAME} WIN32 ${ALL_FILES} )
+elseif( WIN64 )
+  add_executable( ${MODULE_NAME} WIN32 ${ALL_FILES} )
+endif()
+
+if ( LINUX )
+  add_dependencies( ${MODULE_NAME} gucefCORE gucefGUI gucefIMAGE gucefINPUT gucefMT gucefVFS )
+  target_link_libraries( ${MODULE_NAME} gucefCORE gucefGUI gucefIMAGE gucefINPUT gucefMT gucefVFS )
+  set_target_properties( ${MODULE_NAME} PROPERTIES COMPILE_DEFINITIONS "GUCEF_GUI_TESTAPP_BUILD_MODULE" )
+endif( LINUX )
+
+if ( WIN32 )
+  add_dependencies( ${MODULE_NAME} gucefCORE gucefGUI gucefIMAGE gucefINPUT gucefMT gucefVFS )
+  target_link_libraries( ${MODULE_NAME} gucefCORE gucefGUI gucefIMAGE gucefINPUT gucefMT gucefVFS )
+  set_target_properties( ${MODULE_NAME} PROPERTIES COMPILE_DEFINITIONS "GUCEF_GUI_TESTAPP_BUILD_MODULE" )
+endif( WIN32 )
+
+if ( WIN64 )
+  add_dependencies( ${MODULE_NAME} gucefCORE gucefGUI gucefIMAGE gucefINPUT gucefMT gucefVFS )
+  target_link_libraries( ${MODULE_NAME} gucefCORE gucefGUI gucefIMAGE gucefINPUT gucefMT gucefVFS )
+  set_target_properties( ${MODULE_NAME} PROPERTIES COMPILE_DEFINITIONS "GUCEF_GUI_TESTAPP_BUILD_MODULE" )
+endif( WIN64 )
 
 include_directories( ../common/include ../gucefCORE/include ../gucefGUI/include ../gucefIMAGE/include ../gucefINPUT/include ../gucefMT/include ../gucefVFS/include )
-
-if ( ANDROID )
-  include_directories( ../gucefCORE/include/android )
-endif( ANDROID )
 
 if ( LINUX )
   include_directories( ../gucefCORE/include/linux )
@@ -59,17 +100,11 @@ endif( WIN64 )
 
 
 
-if (ANDROID)
-GUCEF_config_tool( ${MODULE_NAME} )
-elseif (LINUX)
-GUCEF_config_tool( ${MODULE_NAME} )
-elseif (OSX)
+if (LINUX)
 GUCEF_config_tool( ${MODULE_NAME} )
 elseif (WIN32)
 GUCEF_config_tool( ${MODULE_NAME} )
 elseif (WIN64)
-GUCEF_config_tool( ${MODULE_NAME} )
-else()
 GUCEF_config_tool( ${MODULE_NAME} )
 endif()
 

@@ -23,6 +23,21 @@
 //                                                                         //
 //-------------------------------------------------------------------------*/
 
+#ifndef GUCEF_CORE_CDYNAMICBUFFER_H
+#include "CDynamicBuffer.h"
+#define GUCEF_CORE_CDYNAMICBUFFER_H
+#endif /* GUCEF_CORE_CDYNAMICBUFFER_H ? */
+
+#ifndef GUCEF_CORE_CDYNAMICBUFFERACCESS_H
+#include "CDynamicBufferAccess.h"
+#define GUCEF_CORE_CDYNAMICBUFFERACCESS_H
+#endif /* GUCEF_CORE_CDYNAMICBUFFERACCESS_H ? */
+
+#ifndef GUCEF_CORE_CFILEACCESS_H
+#include "CFileAccess.h"
+#define GUCEF_CORE_CFILEACCESS_H
+#endif /* GUCEF_CORE_CFILEACCESS_H ? */
+
 #include "CURLDataRetriever.h"
 
 #ifndef GUCEF_CORE_GUCEF_ESSENTIALS_H
@@ -67,7 +82,8 @@ CURLDataRetriever::CURLDataRetriever( CPulseGenerator& pulseGenerator )
       m_url( pulseGenerator )    ,
       m_totalBytesReceived( 0 )  ,
       m_totalBytes( -1 )         ,
-      m_allDataReceived( false )
+      m_allDataReceived( false ) ,
+      m_ownStorage( false )
 {GUCEF_TRACE;
 
     Initialize();
@@ -94,6 +110,42 @@ CURLDataRetriever::~CURLDataRetriever()
 {GUCEF_TRACE;
 
     UnsubscribeFrom( &m_url );
+
+    if ( m_ownStorage )
+    {
+        delete m_ioAccess;
+        m_ioAccess = NULL;
+    }
+}
+
+/*-------------------------------------------------------------------------*/
+
+void
+CURLDataRetriever::SetMemoryBufferAsStorage( void )
+{GUCEF_TRACE;
+
+    // Cleanup whatever storage we already have
+    if ( m_ownStorage )
+    {
+        delete m_ioAccess;        
+    }
+    m_ioAccess = new CDynamicBufferAccess( new CDynamicBuffer(), true );
+    m_ownStorage = true;
+}
+
+/*-------------------------------------------------------------------------*/
+
+void
+CURLDataRetriever::SetFileAsStorage( const CString& filePath )
+{GUCEF_TRACE;
+
+    // Cleanup whatever storage we already have
+    if ( m_ownStorage )
+    {
+        delete m_ioAccess;        
+    }
+    m_ioAccess = new CFileAccess( filePath );
+    m_ownStorage = true;
 }
 
 /*-------------------------------------------------------------------------*/
@@ -119,8 +171,15 @@ CURLDataRetriever::GetTotalBytesReceived( void ) const
 void
 CURLDataRetriever::SetIOAccess( CIOAccess* ioAccess )
 {GUCEF_TRACE;
-
+    
+    // Cleanup whatever storage we already have
+    if ( m_ownStorage )
+    {
+        delete m_ioAccess;        
+    }
+    
     m_ioAccess = ioAccess;
+    m_ownStorage = false;
 }
 
 /*-------------------------------------------------------------------------*/

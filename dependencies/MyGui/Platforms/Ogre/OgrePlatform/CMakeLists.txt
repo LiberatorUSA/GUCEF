@@ -11,43 +11,102 @@
 
 # Configuration for module: MyGUI.OgrePlatform
 
-set( HEADER_FILES 
-  ../../../Common/FileSystemInfo/FileSystemInfo.h
-  include/MyGUI_LastHeader.h
-  include/MyGUI_OgreDataManager.h
-  include/MyGUI_OgreDataStream.h
-  include/MyGUI_OgreDiagnostic.h
-  include/MyGUI_OgrePlatform.h
-  include/MyGUI_OgreRenderManager.h
-  include/MyGUI_OgreRTTexture.h
-  include/MyGUI_OgreTexture.h
-  include/MyGUI_OgreVertexBuffer.h
-)
 
-set( SOURCE_FILES 
-  src/MyGUI_OgreDataManager.cpp
-  src/MyGUI_OgreDataStream.cpp
-  src/MyGUI_OgreRenderManager.cpp
-  src/MyGUI_OgreRTTexture.cpp
-  src/MyGUI_OgreTexture.cpp
-  src/MyGUI_OgreVertexBuffer.cpp
-)
 
-# Make sure the PLATFORM_HEADER_FILES variable is always defined
- set( PLATFORM_HEADER_FILES "" )
+if (LINUX)
+  set( PLATFORM_HEADER_FILES 
+    ../../../Common/FileSystemInfo/FileSystemInfo.h
+    include/MyGUI_LastHeader.h
+    include/MyGUI_OgreDataManager.h
+    include/MyGUI_OgreDataStream.h
+    include/MyGUI_OgreDiagnostic.h
+    include/MyGUI_OgrePlatform.h
+    include/MyGUI_OgreRenderManager.h
+    include/MyGUI_OgreRTTexture.h
+    include/MyGUI_OgreTexture.h
+    include/MyGUI_OgreVertexBuffer.h
+  )
 
-# Make sure the PLATFORM_SOURCE_FILES variable is always defined
- set( PLATFORM_SOURCE_FILES "" )
+  set( PLATFORM_HEADER_INSTALL "LINUX" )
+  source_group( "Platform Header Files" FILES ${PLATFORM_HEADER_FILES} )
+
+  set( PLATFORM_SOURCE_FILES 
+    src/MyGUI_OgreDataManager.cpp
+    src/MyGUI_OgreDataStream.cpp
+    src/MyGUI_OgreRenderManager.cpp
+    src/MyGUI_OgreRTTexture.cpp
+    src/MyGUI_OgreTexture.cpp
+    src/MyGUI_OgreVertexBuffer.cpp
+  )
+
+  set( PLATFORM_SOURCE_INSTALL "LINUX" )
+  source_group( "Platform Source Files" FILES ${PLATFORM_SOURCE_FILES} )
+
+elseif (WIN32)
+  set( PLATFORM_HEADER_FILES 
+    ../../../Common/FileSystemInfo/FileSystemInfo.h
+    include/MyGUI_LastHeader.h
+    include/MyGUI_OgreDataManager.h
+    include/MyGUI_OgreDataStream.h
+    include/MyGUI_OgreDiagnostic.h
+    include/MyGUI_OgrePlatform.h
+    include/MyGUI_OgreRenderManager.h
+    include/MyGUI_OgreRTTexture.h
+    include/MyGUI_OgreTexture.h
+    include/MyGUI_OgreVertexBuffer.h
+  )
+
+  set( PLATFORM_HEADER_INSTALL "WIN32" )
+  source_group( "Platform Header Files" FILES ${PLATFORM_HEADER_FILES} )
+
+  set( PLATFORM_SOURCE_FILES 
+    src/MyGUI_OgreDataManager.cpp
+    src/MyGUI_OgreDataStream.cpp
+    src/MyGUI_OgreRenderManager.cpp
+    src/MyGUI_OgreRTTexture.cpp
+    src/MyGUI_OgreTexture.cpp
+    src/MyGUI_OgreVertexBuffer.cpp
+  )
+
+  set( PLATFORM_SOURCE_INSTALL "WIN32" )
+  source_group( "Platform Source Files" FILES ${PLATFORM_SOURCE_FILES} )
+
+endif ()
 
 # For ease of use make a variable that has all files for this module
 set( ALL_FILES ${HEADER_FILES} ${SOURCE_FILES} ${PLATFORM_HEADER_FILES} ${PLATFORM_SOURCE_FILES} )
 
-set( MODULE_NAME "MyGUI.OgrePlatform" )
-add_library( ${MODULE_NAME} ${ALL_FILES} )
-add_dependencies( ${MODULE_NAME} MyGUI.Engine OgreMain )
-target_link_libraries( ${MODULE_NAME} MyGUI.Engine OgreMain )
 
-include_directories( ../../../../freetype/include ../../../../freetype/include/freetype ../../../../freetype/include/freetype/config ../../../../freetype/include/freetype/internal ../../../../freetype/include/freetype/internal/services ../../../../freetype/src/winfonts ../../../MyGUIEngine/include ../../../Common/FileSystemInfo include )
+if( LINUX )
+  set( MODULE_NAME "MyGUI.OgrePlatform" )
+elseif( WIN32 )
+  set( MODULE_NAME "MyGUI.OgrePlatform" )
+endif()
+if( LINUX )
+  add_library( ${MODULE_NAME} ${ALL_FILES} )
+elseif( WIN32 )
+  add_library( ${MODULE_NAME} ${ALL_FILES} )
+endif()
+
+if ( LINUX )
+  add_dependencies( ${MODULE_NAME} MyGUI.Engine OgreMain )
+  target_link_libraries( ${MODULE_NAME} MyGUI.Engine OgreMain )
+endif( LINUX )
+
+if ( WIN32 )
+  add_dependencies( ${MODULE_NAME} MyGUI.Engine OgreMain )
+  target_link_libraries( ${MODULE_NAME} MyGUI.Engine OgreMain )
+endif( WIN32 )
+
+include_directories( ../../../../freetype/include ../../../../freetype/include/freetype ../../../../freetype/include/freetype/config ../../../../freetype/include/freetype/internal ../../../../freetype/include/freetype/internal/services ../../../../freetype/src/winfonts ../../../MyGUIEngine/include )
+
+if ( LINUX )
+  include_directories( ../../../Common/FileSystemInfo include )
+endif( LINUX )
+
+if ( WIN32 )
+  include_directories( ../../../Common/FileSystemInfo include )
+endif( WIN32 )
 
 
 
@@ -58,13 +117,7 @@ include_directories( ../../../../freetype/include ../../../../freetype/include/f
 
 if (LINUX)
 GUCEF_config_lib( ${MODULE_NAME} )
-elseif (OSX)
-GUCEF_config_lib( ${MODULE_NAME} )
 elseif (WIN32)
-GUCEF_config_lib( ${MODULE_NAME} )
-elseif (WIN64)
-GUCEF_config_lib( ${MODULE_NAME} )
-else()
 GUCEF_config_lib( ${MODULE_NAME} )
 endif()
 

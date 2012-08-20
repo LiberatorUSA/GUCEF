@@ -35,6 +35,11 @@
 #define GUCEF_CORE_CFILEACCESS_H
 #endif /* GUCEF_CORE_CFILEACCESS_H ? */
 
+#ifndef GUCEF_CORE_CONFIGSTORE_H
+#include "CConfigStore.h"
+#define GUCEF_CORE_CONFIGSTORE_H
+#endif /* GUCEF_CORE_CONFIGSTORE_H ? */
+
 #ifndef GUCEF_PROJECTGENERATOR_DATATYPES_H
 #include "gucefProjectGenerator_DataTypes.h"
 #define GUCEF_PROJECTGENERATOR_DATATYPES_H
@@ -84,6 +89,33 @@ using namespace GUCEF::PROJECTGENERATOR;
 //      UTILITIES                                                          //
 //                                                                         //
 //-------------------------------------------------------------------------*/
+
+bool
+LoadConfig( void )
+{GUCEF_TRACE;
+
+    const CORE::CString configFile = "ProjectGenerator.ini";
+
+    CORE::CString configFilePath = CORE::CombinePath( "$MODULEDIR$", configFile );
+    configFilePath = CORE::RelativePath( configFilePath );
+
+    if ( !CORE::FileExists( configFilePath ) )
+    {
+        configFilePath = CORE::CombinePath( "$CURWORKDIR$", configFile );
+        configFilePath = CORE::RelativePath( configFilePath );
+
+        if ( !FileExists( configFilePath ) )
+        {
+            return false;
+        }
+    }
+
+    CORE::CConfigStore& configStore = CORE::CCoreGlobal::Instance()->GetConfigStore();
+    configStore.SetConfigFile( configFilePath );
+    return configStore.LoadConfig();
+}
+
+/*-------------------------------------------------------------------------*/
 
 void
 ParseParams( const int argc                 ,
@@ -209,7 +241,8 @@ GUCEF_OSMAIN_BEGIN
     }
 
     GUCEF_LOG( CORE::LOGLEVEL_NORMAL, "Wrote log file to: " + logFilename );
-
+    
+    CORE::CCoreGlobal::Instance()->GetLogManager().ClearLoggers();
     return 0;
 }
 GUCEF_OSMAIN_END

@@ -1,0 +1,21 @@
+<ModuleInfoEntry>
+    <Module Name="gucefPRODMAN_TestApp" Type="Executable" Platform="All">
+        <Dependencies>
+            <Dependency Name="gucefHeaders" />
+            <Dependency Name="gucefMT" />
+            <Dependency Name="gucefCORE" />
+            <Dependency Name="gucefCOMCORE" />
+            <Dependency Name="gucefCOM" />
+            <Dependency Name="gucefPATCHER" />
+            <Dependency Name="gucefPRODMAN" />
+        </Dependencies>
+        <Linker>
+            <Dependency Name="gucefMT" />
+            <Dependency Name="gucefCORE" />
+            <Dependency Name="gucefCOMCORE" />
+            <Dependency Name="gucefCOM" />
+            <Dependency Name="gucefPATCHER" />
+            <Dependency Name="gucefPRODMAN" />
+        </Linker>
+    </Module>
+</ModuleInfoEntry>

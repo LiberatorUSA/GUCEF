@@ -56,7 +56,7 @@ namespace CORE {
  *  using URL's
  */
 class GUCEF_CORE_PUBLIC_CPP CURLDataRetriever : public CForwardingNotifier ,
-                                               public CIURLEvents
+                                                public CIURLEvents
 {
     public:
 
@@ -67,6 +67,12 @@ class GUCEF_CORE_PUBLIC_CPP CURLDataRetriever : public CForwardingNotifier ,
     virtual ~CURLDataRetriever();
 
     CURL& GetURL( void );
+
+    // utility function for using memory storage
+    void SetMemoryBufferAsStorage( void );
+
+    // utility function for using a file as storage
+    void SetFileAsStorage( const CString& filePath );
 
     void SetIOAccess( CIOAccess* ioAccess );
 
@@ -100,6 +106,7 @@ class GUCEF_CORE_PUBLIC_CPP CURLDataRetriever : public CForwardingNotifier ,
     UInt64 m_totalBytesReceived;
     Int64 m_totalBytes;
     bool m_allDataReceived;
+    bool m_ownStorage;
 };
 
 /*-------------------------------------------------------------------------//
