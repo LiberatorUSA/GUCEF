@@ -592,6 +592,7 @@ FindFirstModuleAccordingToBuildOrder( const TModuleInfoEntryPairVector& mergeLin
         {
             return (*i).second;
         }
+        ++i;
     }
     return NULL;
 }
