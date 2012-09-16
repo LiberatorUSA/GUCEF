@@ -80,7 +80,7 @@ enum
 
 /*-------------------------------------------------------------------------*/
 
-typedef UInt32 ( GUCEF_PLUGIN_CALLSPEC_PREFIX *TINPUTDRIVERPLUGFPTR_Init )                   ( void** plugdata, const char*** args ) GUCEF_PLUGIN_CALLSPEC_SUFFIX;
+typedef UInt32 ( GUCEF_PLUGIN_CALLSPEC_PREFIX *TINPUTDRIVERPLUGFPTR_Init )                   ( void** plugdata, const int argc, const char** argv ) GUCEF_PLUGIN_CALLSPEC_SUFFIX;
 typedef void ( GUCEF_PLUGIN_CALLSPEC_PREFIX *TINPUTDRIVERPLUGFPTR_Shutdown )                 ( void* plugdata ) GUCEF_PLUGIN_CALLSPEC_SUFFIX;
 typedef const char* ( GUCEF_PLUGIN_CALLSPEC_PREFIX *TINPUTDRIVERPLUGFPTR_Name )              ( const void* plugdata ) GUCEF_PLUGIN_CALLSPEC_SUFFIX;
 typedef const char* ( GUCEF_PLUGIN_CALLSPEC_PREFIX *TINPUTDRIVERPLUGFPTR_Copyright )         ( const void* plugdata ) GUCEF_PLUGIN_CALLSPEC_SUFFIX;
@@ -248,7 +248,7 @@ CInputDriverPlugin::OnMouseMove( void* userData        ,
     CPluginInputContext* context = static_cast<CPluginInputContext*>( userData );
     context->GetPluginAPI()->InjectMouseMove( context->GetID() ,
                                               deviceID         ,
-                                              xPos             ,      
+                                              xPos             ,
                                               yPos             ,
                                               xDelta           ,
                                               yDelta           );
@@ -383,9 +383,9 @@ CInputDriverPlugin::Link( void* modulePtr                         ,
     /*
      *      Link up generic module utilities
      */
-    m_fptable[ INPUTDRIVERPLUG_INIT ] = CORE::GetFunctionAddress( m_sohandle                           ,
-                                                                  "INPUTDRIVERPLUG_Init"               ,
-                                                                  sizeof(void**)+sizeof(const char***) ).funcPtr;
+    m_fptable[ INPUTDRIVERPLUG_INIT ] = CORE::GetFunctionAddress( m_sohandle                                      ,
+                                                                  "INPUTDRIVERPLUG_Init"                          ,
+                                                                  sizeof(void**)+sizeof(int)+sizeof(const char**) ).funcPtr;
     m_fptable[ INPUTDRIVERPLUG_SHUTDOWN ] = CORE::GetFunctionAddress( m_sohandle                 ,
                                                                       "INPUTDRIVERPLUG_Shutdown" ,
                                                                       1*sizeof(void*)            ).funcPtr;
@@ -438,7 +438,7 @@ CInputDriverPlugin::Link( void* modulePtr                         ,
     CORE::CValueList params;
     pluginMetaData->GetParams( params );
     char*** argmatrix = CreateArgMatrix( params );
-    ( (TINPUTDRIVERPLUGFPTR_Init) m_fptable[ INPUTDRIVERPLUG_INIT ] )( &m_plugdata, const_cast< const char*** >( argmatrix ) );
+    ( (TINPUTDRIVERPLUGFPTR_Init) m_fptable[ INPUTDRIVERPLUG_INIT ] )( &m_plugdata, params.GetCount(), const_cast< const char*** >( argmatrix ) );
     DestroyArgMatrix( argmatrix );
 
     // Fill in the plugin metadata based on what the actual module can tell us
