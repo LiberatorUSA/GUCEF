@@ -77,8 +77,9 @@ extern "C" {
 /*---------------------------------------------------------------------------*/
 
 GUCEF_INPUT_PLUGIN_PUBLIC_C UInt32 GUCEF_PLUGIN_CALLSPEC_PREFIX
-INPUTDRIVERPLUG_Init( void** plugdata    ,
-                      const char*** args ) GUCEF_PLUGIN_CALLSPEC_SUFFIX;
+INPUTDRIVERPLUG_Init( void** plugdata   ,
+                      const int argc    ,
+                      const char** argv ) GUCEF_PLUGIN_CALLSPEC_SUFFIX;
 
 /*---------------------------------------------------------------------------*/
 
