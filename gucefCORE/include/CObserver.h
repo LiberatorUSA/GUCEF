@@ -95,9 +95,12 @@ class GUCEF_CORE_PUBLIC_CPP CObserver : public CIObserver
 
     void SubscribeTo( CNotifier* notifier );
 
-    void SubscribeTo( CNotifier* notifier                        ,
-                      const CEvent& eventid                      ,
-                      CIEventHandlerFunctorBase* callback = NULL );
+    void SubscribeTo( CNotifier* notifier   ,
+                      const CEvent& eventid );
+
+    void SubscribeTo( CNotifier* notifier                 ,
+                      const CEvent& eventid               ,
+                      CIEventHandlerFunctorBase& callback );
 
     /**
      *  Unsubscribe's the observer from all notifiers.
@@ -150,6 +153,10 @@ class GUCEF_CORE_PUBLIC_CPP CObserver : public CIObserver
      */
     void UnlinkFrom( CNotifier* notifier             ,
                      const bool forAllEvents = false );
+
+    void SubscribeTo( CNotifier* notifier                        ,
+                      const CEvent& eventid                      ,
+                      CIEventHandlerFunctorBase* callback = NULL );
 
     private:
     struct SNotifierRef

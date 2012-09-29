@@ -14,7 +14,7 @@
  *
  *  You should have received a copy of the GNU Lesser General Public
  *  License along with this library; if not, write to the Free Software
- *  Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA 
+ *  Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA
  */
 
 /*-------------------------------------------------------------------------//
@@ -40,7 +40,7 @@
 //                                                                         //
 //-------------------------------------------------------------------------*/
 
-namespace GUCEF { 
+namespace GUCEF {
 namespace CORE {
 
 /*-------------------------------------------------------------------------//
@@ -68,7 +68,7 @@ CObserver::~CObserver()
 {GUCEF_TRACE;
 
     LockData();
-    
+
     /*
      *  Neatly un-subscribe from all notifiers
      */
@@ -96,19 +96,19 @@ CObserver::operator=( const CObserver& src )
 const CString&
 CObserver::GetClassTypeName( void ) const
 {GUCEF_TRACE;
-    
+
     static const CString typeName = "GUCEF::CORE::CObserver";
     return typeName;
 }
 
 /*-------------------------------------------------------------------------*/
 
-void 
+void
 CObserver::UnsubscribeAllFromObserver( void )
 {GUCEF_TRACE;
 
     LockData();
-    
+
     /*
      *  Neatly un-subscribe from all notifiers
      */
@@ -124,11 +124,11 @@ CObserver::UnsubscribeAllFromObserver( void )
         (*i).notifier->Unsubscribe( this );
         ++i;
     }
-    
-    UnlockData();    
+
+    UnlockData();
 }
 
-/*-------------------------------------------------------------------------*/                        
+/*-------------------------------------------------------------------------*/
 
 void
 CObserver::SubscribeTo( CNotifier* notifier )
@@ -137,7 +137,26 @@ CObserver::SubscribeTo( CNotifier* notifier )
     notifier->Subscribe( this );
 }
 
-/*-------------------------------------------------------------------------*/                        
+/*-------------------------------------------------------------------------*/
+
+void
+CObserver::SubscribeTo( CNotifier* notifier   ,
+                        const CEvent& eventid )
+{
+    SubscribeTo( notifier, eventid, 0 );
+}
+
+/*-------------------------------------------------------------------------*/
+
+void
+CObserver::SubscribeTo( CNotifier* notifier                 ,
+                        const CEvent& eventid               ,
+                        CIEventHandlerFunctorBase& callback )
+{
+    SubscribeTo( notifier, eventid, &callback );
+}
+
+/*-------------------------------------------------------------------------*/
 
 void
 CObserver::SubscribeTo( CNotifier* notifier                              ,
@@ -151,13 +170,13 @@ CObserver::SubscribeTo( CNotifier* notifier                              ,
 }
 
 /*-------------------------------------------------------------------------*/
-                   
-void 
+
+void
 CObserver::LinkTo( CNotifier* notifier )
 {GUCEF_TRACE;
 
     LockData();
-    
+
     TNotifierList::iterator i( m_notifiers.begin() );
     while ( i != m_notifiers.end() )
     {
@@ -167,33 +186,33 @@ CObserver::LinkTo( CNotifier* notifier )
              *  Already subscribed to this notifier
              */
             (*i).refCount++;
-            UnlockData(); 
+            UnlockData();
             return;
         }
         ++i;
     }
-    
+
     /*
-     *  If we get here then this is a new notifier and it should be added 
+     *  If we get here then this is a new notifier and it should be added
      *  to our list
      */
     TNotifierRef newNotifierEntry;
     newNotifierEntry.notifier = notifier;
     newNotifierEntry.refCount = 1;
     m_notifiers.push_back( newNotifierEntry );
-    
-    UnlockData();         
+
+    UnlockData();
 }
 
-/*-------------------------------------------------------------------------*/                            
-           
-void          
+/*-------------------------------------------------------------------------*/
+
+void
 CObserver::UnlinkFrom( CNotifier* notifier                   ,
                        const bool forAllEvents /* = false */ )
 {GUCEF_TRACE;
 
     LockData();
-    
+
     TNotifierList::iterator i( m_notifiers.begin() );
     while ( i != m_notifiers.end() )
     {
@@ -211,28 +230,28 @@ CObserver::UnlinkFrom( CNotifier* notifier                   ,
                     /*
                      *  Remove the notifier from our list
                      */
-                    m_notifiers.erase( i ); 
+                    m_notifiers.erase( i );
                 }
-                UnlockData(); 
+                UnlockData();
                 return;
             }
 
             m_notifiers.erase( i );
-            UnlockData(); 
+            UnlockData();
             return;
         }
         ++i;
     }
-    
-    UnlockData();   
+
+    UnlockData();
 }
 
 /*-------------------------------------------------------------------------*/
 
-UInt32 
+UInt32
 CObserver::GetSubscriptionCount( void )
 {GUCEF_TRACE;
-    
+
     UInt32 subscriptionCount( 0 );
     LockData();
     TNotifierList::const_iterator i( m_notifiers.begin() );
@@ -241,13 +260,13 @@ CObserver::GetSubscriptionCount( void )
         subscriptionCount += (*i).refCount;
         ++i;
     }
-    UnlockData(); 
-    return subscriptionCount;       
+    UnlockData();
+    return subscriptionCount;
 }
 
 /*-------------------------------------------------------------------------*/
 
-UInt32 
+UInt32
 CObserver::GetNotifierCount( void ) const
 {GUCEF_TRACE;
 
@@ -266,7 +285,7 @@ CObserver::UnsubscribeFrom( CNotifier& notifier )
 
 /*-------------------------------------------------------------------------*/
 
-void 
+void
 CObserver::LockData( void ) const
 {GUCEF_TRACE;
 
@@ -274,8 +293,8 @@ CObserver::LockData( void ) const
 }
 
 /*-------------------------------------------------------------------------*/
-    
-void 
+
+void
 CObserver::UnlockData( void ) const
 {GUCEF_TRACE;
 
