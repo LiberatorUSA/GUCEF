@@ -38,11 +38,11 @@ function FindAndroidNdkR4 {
       ANDROIDNDKBUILD=$TEST_PATH
     else
       echo "Unable to locate NDK build script, invalid NDK location"
-      ANDROIDNDK="undefined"   
+      ANDROIDNDK="undefined"
     fi
 
   fi
-  
+
 }
 
 #------------------------------------------------------------------------------
@@ -64,11 +64,11 @@ function FindAndroidNdkR5 {
       ANDROIDNDKBUILD=$TEST_PATH
     else
       echo "Unable to locate NDK build script, invalid NDK location"
-      ANDROIDNDK="undefined"   
+      ANDROIDNDK="undefined"
     fi
 
   fi
-  
+
 }
 
 #------------------------------------------------------------------------------
@@ -90,11 +90,11 @@ function FindAndroidNdkR5b {
       ANDROIDNDKBUILD=$TEST_PATH
     else
       echo "Unable to locate NDK build script, invalid NDK location"
-      ANDROIDNDK="undefined"   
+      ANDROIDNDK="undefined"
     fi
 
   fi
-  
+
 }
 
 #------------------------------------------------------------------------------
@@ -116,11 +116,11 @@ function FindAndroidNdkR5c {
       ANDROIDNDKBUILD=$TEST_PATH
     else
       echo "Unable to locate NDK build script, invalid NDK location"
-      ANDROIDNDK="undefined"   
+      ANDROIDNDK="undefined"
     fi
 
   fi
-  
+
 }
 
 #------------------------------------------------------------------------------
@@ -142,11 +142,11 @@ function FindAndroidNdkR6 {
       ANDROIDNDKBUILD=$TEST_PATH
     else
       echo "Unable to locate NDK build script, invalid NDK location"
-      ANDROIDNDK="undefined"   
+      ANDROIDNDK="undefined"
     fi
 
   fi
-  
+
 }
 
 #------------------------------------------------------------------------------
@@ -168,11 +168,11 @@ function FindAndroidNdkR6b {
       ANDROIDNDKBUILD=$TEST_PATH
     else
       echo "Unable to locate NDK build script, invalid NDK location"
-      ANDROIDNDK="undefined"   
+      ANDROIDNDK="undefined"
     fi
 
   fi
-  
+
 }
 
 #------------------------------------------------------------------------------
@@ -194,11 +194,11 @@ function FindAndroidNdkR7 {
       ANDROIDNDKBUILD=$TEST_PATH
     else
       echo "Unable to locate NDK build script, invalid NDK location"
-      ANDROIDNDK="undefined"   
+      ANDROIDNDK="undefined"
     fi
 
   fi
-  
+
 }
 
 #------------------------------------------------------------------------------
@@ -220,11 +220,11 @@ function FindAndroidNdkR7b {
       ANDROIDNDKBUILD=$TEST_PATH
     else
       echo "Unable to locate NDK build script, invalid NDK location"
-      ANDROIDNDK="undefined"   
+      ANDROIDNDK="undefined"
     fi
 
   fi
-  
+
 }
 
 #------------------------------------------------------------------------------
@@ -246,11 +246,11 @@ function FindAndroidNdkR7c {
       ANDROIDNDKBUILD=$TEST_PATH
     else
       echo "Unable to locate NDK build script, invalid NDK location"
-      ANDROIDNDK="undefined"   
+      ANDROIDNDK="undefined"
     fi
 
   fi
-  
+
 }
 
 #------------------------------------------------------------------------------
@@ -272,11 +272,11 @@ function FindAndroidNdkR8 {
       ANDROIDNDKBUILD=$TEST_PATH
     else
       echo "Unable to locate NDK build script, invalid NDK location"
-      ANDROIDNDK="undefined"   
+      ANDROIDNDK="undefined"
     fi
 
   fi
-  
+
 }
 
 #------------------------------------------------------------------------------
@@ -302,59 +302,56 @@ function FindAndroidNdk {
 
   # Check for NDK release 7b
   FindAndroidNdkR7b
-  
+
   if [ "$ANDROIDNDK" = "undefined" ]; then
 
   echo "Unable to locate NDK release 7b, will try release 7"
 
-  if [ "$ANDROIDNDK" = "undefined" ]; then
-
   # Check for NDK release 7
   FindAndroidNdkR7
-  
+
   if [ "$ANDROIDNDK" = "undefined" ]; then
 
   echo "Unable to locate NDK release 7, will try release 6b"
 
   # Check for NDK release 6b
   FindAndroidNdkR6b
-  
+
   if [ "$ANDROIDNDK" = "undefined" ]; then
 
   echo "Unable to locate NDK release 6b, will try release 6"
-  
+
   # Check for NDK release 6
   FindAndroidNdkR6
-  
+
   if [ "$ANDROIDNDK" = "undefined" ]; then
 
   echo "Unable to locate NDK release 6, will try release 5c"
-  
+
   # Check for NDK release 5c
   FindAndroidNdkR5c
 
   if [ "$ANDROIDNDK" = "undefined" ]; then
-  
+
   echo "Unable to locate NDK release 5c, will try release 5b"
-  
+
   # Check for NDK release 5b
   FindAndroidNdkR5b
-    
+
   if [ "$ANDROIDNDK" = "undefined" ]; then
 
   echo "Unable to locate NDK release 5b, will try release 5"
 
   # Check for NDK release 5
   FindAndroidNdkR5b
-    
+
   if [ "$ANDROIDNDK" = "undefined" ]; then
 
   echo "Unable to locate NDK release 5, will try release 4"
-      
+
   # Check for NDK release 4
   FindAndroidNdkR4
-        
-  fi  
+
   fi
   fi
   fi
@@ -363,7 +360,8 @@ function FindAndroidNdk {
   fi
   fi
   fi
-  
+  fi
+
   echo " "
   echo "** Found the following for the NDK"
   echo "   ANDROIDNDK = $ANDROIDNDK"
@@ -384,6 +382,6 @@ SetGucefHome
 FindAndroidNdk
 
 # Export the variable for child processes
-export ANDROIDNDK 
+export ANDROIDNDK
 
 
