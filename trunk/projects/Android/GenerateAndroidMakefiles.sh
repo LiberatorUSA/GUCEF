@@ -20,7 +20,7 @@ function SetGucefHome {
 #------------------------------------------------------------------------------
 
 function FindGucefDebugProjectGenerator {
-  
+
   TEST_PATH="$GUCEF_HOME/common/bin/CBNIX/bin/ProjectGenerator"
   echo "Testing for executable binary @ $TEST_PATH"
   if [ -x "$TEST_PATH" ];
@@ -34,7 +34,7 @@ function FindGucefDebugProjectGenerator {
 #------------------------------------------------------------------------------
 
 function FindGucefReleaseProjectGenerator {
-  
+
   TEST_PATH="$GUCEF_HOME/tools/ProjectGenerator/bin/ReleasedBins/Linux/20January2012/ProjectGenerator"
   echo "Testing for executable binary @ $TEST_PATH"
   if [ -x "$TEST_PATH" ];
@@ -51,7 +51,7 @@ function FindProjectGenerator {
 
   GENERATORPATH=${GENERATORPATH:=undefined}
   FindGucefDebugProjectGenerator
-  if [ "$GENERATORPATH" = "undefined" ]; 
+  if [ "$GENERATORPATH" = "undefined" ];
   then
     FindGucefReleaseProjectGenerator
   fi
@@ -77,7 +77,7 @@ fi
 echo "GENERATORPATH = $TEST_PATH"
 
 # invoke the generator
-$GENERATORPATH *rootDir=%GUCEF_HOME%* *outputDir=%GUCEF_HOME%* *generators=androidmake* *dirsToIgnore=.svn;_svn* *projectName=GUCEF*
+$GENERATORPATH *rootDir=%GUCEF_HOME%* *outputDir=%GUCEF_HOME%* *generators=androidmake* *dirsToIgnore=.svn* *projectName=GUCEF*
 
 echo "Press enter to continue..."
 line=""
