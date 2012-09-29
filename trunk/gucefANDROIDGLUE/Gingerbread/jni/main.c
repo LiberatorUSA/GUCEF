@@ -64,6 +64,17 @@ typedef int ( GUCEF_CALLSPEC_PREFIX *TGUCEFCORECINTERFACE_LoadAndRunGucefPlatfor
 /*-------------------------------------------------------------------------*/
 
 char*
+AllocString( const char* str )
+{
+    int len = strlen( str )+1;
+    char* buffer = (char*) malloc( len );
+    memcpy( buffer, str, len );
+    return buffer;
+}
+
+/*-------------------------------------------------------------------------*/
+
+char*
 Combine2Strings( const char* str1 ,
                  const char* str2 )
 {
@@ -95,6 +106,16 @@ Combine3Strings( const char* str1 ,
 /*-------------------------------------------------------------------------*/
 
 char*
+PointerToString( void* ptr )
+{
+    char* ptrStrBuffer = malloc( 34 );
+    sprintf( ptrStrBuffer, "%p", ptr );
+    return ptrStrBuffer;
+}
+
+/*-------------------------------------------------------------------------*/
+
+char*
 GetAssetPath( const char* packageDir ,
               const char* fileName   )
 {
@@ -116,6 +137,36 @@ GetLibPath( const char* packageDir ,
             const char* moduleName )
 {
     return Combine3Strings( packageDir, "/lib/", moduleName );
+}
+
+/*-------------------------------------------------------------------------*/
+
+void
+FreeStringMatrix( char** argv ,
+                  int argc    )
+{
+    for ( int i=0; i<argc; ++i )
+    {
+        free( argv[ i ] );
+    }
+    free( argv );
+}
+
+/*-------------------------------------------------------------------------*/
+
+void
+CreatePlatformParams( char*** argv              ,
+                      int* argc                 ,
+                      struct android_app* state )
+{
+    // right now we have 1 param
+    // Each key is an entry and each value is an entry
+    argv (char**) = malloc( 2 * sizeof(char**) );
+    argc = 2;
+
+    // create the android_app param
+    argv[ 0 ] = AllocString( "-android_app" );
+    argv[ 1 ] = PointerToString( state );
 }
 
 /*-------------------------------------------------------------------------*/
@@ -436,7 +487,7 @@ ExtractAssets( struct android_app* state ,
 int
 IsFirstRun( const char* packageDir )
 {
-    // We know the gucefLOADER relies on a text file named firstrun.completed.txt
+    // We know the gucefLOADER relies on a text file named firstrun.completed
     // we will use the same convention here to keep things consistent
     char* firstrunFile = GetAssetPath( packageDir, "firstrun.completed" );
     int existsBool = FileExists( firstrunFile );
@@ -449,7 +500,7 @@ IsFirstRun( const char* packageDir )
 void
 SetFirstRunCompleted( const char* packageDir )
 {
-    // We know the gucefLOADER relies on a text file named firstrun.completed.txt
+    // We know the gucefLOADER relies on a text file named firstrun.completed
     // we will use the same convention here to keep things consistent
     char* firstrunFile = GetAssetPath( packageDir, "firstrun.completed" );
     int existsBool = FileExists( firstrunFile );
@@ -520,8 +571,16 @@ android_main( struct android_app* state )
         LOGI( "Detected previous run, skipping first run initialization" );
     }
 
+    // Create the platform specific params
+    char** platformArgv = NULLPTR;
+    int platformArgc = 0;
+    CreatePlatformParams( &platformArgv, &platformArgc, state );
+
     // Start the process of invoking the launch of the platform using the loader
-    int appStatus = InvokeLoadAndRunGucefPlatformApp( "gucefPRODMAN", packageDir, 0, NULLPTR, 0, NULLPTR );
+    int appStatus = InvokeLoadAndRunGucefPlatformApp( "gucefPRODMAN", packageDir, platformArgc, platformArgv, 0, NULLPTR );
+
+    // clean up our platform param data
+    FreeStringMatrix( platformArgv, platformArgc );
 
     // Check if we had a successfull run
     if ( 0 != firstRun )
