@@ -60,6 +60,20 @@
 /*-------------------------------------------------------------------------*/
 
 /*
+ *  GUCEF wide debug flag
+ */
+#if !defined( NDEBUG ) && !( defined( _DEBUG ) || defined( __DEBUG ) || defined( __DEBUG__ ) )
+  #define _DEBUG
+#endif
+#if defined( _DEBUG ) || defined( __DEBUG ) || defined( __DEBUG__ )
+  #define GUCEF_DEBUG_MODE
+#else
+  #undef GUCEF_DEBUG_MODE
+#endif
+
+/*-------------------------------------------------------------------------*/
+
+/*
  *      O/S Specific Switches
  */
 #if ( GUCEF_PLATFORM == GUCEF_PLATFORM_MSWIN )

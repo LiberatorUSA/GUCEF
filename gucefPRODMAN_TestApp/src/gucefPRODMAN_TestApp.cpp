@@ -115,7 +115,7 @@ GUCEF_OSMAIN_BEGIN
         consoleWindow.CreateConsole();
 
 
-        PRODMAN::CProductManager& productManager = PRODMAN::CProdManGlobal::Instance();
+        PRODMAN::CProductManager& productManager = PRODMAN::CProdManGlobal::Instance()->GetProductManager();
 
 
 

@@ -76,6 +76,7 @@ CLogSvcServer::CLogSvcServer( void )
       m_loggers()
 {GUCEF_TRACE;
 
+    RegisterServerSocketEventHandlers();
 }
 
 /*-------------------------------------------------------------------------*/
@@ -87,6 +88,7 @@ CLogSvcServer::CLogSvcServer( CORE::CPulseGenerator& pulseGenerator )
       m_loggers()
 {GUCEF_TRACE;
 
+    RegisterServerSocketEventHandlers();
 }
 
 /*-------------------------------------------------------------------------*/
@@ -302,12 +304,13 @@ CLogSvcServer::ProcessReceivedData( TClientInfo& clientInfo                   ,
 
         // First read the message delimiter
         char msgDelimterHeader[ 5 ];
-        if ( 1 == clientInfo.receiveBuffer.Read( msgDelimterHeader, 5, 1 ) )
+        if ( 5 == clientInfo.receiveBuffer.Read( msgDelimterHeader, 5, 1 ) )
         {
             if ( msgDelimterHeader[ 0 ] == LOGSVCMSGTYPE_DELIMITER )
             {
                 // Get the total message length from the delimiter header
-                CORE::UInt32 msgLength = *((CORE::UInt32*) msgDelimterHeader+1);
+                CORE::UInt32 msgLength = 0;
+                memcpy( &msgLength, msgDelimterHeader+1, 4 );
 
                 // subtract what we already read
                 msgLength -= 5;
@@ -318,7 +321,7 @@ CLogSvcServer::ProcessReceivedData( TClientInfo& clientInfo                   ,
                 {
                     // Make a buffer for this message and read it from the receive buffer
                     CORE::CDynamicBuffer messageBuffer( msgLength, false );
-                    if ( 1 == clientInfo.receiveBuffer.Read( messageBuffer.GetBufferPtr(), msgLength, 1 ) )
+                    if ( msgLength == clientInfo.receiveBuffer.Read( messageBuffer.GetBufferPtr(), msgLength, 1 ) )
                     {
                         // Set the size of usefull data in the buffer
                         messageBuffer.SetDataSize( msgLength );

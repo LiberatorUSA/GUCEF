@@ -1,0 +1,21 @@
+<ModuleInfoEntry>
+    <Module Name="GucefLogServiceClientPlugin" Type="SharedLibrary" Platform="All">
+        <Dependencies>
+            <Dependency Name="gucefMT" />
+            <Dependency Name="gucefCORE" />
+            <Dependency Name="gucefCOMCORE" />
+            <Dependency Name="gucefCOM" />
+            <Dependency Name="GucefLogServiceLib" />
+        </Dependencies>
+        <Linker>
+            <Dependency Name="gucefMT" />
+            <Dependency Name="gucefCORE" />
+            <Dependency Name="gucefCOMCORE" />
+            <Dependency Name="gucefCOM" />
+            <Dependency Name="GucefLogServiceLib" />
+        </Linker>
+        <Preprocessor>
+            <Define String="GUCEF_LOGSERVICECLIENTPLUGIN_BUILD_MODULE" />
+        </Preprocessor>
+    </Module>
+</ModuleInfoEntry>

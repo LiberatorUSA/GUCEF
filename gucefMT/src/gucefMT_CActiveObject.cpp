@@ -50,7 +50,9 @@ CActiveObject::CActiveObject( void )
           _delay( 10 )                       ,
           m_isDeactivationRequested( false ) ,
           _suspend( false )                  ,
-          _active( false )
+          _active( false )                   ,
+          _td( NULL )                        ,
+          m_minimalCycleDelta( 10 )
 {
 
 }
@@ -62,7 +64,9 @@ CActiveObject::CActiveObject( const CActiveObject& src )
           _delay( src._delay )               ,
           m_isDeactivationRequested( false ) ,
           _suspend( false )                  ,
-          _active( false )
+          _active( false )                   ,
+          _td( NULL )                        ,
+          m_minimalCycleDelta( 10 )
 {
     if ( src.IsActive() )
     {
@@ -258,7 +262,7 @@ CActiveObject::Pause( bool force )
 void
 CActiveObject::Resume( void )
 {
-    if ( _td && _suspend )
+    if ( NULL != _td && _suspend )
     {
         _active = true;
         ThreadResume( _td );
@@ -298,7 +302,11 @@ CActiveObject::operator=( const CActiveObject& src )
 UInt32
 CActiveObject::GetThreadID( void ) const
 {
-    return ThreadID( _td );
+    if ( NULL != _td )
+    {
+        return ThreadID( _td );
+    }
+    return 0;
 }
 
 /*-------------------------------------------------------------------------//

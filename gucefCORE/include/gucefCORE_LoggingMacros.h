@@ -110,7 +110,7 @@
 /*-------------------------------------------------------------------------*/
 
 #undef GUCEF_DEBUG_LOG
-#ifdef GUCEF_CORE_DEBUG_MODE
+#ifdef GUCEF_DEBUG_MODE
 #define GUCEF_DEBUG_LOG( logLevel, logMessage ) ::GUCEF::CORE::CCoreGlobal::Instance()->GetLogManager().Log( GUCEF::CORE::CLogManager::LOG_DEBUG, logLevel, logMessage );
 #else
 #define GUCEF_DEBUG_LOG

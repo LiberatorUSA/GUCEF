@@ -134,6 +134,18 @@ class GUCEF_CORE_PUBLIC_CPP CPluginControl : public CNotifier      ,
                            bool loadImmediatly       );
 
     /**
+     *  Utility function: defines limited plugin meta data from the limited information
+     *  available and then performs a trial and error load.
+     *  If you have more information regarding the plugin you should use
+     *      AddPluginMetaData() instead and pass that information
+     *  Note that the directories set as plugin dirs will be used as the directories to
+     *  search. See AddPluginDir()
+     */
+    bool SearchForPluginInPluginDirs( const CString& pluginFileName ,
+                                      const CString& groupName      ,
+                                      bool loadImmediatly           );
+
+    /**
      *  Adds a plugin root dir to the dirs that will be used to load
      *  modules from if the plugin metadata does not already specify a directory to use
      *  Variables in the path are automatically resolved.

@@ -540,10 +540,9 @@ CTaskManager::StartTask( CTaskConsumer& taskConsumer ,
 
     // Just spawn a task delegator, it will auto register as an active task
     taskConsumer.SetIsOwnedByTaskManager( false );
-    CTaskDelegator* delegator = new CSingleTaskDelegator( &taskConsumer, taskData->Clone() );
+    CTaskDelegator* delegator = new CSingleTaskDelegator( &taskConsumer, 0 != taskData ? taskData->Clone() : 0 );
 
-    GUCEF_SYSTEM_LOG( LOGLEVEL_NORMAL, "TaskManager: Started task immediatly of type \"" + taskConsumer.GetType() + "\" with ID " +
-                                        UInt32ToString( taskConsumer.GetTaskId() ) + " using thread with ID " + UInt32ToString( delegator->GetThreadID() ) );
+    GUCEF_SYSTEM_LOG( LOGLEVEL_NORMAL, "TaskManager: Started task immediatly of type \"" + taskConsumer.GetType() + "\" with ID " + UInt32ToString( taskConsumer.GetTaskId() )  );
 
     delegator->Activate();
 

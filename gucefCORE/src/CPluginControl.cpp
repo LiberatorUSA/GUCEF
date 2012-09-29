@@ -796,8 +796,11 @@ void
 CPluginControl::AddPluginDir( const CString& path )
 {GUCEF_TRACE;
 
+    CString absPath( RelativePath( path ) );
+    GUCEF_SYSTEM_LOG( LOGLEVEL_NORMAL, "PluginControl: Adding path as plugin dir: " + absPath );
+
     m_mutex.Lock();
-    m_rootDirs.insert( RelativePath( path ) );
+    m_rootDirs.insert( absPath );
     m_mutex.Unlock();
 }
 
@@ -807,6 +810,8 @@ void
 CPluginControl::RemovePluginDir( const CString& path )
 {GUCEF_TRACE;
 
+    GUCEF_SYSTEM_LOG( LOGLEVEL_NORMAL, "PluginControl: Removing path as plugin dir: " + path );
+    
     m_mutex.Lock();
     m_rootDirs.erase( RelativePath( path ) );
     m_mutex.Unlock();
@@ -883,6 +888,46 @@ CPluginControl::AddAllPluginsFromDir( const CString& pluginDir ,
     }
 
     return success;
+}
+
+/*-------------------------------------------------------------------------*/
+
+bool
+CPluginControl::SearchForPluginInPluginDirs( const CString& pluginFileName ,
+                                             const CString& groupName      ,
+                                             bool loadImmediatly           )
+{GUCEF_TRACE;
+
+    CString fileName( pluginFileName );
+    if ( 0 == ExtractFileExtention( pluginFileName ).Length() )
+    {
+        // use the platform default extension to complete the filename
+        #if ( GUCEF_PLATFORM == GUCEF_PLATFORM_MSWIN )
+        fileName += ".dll";
+        #elif ( ( GUCEF_PLATFORM == GUCEF_PLATFORM_LINUX ) || ( GUCEF_PLATFORM == GUCEF_PLATFORM_ANDROID ) )
+        fileName += ".so";
+        #elif ( GUCEF_PLATFORM == GUCEF_PLATFORM_MACOS )
+        fileName += ".dynlib";
+        #endif
+    }
+    
+    m_mutex.Lock();
+    TStringSet::iterator i = m_rootDirs.begin();
+    while ( i != m_rootDirs.end() )
+    {
+        CString testPath = (*i);
+        AppendToPath( testPath, fileName );
+        if ( FileExists( testPath ) )
+        {
+            m_mutex.Unlock();
+            return AddPluginFromDir( testPath       ,
+                                     groupName      ,
+                                     loadImmediatly );
+        }
+        ++i;
+    }
+    m_mutex.Unlock();
+    return false;
 }
 
 /*-------------------------------------------------------------------------*/

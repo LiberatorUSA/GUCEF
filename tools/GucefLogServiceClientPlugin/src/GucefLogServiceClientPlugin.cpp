@@ -102,8 +102,14 @@ GUCEFPlugin_Load( CORE::UInt32 argc, const char** argv ) GUCEF_PLUGIN_CALLSPEC_S
     {
         logServicePort = CORE::StringToUInt16( keyValueList.GetValueAlways( "logServicePort" ) );
     }
-    
-    svcClient.ConnectTo( addressOfService, logServicePort );
+
+    bool blockingConnect = true;
+    if ( keyValueList.HasKey( "blockingConnect" ) )
+    {
+        blockingConnect = CORE::StringToBool( keyValueList.GetValueAlways( "blockingConnect" ) );
+    }
+
+    svcClient.ConnectTo( addressOfService, logServicePort, blockingConnect );
 
     CORE::CCoreGlobal::Instance()->GetLogManager().AddLogger( &svcClient );
     

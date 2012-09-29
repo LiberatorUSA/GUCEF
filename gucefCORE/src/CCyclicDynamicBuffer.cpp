@@ -169,7 +169,9 @@ CCyclicDynamicBuffer::Read( void* destBuffer             ,
 
             m_freeBlocks.push_back( dataChunck );            
             m_usedBlocks.erase( i );
+            
             i = m_usedBlocks.begin();
+            if ( i == m_usedBlocks.end() ) break;
         }
         else
         {

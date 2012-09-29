@@ -1,0 +1,4 @@
+<ModuleInfoEntry>
+    <Module Name="uuid" Type="StaticLibrary" Platform="All">
+    </Module>
+</ModuleInfoEntry>

@@ -81,16 +81,18 @@ class GUCEF_LOGSERVICELIB_EXPORT_CPP CLogSvcClient : public CORE::CILogger      
     virtual ~CLogSvcClient();
     
     bool ConnectTo( const CORE::CString& address , 
-                    CORE::UInt16 port            ); 
+                    CORE::UInt16 port            ,
+                    bool blocking = false        ); 
 
-    bool ConnectTo( const COMCORE::CHostAddress& address );
+    bool ConnectTo( const COMCORE::CHostAddress& address ,
+                    bool blocking = false                );
 
     /**
      *      Attempts to reconnect to the server provided with
      *      ConnectTo(). If ConnectTo() has not yet been called then this
      *      member function has no effect.
      */
-    bool Reconnect( void );
+    bool Reconnect( bool blocking = false );
     
     void Close( void );
     
