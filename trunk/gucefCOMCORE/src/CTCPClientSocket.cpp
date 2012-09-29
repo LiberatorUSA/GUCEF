@@ -31,6 +31,11 @@
 #define DVSTRUTILS_H
 #endif /* DVSTRUTILS_H ? */
 
+#ifndef GUCEF_MT_DVMTOSWRAP_H
+#include "gucefMT_dvmtoswrap.h"
+#define GUCEF_MT_DVMTOSWRAP_H
+#endif /* GUCEF_MT_DVMTOSWRAP_H ? */
+
 #ifndef GUCEF_CORE_CLOGMANAGER_H
 #include "CLogManager.h"
 #define GUCEF_CORE_CLOGMANAGER_H
@@ -227,12 +232,13 @@ CTCPClientSocket::GetMaxRead( void ) const
 /*-------------------------------------------------------------------------*/
 
 bool
-CTCPClientSocket::Reconnect( void )
+CTCPClientSocket::Reconnect( bool blocking )
 {GUCEF_TRACE;
 
         LockData();
         bool retval = ConnectTo( m_hostAddress.AddressAsString()        ,
-                                 m_hostAddress.GetPortInHostByteOrder() );
+                                 m_hostAddress.GetPortInHostByteOrder() ,
+                                 blocking                               );
         UnlockData();
         return retval;
 }
@@ -241,7 +247,8 @@ CTCPClientSocket::Reconnect( void )
 
 bool
 CTCPClientSocket::ConnectTo( const CORE::CString& remoteaddr ,
-                             UInt16 port                     )
+                             UInt16 port                     ,
+                             bool blocking                   )
 {GUCEF_TRACE;
 
     if ( remoteaddr.Length() == 0 ) return false;
@@ -359,31 +366,56 @@ CTCPClientSocket::ConnectTo( const CORE::CString& remoteaddr ,
             UnlockData();
             return false;
         }
+        else
+        {
+            GUCEF_DEBUG_LOG( CORE::LOGLEVEL_NORMAL, "CTCPClientSocket(" + CORE::PointerToString( this ) + "): Connecting to " + remoteaddr + ":" + CORE::UInt16ToString( port ) );
+
+            m_readbuffer.Clear();
+            
+            m_isConnecting = true;
+            m_hostAddress.SetHostname( remoteaddr );
+            m_hostAddress.SetPortInHostByteOrder( port );
+
+            UnlockData();
+
+            NotifyObservers( ConnectingEvent );
+            
+            // Check if the caller wants this specific call to act as a blocking call but has the socket set as non-blocking
+            if ( !_blocking && blocking )
+            {
+                while ( m_isConnecting && _active )
+                {
+                    // We will manually cycle here to wait for the call to complete
+                    OnPulse( NULL                              ,
+                             CORE::CPulseGenerator::PulseEvent ,
+                             NULL                              );
+
+                    if ( m_isConnecting && _active ) MT::PrecisionDelay( 10 );
+                }
+
+                m_pulseGenerator->RequestPeriodicPulses( this, MAX_PULSE_INTERVAL_IN_MS );
+            }
+            else
+            {
+                m_pulseGenerator->RequestPeriodicPulses( this, MAX_PULSE_INTERVAL_IN_MS );
+            }
+
+            return true;
+        }
     }
-
-    GUCEF_DEBUG_LOG( CORE::LOGLEVEL_NORMAL, "CTCPClientSocket(" + CORE::PointerToString( this ) + "): Connecting to " + remoteaddr + ":" + CORE::UInt16ToString( port ) );
-
-    m_readbuffer.Clear();
-    m_pulseGenerator->RequestPeriodicPulses( this, MAX_PULSE_INTERVAL_IN_MS );
-
-    m_isConnecting = true;
-    m_hostAddress.SetHostname( remoteaddr );
-    m_hostAddress.SetPortInHostByteOrder( port );
-
-    UnlockData();
-
-    NotifyObservers( ConnectingEvent );
-    return true;
+    return false;
 }
 
 /*-------------------------------------------------------------------------*/
 
 bool
-CTCPClientSocket::ConnectTo( const CHostAddress& address )
+CTCPClientSocket::ConnectTo( const CHostAddress& address ,
+                             bool blocking               )
 {GUCEF_TRACE;
 
     return ConnectTo( address.AddressAsString()        ,
-                      address.GetPortInHostByteOrder() );
+                      address.GetPortInHostByteOrder() ,
+                      blocking                         );
 }
 
 /*-------------------------------------------------------------------------*/
@@ -678,9 +710,13 @@ CTCPClientSocket::Close( void )
         m_sendOpBuffer.Clear( false );
         m_readbuffer.Clear( false );
 
+        UnlockData();
+        
+        m_pulseGenerator->RequestStopOfPeriodicUpdates( this );
+
         if ( !NotifyObservers( DisconnectedEvent ) ) return;
     }
-    UnlockData();
+    else UnlockData();
 }
 
 /*-------------------------------------------------------------------------*/

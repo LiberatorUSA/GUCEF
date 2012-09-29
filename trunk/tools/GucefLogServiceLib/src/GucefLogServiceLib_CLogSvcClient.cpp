@@ -89,6 +89,8 @@ CLogSvcClient::CLogSvcClient( void )
 {GUCEF_TRACE;
 
     RegisterEvents();
+
+    SubscribeTo( &m_tcpClient );
 }
 
 /*-------------------------------------------------------------------------*/
@@ -101,6 +103,8 @@ CLogSvcClient::CLogSvcClient( CORE::CPulseGenerator& pulseGenerator )
 {GUCEF_TRACE;
 
     RegisterEvents();
+
+    SubscribeTo( &m_tcpClient );
 }
 
 /*-------------------------------------------------------------------------*/
@@ -115,31 +119,33 @@ CLogSvcClient::~CLogSvcClient()
 
 bool
 CLogSvcClient::ConnectTo( const CORE::CString& address ,
-                          CORE::UInt16 port            )
+                          CORE::UInt16 port            ,
+                          bool blocking                )
 {GUCEF_TRACE;
 
     m_connectionInitialized = false;
-    return m_tcpClient.ConnectTo( address, port );
+    return m_tcpClient.ConnectTo( address, port, blocking );
 }
 
 /*-------------------------------------------------------------------------*/
 
 bool
-CLogSvcClient::ConnectTo( const COMCORE::CHostAddress& address )
+CLogSvcClient::ConnectTo( const COMCORE::CHostAddress& address ,
+                          bool blocking                        )
 {GUCEF_TRACE;
 
     m_connectionInitialized = false;
-    return m_tcpClient.ConnectTo( address );
+    return m_tcpClient.ConnectTo( address, blocking );
 }
 
 /*-------------------------------------------------------------------------*/
 
 bool
-CLogSvcClient::Reconnect( void )
+CLogSvcClient::Reconnect( bool blocking )
 {GUCEF_TRACE;
 
     m_connectionInitialized = false;
-    return m_tcpClient.Reconnect();
+    return m_tcpClient.Reconnect( blocking );
 }
 
 /*-------------------------------------------------------------------------*/
@@ -302,7 +308,7 @@ CLogSvcClient::OnNotify( CORE::CNotifier* notifier    ,
                                         processId.Length()     +
                                         m_appName.Length()     +
                                         ClientVersion.Length() +
-                                        17;   // 1 + str lengths + 4 bytes for size per str
+                                        22;   // 1 + 4 for msg size field + 1 for msg type + str lengths + 4 bytes for size per str
 
             CORE::CDynamicBuffer buffer( totalMsgSize, true );
 

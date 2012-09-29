@@ -69,11 +69,9 @@ class CPulseGenerator;
  *  Timer implementation that attempts to provide a timing mechanism with a
  *  millisecond resolution.
  *
- *  Note that timer calls are performed in the main application thread
- *  (Assuming you are calling the CGUCEFApplication Update() from your main thread).
- *  As such operations by handlers will suspend the message handling
- *  in the application for their duration. Keep this in mind when hooking
- *  up a lengthy process to a timer in an GUI based application.
+ *  Note that timer calls are performed in the thread triggering the timer's action.
+ *  If you pass a pulse generator then its pulse thus its thread will run the timer actions
+ *  Keep this in mind when hooking up lengthy actions to a timer.
  *
  *  Note that the timer resolution is NOT guaranteed. An attempt is made to
  *  provide the theoretical minimum resolution of 1 millisecond.

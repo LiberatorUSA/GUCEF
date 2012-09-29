@@ -1,6 +1,0 @@
-
-add_library( GucefLogServiceClientPlugin ${ALL_FILES} )
-add_dependencies( GucefLogServiceClientPlugin GucefLogServiceLib gucefCOM gucefCOMCORE gucefCORE gucefMT )
-target_link_libraries( GucefLogServiceClientPlugin GucefLogServiceLib gucefCOM gucefCOMCORE gucefCORE gucefMT )
-set_target_properties( GucefLogServiceClientPlugin PROPERTIES COMPILE_DEFINITIONS GUCEF_LOGSERVICECLIENTPLUGIN_BUILD_MODULE )
-GUCEF_config_lib( GucefLogServiceClientPlugin )

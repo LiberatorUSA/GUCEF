@@ -24,6 +24,11 @@
 //                                                                         //
 //-------------------------------------------------------------------------*/
 
+#ifndef GUCEF_OSMAIN_H
+#include "gucef_osmain.h"
+#define GUCEF_OSMAIN_H
+#endif /* GUCEF_OSMAIN_H ? */
+
 #ifndef GUCEF_CORE_CGUCEFAPPLICATION_H
 #include "CGUCEFApplication.h"
 #define GUCEF_CORE_CGUCEFAPPLICATION_H
@@ -34,10 +39,10 @@
 #define GUCEF_CORE_CFILEACCESS_H
 #endif /* GUCEF_CORE_CFILEACCESS_H ? */
 
-#ifndef GUCEF_CORE_CTRACER_H
-#include "CTracer.h"
-#define GUCEF_CORE_CTRACER_H
-#endif /* GUCEF_CORE_CTRACER_H ? */
+#ifndef GUCEF_CORE_LOGGING_H
+#include "gucefCORE_Logging.h"
+#define GUCEF_CORE_LOGGING_H
+#endif /* GUCEF_CORE_LOGGING_H ? */
 
 #ifndef GUCEF_CORE_CVALUELIST_H
 #include "CValueList.h"
@@ -48,6 +53,11 @@
 #include "gucefCORE_Logging.h"
 #define GUCEF_CORE_LOGGING_H
 #endif /* GUCEF_CORE_LOGGING_H ? */
+
+#ifndef GUCEF_CORE_CPLATFORMNATIVECONSOLEWINDOW_H
+#include "gucefCORE_CPlatformNativeConsoleWindow.h"
+#define GUCEF_CORE_CPLATFORMNATIVECONSOLEWINDOW_H
+#endif /* GUCEF_CORE_CPLATFORMNATIVECONSOLEWINDOW_H ? */
 
 #ifdef GUCEF_MSWIN_BUILD
 #include <windows.h>
@@ -66,7 +76,8 @@ using namespace GUCEF;
 //                                                                         //
 //-------------------------------------------------------------------------*/
 
-const bool defaultShowConsoleState = true;
+const bool defaultShowConsoleState = false;
+const bool defaultUseConsoleLoggerState = true;
 CORE::UInt16 defaultListnenPort = 43557;
 
 /*-------------------------------------------------------------------------//
@@ -101,8 +112,7 @@ ParseParams( const int argc                 ,
 
 /*-------------------------------------------------------------------------*/
 
-int
-main( int argc, char* argv[] )
+GUCEF_OSMAIN_BEGIN
 {GUCEF_TRACE;
 
     #ifdef GUCEF_CALLSTACK_TRACING
@@ -122,12 +132,24 @@ main( int argc, char* argv[] )
     CORE::CValueList keyValueList;
     ParseParams( argc, argv, keyValueList );
 
-    // Do we want to display the console window?
-    CORE::CPlatformNativeConsoleLogger* consoleOut = NULL;
+    CORE::CPlatformNativeConsoleWindow consoleWindow;
     bool showConsole = defaultShowConsoleState;
     if ( keyValueList.HasKey( "showConsole" ) )
     {
         showConsole = CORE::StringToBool( keyValueList.GetValue( "showConsole" ) );
+    }
+    if ( showConsole )
+    {
+        consoleWindow.CreateConsole();
+        GUCEF_LOG( CORE::LOGLEVEL_NORMAL, "GucefLogServiceApp: Enabled console window" );
+    }
+
+    // Do we want to use the console logger?
+    CORE::CPlatformNativeConsoleLogger* consoleOut = NULL;
+    bool useConsoleLogger = defaultUseConsoleLoggerState;
+    if ( keyValueList.HasKey( "useConsoleLogger" ) )
+    {
+        showConsole = CORE::StringToBool( keyValueList.GetValue( "useConsoleLogger" ) );
     }
     if ( showConsole )
     {
@@ -174,36 +196,23 @@ main( int argc, char* argv[] )
 
     logServiceServer.UnregisterLogger( &fileLogger );
 
+    CORE::CCoreGlobal::Instance()->GetLogManager().ClearLoggers();
+
     delete consoleOut;
     consoleOut = NULL;
 
     return appRetValue;
 }
+GUCEF_OSMAIN_END
 
-/*---------------------------------------------------------------------------*/
+/*-------------------------------------------------------------------------//
+//                                                                         //
+//      Info & Changes                                                     //
+//                                                                         //
+//-------------------------------------------------------------------------//
 
-#ifdef GUCEF_MSWIN_BUILD
+- 11-02-2008 :
+        - Initial implementation
+          
+---------------------------------------------------------------------------*/
 
-int __stdcall
-WinMain( HINSTANCE hinstance     ,
-         HINSTANCE hprevinstance ,
-         LPSTR lpcmdline         ,
-         int ncmdshow            )
-{GUCEF_TRACE;
-
-    int argc = 0;
-    char** argv = &lpcmdline;
-    if ( lpcmdline != NULL )
-    {
-        if ( *lpcmdline != '\0' )
-        {
-            argc = 1;
-        }
-    }
-
-    return main( argc, argv );
-}
-
-#endif
-
-/*---------------------------------------------------------------------------*/

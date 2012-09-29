@@ -456,11 +456,12 @@ CTCPServerSocket::ListenOnPort( UInt16 servport )
 
 	if ( retval == SOCKET_ERROR )
 	{
-		GUCEF_ERROR_LOG( 1, "CTCPServerSocket: Socket error: " + CORE::Int32ToString( error ) );
-		TServerSocketErrorEventData eData( error );
-		NotifyObservers( ServerSocketErrorEvent, &eData );
-		return false;
+        GUCEF_ERROR_LOG( 1, "CTCPServerSocket: Socket error: " + CORE::Int32ToString( error ) );
+	    TServerSocketErrorEventData eData( error );
+	    NotifyObservers( ServerSocketErrorEvent, &eData );
+	    return false;
 	}
+
     /*
      *      Make the socket listen
      *
@@ -487,6 +488,8 @@ CTCPServerSocket::ListenOnPort( UInt16 servport )
 	 *      Accept new connections if there are any.
 	 */
     AcceptClients();
+
+    m_pulseGenerator->RequestPeriodicPulses( this, 10 );
 
     return true;
 }
@@ -536,6 +539,8 @@ CTCPServerSocket::Close( void )
         }
     }
     _datalock.Unlock();
+
+    m_pulseGenerator->RequestStopOfPeriodicUpdates( this );
 }
 
 

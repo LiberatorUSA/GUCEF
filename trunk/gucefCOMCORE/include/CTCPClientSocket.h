@@ -93,16 +93,18 @@ class GUCEF_COMCORE_EXPORT_CPP CTCPClientSocket : public CTCPConnection
 
 
     bool ConnectTo( const CORE::CString& address , 
-                    UInt16 port                  ); 
+                    UInt16 port                  ,
+                    bool blocking = false        ); 
 
-    bool ConnectTo( const CHostAddress& address );
+    bool ConnectTo( const CHostAddress& address ,
+                    bool blocking = false       );
 
     /**
      *      Attempts to reconnect to the server provided with
      *      Connect_To(). If ConnectTo() has not yet been called then this
      *      member function has no effect.
      */
-    bool Reconnect( void );
+    bool Reconnect( bool blocking = false );
     
     void Close( void );  /* close the socket connection */
     

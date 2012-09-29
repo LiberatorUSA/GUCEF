@@ -37,6 +37,8 @@ LOCAL_C_INCLUDES := \
   $(MY_MODULE_PATH)/../../gucefCORE/include/android \
   $(MY_MODULE_PATH)/../../gucefMT/include
 
+LOCAL_CFLAGS := -DGUCEF_LOGSERVICELIB_BUILD_MODULE
+
 
 LOCAL_SHARED_LIBRARIES := \
   gucefCOM \

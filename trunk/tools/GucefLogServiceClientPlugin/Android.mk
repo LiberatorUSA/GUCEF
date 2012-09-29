@@ -34,6 +34,8 @@ LOCAL_C_INCLUDES := \
   $(MY_MODULE_PATH)/../../gucefMT/include \
   $(MY_MODULE_PATH)/../GucefLogServiceLib/include
 
+LOCAL_CFLAGS := -DGUCEF_LOGSERVICECLIENTPLUGIN_BUILD_MODULE
+
 
 LOCAL_SHARED_LIBRARIES := \
   GucefLogServiceLib \

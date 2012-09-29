@@ -25,6 +25,7 @@ add_subdirectory(ReferenceUpdater)
 add_subdirectory(GucefLogServiceLib)
 add_subdirectory(GucefLogServiceClientPlugin)
 add_subdirectory(GucefLogServiceApp)
+add_subdirectory(GucefLogService_TestApp)
 add_subdirectory(ProjectGenerator)
 add_subdirectory(FileDiff)
 
