@@ -143,7 +143,7 @@ void
 CObserver::SubscribeTo( CNotifier* notifier   ,
                         const CEvent& eventid )
 {
-    SubscribeTo( notifier, eventid, 0 );
+    SubscribeToImp( notifier, eventid, 0 );
 }
 
 /*-------------------------------------------------------------------------*/
@@ -153,15 +153,15 @@ CObserver::SubscribeTo( CNotifier* notifier                 ,
                         const CEvent& eventid               ,
                         CIEventHandlerFunctorBase& callback )
 {
-    SubscribeTo( notifier, eventid, &callback );
+    SubscribeToImp( notifier, eventid, &callback );
 }
 
 /*-------------------------------------------------------------------------*/
 
 void
-CObserver::SubscribeTo( CNotifier* notifier                              ,
-                        const CEvent& eventid                            ,
-                        CIEventHandlerFunctorBase* callback /* = NULL */ )
+CObserver::SubscribeToImp( CNotifier* notifier                 ,
+                           const CEvent& eventid               ,
+                           CIEventHandlerFunctorBase* callback )
 {GUCEF_TRACE;
 
     notifier->Subscribe( this     ,

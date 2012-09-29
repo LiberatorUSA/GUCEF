@@ -154,9 +154,9 @@ class GUCEF_CORE_PUBLIC_CPP CObserver : public CIObserver
     void UnlinkFrom( CNotifier* notifier             ,
                      const bool forAllEvents = false );
 
-    void SubscribeTo( CNotifier* notifier                        ,
-                      const CEvent& eventid                      ,
-                      CIEventHandlerFunctorBase* callback = NULL );
+    void SubscribeToImp( CNotifier* notifier                 ,
+                         const CEvent& eventid               ,
+                         CIEventHandlerFunctorBase* callback );
 
     private:
     struct SNotifierRef
