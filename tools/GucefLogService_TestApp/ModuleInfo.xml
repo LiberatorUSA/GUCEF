@@ -1,0 +1,21 @@
+<ModuleInfoEntry>
+    <Module Name="GucefLogService_TestApp" Type="Executable" Platform="All">
+        <Dependencies>
+            <Dependency Name="gucefMT" />
+            <Dependency Name="gucefCORE" />
+            <Dependency Name="gucefCOMCORE" />
+            <Dependency Name="gucefCOM" />
+            <Dependency Name="GucefLogServiceLib" />
+        </Dependencies>
+        <Linker>
+            <Dependency Name="gucefMT" />
+            <Dependency Name="gucefCORE" />
+            <Dependency Name="gucefCOMCORE" />
+            <Dependency Name="gucefCOM" />
+            <Dependency Name="GucefLogServiceLib" />
+        </Linker>
+        <Preprocessor>
+            <Define String="GUCEFLOGSERVICE_BUILD_MODULE" />
+        </Preprocessor>
+    </Module>
+</ModuleInfoEntry>
