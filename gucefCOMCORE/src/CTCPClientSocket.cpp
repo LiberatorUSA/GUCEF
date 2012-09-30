@@ -141,9 +141,10 @@ CTCPClientSocket::CTCPClientSocket( CORE::CPulseGenerator& pulseGenerator ,
     assert( _data != NULL );
     memset( &_data->timeout, 0, sizeof( struct timeval ) );
 
-    SubscribeTo( m_pulseGenerator                                    ,
-                 CORE::CPulseGenerator::PulseEvent                   ,
-                 &TEventCallback( this, &CTCPClientSocket::OnPulse ) );
+    TEventCallback callback( this, &CTCPClientSocket::OnPulse );
+    SubscribeTo( m_pulseGenerator                  ,
+                 CORE::CPulseGenerator::PulseEvent ,
+                 callback                          );
 }
 
 /*-------------------------------------------------------------------------*/
@@ -168,9 +169,10 @@ CTCPClientSocket::CTCPClientSocket( bool blocking )
     assert( _data != NULL );
     memset( &_data->timeout, 0, sizeof( struct timeval ) );
 
-    SubscribeTo( m_pulseGenerator                                    ,
-                 CORE::CPulseGenerator::PulseEvent                   ,
-                 &TEventCallback( this, &CTCPClientSocket::OnPulse ) );
+    TEventCallback callback( this, &CTCPClientSocket::OnPulse );
+    SubscribeTo( m_pulseGenerator                  ,
+                 CORE::CPulseGenerator::PulseEvent ,
+                 callback                          );
 }
 
 /*-------------------------------------------------------------------------*/
@@ -371,7 +373,7 @@ CTCPClientSocket::ConnectTo( const CORE::CString& remoteaddr ,
             GUCEF_DEBUG_LOG( CORE::LOGLEVEL_NORMAL, "CTCPClientSocket(" + CORE::PointerToString( this ) + "): Connecting to " + remoteaddr + ":" + CORE::UInt16ToString( port ) );
 
             m_readbuffer.Clear();
-            
+
             m_isConnecting = true;
             m_hostAddress.SetHostname( remoteaddr );
             m_hostAddress.SetPortInHostByteOrder( port );
@@ -379,7 +381,7 @@ CTCPClientSocket::ConnectTo( const CORE::CString& remoteaddr ,
             UnlockData();
 
             NotifyObservers( ConnectingEvent );
-            
+
             // Check if the caller wants this specific call to act as a blocking call but has the socket set as non-blocking
             if ( !_blocking && blocking )
             {
@@ -711,7 +713,7 @@ CTCPClientSocket::Close( void )
         m_readbuffer.Clear( false );
 
         UnlockData();
-        
+
         m_pulseGenerator->RequestStopOfPeriodicUpdates( this );
 
         if ( !NotifyObservers( DisconnectedEvent ) ) return;

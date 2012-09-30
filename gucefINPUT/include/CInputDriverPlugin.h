@@ -65,7 +65,7 @@ namespace INPUT {
  *      Class that connects the input driver interface to a plugin mechanism so
  *      that C-style plugins can be used as an input driver.
  */
-class GUCEF_INPUT_PUBLIC_CPP CInputDriverPlugin : public CInputDriver   , 
+class GUCEF_INPUT_PUBLIC_CPP CInputDriverPlugin : public CInputDriver   ,
                                                   public CORE::CIPlugin
 {
     public:
@@ -99,8 +99,8 @@ class GUCEF_INPUT_PUBLIC_CPP CInputDriverPlugin : public CInputDriver   ,
 
     private:
 
-    static char*** CreateArgMatrix( const CORE::CValueList& params );
-    static void DestroyArgMatrix( char*** argmatrix );
+    static void CreateArgMatrix( const CORE::CValueList& params, char**& argv, int& argc );
+    static void DestroyArgMatrix( char** argv, int argc );
 
     static void GUCEF_PLUGIN_CALLSPEC_PREFIX
     OnMouseButtonDown( void* userData           ,

@@ -14,7 +14,7 @@
  *
  *  You should have received a copy of the GNU Lesser General Public
  *  License along with this library; if not, write to the Free Software
- *  Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA 
+ *  Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA
  */
 
 /*-------------------------------------------------------------------------//
@@ -43,7 +43,7 @@
 //                                                                         //
 //-------------------------------------------------------------------------*/
 
-namespace GUCEF { 
+namespace GUCEF {
 namespace CORE {
 
 /*-------------------------------------------------------------------------//
@@ -59,7 +59,7 @@ CObservingNotifier::CObservingNotifier( void )
 }
 
 /*-------------------------------------------------------------------------*/
-    
+
 CObservingNotifier::CObservingNotifier( const CObservingNotifier& src )
     : m_observer( src.m_observer )
 {GUCEF_TRACE;
@@ -68,15 +68,15 @@ CObservingNotifier::CObservingNotifier( const CObservingNotifier& src )
 }
 
 /*-------------------------------------------------------------------------*/
-    
+
 CObservingNotifier::~CObservingNotifier()
 {GUCEF_TRACE;
 
 }
 
 /*-------------------------------------------------------------------------*/
-    
-CObservingNotifier& 
+
+CObservingNotifier&
 CObservingNotifier::operator=( const CObservingNotifier& src )
 {GUCEF_TRACE;
 
@@ -87,8 +87,8 @@ CObservingNotifier::operator=( const CObservingNotifier& src )
 }
 
 /*-------------------------------------------------------------------------*/
-    
-void 
+
+void
 CObservingNotifier::UnsubscribeAllFromObserver( void )
 {GUCEF_TRACE;
 
@@ -96,10 +96,10 @@ CObservingNotifier::UnsubscribeAllFromObserver( void )
     m_observer.UnsubscribeAllFromObserver();
     UnlockData();
 }
-    
+
 /*-------------------------------------------------------------------------*/
 
-UInt32 
+UInt32
 CObservingNotifier::GetObserverSubscriptionCount( void )
 {GUCEF_TRACE;
 
@@ -111,7 +111,7 @@ CObservingNotifier::GetObserverSubscriptionCount( void )
 
 /*-------------------------------------------------------------------------*/
 
-UInt32 
+UInt32
 CObservingNotifier::GetObserverNotifierCount( void )
 {GUCEF_TRACE;
 
@@ -123,7 +123,7 @@ CObservingNotifier::GetObserverNotifierCount( void )
 
 /*-------------------------------------------------------------------------*/
 
-void 
+void
 CObservingNotifier::SubscribeTo( CNotifier* notifier )
 {GUCEF_TRACE;
 
@@ -136,13 +136,34 @@ CObservingNotifier::SubscribeTo( CNotifier* notifier )
 }
 
 /*-------------------------------------------------------------------------*/
-    
-void 
-CObservingNotifier::SubscribeTo( CNotifier* notifier                              ,
-                                 const CEvent& eventid                            ,
-                                 CIEventHandlerFunctorBase* callback /* = NULL */ )
+
+void
+CObservingNotifier::SubscribeTo( CNotifier* notifier   ,
+                                 const CEvent& eventid )
 {GUCEF_TRACE;
-    
+
+    SubscribeToImp( notifier, eventid, 0 );
+}
+
+/*-------------------------------------------------------------------------*/
+
+void
+CObservingNotifier::SubscribeTo( CNotifier* notifier                 ,
+                                 const CEvent& eventid               ,
+                                 CIEventHandlerFunctorBase& callback )
+{GUCEF_TRACE;
+
+    SubscribeToImp( notifier, eventid, &callback );
+}
+
+/*-------------------------------------------------------------------------*/
+
+void
+CObservingNotifier::SubscribeToImp( CNotifier* notifier                 ,
+                                    const CEvent& eventid               ,
+                                    CIEventHandlerFunctorBase* callback )
+{GUCEF_TRACE;
+
     if ( NULL != notifier )
     {
         LockData();
@@ -151,11 +172,11 @@ CObservingNotifier::SubscribeTo( CNotifier* notifier                            
                              callback    );
         UnlockData();
     }
-}                                   
+}
 
 /*-------------------------------------------------------------------------*/
 
-void 
+void
 CObservingNotifier::UnsubscribeFrom( CNotifier* notifier )
 {GUCEF_TRACE;
 
@@ -168,8 +189,8 @@ CObservingNotifier::UnsubscribeFrom( CNotifier* notifier )
 }
 
 /*-------------------------------------------------------------------------*/
-                 
-void 
+
+void
 CObservingNotifier::UnsubscribeFrom( CNotifier* notifier   ,
                                      const CEvent& eventid )
 {GUCEF_TRACE;
@@ -185,7 +206,7 @@ CObservingNotifier::UnsubscribeFrom( CNotifier* notifier   ,
 
 /*-------------------------------------------------------------------------*/
 
-CObserver& 
+CObserver&
 CObservingNotifier::AsObserver( void )
 {GUCEF_TRACE;
 
@@ -194,7 +215,7 @@ CObservingNotifier::AsObserver( void )
 
 /*-------------------------------------------------------------------------*/
 
-const CObserver& 
+const CObserver&
 CObservingNotifier::AsObserver( void ) const
 {GUCEF_TRACE;
 

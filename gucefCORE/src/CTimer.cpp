@@ -95,12 +95,14 @@ CTimer::CTimer( const UInt32 updateDeltaInMilliSecs /* = 10 */ )
         m_updateDeltaInMilliSecs = 1;
     }
 
-    SubscribeTo( m_pulseGenerator                          ,
-                 CPulseGenerator::PulseEvent               ,
-                 &TEventCallback( this, &CTimer::OnPulse ) );
-    SubscribeTo( m_pulseGenerator                                              ,
-                 CPulseGenerator::DestructionEvent                             ,
-                 &TEventCallback( this, &CTimer::OnPulseGeneratorDestruction ) );
+    TEventCallback callback( this, &CTimer::OnPulse );
+    SubscribeTo( m_pulseGenerator            ,
+                 CPulseGenerator::PulseEvent ,
+                 callback                    );
+    TEventCallback callback2( this, &CTimer::OnPulseGeneratorDestruction );
+    SubscribeTo( m_pulseGenerator                  ,
+                 CPulseGenerator::DestructionEvent ,
+                 callback2                         );
 
 }
 
@@ -124,12 +126,14 @@ CTimer::CTimer( CPulseGenerator& pulseGenerator                ,
         m_updateDeltaInMilliSecs = 1;
     }
 
-    SubscribeTo( m_pulseGenerator                          ,
-                 CPulseGenerator::PulseEvent               ,
-                 &TEventCallback( this, &CTimer::OnPulse ) );
-    SubscribeTo( m_pulseGenerator                                              ,
-                 CPulseGenerator::DestructionEvent                             ,
-                 &TEventCallback( this, &CTimer::OnPulseGeneratorDestruction ) );
+    TEventCallback callback( this, &CTimer::OnPulse );
+    SubscribeTo( m_pulseGenerator            ,
+                 CPulseGenerator::PulseEvent ,
+                 callback                    );
+    TEventCallback callback2( this, &CTimer::OnPulseGeneratorDestruction );
+    SubscribeTo( m_pulseGenerator                  ,
+                 CPulseGenerator::DestructionEvent ,
+                 callback2                         );
 }
 
 /*-------------------------------------------------------------------------*/
@@ -151,12 +155,14 @@ CTimer::CTimer( const CTimer& src )
         m_updateDeltaInMilliSecs = 1;
     }
 
-    SubscribeTo( m_pulseGenerator                          ,
-                 CPulseGenerator::PulseEvent               ,
-                 &TEventCallback( this, &CTimer::OnPulse ) );
-    SubscribeTo( m_pulseGenerator                                              ,
-                 CPulseGenerator::DestructionEvent                             ,
-                 &TEventCallback( this, &CTimer::OnPulseGeneratorDestruction ) );
+    TEventCallback callback( this, &CTimer::OnPulse );
+    SubscribeTo( m_pulseGenerator            ,
+                 CPulseGenerator::PulseEvent ,
+                 callback                    );
+    TEventCallback callback2( this, &CTimer::OnPulseGeneratorDestruction );
+    SubscribeTo( m_pulseGenerator                  ,
+                 CPulseGenerator::DestructionEvent ,
+                 callback2                         );
 }
 
 /*-------------------------------------------------------------------------*/

@@ -145,9 +145,10 @@ CTCPServerSocket::CTCPServerSocket( CORE::CPulseGenerator& pulseGenerator ,
         _connections[ i ] = new CTCPServerConnection( this, i );
     }
 
-    SubscribeTo( m_pulseGenerator                                    ,
-                 CORE::CPulseGenerator::PulseEvent                   ,
-                 &TEventCallback( this, &CTCPServerSocket::OnPulse ) );
+    TEventCallback callback( this, &CTCPServerSocket::OnPulse );
+    SubscribeTo( m_pulseGenerator                  ,
+                 CORE::CPulseGenerator::PulseEvent ,
+                 callback                          );
 }
 
 /*-------------------------------------------------------------------------*/
@@ -173,9 +174,10 @@ CTCPServerSocket::CTCPServerSocket( bool blocking )
         _connections[ i ] = new CTCPServerConnection( this, i );
     }
 
-    SubscribeTo( m_pulseGenerator                                    ,
-                 CORE::CPulseGenerator::PulseEvent                   ,
-                 &TEventCallback( this, &CTCPServerSocket::OnPulse ) );
+    TEventCallback callback( this, &CTCPServerSocket::OnPulse );
+    SubscribeTo( m_pulseGenerator                  ,
+                 CORE::CPulseGenerator::PulseEvent ,
+                 callback                          );
 }
 
 /*-------------------------------------------------------------------------*/
