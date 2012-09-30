@@ -102,12 +102,14 @@ CUDPSocket::CUDPSocket( CORE::CPulseGenerator& pulseGenerator ,
 
     m_buffer.SetBufferSize( 1024 );
 
-    SubscribeTo( m_pulseGenerator                              ,
-                 CORE::CPulseGenerator::PulseEvent             ,
-                 &TEventCallback( this, &CUDPSocket::OnPulse ) );
-    SubscribeTo( m_pulseGenerator                                                  ,
-                 CORE::CPulseGenerator::DestructionEvent                           ,
-                 &TEventCallback( this, &CUDPSocket::OnPulseGeneratorDestruction ) );
+    TEventCallback callback( this, &CUDPSocket::OnPulse );
+    SubscribeTo( m_pulseGenerator                  ,
+                 CORE::CPulseGenerator::PulseEvent ,
+                 callback                          );
+    TEventCallback callback2( this, &CUDPSocket::OnPulseGeneratorDestruction );
+    SubscribeTo( m_pulseGenerator                        ,
+                 CORE::CPulseGenerator::DestructionEvent ,
+                 callback2                               );
 }
 
 /*-------------------------------------------------------------------------*/
@@ -128,12 +130,14 @@ CUDPSocket::CUDPSocket( bool blocking )
 
     m_buffer.SetBufferSize( 1024 );
 
-    SubscribeTo( m_pulseGenerator                              ,
-                 CORE::CPulseGenerator::PulseEvent             ,
-                 &TEventCallback( this, &CUDPSocket::OnPulse ) );
-    SubscribeTo( m_pulseGenerator                                                  ,
-                 CORE::CPulseGenerator::DestructionEvent                           ,
-                 &TEventCallback( this, &CUDPSocket::OnPulseGeneratorDestruction ) );
+    TEventCallback callback( this, &CUDPSocket::OnPulse );
+    SubscribeTo( m_pulseGenerator                  ,
+                 CORE::CPulseGenerator::PulseEvent ,
+                 callback                          );
+    TEventCallback callback2( this, &CUDPSocket::OnPulseGeneratorDestruction );
+    SubscribeTo( m_pulseGenerator                        ,
+                 CORE::CPulseGenerator::DestructionEvent ,
+                 callback2                               );
 }
 
 /*-------------------------------------------------------------------------*/

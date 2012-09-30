@@ -88,7 +88,7 @@ typedef const CORE::TVersion* ( GUCEF_PLUGIN_CALLSPEC_PREFIX *TINPUTDRIVERPLUGFP
 
 typedef UInt32 ( GUCEF_PLUGIN_CALLSPEC_PREFIX *TINPUTDRIVERPLUGFPTR_Update )      ( void* plugdata, void* contextdata ) GUCEF_PLUGIN_CALLSPEC_SUFFIX;
 
-typedef UInt32 ( GUCEF_PLUGIN_CALLSPEC_PREFIX *TINPUTDRIVERPLUGFPTR_CreateContext )  ( void* plugdata, void** contextdata, const char*** args, const TInputCallbacks* callbacks ) GUCEF_PLUGIN_CALLSPEC_SUFFIX;
+typedef UInt32 ( GUCEF_PLUGIN_CALLSPEC_PREFIX *TINPUTDRIVERPLUGFPTR_CreateContext )  ( void* plugdata, void** contextdata, int argc, const char** argv, const TInputCallbacks* callbacks ) GUCEF_PLUGIN_CALLSPEC_SUFFIX;
 typedef UInt32 ( GUCEF_PLUGIN_CALLSPEC_PREFIX *TINPUTDRIVERPLUGFPTR_DestroyContext ) ( void* plugdata, void* contextdata ) GUCEF_PLUGIN_CALLSPEC_SUFFIX;
 
 /*-------------------------------------------------------------------------//
@@ -437,9 +437,10 @@ CInputDriverPlugin::Link( void* modulePtr                         ,
      */
     CORE::CValueList params;
     pluginMetaData->GetParams( params );
-    char*** argmatrix = CreateArgMatrix( params );
-    ( (TINPUTDRIVERPLUGFPTR_Init) m_fptable[ INPUTDRIVERPLUG_INIT ] )( &m_plugdata, params.GetCount(), const_cast< const char*** >( argmatrix ) );
-    DestroyArgMatrix( argmatrix );
+    char** argv = 0; int argc = 0;
+    CreateArgMatrix( params, argv, argc );
+    ( (TINPUTDRIVERPLUGFPTR_Init) m_fptable[ INPUTDRIVERPLUG_INIT ] )( &m_plugdata, argc, const_cast<const char**>( argv ) );
+    DestroyArgMatrix( argv, argc );
 
     // Fill in the plugin metadata based on what the actual module can tell us
     CORE::CPluginMetaData* metaData = new CORE::CPluginMetaData( *pluginMetaData );
@@ -484,41 +485,38 @@ CInputDriverPlugin::OnUpdate( const UInt64 tickcount               ,
 
 /*-------------------------------------------------------------------------*/
 
-char***
-CInputDriverPlugin::CreateArgMatrix( const CORE::CValueList& params )
+void
+CInputDriverPlugin::CreateArgMatrix( const CORE::CValueList& params, char**& argv, int& argc )
 {GUCEF_TRACE;
 
-    char*** argmatrix = new char**[ params.GetCount()+1 ];
+    argc = params.GetCount()*2;
+    argv = new char*[ argc ];
+
     CORE::CString value, key;
-    for ( UInt32 i=0; i<params.GetCount(); ++i )
+    for ( UInt32 i=0; i<params.GetCount()*2; ++i )
     {
         value = params.GetValue( i );
         key = params.GetKey( i );
 
-        argmatrix[ i ] = new char*[ 2 ];
-        argmatrix[ i ][ 0 ] = new char[ key.Length()+1 ];
-        memcpy( argmatrix[ i ][ 0 ], key.C_String(), key.Length()+1 );
-        argmatrix[ i ][ 1 ] = new char[ value.Length()+1 ];
-        memcpy( argmatrix[ i ][ 1 ], value.C_String(), value.Length()+1 );
-    }
-    argmatrix[ params.GetCount() ] = NULL;
+        argv[ i ] = new char[ key.Length()+1 ];
+        memcpy( argv[ i ], key.C_String(), key.Length()+1 );
 
-    return argmatrix;
+        argv[ i ] = new char[ value.Length()+1 ];
+        memcpy( argv[ i ], value.C_String(), value.Length()+1 );
+    }
 }
 
 /*-------------------------------------------------------------------------*/
 
 void
-CInputDriverPlugin::DestroyArgMatrix( char*** argmatrix )
+CInputDriverPlugin::DestroyArgMatrix( char** argv, int argc )
 {GUCEF_TRACE;
 
-    for ( UInt32 i=0; argmatrix[ i ]>NULL; ++i )
+    for ( int i=0; i<argc; ++i )
     {
-        delete [](argmatrix[ i ][ 0 ]);
-        delete [](argmatrix[ i ][ 1 ]);
-        delete [](argmatrix[ i ]);
+        delete [](argv[ i ]);
     }
-    delete []argmatrix;
+    delete []argv;
 }
 
 /*-------------------------------------------------------------------------*/
@@ -547,14 +545,16 @@ CInputDriverPlugin::CreateContext( const CORE::CValueList& params )
     callbacks.onDeviceDetached   = OnDeviceDetached;
     callbacks.userData = context;
 
-    char*** argmatrix = CreateArgMatrix( params );
-    if ( ( (TINPUTDRIVERPLUGFPTR_CreateContext) m_fptable[ INPUTDRIVERPLUG_CREATECONTEXT ] )( m_plugdata, context->GetContextDataPtr(), const_cast<const char***>( argmatrix ), &callbacks ) )
+    char** argv = 0;
+    int argc = 0;
+    CreateArgMatrix( params, argv, argc );
+    if ( ( (TINPUTDRIVERPLUGFPTR_CreateContext) m_fptable[ INPUTDRIVERPLUG_CREATECONTEXT ] )( m_plugdata, context->GetContextDataPtr(), argc, const_cast<const char**>( argv ), &callbacks ) )
     {
-        DestroyArgMatrix( argmatrix );
+        DestroyArgMatrix( argv, argc );
         return context;
     }
     delete context;
-    DestroyArgMatrix( argmatrix );
+    DestroyArgMatrix( argv, argc );
     return NULL;
 }
 

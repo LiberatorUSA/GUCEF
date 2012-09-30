@@ -95,9 +95,17 @@ class GUCEF_CORE_PUBLIC_CPP CObservingNotifier : public CNotifier ,
      *  notifier events if it is not yet subscribed plus
      *  subscribes to the given custom event.
      */
-    void SubscribeTo( CNotifier* notifier                        ,
-                      const CEvent& eventid                      ,
-                      CIEventHandlerFunctorBase* callback = NULL );
+    void SubscribeTo( CNotifier* notifier   ,
+                      const CEvent& eventid );
+
+    /**
+     *  Subscribes the observer component to the four standard
+     *  notifier events if it is not yet subscribed plus
+     *  subscribes to the given custom event.
+     */
+    void SubscribeTo( CNotifier* notifier                 ,
+                      const CEvent& eventid               ,
+                      CIEventHandlerFunctorBase& callback );
 
     /**
      *  Detaches the observer component from the notifier.
@@ -153,6 +161,12 @@ class GUCEF_CORE_PUBLIC_CPP CObservingNotifier : public CNotifier ,
     virtual void OnNotify( CNotifier* notifier           ,
                            const CEvent& eventid         ,
                            CICloneable* eventdata = NULL );
+
+    private:
+
+    void SubscribeToImp( CNotifier* notifier                 ,
+                         const CEvent& eventid               ,
+                         CIEventHandlerFunctorBase* callback );
 
     private:
 

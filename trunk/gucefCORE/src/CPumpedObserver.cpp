@@ -150,12 +150,14 @@ CPumpedObserver::CPumpedObserver( void )
       m_mutex()
 {GUCEF_TRACE;
 
-    SubscribeTo( m_pulsGenerator                                   ,
-                 CPulseGenerator::PulseEvent                       ,
-                 TEventCallback( this, &CPumpedObserver::OnPulse ) );
-    SubscribeTo( m_pulsGenerator                                                       ,
-                 CPulseGenerator::DestructionEvent                                     ,
-                 TEventCallback( this, &CPumpedObserver::OnPulseGeneratorDestruction ) );
+    TEventCallback callback( this, &CPumpedObserver::OnPulse );
+    SubscribeTo( m_pulsGenerator             ,
+                 CPulseGenerator::PulseEvent ,
+                 callback                    );
+    TEventCallback callback2( this, &CPumpedObserver::OnPulseGeneratorDestruction );
+    SubscribeTo( m_pulsGenerator                   ,
+                 CPulseGenerator::DestructionEvent ,
+                 callback2                         );
 }
 
 /*-------------------------------------------------------------------------*/
@@ -166,12 +168,14 @@ CPumpedObserver::CPumpedObserver( CPulseGenerator& pulsGenerator )
       m_mutex()
 {GUCEF_TRACE;
 
-    SubscribeTo( m_pulsGenerator                                   ,
-                 CPulseGenerator::PulseEvent                       ,
-                 TEventCallback( this, &CPumpedObserver::OnPulse ) );
-    SubscribeTo( m_pulsGenerator                                                       ,
-                 CPulseGenerator::DestructionEvent                                     ,
-                 TEventCallback( this, &CPumpedObserver::OnPulseGeneratorDestruction ) );
+    TEventCallback callback( this, &CPumpedObserver::OnPulse );
+    SubscribeTo( m_pulsGenerator             ,
+                 CPulseGenerator::PulseEvent ,
+                 callback                    );
+    TEventCallback callback2( this, &CPumpedObserver::OnPulseGeneratorDestruction );
+    SubscribeTo( m_pulsGenerator                   ,
+                 CPulseGenerator::DestructionEvent ,
+                 callback2                         );
 }
 
 /*-------------------------------------------------------------------------*/
@@ -189,12 +193,14 @@ CPumpedObserver::CPumpedObserver( const CPumpedObserver& src )
     // The source should not be in a state of destruction causing this
     assert( NULL != m_pulsGenerator );
 
-    SubscribeTo( m_pulsGenerator                                   ,
-                 CPulseGenerator::PulseEvent                       ,
-                 TEventCallback( this, &CPumpedObserver::OnPulse ) );
-    SubscribeTo( m_pulsGenerator                                                       ,
-                 CPulseGenerator::DestructionEvent                                     ,
-                 TEventCallback( this, &CPumpedObserver::OnPulseGeneratorDestruction ) );
+    TEventCallback callback( this, &CPumpedObserver::OnPulse );
+    SubscribeTo( m_pulsGenerator             ,
+                 CPulseGenerator::PulseEvent ,
+                 callback                    );
+    TEventCallback callback2( this, &CPumpedObserver::OnPulseGeneratorDestruction );
+    SubscribeTo( m_pulsGenerator                   ,
+                 CPulseGenerator::DestructionEvent ,
+                 callback2                         );
 }
 
 /*-------------------------------------------------------------------------*/

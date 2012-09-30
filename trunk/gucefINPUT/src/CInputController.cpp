@@ -108,9 +108,10 @@ CInputController::CInputController( void )
 
     RegisterEvents();
 
-    SubscribeTo( m_pulseGenerator                                    ,
-                 CORE::CPulseGenerator::PulseEvent                   ,
-                 &TEventCallback( this, &CInputController::OnPulse ) );
+    TEventCallback callback( this, &CInputController::OnPulse );
+    SubscribeTo( m_pulseGenerator                  ,
+                 CORE::CPulseGenerator::PulseEvent ,
+                 callback                          );
 }
 
 /*-------------------------------------------------------------------------*/

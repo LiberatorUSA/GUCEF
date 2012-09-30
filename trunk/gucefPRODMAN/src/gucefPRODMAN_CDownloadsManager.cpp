@@ -14,7 +14,7 @@
  *
  *  You should have received a copy of the GNU Lesser General Public
  *  License along with this library; if not, write to the Free Software
- *  Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA 
+ *  Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA
  */
 
 /*-------------------------------------------------------------------------//
@@ -61,7 +61,7 @@ const GUCEF::CORE::CEvent CDownloadsManager::DownloadStopRequestedEvent = "GUCEF
 const GUCEF::CORE::CEvent CDownloadsManager::DownloadFinishedEvent = "GUCEF::PRODMAN::CDownloadsManager::DownloadStartedEvent";
 const GUCEF::CORE::CEvent CDownloadsManager::DownloadPausedEvent = "GUCEF::PRODMAN::CDownloadsManager::DownloadStartedEvent";
 const GUCEF::CORE::CEvent CDownloadsManager::DownloadResumedEvent = "GUCEF::PRODMAN::CDownloadsManager::DownloadStartedEvent";
-const GUCEF::CORE::CEvent CDownloadsManager::PatchTaskEventReceivedEvent = "GUCEF::PRODMAN::CDownloadsManager::PatchTaskEventReceivedEvent";        
+const GUCEF::CORE::CEvent CDownloadsManager::PatchTaskEventReceivedEvent = "GUCEF::PRODMAN::CDownloadsManager::PatchTaskEventReceivedEvent";
 
 /*-------------------------------------------------------------------------//
 //                                                                         //
@@ -83,7 +83,7 @@ CDownloadsManager::RegisterEvents( void )
 }
 
 /*-------------------------------------------------------------------------*/
- 
+
 CDownloadsManager::CDownloadsManager( void )
     : m_productMap()                                                        ,
       m_patchEngineConfigTemplatePath( "Products/PatchConfigTemplate.xml" ) ,
@@ -94,17 +94,19 @@ CDownloadsManager::CDownloadsManager( void )
 {GUCEF_TRACE;
 
     RegisterEvents();
-    
-    SubscribeTo( &m_adListUrlRetiever                                                ,
-                 GUCEF::CORE::CURLDataRetriever::URLAllDataRecievedEvent             ,
-                 &TEventCallback( this, &CDownloadsManager::OnADListRetrievalEvent ) );
-    SubscribeTo( &m_adListUrlRetiever                                                ,
-                 GUCEF::CORE::CURLDataRetriever::URLDataRetrievalErrorEvent          ,
-                 &TEventCallback( this, &CDownloadsManager::OnADListRetrievalEvent ) );                 
+
+    TEventCallback callback( this, &CDownloadsManager::OnADListRetrievalEvent );
+    SubscribeTo( &m_adListUrlRetiever                                    ,
+                 GUCEF::CORE::CURLDataRetriever::URLAllDataRecievedEvent ,
+                 callback                                                );
+    TEventCallback callback2( this, &CDownloadsManager::OnADListRetrievalEvent );
+    SubscribeTo( &m_adListUrlRetiever                                       ,
+                 GUCEF::CORE::CURLDataRetriever::URLDataRetrievalErrorEvent ,
+                 callback2                                                  );
 }
 
 /*-------------------------------------------------------------------------*/
-    
+
 CDownloadsManager::~CDownloadsManager()
 {GUCEF_TRACE;
 
@@ -121,10 +123,10 @@ CDownloadsManager::ObtainAvailableDownloadsList( const CString& listUrl )
     {
         GUCEF::CORE::CDynamicBuffer* listBuffer = new GUCEF::CORE::CDynamicBuffer( true );
         GUCEF::CORE::CDynamicBufferAccess* bufferAccess = new GUCEF::CORE::CDynamicBufferAccess( listBuffer, true );
-        
+
         m_adListUrlRetiever.SetIOAccess( bufferAccess );
     }
-    
+
     GUCEF::CORE::CURL& url = m_adListUrlRetiever.GetURL();
     if ( url.SetURL( listUrl ) )
     {
@@ -144,13 +146,13 @@ CDownloadsManager::RefreshAvailableDownloadsList( void )
     {
         GUCEF::CORE::CDynamicBuffer* listBuffer = new GUCEF::CORE::CDynamicBuffer( true );
         GUCEF::CORE::CDynamicBufferAccess* bufferAccess = new GUCEF::CORE::CDynamicBufferAccess( listBuffer, true );
-        
+
         m_adListUrlRetiever.SetIOAccess( bufferAccess );
     }
-    
+
     m_adListUrlRetiever.GetURL().Refresh();
 }
-    
+
 /*-------------------------------------------------------------------------*/
 
 bool
@@ -166,13 +168,13 @@ CDownloadsManager::StartDownload( const CProductInfo& productInfo )
     //{
     //    GUCEF::CORE::CDataNode* node = configTemplate.Find( "CPatchEngine" );
     //    node->SetAttribute( "PatchListURL", productInfo.GetPatchListURL() );
-    //    
+    //
     //    m_productMap[ productString ] = productInfo;
-    //    
+    //
     //    return m_patchManager.StartTask( productString  ,
     //                                     configTemplate );
     //}
-    return false;                          
+    return false;
 }
 
 /*-------------------------------------------------------------------------*/
@@ -185,7 +187,7 @@ CDownloadsManager::PauseDownload( const CProductInfo& productInfo )
 }
 
 /*-------------------------------------------------------------------------*/
-    
+
 bool
 CDownloadsManager::ResumeDownload( const CProductInfo& productInfo )
 {GUCEF_TRACE;
@@ -194,7 +196,7 @@ CDownloadsManager::ResumeDownload( const CProductInfo& productInfo )
 }
 
 /*-------------------------------------------------------------------------*/
-    
+
 bool
 CDownloadsManager::RequestDownloadToStop( const CProductInfo& productInfo )
 {GUCEF_TRACE;
@@ -203,7 +205,7 @@ CDownloadsManager::RequestDownloadToStop( const CProductInfo& productInfo )
 }
 
 /*-------------------------------------------------------------------------*/
-        
+
 void
 CDownloadsManager::GetDownloadList( TProductMap& list ) const
 {GUCEF_TRACE;
@@ -223,7 +225,7 @@ CDownloadsManager::OnADListRetrievalEvent( GUCEF::CORE::CNotifier* notifier    ,
     {
         GUCEF::CORE::CIOAccess* access = m_adListUrlRetiever.GetIOAccess();
         access->Setpos( 0 );
-    //    
+    //
     //    GUCEF::CORE::CDataNode dataTree;
     //    if ( GUCE::CORE::LoadDataTree( *access   ,
     //                                   "xml"     ,
@@ -233,7 +235,7 @@ CDownloadsManager::OnADListRetrievalEvent( GUCEF::CORE::CNotifier* notifier    ,
     //        GUCEF::CORE::CDataNode::const_iterator i = dataTree.ConstBegin();
     //        while ( i != dataTree.ConstEnd() )
     //        {
-    //            
+    //
     //            ++i;
     //        }
     //    }
@@ -241,8 +243,8 @@ CDownloadsManager::OnADListRetrievalEvent( GUCEF::CORE::CNotifier* notifier    ,
     else
     if ( GUCEF::CORE::CURLDataRetriever::URLDataRetrievalErrorEvent == eventid )
     {
-        
-    }    
+
+    }
 }
 
 /*-------------------------------------------------------------------------*/
@@ -258,7 +260,7 @@ CDownloadsManager::SaveConfig( GUCEF::CORE::CDataNode& node )
 }
 
 /*-------------------------------------------------------------------------*/
-                                
+
 bool
 CDownloadsManager::LoadConfig( const GUCEF::CORE::CDataNode& node )
 {GUCEF_TRACE;
@@ -289,7 +291,7 @@ CDownloadsManager::OnNotify( GUCEF::CORE::CNotifier* notifier    ,
                              GUCEF::CORE::CICloneable* eventdata )
 
 {GUCEF_TRACE;
-                             
+
     GUCEF::PATCHER::CPatchSetDirEngineEvents::DirProcessingStartedEvent.GetID();// == eventid;
     GUCEF::PATCHER::CPatchEngine::PatchListDataReceivedEvent == eventid;
     if ( GUCEF::PATCHER::CPatchManager::PatchTaskStartedEvent == eventid )
@@ -303,7 +305,7 @@ CDownloadsManager::OnNotify( GUCEF::CORE::CNotifier* notifier    ,
         }
     }
 }
-    
+
 /*-------------------------------------------------------------------------//
 //                                                                         //
 //      NAMESPACE                                                          //
