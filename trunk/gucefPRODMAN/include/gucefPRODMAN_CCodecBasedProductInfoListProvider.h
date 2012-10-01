@@ -17,8 +17,8 @@
  *  Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA 
  */
 
-#ifndef GUCEF_PRODMAN_CPRODUCTINFOLIST_H
-#define GUCEF_PRODMAN_CPRODUCTINFOLIST_H
+#ifndef GUCEF_PRODMAN_CCODECBASEDPRODUCTINFOLISTPROVIDER_H
+#define GUCEF_PRODMAN_CCODECBASEDPRODUCTINFOLISTPROVIDER_H
 
 /*-------------------------------------------------------------------------//
 //                                                                         //
@@ -26,22 +26,12 @@
 //                                                                         //
 //-------------------------------------------------------------------------*/
 
-#include <map>
+#ifndef GUCEF_CORE_CURLDATARETRIEVER_H
+#include "CURLDataRetriever.h"
+#define GUCEF_CORE_CURLDATARETRIEVER_H
+#endif /* GUCEF_CORE_CURLDATARETRIEVER_H ? */
 
-#ifndef GUCEF_CORE_EXCEPTIONMACROS_H
-#include "ExceptionMacros.h"
-#define GUCEF_CORE_EXCEPTIONMACROS_H
-#endif /* GUCEF_CORE_EXCEPTIONMACROS_H ? */
-
-#ifndef GUCEF_CORE_CTSHAREDPTR_H
-#include "CTSharedPtr.h"
-#define GUCEF_CORE_CTSHAREDPTR_H
-#endif /* GUCEF_CORE_CTSHAREDPTR_H ? */
-
-#ifndef GUCEF_PRODMAN_CPRODUCTINFO_H
-#include "gucefPRODMAN_CProductInfo.h"
-#define GUCEF_PRODMAN_CPRODUCTINFO_H
-#endif /* GUCEF_PRODMAN_CPRODUCTINFO_H ? */
+#include "gucefPRODMAN_CProductInfoListProvider.h"
 
 /*-------------------------------------------------------------------------//
 //                                                                         //
@@ -57,59 +47,44 @@ namespace PRODMAN {
 //      CLASSES                                                            //
 //                                                                         //
 //-------------------------------------------------------------------------*/
-
-class GUCEF_PRODMAN_PUBLIC_CPP CProductInfoList : public CORE::CIConfigurable
+                  
+class GUCEF_PRODMAN_PUBLIC_CPP CCodecBasedProductInfoListProvider : public CProductInfoListProvider
 {
     public:
-    
-    typedef std::map< CString, CProductInfo > TProductMap;
-    typedef CProductInfo::TDeploymentStatus   TDeploymentStatus;
-    typedef CProductInfo::TProductType        TProductType;  
 
-    CProductInfoList( void );
-    
-    CProductInfoList( const CProductInfoList& src );
-    
-    virtual ~CProductInfoList();
+    CCodecBasedProductInfoListProvider( void );
 
-    CProductInfoList& operator=( const CProductInfoList& src );
+    virtual ~CCodecBasedProductInfoListProvider();
 
-    virtual bool SaveConfig( CORE::CDataNode& node );
-                                
-    virtual bool LoadConfig( const CORE::CDataNode& node );
-    
-    TProductMap& GetList( const TDeploymentStatus deploymentStatus );
-    
-    const TProductMap& GetList( const TDeploymentStatus deploymentStatus ) const;
+    virtual bool RetrieveList( const CORE::CString& listLocation );
 
-    void RetrieveListSubSet( const TProductType productType           ,
-                             CProductInfoList& productList            ) const;
-    
-    void RetrieveListSubSet( const TDeploymentStatus deploymentStatus ,
-                             const TProductType productType           ,
-                             CProductInfoList& productList            ) const;
-                             
-    bool MergeProduct( const CProductInfo& productInfo );
-    
-    bool MergeProductList( const CProductInfoList& productInfoList );
-    
-    CProductInfo* RetrieveProductInfo( const CString& combinedProductString );
-    
-    const CProductInfo* RetrieveProductInfo( const CString& combinedProductString ) const;
-    
-    GUCEF_DEFINE_MSGEXCEPTION( GUCEF_PRODMAN_PUBLIC_CPP, EInvalidDeploymentType );
-    
+    virtual const CORE::CString& GetClassTypeName( void ) const;
+
+    protected:
+
+    /**
+     *  Event callback member function.
+     *
+     *  @param notifier the notifier that sent the notification
+     *  @param eventid the unique event id for an event
+     *  @param eventdata optional notifier defined userdata
+     */
+    virtual void OnNotify( CORE::CNotifier* notifier           ,
+                           const CORE::CEvent& eventid         ,
+                           CORE::CICloneable* eventdata = NULL );
+
     private:
-    
-    TProductMap m_availableProducts;
-    TProductMap m_installedProducts;
-    TProductMap m_updatingProducts;
-    TProductMap m_downloadingProducts;
+
+    CCodecBasedProductInfoListProvider( const CCodecBasedProductInfoListProvider& src );
+    CCodecBasedProductInfoListProvider& operator=( const CCodecBasedProductInfoListProvider& other );
+
+    void OnAllDataRetrieved( void );
+
+    private:
+
+    CORE::CString m_codecToUse;
+    CORE::CURLDataRetriever m_dataRetriever;
 };
-
-/*-------------------------------------------------------------------------*/
-
-typedef CORE::CTSharedPtr< CProductInfoList >   CProductInfoListPtr;
 
 /*-------------------------------------------------------------------------//
 //                                                                         //
@@ -118,11 +93,11 @@ typedef CORE::CTSharedPtr< CProductInfoList >   CProductInfoListPtr;
 //-------------------------------------------------------------------------*/
 
 }; /* namespace PRODMAN */
-}; /* namespace GUCEF */
+}; /* namespace GUCEF*/
 
 /*-------------------------------------------------------------------------*/
 
-#endif /* GUCEF_PRODMAN_CPRODUCTINFOLIST_H ? */
+#endif /* GUCEF_PRODMAN_CIPRODUCTINFOLISTPROVIDER_H ? */
 
 /*-------------------------------------------------------------------------//
 //                                                                         //
@@ -134,3 +109,4 @@ typedef CORE::CTSharedPtr< CProductInfoList >   CProductInfoListPtr;
         - Initial implementation
           
 ---------------------------------------------------------------------------*/
+

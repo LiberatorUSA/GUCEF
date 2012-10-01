@@ -17,8 +17,8 @@
  *  Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA 
  */
 
-#ifndef GUCEF_PRODMAN_CPRODUCTINFOLIST_H
-#define GUCEF_PRODMAN_CPRODUCTINFOLIST_H
+#ifndef GUCEF_PRODMAN_CPRODUCTINFOLISTPROVIDERREGISTRY_H
+#define GUCEF_PRODMAN_CPRODUCTINFOLISTPROVIDERREGISTRY_H
 
 /*-------------------------------------------------------------------------//
 //                                                                         //
@@ -26,22 +26,15 @@
 //                                                                         //
 //-------------------------------------------------------------------------*/
 
-#include <map>
+#ifndef GUCEF_CORE_CTREGISTRY_H
+#include "CTRegistry.h"
+#define GUCEF_CORE_CTREGISTRY_H
+#endif /* GUCEF_CORE_CTREGISTRY_H ? */ 
 
-#ifndef GUCEF_CORE_EXCEPTIONMACROS_H
-#include "ExceptionMacros.h"
-#define GUCEF_CORE_EXCEPTIONMACROS_H
-#endif /* GUCEF_CORE_EXCEPTIONMACROS_H ? */
-
-#ifndef GUCEF_CORE_CTSHAREDPTR_H
-#include "CTSharedPtr.h"
-#define GUCEF_CORE_CTSHAREDPTR_H
-#endif /* GUCEF_CORE_CTSHAREDPTR_H ? */
-
-#ifndef GUCEF_PRODMAN_CPRODUCTINFO_H
-#include "gucefPRODMAN_CProductInfo.h"
-#define GUCEF_PRODMAN_CPRODUCTINFO_H
-#endif /* GUCEF_PRODMAN_CPRODUCTINFO_H ? */
+#ifndef GUCEF_PRODMAN_CPRODUCTINFOLISTPROVIDER_H
+#include "gucefPRODMAN_CProductInfoListProvider.h"
+#define GUCEF_PRODMAN_CPRODUCTINFOLISTPROVIDER_H
+#endif /* GUCEF_PRODMAN_CPRODUCTINFOLISTPROVIDER_H ? */
 
 /*-------------------------------------------------------------------------//
 //                                                                         //
@@ -57,59 +50,32 @@ namespace PRODMAN {
 //      CLASSES                                                            //
 //                                                                         //
 //-------------------------------------------------------------------------*/
-
-class GUCEF_PRODMAN_PUBLIC_CPP CProductInfoList : public CORE::CIConfigurable
+                  
+class GUCEF_PRODMAN_PUBLIC_CPP CProductInfoListProviderRegistry
 {
     public:
-    
-    typedef std::map< CString, CProductInfo > TProductMap;
-    typedef CProductInfo::TDeploymentStatus   TDeploymentStatus;
-    typedef CProductInfo::TProductType        TProductType;  
 
-    CProductInfoList( void );
-    
-    CProductInfoList( const CProductInfoList& src );
-    
-    virtual ~CProductInfoList();
+    CProductInfoListProviderRegistry( void );
 
-    CProductInfoList& operator=( const CProductInfoList& src );
+    virtual ~CProductInfoListProviderRegistry();
 
-    virtual bool SaveConfig( CORE::CDataNode& node );
-                                
-    virtual bool LoadConfig( const CORE::CDataNode& node );
+    bool TryGetProvider( const CORE::CString& providerType     ,
+                         CProductInfoListProviderPtr& provider );
     
-    TProductMap& GetList( const TDeploymentStatus deploymentStatus );
-    
-    const TProductMap& GetList( const TDeploymentStatus deploymentStatus ) const;
+    void RegisterProvider( const CORE::CString& providerType    ,
+                           CProductInfoListProviderPtr provider );
 
-    void RetrieveListSubSet( const TProductType productType           ,
-                             CProductInfoList& productList            ) const;
-    
-    void RetrieveListSubSet( const TDeploymentStatus deploymentStatus ,
-                             const TProductType productType           ,
-                             CProductInfoList& productList            ) const;
-                             
-    bool MergeProduct( const CProductInfo& productInfo );
-    
-    bool MergeProductList( const CProductInfoList& productInfoList );
-    
-    CProductInfo* RetrieveProductInfo( const CString& combinedProductString );
-    
-    const CProductInfo* RetrieveProductInfo( const CString& combinedProductString ) const;
-    
-    GUCEF_DEFINE_MSGEXCEPTION( GUCEF_PRODMAN_PUBLIC_CPP, EInvalidDeploymentType );
-    
+    void UnregisterProvider( const CORE::CString& providerType );
+
     private:
-    
-    TProductMap m_availableProducts;
-    TProductMap m_installedProducts;
-    TProductMap m_updatingProducts;
-    TProductMap m_downloadingProducts;
+
+    CProductInfoListProviderRegistry( const CProductInfoListProviderRegistry& src );
+    CProductInfoListProviderRegistry& operator=( const CProductInfoListProviderRegistry& other );
+
+    private:
+
+    CORE::CTRegistry< CProductInfoListProvider > m_registry;
 };
-
-/*-------------------------------------------------------------------------*/
-
-typedef CORE::CTSharedPtr< CProductInfoList >   CProductInfoListPtr;
 
 /*-------------------------------------------------------------------------//
 //                                                                         //
@@ -118,11 +84,11 @@ typedef CORE::CTSharedPtr< CProductInfoList >   CProductInfoListPtr;
 //-------------------------------------------------------------------------*/
 
 }; /* namespace PRODMAN */
-}; /* namespace GUCEF */
+}; /* namespace GUCEF*/
 
 /*-------------------------------------------------------------------------*/
 
-#endif /* GUCEF_PRODMAN_CPRODUCTINFOLIST_H ? */
+#endif /* GUCEF_PRODMAN_CPRODUCTINFOLISTPROVIDERREGISTRY_H ? */
 
 /*-------------------------------------------------------------------------//
 //                                                                         //
@@ -134,3 +100,4 @@ typedef CORE::CTSharedPtr< CProductInfoList >   CProductInfoListPtr;
         - Initial implementation
           
 ---------------------------------------------------------------------------*/
+

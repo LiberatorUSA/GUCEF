@@ -17,8 +17,8 @@
  *  Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA 
  */
 
-#ifndef GUCEF_PRODMAN_CPRODUCTINFOLIST_H
-#define GUCEF_PRODMAN_CPRODUCTINFOLIST_H
+#ifndef GUCEF_PRODMAN_CPRODUCTINFOLISTRETRIEVEDEVENTDATA_H
+#define GUCEF_PRODMAN_CPRODUCTINFOLISTRETRIEVEDEVENTDATA_H
 
 /*-------------------------------------------------------------------------//
 //                                                                         //
@@ -26,22 +26,8 @@
 //                                                                         //
 //-------------------------------------------------------------------------*/
 
-#include <map>
-
-#ifndef GUCEF_CORE_EXCEPTIONMACROS_H
-#include "ExceptionMacros.h"
-#define GUCEF_CORE_EXCEPTIONMACROS_H
-#endif /* GUCEF_CORE_EXCEPTIONMACROS_H ? */
-
-#ifndef GUCEF_CORE_CTSHAREDPTR_H
-#include "CTSharedPtr.h"
-#define GUCEF_CORE_CTSHAREDPTR_H
-#endif /* GUCEF_CORE_CTSHAREDPTR_H ? */
-
-#ifndef GUCEF_PRODMAN_CPRODUCTINFO_H
-#include "gucefPRODMAN_CProductInfo.h"
-#define GUCEF_PRODMAN_CPRODUCTINFO_H
-#endif /* GUCEF_PRODMAN_CPRODUCTINFO_H ? */
+#include "CICloneable.h"
+#include "gucefPRODMAN_CProductInfoList.h"
 
 /*-------------------------------------------------------------------------//
 //                                                                         //
@@ -57,59 +43,33 @@ namespace PRODMAN {
 //      CLASSES                                                            //
 //                                                                         //
 //-------------------------------------------------------------------------*/
-
-class GUCEF_PRODMAN_PUBLIC_CPP CProductInfoList : public CORE::CIConfigurable
+                  
+class GUCEF_PRODMAN_PUBLIC_CPP CProductInfoListRetrievedEventData : public CORE::CICloneable
 {
     public:
-    
-    typedef std::map< CString, CProductInfo > TProductMap;
-    typedef CProductInfo::TDeploymentStatus   TDeploymentStatus;
-    typedef CProductInfo::TProductType        TProductType;  
 
-    CProductInfoList( void );
-    
-    CProductInfoList( const CProductInfoList& src );
-    
-    virtual ~CProductInfoList();
+    CProductInfoListRetrievedEventData( const CORE::CString& listSourceLocation ,
+                                        CProductInfoListPtr productInfoList     );
 
-    CProductInfoList& operator=( const CProductInfoList& src );
+    virtual ~CProductInfoListRetrievedEventData();
 
-    virtual bool SaveConfig( CORE::CDataNode& node );
-                                
-    virtual bool LoadConfig( const CORE::CDataNode& node );
-    
-    TProductMap& GetList( const TDeploymentStatus deploymentStatus );
-    
-    const TProductMap& GetList( const TDeploymentStatus deploymentStatus ) const;
+    const CORE::CString& GetListSourceLocation( void ) const;
 
-    void RetrieveListSubSet( const TProductType productType           ,
-                             CProductInfoList& productList            ) const;
-    
-    void RetrieveListSubSet( const TDeploymentStatus deploymentStatus ,
-                             const TProductType productType           ,
-                             CProductInfoList& productList            ) const;
-                             
-    bool MergeProduct( const CProductInfo& productInfo );
-    
-    bool MergeProductList( const CProductInfoList& productInfoList );
-    
-    CProductInfo* RetrieveProductInfo( const CString& combinedProductString );
-    
-    const CProductInfo* RetrieveProductInfo( const CString& combinedProductString ) const;
-    
-    GUCEF_DEFINE_MSGEXCEPTION( GUCEF_PRODMAN_PUBLIC_CPP, EInvalidDeploymentType );
-    
+    CProductInfoListPtr GetProductInfoList( void );
+
+    virtual CORE::CICloneable* Clone( void ) const;
+
     private:
-    
-    TProductMap m_availableProducts;
-    TProductMap m_installedProducts;
-    TProductMap m_updatingProducts;
-    TProductMap m_downloadingProducts;
+
+    CProductInfoListRetrievedEventData( const CProductInfoListRetrievedEventData& src );
+    CProductInfoListRetrievedEventData& operator=( const CProductInfoListRetrievedEventData& other );
+
+    private:
+
+    CORE::CString m_listSourceLocation;
+    CProductInfoListPtr m_productInfoList;
 };
 
-/*-------------------------------------------------------------------------*/
-
-typedef CORE::CTSharedPtr< CProductInfoList >   CProductInfoListPtr;
 
 /*-------------------------------------------------------------------------//
 //                                                                         //
@@ -118,11 +78,11 @@ typedef CORE::CTSharedPtr< CProductInfoList >   CProductInfoListPtr;
 //-------------------------------------------------------------------------*/
 
 }; /* namespace PRODMAN */
-}; /* namespace GUCEF */
+}; /* namespace GUCEF*/
 
 /*-------------------------------------------------------------------------*/
 
-#endif /* GUCEF_PRODMAN_CPRODUCTINFOLIST_H ? */
+#endif /* GUCEF_PRODMAN_CPRODUCTINFOLISTRETRIEVEDEVENTDATA_H ? */
 
 /*-------------------------------------------------------------------------//
 //                                                                         //
@@ -134,3 +94,4 @@ typedef CORE::CTSharedPtr< CProductInfoList >   CProductInfoListPtr;
         - Initial implementation
           
 ---------------------------------------------------------------------------*/
+

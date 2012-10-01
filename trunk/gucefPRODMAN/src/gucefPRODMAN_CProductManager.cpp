@@ -1,6 +1,6 @@
 /*
  *  gucefPRODMAN: Product management module
- *  Copyright (C) 2002 - 2008.  Dinand Vanvelzen
+ *  Copyright (C) 2002 - 2012.  Dinand Vanvelzen
  *
  *  This library is free software; you can redistribute it and/or
  *  modify it under the terms of the GNU Lesser General Public
@@ -55,8 +55,6 @@ namespace PRODMAN {
 //                                                                         //
 //-------------------------------------------------------------------------*/
 
-CProductManager* CProductManager::g_instance = NULL;
-
 const GUCEF::CORE::CEvent CProductManager::ProductInfoListRetrievalStartedEvent = "GUCEF::PRODMAN::CProductManager::ProductInfoListRetrievalStartedEvent";
 const GUCEF::CORE::CEvent CProductManager::ProductInfoListRetrievedEvent = "GUCEF::PRODMAN::CProductManager::ProductInfoListRetrievedEvent";
 const GUCEF::CORE::CEvent CProductManager::ProductInfoListRetrievalErrorEvent = "GUCEF::PRODMAN::CProductManager::ProductInfoListRetrievalErrorEvent";
@@ -80,29 +78,6 @@ CProductManager::RegisterEvents( void )
     ProductInfoListRefreshStartedEvent.Initialize();
     ProductInfoListRefreshedEvent.Initialize();
     ProductInfoListRefreshFailedEvent.Initialize();
-}
-
-/*-------------------------------------------------------------------------*/
-
-CProductManager*
-CProductManager::Instance( void )
-{GUCEF_TRACE;
-
-    if ( NULL == g_instance )
-    {
-        g_instance = new CProductManager();
-    }
-    return g_instance;
-}
-
-/*-------------------------------------------------------------------------*/
-
-void
-CProductManager::Deinstance( void )
-{GUCEF_TRACE;
-
-    delete g_instance;
-    g_instance = NULL;
 }
 
 /*-------------------------------------------------------------------------*/
@@ -218,7 +193,7 @@ CProductManager::LoadConfig( const GUCEF::CORE::CDataNode& node )
 
     GUCEF_SYSTEM_LOG( GUCEF::CORE::LOGLEVEL_NORMAL, "CProductManager: Loading the configuration" );
 
-    GUCEF::CORE::CDataNode* n = node.Search( "GU%CORE%CProductManager", '%', false );
+    GUCEF::CORE::CDataNode* n = node.Search( "GUCEF%PRODMAN%CProductManager", '%', false );
     if ( NULL != n )
     {
         GUCEF::CORE::CDataNode::TKeyValuePair* att = NULL;
