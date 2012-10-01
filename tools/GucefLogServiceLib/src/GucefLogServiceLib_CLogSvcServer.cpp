@@ -96,24 +96,30 @@ CLogSvcServer::CLogSvcServer( CORE::CPulseGenerator& pulseGenerator )
 void
 CLogSvcServer::RegisterServerSocketEventHandlers( void )
 {
-    SubscribeTo( &m_tcpServer                                                           ,
-                 COMCORE::CTCPServerSocket::ClientConnectedEvent                        ,
-                 &TEventCallback( this, &CLogSvcServer::OnServerSocketClientConnected ) );
-    SubscribeTo( &m_tcpServer                                                              ,
-                 COMCORE::CTCPServerSocket::ClientDisconnectedEvent                        ,
-                 &TEventCallback( this, &CLogSvcServer::OnServerSocketClientDisconnected ) );
-    SubscribeTo( &m_tcpServer                                                       ,
-                 COMCORE::CTCPServerSocket::ClientErrorEvent                        ,
-                 &TEventCallback( this, &CLogSvcServer::OnServerSocketClientError ) );
-    SubscribeTo( &m_tcpServer                                                              ,
-                 COMCORE::CTCPServerSocket::ServerSocketClosedEvent                        ,
-                 &TEventCallback( this, &CLogSvcServer::OnServerSocketServerSocketClosed ) );
-    SubscribeTo( &m_tcpServer                                                             ,
-                 COMCORE::CTCPServerSocket::ServerSocketErrorEvent                        ,
-                 &TEventCallback( this, &CLogSvcServer::OnServerSocketServerSocketError ) );
-    SubscribeTo( &m_tcpServer                                                                   ,
-                 COMCORE::CTCPServerSocket::ServerSocketClientErrorEvent                        ,
-                 &TEventCallback( this, &CLogSvcServer::OnServerSocketServerSocketClientError ) );
+    TEventCallback callback( this, &CLogSvcServer::OnServerSocketClientConnected );
+    SubscribeTo( &m_tcpServer                                    ,
+                 COMCORE::CTCPServerSocket::ClientConnectedEvent ,
+                 callback                                        );
+    TEventCallback callback2( this, &CLogSvcServer::OnServerSocketClientDisconnected );
+    SubscribeTo( &m_tcpServer                                       ,
+                 COMCORE::CTCPServerSocket::ClientDisconnectedEvent ,
+                 callback2                                          );
+    TEventCallback callback3( this, &CLogSvcServer::OnServerSocketClientError );
+    SubscribeTo( &m_tcpServer                                ,
+                 COMCORE::CTCPServerSocket::ClientErrorEvent ,
+                 callback3                                   );
+    TEventCallback callback4( this, &CLogSvcServer::OnServerSocketServerSocketClosed );
+    SubscribeTo( &m_tcpServer                                       ,
+                 COMCORE::CTCPServerSocket::ServerSocketClosedEvent ,
+                 callback4                                          );
+    TEventCallback callback5( this, &CLogSvcServer::OnServerSocketServerSocketError );
+    SubscribeTo( &m_tcpServer                                      ,
+                 COMCORE::CTCPServerSocket::ServerSocketErrorEvent ,
+                 callback5                                         );
+    TEventCallback callback6( this, &CLogSvcServer::OnServerSocketServerSocketClientError );
+    SubscribeTo( &m_tcpServer                                            ,
+                 COMCORE::CTCPServerSocket::ServerSocketClientErrorEvent ,
+                 callback6                                               );
 }
 
 /*-------------------------------------------------------------------------*/
@@ -122,9 +128,10 @@ void
 CLogSvcServer::RegisterClientConnectionEventHandlers( COMCORE::CTCPServerConnection* connection )
 {GUCEF_TRACE;
 
-    SubscribeTo( connection                                                              ,
-                 COMCORE::CTCPServerConnection::DataRecievedEvent                        ,
-                 &TEventCallback( this, &CLogSvcServer::OnClientConnectionDataReceived ) );
+    TEventCallback callback( this, &CLogSvcServer::OnClientConnectionDataReceived );
+    SubscribeTo( connection                                       ,
+                 COMCORE::CTCPServerConnection::DataRecievedEvent ,
+                 callback                                         );
 
     //static const CORE::CEvent ConnectedEvent;
     //static const CORE::CEvent DisconnectedEvent;

@@ -23,9 +23,14 @@ LOCAL_MODULE_FILENAME := libgucefPRODMAN
 
 LOCAL_SRC_FILES := \
   src/gucefPRODMAN.cpp \
+  src/gucefPRODMAN_CCodecBasedProductInfoListProvider.cpp \
   src/gucefPRODMAN_CDownloadsManager.cpp \
+  src/gucefPRODMAN_CProdManGlobal.cpp \
   src/gucefPRODMAN_CProductInfo.cpp \
   src/gucefPRODMAN_CProductInfoList.cpp \
+  src/gucefPRODMAN_CProductInfoListProvider.cpp \
+  src/gucefPRODMAN_CProductInfoListProviderRegistry.cpp \
+  src/gucefPRODMAN_CProductInfoListRetrievedEventData.cpp \
   src/gucefPRODMAN_CProductManager.cpp
 
 LOCAL_C_INCLUDES := \

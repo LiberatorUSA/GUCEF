@@ -78,9 +78,10 @@ CServerPortExtender::CServerPortExtender( CORE::CPulseGenerator& pulseGenerator 
     SubscribeTo( &m_reversedServerSocket );
     SubscribeTo( &m_serverSocket );
     
-    SubscribeTo( &pulseGenerator                                        ,
-                 CORE::CPulseGenerator::PulseEvent                      ,
-                 &TEventCallback( this, &CServerPortExtender::OnPulse ) );
+    TEventCallback callback( this, &CServerPortExtender::OnPulse );
+    SubscribeTo( &pulseGenerator                   ,
+                 CORE::CPulseGenerator::PulseEvent ,
+                 callback                          );
                  
     pulseGenerator.RequestPeriodicPulses( this, 10 );
 }
@@ -654,21 +655,26 @@ CServerPortExtender::OnReversedServerControlSocketNotify( CORE::CNotifier* notif
         COMCORE::CTCPServerSocket::TConnectionInfo& connectionInfo = eData->GetData();
 
         // Subscribe to connection events        
-        SubscribeTo( connectionInfo.connection                                                 ,
-                     COMCORE::CTCPServerConnection::ConnectedEvent                             ,
-                     &TEventCallback( this, &CServerPortExtender::OnRSControlClientConnected ) );
-        SubscribeTo( connectionInfo.connection                                                    ,
-                     COMCORE::CTCPServerConnection::DisconnectedEvent                             ,
-                     &TEventCallback( this, &CServerPortExtender::OnRSControlClientDisconnected ) );
-        SubscribeTo( connectionInfo.connection                                                ,
-                     COMCORE::CTCPServerConnection::DataSentEvent                             ,
-                     &TEventCallback( this, &CServerPortExtender::OnRSControlClientDataSent ) );
-        SubscribeTo( connectionInfo.connection                                                   ,
-                     COMCORE::CTCPServerConnection::SocketErrorEvent                             ,
-                     &TEventCallback( this, &CServerPortExtender::OnRSControlClientSocketError ) );
-        SubscribeTo( connectionInfo.connection                                                   ,
-                    COMCORE::CTCPServerConnection::DataRecievedEvent                             ,
-                    &TEventCallback( this, &CServerPortExtender::OnRSControlClientDataRecieved ) );
+        TEventCallback callback( this, &CServerPortExtender::OnRSControlClientConnected );
+        SubscribeTo( connectionInfo.connection                     ,
+                     COMCORE::CTCPServerConnection::ConnectedEvent ,
+                     callback                                      );
+        TEventCallback callback2( this, &CServerPortExtender::OnRSControlClientDisconnected );
+        SubscribeTo( connectionInfo.connection                        ,
+                     COMCORE::CTCPServerConnection::DisconnectedEvent ,
+                     callback2                                        );
+        TEventCallback callback3( this, &CServerPortExtender::OnRSControlClientDataSent );
+        SubscribeTo( connectionInfo.connection                    ,
+                     COMCORE::CTCPServerConnection::DataSentEvent ,
+                     callback3                                    );
+        TEventCallback callback4( this, &CServerPortExtender::OnRSControlClientSocketError );
+        SubscribeTo( connectionInfo.connection                       ,
+                     COMCORE::CTCPServerConnection::SocketErrorEvent ,
+                     callback4                                       );
+        TEventCallback callback5( this, &CServerPortExtender::OnRSControlClientDataRecieved );
+        SubscribeTo( connectionInfo.connection                        ,
+                     COMCORE::CTCPServerConnection::DataRecievedEvent ,
+                     callback5                                        );
 
        OnRSControlClientConnected( connectionInfo.connection, COMCORE::CTCPConnection::ConnectedEvent, NULL );
     }
@@ -735,21 +741,26 @@ CServerPortExtender::OnReversedServerSocketNotify( CORE::CNotifier* notifier    
         COMCORE::CTCPServerSocket::TClientConnectedEventData* eData = static_cast< COMCORE::CTCPServerSocket::TClientConnectedEventData* >( eventdata );
         COMCORE::CTCPServerSocket::TConnectionInfo& connectionInfo = eData->GetData();
         
-        SubscribeTo( connectionInfo.connection                                          ,
-                     COMCORE::CTCPServerConnection::ConnectedEvent                      ,
-                     &TEventCallback( this, &CServerPortExtender::OnRSClientConnected ) );
-        SubscribeTo( connectionInfo.connection                                             ,
-                     COMCORE::CTCPServerConnection::DisconnectedEvent                      ,
-                     &TEventCallback( this, &CServerPortExtender::OnRSClientDisconnected ) );
-        SubscribeTo( connectionInfo.connection                                         ,
-                     COMCORE::CTCPServerConnection::DataSentEvent                      ,
-                     &TEventCallback( this, &CServerPortExtender::OnRSClientDataSent ) );
-        SubscribeTo( connectionInfo.connection                                            ,
-                     COMCORE::CTCPServerConnection::SocketErrorEvent                      ,
-                     &TEventCallback( this, &CServerPortExtender::OnRSClientSocketError ) );
-        SubscribeTo( connectionInfo.connection                                             ,
-                     COMCORE::CTCPServerConnection::DataRecievedEvent                      ,
-                     &TEventCallback( this, &CServerPortExtender::OnRSClientDataRecieved ) );
+        TEventCallback callback( this, &CServerPortExtender::OnRSClientConnected );
+        SubscribeTo( connectionInfo.connection                     ,
+                     COMCORE::CTCPServerConnection::ConnectedEvent ,
+                     callback                                      );
+        TEventCallback callback2( this, &CServerPortExtender::OnRSClientDisconnected );
+        SubscribeTo( connectionInfo.connection                        ,
+                     COMCORE::CTCPServerConnection::DisconnectedEvent ,
+                     callback2                                        );
+        TEventCallback callback3( this, &CServerPortExtender::OnRSClientDataSent );
+        SubscribeTo( connectionInfo.connection                    ,
+                     COMCORE::CTCPServerConnection::DataSentEvent ,
+                     callback3                                    );
+        TEventCallback callback4( this, &CServerPortExtender::OnRSClientSocketError );
+        SubscribeTo( connectionInfo.connection                       ,
+                     COMCORE::CTCPServerConnection::SocketErrorEvent ,
+                     callback4                                       );
+        TEventCallback callback5( this, &CServerPortExtender::OnRSClientDataRecieved );
+        SubscribeTo( connectionInfo.connection                        ,
+                     COMCORE::CTCPServerConnection::DataRecievedEvent ,
+                     callback5                                        );
 
         OnRSClientConnected( connectionInfo.connection, COMCORE::CTCPServerConnection::ConnectedEvent, NULL );                   
     }
@@ -810,21 +821,26 @@ CServerPortExtender::OnServerSocketClientConnected( CORE::CNotifier* notifier   
     }    
     
     // subscribe the handlers to the connection object
-    SubscribeTo( connectionInfo.connection                                        ,
-                 COMCORE::CTCPServerConnection::ConnectedEvent                    ,
-                 &TEventCallback( this, &CServerPortExtender::OnClientConnected ) );
-    SubscribeTo( connectionInfo.connection                                           ,
-                 COMCORE::CTCPServerConnection::DisconnectedEvent                    ,
-                 &TEventCallback( this, &CServerPortExtender::OnClientDisconnected ) );
-    SubscribeTo( connectionInfo.connection                                       ,
-                 COMCORE::CTCPServerConnection::DataSentEvent                    ,
-                 &TEventCallback( this, &CServerPortExtender::OnClientDataSent ) );
-    SubscribeTo( connectionInfo.connection                                          ,
-                 COMCORE::CTCPServerConnection::SocketErrorEvent                    ,
-                 &TEventCallback( this, &CServerPortExtender::OnClientSocketError ) );
-    SubscribeTo( connectionInfo.connection                                           ,
-                 COMCORE::CTCPServerConnection::DataRecievedEvent                    ,
-                 &TEventCallback( this, &CServerPortExtender::OnClientDataRecieved ) );
+    TEventCallback callback( this, &CServerPortExtender::OnClientConnected );
+    SubscribeTo( connectionInfo.connection                     ,
+                 COMCORE::CTCPServerConnection::ConnectedEvent ,
+                 callback                                      );
+    TEventCallback callback2( this, &CServerPortExtender::OnClientDisconnected );
+    SubscribeTo( connectionInfo.connection                        ,
+                 COMCORE::CTCPServerConnection::DisconnectedEvent ,
+                 callback2                                        );
+    TEventCallback callback3( this, &CServerPortExtender::OnClientDataSent );
+    SubscribeTo( connectionInfo.connection                    ,
+                 COMCORE::CTCPServerConnection::DataSentEvent ,
+                 callback3                                    );
+    TEventCallback callback4( this, &CServerPortExtender::OnClientSocketError );
+    SubscribeTo( connectionInfo.connection                       ,
+                 COMCORE::CTCPServerConnection::SocketErrorEvent ,
+                 callback4                                       );
+    TEventCallback callback5( this, &CServerPortExtender::OnClientDataRecieved );
+    SubscribeTo( connectionInfo.connection                        ,
+                 COMCORE::CTCPServerConnection::DataRecievedEvent ,
+                 callback5                                        );
 
     OnClientConnected( connectionInfo.connection, COMCORE::CTCPServerConnection::ConnectedEvent, NULL );
 }

@@ -1,6 +1,6 @@
 /*
  *  gucefPRODMAN: Product management module
- *  Copyright (C) 2002 - 2012.  Dinand Vanvelzen
+ *  Copyright (C) 2002 - 2008.  Dinand Vanvelzen
  *
  *  This library is free software; you can redistribute it and/or
  *  modify it under the terms of the GNU Lesser General Public
@@ -14,11 +14,11 @@
  *
  *  You should have received a copy of the GNU Lesser General Public
  *  License along with this library; if not, write to the Free Software
- *  Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA
+ *  Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA 
  */
 
-#ifndef GUCEF_PRODMAN_CPRODUCTMANAGER_H
-#define GUCEF_PRODMAN_CPRODUCTMANAGER_H
+#ifndef GUCEF_PRODMAN_CPRODUCTINFOLISTPROVIDER_H
+#define GUCEF_PRODMAN_CPRODUCTINFOLISTPROVIDER_H
 
 /*-------------------------------------------------------------------------//
 //                                                                         //
@@ -26,22 +26,15 @@
 //                                                                         //
 //-------------------------------------------------------------------------*/
 
-#include <set>
-
-#ifndef GUCEF_CORE_CURLDATARETRIEVER_H
-#include "CURLDataRetriever.h"
-#define GUCEF_CORE_CURLDATARETRIEVER_H
-#endif /* GUCEF_CORE_CURLDATARETRIEVER_H ? */
-
 #ifndef GUCEF_CORE_COBSERVINGNOTIFIER_H
 #include "CObservingNotifier.h"
 #define GUCEF_CORE_COBSERVINGNOTIFIER_H
-#endif /* GUCEF_CORE_COBSERVINGNOTIFIER_H ? */
+#endif /* GUCEF_CORE_COBSERVINGNOTIFIER_H ? */ 
 
-#ifndef GUCEF_PRODMAN_CDOWNLOADSMANAGER_H
-#include "gucefPRODMAN_CDownloadsManager.h"
-#define GUCEF_PRODMAN_CDOWNLOADSMANAGER_H
-#endif /* GUCEF_PRODMAN_CDOWNLOADSMANAGER_H ? */
+#ifndef GUCEF_CORE_CTSHAREDPTR_H
+#include "CTSharedPtr.h"
+#define GUCEF_CORE_CTSHAREDPTR_H
+#endif /* GUCEF_CORE_CTSHAREDPTR_H ? */
 
 #ifndef GUCEF_PRODMAN_CPRODUCTINFOLIST_H
 #include "gucefPRODMAN_CProductInfoList.h"
@@ -62,79 +55,36 @@ namespace PRODMAN {
 //      CLASSES                                                            //
 //                                                                         //
 //-------------------------------------------------------------------------*/
-
-class GUCEF_PRODMAN_PUBLIC_CPP CProductManager : public CORE::CObservingNotifier ,
-                                                 public CORE::CIConfigurable
+                  
+class GUCEF_PRODMAN_PUBLIC_CPP CProductInfoListProvider : public CORE::CObservingNotifier
 {
     public:
-
+    
     static const CORE::CEvent ProductInfoListRetrievalStartedEvent;
     static const CORE::CEvent ProductInfoListRetrievedEvent;
     static const CORE::CEvent ProductInfoListRetrievalErrorEvent;
-    static const CORE::CEvent ProductInfoListRefreshStartedEvent;
-    static const CORE::CEvent ProductInfoListRefreshedEvent;
-    static const CORE::CEvent ProductInfoListRefreshFailedEvent;
 
     static void RegisterEvents( void );
 
     public:
 
-    typedef CProductInfo::TDeploymentStatus  TDeploymentStatus;
-    typedef CProductInfo::TProductType       TProductType;
-    typedef std::set< CProductInfo >         TProductList;
+    CProductInfoListProvider( void );
 
-    bool RetrieveProductInfo( const CString& combinedProductName ,
-                              CProductInfo& productInfo          ) const;
+    virtual ~CProductInfoListProvider();
 
-    void RetrieveProductList( CProductInfoList& productList ) const;
+    virtual bool RetrieveList( const CORE::CString& listLocation ) = 0;
 
-    void RetrieveProductList( const TDeploymentStatus deploymentState ,
-                              const TProductType productType          ,
-                              CProductInfoList& productList           ) const;
-
-    void RefreshProductInfoList( void );
-
-    bool MergeProductList( const CProductInfoList& productList );
-
-    bool MergeProduct( const CProductInfo& productInfo );
-
-    virtual bool SaveConfig( GUCEF::CORE::CDataNode& node );
-
-    virtual bool LoadConfig( const GUCEF::CORE::CDataNode& node );
-
-    CString GetProductRoot( const CProductInfo& product ) const;
-
-    void SetCommonProductRoot( const CString commonProductRoot );
-
-    CString GetCommonProductRoot( void ) const;
-
-    CDownloadsManager& GetDownloadsManager( void );
-
-    private:
-    friend class CProdManGlobal;
-
-    CProductManager( void );
-
-    virtual ~CProductManager();
-
-    private:
-    
-    CProductManager( const CProductManager& src );
-    CProductManager& operator=( const CProductManager& src );
-
-    void OnProductInfoListRetrievalEvent( CORE::CNotifier* notifier    ,
-                                          const CORE::CEvent& eventid  ,
-                                          CORE::CICloneable* eventdata );
+    virtual const CORE::CString& GetClassTypeName( void ) const;
 
     private:
 
-    CProductInfoList m_productList;
-    CString m_productListPath;
-    CString m_productListCodec;
-    CString m_productRoot;
-    CDownloadsManager m_downloadsManager;
-    CORE::CURLDataRetriever m_urlDataRetriever;
+    CProductInfoListProvider( const CProductInfoListProvider& src );
+    CProductInfoListProvider& operator=( const CProductInfoListProvider& other );
 };
+
+/*-------------------------------------------------------------------------*/
+
+typedef CORE::CTSharedPtr< CProductInfoListProvider >   CProductInfoListProviderPtr;
 
 /*-------------------------------------------------------------------------//
 //                                                                         //
@@ -143,11 +93,11 @@ class GUCEF_PRODMAN_PUBLIC_CPP CProductManager : public CORE::CObservingNotifier
 //-------------------------------------------------------------------------*/
 
 }; /* namespace PRODMAN */
-}; /* namespace GUCEF */
+}; /* namespace GUCEF*/
 
 /*-------------------------------------------------------------------------*/
 
-#endif /* GUCEF_PRODMAN_CPRODUCTMANAGER_H ? */
+#endif /* GUCEF_PRODMAN_CPRODUCTINFOLISTPROVIDER_H ? */
 
 /*-------------------------------------------------------------------------//
 //                                                                         //
@@ -157,5 +107,6 @@ class GUCEF_PRODMAN_PUBLIC_CPP CProductManager : public CORE::CObservingNotifier
 
 - 11-02-2008 :
         - Initial implementation
-
+          
 ---------------------------------------------------------------------------*/
+

@@ -76,39 +76,47 @@ CServerPortExtenderClient::CServerPortExtenderClient( CORE::CPulseGenerator& pul
     m_localServer.SetPortInHostByteOrder( 10234 );
 
     // Subscribe to control client events
-    SubscribeTo( &m_controlClient                                                              ,
-                 COMCORE::CTCPClientSocket::ConnectedEvent                                     ,
-                 &TEventCallback( this, &CServerPortExtenderClient::OnControlClientConnected ) );
-    SubscribeTo( &m_controlClient                                                                 ,
-                 COMCORE::CTCPClientSocket::DisconnectedEvent                                     ,
-                 &TEventCallback( this, &CServerPortExtenderClient::OnControlClientDisconnected ) );
-    SubscribeTo( &m_controlClient                                                             ,
-                 COMCORE::CTCPClientSocket::DataSentEvent                                     ,
-                 &TEventCallback( this, &CServerPortExtenderClient::OnControlClientDataSent ) );
-    SubscribeTo( &m_controlClient                                                                ,
-                 COMCORE::CTCPClientSocket::SocketErrorEvent                                     ,
-                 &TEventCallback( this, &CServerPortExtenderClient::OnControlClientSocketError ) );
-    SubscribeTo( &m_controlClient                                                                 ,
-                 COMCORE::CTCPClientSocket::DataRecievedEvent                                     ,
-                 &TEventCallback( this, &CServerPortExtenderClient::OnControlClientDataRecieved ) );
+    TEventCallback callback( this, &CServerPortExtenderClient::OnControlClientConnected );
+    SubscribeTo( &m_controlClient                          ,
+                 COMCORE::CTCPClientSocket::ConnectedEvent ,
+                 callback                                  );
+    TEventCallback callback2( this, &CServerPortExtenderClient::OnControlClientDisconnected );
+    SubscribeTo( &m_controlClient                             ,
+                 COMCORE::CTCPClientSocket::DisconnectedEvent ,
+                 callback2                                    );
+    TEventCallback callback3( this, &CServerPortExtenderClient::OnControlClientDataSent );
+    SubscribeTo( &m_controlClient                         ,
+                 COMCORE::CTCPClientSocket::DataSentEvent ,
+                 callback3                                );
+    TEventCallback callback4( this, &CServerPortExtenderClient::OnControlClientSocketError );
+    SubscribeTo( &m_controlClient                            ,
+                 COMCORE::CTCPClientSocket::SocketErrorEvent ,
+                 callback4                                   );
+    TEventCallback callback5( this, &CServerPortExtenderClient::OnControlClientDataRecieved );
+    SubscribeTo( &m_controlClient                             ,
+                 COMCORE::CTCPClientSocket::DataRecievedEvent ,
+                 callback5                                    );
 
     // Subscribe to Pulse
-    SubscribeTo( &pulseGenerator                                              ,
-                 CORE::CPulseGenerator::PulseEvent                            ,
-                 &TEventCallback( this, &CServerPortExtenderClient::OnPulse ) );
+    TEventCallback callback6( this, &CServerPortExtenderClient::OnPulse );
+    SubscribeTo( &pulseGenerator                   ,
+                 CORE::CPulseGenerator::PulseEvent ,
+                 callback6                         );
 
     // Request to be periodicly updated
     pulseGenerator.RequestPeriodicPulses( this, 10 );
 
     // Subscribe to timer
-    SubscribeTo( &m_reconnectTimer                                                           ,
-                 CORE::CTimer::TimerUpdateEvent                                              ,
-                 &TEventCallback( this, &CServerPortExtenderClient::OnReconnectTimerUpdate ) );
+    TEventCallback callback7( this, &CServerPortExtenderClient::OnReconnectTimerUpdate );
+    SubscribeTo( &m_reconnectTimer              ,
+                 CORE::CTimer::TimerUpdateEvent ,
+                 callback7                      );
 
     // Subscribe to application
-    SubscribeTo( &CORE::CCoreGlobal::Instance()->GetApplication()                   ,
-                 CORE::CGUCEFApplication::AppShutdownEvent                          ,
-                 &TEventCallback( this, &CServerPortExtenderClient::OnAppShutdown ) );
+    TEventCallback callback8( this, &CServerPortExtenderClient::OnAppShutdown );
+    SubscribeTo( &CORE::CCoreGlobal::Instance()->GetApplication() ,
+                 CORE::CGUCEFApplication::AppShutdownEvent        ,
+                 callback8                                        );
 }
 
 /*-------------------------------------------------------------------------*/
@@ -466,21 +474,26 @@ CServerPortExtenderClient::OnClientToRemoteSPEConnected( CORE::CNotifier* notifi
     COMCORE::CTCPClientSocket* clientSocket = new COMCORE::CTCPClientSocket( *m_pulseGenerator, false );
 
     // Subscribe to client events
-    SubscribeTo( clientSocket                                                                         ,
-                 COMCORE::CTCPClientSocket::ConnectedEvent                                            ,
-                 &TEventCallback( this, &CServerPortExtenderClient::OnClientToActualServerConnected ) );
-    SubscribeTo( clientSocket                                                                            ,
-                 COMCORE::CTCPClientSocket::DisconnectedEvent                                            ,
-                 &TEventCallback( this, &CServerPortExtenderClient::OnClientToActualServerDisconnected ) );
-    SubscribeTo( clientSocket                                                                        ,
-                 COMCORE::CTCPClientSocket::DataSentEvent                                            ,
-                 &TEventCallback( this, &CServerPortExtenderClient::OnClientToActualServerDataSent ) );
-    SubscribeTo( clientSocket                                                                           ,
-                 COMCORE::CTCPClientSocket::SocketErrorEvent                                            ,
-                 &TEventCallback( this, &CServerPortExtenderClient::OnClientToActualServerSocketError ) );
-    SubscribeTo( clientSocket                                                                            ,
-                 COMCORE::CTCPClientSocket::DataRecievedEvent                                            ,
-                 &TEventCallback( this, &CServerPortExtenderClient::OnClientToActualServerDataRecieved ) );
+    TEventCallback callback( this, &CServerPortExtenderClient::OnClientToActualServerConnected );
+    SubscribeTo( clientSocket                              ,
+                 COMCORE::CTCPClientSocket::ConnectedEvent ,
+                 callback                                  );
+    TEventCallback callback2( this, &CServerPortExtenderClient::OnClientToActualServerDisconnected );
+    SubscribeTo( clientSocket                                 ,
+                 COMCORE::CTCPClientSocket::DisconnectedEvent ,
+                 callback2                                    );
+    TEventCallback callback3( this, &CServerPortExtenderClient::OnClientToActualServerDataSent );
+    SubscribeTo( clientSocket                             ,
+                 COMCORE::CTCPClientSocket::DataSentEvent ,
+                 callback3                                );
+    TEventCallback callback4( this, &CServerPortExtenderClient::OnClientToActualServerSocketError );
+    SubscribeTo( clientSocket                                ,
+                 COMCORE::CTCPClientSocket::SocketErrorEvent ,
+                 callback4                                   );
+    TEventCallback callback5( this, &CServerPortExtenderClient::OnClientToActualServerDataRecieved );
+    SubscribeTo( clientSocket                                 ,
+                 COMCORE::CTCPClientSocket::DataRecievedEvent ,
+                 callback5                                    );
 
     // add to list of connections and create buffer
     m_localClientConnections[ clientSocket ];
@@ -601,21 +614,26 @@ CServerPortExtenderClient::OnControlMsg( TServerPortExtenderProtocolEnum msgType
                 clientSocket->ConnectTo( m_remoteSPEReversedServer );
 
                 // Subscribe to client events
-                SubscribeTo( clientSocket                                                                      ,
-                             COMCORE::CTCPClientSocket::ConnectedEvent                                         ,
-                             &TEventCallback( this, &CServerPortExtenderClient::OnClientToRemoteSPEConnected ) );
-                SubscribeTo( clientSocket                                                                         ,
-                             COMCORE::CTCPClientSocket::DisconnectedEvent                                         ,
-                             &TEventCallback( this, &CServerPortExtenderClient::OnClientToRemoteSPEDisconnected ) );
-                SubscribeTo( clientSocket                                                                     ,
-                             COMCORE::CTCPClientSocket::DataSentEvent                                         ,
-                             &TEventCallback( this, &CServerPortExtenderClient::OnClientToRemoteSPEDataSent ) );
-                SubscribeTo( clientSocket                                                                        ,
-                             COMCORE::CTCPClientSocket::SocketErrorEvent                                         ,
-                             &TEventCallback( this, &CServerPortExtenderClient::OnClientToRemoteSPESocketError ) );
-                SubscribeTo( clientSocket                                                                         ,
-                             COMCORE::CTCPClientSocket::DataRecievedEvent                                         ,
-                             &TEventCallback( this, &CServerPortExtenderClient::OnClientToRemoteSPEDataRecieved ) );
+                TEventCallback callback( this, &CServerPortExtenderClient::OnClientToRemoteSPEConnected );
+                SubscribeTo( clientSocket                              ,
+                             COMCORE::CTCPClientSocket::ConnectedEvent ,
+                             callback                                  );
+                TEventCallback callback2( this, &CServerPortExtenderClient::OnClientToRemoteSPEDisconnected );
+                SubscribeTo( clientSocket                                 ,
+                             COMCORE::CTCPClientSocket::DisconnectedEvent ,
+                             callback2                                    );
+                TEventCallback callback3( this, &CServerPortExtenderClient::OnClientToRemoteSPEDataSent );
+                SubscribeTo( clientSocket                             ,
+                             COMCORE::CTCPClientSocket::DataSentEvent ,
+                             callback3                                );
+                TEventCallback callback4( this, &CServerPortExtenderClient::OnClientToRemoteSPESocketError );
+                SubscribeTo( clientSocket                                ,
+                             COMCORE::CTCPClientSocket::SocketErrorEvent ,
+                             callback4                                   );
+                TEventCallback callback5( this, &CServerPortExtenderClient::OnClientToRemoteSPEDataRecieved );
+                SubscribeTo( clientSocket                                 ,
+                             COMCORE::CTCPClientSocket::DataRecievedEvent ,
+                             callback5                                    );
 
                 m_rsClientConnections[ clientSocket ];
 
