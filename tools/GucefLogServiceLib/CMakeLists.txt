@@ -13,6 +13,7 @@
 
 set( HEADER_FILES 
   include/GucefLogServiceLib.h
+  include/GucefLogServiceLib_CClientInitMessage.h
   include/GucefLogServiceLib_CILogSvcServerLogger.h
   include/GucefLogServiceLib_CLogSvcClient.h
   include/GucefLogServiceLib_CLogSvcServer.h
@@ -24,6 +25,7 @@ set( HEADER_FILES
 
 set( SOURCE_FILES 
   src/GucefLogServiceLib.cpp
+  src/GucefLogServiceLib_CClientInitMessage.cpp
   src/GucefLogServiceLib_CILogSvcServerLogger.cpp
   src/GucefLogServiceLib_CLogSvcClient.cpp
   src/GucefLogServiceLib_CLogSvcServer.cpp

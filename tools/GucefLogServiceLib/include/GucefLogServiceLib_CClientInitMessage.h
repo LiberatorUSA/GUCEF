@@ -1,6 +1,6 @@
 /*
- *  gucefCOMCORE: GUCEF module providing basic communication facilities
- *  Copyright (C) 2002 - 2007.  Dinand Vanvelzen
+ *  GucefLogServiceLib: Library containing the main logic for the Logging service
+ *  Copyright (C) 2002 - 2008.  Dinand Vanvelzen
  *
  *  This library is free software; you can redistribute it and/or
  *  modify it under the terms of the GNU Lesser General Public
@@ -17,8 +17,8 @@
  *  Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA 
  */
 
-#ifndef GUCEF_COMCORE_CHOSTADDRESS_H
-#define GUCEF_COMCORE_CHOSTADDRESS_H
+#ifndef GUCEF_LOGSERVICELIB_CCLIENTINITMESSAGE_H
+#define GUCEF_LOGSERVICELIB_CCLIENTINITMESSAGE_H
 
 /*-------------------------------------------------------------------------//
 //                                                                         //
@@ -26,10 +26,15 @@
 //                                                                         //
 //-------------------------------------------------------------------------*/
 
-#ifndef GUCEF_COMCORE_CIPADDRESS_H
-#include "CIPAddress.h"      /* macros and build config for the COMCORE library */
-#define GUCEF_COMCORE_CIPADDRESS_H
-#endif /* GUCEF_COMCORE_CIPADDRESS_H ? */
+#ifndef GUCEF_LOGSERVICELIB_MACROS_H
+#include "GucefLogServiceLib_macros.h"
+#define GUCEF_LOGSERVICELIB_MACROS_H
+#endif /* GUCEF_LOGSERVICELIB_MACROS_H ? */
+
+#ifndef GUCEF_CORE_CDYNAMICBUFFER_H
+#include "CDynamicBuffer.h"
+#define GUCEF_CORE_CDYNAMICBUFFER_H
+#endif /* GUCEF_CORE_CDYNAMICBUFFER_H ? */
 
 /*-------------------------------------------------------------------------//
 //                                                                         //
@@ -38,7 +43,7 @@
 //-------------------------------------------------------------------------*/
 
 namespace GUCEF {
-namespace COMCORE {
+namespace LOGSERVICELIB {
 
 /*-------------------------------------------------------------------------//
 //                                                                         //
@@ -46,55 +51,46 @@ namespace COMCORE {
 //                                                                         //
 //-------------------------------------------------------------------------*/
 
-/**
- *  Class representing an internet address with host name in string form
- *  plus the IPv4 address with a port number included.
- *  Note that this class uses network byte order as its default.
- */
-class GUCEF_COMCORE_EXPORT_CPP CHostAddress : public CIPAddress
+class GUCEF_LOGSERVICELIB_EXPORT_CPP CClientInitMessage
 {
     public:
-    
-    CHostAddress( void );
-    
-    CHostAddress( const CHostAddress& src );
 
-    /**
-     *  The port value is expected to be in host byte order
-     */
-    CHostAddress( const CORE::CString& hostname ,
-                  const UInt16 port             );
-                    
-    CHostAddress( const CIPAddress& ipAddress   ,
-                  const CORE::CString& hostname );
+    CClientInitMessage( void );
 
-    virtual ~CHostAddress();
-    
-    void SetHostname( const CORE::CString& hostName );
+    CClientInitMessage( const CClientInitMessage& src );
 
-    const CORE::CString& GetHostname( void ) const;
+    ~CClientInitMessage();
+
+    bool WriteToBuffer( CORE::CDynamicBuffer& outputBuffer ,
+                        bool writeMsgHeader = true         ) const;
+
+    bool ReadFromBuffer( const CORE::CDynamicBuffer& sourceBuffer ,
+                         bool hasMsgheader = true                 );
+
+    void SetProcessName( const CORE::CString& processName );
     
-    CHostAddress& operator=( const CHostAddress& src );
+    const CORE::CString& GetProcessName( void ) const;
+
+    void SetProcessId( const CORE::CString& processId );
     
-    bool operator==( const CHostAddress& other ) const;
+    const CORE::CString& GetProcessId( void ) const;
+
+    void SetApplicationName( const CORE::CString& appName );
     
-    bool operator!=( const CHostAddress& other ) const;
+    const CORE::CString& GetApplicationName( void ) const;
+
+    void SetClientVersion( const CORE::CString& clientVersion );
     
-    /**
-     *  This operator is only implemented to facilitate ordering
-     *  in STL containers. The return value has no real meaning
-     *  except that of a binary data compare.
-     */
-    bool operator<( const CHostAddress& other ) const;
-    
-    protected:
-    
-    virtual void OnChange( const bool addressChanged ,
-                           const bool portChanged    );
-    
+    const CORE::CString& GetClientVersion( void ) const;
+
+    CORE::UInt32 GetStreamedSize( void ) const;
+
     private:
-    
-    CORE::CString m_hostname;
+
+    CORE::CString m_processName;
+    CORE::CString m_processId;
+    CORE::CString m_appName;
+    CORE::CString m_clientVersion;
 };
 
 /*-------------------------------------------------------------------------//
@@ -103,12 +99,12 @@ class GUCEF_COMCORE_EXPORT_CPP CHostAddress : public CIPAddress
 //                                                                         //
 //-------------------------------------------------------------------------*/
 
-}; /* namespace COMCORE */
+}; /* namespace LOGSERVICELIB */
 }; /* namespace GUCEF */
 
 /*-------------------------------------------------------------------------*/
 
-#endif /* GUCEF_COMCORE_CHOSTADDRESS_H ? */
+#endif /* GUCEF_LOGSERVICELIB_CCLIENTINITMESSAGE_H ? */
 
 /*-------------------------------------------------------------------------//
 //                                                                         //
@@ -116,7 +112,7 @@ class GUCEF_COMCORE_EXPORT_CPP CHostAddress : public CIPAddress
 //                                                                         //
 //-------------------------------------------------------------------------//
 
-- 08-04-2007 :
-        - Initial version
+- 04-05-2005 :
+        - Dinand: Initial version.
 
------------------------------------------------------------------------------*/
+---------------------------------------------------------------------------*/

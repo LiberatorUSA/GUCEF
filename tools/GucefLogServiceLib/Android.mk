@@ -23,6 +23,7 @@ LOCAL_MODULE_FILENAME := libGucefLogServiceLib
 
 LOCAL_SRC_FILES := \
   src/GucefLogServiceLib.cpp \
+  src/GucefLogServiceLib_CClientInitMessage.cpp \
   src/GucefLogServiceLib_CILogSvcServerLogger.cpp \
   src/GucefLogServiceLib_CLogSvcClient.cpp \
   src/GucefLogServiceLib_CLogSvcServer.cpp \

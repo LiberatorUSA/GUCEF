@@ -43,6 +43,11 @@
 #define GUCEF_LOGSERVICELIB_PROTOCOL_H
 #endif /* GUCEF_LOGSERVICELIB_PROTOCOL_H ? */
 
+#ifndef GUCEF_LOGSERVICELIB_CCLIENTINITMESSAGE_H
+#include "GucefLogServiceLib_CClientInitMessage.h"
+#define GUCEF_LOGSERVICELIB_CCLIENTINITMESSAGE_H
+#endif /* GUCEF_LOGSERVICELIB_CCLIENTINITMESSAGE_H ? */
+
 #include "GucefLogServiceLib_CLogSvcServer.h"
 
 /*-------------------------------------------------------------------------//
@@ -61,7 +66,8 @@ namespace LOGSERVICELIB {
 //-------------------------------------------------------------------------*/
 
 //                              1024 *  1KB = 1MB * 10 = 10MB
-#define MAX_ACCEPTED_MSGLENGTH  10 * 1024 * 1024
+////10 * 1024 * 1024
+#define MAX_ACCEPTED_MSGLENGTH  2048
 
 /*-------------------------------------------------------------------------//
 //                                                                         //
@@ -200,50 +206,38 @@ CLogSvcServer::ProcessReceivedMessage( TClientInfo& clientInfo                  
         {
             case LOGSVCMSGTYPE_CLIENTINFO:
             {
-                // Parse the client info from the message
-                CORE::UInt32 offset = 1;
-
-                // Set log client version number
-                CORE::UInt32 strLength = messageBuffer.AsConstType< CORE::UInt32 >( offset );
-                offset += 4;
-                clientInfo.logClientVersion.Set( messageBuffer.AsConstTypePtr< char >( offset, strLength ), strLength );
-                offset += strLength;
-
-                // Set the application name
-                strLength = messageBuffer.AsConstType< CORE::UInt32 >( offset );
-                offset += 4;
-                clientInfo.appName.Set( messageBuffer.AsConstTypePtr< char >( offset, strLength ), strLength );
-                offset += strLength;
-
-                // Set the process name
-                strLength = messageBuffer.AsConstType< CORE::UInt32 >( offset );
-                offset += 4;
-                clientInfo.processName.Set( messageBuffer.AsConstTypePtr< char >( offset, strLength ), strLength );
-                offset += strLength;
-
-                // Set the process Id
-                strLength = messageBuffer.AsConstType< CORE::UInt32 >( offset );
-                offset += 4;
-                clientInfo.processId.Set( messageBuffer.AsConstTypePtr< char >( offset, strLength ), strLength );
-
-                // Set the client's address and port for easy unique addressability
-                clientInfo.addressAndPort = connection->GetRemoteIP().AddressAndPortAsString();
-
-                // If we got here without an exception then the we successfully received all info required to
-                // consider the connection as initialized.
-                clientInfo.initialized = true;
-
-                // tell the loggers we have a new client for which we can begin logging
-                TLoggerList::iterator i = m_loggers.begin();
-                while ( i != m_loggers.end() )
+                CClientInitMessage initMessage;
+                if ( initMessage.ReadFromBuffer( messageBuffer, false ) )
                 {
-                    (*i)->StartOfLoggingForClient( clientInfo );
-                    ++i;
-                }
+                    clientInfo.logClientVersion = initMessage.GetClientVersion();
+                    clientInfo.appName = initMessage.GetApplicationName();
+                    clientInfo.processId = initMessage.GetProcessId();
+                    clientInfo.processName = initMessage.GetProcessName();                    
+                    
+                    // Set the client's address and port for easy unique addressability
+                    clientInfo.addressAndPort = connection->GetRemoteIP().AddressAndPortAsString();
 
-                // Send notification to the client that the initialization was successfull
-                CORE::UInt8 statusCode = LOGSVCMSGTYPE_INITIALIZED;
-                connection->Send( &statusCode, 1 );
+                    // If we got here without an exception then the we successfully received all info required to
+                    // consider the connection as initialized.
+                    clientInfo.initialized = true;
+
+                    // tell the loggers we have a new client for which we can begin logging
+                    TLoggerList::iterator i = m_loggers.begin();
+                    while ( i != m_loggers.end() )
+                    {
+                        (*i)->StartOfLoggingForClient( clientInfo );
+                        ++i;
+                    }
+
+                    // Send notification to the client that the initialization was successfull
+                    CORE::UInt8 statusCode = LOGSVCMSGTYPE_INITIALIZED;
+                    connection->Send( &statusCode, 1 );
+                }
+                else
+                {
+                    // Something is wrong with this msg buffer, kill the connection
+                    connection->Close();
+                }
                 break;
             }
             case LOGSVCMSGTYPE_FLUSHLOG:
@@ -305,13 +299,11 @@ CLogSvcServer::ProcessReceivedData( TClientInfo& clientInfo                   ,
 
     // Cycle as long as we have buffered data and no errors occur
     bool noError = true;
-    while ( clientInfo.receiveBuffer.HasBufferedData() && noError )
+    while ( clientInfo.receiveBuffer.HasBufferedData() )
     {
-        noError = false;
-
-        // First read the message delimiter
+        // First read the message delimiter if its fully available
         char msgDelimterHeader[ 5 ];
-        if ( 5 == clientInfo.receiveBuffer.Read( msgDelimterHeader, 5, 1 ) )
+        if ( 5 == clientInfo.receiveBuffer.Peek( msgDelimterHeader, 5, 1 ) )
         {
             if ( msgDelimterHeader[ 0 ] == LOGSVCMSGTYPE_DELIMITER )
             {
@@ -319,36 +311,57 @@ CLogSvcServer::ProcessReceivedData( TClientInfo& clientInfo                   ,
                 CORE::UInt32 msgLength = 0;
                 memcpy( &msgLength, msgDelimterHeader+1, 4 );
 
-                // subtract what we already read
-                msgLength -= 5;
-
                 // Perform a sanity check
                 // Server side we limit the length of the message we will accept from the client
                 if ( msgLength <= MAX_ACCEPTED_MSGLENGTH )
                 {
-                    // Make a buffer for this message and read it from the receive buffer
-                    CORE::CDynamicBuffer messageBuffer( msgLength, false );
-                    if ( msgLength == clientInfo.receiveBuffer.Read( messageBuffer.GetBufferPtr(), msgLength, 1 ) )
+                    // Check to see if the buffer actually has the data available already to form the complete message
+                    if ( msgLength <= clientInfo.receiveBuffer.GetBufferedDataSizeInBytes() )
                     {
-                        // Set the size of usefull data in the buffer
-                        messageBuffer.SetDataSize( msgLength );
+                        // Since we already got he header data via a Peek() we will skip that data now
+                        if ( 5 != clientInfo.receiveBuffer.SkipRead( 5 ) )
+                        {
+                            // This should not happen
+                            GUCEF_ERROR_LOG( CORE::LOGLEVEL_BELOW_NORMAL, "CLogSvcServer: Unable to Skip buffered data" );
+                            connection->Close();
+                            return;
+                        }
 
-                        // Process this single message
-                        ProcessReceivedMessage( clientInfo    ,
-                                                connection    ,
-                                                messageBuffer );
-                        noError = true;
+                        // Make a buffer for this message and read it from the receive buffer
+                        CORE::CDynamicBuffer messageBuffer( msgLength, false );
+                        if ( msgLength == clientInfo.receiveBuffer.Read( messageBuffer.GetBufferPtr(), msgLength, 1 ) )
+                        {
+                            // Set the size of usefull data in the buffer
+                            messageBuffer.SetDataSize( msgLength );
+
+                            // Process this single message
+                            ProcessReceivedMessage( clientInfo    ,
+                                                    connection    ,
+                                                    messageBuffer );
+                        }
+                        else
+                        {
+                            // This should not happen
+                            GUCEF_ERROR_LOG( CORE::LOGLEVEL_NORMAL, "CLogSvcServer: Unable to Read() buffered data" );
+                            connection->Close();
+                            return;
+                        }
                     }
-
+                    else
+                    {
+                        // We don't have all the data yet to read this message, we will wait for more data to come in
+                        return;
+                    }
+                }
+                else
+                {
+                    // This connection is misbehaving
+                    GUCEF_ERROR_LOG( CORE::LOGLEVEL_NORMAL, "CLogSvcServer: A message was received which exceeded the max msg size, disconnecting client" );
+                    connection->Close();
+                    return;
                 }
             }
         }
-    }
-
-    if ( !noError )
-    {
-        // Something is wrong with this connection, kill it
-        connection->Close();
     }
 }
 
@@ -418,10 +431,10 @@ CLogSvcServer::OnServerSocketClientDisconnected( CORE::CNotifier* notifier    ,
 {GUCEF_TRACE;
 
     // Get access to the event data
-    COMCORE::CTCPServerSocket::TClientConnectedEventData* eData = static_cast< COMCORE::CTCPServerSocket::TClientConnectedEventData* >( eventdata );
-    COMCORE::CTCPServerSocket::TConnectionInfo& eventData = eData->GetData();
+    COMCORE::CTCPServerSocket::TClientDisconnectedEventData* eData = static_cast< COMCORE::CTCPServerSocket::TClientDisconnectedEventData* >( eventdata );
+    COMCORE::CTCPServerSocket::TConnectionInfo& connectionInfo = eData->GetData().connectionInfo;
 
-    TClientInfo& clientInfo = m_clientInfoMap[ eventData.connectionIndex ];
+    TClientInfo& clientInfo = m_clientInfoMap[ connectionInfo.connectionIndex ];
     clientInfo.connected = false;
 
     // tell the loggers we should stop logging for this client
@@ -432,7 +445,7 @@ CLogSvcServer::OnServerSocketClientDisconnected( CORE::CNotifier* notifier    ,
         ++i;
     }
 
-    GUCEF_LOG( CORE::LOGLEVEL_NORMAL, "CLogSvcServer: Client from " + eventData.connection->GetRemoteIP().AddressAndPortAsString() + " disconnected" );
+    GUCEF_LOG( CORE::LOGLEVEL_NORMAL, "CLogSvcServer: Client from " + connectionInfo.hostAddress.AddressAndPortAsString() + " disconnected" );
 }
 
 /*-------------------------------------------------------------------------*/

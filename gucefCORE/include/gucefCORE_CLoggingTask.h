@@ -32,7 +32,7 @@
 #endif /* GUCEF_MT_CTMAILBOX_H ? */
 
 #ifndef GUCEF_CORE_CTASKCONSUMER_H
-#include "gucefCORE_CTaskConsumer.h"
+#include "gucefCORE_CITaskConsumer.h"
 #define GUCEF_CORE_CTASKCONSUMER_H
 #endif /* GUCEF_CORE_CTASKCONSUMER_H ? */
 
@@ -63,12 +63,20 @@ namespace CORE {
 
 /**
  *  class which provides a threaded wrapper for logging backends
+ *  You can either provide a backend to be called or you an derive from
+ *  this class and implement the appropriote handler member functions.
  */
 class GUCEF_CORE_PUBLIC_CPP CLoggingTask : public CTaskConsumer ,
                                            public CILogger
 {
     public:
 
+    /**
+     *  Default constructor which allows you to create the task consumer
+     *  consumer and then hook up a logger backend at a later time.
+     */
+    CLoggingTask( void );
+    
     CLoggingTask( CILogger& loggerBackend );
     
     virtual ~CLoggingTask();
@@ -83,6 +91,16 @@ class GUCEF_CORE_PUBLIC_CPP CLoggingTask : public CTaskConsumer ,
                       const CString& logMessage    ,
                       const UInt32 threadId        );
 
+    /** 
+     *  Adds a log message to the mailbox of the threaded logger.
+     *  The actual logging backend invocation will be performed within
+     *  the thread dedicated to logging.
+     */
+    virtual void LogWithoutFormatting( const TLogMsgType logMsgType ,
+                                       const Int32 logLevel         ,
+                                       const CString& logMessage    ,
+                                       const UInt32 threadId        );
+
     virtual void FlushLog( void );
     
     /**
@@ -91,17 +109,44 @@ class GUCEF_CORE_PUBLIC_CPP CLoggingTask : public CTaskConsumer ,
      */
     bool StartTask( void );
 
+    /**
+     *  Utility function for convenience, Stops the task using 
+     *  the taskmanager
+     */
+    bool StopTask( void );
+
+    void SetLoggerBackend( CILogger& loggerBackend );
+
+    /**
+     *  Returns the type of task this task consumer can handle
+     */
+    virtual CString GetType( void ) const;
+
     protected:
 
-    virtual bool OnTaskStart( void* taskdata );
+    virtual bool OnTaskStart( CICloneable* taskdata );
 
-    virtual bool OnTaskCycle( void* taskdata );
+    virtual bool OnTaskCycle( CICloneable* taskdata );
 
-    virtual void OnTaskEnd( void* taskdata );
+    virtual void OnTaskEnd( CICloneable* taskdata );
     
     void LockData( void );
     
     void UnlockData( void );
+
+    virtual bool OnTaskCycleLog( const TLogMsgType logMsgType ,
+                                 const Int32 logLevel         ,
+                                 const CString& logMessage    ,
+                                 const UInt32 threadId        );
+
+    virtual bool OnTaskCycleLogWithoutFormatting( const TLogMsgType logMsgType ,
+                                                  const Int32 logLevel         ,
+                                                  const CString& logMessage    ,
+                                                  const UInt32 threadId        );
+
+    virtual bool OnTaskCycleLogFlush( void );
+
+    virtual bool IsReadyToProcessCycle( void ) const;
 
     private:
     
@@ -115,7 +160,7 @@ class GUCEF_CORE_PUBLIC_CPP CLoggingTask : public CTaskConsumer ,
     typedef enum EMailType TMailType;
     typedef MT::CTMailBox< TMailType > TLoggingMailBox;
     typedef MT::CTMailBox< TMailType >::TMailList TMailList;
-    
+
     class CLoggingMail : public CICloneable
     {
         public:
@@ -124,6 +169,7 @@ class GUCEF_CORE_PUBLIC_CPP CLoggingTask : public CTaskConsumer ,
         Int32 logLevel;
         CString logMessage;
         UInt32 threadId;
+        bool withoutFormatting;
         
         virtual CICloneable* Clone( void ) const;
         
@@ -131,7 +177,7 @@ class GUCEF_CORE_PUBLIC_CPP CLoggingTask : public CTaskConsumer ,
         
         CLoggingMail( const CLoggingMail& src );
     };
-    
+
     private:
     
     CILogger* m_loggerBackend;
@@ -161,4 +207,4 @@ class GUCEF_CORE_PUBLIC_CPP CLoggingTask : public CTaskConsumer ,
 - 16-02-2007 :
         - Dinand: Added this class
 
------------------------------------------------------------------------------*/
+---------------------------------------------------------------------------*/

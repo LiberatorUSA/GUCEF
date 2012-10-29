@@ -441,19 +441,19 @@ CDynamicBuffer::CopyFrom( UInt32 destinationOffset   ,
 
     if ( _bsize < destinationOffset+size )         
     {
-            if ( _autoenlarge )
+        if ( _autoenlarge )
+        {
+            SetBufferSize( destinationOffset+size );
+        }
+        else
+        {       
+            Int32 max = (Int32)_bsize - (Int32)destinationOffset - (Int32)size;
+            if ( max < 0 ) 
             {
-                    SetBufferSize( destinationOffset+size );
-            }
-            else
-            {       
-                    Int32 max = (Int32)_bsize - (Int32)destinationOffset - (Int32)size;
-                    if ( max < 0 ) 
-                    {
-                            return 0;
-                    }                                
-                    size = max;
-            }                
+                return 0;
+            }                                
+            size = max;
+        }                
     }                                                
     
     if ( destinationOffset + size > m_dataSize )

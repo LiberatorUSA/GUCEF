@@ -35,6 +35,11 @@
 #define GUCEF_LOGSERVICELIB_PROTOCOL_H
 #endif /* GUCEF_LOGSERVICELIB_PROTOCOL_H ? */
 
+#ifndef GUCEF_LOGSERVICELIB_CCLIENTINITMESSAGE_H
+#include "GucefLogServiceLib_CClientInitMessage.h"
+#define GUCEF_LOGSERVICELIB_CCLIENTINITMESSAGE_H
+#endif /* GUCEF_LOGSERVICELIB_CCLIENTINITMESSAGE_H ? */
+
 #include "GucefLogServiceLib_CLogSvcClient.h"
 
 /*-------------------------------------------------------------------------//
@@ -82,7 +87,7 @@ CLogSvcClient::RegisterEvents( void )
 /*-------------------------------------------------------------------------*/
 
 CLogSvcClient::CLogSvcClient( void )
-    : CILogger()                       ,
+    : CLoggingTask()                   ,
       m_tcpClient( false )             ,
       m_appName( "Unknown" )           ,
       m_connectionInitialized( false )
@@ -96,7 +101,7 @@ CLogSvcClient::CLogSvcClient( void )
 /*-------------------------------------------------------------------------*/
 
 CLogSvcClient::CLogSvcClient( CORE::CPulseGenerator& pulseGenerator )
-    : CILogger()                           ,
+    : CLoggingTask()                       ,
       m_tcpClient( pulseGenerator, false ) ,
       m_appName( "Unknown" )               ,
       m_connectionInitialized( false )
@@ -123,8 +128,14 @@ CLogSvcClient::ConnectTo( const CORE::CString& address ,
                           bool blocking                )
 {GUCEF_TRACE;
 
+    Close();
+    
     m_connectionInitialized = false;
-    return m_tcpClient.ConnectTo( address, port, blocking );
+    if ( m_tcpClient.ConnectTo( address, port, blocking ) )
+    {
+        return StartTask();
+    }
+    return false;
 }
 
 /*-------------------------------------------------------------------------*/
@@ -134,8 +145,14 @@ CLogSvcClient::ConnectTo( const COMCORE::CHostAddress& address ,
                           bool blocking                        )
 {GUCEF_TRACE;
 
+    Close();
+    
     m_connectionInitialized = false;
-    return m_tcpClient.ConnectTo( address, blocking );
+    if ( m_tcpClient.ConnectTo( address, blocking ) )
+    {
+        return StartTask();
+    }
+    return false;
 }
 
 /*-------------------------------------------------------------------------*/
@@ -144,8 +161,14 @@ bool
 CLogSvcClient::Reconnect( bool blocking )
 {GUCEF_TRACE;
 
+    Close();
+    
     m_connectionInitialized = false;
-    return m_tcpClient.Reconnect( blocking );
+    if ( m_tcpClient.Reconnect( blocking ) )
+    {
+        return StartTask();
+    }
+    return false;
 }
 
 /*-------------------------------------------------------------------------*/
@@ -154,38 +177,49 @@ void
 CLogSvcClient::Close( void )
 {GUCEF_TRACE;
 
-    m_connectionInitialized = false;
-    m_tcpClient.Close();
+    if ( m_tcpClient.IsActive() )
+    {
+        StopTask();
+        m_connectionInitialized = false;
+        m_tcpClient.Close();
+    }
 }
 
 /*-------------------------------------------------------------------------*/
 
-void
-CLogSvcClient::LogWithoutFormatting( const TLogMsgType logMsgType    ,
-                                     const CORE::Int32 logLevel      ,
-                                     const CORE::CString& logMessage ,
-                                     const CORE::UInt32 threadId     )
+bool
+CLogSvcClient::IsReadyToProcessCycle( void ) const
+{
+    return m_connectionInitialized;
+}
+
+/*-------------------------------------------------------------------------*/
+
+bool
+CLogSvcClient::OnTaskCycleLogWithoutFormatting( const TLogMsgType logMsgType    ,
+                                                const CORE::Int32 logLevel      ,
+                                                const CORE::CString& logMessage ,
+                                                const CORE::UInt32 threadId     )
 {GUCEF_TRACE;
 
-    Log( logMsgType ,
-         logLevel   ,
-         logMessage ,
-         threadId   );
+    return OnTaskCycleLog( logMsgType ,
+                           logLevel   ,
+                           logMessage ,
+                           threadId   );
 }
 
 /*-------------------------------------------------------------------------*/
 
-void
-CLogSvcClient::Log( const TLogMsgType logMsgType    ,
-                    const CORE::Int32 logLevel      ,
-                    const CORE::CString& logMessage ,
-                    const CORE::UInt32 threadId     )
+bool
+CLogSvcClient::OnTaskCycleLog( const TLogMsgType logMsgType    ,
+                               const CORE::Int32 logLevel      ,
+                               const CORE::CString& logMessage ,
+                               const CORE::UInt32 threadId     )
 {GUCEF_TRACE;
 
     CORE::Int16 logMsgTypeValue = logMsgType;
     CORE::Int8 msgHeader[ 16 ];  // 16 = 1+4+1+2+4+4
-    CORE::UInt32 logMsgLength = logMessage.Length() + 16;
-
+    CORE::UInt32 logMsgLength = logMessage.Length() + 11;
 
     msgHeader[ 0 ] = (CORE::Int8) LOGSVCMSGTYPE_DELIMITER;   // set delimiter for message: 1 byte
     memcpy( msgHeader+1, &logMsgLength, 4 );                 // set the total message length : 4 bytes
@@ -215,23 +249,25 @@ CLogSvcClient::Log( const TLogMsgType logMsgType    ,
 
         m_logQueue.push_back( queueItem );
     }
+    return true;
 }
 
 /*-------------------------------------------------------------------------*/
 
-void
-CLogSvcClient::FlushLog( void )
+bool
+CLogSvcClient::OnTaskCycleLogFlush( void )
 {GUCEF_TRACE;
 
     if ( m_connectionInitialized )
     {
         char msg[ 6 ];
         msg[ 0 ] = LOGSVCMSGTYPE_DELIMITER;   // set delimiter for message: 1 byte
-        CORE::UInt32 size = 6;
+        CORE::UInt32 size = 1;
         memcpy( msg+1, &size, 4 );            // set the total message length : 4 bytes
         msg[ 5 ] = LOGSVCMSGTYPE_FLUSHLOG;    // set message type for message: 1 byte
         m_tcpClient.Send( &msg, 6 );
     }
+    return true;
 }
 
 /*-------------------------------------------------------------------------*/
@@ -240,7 +276,9 @@ void
 CLogSvcClient::SetApplicationName( const CORE::CString& applicationName )
 {GUCEF_TRACE;
 
+    LockData();
     m_appName = applicationName;
+    UnlockData();
 }
 
 /*-------------------------------------------------------------------------*/
@@ -258,9 +296,13 @@ void
 CLogSvcClient::SendAllQueuedItems( void )
 {GUCEF_TRACE;
 
+    LockData();
+    
     // We will copy the queue because the actual sending of the log
     // messages can cause more items to be queued
     TLogMsgStack logQueueCopy = m_logQueue;
+
+    UnlockData();
 
     // Go through queue and send all items
     TLogMsgStack::reverse_iterator i = logQueueCopy.rbegin();
@@ -278,9 +320,13 @@ CLogSvcClient::SendAllQueuedItems( void )
         ++i;
     }
 
+    LockData();
+
     // Clear the queue.
     // Any log messages that where added while sending will be dropped
     m_logQueue.clear();
+
+    UnlockData();
 }
 
 /*-------------------------------------------------------------------------*/
@@ -298,93 +344,57 @@ CLogSvcClient::OnNotify( CORE::CNotifier* notifier    ,
         {
             // Now that we connected we should send the inital info
             // introducing who we are to the logging service
-            // First we gather the info we need
-            static const CORE::UInt8 delimiter = LOGSVCMSGTYPE_DELIMITER;
-            static const CORE::UInt8 msgType = LOGSVCMSGTYPE_CLIENTINFO;
-            CORE::CString processName = "Unknown";   // @TODO
-            CORE::CString processId = "Unknown";
+            CClientInitMessage initMessage;
+            initMessage.SetProcessName( "Unknown" ); // @TODO
+            initMessage.SetProcessId( "Unknown" ); // @TODO
+            initMessage.SetApplicationName( m_appName );
+            initMessage.SetClientVersion( ClientVersion );
 
-            CORE::UInt32 totalMsgSize = processName.Length()   +
-                                        processId.Length()     +
-                                        m_appName.Length()     +
-                                        ClientVersion.Length() +
-                                        22;   // 1 + 4 for msg size field + 1 for msg type + str lengths + 4 bytes for size per str
-
-            CORE::CDynamicBuffer buffer( totalMsgSize, true );
-
-            // Construct the message
-            CORE::UInt32 strLength = 0;
-            CORE::UInt32 offset = 0;
-            buffer.CopyFrom( offset, 1, &delimiter );
-            offset += 5; // <- we will offset an extra 4 bytes here to reserve room for the message length
-            buffer.CopyFrom( offset, 1, &msgType );
-            offset += 1;
-            strLength = ClientVersion.Length();
-            buffer.CopyFrom( offset, 4, &strLength );
-            offset += 4;
-            buffer.CopyFrom( offset, strLength, ClientVersion.C_String() );
-            offset += strLength;
-            strLength = m_appName.Length();
-            buffer.CopyFrom( offset, 4, &strLength );
-            offset += 4;
-            buffer.CopyFrom( offset, strLength, m_appName.C_String() );
-            offset += strLength;
-            strLength = processName.Length();
-            buffer.CopyFrom( offset, 4, &strLength );
-            offset += 4;
-            buffer.CopyFrom( offset, strLength, processName.C_String() );
-            offset += strLength;
-            strLength = processId.Length();
-            buffer.CopyFrom( offset, 4, &strLength );
-            offset += 4;
-            buffer.CopyFrom( offset, strLength, processId.C_String() );
-
-            // Now that we contructed the whole message write the message length itself into
-            // its reserved slot
-            CORE::UInt32 msgSize = buffer.GetDataSize();
-            buffer.CopyFrom( 1, 4, &msgSize );
-
-            // Now actually send the message
-            m_tcpClient.Send( buffer.GetBufferPtr(), totalMsgSize );
-        }
-    }
-    else
-    if ( COMCORE::CTCPClientSocket::DisconnectedEvent == eventid )
-    {
-        m_connectionInitialized = false;
-    }
-    else
-    if ( COMCORE::CTCPClientSocket::DataRecievedEvent == eventid )
-    {
-        // Get access to the data from the event
-        COMCORE::CTCPClientSocket::TDataRecievedEventData* eData = static_cast< COMCORE::CTCPClientSocket::TDataRecievedEventData* >( eventdata );
-        const CORE::CDynamicBuffer& buffer = eData->GetData();
-
-        // The only reponse we expect back from the server is a 1 byte status code
-        // thus we just check 1 byte for that code
-        CORE::UInt8 code = buffer.AsConstType< CORE::UInt8 >( 0 );
-        if ( LOGSVCMSGTYPE_INITIALIZED == code )
-        {
-            SendAllQueuedItems();
-            NotifyObservers( ConnectionInitializedEvent );
-            m_connectionInitialized = true;
+            CORE::CDynamicBuffer buffer( initMessage.GetStreamedSize(), true );
+            if ( initMessage.WriteToBuffer( buffer ) )
+            {
+                // Now actually send the message
+                m_tcpClient.Send( buffer.GetBufferPtr(), buffer.GetDataSize() );
+            }
         }
         else
-        if ( LOGSVCMSGTYPE_INCOMPATIBLE == code )
+        if ( COMCORE::CTCPClientSocket::DisconnectedEvent == eventid )
         {
-            NotifyObservers( IncompatibleWithServerEvent );
-            m_tcpClient.Close();
+            m_connectionInitialized = false;
         }
-    }
-    else
-    if ( COMCORE::CTCPClientSocket::ConnectingEvent == eventid )
-    {
-        NotifyObservers( ConnectingEvent );
-    }
-    else
-    if ( COMCORE::CTCPClientSocket::SocketErrorEvent == eventid )
-    {
-        NotifyObservers( SocketErrorEvent );
+        else
+        if ( COMCORE::CTCPClientSocket::DataRecievedEvent == eventid )
+        {
+            // Get access to the data from the event
+            COMCORE::CTCPClientSocket::TDataRecievedEventData* eData = static_cast< COMCORE::CTCPClientSocket::TDataRecievedEventData* >( eventdata );
+            const CORE::CDynamicBuffer& buffer = eData->GetData();
+
+            // The only reponse we expect back from the server is a 1 byte status code
+            // thus we just check 1 byte for that code
+            CORE::UInt8 code = buffer.AsConstType< CORE::UInt8 >( 0 );
+            if ( LOGSVCMSGTYPE_INITIALIZED == code )
+            {
+                SendAllQueuedItems();
+                NotifyObservers( ConnectionInitializedEvent );
+                m_connectionInitialized = true;
+            }
+            else
+            if ( LOGSVCMSGTYPE_INCOMPATIBLE == code )
+            {
+                NotifyObservers( IncompatibleWithServerEvent );
+                m_tcpClient.Close();
+            }
+        }
+        else
+        if ( COMCORE::CTCPClientSocket::ConnectingEvent == eventid )
+        {
+            NotifyObservers( ConnectingEvent );
+        }
+        else
+        if ( COMCORE::CTCPClientSocket::SocketErrorEvent == eventid )
+        {
+            NotifyObservers( SocketErrorEvent );
+        }
     }
 }
 

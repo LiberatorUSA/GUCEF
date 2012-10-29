@@ -117,7 +117,7 @@ CCyclicDynamicBuffer::ReadBlockTo( CDynamicBuffer& buffer )
     {        
         TDataChunk& dataChunck = (*i);
         
-        GUCEF_DEBUG_LOG( CORE::LOGLEVEL_NORMAL, "CCyclicDynamicBuffer: Reading an entire block of size " + UInt32ToString( dataChunck.blockSize ) + "bytes out of the buffer" );
+        GUCEF_DEBUG_LOG( CORE::LOGLEVEL_BELOW_NORMAL, "CCyclicDynamicBuffer: Reading an entire block of size " + UInt32ToString( dataChunck.blockSize ) + "bytes out of the buffer" );
         
         // Ensure that the receiving buffer is large enough to handle the block
         buffer.SetBufferSize( dataChunck.blockSize, false );
@@ -144,57 +144,273 @@ CCyclicDynamicBuffer::ReadBlockTo( CDynamicBuffer& buffer )
 /*-------------------------------------------------------------------------*/
 
 UInt32
+CCyclicDynamicBuffer::SkipRead( const UInt32 bytesToSkip )
+{GUCEF_TRACE;
+    
+    UInt32 totalBytesRead = 0, totalBytes = bytesToSkip;
+    bool blocksFreed = false;
+    
+    GUCEF_DEBUG_LOG( CORE::LOGLEVEL_BELOW_NORMAL, "CCyclicDynamicBuffer: Skipping data in the buffer" );    
+
+    // We will simply pop FIFO elements until we hit the byte count
+    for ( TBlockList::iterator i = m_usedBlocks.begin(); i != m_usedBlocks.end(); ++i )
+    {
+        TDataChunk& dataChunck = (*i);
+        if ( totalBytes >= dataChunck.blockSize )
+        {
+            totalBytesRead += dataChunck.blockSize;
+            totalBytes -= dataChunck.blockSize;
+            
+            m_freeBlocks.push_back( (*i) );
+            m_usedBlocks.erase( i );
+            blocksFreed = true;
+            
+            i = m_usedBlocks.begin();
+            if ( 0 == totalBytes || i == m_usedBlocks.end() )
+            {
+                // There is no more data to skip
+                break;
+            }
+        }
+        else
+        {
+            totalBytesRead += totalBytes;         
+            
+            // Shrink the block to remove the data thats skipped
+            dataChunck.blockSize -= totalBytes;            
+            dataChunck.startOffset += totalBytes;
+            
+            break;
+        }
+    }
+
+    // Optimize the free blocks
+    if ( blocksFreed )
+    {
+        TidyFreeBlocks();
+    }
+    return totalBytesRead;
+}
+
+/*-------------------------------------------------------------------------*/
+
+UInt32
+CCyclicDynamicBuffer::PeekBlock( CDynamicBuffer& buffer )
+{GUCEF_TRACE;
+    
+    UInt32 bytesRead = 0;
+    
+    LockData();
+    
+    // We will simply pop a FIFO element
+    TBlockList::iterator i = m_usedBlocks.begin();
+    if ( i != m_usedBlocks.end() )
+    {        
+        TDataChunk& dataChunck = (*i);
+        
+        GUCEF_DEBUG_LOG( CORE::LOGLEVEL_BELOW_NORMAL, "CCyclicDynamicBuffer: Peeking an entire block of size " + UInt32ToString( dataChunck.blockSize ) + "bytes" );
+        
+        // Ensure that the receiving buffer is large enough to handle the block
+        buffer.SetBufferSize( dataChunck.blockSize, false );
+        
+        // Copy the entire element into the given buffer and set the data size
+        bytesRead = m_buffer.CopyTo( dataChunck.startOffset ,
+                                     dataChunck.blockSize   ,
+                                     buffer.GetBufferPtr()  );
+        buffer.SetDataSize( bytesRead );
+    }
+
+    UnlockData();
+    
+    return bytesRead;
+}
+
+/*-------------------------------------------------------------------------*/
+
+UInt32
+CCyclicDynamicBuffer::Peek( void* destBuffer             ,
+                            const UInt32 bytesPerElement ,
+                            const UInt32 elementsToRead  )
+{GUCEF_TRACE;
+
+    LockData();
+
+    UInt8* destPtr = (UInt8*) destBuffer;    
+    TBlockList peekBlocks;
+    UInt32 totalBytesRead = 0; UInt32 bytesRead = 0;
+    for ( UInt32 i=0; i<elementsToRead; ++i )
+    {        
+        TBlockList elementBlocks;
+        bytesRead = ReadElement( destPtr, bytesPerElement, false, elementBlocks );
+
+        TBlockList::iterator n = elementBlocks.begin();
+        while ( n != elementBlocks.end() )
+        {
+            peekBlocks.push_back( (*n) );
+            ++n;
+        }
+
+        if ( 0 == bytesRead ) break;
+
+        totalBytesRead += bytesRead;
+        destPtr += bytesRead;
+    }
+
+    // Since we are only peeking we should leave all the data available for subsequent peek/read operations
+    // We will now roll-back the read making it a peek
+    TBlockList::reverse_iterator m = peekBlocks.rbegin();
+    while ( m != peekBlocks.rend() )
+    {
+        m_usedBlocks.push_front( (*m) );
+        ++m;
+    } 
+
+    UnlockData();
+    return totalBytesRead;
+}
+
+/*-------------------------------------------------------------------------*/
+
+UInt32
+CCyclicDynamicBuffer::CopyBlocksToBuffer( const TBlockList& blockList ,
+                                          void* destBuffer            )
+{GUCEF_TRACE;
+
+    UInt8* destPtr = (UInt8*) destBuffer;
+    UInt32 totalBytesRead = 0; UInt32 bytesRead = 0;
+    TBlockList::const_iterator i = blockList.begin();
+    while ( i != blockList.end() )
+    {
+        const TDataChunk& dataChunck = (*i);
+
+        bytesRead = m_buffer.CopyTo( dataChunck.startOffset   ,
+                                     dataChunck.blockSize     ,
+                                     destPtr + totalBytesRead );
+        totalBytesRead += bytesRead;
+        ++i;
+    }
+
+    return totalBytesRead;
+}
+
+/*-------------------------------------------------------------------------*/
+
+UInt32
+CCyclicDynamicBuffer::ReadElement( void* destBuffer          ,
+                                   const UInt32 elementSize  ,
+                                   bool freeBlocksOnSuccess  ,
+                                   TBlockList& elementBlocks )
+{GUCEF_TRACE;
+
+    UInt32 totalBytesRead = 0, totalBytes = elementSize;    
+
+    // We will simply pop FIFO elements until we hit the byte count
+    TBlockList::iterator i = m_usedBlocks.begin();
+    while ( i != m_usedBlocks.end() )
+    {
+        TDataChunk& dataChunck = (*i);
+        if ( totalBytes >= dataChunck.blockSize )
+        {
+            elementBlocks.push_back( dataChunck );
+
+            totalBytesRead += dataChunck.blockSize;
+            totalBytes -= dataChunck.blockSize;             
+          
+            m_usedBlocks.erase( i );            
+            i = m_usedBlocks.begin();
+
+            if ( 0 == totalBytes || i == m_usedBlocks.end() )
+            {
+                // There is no more data to read
+                break;
+            }
+        }
+        else
+        {
+            TDataChunk elementChunck;
+            elementChunck.startOffset = dataChunck.startOffset;
+            elementChunck.blockSize = totalBytes;
+            elementBlocks.push_back( elementChunck );
+
+            totalBytesRead += totalBytes;         
+            
+            // Shrink the block to remove the data thats read
+            dataChunck.blockSize -= totalBytes;            
+            dataChunck.startOffset += totalBytes;
+            
+            break;
+        }
+        ++i;
+    }
+
+    if ( totalBytesRead == elementSize )
+    {
+        GUCEF_DEBUG_LOG( CORE::LOGLEVEL_BELOW_NORMAL, "CCyclicDynamicBuffer: Reading data out of the buffer" );
+        
+        // We successfully located the blocks for a single element
+        // We can now copy these blocks to the output buffer
+        CopyBlocksToBuffer( elementBlocks, destBuffer );
+
+        if ( freeBlocksOnSuccess )
+        {
+            // Now that we copied the element blocks we can register them as free blocks
+            TBlockList::iterator n = elementBlocks.begin();
+            while ( n != elementBlocks.end() )
+            {
+                m_freeBlocks.push_back( (*n) );
+                ++n;
+            }
+        }
+
+        return elementSize;
+    }
+    else
+    {
+        // Because we failed to read the entire element we will restore the element blocks we used up
+        // as "used blocks" making them available for a new request. Basically rolling back the block edits.
+        TBlockList::reverse_iterator i = elementBlocks.rbegin();
+        while ( i != elementBlocks.rend() )
+        {
+            m_usedBlocks.push_front( (*i) );
+            ++i;
+        }
+        
+        return 0;        
+    }
+}
+
+/*-------------------------------------------------------------------------*/
+
+UInt32
 CCyclicDynamicBuffer::Read( void* destBuffer             ,
                             const UInt32 bytesPerElement ,
                             const UInt32 elementsToRead  )
 {GUCEF_TRACE;
 
     LockData();
-    
-    UInt32 bytesRead = 0, totalBytesRead = 0, totalBytes = bytesPerElement * elementsToRead;
-    
-    // We will simply pop FIFO elements until we hit the byte count
-    for ( TBlockList::iterator i = m_usedBlocks.begin(); i != m_usedBlocks.end(); ++i )
-    {
-        GUCEF_DEBUG_LOG( CORE::LOGLEVEL_NORMAL, "CCyclicDynamicBuffer: Reading data out of the buffer" );
-        
-        TDataChunk& dataChunck = (*i);
-        if ( totalBytes > dataChunck.blockSize )
-        {
-            bytesRead = m_buffer.CopyTo( dataChunck.startOffset ,
-                                         dataChunck.blockSize   ,
-                                         destBuffer             );
-            totalBytesRead += bytesRead;
-            totalBytes -= bytesRead;             
 
-            m_freeBlocks.push_back( dataChunck );            
-            m_usedBlocks.erase( i );
-            
-            i = m_usedBlocks.begin();
-            if ( i == m_usedBlocks.end() ) break;
-        }
-        else
+    UInt8* destPtr = (UInt8*) destBuffer;
+    UInt32 totalBytesRead = 0; UInt32 bytesRead = 0;
+    for ( UInt32 i=0; i<elementsToRead; ++i )
+    {
+        TBlockList elementBlocks;
+        bytesRead = ReadElement( destPtr, bytesPerElement, true, elementBlocks );
+        if ( 0 == bytesRead )
         {
-            bytesRead = m_buffer.CopyTo( dataChunck.startOffset ,
-                                         totalBytes             ,
-                                         destBuffer             );
-            totalBytesRead += bytesRead;
-            totalBytes -= bytesRead;
-            
-            TDataChunk freeDataChunck;
-            freeDataChunck.blockSize = bytesRead;
-            freeDataChunck.startOffset = (*i).startOffset;
-            m_freeBlocks.push_back( freeDataChunck );            
-            
-            dataChunck.blockSize -= bytesRead;            
-            dataChunck.startOffset += bytesRead;
+            // Unable to read a complete element
+            // Optimize the free blocks then abort
+            TidyFreeBlocks();
+            return totalBytesRead; 
         }
+
+        totalBytesRead += bytesRead;
+        destPtr += bytesRead;
     }
-    
+
+    // Optimize the free blocks
     TidyFreeBlocks();
-    
+
     UnlockData();
-    
     return totalBytesRead;
 }
 

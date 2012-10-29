@@ -31,10 +31,10 @@
 #define GUCEF_LOGSERVICELIB_MACROS_H
 #endif /* GUCEF_LOGSERVICELIB_MACROS_H ? */
 
-#ifndef GUCEF_CORE_CILOGGER_H
-#include "CILogger.h"
-#define GUCEF_CORE_CILOGGER_H
-#endif /* GUCEF_CORE_CILOGGER_H ? */
+#ifndef GUCEF_CORE_CLOGGINGTASK_H
+#include "gucefCORE_CLoggingTask.h"
+#define GUCEF_CORE_CLOGGINGTASK_H
+#endif /* GUCEF_CORE_CLOGGINGTASK_H ? */
 
 #ifndef GUCEF_COMCORE_CTCPCLIENTSOCKET_H
 #include "CTCPClientSocket.h"
@@ -56,8 +56,7 @@ namespace LOGSERVICELIB {
 //                                                                         //
 //-------------------------------------------------------------------------*/
 
-class GUCEF_LOGSERVICELIB_EXPORT_CPP CLogSvcClient : public CORE::CILogger           ,
-                                                     public CORE::CObservingNotifier
+class GUCEF_LOGSERVICELIB_EXPORT_CPP CLogSvcClient : public CORE::CLoggingTask                                                           
 {
     public:
 
@@ -96,22 +95,10 @@ class GUCEF_LOGSERVICELIB_EXPORT_CPP CLogSvcClient : public CORE::CILogger      
     
     void Close( void );
     
-    virtual void Log( const TLogMsgType logMsgType    ,
-                      const CORE::Int32 logLevel      ,
-                      const CORE::CString& logMessage ,
-                      const CORE::UInt32 threadId     );
-
-    virtual void LogWithoutFormatting( const TLogMsgType logMsgType    ,
-                                       const CORE::Int32 logLevel      ,
-                                       const CORE::CString& logMessage ,
-                                       const CORE::UInt32 threadId     );
-
-    virtual void FlushLog( void );
-    
     void SetApplicationName( const CORE::CString& applicationName );
     
     const CORE::CString& GetApplicationName( void ) const;
-    
+
     protected:
     
     /**
@@ -125,6 +112,20 @@ class GUCEF_LOGSERVICELIB_EXPORT_CPP CLogSvcClient : public CORE::CILogger      
     virtual void OnNotify( CORE::CNotifier* notifier           ,
                            const CORE::CEvent& eventid         ,
                            CORE::CICloneable* eventdata = NULL );
+
+    virtual bool OnTaskCycleLog( const TLogMsgType logMsgType    ,
+                                 const CORE::Int32 logLevel      ,
+                                 const CORE::CString& logMessage ,
+                                 const CORE::UInt32 threadId     );
+
+    virtual bool OnTaskCycleLogWithoutFormatting( const TLogMsgType logMsgType    ,
+                                                  const CORE::Int32 logLevel      ,
+                                                  const CORE::CString& logMessage ,
+                                                  const CORE::UInt32 threadId     );
+
+    virtual bool OnTaskCycleLogFlush( void );
+
+    virtual bool IsReadyToProcessCycle( void ) const;
     
     private:
     

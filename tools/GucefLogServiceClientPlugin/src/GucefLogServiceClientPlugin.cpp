@@ -59,7 +59,7 @@ using namespace LOGSERVICELIB;
 //                                                                         //
 //-------------------------------------------------------------------------*/
 
-CLogSvcClient svcClient;
+CLogSvcClient* g_svcClient;
 
 /*-------------------------------------------------------------------------//
 //                                                                         //
@@ -109,9 +109,14 @@ GUCEFPlugin_Load( CORE::UInt32 argc, const char** argv ) GUCEF_PLUGIN_CALLSPEC_S
         blockingConnect = CORE::StringToBool( keyValueList.GetValueAlways( "blockingConnect" ) );
     }
 
-    svcClient.ConnectTo( addressOfService, logServicePort, blockingConnect );
+    if ( NULL == g_svcClient )
+    {
+        g_svcClient = new CLogSvcClient(); 
+    }
 
-    CORE::CCoreGlobal::Instance()->GetLogManager().AddLogger( &svcClient );
+    g_svcClient->ConnectTo( addressOfService, logServicePort, blockingConnect );
+
+    CORE::CCoreGlobal::Instance()->GetLogManager().AddLogger( g_svcClient );
     
     return 1;
 }
@@ -122,7 +127,10 @@ void GUCEF_PLUGIN_CALLSPEC_PREFIX
 GUCEFPlugin_Unload( void ) GUCEF_PLUGIN_CALLSPEC_SUFFIX
 {GUCEF_TRACE;
 
-    CORE::CCoreGlobal::Instance()->GetLogManager().RemoveLogger( &svcClient );
+    CORE::CCoreGlobal::Instance()->GetLogManager().RemoveLogger( g_svcClient );
+
+    delete g_svcClient;
+    g_svcClient = NULL;
 }
 
 /*--------------------------------------------------------------------------*/
