@@ -613,11 +613,26 @@ CTaskManager::PauseTask( const UInt32 taskID ,
     TTaskConsumerMap::iterator i = m_taskConsumerMap.find( taskID );
     if ( i != m_taskConsumerMap.end() )
     {
-        (*i).second->GetTaskDelegator()->Pause( force );
-        g_mutex.Unlock();
+        CTaskConsumer* taskConsumer = (*i).second;
+        if ( NULL != taskConsumer )
+        {
+            CTaskDelegator* delegator = taskConsumer->GetTaskDelegator();
+            if ( NULL != delegator )
+            {
+                delegator->Pause( force );
+                g_mutex.Unlock();
 
-        NotifyObservers( TaskPausedEvent );
-        return true;
+                GUCEF_SYSTEM_LOG( LOGLEVEL_NORMAL, "TaskManager: Paused task with ID " + UInt32ToString( taskID ) );                
+                NotifyObservers( TaskPausedEvent );
+                return true;
+            }
+            else
+            {
+                // If a consumer does not have a delegator then it hasnt started yet
+                g_mutex.Unlock();
+                return true;
+            }
+        }
     }
     g_mutex.Unlock();
     return false;
@@ -633,11 +648,20 @@ CTaskManager::ResumeTask( const UInt32 taskID )
     TTaskConsumerMap::iterator i = m_taskConsumerMap.find( taskID );
     if ( i != m_taskConsumerMap.end() )
     {
-        (*i).second->GetTaskDelegator()->Resume();
-        g_mutex.Unlock();
+        CTaskConsumer* taskConsumer = (*i).second;
+        if ( NULL != taskConsumer )
+        {
+            CTaskDelegator* delegator = taskConsumer->GetTaskDelegator();
+            if ( NULL != delegator )
+            {
+                delegator->Resume();
+                g_mutex.Unlock();
 
-        NotifyObservers( TaskResumedEvent );
-        return true;
+                GUCEF_SYSTEM_LOG( LOGLEVEL_NORMAL, "TaskManager: Resumed task with ID " + UInt32ToString( taskID ) );
+                NotifyObservers( TaskResumedEvent );
+                return true;
+            }
+        }
     }
     g_mutex.Unlock();
     return false;
@@ -653,9 +677,25 @@ CTaskManager::RequestTaskToStop( const UInt32 taskID )
     TTaskConsumerMap::iterator i = m_taskConsumerMap.find( taskID );
     if ( i != m_taskConsumerMap.end() )
     {
-        (*i).second->GetTaskDelegator()->Deactivate( false );
-        g_mutex.Unlock();
-        return true;
+        CTaskConsumer* taskConsumer = (*i).second;
+        if ( NULL != taskConsumer )
+        {
+            CTaskDelegator* delegator = taskConsumer->GetTaskDelegator();
+            if ( NULL != delegator )
+            {
+                delegator->Deactivate( false );
+                g_mutex.Unlock();
+
+                GUCEF_SYSTEM_LOG( LOGLEVEL_NORMAL, "TaskManager: Requested task with ID " + UInt32ToString( taskID ) + " to stop" );
+                return true;
+            }
+            else
+            {
+                // If a consumer does not have a delegator then it hasnt started yet
+                g_mutex.Unlock();
+                return true;
+            }
+        }
     }
     g_mutex.Unlock();
     return false;
@@ -671,10 +711,25 @@ CTaskManager::KillTask( const UInt32 taskID )
     TTaskConsumerMap::iterator i = m_taskConsumerMap.find( taskID );
     if ( i != m_taskConsumerMap.end() )
     {
-        (*i).second->GetTaskDelegator()->Deactivate( true );
-        g_mutex.Unlock();
-        GUCEF_SYSTEM_LOG( LOGLEVEL_NORMAL, "TaskManager: Killed task with ID " + UInt32ToString( taskID ) );
-        return true;
+        CTaskConsumer* taskConsumer = (*i).second;
+        if ( NULL != taskConsumer )
+        {
+            CTaskDelegator* delegator = taskConsumer->GetTaskDelegator();
+            if ( NULL != delegator )
+            {
+                delegator->Deactivate( true );
+                g_mutex.Unlock();
+
+                GUCEF_SYSTEM_LOG( LOGLEVEL_NORMAL, "TaskManager: Killed task with ID " + UInt32ToString( taskID ) );
+                return true;
+            }
+            else
+            {
+                // If a consumer does not have a delegator then it hasnt started yet
+                g_mutex.Unlock();
+                return true;
+            }
+        }
     }
     g_mutex.Unlock();
     return false;

@@ -83,7 +83,7 @@ CTaskConsumer::RegisterEvents( void )
 /*-------------------------------------------------------------------------*/
 
 CTaskConsumer::CTaskConsumer( void )
-    : CNotifier()                   ,
+    : CObservingNotifier()          ,
       m_delegator( NULL )           ,
       m_taskId()                    ,
       m_ownedByTaskManager( false )

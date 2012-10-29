@@ -58,6 +58,11 @@ struct SMutexData
     #if ( GUCEF_PLATFORM == GUCEF_PLATFORM_MSWIN )
 
     HANDLE id;
+    
+    SMutexData( void )
+        : id( 0 )
+    {
+    }
 
     #elif ( ( GUCEF_PLATFORM == GUCEF_PLATFORM_LINUX ) || ( GUCEF_PLATFORM == GUCEF_PLATFORM_ANDROID ) )
 

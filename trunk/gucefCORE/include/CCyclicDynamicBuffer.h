@@ -26,7 +26,7 @@
 //                                                                         //
 //-------------------------------------------------------------------------*/
 
-#include <vector>
+#include <list>
 
 #ifndef GUCEF_CORE_CDYNAMICBUFFER_H
 #include "CDynamicBuffer.h"
@@ -75,9 +75,28 @@ class GUCEF_CORE_PUBLIC_CPP CCyclicDynamicBuffer
     // into the given buffer. The target buffer will be overwritten and not appended.
     UInt32 ReadBlockTo( CDynamicBuffer& buffer );
 
+    // Peeks an entire block into the given buffer. The target buffer will be overwritten and not appended.
+    // Peeking does not remove the data and subsequent Read/Peek operations will get the same data
+    UInt32 PeekBlock( CDynamicBuffer& buffer );
+
     UInt32 Read( void* destBuffer             ,
                  const UInt32 bytesPerElement ,
                  const UInt32 elementsToRead  );
+
+    /**
+     *  Same as Read() except that the data that is read remains available in the buffer after the Peek()
+     *  whereas a Read will remove the data
+     */
+    UInt32 Peek( void* destBuffer             ,
+                 const UInt32 bytesPerElement ,
+                 const UInt32 elementsToRead  );
+
+    /**
+     *  Attempts to skip the given number of bytes in the buffer as if they have been read but
+     *  you do not have to provide a buffer to copy that data into. Typically used in combination with Peek()
+     *  The number of bytes skipped is returned, it can be less if there isnt enough data available to skip.
+     */
+    UInt32 SkipRead( const UInt32 bytesToSkip );
 
     UInt32 Write( const void* srcBuffer        ,
                   const UInt32 bytesPerElement ,
@@ -121,6 +140,14 @@ class GUCEF_CORE_PUBLIC_CPP CCyclicDynamicBuffer
 
     private:
 
+    struct SDataChunk
+    {
+        UInt32 startOffset;
+        UInt32 blockSize;
+    };
+    typedef struct SDataChunk TDataChunk;
+    typedef std::list< TDataChunk > TBlockList;
+
     void TidyFreeBlocks( void );
 
     UInt32 WriteImp( const void* srcBuffer        ,
@@ -128,15 +155,15 @@ class GUCEF_CORE_PUBLIC_CPP CCyclicDynamicBuffer
                      const UInt32 elementsToWrite ,
                      bool writeToBack             );
 
-    private:
+    UInt32 CopyBlocksToBuffer( const TBlockList& blockList ,
+                               void* destBuffer            );
 
-    struct SDataChunk
-    {
-        UInt32 startOffset;
-        UInt32 blockSize;
-    };
-    typedef struct SDataChunk TDataChunk;
-    typedef std::vector< TDataChunk > TBlockList;
+    UInt32 ReadElement( void* destBuffer          ,
+                        const UInt32 elementSize  ,
+                        bool freeBlocksOnSuccess  ,
+                        TBlockList& elementBlocks );
+
+    private:
 
     TBlockList m_usedBlocks;
     TBlockList m_freeBlocks;

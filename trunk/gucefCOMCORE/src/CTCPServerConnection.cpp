@@ -129,8 +129,15 @@ CTCPServerConnection::GetRemoteIP( void ) const
     return CIPAddress( _data->clientaddr.sin_addr.s_addr, _data->clientaddr.sin_port );
     
     #endif
+}
 
+/*-------------------------------------------------------------------------*/
+
+CHostAddress
+CTCPServerConnection::GetRemoteHostAddress( void ) const
+{GUCEF_TRACE;
     
+    return CHostAddress( GetRemoteIP(), GetRemoteHostName() );
 }
 
 /*-------------------------------------------------------------------------*/

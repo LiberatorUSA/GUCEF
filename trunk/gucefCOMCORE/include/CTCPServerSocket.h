@@ -81,6 +81,13 @@ class GUCEF_COMCORE_EXPORT_CPP CTCPServerSocket : public CSocket
         UInt32 connectionIndex;
     };
     typedef struct SConnectionInfo TConnectionInfo;
+
+    struct SDisconnectInfo
+    {
+        TConnectionInfo connectionInfo;
+        bool closedByClient;
+    };
+    typedef struct SDisconnectInfo TDisconnectInfo;
     
     public:
     
@@ -96,6 +103,7 @@ class GUCEF_COMCORE_EXPORT_CPP CTCPServerSocket : public CSocket
     typedef CORE::TCloneableInt32   TServerSocketErrorEventData;
     typedef CORE::TCloneableInt32   TServerSocketClientErrorEventData;    
     typedef CORE::CTCloneableObj< TConnectionInfo > TClientConnectedEventData;
+    typedef CORE::CTCloneableObj< TDisconnectInfo > TClientDisconnectedEventData;
     typedef CORE::TLinkedCloneableBuffer TClientDataRecievedEventData;
 
     static void RegisterEvents( void );

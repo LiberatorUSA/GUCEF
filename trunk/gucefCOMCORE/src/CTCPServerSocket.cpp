@@ -560,10 +560,17 @@ CTCPServerSocket::GetPort( void ) const
 void
 CTCPServerSocket::OnClientConnectionClosed( CTCPServerConnection* connection ,
                                             const UInt32 connectionid        ,
-                                            bool closedbyclient              )
+                                            bool closedByClient              )
 {GUCEF_TRACE;
 
-    NotifyObservers( ClientDisconnectedEvent );
+    TClientDisconnectedEventData cloneableEventData;    
+    struct SDisconnectInfo& eData = cloneableEventData.GetData();
+    eData.connectionInfo.hostAddress = connection->GetRemoteHostAddress();
+    eData.connectionInfo.connection = connection;
+    eData.connectionInfo.connectionIndex = connectionid;
+    eData.closedByClient = closedByClient;
+
+    NotifyObservers( ClientDisconnectedEvent, &cloneableEventData );
 }
 
 /*-------------------------------------------------------------------------*/

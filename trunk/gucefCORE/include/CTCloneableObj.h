@@ -56,6 +56,8 @@ class CTCloneableObj : public CICloneable
 {
     public:
 
+    CTCloneableObj( void );
+    
     explicit CTCloneableObj( const T& data );
 
     CTCloneableObj( const CTCloneableObj& src );
@@ -73,10 +75,6 @@ class CTCloneableObj : public CICloneable
     const T& GetData( void ) const;
 
     private:
-
-    CTCloneableObj( void );
-
-    private:
     T m_data;
 };
 
@@ -87,12 +85,20 @@ class CTCloneableObj : public CICloneable
 //-------------------------------------------------------------------------*/
 
 template< typename T >
+CTCloneableObj< T >::CTCloneableObj( void )
+        : m_data()
+{GUCEF_TRACE;
+
+} 
+
+/*-------------------------------------------------------------------------*/
+
+template< typename T >
 CTCloneableObj< T >::CTCloneableObj( const T& data )
         : m_data( data )
 {GUCEF_TRACE;
 
-}
-
+} 
 
 /*-------------------------------------------------------------------------*/
 

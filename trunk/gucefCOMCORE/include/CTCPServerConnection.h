@@ -134,6 +134,8 @@ class GUCEF_COMCORE_EXPORT_CPP CTCPServerConnection : public CTCPConnection
     
     virtual CIPAddress GetRemoteIP( void ) const;
 
+    virtual CHostAddress GetRemoteHostAddress( void ) const;
+
     /**
      *	Constructor, init vars
      */

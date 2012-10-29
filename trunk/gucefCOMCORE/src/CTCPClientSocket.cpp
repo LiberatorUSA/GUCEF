@@ -237,12 +237,12 @@ bool
 CTCPClientSocket::Reconnect( bool blocking )
 {GUCEF_TRACE;
 
-        LockData();
-        bool retval = ConnectTo( m_hostAddress.AddressAsString()        ,
-                                 m_hostAddress.GetPortInHostByteOrder() ,
-                                 blocking                               );
-        UnlockData();
-        return retval;
+    LockData();
+    bool retval = ConnectTo( m_hostAddress.AddressAsString()        ,
+                             m_hostAddress.GetPortInHostByteOrder() ,
+                             blocking                               );
+    UnlockData();
+    return retval;
 }
 
 /*-------------------------------------------------------------------------*/
@@ -255,9 +255,9 @@ CTCPClientSocket::ConnectTo( const CORE::CString& remoteaddr ,
 
     if ( remoteaddr.Length() == 0 ) return false;
 
-    LockData();
-
     Close();
+
+    LockData();
 
     _active = true;
 
@@ -281,13 +281,14 @@ CTCPClientSocket::ConnectTo( const CORE::CString& remoteaddr ,
     {
         // Notify our users of the error
         GUCEF_DEBUG_LOG( CORE::LOGLEVEL_NORMAL, "CTCPClientSocket(" + CORE::PointerToString( this ) + "): Socket error occured: " + CORE::Int32ToString( errorcode ) );
-        TSocketErrorEventData eData( errorcode );
-        if ( !NotifyObservers( SocketErrorEvent, &eData ) ) return false;
 
         // After a socket error you must always close the connection.
         _active = false;
 
         UnlockData();
+
+        TSocketErrorEventData eData( errorcode );
+        if ( !NotifyObservers( SocketErrorEvent, &eData ) ) return false;
         return false;
     }
 
@@ -303,13 +304,14 @@ CTCPClientSocket::ConnectTo( const CORE::CString& remoteaddr ,
     {
         // Notify our users of the error
         GUCEF_DEBUG_LOG( CORE::LOGLEVEL_NORMAL, "CTCPClientSocket(" + CORE::PointerToString( this ) + "): Socket error occured: " + CORE::Int32ToString( errorcode ) );
-        TSocketErrorEventData eData( errorcode );
-        if ( !NotifyObservers( SocketErrorEvent, &eData ) ) return false;
 
         // After a socket error you must always close the connection.
         _active = false;
 
         UnlockData();
+
+        TSocketErrorEventData eData( errorcode );
+        if ( !NotifyObservers( SocketErrorEvent, &eData ) ) return false;
         return false;
     }
 
@@ -319,23 +321,23 @@ CTCPClientSocket::ConnectTo( const CORE::CString& remoteaddr ,
     if ( !SetBlockingMode( _data->sockid ,
                            _blocking     ) )
     {
-            _active = false;
-            return false;
+        _active = false;
+        return false;
     }
 
     /* we want to use the internet protocol */
     _data->serverinfo.sin_family = AF_INET;
 
 	/*
-	 *      At this point, we've successfully retrieved vital information about the server,
-	 *      including its hostname, aliases, and IP addresses.
+	 *  At this point, we've successfully retrieved vital information about the server,
+	 *  including its hostname, aliases, and IP addresses.
 	 */
 	_data->serverinfo.sin_addr = *( (LPIN_ADDR)(*_data->hostent->h_addr_list) );
 
-        /*
-         *      Change port number to network-byte order and
-         *      then insert into the server port info field
-         */
+    /*
+     *  Change port number to network-byte order and
+     *  then insert into the server port info field
+     */
 	_data->serverinfo.sin_port = htons( port );
 
 	/*
@@ -353,6 +355,10 @@ CTCPClientSocket::ConnectTo( const CORE::CString& remoteaddr ,
         {
             _active = false;
 
+            // After a socket error you must always close the connection.
+            _active = false;
+            UnlockData();
+
             // Check for an error
             if ( errorcode != 0 )
             {
@@ -361,11 +367,6 @@ CTCPClientSocket::ConnectTo( const CORE::CString& remoteaddr ,
                 TSocketErrorEventData eData( errorcode );
                 if ( !NotifyObservers( SocketErrorEvent, &eData ) ) return false;
             }
-
-            // After a socket error you must always close the connection.
-            _active = false;
-
-            UnlockData();
             return false;
         }
         else
@@ -584,8 +585,9 @@ CTCPClientSocket::OnPulse( CORE::CNotifier* notifier                 ,
 
                 TSocketErrorEventData eData( errorcode );
                 if ( !NotifyObservers( SocketErrorEvent, &eData ) ) return;
-                Close();
                 UnlockData();
+
+                Close();                
                 return;
             }
             else
@@ -652,7 +654,7 @@ CTCPClientSocket::OnPulse( CORE::CNotifier* notifier                 ,
                         {
                             // Cannot send now,... try again next pulse
                             // We have to place remaining data we grabbed from the send buffer back in
-                            // the send buffer in a FILO manner
+                            // the send buffer in a FIFO manner
                             m_sendBuffer.WriteAtFrontOfQueue( data+totalBytesSent ,
                                                               remnant             ,
                                                               1                   );
@@ -704,8 +706,6 @@ CTCPClientSocket::Close( void )
         dvsocket_closesocket( _data->sockid, &errorCode );
         _active = false;
         m_isConnecting = false;
-
-        m_pulseGenerator->RequestStopOfPeriodicUpdates( this );
 
         // Wipe the buffers
         m_sendBuffer.Clear( false );

@@ -63,6 +63,16 @@ CHostAddress::CHostAddress( const CHostAddress& src )
 
 /*-------------------------------------------------------------------------*/
 
+CHostAddress::CHostAddress( const CIPAddress& ipAddress   ,
+                            const CORE::CString& hostname )
+    : CIPAddress( ipAddress ) ,
+      m_hostname( hostname )
+{GUCEF_TRACE;
+
+}
+
+/*-------------------------------------------------------------------------*/
+
 CHostAddress::CHostAddress( const CORE::CString& hostname ,
                             const UInt16 port             )
     : CIPAddress()           ,

@@ -53,6 +53,19 @@ namespace CORE {
 //                                                                         //
 //-------------------------------------------------------------------------*/
 
+CLoggingTask::CLoggingTask( void )
+    : CTaskConsumer()         ,
+      CILogger()              ,
+      m_loggerBackend( NULL ) ,
+      m_mailbox()             ,
+      m_mailList()
+{GUCEF_TRACE;
+
+    m_mailList.reserve( MAXMAILITEMSPERCYCLE );
+}
+
+/*-------------------------------------------------------------------------*/
+
 CLoggingTask::CLoggingTask( CILogger& loggerBackend )
     : CTaskConsumer()                   ,
       CILogger()                        ,
@@ -74,6 +87,17 @@ CLoggingTask::~CLoggingTask()
 /*-------------------------------------------------------------------------*/
 
 void
+CLoggingTask::SetLoggerBackend( CILogger& loggerBackend )
+{GUCEF_TRACE;
+
+    LockData();
+    m_loggerBackend = &loggerBackend;
+    UnlockData();
+}
+
+/*-------------------------------------------------------------------------*/
+
+void
 CLoggingTask::Log( const TLogMsgType logMsgType ,
                    const Int32 logLevel         ,
                    const CString& logMessage    ,
@@ -85,6 +109,26 @@ CLoggingTask::Log( const TLogMsgType logMsgType ,
     logMsg.logMessage = logMessage;
     logMsg.logMsgType = logMsgType;
     logMsg.threadId = threadId;
+    logMsg.withoutFormatting = false;
+
+    m_mailbox.AddMail( MAILTYPE_NEWLOGMSG, &logMsg );
+}
+
+/*-------------------------------------------------------------------------*/
+
+void
+CLoggingTask::LogWithoutFormatting( const TLogMsgType logMsgType ,
+                                    const Int32 logLevel         ,
+                                    const CString& logMessage    ,
+                                    const UInt32 threadId        )
+{GUCEF_TRACE;
+
+    CLoggingMail logMsg;
+    logMsg.logLevel = logLevel;
+    logMsg.logMessage = logMessage;
+    logMsg.logMsgType = logMsgType;
+    logMsg.threadId = threadId;
+    logMsg.withoutFormatting = true;
 
     m_mailbox.AddMail( MAILTYPE_NEWLOGMSG, &logMsg );
 }
@@ -100,6 +144,15 @@ CLoggingTask::StartTask( void )
 
 /*-------------------------------------------------------------------------*/
 
+bool
+CLoggingTask::StopTask( void )
+{GUCEF_TRACE;
+
+    return CCoreGlobal::Instance()->GetTaskManager().RequestTaskToStop( GetTaskId() );
+}
+
+/*-------------------------------------------------------------------------*/
+
 void
 CLoggingTask::FlushLog( void )
 {GUCEF_TRACE;
@@ -109,8 +162,17 @@ CLoggingTask::FlushLog( void )
 
 /*-------------------------------------------------------------------------*/
 
+CString
+CLoggingTask::GetType( void ) const
+{GUCEF_TRACE;
+
+    return "LoggingTask";
+}
+
+/*-------------------------------------------------------------------------*/
+
 bool
-CLoggingTask::OnTaskStart( void* taskdata )
+CLoggingTask::OnTaskStart( CICloneable* taskdata )
 {GUCEF_TRACE;
 
     // This task does not need to perform any initialization/setup
@@ -120,41 +182,109 @@ CLoggingTask::OnTaskStart( void* taskdata )
 /*-------------------------------------------------------------------------*/
 
 bool
-CLoggingTask::OnTaskCycle( void* taskdata )
+CLoggingTask::OnTaskCycleLog( const TLogMsgType logMsgType ,
+                              const Int32 logLevel         ,
+                              const CString& logMessage    ,
+                              const UInt32 threadId        )
 {GUCEF_TRACE;
 
-    CLoggingMail* loggingMail = NULL;
-    if ( m_mailbox.GetMailList( m_mailList           ,
-                                MAXMAILITEMSPERCYCLE ) )
+    if ( NULL != m_loggerBackend )
     {
-        while ( !m_mailList.empty() )
+        m_loggerBackend->Log( logMsgType ,
+                              logLevel   ,
+                              logMessage ,
+                              threadId   );
+        return true;
+    }
+    return false;
+}
+
+/*-------------------------------------------------------------------------*/
+
+bool
+CLoggingTask::OnTaskCycleLogWithoutFormatting( const TLogMsgType logMsgType ,
+                                               const Int32 logLevel         ,
+                                               const CString& logMessage    ,
+                                               const UInt32 threadId        )
+
+{GUCEF_TRACE;
+
+    if ( NULL != m_loggerBackend )
+    {
+        m_loggerBackend->LogWithoutFormatting( logMsgType ,
+                                               logLevel   ,
+                                               logMessage ,
+                                               threadId   );
+        return true;
+    }
+    return false;
+}
+
+/*-------------------------------------------------------------------------*/
+
+bool
+CLoggingTask::OnTaskCycleLogFlush( void )
+{GUCEF_TRACE;
+
+    if ( NULL != m_loggerBackend )
+    {
+        m_loggerBackend->FlushLog();
+        return true;
+    }
+    return false;
+}
+
+/*-------------------------------------------------------------------------*/
+
+bool
+CLoggingTask::IsReadyToProcessCycle( void ) const
+{
+    return true;
+}
+
+/*-------------------------------------------------------------------------*/
+
+bool
+CLoggingTask::OnTaskCycle( CICloneable* taskdata )
+{GUCEF_TRACE;
+
+    if ( IsReadyToProcessCycle() )
+    {
+        CLoggingMail* loggingMail = NULL;
+        if ( m_mailbox.GetMailList( m_mailList           ,
+                                    MAXMAILITEMSPERCYCLE ) )
         {
-            TLoggingMailBox::TMailElement& mailEntry = m_mailList[ m_mailList.size()-1 ];
-            loggingMail = static_cast< CLoggingMail* >( mailEntry.data );
-
-            switch ( mailEntry.eventid )
+            while ( !m_mailList.empty() )
             {
-                case MAILTYPE_NEWLOGMSG :
-                {
-                    m_loggerBackend->Log( loggingMail->logMsgType ,
-                                          loggingMail->logLevel   ,
-                                          loggingMail->logMessage ,
-                                          loggingMail->threadId   );
+                TLoggingMailBox::TMailElement& mailEntry = m_mailList[ m_mailList.size()-1 ];
+                loggingMail = static_cast< CLoggingMail* >( mailEntry.data );
 
-                    break;
-                }
-                case MAILTYPE_FLUSHLOG :
+                switch ( mailEntry.eventid )
                 {
-                    m_loggerBackend->FlushLog();
-                    break;
+                    case MAILTYPE_NEWLOGMSG :
+                    {
+                        if ( 0 != loggingMail )
+                        {
+                            if ( !OnTaskCycleLog( loggingMail->logMsgType  ,
+                                                  loggingMail->logLevel    ,
+                                                  loggingMail->logMessage  ,
+                                                  loggingMail->threadId    ) ) return true;
+                        }
+                        break;
+                    }
+                    case MAILTYPE_FLUSHLOG :
+                    {
+                        if ( !OnTaskCycleLogFlush() ) return true;
+                        break;
+                    }
+
                 }
 
+                delete loggingMail;
+                loggingMail = NULL;
+
+                m_mailList.pop_back();
             }
-
-            delete loggingMail;
-            loggingMail = NULL;
-
-            m_mailList.pop_back();
         }
     }
 
@@ -184,7 +314,7 @@ CLoggingTask::UnlockData( void )
 /*-------------------------------------------------------------------------*/
 
 void
-CLoggingTask::OnTaskEnd( void* taskdata )
+CLoggingTask::OnTaskEnd( CICloneable* taskdata )
 {GUCEF_TRACE;
 
     TLoggingMailBox::TMailElement* entry;
@@ -205,7 +335,8 @@ CLoggingTask::CLoggingMail::CLoggingMail( void )
       logMsgType( CLogManager::LOG_UNKNOWNTYPE ) ,
       logLevel( LOGLEVEL_NORMAL )                ,
       logMessage()                               ,
-      threadId( 0 )
+      threadId( 0 )                              ,
+      withoutFormatting( false )
 {GUCEF_TRACE;
 
 }
@@ -213,11 +344,12 @@ CLoggingTask::CLoggingMail::CLoggingMail( void )
 /*-------------------------------------------------------------------------*/
 
 CLoggingTask::CLoggingMail::CLoggingMail( const CLoggingMail& src )
-    : CICloneable()                ,
-      logMsgType( src.logMsgType ) ,
-      logLevel( src.logLevel )     ,
-      logMessage( src.logMessage ) ,
-      threadId( src.threadId )
+    : CICloneable()                              ,
+      logMsgType( src.logMsgType )               ,
+      logLevel( src.logLevel )                   ,
+      logMessage( src.logMessage )               ,
+      threadId( src.threadId )                   ,
+      withoutFormatting( src.withoutFormatting )
 {GUCEF_TRACE;
 
 }
