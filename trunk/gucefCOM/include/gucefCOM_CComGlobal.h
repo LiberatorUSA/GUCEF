@@ -1,6 +1,5 @@
 /*
- *  gucefCOM: GUCEF module providing communication 
- *  implementations for standardized protocols.
+ *  gucefCOMCORE: GUCEF module providing basic communication facilities
  *  Copyright (C) 2002 - 2007.  Dinand Vanvelzen
  *
  *  This library is free software; you can redistribute it and/or
@@ -15,8 +14,11 @@
  *
  *  You should have received a copy of the GNU Lesser General Public
  *  License along with this library; if not, write to the Free Software
- *  Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA 
+ *  Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA
  */
+
+#ifndef GUCEF_COM_CCOMGLOBAL_H
+#define GUCEF_COM_CCOMGLOBAL_H
 
 /*-------------------------------------------------------------------------//
 //                                                                         //
@@ -24,7 +26,10 @@
 //                                                                         //
 //-------------------------------------------------------------------------*/
 
-#include "CGUCEFCOMModule.h"  /* definition of the class implemented here */
+#ifndef GUCEF_COM_MACROS_H
+#include "gucefCOM_macros.h"      /* often used gucefCOM macros */
+#define GUCEF_COM_MACROS_H
+#endif /* GUCEF_COM_MACROS_H ? */
 
 /*-------------------------------------------------------------------------//
 //                                                                         //
@@ -41,19 +46,29 @@ namespace COM {
 //                                                                         //
 //-------------------------------------------------------------------------*/
 
-bool 
-CGUCEFCOMModule::Load( void )
-{        
-    return true;
-}
 
-/*-------------------------------------------------------------------------*/
-        
-bool 
-CGUCEFCOMModule::Unload( void )
-{        
-    return true;
-}
+class GUCEF_COM_EXPORT_CPP CComGlobal
+{
+    public:
+
+    static CComGlobal* Instance( void );
+
+    private:
+
+    static void Deinstance( void );
+
+    void Initialize( void );
+
+    CComGlobal( void );    
+    ~CComGlobal();
+
+    CComGlobal( const CComGlobal& src );            /** <- not implemented */
+    CComGlobal& operator=( const CComGlobal& src ); /** <- not implemented */
+
+    private:
+
+    static CComGlobal* g_instance;
+};
 
 /*-------------------------------------------------------------------------//
 //                                                                         //
@@ -65,3 +80,16 @@ CGUCEFCOMModule::Unload( void )
 }; /* namespace GUCEF */
 
 /*-------------------------------------------------------------------------*/
+
+#endif /* GUCEF_COM_CCOMGLOBAL_H ? */
+
+/*-------------------------------------------------------------------------//
+//                                                                         //
+//      Info & Changes                                                     //
+//                                                                         //
+//-------------------------------------------------------------------------//
+
+- 12-02-2005 :
+        - Initial implementation
+
+-----------------------------------------------------------------------------*/

@@ -29,6 +29,21 @@
 #define GUCEF_OSMAIN_H
 #endif /* GUCEF_OSMAIN_H ? */
 
+#ifndef GUCEF_CORE_CCOREGLOBAL_H
+#include "gucefCORE_CCoreGlobal.h"
+#define GUCEF_CORE_CCOREGLOBAL_H
+#endif /* GUCEF_CORE_CCOREGLOBAL_H ? */
+
+#ifndef GUCEF_COMCORE_CCOMCOREGLOBAL_H
+#include "gucefCOMCORE_CComCoreGlobal.h"
+#define GUCEF_COMCORE_CCOMCOREGLOBAL_H
+#endif /* GUCEF_COMCORE_CCOMCOREGLOBAL_H ? */
+
+#ifndef GUCEF_COM_CCOMCOREGLOBAL_H
+#include "gucefCOM_CComCoreGlobal.h"
+#define GUCEF_COM_CCOMCOREGLOBAL_H
+#endif /* GUCEF_COM_CCOMCOREGLOBAL_H ? */
+
 #ifndef GUCEF_CORE_CGUCEFAPPLICATION_H
 #include "CGUCEFApplication.h"
 #define GUCEF_CORE_CGUCEFAPPLICATION_H
@@ -115,6 +130,11 @@ ParseParams( const int argc                 ,
 GUCEF_OSMAIN_BEGIN
 {GUCEF_TRACE;
 
+    // Initialize modules we depend on
+    CORE::CCoreGlobal::Instance();
+    COMCORE::CComCoreGlobal::Instance();
+    COM::CComGlobal::Instance();
+    
     #ifdef GUCEF_CALLSTACK_TRACING
     CORE::GUCEF_LogStackTo( "GucefLogServiceApp_Callstack.cvs" );
     CORE::GUCEF_SetStackLoggingInCvsFormat( 1 );
