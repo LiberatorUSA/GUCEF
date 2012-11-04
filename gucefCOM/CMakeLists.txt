@@ -23,6 +23,7 @@ set( HEADER_FILES
   include/CPHUDPSocket.h
   include/gucefCOM.h
   include/gucefCOMDLLInit.h
+  include/gucefCOM_CComGlobal.h
   include/gucefCOM_CDefaultHTTPServerRouterController.h
   include/gucefCOM_CHTTPServer.h
   include/gucefCOM_CIHTTPServerResource.h
@@ -42,6 +43,7 @@ set( SOURCE_FILES
   src/CMySQLClient.cpp
   src/CPHUDPSocket.cpp
   src/gucefCOM.cpp
+  src/gucefCOM_CComGlobal.cpp
   src/gucefCOM_CDefaultHTTPServerRouterController.cpp
   src/gucefCOM_CHTTPServer.cpp
   src/gucefCOM_CIHTTPServerResource.cpp
