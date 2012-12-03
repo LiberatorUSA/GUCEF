@@ -100,7 +100,7 @@ class GUCEF_MT_PUBLIC_CPP CActiveObject
      *  Use caution when killing a thread because this is likely to cause memory leaks etc. and should not be used for normal operation.
      *  If a thread is killed in this manner OnTaskEnd() will still be called from the calling thread so you can place cleanup code there.
      */
-    void Deactivate( bool force );
+    void Deactivate( bool force, bool callerShouldWait );
 
     /**
      *  Pauses the active object.

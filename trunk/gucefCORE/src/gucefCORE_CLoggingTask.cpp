@@ -148,7 +148,7 @@ bool
 CLoggingTask::StopTask( void )
 {GUCEF_TRACE;
 
-    return CCoreGlobal::Instance()->GetTaskManager().RequestTaskToStop( GetTaskId() );
+    return CCoreGlobal::Instance()->GetTaskManager().RequestTaskToStop( GetTaskId(), true );
 }
 
 /*-------------------------------------------------------------------------*/

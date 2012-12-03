@@ -293,7 +293,7 @@ CPing::Stop( void )
 
     if ( m_isActive )
     {
-       CORE::CCoreGlobal::Instance()->GetTaskManager().RequestTaskToStop( m_taskId );
+       CORE::CCoreGlobal::Instance()->GetTaskManager().RequestTaskToStop( m_taskId, false );
     }
 }
 

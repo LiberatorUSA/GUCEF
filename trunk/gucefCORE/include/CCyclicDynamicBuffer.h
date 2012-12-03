@@ -92,6 +92,13 @@ class GUCEF_CORE_PUBLIC_CPP CCyclicDynamicBuffer
                  const UInt32 elementsToRead  );
 
     /**
+     *  Same as Peek() except that it is optimized for reading a single element.
+     *  If you were going to call peak with 'elementsToRead' set to 1 then use this version instead.
+     */
+    UInt32 PeekElement( void* destBuffer         ,
+                        const UInt32 elementSize );
+
+    /**
      *  Attempts to skip the given number of bytes in the buffer as if they have been read but
      *  you do not have to provide a buffer to copy that data into. Typically used in combination with Peek()
      *  The number of bytes skipped is returned, it can be less if there isnt enough data available to skip.

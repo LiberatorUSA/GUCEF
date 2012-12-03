@@ -72,11 +72,15 @@ bool
 CSingleTaskDelegator::OnTaskCycle( void* taskdata )
 {GUCEF_TRACE;
 
-    bool result = CTaskDelegator::ProcessTask( *m_taskConsumer, m_taskData );
-    TaskCleanup( m_taskConsumer, m_taskData );
-    m_taskConsumer = NULL;
-    m_taskData = NULL;
-    return result;
+    if ( m_taskConsumer )
+    {
+        bool result = CTaskDelegator::ProcessTask( *m_taskConsumer, m_taskData );
+        TaskCleanup( m_taskConsumer, m_taskData );
+        m_taskConsumer = NULL;
+        m_taskData = NULL;
+        return result;
+    }
+    return true;
 }
 
 /*-------------------------------------------------------------------------//
