@@ -23,6 +23,11 @@
 //                                                                         //
 //-------------------------------------------------------------------------*/
 
+#ifndef GUCEF_MT_DVMTOSWRAP_H
+#include "gucefMT_dvmtoswrap.h"
+#define GUCEF_MT_DVMTOSWRAP_H
+#endif /* GUCEF_MT_DVMTOSWRAP_H ? */
+
 #ifndef GUCEF_CORE_DVOSWRAP_H
 #include "DVOSWRAP.h"
 #define GUCEF_CORE_DVOSWRAP_H
@@ -198,7 +203,7 @@ CTaskManager::~CTaskManager( void )
     while ( i != m_taskDelegators.end() )
     {
         // Kill the task
-        (*i)->Deactivate( true );
+        (*i)->Deactivate( true, true );
         ++i;
     }
     m_taskDelegators.clear();
@@ -379,7 +384,7 @@ CTaskManager::EnforceDesiredNrOfThreads( UInt32 desiredNrOfThreads ,
                     if ( !(*i)->IsDeactivationRequested() )
                     {
                         // Ask thread to deactivate
-                        (*i)->Deactivate( gracefullEnforcement );
+                        (*i)->Deactivate( gracefullEnforcement, false );
                     }
                 }
                 ++i;
@@ -670,7 +675,8 @@ CTaskManager::ResumeTask( const UInt32 taskID )
 /*-------------------------------------------------------------------------*/
 
 bool
-CTaskManager::RequestTaskToStop( const UInt32 taskID )
+CTaskManager::RequestTaskToStop( const UInt32 taskID   , 
+                                 bool callerShouldWait )
 {GUCEF_TRACE;
 
     g_mutex.Lock();
@@ -683,7 +689,7 @@ CTaskManager::RequestTaskToStop( const UInt32 taskID )
             CTaskDelegator* delegator = taskConsumer->GetTaskDelegator();
             if ( NULL != delegator )
             {
-                delegator->Deactivate( false );
+                delegator->Deactivate( false, callerShouldWait );
                 g_mutex.Unlock();
 
                 GUCEF_SYSTEM_LOG( LOGLEVEL_NORMAL, "TaskManager: Requested task with ID " + UInt32ToString( taskID ) + " to stop" );
@@ -703,6 +709,36 @@ CTaskManager::RequestTaskToStop( const UInt32 taskID )
 
 /*-------------------------------------------------------------------------*/
 
+void
+CTaskManager::RequestAllTasksToStop( bool waitOnStop )
+{GUCEF_TRACE;
+
+    GUCEF_SYSTEM_LOG( LOGLEVEL_NORMAL, "TaskManager: Requesting all tasks to stop" );
+    
+    g_mutex.Lock();
+    TTaskConsumerMap::iterator i = m_taskConsumerMap.begin();
+    while ( i != m_taskConsumerMap.end() )
+    {
+        CTaskConsumer* taskConsumer = (*i).second;
+        if ( NULL != taskConsumer )
+        {
+            CTaskDelegator* delegator = taskConsumer->GetTaskDelegator();
+            if ( NULL != delegator )
+            {
+                UInt32 taskId = taskConsumer->GetTaskId();
+                delegator->Deactivate( false, waitOnStop );                                
+                g_mutex.Unlock();
+
+                GUCEF_SYSTEM_LOG( LOGLEVEL_NORMAL, "TaskManager: Requested task with ID " + UInt32ToString( taskId ) + " to stop" );
+            }
+        }
+        ++i;
+    }
+    g_mutex.Unlock();
+}
+
+/*-------------------------------------------------------------------------*/
+
 bool
 CTaskManager::KillTask( const UInt32 taskID )
 {GUCEF_TRACE;
@@ -717,7 +753,7 @@ CTaskManager::KillTask( const UInt32 taskID )
             CTaskDelegator* delegator = taskConsumer->GetTaskDelegator();
             if ( NULL != delegator )
             {
-                delegator->Deactivate( true );
+                delegator->Deactivate( true, true );
                 g_mutex.Unlock();
 
                 GUCEF_SYSTEM_LOG( LOGLEVEL_NORMAL, "TaskManager: Killed task with ID " + UInt32ToString( taskID ) );

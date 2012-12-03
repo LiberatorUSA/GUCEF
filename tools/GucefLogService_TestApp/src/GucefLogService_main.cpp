@@ -226,6 +226,7 @@ GUCEF_OSMAIN_BEGIN
             if ( taskManager.StartTask( loggingTask ) )
             {
                 appRetValue = CORE::CCoreGlobal::Instance()->GetApplication().main( argc, argv, true );
+                taskManager.RequestAllTasksToStop( true );
             }
             else
             {

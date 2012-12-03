@@ -23,6 +23,11 @@
 //                                                                         //
 //-------------------------------------------------------------------------*/
 
+#ifndef GUCEF_CORE_DVFILEUTILS_H
+#include "dvfileutils.h"
+#define GUCEF_CORE_DVFILEUTILS_H
+#endif /* GUCEF_CORE_DVFILEUTILS_H ? */
+
 #ifndef GUCEF_CORE_CIOACCESS_H
 #include "CIOAccess.h"
 #define GUCEF_CORE_CIOACCESS_H
@@ -189,35 +194,33 @@ CLogSvcServerFileLogger::CreateRelOutputFilePath( const TClientInfo& clientInfo 
     CORE::CString filename;
     if ( m_seperateLogPerProcessName && m_seperateLogPerApp )
     {
-        filename = clientInfo.addressAndPort + clientInfo.appName + clientInfo.processName;
+        filename = "APP_" + clientInfo.appName + "/PROC_" + clientInfo.processName + "/ADDR_" + clientInfo.addressAndPort;
     }
     else
     if ( !m_seperateLogPerProcessName && m_seperateLogPerApp )
     {
-        filename = clientInfo.addressAndPort + clientInfo.appName;
+        filename = "APP_" + clientInfo.appName + "/ADDR_" + clientInfo.addressAndPort;
     }
     else
     if ( m_seperateLogPerProcessName && !m_seperateLogPerApp )
     {
-        filename = clientInfo.addressAndPort + clientInfo.processName;
+        filename = "PROC_" + clientInfo.processName + "/ADDR_" + clientInfo.addressAndPort;
     }
     else
     {
-        filename = clientInfo.addressAndPort;
+        filename = "ADDR_" + clientInfo.addressAndPort;
     }
     
     // Remove chars not allowed in filenames
     filename = filename.RemoveChar( '*' );
-    filename = filename.RemoveChar( '/' );
-    filename = filename.RemoveChar( '\\' );
     filename = filename.RemoveChar( '?' );
     filename = filename.RemoveChar( ':' );
     filename = filename.RemoveChar( '>' );
     filename = filename.RemoveChar( '<' );
-    filename = filename.RemoveChar( '\"' );
     filename = filename.RemoveChar( '|' );
     
-    filename = filename.ReplaceChar( ' ', '_' );
+    filename = filename.ReplaceChar( ' ', '_' );    
+    filename = filename.ReplaceChar( GUCEF_DIRSEPCHAROPPOSITE, GUCEF_DIRSEPCHAR );
     
     return filename;
 }
@@ -230,9 +233,8 @@ CLogSvcServerFileLogger::CreateAbsOutputFilePath( const CORE::CString& relPath )
 
     CORE::CString absBasePath = CORE::RelativePath( m_outputDir );
     CORE::AppendToPath( absBasePath, relPath );
-    
-    CORE::CString absPath = absBasePath;
-    CORE::AppendToPath( absPath, "_0.txt" );
+    CORE::CString absPath = absBasePath + "_0.txt";
+
     CORE::UInt32 counter = 1;
     
     while ( CORE::FileExists( absPath ) )
@@ -276,12 +278,21 @@ CLogSvcServerFileLogger::GetFileAccess( const TClientInfo& clientInfo )
     CORE::CString absOutputPath = CreateAbsOutputFilePath( relOutputPath );
     
     // Now make the file and add it to our output map
-    TFileAccessPtr filePtr = new CORE::CFileAccess( absOutputPath, "w" );
-    m_outputMap[ relOutputPath ] = filePtr;
+    CORE::CString pathForFile = CORE::StripFilename( absOutputPath );
+    if ( 0 != CORE::Create_Directory( pathForFile.C_String() ) )
+    {
+        //CORE::CString filename = CORE::ExtractFilename( absOutputPath );
     
-    // Now also make a client entry for this new log file
-    m_clientMap[ clientInfo.addressAndPort ] = filePtr;
-    return filePtr;   
+        TFileAccessPtr filePtr = new CORE::CFileAccess( absOutputPath, "w" );
+        m_outputMap[ relOutputPath ] = filePtr;
+    
+        // Now also make a client entry for this new log file
+        m_clientMap[ clientInfo.addressAndPort ] = filePtr;
+        return filePtr;   
+    }
+
+    GUCEF_ERROR_LOG( CORE::LOGLEVEL_IMPORTANT, "LogSvcServerFileLogger: Failed to create path for logfile: " + pathForFile );
+    return TFileAccessPtr();
 }
 
 /*-------------------------------------------------------------------------*/
@@ -305,9 +316,13 @@ CLogSvcServerFileLogger::Log( const TClientInfo& clientInfo   ,
                                                           logMessage       ,
                                                           threadId         ) + '\n';
 
-        GetFileAccess( clientInfo )->Write( actualLogMsg.C_String() ,
-                                            actualLogMsg.Length()   ,
-                                            1                       );
+        TFileAccessPtr fileAccess = GetFileAccess( clientInfo );        
+        if ( 0 != fileAccess )
+        {
+            fileAccess->Write( actualLogMsg.C_String() ,
+                               actualLogMsg.Length()   ,
+                               1                       );
+        }
     }
 }
 

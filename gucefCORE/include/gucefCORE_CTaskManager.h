@@ -132,7 +132,8 @@ class GUCEF_CORE_PUBLIC_CPP CTaskManager : public CObservingNotifier
 
     bool ResumeTask( const UInt32 taskID );
 
-    bool RequestTaskToStop( const UInt32 taskID );
+    bool RequestTaskToStop( const UInt32 taskId   , 
+                            bool callerShouldWait );
 
     bool KillTask( const UInt32 taskID );
 
@@ -141,6 +142,8 @@ class GUCEF_CORE_PUBLIC_CPP CTaskManager : public CObservingNotifier
     void SetNrOfThreads( const UInt32 nrOfThreads );
 
     UInt32 GetNrOfThreads( void ) const;
+
+    void RequestAllTasksToStop( bool waitOnStop );
 
     void RegisterTaskConsumerFactory( const CString& taskType       ,
                                       TTaskConsumerFactory* factory );

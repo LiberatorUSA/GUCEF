@@ -303,7 +303,7 @@ CLogSvcServer::ProcessReceivedData( TClientInfo& clientInfo                   ,
     {
         // First read the message delimiter if its fully available
         char msgDelimterHeader[ 5 ];
-        if ( 5 == clientInfo.receiveBuffer.Peek( msgDelimterHeader, 5, 1 ) )
+        if ( 5 == clientInfo.receiveBuffer.PeekElement( msgDelimterHeader, 5 ) )
         {
             if ( msgDelimterHeader[ 0 ] == LOGSVCMSGTYPE_DELIMITER )
             {
@@ -316,7 +316,7 @@ CLogSvcServer::ProcessReceivedData( TClientInfo& clientInfo                   ,
                 if ( msgLength <= MAX_ACCEPTED_MSGLENGTH )
                 {
                     // Check to see if the buffer actually has the data available already to form the complete message
-                    if ( msgLength <= clientInfo.receiveBuffer.GetBufferedDataSizeInBytes() )
+                    if ( msgLength+5 <= clientInfo.receiveBuffer.GetBufferedDataSizeInBytes() )
                     {
                         // Since we already got he header data via a Peek() we will skip that data now
                         if ( 5 != clientInfo.receiveBuffer.SkipRead( 5 ) )

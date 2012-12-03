@@ -78,7 +78,7 @@ CActiveObject::CActiveObject( const CActiveObject& src )
 
 CActiveObject::~CActiveObject()
 {
-    Deactivate( true );
+    Deactivate( true, true );
 }
 
 /*-------------------------------------------------------------------------*/
@@ -210,7 +210,7 @@ CActiveObject::OnTaskStarted( void* taskdata )
 /*-------------------------------------------------------------------------*/
 
 void
-CActiveObject::Deactivate( bool force )
+CActiveObject::Deactivate( bool force, bool callerShouldWait )
 {
     if ( _active )
     {
@@ -227,6 +227,11 @@ CActiveObject::Deactivate( bool force )
         else
         {
             m_isDeactivationRequested = true;
+
+            if ( callerShouldWait )
+            {
+                ThreadWait( _td, 150000 );
+            }
         }
     }
 }
@@ -283,7 +288,7 @@ CActiveObject::GetTaskData( void ) const
 CActiveObject&
 CActiveObject::operator=( const CActiveObject& src )
 {
-    Deactivate( true );
+    Deactivate( true, true );
 
     _taskdata = src._taskdata;
     _delay = src._delay;

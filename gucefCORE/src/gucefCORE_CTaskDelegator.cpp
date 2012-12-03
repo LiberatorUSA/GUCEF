@@ -169,10 +169,7 @@ CTaskDelegator::ProcessTask( CTaskConsumer& taskConsumer ,
         taskConsumer.OnTaskStarted( taskData );
 
         // cycle the task as long as it is not "done"
-        while ( !taskConsumer.OnTaskCycle( taskData ) )
-        {
-
-        }
+        while ( !IsDeactivationRequested() && !taskConsumer.OnTaskCycle( taskData ) ) {}
 
         taskConsumer.OnTaskEnd( taskData );
         taskConsumer.OnTaskEnded( taskData, false );

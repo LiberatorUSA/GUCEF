@@ -175,11 +175,18 @@ CCyclicDynamicBuffer::SkipRead( const UInt32 bytesToSkip )
         else
         {
             totalBytesRead += totalBytes;         
-            
+
+            // Mark the segment as free'd
+            TDataChunk freeDataChunck; 
+            freeDataChunck.blockSize = totalBytes;
+            freeDataChunck.startOffset = dataChunck.startOffset;
+
             // Shrink the block to remove the data thats skipped
             dataChunck.blockSize -= totalBytes;            
             dataChunck.startOffset += totalBytes;
-            
+
+            m_freeBlocks.push_back( freeDataChunck );
+            blocksFreed = true;
             break;
         }
     }
@@ -296,6 +303,66 @@ CCyclicDynamicBuffer::CopyBlocksToBuffer( const TBlockList& blockList ,
 /*-------------------------------------------------------------------------*/
 
 UInt32
+CCyclicDynamicBuffer::PeekElement( void* destBuffer         ,
+                                   const UInt32 elementSize )
+{GUCEF_TRACE;
+
+    LockData();
+    
+    UInt32 totalBytesRead = 0, totalBytes = elementSize;    
+    TBlockList elementBlocks;
+
+    // We will simply pop FIFO elements until we hit the byte count
+    TBlockList::iterator i = m_usedBlocks.begin();
+    while ( i != m_usedBlocks.end() )
+    {
+        TDataChunk& dataChunck = (*i);
+        if ( totalBytes >= dataChunck.blockSize )
+        {
+            elementBlocks.push_back( dataChunck );
+
+            totalBytesRead += dataChunck.blockSize;
+            totalBytes -= dataChunck.blockSize;             
+
+            if ( 0 == totalBytes || i == m_usedBlocks.end() )
+            {
+                // There is no more data to read
+                break;
+            }
+        }
+        else
+        {
+            TDataChunk elementChunck;
+            elementChunck.startOffset = dataChunck.startOffset;
+            elementChunck.blockSize = totalBytes;
+            elementBlocks.push_back( elementChunck );
+
+            totalBytesRead += totalBytes; 
+            
+            break;
+        }
+        ++i;
+    }
+
+    if ( totalBytesRead == elementSize )
+    {
+        GUCEF_DEBUG_LOG( CORE::LOGLEVEL_EVERYTHING, "CCyclicDynamicBuffer: Peeking element from the buffer" );
+        
+        // We successfully located the blocks for a single element
+        // We can now copy these blocks to the output buffer
+        CopyBlocksToBuffer( elementBlocks, destBuffer );
+
+        UnlockData();
+        return elementSize;
+    }
+
+    UnlockData();
+    return 0;
+}
+
+/*-------------------------------------------------------------------------*/
+
+UInt32
 CCyclicDynamicBuffer::ReadElement( void* destBuffer          ,
                                    const UInt32 elementSize  ,
                                    bool freeBlocksOnSuccess  ,
@@ -340,7 +407,6 @@ CCyclicDynamicBuffer::ReadElement( void* destBuffer          ,
             
             break;
         }
-        ++i;
     }
 
     if ( totalBytesRead == elementSize )
