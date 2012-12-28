@@ -301,7 +301,16 @@ class GUCEF_CORE_PUBLIC_CPP CDynamicBuffer
          *  @throw EIllegalCast thrown when the cast cannot be performed with the data available in the buffer
          */
         template< typename T >
-        const T* AsConstTypePtr( const UInt32 byteOffset /* = 0 */ ) const;
+        const T* AsConstTypePtr( const UInt32 byteOffset = 0 ) const;
+
+        /**
+         *  Utility member function:
+         *  Performs easy casting to the given type as a pointer at the given offset
+         *
+         *  @throw EIllegalCast thrown when the cast cannot be performed with the data available in the buffer
+         */
+        template< typename T >
+        T* AsTypePtr( const UInt32 byteOffset = 0 );
 
         /**
          *  Utility member function:
@@ -392,6 +401,22 @@ CDynamicBuffer::AsConstTypePtr( const UInt32 byteOffset /* = 0 */ ) const
     }
     
     GUCEF_EMSGTHROW( EIllegalCast, "GUCEF::CORE::CDynamicBuffer::AsConstTypePtr(): Cannot cast to the given type" );
+}
+
+/*-------------------------------------------------------------------------*/
+
+template< typename T >
+T*
+CDynamicBuffer::AsTypePtr( const UInt32 byteOffset /* = 0 */ )
+{GUCEF_TRACE;
+
+    // We should have room for at least 1 element of T before the end of the buffer
+    if ( byteOffset + sizeof( T ) <= GetDataSize() )
+    {
+        return reinterpret_cast< T* >( static_cast< char* >( GetBufferPtr() ) + byteOffset );
+    }
+    
+    GUCEF_EMSGTHROW( EIllegalCast, "GUCEF::CORE::CDynamicBuffer::AsTypePtr(): Cannot cast to the given type" );
 }
 
 /*-------------------------------------------------------------------------*/

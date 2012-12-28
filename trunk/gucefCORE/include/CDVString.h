@@ -139,7 +139,7 @@ class GUCEF_CORE_PUBLIC_CPP CString
     /**
      *  If you wish to manipulate characters in a char buffer
      *  while still having containment as a string object this function
-     *  if for you. It will set the string to have an unititialized char buffer
+     *  is for you. It will set the string to have an unititialized char buffer
      *  of stringSize bytes.
      */
     char* Reserve( const UInt32 stringSize );
@@ -147,6 +147,18 @@ class GUCEF_CORE_PUBLIC_CPP CString
     std::string STL_String( void ) const;
 
     UInt32 Length( void ) const;
+
+    /**
+     *  Allows you to set the length of the string.
+     */
+    void SetLength( UInt32 newLength );
+
+    /**
+     *  This function will give you the length of the string just like the regular Length()
+     *  However it will determine the length based on the null terminator and overwrite the cached
+     *  length value. This is useful in combination with the Reserve() function.
+     */
+    UInt32 DetermineLength( void );
 
     void SetInt( Int32 value );
 
