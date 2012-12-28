@@ -39,10 +39,10 @@
 #define GUCEF_COMCORE_CCOMCOREGLOBAL_H
 #endif /* GUCEF_COMCORE_CCOMCOREGLOBAL_H ? */
 
-#ifndef GUCEF_COM_CCOMCOREGLOBAL_H
-#include "gucefCOM_CComCoreGlobal.h"
-#define GUCEF_COM_CCOMCOREGLOBAL_H
-#endif /* GUCEF_COM_CCOMCOREGLOBAL_H ? */
+#ifndef GUCEF_COM_CCOMGLOBAL_H
+#include "gucefCOM_CComGlobal.h"
+#define GUCEF_COM_CCOMGLOBAL_H
+#endif /* GUCEF_COM_CCOMGLOBAL_H ? */
 
 #ifndef GUCEF_CORE_CGUCEFAPPLICATION_H
 #include "CGUCEFApplication.h"
@@ -134,7 +134,7 @@ GUCEF_OSMAIN_BEGIN
     CORE::CCoreGlobal::Instance();
     COMCORE::CComCoreGlobal::Instance();
     COM::CComGlobal::Instance();
-    
+
     #ifdef GUCEF_CALLSTACK_TRACING
     CORE::GUCEF_LogStackTo( "GucefLogServiceApp_Callstack.cvs" );
     CORE::GUCEF_SetStackLoggingInCvsFormat( 1 );
@@ -233,6 +233,6 @@ GUCEF_OSMAIN_END
 
 - 11-02-2008 :
         - Initial implementation
-          
+
 ---------------------------------------------------------------------------*/
 
