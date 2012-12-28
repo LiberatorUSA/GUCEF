@@ -39,6 +39,11 @@
 #define GUCEF_CORE_DVCPPSTRINGUTILS_H
 #endif /* GUCEF_CORE_DVCPPSTRINGUTILS_H ? */
 
+#ifndef GUCEF_CORE_DVOSWRAP_H
+#include "DVOSWRAP.h"
+#define GUCEF_CORE_DVOSWRAP_H
+#endif /* GUCEF_CORE_DVOSWRAP_H ? */
+
 /*-------------------------------------------------------------------------//
 //                                                                         //
 //      NAMESPACE                                                          //
@@ -50,7 +55,15 @@ namespace CORE {
 
 /*-------------------------------------------------------------------------//
 //                                                                         //
-//      CLASSES                                                            //
+//      TYPES                                                              //
+//                                                                         //
+//-------------------------------------------------------------------------*/
+
+typedef void ( *TAndroidLogWriteFunc )( android_LogPriority, const char*, const char* );
+
+/*-------------------------------------------------------------------------//
+//                                                                         //
+//      IMPLEMENTATION                                                     //
 //                                                                         //
 //-------------------------------------------------------------------------*/
 
@@ -117,15 +130,30 @@ LogTypeAndLevelToAndroidPrio( const CLogManager::TLogMsgType logMsgType ,
 /*-------------------------------------------------------------------------*/
 
 CAndroidSystemLogger::CAndroidSystemLogger( void )
-    : CILogger() ,
-      m_tag()
+    : CILogger()        ,
+      m_tag()           ,
+      m_logFunc( NULL )
 {GUCEF_TRACE;
 
     m_tag = "GUCEF:AndroidSystemLogger:" + PointerToString( this );
+
+    // We load the log module dynamically to avoid adding dependencies
+    void* logModule = LoadModuleDynamicly( "log.so" );
+    if ( NULL != logModule )
+    {
+        // Find the address of the Android log function
+        void* funcAddr = GetFunctionAddress( logModule                                     ,
+                                             "__android_log_write"                         ,
+                                             sizeof(android_LogPriority)+(2*sizeof(char*)) ).objPtr;
+        if ( NULL != funcAddr )
+        {
+            m_logFunc = funcAddr;
+        }
+    }
 }
 
 /*-------------------------------------------------------------------------*/
-    
+
 CAndroidSystemLogger::~CAndroidSystemLogger()
 {GUCEF_TRACE;
 
@@ -140,14 +168,17 @@ CAndroidSystemLogger::Log( const TLogMsgType logMsgType ,
                            const UInt32 threadId        )
 {GUCEF_TRACE;
 
-    // Just use standard GUCEF log formatting
-    CString formattedLogMsg = FormatStdLogMessage( logMsgType ,
-                                                   logLevel   ,
-                                                   logMessage ,
-                                                   threadId   );
-                                                   
-    android_LogPriority androidLogPrio = LogTypeAndLevelToAndroidPrio( logMsgType, logLevel );    
-    __android_log_write( androidLogPrio, m_tag.C_String(), formattedLogMsg.C_String() );                             
+    if ( NULL != m_logFunc )
+    {
+        // Just use standard GUCEF log formatting
+        CString formattedLogMsg = FormatStdLogMessage( logMsgType ,
+                                                       logLevel   ,
+                                                       logMessage ,
+                                                       threadId   );
+
+        android_LogPriority androidLogPrio = LogTypeAndLevelToAndroidPrio( logMsgType, logLevel );
+        ( (TAndroidLogWriteFunc) m_logFunc )( androidLogPrio, m_tag.C_String(), formattedLogMsg.C_String() );
+    }
 }
 
 /*-------------------------------------------------------------------------*/
@@ -159,8 +190,11 @@ CAndroidSystemLogger::LogWithoutFormatting( const TLogMsgType logMsgType ,
                                             const UInt32 threadId        )
 {GUCEF_TRACE;
 
-    android_LogPriority androidLogPrio = LogTypeAndLevelToAndroidPrio( logMsgType, logLevel );    
-    __android_log_write( androidLogPrio, m_tag.C_String(), logMessage.C_String() );
+    if ( NULL != m_logFunc )
+    {
+        android_LogPriority androidLogPrio = LogTypeAndLevelToAndroidPrio( logMsgType, logLevel );
+        ( (TAndroidLogWriteFunc) m_logFunc )( androidLogPrio, m_tag.C_String(), logMessage.C_String() );
+    }
 }
 
 /*-------------------------------------------------------------------------*/

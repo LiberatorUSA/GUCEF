@@ -211,7 +211,7 @@ CPatchManager::RequestTaskToStop( const CString& taskName )
         UInt32 taskID = (*i).second->GetTaskId();
         UnlockData();
 
-        if ( m_taskManager->RequestTaskToStop( taskID ) )
+        if ( m_taskManager->RequestTaskToStop( taskID, true ) )
         {
             TPatchTaskStopRequestedEventData eData( taskName );
             NotifyObserversFromThread( PatchTaskStopRequestedEvent, &eData );

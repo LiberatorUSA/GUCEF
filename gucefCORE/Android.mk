@@ -190,8 +190,7 @@ LOCAL_SHARED_LIBRARIES := \
 
 
 LOCAL_LDLIBS := \
-  -ldl \
-  -llog
+  -ldl
 
 include $(BUILD_SHARED_LIBRARY)
 
