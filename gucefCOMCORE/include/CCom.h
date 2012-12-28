@@ -26,6 +26,8 @@
 //                                                                         //
 //-------------------------------------------------------------------------*/
 
+#include <set>
+
 #ifndef GUCEF_MT_CMUTEX_H
 #include "gucefMT_CMutex.h"
 #define GUCEF_MT_CMUTEX_H
@@ -36,10 +38,15 @@
 #define GUCEF_CORE_CTIMER_H
 #endif /* GUCEF_CORE_CTIMER_H ? */
 
-#ifndef GUCEF_CORE_CDYNAMICARRAY_H
-#include "CDynamicArray.h"            /* <- deprecated */
-#define GUCEF_CORE_CDYNAMICARRAY_H
-#endif /* GUCEF_CORE_CDYNAMICARRAY_H ? */
+#ifndef GUCEF_COMCORE_CICOMMUNICATIONPORT_H
+#include "gucefCOMCORE_CICommunicationPort.h"
+#define GUCEF_COMCORE_CICOMMUNICATIONPORT_H
+#endif /* GUCEF_COMCORE_CICOMMUNICATIONPORT_H ? */
+
+#ifndef GUCEF_COMCORE_CSOCKET_H
+#include "CSocket.h"
+#define GUCEF_COMCORE_CSOCKET_H
+#endif /* GUCEF_COMCORE_CSOCKET_H ? */
 
 #ifndef GUCEF_COMCORE_MACROS_H
 #include "gucefCOMCORE_macros.h"      /* build switches and macros */
@@ -75,6 +82,8 @@ class GUCEF_COMCORE_EXPORT_CPP CCom
 {
     public:
 
+    typedef std::vector< CORE::CString > TStringList;
+    
     struct SSocketStats
     {
             UInt32 bytes_sent;       /** the total number of bytes sent by all sockets */
@@ -152,6 +161,20 @@ class GUCEF_COMCORE_EXPORT_CPP CCom
      */
     bool IsSystemWideProxyServerActive( const CORE::CString& protocol ) const;
 
+    /**
+     *  Attempts to retrieve a list port id's for the available ports in the system of the given type
+     */
+    bool GetCommunicationPortList( const CORE::CString& portType ,
+                                   TStringList& portList         ) const;
+    
+    /**
+     *  Attempts to provide access to a communication port of the given type and the given id
+     *  If the cannot be accessed NULL will be returned.
+     */
+    CICommunicationPort* GetCommunicationPort( const CORE::CString& portType ,
+                                               const CORE::CString& portId   );
+
+
     private:
     friend class CComCoreGlobal;
 
@@ -176,13 +199,12 @@ class GUCEF_COMCORE_EXPORT_CPP CCom
      *
      *      @param socket the socket object that you wish to unregister
      */
-    void UnregisterSocketObject( const CSocket* socket );
+    void UnregisterSocketObject( CSocket* socket );
 
     private:
-    friend class CActiveComPump;
 
-    CORE::CDynamicArray _sockets;       /** our socket object heap */
-    MT::CMutex _mutex;  
+    CCom( const CCom& src );            /** not implementated */
+    CCom& operator=( const CCom& src ); /** not implementated */
 
     private:
 
@@ -195,13 +217,18 @@ class GUCEF_COMCORE_EXPORT_CPP CCom
     typedef struct SProxyServer TProxyServer;
     typedef std::map< CORE::CString, TProxyServer > TProxyList;
 
-    CCom( const CCom& src );            /** dummy implementation */
-    CCom& operator=( const CCom& src ); /** dummy implementation */
-    TSocketStats _stats;                /** global socket traffic stats */
-    bool _keep_gstats;                  /** whether or not to keep track of global stats */
-    UInt32 _scount;                     /** current number of registered sockets */
+    typedef std::set< CSocket* > TSocketSet;
 
+    typedef std::map< CORE::CString, CICommunicationPort* > TPortMap;
+    typedef std::map< CORE::CString, TPortMap > TPortIndex;
+    
+    TSocketSet m_sockets;    /** our socket object heap */
+    MT::CMutex _mutex; 
+    TSocketStats _stats;     /** global socket traffic stats */
+    bool _keep_gstats;       /** whether or not to keep track of global stats */
+    UInt32 _scount;          /** current number of registered sockets */
     TProxyList m_proxyList;
+    TPortIndex m_portObjs;   /** index of all currently created port objects */
 };
 
 /*-------------------------------------------------------------------------//

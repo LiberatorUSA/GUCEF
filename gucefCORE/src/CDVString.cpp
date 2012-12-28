@@ -536,7 +536,53 @@ CString::STL_String( void ) const
 UInt32
 CString::Length( void ) const
 {GUCEF_TRACE;
+
+    return m_length;
+}
+
+/*-------------------------------------------------------------------------*/
+
+void
+CString::SetLength( UInt32 newLength )
+{GUCEF_TRACE;
+
+    if ( NULL != m_string )
+    {
+        if ( m_length < newLength )
+        {
+            char* newString = new char[ newLength+1 ];
+            memcpy( newString, m_string, m_length+1 );
+            delete []m_string;
+            m_string = newString;
+            memset( m_string+m_length, 0, newLength-m_length );
+            m_length = newLength;
+            return;
+        }
+        
+        memset( m_string+newLength, 0, m_length-newLength );
+        m_length = newLength;
+        return;
+    }
+
+    if ( newLength > 0 )
+    {
+        m_string = new char[ newLength+1 ];
+        memset( m_string, 0, newLength );
+    }
+    m_length = newLength;
+}
+
+/*-------------------------------------------------------------------------*/
+
+UInt32
+CString::DetermineLength( void )
+{
+    if ( 0 != m_string )
+    {
+        m_length = (UInt32) strlen( m_string );
         return m_length;
+    }
+    return 0;
 }
 
 /*-------------------------------------------------------------------------*/

@@ -65,7 +65,6 @@ namespace COMCORE {
  *	Forward declarations of classes used
  */
 class CCom;                /* network manager, allows the sockets to do there job */
-class CActiveComPump;
 
 /*-------------------------------------------------------------------------*/
 

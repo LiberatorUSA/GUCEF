@@ -54,6 +54,15 @@
   #endif /* GUCEF_NEW_ON_H ? */
 #endif /* ACTIVATE_MEMORY_MANAGER ? */
 
+#if ( GUCEF_PLATFORM_MSWIN == GUCEF_PLATFORM )
+
+  #ifndef GUCEF_COMCORE_CWIN32SERIALPORT_H
+  #include "gucefCOMCORE_CWin32SerialPort.h"
+  #define GUCEF_COMCORE_CWIN32SERIALPORT_H
+  #endif /* GUCEF_COMCORE_CWIN32SERIALPORT_H ? */
+
+#endif
+
 /*-------------------------------------------------------------------------//
 //                                                                         //
 //      NAMESPACE                                                          //
@@ -62,19 +71,6 @@
 
 namespace GUCEF {
 namespace COMCORE {
-
-/*-------------------------------------------------------------------------//
-//                                                                         //
-//      CONSTANTS                                                          //
-//                                                                         //
-//-------------------------------------------------------------------------*/
-
-/*
- *      Define indicating the amount by which the heap is to be resized if there
- *      is insufficient room on the heap or reduce the size of the heap if
- *      sufficient entry's have been deleted.
- */
-#define HEAP_RESIZE_AMOUNT	5
 
 /*-------------------------------------------------------------------------//
 //                                                                         //
@@ -140,11 +136,12 @@ GetMSWinInternetProxyFromRegistry( CORE::CString& remoteHost ,
 /*-------------------------------------------------------------------------*/
 
 CCom::CCom()
-    : _keep_gstats( false )                ,
-      _scount( 0 )
+    : _keep_gstats( false ) ,
+      _scount( 0 )          ,
+      m_sockets()           ,
+      m_proxyList()
 {GUCEF_TRACE;
 
-    _sockets.SetResizeChange( HEAP_RESIZE_AMOUNT );
     memset( &_stats, 0, sizeof(TSocketStats) );
 
     #if ( GUCEF_PLATFORM == GUCEF_PLATFORM_MSWIN )
@@ -187,7 +184,7 @@ CCom::RegisterSocketObject( CSocket* socket )
 {GUCEF_TRACE;
 
     _mutex.Lock();
-    socket->SetSocketID( _sockets.AddEntry( socket ) );
+    m_sockets.insert( socket );
     ++_scount;
     _mutex.Unlock();
 }
@@ -195,11 +192,11 @@ CCom::RegisterSocketObject( CSocket* socket )
 /*-------------------------------------------------------------------------*/
 
 void
-CCom::UnregisterSocketObject( const CSocket* socket )
+CCom::UnregisterSocketObject( CSocket* socket )
 {GUCEF_TRACE;
 
     _mutex.Lock();
-    _sockets.SetEntry( socket->GetSocketID(), NULL );
+    m_sockets.erase( socket );
     --_scount;
     _mutex.Unlock();
 }
@@ -236,6 +233,11 @@ CCom::GetUseGlobalStats( void ) const
 void
 CCom::ResetGlobalStats( void )
 {GUCEF_TRACE;
+
+    _stats.bytes_sent = 0;
+    _stats.bytes_recieved = 0;
+    _stats.bps_sent = 0;
+    _stats.bps_recieved = 0;
 }
 
 /*-------------------------------------------------------------------------*/
@@ -244,7 +246,71 @@ const CCom::TSocketStats&
 CCom::GetGlobalStats( void ) const
 {GUCEF_TRACE;
 
-        return _stats;
+    return _stats;
+}
+
+/*-------------------------------------------------------------------------*/
+
+bool
+CCom::GetCommunicationPortList( const CORE::CString& portType ,
+                                TStringList& portList         ) const
+{
+    CORE::CString typeOfPort = portType.Lowercase();
+    if ( "serial" == typeOfPort ||
+         "com" == typeOfPort     )
+    {
+        #if ( GUCEF_PLATFORM_MSWIN == GUCEF_PLATFORM )
+        CWin32SerialPort::PopulatePortList( portList );
+        return true;
+        #endif
+    }    
+    return false;
+}
+
+/*-------------------------------------------------------------------------*/
+    
+CICommunicationPort*
+CCom::GetCommunicationPort( const CORE::CString& portType ,
+                            const CORE::CString& portId   )
+{
+    CORE::CString typeOfPort = portType.Lowercase();
+
+    _mutex.Lock();
+
+    // Check to see if we already have an entry for the given port
+    TPortIndex::iterator i = m_portObjs.find( typeOfPort );
+    if ( i != m_portObjs.end() )
+    {
+        TPortMap& portMap = (*i).second;
+        TPortMap::iterator n = portMap.find( portId );
+        if ( n != portMap.end() )
+        {
+            CICommunicationPort* port = (*n).second;
+            _mutex.Unlock();
+            return port;
+        }
+    }
+
+    // No such port object was found, check to see if we can create it
+    if ( "serial" == typeOfPort ||
+         "com" == typeOfPort     )
+    {
+        #if ( GUCEF_PLATFORM_MSWIN == GUCEF_PLATFORM )
+
+        CICommunicationPort* port = CWin32SerialPort::Create( portId );
+        if ( NULL != port )
+        {
+            TPortMap& portMap = m_portObjs[ portType ];
+            portMap[ portId ] = port;
+            _mutex.Unlock();
+            return port;
+        }
+
+        #endif
+    }
+    
+    _mutex.Unlock();    
+    return NULL;
 }
 
 /*-------------------------------------------------------------------------*/

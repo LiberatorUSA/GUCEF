@@ -66,10 +66,8 @@ GUCEF_OSMAIN_BEGIN
         GUCEF::CORE::CStdLogger logger( logFileAccess );
         GUCEF::CORE::CCoreGlobal::Instance()->GetLogManager().AddLogger( &logger );
         
-        #ifdef GUCEF_MSWIN_BUILD
-        GUCEF::CORE::CMSWinConsoleLogger consoleOut;
-        GUCEF::CORE::CCoreGlobal::Instance()->GetLogManager().AddLogger( &consoleOut );
-        #endif /* GUCEF_MSWIN_BUILD ? */
+        GUCEF::CORE::CPlatformNativeConsoleLogger consoleOut;
+        GUCEF::CORE::CCoreGlobal::Instance()->GetLogManager().AddLogger( consoleOut.GetLogger() );
         
         GUCEF::CORE::CCoreGlobal::Instance()->GetLogManager().FlushBootstrapLogEntriesToLogs();
 
