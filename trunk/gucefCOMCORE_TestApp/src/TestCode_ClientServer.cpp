@@ -149,19 +149,19 @@ CTestTCPClientServer::OnNotify( CORE::CNotifier* notifier                 ,
     {
         if ( eventid == CTCPServerSocket::ClientConnectedEvent )
         {
-            printf( "%s\r\n", eventid.GetName() );
+            printf( "%s\r\n", eventid.GetName().C_String() );
             
            // CTCPServerSocket* serverSocket = static_cast< CTCPServerSocket* >( notifier );
            // serverSocket->
         }
         else
         {
-            printf( "%s - UNHANDLED\r\n", eventid.GetName() );
+            printf( "%s - UNHANDLED\r\n", eventid.GetName().C_String() );
         }
     }
     else
     {
-        printf( "%s - UNHANDLED\r\n", eventid.GetName() );
+        printf( "%s - UNHANDLED\r\n", eventid.GetName().C_String() );
     }    
 }
 
