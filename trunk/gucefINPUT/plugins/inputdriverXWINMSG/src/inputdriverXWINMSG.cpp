@@ -81,15 +81,16 @@ typedef std::set< CEventListner* > TEventListnerSet;
 //-------------------------------------------------------------------------*/
 
 const char*
-GetArgListItem( const char*** args ,
-                const char* key    )
+GetArgListItem( const int argc    ,
+                const char** argv ,
+                const char* key   )
 {
-    UInt32 i=0;
-    while ( args[ i ] )
+    int i;
+    for ( i=0; i<argc-1; ++i )
     {
-        if ( strcmp( args[ i ][ 0 ], key ) == 0 )
+        if ( strcmp( argv[ i ], key ) == 0 )
         {
-            return args[ i ][ 1 ];
+            return argv[ i+1 ];
         }
         ++i;
     }
@@ -99,10 +100,11 @@ GetArgListItem( const char*** args ,
 /*--------------------------------------------------------------------------*/
 
 UInt32
-ParseArgListItemUInt32( const char*** args ,
-                        const char* key    )
+ParseArgListItemUInt32( const int argc    ,
+                        const char** argv ,
+                        const char* key   )
 {
-    const char* value = GetArgListItem( args, key );
+    const char* value = GetArgListItem( argc, argv, key );
     if ( NULL != value )
     {
         UInt32 result = 0UL;
@@ -115,10 +117,11 @@ ParseArgListItemUInt32( const char*** args ,
 /*--------------------------------------------------------------------------*/
 
 void*
-ParseArgListItemPointer( const char*** args ,
-                         const char* key    )
+ParseArgListItemPointer( const int argc    ,
+                         const char** argv ,
+                         const char* key   )
 {
-    const char* value = GetArgListItem( args, key );
+    const char* value = GetArgListItem( argc, argv, key );
     if ( NULL != value )
     {
         void* result = NULL;
@@ -189,13 +192,14 @@ INPUTDRIVERPLUG_Update( void* plugdata    ,
 UInt32 GUCEF_PLUGIN_CALLSPEC_PREFIX
 INPUTDRIVERPLUG_CreateContext( void* plugdata                   ,
                                void** contextdata               ,
-                               const char*** args               ,
+                               int argc                         ,
+                               const char** argv                ,
                                const TInputCallbacks* callbacks ) GUCEF_PLUGIN_CALLSPEC_SUFFIX
 {
     // input sanity check
     if ( NULL == plugdata ) return 0;
 
-    ::Window window = ParseArgListItemUInt32( args, "WINDOW" );
+    ::Window window = ParseArgListItemUInt32( argc, argv, "WINDOW" );
     if ( 0 == window ) return 0;
 
     TEventListnerSet* eventListnerSet = (TEventListnerSet*) plugdata;

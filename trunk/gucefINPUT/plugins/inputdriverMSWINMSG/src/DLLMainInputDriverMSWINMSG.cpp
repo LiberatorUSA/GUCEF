@@ -305,28 +305,30 @@ static TDriverData* driverData = NULL;
 //-------------------------------------------------------------------------*/
 
 const char*
-GetArgListItem( const char*** args ,
-                const char* key    )
-{       
-    UInt32 i=0;
-    while ( args[ i ] )
+GetArgListItem( const int argc    ,
+                const char** argv ,
+                const char* key   )
+{
+    int i;
+    for ( i=0; i<argc-1; ++i )
     {
-        if ( strcmp( args[ i ][ 0 ], key ) == 0 )
+        if ( strcmp( argv[ i ], key ) == 0 )
         {
-            return args[ i ][ 1 ];
+            return argv[ i+1 ];
         }
         ++i;
     }
     return 0;
 }
 
-/*---------------------------------------------------------------------------*/
+/*--------------------------------------------------------------------------*/
 
 UInt32
-ParseArgListItemUInt32( const char*** args ,
-                        const char* key    )
-{       
-    const char* value = GetArgListItem( args, key );
+ParseArgListItemUInt32( const int argc    ,
+                        const char** argv ,
+                        const char* key   )
+{
+    const char* value = GetArgListItem( argc, argv, key );
     if ( NULL != value )
     {
         UInt32 result = 0UL;
@@ -336,13 +338,14 @@ ParseArgListItemUInt32( const char*** args ,
     return 0;
 }
 
-/*---------------------------------------------------------------------------*/
+/*--------------------------------------------------------------------------*/
 
 void*
-ParseArgListItemPointer( const char*** args ,
-                         const char* key    )
-{       
-    const char* value = GetArgListItem( args, key );
+ParseArgListItemPointer( const int argc    ,
+                         const char** argv ,
+                         const char* key   )
+{
+    const char* value = GetArgListItem( argc, argv, key );
     if ( NULL != value )
     {
         void* result = NULL;
@@ -1063,7 +1066,8 @@ INPUTDRIVERPLUG_Update( void* plugdata    ,
 UInt32 GUCEF_PLUGIN_CALLSPEC_PREFIX
 INPUTDRIVERPLUG_CreateContext( void* plugdata                   ,
                                void** contextdata               ,
-                               const char*** args               ,
+                               int argc                         ,
+                               const char** argv                ,
                                const TInputCallbacks* callbacks ) GUCEF_PLUGIN_CALLSPEC_SUFFIX
 {
     TContextData* data;
@@ -1081,9 +1085,9 @@ INPUTDRIVERPLUG_CreateContext( void* plugdata                   ,
         *      get the window handle, this is always passed for MSWIN input drivers 
         */
     #pragma warning( disable: 4312 )
-    data->hWnd = (HWND) ParseArgListItemPointer( args, "WINDOW" );
-    BYTE grabCursor = ParseArgListItemUInt32( args, "GRABCURSOR" ) != 0;
-    data->showCursor = ParseArgListItemUInt32( args, "HIDECURSOR" ) == 0;
+    data->hWnd = (HWND) ParseArgListItemPointer( argc, argv, "WINDOW" );
+    BYTE grabCursor = ParseArgListItemUInt32( argc, argv, "GRABCURSOR" ) != 0;
+    data->showCursor = ParseArgListItemUInt32( argc, argv, "HIDECURSOR" ) == 0;
                 
     /*
      *      Retrieve a pointer to the current window message handler

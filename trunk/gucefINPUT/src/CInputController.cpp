@@ -436,7 +436,9 @@ CInputController::AddMouse( CInputDriver* inputDriver, const Int32 deviceID )
         m_mouseMap.insert( std::pair< UInt32, CMouse* >( deviceID, mouse ) );
 
         GUCEF_SYSTEM_LOG( CORE::LOGLEVEL_NORMAL, "Mouse input device added with device ID " + CORE::Int32ToString( deviceID ) );
-        NotifyObservers( MouseAttachedEvent, &TMouseAttachedEventData( deviceID ) );
+        
+        TMouseAttachedEventData eData( deviceID );
+        NotifyObservers( MouseAttachedEvent, &eData );
     }
 }
 
@@ -454,7 +456,9 @@ CInputController::RemoveMouse( const Int32 deviceID )
         m_mouseMap.erase( i );
 
         GUCEF_SYSTEM_LOG( CORE::LOGLEVEL_NORMAL, "Mouse input device removed with device ID " + CORE::Int32ToString( deviceID ) );
-        NotifyObservers( MouseDetachedEvent, &TMouseDetachedEventData( deviceID ) );
+        
+        TMouseDetachedEventData eData( deviceID );
+        NotifyObservers( MouseDetachedEvent, &eData );
     }
 }
 
@@ -471,7 +475,9 @@ CInputController::AddKeyboard( CInputDriver* inputDriver, const Int32 deviceID )
         m_keyboardMap.insert( std::pair< UInt32, CKeyboard* >( deviceID, keyboard ) );
 
         GUCEF_SYSTEM_LOG( CORE::LOGLEVEL_NORMAL, "Keyboard input device added with device ID " + CORE::Int32ToString( deviceID ) );
-        NotifyObservers( KeyboardAttachedEvent, &TKeyboardAttachedEventData( deviceID ) );
+        
+        TKeyboardAttachedEventData eData( deviceID );
+        NotifyObservers( KeyboardAttachedEvent, &eData );
     }
 }
 
@@ -489,7 +495,9 @@ CInputController::RemoveKeyboard( const Int32 deviceID )
         m_keyboardMap.erase( i );
 
         GUCEF_SYSTEM_LOG( CORE::LOGLEVEL_NORMAL, "Keyboard input device removed with device ID " + CORE::Int32ToString( deviceID ) );
-        NotifyObservers( KeyboardDetachedEvent, &TKeyboardDetachedEventData( deviceID ) );
+        
+        TKeyboardDetachedEventData eData( deviceID );
+        NotifyObservers( KeyboardDetachedEvent, &eData );
     }
 }
 

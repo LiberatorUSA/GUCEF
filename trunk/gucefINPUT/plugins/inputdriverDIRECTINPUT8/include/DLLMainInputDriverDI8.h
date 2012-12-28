@@ -108,7 +108,8 @@ INPUTDRIVERPLUG_Update( void* plugdata    ,
 GUCEF_INPUT_PLUGIN_PUBLIC_C UInt32 GUCEF_PLUGIN_CALLSPEC_PREFIX
 INPUTDRIVERPLUG_CreateContext( void* plugdata                   ,
                                void** contextdata               ,
-                               const char*** args               ,
+                               int argc                         ,
+                               const char** argv                ,
                                const TInputCallbacks* callbacks ) GUCEF_PLUGIN_CALLSPEC_SUFFIX;
 
 /*---------------------------------------------------------------------------*/

@@ -145,7 +145,8 @@ void
 FreeStringMatrix( char** argv ,
                   int argc    )
 {
-    for ( int i=0; i<argc; ++i )
+    int i;
+    for ( i=0; i<argc; ++i )
     {
         free( argv[ i ] );
     }
@@ -161,8 +162,8 @@ CreatePlatformParams( char*** argv              ,
 {
     // right now we have 1 param
     // Each key is an entry and each value is an entry
-    argv (char**) = malloc( 2 * sizeof(char**) );
-    argc = 2;
+    *argv = (char**) malloc( 2 * sizeof(char**) );
+    *argc = 2;
 
     // create the android_app param
     argv[ 0 ] = AllocString( "-android_app" );
