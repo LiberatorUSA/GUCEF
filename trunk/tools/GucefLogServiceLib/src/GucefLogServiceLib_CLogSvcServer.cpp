@@ -23,6 +23,8 @@
 //                                                                         //
 //-------------------------------------------------------------------------*/
 
+#include <string.h>
+
 #ifndef GUCEF_CORE_CGUCEFAPPLICATION_H
 #include "CGUCEFApplication.h"
 #define GUCEF_CORE_CGUCEFAPPLICATION_H
@@ -212,8 +214,8 @@ CLogSvcServer::ProcessReceivedMessage( TClientInfo& clientInfo                  
                     clientInfo.logClientVersion = initMessage.GetClientVersion();
                     clientInfo.appName = initMessage.GetApplicationName();
                     clientInfo.processId = initMessage.GetProcessId();
-                    clientInfo.processName = initMessage.GetProcessName();                    
-                    
+                    clientInfo.processName = initMessage.GetProcessName();
+
                     // Set the client's address and port for easy unique addressability
                     clientInfo.addressAndPort = connection->GetRemoteIP().AddressAndPortAsString();
 

@@ -58,9 +58,9 @@ class CString;
 class GUCEF_CORE_PUBLIC_CPP CAndroidSystemLogger : public CILogger
 {
     public:
-    
+
     CAndroidSystemLogger( void );
-    
+
     virtual ~CAndroidSystemLogger();
 
     /**
@@ -86,10 +86,11 @@ class GUCEF_CORE_PUBLIC_CPP CAndroidSystemLogger : public CILogger
 
     CAndroidSystemLogger( const CAndroidSystemLogger& src );              /**< not implemented */
     CAndroidSystemLogger& operator=( const CAndroidSystemLogger& src );   /**< not implemented */
-    
+
     private:
-    
+
     CString m_tag;
+    void* m_logFunc;
 };
 
 /*-------------------------------------------------------------------------//
