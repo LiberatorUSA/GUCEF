@@ -157,7 +157,7 @@ public:
         }
         else
         {
-            printf( "This is observer %d calling: Recieved event \"%s\" with id %d\n", m_index, CCoreGlobal::Instance()->GetNotificationIDRegistry().Lookup(eventid).C_String(), eventid );
+            printf( "This is observer %d calling: Recieved event \"%s\" with id %d\n", m_index, CCoreGlobal::Instance()->GetNotificationIDRegistry().Lookup(eventid).C_String(), eventid.GetID() );
             m_eventCache[ m_index ] = eventid;        
         }            
     }   

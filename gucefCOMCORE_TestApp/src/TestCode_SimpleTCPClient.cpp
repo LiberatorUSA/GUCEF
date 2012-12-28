@@ -74,7 +74,7 @@ class CSimpleTCPClient : public CORE::CObservingNotifier
         {
             if ( eventid == CGUCEFApplication::AppInitEvent )
             {
-                printf("%s\n", eventid.GetName());
+                printf("%s\n", eventid.GetName().C_String() );
                 _clientsock.Subscribe( &AsObserver() );
                 _clientsock.ConnectTo( RemoteAddr,
                                        Port      );
@@ -97,16 +97,16 @@ class CSimpleTCPClient : public CORE::CObservingNotifier
                 if ( NULL != eventdata )
                 {
                     CTCPClientSocket::TSocketErrorEventData* errorData = static_cast< CTCPClientSocket::TSocketErrorEventData* >( eventdata );                     
-                    printf( "%s - Error code: %d\r\n", eventid.GetName(), errorData->GetData() );
+                    printf( "%s - Error code: %d\r\n", eventid.GetName().C_String(), errorData->GetData() );
                 }
                 else
                 {
-                    printf( "%s - No error data found\r\n", eventid.GetName() );
+                    printf( "%s - No error data found\r\n", eventid.GetName().C_String() );
                 }
             }
             else
             {
-                printf("%s - UNHANDLED\r\n", eventid.GetName());
+                printf("%s - UNHANDLED\r\n", eventid.GetName().C_String() );
             }
         }
 
