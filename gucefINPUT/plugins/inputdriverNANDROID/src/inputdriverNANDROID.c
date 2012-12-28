@@ -23,14 +23,17 @@
 //                                                                         //
 //-------------------------------------------------------------------------*/
 
+#include "inputdriverNANDROID.h"
+
+#if ( GUCEF_PLATFORM == GUCEF_PLATFORM_ANDROID )
+
 #include <string.h>
 #include <stdlib.h>
-#include <set>
 #include <android/input.h>
+#include <android/native_activity.h>
+#include <android_native_app_glue.h>
 
-#include "gucef_keyboard.h"
-
-#include "inputdriverNANDROID.h"
+#include "gucefINPUT_keyboard.h"
 
 /*-------------------------------------------------------------------------//
 //                                                                         //
@@ -75,9 +78,10 @@ static UInt32 keyModStates = 0;
 int
 GetFreeContextSlot( void )
 {
-    for ( int i=0; i<MAX_CONTEXTS; ++i )
+    int i;
+    for ( i=0; i<MAX_CONTEXTS; ++i )
     {
-        if ( 0 < contexts.isInUse )
+        if ( 0 < contexts[ i ].isInUse )
         {
             return i;
         }
@@ -100,7 +104,8 @@ GetArgListItem( const int argc    ,
                 const char** argv ,
                 const char* key   )
 {
-    for ( int i=0; i<argc-1; ++i )
+    int i;
+    for ( i=0; i<argc-1; ++i )
     {
         if ( strcmp( argv[ i ], key ) == 0 )
         {
@@ -217,8 +222,8 @@ MapAndroidKeyToGucef( int keycode )
         case AKEYCODE_SYM: return KEYCODE_UNASSIGNED;
         case AKEYCODE_EXPLORER: return KEYCODE_MYCOMPUTER;
         case AKEYCODE_ENVELOPE: return KEYCODE_MAIL;
-        case AKEYCODE_ENTER: return KEYCODE_ENTER;
-        case AKEYCODE_DEL: return KEYCODE_DEL;
+        case AKEYCODE_ENTER: return KEYCODE_RETURN;
+        case AKEYCODE_DEL: return KEYCODE_DELETE;
         case AKEYCODE_GRAVE: return KEYCODE_GRAVE;
         case AKEYCODE_MINUS: return KEYCODE_MINUS;
         case AKEYCODE_EQUALS: return KEYCODE_EQUALS;
@@ -243,8 +248,8 @@ MapAndroidKeyToGucef( int keycode )
         //	case AKEYCODE_MEDIA_REWIND: return KEYCODE_UNASSIGNED;
         //	case AKEYCODE_MEDIA_FAST_FORWARD: return KEYCODE_UNASSIGNED;
         case AKEYCODE_MUTE: return KEYCODE_MUTE;
-        case AKEYCODE_PAGE_UP: return KEYCODE_PAGEUP;
-        case AKEYCODE_PAGE_DOWN: return KEYCODE_PAGEDOWN;
+        case AKEYCODE_PAGE_UP: return KEYCODE_PGUP;
+        case AKEYCODE_PAGE_DOWN: return KEYCODE_PGDOWN;
         //	case AKEYCODE_PICTSYMBOLS: return KEYCODE_UNASSIGNED;
         //	case AKEYCODE_SWITCH_CHARSET: return KEYCODE_UNASSIGNED;
         case AKEYCODE_BUTTON_A: return KEYCODE_A;
@@ -271,11 +276,12 @@ MapAndroidKeyToGucef( int keycode )
 void
 NotifyAllContextsOfKeyUp( KeyCode keyCode )
 {
-    for ( int i=0; i<MAX_CONTEXTS; ++i )
+    int i;
+    for ( i=0; i<MAX_CONTEXTS; ++i )
     {
         if ( 0 < contexts[ i ].isInUse )
         {
-            contexts[ i ].callbacks.onKeyboardKeyUp( contexts[ i ].callbacks.userData, 0, keyCode, keyModStates );
+            contexts[ i ].callbacks->onKeyboardKeyUp( contexts[ i ].callbacks->userData, 0, keyCode, keyModStates );
         }
     }
 }
@@ -285,11 +291,12 @@ NotifyAllContextsOfKeyUp( KeyCode keyCode )
 void
 NotifyAllContextsOfKeyDown( KeyCode keyCode )
 {
-    for ( int i=0; i<MAX_CONTEXTS; ++i )
+    int i;
+    for ( i=0; i<MAX_CONTEXTS; ++i )
     {
         if ( 0 < contexts[ i ].isInUse )
         {
-            contexts[ i ].callbacks.onKeyboardKeyDown( contexts[ i ].callbacks.userData, 0, keyCode, keyModStates );
+            contexts[ i ].callbacks->onKeyboardKeyDown( contexts[ i ].callbacks->userData, 0, keyCode, keyModStates );
         }
     }
 }
@@ -299,11 +306,12 @@ NotifyAllContextsOfKeyDown( KeyCode keyCode )
 void
 NotifyAllContextsOfMouseMove( int xPos, int yPos, int xDelta, int yDelta )
 {
-    for ( int i=0; i<MAX_CONTEXTS; ++i )
+    int i;
+    for ( i=0; i<MAX_CONTEXTS; ++i )
     {
         if ( 0 < contexts[ i ].isInUse )
         {
-            contexts[ i ].callbacks.onMouseMove( contexts[ i ].callbacks.userData, 0, xPos, yPos, xDelta, yDelta );
+            contexts[ i ].callbacks->onMouseMove( contexts[ i ].callbacks->userData, 0, xPos, yPos, xDelta, yDelta );
         }
     }
 }
@@ -382,9 +390,6 @@ INPUTDRIVERPLUG_Init( void** plugdata   ,
 UInt32 GUCEF_PLUGIN_CALLSPEC_PREFIX
 INPUTDRIVERPLUG_Shutdown( void* plugdata ) GUCEF_PLUGIN_CALLSPEC_SUFFIX
 {
-    TEventListnerSet* eventListnerSet = (TEventListnerSet*) plugdata;
-    delete eventListnerSet;
-
     return 1;
 }
 
@@ -427,12 +432,13 @@ INPUTDRIVERPLUG_Update( void* plugdata    ,
 UInt32 GUCEF_PLUGIN_CALLSPEC_PREFIX
 INPUTDRIVERPLUG_CreateContext( void* plugdata                   ,
                                void** contextdata               ,
-                               const char** args                ,
+                               int argc                         ,
+                               const char** argv                ,
                                const TInputCallbacks* callbacks ) GUCEF_PLUGIN_CALLSPEC_SUFFIX
 {
 
 
-    GUCEF_SYSTEM_LOG( CORE::LOGLEVEL_NORMAL, "Created Native Android input context" );
+    //GUCEF_SYSTEM_LOG( CORE::LOGLEVEL_NORMAL, "Created Native Android input context" );
 
     return 1;
 }
@@ -511,16 +517,8 @@ INPUTDRIVERPLUG_GetDeviceVarState( void* plugdata          ,
     return 0;
 }
 
-/*-------------------------------------------------------------------------//
-//                                                                         //
-//      NAMESPACE                                                          //
-//                                                                         //
-//-------------------------------------------------------------------------*/
+/*--------------------------------------------------------------------------*/
 
-#ifdef __cplusplus
-}; /* namespace XWINMSG */
-}; /* namespace INPUT */
-}; /* namespace GUCEF */
-#endif /* __cplusplus */
+#endif /* GUCEF_PLATFORM == GUCEF_PLATFORM_ANDROID ? */
 
-/*-------------------------------------------------------------------------*/
+/*--------------------------------------------------------------------------*/

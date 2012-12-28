@@ -25,6 +25,7 @@ LOCAL_SRC_FILES := \
   src/inputdriverNANDROID.c
 
 LOCAL_C_INCLUDES := \
+  $(MY_MODULE_PATH)/include \
   $(MY_MODULE_PATH)/../../../common/include \
   $(MY_MODULE_PATH)/../../../gucefCORE/include \
   $(MY_MODULE_PATH)/../../../gucefCORE/include/android \
@@ -39,5 +40,14 @@ LOCAL_SHARED_LIBRARIES := \
   gucefINPUT \
   gucefMT
 
+
+LOCAL_STATIC_LIBRARIES := \
+  android_native_app_glue
+
+
+LOCAL_LDLIBS := \
+  -landroid
+
 include $(BUILD_SHARED_LIBRARY)
 
+$(call import-module,android/native_app_glue)

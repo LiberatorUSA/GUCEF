@@ -93,20 +93,53 @@ typedef struct SContextData TContextData;
 //                                                                         //
 //-------------------------------------------------------------------------*/
 
-UInt32
-ParseArgListItemUInt32( const char*** args ,
-                        const char* key    )
+const char*
+GetArgListItem( const int argc    ,
+                const char** argv ,
+                const char* key   )
 {
-    UInt32 i=0;
-    while ( 0 != args[ i ] )
+    int i;
+    for ( i=0; i<argc-1; ++i )
     {
-        if ( strcmp( args[ i ][ 0 ], key ) == 0 )
+        if ( strcmp( argv[ i ], key ) == 0 )
         {
-            UInt32 value = 0UL;
-            sscanf( args[ i ][ 1 ], "%d", &value );
-            return value;
+            return argv[ i+1 ];
         }
         ++i;
+    }
+    return 0;
+}
+
+/*--------------------------------------------------------------------------*/
+
+UInt32
+ParseArgListItemUInt32( const int argc    ,
+                        const char** argv ,
+                        const char* key   )
+{
+    const char* value = GetArgListItem( argc, argv, key );
+    if ( NULL != value )
+    {
+        UInt32 result = 0UL;
+        sscanf( value, "%d", &result );
+        return result;
+    }
+    return 0;
+}
+
+/*--------------------------------------------------------------------------*/
+
+void*
+ParseArgListItemPointer( const int argc    ,
+                         const char** argv ,
+                         const char* key   )
+{
+    const char* value = GetArgListItem( argc, argv, key );
+    if ( NULL != value )
+    {
+        void* result = NULL;
+        sscanf( value, "%p", &result );
+        return result;
     }
     return 0;
 }
@@ -204,10 +237,11 @@ INPUTDRIVERPLUG_Update( void* plugdata    ,
 UInt32 GUCEF_PLUGIN_CALLSPEC_PREFIX
 INPUTDRIVERPLUG_CreateContext( void* plugdata                   ,
                                void** contextdata               ,
-                               const char*** args               ,
+                               int argc                         ,
+                               const char** argv                ,
                                const TInputCallbacks* callbacks ) GUCEF_PLUGIN_CALLSPEC_SUFFIX
 {
-    size_t handle = (size_t) ParseArgListItemUInt32( args, "WINDOW" );
+    size_t handle = (size_t) ParseArgListItemUInt32( argc, argv, "WINDOW" );
     if ( 0 != handle )
     {
         TContextData* data = new TContextData;

@@ -9,6 +9,8 @@
             <Dependency Name="gucefINPUT" />
             <Dependency Name="gucefCORE" />
             <Dependency Name="gucefMT" />
+            <Dependency Name="android" />
+            <Dependency Name="android_native_app_glue" Type="StaticLibrary" />
         </Linker>
         <Preprocessor>
             <Define String="INPUTDRIVERANDROID_BUILD_MODULE" />
