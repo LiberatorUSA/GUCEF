@@ -65,6 +65,12 @@ cp -f $SRCDIR/libGucefLogServiceClientPlugin.so $DSTDIR
 cp -f $SRCDIR/libvfspluginDVP.so $DSTDIR
 cp -f $SRCDIR/libvfspluginVP.so $DSTDIR
 cp -f $SRCDIR/libvfspluginZIP.so $DSTDIR
+cp -f $SRCDIR/libguidriverAndroidGLES.so $DSTDIR
+cp -f $SRCDIR/libguidriverMyGUI.so $DSTDIR
+cp -f $SRCDIR/libguidriverMyGUIOpenGL.so $DSTDIR
+cp -f $SRCDIR/libguidriverRocket.so $DSTDIR
+cp -f $SRCDIR/libguidriverRocketOpenGL.so $DSTDIR
+cp -f $SRCDIR/libinputdriverNANDROID.so $DSTDIR
 
 echo "* Copy plugin dependencies"
 
@@ -78,6 +84,7 @@ cp -f $SRCDIR/libzziplib.so $DSTDIR
 cp -f $SRCDIR/libfreetype.so $DSTDIR
 cp -f $SRCDIR/liblibparsifal.so $DSTDIR
 cp -f $SRCDIR/libminiupnpc.so $DSTDIR
+cp -f $SRCDIR/libMyGUI.Engine.so $DSTDIR
 cp -f $SRCDIR/libRocketControls.so $DSTDIR
 cp -f $SRCDIR/libRocketCore.so $DSTDIR
 cp -f $SRCDIR/libRocketDebugger.so $DSTDIR
@@ -95,7 +102,7 @@ scriptPath="$(cd "${0%/*}" 2>/dev/null; echo "$PWD"/"${0##*/}")"
 COPYPACKAGEBINARIES_SCRIPTSTARTDIR=${scriptPath%/*}
 echo "COPYPACKAGEBINARIES_SCRIPTSTARTDIR = $COPYPACKAGEBINARIES_SCRIPTSTARTDIR"
 
-# Make sure the GUCEF_HOME variable is set
+# Copy all the modules
 CopyPackageBinaries
 CopyPackageBinariesAsAssets
 
