@@ -489,7 +489,7 @@ void
 CInputDriverPlugin::CreateArgMatrix( const CORE::CValueList& params, char**& argv, int& argc )
 {GUCEF_TRACE;
 
-    if ( params.GetCount() <= 1 )
+    if ( params.GetCount() = 0 )
     {
         argc = 0;
         argv = 0;
