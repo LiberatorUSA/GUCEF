@@ -199,7 +199,7 @@ INPUTDRIVERPLUG_CreateContext( void* plugdata                   ,
     // input sanity check
     if ( NULL == plugdata ) return 0;
 
-    ::Window window = ParseArgListItemUInt32( argc, argv, "WINDOW" );
+    ::Window window = ParseArgListItemUInt32( argc, argv, "-WINDOW" );
     if ( 0 == window ) return 0;
 
     TEventListnerSet* eventListnerSet = (TEventListnerSet*) plugdata;
