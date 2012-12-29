@@ -108,7 +108,7 @@ ParseArgListItemUInt32( const int argc    ,
     if ( NULL != value )
     {
         UInt32 result = 0UL;
-        sscanf( value, "%d", &result );
+        sscanf( value, "%ul", &result );
         return result;
     }
     return 0;
