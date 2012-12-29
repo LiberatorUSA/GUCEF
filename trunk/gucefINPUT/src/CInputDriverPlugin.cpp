@@ -489,20 +489,31 @@ void
 CInputDriverPlugin::CreateArgMatrix( const CORE::CValueList& params, char**& argv, int& argc )
 {GUCEF_TRACE;
 
+    if ( params.GetCount() <= 1 )
+    {
+        argc = 0;
+        argv = 0;
+        return;
+    }
+
     argc = params.GetCount()*2;
     argv = new char*[ argc ];
 
+    UInt32 n=0;
     CORE::CString value, key;
-    for ( UInt32 i=0; i<params.GetCount()*2; ++i )
+    for ( UInt32 i=0; i<params.GetCount(); ++i )
     {
         value = params.GetValue( i );
         key = params.GetKey( i );
 
-        argv[ i ] = new char[ key.Length()+1 ];
-        memcpy( argv[ i ], key.C_String(), key.Length()+1 );
+        argv[ n ] = new char[ key.Length()+2 ];
+        argv[ n ][ 0 ] = '-';
+        memcpy( ((argv[ n ])+1), key.C_String(), key.Length()+1 );
+        ++n;
 
-        argv[ i ] = new char[ value.Length()+1 ];
-        memcpy( argv[ i ], value.C_String(), value.Length()+1 );
+        argv[ n ] = new char[ value.Length()+1 ];
+        memcpy( argv[ n ], value.C_String(), value.Length()+1 );
+        ++n;
     }
 }
 

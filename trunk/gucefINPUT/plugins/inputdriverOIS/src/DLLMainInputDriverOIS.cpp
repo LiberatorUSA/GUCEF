@@ -241,7 +241,7 @@ INPUTDRIVERPLUG_CreateContext( void* plugdata                   ,
                                const char** argv                ,
                                const TInputCallbacks* callbacks ) GUCEF_PLUGIN_CALLSPEC_SUFFIX
 {
-    size_t handle = (size_t) ParseArgListItemUInt32( argc, argv, "WINDOW" );
+    size_t handle = (size_t) ParseArgListItemUInt32( argc, argv, "-WINDOW" );
     if ( 0 != handle )
     {
         TContextData* data = new TContextData;
