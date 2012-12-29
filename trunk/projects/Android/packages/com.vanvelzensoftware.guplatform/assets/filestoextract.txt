@@ -20,8 +20,15 @@ libs/armeabi/libgucefPATCHER.so
 libs/armeabi/libgucefPRODMAN.so
 libs/armeabi/libgucefSMDRN.so
 libs/armeabi/libgucefVFS.so
+libs/armeabi/libguidriverAndroidGLES.so
+libs/armeabi/libguidriverMyGUI.so
+libs/armeabi/libguidriverMyGUIOpenGL.so
+libs/armeabi/libguidriverRocket.so
+libs/armeabi/libguidriverRocketOpenGL.so
+libs/armeabi/libinputdriverNANDROID.so
 libs/armeabi/liblibparsifal.so
 libs/armeabi/libminiupnpc.so
+libs/armeabi/libMyGUI.Engine.so
 libs/armeabi/libRocketControls.so
 libs/armeabi/libRocketCore.so
 libs/armeabi/libRocketDebugger.so

@@ -65,6 +65,12 @@ xcopy %SRCDIR%\libGucefLogServiceClientPlugin.so %DSTDIR% /Y /I /F
 xcopy %SRCDIR%\libvfspluginDVP.so %DSTDIR% /Y /I /F
 xcopy %SRCDIR%\libvfspluginVP.so %DSTDIR% /Y /I /F
 xcopy %SRCDIR%\libvfspluginZIP.so %DSTDIR% /Y /I /F
+xcopy %SRCDIR%\libguidriverAndroidGLES.so %DSTDIR% /Y /I /F
+xcopy %SRCDIR%\libguidriverMyGUI.so %DSTDIR% /Y /I /F
+xcopy %SRCDIR%\libguidriverMyGUIOpenGL.so %DSTDIR% /Y /I /F
+xcopy %SRCDIR%\libguidriverRocket.so %DSTDIR% /Y /I /F
+xcopy %SRCDIR%\libguidriverRocketOpenGL.so %DSTDIR% /Y /I /F
+xcopy %SRCDIR%\libinputdriverNANDROID.so %DSTDIR% /Y /I /F
 
 ECHO * Copy plugin dependencies
 
@@ -78,6 +84,7 @@ xcopy %SRCDIR%\libzziplib.so %DSTDIR% /Y /I /F
 xcopy %SRCDIR%\libfreetype.so %DSTDIR% /Y /I /F
 xcopy %SRCDIR%\liblibparsifal.so %DSTDIR% /Y /I /F
 xcopy %SRCDIR%\libminiupnpc.so %DSTDIR% /Y /I /F
+xcopy %SRCDIR%\libMyGUI.Engine.so %DSTDIR% /Y /I /F
 xcopy %SRCDIR%\libRocketControls.so %DSTDIR% /Y /I /F
 xcopy %SRCDIR%\libRocketCore.so %DSTDIR% /Y /I /F
 xcopy %SRCDIR%\libRocketDebugger.so %DSTDIR% /Y /I /F
