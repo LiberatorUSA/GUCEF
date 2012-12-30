@@ -152,14 +152,14 @@ CMyGUIInputAdapter::ConvertMouseButtonIndex( const UInt32 buttonIndex )
 
     switch ( buttonIndex )
     {
-        case 0: return MyGUI::MouseButton( MyGUI::MouseButton::Button0 );
-        case 1: return MyGUI::MouseButton( MyGUI::MouseButton::Button1 );
-        case 2: return MyGUI::MouseButton( MyGUI::MouseButton::Button2 );
-        case 3: return MyGUI::MouseButton( MyGUI::MouseButton::Button3 );
-        case 4: return MyGUI::MouseButton( MyGUI::MouseButton::Button4 );
-        case 5: return MyGUI::MouseButton( MyGUI::MouseButton::Button5 );
-        case 6: return MyGUI::MouseButton( MyGUI::MouseButton::Button6 );
-        case 7: return MyGUI::MouseButton( MyGUI::MouseButton::Button7 );
+        case 1: return MyGUI::MouseButton( MyGUI::MouseButton::Button0 );
+        case 2: return MyGUI::MouseButton( MyGUI::MouseButton::Button1 );
+        case 3: return MyGUI::MouseButton( MyGUI::MouseButton::Button2 );
+        case 4: return MyGUI::MouseButton( MyGUI::MouseButton::Button3 );
+        case 5: return MyGUI::MouseButton( MyGUI::MouseButton::Button4 );
+        case 6: return MyGUI::MouseButton( MyGUI::MouseButton::Button5 );
+        case 7: return MyGUI::MouseButton( MyGUI::MouseButton::Button6 );
+        case 8: return MyGUI::MouseButton( MyGUI::MouseButton::Button7 );
         default:
         {
             GUCEF_ERROR_LOG( GUCEF::CORE::LOGLEVEL_IMPORTANT, "CMyGUIInputAdapter(" + GUCEF::CORE::PointerToString( this ) + "): Unable to convert mouse button with index " + GUCEF::CORE::UInt32ToString( buttonIndex ) + " to a MyGUI equivalant" );
