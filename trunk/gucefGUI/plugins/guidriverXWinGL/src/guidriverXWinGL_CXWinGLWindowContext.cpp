@@ -343,6 +343,11 @@ CXWinGLWindowContext::OnNotify( CORE::CNotifier* notifier   ,
     else
     if ( eventID == CORE::CX11Window::WindowResizeEvent )
     {
+        int dummy, width, height;
+        if ( m_window.GetClientArea( dummy, dummy, width, height ) )
+        {
+            glViewport( 0, 0, width, height );
+        }
         NotifyObservers( WindowContextSizeEvent );
     }
     else
