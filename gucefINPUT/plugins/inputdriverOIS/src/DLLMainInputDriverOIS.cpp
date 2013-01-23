@@ -276,8 +276,8 @@ INPUTDRIVERPLUG_CreateContext( void* plugdata                   ,
             {
             }
         }
-        UInt32 windowWidth = ParseArgListItemUInt32( args, "WINDOW_WIDTH" );
-        UInt32 windowHeight = ParseArgListItemUInt32( args, "WINDOW_HEIGHT" );
+        UInt32 windowWidth = ParseArgListItemUInt32( argc, argv, "WINDOW_WIDTH" );
+        UInt32 windowHeight = ParseArgListItemUInt32( argc, argv, "WINDOW_HEIGHT" );
         UInt32 miceCount = (UInt32) data->inputManager->getNumberOfDevices( OIS::OISMouse );
         for ( UInt32 i=0; i<miceCount; ++i )
         {

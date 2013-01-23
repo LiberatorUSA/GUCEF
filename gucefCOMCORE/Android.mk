@@ -40,6 +40,7 @@ LOCAL_SRC_FILES := \
   src/gucefCOMCORE_CComCoreGlobal.cpp \
   src/gucefCOMCORE_CICommunicationPort.cpp \
   src/gucefCOMCORE_CPingTaskConsumer.cpp \
+  src/gucefCOMCORE_CSerialPort.cpp \
   src/socketutils.cpp
 
 LOCAL_C_INCLUDES := \
