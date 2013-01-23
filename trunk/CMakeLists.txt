@@ -249,6 +249,10 @@ add_subdirectory( gucefDRN_TestApp )
 add_subdirectory( gucefLOADER_TestApp )
 add_subdirectory( gucefPRODMAN_TestApp )
 
+# Setup GUCEF Plugin style applications
+add_subdirectory( apps/gucefPATCHERAPP )
+add_subdirectory( apps/gucefPRODMANAPP )
+
 # Setup GUCEF tooling applications
 add_subdirectory(tools)
 

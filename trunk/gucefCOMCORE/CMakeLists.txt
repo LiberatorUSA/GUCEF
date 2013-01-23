@@ -28,8 +28,10 @@ set( HEADER_FILES
   include/dvwinsock.h
   include/gucefCOMCORE.h
   include/gucefCOMCORE_CComCoreGlobal.h
+  include/gucefCOMCORE_CICommunicationPort.h
   include/gucefCOMCORE_config.h
   include/gucefCOMCORE_CPingTaskConsumer.h
+  include/gucefCOMCORE_CSerialPort.h
   include/gucefCOMCORE_ETypes.h
   include/gucefCOMCORE_macros.h
   include/socketerrors.h
@@ -53,6 +55,7 @@ set( SOURCE_FILES
   src/dvwinsock.c
   src/gucefCOMCORE.cpp
   src/gucefCOMCORE_CComCoreGlobal.cpp
+  src/gucefCOMCORE_CICommunicationPort.cpp
   src/gucefCOMCORE_CPingTaskConsumer.cpp
   src/socketutils.cpp
 )
@@ -61,6 +64,7 @@ set( SOURCE_FILES
 
 if (WIN32)
   set( PLATFORM_HEADER_FILES 
+    include/mswin/gucefCOMCORE_CWin32SerialPort.h
     include/mswin/gucefCOMCORE_icmpApi.h
   )
 
@@ -68,6 +72,7 @@ if (WIN32)
   source_group( "Platform Header Files" FILES ${PLATFORM_HEADER_FILES} )
 
   set( PLATFORM_SOURCE_FILES 
+    src/mswin/gucefCOMCORE_CWin32SerialPort.cpp
     src/mswin/gucefCOMCORE_icmpApi.cpp
   )
 
@@ -76,6 +81,7 @@ if (WIN32)
 
 elseif (WIN64)
   set( PLATFORM_HEADER_FILES 
+    include/mswin/gucefCOMCORE_CWin32SerialPort.h
     include/mswin/gucefCOMCORE_icmpApi.h
   )
 
@@ -83,6 +89,7 @@ elseif (WIN64)
   source_group( "Platform Header Files" FILES ${PLATFORM_HEADER_FILES} )
 
   set( PLATFORM_SOURCE_FILES 
+    src/mswin/gucefCOMCORE_CWin32SerialPort.cpp
     src/mswin/gucefCOMCORE_icmpApi.cpp
   )
 

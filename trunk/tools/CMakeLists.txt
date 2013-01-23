@@ -28,5 +28,6 @@ add_subdirectory(GucefLogServiceApp)
 add_subdirectory(GucefLogService_TestApp)
 add_subdirectory(ProjectGenerator)
 add_subdirectory(FileDiff)
+add_subdirectory(MemoryLeakFinder)
 
 
