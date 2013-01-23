@@ -24,11 +24,11 @@ LOCAL_SRC_FILES := \
   src/gucefIMAGE_TestApp.cpp
 
 LOCAL_C_INCLUDES := \
-  $(MY_MODULE_PATH)/../common/include \
-  $(MY_MODULE_PATH)/../gucefCORE/include \
-  $(MY_MODULE_PATH)/../gucefCORE/include/android \
-  $(MY_MODULE_PATH)/../gucefIMAGE/include \
-  $(MY_MODULE_PATH)/../gucefMT/include
+  $(MY_MODULE_PATH)/../../common/include \
+  $(MY_MODULE_PATH)/../../gucefCORE/include \
+  $(MY_MODULE_PATH)/../../gucefCORE/include/android \
+  $(MY_MODULE_PATH)/../../gucefIMAGE/include \
+  $(MY_MODULE_PATH)/../../gucefMT/include
 
 
 LOCAL_SHARED_LIBRARIES := \
