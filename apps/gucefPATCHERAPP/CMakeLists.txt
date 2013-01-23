@@ -12,6 +12,8 @@
 # Configuration for module: gucefPATCHERAPP
 
 set( HEADER_FILES 
+  include/gucefPATCHERAPP_config.h
+  include/gucefPATCHERAPP_macros.h
   include/gucefPATCHERAPP_main.h
 )
 

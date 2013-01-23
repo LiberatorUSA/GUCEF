@@ -45,4 +45,4 @@ GUCEF_config_tool( gucefMT_TestApp )
 
 
 
-include_directories( ../common/include ../gucefMT/include )
+include_directories( ../../common/include ../../gucefMT/include )
