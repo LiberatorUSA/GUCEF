@@ -33,50 +33,50 @@ endif()
 add_dependencies( ${MODULE_NAME} gucefLOADER )
 target_link_libraries( ${MODULE_NAME} gucefLOADER )
 
-include_directories( ../common/include ../gucefCORE/include ../gucefCORE/include/ ../gucefLOADER/include ../gucefMT/include )
+include_directories( ../../common/include ../../gucefCORE/include ../../gucefCORE/include/ ../../gucefLOADER/include ../../gucefMT/include )
 
 if ( ANDROID )
-  include_directories( ../gucefCORE/include/ ../gucefCORE/include/android )
+  include_directories( ../../gucefCORE/include/ ../../gucefCORE/include/android )
 endif( ANDROID )
 
 if ( GLX )
-  include_directories( ../gucefCORE/include/ )
+  include_directories( ../../gucefCORE/include/ )
 endif( GLX )
 
 if ( GTK )
-  include_directories( ../gucefCORE/include/ )
+  include_directories( ../../gucefCORE/include/ )
 endif( GTK )
 
 if ( IPHONEOS )
-  include_directories( ../gucefCORE/include/ )
+  include_directories( ../../gucefCORE/include/ )
 endif( IPHONEOS )
 
 if ( LINUX )
-  include_directories( ../gucefCORE/include/ ../gucefCORE/include/linux )
+  include_directories( ../../gucefCORE/include/ ../../gucefCORE/include/linux )
 endif( LINUX )
 
 if ( OSX )
-  include_directories( ../gucefCORE/include/ )
+  include_directories( ../../gucefCORE/include/ )
 endif( OSX )
 
 if ( SDL )
-  include_directories( ../gucefCORE/include/ )
+  include_directories( ../../gucefCORE/include/ )
 endif( SDL )
 
 if ( SYMBIAN )
-  include_directories( ../gucefCORE/include/ )
+  include_directories( ../../gucefCORE/include/ )
 endif( SYMBIAN )
 
 if ( UNIX )
-  include_directories( ../gucefCORE/include/ )
+  include_directories( ../../gucefCORE/include/ )
 endif( UNIX )
 
 if ( WIN32 )
-  include_directories( ../gucefCORE/include/ ../gucefCORE/include/mswin )
+  include_directories( ../../gucefCORE/include/ ../../gucefCORE/include/mswin )
 endif( WIN32 )
 
 if ( WIN64 )
-  include_directories( ../gucefCORE/include/ ../gucefCORE/include/mswin )
+  include_directories( ../../gucefCORE/include/ ../../gucefCORE/include/mswin )
 endif( WIN64 )
 
 

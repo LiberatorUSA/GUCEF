@@ -58,20 +58,20 @@ GUCEF_config_tool( gucefCORE_TestApp )
 
 
 
-include_directories( ../common/include ../gucefCORE/include ../gucefMT/include include )
+include_directories( ../../common/include ../../gucefCORE/include ../../gucefMT/include include )
 
 if ( ANDROID )
-  include_directories( ../gucefCORE/include/android )
+  include_directories( ../../gucefCORE/include/android )
 endif( ANDROID )
 
 if ( LINUX )
-  include_directories( ../gucefCORE/include/linux )
+  include_directories( ../../gucefCORE/include/linux )
 endif( LINUX )
 
 if ( WIN32 )
-  include_directories( ../gucefCORE/include/mswin )
+  include_directories( ../../gucefCORE/include/mswin )
 endif( WIN32 )
 
 if ( WIN64 )
-  include_directories( ../gucefCORE/include/mswin )
+  include_directories( ../../gucefCORE/include/mswin )
 endif( WIN64 )

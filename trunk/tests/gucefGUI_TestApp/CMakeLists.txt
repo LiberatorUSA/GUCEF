@@ -79,18 +79,18 @@ if ( WIN64 )
   set_target_properties( ${MODULE_NAME} PROPERTIES COMPILE_DEFINITIONS "GUCEF_GUI_TESTAPP_BUILD_MODULE" )
 endif( WIN64 )
 
-include_directories( ../common/include ../gucefCORE/include ../gucefGUI/include ../gucefIMAGE/include ../gucefINPUT/include ../gucefMT/include ../gucefVFS/include )
+include_directories( ../../common/include ../../gucefCORE/include ../../gucefGUI/include ../../gucefIMAGE/include ../../gucefINPUT/include ../../gucefMT/include ../../gucefVFS/include )
 
 if ( LINUX )
-  include_directories( ../gucefCORE/include/linux )
+  include_directories( ../../gucefCORE/include/linux )
 endif( LINUX )
 
 if ( WIN32 )
-  include_directories( ../gucefCORE/include/mswin )
+  include_directories( ../../gucefCORE/include/mswin )
 endif( WIN32 )
 
 if ( WIN64 )
-  include_directories( ../gucefCORE/include/mswin )
+  include_directories( ../../gucefCORE/include/mswin )
 endif( WIN64 )
 
 
