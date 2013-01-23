@@ -1,0 +1,14 @@
+<ModuleInfoEntry>
+    <Module Name="MemoryLeakFinder" Type="SharedLibrary" Platform="mswin;linux">
+        <Dependencies>
+            <Dependency Name="gucefMT" />
+            <Dependency Name="gucefCORE" />
+        </Dependencies>
+        <Linker>
+            <Dependency Name="gucefMT" />
+        </Linker>
+        <Preprocessor>
+            <Define String="MEMORYLEAKFINDER_BUILD_MODULE" />
+        </Preprocessor>
+    </Module>
+</ModuleInfoEntry>

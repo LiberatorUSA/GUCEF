@@ -14,6 +14,13 @@
 
 
 if (ANDROID)
+  set( PLATFORM_HEADER_FILES 
+    include/inputdriverNANDROID.h
+  )
+
+  set( PLATFORM_HEADER_INSTALL "ANDROID" )
+  source_group( "Platform Header Files" FILES ${PLATFORM_HEADER_FILES} )
+
   set( PLATFORM_SOURCE_FILES 
     src/inputdriverNANDROID.c
   )
@@ -22,9 +29,6 @@ if (ANDROID)
   source_group( "Platform Source Files" FILES ${PLATFORM_SOURCE_FILES} )
 
 endif ()
-
-# Make sure the PLATFORM_HEADER_FILES variable is always defined
- set( PLATFORM_HEADER_FILES "" )
 
 # For ease of use make a variable that has all files for this module
 set( ALL_FILES ${HEADER_FILES} ${SOURCE_FILES} ${PLATFORM_HEADER_FILES} ${PLATFORM_SOURCE_FILES} )
@@ -39,14 +43,14 @@ endif()
 
 if ( ANDROID )
   add_dependencies( ${MODULE_NAME} gucefCORE gucefINPUT gucefMT )
-  target_link_libraries( ${MODULE_NAME} gucefCORE gucefINPUT gucefMT )
+  target_link_libraries( ${MODULE_NAME} android android_native_app_glue gucefCORE gucefINPUT gucefMT )
   set_target_properties( ${MODULE_NAME} PROPERTIES COMPILE_DEFINITIONS "BUILD_GUCEF_INPUT_PLUGIN_DLL;INPUTDRIVERANDROID_BUILD_MODULE" )
 endif( ANDROID )
 
 include_directories( ../../../common/include ../../../gucefCORE/include ../../../gucefINPUT/include ../../../gucefMT/include )
 
 if ( ANDROID )
-  include_directories( ../../../gucefCORE/include/android )
+  include_directories( ../../../gucefCORE/include/android include )
 endif( ANDROID )
 
 

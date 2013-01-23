@@ -100,7 +100,10 @@ android_syslog(int level, const char *format, ...)
 //                                                                         //
 //-------------------------------------------------------------------------*/
 
-using namespace GUCEF;
+#ifdef __cplusplus
+namespace GUCEF {
+namespace LOADER {
+#endif /* __cplusplus ? */
 
 /*-------------------------------------------------------------------------//
 //                                                                         //
@@ -176,6 +179,32 @@ struct SLoaderAppData
     CORE::CString appConfigFile;
 };
 typedef struct SLoaderAppData TLoaderAppData;
+
+/*-------------------------------------------------------------------------*/
+
+struct SAppLaunchInfo
+{
+    CORE::CString appName;
+    CORE::CString rootDir;
+    CORE::CString resRootDir;
+    CORE::CString libRootDir;
+    TStringVector platformArgs;
+    TStringVector appArgs;
+    Int32 majorVersion;
+    Int32 minorVersion;
+    Int32 patchVersion;
+    Int32 releaseVersion;
+};
+typedef struct SAppLaunchInfo TAppLaunchInfo;
+
+/*-------------------------------------------------------------------------//
+//                                                                         //
+//      GLOBAL VARS                                                        //
+//                                                                         //
+//-------------------------------------------------------------------------*/
+
+static TAppLaunchInfo* g_currentAppLaunchInfo = 0;
+static TAppLaunchInfo* g_nextAppLaunchInfo = 0;
 
 /*-------------------------------------------------------------------------//
 //                                                                         //
@@ -338,6 +367,19 @@ typedef struct SLoaderAppData TLoaderAppData;
 //    *moduleList = NULL;
 //    *moduleCount = 0;
 //}
+
+/*-------------------------------------------------------------------------*/
+
+GUCEF_LOADER_PRIVATE_CPP void
+CopyArgMatrixToVector( TStringVector& destVector ,
+                       const Int32 argc          ,
+                       char** argv               )
+{
+    for ( Int32 i=0; i<argc; ++i )
+    {
+        destVector.push_back( argv[ i ] );
+    }
+}
 
 /*-------------------------------------------------------------------------*/
 
@@ -517,53 +559,99 @@ UnloadModules( TLoaderAppData& loaderAppData )
 
 /*-------------------------------------------------------------------------*/
 
-GUCEF_LOADER_PRIVATE_CPP bool
-LoadASingleModule( const CORE::CString& rootDir ,
-                   TModuleInfo& moduleInfo      )
+GUCEF_LOADER_PRIVATE_CPP UInt32
+GetTheSystemPathForModule( CORE::CString& outputPath   ,
+                           const char* moduleFilename  ,
+                           const char* rootDir         ,
+                           const char* moduleGroupName ,
+                           Int32 majorVersion          ,
+                           Int32 minorVersion          ,
+                           Int32 patchVersion          ,
+                           Int32 releaseVersion        )
 {
     CORE::CString filePath = rootDir;
+    CORE::AppendToPath( filePath, "libs" );
+    
+    if ( 0 == moduleGroupName )
+    {
+        CORE::AppendToPath( filePath, "_nogroup_" );
+    }
+    else
+    {
+        CORE::AppendToPath( filePath, moduleGroupName );
+    }
 
     // adjust path for desired version
-    // This gives us: <LoadRoot>/LIBS/<GroupName>/<MajorVersion>.<MinorVersion>
+    // This gives us: <LoadRoot>/libs/<GroupName>/<MajorVersion>.<MinorVersion>
     char versionDir[ 41 ];
-    sprintf( versionDir, "%d.%d", moduleInfo.version.major, moduleInfo.version.minor );
+    sprintf( versionDir, "%d.%d", majorVersion, minorVersion );
     CORE::AppendToPath( filePath, versionDir );
 
     // Add the module name to our root path
-    // This gives us: <LoadRoot>/LIBS/<GroupName>/<MajorVersion>.<MinorVersion>/<ModuleName>
-    CORE::AppendToPath( filePath, moduleInfo.name );
+    // This gives us: <LoadRoot>/libs/<GroupName>/<MajorVersion>.<MinorVersion>/<ModuleName>
+    CORE::AppendToPath( filePath, moduleFilename );
 
-    if ( moduleInfo.version.patch < 0 || moduleInfo.version.release < 0 )
+    if ( patchVersion < 0 || releaseVersion < 0 )
     {
         // We will have to search for the latest version available
-        if ( !GetHighestVersionAvailableFromDir( filePath                   ,
-                                                 moduleInfo.version.patch   ,
-                                                 moduleInfo.version.release ) )
+        Int16 locatedPatchVersion = 0;
+        Int16 locatedReleaseVersion = 0;
+        if ( !GetHighestVersionAvailableFromDir( filePath              ,
+                                                 locatedPatchVersion   ,
+                                                 locatedReleaseVersion ) )
         {
             // Unable to find any versions in this dir for this module
-            return false;
+            return 1;
         }
+
+        patchVersion = locatedPatchVersion;
+        releaseVersion = locatedReleaseVersion;
     }
 
     // Simply append with the specific version requested or if no specific version was
     // requested then the highest version located.
-    // This gives us: <LoadRoot>/LIBS/<GroupName>/<MajorVersion>.<MinorVersion>/<ModuleName>/<PatchVersion>.<ReleaseVersion>
-    sprintf( versionDir, "%d.%d", moduleInfo.version.patch, moduleInfo.version.release );
+    // This gives us: <LoadRoot>/libs/<GroupName>/<MajorVersion>.<MinorVersion>/<ModuleName>/<PatchVersion>.<ReleaseVersion>
+    sprintf( versionDir, "%d.%d", patchVersion, releaseVersion );
     CORE::AppendToPath( filePath, versionDir );
 
-    // Add the name of the module which contains the application code
-    CORE::AppendToPath( filePath, moduleInfo.name );
+    // Now we need to add the actual filename of the module to the path
+    CORE::AppendToPath( filePath, moduleFilename );
 
-    // Now that we constructed the full load path for this module we will try and load it
-    moduleInfo.handle = CORE::LoadModuleDynamicly( filePath.C_String() );
-    if ( NULL == moduleInfo.handle )
+    outputPath = filePath;
+    return 0;
+}
+
+/*-------------------------------------------------------------------------*/
+
+GUCEF_LOADER_PRIVATE_CPP bool
+LoadASingleModule( const CORE::CString& rootDir   ,
+                   const CORE::CString& groupName ,
+                   TModuleInfo& moduleInfo        )
+{
+    CORE::CString filePath;
+    if ( 0 == GetTheSystemPathForModule( filePath                   ,
+                                         moduleInfo.name.C_String() ,
+                                         rootDir.C_String()         ,
+                                         groupName.C_String()       ,
+                                         moduleInfo.version.major   ,
+                                         moduleInfo.version.minor   ,
+                                         moduleInfo.version.patch   ,
+                                         moduleInfo.version.release ) )
     {
-        // We are missing one of the requested modules...
-        // Abort
+        // Now that we constructed the full load path for this module we will try and load it
+        moduleInfo.handle = CORE::LoadModuleDynamicly( filePath.C_String() );
+        if ( NULL != moduleInfo.handle )
+        {
+            // Successfully determined the module path and subsequently loaded the module
+            return true;
+        }
+
+        // Unable to load the module
         return false;
     }
 
-    return true;
+    // Unable to determine module path
+    return false;
 }
 
 /*-------------------------------------------------------------------------*/
@@ -574,19 +662,14 @@ LoadModules( const char* rootDir       ,
 {
     try
     {
-        // get the root path to where we should load modules from
-        // This gives us: <LoadRoot>/LIBS/<GroupName>
-        CORE::CString groupRoot = rootDir;
-        CORE::AppendToPath( groupRoot, "LIBS" );
-        CORE::AppendToPath( groupRoot, moduleGroup.name );
-
         // check if all desired modules are present
         for ( int i=0; i<(int)moduleGroup.modules.size(); ++i )
         {
             TModuleInfo& moduleInfo = moduleGroup.modules[ i ];
 
-            if ( !LoadASingleModule( groupRoot  ,
-                                     moduleInfo ) )
+            if ( !LoadASingleModule( rootDir          ,
+                                     moduleGroup.name ,
+                                     moduleInfo       ) )
             {
                 UnloadModules( moduleGroup );
                 return false;
@@ -663,9 +746,9 @@ LinkGucefCoreCInterface( TModuleGroup& moduleGroup        ,
                                        sizeof(int)         +
                                        sizeof(const char**)                ).funcPtr;
     cInterface.gucefAddPluginDir = (TGUCEFCORECINTERFACE_GucefAddPluginDir)
-             CORE::GetFunctionAddress( coreModulePtr                       ,
+             CORE::GetFunctionAddress( coreModulePtr                  ,
                                        "GUCEF_CORE_GucefAddPluginDir" ,
-                                       sizeof(const char*) +
+                                       sizeof(const char*)  +
                                        sizeof(const char**)           ).funcPtr;
     cInterface.gucefSetDefaultPluginLoaderLogicType = (TGUCEFCORECINTERFACE_GucefSetDefaultPluginLoaderLogicType)
              CORE::GetFunctionAddress( coreModulePtr                                     ,
@@ -696,7 +779,7 @@ GetPathToAppDir( const char* appName        ,
                  CORE::TVersion& appVersion )
 {
     CORE::CString pathToAppDir = rootDir;
-    CORE::AppendToPath( pathToAppDir, "APPS" );
+    CORE::AppendToPath( pathToAppDir, "apps" );
     CORE::AppendToPath( pathToAppDir, appName );
     bool usingAutoMajorMinor = false;
 
@@ -732,6 +815,40 @@ GetPathToAppDir( const char* appName        ,
                     CORE::Int16ToString( appVersion.release ) ;
 
     return pathToAppDir;
+}
+
+/*-------------------------------------------------------------------------*/
+
+UInt32
+GetSystemPathForAppModule( char* pathOutputBuffer  ,
+                           UInt32 outputBufferSize ,
+                           const char* appName     ,
+                           const char* rootDir     ,
+                           Int32 majorVersion      ,
+                           Int32 minorVersion      ,
+                           Int32 patchVersion      ,
+                           Int32 releaseVersion    )
+{
+    CORE::TVersion appVersion = { (Int16)majorVersion, (Int16)minorVersion, (Int16)patchVersion, (Int16)releaseVersion };
+    CORE::CString appPath = GetPathToAppDir( appName    ,
+                                             rootDir    ,
+                                             appVersion );
+
+    if ( appPath.Length() > 0 )
+    {
+        // Check to see if we can fit the resulting path in the output buffer
+        if ( appPath.Length()+1 <= outputBufferSize )
+        {
+            memcpy( pathOutputBuffer, appPath.C_String(), appPath.Length()+1 );
+            return 0;
+        }
+
+        // Cannot fit this path into the output buffer
+        return 2;
+    }
+
+    // Unable to determine app path
+    return 1;
 }
 
 /*-------------------------------------------------------------------------*/
@@ -1151,23 +1268,62 @@ ProcessFirstTimeInitialization( const CORE::CString& resRootDir ,
 
 /*-------------------------------------------------------------------------*/
 
-int
+UInt32
+GetSystemPathForModule( char* pathOutputBuffer      ,
+                        UInt32 outputBufferSize     ,
+                        const char* moduleFilename  ,
+                        const char* rootDir         ,
+                        const char* moduleGroupName ,
+                        Int32 majorVersion          ,
+                        Int32 minorVersion          ,
+                        Int32 patchVersion          ,
+                        Int32 releaseVersion        )
+{
+    CORE::CString pathStr;
+    Int32 resultValue = GetTheSystemPathForModule( pathStr         ,
+                                                   moduleFilename  ,
+                                                   rootDir         ,
+                                                   moduleGroupName ,
+                                                   majorVersion    ,
+                                                   minorVersion    ,
+                                                   patchVersion    ,
+                                                   releaseVersion  );
+
+    // Check to see if we were able to determine the path
+    if ( 0 == resultValue )
+    {
+        // Check to see if we can fit the resulting path in the output buffer
+        if ( pathStr.Length()+1 <= outputBufferSize )
+        {
+            memcpy( pathOutputBuffer, pathStr.C_String(), pathStr.Length()+1 );
+            return 0;
+        }
+
+        // Cannot fit this path into the output buffer
+        return 2;
+    }
+    return resultValue;
+}
+
+/*-------------------------------------------------------------------------*/
+
+Int32
 LoadAndRunGucefPlatformAppEx( const char* appName    ,
                               const char* rootDir    ,
                               const char* resRootDir ,
                               const char* libRootDir ,
-                              int platformArgc       ,
+                              Int32 platformArgc     ,
                               char** platformArgv    ,
                               int appArgc            ,
                               char** appArgv         ,
-                              long majorVersion      ,
-                              long minorVersion      ,
-                              long patchVersion      ,
-                              long releaseVersion    )
+                              Int32 majorVersion     ,
+                              Int32 minorVersion     ,
+                              Int32 patchVersion     ,
+                              Int32 releaseVersion   )
 {
-    // Apps load from: <LoadRoot>/APPS/<AppName>/<MajorVersion>.<MinorVersion>/<PatchVersion>.<ReleaseVersion>
+    // Apps load from: <LoadRoot>/apps/<AppName>/<MajorVersion>.<MinorVersion>/<PatchVersion>.<ReleaseVersion>
     // For the app we will check the config file and based on that we will load correct platform.
-    // Platform loads from: <LoadRoot>/LIBS/<Groupname>/<MajorVersion>.<MinorVersion>/<ModuleName>/<PatchVersion>.<ReleaseVersion>
+    // Platform loads from: <LoadRoot>/libs/<Groupname>/<MajorVersion>.<MinorVersion>/<ModuleName>/<PatchVersion>.<ReleaseVersion>
 
     // If the resources root dir is NULL then we will use the generic root dir as the root for resources as well
     if ( NULL == resRootDir )
@@ -1204,6 +1360,24 @@ LoadAndRunGucefPlatformAppEx( const char* appName    ,
         return -2;
     }
 
+    // Check if we have a patchlist for the app
+    // if there is a patchlist then the patcher app has to successfully patch the app before
+    // we continue with the application launch. The app may not even exist locally yet at this point.
+    {
+        CORE::CString patchListPath = appDir;
+        CORE::AppendToPath( patchListPath, "patchlist.xml" );
+        if ( CORE::FileExists( patchListPath ) )
+        {
+            // Since there is a patch list we have to launch the patcher app first
+            if ( false )
+            {
+                // Error while running the patcher app, abort
+                return -3;
+            }
+            // else: Successfully ran the patcher app, we can continue,..
+        }
+    }
+
     // Get the application config file
     TLoaderAppData loaderAppData;
     InitLoaderAppData( loaderAppData );
@@ -1212,7 +1386,7 @@ LoadAndRunGucefPlatformAppEx( const char* appName    ,
     {
         // Failed to load a loader config for this app
         // Now we dont know what to do which is a fatal error
-        return -3;
+        return -4;
     }
 
     // First try to load the platform version required for this application
@@ -1220,7 +1394,7 @@ LoadAndRunGucefPlatformAppEx( const char* appName    ,
     if ( !LoadMultipleModuleGroups( libRootDir, loaderAppData, NULL ) )
     {
         // Failed to load prereq modules for this app
-        return -4;
+        return -5;
     }
 
     TModuleGroup* coreModuleGroup = GetModuleGroup( &loaderAppData, "GUCEF" );
@@ -1228,7 +1402,7 @@ LoadAndRunGucefPlatformAppEx( const char* appName    ,
     {
         // Since this is a GUCEF App loader we don't support apps not using GUCEF
         UnloadModules( loaderAppData );
-        return -5;
+        return -6;
     }
 
     // Link the GUCEF::CORE C interface so we can invoke functions
@@ -1238,7 +1412,7 @@ LoadAndRunGucefPlatformAppEx( const char* appName    ,
                                    cInterface       ) )
     {
         UnloadModules( loaderAppData );
-        return -6;
+        return -7;
     }
 
     // Before we load anything else we want to make sure that the application can load plugins on its own
@@ -1261,7 +1435,7 @@ LoadAndRunGucefPlatformAppEx( const char* appName    ,
     {
         // There was an error loading the application module
         UnloadModules( loaderAppData );
-        return -7;
+        return -8;
     }
 
     // Now load the app config if so desired
@@ -1377,5 +1551,79 @@ LoadSpecificModule( const char* moduleFilename  ,
     }
     return NULL;
 }
+
+/*-------------------------------------------------------------------------*/
+
+Int32
+SetNextGucefPlatformAppToLoadAndRunEx( const char* appName    ,
+                                       const char* rootDir    ,
+                                       const char* resRootDir ,
+                                       const char* libRootDir ,
+                                       Int32 platformArgc     ,
+                                       char** platformArgv    ,
+                                       Int32 appArgc          ,
+                                       char** appArgv         ,
+                                       Int32 majorVersion     ,
+                                       Int32 minorVersion     ,
+                                       Int32 patchVersion     ,
+                                       Int32 releaseVersion   )
+{
+    // Delete whatever was already set as the next app
+    delete g_nextAppLaunchInfo;
+    g_nextAppLaunchInfo = 0;
+
+    // Set the new next app launch info
+    g_nextAppLaunchInfo = new TAppLaunchInfo();
+    g_nextAppLaunchInfo->appName = appName;
+    g_nextAppLaunchInfo->rootDir = rootDir;
+    g_nextAppLaunchInfo->resRootDir = resRootDir;
+    g_nextAppLaunchInfo->libRootDir = libRootDir;
+    g_nextAppLaunchInfo->libRootDir = libRootDir;
+    CopyArgMatrixToVector( g_nextAppLaunchInfo->platformArgs, platformArgc, platformArgv );
+    CopyArgMatrixToVector( g_nextAppLaunchInfo->appArgs, appArgc, appArgv );
+    g_nextAppLaunchInfo->majorVersion = majorVersion;
+    g_nextAppLaunchInfo->minorVersion = minorVersion;
+    g_nextAppLaunchInfo->patchVersion = patchVersion;
+    g_nextAppLaunchInfo->releaseVersion = releaseVersion;
+
+    return 0;
+}
+
+/*-------------------------------------------------------------------------*/
+
+Int32
+SetNextGucefPlatformAppToLoadAndRun( const char* appName    ,
+                                     const char* rootDir    ,
+                                     const char* resRootDir ,
+                                     const char* libRootDir ,
+                                     Int32 platformArgc     ,
+                                     char** platformArgv    ,
+                                     Int32 appArgc          ,
+                                     char** appArgv         )
+{
+    return SetNextGucefPlatformAppToLoadAndRunEx( appName      ,
+                                                  rootDir      ,
+                                                  resRootDir   ,
+                                                  libRootDir   ,
+                                                  platformArgc ,
+                                                  platformArgv ,
+                                                  appArgc      ,
+                                                  appArgv      ,
+                                                  -1           ,
+                                                  -1           ,
+                                                  -1           ,
+                                                  -1           );
+}
+
+/*-------------------------------------------------------------------------//
+//                                                                         //
+//      NAMESPACE                                                          //
+//                                                                         //
+//-------------------------------------------------------------------------*/
+
+#ifdef __cplusplus
+}; /* namespace LOADER */
+}; /* namespace GUCEF */
+#endif /* __cplusplus ? */
 
 /*-------------------------------------------------------------------------*/
