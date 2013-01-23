@@ -17,24 +17,18 @@
  *  Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA
  */
 
-#ifndef GUCEF_COMCORE_CSERIALPORT_H
-#define GUCEF_COMCORE_CSERIALPORT_H
-
 /*-------------------------------------------------------------------------//
 //                                                                         //
 //      INCLUDES                                                           //
 //                                                                         //
 //-------------------------------------------------------------------------*/
 
-#ifndef GUCEF_CORE_CDYNAMICBUFFER_H
-#include "CDynamicBuffer.h"
-#define GUCEF_CORE_CDYNAMICBUFFER_H
-#endif /* GUCEF_CORE_CDYNAMICBUFFER_H ? */
+#ifndef GUCEF_CORE_LOGGING_H
+#include "gucefCORE_Logging.h"
+#define GUCEF_CORE_LOGGING_H
+#endif /* GUCEF_CORE_LOGGING_H ? */
 
-#ifndef GUCEF_COMCORE_CICOMMUNICATIONPORT_H
-#include "gucefCOMCORE_CICommunicationPort.h"
-#define GUCEF_COMCORE_CICOMMUNICATIONPORT_H
-#endif /* GUCEF_COMCORE_CICOMMUNICATIONPORT_H ? */
+#include "gucefCOMCORE_CSerialPort.h"
 
 /*-------------------------------------------------------------------------//
 //                                                                         //
@@ -51,55 +45,57 @@ namespace COMCORE {
 //                                                                         //
 //-------------------------------------------------------------------------*/
 
+CSerialPort::CSerialPort( void )
+    : CICommunicationPort()
+{GUCEF_TRACE;
 
-class GUCEF_COMCORE_EXPORT_CPP CSerialPort : public virtual CICommunicationPort
-{
-    public:
+}
+
+/*-------------------------------------------------------------------------*/
+
+CSerialPort::CSerialPort( const CSerialPort& src )
+    : CICommunicationPort( src )
+{GUCEF_TRACE;
+
+}
+
+/*-------------------------------------------------------------------------*/
+
+CSerialPort&
+CSerialPort::operator=( const CSerialPort& src )
+{GUCEF_TRACE;
+
+    if ( &src != this )
+    {
+    }
+    return *this;
+}
+
+/*-------------------------------------------------------------------------*/
+
+CSerialPort::~CSerialPort()
+{GUCEF_TRACE;
+
+}
+
+/*-------------------------------------------------------------------------*/
     
-    virtual ~CSerialPort();
-    
-    virtual CORE::CString GetPortType( void ) const;
+CORE::CString
+CSerialPort::GetPortType( void ) const
+{GUCEF_TRACE;
 
-    virtual const CORE::CString& GetClassTypeName( void ) const;
+    return "serial";
+}
 
-    virtual bool IsOpen( void ) const = 0;
+/*-------------------------------------------------------------------------*/
 
-    virtual bool Open( void ) = 0;
+const CORE::CString&
+CSerialPort::GetClassTypeName( void ) const
+{GUCEF_TRACE;
 
-    virtual void Close( void ) = 0;
-
-    virtual UInt8 ReadByte( void ) = 0;
-
-    virtual char ReadChar( void ) = 0;
-
-    virtual CORE::CString ReadString( const Int32 maxStringLength ) = 0;
-
-    virtual CORE::CString ReadLine( const Int32 maxStringLength ) = 0;
-
-    virtual UInt32 ReadBytesTo( CORE::CDynamicBuffer& buffer ,
-                                const UInt32 elementSize     ,
-                                const UInt32 elementsToRead  ) = 0;
-
-    virtual UInt32 GetDataSizeInBytesInReceiveBuffer( void ) = 0;
-
-    virtual void SetReadTimeout( const UInt32 timeOutInMilliSecs ) = 0;
-
-    virtual UInt32 GetReadTimeout( void ) const = 0;
-    
-    virtual void SetWriteTimeout( const UInt32 timeOutInMilliSecs ) = 0;
-
-    virtual UInt32 GetWriteTimeout( void ) const = 0;
-
-    virtual bool SetBaudRate( const UInt32 baudRate ) = 0;
-
-    virtual UInt32 GetBaudRate( void ) const = 0;
-
-    protected:
-
-    CSerialPort( void );
-    CSerialPort( const CSerialPort& src );
-    CSerialPort& operator=( const CSerialPort& src );
-};
+    static const CORE::CString classTypeName = "GUCEF::COMCORE::CSerialPort"; 
+    return classTypeName;
+}
 
 /*-------------------------------------------------------------------------//
 //                                                                         //
@@ -111,16 +107,3 @@ class GUCEF_COMCORE_EXPORT_CPP CSerialPort : public virtual CICommunicationPort
 }; /* namespace GUCEF */
 
 /*-------------------------------------------------------------------------*/
-
-#endif /* GUCEF_COMCORE_CSERIALPORT_H ? */
-
-/*-------------------------------------------------------------------------//
-//                                                                         //
-//      Info & Changes                                                     //
-//                                                                         //
-//-------------------------------------------------------------------------//
-
-- 12-02-2005 :
-        - Initial implementation
-
----------------------------------------------------------------------------*/

@@ -48,7 +48,7 @@ GUCEF_OSMAIN_BEGIN
     {
         if ( argc >= 1 )
         {
-            return LoadAndRunGucefPlatformApp( "testapp", argv[ 0 ], NULL, NULL, argc, argv, 0, NULL );
+            return GUCEF::LOADER::LoadAndRunGucefPlatformApp( "testapp", argv[ 0 ], NULL, NULL, argc, argv, 0, NULL );
         }
         return 0;
     }
