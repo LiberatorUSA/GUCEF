@@ -7,6 +7,9 @@
             <Dependency Name="gucefCOMCORE" />
             <Dependency Name="gucefCOM" />
             <Dependency Name="gucefPATCHER" />
+            <Dependency Name="gucefINPUT" />
+            <Dependency Name="gucefGUI" />
+            <Dependency Name="gucefIMAGE" />
         </Dependencies>
         <Linker>
             <Dependency Name="gucefMT" />
@@ -14,6 +17,9 @@
             <Dependency Name="gucefCOMCORE" />
             <Dependency Name="gucefCOM" />
             <Dependency Name="gucefPATCHER" />
+            <Dependency Name="gucefINPUT" />
+            <Dependency Name="gucefGUI" />
+            <Dependency Name="gucefIMAGE" />
         </Linker>
         <Preprocessor>
             <Define String="GUCEF_PATCHERAPP_BUILD_MODULE" />

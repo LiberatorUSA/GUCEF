@@ -1,6 +1,6 @@
 /*
- *  guidriverMyGUIOpenGL: glue module for the MyGUI GUI backend using OpenGL
- *  Copyright (C) 2002 - 2008.  Dinand Vanvelzen
+ *  gucefPATCHERAPP: Application module for the patcher application
+ *  Copyright (C) 2002 - 2013.  Dinand Vanvelzen
  *
  *  This library is free software; you can redistribute it and/or
  *  modify it under the terms of the GNU Lesser General Public
@@ -14,11 +14,11 @@
  *
  *  You should have received a copy of the GNU Lesser General Public
  *  License along with this library; if not, write to the Free Software
- *  Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA
+ *  Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA 
  */
 
-#ifndef GUCEF_MYGUIGL_MACROS_H
-#define GUCEF_MYGUIGL_MACROS_H
+#ifndef GUCEF_PATCHERAPP_MACROS_H
+#define GUCEF_PATCHERAPP_MACROS_H
 
 /*
  *      Build configuration specific macros.
@@ -31,15 +31,15 @@
 //                                                                         //
 //-------------------------------------------------------------------------*/
 
-#ifndef GUCEF_MYGUI_ETYPES_H
-#include "guceMyGUI_ETypes.h"        /* simple types */
-#define GUCEF_MYGUI_ETYPES_H
-#endif /* GUCEF_MYGUI_ETYPES_H ? */
+#ifndef GUCEF_PATCHERAPP_SIMPLETYPES_H
+#include "gucefPATCHERAPP_SimpleTypes.h"   /* simple types */
+#define GUCEF_PATCHERAPP_SIMPLETYPES_H
+#endif /* GUCEF_PATCHERAPP_SIMPLETYPES_H ? */
 
-#ifndef GUCEF_MYGUIGL_CONFIG_H
-#include "guidriverMyGUIOpenGL_config.h"        /* Module build configuration */
-#define GUCEF_MYGUIGL_CONFIG_H
-#endif /* GUCEF_MYGUIGL_CONFIG_H ? */
+#ifndef GUCEF_PATCHERAPP_CONFIG_H
+#include "gucefPATCHERAPP_config.h"        /* Module build configuration */
+#define GUCEF_PATCHERAPP_CONFIG_H
+#endif /* GUCEF_PATCHERAPP_CONFIG_H ? */
 
 /*-------------------------------------------------------------------------//
 //                                                                         //
@@ -51,30 +51,30 @@
  *      Macros for dynamic linking or static linking. Use the switches in the
  *      config file to control the export type.
  */
-#undef GUCEF_MYGUIGL_EXPORTSPEC
-#ifdef GUIDRIVERMYGUIOPENGL_BUILD_MODULE
-  #define GUCEF_MYGUIGL_EXPORTSPEC GUCEF_EXPORT
+#undef GUCEF_PATCHERAPP_EXPORTSPEC
+#ifdef GUCEF_PATCHERAPP_BUILD_MODULE
+  #define GUCEF_PATCHERAPP_EXPORTSPEC GUCEF_EXPORT
 #else
-  #define GUCEF_MYGUIGL_EXPORTSPEC GUCEF_IMPORT
-#endif /* GUIDRIVERMYGUIOPENGL_BUILD_MODULE ? */
+  #define GUCEF_PATCHERAPP_EXPORTSPEC GUCEF_IMPORT
+#endif /* GUCEF_PATCHERAPP_BUILD_MODULE ? */
 
-#undef GUCEF_MYGUIGL_EXPORT_CPP
-#ifdef GUCEF_MYGUIGL_EXPORT_CPP_CODE
-  #define GUCEF_MYGUIGL_EXPORT_CPP GUCEF_MYGUIGL_EXPORTSPEC
+#undef GUCEF_PATCHERAPP_EXPORT_CPP
+#ifdef GUCEF_PATCHERAPP_EXPORT_CPP_CODE
+  #define GUCEF_PATCHERAPP_EXPORT_CPP GUCEF_PATCHERAPP_EXPORTSPEC
 #else
-  #define GUCEF_MYGUIGL_EXPORT_CPP GUCEF_HIDDEN
-#endif /* GUCEF_MYGUIGL_EXPORT_CPP_CODE */
+  #define GUCEF_PATCHERAPP_EXPORT_CPP GUCEF_HIDDEN
+#endif /* GUCEF_PATCHERAPP_EXPORT_CPP_CODE */
 
-#undef GUCEF_MYGUIGL_EXPORT_C
-#ifdef GUCEF_MYGUIGL_EXPORT_C_CODE
-  #define GUCEF_MYGUIGL_EXPORT_C GUCEF_MYGUIGL_EXPORTSPEC
+#undef GUCEF_PATCHERAPP_EXPORT_C
+#ifdef GUCEF_PATCHERAPP_EXPORT_C_CODE
+  #define GUCEF_PATCHERAPP_EXPORT_C GUCEF_PATCHERAPP_EXPORTSPEC
 #else
-  #define GUCEF_MYGUIGL_EXPORT_C GUCEF_HIDDEN
-#endif /* GUCEF_MYGUIGL_EXPORT_C_CODE */
+  #define GUCEF_PATCHERAPP_EXPORT_C GUCEF_HIDDEN
+#endif /* GUCEF_PATCHERAPP_EXPORT_C_CODE */
 
 /*-------------------------------------------------------------------------*/
 
-#endif /* GUCEF_MYGUIGL_MACROS_H ? */
+#endif /* GUCEF_PATCHERAPP_MACROS_H ? */
 
 /*-------------------------------------------------------------------------//
 //                                                                         //

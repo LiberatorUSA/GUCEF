@@ -17,8 +17,8 @@
  *  Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA 
  */
 
-#ifndef GUCEF_PATCHERAPP_MAIN_H
-#define GUCEF_PATCHERAPP_MAIN_H
+#ifndef GUCEF_PATCHERAPP_CPATCHERAPPGLOBAL_H
+#define GUCEF_PATCHERAPP_CPATCHERAPPGLOBAL_H
 
 /*-------------------------------------------------------------------------//
 //                                                                         //
@@ -26,15 +26,10 @@
 //                                                                         //
 //-------------------------------------------------------------------------*/
 
-#ifndef GUCEF_CORE_ESTRUCTS_H
-#include "EStructs.h"
-#define GUCEF_CORE_ESTRUCTS_H
-#endif /* GUCEF_CORE_ESTRUCTS_H ? */
-
-#ifndef GUCEF_MYGUIGL_MACROS_H
+#ifndef GUCEF_PATCHERAPP_MACROS_H
 #include "gucefPATCHERAPP_macros.h"
-#define GUCEF_MYGUIGL_MACROS_H
-#endif /* GUCEF_MYGUIGL_MACROS_H ? */
+#define GUCEF_PATCHERAPP_MACROS_H
+#endif /* GUCEF_PATCHERAPP_MACROS_H ? */
 
 /*-------------------------------------------------------------------------//
 //                                                                         //
@@ -47,47 +42,48 @@ namespace PATCHERAPP {
 
 /*-------------------------------------------------------------------------//
 //                                                                         //
-//      UTILITIES                                                          //
+//      CLASSES                                                            //
 //                                                                         //
 //-------------------------------------------------------------------------*/
 
 /*
- *      Prevent C++ name mangling
+ *  Forward declarations of global classes
  */
-#ifdef __cplusplus
-extern "C" {
-#endif
+class CPatcherAppConfig;
+class CMainPatcherAppLogic;
 
-/*---------------------------------------------------------------------------*/
+/*-------------------------------------------------------------------------*/
 
-GUCEF_PATCHERAPP_EXPORT_C GUCEF::CORE::Int32 GUCEF_PLUGIN_CALLSPEC_PREFIX 
-GUCEFPlugin_Load( GUCEF::CORE::UInt32 argc, const char** argv ) GUCEF_PLUGIN_CALLSPEC_SUFFIX;
+class CPatcherAppGlobal
+{
+    public:
 
-/*--------------------------------------------------------------------------*/
+    CPatcherAppConfig& GetConfig( void );
 
-GUCEF_PATCHERAPP_EXPORT_C void GUCEF_PLUGIN_CALLSPEC_PREFIX 
-GUCEFPlugin_Unload( void ) GUCEF_PLUGIN_CALLSPEC_SUFFIX;
+    CMainPatcherAppLogic& GetMainLogic( void );
+    
+    static CPatcherAppGlobal* Instance( void );
 
-/*--------------------------------------------------------------------------*/
+    static void Deinstance( void );
 
-GUCEF_PATCHERAPP_EXPORT_C void GUCEF_PLUGIN_CALLSPEC_PREFIX 
-GUCEFPlugin_GetVersion( GUCEF::CORE::TVersion* versionInfo ) GUCEF_PLUGIN_CALLSPEC_SUFFIX;
+    private:
 
-/*--------------------------------------------------------------------------*/
+    CPatcherAppGlobal( void );
 
-GUCEF_PATCHERAPP_EXPORT_C const char* GUCEF_PLUGIN_CALLSPEC_PREFIX 
-GUCEFPlugin_GetCopyright( void ) GUCEF_PLUGIN_CALLSPEC_SUFFIX;
+    virtual ~CPatcherAppGlobal();
 
-/*--------------------------------------------------------------------------*/
+    CPatcherAppGlobal( const CPatcherAppGlobal& src );
 
-GUCEF_PATCHERAPP_EXPORT_C const char* GUCEF_PLUGIN_CALLSPEC_PREFIX 
-GUCEFPlugin_GetDescription( void ) GUCEF_PLUGIN_CALLSPEC_SUFFIX;
+    CPatcherAppGlobal& operator=( const CPatcherAppGlobal& src );
+    
+    void Init( void );
 
-/*---------------------------------------------------------------------------*/                 
+    private:
 
-#ifdef __cplusplus
-   }
-#endif /* __cplusplus */
+    static CPatcherAppGlobal* g_instance;
+    CPatcherAppConfig* m_config;
+    CMainPatcherAppLogic* m_mainLogic;
+};
 
 /*-------------------------------------------------------------------------//
 //                                                                         //
@@ -100,7 +96,7 @@ GUCEFPlugin_GetDescription( void ) GUCEF_PLUGIN_CALLSPEC_SUFFIX;
 
 /*-------------------------------------------------------------------------*/
 
-#endif /* GUCEF_PATCHERAPP_MAIN_H ? */
+#endif /* GUCEF_PATCHERAPP_CPATCHERAPPGLOBAL_H ? */
 
 /*-------------------------------------------------------------------------//
 //                                                                         //
@@ -108,7 +104,7 @@ GUCEFPlugin_GetDescription( void ) GUCEF_PLUGIN_CALLSPEC_SUFFIX;
 //                                                                         //
 //-------------------------------------------------------------------------//
 
-- 04-05-2005 :
+- 23-01-2013 :
         - Dinand: Initial version.
 
 ---------------------------------------------------------------------------*/
