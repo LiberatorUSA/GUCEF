@@ -17,8 +17,8 @@
  *  Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA 
  */
 
-#ifndef GUCEF_PATCHERAPP_MAIN_H
-#define GUCEF_PATCHERAPP_MAIN_H
+#ifndef GUCEF_PATCHERAPP_CMAINPATCHERAPPLOGIC_H
+#define GUCEF_PATCHERAPP_CMAINPATCHERAPPLOGIC_H
 
 /*-------------------------------------------------------------------------//
 //                                                                         //
@@ -26,15 +26,40 @@
 //                                                                         //
 //-------------------------------------------------------------------------*/
 
-#ifndef GUCEF_CORE_ESTRUCTS_H
-#include "EStructs.h"
-#define GUCEF_CORE_ESTRUCTS_H
-#endif /* GUCEF_CORE_ESTRUCTS_H ? */
+#ifndef GUCEF_CORE_CFILEACCESS_H
+#include "CFileAccess.h"
+#define GUCEF_CORE_CFILEACCESS_H
+#endif /* GUCEF_CORE_CFILEACCESS_H ? */
 
-#ifndef GUCEF_MYGUIGL_MACROS_H
+#ifndef GUCEF_CORE_CPLATFORMNATIVECONSOLEWINDOW_H
+#include "gucefCORE_CPlatformNativeConsoleWindow.h"
+#define GUCEF_CORE_CPLATFORMNATIVECONSOLEWINDOW_H
+#endif /* GUCEF_CORE_CPLATFORMNATIVECONSOLEWINDOW_H ? */
+
+#ifndef GUCEF_CORE_LOGGING_H
+#include "gucefCORE_Logging.h"
+#define GUCEF_CORE_LOGGING_H
+#endif /* GUCEF_CORE_LOGGING_H ? */
+
+#ifndef GUCEF_CORE_COBSERVINGNOTIFIER_H
+#include "CObservingNotifier.h"
+#define GUCEF_CORE_COBSERVINGNOTIFIER_H
+#endif /* GUCEF_CORE_COBSERVINGNOTIFIER_H ? */
+
+#ifndef GUCEF_CORE_CTEVENTHANDLERFUNCTOR_H
+#include "gucefCORE_CTEventHandlerFunctor.h"
+#define GUCEF_CORE_CTEVENTHANDLERFUNCTOR_H
+#endif /* GUCEF_CORE_CTEVENTHANDLERFUNCTOR_H ? */
+
+#ifndef GUCEF_GUI_CWINDOWMANAGERBACKEND_H
+#include "gucefGUI_CWindowManagerBackend.h"
+#define GUCEF_GUI_CWINDOWMANAGERBACKEND_H
+#endif /* GUCEF_GUI_CWINDOWMANAGERBACKEND_H ? */
+
+#ifndef GUCEF_PATCHERAPP_MACROS_H
 #include "gucefPATCHERAPP_macros.h"
-#define GUCEF_MYGUIGL_MACROS_H
-#endif /* GUCEF_MYGUIGL_MACROS_H ? */
+#define GUCEF_PATCHERAPP_MACROS_H
+#endif /* GUCEF_PATCHERAPP_MACROS_H ? */
 
 /*-------------------------------------------------------------------------//
 //                                                                         //
@@ -47,47 +72,49 @@ namespace PATCHERAPP {
 
 /*-------------------------------------------------------------------------//
 //                                                                         //
-//      UTILITIES                                                          //
+//      CLASSES                                                            //
 //                                                                         //
 //-------------------------------------------------------------------------*/
 
-/*
- *      Prevent C++ name mangling
- */
-#ifdef __cplusplus
-extern "C" {
-#endif
+class CMainPatcherAppLogic : public CORE::CObservingNotifier
+{
+    public:
 
-/*---------------------------------------------------------------------------*/
+    CMainPatcherAppLogic( void );
 
-GUCEF_PATCHERAPP_EXPORT_C GUCEF::CORE::Int32 GUCEF_PLUGIN_CALLSPEC_PREFIX 
-GUCEFPlugin_Load( GUCEF::CORE::UInt32 argc, const char** argv ) GUCEF_PLUGIN_CALLSPEC_SUFFIX;
+    virtual ~CMainPatcherAppLogic();
+    
+    Int32 Init( UInt32 argc, const char** argv );
 
-/*--------------------------------------------------------------------------*/
+    void Shutdown( void );
 
-GUCEF_PATCHERAPP_EXPORT_C void GUCEF_PLUGIN_CALLSPEC_PREFIX 
-GUCEFPlugin_Unload( void ) GUCEF_PLUGIN_CALLSPEC_SUFFIX;
+    private:
 
-/*--------------------------------------------------------------------------*/
+    typedef CORE::CTEventHandlerFunctor< CMainPatcherAppLogic > TEventCallback;
 
-GUCEF_PATCHERAPP_EXPORT_C void GUCEF_PLUGIN_CALLSPEC_PREFIX 
-GUCEFPlugin_GetVersion( GUCEF::CORE::TVersion* versionInfo ) GUCEF_PLUGIN_CALLSPEC_SUFFIX;
+    CMainPatcherAppLogic( const CMainPatcherAppLogic& src );
 
-/*--------------------------------------------------------------------------*/
+    CMainPatcherAppLogic& operator=( const CMainPatcherAppLogic& src );
 
-GUCEF_PATCHERAPP_EXPORT_C const char* GUCEF_PLUGIN_CALLSPEC_PREFIX 
-GUCEFPlugin_GetCopyright( void ) GUCEF_PLUGIN_CALLSPEC_SUFFIX;
+    bool SetupWindowContext( GUI::TWindowManagerBackendPtr windowMngrBackend ,
+                             const GUI::CString& windowMngrBackendName       ,
+                             const GUI::CString& guiDriverToUse              );
 
-/*--------------------------------------------------------------------------*/
+    virtual void OnFirstAppCycle( CORE::CNotifier* notifier           ,
+                                  const CORE::CEvent& eventid         ,
+                                  CORE::CICloneable* eventdata = NULL );
+    
+    void ShutdownLogging( void );
 
-GUCEF_PATCHERAPP_EXPORT_C const char* GUCEF_PLUGIN_CALLSPEC_PREFIX 
-GUCEFPlugin_GetDescription( void ) GUCEF_PLUGIN_CALLSPEC_SUFFIX;
+    void SetupLogging( void );
 
-/*---------------------------------------------------------------------------*/                 
+    private:
 
-#ifdef __cplusplus
-   }
-#endif /* __cplusplus */
+    CORE::CFileAccess* m_logFile;
+    CORE::CStdLogger* m_fileLogger;
+    CORE::CPlatformNativeConsoleLogger* m_consoleLogger;
+    CORE::CPlatformNativeConsoleWindow* m_consoleWindow;
+};
 
 /*-------------------------------------------------------------------------//
 //                                                                         //
@@ -100,7 +127,7 @@ GUCEFPlugin_GetDescription( void ) GUCEF_PLUGIN_CALLSPEC_SUFFIX;
 
 /*-------------------------------------------------------------------------*/
 
-#endif /* GUCEF_PATCHERAPP_MAIN_H ? */
+#endif /* GUCEF_PATCHERAPP_CMAINPATCHERAPPLOGIC_H ? */
 
 /*-------------------------------------------------------------------------//
 //                                                                         //
@@ -108,7 +135,7 @@ GUCEFPlugin_GetDescription( void ) GUCEF_PLUGIN_CALLSPEC_SUFFIX;
 //                                                                         //
 //-------------------------------------------------------------------------//
 
-- 04-05-2005 :
+- 23-01-2013 :
         - Dinand: Initial version.
 
 ---------------------------------------------------------------------------*/

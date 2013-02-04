@@ -1369,7 +1369,7 @@ LoadAndRunGucefPlatformAppEx( const char* appName    ,
         if ( CORE::FileExists( patchListPath ) )
         {
             // Since there is a patch list we have to launch the patcher app first
-            if ( false )
+            if ( false )  //@TODO: Implement
             {
                 // Error while running the patcher app, abort
                 return -3;
@@ -1439,8 +1439,7 @@ LoadAndRunGucefPlatformAppEx( const char* appName    ,
     }
 
     // Now load the app config if so desired
-
-
+    //@TODO: Implement
 
     // Now invoke the Application class main if so desired
     if ( loaderAppData.gucefMainConfig.invokeAppMain )

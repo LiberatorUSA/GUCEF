@@ -17,8 +17,8 @@
  *  Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA 
  */
 
-#ifndef GUCEF_PATCHERAPP_MAIN_H
-#define GUCEF_PATCHERAPP_MAIN_H
+#ifndef GUCEF_PATCHERAPP_CPATCHERAPPMAINCONFIG_H
+#define GUCEF_PATCHERAPP_CPATCHERAPPMAINCONFIG_H
 
 /*-------------------------------------------------------------------------//
 //                                                                         //
@@ -26,15 +26,17 @@
 //                                                                         //
 //-------------------------------------------------------------------------*/
 
-#ifndef GUCEF_CORE_ESTRUCTS_H
-#include "EStructs.h"
-#define GUCEF_CORE_ESTRUCTS_H
-#endif /* GUCEF_CORE_ESTRUCTS_H ? */
+#include <map>
 
-#ifndef GUCEF_MYGUIGL_MACROS_H
+#ifndef GUCEF_CORE_CICONFIGURABLE_H
+#include "CIConfigurable.h"
+#define GUCEF_CORE_CICONFIGURABLE_H
+#endif /* GUCEF_CORE_CICONFIGURABLE_H ? */
+
+#ifndef GUCEF_PATCHERAPP_MACROS_H
 #include "gucefPATCHERAPP_macros.h"
-#define GUCEF_MYGUIGL_MACROS_H
-#endif /* GUCEF_MYGUIGL_MACROS_H ? */
+#define GUCEF_PATCHERAPP_MACROS_H
+#endif /* GUCEF_PATCHERAPP_MACROS_H ? */
 
 /*-------------------------------------------------------------------------//
 //                                                                         //
@@ -47,47 +49,59 @@ namespace PATCHERAPP {
 
 /*-------------------------------------------------------------------------//
 //                                                                         //
-//      UTILITIES                                                          //
+//      CLASSES                                                            //
 //                                                                         //
 //-------------------------------------------------------------------------*/
 
-/*
- *      Prevent C++ name mangling
- */
-#ifdef __cplusplus
-extern "C" {
-#endif
+class CPatcherAppConfig : public CORE::CIConfigurable
+{
+    public:
 
-/*---------------------------------------------------------------------------*/
+    CPatcherAppConfig( void );
 
-GUCEF_PATCHERAPP_EXPORT_C GUCEF::CORE::Int32 GUCEF_PLUGIN_CALLSPEC_PREFIX 
-GUCEFPlugin_Load( GUCEF::CORE::UInt32 argc, const char** argv ) GUCEF_PLUGIN_CALLSPEC_SUFFIX;
+    virtual ~CPatcherAppConfig();
+    
+    const CString& GetWindowManagerName( void ) const;
+   
+    const CString& GetGuiBackendName( void ) const;
 
-/*--------------------------------------------------------------------------*/
+    const CString& GetInitialFormTypeName( void ) const;
 
-GUCEF_PATCHERAPP_EXPORT_C void GUCEF_PLUGIN_CALLSPEC_PREFIX 
-GUCEFPlugin_Unload( void ) GUCEF_PLUGIN_CALLSPEC_SUFFIX;
+    const CString& GetInitialFormResourcePath( void ) const;
 
-/*--------------------------------------------------------------------------*/
+    const CString& GetLogFilePath( void ) const;
 
-GUCEF_PATCHERAPP_EXPORT_C void GUCEF_PLUGIN_CALLSPEC_PREFIX 
-GUCEFPlugin_GetVersion( GUCEF::CORE::TVersion* versionInfo ) GUCEF_PLUGIN_CALLSPEC_SUFFIX;
+    bool IsFileLoggerEnabled( void ) const;
 
-/*--------------------------------------------------------------------------*/
+    bool IsConsoleLoggerEnabled( void ) const;
 
-GUCEF_PATCHERAPP_EXPORT_C const char* GUCEF_PLUGIN_CALLSPEC_PREFIX 
-GUCEFPlugin_GetCopyright( void ) GUCEF_PLUGIN_CALLSPEC_SUFFIX;
+    bool IsConsoleWindowEnabled( void ) const;
 
-/*--------------------------------------------------------------------------*/
+    virtual bool SaveConfig( CORE::CDataNode& tree );
 
-GUCEF_PATCHERAPP_EXPORT_C const char* GUCEF_PLUGIN_CALLSPEC_PREFIX 
-GUCEFPlugin_GetDescription( void ) GUCEF_PLUGIN_CALLSPEC_SUFFIX;
+    virtual bool LoadConfig( const CORE::CDataNode& treeroot );
 
-/*---------------------------------------------------------------------------*/                 
+    void Clear( void );
 
-#ifdef __cplusplus
-   }
-#endif /* __cplusplus */
+    void InitToDefaultValues( void );
+
+    private:
+
+    CPatcherAppConfig( const CPatcherAppConfig& src );
+
+    CPatcherAppConfig& operator=( const CPatcherAppConfig& src );
+    
+    private:
+
+    CString m_windowManagerName;
+    CString m_guiBackendName;
+    CString m_initialFormTypeName;
+    CString m_initialFormResourcePath;
+    CString m_logfilePath;
+    bool m_isFileLoggerEnabled;
+    bool m_isConsoleLoggerEnabled;
+    bool m_isConsoleWindowEnabled;
+};
 
 /*-------------------------------------------------------------------------//
 //                                                                         //
@@ -100,7 +114,7 @@ GUCEFPlugin_GetDescription( void ) GUCEF_PLUGIN_CALLSPEC_SUFFIX;
 
 /*-------------------------------------------------------------------------*/
 
-#endif /* GUCEF_PATCHERAPP_MAIN_H ? */
+#endif /* GUCEF_PATCHERAPP_CPATCHERAPPMAINCONFIG_H ? */
 
 /*-------------------------------------------------------------------------//
 //                                                                         //
@@ -108,7 +122,7 @@ GUCEFPlugin_GetDescription( void ) GUCEF_PLUGIN_CALLSPEC_SUFFIX;
 //                                                                         //
 //-------------------------------------------------------------------------//
 
-- 04-05-2005 :
+- 23-01-2013 :
         - Dinand: Initial version.
 
 ---------------------------------------------------------------------------*/

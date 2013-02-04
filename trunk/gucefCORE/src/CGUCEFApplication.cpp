@@ -89,6 +89,7 @@ namespace CORE {
 
 const CEvent CGUCEFApplication::AppInitEvent = "GUCEF::CORE::CGUCEFApplication::AppInitEvent";
 const CEvent CGUCEFApplication::AppShutdownEvent = "GUCEF::CORE::CGUCEFApplication::AppShutdownEvent";
+const CEvent CGUCEFApplication::FirstCycleEvent = "GUCEF::CORE::CGUCEFApplication::FirstCycleEvent";
 
 /*-------------------------------------------------------------------------//
 //                                                                         //
@@ -229,11 +230,12 @@ CGUCEFApplication::Main( HINSTANCE hinstance     ,
             m_pulseGenerator.AllowPeriodicPulses();
             m_mutex.Unlock();
 
-            m_pulseGenerator.RequestPeriodicPulses();
+            m_pulseGenerator.RequestPeriodicPulses( this );
 
             // Unless the pulse drive is overridden we will now start the loop
             if ( m_pulseGenerator.GetPulseGeneratorDriver() == &m_busyWaitPulseDriver )
             {
+                if ( !NotifyObservers( FirstCycleEvent ) ) return 0;                
                 m_busyWaitPulseDriver.Run( m_pulseGenerator );
             }
         }
@@ -310,11 +312,12 @@ CGUCEFApplication::main( int argc    ,
             m_pulseGenerator.AllowPeriodicPulses();
             m_mutex.Unlock();
 
-            m_pulseGenerator.RequestPeriodicPulses();
+            m_pulseGenerator.RequestPeriodicPulses( this );
 
             // Unless the pulse drive is overridden we will now start the loop
             if ( m_pulseGenerator.GetPulseGeneratorDriver() == &m_busyWaitPulseDriver )
             {
+                if ( !NotifyObservers( FirstCycleEvent ) ) return 0;
                 m_busyWaitPulseDriver.Run( m_pulseGenerator );
             }
         }
@@ -338,6 +341,7 @@ CGUCEFApplication::RegisterEvents( void )
 
     AppInitEvent.Initialize();
     AppShutdownEvent.Initialize();
+    FirstCycleEvent.Initialize();
 }
 
 /*-------------------------------------------------------------------------*/

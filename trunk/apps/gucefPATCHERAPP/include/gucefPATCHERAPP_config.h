@@ -1,6 +1,6 @@
 /*
- *  guidriverMyGUIOpenGL: glue module for the MyGUI GUI backend using OpenGL
- *  Copyright (C) 2002 - 2008.  Dinand Vanvelzen
+ *  gucefPATCHERAPP: Application module for the patcher application
+ *  Copyright (C) 2002 - 2013.  Dinand Vanvelzen
  *
  *  This library is free software; you can redistribute it and/or
  *  modify it under the terms of the GNU Lesser General Public
@@ -17,8 +17,8 @@
  *  Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA 
  */
 
-#ifndef GUCEF_MYGUIGL_CONFIG_H
-#define GUCEF_MYGUIGL_CONFIG_H
+#ifndef GUCEF_PATCHERAPP_CONFIG_H
+#define GUCEF_PATCHERAPP_CONFIG_H
 
 /*-------------------------------------------------------------------------//
 //                                                                         //
@@ -38,12 +38,12 @@
 //-------------------------------------------------------------------------*/
 
 /* Switches for the export of C++ and/or C code */
-#define GUCEF_MYGUIGL_EXPORT_CPP_CODE
-#define GUCEF_MYGUIGL_EXPORT_C_CODE
+#define GUCEF_PATCHERAPP_EXPORT_CPP_CODE
+#define GUCEF_PATCHERAPP_EXPORT_C_CODE
 
 /*-------------------------------------------------------------------------*/
 
-#endif /* GUCEF_MYGUIGL_CONFIG_H */
+#endif /* GUCEF_PATCHERAPP_CONFIG_H */
 
 /*-------------------------------------------------------------------------//
 //                                                                         //

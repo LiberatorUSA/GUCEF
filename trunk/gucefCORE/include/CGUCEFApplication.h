@@ -102,6 +102,7 @@ class GUCEF_CORE_PUBLIC_CPP CGUCEFApplication : public CNotifier             ,
 
     static const CEvent AppInitEvent;
     static const CEvent AppShutdownEvent;
+    static const CEvent FirstCycleEvent;
 
     static void RegisterEvents( void );
 

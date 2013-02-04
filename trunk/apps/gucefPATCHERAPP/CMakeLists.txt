@@ -12,12 +12,19 @@
 # Configuration for module: gucefPATCHERAPP
 
 set( HEADER_FILES 
+  include/gucefPATCHERAPP_CMainPatcherAppLogic.h
   include/gucefPATCHERAPP_config.h
+  include/gucefPATCHERAPP_CPatcherAppConfig.h
+  include/gucefPATCHERAPP_CPatcherAppGlobal.h
   include/gucefPATCHERAPP_macros.h
   include/gucefPATCHERAPP_main.h
+  include/gucefPATCHERAPP_SimpleTypes.h
 )
 
 set( SOURCE_FILES 
+  src/gucefPATCHERAPP_CMainPatcherAppLogic.cpp
+  src/gucefPATCHERAPP_CPatcherAppConfig.cpp
+  src/gucefPATCHERAPP_CPatcherAppGlobal.cpp
   src/gucefPATCHERAPP_main.cpp
 )
 
@@ -32,11 +39,11 @@ set( ALL_FILES ${HEADER_FILES} ${SOURCE_FILES} ${PLATFORM_HEADER_FILES} ${PLATFO
 
 set( MODULE_NAME "gucefPATCHERAPP" )
 add_library( ${MODULE_NAME} ${ALL_FILES} )
-add_dependencies( ${MODULE_NAME} gucefCOM gucefCOMCORE gucefCORE gucefMT gucefPATCHER )
-target_link_libraries( ${MODULE_NAME} gucefCOM gucefCOMCORE gucefCORE gucefMT gucefPATCHER )
+add_dependencies( ${MODULE_NAME} gucefCOM gucefCOMCORE gucefCORE gucefGUI gucefIMAGE gucefINPUT gucefMT gucefPATCHER )
+target_link_libraries( ${MODULE_NAME} gucefCOM gucefCOMCORE gucefCORE gucefGUI gucefIMAGE gucefINPUT gucefMT gucefPATCHER )
 set_target_properties( ${MODULE_NAME} PROPERTIES COMPILE_DEFINITIONS "GUCEF_PATCHERAPP_BUILD_MODULE" )
 
-include_directories( ../../common/include ../../gucefCOM/include ../../gucefCOMCORE/include ../../gucefCORE/include ../../gucefMT/include ../../gucefPATCHER/include include )
+include_directories( ../../common/include ../../gucefCOM/include ../../gucefCOMCORE/include ../../gucefCORE/include ../../gucefGUI/include ../../gucefIMAGE/include ../../gucefINPUT/include ../../gucefMT/include ../../gucefPATCHER/include ../../gucefVFS/include include )
 
 if ( ANDROID )
   include_directories( ../../gucefCORE/include/android )
