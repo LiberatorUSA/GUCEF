@@ -17,6 +17,7 @@ set( HEADER_FILES
   include/gucefProjectGenerator_CDirCrawlingProjectInfoGatherer.h
   include/gucefProjectGenerator_CIProjectGenerator.h
   include/gucefProjectGenerator_CIProjectInfoGatherer.h
+  include/gucefProjectGenerator_CPremake4ProjectGenerator.h
   include/gucefProjectGenerator_CXmlProjectGenerator.h
   include/gucefProjectGenerator_DataTypes.h
 )
@@ -27,6 +28,7 @@ set( SOURCE_FILES
   src/gucefProjectGenerator_CDirCrawlingProjectInfoGatherer.cpp
   src/gucefProjectGenerator_CIProjectGenerator.cpp
   src/gucefProjectGenerator_CIProjectInfoGatherer.cpp
+  src/gucefProjectGenerator_CPremake4ProjectGenerator.cpp
   src/gucefProjectGenerator_CXmlProjectGenerator.cpp
   src/gucefProjectGenerator_DataTypes.cpp
   src/main.cpp
