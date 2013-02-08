@@ -66,7 +66,7 @@ namespace PROJECTGENERATOR {
 //-------------------------------------------------------------------------*/
 
 static const CORE::CString AllPlatforms = "all";
-static TStringMap cmakeAdditionTemplates;
+static TStringMap premake4AdditionTemplates;
 
 /*-------------------------------------------------------------------------//
 //                                                                         //
@@ -374,8 +374,8 @@ GeneratePremake4ListsFileSection( const CORE::CString& sectionContent ,
 /*---------------------------------------------------------------------------*/
 
 CORE::CString
-GenerateCMakeListsFileIncludeSection( const TModuleInfoEntry& moduleInfoEntry  ,
-                                      const CORE::CString& consensusModuleName )
+GeneratePremake4FileIncludeSection( const TModuleInfoEntry& moduleInfoEntry  ,
+                                    const CORE::CString& consensusModuleName )
 {GUCEF_TRACE;
 
     CORE::CString sectionContent;
@@ -386,7 +386,7 @@ GenerateCMakeListsFileIncludeSection( const TModuleInfoEntry& moduleInfoEntry  ,
         if ( !includeFiles.empty() )
         {
             sectionContent = "set( HEADER_FILES \n";
-            sectionContent = GenerateCMakeListsFileSection( sectionContent, includeFiles );
+            sectionContent = GeneratePremake4FileSection( sectionContent, includeFiles );
 
             GUCEF_LOG( CORE::LOGLEVEL_NORMAL, "Processed " + CORE::UInt32ToString( includeFiles.size() ) + " include dirs for module " + consensusModuleName );
             return sectionContent;
@@ -400,8 +400,8 @@ GenerateCMakeListsFileIncludeSection( const TModuleInfoEntry& moduleInfoEntry  ,
 /*---------------------------------------------------------------------------*/
 
 CORE::CString
-GenerateCMakeListsFileSrcSection( const TModuleInfoEntry& moduleInfoEntry  ,
-                                  const CORE::CString& consensusModuleName )
+GeneratePremake4FileSrcSection( const TModuleInfoEntry& moduleInfoEntry  ,
+                                const CORE::CString& consensusModuleName )
 {GUCEF_TRACE;
 
     CORE::CString sectionContent;
@@ -412,7 +412,7 @@ GenerateCMakeListsFileSrcSection( const TModuleInfoEntry& moduleInfoEntry  ,
         if ( !srcFiles.empty() )
         {
             sectionContent = "set( SOURCE_FILES \n";
-            sectionContent = GenerateCMakeListsFileSection( sectionContent, srcFiles );
+            sectionContent = GeneratePremake4FileSection( sectionContent, srcFiles );
 
             GUCEF_LOG( CORE::LOGLEVEL_NORMAL, "Processed " + CORE::UInt32ToString( srcFiles.size() ) + " include dirs for module " + consensusModuleName );
             return sectionContent;
@@ -426,12 +426,12 @@ GenerateCMakeListsFileSrcSection( const TModuleInfoEntry& moduleInfoEntry  ,
 /*---------------------------------------------------------------------------*/
 
 void
-GenerateCMakeListsFilePlatformFilesSection( const TModuleInfoEntry& moduleInfoEntry ,
-                                            const CORE::CString& platformName       ,
-                                            CORE::CString& headerSection            ,
-                                            CORE::CString& sourceSection            ,
-                                            bool& hasPlatformHeaderFiles            ,
-                                            bool& hasPlatformSourceFiles            )
+GeneratePremake4FilePlatformFilesSection( const TModuleInfoEntry& moduleInfoEntry ,
+                                          const CORE::CString& platformName       ,
+                                          CORE::CString& headerSection            ,
+                                          CORE::CString& sourceSection            ,
+                                          bool& hasPlatformHeaderFiles            ,
+                                          bool& hasPlatformSourceFiles            )
 {GUCEF_TRACE;
 
     TModuleInfoMap::const_iterator m = moduleInfoEntry.modulesPerPlatform.find( platformName );
@@ -509,7 +509,7 @@ GenerateCMakeListsFilePlatformFilesSection( const TModuleInfoEntry& moduleInfoEn
 /*---------------------------------------------------------------------------*/
 
 CORE::CString
-GenerateCMakeListsFilePlatformFilesSection( const TModuleInfoEntry& moduleInfoEntry )
+GeneratePremake4FilePlatformFilesSection( const TModuleInfoEntry& moduleInfoEntry )
 {GUCEF_TRACE;
 
     bool hasPlatformHeaderFiles = false;
@@ -526,12 +526,12 @@ GenerateCMakeListsFilePlatformFilesSection( const TModuleInfoEntry& moduleInfoEn
 
         if ( AllPlatforms != platformName && !platformName.IsNULLOrEmpty() )
         {
-            GenerateCMakeListsFilePlatformFilesSection( moduleInfoEntry        ,
-                                                        platformName           ,
-                                                        headerSection          ,
-                                                        sourceSection          ,
-                                                        hasPlatformHeaderFiles ,
-                                                        hasPlatformSourceFiles );
+            GeneratePremake4FilePlatformFilesSection( moduleInfoEntry        ,
+                                                      platformName           ,
+                                                      headerSection          ,
+                                                      sourceSection          ,
+                                                      hasPlatformHeaderFiles ,
+                                                      hasPlatformSourceFiles );
 
             if ( !headerSection.IsNULLOrEmpty() || !sourceSection.IsNULLOrEmpty() )
             {
@@ -555,26 +555,14 @@ GenerateCMakeListsFilePlatformFilesSection( const TModuleInfoEntry& moduleInfoEn
         sectionContent += "endif ()\n\n";
     }
 
-    // Make sure the variable is defined even if we have no platform files
-    // This allows people to always add the variable in the suffix file without knowing
-    // if there are platform files
-    if ( !hasPlatformHeaderFiles )
-    {
-        sectionContent += "# Make sure the PLATFORM_HEADER_FILES variable is always defined\n set( PLATFORM_HEADER_FILES \"\" )\n\n";
-    }
-    if ( !hasPlatformSourceFiles )
-    {
-        sectionContent += "# Make sure the PLATFORM_SOURCE_FILES variable is always defined\n set( PLATFORM_SOURCE_FILES \"\" )\n\n";
-    }
-
     return sectionContent;
 }
 
 /*---------------------------------------------------------------------------*/
 
 CORE::CString
-GenerateCMakeModuleIncludesSection( const TModuleInfo& moduleInfo ,
-                                    const CORE::CString& rootDir  )
+GeneratePremake4ModuleIncludesSection( const TModuleInfo& moduleInfo ,
+                                       const CORE::CString& rootDir  )
 {GUCEF_TRACE;
 
     // Add include dirs for each dependency we know about
@@ -583,7 +571,7 @@ GenerateCMakeModuleIncludesSection( const TModuleInfo& moduleInfo ,
     TStringSet::const_iterator i = includeDirs.begin();
     while ( i != includeDirs.end() )
     {
-        allRelDependencyPaths += (*i) + " ";
+        allRelDependencyPaths += '\"' + (*i) + "\" ";
         ++i;
     }
 
@@ -594,7 +582,7 @@ GenerateCMakeModuleIncludesSection( const TModuleInfo& moduleInfo ,
         CORE::CString includeDir = (*n).first.ReplaceChar( '\\', '/' );
         if ( 0 != includeDir.Length() )
         {
-            allRelDependencyPaths += includeDir + " ";
+            allRelDependencyPaths += '\"' + includeDir + "\" ";
         }
         else
         {
@@ -604,7 +592,7 @@ GenerateCMakeModuleIncludesSection( const TModuleInfo& moduleInfo ,
             // subdir.
             if ( 1 < moduleInfo.includeDirs.size() )
             {
-                allRelDependencyPaths += "../" + CORE::LastSubDir( rootDir ) + " ";
+                allRelDependencyPaths += "\"../\"" + CORE::LastSubDir( rootDir ) + " ";
             }
         }
         ++n;
@@ -613,7 +601,7 @@ GenerateCMakeModuleIncludesSection( const TModuleInfo& moduleInfo ,
     CORE::CString sectionContent;
     if ( allRelDependencyPaths.Length() > 0 )
     {
-        sectionContent = "include_directories( " + allRelDependencyPaths + ")\n";
+        sectionContent = "includedirs { " + allRelDependencyPaths + "}\n";
     }
     return sectionContent;
 }
@@ -621,7 +609,7 @@ GenerateCMakeModuleIncludesSection( const TModuleInfo& moduleInfo ,
 /*---------------------------------------------------------------------------*/
 
 CORE::CString
-GenerateCMakeModuleIncludesSection( const TModuleInfoEntry& moduleInfoEntry )
+GeneratePremake4ModuleIncludesSection( const TModuleInfoEntry& moduleInfoEntry )
 {GUCEF_TRACE;
 
     CORE::CString sectionContent;
@@ -632,7 +620,7 @@ GenerateCMakeModuleIncludesSection( const TModuleInfoEntry& moduleInfoEntry )
     if ( i != moduleInfoEntry.modulesPerPlatform.end() )
     {
         sectionContent += "\n";
-        sectionContent += GenerateCMakeModuleIncludesSection( (*i).second, moduleInfoEntry.rootDir );
+        sectionContent += GeneratePremake4ModuleIncludesSection( (*i).second, moduleInfoEntry.rootDir );
     }
 
     // Now add the include paths which are platform specific
@@ -642,7 +630,7 @@ GenerateCMakeModuleIncludesSection( const TModuleInfoEntry& moduleInfoEntry )
         const CORE::CString& platformName = (*i).first;
         if ( platformName != AllPlatforms )
         {
-            CORE::CString platformSection = GenerateCMakeModuleIncludesSection( (*i).second, moduleInfoEntry.rootDir );
+            CORE::CString platformSection = GeneratePremake4ModuleIncludesSection( (*i).second, moduleInfoEntry.rootDir );
             if ( platformSection.Length() > 0 )
             {
                 sectionContent += "\nif ( "+ platformName.Uppercase() + " )\n  ";
@@ -718,10 +706,10 @@ GeneratePremake4ModuleDescriptionLine( const TModuleInfo& moduleInfo     ,
 /*---------------------------------------------------------------------------*/
 
 CORE::CString
-GenerateCMakeModuleDependenciesLine( const TProjectInfo& projectInfo   ,
-                                     const TModuleInfo& moduleInfo     ,
-                                     const CORE::CString& moduleName   ,
-                                     const CORE::CString& platformName )
+GeneratePremake4ModuleDependenciesLine( const TProjectInfo& projectInfo   ,
+                                        const TModuleInfo& moduleInfo     ,
+                                        const CORE::CString& moduleName   ,
+                                        const CORE::CString& platformName )
 {GUCEF_TRACE;
 
     if ( !moduleInfo.dependencies.empty() )
@@ -845,10 +833,10 @@ GeneratePremake4ModuleDefinesLine( const TModuleInfo& moduleInfo     ,
 /*---------------------------------------------------------------------------*/
 
 CORE::CString
-GenerateCMakeListsModuleNameSection( const TModuleInfoEntry& moduleInfoEntry )
+GeneratePremake4ModuleNameSection( const TModuleInfoEntry& moduleInfoEntry )
 {GUCEF_TRACE;
 
-    GUCEF_LOG( CORE::LOGLEVEL_BELOW_NORMAL, "Generating CMake section which defines the module name variable ${MODULE_NAME} depending on the platform flags" );
+    GUCEF_LOG( CORE::LOGLEVEL_BELOW_NORMAL, "Generating Premake4 section which defines the module name depending on the platform flags" );
 
     CORE::CString sectionContent;
 
@@ -910,8 +898,8 @@ GenerateCMakeListsModuleNameSection( const TModuleInfoEntry& moduleInfoEntry )
 /*---------------------------------------------------------------------------*/
 
 CORE::CString
-GenerateCMakeModuleDescriptionSection( const TModuleInfoEntry& moduleInfoEntry  ,
-                                       const CORE::CString& consensusModuleName )
+GeneratePremake4ModuleDescriptionSection( const TModuleInfoEntry& moduleInfoEntry  ,
+                                          const CORE::CString& consensusModuleName )
 {GUCEF_TRACE;
 
     // This bit of information is not additive and is in fact mutually exclusive per platform
@@ -930,11 +918,11 @@ GenerateCMakeModuleDescriptionSection( const TModuleInfoEntry& moduleInfoEntry  
         {
             if ( platformAdded )
             {
-                sectionContent += "elseif( " + platformName.Uppercase() + " )\n  " + GenerateCMakeModuleDescriptionLine( *moduleInfo, consensusModuleName, platformName );
+                sectionContent += "elseif( " + platformName.Uppercase() + " )\n  " + GeneratePremake4ModuleDescriptionLine( *moduleInfo, consensusModuleName, platformName );
             }
             else
             {
-                sectionContent += "if( " + platformName.Uppercase() + " )\n  " + GenerateCMakeModuleDescriptionLine( *moduleInfo, consensusModuleName, platformName );
+                sectionContent += "if( " + platformName.Uppercase() + " )\n  " + GeneratePremake4ModuleDescriptionLine( *moduleInfo, consensusModuleName, platformName );
                 platformAdded = true;
             }
         }
@@ -949,7 +937,7 @@ GenerateCMakeModuleDescriptionSection( const TModuleInfoEntry& moduleInfoEntry  
         if ( platformAdded )
         {
             // This module has platform module descriptions which override the AllPlatforms version which we will define here
-            sectionContent += "else()\n  " + GenerateCMakeModuleDescriptionLine( *moduleInfo, consensusModuleName, AllPlatforms ) + "endif()\n";
+            sectionContent += "else()\n  " + GeneratePremake4ModuleDescriptionLine( *moduleInfo, consensusModuleName, AllPlatforms ) + "endif()\n";
         }
         else
         {
@@ -959,14 +947,14 @@ GenerateCMakeModuleDescriptionSection( const TModuleInfoEntry& moduleInfoEntry  
             if ( moduleInfo->moduleType == MODULETYPE_EXECUTABLE )
             {
                 sectionContent += "if ( WIN32 )\n  " +
-                                    GenerateCMakeModuleDescriptionLine( *moduleInfo, consensusModuleName, "win32" ) +
+                                    GeneratePremake4ModuleDescriptionLine( *moduleInfo, consensusModuleName, "win32" ) +
                                   "else()\n  " +
-                                    GenerateCMakeModuleDescriptionLine( *moduleInfo, consensusModuleName, AllPlatforms ) +
+                                    GeneratePremake4ModuleDescriptionLine( *moduleInfo, consensusModuleName, AllPlatforms ) +
                                   "endif()\n";
             }
             else
             {
-                sectionContent += GenerateCMakeModuleDescriptionLine( *moduleInfo, consensusModuleName, AllPlatforms );
+                sectionContent += GeneratePremake4ModuleDescriptionLine( *moduleInfo, consensusModuleName, AllPlatforms );
             }
         }
     }
@@ -985,8 +973,8 @@ GenerateCMakeModuleDescriptionSection( const TModuleInfoEntry& moduleInfoEntry  
 /*---------------------------------------------------------------------------*/
 
 CORE::CString
-GeneratePremake4ListsModuleInfoSection( const TProjectInfo& projectInfo         ,
-                                        const TModuleInfoEntry& moduleInfoEntry )
+GeneratePremake4ModuleInfoSection( const TProjectInfo& projectInfo         ,
+                                   const TModuleInfoEntry& moduleInfoEntry )
 {GUCEF_TRACE;
 
     CORE::CString consensusName = GetConsensusModuleName( moduleInfoEntry );
