@@ -75,6 +75,11 @@
 #define GUCEF_PROJECTGENERATOR_CANDROIDMAKEFILEGENERATOR_H
 #endif /* GUCEF_PROJECTGENERATOR_CANDROIDMAKEFILEGENERATOR_H ? */
 
+#ifndef GUCEF_PROJECTGENERATOR_CPREMAKE4PROJECTGENERATOR_H
+#include "gucefProjectGenerator_CPremake4ProjectGenerator.h"
+#define GUCEF_PROJECTGENERATOR_CPREMAKE4PROJECTGENERATOR_H
+#endif /* GUCEF_PROJECTGENERATOR_CPREMAKE4PROJECTGENERATOR_H ? */
+
 /*-------------------------------------------------------------------------//
 //                                                                         //
 //      NAMESPACE                                                          //
@@ -239,11 +244,20 @@ GUCEF_OSMAIN_BEGIN
                                             addToolCompileTimeToOutput ,
                                             keyValueList               );
         }
+        else
+        if ( (*i).Lowercase() == "premake4" )
+        {
+            CPremake4ProjectGenerator premake4Generator;
+            premake4Generator.GenerateProject( projectInfo                ,
+                                               outputDir                  ,
+                                               addToolCompileTimeToOutput ,
+                                               keyValueList               );
+        }
         ++i;
     }
 
     GUCEF_LOG( CORE::LOGLEVEL_NORMAL, "Wrote log file to: " + logFilename );
-    
+
     CORE::CCoreGlobal::Instance()->GetLogManager().ClearLoggers();
     return 0;
 }
