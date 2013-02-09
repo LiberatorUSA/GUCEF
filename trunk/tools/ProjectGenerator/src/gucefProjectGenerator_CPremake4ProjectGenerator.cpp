@@ -229,10 +229,10 @@ LoadPremake4FileAdditionTemplates( const CORE::CString& templateDir )
 }
 
 /*---------------------------------------------------------------------------*/
-/*
+
 CORE::CString
-GenerateCMakeTemplatedAdditionSection( const TModuleInfoEntry& moduleInfoEntry ,
-                                       const CORE::CString& platformName       )
+GeneratePremake4TemplatedAdditionSection( const TModuleInfoEntry& moduleInfoEntry ,
+                                          const CORE::CString& platformName       )
 {GUCEF_TRACE;
 
     const TModuleInfo* moduleInfo = NULL;
@@ -244,8 +244,8 @@ GenerateCMakeTemplatedAdditionSection( const TModuleInfoEntry& moduleInfoEntry ,
         // We can make this more advanced later if needed but for now differentiating based on module
         // type provides enough flexibility since you can do the rest in CMake utility functions
         CORE::CString moduleTypeSttr = ModuleTypeToString( GetModuleType( moduleInfoEntry, platformName ) ).Lowercase();
-        TStringMap::iterator i = cmakeAdditionTemplates.find( moduleTypeSttr );
-        if ( i != cmakeAdditionTemplates.end() )
+        TStringMap::iterator i = premake4AdditionTemplates.find( moduleTypeSttr );
+        if ( i != premake4AdditionTemplates.end() )
         {
             GUCEF_LOG( CORE::LOGLEVEL_NORMAL, "Processing template with name \"" + moduleTypeSttr + "\" for module with name " + *moduleName + " using platform " + platformName );
 
@@ -264,13 +264,13 @@ GenerateCMakeTemplatedAdditionSection( const TModuleInfoEntry& moduleInfoEntry ,
 }
 
 /*---------------------------------------------------------------------------*/
-/*
+
 CORE::CString
-GenerateCMakeTemplatedAdditionSection( const TModuleInfoEntry& moduleInfoEntry )
+GeneratePremake4TemplatedAdditionSection( const TModuleInfoEntry& moduleInfoEntry )
 
 {GUCEF_TRACE;
 
-    CORE::CString sectionContent;
+    CORE::CString sectionContent;     /*
     bool platformAdded = false;
     bool allPlatformsSectionAdded = false;
 
@@ -329,7 +329,7 @@ GenerateCMakeTemplatedAdditionSection( const TModuleInfoEntry& moduleInfoEntry )
                          sectionContent                                          +
                          GenerateAutoGenertedTemplatedAdditionSeperator( true );
     }
-
+               */
     return sectionContent;
 }
 
@@ -357,6 +357,7 @@ GeneratePremake4FileSection( const CORE::CString& sectionContent ,
             if ( first )
             {
                 newSectionContent += "  " + path;
+                first = false;
             }
             else
             {
@@ -1082,40 +1083,26 @@ GeneratePremake4ModuleFileContent( const TProjectInfo& projectInfo         ,
 
     // Add all platform files, headers and source
     fileContent += GeneratePremake4FilePlatformFilesSection( moduleInfoEntry );
-/*
-    // Check if we need to add a legacy suffix file section
-    CORE::CString suffixFileContent = LoadLegacyCMakeListsSuffixFileFromDisk( moduleInfoEntry );
-    if ( suffixFileContent.Length() > 0 )
+
+    // Since we are not using a legacy suffix file we have to auto generate more info then before
+    // mainly the module description, dependencies, definitions, etc.
+    fileContent += GeneratePremake4ModuleInfoSection( projectInfo, moduleInfoEntry );
+
+    CORE::CString additionFileContent ;//= LoadPremake4AdditionFileFromDisk( moduleInfoEntry );
+    if ( !additionFileContent.IsNULLOrEmpty() )
     {
-        fileContent += GenerateAutoGenertedSeperator( true );
-        fileContent += suffixFileContent;
-        fileContent += GenerateAutoGenertedSeperator( false );
-
-        // Add all the include directories for this module
-        fileContent += GenerateCMakeModuleIncludesSection( moduleInfoEntry );
+        fileContent += GeneratePremake4AutoGenertedSeperator( true );
+        fileContent += additionFileContent;
+        fileContent += GeneratePremake4AutoGenertedSeperator( false );
     }
-    else
-    {
-        // Since we are not using a legacy suffix file we have to auto generate more info then before
-        // mainly the module description, dependencies, definitions, etc.
-        fileContent += GenerateCMakeListsModuleInfoSection( projectInfo, moduleInfoEntry );
 
-        CORE::CString additionFileContent = LoadCMakeListsAdditionFileFromDisk( moduleInfoEntry );
-        if ( !additionFileContent.IsNULLOrEmpty() )
-        {
-            fileContent += GenerateAutoGenertedSeperator( true );
-            fileContent += additionFileContent;
-            fileContent += GenerateAutoGenertedSeperator( false );
-        }
+    // Add all the include directories for this module
+    fileContent += GeneratePremake4ModuleIncludesSection( moduleInfoEntry );
 
-        // Add all the include directories for this module
-        fileContent += GenerateCMakeModuleIncludesSection( moduleInfoEntry );
+    // Add the templated addition section which is halfway between a completely manually defined
+    // addition and completely autogenerated content
+    fileContent += GeneratePremake4TemplatedAdditionSection( moduleInfoEntry );
 
-        // Add the templated addition section which is halfway between a completely manually defined
-        // addition and completely autogenerated content
-        fileContent += GenerateCMakeTemplatedAdditionSection( moduleInfoEntry );
-    }
-*/
     // We are done generating the content for the CMake file
     return fileContent;
 }

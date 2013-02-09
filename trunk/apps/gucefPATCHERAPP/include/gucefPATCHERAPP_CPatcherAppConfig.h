@@ -57,6 +57,8 @@ class CPatcherAppConfig : public CORE::CIConfigurable
 {
     public:
 
+    typedef std::vector< CString > TStringList;
+
     CPatcherAppConfig( void );
 
     virtual ~CPatcherAppConfig();
@@ -76,6 +78,8 @@ class CPatcherAppConfig : public CORE::CIConfigurable
     bool IsConsoleLoggerEnabled( void ) const;
 
     bool IsConsoleWindowEnabled( void ) const;
+
+    const TStringList& GetFontAssetsToLoad( void ) const;
 
     virtual bool SaveConfig( CORE::CDataNode& tree );
 
@@ -97,10 +101,11 @@ class CPatcherAppConfig : public CORE::CIConfigurable
     CString m_guiBackendName;
     CString m_initialFormTypeName;
     CString m_initialFormResourcePath;
+    TStringList m_fontAssetsToLoad;
     CString m_logfilePath;
     bool m_isFileLoggerEnabled;
     bool m_isConsoleLoggerEnabled;
-    bool m_isConsoleWindowEnabled;
+    bool m_isConsoleWindowEnabled;    
 };
 
 /*-------------------------------------------------------------------------//

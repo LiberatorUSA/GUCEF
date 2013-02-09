@@ -61,6 +61,7 @@ CPatcherAppConfig::CPatcherAppConfig( void )
       m_guiBackendName()               ,
       m_initialFormTypeName()          ,
       m_initialFormResourcePath()      ,
+      m_fontAssetsToLoad()             ,
       m_logfilePath()                  ,
       m_isFileLoggerEnabled( true )    ,
       m_isConsoleLoggerEnabled( true ) ,
@@ -152,6 +153,15 @@ CPatcherAppConfig::IsConsoleWindowEnabled( void ) const
 
 /*-------------------------------------------------------------------------*/
 
+const CPatcherAppConfig::TStringList&
+CPatcherAppConfig::GetFontAssetsToLoad( void ) const
+{GUCEF_TRACE;
+    
+    return m_fontAssetsToLoad;
+}
+
+/*-------------------------------------------------------------------------*/
+
 bool
 CPatcherAppConfig::SaveConfig( CORE::CDataNode& tree )
 {GUCEF_TRACE;
@@ -167,7 +177,7 @@ CPatcherAppConfig::LoadConfig( const CORE::CDataNode& treeroot )
 
     CORE::CDataNode::TConstDataNodeSet configNodes( treeroot.FindChildrenOfType( "PatcherAppConfig", true ) );
     CORE::CDataNode::TConstDataNodeSet::iterator i = configNodes.begin();
-    while ( i != configNodes.end() )
+    if ( i != configNodes.end() )
     {
         const CORE::CDataNode* configNode = (*i);
 
@@ -198,9 +208,9 @@ CPatcherAppConfig::LoadConfig( const CORE::CDataNode& treeroot )
             m_windowManagerName = value;
         }
 
-        CORE::CDataNode::TConstDataNodeSet formDataNodes( configNode->FindChildrenOfType( "InitialForm", true ) );
-        CORE::CDataNode::TConstDataNodeSet::iterator n = formDataNodes.begin();
-        if ( n != formDataNodes.end() )
+        CORE::CDataNode::TConstDataNodeSet nodeSet( configNode->FindChildrenOfType( "InitialForm", true ) );
+        CORE::CDataNode::TConstDataNodeSet::iterator n = nodeSet.begin();
+        if ( n != nodeSet.end() )
         {
             const CORE::CDataNode* formInfoNode = (*n);
 
@@ -210,10 +220,23 @@ CPatcherAppConfig::LoadConfig( const CORE::CDataNode& treeroot )
                 m_initialFormTypeName = formInfoNode->GetChildValueByName( "FormTypeName" );
                 m_initialFormResourcePath = formInfoNode->GetChildValueByName( "FormResource" );
             }
+        }
+
+        nodeSet = configNode->FindChildrenOfType( "FontToLoadFromAsset", true );
+        n = nodeSet.begin();
+        while ( n != nodeSet.end() )
+        {
+            const CORE::CDataNode* fontInfoNode = (*n);
+
+            //m_guiBackendName = fontInfoNode->GetAttributeValueOrChildValueByName( "GuiBackend" );
+            //if ( !m_guiBackendName.IsNULLOrEmpty() )
+            //{
+            //    m_initialFormTypeName = fontInfoNode->GetChildValueByName( "FormTypeName" );
+            //    m_initialFormResourcePath = fontInfoNode->GetChildValueByName( "FormResource" );
+            //}
             ++n;
         }
 
-        ++i;
     }
     return true;
 }

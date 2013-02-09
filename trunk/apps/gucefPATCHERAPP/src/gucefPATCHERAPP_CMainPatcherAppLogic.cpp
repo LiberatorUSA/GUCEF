@@ -95,7 +95,9 @@ CMainPatcherAppLogic::CMainPatcherAppLogic( void )
       m_consoleLogger( NULL )    ,
       m_fileLogger( NULL )       ,
       m_logFile( NULL )          ,
-      m_consoleWindow( NULL )
+      m_consoleWindow( NULL )    ,
+      m_windowContext()          ,
+      m_guiContext()
 {GUCEF_TRACE;
 
     TEventCallback callback( this, &CMainPatcherAppLogic::OnFirstAppCycle ); 
@@ -133,6 +135,30 @@ CMainPatcherAppLogic::Shutdown( void )
 
 /*-------------------------------------------------------------------------*/
 
+void
+CMainPatcherAppLogic::LoadFontsFromAssets( GUI::TGuiContextPtr guiContext )
+{
+    // Load fonts from assets as needed
+    if ( NULL != guiContext )
+    {       
+        CPatcherAppConfig& config = CPatcherAppGlobal::Instance()->GetConfig();
+        const CPatcherAppConfig::TStringList& fontAssetsToLoad = config.GetFontAssetsToLoad();
+
+        GUI::CGUIDriver* guiDriver = guiContext->GetDriver();
+        if ( NULL != guiDriver )
+        {
+            CPatcherAppConfig::TStringList::const_iterator i = fontAssetsToLoad.begin();
+            while ( i != fontAssetsToLoad.end() )
+            {
+                guiDriver->LoadFontFromAsset( (*i) );
+                ++i;
+            }
+        }
+    }
+}
+
+/*-------------------------------------------------------------------------*/
+
 bool
 CMainPatcherAppLogic::SetupWindowContext( GUI::TWindowManagerBackendPtr windowMngrBackend ,
                                           const GUI::CString& windowMngrBackendName       ,
@@ -140,29 +166,29 @@ CMainPatcherAppLogic::SetupWindowContext( GUI::TWindowManagerBackendPtr windowMn
 {GUCEF_TRACE;
 
     GUI::CString windowTitle( "Galaxy Unlimited Patcher" );
-    GUI::TWindowContextPtr windowContext = windowMngrBackend->CreateWindowContext( windowTitle ,
-                                                                                   800         ,
-                                                                                   600         ,
-                                                                                   false       );
+    m_windowContext = windowMngrBackend->CreateWindowContext( windowTitle ,
+                                                              800         ,
+                                                              600         ,
+                                                              false       );
 
-    if ( NULL != windowContext )
+    if ( NULL != m_windowContext )
     {
         GUCEF_LOG( CORE::LOGLEVEL_NORMAL, "Successfully created window context using backend " + windowMngrBackendName );
 
         // create GUI context for our window
-        GUI::TGuiContextPtr guiContext = GUI::CGuiGlobal::Instance()->GetGuiManager().CreateGUIContext( guiDriverToUse, windowContext );
-        if ( NULL != guiContext )
+        m_guiContext = GUI::CGuiGlobal::Instance()->GetGuiManager().CreateGUIContext( guiDriverToUse, m_windowContext );
+        if ( NULL != m_guiContext )
         {
             GUCEF_LOG( CORE::LOGLEVEL_NORMAL, "Successfully created GUI context using backend " + guiDriverToUse );
 
-            // Load some fonts
-           // LoadFonts( guiContext );
+            // Load fonts from assets as needed
+            LoadFontsFromAssets( m_guiContext );
 
             CPatcherAppConfig& config = CPatcherAppGlobal::Instance()->GetConfig();
             const CString& initialFormTypeName = config.GetInitialFormTypeName();
 
             // Create a form to load the layout into
-            GUI::CFormEx* form = static_cast< GUI::CFormEx* >( guiContext->CreateForm( initialFormTypeName ) );
+            GUI::CFormEx* form = static_cast< GUI::CFormEx* >( m_guiContext->CreateForm( initialFormTypeName ) );
             if ( NULL != form )
             {
                 GUCEF_LOG( CORE::LOGLEVEL_NORMAL, "Successfully created form object of type: " + initialFormTypeName );
