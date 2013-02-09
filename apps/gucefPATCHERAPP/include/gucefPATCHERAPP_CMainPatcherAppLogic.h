@@ -56,6 +56,16 @@
 #define GUCEF_GUI_CWINDOWMANAGERBACKEND_H
 #endif /* GUCEF_GUI_CWINDOWMANAGERBACKEND_H ? */
 
+#ifndef GUCEF_GUI_CWINDOWCONTEXT_H
+#include "gucefGUI_CWindowContext.h"
+#define GUCEF_GUI_CWINDOWCONTEXT_H
+#endif /* GUCEF_GUI_CWINDOWCONTEXT_H ? */
+
+#ifndef GUCEF_GUI_CIGUICONTEXT_H
+#include "gucefGUI_CIGUIContext.h"
+#define GUCEF_GUI_CIGUICONTEXT_H
+#endif /* GUCEF_GUI_CIGUICONTEXT_H ? */
+
 #ifndef GUCEF_PATCHERAPP_MACROS_H
 #include "gucefPATCHERAPP_macros.h"
 #define GUCEF_PATCHERAPP_MACROS_H
@@ -108,12 +118,16 @@ class CMainPatcherAppLogic : public CORE::CObservingNotifier
 
     void SetupLogging( void );
 
+    void LoadFontsFromAssets( GUI::TGuiContextPtr guiContext );
+
     private:
 
     CORE::CFileAccess* m_logFile;
     CORE::CStdLogger* m_fileLogger;
     CORE::CPlatformNativeConsoleLogger* m_consoleLogger;
     CORE::CPlatformNativeConsoleWindow* m_consoleWindow;
+    GUI::TWindowContextPtr m_windowContext;
+    GUI::TGuiContextPtr m_guiContext;
 };
 
 /*-------------------------------------------------------------------------//
