@@ -517,7 +517,6 @@ GeneratePremake4FilePlatformFilesSection( const TModuleInfoEntry& moduleInfoEntr
     bool hasPlatformSourceFiles = false;
 
     CORE::CString sectionContent;
-    bool firstPlatform = true;
     TModuleInfoMap::const_iterator i = moduleInfoEntry.modulesPerPlatform.begin();
     while ( i != moduleInfoEntry.modulesPerPlatform.end() )
     {
@@ -536,24 +535,10 @@ GeneratePremake4FilePlatformFilesSection( const TModuleInfoEntry& moduleInfoEntr
 
             if ( !headerSection.IsNULLOrEmpty() || !sourceSection.IsNULLOrEmpty() )
             {
-                if ( firstPlatform )
-                {
-                    sectionContent = "\n\nif (" + platformName.Uppercase() + ")\n" + headerSection + sourceSection;
-                    firstPlatform = false;
-                }
-                else
-                {
-                    sectionContent += "elseif (" + platformName.Uppercase() + ")\n" + headerSection + sourceSection;
-                }
+                sectionContent = "\n\nconfiguration { \"" + platformName.Uppercase() + "\" }\n" + headerSection + sourceSection;
             }
         }
         ++i;
-    }
-
-    if ( hasPlatformHeaderFiles || hasPlatformSourceFiles )
-    {
-        // since we added data we have to close the section
-        sectionContent += "endif ()\n\n";
     }
 
     return sectionContent;
@@ -853,16 +838,9 @@ GeneratePremake4ModuleNameSection( const TModuleInfoEntry& moduleInfoEntry )
 
         if ( platformName != AllPlatforms )
         {
-            if ( platformAdded )
-            {
-                sectionContent += "elseif( " + platformName.Uppercase() + " )\n  set( MODULE_NAME \"" + moduleName + "\" )\n";
-            }
-            else
-            {
-                sectionContent += "\nif( " + platformName.Uppercase() + " )\n  set( MODULE_NAME \"" + moduleName + "\" )\n";
-                platformAdded = true;
-            }
-            GUCEF_LOG( CORE::LOGLEVEL_BELOW_NORMAL, "${MODULE_NAME} = " + moduleName + " for platform " + platformName );
+            sectionContent += "\nconfiguration { \"" +  platformName.Uppercase() + "\" }\n  project ( \"" + moduleName + "\" )\n";
+            GUCEF_LOG( CORE::LOGLEVEL_BELOW_NORMAL, "module name = " + moduleName + " for platform " + platformName );
+            platformAdded = true;
         }
         ++i;
     }
@@ -875,13 +853,15 @@ GeneratePremake4ModuleNameSection( const TModuleInfoEntry& moduleInfoEntry )
 
         if ( platformAdded )
         {
-            sectionContent += "else()\n  set( MODULE_NAME \"" + moduleName +"\" )\nendif()\n";
+            //sectionContent += "\nconfiguration { \"" +  platformName.Uppercase() + "\" }\n  project { \"" + moduleName + "\" }\n";
+            sectionContent += "else()\n  project ( \"" + moduleName + "\" )\nendif()\n";
         }
         else
         {
-            sectionContent += "set( MODULE_NAME \"" + moduleName +"\" )\n";
+            sectionContent += "project ( \"" + moduleName + "\" )\n";
         }
-        GUCEF_LOG( CORE::LOGLEVEL_BELOW_NORMAL, "${MODULE_NAME} = " + moduleName + " for platform " + platformName );
+
+        GUCEF_LOG( CORE::LOGLEVEL_BELOW_NORMAL, "module name = " + moduleName + " for platform " + platformName );
     }
     else
     {
@@ -928,7 +908,7 @@ GeneratePremake4ModuleDescriptionSection( const TModuleInfoEntry& moduleInfoEntr
         if ( platformAdded )
         {
             // This module has platform module descriptions which override the AllPlatforms version which we will define here
-            sectionContent += "else()\n  " + GeneratePremake4ModuleDescriptionLine( *moduleInfo, consensusModuleName, AllPlatforms ) + "endif()\n";
+            sectionContent += "configuration {}\n  " + GeneratePremake4ModuleDescriptionLine( *moduleInfo, consensusModuleName, AllPlatforms ) + "\n";
         }
         else
         {
@@ -937,24 +917,15 @@ GeneratePremake4ModuleDescriptionSection( const TModuleInfoEntry& moduleInfoEntr
             // entry point.
             if ( moduleInfo->moduleType == MODULETYPE_EXECUTABLE )
             {
-                sectionContent += "if ( WIN32 )\n  " +
+                sectionContent += "configuration { \"WIN32\" }\n" +
                                     GeneratePremake4ModuleDescriptionLine( *moduleInfo, consensusModuleName, "win32" ) +
-                                  "else()\n  " +
-                                    GeneratePremake4ModuleDescriptionLine( *moduleInfo, consensusModuleName, AllPlatforms ) +
-                                  "endif()\n";
+                                  "configuration { \"NOT WIN32\" }\n  " +
+                                    GeneratePremake4ModuleDescriptionLine( *moduleInfo, consensusModuleName, AllPlatforms );
             }
             else
             {
                 sectionContent += GeneratePremake4ModuleDescriptionLine( *moduleInfo, consensusModuleName, AllPlatforms );
             }
-        }
-    }
-    else
-    {
-        if ( platformAdded )
-        {
-            // This module only has platform specific module descriptions, no AllPlatforms version exists
-            sectionContent += "endif()\n";
         }
     }
 
@@ -1139,6 +1110,26 @@ WritePremake4ModuleFilesToDisk( const TProjectInfo& projectInfo  ,
     }
 }
 
+/*---------------------------------------------------------------------------*/
+
+CORE::CString
+GeneratePremake4ProjectFileContent( const TProjectInfo& projectInfo )
+{
+    CORE::CString fileContent = GetPremake4FileHeader( false );
+
+    fileContent += "solution \"" + projectInfo.projectName + "\"\n\n";
+    fileContent += "configurations { \""   "}"
+}
+
+/*---------------------------------------------------------------------------*/
+
+void
+WritePremake4ProjectFileToDisk( const TProjectInfo& projectInfo )
+{
+
+
+
+}
 /*--------------------------------------------------------------------------*/
 
 CPremake4ProjectGenerator::CPremake4ProjectGenerator( void )
@@ -1177,6 +1168,8 @@ CPremake4ProjectGenerator::GenerateProject( TProjectInfo& projectInfo           
         logfilePath = params.GetValueAlways( "logfile" );
     }
     WritePremake4ModuleFilesToDisk( projectInfo, logfilePath, addGeneratorCompileTimeToOutput );
+    WritePremake4ProjectFileToDisk( projectInfo );
+
     return true;
 }
 
