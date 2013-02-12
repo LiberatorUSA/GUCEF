@@ -1608,6 +1608,50 @@ GetModuleInfoEntry( const TProjectInfo& projectInfo ,
 /*---------------------------------------------------------------------------*/
 
 void
+GetAllPlatformsUsed( const TProjectInfo& projectInfo ,
+                     TStringSet& platformList        )
+{GUCEF_TRACE;
+
+    TModuleInfoEntryVector::const_iterator i = projectInfo.modules.begin();
+    while ( i != projectInfo.modules.end() )
+    {
+        const TModuleInfoMap& modulesPerPlatform = (*i).modulesPerPlatform;
+        TModuleInfoMap::const_iterator n = modulesPerPlatform.begin();
+        while ( n != modulesPerPlatform.end() )
+        {
+            platformList.insert( (*n).first );
+            ++n;
+        }
+        ++i;
+    }
+}
+
+/*---------------------------------------------------------------------------*/
+
+bool
+HasIndependentModuleType( const TModuleInfoMap& moduleDefs )
+{GUCEF_TRACE;
+
+    TModuleInfoMap::const_iterator i = moduleDefs.begin();
+    while ( i != moduleDefs.end() )
+    {
+        TModuleType moduleType = (*i).second.moduleType;
+
+        if ( ( moduleType != MODULETYPE_HEADER_INCLUDE_LOCATION ) &&
+             ( moduleType != MODULETYPE_CODE_INCLUDE_LOCATION )   &&
+             ( moduleType != MODULETYPE_UNDEFINED )               &&
+             ( moduleType != MODULETYPE_UNKNOWN )                  )
+        {
+            return true;
+        }
+        ++i;
+    }
+    return false;
+}
+
+/*---------------------------------------------------------------------------*/
+
+void
 MergeStringVectorMap( TStringVectorMap& targetMap          ,
                       const TStringVectorMap& mapToMergeIn ,
                       bool caseSensitive                   )
