@@ -342,7 +342,7 @@ GeneratePremake4FileSection( const CORE::CString& sectionContent ,
 
     CORE::CString newSectionContent = sectionContent;
 
-    newSectionContent = "files {\n";
+    newSectionContent = "files( {\n";
     bool first = true;
     TStringVectorMap::const_iterator i = fileMap.begin();
     while ( i != fileMap.end() )
@@ -368,7 +368,7 @@ GeneratePremake4FileSection( const CORE::CString& sectionContent ,
         ++i;
     }
 
-    newSectionContent += "\n}\n\n";
+    newSectionContent += "\n } )\n\n";
     return newSectionContent;
 }
 
@@ -535,7 +535,7 @@ GeneratePremake4FilePlatformFilesSection( const TModuleInfoEntry& moduleInfoEntr
 
             if ( !headerSection.IsNULLOrEmpty() || !sourceSection.IsNULLOrEmpty() )
             {
-                sectionContent = "\n\nconfiguration { \"" + platformName.Uppercase() + "\" }\n" + headerSection + sourceSection;
+                sectionContent = "\n\nconfiguration( { \"" + platformName.Uppercase() + "\" } )\n" + headerSection + sourceSection;
             }
         }
         ++i;
@@ -587,7 +587,7 @@ GeneratePremake4ModuleIncludesSection( const TModuleInfo& moduleInfo ,
     CORE::CString sectionContent;
     if ( allRelDependencyPaths.Length() > 0 )
     {
-        sectionContent = "includedirs { " + allRelDependencyPaths + "}\n";
+        sectionContent = "includedirs( { " + allRelDependencyPaths + "} )\n";
     }
     return sectionContent;
 }
@@ -619,7 +619,7 @@ GeneratePremake4ModuleIncludesSection( const TModuleInfoEntry& moduleInfoEntry )
             CORE::CString platformSection = GeneratePremake4ModuleIncludesSection( (*i).second, moduleInfoEntry.rootDir );
             if ( platformSection.Length() > 0 )
             {
-                sectionContent += "\nconfiguration { \"" + platformName.Uppercase() + "\" }\n" + platformSection;
+                sectionContent += "\nconfiguration( { \"" + platformName.Uppercase() + "\" } )\n" + platformSection;
             }
         }
         ++i;
@@ -663,20 +663,20 @@ GeneratePremake4ModuleDescriptionLine( const TModuleInfo& moduleInfo     ,
         {
             if ( platformName == "win32" || platformName == "win64" )
             {
-                return "kind \"WindowedApp\"\n";
+                return "kind( \"WindowedApp\" )\n";
             }
             else
             {
-                return "kind \"ConsoleApp\"\n";
+                return "kind( \"ConsoleApp\" )\n";
             }
         }
         case MODULETYPE_SHARED_LIBRARY:
         {
-            return "kind \"SharedLib\"\n";
+            return "kind( \"SharedLib\" )\n";
         }
         case MODULETYPE_STATIC_LIBRARY:
         {
-            return "kind \"StaticLib\"\n";
+            return "kind( \"StaticLib\" )\n";
         }
         case MODULETYPE_UNKNOWN:
         case MODULETYPE_UNDEFINED:
@@ -755,7 +755,7 @@ GeneratePremake4ModuleLinkerLine( const TModuleInfo& moduleInfo     ,
     {
         GUCEF_LOG( CORE::LOGLEVEL_BELOW_NORMAL, "Generating Premake4 module linker line for module " + moduleName + " and platform " + platformName );
 
-        CORE::CString sectionContent = "links { \n";
+        CORE::CString sectionContent = "links( { \n";
         bool first = true;
         TModuleTypeMap::const_iterator i = moduleInfo.linkerSettings.linkedLibraries.begin();
         while ( i != moduleInfo.linkerSettings.linkedLibraries.end() )
@@ -771,7 +771,7 @@ GeneratePremake4ModuleLinkerLine( const TModuleInfo& moduleInfo     ,
             }
             ++i;
         }
-        sectionContent += "\n }\n";
+        sectionContent += "\n } )\n";
         return sectionContent;
     }
 
@@ -790,7 +790,7 @@ GeneratePremake4ModuleDefinesLine( const TModuleInfo& moduleInfo     ,
     {
         GUCEF_LOG( CORE::LOGLEVEL_BELOW_NORMAL, "Generating Premake4 module preprocessor defines for module " + moduleName + " and platform " + platformName );
 
-        CORE::CString sectionContent = "defines {";
+        CORE::CString sectionContent = "defines( { ";
 
         bool first = true;
         TStringSet::const_iterator i = moduleInfo.preprocessorSettings.defines.begin();
@@ -807,7 +807,7 @@ GeneratePremake4ModuleDefinesLine( const TModuleInfo& moduleInfo     ,
             }
             ++i;
         }
-        sectionContent += " }\n";
+        sectionContent += " } )\n";
         return sectionContent;
     }
 
@@ -838,7 +838,7 @@ GeneratePremake4ModuleNameSection( const TModuleInfoEntry& moduleInfoEntry )
 
         if ( platformName != AllPlatforms )
         {
-            sectionContent += "\nconfiguration { \"" +  platformName.Uppercase() + "\" }\n  project ( \"" + moduleName + "\" )\n";
+            sectionContent += "\nconfiguration( { \"" +  platformName.Uppercase() + "\" } )\n  project( \"" + moduleName + "\" )\n";
             GUCEF_LOG( CORE::LOGLEVEL_BELOW_NORMAL, "module name = " + moduleName + " for platform " + platformName );
             platformAdded = true;
         }
@@ -854,11 +854,11 @@ GeneratePremake4ModuleNameSection( const TModuleInfoEntry& moduleInfoEntry )
         if ( platformAdded )
         {
             //sectionContent += "\nconfiguration { \"" +  platformName.Uppercase() + "\" }\n  project { \"" + moduleName + "\" }\n";
-            sectionContent += "else()\n  project ( \"" + moduleName + "\" )\nendif()\n";
+            sectionContent += "else()\n  project( \"" + moduleName + "\" )\nendif()\n";
         }
         else
         {
-            sectionContent += "project ( \"" + moduleName + "\" )\n";
+            sectionContent += "project( \"" + moduleName + "\" )\n";
         }
 
         GUCEF_LOG( CORE::LOGLEVEL_BELOW_NORMAL, "module name = " + moduleName + " for platform " + platformName );
@@ -895,7 +895,7 @@ GeneratePremake4ModuleDescriptionSection( const TModuleInfoEntry& moduleInfoEntr
 
         if ( platformName != AllPlatforms )
         {
-            sectionContent += "configuration { \"" + platformName.Uppercase() + "\" }\n" + GeneratePremake4ModuleDescriptionLine( *moduleInfo, consensusModuleName, platformName );
+            sectionContent += "configuration( { \"" + platformName.Uppercase() + "\" } )\n" + GeneratePremake4ModuleDescriptionLine( *moduleInfo, consensusModuleName, platformName );
         }
         ++n;
     }
@@ -908,7 +908,7 @@ GeneratePremake4ModuleDescriptionSection( const TModuleInfoEntry& moduleInfoEntr
         if ( platformAdded )
         {
             // This module has platform module descriptions which override the AllPlatforms version which we will define here
-            sectionContent += "configuration {}\n  " + GeneratePremake4ModuleDescriptionLine( *moduleInfo, consensusModuleName, AllPlatforms ) + "\n";
+            sectionContent += "configuration( {} )\n  " + GeneratePremake4ModuleDescriptionLine( *moduleInfo, consensusModuleName, AllPlatforms ) + "\n";
         }
         else
         {
@@ -917,9 +917,9 @@ GeneratePremake4ModuleDescriptionSection( const TModuleInfoEntry& moduleInfoEntr
             // entry point.
             if ( moduleInfo->moduleType == MODULETYPE_EXECUTABLE )
             {
-                sectionContent += "configuration { \"WIN32\" }\n" +
+                sectionContent += "configuration( { \"WIN32\" } )\n" +
                                     GeneratePremake4ModuleDescriptionLine( *moduleInfo, consensusModuleName, "win32" ) +
-                                  "configuration { \"NOT WIN32\" }\n  " +
+                                  "configuration( { \"NOT WIN32\" } )\n  " +
                                     GeneratePremake4ModuleDescriptionLine( *moduleInfo, consensusModuleName, AllPlatforms );
             }
             else
@@ -936,13 +936,31 @@ GeneratePremake4ModuleDescriptionSection( const TModuleInfoEntry& moduleInfoEntr
 
 CORE::CString
 GeneratePremake4ModuleInfoSection( const TProjectInfo& projectInfo         ,
-                                   const TModuleInfoEntry& moduleInfoEntry )
+                                   const TModuleInfoEntry& moduleInfoEntry ,
+                                   const CORE::CString& premakeOutputDir   )
 {GUCEF_TRACE;
 
     CORE::CString consensusName = GetConsensusModuleName( moduleInfoEntry );
 
     // First we define the module name which can differ per platform
     CORE::CString sectionContent = GeneratePremake4ModuleNameSection( moduleInfoEntry );
+
+    // Set the output path for the premake4 generated files
+    if ( !premakeOutputDir.IsNULLOrEmpty() )
+    {
+        // Check to see if an environment variable is desired        
+        if ( 0 == premakeOutputDir.HasSubstr( "ENVVAR:", true ) )
+        {
+            // The path specified is actually a directive to use the given environment variable
+            CORE::CString premakeOutputDirEnvVar = premakeOutputDir.CutChars( 7, true );
+            sectionContent += "location( os.getenv( \"" + premakeOutputDirEnvVar + "\" ) )\n";
+        }
+        else
+        {
+            CORE::CString pathToOutputDir = CORE::GetRelativePathToOtherPathRoot( moduleInfoEntry.rootDir, premakeOutputDir );
+            sectionContent += "location( \"" + pathToOutputDir + "\" )\n";
+        }
+    }
 
     // Add the module description which says what type of module this is
     sectionContent += GeneratePremake4ModuleDescriptionSection( moduleInfoEntry, consensusName );
@@ -991,7 +1009,7 @@ GeneratePremake4ModuleInfoSection( const TProjectInfo& projectInfo         ,
             {
                 CORE::CString platformSection;
 
-                platformSection = "\nconfiguration { \"" + platformName.Uppercase() + "\" }\n"
+                platformSection = "\nconfiguration( { \"" + platformName.Uppercase() + "\" } )\n";
 
                 if ( !moduleDependenciesStr.IsNULLOrEmpty() )
                 {
@@ -1020,6 +1038,7 @@ GeneratePremake4ModuleInfoSection( const TProjectInfo& projectInfo         ,
 
 CORE::CString
 GeneratePremake4ModuleFileContent( const TProjectInfo& projectInfo         ,
+                                   const CORE::CString& premakeOutputDir   ,
                                    const TModuleInfoEntry& moduleInfoEntry ,
                                    bool addCompileDate = false             )
 {GUCEF_TRACE;
@@ -1035,6 +1054,9 @@ GeneratePremake4ModuleFileContent( const TProjectInfo& projectInfo         ,
     // Set project name comment section
     fileContent += "\n-- Configuration for module: " + consensusModuleName + "\n\n";
 
+    // the module description, dependencies, definitions, etc.
+    fileContent += GeneratePremake4ModuleInfoSection( projectInfo, moduleInfoEntry, premakeOutputDir );
+
     // Add all the general include files
     fileContent += GeneratePremake4FileIncludeSection( moduleInfoEntry, consensusModuleName );
 
@@ -1043,10 +1065,6 @@ GeneratePremake4ModuleFileContent( const TProjectInfo& projectInfo         ,
 
     // Add all platform files, headers and source
     fileContent += GeneratePremake4FilePlatformFilesSection( moduleInfoEntry );
-
-    // Since we are not using a legacy suffix file we have to auto generate more info then before
-    // mainly the module description, dependencies, definitions, etc.
-    fileContent += GeneratePremake4ModuleInfoSection( projectInfo, moduleInfoEntry );
 
     CORE::CString additionFileContent ;//= LoadPremake4AdditionFileFromDisk( moduleInfoEntry );
     if ( !additionFileContent.IsNULLOrEmpty() )
@@ -1070,9 +1088,10 @@ GeneratePremake4ModuleFileContent( const TProjectInfo& projectInfo         ,
 /*---------------------------------------------------------------------------*/
 
 void
-WritePremake4ModuleFilesToDisk( const TProjectInfo& projectInfo  ,
-                                const CORE::CString& logFilename ,
-                                bool addCompileDate = false      )
+WritePremake4ModuleFilesToDisk( const TProjectInfo& projectInfo       ,
+                                const CORE::CString& premakeOutputDir ,
+                                const CORE::CString& logFilename      ,
+                                bool addCompileDate = false           )
 {GUCEF_TRACE;
 
     // Write all the premake4 files
@@ -1084,27 +1103,27 @@ WritePremake4ModuleFilesToDisk( const TProjectInfo& projectInfo  ,
         if ( ( MODULETYPE_HEADER_INCLUDE_LOCATION != allPlatformsType ) &&
              ( MODULETYPE_CODE_INCLUDE_LOCATION != allPlatformsType )    )
         {
-            CORE::CString fileContent = GeneratePremake4ModuleFileContent( projectInfo, moduleInfoEntry, addCompileDate );
+            CORE::CString fileContent = GeneratePremake4ModuleFileContent( projectInfo, premakeOutputDir, moduleInfoEntry, addCompileDate );
             if ( logFilename.Length() > 0 )
             {
                 fileContent += "\n-- Generator logfile can be found at: " + logFilename;
             }
 
             CORE::CString pathToPremake4ModuleFile = moduleInfoEntry.rootDir;
-            CORE::AppendToPath( pathToPremake4ModuleFile, "ModuleInfo.premake4" );
+            CORE::AppendToPath( pathToPremake4ModuleFile, "premake4.lua" );
 
             if ( CORE::WriteStringAsTextFile( pathToPremake4ModuleFile, fileContent ) )
             {
-                GUCEF_LOG( CORE::LOGLEVEL_NORMAL, "Created ModuleInfo.premake4 file for project dir: " + moduleInfoEntry.rootDir );
+                GUCEF_LOG( CORE::LOGLEVEL_NORMAL, "Created premake4.lua file for project dir: " + moduleInfoEntry.rootDir );
             }
             else
             {
-                GUCEF_ERROR_LOG( CORE::LOGLEVEL_IMPORTANT, "Failed to write ModuleInfo.premake4 file content to disk at path " + moduleInfoEntry.rootDir );
+                GUCEF_ERROR_LOG( CORE::LOGLEVEL_IMPORTANT, "Failed to write premake4.lua file content to disk at path " + moduleInfoEntry.rootDir );
             }
         }
         else
         {
-            GUCEF_LOG( CORE::LOGLEVEL_NORMAL, "Skipping ModuleInfo.premake4 generation for module of type \"HeaderIncludeLocation\"" );
+            GUCEF_LOG( CORE::LOGLEVEL_NORMAL, "Skipping premake4.lua generation for module of type \"HeaderIncludeLocation\"" );
         }
         ++i;
     }
@@ -1113,22 +1132,101 @@ WritePremake4ModuleFilesToDisk( const TProjectInfo& projectInfo  ,
 /*---------------------------------------------------------------------------*/
 
 CORE::CString
-GeneratePremake4ProjectFileContent( const TProjectInfo& projectInfo )
+GeneratePremake4ProjectFileContent( const TProjectInfo& projectInfo       ,
+                                    const CORE::CString& outputDir        ,
+                                    const CORE::CString& premakeOutputDir )
 {
     CORE::CString fileContent = GetPremake4FileHeader( false );
 
-    fileContent += "solution \"" + projectInfo.projectName + "\"\n\n";
-    fileContent += "configurations { \""   "}"
+    // Define the start and name of a new project (aka solution)
+    fileContent += "\n\nsolution( \"" + projectInfo.projectName + "\" )\n\n";
+
+    // Generate the section which defined all configurations available for this Premake4 project
+    TStringSet platformsUsed;
+    GetAllPlatformsUsed( projectInfo, platformsUsed );
+    platformsUsed.erase( AllPlatforms );
+
+    CORE::CString configurationsSection = "  configurations( {";
+    bool first = true;
+    TStringSet::iterator i = platformsUsed.begin();
+    while ( i != platformsUsed.end() ) 
+    {
+        if ( first )
+        {
+            configurationsSection += " \"" + (*i).Uppercase() + "\"";
+            first = false;
+        }
+        else
+        {
+            configurationsSection += ", \"" + (*i).Uppercase() + "\"";
+        }
+        ++i;
+    }
+    configurationsSection += " } )\n\n";
+
+    fileContent += configurationsSection;
+
+    // Set the output path for the premake4 generated files
+    if ( !premakeOutputDir.IsNULLOrEmpty() )
+    {
+        // Check to see if an environment variable is desired        
+        if ( 0 == premakeOutputDir.HasSubstr( "ENVVAR:", true ) )
+        {
+            // The path specified is actually a directive to use the given environment variable
+            CORE::CString premakeOutputDirEnvVar = premakeOutputDir.CutChars( 7, true );
+            fileContent += "  location( os.getenv( \"" + premakeOutputDirEnvVar + "\" ) )\n\n";
+        }
+        else
+        {
+            CORE::CString pathToOutputDir = CORE::GetRelativePathToOtherPathRoot( outputDir, premakeOutputDir );
+            fileContent += "  location( \"" + pathToOutputDir + "\" )\n\n";
+        }
+    }
+
+    // Add the module includes
+    CORE::CString moduleIncludeListSection = "  --\n  -- Includes for all modules in the solution:\n  --\n";
+    TModuleInfoEntryVector::const_iterator n = projectInfo.modules.begin();
+    while ( n != projectInfo.modules.end() )
+    {
+        const TModuleInfoEntry& moduleInfo = (*n);
+        if ( HasIndependentModuleType( moduleInfo.modulesPerPlatform ) )
+        {
+            CORE::CString pathToModuleDir = CORE::GetRelativePathToOtherPathRoot( outputDir, moduleInfo.rootDir );
+            moduleIncludeListSection += "  include( \"" + pathToModuleDir + "\" )\n";
+        }
+        ++n;
+    }
+    fileContent += moduleIncludeListSection; 
+
+    return fileContent;
 }
 
 /*---------------------------------------------------------------------------*/
 
 void
-WritePremake4ProjectFileToDisk( const TProjectInfo& projectInfo )
+WritePremake4ProjectFileToDisk( const TProjectInfo& projectInfo       ,
+                                const CORE::CString& outputDir        ,
+                                const CORE::CString& premakeOutputDir ,
+                                const CORE::CString& logFilename      ,
+                                bool addCompileDate = false           )
 {
+    CORE::CString fileContent = GeneratePremake4ProjectFileContent( projectInfo, outputDir, premakeOutputDir );
+    if ( logFilename.Length() > 0 )
+    {
+        fileContent += "\n-- Generator logfile can be found at: " + logFilename;
+    }
 
+    CORE::CString pathToPremake4ProjectFile = outputDir;
+    CORE::AppendToPath( pathToPremake4ProjectFile, "premake4.lua" );
 
-
+    if ( CORE::WriteStringAsTextFile( pathToPremake4ProjectFile, fileContent ) )
+    {
+        GUCEF_LOG( CORE::LOGLEVEL_NORMAL, "Created ProjectInfo premake4.lua file for project dir: " + outputDir );
+    }
+    else
+    {
+        GUCEF_ERROR_LOG( CORE::LOGLEVEL_IMPORTANT, "Failed to write ProjectInfo premake4.lua file content to disk at path " + outputDir );
+    }
 }
 /*--------------------------------------------------------------------------*/
 
@@ -1160,15 +1258,18 @@ CPremake4ProjectGenerator::GenerateProject( TProjectInfo& projectInfo           
         LoadPremake4FileAdditionTemplates( templateDir );
     }
 
-    // Write the gathered info to disk in CMakeList.txt format
+    CORE::CString premakeOutputDir = params.GetValueAlways( "premake4gen:PM4OutputDir" );
+
+    // Write the gathered info to disk in premake4 format
     CORE::CString logfilePath;
     bool addLogfilePathToOutput = CORE::StringToBool( params.GetValueAlways( "writeLogLocationToOutput" ) );
     if ( addLogfilePathToOutput )
     {
         logfilePath = params.GetValueAlways( "logfile" );
     }
-    WritePremake4ModuleFilesToDisk( projectInfo, logfilePath, addGeneratorCompileTimeToOutput );
-    WritePremake4ProjectFileToDisk( projectInfo );
+    WritePremake4ModuleFilesToDisk( projectInfo, premakeOutputDir, logfilePath, addGeneratorCompileTimeToOutput );
+    
+    WritePremake4ProjectFileToDisk( projectInfo, outputDir, premakeOutputDir, logfilePath, addGeneratorCompileTimeToOutput );
 
     return true;
 }

@@ -1059,7 +1059,7 @@ LoadAllProcessingInstructions( TProjectInfo& projectInfo    ,
 {GUCEF_TRACE;
 
     // Load instructions for the root dir itself
-    GetProcessingInstructions( projectInfo, rootDir );
+    TDirProcessingInstructions* dirInstructions = GetProcessingInstructions( projectInfo, rootDir );
 
     // Recurse through sub-dirs to find more instructions
     CORE::SDI_Data* sdiData = CORE::DI_First_Dir_Entry( rootDir.C_String() );
@@ -1076,8 +1076,28 @@ LoadAllProcessingInstructions( TProjectInfo& projectInfo    ,
                     CORE::CString subRoot = rootDir;
                     CORE::AppendToPath( subRoot, dirName );
 
-                    // Recurse into sub-dir
-                    LoadAllProcessingInstructions( projectInfo, subRoot );
+                    // Optimization: Check to see if the sub-dir is excluded
+                    // If so then we don't even look for processing instructions in said sub-dir
+                    // Note that this optimization can only be applied for dirs that are excluded on all platforms
+                    bool skipSubDir = false;
+                    if ( NULL != dirInstructions )
+                    {
+                        TStringVectorMap::iterator i = dirInstructions->dirExcludeList.find( AllPlatforms );
+                        if ( i != dirInstructions->dirExcludeList.end() )
+                        {
+                            skipSubDir = IsStringInList( (*i).second, true, dirName );
+                            if ( skipSubDir )
+                            {
+                                GUCEF_LOG( CORE::LOGLEVEL_BELOW_NORMAL, "Skipping the search for processing instructions, based on already located processing instructions, for dir \"" + subRoot + "\"" );
+                            }
+                        }
+                    }
+
+                    if ( !skipSubDir )
+                    {
+                        // Recurse into sub-dir
+                        LoadAllProcessingInstructions( projectInfo, subRoot );
+                    }
                 }
             }
         }

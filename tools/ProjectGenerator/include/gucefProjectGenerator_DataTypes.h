@@ -368,6 +368,22 @@ GetModuleInfoEntry( const TProjectInfo& projectInfo       ,
                     const CORE::CString& moduleName       ,
                     const CORE::CString& platform         ,
                     const TModuleInfo** moduleInfo = NULL );
+
+/*-------------------------------------------------------------------------*/
+
+// Determines which platforms are actually used in the project and returns the 
+// names of the platforms in the given platformList
+void
+GetAllPlatformsUsed( const TProjectInfo& projectInfo ,
+                     TStringSet& platformList        );
+                      
+/*-------------------------------------------------------------------------*/
+
+// Determines whether the given list of module definitions has an indepdendant definition
+// An independent definition is a module who has a module type defined which is not a purely logical
+// module type used to structure modules (such as code/header include locations)
+bool
+HasIndependentModuleType( const TModuleInfoMap& moduleDefs );
                       
 /*-------------------------------------------------------------------------//
 //                                                                         //
