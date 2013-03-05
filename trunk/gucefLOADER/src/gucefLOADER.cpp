@@ -571,7 +571,7 @@ GetTheSystemPathForModule( CORE::CString& outputPath   ,
 {
     CORE::CString filePath = rootDir;
     CORE::AppendToPath( filePath, "libs" );
-    
+
     if ( 0 == moduleGroupName )
     {
         CORE::AppendToPath( filePath, "_nogroup_" );
@@ -601,7 +601,20 @@ GetTheSystemPathForModule( CORE::CString& outputPath   ,
                                                  locatedReleaseVersion ) )
         {
             // Unable to find any versions in this dir for this module
-            return 1;
+            // Check if the major and minor versions are also <0 because if so we
+            // can use our alternate search location which is the same dir as this module
+            if ( patchVersion < 0    &&
+                 releaseVersion < 0  &&
+                 majorVersion < 0    &&
+                 minorVersion < 0     )
+            {
+                CORE::Module_Path( outputPath.Reserve( 2048 ), 2048 );
+                outputPath.DetermineLength();
+
+                // Now we need to add the actual filename of the module to the path
+                CORE::AppendToPath( outputPath, moduleFilename );
+                return 0;
+            }
         }
 
         patchVersion = locatedPatchVersion;
