@@ -19,7 +19,7 @@ solution( "GUCEF" )
   --
   -- Includes for all modules in the solution:
   --
-  include( "apps\gucefPATCHERAPP" )
+  include( "apps/gucefPATCHERAPP" )
   include( "apps\gucefPRODMANAPP" )
   include( "dependencies\FreeImage" )
   include( "dependencies\freetype" )

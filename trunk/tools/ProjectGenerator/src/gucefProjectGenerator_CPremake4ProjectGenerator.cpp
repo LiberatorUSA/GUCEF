@@ -459,7 +459,7 @@ GeneratePremake4FilePlatformFilesSection( const TModuleInfoEntry& moduleInfoEntr
                 {
                     CORE::CString path = (*n).first;
                     CORE::AppendToPath( path, (*i) );
-                    path = path.ReplaceChar( '\\', '/' );
+                    path = path.ReplaceChar( '/', '\\' );
 
                     if ( first )
                     {
@@ -494,7 +494,7 @@ GeneratePremake4FilePlatformFilesSection( const TModuleInfoEntry& moduleInfoEntr
                 {
                     CORE::CString path = (*n).first;
                     CORE::AppendToPath( path, (*i) );
-                    path = path.ReplaceChar( '\\', '/' );
+                    path = path.ReplaceChar( '/', '\\' );
 
                     if ( first )
                     {
@@ -581,7 +581,7 @@ GeneratePremake4ModuleIncludesSection( const TModuleInfo& moduleInfo ,
     TStringVectorMap::const_iterator n = moduleInfo.includeDirs.begin();
     while ( n != moduleInfo.includeDirs.end() )
     {
-        CORE::CString includeDir = (*n).first.ReplaceChar( '\\', '/' );
+        CORE::CString includeDir = (*n).first.ReplaceChar( '/', '\\' );
         if ( 0 != includeDir.Length() )
         {
             if ( first )
@@ -602,7 +602,7 @@ GeneratePremake4ModuleIncludesSection( const TModuleInfo& moduleInfo ,
             // subdir.
             if ( 1 < moduleInfo.includeDirs.size() )
             {
-                allRelDependencyPaths += ", \"../\"" + CORE::LastSubDir( rootDir ) + '\"';
+                allRelDependencyPaths += ", \"..\\\"" + CORE::LastSubDir( rootDir ) + '\"';
             }
         }
         ++n;
@@ -722,14 +722,14 @@ GeneratePremake4ModuleDependenciesLine( const TProjectInfo& projectInfo   ,
 
     if ( !moduleInfo.dependencies.empty() )
     {
-        GUCEF_LOG( CORE::LOGLEVEL_BELOW_NORMAL, "Generating CMake module dependencies line for module " + moduleName + " and platform " + platformName );
+        GUCEF_LOG( CORE::LOGLEVEL_BELOW_NORMAL, "Generating Premake4 module dependencies line for module " + moduleName + " and platform " + platformName );
 
         TStringSet dependencies;
         TStringVector::const_iterator i = moduleInfo.dependencies.begin();
         while ( i != moduleInfo.dependencies.end() )
         {
             // We add all dependencies except for header include locations which are not real modules
-            // and CMake will not be using a make file for those.
+            // and Premake4 will not be using a make file for those.
             const TModuleInfoEntry* dependencyModule = GetModuleInfoEntry( projectInfo, (*i), AllPlatforms );
             if ( NULL != dependencyModule )
             {
@@ -749,6 +749,7 @@ GeneratePremake4ModuleDependenciesLine( const TProjectInfo& projectInfo   ,
 
         if ( !dependencies.empty() )
         {
+            bool first = true;
             CORE::CString sectionContent = "links( {";
 
             // The reason we first put the dependency strings in a set is to sort them alphabetically.
@@ -756,7 +757,15 @@ GeneratePremake4ModuleDependenciesLine( const TProjectInfo& projectInfo   ,
             TStringSet::iterator n = dependencies.begin();
             while ( n != dependencies.end() )
             {
-                sectionContent += " \"" + (*n) + '\"';
+                if ( first )
+                {
+                    sectionContent += " \"" + (*n) + '\"';
+                    first = false;
+                }
+                else
+                {
+                    sectionContent += ", \"" + (*n) + '\"';
+                }
                 ++n;
             }
             sectionContent += " } )\n";
@@ -779,11 +788,20 @@ GeneratePremake4ModuleLinkerLine( const TModuleInfo& moduleInfo     ,
     {
         GUCEF_LOG( CORE::LOGLEVEL_BELOW_NORMAL, "Generating Premake4 module linker line for module " + moduleName + " and platform " + platformName );
 
+        bool first = true;
         CORE::CString sectionContent = "links( {";
         TModuleTypeMap::const_iterator i = moduleInfo.linkerSettings.linkedLibraries.begin();
         while ( i != moduleInfo.linkerSettings.linkedLibraries.end() )
         {
-            sectionContent += " \"" + (*i).first + '\"';
+            if ( first )
+            {
+                sectionContent += " \"" + (*i).first + '\"';
+                first = false;
+            }
+            else
+            {
+                sectionContent += ", \"" + (*i).first + '\"';
+            }
             ++i;
         }
         sectionContent += " } )\n";
@@ -963,7 +981,7 @@ GeneratePremake4ModuleInfoSection( const TProjectInfo& projectInfo         ,
     // Set the output path for the premake4 generated files
     if ( !premakeOutputDir.IsNULLOrEmpty() )
     {
-        // Check to see if an environment variable is desired        
+        // Check to see if an environment variable is desired
         if ( 0 == premakeOutputDir.HasSubstr( "ENVVAR:", true ) )
         {
             // The path specified is actually a directive to use the given environment variable
@@ -1164,7 +1182,7 @@ GeneratePremake4ProjectFileContent( const TProjectInfo& projectInfo       ,
     CORE::CString configurationsSection = "  configurations( {";
     bool first = true;
     TStringSet::iterator i = platformsUsed.begin();
-    while ( i != platformsUsed.end() ) 
+    while ( i != platformsUsed.end() )
     {
         if ( first )
         {
@@ -1184,7 +1202,7 @@ GeneratePremake4ProjectFileContent( const TProjectInfo& projectInfo       ,
     // Set the output path for the premake4 generated files
     if ( !premakeOutputDir.IsNULLOrEmpty() )
     {
-        // Check to see if an environment variable is desired        
+        // Check to see if an environment variable is desired
         if ( 0 == premakeOutputDir.HasSubstr( "ENVVAR:", true ) )
         {
             // The path specified is actually a directive to use the given environment variable
@@ -1211,7 +1229,7 @@ GeneratePremake4ProjectFileContent( const TProjectInfo& projectInfo       ,
         }
         ++n;
     }
-    fileContent += moduleIncludeListSection; 
+    fileContent += moduleIncludeListSection;
 
     return fileContent;
 }
@@ -1283,7 +1301,7 @@ CPremake4ProjectGenerator::GenerateProject( TProjectInfo& projectInfo           
         logfilePath = params.GetValueAlways( "logfile" );
     }
     WritePremake4ModuleFilesToDisk( projectInfo, premakeOutputDir, logfilePath, addGeneratorCompileTimeToOutput );
-    
+
     WritePremake4ProjectFileToDisk( projectInfo, outputDir, premakeOutputDir, logfilePath, addGeneratorCompileTimeToOutput );
 
     return true;
