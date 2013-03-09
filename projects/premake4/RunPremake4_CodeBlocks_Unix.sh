@@ -6,8 +6,13 @@
 #set -x
 
 clear
+
+echo "*** Setting premake4 output sub-dir ***"
+PM4SUBDIR="PM4_CBNIX"
+
 echo "*** Invoking Premake4Common ***"
 . Premake4Common.sh
+
 echo "*** Invoking CMake ***"
 CBNIX_OUTPUTDIR="$OUTPUTDIR/PM4_CBNIX"
 echo "Output dir for this CMake target = $CBNIX_OUTPUTDIR"

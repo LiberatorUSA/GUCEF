@@ -356,12 +356,12 @@ GeneratePremake4FileSection( const CORE::CString& sectionContent ,
 
             if ( first )
             {
-                newSectionContent += "  " + path;
+                newSectionContent += "  \"" + path + '\"';
                 first = false;
             }
             else
             {
-                newSectionContent += ",\n  " + path;
+                newSectionContent += ",\n  \"" + path + '\"';
             }
             ++n;
         }
@@ -386,15 +386,18 @@ GeneratePremake4FileIncludeSection( const TModuleInfoEntry& moduleInfoEntry  ,
         const TStringVectorMap& includeFiles = (*i).second.includeDirs;
         if ( !includeFiles.empty() )
         {
-            sectionContent = "set( HEADER_FILES \n";
-            sectionContent = GeneratePremake4FileSection( sectionContent, includeFiles );
+            sectionContent = "\n\nconfiguration( {} )\nvpaths { [\"Headers\"] = { \"**.h\", \"**.hpp\", \"**.hxx\" } }\n";
+            sectionContent += GeneratePremake4FileSection( sectionContent, includeFiles );
 
-            GUCEF_LOG( CORE::LOGLEVEL_NORMAL, "Processed " + CORE::UInt32ToString( includeFiles.size() ) + " include dirs for module " + consensusModuleName );
+            GUCEF_LOG( CORE::LOGLEVEL_NORMAL, "Processed " + CORE::UInt32ToString( includeFiles.size() ) + " include file dirs for module " + consensusModuleName );
             return sectionContent;
+        }
+        else
+        {
+            GUCEF_LOG( CORE::LOGLEVEL_NORMAL, "The module " + consensusModuleName + " does not have include file directories which apply to all platforms, skipping general include section" );
         }
     }
 
-    GUCEF_LOG( CORE::LOGLEVEL_NORMAL, "The module " + consensusModuleName + " does not have include directories which apply to all platforms, skipping general include section" );
     return CORE::CString();
 }
 
@@ -412,15 +415,17 @@ GeneratePremake4FileSrcSection( const TModuleInfoEntry& moduleInfoEntry  ,
         const TStringVectorMap& srcFiles = (*i).second.sourceDirs;
         if ( !srcFiles.empty() )
         {
-            sectionContent = "set( SOURCE_FILES \n";
-            sectionContent = GeneratePremake4FileSection( sectionContent, srcFiles );
+            sectionContent = "\n\nconfiguration( {} )\nvpaths { [\"Source\"] = { \"**.c\", \"**.cpp\", \"**.cs\", \"**.asm\" } }\n";
+            sectionContent += GeneratePremake4FileSection( sectionContent, srcFiles );
 
-            GUCEF_LOG( CORE::LOGLEVEL_NORMAL, "Processed " + CORE::UInt32ToString( srcFiles.size() ) + " include dirs for module " + consensusModuleName );
+            GUCEF_LOG( CORE::LOGLEVEL_NORMAL, "Processed " + CORE::UInt32ToString( srcFiles.size() ) + " source dirs for module " + consensusModuleName );
             return sectionContent;
         }
+        else
+        {
+            GUCEF_LOG( CORE::LOGLEVEL_NORMAL, "The module " + consensusModuleName + " does not have source directories which apply to all platforms, skipping general source section" );
+        }
     }
-
-    GUCEF_LOG( CORE::LOGLEVEL_NORMAL, "The module " + consensusModuleName + " does not have include directories which apply to all platforms, skipping general include section" );
     return CORE::CString();
 }
 
@@ -442,11 +447,12 @@ GeneratePremake4FilePlatformFilesSection( const TModuleInfoEntry& moduleInfoEntr
         if ( !platformHeaderFiles.empty() )
         {
             hasPlatformHeaderFiles = true;
-            headerSection = "  set( PLATFORM_HEADER_FILES \n";
+            headerSection = "    vpaths { [\"Platform Headers\"] = { \"**.h\", \"**.hpp\", \"**.hxx\" } }\n    files( {\n";
 
             TStringVectorMap::const_iterator n = platformHeaderFiles.begin();
             while ( n != platformHeaderFiles.end() )
             {
+                bool first = true;
                 const TStringVector& platformHeaderFilesDir = (*n).second;
                 TStringVector::const_iterator i = platformHeaderFilesDir.begin();
                 while ( i != platformHeaderFilesDir.end() )
@@ -455,37 +461,33 @@ GeneratePremake4FilePlatformFilesSection( const TModuleInfoEntry& moduleInfoEntr
                     CORE::AppendToPath( path, (*i) );
                     path = path.ReplaceChar( '\\', '/' );
 
-                    headerSection += "    " + path + "\n";
-
+                    if ( first )
+                    {
+                        headerSection += "      \"" + path + '\"';
+                        first = false;
+                    }
+                    else
+                    {
+                        headerSection += ",\n      \"" + path + '\"';
+                    }
                     ++i;
                 }
                 ++n;
             }
-            headerSection += "  )\n\n";
+            headerSection += "\n    } )\n\n";
 
-            // Add additional platform specific includes
-            //headerSection += "  include_directories( ";
-            //n = platformHeaderFiles.begin();
-            //while ( n != platformHeaderFiles.end() )
-            //{
-            //    headerSection += (*n).first + " ";
-            //    ++n;
-            //}
-            //headerSection += ")\n";
-
-            headerSection += "  set( PLATFORM_HEADER_INSTALL \"" + platformName.Uppercase() + "\" )\n";
-            headerSection += "  source_group( \"Platform Header Files\" FILES ${PLATFORM_HEADER_FILES} )\n\n";
         }
 
         const TStringVectorMap& platformSourceFiles = (*m).second.sourceDirs;
         if ( !platformSourceFiles.empty() )
         {
             hasPlatformSourceFiles = true;
-            sourceSection = "  set( PLATFORM_SOURCE_FILES \n";
+            sourceSection = "    vpaths { [\"Platform Source\"] = { \"**.c\", \"**.cpp\", \"**.cs\", \"**.asm\" } }\n    files( {\n";
 
             TStringVectorMap::const_iterator n = platformSourceFiles.begin();
             while ( n != platformSourceFiles.end() )
             {
+                bool first = true;
                 const TStringVector& platformSourceFilesDir = (*n).second;
                 TStringVector::const_iterator i = platformSourceFilesDir.begin();
                 while ( i != platformSourceFilesDir.end() )
@@ -494,15 +496,20 @@ GeneratePremake4FilePlatformFilesSection( const TModuleInfoEntry& moduleInfoEntr
                     CORE::AppendToPath( path, (*i) );
                     path = path.ReplaceChar( '\\', '/' );
 
-                    sourceSection += "    " + path + "\n";
+                    if ( first )
+                    {
+                        sourceSection += "      \"" + path + '\"';
+                        first = false;
+                    }
+                    else
+                    {
+                        sourceSection += ",\n      \"" + path + '\"';
+                    }
                     ++i;
                 }
                 ++n;
             }
-            sourceSection += "  )\n\n";
-
-            sourceSection += "  set( PLATFORM_SOURCE_INSTALL \"" + platformName.Uppercase() + "\" )\n";
-            sourceSection += "  source_group( \"Platform Source Files\" FILES ${PLATFORM_SOURCE_FILES} )\n\n";
+            sourceSection += "\n    } )\n\n";
         }
     }
 }
@@ -535,7 +542,7 @@ GeneratePremake4FilePlatformFilesSection( const TModuleInfoEntry& moduleInfoEntr
 
             if ( !headerSection.IsNULLOrEmpty() || !sourceSection.IsNULLOrEmpty() )
             {
-                sectionContent = "\n\nconfiguration( { \"" + platformName.Uppercase() + "\" } )\n" + headerSection + sourceSection;
+                sectionContent += "\n\nconfiguration( { \"" + platformName.Uppercase() + "\" } )\n" + headerSection + sourceSection;
             }
         }
         ++i;
@@ -552,12 +559,21 @@ GeneratePremake4ModuleIncludesSection( const TModuleInfo& moduleInfo ,
 {GUCEF_TRACE;
 
     // Add include dirs for each dependency we know about
+    bool first = true;
     CORE::CString allRelDependencyPaths;
     const TStringSet& includeDirs = moduleInfo.dependencyIncludeDirs;
     TStringSet::const_iterator i = includeDirs.begin();
     while ( i != includeDirs.end() )
     {
-        allRelDependencyPaths += '\"' + (*i) + "\" ";
+        if ( first )
+        {
+            allRelDependencyPaths += " \"" + (*i) + '\"';
+            first = false;
+        }
+        else
+        {
+            allRelDependencyPaths += ", \"" + (*i) + '\"';
+        }
         ++i;
     }
 
@@ -568,7 +584,15 @@ GeneratePremake4ModuleIncludesSection( const TModuleInfo& moduleInfo ,
         CORE::CString includeDir = (*n).first.ReplaceChar( '\\', '/' );
         if ( 0 != includeDir.Length() )
         {
-            allRelDependencyPaths += '\"' + includeDir + "\" ";
+            if ( first )
+            {
+                allRelDependencyPaths += " \"" + includeDir + '\"';
+                first = false;
+            }
+            else
+            {
+                allRelDependencyPaths += ", \"" + includeDir + '\"';
+            }
         }
         else
         {
@@ -578,7 +602,7 @@ GeneratePremake4ModuleIncludesSection( const TModuleInfo& moduleInfo ,
             // subdir.
             if ( 1 < moduleInfo.includeDirs.size() )
             {
-                allRelDependencyPaths += "\"../\"" + CORE::LastSubDir( rootDir ) + " ";
+                allRelDependencyPaths += ", \"../\"" + CORE::LastSubDir( rootDir ) + '\"';
             }
         }
         ++n;
@@ -587,7 +611,7 @@ GeneratePremake4ModuleIncludesSection( const TModuleInfo& moduleInfo ,
     CORE::CString sectionContent;
     if ( allRelDependencyPaths.Length() > 0 )
     {
-        sectionContent = "includedirs( { " + allRelDependencyPaths + "} )\n";
+        sectionContent = "includedirs( {" + allRelDependencyPaths + " } )\n";
     }
     return sectionContent;
 }
@@ -605,7 +629,7 @@ GeneratePremake4ModuleIncludesSection( const TModuleInfoEntry& moduleInfoEntry )
     TModuleInfoMap::const_iterator i = moduleInfoEntry.modulesPerPlatform.find( AllPlatforms );
     if ( i != moduleInfoEntry.modulesPerPlatform.end() )
     {
-        sectionContent += "\n";
+        sectionContent += "\nconfiguration( {} )\n";
         sectionContent += GeneratePremake4ModuleIncludesSection( (*i).second, moduleInfoEntry.rootDir );
     }
 
@@ -700,8 +724,6 @@ GeneratePremake4ModuleDependenciesLine( const TProjectInfo& projectInfo   ,
     {
         GUCEF_LOG( CORE::LOGLEVEL_BELOW_NORMAL, "Generating CMake module dependencies line for module " + moduleName + " and platform " + platformName );
 
-        CORE::CString sectionContent = "add_dependencies( ${MODULE_NAME}";
-
         TStringSet dependencies;
         TStringVector::const_iterator i = moduleInfo.dependencies.begin();
         while ( i != moduleInfo.dependencies.end() )
@@ -725,17 +747,19 @@ GeneratePremake4ModuleDependenciesLine( const TProjectInfo& projectInfo   ,
             ++i;
         }
 
-        // The reason we first put the dependency strings in a set is to sort them alphabetically.
-        // this way the output remains the same regardless of what order the modules were processed in.
-        TStringSet::iterator n = dependencies.begin();
-        while ( n != dependencies.end() )
-        {
-            sectionContent += ' ' + (*n);
-            ++n;
-        }
         if ( !dependencies.empty() )
         {
-            sectionContent += " )\n";
+            CORE::CString sectionContent = "links( {";
+
+            // The reason we first put the dependency strings in a set is to sort them alphabetically.
+            // this way the output remains the same regardless of what order the modules were processed in.
+            TStringSet::iterator n = dependencies.begin();
+            while ( n != dependencies.end() )
+            {
+                sectionContent += " \"" + (*n) + '\"';
+                ++n;
+            }
+            sectionContent += " } )\n";
             return sectionContent;
         }
     }
@@ -755,23 +779,14 @@ GeneratePremake4ModuleLinkerLine( const TModuleInfo& moduleInfo     ,
     {
         GUCEF_LOG( CORE::LOGLEVEL_BELOW_NORMAL, "Generating Premake4 module linker line for module " + moduleName + " and platform " + platformName );
 
-        CORE::CString sectionContent = "links( { \n";
-        bool first = true;
+        CORE::CString sectionContent = "links( {";
         TModuleTypeMap::const_iterator i = moduleInfo.linkerSettings.linkedLibraries.begin();
         while ( i != moduleInfo.linkerSettings.linkedLibraries.end() )
         {
-            if ( first )
-            {
-                sectionContent += "  " + (*i).first;
-                first = false;
-            }
-            else
-            {
-                sectionContent += ",\n  " + (*i).first;
-            }
+            sectionContent += " \"" + (*i).first + '\"';
             ++i;
         }
-        sectionContent += "\n } )\n";
+        sectionContent += " } )\n";
         return sectionContent;
     }
 

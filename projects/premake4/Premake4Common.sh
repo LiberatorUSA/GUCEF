@@ -11,24 +11,7 @@ scriptPath="$(cd "${0%/*}" 2>/dev/null; echo "$PWD"/"${0##*/}")"
 PREMAKE4COMMON_SCRIPTSTARTDIR=${scriptPath%/*}
 echo "PREMAKE4COMMON_SCRIPTSTARTDIR = $PREMAKE4COMMON_SCRIPTSTARTDIR"
 
-
-# Check to see if we need to invoke the CMakeList generator
-SKIP_GUCEF_PREMAKE4FILEGENERATION=${SKIP_GUCEF_PREMAKE4FILEGENERATION:=undefined}
-if [ "$SKIP_GUCEF_PREMAKE4FILEGENERATION" = "undefined" ];
-then 
-  echo "*** Generate Premake4 files ***"
-  . GeneratePremake4Info.sh
-else 
-  echo "Skipping GUCEF's Premake4 file generation"
-fi
-
-
-# Go back to where we came from
-cd "$PREMAKE4COMMON_SCRIPTSTARTDIR"
-
-
-echo "*** Perform common CMake environment variable setup ***"
-
+echo "*** Perform common Premake4 environment variable setup ***"
 
 # Set the basic environment variables we can use for GUCEF in the rest of the script
 cd "$PREMAKE4COMMON_SCRIPTSTARTDIR/../.."
@@ -47,6 +30,14 @@ then
 fi
 echo "OUTPUTDIR = $OUTPUTDIR"
 
+# Set the exact output directory in which the Premake4 will output
+export PM4OUTPUTDIR=${PM4OUTPUTDIR:=undefined}
+if [ "$PM4OUTPUTDIR" = "undefined" ];
+then
+  echo "PM4OUTPUTDIR is undefined, setting it to default"
+  PM4OUTPUTDIR="$GUCEF_HOME/common/bin/premake4"
+fi
+echo "PM4OUTPUTDIR = $PM4OUTPUTDIR"
 
 # Set environment variable which points to OIS library home
 OIS_HOME=${OIS_HOME:=undefined}
@@ -91,4 +82,18 @@ if [ "$ZZIPLIB_HOME" = "undefined" ]; then
   ZZIPLIB_HOME="$GUCEF_HOME/dependencies/zziplib"
 fi
 echo "ZZIPLIB_HOME = $ZZIPLIB_HOME"
+
+# Check to see if we need to invoke the Project generator
+SKIP_GUCEF_PREMAKE4FILEGENERATION=${SKIP_GUCEF_PREMAKE4FILEGENERATION:=undefined}
+if [ "$SKIP_GUCEF_PREMAKE4FILEGENERATION" = "undefined" ];
+then 
+  echo "*** Generate Premake4 files ***"
+  . GeneratePremake4Info.sh
+else 
+  echo "Skipping GUCEF's Premake4 file generation"
+fi
+
+
+# Go back to where we came from
+cd "$PREMAKE4COMMON_SCRIPTSTARTDIR"
 
