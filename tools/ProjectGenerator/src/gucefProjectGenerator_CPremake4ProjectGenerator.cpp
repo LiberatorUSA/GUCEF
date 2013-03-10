@@ -484,10 +484,10 @@ GeneratePremake4FilePlatformFilesSection( const TModuleInfoEntry& moduleInfoEntr
             hasPlatformSourceFiles = true;
             sourceSection = "    vpaths { [\"Platform Source\"] = { \"**.c\", \"**.cpp\", \"**.cs\", \"**.asm\" } }\n    files( {\n";
 
+            bool first = true;
             TStringVectorMap::const_iterator n = platformSourceFiles.begin();
             while ( n != platformSourceFiles.end() )
             {
-                bool first = true;
                 const TStringVector& platformSourceFilesDir = (*n).second;
                 TStringVector::const_iterator i = platformSourceFilesDir.begin();
                 while ( i != platformSourceFilesDir.end() )
