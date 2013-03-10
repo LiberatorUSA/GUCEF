@@ -14,7 +14,6 @@
 
 configuration( { "ANDROID" } )
   project( "inputdriverNANDROID" )
-endif()
 location( os.getenv( "PM4OUTPUTDIR" ) )
 configuration( { "ANDROID" } )
 kind( "SharedLib" )

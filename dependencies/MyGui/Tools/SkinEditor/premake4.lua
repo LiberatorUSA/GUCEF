@@ -20,7 +20,6 @@ configuration( { "WIN32" } )
 
 configuration( { "WIN64" } )
   project( "MyGUI.SkinEditor" )
-endif()
 location( os.getenv( "PM4OUTPUTDIR" ) )
 configuration( { "LINUX" } )
 kind( "ConsoleApp" )
@@ -123,10 +122,16 @@ configuration( { "LINUX" } )
       "TextureControl.h",
       "TextureToolControl.h",
       "VerticalSelectorBlackControl.h",
-      "VerticalSelectorControl.h"      "..\..\Common\Precompiled.h"      "..\..\Common\Base\InputFocusInfo.h",
+      "VerticalSelectorControl.h",
+      "..\..\Common\Precompiled.h",
+      "..\..\Common\Base\InputFocusInfo.h",
       "..\..\Common\Base\Main.h",
-      "..\..\Common\Base\StatisticInfo.h"      "..\..\Common\Base\OpenGL\BaseManager.h"      "..\..\Common\Input\InputConverter.h"      "..\..\Common\Input\OIS\InputManager.h",
-      "..\..\Common\Input\OIS\PointerManager.h"      "..\..\Common\ItemBox\BaseCellView.h",
+      "..\..\Common\Base\StatisticInfo.h",
+      "..\..\Common\Base\OpenGL\BaseManager.h",
+      "..\..\Common\Input\InputConverter.h",
+      "..\..\Common\Input\OIS\InputManager.h",
+      "..\..\Common\Input\OIS\PointerManager.h",
+      "..\..\Common\ItemBox\BaseCellView.h",
       "..\..\Common\ItemBox\BaseItemBox.h",
       "..\..\Common\ItemBox\ItemDropInfo.h"
     } )
@@ -286,10 +291,16 @@ configuration( { "WIN32" } )
       "TextureControl.h",
       "TextureToolControl.h",
       "VerticalSelectorBlackControl.h",
-      "VerticalSelectorControl.h"      "..\..\Common\Precompiled.h"      "..\..\Common\Base\InputFocusInfo.h",
+      "VerticalSelectorControl.h",
+      "..\..\Common\Precompiled.h",
+      "..\..\Common\Base\InputFocusInfo.h",
       "..\..\Common\Base\Main.h",
-      "..\..\Common\Base\StatisticInfo.h"      "..\..\Common\Base\OpenGL\BaseManager.h"      "..\..\Common\Input\InputConverter.h"      "..\..\Common\Input\Win32API\InputManager.h",
-      "..\..\Common\Input\Win32API\PointerManager.h"      "..\..\Common\ItemBox\BaseCellView.h",
+      "..\..\Common\Base\StatisticInfo.h",
+      "..\..\Common\Base\OpenGL\BaseManager.h",
+      "..\..\Common\Input\InputConverter.h",
+      "..\..\Common\Input\Win32API\InputManager.h",
+      "..\..\Common\Input\Win32API\PointerManager.h",
+      "..\..\Common\ItemBox\BaseCellView.h",
       "..\..\Common\ItemBox\BaseItemBox.h",
       "..\..\Common\ItemBox\ItemDropInfo.h"
     } )
@@ -449,10 +460,16 @@ configuration( { "WIN64" } )
       "TextureControl.h",
       "TextureToolControl.h",
       "VerticalSelectorBlackControl.h",
-      "VerticalSelectorControl.h"      "..\..\Common\Precompiled.h"      "..\..\Common\Base\InputFocusInfo.h",
+      "VerticalSelectorControl.h",
+      "..\..\Common\Precompiled.h",
+      "..\..\Common\Base\InputFocusInfo.h",
       "..\..\Common\Base\Main.h",
-      "..\..\Common\Base\StatisticInfo.h"      "..\..\Common\Base\OpenGL\BaseManager.h"      "..\..\Common\Input\InputConverter.h"      "..\..\Common\Input\Win32API\InputManager.h",
-      "..\..\Common\Input\Win32API\PointerManager.h"      "..\..\Common\ItemBox\BaseCellView.h",
+      "..\..\Common\Base\StatisticInfo.h",
+      "..\..\Common\Base\OpenGL\BaseManager.h",
+      "..\..\Common\Input\InputConverter.h",
+      "..\..\Common\Input\Win32API\InputManager.h",
+      "..\..\Common\Input\Win32API\PointerManager.h",
+      "..\..\Common\ItemBox\BaseCellView.h",
       "..\..\Common\ItemBox\BaseItemBox.h",
       "..\..\Common\ItemBox\ItemDropInfo.h"
     } )

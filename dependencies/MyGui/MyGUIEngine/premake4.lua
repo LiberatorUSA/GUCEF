@@ -11,6 +11,7 @@
 
 -- Configuration for module: MyGUI.Engine
 
+
 project( "MyGUI.Engine" )
 location( os.getenv( "PM4OUTPUTDIR" ) )
 kind( "SharedLib" )

@@ -1217,7 +1217,7 @@ GeneratePremake4ProjectFileContent( const TProjectInfo& projectInfo       ,
         if ( HasIndependentModuleType( moduleInfo.modulesPerPlatform ) )
         {
             CORE::CString pathToModuleDir = CORE::GetRelativePathToOtherPathRoot( outputDir, moduleInfo.rootDir );
-            pathToModuleDir = pathToModuleDir.ReplaceChar( '\', '//' );
+            pathToModuleDir = pathToModuleDir.ReplaceChar( '\\', '/' );
             moduleIncludeListSection += "  include( \"" + pathToModuleDir + "\" )\n";
         }
         ++n;

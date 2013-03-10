@@ -11,6 +11,7 @@
 
 -- Configuration for module: gucefCOMCORE_TestApp
 
+
 project( "gucefCOMCORE_TestApp" )
 location( os.getenv( "PM4OUTPUTDIR" ) )
 configuration( { "WIN32" } )

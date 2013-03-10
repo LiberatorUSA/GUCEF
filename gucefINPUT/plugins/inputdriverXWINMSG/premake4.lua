@@ -14,7 +14,6 @@
 
 configuration( { "LINUX" } )
   project( "inputdriverXWINMSG" )
-endif()
 location( os.getenv( "PM4OUTPUTDIR" ) )
 configuration( { "LINUX" } )
 kind( "SharedLib" )

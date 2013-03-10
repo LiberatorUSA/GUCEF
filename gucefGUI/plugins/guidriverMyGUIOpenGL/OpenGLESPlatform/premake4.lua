@@ -14,7 +14,6 @@
 
 configuration( { "ANDROID" } )
   project( "MyGUI.OpenGLESPlatform" )
-endif()
 location( os.getenv( "PM4OUTPUTDIR" ) )
 configuration( { "ANDROID" } )
 kind( "StaticLib" )
@@ -27,7 +26,8 @@ configuration( { "ANDROID" } )
 configuration( { "ANDROID" } )
     vpaths { ["Platform Headers"] = { "**.h", "**.hpp", "**.hxx" } }
     files( {
-      "..\..\..\..\dependencies\MyGui\Common\FileSystemInfo\FileSystemInfo.h"      "include\MyGUI_OpenGLDiagnostic.h",
+      "..\..\..\..\dependencies\MyGui\Common\FileSystemInfo\FileSystemInfo.h",
+      "include\MyGUI_OpenGLDiagnostic.h",
       "include\MyGUI_OpenGLImageLoader.h",
       "include\MyGUI_OpenGLRenderManager.h",
       "include\MyGUI_OpenGLRTTexture.h",

@@ -20,7 +20,6 @@ configuration( { "WIN32" } )
 
 configuration( { "WIN64" } )
   project( "MyGUI.ImageSetViewer" )
-endif()
 location( os.getenv( "PM4OUTPUTDIR" ) )
 configuration( { "LINUX" } )
 kind( "ConsoleApp" )
@@ -49,9 +48,14 @@ configuration( { "LINUX" } )
     vpaths { ["Platform Headers"] = { "**.h", "**.hpp", "**.hxx" } }
     files( {
       "Controller.h",
-      "View.h"      "..\..\Common\Precompiled.h"      "..\..\Common\Base\InputFocusInfo.h",
+      "View.h",
+      "..\..\Common\Precompiled.h",
+      "..\..\Common\Base\InputFocusInfo.h",
       "..\..\Common\Base\Main.h",
-      "..\..\Common\Base\StatisticInfo.h"      "..\..\Common\Base\OpenGL\BaseManager.h"      "..\..\Common\Input\InputConverter.h"      "..\..\Common\Input\OIS\InputManager.h",
+      "..\..\Common\Base\StatisticInfo.h",
+      "..\..\Common\Base\OpenGL\BaseManager.h",
+      "..\..\Common\Input\InputConverter.h",
+      "..\..\Common\Input\OIS\InputManager.h",
       "..\..\Common\Input\OIS\PointerManager.h"
     } )
 
@@ -68,9 +72,14 @@ configuration( { "WIN32" } )
     vpaths { ["Platform Headers"] = { "**.h", "**.hpp", "**.hxx" } }
     files( {
       "Controller.h",
-      "View.h"      "..\..\Common\Precompiled.h"      "..\..\Common\Base\InputFocusInfo.h",
+      "View.h",
+      "..\..\Common\Precompiled.h",
+      "..\..\Common\Base\InputFocusInfo.h",
       "..\..\Common\Base\Main.h",
-      "..\..\Common\Base\StatisticInfo.h"      "..\..\Common\Base\OpenGL\BaseManager.h"      "..\..\Common\Input\InputConverter.h"      "..\..\Common\Input\Win32API\InputManager.h",
+      "..\..\Common\Base\StatisticInfo.h",
+      "..\..\Common\Base\OpenGL\BaseManager.h",
+      "..\..\Common\Input\InputConverter.h",
+      "..\..\Common\Input\Win32API\InputManager.h",
       "..\..\Common\Input\Win32API\PointerManager.h"
     } )
 
@@ -87,9 +96,14 @@ configuration( { "WIN64" } )
     vpaths { ["Platform Headers"] = { "**.h", "**.hpp", "**.hxx" } }
     files( {
       "Controller.h",
-      "View.h"      "..\..\Common\Precompiled.h"      "..\..\Common\Base\InputFocusInfo.h",
+      "View.h",
+      "..\..\Common\Precompiled.h",
+      "..\..\Common\Base\InputFocusInfo.h",
       "..\..\Common\Base\Main.h",
-      "..\..\Common\Base\StatisticInfo.h"      "..\..\Common\Base\OpenGL\BaseManager.h"      "..\..\Common\Input\InputConverter.h"      "..\..\Common\Input\Win32API\InputManager.h",
+      "..\..\Common\Base\StatisticInfo.h",
+      "..\..\Common\Base\OpenGL\BaseManager.h",
+      "..\..\Common\Input\InputConverter.h",
+      "..\..\Common\Input\Win32API\InputManager.h",
       "..\..\Common\Input\Win32API\PointerManager.h"
     } )
 

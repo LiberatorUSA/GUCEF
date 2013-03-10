@@ -11,6 +11,7 @@
 
 -- Configuration for module: gucefCORE
 
+
 project( "gucefCORE" )
 location( os.getenv( "PM4OUTPUTDIR" ) )
 kind( "SharedLib" )

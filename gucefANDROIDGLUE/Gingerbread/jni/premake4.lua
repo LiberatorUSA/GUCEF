@@ -14,7 +14,6 @@
 
 configuration( { "ANDROID" } )
   project( "main" )
-endif()
 location( os.getenv( "PM4OUTPUTDIR" ) )
 configuration( { "ANDROID" } )
 kind( "SharedLib" )

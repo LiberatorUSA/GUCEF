@@ -11,6 +11,7 @@
 
 -- Configuration for module: DuplicateFileFinder
 
+
 project( "DuplicateFileFinder" )
 location( os.getenv( "PM4OUTPUTDIR" ) )
 configuration( { "WIN32" } )

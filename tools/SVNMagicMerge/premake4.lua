@@ -11,6 +11,7 @@
 
 -- Configuration for module: SVNMagicMerge
 
+
 project( "SVNMagicMerge" )
 location( os.getenv( "PM4OUTPUTDIR" ) )
 configuration( { "WIN32" } )

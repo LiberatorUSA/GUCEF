@@ -11,6 +11,7 @@
 
 -- Configuration for module: guidriverMyGUI
 
+
 project( "guidriverMyGUI" )
 location( os.getenv( "PM4OUTPUTDIR" ) )
 kind( "SharedLib" )

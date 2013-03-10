@@ -23,7 +23,6 @@ configuration( { "WIN32" } )
 
 configuration( { "WIN64" } )
   project( "OIS" )
-endif()
 location( os.getenv( "PM4OUTPUTDIR" ) )
 configuration( { "LINUX" } )
 kind( "SharedLib" )
@@ -91,13 +90,15 @@ configuration( { "LINUX" } )
       "includes\OISMouse.h",
       "includes\OISMultiTouch.h",
       "includes\OISObject.h",
-      "includes\OISPrereqs.h"      "includes\linux\EventHelpers.h",
+      "includes\OISPrereqs.h",
+      "includes\linux\EventHelpers.h",
       "includes\linux\LinuxForceFeedback.h",
       "includes\linux\LinuxInputManager.h",
       "includes\linux\LinuxJoyStickEvents.h",
       "includes\linux\LinuxKeyboard.h",
       "includes\linux\LinuxMouse.h",
-      "includes\linux\LinuxPrereqs.h"      "src\extras\LIRC\OISLIRC.h",
+      "includes\linux\LinuxPrereqs.h",
+      "src\extras\LIRC\OISLIRC.h",
       "src\extras\LIRC\OISLIRCFactoryCreator.h",
       "src\extras\LIRC\OISLIRCRingBuffer.h"
     } )
@@ -138,13 +139,15 @@ configuration( { "OSX" } )
       "includes\OISMouse.h",
       "includes\OISMultiTouch.h",
       "includes\OISObject.h",
-      "includes\OISPrereqs.h"      "includes\mac\MacHelpers.h",
+      "includes\OISPrereqs.h",
+      "includes\mac\MacHelpers.h",
       "includes\mac\MacHIDManager.h",
       "includes\mac\MacInputManager.h",
       "includes\mac\MacJoyStick.h",
       "includes\mac\MacKeyboard.h",
       "includes\mac\MacMouse.h",
-      "includes\mac\MacPrereqs.h"      "src\extras\LIRC\OISLIRC.h",
+      "includes\mac\MacPrereqs.h",
+      "src\extras\LIRC\OISLIRC.h",
       "src\extras\LIRC\OISLIRCFactoryCreator.h",
       "src\extras\LIRC\OISLIRCRingBuffer.h"
     } )
@@ -212,12 +215,14 @@ configuration( { "WIN32" } )
       "includes\OISMouse.h",
       "includes\OISMultiTouch.h",
       "includes\OISObject.h",
-      "includes\OISPrereqs.h"      "includes\win32\Win32ForceFeedback.h",
+      "includes\OISPrereqs.h",
+      "includes\win32\Win32ForceFeedback.h",
       "includes\win32\Win32InputManager.h",
       "includes\win32\Win32JoyStick.h",
       "includes\win32\Win32KeyBoard.h",
       "includes\win32\Win32Mouse.h",
-      "includes\win32\Win32Prereqs.h"      "src\extras\LIRC\OISLIRC.h",
+      "includes\win32\Win32Prereqs.h",
+      "src\extras\LIRC\OISLIRC.h",
       "src\extras\LIRC\OISLIRCFactoryCreator.h",
       "src\extras\LIRC\OISLIRCRingBuffer.h"
     } )
@@ -257,7 +262,8 @@ configuration( { "WIN64" } )
       "includes\OISMouse.h",
       "includes\OISMultiTouch.h",
       "includes\OISObject.h",
-      "includes\OISPrereqs.h"      "src\extras\LIRC\OISLIRC.h",
+      "includes\OISPrereqs.h",
+      "src\extras\LIRC\OISLIRC.h",
       "src\extras\LIRC\OISLIRCFactoryCreator.h",
       "src\extras\LIRC\OISLIRCRingBuffer.h"
     } )
