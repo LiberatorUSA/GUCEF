@@ -11,6 +11,7 @@
 
 -- Configuration for module: ReferenceUpdater
 
+
 project( "ReferenceUpdater" )
 location( os.getenv( "PM4OUTPUTDIR" ) )
 configuration( { "WIN32" } )

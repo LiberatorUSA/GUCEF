@@ -11,6 +11,7 @@
 
 -- Configuration for module: gucefPATCHER
 
+
 project( "gucefPATCHER" )
 location( os.getenv( "PM4OUTPUTDIR" ) )
 kind( "SharedLib" )

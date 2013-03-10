@@ -20,7 +20,6 @@ configuration( { "WIN32" } )
 
 configuration( { "WIN64" } )
   project( "imgpluginDEVIL" )
-endif()
 location( os.getenv( "PM4OUTPUTDIR" ) )
 configuration( { "LINUX" } )
 kind( "SharedLib" )

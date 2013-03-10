@@ -20,7 +20,6 @@ configuration( { "WIN32" } )
 
 configuration( { "WIN64" } )
   project( "MyGUI.LayoutEditor" )
-endif()
 location( os.getenv( "PM4OUTPUTDIR" ) )
 configuration( { "LINUX" } )
 kind( "ConsoleApp" )
@@ -126,10 +125,16 @@ configuration( { "LINUX" } )
       "WidgetStyle.h",
       "WidgetsWindow.h",
       "WidgetTypes.h",
-      "WorkspaceControl.h"      "..\..\Common\Precompiled.h"      "..\..\Common\Base\InputFocusInfo.h",
+      "WorkspaceControl.h",
+      "..\..\Common\Precompiled.h",
+      "..\..\Common\Base\InputFocusInfo.h",
       "..\..\Common\Base\Main.h",
-      "..\..\Common\Base\StatisticInfo.h"      "..\..\Common\Base\OpenGL\BaseManager.h"      "..\..\Common\Input\InputConverter.h"      "..\..\Common\Input\OIS\InputManager.h",
-      "..\..\Common\Input\OIS\PointerManager.h"      "..\..\Common\Tools\Dialog.h",
+      "..\..\Common\Base\StatisticInfo.h",
+      "..\..\Common\Base\OpenGL\BaseManager.h",
+      "..\..\Common\Input\InputConverter.h",
+      "..\..\Common\Input\OIS\InputManager.h",
+      "..\..\Common\Input\OIS\PointerManager.h",
+      "..\..\Common\Tools\Dialog.h",
       "..\..\Common\Tools\DialogManager.h",
       "..\..\Common\Tools\OpenSaveFileDialog.h"
     } )
@@ -290,10 +295,16 @@ configuration( { "WIN32" } )
       "WidgetStyle.h",
       "WidgetsWindow.h",
       "WidgetTypes.h",
-      "WorkspaceControl.h"      "..\..\Common\Precompiled.h"      "..\..\Common\Base\InputFocusInfo.h",
+      "WorkspaceControl.h",
+      "..\..\Common\Precompiled.h",
+      "..\..\Common\Base\InputFocusInfo.h",
       "..\..\Common\Base\Main.h",
-      "..\..\Common\Base\StatisticInfo.h"      "..\..\Common\Base\OpenGL\BaseManager.h"      "..\..\Common\Input\InputConverter.h"      "..\..\Common\Input\Win32API\InputManager.h",
-      "..\..\Common\Input\Win32API\PointerManager.h"      "..\..\Common\Tools\Dialog.h",
+      "..\..\Common\Base\StatisticInfo.h",
+      "..\..\Common\Base\OpenGL\BaseManager.h",
+      "..\..\Common\Input\InputConverter.h",
+      "..\..\Common\Input\Win32API\InputManager.h",
+      "..\..\Common\Input\Win32API\PointerManager.h",
+      "..\..\Common\Tools\Dialog.h",
       "..\..\Common\Tools\DialogManager.h",
       "..\..\Common\Tools\OpenSaveFileDialog.h"
     } )
@@ -454,10 +465,16 @@ configuration( { "WIN64" } )
       "WidgetStyle.h",
       "WidgetsWindow.h",
       "WidgetTypes.h",
-      "WorkspaceControl.h"      "..\..\Common\Precompiled.h"      "..\..\Common\Base\InputFocusInfo.h",
+      "WorkspaceControl.h",
+      "..\..\Common\Precompiled.h",
+      "..\..\Common\Base\InputFocusInfo.h",
       "..\..\Common\Base\Main.h",
-      "..\..\Common\Base\StatisticInfo.h"      "..\..\Common\Base\OpenGL\BaseManager.h"      "..\..\Common\Input\InputConverter.h"      "..\..\Common\Input\Win32API\InputManager.h",
-      "..\..\Common\Input\Win32API\PointerManager.h"      "..\..\Common\Tools\Dialog.h",
+      "..\..\Common\Base\StatisticInfo.h",
+      "..\..\Common\Base\OpenGL\BaseManager.h",
+      "..\..\Common\Input\InputConverter.h",
+      "..\..\Common\Input\Win32API\InputManager.h",
+      "..\..\Common\Input\Win32API\PointerManager.h",
+      "..\..\Common\Tools\Dialog.h",
       "..\..\Common\Tools\DialogManager.h",
       "..\..\Common\Tools\OpenSaveFileDialog.h"
     } )

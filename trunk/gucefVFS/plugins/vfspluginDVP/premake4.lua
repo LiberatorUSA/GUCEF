@@ -11,6 +11,7 @@
 
 -- Configuration for module: vfspluginDVP
 
+
 project( "vfspluginDVP" )
 location( os.getenv( "PM4OUTPUTDIR" ) )
 kind( "SharedLib" )

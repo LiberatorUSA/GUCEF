@@ -11,6 +11,7 @@
 
 -- Configuration for module: GucefLogService_TestApp
 
+
 project( "GucefLogService_TestApp" )
 location( os.getenv( "PM4OUTPUTDIR" ) )
 configuration( { "WIN32" } )

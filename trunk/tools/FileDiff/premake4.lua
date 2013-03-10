@@ -11,6 +11,7 @@
 
 -- Configuration for module: FileDiff
 
+
 project( "FileDiff" )
 location( os.getenv( "PM4OUTPUTDIR" ) )
 configuration( { "WIN32" } )

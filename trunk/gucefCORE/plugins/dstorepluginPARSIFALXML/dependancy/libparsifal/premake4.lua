@@ -11,6 +11,7 @@
 
 -- Configuration for module: libparsifal
 
+
 project( "libparsifal" )
 location( os.getenv( "PM4OUTPUTDIR" ) )
 kind( "SharedLib" )

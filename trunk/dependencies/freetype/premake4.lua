@@ -11,6 +11,7 @@
 
 -- Configuration for module: freetype
 
+
 project( "freetype" )
 location( os.getenv( "PM4OUTPUTDIR" ) )
 kind( "SharedLib" )

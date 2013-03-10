@@ -11,6 +11,7 @@
 
 -- Configuration for module: guidriverMyGUIOpenGL
 
+
 project( "guidriverMyGUIOpenGL" )
 location( os.getenv( "PM4OUTPUTDIR" ) )
 kind( "SharedLib" )

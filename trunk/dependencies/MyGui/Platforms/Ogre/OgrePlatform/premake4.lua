@@ -17,7 +17,6 @@ configuration( { "LINUX" } )
 
 configuration( { "WIN32" } )
   project( "MyGUI.OgrePlatform" )
-endif()
 location( os.getenv( "PM4OUTPUTDIR" ) )
 configuration( { "LINUX" } )
 kind( "SharedLib" )
@@ -36,7 +35,8 @@ configuration( { "WIN32" } )
 configuration( { "LINUX" } )
     vpaths { ["Platform Headers"] = { "**.h", "**.hpp", "**.hxx" } }
     files( {
-      "..\..\..\Common\FileSystemInfo\FileSystemInfo.h"      "include\MyGUI_LastHeader.h",
+      "..\..\..\Common\FileSystemInfo\FileSystemInfo.h",
+      "include\MyGUI_LastHeader.h",
       "include\MyGUI_OgreDataManager.h",
       "include\MyGUI_OgreDataStream.h",
       "include\MyGUI_OgreDiagnostic.h",
@@ -62,7 +62,8 @@ configuration( { "LINUX" } )
 configuration( { "WIN32" } )
     vpaths { ["Platform Headers"] = { "**.h", "**.hpp", "**.hxx" } }
     files( {
-      "..\..\..\Common\FileSystemInfo\FileSystemInfo.h"      "include\MyGUI_LastHeader.h",
+      "..\..\..\Common\FileSystemInfo\FileSystemInfo.h",
+      "include\MyGUI_LastHeader.h",
       "include\MyGUI_OgreDataManager.h",
       "include\MyGUI_OgreDataStream.h",
       "include\MyGUI_OgreDiagnostic.h",

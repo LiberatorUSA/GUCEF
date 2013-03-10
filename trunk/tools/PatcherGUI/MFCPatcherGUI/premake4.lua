@@ -17,7 +17,6 @@ configuration( { "WIN32" } )
 
 configuration( { "WIN64" } )
   project( "MFCPatcherGUI" )
-endif()
 location( os.getenv( "PM4OUTPUTDIR" ) )
 configuration( { "WIN32" } )
 kind( "SharedLib" )
@@ -43,7 +42,9 @@ configuration( { "WIN32" } )
       "include\CMFCCommandLineInfo.h",
       "include\MainFrm.h",
       "include\MFCPatcherGUI.h",
-      "include\stdafx.h"      "projects\MVC8\res\Resource.h"      "projects\MVC9\res\Resource.h"
+      "include\stdafx.h",
+      "projects\MVC8\res\Resource.h",
+      "projects\MVC9\res\Resource.h"
     } )
 
     vpaths { ["Platform Source"] = { "**.c", "**.cpp", "**.cs", "**.asm" } }
@@ -66,7 +67,9 @@ configuration( { "WIN64" } )
       "include\CMFCCommandLineInfo.h",
       "include\MainFrm.h",
       "include\MFCPatcherGUI.h",
-      "include\stdafx.h"      "projects\MVC8\res\Resource.h"      "projects\MVC9\res\Resource.h"
+      "include\stdafx.h",
+      "projects\MVC8\res\Resource.h",
+      "projects\MVC9\res\Resource.h"
     } )
 
     vpaths { ["Platform Source"] = { "**.c", "**.cpp", "**.cs", "**.asm" } }

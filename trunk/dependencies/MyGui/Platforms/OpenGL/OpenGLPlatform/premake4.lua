@@ -11,6 +11,7 @@
 
 -- Configuration for module: MyGUI.OpenGLPlatform
 
+
 project( "MyGUI.OpenGLPlatform" )
 location( os.getenv( "PM4OUTPUTDIR" ) )
 kind( "StaticLib" )

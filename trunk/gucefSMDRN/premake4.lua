@@ -11,6 +11,7 @@
 
 -- Configuration for module: gucefSMDRN
 
+
 project( "gucefSMDRN" )
 location( os.getenv( "PM4OUTPUTDIR" ) )
 kind( "SharedLib" )

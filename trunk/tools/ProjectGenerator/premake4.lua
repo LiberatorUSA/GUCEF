@@ -11,6 +11,7 @@
 
 -- Configuration for module: ProjectGenerator
 
+
 project( "ProjectGenerator" )
 location( os.getenv( "PM4OUTPUTDIR" ) )
 configuration( { "WIN32" } )

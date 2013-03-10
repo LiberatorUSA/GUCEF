@@ -17,7 +17,6 @@ configuration( { "WIN32" } )
 
 configuration( { "WIN64" } )
   project( "inputdriverMSWINMSG" )
-endif()
 location( os.getenv( "PM4OUTPUTDIR" ) )
 configuration( { "WIN32" } )
 kind( "SharedLib" )
