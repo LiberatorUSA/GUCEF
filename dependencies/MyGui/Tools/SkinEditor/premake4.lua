@@ -123,17 +123,17 @@ configuration( { "LINUX" } )
       "TextureToolControl.h",
       "VerticalSelectorBlackControl.h",
       "VerticalSelectorControl.h",
-      "..\..\Common\Precompiled.h",
-      "..\..\Common\Base\InputFocusInfo.h",
-      "..\..\Common\Base\Main.h",
-      "..\..\Common\Base\StatisticInfo.h",
-      "..\..\Common\Base\OpenGL\BaseManager.h",
-      "..\..\Common\Input\InputConverter.h",
-      "..\..\Common\Input\OIS\InputManager.h",
-      "..\..\Common\Input\OIS\PointerManager.h",
-      "..\..\Common\ItemBox\BaseCellView.h",
-      "..\..\Common\ItemBox\BaseItemBox.h",
-      "..\..\Common\ItemBox\ItemDropInfo.h"
+      "../../Common/Precompiled.h",
+      "../../Common/Base/InputFocusInfo.h",
+      "../../Common/Base/Main.h",
+      "../../Common/Base/StatisticInfo.h",
+      "../../Common/Base/OpenGL/BaseManager.h",
+      "../../Common/Input/InputConverter.h",
+      "../../Common/Input/OIS/InputManager.h",
+      "../../Common/Input/OIS/PointerManager.h",
+      "../../Common/ItemBox/BaseCellView.h",
+      "../../Common/ItemBox/BaseItemBox.h",
+      "../../Common/ItemBox/ItemDropInfo.h"
     } )
 
     vpaths { ["Platform Source"] = { "**.c", "**.cpp", "**.cs", "**.asm" } }
@@ -208,10 +208,10 @@ configuration( { "LINUX" } )
       "TextureToolControl.cpp",
       "VerticalSelectorBlackControl.cpp",
       "VerticalSelectorControl.cpp",
-      "..\..\Common\Precompiled.cpp",
-      "..\..\Common\Base\OpenGL\BaseManager.cpp",
-      "..\..\Common\Input\OIS\InputManager.cpp",
-      "..\..\Common\Input\OIS\PointerManager.cpp"
+      "../../Common/Precompiled.cpp",
+      "../../Common/Base/OpenGL/BaseManager.cpp",
+      "../../Common/Input/OIS/InputManager.cpp",
+      "../../Common/Input/OIS/PointerManager.cpp"
     } )
 
 
@@ -295,17 +295,17 @@ configuration( { "WIN32" } )
       "TextureToolControl.h",
       "VerticalSelectorBlackControl.h",
       "VerticalSelectorControl.h",
-      "..\..\Common\Precompiled.h",
-      "..\..\Common\Base\InputFocusInfo.h",
-      "..\..\Common\Base\Main.h",
-      "..\..\Common\Base\StatisticInfo.h",
-      "..\..\Common\Base\OpenGL\BaseManager.h",
-      "..\..\Common\Input\InputConverter.h",
-      "..\..\Common\Input\Win32API\InputManager.h",
-      "..\..\Common\Input\Win32API\PointerManager.h",
-      "..\..\Common\ItemBox\BaseCellView.h",
-      "..\..\Common\ItemBox\BaseItemBox.h",
-      "..\..\Common\ItemBox\ItemDropInfo.h"
+      "../../Common/Precompiled.h",
+      "../../Common/Base/InputFocusInfo.h",
+      "../../Common/Base/Main.h",
+      "../../Common/Base/StatisticInfo.h",
+      "../../Common/Base/OpenGL/BaseManager.h",
+      "../../Common/Input/InputConverter.h",
+      "../../Common/Input/Win32API/InputManager.h",
+      "../../Common/Input/Win32API/PointerManager.h",
+      "../../Common/ItemBox/BaseCellView.h",
+      "../../Common/ItemBox/BaseItemBox.h",
+      "../../Common/ItemBox/ItemDropInfo.h"
     } )
 
     vpaths { ["Platform Source"] = { "**.c", "**.cpp", "**.cs", "**.asm" } }
@@ -380,10 +380,10 @@ configuration( { "WIN32" } )
       "TextureToolControl.cpp",
       "VerticalSelectorBlackControl.cpp",
       "VerticalSelectorControl.cpp",
-      "..\..\Common\Precompiled.cpp",
-      "..\..\Common\Base\OpenGL\BaseManager.cpp",
-      "..\..\Common\Input\Win32API\InputManager.cpp",
-      "..\..\Common\Input\Win32API\PointerManager.cpp"
+      "../../Common/Precompiled.cpp",
+      "../../Common/Base/OpenGL/BaseManager.cpp",
+      "../../Common/Input/Win32API/InputManager.cpp",
+      "../../Common/Input/Win32API/PointerManager.cpp"
     } )
 
 
@@ -467,17 +467,17 @@ configuration( { "WIN64" } )
       "TextureToolControl.h",
       "VerticalSelectorBlackControl.h",
       "VerticalSelectorControl.h",
-      "..\..\Common\Precompiled.h",
-      "..\..\Common\Base\InputFocusInfo.h",
-      "..\..\Common\Base\Main.h",
-      "..\..\Common\Base\StatisticInfo.h",
-      "..\..\Common\Base\OpenGL\BaseManager.h",
-      "..\..\Common\Input\InputConverter.h",
-      "..\..\Common\Input\Win32API\InputManager.h",
-      "..\..\Common\Input\Win32API\PointerManager.h",
-      "..\..\Common\ItemBox\BaseCellView.h",
-      "..\..\Common\ItemBox\BaseItemBox.h",
-      "..\..\Common\ItemBox\ItemDropInfo.h"
+      "../../Common/Precompiled.h",
+      "../../Common/Base/InputFocusInfo.h",
+      "../../Common/Base/Main.h",
+      "../../Common/Base/StatisticInfo.h",
+      "../../Common/Base/OpenGL/BaseManager.h",
+      "../../Common/Input/InputConverter.h",
+      "../../Common/Input/Win32API/InputManager.h",
+      "../../Common/Input/Win32API/PointerManager.h",
+      "../../Common/ItemBox/BaseCellView.h",
+      "../../Common/ItemBox/BaseItemBox.h",
+      "../../Common/ItemBox/ItemDropInfo.h"
     } )
 
     vpaths { ["Platform Source"] = { "**.c", "**.cpp", "**.cs", "**.asm" } }
@@ -552,10 +552,10 @@ configuration( { "WIN64" } )
       "TextureToolControl.cpp",
       "VerticalSelectorBlackControl.cpp",
       "VerticalSelectorControl.cpp",
-      "..\..\Common\Precompiled.cpp",
-      "..\..\Common\Base\OpenGL\BaseManager.cpp",
-      "..\..\Common\Input\Win32API\InputManager.cpp",
-      "..\..\Common\Input\Win32API\PointerManager.cpp"
+      "../../Common/Precompiled.cpp",
+      "../../Common/Base/OpenGL/BaseManager.cpp",
+      "../../Common/Input/Win32API/InputManager.cpp",
+      "../../Common/Input/Win32API/PointerManager.cpp"
     } )
 
 
@@ -563,10 +563,10 @@ configuration( {} )
 includedirs( { "../../../freetype/include", "../../../freetype/include/freetype", "../../../freetype/include/freetype/config", "../../../freetype/include/freetype/internal", "../../../freetype/include/freetype/internal/services", "../../../freetype/src/winfonts", "../../Common/FileSystemInfo", "../../MyGUIEngine/include", "../../Platforms/OpenGL/OpenGLPlatform/include", "../../Platforms/OpenGL/OpenGLPlatform/include/GL" } )
 
 configuration( { "LINUX" } )
-includedirs( { "..\"SkinEditor", "..\..\Common", "..\..\Common\Base", "..\..\Common\Base\OpenGL", "..\..\Common\Input", "..\..\Common\Input\OIS", "..\..\Common\ItemBox" } )
+includedirs( { "../"SkinEditor", "../../Common", "../../Common/Base", "../../Common/Base/OpenGL", "../../Common/Input", "../../Common/Input/OIS", "../../Common/ItemBox" } )
 
 configuration( { "WIN32" } )
-includedirs( { "..\"SkinEditor", "..\..\Common", "..\..\Common\Base", "..\..\Common\Base\OpenGL", "..\..\Common\Input", "..\..\Common\Input\Win32API", "..\..\Common\ItemBox" } )
+includedirs( { "../"SkinEditor", "../../Common", "../../Common/Base", "../../Common/Base/OpenGL", "../../Common/Input", "../../Common/Input/Win32API", "../../Common/ItemBox" } )
 
 configuration( { "WIN64" } )
-includedirs( { "..\"SkinEditor", "..\..\Common", "..\..\Common\Base", "..\..\Common\Base\OpenGL", "..\..\Common\Input", "..\..\Common\Input\Win32API", "..\..\Common\ItemBox" } )
+includedirs( { "../"SkinEditor", "../../Common", "../../Common/Base", "../../Common/Base/OpenGL", "../../Common/Input", "../../Common/Input/Win32API", "../../Common/ItemBox" } )

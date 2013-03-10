@@ -26,21 +26,21 @@ configuration( { "ANDROID" } )
 configuration( { "ANDROID" } )
     vpaths { ["Platform Headers"] = { "**.h", "**.hpp", "**.hxx" } }
     files( {
-      "..\..\..\..\dependencies\MyGui\Common\FileSystemInfo\FileSystemInfo.h",
-      "include\MyGUI_OpenGLDiagnostic.h",
-      "include\MyGUI_OpenGLImageLoader.h",
-      "include\MyGUI_OpenGLRenderManager.h",
-      "include\MyGUI_OpenGLRTTexture.h",
-      "include\MyGUI_OpenGLTexture.h",
-      "include\MyGUI_OpenGLVertexBuffer.h"
+      "../../../../dependencies/MyGui/Common/FileSystemInfo/FileSystemInfo.h",
+      "include/MyGUI_OpenGLDiagnostic.h",
+      "include/MyGUI_OpenGLImageLoader.h",
+      "include/MyGUI_OpenGLRenderManager.h",
+      "include/MyGUI_OpenGLRTTexture.h",
+      "include/MyGUI_OpenGLTexture.h",
+      "include/MyGUI_OpenGLVertexBuffer.h"
     } )
 
     vpaths { ["Platform Source"] = { "**.c", "**.cpp", "**.cs", "**.asm" } }
     files( {
-      "src\MyGUI_OpenGLRenderManager.cpp",
-      "src\MyGUI_OpenGLRTTexture.cpp",
-      "src\MyGUI_OpenGLTexture.cpp",
-      "src\MyGUI_OpenGLVertexBuffer.cpp"
+      "src/MyGUI_OpenGLRenderManager.cpp",
+      "src/MyGUI_OpenGLRTTexture.cpp",
+      "src/MyGUI_OpenGLTexture.cpp",
+      "src/MyGUI_OpenGLVertexBuffer.cpp"
     } )
 
 
@@ -48,4 +48,4 @@ configuration( {} )
 includedirs( { "../../../../dependencies/MyGui/MyGUIEngine/include", "../../../../dependencies/freetype/include", "../../../../dependencies/freetype/include/freetype", "../../../../dependencies/freetype/include/freetype/config", "../../../../dependencies/freetype/include/freetype/internal", "../../../../dependencies/freetype/include/freetype/internal/services", "../../../../dependencies/freetype/src/winfonts" } )
 
 configuration( { "ANDROID" } )
-includedirs( { "..\..\..\..\dependencies\MyGui\Common\FileSystemInfo", "include" } )
+includedirs( { "../../../../dependencies/MyGui/Common/FileSystemInfo", "include" } )

@@ -37,7 +37,7 @@ configuration( { "WIN64" } )
 configuration( { "WIN32" } )
     vpaths { ["Platform Source"] = { "**.c", "**.cpp", "**.cs", "**.asm" } }
     files( {
-      "src\PatchSetGenerator.cpp"
+      "src/PatchSetGenerator.cpp"
     } )
 
 
@@ -45,7 +45,7 @@ configuration( { "WIN32" } )
 configuration( { "WIN64" } )
     vpaths { ["Platform Source"] = { "**.c", "**.cpp", "**.cs", "**.asm" } }
     files( {
-      "src\PatchSetGenerator.cpp"
+      "src/PatchSetGenerator.cpp"
     } )
 
 

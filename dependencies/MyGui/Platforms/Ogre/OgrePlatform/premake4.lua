@@ -35,26 +35,26 @@ configuration( { "WIN32" } )
 configuration( { "LINUX" } )
     vpaths { ["Platform Headers"] = { "**.h", "**.hpp", "**.hxx" } }
     files( {
-      "..\..\..\Common\FileSystemInfo\FileSystemInfo.h",
-      "include\MyGUI_LastHeader.h",
-      "include\MyGUI_OgreDataManager.h",
-      "include\MyGUI_OgreDataStream.h",
-      "include\MyGUI_OgreDiagnostic.h",
-      "include\MyGUI_OgrePlatform.h",
-      "include\MyGUI_OgreRenderManager.h",
-      "include\MyGUI_OgreRTTexture.h",
-      "include\MyGUI_OgreTexture.h",
-      "include\MyGUI_OgreVertexBuffer.h"
+      "../../../Common/FileSystemInfo/FileSystemInfo.h",
+      "include/MyGUI_LastHeader.h",
+      "include/MyGUI_OgreDataManager.h",
+      "include/MyGUI_OgreDataStream.h",
+      "include/MyGUI_OgreDiagnostic.h",
+      "include/MyGUI_OgrePlatform.h",
+      "include/MyGUI_OgreRenderManager.h",
+      "include/MyGUI_OgreRTTexture.h",
+      "include/MyGUI_OgreTexture.h",
+      "include/MyGUI_OgreVertexBuffer.h"
     } )
 
     vpaths { ["Platform Source"] = { "**.c", "**.cpp", "**.cs", "**.asm" } }
     files( {
-      "src\MyGUI_OgreDataManager.cpp",
-      "src\MyGUI_OgreDataStream.cpp",
-      "src\MyGUI_OgreRenderManager.cpp",
-      "src\MyGUI_OgreRTTexture.cpp",
-      "src\MyGUI_OgreTexture.cpp",
-      "src\MyGUI_OgreVertexBuffer.cpp"
+      "src/MyGUI_OgreDataManager.cpp",
+      "src/MyGUI_OgreDataStream.cpp",
+      "src/MyGUI_OgreRenderManager.cpp",
+      "src/MyGUI_OgreRTTexture.cpp",
+      "src/MyGUI_OgreTexture.cpp",
+      "src/MyGUI_OgreVertexBuffer.cpp"
     } )
 
 
@@ -62,26 +62,26 @@ configuration( { "LINUX" } )
 configuration( { "WIN32" } )
     vpaths { ["Platform Headers"] = { "**.h", "**.hpp", "**.hxx" } }
     files( {
-      "..\..\..\Common\FileSystemInfo\FileSystemInfo.h",
-      "include\MyGUI_LastHeader.h",
-      "include\MyGUI_OgreDataManager.h",
-      "include\MyGUI_OgreDataStream.h",
-      "include\MyGUI_OgreDiagnostic.h",
-      "include\MyGUI_OgrePlatform.h",
-      "include\MyGUI_OgreRenderManager.h",
-      "include\MyGUI_OgreRTTexture.h",
-      "include\MyGUI_OgreTexture.h",
-      "include\MyGUI_OgreVertexBuffer.h"
+      "../../../Common/FileSystemInfo/FileSystemInfo.h",
+      "include/MyGUI_LastHeader.h",
+      "include/MyGUI_OgreDataManager.h",
+      "include/MyGUI_OgreDataStream.h",
+      "include/MyGUI_OgreDiagnostic.h",
+      "include/MyGUI_OgrePlatform.h",
+      "include/MyGUI_OgreRenderManager.h",
+      "include/MyGUI_OgreRTTexture.h",
+      "include/MyGUI_OgreTexture.h",
+      "include/MyGUI_OgreVertexBuffer.h"
     } )
 
     vpaths { ["Platform Source"] = { "**.c", "**.cpp", "**.cs", "**.asm" } }
     files( {
-      "src\MyGUI_OgreDataManager.cpp",
-      "src\MyGUI_OgreDataStream.cpp",
-      "src\MyGUI_OgreRenderManager.cpp",
-      "src\MyGUI_OgreRTTexture.cpp",
-      "src\MyGUI_OgreTexture.cpp",
-      "src\MyGUI_OgreVertexBuffer.cpp"
+      "src/MyGUI_OgreDataManager.cpp",
+      "src/MyGUI_OgreDataStream.cpp",
+      "src/MyGUI_OgreRenderManager.cpp",
+      "src/MyGUI_OgreRTTexture.cpp",
+      "src/MyGUI_OgreTexture.cpp",
+      "src/MyGUI_OgreVertexBuffer.cpp"
     } )
 
 
@@ -89,7 +89,7 @@ configuration( {} )
 includedirs( { "../../../../freetype/include", "../../../../freetype/include/freetype", "../../../../freetype/include/freetype/config", "../../../../freetype/include/freetype/internal", "../../../../freetype/include/freetype/internal/services", "../../../../freetype/src/winfonts", "../../../MyGUIEngine/include" } )
 
 configuration( { "LINUX" } )
-includedirs( { "..\..\..\Common\FileSystemInfo", "include" } )
+includedirs( { "../../../Common/FileSystemInfo", "include" } )
 
 configuration( { "WIN32" } )
-includedirs( { "..\..\..\Common\FileSystemInfo", "include" } )
+includedirs( { "../../../Common/FileSystemInfo", "include" } )

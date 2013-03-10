@@ -47,7 +47,7 @@ configuration( { "WIN64" } )
 configuration( { "LINUX" } )
     vpaths { ["Platform Source"] = { "**.c", "**.cpp", "**.cs", "**.asm" } }
     files( {
-      "src\gucefGUI_TestApp.cpp"
+      "src/gucefGUI_TestApp.cpp"
     } )
 
 
@@ -55,7 +55,7 @@ configuration( { "LINUX" } )
 configuration( { "WIN32" } )
     vpaths { ["Platform Source"] = { "**.c", "**.cpp", "**.cs", "**.asm" } }
     files( {
-      "src\gucefGUI_TestApp.cpp"
+      "src/gucefGUI_TestApp.cpp"
     } )
 
 
@@ -63,7 +63,7 @@ configuration( { "WIN32" } )
 configuration( { "WIN64" } )
     vpaths { ["Platform Source"] = { "**.c", "**.cpp", "**.cs", "**.asm" } }
     files( {
-      "src\gucefGUI_TestApp.cpp"
+      "src/gucefGUI_TestApp.cpp"
     } )
 
 
