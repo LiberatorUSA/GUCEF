@@ -14,8 +14,8 @@
 project( "vfspluginZIP" )
 location( os.getenv( "PM4OUTPUTDIR" ) )
 kind( "SharedLib" )
-links( { "gucefCORE" "gucefMT" "gucefVFS" "zziplib" } )
-links( { "gucefCORE" "gucefMT" "gucefVFS" "zziplib" } )
+links( { "gucefCORE", "gucefMT", "gucefVFS", "zziplib" } )
+links( { "gucefCORE", "gucefMT", "gucefVFS", "zziplib" } )
 defines( { "GUCEF_VFSPLUGIN_ZIP_BUILD_MODULE", "ZZIP_HAVE_STDINT_H" } )
 
 configuration( { "ANDROID" } )

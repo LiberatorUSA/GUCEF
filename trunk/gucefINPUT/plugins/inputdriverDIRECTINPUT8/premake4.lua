@@ -25,23 +25,23 @@ configuration( { "WIN64" } )
 kind( "SharedLib" )
 
 configuration( { "WIN32" } )
-  links( { "gucefCORE" "gucefINPUT" "gucefMT" } )
+  links( { "gucefCORE", "gucefINPUT", "gucefMT" } )
   defines( { "BUILD_GUCEF_INPUT_PLUGIN_DLL", "INPUTDRIVERDIRECTINPUT8_BUILD_MODULE" } )
 
 configuration( { "WIN64" } )
-  links( { "gucefCORE" "gucefINPUT" "gucefMT" } )
+  links( { "gucefCORE", "gucefINPUT", "gucefMT" } )
   defines( { "BUILD_GUCEF_INPUT_PLUGIN_DLL", "INPUTDRIVERDIRECTINPUT8_BUILD_MODULE" } )
 
 
 configuration( { "WIN32" } )
     vpaths { ["Platform Headers"] = { "**.h", "**.hpp", "**.hxx" } }
     files( {
-      "include/DLLMainInputDriverDI8.h"
+      "include\DLLMainInputDriverDI8.h"
     } )
 
     vpaths { ["Platform Source"] = { "**.c", "**.cpp", "**.cs", "**.asm" } }
     files( {
-      "src/DLLMainInputDriverDI8.cpp"
+      "src\DLLMainInputDriverDI8.cpp"
     } )
 
 
@@ -49,12 +49,12 @@ configuration( { "WIN32" } )
 configuration( { "WIN64" } )
     vpaths { ["Platform Headers"] = { "**.h", "**.hpp", "**.hxx" } }
     files( {
-      "include/DLLMainInputDriverDI8.h"
+      "include\DLLMainInputDriverDI8.h"
     } )
 
     vpaths { ["Platform Source"] = { "**.c", "**.cpp", "**.cs", "**.asm" } }
     files( {
-      "src/DLLMainInputDriverDI8.cpp"
+      "src\DLLMainInputDriverDI8.cpp"
     } )
 
 

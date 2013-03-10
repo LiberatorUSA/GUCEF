@@ -20,20 +20,20 @@ configuration( { "ANDROID" } )
 kind( "SharedLib" )
 
 configuration( { "ANDROID" } )
-  links( { "gucefCORE" "gucefINPUT" "gucefMT" } )
-  links( { "android" "android_native_app_glue" "gucefCORE" "gucefINPUT" "gucefMT" } )
+  links( { "gucefCORE", "gucefINPUT", "gucefMT" } )
+  links( { "android", "android_native_app_glue", "gucefCORE", "gucefINPUT", "gucefMT" } )
   defines( { "BUILD_GUCEF_INPUT_PLUGIN_DLL", "INPUTDRIVERANDROID_BUILD_MODULE" } )
 
 
 configuration( { "ANDROID" } )
     vpaths { ["Platform Headers"] = { "**.h", "**.hpp", "**.hxx" } }
     files( {
-      "include/inputdriverNANDROID.h"
+      "include\inputdriverNANDROID.h"
     } )
 
     vpaths { ["Platform Source"] = { "**.c", "**.cpp", "**.cs", "**.asm" } }
     files( {
-      "src/inputdriverNANDROID.c"
+      "src\inputdriverNANDROID.c"
     } )
 
 

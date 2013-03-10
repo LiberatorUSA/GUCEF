@@ -14,8 +14,8 @@
 project( "vfspluginVP" )
 location( os.getenv( "PM4OUTPUTDIR" ) )
 kind( "SharedLib" )
-links( { "gucefCORE" "gucefMT" "gucefVFS" } )
-links( { "gucefCORE" "gucefMT" "gucefVFS" } )
+links( { "gucefCORE", "gucefMT", "gucefVFS" } )
+links( { "gucefCORE", "gucefMT", "gucefVFS" } )
 
 
 configuration( {} )

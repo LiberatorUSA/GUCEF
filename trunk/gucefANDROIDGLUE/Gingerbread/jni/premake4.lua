@@ -21,7 +21,7 @@ kind( "SharedLib" )
 
 configuration( { "ANDROID" } )
   links( { "gucefLOADER" } )
-  links( { "android" "android_native_app_glue" } )
+  links( { "android", "android_native_app_glue" } )
 
 
 configuration( { "ANDROID" } )

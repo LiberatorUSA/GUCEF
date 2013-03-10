@@ -30,17 +30,17 @@ configuration( { "WIN64" } )
 kind( "SharedLib" )
 
 configuration( { "LINUX" } )
-  links( { "gucefCORE" "gucefMT" } )
+  links( { "gucefCORE", "gucefMT" } )
   links( { "gucefMT" } )
   defines( { "MEMORYLEAKFINDER_BUILD_MODULE" } )
 
 configuration( { "WIN32" } )
-  links( { "gucefCORE" "gucefMT" } )
+  links( { "gucefCORE", "gucefMT" } )
   links( { "gucefMT" } )
   defines( { "MEMORYLEAKFINDER_BUILD_MODULE" } )
 
 configuration( { "WIN64" } )
-  links( { "gucefCORE" "gucefMT" } )
+  links( { "gucefCORE", "gucefMT" } )
   links( { "gucefMT" } )
   defines( { "MEMORYLEAKFINDER_BUILD_MODULE" } )
 
@@ -48,17 +48,17 @@ configuration( { "WIN64" } )
 configuration( { "LINUX" } )
     vpaths { ["Platform Headers"] = { "**.h", "**.hpp", "**.hxx" } }
     files( {
-      "include/DynMemoryManagerLoader.h",
-      "include/gucefMLF_config.h",
-      "include/gucefMLF_macros.h",
-      "include/gucef_dynnewoff.h",
-      "include/gucef_dynnewon.h",
-      "include/MemoryManager.h"
+      "include\DynMemoryManagerLoader.h",
+      "include\gucefMLF_config.h",
+      "include\gucefMLF_macros.h",
+      "include\gucef_dynnewoff.h",
+      "include\gucef_dynnewon.h",
+      "include\MemoryManager.h"
     } )
 
     vpaths { ["Platform Source"] = { "**.c", "**.cpp", "**.cs", "**.asm" } }
     files( {
-      "src/MemoryManager.cpp"
+      "src\MemoryManager.cpp"
     } )
 
 
@@ -66,17 +66,17 @@ configuration( { "LINUX" } )
 configuration( { "WIN32" } )
     vpaths { ["Platform Headers"] = { "**.h", "**.hpp", "**.hxx" } }
     files( {
-      "include/DynMemoryManagerLoader.h",
-      "include/gucefMLF_config.h",
-      "include/gucefMLF_macros.h",
-      "include/gucef_dynnewoff.h",
-      "include/gucef_dynnewon.h",
-      "include/MemoryManager.h"
+      "include\DynMemoryManagerLoader.h",
+      "include\gucefMLF_config.h",
+      "include\gucefMLF_macros.h",
+      "include\gucef_dynnewoff.h",
+      "include\gucef_dynnewon.h",
+      "include\MemoryManager.h"
     } )
 
     vpaths { ["Platform Source"] = { "**.c", "**.cpp", "**.cs", "**.asm" } }
     files( {
-      "src/MemoryManager.cpp"
+      "src\MemoryManager.cpp"
     } )
 
 
@@ -84,17 +84,17 @@ configuration( { "WIN32" } )
 configuration( { "WIN64" } )
     vpaths { ["Platform Headers"] = { "**.h", "**.hpp", "**.hxx" } }
     files( {
-      "include/DynMemoryManagerLoader.h",
-      "include/gucefMLF_config.h",
-      "include/gucefMLF_macros.h",
-      "include/gucef_dynnewoff.h",
-      "include/gucef_dynnewon.h",
-      "include/MemoryManager.h"
+      "include\DynMemoryManagerLoader.h",
+      "include\gucefMLF_config.h",
+      "include\gucefMLF_macros.h",
+      "include\gucef_dynnewoff.h",
+      "include\gucef_dynnewon.h",
+      "include\MemoryManager.h"
     } )
 
     vpaths { ["Platform Source"] = { "**.c", "**.cpp", "**.cs", "**.asm" } }
     files( {
-      "src/MemoryManager.cpp"
+      "src\MemoryManager.cpp"
     } )
 
 

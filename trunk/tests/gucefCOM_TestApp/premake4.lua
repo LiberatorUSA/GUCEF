@@ -17,8 +17,8 @@ configuration( { "WIN32" } )
 kind( "WindowedApp" )
 configuration( { "NOT WIN32" } )
   kind( "ConsoleApp" )
-links( { "gucefCOM" "gucefCOMCORE" "gucefCORE" "gucefMT" } )
-links( { "gucefCOM" "gucefCOMCORE" "gucefCORE" "gucefMT" } )
+links( { "gucefCOM", "gucefCOMCORE", "gucefCORE", "gucefMT" } )
+links( { "gucefCOM", "gucefCOMCORE", "gucefCORE", "gucefMT" } )
 
 
 configuration( {} )

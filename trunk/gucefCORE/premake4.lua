@@ -22,7 +22,7 @@ configuration( { "ANDROID" } )
   links( { "dl" } )
 
 configuration( { "LINUX" } )
-  links( { "X11" "dl" "rt" } )
+  links( { "X11", "dl", "rt" } )
 
 
 configuration( {} )
@@ -371,12 +371,12 @@ files( {
 configuration( { "ANDROID" } )
     vpaths { ["Platform Headers"] = { "**.h", "**.hpp", "**.hxx" } }
     files( {
-      "include/android/gucefCORE_CAndroidSystemLogger.h"
+      "include\android\gucefCORE_CAndroidSystemLogger.h"
     } )
 
     vpaths { ["Platform Source"] = { "**.c", "**.cpp", "**.cs", "**.asm" } }
     files( {
-      "src/android/gucefCORE_CAndroidSystemLogger.cpp"
+      "src\android\gucefCORE_CAndroidSystemLogger.cpp"
     } )
 
 
@@ -384,18 +384,18 @@ configuration( { "ANDROID" } )
 configuration( { "LINUX" } )
     vpaths { ["Platform Headers"] = { "**.h", "**.hpp", "**.hxx" } }
     files( {
-      "include/linux/CXTermConsoleLogger.h",
-      "include/linux/gucefCORE_CX11EventDispatcher.h",
-      "include/linux/gucefCORE_CX11Window.h",
-      "include/linux/gucefCORE_pty.h"
+      "include\linux\CXTermConsoleLogger.h",
+      "include\linux\gucefCORE_CX11EventDispatcher.h",
+      "include\linux\gucefCORE_CX11Window.h",
+      "include\linux\gucefCORE_pty.h"
     } )
 
     vpaths { ["Platform Source"] = { "**.c", "**.cpp", "**.cs", "**.asm" } }
     files( {
-      "src/linux/CXTermConsoleLogger.cpp",
-      "src/linux/gucefCORE_CX11EventDispatcher.cpp",
-      "src/linux/gucefCORE_CX11Window.cpp",
-      "src/linux/gucefCORE_pty.c"
+      "src\linux\CXTermConsoleLogger.cpp",
+      "src\linux\gucefCORE_CX11EventDispatcher.cpp",
+      "src\linux\gucefCORE_CX11Window.cpp",
+      "src\linux\gucefCORE_pty.c"
     } )
 
 
@@ -403,24 +403,24 @@ configuration( { "LINUX" } )
 configuration( { "WIN32" } )
     vpaths { ["Platform Headers"] = { "**.h", "**.hpp", "**.hxx" } }
     files( {
-      "include/mswin/CMSWinConsoleLogger.h",
-      "include/mswin/CWindowMsgHook.h",
-      "include/mswin/CWndMsgHookNotifier.h",
-      "include/mswin/gucefCORE_CMSWin32ConsoleWindow.h",
-      "include/mswin/gucefCORE_CMsWin32Editbox.h",
-      "include/mswin/gucefCORE_CMsWin32Window.h",
-      "include/mswin/gucefCORE_mswinutils.h"
+      "include\mswin\CMSWinConsoleLogger.h",
+      "include\mswin\CWindowMsgHook.h",
+      "include\mswin\CWndMsgHookNotifier.h",
+      "include\mswin\gucefCORE_CMSWin32ConsoleWindow.h",
+      "include\mswin\gucefCORE_CMsWin32Editbox.h",
+      "include\mswin\gucefCORE_CMsWin32Window.h",
+      "include\mswin\gucefCORE_mswinutils.h"
     } )
 
     vpaths { ["Platform Source"] = { "**.c", "**.cpp", "**.cs", "**.asm" } }
     files( {
-      "src/mswin/CMSWinConsoleLogger.cpp",
-      "src/mswin/CWindowMsgHook.cpp",
-      "src/mswin/CWndMsgHookNotifier.cpp",
-      "src/mswin/gucefCORE_CMSWin32ConsoleWindow.cpp",
-      "src/mswin/gucefCORE_CMsWin32Editbox.cpp",
-      "src/mswin/gucefCORE_CMsWin32Window.cpp",
-      "src/mswin/gucefCORE_mswinutils.cpp"
+      "src\mswin\CMSWinConsoleLogger.cpp",
+      "src\mswin\CWindowMsgHook.cpp",
+      "src\mswin\CWndMsgHookNotifier.cpp",
+      "src\mswin\gucefCORE_CMSWin32ConsoleWindow.cpp",
+      "src\mswin\gucefCORE_CMsWin32Editbox.cpp",
+      "src\mswin\gucefCORE_CMsWin32Window.cpp",
+      "src\mswin\gucefCORE_mswinutils.cpp"
     } )
 
 
@@ -428,24 +428,24 @@ configuration( { "WIN32" } )
 configuration( { "WIN64" } )
     vpaths { ["Platform Headers"] = { "**.h", "**.hpp", "**.hxx" } }
     files( {
-      "include/mswin/CMSWinConsoleLogger.h",
-      "include/mswin/CWindowMsgHook.h",
-      "include/mswin/CWndMsgHookNotifier.h",
-      "include/mswin/gucefCORE_CMSWin32ConsoleWindow.h",
-      "include/mswin/gucefCORE_CMsWin32Editbox.h",
-      "include/mswin/gucefCORE_CMsWin32Window.h",
-      "include/mswin/gucefCORE_mswinutils.h"
+      "include\mswin\CMSWinConsoleLogger.h",
+      "include\mswin\CWindowMsgHook.h",
+      "include\mswin\CWndMsgHookNotifier.h",
+      "include\mswin\gucefCORE_CMSWin32ConsoleWindow.h",
+      "include\mswin\gucefCORE_CMsWin32Editbox.h",
+      "include\mswin\gucefCORE_CMsWin32Window.h",
+      "include\mswin\gucefCORE_mswinutils.h"
     } )
 
     vpaths { ["Platform Source"] = { "**.c", "**.cpp", "**.cs", "**.asm" } }
     files( {
-      "src/mswin/CMSWinConsoleLogger.cpp",
-      "src/mswin/CWindowMsgHook.cpp",
-      "src/mswin/CWndMsgHookNotifier.cpp",
-      "src/mswin/gucefCORE_CMSWin32ConsoleWindow.cpp",
-      "src/mswin/gucefCORE_CMsWin32Editbox.cpp",
-      "src/mswin/gucefCORE_CMsWin32Window.cpp",
-      "src/mswin/gucefCORE_mswinutils.cpp"
+      "src\mswin\CMSWinConsoleLogger.cpp",
+      "src\mswin\CWindowMsgHook.cpp",
+      "src\mswin\CWndMsgHookNotifier.cpp",
+      "src\mswin\gucefCORE_CMSWin32ConsoleWindow.cpp",
+      "src\mswin\gucefCORE_CMsWin32Editbox.cpp",
+      "src\mswin\gucefCORE_CMsWin32Window.cpp",
+      "src\mswin\gucefCORE_mswinutils.cpp"
     } )
 
 
@@ -453,13 +453,13 @@ configuration( {} )
 includedirs( { "../common/include", "../gucefMT/include", "include" } )
 
 configuration( { "ANDROID" } )
-includedirs( { "include/android" } )
+includedirs( { "include\android" } )
 
 configuration( { "LINUX" } )
-includedirs( { "include/linux" } )
+includedirs( { "include\linux" } )
 
 configuration( { "WIN32" } )
-includedirs( { "include/mswin" } )
+includedirs( { "include\mswin" } )
 
 configuration( { "WIN64" } )
-includedirs( { "include/mswin" } )
+includedirs( { "include\mswin" } )

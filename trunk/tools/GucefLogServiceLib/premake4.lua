@@ -14,8 +14,8 @@
 project( "GucefLogServiceLib" )
 location( os.getenv( "PM4OUTPUTDIR" ) )
 kind( "SharedLib" )
-links( { "gucefCOM" "gucefCOMCORE" "gucefCORE" "gucefMT" } )
-links( { "gucefCOM" "gucefCOMCORE" "gucefCORE" "gucefMT" } )
+links( { "gucefCOM", "gucefCOMCORE", "gucefCORE", "gucefMT" } )
+links( { "gucefCOM", "gucefCOMCORE", "gucefCORE", "gucefMT" } )
 defines( { "GUCEF_LOGSERVICELIB_BUILD_MODULE" } )
 
 

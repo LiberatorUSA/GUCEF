@@ -14,7 +14,7 @@
 project( "dstorepluginPARSIFALXML" )
 location( os.getenv( "PM4OUTPUTDIR" ) )
 kind( "SharedLib" )
-links( { "gucefCORE" "gucefMT" "libparsifal" } )
+links( { "gucefCORE", "gucefMT", "libparsifal" } )
 links( { "libparsifal" } )
 
 

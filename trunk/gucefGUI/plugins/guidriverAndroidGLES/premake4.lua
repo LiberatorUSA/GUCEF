@@ -20,27 +20,27 @@ configuration( { "ANDROID" } )
 kind( "SharedLib" )
 
 configuration( { "ANDROID" } )
-  links( { "gucefCORE" "gucefGUI" "gucefMT" } )
-  links( { "EGL" "GLESv1_CM" "android" "android_native_app_glue" "gucefCORE" "gucefGUI" "gucefMT" } )
+  links( { "gucefCORE", "gucefGUI", "gucefMT" } )
+  links( { "EGL", "GLESv1_CM", "android", "android_native_app_glue", "gucefCORE", "gucefGUI", "gucefMT" } )
   defines( { "GUIDRIVERANDROIDGLES_BUILD_MODULE" } )
 
 
 configuration( { "ANDROID" } )
     vpaths { ["Platform Headers"] = { "**.h", "**.hpp", "**.hxx" } }
     files( {
-      "include/guidriverAndroidGLES.h",
-      "include/guidriverAndroidGLES_CAndroidGLESWindowContext.h",
-      "include/guidriverAndroidGLES_CAndroidWindowManagerImp.h",
-      "include/guidriverAndroidGLES_config.h",
-      "include/guidriverAndroidGLES_macros.h",
-      "include/guidriverAndroidGLES_pluginAPI.h"
+      "include\guidriverAndroidGLES.h",
+      "include\guidriverAndroidGLES_CAndroidGLESWindowContext.h",
+      "include\guidriverAndroidGLES_CAndroidWindowManagerImp.h",
+      "include\guidriverAndroidGLES_config.h",
+      "include\guidriverAndroidGLES_macros.h",
+      "include\guidriverAndroidGLES_pluginAPI.h"
     } )
 
     vpaths { ["Platform Source"] = { "**.c", "**.cpp", "**.cs", "**.asm" } }
     files( {
-      "src/guidriverAndroidGLES_CAndroidGLESWindowContext.cpp",
-      "src/guidriverAndroidGLES_CAndroidWindowManagerImp.cpp",
-      "src/guidriverAndroidGLES_pluginAPI.cpp"
+      "src\guidriverAndroidGLES_CAndroidGLESWindowContext.cpp",
+      "src\guidriverAndroidGLES_CAndroidWindowManagerImp.cpp",
+      "src\guidriverAndroidGLES_pluginAPI.cpp"
     } )
 
 

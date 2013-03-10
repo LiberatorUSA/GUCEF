@@ -14,14 +14,14 @@
 project( "gucefLOADER" )
 location( os.getenv( "PM4OUTPUTDIR" ) )
 kind( "SharedLib" )
-links( { "gucefCORE" "gucefMT" } )
+links( { "gucefCORE", "gucefMT" } )
 defines( { "GUCEF_CORE_EMBED_CODE", "GUCEF_LOADER_BUILD_MODULE", "GUCEF_MT_EMBED_CODE", "GUCEF_NO_LOGGING" } )
 
 configuration( { "ANDROID" } )
-  links( { "dl" "log" } )
+  links( { "dl", "log" } )
 
 configuration( { "LINUX" } )
-  links( { "dl" "rt" } )
+  links( { "dl", "rt" } )
 
 
 configuration( {} )
@@ -60,24 +60,24 @@ files( {
 configuration( { "ANDROID" } )
     vpaths { ["Platform Headers"] = { "**.h", "**.hpp", "**.hxx" } }
     files( {
-      "../gucefCORE/include/DVOSWRAP.h",
-      "../gucefCORE/include/dvstrutils.h",
-      "../gucefCORE/include/CDVString.h",
-      "../gucefCORE/include/dvfileutils.h",
-      "../gucefCORE/include/dvcppstringutils.h",
-      "../gucefCORE/include/md5.h",
-      "../gucefCORE/include/dvmd5utils.h"
+      "..\gucefCORE\include\DVOSWRAP.h",
+      "..\gucefCORE\include\dvstrutils.h",
+      "..\gucefCORE\include\CDVString.h",
+      "..\gucefCORE\include\dvfileutils.h",
+      "..\gucefCORE\include\dvcppstringutils.h",
+      "..\gucefCORE\include\md5.h",
+      "..\gucefCORE\include\dvmd5utils.h"
     } )
 
     vpaths { ["Platform Source"] = { "**.c", "**.cpp", "**.cs", "**.asm" } }
     files( {
-      "../gucefCORE/src/DVOSWRAP.cpp",
-      "../gucefCORE/src/dvstrutils.c",
-      "../gucefCORE/src/CDVString.cpp",
-      "../gucefCORE/src/dvfileutils.c",
-      "../gucefCORE/src/dvcppstringutils.cpp",
-      "../gucefCORE/src/md5.c",
-      "../gucefCORE/src/dvmd5utils.c"
+      "..\gucefCORE\src\DVOSWRAP.cpp",
+      "..\gucefCORE\src\dvstrutils.c",
+      "..\gucefCORE\src\CDVString.cpp",
+      "..\gucefCORE\src\dvfileutils.c",
+      "..\gucefCORE\src\dvcppstringutils.cpp",
+      "..\gucefCORE\src\md5.c",
+      "..\gucefCORE\src\dvmd5utils.c"
     } )
 
 
@@ -85,24 +85,24 @@ configuration( { "ANDROID" } )
 configuration( { "GLX" } )
     vpaths { ["Platform Headers"] = { "**.h", "**.hpp", "**.hxx" } }
     files( {
-      "../gucefCORE/include/DVOSWRAP.h",
-      "../gucefCORE/include/dvstrutils.h",
-      "../gucefCORE/include/CDVString.h",
-      "../gucefCORE/include/dvfileutils.h",
-      "../gucefCORE/include/dvcppstringutils.h",
-      "../gucefCORE/include/md5.h",
-      "../gucefCORE/include/dvmd5utils.h"
+      "..\gucefCORE\include\DVOSWRAP.h",
+      "..\gucefCORE\include\dvstrutils.h",
+      "..\gucefCORE\include\CDVString.h",
+      "..\gucefCORE\include\dvfileutils.h",
+      "..\gucefCORE\include\dvcppstringutils.h",
+      "..\gucefCORE\include\md5.h",
+      "..\gucefCORE\include\dvmd5utils.h"
     } )
 
     vpaths { ["Platform Source"] = { "**.c", "**.cpp", "**.cs", "**.asm" } }
     files( {
-      "../gucefCORE/src/DVOSWRAP.cpp",
-      "../gucefCORE/src/dvstrutils.c",
-      "../gucefCORE/src/CDVString.cpp",
-      "../gucefCORE/src/dvfileutils.c",
-      "../gucefCORE/src/dvcppstringutils.cpp",
-      "../gucefCORE/src/md5.c",
-      "../gucefCORE/src/dvmd5utils.c"
+      "..\gucefCORE\src\DVOSWRAP.cpp",
+      "..\gucefCORE\src\dvstrutils.c",
+      "..\gucefCORE\src\CDVString.cpp",
+      "..\gucefCORE\src\dvfileutils.c",
+      "..\gucefCORE\src\dvcppstringutils.cpp",
+      "..\gucefCORE\src\md5.c",
+      "..\gucefCORE\src\dvmd5utils.c"
     } )
 
 
@@ -110,24 +110,24 @@ configuration( { "GLX" } )
 configuration( { "GTK" } )
     vpaths { ["Platform Headers"] = { "**.h", "**.hpp", "**.hxx" } }
     files( {
-      "../gucefCORE/include/DVOSWRAP.h",
-      "../gucefCORE/include/dvstrutils.h",
-      "../gucefCORE/include/CDVString.h",
-      "../gucefCORE/include/dvfileutils.h",
-      "../gucefCORE/include/dvcppstringutils.h",
-      "../gucefCORE/include/md5.h",
-      "../gucefCORE/include/dvmd5utils.h"
+      "..\gucefCORE\include\DVOSWRAP.h",
+      "..\gucefCORE\include\dvstrutils.h",
+      "..\gucefCORE\include\CDVString.h",
+      "..\gucefCORE\include\dvfileutils.h",
+      "..\gucefCORE\include\dvcppstringutils.h",
+      "..\gucefCORE\include\md5.h",
+      "..\gucefCORE\include\dvmd5utils.h"
     } )
 
     vpaths { ["Platform Source"] = { "**.c", "**.cpp", "**.cs", "**.asm" } }
     files( {
-      "../gucefCORE/src/DVOSWRAP.cpp",
-      "../gucefCORE/src/dvstrutils.c",
-      "../gucefCORE/src/CDVString.cpp",
-      "../gucefCORE/src/dvfileutils.c",
-      "../gucefCORE/src/dvcppstringutils.cpp",
-      "../gucefCORE/src/md5.c",
-      "../gucefCORE/src/dvmd5utils.c"
+      "..\gucefCORE\src\DVOSWRAP.cpp",
+      "..\gucefCORE\src\dvstrutils.c",
+      "..\gucefCORE\src\CDVString.cpp",
+      "..\gucefCORE\src\dvfileutils.c",
+      "..\gucefCORE\src\dvcppstringutils.cpp",
+      "..\gucefCORE\src\md5.c",
+      "..\gucefCORE\src\dvmd5utils.c"
     } )
 
 
@@ -135,24 +135,24 @@ configuration( { "GTK" } )
 configuration( { "IPHONEOS" } )
     vpaths { ["Platform Headers"] = { "**.h", "**.hpp", "**.hxx" } }
     files( {
-      "../gucefCORE/include/DVOSWRAP.h",
-      "../gucefCORE/include/dvstrutils.h",
-      "../gucefCORE/include/CDVString.h",
-      "../gucefCORE/include/dvfileutils.h",
-      "../gucefCORE/include/dvcppstringutils.h",
-      "../gucefCORE/include/md5.h",
-      "../gucefCORE/include/dvmd5utils.h"
+      "..\gucefCORE\include\DVOSWRAP.h",
+      "..\gucefCORE\include\dvstrutils.h",
+      "..\gucefCORE\include\CDVString.h",
+      "..\gucefCORE\include\dvfileutils.h",
+      "..\gucefCORE\include\dvcppstringutils.h",
+      "..\gucefCORE\include\md5.h",
+      "..\gucefCORE\include\dvmd5utils.h"
     } )
 
     vpaths { ["Platform Source"] = { "**.c", "**.cpp", "**.cs", "**.asm" } }
     files( {
-      "../gucefCORE/src/DVOSWRAP.cpp",
-      "../gucefCORE/src/dvstrutils.c",
-      "../gucefCORE/src/CDVString.cpp",
-      "../gucefCORE/src/dvfileutils.c",
-      "../gucefCORE/src/dvcppstringutils.cpp",
-      "../gucefCORE/src/md5.c",
-      "../gucefCORE/src/dvmd5utils.c"
+      "..\gucefCORE\src\DVOSWRAP.cpp",
+      "..\gucefCORE\src\dvstrutils.c",
+      "..\gucefCORE\src\CDVString.cpp",
+      "..\gucefCORE\src\dvfileutils.c",
+      "..\gucefCORE\src\dvcppstringutils.cpp",
+      "..\gucefCORE\src\md5.c",
+      "..\gucefCORE\src\dvmd5utils.c"
     } )
 
 
@@ -160,24 +160,24 @@ configuration( { "IPHONEOS" } )
 configuration( { "LINUX" } )
     vpaths { ["Platform Headers"] = { "**.h", "**.hpp", "**.hxx" } }
     files( {
-      "../gucefCORE/include/DVOSWRAP.h",
-      "../gucefCORE/include/dvstrutils.h",
-      "../gucefCORE/include/CDVString.h",
-      "../gucefCORE/include/dvfileutils.h",
-      "../gucefCORE/include/dvcppstringutils.h",
-      "../gucefCORE/include/md5.h",
-      "../gucefCORE/include/dvmd5utils.h"
+      "..\gucefCORE\include\DVOSWRAP.h",
+      "..\gucefCORE\include\dvstrutils.h",
+      "..\gucefCORE\include\CDVString.h",
+      "..\gucefCORE\include\dvfileutils.h",
+      "..\gucefCORE\include\dvcppstringutils.h",
+      "..\gucefCORE\include\md5.h",
+      "..\gucefCORE\include\dvmd5utils.h"
     } )
 
     vpaths { ["Platform Source"] = { "**.c", "**.cpp", "**.cs", "**.asm" } }
     files( {
-      "../gucefCORE/src/DVOSWRAP.cpp",
-      "../gucefCORE/src/dvstrutils.c",
-      "../gucefCORE/src/CDVString.cpp",
-      "../gucefCORE/src/dvfileutils.c",
-      "../gucefCORE/src/dvcppstringutils.cpp",
-      "../gucefCORE/src/md5.c",
-      "../gucefCORE/src/dvmd5utils.c"
+      "..\gucefCORE\src\DVOSWRAP.cpp",
+      "..\gucefCORE\src\dvstrutils.c",
+      "..\gucefCORE\src\CDVString.cpp",
+      "..\gucefCORE\src\dvfileutils.c",
+      "..\gucefCORE\src\dvcppstringutils.cpp",
+      "..\gucefCORE\src\md5.c",
+      "..\gucefCORE\src\dvmd5utils.c"
     } )
 
 
@@ -185,24 +185,24 @@ configuration( { "LINUX" } )
 configuration( { "OSX" } )
     vpaths { ["Platform Headers"] = { "**.h", "**.hpp", "**.hxx" } }
     files( {
-      "../gucefCORE/include/DVOSWRAP.h",
-      "../gucefCORE/include/dvstrutils.h",
-      "../gucefCORE/include/CDVString.h",
-      "../gucefCORE/include/dvfileutils.h",
-      "../gucefCORE/include/dvcppstringutils.h",
-      "../gucefCORE/include/md5.h",
-      "../gucefCORE/include/dvmd5utils.h"
+      "..\gucefCORE\include\DVOSWRAP.h",
+      "..\gucefCORE\include\dvstrutils.h",
+      "..\gucefCORE\include\CDVString.h",
+      "..\gucefCORE\include\dvfileutils.h",
+      "..\gucefCORE\include\dvcppstringutils.h",
+      "..\gucefCORE\include\md5.h",
+      "..\gucefCORE\include\dvmd5utils.h"
     } )
 
     vpaths { ["Platform Source"] = { "**.c", "**.cpp", "**.cs", "**.asm" } }
     files( {
-      "../gucefCORE/src/DVOSWRAP.cpp",
-      "../gucefCORE/src/dvstrutils.c",
-      "../gucefCORE/src/CDVString.cpp",
-      "../gucefCORE/src/dvfileutils.c",
-      "../gucefCORE/src/dvcppstringutils.cpp",
-      "../gucefCORE/src/md5.c",
-      "../gucefCORE/src/dvmd5utils.c"
+      "..\gucefCORE\src\DVOSWRAP.cpp",
+      "..\gucefCORE\src\dvstrutils.c",
+      "..\gucefCORE\src\CDVString.cpp",
+      "..\gucefCORE\src\dvfileutils.c",
+      "..\gucefCORE\src\dvcppstringutils.cpp",
+      "..\gucefCORE\src\md5.c",
+      "..\gucefCORE\src\dvmd5utils.c"
     } )
 
 
@@ -210,24 +210,24 @@ configuration( { "OSX" } )
 configuration( { "SDL" } )
     vpaths { ["Platform Headers"] = { "**.h", "**.hpp", "**.hxx" } }
     files( {
-      "../gucefCORE/include/DVOSWRAP.h",
-      "../gucefCORE/include/dvstrutils.h",
-      "../gucefCORE/include/CDVString.h",
-      "../gucefCORE/include/dvfileutils.h",
-      "../gucefCORE/include/dvcppstringutils.h",
-      "../gucefCORE/include/md5.h",
-      "../gucefCORE/include/dvmd5utils.h"
+      "..\gucefCORE\include\DVOSWRAP.h",
+      "..\gucefCORE\include\dvstrutils.h",
+      "..\gucefCORE\include\CDVString.h",
+      "..\gucefCORE\include\dvfileutils.h",
+      "..\gucefCORE\include\dvcppstringutils.h",
+      "..\gucefCORE\include\md5.h",
+      "..\gucefCORE\include\dvmd5utils.h"
     } )
 
     vpaths { ["Platform Source"] = { "**.c", "**.cpp", "**.cs", "**.asm" } }
     files( {
-      "../gucefCORE/src/DVOSWRAP.cpp",
-      "../gucefCORE/src/dvstrutils.c",
-      "../gucefCORE/src/CDVString.cpp",
-      "../gucefCORE/src/dvfileutils.c",
-      "../gucefCORE/src/dvcppstringutils.cpp",
-      "../gucefCORE/src/md5.c",
-      "../gucefCORE/src/dvmd5utils.c"
+      "..\gucefCORE\src\DVOSWRAP.cpp",
+      "..\gucefCORE\src\dvstrutils.c",
+      "..\gucefCORE\src\CDVString.cpp",
+      "..\gucefCORE\src\dvfileutils.c",
+      "..\gucefCORE\src\dvcppstringutils.cpp",
+      "..\gucefCORE\src\md5.c",
+      "..\gucefCORE\src\dvmd5utils.c"
     } )
 
 
@@ -235,24 +235,24 @@ configuration( { "SDL" } )
 configuration( { "SYMBIAN" } )
     vpaths { ["Platform Headers"] = { "**.h", "**.hpp", "**.hxx" } }
     files( {
-      "../gucefCORE/include/DVOSWRAP.h",
-      "../gucefCORE/include/dvstrutils.h",
-      "../gucefCORE/include/CDVString.h",
-      "../gucefCORE/include/dvfileutils.h",
-      "../gucefCORE/include/dvcppstringutils.h",
-      "../gucefCORE/include/md5.h",
-      "../gucefCORE/include/dvmd5utils.h"
+      "..\gucefCORE\include\DVOSWRAP.h",
+      "..\gucefCORE\include\dvstrutils.h",
+      "..\gucefCORE\include\CDVString.h",
+      "..\gucefCORE\include\dvfileutils.h",
+      "..\gucefCORE\include\dvcppstringutils.h",
+      "..\gucefCORE\include\md5.h",
+      "..\gucefCORE\include\dvmd5utils.h"
     } )
 
     vpaths { ["Platform Source"] = { "**.c", "**.cpp", "**.cs", "**.asm" } }
     files( {
-      "../gucefCORE/src/DVOSWRAP.cpp",
-      "../gucefCORE/src/dvstrutils.c",
-      "../gucefCORE/src/CDVString.cpp",
-      "../gucefCORE/src/dvfileutils.c",
-      "../gucefCORE/src/dvcppstringutils.cpp",
-      "../gucefCORE/src/md5.c",
-      "../gucefCORE/src/dvmd5utils.c"
+      "..\gucefCORE\src\DVOSWRAP.cpp",
+      "..\gucefCORE\src\dvstrutils.c",
+      "..\gucefCORE\src\CDVString.cpp",
+      "..\gucefCORE\src\dvfileutils.c",
+      "..\gucefCORE\src\dvcppstringutils.cpp",
+      "..\gucefCORE\src\md5.c",
+      "..\gucefCORE\src\dvmd5utils.c"
     } )
 
 
@@ -260,24 +260,24 @@ configuration( { "SYMBIAN" } )
 configuration( { "UNIX" } )
     vpaths { ["Platform Headers"] = { "**.h", "**.hpp", "**.hxx" } }
     files( {
-      "../gucefCORE/include/DVOSWRAP.h",
-      "../gucefCORE/include/dvstrutils.h",
-      "../gucefCORE/include/CDVString.h",
-      "../gucefCORE/include/dvfileutils.h",
-      "../gucefCORE/include/dvcppstringutils.h",
-      "../gucefCORE/include/md5.h",
-      "../gucefCORE/include/dvmd5utils.h"
+      "..\gucefCORE\include\DVOSWRAP.h",
+      "..\gucefCORE\include\dvstrutils.h",
+      "..\gucefCORE\include\CDVString.h",
+      "..\gucefCORE\include\dvfileutils.h",
+      "..\gucefCORE\include\dvcppstringutils.h",
+      "..\gucefCORE\include\md5.h",
+      "..\gucefCORE\include\dvmd5utils.h"
     } )
 
     vpaths { ["Platform Source"] = { "**.c", "**.cpp", "**.cs", "**.asm" } }
     files( {
-      "../gucefCORE/src/DVOSWRAP.cpp",
-      "../gucefCORE/src/dvstrutils.c",
-      "../gucefCORE/src/CDVString.cpp",
-      "../gucefCORE/src/dvfileutils.c",
-      "../gucefCORE/src/dvcppstringutils.cpp",
-      "../gucefCORE/src/md5.c",
-      "../gucefCORE/src/dvmd5utils.c"
+      "..\gucefCORE\src\DVOSWRAP.cpp",
+      "..\gucefCORE\src\dvstrutils.c",
+      "..\gucefCORE\src\CDVString.cpp",
+      "..\gucefCORE\src\dvfileutils.c",
+      "..\gucefCORE\src\dvcppstringutils.cpp",
+      "..\gucefCORE\src\md5.c",
+      "..\gucefCORE\src\dvmd5utils.c"
     } )
 
 
@@ -285,24 +285,24 @@ configuration( { "UNIX" } )
 configuration( { "WIN32" } )
     vpaths { ["Platform Headers"] = { "**.h", "**.hpp", "**.hxx" } }
     files( {
-      "../gucefCORE/include/DVOSWRAP.h",
-      "../gucefCORE/include/dvstrutils.h",
-      "../gucefCORE/include/CDVString.h",
-      "../gucefCORE/include/dvfileutils.h",
-      "../gucefCORE/include/dvcppstringutils.h",
-      "../gucefCORE/include/md5.h",
-      "../gucefCORE/include/dvmd5utils.h"
+      "..\gucefCORE\include\DVOSWRAP.h",
+      "..\gucefCORE\include\dvstrutils.h",
+      "..\gucefCORE\include\CDVString.h",
+      "..\gucefCORE\include\dvfileutils.h",
+      "..\gucefCORE\include\dvcppstringutils.h",
+      "..\gucefCORE\include\md5.h",
+      "..\gucefCORE\include\dvmd5utils.h"
     } )
 
     vpaths { ["Platform Source"] = { "**.c", "**.cpp", "**.cs", "**.asm" } }
     files( {
-      "../gucefCORE/src/DVOSWRAP.cpp",
-      "../gucefCORE/src/dvstrutils.c",
-      "../gucefCORE/src/CDVString.cpp",
-      "../gucefCORE/src/dvfileutils.c",
-      "../gucefCORE/src/dvcppstringutils.cpp",
-      "../gucefCORE/src/md5.c",
-      "../gucefCORE/src/dvmd5utils.c"
+      "..\gucefCORE\src\DVOSWRAP.cpp",
+      "..\gucefCORE\src\dvstrutils.c",
+      "..\gucefCORE\src\CDVString.cpp",
+      "..\gucefCORE\src\dvfileutils.c",
+      "..\gucefCORE\src\dvcppstringutils.cpp",
+      "..\gucefCORE\src\md5.c",
+      "..\gucefCORE\src\dvmd5utils.c"
     } )
 
 
@@ -310,59 +310,59 @@ configuration( { "WIN32" } )
 configuration( { "WIN64" } )
     vpaths { ["Platform Headers"] = { "**.h", "**.hpp", "**.hxx" } }
     files( {
-      "../gucefCORE/include/DVOSWRAP.h",
-      "../gucefCORE/include/dvstrutils.h",
-      "../gucefCORE/include/CDVString.h",
-      "../gucefCORE/include/dvfileutils.h",
-      "../gucefCORE/include/dvcppstringutils.h",
-      "../gucefCORE/include/md5.h",
-      "../gucefCORE/include/dvmd5utils.h"
+      "..\gucefCORE\include\DVOSWRAP.h",
+      "..\gucefCORE\include\dvstrutils.h",
+      "..\gucefCORE\include\CDVString.h",
+      "..\gucefCORE\include\dvfileutils.h",
+      "..\gucefCORE\include\dvcppstringutils.h",
+      "..\gucefCORE\include\md5.h",
+      "..\gucefCORE\include\dvmd5utils.h"
     } )
 
     vpaths { ["Platform Source"] = { "**.c", "**.cpp", "**.cs", "**.asm" } }
     files( {
-      "../gucefCORE/src/DVOSWRAP.cpp",
-      "../gucefCORE/src/dvstrutils.c",
-      "../gucefCORE/src/CDVString.cpp",
-      "../gucefCORE/src/dvfileutils.c",
-      "../gucefCORE/src/dvcppstringutils.cpp",
-      "../gucefCORE/src/md5.c",
-      "../gucefCORE/src/dvmd5utils.c"
+      "..\gucefCORE\src\DVOSWRAP.cpp",
+      "..\gucefCORE\src\dvstrutils.c",
+      "..\gucefCORE\src\CDVString.cpp",
+      "..\gucefCORE\src\dvfileutils.c",
+      "..\gucefCORE\src\dvcppstringutils.cpp",
+      "..\gucefCORE\src\md5.c",
+      "..\gucefCORE\src\dvmd5utils.c"
     } )
 
 
 configuration( {} )
-includedirs( { "../common/include", "../gucefCORE/include", "../gucefMT/include", "../gucefCORE/include/", "include" } )
+includedirs( { "../common/include", "../gucefCORE/include", "../gucefMT/include", "..\gucefCORE\include\", "include" } )
 
 configuration( { "ANDROID" } )
-includedirs( { "../gucefCORE/include/android", "../gucefCORE/include/" } )
+includedirs( { "../gucefCORE/include/android", "..\gucefCORE\include\" } )
 
 configuration( { "GLX" } )
-includedirs( { "../gucefCORE/include/" } )
+includedirs( { "..\gucefCORE\include\" } )
 
 configuration( { "GTK" } )
-includedirs( { "../gucefCORE/include/" } )
+includedirs( { "..\gucefCORE\include\" } )
 
 configuration( { "IPHONEOS" } )
-includedirs( { "../gucefCORE/include/" } )
+includedirs( { "..\gucefCORE\include\" } )
 
 configuration( { "LINUX" } )
-includedirs( { "../gucefCORE/include/linux", "../gucefCORE/include/" } )
+includedirs( { "../gucefCORE/include/linux", "..\gucefCORE\include\" } )
 
 configuration( { "OSX" } )
-includedirs( { "../gucefCORE/include/" } )
+includedirs( { "..\gucefCORE\include\" } )
 
 configuration( { "SDL" } )
-includedirs( { "../gucefCORE/include/" } )
+includedirs( { "..\gucefCORE\include\" } )
 
 configuration( { "SYMBIAN" } )
-includedirs( { "../gucefCORE/include/" } )
+includedirs( { "..\gucefCORE\include\" } )
 
 configuration( { "UNIX" } )
-includedirs( { "../gucefCORE/include/" } )
+includedirs( { "..\gucefCORE\include\" } )
 
 configuration( { "WIN32" } )
-includedirs( { "../gucefCORE/include/mswin", "../gucefCORE/include/" } )
+includedirs( { "../gucefCORE/include/mswin", "..\gucefCORE\include\" } )
 
 configuration( { "WIN64" } )
-includedirs( { "../gucefCORE/include/mswin", "../gucefCORE/include/" } )
+includedirs( { "../gucefCORE/include/mswin", "..\gucefCORE\include\" } )

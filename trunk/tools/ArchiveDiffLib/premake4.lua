@@ -14,8 +14,8 @@
 project( "ArchiveDiffLib" )
 location( os.getenv( "PM4OUTPUTDIR" ) )
 kind( "SharedLib" )
-links( { "gucefCORE" "gucefMT" "gucefPATCHER" } )
-links( { "gucefCORE" "gucefMT" "gucefPATCHER" } )
+links( { "gucefCORE", "gucefMT", "gucefPATCHER" } )
+links( { "gucefCORE", "gucefMT", "gucefPATCHER" } )
 
 
 configuration( {} )
