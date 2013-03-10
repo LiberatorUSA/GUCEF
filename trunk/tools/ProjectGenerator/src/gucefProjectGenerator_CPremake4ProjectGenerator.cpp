@@ -449,10 +449,10 @@ GeneratePremake4FilePlatformFilesSection( const TModuleInfoEntry& moduleInfoEntr
             hasPlatformHeaderFiles = true;
             headerSection = "    vpaths { [\"Platform Headers\"] = { \"**.h\", \"**.hpp\", \"**.hxx\" } }\n    files( {\n";
 
+            bool first = true;
             TStringVectorMap::const_iterator n = platformHeaderFiles.begin();
             while ( n != platformHeaderFiles.end() )
             {
-                bool first = true;
                 const TStringVector& platformHeaderFilesDir = (*n).second;
                 TStringVector::const_iterator i = platformHeaderFilesDir.begin();
                 while ( i != platformHeaderFilesDir.end() )
@@ -886,22 +886,14 @@ GeneratePremake4ModuleNameSection( const TModuleInfoEntry& moduleInfoEntry )
 
         if ( platformAdded )
         {
-            //sectionContent += "\nconfiguration { \"" +  platformName.Uppercase() + "\" }\n  project { \"" + moduleName + "\" }\n";
-            sectionContent += "else()\n  project( \"" + moduleName + "\" )\nendif()\n";
+            sectionContent += "\nconfiguration( {} )\n  project( \"" + moduleName + "\" )\n";
         }
         else
         {
-            sectionContent += "project( \"" + moduleName + "\" )\n";
+            sectionContent += "\nproject( \"" + moduleName + "\" )\n";
         }
 
         GUCEF_LOG( CORE::LOGLEVEL_BELOW_NORMAL, "module name = " + moduleName + " for platform " + platformName );
-    }
-    else
-    {
-        if ( platformAdded )
-        {
-            sectionContent += "endif()\n";
-        }
     }
 
     return sectionContent;
@@ -1225,6 +1217,7 @@ GeneratePremake4ProjectFileContent( const TProjectInfo& projectInfo       ,
         if ( HasIndependentModuleType( moduleInfo.modulesPerPlatform ) )
         {
             CORE::CString pathToModuleDir = CORE::GetRelativePathToOtherPathRoot( outputDir, moduleInfo.rootDir );
+            pathToModuleDir = pathToModuleDir.ReplaceChar( '\', '//' );
             moduleIncludeListSection += "  include( \"" + pathToModuleDir + "\" )\n";
         }
         ++n;
