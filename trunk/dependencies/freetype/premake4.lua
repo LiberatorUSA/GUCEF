@@ -164,16 +164,36 @@ files( {
 configuration( { "ANDROID" } )
     vpaths { ["Platform Source"] = { "**.c", "**.cpp", "**.cs", "**.asm" } }
     files( {
-      "src\autofit\autofit.c"      "src\base\ftbase.c",
+      "src\autofit\autofit.c",
+      "src\base\ftbase.c",
       "src\base\ftsystem.c",
       "src\base\ftglyph.c",
       "src\base\ftbitmap.c",
-      "src\base\ftinit.c"      "src\bdf\bdf.c"      "src\cache\ftcache.c"      "src\cff\cff.c"      "src\cid\cidriver.c",
+      "src\base\ftinit.c",
+      "src\bdf\bdf.c",
+      "src\cache\ftcache.c",
+      "src\cff\cff.c",
+      "src\cid\cidriver.c",
       "src\cid\cidobjs.c",
       "src\cid\cidgload.c",
       "src\cid\cidload.c",
-      "src\cid\cidparse.c"      "src\gxvalid\gxvalid.c"      "src\gzip\ftgzip.c"      "src\lzw\ftlzw.c"      "src\otvalid\otvalid.c"      "src\pcf\pcf.c"      "src\pfr\pfr.c"      "src\psaux\psaux.c"      "src\pshinter\pshinter.c"      "src\psnames\psnames.c"      "src\raster\raster.c"      "src\sfnt\sfnt.c"      "src\smooth\ftsmooth.c",
-      "src\smooth\ftgrays.c"      "src\truetype\truetype.c"      "src\type1\type1.c"      "src\type42\type42.c"
+      "src\cid\cidparse.c",
+      "src\gxvalid\gxvalid.c",
+      "src\gzip\ftgzip.c",
+      "src\lzw\ftlzw.c",
+      "src\otvalid\otvalid.c",
+      "src\pcf\pcf.c",
+      "src\pfr\pfr.c",
+      "src\psaux\psaux.c",
+      "src\pshinter\pshinter.c",
+      "src\psnames\psnames.c",
+      "src\raster\raster.c",
+      "src\sfnt\sfnt.c",
+      "src\smooth\ftsmooth.c",
+      "src\smooth\ftgrays.c",
+      "src\truetype\truetype.c",
+      "src\type1\type1.c",
+      "src\type42\type42.c"
     } )
 
 
@@ -181,16 +201,36 @@ configuration( { "ANDROID" } )
 configuration( { "GLX" } )
     vpaths { ["Platform Source"] = { "**.c", "**.cpp", "**.cs", "**.asm" } }
     files( {
-      "src\autofit\autofit.c"      "src\base\ftbase.c",
+      "src\autofit\autofit.c",
+      "src\base\ftbase.c",
       "src\base\ftsystem.c",
       "src\base\ftglyph.c",
       "src\base\ftbitmap.c",
-      "src\base\ftinit.c"      "src\bdf\bdf.c"      "src\cache\ftcache.c"      "src\cff\cff.c"      "src\cid\cidriver.c",
+      "src\base\ftinit.c",
+      "src\bdf\bdf.c",
+      "src\cache\ftcache.c",
+      "src\cff\cff.c",
+      "src\cid\cidriver.c",
       "src\cid\cidobjs.c",
       "src\cid\cidgload.c",
       "src\cid\cidload.c",
-      "src\cid\cidparse.c"      "src\gxvalid\gxvalid.c"      "src\gzip\ftgzip.c"      "src\lzw\ftlzw.c"      "src\otvalid\otvalid.c"      "src\pcf\pcf.c"      "src\pfr\pfr.c"      "src\psaux\psaux.c"      "src\pshinter\pshinter.c"      "src\psnames\psnames.c"      "src\raster\raster.c"      "src\sfnt\sfnt.c"      "src\smooth\ftsmooth.c",
-      "src\smooth\ftgrays.c"      "src\truetype\truetype.c"      "src\type1\type1.c"      "src\type42\type42.c"
+      "src\cid\cidparse.c",
+      "src\gxvalid\gxvalid.c",
+      "src\gzip\ftgzip.c",
+      "src\lzw\ftlzw.c",
+      "src\otvalid\otvalid.c",
+      "src\pcf\pcf.c",
+      "src\pfr\pfr.c",
+      "src\psaux\psaux.c",
+      "src\pshinter\pshinter.c",
+      "src\psnames\psnames.c",
+      "src\raster\raster.c",
+      "src\sfnt\sfnt.c",
+      "src\smooth\ftsmooth.c",
+      "src\smooth\ftgrays.c",
+      "src\truetype\truetype.c",
+      "src\type1\type1.c",
+      "src\type42\type42.c"
     } )
 
 
@@ -198,16 +238,36 @@ configuration( { "GLX" } )
 configuration( { "GTK" } )
     vpaths { ["Platform Source"] = { "**.c", "**.cpp", "**.cs", "**.asm" } }
     files( {
-      "src\autofit\autofit.c"      "src\base\ftbase.c",
+      "src\autofit\autofit.c",
+      "src\base\ftbase.c",
       "src\base\ftsystem.c",
       "src\base\ftglyph.c",
       "src\base\ftbitmap.c",
-      "src\base\ftinit.c"      "src\bdf\bdf.c"      "src\cache\ftcache.c"      "src\cff\cff.c"      "src\cid\cidriver.c",
+      "src\base\ftinit.c",
+      "src\bdf\bdf.c",
+      "src\cache\ftcache.c",
+      "src\cff\cff.c",
+      "src\cid\cidriver.c",
       "src\cid\cidobjs.c",
       "src\cid\cidgload.c",
       "src\cid\cidload.c",
-      "src\cid\cidparse.c"      "src\gxvalid\gxvalid.c"      "src\gzip\ftgzip.c"      "src\lzw\ftlzw.c"      "src\otvalid\otvalid.c"      "src\pcf\pcf.c"      "src\pfr\pfr.c"      "src\psaux\psaux.c"      "src\pshinter\pshinter.c"      "src\psnames\psnames.c"      "src\raster\raster.c"      "src\sfnt\sfnt.c"      "src\smooth\ftsmooth.c",
-      "src\smooth\ftgrays.c"      "src\truetype\truetype.c"      "src\type1\type1.c"      "src\type42\type42.c"
+      "src\cid\cidparse.c",
+      "src\gxvalid\gxvalid.c",
+      "src\gzip\ftgzip.c",
+      "src\lzw\ftlzw.c",
+      "src\otvalid\otvalid.c",
+      "src\pcf\pcf.c",
+      "src\pfr\pfr.c",
+      "src\psaux\psaux.c",
+      "src\pshinter\pshinter.c",
+      "src\psnames\psnames.c",
+      "src\raster\raster.c",
+      "src\sfnt\sfnt.c",
+      "src\smooth\ftsmooth.c",
+      "src\smooth\ftgrays.c",
+      "src\truetype\truetype.c",
+      "src\type1\type1.c",
+      "src\type42\type42.c"
     } )
 
 
@@ -215,16 +275,36 @@ configuration( { "GTK" } )
 configuration( { "IPHONEOS" } )
     vpaths { ["Platform Source"] = { "**.c", "**.cpp", "**.cs", "**.asm" } }
     files( {
-      "src\autofit\autofit.c"      "src\base\ftbase.c",
+      "src\autofit\autofit.c",
+      "src\base\ftbase.c",
       "src\base\ftsystem.c",
       "src\base\ftglyph.c",
       "src\base\ftbitmap.c",
-      "src\base\ftinit.c"      "src\bdf\bdf.c"      "src\cache\ftcache.c"      "src\cff\cff.c"      "src\cid\cidriver.c",
+      "src\base\ftinit.c",
+      "src\bdf\bdf.c",
+      "src\cache\ftcache.c",
+      "src\cff\cff.c",
+      "src\cid\cidriver.c",
       "src\cid\cidobjs.c",
       "src\cid\cidgload.c",
       "src\cid\cidload.c",
-      "src\cid\cidparse.c"      "src\gxvalid\gxvalid.c"      "src\gzip\ftgzip.c"      "src\lzw\ftlzw.c"      "src\otvalid\otvalid.c"      "src\pcf\pcf.c"      "src\pfr\pfr.c"      "src\psaux\psaux.c"      "src\pshinter\pshinter.c"      "src\psnames\psnames.c"      "src\raster\raster.c"      "src\sfnt\sfnt.c"      "src\smooth\ftsmooth.c",
-      "src\smooth\ftgrays.c"      "src\truetype\truetype.c"      "src\type1\type1.c"      "src\type42\type42.c"
+      "src\cid\cidparse.c",
+      "src\gxvalid\gxvalid.c",
+      "src\gzip\ftgzip.c",
+      "src\lzw\ftlzw.c",
+      "src\otvalid\otvalid.c",
+      "src\pcf\pcf.c",
+      "src\pfr\pfr.c",
+      "src\psaux\psaux.c",
+      "src\pshinter\pshinter.c",
+      "src\psnames\psnames.c",
+      "src\raster\raster.c",
+      "src\sfnt\sfnt.c",
+      "src\smooth\ftsmooth.c",
+      "src\smooth\ftgrays.c",
+      "src\truetype\truetype.c",
+      "src\type1\type1.c",
+      "src\type42\type42.c"
     } )
 
 
@@ -232,16 +312,36 @@ configuration( { "IPHONEOS" } )
 configuration( { "LINUX" } )
     vpaths { ["Platform Source"] = { "**.c", "**.cpp", "**.cs", "**.asm" } }
     files( {
-      "src\autofit\autofit.c"      "src\base\ftbase.c",
+      "src\autofit\autofit.c",
+      "src\base\ftbase.c",
       "src\base\ftsystem.c",
       "src\base\ftglyph.c",
       "src\base\ftbitmap.c",
-      "src\base\ftinit.c"      "src\bdf\bdf.c"      "src\cache\ftcache.c"      "src\cff\cff.c"      "src\cid\cidriver.c",
+      "src\base\ftinit.c",
+      "src\bdf\bdf.c",
+      "src\cache\ftcache.c",
+      "src\cff\cff.c",
+      "src\cid\cidriver.c",
       "src\cid\cidobjs.c",
       "src\cid\cidgload.c",
       "src\cid\cidload.c",
-      "src\cid\cidparse.c"      "src\gxvalid\gxvalid.c"      "src\gzip\ftgzip.c"      "src\lzw\ftlzw.c"      "src\otvalid\otvalid.c"      "src\pcf\pcf.c"      "src\pfr\pfr.c"      "src\psaux\psaux.c"      "src\pshinter\pshinter.c"      "src\psnames\psnames.c"      "src\raster\raster.c"      "src\sfnt\sfnt.c"      "src\smooth\ftsmooth.c",
-      "src\smooth\ftgrays.c"      "src\truetype\truetype.c"      "src\type1\type1.c"      "src\type42\type42.c"
+      "src\cid\cidparse.c",
+      "src\gxvalid\gxvalid.c",
+      "src\gzip\ftgzip.c",
+      "src\lzw\ftlzw.c",
+      "src\otvalid\otvalid.c",
+      "src\pcf\pcf.c",
+      "src\pfr\pfr.c",
+      "src\psaux\psaux.c",
+      "src\pshinter\pshinter.c",
+      "src\psnames\psnames.c",
+      "src\raster\raster.c",
+      "src\sfnt\sfnt.c",
+      "src\smooth\ftsmooth.c",
+      "src\smooth\ftgrays.c",
+      "src\truetype\truetype.c",
+      "src\type1\type1.c",
+      "src\type42\type42.c"
     } )
 
 
@@ -249,16 +349,36 @@ configuration( { "LINUX" } )
 configuration( { "OSX" } )
     vpaths { ["Platform Source"] = { "**.c", "**.cpp", "**.cs", "**.asm" } }
     files( {
-      "src\autofit\autofit.c"      "src\base\ftbase.c",
+      "src\autofit\autofit.c",
+      "src\base\ftbase.c",
       "src\base\ftsystem.c",
       "src\base\ftglyph.c",
       "src\base\ftbitmap.c",
-      "src\base\ftinit.c"      "src\bdf\bdf.c"      "src\cache\ftcache.c"      "src\cff\cff.c"      "src\cid\cidriver.c",
+      "src\base\ftinit.c",
+      "src\bdf\bdf.c",
+      "src\cache\ftcache.c",
+      "src\cff\cff.c",
+      "src\cid\cidriver.c",
       "src\cid\cidobjs.c",
       "src\cid\cidgload.c",
       "src\cid\cidload.c",
-      "src\cid\cidparse.c"      "src\gxvalid\gxvalid.c"      "src\gzip\ftgzip.c"      "src\lzw\ftlzw.c"      "src\otvalid\otvalid.c"      "src\pcf\pcf.c"      "src\pfr\pfr.c"      "src\psaux\psaux.c"      "src\pshinter\pshinter.c"      "src\psnames\psnames.c"      "src\raster\raster.c"      "src\sfnt\sfnt.c"      "src\smooth\ftsmooth.c",
-      "src\smooth\ftgrays.c"      "src\truetype\truetype.c"      "src\type1\type1.c"      "src\type42\type42.c"
+      "src\cid\cidparse.c",
+      "src\gxvalid\gxvalid.c",
+      "src\gzip\ftgzip.c",
+      "src\lzw\ftlzw.c",
+      "src\otvalid\otvalid.c",
+      "src\pcf\pcf.c",
+      "src\pfr\pfr.c",
+      "src\psaux\psaux.c",
+      "src\pshinter\pshinter.c",
+      "src\psnames\psnames.c",
+      "src\raster\raster.c",
+      "src\sfnt\sfnt.c",
+      "src\smooth\ftsmooth.c",
+      "src\smooth\ftgrays.c",
+      "src\truetype\truetype.c",
+      "src\type1\type1.c",
+      "src\type42\type42.c"
     } )
 
 
@@ -266,16 +386,36 @@ configuration( { "OSX" } )
 configuration( { "SDL" } )
     vpaths { ["Platform Source"] = { "**.c", "**.cpp", "**.cs", "**.asm" } }
     files( {
-      "src\autofit\autofit.c"      "src\base\ftbase.c",
+      "src\autofit\autofit.c",
+      "src\base\ftbase.c",
       "src\base\ftsystem.c",
       "src\base\ftglyph.c",
       "src\base\ftbitmap.c",
-      "src\base\ftinit.c"      "src\bdf\bdf.c"      "src\cache\ftcache.c"      "src\cff\cff.c"      "src\cid\cidriver.c",
+      "src\base\ftinit.c",
+      "src\bdf\bdf.c",
+      "src\cache\ftcache.c",
+      "src\cff\cff.c",
+      "src\cid\cidriver.c",
       "src\cid\cidobjs.c",
       "src\cid\cidgload.c",
       "src\cid\cidload.c",
-      "src\cid\cidparse.c"      "src\gxvalid\gxvalid.c"      "src\gzip\ftgzip.c"      "src\lzw\ftlzw.c"      "src\otvalid\otvalid.c"      "src\pcf\pcf.c"      "src\pfr\pfr.c"      "src\psaux\psaux.c"      "src\pshinter\pshinter.c"      "src\psnames\psnames.c"      "src\raster\raster.c"      "src\sfnt\sfnt.c"      "src\smooth\ftsmooth.c",
-      "src\smooth\ftgrays.c"      "src\truetype\truetype.c"      "src\type1\type1.c"      "src\type42\type42.c"
+      "src\cid\cidparse.c",
+      "src\gxvalid\gxvalid.c",
+      "src\gzip\ftgzip.c",
+      "src\lzw\ftlzw.c",
+      "src\otvalid\otvalid.c",
+      "src\pcf\pcf.c",
+      "src\pfr\pfr.c",
+      "src\psaux\psaux.c",
+      "src\pshinter\pshinter.c",
+      "src\psnames\psnames.c",
+      "src\raster\raster.c",
+      "src\sfnt\sfnt.c",
+      "src\smooth\ftsmooth.c",
+      "src\smooth\ftgrays.c",
+      "src\truetype\truetype.c",
+      "src\type1\type1.c",
+      "src\type42\type42.c"
     } )
 
 
@@ -283,16 +423,36 @@ configuration( { "SDL" } )
 configuration( { "SYMBIAN" } )
     vpaths { ["Platform Source"] = { "**.c", "**.cpp", "**.cs", "**.asm" } }
     files( {
-      "src\autofit\autofit.c"      "src\base\ftbase.c",
+      "src\autofit\autofit.c",
+      "src\base\ftbase.c",
       "src\base\ftsystem.c",
       "src\base\ftglyph.c",
       "src\base\ftbitmap.c",
-      "src\base\ftinit.c"      "src\bdf\bdf.c"      "src\cache\ftcache.c"      "src\cff\cff.c"      "src\cid\cidriver.c",
+      "src\base\ftinit.c",
+      "src\bdf\bdf.c",
+      "src\cache\ftcache.c",
+      "src\cff\cff.c",
+      "src\cid\cidriver.c",
       "src\cid\cidobjs.c",
       "src\cid\cidgload.c",
       "src\cid\cidload.c",
-      "src\cid\cidparse.c"      "src\gxvalid\gxvalid.c"      "src\gzip\ftgzip.c"      "src\lzw\ftlzw.c"      "src\otvalid\otvalid.c"      "src\pcf\pcf.c"      "src\pfr\pfr.c"      "src\psaux\psaux.c"      "src\pshinter\pshinter.c"      "src\psnames\psnames.c"      "src\raster\raster.c"      "src\sfnt\sfnt.c"      "src\smooth\ftsmooth.c",
-      "src\smooth\ftgrays.c"      "src\truetype\truetype.c"      "src\type1\type1.c"      "src\type42\type42.c"
+      "src\cid\cidparse.c",
+      "src\gxvalid\gxvalid.c",
+      "src\gzip\ftgzip.c",
+      "src\lzw\ftlzw.c",
+      "src\otvalid\otvalid.c",
+      "src\pcf\pcf.c",
+      "src\pfr\pfr.c",
+      "src\psaux\psaux.c",
+      "src\pshinter\pshinter.c",
+      "src\psnames\psnames.c",
+      "src\raster\raster.c",
+      "src\sfnt\sfnt.c",
+      "src\smooth\ftsmooth.c",
+      "src\smooth\ftgrays.c",
+      "src\truetype\truetype.c",
+      "src\type1\type1.c",
+      "src\type42\type42.c"
     } )
 
 
@@ -300,16 +460,36 @@ configuration( { "SYMBIAN" } )
 configuration( { "UNIX" } )
     vpaths { ["Platform Source"] = { "**.c", "**.cpp", "**.cs", "**.asm" } }
     files( {
-      "src\autofit\autofit.c"      "src\base\ftbase.c",
+      "src\autofit\autofit.c",
+      "src\base\ftbase.c",
       "src\base\ftsystem.c",
       "src\base\ftglyph.c",
       "src\base\ftbitmap.c",
-      "src\base\ftinit.c"      "src\bdf\bdf.c"      "src\cache\ftcache.c"      "src\cff\cff.c"      "src\cid\cidriver.c",
+      "src\base\ftinit.c",
+      "src\bdf\bdf.c",
+      "src\cache\ftcache.c",
+      "src\cff\cff.c",
+      "src\cid\cidriver.c",
       "src\cid\cidobjs.c",
       "src\cid\cidgload.c",
       "src\cid\cidload.c",
-      "src\cid\cidparse.c"      "src\gxvalid\gxvalid.c"      "src\gzip\ftgzip.c"      "src\lzw\ftlzw.c"      "src\otvalid\otvalid.c"      "src\pcf\pcf.c"      "src\pfr\pfr.c"      "src\psaux\psaux.c"      "src\pshinter\pshinter.c"      "src\psnames\psnames.c"      "src\raster\raster.c"      "src\sfnt\sfnt.c"      "src\smooth\ftsmooth.c",
-      "src\smooth\ftgrays.c"      "src\truetype\truetype.c"      "src\type1\type1.c"      "src\type42\type42.c"
+      "src\cid\cidparse.c",
+      "src\gxvalid\gxvalid.c",
+      "src\gzip\ftgzip.c",
+      "src\lzw\ftlzw.c",
+      "src\otvalid\otvalid.c",
+      "src\pcf\pcf.c",
+      "src\pfr\pfr.c",
+      "src\psaux\psaux.c",
+      "src\pshinter\pshinter.c",
+      "src\psnames\psnames.c",
+      "src\raster\raster.c",
+      "src\sfnt\sfnt.c",
+      "src\smooth\ftsmooth.c",
+      "src\smooth\ftgrays.c",
+      "src\truetype\truetype.c",
+      "src\type1\type1.c",
+      "src\type42\type42.c"
     } )
 
 
@@ -317,16 +497,36 @@ configuration( { "UNIX" } )
 configuration( { "WIN32" } )
     vpaths { ["Platform Source"] = { "**.c", "**.cpp", "**.cs", "**.asm" } }
     files( {
-      "src\autofit\autofit.c"      "src\base\ftbase.c",
+      "src\autofit\autofit.c",
+      "src\base\ftbase.c",
       "src\base\ftsystem.c",
       "src\base\ftglyph.c",
       "src\base\ftbitmap.c",
-      "src\base\ftinit.c"      "src\bdf\bdf.c"      "src\cache\ftcache.c"      "src\cff\cff.c"      "src\cid\cidriver.c",
+      "src\base\ftinit.c",
+      "src\bdf\bdf.c",
+      "src\cache\ftcache.c",
+      "src\cff\cff.c",
+      "src\cid\cidriver.c",
       "src\cid\cidobjs.c",
       "src\cid\cidgload.c",
       "src\cid\cidload.c",
-      "src\cid\cidparse.c"      "src\gxvalid\gxvalid.c"      "src\gzip\ftgzip.c"      "src\lzw\ftlzw.c"      "src\otvalid\otvalid.c"      "src\pcf\pcf.c"      "src\pfr\pfr.c"      "src\psaux\psaux.c"      "src\pshinter\pshinter.c"      "src\psnames\psnames.c"      "src\raster\raster.c"      "src\sfnt\sfnt.c"      "src\smooth\ftsmooth.c",
-      "src\smooth\ftgrays.c"      "src\truetype\truetype.c"      "src\type1\type1.c"      "src\type42\type42.c"
+      "src\cid\cidparse.c",
+      "src\gxvalid\gxvalid.c",
+      "src\gzip\ftgzip.c",
+      "src\lzw\ftlzw.c",
+      "src\otvalid\otvalid.c",
+      "src\pcf\pcf.c",
+      "src\pfr\pfr.c",
+      "src\psaux\psaux.c",
+      "src\pshinter\pshinter.c",
+      "src\psnames\psnames.c",
+      "src\raster\raster.c",
+      "src\sfnt\sfnt.c",
+      "src\smooth\ftsmooth.c",
+      "src\smooth\ftgrays.c",
+      "src\truetype\truetype.c",
+      "src\type1\type1.c",
+      "src\type42\type42.c"
     } )
 
 
@@ -334,16 +534,36 @@ configuration( { "WIN32" } )
 configuration( { "WIN64" } )
     vpaths { ["Platform Source"] = { "**.c", "**.cpp", "**.cs", "**.asm" } }
     files( {
-      "src\autofit\autofit.c"      "src\base\ftbase.c",
+      "src\autofit\autofit.c",
+      "src\base\ftbase.c",
       "src\base\ftsystem.c",
       "src\base\ftglyph.c",
       "src\base\ftbitmap.c",
-      "src\base\ftinit.c"      "src\bdf\bdf.c"      "src\cache\ftcache.c"      "src\cff\cff.c"      "src\cid\cidriver.c",
+      "src\base\ftinit.c",
+      "src\bdf\bdf.c",
+      "src\cache\ftcache.c",
+      "src\cff\cff.c",
+      "src\cid\cidriver.c",
       "src\cid\cidobjs.c",
       "src\cid\cidgload.c",
       "src\cid\cidload.c",
-      "src\cid\cidparse.c"      "src\gxvalid\gxvalid.c"      "src\gzip\ftgzip.c"      "src\lzw\ftlzw.c"      "src\otvalid\otvalid.c"      "src\pcf\pcf.c"      "src\pfr\pfr.c"      "src\psaux\psaux.c"      "src\pshinter\pshinter.c"      "src\psnames\psnames.c"      "src\raster\raster.c"      "src\sfnt\sfnt.c"      "src\smooth\ftsmooth.c",
-      "src\smooth\ftgrays.c"      "src\truetype\truetype.c"      "src\type1\type1.c"      "src\type42\type42.c"
+      "src\cid\cidparse.c",
+      "src\gxvalid\gxvalid.c",
+      "src\gzip\ftgzip.c",
+      "src\lzw\ftlzw.c",
+      "src\otvalid\otvalid.c",
+      "src\pcf\pcf.c",
+      "src\pfr\pfr.c",
+      "src\psaux\psaux.c",
+      "src\pshinter\pshinter.c",
+      "src\psnames\psnames.c",
+      "src\raster\raster.c",
+      "src\sfnt\sfnt.c",
+      "src\smooth\ftsmooth.c",
+      "src\smooth\ftgrays.c",
+      "src\truetype\truetype.c",
+      "src\type1\type1.c",
+      "src\type42\type42.c"
     } )
 
 

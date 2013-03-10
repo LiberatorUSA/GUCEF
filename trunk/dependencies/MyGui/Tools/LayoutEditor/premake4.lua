@@ -206,8 +206,12 @@ configuration( { "LINUX" } )
       "WidgetSelectorManager.cpp",
       "WidgetsWindow.cpp",
       "WidgetTypes.cpp",
-      "WorkspaceControl.cpp"      "..\..\Common\Precompiled.cpp"      "..\..\Common\Base\OpenGL\BaseManager.cpp"      "..\..\Common\Input\OIS\InputManager.cpp",
-      "..\..\Common\Input\OIS\PointerManager.cpp"      "..\..\Common\Tools\Dialog.cpp",
+      "WorkspaceControl.cpp",
+      "..\..\Common\Precompiled.cpp",
+      "..\..\Common\Base\OpenGL\BaseManager.cpp",
+      "..\..\Common\Input\OIS\InputManager.cpp",
+      "..\..\Common\Input\OIS\PointerManager.cpp",
+      "..\..\Common\Tools\Dialog.cpp",
       "..\..\Common\Tools\DialogManager.cpp",
       "..\..\Common\Tools\OpenSaveFileDialog.cpp"
     } )
@@ -376,8 +380,12 @@ configuration( { "WIN32" } )
       "WidgetSelectorManager.cpp",
       "WidgetsWindow.cpp",
       "WidgetTypes.cpp",
-      "WorkspaceControl.cpp"      "..\..\Common\Precompiled.cpp"      "..\..\Common\Base\OpenGL\BaseManager.cpp"      "..\..\Common\Input\Win32API\InputManager.cpp",
-      "..\..\Common\Input\Win32API\PointerManager.cpp"      "..\..\Common\Tools\Dialog.cpp",
+      "WorkspaceControl.cpp",
+      "..\..\Common\Precompiled.cpp",
+      "..\..\Common\Base\OpenGL\BaseManager.cpp",
+      "..\..\Common\Input\Win32API\InputManager.cpp",
+      "..\..\Common\Input\Win32API\PointerManager.cpp",
+      "..\..\Common\Tools\Dialog.cpp",
       "..\..\Common\Tools\DialogManager.cpp",
       "..\..\Common\Tools\OpenSaveFileDialog.cpp"
     } )
@@ -546,8 +554,12 @@ configuration( { "WIN64" } )
       "WidgetSelectorManager.cpp",
       "WidgetsWindow.cpp",
       "WidgetTypes.cpp",
-      "WorkspaceControl.cpp"      "..\..\Common\Precompiled.cpp"      "..\..\Common\Base\OpenGL\BaseManager.cpp"      "..\..\Common\Input\Win32API\InputManager.cpp",
-      "..\..\Common\Input\Win32API\PointerManager.cpp"      "..\..\Common\Tools\Dialog.cpp",
+      "WorkspaceControl.cpp",
+      "..\..\Common\Precompiled.cpp",
+      "..\..\Common\Base\OpenGL\BaseManager.cpp",
+      "..\..\Common\Input\Win32API\InputManager.cpp",
+      "..\..\Common\Input\Win32API\PointerManager.cpp",
+      "..\..\Common\Tools\Dialog.cpp",
       "..\..\Common\Tools\DialogManager.cpp",
       "..\..\Common\Tools\OpenSaveFileDialog.cpp"
     } )

@@ -207,7 +207,10 @@ configuration( { "LINUX" } )
       "TextureControl.cpp",
       "TextureToolControl.cpp",
       "VerticalSelectorBlackControl.cpp",
-      "VerticalSelectorControl.cpp"      "..\..\Common\Precompiled.cpp"      "..\..\Common\Base\OpenGL\BaseManager.cpp"      "..\..\Common\Input\OIS\InputManager.cpp",
+      "VerticalSelectorControl.cpp",
+      "..\..\Common\Precompiled.cpp",
+      "..\..\Common\Base\OpenGL\BaseManager.cpp",
+      "..\..\Common\Input\OIS\InputManager.cpp",
       "..\..\Common\Input\OIS\PointerManager.cpp"
     } )
 
@@ -376,7 +379,10 @@ configuration( { "WIN32" } )
       "TextureControl.cpp",
       "TextureToolControl.cpp",
       "VerticalSelectorBlackControl.cpp",
-      "VerticalSelectorControl.cpp"      "..\..\Common\Precompiled.cpp"      "..\..\Common\Base\OpenGL\BaseManager.cpp"      "..\..\Common\Input\Win32API\InputManager.cpp",
+      "VerticalSelectorControl.cpp",
+      "..\..\Common\Precompiled.cpp",
+      "..\..\Common\Base\OpenGL\BaseManager.cpp",
+      "..\..\Common\Input\Win32API\InputManager.cpp",
       "..\..\Common\Input\Win32API\PointerManager.cpp"
     } )
 
@@ -545,7 +551,10 @@ configuration( { "WIN64" } )
       "TextureControl.cpp",
       "TextureToolControl.cpp",
       "VerticalSelectorBlackControl.cpp",
-      "VerticalSelectorControl.cpp"      "..\..\Common\Precompiled.cpp"      "..\..\Common\Base\OpenGL\BaseManager.cpp"      "..\..\Common\Input\Win32API\InputManager.cpp",
+      "VerticalSelectorControl.cpp",
+      "..\..\Common\Precompiled.cpp",
+      "..\..\Common\Base\OpenGL\BaseManager.cpp",
+      "..\..\Common\Input\Win32API\InputManager.cpp",
       "..\..\Common\Input\Win32API\PointerManager.cpp"
     } )
 
