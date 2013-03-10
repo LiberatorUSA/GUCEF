@@ -128,10 +128,10 @@ configuration( {} )
 includedirs( { "../../../freetype/include", "../../../freetype/include/freetype", "../../../freetype/include/freetype/config", "../../../freetype/include/freetype/internal", "../../../freetype/include/freetype/internal/services", "../../../freetype/src/winfonts", "../../Common/FileSystemInfo", "../../MyGUIEngine/include", "../../Platforms/OpenGL/OpenGLPlatform/include", "../../Platforms/OpenGL/OpenGLPlatform/include/GL" } )
 
 configuration( { "LINUX" } )
-includedirs( {, "..\"ImageSetViewer" "..\..\Common", "..\..\Common\Base", "..\..\Common\Base\OpenGL", "..\..\Common\Input", "..\..\Common\Input\OIS" } )
+includedirs( { "..\"ImageSetViewer", "..\..\Common", "..\..\Common\Base", "..\..\Common\Base\OpenGL", "..\..\Common\Input", "..\..\Common\Input\OIS" } )
 
 configuration( { "WIN32" } )
-includedirs( {, "..\"ImageSetViewer" "..\..\Common", "..\..\Common\Base", "..\..\Common\Base\OpenGL", "..\..\Common\Input", "..\..\Common\Input\Win32API" } )
+includedirs( { "..\"ImageSetViewer", "..\..\Common", "..\..\Common\Base", "..\..\Common\Base\OpenGL", "..\..\Common\Input", "..\..\Common\Input\Win32API" } )
 
 configuration( { "WIN64" } )
-includedirs( {, "..\"ImageSetViewer" "..\..\Common", "..\..\Common\Base", "..\..\Common\Base\OpenGL", "..\..\Common\Input", "..\..\Common\Input\Win32API" } )
+includedirs( { "..\"ImageSetViewer", "..\..\Common", "..\..\Common\Base", "..\..\Common\Base\OpenGL", "..\..\Common\Input", "..\..\Common\Input\Win32API" } )
