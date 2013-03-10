@@ -14,6 +14,19 @@
 
 project( "miniupnpc" )
 location( os.getenv( "PM4OUTPUTDIR" ) )
+
+configuration( {} )
+language( "C" )
+
+configuration( { "ANDROID" } )
+language( "C" )
+
+configuration( { "WIN32" } )
+language( "C" )
+
+configuration( { "WIN64" } )
+language( "C" )
+
 kind( "SharedLib" )
 defines( { "MINIUPNP_EXPORTS" } )
 

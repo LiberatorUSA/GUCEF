@@ -14,6 +14,25 @@
 
 project( "guidriverMyGUIOpenGL" )
 location( os.getenv( "PM4OUTPUTDIR" ) )
+
+configuration( {} )
+language( "C++" )
+
+configuration( { "ANDROID" } )
+language( "C" )
+
+configuration( { "LINUX" } )
+language( "C" )
+
+configuration( { "OSX" } )
+language( "C" )
+
+configuration( { "WIN32" } )
+language( "C" )
+
+configuration( { "WIN64" } )
+language( "C" )
+
 kind( "SharedLib" )
 links( { "MyGUI.Engine", "freetype", "gucefCORE", "gucefGUI", "gucefIMAGE", "gucefINPUT", "gucefMT", "gucefVFS", "guidriverMyGUI" } )
 links( { "MyGUI.Engine", "freetype", "gucefCORE", "gucefGUI", "gucefIMAGE", "gucefINPUT", "gucefMT", "gucefVFS", "guidriverMyGUI" } )

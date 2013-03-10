@@ -14,6 +14,25 @@
 
 project( "DVPACKSYS" )
 location( os.getenv( "PM4OUTPUTDIR" ) )
+
+configuration( {} )
+language( "C" )
+
+configuration( { "ANDROID" } )
+language( "C" )
+
+configuration( { "LINUX" } )
+language( "C" )
+
+configuration( { "OSX" } )
+language( "C" )
+
+configuration( { "WIN32" } )
+language( "C" )
+
+configuration( { "WIN64" } )
+language( "C" )
+
 kind( "SharedLib" )
 links( { "gucefCORE", "gucefMT" } )
 links( { "gucefCORE", "gucefMT" } )

@@ -18,6 +18,16 @@ configuration( { "WIN32" } )
 configuration( { "WIN64" } )
   project( "inputdriverMSWINMSG" )
 location( os.getenv( "PM4OUTPUTDIR" ) )
+
+configuration( {} )
+language( "C" )
+
+configuration( { "WIN32" } )
+language( "C++" )
+
+configuration( { "WIN64" } )
+language( "C++" )
+
 configuration( { "WIN32" } )
 kind( "SharedLib" )
 configuration( { "WIN64" } )

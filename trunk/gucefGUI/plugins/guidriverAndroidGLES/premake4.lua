@@ -15,6 +15,13 @@
 configuration( { "ANDROID" } )
   project( "guidriverAndroidGLES" )
 location( os.getenv( "PM4OUTPUTDIR" ) )
+
+configuration( {} )
+language( "C" )
+
+configuration( { "ANDROID" } )
+language( "C++" )
+
 configuration( { "ANDROID" } )
 kind( "SharedLib" )
 

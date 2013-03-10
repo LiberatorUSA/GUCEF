@@ -21,6 +21,19 @@ configuration( { "WIN32" } )
 configuration( { "WIN64" } )
   project( "imgpluginFreeImage" )
 location( os.getenv( "PM4OUTPUTDIR" ) )
+
+configuration( {} )
+language( "C" )
+
+configuration( { "LINUX" } )
+language( "C" )
+
+configuration( { "WIN32" } )
+language( "C" )
+
+configuration( { "WIN64" } )
+language( "C" )
+
 configuration( { "LINUX" } )
 kind( "SharedLib" )
 configuration( { "WIN32" } )

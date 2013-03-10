@@ -967,6 +967,80 @@ GeneratePremake4ModuleDescriptionSection( const TModuleInfoEntry& moduleInfoEntr
 
 /*---------------------------------------------------------------------------*/
 
+bool
+ContainsFileWithFileExtension( const TStringVectorMap& files ,
+                               const CORE::CString& fileExt  )
+{
+    TStringVectorMap::const_iterator i = files.begin();
+    while ( i != files.end() )
+    {
+        TStringVector::const_iterator n = (*i).second.begin();
+        while ( n != (*i).second.end() )
+        {
+            if ( fileExt.Equals( CORE::ExtractFileExtention( (*n) ), false ) ) 
+                return true;
+            ++n;
+        }
+        ++i;
+    }
+    return false;
+}
+
+/*---------------------------------------------------------------------------*/
+
+CORE::CString
+GeneratePremake4ModuleLanguageSection( const TModuleInfoEntry& moduleInfoEntry , 
+                                       const CORE::CString& consensusName      )
+{GUCEF_TRACE;
+
+    CORE::CString sectionContent;
+    TModuleInfoMap::const_iterator i = moduleInfoEntry.modulesPerPlatform.begin();
+    while ( i != moduleInfoEntry.modulesPerPlatform.end() )
+    {
+        const CORE::CString& platformName = (*i).first;
+        CORE::CString language;
+
+        const TStringSet& languageSet = (*i).second.compilerSettings.languagesUsed;
+        if ( languageSet.empty() )
+        {
+            // No language was specified but premake requires one
+            // We will determine the languege based on the files in the project
+            if ( ContainsFileWithFileExtension( (*i).second.sourceDirs, "CS" ) )
+            {
+                language = "C#";
+            }
+            else
+            if ( ( ContainsFileWithFileExtension( (*i).second.sourceDirs, "CPP" ) ) ||
+                 ( ContainsFileWithFileExtension( (*i).second.sourceDirs, "CXX" ) )  )
+            {
+                language = "C++";
+            }
+            else
+            {
+                language = "C";
+            }
+        }
+        else
+        {
+            // Premake supports only 1 language per module so we list the first one
+            language = *languageSet.begin();
+        }
+        
+        if ( platformName != AllPlatforms )
+        {
+            sectionContent += "\nconfiguration( { \"" + platformName.Uppercase() + "\" } )\nlanguage( \"" + language.Uppercase() + "\" )\n";
+        }
+        else
+        {
+            sectionContent += "\nconfiguration( {} )\nlanguage( \"" + language.Uppercase() + "\" )\n";
+        }
+        ++i;
+    }
+    return sectionContent + '\n';
+}
+
+/*---------------------------------------------------------------------------*/
+
 CORE::CString
 GeneratePremake4ModuleInfoSection( const TProjectInfo& projectInfo         ,
                                    const TModuleInfoEntry& moduleInfoEntry ,
@@ -991,9 +1065,12 @@ GeneratePremake4ModuleInfoSection( const TProjectInfo& projectInfo         ,
         else
         {
             CORE::CString pathToOutputDir = CORE::GetRelativePathToOtherPathRoot( moduleInfoEntry.rootDir, premakeOutputDir );
+            pathToOutputDir = pathToOutputDir.ReplaceChar( '\\', '/' );
             sectionContent += "location( \"" + pathToOutputDir + "\" )\n";
         }
     }
+
+    sectionContent += GeneratePremake4ModuleLanguageSection( moduleInfoEntry, consensusName );
 
     // Add the module description which says what type of module this is
     sectionContent += GeneratePremake4ModuleDescriptionSection( moduleInfoEntry, consensusName );
