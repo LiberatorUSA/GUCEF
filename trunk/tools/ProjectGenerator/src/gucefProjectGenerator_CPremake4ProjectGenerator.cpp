@@ -459,7 +459,7 @@ GeneratePremake4FilePlatformFilesSection( const TModuleInfoEntry& moduleInfoEntr
                 {
                     CORE::CString path = (*n).first;
                     CORE::AppendToPath( path, (*i) );
-                    path = path.ReplaceChar( '/', '\\' );
+                    path = path.ReplaceChar( '\\', '/' );
 
                     if ( first )
                     {
@@ -494,7 +494,7 @@ GeneratePremake4FilePlatformFilesSection( const TModuleInfoEntry& moduleInfoEntr
                 {
                     CORE::CString path = (*n).first;
                     CORE::AppendToPath( path, (*i) );
-                    path = path.ReplaceChar( '/', '\\' );
+                    path = path.ReplaceChar( '\\', '/' );
 
                     if ( first )
                     {
@@ -581,7 +581,7 @@ GeneratePremake4ModuleIncludesSection( const TModuleInfo& moduleInfo ,
     TStringVectorMap::const_iterator n = moduleInfo.includeDirs.begin();
     while ( n != moduleInfo.includeDirs.end() )
     {
-        CORE::CString includeDir = (*n).first.ReplaceChar( '/', '\\' );
+        CORE::CString includeDir = (*n).first.ReplaceChar( '\\', '/' );
         if ( 0 != includeDir.Length() )
         {
             if ( first )
@@ -604,12 +604,12 @@ GeneratePremake4ModuleIncludesSection( const TModuleInfo& moduleInfo ,
             {
                 if ( first )
                 {
-                    allRelDependencyPaths += " \"..\\\"" + CORE::LastSubDir( rootDir ) + '\"';
+                    allRelDependencyPaths += " \"../\"" + CORE::LastSubDir( rootDir ) + '\"';
                     first = false;
                 }
                 else
                 {
-                    allRelDependencyPaths += ", \"..\\\"" + CORE::LastSubDir( rootDir ) + '\"';
+                    allRelDependencyPaths += ", \"../\"" + CORE::LastSubDir( rootDir ) + '\"';
                 }
             }
         }

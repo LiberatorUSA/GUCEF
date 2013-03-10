@@ -333,7 +333,7 @@ configuration( { "WIN64" } )
 
 
 configuration( {} )
-includedirs( { "../common/include", "../gucefCORE/include", "../gucefMT/include", "..\gucefCORE\include\", "include" } )
+includedirs( { "../common/include", "../gucefCORE/include", "../gucefMT/include", "../gucefCORE/include/", "include" } )
 
 configuration( { "ANDROID" } )
 includedirs( { "../gucefCORE/include/android", "..\gucefCORE\include\" } )
