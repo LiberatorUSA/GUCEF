@@ -67,7 +67,8 @@ configuration( { "IPHONEOS" } )
       "src\OISInputManager.cpp",
       "src\OISJoyStick.cpp",
       "src\OISKeyboard.cpp",
-      "src\OISObject.cpp"      "src\extras\LIRC\OISLIRC.cpp",
+      "src\OISObject.cpp",
+      "src\extras\LIRC\OISLIRC.cpp",
       "src\extras\LIRC\OISLIRCFactoryCreator.cpp"
     } )
 
@@ -111,8 +112,10 @@ configuration( { "LINUX" } )
       "src\OISInputManager.cpp",
       "src\OISJoyStick.cpp",
       "src\OISKeyboard.cpp",
-      "src\OISObject.cpp"      "src\extras\LIRC\OISLIRC.cpp",
-      "src\extras\LIRC\OISLIRCFactoryCreator.cpp"      "src\linux\EventHelpers.cpp",
+      "src\OISObject.cpp",
+      "src\extras\LIRC\OISLIRC.cpp",
+      "src\extras\LIRC\OISLIRCFactoryCreator.cpp",
+      "src\linux\EventHelpers.cpp",
       "src\linux\LinuxForceFeedback.cpp",
       "src\linux\LinuxInputManager.cpp",
       "src\linux\LinuxJoyStickEvents.cpp",
@@ -160,8 +163,10 @@ configuration( { "OSX" } )
       "src\OISInputManager.cpp",
       "src\OISJoyStick.cpp",
       "src\OISKeyboard.cpp",
-      "src\OISObject.cpp"      "src\extras\LIRC\OISLIRC.cpp",
-      "src\extras\LIRC\OISLIRCFactoryCreator.cpp"      "src\mac\MacHelpers.cpp",
+      "src\OISObject.cpp",
+      "src\extras\LIRC\OISLIRC.cpp",
+      "src\extras\LIRC\OISLIRCFactoryCreator.cpp",
+      "src\mac\MacHelpers.cpp",
       "src\mac\MacHIDManager.cpp",
       "src\mac\MacInputManager.cpp",
       "src\mac\MacJoyStick.cpp",
@@ -189,10 +194,12 @@ configuration( { "SDL" } )
       "src\OISInputManager.cpp",
       "src\OISJoyStick.cpp",
       "src\OISKeyboard.cpp",
-      "src\OISObject.cpp"      "src\SDL\SDLInputManager.cpp",
+      "src\OISObject.cpp",
+      "src\SDL\SDLInputManager.cpp",
       "src\SDL\SDLJoyStick.cpp",
       "src\SDL\SDLKeyboard.cpp",
-      "src\SDL\SDLMouse.cpp"      "src\extras\LIRC\OISLIRC.cpp",
+      "src\SDL\SDLMouse.cpp",
+      "src\extras\LIRC\OISLIRC.cpp",
       "src\extras\LIRC\OISLIRCFactoryCreator.cpp"
     } )
 
@@ -235,8 +242,10 @@ configuration( { "WIN32" } )
       "src\OISInputManager.cpp",
       "src\OISJoyStick.cpp",
       "src\OISKeyboard.cpp",
-      "src\OISObject.cpp"      "src\extras\LIRC\OISLIRC.cpp",
-      "src\extras\LIRC\OISLIRCFactoryCreator.cpp"      "src\win32\Win32ForceFeedback.cpp",
+      "src\OISObject.cpp",
+      "src\extras\LIRC\OISLIRC.cpp",
+      "src\extras\LIRC\OISLIRCFactoryCreator.cpp",
+      "src\win32\Win32ForceFeedback.cpp",
       "src\win32\Win32InputManager.cpp",
       "src\win32\Win32JoyStick.cpp",
       "src\win32\Win32KeyBoard.cpp",
@@ -276,7 +285,8 @@ configuration( { "WIN64" } )
       "src\OISInputManager.cpp",
       "src\OISJoyStick.cpp",
       "src\OISKeyboard.cpp",
-      "src\OISObject.cpp"      "src\extras\LIRC\OISLIRC.cpp",
+      "src\OISObject.cpp",
+      "src\extras\LIRC\OISLIRC.cpp",
       "src\extras\LIRC\OISLIRCFactoryCreator.cpp"
     } )
 

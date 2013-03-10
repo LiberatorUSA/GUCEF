@@ -66,7 +66,10 @@ configuration( { "LINUX" } )
       "DemoKeeper.cpp",
       "FontPanel.cpp",
       "FontView.cpp",
-      "TextureView.cpp"      "..\..\Common\Precompiled.cpp"      "..\..\Common\Base\OpenGL\BaseManager.cpp"      "..\..\Common\Input\OIS\InputManager.cpp",
+      "TextureView.cpp",
+      "..\..\Common\Precompiled.cpp",
+      "..\..\Common\Base\OpenGL\BaseManager.cpp",
+      "..\..\Common\Input\OIS\InputManager.cpp",
       "..\..\Common\Input\OIS\PointerManager.cpp"
     } )
 
@@ -94,7 +97,10 @@ configuration( { "WIN32" } )
       "DemoKeeper.cpp",
       "FontPanel.cpp",
       "FontView.cpp",
-      "TextureView.cpp"      "..\..\Common\Precompiled.cpp"      "..\..\Common\Base\OpenGL\BaseManager.cpp"      "..\..\Common\Input\Win32API\InputManager.cpp",
+      "TextureView.cpp",
+      "..\..\Common\Precompiled.cpp",
+      "..\..\Common\Base\OpenGL\BaseManager.cpp",
+      "..\..\Common\Input\Win32API\InputManager.cpp",
       "..\..\Common\Input\Win32API\PointerManager.cpp"
     } )
 
@@ -122,7 +128,10 @@ configuration( { "WIN64" } )
       "DemoKeeper.cpp",
       "FontPanel.cpp",
       "FontView.cpp",
-      "TextureView.cpp"      "..\..\Common\Precompiled.cpp"      "..\..\Common\Base\OpenGL\BaseManager.cpp"      "..\..\Common\Input\Win32API\InputManager.cpp",
+      "TextureView.cpp",
+      "..\..\Common\Precompiled.cpp",
+      "..\..\Common\Base\OpenGL\BaseManager.cpp",
+      "..\..\Common\Input\Win32API\InputManager.cpp",
       "..\..\Common\Input\Win32API\PointerManager.cpp"
     } )
 
