@@ -21,6 +21,19 @@ configuration( { "WIN32" } )
 configuration( { "WIN64" } )
   project( "MyGUI.LayoutEditor" )
 location( os.getenv( "PM4OUTPUTDIR" ) )
+
+configuration( {} )
+language( "C" )
+
+configuration( { "LINUX" } )
+language( "C++" )
+
+configuration( { "WIN32" } )
+language( "C++" )
+
+configuration( { "WIN64" } )
+language( "C++" )
+
 configuration( { "LINUX" } )
 kind( "ConsoleApp" )
 configuration( { "WIN32" } )

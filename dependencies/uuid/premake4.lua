@@ -14,6 +14,10 @@
 
 project( "uuid" )
 location( os.getenv( "PM4OUTPUTDIR" ) )
+
+configuration( {} )
+language( "C" )
+
 kind( "StaticLib" )
 
 

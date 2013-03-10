@@ -14,6 +14,22 @@
 
 project( "MyGUI.Engine" )
 location( os.getenv( "PM4OUTPUTDIR" ) )
+
+configuration( {} )
+language( "C++" )
+
+configuration( { "LINUX" } )
+language( "C" )
+
+configuration( { "OSX" } )
+language( "C" )
+
+configuration( { "WIN32" } )
+language( "C" )
+
+configuration( { "WIN64" } )
+language( "C" )
+
 kind( "SharedLib" )
 links( { "freetype" } )
 links( { "freetype" } )

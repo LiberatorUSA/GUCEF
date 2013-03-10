@@ -15,6 +15,13 @@
 configuration( { "LINUX" } )
   project( "inputdriverXWINMSG" )
 location( os.getenv( "PM4OUTPUTDIR" ) )
+
+configuration( {} )
+language( "C" )
+
+configuration( { "LINUX" } )
+language( "C++" )
+
 configuration( { "LINUX" } )
 kind( "SharedLib" )
 

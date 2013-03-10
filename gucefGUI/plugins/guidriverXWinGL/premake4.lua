@@ -15,6 +15,13 @@
 configuration( { "LINUX" } )
   project( "guidriverXWinGL" )
 location( os.getenv( "PM4OUTPUTDIR" ) )
+
+configuration( {} )
+language( "C" )
+
+configuration( { "LINUX" } )
+language( "C++" )
+
 configuration( { "LINUX" } )
 kind( "SharedLib" )
 

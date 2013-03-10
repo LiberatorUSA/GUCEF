@@ -18,6 +18,16 @@ configuration( { "LINUX" } )
 configuration( { "WIN32" } )
   project( "MyGUI.OgrePlatform" )
 location( os.getenv( "PM4OUTPUTDIR" ) )
+
+configuration( {} )
+language( "C" )
+
+configuration( { "LINUX" } )
+language( "C++" )
+
+configuration( { "WIN32" } )
+language( "C++" )
+
 configuration( { "LINUX" } )
 kind( "SharedLib" )
 configuration( { "WIN32" } )

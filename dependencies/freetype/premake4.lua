@@ -14,6 +14,43 @@
 
 project( "freetype" )
 location( os.getenv( "PM4OUTPUTDIR" ) )
+
+configuration( {} )
+language( "C" )
+
+configuration( { "ANDROID" } )
+language( "C" )
+
+configuration( { "GLX" } )
+language( "C" )
+
+configuration( { "GTK" } )
+language( "C" )
+
+configuration( { "IPHONEOS" } )
+language( "C" )
+
+configuration( { "LINUX" } )
+language( "C" )
+
+configuration( { "OSX" } )
+language( "C" )
+
+configuration( { "SDL" } )
+language( "C" )
+
+configuration( { "SYMBIAN" } )
+language( "C" )
+
+configuration( { "UNIX" } )
+language( "C" )
+
+configuration( { "WIN32" } )
+language( "C" )
+
+configuration( { "WIN64" } )
+language( "C" )
+
 kind( "SharedLib" )
 defines( { "FT2_BUILD_LIBRARY", "FT_CONFIG_OPTION_SYSTEM_ZLIB", "FT_CONFIG_OPTION_USE_ZLIB", "FT_DVEDIT_BUILD_DLL", "FT_DVEDIT_DLL_API" } )
 
