@@ -602,7 +602,15 @@ GeneratePremake4ModuleIncludesSection( const TModuleInfo& moduleInfo ,
             // subdir.
             if ( 1 < moduleInfo.includeDirs.size() )
             {
-                allRelDependencyPaths += ", \"..\\\"" + CORE::LastSubDir( rootDir ) + '\"';
+                if ( first )
+                {
+                    allRelDependencyPaths += " \"..\\\"" + CORE::LastSubDir( rootDir ) + '\"';
+                    first = false;
+                }
+                else
+                {
+                    allRelDependencyPaths += ", \"..\\\"" + CORE::LastSubDir( rootDir ) + '\"';
+                }
             }
         }
         ++n;
