@@ -563,10 +563,10 @@ configuration( {} )
 includedirs( { "../../../freetype/include", "../../../freetype/include/freetype", "../../../freetype/include/freetype/config", "../../../freetype/include/freetype/internal", "../../../freetype/include/freetype/internal/services", "../../../freetype/src/winfonts", "../../Common/FileSystemInfo", "../../MyGUIEngine/include", "../../Platforms/OpenGL/OpenGLPlatform/include", "../../Platforms/OpenGL/OpenGLPlatform/include/GL" } )
 
 configuration( { "LINUX" } )
-includedirs( {, "..\"SkinEditor" "..\..\Common", "..\..\Common\Base", "..\..\Common\Base\OpenGL", "..\..\Common\Input", "..\..\Common\Input\OIS", "..\..\Common\ItemBox" } )
+includedirs( { "..\"SkinEditor", "..\..\Common", "..\..\Common\Base", "..\..\Common\Base\OpenGL", "..\..\Common\Input", "..\..\Common\Input\OIS", "..\..\Common\ItemBox" } )
 
 configuration( { "WIN32" } )
-includedirs( {, "..\"SkinEditor" "..\..\Common", "..\..\Common\Base", "..\..\Common\Base\OpenGL", "..\..\Common\Input", "..\..\Common\Input\Win32API", "..\..\Common\ItemBox" } )
+includedirs( { "..\"SkinEditor", "..\..\Common", "..\..\Common\Base", "..\..\Common\Base\OpenGL", "..\..\Common\Input", "..\..\Common\Input\Win32API", "..\..\Common\ItemBox" } )
 
 configuration( { "WIN64" } )
-includedirs( {, "..\"SkinEditor" "..\..\Common", "..\..\Common\Base", "..\..\Common\Base\OpenGL", "..\..\Common\Input", "..\..\Common\Input\Win32API", "..\..\Common\ItemBox" } )
+includedirs( { "..\"SkinEditor", "..\..\Common", "..\..\Common\Base", "..\..\Common\Base\OpenGL", "..\..\Common\Input", "..\..\Common\Input\Win32API", "..\..\Common\ItemBox" } )
