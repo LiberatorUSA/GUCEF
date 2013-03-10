@@ -27,19 +27,19 @@ configuration( { "ANDROID" } )
 configuration( { "ANDROID" } )
     vpaths { ["Platform Headers"] = { "**.h", "**.hpp", "**.hxx" } }
     files( {
-      "include\guidriverAndroidGLES.h",
-      "include\guidriverAndroidGLES_CAndroidGLESWindowContext.h",
-      "include\guidriverAndroidGLES_CAndroidWindowManagerImp.h",
-      "include\guidriverAndroidGLES_config.h",
-      "include\guidriverAndroidGLES_macros.h",
-      "include\guidriverAndroidGLES_pluginAPI.h"
+      "include/guidriverAndroidGLES.h",
+      "include/guidriverAndroidGLES_CAndroidGLESWindowContext.h",
+      "include/guidriverAndroidGLES_CAndroidWindowManagerImp.h",
+      "include/guidriverAndroidGLES_config.h",
+      "include/guidriverAndroidGLES_macros.h",
+      "include/guidriverAndroidGLES_pluginAPI.h"
     } )
 
     vpaths { ["Platform Source"] = { "**.c", "**.cpp", "**.cs", "**.asm" } }
     files( {
-      "src\guidriverAndroidGLES_CAndroidGLESWindowContext.cpp",
-      "src\guidriverAndroidGLES_CAndroidWindowManagerImp.cpp",
-      "src\guidriverAndroidGLES_pluginAPI.cpp"
+      "src/guidriverAndroidGLES_CAndroidGLESWindowContext.cpp",
+      "src/guidriverAndroidGLES_CAndroidWindowManagerImp.cpp",
+      "src/guidriverAndroidGLES_pluginAPI.cpp"
     } )
 
 

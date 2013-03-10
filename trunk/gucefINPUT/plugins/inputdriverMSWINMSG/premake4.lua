@@ -35,12 +35,12 @@ configuration( { "WIN64" } )
 configuration( { "WIN32" } )
     vpaths { ["Platform Headers"] = { "**.h", "**.hpp", "**.hxx" } }
     files( {
-      "include\DLLMainInputDriverMSWINMSG.h"
+      "include/DLLMainInputDriverMSWINMSG.h"
     } )
 
     vpaths { ["Platform Source"] = { "**.c", "**.cpp", "**.cs", "**.asm" } }
     files( {
-      "src\DLLMainInputDriverMSWINMSG.cpp"
+      "src/DLLMainInputDriverMSWINMSG.cpp"
     } )
 
 
@@ -48,12 +48,12 @@ configuration( { "WIN32" } )
 configuration( { "WIN64" } )
     vpaths { ["Platform Headers"] = { "**.h", "**.hpp", "**.hxx" } }
     files( {
-      "include\DLLMainInputDriverMSWINMSG.h"
+      "include/DLLMainInputDriverMSWINMSG.h"
     } )
 
     vpaths { ["Platform Source"] = { "**.c", "**.cpp", "**.cs", "**.asm" } }
     files( {
-      "src\DLLMainInputDriverMSWINMSG.cpp"
+      "src/DLLMainInputDriverMSWINMSG.cpp"
     } )
 
 

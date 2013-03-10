@@ -27,12 +27,12 @@ configuration( { "ANDROID" } )
 configuration( { "ANDROID" } )
     vpaths { ["Platform Headers"] = { "**.h", "**.hpp", "**.hxx" } }
     files( {
-      "include\inputdriverNANDROID.h"
+      "include/inputdriverNANDROID.h"
     } )
 
     vpaths { ["Platform Source"] = { "**.c", "**.cpp", "**.cs", "**.asm" } }
     files( {
-      "src\inputdriverNANDROID.c"
+      "src/inputdriverNANDROID.c"
     } )
 
 

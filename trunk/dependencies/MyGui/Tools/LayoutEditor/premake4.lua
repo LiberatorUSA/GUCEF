@@ -126,17 +126,17 @@ configuration( { "LINUX" } )
       "WidgetsWindow.h",
       "WidgetTypes.h",
       "WorkspaceControl.h",
-      "..\..\Common\Precompiled.h",
-      "..\..\Common\Base\InputFocusInfo.h",
-      "..\..\Common\Base\Main.h",
-      "..\..\Common\Base\StatisticInfo.h",
-      "..\..\Common\Base\OpenGL\BaseManager.h",
-      "..\..\Common\Input\InputConverter.h",
-      "..\..\Common\Input\OIS\InputManager.h",
-      "..\..\Common\Input\OIS\PointerManager.h",
-      "..\..\Common\Tools\Dialog.h",
-      "..\..\Common\Tools\DialogManager.h",
-      "..\..\Common\Tools\OpenSaveFileDialog.h"
+      "../../Common/Precompiled.h",
+      "../../Common/Base/InputFocusInfo.h",
+      "../../Common/Base/Main.h",
+      "../../Common/Base/StatisticInfo.h",
+      "../../Common/Base/OpenGL/BaseManager.h",
+      "../../Common/Input/InputConverter.h",
+      "../../Common/Input/OIS/InputManager.h",
+      "../../Common/Input/OIS/PointerManager.h",
+      "../../Common/Tools/Dialog.h",
+      "../../Common/Tools/DialogManager.h",
+      "../../Common/Tools/OpenSaveFileDialog.h"
     } )
 
     vpaths { ["Platform Source"] = { "**.c", "**.cpp", "**.cs", "**.asm" } }
@@ -207,13 +207,13 @@ configuration( { "LINUX" } )
       "WidgetsWindow.cpp",
       "WidgetTypes.cpp",
       "WorkspaceControl.cpp",
-      "..\..\Common\Precompiled.cpp",
-      "..\..\Common\Base\OpenGL\BaseManager.cpp",
-      "..\..\Common\Input\OIS\InputManager.cpp",
-      "..\..\Common\Input\OIS\PointerManager.cpp",
-      "..\..\Common\Tools\Dialog.cpp",
-      "..\..\Common\Tools\DialogManager.cpp",
-      "..\..\Common\Tools\OpenSaveFileDialog.cpp"
+      "../../Common/Precompiled.cpp",
+      "../../Common/Base/OpenGL/BaseManager.cpp",
+      "../../Common/Input/OIS/InputManager.cpp",
+      "../../Common/Input/OIS/PointerManager.cpp",
+      "../../Common/Tools/Dialog.cpp",
+      "../../Common/Tools/DialogManager.cpp",
+      "../../Common/Tools/OpenSaveFileDialog.cpp"
     } )
 
 
@@ -300,17 +300,17 @@ configuration( { "WIN32" } )
       "WidgetsWindow.h",
       "WidgetTypes.h",
       "WorkspaceControl.h",
-      "..\..\Common\Precompiled.h",
-      "..\..\Common\Base\InputFocusInfo.h",
-      "..\..\Common\Base\Main.h",
-      "..\..\Common\Base\StatisticInfo.h",
-      "..\..\Common\Base\OpenGL\BaseManager.h",
-      "..\..\Common\Input\InputConverter.h",
-      "..\..\Common\Input\Win32API\InputManager.h",
-      "..\..\Common\Input\Win32API\PointerManager.h",
-      "..\..\Common\Tools\Dialog.h",
-      "..\..\Common\Tools\DialogManager.h",
-      "..\..\Common\Tools\OpenSaveFileDialog.h"
+      "../../Common/Precompiled.h",
+      "../../Common/Base/InputFocusInfo.h",
+      "../../Common/Base/Main.h",
+      "../../Common/Base/StatisticInfo.h",
+      "../../Common/Base/OpenGL/BaseManager.h",
+      "../../Common/Input/InputConverter.h",
+      "../../Common/Input/Win32API/InputManager.h",
+      "../../Common/Input/Win32API/PointerManager.h",
+      "../../Common/Tools/Dialog.h",
+      "../../Common/Tools/DialogManager.h",
+      "../../Common/Tools/OpenSaveFileDialog.h"
     } )
 
     vpaths { ["Platform Source"] = { "**.c", "**.cpp", "**.cs", "**.asm" } }
@@ -381,13 +381,13 @@ configuration( { "WIN32" } )
       "WidgetsWindow.cpp",
       "WidgetTypes.cpp",
       "WorkspaceControl.cpp",
-      "..\..\Common\Precompiled.cpp",
-      "..\..\Common\Base\OpenGL\BaseManager.cpp",
-      "..\..\Common\Input\Win32API\InputManager.cpp",
-      "..\..\Common\Input\Win32API\PointerManager.cpp",
-      "..\..\Common\Tools\Dialog.cpp",
-      "..\..\Common\Tools\DialogManager.cpp",
-      "..\..\Common\Tools\OpenSaveFileDialog.cpp"
+      "../../Common/Precompiled.cpp",
+      "../../Common/Base/OpenGL/BaseManager.cpp",
+      "../../Common/Input/Win32API/InputManager.cpp",
+      "../../Common/Input/Win32API/PointerManager.cpp",
+      "../../Common/Tools/Dialog.cpp",
+      "../../Common/Tools/DialogManager.cpp",
+      "../../Common/Tools/OpenSaveFileDialog.cpp"
     } )
 
 
@@ -474,17 +474,17 @@ configuration( { "WIN64" } )
       "WidgetsWindow.h",
       "WidgetTypes.h",
       "WorkspaceControl.h",
-      "..\..\Common\Precompiled.h",
-      "..\..\Common\Base\InputFocusInfo.h",
-      "..\..\Common\Base\Main.h",
-      "..\..\Common\Base\StatisticInfo.h",
-      "..\..\Common\Base\OpenGL\BaseManager.h",
-      "..\..\Common\Input\InputConverter.h",
-      "..\..\Common\Input\Win32API\InputManager.h",
-      "..\..\Common\Input\Win32API\PointerManager.h",
-      "..\..\Common\Tools\Dialog.h",
-      "..\..\Common\Tools\DialogManager.h",
-      "..\..\Common\Tools\OpenSaveFileDialog.h"
+      "../../Common/Precompiled.h",
+      "../../Common/Base/InputFocusInfo.h",
+      "../../Common/Base/Main.h",
+      "../../Common/Base/StatisticInfo.h",
+      "../../Common/Base/OpenGL/BaseManager.h",
+      "../../Common/Input/InputConverter.h",
+      "../../Common/Input/Win32API/InputManager.h",
+      "../../Common/Input/Win32API/PointerManager.h",
+      "../../Common/Tools/Dialog.h",
+      "../../Common/Tools/DialogManager.h",
+      "../../Common/Tools/OpenSaveFileDialog.h"
     } )
 
     vpaths { ["Platform Source"] = { "**.c", "**.cpp", "**.cs", "**.asm" } }
@@ -555,13 +555,13 @@ configuration( { "WIN64" } )
       "WidgetsWindow.cpp",
       "WidgetTypes.cpp",
       "WorkspaceControl.cpp",
-      "..\..\Common\Precompiled.cpp",
-      "..\..\Common\Base\OpenGL\BaseManager.cpp",
-      "..\..\Common\Input\Win32API\InputManager.cpp",
-      "..\..\Common\Input\Win32API\PointerManager.cpp",
-      "..\..\Common\Tools\Dialog.cpp",
-      "..\..\Common\Tools\DialogManager.cpp",
-      "..\..\Common\Tools\OpenSaveFileDialog.cpp"
+      "../../Common/Precompiled.cpp",
+      "../../Common/Base/OpenGL/BaseManager.cpp",
+      "../../Common/Input/Win32API/InputManager.cpp",
+      "../../Common/Input/Win32API/PointerManager.cpp",
+      "../../Common/Tools/Dialog.cpp",
+      "../../Common/Tools/DialogManager.cpp",
+      "../../Common/Tools/OpenSaveFileDialog.cpp"
     } )
 
 
@@ -569,10 +569,10 @@ configuration( {} )
 includedirs( { "../../../freetype/include", "../../../freetype/include/freetype", "../../../freetype/include/freetype/config", "../../../freetype/include/freetype/internal", "../../../freetype/include/freetype/internal/services", "../../../freetype/src/winfonts", "../../Common/FileSystemInfo", "../../MyGUIEngine/include", "../../Platforms/OpenGL/OpenGLPlatform/include", "../../Platforms/OpenGL/OpenGLPlatform/include/GL" } )
 
 configuration( { "LINUX" } )
-includedirs( { "..\"LayoutEditor", "..\..\Common", "..\..\Common\Base", "..\..\Common\Base\OpenGL", "..\..\Common\Input", "..\..\Common\Input\OIS", "..\..\Common\Tools" } )
+includedirs( { "../"LayoutEditor", "../../Common", "../../Common/Base", "../../Common/Base/OpenGL", "../../Common/Input", "../../Common/Input/OIS", "../../Common/Tools" } )
 
 configuration( { "WIN32" } )
-includedirs( { "..\"LayoutEditor", "..\..\Common", "..\..\Common\Base", "..\..\Common\Base\OpenGL", "..\..\Common\Input", "..\..\Common\Input\Win32API", "..\..\Common\Tools" } )
+includedirs( { "../"LayoutEditor", "../../Common", "../../Common/Base", "../../Common/Base/OpenGL", "../../Common/Input", "../../Common/Input/Win32API", "../../Common/Tools" } )
 
 configuration( { "WIN64" } )
-includedirs( { "..\"LayoutEditor", "..\..\Common", "..\..\Common\Base", "..\..\Common\Base\OpenGL", "..\..\Common\Input", "..\..\Common\Input\Win32API", "..\..\Common\Tools" } )
+includedirs( { "../"LayoutEditor", "../../Common", "../../Common/Base", "../../Common/Base/OpenGL", "../../Common/Input", "../../Common/Input/Win32API", "../../Common/Tools" } )

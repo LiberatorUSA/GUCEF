@@ -53,4 +53,4 @@ files( {
 
 
 configuration( {} )
-includedirs( { "include\libparsifal" } )
+includedirs( { "include/libparsifal" } )

@@ -87,14 +87,14 @@ files( {
 configuration( { "WIN32" } )
     vpaths { ["Platform Headers"] = { "**.h", "**.hpp", "**.hxx" } }
     files( {
-      "include\mswin\gucefCOMCORE_CWin32SerialPort.h",
-      "include\mswin\gucefCOMCORE_icmpApi.h"
+      "include/mswin/gucefCOMCORE_CWin32SerialPort.h",
+      "include/mswin/gucefCOMCORE_icmpApi.h"
     } )
 
     vpaths { ["Platform Source"] = { "**.c", "**.cpp", "**.cs", "**.asm" } }
     files( {
-      "src\mswin\gucefCOMCORE_CWin32SerialPort.cpp",
-      "src\mswin\gucefCOMCORE_icmpApi.cpp"
+      "src/mswin/gucefCOMCORE_CWin32SerialPort.cpp",
+      "src/mswin/gucefCOMCORE_icmpApi.cpp"
     } )
 
 
@@ -102,14 +102,14 @@ configuration( { "WIN32" } )
 configuration( { "WIN64" } )
     vpaths { ["Platform Headers"] = { "**.h", "**.hpp", "**.hxx" } }
     files( {
-      "include\mswin\gucefCOMCORE_CWin32SerialPort.h",
-      "include\mswin\gucefCOMCORE_icmpApi.h"
+      "include/mswin/gucefCOMCORE_CWin32SerialPort.h",
+      "include/mswin/gucefCOMCORE_icmpApi.h"
     } )
 
     vpaths { ["Platform Source"] = { "**.c", "**.cpp", "**.cs", "**.asm" } }
     files( {
-      "src\mswin\gucefCOMCORE_CWin32SerialPort.cpp",
-      "src\mswin\gucefCOMCORE_icmpApi.cpp"
+      "src/mswin/gucefCOMCORE_CWin32SerialPort.cpp",
+      "src/mswin/gucefCOMCORE_icmpApi.cpp"
     } )
 
 
@@ -123,7 +123,7 @@ configuration( { "LINUX" } )
 includedirs( { "../gucefCORE/include/linux" } )
 
 configuration( { "WIN32" } )
-includedirs( { "../gucefCORE/include/mswin", "include\mswin" } )
+includedirs( { "../gucefCORE/include/mswin", "include/mswin" } )
 
 configuration( { "WIN64" } )
-includedirs( { "../gucefCORE/include/mswin", "include\mswin" } )
+includedirs( { "../gucefCORE/include/mswin", "include/mswin" } )

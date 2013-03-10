@@ -52,24 +52,24 @@ configuration( { "WIN64" } )
 configuration( { "IPHONEOS" } )
     vpaths { ["Platform Headers"] = { "**.h", "**.hpp", "**.hxx" } }
     files( {
-      "includes\iphone\iPhoneAccelerometer.h",
-      "includes\iphone\iPhoneHelpers.h",
-      "includes\iphone\iPhoneInputManager.h",
-      "includes\iphone\iPhoneMultiTouch.h",
-      "includes\iphone\iPhonePrereqs.h"
+      "includes/iphone/iPhoneAccelerometer.h",
+      "includes/iphone/iPhoneHelpers.h",
+      "includes/iphone/iPhoneInputManager.h",
+      "includes/iphone/iPhoneMultiTouch.h",
+      "includes/iphone/iPhonePrereqs.h"
     } )
 
     vpaths { ["Platform Source"] = { "**.c", "**.cpp", "**.cs", "**.asm" } }
     files( {
-      "src\OISEffect.cpp",
-      "src\OISException.cpp",
-      "src\OISForceFeedback.cpp",
-      "src\OISInputManager.cpp",
-      "src\OISJoyStick.cpp",
-      "src\OISKeyboard.cpp",
-      "src\OISObject.cpp",
-      "src\extras\LIRC\OISLIRC.cpp",
-      "src\extras\LIRC\OISLIRCFactoryCreator.cpp"
+      "src/OISEffect.cpp",
+      "src/OISException.cpp",
+      "src/OISForceFeedback.cpp",
+      "src/OISInputManager.cpp",
+      "src/OISJoyStick.cpp",
+      "src/OISKeyboard.cpp",
+      "src/OISObject.cpp",
+      "src/extras/LIRC/OISLIRC.cpp",
+      "src/extras/LIRC/OISLIRCFactoryCreator.cpp"
     } )
 
 
@@ -77,50 +77,50 @@ configuration( { "IPHONEOS" } )
 configuration( { "LINUX" } )
     vpaths { ["Platform Headers"] = { "**.h", "**.hpp", "**.hxx" } }
     files( {
-      "includes\OIS.h",
-      "includes\OISConfig.h",
-      "includes\OISEffect.h",
-      "includes\OISEvents.h",
-      "includes\OISException.h",
-      "includes\OISFactoryCreator.h",
-      "includes\OISForceFeedback.h",
-      "includes\OISInputManager.h",
-      "includes\OISInterface.h",
-      "includes\OISJoyStick.h",
-      "includes\OISKeyboard.h",
-      "includes\OISMouse.h",
-      "includes\OISMultiTouch.h",
-      "includes\OISObject.h",
-      "includes\OISPrereqs.h",
-      "includes\linux\EventHelpers.h",
-      "includes\linux\LinuxForceFeedback.h",
-      "includes\linux\LinuxInputManager.h",
-      "includes\linux\LinuxJoyStickEvents.h",
-      "includes\linux\LinuxKeyboard.h",
-      "includes\linux\LinuxMouse.h",
-      "includes\linux\LinuxPrereqs.h",
-      "src\extras\LIRC\OISLIRC.h",
-      "src\extras\LIRC\OISLIRCFactoryCreator.h",
-      "src\extras\LIRC\OISLIRCRingBuffer.h"
+      "includes/OIS.h",
+      "includes/OISConfig.h",
+      "includes/OISEffect.h",
+      "includes/OISEvents.h",
+      "includes/OISException.h",
+      "includes/OISFactoryCreator.h",
+      "includes/OISForceFeedback.h",
+      "includes/OISInputManager.h",
+      "includes/OISInterface.h",
+      "includes/OISJoyStick.h",
+      "includes/OISKeyboard.h",
+      "includes/OISMouse.h",
+      "includes/OISMultiTouch.h",
+      "includes/OISObject.h",
+      "includes/OISPrereqs.h",
+      "includes/linux/EventHelpers.h",
+      "includes/linux/LinuxForceFeedback.h",
+      "includes/linux/LinuxInputManager.h",
+      "includes/linux/LinuxJoyStickEvents.h",
+      "includes/linux/LinuxKeyboard.h",
+      "includes/linux/LinuxMouse.h",
+      "includes/linux/LinuxPrereqs.h",
+      "src/extras/LIRC/OISLIRC.h",
+      "src/extras/LIRC/OISLIRCFactoryCreator.h",
+      "src/extras/LIRC/OISLIRCRingBuffer.h"
     } )
 
     vpaths { ["Platform Source"] = { "**.c", "**.cpp", "**.cs", "**.asm" } }
     files( {
-      "src\OISEffect.cpp",
-      "src\OISException.cpp",
-      "src\OISForceFeedback.cpp",
-      "src\OISInputManager.cpp",
-      "src\OISJoyStick.cpp",
-      "src\OISKeyboard.cpp",
-      "src\OISObject.cpp",
-      "src\extras\LIRC\OISLIRC.cpp",
-      "src\extras\LIRC\OISLIRCFactoryCreator.cpp",
-      "src\linux\EventHelpers.cpp",
-      "src\linux\LinuxForceFeedback.cpp",
-      "src\linux\LinuxInputManager.cpp",
-      "src\linux\LinuxJoyStickEvents.cpp",
-      "src\linux\LinuxKeyboard.cpp",
-      "src\linux\LinuxMouse.cpp"
+      "src/OISEffect.cpp",
+      "src/OISException.cpp",
+      "src/OISForceFeedback.cpp",
+      "src/OISInputManager.cpp",
+      "src/OISJoyStick.cpp",
+      "src/OISKeyboard.cpp",
+      "src/OISObject.cpp",
+      "src/extras/LIRC/OISLIRC.cpp",
+      "src/extras/LIRC/OISLIRCFactoryCreator.cpp",
+      "src/linux/EventHelpers.cpp",
+      "src/linux/LinuxForceFeedback.cpp",
+      "src/linux/LinuxInputManager.cpp",
+      "src/linux/LinuxJoyStickEvents.cpp",
+      "src/linux/LinuxKeyboard.cpp",
+      "src/linux/LinuxMouse.cpp"
     } )
 
 
@@ -128,50 +128,50 @@ configuration( { "LINUX" } )
 configuration( { "OSX" } )
     vpaths { ["Platform Headers"] = { "**.h", "**.hpp", "**.hxx" } }
     files( {
-      "includes\OIS.h",
-      "includes\OISConfig.h",
-      "includes\OISEffect.h",
-      "includes\OISEvents.h",
-      "includes\OISException.h",
-      "includes\OISFactoryCreator.h",
-      "includes\OISForceFeedback.h",
-      "includes\OISInputManager.h",
-      "includes\OISInterface.h",
-      "includes\OISJoyStick.h",
-      "includes\OISKeyboard.h",
-      "includes\OISMouse.h",
-      "includes\OISMultiTouch.h",
-      "includes\OISObject.h",
-      "includes\OISPrereqs.h",
-      "includes\mac\MacHelpers.h",
-      "includes\mac\MacHIDManager.h",
-      "includes\mac\MacInputManager.h",
-      "includes\mac\MacJoyStick.h",
-      "includes\mac\MacKeyboard.h",
-      "includes\mac\MacMouse.h",
-      "includes\mac\MacPrereqs.h",
-      "src\extras\LIRC\OISLIRC.h",
-      "src\extras\LIRC\OISLIRCFactoryCreator.h",
-      "src\extras\LIRC\OISLIRCRingBuffer.h"
+      "includes/OIS.h",
+      "includes/OISConfig.h",
+      "includes/OISEffect.h",
+      "includes/OISEvents.h",
+      "includes/OISException.h",
+      "includes/OISFactoryCreator.h",
+      "includes/OISForceFeedback.h",
+      "includes/OISInputManager.h",
+      "includes/OISInterface.h",
+      "includes/OISJoyStick.h",
+      "includes/OISKeyboard.h",
+      "includes/OISMouse.h",
+      "includes/OISMultiTouch.h",
+      "includes/OISObject.h",
+      "includes/OISPrereqs.h",
+      "includes/mac/MacHelpers.h",
+      "includes/mac/MacHIDManager.h",
+      "includes/mac/MacInputManager.h",
+      "includes/mac/MacJoyStick.h",
+      "includes/mac/MacKeyboard.h",
+      "includes/mac/MacMouse.h",
+      "includes/mac/MacPrereqs.h",
+      "src/extras/LIRC/OISLIRC.h",
+      "src/extras/LIRC/OISLIRCFactoryCreator.h",
+      "src/extras/LIRC/OISLIRCRingBuffer.h"
     } )
 
     vpaths { ["Platform Source"] = { "**.c", "**.cpp", "**.cs", "**.asm" } }
     files( {
-      "src\OISEffect.cpp",
-      "src\OISException.cpp",
-      "src\OISForceFeedback.cpp",
-      "src\OISInputManager.cpp",
-      "src\OISJoyStick.cpp",
-      "src\OISKeyboard.cpp",
-      "src\OISObject.cpp",
-      "src\extras\LIRC\OISLIRC.cpp",
-      "src\extras\LIRC\OISLIRCFactoryCreator.cpp",
-      "src\mac\MacHelpers.cpp",
-      "src\mac\MacHIDManager.cpp",
-      "src\mac\MacInputManager.cpp",
-      "src\mac\MacJoyStick.cpp",
-      "src\mac\MacKeyboard.cpp",
-      "src\mac\MacMouse.cpp"
+      "src/OISEffect.cpp",
+      "src/OISException.cpp",
+      "src/OISForceFeedback.cpp",
+      "src/OISInputManager.cpp",
+      "src/OISJoyStick.cpp",
+      "src/OISKeyboard.cpp",
+      "src/OISObject.cpp",
+      "src/extras/LIRC/OISLIRC.cpp",
+      "src/extras/LIRC/OISLIRCFactoryCreator.cpp",
+      "src/mac/MacHelpers.cpp",
+      "src/mac/MacHIDManager.cpp",
+      "src/mac/MacInputManager.cpp",
+      "src/mac/MacJoyStick.cpp",
+      "src/mac/MacKeyboard.cpp",
+      "src/mac/MacMouse.cpp"
     } )
 
 
@@ -179,28 +179,28 @@ configuration( { "OSX" } )
 configuration( { "SDL" } )
     vpaths { ["Platform Headers"] = { "**.h", "**.hpp", "**.hxx" } }
     files( {
-      "includes\SDL\SDLInputManager.h",
-      "includes\SDL\SDLJoyStick.h",
-      "includes\SDL\SDLKeyboard.h",
-      "includes\SDL\SDLMouse.h",
-      "includes\SDL\SDLPrereqs.h"
+      "includes/SDL/SDLInputManager.h",
+      "includes/SDL/SDLJoyStick.h",
+      "includes/SDL/SDLKeyboard.h",
+      "includes/SDL/SDLMouse.h",
+      "includes/SDL/SDLPrereqs.h"
     } )
 
     vpaths { ["Platform Source"] = { "**.c", "**.cpp", "**.cs", "**.asm" } }
     files( {
-      "src\OISEffect.cpp",
-      "src\OISException.cpp",
-      "src\OISForceFeedback.cpp",
-      "src\OISInputManager.cpp",
-      "src\OISJoyStick.cpp",
-      "src\OISKeyboard.cpp",
-      "src\OISObject.cpp",
-      "src\SDL\SDLInputManager.cpp",
-      "src\SDL\SDLJoyStick.cpp",
-      "src\SDL\SDLKeyboard.cpp",
-      "src\SDL\SDLMouse.cpp",
-      "src\extras\LIRC\OISLIRC.cpp",
-      "src\extras\LIRC\OISLIRCFactoryCreator.cpp"
+      "src/OISEffect.cpp",
+      "src/OISException.cpp",
+      "src/OISForceFeedback.cpp",
+      "src/OISInputManager.cpp",
+      "src/OISJoyStick.cpp",
+      "src/OISKeyboard.cpp",
+      "src/OISObject.cpp",
+      "src/SDL/SDLInputManager.cpp",
+      "src/SDL/SDLJoyStick.cpp",
+      "src/SDL/SDLKeyboard.cpp",
+      "src/SDL/SDLMouse.cpp",
+      "src/extras/LIRC/OISLIRC.cpp",
+      "src/extras/LIRC/OISLIRCFactoryCreator.cpp"
     } )
 
 
@@ -208,48 +208,48 @@ configuration( { "SDL" } )
 configuration( { "WIN32" } )
     vpaths { ["Platform Headers"] = { "**.h", "**.hpp", "**.hxx" } }
     files( {
-      "includes\OIS.h",
-      "includes\OISConfig.h",
-      "includes\OISEffect.h",
-      "includes\OISEvents.h",
-      "includes\OISException.h",
-      "includes\OISFactoryCreator.h",
-      "includes\OISForceFeedback.h",
-      "includes\OISInputManager.h",
-      "includes\OISInterface.h",
-      "includes\OISJoyStick.h",
-      "includes\OISKeyboard.h",
-      "includes\OISMouse.h",
-      "includes\OISMultiTouch.h",
-      "includes\OISObject.h",
-      "includes\OISPrereqs.h",
-      "includes\win32\Win32ForceFeedback.h",
-      "includes\win32\Win32InputManager.h",
-      "includes\win32\Win32JoyStick.h",
-      "includes\win32\Win32KeyBoard.h",
-      "includes\win32\Win32Mouse.h",
-      "includes\win32\Win32Prereqs.h",
-      "src\extras\LIRC\OISLIRC.h",
-      "src\extras\LIRC\OISLIRCFactoryCreator.h",
-      "src\extras\LIRC\OISLIRCRingBuffer.h"
+      "includes/OIS.h",
+      "includes/OISConfig.h",
+      "includes/OISEffect.h",
+      "includes/OISEvents.h",
+      "includes/OISException.h",
+      "includes/OISFactoryCreator.h",
+      "includes/OISForceFeedback.h",
+      "includes/OISInputManager.h",
+      "includes/OISInterface.h",
+      "includes/OISJoyStick.h",
+      "includes/OISKeyboard.h",
+      "includes/OISMouse.h",
+      "includes/OISMultiTouch.h",
+      "includes/OISObject.h",
+      "includes/OISPrereqs.h",
+      "includes/win32/Win32ForceFeedback.h",
+      "includes/win32/Win32InputManager.h",
+      "includes/win32/Win32JoyStick.h",
+      "includes/win32/Win32KeyBoard.h",
+      "includes/win32/Win32Mouse.h",
+      "includes/win32/Win32Prereqs.h",
+      "src/extras/LIRC/OISLIRC.h",
+      "src/extras/LIRC/OISLIRCFactoryCreator.h",
+      "src/extras/LIRC/OISLIRCRingBuffer.h"
     } )
 
     vpaths { ["Platform Source"] = { "**.c", "**.cpp", "**.cs", "**.asm" } }
     files( {
-      "src\OISEffect.cpp",
-      "src\OISException.cpp",
-      "src\OISForceFeedback.cpp",
-      "src\OISInputManager.cpp",
-      "src\OISJoyStick.cpp",
-      "src\OISKeyboard.cpp",
-      "src\OISObject.cpp",
-      "src\extras\LIRC\OISLIRC.cpp",
-      "src\extras\LIRC\OISLIRCFactoryCreator.cpp",
-      "src\win32\Win32ForceFeedback.cpp",
-      "src\win32\Win32InputManager.cpp",
-      "src\win32\Win32JoyStick.cpp",
-      "src\win32\Win32KeyBoard.cpp",
-      "src\win32\Win32Mouse.cpp"
+      "src/OISEffect.cpp",
+      "src/OISException.cpp",
+      "src/OISForceFeedback.cpp",
+      "src/OISInputManager.cpp",
+      "src/OISJoyStick.cpp",
+      "src/OISKeyboard.cpp",
+      "src/OISObject.cpp",
+      "src/extras/LIRC/OISLIRC.cpp",
+      "src/extras/LIRC/OISLIRCFactoryCreator.cpp",
+      "src/win32/Win32ForceFeedback.cpp",
+      "src/win32/Win32InputManager.cpp",
+      "src/win32/Win32JoyStick.cpp",
+      "src/win32/Win32KeyBoard.cpp",
+      "src/win32/Win32Mouse.cpp"
     } )
 
 
@@ -257,54 +257,54 @@ configuration( { "WIN32" } )
 configuration( { "WIN64" } )
     vpaths { ["Platform Headers"] = { "**.h", "**.hpp", "**.hxx" } }
     files( {
-      "includes\OIS.h",
-      "includes\OISConfig.h",
-      "includes\OISEffect.h",
-      "includes\OISEvents.h",
-      "includes\OISException.h",
-      "includes\OISFactoryCreator.h",
-      "includes\OISForceFeedback.h",
-      "includes\OISInputManager.h",
-      "includes\OISInterface.h",
-      "includes\OISJoyStick.h",
-      "includes\OISKeyboard.h",
-      "includes\OISMouse.h",
-      "includes\OISMultiTouch.h",
-      "includes\OISObject.h",
-      "includes\OISPrereqs.h",
-      "src\extras\LIRC\OISLIRC.h",
-      "src\extras\LIRC\OISLIRCFactoryCreator.h",
-      "src\extras\LIRC\OISLIRCRingBuffer.h"
+      "includes/OIS.h",
+      "includes/OISConfig.h",
+      "includes/OISEffect.h",
+      "includes/OISEvents.h",
+      "includes/OISException.h",
+      "includes/OISFactoryCreator.h",
+      "includes/OISForceFeedback.h",
+      "includes/OISInputManager.h",
+      "includes/OISInterface.h",
+      "includes/OISJoyStick.h",
+      "includes/OISKeyboard.h",
+      "includes/OISMouse.h",
+      "includes/OISMultiTouch.h",
+      "includes/OISObject.h",
+      "includes/OISPrereqs.h",
+      "src/extras/LIRC/OISLIRC.h",
+      "src/extras/LIRC/OISLIRCFactoryCreator.h",
+      "src/extras/LIRC/OISLIRCRingBuffer.h"
     } )
 
     vpaths { ["Platform Source"] = { "**.c", "**.cpp", "**.cs", "**.asm" } }
     files( {
-      "src\OISEffect.cpp",
-      "src\OISException.cpp",
-      "src\OISForceFeedback.cpp",
-      "src\OISInputManager.cpp",
-      "src\OISJoyStick.cpp",
-      "src\OISKeyboard.cpp",
-      "src\OISObject.cpp",
-      "src\extras\LIRC\OISLIRC.cpp",
-      "src\extras\LIRC\OISLIRCFactoryCreator.cpp"
+      "src/OISEffect.cpp",
+      "src/OISException.cpp",
+      "src/OISForceFeedback.cpp",
+      "src/OISInputManager.cpp",
+      "src/OISJoyStick.cpp",
+      "src/OISKeyboard.cpp",
+      "src/OISObject.cpp",
+      "src/extras/LIRC/OISLIRC.cpp",
+      "src/extras/LIRC/OISLIRCFactoryCreator.cpp"
     } )
 
 
 configuration( { "IPHONEOS" } )
-includedirs( { "includes\iphone" } )
+includedirs( { "includes/iphone" } )
 
 configuration( { "LINUX" } )
-includedirs( { "includes", "includes\linux", "src\extras\LIRC" } )
+includedirs( { "includes", "includes/linux", "src/extras/LIRC" } )
 
 configuration( { "OSX" } )
-includedirs( { "includes", "includes\mac", "src\extras\LIRC" } )
+includedirs( { "includes", "includes/mac", "src/extras/LIRC" } )
 
 configuration( { "SDL" } )
-includedirs( { "includes\SDL" } )
+includedirs( { "includes/SDL" } )
 
 configuration( { "WIN32" } )
-includedirs( { "includes", "includes\win32", "src\extras\LIRC" } )
+includedirs( { "includes", "includes/win32", "src/extras/LIRC" } )
 
 configuration( { "WIN64" } )
-includedirs( { "includes", "src\extras\LIRC" } )
+includedirs( { "includes", "src/extras/LIRC" } )

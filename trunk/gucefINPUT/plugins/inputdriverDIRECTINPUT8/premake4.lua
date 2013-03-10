@@ -35,12 +35,12 @@ configuration( { "WIN64" } )
 configuration( { "WIN32" } )
     vpaths { ["Platform Headers"] = { "**.h", "**.hpp", "**.hxx" } }
     files( {
-      "include\DLLMainInputDriverDI8.h"
+      "include/DLLMainInputDriverDI8.h"
     } )
 
     vpaths { ["Platform Source"] = { "**.c", "**.cpp", "**.cs", "**.asm" } }
     files( {
-      "src\DLLMainInputDriverDI8.cpp"
+      "src/DLLMainInputDriverDI8.cpp"
     } )
 
 
@@ -48,12 +48,12 @@ configuration( { "WIN32" } )
 configuration( { "WIN64" } )
     vpaths { ["Platform Headers"] = { "**.h", "**.hpp", "**.hxx" } }
     files( {
-      "include\DLLMainInputDriverDI8.h"
+      "include/DLLMainInputDriverDI8.h"
     } )
 
     vpaths { ["Platform Source"] = { "**.c", "**.cpp", "**.cs", "**.asm" } }
     files( {
-      "src\DLLMainInputDriverDI8.cpp"
+      "src/DLLMainInputDriverDI8.cpp"
     } )
 
 

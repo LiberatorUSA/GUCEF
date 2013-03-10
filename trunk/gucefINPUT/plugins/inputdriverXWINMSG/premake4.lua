@@ -27,14 +27,14 @@ configuration( { "LINUX" } )
 configuration( { "LINUX" } )
     vpaths { ["Platform Headers"] = { "**.h", "**.hpp", "**.hxx" } }
     files( {
-      "include\inputdriverXWINMSG.h",
-      "include\inputdriverXWINMSG_CEventListner.h"
+      "include/inputdriverXWINMSG.h",
+      "include/inputdriverXWINMSG_CEventListner.h"
     } )
 
     vpaths { ["Platform Source"] = { "**.c", "**.cpp", "**.cs", "**.asm" } }
     files( {
-      "src\inputdriverXWINMSG.cpp",
-      "src\inputdriverXWINMSG_CEventListner.cpp"
+      "src/inputdriverXWINMSG.cpp",
+      "src/inputdriverXWINMSG_CEventListner.cpp"
     } )
 
 
