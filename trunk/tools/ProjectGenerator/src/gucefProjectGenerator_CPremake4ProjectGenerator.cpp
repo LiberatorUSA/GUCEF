@@ -604,12 +604,12 @@ GeneratePremake4ModuleIncludesSection( const TModuleInfo& moduleInfo ,
             {
                 if ( first )
                 {
-                    allRelDependencyPaths += " \"../\"" + CORE::LastSubDir( rootDir ) + '\"';
+                    allRelDependencyPaths += " \"../" + CORE::LastSubDir( rootDir ) + '\"';
                     first = false;
                 }
                 else
                 {
-                    allRelDependencyPaths += ", \"../\"" + CORE::LastSubDir( rootDir ) + '\"';
+                    allRelDependencyPaths += ", \"../" + CORE::LastSubDir( rootDir ) + '\"';
                 }
             }
         }
