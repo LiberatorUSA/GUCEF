@@ -25,20 +25,20 @@ configuration( { "WIN64" } )
 kind( "WindowedApp" )
 
 configuration( { "WIN32" } )
-  links( { "gucefCORE" "gucefMT" "gucefPATCHER" } )
-  links( { "gucefCORE" "gucefMT" "gucefPATCHER" } )
+  links( { "gucefCORE", "gucefMT", "gucefPATCHER" } )
+  links( { "gucefCORE", "gucefMT", "gucefPATCHER" } )
   defines( { "PATCHSETGENERATOR_BUILD_MODULE" } )
 
 configuration( { "WIN64" } )
-  links( { "gucefCORE" "gucefMT" "gucefPATCHER" } )
-  links( { "gucefCORE" "gucefMT" "gucefPATCHER" } )
+  links( { "gucefCORE", "gucefMT", "gucefPATCHER" } )
+  links( { "gucefCORE", "gucefMT", "gucefPATCHER" } )
   defines( { "PATCHSETGENERATOR_BUILD_MODULE" } )
 
 
 configuration( { "WIN32" } )
     vpaths { ["Platform Source"] = { "**.c", "**.cpp", "**.cs", "**.asm" } }
     files( {
-      "src/PatchSetGenerator.cpp"
+      "src\PatchSetGenerator.cpp"
     } )
 
 
@@ -46,7 +46,7 @@ configuration( { "WIN32" } )
 configuration( { "WIN64" } )
     vpaths { ["Platform Source"] = { "**.c", "**.cpp", "**.cs", "**.asm" } }
     files( {
-      "src/PatchSetGenerator.cpp"
+      "src\PatchSetGenerator.cpp"
     } )
 
 

@@ -14,12 +14,12 @@
 project( "guidriverRocketOpenGL" )
 location( os.getenv( "PM4OUTPUTDIR" ) )
 kind( "SharedLib" )
-links( { "RocketControls" "RocketCore" "gucefCORE" "gucefGUI" "gucefINPUT" "gucefMT" "guidriverRocket" } )
-links( { "RocketControls" "RocketCore" "gucefCORE" "gucefGUI" "gucefINPUT" "gucefMT" "guidriverRocket" } )
+links( { "RocketControls", "RocketCore", "gucefCORE", "gucefGUI", "gucefINPUT", "gucefMT", "guidriverRocket" } )
+links( { "RocketControls", "RocketCore", "gucefCORE", "gucefGUI", "gucefINPUT", "gucefMT", "guidriverRocket" } )
 defines( { "GUIDRIVERROCKETGL_BUILD_MODULE" } )
 
 configuration( { "ANDROID" } )
-  links( { "EGL" "GLESv1_CM" } )
+  links( { "EGL", "GLESv1_CM" } )
 
 configuration( { "LINUX" } )
   links( { "GL" } )

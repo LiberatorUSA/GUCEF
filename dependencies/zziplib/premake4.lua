@@ -83,7 +83,7 @@ files( {
 
 
 configuration( {} )
-includedirs( {, "../"zziplib" "zzip" } )
+includedirs( {, "..\"zziplib" "zzip" } )
 
 configuration( { "LINUX" } )
 includedirs( { "../zlib" } )

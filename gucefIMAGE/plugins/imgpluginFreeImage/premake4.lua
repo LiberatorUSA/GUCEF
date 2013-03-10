@@ -30,17 +30,17 @@ configuration( { "WIN64" } )
 kind( "SharedLib" )
 
 configuration( { "LINUX" } )
-  links( { "FreeImage" "gucefCORE" "gucefIMAGE" "gucefMT" } )
+  links( { "FreeImage", "gucefCORE", "gucefIMAGE", "gucefMT" } )
   links( { "FreeImage" } )
   defines( { "GUCEF_CODECPLUGIN_BUILD_MODULE" } )
 
 configuration( { "WIN32" } )
-  links( { "FreeImage" "gucefCORE" "gucefIMAGE" "gucefMT" } )
+  links( { "FreeImage", "gucefCORE", "gucefIMAGE", "gucefMT" } )
   links( { "FreeImage" } )
   defines( { "GUCEF_CODECPLUGIN_BUILD_MODULE" } )
 
 configuration( { "WIN64" } )
-  links( { "FreeImage" "gucefCORE" "gucefIMAGE" "gucefMT" } )
+  links( { "FreeImage", "gucefCORE", "gucefIMAGE", "gucefMT" } )
   links( { "FreeImage" } )
   defines( { "GUCEF_CODECPLUGIN_BUILD_MODULE" } )
 
@@ -48,12 +48,12 @@ configuration( { "WIN64" } )
 configuration( { "LINUX" } )
     vpaths { ["Platform Headers"] = { "**.h", "**.hpp", "**.hxx" } }
     files( {
-      "include/imgpluginFreeImage.h"
+      "include\imgpluginFreeImage.h"
     } )
 
     vpaths { ["Platform Source"] = { "**.c", "**.cpp", "**.cs", "**.asm" } }
     files( {
-      "src/imgpluginFreeImage.c"
+      "src\imgpluginFreeImage.c"
     } )
 
 
@@ -61,12 +61,12 @@ configuration( { "LINUX" } )
 configuration( { "WIN32" } )
     vpaths { ["Platform Headers"] = { "**.h", "**.hpp", "**.hxx" } }
     files( {
-      "include/imgpluginFreeImage.h"
+      "include\imgpluginFreeImage.h"
     } )
 
     vpaths { ["Platform Source"] = { "**.c", "**.cpp", "**.cs", "**.asm" } }
     files( {
-      "src/imgpluginFreeImage.c"
+      "src\imgpluginFreeImage.c"
     } )
 
 
@@ -74,12 +74,12 @@ configuration( { "WIN32" } )
 configuration( { "WIN64" } )
     vpaths { ["Platform Headers"] = { "**.h", "**.hpp", "**.hxx" } }
     files( {
-      "include/imgpluginFreeImage.h"
+      "include\imgpluginFreeImage.h"
     } )
 
     vpaths { ["Platform Source"] = { "**.c", "**.cpp", "**.cs", "**.asm" } }
     files( {
-      "src/imgpluginFreeImage.c"
+      "src\imgpluginFreeImage.c"
     } )
 
 

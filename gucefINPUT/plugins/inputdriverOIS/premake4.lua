@@ -30,17 +30,17 @@ configuration( { "WIN64" } )
 kind( "SharedLib" )
 
 configuration( { "LINUX" } )
-  links( { "OIS" "gucefCORE" "gucefINPUT" "gucefMT" } )
+  links( { "OIS", "gucefCORE", "gucefINPUT", "gucefMT" } )
   links( { "OIS" } )
   defines( { "BUILD_GUCEF_INPUT_PLUGIN_DLL", "INPUTDRIVEROIS_BUILD_MODULE" } )
 
 configuration( { "WIN32" } )
-  links( { "OIS" "gucefCORE" "gucefINPUT" "gucefMT" } )
+  links( { "OIS", "gucefCORE", "gucefINPUT", "gucefMT" } )
   links( { "OIS" } )
   defines( { "BUILD_GUCEF_INPUT_PLUGIN_DLL", "INPUTDRIVEROIS_BUILD_MODULE" } )
 
 configuration( { "WIN64" } )
-  links( { "OIS" "gucefCORE" "gucefINPUT" "gucefMT" } )
+  links( { "OIS", "gucefCORE", "gucefINPUT", "gucefMT" } )
   links( { "OIS" } )
   defines( { "BUILD_GUCEF_INPUT_PLUGIN_DLL", "INPUTDRIVEROIS_BUILD_MODULE" } )
 
@@ -48,18 +48,18 @@ configuration( { "WIN64" } )
 configuration( { "LINUX" } )
     vpaths { ["Platform Headers"] = { "**.h", "**.hpp", "**.hxx" } }
     files( {
-      "include/DLLMainInputDriverOIS.h",
-      "include/gucefINPUT_OISJoystickListener.h",
-      "include/gucefINPUT_OISKeyboardListener.h",
-      "include/gucefINPUT_OISMouseListener.h"
+      "include\DLLMainInputDriverOIS.h",
+      "include\gucefINPUT_OISJoystickListener.h",
+      "include\gucefINPUT_OISKeyboardListener.h",
+      "include\gucefINPUT_OISMouseListener.h"
     } )
 
     vpaths { ["Platform Source"] = { "**.c", "**.cpp", "**.cs", "**.asm" } }
     files( {
-      "src/DLLMainInputDriverOIS.cpp",
-      "src/gucefINPUT_OISJoystickListener.cpp",
-      "src/gucefINPUT_OISKeyboardListener.cpp",
-      "src/gucefINPUT_OISMouseListener.cpp"
+      "src\DLLMainInputDriverOIS.cpp",
+      "src\gucefINPUT_OISJoystickListener.cpp",
+      "src\gucefINPUT_OISKeyboardListener.cpp",
+      "src\gucefINPUT_OISMouseListener.cpp"
     } )
 
 
@@ -67,18 +67,18 @@ configuration( { "LINUX" } )
 configuration( { "WIN32" } )
     vpaths { ["Platform Headers"] = { "**.h", "**.hpp", "**.hxx" } }
     files( {
-      "include/DLLMainInputDriverOIS.h",
-      "include/gucefINPUT_OISJoystickListener.h",
-      "include/gucefINPUT_OISKeyboardListener.h",
-      "include/gucefINPUT_OISMouseListener.h"
+      "include\DLLMainInputDriverOIS.h",
+      "include\gucefINPUT_OISJoystickListener.h",
+      "include\gucefINPUT_OISKeyboardListener.h",
+      "include\gucefINPUT_OISMouseListener.h"
     } )
 
     vpaths { ["Platform Source"] = { "**.c", "**.cpp", "**.cs", "**.asm" } }
     files( {
-      "src/DLLMainInputDriverOIS.cpp",
-      "src/gucefINPUT_OISJoystickListener.cpp",
-      "src/gucefINPUT_OISKeyboardListener.cpp",
-      "src/gucefINPUT_OISMouseListener.cpp"
+      "src\DLLMainInputDriverOIS.cpp",
+      "src\gucefINPUT_OISJoystickListener.cpp",
+      "src\gucefINPUT_OISKeyboardListener.cpp",
+      "src\gucefINPUT_OISMouseListener.cpp"
     } )
 
 
@@ -86,18 +86,18 @@ configuration( { "WIN32" } )
 configuration( { "WIN64" } )
     vpaths { ["Platform Headers"] = { "**.h", "**.hpp", "**.hxx" } }
     files( {
-      "include/DLLMainInputDriverOIS.h",
-      "include/gucefINPUT_OISJoystickListener.h",
-      "include/gucefINPUT_OISKeyboardListener.h",
-      "include/gucefINPUT_OISMouseListener.h"
+      "include\DLLMainInputDriverOIS.h",
+      "include\gucefINPUT_OISJoystickListener.h",
+      "include\gucefINPUT_OISKeyboardListener.h",
+      "include\gucefINPUT_OISMouseListener.h"
     } )
 
     vpaths { ["Platform Source"] = { "**.c", "**.cpp", "**.cs", "**.asm" } }
     files( {
-      "src/DLLMainInputDriverOIS.cpp",
-      "src/gucefINPUT_OISJoystickListener.cpp",
-      "src/gucefINPUT_OISKeyboardListener.cpp",
-      "src/gucefINPUT_OISMouseListener.cpp"
+      "src\DLLMainInputDriverOIS.cpp",
+      "src\gucefINPUT_OISJoystickListener.cpp",
+      "src\gucefINPUT_OISKeyboardListener.cpp",
+      "src\gucefINPUT_OISMouseListener.cpp"
     } )
 
 

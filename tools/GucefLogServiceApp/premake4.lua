@@ -17,8 +17,8 @@ configuration( { "WIN32" } )
 kind( "WindowedApp" )
 configuration( { "NOT WIN32" } )
   kind( "ConsoleApp" )
-links( { "GucefLogServiceLib" "gucefCOM" "gucefCOMCORE" "gucefCORE" "gucefMT" } )
-links( { "GucefLogServiceLib" "gucefCOM" "gucefCOMCORE" "gucefCORE" "gucefMT" } )
+links( { "GucefLogServiceLib", "gucefCOM", "gucefCOMCORE", "gucefCORE", "gucefMT" } )
+links( { "GucefLogServiceLib", "gucefCOM", "gucefCOMCORE", "gucefCORE", "gucefMT" } )
 defines( { "GUCEFLOGSERVICE_BUILD_MODULE" } )
 
 

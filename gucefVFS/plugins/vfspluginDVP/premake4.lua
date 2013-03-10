@@ -14,8 +14,8 @@
 project( "vfspluginDVP" )
 location( os.getenv( "PM4OUTPUTDIR" ) )
 kind( "SharedLib" )
-links( { "DVPACKSYS" "gucefCORE" "gucefMT" "gucefVFS" } )
-links( { "DVPACKSYS" "gucefCORE" "gucefMT" "gucefVFS" } )
+links( { "DVPACKSYS", "gucefCORE", "gucefMT", "gucefVFS" } )
+links( { "DVPACKSYS", "gucefCORE", "gucefMT", "gucefVFS" } )
 defines( { "GUCEF_VFSPLUGIN_DVP_BUILD_MODULE" } )
 
 

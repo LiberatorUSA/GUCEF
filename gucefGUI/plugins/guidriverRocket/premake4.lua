@@ -14,8 +14,8 @@
 project( "guidriverRocket" )
 location( os.getenv( "PM4OUTPUTDIR" ) )
 kind( "SharedLib" )
-links( { "RocketControls" "RocketCore" "gucefCORE" "gucefGUI" "gucefINPUT" "gucefMT" "gucefVFS" } )
-links( { "RocketControls" "RocketCore" "gucefCORE" "gucefGUI" "gucefINPUT" "gucefMT" "gucefVFS" } )
+links( { "RocketControls", "RocketCore", "gucefCORE", "gucefGUI", "gucefINPUT", "gucefMT", "gucefVFS" } )
+links( { "RocketControls", "RocketCore", "gucefCORE", "gucefGUI", "gucefINPUT", "gucefMT", "gucefVFS" } )
 defines( { "GUCEF_GUIDRIVERROCKET_BUILD_MODULE" } )
 
 

@@ -20,27 +20,27 @@ configuration( { "LINUX" } )
 kind( "SharedLib" )
 
 configuration( { "LINUX" } )
-  links( { "gucefCORE" "gucefGUI" "gucefMT" } )
-  links( { "GL" "X11" "gucefCORE" "gucefGUI" "gucefMT" } )
+  links( { "gucefCORE", "gucefGUI", "gucefMT" } )
+  links( { "GL", "X11", "gucefCORE", "gucefGUI", "gucefMT" } )
   defines( { "GUIDRIVERXWINGL_BUILD_MODULE" } )
 
 
 configuration( { "LINUX" } )
     vpaths { ["Platform Headers"] = { "**.h", "**.hpp", "**.hxx" } }
     files( {
-      "include/guidriverXWinGL.h",
-      "include/guidriverXWinGL_config.h",
-      "include/guidriverXWinGL_CXWinGLWindowContext.h",
-      "include/guidriverXWinGL_CXWinGLWindowManagerImp.h",
-      "include/guidriverXWinGL_macros.h",
-      "include/guidriverXWinGL_pluginAPI.h"
+      "include\guidriverXWinGL.h",
+      "include\guidriverXWinGL_config.h",
+      "include\guidriverXWinGL_CXWinGLWindowContext.h",
+      "include\guidriverXWinGL_CXWinGLWindowManagerImp.h",
+      "include\guidriverXWinGL_macros.h",
+      "include\guidriverXWinGL_pluginAPI.h"
     } )
 
     vpaths { ["Platform Source"] = { "**.c", "**.cpp", "**.cs", "**.asm" } }
     files( {
-      "src/guidriverXWinGL_CXWinGLWindowContext.cpp",
-      "src/guidriverXWinGL_CXWinGLWindowManagerImp.cpp",
-      "src/guidriverXWinGL_pluginAPI.cpp"
+      "src\guidriverXWinGL_CXWinGLWindowContext.cpp",
+      "src\guidriverXWinGL_CXWinGLWindowManagerImp.cpp",
+      "src\guidriverXWinGL_pluginAPI.cpp"
     } )
 
 

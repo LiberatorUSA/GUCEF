@@ -14,8 +14,8 @@
 project( "gucefDRN" )
 location( os.getenv( "PM4OUTPUTDIR" ) )
 kind( "SharedLib" )
-links( { "gucefCOMCORE" "gucefCORE" "gucefMT" } )
-links( { "gucefCOMCORE" "gucefCORE" "gucefMT" } )
+links( { "gucefCOMCORE", "gucefCORE", "gucefMT" } )
+links( { "gucefCOMCORE", "gucefCORE", "gucefMT" } )
 defines( { "GUCEF_DRN_BUILD_MODULE" } )
 
 

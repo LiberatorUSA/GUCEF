@@ -30,30 +30,30 @@ configuration( { "WIN64" } )
 kind( "SharedLib" )
 
 configuration( { "LINUX" } )
-  links( { "DevIL" "gucefCORE" "gucefMT" } )
-  links( { "DevIL" "gucefCORE" "gucefMT" } )
+  links( { "DevIL", "gucefCORE", "gucefMT" } )
+  links( { "DevIL", "gucefCORE", "gucefMT" } )
   defines( { "GUCEF_CODECPLUGIN_BUILD_MODULE" } )
 
 configuration( { "WIN32" } )
-  links( { "DevIL" "gucefCORE" "gucefMT" } )
-  links( { "DevIL" "gucefCORE" "gucefMT" } )
+  links( { "DevIL", "gucefCORE", "gucefMT" } )
+  links( { "DevIL", "gucefCORE", "gucefMT" } )
   defines( { "GUCEF_CODECPLUGIN_BUILD_MODULE" } )
 
 configuration( { "WIN64" } )
-  links( { "DevIL" "gucefCORE" "gucefMT" } )
-  links( { "DevIL" "gucefCORE" "gucefMT" } )
+  links( { "DevIL", "gucefCORE", "gucefMT" } )
+  links( { "DevIL", "gucefCORE", "gucefMT" } )
   defines( { "GUCEF_CODECPLUGIN_BUILD_MODULE" } )
 
 
 configuration( { "LINUX" } )
     vpaths { ["Platform Headers"] = { "**.h", "**.hpp", "**.hxx" } }
     files( {
-      "include/imgpluginDEVIL.h"
+      "include\imgpluginDEVIL.h"
     } )
 
     vpaths { ["Platform Source"] = { "**.c", "**.cpp", "**.cs", "**.asm" } }
     files( {
-      "src/imgpluginDEVIL.c"
+      "src\imgpluginDEVIL.c"
     } )
 
 
@@ -61,12 +61,12 @@ configuration( { "LINUX" } )
 configuration( { "WIN32" } )
     vpaths { ["Platform Headers"] = { "**.h", "**.hpp", "**.hxx" } }
     files( {
-      "include/imgpluginDEVIL.h"
+      "include\imgpluginDEVIL.h"
     } )
 
     vpaths { ["Platform Source"] = { "**.c", "**.cpp", "**.cs", "**.asm" } }
     files( {
-      "src/imgpluginDEVIL.c"
+      "src\imgpluginDEVIL.c"
     } )
 
 
@@ -74,12 +74,12 @@ configuration( { "WIN32" } )
 configuration( { "WIN64" } )
     vpaths { ["Platform Headers"] = { "**.h", "**.hpp", "**.hxx" } }
     files( {
-      "include/imgpluginDEVIL.h"
+      "include\imgpluginDEVIL.h"
     } )
 
     vpaths { ["Platform Source"] = { "**.c", "**.cpp", "**.cs", "**.asm" } }
     files( {
-      "src/imgpluginDEVIL.c"
+      "src\imgpluginDEVIL.c"
     } )
 
 

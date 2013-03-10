@@ -14,8 +14,8 @@
 project( "gucefPATCHERAPP" )
 location( os.getenv( "PM4OUTPUTDIR" ) )
 kind( "SharedLib" )
-links( { "gucefCOM" "gucefCOMCORE" "gucefCORE" "gucefGUI" "gucefIMAGE" "gucefINPUT" "gucefMT" "gucefPATCHER" } )
-links( { "gucefCOM" "gucefCOMCORE" "gucefCORE" "gucefGUI" "gucefIMAGE" "gucefINPUT" "gucefMT" "gucefPATCHER" } )
+links( { "gucefCOM", "gucefCOMCORE", "gucefCORE", "gucefGUI", "gucefIMAGE", "gucefINPUT", "gucefMT", "gucefPATCHER" } )
+links( { "gucefCOM", "gucefCOMCORE", "gucefCORE", "gucefGUI", "gucefIMAGE", "gucefINPUT", "gucefMT", "gucefPATCHER" } )
 defines( { "GUCEF_PATCHERAPP_BUILD_MODULE" } )
 
 

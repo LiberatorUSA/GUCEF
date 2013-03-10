@@ -14,8 +14,8 @@
 project( "gucefIMAGE" )
 location( os.getenv( "PM4OUTPUTDIR" ) )
 kind( "SharedLib" )
-links( { "gucefCORE" "gucefMT" } )
-links( { "gucefCORE" "gucefMT" } )
+links( { "gucefCORE", "gucefMT" } )
+links( { "gucefCORE", "gucefMT" } )
 defines( { "GUCEFIMAGE_BUILD_MODULE" } )
 
 

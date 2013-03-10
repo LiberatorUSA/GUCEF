@@ -20,22 +20,22 @@ configuration( { "LINUX" } )
 kind( "SharedLib" )
 
 configuration( { "LINUX" } )
-  links( { "gucefCORE" "gucefINPUT" "gucefMT" } )
-  links( { "gucefCORE" "gucefINPUT" "gucefMT" } )
+  links( { "gucefCORE", "gucefINPUT", "gucefMT" } )
+  links( { "gucefCORE", "gucefINPUT", "gucefMT" } )
   defines( { "BUILD_GUCEF_INPUT_PLUGIN_DLL", "INPUTDRIVERXWINMSG_BUILD_MODULE" } )
 
 
 configuration( { "LINUX" } )
     vpaths { ["Platform Headers"] = { "**.h", "**.hpp", "**.hxx" } }
     files( {
-      "include/inputdriverXWINMSG.h",
-      "include/inputdriverXWINMSG_CEventListner.h"
+      "include\inputdriverXWINMSG.h",
+      "include\inputdriverXWINMSG_CEventListner.h"
     } )
 
     vpaths { ["Platform Source"] = { "**.c", "**.cpp", "**.cs", "**.asm" } }
     files( {
-      "src/inputdriverXWINMSG.cpp",
-      "src/inputdriverXWINMSG_CEventListner.cpp"
+      "src\inputdriverXWINMSG.cpp",
+      "src\inputdriverXWINMSG_CEventListner.cpp"
     } )
 
 

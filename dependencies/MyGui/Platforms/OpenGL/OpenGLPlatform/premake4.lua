@@ -63,4 +63,4 @@ files( {
 
 
 configuration( {} )
-includedirs( { "../../../../freetype/include", "../../../../freetype/include/freetype", "../../../../freetype/include/freetype/config", "../../../../freetype/include/freetype/internal", "../../../../freetype/include/freetype/internal/services", "../../../../freetype/src/winfonts", "../../../MyGUIEngine/include", "../../../Common/FileSystemInfo", "include", "include/GL" } )
+includedirs( { "../../../../freetype/include", "../../../../freetype/include/freetype", "../../../../freetype/include/freetype/config", "../../../../freetype/include/freetype/internal", "../../../../freetype/include/freetype/internal/services", "../../../../freetype/src/winfonts", "../../../MyGUIEngine/include", "..\..\..\Common\FileSystemInfo", "include", "include\GL" } )

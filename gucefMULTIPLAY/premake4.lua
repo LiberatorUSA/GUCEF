@@ -14,8 +14,8 @@
 project( "gucefMULTIPLAY" )
 location( os.getenv( "PM4OUTPUTDIR" ) )
 kind( "SharedLib" )
-links( { "gucefCOM" "gucefCOMCORE" "gucefCORE" "gucefMT" } )
-links( { "gucefCOM" "gucefCOMCORE" "gucefCORE" "gucefMT" } )
+links( { "gucefCOM", "gucefCOMCORE", "gucefCORE", "gucefMT" } )
+links( { "gucefCOM", "gucefCOMCORE", "gucefCORE", "gucefMT" } )
 
 
 configuration( {} )

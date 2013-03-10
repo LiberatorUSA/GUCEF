@@ -14,8 +14,8 @@
 project( "RocketDebugger" )
 location( os.getenv( "PM4OUTPUTDIR" ) )
 kind( "SharedLib" )
-links( { "RocketCore" "freetype" } )
-links( { "RocketCore" "freetype" } )
+links( { "RocketCore", "freetype" } )
+links( { "RocketCore", "freetype" } )
 
 
 configuration( {} )

@@ -14,8 +14,8 @@
 project( "gucefPRODMANAPP" )
 location( os.getenv( "PM4OUTPUTDIR" ) )
 kind( "SharedLib" )
-links( { "gucefCOM" "gucefCOMCORE" "gucefCORE" "gucefMT" "gucefPRODMAN" } )
-links( { "gucefCOM" "gucefCOMCORE" "gucefCORE" "gucefMT" "gucefPRODMAN" } )
+links( { "gucefCOM", "gucefCOMCORE", "gucefCORE", "gucefMT", "gucefPRODMAN" } )
+links( { "gucefCOM", "gucefCOMCORE", "gucefCORE", "gucefMT", "gucefPRODMAN" } )
 defines( { "GUCEF_PRODMANAPP_BUILD_MODULE" } )
 
 

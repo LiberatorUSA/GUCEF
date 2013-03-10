@@ -14,8 +14,8 @@
 project( "guidriverMyGUI" )
 location( os.getenv( "PM4OUTPUTDIR" ) )
 kind( "SharedLib" )
-links( { "MyGUI.Engine" "freetype" "gucefCORE" "gucefGUI" "gucefINPUT" "gucefMT" "gucefVFS" } )
-links( { "MyGUI.Engine" "freetype" "gucefCORE" "gucefGUI" "gucefINPUT" "gucefMT" "gucefVFS" } )
+links( { "MyGUI.Engine", "freetype", "gucefCORE", "gucefGUI", "gucefINPUT", "gucefMT", "gucefVFS" } )
+links( { "MyGUI.Engine", "freetype", "gucefCORE", "gucefGUI", "gucefINPUT", "gucefMT", "gucefVFS" } )
 defines( { "GUIDRIVERMYGUI_BUILD_MODULE" } )
 
 

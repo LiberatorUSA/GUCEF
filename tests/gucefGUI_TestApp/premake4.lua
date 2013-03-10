@@ -30,25 +30,25 @@ configuration( { "WIN64" } )
 kind( "WindowedApp" )
 
 configuration( { "LINUX" } )
-  links( { "gucefCORE" "gucefGUI" "gucefIMAGE" "gucefINPUT" "gucefMT" "gucefVFS" } )
-  links( { "gucefCORE" "gucefGUI" "gucefIMAGE" "gucefINPUT" "gucefMT" "gucefVFS" } )
+  links( { "gucefCORE", "gucefGUI", "gucefIMAGE", "gucefINPUT", "gucefMT", "gucefVFS" } )
+  links( { "gucefCORE", "gucefGUI", "gucefIMAGE", "gucefINPUT", "gucefMT", "gucefVFS" } )
   defines( { "GUCEF_GUI_TESTAPP_BUILD_MODULE" } )
 
 configuration( { "WIN32" } )
-  links( { "gucefCORE" "gucefGUI" "gucefIMAGE" "gucefINPUT" "gucefMT" "gucefVFS" } )
-  links( { "gucefCORE" "gucefGUI" "gucefIMAGE" "gucefINPUT" "gucefMT" "gucefVFS" } )
+  links( { "gucefCORE", "gucefGUI", "gucefIMAGE", "gucefINPUT", "gucefMT", "gucefVFS" } )
+  links( { "gucefCORE", "gucefGUI", "gucefIMAGE", "gucefINPUT", "gucefMT", "gucefVFS" } )
   defines( { "GUCEF_GUI_TESTAPP_BUILD_MODULE" } )
 
 configuration( { "WIN64" } )
-  links( { "gucefCORE" "gucefGUI" "gucefIMAGE" "gucefINPUT" "gucefMT" "gucefVFS" } )
-  links( { "gucefCORE" "gucefGUI" "gucefIMAGE" "gucefINPUT" "gucefMT" "gucefVFS" } )
+  links( { "gucefCORE", "gucefGUI", "gucefIMAGE", "gucefINPUT", "gucefMT", "gucefVFS" } )
+  links( { "gucefCORE", "gucefGUI", "gucefIMAGE", "gucefINPUT", "gucefMT", "gucefVFS" } )
   defines( { "GUCEF_GUI_TESTAPP_BUILD_MODULE" } )
 
 
 configuration( { "LINUX" } )
     vpaths { ["Platform Source"] = { "**.c", "**.cpp", "**.cs", "**.asm" } }
     files( {
-      "src/gucefGUI_TestApp.cpp"
+      "src\gucefGUI_TestApp.cpp"
     } )
 
 
@@ -56,7 +56,7 @@ configuration( { "LINUX" } )
 configuration( { "WIN32" } )
     vpaths { ["Platform Source"] = { "**.c", "**.cpp", "**.cs", "**.asm" } }
     files( {
-      "src/gucefGUI_TestApp.cpp"
+      "src\gucefGUI_TestApp.cpp"
     } )
 
 
@@ -64,7 +64,7 @@ configuration( { "WIN32" } )
 configuration( { "WIN64" } )
     vpaths { ["Platform Source"] = { "**.c", "**.cpp", "**.cs", "**.asm" } }
     files( {
-      "src/gucefGUI_TestApp.cpp"
+      "src\gucefGUI_TestApp.cpp"
     } )
 
 
