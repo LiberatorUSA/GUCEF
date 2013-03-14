@@ -33,9 +33,17 @@ language( "C" )
 configuration( { "WIN64" } )
 language( "C" )
 
+
+
+configuration( {} )
 kind( "SharedLib" )
+
+configuration( {} )
 links( { "RocketControls", "RocketCore", "gucefCORE", "gucefGUI", "gucefINPUT", "gucefMT", "gucefVFS" } )
 links( { "RocketControls", "RocketCore", "gucefCORE", "gucefGUI", "gucefINPUT", "gucefMT", "gucefVFS" } )
+
+
+configuration( {} )
 defines( { "GUCEF_GUIDRIVERROCKET_BUILD_MODULE" } )
 
 

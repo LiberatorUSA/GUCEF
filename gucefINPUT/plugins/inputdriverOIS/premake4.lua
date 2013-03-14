@@ -35,26 +35,50 @@ configuration( { "WIN64" } )
 language( "C++" )
 
 configuration( { "LINUX" } )
+
+
+configuration( { LINUX } )
 kind( "SharedLib" )
 configuration( { "WIN32" } )
+
+
+configuration( { WIN32 } )
 kind( "SharedLib" )
 configuration( { "WIN64" } )
+
+
+configuration( { WIN64 } )
 kind( "SharedLib" )
 
 configuration( { "LINUX" } )
-  links( { "OIS", "gucefCORE", "gucefINPUT", "gucefMT" } )
+  
+configuration( { LINUX } )
+links( { "OIS", "gucefCORE", "gucefINPUT", "gucefMT" } )
   links( { "OIS" } )
-  defines( { "BUILD_GUCEF_INPUT_PLUGIN_DLL", "INPUTDRIVEROIS_BUILD_MODULE" } )
+  
+
+configuration( { LINUX } )
+defines( { "BUILD_GUCEF_INPUT_PLUGIN_DLL", "INPUTDRIVEROIS_BUILD_MODULE" } )
 
 configuration( { "WIN32" } )
-  links( { "OIS", "gucefCORE", "gucefINPUT", "gucefMT" } )
+  
+configuration( { WIN32 } )
+links( { "OIS", "gucefCORE", "gucefINPUT", "gucefMT" } )
   links( { "OIS" } )
-  defines( { "BUILD_GUCEF_INPUT_PLUGIN_DLL", "INPUTDRIVEROIS_BUILD_MODULE" } )
+  
+
+configuration( { WIN32 } )
+defines( { "BUILD_GUCEF_INPUT_PLUGIN_DLL", "INPUTDRIVEROIS_BUILD_MODULE" } )
 
 configuration( { "WIN64" } )
-  links( { "OIS", "gucefCORE", "gucefINPUT", "gucefMT" } )
+  
+configuration( { WIN64 } )
+links( { "OIS", "gucefCORE", "gucefINPUT", "gucefMT" } )
   links( { "OIS" } )
-  defines( { "BUILD_GUCEF_INPUT_PLUGIN_DLL", "INPUTDRIVEROIS_BUILD_MODULE" } )
+  
+
+configuration( { WIN64 } )
+defines( { "BUILD_GUCEF_INPUT_PLUGIN_DLL", "INPUTDRIVEROIS_BUILD_MODULE" } )
 
 
 configuration( { "LINUX" } )

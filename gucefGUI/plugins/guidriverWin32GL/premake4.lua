@@ -29,19 +29,35 @@ configuration( { "WIN64" } )
 language( "C++" )
 
 configuration( { "WIN32" } )
+
+
+configuration( { WIN32 } )
 kind( "SharedLib" )
 configuration( { "WIN64" } )
+
+
+configuration( { WIN64 } )
 kind( "SharedLib" )
 
 configuration( { "WIN32" } )
-  links( { "gucefCORE", "gucefGUI", "gucefMT" } )
+  
+configuration( { WIN32 } )
+links( { "gucefCORE", "gucefGUI", "gucefMT" } )
   links( { "Opengl32", "gucefCORE", "gucefGUI", "gucefMT" } )
-  defines( { "GUIDRIVERWIN32GL_BUILD_MODULE" } )
+  
+
+configuration( { WIN32 } )
+defines( { "GUIDRIVERWIN32GL_BUILD_MODULE" } )
 
 configuration( { "WIN64" } )
-  links( { "gucefCORE", "gucefGUI", "gucefMT" } )
+  
+configuration( { WIN64 } )
+links( { "gucefCORE", "gucefGUI", "gucefMT" } )
   links( { "Opengl32", "gucefCORE", "gucefGUI", "gucefMT" } )
-  defines( { "GUIDRIVERWIN32GL_BUILD_MODULE" } )
+  
+
+configuration( { WIN64 } )
+defines( { "GUIDRIVERWIN32GL_BUILD_MODULE" } )
 
 
 configuration( { "WIN32" } )

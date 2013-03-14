@@ -18,6 +18,9 @@ location( os.getenv( "PM4OUTPUTDIR" ) )
 configuration( {} )
 language( "C" )
 
+
+
+configuration( {} )
 kind( "SharedLib" )
 
 

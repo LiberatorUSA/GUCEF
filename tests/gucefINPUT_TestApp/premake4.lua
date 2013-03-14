@@ -34,9 +34,17 @@ configuration( { "WIN64" } )
 language( "C" )
 
 configuration( { "WIN32" } )
+
+
+configuration( { WIN32 } )
 kind( "WindowedApp" )
 configuration( { "NOT WIN32" } )
-  kind( "ConsoleApp" )
+  
+
+configuration( {} )
+kind( "ConsoleApp" )
+
+configuration( {} )
 links( { "gucefCORE", "gucefINPUT", "gucefMT" } )
 links( { "gucefCORE", "gucefINPUT", "gucefMT" } )
 

@@ -35,26 +35,50 @@ configuration( { "WIN64" } )
 language( "C++" )
 
 configuration( { "LINUX" } )
+
+
+configuration( { LINUX } )
 kind( "ConsoleApp" )
 configuration( { "WIN32" } )
+
+
+configuration( { WIN32 } )
 kind( "WindowedApp" )
 configuration( { "WIN64" } )
+
+
+configuration( { WIN64 } )
 kind( "WindowedApp" )
 
 configuration( { "LINUX" } )
+  
+configuration( { LINUX } )
+links( { "MyGUI.Engine", "MyGUI.OpenGLPlatform", "freetype" } )
   links( { "MyGUI.Engine", "MyGUI.OpenGLPlatform", "freetype" } )
-  links( { "MyGUI.Engine", "MyGUI.OpenGLPlatform", "freetype" } )
-  defines( { "MYGUI_USE_FREETYPE" } )
+  
+
+configuration( { LINUX } )
+defines( { "MYGUI_USE_FREETYPE" } )
 
 configuration( { "WIN32" } )
+  
+configuration( { WIN32 } )
+links( { "MyGUI.Engine", "MyGUI.OpenGLPlatform", "freetype" } )
   links( { "MyGUI.Engine", "MyGUI.OpenGLPlatform", "freetype" } )
-  links( { "MyGUI.Engine", "MyGUI.OpenGLPlatform", "freetype" } )
-  defines( { "MYGUI_USE_FREETYPE" } )
+  
+
+configuration( { WIN32 } )
+defines( { "MYGUI_USE_FREETYPE" } )
 
 configuration( { "WIN64" } )
+  
+configuration( { WIN64 } )
+links( { "MyGUI.Engine", "MyGUI.OpenGLPlatform", "freetype" } )
   links( { "MyGUI.Engine", "MyGUI.OpenGLPlatform", "freetype" } )
-  links( { "MyGUI.Engine", "MyGUI.OpenGLPlatform", "freetype" } )
-  defines( { "MYGUI_USE_FREETYPE" } )
+  
+
+configuration( { WIN64 } )
+defines( { "MYGUI_USE_FREETYPE" } )
 
 
 configuration( { "LINUX" } )

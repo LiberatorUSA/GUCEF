@@ -32,20 +32,38 @@ configuration( { "WIN64" } )
 language( "C" )
 
 configuration( { "LINUX" } )
+
+
+configuration( { LINUX } )
 kind( "SharedLib" )
 configuration( { "WIN32" } )
+
+
+configuration( { WIN32 } )
 kind( "SharedLib" )
 configuration( { "WIN64" } )
+
+
+configuration( { WIN64 } )
 kind( "SharedLib" )
 
 configuration( { "LINUX" } )
-  defines( { "ZLIB_DLL", "ZLIB_INTERNAL", "ZZIP_HAVE_STDINT_H" } )
+  
+
+configuration( { LINUX } )
+defines( { "ZLIB_DLL", "ZLIB_INTERNAL", "ZZIP_HAVE_STDINT_H" } )
 
 configuration( { "WIN32" } )
-  defines( { "ZLIB_DLL", "ZLIB_INTERNAL", "ZZIP_HAVE_STDINT_H" } )
+  
+
+configuration( { WIN32 } )
+defines( { "ZLIB_DLL", "ZLIB_INTERNAL", "ZZIP_HAVE_STDINT_H" } )
 
 configuration( { "WIN64" } )
-  defines( { "ZLIB_DLL", "ZLIB_INTERNAL", "ZZIP_HAVE_STDINT_H" } )
+  
+
+configuration( { WIN64 } )
+defines( { "ZLIB_DLL", "ZLIB_INTERNAL", "ZZIP_HAVE_STDINT_H" } )
 
 
 configuration( { "LINUX" } )

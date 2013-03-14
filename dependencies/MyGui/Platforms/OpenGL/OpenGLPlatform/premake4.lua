@@ -33,7 +33,12 @@ language( "C" )
 configuration( { "WIN64" } )
 language( "C" )
 
+
+
+configuration( {} )
 kind( "StaticLib" )
+
+configuration( {} )
 links( { "MyGUI.Engine" } )
 links( { "MyGUI.Engine" } )
 

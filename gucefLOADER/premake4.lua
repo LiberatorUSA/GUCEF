@@ -51,8 +51,16 @@ language( "C++" )
 configuration( { "WIN64" } )
 language( "C++" )
 
+
+
+configuration( {} )
 kind( "SharedLib" )
+
+configuration( {} )
 links( { "gucefCORE", "gucefMT" } )
+
+
+configuration( {} )
 defines( { "GUCEF_CORE_EMBED_CODE", "GUCEF_LOADER_BUILD_MODULE", "GUCEF_MT_EMBED_CODE", "GUCEF_NO_LOGGING" } )
 
 configuration( { "ANDROID" } )

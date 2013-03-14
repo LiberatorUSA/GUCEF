@@ -33,9 +33,17 @@ language( "C" )
 configuration( { "WIN64" } )
 language( "C" )
 
+
+
+configuration( {} )
 kind( "SharedLib" )
+
+configuration( {} )
 links( { "GucefLogServiceLib", "gucefCOM", "gucefCOMCORE", "gucefCORE", "gucefMT" } )
 links( { "GucefLogServiceLib", "gucefCOM", "gucefCOMCORE", "gucefCORE", "gucefMT" } )
+
+
+configuration( {} )
 defines( { "GUCEF_LOGSERVICECLIENTPLUGIN_BUILD_MODULE" } )
 
 

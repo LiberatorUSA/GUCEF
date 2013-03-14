@@ -33,24 +33,38 @@ language( "C" )
 configuration( { "WIN64" } )
 language( "C" )
 
+
+
+configuration( {} )
 kind( "SharedLib" )
+
+configuration( {} )
 links( { "gucefCORE", "gucefMT", "gucefVFS", "zziplib" } )
 links( { "gucefCORE", "gucefMT", "gucefVFS", "zziplib" } )
+
+
+configuration( {} )
 defines( { "GUCEF_VFSPLUGIN_ZIP_BUILD_MODULE", "ZZIP_HAVE_STDINT_H" } )
 
 configuration( { "ANDROID" } )
   links( { "z" } )
 
 configuration( { "LINUX" } )
-  links( { "zlib" } )
+  
+configuration( { LINUX } )
+links( { "zlib" } )
   links( { "zlib" } )
 
 configuration( { "WIN32" } )
-  links( { "zlib" } )
+  
+configuration( { WIN32 } )
+links( { "zlib" } )
   links( { "zlib" } )
 
 configuration( { "WIN64" } )
-  links( { "zlib" } )
+  
+configuration( { WIN64 } )
+links( { "zlib" } )
   links( { "zlib" } )
 
 

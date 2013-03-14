@@ -30,9 +30,17 @@ language( "C" )
 configuration( { "WIN64" } )
 language( "C" )
 
+
+
+configuration( {} )
 kind( "SharedLib" )
+
+configuration( {} )
 links( { "freetype" } )
 links( { "freetype" } )
+
+
+configuration( {} )
 defines( { "MYGUI_BUILD", "MYGUI_BUILD_DLL", "MYGUI_USE_FREETYPE" } )
 
 

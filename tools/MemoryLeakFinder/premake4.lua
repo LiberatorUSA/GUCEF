@@ -35,26 +35,50 @@ configuration( { "WIN64" } )
 language( "C++" )
 
 configuration( { "LINUX" } )
+
+
+configuration( { LINUX } )
 kind( "SharedLib" )
 configuration( { "WIN32" } )
+
+
+configuration( { WIN32 } )
 kind( "SharedLib" )
 configuration( { "WIN64" } )
+
+
+configuration( { WIN64 } )
 kind( "SharedLib" )
 
 configuration( { "LINUX" } )
-  links( { "gucefCORE", "gucefMT" } )
+  
+configuration( { LINUX } )
+links( { "gucefCORE", "gucefMT" } )
   links( { "gucefMT" } )
-  defines( { "MEMORYLEAKFINDER_BUILD_MODULE" } )
+  
+
+configuration( { LINUX } )
+defines( { "MEMORYLEAKFINDER_BUILD_MODULE" } )
 
 configuration( { "WIN32" } )
-  links( { "gucefCORE", "gucefMT" } )
+  
+configuration( { WIN32 } )
+links( { "gucefCORE", "gucefMT" } )
   links( { "gucefMT" } )
-  defines( { "MEMORYLEAKFINDER_BUILD_MODULE" } )
+  
+
+configuration( { WIN32 } )
+defines( { "MEMORYLEAKFINDER_BUILD_MODULE" } )
 
 configuration( { "WIN64" } )
-  links( { "gucefCORE", "gucefMT" } )
+  
+configuration( { WIN64 } )
+links( { "gucefCORE", "gucefMT" } )
   links( { "gucefMT" } )
-  defines( { "MEMORYLEAKFINDER_BUILD_MODULE" } )
+  
+
+configuration( { WIN64 } )
+defines( { "MEMORYLEAKFINDER_BUILD_MODULE" } )
 
 
 configuration( { "LINUX" } )

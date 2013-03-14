@@ -33,9 +33,17 @@ language( "C" )
 configuration( { "WIN64" } )
 language( "C" )
 
+
+
+configuration( {} )
 kind( "SharedLib" )
+
+configuration( {} )
 links( { "gucefCOM", "gucefCOMCORE", "gucefCORE", "gucefMT", "gucefPRODMAN" } )
 links( { "gucefCOM", "gucefCOMCORE", "gucefCORE", "gucefMT", "gucefPRODMAN" } )
+
+
+configuration( {} )
 defines( { "GUCEF_PRODMANAPP_BUILD_MODULE" } )
 
 
