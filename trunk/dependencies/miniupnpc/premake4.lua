@@ -27,11 +27,20 @@ language( "C" )
 configuration( { "WIN64" } )
 language( "C" )
 
+
+
+configuration( {} )
 kind( "SharedLib" )
+
+
+configuration( {} )
 defines( { "MINIUPNP_EXPORTS" } )
 
 configuration( { "ANDROID" } )
-  defines( { "__sun" } )
+  
+
+configuration( { ANDROID } )
+defines( { "__sun" } )
 
 configuration( { "WIN32" } )
   links( { "WS2_32.lib" } )

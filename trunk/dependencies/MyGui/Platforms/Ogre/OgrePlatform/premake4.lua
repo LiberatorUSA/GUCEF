@@ -29,16 +29,26 @@ configuration( { "WIN32" } )
 language( "C++" )
 
 configuration( { "LINUX" } )
+
+
+configuration( { LINUX } )
 kind( "SharedLib" )
 configuration( { "WIN32" } )
+
+
+configuration( { WIN32 } )
 kind( "SharedLib" )
 
 configuration( { "LINUX" } )
-  links( { "MyGUI.Engine", "OgreMain" } )
+  
+configuration( { LINUX } )
+links( { "MyGUI.Engine", "OgreMain" } )
   links( { "MyGUI.Engine", "OgreMain" } )
 
 configuration( { "WIN32" } )
-  links( { "MyGUI.Engine", "OgreMain" } )
+  
+configuration( { WIN32 } )
+links( { "MyGUI.Engine", "OgreMain" } )
   links( { "MyGUI.Engine", "OgreMain" } )
 
 

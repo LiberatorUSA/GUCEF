@@ -33,7 +33,13 @@ language( "C" )
 configuration( { "WIN64" } )
 language( "C" )
 
+
+
+configuration( {} )
 kind( "SharedLib" )
+
+
+configuration( {} )
 defines( { "GUCEF_MT_BUILD_MODULE" } )
 
 configuration( { "LINUX" } )

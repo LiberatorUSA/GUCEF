@@ -33,9 +33,17 @@ language( "C++" )
 configuration( { "WIN64" } )
 language( "C++" )
 
+
+
+configuration( {} )
 kind( "SharedLib" )
+
+configuration( {} )
 links( { "gucefCORE", "gucefMT" } )
 links( { "gucefCORE", "gucefMT" } )
+
+
+configuration( {} )
 defines( { "GUCEF_COMCORE_BUILD_MODULE" } )
 
 configuration( { "WIN32" } )

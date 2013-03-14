@@ -23,12 +23,20 @@ configuration( { "LINUX" } )
 language( "C++" )
 
 configuration( { "LINUX" } )
+
+
+configuration( { LINUX } )
 kind( "SharedLib" )
 
 configuration( { "LINUX" } )
-  links( { "gucefCORE", "gucefGUI", "gucefMT" } )
+  
+configuration( { LINUX } )
+links( { "gucefCORE", "gucefGUI", "gucefMT" } )
   links( { "GL", "X11", "gucefCORE", "gucefGUI", "gucefMT" } )
-  defines( { "GUIDRIVERXWINGL_BUILD_MODULE" } )
+  
+
+configuration( { LINUX } )
+defines( { "GUIDRIVERXWINGL_BUILD_MODULE" } )
 
 
 configuration( { "LINUX" } )

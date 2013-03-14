@@ -32,20 +32,38 @@ configuration( { "WIN64" } )
 language( "C++" )
 
 configuration( { "LINUX" } )
+
+
+configuration( { LINUX } )
 kind( "SharedLib" )
 configuration( { "WIN32" } )
+
+
+configuration( { WIN32 } )
 kind( "SharedLib" )
 configuration( { "WIN64" } )
+
+
+configuration( { WIN64 } )
 kind( "SharedLib" )
 
 configuration( { "LINUX" } )
-  defines( { "FREEIMAGE_EXPORTS", "HALF_EXPORTS", "ILMIMF_EXPORTS", "IMATH_EXPORTS", "OPJ_EXPORTS", "OPJ_STATIC", "ZENO_STATIC" } )
+  
+
+configuration( { LINUX } )
+defines( { "FREEIMAGE_EXPORTS", "HALF_EXPORTS", "ILMIMF_EXPORTS", "IMATH_EXPORTS", "OPJ_EXPORTS", "OPJ_STATIC", "ZENO_STATIC" } )
 
 configuration( { "WIN32" } )
-  defines( { "FREEIMAGE_EXPORTS", "HALF_EXPORTS", "ILMIMF_EXPORTS", "IMATH_EXPORTS", "OPENEXR_DLL", "OPJ_EXPORTS", "OPJ_STATIC", "ZENO_STATIC", "_CRT_SECURE_NO_WARNINGS" } )
+  
+
+configuration( { WIN32 } )
+defines( { "FREEIMAGE_EXPORTS", "HALF_EXPORTS", "ILMIMF_EXPORTS", "IMATH_EXPORTS", "OPENEXR_DLL", "OPJ_EXPORTS", "OPJ_STATIC", "ZENO_STATIC", "_CRT_SECURE_NO_WARNINGS" } )
 
 configuration( { "WIN64" } )
-  defines( { "FREEIMAGE_EXPORTS", "HALF_EXPORTS", "ILMIMF_EXPORTS", "IMATH_EXPORTS", "OPENEXR_DLL", "OPJ_EXPORTS", "OPJ_STATIC", "ZENO_STATIC", "_CRT_SECURE_NO_WARNINGS" } )
+  
+
+configuration( { WIN64 } )
+defines( { "FREEIMAGE_EXPORTS", "HALF_EXPORTS", "ILMIMF_EXPORTS", "IMATH_EXPORTS", "OPENEXR_DLL", "OPJ_EXPORTS", "OPJ_STATIC", "ZENO_STATIC", "_CRT_SECURE_NO_WARNINGS" } )
 
 
 configuration( { "LINUX" } )

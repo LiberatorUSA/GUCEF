@@ -29,19 +29,35 @@ configuration( { "WIN64" } )
 language( "C++" )
 
 configuration( { "WIN32" } )
+
+
+configuration( { WIN32 } )
 kind( "SharedLib" )
 configuration( { "WIN64" } )
+
+
+configuration( { WIN64 } )
 kind( "SharedLib" )
 
 configuration( { "WIN32" } )
+  
+configuration( { WIN32 } )
+links( { "gucefCOM", "gucefCOMCORE", "gucefCORE", "gucefMT", "gucefPATCHER", "gucefVFS" } )
   links( { "gucefCOM", "gucefCOMCORE", "gucefCORE", "gucefMT", "gucefPATCHER", "gucefVFS" } )
-  links( { "gucefCOM", "gucefCOMCORE", "gucefCORE", "gucefMT", "gucefPATCHER", "gucefVFS" } )
-  defines( { "_AFXDLL" } )
+  
+
+configuration( { WIN32 } )
+defines( { "_AFXDLL" } )
 
 configuration( { "WIN64" } )
+  
+configuration( { WIN64 } )
+links( { "gucefCOM", "gucefCOMCORE", "gucefCORE", "gucefMT", "gucefPATCHER", "gucefVFS" } )
   links( { "gucefCOM", "gucefCOMCORE", "gucefCORE", "gucefMT", "gucefPATCHER", "gucefVFS" } )
-  links( { "gucefCOM", "gucefCOMCORE", "gucefCORE", "gucefMT", "gucefPATCHER", "gucefVFS" } )
-  defines( { "_AFXDLL" } )
+  
+
+configuration( { WIN64 } )
+defines( { "_AFXDLL" } )
 
 
 configuration( { "WIN32" } )

@@ -44,28 +44,52 @@ configuration( { "WIN64" } )
 language( "C++" )
 
 configuration( { "LINUX" } )
+
+
+configuration( { LINUX } )
 kind( "SharedLib" )
 configuration( { "OSX" } )
+
+
+configuration( { OSX } )
 kind( "SharedLib" )
 configuration( { "WIN32" } )
+
+
+configuration( { WIN32 } )
 kind( "SharedLib" )
 configuration( { "WIN64" } )
+
+
+configuration( { WIN64 } )
 kind( "SharedLib" )
 
 configuration( { "LINUX" } )
   links( { "X11" } )
-  defines( { "OIS_DYNAMIC_LIB", "OIS_LINUX_PLATFORM", "OIS_NONCLIENT_BUILD" } )
+  
+
+configuration( { LINUX } )
+defines( { "OIS_DYNAMIC_LIB", "OIS_LINUX_PLATFORM", "OIS_NONCLIENT_BUILD" } )
 
 configuration( { "OSX" } )
-  defines( { "OIS_APPLE_PLATFORM", "OIS_DYNAMIC_LIB", "OIS_NONCLIENT_BUILD" } )
+  
+
+configuration( { OSX } )
+defines( { "OIS_APPLE_PLATFORM", "OIS_DYNAMIC_LIB", "OIS_NONCLIENT_BUILD" } )
 
 configuration( { "WIN32" } )
   links( { "dinput8.lib", "dxguid.lib" } )
-  defines( { "OIS_DYNAMIC_LIB", "OIS_NONCLIENT_BUILD" } )
+  
+
+configuration( { WIN32 } )
+defines( { "OIS_DYNAMIC_LIB", "OIS_NONCLIENT_BUILD" } )
 
 configuration( { "WIN64" } )
   links( { "dinput8.lib", "dxguid.lib" } )
-  defines( { "OIS_DYNAMIC_LIB", "OIS_NONCLIENT_BUILD" } )
+  
+
+configuration( { WIN64 } )
+defines( { "OIS_DYNAMIC_LIB", "OIS_NONCLIENT_BUILD" } )
 
 
 configuration( { "IPHONEOS" } )

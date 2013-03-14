@@ -23,10 +23,15 @@ configuration( { "ANDROID" } )
 language( "C" )
 
 configuration( { "ANDROID" } )
+
+
+configuration( { ANDROID } )
 kind( "SharedLib" )
 
 configuration( { "ANDROID" } )
-  links( { "gucefLOADER" } )
+  
+configuration( { ANDROID } )
+links( { "gucefLOADER" } )
   links( { "android", "android_native_app_glue" } )
 
 

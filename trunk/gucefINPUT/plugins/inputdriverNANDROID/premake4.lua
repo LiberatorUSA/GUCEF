@@ -23,12 +23,20 @@ configuration( { "ANDROID" } )
 language( "C" )
 
 configuration( { "ANDROID" } )
+
+
+configuration( { ANDROID } )
 kind( "SharedLib" )
 
 configuration( { "ANDROID" } )
-  links( { "gucefCORE", "gucefINPUT", "gucefMT" } )
+  
+configuration( { ANDROID } )
+links( { "gucefCORE", "gucefINPUT", "gucefMT" } )
   links( { "android", "android_native_app_glue", "gucefCORE", "gucefINPUT", "gucefMT" } )
-  defines( { "BUILD_GUCEF_INPUT_PLUGIN_DLL", "INPUTDRIVERANDROID_BUILD_MODULE" } )
+  
+
+configuration( { ANDROID } )
+defines( { "BUILD_GUCEF_INPUT_PLUGIN_DLL", "INPUTDRIVERANDROID_BUILD_MODULE" } )
 
 
 configuration( { "ANDROID" } )

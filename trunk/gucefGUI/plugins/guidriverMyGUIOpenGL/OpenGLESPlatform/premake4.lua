@@ -23,10 +23,15 @@ configuration( { "ANDROID" } )
 language( "C++" )
 
 configuration( { "ANDROID" } )
+
+
+configuration( { ANDROID } )
 kind( "StaticLib" )
 
 configuration( { "ANDROID" } )
-  links( { "MyGUI.Engine" } )
+  
+configuration( { ANDROID } )
+links( { "MyGUI.Engine" } )
   links( { "GLESv1_CM", "MyGUI.Engine" } )
 
 

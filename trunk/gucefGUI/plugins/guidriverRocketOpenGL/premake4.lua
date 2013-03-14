@@ -33,9 +33,17 @@ language( "C" )
 configuration( { "WIN64" } )
 language( "C" )
 
+
+
+configuration( {} )
 kind( "SharedLib" )
+
+configuration( {} )
 links( { "RocketControls", "RocketCore", "gucefCORE", "gucefGUI", "gucefINPUT", "gucefMT", "guidriverRocket" } )
 links( { "RocketControls", "RocketCore", "gucefCORE", "gucefGUI", "gucefINPUT", "gucefMT", "guidriverRocket" } )
+
+
+configuration( {} )
 defines( { "GUIDRIVERROCKETGL_BUILD_MODULE" } )
 
 configuration( { "ANDROID" } )

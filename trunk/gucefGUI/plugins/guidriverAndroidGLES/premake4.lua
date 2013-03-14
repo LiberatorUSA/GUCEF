@@ -23,12 +23,20 @@ configuration( { "ANDROID" } )
 language( "C++" )
 
 configuration( { "ANDROID" } )
+
+
+configuration( { ANDROID } )
 kind( "SharedLib" )
 
 configuration( { "ANDROID" } )
-  links( { "gucefCORE", "gucefGUI", "gucefMT" } )
+  
+configuration( { ANDROID } )
+links( { "gucefCORE", "gucefGUI", "gucefMT" } )
   links( { "EGL", "GLESv1_CM", "android", "android_native_app_glue", "gucefCORE", "gucefGUI", "gucefMT" } )
-  defines( { "GUIDRIVERANDROIDGLES_BUILD_MODULE" } )
+  
+
+configuration( { ANDROID } )
+defines( { "GUIDRIVERANDROIDGLES_BUILD_MODULE" } )
 
 
 configuration( { "ANDROID" } )

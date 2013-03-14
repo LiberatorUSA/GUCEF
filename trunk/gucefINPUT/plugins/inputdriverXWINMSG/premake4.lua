@@ -23,12 +23,20 @@ configuration( { "LINUX" } )
 language( "C++" )
 
 configuration( { "LINUX" } )
+
+
+configuration( { LINUX } )
 kind( "SharedLib" )
 
 configuration( { "LINUX" } )
+  
+configuration( { LINUX } )
+links( { "gucefCORE", "gucefINPUT", "gucefMT" } )
   links( { "gucefCORE", "gucefINPUT", "gucefMT" } )
-  links( { "gucefCORE", "gucefINPUT", "gucefMT" } )
-  defines( { "BUILD_GUCEF_INPUT_PLUGIN_DLL", "INPUTDRIVERXWINMSG_BUILD_MODULE" } )
+  
+
+configuration( { LINUX } )
+defines( { "BUILD_GUCEF_INPUT_PLUGIN_DLL", "INPUTDRIVERXWINMSG_BUILD_MODULE" } )
 
 
 configuration( { "LINUX" } )

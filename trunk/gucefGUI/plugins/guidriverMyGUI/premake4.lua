@@ -33,9 +33,17 @@ language( "C" )
 configuration( { "WIN64" } )
 language( "C" )
 
+
+
+configuration( {} )
 kind( "SharedLib" )
+
+configuration( {} )
 links( { "MyGUI.Engine", "freetype", "gucefCORE", "gucefGUI", "gucefINPUT", "gucefMT", "gucefVFS" } )
 links( { "MyGUI.Engine", "freetype", "gucefCORE", "gucefGUI", "gucefINPUT", "gucefMT", "gucefVFS" } )
+
+
+configuration( {} )
 defines( { "GUIDRIVERMYGUI_BUILD_MODULE" } )
 
 

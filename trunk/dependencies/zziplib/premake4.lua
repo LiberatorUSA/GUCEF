@@ -30,24 +30,42 @@ language( "C" )
 configuration( { "WIN64" } )
 language( "C" )
 
+
+
+configuration( {} )
 kind( "SharedLib" )
+
+
+configuration( {} )
 defines( { "ZZIP_DLL" } )
 
 configuration( { "ANDROID" } )
   links( { "z" } )
-  defines( { "ZZIP_HAVE_STDINT_H" } )
+  
+
+configuration( { ANDROID } )
+defines( { "ZZIP_HAVE_STDINT_H" } )
 
 configuration( { "LINUX" } )
+  
+configuration( { LINUX } )
+links( { "zlib" } )
   links( { "zlib" } )
-  links( { "zlib" } )
-  defines( { "ZZIP_HAVE_STDINT_H" } )
+  
+
+configuration( { LINUX } )
+defines( { "ZZIP_HAVE_STDINT_H" } )
 
 configuration( { "WIN32" } )
-  links( { "zlib" } )
+  
+configuration( { WIN32 } )
+links( { "zlib" } )
   links( { "zlib" } )
 
 configuration( { "WIN64" } )
-  links( { "zlib" } )
+  
+configuration( { WIN64 } )
+links( { "zlib" } )
   links( { "zlib" } )
 
 

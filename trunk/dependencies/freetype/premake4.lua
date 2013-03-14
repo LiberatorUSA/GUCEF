@@ -51,22 +51,34 @@ language( "C" )
 configuration( { "WIN64" } )
 language( "C" )
 
+
+
+configuration( {} )
 kind( "SharedLib" )
+
+
+configuration( {} )
 defines( { "FT2_BUILD_LIBRARY", "FT_CONFIG_OPTION_SYSTEM_ZLIB", "FT_CONFIG_OPTION_USE_ZLIB", "FT_DVEDIT_BUILD_DLL", "FT_DVEDIT_DLL_API" } )
 
 configuration( { "ANDROID" } )
   links( { "z" } )
 
 configuration( { "LINUX" } )
-  links( { "zlib" } )
+  
+configuration( { LINUX } )
+links( { "zlib" } )
   links( { "zlib" } )
 
 configuration( { "WIN32" } )
-  links( { "zlib" } )
+  
+configuration( { WIN32 } )
+links( { "zlib" } )
   links( { "zlib" } )
 
 configuration( { "WIN64" } )
-  links( { "zlib" } )
+  
+configuration( { WIN64 } )
+links( { "zlib" } )
   links( { "zlib" } )
 
 

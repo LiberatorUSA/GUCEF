@@ -33,9 +33,17 @@ language( "C" )
 configuration( { "WIN64" } )
 language( "C" )
 
+
+
+configuration( {} )
 kind( "SharedLib" )
+
+configuration( {} )
 links( { "gucefCOMCORE", "gucefCORE", "gucefMT" } )
 links( { "gucefCOMCORE", "gucefCORE", "gucefMT" } )
+
+
+configuration( {} )
 defines( { "GUCEF_DRN_BUILD_MODULE" } )
 
 

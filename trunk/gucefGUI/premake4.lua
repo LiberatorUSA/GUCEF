@@ -33,7 +33,12 @@ language( "C" )
 configuration( { "WIN64" } )
 language( "C" )
 
+
+
+configuration( {} )
 kind( "SharedLib" )
+
+configuration( {} )
 links( { "gucefCORE", "gucefIMAGE", "gucefMT", "gucefVFS" } )
 links( { "gucefCORE", "gucefMT", "gucefVFS" } )
 

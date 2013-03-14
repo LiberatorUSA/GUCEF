@@ -33,9 +33,17 @@ language( "C" )
 configuration( { "WIN64" } )
 language( "C" )
 
+
+
+configuration( {} )
 kind( "SharedLib" )
+
+configuration( {} )
 links( { "DVPACKSYS", "gucefCORE", "gucefMT", "gucefVFS" } )
 links( { "DVPACKSYS", "gucefCORE", "gucefMT", "gucefVFS" } )
+
+
+configuration( {} )
 defines( { "GUCEF_VFSPLUGIN_DVP_BUILD_MODULE" } )
 
 

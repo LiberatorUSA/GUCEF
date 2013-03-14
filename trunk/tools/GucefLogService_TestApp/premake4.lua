@@ -34,11 +34,22 @@ configuration( { "WIN64" } )
 language( "C" )
 
 configuration( { "WIN32" } )
+
+
+configuration( { WIN32 } )
 kind( "WindowedApp" )
 configuration( { "NOT WIN32" } )
-  kind( "ConsoleApp" )
+  
+
+configuration( {} )
+kind( "ConsoleApp" )
+
+configuration( {} )
 links( { "GucefLogServiceLib", "gucefCOM", "gucefCOMCORE", "gucefCORE", "gucefMT" } )
 links( { "GucefLogServiceLib", "gucefCOM", "gucefCOMCORE", "gucefCORE", "gucefMT" } )
+
+
+configuration( {} )
 defines( { "GUCEFLOGSERVICE_BUILD_MODULE" } )
 
 

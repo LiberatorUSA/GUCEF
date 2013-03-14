@@ -33,25 +33,41 @@ language( "C" )
 configuration( { "WIN64" } )
 language( "C" )
 
+
+
+configuration( {} )
 kind( "SharedLib" )
+
+configuration( {} )
 links( { "MyGUI.Engine", "freetype", "gucefCORE", "gucefGUI", "gucefIMAGE", "gucefINPUT", "gucefMT", "gucefVFS", "guidriverMyGUI" } )
 links( { "MyGUI.Engine", "freetype", "gucefCORE", "gucefGUI", "gucefIMAGE", "gucefINPUT", "gucefMT", "gucefVFS", "guidriverMyGUI" } )
+
+
+configuration( {} )
 defines( { "GUIDRIVERMYGUIOPENGL_BUILD_MODULE" } )
 
 configuration( { "ANDROID" } )
-  links( { "MyGUI.OpenGLESPlatform" } )
+  
+configuration( { ANDROID } )
+links( { "MyGUI.OpenGLESPlatform" } )
   links( { "GLESv1_CM", "MyGUI.OpenGLESPlatform" } )
 
 configuration( { "LINUX" } )
-  links( { "MyGUI.OpenGLPlatform" } )
+  
+configuration( { LINUX } )
+links( { "MyGUI.OpenGLPlatform" } )
   links( { "GL", "MyGUI.OpenGLPlatform" } )
 
 configuration( { "WIN32" } )
-  links( { "MyGUI.OpenGLPlatform" } )
+  
+configuration( { WIN32 } )
+links( { "MyGUI.OpenGLPlatform" } )
   links( { "MyGUI.OpenGLPlatform", "OpenGL32" } )
 
 configuration( { "WIN64" } )
-  links( { "MyGUI.OpenGLPlatform" } )
+  
+configuration( { WIN64 } )
+links( { "MyGUI.OpenGLPlatform" } )
   links( { "MyGUI.OpenGLPlatform", "OpenGL32" } )
 
 
