@@ -689,26 +689,36 @@ GeneratePremake4ModuleDescriptionLine( const TModuleInfo& moduleInfo     ,
 
     GUCEF_LOG( CORE::LOGLEVEL_BELOW_NORMAL, "Generating Premake4 module description line for module " + moduleName + " and platform " + platformName );
 
+    CORE::CString platformPrefix;
+    if ( platformName == AllPlatforms )
+    {
+        platformPrefix = "\n\nconfiguration( {} )\n";
+    }
+    else
+    {
+        platformPrefix = "\n\nconfiguration( { " + platformName.Uppercase() + " } )\n";
+    }
+
     switch ( moduleInfo.moduleType )
     {
         case MODULETYPE_EXECUTABLE:
         {
             if ( platformName == "win32" || platformName == "win64" )
             {
-                return "kind( \"WindowedApp\" )\n";
+                return platformPrefix + "kind( \"WindowedApp\" )\n";
             }
             else
             {
-                return "kind( \"ConsoleApp\" )\n";
+                return platformPrefix + "kind( \"ConsoleApp\" )\n";
             }
         }
         case MODULETYPE_SHARED_LIBRARY:
         {
-            return "kind( \"SharedLib\" )\n";
+            return platformPrefix + "kind( \"SharedLib\" )\n";
         }
         case MODULETYPE_STATIC_LIBRARY:
         {
-            return "kind( \"StaticLib\" )\n";
+            return platformPrefix + "kind( \"StaticLib\" )\n";
         }
         case MODULETYPE_UNKNOWN:
         case MODULETYPE_UNDEFINED:
@@ -758,7 +768,15 @@ GeneratePremake4ModuleDependenciesLine( const TProjectInfo& projectInfo   ,
         if ( !dependencies.empty() )
         {
             bool first = true;
-            CORE::CString sectionContent = "links( {";
+            CORE::CString sectionContent;
+            if ( platformName == AllPlatforms )
+            {
+                sectionContent = "\nconfiguration( {} )\nlinks( {";
+            }
+            else
+            {
+                sectionContent = "\nconfiguration( { " + platformName.Uppercase() + " } )\nlinks( {";
+            }
 
             // The reason we first put the dependency strings in a set is to sort them alphabetically.
             // this way the output remains the same regardless of what order the modules were processed in.
@@ -831,7 +849,15 @@ GeneratePremake4ModuleDefinesLine( const TModuleInfo& moduleInfo     ,
     {
         GUCEF_LOG( CORE::LOGLEVEL_BELOW_NORMAL, "Generating Premake4 module preprocessor defines for module " + moduleName + " and platform " + platformName );
 
-        CORE::CString sectionContent = "defines( { ";
+        CORE::CString sectionContent;
+        if ( platformName == AllPlatforms )
+        {
+            sectionContent = "\n\nconfiguration( {} )\ndefines( { ";
+        }
+        else
+        {
+            sectionContent = "\n\nconfiguration( { " + platformName.Uppercase() + " } )\ndefines( { ";
+        }
 
         bool first = true;
         TStringSet::const_iterator i = moduleInfo.preprocessorSettings.defines.begin();
@@ -977,7 +1003,7 @@ ContainsFileWithFileExtension( const TStringVectorMap& files ,
         TStringVector::const_iterator n = (*i).second.begin();
         while ( n != (*i).second.end() )
         {
-            if ( fileExt.Equals( CORE::ExtractFileExtention( (*n) ), false ) ) 
+            if ( fileExt.Equals( CORE::ExtractFileExtention( (*n) ), false ) )
                 return true;
             ++n;
         }
@@ -989,7 +1015,7 @@ ContainsFileWithFileExtension( const TStringVectorMap& files ,
 /*---------------------------------------------------------------------------*/
 
 CORE::CString
-GeneratePremake4ModuleLanguageSection( const TModuleInfoEntry& moduleInfoEntry , 
+GeneratePremake4ModuleLanguageSection( const TModuleInfoEntry& moduleInfoEntry ,
                                        const CORE::CString& consensusName      )
 {GUCEF_TRACE;
 
@@ -1025,7 +1051,7 @@ GeneratePremake4ModuleLanguageSection( const TModuleInfoEntry& moduleInfoEntry ,
             // Premake supports only 1 language per module so we list the first one
             language = *languageSet.begin();
         }
-        
+
         if ( platformName != AllPlatforms )
         {
             sectionContent += "\nconfiguration( { \"" + platformName.Uppercase() + "\" } )\nlanguage( \"" + language.Uppercase() + "\" )\n";
