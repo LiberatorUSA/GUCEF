@@ -49,8 +49,6 @@ configuration( { "WIN64" } )
 
 configuration( { WIN64 } )
 kind( "SharedLib" )
-
-configuration( { "LINUX" } )
   
 configuration( { LINUX } )
 links( { "gucefCORE", "gucefMT" } )
@@ -59,8 +57,6 @@ links( { "gucefCORE", "gucefMT" } )
 
 configuration( { LINUX } )
 defines( { "MEMORYLEAKFINDER_BUILD_MODULE" } )
-
-configuration( { "WIN32" } )
   
 configuration( { WIN32 } )
 links( { "gucefCORE", "gucefMT" } )
@@ -69,8 +65,6 @@ links( { "gucefCORE", "gucefMT" } )
 
 configuration( { WIN32 } )
 defines( { "MEMORYLEAKFINDER_BUILD_MODULE" } )
-
-configuration( { "WIN64" } )
   
 configuration( { WIN64 } )
 links( { "gucefCORE", "gucefMT" } )

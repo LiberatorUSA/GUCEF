@@ -49,8 +49,6 @@ configuration( { "WIN64" } )
 
 configuration( { WIN64 } )
 kind( "WindowedApp" )
-
-configuration( { "LINUX" } )
   
 configuration( { LINUX } )
 links( { "ArchiveDiffLib", "gucefCORE", "gucefMT", "gucefPATCHER" } )
@@ -59,8 +57,6 @@ links( { "ArchiveDiffLib", "gucefCORE", "gucefMT", "gucefPATCHER" } )
 
 configuration( { LINUX } )
 defines( { "ARCHIVEDIFF_BUILD_MODULE" } )
-
-configuration( { "WIN32" } )
   
 configuration( { WIN32 } )
 links( { "ArchiveDiffLib", "gucefCORE", "gucefMT", "gucefPATCHER" } )
@@ -69,8 +65,6 @@ links( { "ArchiveDiffLib", "gucefCORE", "gucefMT", "gucefPATCHER" } )
 
 configuration( { WIN32 } )
 defines( { "ARCHIVEDIFF_BUILD_MODULE" } )
-
-configuration( { "WIN64" } )
   
 configuration( { WIN64 } )
 links( { "ArchiveDiffLib", "gucefCORE", "gucefMT", "gucefPATCHER" } )

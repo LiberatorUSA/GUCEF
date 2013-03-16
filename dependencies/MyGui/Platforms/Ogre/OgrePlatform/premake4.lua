@@ -38,14 +38,10 @@ configuration( { "WIN32" } )
 
 configuration( { WIN32 } )
 kind( "SharedLib" )
-
-configuration( { "LINUX" } )
   
 configuration( { LINUX } )
 links( { "MyGUI.Engine", "OgreMain" } )
   links( { "MyGUI.Engine", "OgreMain" } )
-
-configuration( { "WIN32" } )
   
 configuration( { WIN32 } )
 links( { "MyGUI.Engine", "OgreMain" } )

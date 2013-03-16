@@ -25,24 +25,6 @@ configuration( { "WIN64" } )
   project( "OIS" )
 location( os.getenv( "PM4OUTPUTDIR" ) )
 
-configuration( { "IPHONEOS" } )
-language( "C++" )
-
-configuration( { "LINUX" } )
-language( "C++" )
-
-configuration( { "OSX" } )
-language( "C++" )
-
-configuration( { "SDL" } )
-language( "C++" )
-
-configuration( { "WIN32" } )
-language( "C++" )
-
-configuration( { "WIN64" } )
-language( "C++" )
-
 configuration( { "LINUX" } )
 
 
@@ -63,28 +45,20 @@ configuration( { "WIN64" } )
 
 configuration( { WIN64 } )
 kind( "SharedLib" )
-
-configuration( { "LINUX" } )
   links( { "X11" } )
   
 
 configuration( { LINUX } )
 defines( { "OIS_DYNAMIC_LIB", "OIS_LINUX_PLATFORM", "OIS_NONCLIENT_BUILD" } )
-
-configuration( { "OSX" } )
   
 
 configuration( { OSX } )
 defines( { "OIS_APPLE_PLATFORM", "OIS_DYNAMIC_LIB", "OIS_NONCLIENT_BUILD" } )
-
-configuration( { "WIN32" } )
   links( { "dinput8.lib", "dxguid.lib" } )
   
 
 configuration( { WIN32 } )
 defines( { "OIS_DYNAMIC_LIB", "OIS_NONCLIENT_BUILD" } )
-
-configuration( { "WIN64" } )
   links( { "dinput8.lib", "dxguid.lib" } )
   
 

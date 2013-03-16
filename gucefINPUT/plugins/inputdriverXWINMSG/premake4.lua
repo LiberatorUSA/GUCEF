@@ -27,8 +27,6 @@ configuration( { "LINUX" } )
 
 configuration( { LINUX } )
 kind( "SharedLib" )
-
-configuration( { "LINUX" } )
   
 configuration( { LINUX } )
 links( { "gucefCORE", "gucefINPUT", "gucefMT" } )

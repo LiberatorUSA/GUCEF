@@ -27,8 +27,6 @@ configuration( { "ANDROID" } )
 
 configuration( { ANDROID } )
 kind( "SharedLib" )
-
-configuration( { "ANDROID" } )
   
 configuration( { ANDROID } )
 links( { "gucefCORE", "gucefGUI", "gucefMT" } )

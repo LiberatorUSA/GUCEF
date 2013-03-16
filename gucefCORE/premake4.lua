@@ -18,21 +18,6 @@ location( os.getenv( "PM4OUTPUTDIR" ) )
 configuration( {} )
 language( "C++" )
 
-configuration( { "ANDROID" } )
-language( "C++" )
-
-configuration( { "LINUX" } )
-language( "C++" )
-
-configuration( { "OSX" } )
-language( "C" )
-
-configuration( { "WIN32" } )
-language( "C++" )
-
-configuration( { "WIN64" } )
-language( "C++" )
-
 
 
 configuration( {} )
@@ -45,11 +30,7 @@ links( { "gucefMT" } )
 
 configuration( {} )
 defines( { "GUCEF_CORE_BUILD_MODULE" } )
-
-configuration( { "ANDROID" } )
   links( { "dl" } )
-
-configuration( { "LINUX" } )
   links( { "X11", "dl", "rt" } )
 
 

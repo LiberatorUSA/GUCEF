@@ -18,21 +18,6 @@ location( os.getenv( "PM4OUTPUTDIR" ) )
 configuration( {} )
 language( "C++" )
 
-configuration( { "ANDROID" } )
-language( "C" )
-
-configuration( { "LINUX" } )
-language( "C" )
-
-configuration( { "OSX" } )
-language( "C" )
-
-configuration( { "WIN32" } )
-language( "C" )
-
-configuration( { "WIN64" } )
-language( "C" )
-
 
 
 configuration( {} )
@@ -45,23 +30,15 @@ links( { "gucefCORE", "gucefMT", "gucefVFS", "zziplib" } )
 
 configuration( {} )
 defines( { "GUCEF_VFSPLUGIN_ZIP_BUILD_MODULE", "ZZIP_HAVE_STDINT_H" } )
-
-configuration( { "ANDROID" } )
   links( { "z" } )
-
-configuration( { "LINUX" } )
   
 configuration( { LINUX } )
 links( { "zlib" } )
   links( { "zlib" } )
-
-configuration( { "WIN32" } )
   
 configuration( { WIN32 } )
 links( { "zlib" } )
   links( { "zlib" } )
-
-configuration( { "WIN64" } )
   
 configuration( { WIN64 } )
 links( { "zlib" } )

@@ -18,18 +18,6 @@ location( os.getenv( "PM4OUTPUTDIR" ) )
 configuration( {} )
 language( "C" )
 
-configuration( { "ANDROID" } )
-language( "C" )
-
-configuration( { "LINUX" } )
-language( "C" )
-
-configuration( { "WIN32" } )
-language( "C" )
-
-configuration( { "WIN64" } )
-language( "C" )
-
 
 
 configuration( {} )
@@ -38,15 +26,11 @@ kind( "SharedLib" )
 
 configuration( {} )
 defines( { "ZZIP_DLL" } )
-
-configuration( { "ANDROID" } )
   links( { "z" } )
   
 
 configuration( { ANDROID } )
 defines( { "ZZIP_HAVE_STDINT_H" } )
-
-configuration( { "LINUX" } )
   
 configuration( { LINUX } )
 links( { "zlib" } )
@@ -55,14 +39,10 @@ links( { "zlib" } )
 
 configuration( { LINUX } )
 defines( { "ZZIP_HAVE_STDINT_H" } )
-
-configuration( { "WIN32" } )
   
 configuration( { WIN32 } )
 links( { "zlib" } )
   links( { "zlib" } )
-
-configuration( { "WIN64" } )
   
 configuration( { WIN64 } )
 links( { "zlib" } )

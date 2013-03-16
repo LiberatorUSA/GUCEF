@@ -49,8 +49,6 @@ configuration( { "WIN64" } )
 
 configuration( { WIN64 } )
 kind( "SharedLib" )
-
-configuration( { "LINUX" } )
   
 configuration( { LINUX } )
 links( { "OIS", "gucefCORE", "gucefINPUT", "gucefMT" } )
@@ -59,8 +57,6 @@ links( { "OIS", "gucefCORE", "gucefINPUT", "gucefMT" } )
 
 configuration( { LINUX } )
 defines( { "BUILD_GUCEF_INPUT_PLUGIN_DLL", "INPUTDRIVEROIS_BUILD_MODULE" } )
-
-configuration( { "WIN32" } )
   
 configuration( { WIN32 } )
 links( { "OIS", "gucefCORE", "gucefINPUT", "gucefMT" } )
@@ -69,8 +65,6 @@ links( { "OIS", "gucefCORE", "gucefINPUT", "gucefMT" } )
 
 configuration( { WIN32 } )
 defines( { "BUILD_GUCEF_INPUT_PLUGIN_DLL", "INPUTDRIVEROIS_BUILD_MODULE" } )
-
-configuration( { "WIN64" } )
   
 configuration( { WIN64 } )
 links( { "OIS", "gucefCORE", "gucefINPUT", "gucefMT" } )

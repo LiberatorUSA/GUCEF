@@ -18,21 +18,6 @@ location( os.getenv( "PM4OUTPUTDIR" ) )
 configuration( {} )
 language( "C++" )
 
-configuration( { "ANDROID" } )
-language( "C" )
-
-configuration( { "LINUX" } )
-language( "C" )
-
-configuration( { "OSX" } )
-language( "C" )
-
-configuration( { "WIN32" } )
-language( "C" )
-
-configuration( { "WIN64" } )
-language( "C" )
-
 
 
 configuration( {} )
@@ -41,17 +26,9 @@ kind( "StaticLib" )
 configuration( {} )
 links( { "MyGUI.Engine" } )
 links( { "MyGUI.Engine" } )
-
-configuration( { "ANDROID" } )
   links( { "GLESv1_CM" } )
-
-configuration( { "LINUX" } )
   links( { "GL" } )
-
-configuration( { "WIN32" } )
   links( { "opengl32" } )
-
-configuration( { "WIN64" } )
   links( { "opengl32" } )
 
 

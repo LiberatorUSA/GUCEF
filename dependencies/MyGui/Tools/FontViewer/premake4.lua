@@ -49,8 +49,6 @@ configuration( { "WIN64" } )
 
 configuration( { WIN64 } )
 kind( "WindowedApp" )
-
-configuration( { "LINUX" } )
   
 configuration( { LINUX } )
 links( { "MyGUI.Engine", "MyGUI.OpenGLPlatform", "freetype" } )
@@ -59,8 +57,6 @@ links( { "MyGUI.Engine", "MyGUI.OpenGLPlatform", "freetype" } )
 
 configuration( { LINUX } )
 defines( { "MYGUI_USE_FREETYPE" } )
-
-configuration( { "WIN32" } )
   
 configuration( { WIN32 } )
 links( { "MyGUI.Engine", "MyGUI.OpenGLPlatform", "freetype" } )
@@ -69,8 +65,6 @@ links( { "MyGUI.Engine", "MyGUI.OpenGLPlatform", "freetype" } )
 
 configuration( { WIN32 } )
 defines( { "MYGUI_USE_FREETYPE" } )
-
-configuration( { "WIN64" } )
   
 configuration( { WIN64 } )
 links( { "MyGUI.Engine", "MyGUI.OpenGLPlatform", "freetype" } )
