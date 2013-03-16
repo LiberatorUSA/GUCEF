@@ -38,8 +38,6 @@ configuration( { "WIN64" } )
 
 configuration( { WIN64 } )
 kind( "SharedLib" )
-
-configuration( { "WIN32" } )
   
 configuration( { WIN32 } )
 links( { "gucefCORE", "gucefINPUT", "gucefMT" } )
@@ -47,8 +45,6 @@ links( { "gucefCORE", "gucefINPUT", "gucefMT" } )
 
 configuration( { WIN32 } )
 defines( { "BUILD_GUCEF_INPUT_PLUGIN_DLL", "INPUTDRIVERMSWINMSG_BUILD_MODULE" } )
-
-configuration( { "WIN64" } )
   
 configuration( { WIN64 } )
 links( { "gucefCORE", "gucefINPUT", "gucefMT" } )

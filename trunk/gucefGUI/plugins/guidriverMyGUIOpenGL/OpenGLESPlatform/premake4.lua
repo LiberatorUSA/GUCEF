@@ -27,8 +27,6 @@ configuration( { "ANDROID" } )
 
 configuration( { ANDROID } )
 kind( "StaticLib" )
-
-configuration( { "ANDROID" } )
   
 configuration( { ANDROID } )
 links( { "MyGUI.Engine" } )

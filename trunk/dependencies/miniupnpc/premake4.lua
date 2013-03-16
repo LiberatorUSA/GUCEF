@@ -18,15 +18,6 @@ location( os.getenv( "PM4OUTPUTDIR" ) )
 configuration( {} )
 language( "C" )
 
-configuration( { "ANDROID" } )
-language( "C" )
-
-configuration( { "WIN32" } )
-language( "C" )
-
-configuration( { "WIN64" } )
-language( "C" )
-
 
 
 configuration( {} )
@@ -35,17 +26,11 @@ kind( "SharedLib" )
 
 configuration( {} )
 defines( { "MINIUPNP_EXPORTS" } )
-
-configuration( { "ANDROID" } )
   
 
 configuration( { ANDROID } )
 defines( { "__sun" } )
-
-configuration( { "WIN32" } )
   links( { "WS2_32.lib" } )
-
-configuration( { "WIN64" } )
   links( { "WS2_32.lib" } )
 
 

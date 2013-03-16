@@ -49,8 +49,6 @@ configuration( { "WIN64" } )
 
 configuration( { WIN64 } )
 kind( "WindowedApp" )
-
-configuration( { "LINUX" } )
   
 configuration( { LINUX } )
 links( { "gucefCORE", "gucefGUI", "gucefIMAGE", "gucefINPUT", "gucefMT", "gucefVFS" } )
@@ -59,8 +57,6 @@ links( { "gucefCORE", "gucefGUI", "gucefIMAGE", "gucefINPUT", "gucefMT", "gucefV
 
 configuration( { LINUX } )
 defines( { "GUCEF_GUI_TESTAPP_BUILD_MODULE" } )
-
-configuration( { "WIN32" } )
   
 configuration( { WIN32 } )
 links( { "gucefCORE", "gucefGUI", "gucefIMAGE", "gucefINPUT", "gucefMT", "gucefVFS" } )
@@ -69,8 +65,6 @@ links( { "gucefCORE", "gucefGUI", "gucefIMAGE", "gucefINPUT", "gucefMT", "gucefV
 
 configuration( { WIN32 } )
 defines( { "GUCEF_GUI_TESTAPP_BUILD_MODULE" } )
-
-configuration( { "WIN64" } )
   
 configuration( { WIN64 } )
 links( { "gucefCORE", "gucefGUI", "gucefIMAGE", "gucefINPUT", "gucefMT", "gucefVFS" } )

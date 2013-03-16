@@ -18,21 +18,6 @@ location( os.getenv( "PM4OUTPUTDIR" ) )
 configuration( {} )
 language( "C++" )
 
-configuration( { "ANDROID" } )
-language( "C" )
-
-configuration( { "LINUX" } )
-language( "C" )
-
-configuration( { "OSX" } )
-language( "C" )
-
-configuration( { "WIN32" } )
-language( "C++" )
-
-configuration( { "WIN64" } )
-language( "C++" )
-
 
 
 configuration( {} )
@@ -45,11 +30,7 @@ links( { "gucefCORE", "gucefMT" } )
 
 configuration( {} )
 defines( { "GUCEF_COMCORE_BUILD_MODULE" } )
-
-configuration( { "WIN32" } )
   links( { "Advapi32.lib", "Ws2_32.lib" } )
-
-configuration( { "WIN64" } )
   links( { "Advapi32.lib", "Ws2_32.lib" } )
 
 

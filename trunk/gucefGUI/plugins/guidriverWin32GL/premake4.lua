@@ -38,8 +38,6 @@ configuration( { "WIN64" } )
 
 configuration( { WIN64 } )
 kind( "SharedLib" )
-
-configuration( { "WIN32" } )
   
 configuration( { WIN32 } )
 links( { "gucefCORE", "gucefGUI", "gucefMT" } )
@@ -48,8 +46,6 @@ links( { "gucefCORE", "gucefGUI", "gucefMT" } )
 
 configuration( { WIN32 } )
 defines( { "GUIDRIVERWIN32GL_BUILD_MODULE" } )
-
-configuration( { "WIN64" } )
   
 configuration( { WIN64 } )
 links( { "gucefCORE", "gucefGUI", "gucefMT" } )

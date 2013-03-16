@@ -26,15 +26,6 @@ configuration( {} )
 language( "C" )
 
 configuration( { "LINUX" } )
-language( "C" )
-
-configuration( { "WIN32" } )
-language( "C" )
-
-configuration( { "WIN64" } )
-language( "C" )
-
-configuration( { "LINUX" } )
 
 
 configuration( { LINUX } )
@@ -49,8 +40,6 @@ configuration( { "WIN64" } )
 
 configuration( { WIN64 } )
 kind( "SharedLib" )
-
-configuration( { "LINUX" } )
   
 configuration( { LINUX } )
 links( { "DevIL", "gucefCORE", "gucefMT" } )
@@ -59,8 +48,6 @@ links( { "DevIL", "gucefCORE", "gucefMT" } )
 
 configuration( { LINUX } )
 defines( { "GUCEF_CODECPLUGIN_BUILD_MODULE" } )
-
-configuration( { "WIN32" } )
   
 configuration( { WIN32 } )
 links( { "DevIL", "gucefCORE", "gucefMT" } )
@@ -69,8 +56,6 @@ links( { "DevIL", "gucefCORE", "gucefMT" } )
 
 configuration( { WIN32 } )
 defines( { "GUCEF_CODECPLUGIN_BUILD_MODULE" } )
-
-configuration( { "WIN64" } )
   
 configuration( { WIN64 } )
 links( { "DevIL", "gucefCORE", "gucefMT" } )

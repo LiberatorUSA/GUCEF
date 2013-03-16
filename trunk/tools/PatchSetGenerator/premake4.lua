@@ -38,8 +38,6 @@ configuration( { "WIN64" } )
 
 configuration( { WIN64 } )
 kind( "WindowedApp" )
-
-configuration( { "WIN32" } )
   
 configuration( { WIN32 } )
 links( { "gucefCORE", "gucefMT", "gucefPATCHER" } )
@@ -48,8 +46,6 @@ links( { "gucefCORE", "gucefMT", "gucefPATCHER" } )
 
 configuration( { WIN32 } )
 defines( { "PATCHSETGENERATOR_BUILD_MODULE" } )
-
-configuration( { "WIN64" } )
   
 configuration( { WIN64 } )
 links( { "gucefCORE", "gucefMT", "gucefPATCHER" } )

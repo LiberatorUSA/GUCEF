@@ -18,39 +18,6 @@ location( os.getenv( "PM4OUTPUTDIR" ) )
 configuration( {} )
 language( "C++" )
 
-configuration( { "ANDROID" } )
-language( "C++" )
-
-configuration( { "GLX" } )
-language( "C++" )
-
-configuration( { "GTK" } )
-language( "C++" )
-
-configuration( { "IPHONEOS" } )
-language( "C++" )
-
-configuration( { "LINUX" } )
-language( "C++" )
-
-configuration( { "OSX" } )
-language( "C++" )
-
-configuration( { "SDL" } )
-language( "C++" )
-
-configuration( { "SYMBIAN" } )
-language( "C++" )
-
-configuration( { "UNIX" } )
-language( "C++" )
-
-configuration( { "WIN32" } )
-language( "C++" )
-
-configuration( { "WIN64" } )
-language( "C++" )
-
 
 
 configuration( {} )
@@ -62,11 +29,7 @@ links( { "gucefCORE", "gucefMT" } )
 
 configuration( {} )
 defines( { "GUCEF_CORE_EMBED_CODE", "GUCEF_LOADER_BUILD_MODULE", "GUCEF_MT_EMBED_CODE", "GUCEF_NO_LOGGING" } )
-
-configuration( { "ANDROID" } )
   links( { "dl", "log" } )
-
-configuration( { "LINUX" } )
   links( { "dl", "rt" } )
 
 

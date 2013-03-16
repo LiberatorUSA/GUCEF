@@ -18,21 +18,6 @@ location( os.getenv( "PM4OUTPUTDIR" ) )
 configuration( {} )
 language( "C++" )
 
-configuration( { "ANDROID" } )
-language( "C" )
-
-configuration( { "LINUX" } )
-language( "C" )
-
-configuration( { "OSX" } )
-language( "C" )
-
-configuration( { "WIN32" } )
-language( "C" )
-
-configuration( { "WIN64" } )
-language( "C" )
-
 
 
 configuration( {} )
@@ -41,14 +26,8 @@ kind( "SharedLib" )
 
 configuration( {} )
 defines( { "GUCEF_MT_BUILD_MODULE" } )
-
-configuration( { "LINUX" } )
   links( { "pthread" } )
-
-configuration( { "WIN32" } )
   links( { "Winmm" } )
-
-configuration( { "WIN64" } )
   links( { "Winmm" } )
 
 

@@ -18,21 +18,6 @@ location( os.getenv( "PM4OUTPUTDIR" ) )
 configuration( {} )
 language( "C++" )
 
-configuration( { "ANDROID" } )
-language( "C" )
-
-configuration( { "LINUX" } )
-language( "C" )
-
-configuration( { "OSX" } )
-language( "C" )
-
-configuration( { "WIN32" } )
-language( "C" )
-
-configuration( { "WIN64" } )
-language( "C" )
-
 
 
 configuration( {} )
@@ -45,17 +30,9 @@ links( { "RocketControls", "RocketCore", "gucefCORE", "gucefGUI", "gucefINPUT", 
 
 configuration( {} )
 defines( { "GUIDRIVERROCKETGL_BUILD_MODULE" } )
-
-configuration( { "ANDROID" } )
   links( { "EGL", "GLESv1_CM" } )
-
-configuration( { "LINUX" } )
   links( { "GL" } )
-
-configuration( { "WIN32" } )
   links( { "OpenGL32.lib" } )
-
-configuration( { "WIN64" } )
   links( { "OpenGL32.lib" } )
 
 

@@ -23,15 +23,6 @@ configuration( { "WIN64" } )
 location( os.getenv( "PM4OUTPUTDIR" ) )
 
 configuration( { "LINUX" } )
-language( "C" )
-
-configuration( { "WIN32" } )
-language( "C" )
-
-configuration( { "WIN64" } )
-language( "C" )
-
-configuration( { "LINUX" } )
 
 
 configuration( { LINUX } )
@@ -46,20 +37,14 @@ configuration( { "WIN64" } )
 
 configuration( { WIN64 } )
 kind( "SharedLib" )
-
-configuration( { "LINUX" } )
   
 
 configuration( { LINUX } )
 defines( { "ZLIB_DLL", "ZLIB_INTERNAL", "ZZIP_HAVE_STDINT_H" } )
-
-configuration( { "WIN32" } )
   
 
 configuration( { WIN32 } )
 defines( { "ZLIB_DLL", "ZLIB_INTERNAL", "ZZIP_HAVE_STDINT_H" } )
-
-configuration( { "WIN64" } )
   
 
 configuration( { WIN64 } )

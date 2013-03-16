@@ -20,15 +20,10 @@ configuration( {} )
 language( "C" )
 
 configuration( { "ANDROID" } )
-language( "C" )
-
-configuration( { "ANDROID" } )
 
 
 configuration( { ANDROID } )
 kind( "SharedLib" )
-
-configuration( { "ANDROID" } )
   
 configuration( { ANDROID } )
 links( { "gucefCORE", "gucefINPUT", "gucefMT" } )

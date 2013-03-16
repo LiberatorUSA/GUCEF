@@ -23,15 +23,6 @@ configuration( { "WIN64" } )
 location( os.getenv( "PM4OUTPUTDIR" ) )
 
 configuration( { "LINUX" } )
-language( "C++" )
-
-configuration( { "WIN32" } )
-language( "C++" )
-
-configuration( { "WIN64" } )
-language( "C++" )
-
-configuration( { "LINUX" } )
 
 
 configuration( { LINUX } )
@@ -46,20 +37,14 @@ configuration( { "WIN64" } )
 
 configuration( { WIN64 } )
 kind( "SharedLib" )
-
-configuration( { "LINUX" } )
   
 
 configuration( { LINUX } )
 defines( { "FREEIMAGE_EXPORTS", "HALF_EXPORTS", "ILMIMF_EXPORTS", "IMATH_EXPORTS", "OPJ_EXPORTS", "OPJ_STATIC", "ZENO_STATIC" } )
-
-configuration( { "WIN32" } )
   
 
 configuration( { WIN32 } )
 defines( { "FREEIMAGE_EXPORTS", "HALF_EXPORTS", "ILMIMF_EXPORTS", "IMATH_EXPORTS", "OPENEXR_DLL", "OPJ_EXPORTS", "OPJ_STATIC", "ZENO_STATIC", "_CRT_SECURE_NO_WARNINGS" } )
-
-configuration( { "WIN64" } )
   
 
 configuration( { WIN64 } )

@@ -1015,50 +1015,91 @@ ContainsFileWithFileExtension( const TStringVectorMap& files ,
 /*---------------------------------------------------------------------------*/
 
 CORE::CString
+GetLanguageForModule( const TModuleInfo& moduleInfo )
+{GUCEF_TRACE;
+
+    const TStringSet& languageSet = moduleInfo.compilerSettings.languagesUsed;
+    if ( languageSet.empty() )
+    {
+        // No language was specified but premake requires one
+        // We will determine the languege based on the files in the project
+        if ( ContainsFileWithFileExtension( moduleInfo.sourceDirs, "CS" ) )
+        {
+            return "C#";
+        }
+        else
+        if ( ( ContainsFileWithFileExtension( moduleInfo.sourceDirs, "CPP" ) ) ||
+             ( ContainsFileWithFileExtension( moduleInfo.sourceDirs, "CXX" ) )  )
+        {
+            return "C++";
+        }
+        else
+        {
+            return "C";
+        }
+    }
+    else
+    {
+        // Premake supports only 1 language per module so we list the first one
+        return (*languageSet.begin()).Uppercase();
+    }
+}
+
+/*---------------------------------------------------------------------------*/
+
+CORE::CString
 GeneratePremake4ModuleLanguageSection( const TModuleInfoEntry& moduleInfoEntry ,
                                        const CORE::CString& consensusName      )
 {GUCEF_TRACE;
 
     CORE::CString sectionContent;
-    TModuleInfoMap::const_iterator i = moduleInfoEntry.modulesPerPlatform.begin();
+
+    CORE::CString allPlatformsLanguage;
+    TModuleInfoMap::const_iterator i = moduleInfoEntry.modulesPerPlatform.find( AllPlatforms );
+    if ( i != moduleInfoEntry.modulesPerPlatform.end() )
+    {
+        allPlatformsLanguage = GetLanguageForModule( (*i).second );
+        sectionContent = "\nconfiguration( {} )\nlanguage( \"" + allPlatformsLanguage + "\" )\n";
+    }
+
+    i = moduleInfoEntry.modulesPerPlatform.begin();
     while ( i != moduleInfoEntry.modulesPerPlatform.end() )
     {
         const CORE::CString& platformName = (*i).first;
-        CORE::CString language;
-
-        const TStringSet& languageSet = (*i).second.compilerSettings.languagesUsed;
-        if ( languageSet.empty() )
-        {
-            // No language was specified but premake requires one
-            // We will determine the languege based on the files in the project
-            if ( ContainsFileWithFileExtension( (*i).second.sourceDirs, "CS" ) )
-            {
-                language = "C#";
-            }
-            else
-            if ( ( ContainsFileWithFileExtension( (*i).second.sourceDirs, "CPP" ) ) ||
-                 ( ContainsFileWithFileExtension( (*i).second.sourceDirs, "CXX" ) )  )
-            {
-                language = "C++";
-            }
-            else
-            {
-                language = "C";
-            }
-        }
-        else
-        {
-            // Premake supports only 1 language per module so we list the first one
-            language = *languageSet.begin();
-        }
 
         if ( platformName != AllPlatforms )
         {
-            sectionContent += "\nconfiguration( { \"" + platformName.Uppercase() + "\" } )\nlanguage( \"" + language.Uppercase() + "\" )\n";
-        }
-        else
-        {
-            sectionContent += "\nconfiguration( {} )\nlanguage( \"" + language.Uppercase() + "\" )\n";
+            CORE::CString language;
+
+            // We have to combine the language of the platform independent code with the platform specific code to
+            // throw the widest net required between them
+            if ( !allPlatformsLanguage.IsNULLOrEmpty() )
+            {
+                if ( "C#" == allPlatformsLanguage )
+                {
+                    language = "C#";
+                }
+                else
+                if ( "C++" == allPlatformsLanguage )
+                {
+                    language = "C++";
+                }
+                else
+                if ( "C" == allPlatformsLanguage )
+                {
+                    CORE::CString platformLanguage = GetLanguageForModule( (*i).second );
+                    if ( "C++" == platformLanguage )
+                    {
+                        language = "C++";
+                    }
+                }
+            }
+
+            // No need to specify something that did not change, reduce clutter
+            if ( language != allPlatformsLanguage )
+            {
+                sectionContent += "\nconfiguration( { \"" + platformName.Uppercase() + "\" } )\nlanguage( \"" + language + "\" )\n";
+            }
         }
         ++i;
     }
@@ -1070,7 +1111,8 @@ GeneratePremake4ModuleLanguageSection( const TModuleInfoEntry& moduleInfoEntry ,
 CORE::CString
 GeneratePremake4ModuleInfoSection( const TProjectInfo& projectInfo         ,
                                    const TModuleInfoEntry& moduleInfoEntry ,
-                                   const CORE::CString& premakeOutputDir   )
+                                   const CORE::CString& premakeOutputDir   ,
+                                   const CORE::CString&  premakeTargetDir  )
 {GUCEF_TRACE;
 
     CORE::CString consensusName = GetConsensusModuleName( moduleInfoEntry );
@@ -1093,6 +1135,23 @@ GeneratePremake4ModuleInfoSection( const TProjectInfo& projectInfo         ,
             CORE::CString pathToOutputDir = CORE::GetRelativePathToOtherPathRoot( moduleInfoEntry.rootDir, premakeOutputDir );
             pathToOutputDir = pathToOutputDir.ReplaceChar( '\\', '/' );
             sectionContent += "location( \"" + pathToOutputDir + "\" )\n";
+        }
+    }
+
+    // Set the target path for the premake4 based builds
+    if ( !premakeTargetDir.IsNULLOrEmpty() )
+    {
+        // Check to see if an environment variable is desired
+        if ( 0 == premakeTargetDir.HasSubstr( "ENVVAR:", true ) )
+        {
+            // The path specified is actually a directive to use the given environment variable
+            CORE::CString premakeTargetDirEnvVar = premakeTargetDir.CutChars( 7, true );
+            sectionContent += "targetdir( os.getenv( \"" + premakeTargetDirEnvVar + "\" ) )\n";
+        }
+        else
+        {
+            CORE::CString pathToOutputDir = CORE::GetRelativePathToOtherPathRoot( moduleInfoEntry.rootDir, premakeTargetDir );
+            sectionContent += "targetdir( \"" + pathToOutputDir + "\" )\n";
         }
     }
 
@@ -1145,7 +1204,7 @@ GeneratePremake4ModuleInfoSection( const TProjectInfo& projectInfo         ,
             {
                 CORE::CString platformSection;
 
-                platformSection = "\nconfiguration( { \"" + platformName.Uppercase() + "\" } )\n";
+                platformSection.Clear();// = "\nconfiguration( { \"" + platformName.Uppercase() + "\" } )\n";
 
                 if ( !moduleDependenciesStr.IsNULLOrEmpty() )
                 {
@@ -1175,6 +1234,7 @@ GeneratePremake4ModuleInfoSection( const TProjectInfo& projectInfo         ,
 CORE::CString
 GeneratePremake4ModuleFileContent( const TProjectInfo& projectInfo         ,
                                    const CORE::CString& premakeOutputDir   ,
+                                   const CORE::CString& premakeTargetDir   ,
                                    const TModuleInfoEntry& moduleInfoEntry ,
                                    bool addCompileDate = false             )
 {GUCEF_TRACE;
@@ -1191,7 +1251,7 @@ GeneratePremake4ModuleFileContent( const TProjectInfo& projectInfo         ,
     fileContent += "\n-- Configuration for module: " + consensusModuleName + "\n\n";
 
     // the module description, dependencies, definitions, etc.
-    fileContent += GeneratePremake4ModuleInfoSection( projectInfo, moduleInfoEntry, premakeOutputDir );
+    fileContent += GeneratePremake4ModuleInfoSection( projectInfo, moduleInfoEntry, premakeOutputDir, premakeTargetDir );
 
     // Add all the general include files
     fileContent += GeneratePremake4FileIncludeSection( moduleInfoEntry, consensusModuleName );
@@ -1226,6 +1286,7 @@ GeneratePremake4ModuleFileContent( const TProjectInfo& projectInfo         ,
 void
 WritePremake4ModuleFilesToDisk( const TProjectInfo& projectInfo       ,
                                 const CORE::CString& premakeOutputDir ,
+                                const CORE::CString& premakeTargetDir ,
                                 const CORE::CString& logFilename      ,
                                 bool addCompileDate = false           )
 {GUCEF_TRACE;
@@ -1239,7 +1300,7 @@ WritePremake4ModuleFilesToDisk( const TProjectInfo& projectInfo       ,
         if ( ( MODULETYPE_HEADER_INCLUDE_LOCATION != allPlatformsType ) &&
              ( MODULETYPE_CODE_INCLUDE_LOCATION != allPlatformsType )    )
         {
-            CORE::CString fileContent = GeneratePremake4ModuleFileContent( projectInfo, premakeOutputDir, moduleInfoEntry, addCompileDate );
+            CORE::CString fileContent = GeneratePremake4ModuleFileContent( projectInfo, premakeOutputDir, premakeTargetDir, moduleInfoEntry, addCompileDate );
             if ( logFilename.Length() > 0 )
             {
                 fileContent += "\n-- Generator logfile can be found at: " + logFilename;
@@ -1396,6 +1457,7 @@ CPremake4ProjectGenerator::GenerateProject( TProjectInfo& projectInfo           
     }
 
     CORE::CString premakeOutputDir = params.GetValueAlways( "premake4gen:PM4OutputDir" );
+    CORE::CString premakeTargetDir = params.GetValueAlways( "premake4gen:PM4TargetDir" );
 
     // Write the gathered info to disk in premake4 format
     CORE::CString logfilePath;
@@ -1404,7 +1466,7 @@ CPremake4ProjectGenerator::GenerateProject( TProjectInfo& projectInfo           
     {
         logfilePath = params.GetValueAlways( "logfile" );
     }
-    WritePremake4ModuleFilesToDisk( projectInfo, premakeOutputDir, logfilePath, addGeneratorCompileTimeToOutput );
+    WritePremake4ModuleFilesToDisk( projectInfo, premakeOutputDir, premakeTargetDir, logfilePath, addGeneratorCompileTimeToOutput );
 
     WritePremake4ProjectFileToDisk( projectInfo, outputDir, premakeOutputDir, logfilePath, addGeneratorCompileTimeToOutput );
 
