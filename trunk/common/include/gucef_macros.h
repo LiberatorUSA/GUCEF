@@ -391,6 +391,8 @@
   #define NULL ((void*)0)
 #endif
 
+#define GUCEF_NULL NULL
+
 /*-------------------------------------------------------------------------*/
 
 #endif /* GUCEF_MACROS_H ? */

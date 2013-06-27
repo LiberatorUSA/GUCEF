@@ -129,10 +129,14 @@ void
 CLoaderDelegatedPluginLoadLogic::Initialize( void )
 {GUCEF_TRACE;
 
-    if ( NULL != m_cInterface )
+    if ( NULL == m_cInterface )
     {
         // Link to the already loaded gucefLOADER module
         void* modulePtr = GetModulePointer( "gucefLOADER" );
+        if ( NULL == modulePtr )
+        {
+            modulePtr = GetModulePointer( "gucefLOADER_d" );
+        }
         if ( NULL != modulePtr )
         {
             TGucefLoaderCInterface* cInterface = new TGucefLoaderCInterface();
@@ -145,6 +149,11 @@ CLoaderDelegatedPluginLoadLogic::Initialize( void )
                  ( NULL != cInterface->unloadModule )  )
             {
                 m_cInterface = cInterface;
+            }
+            else
+            {
+                delete cInterface;
+                m_cInterface = NULL;
             }
         }
     }

@@ -74,6 +74,8 @@ class GUCEF_CORE_PRIVATE_CPP CPluginGroup
 
     TPluginMetaDataSet& GetPluginMetaData( void );
 
+    bool HasPluginWithFileName( const CString& moduleFileName ) const;
+
     private:
 
     TPluginSet m_plugins;

@@ -81,7 +81,7 @@ class GUCEF_CORE_PUBLIC_CPP CStdCodecPlugin : public CICodecPlugin
                          const CString& familyName ,
                          const CString& typeName   );
 
-    virtual TPluginMetaDataPtr GetMetaData( void );
+    virtual TPluginMetaDataPtr GetMetaData( void ) const;
 
     virtual void* GetModulePointer( void );
 

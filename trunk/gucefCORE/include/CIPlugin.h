@@ -61,7 +61,7 @@ class GUCEF_CORE_PUBLIC_CPP CIPlugin
 
     CIPlugin& operator=( const CIPlugin& src );
 
-    virtual TPluginMetaDataPtr GetMetaData( void ) = 0;
+    virtual TPluginMetaDataPtr GetMetaData( void ) const = 0;
 
     virtual void* GetModulePointer( void ) = 0;
 };

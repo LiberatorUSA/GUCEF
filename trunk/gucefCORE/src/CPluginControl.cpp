@@ -992,14 +992,25 @@ CPluginControl::LoadConfig( const CDataNode& treeroot )
         CDataNode::TConstDataNodeSet::iterator n = pluginMetaDataNodes.begin();
         while ( n != pluginMetaDataNodes.end() ) 
         {
+            // Since we have to report whether loading the config settings went ok
+            // Check to see if allow the loading of this plugin to fail and still report success
+            bool loadFailAllowed = false;
+            CString loadFailAllowedSetting = (*n )->GetAttributeValueOrChildValueByName( "LoadFailAllowed" );
+            if ( !loadFailAllowedSetting.IsNULLOrEmpty() ) loadFailAllowed = StringToBool( loadFailAllowedSetting );
+
             CPluginMetaData metaData;
             if ( metaData.LoadConfig( *(*n ) ) )
             {                
                 if ( !AddPluginMetaData( metaData, groupName, loadPlugins ) )
                 {
-                    GUCEF_ERROR_LOG( LOGLEVEL_NORMAL, "Failed to load plugin meta data based on info in config" );
-                    errorOccured = true;
+                    GUCEF_ERROR_LOG( LOGLEVEL_NORMAL, "PluginControl: Failed to add plugin meta data" );
+                    if ( !loadFailAllowed ) errorOccured = true;
                 }
+            }
+            else
+            {
+                GUCEF_ERROR_LOG( LOGLEVEL_NORMAL, "PluginControl: LoadConfig failed for the given plugin meta data" );
+                if ( !loadFailAllowed ) errorOccured = true;
             }
             ++n;
         }
@@ -1007,7 +1018,7 @@ CPluginControl::LoadConfig( const CDataNode& treeroot )
         ++i;
     }
 
-    return errorOccured;
+    return !errorOccured;
 }
 
 /*-------------------------------------------------------------------------//

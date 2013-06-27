@@ -79,7 +79,7 @@ class GUCEF_INPUT_PUBLIC_CPP CInputDriverPlugin : public CInputDriver   ,
 
     void Unlink( void );
 
-    virtual CORE::TPluginMetaDataPtr GetMetaData( void );
+    virtual CORE::TPluginMetaDataPtr GetMetaData( void ) const;
 
     virtual void* GetModulePointer( void );
 

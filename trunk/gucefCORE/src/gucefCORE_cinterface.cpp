@@ -43,6 +43,11 @@
 #define GUCEF_CORE_CPLUGINCONTROL_H
 #endif /* GUCEF_CORE_CPLUGINCONTROL_H ? */
 
+#ifndef GUCEF_CORE_CONFIGSTORE_H
+#include "CConfigStore.h"
+#define GUCEF_CORE_CONFIGSTORE_H
+#endif /* GUCEF_CORE_CONFIGSTORE_H ? */
+
 #include "gucefCORE_cinterface.h"
 
 /*-------------------------------------------------------------------------//
@@ -77,6 +82,20 @@ GUCEF_CORE_GucefLoadConfig( const char* configPath ,
 {GUCEF_TRACE;
 
     GUCEF_SYSTEM_LOG( LOGLEVEL_NORMAL, "Invoking LoadConfig via C interface" );
+
+    CConfigStore& configStore = CCoreGlobal::Instance()->GetConfigStore();
+    configStore.SetConfigFile( configPath );
+    
+    if ( 0 != dataCodec )
+    {
+        configStore.SetCodec( dataCodec );
+    }
+
+    if ( configStore.LoadConfig() )
+    {
+        return 1;
+    }
+    
     return 0;
 }
 
@@ -90,7 +109,7 @@ GUCEF_CORE_GucefLoadPlugin( const char* pluginPath ,
                             char** argv            )
 {GUCEF_TRACE;
 
-    GUCEF_SYSTEM_LOG( LOGLEVEL_NORMAL, "Invoking LoadGenericPlugin via C interface" );
+    GUCEF_SYSTEM_LOG( LOGLEVEL_NORMAL, "Invoking LoadPlugin via C interface" );
 
     CPluginMetaData pluginMetaData;
     pluginMetaData.SetLoaderLogicTypeName( "gucefLOADER" );

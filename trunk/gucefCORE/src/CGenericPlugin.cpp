@@ -114,7 +114,7 @@ CGenericPlugin::GetPluginParams( void ) const
 /*-------------------------------------------------------------------------*/
 
 TPluginMetaDataPtr
-CGenericPlugin::GetMetaData( void )
+CGenericPlugin::GetMetaData( void ) const
 {GUCEF_TRACE;
 
     return m_metaData;
