@@ -248,6 +248,7 @@ add_subdirectory( tests/gucefINPUT_TestApp )
 add_subdirectory( tests/gucefDRN_TestApp )
 add_subdirectory( tests/gucefLOADER_TestApp )
 add_subdirectory( tests/gucefPRODMAN_TestApp )
+add_subdirectory( tests/gucefPATCHERAPP_TestApp )
 
 # Setup GUCEF Plugin style applications
 add_subdirectory( apps/gucefPATCHERAPP )

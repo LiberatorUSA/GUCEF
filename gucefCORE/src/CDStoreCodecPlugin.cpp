@@ -248,7 +248,7 @@ OnParserErrorHandler( void* privdata          ,
 /*-------------------------------------------------------------------------*/
 
 TPluginMetaDataPtr
-CDStoreCodecPlugin::GetMetaData( void )
+CDStoreCodecPlugin::GetMetaData( void ) const
 {GUCEF_TRACE;
 
     return m_metaData;

@@ -139,15 +139,19 @@ class CTSharedPtr : public CTBasicSharedPtr< T >
 
     CTSharedPtr& operator=( const CTSharedPtr& src );
 
-    bool operator==( const void* other ) const;
+    inline bool operator==( int other ) const;
+    
+    inline bool operator==( const void* other ) const;
 
-    bool operator==( const CTSharedPtr& other ) const;
+    inline bool operator==( const CTSharedPtr& other ) const;
 
-    bool operator!=( const void* other ) const;
+    inline bool operator!=( int other ) const;
 
-    bool operator!=( const CTSharedPtr& other ) const;
+    inline bool operator!=( const void* other ) const;
 
-    bool operator<( const CTSharedPtr& other ) const;
+    inline bool operator!=( const CTSharedPtr& other ) const;
+
+    inline bool operator<( const CTSharedPtr& other ) const;
 
     /**
      *  operator that implements '(*mySharedPtr)'
@@ -176,6 +180,12 @@ class CTSharedPtr : public CTBasicSharedPtr< T >
      *  @throws ENotInitialized if the pointer is not initialized
      */
     inline const T* operator->( void ) const;
+
+    /**
+     *  Conversion operator to bool to facilitate easy ! etc checks against the
+     *  pointer being NULL as some people like to do versus an explicit NULL == check.
+     */
+    inline operator bool() const;
 
     // implemented inline as a workaround for VC6 issues
     // The dummy param is a VC6 hack for templated member functions
@@ -322,6 +332,16 @@ CTSharedPtr< T >::operator==( const void* other ) const
 
 template< typename T >
 inline bool
+CTSharedPtr< T >::operator==( int other ) const
+{GUCEF_TRACE;
+
+    return static_cast< const CTBasicSharedPtr< T >& >( *this ) == other;
+}
+
+/*-------------------------------------------------------------------------*/
+
+template< typename T >
+inline bool
 operator==( const void* ptr, const CTSharedPtr< T >& other )
 {GUCEF_TRACE;
 
@@ -338,7 +358,7 @@ inline bool
 operator==( const int ptr, const CTSharedPtr< T >& other )
 {GUCEF_TRACE;
 
-    return static_cast< const T* >( NULL ) == static_cast< const CTBasicSharedPtr< T >& >( other );
+    return static_cast< const CTBasicSharedPtr< T >& >( other ) == ptr;
 }
 
 /*-------------------------------------------------------------------------*/
@@ -349,6 +369,16 @@ CTSharedPtr< T >::operator!=( const CTSharedPtr< T >& other ) const
 {GUCEF_TRACE;
 
     return static_cast< const CTBasicSharedPtr< T >& >( *this ) != static_cast< const CTBasicSharedPtr< T >& >( other );
+}
+
+/*-------------------------------------------------------------------------*/
+
+template< typename T >
+inline bool
+CTSharedPtr< T >::operator!=( int other ) const
+{GUCEF_TRACE;
+
+    return static_cast< const CTBasicSharedPtr< T >& >( *this ) != other;
 }
 
 /*-------------------------------------------------------------------------*/
@@ -378,10 +408,10 @@ operator!=( const void* ptr, const CTSharedPtr< T >& other )
  */
 template< typename T >
 inline bool
-operator!=( const int ptr, const CTSharedPtr< T >& other )
+operator!=( int intPtr, const CTSharedPtr< T >& other )
 {GUCEF_TRACE;
 
-    return ptr != static_cast< const CTBasicSharedPtr< T >& >( other);
+    return other != intPtr;
 }
 
 /*-------------------------------------------------------------------------*/
@@ -435,6 +465,15 @@ CTSharedPtr< T >::operator->( void ) const
 {GUCEF_TRACE;
 
     return static_cast< const CTBasicSharedPtr< T >* >( this )->operator->();
+}
+
+/*-------------------------------------------------------------------------*/
+
+template< typename T >
+inline 
+CTSharedPtr< T >::operator bool() const
+{
+    return (*this) != (const void*)0;
 }
 
 /*-------------------------------------------------------------------------//

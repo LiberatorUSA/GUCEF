@@ -1685,6 +1685,72 @@ GetModuleInfo( const TProjectInfo& projectInfo ,
 /*---------------------------------------------------------------------------*/
 
 void
+GenerateModuleDependencyIncludes( TModuleInfoEntry& moduleInfoEntry             ,
+                                  const TModuleInfoEntry* dependencyModuleEntry ,
+                                  const CORE::CString& platformName             )
+{GUCEF_TRACE;
+
+    // Narrow it down to the platform we are interested in    
+    TModuleInfoMap::const_iterator n = dependencyModuleEntry->modulesPerPlatform.find( platformName );
+    if ( n != dependencyModuleEntry->modulesPerPlatform.end() )
+    {
+        // this dependency has module info which is specfic to this platform
+        const TModuleInfo& dependencyModule = (*n).second;
+
+        // Now construct the relative path to each of the dependency module's include dirs
+        // These dir will all become include dirs for this module
+        const TStringVectorMap& headerFiles = dependencyModule.includeDirs;
+        if ( !headerFiles.empty() )
+        {
+            // Since this platform specific entry has header files we will need to generate
+            // and include platform specific dependency paths to this module
+            // to that end we will grab this module's definition for this platform or make a
+            // new one if no entry exists yet
+            TModuleInfo* moduleInfo = FindModuleInfoForPlatform( moduleInfoEntry, platformName, true );
+                                
+            // Determine the relative path to this other module
+            CORE::CString relativePath = CORE::GetRelativePathToOtherPathRoot( moduleInfoEntry.rootDir        ,
+                                                                               dependencyModuleEntry->rootDir );
+            relativePath = relativePath.ReplaceChar( '\\', '/' );                
+            
+            TStringVectorMap::const_iterator n = headerFiles.begin();
+            while ( n != headerFiles.end() )
+            {
+                CORE::CString dependencyInclDir = relativePath;
+                CORE::AppendToPath( dependencyInclDir, (*n).first );
+                dependencyInclDir = CORE::RelativePath( dependencyInclDir );
+                dependencyInclDir = dependencyInclDir.ReplaceChar( '\\', '/' );
+
+                // Add the contructed include directory to the list of dependency directories
+                // for the current module. This can later be used again by other modules which
+                // include this one.
+                moduleInfo->dependencyIncludeDirs.insert( dependencyInclDir );
+                ++n;
+            }
+
+            // On top of that we have to include all the include dirs that the dependency module
+            // was including itself since it's headers might be referring to those files.
+            TStringSet::const_iterator m = dependencyModule.dependencyIncludeDirs.begin();
+            while ( m != dependencyModule.dependencyIncludeDirs.end() )
+            {
+                CORE::CString dependencyInclDir = relativePath;
+                CORE::AppendToPath( dependencyInclDir, (*m) );
+                dependencyInclDir = CORE::RelativePath( dependencyInclDir );
+                dependencyInclDir = dependencyInclDir.ReplaceChar( '\\', '/' );
+
+                // Add the contructed include directory to the list of dependency directories
+                // for the current module. This can later be used again by other modules which
+                // include this one.
+                moduleInfo->dependencyIncludeDirs.insert( dependencyInclDir );
+                ++m;
+            }
+        }
+    }
+}
+
+/*---------------------------------------------------------------------------*/
+
+void
 GenerateModuleDependencyIncludesForPlatform( const TProjectInfo& projectInfo     ,
                                              TModuleInfoEntry& moduleInfoEntry   ,
                                              const CORE::CString& platformName   ,
@@ -1698,61 +1764,15 @@ GenerateModuleDependencyIncludesForPlatform( const TProjectInfo& projectInfo    
     const TModuleInfoEntry* dependencyModule = GetModuleInfoEntry( projectInfo, dependencyName, platformName );
     if ( NULL != dependencyModule )
     {
-        // Now we narrow it down to the platform we are interested in    
-        TModuleInfoMap::const_iterator n = dependencyModule->modulesPerPlatform.find( platformName );
-        if ( n != dependencyModule->modulesPerPlatform.end() )
+        // Includes defined as being for all platforms are always included since other platform defintions
+        // are addative and do not replace the All platforms definition. Some dependencies are only on certain platforms
+        // so we cannot rely on a previous pass for AllPlatforms to have added the correct include paths
+        GenerateModuleDependencyIncludes( moduleInfoEntry, dependencyModule, AllPlatforms );
+
+        // Now we can add the platform specific includes
+        if ( platformName != AllPlatforms )
         {
-            // this dependency has module info which is specfic to this platform
-            const TModuleInfo& dependencyModuleInfo = (*n).second;
-
-            // Now construct the relative path to each of the dependency module's include dirs
-            // These dir will all become include dirs for this module
-            const TStringVectorMap& headerFiles = dependencyModuleInfo.includeDirs;
-            if ( !headerFiles.empty() )
-            {
-                // Since this platform specific entry has header files we will need to generate
-                // and include platform specific dependency paths to this module
-                // to that end we will grab this module's definition for this platform or make a
-                // new one if no entry exists yet
-                TModuleInfo* moduleInfo = FindModuleInfoForPlatform( moduleInfoEntry, platformName, true );
-                                
-                // Determine the relative path to this other module
-                CORE::CString relativePath = CORE::GetRelativePathToOtherPathRoot( moduleInfoEntry.rootDir   ,
-                                                                                   dependencyModule->rootDir );
-                relativePath = relativePath.ReplaceChar( '\\', '/' );                
-            
-                TStringVectorMap::const_iterator n = headerFiles.begin();
-                while ( n != headerFiles.end() )
-                {
-                    CORE::CString dependencyInclDir = relativePath;
-                    CORE::AppendToPath( dependencyInclDir, (*n).first );
-                    dependencyInclDir = CORE::RelativePath( dependencyInclDir );
-                    dependencyInclDir = dependencyInclDir.ReplaceChar( '\\', '/' );
-
-                    // Add the contructed include directory to the list of dependency directories
-                    // for the current module. This can later be used again by other modules which
-                    // include this one.
-                    moduleInfo->dependencyIncludeDirs.insert( dependencyInclDir );
-                    ++n;
-                }
-
-                // On top of that we have to include all the include dirs that the dependency module
-                // was including itself since it's headers might be referring to those files.
-                TStringSet::const_iterator m = dependencyModuleInfo.dependencyIncludeDirs.begin();
-                while ( m != dependencyModuleInfo.dependencyIncludeDirs.end() )
-                {
-                    CORE::CString dependencyInclDir = relativePath;
-                    CORE::AppendToPath( dependencyInclDir, (*m) );
-                    dependencyInclDir = CORE::RelativePath( dependencyInclDir );
-                    dependencyInclDir = dependencyInclDir.ReplaceChar( '\\', '/' );
-
-                    // Add the contructed include directory to the list of dependency directories
-                    // for the current module. This can later be used again by other modules which
-                    // include this one.
-                    moduleInfo->dependencyIncludeDirs.insert( dependencyInclDir );
-                    ++m;
-                }
-            }
+            GenerateModuleDependencyIncludes( moduleInfoEntry, dependencyModule, platformName );
         }
     }
 }
@@ -1815,7 +1835,7 @@ GenerateDependencyIncludesForPlatform( TProjectInfo& projectInfo         ,
     TModuleInfoEntry* moduleInfoEntry = FindFirstModuleAccordingToBuildOrder( projectInfo  ,
                                                                               platformName );
     while ( NULL != moduleInfoEntry )
-    {    
+    {        
         ++buildOrderIndex;
         
         GenerateModuleDependencyIncludesForPlatform( projectInfo      ,

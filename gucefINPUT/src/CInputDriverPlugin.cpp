@@ -582,7 +582,7 @@ CInputDriverPlugin::DeleteContext( CInputContext* context )
 /*-------------------------------------------------------------------------*/
 
 CORE::TPluginMetaDataPtr
-CInputDriverPlugin::GetMetaData( void )
+CInputDriverPlugin::GetMetaData( void ) const
 {GUCEF_TRACE;
 
     return m_metaData;

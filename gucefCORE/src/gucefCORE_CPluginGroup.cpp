@@ -102,6 +102,38 @@ CPluginGroup::GetPluginMetaData( void )
     return m_pluginMetaData;
 }
 
+/*-------------------------------------------------------------------------*/
+
+bool
+CPluginGroup::HasPluginWithFileName( const CString& moduleFileName ) const
+{
+    TPluginSet::const_iterator i = m_plugins.begin();
+    while ( i != m_plugins.end() )
+    {
+        TConstPluginMetaDataPtr metadata = (*i)->GetMetaData();
+        if ( metadata )
+        {
+            if ( moduleFileName == metadata->GetModuleFilename() )
+            {
+                return true;
+            }
+        }
+        ++i;
+    }
+
+    TPluginMetaDataSet::const_iterator n = m_pluginMetaData.begin();
+    while ( n != m_pluginMetaData.end() )
+    {
+        if ( moduleFileName == (*n)->GetModuleFilename() )
+        {
+            return true;
+        }
+        ++n;
+    }
+
+    return false;
+}
+
 /*-------------------------------------------------------------------------//
 //                                                                         //
 //      NAMESPACE                                                          //

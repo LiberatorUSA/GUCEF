@@ -222,18 +222,16 @@ CPatcherAppConfig::LoadConfig( const CORE::CDataNode& treeroot )
             }
         }
 
-        nodeSet = configNode->FindChildrenOfType( "FontToLoadFromAsset", true );
+        nodeSet = configNode->FindChildrenOfType( "FontsToLoadFromAssets", true );
         n = nodeSet.begin();
         while ( n != nodeSet.end() )
         {
             const CORE::CDataNode* fontInfoNode = (*n);
-
-            //m_guiBackendName = fontInfoNode->GetAttributeValueOrChildValueByName( "GuiBackend" );
-            //if ( !m_guiBackendName.IsNULLOrEmpty() )
-            //{
-            //    m_initialFormTypeName = fontInfoNode->GetChildValueByName( "FormTypeName" );
-            //    m_initialFormResourcePath = fontInfoNode->GetChildValueByName( "FormResource" );
-            //}
+            CString fontAsset = fontInfoNode->GetAttributeValueOrChildValueByName( "FontAsset" );
+            if ( !fontAsset.IsNULLOrEmpty() )
+            {
+                m_fontAssetsToLoad.push_back( fontAsset );
+            }
             ++n;
         }
 

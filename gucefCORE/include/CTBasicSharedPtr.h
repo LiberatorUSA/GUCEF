@@ -167,10 +167,14 @@ class CTBasicSharedPtr
 
     CTBasicSharedPtr& operator=( int nullValue );
 
+    inline bool operator==( int nullValue ) const;
+
     inline bool operator==( const void* other ) const;
 
     inline bool operator==( const CTBasicSharedPtr& other ) const;
 
+    inline bool operator!=( int other ) const;
+    
     inline bool operator!=( const void* other ) const;
 
     inline bool operator!=( const CTBasicSharedPtr& other ) const;
@@ -204,6 +208,12 @@ class CTBasicSharedPtr
      *  @throws ENotInitialized if the pointer is not initialized
      */
     inline const T* operator->( void ) const;
+
+    /**
+     *  Conversion operator to bool to facilitate easy ! etc checks against the
+     *  pointer being NULL as some people like to do versus an explicit NULL == check.
+     */
+    inline operator bool() const;
 
     inline T* GetPointer( void );
 
@@ -344,9 +354,9 @@ CTBasicSharedPtr< T >::Initialize( T* ptr                        ,
     
     // If you get an assert here:
     //    You have an error in your decending class: you cannot initialize twice
-    assert( m_ptr == NULL );
-    assert( m_objectDestructor == NULL );
-    assert( m_refCounter == NULL );
+    assert( m_ptr == GUCEF_NULL );
+    assert( m_objectDestructor == GUCEF_NULL );
+    assert( m_refCounter == GUCEF_NULL );
 
     // Just in case we did not hit the asserts above because the code was compiled in release
     // mode without asserts we will still allow the scenario by unlinking first
@@ -388,7 +398,7 @@ bool
 CTBasicSharedPtr< T >::IsNULL( void ) const
 {GUCEF_TRACE;
 
-    return NULL == m_ptr;
+    return GUCEF_NULL == m_ptr;
 }
 
 /*-------------------------------------------------------------------------*/
@@ -412,7 +422,7 @@ CTBasicSharedPtr< T >&
 CTBasicSharedPtr< T >::operator=( int nullValue )
 {GUCEF_TRACE;
 
-    assert( nullValue == NULL );
+    assert( nullValue == GUCEF_NULL );
     Unlink();
     return *this;
 }
@@ -478,6 +488,18 @@ CTBasicSharedPtr< T >::operator==( const void* other ) const
 
 template< typename T >
 inline bool
+CTBasicSharedPtr< T >::operator==( int other ) const
+{GUCEF_TRACE;
+
+    if ( 0 == other ) return GUCEF_NULL == m_ptr;
+    if ( sizeof( int ) != sizeof( m_ptr ) ) return false;
+    return other == (int) m_ptr;
+}
+
+/*-------------------------------------------------------------------------*/
+
+template< typename T >
+inline bool
 operator==( const T* ptr, const CTBasicSharedPtr< T >& other )
 {GUCEF_TRACE;
 
@@ -494,8 +516,8 @@ inline bool
 operator==( const int ptr, const CTBasicSharedPtr< T >& other )
 {GUCEF_TRACE;
 
-    assert( NULL == ptr );
-    return static_cast< const T* >( NULL ) == other;
+    assert( GUCEF_NULL == ptr );
+    return static_cast< const T* >( GUCEF_NULL ) == other;
 }
 
 /*-------------------------------------------------------------------------*/
@@ -506,6 +528,18 @@ CTBasicSharedPtr< T >::operator!=( const CTBasicSharedPtr< T >& other ) const
 {GUCEF_TRACE;
 
     return m_ptr != other.m_ptr;
+}
+
+/*-------------------------------------------------------------------------*/
+
+template< typename T >
+inline bool
+CTBasicSharedPtr< T >::operator!=( int other ) const
+{GUCEF_TRACE;
+
+    if ( 0 == other ) return GUCEF_NULL != m_ptr;
+    if ( sizeof( int ) != sizeof( m_ptr ) ) return true;
+    return other != (int) m_ptr;
 }
 
 /*-------------------------------------------------------------------------*/
@@ -535,11 +569,10 @@ operator!=( const T* ptr, const CTBasicSharedPtr< T >& other )
  */
 template< typename T >
 inline bool
-operator!=( const int ptr, const CTBasicSharedPtr< T >& other )
+operator!=( int intPtr, const CTBasicSharedPtr< T >& other )
 {GUCEF_TRACE;
 
-    assert( NULL == ptr );
-    return static_cast< const T* >( NULL ) != other;
+    return other != intPtr;
 }
 
 /*-------------------------------------------------------------------------*/
@@ -565,7 +598,7 @@ inline const T&
 CTBasicSharedPtr< T >::operator*( void ) const
 {GUCEF_TRACE;
 
-    if ( NULL != m_ptr )
+    if ( GUCEF_NULL != m_ptr )
     {
         return *m_ptr;
     }
@@ -582,7 +615,7 @@ inline T*
 CTBasicSharedPtr< T >::operator->( void )
 {GUCEF_TRACE;
 
-    if ( NULL != m_ptr )
+    if ( GUCEF_NULL != m_ptr )
     {
         return m_ptr;
     }
@@ -598,13 +631,22 @@ inline const T*
 CTBasicSharedPtr< T >::operator->( void ) const
 {GUCEF_TRACE;
 
-    if ( NULL != m_ptr )
+    if ( GUCEF_NULL != m_ptr )
     {
         return m_ptr;
     }
 
     // Someone forgot to initialize the shared pointer with an assignment
     GUCEF_EMSGTHROW( ENotInitialized, "CTBasicSharedPtr< T >::operator->( void ) const: uninitialized pointer usage" );
+}
+
+/*-------------------------------------------------------------------------*/
+
+template< typename T >
+inline 
+CTBasicSharedPtr< T >::operator bool() const
+{
+    return GUCEF_NULL != m_ptr;
 }
 
 /*-------------------------------------------------------------------------*/
@@ -632,7 +674,7 @@ inline T*
 CTBasicSharedPtr< T >::GetPointer( void )
 {GUCEF_TRACE;
 
-    if ( NULL != m_ptr )
+    if ( GUCEF_NULL != m_ptr )
     {
         return m_ptr;
     }
@@ -648,7 +690,7 @@ inline const T*
 CTBasicSharedPtr< T >::GetPointer( void ) const
 {GUCEF_TRACE;
 
-    if ( NULL != m_ptr )
+    if ( GUCEF_NULL != m_ptr )
     {
         return m_ptr;
     }
@@ -694,21 +736,21 @@ CTBasicSharedPtr< T >::Unlink( void )
             if ( NULL != m_objectDestructor )
             {
                 m_objectDestructor->DestroyObject( m_ptr );
-                m_objectDestructor = NULL;
+                m_objectDestructor = GUCEF_NULL;
             }
 
             delete m_refCounter;
-            m_refCounter = NULL;
+            m_refCounter = GUCEF_NULL;
 
-            m_ptr = NULL;
+            m_ptr = GUCEF_NULL;
         }
     }
 
     // this object may not have been the last refrence but we still have to NULL
     // the attributes to allow this object to be re-used
-    m_objectDestructor = NULL;
-    m_refCounter = NULL;
-    m_ptr = NULL;
+    m_objectDestructor = GUCEF_NULL;
+    m_refCounter = GUCEF_NULL;
+    m_ptr = GUCEF_NULL;
     
     UnlockData();
 }
@@ -721,10 +763,10 @@ CTBasicSharedPtr< T >::SetToNULL( void )
 {
     LockData();
     
-    m_objectDestructor = NULL;
+    m_objectDestructor = GUCEF_NULL;
     delete m_refCounter;
-    m_refCounter = NULL;
-    m_ptr = NULL;
+    m_refCounter = GUCEF_NULL;
+    m_ptr = GUCEF_NULL;
     
     UnlockData();
 }

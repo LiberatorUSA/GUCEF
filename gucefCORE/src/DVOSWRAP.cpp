@@ -174,7 +174,7 @@ GetModulePointer( const char* moduleName )
 
     #if ( ( GUCEF_PLATFORM == GUCEF_PLATFORM_LINUX ) || ( GUCEF_PLATFORM == GUCEF_PLATFORM_ANDROID ) )
 
-    // On linux the reference could is always incremented so we must decrement again right away to get
+    // On linux the reference count is always incremented so we must decrement again right away to get
     // the same behaviour as the windows version
     void* modulePtr = (void*) dlopen( moduleName, RTLD_NOW );
     dlclose( modulePtr );

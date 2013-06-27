@@ -122,7 +122,7 @@ CStdCodecPlugin::~CStdCodecPlugin()
 /*-------------------------------------------------------------------------*/
 
 TPluginMetaDataPtr
-CStdCodecPlugin::GetMetaData( void )
+CStdCodecPlugin::GetMetaData( void ) const
 {GUCEF_TRACE;
 
     return m_metaData;

@@ -87,7 +87,7 @@ class GUCEF_CORE_PUBLIC_CPP CDStoreCodecPlugin : public CDStoreCodec ,
 
     bool Unlink( void );
 
-    virtual TPluginMetaDataPtr GetMetaData( void );
+    virtual TPluginMetaDataPtr GetMetaData( void ) const;
 
     virtual void* GetModulePointer( void );
 

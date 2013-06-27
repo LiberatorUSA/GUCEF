@@ -129,6 +129,7 @@ class GUCEF_CORE_PUBLIC_CPP CIPluginMetaData
 /*-------------------------------------------------------------------------*/
 
 typedef CTSharedPtr< CIPluginMetaData > TPluginMetaDataPtr;
+typedef CTSharedPtr< const CIPluginMetaData > TConstPluginMetaDataPtr;
 
 /*-------------------------------------------------------------------------//
 //                                                                         //
