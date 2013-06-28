@@ -93,7 +93,9 @@ CLogManager::CLogManager( void )
       m_msgTypeEnablers()                 ,
       m_maxLogLevel( GUCEFCORE_INT32MAX ) ,
       m_bootstrapLog()                    ,
-      m_busyLogging( false )
+      m_busyLogging( false )              ,
+      m_redirectToLogQueue( false )       ,
+      m_dataLock()
 {GUCEF_TRACE;
 
     m_msgTypeEnablers[ LOG_ERROR ] = true;
@@ -122,6 +124,28 @@ CLogManager::CLogManager( void )
 CLogManager::~CLogManager()
 {GUCEF_TRACE;
 
+}
+
+/*-------------------------------------------------------------------------*/
+
+void
+CLogManager::RedirectToBootstrapLogQueue( bool redirect )
+{GUCEF_TRACE;
+    
+    m_dataLock.Lock();
+
+    m_redirectToLogQueue = redirect;
+    if ( redirect )
+    {
+        Log( LOG_SYSTEM, LOGLEVEL_NORMAL, "LogManager: Redirecting all log statements to the bootstrap log queue" );
+    }
+    else
+    {
+        Log( LOG_SYSTEM, LOGLEVEL_NORMAL, "LogManager: Turning off redirect of all log statements to the bootstrap log queue" );
+        FlushBootstrapLogEntriesToLogs();
+    }
+
+    m_dataLock.Unlock();
 }
 
 /*-------------------------------------------------------------------------*/
@@ -262,7 +286,7 @@ CLogManager::Log( const TLogMsgType logMsgType ,
     {
         if ( (*m_msgTypeEnablers.find( logMsgType )).second )
         {
-            if ( m_loggers.size() > 0 )
+            if ( m_loggers.size() > 0  && !m_redirectToLogQueue )
             {
                 TLoggerList::const_iterator i = m_loggers.begin();
                 while ( i != m_loggers.end() )

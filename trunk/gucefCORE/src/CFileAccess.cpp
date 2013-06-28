@@ -394,6 +394,39 @@ CFileAccess::GetFilename( void ) const
     return m_filename; 
 }
 
+/*-------------------------------------------------------------------------*/
+
+bool
+CFileAccess::SetFileToUse( const CString& filename  ,
+                           const char* mode         ,
+                           bool moveIfCurrentlyOpen )
+{GUCEF_TRACE;
+
+    if ( NULL != m_file )
+    {
+        // We already have a file open.
+        fclose( m_file );
+        m_file = NULL;
+
+        if ( moveIfCurrentlyOpen )
+        {
+            Move_File( filename.C_String(), m_filename.C_String() );
+        }
+    }
+
+    m_file = fopen( filename.C_String(), mode );
+    if ( NULL != m_file )
+    {
+        m_filename = filename;
+        m_mode = mode;
+        return true;
+    }
+
+    m_filename.Clear();
+    m_mode.Clear();
+    return false;
+}
+
 /*-------------------------------------------------------------------------//
 //                                                                         //
 //      NAMESPACE                                                          //
