@@ -50,113 +50,117 @@ namespace CORE {
 
 class GUCEF_CORE_PUBLIC_CPP CFileAccess : public CIOAccess
 {
-        public:
+    public:
 
-        CFileAccess( const CString& file     ,
-                     const char* mode = "rb" );
+    CFileAccess( const CString& file     ,
+                 const char* mode = "rb" );
 
-        virtual ~CFileAccess();
+    virtual ~CFileAccess();
 
-        /**
-         *      open the resource for I/O
-         */
-        virtual void Open( void );
+    /**
+      *      open the resource for I/O
+      */
+    virtual void Open( void );
 
-        /**
-         *      close the recource
-         */
-        virtual void Close( void );
+    /**
+        *      close the recource
+        */
+    virtual void Close( void );
 
-        /**
-         *      is the recource opened for reading ?
-         */
-        virtual bool Opened( void ) const;
+    /**
+        *      is the recource opened for reading ?
+        */
+    virtual bool Opened( void ) const;
 
-        /**
-         *      read a line of text
-         */
-        virtual CString ReadLine( void );
+    /**
+        *      read a line of text
+        */
+    virtual CString ReadLine( void );
 
-        /**
-         *      Reads a string from the recource
-         */
-        virtual CString ReadString( void );
+    /**
+        *      Reads a string from the recource
+        */
+    virtual CString ReadString( void );
 
-        /**
-         *      Attempts to read the specified number of bytes from the recourse
-         */
-        virtual UInt32 Read( void *dest      ,
-                             UInt32 esize    ,
-                             UInt32 elements );
+    /**
+        *      Attempts to read the specified number of bytes from the recourse
+        */
+    virtual UInt32 Read( void *dest      ,
+                            UInt32 esize    ,
+                            UInt32 elements );
 
-        /**
-         *      Attempts to write the specified number of bytes to the recourse
-         *      using srcdata as the data source.
-         */
-        virtual UInt32 Write( const void* srcdata ,
-                              UInt32 esize        ,
-                              UInt32 elements     );
+    /**
+        *      Attempts to write the specified number of bytes to the recourse
+        *      using srcdata as the data source.
+        */
+    virtual UInt32 Write( const void* srcdata ,
+                            UInt32 esize        ,
+                            UInt32 elements     );
 
-        virtual UInt32 Write( CIOAccess& sourceData );
+    virtual UInt32 Write( CIOAccess& sourceData );
         
-        virtual UInt32 Write( const CString& string );
+    virtual UInt32 Write( const CString& string );
 
-        /**
-         *      Get the current offset in bytes
-         */
-        virtual UInt32 Tell( void ) const;
+    /**
+        *      Get the current offset in bytes
+        */
+    virtual UInt32 Tell( void ) const;
 
-        /**
-         *      Get the size of the resource in bytes
-         */
-        virtual UInt32 GetSize( void ) const;
+    /**
+        *      Get the size of the resource in bytes
+        */
+    virtual UInt32 GetSize( void ) const;
 
-        /**
-         *      jump to a different part of the recource
-         */
-        virtual Int32 Seek( Int32 offset ,
-                            Int32 origin );
+    /**
+        *      jump to a different part of the recource
+        */
+    virtual Int32 Seek( Int32 offset ,
+                        Int32 origin );
 
-        /**
-         *      jump to the given offset in the recource
-         */
-        virtual UInt32 Setpos( UInt32 position );
+    /**
+        *      jump to the given offset in the recource
+        */
+    virtual UInt32 Setpos( UInt32 position );
 
-        /**
-         *      Read a single character
-         */
-        virtual char GetChar( void );
+    /**
+        *      Read a single character
+        */
+    virtual char GetChar( void );
 
-        /**
-         *      are we at the end of the recource ?
-         */
-        virtual bool Eof( void ) const;
+    /**
+        *      are we at the end of the recource ?
+        */
+    virtual bool Eof( void ) const;
 
-        virtual bool IsReadable( void ) const;
+    virtual bool IsReadable( void ) const;
 
-        virtual bool IsWriteable( void ) const;
+    virtual bool IsWriteable( void ) const;
 
-        /**
-         *      Is the access to the resource a valid one or
-         *      has something gone wrong ?
-         */
-        virtual bool IsValid( void );
+    /**
+        *      Is the access to the resource a valid one or
+        *      has something gone wrong ?
+        */
+    virtual bool IsValid( void );
 
-        virtual void Flush( void );
+    virtual void Flush( void );
 
-        virtual CICloneable* Clone( void ) const;
+    virtual CICloneable* Clone( void ) const;
 
-        const CString& GetFilename( void ) const;
+    bool SetFileToUse( const CString& filename          ,
+                       const char* mode = "rb"          ,
+                       bool moveIfCurrentlyOpen = false );
+    
+    const CString& GetFilename( void ) const;
 
-        private:
-        CFileAccess( void );
+    private:
+    CFileAccess( void );
 
-        bool _writeable;
-        bool _readable;
-        CString m_mode;
-        FILE* m_file;
-        CString m_filename;
-        UInt32 _size;
+    bool _writeable;
+    bool _readable;
+    CString m_mode;
+    FILE* m_file;
+    CString m_filename;
+    UInt32 _size;
 };
 
 /*-------------------------------------------------------------------------//

@@ -1,0 +1,3 @@
+LOADMODULES GUCEF -1.-1.-1.-1 gucefMT gucefCORE gucefVFS gucefCOMCORE gucefCOM gucefPATCHER gucefIMAGE gucefINPUT gucefGUI
+APPCONFIG bootstrap.ini
+GUCEFMAIN true

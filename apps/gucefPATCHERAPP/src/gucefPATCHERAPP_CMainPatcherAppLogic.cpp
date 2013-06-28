@@ -217,23 +217,23 @@ void
 CMainPatcherAppLogic::ShutdownLogging( void )
 {GUCEF_TRACE;
 
-    if ( NULL != m_fileLogger )
+    if ( GUCEF_NULL != m_fileLogger )
     {
         CORE::CCoreGlobal::Instance()->GetLogManager().RemoveLogger( m_fileLogger );
     }
-    if ( NULL != m_consoleLogger )
+    if ( GUCEF_NULL != m_consoleLogger )
     {
         CORE::CCoreGlobal::Instance()->GetLogManager().RemoveLogger( m_consoleLogger->GetLogger() );
     }
 
     delete m_consoleLogger;
-    m_consoleLogger = NULL;
+    m_consoleLogger = GUCEF_NULL;
     
     delete m_fileLogger;
-    m_fileLogger = NULL;
+    m_fileLogger = GUCEF_NULL;
 
     delete m_logFile;
-    m_logFile = NULL;
+    m_logFile = GUCEF_NULL;
 }
 
 /*-------------------------------------------------------------------------*/
@@ -241,31 +241,78 @@ CMainPatcherAppLogic::ShutdownLogging( void )
 void
 CMainPatcherAppLogic::SetupLogging( void )
 {GUCEF_TRACE;
-    
-    // Cleanup, in case invoked multiple times
-    ShutdownLogging();
-    
+       
     CPatcherAppConfig& config = CPatcherAppGlobal::Instance()->GetConfig();
+    bool newLoggingWasEnabled = false;
     
     if ( config.IsFileLoggerEnabled() )
     {
-        // Setup file to log to with file logger
-        m_logFile = new CORE::CFileAccess( config.GetLogFilePath(), "w" );
+        if ( GUCEF_NULL != m_logFile )
+        {
+            CString newLogFilePath = CORE::RelativePath( config.GetLogFilePath() );
+            if ( newLogFilePath != m_logFile->GetFilename() )
+            {
+                CORE::CLogManager& logManager = CORE::CCoreGlobal::Instance()->GetLogManager();            
+                logManager.RedirectToBootstrapLogQueue( true );
+                if ( !m_logFile->SetFileToUse( newLogFilePath, "a+", true ) ) return;
+                logManager.RedirectToBootstrapLogQueue( false );
+            }
+            // else: just keep using the file we already have
+        }
+        else
+        {
+            // Setup new file to log to with file logger
+            m_logFile = new CORE::CFileAccess( config.GetLogFilePath(), "w" );
+        }
 
-        // setup file logger
-        m_fileLogger = new CORE::CStdLogger( *m_logFile );
-        CORE::CCoreGlobal::Instance()->GetLogManager().AddLogger( m_fileLogger );
+        if ( GUCEF_NULL == m_fileLogger )
+        {
+            // setup file logger
+            m_fileLogger = new CORE::CStdLogger( *m_logFile );
+            CORE::CCoreGlobal::Instance()->GetLogManager().AddLogger( m_fileLogger );
+            newLoggingWasEnabled = true;
+        }
+    }
+    else
+    {
+        if ( GUCEF_NULL != m_fileLogger )
+        {
+            CORE::CCoreGlobal::Instance()->GetLogManager().RemoveLogger( m_fileLogger );
+            delete m_fileLogger;
+            m_fileLogger = GUCEF_NULL;
+        }
+        if ( GUCEF_NULL != m_logFile )
+        {
+            delete m_logFile;
+            m_logFile = GUCEF_NULL;
+        }
     }
 
     if ( config.IsConsoleLoggerEnabled() )
     {
-        // setup console logger
-        m_consoleLogger = new CORE::CPlatformNativeConsoleLogger();
-        CORE::CCoreGlobal::Instance()->GetLogManager().AddLogger( m_consoleLogger->GetLogger() );
+        if ( GUCEF_NULL == m_consoleLogger )
+        {
+            // setup console logger
+            m_consoleLogger = new CORE::CPlatformNativeConsoleLogger();
+            CORE::CCoreGlobal::Instance()->GetLogManager().AddLogger( m_consoleLogger->GetLogger() );
+            newLoggingWasEnabled = true;
+        }
+    }
+    else
+    {
+        if ( GUCEF_NULL != m_consoleLogger )
+        {
+            CORE::CCoreGlobal::Instance()->GetLogManager().RemoveLogger( m_consoleLogger->GetLogger() );
+            delete m_consoleLogger;
+            m_consoleLogger = GUCEF_NULL;
+        }
     }
 
-    // flush startup log entries
-    CORE::CCoreGlobal::Instance()->GetLogManager().FlushBootstrapLogEntriesToLogs();
+    if ( newLoggingWasEnabled )
+    {
+        // flush startup log entries
+        CORE::CCoreGlobal::Instance()->GetLogManager().FlushBootstrapLogEntriesToLogs();
+    }
 }
 
 /*-------------------------------------------------------------------------*/
@@ -278,6 +325,9 @@ CMainPatcherAppLogic::OnFirstAppCycle( CORE::CNotifier* notifier    ,
 
     try
     {
+        // Now that the config is loaded refine our logging
+        SetupLogging();
+        
         CPatcherAppConfig& config = CPatcherAppGlobal::Instance()->GetConfig();
 
         if ( config.IsConsoleWindowEnabled() )

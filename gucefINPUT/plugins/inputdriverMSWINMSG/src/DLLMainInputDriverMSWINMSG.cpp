@@ -377,12 +377,28 @@ GetFreeContext( void )
         {
             if ( 0 == driverData->contextList[ i ].inUse )
             {
+                 driverData->contextList[ i ].inUse = 1;
                  return &driverData->contextList[ i ];
             }
         }
         return NULL;
     }
     return NULL;
+}
+
+/*---------------------------------------------------------------------------*/
+
+void
+ReleaseContext( TContextData* context )
+{
+    UInt32 i;
+    for ( i=0; i<MAX_NR_OF_CONTEXTS; ++i )
+    {
+        if ( &driverData->contextList[ i ] == context )
+        {
+            memset( context, 0, sizeof( TContextData ) );
+        }
+    }
 }
 
 /*---------------------------------------------------------------------------*/
@@ -1074,7 +1090,7 @@ INPUTDRIVERPLUG_CreateContext( void* plugdata                   ,
     *contextdata = data = GetFreeContext();
         
     /* make sure we didnt hit the context maximum */
-    if ( NULL == data ) return 0;
+    if ( GUCEF_NULL == data ) return 0;
 
     data->callbacks = *callbacks; /* copy our callbacks */
     data->inUse = 1;              /* we are using this context */
@@ -1085,10 +1101,18 @@ INPUTDRIVERPLUG_CreateContext( void* plugdata                   ,
         *      get the window handle, this is always passed for MSWIN input drivers 
         */
     #pragma warning( disable: 4312 )
-    data->hWnd = (HWND) ParseArgListItemPointer( argc, argv, "WINDOW" );
-    BYTE grabCursor = ParseArgListItemUInt32( argc, argv, "GRABCURSOR" ) != 0;
-    data->showCursor = ParseArgListItemUInt32( argc, argv, "HIDECURSOR" ) == 0;
-                
+    data->hWnd = (HWND) ParseArgListItemPointer( argc, argv, "-WINDOW" );
+    BYTE grabCursor = ParseArgListItemUInt32( argc, argv, "-GRABCURSOR" ) != 0;
+    data->showCursor = ParseArgListItemUInt32( argc, argv, "-HIDECURSOR" ) == 0;
+
+    if ( GUCEF_NULL == data->hWnd )
+    {
+        /* We need a valid window handle in order to hook up a input context */
+        ReleaseContext( data );
+        *contextdata = GUCEF_NULL;
+        return 0;
+    }
+
     /*
      *      Retrieve a pointer to the current window message handler
      *      we will have to restore this link if the context is destroyed !!!
@@ -1124,23 +1148,25 @@ UInt32 GUCEF_PLUGIN_CALLSPEC_PREFIX
 INPUTDRIVERPLUG_DestroyContext( void* plugdata    , 
                                 void* contextdata ) GUCEF_PLUGIN_CALLSPEC_SUFFIX
 {
-        TContextData* data = (TContextData*) contextdata;
+    TContextData* data = (TContextData*) contextdata;
 
-        /*
-         *      Restore the link to the old window handler
-         */        
-        #pragma warning( disable: 4244 ) // 'argument' : conversion from 'LONG_PTR' to 'LONG', possible loss of data
-        SetWindowLong( data->hWnd                              ,
-                       GWL_WNDPROC                             ,
-                       (LONG_PTR) data->PrevWindowProcedurePtr );
+    /*
+     *  Restore the link to the old window handler
+     */        
+    #pragma warning( disable: 4244 ) // 'argument' : conversion from 'LONG_PTR' to 'LONG', possible loss of data
+    SetWindowLong( data->hWnd                              ,
+                   GWL_WNDPROC                             ,
+                   (LONG_PTR) data->PrevWindowProcedurePtr );
                                         
-        /* make sure we release our grab on the cursor */
-        GrabWindowCursorInput( data, 0 );
+    /* make sure we release our grab on the cursor */
+    GrabWindowCursorInput( data, 0 );
 
-        data->callbacks.onKeyboardDetached( data->callbacks.userData, KEYBOARD_DEVICEID );
-        data->callbacks.onMouseDetached( data->callbacks.userData, MOUSE_DEVICEID );
+    data->callbacks.onKeyboardDetached( data->callbacks.userData, KEYBOARD_DEVICEID );
+    data->callbacks.onMouseDetached( data->callbacks.userData, MOUSE_DEVICEID );
+
+    ReleaseContext( data );
         
-        return 1;
+    return 1;
 }
 
 /*---------------------------------------------------------------------------*/

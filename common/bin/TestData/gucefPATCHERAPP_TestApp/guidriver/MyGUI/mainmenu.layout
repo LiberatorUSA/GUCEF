@@ -1,0 +1,17 @@
+﻿<?xml version="1.0" encoding="UTF-8"?>
+<MyGUI type="Layout" version="3.2.0">
+    <Widget type="Window" skin="Window" position_real="0.0302734 0.0224609 0.951172 0.949219" align="HStretch VStretch" layer="Overlapped" name="MainWindow">
+        <Property key="Caption" value="Main Menu"/>
+        <Property key="MinSize" value="200 100"/>
+        <Widget type="Button" skin="Button" position_real="0.216805 0.919786 0.56639 0.0620321" align="HStretch VStretch" name="CancelButton">
+            <Property key="Caption" value="Cancel"/>
+        </Widget>
+        <Widget type="ProgressBar" skin="ProgressBar" position_real="0.0311203 0.0213904 0.93361 0.128342" align="HStretch VStretch" name="ProgressBarTotal">
+            <Property key="FlowDirection" value="LeftToRight"/>
+        </Widget>
+        <Widget type="ProgressBar" skin="ProgressBar" position_real="0.0311203 0.176471 0.93361 0.149733" align="HStretch VStretch"/>
+        <Widget type="ProgressBar" skin="ProgressBar" position_real="0.0311203 0.363636 0.93361 0.160428" align="HStretch VStretch"/>
+        
+    </Widget>
+    <CodeGeneratorSettings/>
+</MyGUI>

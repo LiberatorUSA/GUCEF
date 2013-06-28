@@ -114,6 +114,14 @@ class GUCEF_CORE_PUBLIC_CPP CLogManager
      */
     void FlushBootstrapLogEntriesToLogs( void );
 
+    /**
+     *  Allows you to redirect all logging output back to the bootstrap log queue
+     *  Typically only ever needed when you want to fiddle with your logging outputs when the
+     *  application is already up and running and already had working loggers attached.
+     *  When you turn redirect off the queue is immediatly flushed
+     */
+    void RedirectToBootstrapLogQueue( bool redirect );
+
     static const CString& GetLogMsgTypeString( const TLogMsgType logMsgType );
 
     private:
@@ -152,6 +160,7 @@ class GUCEF_CORE_PUBLIC_CPP CLogManager
     Int32 m_maxLogLevel;
     TBootstrapLogVector m_bootstrapLog;
     bool m_busyLogging;
+    bool m_redirectToLogQueue;
     MT::CMutex m_dataLock;
 };
 
