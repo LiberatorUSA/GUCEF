@@ -280,8 +280,59 @@ CPatchManager::OnPumpedNotify( CORE::CNotifier* notifier    ,
 
 {GUCEF_TRACE;
 
-    // @todo: finish
-    //PatchTaskEventReceivedEvent
+    if ( ( CPatchEngine::PatchProcessStartedEvent == eventid ) ||
+         ( CPatchEngine::PatchProcessCompletedEvent == eventid ) ||
+         ( CPatchEngine::PatchProcessAbortedEvent == eventid ) ||
+         ( CPatchEngine::PatchProcessFailedEvent == eventid ) ||
+         ( CPatchEngine::PatchListDataReceivedEvent == eventid ) ||
+         ( CPatchEngine::PatchListRetrievalStartedEvent == eventid ) ||
+         ( CPatchEngine::PatchListRetrievalCompletedEvent == eventid ) ||
+         ( CPatchEngine::PatchListRetrievalFailedEvent == eventid ) ||
+         ( CPatchEngine::PatchListRetrievalAbortedEvent == eventid ) ||
+         ( CPatchEngine::PatchListDecodingFailedEvent == eventid ) ||
+
+         ( CPatchSetDirEngineEvents::DirProcessingStartedEvent == eventid ) ||
+         ( CPatchSetDirEngineEvents::DirProcessingProgressEvent == eventid ) ||
+         ( CPatchSetDirEngineEvents::SubDirProcessingStartedEvent == eventid ) ||
+         ( CPatchSetDirEngineEvents::SubDirProcessingCompletedEvent == eventid ) ||
+         ( CPatchSetDirEngineEvents::DirProcessingCompletedEvent == eventid ) ||
+         ( CPatchSetDirEngineEvents::DirProcessingAbortedEvent == eventid ) ||
+
+         ( CPatchSetFileEngineEvents::FileListProcessingStartedEvent == eventid ) ||
+         ( CPatchSetFileEngineEvents::LocalFileIsOKEvent == eventid ) ||
+         ( CPatchSetFileEngineEvents::LocalFileSizeMismatchEvent == eventid ) ||
+         ( CPatchSetFileEngineEvents::LocalFileHashMismatchEvent == eventid ) ||
+         ( CPatchSetFileEngineEvents::LocalFileNotFoundEvent == eventid ) ||
+         ( CPatchSetFileEngineEvents::LocalFileReplacedEvent == eventid ) ||
+         ( CPatchSetFileEngineEvents::LocalFileReplacementFailure == eventid ) ||
+         ( CPatchSetFileEngineEvents::FileRetrievalStartedEvent == eventid ) ||
+         ( CPatchSetFileEngineEvents::FileRetrievalProgressEvent == eventid ) ||
+         ( CPatchSetFileEngineEvents::FileRetrievalCompleteEvent == eventid ) ||
+         ( CPatchSetFileEngineEvents::FileRetrievalErrorEvent == eventid ) ||
+         ( CPatchSetFileEngineEvents::FileStorageErrorEvent == eventid ) ||
+         ( CPatchSetFileEngineEvents::FileListProcessingCompleteEvent == eventid ) ||
+         ( CPatchSetFileEngineEvents::FileListProcessingAbortedEvent == eventid ) ||
+
+         ( CPatchSetEngineEvents::PatchSetProcessingStartedEvent == eventid ) ||
+         ( CPatchSetEngineEvents::PatchSetProcessingProgressEvent == eventid ) ||
+         ( CPatchSetEngineEvents::PatchSetProcessingCompletedEvent == eventid ) ||
+         ( CPatchSetEngineEvents::PatchSetProcessingAbortedEvent == eventid ) ||
+         ( CPatchSetEngineEvents::PatchSetProcessingFailedEvent == eventid ) ||
+
+         ( CPatchListEngineEvents::PatchListProcessingStartedEvent == eventid ) ||
+         ( CPatchListEngineEvents::PatchListProcessingProgressEvent == eventid ) ||
+         ( CPatchListEngineEvents::PatchListProcessingCompletedEvent == eventid ) ||
+         ( CPatchListEngineEvents::PatchListProcessingAbortedEvent == eventid ) ||
+         ( CPatchListEngineEvents::PatchListProcessingFailedEvent == eventid ) ||
+         ( CPatchListEngineEvents::PatchSetDataRecievedEvent == eventid ) ||
+         ( CPatchListEngineEvents::PatchSetRetrievalStartedEvent == eventid ) ||
+         ( CPatchListEngineEvents::PatchSetRetrievalCompletedEvent == eventid ) ||
+         ( CPatchListEngineEvents::PatchSetRetrievalFailedEvent == eventid ) || 
+         ( CPatchListEngineEvents::PatchSetRetrievalAbortedEvent == eventid ) ||
+         ( CPatchListEngineEvents::PatchSetDecodingFailedEvent == eventid ) )
+    {
+        NotifyObservers( eventid, eventdata );    
+    }
 }
 
 /*-------------------------------------------------------------------------//

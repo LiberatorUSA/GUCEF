@@ -118,7 +118,11 @@ CPatchTaskConsumer::OnTaskCycle( CORE::CICloneable* taskData )
     if ( m_patchEngine->GetConfig().LoadConfig( ptData->GetPatchEngineConfig() ) )
     {
         ptData->GetPatchManager().RegisterTask( this );        
+        ptData->GetPatchManager().SubscribeTo( m_patchEngine ); 
+
         m_patchEngine->Start();
+
+        ptData->GetPatchManager().UnsubscribeFrom( m_patchEngine );
         ptData->GetPatchManager().UnregisterTask( this );
     }
     return true;

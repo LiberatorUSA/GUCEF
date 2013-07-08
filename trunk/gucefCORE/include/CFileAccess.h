@@ -55,6 +55,8 @@ class GUCEF_CORE_PUBLIC_CPP CFileAccess : public CIOAccess
     CFileAccess( const CString& file     ,
                  const char* mode = "rb" );
 
+    CFileAccess( void );
+
     virtual ~CFileAccess();
 
     /**
@@ -153,7 +155,6 @@ class GUCEF_CORE_PUBLIC_CPP CFileAccess : public CIOAccess
     const CString& GetFilename( void ) const;
 
     private:
-    CFileAccess( void );
 
     bool _writeable;
     bool _readable;

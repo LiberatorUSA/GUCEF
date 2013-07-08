@@ -66,6 +66,11 @@
 #define GUCEF_GUI_CIGUICONTEXT_H
 #endif /* GUCEF_GUI_CIGUICONTEXT_H ? */
 
+#ifndef GUCEF_PATCHER_CPATCHMANAGER_H
+#include "gucefPATCHER_CPatchManager.h"
+#define GUCEF_PATCHER_CPATCHMANAGER_H
+#endif /* GUCEF_PATCHER_CPATCHMANAGER_H ? */
+
 #ifndef GUCEF_PATCHERAPP_MACROS_H
 #include "gucefPATCHERAPP_macros.h"
 #define GUCEF_PATCHERAPP_MACROS_H
@@ -113,12 +118,18 @@ class CMainPatcherAppLogic : public CORE::CObservingNotifier
     virtual void OnFirstAppCycle( CORE::CNotifier* notifier           ,
                                   const CORE::CEvent& eventid         ,
                                   CORE::CICloneable* eventdata = NULL );
+
+    virtual void OnPatchingProgress( CORE::CNotifier* notifier           ,
+                                     const CORE::CEvent& eventid         ,
+                                     CORE::CICloneable* eventdata = NULL );
     
     void ShutdownLogging( void );
 
     void SetupLogging( void );
 
     void LoadFontsFromAssets( GUI::TGuiContextPtr guiContext );
+
+    bool StartPatchingWork( void );
 
     private:
 
@@ -128,6 +139,7 @@ class CMainPatcherAppLogic : public CORE::CObservingNotifier
     CORE::CPlatformNativeConsoleWindow* m_consoleWindow;
     GUI::TWindowContextPtr m_windowContext;
     GUI::TGuiContextPtr m_guiContext;
+    PATCHER::CPatchManager m_patchManager;
 };
 
 /*-------------------------------------------------------------------------//

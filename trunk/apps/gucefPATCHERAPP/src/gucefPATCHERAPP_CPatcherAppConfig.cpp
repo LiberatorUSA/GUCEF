@@ -162,6 +162,42 @@ CPatcherAppConfig::GetFontAssetsToLoad( void ) const
 
 /*-------------------------------------------------------------------------*/
 
+void
+CPatcherAppConfig::SetPatchEngineConfigFilePath( const CString& configFilePath )
+{GUCEF_TRACE;
+
+    m_patchEngineConfigFilePath = configFilePath;
+}
+
+/*-------------------------------------------------------------------------*/
+
+const CString&
+CPatcherAppConfig::GetPatchEngineConfigFilePath( void ) const
+{GUCEF_TRACE;
+
+    return m_patchEngineConfigFilePath;
+}
+
+/*-------------------------------------------------------------------------*/
+
+void
+CPatcherAppConfig::SetPatchEngineConfigFileCodec( const CString& configFileCodec )
+{GUCEF_TRACE;
+
+    m_patchEngineConfigFileCodec = configFileCodec;
+}
+
+/*-------------------------------------------------------------------------*/
+
+const CString&
+CPatcherAppConfig::GetPatchEngineConfigFileCodec( void ) const
+{GUCEF_TRACE;
+
+    return m_patchEngineConfigFileCodec;
+}
+
+/*-------------------------------------------------------------------------*/
+
 bool
 CPatcherAppConfig::SaveConfig( CORE::CDataNode& tree )
 {GUCEF_TRACE;
