@@ -60,6 +60,16 @@ namespace CORE {
 //                                                                         //
 //-------------------------------------------------------------------------*/
 
+CFileAccess::CFileAccess( void )
+    : CIOAccess()  ,
+      m_filename() ,
+      m_mode()
+{GUCEF_TRACE;
+
+}
+
+/*-------------------------------------------------------------------------*/
+
 CFileAccess::CFileAccess( const CString& file           ,
                           const char* mode /* = "rb" */ )
         : CIOAccess(),

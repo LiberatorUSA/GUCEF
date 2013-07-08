@@ -43,6 +43,11 @@
 #define GUCEF_CORE_DVCPPSTRINGUTILS_H
 #endif /* GUCEF_CORE_DVCPPSTRINGUTILS_H ? */
 
+#ifndef GUCEF_CORE_CDSTORECODECREGISTRY_H
+#include "CDStoreCodecRegistry.h"
+#define GUCEF_CORE_CDSTORECODECREGISTRY_H
+#endif /* GUCEF_CORE_CDSTORECODECREGISTRY_H ? */
+
 #ifndef GUCEF_GUI_CGUIGLOBAL_H
 #include "gucefGUI_CGuiGlobal.h"
 #define GUCEF_GUI_CGUIGLOBAL_H
@@ -97,13 +102,19 @@ CMainPatcherAppLogic::CMainPatcherAppLogic( void )
       m_logFile( NULL )          ,
       m_consoleWindow( NULL )    ,
       m_windowContext()          ,
-      m_guiContext()
+      m_guiContext()             ,
+      m_patchManager()
 {GUCEF_TRACE;
 
     TEventCallback callback( this, &CMainPatcherAppLogic::OnFirstAppCycle ); 
     SubscribeTo( &CORE::CCoreGlobal::Instance()->GetApplication() , 
                  CORE::CGUCEFApplication::FirstCycleEvent         ,
                  callback                                         );
+
+    TEventCallback callback2( this, &CMainPatcherAppLogic::OnPatchingProgress ); 
+    SubscribeTo( &m_patchManager                                     ,
+                 PATCHER::CPatchManager::PatchTaskEventReceivedEvent ,
+                 callback2                                           );
 }
 
 /*-------------------------------------------------------------------------*/
@@ -316,6 +327,63 @@ CMainPatcherAppLogic::SetupLogging( void )
 }
 
 /*-------------------------------------------------------------------------*/
+
+bool
+CMainPatcherAppLogic::StartPatchingWork( void )
+{
+    CPatcherAppConfig& config = CPatcherAppGlobal::Instance()->GetConfig();
+    
+    // First we need to actually load the patch engine config
+    CORE::CDStoreCodecRegistry& codecRegistry = CORE::CCoreGlobal::Instance()->GetDStoreCodecRegistry();
+    CORE::CDStoreCodecRegistry::TDStoreCodecPtr codec = codecRegistry.Lookup( config.GetPatchEngineConfigFileCodec() );
+    if ( codec )
+    {
+        // We have a codec we can use to read the file
+        CORE::CFileAccess patchEngineConfigFile;
+        if ( patchEngineConfigFile.SetFileToUse( CORE::RelativePath( config.GetPatchEngineConfigFilePath() ) ,
+                                                 "rb"                                                        ) )
+        {
+            // parse the config data from the file
+            CORE::CDataNode patchEngineConfig;
+            if ( codec->BuildDataTree( &patchEngineConfig      ,  
+                                       &patchEngineConfigFile ) )
+            {
+                // Start the patching task, it will run async (threaded)
+                if ( m_patchManager.StartTask( "patcherApp", patchEngineConfig ) )
+                {
+                    GUCEF_LOG( CORE::LOGLEVEL_NORMAL, "Successfully started the patching task" );
+                    return true;
+                }
+                else
+                {
+                    GUCEF_ERROR_LOG( CORE::LOGLEVEL_CRITICAL, "Failed to start the patching task" );
+                }
+            }
+            else
+            {
+                GUCEF_ERROR_LOG( CORE::LOGLEVEL_CRITICAL, "Failed to parse patching engine config from: " + config.GetPatchEngineConfigFilePath() );
+            }
+        }
+        else
+        {
+            GUCEF_ERROR_LOG( CORE::LOGLEVEL_CRITICAL, "Failed to open patch engine config: " + config.GetPatchEngineConfigFilePath() );
+        }
+    }
+    
+    return false;
+}
+
+/*-------------------------------------------------------------------------*/
+    
+void
+CMainPatcherAppLogic::OnPatchingProgress( CORE::CNotifier* notifier    ,
+                                          const CORE::CEvent& eventid  ,
+                                          CORE::CICloneable* eventdata )
+{GUCEF_TRACE;
+
+}
+
+/*-------------------------------------------------------------------------*/
     
 void
 CMainPatcherAppLogic::OnFirstAppCycle( CORE::CNotifier* notifier    ,
@@ -355,6 +423,17 @@ CMainPatcherAppLogic::OnFirstAppCycle( CORE::CNotifier* notifier    ,
             if ( SetupWindowContext( windowMngrBackend, windowManagerName, config.GetGuiBackendName() ) )
             {
                 GUCEF_LOG( CORE::LOGLEVEL_NORMAL, "Successfully created a window context using GUI backend " + config.GetGuiBackendName() );
+
+                // Now that the visual environment is up and running let the patching begin
+                if ( StartPatchingWork() )
+                {
+                    GUCEF_LOG( CORE::LOGLEVEL_NORMAL, "Successfully started the patching task" );
+                }
+                else
+                {
+                    GUCEF_ERROR_LOG( CORE::LOGLEVEL_CRITICAL, "Failed to start the patching work, shutting down" );
+                    CORE::CCoreGlobal::Instance()->GetApplication().Stop();
+                }
             }
             else
             {
@@ -364,7 +443,7 @@ CMainPatcherAppLogic::OnFirstAppCycle( CORE::CNotifier* notifier    ,
         }
         else
         {
-            GUCEF_ERROR_LOG( CORE::LOGLEVEL_CRITICAL, "Failed to obtain window management backend" );
+            GUCEF_ERROR_LOG( CORE::LOGLEVEL_CRITICAL, "Failed to obtain window management backend, shutting down" );
             CORE::CCoreGlobal::Instance()->GetApplication().Stop();
         }
     }

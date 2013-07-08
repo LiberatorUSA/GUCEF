@@ -81,6 +81,14 @@ class CPatcherAppConfig : public CORE::CIConfigurable
 
     const TStringList& GetFontAssetsToLoad( void ) const;
 
+    void SetPatchEngineConfigFilePath( const CString& configFilePath );
+
+    const CString& GetPatchEngineConfigFilePath( void ) const;
+
+    void SetPatchEngineConfigFileCodec( const CString& configFileCodec );
+
+    const CString& GetPatchEngineConfigFileCodec( void ) const;
+
     virtual bool SaveConfig( CORE::CDataNode& tree );
 
     virtual bool LoadConfig( const CORE::CDataNode& treeroot );
@@ -106,6 +114,8 @@ class CPatcherAppConfig : public CORE::CIConfigurable
     bool m_isFileLoggerEnabled;
     bool m_isConsoleLoggerEnabled;
     bool m_isConsoleWindowEnabled;    
+    CString m_patchEngineConfigFilePath;
+    CString m_patchEngineConfigFileCodec;
 };
 
 /*-------------------------------------------------------------------------//
