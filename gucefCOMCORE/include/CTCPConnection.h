@@ -96,6 +96,14 @@ class GUCEF_COMCORE_EXPORT_CPP CTCPConnection : public CSocket
 
     bool SendString( const CString& data );
 
+    /**
+     *  Allows you to set whether to use data coalescing on sends.
+     *  This is commonly refered to as the Nagle algorithm
+     */
+    virtual bool SetUseTcpSendCoalescing( bool coaleseData ) = 0;
+
+    virtual bool GetUseTcpSendCoalescing( void ) const = 0;
+
     virtual const CORE::CString& GetClassTypeName( void ) const;
  
     private:

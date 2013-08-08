@@ -145,6 +145,14 @@ class GUCEF_COMCORE_EXPORT_CPP CTCPServerConnection : public CTCPConnection
     virtual ~CTCPServerConnection();
     
     UInt32 GetConnectionIndex( void ) const;
+
+    /**
+     *  Allows you to set whether to use data coalescing on sends.
+     *  This is commonly refered to as the Nagle algorithm
+     */
+    virtual bool SetUseTcpSendCoalescing( bool coaleseData );
+
+    virtual bool GetUseTcpSendCoalescing( void ) const;
     
     protected:
     friend class CTCPServerSocket;
@@ -178,6 +186,7 @@ class GUCEF_COMCORE_EXPORT_CPP CTCPServerConnection : public CTCPConnection
     UInt32 m_maxreadbytes;
     UInt32 m_connectionidx;      
     CTCPServerSocket* m_parentsock;
+    bool m_coaleseDataSends;
 
     CTCPServerConnection( void ); /* private default constructor because we need data */                             
 };

@@ -39,6 +39,10 @@
 
 #include "CTCPServerConnection.h"       /* header for this class */
 
+#if ( ( GUCEF_PLATFORM == GUCEF_PLATFORM_LINUX ) || ( GUCEF_PLATFORM == GUCEF_PLATFORM_ANDROID ) )    
+    #include <netinet/tcp.h>    
+#endif
+
 /*-------------------------------------------------------------------------//
 //                                                                         //
 //      NAMESPACE                                                          //
@@ -89,7 +93,8 @@ CTCPServerConnection::CTCPServerConnection( CTCPServerSocket *tcp_serversock ,
           _datalock()                         ,
           m_maxreadbytes( 0 )                 ,
           m_connectionidx( connection_idx )   ,
-          m_parentsock( tcp_serversock )
+          m_parentsock( tcp_serversock )      ,
+          m_coaleseDataSends( true )
 {GUCEF_TRACE;
         
     _data = new TTCPServerConData;        
@@ -547,6 +552,32 @@ CTCPServerConnection::IsActive( void ) const
 {GUCEF_TRACE;
 
     return _active;
+}
+
+/*-------------------------------------------------------------------------*/
+
+bool
+CTCPServerConnection::SetUseTcpSendCoalescing( bool coaleseData )
+{
+    if ( _active )
+    {
+        int flag = (coaleseData ? 1 : 0);
+        if ( -1 == setsockopt( _data->sockid, IPPROTO_TCP, TCP_NODELAY, (char *)&flag, sizeof(flag) ) )
+        {
+            return false;
+        }
+    }
+
+    m_coaleseDataSends = coaleseData;
+    return true;
+}
+
+/*-------------------------------------------------------------------------*/
+
+bool
+CTCPServerConnection::GetUseTcpSendCoalescing( void ) const
+{
+    return m_coaleseDataSends;
 }
 
 /*-------------------------------------------------------------------------//
