@@ -70,6 +70,10 @@
   #endif /* GUCEF_NEW_ON_H ? */
 #endif /* ACTIVATE_MEMORY_MANAGER ? */
 
+#if ( ( GUCEF_PLATFORM == GUCEF_PLATFORM_LINUX ) || ( GUCEF_PLATFORM == GUCEF_PLATFORM_ANDROID ) )    
+    #include <netinet/tcp.h>    
+#endif
+
 /*-------------------------------------------------------------------------//
 //                                                                         //
 //      NAMESPACE                                                          //
@@ -132,7 +136,8 @@ CTCPClientSocket::CTCPClientSocket( CORE::CPulseGenerator& pulseGenerator ,
           m_maxreadbytes( 0 )                 ,
           m_hostAddress()                     ,
           m_isConnecting( false )             ,
-          m_pulseGenerator( &pulseGenerator )
+          m_pulseGenerator( &pulseGenerator ) ,
+          m_coaleseDataSends( true )
 {GUCEF_TRACE;
 
     RegisterEvents();
@@ -160,7 +165,8 @@ CTCPClientSocket::CTCPClientSocket( bool blocking )
           m_maxreadbytes( 0 )      ,
           m_hostAddress()          ,
           m_isConnecting( false )  ,
-          m_pulseGenerator( &CORE::CCoreGlobal::Instance()->GetPulseGenerator() )
+          m_pulseGenerator( &CORE::CCoreGlobal::Instance()->GetPulseGenerator() ) ,
+          m_coaleseDataSends( true )
 {GUCEF_TRACE;
 
     RegisterEvents();
@@ -339,6 +345,13 @@ CTCPClientSocket::ConnectTo( const CORE::CString& remoteaddr ,
      *  then insert into the server port info field
      */
 	_data->serverinfo.sin_port = htons( port );
+
+    int noDelayFlag = (m_coaleseDataSends ? 1 : 0);
+    if ( -1 == setsockopt( _data->sockid, IPPROTO_TCP, TCP_NODELAY, (char*) &noDelayFlag, sizeof(noDelayFlag) ) )
+    {
+        _active = false;
+        return false;
+    }
 
 	/*
 	 *      We now attempt to create a connection.
@@ -838,6 +851,32 @@ CTCPClientSocket::GetClassTypeName( void ) const
 
     static CORE::CString typeName = "GUCEF::COMCORE::CTCPClientSocket";
     return typeName;
+}
+
+/*-------------------------------------------------------------------------*/
+
+bool
+CTCPClientSocket::SetUseTcpSendCoalescing( bool coaleseData )
+{
+    if ( _active )
+    {
+        int flag = (coaleseData ? 1 : 0);
+        if ( -1 == setsockopt( _data->sockid, IPPROTO_TCP, TCP_NODELAY, (char *)&flag, sizeof(flag) ) )
+        {
+            return false;
+        }
+    }
+
+    m_coaleseDataSends = coaleseData;
+    return true;
+}
+
+/*-------------------------------------------------------------------------*/
+
+bool
+CTCPClientSocket::GetUseTcpSendCoalescing( void ) const
+{
+    return m_coaleseDataSends;
 }
 
 /*-------------------------------------------------------------------------//

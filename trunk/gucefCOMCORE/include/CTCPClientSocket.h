@@ -161,6 +161,14 @@ class GUCEF_COMCORE_EXPORT_CPP CTCPClientSocket : public CTCPConnection
     
     virtual CIPAddress GetRemoteIP( void ) const;
 
+    /**
+     *  Allows you to set whether to use data coalescing on sends.
+     *  This is commonly refered to as the Nagle algorithm
+     */
+    virtual bool SetUseTcpSendCoalescing( bool coaleseData );
+
+    virtual bool GetUseTcpSendCoalescing( void ) const;
+
     virtual const CORE::CString& GetClassTypeName( void ) const;
 
     public:
@@ -198,6 +206,7 @@ class GUCEF_COMCORE_EXPORT_CPP CTCPClientSocket : public CTCPConnection
     UInt32 m_maxreadbytes;                  /**< max number of bytes to receive before processing it */ 
     CHostAddress m_hostAddress;             /**< network order IP address */
     CORE::CPulseGenerator* m_pulseGenerator;
+    bool m_coaleseDataSends;
 };
 
 /*-------------------------------------------------------------------------//
