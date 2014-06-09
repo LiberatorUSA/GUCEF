@@ -40,45 +40,50 @@
 #define GUCEF_CORE_CONFIGSTORE_H
 #endif /* GUCEF_CORE_CONFIGSTORE_H ? */
 
-#ifndef GUCEF_PROJECTGENERATOR_DATATYPES_H
-#include "gucefProjectGenerator_DataTypes.h"
-#define GUCEF_PROJECTGENERATOR_DATATYPES_H
-#endif /* GUCEF_PROJECTGENERATOR_DATATYPES_H ? */
+#ifndef GUCEF_PROJECTGEN_DATATYPES_H
+#include "gucefProjectGen_DataTypes.h"
+#define GUCEF_PROJECTGEN_DATATYPES_H
+#endif /* GUCEF_PROJECTGEN_DATATYPES_H ? */
 
-#ifndef GUCEF_PROJECTGENERATOR_CIPROJECTGENERATOR_H
-#include "gucefProjectGenerator_CIProjectGenerator.h"
-#define GUCEF_PROJECTGENERATOR_CIPROJECTGENERATOR_H
-#endif /* GUCEF_PROJECTGENERATOR_CIPROJECTGENERATOR_H ? */
+#ifndef GUCEF_PROJECTGEN_CIPROJECTGENERATOR_H
+#include "gucefProjectGen_CIProjectGenerator.h"
+#define GUCEF_PROJECTGEN_CIPROJECTGENERATOR_H
+#endif /* GUCEF_PROJECTGEN_CIPROJECTGENERATOR_H ? */
 
-#ifndef GUCEF_PROJECTGENERATOR_CIPROJECTINFOGATHERER_H
-#include "gucefProjectGenerator_CIProjectInfoGatherer.h"
-#define GUCEF_PROJECTGENERATOR_CIPROJECTINFOGATHERER_H
-#endif /* GUCEF_PROJECTGENERATOR_CIPROJECTINFOGATHERER_H ? */
+#ifndef GUCEF_PROJECTGEN_CIPROJECTINFOGATHERER_H
+#include "gucefProjectGen_CIProjectInfoGatherer.h"
+#define GUCEF_PROJECTGEN_CIPROJECTINFOGATHERER_H
+#endif /* GUCEF_PROJECTGEN_CIPROJECTINFOGATHERER_H ? */
 
-#ifndef GUCEF_PROJECTGENERATOR_CDIRCRAWLINGPROJECTINFOGATHERER_H
-#include "gucefProjectGenerator_CDirCrawlingProjectInfoGatherer.h"
-#define GUCEF_PROJECTGENERATOR_CDIRCRAWLINGPROJECTINFOGATHERER_H
-#endif /* GUCEF_PROJECTGENERATOR_CDIRCRAWLINGPROJECTINFOGATHERER_H ? */
+#ifndef GUCEF_PROJECTGEN_CDIRCRAWLINGPROJECTINFOGATHERER_H
+#include "gucefProjectGen_CDirCrawlingProjectInfoGatherer.h"
+#define GUCEF_PROJECTGEN_CDIRCRAWLINGPROJECTINFOGATHERER_H
+#endif /* GUCEF_PROJECTGEN_CDIRCRAWLINGPROJECTINFOGATHERER_H ? */
 
-#ifndef GUCEF_PROJECTGENERATOR_CXMLPROJECTGENERATOR_H
-#include "gucefProjectGenerator_CXmlProjectGenerator.h"
-#define GUCEF_PROJECTGENERATOR_CXMLPROJECTGENERATOR_H
-#endif /* GUCEF_PROJECTGENERATOR_CXMLPROJECTGENERATOR_H ? */
+#ifndef GUCEF_PROJECTGEN_CXMLPROJECTGENERATOR_H
+#include "gucefProjectGen_CXmlProjectGenerator.h"
+#define GUCEF_PROJECTGEN_CXMLPROJECTGENERATOR_H
+#endif /* GUCEF_PROJECTGEN_CXMLPROJECTGENERATOR_H ? */
 
-#ifndef GUCEF_PROJECTGENERATOR_CCMAKEPROJECTGENERATOR_H
-#include "gucefProjectGenerator_CCMakeProjectGenerator.h"
-#define GUCEF_PROJECTGENERATOR_CCMAKEPROJECTGENERATOR_H
-#endif /* GUCEF_PROJECTGENERATOR_CCMAKEPROJECTGENERATOR_H ? */
+#ifndef GUCEF_PROJECTGEN_CCMAKEPROJECTGENERATOR_H
+#include "gucefProjectGen_CCMakeProjectGenerator.h"
+#define GUCEF_PROJECTGEN_CCMAKEPROJECTGENERATOR_H
+#endif /* GUCEF_PROJECTGEN_CCMAKEPROJECTGENERATOR_H ? */
 
-#ifndef GUCEF_PROJECTGENERATOR_CANDROIDMAKEFILEGENERATOR_H
-#include "gucefProjectGenerator_CAndroidMakefileGenerator.h"
-#define GUCEF_PROJECTGENERATOR_CANDROIDMAKEFILEGENERATOR_H
-#endif /* GUCEF_PROJECTGENERATOR_CANDROIDMAKEFILEGENERATOR_H ? */
+#ifndef GUCEF_PROJECTGEN_CANDROIDMAKEFILEGENERATOR_H
+#include "gucefProjectGen_CAndroidMakefileGenerator.h"
+#define GUCEF_PROJECTGEN_CANDROIDMAKEFILEGENERATOR_H
+#endif /* GUCEF_PROJECTGEN_CANDROIDMAKEFILEGENERATOR_H ? */
 
-#ifndef GUCEF_PROJECTGENERATOR_CPREMAKE4PROJECTGENERATOR_H
-#include "gucefProjectGenerator_CPremake4ProjectGenerator.h"
-#define GUCEF_PROJECTGENERATOR_CPREMAKE4PROJECTGENERATOR_H
-#endif /* GUCEF_PROJECTGENERATOR_CPREMAKE4PROJECTGENERATOR_H ? */
+#ifndef GUCEF_PROJECTGEN_CPREMAKE4PROJECTGENERATOR_H
+#include "gucefProjectGen_CPremake4ProjectGenerator.h"
+#define GUCEF_PROJECTGEN_CPREMAKE4PROJECTGENERATOR_H
+#endif /* GUCEF_PROJECTGEN_CPREMAKE4PROJECTGENERATOR_H ? */
+
+#ifndef GUCEF_PROJECTGEN_CPROJECTGENGLOBAL_H
+#include "gucefProjectGen_CProjectGenGlobal.h"
+#define GUCEF_PROJECTGEN_CPROJECTGENGLOBAL_H
+#endif /* GUCEF_PROJECTGEN_CPROJECTGENGLOBAL_H ? */
 
 /*-------------------------------------------------------------------------//
 //                                                                         //
@@ -87,7 +92,7 @@
 //-------------------------------------------------------------------------*/
 
 using namespace GUCEF;
-using namespace GUCEF::PROJECTGENERATOR;
+using namespace GUCEF::PROJECTGEN;
 
 /*-------------------------------------------------------------------------//
 //                                                                         //
@@ -157,6 +162,9 @@ GUCEF_OSMAIN_BEGIN
 
     GUCEF_LOG( CORE::LOGLEVEL_NORMAL, "This tool was compiled on: " __DATE__ " @ " __TIME__ );
 
+    CORE::CCoreGlobal::Instance();
+    PROJECTGEN::CProjectGenGlobal::Instance();
+    
     CORE::CValueList keyValueList;
     ParseParams( argc, argv, keyValueList );
 
@@ -177,6 +185,8 @@ GUCEF_OSMAIN_BEGIN
 
     CORE::CPlatformNativeConsoleLogger console;
     CORE::CCoreGlobal::Instance()->GetLogManager().AddLogger( console.GetLogger() );
+    
+    CORE::CCoreGlobal::Instance()->GetLogManager().FlushBootstrapLogEntriesToLogs();
 
     LoadConfig();
 

@@ -17,8 +17,8 @@
  *  Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA
  */
  
-#ifndef GUCEF_PROJECTGENERATOR_DATATYPES_H
-#define GUCEF_PROJECTGENERATOR_DATATYPES_H
+#ifndef GUCEF_PROJECTGEN_DATATYPES_H
+#define GUCEF_PROJECTGEN_DATATYPES_H
 
 /*-------------------------------------------------------------------------//
 //                                                                         //
@@ -45,6 +45,11 @@
 #define GUCEF_CORE_CDATANODE_H
 #endif /* GUCEF_CORE_CDATANODE_H ? */
 
+#ifndef GUCEF_PROJECTGEN_MACROS_H
+#include "gucefProjectGen_macros.h"
+#define GUCEF_PROJECTGEN_MACROS_H
+#endif /* GUCEF_PROJECTGEN_MACROS_H ? */
+
 /*-------------------------------------------------------------------------//
 //                                                                         //
 //      NAMESPACE                                                          //
@@ -52,7 +57,7 @@
 //-------------------------------------------------------------------------*/
 
 namespace GUCEF {
-namespace PROJECTGENERATOR {
+namespace PROJECTGEN {
 
 /*-------------------------------------------------------------------------//
 //                                                                         //
@@ -203,28 +208,33 @@ typedef struct SProjectInfo TProjectInfo;
 //                                                                         //
 //-------------------------------------------------------------------------*/
 
+GUCEF_PROJECTGEN_PUBLIC_CPP 
 CORE::CDStoreCodecRegistry::TDStoreCodecPtr
 GetXmlDStoreCodec( void );
 
 /*-------------------------------------------------------------------------*/
 
+GUCEF_PROJECTGEN_PUBLIC_CPP 
 void
 InitializeModuleInfoEntry( TModuleInfoEntry& moduleEntry );
 
 /*-------------------------------------------------------------------------*/
 
+GUCEF_PROJECTGEN_PUBLIC_CPP
 void
 InitializeModuleInfo( TModuleInfo& moduleInfo );
 
 
 /*-------------------------------------------------------------------------*/
 
+GUCEF_PROJECTGEN_PUBLIC_CPP
 const TModuleInfo*
 FindModuleInfoForPlatform( const TModuleInfoEntry& moduleInfoEntry ,
                            const CORE::CString& platform           );
 
 /*-------------------------------------------------------------------------*/
 
+GUCEF_PROJECTGEN_PUBLIC_CPP
 TModuleInfo*
 FindModuleInfoForPlatform( TModuleInfoEntry& moduleInfoEntry ,
                            const CORE::CString& platform     ,
@@ -232,6 +242,7 @@ FindModuleInfoForPlatform( TModuleInfoEntry& moduleInfoEntry ,
 
 /*-------------------------------------------------------------------------*/
 
+GUCEF_PROJECTGEN_PUBLIC_CPP
 const CORE::CString*
 GetModuleName( const TModuleInfoEntry& moduleInfoEntry ,
                const CORE::CString& targetPlatform     ,
@@ -244,6 +255,7 @@ GetModuleName( const TModuleInfoEntry& moduleInfoEntry ,
 // available across the platforms and find the general consensus name which is the
 // best guess name that could be used to label this module generally without specifying 
 // a platform
+GUCEF_PROJECTGEN_PUBLIC_CPP
 CORE::CString
 GetConsensusModuleName( const TModuleInfoEntry& moduleInfoEntry );
 
@@ -252,12 +264,14 @@ GetConsensusModuleName( const TModuleInfoEntry& moduleInfoEntry );
 // Tries to get the properly merged module name first for the given platform
 // if this does not yield a module name it will use the general consensus
 // module name instead
+GUCEF_PROJECTGEN_PUBLIC_CPP
 CORE::CString
 GetModuleNameAlways( const TModuleInfoEntry& moduleInfoEntry ,
                      const CORE::CString& targetPlatform     );
                      
 /*-------------------------------------------------------------------------*/
                      
+GUCEF_PROJECTGEN_PUBLIC_CPP
 void
 MergeStringVector( TStringVector& targetList          ,
                    const TStringVector& listToMergeIn ,
@@ -265,6 +279,7 @@ MergeStringVector( TStringVector& targetList          ,
 
 /*-------------------------------------------------------------------------*/
                    
+GUCEF_PROJECTGEN_PUBLIC_CPP
 void
 MergeStringVectorMap( TStringVectorMap& targetMap          ,
                       const TStringVectorMap& mapToMergeIn ,
@@ -272,12 +287,14 @@ MergeStringVectorMap( TStringVectorMap& targetMap          ,
 
 /*-------------------------------------------------------------------------*/
 
+GUCEF_PROJECTGEN_PUBLIC_CPP
 void
 MergeModuleInfo( TModuleInfo& targetModuleInfo          ,
                  const TModuleInfo& moduleInfoToMergeIn );
 
 /*-------------------------------------------------------------------------*/
 
+GUCEF_PROJECTGEN_PUBLIC_CPP
 bool
 MergeModuleInfo( const TModuleInfoEntry& moduleInfo     ,
                  const CORE::CString& targetPlatform    ,
@@ -285,6 +302,7 @@ MergeModuleInfo( const TModuleInfoEntry& moduleInfo     ,
 
 /*-------------------------------------------------------------------------*/
 
+GUCEF_PROJECTGEN_PUBLIC_CPP
 bool
 MergeAllModuleInfoForPlatform( const TModuleInfoEntryVector& allInfo  ,
                                const CORE::CString& platform          ,
@@ -293,27 +311,32 @@ MergeAllModuleInfoForPlatform( const TModuleInfoEntryVector& allInfo  ,
 
 /*-------------------------------------------------------------------------*/
 
+GUCEF_PROJECTGEN_PUBLIC_CPP
 CORE::CString
 ModuleTypeToString( const TModuleType moduleType );
 
 /*-------------------------------------------------------------------------*/
 
+GUCEF_PROJECTGEN_PUBLIC_CPP
 TModuleType
 StringToModuleType( const CORE::CString moduleTypeStr );
 
 /*-------------------------------------------------------------------------*/
 
+GUCEF_PROJECTGEN_PUBLIC_CPP
 TStringSet
 StringVectorToStringSet( const TStringVector& stringVector );
 
 /*-------------------------------------------------------------------------*/
 
+GUCEF_PROJECTGEN_PUBLIC_CPP
 bool
 SerializeModuleInfo( const TModuleInfoEntry& moduleInfo  ,
                      const CORE::CString& outputFilepath );
 
 /*-------------------------------------------------------------------------*/
 
+GUCEF_PROJECTGEN_PUBLIC_CPP
 bool
 DeserializeModuleInfo( TModuleInfoEntry& moduleInfo       ,
                        const CORE::CString& inputFilepath );
@@ -321,18 +344,21 @@ DeserializeModuleInfo( TModuleInfoEntry& moduleInfo       ,
 
 /*-------------------------------------------------------------------------*/
 
+GUCEF_PROJECTGEN_PUBLIC_CPP
 bool
 SerializeProjectInfo( const TProjectInfo& projectInfo ,
                       CORE::CDataNode& rootNodeToBe   );
 
 /*-------------------------------------------------------------------------*/
 
+GUCEF_PROJECTGEN_PUBLIC_CPP
 bool
 SerializeProjectInfo( const TProjectInfo& projectInfo     ,
                       const CORE::CString& outputFilepath );
 
 /*-------------------------------------------------------------------------*/
 
+GUCEF_PROJECTGEN_PUBLIC_CPP
 void
 GetModuleDependencies( TModuleInfoEntry& moduleInfoEntry   ,
                        const CORE::CString& targetPlatform ,
@@ -341,6 +367,7 @@ GetModuleDependencies( TModuleInfoEntry& moduleInfoEntry   ,
 
 /*-------------------------------------------------------------------------*/
 
+GUCEF_PROJECTGEN_PUBLIC_CPP
 TModuleType
 GetModuleType( const TModuleInfoEntry& moduleInfoEntry ,
                const CORE::CString& targetPlatform     );
@@ -351,18 +378,21 @@ GetModuleType( const TModuleInfoEntry& moduleInfoEntry ,
 // This functions has some smarts because it filters non-deviating info wrt
 // a AllPlatforms definition or cases where a platform specific module definition
 // yields to 'AllPlatforms' wrt the module type to use.
+GUCEF_PROJECTGEN_PUBLIC_CPP
 void
 GetModuleInfoWithUniqueModulesTypes( const TModuleInfoEntry& moduleInfoEntry ,
                                      TConstModuleInfoPtrMap& moduleMap       );
 
 /*-------------------------------------------------------------------------*/
 
+GUCEF_PROJECTGEN_PUBLIC_CPP
 void
 GetModuleInfoWithUniqueModuleNames( const TModuleInfoEntry& moduleInfoEntry ,
                                     TConstModuleInfoPtrMap& moduleMap       );
 
 /*-------------------------------------------------------------------------*/
 
+GUCEF_PROJECTGEN_PUBLIC_CPP
 const TModuleInfoEntry*
 GetModuleInfoEntry( const TProjectInfo& projectInfo       ,
                     const CORE::CString& moduleName       ,
@@ -373,6 +403,7 @@ GetModuleInfoEntry( const TProjectInfo& projectInfo       ,
 
 // Determines which platforms are actually used in the project and returns the 
 // names of the platforms in the given platformList
+GUCEF_PROJECTGEN_PUBLIC_CPP
 void
 GetAllPlatformsUsed( const TProjectInfo& projectInfo ,
                      TStringSet& platformList        );
@@ -382,6 +413,7 @@ GetAllPlatformsUsed( const TProjectInfo& projectInfo ,
 // Determines whether the given list of module definitions has an indepdendant definition
 // An independent definition is a module who has a module type defined which is not a purely logical
 // module type used to structure modules (such as code/header include locations)
+GUCEF_PROJECTGEN_PUBLIC_CPP
 bool
 HasIndependentModuleType( const TModuleInfoMap& moduleDefs );
                       
@@ -391,12 +423,12 @@ HasIndependentModuleType( const TModuleInfoMap& moduleDefs );
 //                                                                         //
 //-------------------------------------------------------------------------*/
 
-}; /* namespace PROJECTGENERATOR */
+}; /* namespace PROJECTGEN */
 }; /* namespace GUCEF */
 
 /*-------------------------------------------------------------------------*/
 
-#endif /* GUCEF_PROJECTGENERATOR_DATATYPES_H ? */
+#endif /* GUCEF_PROJECTGEN_DATATYPES_H ? */
 
 /*-------------------------------------------------------------------------//
 //                                                                         //

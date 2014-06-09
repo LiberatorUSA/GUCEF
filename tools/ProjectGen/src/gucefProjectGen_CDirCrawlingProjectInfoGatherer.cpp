@@ -63,7 +63,17 @@
 #define GUCEF_CORE_DVOSWRAP_H
 #endif /* GUCEF_CORE_DVOSWRAP_H ? */
 
-#include "gucefProjectGenerator_CDirCrawlingProjectInfoGatherer.h"
+#ifndef GUCEF_PROJECTGEN_CPROJECTGENGLOBAL_H
+#include "gucefProjectGen_CProjectGenGlobal.h"
+#define GUCEF_PROJECTGEN_CPROJECTGENGLOBAL_H
+#endif /* GUCEF_PROJECTGEN_CPROJECTGENGLOBAL_H ? */
+
+#ifndef GUCEF_PROJECTGEN_CDIRPREPROCESSORMANAGER_H
+#include "gucefProjectGen_CDirPreprocessorManager.h"
+#define GUCEF_PROJECTGEN_CDIRPREPROCESSORMANAGER_H
+#endif /* GUCEF_PROJECTGEN_CDIRPREPROCESSORMANAGER_H ? */
+
+#include "gucefProjectGen_CDirCrawlingProjectInfoGatherer.h"
 
 /*-------------------------------------------------------------------------//
 //                                                                         //
@@ -72,7 +82,7 @@
 //-------------------------------------------------------------------------*/
 
 namespace GUCEF {
-namespace PROJECTGENERATOR {
+namespace PROJECTGEN {
 
 /*-------------------------------------------------------------------------//
 //                                                                         //
@@ -2214,11 +2224,40 @@ ProcessProjectDir( TProjectInfo& projectInfo         ,
 /*---------------------------------------------------------------------------*/
 
 void
+PreprocessDir( const CORE::CString& path )
+{GUCEF_TRACE;
+
+    CDirPreprocessorManager& dirPreprocessorManager = CProjectGenGlobal::Instance()->GetDirPreprocessorManager();
+    const CDirPreprocessorManager::TDirPreprocessorsList& dirPreprocessorsList = dirPreprocessorManager.GetDirPreprocessors();
+
+    GUCEF_LOG( CORE::LOGLEVEL_NORMAL, "There are " + CORE::UInt32ToString( dirPreprocessorsList.size() ) + " preprocessors registered" );
+
+    CDirPreprocessorManager::TDirPreprocessorsList::const_iterator i = dirPreprocessorsList.begin();
+    while ( i != dirPreprocessorsList.end() )
+    {
+        if ( (*i)->ProccessDir( path ) )
+        {
+            GUCEF_LOG( CORE::LOGLEVEL_NORMAL, "Preprocessed directory " + path );
+        }
+        else
+        {
+            GUCEF_ERROR_LOG( CORE::LOGLEVEL_IMPORTANT, "Failed to preprocess directory " + path );
+        }
+        ++i;
+    }
+}
+
+/*---------------------------------------------------------------------------*/
+
+void
 LocateAndProcessProjectDirsRecusively( TProjectInfo& projectInfo        ,
                                        const CORE::CString& topLevelDir )
 {GUCEF_TRACE;
 
     GUCEF_LOG( CORE::LOGLEVEL_EVERYTHING, "Recursively processing directory for module info: " + topLevelDir );
+
+    // Run any custom preprocessing logic thats registered
+    PreprocessDir( topLevelDir );
 
     // Is this a project dir or some other dir?
     if ( IsDirAProjectDir( topLevelDir ) )
@@ -3020,7 +3059,7 @@ CDirCrawlingProjectInfoGatherer::GatherInfo( const TStringVector& rootDirs ,
 //                                                                         //
 //-------------------------------------------------------------------------*/
 
-}; /* namespace PROJECTGENERATOR */
+}; /* namespace PROJECTGEN */
 }; /* namespace GUCEF */
 
 /*-------------------------------------------------------------------------*/

@@ -17,19 +17,18 @@
  *  Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA
  */
 
-#ifndef GUCEF_PROJECTGENERATOR_CANDROIDMAKEFILEGENERATOR_H
-#define GUCEF_PROJECTGENERATOR_CANDROIDMAKEFILEGENERATOR_H
-
 /*-------------------------------------------------------------------------//
 //                                                                         //
 //      INCLUDES                                                           //
 //                                                                         //
 //-------------------------------------------------------------------------*/
 
-#ifndef GUCEF_PROJECTGENERATOR_CIPROJECTGENERATOR_H
-#include "gucefProjectGenerator_CIProjectGenerator.h"
-#define GUCEF_PROJECTGENERATOR_CIPROJECTGENERATOR_H
-#endif /* GUCEF_PROJECTGENERATOR_CIPROJECTGENERATOR_H ? */
+#ifndef GUCEF_CORE_LOGGING_H
+#include "gucefCORE_Logging.h"
+#define GUCEF_CORE_LOGGING_H
+#endif /* GUCEF_CORE_LOGGING_H ? */
+
+#include "gucefProjectGen_CIProjectInfoGatherer.h"
 
 /*-------------------------------------------------------------------------//
 //                                                                         //
@@ -38,33 +37,41 @@
 //-------------------------------------------------------------------------*/
 
 namespace GUCEF {
-namespace PROJECTGENERATOR {
+namespace PROJECTGEN {
 
 /*-------------------------------------------------------------------------//
 //                                                                         //
-//      CLASSES                                                            //
+//      UTILITIES                                                          //
 //                                                                         //
 //-------------------------------------------------------------------------*/
 
-class CAndroidMakefileGenerator : public CIProjectGenerator
-{
-    public:
-    
-    CAndroidMakefileGenerator( void );
-    
-    virtual ~CAndroidMakefileGenerator();
-    
-    virtual bool GenerateProject( TProjectInfo& projectInfo            ,
-                                  const CORE::CString& outputDir       ,
-                                  bool addGeneratorCompileTimeToOutput ,
-                                  const CORE::CValueList& params       );
-                                  
-    private:
+CIProjectInfoGatherer::CIProjectInfoGatherer( void )
+{GUCEF_TRACE;
 
-    CAndroidMakefileGenerator( const CAndroidMakefileGenerator& src );
+}
+
+/*-------------------------------------------------------------------------*/
     
-    CAndroidMakefileGenerator& operator=( const CAndroidMakefileGenerator& src );
-};
+CIProjectInfoGatherer::CIProjectInfoGatherer( const CIProjectInfoGatherer& src )
+{GUCEF_TRACE;
+
+}
+
+/*-------------------------------------------------------------------------*/
+    
+CIProjectInfoGatherer::~CIProjectInfoGatherer()
+{GUCEF_TRACE;
+
+}
+
+/*-------------------------------------------------------------------------*/
+
+CIProjectInfoGatherer&
+CIProjectInfoGatherer::operator=( const CIProjectInfoGatherer& src )
+{GUCEF_TRACE;
+    
+    return *this;
+}
 
 /*-------------------------------------------------------------------------//
 //                                                                         //
@@ -72,20 +79,7 @@ class CAndroidMakefileGenerator : public CIProjectGenerator
 //                                                                         //
 //-------------------------------------------------------------------------*/
 
-}; /* namespace PROJECTGENERATOR */
+}; /* namespace PROJECTGEN */
 }; /* namespace GUCEF */
 
 /*-------------------------------------------------------------------------*/
-
-#endif /* GUCEF_PROJECTGENERATOR_CANDROIDMAKEFILEGENERATOR_H ? */
-
-/*-------------------------------------------------------------------------//
-//                                                                         //
-//      Info & Changes                                                     //
-//                                                                         //
-//-------------------------------------------------------------------------//
-
-- 27-11-2004 :
-        - Dinand: Initial implementation
-
----------------------------------------------------------------------------*/

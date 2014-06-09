@@ -17,8 +17,8 @@
  *  Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA
  */
 
-#ifndef GUCEF_PROJECTGENERATOR_CIPROJECTINFOGATHERER_H
-#define GUCEF_PROJECTGENERATOR_CIPROJECTINFOGATHERER_H
+#ifndef GUCEF_PROJECTGEN_CANDROIDMAKEFILEGENERATOR_H
+#define GUCEF_PROJECTGEN_CANDROIDMAKEFILEGENERATOR_H
 
 /*-------------------------------------------------------------------------//
 //                                                                         //
@@ -26,10 +26,15 @@
 //                                                                         //
 //-------------------------------------------------------------------------*/
 
-#ifndef GUCEF_PROJECTGENERATOR_DATATYPES_H
-#include "gucefProjectGenerator_DataTypes.h"
-#define GUCEF_PROJECTGENERATOR_DATATYPES_H
-#endif /* GUCEF_PROJECTGENERATOR_DATATYPES_H ? */
+#ifndef GUCEF_PROJECTGEN_CIPROJECTGENERATOR_H
+#include "gucefProjectGen_CIProjectGenerator.h"
+#define GUCEF_PROJECTGEN_CIPROJECTGENERATOR_H
+#endif /* GUCEF_PROJECTGEN_CIPROJECTGENERATOR_H ? */
+
+#ifndef GUCEF_PROJECTGEN_MACROS_H
+#include "gucefProjectGen_macros.h"
+#define GUCEF_PROJECTGEN_MACROS_H
+#endif /* GUCEF_PROJECTGEN_MACROS_H ? */
 
 /*-------------------------------------------------------------------------//
 //                                                                         //
@@ -38,7 +43,7 @@
 //-------------------------------------------------------------------------*/
 
 namespace GUCEF {
-namespace PROJECTGENERATOR {
+namespace PROJECTGEN {
 
 /*-------------------------------------------------------------------------//
 //                                                                         //
@@ -46,20 +51,24 @@ namespace PROJECTGENERATOR {
 //                                                                         //
 //-------------------------------------------------------------------------*/
 
-class CIProjectInfoGatherer
+class GUCEF_PROJECTGEN_PUBLIC_CPP CAndroidMakefileGenerator : public CIProjectGenerator
 {
     public:
     
-    CIProjectInfoGatherer( void );
+    CAndroidMakefileGenerator( void );
     
-    CIProjectInfoGatherer( const CIProjectInfoGatherer& src );
+    virtual ~CAndroidMakefileGenerator();
     
-    virtual ~CIProjectInfoGatherer();
+    virtual bool GenerateProject( TProjectInfo& projectInfo            ,
+                                  const CORE::CString& outputDir       ,
+                                  bool addGeneratorCompileTimeToOutput ,
+                                  const CORE::CValueList& params       );
+                                  
+    private:
+
+    CAndroidMakefileGenerator( const CAndroidMakefileGenerator& src );
     
-    CIProjectInfoGatherer& operator=( const CIProjectInfoGatherer& src );
-    
-    virtual bool GatherInfo( const TStringVector& rootDirs ,
-                             TProjectInfo& projectInfo     ) = 0;
+    CAndroidMakefileGenerator& operator=( const CAndroidMakefileGenerator& src );
 };
 
 /*-------------------------------------------------------------------------//
@@ -68,12 +77,12 @@ class CIProjectInfoGatherer
 //                                                                         //
 //-------------------------------------------------------------------------*/
 
-}; /* namespace PROJECTGENERATOR */
+}; /* namespace PROJECTGEN */
 }; /* namespace GUCEF */
 
 /*-------------------------------------------------------------------------*/
 
-#endif /* GUCEF_PROJECTGENERATOR_CIPROJECTINFOGATHERER_H ? */
+#endif /* GUCEF_PROJECTGEN_CANDROIDMAKEFILEGENERATOR_H ? */
 
 /*-------------------------------------------------------------------------//
 //                                                                         //
@@ -85,4 +94,3 @@ class CIProjectInfoGatherer
         - Dinand: Initial implementation
 
 ---------------------------------------------------------------------------*/
-

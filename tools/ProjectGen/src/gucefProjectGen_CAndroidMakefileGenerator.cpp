@@ -33,7 +33,7 @@
 #define GUCEF_CORE_DVCPPSTRINGUTILS_H
 #endif /* GUCEF_CORE_DVCPPSTRINGUTILS_H ? */
 
-#include "gucefProjectGenerator_CAndroidMakefileGenerator.h"
+#include "gucefProjectGen_CAndroidMakefileGenerator.h"
 
 /*-------------------------------------------------------------------------//
 //                                                                         //
@@ -42,7 +42,7 @@
 //-------------------------------------------------------------------------*/
 
 namespace GUCEF {
-namespace PROJECTGENERATOR {
+namespace PROJECTGEN {
 
 /*-------------------------------------------------------------------------//
 //                                                                         //
@@ -814,7 +814,7 @@ CAndroidMakefileGenerator::GenerateProject( TProjectInfo& projectInfo           
 //                                                                         //
 //-------------------------------------------------------------------------*/
 
-}; /* namespace PROJECTGENERATOR */
+}; /* namespace PROJECTGEN */
 }; /* namespace GUCEF */
 
 /*-------------------------------------------------------------------------*/

@@ -538,7 +538,7 @@ CDataNode::FindChildrenOfType( const CString& name  ,
     TDataNodeSet children;
     CDataNode* child = _pfchild;
     
-    while ( 0 != child && child != _pfchild )
+    while ( 0 != child )
     {
         if ( child->_name == name )
         {
@@ -555,6 +555,7 @@ CDataNode::FindChildrenOfType( const CString& name  ,
             }
         }                
         child = child->_pnext;
+        if ( child == _pfchild ) break;
     }
     return children;
 }

@@ -28,7 +28,7 @@
 #define GUCEF_CORE_LOGGING_H
 #endif /* GUCEF_CORE_LOGGING_H ? */
 
-#include "gucefProjectGenerator_CIProjectGenerator.h"
+#include "gucefProjectGen_CDirPreprocessorManager.h"
 
 /*-------------------------------------------------------------------------//
 //                                                                         //
@@ -37,40 +37,53 @@
 //-------------------------------------------------------------------------*/
 
 namespace GUCEF {
-namespace PROJECTGENERATOR {
+namespace PROJECTGEN {
 
 /*-------------------------------------------------------------------------//
 //                                                                         //
-//      UTILITIES                                                          //
+//      IMPLEMENTATION                                                     //
 //                                                                         //
 //-------------------------------------------------------------------------*/
 
-CIProjectGenerator::CIProjectGenerator( void )
-{GUCEF_TRACE;
-
-}
-
-/*-------------------------------------------------------------------------*/
-    
-CIProjectGenerator::CIProjectGenerator( const CIProjectGenerator& src )
-{GUCEF_TRACE;
-
-}
-
-/*-------------------------------------------------------------------------*/
-    
-CIProjectGenerator::~CIProjectGenerator()
+CDirPreprocessorManager::CDirPreprocessorManager( void )
+    : m_dirPreprocessors()
 {GUCEF_TRACE;
 
 }
 
 /*-------------------------------------------------------------------------*/
 
-CIProjectGenerator&
-CIProjectGenerator::operator=( const CIProjectGenerator& src )
+CDirPreprocessorManager::~CDirPreprocessorManager()
 {GUCEF_TRACE;
+
+    m_dirPreprocessors.clear();
+}
+
+/*-------------------------------------------------------------------------*/
+       
+void
+CDirPreprocessorManager::RegisterDirPreprocessor( CIDirPreprocessor* preprocessor )
+{GUCEF_TRACE;
+
+    m_dirPreprocessors.insert( preprocessor );
+}
+
+/*-------------------------------------------------------------------------*/
+
+void
+CDirPreprocessorManager::UnregisterDirPreprocessor( CIDirPreprocessor* preprocessor )
+{GUCEF_TRACE;
+
+    m_dirPreprocessors.erase( preprocessor );
+}
     
-    return *this;
+/*-------------------------------------------------------------------------*/
+
+const CDirPreprocessorManager::TDirPreprocessorsList&
+CDirPreprocessorManager::GetDirPreprocessors( void ) const
+{GUCEF_TRACE;
+
+    return m_dirPreprocessors;
 }
 
 /*-------------------------------------------------------------------------//
@@ -79,7 +92,7 @@ CIProjectGenerator::operator=( const CIProjectGenerator& src )
 //                                                                         //
 //-------------------------------------------------------------------------*/
 
-}; /* namespace PROJECTGENERATOR */
+}; /* namespace PROJECTGEN */
 }; /* namespace GUCEF */
 
 /*-------------------------------------------------------------------------*/

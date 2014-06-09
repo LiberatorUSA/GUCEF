@@ -1,0 +1,18 @@
+<ModuleInfoEntry>
+    <Module Name="ProjectGenerator" Type="Executable" Platform="All">
+        <Dependencies>
+            <Dependency Name="gucefHeaders" />
+            <Dependency Name="gucefMT" />
+            <Dependency Name="gucefCORE" />
+            <Dependency Name="ProjectGen" />
+        </Dependencies>
+        <Linker>
+            <Dependency Name="gucefMT" />
+            <Dependency Name="gucefCORE" />
+            <Dependency Name="ProjectGen" />
+        </Linker>
+        <Preprocessor>
+            <Define String="GUCEF_PROJECTGENERATOR_BUILD_MODULE" />
+        </Preprocessor>
+    </Module>
+</ModuleInfoEntry>

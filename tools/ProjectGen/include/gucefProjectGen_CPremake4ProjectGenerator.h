@@ -17,18 +17,24 @@
  *  Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA
  */
 
+#ifndef GUCEF_PROJECTGEN_CPREMAKE4PROJECTGENERATOR_H
+#define GUCEF_PROJECTGEN_CPREMAKE4PROJECTGENERATOR_H
+
 /*-------------------------------------------------------------------------//
 //                                                                         //
 //      INCLUDES                                                           //
 //                                                                         //
 //-------------------------------------------------------------------------*/
 
-#ifndef GUCEF_CORE_LOGGING_H
-#include "gucefCORE_Logging.h"
-#define GUCEF_CORE_LOGGING_H
-#endif /* GUCEF_CORE_LOGGING_H ? */
+#ifndef GUCEF_PROJECTGEN_CIPROJECTGENERATOR_H
+#include "gucefProjectGen_CIProjectGenerator.h"
+#define GUCEF_PROJECTGEN_CIPROJECTGENERATOR_H
+#endif /* GUCEF_PROJECTGEN_CIPROJECTGENERATOR_H ? */
 
-#include "gucefProjectGenerator_CIProjectInfoGatherer.h"
+#ifndef GUCEF_PROJECTGEN_MACROS_H
+#include "gucefProjectGen_macros.h"
+#define GUCEF_PROJECTGEN_MACROS_H
+#endif /* GUCEF_PROJECTGEN_MACROS_H ? */
 
 /*-------------------------------------------------------------------------//
 //                                                                         //
@@ -37,41 +43,33 @@
 //-------------------------------------------------------------------------*/
 
 namespace GUCEF {
-namespace PROJECTGENERATOR {
+namespace PROJECTGEN {
 
 /*-------------------------------------------------------------------------//
 //                                                                         //
-//      UTILITIES                                                          //
+//      CLASSES                                                            //
 //                                                                         //
 //-------------------------------------------------------------------------*/
 
-CIProjectInfoGatherer::CIProjectInfoGatherer( void )
-{GUCEF_TRACE;
+class GUCEF_PROJECTGEN_PUBLIC_CPP CPremake4ProjectGenerator : public CIProjectGenerator
+{
+    public:
 
-}
+    CPremake4ProjectGenerator( void );
 
-/*-------------------------------------------------------------------------*/
-    
-CIProjectInfoGatherer::CIProjectInfoGatherer( const CIProjectInfoGatherer& src )
-{GUCEF_TRACE;
+    CPremake4ProjectGenerator( const CPremake4ProjectGenerator& src );
 
-}
+    virtual ~CPremake4ProjectGenerator();
 
-/*-------------------------------------------------------------------------*/
-    
-CIProjectInfoGatherer::~CIProjectInfoGatherer()
-{GUCEF_TRACE;
+    virtual bool GenerateProject( TProjectInfo& projectInfo            ,
+                                  const CORE::CString& outputDir       ,
+                                  bool addGeneratorCompileTimeToOutput ,
+                                  const CORE::CValueList& params       );
 
-}
+    private:
 
-/*-------------------------------------------------------------------------*/
-
-CIProjectInfoGatherer&
-CIProjectInfoGatherer::operator=( const CIProjectInfoGatherer& src )
-{GUCEF_TRACE;
-    
-    return *this;
-}
+    CPremake4ProjectGenerator& operator=( const CPremake4ProjectGenerator& src );
+};
 
 /*-------------------------------------------------------------------------//
 //                                                                         //
@@ -79,7 +77,20 @@ CIProjectInfoGatherer::operator=( const CIProjectInfoGatherer& src )
 //                                                                         //
 //-------------------------------------------------------------------------*/
 
-}; /* namespace PROJECTGENERATOR */
+}; /* namespace PROJECTGEN */
 }; /* namespace GUCEF */
 
 /*-------------------------------------------------------------------------*/
+
+#endif /* GUCEF_PROJECTGEN_CPREMAKE4PROJECTGENERATOR_H ? */
+
+/*-------------------------------------------------------------------------//
+//                                                                         //
+//      Info & Changes                                                     //
+//                                                                         //
+//-------------------------------------------------------------------------//
+
+- 27-11-2004 :
+        - Dinand: Initial implementation
+
+---------------------------------------------------------------------------*/
