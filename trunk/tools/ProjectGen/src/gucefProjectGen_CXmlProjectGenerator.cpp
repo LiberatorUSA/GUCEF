@@ -48,7 +48,7 @@
 #define GUCEF_CORE_LOGGING_H
 #endif /* GUCEF_CORE_LOGGING_H ? */
 
-#include "gucefProjectGenerator_CXmlProjectGenerator.h"
+#include "gucefProjectGen_CXmlProjectGenerator.h"
 
 /*-------------------------------------------------------------------------//
 //                                                                         //
@@ -57,7 +57,7 @@
 //-------------------------------------------------------------------------*/
 
 namespace GUCEF {
-namespace PROJECTGENERATOR {
+namespace PROJECTGEN {
 
 /*-------------------------------------------------------------------------//
 //                                                                         //
@@ -98,7 +98,7 @@ CXmlProjectGenerator::GenerateProject( TProjectInfo& projectInfo            ,
 //                                                                         //
 //-------------------------------------------------------------------------*/
 
-}; /* namespace PROJECTGENERATOR */
+}; /* namespace PROJECTGEN */
 }; /* namespace GUCEF */
 
 /*-------------------------------------------------------------------------*/

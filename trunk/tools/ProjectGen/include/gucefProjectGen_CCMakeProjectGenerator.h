@@ -17,8 +17,8 @@
  *  Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA
  */
 
-#ifndef GUCEF_PROJECTGENERATOR_CIPROJECTGENERATOR_H
-#define GUCEF_PROJECTGENERATOR_CIPROJECTGENERATOR_H
+#ifndef GUCEF_PROJECTGEN_CCMAKEPROJECTGENERATOR_H
+#define GUCEF_PROJECTGEN_CCMAKEPROJECTGENERATOR_H
 
 /*-------------------------------------------------------------------------//
 //                                                                         //
@@ -26,15 +26,15 @@
 //                                                                         //
 //-------------------------------------------------------------------------*/
 
-#ifndef GUCEF_PROJECTGENERATOR_DATATYPES_H
-#include "gucefProjectGenerator_DataTypes.h"
-#define GUCEF_PROJECTGENERATOR_DATATYPES_H
-#endif /* GUCEF_PROJECTGENERATOR_DATATYPES_H ? */
+#ifndef GUCEF_PROJECTGEN_CIPROJECTGENERATOR_H
+#include "gucefProjectGen_CIProjectGenerator.h"
+#define GUCEF_PROJECTGEN_CIPROJECTGENERATOR_H
+#endif /* GUCEF_PROJECTGEN_CIPROJECTGENERATOR_H ? */
 
-#ifndef GUCEF_CORE_CVALUELIST_H
-#include "CValueList.h"
-#define GUCEF_CORE_CVALUELIST_H
-#endif /* GUCEF_CORE_CVALUELIST_H ? */
+#ifndef GUCEF_PROJECTGEN_MACROS_H
+#include "gucefProjectGen_macros.h"
+#define GUCEF_PROJECTGEN_MACROS_H
+#endif /* GUCEF_PROJECTGEN_MACROS_H ? */
 
 /*-------------------------------------------------------------------------//
 //                                                                         //
@@ -43,7 +43,7 @@
 //-------------------------------------------------------------------------*/
 
 namespace GUCEF {
-namespace PROJECTGENERATOR {
+namespace PROJECTGEN {
 
 /*-------------------------------------------------------------------------//
 //                                                                         //
@@ -51,22 +51,24 @@ namespace PROJECTGENERATOR {
 //                                                                         //
 //-------------------------------------------------------------------------*/
 
-class CIProjectGenerator
+class GUCEF_PROJECTGEN_PUBLIC_CPP CCMakeProjectGenerator : public CIProjectGenerator
 {
     public:
     
-    CIProjectGenerator( void );
+    CCMakeProjectGenerator( void );
     
-    CIProjectGenerator( const CIProjectGenerator& src );
+    CCMakeProjectGenerator( const CCMakeProjectGenerator& src );
     
-    virtual ~CIProjectGenerator();
-    
-    CIProjectGenerator& operator=( const CIProjectGenerator& src );
+    virtual ~CCMakeProjectGenerator();
     
     virtual bool GenerateProject( TProjectInfo& projectInfo            ,
                                   const CORE::CString& outputDir       ,
                                   bool addGeneratorCompileTimeToOutput ,
-                                  const CORE::CValueList& params       ) = 0;
+                                  const CORE::CValueList& params       );
+                                  
+    private:
+    
+    CCMakeProjectGenerator& operator=( const CCMakeProjectGenerator& src );
 };
 
 /*-------------------------------------------------------------------------//
@@ -75,12 +77,12 @@ class CIProjectGenerator
 //                                                                         //
 //-------------------------------------------------------------------------*/
 
-}; /* namespace PROJECTGENERATOR */
+}; /* namespace PROJECTGEN */
 }; /* namespace GUCEF */
 
 /*-------------------------------------------------------------------------*/
 
-#endif /* GUCEF_PROJECTGENERATOR_CIPROJECTGENERATOR_H ? */
+#endif /* GUCEF_PROJECTGEN_CCMAKEPROJECTGENERATOR_H ? */
 
 /*-------------------------------------------------------------------------//
 //                                                                         //

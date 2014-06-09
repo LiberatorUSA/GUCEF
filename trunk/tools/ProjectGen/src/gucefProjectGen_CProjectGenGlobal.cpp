@@ -17,19 +17,28 @@
  *  Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA
  */
 
-#ifndef GUCEF_PROJECTGENERATOR_CCMAKEPROJECTGENERATOR_H
-#define GUCEF_PROJECTGENERATOR_CCMAKEPROJECTGENERATOR_H
-
 /*-------------------------------------------------------------------------//
 //                                                                         //
 //      INCLUDES                                                           //
 //                                                                         //
 //-------------------------------------------------------------------------*/
 
-#ifndef GUCEF_PROJECTGENERATOR_CIPROJECTGENERATOR_H
-#include "gucefProjectGenerator_CIProjectGenerator.h"
-#define GUCEF_PROJECTGENERATOR_CIPROJECTGENERATOR_H
-#endif /* GUCEF_PROJECTGENERATOR_CIPROJECTGENERATOR_H ? */
+#ifndef GUCEF_CORE_CCOREGLOBAL_H
+#include "gucefCORE_CCoreGlobal.h"
+#define GUCEF_CORE_CCOREGLOBAL_H
+#endif /* GUCEF_CORE_CCOREGLOBAL_H ? */
+
+#ifndef GUCEF_CORE_LOGGING_H
+#include "gucefCORE_Logging.h"
+#define GUCEF_CORE_LOGGING_H
+#endif /* GUCEF_CORE_LOGGING_H ? */
+
+#ifndef GUCEF_PROJECTGEN_CDIRPREPROCESSORMANAGER_H
+#include "gucefProjectGen_CDirPreprocessorManager.h"
+#define GUCEF_PROJECTGEN_CDIRPREPROCESSORMANAGER_H
+#endif /* GUCEF_PROJECTGEN_CDIRPREPROCESSORMANAGER_H ? */
+
+#include "gucefProjectGen_CProjectGenGlobal.h"
 
 /*-------------------------------------------------------------------------//
 //                                                                         //
@@ -38,33 +47,90 @@
 //-------------------------------------------------------------------------*/
 
 namespace GUCEF {
-namespace PROJECTGENERATOR {
+namespace PROJECTGEN {
 
 /*-------------------------------------------------------------------------//
 //                                                                         //
-//      CLASSES                                                            //
+//      GLOBAL VARS                                                        //
 //                                                                         //
 //-------------------------------------------------------------------------*/
 
-class CCMakeProjectGenerator : public CIProjectGenerator
-{
-    public:
+CProjectGenGlobal* CProjectGenGlobal::g_instance = NULL;
+
+/*-------------------------------------------------------------------------//
+//                                                                         //
+//      UTILITIES                                                          //
+//                                                                         //
+//-------------------------------------------------------------------------*/
+
+CProjectGenGlobal*
+CProjectGenGlobal::Instance()
+{GUCEF_TRACE;
+
+    if ( NULL == g_instance )
+    {
+        g_instance = new CProjectGenGlobal();
+        g_instance->Initialize();
+    }
+    return g_instance;
+}
+
+/*-------------------------------------------------------------------------*/
+
+void
+CProjectGenGlobal::Deinstance( void )
+{GUCEF_TRACE;
+
+    delete g_instance;
+    g_instance = NULL;
+}
+
+/*-------------------------------------------------------------------------*/
+
+void
+CProjectGenGlobal::Initialize( void )
+{GUCEF_TRACE;
+
+    CORE::CCoreGlobal::Instance();
     
-    CCMakeProjectGenerator( void );
-    
-    CCMakeProjectGenerator( const CCMakeProjectGenerator& src );
-    
-    virtual ~CCMakeProjectGenerator();
-    
-    virtual bool GenerateProject( TProjectInfo& projectInfo            ,
-                                  const CORE::CString& outputDir       ,
-                                  bool addGeneratorCompileTimeToOutput ,
-                                  const CORE::CValueList& params       );
-                                  
-    private:
-    
-    CCMakeProjectGenerator& operator=( const CCMakeProjectGenerator& src );
-};
+    /*
+     *  Instantiate all the singletons
+     */
+    m_dirPreprocessorManager = new CDirPreprocessorManager();
+
+    GUCEF_SYSTEM_LOG( CORE::LOGLEVEL_NORMAL, "gucefProjectGen Global systems initialized" );
+}
+
+/*-------------------------------------------------------------------------*/
+
+CProjectGenGlobal::CProjectGenGlobal( void )
+    : m_dirPreprocessorManager( NULL )
+{GUCEF_TRACE;
+
+}
+
+/*-------------------------------------------------------------------------*/
+
+CProjectGenGlobal::~CProjectGenGlobal()
+{GUCEF_TRACE;
+
+    GUCEF_SYSTEM_LOG( CORE::LOGLEVEL_NORMAL, "Shutting down gucefProjectGen global systems" );
+
+    /*
+     *      cleanup all singletons
+     */
+    delete m_dirPreprocessorManager;
+    m_dirPreprocessorManager = NULL;
+}
+
+/*-------------------------------------------------------------------------*/
+
+CDirPreprocessorManager&
+CProjectGenGlobal::GetDirPreprocessorManager( void )
+{GUCEF_TRACE;
+
+    return *m_dirPreprocessorManager;
+}
 
 /*-------------------------------------------------------------------------//
 //                                                                         //
@@ -72,20 +138,7 @@ class CCMakeProjectGenerator : public CIProjectGenerator
 //                                                                         //
 //-------------------------------------------------------------------------*/
 
-}; /* namespace PROJECTGENERATOR */
+}; /* namespace PROJECTGEN */
 }; /* namespace GUCEF */
 
 /*-------------------------------------------------------------------------*/
-
-#endif /* GUCEF_PROJECTGENERATOR_CCMAKEPROJECTGENERATOR_H ? */
-
-/*-------------------------------------------------------------------------//
-//                                                                         //
-//      Info & Changes                                                     //
-//                                                                         //
-//-------------------------------------------------------------------------//
-
-- 27-11-2004 :
-        - Dinand: Initial implementation
-
----------------------------------------------------------------------------*/

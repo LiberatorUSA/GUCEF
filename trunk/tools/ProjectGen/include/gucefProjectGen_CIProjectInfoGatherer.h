@@ -17,8 +17,8 @@
  *  Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA
  */
 
-#ifndef GUCEF_PROJECTGENERATOR_CXMLPROJECTGENERATOR_H
-#define GUCEF_PROJECTGENERATOR_CXMLPROJECTGENERATOR_H
+#ifndef GUCEF_PROJECTGEN_CIPROJECTINFOGATHERER_H
+#define GUCEF_PROJECTGEN_CIPROJECTINFOGATHERER_H
 
 /*-------------------------------------------------------------------------//
 //                                                                         //
@@ -26,10 +26,15 @@
 //                                                                         //
 //-------------------------------------------------------------------------*/
 
-#ifndef GUCEF_PROJECTGENERATOR_CIPROJECTGENERATOR_H
-#include "gucefProjectGenerator_CIProjectGenerator.h"
-#define GUCEF_PROJECTGENERATOR_CIPROJECTGENERATOR_H
-#endif /* GUCEF_PROJECTGENERATOR_CIPROJECTGENERATOR_H ? */
+#ifndef GUCEF_PROJECTGEN_DATATYPES_H
+#include "gucefProjectGen_DataTypes.h"
+#define GUCEF_PROJECTGEN_DATATYPES_H
+#endif /* GUCEF_PROJECTGEN_DATATYPES_H ? */
+
+#ifndef GUCEF_PROJECTGEN_MACROS_H
+#include "gucefProjectGen_macros.h"
+#define GUCEF_PROJECTGEN_MACROS_H
+#endif /* GUCEF_PROJECTGEN_MACROS_H ? */
 
 /*-------------------------------------------------------------------------//
 //                                                                         //
@@ -38,7 +43,7 @@
 //-------------------------------------------------------------------------*/
 
 namespace GUCEF {
-namespace PROJECTGENERATOR {
+namespace PROJECTGEN {
 
 /*-------------------------------------------------------------------------//
 //                                                                         //
@@ -46,24 +51,20 @@ namespace PROJECTGENERATOR {
 //                                                                         //
 //-------------------------------------------------------------------------*/
 
-class CXmlProjectGenerator : public CIProjectGenerator
+class GUCEF_PROJECTGEN_PUBLIC_CPP CIProjectInfoGatherer
 {
     public:
     
-    CXmlProjectGenerator( void );
+    CIProjectInfoGatherer( void );
     
-    virtual ~CXmlProjectGenerator();
+    CIProjectInfoGatherer( const CIProjectInfoGatherer& src );
     
-    virtual bool GenerateProject( TProjectInfo& projectInfo            ,
-                                  const CORE::CString& outputDir       ,
-                                  bool addGeneratorCompileTimeToOutput ,
-                                  const CORE::CValueList& params       );
-                                  
-    private:
+    virtual ~CIProjectInfoGatherer();
     
-    CXmlProjectGenerator( const CXmlProjectGenerator& src );
+    CIProjectInfoGatherer& operator=( const CIProjectInfoGatherer& src );
     
-    CXmlProjectGenerator& operator=( const CXmlProjectGenerator& src );
+    virtual bool GatherInfo( const TStringVector& rootDirs ,
+                             TProjectInfo& projectInfo     ) = 0;
 };
 
 /*-------------------------------------------------------------------------//
@@ -72,12 +73,12 @@ class CXmlProjectGenerator : public CIProjectGenerator
 //                                                                         //
 //-------------------------------------------------------------------------*/
 
-}; /* namespace PROJECTGENERATOR */
+}; /* namespace PROJECTGEN */
 }; /* namespace GUCEF */
 
 /*-------------------------------------------------------------------------*/
 
-#endif /* GUCEF_PROJECTGENERATOR_CXMLPROJECTGENERATOR_H ? */
+#endif /* GUCEF_PROJECTGEN_CIPROJECTINFOGATHERER_H ? */
 
 /*-------------------------------------------------------------------------//
 //                                                                         //
@@ -89,3 +90,4 @@ class CXmlProjectGenerator : public CIProjectGenerator
         - Dinand: Initial implementation
 
 ---------------------------------------------------------------------------*/
+

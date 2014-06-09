@@ -16,9 +16,9 @@
  *  License along with this library; if not, write to the Free Software
  *  Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA
  */
-
-#ifndef GUCEF_PROJECTGENERATOR_CDIRCRAWLINGPROJECTINFOGATHERER_H
-#define GUCEF_PROJECTGENERATOR_CDIRCRAWLINGPROJECTINFOGATHERER_H
+ 
+#ifndef GUCEF_PROJECTGEN_CIDIRPREPROCESSOR_H
+#define GUCEF_PROJECTGEN_CIDIRPREPROCESSOR_H
 
 /*-------------------------------------------------------------------------//
 //                                                                         //
@@ -26,15 +26,10 @@
 //                                                                         //
 //-------------------------------------------------------------------------*/
 
-#ifndef GUCEF_PROJECTGENERATOR_DATATYPES_H
-#include "gucefProjectGenerator_DataTypes.h"
-#define GUCEF_PROJECTGENERATOR_DATATYPES_H
-#endif /* GUCEF_PROJECTGENERATOR_DATATYPES_H ? */
-
-#ifndef GUCEF_PROJECTGENERATOR_CIPROJECTINFOGATHERER_H
-#include "gucefProjectGenerator_CIProjectInfoGatherer.h"
-#define GUCEF_PROJECTGENERATOR_CIPROJECTINFOGATHERER_H
-#endif /* GUCEF_PROJECTGENERATOR_CIPROJECTINFOGATHERER_H ? */
+#ifndef GUCEF_PROJECTGEN_MACROS_H
+#include "gucefProjectGen_macros.h"
+#define GUCEF_PROJECTGEN_MACROS_H
+#endif /* GUCEF_PROJECTGEN_MACROS_H ? */
 
 /*-------------------------------------------------------------------------//
 //                                                                         //
@@ -43,7 +38,7 @@
 //-------------------------------------------------------------------------*/
 
 namespace GUCEF {
-namespace PROJECTGENERATOR {
+namespace PROJECTGEN {
 
 /*-------------------------------------------------------------------------//
 //                                                                         //
@@ -51,35 +46,33 @@ namespace PROJECTGENERATOR {
 //                                                                         //
 //-------------------------------------------------------------------------*/
 
-class CDirCrawlingProjectInfoGatherer : public CIProjectInfoGatherer
+class GUCEF_PROJECTGEN_PUBLIC_CPP CIDirPreprocessor
 {
     public:
-    
-    CDirCrawlingProjectInfoGatherer( void );
-    
-    virtual ~CDirCrawlingProjectInfoGatherer();
-    
-    virtual bool GatherInfo( const TStringVector& rootDirs ,
-                             TProjectInfo& projectInfo     );
-                              
-    private:
-    
-    CDirCrawlingProjectInfoGatherer( const CDirCrawlingProjectInfoGatherer& src );
-    CDirCrawlingProjectInfoGatherer& operator=( const CDirCrawlingProjectInfoGatherer& src );
-};
 
+    CIDirPreprocessor( void );
+
+    CIDirPreprocessor( const CIDirPreprocessor& src );
+
+    virtual ~CIDirPreprocessor();
+
+    CIDirPreprocessor& operator=( const CIDirPreprocessor& src );
+
+    virtual bool ProccessDir( const CORE::CString& path ) = 0;
+};
+                      
 /*-------------------------------------------------------------------------//
 //                                                                         //
 //      NAMESPACE                                                          //
 //                                                                         //
 //-------------------------------------------------------------------------*/
 
-}; /* namespace PROJECTGENERATOR */
+}; /* namespace PROJECTGEN */
 }; /* namespace GUCEF */
 
 /*-------------------------------------------------------------------------*/
 
-#endif /* GUCEF_PROJECTGENERATOR_CDIRCRAWLINGPROJECTINFOGATHERER_H ? */
+#endif /* GUCEF_PROJECTGEN_CIDIRPREPROCESSOR_H ? */
 
 /*-------------------------------------------------------------------------//
 //                                                                         //
@@ -91,4 +84,3 @@ class CDirCrawlingProjectInfoGatherer : public CIProjectInfoGatherer
         - Dinand: Initial implementation
 
 ---------------------------------------------------------------------------*/
-

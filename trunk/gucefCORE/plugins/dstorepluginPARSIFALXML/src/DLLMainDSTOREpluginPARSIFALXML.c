@@ -83,6 +83,7 @@ struct SSrcFileData
     LPXMLPARSER parser;
     TReadHandlers handlers;
     void* privdata;
+    XMLSTRINGBUF textBuffer;
 };
 
 typedef struct SSrcFileData TSrcFileData;
@@ -146,6 +147,17 @@ ParsifalDocumentEnd( void* userdata )
 /*---------------------------------------------------------------------------*/
 
 static int
+ParsifalCharacters( void *userdata     , 
+                    const XMLCH *chars , 
+                    int cbChars        )
+{	
+    TSrcFileData* sd = (TSrcFileData*) userdata;
+	XMLStringbuf_Append( &sd->textBuffer, (XMLCH*)chars, cbChars );
+	return XML_OK;
+}
+/*---------------------------------------------------------------------------*/
+
+static int
 ParsifalElementStart( void* userdata         ,
                       const XMLCH *uri       ,
                       const XMLCH *localname ,
@@ -154,7 +166,9 @@ ParsifalElementStart( void* userdata         ,
 {
         Int32 i;
         LPXMLRUNTIMEATT att;
+
         TSrcFileData* sd = (TSrcFileData*) userdata;
+
         (*sd->handlers.OnNodeBegin)( sd->privdata, qname );
         if ( atts->length )
         {
@@ -310,9 +324,29 @@ ParsifalElementEnd( void* userdata         ,
                     const XMLCH *localname ,
                     const XMLCH *qname     )
 {
-        TSrcFileData* sd = (TSrcFileData*) userdata;
-        (*sd->handlers.OnNodeEnd)( sd->privdata, qname );
-        return XML_OK;
+    TSrcFileData* sd = (TSrcFileData*) userdata;
+
+    char* text = _strdup( (const char*) XMLStringbuf_ToString( &sd->textBuffer ) );
+    if ( 0 != text )
+    {
+        /* normalize buffer, note that XMLNormalizeBuf doesn't nul terminate the buffer: */
+		int len = XMLNormalizeBuf( text, sd->textBuffer.len );
+		if ( len < sd->textBuffer.len ) text[ len ] = '\0';
+
+        if ( len > 0 )
+        {
+            (*sd->handlers.OnNodeAtt)( sd->privdata ,
+                                       qname        ,
+                                       0            ,
+                                       text         );
+        }
+
+        /* we'll reuse Stringbuf just setting its length to 0: */
+		XMLStringbuf_SetLength( &sd->textBuffer, 0 );
+    }
+
+    (*sd->handlers.OnNodeEnd)( sd->privdata, qname );
+    return XML_OK;
 }
 
 /*---------------------------------------------------------------------------*/
@@ -556,28 +590,32 @@ DSTOREPLUG_Src_File_Open( void** plugdata      ,
                           void** filedata      ,
                           TIOAccess* file      ) GUCEF_PLUGIN_CALLSPEC_SUFFIX
 {
-        TSrcFileData* sd;
-        *plugdata = NULL;
+    TSrcFileData* sd;
+    *plugdata = NULL;
 
-        sd = (TSrcFileData*) malloc( sizeof(TSrcFileData) );
-        sd->access = file;
+    sd = (TSrcFileData*) malloc( sizeof(TSrcFileData) );
+    sd->access = file;
 
-        if ( XMLParser_Create( &sd->parser ) )
-        {
-                sd->privdata = NULL;
-                memset( &sd->handlers, 0, sizeof(TReadHandlers) );
+    if ( XMLParser_Create( &sd->parser ) )
+    {
+        sd->privdata = NULL;
+        memset( &sd->handlers, 0, sizeof(TReadHandlers) );
 
-                sd->parser->startDocumentHandler = &ParsifalDocumentStart;
-                sd->parser->endDocumentHandler = &ParsifalDocumentEnd;
-                sd->parser->startElementHandler = &ParsifalElementStart;
-                sd->parser->endElementHandler = &ParsifalElementEnd;
-                sd->parser->errorHandler = &ParsifalError;
-                sd->parser->UserData = sd;
-                *filedata = sd;
-                return 1;
-        }
-        free( sd );
-        return 0;
+        /* init Stringbuf: blockSize 256, no pre-allocation: */
+        XMLStringbuf_Init( &sd->textBuffer, 256, 0 );
+
+        sd->parser->startDocumentHandler = &ParsifalDocumentStart;
+        sd->parser->endDocumentHandler = &ParsifalDocumentEnd;
+        sd->parser->startElementHandler = &ParsifalElementStart;
+        sd->parser->endElementHandler = &ParsifalElementEnd;
+        sd->parser->charactersHandler = &ParsifalCharacters;
+        sd->parser->errorHandler = &ParsifalError;
+        sd->parser->UserData = sd;
+        *filedata = sd;
+        return 1;
+    }
+    free( sd );
+    return 0;
 }
 
 /*---------------------------------------------------------------------------*/

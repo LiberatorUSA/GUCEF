@@ -203,14 +203,20 @@ OnNodeAttHandler( void* privdata       ,
                   const char* attname  ,
                   const char* attvalue ) GUCEF_PLUGIN_CALLSPEC_SUFFIX
 {GUCEF_TRACE;
-        TParserData* pd = static_cast<TParserData*>(privdata);
-        if ( pd )
+
+    TParserData* pd = static_cast<TParserData*>(privdata);
+    if ( 0 != pd && 0 != pd->curnode )
+    {
+        if ( 0 != attname )
         {
-                if ( pd->curnode )
-                {
-                        pd->curnode->SetAttribute( attname, attvalue );
-                }
+            pd->curnode->SetAttribute( attname, attvalue );
         }
+        else
+        if ( 0 != attvalue )
+        {
+            pd->curnode->SetValue( attvalue );
+        }
+    }
 }
 
 /*-------------------------------------------------------------------------*/
