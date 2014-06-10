@@ -229,11 +229,19 @@ CDirPreprocessor::ProccessProjectFiles( const CORE::CString& path ,
             CORE::CDataNode* clCompileNode = (*n)->FindChild( "ClCompile" );
             if ( NULL != clCompileNode )
             {                
-                PROJECTGEN::TStringSet newDefines = PROJECTGEN::StringVectorToStringSet( (*n)->GetChildValueByName( "PreprocessorDefinitions" ).ParseElements( ';', false ) );
+                PROJECTGEN::TStringSet newDefines = PROJECTGEN::StringVectorToStringSet( clCompileNode->GetChildValueByName( "PreprocessorDefinitions" ).ParseElements( ';', false ) );
                 PROJECTGEN::TStringSet::iterator m = newDefines.begin();
                 while ( m != newDefines.end() ) 
                 {
                     moduleInfo.preprocessorSettings.defines.insert( (*m) ); 
+                    ++m;
+                }
+
+                PROJECTGEN::TStringSet additionalIncludeDirs = PROJECTGEN::StringVectorToStringSet( clCompileNode->GetChildValueByName( "AdditionalIncludeDirectories" ).ParseElements( ';', false ) );
+                m = additionalIncludeDirs.begin();
+                while ( m != additionalIncludeDirs.end() ) 
+                {
+                    moduleInfo.includeDirs[ (*m) ];
                     ++m;
                 }
             }
@@ -243,7 +251,7 @@ CDirPreprocessor::ProccessProjectFiles( const CORE::CString& path ,
                 //PROJECTGEN::TStringSet newLibDirs = PROJECTGEN::StringVectorToStringSet( (*n)->GetChildValueByName( "AdditionalLibraryDirectories" ).ParseElements( ';', false ) );
                 //moduleInfo.linkerSettings.linkedLibraries[ ];
 
-                PROJECTGEN::TStringVector additionalDependencies = (*n)->GetChildValueByName( "AdditionalDependencies" ).ParseElements( ';', false );
+                PROJECTGEN::TStringVector additionalDependencies = linkNode->GetChildValueByName( "AdditionalDependencies" ).ParseElements( ';', false );
                 if ( !additionalDependencies.empty() )
                 {
                     PROJECTGEN::TStringVector::iterator m = additionalDependencies.begin();
@@ -262,36 +270,36 @@ CDirPreprocessor::ProccessProjectFiles( const CORE::CString& path ,
         while ( n != nodes.end() )
         {
             CORE::CDataNode::TDataNodeSet fileNodes = (*n)->FindChildrenOfType( "ClInclude", true );
-            CORE::CDataNode::TDataNodeSet::iterator m = nodes.begin();
-            while ( m != nodes.end() )
+            CORE::CDataNode::TDataNodeSet::iterator m = fileNodes.begin();
+            while ( m != fileNodes.end() )
             {
                 CORE::CString relPath = (*m)->GetAttributeValue( "Include" );
                 if ( 0 != relPath.Length() )
                 {
                     CORE::CString includeFilename = CORE::ExtractFilename( relPath );
-                    relPath = relPath.CutChars( includeFilename.Length(), true );
+                    relPath = relPath.CutChars( includeFilename.Length(), false );
                     moduleInfo.includeDirs[ relPath ].push_back( includeFilename );
                 }
                 ++m;
             }
 
             fileNodes = (*n)->FindChildrenOfType( "ClCompile", true );
-            m = nodes.begin();
-            while ( m != nodes.end() )
+            m = fileNodes.begin();
+            while ( m != fileNodes.end() )
             {
                 CORE::CString relPath = (*m)->GetAttributeValue( "Include" );
                 if ( 0 != relPath.Length() )
                 {
                     CORE::CString sourceFilename = CORE::ExtractFilename( relPath );
-                    relPath = relPath.CutChars( sourceFilename.Length(), true );
+                    relPath = relPath.CutChars( sourceFilename.Length(), false );
                     moduleInfo.sourceDirs[ relPath ].push_back( sourceFilename );
                 }
                 ++m;
             }
 
             fileNodes = (*n)->FindChildrenOfType( "ProjectReference", true );
-            m = nodes.begin();
-            while ( m != nodes.end() )
+            m = fileNodes.begin();
+            while ( m != fileNodes.end() )
             {
                 CORE::CString relPath = (*m)->GetAttributeValue( "Include" );
                 if ( 0 != relPath.Length() )
