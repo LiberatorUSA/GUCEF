@@ -12,7 +12,10 @@
 # Configuration for module: ProjectGenVSImporter
 
 set( HEADER_FILES 
+  include/ProjectGenVSImporter.h
   include/ProjectGenVSImporter_CDirPreprocessor.h
+  include/ProjectGenVSImporter_config.h
+  include/ProjectGenVSImporter_macros.h
 )
 
 set( SOURCE_FILES 
