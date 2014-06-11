@@ -43,6 +43,11 @@
 #define GUCEF_CORE_DVFILEUTILS_H
 #endif /* GUCEF_CORE_DVFILEUTILS_H ? */
 
+#ifndef GUCEF_CORE_DVOSWRAP_H
+#include "DVOSWRAP.h"
+#define GUCEF_CORE_DVOSWRAP_H
+#endif /* GUCEF_CORE_DVOSWRAP_H ? */
+
 #include "ProjectGenVSImporter_CDirPreprocessor.h"
 
 /*-------------------------------------------------------------------------//
@@ -167,6 +172,95 @@ CDirPreprocessor::StudioConfigurationTypeToModuleType( const CORE::CString& conf
 
 /*--------------------------------------------------------------------------*/
 
+void
+CDirPreprocessor::ParseGlobalVars( const CORE::CDataNode& projectData ,
+                                   TStringMap& globals                )
+{GUCEF_TRACE;
+
+    CORE::CDataNode::TConstDataNodeSet nodes = projectData.FindChildrenOfType( "PropertyGroup", true );
+    CORE::CDataNode::TConstDataNodeSet::const_iterator n = nodes.begin();
+    while ( n != nodes.end() )
+    {
+        CORE::CString labelType = (*n)->GetAttributeValue( "Label" );
+        if ( "Globals" == labelType )
+        {
+            CORE::CDataNode::const_iterator m = (*n)->Begin();
+            while ( m != (*n)->End() )
+            {
+                globals[ (*m)->GetName() ] = (*m)->GetValue();                
+                ++m;
+            }
+        }
+        ++n;
+    }
+}
+
+/*--------------------------------------------------------------------------*/
+
+void
+CDirPreprocessor::ParseVisualStudioVariables( const CORE::CString& testStr ,
+                                              TStringSet& vars             )
+{GUCEF_TRACE;
+
+    CORE::Int32 i=0;
+    CORE::Int32 subStrStart = -1;
+
+    do
+    {
+        subStrStart = testStr.HasSubstr( "$(", i, true );
+        if ( subStrStart >= 0 )
+        {
+            CORE::Int32 subStrEnd = testStr.HasChar( ')', i+2, true );
+            if ( i+2 < subStrEnd )
+            {
+                vars.insert( testStr.SubstrFromRange( i+2, subStrEnd-1 ) );
+                i = subStrEnd + 1;
+            }
+        }
+
+    }
+    while ( subStrStart >= 0 );
+}
+
+/*--------------------------------------------------------------------------*/
+
+CORE::CString
+CDirPreprocessor::ReplaceVisualStudioVariables( const CORE::CString& testStr ,
+                                                const TStringMap& globals    )
+{GUCEF_TRACE;
+
+    CORE::CString resultStr = testStr;
+    
+    TStringMap::const_iterator i = globals.begin();
+    while ( i != globals.end() )
+    {
+        CORE::CString varStr = "$(" + (*i).first + ')';        
+        resultStr = resultStr.ReplaceSubstr( varStr, (*i).second );
+        
+        ++i;
+    }
+
+    // remaining variables are likely to be environment variables
+    TStringSet remainingVars;
+    ParseVisualStudioVariables( resultStr, remainingVars );
+
+    TStringSet::iterator n = remainingVars.begin();
+    while ( n != remainingVars.end() )
+    {       
+        CORE::CString envVarValue = CORE::GUCEFGetEnv( (*n).C_String() );        
+        if ( !envVarValue.IsNULLOrEmpty() )
+        {
+            CORE::CString varStr = "$(" + (*n) + ')';
+            resultStr = resultStr.ReplaceSubstr( varStr, envVarValue );
+        }
+        ++n;
+    }
+
+    return resultStr;
+}
+
+/*--------------------------------------------------------------------------*/
+
 bool
 CDirPreprocessor::ProccessProjectFiles( const CORE::CString& path ,
                                         TStringList& list         )
@@ -187,6 +281,10 @@ CDirPreprocessor::ProccessProjectFiles( const CORE::CString& path ,
 
         PROJECTGEN::TModuleInfo& moduleInfo = moduleEntry.modulesPerPlatform[ "all" ];
         InitializeModuleInfo( moduleInfo );        
+        
+        // First parse the globals so we can resolve variables in other sections
+        TStringMap globals;
+        ParseGlobalVars( rootNode, globals );
         
         CORE::CDataNode::TDataNodeSet nodes = rootNode.FindChildrenOfType( "PropertyGroup", true );
         CORE::CDataNode::TDataNodeSet::iterator n = nodes.begin();
@@ -233,7 +331,7 @@ CDirPreprocessor::ProccessProjectFiles( const CORE::CString& path ,
                 PROJECTGEN::TStringSet::iterator m = newDefines.begin();
                 while ( m != newDefines.end() ) 
                 {
-                    moduleInfo.preprocessorSettings.defines.insert( (*m) ); 
+                    moduleInfo.preprocessorSettings.defines.insert( ReplaceVisualStudioVariables( (*m), globals ) ); 
                     ++m;
                 }
 
@@ -241,7 +339,7 @@ CDirPreprocessor::ProccessProjectFiles( const CORE::CString& path ,
                 m = additionalIncludeDirs.begin();
                 while ( m != additionalIncludeDirs.end() ) 
                 {
-                    moduleInfo.includeDirs[ (*m) ];
+                    moduleInfo.includeDirs[ ReplaceVisualStudioVariables( (*m), globals ) ];
                     ++m;
                 }
             }
@@ -257,7 +355,7 @@ CDirPreprocessor::ProccessProjectFiles( const CORE::CString& path ,
                     PROJECTGEN::TStringVector::iterator m = additionalDependencies.begin();
                     while ( m != additionalDependencies.end() )
                     {
-                        moduleInfo.linkerSettings.linkedLibraries[ (*m) ] = PROJECTGEN::MODULETYPE_UNKNOWN;
+                        moduleInfo.linkerSettings.linkedLibraries[ ReplaceVisualStudioVariables( (*m), globals ) ] = PROJECTGEN::MODULETYPE_UNKNOWN;
                         ++m;
                     }
                 }                
@@ -278,6 +376,7 @@ CDirPreprocessor::ProccessProjectFiles( const CORE::CString& path ,
                 {
                     CORE::CString includeFilename = CORE::ExtractFilename( relPath );
                     relPath = relPath.CutChars( includeFilename.Length(), false );
+                    relPath = ReplaceVisualStudioVariables( relPath, globals );
                     moduleInfo.includeDirs[ relPath ].push_back( includeFilename );
                 }
                 ++m;
@@ -292,6 +391,7 @@ CDirPreprocessor::ProccessProjectFiles( const CORE::CString& path ,
                 {
                     CORE::CString sourceFilename = CORE::ExtractFilename( relPath );
                     relPath = relPath.CutChars( sourceFilename.Length(), false );
+                    relPath = ReplaceVisualStudioVariables( relPath, globals );
                     moduleInfo.sourceDirs[ relPath ].push_back( sourceFilename );
                 }
                 ++m;
@@ -307,6 +407,7 @@ CDirPreprocessor::ProccessProjectFiles( const CORE::CString& path ,
                     CORE::CString moduleDependency = CORE::ExtractFilename( relPath );
                     CORE::Int32 dotIndex = moduleDependency.HasChar( '.', false );
                     if ( 0 <= dotIndex ) moduleDependency = moduleDependency.CutChars( moduleDependency.Length() - dotIndex, false );
+                    moduleDependency = ReplaceVisualStudioVariables( moduleDependency, globals );
                     moduleInfo.dependencies.push_back( moduleDependency );
                 }
                 ++m;
