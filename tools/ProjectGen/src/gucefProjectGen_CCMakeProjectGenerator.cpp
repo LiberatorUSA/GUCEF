@@ -122,6 +122,15 @@ GetSupportedPlatforms( void )
 
 /*-------------------------------------------------------------------------*/
 
+static CString
+ConvertEnvVarStrings( const CString& inStr )
+{GUCEF_TRACE;
+
+    return inStr.ReplaceEnvelopingSubstr( "$ENVVAR:", "$", "$ENV{", "}" );
+}
+
+/*-------------------------------------------------------------------------*/
+
 const CORE::CString&
 GetCMakeListsFileHeader( bool addCompileDate = false )
 {GUCEF_TRACE;
@@ -348,6 +357,8 @@ GenerateCMakeListsFileSection( const CORE::CString& sectionContent ,
         while ( n != (*i).second.end() )
         {
             CORE::CString path = (*i).first;
+            path = ConvertEnvVarStrings( path );
+
             CORE::AppendToPath( path, (*n) );
             path = path.ReplaceChar( '\\', '/' );
 
@@ -572,7 +583,7 @@ GenerateCMakeModuleIncludesSection( const TModuleInfo& moduleInfo ,
     TStringSet::const_iterator i = includeDirs.begin();
     while ( i != includeDirs.end() )
     {
-        allRelDependencyPaths += (*i) + " ";
+        allRelDependencyPaths += ConvertEnvVarStrings( (*i) ) + " ";
         ++i;
     }
 
@@ -580,7 +591,7 @@ GenerateCMakeModuleIncludesSection( const TModuleInfo& moduleInfo ,
     TStringVectorMap::const_iterator n = moduleInfo.includeDirs.begin();
     while ( n != moduleInfo.includeDirs.end() )
     {
-        CORE::CString includeDir = (*n).first.ReplaceChar( '\\', '/' );
+        CORE::CString includeDir = ConvertEnvVarStrings( (*n).first ).ReplaceChar( '\\', '/' );
         if ( 0 != includeDir.Length() )
         {
             allRelDependencyPaths += includeDir + " ";
@@ -780,7 +791,7 @@ GenerateCMakeModuleDependenciesLine( const TProjectInfo& projectInfo   ,
         TStringSet::iterator n = dependencies.begin();
         while ( n != dependencies.end() )
         {
-            sectionContent += ' ' + (*n);
+            sectionContent += ' ' + ConvertEnvVarStrings( (*n) );
             ++n;
         }
         if ( !dependencies.empty() )
@@ -810,7 +821,7 @@ GenerateCMakeModuleLinkerLine( const TModuleInfo& moduleInfo     ,
         TModuleTypeMap::const_iterator i = moduleInfo.linkerSettings.linkedLibraries.begin();
         while ( i != moduleInfo.linkerSettings.linkedLibraries.end() )
         {
-            sectionContent += ' ' + (*i).first;
+            sectionContent += ' ' + ConvertEnvVarStrings( (*i).first );
             ++i;
         }
         sectionContent += " )\n";
@@ -840,12 +851,12 @@ GenerateCMakeModuleDefinesLine( const TModuleInfo& moduleInfo     ,
         {
             if ( first )
             {
-                sectionContent += (*i);
+                sectionContent += ConvertEnvVarStrings( (*i) );
                 first = false;
             }
             else
             {
-                sectionContent += ';' + (*i);
+                sectionContent += ';' + ConvertEnvVarStrings( (*i) );
             }
             ++i;
         }

@@ -330,6 +330,12 @@ StringVectorToStringSet( const TStringVector& stringVector );
 /*-------------------------------------------------------------------------*/
 
 GUCEF_PROJECTGEN_PUBLIC_CPP
+void
+CleanupIncludeDirs( TModuleInfoEntry& moduleInfoEntry );
+
+/*-------------------------------------------------------------------------*/
+
+GUCEF_PROJECTGEN_PUBLIC_CPP
 bool
 SerializeModuleInfo( const TModuleInfoEntry& moduleInfo  ,
                      const CORE::CString& outputFilepath );

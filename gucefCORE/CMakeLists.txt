@@ -129,6 +129,7 @@ set( HEADER_FILES
   include/CURLHandlerRegistry.h
   include/CValueList.h
   include/DStoreCodecPluginStructs.h
+  include/DVCPPOSWRAP.h
   include/dvcppstringutils.h
   include/dvfileutils.h
   include/dvmd5utils.h
@@ -298,6 +299,7 @@ set( SOURCE_FILES
   src/CURLHandler.cpp
   src/CURLHandlerRegistry.cpp
   src/CValueList.cpp
+  src/DVCPPOSWRAP.cpp
   src/dvcppstringutils.cpp
   src/dvfileutils.c
   src/dvmd5utils.c

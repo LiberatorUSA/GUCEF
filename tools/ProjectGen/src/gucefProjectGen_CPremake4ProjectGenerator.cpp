@@ -122,6 +122,15 @@ GetSupportedPlatforms( void )
 
 /*-------------------------------------------------------------------------*/
 
+static CORE::CString
+ConvertEnvVarStrings( const CORE::CString& inStr )
+{GUCEF_TRACE;
+    
+    return inStr.ReplaceEnvelopingSubstr( "$ENVVAR:", "$", "os.getenv( ", " )" );
+}
+
+/*-------------------------------------------------------------------------*/
+
 const CORE::CString&
 GetPremake4FileHeader( bool addCompileDate = false )
 {GUCEF_TRACE;
@@ -352,6 +361,8 @@ GeneratePremake4FileSection( const CORE::CString& sectionContent ,
         {
             CORE::CString path = (*i).first;
             CORE::AppendToPath( path, (*n) );
+            path = ConvertEnvVarStrings( path );
+
             path = path.ReplaceChar( '\\', '/' );
 
             if ( first )
@@ -567,12 +578,12 @@ GeneratePremake4ModuleIncludesSection( const TModuleInfo& moduleInfo ,
     {
         if ( first )
         {
-            allRelDependencyPaths += " \"" + (*i) + '\"';
+            allRelDependencyPaths += " \"" + ConvertEnvVarStrings( (*i) ) + '\"';
             first = false;
         }
         else
         {
-            allRelDependencyPaths += ", \"" + (*i) + '\"';
+            allRelDependencyPaths += ", \"" + ConvertEnvVarStrings( (*i) ) + '\"';
         }
         ++i;
     }
@@ -581,7 +592,7 @@ GeneratePremake4ModuleIncludesSection( const TModuleInfo& moduleInfo ,
     TStringVectorMap::const_iterator n = moduleInfo.includeDirs.begin();
     while ( n != moduleInfo.includeDirs.end() )
     {
-        CORE::CString includeDir = (*n).first.ReplaceChar( '\\', '/' );
+        CORE::CString includeDir = ConvertEnvVarStrings( (*n).first ).ReplaceChar( '\\', '/' );
         if ( 0 != includeDir.Length() )
         {
             if ( first )
@@ -785,12 +796,12 @@ GeneratePremake4ModuleDependenciesLine( const TProjectInfo& projectInfo   ,
             {
                 if ( first )
                 {
-                    sectionContent += " \"" + (*n) + '\"';
+                    sectionContent += " \"" + ConvertEnvVarStrings( (*n) ) + '\"';
                     first = false;
                 }
                 else
                 {
-                    sectionContent += ", \"" + (*n) + '\"';
+                    sectionContent += ", \"" + ConvertEnvVarStrings( (*n) ) + '\"';
                 }
                 ++n;
             }
@@ -821,12 +832,12 @@ GeneratePremake4ModuleLinkerLine( const TModuleInfo& moduleInfo     ,
         {
             if ( first )
             {
-                sectionContent += " \"" + (*i).first + '\"';
+                sectionContent += " \"" + ConvertEnvVarStrings( (*i).first ) + '\"';
                 first = false;
             }
             else
             {
-                sectionContent += ", \"" + (*i).first + '\"';
+                sectionContent += ", \"" + ConvertEnvVarStrings( (*i).first ) + '\"';
             }
             ++i;
         }
@@ -865,12 +876,12 @@ GeneratePremake4ModuleDefinesLine( const TModuleInfo& moduleInfo     ,
         {
             if ( first )
             {
-                sectionContent += "\"" + (*i) + "\"";
+                sectionContent += "\"" + ConvertEnvVarStrings( (*i) ) + "\"";
                 first = false;
             }
             else
             {
-                sectionContent += ", \"" + (*i) + "\"";
+                sectionContent += ", \"" + ConvertEnvVarStrings( (*i) ) + "\"";
             }
             ++i;
         }
@@ -1389,6 +1400,13 @@ GeneratePremake4ProjectFileContent( const TProjectInfo& projectInfo       ,
         if ( HasIndependentModuleType( moduleInfo.modulesPerPlatform ) )
         {
             CORE::CString pathToModuleDir = CORE::GetRelativePathToOtherPathRoot( outputDir, moduleInfo.rootDir );
+
+            if ( 0 == pathToModuleDir.HasSubstr( "ENVVAR:", true ) )
+            {
+                // The path specified is actually a directive to use the given environment variable
+                CORE::CString premakeOutputDirEnvVar = premakeOutputDir.CutChars( 7, true );
+                fileContent += "  location( os.getenv( \"" + premakeOutputDirEnvVar + "\" ) )\n\n";
+            }
             pathToModuleDir = pathToModuleDir.ReplaceChar( '\\', '/' );
             moduleIncludeListSection += "  include( \"" + pathToModuleDir + "\" )\n";
         }

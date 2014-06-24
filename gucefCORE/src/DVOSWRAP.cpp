@@ -80,7 +80,7 @@ namespace CORE {
 
 /*-------------------------------------------------------------------------//
 //                                                                         //
-//      UTILITIES                                                          //
+//      IMPLEMENTATION                                                     //
 //                                                                         //
 //-------------------------------------------------------------------------*/
 
@@ -507,29 +507,31 @@ StringFromClipboard( char *dest     ,
 UInt32
 GUCEFSetEnv( const char* key   ,
              const char* value )
-{
-        #ifdef GUCEF_MSWIN_BUILD
+{GUCEF_TRACE;
 
-        UInt32 retval;
-        char* envstr = (char*) malloc( strlen( key ) + strlen( value )+2 );
-        sprintf( envstr, "%s=%s", key, value );
-        retval = _putenv( envstr );
-        free( envstr );
-        return retval == 0;
+    #ifdef GUCEF_MSWIN_BUILD
 
-        #else
+    UInt32 retval;
+    char* envstr = (char*) malloc( strlen( key ) + strlen( value )+2 );
+    sprintf( envstr, "%s=%s", key, value );
+    retval = _putenv( envstr );
+    free( envstr );
+    return retval == 0;
 
-        return setenv( key, value, 1 ) == 0;
+    #else
 
-        #endif
+    return setenv( key, value, 1 ) == 0;
+
+    #endif
 }
 
 /*--------------------------------------------------------------------------*/
 
 const char*
 GUCEFGetEnv( const char* key )
-{
-        return getenv( key );
+{GUCEF_TRACE;
+
+    return getenv( key );
 }
 
 /*--------------------------------------------------------------------------*/

@@ -30,6 +30,11 @@
 #define GUCEF_CORE_DVOSWRAP_H
 #endif /* GUCEF_CORE_DVOSWRAP_H ? */
 
+#ifndef GUCEF_CORE_DVFILEUTILS_H
+#include "dvfileutils.h"
+#define GUCEF_CORE_DVFILEUTILS_H
+#endif /* GUCEF_CORE_DVFILEUTILS_H ? */
+
 #ifndef GUCEF_CORE_DSTORECODECPLUGINSTRUCTS_H
 #include "DStoreCodecPluginStructs.h"   /* shared structs */
 #define GUCEF_CORE_DSTORECODECPLUGINSTRUCTS_H
@@ -530,6 +535,8 @@ CDStoreCodecPlugin::StoreDataTree( const CDataNode* tree   ,
                                    const CString& filename )
 {GUCEF_TRACE;
 
+    Create_Path_Directories( filename.C_String() );
+    
     CFileAccess access( filename, "wb" );
     if ( access.IsValid() )
     {
