@@ -88,10 +88,24 @@ PerformStringTests( void )
         ASSERT_TRUE( "abcde" == testStr2 );
         testStr2 = testStr1.SubstrToSubstr( "fghi", false );
         ASSERT_TRUE( "jklmnopqrstuvwxyz" == testStr2 );
-        
+        testStr2 = testStr1.SubstrToSubstr( "ghi", 3, true );
+        ASSERT_TRUE( "def" == testStr2 );
+        testStr2 = testStr1.SubstrToSubstr( "rst", 22, false );
+        ASSERT_TRUE( "uvw" == testStr2 );
+                
         // test FindMaxSubstrEquality
-        testStr2 = "jklmnopqrstuvwxyz";
-        testStr1.FindMaxSubstrEquality( testStr2, 0, true, true );
+        //testStr2 = "jklmnopqrstuvwxyz";
+        //testStr1.FindMaxSubstrEquality( testStr2, 0, true, true );
+
+        // test ReplaceEnvelopingSubstr
+        testStr1 = "$MYVAR:VALUE$";
+        testStr2 = testStr1.ReplaceEnvelopingSubstr( "$MYVAR:", "$", "{{", "}}" );
+        ASSERT_TRUE( testStr2 == "{{VALUE}}" );
+        testStr1 = "blablabla$MYVAR:VALUE$foobar";
+        testStr2 = testStr1.ReplaceEnvelopingSubstr( "$MYVAR:", "$", "{{", "}}" );
+        ASSERT_TRUE( testStr2 == "blablabla{{VALUE}}foobar" );
+        testStr2 = testStr1.ReplaceEnvelopingSubstr( "$NOT_HERE:", "$", "{{", "}}" );
+        ASSERT_TRUE( testStr2 == testStr1 );
     }
     catch( ... )
     {

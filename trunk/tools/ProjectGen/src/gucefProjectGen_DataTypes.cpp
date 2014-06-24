@@ -819,6 +819,29 @@ DeserializeModuleInfo( TModuleInfo& moduleInfo           ,
                 ++n;
             }
         }
+        else
+        if ( source == "self" )
+        {
+            // If the "self" includes came from actual include files then they would be automatically
+            // added when the files are added. However,... some importers might place additional includes
+            // under self which would not be auto-detected via include files. As such we have to add them 
+            // here as well to make sure. 
+            // Importers might not have any way of knowing whether a path was added due to dependency needs
+
+            CORE::CDataNode::TConstDataNodeSet includes = includesNode->FindChildrenOfType( "Include" );
+            CORE::CDataNode::TConstDataNodeSet::iterator n = includes.begin();
+            while ( n != includes.end() )
+            {
+                const CORE::CDataNode* includeNode = (*n);
+                CORE::CString path = includeNode->GetAttributeValue( "Path" );
+
+                if ( moduleInfo.includeDirs[ path ].empty() )
+                {
+                    GUCEF_LOG( CORE::LOGLEVEL_NORMAL, "DeserializeModuleInfo: Adding include dir of source \"self\" which does not currently have a reference to include files: " + path );
+                }
+                ++n;
+            }
+        }
         ++i;
     }
 
@@ -919,6 +942,62 @@ DeserializeModuleInfo( TModuleInfo& moduleInfo           ,
     }
 
     return true;
+}
+
+/*-------------------------------------------------------------------------*/
+
+void
+CleanupIncludeDirs( TModuleInfoEntry& moduleInfoEntry )
+{GUCEF_TRACE;
+
+    TModuleInfoMap::iterator i = moduleInfoEntry.modulesPerPlatform.begin();
+    while ( i != moduleInfoEntry.modulesPerPlatform.end() )
+    {
+        TModuleInfo& moduleInfo = (*i).second;
+        
+        // Check for empty include dirs
+        // If the include dir does not have include files as part of this module then 
+        // the dir should have been a dependency include dir
+        TStringSet dirs;
+        TStringVectorMap::iterator n = moduleInfo.includeDirs.begin();
+        while ( n != moduleInfo.includeDirs.end() )
+        {
+            TStringVector& filesInDirList = (*n).second;
+            if ( filesInDirList.empty() )
+            {
+                dirs.insert( (*n).first );
+            }
+            ++n;
+        }
+
+        TStringSet::iterator m = dirs.begin();
+        while ( m != dirs.end() )
+        {
+            moduleInfo.includeDirs.erase( (*m) ); 
+            moduleInfo.dependencyIncludeDirs.insert( (*m) );
+
+            GUCEF_LOG( CORE::LOGLEVEL_NORMAL, "Moved dir from module header dir to dependency include dir as it had no files: " + (*m) );
+
+            ++m;
+        }
+
+        // Check for duplicates,.. dirs that are listed as 
+        // dependency includes but which also have headers part of this module
+        // as such its not a dir coming from a dependency
+        n = moduleInfo.includeDirs.begin();
+        while ( n != moduleInfo.includeDirs.end() )
+        {
+            TStringSet::iterator p = moduleInfo.dependencyIncludeDirs.find( (*n).first );
+            if ( p != moduleInfo.dependencyIncludeDirs.end() )
+            {
+                GUCEF_LOG( CORE::LOGLEVEL_NORMAL, "Deleting dependency include dir since it already exists as a module header dir: " + (*p) );                
+                moduleInfo.dependencyIncludeDirs.erase( p );
+            }            
+            ++n;
+        }
+                
+        ++i;
+    }
 }
 
 /*-------------------------------------------------------------------------*/

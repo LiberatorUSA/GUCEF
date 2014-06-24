@@ -1874,6 +1874,17 @@ GenerateDependencyIncludes( TProjectInfo& projectInfo )
         GenerateDependencyIncludesForPlatform( projectInfo, (*i).Lowercase() );
         ++i;
     }
+
+    // Normalize the include paths,..
+    // It is possible that some dependency include paths are set as empty dir locations
+    // or that dependency include paths are actually already include dirs of the project itself
+    // we automatically clean that up now
+    TModuleInfoEntryVector::iterator n = projectInfo.modules.begin();
+    while ( n != projectInfo.modules.end() )
+    {
+        CleanupIncludeDirs( (*n) );
+        ++n;
+    }
 }
 
 /*---------------------------------------------------------------------------*/
@@ -2218,6 +2229,7 @@ ProcessProjectDir( TProjectInfo& projectInfo         ,
     // If we have a module name then use it for our logging output
     // we want to be able to see in the log which modules where successfully processed
     CORE::CString consensusModuleName = GetConsensusModuleName( moduleInfoEntry );
+
     GUCEF_LOG( CORE::LOGLEVEL_NORMAL, "Processed module " + consensusModuleName + " from project dir: " + moduleInfoEntry.rootDir );
 }
 

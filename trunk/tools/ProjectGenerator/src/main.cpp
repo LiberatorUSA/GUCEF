@@ -30,6 +30,11 @@
 #define GUCEF_CORE_LOGGING_H
 #endif /* GUCEF_CORE_LOGGING_H ? */
 
+#ifndef GUCEF_CORE_DVCPPOSWRAP_H
+#include "DVCPPOSWRAP.h"
+#define GUCEF_CORE_DVCPPOSWRAP_H
+#endif /* GUCEF_CORE_DVCPPOSWRAP_H ? */
+
 #ifndef GUCEF_CORE_CFILEACCESS_H
 #include "CFileAccess.h"
 #define GUCEF_CORE_CFILEACCESS_H
@@ -167,6 +172,18 @@ GUCEF_OSMAIN_BEGIN
     
     CORE::CValueList keyValueList;
     ParseParams( argc, argv, keyValueList );
+
+    // Support overriding environment variables from a file.
+    // This can be important for build environments which rely on such variables 
+    CORE::CString envOverrideFile = keyValueList.GetValueAlways( "envOverridesFile" );
+    if ( !envOverrideFile.IsNULLOrEmpty() )
+    {
+        CORE::CString fileContent;
+        if ( CORE::LoadTextFileAsString( envOverrideFile, fileContent, true, "\n" ) )
+        {
+            CORE::SetEnvOverrides( fileContent );
+        }
+    }
 
     CORE::CString outputDir = keyValueList.GetValueAlways( "outputDir" );
     if ( outputDir.IsNULLOrEmpty() )

@@ -200,6 +200,15 @@ class GUCEF_CORE_PUBLIC_CPP CString
     CString ReplaceSubstr( const CString& substr      ,
                            const CString& replacement ) const;
 
+    /**
+     *  Replaces an enveloping substring with another
+     *  Example: "$MyEnvelope(" ")" -> "%{" "}"
+     */
+    CString ReplaceEnvelopingSubstr( const CString& envelopPrefix     ,
+                                     const CString& envelopPostfix    ,
+                                     const CString& newEnvelopPrefix  ,
+                                     const CString& newEnvelopPostfix ) const;
+
     CString SubstrToChar( char searchchar         ,
                           bool frontToBack = true ) const;
 
@@ -208,6 +217,10 @@ class GUCEF_CORE_PUBLIC_CPP CString
                           bool frontToBack = true ) const;
 
     CString SubstrToSubstr( const CString& searchstr ,
+                            bool frontToBack = true  ) const;
+
+    CString SubstrToSubstr( const CString& searchstr ,
+                            UInt32 startIndex        ,
                             bool frontToBack = true  ) const;
 
     CString SubstrToIndex( UInt32 index            ,

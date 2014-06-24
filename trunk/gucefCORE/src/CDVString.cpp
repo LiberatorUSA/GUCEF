@@ -639,6 +639,40 @@ CString::ReplaceSubstr( const CString& substr      ,
 
 /*-------------------------------------------------------------------------*/
 
+CString
+CString::ReplaceEnvelopingSubstr( const CString& envelopPrefix     ,
+                                  const CString& envelopPostfix    ,
+                                  const CString& newEnvelopPrefix  ,
+                                  const CString& newEnvelopPostfix ) const
+{GUCEF_TRACE;
+
+    CString resultStr;
+    
+    Int32 startIndex = 0;
+    Int32 envSegIndex = this->HasSubstr( envelopPrefix, startIndex, true );
+    while ( envSegIndex >= 0 )
+    {
+        if ( startIndex < envSegIndex )
+        {
+            resultStr += this->SubstrFromRange( startIndex, envSegIndex-1 );
+        }
+        
+        envSegIndex+=envelopPrefix.Length();
+        CString envelopedSegment = this->SubstrToSubstr( envelopPostfix, envSegIndex, true );
+        resultStr += newEnvelopPrefix + envelopedSegment + newEnvelopPostfix;
+        
+        startIndex = envSegIndex+envelopedSegment.Length()+envelopPostfix.Length();
+        envSegIndex = this->HasSubstr( envelopPrefix, startIndex, true );
+    }
+
+    // append the remainder, if any
+    resultStr += this->SubstrToIndex( startIndex, false );
+
+    return resultStr;
+}
+
+/*-------------------------------------------------------------------------*/
+
 void
 CString::Clear( void )
 {GUCEF_TRACE;
@@ -695,12 +729,14 @@ CString::SubstrToIndex( UInt32 index     ,
                         bool frontToBack ) const
 {GUCEF_TRACE;
 
-    UInt32 otherIndex = frontToBack ? 0 : m_length > 0 ? m_length-1 : 0;
+    if ( !frontToBack )
+    {
+         if ( index >= m_length ) return CString();
+         return SubstrFromRange( index, m_length-1 );
+    }
 
-    if ( index == otherIndex ) return CString();
-
-    index > otherIndex ? --index : ++index;
-    return SubstrFromRange( otherIndex, index );
+    if ( index >= m_length ) return CString( m_string, m_length );
+    return SubstrFromRange( 0, index );    
 }
 
 /*-------------------------------------------------------------------------*/
@@ -709,6 +745,8 @@ CString
 CString::SubstrFromRange( UInt32 startIndex ,
                           UInt32 endIndex   ) const
 {GUCEF_TRACE;
+    
+    if ( startIndex == endIndex ) return CString();
 
     // we want the user to be able to pass a range conveniently
     if  ( startIndex > endIndex )
@@ -783,36 +821,59 @@ CString::SubstrToSubstr( const CString& searchstr ,
                          bool startfront          ) const
 {GUCEF_TRACE;
 
-    UInt32 slen = searchstr.Length();
-    if ( slen > m_length )
+    if ( searchstr.Length() > m_length || 0 == searchstr.Length() || 0 == m_length )
     {
         return *this;
     }
 
     if ( startfront )
     {
+        return SubstrToSubstr( searchstr, 0, startfront );
+    }
+
+    return SubstrToSubstr( searchstr, m_length-1, startfront );
+}
+
+/*-------------------------------------------------------------------------*/
+
+CString
+CString::SubstrToSubstr( const CString& searchstr ,
+                         UInt32 startIndex        ,
+                         bool startfront          ) const
+{GUCEF_TRACE;
+
+    UInt32 slen = searchstr.Length();
+    if ( slen > m_length || 0 == slen || 0 == m_length )
+    {
+        return *this;
+    }
+    if ( startIndex >= m_length ) 
+    {
+        // cap the index to disallow over/under flows
+        startIndex = m_length-1;
+    }
+
+    if ( startfront )
+    {
         UInt32 max = m_length - slen;
-        for ( UInt32 i=0; i<max; ++i )
+        for ( UInt32 i=startIndex; i<=max; ++i )
         {
             if ( memcmp( m_string+i, searchstr.m_string, slen ) == 0 )
             {
-                CString substr;
-                substr.Set( m_string ,
-                            i       );
-                return substr;
+                return CString( m_string+startIndex, i-startIndex );
             }
         }
         return *this;
     }
 
-    UInt32 max = m_length - slen;
-    for ( Int32 i=max-1; i>=0; --i )
+    UInt32 max = startIndex - slen;
+    for ( Int32 i=max; i>=0; --i )
     {
         if ( memcmp( m_string+i, searchstr.m_string, slen ) == 0 )
         {
             CString substr;
-            substr.Set( m_string+i+slen ,
-                        max-i           );
+            substr.Set( m_string+i+slen                    ,
+                        m_length-(i+slen) - ((m_length-1)-startIndex) );
             return substr;
         }
     }

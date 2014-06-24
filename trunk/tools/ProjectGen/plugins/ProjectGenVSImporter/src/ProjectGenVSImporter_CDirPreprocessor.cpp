@@ -247,12 +247,17 @@ CDirPreprocessor::ReplaceVisualStudioVariables( const CORE::CString& testStr ,
     TStringSet::iterator n = remainingVars.begin();
     while ( n != remainingVars.end() )
     {       
-        CORE::CString envVarValue = CORE::GUCEFGetEnv( (*n).C_String() );        
-        if ( !envVarValue.IsNULLOrEmpty() )
-        {
-            CORE::CString varStr = "$(" + (*n) + ')';
-            resultStr = resultStr.ReplaceSubstr( varStr, envVarValue );
-        }
+        //CORE::CString envVarValue = CORE::GUCEFGetEnv( (*n).C_String() );        
+        //if ( !envVarValue.IsNULLOrEmpty() )
+        //{
+        //    CORE::CString varStr = "$(" + (*n) + ')';
+        //    resultStr = resultStr.ReplaceSubstr( varStr, envVarValue );
+        //}
+
+        // Let the generator put in lookup code instead of resolving the variable at this time
+        resultStr = resultStr.ReplaceSubstr( "$(" + (*n) + ')', "$ENVVAR:" + (*n) + "$" );
+        resultStr = resultStr.ReplaceSubstr( "%(" + (*n) + ')', "$ENVVAR:" + (*n) + "$" );
+        
         ++n;
     }
 
