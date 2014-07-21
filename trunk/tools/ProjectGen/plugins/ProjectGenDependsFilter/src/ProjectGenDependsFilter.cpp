@@ -23,27 +23,22 @@
 //                                                                         //
 //-------------------------------------------------------------------------*/
 
-#ifndef GUCEF_CORE_CCOREGLOBAL_H
-#include "gucefCORE_CCoreGlobal.h"
-#define GUCEF_CORE_CCOREGLOBAL_H
-#endif /* GUCEF_CORE_CCOREGLOBAL_H ? */
+#ifndef PROJECTGENDEPENDSFILTER_CDEPENDSFILTER_H
+#include "ProjectGenDependsFilter_CDependsFilter.h"
+#define PROJECTGENDEPENDSFILTER_CDEPENDSFILTER_H
+#endif /* PROJECTGENDEPENDSFILTER_CDEPENDSFILTER_H ? */
 
-#ifndef GUCEF_CORE_LOGGING_H
-#include "gucefCORE_Logging.h"
-#define GUCEF_CORE_LOGGING_H
-#endif /* GUCEF_CORE_LOGGING_H ? */
-
-#ifndef GUCEF_PROJECTGEN_CDIRPREPROCESSORMANAGER_H
-#include "gucefProjectGen_CDirPreprocessorManager.h"
-#define GUCEF_PROJECTGEN_CDIRPREPROCESSORMANAGER_H
-#endif /* GUCEF_PROJECTGEN_CDIRPREPROCESSORMANAGER_H ? */
+#ifndef GUCEF_PROJECTGEN_CPROJECTGENGLOBAL_H
+#include "gucefProjectGen_CProjectGenGlobal.h"
+#define GUCEF_PROJECTGEN_CPROJECTGENGLOBAL_H
+#endif /* GUCEF_PROJECTGEN_CPROJECTGENGLOBAL_H ? */
 
 #ifndef GUCEF_PROJECTGEN_CPROJECTPREPROCESSORMANAGER_H
 #include "gucefProjectGen_CProjectPreprocessorManager.h"
 #define GUCEF_PROJECTGEN_CPROJECTPREPROCESSORMANAGER_H
 #endif /* GUCEF_PROJECTGEN_CPROJECTPREPROCESSORMANAGER_H ? */
 
-#include "gucefProjectGen_CProjectGenGlobal.h"
+#include "ProjectGenDependsFilter.h"
 
 /*-------------------------------------------------------------------------//
 //                                                                         //
@@ -53,6 +48,7 @@
 
 namespace GUCEF {
 namespace PROJECTGEN {
+namespace DEPFILTER {
 
 /*-------------------------------------------------------------------------//
 //                                                                         //
@@ -60,7 +56,7 @@ namespace PROJECTGEN {
 //                                                                         //
 //-------------------------------------------------------------------------*/
 
-CProjectGenGlobal* CProjectGenGlobal::g_instance = NULL;
+static CDependsFilter g_dependsFilter;
 
 /*-------------------------------------------------------------------------//
 //                                                                         //
@@ -68,86 +64,51 @@ CProjectGenGlobal* CProjectGenGlobal::g_instance = NULL;
 //                                                                         //
 //-------------------------------------------------------------------------*/
 
-CProjectGenGlobal*
-CProjectGenGlobal::Instance()
+CORE::Int32 GUCEF_PLUGIN_CALLSPEC_PREFIX 
+GUCEFPlugin_Load( CORE::UInt32 argc, const char** argv ) GUCEF_PLUGIN_CALLSPEC_SUFFIX
 {GUCEF_TRACE;
 
-    if ( NULL == g_instance )
-    {
-        g_instance = new CProjectGenGlobal();
-        g_instance->Initialize();
-    }
-    return g_instance;
+    PROJECTGEN::CProjectGenGlobal::Instance()->GetProjectPreprocessorManager().RegisterProjectPreprocessor( &g_dependsFilter );
+    return 1;
 }
 
-/*-------------------------------------------------------------------------*/
+/*--------------------------------------------------------------------------*/
 
-void
-CProjectGenGlobal::Deinstance( void )
+void GUCEF_PLUGIN_CALLSPEC_PREFIX 
+GUCEFPlugin_Unload( void ) GUCEF_PLUGIN_CALLSPEC_SUFFIX
 {GUCEF_TRACE;
 
-    delete g_instance;
-    g_instance = NULL;
+    PROJECTGEN::CProjectGenGlobal::Instance()->GetProjectPreprocessorManager().UnregisterProjectPreprocessor( &g_dependsFilter );
 }
 
-/*-------------------------------------------------------------------------*/
+/*--------------------------------------------------------------------------*/
 
-void
-CProjectGenGlobal::Initialize( void )
+void GUCEF_PLUGIN_CALLSPEC_PREFIX 
+GUCEFPlugin_GetVersion( CORE::TVersion* versionInfo ) GUCEF_PLUGIN_CALLSPEC_SUFFIX
 {GUCEF_TRACE;
 
-    CORE::CCoreGlobal::Instance();
+    versionInfo->major = 1; 
+    versionInfo->minor = 0;
+    versionInfo->patch = 0;
+    versionInfo->release = 0;
+}
+
+/*--------------------------------------------------------------------------*/
+
+const char* GUCEF_PLUGIN_CALLSPEC_PREFIX 
+GUCEFPlugin_GetCopyright( void ) GUCEF_PLUGIN_CALLSPEC_SUFFIX
+{GUCEF_TRACE;
     
-    /*
-     *  Instantiate all the singletons
-     */
-    m_dirPreprocessorManager = new CDirPreprocessorManager();
-    m_projectPreprocessorManager = new CProjectPreprocessorManager();
-
-    GUCEF_SYSTEM_LOG( CORE::LOGLEVEL_NORMAL, "gucefProjectGen Global systems initialized" );
+    return "Copyright (C) Dinand Vanvelzen, LGPL license version 3";
 }
 
-/*-------------------------------------------------------------------------*/
+/*--------------------------------------------------------------------------*/
 
-CProjectGenGlobal::CProjectGenGlobal( void )
-    : m_dirPreprocessorManager( NULL )     ,
-      m_projectPreprocessorManager( NULL )
+const char* GUCEF_PLUGIN_CALLSPEC_PREFIX 
+GUCEFPlugin_GetDescription( void ) GUCEF_PLUGIN_CALLSPEC_SUFFIX
 {GUCEF_TRACE;
 
-}
-
-/*-------------------------------------------------------------------------*/
-
-CProjectGenGlobal::~CProjectGenGlobal()
-{GUCEF_TRACE;
-
-    GUCEF_SYSTEM_LOG( CORE::LOGLEVEL_NORMAL, "Shutting down gucefProjectGen global systems" );
-
-    /*
-     *      cleanup all singletons
-     */
-    delete m_dirPreprocessorManager;
-    m_dirPreprocessorManager = NULL;
-    delete m_projectPreprocessorManager;
-    m_projectPreprocessorManager = NULL;
-}
-
-/*-------------------------------------------------------------------------*/
-
-CDirPreprocessorManager&
-CProjectGenGlobal::GetDirPreprocessorManager( void )
-{GUCEF_TRACE;
-
-    return *m_dirPreprocessorManager;
-}
-
-/*-------------------------------------------------------------------------*/
-
-CProjectPreprocessorManager&
-CProjectGenGlobal::GetProjectPreprocessorManager( void )
-{GUCEF_TRACE;
-
-    return *m_projectPreprocessorManager;
+    return "Project preprocessor plugin which filters out projects based on the output of the Depends tool";
 }
 
 /*-------------------------------------------------------------------------//
@@ -156,7 +117,8 @@ CProjectGenGlobal::GetProjectPreprocessorManager( void )
 //                                                                         //
 //-------------------------------------------------------------------------*/
 
+}; /* namespace DEPFILTER */
 }; /* namespace PROJECTGEN */
 }; /* namespace GUCEF */
 
-/*-------------------------------------------------------------------------*/
+/*--------------------------------------------------------------------------*/

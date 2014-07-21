@@ -17,24 +17,38 @@
  *  Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA
  */
 
-#ifndef GUCEF_PROJECTGEN_CPROJECTGENGLOBAL_H
-#define GUCEF_PROJECTGEN_CPROJECTGENGLOBAL_H
-
 /*-------------------------------------------------------------------------//
 //                                                                         //
 //      INCLUDES                                                           //
 //                                                                         //
 //-------------------------------------------------------------------------*/
 
-#ifndef GUCEF_PROJECTGEN_CIPROJECTGENERATOR_H
-#include "gucefProjectGen_CIProjectGenerator.h"
-#define GUCEF_PROJECTGEN_CIPROJECTGENERATOR_H
-#endif /* GUCEF_PROJECTGEN_CIPROJECTGENERATOR_H ? */
+#ifndef GUCEF_CORE_CDSTORECODECPLUGINMANAGER_H
+#include "CDStoreCodecPluginManager.h"
+#define GUCEF_CORE_CDSTORECODECPLUGINMANAGER_H
+#endif /* GUCEF_CORE_CDSTORECODECPLUGINMANAGER_H ? */
 
-#ifndef GUCEF_PROJECTGEN_MACROS_H
-#include "gucefProjectGen_macros.h"
-#define GUCEF_PROJECTGEN_MACROS_H
-#endif /* GUCEF_PROJECTGEN_MACROS_H ? */
+#ifndef GUCEF_CORE_LOGGING_H
+#include "gucefCORE_Logging.h"
+#define GUCEF_CORE_LOGGING_H
+#endif /* GUCEF_CORE_LOGGING_H ? */
+
+#ifndef GUCEF_CORE_DVCPPSTRINGUTILS_H
+#include "dvcppstringutils.h"
+#define GUCEF_CORE_DVCPPSTRINGUTILS_H
+#endif /* GUCEF_CORE_DVCPPSTRINGUTILS_H ? */
+
+#ifndef GUCEF_CORE_DVFILEUTILS_H
+#include "dvfileutils.h"
+#define GUCEF_CORE_DVFILEUTILS_H
+#endif /* GUCEF_CORE_DVFILEUTILS_H ? */
+
+#ifndef GUCEF_CORE_DVOSWRAP_H
+#include "DVOSWRAP.h"
+#define GUCEF_CORE_DVOSWRAP_H
+#endif /* GUCEF_CORE_DVOSWRAP_H ? */
+
+#include "ProjectGenDependsFilter_CDependsFilter.h"
 
 /*-------------------------------------------------------------------------//
 //                                                                         //
@@ -44,47 +58,53 @@
 
 namespace GUCEF {
 namespace PROJECTGEN {
+namespace DEPFILTER {
 
 /*-------------------------------------------------------------------------//
 //                                                                         //
-//      CLASSES                                                            //
+//      IMPLEMENTATION                                                     //
 //                                                                         //
 //-------------------------------------------------------------------------*/
 
-class CDirPreprocessorManager;
-class CProjectPreprocessorManager;
+CDependsFilter::CDependsFilter( void )
+    : CIProjectPreprocessor()
+{GUCEF_TRACE;
 
-/*-------------------------------------------------------------------------*/
+}
 
-class GUCEF_PROJECTGEN_PUBLIC_CPP CProjectGenGlobal
-{
-    public:
-       
-    static CProjectGenGlobal* Instance( void );
+/*--------------------------------------------------------------------------*/
+    
+CDependsFilter::CDependsFilter( const CDependsFilter& src )
+{GUCEF_TRACE;
 
-    CDirPreprocessorManager& GetDirPreprocessorManager( void );
+}
 
-    CProjectPreprocessorManager& GetProjectPreprocessorManager( void );
-                                  
-    private:
-    friend class CProjectGenModule;
+/*--------------------------------------------------------------------------*/
+    
+CDependsFilter::~CDependsFilter()
+{GUCEF_TRACE;
 
-    static void Deinstance( void );
+}
 
-    private:
+/*--------------------------------------------------------------------------*/
+    
+CDependsFilter&
+CDependsFilter::operator=( const CDependsFilter& src )
+{GUCEF_TRACE;
 
-    CProjectGenGlobal( void );
+    return *this;
+}
 
-    ~CProjectGenGlobal();
+/*--------------------------------------------------------------------------*/
+    
+bool
+CDependsFilter::ProccessProjects( TProjectInfo& projectInfo      ,
+                                  const CORE::CString& outputDir ,
+                                  const CORE::CValueList& params )
+{GUCEF_TRACE;
 
-    void Initialize( void );
-
-    private:
-
-    CDirPreprocessorManager* m_dirPreprocessorManager;
-    CProjectPreprocessorManager* m_projectPreprocessorManager;
-    static CProjectGenGlobal* g_instance;
-};
+    return true;
+}
 
 /*-------------------------------------------------------------------------//
 //                                                                         //
@@ -92,20 +112,8 @@ class GUCEF_PROJECTGEN_PUBLIC_CPP CProjectGenGlobal
 //                                                                         //
 //-------------------------------------------------------------------------*/
 
+}; /* namespace DEPFILTER */
 }; /* namespace PROJECTGEN */
 }; /* namespace GUCEF */
 
-/*-------------------------------------------------------------------------*/
-
-#endif /* GUCEF_PROJECTGEN_CPROJECTGENGLOBAL_H ? */
-
-/*-------------------------------------------------------------------------//
-//                                                                         //
-//      Info & Changes                                                     //
-//                                                                         //
-//-------------------------------------------------------------------------//
-
-- 27-11-2004 :
-        - Dinand: Initial implementation
-
----------------------------------------------------------------------------*/
+/*--------------------------------------------------------------------------*/

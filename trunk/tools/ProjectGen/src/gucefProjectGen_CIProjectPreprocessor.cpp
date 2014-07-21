@@ -23,27 +23,12 @@
 //                                                                         //
 //-------------------------------------------------------------------------*/
 
-#ifndef GUCEF_CORE_CCOREGLOBAL_H
-#include "gucefCORE_CCoreGlobal.h"
-#define GUCEF_CORE_CCOREGLOBAL_H
-#endif /* GUCEF_CORE_CCOREGLOBAL_H ? */
-
 #ifndef GUCEF_CORE_LOGGING_H
 #include "gucefCORE_Logging.h"
 #define GUCEF_CORE_LOGGING_H
 #endif /* GUCEF_CORE_LOGGING_H ? */
 
-#ifndef GUCEF_PROJECTGEN_CDIRPREPROCESSORMANAGER_H
-#include "gucefProjectGen_CDirPreprocessorManager.h"
-#define GUCEF_PROJECTGEN_CDIRPREPROCESSORMANAGER_H
-#endif /* GUCEF_PROJECTGEN_CDIRPREPROCESSORMANAGER_H ? */
-
-#ifndef GUCEF_PROJECTGEN_CPROJECTPREPROCESSORMANAGER_H
-#include "gucefProjectGen_CProjectPreprocessorManager.h"
-#define GUCEF_PROJECTGEN_CPROJECTPREPROCESSORMANAGER_H
-#endif /* GUCEF_PROJECTGEN_CPROJECTPREPROCESSORMANAGER_H ? */
-
-#include "gucefProjectGen_CProjectGenGlobal.h"
+#include "gucefProjectGen_CIProjectPreprocessor.h"
 
 /*-------------------------------------------------------------------------//
 //                                                                         //
@@ -56,100 +41,38 @@ namespace PROJECTGEN {
 
 /*-------------------------------------------------------------------------//
 //                                                                         //
-//      GLOBAL VARS                                                        //
+//      IMPLEMENTATION                                                     //
 //                                                                         //
 //-------------------------------------------------------------------------*/
 
-CProjectGenGlobal* CProjectGenGlobal::g_instance = NULL;
-
-/*-------------------------------------------------------------------------//
-//                                                                         //
-//      UTILITIES                                                          //
-//                                                                         //
-//-------------------------------------------------------------------------*/
-
-CProjectGenGlobal*
-CProjectGenGlobal::Instance()
-{GUCEF_TRACE;
-
-    if ( NULL == g_instance )
-    {
-        g_instance = new CProjectGenGlobal();
-        g_instance->Initialize();
-    }
-    return g_instance;
-}
-
-/*-------------------------------------------------------------------------*/
-
-void
-CProjectGenGlobal::Deinstance( void )
-{GUCEF_TRACE;
-
-    delete g_instance;
-    g_instance = NULL;
-}
-
-/*-------------------------------------------------------------------------*/
-
-void
-CProjectGenGlobal::Initialize( void )
-{GUCEF_TRACE;
-
-    CORE::CCoreGlobal::Instance();
-    
-    /*
-     *  Instantiate all the singletons
-     */
-    m_dirPreprocessorManager = new CDirPreprocessorManager();
-    m_projectPreprocessorManager = new CProjectPreprocessorManager();
-
-    GUCEF_SYSTEM_LOG( CORE::LOGLEVEL_NORMAL, "gucefProjectGen Global systems initialized" );
-}
-
-/*-------------------------------------------------------------------------*/
-
-CProjectGenGlobal::CProjectGenGlobal( void )
-    : m_dirPreprocessorManager( NULL )     ,
-      m_projectPreprocessorManager( NULL )
+CIProjectPreprocessor::CIProjectPreprocessor( void )
 {GUCEF_TRACE;
 
 }
 
 /*-------------------------------------------------------------------------*/
 
-CProjectGenGlobal::~CProjectGenGlobal()
+CIProjectPreprocessor::CIProjectPreprocessor( const CIProjectPreprocessor& src )
 {GUCEF_TRACE;
 
-    GUCEF_SYSTEM_LOG( CORE::LOGLEVEL_NORMAL, "Shutting down gucefProjectGen global systems" );
-
-    /*
-     *      cleanup all singletons
-     */
-    delete m_dirPreprocessorManager;
-    m_dirPreprocessorManager = NULL;
-    delete m_projectPreprocessorManager;
-    m_projectPreprocessorManager = NULL;
 }
 
 /*-------------------------------------------------------------------------*/
 
-CDirPreprocessorManager&
-CProjectGenGlobal::GetDirPreprocessorManager( void )
+CIProjectPreprocessor::~CIProjectPreprocessor()
 {GUCEF_TRACE;
 
-    return *m_dirPreprocessorManager;
 }
 
 /*-------------------------------------------------------------------------*/
 
-CProjectPreprocessorManager&
-CProjectGenGlobal::GetProjectPreprocessorManager( void )
+CIProjectPreprocessor&
+CIProjectPreprocessor::operator=( const CIProjectPreprocessor& src )
 {GUCEF_TRACE;
 
-    return *m_projectPreprocessorManager;
+    return *this;
 }
-
+                      
 /*-------------------------------------------------------------------------//
 //                                                                         //
 //      NAMESPACE                                                          //
