@@ -1,0 +1,18 @@
+<ModuleInfoEntry>
+    <Module Name="ProjectGenDependsFilter" Type="SharedLibrary" Platform="All">
+        <Dependencies>
+            <Dependency Name="gucefHeaders" />
+            <Dependency Name="gucefMT" />
+            <Dependency Name="gucefCORE" />
+            <Dependency Name="ProjectGen" />
+        </Dependencies>
+        <Linker>
+            <Dependency Name="gucefMT" />
+            <Dependency Name="gucefCORE" />
+            <Dependency Name="ProjectGen" />
+        </Linker>
+        <Preprocessor>
+            <Define String="PROJECTGENDEPENDSFILTER_BUILD_MODULE" />
+        </Preprocessor>
+    </Module>
+</ModuleInfoEntry>

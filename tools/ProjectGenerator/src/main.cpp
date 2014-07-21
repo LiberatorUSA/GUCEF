@@ -90,6 +90,11 @@
 #define GUCEF_PROJECTGEN_CPROJECTGENGLOBAL_H
 #endif /* GUCEF_PROJECTGEN_CPROJECTGENGLOBAL_H ? */
 
+#ifndef GUCEF_PROJECTGEN_CPROJECTPREPROCESSORMANAGER_H
+#include "gucefProjectGen_CProjectPreprocessorManager.h"
+#define GUCEF_PROJECTGEN_CPROJECTPREPROCESSORMANAGER_H
+#endif /* GUCEF_PROJECTGEN_CPROJECTPREPROCESSORMANAGER_H ? */
+
 /*-------------------------------------------------------------------------//
 //                                                                         //
 //      NAMESPACE                                                          //
@@ -240,6 +245,20 @@ GUCEF_OSMAIN_BEGIN
     CDirCrawlingProjectInfoGatherer infoGatherer;
     infoGatherer.GatherInfo( rootDirs    ,
                              projectInfo );
+
+    // Before we hand the data we collected and generated to the generator(s) for the desired output we will check
+    // for preprocessors which can be executed before any output generator. These apply changes to the project data
+    // that will apply to all output generators  
+    const CProjectPreprocessorManager::TProjectPreprocessorsList& projectPreProcessors = CProjectGenGlobal::Instance()->GetProjectPreprocessorManager().GetProjectPreprocessors();
+    CProjectPreprocessorManager::TProjectPreprocessorsList::const_iterator n = projectPreProcessors.begin();
+    while ( n != projectPreProcessors.end() )
+    {
+        GUCEF_LOG( CORE::LOGLEVEL_NORMAL, "Invoking project preprocessor" );
+        (*n)->ProccessProjects( projectInfo  ,
+                                outputDir    ,
+                                keyValueList );
+        ++n;
+    }
 
     // Now we output the project info using all generators specified
     TStringVector::iterator i = generatorList.begin();

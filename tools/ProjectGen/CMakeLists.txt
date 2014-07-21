@@ -19,9 +19,11 @@ set( HEADER_FILES
   include/gucefProjectGen_CIDirPreprocessor.h
   include/gucefProjectGen_CIProjectGenerator.h
   include/gucefProjectGen_CIProjectInfoGatherer.h
+  include/gucefProjectGen_CIProjectPreprocessor.h
   include/gucefProjectGen_config.h
   include/gucefProjectGen_CPremake4ProjectGenerator.h
   include/gucefProjectGen_CProjectGenGlobal.h
+  include/gucefProjectGen_CProjectPreprocessorManager.h
   include/gucefProjectGen_CXmlProjectGenerator.h
   include/gucefProjectGen_DataTypes.h
   include/gucefProjectGen_ETypes.h
@@ -36,8 +38,10 @@ set( SOURCE_FILES
   src/gucefProjectGen_CIDirPreprocessor.cpp
   src/gucefProjectGen_CIProjectGenerator.cpp
   src/gucefProjectGen_CIProjectInfoGatherer.cpp
+  src/gucefProjectGen_CIProjectPreprocessor.cpp
   src/gucefProjectGen_CPremake4ProjectGenerator.cpp
   src/gucefProjectGen_CProjectGenGlobal.cpp
+  src/gucefProjectGen_CProjectPreprocessorManager.cpp
   src/gucefProjectGen_CXmlProjectGenerator.cpp
   src/gucefProjectGen_DataTypes.cpp
 )

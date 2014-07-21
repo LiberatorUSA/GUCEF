@@ -17,8 +17,8 @@
  *  Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA
  */
 
-#ifndef GUCEF_PROJECTGEN_CPROJECTGENGLOBAL_H
-#define GUCEF_PROJECTGEN_CPROJECTGENGLOBAL_H
+#ifndef GUCEF_PROJECTGEN_CPROJECTPREPROCESSORMANAGER_H
+#define GUCEF_PROJECTGEN_CPROJECTPREPROCESSORMANAGER_H
 
 /*-------------------------------------------------------------------------//
 //                                                                         //
@@ -26,10 +26,12 @@
 //                                                                         //
 //-------------------------------------------------------------------------*/
 
-#ifndef GUCEF_PROJECTGEN_CIPROJECTGENERATOR_H
-#include "gucefProjectGen_CIProjectGenerator.h"
-#define GUCEF_PROJECTGEN_CIPROJECTGENERATOR_H
-#endif /* GUCEF_PROJECTGEN_CIPROJECTGENERATOR_H ? */
+#include <set>
+
+#ifndef GUCEF_PROJECTGEN_CIPROJECTPREPROCESSOR_H
+#include "gucefProjectGen_CIProjectPreprocessor.h"
+#define GUCEF_PROJECTGEN_CIPROJECTPREPROCESSOR_H
+#endif /* GUCEF_PROJECTGEN_CIPROJECTPREPROCESSOR_H ? */
 
 #ifndef GUCEF_PROJECTGEN_MACROS_H
 #include "gucefProjectGen_macros.h"
@@ -51,39 +53,28 @@ namespace PROJECTGEN {
 //                                                                         //
 //-------------------------------------------------------------------------*/
 
-class CDirPreprocessorManager;
-class CProjectPreprocessorManager;
-
-/*-------------------------------------------------------------------------*/
-
-class GUCEF_PROJECTGEN_PUBLIC_CPP CProjectGenGlobal
+class GUCEF_PROJECTGEN_PUBLIC_CPP CProjectPreprocessorManager
 {
     public:
+
+    typedef std::set< CIProjectPreprocessor* >   TProjectPreprocessorsList;
        
-    static CProjectGenGlobal* Instance( void );
+    void RegisterProjectPreprocessor( CIProjectPreprocessor* preprocessor );
 
-    CDirPreprocessorManager& GetDirPreprocessorManager( void );
-
-    CProjectPreprocessorManager& GetProjectPreprocessorManager( void );
+    void UnregisterProjectPreprocessor( CIProjectPreprocessor* preprocessor );
+    
+    const TProjectPreprocessorsList& GetProjectPreprocessors( void ) const;
                                   
     private:
-    friend class CProjectGenModule;
+    friend class CProjectGenGlobal;
 
-    static void Deinstance( void );
+    CProjectPreprocessorManager( void );
 
-    private:
-
-    CProjectGenGlobal( void );
-
-    ~CProjectGenGlobal();
-
-    void Initialize( void );
+    ~CProjectPreprocessorManager();
 
     private:
 
-    CDirPreprocessorManager* m_dirPreprocessorManager;
-    CProjectPreprocessorManager* m_projectPreprocessorManager;
-    static CProjectGenGlobal* g_instance;
+    TProjectPreprocessorsList m_projectPreprocessors;
 };
 
 /*-------------------------------------------------------------------------//
@@ -97,7 +88,7 @@ class GUCEF_PROJECTGEN_PUBLIC_CPP CProjectGenGlobal
 
 /*-------------------------------------------------------------------------*/
 
-#endif /* GUCEF_PROJECTGEN_CPROJECTGENGLOBAL_H ? */
+#endif /* GUCEF_PROJECTGEN_CPROJECTPREPROCESSORMANAGER_H ? */
 
 /*-------------------------------------------------------------------------//
 //                                                                         //

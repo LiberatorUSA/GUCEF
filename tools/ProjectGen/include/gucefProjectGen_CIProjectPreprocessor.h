@@ -16,9 +16,9 @@
  *  License along with this library; if not, write to the Free Software
  *  Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA
  */
-
-#ifndef GUCEF_PROJECTGEN_CPROJECTGENGLOBAL_H
-#define GUCEF_PROJECTGEN_CPROJECTGENGLOBAL_H
+ 
+#ifndef GUCEF_PROJECTGEN_CIPROJECTPREPROCESSOR_H
+#define GUCEF_PROJECTGEN_CIPROJECTPREPROCESSOR_H
 
 /*-------------------------------------------------------------------------//
 //                                                                         //
@@ -26,10 +26,15 @@
 //                                                                         //
 //-------------------------------------------------------------------------*/
 
-#ifndef GUCEF_PROJECTGEN_CIPROJECTGENERATOR_H
-#include "gucefProjectGen_CIProjectGenerator.h"
-#define GUCEF_PROJECTGEN_CIPROJECTGENERATOR_H
-#endif /* GUCEF_PROJECTGEN_CIPROJECTGENERATOR_H ? */
+#ifndef GUCEF_PROJECTGEN_DATATYPES_H
+#include "gucefProjectGen_DataTypes.h"
+#define GUCEF_PROJECTGEN_DATATYPES_H
+#endif /* GUCEF_PROJECTGEN_DATATYPES_H ? */
+
+#ifndef GUCEF_CORE_CVALUELIST_H
+#include "CValueList.h"
+#define GUCEF_CORE_CVALUELIST_H
+#endif /* GUCEF_CORE_CVALUELIST_H ? */
 
 #ifndef GUCEF_PROJECTGEN_MACROS_H
 #include "gucefProjectGen_macros.h"
@@ -51,41 +56,23 @@ namespace PROJECTGEN {
 //                                                                         //
 //-------------------------------------------------------------------------*/
 
-class CDirPreprocessorManager;
-class CProjectPreprocessorManager;
-
-/*-------------------------------------------------------------------------*/
-
-class GUCEF_PROJECTGEN_PUBLIC_CPP CProjectGenGlobal
+class GUCEF_PROJECTGEN_PUBLIC_CPP CIProjectPreprocessor
 {
     public:
-       
-    static CProjectGenGlobal* Instance( void );
 
-    CDirPreprocessorManager& GetDirPreprocessorManager( void );
+    CIProjectPreprocessor( void );
 
-    CProjectPreprocessorManager& GetProjectPreprocessorManager( void );
-                                  
-    private:
-    friend class CProjectGenModule;
+    CIProjectPreprocessor( const CIProjectPreprocessor& src );
 
-    static void Deinstance( void );
+    virtual ~CIProjectPreprocessor();
 
-    private:
+    CIProjectPreprocessor& operator=( const CIProjectPreprocessor& src );
 
-    CProjectGenGlobal( void );
-
-    ~CProjectGenGlobal();
-
-    void Initialize( void );
-
-    private:
-
-    CDirPreprocessorManager* m_dirPreprocessorManager;
-    CProjectPreprocessorManager* m_projectPreprocessorManager;
-    static CProjectGenGlobal* g_instance;
+    virtual bool ProccessProjects( TProjectInfo& projectInfo            ,
+                                   const CORE::CString& outputDir       ,
+                                   const CORE::CValueList& params       ) = 0;
 };
-
+                      
 /*-------------------------------------------------------------------------//
 //                                                                         //
 //      NAMESPACE                                                          //
@@ -97,7 +84,7 @@ class GUCEF_PROJECTGEN_PUBLIC_CPP CProjectGenGlobal
 
 /*-------------------------------------------------------------------------*/
 
-#endif /* GUCEF_PROJECTGEN_CPROJECTGENGLOBAL_H ? */
+#endif /* GUCEF_PROJECTGEN_CIPROJECTPREPROCESSOR_H ? */
 
 /*-------------------------------------------------------------------------//
 //                                                                         //

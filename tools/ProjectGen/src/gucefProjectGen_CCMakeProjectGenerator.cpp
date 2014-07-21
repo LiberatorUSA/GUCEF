@@ -1204,6 +1204,53 @@ WriteCMakeListsFilesToDisk( const TProjectInfo& projectInfo  ,
 
 /*--------------------------------------------------------------------------*/
 
+void
+WriteCMakeModulesListToDisk( const TProjectInfo& projectInfo ,
+                             const CORE::CString& outputDir  )
+{GUCEF_TRACE;
+
+    //TModuleInfoEntryVector::const_iterator i = projectInfo.modules.begin();
+    //while ( i != projectInfo.modules.end() )
+    //{
+    //    const TModuleInfoEntry& moduleInfoEntry = (*i);
+
+
+
+    //    TModuleType allPlatformsType = GetModuleType( moduleInfoEntry, AllPlatforms );
+    //    if ( ( MODULETYPE_HEADER_INCLUDE_LOCATION != allPlatformsType ) &&
+    //         ( MODULETYPE_CODE_INCLUDE_LOCATION != allPlatformsType )    )
+    //    {
+    //        CORE::CString fileContent = GenerateCMakeListsFileContent( projectInfo, moduleInfoEntry, addCompileDate );
+    //        if ( logFilename.Length() > 0 )
+    //        {
+    //            fileContent += "\n# Generator logfile can be found at: " + logFilename;
+    //        }
+
+    //        CORE::CString pathToCMakeListsFile = moduleInfoEntry.rootDir;
+    //        CORE::AppendToPath( pathToCMakeListsFile, "CMakeLists.txt" );
+
+    //        if ( CORE::WriteStringAsTextFile( pathToCMakeListsFile, fileContent ) )
+    //        {
+    //            GUCEF_LOG( CORE::LOGLEVEL_NORMAL, "Created CMakeLists.txt file for project dir: " + moduleInfoEntry.rootDir );
+    //        }
+    //        else
+    //        {
+    //            GUCEF_ERROR_LOG( CORE::LOGLEVEL_IMPORTANT, "Failed to write CMakeLists.txt file content to disk at path " + moduleInfoEntry.rootDir );
+    //        }
+    //    }
+    //    else
+    //    {
+    //        GUCEF_LOG( CORE::LOGLEVEL_NORMAL, "Skipping CMakeLists.txt generation for module of type \"HeaderIncludeLocation\"" );
+    //    }
+    //    ++i;
+    //}
+    //outputDir
+    //
+    //"add_subdirectory("  ")"
+}
+
+/*--------------------------------------------------------------------------*/
+
 CCMakeProjectGenerator::CCMakeProjectGenerator( void )
 {GUCEF_TRACE;
 
@@ -1240,6 +1287,9 @@ CCMakeProjectGenerator::GenerateProject( TProjectInfo& projectInfo            ,
         logfilePath = params.GetValueAlways( "logfile" );
     }
     WriteCMakeListsFilesToDisk( projectInfo, logfilePath, addGeneratorCompileTimeToOutput );
+
+    WriteCMakeModulesListToDisk( projectInfo, outputDir );
+
     return true;
 }
 

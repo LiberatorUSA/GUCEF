@@ -17,8 +17,8 @@
  *  Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA
  */
 
-#ifndef GUCEF_PROJECTGEN_CPROJECTGENGLOBAL_H
-#define GUCEF_PROJECTGEN_CPROJECTGENGLOBAL_H
+#ifndef PROJECTGENDEPENDSFILTER_CDEPENDSFILTER_H
+#define PROJECTGENDEPENDSFILTER_CDEPENDSFILTER_H
 
 /*-------------------------------------------------------------------------//
 //                                                                         //
@@ -26,15 +26,25 @@
 //                                                                         //
 //-------------------------------------------------------------------------*/
 
-#ifndef GUCEF_PROJECTGEN_CIPROJECTGENERATOR_H
-#include "gucefProjectGen_CIProjectGenerator.h"
-#define GUCEF_PROJECTGEN_CIPROJECTGENERATOR_H
-#endif /* GUCEF_PROJECTGEN_CIPROJECTGENERATOR_H ? */
+#ifndef GUCEF_CORE_CDSTORECODECREGISTRY_H
+#include "CDStoreCodecRegistry.h"
+#define GUCEF_CORE_CDSTORECODECREGISTRY_H
+#endif /* GUCEF_CORE_CDSTORECODECREGISTRY_H ? */
 
-#ifndef GUCEF_PROJECTGEN_MACROS_H
-#include "gucefProjectGen_macros.h"
-#define GUCEF_PROJECTGEN_MACROS_H
-#endif /* GUCEF_PROJECTGEN_MACROS_H ? */
+#ifndef GUCEF_CORE_CDATANODE_H
+#include "CDataNode.h"
+#define GUCEF_CORE_CDATANODE_H
+#endif /* GUCEF_CORE_CDATANODE_H ? */
+
+#ifndef GUCEF_PROJECTGEN_DATATYPES_H
+#include "gucefProjectGen_DataTypes.h"
+#define GUCEF_PROJECTGEN_DATATYPES_H
+#endif /* GUCEF_PROJECTGEN_DATATYPES_H ? */
+
+#ifndef GUCEF_PROJECTGEN_CIPROJECTPREPROCESSOR_H
+#include "gucefProjectGen_CIProjectPreprocessor.h"
+#define GUCEF_PROJECTGEN_CIPROJECTPREPROCESSOR_H
+#endif /* GUCEF_PROJECTGEN_CIPROJECTPREPROCESSOR_H ? */
 
 /*-------------------------------------------------------------------------//
 //                                                                         //
@@ -44,6 +54,7 @@
 
 namespace GUCEF {
 namespace PROJECTGEN {
+namespace DEPFILTER {
 
 /*-------------------------------------------------------------------------//
 //                                                                         //
@@ -51,39 +62,24 @@ namespace PROJECTGEN {
 //                                                                         //
 //-------------------------------------------------------------------------*/
 
-class CDirPreprocessorManager;
-class CProjectPreprocessorManager;
-
-/*-------------------------------------------------------------------------*/
-
-class GUCEF_PROJECTGEN_PUBLIC_CPP CProjectGenGlobal
+class GUCEF_HIDDEN CDependsFilter : public PROJECTGEN::CIProjectPreprocessor
 {
     public:
-       
-    static CProjectGenGlobal* Instance( void );
-
-    CDirPreprocessorManager& GetDirPreprocessorManager( void );
-
-    CProjectPreprocessorManager& GetProjectPreprocessorManager( void );
-                                  
-    private:
-    friend class CProjectGenModule;
-
-    static void Deinstance( void );
-
-    private:
-
-    CProjectGenGlobal( void );
-
-    ~CProjectGenGlobal();
-
-    void Initialize( void );
+    
+    CDependsFilter( void );
+    
+    CDependsFilter( const CDependsFilter& src );
+    
+    virtual ~CDependsFilter();
+    
+    CDependsFilter& operator=( const CDependsFilter& src );
+    
+    virtual bool ProccessProjects( TProjectInfo& projectInfo      ,
+                                   const CORE::CString& outputDir ,
+                                   const CORE::CValueList& params );
 
     private:
 
-    CDirPreprocessorManager* m_dirPreprocessorManager;
-    CProjectPreprocessorManager* m_projectPreprocessorManager;
-    static CProjectGenGlobal* g_instance;
 };
 
 /*-------------------------------------------------------------------------//
@@ -92,12 +88,13 @@ class GUCEF_PROJECTGEN_PUBLIC_CPP CProjectGenGlobal
 //                                                                         //
 //-------------------------------------------------------------------------*/
 
+}; /* namespace DEPFILTER */
 }; /* namespace PROJECTGEN */
 }; /* namespace GUCEF */
 
-/*-------------------------------------------------------------------------*/
+/*--------------------------------------------------------------------------*/
 
-#endif /* GUCEF_PROJECTGEN_CPROJECTGENGLOBAL_H ? */
+#endif /* PROJECTGENDEPENDSFILTER_CDEPENDSFILTER_H ? */
 
 /*-------------------------------------------------------------------------//
 //                                                                         //
@@ -105,7 +102,7 @@ class GUCEF_PROJECTGEN_PUBLIC_CPP CProjectGenGlobal
 //                                                                         //
 //-------------------------------------------------------------------------//
 
-- 27-11-2004 :
+- 06-06-2014 :
         - Dinand: Initial implementation
 
 ---------------------------------------------------------------------------*/
