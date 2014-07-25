@@ -125,7 +125,7 @@ GetSupportedPlatforms( void )
 static CORE::CString
 ConvertEnvVarStrings( const CORE::CString& inStr )
 {GUCEF_TRACE;
-    
+
     return inStr.ReplaceEnvelopingSubstr( "$ENVVAR:", "$", "os.getenv( ", " )" );
 }
 
@@ -1105,9 +1105,13 @@ GeneratePremake4ModuleLanguageSection( const TModuleInfoEntry& moduleInfoEntry ,
                     }
                 }
             }
+            else
+            {
+                language = GetLanguageForModule( (*i).second );
+            }
 
             // No need to specify something that did not change, reduce clutter
-            if ( language != allPlatformsLanguage )
+            if ( !language.IsNULLOrEmpty() && language != allPlatformsLanguage )
             {
                 sectionContent += "\nconfiguration( { \"" + platformName.Uppercase() + "\" } )\nlanguage( \"" + language + "\" )\n";
             }
