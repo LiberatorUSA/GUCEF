@@ -48,6 +48,11 @@
 #define GUCEF_CORE_DVOSWRAP_H
 #endif /* GUCEF_CORE_DVOSWRAP_H ? */
 
+#ifndef GUCEF_CORE_LOGGING_H
+#include "gucefCORE_Logging.h"
+#define GUCEF_CORE_LOGGING_H
+#endif /* GUCEF_CORE_LOGGING_H ? */
+
 #include "ProjectGenDependsFilter_CDependsFilter.h"
 
 /*-------------------------------------------------------------------------//
@@ -96,13 +101,114 @@ CDependsFilter::operator=( const CDependsFilter& src )
 }
 
 /*--------------------------------------------------------------------------*/
+
+CDependsFilter::TStringSet
+CDependsFilter::GetListOfModules( const TStringVector& dependsCsvFiles )
+{GUCEF_TRACE;
+
+    TStringSet modules;
+    TStringVector::const_iterator i = dependsCsvFiles.begin();
+    while ( i != dependsCsvFiles.end() )
+    {
+        CORE::CString csvContent;
+        if ( CORE::LoadTextFileAsString( (*i), csvContent, true, "\n" ) )
+        {
+            TStringVector lines = csvContent.ParseElements( '\n', false );
+            csvContent.Clear();
+
+	        TStringSet modules;
+	        TStringVector::iterator n = lines.begin();
+	        while ( n != lines.end() )
+	        {
+		        CORE::Int32 firstCommaPos = (*i).HasChar( ',', 0, true );
+		        if ( -1 != firstCommaPos )
+		        {
+			        CORE::Int32 secondCommaPos = (*i).HasChar( ',', firstCommaPos+1, true );
+			        if ( -1 != secondCommaPos )
+			        {	
+				        // Name also has quotes around it, lets strip those
+				        CORE::Int32 nameLength = (secondCommaPos-1) - firstCommaPos;
+				        if ( nameLength > 2 )
+				        {
+					        nameLength -= 2;
+					        CORE::CString moduleName = (*i).SubstrFromRange( firstCommaPos+2, nameLength );
+
+                            // Strip the extention from the file name
+                            Int32 dotIndex = moduleName.HasChar( '.', false );
+                            moduleName = moduleName.SubstrToIndex( dotIndex, true );
+                            
+                            // For easy searches lets make the names lowercase.
+                            // Depends is a MS Windows tool so case sensitivity is not an issue anyway
+                            moduleName = moduleName.Lowercase();
+
+					        modules.insert( moduleName );
+
+					        GUCEF_LOG( CORE::LOGLEVEL_NORMAL, "Found dependency module with name \"" + moduleName + "\"" );
+				        }
+			        }
+		        }
+		        ++n;
+	        }
+	        lines.clear();
+        }        
+        ++i;
+    }
+
+    return modules;
+}
+
+/*--------------------------------------------------------------------------*/
     
 bool
 CDependsFilter::ProccessProjects( TProjectInfo& projectInfo      ,
                                   const CORE::CString& outputDir ,
                                   const CORE::CValueList& params )
 {GUCEF_TRACE;
+   
+    CORE::CString filterFileStr = params.GetValueAlways( "DependsFilter" );
+    TStringVector dependsCsvFiles = filterFileStr.ParseElements( ';', false );
 
+    GUCEF_LOG( CORE::LOGLEVEL_NORMAL, "Executing Depends filter on the given project info. There are " + CORE::UInt32ToString( dependsCsvFiles.size() ) + " csv files given" );
+    
+    // Obtain a list of all modules from the Depends generated csv files.
+    TStringSet modules = GetListOfModules( dependsCsvFiles );
+
+    // Mark all the modules from the project which are not in the modules list for deletion
+    TStringSet deleteList;
+    TModuleInfoEntryVector& moduleInfoList = projectInfo.modules;
+    TModuleInfoEntryVector::iterator i = moduleInfoList.begin(); 
+    while ( i != moduleInfoList.end() )
+    {
+        CString moduleName = GetConsensusModuleName( (*i) );        
+        TStringSet::iterator n = modules.find( moduleName.Lowercase() );
+        if ( n == modules.end() )
+        {
+            // The given module is not in the list of modules we obtained from depends
+            // as such we should filter it out
+            deleteList.insert( (*i).rootDir + ':' + moduleName );
+        }
+
+        ++i;
+    }
+    GUCEF_LOG( CORE::LOGLEVEL_NORMAL, "Based on the Depends filter there are now " + CORE::UInt32ToString( deleteList.size() ) + " modules listed for deletion" );
+
+    if ( !deleteList.empty() )
+    {
+        TModuleInfoEntryVector::iterator i = moduleInfoList.begin(); 
+        while ( i != moduleInfoList.end() )
+        {
+            CString moduleName = GetConsensusModuleName( (*i) );
+            TStringSet::iterator n = deleteList.find( (*i).rootDir + ':' + moduleName );
+            if ( n != deleteList.end() )
+            {
+                moduleInfoList.erase( i );
+                i = moduleInfoList.begin();
+
+                GUCEF_LOG( CORE::LOGLEVEL_NORMAL, "Filtered out module with consensus name: " + moduleName );
+            }
+            ++i;
+        }
+    }
     return true;
 }
 

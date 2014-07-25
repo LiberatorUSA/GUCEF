@@ -80,6 +80,10 @@ class GUCEF_HIDDEN CDependsFilter : public PROJECTGEN::CIProjectPreprocessor
 
     private:
 
+    typedef std::set< CORE::CString > TStringSet;
+    typedef std::vector< CORE::CString > TStringVector;
+    
+    TStringSet GetListOfModules( const TStringVector& dependsCsvFiles );
 };
 
 /*-------------------------------------------------------------------------//

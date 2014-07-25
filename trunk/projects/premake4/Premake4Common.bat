@@ -12,16 +12,6 @@ IF ERRORLEVEL 1 (
 )
 ENDLOCAL
 
-IF NOT DEFINED SKIP_GUCEF_PREMAKE4INFOGENERATION (
-  ECHO *** Generate Premake4 files ***
-  CALL GeneratePremake4Info.bat
-)
-IF DEFINED SKIP_GUCEF_PREMAKE4INFOGENERATION (
-  ECHO Skipping GUCEF's Premake4 file generation
-)
-
-cd "%BATCHSTARTDIR%"
-
 ECHO *** Perform common Premake4 environment variable setup ***
 
 cd..
@@ -60,3 +50,22 @@ IF NOT DEFINED ZZIPLIB_HOME (
   SET ZZIPLIB_HOME=%GUCEF_HOME%\dependencies\zziplib
 )
 ECHO ZZIPLIB_HOME = %ZZIPLIB_HOME%
+
+IF NOT DEFINED PM4OUTPUTDIR (
+  ECHO PM4OUTPUTDIR environment variable not found, setting it
+  SET PM4OUTPUTDIR=%GUCEF_HOME%\common\bin\premake4
+)
+IF DEFINED PM4OUTSUBDIR (
+  ECHO PM4OUTSUBDIR environment variable found, appending premake4 output path
+  SET PM4OUTPUTDIR=%PM4OUTPUTDIR%\%PM4OUTSUBDIR%
+)
+
+cd "%BATCHSTARTDIR%"
+
+IF NOT DEFINED SKIP_GUCEF_PREMAKE4INFOGENERATION (
+  ECHO *** Generate Premake4 files ***
+  CALL GeneratePremake4Info.bat
+) ELSE (
+  ECHO Skipping GUCEF's Premake4 file generation
+)
+
