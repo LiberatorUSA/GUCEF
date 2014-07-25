@@ -1337,7 +1337,7 @@ CDRNPeerLink::OnPeerSubscribeToDataGroupRequest( const char* data      ,
             {
                 // Now we try to find the requested item
                 CDRNPeerLinkData::TDRNDataGroupPtr dataPtr = m_linkData->GetPublicizedDataGroupWithName( dataGroupName );
-                if ( dataPtr != NULL )
+                if ( !dataPtr.IsNULL() )
                 {
                     // Subscribe the peer to the data group
 					SubscribeTo( &(*dataPtr), CDRNDataGroup::ItemChangedEvent );
@@ -1401,7 +1401,7 @@ CDRNPeerLink::OnPeerSubscribeToStreamRequest( const char* data      ,
             {
                 // Now we try to find the requested item
                 CDRNPeerLinkData::TDRNDataStreamPtr dataPtr = m_linkData->GetPublicizedDataStreamWithName( dataStreamName );
-                if ( dataPtr != NULL )
+                if ( !dataPtr.IsNULL() )
                 {
                     // Subscribe the peer to the data stream
                     SubscribeTo( &(*dataPtr), CDRNDataStream::DataTransmittedEvent );

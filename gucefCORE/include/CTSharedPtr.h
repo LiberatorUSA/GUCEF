@@ -118,7 +118,7 @@ class CTSharedPtr : public CTBasicSharedPtr< T >
         : CTBasicSharedPtr< T >()
     {GUCEF_TRACE;
 
-        InitializeUsingInheritance( src );
+        CTBasicSharedPtr< T >::InitializeUsingInheritance( src );
     }
 
     CTSharedPtr( const CTSharedPtr& src );
@@ -140,7 +140,7 @@ class CTSharedPtr : public CTBasicSharedPtr< T >
     CTSharedPtr& operator=( const CTSharedPtr& src );
 
     inline bool operator==( int other ) const;
-    
+
     inline bool operator==( const void* other ) const;
 
     inline bool operator==( const CTSharedPtr& other ) const;
@@ -233,11 +233,11 @@ CTSharedPtr< T >::CTSharedPtr( T* ptr                                           
 
     if ( NULL != objectDestructor )
     {
-        Initialize( ptr, objectDestructor );
+        CTBasicSharedPtr< T >::Initialize( ptr, objectDestructor );
     }
     else
     {
-        Initialize( ptr, new CTDynamicDestructor< T >( true ) );
+        CTBasicSharedPtr< T >::Initialize( ptr, new CTDynamicDestructor< T >( true ) );
     }
 }
 
@@ -470,7 +470,7 @@ CTSharedPtr< T >::operator->( void ) const
 /*-------------------------------------------------------------------------*/
 
 template< typename T >
-inline 
+inline
 CTSharedPtr< T >::operator bool() const
 {
     return (*this) != (const void*)0;

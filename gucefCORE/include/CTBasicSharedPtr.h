@@ -114,32 +114,32 @@ class CTBasicSharedPtr
     CTBasicSharedPtr( const CTBasicSharedPtr& src );
 
     virtual ~CTBasicSharedPtr();
-    
+
     template< class RelatedClass >
     bool InitializeUsingInheritance( const CTBasicSharedPtr< RelatedClass >& classPtr )
     {
         Unlink();
-        
+
         LockData();
-        
+
         // The static cast below is performed as a compile time validation
         // of the type passed.
         T* relatedClass = static_cast< T* >( const_cast< RelatedClass* >( classPtr.GetPointerAlways() ) );
         if ( NULL != relatedClass )
-        {            
+        {
             m_ptr = relatedClass;
             m_refCounter = const_cast< UInt32* >( classPtr.GetReferenceCounter() );
             m_objectDestructor = reinterpret_cast< CTBasicSharedPtr< T >::TDestructor* >( classPtr.GetDestructor() );
-            
+
             ++(*m_refCounter);
-            
+
             UnlockData();
             return true;
         }
         UnlockData();
         return false;
     }
-    
+
     // implemented inline as a workaround for VC6 issues
     template< class Derived >
     CTBasicSharedPtr& operator=( const CTBasicSharedPtr< Derived >& src )
@@ -174,7 +174,7 @@ class CTBasicSharedPtr
     inline bool operator==( const CTBasicSharedPtr& other ) const;
 
     inline bool operator!=( int other ) const;
-    
+
     inline bool operator!=( const void* other ) const;
 
     inline bool operator!=( const CTBasicSharedPtr& other ) const;
@@ -218,15 +218,15 @@ class CTBasicSharedPtr
     inline T* GetPointer( void );
 
     inline const T* GetPointer( void ) const;
-    
+
     inline T* GetPointerAlways( void );
-    
+
     inline const T* GetPointerAlways( void ) const;
 
     inline bool IsNULL( void ) const;
 
     UInt32 GetReferenceCount( void ) const;
-    
+
     const UInt32* GetReferenceCounter( void ) const;
 
     TDestructor* GetDestructor( void ) const;
@@ -253,27 +253,27 @@ class CTBasicSharedPtr
      *  The pointer has to be valid.
      */
     void OverrideDestructor( TDestructor* newObjectDestructor );
-    
+
     UInt32* GetReferenceCounter( void );
 
     void Unlink( void );
-    
-    /** 
-     *  no-op in the default implementation. 
+
+    /**
+     *  no-op in the default implementation.
      *  derived classes wishing to make the shared pointer thread safe
      *  should add a synchronization mechanic in a derived implementation
      *
-     *  This function should be implemented to be logically const 
+     *  This function should be implemented to be logically const
      */
     virtual void LockData( void ) const;
 
-    /** 
-     *  no-op in the default implementation. 
+    /**
+     *  no-op in the default implementation.
      *  derived classes wishing to make the shared pointer thread safe
      *  should add a synchronization mechanic in a derived implementation
      *
-     *  This function should be implemented to be logically const 
-     */    
+     *  This function should be implemented to be logically const
+     */
     virtual void UnlockData( void ) const;
 
     private:
@@ -326,12 +326,12 @@ CTBasicSharedPtr< T >::CTBasicSharedPtr( const CTBasicSharedPtr< T >& src )
 {GUCEF_TRACE;
 
     src.LockData();
-    
+
     if ( m_refCounter )
     {
         ++(*m_refCounter);
     }
-    
+
     src.UnlockData();
 }
 
@@ -351,7 +351,7 @@ void
 CTBasicSharedPtr< T >::Initialize( T* ptr                        ,
                                    TDestructor* objectDestructor )
 {GUCEF_TRACE;
-    
+
     // If you get an assert here:
     //    You have an error in your decending class: you cannot initialize twice
     assert( m_ptr == GUCEF_NULL );
@@ -367,7 +367,7 @@ CTBasicSharedPtr< T >::Initialize( T* ptr                        ,
     m_ptr = ptr;
     m_refCounter = new UInt32( 1UL );
     m_objectDestructor = objectDestructor;
-    
+
     UnlockData();
 }
 
@@ -439,7 +439,7 @@ CTBasicSharedPtr< T >::operator=( const CTBasicSharedPtr< T >& src )
         Unlink();
 
         LockData();
-        
+
         m_ptr = src.m_ptr;
         m_refCounter = src.m_refCounter;
         m_objectDestructor = src.m_objectDestructor;
@@ -448,7 +448,7 @@ CTBasicSharedPtr< T >::operator=( const CTBasicSharedPtr< T >& src )
         {
             ++(*m_refCounter);
         }
-        
+
         UnlockData();
     }
     return *this;
@@ -493,7 +493,7 @@ CTBasicSharedPtr< T >::operator==( int other ) const
 
     if ( 0 == other ) return GUCEF_NULL == m_ptr;
     if ( sizeof( int ) != sizeof( m_ptr ) ) return false;
-    return other == (int) m_ptr;
+    return reinterpret_cast< void* >( other ) == m_ptr;
 }
 
 /*-------------------------------------------------------------------------*/
@@ -539,7 +539,7 @@ CTBasicSharedPtr< T >::operator!=( int other ) const
 
     if ( 0 == other ) return GUCEF_NULL != m_ptr;
     if ( sizeof( int ) != sizeof( m_ptr ) ) return true;
-    return other != (int) m_ptr;
+    return reinterpret_cast< void* >( other ) != m_ptr;
 }
 
 /*-------------------------------------------------------------------------*/
@@ -643,7 +643,7 @@ CTBasicSharedPtr< T >::operator->( void ) const
 /*-------------------------------------------------------------------------*/
 
 template< typename T >
-inline 
+inline
 CTBasicSharedPtr< T >::operator bool() const
 {
     return GUCEF_NULL != m_ptr;
@@ -702,7 +702,7 @@ CTBasicSharedPtr< T >::GetPointer( void ) const
 /*-------------------------------------------------------------------------*/
 
 template< typename T >
-inline T* 
+inline T*
 CTBasicSharedPtr< T >::GetPointerAlways( void )
 {
     return m_ptr;
@@ -711,7 +711,7 @@ CTBasicSharedPtr< T >::GetPointerAlways( void )
 /*-------------------------------------------------------------------------*/
 
 template< typename T >
-inline const T* 
+inline const T*
 CTBasicSharedPtr< T >::GetPointerAlways( void ) const
 {
     return m_ptr;
@@ -725,7 +725,7 @@ CTBasicSharedPtr< T >::Unlink( void )
 {GUCEF_TRACE;
 
     LockData();
-    
+
     if ( NULL != m_ptr )
     {
         --(*m_refCounter);
@@ -751,7 +751,7 @@ CTBasicSharedPtr< T >::Unlink( void )
     m_objectDestructor = GUCEF_NULL;
     m_refCounter = GUCEF_NULL;
     m_ptr = GUCEF_NULL;
-    
+
     UnlockData();
 }
 
@@ -762,12 +762,12 @@ void
 CTBasicSharedPtr< T >::SetToNULL( void )
 {
     LockData();
-    
+
     m_objectDestructor = GUCEF_NULL;
     delete m_refCounter;
     m_refCounter = GUCEF_NULL;
     m_ptr = GUCEF_NULL;
-    
+
     UnlockData();
 }
 
@@ -777,7 +777,7 @@ template< typename T >
 void
 CTBasicSharedPtr< T >::LockData( void ) const
 {
-    // no-op in the default implementation. 
+    // no-op in the default implementation.
     // derived classes wishing to make the shared pointer thread safe
     // should add a synchronization mechanic in a derived implementation
 }
@@ -788,7 +788,7 @@ template< typename T >
 void
 CTBasicSharedPtr< T >::UnlockData( void ) const
 {
-    // no-op in the default implementation. 
+    // no-op in the default implementation.
     // derived classes wishing to make the shared pointer thread safe
     // should add a synchronization mechanic in a derived implementation
 }

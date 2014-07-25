@@ -228,7 +228,7 @@ CPassiveURLServerListProvider::ProcessRetrievedList( void )
 
     // Try to obtain the list codec
     CORE::CDStoreCodecRegistry::TDStoreCodecPtr codec = CORE::CCoreGlobal::Instance()->GetDStoreCodecRegistry().Lookup( m_codecType );
-    if ( codec != NULL )
+    if ( !codec.IsNULL() )
     {
         CORE::CDynamicBufferAccess bufferAccess( &m_buffer, false );
         CORE::CDataNode serverList;

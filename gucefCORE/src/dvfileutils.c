@@ -271,7 +271,7 @@ DI_Next_Dir_Entry( struct SDI_Data *data )
 
     /*
      *	Read next entry
-     */                            0
+     */
     data->entry = readdir( data->dir );
     while( data->entry )
     {
