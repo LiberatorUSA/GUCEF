@@ -212,7 +212,7 @@ CTONRegistry< T >::UnregisterAll( void )
     TExpansionBase::LockData();
 
     TStringList list;
-    GetList( list );
+    this->GetList( list );
 
     for ( UInt32 i=0; i<list.size(); ++i )
     {

@@ -37,12 +37,12 @@
 #endif /* GUCEF_MACROS_H ? */
 
 #ifndef GUCEF_PROJECTGEN_ETYPES_H
-#include "gucefPROJECTGEN_ETypes.h"      /* simple types */
+#include "gucefProjectGen_ETypes.h"      /* simple types */
 #define GUCEF_PROJECTGEN_ETYPES_H
 #endif /* GUCEF_PROJECTGEN_ETYPES_H ? */
 
 #ifndef GUCEF_PROJECTGEN_CONFIG_H
-#include "gucefPROJECTGEN_config.h"      /* Module build configuration */
+#include "gucefProjectGen_config.h"      /* Module build configuration */
 #define GUCEF_PROJECTGEN_CONFIG_H
 #endif /* GUCEF_PROJECTGEN_CONFIG_H ? */
 

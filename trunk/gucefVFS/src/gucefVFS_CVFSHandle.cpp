@@ -14,7 +14,7 @@
  *
  *  You should have received a copy of the GNU Lesser General Public
  *  License along with this library; if not, write to the Free Software
- *  Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA 
+ *  Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA
  */
 
 /*-------------------------------------------------------------------------//
@@ -48,7 +48,7 @@ CVFSHandle::CVFSHandle( CORE::CIOAccess* fileAccess   ,
       m_bufferPtr()              ,
       m_filePath( filePath )
 {GUCEF_TRACE;
-                  
+
 }
 
 /*-------------------------------------------------------------------------*/
@@ -62,14 +62,14 @@ CVFSHandle::CVFSHandle( CORE::CIOAccess* fileAccess   ,
       m_bufferPtr( bufferPtr )   ,
       m_filePath( filePath )
 {GUCEF_TRACE;
-                  
+
 }
 
 /*-------------------------------------------------------------------------*/
 
 CVFSHandle::~CVFSHandle()
 {GUCEF_TRACE;
-    
+
     /* dont do anything here, this is just a storage / encapsulation class */
 }
 
@@ -93,10 +93,10 @@ CVFSHandle::GetFilePath( void ) const
 
 /*-------------------------------------------------------------------------*/
 
-CORE::CIOAccess* 
+CORE::CIOAccess*
 CVFSHandle::GetAccess( void )
 {GUCEF_TRACE;
-    
+
     return m_fileAccess;
 }
 
@@ -106,7 +106,7 @@ bool
 CVFSHandle::IsLoadedInMemory( void ) const
 {GUCEF_TRACE;
 
-    return m_bufferPtr != NULL;
+    return !m_bufferPtr.IsNULL();
 }
 
 /*-------------------------------------------------------------------------//
