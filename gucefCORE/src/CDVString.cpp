@@ -301,7 +301,7 @@ CString::operator!=( const CString &other ) const
 
     if ( !m_string || !other.m_string )
     {
-            return false;
+        return true;
     }
     return strcmp( m_string       ,
                    other.m_string ) != 0;

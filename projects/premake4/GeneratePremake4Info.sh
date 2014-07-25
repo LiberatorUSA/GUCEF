@@ -77,7 +77,7 @@ fi
 echo "GENERATORPATH = $TEST_PATH"
 
 # invoke the generator
-#$GENERATORPATH *rootDir=$GUCEF_HOME* *dirsToIgnore=.svn* *projectName=GUCEF* *generators=premake4* *outputDir=$GUCEF_HOME* *premake4gen:TemplateDir=$GUCEF_HOME/projects/premake4/ProjectGenTemplates* *premake4gen:PM4OutputDir=ENVVAR:PM4OUTPUTDIR*
+$GENERATORPATH *rootDir=$GUCEF_HOME* *dirsToIgnore=.svn* *projectName=GUCEF* *generators=premake4* *outputDir=$GUCEF_HOME* *premake4gen:TemplateDir=$GUCEF_HOME/projects/premake4/ProjectGenTemplates* *premake4gen:PM4OutputDir=ENVVAR:PM4OUTPUTDIR*
 
 
 
