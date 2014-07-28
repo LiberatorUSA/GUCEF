@@ -30,6 +30,11 @@
 #define GUCEF_CORE_LOGGING_H
 #endif /* GUCEF_CORE_LOGGING_H ? */
 
+#ifndef GUCEF_CORE_CDATANODE_H
+#include "CDataNode.h"
+#define GUCEF_CORE_CDATANODE_H
+#endif /* GUCEF_CORE_CDATANODE_H ? */
+
 #include "CValueList.h"
 
 /*-------------------------------------------------------------------------//
@@ -53,18 +58,22 @@ GUCEF_IMPLEMENT_MSGEXCEPTION( CValueList, EIndexOutOfRange );
 /*-------------------------------------------------------------------------*/
 
 CValueList::CValueList( void )
-    : m_list()                      ,
+    : CIConfigurable( false )       ,
+      m_list()                      ,
       m_allowDuplicates( false )    ,
-      m_allowMultipleValues( true )
+      m_allowMultipleValues( true ) ,
+      m_configNamespace()
 {GUCEF_TRACE;
 }
 
 /*-------------------------------------------------------------------------*/
 
 CValueList::CValueList( const CValueList& src )
-    : m_list( src.m_list )                               ,
+    : CIConfigurable( false )                            ,
+      m_list( src.m_list )                               ,
       m_allowDuplicates( src.m_allowDuplicates )         ,
-      m_allowMultipleValues( src.m_allowMultipleValues )
+      m_allowMultipleValues( src.m_allowMultipleValues ) ,
+      m_configNamespace()
 {GUCEF_TRACE;
                
 }
@@ -120,6 +129,66 @@ CValueList::SetMultiple( int argc    ,
     {
         Set( argv[ i ] );
     }
+}
+
+/*-------------------------------------------------------------------------*/
+
+void
+CValueList::SetConfigNamespace( const CString& configNamespace )
+{GUCEF_TRACE;
+
+    m_configNamespace = configNamespace;
+}
+
+/*-------------------------------------------------------------------------*/
+
+const CString&
+CValueList::GetConfigNamespace( void ) const
+{GUCEF_TRACE;
+
+    return m_configNamespace;
+}
+
+/*-------------------------------------------------------------------------*/
+
+bool
+CValueList::SaveConfig( CDataNode& tree )
+{GUCEF_TRACE;
+
+    // not currently supported
+    return true;
+}
+
+/*-------------------------------------------------------------------------*/
+
+bool
+CValueList::LoadConfig( const CDataNode& treeroot )
+{GUCEF_TRACE;
+
+    const CDataNode* nodeNamespaceRoot = treeroot.Search( m_configNamespace, '/', true );
+    if ( NULL != nodeNamespaceRoot )
+    {
+        // Get the key-value combos from the attributes
+        CDataNode::TAttributeMap::const_iterator i = nodeNamespaceRoot->AttributeBegin();
+        while ( i != nodeNamespaceRoot->AttributeEnd() )
+        {
+            Set( (*i).first, (*i).second );
+            ++i;
+        }
+
+        // Also get the key-value combo's of Child nodes names + default value
+        CDataNode::const_iterator n = nodeNamespaceRoot->Begin();
+        while ( n != nodeNamespaceRoot->End() )
+        {
+            const CString& value = (*n)->GetValue();
+            if ( !value.IsNULLOrEmpty() )
+            {
+                Set( (*n)->GetName(), value );
+            }
+            ++n;
+        }
+    }
+    return true;
 }
 
 /*-------------------------------------------------------------------------*/

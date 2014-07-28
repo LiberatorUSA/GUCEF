@@ -111,7 +111,7 @@ using namespace GUCEF::PROJECTGEN;
 //-------------------------------------------------------------------------*/
 
 bool
-LoadConfig( void )
+LoadConfig( CORE::CValueList& keyValueList )
 {GUCEF_TRACE;
 
     const CORE::CString configFile = "ProjectGenerator.ini";
@@ -130,9 +130,14 @@ LoadConfig( void )
         }
     }
 
+    keyValueList.SetConfigNamespace( "Main/AppArgs" );
+    keyValueList.SetUseGlobalConfig( true );
+    keyValueList.SetAllowDuplicates( false );
+    keyValueList.SetAllowMultipleValues( true );
+    
     CORE::CConfigStore& configStore = CORE::CCoreGlobal::Instance()->GetConfigStore();
     configStore.SetConfigFile( configFilePath );
-    return configStore.LoadConfig();
+    return configStore.LoadConfig();    
 }
 
 /*-------------------------------------------------------------------------*/
@@ -175,7 +180,9 @@ GUCEF_OSMAIN_BEGIN
     CORE::CCoreGlobal::Instance();
     PROJECTGEN::CProjectGenGlobal::Instance();
     
+    // Load settings from a config file (if any) and then override with params (if any)
     CORE::CValueList keyValueList;
+    LoadConfig( keyValueList );
     ParseParams( argc, argv, keyValueList );
 
     // Support overriding environment variables from a file.
@@ -209,8 +216,6 @@ GUCEF_OSMAIN_BEGIN
     CORE::CCoreGlobal::Instance()->GetLogManager().AddLogger( console.GetLogger() );
     
     CORE::CCoreGlobal::Instance()->GetLogManager().FlushBootstrapLogEntriesToLogs();
-
-    LoadConfig();
 
     TStringVector rootDirs;
     try

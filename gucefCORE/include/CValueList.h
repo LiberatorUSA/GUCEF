@@ -39,6 +39,11 @@
 #define GUCEF_CORE_CDVSTRING_H
 #endif /* GUCEF_CORE_CDVSTRING_H ? */
 
+#ifndef GUCEF_CORE_CICONFIGURABLE_H
+#include "CIConfigurable.h"
+#define GUCEF_CORE_CICONFIGURABLE_H
+#endif /* GUCEF_CORE_CICONFIGURABLE_H ? */
+
 #ifndef GUCEF_CORE_MACROS_H
 #include "gucefCORE_macros.h"     /* often used gucef macros */
 #define GUCEF_CORE_MACROS_H
@@ -59,7 +64,7 @@ namespace CORE {
 //                                                                         //
 //-------------------------------------------------------------------------*/
 
-class GUCEF_CORE_PUBLIC_CPP CValueList
+class GUCEF_CORE_PUBLIC_CPP CValueList : public CIConfigurable
 {
     public:
 
@@ -197,6 +202,27 @@ class GUCEF_CORE_PUBLIC_CPP CValueList
     bool GetAllowMultipleValues( void ) const;
 
     void Clear( void );
+
+    /**
+     *      Attempts to store the given tree in the value list
+     */
+    virtual bool SaveConfig( CDataNode& tree );
+
+    /**
+     *      Attempts to load data 
+     *
+     *      @param treeroot pointer to the node that is to act as root of the data tree
+     *      @return whether building the tree from the given file was successfull.
+     */
+    virtual bool LoadConfig( const CDataNode& treeroot );
+
+    /**
+     *  When loading from config data this will limit the scope
+     *  of the information loaded to just the namespace given
+     */
+    void SetConfigNamespace( const CString& configNamespace );
+
+    const CString& GetConfigNamespace( void ) const;
     
     TValueMap::const_iterator GetDataBeginIterator( void ) const;
     
@@ -210,6 +236,7 @@ class GUCEF_CORE_PUBLIC_CPP CValueList
     TValueMap m_list;
     bool m_allowDuplicates;
     bool m_allowMultipleValues;
+    CString m_configNamespace;
 };
 
 /*-------------------------------------------------------------------------//
