@@ -111,7 +111,7 @@ CDependsFilter::GetListOfModules( const TStringVector& dependsCsvFiles )
     while ( i != dependsCsvFiles.end() )
     {
         CORE::CString csvContent;
-        if ( CORE::LoadTextFileAsString( (*i), csvContent, true, "\n" ) )
+        if ( CORE::LoadTextFileAsString( CORE::RelativePath( (*i) ), csvContent, true, "\n" ) )
         {
             TStringVector lines = csvContent.ParseElements( '\n', false );
             csvContent.Clear();

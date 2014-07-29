@@ -165,7 +165,7 @@ bool
 CValueList::LoadConfig( const CDataNode& treeroot )
 {GUCEF_TRACE;
 
-    const CDataNode* nodeNamespaceRoot = treeroot.Search( m_configNamespace, '/', true );
+    const CDataNode* nodeNamespaceRoot = treeroot.Search( m_configNamespace, '/', false );
     if ( NULL != nodeNamespaceRoot )
     {
         // Get the key-value combos from the attributes
@@ -339,7 +339,7 @@ CValueList::GetValue( const CString& key ) const
         return (*i).second[ 0 ];
     }
 
-    GUCEF_EMSGTHROW( EUnknownKey, "CValueList::GetValue(): The given key is not found" );
+    GUCEF_EMSGTHROW( EUnknownKey, CString( "CValueList::GetValue(): The given key \"" + key + "\" is not found" ).C_String() );
 }
 
 /*-------------------------------------------------------------------------*/                

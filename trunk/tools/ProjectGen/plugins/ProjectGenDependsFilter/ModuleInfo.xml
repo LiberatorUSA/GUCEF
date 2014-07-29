@@ -12,7 +12,7 @@
             <Dependency Name="ProjectGen" />
         </Linker>
         <Preprocessor>
-            <Define String="PROJECTGENDEPENDSFILTER_BUILD_MODULE" />
+            <Define String="PROJECTGENDEPFILTER_BUILD_MODULE" />
         </Preprocessor>
     </Module>
 </ModuleInfoEntry>
