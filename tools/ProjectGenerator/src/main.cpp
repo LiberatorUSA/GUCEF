@@ -148,7 +148,6 @@ ParseParams( const int argc                 ,
              CORE::CValueList& keyValueList )
 {GUCEF_TRACE;
 
-    keyValueList.DeleteAll();
     GUCEF::CORE::CString argString;
     if ( argc > 0 )
     {
@@ -203,8 +202,7 @@ GUCEF_OSMAIN_BEGIN
         outputDir = CORE::RelativePath( "$CURWORKDIR$" );
     }
 
-    CORE::CString logFilename = outputDir;
-    CORE::AppendToPath( logFilename, "ProjectGenerator_Log.txt" );
+    CORE::CString logFilename = CORE::CombinePath( outputDir, "ProjectGenerator_Log.txt" );    
 
     keyValueList.Set( "logfile", logFilename );
 

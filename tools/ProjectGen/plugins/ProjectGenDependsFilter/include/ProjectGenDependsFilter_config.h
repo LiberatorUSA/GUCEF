@@ -26,8 +26,8 @@
 //                                                                         //
 //-------------------------------------------------------------------------*/
 
-#define PROJECTGENDEPENDSFILTER_EXPORT_CPP_CODE
-#define PROJECTGENDEPENDSFILTER_EXPORT_C_CODE
+#define PROJECTGENDEPFILTER_EXPORT_CPP_CODE
+#define PROJECTGENDEPFILTER_EXPORT_C_CODE
 
 /*-------------------------------------------------------------------------*/
 
