@@ -368,6 +368,7 @@ SerializeModuleInfo( const TModuleInfoEntry& moduleEntry ,
     // Add basic module info
     CORE::CDataNode moduleInfoNode;
     moduleInfoNode.SetName( "Module" );
+    
     if ( !moduleInfo.name.IsNULLOrEmpty() )
     {
         moduleInfoNode.SetAttribute( "Name", moduleInfo.name );
@@ -380,6 +381,7 @@ SerializeModuleInfo( const TModuleInfoEntry& moduleEntry ,
     {
         moduleInfoNode.SetAttribute( "Type", ModuleTypeToString( moduleInfo.moduleType ) );
     }
+
     moduleInfoNode.SetAttribute( "Platform", platform );
 
     // Add headers
@@ -606,6 +608,11 @@ SerializeModuleInfo( const TModuleInfoEntry& moduleEntry ,
 
     CORE::CDataNode moduleEntryNode( "ModuleInfoEntry" );
     moduleEntryNode.SetAttribute( "RootDir", moduleEntry.rootDir );
+
+    if ( !moduleEntry.lastEditBy.IsNULLOrEmpty() )
+    {
+        moduleEntryNode.SetAttribute( "LastEditBy", moduleEntry.lastEditBy );
+    }
 
     TModuleInfoMap::const_iterator i = moduleEntry.modulesPerPlatform.begin();
     while ( i != moduleEntry.modulesPerPlatform.end() )

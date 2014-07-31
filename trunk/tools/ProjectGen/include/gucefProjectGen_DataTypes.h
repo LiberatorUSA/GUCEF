@@ -159,6 +159,7 @@ struct SModuleInfoEntry
 {
     TModuleInfoMap  modulesPerPlatform;     // ModuleInfo per platform
     CORE::CString   rootDir;                // the absolute path to the root of this module's directory tree
+    CORE::CString   lastEditBy;             // optional info listing who last updated the information
 };
 typedef struct SModuleInfoEntry TModuleInfoEntry;
 
