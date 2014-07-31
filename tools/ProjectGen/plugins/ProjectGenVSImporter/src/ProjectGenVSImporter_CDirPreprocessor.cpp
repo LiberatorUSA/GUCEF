@@ -435,6 +435,8 @@ CDirPreprocessor::ProccessProjectFiles( const CORE::CString& path ,
         }
 
         CORE::CString moduleInfoFilePath = CORE::CombinePath( path, "ModuleInfo.xml" );
+
+        moduleEntry.lastEditBy = "ProjectGenVSImporter";
         PROJECTGEN::SerializeModuleInfo( moduleEntry, moduleInfoFilePath );
 
         ++i;

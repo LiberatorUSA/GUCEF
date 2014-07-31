@@ -1,2 +1,0 @@
-The OIS dependency is at version 1.3 and can be obtained from http://sourceforge.net/projects/wgois
-Note for MS Windows builds: that to build the DirectInput dependent code you must have the DirectX SDK installed on your system.
