@@ -1,6 +1,0 @@
-; gucefCORE_MVC.def : Declares the module parameters for the DLL.
-
-LIBRARY      "gucefCORE_MVC8_d"
-
-EXPORTS
-    ; Explicit exports can go here
