@@ -1,6 +1,0 @@
-; gucefCOM_MVC.def : Declares the module parameters for the DLL.
-
-LIBRARY      "gucefCOM_MVC"
-
-EXPORTS
-    ; Explicit exports can go here
