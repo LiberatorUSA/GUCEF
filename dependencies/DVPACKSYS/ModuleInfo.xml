@@ -1,0 +1,12 @@
+<ModuleInfoEntry>
+    <Module Name="DVPACKSYS" Type="SharedLibrary" Platform="All">
+        <Dependencies>
+            <Dependency Name="gucefHeaders" />
+            <Dependency Name="gucefMT" />
+            <Dependency Name="gucefCORE" />
+        </Dependencies>
+        <Preprocessor>
+            <Define String="DVPACKSYS_BUILD_MODULE" />
+        </Preprocessor>
+    </Module>
+</ModuleInfoEntry>

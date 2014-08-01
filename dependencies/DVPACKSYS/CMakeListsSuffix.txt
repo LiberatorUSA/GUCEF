@@ -1,6 +1,0 @@
-
-add_library( DVPACKSYS ${HEADER_FILES} ${SOURCE_FILES} )
-add_dependencies( DVPACKSYS gucefCORE gucefMT )
-target_link_libraries( DVPACKSYS gucefCORE gucefMT )
-set_target_properties( DVPACKSYS PROPERTIES COMPILE_DEFINITIONS "DVPACKSYS_BUILD_MODULE" )
-GUCEF_config_plugin( DVPACKSYS )

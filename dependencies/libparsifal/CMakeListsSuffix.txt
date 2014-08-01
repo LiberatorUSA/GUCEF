@@ -1,3 +1,0 @@
-
-add_library( libparsifal ${HEADER_FILES} ${SOURCE_FILES} )
-set_target_properties( libparsifal PROPERTIES COMPILE_DEFINITIONS "PARSIFAL_BUILD_MODULE;PARSIFAL_CUSTOM_GUCEF_BUILD" )

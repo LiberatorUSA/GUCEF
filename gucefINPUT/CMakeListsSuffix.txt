@@ -1,6 +1,0 @@
-
-add_library( gucefINPUT ${ALL_FILES} )
-add_dependencies( gucefINPUT gucefCORE gucefMT)
-target_link_libraries( gucefINPUT gucefCORE gucefMT )
-set_target_properties( gucefINPUT PROPERTIES COMPILE_DEFINITIONS GUCEFINPUT_BUILD_MODULE )
-GUCEF_config_lib( gucefINPUT )

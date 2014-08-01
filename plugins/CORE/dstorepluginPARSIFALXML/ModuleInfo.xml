@@ -1,0 +1,16 @@
+<ModuleInfoEntry>
+    <Module Name="dstorepluginPARSIFALXML" Type="SharedLibrary" Platform="All">
+        <Dependencies>
+            <Dependency Name="gucefHeaders" />
+            <Dependency Name="gucefMT" />
+            <Dependency Name="gucefCORE" />
+            <Dependency Name="libparsifal" />
+        </Dependencies>
+        <Linker>
+            <Dependency Name="libparsifal" />
+        </Linker>
+        <Preprocessor>
+            <Define String="DSTOREPLUGINPARSIFALXML_BUILD_MODULE" />
+        </Preprocessor>
+    </Module>
+</ModuleInfoEntry>

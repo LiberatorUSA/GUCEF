@@ -1,6 +1,0 @@
-
-add_library( gucefMATH ${ALL_FILES} )
-add_dependencies( gucefMATH gucefCORE gucefMT )
-target_link_libraries( gucefMATH gucefCORE gucefMT )
-set_target_properties( gucefMATH PROPERTIES COMPILE_DEFINITIONS GUCEF_MATH_BUILD_MODULE )
-GUCEF_config_lib( gucefMATH )
