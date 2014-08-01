@@ -129,6 +129,7 @@ LoadConfig( CORE::CValueList& keyValueList )
             return false;
         }
     }
+    GUCEF_LOG( CORE::LOGLEVEL_NORMAL, "Located config file @ " + configFilePath );
 
     keyValueList.SetConfigNamespace( "Main/AppArgs" );
     keyValueList.SetUseGlobalConfig( true );

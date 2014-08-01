@@ -1,0 +1,8 @@
+<ModuleInfoEntry>
+    <Module Name="libparsifal" Type="SharedLibrary" Platform="All">
+        <Preprocessor>
+            <Define String="PARSIFAL_BUILD_MODULE" />
+            <Define String="PARSIFAL_CUSTOM_GUCEF_BUILD" />
+        </Preprocessor>
+    </Module>
+</ModuleInfoEntry>
