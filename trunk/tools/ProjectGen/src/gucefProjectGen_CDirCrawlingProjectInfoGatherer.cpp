@@ -3038,7 +3038,7 @@ CDirCrawlingProjectInfoGatherer::GatherInfo( const TStringVector& rootDirs ,
     while ( i != rootDirs.end() )
     {
         GUCEF_LOG( CORE::LOGLEVEL_NORMAL, "Recursively loading all processing instructions for root directory \"" + (*i) + "\"" );
-        LoadAllProcessingInstructions( projectInfo, (*i) );
+        LoadAllProcessingInstructions( projectInfo, CORE::RelativePath( (*i) ) );
         ++i;
     }
 
@@ -3047,7 +3047,7 @@ CDirCrawlingProjectInfoGatherer::GatherInfo( const TStringVector& rootDirs ,
     while ( i != rootDirs.end() )
     {
         GUCEF_LOG( CORE::LOGLEVEL_NORMAL, "Identifying all modules for root directory \"" + (*i) + "\"" );
-        LocateAndProcessProjectDirsRecusively( projectInfo, (*i) );
+        LocateAndProcessProjectDirsRecusively( projectInfo, CORE::RelativePath( (*i) ) );
         ++i;
     }
 

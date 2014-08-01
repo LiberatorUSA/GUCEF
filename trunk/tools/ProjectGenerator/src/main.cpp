@@ -114,14 +114,18 @@ bool
 LoadConfig( CORE::CValueList& keyValueList )
 {GUCEF_TRACE;
 
+    #ifdef GUCEF_DEBUG_MODE
+    const CORE::CString configFile = "ProjectGenerator_d.ini";
+    #else
     const CORE::CString configFile = "ProjectGenerator.ini";
+    #endif
 
-    CORE::CString configFilePath = CORE::CombinePath( "$MODULEDIR$", configFile );
+    CORE::CString configFilePath = CORE::CombinePath( "$CURWORKDIR$", configFile );
     configFilePath = CORE::RelativePath( configFilePath );
 
     if ( !CORE::FileExists( configFilePath ) )
     {
-        configFilePath = CORE::CombinePath( "$CURWORKDIR$", configFile );
+        configFilePath = CORE::CombinePath( "$MODULEDIR$", configFile );
         configFilePath = CORE::RelativePath( configFilePath );
 
         if ( !FileExists( configFilePath ) )
@@ -202,7 +206,8 @@ GUCEF_OSMAIN_BEGIN
     {
         outputDir = CORE::RelativePath( "$CURWORKDIR$" );
     }
-
+    CORE::Create_Directory( CORE::RelativePath( outputDir ).C_String() );
+    
     CORE::CString logFilename = CORE::CombinePath( outputDir, "ProjectGenerator_Log.txt" );    
 
     keyValueList.Set( "logfile", logFilename );

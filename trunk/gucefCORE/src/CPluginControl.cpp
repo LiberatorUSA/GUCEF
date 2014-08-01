@@ -307,7 +307,7 @@ CPluginControl::LoadPlugin( TPluginMetaDataPtr& pluginMetaData ,
             TStringSet::iterator i = m_rootDirs.begin();
             while ( i != m_rootDirs.end() && modulePtr == NULL )
             {
-                modulePtr = (*m).second->LoadPlugin( (*i)                                ,
+                modulePtr = (*m).second->LoadPlugin( RelativePath( (*i) )                ,
                                                      pluginMetaData->GetModuleFilename() ,
                                                      groupName                           ,
                                                      &versionInfo                        );

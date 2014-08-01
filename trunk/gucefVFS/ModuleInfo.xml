@@ -10,7 +10,7 @@
             <Dependency Name="gucefCORE" />
         </Linker>
         <Preprocessor>
-            <Define String="GUCEFVFS_BUILD_MODULE" />
+            <Define String="GUCEF_VFS_BUILD_MODULE" />
         </Preprocessor>
     </Module>
 </ModuleInfoEntry>

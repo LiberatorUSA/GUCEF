@@ -49,7 +49,7 @@ set( MODULE_NAME "gucefVFS" )
 add_library( ${MODULE_NAME} ${ALL_FILES} )
 add_dependencies( ${MODULE_NAME} gucefCORE gucefMT )
 target_link_libraries( ${MODULE_NAME} gucefCORE gucefMT )
-set_target_properties( ${MODULE_NAME} PROPERTIES COMPILE_DEFINITIONS "GUCEFVFS_BUILD_MODULE" )
+set_target_properties( ${MODULE_NAME} PROPERTIES COMPILE_DEFINITIONS "GUCEF_VFS_BUILD_MODULE" )
 
 include_directories( ../common/include ../gucefCORE/include ../gucefMT/include include )
 

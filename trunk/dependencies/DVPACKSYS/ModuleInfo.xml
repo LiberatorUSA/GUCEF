@@ -5,6 +5,10 @@
             <Dependency Name="gucefMT" />
             <Dependency Name="gucefCORE" />
         </Dependencies>
+        <Linker>
+            <Dependency Name="gucefMT" />
+            <Dependency Name="gucefCORE" />
+        </Linker>
         <Preprocessor>
             <Define String="DVPACKSYS_BUILD_MODULE" />
         </Preprocessor>
