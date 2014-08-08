@@ -302,10 +302,10 @@ CIniParser::LoadFrom( const CDataNode& node       ,
 /*-------------------------------------------------------------------------*/
 
 bool
-CIniParser::IsCharIndexWithinQuotes( const CString& testString , 
-                                     UInt32 charIndex          ,
-                                     Int32 quotationStartIndex ,
-                                     Int32 quotationEndIndex   )
+CIniParser::IsCharIndexWithinQuotes( const CString& testString  , 
+                                     UInt32 charIndex           ,
+                                     Int32& quotationStartIndex ,
+                                     Int32& quotationEndIndex   )
 {GUCEF_TRACE;
 
     // initial sanity check
@@ -318,14 +318,15 @@ CIniParser::IsCharIndexWithinQuotes( const CString& testString ,
     bool quoteFound = false;
     for ( UInt32 i=0; i<testString.Length(); ++i )
     {
-        if ( charIndex >= i && !firstQuoteFound )
-        {
-            // there was no quotation char until now and we are at
-            // the search char thus it logically cannot be between quotes
-            quotationStartIndex = -1;
-            quotationEndIndex = -1;
-            return false;
-        }
+        // can never work:
+        //if ( charIndex >= i && !firstQuoteFound )
+        //{
+        //    // there was no quotation char until now and we are at
+        //    // the search char thus it logically cannot be between quotes
+        //    quotationStartIndex = -1;
+        //    quotationEndIndex = -1;
+        //    return false;
+        //}
         
         if ( testString[ i ] == '\"' )
         {

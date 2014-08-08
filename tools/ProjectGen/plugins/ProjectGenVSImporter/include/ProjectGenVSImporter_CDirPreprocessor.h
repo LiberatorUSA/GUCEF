@@ -84,7 +84,9 @@ class GUCEF_HIDDEN CDirPreprocessor : public PROJECTGEN::CIDirPreprocessor
 
     bool FindProjectFiles( const CORE::CString& path, TStringList& list );
 
-    bool ProccessProjectFiles( const CORE::CString& path, TStringList& list );
+    bool ProccessProjectFiles( const CORE::CString& path             ,
+                               TStringList& list                     ,
+                               const CORE::CString& buildConfigToUse );
 
     static PROJECTGEN::TModuleType StudioConfigurationTypeToModuleType( const CORE::CString& configType );
 

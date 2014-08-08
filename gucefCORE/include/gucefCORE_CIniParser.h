@@ -112,10 +112,10 @@ class GUCEF_CORE_PUBLIC_CPP CIniParser
     bool LoadFrom( const CDataNode& node       ,
                    TIniSection* currentSection );
     
-    static bool IsCharIndexWithinQuotes( const CString& testString , 
-                                         UInt32 charIndex          ,
-                                         Int32 quotationStartIndex ,
-                                         Int32 quotationEndIndex   );
+    static bool IsCharIndexWithinQuotes( const CString& testString  , 
+                                         UInt32 charIndex           ,
+                                         Int32& quotationStartIndex ,
+                                         Int32& quotationEndIndex   );
 
     static Int32 FindIndexOfNonQuotedEquals( const CString& testString );
     
