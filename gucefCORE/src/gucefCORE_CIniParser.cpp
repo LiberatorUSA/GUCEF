@@ -14,7 +14,7 @@
  *
  *  You should have received a copy of the GNU Lesser General Public
  *  License along with this library; if not, write to the Free Software
- *  Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA 
+ *  Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA
  */
 
 /*-------------------------------------------------------------------------//
@@ -64,15 +64,15 @@ CIniParser::CIniParser( void )
 }
 
 /*-------------------------------------------------------------------------*/
-    
+
 CIniParser::CIniParser( const CIniParser& src )
     : m_iniData( src.m_iniData )
 {GUCEF_TRACE;
 
 }
-    
+
 /*-------------------------------------------------------------------------*/
-    
+
 CIniParser::~CIniParser()
 {GUCEF_TRACE;
 
@@ -80,7 +80,7 @@ CIniParser::~CIniParser()
 
 /*-------------------------------------------------------------------------*/
 
-CIniParser&    
+CIniParser&
 CIniParser::operator=( const CIniParser& src )
 {GUCEF_TRACE;
 
@@ -101,7 +101,7 @@ CIniParser::Clear( void )
 }
 
 /*-------------------------------------------------------------------------*/
-    
+
 bool
 CIniParser::SaveTo( CDataNode& rootNode ) const
 {GUCEF_TRACE;
@@ -109,12 +109,12 @@ CIniParser::SaveTo( CDataNode& rootNode ) const
     TIniData::const_iterator i = m_iniData.begin();
     while ( i != m_iniData.end() )
     {
-        const TIniSection& iniSection = (*i);        
+        const TIniSection& iniSection = (*i);
         const CValueList& sectionData = iniSection.sectionData;
-        
+
         CString nodeName = iniSection.sectionName.SubstrToChar( '\\', false );
         CString sectionName;
-        
+
         if ( nodeName.Length()+1 < iniSection.sectionName.Length() )
         {
             sectionName = iniSection.sectionName.CutChars( nodeName.Length()+1, false );
@@ -135,13 +135,13 @@ CIniParser::SaveTo( CDataNode& rootNode ) const
         // the whole sequence creates as nodes with Sequence being the parent node
         // where we add the key/value pairs from the ini section
         CDataNode* sectionNode = sectionNodeParent->AddChild( nodeName );
-                
+
         CValueList::TValueMap::const_iterator n = sectionData.GetDataBeginIterator();
         while ( n != sectionData.GetDataEndIterator() )
         {
             const CString& key = (*n).first;
             const CValueList::TStringVector& values = (*n).second;
-            
+
             // Since key/value pairs in an ini section have no uniqueness constraint we cannot
             // set the pairs as attributes. Instead they are child nodes using the simplistic value representation
             CValueList::TStringVector::const_iterator m = values.begin();
@@ -151,16 +151,16 @@ CIniParser::SaveTo( CDataNode& rootNode ) const
                 keyValueNode->SetValue( (*m) );
 
                 ++m;
-            }            
+            }
             ++n;
         }
         ++i;
     }
     return true;
 }
-    
+
 /*-------------------------------------------------------------------------*/
-    
+
 bool
 CIniParser::SaveTo( CIOAccess& file ) const
 {GUCEF_TRACE;
@@ -174,12 +174,12 @@ CIniParser::SaveTo( CIOAccess& file ) const
         {
             CString keyString = GUCEF_EOL "[" + (*i).sectionName + "]" GUCEF_EOL;
             CString values = (*i).sectionData.GetAllPairs( valueSepStr );
-            
+
             file.Write( keyString );
             file.Write( values );
-            
+
             ++i;
-        }        
+        }
         return true;
     }
     return false;
@@ -199,12 +199,12 @@ CIniParser::SaveTo( CString& outputIniString ) const
         outputIniString += GUCEF_EOL "[" + (*i).sectionName + "]" GUCEF_EOL;
         outputIniString += (*i).sectionData.GetAllPairs( valueSepStr );
         ++i;
-    }        
+    }
     return true;
 }
 
 /*-------------------------------------------------------------------------*/
-    
+
 bool
 CIniParser::LoadFrom( const CDataNode& rootNode )
 {GUCEF_TRACE;
@@ -215,9 +215,9 @@ CIniParser::LoadFrom( const CDataNode& rootNode )
 /*-------------------------------------------------------------------------*/
 
 bool
-CIniParser::HasChildWithValueOrAttribs( const CDataNode& node ) 
+CIniParser::HasChildWithValueOrAttribs( const CDataNode& node )
 {GUCEF_TRACE;
-    
+
     CDataNode::const_iterator n = node.Begin();
     while ( n != node.End() )
     {
@@ -238,10 +238,10 @@ CIniParser::HasChildWithValueOrAttribs( const CDataNode& node )
 bool
 CIniParser::LoadFrom( const CDataNode& node       ,
                       TIniSection* currentSection )
-{GUCEF_TRACE;   
+{GUCEF_TRACE;
 
     TIniSection* iniSection = currentSection;
-        
+
     // A node is a section node if it has no value set and no attributes
     const CString& value = node.GetValue();
     if ( node.GetAttCount() == 0 && value.IsNULLOrEmpty() )
@@ -302,7 +302,7 @@ CIniParser::LoadFrom( const CDataNode& node       ,
 /*-------------------------------------------------------------------------*/
 
 bool
-CIniParser::IsCharIndexWithinQuotes( const CString& testString  , 
+CIniParser::IsCharIndexWithinQuotes( const CString& testString  ,
                                      UInt32 charIndex           ,
                                      Int32& quotationStartIndex ,
                                      Int32& quotationEndIndex   )
@@ -310,7 +310,7 @@ CIniParser::IsCharIndexWithinQuotes( const CString& testString  ,
 
     // initial sanity check
     if ( charIndex+1 >= testString.Length() ) return false;
-    
+
     // go through string identifying quoted sections as we go and checking whether
     // this encompasses the char given
     Int32 quoteIndex = -1;
@@ -318,23 +318,22 @@ CIniParser::IsCharIndexWithinQuotes( const CString& testString  ,
     bool quoteFound = false;
     for ( UInt32 i=0; i<testString.Length(); ++i )
     {
-        // can never work:
-        //if ( charIndex >= i && !firstQuoteFound )
-        //{
-        //    // there was no quotation char until now and we are at
-        //    // the search char thus it logically cannot be between quotes
-        //    quotationStartIndex = -1;
-        //    quotationEndIndex = -1;
-        //    return false;
-        //}
-        
+        if ( i >= charIndex && !firstQuoteFound )
+        {
+            // there was no quotation char until now and we are at
+            // the search char thus it logically cannot be between quotes
+            quotationStartIndex = -1;
+            quotationEndIndex = -1;
+            return false;
+        }
+
         if ( testString[ i ] == '\"' )
         {
             if ( !firstQuoteFound )
             {
                 firstQuoteFound = true;
             }
-            
+
             if ( !quoteFound )
             {
                 if ( i > charIndex )
@@ -344,7 +343,7 @@ CIniParser::IsCharIndexWithinQuotes( const CString& testString  ,
                     quotationStartIndex = -1;
                     quotationEndIndex = -1;
                     return false;
-                }                
+                }
                 quoteFound = true;
                 quoteIndex = i;
             }
@@ -375,7 +374,7 @@ CIniParser::FindIndexOfNonQuotedEquals( const CString& testString )
     if ( equalsIndex > -1 )
     {
         Int32 dummy = 0;
-        if ( IsCharIndexWithinQuotes( testString  , 
+        if ( IsCharIndexWithinQuotes( testString  ,
                                       equalsIndex ,
                                       dummy       ,
                                       dummy       ) )
@@ -388,7 +387,7 @@ CIniParser::FindIndexOfNonQuotedEquals( const CString& testString )
             equalsIndex = testString.HasChar( '=', equalsIndex+1, true );
             if ( equalsIndex > -1 )
             {
-                if ( !IsCharIndexWithinQuotes( testString  , 
+                if ( !IsCharIndexWithinQuotes( testString  ,
                                                equalsIndex ,
                                                dummy       ,
                                                dummy       ) )
@@ -396,7 +395,7 @@ CIniParser::FindIndexOfNonQuotedEquals( const CString& testString )
                     return equalsIndex;
                 }
                 // else:
-                // this is not valid, the quoted section should have been followed by a 
+                // this is not valid, the quoted section should have been followed by a
                 // non quoted equals
             }
         }
@@ -436,11 +435,11 @@ CIniParser::GetData( void )
 }
 
 /*-------------------------------------------------------------------------*/
-    
-const CIniParser::TIniData& 
+
+const CIniParser::TIniData&
 CIniParser::GetData( void ) const
 {GUCEF_TRACE;
-   
+
     return m_iniData;
 }
 
@@ -457,7 +456,7 @@ CIniParser::LoadFrom( const CString& iniText )
 }
 
 /*-------------------------------------------------------------------------*/
-    
+
 bool
 CIniParser::LoadFrom( CIOAccess& fileAccess )
 {GUCEF_TRACE;
@@ -485,7 +484,7 @@ CIniParser::LoadFrom( CIOAccess& fileAccess )
                         line = line.CutChars( line.Length()-commentaryIndex, false ).Trim( false );
                     }
                 }
-            
+
                 if( line.Length() > 0 )
                 {
                     // Check if this is a section tag line
@@ -502,7 +501,7 @@ CIniParser::LoadFrom( CIOAccess& fileAccess )
                             // get the key and value strings
                             CString sectionBeforeEquals = StripQuotation( line.SubstrFromRange( 0, equalsIndex-1 ) );
                             CString sectionAfterEquals = StripQuotation( line.SubstrFromRange( equalsIndex+1, line.Length()-1 ) );
-                        
+
                             if ( ( sectionBeforeEquals.Length() > 0 ) &&
                                  ( sectionAfterEquals.Length() > 0 )   )
                             {
@@ -519,7 +518,7 @@ CIniParser::LoadFrom( CIOAccess& fileAccess )
                                 }
 
                                 TIniSection& newSection = (*m_iniData.rbegin());
-                                newSection.sectionData.Set( sectionBeforeEquals, sectionAfterEquals ); 
+                                newSection.sectionData.Set( sectionBeforeEquals, sectionAfterEquals );
                             }
                         }
                         // else:
