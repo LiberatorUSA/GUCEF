@@ -419,7 +419,7 @@ CIniParser::StripQuotation( const CString& testString )
     {
         if ( ( resultStr[ 0 ] == '\"' ) && ( resultStr[ resultStr.Length()-1 ] == '\"' ) )
         {
-            return resultStr.SubstrFromRange( 1, resultStr.Length()-2 );
+            return resultStr.SubstrFromRange( 1, resultStr.Length()-1 );
         }
     }
     return resultStr;
@@ -490,7 +490,7 @@ CIniParser::LoadFrom( CIOAccess& fileAccess )
                     // Check if this is a section tag line
                     if ( ( line[ 0 ] == '[' ) && ( line[ line.Length()-1 ] == ']' ) )
                     {
-                        sectionName = line.SubstrFromRange( 1, line.Length()-2 );
+                        sectionName = line.SubstrFromRange( 1, line.Length()-1 );
                         isNewSection = true;
                     }
                     else
@@ -499,8 +499,8 @@ CIniParser::LoadFrom( CIOAccess& fileAccess )
                         if ( equalsIndex > -1 )
                         {
                             // get the key and value strings
-                            CString sectionBeforeEquals = StripQuotation( line.SubstrFromRange( 0, equalsIndex-1 ) );
-                            CString sectionAfterEquals = StripQuotation( line.SubstrFromRange( equalsIndex+1, line.Length()-1 ) );
+                            CString sectionBeforeEquals = StripQuotation( line.SubstrFromRange( 0, equalsIndex ) );
+                            CString sectionAfterEquals = StripQuotation( line.SubstrFromRange( equalsIndex+1, line.Length() ) );
 
                             if ( ( sectionBeforeEquals.Length() > 0 ) &&
                                  ( sectionAfterEquals.Length() > 0 )   )

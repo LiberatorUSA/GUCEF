@@ -1124,6 +1124,29 @@ GeneratePremake4ModuleLanguageSection( const TModuleInfoEntry& moduleInfoEntry ,
 /*---------------------------------------------------------------------------*/
 
 CORE::CString
+GeneratePremake4ModuleTargetNameLine( const TModuleInfo& moduleInfo     ,
+                                      const CORE::CString& moduleName   ,
+                                      const CORE::CString& platformName )
+{GUCEF_TRACE;
+
+    if ( !moduleInfo.linkerSettings.targetName.IsNULLOrEmpty() )
+    {
+        // Name is the target name unless you want something else, so no need to specify unless they are different
+        if ( moduleInfo.linkerSettings.targetName != moduleInfo.name )
+        {
+            if ( platformName != AllPlatforms )
+            {
+                return "\nconfiguration( { \"" + platformName.Uppercase() + "\" } )\ntargetname( \"" + moduleInfo.linkerSettings.targetName + "\" )\n";
+            }
+            return "\nconfiguration( {} )\ntargetname( \"" + moduleInfo.linkerSettings.targetName + "\" )\n";
+        }
+    }
+    return CORE::CString();
+} 
+
+/*---------------------------------------------------------------------------*/
+
+CORE::CString
 GeneratePremake4ModuleInfoSection( const TProjectInfo& projectInfo         ,
                                    const TModuleInfoEntry& moduleInfoEntry ,
                                    const CORE::CString& premakeOutputDir   ,
@@ -1187,13 +1210,15 @@ GeneratePremake4ModuleInfoSection( const TProjectInfo& projectInfo         ,
         CORE::CString moduleDependenciesStr = GeneratePremake4ModuleDependenciesLine( projectInfo, moduleInfo, consensusName, platformName );
         CORE::CString moduleLinkingStr = GeneratePremake4ModuleLinkerLine( moduleInfo, consensusName, platformName );
         CORE::CString moduleDefinesStr = GeneratePremake4ModuleDefinesLine( moduleInfo, consensusName, platformName );
+        CORE::CString moduleTargetNameStr = GeneratePremake4ModuleTargetNameLine( moduleInfo, consensusName, platformName );
 
         // make sure we actually have any instructions
         if ( !moduleDependenciesStr.IsNULLOrEmpty() ||
              !moduleLinkingStr.IsNULLOrEmpty()      ||
-             !moduleDefinesStr.IsNULLOrEmpty()       )
+             !moduleDefinesStr.IsNULLOrEmpty()      ||
+             !moduleTargetNameStr.IsNULLOrEmpty()    )
         {
-            sectionContent += ( moduleDependenciesStr + moduleLinkingStr + moduleDefinesStr );
+            sectionContent += ( moduleDependenciesStr + moduleLinkingStr + moduleDefinesStr + moduleTargetNameStr );
         }
     }
 
@@ -1211,11 +1236,13 @@ GeneratePremake4ModuleInfoSection( const TProjectInfo& projectInfo         ,
             CORE::CString moduleDependenciesStr = GeneratePremake4ModuleDependenciesLine( projectInfo, moduleInfo, consensusName, platformName );
             CORE::CString moduleLinkingStr = GeneratePremake4ModuleLinkerLine( moduleInfo, consensusName, platformName );
             CORE::CString moduleDefinesStr = GeneratePremake4ModuleDefinesLine( moduleInfo, consensusName, platformName );
+            CORE::CString moduleTargetNameStr = GeneratePremake4ModuleTargetNameLine( moduleInfo, consensusName, platformName );
 
             // Encompass inside an if section if we have any instructions
             if ( !moduleDependenciesStr.IsNULLOrEmpty() ||
                  !moduleLinkingStr.IsNULLOrEmpty()      ||
-                 !moduleDefinesStr.IsNULLOrEmpty()       )
+                 !moduleDefinesStr.IsNULLOrEmpty()      ||
+                 !moduleTargetNameStr.IsNULLOrEmpty()    )
             {
                 CORE::CString platformSection;
 
@@ -1232,6 +1259,10 @@ GeneratePremake4ModuleInfoSection( const TProjectInfo& projectInfo         ,
                 if ( !moduleDefinesStr.IsNULLOrEmpty() )
                 {
                     platformSection += "  " + moduleDefinesStr;
+                }
+                if ( !moduleTargetNameStr.IsNULLOrEmpty() )
+                {
+                    platformSection += "  " + moduleTargetNameStr;
                 }
 
                 // Now that we finished generating the section for this platform add it to the entire info content section

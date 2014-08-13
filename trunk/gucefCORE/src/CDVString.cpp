@@ -654,7 +654,7 @@ CString::ReplaceEnvelopingSubstr( const CString& envelopPrefix     ,
     {
         if ( startIndex < envSegIndex )
         {
-            resultStr += this->SubstrFromRange( startIndex, envSegIndex-1 );
+            resultStr += this->SubstrFromRange( startIndex, envSegIndex );
         }
         
         envSegIndex+=envelopPrefix.Length();
@@ -732,7 +732,7 @@ CString::SubstrToIndex( UInt32 index     ,
     if ( !frontToBack )
     {
          if ( index >= m_length ) return CString();
-         return SubstrFromRange( index, m_length-1 );
+         return SubstrFromRange( index, m_length );
     }
 
     if ( index >= m_length ) return CString( m_string, m_length );
@@ -758,14 +758,16 @@ CString::SubstrFromRange( UInt32 startIndex ,
     }
 
     // gracefully protect against out-of-bounds index
-    UInt32 maxEnd = endIndex+1 > m_length ? m_length-1 : endIndex;
-    UInt32 maxStart = startIndex+1 > m_length ? m_length-1 : startIndex;
+    // keep in mind that endIndex is exclusive, thus out of bounds is endIndex 
+    // beyond the null terminator
+    UInt32 maxEnd = endIndex > m_length ? m_length : endIndex;
+    UInt32 maxStart = startIndex > m_length ? m_length : startIndex;
 
     // Check for 0 length string
     if ( maxEnd >= maxStart )
     {
         // make the new string using the given range
-        return CString( m_string+maxStart, (maxEnd-maxStart)+1 );
+        return CString( m_string+maxStart, maxEnd-maxStart );
     }
     return CString();
 }
