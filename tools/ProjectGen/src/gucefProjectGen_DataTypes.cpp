@@ -252,6 +252,7 @@ ModuleTypeToString( const TModuleType moduleType )
         case MODULETYPE_STATIC_LIBRARY: return "StaticLibrary";
         case MODULETYPE_HEADER_INCLUDE_LOCATION: return "HeaderIncludeLocation";
         case MODULETYPE_CODE_INCLUDE_LOCATION: return "CodeIncludeLocation";
+        case MODULETYPE_REFERENCE_LIBRARY: return "ReferenceLibrary";
         case MODULETYPE_UNKNOWN: return "Unknown";
         default: return "";
     }
@@ -269,6 +270,7 @@ StringToModuleType( const CORE::CString moduleTypeStr )
     if ( moduleTypeString == "staticlibrary" ) return MODULETYPE_STATIC_LIBRARY;
     if ( moduleTypeString == "headerincludelocation" ) return MODULETYPE_HEADER_INCLUDE_LOCATION;
     if ( moduleTypeString == "codeincludelocation" ) return MODULETYPE_CODE_INCLUDE_LOCATION;
+    if ( moduleTypeString == "referencelibrary" ) return MODULETYPE_REFERENCE_LIBRARY;
     if ( moduleTypeString == "unknown" ) return MODULETYPE_UNKNOWN;
     return MODULETYPE_UNDEFINED;
 }
@@ -587,6 +589,11 @@ SerializeModuleInfo( const TModuleInfoEntry& moduleEntry ,
         }
 
     }
+    if ( !moduleInfo.linkerSettings.targetName.IsNULLOrEmpty() )
+    {
+        addedLinkedSettings = true;
+        linkerNode.SetAttribute( "TargetName", moduleInfo.linkerSettings.targetName ); 
+    }
 
     if ( addedLinkedSettings )
     {
@@ -874,6 +881,8 @@ DeserializeModuleInfo( TModuleInfo& moduleInfo           ,
     const CORE::CDataNode* linkerNode = moduleInfoNode->Find( "Linker" );
     if ( NULL != linkerNode )
     {
+        moduleInfo.linkerSettings.targetName = linkerNode->GetAttributeValueOrChildValueByName( "TargetName" );
+        
         // Find all the libraries that are linked but not part of the overall project
         CORE::CDataNode::TConstDataNodeSet linkedLibs = linkerNode->FindChildrenOfType( "Dependency" );
         i = linkedLibs.begin();
@@ -1213,6 +1222,10 @@ MergeModuleInfo( TModuleInfo& targetModuleInfo          ,
     {
         targetModuleInfo.moduleType = moduleInfoToMergeIn.moduleType;
     }
+    if ( !moduleInfoToMergeIn.linkerSettings.targetName.IsNULLOrEmpty() )
+    {
+        targetModuleInfo.linkerSettings.targetName = moduleInfoToMergeIn.linkerSettings.targetName; 
+    }
 
     // Now combine the other items without overwriting
     MergeStringSet( targetModuleInfo.compilerSettings.languagesUsed    ,
@@ -1523,6 +1536,41 @@ GetModuleNameAlways( const TModuleInfoEntry& moduleInfoEntry ,
         return GetConsensusModuleName( moduleInfoEntry );
     }
     return *strPtr;
+}
+
+/*---------------------------------------------------------------------------*/
+
+CORE::CString
+GetModuleTargetName( const TModuleInfoEntry& moduleInfoEntry ,
+                     const CORE::CString& targetPlatform     ,
+                     bool useModuleNameIfNoTargetName        )
+{GUCEF_TRACE;
+
+    const TModuleInfo* moduleInfo = FindModuleInfoForPlatform( moduleInfoEntry, targetPlatform );
+    if ( NULL != moduleInfo )
+    {
+        if ( !moduleInfo->linkerSettings.targetName.IsNULLOrEmpty() )
+        {
+            return moduleInfo->linkerSettings.targetName;
+        }
+    }
+    if ( targetPlatform != AllPlatforms && !targetPlatform.IsNULLOrEmpty() )
+    {
+        moduleInfo = FindModuleInfoForPlatform( moduleInfoEntry, AllPlatforms );
+        if ( !moduleInfo->linkerSettings.targetName.IsNULLOrEmpty() )
+        {
+            return moduleInfo->linkerSettings.targetName;
+        }
+    }
+
+    // If we got here no target name was defined so the only option left is the 
+    // module name. For most projects this is the same thing.
+    if ( useModuleNameIfNoTargetName )
+    {
+        return GetModuleNameAlways( moduleInfoEntry, targetPlatform );
+    }
+
+    return CORE::CString(); 
 }
 
 /*---------------------------------------------------------------------------*/

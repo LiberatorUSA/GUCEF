@@ -83,6 +83,7 @@ enum EModuleType
     MODULETYPE_STATIC_LIBRARY           ,    // <- static library (.lib on win32, .a on linux/android)
     MODULETYPE_HEADER_INCLUDE_LOCATION  ,    // <- location where headers can be placed for reference by other modules
     MODULETYPE_CODE_INCLUDE_LOCATION    ,    // <- location where shared code can be placed for inclusion in other modules
+    MODULETYPE_REFERENCE_LIBRARY        ,    // <- managed code library
     
     MODULETYPE_UNKNOWN             // <- to be used when initialized BUT we cannot determine the module type
 };
@@ -98,6 +99,7 @@ typedef std::map< CORE::CString, TModuleType > TModuleTypeMap;
 struct SLinkerSettings
 {
     TModuleTypeMap linkedLibraries;               // list of all libraries the module links against
+    CORE::CString targetName;                     // optional name for the linker target if desired from the module name
 };
 typedef struct SLinkerSettings TLinkerSettings;
 
@@ -378,6 +380,14 @@ GUCEF_PROJECTGEN_PUBLIC_CPP
 TModuleType
 GetModuleType( const TModuleInfoEntry& moduleInfoEntry ,
                const CORE::CString& targetPlatform     );
+
+/*-------------------------------------------------------------------------*/
+
+GUCEF_PROJECTGEN_PUBLIC_CPP
+CORE::CString
+GetModuleTargetName( const TModuleInfoEntry& moduleInfoEntry ,
+                     const CORE::CString& targetPlatform     ,
+                     bool useModuleNameIfNoTargetName        );
 
 /*-------------------------------------------------------------------------*/
 

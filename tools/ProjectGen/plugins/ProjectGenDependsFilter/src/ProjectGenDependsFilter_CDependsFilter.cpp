@@ -116,22 +116,24 @@ CDependsFilter::GetListOfModules( const TStringVector& dependsCsvFiles )
             TStringVector lines = csvContent.ParseElements( '\n', false );
             csvContent.Clear();
 
-	        TStringSet modules;
 	        TStringVector::iterator n = lines.begin();
-	        while ( n != lines.end() )
+            
+            // We need to skip the first line as its a legend
+            if ( n != lines.end() ) ++n;
+	        
+            while ( n != lines.end() )
 	        {
-		        CORE::Int32 firstCommaPos = (*i).HasChar( ',', 0, true );
+		        CORE::Int32 firstCommaPos = (*n).HasChar( ',', 0, true );
 		        if ( -1 != firstCommaPos )
 		        {
-			        CORE::Int32 secondCommaPos = (*i).HasChar( ',', firstCommaPos+1, true );
+			        CORE::Int32 secondCommaPos = (*n).HasChar( ',', firstCommaPos+1, true );
 			        if ( -1 != secondCommaPos )
 			        {	
 				        // Name also has quotes around it, lets strip those
-				        CORE::Int32 nameLength = (secondCommaPos-1) - firstCommaPos;
-				        if ( nameLength > 2 )
+				        CORE::Int32 nameLength = (secondCommaPos-1) - (firstCommaPos+2);
+				        if ( nameLength > 0 )
 				        {
-					        nameLength -= 2;
-					        CORE::CString moduleName = (*i).SubstrFromRange( firstCommaPos+2, nameLength );
+					        CORE::CString moduleName = (*n).SubstrFromRange( firstCommaPos+2, firstCommaPos+2+nameLength );
 
                             // Strip the extention from the file name
                             Int32 dotIndex = moduleName.HasChar( '.', false );
@@ -179,13 +181,16 @@ CDependsFilter::ProccessProjects( TProjectInfo& projectInfo      ,
     TModuleInfoEntryVector::iterator i = moduleInfoList.begin(); 
     while ( i != moduleInfoList.end() )
     {
-        CString moduleName = GetConsensusModuleName( (*i) );        
-        TStringSet::iterator n = modules.find( moduleName.Lowercase() );
+        // we will check using the target name if the module has one
+        // Keep in mind that Depends would be using the target name.
+        // If no target name is defines we use the module name
+        CString targetName = GetModuleTargetName( (*i), "win32", true );        
+        TStringSet::iterator n = modules.find( targetName.Lowercase() );
         if ( n == modules.end() )
         {
             // The given module is not in the list of modules we obtained from depends
             // as such we should filter it out
-            deleteList.insert( (*i).rootDir + ':' + moduleName );
+            deleteList.insert( (*i).rootDir + ':' + targetName );
         }
 
         ++i;
@@ -197,14 +202,14 @@ CDependsFilter::ProccessProjects( TProjectInfo& projectInfo      ,
         TModuleInfoEntryVector::iterator i = moduleInfoList.begin(); 
         while ( i != moduleInfoList.end() )
         {
-            CString moduleName = GetConsensusModuleName( (*i) );
-            TStringSet::iterator n = deleteList.find( (*i).rootDir + ':' + moduleName );
+            CString targetName = GetModuleTargetName( (*i), "win32", true );
+            TStringSet::iterator n = deleteList.find( (*i).rootDir + ':' + targetName );
             if ( n != deleteList.end() )
             {
                 moduleInfoList.erase( i );
                 i = moduleInfoList.begin();
 
-                GUCEF_LOG( CORE::LOGLEVEL_NORMAL, "Filtered out module with consensus name: " + moduleName );
+                GUCEF_LOG( CORE::LOGLEVEL_NORMAL, "Filtered out module with target name: " + targetName );
             }
             ++i;
         }

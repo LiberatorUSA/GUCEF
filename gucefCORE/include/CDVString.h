@@ -226,6 +226,11 @@ class GUCEF_CORE_PUBLIC_CPP CString
     CString SubstrToIndex( UInt32 index            ,
                            bool frontToBack = true ) const;
 
+    /**
+     *  As per common convention:
+     *  startIndex is inclusive and endIndex is exclusive
+     *  Put another way: the char pointed to by endIndex will NOT be included
+     */
     CString SubstrFromRange( UInt32 startIndex ,
                              UInt32 endIndex   ) const;
 
