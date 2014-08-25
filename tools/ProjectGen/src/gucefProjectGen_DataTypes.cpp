@@ -712,6 +712,43 @@ SerializeProjectInfo( const TProjectInfo& projectInfo ,
 /*-------------------------------------------------------------------------*/
 
 bool
+DeserializeProjectInfo( TProjectInfo& projectInfo       ,
+                        const CORE::CDataNode& rootNode )
+{GUCEF_TRACE;
+
+    const CORE::CDataNode* node = rootNode.Search( "Project", '\\', true );
+    if ( NULL == node )
+    {
+        GUCEF_ERROR_LOG( CORE::LOGLEVEL_NORMAL, "DeserializeProjectInfo: Failed locate project root data node" );
+        return false;
+    }
+
+    int errorCount = 0;
+    projectInfo.projectName = node->GetAttributeValueOrChildValueByName( "Name" );
+    CORE::CDataNode::TConstDataNodeSet nodeSet = node->FindChildrenOfType( "ModuleInfoEntry" );
+    CORE::CDataNode::TConstDataNodeSet::const_iterator i = nodeSet.begin();
+    while ( i != nodeSet.end() )
+    {
+        TModuleInfoEntry newModuleInfo;
+        InitializeModuleInfoEntry( newModuleInfo );
+        projectInfo.modules.push_back( newModuleInfo );
+        TModuleInfoEntry& moduleInfoEntry = projectInfo.modules.back();
+
+        if ( !DeserializeModuleInfo( moduleInfoEntry, *(*i) ) )
+        {
+            GUCEF_ERROR_LOG( CORE::LOGLEVEL_NORMAL, "DeserializeProjectInfo: Failed deserialize module info entry" );
+            ++errorCount;
+        }
+        
+        ++i;
+    }
+
+    return errorCount == 0;
+}
+
+/*-------------------------------------------------------------------------*/
+
+bool
 SerializeProjectInfo( const TProjectInfo& projectInfo     ,
                       const CORE::CString& outputFilepath )
 {GUCEF_TRACE;
@@ -742,6 +779,42 @@ SerializeProjectInfo( const TProjectInfo& projectInfo     ,
         }
     }
     GUCEF_ERROR_LOG( CORE::LOGLEVEL_NORMAL, "SerializeProjectInfo: Cannot serialize since no codec is registered that can be used for serialization" );
+    return false;
+}
+
+/*-------------------------------------------------------------------------*/
+
+bool
+DeserializeProjectInfo( TProjectInfo& projectInfo            ,
+                        const CORE::CString& projectInfoPath )
+{GUCEF_TRACE;
+
+    CORE::CDStoreCodecRegistry::TDStoreCodecPtr codec = GetXmlDStoreCodec();
+    if ( 0 != codec )
+    {
+        CORE::CDataNode info;
+        if ( codec->BuildDataTree( &info, projectInfoPath ) )
+        {
+            GUCEF_LOG( CORE::LOGLEVEL_NORMAL, "Successfully generated a data tree with all project information" );
+
+            if ( DeserializeProjectInfo( projectInfo, info ) )
+            {
+                GUCEF_LOG( CORE::LOGLEVEL_NORMAL, "Successfully loaded all project information from disk file \"" + projectInfoPath + "\"" );
+                return true;
+            }
+            else
+            {
+                GUCEF_ERROR_LOG( CORE::LOGLEVEL_NORMAL, "DeserializeProjectInfo: Failed to load project information from deserialized info loaded from " + projectInfoPath );
+                return false;
+            }
+        }
+        else
+        {
+            GUCEF_ERROR_LOG( CORE::LOGLEVEL_NORMAL, "DeserializeProjectInfo: Failed to deserialize project information from disk at " + projectInfoPath );
+            return false;
+        }
+    }
+    GUCEF_ERROR_LOG( CORE::LOGLEVEL_NORMAL, "DeserializeProjectInfo: Cannot deserialize since no codec is registered that can be used for deserialization" );
     return false;
 }
 

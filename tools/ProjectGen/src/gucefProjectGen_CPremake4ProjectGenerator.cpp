@@ -1384,10 +1384,15 @@ GeneratePremake4ProjectFileContent( const TProjectInfo& projectInfo       ,
     // Define the start and name of a new project (aka solution)
     fileContent += "\n\nsolution( \"" + projectInfo.projectName + "\" )\n\n";
 
-    // Generate the section which defined all configurations available for this Premake4 project
+    // Generate the section which defines all configurations available for this Premake4 project
     TStringSet platformsUsed;
     GetAllPlatformsUsed( projectInfo, platformsUsed );
     platformsUsed.erase( AllPlatforms );
+
+    if ( platformsUsed.empty() )
+    {
+        platformsUsed = GetSupportedPlatforms();
+    }
 
     CORE::CString configurationsSection = "  configurations( {";
     bool first = true;
@@ -1467,8 +1472,7 @@ WritePremake4ProjectFileToDisk( const TProjectInfo& projectInfo       ,
         fileContent += "\n-- Generator logfile can be found at: " + logFilename;
     }
 
-    CORE::CString pathToPremake4ProjectFile = outputDir;
-    CORE::AppendToPath( pathToPremake4ProjectFile, "premake4.lua" );
+    CORE::CString pathToPremake4ProjectFile = CORE::CombinePath( CORE::RelativePath( outputDir ), "premake4.lua" );
 
     if ( CORE::WriteStringAsTextFile( pathToPremake4ProjectFile, fileContent ) )
     {

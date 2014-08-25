@@ -220,7 +220,7 @@ GUCEF_OSMAIN_BEGIN
     CORE::CCoreGlobal::Instance()->GetLogManager().AddLogger( console.GetLogger() );
     
     CORE::CCoreGlobal::Instance()->GetLogManager().FlushBootstrapLogEntriesToLogs();
-
+    
     TStringVector rootDirs;
     try
     {
@@ -250,10 +250,21 @@ GUCEF_OSMAIN_BEGIN
 
     projectInfo.projectName = keyValueList.GetValueAlways( "projectName" );
 
-    // Use an info gatherer to get all the project information for us
-    CDirCrawlingProjectInfoGatherer infoGatherer;
-    infoGatherer.GatherInfo( rootDirs    ,
-                             projectInfo );
+    bool useProjectInfoCache = CORE::StringToBool( keyValueList.GetValueAlways( "useProjectInfoCache" ) );
+    bool projectInfoLoadedFromCache = false;
+    if ( useProjectInfoCache )
+    {
+        CORE::CString cachedInfoPath = CORE::CombinePath( CORE::RelativePath( outputDir ), "Project.xml" );
+        projectInfoLoadedFromCache = DeserializeProjectInfo( projectInfo, cachedInfoPath );
+    }
+    
+    if ( !projectInfoLoadedFromCache )
+    {
+        // Use an info gatherer to get all the project information for us
+        CDirCrawlingProjectInfoGatherer infoGatherer;
+        infoGatherer.GatherInfo( rootDirs    ,
+                                 projectInfo );
+    }
 
     // Before we hand the data we collected and generated to the generator(s) for the desired output we will check
     // for preprocessors which can be executed before any output generator. These apply changes to the project data
