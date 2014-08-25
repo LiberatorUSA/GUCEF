@@ -213,6 +213,9 @@ CDependsFilter::ProccessProjects( TProjectInfo& projectInfo      ,
             }
             ++i;
         }
+
+        // Since we deleted modules we should reindex the build order for the modules to remove gaps
+        // @TODO
     }
     return true;
 }

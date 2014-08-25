@@ -347,6 +347,13 @@ SerializeModuleInfo( const TModuleInfoEntry& moduleInfo  ,
 
 GUCEF_PROJECTGEN_PUBLIC_CPP
 bool
+DeserializeModuleInfo( TModuleInfoEntry& moduleInfo    ,
+                       const CORE::CDataNode& rootNode );
+
+/*-------------------------------------------------------------------------*/
+
+GUCEF_PROJECTGEN_PUBLIC_CPP
+bool
 DeserializeModuleInfo( TModuleInfoEntry& moduleInfo       ,
                        const CORE::CString& inputFilepath );
 
@@ -362,8 +369,22 @@ SerializeProjectInfo( const TProjectInfo& projectInfo ,
 
 GUCEF_PROJECTGEN_PUBLIC_CPP
 bool
+DeserializeProjectInfo( TProjectInfo& projectInfo       ,
+                        const CORE::CDataNode& rootNode );
+
+/*-------------------------------------------------------------------------*/
+
+GUCEF_PROJECTGEN_PUBLIC_CPP
+bool
 SerializeProjectInfo( const TProjectInfo& projectInfo     ,
                       const CORE::CString& outputFilepath );
+
+/*-------------------------------------------------------------------------*/
+
+GUCEF_PROJECTGEN_PUBLIC_CPP
+bool
+DeserializeProjectInfo( TProjectInfo& projectInfo            ,
+                        const CORE::CString& projectInfoPath );
 
 /*-------------------------------------------------------------------------*/
 
