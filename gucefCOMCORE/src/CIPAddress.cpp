@@ -141,14 +141,14 @@ CIPAddress::OnChange( const bool addressChanged ,
 /*-------------------------------------------------------------------------*/
 
 bool
-CIPAddress::ResolveDNS( const CORE::CString& address ,
-                        const UInt16 port            )
+CIPAddress::ResolveDNS( const CORE::CString& address     ,
+                        const UInt16 portInHostByteOrder )
 {GUCEF_TRACE;
 
     if ( CORE::Check_If_IP( address.C_String() ) )
     {
         m_address = inet_addr( address.C_String() );
-        m_port = htons( port );
+        m_port = htons( portInHostByteOrder );
         if ( m_address == INADDR_NONE ) return false;
         return true;
     }
@@ -166,7 +166,7 @@ CIPAddress::ResolveDNS( const CORE::CString& address ,
             if ( netaddr >= 0 )
             {
                 m_address = netaddr;
-                m_port = htons( port );
+                m_port = htons( portInHostByteOrder );
                 return true;
             }
         }
@@ -177,7 +177,7 @@ CIPAddress::ResolveDNS( const CORE::CString& address ,
         /* Alternate method */
 
         struct addrinfo* info = NULL;
-        CORE::CString portString( CORE::Int32ToString( destport ) );
+        CORE::CString portString( CORE::Int32ToString( portInHostByteOrder ) );
         int retval = getaddrinfo( destaddrstr.C_String() ,
                                   portString.C_String()  ,
                                   NULL                   ,
@@ -187,7 +187,7 @@ CIPAddress::ResolveDNS( const CORE::CString& address ,
             struct in_addr* addr = (struct in_addr*)info->ai_addr;
             GUCEF_DEBUG_LOG( "CSocket::ConvertToIPAddress(): resolved DNS name " + destaddrstr + " to " + CORE::CString( inet_ntoa( *addr ) ) );
             resolvedDest.netaddr = inet_addr( inet_ntoa( *addr ) ); // <- does this actually work ???
-            resolvedDest.port = htons( destport );
+            resolvedDest.port = htons( portInHostByteOrder );
             return true;
         }
         #ifdef GUCEF_COMCORE_DEBUG_MODE

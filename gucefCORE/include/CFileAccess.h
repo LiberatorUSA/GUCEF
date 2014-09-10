@@ -62,6 +62,12 @@ class GUCEF_CORE_PUBLIC_CPP CFileAccess : public CIOAccess
     /**
       *      open the resource for I/O
       */
+    virtual bool Open( const CString& file     ,
+                       const char* mode = "rb" );
+
+    /**
+      *      open the resource for I/O
+      */
     virtual void Open( void );
 
     /**

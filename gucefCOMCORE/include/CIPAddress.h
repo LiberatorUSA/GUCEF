@@ -76,6 +76,8 @@ class GUCEF_COMCORE_EXPORT_CPP CIPAddress
                 const UInt16 port            );
                     
     virtual ~CIPAddress();
+
+    void SetDnsOrIpAsString( const CORE::CString& address );
     
     void SetPort( const UInt16 port );
     
@@ -136,11 +138,11 @@ class GUCEF_COMCORE_EXPORT_CPP CIPAddress
      */
     bool operator<( const CIPAddress& other ) const;
     
+    bool ResolveDNS( const CORE::CString& address     ,
+                     const UInt16 portInHostByteOrder );
+
     protected:
     
-    bool ResolveDNS( const CORE::CString& address ,
-                     const UInt16 port            );
-
     virtual void OnChange( const bool addressChanged ,
                            const bool portChanged    );
         
