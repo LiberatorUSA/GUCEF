@@ -61,9 +61,10 @@ namespace CORE {
 //-------------------------------------------------------------------------*/
 
 CFileAccess::CFileAccess( void )
-    : CIOAccess()  ,
-      m_filename() ,
-      m_mode()
+    : CIOAccess()    ,
+      m_filename()   ,
+      m_mode()       ,
+      m_file( NULL )
 {GUCEF_TRACE;
 
 }
@@ -74,15 +75,11 @@ CFileAccess::CFileAccess( const CString& file           ,
                           const char* mode /* = "rb" */ )
         : CIOAccess(),
           m_filename( file ) ,
-          m_mode( mode )
+          m_mode( mode )     ,
+          m_file( NULL )     
 {GUCEF_TRACE;
-        
-    _readable = ( strchr( mode, 'r' ) != NULL ) || ( strchr( mode, 'a' ) != NULL );
-    _writeable = ( strchr( mode, 'w' ) != NULL ) || ( strchr( mode, 'a' ) != NULL );
-    
-    _size = Filesize( file.C_String() );
-    m_file = fopen( file.C_String() ,
-                    mode            );                      
+
+    Open( file, mode );
 }
 
 /*-------------------------------------------------------------------------*/
@@ -102,6 +99,27 @@ CFileAccess::Open( void )
         
         m_file = fopen( m_filename.C_String() ,
                        m_mode.C_String()    );                      
+}
+
+/*-------------------------------------------------------------------------*/
+
+bool
+CFileAccess::Open( const CString& file ,
+                   const char* mode    )
+{
+    Close();
+    
+    m_filename = file;
+    m_mode = mode;
+    
+    _readable = ( strchr( mode, 'r' ) != NULL ) || ( strchr( mode, 'a' ) != NULL );
+    _writeable = ( strchr( mode, 'w' ) != NULL ) || ( strchr( mode, 'a' ) != NULL );
+    
+    _size = Filesize( file.C_String() );
+    m_file = fopen( file.C_String() ,
+                    mode            );
+
+    return m_file != NULL;
 }
 
 /*-------------------------------------------------------------------------*/

@@ -30,6 +30,11 @@
 #define GUCEF_CORE_DVSTRUTILS_H
 #endif /* GUCEF_CORE_DVSTRUTILS_H ? */
 
+#ifndef GUCEF_CORE_LOGGING_H
+#include "gucefCORE_Logging.h"
+#define GUCEF_CORE_LOGGING_H
+#endif /* GUCEF_CORE_LOGGING_H ? */
+
 #ifndef GUCEF_CORE_CGUCEFAPPLICATION_H
 #include "CGUCEFApplication.h"
 #define GUCEF_CORE_CGUCEFAPPLICATION_H
@@ -395,7 +400,11 @@ CUDPSocket::Open( const CORE::CString& localaddr ,
                                      SOCK_DGRAM  ,
                                      IPPROTO_UDP ,
                                      &errorCode  );
-    if ( _data->sockid != INVALID_SOCKET ) return false;
+    if ( _data->sockid == INVALID_SOCKET )
+    {
+        GUCEF_ERROR_LOG( CORE::LOGLEVEL_IMPORTANT, "UDPSocket: Failed to open socket at " + localaddr + ":" + CORE::UInt16ToString( port ) );
+        return false;
+    }
 
     // Set the desired blocking mode
     if ( !SetBlockingMode( _data->sockid, _blocking ) )

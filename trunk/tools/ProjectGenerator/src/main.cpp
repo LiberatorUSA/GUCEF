@@ -325,6 +325,7 @@ GUCEF_OSMAIN_BEGIN
     GUCEF_LOG( CORE::LOGLEVEL_NORMAL, "Wrote log file to: " + logFilename );
 
     CORE::CCoreGlobal::Instance()->GetLogManager().ClearLoggers();
+
     return 0;
 }
 GUCEF_OSMAIN_END

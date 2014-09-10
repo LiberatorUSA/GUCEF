@@ -88,7 +88,8 @@ class GUCEF_COMCORE_EXPORT_CPP CUDPSocket : public CSocket
         CIPAddress sourceAddress;                 /**< the source address of the data */
         CORE::TLinkedCloneableBuffer dataBuffer;  /**< the received packet data */
     };
-    typedef CORE::CTCloneableObj< struct SUDPPacketRecievedEventData > UDPPacketRecievedEventData;
+    typedef struct SUDPPacketRecievedEventData TUDPPacketRecievedEventData;
+    typedef CORE::CTCloneableObj< TUDPPacketRecievedEventData > UDPPacketRecievedEventData;
     
     public:
     
