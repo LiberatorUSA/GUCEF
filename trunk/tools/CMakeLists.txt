@@ -32,5 +32,6 @@ add_subdirectory(ProjectGen/plugins/ProjectGenDependsFilter)
 add_subdirectory(ProjectGenerator)
 add_subdirectory(FileDiff)
 add_subdirectory(MemoryLeakFinder)
+add_subdirectory(SocketSink)
 
 

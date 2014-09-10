@@ -638,7 +638,7 @@ CString
 PointerToString( const void* value )
 {GUCEF_TRACE;
 
-    char addrBuffer[ 12 ];
+    char addrBuffer[ 64 ];
     sprintf( addrBuffer, "%p", value );
     return CString( addrBuffer );
 }
