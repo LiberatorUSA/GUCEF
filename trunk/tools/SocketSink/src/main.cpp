@@ -98,6 +98,7 @@ class SocketSink : public CORE::CObserver
     CORE::CFileAccess m_udpSinkFile;
     CORE::CFileAccess m_tcpSinkFile;
     bool m_doUdpForwarding;
+    bool m_udpAddNewLine;
 
     void
     OnUDPSocketError( CORE::CNotifier* notifier   ,
@@ -143,7 +144,12 @@ class SocketSink : public CORE::CObserver
             if ( m_udpSinkFile.IsValid() )
             {
                 m_udpSinkFile.Write( udpPacketBuffer.GetConstBufferPtr(), udpPacketBuffer.GetDataSize(), 1 );
-                GUCEF_LOG( CORE::LOGLEVEL_BELOW_NORMAL, "SocketSink: Wrote UDP packet to file: " + CORE::UInt32ToString( udpPacketBuffer.GetDataSize() ) );
+                if ( m_udpAddNewLine )
+                {
+                    char newLine = '\n';
+                    m_udpSinkFile.Write( &newLine, 1, 1 );
+                }
+                GUCEF_LOG( CORE::LOGLEVEL_BELOW_NORMAL, "SocketSink: Wrote UDP packet to file: " + CORE::UInt32ToString( udpPacketBuffer.GetDataSize() ) + " bytes in payload" );
             }
 
             if ( m_doUdpForwarding )
@@ -318,20 +324,28 @@ class SocketSink : public CORE::CObserver
                 GUCEF_LOG( CORE::LOGLEVEL_IMPORTANT, "SocketSink: Set UDP buffer size as " + valueStr + ". For non-payload-delimited packets this should match the packet size" );
             }
 
-            CORE::CString udpPortStr = keyValueList.GetValueAlways( "UdpPort" );
-            if ( !udpPortStr.IsNULLOrEmpty() )
+            m_udpAddNewLine = false;
+            valueStr = keyValueList.GetValueAlways( "AddNewLineAfterUdpData" );
+            if ( !valueStr.IsNULLOrEmpty() )
             {
-                if ( m_udpSocket.Open( CORE::StringToUInt16( udpPortStr ) ) )
+                m_udpAddNewLine = CORE::StringToBool( valueStr );
+                GUCEF_LOG( CORE::LOGLEVEL_IMPORTANT, "SocketSink: Add new line is true for UDP: Make sure you are sending text!" );
+            }
+
+            valueStr = keyValueList.GetValueAlways( "UdpPort" );
+            if ( !valueStr.IsNULLOrEmpty() )
+            {
+                if ( m_udpSocket.Open( CORE::StringToUInt16( valueStr ) ) )
                 {
-                    GUCEF_LOG( CORE::LOGLEVEL_IMPORTANT, "SocketSink: Opened UDP port " + udpPortStr );
+                    GUCEF_LOG( CORE::LOGLEVEL_IMPORTANT, "SocketSink: Opened UDP port " + valueStr );
                 }
                 else
                 {
-                    GUCEF_ERROR_LOG( CORE::LOGLEVEL_IMPORTANT, "SocketSink: Failed to open udp port " + udpPortStr );
+                    GUCEF_ERROR_LOG( CORE::LOGLEVEL_IMPORTANT, "SocketSink: Failed to open udp port " + valueStr );
                 }
             }
 
-            bool m_doUdpForwarding = false;
+            m_doUdpForwarding = false;
             valueStr = keyValueList.GetValueAlways( "DoUdpForwarding" );
             if ( !valueStr.IsNULLOrEmpty() )
             {
