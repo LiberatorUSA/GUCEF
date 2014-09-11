@@ -100,6 +100,8 @@ class GUCEF_CORE_PUBLIC_CPP CLogManager
               const Int32 logLevel         ,
               const CString& logMessage    );
 
+    void SetMinLogLevel( const Int32 logLevel );
+
     void FlushLogs( void );
 
     /**
@@ -157,7 +159,7 @@ class GUCEF_CORE_PUBLIC_CPP CLogManager
 
     TLoggerList m_loggers;
     std::map< TLogMsgType, bool > m_msgTypeEnablers;
-    Int32 m_maxLogLevel;
+    Int32 m_minLogLevel;
     TBootstrapLogVector m_bootstrapLog;
     bool m_busyLogging;
     bool m_redirectToLogQueue;
