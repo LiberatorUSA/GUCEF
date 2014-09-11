@@ -88,6 +88,7 @@ SKIP_GUCEF_PREMAKE4FILEGENERATION=${SKIP_GUCEF_PREMAKE4FILEGENERATION:=undefined
 if [ "$SKIP_GUCEF_PREMAKE4FILEGENERATION" = "undefined" ];
 then 
   echo "*** Generate Premake4 files ***"
+  cd "$PREMAKE4COMMON_SCRIPTSTARTDIR"
   . GeneratePremake4Info.sh
 else 
   echo "Skipping GUCEF's Premake4 file generation"

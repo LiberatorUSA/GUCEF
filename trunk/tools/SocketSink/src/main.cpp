@@ -89,7 +89,7 @@ using namespace GUCEF;
 class SocketSink : public CORE::CObserver
 {
     private:
-        
+
     typedef CORE::CTEventHandlerFunctor< SocketSink > TEventCallback;
 
     COMCORE::CUDPSocket m_udpSocket;
@@ -104,7 +104,7 @@ class SocketSink : public CORE::CObserver
                       const CORE::CEvent& eventID ,
                       CORE::CICloneable* evenData )
     {GUCEF_TRACE;
-    
+
         GUCEF_LOG( CORE::LOGLEVEL_IMPORTANT, "SocketSink: UDP Socket experienced an error" );
     }
 
@@ -113,7 +113,7 @@ class SocketSink : public CORE::CObserver
                        const CORE::CEvent& eventID ,
                        CORE::CICloneable* evenData )
     {GUCEF_TRACE;
-        
+
         GUCEF_LOG( CORE::LOGLEVEL_IMPORTANT, "SocketSink: UDP Socket has been closed" );
     }
 
@@ -122,7 +122,7 @@ class SocketSink : public CORE::CObserver
                        const CORE::CEvent& eventID ,
                        CORE::CICloneable* evenData )
     {GUCEF_TRACE;
-        
+
         GUCEF_LOG( CORE::LOGLEVEL_IMPORTANT, "SocketSink: UDP Socket has been opened" );
     }
 
@@ -131,8 +131,6 @@ class SocketSink : public CORE::CObserver
                          const CORE::CEvent& eventID ,
                          CORE::CICloneable* evenData )
     {GUCEF_TRACE;
-    
-        GUCEF_LOG( CORE::LOGLEVEL_IMPORTANT, "SocketSink: UDP Socket received a packet" );
 
         COMCORE::CUDPSocket::UDPPacketRecievedEventData* udpPacketData = static_cast< COMCORE::CUDPSocket::UDPPacketRecievedEventData* >( evenData );
         if ( NULL != udpPacketData )
@@ -140,9 +138,11 @@ class SocketSink : public CORE::CObserver
             const COMCORE::CUDPSocket::TUDPPacketRecievedEventData& data = udpPacketData->GetData();
             const CORE::CDynamicBuffer& udpPacketBuffer = data.dataBuffer.GetData();
 
+            GUCEF_LOG( CORE::LOGLEVEL_IMPORTANT, "SocketSink: UDP Socket received a packet from " + data.sourceAddress.AddressAndPortAsString() );
+
             if ( m_udpSinkFile.IsValid() )
             {
-                m_udpSinkFile.Write( udpPacketBuffer.GetConstBufferPtr(), udpPacketBuffer.GetDataSize(), 1 ); 
+                m_udpSinkFile.Write( udpPacketBuffer.GetConstBufferPtr(), udpPacketBuffer.GetDataSize(), 1 );
                 GUCEF_LOG( CORE::LOGLEVEL_BELOW_NORMAL, "SocketSink: Wrote UDP packet to file: " + CORE::UInt32ToString( udpPacketBuffer.GetDataSize() ) );
             }
 
@@ -152,6 +152,11 @@ class SocketSink : public CORE::CObserver
                 GUCEF_LOG( CORE::LOGLEVEL_BELOW_NORMAL, "SocketSink: Forwarded UDP packet" );
             }
         }
+        else
+        {
+            GUCEF_ERROR_LOG( CORE::LOGLEVEL_IMPORTANT, "SocketSink: UDP Socket has a data received event but no data was provided" );
+        }
+
     }
 
     void
@@ -159,7 +164,7 @@ class SocketSink : public CORE::CObserver
                              const CORE::CEvent& eventID ,
                              CORE::CICloneable* evenData )
     {GUCEF_TRACE;
-    
+
         GUCEF_LOG( CORE::LOGLEVEL_IMPORTANT, "SocketSink: TCP Server Socket opened" );
     }
 
@@ -168,7 +173,7 @@ class SocketSink : public CORE::CObserver
                              const CORE::CEvent& eventID ,
                              CORE::CICloneable* evenData )
     {GUCEF_TRACE;
-    
+
         GUCEF_LOG( CORE::LOGLEVEL_IMPORTANT, "SocketSink: TCP Server Socket closed" );
     }
 
@@ -177,7 +182,7 @@ class SocketSink : public CORE::CObserver
                             const CORE::CEvent& eventID ,
                             CORE::CICloneable* evenData )
     {GUCEF_TRACE;
-    
+
         GUCEF_LOG( CORE::LOGLEVEL_IMPORTANT, "SocketSink: TCP Server Socket experienced an error" );
     }
 
@@ -186,7 +191,7 @@ class SocketSink : public CORE::CObserver
                                             const CORE::CEvent& eventID ,
                                             CORE::CICloneable* evenData )
     {GUCEF_TRACE;
-    
+
         GUCEF_LOG( CORE::LOGLEVEL_IMPORTANT, "SocketSink: TCP Server Socket changed max client connections" );
     }
 
@@ -195,7 +200,7 @@ class SocketSink : public CORE::CObserver
                                       const CORE::CEvent& eventID ,
                                       CORE::CICloneable* evenData )
     {GUCEF_TRACE;
-    
+
         GUCEF_LOG( CORE::LOGLEVEL_IMPORTANT, "SocketSink: TCP Server Socket has a new client connection" );
     }
 
@@ -204,7 +209,7 @@ class SocketSink : public CORE::CObserver
                                          const CORE::CEvent& eventID ,
                                          CORE::CICloneable* evenData )
     {GUCEF_TRACE;
-    
+
         GUCEF_LOG( CORE::LOGLEVEL_IMPORTANT, "SocketSink: TCP Server Socket disconnected a client connection" );
     }
 
@@ -213,7 +218,7 @@ class SocketSink : public CORE::CObserver
                                   const CORE::CEvent& eventID ,
                                   CORE::CICloneable* evenData )
     {GUCEF_TRACE;
-    
+
         GUCEF_LOG( CORE::LOGLEVEL_IMPORTANT, "SocketSink: TCP Server Socket experienced an error on a client connection" );
     }
 
@@ -276,32 +281,41 @@ class SocketSink : public CORE::CObserver
     virtual const CORE::CString& GetClassTypeName( void ) const
     {GUCEF_TRACE;
 
-        static const CORE::CString classTypeName = "SocketSink";    
+        static const CORE::CString classTypeName = "SocketSink";
         return classTypeName;
     }
 
     bool Setup( const CORE::CValueList& keyValueList )
     {GUCEF_TRACE;
 
+        GUCEF_DEBUG_LOG( CORE::LOGLEVEL_NORMAL, "SocketSink: Setup starting. " + CORE::UInt32ToString( keyValueList.GetCount() ) + " Config keys were provided" );
+
         bool enableUdp = false;
-        CORE::CString enabledStr = keyValueList.GetValueAlways( "EnableUdp" );
-        if ( !enabledStr.IsNULLOrEmpty() )
+        CORE::CString valueStr = keyValueList.GetValueAlways( "EnableUdp" );
+        if ( !valueStr.IsNULLOrEmpty() )
         {
-            enableUdp = CORE::StringToBool( enabledStr );
+            enableUdp = CORE::StringToBool( valueStr );
         }
         bool enableTcp = false;
-        enabledStr = keyValueList.GetValueAlways( "EnableTcp" );
-        if ( !enabledStr.IsNULLOrEmpty() )
+        valueStr = keyValueList.GetValueAlways( "EnableTcp" );
+        if ( !valueStr.IsNULLOrEmpty() )
         {
-            enableTcp = CORE::StringToBool( enabledStr );
+            enableTcp = CORE::StringToBool( valueStr );
         }
-                
+
         if ( enableUdp )
         {
             CORE::CString udpOutputFilePath = CORE::RelativePath( keyValueList.GetValueAlways( "UdpOutputFile" ) );
             if ( !udpOutputFilePath.IsNULLOrEmpty() && !m_udpSinkFile.Open( udpOutputFilePath, "wb" ) )
             {
                 GUCEF_ERROR_LOG( CORE::LOGLEVEL_IMPORTANT, "SocketSink: Failed to open udp output file at: " + udpOutputFilePath );
+            }
+
+            valueStr = keyValueList.GetValueAlways( "UdpBufferSize" );
+            if ( !valueStr.IsNULLOrEmpty() )
+            {
+                m_udpSocket.SetRecievedDataBufferSize( CORE::StringToUInt32( valueStr ) );
+                GUCEF_LOG( CORE::LOGLEVEL_IMPORTANT, "SocketSink: Set UDP buffer size as " + valueStr + ". For non-payload-delimited packets this should match the packet size" );
             }
 
             CORE::CString udpPortStr = keyValueList.GetValueAlways( "UdpPort" );
@@ -318,10 +332,10 @@ class SocketSink : public CORE::CObserver
             }
 
             bool m_doUdpForwarding = false;
-            enabledStr = keyValueList.GetValueAlways( "DoUdpForwarding" );
-            if ( !enabledStr.IsNULLOrEmpty() )
+            valueStr = keyValueList.GetValueAlways( "DoUdpForwarding" );
+            if ( !valueStr.IsNULLOrEmpty() )
             {
-                m_doUdpForwarding = CORE::StringToBool( enabledStr );
+                m_doUdpForwarding = CORE::StringToBool( valueStr );
             }
 
             CORE::UInt16 fwdPort = CORE::StringToUInt16( keyValueList.GetValueAlways( "UdpFwdPort" ) );
@@ -334,7 +348,7 @@ class SocketSink : public CORE::CObserver
             if ( !tcpOutputFilePath.IsNULLOrEmpty() && !m_tcpSinkFile.Open( tcpOutputFilePath, "wb" ) )
             {
                 GUCEF_ERROR_LOG( CORE::LOGLEVEL_IMPORTANT, "SocketSink: Failed to open udp output file at: " + tcpOutputFilePath );
-            }            
+            }
 
             CORE::CString tcpPortStr = keyValueList.GetValueAlways( "TcpPort" );
             if ( !tcpPortStr.IsNULLOrEmpty() )
@@ -349,7 +363,8 @@ class SocketSink : public CORE::CObserver
                 }
             }
         }
-        return true;
+
+        return m_udpSocket.IsActive() || m_tcpServerSocket.IsActive();
     }
 
     SocketSink()
@@ -401,10 +416,10 @@ LoadConfig( CORE::CValueList& keyValueList )
     keyValueList.SetUseGlobalConfig( true );
     keyValueList.SetAllowDuplicates( false );
     keyValueList.SetAllowMultipleValues( true );
-    
+
     CORE::CConfigStore& configStore = CORE::CCoreGlobal::Instance()->GetConfigStore();
     configStore.SetConfigFile( configFilePath );
-    return configStore.LoadConfig();    
+    return configStore.LoadConfig();
 }
 
 /*-------------------------------------------------------------------------*/
@@ -445,7 +460,7 @@ GUCEF_OSMAIN_BEGIN
 
     CORE::CCoreGlobal::Instance();
     COMCORE::CComCoreGlobal::Instance();
-    
+
     // Load settings from a config file (if any) and then override with params (if any)
     CORE::CValueList keyValueList;
     LoadConfig( keyValueList );
@@ -457,8 +472,8 @@ GUCEF_OSMAIN_BEGIN
         outputDir = CORE::RelativePath( "$CURWORKDIR$" );
     }
     CORE::Create_Directory( CORE::RelativePath( outputDir ).C_String() );
-    
-    CORE::CString logFilename = CORE::CombinePath( outputDir, "SocketSink_Log.txt" );    
+
+    CORE::CString logFilename = CORE::CombinePath( outputDir, "SocketSink_Log.txt" );
 
     keyValueList.Set( "logfile", logFilename );
 
@@ -468,13 +483,16 @@ GUCEF_OSMAIN_BEGIN
 
     CORE::CPlatformNativeConsoleLogger console;
     CORE::CCoreGlobal::Instance()->GetLogManager().AddLogger( console.GetLogger() );
-    
+
     CORE::CCoreGlobal::Instance()->GetLogManager().FlushBootstrapLogEntriesToLogs();
 
     SocketSink socketSink;
-    socketSink.Setup( keyValueList );
-
-    return CORE::CCoreGlobal::Instance()->GetApplication().main( argc, argv, true );
+    if ( socketSink.Setup( keyValueList ) )
+    {
+        return CORE::CCoreGlobal::Instance()->GetApplication().main( argc, argv, true );
+    }
+    GUCEF_ERROR_LOG( CORE::LOGLEVEL_IMPORTANT, "SocketSink: Exiting because setup failed" );
+    return -1;
 }
 GUCEF_OSMAIN_END
 

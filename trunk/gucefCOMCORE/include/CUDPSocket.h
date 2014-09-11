@@ -14,7 +14,7 @@
  *
  *  You should have received a copy of the GNU Lesser General Public
  *  License along with this library; if not, write to the Free Software
- *  Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA 
+ *  Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA
  */
 
 #ifndef GUCEF_COMCORE_CUDPSOCKET_H
@@ -46,7 +46,7 @@
 #define GUCEF_CORE_CTEVENTHANDLERFUNCTOR_H
 #endif /* GUCEF_CORE_CTEVENTHANDLERFUNCTOR_H ? */
 
-#ifndef GUCEF_COMCORE_CSOCKET_H 
+#ifndef GUCEF_COMCORE_CSOCKET_H
 #include "CSocket.h"      /* base class for all TCP and UDP related socket classes */
 #define GUCEF_COMCORE_CSOCKET_H
 #endif /* GUCEF_COMCORE_CSOCKET_H ? */
@@ -75,14 +75,14 @@ namespace COMCORE {
 class GUCEF_COMCORE_EXPORT_CPP CUDPSocket : public CSocket
 {
     public:
-    
+
     static const CORE::CEvent UDPSocketErrorEvent;
     static const CORE::CEvent UDPSocketClosedEvent;
     static const CORE::CEvent UDPSocketOpenedEvent;
     static const CORE::CEvent UDPPacketRecievedEvent;
 
     static void RegisterEvents( void );
-    
+
     struct SUDPPacketRecievedEventData
     {
         CIPAddress sourceAddress;                 /**< the source address of the data */
@@ -90,15 +90,16 @@ class GUCEF_COMCORE_EXPORT_CPP CUDPSocket : public CSocket
     };
     typedef struct SUDPPacketRecievedEventData TUDPPacketRecievedEventData;
     typedef CORE::CTCloneableObj< TUDPPacketRecievedEventData > UDPPacketRecievedEventData;
-    
+    typedef CORE::TCloneableInt32  TSocketErrorEventData;
+
     public:
-    
+
     /**
      *      Creates a UDP socket object initialized to be either blocking
      *      or non-blocking. Choosing either type is a design decision.
      *
      *      @param blocking whether to construct the socket as a blocking socket
-     */        
+     */
     CUDPSocket( CORE::CPulseGenerator& pulseGenerator ,
                 bool blocking                         );
 
@@ -107,21 +108,21 @@ class GUCEF_COMCORE_EXPORT_CPP CUDPSocket : public CSocket
      *      or non-blocking. Choosing either type is a design decision.
      *
      *      @param blocking whether to construct the socket as a blocking socket
-     */        
+     */
     CUDPSocket( bool blocking );
-    
+
     /**
      *      Cleans up the allocated data and closes the socket
      */
     virtual ~CUDPSocket();
-    
+
     /**
      *      Returns wheter the socket is currently active
      *
      *      @return activity status of the socket
      */
     bool IsActive( void ) const;
-    
+
     /**
      *      Attempts to open the UDP socket for use.
      *      The port used is left up to the operating system.
@@ -129,7 +130,7 @@ class GUCEF_COMCORE_EXPORT_CPP CUDPSocket : public CSocket
      *      architecture.
      */
     bool Open( void );
-    
+
     /**
      *      Attempts to open the UDP socket for use on the given port.
      *      This will typically be used for a server in a client-server
@@ -137,9 +138,9 @@ class GUCEF_COMCORE_EXPORT_CPP CUDPSocket : public CSocket
      *      Any local address can be used.
      *
      *      @param port port used for sending and/or receiving data
-     */        
+     */
     bool Open( UInt16 port );
-    
+
     /**
      *      Attempts to open the UDP socket for use on the given local
      *      address and port. Basically the same as Open( UInt16 port )
@@ -147,17 +148,17 @@ class GUCEF_COMCORE_EXPORT_CPP CUDPSocket : public CSocket
      *
      *      @param localaddr local address to be used for this socket
      *      @param port port used for sending and/or receiving data
-     */  
+     */
     bool Open( const CORE::CString& localaddr ,
                UInt16 port                    );
-               
-    UInt16 GetPort( void ) const;                   
-    
+
+    UInt16 GetPort( void ) const;
+
     /**
      *      Closes the socket connection.
      */
     void Close( bool force = false );
-    
+
     /**
      *      Attempts to send a UDP packet to the given destination.
      *      Note that the data you send must fit within the payload
@@ -174,9 +175,9 @@ class GUCEF_COMCORE_EXPORT_CPP CUDPSocket : public CSocket
      */
     Int32 SendPacketTo( const CORE::CString& dnsname ,
                         UInt16 port                  ,
-                        const void* data             , 
+                        const void* data             ,
                         UInt16 datasize              );
-                                
+
     /**
      *      Attempts to send a UDP packet to the given destination.
      *      Note that the data you send must fit within the payload
@@ -188,7 +189,7 @@ class GUCEF_COMCORE_EXPORT_CPP CUDPSocket : public CSocket
      *      @return the actual number of bytes that where sent. -1 indicates an error.
      */
     Int32 SendPacketTo( const CIPAddress& dest ,
-                        const void* data       , 
+                        const void* data       ,
                         UInt16 datasize        );
 
     /**
@@ -201,7 +202,7 @@ class GUCEF_COMCORE_EXPORT_CPP CUDPSocket : public CSocket
      *      packet data then the remaining data will be lost !!!
      *
      *      If there are more packets queued after a successful read then
-     *      a new UDPPacketRecievedEvent will be sent. This cycle repeats until 
+     *      a new UDPPacketRecievedEvent will be sent. This cycle repeats until
      *      there are no more packets in the queue.
      *
      *      @param src structure that will hold the information about the source of the data
@@ -210,35 +211,35 @@ class GUCEF_COMCORE_EXPORT_CPP CUDPSocket : public CSocket
      *      @return the number of bytes written to the given buffer, returns -1 on error.
      */
     Int32 Recieve( CIPAddress& src ,
-                   void* destbuf   , 
+                   void* destbuf   ,
                    UInt16 bufsize  );
-                   
+
     /**
      *      Same as the other version of Recieve() except here
      *      you do not have to pass in a structure for source info.
-     *      Only use this version if you don't care where the packet 
+     *      Only use this version if you don't care where the packet
      *      came from
      *
      *      @param destbuf buffer the received data will be written to.
-     *      @param bufsize size of the destination buffer in bytes.         
-     */                       
-    Int32 Recieve( void* destbuf      , 
+     *      @param bufsize size of the destination buffer in bytes.
+     */
+    Int32 Recieve( void* destbuf      ,
                    UInt16 bufsize     );
-                             
+
     /**
      *      returns whether this socket is a blocking socket
      *
      *      @return whether this socket is a blocking socket
-     */                                 
+     */
     bool IsBlocking( void ) const;
-    
+
     /**
      *  returns the size of the buffer used for a single received data packet
      *
      *  @return the size of the buffer for received data
      */
     UInt32 GetRecievedDataBufferSize( void ) const;
-    
+
     /**
      *  sets the size of the buffer used for a single received data packet
      *  Typically you will want to set this to the exact size of your UDP packages
@@ -248,11 +249,11 @@ class GUCEF_COMCORE_EXPORT_CPP CUDPSocket : public CSocket
      */
     void SetRecievedDataBufferSize( const UInt32 newBufferSize );
 
-    bool IsIncomingDataQueued( void ) const;
-        
-    private:    
+    bool IsIncomingDataQueued( void );
+
+    private:
     typedef CORE::CTEventHandlerFunctor< CUDPSocket > TEventCallback;
-    
+
     void OnPulse( CORE::CNotifier* notifier           ,
                   const CORE::CEvent& eventid         ,
                   CORE::CICloneable* eventdata = NULL );
@@ -260,14 +261,14 @@ class GUCEF_COMCORE_EXPORT_CPP CUDPSocket : public CSocket
     void OnPulseGeneratorDestruction( CORE::CNotifier* notifier           ,
                                       const CORE::CEvent& eventid         ,
                                       CORE::CICloneable* eventdata = NULL );
-    
-    void CheckForData( void );                     /**< checks the socket for queued incoming data */
+
+    bool Update( bool performRead );  /**< checks the socket for queued incoming data */
 
     private:
-    
+
     struct SUDPSockData;            /**< forward declaration of platform data storage structure */
     typedef struct CUDPSocket::SUDPSockData TUDPSockData;
-    
+
     bool _blocking;                 /**< is this socket blocking ? */
     bool _checkfordata;             /**< check for data and dispatch event next update cycle ? */
     struct SUDPSockData* _data;     /**< container for platform specific data */

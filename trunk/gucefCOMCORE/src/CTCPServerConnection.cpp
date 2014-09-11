@@ -14,7 +14,7 @@
  *
  *  You should have received a copy of the GNU Lesser General Public
  *  License along with this library; if not, write to the Free Software
- *  Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA 
+ *  Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA
  */
 
 /*-------------------------------------------------------------------------//
@@ -22,6 +22,8 @@
 //      INCLUDES                                                           //
 //                                                                         //
 //-------------------------------------------------------------------------*/
+
+#include <string.h>
 
 #include "CTCPServerSocket.h"           /* parent server socket */
 
@@ -39,8 +41,8 @@
 
 #include "CTCPServerConnection.h"       /* header for this class */
 
-#if ( ( GUCEF_PLATFORM == GUCEF_PLATFORM_LINUX ) || ( GUCEF_PLATFORM == GUCEF_PLATFORM_ANDROID ) )    
-    #include <netinet/tcp.h>    
+#if ( ( GUCEF_PLATFORM == GUCEF_PLATFORM_LINUX ) || ( GUCEF_PLATFORM == GUCEF_PLATFORM_ANDROID ) )
+    #include <netinet/tcp.h>
 #endif
 
 /*-------------------------------------------------------------------------//
@@ -96,8 +98,11 @@ CTCPServerConnection::CTCPServerConnection( CTCPServerSocket *tcp_serversock ,
           m_parentsock( tcp_serversock )      ,
           m_coaleseDataSends( true )
 {GUCEF_TRACE;
-        
-    _data = new TTCPServerConData;        
+
+    _data = new TTCPServerConData;
+    _data->sockid = 0;
+    _data->timeout = { 0, 0 };
+    memset( &_data->clientaddr, 0, sizeof(_data->clientaddr) );
 }
 
 /*-------------------------------------------------------------------------*/
@@ -105,8 +110,8 @@ CTCPServerConnection::CTCPServerConnection( CTCPServerSocket *tcp_serversock ,
 CTCPServerConnection::~CTCPServerConnection()
 {GUCEF_TRACE;
 
-    Close();      
-    
+    Close();
+
     delete _data;
 }
 
@@ -126,13 +131,13 @@ CTCPServerConnection::GetRemoteIP( void ) const
 {GUCEF_TRACE;
 
     #if ( GUCEF_PLATFORM == GUCEF_PLATFORM_MSWIN )
-    
+
     return CIPAddress( _data->clientaddr.sin_addr.S_un.S_addr, _data->clientaddr.sin_port );
-    
+
     #elif ( ( GUCEF_PLATFORM == GUCEF_PLATFORM_LINUX ) || ( GUCEF_PLATFORM == GUCEF_PLATFORM_ANDROID ) )
-    
+
     return CIPAddress( _data->clientaddr.sin_addr.s_addr, _data->clientaddr.sin_port );
-    
+
     #endif
 }
 
@@ -141,7 +146,7 @@ CTCPServerConnection::GetRemoteIP( void ) const
 CHostAddress
 CTCPServerConnection::GetRemoteHostAddress( void ) const
 {GUCEF_TRACE;
-    
+
     return CHostAddress( GetRemoteIP(), GetRemoteHostName() );
 }
 
@@ -164,7 +169,7 @@ CTCPServerConnection::LockData( void ) const
 }
 
 /*-------------------------------------------------------------------------*/
-    
+
 void
 CTCPServerConnection::UnlockData( void ) const
 {GUCEF_TRACE;
@@ -179,15 +184,15 @@ CTCPServerConnection::Close( void )
 {GUCEF_TRACE;
 
     LockData();
-    
+
     if ( _active )
     {
         int errorCode;
-        dvsocket_closesocket( _data->sockid, &errorCode ); 
+        dvsocket_closesocket( _data->sockid, &errorCode );
         _active = false;
-        
+
         NotifyObservers( DisconnectedEvent );
-        
+
         m_parentsock->OnClientConnectionClosed( this            ,
                                                 m_connectionidx ,
                                                 false           );
@@ -195,30 +200,30 @@ CTCPServerConnection::Close( void )
 		m_readbuffer.Clear( false );
 		m_sendBuffer.Clear( false );
 		m_sendOpBuffer.Clear( false );
-    }                                                                    
+    }
     UnlockData();
 }
 
 /*-------------------------------------------------------------------------*/
 
 bool
-CTCPServerConnection::Send( const void* dataSource , 
+CTCPServerConnection::Send( const void* dataSource ,
                             const UInt32 length    )
 {GUCEF_TRACE;
-        
+
     if ( IsActive() )
     {
         GUCEF_DEBUG_LOG( CORE::LOGLEVEL_NORMAL, "CTCPServerConnection(" + CORE::PointerToString( this ) + "): Sending data of length " + CORE::UInt32ToString( length ) );
-        
+
         LockData();
-        
+
         // notify observers that we are sending data
         CORE::CDynamicBuffer linkedBuffer;
         linkedBuffer.LinkTo( dataSource, length );
         TDataRecievedEventData cData( &linkedBuffer );
         if ( !NotifyObservers( DataSentEvent, &cData ) ) return false;
-        
-        // Check if we still have data queued to be sent,.. 
+
+        // Check if we still have data queued to be sent,..
         // TCP has to be in-order so we will have to queue the new data behind the already queued data
         if ( m_sendBuffer.HasBufferedData() )
         {
@@ -227,7 +232,7 @@ CTCPServerConnection::Send( const void* dataSource ,
             UnlockData();
             return true;
         }
-                                
+
         // We will try looping until we have transmitted all the data
         int error;
         UInt32 totalBytesSent = 0;
@@ -236,16 +241,16 @@ CTCPServerConnection::Send( const void* dataSource ,
         {
             // perform a send, trying to send as much of the given data as possible
             Int32 remnant = length - totalBytesSent;
-            wbytes = dvsocket_send( _data->sockid                      ,  
-                                    ((Int8*)dataSource)+totalBytesSent , 
-                                    remnant                            , 
-                                    0                                  , 
+            wbytes = dvsocket_send( _data->sockid                      ,
+                                    ((Int8*)dataSource)+totalBytesSent ,
+                                    remnant                            ,
+                                    0                                  ,
                                     &error                             );
             if ( wbytes != SOCKET_ERROR )
             {
                 // we where able to send at least some of the data
                 totalBytesSent += wbytes;
-                
+
                 GUCEF_DEBUG_LOG( CORE::LOGLEVEL_BELOW_NORMAL, "CTCPServerConnection(" + CORE::PointerToString( this ) + "): Succeeded in sending " + CORE::UInt32ToString( wbytes ) + " bytes of data" );
             }
             else
@@ -260,20 +265,20 @@ CTCPServerConnection::Send( const void* dataSource ,
                 else
                 {
                     UnlockData();
-                    
+
                     GUCEF_DEBUG_LOG( CORE::LOGLEVEL_NORMAL, "CTCPServerConnection(" + CORE::PointerToString( this ) + "): Socket error occured: " + CORE::Int32ToString( error ) );
-                    
+
                     TSocketErrorEventData eData( error );
                     NotifyObservers( SocketErrorEvent, &eData );
                     return false;
                 }
             }
         }
-        
+
         UnlockData();
         return true;
     }
-     
+
     return false;
 }
 
@@ -291,7 +296,7 @@ CTCPServerConnection::SetMaxRead( UInt32 mr )
      */
     LockData();
     m_maxreadbytes = mr;
-    UnlockData();          
+    UnlockData();
 }
 
 /*-------------------------------------------------------------------------*/
@@ -306,9 +311,9 @@ CTCPServerConnection::GetMaxRead( void ) const
 /*-------------------------------------------------------------------------*/
 
 bool
-CTCPServerConnection::Read( char *dest     , 
-                            UInt32 size    , 
-                            UInt32 &wbytes , 
+CTCPServerConnection::Read( char *dest     ,
+                            UInt32 size    ,
+                            UInt32 &wbytes ,
                             Int32 timeout  )
 {GUCEF_TRACE;
             //@TODO: blocking socket support
@@ -317,8 +322,8 @@ CTCPServerConnection::Read( char *dest     ,
      //         _readbuffer.GetBufferPtr() ,
      //         _readbuffer.GetSize()      ,
      //         0                          );
-              
-        
+
+
      /*
         if ( !datalock.Lock_Mutex() ) return false;
 	rb_dest = dest;
@@ -336,9 +341,9 @@ CTCPServerConnection::Read( char *dest     ,
 void
 CTCPServerConnection::CheckRecieveBuffer( void )
 {GUCEF_TRACE;
-                                 
+
     GUCEF_DEBUG_LOG( CORE::LOGLEVEL_BELOW_NORMAL, "CTCPServerConnection(" + CORE::PointerToString( this ) + "): Checking the recieve buffer for incoming data" );
-    
+
     /*
      *      Since this is a non-blocking socket we need to poll for received data
      */
@@ -348,51 +353,51 @@ CTCPServerConnection::CheckRecieveBuffer( void )
     UInt32 readblocksize;
     m_maxreadbytes ? readblocksize = m_maxreadbytes : readblocksize = 1024;
     do
-    {                 
+    {
         m_readbuffer.SetDataSize( m_readbuffer.GetDataSize()+readblocksize );
-        bytesrecv = dvsocket_recv( _data->sockid                                                 , 
+        bytesrecv = dvsocket_recv( _data->sockid                                                 ,
                                    static_cast<char*>(m_readbuffer.GetBufferPtr())+totalrecieved ,
                                    readblocksize                                                 ,
                                    0                                                             ,
                                    &errorcode                                                    );
-        
+
         // Check for an error
         if ( ( bytesrecv == SOCKET_ERROR ) || ( errorcode != 0 ) )
         {
             GUCEF_DEBUG_LOG( CORE::LOGLEVEL_NORMAL, "CTCPServerConnection(" + CORE::PointerToString( this ) + "): Socket error occured: " + CORE::Int32ToString( errorcode ) );
 
             // After a socket error you must always close the connection.
-            dvsocket_closesocket( _data->sockid, &errorcode ); 
+            dvsocket_closesocket( _data->sockid, &errorcode );
             _active = false;
-            
+
             // Notify our users of the error
             TSocketErrorEventData eData( errorcode );
             NotifyObservers( SocketErrorEvent, &eData );
             return;
         }
-                                           
+
         if ( (  0 == totalrecieved ) &&
              (  0 == bytesrecv     )  )
         {
             GUCEF_DEBUG_LOG( CORE::LOGLEVEL_NORMAL, "CTCPServerConnection(" + CORE::PointerToString( this ) + "): Client closed the connection" );
-            
+
             /*
              *      we arrived here because the read flag was set, however no data is available
              *      This means that the client closed the connection
              */
-            dvsocket_closesocket( _data->sockid, &errorcode ); 
+            dvsocket_closesocket( _data->sockid, &errorcode );
             _active = false;
-            
+
             NotifyObservers( DisconnectedEvent );
-            
+
             m_parentsock->OnClientConnectionClosed( this            ,
                                                     m_connectionidx ,
-                                                    true            );                         
-            return; 
-        }                     
+                                                    true            );
+            return;
+        }
         totalrecieved += bytesrecv;
         m_readbuffer.SetDataSize( totalrecieved );
-        
+
         if ( m_maxreadbytes )
         {
             if ( m_maxreadbytes <= totalrecieved )
@@ -402,16 +407,16 @@ CTCPServerConnection::CheckRecieveBuffer( void )
         }
     }
     while ( bytesrecv == readblocksize );
-    
+
     if ( totalrecieved > 0 )
-    {        
+    {
         GUCEF_DEBUG_LOG( CORE::LOGLEVEL_BELOW_NORMAL, "CTCPServerConnection(" + CORE::PointerToString( this ) + "): Received " + CORE::UInt32ToString( totalrecieved ) + " bytes of data" );
-        
+
         UInt16 keepbytes(0);
-        
+
         TDataRecievedEventData eData( &m_readbuffer );
         NotifyObservers( DataRecievedEvent, &eData );
-    }                              
+    }
 }
 
 /*-------------------------------------------------------------------------*/
@@ -425,64 +430,64 @@ CTCPServerConnection::GetConnectionIndex( void ) const
 
 /*-------------------------------------------------------------------------*/
 
-void 
+void
 CTCPServerConnection::Update( void )
 {GUCEF_TRACE;
 
     if ( !_blocking && _active )
-    {       
-        fd_set readfds;      /* Setup the read variable for the select function */        
+    {
+        fd_set readfds;      /* Setup the read variable for the select function */
         fd_set exceptfds;    /* Setup the except variable for the select function */
 
         FD_ZERO( &readfds );
         FD_ZERO( &exceptfds );
 
         LockData();
-        
+
         FD_SET( _data->sockid, &readfds );
-        FD_SET( _data->sockid, &exceptfds );                
-        
+        FD_SET( _data->sockid, &exceptfds );
+
         int errorCode = 0;
-        if ( dvsocket_select( _data->sockid+1   , 
-                              &readfds          , 
+        if ( dvsocket_select( _data->sockid+1   ,
+                              &readfds          ,
                               NULL              , // We don't care about socket writes here
-                              &exceptfds        , 
+                              &exceptfds        ,
                               &_data->timeout   ,
-                              &errorCode        ) != SOCKET_ERROR ) 
+                              &errorCode        ) != SOCKET_ERROR )
         {
             /* something happened on the socket */
-            
+
             if ( FD_ISSET( _data->sockid, &exceptfds ) )
             {
                 GUCEF_DEBUG_LOG( CORE::LOGLEVEL_NORMAL, "CTCPServerConnection(" + CORE::PointerToString( this ) + "): Socket error occured: " + CORE::Int32ToString( errorCode ) );
-                
+
                 int lastError = errorCode;
-                dvsocket_closesocket( _data->sockid, &errorCode ); 
+                dvsocket_closesocket( _data->sockid, &errorCode );
                 _active = false;
 
                 TSocketErrorEventData eData( lastError );
                 if ( !NotifyObservers( SocketErrorEvent, &eData ) ) return;
-               
+
                 UnlockData();
-                return;                                                                   
+                return;
             }
             else
             if ( FD_ISSET( _data->sockid, &readfds ) )
             {
                 /* data can be read from the socket */
                 CheckRecieveBuffer();
-            }                                                
+            }
         }
         else
         {
             /* select call failed */
             GUCEF_DEBUG_LOG( CORE::LOGLEVEL_NORMAL, "CTCPServerConnection(" + CORE::PointerToString( this ) + "): Socket error occured (select call failed): " + CORE::Int32ToString( errorCode ) );
-            
+
             TSocketErrorEventData eData( errorCode );
             NotifyObservers( SocketErrorEvent, &eData );
         }
-        
-        // Check if we still have data queued to be sent,.. 
+
+        // Check if we still have data queued to be sent,..
         while ( m_sendBuffer.HasBufferedData() )
         {
             // read an entire block
@@ -497,10 +502,10 @@ CTCPServerConnection::Update( void )
                     // perform a send, trying to send as much of the given data as possible
                     const Int8* data = static_cast< const Int8* >( m_sendOpBuffer.GetConstBufferPtr() );
                     Int32 remnant = m_sendOpBuffer.GetDataSize() - totalBytesSent;
-                    wbytes = dvsocket_send( _data->sockid       ,  
-                                            data+totalBytesSent , 
-                                            remnant             , 
-                                            0                   , 
+                    wbytes = dvsocket_send( _data->sockid       ,
+                                            data+totalBytesSent ,
+                                            remnant             ,
+                                            0                   ,
                                             &error              );
                     if ( wbytes != SOCKET_ERROR )
                     {
@@ -520,18 +525,18 @@ CTCPServerConnection::Update( void )
                             m_sendBuffer.WriteAtFrontOfQueue( data+totalBytesSent ,
                                                               remnant             ,
                                                               1                   );
-                            
+
                             GUCEF_DEBUG_LOG( CORE::LOGLEVEL_BELOW_NORMAL, "CTCPServerConnection(" + CORE::PointerToString( this ) + "): Unable to delayed send queued data at this time" );
-                            
+
                             UnlockData();
                             return;
                         }
                         else
                         {
                             UnlockData();
-                            
+
                             GUCEF_DEBUG_LOG( CORE::LOGLEVEL_NORMAL, "CTCPServerConnection(" + CORE::PointerToString( this ) + "): Socket error occured: " + CORE::Int32ToString( error ) );
-                            
+
                             TSocketErrorEventData eData( error );
                             NotifyObservers( SocketErrorEvent, &eData );
                             return;
@@ -540,14 +545,14 @@ CTCPServerConnection::Update( void )
                 }
             }
         }
-        
-        UnlockData(); 
-    }               
+
+        UnlockData();
+    }
 }
 
 /*-------------------------------------------------------------------------*/
 
-bool 
+bool
 CTCPServerConnection::IsActive( void ) const
 {GUCEF_TRACE;
 
