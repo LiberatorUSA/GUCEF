@@ -62,6 +62,11 @@
 #define GUCEF_CORE_CVALUELIST_H
 #endif /* GUCEF_CORE_CVALUELIST_H ? */
 
+#ifndef GUCEF_CORE_CTIMER_H
+#include "CTimer.h"
+#define GUCEF_CORE_CTIMER_H
+#endif /* GUCEF_CORE_CTIMER_H ? */
+
 #ifndef GUCEF_COMCORE_CUDPSOCKET_H
 #include "CUDPSocket.h"
 #define GUCEF_COMCORE_CUDPSOCKET_H
@@ -106,6 +111,7 @@ class SocketSink : public CORE::CObserver
     bool m_udpAddNewLine;
     CORE::Int64 m_flushThreshold;
     CORE::CDynamicBuffer m_udpFileBuffer;
+    CORE::CTimer m_udpFlushTimer;
 
     void
     OnUDPSocketError( CORE::CNotifier* notifier   ,
@@ -133,6 +139,8 @@ class SocketSink : public CORE::CObserver
 
         // We don't want to lose UDP packets, thus update faster then we normally would
         CORE::CCoreGlobal::Instance()->GetApplication().GetPulseGenerator().RequestPeriodicPulses( this, 1 );
+        
+        m_udpFlushTimer.SetEnabled( true );
 
         GUCEF_LOG( CORE::LOGLEVEL_IMPORTANT, "SocketSink: UDP Socket has been opened" );
     }
@@ -272,6 +280,16 @@ class SocketSink : public CORE::CObserver
     }
 
     void
+    OnUdpFlushTimerUpdate( CORE::CNotifier* notifier   ,
+                           const CORE::CEvent& eventID ,
+                           CORE::CICloneable* evenData )
+    {GUCEF_TRACE;
+
+        GUCEF_LOG( CORE::LOGLEVEL_IMPORTANT, "SocketSink: Flush timer interval triggered" );
+        FlushUdpBuffer();
+    }
+
+    void
     RegisterEventHandlers( void )
     {GUCEF_TRACE;
 
@@ -323,6 +341,11 @@ class SocketSink : public CORE::CObserver
                      COMCORE::CTCPServerSocket::ClientErrorEvent ,
                      callback11                                  );
 
+        // Register timer event handler
+        TEventCallback callback12( this, &SocketSink::OnUdpFlushTimerUpdate );
+        SubscribeTo( &m_udpFlushTimer               ,
+                     CORE::CTimer::TimerUpdateEvent ,
+                     callback12                     );
     }
 
     public:
@@ -370,6 +393,14 @@ class SocketSink : public CORE::CObserver
         {
             minLogLevel = CORE::StringToInt32( valueStr );
             CORE::CCoreGlobal::Instance()->GetLogManager().SetMinLogLevel( minLogLevel );
+        }
+
+        CORE::UInt32 flushTimerInterval = 360000;
+        valueStr = keyValueList.GetValueAlways( "UdpFlushTimerInterval" );
+        if ( !valueStr.IsNULLOrEmpty() )
+        {
+            minLogLevel = CORE::StringToUInt32( valueStr );
+            m_udpFlushTimer.SetInterval( flushTimerInterval );
         }
 
         if ( enableUdp )
