@@ -66,8 +66,8 @@ class GUCEF_COMCORE_EXPORT_CPP CIPAddress
     /**
      *  The values are expected to be in network byte order 
      */
-    CIPAddress( const UInt32 address ,
-                const UInt16 port    );
+    CIPAddress( const UInt32 addressInNetworkByteOrder ,
+                const UInt16 portInNetworkByteOrder    );
 
     /**
      *  The port value is expected to be in host byte order
