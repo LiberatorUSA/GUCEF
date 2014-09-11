@@ -52,6 +52,11 @@
 #define GUCEF_CORE_CTRACER_H
 #endif /* GUCEF_CORE_CTRACER_H ? */
 
+#ifndef GUCEF_CORE_CPLATFORMNATIVECONSOLEWINDOW_H
+#include "gucefCORE_CPlatformNativeConsoleWindow.h"
+#define GUCEF_CORE_CPLATFORMNATIVECONSOLEWINDOW_H
+#endif /* GUCEF_CORE_CPLATFORMNATIVECONSOLEWINDOW_H ? */
+
 #ifndef GUCEF_CORE_CVALUELIST_H
 #include "CValueList.h"
 #define GUCEF_CORE_CVALUELIST_H
@@ -334,8 +339,20 @@ class SocketSink : public CORE::CObserver
 
         GUCEF_DEBUG_LOG( CORE::LOGLEVEL_NORMAL, "SocketSink: Setup starting. " + CORE::UInt32ToString( keyValueList.GetCount() ) + " Config keys were provided" );
 
+        CORE::CPlatformNativeConsoleWindow consoleWindow;
+        bool provideConsoleWindow = false;
+        CORE::CString valueStr = keyValueList.GetValueAlways( "ProvideConsoleWindow" );
+        if ( !valueStr.IsNULLOrEmpty() )
+        {
+            provideConsoleWindow = CORE::StringToBool( valueStr );
+            if ( provideConsoleWindow )
+            {
+                consoleWindow.CreateConsole();
+            }
+        }
+
         bool enableUdp = false;
-        CORE::CString valueStr = keyValueList.GetValueAlways( "EnableUdp" );
+        valueStr = keyValueList.GetValueAlways( "EnableUdp" );
         if ( !valueStr.IsNULLOrEmpty() )
         {
             enableUdp = CORE::StringToBool( valueStr );
