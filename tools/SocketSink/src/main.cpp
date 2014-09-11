@@ -99,6 +99,8 @@ class SocketSink : public CORE::CObserver
     CORE::CFileAccess m_tcpSinkFile;
     bool m_doUdpForwarding;
     bool m_udpAddNewLine;
+    CORE::Int64 m_flushThreshold;
+    CORE::CDynamicBuffer m_udpFileBuffer;
 
     void
     OnUDPSocketError( CORE::CNotifier* notifier   ,
@@ -128,6 +130,18 @@ class SocketSink : public CORE::CObserver
     }
 
     void
+    FlushUdpBuffer( void )
+    {
+        // flush memory buffer
+        if ( m_udpSinkFile.IsValid() )
+        {
+            m_udpSinkFile.Write( m_udpFileBuffer.GetConstBufferPtr(), m_udpFileBuffer.GetDataSize(), 1 );
+            m_udpFileBuffer.Clear( true );
+            m_udpSinkFile.Flush();
+        }
+    }
+
+    void
     OnUDPPacketRecieved( CORE::CNotifier* notifier   ,
                          const CORE::CEvent& eventID ,
                          CORE::CICloneable* evenData )
@@ -141,12 +155,33 @@ class SocketSink : public CORE::CObserver
 
             GUCEF_LOG( CORE::LOGLEVEL_IMPORTANT, "SocketSink: UDP Socket received a packet from " + data.sourceAddress.AddressAndPortAsString() );
 
-            if ( m_udpSinkFile.IsValid() )
+            bool writeToFile = true;
+            if ( m_flushThreshold > 0 ) 
+            {
+                if ( m_udpFileBuffer.GetDataSize() < m_flushThreshold ) 
+                {
+                    // add to in-memory buffer
+                    m_udpFileBuffer.Append( udpPacketBuffer.GetConstBufferPtr(), udpPacketBuffer.GetDataSize(), true );
+                    if ( m_udpAddNewLine )
+                    {
+                        static const char newLine = '\n';
+                        m_udpFileBuffer.Append( &newLine, 1, true );
+                    }
+                    writeToFile = false;
+                }
+                else
+                {
+                    // flush memory buffer
+                    FlushUdpBuffer();
+                }
+            }
+
+            if ( writeToFile && m_udpSinkFile.IsValid() )
             {
                 m_udpSinkFile.Write( udpPacketBuffer.GetConstBufferPtr(), udpPacketBuffer.GetDataSize(), 1 );
                 if ( m_udpAddNewLine )
                 {
-                    char newLine = '\n';
+                    static const char newLine = '\n';
                     m_udpSinkFile.Write( &newLine, 1, 1 );
                 }
                 GUCEF_LOG( CORE::LOGLEVEL_BELOW_NORMAL, "SocketSink: Wrote UDP packet to file: " + CORE::UInt32ToString( udpPacketBuffer.GetDataSize() ) + " bytes in payload" );
@@ -309,6 +344,14 @@ class SocketSink : public CORE::CObserver
             enableTcp = CORE::StringToBool( valueStr );
         }
 
+        CORE::Int32 minLogLevel = CORE::LOGLEVEL_BELOW_NORMAL;
+        valueStr = keyValueList.GetValueAlways( "MinimalLogLevel" );
+        if ( !valueStr.IsNULLOrEmpty() )
+        {
+            minLogLevel = CORE::StringToInt32( valueStr );
+            CORE::CCoreGlobal::Instance()->GetLogManager().SetMinLogLevel( minLogLevel );
+        }
+
         if ( enableUdp )
         {
             CORE::CString udpOutputFilePath = CORE::RelativePath( keyValueList.GetValueAlways( "UdpOutputFile" ) );
@@ -330,6 +373,22 @@ class SocketSink : public CORE::CObserver
             {
                 m_udpAddNewLine = CORE::StringToBool( valueStr );
                 GUCEF_LOG( CORE::LOGLEVEL_IMPORTANT, "SocketSink: Add new line is true for UDP: Make sure you are sending text!" );
+            }
+
+            m_flushThreshold = -1;
+            valueStr = keyValueList.GetValueAlways( "UdpFlushThreshold" );
+            if ( !valueStr.IsNULLOrEmpty() )
+            {
+                m_flushThreshold = CORE::StringToInt64( valueStr );
+                GUCEF_LOG( CORE::LOGLEVEL_IMPORTANT, "SocketSink: Set UDP flush threshold to " + valueStr );
+            }
+
+            m_udpFileBuffer.SetAutoEnlarge( true );
+            valueStr = keyValueList.GetValueAlways( "UdpFileBufferSize" );
+            if ( !valueStr.IsNULLOrEmpty() )
+            {
+                m_udpFileBuffer.SetBufferSize( CORE::StringToUInt32( valueStr ) );
+                GUCEF_LOG( CORE::LOGLEVEL_IMPORTANT, "SocketSink: Set UDP file buffer size to: " + valueStr );
             }
 
             valueStr = keyValueList.GetValueAlways( "UdpPort" );
@@ -396,6 +455,8 @@ class SocketSink : public CORE::CObserver
 
         m_udpSocket.Close( true );
         m_tcpServerSocket.Close();
+
+        FlushUdpBuffer();
     }
 };
 

@@ -89,12 +89,12 @@ const Int32 LOGLEVEL_EVERYTHING = 0;
 //-------------------------------------------------------------------------*/
 
 CLogManager::CLogManager( void )
-    : m_loggers()                         ,
-      m_msgTypeEnablers()                 ,
-      m_maxLogLevel( GUCEFCORE_INT32MAX ) ,
-      m_bootstrapLog()                    ,
-      m_busyLogging( false )              ,
-      m_redirectToLogQueue( false )       ,
+    : m_loggers()                            ,
+      m_msgTypeEnablers()                    ,
+      m_minLogLevel( LOGLEVEL_BELOW_NORMAL ) ,
+      m_bootstrapLog()                       ,
+      m_busyLogging( false )                 ,
+      m_redirectToLogQueue( false )          ,
       m_dataLock()
 {GUCEF_TRACE;
 
@@ -241,13 +241,22 @@ CLogManager::ClearLoggers( void )
     m_dataLock.Lock();
 
     bool retValue = false;
-    if ( logLevel < m_maxLogLevel )
+    if ( logLevel < m_minLogLevel )
     {
         retValue = (*m_msgTypeEnablers.find( logMsgType )).second;
     }
 
     m_dataLock.Unlock();
     return retValue;
+}
+
+/*-------------------------------------------------------------------------*/
+
+void
+CLogManager::SetMinLogLevel( const Int32 logLevel )
+{GUCEF_TRACE;
+
+    m_minLogLevel = logLevel;
 }
 
 /*-------------------------------------------------------------------------*/
@@ -282,7 +291,7 @@ CLogManager::Log( const TLogMsgType logMsgType ,
     // if this flag is true then log messages will be dropped since the thread is within
     // the logger->Log() call and thus the message is generated due to the logging
     // activity itself.
-    if ( logLevel < m_maxLogLevel && !m_busyLogging )
+    if ( logLevel > m_minLogLevel && !m_busyLogging )
     {
         if ( (*m_msgTypeEnablers.find( logMsgType )).second )
         {
