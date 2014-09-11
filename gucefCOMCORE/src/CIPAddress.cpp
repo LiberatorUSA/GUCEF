@@ -145,6 +145,8 @@ CIPAddress::ResolveDNS( const CORE::CString& address     ,
                         const UInt16 portInHostByteOrder )
 {GUCEF_TRACE;
 
+    if ( address.IsNULLOrEmpty() ) return false;
+    
     if ( CORE::Check_If_IP( address.C_String() ) )
     {
         m_address = inet_addr( address.C_String() );

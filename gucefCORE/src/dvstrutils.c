@@ -802,6 +802,9 @@ Tab_To_Space( char *buffer, UInt32 numspace )
 UInt32
 Check_If_IP( const char *buffer )
 {
+    if ( NULL != buffer )
+    {
+        
         /*
          *      Function that simply checks if the given string is an IP address in
          *      string form or something else, a host name for example.
@@ -848,6 +851,8 @@ Check_If_IP( const char *buffer )
                 i++;
         }
         return 1;
+    }
+    return 0;
 }
 
 /*--------------------------------------------------------------------------*/
