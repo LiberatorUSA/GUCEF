@@ -95,8 +95,8 @@ CUDPSocket::CUDPSocket( CORE::CPulseGenerator& pulseGenerator ,
                         bool blocking                         )
     : CSocket()                           ,
       _blocking( blocking )               ,
-      m_port( 0 )                         ,
       _data( NULL )                       ,
+      m_hostAddress()                     ,
       m_buffer()                          ,
       m_pulseGenerator( &pulseGenerator )
 {GUCEF_TRACE;
@@ -123,8 +123,8 @@ CUDPSocket::CUDPSocket( CORE::CPulseGenerator& pulseGenerator ,
 CUDPSocket::CUDPSocket( bool blocking )
     : CSocket()             ,
       _blocking( blocking ) ,
-      m_port( 0 )           ,
       _data( NULL )         ,
+      m_hostAddress()       ,
       m_buffer()            ,
       m_pulseGenerator( &CORE::CCoreGlobal::Instance()->GetPulseGenerator() )
 {GUCEF_TRACE;
@@ -357,12 +357,12 @@ CUDPSocket::Recieve( CIPAddress& src ,
                                     &sockError                     );
     if ( retval < 0 )
     {
-            return -1;
+        return -1;
     }
     if ( retval == 0 )
     {
-            Close( true );
-            return 0;
+        Close( true );
+        return 0;
     }
 
     // Set the actual usefull bytes of data in the buffer
@@ -414,22 +414,7 @@ bool
 CUDPSocket::Open( void )
 {GUCEF_TRACE;
 
-    Close( true );
-
-    int errorCode;
-    if ( dvsocket_bind( _data->sockid                            ,
-                        (struct sockaddr *) &_data->localaddress ,
-                        sizeof(struct sockaddr_in)               ,
-                        &errorCode                               ) == 0 )
-    {
-        NotifyObservers( UDPSocketOpenedEvent );
-
-        // We will now be requiring periodic updates to poll for data
-        m_pulseGenerator->RequestPeriodicPulses( this, PULSEUPDATEINTERVAL );
-
-        return true;
-    }
-    return false;
+    return Open( m_hostAddress );
 }
 
 /*-------------------------------------------------------------------------*/
@@ -438,7 +423,8 @@ bool
 CUDPSocket::Open( UInt16 port )
 {GUCEF_TRACE;
 
-    return Open( CORE::CString(), port );
+    CIPAddress address( INADDR_ANY, htons( port ) );
+    return Open( address );
 }
 
 /*-------------------------------------------------------------------------*/
@@ -448,16 +434,30 @@ CUDPSocket::Open( const CORE::CString& localaddr ,
                   UInt16 port                    )
 {GUCEF_TRACE;
 
+    CHostAddress address( localaddr, port );
+    bool success = Open( address );
+    m_hostAddress = address;
+    return success;
+}
+
+/*-------------------------------------------------------------------------*/
+
+bool
+CUDPSocket::Open( const CIPAddress& localaddr )
+{GUCEF_TRACE;
+
     Close( true );
 
-    int errorCode;
-    _data->sockid = dvsocket_socket( AF_INET     ,
-                                     SOCK_DGRAM  ,
-                                     IPPROTO_UDP ,
-                                     &errorCode  );
-    if ( _data->sockid == INVALID_SOCKET )
+    m_hostAddress = localaddr; 
+
+    //create a UDP socket
+    int errorCode = 0;
+    if ( ( _data->sockid = dvsocket_socket( AF_INET     , 
+                                            SOCK_DGRAM  , 
+                                            IPPROTO_UDP , 
+                                            &errorCode  ) ) == INVALID_SOCKET )
     {
-        GUCEF_ERROR_LOG( CORE::LOGLEVEL_IMPORTANT, "UDPSocket: Failed to open socket at " + localaddr + ":" + CORE::UInt16ToString( port ) );
+        GUCEF_ERROR_LOG( CORE::LOGLEVEL_IMPORTANT, "UDPSocket: Failed to open socket at " + m_hostAddress.AddressAndPortAsString() + ". Error code: " + CORE::Int32ToString( errorCode ) );
         return false;
     }
 
@@ -468,22 +468,14 @@ CUDPSocket::Open( const CORE::CString& localaddr ,
     }
 
     _data->localaddress.sin_family = AF_INET;
-    _data->localaddress.sin_port = htons( port );
-    if ( localaddr.IsNULLOrEmpty() )
-    {
-        _data->localaddress.sin_addr.s_addr = INADDR_ANY;
-    }
-    else
-    {
-        _data->localaddress.sin_addr.s_addr = inet_addr( localaddr.C_String() );
-    }
+    _data->localaddress.sin_port = m_hostAddress.GetPort();
+    _data->localaddress.sin_addr.s_addr = m_hostAddress.GetAddress();
 
     if ( dvsocket_bind( _data->sockid                            ,
                         (struct sockaddr *) &_data->localaddress ,
                         sizeof(struct sockaddr_in)               ,
                         &errorCode                               ) == 0 )
     {
-        m_port = port;
         NotifyObservers( UDPSocketOpenedEvent );
 
         // We will now be requiring periodic updates to poll for data
@@ -536,7 +528,7 @@ UInt16
 CUDPSocket::GetPort( void ) const
 {GUCEF_TRACE;
 
-    return m_port;
+    return m_hostAddress.GetPortInHostByteOrder();
 }
 
 /*-------------------------------------------------------------------------//

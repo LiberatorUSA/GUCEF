@@ -102,10 +102,10 @@ CIPAddress::CIPAddress( const CIPAddress& src )
 
 /*-------------------------------------------------------------------------*/
 
-CIPAddress::CIPAddress( const UInt32 address ,
-                        const UInt16 port    )
-    : m_address( address ) ,
-      m_port( port )
+CIPAddress::CIPAddress( const UInt32 addressInNetworkByteOrder ,
+                        const UInt16 portInNetworkByteOrder    )
+    : m_address( addressInNetworkByteOrder ) ,
+      m_port( portInNetworkByteOrder )
 {GUCEF_TRACE;
 
 }
@@ -156,6 +156,8 @@ CIPAddress::ResolveDNS( const CORE::CString& address     ,
     }
     else
     {
+        GUCEF_DEBUG_LOG( CORE::LOGLEVEL_BELOW_NORMAL, "CIPAddress: Resolving DNS name: " + address );
+
         #if 1
 
         int errorCode;
@@ -172,6 +174,7 @@ CIPAddress::ResolveDNS( const CORE::CString& address     ,
                 return true;
             }
         }
+        GUCEF_DEBUG_LOG( CORE::LOGLEVEL_NORMAL, "CIPAddress: Failed to resolve DNS name: " + address );
         return false;
 
         #else

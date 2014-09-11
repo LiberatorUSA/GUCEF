@@ -28,6 +28,11 @@
 #define GUCEF_CORE_CTRACER_H
 #endif /* GUCEF_CORE_CTRACER_H ? */
 
+#ifndef GUCEF_COMCORE_SOCKETUTILS_H
+#include "socketutils.h"
+#define GUCEF_COMCORE_SOCKETUTILS_H
+#endif /* GUCEF_COMCORE_SOCKETUTILS_H ? */
+
 #include "CHostAddress.h"
 
 /*-------------------------------------------------------------------------//
@@ -79,7 +84,15 @@ CHostAddress::CHostAddress( const CORE::CString& hostname ,
       m_hostname( hostname )
 {GUCEF_TRACE;
 
-    ResolveDNS( hostname, port );
+    SetPortInHostByteOrder( port );
+    if ( !m_hostname.IsNULLOrEmpty() )
+    {
+        ResolveDNS( hostname, port );
+    }
+    else
+    {
+        SetAddress( INADDR_ANY );
+    }
 }
 
 /*-------------------------------------------------------------------------*/
@@ -133,6 +146,20 @@ CHostAddress::operator=( const CHostAddress& src )
         CIPAddress::operator=( src );
         
         m_hostname = src.m_hostname;
+    }
+    return *this;
+}
+
+/*-------------------------------------------------------------------------*/
+
+CHostAddress&
+CHostAddress::operator=( const CIPAddress& src )
+{GUCEF_TRACE;
+
+    if ( this != &src )
+    {
+        CIPAddress::operator=( src );        
+        m_hostname = src.AddressAsString();
     }
     return *this;
 }

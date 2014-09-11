@@ -152,6 +152,15 @@ class GUCEF_COMCORE_EXPORT_CPP CUDPSocket : public CSocket
     bool Open( const CORE::CString& localaddr ,
                UInt16 port                    );
 
+    /**
+     *      Attempts to open the UDP socket for use on the given local
+     *      address and port. Basically the same as Open( UInt16 port )
+     *      but here you binding to a specific local address mandatory.
+     *
+     *      @param localaddr local address and port to be used for this socket
+     */
+    bool Open( const CIPAddress& localaddr );
+
     UInt16 GetPort( void ) const;
 
     /**
@@ -272,7 +281,7 @@ class GUCEF_COMCORE_EXPORT_CPP CUDPSocket : public CSocket
     bool _blocking;                 /**< is this socket blocking ? */
     bool _checkfordata;             /**< check for data and dispatch event next update cycle ? */
     struct SUDPSockData* _data;     /**< container for platform specific data */
-    UInt16 m_port;
+    CHostAddress m_hostAddress;     /**< retains the destination address and provides easy host-network conversion */
     MT::CMutex _datalock;           /**< mutex for thread-safety when manipulating the socket */
     CORE::CDynamicBuffer m_buffer;
     CORE::CPulseGenerator* m_pulseGenerator;

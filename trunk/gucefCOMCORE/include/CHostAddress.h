@@ -75,6 +75,8 @@ class GUCEF_COMCORE_EXPORT_CPP CHostAddress : public CIPAddress
     const CORE::CString& GetHostname( void ) const;
     
     CHostAddress& operator=( const CHostAddress& src );
+
+    CHostAddress& operator=( const CIPAddress& src );
     
     bool operator==( const CHostAddress& other ) const;
     
