@@ -76,8 +76,6 @@ class GUCEF_COMCORE_EXPORT_CPP CIPAddress
                 const UInt16 port            );
                     
     virtual ~CIPAddress();
-
-    void SetDnsOrIpAsString( const CORE::CString& address );
     
     void SetPort( const UInt16 port );
     

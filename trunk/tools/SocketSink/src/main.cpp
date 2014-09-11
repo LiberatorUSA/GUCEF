@@ -93,7 +93,7 @@ class SocketSink : public CORE::CObserver
     typedef CORE::CTEventHandlerFunctor< SocketSink > TEventCallback;
 
     COMCORE::CUDPSocket m_udpSocket;
-    COMCORE::CIPAddress m_udpFwdAddr;
+    COMCORE::CHostAddress m_udpFwdAddr;
     COMCORE::CTCPServerSocket m_tcpServerSocket;
     CORE::CFileAccess m_udpSinkFile;
     CORE::CFileAccess m_tcpSinkFile;

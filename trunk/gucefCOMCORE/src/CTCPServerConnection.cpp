@@ -101,7 +101,7 @@ CTCPServerConnection::CTCPServerConnection( CTCPServerSocket *tcp_serversock ,
 
     _data = new TTCPServerConData;
     _data->sockid = 0;
-    _data->timeout = { 0, 0 };
+    memset( &_data->timeout, 0, sizeof( _data->timeout ) );
     memset( &_data->clientaddr, 0, sizeof(_data->clientaddr) );
 }
 
