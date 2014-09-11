@@ -126,6 +126,9 @@ class SocketSink : public CORE::CObserver
                        CORE::CICloneable* evenData )
     {GUCEF_TRACE;
 
+        // We don't want to lose UDP packets, thus update faster then we normally would
+        CORE::CCoreGlobal::Instance()->GetApplication().GetPulseGenerator().RequestPeriodicPulses( this, 1 );
+
         GUCEF_LOG( CORE::LOGLEVEL_IMPORTANT, "SocketSink: UDP Socket has been opened" );
     }
 
