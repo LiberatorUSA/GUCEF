@@ -257,8 +257,9 @@ ilfWriteProc( const void* data ,
 /*---------------------------------------------------------------------------*/
 
 UInt32 GUCEF_PLUGIN_CALLSPEC_PREFIX
-CODECPLUGIN_Init( void** plugdata    , 
-                  const char*** args ) GUCEF_PLUGIN_CALLSPEC_SUFFIX
+CODECPLUGIN_Init( void** plugdata   ,
+                  const int argc    ,
+                  const char** argv ) GUCEF_PLUGIN_CALLSPEC_SUFFIX
 {
     /* count the total number of available codecs */
     const char** sTypes = supportedTypes;

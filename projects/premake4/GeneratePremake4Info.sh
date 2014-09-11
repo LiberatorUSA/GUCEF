@@ -3,6 +3,11 @@
 # Turn on tracing, we want to see what's going on
 #set -x
 
+# Remember the dir where we started out since we use relative paths
+scriptPath="$(cd "${0%/*}" 2>/dev/null; echo "$PWD"/"${0##*/}")"
+PREMAKE4COMMON_SCRIPTSTARTDIR=${scriptPath%/*}
+echo "PREMAKE4COMMON_SCRIPTSTARTDIR = $PREMAKE4COMMON_SCRIPTSTARTDIR"
+
 #------------------------------------------------------------------------------
 
 function SetGucefHome {
@@ -11,7 +16,7 @@ function SetGucefHome {
   GUCEF_HOME=${GUCEF_HOME:=undefined}
   if [ "$GUCEF_HOME" = "undefined" ]; then
     echo "GUCEF_HOME environment variable not found, setting it"
-    GUCEF_HOME="$GENERATEPREMAKE4_SCRIPTSTARTDIR/../.."
+    GUCEF_HOME="$PREMAKE4COMMON_SCRIPTSTARTDIR_SCRIPTSTARTDIR/../.."
   fi
   echo "GUCEF_HOME = $GUCEF_HOME"
 
@@ -25,7 +30,7 @@ function FindGucefDebugProjectGenerator {
   echo "Testing for executable binary @ $TEST_PATH"
   if [ -x "$TEST_PATH" ];
   then
-    echo "Found Debug version of GUCEF ProjectGenerator"
+    echo "Found CodeBlocks Debug version of GUCEF ProjectGenerator"
     GENERATORPATH=$TEST_PATH
   fi
 
@@ -47,13 +52,31 @@ function FindGucefReleaseProjectGenerator {
 
 #------------------------------------------------------------------------------
 
+function FindGucefCBReleaseProjectGenerator {
+
+  TEST_PATH="$GUCEF_HOME/common/bin/CBNIX/bin/ProjectGenerator"
+  echo "Testing for executable binary @ $TEST_PATH"
+  if [ -x "$TEST_PATH" ];
+  then
+    echo "Found CodeBlocks Release version of GUCEF ProjectGenerator"
+    GENERATORPATH=$TEST_PATH
+  fi
+
+}
+
+#------------------------------------------------------------------------------
+
 function FindProjectGenerator {
 
   GENERATORPATH=${GENERATORPATH:=undefined}
   FindGucefDebugProjectGenerator
   if [ "$GENERATORPATH" = "undefined" ];
   then
-    FindGucefReleaseProjectGenerator
+    FindGucefCBReleaseProjectGenerator
+    if [ "$GENERATORPATH" = "undefined" ];
+    then
+      FindGucefReleaseProjectGenerator
+    fi
   fi
 }
 

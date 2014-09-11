@@ -82,6 +82,7 @@ struct CUDPSocket::SUDPSockData
 {
     SOCKET sockid;
     struct sockaddr_in localaddress;
+    struct timeval timeout;         /* timeout for blocking operations */
 };
 
 /*-------------------------------------------------------------------------//
@@ -213,22 +214,94 @@ CUDPSocket::SendPacketTo( const CORE::CString& dnsname ,
 
 /*-------------------------------------------------------------------------*/
 
+bool
+CUDPSocket::IsIncomingDataQueued( void )
+{GUCEF_TRACE;
+
+    return Update( false );
+}
+
+/*-------------------------------------------------------------------------*/
+
+bool
+CUDPSocket::Update( bool performRead )
+{GUCEF_TRACE;
+
+    if ( !_blocking && _data->sockid > 0 )
+    {
+        fd_set readfds;      /* Setup the read variable for the select function */
+        fd_set exceptfds;    /* Setup the except variable for the select function */
+
+        FD_ZERO( &readfds );
+        FD_ZERO( &exceptfds );
+
+        LockData();
+
+        FD_SET( _data->sockid, &readfds );
+        FD_SET( _data->sockid, &exceptfds );
+
+        int errorCode = 0;
+        if ( dvsocket_select( _data->sockid+1   ,
+                              &readfds          ,
+                              NULL              , // We don't care about socket writes here
+                              &exceptfds        ,
+                              &_data->timeout   ,
+                              &errorCode        ) != SOCKET_ERROR )
+        {
+            /* something happened on the socket */
+
+            if ( FD_ISSET( _data->sockid, &exceptfds ) )
+            {
+                GUCEF_DEBUG_LOG( CORE::LOGLEVEL_NORMAL, "CUDPSocket(" + CORE::PointerToString( this ) + "): Socket error occured: " + CORE::Int32ToString( errorCode ) );
+
+                int lastError = errorCode;
+                dvsocket_closesocket( _data->sockid, &errorCode );
+                _data->sockid = 0;
+
+                TSocketErrorEventData eData( lastError );
+                if ( !NotifyObservers( UDPSocketErrorEvent, &eData ) ) return false;
+
+                UnlockData();
+                return false;
+            }
+            else
+            if ( FD_ISSET( _data->sockid, &readfds ) )
+            {
+                /* data can be read from the socket */
+                if ( performRead )
+                {
+                    CIPAddress sender;
+                    bool receiveSuccess = 0 < Recieve( sender, NULL, 0);
+                    UnlockData();
+                    return receiveSuccess;
+                }
+                return true;
+            }
+        }
+        else
+        {
+            /* select call failed */
+            GUCEF_DEBUG_LOG( CORE::LOGLEVEL_NORMAL, "CUDPSocket(" + CORE::PointerToString( this ) + "): Socket error occured (select call failed): " + CORE::Int32ToString( errorCode ) );
+
+            TSocketErrorEventData eData( errorCode );
+            NotifyObservers( UDPSocketErrorEvent, &eData );
+        }
+
+        UnlockData();
+    }
+
+    return false;
+}
+
+/*-------------------------------------------------------------------------*/
+
 void
 CUDPSocket::OnPulse( CORE::CNotifier* notifier                 ,
                      const CORE::CEvent& eventid               ,
                      CORE::CICloneable* eventdata /* = NULL */ )
 {GUCEF_TRACE;
 
-    if ( !_blocking )
-    {
-        CIPAddress src;
-        while ( IsIncomingDataQueued() )
-        {
-            Recieve( src  ,
-                     NULL ,
-                     0    );
-        }
-    }
+    while( Update( true ) );
 }
 
 /*-------------------------------------------------------------------------*/
@@ -244,24 +317,6 @@ CUDPSocket::OnPulseGeneratorDestruction( CORE::CNotifier* notifier              
     {
         m_pulseGenerator = NULL;
     }
-}
-
-/*-------------------------------------------------------------------------*/
-
-bool
-CUDPSocket::IsIncomingDataQueued( void ) const
-{GUCEF_TRACE;
-
-    TIMEVAL time = { 0, 0 };
-    fd_set sockset;
-    FD_ZERO( &sockset );
-    FD_SET( _data->sockid, &sockset );
-
-    if ( select( 2, &sockset, NULL, NULL, &time ) > 0 )
-    {
-            return true;
-    }
-    return false;
 }
 
 /*-------------------------------------------------------------------------*/
