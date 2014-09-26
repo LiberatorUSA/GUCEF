@@ -318,13 +318,24 @@ CString
 CValueList::GetValueAlways( const CString& key ) const
 {GUCEF_TRACE;
 
+    CString emptyStr;
+    return GetValueAlways( key, emptyStr );
+}
+
+/*-------------------------------------------------------------------------*/                
+        
+CString
+CValueList::GetValueAlways( const CString& key          , 
+                            const CString& defaultValue ) const
+{GUCEF_TRACE;
+
     TValueMap::const_iterator i = m_list.find( key );
     if ( i != m_list.end() )
     {
         return (*i).second[ 0 ];
     }
 
-    return CString(); 
+    return defaultValue; 
 }
 
 /*-------------------------------------------------------------------------*/                

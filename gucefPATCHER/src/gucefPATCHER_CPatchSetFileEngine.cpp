@@ -292,7 +292,7 @@ CPatchSetFileEngine::ProcessCurrentFile( void )
         CORE::AppendToPath( tmpFilePath, curFile->name );
         
         // make sure the path exists
-        CORE::Create_Directory( CORE::StripFilename( tmpFilePath ).C_String() );
+        CORE::CreateDirs( CORE::StripFilename( tmpFilePath ) );
         
         // Try to create the file
         m_fileAccess = new CORE::CFileAccess( tmpFilePath, "wb" );

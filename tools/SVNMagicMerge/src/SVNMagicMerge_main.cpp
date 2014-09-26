@@ -496,7 +496,7 @@ PerformSvnMakeSurePathExists( const CORE::CString& givenPath   ,
     // First check if the path exists on disk at all
     if ( !CORE::IsPathValid( path ) )
     {
-        if ( 0 == CORE::Create_Directory( path.C_String() ) )
+        if ( CORE::CreateDirs( path ) )
         {
             // Failed to create the path using O/S
             failureReason += "garanteeing versioned path exists failed because the path could not be created using O/S functions at " + path + ";";

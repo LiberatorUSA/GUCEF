@@ -597,7 +597,7 @@ GUCEF_OSMAIN_BEGIN
     {
         outputDir = CORE::RelativePath( "$CURWORKDIR$" );
     }
-    CORE::Create_Directory( CORE::RelativePath( outputDir ).C_String() );
+    CORE::CreateDirs( outputDir );
 
     CORE::CString logFilename = CORE::CombinePath( outputDir, "SocketSink_Log.txt" );
 

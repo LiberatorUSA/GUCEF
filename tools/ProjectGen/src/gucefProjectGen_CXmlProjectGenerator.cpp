@@ -87,9 +87,8 @@ CXmlProjectGenerator::GenerateProject( TProjectInfo& projectInfo            ,
 {GUCEF_TRACE;
 
     // Write all the project information we gathered to disk 
-    CORE::CString projectinfoFilename = outputDir;
-    CORE::AppendToPath( projectinfoFilename, "Project.xml" );
-    return SerializeProjectInfo( projectInfo, projectinfoFilename );
+    CORE::CString outputFile = CORE::CombinePath( CORE::RelativePath( outputDir ), "Project.xml" );
+    return SerializeProjectInfo( projectInfo, outputFile );
 }
 
 /*-------------------------------------------------------------------------//

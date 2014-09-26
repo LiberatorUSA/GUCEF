@@ -132,6 +132,15 @@ class GUCEF_CORE_PUBLIC_CPP CValueList : public CIConfigurable
 
     /**
      *  Returns the first value associated with the
+     *  given key. This GetValue version differs from the others in
+     *  that no exception will be thrown if the key does not exist
+     *  instead it will return an empty string.
+     */
+    CString GetValueAlways( const CString& key          ,
+                            const CString& defaultValue ) const;
+
+    /**
+     *  Returns the first value associated with the
      *  given key index.
      *
      *  @exception EIndexOutOfRange thrown if the given key index is invalid

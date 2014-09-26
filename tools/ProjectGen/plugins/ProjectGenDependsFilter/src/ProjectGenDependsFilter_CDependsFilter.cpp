@@ -103,7 +103,8 @@ CDependsFilter::operator=( const CDependsFilter& src )
 /*--------------------------------------------------------------------------*/
 
 CDependsFilter::TStringSet
-CDependsFilter::GetListOfModules( const TStringVector& dependsCsvFiles )
+CDependsFilter::GetListOfModules( const TStringVector& dependsCsvFiles ,
+                                  const TStringVector& binarySrcDirs   )
 {GUCEF_TRACE;
 
     TStringSet modules;
@@ -156,6 +157,49 @@ CDependsFilter::GetListOfModules( const TStringVector& dependsCsvFiles )
         ++i;
     }
 
+    // Check if we want to apply additional filtering using source binary dirs
+    // Depends also spits out O/S dependencies etc which you might not want added
+    if ( !binarySrcDirs.empty() )
+    {
+        TStringSet eraseList;
+        TStringSet::const_iterator n = modules.begin();
+        while ( n != modules.end() )
+        {        
+            bool moduleLocated = false;
+            TStringVector::const_iterator i = binarySrcDirs.begin();
+            while ( i != binarySrcDirs.end() )
+            {
+                CORE::CString testPath = CORE::CombinePath( CORE::RelativePath( (*i) ), (*n) );
+                if ( CORE::FileExists( testPath + ".dll" ) )
+                {
+                    moduleLocated = true;
+                    break;
+                }
+                else // Although bad practice some people link against the exports from executables :( so we have to support it
+                if ( CORE::FileExists( testPath + ".exe" ) )
+                {
+                    moduleLocated = true;
+                    break;
+                }
+                ++i;
+            }
+
+            if ( !moduleLocated )
+            {
+                eraseList.insert( (*n) );
+            }
+            ++n;
+        }
+
+        n = eraseList.begin();
+        while ( n != eraseList.end() )
+        {
+            GUCEF_LOG( CORE::LOGLEVEL_NORMAL, "Dropping dependency module with name \"" + (*n) + "\" because it's not found in any of the binary source dirs given" );
+            modules.erase( (*n) );
+            ++n;
+        }
+    }
+
     return modules;
 }
 
@@ -167,32 +211,46 @@ CDependsFilter::ProccessProjects( TProjectInfo& projectInfo      ,
                                   const CORE::CValueList& params )
 {GUCEF_TRACE;
    
-    CORE::CString filterFileStr = params.GetValueAlways( "DependsFilter" );
+    CORE::CString filterFileStr = params.GetValueAlways( "DependsFilter:DependsOutput" );
     TStringVector dependsCsvFiles = filterFileStr.ParseElements( ';', false );
+
+    CORE::CString binarySrcDirsStr = params.GetValueAlways( "DependsFilter:BinarySrcDirs" );
+    TStringVector binarySrcDirs = binarySrcDirsStr.ParseElements( ';', false );
 
     GUCEF_LOG( CORE::LOGLEVEL_NORMAL, "Executing Depends filter on the given project info. There are " + CORE::UInt32ToString( dependsCsvFiles.size() ) + " csv files given" );
     
     // Obtain a list of all modules from the Depends generated csv files.
-    TStringSet modules = GetListOfModules( dependsCsvFiles );
+    TStringSet modules = GetListOfModules( dependsCsvFiles, binarySrcDirs );
 
     // Mark all the modules from the project which are not in the modules list for deletion
+    // Note that not all module types are filtered as they are not compiled into binaries for which Depends can provide a check
     TStringSet deleteList;
     TModuleInfoEntryVector& moduleInfoList = projectInfo.modules;
     TModuleInfoEntryVector::iterator i = moduleInfoList.begin(); 
     while ( i != moduleInfoList.end() )
     {
+        CString targetName = GetModuleTargetName( (*i), "win32", true );
+        
         // we will check using the target name if the module has one
         // Keep in mind that Depends would be using the target name.
         // If no target name is defines we use the module name
-        CString targetName = GetModuleTargetName( (*i), "win32", true );        
-        TStringSet::iterator n = modules.find( targetName.Lowercase() );
-        if ( n == modules.end() )
-        {
-            // The given module is not in the list of modules we obtained from depends
-            // as such we should filter it out
-            deleteList.insert( (*i).rootDir + ':' + targetName );
+        TModuleType moduleType = GetModuleType( (*i), "win32" );
+        if ( moduleType == MODULETYPE_SHARED_LIBRARY    ||
+             moduleType == MODULETYPE_EXECUTABLE        ||
+             moduleType == MODULETYPE_REFERENCE_LIBRARY  )
+        {        
+            TStringSet::iterator n = modules.find( targetName.Lowercase() );
+            if ( n == modules.end() )
+            {
+                // The given module is not in the list of modules we obtained from depends
+                // as such we should filter it out
+                deleteList.insert( (*i).rootDir + ':' + targetName );
+            }
         }
-
+        else
+        {
+            GUCEF_DEBUG_LOG( CORE::LOGLEVEL_NORMAL, "Skipping Depends check for module with target name \"" + targetName + "\" since it's type is not checkable via Depends" );
+        }
         ++i;
     }
     GUCEF_LOG( CORE::LOGLEVEL_NORMAL, "Based on the Depends filter there are now " + CORE::UInt32ToString( deleteList.size() ) + " modules listed for deletion" );

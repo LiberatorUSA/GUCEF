@@ -189,6 +189,14 @@ GUCEF_OSMAIN_BEGIN
     LoadConfig( keyValueList );
     ParseParams( argc, argv, keyValueList );
 
+    CORE::Int32 minLogLevel = CORE::LOGLEVEL_BELOW_NORMAL;
+    CORE::CString valueStr = keyValueList.GetValueAlways( "MinimalLogLevel" );
+    if ( !valueStr.IsNULLOrEmpty() )
+    {
+        minLogLevel = CORE::StringToInt32( valueStr );
+        CORE::CCoreGlobal::Instance()->GetLogManager().SetMinLogLevel( minLogLevel );
+    }
+
     // Support overriding environment variables from a file.
     // This can be important for build environments which rely on such variables 
     CORE::CString envOverrideFile = keyValueList.GetValueAlways( "envOverridesFile" );
@@ -201,12 +209,12 @@ GUCEF_OSMAIN_BEGIN
         }
     }
 
-    CORE::CString outputDir = keyValueList.GetValueAlways( "outputDir" );
+    CORE::CString outputDir = CORE::RelativePath( keyValueList.GetValueAlways( "outputDir" ) );
     if ( outputDir.IsNULLOrEmpty() )
     {
         outputDir = CORE::RelativePath( "$CURWORKDIR$" );
     }
-    CORE::Create_Directory( CORE::RelativePath( outputDir ).C_String() );
+    CORE::CreateDirs( outputDir );
     
     CORE::CString logFilename = CORE::CombinePath( outputDir, "ProjectGenerator_Log.txt" );    
 
@@ -220,6 +228,7 @@ GUCEF_OSMAIN_BEGIN
     CORE::CCoreGlobal::Instance()->GetLogManager().AddLogger( console.GetLogger() );
     
     CORE::CCoreGlobal::Instance()->GetLogManager().FlushBootstrapLogEntriesToLogs();
+    GUCEF_LOG( CORE::LOGLEVEL_NORMAL, "Flushed to log @ " + logFilename );
     
     TStringVector rootDirs;
     try

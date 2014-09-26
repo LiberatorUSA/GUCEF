@@ -279,7 +279,7 @@ CLogSvcServerFileLogger::GetFileAccess( const TClientInfo& clientInfo )
     
     // Now make the file and add it to our output map
     CORE::CString pathForFile = CORE::StripFilename( absOutputPath );
-    if ( 0 != CORE::Create_Directory( pathForFile.C_String() ) )
+    if ( CreateDirs( pathForFile ) )
     {
         //CORE::CString filename = CORE::ExtractFilename( absOutputPath );
     

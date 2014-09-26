@@ -220,7 +220,7 @@ CPatchSetDirEngine::ProcessCurSubDir( void )
         CORE::AppendToPath( subTmpDirPath, subDir->name );
         
         // make sure the sub-dir exists locally
-        CORE::Create_Directory( subDirPath.C_String() );
+        CORE::CreateDirs( subDirPath );
         
         // process the sub-dir
         return m_subDirPatchEngine->Start( *subDir                        ,
