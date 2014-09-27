@@ -846,7 +846,7 @@ MirrorDirsAndFiles( const CORE::CString& srcDir    ,
         CORE::AppendToPath( destFilePath, fileEntry.filedir );
         
         // Make sure destination directory exists
-        if ( 0 != CORE::Create_Directory( destFilePath.C_String() ) )
+        if ( CORE::CreateDirs( destFilePath ) )
         {
             CORE::AppendToPath( destFilePath, fileEntry.filename );
             

@@ -396,6 +396,23 @@ CDirPreprocessor::ProccessProjectFiles( const CORE::CString& path             ,
                     //PROJECTGEN::TStringSet newLibDirs = PROJECTGEN::StringVectorToStringSet( (*n)->GetChildValueByName( "AdditionalLibraryDirectories" ).ParseElements( ';', false ) );
                     //moduleInfo.linkerSettings.linkedLibraries[ ];
 
+                    // Sometimes despite all the other variables project files have an explicit output filename
+                    // In such a case we should use that name as the target name
+                    CORE::CString outputFilename = linkNode->GetChildValueByName( "OutputFile" );
+                    if ( !outputFilename.IsNULLOrEmpty() )
+                    {
+                        // Resolve variables (if any) and strip path (if any)
+                        outputFilename = ReplaceVisualStudioVariables( outputFilename, globals, true );
+                        outputFilename = outputFilename.ReplaceChar( '\\', '/' ).SubstrToChar( '/', false );
+                        
+                        // Strip the file extension (if any)
+                        CORE::Int32 dotIndex = outputFilename.HasChar( '.', false );
+                        if ( dotIndex >= 0 ) outputFilename = outputFilename.SubstrToIndex( dotIndex, true );
+                        
+                        GUCEF_LOG( CORE::LOGLEVEL_BELOW_NORMAL, "Since the given module has an explicit Output filename set (\"" + outputFilename + "\") we will use said filename as the target name instead of \"" + moduleInfo.linkerSettings.targetName + "\"" );                        
+                        moduleInfo.linkerSettings.targetName = outputFilename;
+                    }
+
                     PROJECTGEN::TStringVector additionalDependencies = linkNode->GetChildValueByName( "AdditionalDependencies" ).ParseElements( ';', false );
                     if ( !additionalDependencies.empty() )
                     {

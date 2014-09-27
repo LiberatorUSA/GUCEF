@@ -291,7 +291,7 @@ CLogManager::Log( const TLogMsgType logMsgType ,
     // if this flag is true then log messages will be dropped since the thread is within
     // the logger->Log() call and thus the message is generated due to the logging
     // activity itself.
-    if ( logLevel > m_minLogLevel && !m_busyLogging )
+    if ( logLevel >= m_minLogLevel && !m_busyLogging )
     {
         if ( (*m_msgTypeEnablers.find( logMsgType )).second )
         {

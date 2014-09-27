@@ -941,6 +941,16 @@ LoadTextFileAsString( const CString& filePath ,
     return false;
 }
 
+/*-------------------------------------------------------------------------*/
+
+bool
+CreateDirs( const CString& path )
+{GUCEF_TRACE;
+
+    CString actualPath = RelativePath( path );
+    return 0 != Create_Directory( actualPath.C_String() );
+}
+
 /*-------------------------------------------------------------------------//
 //                                                                         //
 //      NAMESPACE                                                          //

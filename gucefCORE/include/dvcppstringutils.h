@@ -295,6 +295,14 @@ WriteStringAsTextFile( const CString& filePath      ,
                        const bool unifyEol = false  ,
                        const char* eolString = NULL );
 
+/*-------------------------------------------------------------------------*/
+
+/**
+ *  Attempts recursively create all the dirs in the path if they don't exist
+ */
+GUCEF_CORE_PUBLIC_CPP bool
+CreateDirs( const CString& path );
+
 /*-------------------------------------------------------------------------//
 //                                                                         //
 //      NAMESPACE                                                          //
