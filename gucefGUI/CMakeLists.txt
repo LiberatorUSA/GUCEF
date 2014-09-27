@@ -111,11 +111,11 @@ set( ALL_FILES ${HEADER_FILES} ${SOURCE_FILES} ${PLATFORM_HEADER_FILES} ${PLATFO
 
 set( MODULE_NAME "gucefGUI" )
 add_library( ${MODULE_NAME} ${ALL_FILES} )
-add_dependencies( ${MODULE_NAME} gucefCORE gucefMT gucefVFS gucefIMAGE )
-target_link_libraries( ${MODULE_NAME} gucefCORE gucefMT gucefVFS gucefIMAGE )
+add_dependencies( ${MODULE_NAME} gucefCORE gucefIMAGE gucefMT gucefVFS )
+target_link_libraries( ${MODULE_NAME} gucefCORE gucefIMAGE gucefMT gucefVFS )
 set_target_properties( ${MODULE_NAME} PROPERTIES COMPILE_DEFINITIONS "GUCEF_GUI_BUILD_MODULE" )
 
-include_directories( ../common/include ../gucefCORE/include ../gucefMT/include ../gucefVFS/include ../gucefIMAGE/include include )
+include_directories( ../common/include ../gucefCORE/include ../gucefIMAGE/include ../gucefMT/include ../gucefVFS/include include )
 
 if ( ANDROID )
   include_directories( ../gucefCORE/include/android )

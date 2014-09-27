@@ -38,7 +38,7 @@ add_dependencies( ${MODULE_NAME} DVPACKSYS gucefCORE gucefMT gucefVFS )
 target_link_libraries( ${MODULE_NAME} DVPACKSYS gucefCORE gucefMT gucefVFS )
 set_target_properties( ${MODULE_NAME} PROPERTIES COMPILE_DEFINITIONS "GUCEF_VFSPLUGIN_DVP_BUILD_MODULE" )
 
-include_directories( ../../../common/include ../../../gucefCORE/include ../../../gucefMT/include ../../../gucefVFS/include dependencies/DVPACKSYS/include include )
+include_directories( ../../../common/include ../../../dependencies/DVPACKSYS/include ../../../gucefCORE/include ../../../gucefMT/include ../../../gucefVFS/include include )
 
 if ( ANDROID )
   include_directories( ../../../gucefCORE/include/android )
