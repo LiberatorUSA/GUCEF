@@ -111,7 +111,8 @@ using namespace GUCEF::PROJECTGEN;
 //-------------------------------------------------------------------------*/
 
 bool
-LoadConfig( CORE::CValueList& keyValueList )
+LoadConfig( const CORE::CString& configPath ,
+            CORE::CValueList& keyValueList  )
 {GUCEF_TRACE;
 
     #ifdef GUCEF_DEBUG_MODE
@@ -120,20 +121,32 @@ LoadConfig( CORE::CValueList& keyValueList )
     const CORE::CString configFile = "ProjectGenerator.ini";
     #endif
 
-    CORE::CString configFilePath = CORE::CombinePath( "$CURWORKDIR$", configFile );
-    configFilePath = CORE::RelativePath( configFilePath );
-
-    GUCEF_LOG( CORE::LOGLEVEL_BELOW_NORMAL, "Checking for config file @ " + configFilePath );
-    if ( !CORE::FileExists( configFilePath ) )
+    CORE::CString configFilePath;
+    bool foundViaParam = false;
+    if ( !configPath.IsNULLOrEmpty() )
     {
-        configFilePath = CORE::CombinePath( "$MODULEDIR$", configFile );
+        GUCEF_LOG( CORE::LOGLEVEL_BELOW_NORMAL, "Checking for config file @ " + configPath );
+        foundViaParam = CORE::FileExists( configPath );
+        configFilePath = configPath;
+    }
+
+    if ( !foundViaParam )
+    {
+        CORE::CString configFilePath = CORE::CombinePath( "$CURWORKDIR$", configFile );
         configFilePath = CORE::RelativePath( configFilePath );
 
         GUCEF_LOG( CORE::LOGLEVEL_BELOW_NORMAL, "Checking for config file @ " + configFilePath );
-        if ( !FileExists( configFilePath ) )
+        if ( !CORE::FileExists( configFilePath ) )
         {
-            GUCEF_WARNING_LOG( CORE::LOGLEVEL_NORMAL, "Unable to locate any config file, will rely on params" );
-            return false;
+            configFilePath = CORE::CombinePath( "$MODULEDIR$", configFile );
+            configFilePath = CORE::RelativePath( configFilePath );
+
+            GUCEF_LOG( CORE::LOGLEVEL_BELOW_NORMAL, "Checking for config file @ " + configFilePath );
+            if ( !FileExists( configFilePath ) )
+            {
+                GUCEF_WARNING_LOG( CORE::LOGLEVEL_NORMAL, "Unable to locate any config file, will rely on params" );
+                return false;
+            }
         }
     }
     GUCEF_LOG( CORE::LOGLEVEL_NORMAL, "Located config file @ " + configFilePath );
@@ -187,9 +200,14 @@ GUCEF_OSMAIN_BEGIN
     CORE::CCoreGlobal::Instance();
     PROJECTGEN::CProjectGenGlobal::Instance();
 
-    // Load settings from a config file (if any) and then override with params (if any)
+    // Check for config param first
     CORE::CValueList keyValueList;
-    LoadConfig( keyValueList );
+    ParseParams( argc, argv, keyValueList );
+    CORE::CString configPathParam = keyValueList.GetValueAlways( "ConfigPath" );
+    keyValueList.Clear();
+
+    // Load settings from a config file (if any) and then override with params (if any)
+    LoadConfig( configPathParam, keyValueList );
     ParseParams( argc, argv, keyValueList );
 
     CORE::Int32 minLogLevel = CORE::LOGLEVEL_BELOW_NORMAL;

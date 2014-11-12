@@ -40,11 +40,11 @@ function FindGucefDebugProjectGenerator {
 
 function FindGucefReleaseProjectGenerator {
 
-  TEST_PATH="$GUCEF_HOME/tools/ProjectGenerator/bin/ReleasedBins/Linux/20January2012/ProjectGenerator"
+  TEST_PATH="$GUCEF_HOME/tools/ProjectGenerator/bin/ReleasedBins/Linux/2014.11.11/ProjectGenerator"
   echo "Testing for executable binary @ $TEST_PATH"
   if [ -x "$TEST_PATH" ];
   then
-    echo "Found Release version of GUCEF ProjectGenerator dated 20th of January 2012"
+    echo "Found Release version of GUCEF ProjectGenerator dated 11th of November 2014"
     GENERATORPATH=$TEST_PATH
   fi
 
@@ -100,7 +100,7 @@ fi
 echo "GENERATORPATH = $TEST_PATH"
 
 # invoke the generator
-$GENERATORPATH *rootDir=$GUCEF_HOME* *dirsToIgnore=.svn* *projectName=GUCEF* *generators=premake4* *outputDir=$GUCEF_HOME* *premake4gen:TemplateDir=$GUCEF_HOME/projects/premake4/ProjectGenTemplates* *premake4gen:PM4OutputDir=ENVVAR:PM4OUTPUTDIR*
+$GENERATORPATH
 
 
 
