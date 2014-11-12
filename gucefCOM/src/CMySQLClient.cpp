@@ -1,5 +1,5 @@
 /*
- *  gucefCOM: GUCEF module providing communication 
+ *  gucefCOM: GUCEF module providing communication
  *  implementations for standardized protocols.
  *  Copyright (C) 2002 - 2007.  Dinand Vanvelzen
  *
@@ -15,7 +15,7 @@
  *
  *  You should have received a copy of the GNU Lesser General Public
  *  License along with this library; if not, write to the Free Software
- *  Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA 
+ *  Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA
  */
 
 /*-------------------------------------------------------------------------//
@@ -83,7 +83,7 @@ namespace COM {
 
 /**
  *	Following are a number for charset defines which define the 'language'
- *	in which we talk to the server. 
+ *	in which we talk to the server.
  */
 #define big5        1
 #define czech       2
@@ -130,7 +130,7 @@ namespace COM {
 /**
  *	Default constructor, we just init some vars
  */
-CMySQLClient::CMySQLClient( bool blocking ) 
+CMySQLClient::CMySQLClient( bool blocking )
         : socket( blocking )
 {GUCEF_TRACE;
         #ifdef DEBUG_MODE
@@ -180,19 +180,19 @@ CMySQLClient::ConnectTo( const GUCEF::CORE::CString& address  ,
         if ( query_busy ) return false;
 
         lock.Lock();
-        
+
         mysql_connection_state = MYSQL_CONNECTING;
 
         if( !socket.ConnectTo( address, port ) )
         {
                 CORE::CString portstr;
                 portstr.SetInt( port );
-                
-                mysql_error = "Could not connect to "; 
+
+                mysql_error = "Could not connect to ";
                 mysql_error += address;
                 mysql_error += ":";
                 mysql_error += portstr;
-                
+
                 mysql_error_number = 0;
 
                 mysql_connection_state = MYSQL_CONNECTION_FAILED;
@@ -247,7 +247,7 @@ CMySQLClient::OnRead( COMCORE::CTCPClientSocket &socket ,
         #ifdef DEBUG_MODE
         CORE::tsprintf( "CMySQLClient::OnRead()\n" );
         #endif /* DEBUG_MODE */
-        
+
         if(mysql_connection_state == MYSQL_CONNECTING) {
                 if(data[4] == 0x0a) {
                         Login(data, length);
@@ -425,7 +425,7 @@ CMySQLClient::Login( const char *data, UInt32 length )
         #ifdef DEBUG_MODE
         CORE::tsprintf( "CMySQLClient::Login()\n" );
         #endif /* DEBUG_MODE */
-        
+
         UInt32 i, body_length;
         UInt8 packet = data[3];
 
@@ -441,7 +441,7 @@ CMySQLClient::Login( const char *data, UInt32 length )
 
         mysql_charset = data[++i];
         mysql_status = data[++i] | data[++i] << 8;
-
+/*
         #ifdef DEBUG_MODE
         CORE::tsprintf("Logging on to MySQL Server\n");
         CORE::tsprintf("Username: %s, Password: %s\n\n", mysql_username, mysql_password);
@@ -584,7 +584,7 @@ CMySQLClient::QueryAndWait( CDBQuery &cdbquery   ,
         /*
          *      First we must wait for the client to finish any existing query
          */
-        UInt32 reqt = CORE::GUCEFGetTickCount(); 
+        UInt32 reqt = CORE::GUCEFGetTickCount();
         while ( query_busy && timeout >= 0 )
         {
                 MT::ThreadDelay( 10 );
@@ -597,7 +597,7 @@ CMySQLClient::QueryAndWait( CDBQuery &cdbquery   ,
                 return false;
         }
         query_busy = true;
-        
+
         /*
          *      Now we formulate and send the new query and wait for that to
          *      finish.
@@ -698,26 +698,26 @@ CMySQLClient::SetInterface( CMySQLClientInterface *new_iface )
 
 /*--------------------------------------------------------------------------*/
 
-CMySQLClientInterface* 
+CMySQLClientInterface*
 CMySQLClient::GetInterface( void ) const
-{GUCEF_TRACE; 
-        return iface; 
+{GUCEF_TRACE;
+        return iface;
 }
 
 /*--------------------------------------------------------------------------*/
 
-bool 
-CMySQLClient::Query_Busy( void ) const 
-{GUCEF_TRACE; 
-        return query_busy; 
+bool
+CMySQLClient::Query_Busy( void ) const
+{GUCEF_TRACE;
+        return query_busy;
 }
 
 /*--------------------------------------------------------------------------*/
 
-CORE::CString 
-CMySQLClient::GetError( void ) const 
-{GUCEF_TRACE; 
-        return mysql_error; 
+CORE::CString
+CMySQLClient::GetError( void ) const
+{GUCEF_TRACE;
+        return mysql_error;
 }
 
 /*-------------------------------------------------------------------------//
