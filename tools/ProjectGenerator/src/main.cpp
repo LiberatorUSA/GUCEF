@@ -123,13 +123,16 @@ LoadConfig( CORE::CValueList& keyValueList )
     CORE::CString configFilePath = CORE::CombinePath( "$CURWORKDIR$", configFile );
     configFilePath = CORE::RelativePath( configFilePath );
 
+    GUCEF_LOG( CORE::LOGLEVEL_BELOW_NORMAL, "Checking for config file @ " + configFilePath );
     if ( !CORE::FileExists( configFilePath ) )
     {
         configFilePath = CORE::CombinePath( "$MODULEDIR$", configFile );
         configFilePath = CORE::RelativePath( configFilePath );
 
+        GUCEF_LOG( CORE::LOGLEVEL_BELOW_NORMAL, "Checking for config file @ " + configFilePath );
         if ( !FileExists( configFilePath ) )
         {
+            GUCEF_WARNING_LOG( CORE::LOGLEVEL_NORMAL, "Unable to locate any config file, will rely on params" );
             return false;
         }
     }
@@ -139,10 +142,10 @@ LoadConfig( CORE::CValueList& keyValueList )
     keyValueList.SetUseGlobalConfig( true );
     keyValueList.SetAllowDuplicates( false );
     keyValueList.SetAllowMultipleValues( true );
-    
+
     CORE::CConfigStore& configStore = CORE::CCoreGlobal::Instance()->GetConfigStore();
     configStore.SetConfigFile( configFilePath );
-    return configStore.LoadConfig();    
+    return configStore.LoadConfig();
 }
 
 /*-------------------------------------------------------------------------*/
@@ -183,7 +186,7 @@ GUCEF_OSMAIN_BEGIN
 
     CORE::CCoreGlobal::Instance();
     PROJECTGEN::CProjectGenGlobal::Instance();
-    
+
     // Load settings from a config file (if any) and then override with params (if any)
     CORE::CValueList keyValueList;
     LoadConfig( keyValueList );
@@ -198,7 +201,7 @@ GUCEF_OSMAIN_BEGIN
     }
 
     // Support overriding environment variables from a file.
-    // This can be important for build environments which rely on such variables 
+    // This can be important for build environments which rely on such variables
     CORE::CString envOverrideFile = keyValueList.GetValueAlways( "envOverridesFile" );
     if ( !envOverrideFile.IsNULLOrEmpty() )
     {
@@ -215,8 +218,8 @@ GUCEF_OSMAIN_BEGIN
         outputDir = CORE::RelativePath( "$CURWORKDIR$" );
     }
     CORE::CreateDirs( outputDir );
-    
-    CORE::CString logFilename = CORE::CombinePath( outputDir, "ProjectGenerator_Log.txt" );    
+
+    CORE::CString logFilename = CORE::CombinePath( outputDir, "ProjectGenerator_Log.txt" );
 
     keyValueList.Set( "logfile", logFilename );
 
@@ -226,10 +229,10 @@ GUCEF_OSMAIN_BEGIN
 
     CORE::CPlatformNativeConsoleLogger console;
     CORE::CCoreGlobal::Instance()->GetLogManager().AddLogger( console.GetLogger() );
-    
+
     CORE::CCoreGlobal::Instance()->GetLogManager().FlushBootstrapLogEntriesToLogs();
     GUCEF_LOG( CORE::LOGLEVEL_NORMAL, "Flushed to log @ " + logFilename );
-    
+
     TStringVector rootDirs;
     try
     {
@@ -266,7 +269,7 @@ GUCEF_OSMAIN_BEGIN
         CORE::CString cachedInfoPath = CORE::CombinePath( CORE::RelativePath( outputDir ), "Project.xml" );
         projectInfoLoadedFromCache = DeserializeProjectInfo( projectInfo, cachedInfoPath );
     }
-    
+
     if ( !projectInfoLoadedFromCache )
     {
         // Use an info gatherer to get all the project information for us
@@ -277,7 +280,7 @@ GUCEF_OSMAIN_BEGIN
 
     // Before we hand the data we collected and generated to the generator(s) for the desired output we will check
     // for preprocessors which can be executed before any output generator. These apply changes to the project data
-    // that will apply to all output generators  
+    // that will apply to all output generators
     const CProjectPreprocessorManager::TProjectPreprocessorsList& projectPreProcessors = CProjectGenGlobal::Instance()->GetProjectPreprocessorManager().GetProjectPreprocessors();
     CProjectPreprocessorManager::TProjectPreprocessorsList::const_iterator n = projectPreProcessors.begin();
     while ( n != projectPreProcessors.end() )
