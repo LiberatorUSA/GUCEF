@@ -1,0 +1,9 @@
+*.o
+*.obj
+*.lib
+*.a
+*.dll
+*.exe
+
+common/bin/*
+!common/bin/TestData
