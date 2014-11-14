@@ -111,6 +111,10 @@ CPluginControl::~CPluginControl()
 {GUCEF_TRACE;
 
     UnloadAll();
+    
+    // Unregister the load logic implementations available by default
+    UnregisterPluginLoadLogic( loaderDelegatedPluginLoadLogic.GetLoaderLogicTypeName() );
+    UnregisterPluginLoadLogic( simplisticPluginLoadLogic.GetLoaderLogicTypeName() );
 }
 
 /*-------------------------------------------------------------------------*/
@@ -293,7 +297,7 @@ CPluginControl::LoadPlugin( TPluginMetaDataPtr& pluginMetaData ,
     // Check to see whether the module has a specific loader logic type defined
     // if not we will use the default.
     CString pluginLoaderLogicToUse = pluginMetaData->GetLoaderLogicTypeName().IsNULLOrEmpty() ?
-            m_defaultPluginLoadLogicType :  pluginMetaData->GetLoaderLogicTypeName();
+            m_defaultPluginLoadLogicType : pluginMetaData->GetLoaderLogicTypeName();
 
     TPluginLoadLogicMap::iterator m = m_pluginLoadLogicProviders.find( pluginLoaderLogicToUse );
     if ( m != m_pluginLoadLogicProviders.end() )
@@ -307,10 +311,25 @@ CPluginControl::LoadPlugin( TPluginMetaDataPtr& pluginMetaData ,
             TStringSet::iterator i = m_rootDirs.begin();
             while ( i != m_rootDirs.end() && modulePtr == NULL )
             {
-                modulePtr = (*m).second->LoadPlugin( RelativePath( (*i) )                ,
-                                                     pluginMetaData->GetModuleFilename() ,
-                                                     groupName                           ,
-                                                     &versionInfo                        );
+                CString filename = pluginMetaData->GetModuleFilename();
+                
+                modulePtr = (*m).second->LoadPlugin( RelativePath( (*i) ) ,
+                                                     filename             ,
+                                                     groupName            ,
+                                                     &versionInfo         );
+                
+                if ( NULL == modulePtr )
+                {
+                    filename = pluginMetaData->GetAltModuleFilename();
+                    if ( !filename.IsNULLOrEmpty() )
+                    {
+                        modulePtr = (*m).second->LoadPlugin( RelativePath( (*i) ) ,
+                                                             filename             ,
+                                                             groupName            ,
+                                                             &versionInfo         );
+                    }
+                }
+
                 ++i;
             }
 
@@ -318,7 +337,8 @@ CPluginControl::LoadPlugin( TPluginMetaDataPtr& pluginMetaData ,
             {
                 // We were not able to load the module, no point in proceeding
                 GUCEF_ERROR_LOG( LOGLEVEL_NORMAL, "PluginControl: Failed to load module with name \"" +
-                                        pluginMetaData->GetModuleFilename() + "\" and group \"" + groupName + "\" and version " +
+                                        pluginMetaData->GetModuleFilename() + "\", alt name \"" + pluginMetaData->GetAltModuleFilename() + 
+                                        "\", and group \"" + groupName + "\" and version " +
                                         VersionToString( pluginMetaData->GetVersion() ) );
                 return false;
             }
@@ -331,12 +351,25 @@ CPluginControl::LoadPlugin( TPluginMetaDataPtr& pluginMetaData ,
                                                  pluginMetaData->GetModuleFilename()                 ,
                                                  groupName                                           ,
                                                  &versionInfo                                        );
+            
+            if ( NULL == modulePtr )
+            {
+                CString filename = pluginMetaData->GetAltModuleFilename();
+                if ( !filename.IsNULLOrEmpty() )
+                {
+                    modulePtr = (*m).second->LoadPlugin( RelativePath( pluginMetaData->GetFullModulePath() ) ,
+                                                         filename                                            ,
+                                                         groupName                                           ,
+                                                         &versionInfo                                        );
+                }
+            }
 
             if ( NULL == modulePtr )
             {
                 // We were not able to load the module, no point in proceeding
                 GUCEF_ERROR_LOG( LOGLEVEL_NORMAL, "PluginControl: Failed to load module with name \"" +
-                                        pluginMetaData->GetModuleFilename() + "\" and group \"" + groupName + "\" and version " +
+                                        pluginMetaData->GetModuleFilename() + "\", alt name \"" + pluginMetaData->GetAltModuleFilename() + 
+                                        "\", and group \"" + groupName + "\" and version " +
                                         VersionToString( pluginMetaData->GetVersion() ) + " using provided path " + pluginMetaData->GetFullModulePath() );
                 return false;
             }
@@ -464,7 +497,7 @@ CPluginControl::UnloadPlugin( TPluginPtr& pluginPtr     ,
                               const CString& groupName  )
 {GUCEF_TRACE;
 
-    TPluginMetaDataPtr pluginMetaData =  pluginPtr->GetMetaData();
+    TPluginMetaDataPtr pluginMetaData = pluginPtr->GetMetaData();
     if ( 0 == pluginMetaData )
     {
         // This plugin does not have any meta data set thus we cannot unload it

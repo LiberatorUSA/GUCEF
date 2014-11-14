@@ -112,6 +112,16 @@ class GUCEF_CORE_PUBLIC_CPP CPluginMetaData : public CIPluginMetaData ,
     
     virtual CString GetModuleFilename( void ) const;
 
+    void SetAltModuleFilename( const CString& altModuleFilename );
+    
+    /**
+     *  Optional postfix which can be used in combination with ModuleFilename
+     *  If the module cannot be located with just ModuleFilename an alternate
+     *  ModuleFilename will be constructed using the postfix (if any) and another 
+     *  attempt made
+     */
+    virtual CString GetAltModuleFilename( void ) const;
+
     void SetFullModulePath( const CString& description );
     
     /**
@@ -167,6 +177,7 @@ class GUCEF_CORE_PUBLIC_CPP CPluginMetaData : public CIPluginMetaData ,
     CString m_loaderLogicTypeName;
     CString m_pluginType;
     CString m_moduleFilename;
+    CString m_altModuleFilename;
     CString m_modulePath;
     CValueList m_params;
 };

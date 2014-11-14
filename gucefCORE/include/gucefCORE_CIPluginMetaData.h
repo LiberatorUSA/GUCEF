@@ -107,6 +107,11 @@ class GUCEF_CORE_PUBLIC_CPP CIPluginMetaData
     virtual CString GetModuleFilename( void ) const = 0;
 
     /**
+     *  Optional alternate filename
+     */
+    virtual CString GetAltModuleFilename( void ) const = 0;
+
+    /**
      *  Optional info regarding the full path of the module.
      *  If none is specified globally defined root paths can be used in combination 
      *  with the module filename to find the module

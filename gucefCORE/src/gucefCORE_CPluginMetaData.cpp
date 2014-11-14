@@ -59,6 +59,7 @@ CPluginMetaData::CPluginMetaData( void )
       m_loaderLogicTypeName() ,
       m_pluginType()          ,
       m_moduleFilename()      ,
+      m_altModuleFilename()   ,
       m_modulePath()          ,
       m_params()
 {GUCEF_TRACE;
@@ -82,6 +83,7 @@ CPluginMetaData::CPluginMetaData( const CPluginMetaData& src )
       m_loaderLogicTypeName( src.m_loaderLogicTypeName ) ,
       m_pluginType( src.m_pluginType )                   ,
       m_moduleFilename( src.m_moduleFilename )           ,
+      m_altModuleFilename( src.m_altModuleFilename )     ,
       m_modulePath( src.m_modulePath )                   ,
       m_params( src.m_params )
 {GUCEF_TRACE;
@@ -99,6 +101,7 @@ CPluginMetaData::CPluginMetaData( const CIPluginMetaData& src )
       m_loaderLogicTypeName( src.GetLoaderLogicTypeName() ) ,
       m_pluginType( src.GetPluginType() )                   ,
       m_moduleFilename( src.GetModuleFilename() )           ,
+      m_altModuleFilename( src.GetAltModuleFilename() )     ,
       m_modulePath( src.GetFullModulePath() )               ,
       m_params()
 {GUCEF_TRACE;
@@ -245,6 +248,24 @@ CPluginMetaData::GetModuleFilename( void ) const
 /*-------------------------------------------------------------------------*/
 
 void
+CPluginMetaData::SetAltModuleFilename( const CString& altModuleFilename )
+{GUCEF_TRACE;
+
+    m_altModuleFilename = altModuleFilename; 
+}
+
+/*-------------------------------------------------------------------------*/
+
+CString
+CPluginMetaData::GetAltModuleFilename( void ) const
+{GUCEF_TRACE;
+
+    return m_altModuleFilename;
+}
+
+/*-------------------------------------------------------------------------*/
+
+void
 CPluginMetaData::SetFullModulePath( const CString& modulePath )
 {GUCEF_TRACE;
 
@@ -315,6 +336,11 @@ CPluginMetaData::LoadConfig( const CDataNode& treeroot )
         if ( !value.IsNULLOrEmpty() )
         {
             m_moduleFilename = value;
+        }
+        value = node->GetAttributeValueOrChildValueByName( "AltFilename" );
+        if ( !value.IsNULLOrEmpty() )
+        {
+            m_altModuleFilename = value;
         }
         value = node->GetAttributeValueOrChildValueByName( "Version" );
         if ( !value.IsNULLOrEmpty() )
