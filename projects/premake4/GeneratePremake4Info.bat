@@ -62,7 +62,7 @@ IF NOT DEFINED GUCEF_HOME (
   ECHO GUCEF_HOME=%CD%
 )
 
-%GENERATOREXE% *rootDir=%GUCEF_HOME%* *dirsToIgnore=.svn;_svn* *projectName=GUCEF* *generators=premake4* *outputDir=%GUCEF_HOME%* *premake4gen:TemplateDir=%GUCEF_HOME%\projects\premake4\ProjectGenTemplates* *premake4gen:PM4OutputDir=ENVVAR:PM4OUTPUTDIR*
+%GENERATOREXE% *ConfigPath=%GUCEF_THEBATCHDIR%*
 cd "%GUCEF_THEBATCHDIR%"
 GOTO END
 

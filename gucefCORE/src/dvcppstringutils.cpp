@@ -31,6 +31,11 @@
 #define GUCEF_CORE_DVSTRUTILS_H
 #endif /* GUCEF_CORE_DVSTRUTILS_H ? */
 
+#ifndef GUCEF_CORE_DVCPPOSWRAP_H
+#include "DVCPPOSWRAP.h"
+#define GUCEF_CORE_DVCPPOSWRAP_H
+#endif /* GUCEF_CORE_DVCPPOSWRAP_H ? */
+
 #include "dvcppstringutils.h"   /* function prototypes of the functions implemented here */
 
 #ifndef GUCEF_CORE_NO_MD5_SUPPORT
@@ -173,14 +178,34 @@ CString
 RelativePath( const CString& relpath )
 {GUCEF_TRACE;
 
+    CString relPath = relpath;
     CString resultStr;
 
-    Int32 idx = relpath.HasSubstr( "$MODULEDIR$", true );
+    // First resolve any environment variables which in turn could contain other variables
+    Int32 idx = 0;
+    do
+    {
+        idx = relPath.HasSubstr( "$ENVVAR:", idx, true );
+        if ( idx > -1 )
+        {
+            Int32 endIndex = relPath.HasChar( '$', idx+8, true );
+            
+            // Break out if there is no closing char, this is invalid
+            if ( endIndex < 0 ) break;
+
+            CString varName = relPath.SubstrFromRange( idx+8, endIndex );
+            CString varValue = ::GUCEF::CORE::GetEnv( varName );
+            relPath = relPath.ReplaceSubStr( idx, endIndex-idx, varValue );
+        }
+    }
+    while ( idx > -1 );
+
+    idx = relPath.HasSubstr( "$MODULEDIR$", true );
     if ( idx > -1 )
     {
         CString moduleDir = ModuleDir();
-        CString prefix = relpath.SubstrToIndex( idx, true );
-        CString postfix = relpath.CutChars( idx+11, true );
+        CString prefix = relPath.SubstrToIndex( idx, true );
+        CString postfix = relPath.CutChars( idx+11, true );
 
         resultStr = prefix;
         AppendToPath( resultStr, moduleDir );
@@ -188,12 +213,12 @@ RelativePath( const CString& relpath )
     }
     else
     {
-        Int32 idx = relpath.HasSubstr( "$CURWORKDIR$", true );
+        Int32 idx = relPath.HasSubstr( "$CURWORKDIR$", true );
         if ( idx > -1 )
         {
             CString workingDir = CurrentWorkingDir();
-            CString prefix = relpath.SubstrToIndex( idx, true );
-            CString postfix = relpath.CutChars( idx+12, true );
+            CString prefix = relPath.SubstrToIndex( idx, true );
+            CString postfix = relPath.CutChars( idx+12, true );
 
             resultStr = prefix;
             AppendToPath( resultStr, workingDir );
@@ -201,7 +226,7 @@ RelativePath( const CString& relpath )
         }
         else
         {
-            resultStr = relpath;
+            resultStr = relPath;
         }
     }
 

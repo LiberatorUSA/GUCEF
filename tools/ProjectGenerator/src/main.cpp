@@ -1,6 +1,6 @@
 /*
  *  ProjectGenerator: Tool to generate module/project files
- *  Copyright (C) 2002 - 2011.  Dinand Vanvelzen
+ *  Copyright (C) 2002 - 2014.  Dinand Vanvelzen
  *
  *  This library is free software; you can redistribute it and/or
  *  modify it under the terms of the GNU Lesser General Public

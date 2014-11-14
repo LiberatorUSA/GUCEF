@@ -673,6 +673,25 @@ CString::ReplaceEnvelopingSubstr( const CString& envelopPrefix     ,
 
 /*-------------------------------------------------------------------------*/
 
+CString
+CString::ReplaceSubStr( UInt32 startIndex        ,
+                        UInt32 length            ,
+                        const CString& newSubstr ) const
+{GUCEF_TRACE;
+
+    // Sanity check on the given range
+    if ( 0 == m_length ) return CString();
+    if ( startIndex >= m_length ) startIndex = m_length -1;
+    if ( startIndex+length >= m_length ) length = (m_length-1) - startIndex; 
+    
+    CString prefix = this->SubstrFromRange( 0, startIndex );
+    CString postfix = this->SubstrFromRange( startIndex+length+1, m_length );
+
+    return prefix + newSubstr + postfix; 
+}
+
+/*-------------------------------------------------------------------------*/
+
 void
 CString::Clear( void )
 {GUCEF_TRACE;

@@ -209,6 +209,10 @@ class GUCEF_CORE_PUBLIC_CPP CString
                                      const CString& newEnvelopPrefix  ,
                                      const CString& newEnvelopPostfix ) const;
 
+    CString ReplaceSubStr( UInt32 startIndex        ,
+                           UInt32 length            ,
+                           const CString& newSubstr ) const;
+
     CString SubstrToChar( char searchchar         ,
                           bool frontToBack = true ) const;
 
