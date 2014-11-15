@@ -23,7 +23,30 @@ configuration( { "WIN32" } )
 
 configuration( { "WIN64" } )
   project( "OIS" )
-location( os.getenv( "PM4OUTPUTDIR" ) )
+
+configuration( {} )
+  location( os.getenv( "PM4OUTPUTDIR" ) )
+
+configuration( {} )
+  targetdir( os.getenv( "PM4TARGETDIR" ) )
+
+configuration( { "IPHONEOS" } )
+language( "C++" )
+
+configuration( { "LINUX" } )
+language( "C++" )
+
+configuration( { "OSX" } )
+language( "C++" )
+
+configuration( { "SDL" } )
+language( "C++" )
+
+configuration( { "WIN32" } )
+language( "C++" )
+
+configuration( { "WIN64" } )
+language( "C++" )
 
 configuration( { "LINUX" } )
 

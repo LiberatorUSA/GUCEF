@@ -20,7 +20,12 @@ configuration( { "WIN32" } )
 
 configuration( { "WIN64" } )
   project( "inputdriverOIS" )
-location( os.getenv( "PM4OUTPUTDIR" ) )
+
+configuration( {} )
+  location( os.getenv( "PM4OUTPUTDIR" ) )
+
+configuration( {} )
+  targetdir( os.getenv( "PM4TARGETDIR" ) )
 
 configuration( {} )
 language( "C" )
@@ -135,10 +140,10 @@ configuration( {} )
 includedirs( { "../../../common/include", "../../../gucefCORE/include", "../../../gucefINPUT/include", "../../../gucefMT/include" } )
 
 configuration( { "LINUX" } )
-includedirs( { "../../../gucefCORE/include/linux", "dependency/OIS/includes", "dependency/OIS/includes/linux", "dependency/OIS/src/extras/LIRC", "include" } )
+includedirs( { "../../../dependencies/OIS/includes", "../../../dependencies/OIS/includes/linux", "../../../dependencies/OIS/src/extras/LIRC", "../../../gucefCORE/include/linux", "include" } )
 
 configuration( { "WIN32" } )
-includedirs( { "../../../gucefCORE/include/mswin", "dependency/OIS/includes", "dependency/OIS/includes/win32", "dependency/OIS/src/extras/LIRC", "include" } )
+includedirs( { "../../../dependencies/OIS/includes", "../../../dependencies/OIS/includes/win32", "../../../dependencies/OIS/src/extras/LIRC", "../../../gucefCORE/include/mswin", "include" } )
 
 configuration( { "WIN64" } )
-includedirs( { "../../../gucefCORE/include/mswin", "dependency/OIS/includes", "dependency/OIS/src/extras/LIRC", "include" } )
+includedirs( { "../../../dependencies/OIS/includes", "../../../dependencies/OIS/src/extras/LIRC", "../../../gucefCORE/include/mswin", "include" } )

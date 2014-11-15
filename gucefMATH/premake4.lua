@@ -13,7 +13,12 @@
 
 
 project( "gucefMATH" )
-location( os.getenv( "PM4OUTPUTDIR" ) )
+
+configuration( {} )
+  location( os.getenv( "PM4OUTPUTDIR" ) )
+
+configuration( {} )
+  targetdir( os.getenv( "PM4TARGETDIR" ) )
 
 configuration( {} )
 language( "C++" )
@@ -26,6 +31,10 @@ kind( "SharedLib" )
 configuration( {} )
 links( { "gucefCORE", "gucefMT" } )
 links( { "gucefCORE", "gucefMT" } )
+
+
+configuration( {} )
+defines( { "GUCEF_MATH_BUILD_MODULE" } )
 
 
 configuration( {} )

@@ -20,7 +20,12 @@ configuration( { "WIN32" } )
 
 configuration( { "WIN64" } )
   project( "MyGUI.SkinEditor" )
-location( os.getenv( "PM4OUTPUTDIR" ) )
+
+configuration( {} )
+  location( os.getenv( "PM4OUTPUTDIR" ) )
+
+configuration( {} )
+  targetdir( os.getenv( "PM4TARGETDIR" ) )
 
 configuration( {} )
 language( "C" )

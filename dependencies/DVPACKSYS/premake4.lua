@@ -13,7 +13,12 @@
 
 
 project( "DVPACKSYS" )
-location( os.getenv( "PM4OUTPUTDIR" ) )
+
+configuration( {} )
+  location( os.getenv( "PM4OUTPUTDIR" ) )
+
+configuration( {} )
+  targetdir( os.getenv( "PM4TARGETDIR" ) )
 
 configuration( {} )
 language( "C" )
@@ -26,6 +31,10 @@ kind( "SharedLib" )
 configuration( {} )
 links( { "gucefCORE", "gucefMT" } )
 links( { "gucefCORE", "gucefMT" } )
+
+
+configuration( {} )
+defines( { "DVPACKSYS_BUILD_MODULE" } )
 
 
 configuration( {} )
@@ -45,16 +54,16 @@ files( {
 
 
 configuration( {} )
-includedirs( { "../../../../../common/include", "../../../../../gucefCORE/include", "../../../../../gucefMT/include", "include" } )
+includedirs( { "../../common/include", "../../gucefCORE/include", "../../gucefMT/include", "include" } )
 
 configuration( { "ANDROID" } )
-includedirs( { "../../../../../gucefCORE/include/android" } )
+includedirs( { "../../gucefCORE/include/android" } )
 
 configuration( { "LINUX" } )
-includedirs( { "../../../../../gucefCORE/include/linux" } )
+includedirs( { "../../gucefCORE/include/linux" } )
 
 configuration( { "WIN32" } )
-includedirs( { "../../../../../gucefCORE/include/mswin" } )
+includedirs( { "../../gucefCORE/include/mswin" } )
 
 configuration( { "WIN64" } )
-includedirs( { "../../../../../gucefCORE/include/mswin" } )
+includedirs( { "../../gucefCORE/include/mswin" } )

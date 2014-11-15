@@ -1166,13 +1166,13 @@ GeneratePremake4ModuleInfoSection( const TProjectInfo& projectInfo         ,
         {
             // The path specified is actually a directive to use the given environment variable
             CORE::CString premakeOutputDirEnvVar = premakeOutputDir.CutChars( 7, true );
-            sectionContent += "location( os.getenv( \"" + premakeOutputDirEnvVar + "\" ) )\n";
+            sectionContent += "\nconfiguration( {} )\n  location( os.getenv( \"" + premakeOutputDirEnvVar + "\" ) )\n";
         }
         else
         {
             CORE::CString pathToOutputDir = CORE::GetRelativePathToOtherPathRoot( moduleInfoEntry.rootDir, premakeOutputDir );
             pathToOutputDir = pathToOutputDir.ReplaceChar( '\\', '/' );
-            sectionContent += "location( \"" + pathToOutputDir + "\" )\n";
+            sectionContent += "\nconfiguration( {} )\n  location( \"" + pathToOutputDir + "\" )\n";
         }
     }
 
@@ -1184,12 +1184,12 @@ GeneratePremake4ModuleInfoSection( const TProjectInfo& projectInfo         ,
         {
             // The path specified is actually a directive to use the given environment variable
             CORE::CString premakeTargetDirEnvVar = premakeTargetDir.CutChars( 7, true );
-            sectionContent += "targetdir( os.getenv( \"" + premakeTargetDirEnvVar + "\" ) )\n";
+            sectionContent += "\nconfiguration( {} )\n  targetdir( os.getenv( \"" + premakeTargetDirEnvVar + "\" ) )\n";
         }
         else
         {
             CORE::CString pathToOutputDir = CORE::GetRelativePathToOtherPathRoot( moduleInfoEntry.rootDir, premakeTargetDir );
-            sectionContent += "targetdir( \"" + pathToOutputDir + "\" )\n";
+            sectionContent += "\nconfiguration( {} )\n  targetdir( \"" + pathToOutputDir + "\" )\n";
         }
     }
 

@@ -13,7 +13,12 @@
 
 
 project( "guidriverMyGUIOpenGL" )
-location( os.getenv( "PM4OUTPUTDIR" ) )
+
+configuration( {} )
+  location( os.getenv( "PM4OUTPUTDIR" ) )
+
+configuration( {} )
+  targetdir( os.getenv( "PM4TARGETDIR" ) )
 
 configuration( {} )
 language( "C++" )
@@ -74,7 +79,7 @@ files( {
 
 
 configuration( {} )
-includedirs( { "../../../common/include", "../../../dependencies/MyGui/MyGUIEngine/include", "../../../dependencies/freetype/include", "../../../dependencies/freetype/include/freetype", "../../../dependencies/freetype/include/freetype/config", "../../../dependencies/freetype/include/freetype/internal", "../../../dependencies/freetype/include/freetype/internal/services", "../../../dependencies/freetype/src/winfonts", "../../../gucefCORE/include", "../../../gucefGUI/include", "../../../gucefIMAGE/include", "../../../gucefINPUT/include", "../../../gucefMT/include", "../../../gucefVFS/include", "../guidriverMyGUI/include", "include" } )
+includedirs( { "../../../common/include", "../../../dependencies/MyGui/Common/FileSystemInfo", "../../../dependencies/MyGui/MyGUIEngine/include", "../../../dependencies/MyGui/Platforms/OpenGL/OpenGLPlatform/include", "../../../dependencies/MyGui/Platforms/OpenGL/OpenGLPlatform/include/GL", "../../../dependencies/freetype/include", "../../../dependencies/freetype/include/freetype", "../../../dependencies/freetype/include/freetype/config", "../../../dependencies/freetype/include/freetype/internal", "../../../dependencies/freetype/include/freetype/internal/services", "../../../dependencies/freetype/src/winfonts", "../../../gucefCORE/include", "../../../gucefGUI/include", "../../../gucefIMAGE/include", "../../../gucefINPUT/include", "../../../gucefMT/include", "../../../gucefVFS/include", "../guidriverMyGUI/include", "include" } )
 
 configuration( { "ANDROID" } )
 includedirs( { "../../../dependencies/MyGui/Common/FileSystemInfo", "../../../gucefCORE/include/android", "OpenGLESPlatform/include" } )

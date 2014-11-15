@@ -261,8 +261,9 @@ class GUCEF_CORE_PUBLIC_CPP CString
                                   bool frontToBack         ,
                                   bool isCaseSentive       ) const;
 
-    CString CutChars( UInt32 charcount         ,
-                      bool frontToBack = false ) const;
+    CString CutChars( UInt32 charcount        ,
+                      bool frontToBack = true ,
+                      UInt32 startOffset = 0  ) const;
 
     CString RemoveChar( const char charToRemove ) const;
 

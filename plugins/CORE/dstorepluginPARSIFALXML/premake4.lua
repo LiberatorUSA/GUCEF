@@ -13,7 +13,12 @@
 
 
 project( "dstorepluginPARSIFALXML" )
-location( os.getenv( "PM4OUTPUTDIR" ) )
+
+configuration( {} )
+  location( os.getenv( "PM4OUTPUTDIR" ) )
+
+configuration( {} )
+  targetdir( os.getenv( "PM4TARGETDIR" ) )
 
 configuration( {} )
 language( "C" )
@@ -26,6 +31,10 @@ kind( "SharedLib" )
 configuration( {} )
 links( { "gucefCORE", "gucefMT", "libparsifal" } )
 links( { "libparsifal" } )
+
+
+configuration( {} )
+defines( { "DSTOREPLUGINPARSIFALXML_BUILD_MODULE" } )
 
 
 configuration( {} )
@@ -44,7 +53,7 @@ files( {
 
 
 configuration( {} )
-includedirs( { "../../../common/include", "../../../gucefCORE/include", "../../../gucefMT/include", "dependancy/libparsifal/include/libparsifal", "include" } )
+includedirs( { "../../../common/include", "../../../dependencies/libparsifal/include/libparsifal", "../../../gucefCORE/include", "../../../gucefMT/include", "include" } )
 
 configuration( { "ANDROID" } )
 includedirs( { "../../../gucefCORE/include/android" } )

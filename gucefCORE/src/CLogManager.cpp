@@ -82,6 +82,10 @@ const Int32 LOGLEVEL_EVERYTHING = 0;
 
 }
 
+#if ( GUCEF_PLATFORM == GUCEF_PLATFORM_ANDROID )
+static CAndroidSystemLogger androidSystemLogger;
+#endif /* GUCEF_PLATFORM == GUCEF_PLATFORM_ANDROID ? */
+
 /*-------------------------------------------------------------------------//
 //                                                                         //
 //      UTILITIES                                                          //
@@ -112,10 +116,7 @@ CLogManager::CLogManager( void )
     m_msgTypeEnablers[ LOG_CONSOLE ] = true;
 
     #if ( GUCEF_PLATFORM == GUCEF_PLATFORM_ANDROID )
-
-    static CAndroidSystemLogger androidSystemLogger;
     AddLogger( &androidSystemLogger);
-
     #endif /* GUCEF_PLATFORM == GUCEF_PLATFORM_ANDROID ? */
 }
 
@@ -124,6 +125,9 @@ CLogManager::CLogManager( void )
 CLogManager::~CLogManager()
 {GUCEF_TRACE;
 
+    #if ( GUCEF_PLATFORM == GUCEF_PLATFORM_ANDROID )
+    RemoveLogger( &androidSystemLogger);
+    #endif /* GUCEF_PLATFORM == GUCEF_PLATFORM_ANDROID ? */
 }
 
 /*-------------------------------------------------------------------------*/

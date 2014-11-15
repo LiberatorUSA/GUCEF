@@ -9,11 +9,16 @@
 --------------------------------------------------------------------
 --
 
--- Configuration for module: gucefPRODMAN_TestApp
+-- Configuration for module: gucefPATCHERAPP_TestApp
 
 
-project( "gucefPRODMAN_TestApp" )
-location( os.getenv( "PM4OUTPUTDIR" ) )
+project( "gucefPATCHERAPP_TestApp" )
+
+configuration( {} )
+  location( os.getenv( "PM4OUTPUTDIR" ) )
+
+configuration( {} )
+  targetdir( os.getenv( "PM4TARGETDIR" ) )
 
 configuration( {} )
 language( "C++" )
@@ -30,28 +35,49 @@ configuration( {} )
 kind( "ConsoleApp" )
 
 configuration( {} )
-links( { "gucefCOM", "gucefCOMCORE", "gucefCORE", "gucefMT", "gucefPATCHER", "gucefPRODMAN" } )
-links( { "gucefCOM", "gucefCOMCORE", "gucefCORE", "gucefMT", "gucefPATCHER", "gucefPRODMAN" } )
+links( { "gucefLOADER" } )
+links( { "gucefLOADER" } )
 
 
 configuration( {} )
 vpaths { ["Source"] = { "**.c", "**.cpp", "**.cs", "**.asm" } }
 files( {
-  "src/gucefPRODMAN_TestApp.cpp"
+  "src/gucefPATCHERAPP_TestApp.cpp"
  } )
 
 
 configuration( {} )
-includedirs( { "../../common/include", "../../gucefCOM/include", "../../gucefCOMCORE/include", "../../gucefCORE/include", "../../gucefMT/include", "../../gucefPATCHER/include", "../../gucefPRODMAN/include" } )
+includedirs( { "../../common/include", "../../gucefCORE/include", "../../gucefCORE/include/", "../../gucefLOADER/include", "../../gucefMT/include" } )
 
 configuration( { "ANDROID" } )
-includedirs( { "../../gucefCORE/include/android" } )
+includedirs( { "../../gucefCORE/include/", "../../gucefCORE/include/android" } )
+
+configuration( { "GLX" } )
+includedirs( { "../../gucefCORE/include/" } )
+
+configuration( { "GTK" } )
+includedirs( { "../../gucefCORE/include/" } )
+
+configuration( { "IPHONEOS" } )
+includedirs( { "../../gucefCORE/include/" } )
 
 configuration( { "LINUX" } )
-includedirs( { "../../gucefCORE/include/linux" } )
+includedirs( { "../../gucefCORE/include/", "../../gucefCORE/include/linux" } )
+
+configuration( { "OSX" } )
+includedirs( { "../../gucefCORE/include/" } )
+
+configuration( { "SDL" } )
+includedirs( { "../../gucefCORE/include/" } )
+
+configuration( { "SYMBIAN" } )
+includedirs( { "../../gucefCORE/include/" } )
+
+configuration( { "UNIX" } )
+includedirs( { "../../gucefCORE/include/" } )
 
 configuration( { "WIN32" } )
-includedirs( { "../../gucefCOMCORE/include/mswin", "../../gucefCORE/include/mswin" } )
+includedirs( { "../../gucefCORE/include/", "../../gucefCORE/include/mswin" } )
 
 configuration( { "WIN64" } )
-includedirs( { "../../gucefCOMCORE/include/mswin", "../../gucefCORE/include/mswin" } )
+includedirs( { "../../gucefCORE/include/", "../../gucefCORE/include/mswin" } )

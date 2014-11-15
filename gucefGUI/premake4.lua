@@ -13,7 +13,12 @@
 
 
 project( "gucefGUI" )
-location( os.getenv( "PM4OUTPUTDIR" ) )
+
+configuration( {} )
+  location( os.getenv( "PM4OUTPUTDIR" ) )
+
+configuration( {} )
+  targetdir( os.getenv( "PM4TARGETDIR" ) )
 
 configuration( {} )
 language( "C++" )
@@ -25,7 +30,11 @@ kind( "SharedLib" )
 
 configuration( {} )
 links( { "gucefCORE", "gucefIMAGE", "gucefMT", "gucefVFS" } )
-links( { "gucefCORE", "gucefMT", "gucefVFS" } )
+links( { "gucefCORE", "gucefIMAGE", "gucefMT", "gucefVFS" } )
+
+
+configuration( {} )
+defines( { "GUCEF_GUI_BUILD_MODULE" } )
 
 
 configuration( {} )

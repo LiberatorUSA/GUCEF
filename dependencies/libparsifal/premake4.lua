@@ -13,7 +13,12 @@
 
 
 project( "libparsifal" )
-location( os.getenv( "PM4OUTPUTDIR" ) )
+
+configuration( {} )
+  location( os.getenv( "PM4OUTPUTDIR" ) )
+
+configuration( {} )
+  targetdir( os.getenv( "PM4TARGETDIR" ) )
 
 configuration( {} )
 language( "C" )
@@ -22,6 +27,10 @@ language( "C" )
 
 configuration( {} )
 kind( "SharedLib" )
+
+
+configuration( {} )
+defines( { "PARSIFAL_BUILD_MODULE", "PARSIFAL_CUSTOM_GUCEF_BUILD" } )
 
 
 configuration( {} )

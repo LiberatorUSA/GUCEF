@@ -9,42 +9,53 @@
 --------------------------------------------------------------------
 --
 
--- Configuration for module: ProjectGenerator
+-- Configuration for module: ProjectGen
 
 
-project( "ProjectGenerator" )
-location( os.getenv( "PM4OUTPUTDIR" ) )
+project( "ProjectGen" )
+
+configuration( {} )
+  location( os.getenv( "PM4OUTPUTDIR" ) )
+
+configuration( {} )
+  targetdir( os.getenv( "PM4TARGETDIR" ) )
 
 configuration( {} )
 language( "C++" )
 
-configuration( { "WIN32" } )
 
-
-configuration( { WIN32 } )
-kind( "WindowedApp" )
-configuration( { "NOT WIN32" } )
-  
 
 configuration( {} )
-kind( "ConsoleApp" )
+kind( "SharedLib" )
 
 configuration( {} )
 links( { "gucefCORE", "gucefMT" } )
 links( { "gucefCORE", "gucefMT" } )
+
+
+configuration( {} )
+defines( { "GUCEF_PROJECTGEN_BUILD_MODULE" } )
 
 
 configuration( {} )
 vpaths { ["Headers"] = { "**.h", "**.hpp", "**.hxx" } }
 files( {
-  "include/gucefProjectGenerator_CAndroidMakefileGenerator.h",
-  "include/gucefProjectGenerator_CCMakeProjectGenerator.h",
-  "include/gucefProjectGenerator_CDirCrawlingProjectInfoGatherer.h",
-  "include/gucefProjectGenerator_CIProjectGenerator.h",
-  "include/gucefProjectGenerator_CIProjectInfoGatherer.h",
-  "include/gucefProjectGenerator_CPremake4ProjectGenerator.h",
-  "include/gucefProjectGenerator_CXmlProjectGenerator.h",
-  "include/gucefProjectGenerator_DataTypes.h"
+  "include/gucefProjectGen_CAndroidMakefileGenerator.h",
+  "include/gucefProjectGen_CCMakeProjectGenerator.h",
+  "include/gucefProjectGen_CDirCrawlingProjectInfoGatherer.h",
+  "include/gucefProjectGen_CDirPreprocessorManager.h",
+  "include/gucefProjectGen_CIDirPreprocessor.h",
+  "include/gucefProjectGen_CIProjectGenerator.h",
+  "include/gucefProjectGen_CIProjectInfoGatherer.h",
+  "include/gucefProjectGen_CIProjectPreprocessor.h",
+  "include/gucefProjectGen_config.h",
+  "include/gucefProjectGen_CPremake4ProjectGenerator.h",
+  "include/gucefProjectGen_CProjectGenGlobal.h",
+  "include/gucefProjectGen_CProjectPreprocessorManager.h",
+  "include/gucefProjectGen_CXmlProjectGenerator.h",
+  "include/gucefProjectGen_DataTypes.h",
+  "include/gucefProjectGen_ETypes.h",
+  "include/gucefProjectGen_macros.h"
  } )
 
 
@@ -52,15 +63,19 @@ files( {
 configuration( {} )
 vpaths { ["Source"] = { "**.c", "**.cpp", "**.cs", "**.asm" } }
 files( {
-  "src/gucefProjectGenerator_CAndroidMakefileGenerator.cpp",
-  "src/gucefProjectGenerator_CCMakeProjectGenerator.cpp",
-  "src/gucefProjectGenerator_CDirCrawlingProjectInfoGatherer.cpp",
-  "src/gucefProjectGenerator_CIProjectGenerator.cpp",
-  "src/gucefProjectGenerator_CIProjectInfoGatherer.cpp",
-  "src/gucefProjectGenerator_CPremake4ProjectGenerator.cpp",
-  "src/gucefProjectGenerator_CXmlProjectGenerator.cpp",
-  "src/gucefProjectGenerator_DataTypes.cpp",
-  "src/main.cpp"
+  "src/gucefProjectGen_CAndroidMakefileGenerator.cpp",
+  "src/gucefProjectGen_CCMakeProjectGenerator.cpp",
+  "src/gucefProjectGen_CDirCrawlingProjectInfoGatherer.cpp",
+  "src/gucefProjectGen_CDirPreprocessorManager.cpp",
+  "src/gucefProjectGen_CIDirPreprocessor.cpp",
+  "src/gucefProjectGen_CIProjectGenerator.cpp",
+  "src/gucefProjectGen_CIProjectInfoGatherer.cpp",
+  "src/gucefProjectGen_CIProjectPreprocessor.cpp",
+  "src/gucefProjectGen_CPremake4ProjectGenerator.cpp",
+  "src/gucefProjectGen_CProjectGenGlobal.cpp",
+  "src/gucefProjectGen_CProjectPreprocessorManager.cpp",
+  "src/gucefProjectGen_CXmlProjectGenerator.cpp",
+  "src/gucefProjectGen_DataTypes.cpp"
  } )
 
 

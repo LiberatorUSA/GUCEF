@@ -950,28 +950,37 @@ CString::CompactRepeatingChar( const char charToCompact ) const
 /*-------------------------------------------------------------------------*/
 
 CString
-CString::CutChars( UInt32 charcount ,
-                   bool startfront  ) const
+CString::CutChars( UInt32 charcount   ,
+                   bool startfront    ,
+                   UInt32 startOffset ) const
 {GUCEF_TRACE;
 
     if ( startfront )
     {
+        if ( 0 == startOffset )
+        {
+            if ( charcount < m_length )
+            {
+                return CString( m_string+charcount, m_length-charcount );
+            }
+
+            return CString();
+        }
+
+        return CString( m_string, startfront ) + CString( m_string+startOffset+charcount, m_length-startOffset-charcount );
+    }
+
+    if ( 0 == startOffset )
+    {
         if ( charcount < m_length )
         {
-            return CString( m_string+charcount ,
-                            m_length-charcount );
+            return CString( m_string, m_length-charcount );
         }
 
         return CString();
     }
 
-    if ( charcount < m_length )
-    {
-        return CString( m_string           ,
-                        m_length-charcount );
-    }
-
-    return CString();
+    return CString( m_string, m_length-startOffset-charcount ) + CString( m_string+m_length-charcount, charcount );
 }
 
 /*-------------------------------------------------------------------------*/

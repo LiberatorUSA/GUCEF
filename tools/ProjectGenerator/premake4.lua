@@ -13,7 +13,12 @@
 
 
 project( "ProjectGenerator" )
-location( os.getenv( "PM4OUTPUTDIR" ) )
+
+configuration( {} )
+  location( os.getenv( "PM4OUTPUTDIR" ) )
+
+configuration( {} )
+  targetdir( os.getenv( "PM4TARGETDIR" ) )
 
 configuration( {} )
 language( "C++" )
@@ -30,42 +35,23 @@ configuration( {} )
 kind( "ConsoleApp" )
 
 configuration( {} )
-links( { "gucefCORE", "gucefMT" } )
-links( { "gucefCORE", "gucefMT" } )
+links( { "ProjectGen", "gucefCORE", "gucefMT" } )
+links( { "ProjectGen", "gucefCORE", "gucefMT" } )
 
 
 configuration( {} )
-vpaths { ["Headers"] = { "**.h", "**.hpp", "**.hxx" } }
-files( {
-  "include/gucefProjectGenerator_CAndroidMakefileGenerator.h",
-  "include/gucefProjectGenerator_CCMakeProjectGenerator.h",
-  "include/gucefProjectGenerator_CDirCrawlingProjectInfoGatherer.h",
-  "include/gucefProjectGenerator_CIProjectGenerator.h",
-  "include/gucefProjectGenerator_CIProjectInfoGatherer.h",
-  "include/gucefProjectGenerator_CPremake4ProjectGenerator.h",
-  "include/gucefProjectGenerator_CXmlProjectGenerator.h",
-  "include/gucefProjectGenerator_DataTypes.h"
- } )
-
+defines( { "GUCEF_PROJECTGENERATOR_BUILD_MODULE" } )
 
 
 configuration( {} )
 vpaths { ["Source"] = { "**.c", "**.cpp", "**.cs", "**.asm" } }
 files( {
-  "src/gucefProjectGenerator_CAndroidMakefileGenerator.cpp",
-  "src/gucefProjectGenerator_CCMakeProjectGenerator.cpp",
-  "src/gucefProjectGenerator_CDirCrawlingProjectInfoGatherer.cpp",
-  "src/gucefProjectGenerator_CIProjectGenerator.cpp",
-  "src/gucefProjectGenerator_CIProjectInfoGatherer.cpp",
-  "src/gucefProjectGenerator_CPremake4ProjectGenerator.cpp",
-  "src/gucefProjectGenerator_CXmlProjectGenerator.cpp",
-  "src/gucefProjectGenerator_DataTypes.cpp",
   "src/main.cpp"
  } )
 
 
 configuration( {} )
-includedirs( { "../../common/include", "../../gucefCORE/include", "../../gucefMT/include", "include" } )
+includedirs( { "../../common/include", "../../gucefCORE/include", "../../gucefMT/include", "../ProjectGen/include" } )
 
 configuration( { "ANDROID" } )
 includedirs( { "../../gucefCORE/include/android" } )

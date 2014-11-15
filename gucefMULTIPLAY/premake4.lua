@@ -13,7 +13,12 @@
 
 
 project( "gucefMULTIPLAY" )
-location( os.getenv( "PM4OUTPUTDIR" ) )
+
+configuration( {} )
+  location( os.getenv( "PM4OUTPUTDIR" ) )
+
+configuration( {} )
+  targetdir( os.getenv( "PM4TARGETDIR" ) )
 
 configuration( {} )
 language( "C++" )
@@ -26,6 +31,10 @@ kind( "SharedLib" )
 configuration( {} )
 links( { "gucefCOM", "gucefCOMCORE", "gucefCORE", "gucefMT" } )
 links( { "gucefCOM", "gucefCOMCORE", "gucefCORE", "gucefMT" } )
+
+
+configuration( {} )
+defines( { "GUCEFMULTIPLAY_BUILD_MODULE" } )
 
 
 configuration( {} )

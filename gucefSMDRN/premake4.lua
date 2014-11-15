@@ -13,7 +13,12 @@
 
 
 project( "gucefSMDRN" )
-location( os.getenv( "PM4OUTPUTDIR" ) )
+
+configuration( {} )
+  location( os.getenv( "PM4OUTPUTDIR" ) )
+
+configuration( {} )
+  targetdir( os.getenv( "PM4TARGETDIR" ) )
 
 configuration( {} )
 language( "C++" )
@@ -26,6 +31,10 @@ kind( "SharedLib" )
 configuration( {} )
 links( { "gucefCOM", "gucefCOMCORE", "gucefCORE", "gucefDRN", "gucefMT" } )
 links( { "gucefCOM", "gucefCOMCORE", "gucefCORE", "gucefDRN", "gucefMT" } )
+
+
+configuration( {} )
+defines( { "GUCEF_SMDRN_BUILD_MODULE" } )
 
 
 configuration( {} )

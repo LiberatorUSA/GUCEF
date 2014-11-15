@@ -13,7 +13,12 @@
 
 
 project( "DVPPackTool" )
-location( os.getenv( "PM4OUTPUTDIR" ) )
+
+configuration( {} )
+  location( os.getenv( "PM4OUTPUTDIR" ) )
+
+configuration( {} )
+  targetdir( os.getenv( "PM4TARGETDIR" ) )
 
 configuration( {} )
 language( "C" )
@@ -42,7 +47,7 @@ files( {
 
 
 configuration( {} )
-includedirs( { "../../common/include", "../../gucefCORE/include", "../../gucefMT/include", "../../gucefVFS/plugins/vfspluginDVP/dependencies/DVPACKSYS/include" } )
+includedirs( { "../../common/include", "../../dependencies/DVPACKSYS/include", "../../gucefCORE/include", "../../gucefMT/include" } )
 
 configuration( { "ANDROID" } )
 includedirs( { "../../gucefCORE/include/android" } )
