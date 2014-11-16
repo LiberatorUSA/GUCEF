@@ -1,0 +1,15 @@
+<?xml version="1.0" encoding="ISO-8859-1" ?>
+	<ModuleInfoEntry>
+		<Module Name="DCSBruteInstaller" Platform="All" Type="Executable" >
+			<Dependencies>
+				<Dependency Name="gucefCOMCORE" />
+				<Dependency Name="gucefCORE" />
+				<Dependency Name="gucefMT" />
+			</Dependencies>
+			<Linker>
+				<Dependency Name="gucefCOMCORE" />
+				<Dependency Name="gucefCORE" />
+				<Dependency Name="gucefMT" />
+			</Linker>
+		</Module>
+	</ModuleInfoEntry>

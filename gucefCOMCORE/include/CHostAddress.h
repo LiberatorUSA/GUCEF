@@ -70,9 +70,15 @@ class GUCEF_COMCORE_EXPORT_CPP CHostAddress : public CIPAddress
 
     virtual ~CHostAddress();
     
-    void SetHostname( const CORE::CString& hostName );
+    bool SetHostname( const CORE::CString& hostName );
 
     const CORE::CString& GetHostname( void ) const;
+
+    /**
+     *  Address and port as a string with the network to host
+     *  conversion applied
+     */
+    virtual CORE::CString HostnameAndPortAsString( void ) const;
     
     CHostAddress& operator=( const CHostAddress& src );
 

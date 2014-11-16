@@ -111,7 +111,6 @@ const CORE::CEvent CTCPClientSocket::ConnectingEvent = "GUCEF::COMCORE::CTCPClie
  */
 struct CTCPClientSocket::STCPClientSockData
 {
-    LPHOSTENT hostent;
     SOCKET sockid;
     SOCKADDR_IN serverinfo;
     struct timeval timeout;         /* timeout for blocking operations */
@@ -244,9 +243,8 @@ CTCPClientSocket::Reconnect( bool blocking )
 {GUCEF_TRACE;
 
     LockData();
-    bool retval = ConnectTo( m_hostAddress.AddressAsString()        ,
-                             m_hostAddress.GetPortInHostByteOrder() ,
-                             blocking                               );
+    bool retval = ConnectTo( m_hostAddress ,
+                             blocking      );
     UnlockData();
     return retval;
 }
@@ -261,45 +259,58 @@ CTCPClientSocket::ConnectTo( const CORE::CString& remoteaddr ,
 
     if ( remoteaddr.Length() == 0 ) return false;
 
-    Close();
+    // Don't bother trying to connect if the DNS resolution fails
+    CHostAddress remoteAddress;
+    if ( !remoteAddress.SetHostname( remoteaddr ) ) return false;
+    remoteAddress.SetPortInHostByteOrder( port );
 
+    Close();
+    
     LockData();
+    m_hostAddress = remoteAddress;
+    bool success = Connect( blocking );
+    return success;
+} 
+
+/*-------------------------------------------------------------------------*/
+
+bool
+CTCPClientSocket::ConnectTo( const CIPAddress& address ,
+                             bool blocking             )
+{GUCEF_TRACE;
+    
+    Close();
+    
+    LockData();
+    m_hostAddress = address;
+    bool success = Connect( blocking );
+    return success;
+}
+
+/*-------------------------------------------------------------------------*/
+
+bool
+CTCPClientSocket::ConnectTo( const CHostAddress& address ,
+                             bool blocking               )
+{GUCEF_TRACE;
+    
+    Close();
+    
+    LockData();
+    m_hostAddress = address;
+    bool success = Connect( blocking );
+    return success;
+}
+
+/*-------------------------------------------------------------------------*/
+
+bool
+CTCPClientSocket::Connect( bool blocking )
+{GUCEF_TRACE;
 
     _active = true;
 
     int errorcode = 0;
-    if ( CORE::Check_If_IP( remoteaddr.C_String() ) == 1 )
-    {
-            UInt32 addr = inet_addr( remoteaddr.C_String() );
-            _data->hostent = dvsocket_gethostbyaddr( (char*) &addr ,
-                                                      4            ,
-                                                      AF_INET      ,
-                                                      &errorcode   );
-    }
-    else
-    {
-            _data->hostent = dvsocket_gethostbyname( remoteaddr.C_String() ,
-                                                     &errorcode            );
-    }
-
-    // Check for an error
-    if ( errorcode != 0 )
-    {
-        // Notify our users of the error
-        GUCEF_DEBUG_LOG( CORE::LOGLEVEL_NORMAL, "CTCPClientSocket(" + CORE::PointerToString( this ) + "): Socket error occured: " + CORE::Int32ToString( errorcode ) );
-
-        // After a socket error you must always close the connection.
-        _active = false;
-
-        UnlockData();
-
-        TSocketErrorEventData eData( errorcode );
-        if ( !NotifyObservers( SocketErrorEvent, &eData ) ) return false;
-        return false;
-    }
-
-    if ( NULL == _data->hostent ) return false;
-
     _data->sockid = dvsocket_socket( AF_INET     ,  /* Go over TCP/IP */
                                      SOCK_STREAM ,  /* This is a stream-oriented socket */
                                      IPPROTO_TCP ,  /* Use TCP rather than UDP */
@@ -321,13 +332,18 @@ CTCPClientSocket::ConnectTo( const CORE::CString& remoteaddr ,
         return false;
     }
 
-    if ( _data->sockid == INVALID_SOCKET ) return false;
+    if ( _data->sockid == INVALID_SOCKET )
+    {
+        UnlockData();
+        return false;
+    }
 
     /* Set the desired blocking mode */
     if ( !SetBlockingMode( _data->sockid ,
                            _blocking     ) )
     {
         _active = false;
+        UnlockData();
         return false;
     }
 
@@ -338,18 +354,19 @@ CTCPClientSocket::ConnectTo( const CORE::CString& remoteaddr ,
 	 *  At this point, we've successfully retrieved vital information about the server,
 	 *  including its hostname, aliases, and IP addresses.
 	 */
-	_data->serverinfo.sin_addr = *( (LPIN_ADDR)(*_data->hostent->h_addr_list) );
+	_data->serverinfo.sin_addr.S_un.S_addr = m_hostAddress.GetAddress();
 
     /*
      *  Change port number to network-byte order and
      *  then insert into the server port info field
      */
-	_data->serverinfo.sin_port = htons( port );
+	_data->serverinfo.sin_port = m_hostAddress.GetPort();
 
     int noDelayFlag = (m_coaleseDataSends ? 1 : 0);
     if ( -1 == setsockopt( _data->sockid, IPPROTO_TCP, TCP_NODELAY, (char*) &noDelayFlag, sizeof(noDelayFlag) ) )
-    {
+    {        
         _active = false;
+        UnlockData();
         return false;
     }
 
@@ -384,13 +401,11 @@ CTCPClientSocket::ConnectTo( const CORE::CString& remoteaddr ,
         }
         else
         {
-            GUCEF_DEBUG_LOG( CORE::LOGLEVEL_NORMAL, "CTCPClientSocket(" + CORE::PointerToString( this ) + "): Connecting to " + remoteaddr + ":" + CORE::UInt16ToString( port ) );
+            GUCEF_DEBUG_LOG( CORE::LOGLEVEL_NORMAL, "CTCPClientSocket(" + CORE::PointerToString( this ) + "): Connecting to " + m_hostAddress.HostnameAndPortAsString() );
 
             m_readbuffer.Clear();
 
             m_isConnecting = true;
-            m_hostAddress.SetHostname( remoteaddr );
-            m_hostAddress.SetPortInHostByteOrder( port );
 
             UnlockData();
 
@@ -422,17 +437,6 @@ CTCPClientSocket::ConnectTo( const CORE::CString& remoteaddr ,
     return false;
 }
 
-/*-------------------------------------------------------------------------*/
-
-bool
-CTCPClientSocket::ConnectTo( const CHostAddress& address ,
-                             bool blocking               )
-{GUCEF_TRACE;
-
-    return ConnectTo( address.AddressAsString()        ,
-                      address.GetPortInHostByteOrder() ,
-                      blocking                         );
-}
 
 /*-------------------------------------------------------------------------*/
 
@@ -449,7 +453,7 @@ UInt16
 CTCPClientSocket::GetRemoteTCPPort( void ) const
 {GUCEF_TRACE;
 
-    return ntohs( _data->serverinfo.sin_port );
+    return m_hostAddress.GetPortInHostByteOrder();
 }
 
 /*-------------------------------------------------------------------------*/
@@ -458,11 +462,7 @@ CIPAddress
 CTCPClientSocket::GetRemoteIP( void ) const
 {GUCEF_TRACE;
 
-    #if ( GUCEF_PLATFORM == GUCEF_PLATFORM_MSWIN )
-    return CIPAddress( _data->serverinfo.sin_addr.S_un.S_addr, _data->serverinfo.sin_port );
-    #elif ( ( GUCEF_PLATFORM == GUCEF_PLATFORM_LINUX ) || ( GUCEF_PLATFORM == GUCEF_PLATFORM_ANDROID ) )
-    return CIPAddress( _data->serverinfo.sin_addr.s_addr, _data->serverinfo.sin_port );
-    #endif
+    return m_hostAddress;
 }
 
 /*-------------------------------------------------------------------------*/

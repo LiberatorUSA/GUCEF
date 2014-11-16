@@ -701,7 +701,8 @@ DetermineMatchGaps( const TBlockMatchComboMap& blockMatchComboMap ,
 CORE::CString
 ConvertBytesToHexStringLines( const void* byteBuffer  ,
                               CORE::UInt32 bufferSize ,
-                              bool addSpaces          )
+                              bool addSpaces          ,
+                              bool addHexPrefix       )
 {GUCEF_TRACE;
 
     CORE::CString hexString;
@@ -714,7 +715,8 @@ ConvertBytesToHexStringLines( const void* byteBuffer  ,
 
         hexString += CORE::ConvertBytesToHexString( (const char*)byteBuffer + (bufferSize-remainingBytes) ,
                                                     sectionSize                                           ,
-                                                    true                                                  ) + '\n';
+                                                    addSpaces                                             ,
+                                                    addHexPrefix                                          ) + '\n';
         remainingBytes -= sectionSize;
     }
     while ( remainingBytes > 0 );
@@ -759,7 +761,8 @@ WriteBlocksAsHexInTextFile( const TBlockMatchVector& blocks ,
         "sub block count: " + CORE::UInt32ToString( blockmatch.subBlockCount ) + "\n"
         "hex:\n" + ConvertBytesToHexStringLines( fileBuffer.GetConstBufferPtr( blockmatch.offsetInFile ) ,
                                                  blockmatch.sizeOfBlock                                  ,
-                                                 true                                                    );
+                                                 true                                                    ,
+                                                 false                                                   );
 
         totalBlockBytes += blockmatch.sizeOfBlock;
         fwrite( content.C_String(), 1, content.Length(), outFile );

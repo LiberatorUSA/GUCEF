@@ -229,7 +229,8 @@ MD5ToString( const UInt8 md5Digest[ 16 ] );
 GUCEF_CORE_PUBLIC_CPP CString
 ConvertBytesToHexString( const void* byteBuffer , 
                          UInt32 bufferSize      ,
-                         bool addSpaces         );
+                         bool addSpaces         ,
+                         bool addHexPrefix      );
 
 /*-------------------------------------------------------------------------*/
 

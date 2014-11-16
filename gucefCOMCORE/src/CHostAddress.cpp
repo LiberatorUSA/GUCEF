@@ -117,13 +117,13 @@ CHostAddress::OnChange( const bool addressChanged ,
 
 /*-------------------------------------------------------------------------*/
 
-void
+bool
 CHostAddress::SetHostname( const CORE::CString& hostName )
 {GUCEF_TRACE;
 
     m_hostname = hostName;
-    ResolveDNS( hostName                 ,
-                GetPortInHostByteOrder() );
+    return ResolveDNS( hostName                 ,
+                       GetPortInHostByteOrder() );
 }
 
 /*-------------------------------------------------------------------------*/
@@ -133,6 +133,15 @@ CHostAddress::GetHostname( void ) const
 {GUCEF_TRACE;
 
     return m_hostname;
+}
+
+/*-------------------------------------------------------------------------*/
+
+CORE::CString
+CHostAddress::HostnameAndPortAsString( void ) const
+{GUCEF_TRACE;
+
+    return m_hostname + ':' + PortAsString();
 }
 
 /*-------------------------------------------------------------------------*/
