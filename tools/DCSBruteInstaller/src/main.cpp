@@ -110,6 +110,7 @@ class DCSBruteInstaller : public CORE::CObserver
     TStringVector m_msgQueue;
     bool m_requestSystemInfo;
     bool m_sendIndividualKeystrokes;
+    bool m_ackReceivedForLastSend;
 
     public:
 
@@ -204,16 +205,27 @@ class DCSBruteInstaller : public CORE::CObserver
     {
         if ( !m_msgQueue.empty() )
         {
-            if ( m_tcpClientSocket.SendString( m_msgQueue.front() ) )
+            if ( m_ackReceivedForLastSend )
             {
-                GUCEF_LOG( CORE::LOGLEVEL_IMPORTANT, "DCSBruteInstaller: Sent queued message: " + m_msgQueue.front() );
-                Sleep( 20 );
-                //m_msgQueue.erase( m_msgQueue.begin() );
+                if ( m_tcpClientSocket.SendString( m_msgQueue.front() ) )
+                {
+                    m_ackReceivedForLastSend = false;
+                    GUCEF_LOG( CORE::LOGLEVEL_IMPORTANT, "DCSBruteInstaller: Sent queued message: " + m_msgQueue.front() );
+                    Sleep( 10 );
+                    //m_msgQueue.erase( m_msgQueue.begin() );
+                    return true;
+                }
+                GUCEF_ERROR_LOG( CORE::LOGLEVEL_IMPORTANT, "DCSBruteInstaller: Failed to send queued message: " + m_msgQueue.front() );
+                return false;
+            }
+            else
+            {
+                GUCEF_DEBUG_LOG( CORE::LOGLEVEL_NORMAL, "DCSBruteInstaller: Skipping send since ack has not yet been received for last message we sent" );
                 return true;
             }
-            GUCEF_ERROR_LOG( CORE::LOGLEVEL_IMPORTANT, "DCSBruteInstaller: Failed to send queued message: " + m_msgQueue.front() );
-            return false;
         }
+        
+        GUCEF_DEBUG_LOG( CORE::LOGLEVEL_NORMAL, "DCSBruteInstaller: There are no messages queued to be sent" );
         return true;
     }
 
@@ -279,13 +291,21 @@ class DCSBruteInstaller : public CORE::CObserver
         }
     }
 
+    void SendReset( void )
+    {GUCEF_TRACE;
+
+        QueueMessage( "070#" );
+        GUCEF_LOG( CORE::LOGLEVEL_IMPORTANT, "DCSBruteInstaller: Queued keystroke # to signal a reset" );
+        SendQueuedMessage();
+    }
+
     void SendMasterCodeSingleStroke( void )
     {GUCEF_TRACE;
         
-        // Prepare the installer code string
+        // Prepare the master code string
         // this has the command code 071 which is multiple key presses
         // followed by *5 which means login as master user
-        // followed by the 4 digit master code
+        // followed by the 4-6 digit master code
         
         CORE::CString codeStr = PassCodeToString( m_masterCode ); 
         CORE::CString msg = "*5" + codeStr + '#';
@@ -296,17 +316,52 @@ class DCSBruteInstaller : public CORE::CObserver
             keyStrokeMsg += msg[ i ];
 
             QueueMessage( keyStrokeMsg );
-            GUCEF_LOG( CORE::LOGLEVEL_IMPORTANT, "DCSBruteInstaller: Queued keystroke " + CORE::CString( msg[i] ) + " for installer login with code " + codeStr );
+            GUCEF_LOG( CORE::LOGLEVEL_IMPORTANT, "DCSBruteInstaller: Queued keystroke " + CORE::CString( msg[i] ) + " for master login with code " + codeStr );
         }
         
         if ( SendQueuedMessage() )
         {
-            GUCEF_LOG( CORE::LOGLEVEL_IMPORTANT, "DCSBruteInstaller: Starting to send keystrokes for installer login with code " + codeStr );
+            GUCEF_LOG( CORE::LOGLEVEL_IMPORTANT, "DCSBruteInstaller: Starting to send keystrokes for master login with code " + codeStr );
         }
         else
         {
-            GUCEF_ERROR_LOG( CORE::LOGLEVEL_IMPORTANT, "DCSBruteInstaller: Failed to send first keystroke for installer login with code " + codeStr );
+            GUCEF_ERROR_LOG( CORE::LOGLEVEL_IMPORTANT, "DCSBruteInstaller: Failed to send first keystroke for master login with code " + codeStr );
         }         
+    }
+
+    void SendMasterCode( void )
+    {GUCEF_TRACE;
+        
+        if ( m_sendIndividualKeystrokes )
+        {
+            SendMasterCodeSingleStroke();
+        }
+        else
+        {
+            // Prepare the master code string
+            // this has the command code 071 which is multiple key presses
+            // followed by *5 which means login as master user
+            // followed by the 4-6 digit master code
+        
+            CORE::CString codeStr = PassCodeToString( m_masterCode ); 
+            CORE::CString msg = "071*5" + codeStr + '#';
+        
+            QueueMessage( msg );
+            GUCEF_LOG( CORE::LOGLEVEL_IMPORTANT, "DCSBruteInstaller: Queued master login with code " + codeStr );
+            SendQueuedMessage();
+        }
+    }
+
+    void SendPartitionDisarm( CORE::UInt16 partition = 1 )
+    {
+        CORE::CString codeStr = PassCodeToString( m_masterCode );
+        CORE::CString partStr = CORE::UInt16ToString( partition );
+        CORE::CString msg = "040" + CORE::UInt16ToString( partition ) + codeStr;
+        
+        QueueMessage( msg );
+        
+        GUCEF_LOG( CORE::LOGLEVEL_IMPORTANT, "DCSBruteInstaller: Sending Partition Disarm for partition " + partStr + " with code " + codeStr );
+        SendQueuedMessage();
     }
 
     void SendInstallerCodeSingleStroke( void )
@@ -341,7 +396,8 @@ class DCSBruteInstaller : public CORE::CObserver
 
     void SendInstallerCode( void )
     {GUCEF_TRACE;
-        
+        SendPartitionDisarm();
+        return;
         if ( m_sendIndividualKeystrokes )
         {
             SendInstallerCodeSingleStroke();
@@ -423,6 +479,7 @@ class DCSBruteInstaller : public CORE::CObserver
                 CORE::UInt16 prevCommand = CORE::StringToUInt16( msg.SubstrFromRange( 3, 6 ) );
                 GUCEF_LOG( CORE::LOGLEVEL_IMPORTANT, "DCSBruteInstaller: Envisalink acknowledges command as received: " + CommandToString( prevCommand ) );
 
+                m_ackReceivedForLastSend = true;
                 EraseQueuedMessage();
                 SendQueuedMessage();
                 break;
@@ -430,6 +487,7 @@ class DCSBruteInstaller : public CORE::CObserver
             case 501:
             {
                 GUCEF_LOG( CORE::LOGLEVEL_IMPORTANT, "DCSBruteInstaller: Envisalink says the command we sent had a bad checksum" );
+                m_ackReceivedForLastSend = true;
                 SendQueuedMessage();
                 break;
             }
@@ -454,6 +512,8 @@ class DCSBruteInstaller : public CORE::CObserver
                     case 10:
                     {
                         GUCEF_LOG( CORE::LOGLEVEL_IMPORTANT, "Envisalink error: Keybus Transmit Buffer Overrun" );
+                        m_ackReceivedForLastSend = true;
+
                         Sleep( 20 );
                         SendQueuedMessage();
                         break;
@@ -518,6 +578,7 @@ class DCSBruteInstaller : public CORE::CObserver
                     }
                     case 23:
                     {
+                        // this sometimes comes dispite the system being armed, maybe some race condition in Envisalink???
                         GUCEF_LOG( CORE::LOGLEVEL_IMPORTANT, "Envisalink error: API System Not Armed (sent in response to a disarm command)" );
                         break;
                     }
@@ -601,6 +662,11 @@ class DCSBruteInstaller : public CORE::CObserver
                 GUCEF_LOG( CORE::LOGLEVEL_IMPORTANT, "DCSBruteInstaller: Envisalink reports Partition 1's KeyPad LED state " + msg.SubstrFromRange( 3, 5 ) );
                 break;
             }
+            case 511 :
+            {
+                GUCEF_LOG( CORE::LOGLEVEL_IMPORTANT, "DCSBruteInstaller: Envisalink reports Partition 1's KeyPad LED FLASH state " + msg.SubstrFromRange( 3, 5 ) );
+                break;
+            }
             case 601:
             {
                 GUCEF_LOG( CORE::LOGLEVEL_IMPORTANT, "DCSBruteInstaller: Envisalink reports zone " + msg.SubstrFromRange( 3, 6 ) + " is in alarm condition" );
@@ -659,13 +725,26 @@ class DCSBruteInstaller : public CORE::CObserver
             }
             case 652:
             {
-                GUCEF_LOG( CORE::LOGLEVEL_IMPORTANT, "DCSBruteInstaller: Envisalink tells us partition " + msg.SubstrFromRange( 3, 4 ) + " is armed as type " + GetArmTypeString( msg.SubstrFromRange( 4, 5 ) ) );
+                CORE::CString partitionStr = msg.SubstrFromRange( 3, 4 );
+                CORE::UInt16 partitionId = CORE::StringToUInt16( partitionStr );
+
+                GUCEF_LOG( CORE::LOGLEVEL_IMPORTANT, "DCSBruteInstaller: Envisalink tells us partition " + partitionStr + " is armed as type " + GetArmTypeString( msg.SubstrFromRange( 4, 5 ) ) );
+                
+                m_ackReceivedForLastSend = true;
+                SendQueuedMessage();
+                
+                //
+
+                //++m_masterCode;
+                //SendPartitionDisarm( partitionId );
                 break;
             }
             case 670:
             {
                 GUCEF_LOG( CORE::LOGLEVEL_IMPORTANT, "DCSBruteInstaller: Envisalink tells us we sent an Invalid Access Code for partition " + msg.SubstrFromRange( 3, 4 ) );
-                
+                m_ackReceivedForLastSend = true;
+
+++m_masterCode;                
                 ++m_installerCode;
                 SendInstallerCode();
                 break;
@@ -673,29 +752,62 @@ class DCSBruteInstaller : public CORE::CObserver
             case 671:
             {
                 GUCEF_LOG( CORE::LOGLEVEL_IMPORTANT, "DCSBruteInstaller: Envisalink tells us Function Not Available for partition " + msg.SubstrFromRange( 3, 4 ) );
+                m_ackReceivedForLastSend = true;
                 break;
             }
             case 673:
             {
                 GUCEF_LOG( CORE::LOGLEVEL_IMPORTANT, "DCSBruteInstaller: Envisalink tells us partition " + msg.SubstrFromRange( 3, 4 ) + " is busy (another keypad is programming or an installer is programming)" );
+                m_ackReceivedForLastSend = true;
                 break;
             }
             case 674:
             {
                 GUCEF_LOG( CORE::LOGLEVEL_IMPORTANT, "DCSBruteInstaller: Envisalink tells us System Arming in Progress: This system is auto-arming and is in arm warning delay for partition " + msg.SubstrFromRange( 3, 4 ) );
+                m_ackReceivedForLastSend = true;
                 break;
             }
             case 680:
             {
                 GUCEF_LOG( CORE::LOGLEVEL_CRITICAL, "DCSBruteInstaller: Envisalink reports the system is NOW IN INSTALLER MODE!!! Last code used: " + PassCodeToString( m_installerCode ) );
+                m_ackReceivedForLastSend = true;
 
                 // we have to now make sure we exit installer mode because other panels will be locked out
                 // failure here could mean having to power-cycle the system
-                for ( int i=0; i<10; ++i )
+                for ( int i=0; i<5; ++i )
                 {
                     QueueMessage( "070#" );
                 }
                 SendQueuedMessage();
+                break;
+            }
+            case 700 :
+            {
+                CORE::CString partitionStr = msg.SubstrFromRange( 3, 4 );
+                CORE::UInt16 partitionId = CORE::StringToUInt16( partitionStr );
+
+                // This could mean we have found he user code for a user Id!!!
+                GUCEF_LOG( CORE::LOGLEVEL_CRITICAL, "DCSBruteInstaller: Envisalink tells us User Closing, A partition has been armed by a user – sent at the end of exit delay, for partition " + partitionStr + " with userId " + msg.SubstrFromRange( 4, 8 ) + ". The current last user code was " + CORE::UInt16ToString( m_masterCode ) );                
+            }
+            case 750 :
+            {
+                CORE::CString partitionStr = msg.SubstrFromRange( 3, 4 );
+                CORE::UInt16 partitionId = CORE::StringToUInt16( partitionStr );
+
+                // This could mean we have found he user code for a user Id!!!
+                GUCEF_LOG( CORE::LOGLEVEL_CRITICAL, "DCSBruteInstaller: Envisalink tells us User Opening, A partition has been disarmed by a user for partition " + partitionStr + " with userId " + msg.SubstrFromRange( 4, 8 ) + ". The current last user code was " + CORE::UInt16ToString( m_masterCode ) );
+
+
+                break;
+            }
+            case 751 :
+            {
+                CORE::CString partitionStr = msg.SubstrFromRange( 3, 4 );
+                CORE::UInt16 partitionId = CORE::StringToUInt16( partitionStr );
+
+                // This could mean we have found he user code for a user Id!!!
+                GUCEF_LOG( CORE::LOGLEVEL_IMPORTANT, "DCSBruteInstaller: Envisalink tells us Special Opening, A partition has been disarmed by one of the following methods: Keyswitch, DLS software, Wireless Key for partition " + partitionStr + ". The current last user code was " + CORE::UInt16ToString( m_masterCode ) );
+
                 break;
             }
             case 840 :
@@ -706,6 +818,11 @@ class DCSBruteInstaller : public CORE::CObserver
             case 841 :
             {
                 GUCEF_LOG( CORE::LOGLEVEL_IMPORTANT, "DCSBruteInstaller: Envisalink tells us trouble LED for partition " + msg.SubstrFromRange( 3, 4 ) + " is OFF" );
+                break;
+            }
+            case 849 :
+            {
+                GUCEF_LOG( CORE::LOGLEVEL_IMPORTANT, "DCSBruteInstaller: Envisalink tells gives us verbose trouble status " + msg.SubstrFromRange( 3, 5 ) );
                 break;
             }
             case 922 :
@@ -879,7 +996,8 @@ class DCSBruteInstaller : public CORE::CObserver
           m_installerCode( 0 )                ,
           m_masterCode( 0 )                   ,
           m_requestSystemInfo( true )         ,
-          m_sendIndividualKeystrokes( false )
+          m_sendIndividualKeystrokes( false ) ,
+          m_ackReceivedForLastSend( true )
     {GUCEF_TRACE;
 
         RegisterEventHandlers();
