@@ -23,7 +23,7 @@ PM4OUTPUTDIR="$OUTPUTDIR/PM4_CBNIX"
 echo "Output dir for this Premake4 target = $PM4OUTPUTDIR"
 echo "Premake4 will use source root: $SRCROOTDIR"
 cd $GUCEF_HOME
-$PREMAKE4LAUNCH_SCRIPTSTARTDIR/premake4 codeblocks
+. $PREMAKE4LAUNCH_SCRIPTSTARTDIR/premake4 codeblocks
 echo "Press enter to continue..."
 line=""
 read line

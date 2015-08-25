@@ -70,8 +70,8 @@
   #endif /* GUCEF_NEW_ON_H ? */
 #endif /* ACTIVATE_MEMORY_MANAGER ? */
 
-#if ( ( GUCEF_PLATFORM == GUCEF_PLATFORM_LINUX ) || ( GUCEF_PLATFORM == GUCEF_PLATFORM_ANDROID ) )    
-    #include <netinet/tcp.h>    
+#if ( ( GUCEF_PLATFORM == GUCEF_PLATFORM_LINUX ) || ( GUCEF_PLATFORM == GUCEF_PLATFORM_ANDROID ) )
+    #include <netinet/tcp.h>
 #endif
 
 /*-------------------------------------------------------------------------//
@@ -265,12 +265,12 @@ CTCPClientSocket::ConnectTo( const CORE::CString& remoteaddr ,
     remoteAddress.SetPortInHostByteOrder( port );
 
     Close();
-    
+
     LockData();
     m_hostAddress = remoteAddress;
     bool success = Connect( blocking );
     return success;
-} 
+}
 
 /*-------------------------------------------------------------------------*/
 
@@ -278,9 +278,9 @@ bool
 CTCPClientSocket::ConnectTo( const CIPAddress& address ,
                              bool blocking             )
 {GUCEF_TRACE;
-    
+
     Close();
-    
+
     LockData();
     m_hostAddress = address;
     bool success = Connect( blocking );
@@ -293,9 +293,9 @@ bool
 CTCPClientSocket::ConnectTo( const CHostAddress& address ,
                              bool blocking               )
 {GUCEF_TRACE;
-    
+
     Close();
-    
+
     LockData();
     m_hostAddress = address;
     bool success = Connect( blocking );
@@ -354,7 +354,11 @@ CTCPClientSocket::Connect( bool blocking )
 	 *  At this point, we've successfully retrieved vital information about the server,
 	 *  including its hostname, aliases, and IP addresses.
 	 */
-	_data->serverinfo.sin_addr.S_un.S_addr = m_hostAddress.GetAddress();
+    #if ( GUCEF_PLATFORM == GUCEF_PLATFORM_MSWIN )
+    _data->serverinfo.sin_addr.S_un.S_addr = m_hostAddress.GetAddress();
+    #elif ( ( GUCEF_PLATFORM == GUCEF_PLATFORM_LINUX ) || ( GUCEF_PLATFORM == GUCEF_PLATFORM_ANDROID ) )
+    _data->serverinfo.sin_addr.s_addr = m_hostAddress.GetAddress();
+    #endif
 
     /*
      *  Change port number to network-byte order and
@@ -364,7 +368,7 @@ CTCPClientSocket::Connect( bool blocking )
 
     int noDelayFlag = (m_coaleseDataSends ? 1 : 0);
     if ( -1 == setsockopt( _data->sockid, IPPROTO_TCP, TCP_NODELAY, (char*) &noDelayFlag, sizeof(noDelayFlag) ) )
-    {        
+    {
         _active = false;
         UnlockData();
         return false;
@@ -600,7 +604,7 @@ CTCPClientSocket::OnPulse( CORE::CNotifier* notifier                 ,
                 if ( !NotifyObservers( SocketErrorEvent, &eData ) ) return;
                 UnlockData();
 
-                Close();                
+                Close();
                 return;
             }
             else

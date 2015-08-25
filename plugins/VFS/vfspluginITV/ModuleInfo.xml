@@ -1,0 +1,17 @@
+<ModuleInfoEntry>
+    <Module Name="vfspluginITV" Type="SharedLibrary" Platform="All">
+        <Dependencies>
+            <Dependency Name="gucefMT" />
+            <Dependency Name="gucefCORE" />
+            <Dependency Name="gucefVFS" />
+        </Dependencies>
+        <Linker>
+            <Dependency Name="gucefMT" />
+            <Dependency Name="gucefCORE" />
+            <Dependency Name="gucefVFS" />
+        </Linker>
+        <Preprocessor>
+            <Define String="GUCEF_VFSPLUGIN_ITV_BUILD_MODULE" />
+        </Preprocessor>
+    </Module>
+</ModuleInfoEntry>

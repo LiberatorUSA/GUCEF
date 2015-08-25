@@ -4,6 +4,7 @@
 *.a
 *.dll
 *.exe
+*.*~
 
 common/bin/*
 !common/bin/TestData
