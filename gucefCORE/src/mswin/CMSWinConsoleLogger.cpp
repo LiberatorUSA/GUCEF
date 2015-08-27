@@ -65,14 +65,16 @@ namespace CORE {
 //-------------------------------------------------------------------------*/
 
 CMSWinConsoleLogger::CMSWinConsoleLogger( void )
-    : CILogger()                                 ,
-      m_minimalLogLevel( LOGLEVEL_BELOW_NORMAL )
+    : CIConsoleLogger()                          ,
+      m_minimalLogLevel( LOGLEVEL_BELOW_NORMAL ) ,
+      m_consoleFptr( NULL )                      ,
+      m_formatForUiPurpose( false )
 {GUCEF_TRACE;
 
     AllocConsole();
 
     /* reopen stout handle as console window output */
-    freopen( "CONOUT$", "wb", stdout );
+    m_consoleFptr = freopen( "CONOUT$", "wb", stdout );
 }
 
 /*-------------------------------------------------------------------------*/
@@ -81,6 +83,25 @@ CMSWinConsoleLogger::~CMSWinConsoleLogger()
 {GUCEF_TRACE;
 
     FreeConsole();
+    fclose( m_consoleFptr );
+}
+
+/*-------------------------------------------------------------------------*/
+
+void
+CMSWinConsoleLogger::SetFormatAsConsoleUI( bool formatForUiPurpose )
+{GUCEF_TRACE;
+    
+    m_formatForUiPurpose = formatForUiPurpose;
+}
+
+/*-------------------------------------------------------------------------*/
+    
+bool
+CMSWinConsoleLogger::GetFormatAsConsoleUI( void ) const
+{GUCEF_TRACE;
+
+    return m_formatForUiPurpose;
 }
 
 /*-------------------------------------------------------------------------*/
@@ -92,14 +113,25 @@ CMSWinConsoleLogger::Log( const TLogMsgType logMsgType ,
                           const UInt32 threadId        )
 {GUCEF_TRACE;
 
-    if ( logLevel >= m_minimalLogLevel )
+    if ( !m_formatForUiPurpose )
     {
-        CString actualLogMsg( FormatStdLogMessage( logMsgType ,
-                                                   logLevel   ,
-                                                   logMessage ,
-                                                   threadId   ) + "\n" );
+        if ( logLevel >= m_minimalLogLevel )
+        {
+            CString actualLogMsg( FormatStdLogMessage( logMsgType ,
+                                                       logLevel   ,
+                                                       logMessage ,
+                                                       threadId   ) + "\n" );
 
-        fprintf( stdout, actualLogMsg.C_String() );
+            fprintf( stdout, actualLogMsg.C_String() );
+        }
+    }
+    else
+    {
+        if ( logMsgType == CORE::CLogManager::LOG_CONSOLE )
+        {
+            CString actualLogMsg( logMessage + "\n" );
+            fprintf( m_consoleFptr, actualLogMsg.C_String() );
+        }
     }
 }
 
@@ -112,10 +144,21 @@ CMSWinConsoleLogger::LogWithoutFormatting( const TLogMsgType logMsgType ,
                                            const UInt32 threadId        )
 {GUCEF_TRACE;
 
-    if ( logLevel >= m_minimalLogLevel )
+    if ( !m_formatForUiPurpose )
     {
-        CString actualLogMsg( logMessage + "\n" );
-        fprintf( stdout, actualLogMsg.C_String() );
+        if ( logLevel >= m_minimalLogLevel || m_formatForUiPurpose )
+        {
+            CString actualLogMsg( logMessage + "\n" );
+            fprintf( m_consoleFptr, actualLogMsg.C_String() );
+        }
+    }
+    else
+    {
+        if ( logMsgType == CORE::CLogManager::LOG_CONSOLE )
+        {
+            CString actualLogMsg( logMessage + "\n" );
+            fprintf( m_consoleFptr, actualLogMsg.C_String() );
+        }
     }
 }
 
@@ -125,7 +168,7 @@ void
 CMSWinConsoleLogger::FlushLog( void )
 {GUCEF_TRACE;
 
-    fflush( stdout );
+    fflush( m_consoleFptr );
 }
 
 /*-------------------------------------------------------------------------*/

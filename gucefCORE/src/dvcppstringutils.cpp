@@ -836,6 +836,15 @@ FileExists( const CString& filename )
 
 /*-------------------------------------------------------------------------*/
 
+UInt32
+FileSize( const CString& filename )
+{GUCEF_TRACE;
+
+    return Filesize( filename.C_String() );
+}
+
+/*-------------------------------------------------------------------------*/
+
 bool
 IsPathValid( const CString& path  )
 {GUCEF_TRACE;

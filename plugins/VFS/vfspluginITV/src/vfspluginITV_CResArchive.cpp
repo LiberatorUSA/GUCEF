@@ -175,18 +175,15 @@ VFS::UInt32
 CResArchive::GetFileSize( const VFS::CString& filePath ) const
 {GUCEF_TRACE;
 
-    CORE::UInt32 resourceId = CORE::StringToUInt32( filePath );
-    IndexVector::const_iterator i = m_index.index.begin();
-    while ( i != m_index.index.end() )
+    CORE::Int32 offset = 0;
+    CORE::Int32 size = 0;
+    CORE::Int32 resourceId = CORE::StringToInt32( filePath );
+    if ( GetResourceInfo( resourceId ,
+                          offset     ,
+                          size       ) )
     {
-        if ( (*i).resourceNr == resourceId )
-        {
-            // @todo: determine size from reading record
-            return (*i).offset;
-        }
-        ++i;
+        return size;
     }
-
     return 0;
 }
 
@@ -201,13 +198,67 @@ CResArchive::GetFileModificationTime( const VFS::CString& filePath ) const
 
 /*-------------------------------------------------------------------------*/
 
+bool
+CResArchive::GetResourceInfo( CORE::Int32 resourceId ,
+                              CORE::Int32& offset    ,
+                              CORE::Int32& size      ) const
+{
+    IndexVector::const_iterator i = m_index.index.begin();
+    while ( i != m_index.index.end() )
+    {
+        if ( (*i).resourceNr == resourceId )
+        {
+            offset = (*i).offset;
+            ++i;
+            if ( i != m_index.index.end() )
+            {
+                size = (*i).offset - offset;
+            }
+            else
+            {
+                size = CORE::FileSize( m_resPath ) - 2 - offset;
+            }
+            return true;
+        }
+        ++i;
+    }
+    return false;
+}
+
+/*-------------------------------------------------------------------------*/
+
 CORE::CIOAccess*
 CResArchive::LoadFile( const VFS::CString& file      ,
                        const VFS::UInt32 memLoadSize ) const
 {GUCEF_TRACE;
 
+    CORE::Int32 offset = 0;
+    CORE::Int32 size = 0;
+    CORE::Int32 resourceId = CORE::StringToInt32( file );
+    if ( !GetResourceInfo( resourceId ,
+                           offset     ,
+                           size       ) )
+    {
+        return NULL;
+    }
+        
+    if ( size <= memLoadSize )
+    {
+        CORE::CDynamicBufferAccess* memBuffer = new CORE::CDynamicBufferAccess();
+        if ( memBuffer->LoadContentFromFile( m_resPath, offset, size ) )
+        {
+            return memBuffer;
+        } 
+    }
+    else
+    {
+        CORE::CSubFileAccess* subFile = new CORE::CSubFileAccess();
+        if ( subFile->Load( m_resPath, offset, size ) )
+        {
+            return subFile;
+        }
+    }
 
-    // We will not load anything in memory for now (ignore memLoadSize)
     return NULL;
 }
 
@@ -267,21 +318,39 @@ CResArchive::LoadIndex( void )
     CORE::CFileAccess file;
     if ( file.Open( m_idxPath, "rb" ) )
     {
+        CORE::UInt32 fileSize = file.GetSize();        
+        GUCEF_DEBUG_LOG( CORE::LOGLEVEL_BELOW_NORMAL, "CResArchive:LoadIndex: Successfully opened index file of " + CORE::UInt32ToString( fileSize ) + " bytes"  );
+        
         if ( 1 != file.Read( &m_index.recordType, 2, 1 ) ) { file.Close(); return false; }
 
-        while ( !file.Eof() )
+        // Get the nr of index entries plus do a sanity check
+        CORE::UInt32 nrOfEntries = fileSize - 2;
+        if ( 0 != nrOfEntries % 8 )
+        {
+            GUCEF_ERROR_LOG( CORE::LOGLEVEL_IMPORTANT, "CResArchive:LoadIndex: The number of bytes in the index is not what we expected, the data will probably be corrupt" );
+        }
+        nrOfEntries /= 8;
+
+        // read all the index entries
+        for ( CORE::UInt32 i=0; i<nrOfEntries; ++i )
         {
             IdxRecord idxRecord;
-            if ( 1 != file.Read( &idxRecord.resourceNr, 4, 1 ) ) { file.Close(); return false; }
-            if ( 1 != file.Read( &idxRecord.offset, 4, 1 ) ) { file.Close(); return false; }
+            if ( 1 != file.Read( &idxRecord.resourceNr, 4, 1 ) ) 
+                { file.Close(); return false; }
+            if ( 1 != file.Read( &idxRecord.offset, 4, 1 ) ) 
+                { file.Close(); return false; }
 
+            GUCEF_DEBUG_LOG( CORE::LOGLEVEL_BELOW_NORMAL, "Read index entry: id " + CORE::Int32ToString( idxRecord.resourceNr ) + 
+                ", offset " + CORE::Int32ToString( idxRecord.offset ) + ". Pos in index " + CORE::UInt32ToString( file.Tell() ) + 
+                " Entry " + CORE::UInt32ToString( i+1 ) + "/" + CORE::UInt32ToString( nrOfEntries ) );
+            
             m_index.index.push_back( idxRecord );
         }
 
         file.Close();
     }
 
-    GUCEF_DEBUG_LOG( CORE::LOGLEVEL_BELOW_NORMAL, "CResArchive:LoadIndex: Successfully loaded " + CORE::UInt32ToString( m_index.index.size() ) + " entries"  );
+    GUCEF_DEBUG_LOG( CORE::LOGLEVEL_BELOW_NORMAL, "CResArchive:LoadIndex: Successfully loaded " + CORE::UInt32ToString( m_index.index.size() ) + " entries from index"  );
     return true;
 }
 
@@ -299,28 +368,24 @@ CResArchive::LoadArchive( const VFS::CString& archiveName ,
     // Since we always need both the index file and the resource file
     // already construct the paths for both
 
-    CORE::CString fileExt = CORE::ExtractFileExtention( archiveName );
+    CORE::CString fileExt = CORE::ExtractFileExtention( archivePath ).Uppercase();
     if ( fileExt.IsNULLOrEmpty() )
     {
-        m_idxPath = m_resPath = CORE::CombinePath( archivePath, archiveName );
+        m_idxPath = m_resPath = archivePath;
         m_idxPath += ".IDX";
         m_resPath += ".RES";
     }
     else
     if ( fileExt.Equals( "RES", false ) )
     {
-        m_resPath = CORE::CombinePath( archivePath, archiveName );
-        CORE::CString idxFilename = archiveName.CutChars( 4, false, 0 );
-        idxFilename += ".IDX";
-        m_idxPath = CORE::CombinePath( archivePath, idxFilename );
+        m_resPath = archivePath;
+        m_idxPath = archivePath.CutChars( 4, false, 0 ) + ".IDX";
     }
     else
     if ( fileExt.Equals( "IDX", false ) )
     {
-        m_idxPath = CORE::CombinePath( archivePath, archiveName );
-        CORE::CString resFilename = archiveName.CutChars( 4, false, 0 );
-        resFilename += ".RES";
-        m_resPath = CORE::CombinePath( archivePath, resFilename );
+        m_idxPath = archivePath;
+        m_resPath = archivePath.CutChars( 4, false, 0 ) + ".RES";
     }
 
     m_archiveName = archiveName;

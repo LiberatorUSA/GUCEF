@@ -173,6 +173,10 @@ class CResArchive : public VFS::CIArchive
 
     bool LoadIndex( void );
 
+    bool GetResourceInfo( CORE::Int32 resourceId ,
+                          CORE::Int32& offset    ,
+                          CORE::Int32& size      ) const;
+
     private:
 
     CORE::CString m_archiveName;

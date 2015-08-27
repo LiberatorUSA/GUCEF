@@ -1,6 +1,6 @@
 /*
- *  ProjectGenerator: Tool to generate module/project files
- *  Copyright (C) 2002 - 2014.  Dinand Vanvelzen
+ *  GucefArchiver: Tool to manipulate archives
+ *  Copyright (C) 2002 - 2015.  Dinand Vanvelzen
  *
  *  This library is free software; you can redistribute it and/or
  *  modify it under the terms of the GNU Lesser General Public
@@ -45,55 +45,25 @@
 #define GUCEF_CORE_CONFIGSTORE_H
 #endif /* GUCEF_CORE_CONFIGSTORE_H ? */
 
-#ifndef GUCEF_PROJECTGEN_DATATYPES_H
-#include "gucefProjectGen_DataTypes.h"
-#define GUCEF_PROJECTGEN_DATATYPES_H
-#endif /* GUCEF_PROJECTGEN_DATATYPES_H ? */
+#ifndef GUCEF_CORE_DVCPPSTRINGUTILS_H
+#include "dvcppstringutils.h"
+#define GUCEF_CORE_DVCPPSTRINGUTILS_H
+#endif /* GUCEF_CORE_DVCPPSTRINGUTILS_H ? */
 
-#ifndef GUCEF_PROJECTGEN_CIPROJECTGENERATOR_H
-#include "gucefProjectGen_CIProjectGenerator.h"
-#define GUCEF_PROJECTGEN_CIPROJECTGENERATOR_H
-#endif /* GUCEF_PROJECTGEN_CIPROJECTGENERATOR_H ? */
+#ifndef GUCEF_CORE_CVALUELIST_H
+#include "CValueList.h"
+#define GUCEF_CORE_CVALUELIST_H
+#endif /* GUCEF_CORE_CVALUELIST_H ? */
 
-#ifndef GUCEF_PROJECTGEN_CIPROJECTINFOGATHERER_H
-#include "gucefProjectGen_CIProjectInfoGatherer.h"
-#define GUCEF_PROJECTGEN_CIPROJECTINFOGATHERER_H
-#endif /* GUCEF_PROJECTGEN_CIPROJECTINFOGATHERER_H ? */
+#ifndef GUCEF_VFS_CVFSGLOBAL_H
+#include "gucefVFS_CVfsGlobal.h"
+#define GUCEF_VFS_CVFSGLOBAL_H
+#endif /* GUCEF_VFS_CVFSGLOBAL_H ? */
 
-#ifndef GUCEF_PROJECTGEN_CDIRCRAWLINGPROJECTINFOGATHERER_H
-#include "gucefProjectGen_CDirCrawlingProjectInfoGatherer.h"
-#define GUCEF_PROJECTGEN_CDIRCRAWLINGPROJECTINFOGATHERER_H
-#endif /* GUCEF_PROJECTGEN_CDIRCRAWLINGPROJECTINFOGATHERER_H ? */
-
-#ifndef GUCEF_PROJECTGEN_CXMLPROJECTGENERATOR_H
-#include "gucefProjectGen_CXmlProjectGenerator.h"
-#define GUCEF_PROJECTGEN_CXMLPROJECTGENERATOR_H
-#endif /* GUCEF_PROJECTGEN_CXMLPROJECTGENERATOR_H ? */
-
-#ifndef GUCEF_PROJECTGEN_CCMAKEPROJECTGENERATOR_H
-#include "gucefProjectGen_CCMakeProjectGenerator.h"
-#define GUCEF_PROJECTGEN_CCMAKEPROJECTGENERATOR_H
-#endif /* GUCEF_PROJECTGEN_CCMAKEPROJECTGENERATOR_H ? */
-
-#ifndef GUCEF_PROJECTGEN_CANDROIDMAKEFILEGENERATOR_H
-#include "gucefProjectGen_CAndroidMakefileGenerator.h"
-#define GUCEF_PROJECTGEN_CANDROIDMAKEFILEGENERATOR_H
-#endif /* GUCEF_PROJECTGEN_CANDROIDMAKEFILEGENERATOR_H ? */
-
-#ifndef GUCEF_PROJECTGEN_CPREMAKE4PROJECTGENERATOR_H
-#include "gucefProjectGen_CPremake4ProjectGenerator.h"
-#define GUCEF_PROJECTGEN_CPREMAKE4PROJECTGENERATOR_H
-#endif /* GUCEF_PROJECTGEN_CPREMAKE4PROJECTGENERATOR_H ? */
-
-#ifndef GUCEF_PROJECTGEN_CPROJECTGENGLOBAL_H
-#include "gucefProjectGen_CProjectGenGlobal.h"
-#define GUCEF_PROJECTGEN_CPROJECTGENGLOBAL_H
-#endif /* GUCEF_PROJECTGEN_CPROJECTGENGLOBAL_H ? */
-
-#ifndef GUCEF_PROJECTGEN_CPROJECTPREPROCESSORMANAGER_H
-#include "gucefProjectGen_CProjectPreprocessorManager.h"
-#define GUCEF_PROJECTGEN_CPROJECTPREPROCESSORMANAGER_H
-#endif /* GUCEF_PROJECTGEN_CPROJECTPREPROCESSORMANAGER_H ? */
+#ifndef GUCEF_VFS_CVFS_H
+#include "gucefVFS_CVFS.h"
+#define GUCEF_VFS_CVFS_H
+#endif /* GUCEF_VFS_CVFS_H ? */
 
 /*-------------------------------------------------------------------------//
 //                                                                         //
@@ -102,7 +72,6 @@
 //-------------------------------------------------------------------------*/
 
 using namespace GUCEF;
-using namespace GUCEF::PROJECTGEN;
 
 /*-------------------------------------------------------------------------//
 //                                                                         //
@@ -116,9 +85,9 @@ LoadConfig( const CORE::CString& configPath ,
 {GUCEF_TRACE;
 
     #ifdef GUCEF_DEBUG_MODE
-    const CORE::CString configFile = "ProjectGenerator_d.ini";
+    const CORE::CString configFile = "GucefArchiver_d.ini";
     #else
-    const CORE::CString configFile = "ProjectGenerator.ini";
+    const CORE::CString configFile = "GucefArchiver.ini";
     #endif
 
     CORE::CString configFilePath;
@@ -175,7 +144,7 @@ ParseParams( const int argc                 ,
         argString = *argv;
 
         // Combine the argument strings back into a single string because we don't want to use
-        // a space as the seperator
+        // a space as the deliminator
         for ( int i=1; i<argc; ++i )
         {
             argString += ' ' + CORE::CString( argv[ i ] );
@@ -183,7 +152,7 @@ ParseParams( const int argc                 ,
 
         // Parse the param list based on the ' symbol
         GUCEF_LOG( CORE::LOGLEVEL_NORMAL, "Application parameters: " + argString );
-        keyValueList.SetMultiple( argString, '*' );
+        keyValueList.SetMultiple( argString, '\'' );
     }
 }
 
@@ -198,12 +167,12 @@ GUCEF_OSMAIN_BEGIN
     GUCEF_LOG( CORE::LOGLEVEL_NORMAL, "This tool was compiled on: " __DATE__ " @ " __TIME__ );
 
     CORE::CCoreGlobal::Instance();
-    PROJECTGEN::CProjectGenGlobal::Instance();
+    VFS::CVfsGlobal::Instance();
 
     // Check for config param first
     CORE::CValueList keyValueList;
     ParseParams( argc, argv, keyValueList );
-    CORE::CString configPathParam = keyValueList.GetValueAlways( "ConfigPath" );
+    CORE::CString configPathParam = keyValueList.GetValueAlways( "configPath" );
     keyValueList.Clear();
 
     // Load settings from a config file (if any) and then override with params (if any)
@@ -211,23 +180,11 @@ GUCEF_OSMAIN_BEGIN
     ParseParams( argc, argv, keyValueList );
 
     CORE::Int32 minLogLevel = CORE::LOGLEVEL_BELOW_NORMAL;
-    CORE::CString valueStr = keyValueList.GetValueAlways( "MinimalLogLevel" );
+    CORE::CString valueStr = keyValueList.GetValueAlways( "minimalLogLevel" );
     if ( !valueStr.IsNULLOrEmpty() )
     {
         minLogLevel = CORE::StringToInt32( valueStr );
         CORE::CCoreGlobal::Instance()->GetLogManager().SetMinLogLevel( minLogLevel );
-    }
-
-    // Support overriding environment variables from a file.
-    // This can be important for build environments which rely on such variables
-    CORE::CString envOverrideFile = keyValueList.GetValueAlways( "envOverridesFile" );
-    if ( !envOverrideFile.IsNULLOrEmpty() )
-    {
-        CORE::CString fileContent;
-        if ( CORE::LoadTextFileAsString( envOverrideFile, fileContent, true, "\n" ) )
-        {
-            CORE::SetEnvOverrides( fileContent );
-        }
     }
 
     CORE::CString outputDir = CORE::RelativePath( keyValueList.GetValueAlways( "outputDir" ) );
@@ -237,7 +194,7 @@ GUCEF_OSMAIN_BEGIN
     }
     CORE::CreateDirs( outputDir );
 
-    CORE::CString logFilename = CORE::CombinePath( outputDir, "ProjectGenerator_Log.txt" );
+    CORE::CString logFilename = CORE::CombinePath( outputDir, "GucefArchiver_Log.txt" );
 
     keyValueList.Set( "logfile", logFilename );
 
@@ -251,108 +208,128 @@ GUCEF_OSMAIN_BEGIN
     CORE::CCoreGlobal::Instance()->GetLogManager().FlushBootstrapLogEntriesToLogs();
     GUCEF_LOG( CORE::LOGLEVEL_NORMAL, "Flushed to log @ " + logFilename );
 
-    TStringVector rootDirs;
-    try
+    if ( argc > 0 )
     {
-        rootDirs = keyValueList.GetValueVector( "rootDir" );
-        GUCEF_LOG( CORE::LOGLEVEL_NORMAL, "Number of rootDir arguments passed from command line: " + CORE::UInt32ToString( rootDirs.size() ) );
-    }
-    catch ( CORE::CValueList::EUnknownKey& )
-    {
-        rootDirs.push_back( CORE::RelativePath( "$CURWORKDIR$" ) );
-        GUCEF_LOG( CORE::LOGLEVEL_NORMAL, "Using current working directory since no rootDir arguments where passed from the command line" );
-    }
-
-    bool addToolCompileTimeToOutput = CORE::StringToBool( keyValueList.GetValueAlways( "addToolCompileTimeToOutput" ) );
-
-    // Get the generators to use
-    TStringVector generatorList = keyValueList.GetValueAlways( "generators" ).ParseElements( ';', false );
-    if ( generatorList.size() == 0  )
-    {
-        // No specific generators where specified, defaulting...
-        generatorList.push_back( "xml" );
-    }
-
-    // Set any global dir excludes that where passed as cmd parameters
-    TProjectInfo projectInfo;
-    projectInfo.globalDirExcludeList = keyValueList.GetValueAlways( "dirsToIgnore" ).ParseElements( ';', false );
-    GUCEF_LOG( CORE::LOGLEVEL_NORMAL, "There are " + CORE::UInt32ToString( projectInfo.globalDirExcludeList.size() ) + " dirs in the global dir ignore list" );
-
-    projectInfo.projectName = keyValueList.GetValueAlways( "projectName" );
-
-    bool useProjectInfoCache = CORE::StringToBool( keyValueList.GetValueAlways( "useProjectInfoCache" ) );
-    bool projectInfoLoadedFromCache = false;
-    if ( useProjectInfoCache )
-    {
-        CORE::CString cachedInfoPath = CORE::CombinePath( CORE::RelativePath( outputDir ), "Project.xml" );
-        projectInfoLoadedFromCache = DeserializeProjectInfo( projectInfo, cachedInfoPath );
-    }
-
-    if ( !projectInfoLoadedFromCache )
-    {
-        // Use an info gatherer to get all the project information for us
-        CDirCrawlingProjectInfoGatherer infoGatherer;
-        infoGatherer.GatherInfo( rootDirs    ,
-                                 projectInfo );
-    }
-
-    // Before we hand the data we collected and generated to the generator(s) for the desired output we will check
-    // for preprocessors which can be executed before any output generator. These apply changes to the project data
-    // that will apply to all output generators
-    const CProjectPreprocessorManager::TProjectPreprocessorsList& projectPreProcessors = CProjectGenGlobal::Instance()->GetProjectPreprocessorManager().GetProjectPreprocessors();
-    CProjectPreprocessorManager::TProjectPreprocessorsList::const_iterator n = projectPreProcessors.begin();
-    while ( n != projectPreProcessors.end() )
-    {
-        GUCEF_LOG( CORE::LOGLEVEL_NORMAL, "Invoking project preprocessor" );
-        (*n)->ProccessProjects( projectInfo  ,
-                                outputDir    ,
-                                keyValueList );
-        ++n;
-    }
-
-    // Now we output the project info using all generators specified
-    TStringVector::iterator i = generatorList.begin();
-    while ( i != generatorList.end() )
-    {
-        if ( (*i).Lowercase() == "xml" )
+        CORE::CString archivePath = keyValueList.GetValueAlways( "archive" );
+        if ( !archivePath.IsNULLOrEmpty() )
         {
-            CXmlProjectGenerator xmlGenerator;
-            xmlGenerator.GenerateProject( projectInfo                ,
-                                          outputDir                  ,
-                                          addToolCompileTimeToOutput ,
-                                          keyValueList               );
+            CORE::CString archiveType = keyValueList.GetValueAlways( "archiveType" );
+            if ( archiveType.IsNULLOrEmpty() )
+            {
+                archiveType = CORE::ExtractFileExtention( archivePath ).Lowercase();
+            }
+
+            bool listArchiveContents = CORE::StringToBool( keyValueList.GetValueAlways( "list", "true" ) );
+            bool extractArchiveContents = CORE::StringToBool( keyValueList.GetValueAlways( "extract", "false" ) );
+
+            if ( CORE::FileExists( archivePath ) )
+            {   
+                CORE::CString archiveFilename = CORE::ExtractFilename( archivePath );
+                CORE::CString archiveDir = CORE::StripFilename( archivePath );
+                VFS::CVFS& vfs = VFS::CVfsGlobal::Instance()->GetVfs();
+
+                // Add the archive dir as a VFS root named root
+                vfs.AddRoot( archiveDir, "root", false, false );
+
+                // Mount the archive
+                if ( vfs.MountArchive( "archive", archiveFilename, archiveType, "archive", false ) )
+                {
+                    if ( listArchiveContents )
+                    {
+                        // Get the contents of the archive
+                        VFS::CVFS::TStringSet archiveContent;
+                        vfs.GetList( archiveContent, "archive", true, true, CORE::CString::Empty, true, false );
+
+                        // Write the contents to the log which includes the console
+                        console.GetLogger()->SetFormatAsConsoleUI( true );
+                        GUCEF_CONSOLE_LOG( CORE::LOGLEVEL_NORMAL, "***** BEGIN ARCHIVE CONTENTS *****" );
+                        CORE::UInt32 n=1;
+                        VFS::CVFS::TStringSet::iterator i = archiveContent.begin();
+                        while ( i != archiveContent.end() )
+                        {
+                            GUCEF_CONSOLE_LOG( CORE::LOGLEVEL_NORMAL, CORE::UInt32ToString( n ) + ": " + (*i) );
+                            ++i; ++n;
+                        }
+                        GUCEF_CONSOLE_LOG( CORE::LOGLEVEL_NORMAL, "***** END ARCHIVE CONTENTS *****" );
+                        console.GetLogger()->SetFormatAsConsoleUI( false );
+                    }
+
+                    if ( extractArchiveContents )
+                    {
+                        // Get the contents of the archive
+                        VFS::CVFS::TStringSet archiveContent;
+                        vfs.GetList( archiveContent, "archive", true, true, CORE::CString::Empty, true, false );
+
+                        // prepare the output folder
+                        CORE::CString archiveOutputDir = archiveFilename.ReplaceChar( '.', '_' );
+                        archiveOutputDir = CORE::CombinePath( outputDir, archiveOutputDir );
+                        if ( CORE::CreateDirs( archiveOutputDir ) )
+                        {
+                            GUCEF_LOG( CORE::LOGLEVEL_NORMAL, "Output path " + archiveOutputDir + " is available for extraction" );
+                            
+                            // Obtain access to each of the resources in the archive and extract it
+                            VFS::CVFS::TStringSet::iterator i = archiveContent.begin();
+                            while ( i != archiveContent.end() )
+                            {
+                                CORE::CString filename = CORE::ExtractFilename( (*i) );
+                                CORE::CString vfsFilePath = CORE::CombinePath( "archive", filename );
+                                VFS::CVFS::CVFSHandlePtr file = vfs.GetFile( vfsFilePath, "rb", false );
+                                if ( !file.IsNULL() )
+                                {
+                                    GUCEF_LOG( CORE::LOGLEVEL_NORMAL, "Obtained access to resource: " + (*i) );
+                                
+                                    CORE::CString extractedFilePath = filename;
+                                    extractedFilePath = CORE::CombinePath( archiveOutputDir, extractedFilePath );
+
+                                    CORE::CFileAccess extractedFile;
+                                    if ( extractedFile.Open( extractedFilePath, "wb" ) )
+                                    {
+                                        CORE::CIOAccess* fileAccess = file->GetAccess();
+                                        CORE::UInt32 fileSize = fileAccess->GetSize();
+                                        CORE::UInt32 bytesExtracted = extractedFile.Write( *fileAccess );
+                                        extractedFile.Close();
+                                        
+                                        if ( fileSize == bytesExtracted )
+                                        {
+                                            GUCEF_LOG( CORE::LOGLEVEL_NORMAL, "Extracted " + CORE::UInt32ToString( bytesExtracted ) + " bytes into file: " + extractedFilePath );
+                                        }
+                                        else
+                                        {
+                                            GUCEF_ERROR_LOG( CORE::LOGLEVEL_IMPORTANT, "Extracted " + CORE::UInt32ToString( bytesExtracted ) + " bytes instead of " +
+                                                     CORE::UInt32ToString( fileSize ) + " expected bytes into file: " + extractedFilePath + ". The file is probably corrupt" );
+                                        }
+                                    }
+                                    else
+                                    {
+                                        GUCEF_ERROR_LOG( CORE::LOGLEVEL_NORMAL, "Unable to open target file for writing: " + extractedFilePath );
+                                    }                                                                    
+                                }
+                                else
+                                {
+                                    GUCEF_ERROR_LOG( CORE::LOGLEVEL_NORMAL, "Unable to obtain access to resource: " + filename );
+                                }
+                                ++i;
+                            }
+                        }                                                
+                    }
+                }
+                else
+                {
+                    GUCEF_LOG( CORE::LOGLEVEL_NORMAL, "Failed to mount archive" );
+                }
+            }
+            else
+            {
+                GUCEF_LOG( CORE::LOGLEVEL_NORMAL, "Archive file does not exist, cannot proceed" );
+            }
         }
         else
-        if ( (*i).Lowercase() == "androidmake" )
         {
-            CAndroidMakefileGenerator androidMakefileGenerator;
-            androidMakefileGenerator.GenerateProject( projectInfo                ,
-                                                      outputDir                  ,
-                                                      addToolCompileTimeToOutput ,
-                                                      keyValueList               );
+            GUCEF_LOG( CORE::LOGLEVEL_NORMAL, "Missing minimal param \"archive\" thus no idea which archive to use" );
         }
-        else
-        if ( (*i).Lowercase() == "cmake" )
-        {
-            CCMakeProjectGenerator cmakeGenerator;
-            cmakeGenerator.GenerateProject( projectInfo                ,
-                                            outputDir                  ,
-                                            addToolCompileTimeToOutput ,
-                                            keyValueList               );
-        }
-        else
-        if ( (*i).Lowercase() == "premake4" )
-        {
-            CPremake4ProjectGenerator premake4Generator;
-            premake4Generator.GenerateProject( projectInfo                ,
-                                               outputDir                  ,
-                                               addToolCompileTimeToOutput ,
-                                               keyValueList               );
-        }
-        ++i;
     }
-
-    GUCEF_LOG( CORE::LOGLEVEL_NORMAL, "Wrote log file to: " + logFilename );
+	
+	GUCEF_LOG( CORE::LOGLEVEL_NORMAL, "Wrote log file to: " + logFilename );
 
     CORE::CCoreGlobal::Instance()->GetLogManager().ClearLoggers();
 
@@ -366,7 +343,7 @@ GUCEF_OSMAIN_END
 //                                                                         //
 //-------------------------------------------------------------------------//
 
-- 27-11-2004 :
+- 25-08-2015 :
         - Dinand: Initial implementation
 
 ---------------------------------------------------------------------------*/

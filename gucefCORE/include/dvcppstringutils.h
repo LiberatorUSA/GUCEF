@@ -107,6 +107,11 @@ FileExists( const CString& filename );
 
 /*-------------------------------------------------------------------------*/
 
+GUCEF_CORE_PUBLIC_CPP UInt32
+FileSize( const CString& filename );
+
+/*-------------------------------------------------------------------------*/
+
 GUCEF_CORE_PUBLIC_CPP const TVersion
 StringToVersion( const CString& version );
 

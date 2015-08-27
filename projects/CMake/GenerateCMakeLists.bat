@@ -52,6 +52,8 @@ REM -----------------------------------------------------
 
 :RUN_CMAKELISTGENERATOR
 
+SET CMAKE_ROOT="C:\Program Files (x86)\CMake"
+
 SET PATH="%GENERATORPATH%";%PATH%
 
 cd %GUCEF_THEBATCHDIR%\..\..\
@@ -62,7 +64,7 @@ IF NOT DEFINED GUCEF_HOME (
   ECHO GUCEF_HOME=%CD%
 )
 
-rem %GENERATOREXE% *rootDir=%GUCEF_HOME%* *dirsToIgnore=.svn;_svn* *projectName=GUCEF* *generators=cmake* *outputDir=%GUCEF_HOME%* *cmakgen:TemplateDir=%GUCEF_HOME%\projects\CMake\ProjectGenTemplates*
+%GENERATOREXE% *rootDir=%GUCEF_HOME%* *dirsToIgnore=.svn;_svn* *projectName=GUCEF* *generators=cmake* *outputDir=%GUCEF_HOME%* *cmakgen:TemplateDir=%GUCEF_HOME%\projects\CMake\ProjectGenTemplates*
 cd "%GUCEF_THEBATCHDIR%"
 GOTO END
 

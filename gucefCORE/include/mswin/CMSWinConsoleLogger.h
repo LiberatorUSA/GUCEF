@@ -26,10 +26,10 @@
 //                                                                         //
 //-------------------------------------------------------------------------*/
 
-#ifndef GUCEF_CORE_CILOGGER_H
-#include "CILogger.h"
-#define GUCEF_CORE_CILOGGER_H
-#endif /* GUCEF_CORE_CILOGGER_H ? */
+#ifndef GUCEF_CORE_CICONSOLELOGGER_H
+#include "gucefCORE_CIConsoleLogger.h"
+#define GUCEF_CORE_CICONSOLELOGGER_H
+#endif /* GUCEF_CORE_CICONSOLELOGGER_H ? */
 
 #ifdef GUCEF_MSWIN_BUILD
 /*-------------------------------------------------------------------------//
@@ -51,7 +51,7 @@ namespace CORE {
  *  GUCEF logger implementation for MS Windows that displays log output
  *  in a console window.
  */
-class GUCEF_CORE_PUBLIC_CPP CMSWinConsoleLogger : public CILogger
+class GUCEF_CORE_PUBLIC_CPP CMSWinConsoleLogger : public CIConsoleLogger
 {
     public:
 
@@ -75,6 +75,10 @@ class GUCEF_CORE_PUBLIC_CPP CMSWinConsoleLogger : public CILogger
 
     Int32 GetMinimalLogLevel( void ) const;
 
+    virtual void SetFormatAsConsoleUI( bool formatForUiPurpose );
+    
+    virtual bool GetFormatAsConsoleUI( void ) const;
+
     private:
 
     CMSWinConsoleLogger& operator=( const CMSWinConsoleLogger& src );
@@ -83,6 +87,8 @@ class GUCEF_CORE_PUBLIC_CPP CMSWinConsoleLogger : public CILogger
     private:
 
     Int32 m_minimalLogLevel;
+    FILE* m_consoleFptr;
+    bool m_formatForUiPurpose;
 };
 
 /*-------------------------------------------------------------------------//

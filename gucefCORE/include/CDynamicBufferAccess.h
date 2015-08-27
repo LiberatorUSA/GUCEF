@@ -56,10 +56,16 @@ class GUCEF_CORE_PUBLIC_CPP CDynamicBufferAccess : public CIOAccess
 {
     public:
 
+    CDynamicBufferAccess( void );
+    
     CDynamicBufferAccess( CDynamicBuffer* buffer                         ,
                           const bool deleteBufferUponDestruction = false );
 
     virtual ~CDynamicBufferAccess();
+
+    bool LoadContentFromFile( const CString& filePath       ,
+                              const UInt32 offsetInFile = 0 ,
+                              const Int32 bytesToRead = -1  );
 
     /**
      *      open the resource for I/O
@@ -149,10 +155,6 @@ class GUCEF_CORE_PUBLIC_CPP CDynamicBufferAccess : public CIOAccess
     virtual void Flush( void );
 
     virtual CICloneable* Clone( void ) const;
-
-    private:
-
-    CDynamicBufferAccess( void );
 
     private:
 

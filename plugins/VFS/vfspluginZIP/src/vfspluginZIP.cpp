@@ -77,13 +77,15 @@ static TZIPArchiveFactory zipArchiveFactory;
 //                                                                         //
 //-------------------------------------------------------------------------*/
 
-void GUCEF_PLUGIN_CALLSPEC_PREFIX 
-GUCEFPlugin_Load( void ) GUCEF_PLUGIN_CALLSPEC_SUFFIX
+CORE::Int32 GUCEF_PLUGIN_CALLSPEC_PREFIX 
+GUCEFPlugin_Load( CORE::UInt32 argc, const char** argv ) GUCEF_PLUGIN_CALLSPEC_SUFFIX
 {GUCEF_TRACE;
 
     VFS::CVfsGlobal::Instance()->GetVfs().RegisterArchiveFactory( "zip", zipArchiveFactory );
     VFS::CVfsGlobal::Instance()->GetVfs().RegisterArchiveFactory( "pk3", zipArchiveFactory );
     VFS::CVfsGlobal::Instance()->GetVfs().RegisterArchiveFactory( "jar", zipArchiveFactory );
+
+    return 1;
 }
 
 /*--------------------------------------------------------------------------*/

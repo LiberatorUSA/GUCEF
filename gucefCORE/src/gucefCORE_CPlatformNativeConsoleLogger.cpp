@@ -23,6 +23,11 @@
 //                                                                         //
 //-------------------------------------------------------------------------*/
 
+#ifndef GUCEF_CORE_LOGGING_H
+#include "gucefCORE_Logging.h"
+#define GUCEF_CORE_LOGGING_H
+#endif /* GUCEF_CORE_LOGGING_H ? */
+
 #include "gucefCORE_CPlatformNativeConsoleLogger.h"
 
 #if GUCEF_PLATFORM == GUCEF_PLATFORM_MSWIN
@@ -58,7 +63,8 @@ namespace CORE {
 
 CPlatformNativeConsoleLogger::CPlatformNativeConsoleLogger( void )
     : m_nativeConsoleLogger( NULL )
-{
+{GUCEF_TRACE;
+
     #if GUCEF_PLATFORM == GUCEF_PLATFORM_MSWIN
 
     m_nativeConsoleLogger = new CMSWinConsoleLogger();
@@ -73,16 +79,18 @@ CPlatformNativeConsoleLogger::CPlatformNativeConsoleLogger( void )
 /*-------------------------------------------------------------------------*/
 
 CPlatformNativeConsoleLogger::~CPlatformNativeConsoleLogger()
-{
+{GUCEF_TRACE;
+
     delete m_nativeConsoleLogger;
     m_nativeConsoleLogger = NULL;
 }
 
 /*-------------------------------------------------------------------------*/
 
-CILogger*
+CIConsoleLogger*
 CPlatformNativeConsoleLogger::GetLogger( void )
-{
+{GUCEF_TRACE;
+
     return m_nativeConsoleLogger;
 }
 

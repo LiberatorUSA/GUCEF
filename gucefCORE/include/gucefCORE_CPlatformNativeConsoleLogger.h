@@ -26,10 +26,10 @@
 //                                                                         //
 //-------------------------------------------------------------------------*/
 
-#ifndef GUCEF_CORE_CILOGGER_H
-#include "CILogger.h"
-#define GUCEF_CORE_CILOGGER_H
-#endif /* GUCEF_CORE_CILOGGER_H ? */
+#ifndef GUCEF_CORE_CICONSOLELOGGER_H
+#include "gucefCORE_CIConsoleLogger.h"
+#define GUCEF_CORE_CICONSOLELOGGER_H
+#endif /* GUCEF_CORE_CICONSOLELOGGER_H ? */
 
 /*-------------------------------------------------------------------------//
 //                                                                         //
@@ -60,7 +60,7 @@ class GUCEF_CORE_PUBLIC_CPP CPlatformNativeConsoleLogger
 
     ~CPlatformNativeConsoleLogger();
 
-    CILogger* GetLogger( void );
+    CIConsoleLogger* GetLogger( void );
 
     private:
 
@@ -69,7 +69,7 @@ class GUCEF_CORE_PUBLIC_CPP CPlatformNativeConsoleLogger
 
     private:
 
-    CILogger* m_nativeConsoleLogger;
+    CIConsoleLogger* m_nativeConsoleLogger;
 };
 
 /*-------------------------------------------------------------------------//

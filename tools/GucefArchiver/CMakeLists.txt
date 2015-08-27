@@ -9,7 +9,7 @@
 #-------------------------------------------------------------------
 #
 
-# Configuration for module: DCSBruteInstaller
+# Configuration for module: GucefArchiver
 
 set( SOURCE_FILES 
   src/main.cpp
@@ -24,16 +24,17 @@ set( SOURCE_FILES
 # For ease of use make a variable that has all files for this module
 set( ALL_FILES ${HEADER_FILES} ${SOURCE_FILES} ${PLATFORM_HEADER_FILES} ${PLATFORM_SOURCE_FILES} )
 
-set( MODULE_NAME "DCSBruteInstaller" )
+set( MODULE_NAME "GucefArchiver" )
 if ( WIN32 )
   add_executable( ${MODULE_NAME} WIN32 ${ALL_FILES} )
 else()
   add_executable( ${MODULE_NAME} ${ALL_FILES} )
 endif()
-add_dependencies( ${MODULE_NAME} gucefCOMCORE gucefCORE gucefMT )
-target_link_libraries( ${MODULE_NAME} gucefCOMCORE gucefCORE gucefMT )
+add_dependencies( ${MODULE_NAME} gucefCORE gucefMT gucefVFS )
+target_link_libraries( ${MODULE_NAME} gucefCORE gucefMT gucefVFS )
+set_target_properties( ${MODULE_NAME} PROPERTIES COMPILE_DEFINITIONS "GUCEF_ARCHIVER_BUILD_MODULE" )
 
-include_directories( ../../common/include ../../gucefCOMCORE/include ../../gucefCORE/include ../../gucefMT/include )
+include_directories( ../../common/include ../../gucefCORE/include ../../gucefMT/include ../../gucefVFS/include )
 
 if ( ANDROID )
   include_directories( ../../gucefCORE/include/android )
@@ -44,11 +45,11 @@ if ( LINUX )
 endif( LINUX )
 
 if ( WIN32 )
-  include_directories( ../../gucefCOMCORE/include/mswin ../../gucefCORE/include/mswin )
+  include_directories( ../../gucefCORE/include/mswin )
 endif( WIN32 )
 
 if ( WIN64 )
-  include_directories( ../../gucefCOMCORE/include/mswin ../../gucefCORE/include/mswin )
+  include_directories( ../../gucefCORE/include/mswin )
 endif( WIN64 )
 
 

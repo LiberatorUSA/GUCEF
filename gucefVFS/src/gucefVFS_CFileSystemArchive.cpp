@@ -272,7 +272,7 @@ CFileSystemArchive::FileExists( const CString& filePath ) const
 
     CString path = m_rootDir;
     CORE::AppendToPath( path, filePath );
-    return CORE::File_Exists( path.C_String() ) != 0;
+    return CORE::FileExists( path );
 }
 
 /*-------------------------------------------------------------------------*/
@@ -283,9 +283,9 @@ CFileSystemArchive::GetFileSize( const CString& filePath ) const
 
     CString path = m_rootDir;
     CORE::AppendToPath( path, filePath );
-    if ( CORE::File_Exists( path.C_String() ) != 0 )
+    if ( CORE::FileExists( path ) )
     {
-        return CORE::Filesize( path.C_String() );
+        return CORE::FileSize( path );
     }
     return 0;
 }

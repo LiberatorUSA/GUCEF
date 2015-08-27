@@ -52,6 +52,17 @@ namespace CORE {
 //                                                                         //
 //-------------------------------------------------------------------------*/
 
+CDynamicBufferAccess::CDynamicBufferAccess( void )
+    : CIOAccess()      ,
+      m_buffer( NULL ) ,
+      m_carat( 0 )     ,
+      m_deleteBufferUponDestruction( false )
+{GUCEF_TRACE;
+
+}
+
+/*-------------------------------------------------------------------------*/
+
 CDynamicBufferAccess::CDynamicBufferAccess( CDynamicBuffer* buffer                               ,
                                             const bool deleteBufferUponDestruction /* = false */ )
         : CIOAccess()                                                  ,
@@ -75,6 +86,34 @@ CDynamicBufferAccess::~CDynamicBufferAccess()
         delete m_buffer;
         m_buffer = NULL;
     }
+}
+
+/*-------------------------------------------------------------------------*/
+
+bool
+CDynamicBufferAccess::LoadContentFromFile( const CString& filePath   ,
+                                           const UInt32 offsetInFile ,
+                                           const Int32 bytesToRead   )
+{GUCEF_TRACE;
+
+    Close();
+
+    if ( m_deleteBufferUponDestruction )
+    {
+        delete m_buffer;
+        m_buffer = NULL;
+    }
+    
+    m_buffer = new CDynamicBuffer();
+    if ( m_buffer->LoadContentFromFile( filePath, offsetInFile, bytesToRead ) )
+    {
+        m_deleteBufferUponDestruction = true;
+        return true;
+    }
+
+    delete m_buffer;
+    m_buffer = NULL;
+    return false;
 }
 
 /*-------------------------------------------------------------------------*/

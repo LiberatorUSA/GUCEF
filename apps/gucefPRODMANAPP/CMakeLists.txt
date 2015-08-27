@@ -9,10 +9,16 @@
 #-------------------------------------------------------------------
 #
 
-# Configuration for module: DCSBruteInstaller
+# Configuration for module: gucefPRODMANAPP
+
+set( HEADER_FILES 
+  include/gucefPRODMANAPP_config.h
+  include/gucefPRODMANAPP_macros.h
+  include/gucefPRODMANAPP_main.h
+)
 
 set( SOURCE_FILES 
-  src/main.cpp
+  src/gucefPRODMANAPP_main.cpp
 )
 
 # Make sure the PLATFORM_HEADER_FILES variable is always defined
@@ -24,16 +30,13 @@ set( SOURCE_FILES
 # For ease of use make a variable that has all files for this module
 set( ALL_FILES ${HEADER_FILES} ${SOURCE_FILES} ${PLATFORM_HEADER_FILES} ${PLATFORM_SOURCE_FILES} )
 
-set( MODULE_NAME "DCSBruteInstaller" )
-if ( WIN32 )
-  add_executable( ${MODULE_NAME} WIN32 ${ALL_FILES} )
-else()
-  add_executable( ${MODULE_NAME} ${ALL_FILES} )
-endif()
-add_dependencies( ${MODULE_NAME} gucefCOMCORE gucefCORE gucefMT )
-target_link_libraries( ${MODULE_NAME} gucefCOMCORE gucefCORE gucefMT )
+set( MODULE_NAME "gucefPRODMANAPP" )
+add_library( ${MODULE_NAME} ${ALL_FILES} )
+add_dependencies( ${MODULE_NAME} gucefCOM gucefCOMCORE gucefCORE gucefMT gucefPRODMAN )
+target_link_libraries( ${MODULE_NAME} gucefCOM gucefCOMCORE gucefCORE gucefMT gucefPRODMAN )
+set_target_properties( ${MODULE_NAME} PROPERTIES COMPILE_DEFINITIONS "GUCEF_PRODMANAPP_BUILD_MODULE" )
 
-include_directories( ../../common/include ../../gucefCOMCORE/include ../../gucefCORE/include ../../gucefMT/include )
+include_directories( ../../common/include ../../gucefCOM/include ../../gucefCOMCORE/include ../../gucefCORE/include ../../gucefMT/include ../../gucefPATCHER/include ../../gucefPRODMAN/include include )
 
 if ( ANDROID )
   include_directories( ../../gucefCORE/include/android )
@@ -59,17 +62,17 @@ endif( WIN64 )
 
 
 if (ANDROID)
-GUCEF_config_tool( ${MODULE_NAME} )
+GUCEF_config_lib( ${MODULE_NAME} )
 elseif (LINUX)
-GUCEF_config_tool( ${MODULE_NAME} )
+GUCEF_config_lib( ${MODULE_NAME} )
 elseif (OSX)
-GUCEF_config_tool( ${MODULE_NAME} )
+GUCEF_config_lib( ${MODULE_NAME} )
 elseif (WIN32)
-GUCEF_config_tool( ${MODULE_NAME} )
+GUCEF_config_lib( ${MODULE_NAME} )
 elseif (WIN64)
-GUCEF_config_tool( ${MODULE_NAME} )
+GUCEF_config_lib( ${MODULE_NAME} )
 else()
-GUCEF_config_tool( ${MODULE_NAME} )
+GUCEF_config_lib( ${MODULE_NAME} )
 endif()
 
 

@@ -224,8 +224,8 @@ CVFS::MountArchive( const CString& archiveName  ,
     m_datalock.Lock();
 
     CString actualArchivePath;
-    if( GetActualFilePath( archivePath       ,
-                           actualArchivePath ) )
+    if ( GetActualFilePath( archivePath       ,
+                            actualArchivePath ) )
     {
         // Found a compatible type,.. create an archive for the type
         m_datalock.Lock();

@@ -68,6 +68,8 @@ class GUCEF_CORE_PUBLIC_CPP CString
 {
     public:
 
+    static const CString Empty;
+
     CString( void );
 
     CString( const CString& src );
