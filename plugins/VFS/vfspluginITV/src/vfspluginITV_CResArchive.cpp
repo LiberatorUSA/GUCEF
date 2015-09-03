@@ -136,10 +136,11 @@ CResArchive::GetList( TStringSet& outputList       ,
     if ( !addFiles ) return;
 
     // Generate list of all resource Id's
+    CORE::CString resourceType = CORE::Int16ToString( m_index.recordType );
     IndexVector::const_iterator i = m_index.index.begin();
     while ( i != m_index.index.end() )
     {
-        CORE::CString resourceId = CORE::Int32ToString( (*i).resourceNr );
+        CORE::CString resourceId = CORE::Int32ToString( (*i).resourceNr ) + '.' + resourceType;
         if ( includePathInFilename )
         {
             resourceId = CORE::CombinePath( m_resPath, resourceId );
@@ -155,7 +156,12 @@ bool
 CResArchive::FileExists( const VFS::CString& filePath ) const
 {GUCEF_TRACE;
 
-    CORE::UInt32 resourceId = CORE::StringToUInt32( filePath );
+    // First perform a sanity check on the resource type
+    CORE::Int32 fileType = CORE::StringToInt32( filePath.SubstrToChar( '.', false ) );
+    if ( fileType != m_index.recordType )
+        return false;
+
+    CORE::UInt32 resourceId = CORE::StringToUInt32( filePath.SubstrToChar( '.', true ) );
     IndexVector::const_iterator i = m_index.index.begin();
     while ( i != m_index.index.end() )
     {
@@ -175,9 +181,14 @@ VFS::UInt32
 CResArchive::GetFileSize( const VFS::CString& filePath ) const
 {GUCEF_TRACE;
 
+    // First perform a sanity check on the resource type
+    CORE::Int32 fileType = CORE::StringToInt32( filePath.SubstrToChar( '.', false ) );
+    if ( fileType != m_index.recordType )
+        return 0;
+
     CORE::Int32 offset = 0;
     CORE::Int32 size = 0;
-    CORE::Int32 resourceId = CORE::StringToInt32( filePath );
+    CORE::Int32 resourceId = CORE::StringToInt32( filePath.SubstrToChar( '.', true ) );
     if ( GetResourceInfo( resourceId ,
                           offset     ,
                           size       ) )
@@ -232,9 +243,14 @@ CResArchive::LoadFile( const VFS::CString& file      ,
                        const VFS::UInt32 memLoadSize ) const
 {GUCEF_TRACE;
 
+    // First perform a sanity check on the resource type
+    CORE::Int32 fileType = CORE::StringToInt32( file.SubstrToChar( '.', false ) );
+    if ( fileType != m_index.recordType )
+        return NULL;
+    
     CORE::Int32 offset = 0;
     CORE::Int32 size = 0;
-    CORE::Int32 resourceId = CORE::StringToInt32( file );
+    CORE::Int32 resourceId = CORE::StringToInt32( file.SubstrToChar( '.', true ) );
     if ( !GetResourceInfo( resourceId ,
                            offset     ,
                            size       ) )
@@ -242,7 +258,7 @@ CResArchive::LoadFile( const VFS::CString& file      ,
         return NULL;
     }
         
-    if ( size <= memLoadSize )
+    if ( (CORE::UInt32) size <= memLoadSize )
     {
         CORE::CDynamicBufferAccess* memBuffer = new CORE::CDynamicBufferAccess();
         if ( memBuffer->LoadContentFromFile( m_resPath, offset, size ) )

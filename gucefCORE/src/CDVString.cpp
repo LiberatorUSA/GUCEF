@@ -106,6 +106,19 @@ CString::CString( const std::string& src )
 }
 
 /*-------------------------------------------------------------------------*/
+#ifdef GUCEF_RVALUE_REFERENCES_SUPPORTED
+
+CString::CString( CString&& src )
+    : m_string( src.m_string ) ,
+      m_length( src.m_length )
+{GUCEF_TRACE;
+    
+    src.m_string = NULL;
+    src.m_length = 0;
+}
+
+#endif
+/*-------------------------------------------------------------------------*/
 
 CString::CString( const char *src )
         : m_string( NULL ) ,

@@ -103,10 +103,15 @@ class CResArchive : public VFS::CIArchive
     // SDEF: Star definitions
     // STR: misc string table
     // FDEF: Propulsion definitions
-    // MATB: material bitmap?
+    // 1) MATB: material (mineral/resource) gfx?
+    // 1) OTHERB: misc bitmaps?
     // HDEF: Hull definitions
     // MOUSE: mouse mask?
+    // 4) FONT: Font info/bitmap?
     // WDEF: Weapon definitions
+    // 6) PDEF: Planet type definitions
+    // 12) PPDEF: Propulsion definitions
+    // 9) MDEF: Material (mineral/resource) definitions
     //
     // Sound format:
     //  tried:

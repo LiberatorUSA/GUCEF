@@ -395,6 +395,26 @@
 
 /*-------------------------------------------------------------------------*/
 
+#if defined(__cplusplus)
+    #undef GUCEF_RVALUE_REFERENCES_SUPPORTED
+    #if defined( _MSC_VER )  /* MS visual studio */
+        #if _MSC_VER >= 1600  /* Visual Studio 2010 */
+            #define GUCEF_RVALUE_REFERENCES_SUPPORTED
+        #endif
+    #elif defined( __GNUG__ )  /* GNU C++ compiler */
+        #if __cpp_rvalue_references >= 200610
+            #define GUCEF_RVALUE_REFERENCES_SUPPORTED
+        #endif
+    #else
+        /* Unknown compiler, fall back to cpp version check */
+        #if __cplusplus > 201103L  /* This is not fullproof since not every compiler truly supports the spec */
+            #define GUCEF_RVALUE_REFERENCES_SUPPORTED
+        #endif        
+    #endif
+#endif
+
+/*-------------------------------------------------------------------------*/
+
 #endif /* GUCEF_MACROS_H ? */
 
 /*-------------------------------------------------------------------------//

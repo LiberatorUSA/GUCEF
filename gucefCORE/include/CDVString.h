@@ -74,6 +74,10 @@ class GUCEF_CORE_PUBLIC_CPP CString
 
     CString( const CString& src );
 
+    #ifdef GUCEF_RVALUE_REFERENCES_SUPPORTED
+    CString( CString&& src );
+    #endif
+
     CString( const std::string& src );
 
     CString( const char *src );

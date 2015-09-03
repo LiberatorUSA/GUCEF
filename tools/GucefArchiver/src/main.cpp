@@ -222,105 +222,135 @@ GUCEF_OSMAIN_BEGIN
             bool listArchiveContents = CORE::StringToBool( keyValueList.GetValueAlways( "list", "true" ) );
             bool extractArchiveContents = CORE::StringToBool( keyValueList.GetValueAlways( "extract", "false" ) );
 
-            if ( CORE::FileExists( archivePath ) )
-            {   
-                CORE::CString archiveFilename = CORE::ExtractFilename( archivePath );
-                CORE::CString archiveDir = CORE::StripFilename( archivePath );
-                VFS::CVFS& vfs = VFS::CVfsGlobal::Instance()->GetVfs();
+            CORE::CString archiveFilename = CORE::ExtractFilename( archivePath );
+            CORE::CString archiveDir = CORE::StripFilename( archivePath );
 
-                // Add the archive dir as a VFS root named root
-                vfs.AddRoot( archiveDir, "root", false, false );
+            VFS::CVFS& vfs = VFS::CVfsGlobal::Instance()->GetVfs();
 
-                // Mount the archive
-                if ( vfs.MountArchive( "archive", archiveFilename, archiveType, "archive", false ) )
-                {
-                    if ( listArchiveContents )
+            // Add the archive dir as a VFS root named root
+            vfs.AddRoot( archiveDir, "root", false, false );
+
+            VFS::CVFS::TStringSet archiveFileNames;
+            if ( -1 < archiveFilename.HasChar( '*' ) )
+            {
+                // Use the filename as a filter
+                vfs.GetList( archiveFileNames, CORE::CString::Empty, false, false, archiveFilename, true, false );
+            }
+            else
+            {
+                // directly use the filename
+                archiveFileNames.insert( archiveFilename );
+            }
+            
+            // Batch extract each of the archives
+            VFS::CVFS::TStringSet::iterator n = archiveFileNames.begin();
+            while ( n != archiveFileNames.end() )
+            {            
+                archiveFilename = (*n);
+                
+                if ( vfs.FileExists( archiveFilename ) )
+                {   
+                    CORE::CString mount = '[' + archiveFilename + ']';
+                    
+                    // Mount the archive
+                    if ( vfs.MountArchive( mount, archiveFilename, archiveType, mount, false ) )
                     {
-                        // Get the contents of the archive
-                        VFS::CVFS::TStringSet archiveContent;
-                        vfs.GetList( archiveContent, "archive", true, true, CORE::CString::Empty, true, false );
-
-                        // Write the contents to the log which includes the console
-                        console.GetLogger()->SetFormatAsConsoleUI( true );
-                        GUCEF_CONSOLE_LOG( CORE::LOGLEVEL_NORMAL, "***** BEGIN ARCHIVE CONTENTS *****" );
-                        CORE::UInt32 n=1;
-                        VFS::CVFS::TStringSet::iterator i = archiveContent.begin();
-                        while ( i != archiveContent.end() )
+                        if ( listArchiveContents )
                         {
-                            GUCEF_CONSOLE_LOG( CORE::LOGLEVEL_NORMAL, CORE::UInt32ToString( n ) + ": " + (*i) );
-                            ++i; ++n;
-                        }
-                        GUCEF_CONSOLE_LOG( CORE::LOGLEVEL_NORMAL, "***** END ARCHIVE CONTENTS *****" );
-                        console.GetLogger()->SetFormatAsConsoleUI( false );
-                    }
+                            // Get the contents of the archive
+                            VFS::CVFS::TStringSet archiveContent;
+                            vfs.GetList( archiveContent, mount, true, true, CORE::CString::Empty, true, false );
 
-                    if ( extractArchiveContents )
-                    {
-                        // Get the contents of the archive
-                        VFS::CVFS::TStringSet archiveContent;
-                        vfs.GetList( archiveContent, "archive", true, true, CORE::CString::Empty, true, false );
-
-                        // prepare the output folder
-                        CORE::CString archiveOutputDir = archiveFilename.ReplaceChar( '.', '_' );
-                        archiveOutputDir = CORE::CombinePath( outputDir, archiveOutputDir );
-                        if ( CORE::CreateDirs( archiveOutputDir ) )
-                        {
-                            GUCEF_LOG( CORE::LOGLEVEL_NORMAL, "Output path " + archiveOutputDir + " is available for extraction" );
-                            
-                            // Obtain access to each of the resources in the archive and extract it
+                            // Write the contents to the log which includes the console
+                            console.GetLogger()->SetFormatAsConsoleUI( true );
+                            GUCEF_CONSOLE_LOG( CORE::LOGLEVEL_NORMAL, "***** BEGIN ARCHIVE CONTENTS *****" );
+                            CORE::UInt32 n=1;
                             VFS::CVFS::TStringSet::iterator i = archiveContent.begin();
                             while ( i != archiveContent.end() )
                             {
-                                CORE::CString filename = CORE::ExtractFilename( (*i) );
-                                CORE::CString vfsFilePath = CORE::CombinePath( "archive", filename );
-                                VFS::CVFS::CVFSHandlePtr file = vfs.GetFile( vfsFilePath, "rb", false );
-                                if ( !file.IsNULL() )
-                                {
-                                    GUCEF_LOG( CORE::LOGLEVEL_NORMAL, "Obtained access to resource: " + (*i) );
-                                
-                                    CORE::CString extractedFilePath = filename;
-                                    extractedFilePath = CORE::CombinePath( archiveOutputDir, extractedFilePath );
+                                GUCEF_CONSOLE_LOG( CORE::LOGLEVEL_NORMAL, CORE::UInt32ToString( n ) + ": " + (*i) );
+                                ++i; ++n;
+                            }
+                            GUCEF_CONSOLE_LOG( CORE::LOGLEVEL_NORMAL, "***** END ARCHIVE CONTENTS *****" );
+                            console.GetLogger()->SetFormatAsConsoleUI( false );
+                        }
 
-                                    CORE::CFileAccess extractedFile;
-                                    if ( extractedFile.Open( extractedFilePath, "wb" ) )
+                        if ( extractArchiveContents )
+                        {
+                            // Get the contents of the archive
+                            VFS::CVFS::TStringSet archiveContent;
+                            vfs.GetList( archiveContent, mount, true, true, CORE::CString::Empty, true, false );
+
+                            // prepare the output folder
+                            CORE::CString archiveOutputDir = archiveFilename.ReplaceChar( '.', '_' );
+                            archiveOutputDir = CORE::CombinePath( outputDir, archiveOutputDir );
+                            if ( CORE::CreateDirs( archiveOutputDir ) )
+                            {
+                                GUCEF_LOG( CORE::LOGLEVEL_NORMAL, "Output path " + archiveOutputDir + " is available for extraction" );
+                            
+                                // Obtain access to each of the resources in the archive and extract it
+                                VFS::CVFS::TStringSet::iterator i = archiveContent.begin();
+                                while ( i != archiveContent.end() )
+                                {
+                                    CORE::CString filename = CORE::ExtractFilename( (*i) );
+                                    CORE::CString vfsFilePath = CORE::CombinePath( mount, filename );
+                                    VFS::CVFS::CVFSHandlePtr file = vfs.GetFile( vfsFilePath, "rb", false );
+                                    if ( !file.IsNULL() )
                                     {
-                                        CORE::CIOAccess* fileAccess = file->GetAccess();
-                                        CORE::UInt32 fileSize = fileAccess->GetSize();
-                                        CORE::UInt32 bytesExtracted = extractedFile.Write( *fileAccess );
-                                        extractedFile.Close();
-                                        
-                                        if ( fileSize == bytesExtracted )
+                                        GUCEF_LOG( CORE::LOGLEVEL_NORMAL, "Obtained access to resource: " + (*i) );
+                                
+                                        CORE::CString extractedFilePath = filename;
+                                        extractedFilePath = CORE::CombinePath( archiveOutputDir, extractedFilePath );
+
+                                        CORE::CFileAccess extractedFile;
+                                        if ( extractedFile.Open( extractedFilePath, "wb" ) )
                                         {
-                                            GUCEF_LOG( CORE::LOGLEVEL_NORMAL, "Extracted " + CORE::UInt32ToString( bytesExtracted ) + " bytes into file: " + extractedFilePath );
+                                            CORE::CIOAccess* fileAccess = file->GetAccess();
+                                            CORE::UInt32 fileSize = fileAccess->GetSize();
+                                            CORE::UInt32 bytesExtracted = extractedFile.Write( *fileAccess );
+                                            extractedFile.Close();
+                                        
+                                            if ( fileSize == bytesExtracted )
+                                            {
+                                                GUCEF_LOG( CORE::LOGLEVEL_NORMAL, "Extracted " + CORE::UInt32ToString( bytesExtracted ) + " bytes into file: " + extractedFilePath );
+                                            }
+                                            else
+                                            {
+                                                GUCEF_ERROR_LOG( CORE::LOGLEVEL_IMPORTANT, "Extracted " + CORE::UInt32ToString( bytesExtracted ) + " bytes instead of " +
+                                                         CORE::UInt32ToString( fileSize ) + " expected bytes into file: " + extractedFilePath + ". The file is probably corrupt" );
+                                            }
                                         }
                                         else
                                         {
-                                            GUCEF_ERROR_LOG( CORE::LOGLEVEL_IMPORTANT, "Extracted " + CORE::UInt32ToString( bytesExtracted ) + " bytes instead of " +
-                                                     CORE::UInt32ToString( fileSize ) + " expected bytes into file: " + extractedFilePath + ". The file is probably corrupt" );
-                                        }
+                                            GUCEF_ERROR_LOG( CORE::LOGLEVEL_NORMAL, "Unable to open target file for writing: " + extractedFilePath );
+                                        }                                                                    
                                     }
                                     else
                                     {
-                                        GUCEF_ERROR_LOG( CORE::LOGLEVEL_NORMAL, "Unable to open target file for writing: " + extractedFilePath );
-                                    }                                                                    
+                                        GUCEF_ERROR_LOG( CORE::LOGLEVEL_NORMAL, "Unable to obtain access to resource: " + filename );
+                                    }
+                                    ++i;
                                 }
-                                else
-                                {
-                                    GUCEF_ERROR_LOG( CORE::LOGLEVEL_NORMAL, "Unable to obtain access to resource: " + filename );
-                                }
-                                ++i;
-                            }
-                        }                                                
+                            }                                                
+                        }
+                    
+                        if ( !vfs.UnmountArchiveByName( mount ) )
+                        {
+                            GUCEF_ERROR_LOG( CORE::LOGLEVEL_NORMAL, "Unable to unmount archive" );
+                            break;
+                        }
+                    }
+                    else
+                    {
+                        GUCEF_LOG( CORE::LOGLEVEL_NORMAL, "Failed to mount archive" );
                     }
                 }
                 else
                 {
-                    GUCEF_LOG( CORE::LOGLEVEL_NORMAL, "Failed to mount archive" );
+                    GUCEF_LOG( CORE::LOGLEVEL_NORMAL, "Archive file does not exist, cannot proceed" );
                 }
-            }
-            else
-            {
-                GUCEF_LOG( CORE::LOGLEVEL_NORMAL, "Archive file does not exist, cannot proceed" );
+
+                ++n;
             }
         }
         else

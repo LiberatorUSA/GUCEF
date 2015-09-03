@@ -409,12 +409,19 @@ CDynamicBuffer::LoadContentFromFile( const CString& filePath   ,
     SetBufferSize( readBlockSize, true );
     
     // Load the entire file into memory
+    UInt32 actuallyRead = 0;
     FILE* filePtr = fopen( filePath.C_String(), "rb" );
-    fseek( filePtr, offsetInFile, SEEK_SET );
-    UInt32 actuallyRead = fread( _buffer, readBlockSize, 1, filePtr );
     if ( NULL != filePtr )
     {
+        fseek( filePtr, offsetInFile, SEEK_SET );
+        actuallyRead = fread( _buffer, readBlockSize, 1, filePtr );
         fclose( filePtr );
+    }
+    else
+    {
+        // Failed to open the file for loading
+        Clear( false );
+        return false;
     }
     
     // Sanity check to make sure we loaded the whole block

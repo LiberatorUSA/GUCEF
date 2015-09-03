@@ -691,28 +691,17 @@ CVFS::FilterValidation( const CORE::CString& filename ,
 
     if ( filter.Length() > 0 )
     {
-        //@TODO: add better wildcard support
-        if ( filter[ 0 ] == '*' )
+        CVFS::TStringList segs = filter.ParseElements( '*', false );
+        VFS::Int32 lastSeg = 0;
+        CVFS::TStringList::iterator i = segs.begin();
+        while ( i != segs.end() )
         {
-            if ( filter.Length() == 1 )
-            {
-                    return true;
-            }
-
-            if ( filename.HasSubstr( filter.C_String()+1, false ) == 0 )
-            {
-                    return true;
-            }
-            return false;
+            lastSeg = filename.HasSubstr( (*i), lastSeg, true );
+            if ( 0 > lastSeg ) 
+                return false;
+            ++i;
         }
-        else
-        {
-            if ( filename.HasSubstr( filter, true ) == 0 )
-            {
-                    return true;
-            }
-            return false;
-        }
+        return true;
     }
     return true;
 }
