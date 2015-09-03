@@ -1,0 +1,11 @@
+<ModuleInfoEntry>
+    <Module Name="CEGUI" Type="SharedLibrary" Platform="All">
+        <Dependencies>
+            <Dependency Name="CEGUI.Includes" />
+        </Dependencies>
+        <Linker>
+        </Linker>
+        <Preprocessor>
+        </Preprocessor>
+    </Module>
+</ModuleInfoEntry>

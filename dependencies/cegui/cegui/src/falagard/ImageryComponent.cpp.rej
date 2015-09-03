@@ -1,0 +1,11 @@
+--- cegui/src/falagard/ImageryComponent.cpp	Sat Mar 30 13:08:54 2013 +0100
++++ cegui/src/falagard/ImageryComponent.cpp	Mon Apr 01 17:28:26 2013 +0200
+@@ -104,7 +104,7 @@
+     {
+         // get final image to use.
+         const Image* img = isImageFetchedFromProperty() ?
+-            PropertyHelper<Image*>::fromString(srcWindow.getProperty(d_imagePropertyName)) :
++            srcWindow.getProperty<Image*>(d_imagePropertyName) :
+             d_image;
+ 
+         // do not draw anything if image is not set.

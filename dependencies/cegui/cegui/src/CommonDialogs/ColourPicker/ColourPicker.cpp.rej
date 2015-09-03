@@ -1,0 +1,21 @@
+--- cegui/src/CommonDialogs/ColourPicker/ColourPicker.cpp	Sat Mar 30 13:08:54 2013 +0100
++++ cegui/src/CommonDialogs/ColourPicker/ColourPicker.cpp	Mon Apr 01 17:28:26 2013 +0200
+@@ -103,7 +103,7 @@
+     performChildWindowLayout();
+ 
+     d_selectedColour =
+-        PropertyHelper<ColourRect>::fromString(getProperty("Colour")).d_top_left;
++        getProperty<ColourRect>("Colour").d_top_left;
+ 
+     initialiseColourPickerControlsWindow();
+ }
+@@ -142,8 +142,7 @@
+     String colourPickerControlsStyle =
+         this->getProperty("ColourPickerControlsStyle");
+ 
+-    d_shareColourPickerControlsWindow = PropertyHelper<bool>::fromString(
+-        this->getProperty("ShareColourPickerControlsWidget"));
++    d_shareColourPickerControlsWindow = this->getProperty<bool>("ShareColourPickerControlsWidget");
+ 
+     if (d_shareColourPickerControlsWindow)
+     {

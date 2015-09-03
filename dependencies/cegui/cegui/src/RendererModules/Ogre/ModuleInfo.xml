@@ -1,0 +1,13 @@
+<ModuleInfoEntry>
+    <Module Name="CEGUI.RendererModule.Ogre" Type="SharedLibrary" Platform="All">
+        <Dependencies>
+            <Dependency Name="CEGUI" />
+            <Dependency Name="CEGUI.Includes" />
+        </Dependencies>
+        <Linker>
+            <Dependency Name="CEGUI" />
+        </Linker>
+        <Preprocessor>
+        </Preprocessor>
+    </Module>
+</ModuleInfoEntry>

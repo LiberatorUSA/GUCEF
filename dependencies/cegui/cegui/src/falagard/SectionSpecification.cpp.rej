@@ -1,0 +1,27 @@
+--- cegui/src/falagard/SectionSpecification.cpp	Sat Mar 30 13:08:54 2013 +0100
++++ cegui/src/falagard/SectionSpecification.cpp	Mon Apr 01 17:28:26 2013 +0200
+@@ -200,7 +200,7 @@
+         else if (!d_colourPropertyName.empty())
+         {
+             // if property accesses a ColourRect or a colour
+-            cr = PropertyHelper<ColourRect>::fromString(wnd.getProperty(d_colourPropertyName));
++            cr = wnd.getProperty<ColourRect>(d_colourPropertyName);
+         }
+         // override is an explicitly defined ColourRect.
+         else
+@@ -283,11 +283,11 @@
+ 
+     // return whether to draw based on property value.
+     if (d_renderControlValue.empty())
+-        return PropertyHelper<bool>::fromString(
+-            property_source->getProperty(d_renderControlProperty));
++        return property_source->
++            getProperty<bool>(d_renderControlProperty);
+     else
+-        return property_source->
+-            getProperty(d_renderControlProperty) == d_renderControlValue;
++        return
++            property_source->getProperty(d_renderControlProperty) == d_renderControlValue;
+ }
+ 
+ //----------------------------------------------------------------------------//

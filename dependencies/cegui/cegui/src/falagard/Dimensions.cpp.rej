@@ -1,0 +1,37 @@
+--- cegui/src/falagard/Dimensions.cpp	Sat Mar 30 13:08:54 2013 +0100
++++ cegui/src/falagard/Dimensions.cpp	Mon Apr 01 17:28:26 2013 +0200
+@@ -802,13 +802,13 @@
+         // check property data type and convert to float if necessary
+         Property* pi = sourceWindow.getPropertyInstance(d_property);
+         if (pi->getDataType() == "bool")
+-            return PropertyHelper<bool>::fromString(sourceWindow.getProperty(d_property)) ? 1.0f : 0.0f;
++            return sourceWindow.getProperty<bool>(d_property) ? 1.0f : 0.0f;
+ 
+         // return float property value.
+-        return PropertyHelper<float>::fromString(sourceWindow.getProperty(d_property));
++        return sourceWindow.getProperty<float>(d_property);
+     }
+ 
+-    const UDim d = PropertyHelper<UDim>::fromString(sourceWindow.getProperty(d_property));
++    const UDim d = sourceWindow.getProperty<UDim>(d_property);
+     const Sizef s = sourceWindow.getPixelSize();
+ 
+     switch (d_type)
+@@ -1077,7 +1077,7 @@
+     if (isAreaFetchedFromProperty())
+     {
+         pixelRect = CoordConverter::asAbsolute(
+-            PropertyHelper<URect>::fromString(wnd.getProperty(d_namedSource)), wnd.getPixelSize());
++            wnd.getProperty<URect>(d_namedSource), wnd.getPixelSize());
+     }
+     else if (isAreaFetchedFromNamedArea())
+     {
+@@ -1122,7 +1122,7 @@
+     if (isAreaFetchedFromProperty())
+     {
+         pixelRect = CoordConverter::asAbsolute(
+-            PropertyHelper<URect>::fromString(wnd.getProperty(d_namedSource)), wnd.getPixelSize());
++            wnd.getProperty<URect>(d_namedSource), wnd.getPixelSize());
+     }
+     else if (isAreaFetchedFromNamedArea())
+     {

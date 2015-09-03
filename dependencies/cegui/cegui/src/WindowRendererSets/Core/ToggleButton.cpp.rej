@@ -1,0 +1,11 @@
+--- cegui/src/WindowRendererSets/Core/ToggleButton.cpp	Sat Mar 30 13:08:54 2013 +0100
++++ cegui/src/WindowRendererSets/Core/ToggleButton.cpp	Mon Apr 01 17:28:26 2013 +0200
+@@ -42,7 +42,7 @@
+ 
+     String FalagardToggleButton::actualStateName(const String& name) const
+     {
+-    	bool selected = PropertyHelper<bool>::fromString(d_window->getProperty("Selected"));
++    	bool selected = d_window->getProperty<bool>("Selected");
+         return selected ? "Selected"+name : name;
+     }
+ 

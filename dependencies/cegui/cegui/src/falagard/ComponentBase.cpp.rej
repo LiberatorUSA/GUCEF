@@ -1,0 +1,11 @@
+--- cegui/src/falagard/ComponentBase.cpp	Mon Apr 01 16:40:25 2013 +0200
++++ cegui/src/falagard/ComponentBase.cpp	Mon Apr 01 16:41:26 2013 +0200
+@@ -114,7 +114,7 @@
+     if (!d_colourPropertyName.empty())
+     {
+         // if property accesses a ColourRect or a colour
+-        cr = wnd.getProperty<CEGUI::ColourRect>(d_colourPropertyName);
++        cr = wnd.getProperty<ColourRect>(d_colourPropertyName);
+     }
+     // use explicit ColourRect.
+     else

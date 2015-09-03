@@ -1,0 +1,11 @@
+--- cegui/src/Window.cpp	Sat Mar 30 13:08:54 2013 +0100
++++ cegui/src/Window.cpp	Mon Apr 01 17:28:26 2013 +0200
+@@ -3623,7 +3623,7 @@
+                 continue;
+         }
+ 
+-        target.setProperty(propertyName, getProperty(propertyName));
++        target.setProperty(propertyName, propertyValue);
+     }
+ }
+ 

@@ -1,0 +1,11 @@
+--- cegui/src/falagard/ImagerySection.cpp	Sat Mar 30 13:08:54 2013 +0100
++++ cegui/src/falagard/ImagerySection.cpp	Mon Apr 01 17:28:26 2013 +0200
+@@ -196,7 +196,7 @@
+         if (!d_colourPropertyName.empty())
+         {
+             // if property accesses a ColourRect or a colour
+-            cr = PropertyHelper<ColourRect>::fromString(wnd.getProperty(d_colourPropertyName));
++            cr = wnd.getProperty<ColourRect>(d_colourPropertyName);
+         }
+         // use explicit ColourRect.
+         else

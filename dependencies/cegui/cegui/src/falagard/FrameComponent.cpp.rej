@@ -1,0 +1,17 @@
+--- cegui/src/falagard/FrameComponent.cpp	Sat Mar 30 13:08:54 2013 +0100
++++ cegui/src/falagard/FrameComponent.cpp	Mon Apr 01 17:28:26 2013 +0200
+@@ -175,13 +175,7 @@
+     if (d_frameImages[part].d_propertyName.empty())
+         return d_frameImages[part].d_image;
+ 
+-    const String& image_name(
+-        wnd.getProperty(d_frameImages[part].d_propertyName));
+-
+-    if (image_name.empty())
+-        return 0;
+-
+-    return &ImageManager::getSingleton().get(image_name);
++    return wnd.getProperty<Image*>(d_frameImages[part].d_propertyName);
+ }
+ 
+ //----------------------------------------------------------------------------//
