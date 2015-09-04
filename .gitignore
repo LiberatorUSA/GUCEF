@@ -8,3 +8,4 @@
 
 common/bin/*
 !common/bin/TestData
+ProjectGenerator_Log.txt

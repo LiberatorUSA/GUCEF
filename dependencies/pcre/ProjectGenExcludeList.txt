@@ -1,0 +1,5 @@
+cmake
+doc
+m4
+sljit
+testdata

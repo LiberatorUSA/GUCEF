@@ -1,9 +1,11 @@
 <ModuleInfoEntry>
     <Module Name="CEGUI.Falagard" Type="SharedLibrary" Platform="All">
         <Dependencies>
-            <Dependency Name="CEGUI.Falagard.Includes" />
+            <Dependency Name="CEGUI" />
+            <Dependency Name="CEGUI.Includes" />
         </Dependencies>
         <Linker>
+            <Dependency Name="CEGUI" />
         </Linker>
         <Preprocessor>
         </Preprocessor>

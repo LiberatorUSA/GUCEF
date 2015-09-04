@@ -45,8 +45,10 @@ set( ALL_FILES ${HEADER_FILES} ${SOURCE_FILES} ${PLATFORM_HEADER_FILES} ${PLATFO
 
 set( MODULE_NAME "CEGUI.Falagard" )
 add_library( ${MODULE_NAME} ${ALL_FILES} )
-add_dependencies( ${MODULE_NAME} CEGUI.Falagard.Includes )
+add_dependencies( ${MODULE_NAME} CEGUI )
+target_link_libraries( ${MODULE_NAME} CEGUI )
 
+include_directories( ../../include ../../include/CEGUI ../../include/CEGUI/CommonDialogs ../../include/CEGUI/CommonDialogs/ColourPicker ../../include/CEGUI/RendererModules/Null ../../include/CEGUI/RendererModules/Ogre ../../include/CEGUI/RendererModules/OpenGL ../../include/CEGUI/RendererModules/OpenGLES ../../include/CEGUI/ScriptModules/Lua ../../include/CEGUI/WindowRendererSets/Core ../../include/CEGUI/falagard ../../include/CEGUI/widgets )
 
 
 
@@ -55,7 +57,9 @@ add_dependencies( ${MODULE_NAME} CEGUI.Falagard.Includes )
 
 
 
-if (LINUX)
+if (ANDROID)
+GUCEF_config_lib( ${MODULE_NAME} )
+elseif (LINUX)
 GUCEF_config_lib( ${MODULE_NAME} )
 elseif (OSX)
 GUCEF_config_lib( ${MODULE_NAME} )

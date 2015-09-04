@@ -2,12 +2,13 @@
     <Module Name="CEGUI" Type="SharedLibrary" Platform="All">
         <Dependencies>
             <Dependency Name="CEGUI.Includes" />
-            <Dependency Name="FreeType" />
+            <Dependency Name="freetype" />
         </Dependencies>
         <Linker>
-            <Dependency Name="FreeType" />
+            <Dependency Name="freetype" />
         </Linker>
         <Preprocessor>
+            <Define String="CEGUIBASE_EXPORTS" />
         </Preprocessor>
     </Module>
 </ModuleInfoEntry>

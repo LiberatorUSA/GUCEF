@@ -72,7 +72,7 @@ setting CMake options and regenerating, rather than editing directly.
 // std::basic_string allocated according to allocator config
 #define CEGUI_STRING_CLASS_STD_AO 3
 
-#define CEGUI_STRING_CLASS 1 //@CEGUI_STRING_CLASS@
+#define CEGUI_STRING_CLASS 2 //@CEGUI_STRING_CLASS@
 
 //////////////////////////////////////////////////////////////////////////
 // Set this to the default XMLParser to be used.

@@ -1,0 +1,11 @@
+<ModuleInfoEntry>
+    <Module Name="pcre" Type="SharedLibrary" Platform="All">
+        <Dependencies>
+        </Dependencies>
+        <Linker>
+        </Linker>
+        <Preprocessor>
+            <Define String="PCRE_EXP_DEFN" />
+        </Preprocessor>
+    </Module>
+</ModuleInfoEntry>

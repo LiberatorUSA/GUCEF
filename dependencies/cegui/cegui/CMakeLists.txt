@@ -199,8 +199,11 @@ set( ALL_FILES ${HEADER_FILES} ${SOURCE_FILES} ${PLATFORM_HEADER_FILES} ${PLATFO
 
 set( MODULE_NAME "CEGUI" )
 add_library( ${MODULE_NAME} ${ALL_FILES} )
+add_dependencies( ${MODULE_NAME} freetype )
+target_link_libraries( ${MODULE_NAME} freetype )
+set_target_properties( ${MODULE_NAME} PROPERTIES COMPILE_DEFINITIONS "CEGUIBASE_EXPORTS" )
 
-include_directories( include include/CEGUI include/CEGUI/CommonDialogs include/CEGUI/CommonDialogs/ColourPicker include/CEGUI/RendererModules/Null include/CEGUI/RendererModules/Ogre include/CEGUI/RendererModules/OpenGL include/CEGUI/RendererModules/OpenGLES include/CEGUI/ScriptModules/Lua include/CEGUI/WindowRendererSets/Core include/CEGUI/falagard include/CEGUI/widgets )
+include_directories( ../../freetype/include ../../freetype/include/freetype ../../freetype/include/freetype/config ../../freetype/include/freetype/internal ../../freetype/include/freetype/internal/services ../../freetype/src/winfonts include )
 
 
 
@@ -209,7 +212,9 @@ include_directories( include include/CEGUI include/CEGUI/CommonDialogs include/C
 
 
 
-if (LINUX)
+if (ANDROID)
+GUCEF_config_lib( ${MODULE_NAME} )
+elseif (LINUX)
 GUCEF_config_lib( ${MODULE_NAME} )
 elseif (OSX)
 GUCEF_config_lib( ${MODULE_NAME} )
