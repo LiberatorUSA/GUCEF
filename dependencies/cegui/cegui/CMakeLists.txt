@@ -200,7 +200,7 @@ set( ALL_FILES ${HEADER_FILES} ${SOURCE_FILES} ${PLATFORM_HEADER_FILES} ${PLATFO
 set( MODULE_NAME "CEGUI" )
 add_library( ${MODULE_NAME} ${ALL_FILES} )
 
-include_directories( include/CEGUI include/CEGUI/CommonDialogs include/CEGUI/CommonDialogs/ColourPicker include/CEGUI/RendererModules/Null include/CEGUI/RendererModules/Ogre include/CEGUI/RendererModules/OpenGL include/CEGUI/RendererModules/OpenGLES include/CEGUI/ScriptModules/Lua include/CEGUI/WindowRendererSets/Core include/CEGUI/falagard include/CEGUI/widgets )
+include_directories( include include/CEGUI include/CEGUI/CommonDialogs include/CEGUI/CommonDialogs/ColourPicker include/CEGUI/RendererModules/Null include/CEGUI/RendererModules/Ogre include/CEGUI/RendererModules/OpenGL include/CEGUI/RendererModules/OpenGLES include/CEGUI/ScriptModules/Lua include/CEGUI/WindowRendererSets/Core include/CEGUI/falagard include/CEGUI/widgets )
 
 
 

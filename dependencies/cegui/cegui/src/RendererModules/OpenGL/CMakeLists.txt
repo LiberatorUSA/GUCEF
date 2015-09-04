@@ -45,7 +45,7 @@ add_library( ${MODULE_NAME} ${ALL_FILES} )
 add_dependencies( ${MODULE_NAME} CEGUI )
 target_link_libraries( ${MODULE_NAME} CEGUI )
 
-include_directories( ../../../include/CEGUI ../../../include/CEGUI/CommonDialogs ../../../include/CEGUI/CommonDialogs/ColourPicker ../../../include/CEGUI/RendererModules/Null ../../../include/CEGUI/RendererModules/Ogre ../../../include/CEGUI/RendererModules/OpenGL ../../../include/CEGUI/RendererModules/OpenGLES ../../../include/CEGUI/ScriptModules/Lua ../../../include/CEGUI/WindowRendererSets/Core ../../../include/CEGUI/falagard ../../../include/CEGUI/widgets )
+include_directories( ../../../include ../../../include/CEGUI ../../../include/CEGUI/CommonDialogs ../../../include/CEGUI/CommonDialogs/ColourPicker ../../../include/CEGUI/RendererModules/Null ../../../include/CEGUI/RendererModules/Ogre ../../../include/CEGUI/RendererModules/OpenGL ../../../include/CEGUI/RendererModules/OpenGLES ../../../include/CEGUI/ScriptModules/Lua ../../../include/CEGUI/WindowRendererSets/Core ../../../include/CEGUI/falagard ../../../include/CEGUI/widgets )
 
 
 

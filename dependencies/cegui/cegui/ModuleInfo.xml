@@ -2,8 +2,10 @@
     <Module Name="CEGUI" Type="SharedLibrary" Platform="All">
         <Dependencies>
             <Dependency Name="CEGUI.Includes" />
+            <Dependency Name="FreeType" />
         </Dependencies>
         <Linker>
+            <Dependency Name="FreeType" />
         </Linker>
         <Preprocessor>
         </Preprocessor>

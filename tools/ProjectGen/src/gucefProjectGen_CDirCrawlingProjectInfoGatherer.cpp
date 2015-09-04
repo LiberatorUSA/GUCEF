@@ -1707,6 +1707,24 @@ GenerateModuleDependencyIncludes( TModuleInfoEntry& moduleInfoEntry             
         // this dependency has module info which is specfic to this platform
         const TModuleInfo& dependencyModule = (*n).second;
 
+        TModuleInfo* moduleInfo = NULL;
+
+        // For header include locations we want to include the module definition
+        // location regardless of whether headers were found there. This takes care of the
+        // use-case whereby people use complex relative paths in their headers which need a particular
+        // starting point
+        if ( dependencyModule.moduleType == MODULETYPE_HEADER_INCLUDE_LOCATION )
+        {
+            moduleInfo = FindModuleInfoForPlatform( moduleInfoEntry, platformName, true );
+            
+            // Determine the relative path to this other module's root
+            CORE::CString relativePath = CORE::GetRelativePathToOtherPathRoot( moduleInfoEntry.rootDir        ,
+                                                                               dependencyModuleEntry->rootDir );
+            relativePath = relativePath.ReplaceChar( '\\', '/' );
+
+            moduleInfo->dependencyIncludeDirs.insert( relativePath );
+        }
+
         // Now construct the relative path to each of the dependency module's include dirs
         // These dir will all become include dirs for this module
         const TStringVectorMap& headerFiles = dependencyModule.includeDirs;
@@ -1716,9 +1734,10 @@ GenerateModuleDependencyIncludes( TModuleInfoEntry& moduleInfoEntry             
             // and include platform specific dependency paths to this module
             // to that end we will grab this module's definition for this platform or make a
             // new one if no entry exists yet
-            TModuleInfo* moduleInfo = FindModuleInfoForPlatform( moduleInfoEntry, platformName, true );
+            if ( NULL == moduleInfo )
+                moduleInfo = FindModuleInfoForPlatform( moduleInfoEntry, platformName, true );
                                 
-            // Determine the relative path to this other module
+            // Determine the relative path to this other module and subsequently the include dirs
             CORE::CString relativePath = CORE::GetRelativePathToOtherPathRoot( moduleInfoEntry.rootDir        ,
                                                                                dependencyModuleEntry->rootDir );
             relativePath = relativePath.ReplaceChar( '\\', '/' );                
