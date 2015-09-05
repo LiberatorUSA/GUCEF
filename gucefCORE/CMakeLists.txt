@@ -451,7 +451,7 @@ set( MODULE_NAME "gucefCORE" )
 add_library( ${MODULE_NAME} ${ALL_FILES} )
 add_dependencies( ${MODULE_NAME} gucefMT )
 target_link_libraries( ${MODULE_NAME} gucefMT )
-set_target_properties( ${MODULE_NAME} PROPERTIES COMPILE_DEFINITIONS "GUCEF_CORE_BUILD_MODULE" )
+set_property( TARGET ${MODULE_NAME} APPEND_STRING PROPERTY COMPILE_DEFINITIONS "GUCEF_CORE_BUILD_MODULE" )
 
 if ( ANDROID )
   target_link_libraries( ${MODULE_NAME} dl )

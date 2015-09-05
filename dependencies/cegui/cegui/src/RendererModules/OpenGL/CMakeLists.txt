@@ -44,8 +44,13 @@ set( MODULE_NAME "CEGUI.RendererModule.OpenGL" )
 add_library( ${MODULE_NAME} ${ALL_FILES} )
 add_dependencies( ${MODULE_NAME} CEGUI )
 target_link_libraries( ${MODULE_NAME} CEGUI )
+set_property( TARGET ${MODULE_NAME} APPEND_STRING PROPERTY COMPILE_DEFINITIONS "CEGUIOPENGLRENDERER_EXPORTS" )
 
-include_directories( ../../../include ../../../include/CEGUI ../../../include/CEGUI/CommonDialogs ../../../include/CEGUI/CommonDialogs/ColourPicker ../../../include/CEGUI/RendererModules/Null ../../../include/CEGUI/RendererModules/Ogre ../../../include/CEGUI/RendererModules/OpenGL ../../../include/CEGUI/RendererModules/OpenGLES ../../../include/CEGUI/ScriptModules/Lua ../../../include/CEGUI/WindowRendererSets/Core ../../../include/CEGUI/falagard ../../../include/CEGUI/widgets )
+include_directories( ../../../include )
+
+if ( OSX )
+  include_directories( ../../../../cegui/src/implementations/mac )
+endif( OSX )
 
 
 

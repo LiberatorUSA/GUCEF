@@ -1,4 +1,4 @@
 <ModuleInfoEntry>
-    <Module Name="CEGUI.Includes" Type="HeaderIncludeLocation" Platform="All">
+    <Module Name="CEGUI.Includes" Type="HeaderIncludeLocation" ConsiderSubDirs="False" Platform="All" >
     </Module>
 </ModuleInfoEntry>

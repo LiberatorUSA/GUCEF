@@ -41,7 +41,7 @@ set( MODULE_NAME "gucefPATCHERAPP" )
 add_library( ${MODULE_NAME} ${ALL_FILES} )
 add_dependencies( ${MODULE_NAME} gucefCOM gucefCOMCORE gucefCORE gucefGUI gucefIMAGE gucefINPUT gucefMT gucefPATCHER )
 target_link_libraries( ${MODULE_NAME} gucefCOM gucefCOMCORE gucefCORE gucefGUI gucefIMAGE gucefINPUT gucefMT gucefPATCHER )
-set_target_properties( ${MODULE_NAME} PROPERTIES COMPILE_DEFINITIONS "GUCEF_PATCHERAPP_BUILD_MODULE" )
+set_property( TARGET ${MODULE_NAME} APPEND_STRING PROPERTY COMPILE_DEFINITIONS "GUCEF_PATCHERAPP_BUILD_MODULE" )
 
 include_directories( ../../common/include ../../gucefCOM/include ../../gucefCOMCORE/include ../../gucefCORE/include ../../gucefGUI/include ../../gucefIMAGE/include ../../gucefINPUT/include ../../gucefMT/include ../../gucefPATCHER/include ../../gucefVFS/include include )
 

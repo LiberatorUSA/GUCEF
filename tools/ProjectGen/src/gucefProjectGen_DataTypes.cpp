@@ -251,7 +251,8 @@ ModuleTypeToString( const TModuleType moduleType )
         case MODULETYPE_SHARED_LIBRARY: return "SharedLibrary";
         case MODULETYPE_STATIC_LIBRARY: return "StaticLibrary";
         case MODULETYPE_HEADER_INCLUDE_LOCATION: return "HeaderIncludeLocation";
-        case MODULETYPE_CODE_INCLUDE_LOCATION: return "CodeIncludeLocation";
+        case MODULETYPE_HEADER_INTEGRATE_LOCATION: return "HeaderIntegrateLocation";
+        case MODULETYPE_CODE_INTEGRATE_LOCATION: return "CodeIntegrateLocation";
         case MODULETYPE_REFERENCE_LIBRARY: return "ReferenceLibrary";
         case MODULETYPE_UNKNOWN: return "Unknown";
         default: return "";
@@ -269,7 +270,8 @@ StringToModuleType( const CORE::CString moduleTypeStr )
     if ( moduleTypeString == "sharedlibrary" ) return MODULETYPE_SHARED_LIBRARY;
     if ( moduleTypeString == "staticlibrary" ) return MODULETYPE_STATIC_LIBRARY;
     if ( moduleTypeString == "headerincludelocation" ) return MODULETYPE_HEADER_INCLUDE_LOCATION;
-    if ( moduleTypeString == "codeincludelocation" ) return MODULETYPE_CODE_INCLUDE_LOCATION;
+    if ( moduleTypeString == "headerintegratelocation" ) return MODULETYPE_HEADER_INTEGRATE_LOCATION;
+    if ( moduleTypeString == "codeintegratelocation" ) return MODULETYPE_CODE_INTEGRATE_LOCATION;
     if ( moduleTypeString == "referencelibrary" ) return MODULETYPE_REFERENCE_LIBRARY;
     if ( moduleTypeString == "unknown" ) return MODULETYPE_UNKNOWN;
     return MODULETYPE_UNDEFINED;
@@ -829,16 +831,10 @@ DeserializeModuleInfo( TModuleInfo& moduleInfo           ,
     if ( moduleInfoNode == NULL ) return false;
 
     // Find the overall module properties
-    CORE::CString tmpStr = moduleInfoNode->GetAttributeValue( "BuildOrder" );
-    if ( !tmpStr.IsNULLOrEmpty() )
-    {
-        moduleInfo.buildOrder = CORE::StringToInt32( tmpStr );
-    }
-    else
-    {
-        moduleInfo.buildOrder = -1;
-    }
+    CORE::CString tmpStr = moduleInfoNode->GetAttributeValue( "BuildOrder", "-1" );
+    moduleInfo.buildOrder = CORE::StringToInt32( tmpStr );
     moduleInfo.moduleType = StringToModuleType( moduleInfoNode->GetAttributeValue( "Type" ) );
+    moduleInfo.considerSubDirs = CORE::StringToBool( moduleInfoNode->GetAttributeValue( "ConsiderSubDirs", "True" ) );
 
     // Check to see if a name was defined
     tmpStr = moduleInfoNode->GetAttributeValue( "Name" );
@@ -1232,6 +1228,7 @@ InitializeModuleInfo( TModuleInfo& moduleInfo )
     moduleInfo.compilerSettings.languagesUsed.clear();
     moduleInfo.preprocessorSettings.defines.clear();
     moduleInfo.dependencies.clear();
+    moduleInfo.considerSubDirs = true;
     moduleInfo.moduleType = MODULETYPE_UNDEFINED;
 }
 
@@ -1844,10 +1841,11 @@ HasIndependentModuleType( const TModuleInfoMap& moduleDefs )
     {
         TModuleType moduleType = (*i).second.moduleType;
 
-        if ( ( moduleType != MODULETYPE_HEADER_INCLUDE_LOCATION ) &&
-             ( moduleType != MODULETYPE_CODE_INCLUDE_LOCATION )   &&
-             ( moduleType != MODULETYPE_UNDEFINED )               &&
-             ( moduleType != MODULETYPE_UNKNOWN )                  )
+        if ( ( moduleType != MODULETYPE_HEADER_INCLUDE_LOCATION )   &&
+             ( moduleType != MODULETYPE_HEADER_INTEGRATE_LOCATION ) &&
+             ( moduleType != MODULETYPE_CODE_INTEGRATE_LOCATION )   &&
+             ( moduleType != MODULETYPE_UNDEFINED )                 &&
+             ( moduleType != MODULETYPE_UNKNOWN )                    )
         {
             return true;
         }

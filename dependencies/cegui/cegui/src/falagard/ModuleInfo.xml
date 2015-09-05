@@ -1,13 +1,13 @@
 <ModuleInfoEntry>
     <Module Name="CEGUI.Falagard" Type="SharedLibrary" Platform="All">
         <Dependencies>
-            <Dependency Name="CEGUI" />
             <Dependency Name="CEGUI.Includes" />
         </Dependencies>
         <Linker>
             <Dependency Name="CEGUI" />
         </Linker>
         <Preprocessor>
+            <Define String="CEGUIBASE_EXPORTS" />
         </Preprocessor>
     </Module>
 </ModuleInfoEntry>

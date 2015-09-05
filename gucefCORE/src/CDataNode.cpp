@@ -357,12 +357,22 @@ CString
 CDataNode::GetAttributeValue( const CString& name ) const
 {GUCEF_TRACE;
 
+    return GetAttributeValue( name, CString::Empty );
+}
+
+/*-------------------------------------------------------------------------*/
+
+CString 
+CDataNode::GetAttributeValue( const CString& name         , 
+                              const CString& defaultValue ) const
+{GUCEF_TRACE;
+
     TAttributeMap::const_iterator i = _atts.find( name );
     if ( i != _atts.end() )
     {
         return (*i).second;
     }
-    return CString();
+    return defaultValue;
 }
 
 /*-------------------------------------------------------------------------*/

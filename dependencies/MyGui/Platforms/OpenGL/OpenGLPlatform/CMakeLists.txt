@@ -12,7 +12,6 @@
 # Configuration for module: MyGUI.OpenGLPlatform
 
 set( HEADER_FILES 
-  ../../../Common/FileSystemInfo/FileSystemInfo.h
   include/MyGUI_OpenGLDataManager.h
   include/MyGUI_OpenGLDiagnostic.h
   include/MyGUI_OpenGLImageLoader.h
@@ -47,7 +46,7 @@ set( ALL_FILES ${HEADER_FILES} ${SOURCE_FILES} ${PLATFORM_HEADER_FILES} ${PLATFO
 
 set( MODULE_NAME "MyGUI.OpenGLPlatform" )
 add_library( ${MODULE_NAME} STATIC ${ALL_FILES} )
-add_dependencies( ${MODULE_NAME} MyGUI.Engine )
+add_dependencies( ${MODULE_NAME} MyGUI.Common.FileSystemInfo MyGUI.Engine )
 target_link_libraries( ${MODULE_NAME} MyGUI.Engine )
 
 if ( ANDROID )
@@ -66,7 +65,7 @@ if ( WIN64 )
   target_link_libraries( ${MODULE_NAME} opengl32 )
 endif( WIN64 )
 
-include_directories( ../../../../freetype/include ../../../../freetype/include/freetype ../../../../freetype/include/freetype/config ../../../../freetype/include/freetype/internal ../../../../freetype/include/freetype/internal/services ../../../../freetype/src/winfonts ../../../MyGUIEngine/include ../../../Common/FileSystemInfo include include/GL )
+include_directories( ../../../../freetype/include ../../../../freetype/include/freetype ../../../../freetype/include/freetype/config ../../../../freetype/include/freetype/internal ../../../../freetype/include/freetype/internal/services ../../../../freetype/src/winfonts ../../../Common/FileSystemInfo ../../../MyGUIEngine/include include include/GL )
 
 
 

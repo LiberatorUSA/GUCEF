@@ -32,7 +32,7 @@ else()
 endif()
 add_dependencies( ${MODULE_NAME} ProjectGen gucefCORE gucefMT )
 target_link_libraries( ${MODULE_NAME} ProjectGen gucefCORE gucefMT )
-set_target_properties( ${MODULE_NAME} PROPERTIES COMPILE_DEFINITIONS "GUCEF_PROJECTGENERATOR_BUILD_MODULE" )
+set_property( TARGET ${MODULE_NAME} APPEND_STRING PROPERTY COMPILE_DEFINITIONS "GUCEF_PROJECTGENERATOR_BUILD_MODULE" )
 
 include_directories( ../../common/include ../../gucefCORE/include ../../gucefMT/include ../ProjectGen/include )
 

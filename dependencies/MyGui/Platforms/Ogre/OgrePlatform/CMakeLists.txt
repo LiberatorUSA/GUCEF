@@ -15,7 +15,6 @@
 
 if (LINUX)
   set( PLATFORM_HEADER_FILES 
-    ../../../Common/FileSystemInfo/FileSystemInfo.h
     include/MyGUI_LastHeader.h
     include/MyGUI_OgreDataManager.h
     include/MyGUI_OgreDataStream.h
@@ -44,7 +43,6 @@ if (LINUX)
 
 elseif (WIN32)
   set( PLATFORM_HEADER_FILES 
-    ../../../Common/FileSystemInfo/FileSystemInfo.h
     include/MyGUI_LastHeader.h
     include/MyGUI_OgreDataManager.h
     include/MyGUI_OgreDataStream.h
@@ -89,23 +87,23 @@ elseif( WIN32 )
 endif()
 
 if ( LINUX )
-  add_dependencies( ${MODULE_NAME} MyGUI.Engine OgreMain )
+  add_dependencies( ${MODULE_NAME} MyGUI.Common.FileSystemInfo MyGUI.Engine OgreMain )
   target_link_libraries( ${MODULE_NAME} MyGUI.Engine OgreMain )
 endif( LINUX )
 
 if ( WIN32 )
-  add_dependencies( ${MODULE_NAME} MyGUI.Engine OgreMain )
+  add_dependencies( ${MODULE_NAME} MyGUI.Common.FileSystemInfo MyGUI.Engine OgreMain )
   target_link_libraries( ${MODULE_NAME} MyGUI.Engine OgreMain )
 endif( WIN32 )
 
-include_directories( ../../../../freetype/include ../../../../freetype/include/freetype ../../../../freetype/include/freetype/config ../../../../freetype/include/freetype/internal ../../../../freetype/include/freetype/internal/services ../../../../freetype/src/winfonts ../../../MyGUIEngine/include )
+include_directories( ../../../../freetype/include ../../../../freetype/include/freetype ../../../../freetype/include/freetype/config ../../../../freetype/include/freetype/internal ../../../../freetype/include/freetype/internal/services ../../../../freetype/src/winfonts ../../../Common/FileSystemInfo ../../../MyGUIEngine/include )
 
 if ( LINUX )
-  include_directories( ../../../Common/FileSystemInfo include )
+  include_directories( include )
 endif( LINUX )
 
 if ( WIN32 )
-  include_directories( ../../../Common/FileSystemInfo include )
+  include_directories( include )
 endif( WIN32 )
 
 

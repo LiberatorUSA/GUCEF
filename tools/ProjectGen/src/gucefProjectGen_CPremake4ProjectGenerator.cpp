@@ -763,8 +763,9 @@ GeneratePremake4ModuleDependenciesLine( const TProjectInfo& projectInfo   ,
             if ( NULL != dependencyModule )
             {
                 TModuleType moduleType = GetModuleType( *dependencyModule, AllPlatforms );
-                if ( ( MODULETYPE_HEADER_INCLUDE_LOCATION != moduleType ) &&
-                     ( MODULETYPE_CODE_INCLUDE_LOCATION != moduleType )    )
+                if ( ( MODULETYPE_HEADER_INCLUDE_LOCATION != moduleType )   &&
+                     ( MODULETYPE_HEADER_INTEGRATE_LOCATION != moduleType ) &&
+                     ( MODULETYPE_CODE_INTEGRATE_LOCATION != moduleType )    )
                 {
                     dependencies.insert( (*i) );
                 }
@@ -1343,8 +1344,9 @@ WritePremake4ModuleFilesToDisk( const TProjectInfo& projectInfo       ,
     {
         const TModuleInfoEntry& moduleInfoEntry = (*i);
         TModuleType allPlatformsType = GetModuleType( moduleInfoEntry, AllPlatforms );
-        if ( ( MODULETYPE_HEADER_INCLUDE_LOCATION != allPlatformsType ) &&
-             ( MODULETYPE_CODE_INCLUDE_LOCATION != allPlatformsType )    )
+        if ( ( MODULETYPE_HEADER_INCLUDE_LOCATION != allPlatformsType )    &&
+             ( MODULETYPE_HEADER_INTEGRATE_LOCATION != allPlatformsType )  &&
+             ( MODULETYPE_CODE_INTEGRATE_LOCATION != allPlatformsType )    )
         {
             CORE::CString fileContent = GeneratePremake4ModuleFileContent( projectInfo, premakeOutputDir, premakeTargetDir, moduleInfoEntry, addCompileDate );
             if ( logFilename.Length() > 0 )

@@ -2014,7 +2014,14 @@ FindSubDirsWithHeaders( TProjectInfo& projectInfo         ,
         TModuleInfoMap::iterator i = moduleInfoEntry.modulesPerPlatform.find( platform );
         if ( i != moduleInfoEntry.modulesPerPlatform.end() )
         {
-            MergeStringVectorMap( (*i).second.includeDirs, fileMap, true );
+            if ( (*i).second.considerSubDirs )
+            {
+                MergeStringVectorMap( (*i).second.includeDirs, fileMap, true );
+            }
+            else
+            {
+                GUCEF_DEBUG_LOG( CORE::LOGLEVEL_BELOW_NORMAL, "Skipping processing subdirs since recursive processing is disabled" );
+            }
         }
         else        
         {
@@ -2030,8 +2037,15 @@ FindSubDirsWithHeaders( TProjectInfo& projectInfo         ,
                 i = moduleInfoEntry.modulesPerPlatform.begin();
                 while ( i != moduleInfoEntry.modulesPerPlatform.end() )
                 {
-                    TModuleInfo& moduleInfo = (*i).second;
-                    MergeStringVectorMap( moduleInfo.includeDirs, fileMap, true );
+                    if ( (*i).second.considerSubDirs )
+                    {
+                        TModuleInfo& moduleInfo = (*i).second;
+                        MergeStringVectorMap( moduleInfo.includeDirs, fileMap, true );
+                    }
+                    else
+                    {
+                        GUCEF_DEBUG_LOG( CORE::LOGLEVEL_BELOW_NORMAL, "Skipping processing subdirs since recursive processing is disabled" );
+                    }
                     ++i;
                 }
             }
@@ -2095,8 +2109,15 @@ FindSubDirsWithSource( TProjectInfo& projectInfo         ,
     {
         TModuleInfoMap::iterator i = moduleInfoEntry.modulesPerPlatform.find( platform );
         if ( i != moduleInfoEntry.modulesPerPlatform.end() )
-        {
-            MergeStringVectorMap( (*i).second.sourceDirs, fileMap, true );  
+        {  
+            if ( (*i).second.considerSubDirs )
+            {
+                MergeStringVectorMap( (*i).second.sourceDirs, fileMap, true );
+            }
+            else
+            {
+                GUCEF_DEBUG_LOG( CORE::LOGLEVEL_BELOW_NORMAL, "Skipping processing subdirs since recursive processing is disabled" );
+            }
         }
         else        
         {
@@ -2112,8 +2133,16 @@ FindSubDirsWithSource( TProjectInfo& projectInfo         ,
                 i = moduleInfoEntry.modulesPerPlatform.begin();
                 while ( i != moduleInfoEntry.modulesPerPlatform.end() )
                 {
-                    TModuleInfo& moduleInfo = (*i).second;
-                    MergeStringVectorMap( moduleInfo.sourceDirs, fileMap, true );
+                    if ( (*i).second.considerSubDirs )
+                    {
+                        TModuleInfo& moduleInfo = (*i).second;
+                        MergeStringVectorMap( moduleInfo.sourceDirs, fileMap, true );
+                    }
+                    else
+                    {
+                        GUCEF_DEBUG_LOG( CORE::LOGLEVEL_BELOW_NORMAL, "Skipping processing subdirs since recursive processing is disabled" );
+                    }
+
                     ++i;
                 }
             }
@@ -2286,6 +2315,9 @@ LocateAndProcessProjectDirsRecusively( TProjectInfo& projectInfo        ,
 {GUCEF_TRACE;
 
     GUCEF_LOG( CORE::LOGLEVEL_EVERYTHING, "Recursively processing directory for module info: " + topLevelDir );
+
+    if ( -1 != topLevelDir.HasSubstr( "pcre" ) )
+        int a=0;
 
     // Run any custom preprocessing logic thats registered
     PreprocessDir( topLevelDir );
@@ -2710,13 +2742,14 @@ FindModulesWhichDependOnModule( TProjectInfo& projectInfo           ,
 /*-------------------------------------------------------------------------*/
 
 void
-MergeCodeIncludeLocationsIntoModuleForPlatform( TProjectInfo& projectInfo              ,
+MergeIntegrationLocationsIntoModuleForPlatform( TProjectInfo& projectInfo              ,
                                                 const CORE::CString& targetPlatform    ,
                                                 const TModuleInfo& moduleInfoToMergeIn ,
-                                                const CORE::CString& codeIncludeRoot   )
+                                                const CORE::CString& codeIncludeRoot   ,
+                                                const TModuleType moduleType           )
 {GUCEF_TRACE;
 
-    // First find all the modules which depend on this code include location
+    // First find all the modules which depend on this integration location
     TMutableModuleInfoEntryPairVector targetModules = FindModulesWhichDependOnModule( projectInfo              ,
                                                                                       targetPlatform           ,
                                                                                       moduleInfoToMergeIn.name );
@@ -2732,34 +2765,43 @@ MergeCodeIncludeLocationsIntoModuleForPlatform( TProjectInfo& projectInfo       
         CORE::CString pathToCodeLocation = CORE::GetRelativePathToOtherPathRoot( moduleInfoEntry.rootDir ,
                                                                                  codeIncludeRoot         );
         
-        TStringVectorMap::const_iterator n = moduleInfoToMergeIn.includeDirs.begin();
-        while ( n != moduleInfoToMergeIn.includeDirs.end() )
+        // merge in the headers for both header integration locations as well as code integration locations
+        TStringVectorMap::const_iterator n;
+        
+        if ( ( MODULETYPE_CODE_INTEGRATE_LOCATION == moduleInfo.moduleType )  ||
+             ( MODULETYPE_HEADER_INTEGRATE_LOCATION == moduleInfo.moduleType ) )
         {
-            // Create the full path to the files
-            CORE::CString fullPathToIncludeLocation = pathToCodeLocation;
-            CORE::AppendToPath( fullPathToIncludeLocation, (*n).first );
+            n = moduleInfoToMergeIn.includeDirs.begin();
+            while ( n != moduleInfoToMergeIn.includeDirs.end() )
+            {
+                // Create the full path to the files
+                CORE::CString fullPathToIncludeLocation = pathToCodeLocation;
+                CORE::AppendToPath( fullPathToIncludeLocation, (*n).first );
 
-            // Use the merge function just in case this location is already added by other means
-            TStringVector& targetVector = moduleInfo.includeDirs[ fullPathToIncludeLocation ];
-            MergeStringVector( targetVector, (*n).second, true );
+                // Use the merge function just in case this location is already added by other means
+                TStringVector& targetVector = moduleInfo.includeDirs[ fullPathToIncludeLocation ];
+                MergeStringVector( targetVector, (*n).second, true );
                               
-            ++n;
+                ++n;
+            }
         }
 
-        n = moduleInfoToMergeIn.sourceDirs.begin();
-        while ( n != moduleInfoToMergeIn.sourceDirs.end() )
+        if ( MODULETYPE_CODE_INTEGRATE_LOCATION == moduleInfo.moduleType )
         {
-            // Create the full path to the files
-            CORE::CString fullPathToSourceLocation = pathToCodeLocation;
-            CORE::AppendToPath( fullPathToSourceLocation, (*n).first );
+            n = moduleInfoToMergeIn.sourceDirs.begin();
+            while ( n != moduleInfoToMergeIn.sourceDirs.end() )
+            {
+                // Create the full path to the files
+                CORE::CString fullPathToSourceLocation = pathToCodeLocation;
+                CORE::AppendToPath( fullPathToSourceLocation, (*n).first );
 
-            // Use the merge function just in case this location is already added by other means
-            TStringVector& targetVector = moduleInfo.sourceDirs[ fullPathToSourceLocation ];
-            MergeStringVector( targetVector, (*n).second, true );
+                // Use the merge function just in case this location is already added by other means
+                TStringVector& targetVector = moduleInfo.sourceDirs[ fullPathToSourceLocation ];
+                MergeStringVector( targetVector, (*n).second, true );
                               
-            ++n;
+                ++n;
+            }
         }
-
         ++i;
     }
 }
@@ -2767,11 +2809,11 @@ MergeCodeIncludeLocationsIntoModuleForPlatform( TProjectInfo& projectInfo       
 /*-------------------------------------------------------------------------*/
 
 void
-MergeCodeIncludeLocationsIntoModuleForPlatform( TProjectInfo& projectInfo           ,
+MergeIntegrationLocationsIntoModuleForPlatform( TProjectInfo& projectInfo           ,
                                                 const CORE::CString& targetPlatform )
 {GUCEF_TRACE;
 
-    // Loop trough all modules and process each code include as we go
+    // Loop trough all modules and process each integration as we go
     TModuleInfoEntryVector::iterator i = projectInfo.modules.begin();
     while ( i != projectInfo.modules.end() )
     {
@@ -2781,14 +2823,16 @@ MergeCodeIncludeLocationsIntoModuleForPlatform( TProjectInfo& projectInfo       
         {
             // This module has info for for this module, check its type
             TModuleInfo& moduleInfo = (*n).second;
-            if ( MODULETYPE_CODE_INCLUDE_LOCATION == moduleInfo.moduleType )
+            if ( ( MODULETYPE_CODE_INTEGRATE_LOCATION == moduleInfo.moduleType ) ||
+                 ( MODULETYPE_HEADER_INTEGRATE_LOCATION == moduleInfo.moduleType ) )
             {
                 // We found a code include location, now process it for all modules which proclaim to have a dependency on it
-                GUCEF_LOG( CORE::LOGLEVEL_NORMAL, "Processing code include location labeled as \"" + moduleInfo.name + "\" for platform " + targetPlatform );
-                MergeCodeIncludeLocationsIntoModuleForPlatform( projectInfo             ,
+                GUCEF_LOG( CORE::LOGLEVEL_NORMAL, "Processing integration location labeled as \"" + moduleInfo.name + "\" for platform " + targetPlatform );
+                MergeIntegrationLocationsIntoModuleForPlatform( projectInfo             ,
                                                                 targetPlatform          ,
                                                                 moduleInfo              ,
-                                                                moduleInfoEntry.rootDir );
+                                                                moduleInfoEntry.rootDir ,
+                                                                moduleInfo.moduleType   );
             }
         }
         
@@ -2831,7 +2875,7 @@ FindModulesWhichDependOnModule( TProjectInfo& projectInfo           ,
 /*-------------------------------------------------------------------------*/
 
 void
-MergeCodeIncludeLocationsIntoModuleForAllPlatformsPlatform( TProjectInfo& projectInfo              ,
+MergeIntegrationLocationsIntoModuleForAllPlatformsPlatform( TProjectInfo& projectInfo              ,
                                                             const TModuleInfo& moduleInfoToMergeIn ,
                                                             const CORE::CString& codeIncludeRoot   )
 {GUCEF_TRACE;
@@ -2855,32 +2899,41 @@ MergeCodeIncludeLocationsIntoModuleForAllPlatformsPlatform( TProjectInfo& projec
         {
             TModuleInfo& moduleInfo = (*m).second;
             
-            TStringVectorMap::const_iterator n = moduleInfoToMergeIn.includeDirs.begin();
-            while ( n != moduleInfoToMergeIn.includeDirs.end() )
+            TStringVectorMap::const_iterator n;
+            
+            if ( ( MODULETYPE_CODE_INTEGRATE_LOCATION == moduleInfoToMergeIn.moduleType )   ||
+                 ( MODULETYPE_HEADER_INTEGRATE_LOCATION == moduleInfoToMergeIn.moduleType )  )
             {
-                // Create the full path to the files
-                CORE::CString fullPathToIncludeLocation = pathToCodeLocation;
-                CORE::AppendToPath( fullPathToIncludeLocation, (*n).first );
+                n = moduleInfoToMergeIn.includeDirs.begin();
+                while ( n != moduleInfoToMergeIn.includeDirs.end() )
+                {
+                    // Create the full path to the files
+                    CORE::CString fullPathToIncludeLocation = pathToCodeLocation;
+                    CORE::AppendToPath( fullPathToIncludeLocation, (*n).first );
 
-                // Use the merge function just in case this location is already added by other means
-                TStringVector& targetVector = moduleInfo.includeDirs[ fullPathToIncludeLocation ];
-                MergeStringVector( targetVector, (*n).second, true );
+                    // Use the merge function just in case this location is already added by other means
+                    TStringVector& targetVector = moduleInfo.includeDirs[ fullPathToIncludeLocation ];
+                    MergeStringVector( targetVector, (*n).second, true );
                               
-                ++n;
+                    ++n;
+                }
             }
 
-            n = moduleInfoToMergeIn.sourceDirs.begin();
-            while ( n != moduleInfoToMergeIn.sourceDirs.end() )
+            if ( MODULETYPE_CODE_INTEGRATE_LOCATION == moduleInfoToMergeIn.moduleType )
             {
-                // Create the full path to the files
-                CORE::CString fullPathToSourceLocation = pathToCodeLocation;
-                CORE::AppendToPath( fullPathToSourceLocation, (*n).first );
+                n = moduleInfoToMergeIn.sourceDirs.begin();
+                while ( n != moduleInfoToMergeIn.sourceDirs.end() )
+                {
+                    // Create the full path to the files
+                    CORE::CString fullPathToSourceLocation = pathToCodeLocation;
+                    CORE::AppendToPath( fullPathToSourceLocation, (*n).first );
 
-                // Use the merge function just in case this location is already added by other means
-                TStringVector& targetVector = moduleInfo.sourceDirs[ fullPathToSourceLocation ];
-                MergeStringVector( targetVector, (*n).second, true );
+                    // Use the merge function just in case this location is already added by other means
+                    TStringVector& targetVector = moduleInfo.sourceDirs[ fullPathToSourceLocation ];
+                    MergeStringVector( targetVector, (*n).second, true );
                               
-                ++n;
+                    ++n;
+                }
             }
         }
         else
@@ -2895,32 +2948,41 @@ MergeCodeIncludeLocationsIntoModuleForAllPlatformsPlatform( TProjectInfo& projec
                 // Check if this particular platform needs the dependency
                 if ( IsStringInList( moduleInfo.dependencies, false, moduleInfoToMergeIn.name ) )
                 {
-                    TStringVectorMap::const_iterator n = moduleInfoToMergeIn.includeDirs.begin();
-                    while ( n != moduleInfoToMergeIn.includeDirs.end() )
-                    {
-                        // Create the full path to the files
-                        CORE::CString fullPathToIncludeLocation = pathToCodeLocation;
-                        CORE::AppendToPath( fullPathToIncludeLocation, (*n).first );
+                    TStringVectorMap::const_iterator n;
+                    
+                    if ( ( MODULETYPE_CODE_INTEGRATE_LOCATION == moduleInfoToMergeIn.moduleType )   ||
+                         ( MODULETYPE_HEADER_INTEGRATE_LOCATION == moduleInfoToMergeIn.moduleType )  )
+                    {                    
+                        n = moduleInfoToMergeIn.includeDirs.begin();
+                        while ( n != moduleInfoToMergeIn.includeDirs.end() )
+                        {
+                            // Create the full path to the files
+                            CORE::CString fullPathToIncludeLocation = pathToCodeLocation;
+                            CORE::AppendToPath( fullPathToIncludeLocation, (*n).first );
 
-                        // Use the merge function just in case this location is already added by other means
-                        TStringVector& targetVector = moduleInfo.includeDirs[ fullPathToIncludeLocation ];
-                        MergeStringVector( targetVector, (*n).second, true );
+                            // Use the merge function just in case this location is already added by other means
+                            TStringVector& targetVector = moduleInfo.includeDirs[ fullPathToIncludeLocation ];
+                            MergeStringVector( targetVector, (*n).second, true );
                               
-                        ++n;
+                            ++n;
+                        }
                     }
 
-                    n = moduleInfoToMergeIn.sourceDirs.begin();
-                    while ( n != moduleInfoToMergeIn.sourceDirs.end() )
+                    if ( MODULETYPE_CODE_INTEGRATE_LOCATION == moduleInfoToMergeIn.moduleType )
                     {
-                        // Create the full path to the files
-                        CORE::CString fullPathToSourceLocation = pathToCodeLocation;
-                        CORE::AppendToPath( fullPathToSourceLocation, (*n).first );
+                        n = moduleInfoToMergeIn.sourceDirs.begin();
+                        while ( n != moduleInfoToMergeIn.sourceDirs.end() )
+                        {
+                            // Create the full path to the files
+                            CORE::CString fullPathToSourceLocation = pathToCodeLocation;
+                            CORE::AppendToPath( fullPathToSourceLocation, (*n).first );
 
-                        // Use the merge function just in case this location is already added by other means
-                        TStringVector& targetVector = moduleInfo.sourceDirs[ fullPathToSourceLocation ];
-                        MergeStringVector( targetVector, (*n).second, true );
+                            // Use the merge function just in case this location is already added by other means
+                            TStringVector& targetVector = moduleInfo.sourceDirs[ fullPathToSourceLocation ];
+                            MergeStringVector( targetVector, (*n).second, true );
                               
-                        ++n;
+                            ++n;
+                        }
                     }
                 }
                 ++m;
@@ -2934,7 +2996,7 @@ MergeCodeIncludeLocationsIntoModuleForAllPlatformsPlatform( TProjectInfo& projec
 /*-------------------------------------------------------------------------*/
 
 void
-MergeCodeIncludeLocationsIntoModuleForAllPlatformsPlatform( TProjectInfo& projectInfo )
+MergeIntegrationLocationsIntoModuleForAllPlatformsPlatform( TProjectInfo& projectInfo )
 {GUCEF_TRACE;
 
     // Loop trough all modules and process each code include as we go
@@ -2947,11 +3009,12 @@ MergeCodeIncludeLocationsIntoModuleForAllPlatformsPlatform( TProjectInfo& projec
         {
             // This module has info for for this module, check its type
             TModuleInfo& moduleInfo = (*n).second;
-            if ( MODULETYPE_CODE_INCLUDE_LOCATION == moduleInfo.moduleType )
+            if ( ( MODULETYPE_CODE_INTEGRATE_LOCATION == moduleInfo.moduleType )   ||
+                 ( MODULETYPE_HEADER_INTEGRATE_LOCATION == moduleInfo.moduleType )  )
             {
                 // We found a code include location, now process it for all modules which proclaim to have a dependency on it
-                GUCEF_LOG( CORE::LOGLEVEL_NORMAL, "Processing code include location labeled as \"" + moduleInfo.name + "\" for platform " + AllPlatforms );
-                MergeCodeIncludeLocationsIntoModuleForAllPlatformsPlatform( projectInfo             ,
+                GUCEF_LOG( CORE::LOGLEVEL_NORMAL, "Processing integration location labeled as \"" + moduleInfo.name + "\" for platform " + AllPlatforms );
+                MergeIntegrationLocationsIntoModuleForAllPlatformsPlatform( projectInfo             ,
                                                                             moduleInfo              ,
                                                                             moduleInfoEntry.rootDir );
             }
@@ -2986,7 +3049,7 @@ RemoveDependencyToModule( TProjectInfo& projectInfo       ,
 /*-------------------------------------------------------------------------*/
 
 void
-RemoveDependenciesOnCodeIncludeLocations( TProjectInfo& projectInfo )
+RemoveDependenciesOnIntegrationLocations( TProjectInfo& projectInfo )
 {GUCEF_TRACE;
 
     // Loop trough all modules and process each code include as we go
@@ -2998,10 +3061,11 @@ RemoveDependenciesOnCodeIncludeLocations( TProjectInfo& projectInfo )
         while ( n != moduleInfoEntry.modulesPerPlatform.end() )
         {
             TModuleInfo& moduleInfo = (*n).second;
-            if ( MODULETYPE_CODE_INCLUDE_LOCATION == moduleInfo.moduleType )
+            if ( ( MODULETYPE_CODE_INTEGRATE_LOCATION == moduleInfo.moduleType ) ||
+                 ( MODULETYPE_HEADER_INTEGRATE_LOCATION == moduleInfo.moduleType ) )
             {
                 // We found a code include location, now process it for all modules which proclaim to have a dependency on it
-                GUCEF_LOG( CORE::LOGLEVEL_NORMAL, "Removing dependency labeled as \"" + moduleInfo.name + "\" for platform " + (*n).first + " because it is a code include location and it has been processed" );
+                GUCEF_LOG( CORE::LOGLEVEL_NORMAL, "Removing dependency labeled as \"" + moduleInfo.name + "\" for platform " + (*n).first + " because it is an integration location and it has been processed" );
                 RemoveDependencyToModule( projectInfo     ,
                                           moduleInfo.name );
             }
@@ -3015,20 +3079,20 @@ RemoveDependenciesOnCodeIncludeLocations( TProjectInfo& projectInfo )
 /*-------------------------------------------------------------------------*/
 
 void
-MergeCodeIncludeLocationsIntoModule( TProjectInfo& projectInfo )
+MergeIntegrationLocationsIntoModule( TProjectInfo& projectInfo )
 {GUCEF_TRACE;
 
-    MergeCodeIncludeLocationsIntoModuleForAllPlatformsPlatform( projectInfo );
+    MergeIntegrationLocationsIntoModuleForAllPlatformsPlatform( projectInfo );
     
     const TStringSet& supportedPlatforms = GetSupportedPlatforms();
     TStringSet::const_iterator i = supportedPlatforms.begin();
     while ( i != supportedPlatforms.end() )
     {
-        MergeCodeIncludeLocationsIntoModuleForPlatform( projectInfo, (*i).Lowercase() );        
+        MergeIntegrationLocationsIntoModuleForPlatform( projectInfo, (*i).Lowercase() );        
         ++i;
     }
 
-    RemoveDependenciesOnCodeIncludeLocations( projectInfo );
+    RemoveDependenciesOnIntegrationLocations( projectInfo );
 }
 
 /*-------------------------------------------------------------------------*/
@@ -3070,8 +3134,8 @@ CDirCrawlingProjectInfoGatherer::GatherInfo( const TStringVector& rootDirs ,
         ++i;
     }
 
-    // Merge code include locations into modules
-    MergeCodeIncludeLocationsIntoModule( projectInfo );
+    // Merge headers and code from integration locations into modules
+    MergeIntegrationLocationsIntoModule( projectInfo );
 
     // Based on all the information we have gathered we can now determine the correct build order
     // for all platforms

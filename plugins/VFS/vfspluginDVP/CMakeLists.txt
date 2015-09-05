@@ -36,7 +36,7 @@ set( MODULE_NAME "vfspluginDVP" )
 add_library( ${MODULE_NAME} ${ALL_FILES} )
 add_dependencies( ${MODULE_NAME} DVPACKSYS gucefCORE gucefMT gucefVFS )
 target_link_libraries( ${MODULE_NAME} DVPACKSYS gucefCORE gucefMT gucefVFS )
-set_target_properties( ${MODULE_NAME} PROPERTIES COMPILE_DEFINITIONS "GUCEF_VFSPLUGIN_DVP_BUILD_MODULE" )
+set_property( TARGET ${MODULE_NAME} APPEND_STRING PROPERTY COMPILE_DEFINITIONS "GUCEF_VFSPLUGIN_DVP_BUILD_MODULE" )
 
 include_directories( ../../../common/include ../../../dependencies/DVPACKSYS/include ../../../gucefCORE/include ../../../gucefMT/include ../../../gucefVFS/include include )
 

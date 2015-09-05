@@ -162,6 +162,8 @@ class GUCEF_CORE_PUBLIC_CPP CDataNode
     TKeyValuePair* GetAttribute( const CString& name );
 
     CString GetAttributeValue( const CString& name ) const;
+    
+    CString GetAttributeValue( const CString& name, const CString& defaultValue ) const;
 
     bool SetAttribute( const CString& name  ,
                        const CString& value );

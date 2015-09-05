@@ -34,7 +34,7 @@ set( MODULE_NAME "gucefPRODMANAPP" )
 add_library( ${MODULE_NAME} ${ALL_FILES} )
 add_dependencies( ${MODULE_NAME} gucefCOM gucefCOMCORE gucefCORE gucefMT gucefPRODMAN )
 target_link_libraries( ${MODULE_NAME} gucefCOM gucefCOMCORE gucefCORE gucefMT gucefPRODMAN )
-set_target_properties( ${MODULE_NAME} PROPERTIES COMPILE_DEFINITIONS "GUCEF_PRODMANAPP_BUILD_MODULE" )
+set_property( TARGET ${MODULE_NAME} APPEND_STRING PROPERTY COMPILE_DEFINITIONS "GUCEF_PRODMANAPP_BUILD_MODULE" )
 
 include_directories( ../../common/include ../../gucefCOM/include ../../gucefCOMCORE/include ../../gucefCORE/include ../../gucefMT/include ../../gucefPATCHER/include ../../gucefPRODMAN/include include )
 

@@ -106,7 +106,7 @@ set( MODULE_NAME "guidriverMyGUI" )
 add_library( ${MODULE_NAME} ${ALL_FILES} )
 add_dependencies( ${MODULE_NAME} MyGUI.Engine freetype gucefCORE gucefGUI gucefINPUT gucefMT gucefVFS )
 target_link_libraries( ${MODULE_NAME} MyGUI.Engine freetype gucefCORE gucefGUI gucefINPUT gucefMT gucefVFS )
-set_target_properties( ${MODULE_NAME} PROPERTIES COMPILE_DEFINITIONS "GUIDRIVERMYGUI_BUILD_MODULE" )
+set_property( TARGET ${MODULE_NAME} APPEND_STRING PROPERTY COMPILE_DEFINITIONS "GUIDRIVERMYGUI_BUILD_MODULE" )
 
 include_directories( ../../../common/include ../../../dependencies/MyGui/MyGUIEngine/include ../../../dependencies/freetype/include ../../../dependencies/freetype/include/freetype ../../../dependencies/freetype/include/freetype/config ../../../dependencies/freetype/include/freetype/internal ../../../dependencies/freetype/include/freetype/internal/services ../../../dependencies/freetype/src/winfonts ../../../gucefCORE/include ../../../gucefGUI/include ../../../gucefIMAGE/include ../../../gucefINPUT/include ../../../gucefMT/include ../../../gucefVFS/include include )
 

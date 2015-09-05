@@ -51,7 +51,7 @@ endif()
 if ( LINUX )
   add_dependencies( ${MODULE_NAME} gucefCORE gucefGUI gucefMT )
   target_link_libraries( ${MODULE_NAME} GL X11 gucefCORE gucefGUI gucefMT )
-  set_target_properties( ${MODULE_NAME} PROPERTIES COMPILE_DEFINITIONS "GUIDRIVERXWINGL_BUILD_MODULE" )
+  set_property( TARGET ${MODULE_NAME} APPEND_STRING PROPERTY COMPILE_DEFINITIONS "GUIDRIVERXWINGL_BUILD_MODULE" )
 endif( LINUX )
 
 include_directories( ../../../common/include ../../../gucefCORE/include ../../../gucefGUI/include ../../../gucefIMAGE/include ../../../gucefMT/include ../../../gucefVFS/include )

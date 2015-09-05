@@ -42,7 +42,7 @@ set( MODULE_NAME "guidriverMyGUIOpenGL" )
 add_library( ${MODULE_NAME} ${ALL_FILES} )
 add_dependencies( ${MODULE_NAME} MyGUI.Engine freetype gucefCORE gucefGUI gucefIMAGE gucefINPUT gucefMT gucefVFS guidriverMyGUI )
 target_link_libraries( ${MODULE_NAME} MyGUI.Engine freetype gucefCORE gucefGUI gucefIMAGE gucefINPUT gucefMT gucefVFS guidriverMyGUI )
-set_target_properties( ${MODULE_NAME} PROPERTIES COMPILE_DEFINITIONS "GUIDRIVERMYGUIOPENGL_BUILD_MODULE" )
+set_property( TARGET ${MODULE_NAME} APPEND_STRING PROPERTY COMPILE_DEFINITIONS "GUIDRIVERMYGUIOPENGL_BUILD_MODULE" )
 
 if ( ANDROID )
   add_dependencies( ${MODULE_NAME} MyGUI.OpenGLESPlatform )
@@ -67,7 +67,7 @@ endif( WIN64 )
 include_directories( ../../../common/include ../../../dependencies/MyGui/Common/FileSystemInfo ../../../dependencies/MyGui/MyGUIEngine/include ../../../dependencies/MyGui/Platforms/OpenGL/OpenGLPlatform/include ../../../dependencies/MyGui/Platforms/OpenGL/OpenGLPlatform/include/GL ../../../dependencies/freetype/include ../../../dependencies/freetype/include/freetype ../../../dependencies/freetype/include/freetype/config ../../../dependencies/freetype/include/freetype/internal ../../../dependencies/freetype/include/freetype/internal/services ../../../dependencies/freetype/src/winfonts ../../../gucefCORE/include ../../../gucefGUI/include ../../../gucefIMAGE/include ../../../gucefINPUT/include ../../../gucefMT/include ../../../gucefVFS/include ../guidriverMyGUI/include include )
 
 if ( ANDROID )
-  include_directories( ../../../dependencies/MyGui/Common/FileSystemInfo ../../../gucefCORE/include/android OpenGLESPlatform/include )
+  include_directories( ../../../gucefCORE/include/android OpenGLESPlatform/include )
 endif( ANDROID )
 
 if ( LINUX )

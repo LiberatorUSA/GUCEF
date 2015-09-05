@@ -3,9 +3,11 @@
         <Dependencies>
             <Dependency Name="CEGUI.Includes" />
             <Dependency Name="freetype" />
+            <Dependency Name="pcre" />
         </Dependencies>
         <Linker>
             <Dependency Name="freetype" />
+            <Dependency Name="pcre" />
         </Linker>
         <Preprocessor>
             <Define String="CEGUIBASE_EXPORTS" />

@@ -248,7 +248,7 @@ set( MODULE_NAME "RocketCore" )
 add_library( ${MODULE_NAME} ${ALL_FILES} )
 add_dependencies( ${MODULE_NAME} freetype )
 target_link_libraries( ${MODULE_NAME} freetype )
-set_target_properties( ${MODULE_NAME} PROPERTIES COMPILE_DEFINITIONS "RocketCore_EXPORTS" )
+set_property( TARGET ${MODULE_NAME} APPEND_STRING PROPERTY COMPILE_DEFINITIONS "RocketCore_EXPORTS" )
 
 include_directories( ../../../freetype/include ../../../freetype/include/freetype ../../../freetype/include/freetype/config ../../../freetype/include/freetype/internal ../../../freetype/include/freetype/internal/services ../../../freetype/src/winfonts ../../Include ../../Include/Rocket ../../Include/Rocket/Controls ../../Include/Rocket/Core ../../Include/Rocket/Core/Python ../../Include/Rocket/Debugger )
 
@@ -259,9 +259,7 @@ include_directories( ../../../freetype/include ../../../freetype/include/freetyp
 
 
 
-if (ANDROID)
-GUCEF_config_lib( ${MODULE_NAME} )
-elseif (LINUX)
+if (LINUX)
 GUCEF_config_lib( ${MODULE_NAME} )
 elseif (OSX)
 GUCEF_config_lib( ${MODULE_NAME} )

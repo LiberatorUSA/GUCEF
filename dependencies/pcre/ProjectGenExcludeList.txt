@@ -3,3 +3,16 @@ doc
 m4
 sljit
 testdata
+pcretest.c
+pcre_scanner.cc
+pcre_scanner_unittest.cc
+pcre_stringpiece.cc
+pcre_stringpiece_unittest.cc
+pcrecpp.cc
+pcrecpp_unittests.cc
+pcre_jit_test.c
+pcregrep.c
+pcredemo.c
+pcrecpp_unittest.cc
+pcreposix.c
+dftables.c

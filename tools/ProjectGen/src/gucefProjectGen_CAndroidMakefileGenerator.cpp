@@ -267,7 +267,8 @@ GenerateContentForAndroidMakefile( const TModuleInfoEntryPairVector& mergeLinks 
                 linkedStaticLibraries.insert( linkedLibName );
                 break;
             }
-            case MODULETYPE_CODE_INCLUDE_LOCATION:
+            case MODULETYPE_CODE_INTEGRATE_LOCATION:
+            case MODULETYPE_HEADER_INTEGRATE_LOCATION:
             case MODULETYPE_HEADER_INCLUDE_LOCATION:
             {
                 // Skip this, no linking required
@@ -305,7 +306,8 @@ GenerateContentForAndroidMakefile( const TModuleInfoEntryPairVector& mergeLinks 
                             linkedSharedLibraries.insert( linkedLibName );
                             break;
                         }
-                        case MODULETYPE_CODE_INCLUDE_LOCATION:
+                        case MODULETYPE_HEADER_INTEGRATE_LOCATION:
+                        case MODULETYPE_CODE_INTEGRATE_LOCATION:
                         {
                             // Dont do anything.
                             // The files for this 'module' have already been merged into the dependent module
@@ -505,8 +507,9 @@ CreateAndroidMakefileOnDiskForModule( const TModuleInfoEntryPairVector& mergeLin
                                       TStringSet& ndkModulesUsed                   )
 {GUCEF_TRACE;
 
-    if ( ( MODULETYPE_HEADER_INCLUDE_LOCATION == moduleInfo.moduleType ) ||
-         ( MODULETYPE_CODE_INCLUDE_LOCATION == moduleInfo.moduleType )    )
+    if ( ( MODULETYPE_HEADER_INCLUDE_LOCATION == moduleInfo.moduleType )   ||
+         ( MODULETYPE_HEADER_INTEGRATE_LOCATION == moduleInfo.moduleType ) ||
+         ( MODULETYPE_CODE_INTEGRATE_LOCATION == moduleInfo.moduleType )    )
     {
         // this module type does not require processing here
         return true;
@@ -694,8 +697,9 @@ GenerateContentForAndroidProjectMakefile( const CORE::CString& projectName      
     const TModuleInfo* currentModule = FindFirstModuleAccordingToBuildOrder( mergeLinks );
     while ( NULL != currentModule )
     {
-        if ( ( MODULETYPE_HEADER_INCLUDE_LOCATION != currentModule->moduleType ) &&
-             ( MODULETYPE_CODE_INCLUDE_LOCATION != currentModule->moduleType )    )
+        if ( ( MODULETYPE_HEADER_INCLUDE_LOCATION != currentModule->moduleType )   &&
+             ( MODULETYPE_HEADER_INTEGRATE_LOCATION != currentModule->moduleType ) &&
+             ( MODULETYPE_CODE_INTEGRATE_LOCATION != currentModule->moduleType )    )
         {
             // Get relative path from the outputDir to the other module
             const TModuleInfoEntry* fullModuleInfo = FindModuleInfoEntryForMergedInfo( mergeLinks, *currentModule );

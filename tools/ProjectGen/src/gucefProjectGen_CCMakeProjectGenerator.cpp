@@ -773,8 +773,9 @@ GenerateCMakeModuleDependenciesLine( const TProjectInfo& projectInfo   ,
             if ( NULL != dependencyModule )
             {
                 TModuleType moduleType = GetModuleType( *dependencyModule, AllPlatforms );
-                if ( ( MODULETYPE_HEADER_INCLUDE_LOCATION != moduleType ) &&
-                     ( MODULETYPE_CODE_INCLUDE_LOCATION != moduleType )    )
+                if ( ( MODULETYPE_HEADER_INCLUDE_LOCATION != moduleType )   &&
+                     ( MODULETYPE_HEADER_INTEGRATE_LOCATION != moduleType ) &&
+                     ( MODULETYPE_CODE_INTEGRATE_LOCATION != moduleType )    )
                 {
                     dependencies.insert( (*i) );
                 }
@@ -843,7 +844,7 @@ GenerateCMakeModuleDefinesLine( const TModuleInfo& moduleInfo     ,
     {
         GUCEF_LOG( CORE::LOGLEVEL_BELOW_NORMAL, "Generating CMake module preprocessor defines for module " + moduleName + " and platform " + platformName );
 
-        CORE::CString sectionContent = "set_target_properties( ${MODULE_NAME} PROPERTIES COMPILE_DEFINITIONS \"";
+        CORE::CString sectionContent = "set_property( TARGET ${MODULE_NAME} APPEND_STRING PROPERTY COMPILE_DEFINITIONS \"";
 
         bool first = true;
         TStringSet::const_iterator i = moduleInfo.preprocessorSettings.defines.begin();
@@ -1173,8 +1174,9 @@ WriteCMakeListsFilesToDisk( const TProjectInfo& projectInfo  ,
     {
         const TModuleInfoEntry& moduleInfoEntry = (*i);
         TModuleType allPlatformsType = GetModuleType( moduleInfoEntry, AllPlatforms );
-        if ( ( MODULETYPE_HEADER_INCLUDE_LOCATION != allPlatformsType ) &&
-             ( MODULETYPE_CODE_INCLUDE_LOCATION != allPlatformsType )    )
+        if ( ( MODULETYPE_HEADER_INCLUDE_LOCATION != allPlatformsType )   &&
+             ( MODULETYPE_HEADER_INTEGRATE_LOCATION != allPlatformsType ) &&
+             ( MODULETYPE_CODE_INTEGRATE_LOCATION != allPlatformsType )    )
         {
             CORE::CString fileContent = GenerateCMakeListsFileContent( projectInfo, moduleInfoEntry, addCompileDate );
             if ( logFilename.Length() > 0 )

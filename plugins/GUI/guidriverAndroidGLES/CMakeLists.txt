@@ -51,7 +51,7 @@ endif()
 if ( ANDROID )
   add_dependencies( ${MODULE_NAME} gucefCORE gucefGUI gucefMT )
   target_link_libraries( ${MODULE_NAME} EGL GLESv1_CM android android_native_app_glue gucefCORE gucefGUI gucefMT )
-  set_target_properties( ${MODULE_NAME} PROPERTIES COMPILE_DEFINITIONS "GUIDRIVERANDROIDGLES_BUILD_MODULE" )
+  set_property( TARGET ${MODULE_NAME} APPEND_STRING PROPERTY COMPILE_DEFINITIONS "GUIDRIVERANDROIDGLES_BUILD_MODULE" )
 endif( ANDROID )
 
 include_directories( ../../../common/include ../../../gucefCORE/include ../../../gucefGUI/include ../../../gucefIMAGE/include ../../../gucefMT/include ../../../gucefVFS/include )

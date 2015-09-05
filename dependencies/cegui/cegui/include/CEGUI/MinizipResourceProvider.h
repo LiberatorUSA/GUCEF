@@ -30,6 +30,9 @@
 #define _CEGUIMinizipResourceProvider_h_
 
 #include "CEGUI/Base.h"
+
+#ifdef CEGUI_HAS_MINIZIP_RESOURCE_PROVIDER
+
 #include "CEGUI/DefaultResourceProvider.h"
 
 #if defined(_MSC_VER)
@@ -85,6 +88,8 @@ protected:
 
 #if defined(_MSC_VER)
 #   pragma warning(pop)
+#endif
+
 #endif
 
 #endif  // end of guard _CEGUIMinizipResourceProvider_h_

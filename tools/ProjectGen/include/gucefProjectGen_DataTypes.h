@@ -82,7 +82,8 @@ enum EModuleType
     MODULETYPE_SHARED_LIBRARY           ,    // <- shared library (.dll on win32, .so on linux/android)
     MODULETYPE_STATIC_LIBRARY           ,    // <- static library (.lib on win32, .a on linux/android)
     MODULETYPE_HEADER_INCLUDE_LOCATION  ,    // <- location where headers can be placed for reference by other modules
-    MODULETYPE_CODE_INCLUDE_LOCATION    ,    // <- location where shared code can be placed for inclusion in other modules
+    MODULETYPE_CODE_INTEGRATE_LOCATION  ,    // <- location where shared code can be placed for inclusion as part of other modules
+    MODULETYPE_HEADER_INTEGRATE_LOCATION,    // <- location where shared headers can be placed for inclusion as part of other modules
     MODULETYPE_REFERENCE_LIBRARY        ,    // <- managed code library
     
     MODULETYPE_UNKNOWN             // <- to be used when initialized BUT we cannot determine the module type
@@ -140,6 +141,7 @@ struct SModuleInfo
     TStringVectorMap sourceDirs;                 // source directories of this module's own source
 
     int buildOrder;                              // order number of this module in the build queue
+    bool considerSubDirs;                        // Whether only the dir with the ModuleInfo is to be considered or whether subdirs are recursively considered
 
     TLinkerSettings linkerSettings;              // all linker related settings for this module
     TCompilerSettings compilerSettings;          // all compiler related settings for this module

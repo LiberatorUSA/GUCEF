@@ -44,7 +44,7 @@ endif()
 if ( ANDROID )
   add_dependencies( ${MODULE_NAME} gucefCORE gucefINPUT gucefMT )
   target_link_libraries( ${MODULE_NAME} android android_native_app_glue gucefCORE gucefINPUT gucefMT )
-  set_target_properties( ${MODULE_NAME} PROPERTIES COMPILE_DEFINITIONS "BUILD_GUCEF_INPUT_PLUGIN_DLL;INPUTDRIVERANDROID_BUILD_MODULE" )
+  set_property( TARGET ${MODULE_NAME} APPEND_STRING PROPERTY COMPILE_DEFINITIONS "BUILD_GUCEF_INPUT_PLUGIN_DLL;INPUTDRIVERANDROID_BUILD_MODULE" )
 endif( ANDROID )
 
 include_directories( ../../../common/include ../../../gucefCORE/include ../../../gucefINPUT/include ../../../gucefMT/include )

@@ -106,7 +106,7 @@ set( MODULE_NAME "gucefCOMCORE" )
 add_library( ${MODULE_NAME} ${ALL_FILES} )
 add_dependencies( ${MODULE_NAME} gucefCORE gucefMT )
 target_link_libraries( ${MODULE_NAME} gucefCORE gucefMT )
-set_target_properties( ${MODULE_NAME} PROPERTIES COMPILE_DEFINITIONS "GUCEF_COMCORE_BUILD_MODULE" )
+set_property( TARGET ${MODULE_NAME} APPEND_STRING PROPERTY COMPILE_DEFINITIONS "GUCEF_COMCORE_BUILD_MODULE" )
 
 if ( WIN32 )
   target_link_libraries( ${MODULE_NAME} Advapi32.lib Ws2_32.lib )

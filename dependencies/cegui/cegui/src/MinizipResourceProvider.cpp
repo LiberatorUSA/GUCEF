@@ -26,7 +26,11 @@
  *   ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR
  *   OTHER DEALINGS IN THE SOFTWARE.
  ***************************************************************************/
+
 #include "CEGUI/MinizipResourceProvider.h"
+
+#ifdef CEGUI_HAS_MINIZIP_RESOURCE_PROVIDER
+
 #include "CEGUI/Logger.h"
 #include "CEGUI/Exceptions.h"
 
@@ -279,5 +283,7 @@ void MinizipResourceProvider::setLoadLocal(bool load)
 //----------------------------------------------------------------------------//
 
 } // End of  CEGUI namespace section
+
+#endif
 
 #endif

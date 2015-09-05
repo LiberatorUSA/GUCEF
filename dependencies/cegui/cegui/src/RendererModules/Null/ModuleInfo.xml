@@ -8,6 +8,7 @@
             <Dependency Name="CEGUI" />
         </Linker>
         <Preprocessor>
+            <Define String="CEGUINULLRENDERER_EXPORTS" />
         </Preprocessor>
     </Module>
 </ModuleInfoEntry>

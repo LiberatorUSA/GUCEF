@@ -107,39 +107,32 @@ set( SOURCE_FILES
   src/XMLHandler.cpp
   src/XMLParser.cpp
   src/XMLSerializer.cpp
-  src/CommonDialogs/Module.cpp
-  src/CommonDialogs/ColourPicker/ColourPicker.cpp
-  src/CommonDialogs/ColourPicker/Controls.cpp
-  src/CommonDialogs/ColourPicker/Conversions.cpp
-  src/CommonDialogs/ColourPicker/Types.cpp
-  src/WindowRendererSets/Core/Button.cpp
-  src/WindowRendererSets/Core/Default.cpp
-  src/WindowRendererSets/Core/Editbox.cpp
-  src/WindowRendererSets/Core/FrameWindow.cpp
-  src/WindowRendererSets/Core/ItemEntry.cpp
-  src/WindowRendererSets/Core/ItemListbox.cpp
-  src/WindowRendererSets/Core/Listbox.cpp
-  src/WindowRendererSets/Core/ListHeader.cpp
-  src/WindowRendererSets/Core/ListHeaderSegment.cpp
-  src/WindowRendererSets/Core/Menubar.cpp
-  src/WindowRendererSets/Core/MenuItem.cpp
-  src/WindowRendererSets/Core/Module.cpp
-  src/WindowRendererSets/Core/MultiColumnList.cpp
-  src/WindowRendererSets/Core/MultiLineEditbox.cpp
-  src/WindowRendererSets/Core/PopupMenu.cpp
-  src/WindowRendererSets/Core/ProgressBar.cpp
-  src/WindowRendererSets/Core/ScrollablePane.cpp
-  src/WindowRendererSets/Core/Scrollbar.cpp
-  src/WindowRendererSets/Core/Slider.cpp
-  src/WindowRendererSets/Core/Static.cpp
-  src/WindowRendererSets/Core/StaticImage.cpp
-  src/WindowRendererSets/Core/StaticText.cpp
-  src/WindowRendererSets/Core/TabButton.cpp
-  src/WindowRendererSets/Core/TabControl.cpp
-  src/WindowRendererSets/Core/Titlebar.cpp
-  src/WindowRendererSets/Core/ToggleButton.cpp
-  src/WindowRendererSets/Core/Tooltip.cpp
-  src/WindowRendererSets/Core/Tree.cpp
+  src/ImageCodecModules/Corona/ImageCodec.cpp
+  src/ImageCodecModules/Corona/ImageCodecModule.cpp
+  src/ImageCodecModules/DevIL/ImageCodec.cpp
+  src/ImageCodecModules/DevIL/ImageCodecModule.cpp
+  src/ImageCodecModules/FreeImage/ImageCodec.cpp
+  src/ImageCodecModules/FreeImage/ImageCodecModule.cpp
+  src/ImageCodecModules/PVR/ImageCodec.cpp
+  src/ImageCodecModules/PVR/ImageCodecModule.cpp
+  src/ImageCodecModules/SILLY/ImageCodec.cpp
+  src/ImageCodecModules/SILLY/ImageCodecModule.cpp
+  src/ImageCodecModules/STB/ImageCodec.cpp
+  src/ImageCodecModules/STB/ImageCodecModule.cpp
+  src/ImageCodecModules/STB/stb_image.cpp
+  src/ImageCodecModules/TGA/ImageCodec.cpp
+  src/ImageCodecModules/TGA/ImageCodecModule.cpp
+  src/XMLParserModules/Expat/XMLParser.cpp
+  src/XMLParserModules/Expat/XMLParserModule.cpp
+  src/XMLParserModules/Libxml2/XMLParser.cpp
+  src/XMLParserModules/Libxml2/XMLParserModule.cpp
+  src/XMLParserModules/RapidXML/XMLParser.cpp
+  src/XMLParserModules/RapidXML/XMLParserModule.cpp
+  src/XMLParserModules/TinyXML/XMLParser.cpp
+  src/XMLParserModules/TinyXML/XMLParserModule.cpp
+  src/XMLParserModules/Xerces/XMLParser.cpp
+  src/XMLParserModules/Xerces/XMLParserModule.cpp
+  src/XMLParserModules/Xerces/XMLParserProperties.cpp
   src/widgets/ButtonBase.cpp
   src/widgets/ClippedContainer.cpp
   src/widgets/Combobox.cpp
@@ -188,22 +181,39 @@ set( SOURCE_FILES
   src/widgets/VerticalLayoutContainer.cpp
 )
 
-# Make sure the PLATFORM_HEADER_FILES variable is always defined
- set( PLATFORM_HEADER_FILES "" )
 
-# Make sure the PLATFORM_SOURCE_FILES variable is always defined
- set( PLATFORM_SOURCE_FILES "" )
+
+if (OSX)
+  set( PLATFORM_HEADER_FILES 
+    src/implementations/mac/macPlugins.h
+  )
+
+  set( PLATFORM_HEADER_INSTALL "OSX" )
+  source_group( "Platform Header Files" FILES ${PLATFORM_HEADER_FILES} )
+
+  set( PLATFORM_SOURCE_FILES 
+    src/implementations/mac/macPlugins.cpp
+  )
+
+  set( PLATFORM_SOURCE_INSTALL "OSX" )
+  source_group( "Platform Source Files" FILES ${PLATFORM_SOURCE_FILES} )
+
+endif ()
 
 # For ease of use make a variable that has all files for this module
 set( ALL_FILES ${HEADER_FILES} ${SOURCE_FILES} ${PLATFORM_HEADER_FILES} ${PLATFORM_SOURCE_FILES} )
 
 set( MODULE_NAME "CEGUI" )
 add_library( ${MODULE_NAME} ${ALL_FILES} )
-add_dependencies( ${MODULE_NAME} freetype )
-target_link_libraries( ${MODULE_NAME} freetype )
-set_target_properties( ${MODULE_NAME} PROPERTIES COMPILE_DEFINITIONS "CEGUIBASE_EXPORTS" )
+add_dependencies( ${MODULE_NAME} freetype pcre )
+target_link_libraries( ${MODULE_NAME} freetype pcre )
+set_property( TARGET ${MODULE_NAME} APPEND_STRING PROPERTY COMPILE_DEFINITIONS "CEGUIBASE_EXPORTS" )
 
-include_directories( ../../freetype/include ../../freetype/include/freetype ../../freetype/include/freetype/config ../../freetype/include/freetype/internal ../../freetype/include/freetype/internal/services ../../freetype/src/winfonts include )
+include_directories( ../../freetype/include ../../freetype/include/freetype ../../freetype/include/freetype/config ../../freetype/include/freetype/internal ../../freetype/include/freetype/internal/services ../../freetype/src/winfonts ../../pcre include )
+
+if ( OSX )
+  include_directories( src/implementations/mac )
+endif( OSX )
 
 
 
