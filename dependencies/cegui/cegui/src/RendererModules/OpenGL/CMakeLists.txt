@@ -68,7 +68,7 @@ add_dependencies( ${MODULE_NAME} CEGUI glew )
 target_link_libraries( ${MODULE_NAME} CEGUI glew )
 set_property( TARGET ${MODULE_NAME} APPEND_STRING PROPERTY COMPILE_DEFINITIONS "CEGUIOPENGLRENDERER_EXPORTS" )
 
-include_directories( ../../../../../glew/include ../../../include )
+include_directories( ../../../../../glew/include ../../../../../glm ../../../include )
 
 
 

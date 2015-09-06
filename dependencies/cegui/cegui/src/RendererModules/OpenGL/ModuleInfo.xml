@@ -5,6 +5,7 @@
             <Dependency Name="CEGUI.Includes" />
             <Dependency Name="glew" />
             <Dependency Name="glew.Includes" />
+            <Dependency Name="glm.Includes" />
         </Dependencies>
         <Linker>
             <Dependency Name="CEGUI" />

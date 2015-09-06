@@ -1,0 +1,4 @@
+<ModuleInfoEntry>
+    <Module Name="glm.Includes" Type="HeaderIncludeLocation" ConsiderSubDirs="False" Platform="All" >
+    </Module>
+</ModuleInfoEntry>

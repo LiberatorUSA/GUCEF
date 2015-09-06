@@ -53,8 +53,9 @@ set( ALL_FILES ${HEADER_FILES} ${SOURCE_FILES} ${PLATFORM_HEADER_FILES} ${PLATFO
 
 set( MODULE_NAME "CEGUI.WindowRendererSets.Core" )
 add_library( ${MODULE_NAME} ${ALL_FILES} )
-add_dependencies( ${MODULE_NAME} CEGUI CEGUI.falagard )
-target_link_libraries( ${MODULE_NAME} CEGUI CEGUI.falagard )
+add_dependencies( ${MODULE_NAME} CEGUI )
+target_link_libraries( ${MODULE_NAME} CEGUI )
+set_property( TARGET ${MODULE_NAME} APPEND_STRING PROPERTY COMPILE_DEFINITIONS "CEGUICOREWINDOWRENDERERSET_EXPORTS" )
 
 include_directories( ../../../include )
 

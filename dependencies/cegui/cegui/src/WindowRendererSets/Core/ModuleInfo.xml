@@ -3,13 +3,12 @@
         <Dependencies>
             <Dependency Name="CEGUI" />
             <Dependency Name="CEGUI.Includes" />
-            <Dependency Name="CEGUI.falagard" />
         </Dependencies>
         <Linker>
             <Dependency Name="CEGUI" />
-            <Dependency Name="CEGUI.falagard" />
         </Linker>
         <Preprocessor>
+            <Define String="CEGUICOREWINDOWRENDERERSET_EXPORTS" />
         </Preprocessor>
     </Module>
 </ModuleInfoEntry>

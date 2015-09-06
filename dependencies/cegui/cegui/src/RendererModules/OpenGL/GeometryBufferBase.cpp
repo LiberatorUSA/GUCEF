@@ -37,6 +37,9 @@
 #include "CEGUI/Vertex.h"
 #include "CEGUI/RendererModules/OpenGL/GlmPimpl.h"
 
+#undef max
+#undef min
+
 namespace CEGUI
 {
 //----------------------------------------------------------------------------//

@@ -14,6 +14,7 @@ pcre is version 8.37
 CEGUI is version 0.8.3
 libiconv is version 1.14
 glew is version 1.13
+glm is version 0.9.6
 
 The OIS dependency is at version 1.3 and can be obtained from http://sourceforge.net/projects/wgois
 Note for MS Windows builds: that to build the DirectInput dependent code you must have the DirectX SDK installed on your system.
