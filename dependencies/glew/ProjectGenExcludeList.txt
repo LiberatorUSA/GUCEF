@@ -1,0 +1,6 @@
+auto
+bin
+build
+config
+doc
+lib

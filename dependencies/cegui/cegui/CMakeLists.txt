@@ -52,7 +52,6 @@ set( SOURCE_FILES
   src/GlobalEventSet.cpp
   src/GUIContext.cpp
   src/GUILayout_xmlHandler.cpp
-  src/IconvStringTranscoder.cpp
   src/Image.cpp
   src/ImageCodec.cpp
   src/ImageManager.cpp
@@ -96,7 +95,6 @@ set( SOURCE_FILES
   src/System.cpp
   src/SystemKeys.cpp
   src/TextUtils.cpp
-  src/Win32StringTranscoder.cpp
   src/Window.cpp
   src/WindowFactory.cpp
   src/WindowFactoryManager.cpp
@@ -107,32 +105,26 @@ set( SOURCE_FILES
   src/XMLHandler.cpp
   src/XMLParser.cpp
   src/XMLSerializer.cpp
-  src/ImageCodecModules/Corona/ImageCodec.cpp
-  src/ImageCodecModules/Corona/ImageCodecModule.cpp
-  src/ImageCodecModules/DevIL/ImageCodec.cpp
-  src/ImageCodecModules/DevIL/ImageCodecModule.cpp
-  src/ImageCodecModules/FreeImage/ImageCodec.cpp
-  src/ImageCodecModules/FreeImage/ImageCodecModule.cpp
-  src/ImageCodecModules/PVR/ImageCodec.cpp
-  src/ImageCodecModules/PVR/ImageCodecModule.cpp
-  src/ImageCodecModules/SILLY/ImageCodec.cpp
-  src/ImageCodecModules/SILLY/ImageCodecModule.cpp
-  src/ImageCodecModules/STB/ImageCodec.cpp
-  src/ImageCodecModules/STB/ImageCodecModule.cpp
-  src/ImageCodecModules/STB/stb_image.cpp
-  src/ImageCodecModules/TGA/ImageCodec.cpp
-  src/ImageCodecModules/TGA/ImageCodecModule.cpp
-  src/XMLParserModules/Expat/XMLParser.cpp
-  src/XMLParserModules/Expat/XMLParserModule.cpp
-  src/XMLParserModules/Libxml2/XMLParser.cpp
-  src/XMLParserModules/Libxml2/XMLParserModule.cpp
-  src/XMLParserModules/RapidXML/XMLParser.cpp
-  src/XMLParserModules/RapidXML/XMLParserModule.cpp
-  src/XMLParserModules/TinyXML/XMLParser.cpp
-  src/XMLParserModules/TinyXML/XMLParserModule.cpp
-  src/XMLParserModules/Xerces/XMLParser.cpp
-  src/XMLParserModules/Xerces/XMLParserModule.cpp
-  src/XMLParserModules/Xerces/XMLParserProperties.cpp
+  src/falagard/ComponentBase.cpp
+  src/falagard/Dimensions.cpp
+  src/falagard/EventAction.cpp
+  src/falagard/EventLinkDefinition.cpp
+  src/falagard/FormattingSetting.cpp
+  src/falagard/FrameComponent.cpp
+  src/falagard/ImageryComponent.cpp
+  src/falagard/ImagerySection.cpp
+  src/falagard/LayerSpecification.cpp
+  src/falagard/NamedArea.cpp
+  src/falagard/PropertyDefinitionBase.cpp
+  src/falagard/PropertyInitialiser.cpp
+  src/falagard/SectionSpecification.cpp
+  src/falagard/StateImagery.cpp
+  src/falagard/TextComponent.cpp
+  src/falagard/WidgetComponent.cpp
+  src/falagard/WidgetLookFeel.cpp
+  src/falagard/WidgetLookManager.cpp
+  src/falagard/XMLEnumHelper.cpp
+  src/falagard/XMLHandler.cpp
   src/widgets/ButtonBase.cpp
   src/widgets/ClippedContainer.cpp
   src/widgets/Combobox.cpp
@@ -183,22 +175,26 @@ set( SOURCE_FILES
 
 
 
-if (OSX)
-  set( PLATFORM_HEADER_FILES 
-    src/implementations/mac/macPlugins.h
-  )
-
-  set( PLATFORM_HEADER_INSTALL "OSX" )
-  source_group( "Platform Header Files" FILES ${PLATFORM_HEADER_FILES} )
-
+if (WIN32)
   set( PLATFORM_SOURCE_FILES 
-    src/implementations/mac/macPlugins.cpp
+    src/Win32StringTranscoder.cpp
   )
 
-  set( PLATFORM_SOURCE_INSTALL "OSX" )
+  set( PLATFORM_SOURCE_INSTALL "WIN32" )
+  source_group( "Platform Source Files" FILES ${PLATFORM_SOURCE_FILES} )
+
+elseif (WIN64)
+  set( PLATFORM_SOURCE_FILES 
+    src/Win32StringTranscoder.cpp
+  )
+
+  set( PLATFORM_SOURCE_INSTALL "WIN64" )
   source_group( "Platform Source Files" FILES ${PLATFORM_SOURCE_FILES} )
 
 endif ()
+
+# Make sure the PLATFORM_HEADER_FILES variable is always defined
+ set( PLATFORM_HEADER_FILES "" )
 
 # For ease of use make a variable that has all files for this module
 set( ALL_FILES ${HEADER_FILES} ${SOURCE_FILES} ${PLATFORM_HEADER_FILES} ${PLATFORM_SOURCE_FILES} )
@@ -209,11 +205,15 @@ add_dependencies( ${MODULE_NAME} freetype pcre )
 target_link_libraries( ${MODULE_NAME} freetype pcre )
 set_property( TARGET ${MODULE_NAME} APPEND_STRING PROPERTY COMPILE_DEFINITIONS "CEGUIBASE_EXPORTS" )
 
-include_directories( ../../freetype/include ../../freetype/include/freetype ../../freetype/include/freetype/config ../../freetype/include/freetype/internal ../../freetype/include/freetype/internal/services ../../freetype/src/winfonts ../../pcre include )
+if ( WIN32 )
+  target_link_libraries( ${MODULE_NAME} Dbghelp Winmm )
+endif( WIN32 )
 
-if ( OSX )
-  include_directories( src/implementations/mac )
-endif( OSX )
+if ( WIN64 )
+  target_link_libraries( ${MODULE_NAME} Dbghelp Winmm )
+endif( WIN64 )
+
+include_directories( ../../freetype/include ../../freetype/include/freetype ../../freetype/include/freetype/config ../../freetype/include/freetype/internal ../../freetype/include/freetype/internal/services ../../freetype/src/winfonts ../../pcre include )
 
 
 

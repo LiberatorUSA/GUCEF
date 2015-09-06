@@ -23,7 +23,6 @@ set( HEADER_FILES
 )
 
 set( SOURCE_FILES 
-  dftables.c
   pcre16_byte_order.c
   pcre16_chartables.c
   pcre16_compile.c
@@ -70,7 +69,6 @@ set( SOURCE_FILES
   pcre32_valid_utf32.c
   pcre32_version.c
   pcre32_xclass.c
-  pcreposix.c
   pcre_byte_order.c
   pcre_chartables.c
   pcre_compile.c

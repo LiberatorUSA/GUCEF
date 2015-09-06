@@ -836,151 +836,168 @@ ParseProcessingInstructions( const CORE::CString& instructionsDir           ,
                 if ( curNode->GetName() == excludesNodeName )
                 {
                     // Store whether the instructions apply to a particular platform
-                    CORE::CString platformName = curNode->GetAttributeValue( platformNodeName ).Lowercase();
+                    CORE::CString platformValue = curNode->GetAttributeValue( platformNodeName ).Lowercase();
 
-                    // Parse instructions
-                    const CORE::CDataNode* excludesNode = curNode;
-                    CORE::CDataNode::const_iterator n = excludesNode->ConstBegin();
-                    while ( n != excludesNode->ConstEnd() )
+                    // apply 1 to n platform mappings if applicable
+                    TStringSet platforms = ResolveMultiPlatformName( platformValue );
+                    TStringSet::iterator p = platforms.begin();
+                    while ( p != platforms.end() )
                     {
-                        // Process all the items in this instruction set
-                        const CORE::CDataNode* curNode2 = (*n);
-                        if ( curNode2->GetName() == itemNodeName )
-                        {
-                            // Get the name and type of the item to add to the list
-                            CORE::CString itemName = curNode2->GetAttributeValue( nameAttribName );
-                            if ( !itemName.IsNULLOrEmpty() )
-                            {
-                                CORE::CString itemType = curNode2->GetAttributeValue( typeAttribName );
-                                bool itemIsADir = IsProcessingInstructionsItemADir( instructionsDir, itemName, itemType );
+                        const CORE::CString& platformName = (*p); 
 
-                                // We found an item to add to our list
-                                if ( platformName.IsNULLOrEmpty() || platformName.Equals( allPlatformsValue, false ) )
+                        // Parse instructions
+                        const CORE::CDataNode* excludesNode = curNode;
+                        CORE::CDataNode::const_iterator n = excludesNode->ConstBegin();
+                        while ( n != excludesNode->ConstEnd() )
+                        {
+                            // Process all the items in this instruction set
+                            const CORE::CDataNode* curNode2 = (*n);
+                            if ( curNode2->GetName() == itemNodeName )
+                            {
+                                // Get the name and type of the item to add to the list
+                                CORE::CString itemName = curNode2->GetAttributeValue( nameAttribName );
+                                if ( !itemName.IsNULLOrEmpty() )
                                 {
-                                    // Add as non-platform specific
-                                    if ( itemName.HasChar( '*' ) != -1 && itemType.IsNULLOrEmpty() )
+                                    CORE::CString itemType = curNode2->GetAttributeValue( typeAttribName );
+                                    bool itemIsADir = IsProcessingInstructionsItemADir( instructionsDir, itemName, itemType );
+
+                                    // We found an item to add to our list
+                                    if ( platformName.IsNULLOrEmpty() || platformName.Equals( allPlatformsValue, false ) )
                                     {
-                                        instructionStorage.dirExcludeList[ AllPlatforms ].push_back( itemName );
-                                        GUCEF_LOG( CORE::LOGLEVEL_BELOW_NORMAL, "Added wildcard directory exclude entry \"" + itemName + "\" based on the processing instructions for this dir" );
-                                        instructionStorage.fileExcludeList[ AllPlatforms ].push_back( itemName );
-                                        GUCEF_LOG( CORE::LOGLEVEL_BELOW_NORMAL, "Added wildcard file exclude entry \"" + itemName + "\" based on the processing instructions for this dir" );
-                                    }
-                                    else
-                                    {
-                                        if ( itemIsADir )
+                                        // Add as non-platform specific
+                                        if ( itemName.HasChar( '*' ) != -1 && itemType.IsNULLOrEmpty() )
                                         {
                                             instructionStorage.dirExcludeList[ AllPlatforms ].push_back( itemName );
-                                            GUCEF_LOG( CORE::LOGLEVEL_BELOW_NORMAL, "Added directory exclude entry \"" + itemName + "\" based on the processing instructions for this dir" );
+                                            GUCEF_LOG( CORE::LOGLEVEL_BELOW_NORMAL, "Added wildcard directory exclude entry \"" + itemName + "\" based on the processing instructions for this dir" );
+                                            instructionStorage.fileExcludeList[ AllPlatforms ].push_back( itemName );
+                                            GUCEF_LOG( CORE::LOGLEVEL_BELOW_NORMAL, "Added wildcard file exclude entry \"" + itemName + "\" based on the processing instructions for this dir" );
                                         }
                                         else
                                         {
-                                            instructionStorage.fileExcludeList[ AllPlatforms ].push_back( itemName );
-                                            GUCEF_LOG( CORE::LOGLEVEL_BELOW_NORMAL, "Added file exclude entry \"" + itemName + "\" based on the processing instructions for this dir" );
+                                            if ( itemIsADir )
+                                            {
+                                                instructionStorage.dirExcludeList[ AllPlatforms ].push_back( itemName );
+                                                GUCEF_LOG( CORE::LOGLEVEL_BELOW_NORMAL, "Added directory exclude entry \"" + itemName + "\" based on the processing instructions for this dir" );
+                                            }
+                                            else
+                                            {
+                                                instructionStorage.fileExcludeList[ AllPlatforms ].push_back( itemName );
+                                                GUCEF_LOG( CORE::LOGLEVEL_BELOW_NORMAL, "Added file exclude entry \"" + itemName + "\" based on the processing instructions for this dir" );
+                                            }
                                         }
-                                    }
-                                }
-                                else
-                                {
-                                    // Add for the given platform
-                                    if ( itemName.HasChar( '*' ) != -1 && itemType.IsNULLOrEmpty() )
-                                    {
-                                        instructionStorage.dirExcludeList[ platformName ].push_back( itemName );
-                                        GUCEF_LOG( CORE::LOGLEVEL_BELOW_NORMAL, "Added wildcard directory exclude entry \"" + itemName + "\" for platform " + platformName + " based on the processing instructions for this dir" );
-                                        instructionStorage.fileExcludeList[ platformName ].push_back( itemName );
-                                        GUCEF_LOG( CORE::LOGLEVEL_BELOW_NORMAL, "Added wildcard file exclude entry \"" + itemName + "\" for platform " + platformName + " based on the processing instructions for this dir" );
                                     }
                                     else
                                     {
-                                        if ( itemIsADir )
+                                        // Add for the given platform
+                                        if ( itemName.HasChar( '*' ) != -1 && itemType.IsNULLOrEmpty() )
                                         {
                                             instructionStorage.dirExcludeList[ platformName ].push_back( itemName );
-                                            GUCEF_LOG( CORE::LOGLEVEL_BELOW_NORMAL, "Added directory exclude entry \"" + itemName + "\" for platform " + platformName + " based on the processing instructions for this dir" );
+                                            GUCEF_LOG( CORE::LOGLEVEL_BELOW_NORMAL, "Added wildcard directory exclude entry \"" + itemName + "\" for platform " + platformName + " based on the processing instructions for this dir" );
+                                            instructionStorage.fileExcludeList[ platformName ].push_back( itemName );
+                                            GUCEF_LOG( CORE::LOGLEVEL_BELOW_NORMAL, "Added wildcard file exclude entry \"" + itemName + "\" for platform " + platformName + " based on the processing instructions for this dir" );
                                         }
                                         else
                                         {
-                                            instructionStorage.fileExcludeList[ platformName ].push_back( itemName );
-                                            GUCEF_LOG( CORE::LOGLEVEL_BELOW_NORMAL, "Added file exclude entry \"" + itemName + "\" for platform " + platformName + " based on the processing instructions for this dir" );
+                                            if ( itemIsADir )
+                                            {
+                                                instructionStorage.dirExcludeList[ platformName ].push_back( itemName );
+                                                GUCEF_LOG( CORE::LOGLEVEL_BELOW_NORMAL, "Added directory exclude entry \"" + itemName + "\" for platform " + platformName + " based on the processing instructions for this dir" );
+                                            }
+                                            else
+                                            {
+                                                instructionStorage.fileExcludeList[ platformName ].push_back( itemName );
+                                                GUCEF_LOG( CORE::LOGLEVEL_BELOW_NORMAL, "Added file exclude entry \"" + itemName + "\" for platform " + platformName + " based on the processing instructions for this dir" );
+                                            }
                                         }
                                     }
                                 }
                             }
+                            ++n;
                         }
-                        ++n;
+                        ++p;
                     }
-
                 }
                 else
                 if ( curNode->GetName() == includesNodeName )
                 {
                     // Store whether the instructions apply to a particular platform
-                    CORE::CString platformName = curNode->GetAttributeValue( platformNodeName );
+                    CORE::CString platformValue = curNode->GetAttributeValue( platformNodeName ).Lowercase();
 
-                    // Parse instructions
-                    const CORE::CDataNode* includesNode = curNode;
-                    CORE::CDataNode::const_iterator n = includesNode->ConstBegin();
-                    while ( n != includesNode->ConstEnd() )
+                    // apply 1 to n platform mappings if applicable
+                    TStringSet platforms = ResolveMultiPlatformName( platformValue );
+                    TStringSet::iterator p = platforms.begin();
+                    while ( p != platforms.end() )
                     {
-                        // Process all the items in this instruction set
-                        const CORE::CDataNode* curNode2 = (*n);
-                        if ( curNode2->GetName() == itemNodeName )
-                        {
-                            // Get the name of the item to add to the list
-                            CORE::CString itemName = curNode2->GetAttributeValue( nameAttribName );
-                            if ( !itemName.IsNULLOrEmpty() )
-                            {
-                                CORE::CString itemType = curNode2->GetAttributeValue( typeAttribName );
-                                bool itemIsADir = IsProcessingInstructionsItemADir( instructionsDir, itemName, itemType );
+                        CORE::CString platformName = (*p);
 
-                                // We found an item to add to our list
-                                if ( platformName.IsNULLOrEmpty() || platformName.Equals( allPlatformsValue, false ) )
+                        // Parse instructions
+                        const CORE::CDataNode* includesNode = curNode;
+                        CORE::CDataNode::const_iterator n = includesNode->ConstBegin();
+                        while ( n != includesNode->ConstEnd() )
+                        {
+                            // Process all the items in this instruction set
+                            const CORE::CDataNode* curNode2 = (*n);
+                            if ( curNode2->GetName() == itemNodeName )
+                            {
+                                // Get the name of the item to add to the list
+                                CORE::CString itemName = curNode2->GetAttributeValue( nameAttribName );
+                                if ( !itemName.IsNULLOrEmpty() )
                                 {
-                                    // Add as non-platform specific
-                                    if ( itemName.HasChar( '*' ) != -1 && itemType.IsNULLOrEmpty() )
+                                    CORE::CString itemType = curNode2->GetAttributeValue( typeAttribName );
+                                    bool itemIsADir = IsProcessingInstructionsItemADir( instructionsDir, itemName, itemType );
+
+                                    // We found an item to add to our list
+                                    if ( platformName.IsNULLOrEmpty() || platformName.Equals( allPlatformsValue, false ) )
                                     {
-                                        instructionStorage.dirIncludeList[ AllPlatforms ].push_back( itemName );
-                                        GUCEF_LOG( CORE::LOGLEVEL_BELOW_NORMAL, "Added wildcard directory include entry \"" + itemName + "\" based on the processing instructions for this dir" );
-                                        instructionStorage.fileIncludeList[ AllPlatforms ].push_back( itemName );
-                                        GUCEF_LOG( CORE::LOGLEVEL_BELOW_NORMAL, "Added wildcard file include entry \"" + itemName + "\" based on the processing instructions for this dir" );
-                                    }
-                                    else
-                                    if ( itemIsADir )
-                                    {
-                                        instructionStorage.dirIncludeList[ AllPlatforms ].push_back( itemName );
-                                        GUCEF_LOG( CORE::LOGLEVEL_BELOW_NORMAL, "Added directory include entry \"" + itemName + "\" based on the processing instructions for this dir" );
-                                    }
-                                    else
-                                    {
-                                        instructionStorage.fileIncludeList[ AllPlatforms ].push_back( itemName );
-                                        GUCEF_LOG( CORE::LOGLEVEL_BELOW_NORMAL, "Added file include entry \"" + itemName + "\" based on the processing instructions for this dir" );
-                                    }
-                                }
-                                else
-                                {
-                                    // Add for the given platform
-                                    if ( itemName.HasChar( '*' ) != -1 && itemType.IsNULLOrEmpty() )
-                                    {
-                                        instructionStorage.dirIncludeList[ platformName ].push_back( itemName );
-                                        GUCEF_LOG( CORE::LOGLEVEL_BELOW_NORMAL, "Added wildcard directory include entry \"" + itemName + "\" for platform " + platformName + " based on the processing instructions for this dir" );
-                                        instructionStorage.fileIncludeList[ platformName ].push_back( itemName );
-                                        GUCEF_LOG( CORE::LOGLEVEL_BELOW_NORMAL, "Added wildcard file include entry \"" + itemName + "\" for platform " + platformName + " based on the processing instructions for this dir" );
-                                    }
-                                    else
-                                    {
+                                        // Add as non-platform specific
+                                        if ( itemName.HasChar( '*' ) != -1 && itemType.IsNULLOrEmpty() )
+                                        {
+                                            instructionStorage.dirIncludeList[ AllPlatforms ].push_back( itemName );
+                                            GUCEF_LOG( CORE::LOGLEVEL_BELOW_NORMAL, "Added wildcard directory include entry \"" + itemName + "\" based on the processing instructions for this dir" );
+                                            instructionStorage.fileIncludeList[ AllPlatforms ].push_back( itemName );
+                                            GUCEF_LOG( CORE::LOGLEVEL_BELOW_NORMAL, "Added wildcard file include entry \"" + itemName + "\" based on the processing instructions for this dir" );
+                                        }
+                                        else
                                         if ( itemIsADir )
                                         {
-                                            instructionStorage.dirIncludeList[ platformName ].push_back( itemName );
-                                            GUCEF_LOG( CORE::LOGLEVEL_BELOW_NORMAL, "Added directory include entry \"" + itemName + "\" for platform " + platformName + " based on the processing instructions for this dir" );
+                                            instructionStorage.dirIncludeList[ AllPlatforms ].push_back( itemName );
+                                            GUCEF_LOG( CORE::LOGLEVEL_BELOW_NORMAL, "Added directory include entry \"" + itemName + "\" based on the processing instructions for this dir" );
                                         }
                                         else
                                         {
+                                            instructionStorage.fileIncludeList[ AllPlatforms ].push_back( itemName );
+                                            GUCEF_LOG( CORE::LOGLEVEL_BELOW_NORMAL, "Added file include entry \"" + itemName + "\" based on the processing instructions for this dir" );
+                                        }
+                                    }
+                                    else
+                                    {
+                                        // Add for the given platform
+                                        if ( itemName.HasChar( '*' ) != -1 && itemType.IsNULLOrEmpty() )
+                                        {
+                                            instructionStorage.dirIncludeList[ platformName ].push_back( itemName );
+                                            GUCEF_LOG( CORE::LOGLEVEL_BELOW_NORMAL, "Added wildcard directory include entry \"" + itemName + "\" for platform " + platformName + " based on the processing instructions for this dir" );
                                             instructionStorage.fileIncludeList[ platformName ].push_back( itemName );
-                                            GUCEF_LOG( CORE::LOGLEVEL_BELOW_NORMAL, "Added file include entry \"" + itemName + "\" for platform " + platformName + " based on the processing instructions for this dir" );
+                                            GUCEF_LOG( CORE::LOGLEVEL_BELOW_NORMAL, "Added wildcard file include entry \"" + itemName + "\" for platform " + platformName + " based on the processing instructions for this dir" );
+                                        }
+                                        else
+                                        {
+                                            if ( itemIsADir )
+                                            {
+                                                instructionStorage.dirIncludeList[ platformName ].push_back( itemName );
+                                                GUCEF_LOG( CORE::LOGLEVEL_BELOW_NORMAL, "Added directory include entry \"" + itemName + "\" for platform " + platformName + " based on the processing instructions for this dir" );
+                                            }
+                                            else
+                                            {
+                                                instructionStorage.fileIncludeList[ platformName ].push_back( itemName );
+                                                GUCEF_LOG( CORE::LOGLEVEL_BELOW_NORMAL, "Added file include entry \"" + itemName + "\" for platform " + platformName + " based on the processing instructions for this dir" );
+                                            }
                                         }
                                     }
                                 }
                             }
+                            ++n;
                         }
-                        ++n;
+                        ++p;
                     }
                 }
 
@@ -2315,9 +2332,6 @@ LocateAndProcessProjectDirsRecusively( TProjectInfo& projectInfo        ,
 {GUCEF_TRACE;
 
     GUCEF_LOG( CORE::LOGLEVEL_EVERYTHING, "Recursively processing directory for module info: " + topLevelDir );
-
-    if ( -1 != topLevelDir.HasSubstr( "pcre" ) )
-        int a=0;
 
     // Run any custom preprocessing logic thats registered
     PreprocessDir( topLevelDir );

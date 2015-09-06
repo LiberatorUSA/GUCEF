@@ -13,4 +13,11 @@
             <Define String="CEGUIBASE_EXPORTS" />
         </Preprocessor>
     </Module>
+    <Module Platform="mswin">
+        <Linker>
+            <Dependency Name="Dbghelp" />
+            <Dependency Name="Winmm" />
+        </Linker>
+    </Module>
+
 </ModuleInfoEntry>

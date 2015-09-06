@@ -1,0 +1,15 @@
+<PROJECTGENERATOR>
+    <EXCLUDES PLATFORM="All">
+        <ITEM NAME="ImageCodecModules" TYPE="DIR" />
+        <ITEM NAME="XMLParserModules" TYPE="DIR" />
+        <ITEM NAME="implementations" TYPE="DIR" />
+        <ITEM NAME="IconvStringTranscoder.cpp" TYPE="FILE" />
+        <ITEM NAME="Win32StringTranscoder.cpp" TYPE="FILE" />
+    </EXCLUDES>
+    <INCLUDES PLATFORM="mswin">
+        <ITEM NAME="Win32StringTranscoder.cpp" TYPE="FILE" />
+    </INCLUDES>
+    <INCLUDES PLATFORM="linux;android">
+        <ITEM NAME="IconvStringTranscoder.cpp" TYPE="FILE" />
+    </INCLUDES>
+</PROJECTGENERATOR>

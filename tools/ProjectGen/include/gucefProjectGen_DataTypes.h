@@ -457,6 +457,15 @@ GUCEF_PROJECTGEN_PUBLIC_CPP
 bool
 HasIndependentModuleType( const TModuleInfoMap& moduleDefs );
                       
+/*-------------------------------------------------------------------------*/
+
+// if the platform name is a multiplatform name this function will resolve it as such
+// and return the actual platforms the multiplatform name maps to. If the name is not
+// a multiplatform name the same name is returned
+GUCEF_PROJECTGEN_PUBLIC_CPP
+TStringSet
+ResolveMultiPlatformName( const CORE::CString& platformName );
+
 /*-------------------------------------------------------------------------//
 //                                                                         //
 //      NAMESPACE                                                          //

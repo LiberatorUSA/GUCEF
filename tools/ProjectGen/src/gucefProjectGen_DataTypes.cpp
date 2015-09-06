@@ -359,6 +359,31 @@ GetXmlDStoreCodec( void )
 
 /*-------------------------------------------------------------------------*/
 
+TStringSet
+ResolveMultiPlatformName( const CORE::CString& platformName )
+{GUCEF_TRACE;
+
+    TStringSet resultSet;    
+    TStringVector elements = platformName.ParseElements( ';', false );
+    TStringVector::iterator i = elements.begin();
+    while ( i != elements.end() )
+    {        
+        if ( (*i).Equals( "mswin", false ) )
+        {
+            resultSet.insert( "win32" );
+            resultSet.insert( "win64" );
+        }
+        else
+        {
+            resultSet.insert( (*i).Lowercase() );
+        }
+        ++i;
+    }
+    return resultSet;
+}
+
+/*-------------------------------------------------------------------------*/
+
 // Serialize a specific moduleInfo which is derived off of
 // the given entry. The given moduleInfo can be an independent platform
 // moduleInfo or a merged moduleInfo
@@ -1158,20 +1183,14 @@ DeserializeModuleInfo( TModuleInfoEntry& moduleInfoEntry ,
             TStringVector::iterator i = platforms.begin();
             while ( i != platforms.end() )
             {
-                // Special case handling for win32 vs win64
-                // When mswin is specified we add the platform to both win32 and win64
-                // This just makes it less effort for people to specify modules for mswin
-                if ( "mswin" == (*i) )
+                TStringSet actualPlatforms = ResolveMultiPlatformName( (*i) );
+                TStringSet::iterator n = actualPlatforms.begin();
+                while ( n != actualPlatforms.end() )
                 {
-                    GUCEF_LOG( CORE::LOGLEVEL_NORMAL, "Adding module definition for platform win32 and win64 because the deserialized info used mswin as the platform name" );
-                    SetModuleInfo( moduleInfoEntry, moduleInfoForPlatform, "win32" );
-                    SetModuleInfo( moduleInfoEntry, moduleInfoForPlatform, "win64" );
-                }
-                else
-                {
-                    GUCEF_LOG( CORE::LOGLEVEL_NORMAL, "Adding module definition for platform " + (*i) );
-                    SetModuleInfo( moduleInfoEntry, moduleInfoForPlatform, (*i) );
-                }
+                    GUCEF_LOG( CORE::LOGLEVEL_NORMAL, "Adding module definition for platform " + (*n) );
+                    SetModuleInfo( moduleInfoEntry, moduleInfoForPlatform, (*n) );
+                    ++n;
+                }                
 
                 ++i;
             }

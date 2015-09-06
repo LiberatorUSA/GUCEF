@@ -1,0 +1,25 @@
+<ModuleInfoEntry>
+    <Module Name="glew" Type="SharedLibrary" Platform="All" >
+        <Dependencies>
+            <Dependency Name="glew.Includes" />
+        </Dependencies>
+        <Preprocessor>
+            <Define String="GLEW_BUILD" />
+        </Preprocessor>
+    </Module>
+    <Module Platform="mswin">
+        <Linker>
+            <Dependency Name="opengl32" />
+        </Linker>
+    </Module>
+    <Module Platform="linux">
+        <Linker>
+            <Dependency Name="GL" />
+        </Linker>
+    </Module>
+    <Module Platform="android">
+        <Linker>
+            <Dependency Name="GLESv1_CM" />
+        </Linker>
+    </Module>
+</ModuleInfoEntry>

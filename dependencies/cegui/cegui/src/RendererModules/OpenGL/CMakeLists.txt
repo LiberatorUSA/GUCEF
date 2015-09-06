@@ -12,7 +12,6 @@
 # Configuration for module: CEGUI.RendererModule.OpenGL
 
 set( SOURCE_FILES 
-  ApplePBTextureTarget.cpp
   GeometryBufferBase.cpp
   GL3FBOTextureTarget.cpp
   GL3GeometryBuffer.cpp
@@ -20,7 +19,6 @@ set( SOURCE_FILES
   GLFBOTextureTarget.cpp
   GLGeometryBuffer.cpp
   GLRenderer.cpp
-  GLXPBTextureTarget.cpp
   RendererBase.cpp
   Shader.cpp
   ShaderManager.cpp
@@ -28,29 +26,49 @@ set( SOURCE_FILES
   Texture.cpp
   TextureTarget.cpp
   ViewportTarget.cpp
-  WGLPBTextureTarget.cpp
 )
+
+
+
+if (LINUX)
+  set( PLATFORM_SOURCE_FILES 
+    GLXPBTextureTarget.cpp
+  )
+
+  set( PLATFORM_SOURCE_INSTALL "LINUX" )
+  source_group( "Platform Source Files" FILES ${PLATFORM_SOURCE_FILES} )
+
+elseif (WIN32)
+  set( PLATFORM_SOURCE_FILES 
+    WGLPBTextureTarget.cpp
+  )
+
+  set( PLATFORM_SOURCE_INSTALL "WIN32" )
+  source_group( "Platform Source Files" FILES ${PLATFORM_SOURCE_FILES} )
+
+elseif (WIN64)
+  set( PLATFORM_SOURCE_FILES 
+    WGLPBTextureTarget.cpp
+  )
+
+  set( PLATFORM_SOURCE_INSTALL "WIN64" )
+  source_group( "Platform Source Files" FILES ${PLATFORM_SOURCE_FILES} )
+
+endif ()
 
 # Make sure the PLATFORM_HEADER_FILES variable is always defined
  set( PLATFORM_HEADER_FILES "" )
-
-# Make sure the PLATFORM_SOURCE_FILES variable is always defined
- set( PLATFORM_SOURCE_FILES "" )
 
 # For ease of use make a variable that has all files for this module
 set( ALL_FILES ${HEADER_FILES} ${SOURCE_FILES} ${PLATFORM_HEADER_FILES} ${PLATFORM_SOURCE_FILES} )
 
 set( MODULE_NAME "CEGUI.RendererModule.OpenGL" )
 add_library( ${MODULE_NAME} ${ALL_FILES} )
-add_dependencies( ${MODULE_NAME} CEGUI )
-target_link_libraries( ${MODULE_NAME} CEGUI )
+add_dependencies( ${MODULE_NAME} CEGUI glew )
+target_link_libraries( ${MODULE_NAME} CEGUI glew )
 set_property( TARGET ${MODULE_NAME} APPEND_STRING PROPERTY COMPILE_DEFINITIONS "CEGUIOPENGLRENDERER_EXPORTS" )
 
-include_directories( ../../../include )
-
-if ( OSX )
-  include_directories( ../../../../cegui/src/implementations/mac )
-endif( OSX )
+include_directories( ../../../../../glew/include ../../../include )
 
 
 

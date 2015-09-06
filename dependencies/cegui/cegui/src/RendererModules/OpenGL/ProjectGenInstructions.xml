@@ -1,0 +1,16 @@
+<PROJECTGENERATOR>
+    <EXCLUDES PLATFORM="All">
+        <ITEM NAME="ApplePBTextureTarget.cpp" TYPE="FILE" />
+        <ITEM NAME="GLXPBTextureTarget.cpp" TYPE="FILE" />
+        <ITEM NAME="WGLPBTextureTarget.cpp" TYPE="FILE" />
+    </EXCLUDES>
+    <INCLUDES PLATFORM="mswin">
+        <ITEM NAME="WGLPBTextureTarget.cpp" TYPE="FILE" />
+    </INCLUDES>
+    <INCLUDES PLATFORM="linux">
+        <ITEM NAME="GLXPBTextureTarget.cpp" TYPE="FILE" />
+    </INCLUDES>
+    <INCLUDES PLATFORM="mac">
+        <ITEM NAME="ApplePBTextureTarget.cpp" TYPE="FILE" />
+    </INCLUDES>
+</PROJECTGENERATOR>
