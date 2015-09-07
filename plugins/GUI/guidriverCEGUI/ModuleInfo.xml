@@ -1,0 +1,26 @@
+<ModuleInfoEntry>
+    <Module Name="guidriverCEGUI" Type="SharedLibrary" Platform="All">
+        <Dependencies>
+            <Dependency Name="gucefVFS" />
+            <Dependency Name="gucefINPUT" />
+            <Dependency Name="gucefGUI" />
+            <Dependency Name="gucefCORE" />
+            <Dependency Name="gucefMT" />
+            <Dependency Name="freetype" />
+            <Dependency Name="CEGUI" />
+            <Dependency Name="CEGUI.Includes" />
+        </Dependencies>
+        <Linker>
+            <Dependency Name="gucefVFS" />
+            <Dependency Name="gucefINPUT" />
+            <Dependency Name="gucefGUI" />
+            <Dependency Name="gucefCORE" />
+            <Dependency Name="gucefMT" />
+            <Dependency Name="freetype" />
+            <Dependency Name="CEGUI" />
+        </Linker>
+        <Preprocessor>
+            <Define String="GUIDRIVERCEGUI_BUILD_MODULE" />
+        </Preprocessor>
+    </Module>
+</ModuleInfoEntry>

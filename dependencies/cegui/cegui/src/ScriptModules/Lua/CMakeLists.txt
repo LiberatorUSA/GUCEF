@@ -36,9 +36,10 @@ set( ALL_FILES ${HEADER_FILES} ${SOURCE_FILES} ${PLATFORM_HEADER_FILES} ${PLATFO
 
 set( MODULE_NAME "CEGUI.ScriptModule.Lua" )
 add_library( ${MODULE_NAME} ${ALL_FILES} )
-add_dependencies( ${MODULE_NAME} CEGUI.ScriptModule.Lua.Includes )
+add_dependencies( ${MODULE_NAME} CEGUI )
+target_link_libraries( ${MODULE_NAME} CEGUI )
 
-include_directories( ../Lua support/tolua++bin )
+include_directories( ../../../include ../Lua support/tolua++bin )
 
 
 
@@ -47,7 +48,9 @@ include_directories( ../Lua support/tolua++bin )
 
 
 
-if (LINUX)
+if (ANDROID)
+GUCEF_config_lib( ${MODULE_NAME} )
+elseif (LINUX)
 GUCEF_config_lib( ${MODULE_NAME} )
 elseif (OSX)
 GUCEF_config_lib( ${MODULE_NAME} )

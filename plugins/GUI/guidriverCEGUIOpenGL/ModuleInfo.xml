@@ -1,0 +1,55 @@
+<ModuleInfoEntry>
+    <Module Name="guidriverCEGUIOpenGL" Type="SharedLibrary" Platform="All">
+        <Dependencies>
+            <Dependency Name="gucefVFS" />
+            <Dependency Name="gucefINPUT" />
+            <Dependency Name="gucefIMAGE" />
+            <Dependency Name="gucefGUI" />
+            <Dependency Name="gucefCORE" />
+            <Dependency Name="gucefMT" />
+            <Dependency Name="CEGUI" />
+            <Dependency Name="CEGUI.Includes" />
+            <Dependency Name="guidriverCEGUI" />
+        </Dependencies>
+        <Linker>
+            <Dependency Name="gucefVFS" />
+            <Dependency Name="gucefINPUT" />
+            <Dependency Name="gucefIMAGE" />
+            <Dependency Name="gucefGUI" />
+            <Dependency Name="gucefCORE" />
+            <Dependency Name="gucefMT" />
+            <Dependency Name="CEGUI" />
+            <Dependency Name="guidriverCEGUI" />
+        </Linker>
+        <Preprocessor>
+            <Define String="GUCEF_GUIDRIVERCEGUIGL_BUILD_MODULE" />
+        </Preprocessor>
+    </Module>
+    <Module Platform="mswin">
+        <Dependencies>
+            <Dependency Name="CEGUI.RendererModule.OpenGL" />
+        </Dependencies>
+        <Linker>
+            <Dependency Name="OpenGL32" />
+            <Dependency Name="CEGUI.RendererModule.OpenGL" />
+        </Linker>
+    </Module>
+    <Module Platform="linux">
+        <Dependencies>
+            <Dependency Name="CEGUI.RendererModule.OpenGL" />
+        </Dependencies>
+        <Linker>
+            <Dependency Name="GL" />
+            <Dependency Name="CEGUI.RendererModule.OpenGL" />
+        </Linker>
+    </Module>
+    <Module Platform="android">
+        <Dependencies>
+            <Dependency Name="CEGUI.RendererModule.OpenGLES" />
+        </Dependencies>
+        <Linker>
+            <Dependency Name="GLESv1_CM" />
+            <Dependency Name="CEGUI.RendererModule.OpenGLES" />
+        </Linker>
+    </Module>
+</ModuleInfoEntry>

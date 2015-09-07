@@ -1,9 +1,11 @@
 <ModuleInfoEntry>
     <Module Name="CEGUI.ScriptModule.Lua" Type="SharedLibrary" Platform="All">
         <Dependencies>
-            <Dependency Name="CEGUI.ScriptModule.Lua.Includes" />
+            <Dependency Name="CEGUI" />
+            <Dependency Name="CEGUI.Includes" />
         </Dependencies>
         <Linker>
+            <Dependency Name="CEGUI" />
         </Linker>
         <Preprocessor>
         </Preprocessor>
