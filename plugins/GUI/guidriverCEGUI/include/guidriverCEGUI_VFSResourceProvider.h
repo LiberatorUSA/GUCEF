@@ -14,11 +14,11 @@
  *
  *  You should have received a copy of the GNU Lesser General Public
  *  License along with this library; if not, write to the Free Software
- *  Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA 
+ *  Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA
  */
 
-#ifndef GUCEF_GUIDRIVERCEGUI_CGUICONTEXT_H
-#define GUCEF_GUIDRIVERCEGUI_CGUICONTEXT_H 
+#ifndef GUCEF_GUIDRIVERCEGUI_VFSRESOURCEPROVIDER_H
+#define GUCEF_GUIDRIVERCEGUI_VFSRESOURCEPROVIDER_H
 
 /*-------------------------------------------------------------------------//
 //                                                                         //
@@ -26,25 +26,17 @@
 //                                                                         //
 //-------------------------------------------------------------------------*/
 
-#ifndef GUCEF_INPUT_CINPUTCONTEXT_H
-#include "CInputContext.h"
-#define GUCEF_INPUT_CINPUTCONTEXT_H
-#endif /* GUCEF_INPUT_CINPUTCONTEXT_H ? */
+#include <map>
 
-#ifndef GUCEF_GUI_CIGUICONTEXT_H
-#include "gucefGUI_CIGUIContext.h"
-#define GUCEF_GUI_CIGUICONTEXT_H
-#endif /* GUCEF_GUI_CIGUICONTEXT_H ? */
+#ifndef _CEGUIBase_h_
+#include "CEGUI/Base.h"
+#define _CEGUIBase_h_
+#endif /* _CEGUIBase_h_ ? */
 
-#ifndef GUCEF_GUI_CGUIDRIVER_H
-#include "gucefGUI_CGUIDriver.h"
-#define GUCEF_GUI_CGUIDRIVER_H
-#endif /* GUCEF_GUI_CGUIDRIVER_H ? */
-
-#ifndef GUCEF_GUIDRIVERCEGUI_CCEGUIINPUTADAPTER_H
-#include "guidriverCEGUI_CCEGUIInputAdapter.h"
-#define GUCEF_GUIDRIVERCEGUI_CCEGUIINPUTADAPTER_H
-#endif /* GUCEF_GUIDRIVERCEGUI_CCEGUIINPUTADAPTER_H ? */
+#ifndef _CEGUIResourceProvider_h_
+#include "CEGUI/ResourceProvider.h"
+#define _CEGUIResourceProvider_h_
+#endif /* _CEGUIResourceProvider_h_ ? */
 
 #ifndef GUCEF_GUIDRIVERCEGUI_MACROS_H
 #include "guidriverCEGUI_macros.h" 
@@ -66,56 +58,74 @@ namespace GUIDRIVERCEGUI {
 //                                                                         //
 //-------------------------------------------------------------------------*/
 
-class CCEGUIDriver;
-
-/*-------------------------------------------------------------------------*/
-
-/**
- *  Implementation of the GUI context for MyGUI
- */
-class GUCEF_GUIDRIVERCEGUI_EXPORT_CPP CGUIContext : public GUI::CIGUIContext
+class GUCEF_GUIDRIVERCEGUI_EXPORT_CPP VfsResourceProvider : public ::CEGUI::ResourceProvider
 {
-    public:    
-    
-    CGUIContext( CCEGUIDriver& myGuiDriver          ,
-                 INPUT::CInputContext* inputContext );
-    
-    virtual ~CGUIContext();
-    
-    virtual GUCEF::GUI::CWidget* CreateWidget( const CString& widgetName );
-    
-    virtual void DestroyWidget( GUI::CWidget* widget );
-    
-    virtual GUCEF::GUI::CForm* CreateForm( const CString& formName );
-    
-    virtual void DestroyForm( GUI::CForm* form );   
+    public :
 
-    virtual TStringSet GetAvailableFormTypes( void );
-    
-    virtual TStringSet GetAvailableWidgetTypes( void );
-    
-    virtual GUCEF::GUI::CFormBackend* CreateFormBackend( void );
-    
-    virtual void DestroyFormBackend( GUI::CFormBackend* formBackend );
-    
-    virtual GUCEF::GUI::CGUIDriver* GetDriver( void );
-    
-    virtual TWidgetSet GetOwnedWidgets( void );
-    
-    virtual TFormSet GetOwnedForms( void );
-                               
-    private:
-    
-    CGUIContext( const CGUIContext& src );            
-    CGUIContext& operator=( const CGUIContext& src );
-    
+    VfsResourceProvider();
+
+    virtual ~VfsResourceProvider();
+
+    /*!
+    \brief
+        Set the directory associated with a given resource group identifier.
+
+    \param resourceGroup
+        The resource group identifier whose directory is to be set.
+
+    \param directory
+        The directory to be associated with resource group identifier
+        \a resourceGroup
+
+    \return
+        Nothing.
+    */
+    virtual void setResourceGroupDirectory( const CEGUI::String& resourceGroup, const CEGUI::String& directory );
+
+    /*!
+    \brief
+        Return the directory associated with the specified resource group
+        identifier.
+
+    \param resourceGroup
+        The resource group identifier for which the associated directory is to
+        be returned.
+
+    \return
+        String object describing the directory currently associated with resource
+        group identifier \a resourceGroup.
+
+    \note
+        This member is not defined as being const because it may cause
+        creation of an 'empty' directory specification for the resourceGroup
+        if the resourceGroup has not previously been accessed.
+    */
+    virtual const CEGUI::String& getResourceGroupDirectory( const CEGUI::String& resourceGroup );
+
+    /*!
+    \brief
+        clears any currently set directory for the specified resource group
+        identifier.
+
+    \param resourceGroup
+        The resource group identifier for which the associated directory is to
+        be cleared.
+    */
+    virtual void clearResourceGroupDirectory( const CEGUI::String& resourceGroup );
+
+    virtual void loadRawDataContainer( const CEGUI::String& filename, CEGUI::RawDataContainer& output, const CEGUI::String& resourceGroup );
+
+    virtual void unloadRawDataContainer( CEGUI::RawDataContainer& data );
+
+    virtual size_t getResourceGroupFileNames( std::vector<CEGUI::String>& out_vec ,
+                                              const CEGUI::String& file_pattern   ,
+                                              const CEGUI::String& resource_group );
+
     private:
 
-    CCEGUIDriver* m_driver;
-    TWidgetSet m_widgetSet;
-    TFormSet m_formSet;
-    INPUT::CInputContext* m_inputContext;
-    CCEGUIInputAdapter m_inputAdapter;
+    typedef std::map< CEGUI::String, CEGUI::String >    TCEStringMap;
+
+    TCEStringMap m_groupMap;
 };
 
 /*-------------------------------------------------------------------------//
@@ -124,12 +134,12 @@ class GUCEF_GUIDRIVERCEGUI_EXPORT_CPP CGUIContext : public GUI::CIGUIContext
 //                                                                         //
 //-------------------------------------------------------------------------*/
 
-} /* namespace MYGUI */
-} /* namespace GUCEF */
+}; /* namespace GUIDRIVERCEGUI */
+}; /* namespace GUCEF */
 
 /*-------------------------------------------------------------------------*/
 
-#endif /* GUCEF_GUIDRIVERCEGUI_CGUICONTEXT_H ? */
+#endif /* GUCEF_GUIDRIVERCEGUIGL_CGUIDRIVERGL_H ? */
 
 /*-------------------------------------------------------------------------//
 //                                                                         //
@@ -137,7 +147,7 @@ class GUCEF_GUIDRIVERCEGUI_EXPORT_CPP CGUIContext : public GUI::CIGUIContext
 //                                                                         //
 //-------------------------------------------------------------------------//
 
-- 08-04-2007 :
-        - Initial implementation
+- 18-08-2010 :
+        - Dinand: Initial implementation
 
 ---------------------------------------------------------------------------*/

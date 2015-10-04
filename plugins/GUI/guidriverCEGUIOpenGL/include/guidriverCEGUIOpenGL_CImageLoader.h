@@ -26,11 +26,6 @@
 //                                                                         //
 //-------------------------------------------------------------------------*/
 
-#ifndef __MYGUI_OPENGL_IMAGE_LOADER_H__
-#include "MyGUI_OpenGLImageLoader.h"
-#define __MYGUI_OPENGL_IMAGE_LOADER_H__
-#endif /* __MYGUI_OPENGL_IMAGE_LOADER_H__ ? */
-
 #ifndef GUCEF_IMAGE_CIMAGE_H
 #include "gucefIMAGE_CImage.h"
 #define GUCEF_IMAGE_CIMAGE_H

@@ -1,5 +1,5 @@
 /*
- *  guidriverCEGUIOpenGL: glue module for the MyGUI GUI backend using OpenGL
+ *  guidriverCEGUI: glue module for the CEGUI GUI backend
  *  Copyright (C) 2002 - 2008.  Dinand Vanvelzen
  *
  *  This library is free software; you can redistribute it and/or
@@ -17,8 +17,8 @@
  *  Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA
  */
 
-#ifndef GUCEF_GUIDRIVERCEGUIGL_CGUICONTEXTGL_H
-#define GUCEF_GUIDRIVERCEGUIGL_CGUICONTEXTGL_H
+#ifndef GUCEF_GUIDRIVERCEGUI_IMAGECODECADAPTER_H
+#define GUCEF_GUIDRIVERCEGUI_IMAGECODECADAPTER_H
 
 /*-------------------------------------------------------------------------//
 //                                                                         //
@@ -26,20 +26,20 @@
 //                                                                         //
 //-------------------------------------------------------------------------*/
 
-#ifndef GUCEF_CORE_COBSERVINGNOTIFIER_H
-#include "CObservingNotifier.h"
-#define GUCEF_CORE_COBSERVINGNOTIFIER_H
-#endif /* GUCEF_CORE_COBSERVINGNOTIFIER_H ? */
+#ifndef _CEGUIBase_h_
+#include "CEGUI/Base.h"
+#define _CEGUIBase_h_
+#endif /* _CEGUIBase_h_ ? */
 
-#ifndef GUCEF_GUI_CWINDOWCONTEXT_H
-#include "gucefGUI_CWindowContext.h"
-#define GUCEF_GUI_CWINDOWCONTEXT_H
-#endif /* GUCEF_GUI_CWINDOWCONTEXT_H ? */
+#ifndef _CEGUIImageCodec_h_
+#include "CEGUI/ImageCodec.h"
+#define _CEGUIImageCodec_h_
+#endif /* _CEGUIImageCodec_h_ ? */
 
-#ifndef GUCEF_GUIDRIVERCEGUIGL_MACROS_H
-#include "guidriverCEGUIOpenGL_macros.h"
-#define GUCEF_GUIDRIVERCEGUIGL_MACROS_H
-#endif /* GUCEF_GUIDRIVERCEGUIGL_MACROS_H ? */
+#ifndef GUCEF_GUIDRIVERCEGUI_MACROS_H
+#include "guidriverCEGUI_macros.h" 
+#define GUCEF_GUIDRIVERCEGUI_MACROS_H
+#endif /* GUCEF_GUIDRIVERCEGUI_MACROS_H ? */
 
 /*-------------------------------------------------------------------------//
 //                                                                         //
@@ -48,7 +48,7 @@
 //-------------------------------------------------------------------------*/
 
 namespace GUCEF {
-namespace GUIDRIVERCEGUIGL {
+namespace GUIDRIVERCEGUI {
 
 /*-------------------------------------------------------------------------//
 //                                                                         //
@@ -56,42 +56,55 @@ namespace GUIDRIVERCEGUIGL {
 //                                                                         //
 //-------------------------------------------------------------------------*/
 
-class CGUIDriverGL;
-
-/*-------------------------------------------------------------------------*/
-
-/**
- *  Implementation of the GUI context for the MyGUI & OpenGL combo
- */
-class GUCEF_GUIDRIVERCEGUIGL_EXPORT_CPP CGUIContextGL : public GUIDRIVERCEGUI::CGUIContext ,
-                                               public CORE::CObserver
+class GUCEF_GUIDRIVERCEGUI_EXPORT_CPP ImageCodecAdapter : public ::CEGUI::ImageCodec
 {
-    public:
+    public :
 
-    CGUIContextGL( CGUIDriverGL& guiDriver                   ,
-                   GUIDRIVERCEGUI::OpenGLRenderManager* renderManager ,
-                   GUI::TWindowContextPtr windowContext      ,
-                   INPUT::CInputContext* inputContext        );
+    ImageCodecAdapter();
 
-    virtual ~CGUIContextGL();
+    virtual ~ImageCodecAdapter();
 
-    virtual const CORE::CString& GetClassTypeName( void ) const;
+    /*!
+      \brief 
+      Return the name of the image codec object 
+      
+      Return the name of the image codec 
 
-    protected:
+      \return a string containing image codec name 
+    */
+    const CEGUI::String& getIdentifierString() const;
 
-    virtual void OnNotify( CORE::CNotifier* notifier          ,
-                           const CORE::CEvent& eventID        ,
-                           CORE::CICloneable* evenData = NULL );
+    /*! 
+      \brief
+      Return the list of image file format supported 
+
+      Return a list of space separated image format supported by this
+      codec
+
+      \return 
+      list of supported image file format separated with space 
+    */
+    const CEGUI::String& getSupportedFormat() const;
+    
+    /*!
+      \brief 
+      Load an image from a memory buffer 
+
+      \param data the image data 
+
+      \param result the texture to use for storing the image data 
+     
+      \return result on success or 0 if the load failed 
+    */
+    virtual CEGUI::Texture* load( const CEGUI::RawDataContainer& data, CEGUI::Texture* result );
+
+    static bool TryConvertPixelFormat( IMAGE::TPixelStorageFormat pixelFormat , 
+                                       CORE::UInt32 channelSize               , 
+                                       CEGUI::Texture::PixelFormat& outFormat );
 
     private:
 
-    CGUIContextGL( const CGUIContextGL& src );
-    CGUIContextGL& operator=( const CGUIContextGL& src );
-
-    private:
-
-    GUIDRIVERCEGUI::OpenGLRenderManager* m_renderManager;
-    GUI::TWindowContextPtr m_windowContext;
+    CEGUI::String m_codecName;
 };
 
 /*-------------------------------------------------------------------------//
@@ -100,12 +113,12 @@ class GUCEF_GUIDRIVERCEGUIGL_EXPORT_CPP CGUIContextGL : public GUIDRIVERCEGUI::C
 //                                                                         //
 //-------------------------------------------------------------------------*/
 
-} /* namespace MYGUIGL */
-} /* namespace GUCEF */
+}; /* namespace GUIDRIVERCEGUI */
+}; /* namespace GUCEF */
 
 /*-------------------------------------------------------------------------*/
 
-#endif /* GUCEF_GUIDRIVERCEGUIGL_CGUICONTEXTGL_H ? */
+#endif /* GUCEF_GUIDRIVERCEGUI_IMAGECODECADAPTER_H ? */
 
 /*-------------------------------------------------------------------------//
 //                                                                         //
@@ -113,7 +126,7 @@ class GUCEF_GUIDRIVERCEGUIGL_EXPORT_CPP CGUIContextGL : public GUIDRIVERCEGUI::C
 //                                                                         //
 //-------------------------------------------------------------------------//
 
-- 08-04-2007 :
-        - Initial implementation
+- 18-08-2010 :
+        - Dinand: Initial implementation
 
 ---------------------------------------------------------------------------*/

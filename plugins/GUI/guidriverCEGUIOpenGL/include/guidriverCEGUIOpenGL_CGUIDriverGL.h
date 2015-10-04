@@ -26,16 +26,6 @@
 //                                                                         //
 //-------------------------------------------------------------------------*/
 
-#ifndef __MYGUI_H__
-#include "MyGUI.h"
-#define __MYGUI_H__
-#endif /* __MYGUI_H__ ? */
-
-#ifndef __MYGUI_OPENGL_RENDER_MANAGER_H__
-#include "MyGUI_OpenGLRenderManager.h"
-#define __MYGUI_OPENGL_RENDER_MANAGER_H__
-#endif /* __MYGUI_OPENGL_RENDER_MANAGER_H__ ? */
-
 #ifndef GUCEF_CORE_COBSERVINGNOTIFIER_H
 #include "CObservingNotifier.h"
 #define GUCEF_CORE_COBSERVINGNOTIFIER_H

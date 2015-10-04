@@ -41,15 +41,15 @@ set( HEADER_FILES
   include/guidriverCEGUI_CTabContentPaneImp.h
   include/guidriverCEGUI_CTabControlImp.h
   include/guidriverCEGUI_CTreeviewImp.h
-  include/guidriverCEGUI_CVFSHandleToMyGuiDataStreamAdapter.h
   include/guidriverCEGUI_CVFSInfoProvider.h
   include/guidriverCEGUI_CWidgetImp.h
   include/guidriverCEGUI_CWindowImp.h
   include/guidriverCEGUI_ETypes.h
+  include/guidriverCEGUI_ImageCodecAdapter.h
   include/guidriverCEGUI_macros.h
   include/guidriverCEGUI_pluginAPI.h
+  include/guidriverCEGUI_VFSResourceProvider.h
   include/guidriverCEGUI_widgets.h
-  include/MyGUI_LastHeader.h
 )
 
 set( SOURCE_FILES 
@@ -85,7 +85,9 @@ set( SOURCE_FILES
   src/guidriverCEGUI_CVFSInfoProvider.cpp
   src/guidriverCEGUI_CWidgetImp.cpp
   src/guidriverCEGUI_CWindowImp.cpp
+  src/guidriverCEGUI_ImageCodecAdapter.cpp
   src/guidriverCEGUI_pluginAPI.cpp
+  src/guidriverCEGUI_VFSResourceProvider.cpp
   src/guidriverCEGUI_widgets.cpp
 )
 

@@ -68,6 +68,13 @@ class GUCEF_CORE_PUBLIC_CPP CDynamicBufferAccess : public CIOAccess
                               const Int32 bytesToRead = -1  );
 
     /**
+     *  Shortcut for creating a linked dynamic buffer with IO access.
+     *  Uses DynamicBuffer::LinkTo
+     */
+    void LinkTo( const void* externalBuffer ,
+                 UInt32 bufferSize          );
+
+    /**
      *      open the resource for I/O
      */
     virtual void Open( void );

@@ -328,6 +328,26 @@ CImage::Clear( void )
 
 /*-------------------------------------------------------------------------*/
 
+bool
+CImage::TryGetPixelMap( const UInt32 frameIndex /* = 0 */  ,
+                        const UInt32 mipMapLevel /* = 0 */ ,
+                        TPixelMapPtr& pixelMap             ) const
+{GUCEF_TRACE;
+
+    if ( m_frameList.size() > frameIndex )
+    {
+        const TMipMapList& mipmapList = m_frameList[ frameIndex ];
+        if ( mipmapList.size() > mipMapLevel )
+        {
+            pixelMap = mipmapList[ mipMapLevel ];
+            return true;
+        }
+    }
+    return false;
+}
+
+/*-------------------------------------------------------------------------*/
+
 TPixelMapPtr
 CImage::GetPixelMap( const UInt32 frameIndex /* = 0 */  ,
                      const UInt32 mipMapLevel /* = 0 */ ) const

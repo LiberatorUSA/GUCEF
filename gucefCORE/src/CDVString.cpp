@@ -205,6 +205,25 @@ CString::operator=( const CString &src )
 
 /*-------------------------------------------------------------------------*/
 
+CString& 
+CString::operator=( const std::string& src )
+{GUCEF_TRACE;
+
+    delete []m_string;
+    m_string = NULL;
+    m_length = src.size();
+
+    if ( m_length > 0 )
+    {
+        m_string = new char[ m_length+1 ];
+        assert( m_string );
+        memcpy( m_string, src.c_str(), m_length+1 );
+    }
+    return *this;    
+}
+
+/*-------------------------------------------------------------------------*/
+
 CString&
 CString::operator=( const char *src )
 {GUCEF_TRACE;

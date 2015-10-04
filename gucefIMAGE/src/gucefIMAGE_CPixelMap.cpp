@@ -25,6 +25,7 @@
 
 #include <string.h> /* <- for memset() */
 #include <assert.h>
+#include <math.h>
 
 #ifndef GUCEF_CORE_CTRACER_H
 #include "CTracer.h"
@@ -342,7 +343,7 @@ CPixelMap::ApplyMaskColor( Float32 r ,
                            Float32 b )
 {GUCEF_TRACE;
 
-    ConvertPixelStorageFormatTo( PSF_RGBA );
+//    ConvertPixelStorageFormatTo( PSF_RGBA );
     
     assert( 0 ); // @TODO makeme
     return false;
@@ -386,26 +387,759 @@ CPixelMap::RelinquishPixelDataOwnership( void )
 
 /*--------------------------------------------------------------------------*/
 
-void
-CPixelMap::ConvertPixelComponentDataTypeTo( const TBuildinDataType pixelComponentDataType )
-{GUCEF_TRACE;
+template< typename T >
+bool
+CPixelMap::ConvertFormatToImp( T* pixelMapData                               ,
+                               const TPixelStorageFormat pixelStorageFormat  , 
+                               const TBuildinDataType pixelComponentDataType ,
+                               TPixelMapPtr& newMap                          )
+{
+    // create new pixelmap with enough space
+    newMap = new CPixelMap( NULL, m_widthInPixels, m_heightInPixels, pixelStorageFormat, pixelComponentDataType );
+    
+    UInt32 pixelCount = GetPixelCount();
+    UInt32 channelCount = GetNumberOfChannelsPerPixel();
 
-    if ( m_pixelComponentDataType != pixelComponentDataType )
-    {
-        assert( 0 ); // @TODO makeme    
-    }
+    switch ( m_pixelStorageFormat )
+    {   
+        case PSF_BGR:
+        {
+            switch ( pixelStorageFormat )
+            {
+                case PSF_RGB:
+                {
+                    // copy segments and alter/supplement
+                    for ( UInt32 i=0; i<pixelCount; ++i )
+                    {                            
+                        T* orgPixelData = pixelMapData+(i*channelCount);                        
+                        T pixelData[ 3 ] = { orgPixelData[ 2 ], orgPixelData[ 1 ], orgPixelData[ 0 ] };
+
+                        // Assign new pixel value and convert data type from T to its type
+                        newMap->AssignToPixel< T >( i, pixelData );
+                    }
+                    return true;
+                }
+                case PSF_RGBA:
+                {
+                    // copy segments and alter/supplement
+                    for ( UInt32 i=0; i<pixelCount; ++i )
+                    {                            
+                        T* orgPixelData = pixelMapData+(i*channelCount);                        
+                        T pixelData[ 4 ] = { orgPixelData[ 2 ], orgPixelData[ 1 ], orgPixelData[ 0 ], 1 }; // fully opaque
+
+                        // Assign new pixel value and convert data type from T to its type
+                        newMap->AssignToPixel< T >( i, pixelData );
+                    }
+                    return true;
+                }
+                case PSF_BGRA:
+                {
+                    // copy segments and alter/supplement
+                    for ( UInt32 i=0; i<pixelCount; ++i )
+                    {                            
+                        T* orgPixelData = pixelMapData+(i*channelCount);                        
+                        T pixelData[ 4 ] = { orgPixelData[ 0 ], orgPixelData[ 1 ], orgPixelData[ 2 ], 1 };  // fully opaque
+
+                        // Assign new pixel value and convert data type from T to its type
+                        newMap->AssignToPixel< T >( i, pixelData );
+                    }
+                    return true;
+                }
+                case PSF_SINGLE_CHANNEL_RED:
+                {
+                    // copy segments and alter/supplement
+                    for ( UInt32 i=0; i<pixelCount; ++i )
+                    {                            
+                        T* orgPixelData = pixelMapData+(i*channelCount);                        
+                        T pixelData[ 1 ] = { orgPixelData[ 2 ] };
+
+                        // Assign new pixel value and convert data type from T to its type
+                        newMap->AssignToPixel< T >( i, pixelData );
+                    }
+                    return true;
+                }
+                case PSF_SINGLE_CHANNEL_GREEN:
+                {
+                    // copy segments and alter/supplement
+                    for ( UInt32 i=0; i<pixelCount; ++i )
+                    {                            
+                        T* orgPixelData = pixelMapData+(i*channelCount);                        
+                        T pixelData[ 1 ] = { orgPixelData[ 1 ] };
+
+                        // Assign new pixel value and convert data type from T to its type
+                        newMap->AssignToPixel< T >( i, pixelData );
+                    }
+                    return true;
+                }
+                case PSF_SINGLE_CHANNEL_BLUE:
+                {
+                    // copy segments and alter/supplement
+                    for ( UInt32 i=0; i<pixelCount; ++i )
+                    {                            
+                        T* orgPixelData = pixelMapData+(i*channelCount);                        
+                        T pixelData[ 1 ] = { orgPixelData[ 0 ] };
+
+                        // Assign new pixel value and convert data type from T to its type
+                        newMap->AssignToPixel< T >( i, pixelData );
+                    }
+                    return true;
+                }         
+                case PSF_SINGLE_CHANNEL_STD_LUMINANCE:
+                {
+                    // copy segments and alter/supplement
+                    for ( UInt32 i=0; i<pixelCount; ++i )
+                    {                            
+                        T* orgPixelData = pixelMapData+(i*channelCount);
+                        
+                        // Luminance (standard for certain colour spaces): (0.2126*R + 0.7152*G + 0.0722*B) 
+                        CORE::Float64 luminance = ( 0.0722f * orgPixelData[ 0 ] ) + ( 0.7152f * orgPixelData[ 1 ] ) + ( 0.2126f * orgPixelData[ 2 ] );                      
+                        T pixelData[ 1 ] = { (T) round( luminance ) };
+
+                        // Assign new pixel value and convert data type from T to its type
+                        newMap->AssignToPixel< T >( i, pixelData );
+                    }
+                    return true;
+                }
+                case PSF_SINGLE_CHANNEL_P1_LUMINANCE:
+                {
+                    // copy segments and alter/supplement
+                    for ( UInt32 i=0; i<pixelCount; ++i )
+                    {                            
+                        T* orgPixelData = pixelMapData+(i*channelCount);
+                        
+                        // Luminance (perceived option 1): (0.299*R + 0.587*G + 0.114*B)                       
+                        CORE::Float64 luminance = ( 0.114f * orgPixelData[ 0 ] ) + ( 0.587f * orgPixelData[ 1 ] ) + ( 0.299f * orgPixelData[ 2 ] );
+                        T pixelData[ 1 ] = { (T) round( luminance ) };
+
+                        // Assign new pixel value and convert data type from T to its type
+                        newMap->AssignToPixel< T >( i, pixelData );
+                    }
+                    return true;
+                }
+                case PSF_SINGLE_CHANNEL_P2_LUMINANCE:
+                {
+                    // copy segments and alter/supplement
+                    for ( UInt32 i=0; i<pixelCount; ++i )
+                    {                            
+                        T* orgPixelData = pixelMapData+(i*channelCount);
+                        
+                        // Luminance (perceived option 1): sqrt( 0.299*R^2 + 0.587*G^2 + 0.114*B^2 )                      
+                        CORE::Float64 luminance = sqrt( ( 0.114f * pow( orgPixelData[ 0 ], 2 ) ) + ( 0.587f * pow( orgPixelData[ 1 ], 2 ) ) + ( 0.299f * pow( orgPixelData[ 2 ], 2 ) ) );
+                        T pixelData[ 1 ] = { (T) round( luminance ) };
+
+                        // Assign new pixel value and convert data type from T to its type
+                        newMap->AssignToPixel< T >( i, pixelData );
+                    }
+                    return true;
+                }
+            }
+            break;
+        }
+        case PSF_BGRA:
+        {
+            switch ( pixelStorageFormat )
+            {
+                case PSF_RGB:
+                {
+                    // copy segments and alter/supplement
+                    for ( UInt32 i=0; i<pixelCount; ++i )
+                    {                            
+                        T* orgPixelData = pixelMapData+(i*channelCount);                        
+                        T pixelData[ 3 ] = { orgPixelData[ 2 ], orgPixelData[ 1 ], orgPixelData[ 0 ] };
+
+                        // Assign new pixel value and convert data type from T to its type
+                        newMap->AssignToPixel< T >( i, pixelData );
+                    }
+                    return true;
+                }
+                case PSF_RGBA:
+                {
+                    // copy segments and alter/supplement
+                    for ( UInt32 i=0; i<pixelCount; ++i )
+                    {                            
+                        T* orgPixelData = pixelMapData+(i*channelCount);                        
+                        T pixelData[ 4 ] = { orgPixelData[ 2 ], orgPixelData[ 1 ], orgPixelData[ 0 ], orgPixelData[ 3 ] };
+
+                        // Assign new pixel value and convert data type from T to its type
+                        newMap->AssignToPixel< T >( i, pixelData );
+                    }
+                    return true;
+                }
+                case PSF_BGR:
+                {
+                    // copy segments and alter/supplement
+                    for ( UInt32 i=0; i<pixelCount; ++i )
+                    {                            
+                        T* orgPixelData = pixelMapData+(i*channelCount);                        
+                        T pixelData[ 3 ] = { orgPixelData[ 0 ], orgPixelData[ 1 ], orgPixelData[ 2 ] };
+
+                        // Assign new pixel value and convert data type from T to its type
+                        newMap->AssignToPixel< T >( i, pixelData );
+                    }
+                    return true;
+                }
+                case PSF_SINGLE_CHANNEL_RED:
+                {
+                    // copy segments and alter/supplement
+                    for ( UInt32 i=0; i<pixelCount; ++i )
+                    {                            
+                        T* orgPixelData = pixelMapData+(i*channelCount);                        
+                        T pixelData[ 1 ] = { orgPixelData[ 2 ] };
+
+                        // Assign new pixel value and convert data type from T to its type
+                        newMap->AssignToPixel< T >( i, pixelData );
+                    }
+                    return true;
+                }
+                case PSF_SINGLE_CHANNEL_GREEN:
+                {
+                    // copy segments and alter/supplement
+                    for ( UInt32 i=0; i<pixelCount; ++i )
+                    {                            
+                        T* orgPixelData = pixelMapData+(i*channelCount);                        
+                        T pixelData[ 1 ] = { orgPixelData[ 1 ] };
+
+                        // Assign new pixel value and convert data type from T to its type
+                        newMap->AssignToPixel< T >( i, pixelData );
+                    }
+                    return true;
+                }
+                case PSF_SINGLE_CHANNEL_BLUE:
+                {
+                    // copy segments and alter/supplement
+                    for ( UInt32 i=0; i<pixelCount; ++i )
+                    {                            
+                        T* orgPixelData = pixelMapData+(i*channelCount);                        
+                        T pixelData[ 1 ] = { orgPixelData[ 0 ] };
+
+                        // Assign new pixel value and convert data type from T to its type
+                        newMap->AssignToPixel< T >( i, pixelData );
+                    }
+                    return true;
+                }         
+                case PSF_SINGLE_CHANNEL_ALPHA:
+                {
+                    // copy segments and alter/supplement
+                    for ( UInt32 i=0; i<pixelCount; ++i )
+                    {                            
+                        T* orgPixelData = pixelMapData+(i*channelCount);                        
+                        T pixelData[ 1 ] = { orgPixelData[ 3 ] };
+
+                        // Assign new pixel value and convert data type from T to its type
+                        newMap->AssignToPixel< T >( i, pixelData );
+                    }
+                    return true;
+                }
+                case PSF_SINGLE_CHANNEL_STD_LUMINANCE:
+                {
+                    // copy segments and alter/supplement
+                    for ( UInt32 i=0; i<pixelCount; ++i )
+                    {                            
+                        T* orgPixelData = pixelMapData+(i*channelCount);
+                        
+                        // Luminance (standard for certain colour spaces): (0.2126*R + 0.7152*G + 0.0722*B)                        
+                        CORE::Float64 luminance = ( 0.0722f * orgPixelData[ 0 ] ) + ( 0.7152f * orgPixelData[ 1 ] ) + ( 0.2126f * orgPixelData[ 2 ] );
+                        T pixelData[ 1 ] = { (T) round( luminance ) };
+
+                        // Assign new pixel value and convert data type from T to its type
+                        newMap->AssignToPixel< T >( i, pixelData );
+                    }
+                    return true;
+                }
+                case PSF_SINGLE_CHANNEL_P1_LUMINANCE:
+                {
+                    // copy segments and alter/supplement
+                    for ( UInt32 i=0; i<pixelCount; ++i )
+                    {                            
+                        T* orgPixelData = pixelMapData+(i*channelCount);
+                        
+                        // Luminance (perceived option 1): (0.299*R + 0.587*G + 0.114*B)                       
+                        CORE::Float64 luminance = ( 0.114f * orgPixelData[ 0 ] ) + ( 0.587f * orgPixelData[ 1 ] ) + ( 0.299f * orgPixelData[ 2 ] );
+                        T pixelData[ 1 ] { (T) round( luminance ) };
+
+                        // Assign new pixel value and convert data type from T to its type
+                        newMap->AssignToPixel< T >( i, pixelData );
+                    }
+                    return true;
+                }
+                case PSF_SINGLE_CHANNEL_P2_LUMINANCE:
+                {
+                    // copy segments and alter/supplement
+                    for ( UInt32 i=0; i<pixelCount; ++i )
+                    {                            
+                        T* orgPixelData = pixelMapData+(i*channelCount);
+                        
+                        // Luminance (perceived option 1): sqrt( 0.299*R^2 + 0.587*G^2 + 0.114*B^2 )                      
+                        CORE::Float64 luminance = sqrt( ( 0.114f * pow( orgPixelData[ 0 ], 2 ) ) + ( 0.587f * pow( orgPixelData[ 1 ], 2 ) ) + ( 0.299f * pow( orgPixelData[ 2 ], 2 ) ) );
+                        T pixelData[ 1 ] = { (T) round( luminance ) };
+
+                        // Assign new pixel value and convert data type from T to its type
+                        newMap->AssignToPixel< T >( i, pixelData );
+                    }
+                    return true;
+                }
+            }
+            break;
+        }
+        case PSF_RGB:
+        {
+            switch ( pixelStorageFormat )
+            {
+                case PSF_BGR:
+                {
+                    // copy segments and alter/supplement
+                    for ( UInt32 i=0; i<pixelCount; ++i )
+                    {                            
+                        T* orgPixelData = pixelMapData+(i*channelCount);                        
+                        T pixelData[ 3 ] = { orgPixelData[ 2 ], orgPixelData[ 1 ], orgPixelData[ 0 ] };
+
+                        // Assign new pixel value and convert data type from T to its type
+                        newMap->AssignToPixel< T >( i, pixelData );
+                    }
+                    return true;
+                }
+                case PSF_BGRA:
+                {
+                    // copy segments and alter/supplement
+                    for ( UInt32 i=0; i<pixelCount; ++i )
+                    {                            
+                        T* orgPixelData = pixelMapData+(i*channelCount);                        
+                        T pixelData[ 4 ] = { orgPixelData[ 2 ], orgPixelData[ 1 ], orgPixelData[ 0 ], 0 }; // fully opaque
+
+                        // Assign new pixel value and convert data type from T to its type
+                        newMap->AssignToPixel< T >( i, pixelData );
+                    }
+                    return true;
+                }
+                case PSF_RGBA:
+                {
+                    // copy segments and alter/supplement
+                    for ( UInt32 i=0; i<pixelCount; ++i )
+                    {                            
+                        T* orgPixelData = pixelMapData+(i*channelCount);                        
+                        T pixelData[ 4 ] = { orgPixelData[ 0 ], orgPixelData[ 1 ], orgPixelData[ 2 ], 0 };  // fully opaque
+
+                        // Assign new pixel value and convert data type from T to its type
+                        newMap->AssignToPixel< T >( i, pixelData );
+                    }
+                    return true;
+                }
+                case PSF_SINGLE_CHANNEL_RED:
+                {
+                    // copy segments and alter/supplement
+                    for ( UInt32 i=0; i<pixelCount; ++i )
+                    {                            
+                        T* orgPixelData = pixelMapData+(i*channelCount);                        
+                        T pixelData[ 1 ] = { orgPixelData[ 0 ] };
+
+                        // Assign new pixel value and convert data type from T to its type
+                        newMap->AssignToPixel< T >( i, pixelData );
+                    }
+                    return true;
+                }
+                case PSF_SINGLE_CHANNEL_GREEN:
+                {
+                    // copy segments and alter/supplement
+                    for ( UInt32 i=0; i<pixelCount; ++i )
+                    {                            
+                        T* orgPixelData = pixelMapData+(i*channelCount);                        
+                        T pixelData[ 1 ] = { orgPixelData[ 1 ] };
+
+                        // Assign new pixel value and convert data type from T to its type
+                        newMap->AssignToPixel< T >( i, pixelData );
+                    }
+                    return true;
+                }
+                case PSF_SINGLE_CHANNEL_BLUE:
+                {
+                    // copy segments and alter/supplement
+                    for ( UInt32 i=0; i<pixelCount; ++i )
+                    {                            
+                        T* orgPixelData = pixelMapData+(i*channelCount);                        
+                        T pixelData[ 1 ] = { orgPixelData[ 2 ] };
+
+                        // Assign new pixel value and convert data type from T to its type
+                        newMap->AssignToPixel< T >( i, pixelData );
+                    }
+                    return true;
+                }         
+                case PSF_SINGLE_CHANNEL_STD_LUMINANCE:
+                {
+                    // copy segments and alter/supplement
+                    for ( UInt32 i=0; i<pixelCount; ++i )
+                    {                            
+                        T* orgPixelData = pixelMapData+(i*channelCount);
+                        
+                        // Luminance (standard for certain colour spaces): (0.2126*R + 0.7152*G + 0.0722*B)                        
+                        CORE::Float64 luminance = ( 0.0722f * orgPixelData[ 2 ] ) + ( 0.7152f * orgPixelData[ 1 ] ) + ( 0.2126f * orgPixelData[ 0 ] );
+                        T pixelData[ 1 ] = { (T) round( luminance ) };
+
+                        // Assign new pixel value and convert data type from T to its type
+                        newMap->AssignToPixel< T >( i, pixelData );
+                    }
+                    return true;
+                }
+                case PSF_SINGLE_CHANNEL_P1_LUMINANCE:
+                {
+                    // copy segments and alter/supplement
+                    for ( UInt32 i=0; i<pixelCount; ++i )
+                    {                            
+                        T* orgPixelData = pixelMapData+(i*channelCount);
+                        
+                        // Luminance (perceived option 1): (0.299*R + 0.587*G + 0.114*B)                       
+                        CORE::Float64 luminance = ( 0.114f * orgPixelData[ 2 ] ) + ( 0.587f * orgPixelData[ 1 ] ) + ( 0.299f * orgPixelData[ 0 ] );
+                        T pixelData[ 1 ] = { (T) round( luminance ) };
+
+                        // Assign new pixel value and convert data type from T to its type
+                        newMap->AssignToPixel< T >( i, pixelData );
+                    }
+                    return true;
+                }
+                case PSF_SINGLE_CHANNEL_P2_LUMINANCE:
+                {
+                    // copy segments and alter/supplement
+                    for ( UInt32 i=0; i<pixelCount; ++i )
+                    {                            
+                        T* orgPixelData = pixelMapData+(i*channelCount);
+                        
+                        // Luminance (perceived option 1): sqrt( 0.299*R^2 + 0.587*G^2 + 0.114*B^2 )                      
+                        CORE::Float64 luminance = sqrt( ( 0.114f * pow( orgPixelData[ 2 ], 2 ) ) + ( 0.587f * pow( orgPixelData[ 1 ], 2 ) ) + ( 0.299f * pow( orgPixelData[ 0 ], 2 ) ) );
+                        T pixelData[ 1 ] = { (T) round( luminance ) };
+
+                        // Assign new pixel value and convert data type from T to its type
+                        newMap->AssignToPixel< T >( i, pixelData );
+                    }
+                    return true;
+                }
+            }
+            break;
+        }
+        case PSF_RGBA:
+        {
+            switch ( pixelStorageFormat )
+            {
+                case PSF_BGR:
+                {
+                    // copy segments and alter/supplement
+                    for ( UInt32 i=0; i<pixelCount; ++i )
+                    {                            
+                        T* orgPixelData = pixelMapData+(i*channelCount);                        
+                        T pixelData[ 3 ] = { orgPixelData[ 2 ], orgPixelData[ 1 ], orgPixelData[ 0 ] };
+
+                        // Assign new pixel value and convert data type from T to its type
+                        newMap->AssignToPixel< T >( i, pixelData );
+                    }
+                    return true;
+                }
+                case PSF_BGRA:
+                {
+                    // copy segments and alter/supplement
+                    for ( UInt32 i=0; i<pixelCount; ++i )
+                    {                            
+                        T* orgPixelData = pixelMapData+(i*channelCount);                        
+                        T pixelData[ 4 ] = { orgPixelData[ 2 ], orgPixelData[ 1 ], orgPixelData[ 0 ], orgPixelData[ 3 ] };
+
+                        // Assign new pixel value and convert data type from T to its type
+                        newMap->AssignToPixel< T >( i, pixelData );
+                    }
+                    return true;
+                }
+                case PSF_RGB:
+                {
+                    // copy segments and alter/supplement
+                    for ( UInt32 i=0; i<pixelCount; ++i )
+                    {                            
+                        T* orgPixelData = pixelMapData+(i*channelCount);                        
+                        T pixelData[ 3 ] = { orgPixelData[ 0 ], orgPixelData[ 1 ], orgPixelData[ 2 ] };
+
+                        // Assign new pixel value and convert data type from T to its type
+                        newMap->AssignToPixel< T >( i, pixelData );
+                    }
+                    return true;
+                }
+                case PSF_SINGLE_CHANNEL_RED:
+                {
+                    // copy segments and alter/supplement
+                    for ( UInt32 i=0; i<pixelCount; ++i )
+                    {                            
+                        T* orgPixelData = pixelMapData+(i*channelCount);                        
+                        T pixelData[ 1 ] = { orgPixelData[ 0 ] };
+
+                        // Assign new pixel value and convert data type from T to its type
+                        newMap->AssignToPixel< T >( i, pixelData );
+                    }
+                    return true;
+                }
+                case PSF_SINGLE_CHANNEL_GREEN:
+                {
+                    // copy segments and alter/supplement
+                    for ( UInt32 i=0; i<pixelCount; ++i )
+                    {                            
+                        T* orgPixelData = pixelMapData+(i*channelCount);                        
+                        T pixelData[ 1 ] = { orgPixelData[ 1 ] };
+
+                        // Assign new pixel value and convert data type from T to its type
+                        newMap->AssignToPixel< T >( i, pixelData );
+                    }
+                    return true;
+                }
+                case PSF_SINGLE_CHANNEL_BLUE:
+                {
+                    // copy segments and alter/supplement
+                    for ( UInt32 i=0; i<pixelCount; ++i )
+                    {                            
+                        T* orgPixelData = pixelMapData+(i*channelCount);                        
+                        T pixelData[ 1 ] = { orgPixelData[ 2 ] };
+
+                        // Assign new pixel value and convert data type from T to its type
+                        newMap->AssignToPixel< T >( i, pixelData );
+                    }
+                    return true;
+                }         
+                case PSF_SINGLE_CHANNEL_ALPHA:
+                {
+                    // copy segments and alter/supplement
+                    for ( UInt32 i=0; i<pixelCount; ++i )
+                    {                            
+                        T* orgPixelData = pixelMapData+(i*channelCount);                        
+                        T pixelData[ 1 ] = { orgPixelData[ 3 ] };
+
+                        // Assign new pixel value and convert data type from T to its type
+                        newMap->AssignToPixel< T >( i, pixelData );
+                    }
+                    return true;
+                }
+                case PSF_SINGLE_CHANNEL_STD_LUMINANCE:
+                {
+                    // copy segments and alter/supplement
+                    for ( UInt32 i=0; i<pixelCount; ++i )
+                    {                            
+                        T* orgPixelData = pixelMapData+(i*channelCount);
+                        
+                        // Luminance (standard for certain colour spaces): (0.2126*R + 0.7152*G + 0.0722*B)
+                        CORE::Float64 luminance = ( 0.0722f * orgPixelData[ 2 ] ) + ( 0.7152f * orgPixelData[ 1 ] ) + ( 0.2126f * orgPixelData[ 0 ] );                        
+                        T pixelData[ 1 ] = { (T) round( luminance ) };
+
+                        // Assign new pixel value and convert data type from T to its type
+                        newMap->AssignToPixel< T >( i, pixelData );
+                    }
+                    return true;
+                }
+                case PSF_SINGLE_CHANNEL_P1_LUMINANCE:
+                {
+                    // copy segments and alter/supplement
+                    for ( UInt32 i=0; i<pixelCount; ++i )
+                    {                            
+                        T* orgPixelData = pixelMapData+(i*channelCount);
+                        
+                        // Luminance (perceived option 1): (0.299*R + 0.587*G + 0.114*B)                       
+                        CORE::Float64 luminance = ( 0.114f * orgPixelData[ 2 ] ) + ( 0.587f * orgPixelData[ 1 ] ) + ( 0.299f * orgPixelData[ 0 ] );
+                        T pixelData[ 1 ] = { (T) round( luminance ) };
+
+                        // Assign new pixel value and convert data type from T to its type
+                        newMap->AssignToPixel< T >( i, pixelData );
+                    }
+                    return true;
+                }
+                case PSF_SINGLE_CHANNEL_P2_LUMINANCE:
+                {
+                    // copy segments and alter/supplement
+                    for ( UInt32 i=0; i<pixelCount; ++i )
+                    {                            
+                        T* orgPixelData = pixelMapData+(i*channelCount);
+                        
+                        // Luminance (perceived option 1): sqrt( 0.299*R^2 + 0.587*G^2 + 0.114*B^2 )                      
+                        CORE::Float64 luminance = sqrt( ( 0.114f * pow( orgPixelData[ 2 ], 2 ) ) + ( 0.587f * pow( orgPixelData[ 1 ], 2 ) ) + ( 0.299f * pow( orgPixelData[ 0 ], 2 ) ) ); 
+                        T pixelData[ 1 ] = { (T) round( luminance ) };
+
+                        // Assign new pixel value and convert data type from T to its type
+                        newMap->AssignToPixel< T >( i, pixelData );
+                    }
+                    return true;
+                }
+            }
+            break;
+        }
+        case PSF_SINGLE_CHANNEL_GRAYSCALE:
+        {
+            switch ( pixelStorageFormat )
+            {
+                case PSF_BGR:
+                {
+                    // copy segments and alter/supplement
+                    for ( UInt32 i=0; i<pixelCount; ++i )
+                    {                            
+                        T* orgPixelData = pixelMapData+(i*channelCount);                        
+                        T pixelData[ 3 ] = { orgPixelData[ 0 ], orgPixelData[ 0 ], orgPixelData[ 0 ] };
+
+                        // Assign new pixel value and convert data type from T to its type
+                        newMap->AssignToPixel< T >( i, pixelData );
+                    }
+                    return true;
+                }
+                case PSF_BGRA:
+                {
+                    // copy segments and alter/supplement
+                    for ( UInt32 i=0; i<pixelCount; ++i )
+                    {                            
+                        T* orgPixelData = pixelMapData+(i*channelCount);                        
+                        T pixelData[ 4 ] = { orgPixelData[ 0 ], orgPixelData[ 0 ], orgPixelData[ 0 ], 0 };  // fully opaque
+
+                        // Assign new pixel value and convert data type from T to its type
+                        newMap->AssignToPixel< T >( i, pixelData );
+                    }
+                    return true;
+                }
+                case PSF_RGB:
+                {
+                    // copy segments and alter/supplement
+                    for ( UInt32 i=0; i<pixelCount; ++i )
+                    {                            
+                        T* orgPixelData = pixelMapData+(i*channelCount);                        
+                        T pixelData[ 3 ] = { orgPixelData[ 0 ], orgPixelData[ 0 ], orgPixelData[ 0 ] };
+
+                        // Assign new pixel value and convert data type from T to its type
+                        newMap->AssignToPixel< T >( i, pixelData );
+                    }
+                    return true;
+                }
+                case PSF_SINGLE_CHANNEL_RED:
+                {
+                    // copy segments and alter/supplement
+                    for ( UInt32 i=0; i<pixelCount; ++i )
+                    {                            
+                        T* orgPixelData = pixelMapData+(i*channelCount);                        
+                        T pixelData[ 1 ] = { orgPixelData[ 0 ] };
+
+                        // Assign new pixel value and convert data type from T to its type
+                        newMap->AssignToPixel< T >( i, pixelData );
+                    }
+                    return true;
+                }
+                case PSF_SINGLE_CHANNEL_GREEN:
+                {
+                    // copy segments and alter/supplement
+                    for ( UInt32 i=0; i<pixelCount; ++i )
+                    {                            
+                        T* orgPixelData = pixelMapData+(i*channelCount);                        
+                        T pixelData[ 1 ] = { orgPixelData[ 0 ] };
+
+                        // Assign new pixel value and convert data type from T to its type
+                        newMap->AssignToPixel< T >( i, pixelData );
+                    }
+                    return true;
+                }
+                case PSF_SINGLE_CHANNEL_BLUE:
+                {
+                    // copy segments and alter/supplement
+                    for ( UInt32 i=0; i<pixelCount; ++i )
+                    {                            
+                        T* orgPixelData = pixelMapData+(i*channelCount);                        
+                        T pixelData[ 1 ] = { orgPixelData[ 0 ] };
+
+                        // Assign new pixel value and convert data type from T to its type
+                        newMap->AssignToPixel< T >( i, pixelData );
+                    }
+                    return true;
+                }         
+                case PSF_SINGLE_CHANNEL_ALPHA:
+                {
+                    // copy segments and alter/supplement
+                    for ( UInt32 i=0; i<pixelCount; ++i )
+                    {                            
+                        T* orgPixelData = pixelMapData+(i*channelCount);                        
+                        T pixelData[ 1 ] = { orgPixelData[ 0 ] };
+
+                        // Assign new pixel value and convert data type from T to its type
+                        newMap->AssignToPixel< T >( i, pixelData );
+                    }
+                    return true;
+                }
+            }
+            break;
+        }
+    }   
+
+    newMap = NULL;
+    return false;
 }
 
 /*--------------------------------------------------------------------------*/
 
-void
-CPixelMap::ConvertPixelStorageFormatTo( const TPixelStorageFormat pixelStorageFormat )
+bool
+CPixelMap::ConvertFormatTo( const TPixelStorageFormat pixelStorageFormat  , 
+                            const TBuildinDataType pixelComponentDataType ,
+                            TPixelMapPtr& newMap                          )
 {GUCEF_TRACE;
 
-    if ( m_pixelStorageFormat != pixelStorageFormat )
+    // Only do conversions if needed
+    if ( m_pixelStorageFormat != pixelStorageFormat || m_pixelComponentDataType != pixelComponentDataType )
     {
-        assert( 0 ); // @TODO makeme    
+        switch ( m_pixelComponentDataType )
+        {
+            case MT::DATATYPE_FLOAT32:
+            {
+                CORE::Float32* pixelMapData = (CORE::Float32*) m_pixelMapData;
+                return ConvertFormatToImp< CORE::Float32 >( pixelMapData, pixelStorageFormat, pixelComponentDataType, newMap );
+            }
+            case MT::DATATYPE_FLOAT64:
+            {
+                CORE::Float64* pixelMapData = (CORE::Float64*) m_pixelMapData;
+                return ConvertFormatToImp< CORE::Float64 >( pixelMapData, pixelStorageFormat, pixelComponentDataType, newMap );
+            }
+            case MT::DATATYPE_UINT8:
+            {
+                CORE::UInt8* pixelMapData = (CORE::UInt8*) m_pixelMapData;
+                return ConvertFormatToImp< CORE::UInt8 >( pixelMapData, pixelStorageFormat, pixelComponentDataType, newMap );
+            }
+            case MT::DATATYPE_INT8:
+            {
+                CORE::Int8* pixelMapData = (CORE::Int8*) m_pixelMapData;
+                return ConvertFormatToImp< CORE::Int8 >( pixelMapData, pixelStorageFormat, pixelComponentDataType, newMap );
+            }
+            case MT::DATATYPE_UINT16:
+            {
+                CORE::UInt16* pixelMapData = (CORE::UInt16*) m_pixelMapData;
+                return ConvertFormatToImp< CORE::UInt16 >( pixelMapData, pixelStorageFormat, pixelComponentDataType, newMap );
+            }
+            case MT::DATATYPE_INT16:
+            {
+                CORE::Int16* pixelMapData = (CORE::Int16*) m_pixelMapData;
+                return ConvertFormatToImp< CORE::Int16 >( pixelMapData, pixelStorageFormat, pixelComponentDataType, newMap );
+            }
+            case MT::DATATYPE_UINT32:
+            {
+                CORE::UInt32* pixelMapData = (CORE::UInt32*) m_pixelMapData;
+                return ConvertFormatToImp< CORE::UInt32 >( pixelMapData, pixelStorageFormat, pixelComponentDataType, newMap );
+            }
+            case MT::DATATYPE_INT32:
+            {
+                CORE::Int32* pixelMapData = (CORE::Int32*) m_pixelMapData;
+                return ConvertFormatToImp< CORE::Int32 >( pixelMapData, pixelStorageFormat, pixelComponentDataType, newMap );
+            }
+            case MT::DATATYPE_UINT64:
+            {
+                CORE::UInt64* pixelMapData = (CORE::UInt64*) m_pixelMapData;
+                return ConvertFormatToImp< CORE::UInt64 >( pixelMapData, pixelStorageFormat, pixelComponentDataType, newMap );
+            }
+            case MT::DATATYPE_INT64:
+            {
+                CORE::Int64* pixelMapData = (CORE::Int64*) m_pixelMapData;
+                return ConvertFormatToImp< CORE::Int64 >( pixelMapData, pixelStorageFormat, pixelComponentDataType, newMap );
+            }
+            default:
+            {
+                // this should not happen
+                return false;
+            }
+        }
     }
+    else
+    {
+        // no change needed
+        newMap = NULL;
+        return true;
+    }        
 }
 
 /*--------------------------------------------------------------------------*/
@@ -429,7 +1163,9 @@ CPixelMap::GetChannelCountForFormat( const TPixelStorageFormat pixelStorageForma
         case PSF_SINGLE_CHANNEL_RED :
         case PSF_SINGLE_CHANNEL_GREEN :
         case PSF_SINGLE_CHANNEL_BLUE :
-        case PSF_SINGLE_CHANNEL_LUMINANCE :
+        case PSF_SINGLE_CHANNEL_STD_LUMINANCE :
+        case PSF_SINGLE_CHANNEL_P1_LUMINANCE :
+        case PSF_SINGLE_CHANNEL_P2_LUMINANCE :
         case PSF_SINGLE_CHANNEL_ALPHA :
         {
             return 1;

@@ -93,6 +93,8 @@ class GUCEF_CORE_PUBLIC_CPP CString
 
     CString& operator=( const CString &src );
 
+    CString& operator=( const std::string& src );
+    
     /**
      *      Copys the source string.
      *      If the src string is NULL then the current string will be

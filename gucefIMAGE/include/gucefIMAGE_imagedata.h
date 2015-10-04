@@ -71,20 +71,22 @@ namespace IMAGE {
  */
 enum EPixelStorageFormat
 {
-    PSF_UNKNOWN = 0              ,
+    PSF_UNKNOWN = 0                  ,
 
-    PSF_RGB = 1                  ,
-    PSF_RGBA                     ,
-    PSF_BGR                      ,
-    PSF_BGRA                     ,
-    PSF_SINGLE_CHANNEL           ,
-    PSF_SINGLE_CHANNEL_RED       ,
-    PSF_SINGLE_CHANNEL_GREEN     ,
-    PSF_SINGLE_CHANNEL_BLUE      ,
-    PSF_SINGLE_CHANNEL_ALPHA     ,
-    PSF_SINGLE_CHANNEL_LUMINANCE ,
-    PSF_LUMINANCE_ALPHA          ,
-    PSF_PALETTE_INDICES          ,
+    PSF_RGB = 1                      ,
+    PSF_RGBA                         ,
+    PSF_BGR                          ,
+    PSF_BGRA                         ,
+    PSF_SINGLE_CHANNEL_GRAYSCALE     ,
+    PSF_SINGLE_CHANNEL_RED           ,
+    PSF_SINGLE_CHANNEL_GREEN         ,
+    PSF_SINGLE_CHANNEL_BLUE          ,
+    PSF_SINGLE_CHANNEL_ALPHA         ,
+    PSF_SINGLE_CHANNEL_STD_LUMINANCE ,
+    PSF_SINGLE_CHANNEL_P1_LUMINANCE  ,
+    PSF_SINGLE_CHANNEL_P2_LUMINANCE  ,
+    PSF_LUMINANCE_ALPHA              ,
+    PSF_PALETTE_INDICES              ,
 
     PSF_COUNT
 };

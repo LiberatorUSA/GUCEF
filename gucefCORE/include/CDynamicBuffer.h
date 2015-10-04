@@ -268,6 +268,13 @@ class GUCEF_CORE_PUBLIC_CPP CDynamicBuffer
         void Clear( const bool logicalClearOnly = true );
 
         /**
+         *  Relinquishes ownership of any contained data to the caller
+         *  the caller is henceforth responsible for deallocating the memory
+         *  Note that if the buffer is linked this operation will result in the creation of a private copy
+         */
+        void RelinquishDataOwnership( void*& data, UInt32& dataSize );
+
+        /**
          *  Utility member function:
          *  Template'd assignment operator for easy assignment of a unit of the given type.
          *  The raw data will be copied into the buffer.

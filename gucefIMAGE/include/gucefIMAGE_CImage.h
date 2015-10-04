@@ -118,6 +118,10 @@ class GUCEF_IMAGE_EXPORT_CPP CImage
     TPixelMapPtr GetPixelMap( const UInt32 frameIndex = 0  ,
                               const UInt32 mipMapLevel = 0 ) const;
 
+    bool TryGetPixelMap( const UInt32 frameIndex  ,
+                         const UInt32 mipMapLevel ,
+                         TPixelMapPtr& pixelMap   ) const;
+
     void AddFrame( TPixelMapPtr& imageFrame );
 
     void AddFrame( TMipMapList& imageFrame );

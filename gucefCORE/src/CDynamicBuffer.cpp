@@ -571,6 +571,23 @@ CDynamicBuffer::GetConstBufferPtr( const UInt32 offset /* = 0 */ ) const
 
 /*-------------------------------------------------------------------------*/
 
+void
+CDynamicBuffer::RelinquishDataOwnership( void*& data, UInt32& dataSize )
+{
+    SecureLinkBeforeMutation();
+
+    // yield ownership
+    data = _buffer;
+    dataSize = m_dataSize;
+
+    // release our references
+    _buffer = NULL;
+    m_dataSize = 0;
+    _bsize = 0;
+}
+
+/*-------------------------------------------------------------------------*/
+
 void 
 CDynamicBuffer::Append( const void* data                            ,
                         const UInt32 size                           ,

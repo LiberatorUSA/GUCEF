@@ -118,6 +118,26 @@ CDynamicBufferAccess::LoadContentFromFile( const CString& filePath   ,
 
 /*-------------------------------------------------------------------------*/
 
+void
+CDynamicBufferAccess::LinkTo( const void* externalBuffer ,
+                              UInt32 bufferSize          )
+{GUCEF_TRACE;
+
+    Close();
+
+    if ( m_deleteBufferUponDestruction )
+    {
+        delete m_buffer;
+        m_buffer = NULL;
+    }
+    
+    m_buffer = new CDynamicBuffer();
+    m_deleteBufferUponDestruction = true;
+    m_buffer->LinkTo( externalBuffer, bufferSize );    
+}
+
+/*-------------------------------------------------------------------------*/
+
 void 
 CDynamicBufferAccess::Open( void )
 {GUCEF_TRACE;
