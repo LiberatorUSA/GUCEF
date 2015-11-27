@@ -12,6 +12,12 @@ IF ERRORLEVEL 1 (
 )
 ENDLOCAL
 
+
+ECHO *** Add CMake dir to PATH ***
+SET CMAKE_EXE=%BATCHSTARTDIR%\cmake\bin
+SET PATH=%PATH%;"%CMAKE_EXE%"
+ECHO CMake binary is here: %CMAKE_EXE%
+
 IF NOT DEFINED SKIP_GUCEF_CMAKELISTSFILEGENERATION (
   ECHO *** Generate CMakeLists.txt files ***
   CALL GenerateCMakeLists.bat
