@@ -63,8 +63,6 @@ class GUCEF_GUIDRIVERCEGUI_EXPORT_CPP CLogAdapter : public CEGUI::Logger
 {
     public:
     
-    static CLogAdapter* Instance( void );
-
     /*!
     \brief
         Add an event to the log.
@@ -94,18 +92,15 @@ class GUCEF_GUIDRIVERCEGUI_EXPORT_CPP CLogAdapter : public CEGUI::Logger
      */
     virtual void setLogFilename( const CEGUI::String& filename , 
                                  bool append = false           );
-    
-    private:
-    friend class CModule;
-    
-    static void Deinstance( void );
+   
+
+    CLogAdapter( void );
+    virtual ~CLogAdapter();
 
     private:
-    
-    CLogAdapter( void );
+
     CLogAdapter( const CLogAdapter& src );
-    CLogAdapter& operator=( const CLogAdapter& src );
-    virtual ~CLogAdapter();
+    CLogAdapter& operator=( const CLogAdapter& src );    
     
     private:
     

@@ -36,6 +36,11 @@
 #define _CEGUIImageCodec_h_
 #endif /* _CEGUIImageCodec_h_ ? */
 
+#ifndef GUCEF_IMAGE_CIMAGE_H
+#include "gucefIMAGE_CImage.h"
+#define GUCEF_IMAGE_CIMAGE_H
+#endif /* GUCEF_IMAGE_CIMAGE_H ? */
+
 #ifndef GUCEF_GUIDRIVERCEGUI_MACROS_H
 #include "guidriverCEGUI_macros.h" 
 #define GUCEF_GUIDRIVERCEGUI_MACROS_H

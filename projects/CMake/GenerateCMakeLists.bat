@@ -8,18 +8,18 @@ REM -----------------------------------------------------
 
 :FIND_GUCEF_RELEASE_CMAKELISTGENERATOR
 
-SET GENERATORPATH=%GUCEF_THEBATCHDIR%\..\..\tools\ProjectGenerator\bin\ReleasedBins\Win32\22January2013\
+SET GENERATORPATH=%GUCEF_THEBATCHDIR%\..\..\tools\ProjectGenerator\bin\ReleasedBins\Win32\2015.09.03\
 SET GENERATOREXE=ProjectGenerator.exe
 SET EXETEST=%GENERATORPATH%\%GENERATOREXE%
 
 ECHO Test path = "%EXETEST%"
 IF EXIST "%EXETEST%" (
-  ECHO Using released version of ProjectGenerator dated 22'nd January 2013
+  ECHO Using released version of ProjectGenerator dated Sept 3rd 2015
   GOTO RUN_CMAKELISTGENERATOR
 )
 
 IF NOT EXIST "%EXETEST%" (
-  ECHO Error: Unable to locate GUCEF released CMakeListGenerator
+  ECHO Error: Unable to locate GUCEF released ProjectGenerator
   GOTO END
 )
     

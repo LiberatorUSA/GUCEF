@@ -36,6 +36,11 @@
 #define GUCEF_GUI_CWINDOWCONTEXT_H
 #endif /* GUCEF_GUI_CWINDOWCONTEXT_H ? */
 
+#ifndef GUCEF_GUIDRIVERCEGUI_CGUICONTEXT_H
+#include "guidriverCEGUI_CGUIContext.h"
+#define GUCEF_GUIDRIVERCEGUI_CGUICONTEXT_H
+#endif /* GUCEF_GUIDRIVERCEGUI_CGUICONTEXT_H ? */
+
 #ifndef GUCEF_GUIDRIVERCEGUIGL_MACROS_H
 #include "guidriverCEGUIOpenGL_macros.h"
 #define GUCEF_GUIDRIVERCEGUIGL_MACROS_H
@@ -58,20 +63,18 @@ namespace GUIDRIVERCEGUIGL {
 
 class CGUIDriverGL;
 
-/*-------------------------------------------------------------------------*/
-
 /**
  *  Implementation of the GUI context for the MyGUI & OpenGL combo
  */
 class GUCEF_GUIDRIVERCEGUIGL_EXPORT_CPP CGUIContextGL : public GUIDRIVERCEGUI::CGUIContext ,
-                                               public CORE::CObserver
+                                                        public CORE::CObserver
 {
     public:
 
-    CGUIContextGL( CGUIDriverGL& guiDriver                   ,
-                   GUIDRIVERCEGUI::OpenGLRenderManager* renderManager ,
-                   GUI::TWindowContextPtr windowContext      ,
-                   INPUT::CInputContext* inputContext        );
+    CGUIContextGL( CGUIDriverGL& guiDriver              ,
+                   GUI::TWindowContextPtr windowContext ,
+                   INPUT::CInputContext* inputContext   ,
+                   CEGUI::GUIContext* ceGuiContext      );
 
     virtual ~CGUIContextGL();
 
@@ -90,7 +93,6 @@ class GUCEF_GUIDRIVERCEGUIGL_EXPORT_CPP CGUIContextGL : public GUIDRIVERCEGUI::C
 
     private:
 
-    GUIDRIVERCEGUI::OpenGLRenderManager* m_renderManager;
     GUI::TWindowContextPtr m_windowContext;
 };
 
