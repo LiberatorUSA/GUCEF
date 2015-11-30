@@ -50,6 +50,26 @@
 
 #include "guidriverCEGUIOpenGL_CGUIDriverGL.h"
 
+#ifndef GUCEF_GUIDRIVERCEGUI_VFSRESOURCEPROVIDER_H
+#include "guidriverCEGUI_VFSResourceProvider.h"
+#define GUCEF_GUIDRIVERCEGUI_VFSRESOURCEPROVIDER_H
+#endif /* GUCEF_GUIDRIVERCEGUI_VFSRESOURCEPROVIDER_H ? */
+
+#ifndef GUCEF_GUIDRIVERCEGUI_IMAGECODECADAPTER_H
+#include "guidriverCEGUI_ImageCodecAdapter.h"
+#define GUCEF_GUIDRIVERCEGUI_IMAGECODECADAPTER_H
+#endif /* GUCEF_GUIDRIVERCEGUI_IMAGECODECADAPTER_H ? */
+
+#ifndef GUCEF_GUIDRIVERCEGUI_CLOGADAPTER_H
+#include "guidriverCEGUI_CLogAdapter.h"
+#define GUCEF_GUIDRIVERCEGUI_CLOGADAPTER_H
+#endif /* GUCEF_GUIDRIVERCEGUI_CLOGADAPTER_H ? */
+
+#ifndef _CEGUIOpenGLRenderer_h_
+#include "CEGUI/RendererModules/OpenGL/GLRenderer.h"
+#define _CEGUIOpenGLRenderer_h_
+#endif /* _CEGUIOpenGLRenderer_h_ */
+
 /*-------------------------------------------------------------------------//
 //                                                                         //
 //      NAMESPACE                                                          //
@@ -66,15 +86,10 @@ namespace GUIDRIVERCEGUIGL {
 //-------------------------------------------------------------------------*/
 
 CGUIDriverGL::CGUIDriverGL( void )
-    : GUIDRIVERCEGUI::CMyGUIDriver()       ,
+    : GUIDRIVERCEGUI::CCEGUIDriver()       ,
       m_contextSet()              ,
-      m_fontTypes()               ,
-      m_myGUI()                   ,
-      m_renderManager()           ,
-      m_imageLoader()             ,
       m_logAdapter()              ,
-      m_dataManager()             ,
-      m_myGuiInitialized( false )
+      m_ceGuiInitialized( false )
 {GUCEF_TRACE;
 
 }
@@ -85,7 +100,9 @@ CGUIDriverGL::~CGUIDriverGL()
 {GUCEF_TRACE;
 
     m_contextSet.clear();
-    m_myGUI.shutdown();
+
+    if ( NULL != m_guiSystem )
+        m_guiSystem->destroy();
 }
 
 /*-------------------------------------------------------------------------*/
@@ -93,7 +110,7 @@ CGUIDriverGL::~CGUIDriverGL()
 CEGUI::System*
 CGUIDriverGL::GetCEGui( void )
 {
-    return &m_myGUI;
+    return m_guiSystem;
 }
 
 /*-------------------------------------------------------------------------*/
@@ -103,12 +120,20 @@ CGUIDriverGL::CreateGUIContext( GUI::TWindowContextPtr windowContext )
 {GUCEF_TRACE;
 
     // Lazy initialize if needed
-    if ( !m_myGuiInitialized )
+    if ( !m_ceGuiInitialized )
     {
-        m_renderManager.initialise( &m_imageLoader );
-        m_myGUI.initialise();        
-
-        m_myGuiInitialized = true;
+        if ( NULL == m_logAdapter )
+        {
+            m_logAdapter = new GUIDRIVERCEGUI::CLogAdapter();
+        }
+        
+        CEGUI::Sizef displaySize( (float) windowContext->GetWidth(), (float) windowContext->GetHeight() );
+        m_guiRenderer = &CEGUI::OpenGLRenderer::create( displaySize, CEGUI::OpenGLRenderer::TTT_AUTO );
+        GUIDRIVERCEGUI::VfsResourceProvider* vfsResourceProvider = new GUIDRIVERCEGUI::VfsResourceProvider();
+        GUIDRIVERCEGUI::ImageCodecAdapter* imageCodecAdaper = new GUIDRIVERCEGUI::ImageCodecAdapter();
+        m_guiSystem = &CEGUI::System::create( *m_guiRenderer, vfsResourceProvider, NULL, imageCodecAdaper );     
+        
+        m_ceGuiInitialized = true;
     }
     
     // Create an input context using the default driver and set it for this GUI context so that we can interact
@@ -118,11 +143,12 @@ CGUIDriverGL::CreateGUIContext( GUI::TWindowContextPtr windowContext )
     inputContextParams.Set( "WINDOW", windowContext->GetProperty( "WINDOW" ) );
     INPUT::CInputContext* inputContext = INPUT::CInputGlobal::Instance()->GetInputController().CreateContext( inputContextParams );
 
+    CEGUI::GUIContext* ceGuiContext = &m_guiSystem->createGUIContext( *m_guiRenderer->getActiveRenderTarget() );
+    GUI::TGuiContextPtr guiContextPtr = new CGUIContextGL( *this         ,
+                                                           windowContext ,
+                                                           inputContext  ,
+                                                           ceGuiContext  );
     // Add a reference to the context in our set
-    GUI::TGuiContextPtr guiContextPtr = new CGUIContextGL( *this            ,
-                                                           &m_renderManager ,
-                                                           windowContext    ,
-                                                           inputContext     );
     m_contextSet.insert( guiContextPtr );
 
     return guiContextPtr;

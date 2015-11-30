@@ -46,10 +46,12 @@
 #define GUCEF_MYGUI_CLOGADAPTER_H
 #endif /* GUCEF_MYGUI_CLOGADAPTER_H ? */
 
-#ifndef GUCEF_GUIDRIVERCEGUIGL_CIMAGELOADER_H
-#include "guidriverCEGUIOpenGL_CImageLoader.h"
-#define GUCEF_GUIDRIVERCEGUIGL_CIMAGELOADER_H
-#endif /* GUCEF_GUIDRIVERCEGUIGL_CIMAGELOADER_H ? */
+#ifndef GUCEF_GUIDRIVERCEGUIGL_MACROS_H
+#include "guidriverCEGUIOpenGL_macros.h"
+#define GUCEF_GUIDRIVERCEGUIGL_MACROS_H
+#endif /* GUCEF_GUIDRIVERCEGUIGL_MACROS_H ? */
+
+namespace CEGUI { class OpenGLRenderer; }
 
 /*-------------------------------------------------------------------------//
 //                                                                         //
@@ -119,11 +121,11 @@ class GUCEF_GUIDRIVERCEGUIGL_EXPORT_CPP CGUIDriverGL : public GUCEF::GUIDRIVERCE
 
     GUI::CGUIDriver::TGUIContextSet m_contextSet;
     TStringSet m_fontTypes;
-    GUIDRIVERCEGUI::Gui m_myGUI;
-    GUIDRIVERCEGUI::OpenGLRenderManager m_renderManager;
-    CImageLoader m_imageLoader;
-    GUIDRIVERCEGUI::CLogAdapter m_logAdapter;
-    bool m_myGuiInitialized;
+
+    GUIDRIVERCEGUI::CLogAdapter* m_logAdapter;
+    CEGUI::System* m_guiSystem;
+    CEGUI::OpenGLRenderer* m_guiRenderer;
+    bool m_ceGuiInitialized;
 };
 
 /*-------------------------------------------------------------------------//

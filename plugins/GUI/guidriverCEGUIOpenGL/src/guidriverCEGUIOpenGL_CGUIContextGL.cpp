@@ -46,12 +46,12 @@ namespace GUIDRIVERCEGUIGL {
 //-------------------------------------------------------------------------*/
 
 CGUIContextGL::CGUIContextGL( CGUIDriverGL& guiDriver                   ,
-                              GUIDRIVERCEGUI::OpenGLRenderManager* renderManager ,
                               GUI::TWindowContextPtr windowContext      ,
-                              INPUT::CInputContext* inputContext        )
+                              INPUT::CInputContext* inputContext        ,
+                              CEGUI::GUIContext* ceGuiContext           )
     : GUIDRIVERCEGUI::CGUIContext( guiDriver    ,
-                          inputContext )  ,
-      m_renderManager( renderManager )    ,
+                                   inputContext ,
+                                   ceGuiContext )  ,
       m_windowContext( windowContext ) 
 {GUCEF_TRACE;
 
@@ -83,20 +83,20 @@ CGUIContextGL::OnNotify( CORE::CNotifier* notifier   ,
                          CORE::CICloneable* evenData )
 {GUCEF_TRACE;
 
-    if ( eventID == GUI::CWindowContext::WindowContextRedrawEvent   ||
-         eventID == GUI::CWindowContext::WindowContextActivateEvent  )
-    {
-        m_renderManager->drawOneFrame();
-    }
-    else
-    if ( eventID == GUI::CWindowContext::WindowContextSizeEvent )
-    {        
-        GUCEF_DEBUG_LOG( CORE::LOGLEVEL_NORMAL, "GUIContext: Resizing MyGUI GUI context to " + CORE::UInt32ToString( m_windowContext->GetWidth() ) + "x" +
-                                                                                               CORE::UInt32ToString( m_windowContext->GetHeight() ) );
+  //  if ( eventID == GUI::CWindowContext::WindowContextRedrawEvent   ||
+  //       eventID == GUI::CWindowContext::WindowContextActivateEvent  )
+  //  {
+  //      m_renderManager->drawOneFrame();
+  //  }
+  //  else
+  //  if ( eventID == GUI::CWindowContext::WindowContextSizeEvent )
+  //  {        
+  //      GUCEF_DEBUG_LOG( CORE::LOGLEVEL_NORMAL, "GUIContext: Resizing MyGUI GUI context to " + CORE::UInt32ToString( m_windowContext->GetWidth() ) + "x" +
+  //                                                                                             CORE::UInt32ToString( m_windowContext->GetHeight() ) );
 
-		m_renderManager->setViewSize( m_windowContext->GetWidth(), m_windowContext->GetHeight() );
-        m_renderManager->drawOneFrame();
-    }
+		//m_renderManager->setViewSize( m_windowContext->GetWidth(), m_windowContext->GetHeight() );
+  //      m_renderManager->drawOneFrame();
+  //  }
 }
 
 /*-------------------------------------------------------------------------//

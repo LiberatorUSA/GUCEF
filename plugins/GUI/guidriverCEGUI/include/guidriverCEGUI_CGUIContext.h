@@ -78,7 +78,8 @@ class GUCEF_GUIDRIVERCEGUI_EXPORT_CPP CGUIContext : public GUI::CIGUIContext
     public:    
     
     CGUIContext( CCEGUIDriver& myGuiDriver          ,
-                 INPUT::CInputContext* inputContext );
+                 INPUT::CInputContext* inputContext ,
+                 CEGUI::GUIContext* ceGuiContext    );
     
     virtual ~CGUIContext();
     
@@ -103,6 +104,8 @@ class GUCEF_GUIDRIVERCEGUI_EXPORT_CPP CGUIContext : public GUI::CIGUIContext
     virtual TWidgetSet GetOwnedWidgets( void );
     
     virtual TFormSet GetOwnedForms( void );
+
+    CEGUI::GUIContext* GetCEGuiContext( void );
                                
     private:
     
@@ -116,6 +119,7 @@ class GUCEF_GUIDRIVERCEGUI_EXPORT_CPP CGUIContext : public GUI::CIGUIContext
     TFormSet m_formSet;
     INPUT::CInputContext* m_inputContext;
     CCEGUIInputAdapter m_inputAdapter;
+    CEGUI::GUIContext* m_ceGuiContext;
 };
 
 /*-------------------------------------------------------------------------//

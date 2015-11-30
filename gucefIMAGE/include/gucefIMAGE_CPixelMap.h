@@ -154,6 +154,13 @@ class GUCEF_IMAGE_EXPORT_CPP CPixelMap
                           const TBuildinDataType pixelComponentDataType ,
                           TPixelMapPtr& newMap                          );
 
+
+    bool ConvertFormatTo( const TPixelStorageFormat pixelStorageFormat  , 
+                          TPixelMapPtr& newMap                          );
+
+    bool ConvertFormatTo( const TBuildinDataType pixelComponentDataType , 
+                          TPixelMapPtr& newMap                          );
+
     /**
      *      Check if the image data has an alpha channel
      *

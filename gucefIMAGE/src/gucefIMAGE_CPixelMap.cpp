@@ -1066,6 +1066,26 @@ CPixelMap::ConvertFormatToImp( T* pixelMapData                               ,
 
 /*--------------------------------------------------------------------------*/
 
+bool 
+CPixelMap::ConvertFormatTo( const TBuildinDataType pixelComponentDataType , 
+                            TPixelMapPtr& newMap                          )
+{GUCEF_TRACE;
+
+    return ConvertFormatTo( m_pixelStorageFormat, pixelComponentDataType, newMap );
+}
+
+/*--------------------------------------------------------------------------*/
+
+bool
+CPixelMap::ConvertFormatTo( const TPixelStorageFormat pixelStorageFormat  , 
+                            TPixelMapPtr& newMap                          )
+{GUCEF_TRACE;
+
+    return ConvertFormatTo( pixelStorageFormat, m_pixelComponentDataType, newMap );
+}
+
+/*--------------------------------------------------------------------------*/
+
 bool
 CPixelMap::ConvertFormatTo( const TPixelStorageFormat pixelStorageFormat  , 
                             const TBuildinDataType pixelComponentDataType ,

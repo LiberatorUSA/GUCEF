@@ -59,6 +59,8 @@
 #include <fstream>
 #include <assert.h>
 
+#undef min
+#undef max
 
 namespace Imf {
 

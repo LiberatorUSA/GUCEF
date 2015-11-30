@@ -58,13 +58,15 @@ namespace GUIDRIVERCEGUI {
 //-------------------------------------------------------------------------*/
 
 CGUIContext::CGUIContext( CCEGUIDriver& guiDriver            ,
-                          INPUT::CInputContext* inputContext )
+                          INPUT::CInputContext* inputContext ,
+                          CEGUI::GUIContext* ceGuiContext    )
     : GUCEF::GUI::CIGUIContext()                ,
       m_driver( &guiDriver )                    ,
       m_widgetSet()                             ,
       m_formSet()                               ,
       m_inputContext( inputContext )            ,
-      m_inputAdapter()
+      m_inputAdapter()                          ,
+      m_ceGuiContext( ceGuiContext )
 {GUCEF_TRACE;
 
     assert( NULL != m_driver );
@@ -208,6 +210,15 @@ CGUIContext::GetOwnedForms( void )
 {GUCEF_TRACE;
 
     return m_formSet;
+}
+
+/*-------------------------------------------------------------------------*/
+
+CEGUI::GUIContext* 
+CGUIContext::GetCEGuiContext( void )
+{GUCEF_TRACE;
+
+    return m_ceGuiContext;
 }
 
 /*-------------------------------------------------------------------------//
