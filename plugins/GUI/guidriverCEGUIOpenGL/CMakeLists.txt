@@ -15,7 +15,6 @@ set( HEADER_FILES
   include/guidriverCEGUIOpenGL.h
   include/guidriverCEGUIOpenGL_CGUIContextGL.h
   include/guidriverCEGUIOpenGL_CGUIDriverGL.h
-  include/guidriverCEGUIOpenGL_CImageLoader.h
   include/guidriverCEGUIOpenGL_config.h
   include/guidriverCEGUIOpenGL_macros.h
   include/guidriverCEGUIOpenGL_pluginAPI.h
@@ -25,7 +24,6 @@ set( SOURCE_FILES
   src/guidriverCEGUIOpenGL.cpp
   src/guidriverCEGUIOpenGL_CGUIContextGL.cpp
   src/guidriverCEGUIOpenGL_CGUIDriverGL.cpp
-  src/guidriverCEGUIOpenGL_CImageLoader.cpp
   src/guidriverCEGUIOpenGL_pluginAPI.cpp
 )
 

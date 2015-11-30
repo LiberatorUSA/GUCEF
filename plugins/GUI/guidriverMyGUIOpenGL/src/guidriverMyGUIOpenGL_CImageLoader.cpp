@@ -80,7 +80,7 @@ CImageLoader::ConvertPixelFormat( IMAGE::TPixelMapPtr pixelMap )
             case IMAGE::PSF_RGBA : return MyGUI::PixelFormat( MyGUI::PixelFormat::R8G8B8A8 );
             case IMAGE::PSF_BGR :
             {
-                pixelMap->ConvertFormatTo( IMAGE::PSF_RGB );
+                pixelMap->ConvertFormatTo( IMAGE::PSF_RGB, pixelMap );
                 return MyGUI::PixelFormat( MyGUI::PixelFormat::R8G8B8 );
             }
             case IMAGE::PSF_BGRA :

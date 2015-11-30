@@ -81,7 +81,6 @@ set( SOURCE_FILES
   src/guidriverCEGUI_CTabContentPaneImp.cpp
   src/guidriverCEGUI_CTabControlImp.cpp
   src/guidriverCEGUI_CTreeviewImp.cpp
-  src/guidriverCEGUI_CVFSHandleToMyGuiDataStreamAdapter.cpp
   src/guidriverCEGUI_CVFSInfoProvider.cpp
   src/guidriverCEGUI_CWidgetImp.cpp
   src/guidriverCEGUI_CWindowImp.cpp

@@ -175,7 +175,23 @@ set( SOURCE_FILES
 
 
 
-if (WIN32)
+if (ANDROID)
+  set( PLATFORM_SOURCE_FILES 
+    src/IconvStringTranscoder.cpp
+  )
+
+  set( PLATFORM_SOURCE_INSTALL "ANDROID" )
+  source_group( "Platform Source Files" FILES ${PLATFORM_SOURCE_FILES} )
+
+elseif (LINUX)
+  set( PLATFORM_SOURCE_FILES 
+    src/IconvStringTranscoder.cpp
+  )
+
+  set( PLATFORM_SOURCE_INSTALL "LINUX" )
+  source_group( "Platform Source Files" FILES ${PLATFORM_SOURCE_FILES} )
+
+elseif (WIN32)
   set( PLATFORM_SOURCE_FILES 
     src/Win32StringTranscoder.cpp
   )
