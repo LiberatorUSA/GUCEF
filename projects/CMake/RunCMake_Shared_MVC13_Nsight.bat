@@ -1,0 +1,7 @@
+CALL CMakeCommon.bat
+
+ECHO *** Set MVC13 specifics and run CMake ***
+
+SET MVC13_OUTPUTDIR="%OUTPUTDIR%\MVC13Nsight"
+CMake.exe -DCMAKE_SYSTEM_NAME=Android -DBUILD_SHARED_LIBS=ON -G"Visual Studio 12 2013" -H"%SRCROOTDIR%" -B%MVC13_OUTPUTDIR%
+PAUSE
