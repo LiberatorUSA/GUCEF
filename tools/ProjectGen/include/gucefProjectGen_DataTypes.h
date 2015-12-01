@@ -447,6 +447,12 @@ GUCEF_PROJECTGEN_PUBLIC_CPP
 void
 GetAllPlatformsUsed( const TProjectInfo& projectInfo ,
                      TStringSet& platformList        );
+
+/*-------------------------------------------------------------------------*/
+
+GUCEF_PROJECTGEN_PUBLIC_CPP
+CORE::CString
+GetLanguageForModule( const TModuleInfo& moduleInfo );
                       
 /*-------------------------------------------------------------------------*/
 

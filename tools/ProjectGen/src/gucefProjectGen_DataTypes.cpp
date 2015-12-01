@@ -357,6 +357,61 @@ GetXmlDStoreCodec( void )
     return codecPtr;
 }
 
+/*---------------------------------------------------------------------------*/
+
+bool
+ContainsFileWithFileExtension( const TStringVectorMap& files ,
+                               const CORE::CString& fileExt  )
+{GUCEF_TRACE;
+
+    TStringVectorMap::const_iterator i = files.begin();
+    while ( i != files.end() )
+    {
+        TStringVector::const_iterator n = (*i).second.begin();
+        while ( n != (*i).second.end() )
+        {
+            if ( fileExt.Equals( CORE::ExtractFileExtention( (*n) ), false ) )
+                return true;
+            ++n;
+        }
+        ++i;
+    }
+    return false;
+}
+
+/*---------------------------------------------------------------------------*/
+
+CORE::CString
+GetLanguageForModule( const TModuleInfo& moduleInfo )
+{GUCEF_TRACE;
+
+    const TStringSet& languageSet = moduleInfo.compilerSettings.languagesUsed;
+    if ( languageSet.empty() )
+    {
+        // No language was specified but premake requires one
+        // We will determine the languege based on the files in the project
+        if ( ContainsFileWithFileExtension( moduleInfo.sourceDirs, "CS" ) )
+        {
+            return "C#";
+        }
+        else
+        if ( ( ContainsFileWithFileExtension( moduleInfo.sourceDirs, "CPP" ) ) ||
+             ( ContainsFileWithFileExtension( moduleInfo.sourceDirs, "CXX" ) )  )
+        {
+            return "C++";
+        }
+        else
+        {
+            return "C";
+        }
+    }
+    else
+    {
+        // Premake supports only 1 language per module so we list the first one
+        return (*languageSet.begin()).Uppercase();
+    }
+}
+
 /*-------------------------------------------------------------------------*/
 
 TStringSet

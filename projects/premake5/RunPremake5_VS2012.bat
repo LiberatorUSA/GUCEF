@@ -1,0 +1,13 @@
+for /f %%i in ("%0") do SET VS2012_BATCHPATH=%%~dpi
+
+SET PM5OUTSUBDIR=PM5MVC11
+SET PM5TARGETSUBDIR=PM5MVC11\bin
+SET NOPAUSE=TRUE
+
+CALL Premake5Common.bat
+
+ECHO *** Set VS specifics and run Pemake 5 ***
+
+CD %GUCEF_HOME%
+%VS2012_BATCHPATH%\premake5.exe vs2012
+PAUSE

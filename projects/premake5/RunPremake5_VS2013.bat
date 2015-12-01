@@ -1,0 +1,13 @@
+for /f %%i in ("%0") do SET VS2013_BATCHPATH=%%~dpi
+
+SET PM5OUTSUBDIR=PM5MVC12
+SET PM5TARGETSUBDIR=PM5MVC12\bin
+SET NOPAUSE=TRUE
+
+CALL Premake5Common.bat
+
+ECHO *** Set MVC12 specifics and run Premake 5 ***
+
+CD %GUCEF_HOME%
+%VS2013_BATCHPATH%\premake5.exe vs2013
+PAUSE

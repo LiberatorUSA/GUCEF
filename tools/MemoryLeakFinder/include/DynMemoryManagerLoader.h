@@ -147,7 +147,7 @@ LazyLoadMemoryManager( void )
 {
     /* check to make sure we havent already loaded the library */
     if ( 0 != g_memoryManagerModulePtr ) return 1;    
-    if ( WAIT_FAILED == WaitForSingleObject( (HANDLE) g_memoryManagerModulePtr, INFINITE ) ) return 0;
+    if ( WAIT_FAILED == WaitForSingleObject( (HANDLE) g_dynLoadMutex, 30000 ) ) return 0;
     if ( 0 != g_memoryManagerModulePtr ) return 1;
 
     /* check to see if the module is already loaded elsewhere in the process */
