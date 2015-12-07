@@ -132,6 +132,20 @@ CPixelMap::operator=( const CPixelMap& src )
 
 /*--------------------------------------------------------------------------*/
 
+bool
+CPixelMap::AssociatePalette( TPixelMapPtr pallete )
+{GUCEF_TRACE;
+
+    if ( m_pixelStorageFormat == PSF_PALETTE_INDICES )
+    {
+        m_pallete = pallete;
+        return true;
+    }
+    return false;
+}
+
+/*--------------------------------------------------------------------------*/
+
 void
 CPixelMap::Assign( const void* pixelMapData                      , 
                    const UInt32 widthInPixels                    ,

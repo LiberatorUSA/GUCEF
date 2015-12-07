@@ -94,6 +94,11 @@ class GUCEF_IMAGE_EXPORT_CPP CImage
     
     void Assign( const TPixelMapPtr& pixelMapPtr );
     
+    bool Load( const CORE::CString& filePath );
+
+    bool Load( const CORE::CString& filePath ,
+               const CORE::CString& dataType );
+    
     bool Load( CORE::CIOAccess& data         ,
                const CORE::CString& dataType );
 

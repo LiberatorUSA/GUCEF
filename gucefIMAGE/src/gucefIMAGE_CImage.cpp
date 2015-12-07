@@ -28,6 +28,11 @@
 #define GUCEF_CORE_CCODECREGISTRY_H
 #endif /* GUCEF_CORE_CCODECREGISTRY_H ? */
 
+#ifndef GUCEF_CORE_CFILEACCESS_H
+#include "CFileAccess.h"
+#define GUCEF_CORE_CFILEACCESS_H
+#endif /* GUCEF_CORE_CFILEACCESS_H ? */
+
 #ifndef GUCEF_IMAGE_CIMGCODEC_H
 #include "gucefIMAGE_CIMGCodec.h"
 #define GUCEF_IMAGE_CIMGCODEC_H
@@ -225,9 +230,9 @@ CImage::FreeCStyleAccess( TImage* cStyleImage ) const
     for ( UInt32 i=0; i<cStyleImage->imageInfo.nrOfFramesInImage; ++i )
     {
         TImageFrame* frame = &cStyleImage->frames[ i ];
-        delete frame->mipmapLevel;
+        delete[] frame->mipmapLevel;
     }
-    delete cStyleImage->frames;
+    delete[] cStyleImage->frames;
     delete cStyleImage;
 }
 
@@ -454,6 +459,31 @@ CImage::Load( CORE::CIOAccess& data         ,
         }
     }
     return false;
+}
+
+/*-------------------------------------------------------------------------*/
+
+bool
+CImage::Load( const CORE::CString& filePath ,
+              const CORE::CString& dataType )
+{GUCEF_TRACE;
+
+    CORE::CFileAccess fileAccess;
+    if ( fileAccess.Open( filePath ) )
+    {
+        return Load( fileAccess, dataType );
+    }
+    return false;
+}
+
+/*-------------------------------------------------------------------------*/
+
+bool
+CImage::Load( const CORE::CString& filePath )
+{GUCEF_TRACE;
+
+    CORE::CString dataType = CORE::ExtractFileExtention( filePath );
+    return Load( filePath, dataType );
 }
 
 /*-------------------------------------------------------------------------*/

@@ -172,6 +172,12 @@ class GUCEF_IMAGE_EXPORT_CPP CPixelMap
      *      Unloads pixel data if needed and resets values to there defaults
      */
     void Clear( void );
+
+    /**
+     *  Associated the given pallete with the pixel map
+     *  The pixelmap given as the 'palette' argument must of the PALETTE type of the assignment fails
+     */
+    bool AssociatePalette( TPixelMapPtr pallete );
     
     /**
      *  Assigns the data to the object.
@@ -238,6 +244,7 @@ class GUCEF_IMAGE_EXPORT_CPP CPixelMap
     UInt32 m_heightInPixels;
     TPixelStorageFormat m_pixelStorageFormat;
     TBuildinDataType m_pixelComponentDataType;
+    TPixelMapPtr m_pallete;
     
     UInt8* m_pixelMapData; 
 };
