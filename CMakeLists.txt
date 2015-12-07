@@ -261,6 +261,7 @@ add_subdirectory( tests/gucefDRN_TestApp )
 add_subdirectory( tests/gucefLOADER_TestApp )
 add_subdirectory( tests/gucefPRODMAN_TestApp )
 add_subdirectory( tests/gucefPATCHERAPP_TestApp )
+add_subdirectory( tests/MemoryLeakFinder_TestApp )
 
 # Setup GUCEF Plugin style applications
 add_subdirectory( apps/gucefPATCHERAPP )

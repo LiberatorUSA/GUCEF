@@ -18,3 +18,23 @@
         </Linker>
     </Module>
 </ModuleInfoEntry>
+<ModuleInfoEntry>
+    <Module Name="gucefMT_Integrated" Type="CodeIntegrateLocation" Platform="All">
+        <Dependencies>
+            <Dependency Name="gucefHeaders" />
+        </Dependencies>
+        <Preprocessor>
+            <Define String="GUCEF_MT_EMBED_CODE" />
+        </Preprocessor>
+    </Module>
+    <Module Platform="mswin">
+        <Linker>
+            <Dependency Name="Winmm" />
+        </Linker>
+    </Module>
+    <Module Platform="linux">
+        <Linker>
+            <Dependency Name="pthread" />
+        </Linker>
+    </Module>
+</ModuleInfoEntry>

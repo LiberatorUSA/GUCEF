@@ -1,0 +1,17 @@
+<ModuleInfoEntry>
+    <Module Name="MemoryLeakFinder_TestApp" Type="Executable" Platform="mswin">
+        <Dependencies>
+            <Dependency Name="gucefMT" />
+            <Dependency Name="gucefCORE" />
+			<Dependency Name="MemoryLeakFinder" />
+        </Dependencies>
+        <Linker>
+            <Dependency Name="gucefMT" />
+            <Dependency Name="gucefCORE" />
+        </Linker>
+        <Preprocessor>
+            <Define String="GUCEF_MLF_TESTAPP_BUILD_MODULE" />
+			<Define String="MEMCHECK_OLEAPI" />
+        </Preprocessor>
+    </Module>
+</ModuleInfoEntry>

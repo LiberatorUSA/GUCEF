@@ -48,24 +48,10 @@
  *      export only C code or perhaps only C++ code. You can do this with the
  *      following defines
  */
-#define GUCEF_CORE_PUBLIC_CPP_CODE /* do you want to enable the C++ exports ? */
-#define GUCEF_CORE_PUBLIC_C_CODE   /* do you want to enable the C exports ? */
-
-/*
- *      Switch that adds or removes the memory manager code from
- *      the module. If no modules use the memory manager then
- *      comment this switch to get rid of the then unused code.
- */
-#undef ADD_MEMORY_MANAGER     /* do not change this line */
-#define ADD_MEMORY_MANAGER
-
-/*
- *      Switch that activates or deactivates the module memory manager.
- *      This is a debugging tool that will allow you to search for
- *      memory leaks and bounds violations.
- */
-#undef ACTIVATE_MEMORY_MANAGER  /* do not change this line */
-#define ACTIVATE_MEMORY_MANAGER
+#undef GUCEF_MLF_PUBLIC_CPP_CODE /* do not change this line */
+#undef GUCEF_MLF_PUBLIC_C_CODE   /* do not change this line */
+#define GUCEF_MLF_PUBLIC_CPP_CODE /* do you want to enable the C++ exports ? */
+#define GUCEF_MLF_PUBLIC_C_CODE   /* do you want to enable the C exports ? */
 
 /*
  *      Switch htat activates or deactivates the redirection of OLE's 

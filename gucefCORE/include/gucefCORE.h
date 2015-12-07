@@ -84,11 +84,6 @@
 #define GUCEF_CORE_IOACCESS_H
 #endif /* GUCEF_CORE_IOACCESS_H ? */
 
-#ifndef GUCEF_CORE_MEMORYMANAGER_H
-#include "MemoryManager.h"
-#define GUCEF_CORE_MEMORYMANAGER_H
-#endif /* GUCEF_CORE_MEMORYMANAGER_H ? */
-
 #ifndef GUCEF_CORE_CALLSTACK_H
 #include "callstack.h"
 #define GUCEF_CORE_CALLSTACK_H

@@ -278,6 +278,20 @@ MEMMAN_DeAllocateMemory( void *address   ,
 /*-------------------------------------------------------------------------*/
 
 /**
+ *      MEMMAN_DeAllocateMemoryEx():
+ *      This is the main memory deallocation routine.
+ *      This method is used by all of the other de-allocation routines
+ *      for de-allocating and tracking memory.
+ */
+GUCEF_MLF_PUBLIC_C void
+MEMMAN_DeAllocateMemoryEx( const char *file ,
+                           int line         ,
+                           void *address    ,
+                           char type        );
+
+/*-------------------------------------------------------------------------*/
+
+/**
  *      MEMMAN_SetOwner():
  *      This method is used by the deallocation methods to record the source file and line
  *      number that is requesting the allocation.  Note that it is important to create a
@@ -336,7 +350,30 @@ MEMMAN_SysFreeString( const char *file    ,
                       int line            ,
                       wchar_t* bstrString );
 
+/*-------------------------------------------------------------------------*/
 
+/**
+ *      Memory check version of the OLE function SysReAllocString
+ */
+GUCEF_MLF_PUBLIC_C
+void
+MEMMAN_SysReAllocString( const char *file    ,
+                         int line            ,
+                         wchar_t** pbstr     , 
+                         const wchar_t* psz  );
+
+/*-------------------------------------------------------------------------*/
+
+/**
+ *      Memory check version of the OLE function SysReAllocStringLen
+ */
+GUCEF_MLF_PUBLIC_C
+void
+MEMMAN_SysReAllocStringLen( const char *file    ,
+                            int line            ,
+                            wchar_t** pbstr     , 
+                            const wchar_t* psz  ,
+                            unsigned int len    );
 #endif
 
 /*-------------------------------------------------------------------------*/

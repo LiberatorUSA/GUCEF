@@ -58,6 +58,7 @@
 //                                                                         //
 //-------------------------------------------------------------------------*/
 
+#ifdef MEMCHECK_NEWDELETE
 #ifdef __cplusplus
 
 /*-------------------------------------------------------------------------*/
@@ -150,6 +151,112 @@ inline void operator delete[]( void *address, const char *file, int line ) { if 
 /*-------------------------------------------------------------------------*/
 
 #endif /* __cplusplus ? */
+#endif /* MEMCHECK_NEWDELETE ? */
+
+/*-------------------------------------------------------------------------*/
+
+inline
+void*
+MEMMAN_malloc( const char *file, int line, size_t size )
+{
+    return ( 0 == LazyLoadMemoryManager() ? 0 : fp_MEMMAN_AllocateMemory( file, line, size, MM_MALLOC, NULL ) );    
+}
+
+/*-------------------------------------------------------------------------*/
+
+inline
+void*
+MEMMAN_calloc( const char *file, int line, size_t num, size_t size )
+{
+    return ( 0 == LazyLoadMemoryManager() ? 0 : fp_MEMMAN_AllocateMemory( file, line, size*num, MM_CALLOC, NULL ) );    
+}
+
+/*-------------------------------------------------------------------------*/
+
+inline
+void*
+MEMMAN_realloc( const char *file, int line, void* ptr, size_t size )
+{
+    return ( 0 == LazyLoadMemoryManager() ? 0 : ( ptr ? fp_MEMMAN_AllocateMemory( file, line, size, MM_REALLOC, ptr ) : fp_MEMMAN_AllocateMemory( file, line, size, MM_MALLOC, NULL ) ) );
+}
+
+/*-------------------------------------------------------------------------*/
+
+inline
+void
+MEMMAN_free( const char *file, int line, void* ptr )
+{
+    return ( 0 == LazyLoadMemoryManager() ? 0 : fp_MEMMAN_DeAllocateMemoryEx( file, line, ptr, MM_FREE  ) );
+}
+
+/*-------------------------------------------------------------------------*/
+
+#ifdef MEMCHECK_OLEAPI
+
+inline
+wchar_t* 
+MEMMAN_SysAllocString( const char *file, int line, wchar_t* wcharStr )
+{    
+    wchar_t* ptr = ( 0 == LazyLoadMemoryManager() ? 0 : fp_MEMMAN_SysAllocString( file, line, wcharStr ) );
+    //fp_MEMMAN_DumpMemoryAllocations();
+    return ptr;
+}
+
+/*-------------------------------------------------------------------------*/
+
+inline
+wchar_t* 
+MEMMAN_SysAllocStringByteLen( const char *file, int line, const char* str, unsigned int bufferSize )
+{
+    wchar_t* ptr = ( 0 == LazyLoadMemoryManager() ? 0 : fp_MEMMAN_SysAllocStringByteLen( file, line, str, bufferSize ) );
+    //fp_MEMMAN_DumpMemoryAllocations();
+    return ptr;
+}
+
+/*-------------------------------------------------------------------------*/
+
+inline
+wchar_t* 
+MEMMAN_SysAllocStringLen( const char *file, int line, const wchar_t* str, unsigned int charsToCopy )
+{
+    wchar_t* ptr = ( 0 == LazyLoadMemoryManager() ? 0 : fp_MEMMAN_SysAllocStringLen( file, line, str, charsToCopy ) );
+    //fp_MEMMAN_DumpMemoryAllocations();
+    return ptr;
+}
+
+/*-------------------------------------------------------------------------*/
+
+inline
+void 
+MEMMAN_SysFreeString( const char *file, int line, wchar_t* bstrString )
+{
+    ( 0 == LazyLoadMemoryManager() ? 0 : fp_MEMMAN_SysFreeString( file, line, bstrString ) );
+    //fp_MEMMAN_DumpMemoryAllocations();
+}
+
+/*-------------------------------------------------------------------------*/
+
+inline
+int 
+MEMMAN_SysReAllocString( const char* file, int line, wchar_t** pbstr, const wchar_t* psz )
+{
+    int result = ( 0 == LazyLoadMemoryManager() ? 0 : fp_MEMMAN_SysReAllocString( file, line, pbstr, psz ) );
+    //fp_MEMMAN_DumpMemoryAllocations();
+    return result;
+}
+
+/*-------------------------------------------------------------------------*/
+
+inline
+int 
+MEMMAN_SysReAllocStringLen( const char* file, int line, wchar_t** pbstr, const wchar_t* psz, unsigned int len )
+{
+    int result = ( 0 == LazyLoadMemoryManager() ? 0 : fp_MEMMAN_SysReAllocStringLen( file, line, pbstr, psz, len ) );
+    //fp_MEMMAN_DumpMemoryAllocations();
+    return result;
+}
+
+#endif /* MEMCHECK_OLEAPI ? */
 
 /*-------------------------------------------------------------------------//
 //                                                                         //
@@ -161,16 +268,18 @@ inline void operator delete[]( void *address, const char *file, int line ) { if 
  *      Macros that redirect the standard allocation and deallocation utilities
  *      to our memory manager.
  */
- 
+
+#ifdef MEMCHECK_NEWDELETE 
 #ifdef __cplusplus
 #define new              new( __FILE__, __LINE__ )
 #define delete           ( if ( 0 == LazyLoadMemoryManager() ) { assert( 0 ); return; } fp_MEMMAN_SetOwner( __FILE__, __LINE__ ), false) ? fp_MEMMAN_SetOwner( "", 0 ) : delete
 #endif /* __cplusplus ? */
+#endif /* MEMCHECK_NEWDELETE ? */
 
-#define malloc(sz)       ( 0 == LazyLoadMemoryManager() ? 0 : fp_MEMMAN_AllocateMemory( __FILE__, __LINE__, sz, MM_MALLOC, NULL ) )
-#define calloc(num, sz)  ( 0 == LazyLoadMemoryManager() ? 0 : fp_MEMMAN_AllocateMemory( __FILE__, __LINE__, sz*num, MM_CALLOC, NULL ) )
-#define realloc(ptr, sz) ( 0 == LazyLoadMemoryManager() ? 0 : ( ptr ? fp_MEMMAN_AllocateMemory( __FILE__, __LINE__, sz, MM_REALLOC, ptr ) : fp_MEMMAN_AllocateMemory( __FILE__, __LINE__, sz, MM_MALLOC, NULL ) ) )
-#define free(sz)         ( { if ( 0 == LazyLoadMemoryManager() ) fp_MEMMAN_DeAllocateMemory( sz, MM_FREE  ); } )
+#define malloc(size)     MEMMAN_malloc( __FILE__, __LINE__, size )
+#define calloc(num, sz)  MEMMAN_calloc( __FILE__, __LINE__, num, sz )
+#define realloc(ptr, sz) MEMMAN_realloc( __FILE__, __LINE__, ptr, sz )
+#define free(ptr)        MEMMAN_free( __FILE__, __LINE__, ptr )
 
 #undef CHECKMEM
 #undef CHECKMEMSEG
@@ -182,11 +291,15 @@ inline void operator delete[]( void *address, const char *file, int line ) { if 
 #undef SysAllocStringByteLen
 #undef SysAllocStringLen
 #undef SysFreeString
-#define SysAllocString( wcharStr ) ( 0 == LazyLoadMemoryManager() ? 0 : fp_MEMMAN_SysAllocString( __FILE__, __LINE__, wcharStr ) )
-#define SysAllocStringByteLen( psz, len ) ( 0 == LazyLoadMemoryManager() ? 0 : fp_MEMMAN_SysAllocStringByteLen( __FILE__, __LINE__, psz, len ) )
-#define SysAllocStringLen( strIn, ui ) ( 0 == LazyLoadMemoryManager() ? 0 : fp_MEMMAN_SysAllocStringLen( __FILE__, __LINE__, strIn, ui ) )
-#define SysFreeString( bstrString ) ( 0 == LazyLoadMemoryManager() ? 0 : fp_MEMMAN_SysFreeString( __FILE__, __LINE__, bstrString ) )
-#endif
+#undef SysReAllocString
+#undef SysReAllocStringLen
+#define SysAllocString( wcharStr )              MEMMAN_SysAllocString( __FILE__, __LINE__, wcharStr )
+#define SysAllocStringByteLen( psz, len )       MEMMAN_SysAllocStringByteLen( __FILE__, __LINE__, psz, len )
+#define SysAllocStringLen( strIn, ui )          MEMMAN_SysAllocStringLen( __FILE__, __LINE__, strIn, ui )
+#define SysFreeString( bstrString )             MEMMAN_SysFreeString( __FILE__, __LINE__, bstrString )
+#define SysReAllocString( pbstr, psz )          MEMMAN_SysReAllocString( __FILE__, __LINE__, pbstr, psz );
+#define SysReAllocStringLen( pbstr, psz, len )  MEMMAN_SysReAllocStringLen( __FILE__, __LINE__, pbstr, psz, len );
+#endif /* MEMCHECK_OLEAPI ? */
 
 /*-------------------------------------------------------------------------*/
 
