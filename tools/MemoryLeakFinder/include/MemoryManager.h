@@ -350,7 +350,30 @@ MEMMAN_SysFreeString( const char *file    ,
                       int line            ,
                       wchar_t* bstrString );
 
+/*-------------------------------------------------------------------------*/
 
+/**
+ *      Memory check version of the OLE function SysReAllocString
+ */
+GUCEF_MLF_PUBLIC_C
+void
+MEMMAN_SysReAllocString( const char *file    ,
+                         int line            ,
+                         wchar_t** pbstr     , 
+                         const wchar_t* psz  );
+
+/*-------------------------------------------------------------------------*/
+
+/**
+ *      Memory check version of the OLE function SysReAllocStringLen
+ */
+GUCEF_MLF_PUBLIC_C
+void
+MEMMAN_SysReAllocStringLen( const char *file    ,
+                            int line            ,
+                            wchar_t** pbstr     , 
+                            const wchar_t* psz  ,
+                            unsigned int len    );
 #endif
 
 /*-------------------------------------------------------------------------*/

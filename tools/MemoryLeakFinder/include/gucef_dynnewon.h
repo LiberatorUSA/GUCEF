@@ -234,6 +234,28 @@ MEMMAN_SysFreeString( const char *file, int line, wchar_t* bstrString )
     //fp_MEMMAN_DumpMemoryAllocations();
 }
 
+/*-------------------------------------------------------------------------*/
+
+inline
+int 
+MEMMAN_SysReAllocString( const char* file, int line, wchar_t** pbstr, const wchar_t* psz )
+{
+    int result = ( 0 == LazyLoadMemoryManager() ? 0 : fp_MEMMAN_SysReAllocString( file, line, pbstr, psz ) );
+    //fp_MEMMAN_DumpMemoryAllocations();
+    return result;
+}
+
+/*-------------------------------------------------------------------------*/
+
+inline
+int 
+MEMMAN_SysReAllocStringLen( const char* file, int line, wchar_t** pbstr, const wchar_t* psz, unsigned int len )
+{
+    int result = ( 0 == LazyLoadMemoryManager() ? 0 : fp_MEMMAN_SysReAllocStringLen( file, line, pbstr, psz, len ) );
+    //fp_MEMMAN_DumpMemoryAllocations();
+    return result;
+}
+
 #endif /* MEMCHECK_OLEAPI ? */
 
 /*-------------------------------------------------------------------------//
@@ -269,10 +291,14 @@ MEMMAN_SysFreeString( const char *file, int line, wchar_t* bstrString )
 #undef SysAllocStringByteLen
 #undef SysAllocStringLen
 #undef SysFreeString
-#define SysAllocString( wcharStr )         MEMMAN_SysAllocString( __FILE__, __LINE__, wcharStr )
-#define SysAllocStringByteLen( psz, len )  MEMMAN_SysAllocStringByteLen( __FILE__, __LINE__, psz, len )
-#define SysAllocStringLen( strIn, ui )     MEMMAN_SysAllocStringLen( __FILE__, __LINE__, strIn, ui )
-#define SysFreeString( bstrString )        MEMMAN_SysFreeString( __FILE__, __LINE__, bstrString )
+#undef SysReAllocString
+#undef SysReAllocStringLen
+#define SysAllocString( wcharStr )              MEMMAN_SysAllocString( __FILE__, __LINE__, wcharStr )
+#define SysAllocStringByteLen( psz, len )       MEMMAN_SysAllocStringByteLen( __FILE__, __LINE__, psz, len )
+#define SysAllocStringLen( strIn, ui )          MEMMAN_SysAllocStringLen( __FILE__, __LINE__, strIn, ui )
+#define SysFreeString( bstrString )             MEMMAN_SysFreeString( __FILE__, __LINE__, bstrString )
+#define SysReAllocString( pbstr, psz )          MEMMAN_SysReAllocString( __FILE__, __LINE__, pbstr, psz );
+#define SysReAllocStringLen( pbstr, psz, len )  MEMMAN_SysReAllocStringLen( __FILE__, __LINE__, pbstr, psz, len );
 #endif /* MEMCHECK_OLEAPI ? */
 
 /*-------------------------------------------------------------------------*/

@@ -119,6 +119,8 @@ typedef wchar_t* ( *TFP_MEMMAN_SysAllocString )( const char *file, int line, wch
 typedef wchar_t* ( *TFP_MEMMAN_SysAllocStringByteLen )( const char *file, int line, const char* str, unsigned int bufferSize );
 typedef wchar_t* ( *TFP_MEMMAN_SysAllocStringLen )( const char *file, int line, const wchar_t* str, unsigned int charsToCopy );
 typedef void ( *TFP_MEMMAN_SysFreeString )( const char *file, int line, wchar_t* bstrString );
+typedef int ( *TFP_MEMMAN_SysReAllocString )( const char *file, int line, wchar_t** pbstr, const wchar_t* psz );
+typedef int ( *TFP_MEMMAN_SysReAllocStringLen )( const char *file, int line, wchar_t** pbstr, const wchar_t* psz, unsigned int len );
 
 #endif /* MEMCHECK_OLEAPI ? */
 
@@ -159,6 +161,8 @@ static TFP_MEMMAN_SysAllocString fp_MEMMAN_SysAllocString = 0;
 static TFP_MEMMAN_SysAllocStringByteLen fp_MEMMAN_SysAllocStringByteLen = 0;
 static TFP_MEMMAN_SysAllocStringLen fp_MEMMAN_SysAllocStringLen = 0;
 static TFP_MEMMAN_SysFreeString fp_MEMMAN_SysFreeString = 0;
+static TFP_MEMMAN_SysReAllocString fp_MEMMAN_SysReAllocString = 0;
+static TFP_MEMMAN_SysReAllocStringLen fp_MEMMAN_SysReAllocStringLen = 0;
 
 #endif /* MEMCHECK_OLEAPI ? */
 
@@ -245,11 +249,15 @@ LazyLoadMemoryManager( void )
     fp_MEMMAN_SysAllocStringByteLen = (TFP_MEMMAN_SysAllocStringByteLen) GetProcAddress( (HMODULE) g_memoryManagerModulePtr, "MEMMAN_SysAllocStringByteLen" );
     fp_MEMMAN_SysAllocStringLen = (TFP_MEMMAN_SysAllocStringLen) GetProcAddress( (HMODULE) g_memoryManagerModulePtr, "MEMMAN_SysAllocStringLen" );
     fp_MEMMAN_SysFreeString = (TFP_MEMMAN_SysFreeString) GetProcAddress( (HMODULE) g_memoryManagerModulePtr, "MEMMAN_SysFreeString" );
+    fp_MEMMAN_SysReAllocString = (TFP_MEMMAN_SysReAllocString) GetProcAddress( (HMODULE) g_memoryManagerModulePtr, "MEMMAN_SysReAllocString" );
+    fp_MEMMAN_SysReAllocStringLen = (TFP_MEMMAN_SysReAllocStringLen) GetProcAddress( (HMODULE) g_memoryManagerModulePtr, "MEMMAN_SysReAllocStringLen" );
 
     if ( 0 == fp_MEMMAN_SysAllocString ||
          0 == fp_MEMMAN_SysAllocStringByteLen ||
          0 == fp_MEMMAN_SysAllocStringLen ||
-         0 == fp_MEMMAN_SysFreeString )
+         0 == fp_MEMMAN_SysFreeString ||
+         0 == fp_MEMMAN_SysReAllocString ||
+         0 == fp_MEMMAN_SysReAllocStringLen )
     {
         FreeLibrary( (HMODULE) g_memoryManagerModulePtr );
         g_memoryManagerModulePtr = 0;

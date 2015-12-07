@@ -35,6 +35,15 @@
 #define CHECKMEM( addr, size )
 #define CHECKMEMSEG( addr, chunk, size )
 
+#ifdef MEMCHECK_OLEAPI
+#undef SysAllocString
+#undef SysAllocStringByteLen
+#undef SysAllocStringLen
+#undef SysFreeString
+#undef SysReAllocString
+#undef SysReAllocStringLen
+#endif /* MEMCHECK_OLEAPI ? */
+
 #ifdef __cplusplus
   #undef new
   #undef delete

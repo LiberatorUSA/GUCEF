@@ -1651,7 +1651,105 @@ MEMMAN_SysFreeString( const char *file    ,
 }
 
 /*-------------------------------------------------------------------------*/
-//#endif  /* ADD_MEMORY_MANAGER */
+
+void
+MEMMAN_SysReAllocString( const char *file    ,
+                         int line            ,
+                         wchar_t** pbstr     , 
+                         const wchar_t* psz  )
+{
+    MT::CScopeMutex scopeLock( g_manager.m_mutex );
+    
+    // per MSDN pbstr is not allowed to be NULL or the application would crash
+    if ( NULL != pbstr )
+    {
+        g_manager.log( "MEMMAN: NULL passed into SysReAllocString for pbstr, this invalid @ %s:%d\n", file, line );
+        m_assert( NULL != pbstr );
+    }
+    // per MSDN psz is not allowed to be NULL or the application would crash
+    if ( NULL != psz )
+    {
+        g_manager.log( "MEMMAN: NULL passed into SysReAllocString for psz, this invalid @ %s:%d\n", file, line );
+        m_assert( NULL != psz );
+    }
+    
+    // get the size of the psz buffer as per its prefix
+    // do not rely on null termination
+    char* pszBuffer = (char*) psz;
+    unsigned int* bufferPrefix = (unsigned int*) (pszBuffer-4);
+    unsigned int pszBufferSize = *bufferPrefix;
+    
+    char* buffer = ((char*)(*pbstr))-4;
+    buffer = (char*) MEMMAN_AllocateMemory( file, line, 4+pszBufferSize, MM_OLE_ALLOC, buffer );
+    if ( NULL != buffer )
+    {
+        // set the new size in the size prefix
+        *( (unsigned int*) buffer ) = pszBufferSize; 
+        buffer += 4;
+
+        // perform the actual copy into the new buffer
+        memcpy( buffer, psz, pszBufferSize );
+
+        *pbstr = (wchar_t*) buffer;
+    }
+    else
+    {
+        *pbstr = NULL;
+    }
+}
+
+/*-------------------------------------------------------------------------*/
+
+void
+MEMMAN_SysReAllocStringLen( const char *file    ,
+                            int line            ,
+                            wchar_t** pbstr     , 
+                            const wchar_t* psz  ,
+                            unsigned int len    )
+{
+    MT::CScopeMutex scopeLock( g_manager.m_mutex );
+    
+    // per MSDN pbstr is not allowed to be NULL or the application would crash
+    if ( NULL != pbstr )
+    {
+        g_manager.log( "MEMMAN: NULL passed into SysReAllocStringLen for pbstr, this invalid @ %s:%d\n", file, line );
+        m_assert( NULL != pbstr );
+    }
+
+    // get the size of the psz buffer as per its prefix
+    // do not rely on null termination
+    char* pszBuffer = (char*) psz;
+    unsigned int pszBufferSize = 0;
+    if ( NULL != pszBuffer )
+    {
+        unsigned int* bufferPrefix = (unsigned int*) (pszBuffer-4);
+        pszBufferSize = *bufferPrefix;
+    }
+
+    char* buffer = ((char*)(*pbstr))-4;
+    buffer = (char*) MEMMAN_AllocateMemory( file, line, 4+len, MM_OLE_ALLOC, buffer );
+    if ( NULL != buffer )
+    {
+        // set the new size in the size prefix
+        *( (unsigned int*) buffer ) = len; 
+        buffer += 4;
+
+        *pbstr = (wchar_t*) buffer;
+        
+        if ( NULL != psz && 0 < pszBufferSize )
+        {
+            // perform the actual copy into the new buffer
+            // be sure the add the null terminator as per MSDN
+            memcpy( buffer, psz, pszBufferSize );
+            int nullTermOffset = ( pszBufferSize / 2 ) - 1;
+            (*pbstr)[ nullTermOffset ] = 0;
+        }        
+    }
+    else
+    {
+        *pbstr = NULL;
+    }
+}
 
 /*-------------------------------------------------------------------------//
 //                                                                         //
