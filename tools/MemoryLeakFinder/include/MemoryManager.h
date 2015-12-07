@@ -278,6 +278,20 @@ MEMMAN_DeAllocateMemory( void *address   ,
 /*-------------------------------------------------------------------------*/
 
 /**
+ *      MEMMAN_DeAllocateMemoryEx():
+ *      This is the main memory deallocation routine.
+ *      This method is used by all of the other de-allocation routines
+ *      for de-allocating and tracking memory.
+ */
+GUCEF_MLF_PUBLIC_C void
+MEMMAN_DeAllocateMemoryEx( const char *file ,
+                           int line         ,
+                           void *address    ,
+                           char type        );
+
+/*-------------------------------------------------------------------------*/
+
+/**
  *      MEMMAN_SetOwner():
  *      This method is used by the deallocation methods to record the source file and line
  *      number that is requesting the allocation.  Note that it is important to create a

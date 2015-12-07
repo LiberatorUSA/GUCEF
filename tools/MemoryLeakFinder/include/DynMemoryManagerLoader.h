@@ -73,9 +73,6 @@
 //                                                                         //
 //-------------------------------------------------------------------------*/
 
-typedef unsigned __int32 UInt32;
-
-
 /*
  *      User API, these functions can be used to set parameters within the Memory
  *      Manager to control the type and extent of the memory tests that are performed.
@@ -83,20 +80,20 @@ typedef unsigned __int32 UInt32;
  *      Memory Manager automatically.
  */
 
-typedef UInt32 ( *TFP_MEMMAN_Initialize )( void );
+typedef unsigned __int32 ( *TFP_MEMMAN_Initialize )( void );
 typedef void ( *TFP_MEMMAN_Shutdown )( void );
 typedef void ( *TFP_MEMMAN_DumpLogReport )( void );
 typedef void ( *TFP_MEMMAN_DumpMemoryAllocations )( void );
 typedef void ( *TFP_MEMMAN_SetLogFile )( const char *file );
-typedef void ( *TFP_MEMMAN_SetExhaustiveTesting )( UInt32 test );
-typedef void ( *TFP_MEMMAN_SetLogAlways )( UInt32 log );
-typedef void ( *TFP_MEMMAN_SetPaddingSize )( UInt32 clean );
-typedef void ( *TFP_MEMMAN_CleanLogFile )( UInt32 test );
+typedef void ( *TFP_MEMMAN_SetExhaustiveTesting )( unsigned __int32 test );
+typedef void ( *TFP_MEMMAN_SetLogAlways )( unsigned __int32 log );
+typedef void ( *TFP_MEMMAN_SetPaddingSize )( unsigned __int32 clean );
+typedef void ( *TFP_MEMMAN_CleanLogFile )( unsigned __int32 test );
 typedef void ( *TFP_MEMMAN_BreakOnAllocation )( int alloccount );
 typedef void ( *TFP_MEMMAN_BreakOnDeallocation )( void *address );
 typedef void ( *TFP_MEMMAN_BreakOnReallocation )( void *address );
-typedef void ( *TFP_MEMMAN_Validate )( const void* address, UInt32 blocksize, const char *file, int line );
-typedef void ( *TFP_MEMMAN_ValidateChunk )( const void* address, const void* chunk, UInt32 blocksize, const char *file, int line );
+typedef void ( *TFP_MEMMAN_Validate )( const void* address, unsigned __int32 blocksize, const char *file, int line );
+typedef void ( *TFP_MEMMAN_ValidateChunk )( const void* address, const void* chunk, unsigned __int32 blocksize, const char *file, int line );
 
 /*-------------------------------------------------------------------------*/
 
@@ -106,6 +103,7 @@ typedef void ( *TFP_MEMMAN_ValidateChunk )( const void* address, const void* chu
 
 typedef void* ( *TFP_MEMMAN_AllocateMemory )( const char *file, int line, size_t size, char type, void *address );
 typedef void ( *TFP_MEMMAN_DeAllocateMemory )( void *address, char type );
+typedef void ( *TFP_MEMMAN_DeAllocateMemoryEx )( const char *file, int line, void *address, char type );
 typedef void ( *TFP_MEMMAN_SetOwner )( const char *file, int line );
 
 
@@ -149,6 +147,7 @@ static TFP_MEMMAN_ValidateChunk fp_MEMMAN_ValidateChunk = 0;
 
 static TFP_MEMMAN_AllocateMemory fp_MEMMAN_AllocateMemory = 0;
 static TFP_MEMMAN_DeAllocateMemory fp_MEMMAN_DeAllocateMemory = 0;
+static TFP_MEMMAN_DeAllocateMemoryEx fp_MEMMAN_DeAllocateMemoryEx = 0;
 static TFP_MEMMAN_SetOwner fp_MEMMAN_SetOwner = 0;
 
 
@@ -156,10 +155,10 @@ static TFP_MEMMAN_SetOwner fp_MEMMAN_SetOwner = 0;
 
 #ifdef MEMCHECK_OLEAPI
 
-static fp_MEMMAN_SysAllocString = 0;
-static fp_MEMMAN_SysAllocStringByteLen = 0;
-static fp_MEMMAN_SysAllocStringLen = 0;
-static fp_MEMMAN_SysFreeString = 0;
+static TFP_MEMMAN_SysAllocString fp_MEMMAN_SysAllocString = 0;
+static TFP_MEMMAN_SysAllocStringByteLen fp_MEMMAN_SysAllocStringByteLen = 0;
+static TFP_MEMMAN_SysAllocStringLen fp_MEMMAN_SysAllocStringLen = 0;
+static TFP_MEMMAN_SysFreeString fp_MEMMAN_SysFreeString = 0;
 
 #endif /* MEMCHECK_OLEAPI ? */
 
@@ -167,6 +166,7 @@ static fp_MEMMAN_SysFreeString = 0;
 
 static void* g_memoryManagerModulePtr = 0; 
 static void* g_dynLoadMutex = CreateMutex( NULL, FALSE, NULL );
+static const char* MemoryLeakFinderLib = "MemoryLeakFinder_d.dll";
 
 /*-------------------------------------------------------------------------//
 //                                                                         //
@@ -184,11 +184,11 @@ LazyLoadMemoryManager( void )
     if ( 0 != g_memoryManagerModulePtr ) return 1;
 
     /* check to see if the module is already loaded elsewhere in the process */
-    g_memoryManagerModulePtr = (void*) GetModuleHandleA( "MemoryLeakFinder.dll" );
+    g_memoryManagerModulePtr = (void*) GetModuleHandleA( MemoryLeakFinderLib );
     if ( 0 == g_memoryManagerModulePtr )
     {
         /* load the library */
-        g_memoryManagerModulePtr = (void*) LoadLibrary( "MemoryLeakFinder.dll" );
+        g_memoryManagerModulePtr = (void*) LoadLibrary( MemoryLeakFinderLib );
         if ( 0 == g_memoryManagerModulePtr )
         {
             ReleaseMutex( (HANDLE) g_dynLoadMutex );
@@ -213,20 +213,59 @@ LazyLoadMemoryManager( void )
     fp_MEMMAN_ValidateChunk = (TFP_MEMMAN_ValidateChunk) GetProcAddress( (HMODULE) g_memoryManagerModulePtr, "MEMMAN_ValidateChunk" );
     fp_MEMMAN_AllocateMemory = (TFP_MEMMAN_AllocateMemory) GetProcAddress( (HMODULE) g_memoryManagerModulePtr, "MEMMAN_AllocateMemory" );
     fp_MEMMAN_DeAllocateMemory = (TFP_MEMMAN_DeAllocateMemory) GetProcAddress( (HMODULE) g_memoryManagerModulePtr, "MEMMAN_DeAllocateMemory" );
+    fp_MEMMAN_DeAllocateMemoryEx = (TFP_MEMMAN_DeAllocateMemoryEx) GetProcAddress( (HMODULE) g_memoryManagerModulePtr, "MEMMAN_DeAllocateMemoryEx" );
     fp_MEMMAN_SetOwner = (TFP_MEMMAN_SetOwner) GetProcAddress( (HMODULE) g_memoryManagerModulePtr, "MEMMAN_SetOwner" );
+
+    if ( 0 == fp_MEMMAN_Initialize ||
+         0 == fp_MEMMAN_Shutdown ||
+         0 == fp_MEMMAN_DumpLogReport ||
+         0 == fp_MEMMAN_DumpMemoryAllocations ||
+         0 == fp_MEMMAN_SetLogFile ||
+         0 == fp_MEMMAN_SetExhaustiveTesting ||
+         0 == fp_MEMMAN_SetLogAlways ||
+         0 == fp_MEMMAN_SetPaddingSize || 
+         0 == fp_MEMMAN_CleanLogFile ||
+         0 == fp_MEMMAN_BreakOnAllocation ||
+         0 == fp_MEMMAN_BreakOnDeallocation ||
+         0 == fp_MEMMAN_BreakOnReallocation ||
+         0 == fp_MEMMAN_Validate ||
+         0 == fp_MEMMAN_ValidateChunk ||
+         0 == fp_MEMMAN_AllocateMemory ||
+         0 == fp_MEMMAN_DeAllocateMemory ||
+         0 == fp_MEMMAN_SetOwner ) 
+    {
+        FreeLibrary( (HMODULE) g_memoryManagerModulePtr );
+        g_memoryManagerModulePtr = 0;
+        return 0;
+    }
 
     #ifdef MEMCHECK_OLEAPI
 
-    fp_MEMMAN_SysAllocString = (TFP_MEMMAN_AllocateMemory) GetProcAddress( (HMODULE) g_memoryManagerModulePtr, "MEMMAN_SysAllocString" );
-    fp_MEMMAN_SysAllocStringByteLen = (TFP_MEMMAN_AllocateMemory) GetProcAddress( (HMODULE) g_memoryManagerModulePtr, "MEMMAN_SysAllocStringByteLen" );
-    fp_MEMMAN_SysAllocStringLen = (TFP_MEMMAN_AllocateMemory) GetProcAddress( (HMODULE) g_memoryManagerModulePtr, "MEMMAN_SysAllocStringLen" );
-    fp_MEMMAN_SysFreeString = (TFP_MEMMAN_AllocateMemory) GetProcAddress( (HMODULE) g_memoryManagerModulePtr, "MEMMAN_SysFreeString" );
+    fp_MEMMAN_SysAllocString = (TFP_MEMMAN_SysAllocString) GetProcAddress( (HMODULE) g_memoryManagerModulePtr, "MEMMAN_SysAllocString" );
+    fp_MEMMAN_SysAllocStringByteLen = (TFP_MEMMAN_SysAllocStringByteLen) GetProcAddress( (HMODULE) g_memoryManagerModulePtr, "MEMMAN_SysAllocStringByteLen" );
+    fp_MEMMAN_SysAllocStringLen = (TFP_MEMMAN_SysAllocStringLen) GetProcAddress( (HMODULE) g_memoryManagerModulePtr, "MEMMAN_SysAllocStringLen" );
+    fp_MEMMAN_SysFreeString = (TFP_MEMMAN_SysFreeString) GetProcAddress( (HMODULE) g_memoryManagerModulePtr, "MEMMAN_SysFreeString" );
 
-    #undef /* MEMCHECK_OLEAPI ? */
+    if ( 0 == fp_MEMMAN_SysAllocString ||
+         0 == fp_MEMMAN_SysAllocStringByteLen ||
+         0 == fp_MEMMAN_SysAllocStringLen ||
+         0 == fp_MEMMAN_SysFreeString )
+    {
+        FreeLibrary( (HMODULE) g_memoryManagerModulePtr );
+        g_memoryManagerModulePtr = 0;
+        return 0;
+    }
 
-    ReleaseMutex( (HANDLE) g_dynLoadMutex );
+    #endif /* MEMCHECK_OLEAPI ? */
 
-    return 1;
+    if ( fp_MEMMAN_Initialize() )
+    {
+        ReleaseMutex( (HANDLE) g_dynLoadMutex );
+        g_dynLoadMutex = 0;
+
+        return 1;
+    }
+    return 0;
 }
 
 /*-------------------------------------------------------------------------*/

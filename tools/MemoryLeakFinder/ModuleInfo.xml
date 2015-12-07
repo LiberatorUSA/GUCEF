@@ -1,11 +1,14 @@
 <ModuleInfoEntry>
     <Module Name="MemoryLeakFinder" Type="SharedLibrary" Platform="mswin">
         <Dependencies>
+            <Dependency Name="gucefHeaders" />		
         </Dependencies>
         <Linker>
         </Linker>
         <Preprocessor>
-            <Define String="MEMORYLEAKFINDER_BUILD_MODULE" />
+            <Define String="GUCEF_MLF_BUILD_MODULE" />
+			<Define String="MEMCHECK_OLEAPI" />
+			<Define String="GUCEF_MT_EMBED_CODE" />
         </Preprocessor>
     </Module>
 </ModuleInfoEntry>
