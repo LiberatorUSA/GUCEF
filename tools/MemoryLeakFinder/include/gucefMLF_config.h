@@ -67,6 +67,13 @@
 #undef ACTIVATE_MEMORY_MANAGER  /* do not change this line */
 #define ACTIVATE_MEMORY_MANAGER
 
+/*
+ *      Switch htat activates or deactivates the redirection of OLE's 
+ *      memory management APIs
+ */
+#undef MEMCHECK_OLEAPI  /* do not change this line */
+#define MEMCHECK_OLEAPI
+
 /*-------------------------------------------------------------------------*/
 
 #endif /* GUCEF_MLF_CONFIG_H */

@@ -182,7 +182,6 @@ set( HEADER_FILES
   include/ioaccess.h
   include/macros.h
   include/md5.h
-  include/MemoryManager.h
   include/MemoryPool.h
   include/MemorySegment.h
   include/MFILE.h
@@ -340,7 +339,6 @@ set( SOURCE_FILES
   src/gucefCORE_CTEventHandlerFunctor.cpp
   src/IOACCESS.c
   src/md5.c
-  src/MemoryManager.cpp
   src/MemoryPool.cpp
   src/MemorySegment.cpp
   src/MFILE.c

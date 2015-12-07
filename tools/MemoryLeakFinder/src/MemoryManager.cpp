@@ -33,23 +33,22 @@
 #include <time.h>             // the MemoryManager.h header.  All other custom file should be
 #include <assert.h>           // included after the MemoryManager.h header. 
  
-#ifndef GUCEF_MT_MUTEX_H
-#include "gucefMT_mutex.h"            /* gucefMT mutex implementation */ 
-#define GUCEF_MT_MUTEX_H
-#endif /* GUCEF_MT_MUTEX_H ? */
- 
 #include "MemoryManager.h"    
 
-/*******************************************************************************************/
-/*******************************************************************************************/
-// ***** Implementation:
-
-#ifdef ADD_MEMORY_MANAGER  // Only execute if the memory manager has been enabled.
-
-/*******************************************************************************************/
 // Turn off the defined macros to avoid confusion.  We want to avoid circular definition, 
 // it is also not desired to track memory allocations within the memory manager module.
-#include "gucef_new_off.h"
+#include "gucef_dynnewoff.h"
+
+/*-------------------------------------------------------------------------//
+//                                                                         //
+//      NAMESPACE                                                          //
+//                                                                         //
+//-------------------------------------------------------------------------*/
+
+namespace GUCEF {
+namespace MLF {
+
+/*-------------------------------------------------------------------------*/
 
 #define SETBREAKPOINT __asm { int 3 }
 
@@ -69,7 +68,7 @@ const int  HASH_SIZE        = 1024;
 int   NumAllocations        = 0;
 char  LOGFILE[40]           = "GUCEFmemlog.txt"; 
 const char* const s_allocationTypes[] = { "Unknown", "new", "new[]", "malloc", "calloc",
-                                          "realloc", "delete", "delete[]", "free" };
+                                          "realloc", "delete", "delete[]", "free", "OLESysAlloc", "OLESysFree" };
 
 
 /*******************************************************************************************/
@@ -751,7 +750,7 @@ MemoryNode* MemoryManager::allocateMemory( void )
 void MemoryManager::dumpLogReport( void )
 {
 	if (m_cleanLogFileOnFirstRun) {      // Cleanup the log?
-		unlink( LOGFILE );                 // Delete the existing log file.
+		_unlink( LOGFILE );                 // Delete the existing log file.
 		m_cleanLogFileOnFirstRun = false;  // Toggle the flag.
 	}
 
@@ -830,7 +829,7 @@ void MemoryManager::dumpLogReport( void )
 void MemoryManager::dumpMemoryAllocations( void )
 {
 	if (m_cleanLogFileOnFirstRun) {      // Cleanup the log?
-		unlink( LOGFILE );                 // Delete the existing log file.
+		_unlink( LOGFILE );                 // Delete the existing log file.
 		m_cleanLogFileOnFirstRun = false;  // Toggle the flag.
 	}
 
@@ -873,7 +872,7 @@ void MemoryManager::dumpMemoryAllocations( void )
 void MemoryManager::log( char *s, ... )
 {
 	if (m_cleanLogFileOnFirstRun) {      // Cleanup the log?
-		unlink( LOGFILE );                 // Delete the existing log file.
+		_unlink( LOGFILE );                 // Delete the existing log file.
 		m_cleanLogFileOnFirstRun = false;  // Toggle the flag.
 	}
 
@@ -883,7 +882,7 @@ void MemoryManager::log( char *s, ... )
 	vsprintf( buffer, s, list );
 	va_end( list );
 
-        DEBUGOUTPUT( buffer ); 
+        //DEBUGOUTPUT( buffer ); 
 
 	FILE	*fp = fopen( LOGFILE, "ab" );  // Open the log file
 	if (!fp) return;
@@ -904,7 +903,7 @@ void MemoryManager::log( char *s, ... )
  */
 int MemoryManager::getHashIndex( const void *address )
 {
-	return ((INTPTR)address >> 4) & (HASH_SIZE -1);
+	return ((Int32)address >> 4) & (HASH_SIZE -1);
 }
 
 /*-------------------------------------------------------------------------*/
@@ -1056,10 +1055,10 @@ char *formatOwnerString( const char *file, int line )
 char *sourceFileStripper( const char *sourceFile )
 {
 	if (!sourceFile) return NULL;
-	char *ptr = strrchr( sourceFile, '\\' );
-	if (ptr) return ptr + 1;
+	const char *ptr = strrchr( sourceFile, '\\' );
+	if (ptr) return (char*) ptr + 1;
 	ptr = strrchr(sourceFile, '/');
-	if (ptr) return ptr + 1;
+	if (ptr) return (char*) ptr + 1;
 	return (char*)sourceFile;
 }
 
@@ -1471,7 +1470,127 @@ MEMMAN_SetOwner( const char *file, int line )
 	SETBREAKPOINT;
 }
 
-#endif  /* ADD_MEMORY_MANAGER */
+/*-------------------------------------------------------------------------*/
+
+wchar_t*
+MEMMAN_SysAllocString( const char* file   ,
+                       int line           ,
+                       const wchar_t* str )
+{
+    if ( NULL == str ) 
+        return NULL;   
+
+    int i = 0;
+    while ( str[ i ] != 0 ) 
+        ++i;
+
+    char* buffer = (char*) MEMMAN_AllocateMemory( file, line, 4+(i*sizeof(wchar_t)), MM_OLE_ALLOC, NULL );
+    if ( NULL != buffer )
+    {
+        unsigned int* bufferPrefix = (unsigned int*) buffer;
+        *bufferPrefix = i;
+        buffer+=4; 
+
+        return (wchar_t*) buffer;
+    }
+    return NULL;
+}
+
+/*-------------------------------------------------------------------------*/
+
+wchar_t*
+MEMMAN_SysAllocStringByteLen( const char* file        ,
+                              int line                ,
+                              const char* str         ,
+                              unsigned int bufferSize )
+{
+    char* buffer = (char*) MEMMAN_AllocateMemory( file, line, 4+bufferSize, MM_OLE_ALLOC, NULL );
+    if ( NULL != buffer )
+    {
+        unsigned int* bufferPrefix = (unsigned int*) buffer;
+        *bufferPrefix = bufferSize;
+        buffer += 4;
+        
+        if ( NULL != str && 0 < bufferSize )
+        {
+            unsigned int strLength = strlen( str );
+            if ( strLength > bufferSize )
+                strLength = bufferSize-1;
+
+            memcpy( buffer, str, strLength );
+            buffer[ strLength ] = 0;
+        } 
+
+        return (wchar_t*) buffer;
+    }
+    return NULL;
+}
+
+/*-------------------------------------------------------------------------*/
+
+wchar_t*
+MEMMAN_SysAllocStringLen( const char* file         ,
+                          int line                 ,
+                          const wchar_t* str       ,
+                          unsigned int charsToCopy )
+{
+    int bufferSize = (charsToCopy+1)*2;
+    char* buffer = (char*) MEMMAN_AllocateMemory( file, line, 4+bufferSize, MM_OLE_ALLOC, NULL );
+    if ( NULL != buffer )
+    {
+        unsigned int* bufferPrefix = (unsigned int*) buffer;
+        *bufferPrefix = bufferSize;
+        buffer += 4;
+        
+        if ( NULL != str && 0 < bufferSize )
+        {
+            int strLength = 0;
+            while ( str[ strLength ] != 0 ) 
+                ++strLength;
+
+            int strByteLength = strLength*2;
+
+            if ( strByteLength > bufferSize )
+                strByteLength = bufferSize-2;
+
+            wchar_t* wbuffer = (wchar_t*) buffer;
+            memcpy( wbuffer, str, strLength );            
+            wbuffer[ charsToCopy+1 ] = 0;
+        } 
+
+        return (wchar_t*) buffer;
+    }
+    return NULL;
+}
+
+/*-------------------------------------------------------------------------*/
+
+void
+MEMMAN_SysFreeString( const char *file    ,
+                      int line            ,
+                      wchar_t* bstrString )
+{
+    if ( NULL == bstrString )    
+        return;
+
+    char* buffer = ( (char*) bstrString ) - 4;
+
+    MEMMAN_DeAllocateMemory( buffer, MM_OLE_FREE );
+}
+
+/*-------------------------------------------------------------------------*/
+//#endif  /* ADD_MEMORY_MANAGER */
+
+/*-------------------------------------------------------------------------//
+//                                                                         //
+//      NAMESPACE                                                          //
+//                                                                         //
+//-------------------------------------------------------------------------*/
+
+}; /* namespace MLF */
+}; /* namespace GUCEF */
+
+/*--------------------------------------------------------------------------*/
 
 // ***** End of MemoryManager.cpp
 /*******************************************************************************************/

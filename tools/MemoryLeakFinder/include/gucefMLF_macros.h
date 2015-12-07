@@ -31,10 +31,10 @@
 //                                                                         //
 //-------------------------------------------------------------------------*/
 
-#ifndef GUCEF_CORE_ETYPES_H
-#include "gucefCORE_ETypes.h"
-#define GUCEF_CORE_ETYPES_H
-#endif /* GUCEF_CORE_ETYPES_H ? */
+#ifndef GUCEF_MLF_ETYPES_H
+#include "gucefMLF_ETypes.h"
+#define GUCEF_MLF_ETYPES_H
+#endif /* GUCEF_MLF_ETYPES_H ? */
 
 #ifndef GUCEF_MLF_CONFIG_H
 #include "gucefMLF_config.h"        /* Module build configuration */

@@ -53,6 +53,8 @@
 #undef MM_DELETE
 #undef MM_DELETE_ARRAY
 #undef MM_FREE
+#undef MM_OLE_ALLOC
+#undef MM_OLE_FREE
 #define MM_UNKNOWN        0
 #define MM_NEW            1
 #define MM_NEW_ARRAY      2
@@ -62,6 +64,8 @@
 #define MM_DELETE         6
 #define MM_DELETE_ARRAY   7
 #define MM_FREE           8
+#define MM_OLE_ALLOC      9
+#define MM_OLE_FREE       10
 
 /*-------------------------------------------------------------------------//
 //                                                                         //
@@ -104,6 +108,22 @@ typedef void* ( *TFP_MEMMAN_AllocateMemory )( const char *file, int line, size_t
 typedef void ( *TFP_MEMMAN_DeAllocateMemory )( void *address, char type );
 typedef void ( *TFP_MEMMAN_SetOwner )( const char *file, int line );
 
+
+/*-------------------------------------------------------------------------*/
+
+#ifdef MEMCHECK_OLEAPI
+
+/*
+ *  OLE Memory tracking functions which are invoked by the OLE memory allocation overrides
+ */
+
+typedef wchar_t* ( *TFP_MEMMAN_SysAllocString )( const char *file, int line, wchar_t* wcharStr );
+typedef wchar_t* ( *TFP_MEMMAN_SysAllocStringByteLen )( const char *file, int line, const char* str, unsigned int bufferSize );
+typedef wchar_t* ( *TFP_MEMMAN_SysAllocStringLen )( const char *file, int line, const wchar_t* str, unsigned int charsToCopy );
+typedef void ( *TFP_MEMMAN_SysFreeString )( const char *file, int line, wchar_t* bstrString );
+
+#endif /* MEMCHECK_OLEAPI ? */
+
 /*-------------------------------------------------------------------------//
 //                                                                         //
 //      GLOBAL VARS                                                        //
@@ -131,6 +151,18 @@ static TFP_MEMMAN_AllocateMemory fp_MEMMAN_AllocateMemory = 0;
 static TFP_MEMMAN_DeAllocateMemory fp_MEMMAN_DeAllocateMemory = 0;
 static TFP_MEMMAN_SetOwner fp_MEMMAN_SetOwner = 0;
 
+
+/*-------------------------------------------------------------------------*/
+
+#ifdef MEMCHECK_OLEAPI
+
+static fp_MEMMAN_SysAllocString = 0;
+static fp_MEMMAN_SysAllocStringByteLen = 0;
+static fp_MEMMAN_SysAllocStringLen = 0;
+static fp_MEMMAN_SysFreeString = 0;
+
+#endif /* MEMCHECK_OLEAPI ? */
+
 /*-------------------------------------------------------------------------*/
 
 static void* g_memoryManagerModulePtr = 0; 
@@ -146,7 +178,8 @@ static int
 LazyLoadMemoryManager( void )
 {
     /* check to make sure we havent already loaded the library */
-    if ( 0 != g_memoryManagerModulePtr ) return 1;    
+    if ( 0 != g_memoryManagerModulePtr ) return 1;
+    if ( 0 == g_dynLoadMutex ) return 0;    
     if ( WAIT_FAILED == WaitForSingleObject( (HANDLE) g_dynLoadMutex, 30000 ) ) return 0;
     if ( 0 != g_memoryManagerModulePtr ) return 1;
 
@@ -181,6 +214,15 @@ LazyLoadMemoryManager( void )
     fp_MEMMAN_AllocateMemory = (TFP_MEMMAN_AllocateMemory) GetProcAddress( (HMODULE) g_memoryManagerModulePtr, "MEMMAN_AllocateMemory" );
     fp_MEMMAN_DeAllocateMemory = (TFP_MEMMAN_DeAllocateMemory) GetProcAddress( (HMODULE) g_memoryManagerModulePtr, "MEMMAN_DeAllocateMemory" );
     fp_MEMMAN_SetOwner = (TFP_MEMMAN_SetOwner) GetProcAddress( (HMODULE) g_memoryManagerModulePtr, "MEMMAN_SetOwner" );
+
+    #ifdef MEMCHECK_OLEAPI
+
+    fp_MEMMAN_SysAllocString = (TFP_MEMMAN_AllocateMemory) GetProcAddress( (HMODULE) g_memoryManagerModulePtr, "MEMMAN_SysAllocString" );
+    fp_MEMMAN_SysAllocStringByteLen = (TFP_MEMMAN_AllocateMemory) GetProcAddress( (HMODULE) g_memoryManagerModulePtr, "MEMMAN_SysAllocStringByteLen" );
+    fp_MEMMAN_SysAllocStringLen = (TFP_MEMMAN_AllocateMemory) GetProcAddress( (HMODULE) g_memoryManagerModulePtr, "MEMMAN_SysAllocStringLen" );
+    fp_MEMMAN_SysFreeString = (TFP_MEMMAN_AllocateMemory) GetProcAddress( (HMODULE) g_memoryManagerModulePtr, "MEMMAN_SysFreeString" );
+
+    #undef /* MEMCHECK_OLEAPI ? */
 
     ReleaseMutex( (HANDLE) g_dynLoadMutex );
 

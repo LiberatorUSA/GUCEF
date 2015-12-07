@@ -39,10 +39,10 @@
 //                                                                         //
 //-------------------------------------------------------------------------*/
 
-#ifndef GUCEF_CORE_ETYPES_H
-#include "gucefCORE_ETypes.h"      /* simple types used */
-#define GUCEF_CORE_ETYPES_H
-#endif /* GUCEF_CORE_ETYPES_H ? */
+#ifndef GUCEF_MLF_CONFIG_H
+#include "gucefMLF_config.h"
+#define GUCEF_MLF_CONFIG_H
+#endif /* GUCEF_MLF_CONFIG_H ? */
 
 #ifndef GUCEF_MLF_MACROS_H
 #include "gucefMLF_macros.h"      /* module build configuration */
@@ -51,17 +51,20 @@
 
 /*-------------------------------------------------------------------------//
 //                                                                         //
-//      UTILITIES                                                          //
+//      NAMESPACE                                                          //
 //                                                                         //
 //-------------------------------------------------------------------------*/
 
-/*
- *      Only compile in the memory manager code if one or more modules use
- *      the GUCEF memory manager. The following define check takes care of this.
- */
-#ifdef ADD_MEMORY_MANAGER
+#ifdef __cplusplus
+namespace GUCEF {
+namespace MLF {
+#endif /* __cplusplus ? */
 
-/*-------------------------------------------------------------------------*/
+/*-------------------------------------------------------------------------//
+//                                                                         //
+//      UTILITIES                                                          //
+//                                                                         //
+//-------------------------------------------------------------------------*/
 
 /*
  *      Prevent C++ name mangling
@@ -228,6 +231,8 @@ MEMMAN_ValidateChunk( const void* address ,
 #undef MM_DELETE
 #undef MM_DELETE_ARRAY
 #undef MM_FREE
+#undef MM_OLE_ALLOC
+#undef MM_OLE_FREE
 #define MM_UNKNOWN        0
 #define MM_NEW            1
 #define MM_NEW_ARRAY      2
@@ -237,6 +242,8 @@ MEMMAN_ValidateChunk( const void* address ,
 #define MM_DELETE         6
 #define MM_DELETE_ARRAY   7
 #define MM_FREE           8
+#define MM_OLE_ALLOC      9
+#define MM_OLE_FREE       10
 
 /*-------------------------------------------------------------------------//
 //                                                                         //
@@ -283,6 +290,57 @@ MEMMAN_SetOwner( const char *file ,
 
 /*-------------------------------------------------------------------------*/
 
+#ifdef MEMCHECK_OLEAPI
+
+/**
+ *      Memory check version of the OLE function SysAllocString
+ */
+GUCEF_MLF_PUBLIC_C
+wchar_t*
+MEMMAN_SysAllocString( const char* file ,
+                       int line         ,
+                       const wchar_t*   );
+
+/*-------------------------------------------------------------------------*/
+
+/**
+ *      Memory check version of the OLE function SysAllocStringByteLen
+ */
+GUCEF_MLF_PUBLIC_C
+wchar_t*
+MEMMAN_SysAllocStringByteLen( const char* file        ,
+                              int line                ,
+                              const char* str         ,
+                              unsigned int bufferSize );
+
+/*-------------------------------------------------------------------------*/
+
+/**
+ *      Memory check version of the OLE function SysAllocStringLen
+ */
+GUCEF_MLF_PUBLIC_C
+wchar_t*
+MEMMAN_SysAllocStringLen( const char* file         ,
+                          int line                 ,
+                          const wchar_t* strIn     ,
+                          unsigned int charsToCopy );
+
+/*-------------------------------------------------------------------------*/
+
+/**
+ *      Memory check version of the OLE function SysFreeString
+ */
+GUCEF_MLF_PUBLIC_C
+void
+MEMMAN_SysFreeString( const char *file    ,
+                      int line            ,
+                      wchar_t* bstrString );
+
+
+#endif
+
+/*-------------------------------------------------------------------------*/
+
 /*
  *      End the C++ name mangling protection
  */
@@ -290,11 +348,18 @@ MEMMAN_SetOwner( const char *file ,
 };
 #endif
 
-/*-------------------------------------------------------------------------*/
+/*-------------------------------------------------------------------------//
+//                                                                         //
+//      NAMESPACE                                                          //
+//                                                                         //
+//-------------------------------------------------------------------------*/
 
-#endif /* ADD_MEMORY_MANAGER */
+#ifdef __cplusplus
+}; /* namespace MLF */
+}; /* namespace GUCEF */
+#endif /* __cplusplus ? */
 
-/*-------------------------------------------------------------------------*/
+/*--------------------------------------------------------------------------*/
 
 #endif /* GUCEF_MLF_MEMORYMANAGER_H */
 

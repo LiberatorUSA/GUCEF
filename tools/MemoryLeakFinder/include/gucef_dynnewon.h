@@ -167,8 +167,8 @@ inline void operator delete[]( void *address, const char *file, int line ) { if 
 #define delete           ( if ( 0 == LazyLoadMemoryManager() ) { assert( 0 ); return; } fp_MEMMAN_SetOwner( __FILE__, __LINE__ ), false) ? fp_MEMMAN_SetOwner( "", 0 ) : delete
 #endif /* __cplusplus ? */
 
-#define malloc(sz)       ( 0 == LazyLoadMemoryManager() ? 0 : fp_MEMMAN_AllocateMemory(   __FILE__, __LINE__, sz, MM_MALLOC, NULL ) )
-#define calloc(num, sz)  ( 0 == LazyLoadMemoryManager() ? 0 : fp_MEMMAN_AllocateMemory(   __FILE__, __LINE__, sz*num, MM_CALLOC, NULL ) )
+#define malloc(sz)       ( 0 == LazyLoadMemoryManager() ? 0 : fp_MEMMAN_AllocateMemory( __FILE__, __LINE__, sz, MM_MALLOC, NULL ) )
+#define calloc(num, sz)  ( 0 == LazyLoadMemoryManager() ? 0 : fp_MEMMAN_AllocateMemory( __FILE__, __LINE__, sz*num, MM_CALLOC, NULL ) )
 #define realloc(ptr, sz) ( 0 == LazyLoadMemoryManager() ? 0 : ( ptr ? fp_MEMMAN_AllocateMemory( __FILE__, __LINE__, sz, MM_REALLOC, ptr ) : fp_MEMMAN_AllocateMemory( __FILE__, __LINE__, sz, MM_MALLOC, NULL ) ) )
 #define free(sz)         ( { if ( 0 == LazyLoadMemoryManager() ) fp_MEMMAN_DeAllocateMemory( sz, MM_FREE  ); } )
 
@@ -176,6 +176,17 @@ inline void operator delete[]( void *address, const char *file, int line ) { if 
 #undef CHECKMEMSEG
 #define CHECKMEM( addr, size ) ( 0 == LazyLoadMemoryManager() ? 0 : fp_MEMMAN_Validate( addr, size, __FILE__, __LINE__ ) )
 #define CHECKMEMSEG( addr, chunk, size ) ( 0 == LazyLoadMemoryManager() ? 0 : fp_MEMMAN_ValidateChunk( addr, chunk, size, __FILE__, __LINE__ ) )
+
+#ifdef MEMCHECK_OLEAPI
+#undef SysAllocString
+#undef SysAllocStringByteLen
+#undef SysAllocStringLen
+#undef SysFreeString
+#define SysAllocString( wcharStr ) ( 0 == LazyLoadMemoryManager() ? 0 : fp_MEMMAN_SysAllocString( __FILE__, __LINE__, wcharStr ) )
+#define SysAllocStringByteLen( psz, len ) ( 0 == LazyLoadMemoryManager() ? 0 : fp_MEMMAN_SysAllocStringByteLen( __FILE__, __LINE__, psz, len ) )
+#define SysAllocStringLen( strIn, ui ) ( 0 == LazyLoadMemoryManager() ? 0 : fp_MEMMAN_SysAllocStringLen( __FILE__, __LINE__, strIn, ui ) )
+#define SysFreeString( bstrString ) ( 0 == LazyLoadMemoryManager() ? 0 : fp_MEMMAN_SysFreeString( __FILE__, __LINE__, bstrString ) )
+#endif
 
 /*-------------------------------------------------------------------------*/
 
