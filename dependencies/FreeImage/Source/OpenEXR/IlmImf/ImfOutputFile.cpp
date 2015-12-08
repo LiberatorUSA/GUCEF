@@ -57,6 +57,7 @@
 #include <string>
 #include <vector>
 #include <fstream>
+#include <algorithm>
 #include <assert.h>
 
 #undef min

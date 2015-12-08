@@ -294,7 +294,7 @@ ConvertToPSF( const FREE_IMAGE_TYPE imageType       ,
         case FIT_UINT16 :
         case FIT_INT16 :
         {
-            return PSF_SINGLE_CHANNEL;
+            return PSF_SINGLE_CHANNEL_STD_LUMINANCE;
         }
         case FIT_RGBF :
         case FIT_RGB16 :
@@ -333,7 +333,9 @@ GetChannelCountForFormat( const int pixelStorageFormat )
         case PSF_SINGLE_CHANNEL_RED :
         case PSF_SINGLE_CHANNEL_GREEN :
         case PSF_SINGLE_CHANNEL_BLUE :
-        case PSF_SINGLE_CHANNEL_LUMINANCE :
+        case PSF_SINGLE_CHANNEL_STD_LUMINANCE :
+        case PSF_SINGLE_CHANNEL_P1_LUMINANCE :
+        case PSF_SINGLE_CHANNEL_P2_LUMINANCE :
         case PSF_SINGLE_CHANNEL_ALPHA :
         {
             return 1;
