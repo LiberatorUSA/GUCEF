@@ -297,8 +297,8 @@ MEMMAN_SysReAllocStringLen( const char* file, int line, wchar_t** pbstr, const w
 #define SysAllocStringByteLen( psz, len )       MEMMAN_SysAllocStringByteLen( __FILE__, __LINE__, psz, len )
 #define SysAllocStringLen( strIn, ui )          MEMMAN_SysAllocStringLen( __FILE__, __LINE__, strIn, ui )
 #define SysFreeString( bstrString )             MEMMAN_SysFreeString( __FILE__, __LINE__, bstrString )
-#define SysReAllocString( pbstr, psz )          MEMMAN_SysReAllocString( __FILE__, __LINE__, pbstr, psz );
-#define SysReAllocStringLen( pbstr, psz, len )  MEMMAN_SysReAllocStringLen( __FILE__, __LINE__, pbstr, psz, len );
+#define SysReAllocString( pbstr, psz )          MEMMAN_SysReAllocString( __FILE__, __LINE__, pbstr, psz )
+#define SysReAllocStringLen( pbstr, psz, len )  MEMMAN_SysReAllocStringLen( __FILE__, __LINE__, pbstr, psz, len )
 #endif /* MEMCHECK_OLEAPI ? */
 
 /*-------------------------------------------------------------------------*/
