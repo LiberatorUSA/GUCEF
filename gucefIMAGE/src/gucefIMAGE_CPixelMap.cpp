@@ -133,12 +133,109 @@ CPixelMap::operator=( const CPixelMap& src )
 /*--------------------------------------------------------------------------*/
 
 bool
-CPixelMap::AssociatePalette( TPixelMapPtr pallete )
+CPixelMap::ApplyPalette( TPixelMapPtr palette, TPixelMapPtr& resultImage ) const
 {GUCEF_TRACE;
 
     if ( m_pixelStorageFormat == PSF_PALETTE_INDICES )
     {
-        m_pallete = pallete;
+        // Allocate a new blank pixelmap with the right dimensions
+        resultImage = new CPixelMap( NULL, m_widthInPixels, m_heightInPixels, palette->GetPixelStorageFormat(), palette->GetPixelComponentDataType() );
+        
+        UInt32 pixelByteSize = palette->GetSizeOfPixelInBytes();        
+        for ( UInt32 i=0; i<m_heightInPixels; ++i )
+        {
+            for ( UInt32 n=0; n<m_widthInPixels; ++n )
+            {
+                UInt32 pixelIndex = (i*m_widthInPixels)+n;
+
+                UInt32 paletteIndex = 0;
+                switch ( m_pixelComponentDataType )
+                {
+                    case MT::DATATYPE_FLOAT32:
+                    {
+                        Float32 index = *(Float32*) m_pixelMapData + ( sizeof(Float32) * pixelIndex );
+                        paletteIndex = (UInt32) index;
+                        break;
+                    }                            
+                    case MT::DATATYPE_FLOAT64:
+                    {
+                        Float64 index = *(Float64*) m_pixelMapData + ( sizeof(Float64) * pixelIndex );
+                        paletteIndex = (UInt32) index;
+                        break;
+                    }
+                    case MT::DATATYPE_UINT8:
+                    {
+                        paletteIndex = *(UInt8*) m_pixelMapData + ( sizeof(UInt8) * pixelIndex );
+                        break;
+                    }
+                    case MT::DATATYPE_INT8:
+                    {
+                        paletteIndex = *(Int8*) m_pixelMapData + ( sizeof(Int8) * pixelIndex );
+                        break;
+                    }
+                    case MT::DATATYPE_UINT16:
+                    {
+                        paletteIndex = *(UInt16*) m_pixelMapData + ( sizeof(UInt16) * pixelIndex );
+                        break;
+                    }
+                    case MT::DATATYPE_INT16:
+                    {
+                        paletteIndex = *(UInt16*) m_pixelMapData + ( sizeof(UInt16) * pixelIndex );
+                        break;
+                    }
+                    case MT::DATATYPE_UINT32:
+                    {
+                        paletteIndex = *(UInt32*) m_pixelMapData + ( sizeof(UInt32) * pixelIndex );
+                        break;
+                    }
+                    case MT::DATATYPE_INT32:
+                    {
+                        paletteIndex = *(UInt32*) m_pixelMapData + ( sizeof(UInt32) * pixelIndex );
+                        break;
+                    }
+                    case MT::DATATYPE_UINT64:
+                    {
+                        UInt64 index = *(UInt64*) m_pixelMapData + ( sizeof(UInt64) * pixelIndex );
+                        paletteIndex = (UInt32) index;
+                        break;
+                    }
+                    case MT::DATATYPE_INT64:
+                    {
+                        Int64 index = *(Int64*) m_pixelMapData + ( sizeof(Int64) * pixelIndex );
+                        paletteIndex = (UInt32) index;
+                        break;
+                    }
+                }
+
+                UInt32 srcPixelOffset = paletteIndex*pixelByteSize;
+                UInt32 dstPixelOffset = pixelIndex*pixelByteSize;
+
+                memcpy( resultImage->m_pixelMapData+dstPixelOffset, palette->m_pixelMapData+srcPixelOffset, pixelByteSize );
+            }
+        }
+        
+        
+        return true;
+    }
+    return false;
+}
+
+/*--------------------------------------------------------------------------*/
+
+bool
+CPixelMap::ApplyPalette( TPixelMapPtr palette )
+{GUCEF_TRACE;
+    
+    TPixelMapPtr resultImage; 
+    if ( ApplyPalette( palette, resultImage ) )
+    {
+        // for efficiency we just steal the data
+        m_widthInPixels = resultImage->m_widthInPixels;
+        m_heightInPixels = resultImage->m_heightInPixels;
+        m_pixelStorageFormat = resultImage->m_pixelStorageFormat;
+        m_pixelComponentDataType = resultImage->m_pixelComponentDataType;
+        m_pixelMapData = resultImage->m_pixelMapData;
+        resultImage->m_pixelMapData = NULL;
         return true;
     }
     return false;

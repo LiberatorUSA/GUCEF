@@ -174,10 +174,16 @@ class GUCEF_IMAGE_EXPORT_CPP CPixelMap
     void Clear( void );
 
     /**
-     *  Associated the given pallete with the pixel map
-     *  The pixelmap given as the 'palette' argument must of the PALETTE type of the assignment fails
+     *  If the pixel map consists of palette indices you can apply another pixelmap as the palette
+     *  Doing so will 'inflate' the pixelmap into a non-palettized image
      */
-    bool AssociatePalette( TPixelMapPtr pallete );
+    bool ApplyPalette( TPixelMapPtr pallete );
+
+    /**
+     *  If the pixel map consists of palette indices you can apply another pixelmap as the palette
+     *  Doing so will 'inflate' the pixelmap into a non-palettized image
+     */
+    bool ApplyPalette( TPixelMapPtr pallete, TPixelMapPtr& resultImage ) const;
     
     /**
      *  Assigns the data to the object.
@@ -244,7 +250,6 @@ class GUCEF_IMAGE_EXPORT_CPP CPixelMap
     UInt32 m_heightInPixels;
     TPixelStorageFormat m_pixelStorageFormat;
     TBuildinDataType m_pixelComponentDataType;
-    TPixelMapPtr m_pallete;
     
     UInt8* m_pixelMapData; 
 };

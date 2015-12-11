@@ -102,6 +102,11 @@ class GUCEF_IMAGE_EXPORT_CPP CImage
     bool Load( CORE::CIOAccess& data         ,
                const CORE::CString& dataType );
 
+    bool Save( const CORE::CString& filePath );
+
+    bool Save( const CORE::CString& filePath ,
+               const CORE::CString& dataType );
+
     bool Save( CORE::CIOAccess& data         ,
                const CORE::CString& dataType );
     

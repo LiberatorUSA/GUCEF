@@ -358,10 +358,10 @@ CImage::GetPixelMap( const UInt32 frameIndex /* = 0 */  ,
                      const UInt32 mipMapLevel /* = 0 */ ) const
 {GUCEF_TRACE;
 
-    if ( m_frameList.size() > frameIndex )
+    if ( !m_frameList.empty() && frameIndex < m_frameList.size() )
     {
         const TMipMapList& mipmapList = m_frameList[ frameIndex ];
-        if ( mipmapList.size() > mipMapLevel )
+        if ( !mipmapList.empty() && mipMapLevel < mipmapList.size() )
         {
             return mipmapList[ mipMapLevel ];
         }
@@ -376,7 +376,7 @@ CImage::TMipMapList&
 CImage::GetFrame( const UInt32 frameIndex /* = 0 */ )
 {GUCEF_TRACE;
 
-    if ( m_frameList.size() > frameIndex )
+    if ( !m_frameList.empty() && frameIndex < m_frameList.size() )
     {
         return m_frameList[ frameIndex ];
     }
@@ -390,7 +390,7 @@ const CImage::TMipMapList&
 CImage::GetFrame( const UInt32 frameIndex /* = 0 */ ) const
 {GUCEF_TRACE;
 
-    if ( m_frameList.size() > frameIndex )
+    if ( !m_frameList.empty() && frameIndex < m_frameList.size() )
     {
         return m_frameList[ frameIndex ];
     }
@@ -515,6 +515,31 @@ CImage::Save( CORE::CIOAccess& data         ,
         }
     }
     return false;
+}
+
+/*-------------------------------------------------------------------------*/
+
+bool
+CImage::Save( const CORE::CString& filePath ,
+              const CORE::CString& dataType )
+{GUCEF_TRACE;
+
+    CORE::CFileAccess fileAccess;
+    if ( fileAccess.Open( filePath, "wb" ) )
+    {
+        return Save( fileAccess, dataType );
+    }
+    return false;
+}
+
+/*-------------------------------------------------------------------------*/
+
+bool
+CImage::Save( const CORE::CString& filePath )
+{GUCEF_TRACE;
+
+    CORE::CString dataType = CORE::ExtractFileExtention( filePath );
+    return Save( filePath, dataType );
 }
 
 /*-------------------------------------------------------------------------//
