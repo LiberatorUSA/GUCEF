@@ -54,7 +54,7 @@
 /*---------------------------------------------------------------------------*/
 
 static char* supportedTypes[] = {
-    "1"
+    "1", "5"
 };
 
 static const UInt32 codecCount = sizeof( supportedTypes ) / sizeof(char*); // 31;
@@ -321,7 +321,7 @@ IMGCODECPLUGIN_DecodeImage( void* pluginData      ,
     /* input sanity check */
     if ( ( NULL == imageOutput ) || ( NULL == codecType ) || ( NULL == input ) || ( NULL == imageOutput ) ) return 0;
 
-    if ( 0 == strcmp( codecType, "1" ) )
+    if ( 0 == strcmp( codecType, "1" ) )  // Palettized image
     {
         UInt16 ui16 = 0;
         
@@ -342,7 +342,7 @@ IMGCODECPLUGIN_DecodeImage( void* pluginData      ,
         image->frames[ 0 ].mipmapLevel[ 0 ].mipLevelInfo.pixelStorageFormat = PSF_PALETTE_INDICES;
 
         /* skip bytes till image size fields */
-        input->setpos( input, 37 );        
+        input->setpos( input, 55 );        
         if ( 1 != input->read( input, &ui16, 2, 1 ) )
             { IMGCODECPLUGIN_FreeImageStorage( image, *imageData ); return 0; }
         image->frames[ 0 ].mipmapLevel[ 0 ].mipLevelInfo.frameWidth = ui16;
@@ -355,6 +355,47 @@ IMGCODECPLUGIN_DecodeImage( void* pluginData      ,
                 image->frames[ 0 ].mipmapLevel[ 0 ].mipLevelInfo.frameWidth * image->frames[ 0 ].mipmapLevel[ 0 ].mipLevelInfo.frameHeight;
         image->frames[ 0 ].mipmapLevel[ 0 ].pixelData = malloc( image->frames[ 0 ].mipmapLevel[ 0 ].pixelDataSizeInBytes );
         if ( 1 != input->read( input, image->frames[ 0 ].mipmapLevel[ 0 ].pixelData, image->frames[ 0 ].mipmapLevel[ 0 ].pixelDataSizeInBytes, 1 ) )
+            { IMGCODECPLUGIN_FreeImageStorage( image, *imageData ); return 0; }
+    
+        *imageOutput = image;
+        *imageData = NULL;
+
+        return 1;
+    }
+    else
+    if ( 0 == strcmp( codecType, "5" ) ) // Image Palette
+    {
+        UInt16 ui16 = 0;
+        UInt32 dataSize = 0;
+        
+        /* setup the image struct in the same way for any simple single frame/level image */
+        TImage* image = malloc( sizeof(TImage) );
+        image->imageInfo.version = GUCEF_IMAGE_TIMAGEINFO_VERSION;
+        image->imageInfo.nrOfFramesInImage = 1;
+        image->frames = malloc( sizeof(TImageFrame) );
+        image->frames[ 0 ].version = GUCEF_IMAGE_TIMAGEFRAME_VERSION;        
+        image->frames[ 0 ].frameInfo.version = GUCEF_IMAGE_TIMAGEFRAMEINFO_VERSION;
+        image->frames[ 0 ].frameInfo.nrOfMipmapLevels = 1;
+        image->frames[ 0 ].mipmapLevel = malloc( sizeof(TImageMipMapLevel) );
+        image->frames[ 0 ].mipmapLevel[ 0 ].version = GUCEF_IMAGE_TIMAGEMIPMAPLEVEL_VERSION;
+        image->frames[ 0 ].mipmapLevel[ 0 ].mipLevelInfo.version = GUCEF_IMAGE_TIMAGEMIPMAPLEVELINFO_VERSION;
+
+        /* setup properties which are fixed due to the codecType */
+        image->frames[ 0 ].mipmapLevel[ 0 ].mipLevelInfo.pixelComponentDataType = DATATYPE_UINT8;
+        image->frames[ 0 ].mipmapLevel[ 0 ].mipLevelInfo.pixelStorageFormat = PSF_RGB;
+        
+        input->seek( input, 0, SEEK_END );
+        dataSize = input->tell( input );
+        dataSize -= 55;
+
+        image->frames[ 0 ].mipmapLevel[ 0 ].mipLevelInfo.frameWidth = dataSize / 3;
+        image->frames[ 0 ].mipmapLevel[ 0 ].mipLevelInfo.frameHeight = 1;
+        image->frames[ 0 ].mipmapLevel[ 0 ].pixelDataSizeInBytes = dataSize;
+
+        /* skip bytes till color values and read the RGB values */
+        input->setpos( input, 55 );        
+        image->frames[ 0 ].mipmapLevel[ 0 ].pixelData = malloc( dataSize );
+        if ( 1 != input->read( input, image->frames[ 0 ].mipmapLevel[ 0 ].pixelData, dataSize, 1 ) )
             { IMGCODECPLUGIN_FreeImageStorage( image, *imageData ); return 0; }
     
         *imageOutput = image;
