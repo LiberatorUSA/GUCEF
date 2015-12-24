@@ -31,11 +31,6 @@
 #define GUCEF_CORE_CDVSTRING_H
 #endif /* GUCEF_CORE_CDVSTRING_H ? */
 
-#ifndef GUCEF_CORE_CDYNAMICARRAY_H
-#include "CDynamicArray.h"
-#define GUCEF_CORE_CDYNAMICARRAY_H
-#endif /* GUCEF_CORE_CDYNAMICARRAY_H ? */
-
 /*-------------------------------------------------------------------------//
 //                                                                         //
 //      NAMESPACE                                                          //
@@ -143,7 +138,7 @@ class GUCEF_CORE_PUBLIC_CPP CStateMachine
         UInt32 _initialstate;
         CMachineState* _curstate;
         bool _updatestate;
-        CDynamicArray _states;
+        std::vector< CMachineState* > _states;
 };
 
 /*-------------------------------------------------------------------------//

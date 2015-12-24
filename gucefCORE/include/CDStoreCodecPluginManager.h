@@ -41,11 +41,6 @@
 #define GUCEF_CORE_CPLUGINMANAGER_H
 #endif /* GUCEF_CORE_CPLUGINMANAGER_H ? */
 
-#ifndef GUCEF_CORE_CDYNAMICARRAY_H
-#include "CDynamicArray.h"      /* dynamic array implementation */
-#define GUCEF_CORE_CDYNAMICARRAY_H
-#endif /* GUCEF_CORE_CDYNAMICARRAY_H ? */
-
 #ifndef GUCEF_CORE_CDSTORECODECPLUGIN_H
 #include "CDStoreCodecPlugin.h"
 #define GUCEF_CORE_CDSTORECODECPLUGIN_H

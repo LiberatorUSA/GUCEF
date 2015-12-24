@@ -30,11 +30,6 @@
 #define GUCEF_CORE_CICODEC_H
 #endif /* GUCEF_CORE_CICODEC_H ? */
 
-#ifndef GUCEF_CORE_CSTRINGLIST_H
-#include "CStringList.h"
-#define GUCEF_CORE_CSTRINGLIST_H
-#endif /* GUCEF_CORE_CSTRINGLIST_H ? */
-
 #ifndef GUCEF_CORE_GUCEF_ESSENTIALS_H
 #include "gucef_essentials.h"
 #define GUCEF_CORE_GUCEF_ESSENTIALS_H

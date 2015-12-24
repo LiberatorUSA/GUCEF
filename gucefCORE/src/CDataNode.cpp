@@ -23,7 +23,6 @@
 //                                                                         //
 //-------------------------------------------------------------------------*/
 
-#include "CStringList.h"
 #include "CDataNode.h"  /* definition of the class implemented here */
 
 #ifndef GUCEF_CORE_GUCEF_ESSENTIALS_H

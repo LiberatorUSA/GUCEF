@@ -46,6 +46,8 @@ namespace CORE {
 //                                                                         //
 //-------------------------------------------------------------------------*/
 
+struct SStateTransition;
+
 /**
  *      Internally used class for the CStateMachine class.
  *      Represents a system state and stores the state transition 
@@ -78,11 +80,12 @@ class CMachineState
         UInt32 GetTransition( UInt32 conditionvalue );        
         
         private:
+
         CMachineState( void );
         CMachineState( const CMachineState& src );    
         CMachineState& operator=( const CMachineState& src );    
                 
-        CDynamicArray _transitions;
+        std::vector< struct SStateTransition* > _transitions;
         CStateHandler* _handler;
         UInt32 _state;
 };

@@ -85,15 +85,17 @@ CImageLoader::ConvertPixelFormat( IMAGE::TPixelMapPtr pixelMap )
             }
             case IMAGE::PSF_BGRA :
             {
-                pixelMap->ConvertPixelStorageFormatTo( IMAGE::PSF_RGBA );
+                pixelMap->ConvertFormatTo( IMAGE::PSF_RGBA, pixelMap );
                 return MyGUI::PixelFormat( MyGUI::PixelFormat::R8G8B8A8 );
             }
-            case IMAGE::PSF_SINGLE_CHANNEL : return MyGUI::PixelFormat( MyGUI::PixelFormat::L8 );
+            case IMAGE::PSF_SINGLE_CHANNEL_GRAYSCALE : return MyGUI::PixelFormat( MyGUI::PixelFormat::L8 );
             case IMAGE::PSF_SINGLE_CHANNEL_RED : return MyGUI::PixelFormat( MyGUI::PixelFormat::L8 );
             case IMAGE::PSF_SINGLE_CHANNEL_GREEN : return MyGUI::PixelFormat( MyGUI::PixelFormat::L8 );
             case IMAGE::PSF_SINGLE_CHANNEL_BLUE : return MyGUI::PixelFormat( MyGUI::PixelFormat::L8 );
             case IMAGE::PSF_SINGLE_CHANNEL_ALPHA : return MyGUI::PixelFormat( MyGUI::PixelFormat::L8 );
-            case IMAGE::PSF_SINGLE_CHANNEL_LUMINANCE : return MyGUI::PixelFormat( MyGUI::PixelFormat::L8 );
+            case IMAGE::PSF_SINGLE_CHANNEL_STD_LUMINANCE : return MyGUI::PixelFormat( MyGUI::PixelFormat::L8 );
+            case IMAGE::PSF_SINGLE_CHANNEL_P1_LUMINANCE : return MyGUI::PixelFormat( MyGUI::PixelFormat::L8 );
+            case IMAGE::PSF_SINGLE_CHANNEL_P2_LUMINANCE : return MyGUI::PixelFormat( MyGUI::PixelFormat::L8 );
 
             case IMAGE::PSF_LUMINANCE_ALPHA : return MyGUI::PixelFormat( MyGUI::PixelFormat::L8A8 );
 
@@ -114,7 +116,7 @@ CImageLoader::TranslatePixelFormat( const MyGUI::PixelFormat myGuiPixelFormat )
 {
     if ( myGuiPixelFormat == MyGUI::PixelFormat( MyGUI::PixelFormat::R8G8B8 ) ) return IMAGE::PSF_RGB;
     if ( myGuiPixelFormat == MyGUI::PixelFormat( MyGUI::PixelFormat::R8G8B8A8 ) ) return IMAGE::PSF_RGBA;
-    if ( myGuiPixelFormat == MyGUI::PixelFormat( MyGUI::PixelFormat::L8 ) ) return IMAGE::PSF_SINGLE_CHANNEL_LUMINANCE;
+    if ( myGuiPixelFormat == MyGUI::PixelFormat( MyGUI::PixelFormat::L8 ) ) return IMAGE::PSF_SINGLE_CHANNEL_STD_LUMINANCE;
     if ( myGuiPixelFormat == MyGUI::PixelFormat( MyGUI::PixelFormat::L8A8 ) ) return IMAGE::PSF_LUMINANCE_ALPHA;
     return IMAGE::PSF_UNKNOWN;
 }

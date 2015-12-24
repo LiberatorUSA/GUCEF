@@ -50,7 +50,7 @@ namespace MT {
 /**
  *      Default constructor, allocates storage for a mutex.
  */
-CScopeMutex::CScopeMutex( CMutex& mutex )
+CScopeMutex::CScopeMutex( const CMutex& mutex )
         : m_mutex( &mutex )
 {
         assert( m_mutex );

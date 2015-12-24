@@ -33,10 +33,10 @@
 #define GUCEF_CORE_CSYSCONSOLECLIENT_H
 #endif /* GUCEF_CORE_CSYSCONSOLECLIENT_H ? */
 
-#ifndef GUCEF_CORE_CDYNAMICARRAY_H
-#include "CDynamicArray.h"
-#define GUCEF_CORE_CDYNAMICARRAY_H
-#endif /* GUCEF_CORE_CDYNAMICARRAY_H ? */
+#ifndef GUCEF_MT_CSCOPEMUTEX_H
+#include "gucefMT_CScopeMutex.h"
+#define GUCEF_MT_CSCOPEMUTEX_H
+#endif /* GUCEF_MT_CSCOPEMUTEX_H ? */
 
 #ifndef GUCEF_CORE_CTRACER_H
 #include "CTracer.h"
@@ -75,18 +75,6 @@ namespace CORE {
 //                                                                         //
 //-------------------------------------------------------------------------*/
 
-struct CSysConsole::SCmdChannel
-{
-        CString name;
-        CDynamicArray channels;
-        CDynamicArray functions;
-        struct SCmdChannel* parent;
-        UInt32 views;
-};
-typedef struct CSysConsole::SCmdChannel TCmdChannel;
-
-/*-------------------------------------------------------------------------*/
-
 struct CSysConsole::SFunctionHook
 {
         CString name;
@@ -94,6 +82,18 @@ struct CSysConsole::SFunctionHook
         CISysConsoleCmdHandler* handler;
 };
 typedef struct CSysConsole::SFunctionHook TFunctionHook;
+
+/*-------------------------------------------------------------------------*/
+
+struct CSysConsole::SCmdChannel
+{
+        CString name;
+        std::vector< struct CSysConsole::SCmdChannel* > channels;
+        std::vector< TFunctionHook* > functions;
+        struct SCmdChannel* parent;
+        UInt32 views;
+};
+typedef struct CSysConsole::SCmdChannel TCmdChannel;
 
 /*-------------------------------------------------------------------------//
 //                                                                         //
@@ -145,23 +145,24 @@ void
 CSysConsole::DelTree( TCmdChannel* tree )
 {GUCEF_TRACE;
 
-        CDynamicArray* array = &tree->channels;
+        std::vector<TCmdChannel*>& array = tree->channels;
         TCmdChannel* chentry;
-        for ( UInt32 i=0; i<array->GetCount(); ++i )
+        for ( UInt32 i=0; i<array.size(); ++i )
         {
-                chentry = static_cast<TCmdChannel*>( (*array)[ i ] );
+                chentry = array[ i ];
                 DelTree( chentry );
                 delete chentry;
         }
-        array->Clear();
-        array = &tree->functions;
-        TFunctionHook* fhook;
-        for ( UInt32 i=0; i<array->GetCount(); ++i )
+        array.clear();
+        
+        std::vector<TFunctionHook*>& farray = tree->functions;
+        TFunctionHook* fhook = NULL;
+        for ( UInt32 i=0; i<farray.size(); ++i )
         {
-                fhook = static_cast<TFunctionHook*>( (*array)[ i ] );
+                fhook = farray[ i ];
                 delete fhook;
         }
-        array->Clear();
+        farray.clear();
 
         delete tree; // is this safe ?
 }
@@ -173,17 +174,17 @@ CSysConsole::FindChannel( struct SCmdChannel* curchannel ,
                           const CString& name            )
 {GUCEF_TRACE;
 
-        const CDynamicArray* channels = &curchannel->channels;
-        TCmdChannel* chentry;
-        for ( UInt32 i=0; i<channels->GetCount(); ++i )
+    const std::vector< TCmdChannel* >& channels = curchannel->channels;
+    TCmdChannel* chentry;
+    for ( UInt32 i=0; i<channels.size(); ++i )
+    {
+        chentry = channels[ i ];
+        if ( chentry->name == name )
         {
-                chentry = static_cast<TCmdChannel*>( (*channels)[ i ] );
-                if ( chentry->name == name )
-                {
-                        return chentry;
-                }
+            return chentry;
         }
-        return NULL;
+    }
+    return NULL;
 }
 
 /*-------------------------------------------------------------------------*/
@@ -236,7 +237,7 @@ CSysConsole::BuildTree( struct SCmdChannel* curchannel ,
                         newch->name = leftover.SubstrToChar( '\\', true );
                         newch->parent = parent;
                         newch->views = 0;
-                        parent->channels.AppendEntry( newch );
+                        parent->channels.push_back( newch );
                         parent = newch;
                         leftover = leftover.CutChars( newch->name.Length()+1, true );
                 }
@@ -254,11 +255,11 @@ CSysConsole::FindFunction( const struct SCmdChannel* curchannel ,
                            const CString& funcname              )
 {GUCEF_TRACE;
 
-        const CDynamicArray* commands = &curchannel->functions;
-        TFunctionHook* cmdentry;
-        for ( UInt32 i=0; i<commands->GetCount(); ++i )
+        const std::vector< TFunctionHook* >& commands = curchannel->functions;
+        TFunctionHook* cmdentry = 0;
+        for ( UInt32 i=0; i<commands.size(); ++i )
         {
-                cmdentry = static_cast<TFunctionHook*>( (*commands)[ i ] );
+                cmdentry = commands[ i ];
                 if ( cmdentry->name == funcname )
                 {
                         return cmdentry;
@@ -292,7 +293,7 @@ CSysConsole::RegisterCmd( const CString& path                ,
                         func->argdefs = args;
                         func->handler = cmdhandler;
 
-                        channel->functions.AppendEntry( func );
+                        channel->functions.push_back( func );
 
                         _datalock.Unlock();
                         return true;
@@ -318,10 +319,9 @@ void
 CSysConsole::InitClient( CSysConsoleClient* client )
 {GUCEF_TRACE;
 
-        _datalock.Lock();
+        MT::CScopeMutex scopeLock( _datalock );
         client->channel = _root;
         ++_root->views;
-        _datalock.Unlock();
 }
 
 /*-------------------------------------------------------------------------*/
@@ -573,15 +573,14 @@ std::vector< CString >
 CSysConsole::GetDirList( const CSysConsoleClient* client ) const
 {GUCEF_TRACE;
 
-        _datalock.Lock();
-        CDynamicArray* channels = &(static_cast< TCmdChannel* >( client->channel )->channels);
-        std::vector< CString > list;
-        for ( UInt32 i=0; i<channels->GetCount(); ++i )
-        {
-                list.push_back( static_cast<TCmdChannel*>( (*channels)[ i ] )->name );
-        }
-        _datalock.Unlock();
-        return list;
+    MT::CScopeMutex scopeLock( _datalock );
+    std::vector< TCmdChannel* >& channels = static_cast< TCmdChannel* >( client->channel )->channels;
+    std::vector< CString > list;
+    for ( UInt32 i=0; i<channels.size(); ++i )
+    {
+            list.push_back( channels[ i ]->name );
+    }
+    return list;
 }
 
 /*-------------------------------------------------------------------------*/
@@ -590,15 +589,14 @@ std::vector< CString >
 CSysConsole::GetCmdList( const CSysConsoleClient* client ) const
 {GUCEF_TRACE;
 
-        _datalock.Lock();
-        CDynamicArray* functions = &(static_cast< TCmdChannel* >( client->channel )->functions);
-        std::vector< CString > list;
-        for ( UInt32 i=0; i<functions->GetCount(); ++i )
-        {
-                list.push_back( static_cast<TFunctionHook*>( (*functions)[ i ] )->name );
-        }
-        _datalock.Unlock();
-        return list;
+    MT::CScopeMutex scopeLock( _datalock );
+    std::vector< TFunctionHook* >& functions = static_cast< TCmdChannel* >( client->channel )->functions;
+    std::vector< CString > list;
+    for ( UInt32 i=0; i<functions.size(); ++i )
+    {
+            list.push_back( functions[ i ]->name );
+    }
+    return list;
 }
 
 /*-------------------------------------------------------------------------*/

@@ -26,11 +26,6 @@
 #include <string.h>
 #include <assert.h>
 
-#ifndef GUCEF_CORE_CSTRINGLIST_H
-#include "CStringList.h"
-#define GUCEF_CORE_CSTRINGLIST_H
-#endif /* GUCEF_CORE_CSTRINGLIST_H ? */
-
 #ifndef GUCEF_CORE_DVSTRUTILS_H
 #include "dvstrutils.h"
 #define GUCEF_CORE_DVSTRUTILS_H

@@ -53,13 +53,6 @@ typedef struct SStateTransition TStateTransition;
 //                                                                         //
 //-------------------------------------------------------------------------*/
 
-CMachineState::CMachineState( void )
-{
-        /* dummy, should not be used */
-}
-
-/*-------------------------------------------------------------------------*/
-
 CMachineState::CMachineState( UInt32 state           ,
                               CStateHandler* handler )
         : _state( state )     ,
@@ -69,31 +62,13 @@ CMachineState::CMachineState( UInt32 state           ,
 }
 
 /*-------------------------------------------------------------------------*/
-                          
-CMachineState::CMachineState( const CMachineState& src )
-         : _state( src._state )     ,
-           _handler( src._handler )
-{
-        /* dummy, should not be used */        
-}
-
-/*-------------------------------------------------------------------------*/
 
 CMachineState::~CMachineState()
 {
-        for ( UInt32 i=0; i<_transitions.GetCount(); ++i )
+        for ( UInt32 i=0; i<_transitions.size(); ++i )
         {
-                delete static_cast<TStateTransition*>(_transitions[ i ]);
+                delete _transitions[ i ];
         }
-}
-
-/*-------------------------------------------------------------------------*/
-
-CMachineState& 
-CMachineState::operator=( const CMachineState& src )
-{
-        /* dummy, should not be used */              
-        return *this;
 }
 
 /*-------------------------------------------------------------------------*/
@@ -123,7 +98,7 @@ CMachineState::AddTransition( UInt32 state          ,
                 TStateTransition* trans = new TStateTransition;
                 trans->conditionvalue = conditionvalue;
                 trans->state = state;
-                _transitions.AppendEntry( trans );
+                _transitions.push_back( trans );
                 return true;        
         }
         return false;                
@@ -135,9 +110,9 @@ UInt32
 CMachineState::GetTransition( UInt32 conditionvalue )
 {
         TStateTransition* trans;
-        for ( UInt32 i=0; i<_transitions.GetCount(); ++i )
+        for ( UInt32 i=0; i<_transitions.size(); ++i )
         {
-                trans = static_cast<TStateTransition*>( _transitions[ i ] );
+                trans = _transitions[ i ];
                 if ( trans->conditionvalue == conditionvalue )
                 {
                         return trans->state;

@@ -136,11 +136,6 @@
 #define GUCEF_CORE_DVCPPSTRINGUTILS_H
 #endif /* GUCEF_CORE_DVCPPSTRINGUTILS_H ? */
 
-#ifndef GUCEF_CORE_CSTRINGMAP_H
-#include "CStringMap.h"
-#define GUCEF_CORE_CSTRINGMAP_H
-#endif /* GUCEF_CORE_CSTRINGMAP_H ? */
-
 #ifndef GUCEF_CORE_COBSERVER_H
 #include "CObserver.h"
 #define GUCEF_CORE_COBSERVER_H
@@ -191,11 +186,6 @@
 #define GUCEF_CORE_CDATANODE_H
 #endif /* GUCEF_CORE_CDATANODE_H ? */
 
-#ifndef GUCEF_CORE_CPROPERTYLIST_H
-#include "CPropertyList.h"
-#define GUCEF_CORE_CPROPERTYLIST_H
-#endif /* GUCEF_CORE_CPROPERTYLIST_H ? */
-
 #ifndef GUCEF_CORE_CNODE_H
 #include "CNode.h"
 #define GUCEF_CORE_CNODE_H
@@ -205,11 +195,6 @@
 #include "CLLNode.h"
 #define GUCEF_CORE_CLLNODE_H
 #endif /* GUCEF_CORE_CLLNODE_H ? */
-
-#ifndef GUCEF_CORE_CSTRINGLIST_H
-#include "CStringList.h"
-#define GUCEF_CORE_CSTRINGLIST_H
-#endif /* GUCEF_CORE_CSTRINGLIST_H ? */
 
 #ifndef GUCEF_CORE_CVALUELIST_H
 #include "CValueList.h"
@@ -235,11 +220,6 @@
 #include "CPluginManager.h"
 #define GUCEF_CORE_CPLUGINMANAGER_H
 #endif /* GUCEF_CORE_CPLUGINMANAGER_H ? */
-
-#ifndef GUCEF_CORE_CDYNAMICARRAY_H
-#include "CDynamicArray.h"
-#define GUCEF_CORE_CDYNAMICARRAY_H
-#endif /* GUCEF_CORE_CDYNAMICARRAY_H ? */
 
 #ifndef GUCEF_CORE_CDYNAMICBUFFER_H
 #include "CDynamicBuffer.h"

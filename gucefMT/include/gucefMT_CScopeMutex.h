@@ -63,7 +63,7 @@ class GUCEF_MT_PUBLIC_CPP CScopeMutex
          *      Default constructor, allocates storage for a mutex and locks
          *      the mutex
          */
-        CScopeMutex( CMutex& mutex );
+        CScopeMutex( const CMutex& mutex );
 
         /**
          *      Destructor, Unlocks and then de-allocates storage for a mutex.
@@ -71,7 +71,7 @@ class GUCEF_MT_PUBLIC_CPP CScopeMutex
         ~CScopeMutex();
 
         private:
-        CMutex* m_mutex;
+        const CMutex* m_mutex;
 
         CScopeMutex( const CScopeMutex& src );      /* Copying doesnt make sense */
         CScopeMutex& operator=( const CScopeMutex& src );   /* Copying doesnt make sense */

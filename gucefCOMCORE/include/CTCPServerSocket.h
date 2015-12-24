@@ -26,8 +26,6 @@
 //                                                                         //
 //-------------------------------------------------------------------------*/
 
-#include "CDynamicArray.h"		/* resizable array implementation */
-
 #ifndef GUCEFCOMCORE_MACROS_H
 #include "gucefCOMCORE_macros.h"       /* build defines */
 #define GUCEFCOMCORE_MACROS_H

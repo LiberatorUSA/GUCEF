@@ -92,9 +92,9 @@ CStateMachine::Start( const UInt32 initialstate )
                  *      that each is notified only once.
                  */                
                 CStateHandler* handler;
-                for ( UInt32 i=0; i<_states.GetCount(); ++i )
+                for ( UInt32 i=0; i<_states.size(); ++i )
                 {
-                        handler = static_cast<CMachineState*>(_states[ i ])->GetHandler();
+                        handler = _states[ i ]->GetHandler();
                         if ( !handler->_mstarted )
                         {
                                 handler->_mstarted = true;
@@ -129,9 +129,9 @@ CStateMachine::Stop( void )
         if ( _curstate )
         {      
                 CStateHandler* handler;
-                for ( UInt32 i=0; i<_states.GetCount(); ++i )
+                for ( UInt32 i=0; i<_states.size(); ++i )
                 {
-                        handler = static_cast<CMachineState*>(_states[ i ])->GetHandler();
+                        handler = _states[ i ]->GetHandler();
                         if ( handler->_mstarted )
                         {
                                 handler->_mstarted = false;
@@ -176,11 +176,11 @@ CStateMachine::SetErrorHandler( CErrorStateHandler* errorhandler )
 void 
 CStateMachine::Clear( void )
 {
-        for ( UInt32 i=0; i<_states.GetCount(); ++i )
+        for ( UInt32 i=0; i<_states.size(); ++i )
         {
-                delete static_cast<CMachineState*>(_states[ i ]);
+                delete _states[ i ];
         }
-        _states.Clear();
+        _states.clear();
 }
 
 /*-------------------------------------------------------------------------*/
@@ -231,9 +231,9 @@ CMachineState*
 CStateMachine::LookupStateObj( UInt32 state ) const
 {
         CMachineState* mstate;
-        for ( UInt32 i=0; i<_states.GetCount(); ++i )
+        for ( UInt32 i=0; i<_states.size(); ++i )
         {       
-                mstate = static_cast<CMachineState*>( _states[ i ] );
+                mstate = _states[ i ];
                 if ( mstate->GetState() == state )
                 {
                         return mstate;
@@ -253,7 +253,7 @@ CStateMachine::AddState( UInt32 state           ,
                 if ( !LookupStateObj( state ) )
                 {
                         handler->_machine = this;
-                        _states.AppendEntry( new CMachineState( state, handler ) );
+                        _states.push_back( new CMachineState( state, handler ) );
                         return true;
                 }
         }                
@@ -266,15 +266,16 @@ bool
 CStateMachine::DelState( UInt32 state )
 {
         CMachineState* mstate;
-        for ( UInt32 i=0; i<_states.GetCount(); ++i )
+        for ( UInt32 i=0; i<_states.size(); ++i )
         {       
-                mstate = static_cast<CMachineState*>( _states[ i ] );
+                mstate = _states[ i ];
                 if ( mstate->GetState() == state )
                 {
-                        _states.SetEntry( i, NULL );
-                        delete mstate;
-                        _states.FillNULLGaps();
-                        return true;
+                    _states[ i ] = NULL;
+                    delete mstate;
+                    mstate = 0;
+                    //_states.FillNULLGaps(); @TODO
+                    return true;
                 }                
         }
         return false;
