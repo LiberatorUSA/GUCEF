@@ -46,6 +46,7 @@ using System.Runtime.InteropServices;
 using System.Runtime.Serialization;
 using System.Text;
 using System.Text.RegularExpressions;
+using System.Xml;
 using FreeImageAPI;
 using FreeImageAPI.IO;
 using FreeImageAPI.Metadata;
@@ -99,9 +100,13 @@ using FreeImageAPI.Plugins;
 
 	#region Enums
 
+#include "Enumerations\DisposalMethodType.cs"
+
 #include "Enumerations\FREE_IMAGE_FORMAT.cs"
 
 #include "Enumerations\FREE_IMAGE_TYPE.cs"
+
+#include "Enumerations\FREE_IMAGE_COLOR_OPTIONS.cs"
 
 #include "Enumerations\FREE_IMAGE_COLOR_TYPE.cs"
 
@@ -170,6 +175,8 @@ using FreeImageAPI.Plugins;
 #include "Classes\FreeImagePlugin.cs"
 
 #include "Classes\FreeImageStreamIO.cs"
+
+#include "Classes\GifInformation.cs"
 
 #include "Classes\ImageMetadata.cs"
 

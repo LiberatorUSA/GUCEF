@@ -2,6 +2,7 @@ using System;
 using System.Runtime.InteropServices;
 using System.Collections;
 using System.Collections.Generic;
+using System.Diagnostics;
 
 namespace FreeImageAPI
 {
@@ -15,53 +16,79 @@ namespace FreeImageAPI
 	/// Use <see cref="System.Int32"/> instead of <see cref="System.Boolean"/> and
 	/// <see cref="System.Byte"/> instead of <see cref="System.Char"/>.
 	/// </remarks>
-	public unsafe class MemoryArray<T> : ICloneable, ICollection, IEnumerable<T>, IEquatable<MemoryArray<T>> where T : struct
+	public unsafe class MemoryArray<T> : IDisposable, ICloneable, ICollection, IEnumerable<T>, IEquatable<MemoryArray<T>> where T : struct
 	{
 		/// <summary>
 		/// Baseaddress of the wrapped memory.
 		/// </summary>
-		protected readonly byte* baseAddress;
+		[DebuggerBrowsable(DebuggerBrowsableState.Never)]
+		protected byte* baseAddress;
 
 		/// <summary>
 		/// Number of elements being wrapped.
 		/// </summary>
-		protected readonly int length;
+		[DebuggerBrowsable(DebuggerBrowsableState.Never)]
+		protected int length;
 
 		/// <summary>
 		/// Size, in bytes, of each element.
 		/// </summary>
-		protected readonly int size;
+		[DebuggerBrowsable(DebuggerBrowsableState.Never)]
+		private static readonly int size;
 
 		/// <summary>
 		/// Array of <b>T</b> containing a single element.
 		/// The array is used as a workaround, because there are no pointer for generic types.
 		/// </summary>
-		protected readonly T[] buffer;
+		[DebuggerBrowsable(DebuggerBrowsableState.Never)]
+		protected T[] buffer;
 
 		/// <summary>
 		/// Pointer to the element of <b>buffer</b>.
 		/// </summary>
-		protected readonly byte* ptr;
+		[DebuggerBrowsable(DebuggerBrowsableState.Never)]
+		protected byte* ptr;
 
 		/// <summary>
 		/// Handle for pinning <b>buffer</b>.
 		/// </summary>
-		protected readonly GCHandle handle;
+		[DebuggerBrowsable(DebuggerBrowsableState.Never)]
+		protected GCHandle handle;
 
 		/// <summary>
 		/// Indicates whether the wrapped memory is handled like a bitfield.
 		/// </summary>
+		[DebuggerBrowsable(DebuggerBrowsableState.Never)]
 		protected readonly bool isOneBit;
 
 		/// <summary>
 		/// Indicates whther the wrapped memory is handles like 4-bit blocks.
 		/// </summary>
+		[DebuggerBrowsable(DebuggerBrowsableState.Never)]
 		protected readonly bool isFourBit;
 
 		/// <summary>
 		/// An object that can be used to synchronize access to the <see cref="MemoryArray&lt;T&gt;"/>.
 		/// </summary>
+		[DebuggerBrowsable(DebuggerBrowsableState.Never)]
 		protected object syncRoot = null;
+
+		static MemoryArray()
+		{
+			T[] dummy = new T[2];
+			long marshalledSize = Marshal.SizeOf(typeof(T));
+			long structureSize =
+				Marshal.UnsafeAddrOfPinnedArrayElement(dummy, 1).ToInt64() -
+				Marshal.UnsafeAddrOfPinnedArrayElement(dummy, 0).ToInt64();
+			if (marshalledSize != structureSize)
+			{
+				throw new NotSupportedException(
+					"The desired type can not be handled, " +
+					"because its managed and unmanaged size in bytes are different.");
+			}
+
+			size = (int)marshalledSize;
+		}
 
 		/// <summary>
 		/// Initializes a new instance.
@@ -107,20 +134,6 @@ namespace FreeImageAPI
 			{
 				isFourBit = true;
 			}
-			else
-			{
-				T[] dummy = new T[2];
-				long marshalledSize = Marshal.SizeOf(typeof(T));
-				long structureSize =
-					Marshal.UnsafeAddrOfPinnedArrayElement(dummy, 1).ToInt64() -
-					Marshal.UnsafeAddrOfPinnedArrayElement(dummy, 0).ToInt64();
-				if (marshalledSize != structureSize)
-				{
-					throw new NotSupportedException(
-						"The desired type can not be handled, " +
-						"because it's managed and unmanaged size in bytes are different.");
-				}
-			}
 
 			if (baseAddress == null)
 			{
@@ -136,7 +149,6 @@ namespace FreeImageAPI
 
 			if (!isOneBit && !isFourBit)
 			{
-				this.size = Marshal.SizeOf(typeof(T));
 				// Create an array containing a single element.
 				// Due to the fact, that it's not possible to create pointers
 				// of generic types, an array is used to obtain the memory
@@ -148,7 +160,7 @@ namespace FreeImageAPI
 				// The array and its content have beed pinned, so that its address
 				// can be safely requested and stored for the whole lifetime
 				// of the instace.
-				this.ptr = (byte*)Marshal.UnsafeAddrOfPinnedArrayElement(this.buffer, 0);
+				this.ptr = (byte*)handle.AddrOfPinnedObject();
 			}
 		}
 
@@ -157,10 +169,7 @@ namespace FreeImageAPI
 		/// </summary>
 		~MemoryArray()
 		{
-			if (handle.IsAllocated)
-			{
-				handle.Free();
-			}
+			Dispose(false);
 		}
 
 		/// <summary>
@@ -224,6 +233,7 @@ namespace FreeImageAPI
 
 		private T GetValueInternal(int index)
 		{
+			EnsureNotDisposed();
 			if (isOneBit)
 			{
 				return (T)(object)(FI1BIT)(((baseAddress[index / 8] & ((1 << (7 - (index % 8))))) == 0) ? 0 : 1);
@@ -259,6 +269,7 @@ namespace FreeImageAPI
 
 		private void SetValueInternal(T value, int index)
 		{
+			EnsureNotDisposed();
 			if (isOneBit)
 			{
 				if ((FI1BIT)(object)value != 0)
@@ -302,6 +313,7 @@ namespace FreeImageAPI
 		/// from <paramref name="index"/> to the end of the unmanaged array.</exception>
 		public T[] GetValues(int index, int length)
 		{
+			EnsureNotDisposed();
 			if ((index >= this.length) || (index < 0))
 			{
 				throw new ArgumentOutOfRangeException("index");
@@ -343,6 +355,7 @@ namespace FreeImageAPI
 		/// from <paramref name="index"/> to the end of the array.</exception>
 		public void SetValues(T[] values, int index)
 		{
+			EnsureNotDisposed();
 			if (values == null)
 			{
 				throw new ArgumentNullException("values");
@@ -383,6 +396,7 @@ namespace FreeImageAPI
 		/// at which copying begins.</param>
 		public void CopyTo(Array array, int index)
 		{
+			EnsureNotDisposed();
 			if (!(array is T[]))
 			{
 				throw new InvalidCastException("array");
@@ -422,6 +436,7 @@ namespace FreeImageAPI
 		/// </exception>
 		public void CopyTo(T[] array, int sourceIndex, int destinationIndex, int length)
 		{
+			EnsureNotDisposed();
 			if (array == null)
 			{
 				throw new ArgumentNullException("array");
@@ -482,6 +497,7 @@ namespace FreeImageAPI
 		/// </exception>
 		public void CopyFrom(T[] array, int sourceIndex, int destinationIndex, int length)
 		{
+			EnsureNotDisposed();
 			if (array == null)
 			{
 				throw new ArgumentNullException("array");
@@ -523,6 +539,7 @@ namespace FreeImageAPI
 		/// <returns>The represented block of memory.</returns>
 		public byte[] ToByteArray()
 		{
+			EnsureNotDisposed();
 			byte[] result;
 			if (isOneBit)
 			{
@@ -594,6 +611,7 @@ namespace FreeImageAPI
 		{
 			get
 			{
+				EnsureNotDisposed();
 				return length;
 			}
 		}
@@ -605,6 +623,7 @@ namespace FreeImageAPI
 		{
 			get
 			{
+				EnsureNotDisposed();
 				return new IntPtr(baseAddress);
 			}
 		}
@@ -615,6 +634,7 @@ namespace FreeImageAPI
 		/// <returns>A shallow copy of the <see cref="MemoryArray&lt;T&gt;"/>.</returns>
 		public object Clone()
 		{
+			EnsureNotDisposed();
 			return new MemoryArray<T>(baseAddress, length);
 		}
 
@@ -624,7 +644,7 @@ namespace FreeImageAPI
 		/// </summary>
 		public int Count
 		{
-			get { return length; }
+			get { EnsureNotDisposed(); return length; }
 		}
 
 		/// <summary>
@@ -633,7 +653,7 @@ namespace FreeImageAPI
 		/// </summary>
 		public bool IsSynchronized
 		{
-			get { return false; }
+			get { EnsureNotDisposed(); return false; }
 		}
 
 		/// <summary>
@@ -643,6 +663,7 @@ namespace FreeImageAPI
 		{
 			get
 			{
+				EnsureNotDisposed();
 				if (syncRoot == null)
 				{
 					System.Threading.Interlocked.CompareExchange(ref syncRoot, new object(), null);
@@ -658,6 +679,7 @@ namespace FreeImageAPI
 		/// <returns>An <see cref="IEnumerator"/> for the <see cref="MemoryArray&lt;T&gt;"/>.</returns>
 		public IEnumerator GetEnumerator()
 		{
+			EnsureNotDisposed();
 			T[] values = GetValues(0, length);
 			for (int i = 0; i != values.Length; i++)
 			{
@@ -672,11 +694,48 @@ namespace FreeImageAPI
 		/// <returns>An <see cref="IEnumerator&lt;T&gt;"/> for the <see cref="MemoryArray&lt;T&gt;"/>.</returns>
 		IEnumerator<T> IEnumerable<T>.GetEnumerator()
 		{
+			EnsureNotDisposed();
 			T[] values = GetValues(0, length);
 			for (int i = 0; i != values.Length; i++)
 			{
 				yield return values[i];
 			}
+		}
+
+		/// <summary>
+		/// Releases all ressources.
+		/// </summary>
+		public void Dispose()
+		{
+			Dispose(true);
+			GC.SuppressFinalize(this);
+		}
+
+		/// <summary>
+		/// Releases allocated handles associated with this instance.
+		/// </summary>
+		/// <param name="disposing"><b>true</b> to release managed resources.</param>
+		protected virtual void Dispose(bool disposing)
+		{
+			if (baseAddress != null)
+			{
+				if (handle.IsAllocated)
+					handle.Free();
+				baseAddress = null;
+				buffer = null;
+				length = 0;
+				syncRoot = null;
+			}
+		}
+
+		/// <summary>
+		/// Throws an <see cref="ObjectDisposedException"/> if
+		/// this instance is disposed.
+		/// </summary>
+		protected virtual void EnsureNotDisposed()
+		{
+			if (baseAddress == null)
+				throw new ObjectDisposedException("This instance is disposed.");
 		}
 
 		/// <summary>
@@ -689,6 +748,7 @@ namespace FreeImageAPI
 		/// <b>false</b>.</returns>
 		public override bool Equals(object obj)
 		{
+			EnsureNotDisposed();
 			return ((obj is MemoryArray<T>) && Equals((MemoryArray<T>)obj));
 		}
 
@@ -702,6 +762,7 @@ namespace FreeImageAPI
 		/// <b>false</b>.</returns>
 		public bool Equals(MemoryArray<T> other)
 		{
+			EnsureNotDisposed();
 			return ((this.baseAddress == other.baseAddress) && (this.length == other.length));
 		}
 
@@ -711,6 +772,7 @@ namespace FreeImageAPI
 		/// <returns>A hash code for the current <see cref="MemoryArray&lt;T&gt;"/>.</returns>
 		public override int GetHashCode()
 		{
+			EnsureNotDisposed();
 			return (int)baseAddress ^ length;
 		}
 

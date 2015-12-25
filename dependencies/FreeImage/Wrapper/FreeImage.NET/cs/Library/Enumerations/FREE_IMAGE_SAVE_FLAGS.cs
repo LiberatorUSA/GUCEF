@@ -28,9 +28,9 @@
 
 // ==========================================================
 // CVS
-// $Revision: 1.2 $
-// $Date: 2008/06/16 15:14:24 $
-// $Id: FREE_IMAGE_SAVE_FLAGS.cs,v 1.2 2008/06/16 15:14:24 cklein05 Exp $
+// $Revision: 1.3 $
+// $Date: 2011/12/22 14:53:28 $
+// $Id: FREE_IMAGE_SAVE_FLAGS.cs,v 1.3 2011/12/22 14:53:28 drolon Exp $
 // ==========================================================
 
 namespace FreeImageAPI
@@ -117,6 +117,14 @@ namespace FreeImageAPI
 		/// Save with no chroma subsampling (4:4:4).
 		/// </summary>
 		JPEG_SUBSAMPLING_444 = 0x10000,
+        /// <summary>
+        /// On saving, compute optimal Huffman coding tables (can reduce a few percent of file size).
+        /// </summary>
+        JPEG_OPTIMIZE = 0x20000,
+        /// <summary>
+        /// save basic JPEG, without metadata or any markers.
+        /// </summary>
+        JPEG_BASELINE = 0x40000,
 		/// <summary>
 		/// Save using ZLib level 1 compression flag
 		/// (default value is <see cref="PNG_Z_DEFAULT_COMPRESSION"/>).

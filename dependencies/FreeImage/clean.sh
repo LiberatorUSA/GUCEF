@@ -1,8 +1,6 @@
 #!/bin/sh
 rm -rf Release
 rm -rf Debug
-rm -rf Source/FreeImageQt/Release
-rm -rf Source/FreeImageQt/Debug
 rm -rf Source/FreeImageLib/Debug
 rm -rf Source/FreeImageLib/Release
 rm -rf Source/Source/Release
@@ -15,12 +13,20 @@ rm -rf Source/LibMNG/Debug
 rm -rf Source/LibMNG/Release
 rm -rf Source/LibTIFF/Debug
 rm -rf Source/LibTIFF/Release
+rm -rf Source/LibTIFF4/Debug
+rm -rf Source/LibTIFF4/Release
 rm -rf Source/Zlib/Debug
 rm -rf Source/Zlib/Release
-rm -rf Source\OpenEXR\Debug
-rm -rf Source\OpenEXR\Release
-rm -rf Source\LibOpenJPEG\Debug
-rm -rf Source\LibOpenJPEG\Release
+rm -rf Source/OpenEXR/Debug
+rm -rf Source/OpenEXR/Release
+rm -rf Source/LibOpenJPEG/Debug
+rm -rf Source/LibOpenJPEG/Release
+rm -rf Source/LibRawLite/Debug
+rm -rf Source/LibRawLite/Release
+rm -rf Source/LibWebP/Debug
+rm -rf Source/LibWebP/Release
+rm -rf Source/LibJXR/Debug
+rm -rf Source/LibJXR/Release
 rm -rf TestAPI/Debug
 rm -rf TestAPI/Release
 find . -name '*.pch' -exec rm -f {} ";"

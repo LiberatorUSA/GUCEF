@@ -28,9 +28,9 @@
 
 // ==========================================================
 // CVS
-// $Revision: 1.2 $
-// $Date: 2008/06/16 15:17:37 $
-// $Id: FIRGBAF.cs,v 1.2 2008/06/16 15:17:37 cklein05 Exp $
+// $Revision: 1.3 $
+// $Date: 2009/02/20 07:41:08 $
+// $Id: FIRGBAF.cs,v 1.3 2009/02/20 07:41:08 cklein05 Exp $
 // ==========================================================
 
 using System;
@@ -215,7 +215,7 @@ namespace FreeImageAPI
 			}
 			if (!(obj is FIRGBAF))
 			{
-				throw new ArgumentException();
+				throw new ArgumentException("obj");
 			}
 			return CompareTo((FIRGBAF)obj);
 		}

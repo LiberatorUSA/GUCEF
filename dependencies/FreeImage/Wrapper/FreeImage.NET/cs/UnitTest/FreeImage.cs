@@ -46,6 +46,7 @@ using System.Runtime.InteropServices;
 using System.Runtime.Serialization;
 using System.Text;
 using System.Text.RegularExpressions;
+using System.Xml;
 using FreeImageAPI;
 using FreeImageAPI.IO;
 using FreeImageAPI.Metadata;
@@ -623,24 +624,9 @@ namespace FreeImageAPI
 		private IntPtr data;
 
 		/// <summary>
-		/// Initializes a new instance of the <see cref="FIBITMAP"/> structure to the value indicated by
-		/// a specified pointer to a native <see cref="FIBITMAP"/> structure.
+		/// A read-only field that represents a handle that has been initialized to zero.
 		/// </summary>
-		/// <param name="ptr">A pointer to a native <see cref="FIBITMAP"/> structure.</param>
-		public FIBITMAP(int ptr)
-		{
-			data = new IntPtr(ptr);
-		}
-
-		/// <summary>
-		/// Initializes a new instance of the <see cref="FIBITMAP"/> structure to the value indicated by
-		/// a specified pointer to a native <see cref="FIBITMAP"/> structure.
-		/// </summary>
-		/// <param name="ptr">A pointer to a native <see cref="FIBITMAP"/> structure.</param>
-		public FIBITMAP(IntPtr ptr)
-		{
-			data = ptr;
-		}
+		public static readonly FIBITMAP Zero;
 
 		/// <summary>
 		/// Tests whether two specified <see cref="FIBITMAP"/> structures are equivalent.
@@ -669,49 +655,9 @@ namespace FreeImageAPI
 		}
 
 		/// <summary>
-		/// Converts the pointer specified in <paramref name="ptr"/> to a <see cref="FIBITMAP"/> structure.
+		/// Gets whether the handle is a null or not.
 		/// </summary>
-		/// <param name="ptr">A 32-bit value to be converted into a <see cref="FIBITMAP"/> structure.</param>
-		/// <returns>A <see cref="FIBITMAP"/> structure initialized with the specified pointer.</returns>
-		public static implicit operator FIBITMAP(int ptr)
-		{
-			return new FIBITMAP(ptr);
-		}
-
-		/// <summary>
-		/// Converts the <see cref="FIBITMAP"/> structure specified in <paramref name="handle"/> to a 32-bit value.
-		/// </summary>
-		/// <param name="handle">A <see cref="FIBITMAP"/> structure to be converted into a 32-bit value.</param>
-		/// <returns>A 32-bit value initialized with the pointer of the <see cref="FIBITMAP"/> structure.</returns>
-		public static implicit operator int(FIBITMAP handle)
-		{
-			return handle.data.ToInt32();
-		}
-
-		/// <summary>
-		/// Converts the pointer specified in <paramref name="ptr"/> to a <see cref="FIBITMAP"/> structure.
-		/// </summary>
-		/// <param name="ptr">A 32-bit value to be converted into a <see cref="FIBITMAP"/> structure.</param>
-		/// <returns>A <see cref="FIBITMAP"/> structure initialized with the specified pointer.</returns>
-		public static implicit operator FIBITMAP(IntPtr ptr)
-		{
-			return new FIBITMAP(ptr);
-		}
-
-		/// <summary>
-		/// Converts the <see cref="FIBITMAP"/> structure specified in <paramref name="handle"/> to an IntPtr.
-		/// </summary>
-		/// <param name="handle">A <see cref="FIBITMAP"/> structure to be converted into an IntPtr.</param>
-		/// <returns>An IntPtr initialized with the pointer of the <see cref="FIBITMAP"/> structure.</returns>
-		public static implicit operator IntPtr(FIBITMAP handle)
-		{
-			return handle.data;
-		}
-
-		/// <summary>
-		/// Gets whether the pointer is a null pointer or not.
-		/// </summary>
-		/// <value><b>true</b> if this <see cref="FIBITMAP"/> is a null pointer;
+		/// <value><b>true</b> if this <see cref="FIBITMAP"/> handle is a null;
 		/// otherwise, <b>false</b>.</value>		
 		public bool IsNull
 		{
@@ -719,6 +665,14 @@ namespace FreeImageAPI
 			{
 				return (data == IntPtr.Zero);
 			}
+		}
+
+		/// <summary>
+		/// Sets the handle to <i>null</i>.
+		/// </summary>
+		public void SetNull()
+		{
+			data = IntPtr.Zero;
 		}
 
 		/// <summary>
@@ -774,7 +728,7 @@ namespace FreeImageAPI
 			}
 			if (!(obj is FIBITMAP))
 			{
-				throw new ArgumentException();
+				throw new ArgumentException("obj");
 			}
 			return CompareTo((FIBITMAP)obj);
 		}
@@ -803,24 +757,9 @@ namespace FreeImageAPI
 		private IntPtr data;
 
 		/// <summary>
-		/// Initializes a new instance of the <see cref="FIMULTIBITMAP"/> structure to the value indicated by
-		/// a specified pointer to a native <see cref="FIMULTIBITMAP"/> structure.
+		/// A read-only field that represents a handle that has been initialized to zero.
 		/// </summary>
-		/// <param name="ptr">A pointer to a native <see cref="FIMULTIBITMAP"/> structure.</param>
-		public FIMULTIBITMAP(int ptr)
-		{
-			data = new IntPtr(ptr);
-		}
-
-		/// <summary>
-		/// Initializes a new instance of the <see cref="FIMULTIBITMAP"/> structure to the value indicated by
-		/// a specified pointer to a native <see cref="FIMULTIBITMAP"/> structure.
-		/// </summary>
-		/// <param name="ptr">A pointer to a native <see cref="FIMULTIBITMAP"/> structure.</param>
-		public FIMULTIBITMAP(IntPtr ptr)
-		{
-			data = ptr;
-		}
+		public static readonly FIMULTIBITMAP Zero;
 
 		/// <summary>
 		/// Tests whether two specified <see cref="FIMULTIBITMAP"/> structures are equivalent.
@@ -849,49 +788,9 @@ namespace FreeImageAPI
 		}
 
 		/// <summary>
-		/// Converts the pointer specified in <paramref name="ptr"/> to a <see cref="FIMULTIBITMAP"/> structure.
+		/// Gets whether the handle is a null or not.
 		/// </summary>
-		/// <param name="ptr">A 32-bit value to be converted into a <see cref="FIMULTIBITMAP"/> structure.</param>
-		/// <returns>A <see cref="FIMULTIBITMAP"/> structure initialized with the specified pointer.</returns>
-		public static implicit operator FIMULTIBITMAP(int ptr)
-		{
-			return new FIMULTIBITMAP(ptr);
-		}
-
-		/// <summary>
-		/// Converts the <see cref="FIMULTIBITMAP"/> structure specified in <paramref name="handle"/> to a 32-bit value.
-		/// </summary>
-		/// <param name="handle">A <see cref="FIMULTIBITMAP"/> structure to be converted into a 32-bit value.</param>
-		/// <returns>A 32-bit value initialized with the pointer of the <see cref="FIMULTIBITMAP"/> structure.</returns>
-		public static implicit operator int(FIMULTIBITMAP handle)
-		{
-			return handle.data.ToInt32();
-		}
-
-		/// <summary>
-		/// Converts the pointer specified in <paramref name="ptr"/> to a <see cref="FIMULTIBITMAP"/> structure.
-		/// </summary>
-		/// <param name="ptr">A 32-bit value to be converted into a <see cref="FIMULTIBITMAP"/> structure.</param>
-		/// <returns>A <see cref="FIMULTIBITMAP"/> structure initialized with the specified pointer.</returns>
-		public static implicit operator FIMULTIBITMAP(IntPtr ptr)
-		{
-			return new FIMULTIBITMAP(ptr);
-		}
-
-		/// <summary>
-		/// Converts the <see cref="FIMULTIBITMAP"/> structure specified in <paramref name="handle"/> to an IntPtr.
-		/// </summary>
-		/// <param name="handle">A <see cref="FIMULTIBITMAP"/> structure to be converted into an IntPtr.</param>
-		/// <returns>An IntPtr initialized with the pointer of the <see cref="FIMULTIBITMAP"/> structure.</returns>
-		public static implicit operator IntPtr(FIMULTIBITMAP handle)
-		{
-			return handle.data;
-		}
-
-		/// <summary>
-		/// Gets whether the pointer is a null pointer or not.
-		/// </summary>
-		/// <value><b>true</b> if this <see cref="FIMULTIBITMAP"/> is a null pointer;
+		/// <value><b>true</b> if this <see cref="FIMULTIBITMAP"/> handle is a null;
 		/// otherwise, <b>false</b>.</value>		
 		public bool IsNull
 		{
@@ -899,6 +798,14 @@ namespace FreeImageAPI
 			{
 				return (data == IntPtr.Zero);
 			}
+		}
+
+		/// <summary>
+		/// Sets the handle to <i>null</i>.
+		/// </summary>
+		public void SetNull()
+		{
+			data = IntPtr.Zero;
 		}
 
 		/// <summary>
@@ -954,7 +861,7 @@ namespace FreeImageAPI
 			}
 			if (!(obj is FIMULTIBITMAP))
 			{
-				throw new ArgumentException();
+				throw new ArgumentException("obj");
 			}
 			return CompareTo((FIMULTIBITMAP)obj);
 		}
@@ -983,24 +890,9 @@ namespace FreeImageAPI
 		private IntPtr data;
 
 		/// <summary>
-		/// Initializes a new instance of the <see cref="FIMEMORY"/> structure to the value indicated by
-		/// a specified pointer to a native <see cref="FIMEMORY"/> structure.
+		/// A read-only field that represents a handle that has been initialized to zero.
 		/// </summary>
-		/// <param name="ptr">A pointer to a native <see cref="FIMEMORY"/> structure.</param>
-		public FIMEMORY(int ptr)
-		{
-			data = new IntPtr(ptr);
-		}
-
-		/// <summary>
-		/// Initializes a new instance of the <see cref="FIMEMORY"/> structure to the value indicated by
-		/// a specified pointer to a native <see cref="FIMEMORY"/> structure.
-		/// </summary>
-		/// <param name="ptr">A pointer to a native <see cref="FIMEMORY"/> structure.</param>
-		public FIMEMORY(IntPtr ptr)
-		{
-			data = ptr;
-		}
+		public static readonly FIMEMORY Zero;
 
 		/// <summary>
 		/// Tests whether two specified <see cref="FIMEMORY"/> structures are equivalent.
@@ -1029,46 +921,6 @@ namespace FreeImageAPI
 		}
 
 		/// <summary>
-		/// Converts the pointer specified in <paramref name="ptr"/> to a <see cref="FIMEMORY"/> structure.
-		/// </summary>
-		/// <param name="ptr">A 32-bit value to be converted into a <see cref="FIMEMORY"/> structure.</param>
-		/// <returns>A <see cref="FIMEMORY"/> structure initialized with the specified pointer.</returns>
-		public static implicit operator FIMEMORY(int ptr)
-		{
-			return new FIMEMORY(ptr);
-		}
-
-		/// <summary>
-		/// Converts the <see cref="FIMEMORY"/> structure specified in <paramref name="handle"/> to a 32-bit value.
-		/// </summary>
-		/// <param name="handle">A <see cref="FIMEMORY"/> structure to be converted into a 32-bit value.</param>
-		/// <returns>A 32-bit value initialized with the pointer of the <see cref="FIMEMORY"/> structure.</returns>
-		public static implicit operator int(FIMEMORY handle)
-		{
-			return handle.data.ToInt32();
-		}
-
-		/// <summary>
-		/// Converts the pointer specified in <paramref name="ptr"/> to a <see cref="FIMEMORY"/> structure.
-		/// </summary>
-		/// <param name="ptr">A 32-bit value to be converted into a <see cref="FIMEMORY"/> structure.</param>
-		/// <returns>A <see cref="FIMEMORY"/> structure initialized with the specified pointer.</returns>
-		public static implicit operator FIMEMORY(IntPtr ptr)
-		{
-			return new FIMEMORY(ptr);
-		}
-
-		/// <summary>
-		/// Converts the <see cref="FIMEMORY"/> structure specified in <paramref name="handle"/> to an IntPtr.
-		/// </summary>
-		/// <param name="handle">A <see cref="FIMEMORY"/> structure to be converted into an IntPtr.</param>
-		/// <returns>An IntPtr initialized with the pointer of the <see cref="FIMEMORY"/> structure.</returns>
-		public static implicit operator IntPtr(FIMEMORY handle)
-		{
-			return handle.data;
-		}
-
-		/// <summary>
 		/// Gets whether the pointer is a null pointer or not.
 		/// </summary>
 		/// <value><b>true</b> if this <see cref="FIMEMORY"/> is a null pointer;
@@ -1079,6 +931,14 @@ namespace FreeImageAPI
 			{
 				return (data == IntPtr.Zero);
 			}
+		}
+
+		/// <summary>
+		/// Sets the handle to <i>null</i>.
+		/// </summary>
+		public void SetNull()
+		{
+			data = IntPtr.Zero;
 		}
 
 		/// <summary>
@@ -1134,7 +994,7 @@ namespace FreeImageAPI
 			}
 			if (!(obj is FIMEMORY))
 			{
-				throw new ArgumentException();
+				throw new ArgumentException("obj");
 			}
 			return CompareTo((FIMEMORY)obj);
 		}
@@ -1171,24 +1031,9 @@ namespace FreeImageAPI
 		private IntPtr data;
 
 		/// <summary>
-		/// Initializes a new instance of the <see cref="FIMETADATA"/> structure to the value indicated by
-		/// a specified pointer to a native <see cref="FIMETADATA"/> structure.
+		/// A read-only field that represents a handle that has been initialized to zero.
 		/// </summary>
-		/// <param name="ptr">A pointer to a native <see cref="FIMETADATA"/> structure.</param>
-		public FIMETADATA(int ptr)
-		{
-			data = new IntPtr(ptr);
-		}
-
-		/// <summary>
-		/// Initializes a new instance of the <see cref="FIMETADATA"/> structure to the value indicated by
-		/// a specified pointer to a native <see cref="FIMETADATA"/> structure.
-		/// </summary>
-		/// <param name="ptr">A pointer to a native <see cref="FIMETADATA"/> structure.</param>
-		public FIMETADATA(IntPtr ptr)
-		{
-			data = ptr;
-		}
+		public static readonly FIMETADATA Zero;
 
 		/// <summary>
 		/// Tests whether two specified <see cref="FIMETADATA"/> structures are equivalent.
@@ -1217,46 +1062,6 @@ namespace FreeImageAPI
 		}
 
 		/// <summary>
-		/// Converts the pointer specified in <paramref name="ptr"/> to a <see cref="FIMETADATA"/> structure.
-		/// </summary>
-		/// <param name="ptr">A 32-bit value to be converted into a <see cref="FIMETADATA"/> structure.</param>
-		/// <returns>A <see cref="FIMETADATA"/> structure initialized with the specified pointer.</returns>
-		public static implicit operator FIMETADATA(int ptr)
-		{
-			return new FIMETADATA(ptr);
-		}
-
-		/// <summary>
-		/// Converts the <see cref="FIMETADATA"/> structure specified in <paramref name="handle"/> to a 32-bit value.
-		/// </summary>
-		/// <param name="handle">A <see cref="FIMETADATA"/> structure to be converted into a 32-bit value.</param>
-		/// <returns>A 32-bit value initialized with the pointer of the <see cref="FIMETADATA"/> structure.</returns>
-		public static implicit operator int(FIMETADATA handle)
-		{
-			return handle.data.ToInt32();
-		}
-
-		/// <summary>
-		/// Converts the pointer specified in <paramref name="ptr"/> to a <see cref="FIMETADATA"/> structure.
-		/// </summary>
-		/// <param name="ptr">A 32-bit value to be converted into a <see cref="FIMETADATA"/> structure.</param>
-		/// <returns>A <see cref="FIMETADATA"/> structure initialized with the specified pointer.</returns>
-		public static implicit operator FIMETADATA(IntPtr ptr)
-		{
-			return new FIMETADATA(ptr);
-		}
-
-		/// <summary>
-		/// Converts the <see cref="FIMETADATA"/> structure specified in <paramref name="handle"/> to an IntPtr.
-		/// </summary>
-		/// <param name="handle">A <see cref="FIMETADATA"/> structure to be converted into an IntPtr.</param>
-		/// <returns>An IntPtr initialized with the pointer of the <see cref="FIMETADATA"/> structure.</returns>
-		public static implicit operator IntPtr(FIMETADATA handle)
-		{
-			return handle.data;
-		}
-
-		/// <summary>
 		/// Gets whether the pointer is a null pointer or not.
 		/// </summary>
 		/// <value><b>true</b> if this <see cref="FIMETADATA"/> is a null pointer;
@@ -1267,6 +1072,14 @@ namespace FreeImageAPI
 			{
 				return (data == IntPtr.Zero);
 			}
+		}
+
+		/// <summary>
+		/// Sets the handle to <i>null</i>.
+		/// </summary>
+		public void SetNull()
+		{
+			data = IntPtr.Zero;
 		}
 
 		/// <summary>
@@ -1322,7 +1135,7 @@ namespace FreeImageAPI
 			}
 			if (!(obj is FIMETADATA))
 			{
-				throw new ArgumentException();
+				throw new ArgumentException("obj");
 			}
 			return CompareTo((FIMETADATA)obj);
 		}
@@ -1351,24 +1164,9 @@ namespace FreeImageAPI
 		private IntPtr data;
 
 		/// <summary>
-		/// Initializes a new instance of the <see cref="FITAG"/> structure to the value indicated by
-		/// a specified pointer to a native <see cref="FITAG"/> structure.
+		/// A read-only field that represents a handle that has been initialized to zero.
 		/// </summary>
-		/// <param name="ptr">A pointer to a native <see cref="FITAG"/> structure.</param>
-		public FITAG(int ptr)
-		{
-			data = new IntPtr(ptr);
-		}
-
-		/// <summary>
-		/// Initializes a new instance of the <see cref="FITAG"/> structure to the value indicated by
-		/// a specified pointer to a native <see cref="FITAG"/> structure.
-		/// </summary>
-		/// <param name="ptr">A pointer to a native <see cref="FITAG"/> structure.</param>
-		public FITAG(IntPtr ptr)
-		{
-			data = ptr;
-		}
+		public static readonly FITAG Zero;
 
 		/// <summary>
 		/// Tests whether two specified <see cref="FITAG"/> structures are equivalent.
@@ -1397,46 +1195,6 @@ namespace FreeImageAPI
 		}
 
 		/// <summary>
-		/// Converts the pointer specified in <paramref name="ptr"/> to a <see cref="FITAG"/> structure.
-		/// </summary>
-		/// <param name="ptr">A 32-bit value to be converted into a <see cref="FITAG"/> structure.</param>
-		/// <returns>A <see cref="FITAG"/> structure initialized with the specified pointer.</returns>
-		public static implicit operator FITAG(int ptr)
-		{
-			return new FITAG(ptr);
-		}
-
-		/// <summary>
-		/// Converts the <see cref="FITAG"/> structure specified in <paramref name="handle"/> to a 32-bit value.
-		/// </summary>
-		/// <param name="handle">A <see cref="FITAG"/> structure to be converted into a 32-bit value.</param>
-		/// <returns>A 32-bit value initialized with the pointer of the <see cref="FITAG"/> structure.</returns>
-		public static implicit operator int(FITAG handle)
-		{
-			return handle.data.ToInt32();
-		}
-
-		/// <summary>
-		/// Converts the pointer specified in <paramref name="ptr"/> to a <see cref="FITAG"/> structure.
-		/// </summary>
-		/// <param name="ptr">A 32-bit value to be converted into a <see cref="FITAG"/> structure.</param>
-		/// <returns>A <see cref="FITAG"/> structure initialized with the specified pointer.</returns>
-		public static implicit operator FITAG(IntPtr ptr)
-		{
-			return new FITAG(ptr);
-		}
-
-		/// <summary>
-		/// Converts the <see cref="FITAG"/> structure specified in <paramref name="handle"/> to an IntPtr.
-		/// </summary>
-		/// <param name="handle">A <see cref="FITAG"/> structure to be converted into an IntPtr.</param>
-		/// <returns>An IntPtr initialized with the pointer of the <see cref="FITAG"/> structure.</returns>
-		public static implicit operator IntPtr(FITAG handle)
-		{
-			return handle.data;
-		}
-
-		/// <summary>
 		/// Gets whether the pointer is a null pointer or not.
 		/// </summary>
 		/// <value><b>true</b> if this <see cref="FITAG"/> is a null pointer;
@@ -1447,6 +1205,14 @@ namespace FreeImageAPI
 			{
 				return (data == IntPtr.Zero);
 			}
+		}
+
+		/// <summary>
+		/// Sets the handle to <i>null</i>.
+		/// </summary>
+		public void SetNull()
+		{
+			data = IntPtr.Zero;
 		}
 
 		/// <summary>
@@ -1502,7 +1268,7 @@ namespace FreeImageAPI
 			}
 			if (!(obj is FITAG))
 			{
-				throw new ArgumentException();
+				throw new ArgumentException("obj");
 			}
 			return CompareTo((FITAG)obj);
 		}
@@ -1743,6 +1509,44 @@ namespace FreeImageAPI
 		}
 
 		/// <summary>
+		/// Converts an array of <see cref="Color"/> into an array of
+		/// <see cref="RGBQUAD"/>.
+		/// </summary>
+		/// <param name="array">The array to convert.</param>
+		/// <returns>An array of <see cref="RGBQUAD"/>.</returns>
+		public static RGBQUAD[] ToRGBQUAD(Color[] array)
+		{
+			if (array == null)
+				return null;
+
+			RGBQUAD[] result = new RGBQUAD[array.Length];
+			for (int i = 0; i < array.Length; i++)
+			{
+				result[i] = array[i];
+			}
+			return result;
+		}
+
+		/// <summary>
+		/// Converts an array of <see cref="RGBQUAD"/> into an array of
+		/// <see cref="Color"/>.
+		/// </summary>
+		/// <param name="array">The array to convert.</param>
+		/// <returns>An array of <see cref="RGBQUAD"/>.</returns>
+		public static Color[] ToColor(RGBQUAD[] array)
+		{
+			if (array == null)
+				return null;
+
+			Color[] result = new Color[array.Length];
+			for (int i = 0; i < array.Length; i++)
+			{
+				result[i] = array[i].Color;
+			}
+			return result;
+		}
+
+		/// <summary>
 		/// Compares this instance with a specified <see cref="Object"/>.
 		/// </summary>
 		/// <param name="obj">An object to compare with this instance.</param>
@@ -1756,7 +1560,7 @@ namespace FreeImageAPI
 			}
 			if (!(obj is RGBQUAD))
 			{
-				throw new ArgumentException();
+				throw new ArgumentException("obj");
 			}
 			return CompareTo((RGBQUAD)obj);
 		}
@@ -2012,7 +1816,7 @@ namespace FreeImageAPI
 			}
 			if (!(obj is RGBTRIPLE))
 			{
-				throw new ArgumentException();
+				throw new ArgumentException("obj");
 			}
 			return CompareTo((RGBTRIPLE)obj);
 		}
@@ -2246,7 +2050,7 @@ namespace FreeImageAPI
 			}
 			if (!(obj is FIRGBA16))
 			{
-				throw new ArgumentException();
+				throw new ArgumentException("obj");
 			}
 			return CompareTo((FIRGBA16)obj);
 		}
@@ -2475,7 +2279,7 @@ namespace FreeImageAPI
 			}
 			if (!(obj is FIRGB16))
 			{
-				throw new ArgumentException();
+				throw new ArgumentException("obj");
 			}
 			return CompareTo((FIRGB16)obj);
 		}
@@ -2713,7 +2517,7 @@ namespace FreeImageAPI
 			}
 			if (!(obj is FIRGBAF))
 			{
-				throw new ArgumentException();
+				throw new ArgumentException("obj");
 			}
 			return CompareTo((FIRGBAF)obj);
 		}
@@ -2946,7 +2750,7 @@ namespace FreeImageAPI
 			}
 			if (!(obj is FIRGBF))
 			{
-				throw new ArgumentException();
+				throw new ArgumentException("obj");
 			}
 			return CompareTo((FIRGBF)obj);
 		}
@@ -3066,7 +2870,7 @@ namespace FreeImageAPI
 			}
 			if (!(obj is FICOMPLEX))
 			{
-				throw new ArgumentException();
+				throw new ArgumentException("obj");
 			}
 			return CompareTo((FICOMPLEX)obj);
 		}
@@ -3193,11 +2997,8 @@ namespace FreeImageAPI
 		{
 			get
 			{
-				byte[] result = new byte[size];
-				fixed (byte* dst = result)
-				{
-					FreeImage.CopyMemory(dst, data.ToPointer(), size);
-				}
+				byte[] result;
+				FreeImage.CopyMemory(result = new byte[size], data.ToPointer(), size);
 				return result;
 			}
 		}
@@ -3312,6 +3113,36 @@ namespace FreeImageAPI.Plugins
 	#endregion
 
 	#region Enums
+
+namespace FreeImageAPI.Metadata
+{
+	/// <summary>
+	/// Specifies how a single frame will be handled after being displayed.
+	/// </summary>
+	public enum DisposalMethodType : byte
+	{
+		/// <summary>
+		/// Same behavior as <see cref="DisposalMethodType.Leave"/> but should not be used.
+		/// </summary>
+		Unspecified,
+
+		/// <summary>
+		/// The image is left in place and will be overdrawn by the next image.
+		/// </summary>
+		Leave,
+
+		/// <summary>
+		/// The area of the image will be blanked out by its background.
+		/// </summary>
+		Background,
+
+		/// <summary>
+		/// Restores the the area of the image to the state it was before it
+		/// has been dawn.
+		/// </summary>
+		Previous,
+	}
+}
 
 namespace FreeImageAPI
 {
@@ -3455,7 +3286,19 @@ namespace FreeImageAPI
 		/// <summary>
 		/// JPEG-2000 format (*.JP2)
 		/// </summary>
-		FIF_JP2 = 31
+		FIF_JP2 = 31,
+		/// <summary>
+		/// Portable FloatMap (*.PFM)
+		/// </summary>
+		FIF_PFM = 32,
+		/// <summary>
+		/// Macintosh PICT (*.PICT)
+		/// </summary>
+		FIF_PICT = 33,
+		/// <summary>
+		/// RAW camera image (*.*)
+		/// </summary>
+		FIF_RAW = 34,
 	}
 }
 
@@ -3518,6 +3361,40 @@ namespace FreeImageAPI
 		/// 128-bit RGBA float image : 4 x 32-bit IEEE floating point
 		/// </summary>
 		FIT_RGBAF = 12
+	}
+}
+
+namespace FreeImageAPI
+{
+	/// <summary>
+	/// Constants used in color filling routines.
+	/// </summary>
+	public enum FREE_IMAGE_COLOR_OPTIONS
+	{
+		/// <summary>
+		/// Default value.
+		/// </summary>
+		FICO_DEFAULT = 0x0,
+		/// <summary>
+		/// <see cref="RGBQUAD"/> color is RGB color (contains no valid alpha channel).
+		/// </summary>
+		FICO_RGB = 0x0,
+		/// <summary>
+		/// <see cref="RGBQUAD"/> color is RGBA color (contains a valid alpha channel).
+		/// </summary>
+		FICO_RGBA = 0x1,
+		/// <summary>
+		/// Lookup nearest RGB color from palette.
+		/// </summary>
+		FICO_NEAREST_COLOR = 0x0,
+		/// <summary>
+		/// Lookup equal RGB color from palette.
+		/// </summary>
+		FICO_EQUAL_COLOR = 0x2,
+		/// <summary>
+		/// <see cref="RGBQUAD.rgbReserved"/> contains the palette index to be used.
+		/// </summary>
+		FICO_ALPHA_IS_INDEX = 0x4,
 	}
 }
 
@@ -3923,9 +3800,13 @@ namespace FreeImageAPI
 		/// </summary>
 		JPEG_ACCURATE = 0x0002,
 		/// <summary>
-		/// load separated CMYK "as is" (use | to combine with other load flags).
+		/// Load separated CMYK "as is" (use | to combine with other load flags).
 		/// </summary>
 		JPEG_CMYK = 0x0004,
+		/// <summary>
+		/// Load and rotate according to Exif 'Orientation' tag if available.
+		/// </summary>
+		JPEG_EXIFROTATE = 0x0008,
 		/// <summary>
 		/// Load the bitmap sized 768 x 512.
 		/// </summary>
@@ -3949,7 +3830,17 @@ namespace FreeImageAPI
 		/// <summary>
 		/// Reads tags for separated CMYK.
 		/// </summary>
-		TIFF_CMYK = 0x0001
+		TIFF_CMYK = 0x0001,
+		/// <summary>
+		/// Tries to load the JPEG preview image, embedded in
+		/// Exif Metadata or load the image as RGB 24-bit if no 
+		/// preview image is available.
+		/// </summary>
+		RAW_PREVIEW = 0x1,
+		/// <summary>
+		/// Loads the image as RGB 24-bit.
+		/// </summary>
+		RAW_DISPLAY = 0x2,
 	}
 }
 
@@ -4135,7 +4026,7 @@ namespace FreeImageAPI
 	/// <param name="fif">The format of the image.</param>
 	/// <param name="message">The errormessage.</param>
 	// DLL_API is missing in the definition of the callbackfuntion.
-	[UnmanagedFunctionPointer(CallingConvention.Cdecl)]
+	[UnmanagedFunctionPointer(CallingConvention.Cdecl, CharSet = CharSet.Ansi, ThrowOnUnmappableChar = false)]
 	public delegate void OutputMessageFunction(FREE_IMAGE_FORMAT fif, string message);
 }
 
@@ -4291,66 +4182,65 @@ namespace FreeImageAPI
 		private const string FreeImageLibrary = "FreeImage";
 
 		/// <summary>
-		/// Major version of the library.
+		/// Number of bytes to shift left within a 4 byte block.
 		/// </summary>
-		public const int FREEIMAGE_MAJOR_VERSION = 3;
-		/// <summary>
-		/// Minor version of the library.
-		/// </summary>
-		public const int FREEIMAGE_MINOR_VERSION = 11;
-		/// <summary>
-		/// Release version of the library.
-		/// </summary>
-		public const int FREEIMAGE_RELEASE_SERIAL = 0;
+		public const int FI_RGBA_RED = 2;
 
 		/// <summary>
 		/// Number of bytes to shift left within a 4 byte block.
 		/// </summary>
-		public const int FI_RGBA_RED = 2;
-		/// <summary>
-		/// Number of bytes to shift left within a 4 byte block.
-		/// </summary>
 		public const int FI_RGBA_GREEN = 1;
+
 		/// <summary>
 		/// Number of bytes to shift left within a 4 byte block.
 		/// </summary>
 		public const int FI_RGBA_BLUE = 0;
+
 		/// <summary>
 		/// Number of bytes to shift left within a 4 byte block.
 		/// </summary>
 		public const int FI_RGBA_ALPHA = 3;
+
 		/// <summary>
 		/// Mask indicating the position of the given color.
 		/// </summary>
 		public const uint FI_RGBA_RED_MASK = 0x00FF0000;
+
 		/// <summary>
 		/// Mask indicating the position of the given color.
 		/// </summary>
 		public const uint FI_RGBA_GREEN_MASK = 0x0000FF00;
+
 		/// <summary>
 		/// Mask indicating the position of the given color.
 		/// </summary>
 		public const uint FI_RGBA_BLUE_MASK = 0x000000FF;
+
 		/// <summary>
 		/// Mask indicating the position of the given color.
 		/// </summary>
 		public const uint FI_RGBA_ALPHA_MASK = 0xFF000000;
+
 		/// <summary>
 		/// Number of bits to shift left within a 32 bit block.
 		/// </summary>
 		public const int FI_RGBA_RED_SHIFT = 16;
+
 		/// <summary>
 		/// Number of bits to shift left within a 32 bit block.
 		/// </summary>
 		public const int FI_RGBA_GREEN_SHIFT = 8;
+
 		/// <summary>
 		/// Number of bits to shift left within a 32 bit block.
 		/// </summary>
 		public const int FI_RGBA_BLUE_SHIFT = 0;
+
 		/// <summary>
 		/// Number of bits to shift left within a 32 bit block.
 		/// </summary>
 		public const int FI_RGBA_ALPHA_SHIFT = 24;
+
 		/// <summary>
 		/// Mask indicating the position of color components of a 32 bit color.
 		/// </summary>
@@ -4360,46 +4250,57 @@ namespace FreeImageAPI
 		/// Mask indicating the position of the given color.
 		/// </summary>
 		public const int FI16_555_RED_MASK = 0x7C00;
+
 		/// <summary>
 		/// Mask indicating the position of the given color.
 		/// </summary>
 		public const int FI16_555_GREEN_MASK = 0x03E0;
+
 		/// <summary>
 		/// Mask indicating the position of the given color.
 		/// </summary>
 		public const int FI16_555_BLUE_MASK = 0x001F;
+
 		/// <summary>
 		/// Number of bits to shift left within a 16 bit block.
 		/// </summary>
 		public const int FI16_555_RED_SHIFT = 10;
+
 		/// <summary>
 		/// Number of bits to shift left within a 16 bit block.
 		/// </summary>
 		public const int FI16_555_GREEN_SHIFT = 5;
+
 		/// <summary>
 		/// Number of bits to shift left within a 16 bit block.
 		/// </summary>
 		public const int FI16_555_BLUE_SHIFT = 0;
+
 		/// <summary>
 		/// Mask indicating the position of the given color.
 		/// </summary>
 		public const int FI16_565_RED_MASK = 0xF800;
+
 		/// <summary>
 		/// Mask indicating the position of the given color.
 		/// </summary>
 		public const int FI16_565_GREEN_MASK = 0x07E0;
+
 		/// <summary>
 		/// Mask indicating the position of the given color.
 		/// </summary>
 		public const int FI16_565_BLUE_MASK = 0x001F;
+
 		/// <summary>
 		/// Number of bits to shift left within a 16 bit block.
 		/// </summary>
 		public const int FI16_565_RED_SHIFT = 11;
+
 		/// <summary>
 		/// Number of bits to shift left within a 16 bit block.
 		/// </summary>
 		public const int FI16_565_GREEN_SHIFT = 5;
+
 		/// <summary>
 		/// Number of bits to shift left within a 16 bit block.
 		/// </summary>
@@ -4451,10 +4352,11 @@ namespace FreeImageAPI
 		/// <summary>
 		/// You use the function FreeImage_SetOutputMessage to capture the log string
 		/// so that you can show it to the user of the program.
-		/// The callback is implemented in the <see cref="Message"/> event of this class.
+		/// The callback is implemented in the <see cref="FreeImageEngine.Message"/> event of this class.
 		/// </summary>
 		/// <remarks>The function is private because FreeImage can only have a single
-		/// callback function. To use the callback use the <see cref="Message"/> event of this class.</remarks>
+		/// callback function. To use the callback use the <see cref="FreeImageEngine.Message"/>
+		/// event of this class.</remarks>
 		/// <param name="omf">Handler to the callback function.</param>
 		[DllImport(FreeImageLibrary, EntryPoint = "FreeImage_SetOutputMessage")]
 		internal static extern void SetOutputMessage(OutputMessageFunction omf);
@@ -4479,7 +4381,7 @@ namespace FreeImageAPI
 		/// <returns>Handle to a FreeImage bitmap.</returns>
 		[DllImport(FreeImageLibrary, EntryPoint = "FreeImage_Allocate")]
 		public static extern FIBITMAP Allocate(int width, int height, int bpp,
-				uint red_mask, uint green_mask, uint blue_mask);
+			uint red_mask, uint green_mask, uint blue_mask);
 
 		/// <summary>
 		/// Creates a new bitmap in memory.
@@ -4498,7 +4400,17 @@ namespace FreeImageAPI
 		/// <returns>Handle to a FreeImage bitmap.</returns>
 		[DllImport(FreeImageLibrary, EntryPoint = "FreeImage_AllocateT")]
 		public static extern FIBITMAP AllocateT(FREE_IMAGE_TYPE type, int width, int height, int bpp,
-				uint red_mask, uint green_mask, uint blue_mask);
+			uint red_mask, uint green_mask, uint blue_mask);
+
+		[DllImport(FreeImageLibrary, EntryPoint = "FreeImage_AllocateEx")]
+		internal static extern FIBITMAP AllocateEx(int width, int height, int bpp,
+			IntPtr color, FREE_IMAGE_COLOR_OPTIONS options, RGBQUAD[] palette,
+			uint red_mask, uint green_mask, uint blue_mask);
+
+		[DllImport(FreeImageLibrary, EntryPoint = "FreeImage_AllocateExT")]
+		internal static extern FIBITMAP AllocateExT(FREE_IMAGE_TYPE type, int width, int height, int bpp,
+			IntPtr color, FREE_IMAGE_COLOR_OPTIONS options, RGBQUAD[] palette,
+			uint red_mask, uint green_mask, uint blue_mask);
 
 		/// <summary>
 		/// Makes an exact reproduction of an existing bitmap, including metadata and attached profile if any.
@@ -4581,7 +4493,7 @@ namespace FreeImageAPI
 		/// <returns>Returns true on success, false on failure.</returns>
 		[DllImport(FreeImageLibrary, EntryPoint = "FreeImage_SaveToHandle")]
 		public static extern bool SaveToHandle(FREE_IMAGE_FORMAT fif, FIBITMAP dib, ref FreeImageIO io, fi_handle handle,
-				FREE_IMAGE_SAVE_FLAGS flags);
+			FREE_IMAGE_SAVE_FLAGS flags);
 
 		#endregion
 
@@ -4888,7 +4800,21 @@ namespace FreeImageAPI
 		/// <returns>Handle to a FreeImage multi-paged bitmap.</returns>
 		[DllImport(FreeImageLibrary, EntryPoint = "FreeImage_OpenMultiBitmap")]
 		public static extern FIMULTIBITMAP OpenMultiBitmap(FREE_IMAGE_FORMAT fif, string filename, bool create_new,
-				bool read_only, bool keep_cache_in_memory, FREE_IMAGE_LOAD_FLAGS flags);
+			bool read_only, bool keep_cache_in_memory, FREE_IMAGE_LOAD_FLAGS flags);
+
+		/// <summary>
+		/// Loads a FreeImage multi-pages bitmap from the specified handle
+		/// using the specified functions.
+		/// Load flags can be provided by the flags parameter.
+		/// </summary>
+		/// <param name="fif">Format of the image.</param>
+		/// <param name="io">IO functions used to read from the specified handle.</param>
+		/// <param name="handle">The handle to load the bitmap from.</param>
+		/// <param name="flags">Flags to enable or disable plugin-features.</param>
+		/// <returns>Handle to a FreeImage multi-paged bitmap.</returns>
+		[DllImport(FreeImageLibrary, EntryPoint = "FreeImage_OpenMultiBitmapFromHandle")]
+		public static extern FIMULTIBITMAP OpenMultiBitmapFromHandle(FREE_IMAGE_FORMAT fif, ref FreeImageIO io,
+			fi_handle handle, FREE_IMAGE_LOAD_FLAGS flags);
 
 		/// <summary>
 		/// Closes a previously opened multi-page bitmap and, when the bitmap was not opened read-only, applies any changes made to it.
@@ -4897,7 +4823,7 @@ namespace FreeImageAPI
 		/// <param name="flags">Flags to enable or disable plugin-features.</param>
 		/// <returns>Returns true on success, false on failure.</returns>
 		[DllImport(FreeImageLibrary, EntryPoint = "FreeImage_CloseMultiBitmap")]
-		public static extern bool CloseMultiBitmap(FIMULTIBITMAP bitmap, FREE_IMAGE_SAVE_FLAGS flags);
+		private static extern bool CloseMultiBitmap_(FIMULTIBITMAP bitmap, FREE_IMAGE_SAVE_FLAGS flags);
 
 		/// <summary>
 		/// Returns the number of pages currently available in the multi-paged bitmap.
@@ -5313,7 +5239,7 @@ namespace FreeImageAPI
 		/// <param name="table">Pointer to the bitmap's new transparency table.</param>
 		/// <param name="count">The number of transparent colors in the new transparency table.</param>
 		[DllImport(FreeImageLibrary, EntryPoint = "FreeImage_SetTransparencyTable")]
-		internal static extern void SetTransparencyTable_(FIBITMAP dib, byte[] table, int count);
+		internal static extern void SetTransparencyTable(FIBITMAP dib, byte[] table, int count);
 
 		/// <summary>
 		/// Returns whether the transparency table is enabled.
@@ -5447,121 +5373,6 @@ namespace FreeImageAPI
 
 		#endregion
 
-		#region Internal Functions
-
-		/*
-		[DllImport(dllName, EntryPoint = "FreeImage_ConvertLine1To4")]
-		public static extern void ConvertLine1To4(ref byte target, ref byte source, int width_in_pixels);
-
-		[DllImport(dllName, EntryPoint = "FreeImage_ConvertLine8To4")]
-		public static extern void ConvertLine8To4(ref byte target, ref byte source, int width_in_pixels, ref RGBQUAD palette);
-
-		[DllImport(dllName, EntryPoint = "FreeImage_ConvertLine16To4_555")]
-		public static extern void ConvertLine16To4_555(ref byte target, ref byte source, int width_in_pixels);
-
-		[DllImport(dllName, EntryPoint = "FreeImage_ConvertLine16To4_565")]
-		public static extern void ConvertLine16To4_565(ref byte target, ref byte source, int width_in_pixels);
-
-		[DllImport(dllName, EntryPoint = "FreeImage_ConvertLine24To4")]
-		public static extern void ConvertLine24To4(ref byte target, ref byte source, int width_in_pixels);
-
-		[DllImport(dllName, EntryPoint = "FreeImage_ConvertLine32To4")]
-		public static extern void ConvertLine32To4(ref byte target, ref byte source, int width_in_pixels);
-
-		[DllImport(dllName, EntryPoint = "FreeImage_ConvertLine1To8")]
-		public static extern void ConvertLine1To8(ref byte target, ref byte source, int width_in_pixels);
-
-		[DllImport(dllName, EntryPoint = "FreeImage_ConvertLine4To8")]
-		public static extern void ConvertLine4To8(ref byte target, ref byte source, int width_in_pixels);
-
-		[DllImport(dllName, EntryPoint = "FreeImage_ConvertLine16To8_555")]
-		public static extern void ConvertLine16To8_555(ref byte target, ref byte source, int width_in_pixels);
-
-		[DllImport(dllName, EntryPoint = "FreeImage_ConvertLine16To8_565")]
-		public static extern void ConvertLine16To8_565(ref byte target, ref byte source, int width_in_pixels);
-
-		[DllImport(dllName, EntryPoint = "FreeImage_ConvertLine24To8")]
-		public static extern void ConvertLine24To8(ref byte target, ref byte source, int width_in_pixels);
-
-		[DllImport(dllName, EntryPoint = "FreeImageonvertLine32To8")]
-		public static extern void ConvertLine32To8(ref byte target, ref byte source, int width_in_pixels);
-
-		[DllImport(dllName, EntryPoint = "FreeImageonvertLine1To16_555")]
-		public static extern void ConvertLine1To16_555(ref byte target, ref byte source, int width_in_pixels, ref RGBQUAD palette);
-
-		[DllImport(dllName, EntryPoint = "FreeImageonvertLine4To16_555")]
-		public static extern void ConvertLine4To16_555(ref byte target, ref byte source, int width_in_pixels, ref RGBQUAD palette);
-
-		[DllImport(dllName, EntryPoint = "FreeImageonvertLine8To16_555")]
-		public static extern void ConvertLine8To16_555(ref byte target, ref byte source, int width_in_pixels, ref RGBQUAD palette);
-
-		[DllImport(dllName, EntryPoint = "FreeImageonvertLine16_565_To16_555")]
-		public static extern void ConvertLine16_565_To16_555(ref byte target, ref byte source, int width_in_pixels);
-
-		[DllImport(dllName, EntryPoint = "FreeImageonvertLine24To16_555")]
-		public static extern void ConvertLine24To16_555(ref byte target, ref byte source, int width_in_pixels);
-
-		[DllImport(dllName, EntryPoint = "FreeImageonvertLine32To16_555")]
-		public static extern void ConvertLine32To16_555(ref byte target, ref byte source, int width_in_pixels);
-
-		[DllImport(dllName, EntryPoint = "FreeImageonvertLine1To16_565")]
-		public static extern void ConvertLine1To16_565(ref byte target, ref byte source, int width_in_pixels, ref RGBQUAD palette);
-
-		[DllImport(dllName, EntryPoint = "FreeImageonvertLine4To16_565")]
-		public static extern void ConvertLine4To16_565(ref byte target, ref byte source, int width_in_pixels, ref RGBQUAD palette);
-
-		[DllImport(dllName, EntryPoint = "FreeImageonvertLine8To16_565")]
-		public static extern void ConvertLine8To16_565(ref byte target, ref byte source, int width_in_pixels, ref RGBQUAD palette);
-
-		[DllImport(dllName, EntryPoint = "FreeImageonvertLine16_555_To16_565")]
-		public static extern void ConvertLine16_555_To16_565(ref byte target, ref byte source, int width_in_pixels);
-
-		[DllImport(dllName, EntryPoint = "FreeImageonvertLine24To16_565")]
-		public static extern void ConvertLine24To16_565(ref byte target, ref byte source, int width_in_pixels);
-
-		[DllImport(dllName, EntryPoint = "FreeImageonvertLine32To16_565")]
-		public static extern void ConvertLine32To16_565(ref byte target, ref byte source, int width_in_pixels);
-
-		[DllImport(dllName, EntryPoint = "FreeImageonvertLine1To24")]
-		public static extern void ConvertLine1To24(ref byte target, ref byte source, int width_in_pixels, ref RGBQUAD palette);
-
-		[DllImport(dllName, EntryPoint = "FreeImageonvertLine4To24")]
-		public static extern void ConvertLine4To24(ref byte target, ref byte source, int width_in_pixels, ref RGBQUAD palette);
-
-		[DllImport(dllName, EntryPoint = "FreeImageonvertLine8To24")]
-		public static extern void ConvertLine8To24(ref byte target, ref byte source, int width_in_pixels, ref RGBQUAD palette);
-
-		[DllImport(dllName, EntryPoint = "FreeImageonvertLine16To24_555")]
-		public static extern void ConvertLine16To24_555(ref byte target, ref byte source, int width_in_pixels);
-
-		[DllImport(dllName, EntryPoint = "FreeImageonvertLine16To24_565")]
-		public static extern void ConvertLine16To24_565(ref byte target, ref byte source, int width_in_pixels);
-
-		[DllImport(dllName, EntryPoint = "FreeImageonvertLine32To24")]
-		public static extern void ConvertLine32To24(ref byte target, ref byte source, int width_in_pixels);
-
-		[DllImport(dllName, EntryPoint = "FreeImageonvertLine1To32")]
-		public static extern void ConvertLine1To32(ref byte target, ref byte source, int width_in_pixels, ref RGBQUAD palette);
-
-		[DllImport(dllName, EntryPoint = "FreeImageonvertLine4To32")]
-		public static extern void ConvertLine4To32(ref byte target, ref byte source, int width_in_pixels, ref RGBQUAD palette);
-
-		[DllImport(dllName, EntryPoint = "FreeImageonvertLine8To32")]
-		public static extern void ConvertLine8To32(ref byte target, ref byte source, int width_in_pixels, ref RGBQUAD palette);
-
-		[DllImport(dllName, EntryPoint = "FreeImageonvertLine16To32_555")]
-		public static extern void ConvertLine16To32_555(ref byte target, ref byte source, int width_in_pixels);
-
-		[DllImport(dllName, EntryPoint = "FreeImageonvertLine16To32_565")]
-		public static extern void ConvertLine16To32_565(ref byte target, ref byte source, int width_in_pixels);
-
-		[DllImport(dllName, EntryPoint = "FreeImageonvertLine24To32")]
-		public static extern void ConvertLine24To32(ref byte target, ref byte source, int width_in_pixels);
-
-		*/
-
-		#endregion
-
 		#region Conversion functions
 
 		/// <summary>
@@ -5674,41 +5485,88 @@ namespace FreeImageAPI
 		public static extern FIBITMAP Dither(FIBITMAP dib, FREE_IMAGE_DITHER algorithm);
 
 		/// <summary>
-		/// Converts a raw bitmap somewhere in memory to a FreeImage bitmap.
-		/// The parameters in this function are used to describe the raw bitmap.
+		/// Converts a raw bitmap to a FreeImage bitmap.
 		/// </summary>
-		/// <param name="bits">Pointer to start of the raw bits.</param>
-		/// <param name="width">Width of the bitmap.</param>
-		/// <param name="height">Height of the bitmap.</param>
-		/// <param name="pitch">Defines the total width of a scanline in the source bitmap,
-		/// including padding bytes that may be applied.</param>
-		/// <param name="bpp">The bit depth of the bitmap.</param>
-		/// <param name="red_mask">The bit-layout of the color components in the bitmap.</param>
-		/// <param name="green_mask">The bit-layout of the color components in the bitmap.</param>
-		/// <param name="blue_mask">The bit-layout of the color components in the bitmap.</param>
-		/// <param name="topdown">Stores the bitmap top-left pixel first when it is true
-		/// or bottom-left pixel first when it is false</param>
+		/// <param name="bits">Pointer to the memory block containing the raw bitmap.</param>
+		/// <param name="width">The width in pixels of the raw bitmap.</param>
+		/// <param name="height">The height in pixels of the raw bitmap.</param>
+		/// <param name="pitch">Defines the total width of a scanline in the raw bitmap,
+		/// including padding bytes.</param>
+		/// <param name="bpp">The bit depth (bits per pixel) of the raw bitmap.</param>
+		/// <param name="red_mask">The bit mask describing the bits used to store a single 
+		/// pixel's red component in the raw bitmap. This is only applied to 16-bpp raw bitmaps.</param>
+		/// <param name="green_mask">The bit mask describing the bits used to store a single
+		/// pixel's green component in the raw bitmap. This is only applied to 16-bpp raw bitmaps.</param>
+		/// <param name="blue_mask">The bit mask describing the bits used to store a single
+		/// pixel's blue component in the raw bitmap. This is only applied to 16-bpp raw bitmaps.</param>
+		/// <param name="topdown">If true, the raw bitmap is stored in top-down order (top-left pixel first)
+		/// and in bottom-up order (bottom-left pixel first) otherwise.</param>
 		/// <returns>Handle to a FreeImage bitmap.</returns>
 		[DllImport(FreeImageLibrary, EntryPoint = "FreeImage_ConvertFromRawBits")]
 		public static extern FIBITMAP ConvertFromRawBits(IntPtr bits, int width, int height, int pitch,
-				uint bpp, uint red_mask, uint green_mask, uint blue_mask, bool topdown);
+			uint bpp, uint red_mask, uint green_mask, uint blue_mask, bool topdown);
 
 		/// <summary>
-		/// Converts a FreeImage bitmap to a raw piece of memory.
+		/// Converts a raw bitmap to a FreeImage bitmap.
 		/// </summary>
-		/// <param name="bits">Pointer to the start of the raw bits.</param>
+		/// <param name="bits">Array of bytes containing the raw bitmap.</param>
+		/// <param name="width">The width in pixels of the raw bitmap.</param>
+		/// <param name="height">The height in pixels of the raw bitmap.</param>
+		/// <param name="pitch">Defines the total width of a scanline in the raw bitmap,
+		/// including padding bytes.</param>
+		/// <param name="bpp">The bit depth (bits per pixel) of the raw bitmap.</param>
+		/// <param name="red_mask">The bit mask describing the bits used to store a single 
+		/// pixel's red component in the raw bitmap. This is only applied to 16-bpp raw bitmaps.</param>
+		/// <param name="green_mask">The bit mask describing the bits used to store a single
+		/// pixel's green component in the raw bitmap. This is only applied to 16-bpp raw bitmaps.</param>
+		/// <param name="blue_mask">The bit mask describing the bits used to store a single
+		/// pixel's blue component in the raw bitmap. This is only applied to 16-bpp raw bitmaps.</param>
+		/// <param name="topdown">If true, the raw bitmap is stored in top-down order (top-left pixel first)
+		/// and in bottom-up order (bottom-left pixel first) otherwise.</param>
+		/// <returns>Handle to a FreeImage bitmap.</returns>
+		[DllImport(FreeImageLibrary, EntryPoint = "FreeImage_ConvertFromRawBits")]
+		public static extern FIBITMAP ConvertFromRawBits(byte[] bits, int width, int height, int pitch,
+			uint bpp, uint red_mask, uint green_mask, uint blue_mask, bool topdown);
+
+		/// <summary>
+		/// Converts a FreeImage bitmap to a raw bitmap, that is a raw piece of memory.
+		/// </summary>
+		/// <param name="bits">Pointer to the memory block receiving the raw bitmap.</param>
 		/// <param name="dib">Handle to a FreeImage bitmap.</param>
-		/// <param name="pitch">Defines the total width of a scanline in the source bitmap,
-		/// including padding bytes that may be applied.</param>
-		/// <param name="bpp">The bit depth of the bitmap.</param>
-		/// <param name="red_mask">The bit-layout of the color components in the bitmap.</param>
-		/// <param name="green_mask">The bit-layout of the color components in the bitmap.</param>
-		/// <param name="blue_mask">The bit-layout of the color components in the bitmap.</param>
-		/// <param name="topdown">Store the bitmap top-left pixel first when it is true
-		/// or bottom-left pixel first when it is false.</param>
+		/// <param name="pitch">The desired total width in bytes of a scanline in the raw bitmap,
+		/// including any padding bytes.</param>
+		/// <param name="bpp">The desired bit depth (bits per pixel) of the raw bitmap.</param>
+		/// <param name="red_mask">The desired bit mask describing the bits used to store a single 
+		/// pixel's red component in the raw bitmap. This is only applied to 16-bpp raw bitmaps.</param>
+		/// <param name="green_mask">The desired bit mask describing the bits used to store a single
+		/// pixel's green component in the raw bitmap. This is only applied to 16-bpp raw bitmaps.</param>
+		/// <param name="blue_mask">The desired bit mask describing the bits used to store a single
+		/// pixel's blue component in the raw bitmap. This is only applied to 16-bpp raw bitmaps.</param>
+		/// <param name="topdown">If true, the raw bitmap will be stored in top-down order (top-left pixel first)
+		/// and in bottom-up order (bottom-left pixel first) otherwise.</param>
 		[DllImport(FreeImageLibrary, EntryPoint = "FreeImage_ConvertToRawBits")]
 		public static extern void ConvertToRawBits(IntPtr bits, FIBITMAP dib, int pitch, uint bpp,
-				uint red_mask, uint green_mask, uint blue_mask, bool topdown);
+			uint red_mask, uint green_mask, uint blue_mask, bool topdown);
+
+		/// <summary>
+		/// Converts a FreeImage bitmap to a raw bitmap, that is a raw piece of memory.
+		/// </summary>
+		/// <param name="bits">Array of bytes receiving the raw bitmap.</param>
+		/// <param name="dib">Handle to a FreeImage bitmap.</param>
+		/// <param name="pitch">The desired total width in bytes of a scanline in the raw bitmap,
+		/// including any padding bytes.</param>
+		/// <param name="bpp">The desired bit depth (bits per pixel) of the raw bitmap.</param>
+		/// <param name="red_mask">The desired bit mask describing the bits used to store a single 
+		/// pixel's red component in the raw bitmap. This is only applied to 16-bpp raw bitmaps.</param>
+		/// <param name="green_mask">The desired bit mask describing the bits used to store a single
+		/// pixel's green component in the raw bitmap. This is only applied to 16-bpp raw bitmaps.</param>
+		/// <param name="blue_mask">The desired bit mask describing the bits used to store a single
+		/// pixel's blue component in the raw bitmap. This is only applied to 16-bpp raw bitmaps.</param>
+		/// <param name="topdown">If true, the raw bitmap will be stored in top-down order (top-left pixel first)
+		/// and in bottom-up order (bottom-left pixel first) otherwise.</param>
+		[DllImport(FreeImageLibrary, EntryPoint = "FreeImage_ConvertToRawBits")]
+		public static extern void ConvertToRawBits(byte[] bits, FIBITMAP dib, int pitch, uint bpp,
+			uint red_mask, uint green_mask, uint blue_mask, bool topdown);
 
 		/// <summary>
 		/// Converts a 24- or 32-bit RGB(A) standard image or a 48-bit RGB image to a FIT_RGBF type image.
@@ -6010,7 +5868,6 @@ namespace FreeImageAPI
 		/// <returns>Returns true on success, false on failure.</returns>
 		[DllImport(FreeImageLibrary, EntryPoint = "FreeImage_SetTagValue")]
 		public static extern bool SetTagValue(FITAG tag, byte[] value);
-		//public static extern bool SetTagValue(FITAG tag, IntPtr value);
 
 		#endregion
 
@@ -6110,14 +5967,18 @@ namespace FreeImageAPI
 
 		/// <summary>
 		/// This function rotates a 1-, 8-bit greyscale or a 24-, 32-bit color image by means of 3 shears.
+		/// 1-bit images rotation is limited to integer multiple of 90�.
+		/// <c>null</c> is returned for other values.
 		/// </summary>
 		/// <param name="dib">Handle to a FreeImage bitmap.</param>
 		/// <param name="angle">The angle of rotation.</param>
-		/// <returns>Handle to a FreeImage bitmap.
-		/// 1-bit images rotation is limited to integer multiple of 90�.
-		/// Null is returned for other values.</returns>
+		/// <returns>Handle to a FreeImage bitmap.</returns>
 		[DllImport(FreeImageLibrary, EntryPoint = "FreeImage_RotateClassic")]
+		[Obsolete("RotateClassic is deprecated (use Rotate instead).")]
 		public static extern FIBITMAP RotateClassic(FIBITMAP dib, double angle);
+
+		[DllImport(FreeImageLibrary, EntryPoint = "FreeImage_Rotate")]
+		internal static extern FIBITMAP Rotate(FIBITMAP dib, double angle, IntPtr backgroundColor);
 
 		/// <summary>
 		/// This function performs a rotation and / or translation of an 8-bit greyscale,
@@ -6160,7 +6021,7 @@ namespace FreeImageAPI
 		/// <param name="operation">The operation to apply.</param>
 		/// <param name="perfect">To avoid lossy transformation, you can set the perfect parameter to true.</param>
 		/// <returns>Returns true on success, false on failure.</returns>
-		[DllImport(FreeImageLibrary, CharSet = CharSet.Ansi, EntryPoint = "FreeImage_JPEGTransform")]
+		[DllImport(FreeImageLibrary, CharSet = CharSet.Unicode, EntryPoint = "FreeImage_JPEGTransformU")]
 		public static extern bool JPEGTransform(string src_file, string dst_file,
 			FREE_IMAGE_JPEG_OPERATION operation, bool perfect);
 
@@ -6190,6 +6051,10 @@ namespace FreeImageAPI
 		[DllImport(FreeImageLibrary, EntryPoint = "FreeImage_MakeThumbnail")]
 		public static extern FIBITMAP MakeThumbnail(FIBITMAP dib, int max_pixel_size, bool convert);
 
+		[DllImport(FreeImageLibrary, EntryPoint = "FreeImage_EnlargeCanvas")]
+		internal static extern FIBITMAP EnlargeCanvas(FIBITMAP dib,
+			int left, int top, int right, int bottom, IntPtr color, FREE_IMAGE_COLOR_OPTIONS options);
+
 		#endregion
 
 		#region Color manipulation
@@ -6198,12 +6063,12 @@ namespace FreeImageAPI
 		/// Perfoms an histogram transformation on a 8-, 24- or 32-bit image.
 		/// </summary>
 		/// <param name="dib">Handle to a FreeImage bitmap.</param>
-		/// <param name="LUT">The lookup table (LUT).
+		/// <param name="lookUpTable">The lookup table.
 		/// It's size is assumed to be 256 in length.</param>
 		/// <param name="channel">The color channel to be transformed.</param>
 		/// <returns>Returns true on success, false on failure.</returns>
 		[DllImport(FreeImageLibrary, EntryPoint = "FreeImage_AdjustCurve")]
-		public static extern bool AdjustCurve(FIBITMAP dib, byte[] LUT, FREE_IMAGE_COLOR_CHANNEL channel);
+		public static extern bool AdjustCurve(FIBITMAP dib, byte[] lookUpTable, FREE_IMAGE_COLOR_CHANNEL channel);
 
 		/// <summary>
 		/// Performs gamma correction on a 8-, 24- or 32-bit image.
@@ -6365,7 +6230,7 @@ namespace FreeImageAPI
 		/// <param name="right">Specifies the right position of the cropped rectangle.</param>
 		/// <param name="bottom">Specifies the bottom position of the cropped rectangle.</param>
 		/// <returns>Returns true on success, false on failure.</returns>
-		[DllImport(FreeImageLibrary, CharSet = CharSet.Ansi, EntryPoint = "FreeImage_JPEGCrop")]
+		[DllImport(FreeImageLibrary, CharSet = CharSet.Unicode, EntryPoint = "FreeImage_JPEGCropU")]
 		public static extern bool JPEGCrop(string src_file, string dst_file, int left, int top, int right, int bottom);
 
 		/// <summary>
@@ -6396,12 +6261,11 @@ namespace FreeImageAPI
 		#region Colors
 
 		/// <summary>
-		/// Creates a lookup table to be used with FreeImage_AdjustCurve() which
-		/// may adjusts brightness and contrast, correct gamma and invert the image with a
-		/// single call to FreeImage_AdjustCurve().
+		/// Creates a lookup table to be used with <see cref="AdjustCurve"/> which may adjusts brightness and
+		/// contrast, correct gamma and invert the image with a single call to <see cref="AdjustCurve"/>.
 		/// </summary>
-		/// <param name="LUT">Output lookup table to be used with FreeImage_AdjustCurve().
-		/// The size of 'LUT' is assumed to be 256.</param>
+		/// <param name="lookUpTable">Output lookup table to be used with <see cref="AdjustCurve"/>.
+		/// The size of 'lookUpTable' is assumed to be 256.</param>
 		/// <param name="brightness">Percentage brightness value where -100 &lt;= brightness &lt;= 100.
 		/// <para>A value of 0 means no change, less than 0 will make the image darker and greater
 		/// than 0 will make the image brighter.</para></param>
@@ -6414,8 +6278,46 @@ namespace FreeImageAPI
 		/// <param name="invert">If set to true, the image will be inverted.</param>
 		/// <returns>The number of adjustments applied to the resulting lookup table
 		/// compared to a blind lookup table.</returns>
+		/// <remarks>
+		/// This function creates a lookup table to be used with <see cref="AdjustCurve"/> which may adjust
+		/// brightness and contrast, correct gamma and invert the image with a single call to
+		/// <see cref="AdjustCurve"/>. If more than one of these image display properties need to be adjusted,
+		/// using a combined lookup table should be preferred over calling each adjustment function
+		/// separately. That's particularly true for huge images or if performance is an issue. Then,
+		/// the expensive process of iterating over all pixels of an image is performed only once and
+		/// not up to four times.
+		/// <para/>
+		/// Furthermore, the lookup table created does not depend on the order, in which each single
+		/// adjustment operation is performed. Due to rounding and byte casting issues, it actually
+		/// matters in which order individual adjustment operations are performed. Both of the following
+		/// snippets most likely produce different results:
+		/// <para/>
+		/// <code>
+		/// // snippet 1: contrast, brightness
+		/// AdjustContrast(dib, 15.0);
+		/// AdjustBrightness(dib, 50.0); 
+		/// </code>
+		/// <para/>
+		/// <code>
+		/// // snippet 2: brightness, contrast
+		/// AdjustBrightness(dib, 50.0);
+		/// AdjustContrast(dib, 15.0);
+		/// </code>
+		/// <para/>
+		/// Better and even faster would be snippet 3:
+		/// <para/>
+		/// <code>
+		/// // snippet 3:
+		/// byte[] lut = new byte[256];
+		/// GetAdjustColorsLookupTable(lut, 50.0, 15.0, 1.0, false);
+		/// AdjustCurve(dib, lut, FREE_IMAGE_COLOR_CHANNEL.FICC_RGB);
+		/// </code>
+		/// <para/>
+		/// This function is also used internally by <see cref="AdjustColors"/>, which does not return the
+		/// lookup table, but uses it to call <see cref="AdjustCurve"/> on the passed image.
+		/// </remarks>
 		[DllImport(FreeImageLibrary, EntryPoint = "FreeImage_GetAdjustColorsLookupTable")]
-		public static extern int GetAdjustColorsLookupTable(byte[] LUT, double brightness, double contrast, double gamma, bool invert);
+		public static extern int GetAdjustColorsLookupTable(byte[] lookUpTable, double brightness, double contrast, double gamma, bool invert);
 
 		/// <summary>
 		/// Adjusts an image's brightness, contrast and gamma as well as it may
@@ -6435,6 +6337,41 @@ namespace FreeImageAPI
 		/// If so, it will be ignored and no gamma correction will be performed on the image.</param>
 		/// <param name="invert">If set to true, the image will be inverted.</param>
 		/// <returns>Returns true on success, false on failure.</returns>
+		/// <remarks>
+		/// This function adjusts an image's brightness, contrast and gamma as well as it
+		/// may optionally invert the image within a single operation. If more than one of
+		/// these image display properties need to be adjusted, using this function should
+		/// be preferred over calling each adjustment function separately. That's particularly
+		/// true for huge images or if performance is an issue.
+		/// <para/>
+		/// This function relies on <see cref="GetAdjustColorsLookupTable"/>,
+		/// which creates a single lookup table, that combines all adjustment operations requested.
+		/// <para/>
+		/// Furthermore, the lookup table created by <see cref="GetAdjustColorsLookupTable"/> does
+		/// not depend on the order, in which each single adjustment operation is performed.
+		/// Due to rounding and byte casting issues, it actually matters in which order individual
+		/// adjustment operations are performed. Both of the following snippets most likely produce
+		/// different results:
+		/// <para/>
+		/// <code>
+		/// // snippet 1: contrast, brightness
+		/// AdjustContrast(dib, 15.0);
+		/// AdjustBrightness(dib, 50.0);
+		/// </code>
+		/// <para/>
+		/// <code>
+		/// // snippet 2: brightness, contrast
+		/// AdjustBrightness(dib, 50.0);
+		/// AdjustContrast(dib, 15.0);
+		/// </code>
+		/// <para/>
+		/// Better and even faster would be snippet 3:
+		/// <para/>
+		/// <code>
+		/// // snippet 3:
+		/// AdjustColors(dib, 50.0, 15.0, 1.0, false);
+		/// </code>
+		/// </remarks>
 		[DllImport(FreeImageLibrary, EntryPoint = "FreeImage_AdjustColors")]
 		public static extern bool AdjustColors(FIBITMAP dib, double brightness, double contrast, double gamma, bool invert);
 
@@ -6451,6 +6388,27 @@ namespace FreeImageAPI
 		/// <param name="swap">If true, source and destination colors are swapped, that is,
 		/// each destination color is also mapped to the corresponding source color.</param>
 		/// <returns>The total number of pixels changed.</returns>
+		/// <remarks>
+		/// This function maps up to <paramref name="count"/> colors specified in
+		/// <paramref name="srccolors"/> to these specified in <paramref name="dstcolors"/>.
+		/// Thereby, color <i>srccolors[N]</i>, if found in the image, will be replaced by color
+		/// <i>dstcolors[N]</i>. If <paramref name="swap"/> is <b>true</b>, additionally all colors
+		/// specified in <paramref name="dstcolors"/> are also mapped to these specified
+		/// in <paramref name="srccolors"/>. For high color images, the actual image data will be
+		/// modified whereas, for palletized images only the palette will be changed.
+		/// <para/>
+		/// The function returns the number of pixels changed or zero, if no pixels were changed. 
+		/// <para/>
+		/// Both arrays <paramref name="srccolors"/> and <paramref name="dstcolors"/> are assumed
+		/// not to hold less than <paramref name="count"/> colors.
+		/// <para/>
+		/// For 16-bit images, all colors specified are transparently converted to their 
+		/// proper 16-bit representation (either in RGB555 or RGB565 format, which is determined
+		/// by the image's red- green- and blue-mask).
+		/// <para/>
+		/// <b>Note, that this behaviour is different from what <see cref="ApplyPaletteIndexMapping"/> does,
+		/// which modifies the actual image data on palletized images.</b>
+		/// </remarks>
 		[DllImport(FreeImageLibrary, EntryPoint = "FreeImage_ApplyColorMapping")]
 		public static extern uint ApplyColorMapping(FIBITMAP dib, RGBQUAD[] srccolors, RGBQUAD[] dstcolors, uint count, bool ignore_alpha, bool swap);
 
@@ -6463,6 +6421,21 @@ namespace FreeImageAPI
 		/// <param name="color_b">The other of the two colors to be swapped.</param>
 		/// <param name="ignore_alpha">If true, 32-bit images and colors are treated as 24-bit.</param>
 		/// <returns>The total number of pixels changed.</returns>
+		/// <remarks>
+		/// This function swaps the two specified colors <paramref name="color_a"/> and
+		/// <paramref name="color_b"/> on a palletized or high color image.
+		/// For high color images, the actual image data will be modified whereas, for palletized
+		/// images only the palette will be changed.
+		/// <para/>
+		/// <b>Note, that this behaviour is different from what <see cref="SwapPaletteIndices"/> does,
+		/// which modifies the actual image data on palletized images.</b>
+		/// <para/>
+		/// This is just a thin wrapper for <see cref="ApplyColorMapping"/> and resolves to:
+		/// <para/>
+		/// <code>
+		/// return ApplyColorMapping(dib, color_a, color_b, 1, ignore_alpha, true);
+		/// </code>
+		/// </remarks>
 		[DllImport(FreeImageLibrary, EntryPoint = "FreeImage_SwapColors")]
 		public static extern uint SwapColors(FIBITMAP dib, ref RGBQUAD color_a, ref RGBQUAD color_b, bool ignore_alpha);
 
@@ -6478,6 +6451,21 @@ namespace FreeImageAPI
 		/// <param name="swap">If true, source and destination palette indices are swapped, that is,
 		/// each destination index is also mapped to the corresponding source index.</param>
 		/// <returns>The total number of pixels changed.</returns>
+		/// <remarks>
+		/// This function maps up to <paramref name="count"/> palette indices specified in
+		/// <paramref name="srcindices"/> to these specified in <paramref name="dstindices"/>.
+		/// Thereby, index <i>srcindices[N]</i>, if present in the image, will be replaced by index
+		/// <i>dstindices[N]</i>. If <paramref name="swap"/> is <b>true</b>, additionally all indices
+		/// specified in <paramref name="dstindices"/> are also mapped to these specified in 
+		/// <paramref name="srcindices"/>.
+		/// <para/>
+		/// The function returns the number of pixels changed or zero, if no pixels were changed.
+		/// Both arrays <paramref name="srcindices"/> and <paramref name="dstindices"/> are assumed not to
+		/// hold less than <paramref name="count"/> indices.
+		/// <para/>
+		/// <b>Note, that this behaviour is different from what <see cref="ApplyColorMapping"/> does, which
+		/// modifies the actual image data on palletized images.</b>
+		/// </remarks>
 		[DllImport(FreeImageLibrary, EntryPoint = "FreeImage_ApplyPaletteIndexMapping")]
 		public static extern uint ApplyPaletteIndexMapping(FIBITMAP dib, byte[] srcindices, byte[] dstindices, uint count, bool swap);
 
@@ -6488,8 +6476,25 @@ namespace FreeImageAPI
 		/// <param name="index_a">One of the two palette indices to be swapped.</param>
 		/// <param name="index_b">The other of the two palette indices to be swapped.</param>
 		/// <returns>The total number of pixels changed.</returns>
+		/// <remarks>
+		/// This function swaps the two specified palette indices <i>index_a</i> and
+		/// <i>index_b</i> on a palletized image. Therefore, not the palette, but the
+		/// actual image data will be modified.
+		/// <para/>
+		/// <b>Note, that this behaviour is different from what <see cref="SwapColors"/> does on palletized images,
+		/// which only swaps the colors in the palette.</b>
+		/// <para/>
+		/// This is just a thin wrapper for <see cref="ApplyColorMapping"/> and resolves to:
+		/// <para/>
+		/// <code>
+		/// return ApplyPaletteIndexMapping(dib, index_a, index_b, 1, true);
+		/// </code>
+		/// </remarks>
 		[DllImport(FreeImageLibrary, EntryPoint = "FreeImage_SwapPaletteIndices")]
 		public static extern uint SwapPaletteIndices(FIBITMAP dib, ref byte index_a, ref byte index_b);
+
+		[DllImport(FreeImageLibrary, EntryPoint = "FreeImage_FillBackground")]
+		internal static extern bool FillBackground(FIBITMAP dib, IntPtr color, FREE_IMAGE_COLOR_OPTIONS options);
 
 		#endregion
 	}
@@ -6516,12 +6521,12 @@ namespace FreeImageAPI.IO
 	/// we can simply pass through to the given functions in a 'FreeImageIO'
 	/// structure.
 	/// But when we want to use LoadFromhandle or SaveToHandle we need
-	/// a fi_handle (that we recieve again in our own functions).
+	/// a fi_handle (that we receive again in our own functions).
 	/// This handle is for example a stream (see LoadFromStream / SaveToStream)
 	/// that we want to work with. To know which stream a read/write is meant for
 	/// we could use a hash value that the wrapper itself handles or we can
 	/// go the unmanaged way of using a handle.
-	/// Therefor we use a <see cref="GCHandle"/> to recieve a unique pointer that we can
+	/// Therefor we use a <see cref="GCHandle"/> to receive a unique pointer that we can
 	/// convert back into a .NET object.
 	/// When the <b>fi_handle</b> instance is no longer needed the instance must be disposed
 	/// by the creater manually! It is recommended to use the <c>using</c> statement to
@@ -6682,7 +6687,7 @@ namespace FreeImageAPI.IO
 			}
 			if (!(obj is fi_handle))
 			{
-				throw new ArgumentException();
+				throw new ArgumentException("obj");
 			}
 			return CompareTo((fi_handle)obj);
 		}
@@ -7032,7 +7037,7 @@ namespace FreeImageAPI
 			}
 			if (!(obj is FI16RGB555))
 			{
-				throw new ArgumentException();
+				throw new ArgumentException("obj");
 			}
 			return CompareTo((FI16RGB555)obj);
 		}
@@ -7271,7 +7276,7 @@ namespace FreeImageAPI
 			}
 			if (!(obj is FI16RGB565))
 			{
-				throw new ArgumentException();
+				throw new ArgumentException("obj");
 			}
 			return CompareTo((FI16RGB565)obj);
 		}
@@ -7350,7 +7355,10 @@ namespace FreeImageAPI
 	[Serializable, StructLayout(LayoutKind.Sequential), ComVisible(true)]
 	public struct FIRational : IConvertible, IComparable, IFormattable, IComparable<FIRational>, IEquatable<FIRational>
 	{
+		[DebuggerBrowsable(DebuggerBrowsableState.Never)]
 		private int numerator;
+
+		[DebuggerBrowsable(DebuggerBrowsableState.Never)]
 		private int denominator;
 
 		/// <summary>
@@ -7431,7 +7439,7 @@ namespace FreeImageAPI
 					Normalize();
 					if (Math.Abs(((decimal)numerator / (decimal)denominator) - value) > 0.0001m)
 					{
-						throw new OverflowException();
+						throw new OverflowException("Unable to convert value into a fraction");
 					}
 				}
 				numerator *= sign;
@@ -7441,17 +7449,6 @@ namespace FreeImageAPI
 			{
 				throw new OverflowException("Unable to calculate fraction.", ex);
 			}
-		}
-
-		/// <summary>
-		/// Initializes a new instance based on the specified parameters.
-		/// </summary>
-		/// <param name="r">The structure to clone from.</param>
-		public FIRational(FIRational r)
-		{
-			numerator = r.numerator;
-			denominator = r.denominator;
-			Normalize();
 		}
 
 		/// <summary>
@@ -8330,7 +8327,10 @@ namespace FreeImageAPI
 	[Serializable, StructLayout(LayoutKind.Sequential), ComVisible(true)]
 	public struct FIURational : IConvertible, IComparable, IFormattable, IComparable<FIURational>, IEquatable<FIURational>
 	{
+		[DebuggerBrowsable(DebuggerBrowsableState.Never)]
 		private uint numerator;
+
+		[DebuggerBrowsable(DebuggerBrowsableState.Never)]
 		private uint denominator;
 
 		/// <summary>
@@ -8346,7 +8346,7 @@ namespace FreeImageAPI
 		/// <summary>
 		/// Represents the smallest positive <see cref="FIURational"/> value greater than zero. This field is constant.
 		/// </summary>
-		public static readonly FIURational Epsilon = new FIURational(1, Int32.MaxValue);
+		public static readonly FIURational Epsilon = new FIURational(1u, UInt32.MaxValue);
 
 		/// <summary>
 		/// Initializes a new instance based on the specified parameters.
@@ -8385,12 +8385,15 @@ namespace FreeImageAPI
 		/// <param name="value">The value to convert into a fraction.</param>
 		/// <exception cref="OverflowException">
 		/// <paramref name="value"/> cannot be converted into a fraction
-		/// represented by two integer values.</exception>
+		/// represented by two unsigned integer values.</exception>
 		public FIURational(decimal value)
 		{
 			try
 			{
-				if (value < 0) throw new ArgumentOutOfRangeException("value");
+				if (value < 0)
+				{
+					throw new OverflowException("value");
+				}
 				try
 				{
 					int[] contFract = CreateContinuedFraction(value);
@@ -8410,7 +8413,7 @@ namespace FreeImageAPI
 					Normalize();
 					if (Math.Abs(((decimal)numerator / (decimal)denominator) - value) > 0.0001m)
 					{
-						throw new OverflowException();
+						throw new OverflowException("Unable to convert value into a fraction");
 					}
 				}
 				Normalize();
@@ -8419,17 +8422,6 @@ namespace FreeImageAPI
 			{
 				throw new OverflowException("Unable to calculate fraction.", ex);
 			}
-		}
-
-		/// <summary>
-		/// Initializes a new instance based on the specified parameters.
-		/// </summary>
-		/// <param name="r">The structure to clone from.</param>
-		public FIURational(FIURational r)
-		{
-			numerator = r.numerator;
-			denominator = r.denominator;
-			Normalize();
 		}
 
 		/// <summary>
@@ -9297,29 +9289,78 @@ namespace FreeImageAPI
 	/// Encapsulates a FreeImage-bitmap.
 	/// </summary>
 	[Serializable, Guid("64a4c935-b757-499c-ab8c-6110316a9e51")]
-	public class FreeImageBitmap : ICloneable, IDisposable, IEnumerable, ISerializable
+	public class FreeImageBitmap : MarshalByRefObject, ICloneable, IDisposable, IEnumerable, ISerializable
 	{
 		#region Fields
 
-		private bool disposed = false;
-		private object tag = null;
+		/// <summary>
+		/// Indicates whether this instance is disposed.
+		/// </summary>
+		[DebuggerBrowsable(DebuggerBrowsableState.Never)]
+		private bool disposed;
+
+		/// <summary>
+		/// Tab object.
+		/// </summary>
+		[DebuggerBrowsable(DebuggerBrowsableState.Never)]
+		private object tag;
+
+		/// <summary>
+		/// Object used to syncronize lock methods.
+		/// </summary>
+		[DebuggerBrowsable(DebuggerBrowsableState.Never)]
 		private object lockObject = new object();
+
+		/// <summary>
+		/// Holds information used by SaveAdd() methods.
+		/// </summary>
+		[DebuggerBrowsable(DebuggerBrowsableState.Never)]
 		private SaveInformation saveInformation = new SaveInformation();
+
+		/// <summary>
+		/// The stream that this instance was loaded from or
+		/// null if it has been cloned or deserialized.
+		/// </summary>
+		[DebuggerBrowsable(DebuggerBrowsableState.Never)]
+		private Stream stream;
+
+		/// <summary>
+		/// True if the stream must be disposed with this
+		/// instance.
+		/// </summary>
+		[DebuggerBrowsable(DebuggerBrowsableState.Never)]
+		private bool disposeStream;
+
+		/// <summary>
+		/// The number of frames contained by a mutlipage bitmap.
+		/// Default value is 1 and only changed if needed.
+		/// </summary>
+		[DebuggerBrowsable(DebuggerBrowsableState.Never)]
+		private int frameCount = 1;
+
+		/// <summary>
+		/// The index of the loaded frame.
+		/// Default value is 0 and only changed if needed.
+		/// </summary>
+		[DebuggerBrowsable(DebuggerBrowsableState.Never)]
+		private int frameIndex = 0;
 
 		/// <summary>
 		/// Format of the sourceimage.
 		/// </summary>
+		[DebuggerBrowsable(DebuggerBrowsableState.Never)]
 		private FREE_IMAGE_FORMAT originalFormat = FREE_IMAGE_FORMAT.FIF_UNKNOWN;
 
 		/// <summary>
 		/// Handle to the encapsulated FreeImage-bitmap.
 		/// </summary>
-		private FIBITMAP dib = 0;
+		[DebuggerBrowsable(DebuggerBrowsableState.Never)]
+		private FIBITMAP dib;
 
-		/// <summary>
-		/// Handle to the encapsulated FreeImage-multipagebitmap.
-		/// </summary>
-		private FIMULTIBITMAP mdib = 0;
+		private const string ErrorLoadingBitmap = "Unable to load bitmap.";
+		private const string ErrorLoadingFrame = "Unable to load frame.";
+		private const string ErrorCreatingBitmap = "Unable to create bitmap.";
+		private const string ErrorUnloadBitmap = "Unable to unload bitmap.";
 
 		#endregion
 
@@ -9341,9 +9382,10 @@ namespace FreeImageAPI
 		{
 			if (dib.IsNull)
 			{
-				throw new Exception();
+				throw new Exception(ErrorLoadingBitmap);
 			}
 			this.dib = dib;
+			AddMemoryPressure();
 		}
 
 		/// <summary>
@@ -9352,14 +9394,21 @@ namespace FreeImageAPI
 		/// </summary>
 		/// <param name="original">The original to clone from.</param>
 		/// <exception cref="Exception">The operation failed.</exception>
+		/// <exception cref="ArgumentNullException"><paramref name="original"/> is a null reference.</exception>
 		public FreeImageBitmap(FreeImageBitmap original)
 		{
+			if (original == null)
+			{
+				throw new ArgumentNullException("original");
+			}
 			original.EnsureNotDisposed();
 			dib = FreeImage.Clone(original.dib);
 			if (dib.IsNull)
 			{
-				throw new Exception();
+				throw new Exception(ErrorLoadingBitmap);
 			}
+			originalFormat = original.originalFormat;
+			AddMemoryPressure();
 		}
 
 		/// <summary>
@@ -9370,7 +9419,7 @@ namespace FreeImageAPI
 		/// <param name="newSize">The Size structure that represent the
 		/// size of the new <see cref="FreeImageBitmap"/>.</param>
 		/// <exception cref="Exception">The operation failed.</exception>
-		/// <exception cref="ArgumentNullException"><paramref name="original"/> is null.</exception>
+		/// <exception cref="ArgumentNullException"><paramref name="original"/> is a null reference.</exception>
 		/// <exception cref="ArgumentOutOfRangeException">
 		/// <paramref name="newSize.Width"/> or <paramref name="newSize.Height"/> are less or equal zero.
 		/// </exception>
@@ -9387,7 +9436,7 @@ namespace FreeImageAPI
 		/// <param name="width">Width of the new <see cref="FreeImageBitmap"/>.</param>
 		/// <param name="height">Height of the new <see cref="FreeImageBitmap"/>.</param>
 		/// <exception cref="Exception">The operation failed.</exception>
-		/// <exception cref="ArgumentNullException"><paramref name="original"/> is null.</exception>
+		/// <exception cref="ArgumentNullException"><paramref name="original"/> is a null reference.</exception>
 		/// <exception cref="ArgumentOutOfRangeException">
 		/// <paramref name="width"/> or <paramref name="height"/> are less or equal zero.</exception>
 		public FreeImageBitmap(FreeImageBitmap original, int width, int height)
@@ -9408,8 +9457,10 @@ namespace FreeImageAPI
 			dib = FreeImage.Rescale(original.dib, width, height, FREE_IMAGE_FILTER.FILTER_BICUBIC);
 			if (dib.IsNull)
 			{
-				throw new Exception();
+				throw new Exception(ErrorLoadingBitmap);
 			}
+			originalFormat = original.originalFormat;
+			AddMemoryPressure();
 		}
 
 		/// <summary>
@@ -9417,6 +9468,14 @@ namespace FreeImageAPI
 		/// bases on the specified image.
 		/// </summary>
 		/// <param name="original">The original to clone from.</param>
+		/// <remarks>
+		/// Although this constructor supports creating images in both formats
+		/// <see cref="System.Drawing.Imaging.PixelFormat.Format32bppPArgb"/>
+		/// and <see cref="System.Drawing.Imaging.PixelFormat.Format64bppPArgb"/>, bitmaps
+		/// created in these formats are treated like any normal 32-bit RGBA and 64-bit RGBA
+		/// images respectively. Currently, there is no  support for automatic premultiplying images in
+		/// <see cref="FreeImageBitmap"/>.
+		/// </remarks>
 		/// <exception cref="Exception">The operation failed.</exception>
 		public FreeImageBitmap(Image original)
 			: this(original as Bitmap)
@@ -9430,8 +9489,16 @@ namespace FreeImageAPI
 		/// <param name="original">The original to clone from.</param>
 		/// <param name="newSize">The Size structure that represent the
 		/// size of the new <see cref="FreeImageBitmap"/>.</param>
+		/// <remarks>
+		/// Although this constructor supports creating images in both formats
+		/// <see cref="System.Drawing.Imaging.PixelFormat.Format32bppPArgb"/>
+		/// and <see cref="System.Drawing.Imaging.PixelFormat.Format64bppPArgb"/>, bitmaps
+		/// created in these formats are treated like any normal 32-bit RGBA and 64-bit RGBA
+		/// images respectively. Currently, there is no  support for automatic premultiplying images in
+		/// <see cref="FreeImageBitmap"/>.
+		/// </remarks>
 		/// <exception cref="Exception">The operation failed.</exception>
-		/// <exception cref="ArgumentNullException"><paramref name="original"/> is null.</exception>
+		/// <exception cref="ArgumentNullException"><paramref name="original"/> is a null reference.</exception>
 		/// <exception cref="ArgumentOutOfRangeException">
 		/// <paramref name="newSize.Width"/> or <paramref name="newSize.Height"/> are less or equal zero.
 		/// </exception>
@@ -9447,8 +9514,16 @@ namespace FreeImageAPI
 		/// <param name="original">The original to clone from.</param>
 		/// <param name="width">The width, in pixels, of the new <see cref="FreeImageBitmap"/>.</param>
 		/// <param name="height">The height, in pixels, of the new <see cref="FreeImageBitmap"/>.</param>
+		/// <remarks>
+		/// Although this constructor supports creating images in both formats
+		/// <see cref="System.Drawing.Imaging.PixelFormat.Format32bppPArgb"/>
+		/// and <see cref="System.Drawing.Imaging.PixelFormat.Format64bppPArgb"/>, bitmaps
+		/// created in these formats are treated like any normal 32-bit RGBA and 64-bit RGBA
+		/// images respectively. Currently, there is no  support for automatic premultiplying images in
+		/// <see cref="FreeImageBitmap"/>.
+		/// </remarks>
 		/// <exception cref="Exception">The operation failed.</exception>
-		/// <exception cref="ArgumentNullException"><paramref name="original"/> is null.</exception>
+		/// <exception cref="ArgumentNullException"><paramref name="original"/> is a null reference.</exception>
 		/// <exception cref="ArgumentOutOfRangeException">
 		/// <paramref name="width"/> or <paramref name="height"/> are less or equal zero.</exception>
 		public FreeImageBitmap(Image original, int width, int height)
@@ -9461,6 +9536,15 @@ namespace FreeImageAPI
 		/// bases on the specified image.
 		/// </summary>
 		/// <param name="original">The original to clone from.</param>
+		/// <remarks>
+		/// Although this constructor supports creating images in both formats
+		/// <see cref="System.Drawing.Imaging.PixelFormat.Format32bppPArgb"/>
+		/// and <see cref="System.Drawing.Imaging.PixelFormat.Format64bppPArgb"/>, bitmaps
+		/// created in these formats are treated like any normal 32-bit RGBA and 64-bit RGBA
+		/// images respectively. Currently, there is no  support for automatic premultiplying images in
+		/// <see cref="FreeImageBitmap"/>.
+		/// </remarks>
+		/// <exception cref="ArgumentNullException"><paramref name="original"/> is a null reference.</exception>
 		/// <exception cref="Exception">The operation failed.</exception>
 		public FreeImageBitmap(Bitmap original)
 		{
@@ -9471,8 +9555,10 @@ namespace FreeImageAPI
 			dib = FreeImage.CreateFromBitmap(original, true);
 			if (dib.IsNull)
 			{
-				throw new Exception();
+				throw new Exception(ErrorLoadingBitmap);
 			}
+			originalFormat = FreeImage.GetFormat(original.RawFormat);
+			AddMemoryPressure();
 		}
 
 		/// <summary>
@@ -9482,8 +9568,16 @@ namespace FreeImageAPI
 		/// <param name="original">The original to clone from.</param>
 		/// <param name="newSize">The Size structure that represent the
 		/// size of the new <see cref="FreeImageBitmap"/>.</param>
+		/// <remarks>
+		/// Although this constructor supports creating images in both formats
+		/// <see cref="System.Drawing.Imaging.PixelFormat.Format32bppPArgb"/>
+		/// and <see cref="System.Drawing.Imaging.PixelFormat.Format64bppPArgb"/>, bitmaps
+		/// created in these formats are treated like any normal 32-bit RGBA and 64-bit RGBA
+		/// images respectively. Currently, there is no  support for automatic premultiplying images in
+		/// <see cref="FreeImageBitmap"/>.
+		/// </remarks>
 		/// <exception cref="Exception">The operation failed.</exception>
-		/// <exception cref="ArgumentNullException"><paramref name="original"/> is null.</exception>
+		/// <exception cref="ArgumentNullException"><paramref name="original"/> is a null reference.</exception>
 		/// <exception cref="ArgumentOutOfRangeException">
 		/// <paramref name="newSize.Width"/> or <paramref name="newSize.Height"/> are less or equal zero.
 		/// </exception>
@@ -9499,8 +9593,16 @@ namespace FreeImageAPI
 		/// <param name="original">The original to clone from.</param>
 		/// <param name="width">The width, in pixels, of the new <see cref="FreeImageBitmap"/>.</param>
 		/// <param name="height">The height, in pixels, of the new <see cref="FreeImageBitmap"/>.</param>
+		/// <remarks>
+		/// Although this constructor supports creating images in both formats
+		/// <see cref="System.Drawing.Imaging.PixelFormat.Format32bppPArgb"/>
+		/// and <see cref="System.Drawing.Imaging.PixelFormat.Format64bppPArgb"/>, bitmaps
+		/// created in these formats are treated like any normal 32-bit RGBA and 64-bit RGBA
+		/// images respectively. Currently, there is no  support for automatic premultiplying images in
+		/// <see cref="FreeImageBitmap"/>.
+		/// </remarks>
 		/// <exception cref="Exception">The operation failed.</exception>
-		/// <exception cref="ArgumentNullException"><paramref name="original"/> is null.</exception>
+		/// <exception cref="ArgumentNullException"><paramref name="original"/> is a null reference.</exception>
 		/// <exception cref="ArgumentOutOfRangeException">
 		/// <paramref name="width"/> or <paramref name="height"/> are less or equal zero.</exception>
 		public FreeImageBitmap(Bitmap original, int width, int height)
@@ -9520,17 +9622,16 @@ namespace FreeImageAPI
 			FIBITMAP temp = FreeImage.CreateFromBitmap(original, true);
 			if (temp.IsNull)
 			{
-				throw new Exception();
+				throw new Exception(ErrorLoadingBitmap);
 			}
-			else
+			dib = FreeImage.Rescale(temp, width, height, FREE_IMAGE_FILTER.FILTER_BICUBIC);
+			FreeImage.Unload(temp);
+			if (dib.IsNull)
 			{
-				dib = FreeImage.Rescale(temp, width, height, FREE_IMAGE_FILTER.FILTER_BICUBIC);
-				FreeImage.Unload(temp);
-				if (dib.IsNull)
-				{
-					throw new Exception();
-				}
+				throw new Exception(ErrorLoadingBitmap);
 			}
+			originalFormat = FreeImage.GetFormat(original.RawFormat);
+			AddMemoryPressure();
 		}
 
 		/// <summary>
@@ -9540,7 +9641,10 @@ namespace FreeImageAPI
 		/// <param name="stream">Stream to read from.</param>
 		/// <param name="useIcm">Ignored.</param>
 		/// <exception cref="Exception">The operation failed.</exception>
-		/// <exception cref="ArgumentNullException"><paramref name="stream"/> is null.</exception>
+		/// <exception cref="ArgumentNullException"><paramref name="stream"/> is a null reference.</exception>
+		/// <remarks>
+		/// You must keep the stream open for the lifetime of the <see cref="FreeImageBitmap"/>.
+		/// </remarks>
 		public FreeImageBitmap(Stream stream, bool useIcm)
 			: this(stream)
 		{
@@ -9552,7 +9656,10 @@ namespace FreeImageAPI
 		/// </summary>
 		/// <param name="stream">Stream to read from.</param>
 		/// <exception cref="Exception">The operation failed.</exception>
-		/// <exception cref="ArgumentNullException"><paramref name="stream"/> is null.</exception>
+		/// <exception cref="ArgumentNullException"><paramref name="stream"/> is a null reference.</exception>
+		/// <remarks>
+		/// You must keep the stream open for the lifetime of the <see cref="FreeImageBitmap"/>.
+		/// </remarks>
 		public FreeImageBitmap(Stream stream)
 			: this(stream, FREE_IMAGE_FORMAT.FIF_UNKNOWN, FREE_IMAGE_LOAD_FLAGS.DEFAULT)
 		{
@@ -9565,7 +9672,10 @@ namespace FreeImageAPI
 		/// <param name="stream">Stream to read from.</param>
 		/// <param name="format">Format of the image.</param>
 		/// <exception cref="Exception">The operation failed.</exception>
-		/// <exception cref="ArgumentNullException"><paramref name="stream"/> is null.</exception>
+		/// <exception cref="ArgumentNullException"><paramref name="stream"/> is a null reference.</exception>
+		/// <remarks>
+		/// You must keep the stream open for the lifetime of the <see cref="FreeImageBitmap"/>.
+		/// </remarks>
 		public FreeImageBitmap(Stream stream, FREE_IMAGE_FORMAT format)
 			: this(stream, format, FREE_IMAGE_LOAD_FLAGS.DEFAULT)
 		{
@@ -9578,7 +9688,10 @@ namespace FreeImageAPI
 		/// <param name="stream">Stream to read from.</param>
 		/// <param name="flags">Flags to enable or disable plugin-features.</param>
 		/// <exception cref="Exception">The operation failed.</exception>
-		/// <exception cref="ArgumentNullException"><paramref name="stream"/> is null.</exception>
+		/// <exception cref="ArgumentNullException"><paramref name="stream"/> is a null reference.</exception>
+		/// <remarks>
+		/// You must keep the stream open for the lifetime of the <see cref="FreeImageBitmap"/>.
+		/// </remarks>
 		public FreeImageBitmap(Stream stream, FREE_IMAGE_LOAD_FLAGS flags)
 			: this(stream, FREE_IMAGE_FORMAT.FIF_UNKNOWN, flags)
 		{
@@ -9593,23 +9706,19 @@ namespace FreeImageAPI
 		/// <param name="format">Format of the image.</param>
 		/// <param name="flags">Flags to enable or disable plugin-features.</param>
 		/// <exception cref="Exception">The operation failed.</exception>
-		/// <exception cref="ArgumentNullException"><paramref name="stream"/> is null.</exception>
+		/// <exception cref="ArgumentNullException"><paramref name="stream"/> is a null reference.</exception>
+		/// <remarks>
+		/// You must keep the stream open for the lifetime of the <see cref="FreeImageBitmap"/>.
+		/// </remarks>
 		public FreeImageBitmap(Stream stream, FREE_IMAGE_FORMAT format, FREE_IMAGE_LOAD_FLAGS flags)
 		{
 			if (stream == null)
 			{
 				throw new ArgumentNullException("stream");
 			}
-			saveInformation.loadFlags = flags;
-
-			dib = FreeImage.LoadFromStream(stream, flags, ref format);
-
-			if (dib.IsNull)
-			{
-				throw new Exception();
-			}
-
-			originalFormat = format;
+			this.stream = stream;
+			disposeStream = false;
+			LoadFromStream(stream, format, flags);
 		}
 
 		/// <summary>
@@ -9617,7 +9726,7 @@ namespace FreeImageAPI
 		/// </summary>
 		/// <param name="filename">The complete name of the file to load.</param>
 		/// <exception cref="Exception">The operation failed.</exception>
-		/// <exception cref="ArgumentNullException"><paramref name="filename"/> is null.</exception>
+		/// <exception cref="ArgumentNullException"><paramref name="filename"/> is a null reference.</exception>
 		/// <exception cref="FileNotFoundException"><paramref name="filename"/> does not exist.</exception>
 		public FreeImageBitmap(string filename)
 			: this(filename, FREE_IMAGE_LOAD_FLAGS.DEFAULT)
@@ -9630,7 +9739,7 @@ namespace FreeImageAPI
 		/// <param name="filename">The complete name of the file to load.</param>
 		/// <param name="useIcm">Ignored.</param>
 		/// <exception cref="Exception">The operation failed.</exception>
-		/// <exception cref="ArgumentNullException"><paramref name="filename"/> is null.</exception>
+		/// <exception cref="ArgumentNullException"><paramref name="filename"/> is a null reference.</exception>
 		/// <exception cref="FileNotFoundException"><paramref name="filename"/> does not exist.</exception>
 		public FreeImageBitmap(string filename, bool useIcm)
 			: this(filename)
@@ -9644,7 +9753,7 @@ namespace FreeImageAPI
 		/// <param name="filename">The complete name of the file to load.</param>
 		/// <param name="flags">Flags to enable or disable plugin-features.</param>
 		/// <exception cref="Exception">The operation failed.</exception>
-		/// <exception cref="ArgumentNullException"><paramref name="filename"/> is null.</exception>
+		/// <exception cref="ArgumentNullException"><paramref name="filename"/> is a null reference.</exception>
 		/// <exception cref="FileNotFoundException"><paramref name="filename"/> does not exist.</exception>
 		public FreeImageBitmap(string filename, FREE_IMAGE_LOAD_FLAGS flags)
 			: this(filename, FREE_IMAGE_FORMAT.FIF_UNKNOWN, flags)
@@ -9658,7 +9767,7 @@ namespace FreeImageAPI
 		/// <param name="filename">The complete name of the file to load.</param>
 		/// <param name="format">Format of the image.</param>
 		/// <exception cref="Exception">The operation failed.</exception>
-		/// <exception cref="ArgumentNullException"><paramref name="filename"/> is null.</exception>
+		/// <exception cref="ArgumentNullException"><paramref name="filename"/> is a null reference.</exception>
 		/// <exception cref="FileNotFoundException"><paramref name="filename"/> does not exist.</exception>
 		public FreeImageBitmap(string filename, FREE_IMAGE_FORMAT format)
 			: this(filename, format, FREE_IMAGE_LOAD_FLAGS.DEFAULT)
@@ -9673,7 +9782,7 @@ namespace FreeImageAPI
 		/// <param name="format">Format of the image.</param>
 		/// <param name="flags">Flags to enable or disable plugin-features.</param>
 		/// <exception cref="Exception">The operation failed.</exception>
-		/// <exception cref="ArgumentNullException"><paramref name="filename"/> is null.</exception>
+		/// <exception cref="ArgumentNullException"><paramref name="filename"/> is a null reference.</exception>
 		/// <exception cref="FileNotFoundException"><paramref name="filename"/> does not exist.</exception>
 		public FreeImageBitmap(string filename, FREE_IMAGE_FORMAT format, FREE_IMAGE_LOAD_FLAGS flags)
 		{
@@ -9685,46 +9794,11 @@ namespace FreeImageAPI
 			{
 				throw new FileNotFoundException("filename");
 			}
-			saveInformation.loadFlags = flags;
 
-			mdib = FreeImage.OpenMultiBitmapEx(filename, ref format, flags, false, true, false);
-
-			if (mdib.IsNull)
-			{
-				throw new Exception();
-			}
-
-			originalFormat = format;
-
-			if (FreeImage.GetPageCount(mdib) != 0)
-			{
-				if (FreeImage.GetPageCount(mdib) == 1)
-				{
-					if (!FreeImage.CloseMultiBitmapEx(ref mdib, FREE_IMAGE_SAVE_FLAGS.DEFAULT))
-					{
-						throw new Exception();
-					}
-
-					dib = FreeImage.LoadEx(filename, flags, ref format);
-					if (dib.IsNull)
-					{
-						throw new Exception();
-					}
-
-					return;
-				}
-				else
-				{
-					dib = FreeImage.LockPage(mdib, 0);
-					if (!dib.IsNull)
-					{
-						return;
-					}
-				}
-			}
-
-			FreeImage.CloseMultiBitmap(mdib, FREE_IMAGE_SAVE_FLAGS.DEFAULT);
-			throw new Exception();
+			saveInformation.filename = filename;
+			stream = new FileStream(filename, FileMode.Open, FileAccess.Read, FileShare.Read);
+			disposeStream = true;
+			LoadFromStream(stream, format, flags);
 		}
 
 		/// <summary>
@@ -9745,8 +9819,9 @@ namespace FreeImageAPI
 				FreeImage.FI_RGBA_BLUE_MASK);
 			if (dib.IsNull)
 			{
-				throw new Exception();
+				throw new Exception(ErrorCreatingBitmap);
 			}
+			AddMemoryPressure();
 		}
 
 		/// <summary>
@@ -9768,12 +9843,12 @@ namespace FreeImageAPI
 		/// <param name="height">The height, in pixels, of the new <see cref="FreeImageBitmap"/>.</param>
 		/// <param name="g">The Graphics object that specifies the resolution for the new <see cref="FreeImageBitmap"/>.</param>
 		/// <exception cref="Exception">The operation failed.</exception>
-		/// <exception cref="ArgumentNullException"><paramref name="g"/> is null.</exception>
+		/// <exception cref="ArgumentNullException"><paramref name="g"/> is a null reference.</exception>
 		public FreeImageBitmap(int width, int height, Graphics g)
 			: this(width, height)
 		{
 			FreeImage.SetResolutionX(dib, (uint)g.DpiX);
-			FreeImage.SetResolutionX(dib, (uint)g.DpiY);
+			FreeImage.SetResolutionY(dib, (uint)g.DpiY);
 		}
 
 		/// <summary>
@@ -9782,6 +9857,14 @@ namespace FreeImageAPI
 		/// <param name="width">The width, in pixels, of the new <see cref="FreeImageBitmap"/>.</param>
 		/// <param name="height">The height, in pixels, of the new <see cref="FreeImageBitmap"/>.</param>
 		/// <param name="format">The PixelFormat enumeration for the new <see cref="FreeImageBitmap"/>.</param>
+		/// <remarks>
+		/// Although this constructor supports creating images in both formats
+		/// <see cref="System.Drawing.Imaging.PixelFormat.Format32bppPArgb"/>
+		/// and <see cref="System.Drawing.Imaging.PixelFormat.Format64bppPArgb"/>, bitmaps
+		/// created in these formats are treated like any normal 32-bit RGBA and 64-bit RGBA
+		/// images respectively. Currently, there is no  support for automatic premultiplying images in
+		/// <see cref="FreeImageBitmap"/>.
+		/// </remarks>
 		/// <exception cref="Exception">The operation failed.</exception>
 		/// <exception cref="ArgumentException"><paramref name="format"/> is invalid.</exception>
 		/// <exception cref="ArgumentOutOfRangeException">
@@ -9797,21 +9880,23 @@ namespace FreeImageAPI
 				throw new ArgumentOutOfRangeException("height");
 			}
 			uint bpp, redMask, greenMask, blueMask;
-			if (!FreeImage.GetFormatParameters(format, out bpp, out redMask, out greenMask, out blueMask))
+			FREE_IMAGE_TYPE type;
+			if (!FreeImage.GetFormatParameters(format, out type, out bpp, out redMask, out greenMask, out blueMask))
 			{
-				throw new ArgumentException("format is invalid.");
+				throw new ArgumentException("format is invalid");
 			}
-			dib = FreeImage.Allocate(width, height, (int)bpp, redMask, greenMask, blueMask);
+			dib = FreeImage.AllocateT(type, width, height, (int)bpp, redMask, greenMask, blueMask);
 			if (dib.IsNull)
 			{
-				throw new Exception();
+				throw new Exception(ErrorCreatingBitmap);
 			}
+			AddMemoryPressure();
 		}
 
 		/// <summary>
 		/// Initializes a new instance of the <see cref="FreeImageBitmap"/> class bases on the specified size and type.
 		/// Only non standard bitmaps are supported.
-		/// </summary>
+		/// </summary>	
 		/// <param name="width">The width, in pixels, of the new <see cref="FreeImageBitmap"/>.</param>
 		/// <param name="height">The height, in pixels, of the new <see cref="FreeImageBitmap"/>.</param>
 		/// <param name="type">The type of the bitmap.</param>
@@ -9838,8 +9923,9 @@ namespace FreeImageAPI
 			dib = FreeImage.AllocateT(type, width, height, 0, 0u, 0u, 0u);
 			if (dib.IsNull)
 			{
-				throw new Exception();
+				throw new Exception(ErrorCreatingBitmap);
 			}
+			AddMemoryPressure();
 		}
 
 		/// <summary>
@@ -9848,13 +9934,21 @@ namespace FreeImageAPI
 		/// </summary>
 		/// <param name="width">The width, in pixels, of the new <see cref="FreeImageBitmap"/>.</param>
 		/// <param name="height">The height, in pixels, of the new <see cref="FreeImageBitmap"/>.</param>
-		/// <param name="stride">nteger that specifies the byte offset between the beginning
+		/// <param name="stride">Integer that specifies the byte offset between the beginning
 		/// of one scan line and the next. This is usually (but not necessarily)
 		/// the number of bytes in the pixel format (for example, 2 for 16 bits per pixel)
 		/// multiplied by the width of the bitmap. The value passed to this parameter must
 		/// be a multiple of four..</param>
 		/// <param name="format">The PixelFormat enumeration for the new <see cref="FreeImageBitmap"/>.</param>
 		/// <param name="scan0">Pointer to an array of bytes that contains the pixel data.</param>
+		/// <remarks>
+		/// Although this constructor supports creating images in both formats
+		/// <see cref="System.Drawing.Imaging.PixelFormat.Format32bppPArgb"/>
+		/// and <see cref="System.Drawing.Imaging.PixelFormat.Format64bppPArgb"/>, bitmaps
+		/// created in these formats are treated like any normal 32-bit RGBA and 64-bit RGBA
+		/// images respectively. Currently, there is no  support for automatic premultiplying images in
+		/// <see cref="FreeImageBitmap"/>.
+		/// </remarks>
 		/// <exception cref="Exception">The operation failed.</exception>
 		/// <exception cref="ArgumentException"><paramref name="format"/> is invalid.</exception>
 		/// <exception cref="ArgumentOutOfRangeException">
@@ -9870,20 +9964,182 @@ namespace FreeImageAPI
 				throw new ArgumentOutOfRangeException("height");
 			}
 			uint bpp, redMask, greenMask, blueMask;
+			FREE_IMAGE_TYPE type;
 			bool topDown = (stride > 0);
 			stride = (stride > 0) ? stride : (stride * -1);
 
-			if (!FreeImage.GetFormatParameters(format, out bpp, out redMask, out greenMask, out blueMask))
+			if (!FreeImage.GetFormatParameters(format, out type, out bpp, out redMask, out greenMask, out blueMask))
 			{
 				throw new ArgumentException("format is invalid.");
 			}
 
 			dib = FreeImage.ConvertFromRawBits(
-				scan0, width, height, stride, bpp, redMask, greenMask, blueMask, topDown);
+				scan0, type, width, height, stride, bpp, redMask, greenMask, blueMask, topDown);
+
 			if (dib.IsNull)
 			{
-				throw new Exception();
+				throw new Exception(ErrorCreatingBitmap);
 			}
+			AddMemoryPressure();
+		}
+
+		/// <summary>
+		/// Initializes a new instance of the <see cref="FreeImageBitmap"/> class bases on the specified size,
+		/// pixel format and pixel data.
+		/// </summary>
+		/// <param name="width">The width, in pixels, of the new <see cref="FreeImageBitmap"/>.</param>
+		/// <param name="height">The height, in pixels, of the new <see cref="FreeImageBitmap"/>.</param>
+		/// <param name="stride">Integer that specifies the byte offset between the beginning
+		/// of one scan line and the next. This is usually (but not necessarily)
+		/// the number of bytes in the pixel format (for example, 2 for 16 bits per pixel)
+		/// multiplied by the width of the bitmap. The value passed to this parameter must
+		/// be a multiple of four..</param>
+		/// <param name="format">The PixelFormat enumeration for the new <see cref="FreeImageBitmap"/>.</param>
+		/// <param name="bits">Array of bytes containing the bitmap data.</param>
+		/// <remarks>
+		/// Although this constructor supports creating images in both formats
+		/// <see cref="System.Drawing.Imaging.PixelFormat.Format32bppPArgb"/>
+		/// and <see cref="System.Drawing.Imaging.PixelFormat.Format64bppPArgb"/>, bitmaps
+		/// created in these formats are treated like any normal 32-bit RGBA and 64-bit RGBA
+		/// images respectively. Currently, there is no  support for automatic premultiplying images in
+		/// <see cref="FreeImageBitmap"/>.
+		/// </remarks>
+		/// <exception cref="Exception">The operation failed.</exception>
+		/// <exception cref="ArgumentException"><paramref name="format"/> is invalid.</exception>
+		/// <exception cref="ArgumentOutOfRangeException">
+		/// <paramref name="width"/> or <paramref name="height"/> are less or equal zero.</exception>
+		/// <exception cref="ArgumentNullException"><paramref name="bits"/> is null</exception>
+		public FreeImageBitmap(int width, int height, int stride, PixelFormat format, byte[] bits)
+		{
+			if (width <= 0)
+			{
+				throw new ArgumentOutOfRangeException("width");
+			}
+			if (height <= 0)
+			{
+				throw new ArgumentOutOfRangeException("height");
+			}
+			if (bits == null)
+			{
+				throw new ArgumentNullException("bits");
+			}
+			uint bpp, redMask, greenMask, blueMask;
+			FREE_IMAGE_TYPE type;
+			bool topDown = (stride > 0);
+			stride = (stride > 0) ? stride : (stride * -1);
+
+			if (!FreeImage.GetFormatParameters(format, out type, out bpp, out redMask, out greenMask, out blueMask))
+			{
+				throw new ArgumentException("format is invalid.");
+			}
+
+			dib = FreeImage.ConvertFromRawBits(
+				bits, type, width, height, stride, bpp, redMask, greenMask, blueMask, topDown);
+
+			if (dib.IsNull)
+			{
+				throw new Exception(ErrorCreatingBitmap);
+			}
+			AddMemoryPressure();
+		}
+
+		/// <summary>
+		/// Initializes a new instance of the <see cref="FreeImageBitmap"/> class bases on the specified size,
+		/// pixel format and pixel data.
+		/// </summary>
+		/// <param name="width">The width, in pixels, of the new <see cref="FreeImageBitmap"/>.</param>
+		/// <param name="height">The height, in pixels, of the new <see cref="FreeImageBitmap"/>.</param>
+		/// <param name="stride">Integer that specifies the byte offset between the beginning
+		/// of one scan line and the next. This is usually (but not necessarily)
+		/// the number of bytes in the pixel format (for example, 2 for 16 bits per pixel)
+		/// multiplied by the width of the bitmap. The value passed to this parameter must
+		/// be a multiple of four..</param>
+		/// <param name="bpp">The color depth of the new <see cref="FreeImageBitmap"/></param>
+		/// <param name="type">The type for the new <see cref="FreeImageBitmap"/>.</param>
+		/// <param name="scan0">Pointer to an array of bytes that contains the pixel data.</param>
+		/// <exception cref="Exception">The operation failed.</exception>
+		/// <exception cref="ArgumentException"><paramref name="format"/> is invalid.</exception>
+		/// <exception cref="ArgumentOutOfRangeException">
+		/// <paramref name="width"/> or <paramref name="height"/> are less or equal zero.</exception>
+		public FreeImageBitmap(int width, int height, int stride, int bpp, FREE_IMAGE_TYPE type, IntPtr scan0)
+		{
+			if (width <= 0)
+			{
+				throw new ArgumentOutOfRangeException("width");
+			}
+			if (height <= 0)
+			{
+				throw new ArgumentOutOfRangeException("height");
+			}
+			uint redMask, greenMask, blueMask;
+			bool topDown = (stride > 0);
+			stride = (stride > 0) ? stride : (stride * -1);
+
+			if (!FreeImage.GetTypeParameters(type, bpp, out redMask, out greenMask, out blueMask))
+			{
+				throw new ArgumentException("bpp and type are invalid or not supported.");
+			}
+
+			dib = FreeImage.ConvertFromRawBits(
+				scan0, type, width, height, stride, (uint)bpp, redMask, greenMask, blueMask, topDown);
+
+			if (dib.IsNull)
+			{
+				throw new Exception(ErrorCreatingBitmap);
+			}
+			AddMemoryPressure();
+		}
+
+		/// <summary>
+		/// Initializes a new instance of the <see cref="FreeImageBitmap"/> class bases on the specified size,
+		/// pixel format and pixel data.
+		/// </summary>
+		/// <param name="width">The width, in pixels, of the new <see cref="FreeImageBitmap"/>.</param>
+		/// <param name="height">The height, in pixels, of the new <see cref="FreeImageBitmap"/>.</param>
+		/// <param name="stride">Integer that specifies the byte offset between the beginning
+		/// of one scan line and the next. This is usually (but not necessarily)
+		/// the number of bytes in the pixel format (for example, 2 for 16 bits per pixel)
+		/// multiplied by the width of the bitmap. The value passed to this parameter must
+		/// be a multiple of four..</param>
+		/// <param name="bpp">The color depth of the new <see cref="FreeImageBitmap"/></param>
+		/// <param name="type">The type for the new <see cref="FreeImageBitmap"/>.</param>
+		/// <param name="bits">Array of bytes containing the bitmap data.</param>
+		/// <exception cref="Exception">The operation failed.</exception>
+		/// <exception cref="ArgumentException"><paramref name="format"/> is invalid.</exception>
+		/// <exception cref="ArgumentOutOfRangeException">
+		/// <paramref name="width"/> or <paramref name="height"/> are less or equal zero.</exception>
+		/// <exception cref="ArgumentNullException"><paramref name="bits"/> is null</exception>
+		public FreeImageBitmap(int width, int height, int stride, int bpp, FREE_IMAGE_TYPE type, byte[] bits)
+		{
+			if (width <= 0)
+			{
+				throw new ArgumentOutOfRangeException("width");
+			}
+			if (height <= 0)
+			{
+				throw new ArgumentOutOfRangeException("height");
+			}
+			if (bits == null)
+			{
+				throw new ArgumentNullException("bits");
+			}
+			uint redMask, greenMask, blueMask;
+			bool topDown = (stride > 0);
+			stride = (stride > 0) ? stride : (stride * -1);
+
+			if (!FreeImage.GetTypeParameters(type, bpp, out redMask, out greenMask, out blueMask))
+			{
+				throw new ArgumentException("bpp and type are invalid or not supported.");
+			}
+
+			dib = FreeImage.ConvertFromRawBits(
+				bits, type, width, height, stride, (uint)bpp, redMask, greenMask, blueMask, topDown);
+
+			if (dib.IsNull)
+			{
+				throw new Exception(ErrorCreatingBitmap);
+			}
+			AddMemoryPressure();
 		}
 
 		/// <summary>
@@ -9896,20 +10152,23 @@ namespace FreeImageAPI
 			try
 			{
 				byte[] data = (byte[])info.GetValue("Bitmap Data", typeof(byte[]));
-				if (data != null && data.Length > 0)
+				if ((data != null) && (data.Length > 0))
 				{
 					MemoryStream memory = new MemoryStream(data);
 					FREE_IMAGE_FORMAT format = FREE_IMAGE_FORMAT.FIF_TIFF;
 					dib = FreeImage.LoadFromStream(memory, ref format);
-				}
-				if (dib.IsNull)
-				{
-					throw new Exception();
+
+					if (dib.IsNull)
+					{
+						throw new Exception(ErrorLoadingBitmap);
+					}
+
+					AddMemoryPressure();
 				}
 			}
-			catch
+			catch (Exception ex)
 			{
-				throw new SerializationException();
+				throw new SerializationException("Deserialization failed.", ex);
 			}
 		}
 
@@ -9931,16 +10190,15 @@ namespace FreeImageAPI
 		/// <param name="value">A <see cref="FreeImageBitmap"/> instance.</param>
 		/// <returns>A new instance of <see cref="Bitmap"/> initialized to <paramref name="value"/>.</returns>
 		/// <remarks>
-		/// The implicit conversion from <see cref="FreeImageBitmap"/> into Bitmap
+		/// The explicit conversion from <see cref="FreeImageBitmap"/> into Bitmap
 		/// allows to create an instance on the fly and use it as if
 		/// was a Bitmap. This way it can be directly used with a
 		/// PixtureBox for example without having to call any
 		/// conversion operations.
 		/// </remarks>
-		public static implicit operator Bitmap(FreeImageBitmap value)
+		public static explicit operator Bitmap(FreeImageBitmap value)
 		{
-			value.EnsureNotDisposed();
-			return FreeImage.GetBitmap(value.dib, true);
+			return value.ToBitmap();
 		}
 
 		/// <summary>
@@ -9949,20 +10207,13 @@ namespace FreeImageAPI
 		/// <param name="value">A <see cref="Bitmap"/> instance.</param>
 		/// <returns>A new instance of <see cref="FreeImageBitmap"/> initialized to <paramref name="value"/>.</returns>
 		/// <remarks>
-		/// The implicit conversion from <see cref="Bitmap"/> into <see cref="FreeImageBitmap"/>
+		/// The explicit conversion from <see cref="Bitmap"/> into <see cref="FreeImageBitmap"/>
 		/// allows to create an instance on the fly to perform
 		/// image processing operations and converting it back.
 		/// </remarks>
-		public static implicit operator FreeImageBitmap(Bitmap value)
+		public static explicit operator FreeImageBitmap(Bitmap value)
 		{
-			FreeImageBitmap result = null;
-			FIBITMAP newDib = FreeImage.CreateFromBitmap(value, true);
-			if (!newDib.IsNull)
-			{
-				result = new FreeImageBitmap();
-				result.dib = newDib;
-			}
-			return result;
+			return new FreeImageBitmap(value);
 		}
 
 		/// <summary>
@@ -10001,7 +10252,7 @@ namespace FreeImageAPI
 		/// </returns>
 		public static bool operator !=(FreeImageBitmap left, FreeImageBitmap right)
 		{
-			return !(left == right);
+			return (!(left == right));
 		}
 
 		#endregion
@@ -10109,7 +10360,7 @@ namespace FreeImageAPI
 		/// <summary>
 		/// Returns a structure that represents the palette of a FreeImage bitmap.
 		/// </summary>
-		/// <exception cref="Exception"><see cref="HasPalette"/> is false.</exception>
+		/// <exception cref="InvalidOperationException"><see cref="HasPalette"/> is false.</exception>
 		public Palette Palette
 		{
 			get
@@ -10119,7 +10370,7 @@ namespace FreeImageAPI
 				{
 					return new Palette(dib);
 				}
-				throw new Exception();
+				throw new InvalidOperationException("This bitmap does not have a palette.");
 			}
 		}
 
@@ -10130,6 +10381,7 @@ namespace FreeImageAPI
 		{
 			get
 			{
+				EnsureNotDisposed();
 				return FreeImage.IsRGB555(dib);
 			}
 		}
@@ -10141,6 +10393,7 @@ namespace FreeImageAPI
 		{
 			get
 			{
+				EnsureNotDisposed();
 				return FreeImage.IsRGB565(dib);
 			}
 		}
@@ -10663,12 +10916,7 @@ namespace FreeImageAPI
 			get
 			{
 				EnsureNotDisposed();
-				int result = 1;
-				if (!mdib.IsNull)
-				{
-					result = FreeImage.GetPageCount(mdib);
-				}
-				return result;
+				return frameCount;
 			}
 		}
 
@@ -10695,6 +10943,14 @@ namespace FreeImageAPI
 				EnsureNotDisposed();
 				return originalFormat;
 			}
+		}
+
+		/// <summary>
+		/// Gets the encapsulated FIBITMAP.
+		/// </summary>
+		internal FIBITMAP Dib
+		{
+			get { EnsureNotDisposed(); return dib; }
 		}
 
 		#endregion
@@ -10758,8 +11014,7 @@ namespace FreeImageAPI
 				dib, thumbWidth, thumbHeight, FREE_IMAGE_FILTER.FILTER_BICUBIC);
 			if (!newDib.IsNull)
 			{
-				result = new FreeImageBitmap();
-				result.dib = newDib;
+				result = new FreeImageBitmap(newDib);
 			}
 			return result;
 		}
@@ -10780,10 +11035,19 @@ namespace FreeImageAPI
 			FIBITMAP newDib = FreeImage.MakeThumbnail(dib, maxPixelSize, convert);
 			if (!newDib.IsNull)
 			{
-				result = new FreeImageBitmap();
-				result.dib = newDib;
+				result = new FreeImageBitmap(newDib);
 			}
 			return result;
+		}
+
+		/// <summary>
+		/// Converts this <see cref="FreeImageBitmap"/> instance to a <see cref="Bitmap"/> instance.
+		/// </summary>
+		/// <returns>A new instance of <see cref="Bitmap"/> initialized this instance.</returns>
+		public Bitmap ToBitmap()
+		{
+			EnsureNotDisposed();
+			return FreeImage.GetBitmap(dib, true);
 		}
 
 		/// <summary>
@@ -10825,7 +11089,7 @@ namespace FreeImageAPI
 		/// FreeImageBitmap bitmap = new FreeImageBitmap(@"C:\Pictures\picture.bmp");
 		/// if (bitmap.ColorDepth == 32)
 		/// {
-		/// 	Scanline&lt;RGBQUAD&gt; scanline = (Scanline&lt;RGBQUAD&gt;)bitmap.GetScanline(0);
+		/// 	Scanline&lt;RGBQUAD&gt; scanline = bitmap.GetScanline&lt;RGBQUAD&gt;(0);
 		/// 	foreach (RGBQUAD pixel in scanline)
 		/// 	{
 		///			Console.WriteLine(pixel);
@@ -11088,7 +11352,7 @@ namespace FreeImageAPI
 		{
 			EnsureNotDisposed();
 
-			FIBITMAP newDib = 0;
+			FIBITMAP newDib = new FIBITMAP();
 			uint bpp = FreeImage.GetBPP(dib);
 
 			switch (rotateFlipType)
@@ -11111,24 +11375,24 @@ namespace FreeImageAPI
 
 				case RotateFlipType.Rotate90FlipNone:
 
-					newDib = (bpp == 4u) ? FreeImage.Rotate4bit(dib, 90d) : FreeImage.RotateClassic(dib, 90d);
+					newDib = (bpp == 4u) ? FreeImage.Rotate4bit(dib, 90d) : FreeImage.Rotate(dib, 90d);
 					break;
 
 				case RotateFlipType.Rotate90FlipX:
 
-					newDib = (bpp == 4u) ? FreeImage.Rotate4bit(dib, 90d) : FreeImage.RotateClassic(dib, 90d);
+					newDib = (bpp == 4u) ? FreeImage.Rotate4bit(dib, 90d) : FreeImage.Rotate(dib, 90d);
 					FreeImage.FlipHorizontal(newDib);
 					break;
 
 				case RotateFlipType.Rotate90FlipY:
 
-					newDib = (bpp == 4u) ? FreeImage.Rotate4bit(dib, 90d) : FreeImage.RotateClassic(dib, 90d);
+					newDib = (bpp == 4u) ? FreeImage.Rotate4bit(dib, 90d) : FreeImage.Rotate(dib, 90d);
 					FreeImage.FlipVertical(newDib);
 					break;
 
 				case RotateFlipType.Rotate90FlipXY:
 
-					newDib = (bpp == 4u) ? FreeImage.Rotate4bit(dib, 90d) : FreeImage.RotateClassic(dib, 90d);
+					newDib = (bpp == 4u) ? FreeImage.Rotate4bit(dib, 90d) : FreeImage.Rotate(dib, 90d);
 					FreeImage.FlipHorizontal(newDib);
 					FreeImage.FlipVertical(newDib);
 					break;
@@ -11145,7 +11409,7 @@ namespace FreeImageAPI
 		/// </summary>
 		/// <param name="bitmap">The bitmap to read the metadata from.</param>
 		/// <exception cref="ArgumentNullException">
-		/// <paramref name="bitmap"/> is null.
+		/// <paramref name="bitmap"/> is a null reference.
 		/// </exception>
 		public void CloneMetadataFrom(FreeImageBitmap bitmap)
 		{
@@ -11165,7 +11429,7 @@ namespace FreeImageAPI
 		/// <param name="bitmap">The bitmap to read the metadata from.</param>
 		/// <param name="flags">Specifies the way the metadata is copied.</param>
 		/// <exception cref="ArgumentNullException">
-		/// <paramref name="bitmap"/> is null.
+		/// <paramref name="bitmap"/> is a null reference.
 		/// </exception>
 		public void CloneMetadataFrom(FreeImageBitmap bitmap, FREE_IMAGE_METADATA_COPY flags)
 		{
@@ -11222,7 +11486,7 @@ namespace FreeImageAPI
 			}
 			if (!FreeImage.SaveEx(dib, filename, format, flags))
 			{
-				throw new Exception();
+				throw new Exception("Unable to save bitmap");
 			}
 
 			saveInformation.filename = filename;
@@ -11235,7 +11499,7 @@ namespace FreeImageAPI
 		/// </summary>
 		/// <param name="stream">The stream where this <see cref="FreeImageBitmap"/> will be saved.</param>
 		/// <param name="format">An <see cref="FREE_IMAGE_FORMAT"/> that specifies the format of the saved image.</param>
-		/// <exception cref="ArgumentNullException"><paramref name="stream"/> is null.</exception>
+		/// <exception cref="ArgumentNullException"><paramref name="stream"/> is a null reference.</exception>
 		/// <exception cref="Exception">Saving the image failed.</exception>
 		public void Save(Stream stream, FREE_IMAGE_FORMAT format)
 		{
@@ -11249,7 +11513,7 @@ namespace FreeImageAPI
 		/// <param name="stream">The stream where this <see cref="FreeImageBitmap"/> will be saved.</param>
 		/// <param name="format">An <see cref="FREE_IMAGE_FORMAT"/> that specifies the format of the saved image.</param>
 		/// <param name="flags">Flags to enable or disable plugin-features.</param>
-		/// <exception cref="ArgumentNullException"><paramref name="stream"/> is null.</exception>
+		/// <exception cref="ArgumentNullException"><paramref name="stream"/> is a null reference.</exception>
 		/// <exception cref="Exception">Saving the image failed.</exception>
 		public void Save(Stream stream, FREE_IMAGE_FORMAT format, FREE_IMAGE_SAVE_FLAGS flags)
 		{
@@ -11260,16 +11524,15 @@ namespace FreeImageAPI
 			}
 			if (!FreeImage.SaveToStream(dib, stream, format, flags))
 			{
-				throw new Exception();
+				throw new Exception("Unable to save bitmap");
 			}
 
 			saveInformation.filename = null;
 		}
 
 		/// <summary>
-		/// Adds a frame to the file specified in a previous call to the <see cref="Save(String)"/> method.
-		/// Use this method to save selected frames from a multiple-frame image to
-		/// another multiple-frame image.
+		/// Adds a frame to the file specified in a previous call to the <see cref="Save(String)"/>
+		/// method.
 		/// </summary>
 		/// <exception cref="InvalidOperationException">
 		/// This instance has not been saved to a file using Save(...) before.</exception>
@@ -11280,17 +11543,27 @@ namespace FreeImageAPI
 
 		/// <summary>
 		/// Adds a frame to the file specified in a previous call to the <see cref="Save(String)"/> method.
-		/// Use this method to save selected frames from a multiple-frame image to
-		/// another multiple-frame image.
+		/// </summary>
+		/// <param name="insertPosition">The position at which the frame should be inserted.</param>
+		/// <exception cref="InvalidOperationException">
+		/// This instance has not yet been saved to a file using the Save(...) method.</exception>
+		/// <exception cref="ArgumentOutOfRangeException"><paramref name="insertPosition"/> is out of range.</exception>
+		public void SaveAdd(int insertPosition)
+		{
+			SaveAdd(this, insertPosition);
+		}
+
+		/// <summary>
+		/// Adds a frame to the file specified in a previous call to the <see cref="Save(String)"/> method.
 		/// </summary>
 		/// <param name="bitmap">A <see cref="FreeImageBitmap"/> that contains the frame to add.</param>
 		/// <exception cref="InvalidOperationException">
-		/// This instance has not been saved to a file using Save(...) before.</exception>
+		/// This instance has not yet been saved to a file using the Save(...) method.</exception>
 		public void SaveAdd(FreeImageBitmap bitmap)
 		{
 			if (saveInformation.filename == null)
 			{
-				throw new InvalidOperationException();
+				throw new InvalidOperationException("This operation requires a previous call of Save().");
 			}
 
 			SaveAdd(
@@ -11302,14 +11575,36 @@ namespace FreeImageAPI
 		}
 
 		/// <summary>
+		/// Adds a frame to the file specified in a previous call to the <see cref="Save(String)"/> method.
+		/// </summary>
+		/// <param name="bitmap">A <see cref="FreeImageBitmap"/> that contains the frame to add.</param>
+		/// <param name="insertPosition">The position at which the frame should be inserted.</param>
+		/// <exception cref="InvalidOperationException">
+		/// This instance has not yet been saved to a file using the Save(...) method.</exception>
+		/// <exception cref="ArgumentOutOfRangeException"><paramref name="insertPosition"/> is out of range.</exception>
+		public void SaveAdd(FreeImageBitmap bitmap, int insertPosition)
+		{
+			if (saveInformation.filename == null)
+			{
+				throw new InvalidOperationException("This operation requires a previous call of Save().");
+			}
+
+			SaveAdd(
+				saveInformation.filename,
+				bitmap,
+				insertPosition,
+				saveInformation.format,
+				saveInformation.loadFlags,
+				saveInformation.saveFlags);
+		}
+
+		/// <summary>
 		/// Adds a frame to the file specified.
-		/// Use this method to save selected frames from a multiple-frame image to
-		/// another multiple-frame image.
 		/// </summary>
 		/// <param name="filename">File to add this frame to.</param>
-		/// <exception cref="ArgumentNullException"><paramref name="filename"/> is null.</exception>
+		/// <exception cref="ArgumentNullException"><paramref name="filename"/> is a null reference.</exception>
 		/// <exception cref="FileNotFoundException"><paramref name="filename"/> does not exist.</exception>
-		/// <exception cref="Exception">Saving the image failed.</exception>
+		/// <exception cref="Exception">Saving the image has failed.</exception>
 		public void SaveAdd(string filename)
 		{
 			SaveAdd(
@@ -11321,17 +11616,35 @@ namespace FreeImageAPI
 		}
 
 		/// <summary>
+		/// Adds a frame to the file specified.
+		/// </summary>
+		/// <param name="filename">File to add this frame to.</param>
+		/// <param name="insertPosition">The position at which the frame should be inserted.</param>
+		/// <exception cref="ArgumentNullException"><paramref name="filename"/> is a null reference.</exception>
+		/// <exception cref="FileNotFoundException"><paramref name="filename"/> does not exist.</exception>
+		/// <exception cref="Exception">Saving the image has failed.</exception>
+		/// <exception cref="ArgumentOutOfRangeException"><paramref name="insertPosition"/> is out of range.</exception>
+		public void SaveAdd(string filename, int insertPosition)
+		{
+			SaveAdd(
+				filename,
+				this,
+				insertPosition,
+				FREE_IMAGE_FORMAT.FIF_UNKNOWN,
+				FREE_IMAGE_LOAD_FLAGS.DEFAULT,
+				FREE_IMAGE_SAVE_FLAGS.DEFAULT);
+		}
+
+		/// <summary>
 		/// Adds a frame to the file specified using the specified parameters.
-		/// Use this method to save selected frames from a multiple-frame image to
-		/// another multiple-frame image.
 		/// </summary>
 		/// <param name="filename">File to add this frame to.</param>
 		/// <param name="format">Format of the image.</param>
 		/// <param name="loadFlags">Flags to enable or disable plugin-features.</param>
 		/// <param name="saveFlags">Flags to enable or disable plugin-features.</param>
-		/// <exception cref="ArgumentNullException"><paramref name="filename"/> is null.</exception>
+		/// <exception cref="ArgumentNullException"><paramref name="filename"/> is a null reference.</exception>
 		/// <exception cref="FileNotFoundException"><paramref name="filename"/> does not exist.</exception>
-		/// <exception cref="Exception">Saving the image failed.</exception>
+		/// <exception cref="Exception">Saving the image has failed.</exception>
 		public void SaveAdd(
 			string filename,
 			FREE_IMAGE_FORMAT format,
@@ -11347,31 +11660,101 @@ namespace FreeImageAPI
 		}
 
 		/// <summary>
-		/// Selects the frame specified by the dimension and index.
+		/// Adds a frame to the file specified using the specified parameters.
+		/// </summary>
+		/// <param name="filename">File to add this frame to.</param>
+		/// <param name="insertPosition">The position at which the frame should be inserted.</param>
+		/// <param name="format">Format of the image.</param>
+		/// <param name="loadFlags">Flags to enable or disable plugin-features.</param>
+		/// <param name="saveFlags">Flags to enable or disable plugin-features.</param>
+		/// <exception cref="ArgumentNullException"><paramref name="filename"/> is a null reference.</exception>
+		/// <exception cref="FileNotFoundException"><paramref name="filename"/> does not exist.</exception>
+		/// <exception cref="Exception">Saving the image has failed.</exception>
+		/// <exception cref="ArgumentOutOfRangeException"><paramref name="insertPosition"/> is out of range.</exception>
+		public void SaveAdd(
+			string filename,
+			int insertPosition,
+			FREE_IMAGE_FORMAT format,
+			FREE_IMAGE_LOAD_FLAGS loadFlags,
+			FREE_IMAGE_SAVE_FLAGS saveFlags)
+		{
+			SaveAdd(
+				filename,
+				this,
+				insertPosition,
+				format,
+				loadFlags,
+				saveFlags);
+		}
+
+		/// <summary>
+		/// Selects the frame specified by the index.
 		/// </summary>
 		/// <param name="frameIndex">The index of the active frame.</param>
 		/// <exception cref="ArgumentOutOfRangeException">
-		/// <paramref name="frameIndex"/> is out of range.
-		/// </exception>
+		/// <paramref name="frameIndex"/> is out of range.</exception>
 		/// <exception cref="Exception">The operation failed.</exception>
+		/// <exception cref="InvalidOperationException">The source of the bitmap is not available.
+		/// </exception>
 		public void SelectActiveFrame(int frameIndex)
 		{
 			EnsureNotDisposed();
-			if (frameIndex < 0)
+			if ((frameIndex < 0) || (frameIndex >= frameCount))
 			{
 				throw new ArgumentOutOfRangeException("frameIndex");
 			}
-			if (!mdib.IsNull)
+
+			if (frameIndex != this.frameIndex)
 			{
-				if (frameIndex >= FrameCount)
+				if (stream == null)
 				{
-					throw new ArgumentOutOfRangeException("frameIndex");
+					throw new InvalidOperationException("No source available.");
 				}
-				ReplaceDib(FreeImage.LockPage(mdib, frameIndex));
-				if (dib.IsNull)
+
+				FREE_IMAGE_FORMAT format = originalFormat;
+				FIMULTIBITMAP mdib = FreeImage.OpenMultiBitmapFromStream(stream, ref format, saveInformation.loadFlags);
+				if (mdib.IsNull)
+					throw new Exception(ErrorLoadingBitmap);
+
+				try
 				{
-					throw new Exception();
+					if (frameIndex >= FreeImage.GetPageCount(mdib))
+					{
+						throw new ArgumentOutOfRangeException("frameIndex");
+					}
+
+					FIBITMAP newDib = FreeImage.LockPage(mdib, frameIndex);
+					if (newDib.IsNull)
+					{
+						throw new Exception(ErrorLoadingFrame);
+					}
+
+					try
+					{
+						FIBITMAP clone = FreeImage.Clone(newDib);
+						if (clone.IsNull)
+						{
+							throw new Exception(ErrorCreatingBitmap);
+						}
+						ReplaceDib(clone);
+					}
+					finally
+					{
+						if (!newDib.IsNull)
+						{
+							FreeImage.UnlockPage(mdib, newDib, false);
+						}
+					}
 				}
+				finally
+				{
+					if (!FreeImage.CloseMultiBitmapEx(ref mdib))
+					{
+						throw new Exception(ErrorUnloadBitmap);
+					}
+				}
+
+				this.frameIndex = frameIndex;
 			}
 		}
 
@@ -11443,7 +11826,7 @@ namespace FreeImageAPI
 					RGBQUAD rgbq;
 					if (!FreeImage.GetPixelColor(dib, (uint)x, (uint)y, out rgbq))
 					{
-						throw new Exception();
+						throw new Exception("FreeImage.GetPixelColor() failed");
 					}
 					return rgbq.Color;
 				}
@@ -11452,13 +11835,13 @@ namespace FreeImageAPI
 					byte index;
 					if (!FreeImage.GetPixelIndex(dib, (uint)x, (uint)y, out index))
 					{
-						throw new Exception();
+						throw new Exception("FreeImage.GetPixelIndex() failed");
 					}
 					RGBQUAD* palette = (RGBQUAD*)FreeImage.GetPalette(dib);
 					return palette[index].Color;
 				}
 			}
-			throw new NotSupportedException();
+			throw new NotSupportedException("The type of the image is not supported");
 		}
 
 		/// <summary>
@@ -11502,7 +11885,7 @@ namespace FreeImageAPI
 					RGBQUAD rgbq = color;
 					if (!FreeImage.SetPixelColor(dib, (uint)x, (uint)y, ref rgbq))
 					{
-						throw new Exception();
+						throw new Exception("FreeImage.SetPixelColor() failed");
 					}
 					return;
 				}
@@ -11517,7 +11900,7 @@ namespace FreeImageAPI
 							byte index = (byte)i;
 							if (!FreeImage.SetPixelIndex(dib, (uint)x, (uint)y, ref index))
 							{
-								throw new Exception();
+								throw new Exception("FreeImage.SetPixelIndex() failed");
 							}
 							return;
 						}
@@ -11525,7 +11908,7 @@ namespace FreeImageAPI
 					throw new ArgumentOutOfRangeException("color");
 				}
 			}
-			throw new NotSupportedException();
+			throw new NotSupportedException("The type of the image is not supported");
 		}
 
 		/// <summary>
@@ -11579,7 +11962,7 @@ namespace FreeImageAPI
 		/// color depth.</para>
 		/// <para>Adding the <see cref="FREE_IMAGE_COLOR_DEPTH.FICD_REORDER_PALETTE"/> flag
 		/// will allow the algorithm to reorder the palette. This operation will not be performed to
-		/// non-greyscale images to prevent data lost by mistake.</para>
+		/// non-greyscale images to prevent data loss by mistake.</para>
 		/// </summary>
 		/// <param name="bpp">A bitfield containing information about the conversion
 		/// to perform.</param>
@@ -11622,8 +12005,7 @@ namespace FreeImageAPI
 				FIBITMAP newDib = FreeImage.ConvertToType(dib, type, scaleLinear);
 				if (!newDib.IsNull)
 				{
-					result = new FreeImageBitmap();
-					result.dib = newDib;
+					result = new FreeImageBitmap(newDib);
 				}
 			}
 			return result;
@@ -11638,7 +12020,7 @@ namespace FreeImageAPI
 		/// first perform a convesion to greyscale. This can be done with any target color depth.</para>
 		/// <para>Adding the <see cref="FREE_IMAGE_COLOR_DEPTH.FICD_REORDER_PALETTE"/> flag will
 		/// allow the algorithm to reorder the palette. This operation will not be performed to
-		/// non-greyscale images to prevent data lost by mistake.</para>
+		/// non-greyscale images to prevent data loss by mistake.</para>
 		/// </summary>
 		/// <param name="bpp">A bitfield containing information about the conversion
 		/// to perform.</param>
@@ -11654,8 +12036,7 @@ namespace FreeImageAPI
 			}
 			if (!newDib.IsNull)
 			{
-				result = new FreeImageBitmap();
-				result.dib = newDib;
+				result = new FreeImageBitmap(newDib);
 			}
 			return result;
 		}
@@ -11715,8 +12096,104 @@ namespace FreeImageAPI
 			FIBITMAP newDib = FreeImage.Rescale(dib, width, height, filter);
 			if (!newDib.IsNull)
 			{
-				result = new FreeImageBitmap();
-				result.dib = newDib;
+				result = new FreeImageBitmap(newDib);
+			}
+			return result;
+		}
+
+		/// <summary>
+		/// Enlarges or shrinks this <see cref="FreeImageBitmap"/> selectively per side and fills
+		/// newly added areas with the specified background color.
+		/// See <see cref="FreeImage.EnlargeCanvas&lt;T&gt;"/> for further details.
+		/// </summary>
+		/// <typeparam name="T">The type of the specified color.</typeparam>
+		/// <param name="left">The number of pixels, the image should be enlarged on its left side.
+		/// Negative values shrink the image on its left side.</param>
+		/// <param name="top">The number of pixels, the image should be enlarged on its top side.
+		/// Negative values shrink the image on its top side.</param>
+		/// <param name="right">The number of pixels, the image should be enlarged on its right side.
+		/// Negative values shrink the image on its right side.</param>
+		/// <param name="bottom">The number of pixels, the image should be enlarged on its bottom side.
+		/// Negative values shrink the image on its bottom side.</param>
+		/// <param name="color">The color, the enlarged sides of the image should be filled with.</param>
+		/// <returns><c>true</c> on success, <c>false</c> on failure.</returns>
+		public bool EnlargeCanvas<T>(int left, int top, int right, int bottom, T? color) where T : struct
+		{
+			return EnlargeCanvas(left, top, right, bottom, color, FREE_IMAGE_COLOR_OPTIONS.FICO_DEFAULT);
+		}
+
+		/// <summary>
+		/// Enlarges or shrinks this <see cref="FreeImageBitmap"/> selectively per side and fills
+		/// newly added areas with the specified background color.
+		/// See <see cref="FreeImage.EnlargeCanvas&lt;T&gt;"/> for further details.
+		/// </summary>
+		/// <typeparam name="T">The type of the specified color.</typeparam>
+		/// <param name="left">The number of pixels, the image should be enlarged on its left side.
+		/// Negative values shrink the image on its left side.</param>
+		/// <param name="top">The number of pixels, the image should be enlarged on its top side.
+		/// Negative values shrink the image on its top side.</param>
+		/// <param name="right">The number of pixels, the image should be enlarged on its right side.
+		/// Negative values shrink the image on its right side.</param>
+		/// <param name="bottom">The number of pixels, the image should be enlarged on its bottom side.
+		/// Negative values shrink the image on its bottom side.</param>
+		/// <param name="color">The color, the enlarged sides of the image should be filled with.</param>
+		/// <param name="options">Options that affect the color search process for palletized images.</param>
+		/// <returns><c>true</c> on success, <c>false</c> on failure.</returns>
+		public bool EnlargeCanvas<T>(int left, int top, int right, int bottom,
+			T? color, FREE_IMAGE_COLOR_OPTIONS options) where T : struct
+		{
+			EnsureNotDisposed();
+			return ReplaceDib(FreeImage.EnlargeCanvas(dib, left, top, right, bottom, color, options));
+		}
+
+		/// <summary>
+		/// Enlarges or shrinks this <see cref="FreeImageBitmap"/> selectively per side and fills
+		/// newly added areas with the specified background color returning a new instance.
+		/// See <see cref="FreeImage.EnlargeCanvas&lt;T&gt;"/> for further details.
+		/// </summary>
+		/// <typeparam name="T">The type of the specified color.</typeparam>
+		/// <param name="left">The number of pixels, the image should be enlarged on its left side.
+		/// Negative values shrink the image on its left side.</param>
+		/// <param name="top">The number of pixels, the image should be enlarged on its top side.
+		/// Negative values shrink the image on its top side.</param>
+		/// <param name="right">The number of pixels, the image should be enlarged on its right side.
+		/// Negative values shrink the image on its right side.</param>
+		/// <param name="bottom">The number of pixels, the image should be enlarged on its bottom side.
+		/// Negative values shrink the image on its bottom side.</param>
+		/// <param name="color">The color, the enlarged sides of the image should be filled with.</param>
+		/// <returns>The enlarged instance.</returns>
+		public FreeImageBitmap GetEnlargedInstance<T>(int left, int top, int right, int bottom,
+			T? color) where T : struct
+		{
+			return GetEnlargedInstance(left, top, right, bottom, color, FREE_IMAGE_COLOR_OPTIONS.FICO_DEFAULT);
+		}
+
+		/// <summary>
+		/// Enlarges or shrinks this <see cref="FreeImageBitmap"/> selectively per side and fills
+		/// newly added areas with the specified background color returning a new instance.
+		/// See <see cref="FreeImage.EnlargeCanvas&lt;T&gt;"/> for further details.
+		/// </summary>
+		/// <typeparam name="T">The type of the specified color.</typeparam>
+		/// <param name="left">The number of pixels, the image should be enlarged on its left side.
+		/// Negative values shrink the image on its left side.</param>
+		/// <param name="top">The number of pixels, the image should be enlarged on its top side.
+		/// Negative values shrink the image on its top side.</param>
+		/// <param name="right">The number of pixels, the image should be enlarged on its right side.
+		/// Negative values shrink the image on its right side.</param>
+		/// <param name="bottom">The number of pixels, the image should be enlarged on its bottom side.
+		/// Negative values shrink the image on its bottom side.</param>
+		/// <param name="color">The color, the enlarged sides of the image should be filled with.</param>
+		/// <param name="options">Options that affect the color search process for palletized images.</param>
+		/// <returns>The enlarged instance.</returns>
+		public FreeImageBitmap GetEnlargedInstance<T>(int left, int top, int right, int bottom,
+			T? color, FREE_IMAGE_COLOR_OPTIONS options) where T : struct
+		{
+			EnsureNotDisposed();
+			FreeImageBitmap result = null;
+			FIBITMAP newDib = FreeImage.EnlargeCanvas(dib, left, top, right, bottom, color, options);
+			if (!newDib.IsNull)
+			{
+				result = new FreeImageBitmap(newDib);
 			}
 			return result;
 		}
@@ -11846,8 +12323,7 @@ namespace FreeImageAPI
 			FIBITMAP newDib = FreeImage.ColorQuantizeEx(dib, algorithm, paletteSize, reserveSize, reservePalette);
 			if (!newDib.IsNull)
 			{
-				result = new FreeImageBitmap();
-				result.dib = newDib;
+				result = new FreeImageBitmap(newDib);
 			}
 			return result;
 		}
@@ -11909,7 +12385,60 @@ namespace FreeImageAPI
 			}
 			else
 			{
-				result = ReplaceDib(FreeImage.RotateClassic(dib, angle));
+				result = ReplaceDib(FreeImage.Rotate(dib, angle));
+			}
+			return result;
+		}
+
+		/// <summary>
+		/// This method rotates a 1-, 4-, 8-bit greyscale or a 24-, 32-bit color image by means of 3 shears.
+		/// For 1- and 4-bit images, rotation is limited to angles whose value is an integer
+		/// multiple of 90.
+		/// </summary>
+		/// <typeparam name="T">The type of the color to use as background.</typeparam>
+		/// <param name="angle">The angle of rotation.</param>
+		/// <param name="backgroundColor">The color used used to fill the bitmap's background.</param>
+		/// <returns>Returns true on success, false on failure.</returns>
+		public bool Rotate<T>(double angle, T? backgroundColor) where T : struct
+		{
+			EnsureNotDisposed();
+			bool result = false;
+			if (ColorDepth == 4)
+			{
+				result = ReplaceDib(FreeImage.Rotate4bit(dib, angle));
+			}
+			else
+			{
+				result = ReplaceDib(FreeImage.Rotate(dib, angle, backgroundColor));
+			}
+			return result;
+		}
+
+		/// <summary>
+		/// Rotates this <see cref="FreeImageBitmap"/> by the specified angle initializing a new instance.
+		/// For 1- and 4-bit images, rotation is limited to angles whose value is an integer
+		/// multiple of 90.
+		/// </summary>
+		/// <typeparam name="T">The type of the color to use as background.</typeparam>
+		/// <param name="angle">The angle of rotation.</param>
+		/// <param name="backgroundColor">The color used used to fill the bitmap's background.</param>
+		/// <returns>The rotated instance.</returns>
+		public FreeImageBitmap GetRotatedInstance<T>(double angle, T? backgroundColor) where T : struct
+		{
+			EnsureNotDisposed();
+			FreeImageBitmap result = null;
+			FIBITMAP newDib;
+			if (ColorDepth == 4)
+			{
+				newDib = FreeImage.Rotate4bit(dib, angle);
+			}
+			else
+			{
+				newDib = FreeImage.Rotate(dib, angle, backgroundColor);
+			}
+			if (!newDib.IsNull)
+			{
+				result = new FreeImageBitmap(newDib);
 			}
 			return result;
 		}
@@ -11932,12 +12461,11 @@ namespace FreeImageAPI
 			}
 			else
 			{
-				newDib = FreeImage.RotateClassic(dib, angle);
+				newDib = FreeImage.Rotate(dib, angle);
 			}
 			if (!newDib.IsNull)
 			{
-				result = new FreeImageBitmap();
-				result.dib = newDib;
+				result = new FreeImageBitmap(newDib);
 			}
 			return result;
 		}
@@ -11982,8 +12510,7 @@ namespace FreeImageAPI
 				dib, angle, xShift, yShift, xOrigin, yOrigin, useMask);
 			if (!newDib.IsNull)
 			{
-				result = new FreeImageBitmap();
-				result.dib = newDib;
+				result = new FreeImageBitmap(newDib);
 			}
 			return result;
 		}
@@ -12072,8 +12599,7 @@ namespace FreeImageAPI
 			FIBITMAP newDib = FreeImage.GetChannel(dib, channel);
 			if (!newDib.IsNull)
 			{
-				result = new FreeImageBitmap();
-				result.dib = newDib;
+				result = new FreeImageBitmap(newDib);
 			}
 			return result;
 		}
@@ -12104,8 +12630,7 @@ namespace FreeImageAPI
 			FIBITMAP newDib = FreeImage.GetComplexChannel(dib, channel);
 			if (!newDib.IsNull)
 			{
-				result = new FreeImageBitmap();
-				result.dib = newDib;
+				result = new FreeImageBitmap(newDib);
 			}
 			return result;
 		}
@@ -12150,8 +12675,7 @@ namespace FreeImageAPI
 			FIBITMAP newDib = FreeImage.Copy(dib, left, top, right, bottom);
 			if (!newDib.IsNull)
 			{
-				result = new FreeImageBitmap();
-				result.dib = newDib;
+				result = new FreeImageBitmap(newDib);
 			}
 			return result;
 		}
@@ -12202,7 +12726,7 @@ namespace FreeImageAPI
 		/// <param name="applicationBackground">Backgroundcolor used in case <paramref name="useBitmapBackground"/> is false
 		/// and <paramref name="applicationBackground"/> is not null.</param>
 		/// <param name="bitmapBackGround">Background used in case <paramref name="useBitmapBackground"/>
-		/// is false and <paramref name="applicationBackground"/> is null.</param>
+		/// is false and <paramref name="applicationBackground"/> is a null reference.</param>
 		/// <returns>Returns true on success, false on failure.</returns>
 		public bool Composite(bool useBitmapBackground, Color? applicationBackground, FreeImageBitmap bitmapBackGround)
 		{
@@ -12274,7 +12798,7 @@ namespace FreeImageAPI
 		/// each destination color is also mapped to the corresponding source color.</param>
 		/// <returns>The total number of pixels changed.</returns>
 		/// <exception cref="ArgumentNullException">
-		/// <paramref name="srccolors"/> or <paramref name="dstcolors"/> is null.
+		/// <paramref name="srccolors"/> or <paramref name="dstcolors"/> is a null reference.
 		/// </exception>
 		/// <exception cref="ArgumentException">
 		/// <paramref name="srccolors"/> has a different length than <paramref name="dstcolors"/>.
@@ -12323,7 +12847,7 @@ namespace FreeImageAPI
 		/// each destination index is also mapped to the corresponding source index.</param>
 		/// <returns>The total number of pixels changed.</returns>
 		/// <exception cref="ArgumentNullException">
-		/// <paramref name="srccolors"/> or <paramref name="dstcolors"/> is null.
+		/// <paramref name="srccolors"/> or <paramref name="dstcolors"/> is a null reference.
 		/// </exception>
 		/// <exception cref="ArgumentException">
 		/// <paramref name="srccolors"/> has a different length than <paramref name="dstcolors"/>.
@@ -12359,11 +12883,37 @@ namespace FreeImageAPI
 		}
 
 		/// <summary>
+		/// Sets all pixels of this <see cref="FreeImageBitmap"/> to the specified color.
+		/// See <see cref="FreeImage.FillBackground&lt;T&gt;"/> for further details.
+		/// </summary>
+		/// <typeparam name="T">The type of the specified color.</typeparam>
+		/// <param name="color">The color to fill this <see cref="FreeImageBitmap"/> with.</param>
+		/// <returns><c>true</c> on success, <c>false</c> on failure.</returns>
+		public bool FillBackground<T>(T color) where T : struct
+		{
+			return FillBackground(color, FREE_IMAGE_COLOR_OPTIONS.FICO_DEFAULT);
+		}
+
+		/// <summary>
+		/// Sets all pixels of this <see cref="FreeImageBitmap"/> to the specified color.
+		/// See <see cref="FreeImage.FillBackground&lt;T&gt;"/> for further details.
+		/// </summary>
+		/// <typeparam name="T">The type of the specified color.</typeparam>
+		/// <param name="color">The color to fill this <see cref="FreeImageBitmap"/> with.</param>
+		/// <param name="options">Options that affect the color search process for palletized images.</param>
+		/// <returns><c>true</c> on success, <c>false</c> on failure.</returns>
+		public bool FillBackground<T>(T color, FREE_IMAGE_COLOR_OPTIONS options) where T : struct
+		{
+			EnsureNotDisposed();
+			return FreeImage.FillBackground(dib, color, options);
+		}
+
+		/// <summary>
 		/// Creates a new ICC-Profile.
 		/// </summary>
 		/// <param name="data">The data of the new ICC-Profile.</param>
 		/// <returns>The new ICC-Profile of the bitmap.</returns>
-		/// <exception cref="ArgumentNullException"><paramref name="data"/> is null.</exception>
+		/// <exception cref="ArgumentNullException"><paramref name="data"/> is a null reference.</exception>
 		public FIICCPROFILE CreateICCProfile(byte[] data)
 		{
 			if (data == null)
@@ -12507,8 +13057,7 @@ namespace FreeImageAPI
 			FIBITMAP newDib = FreeImage.CreateFromHbitmap(hbitmap, IntPtr.Zero);
 			if (!newDib.IsNull)
 			{
-				result = new FreeImageBitmap();
-				result.dib = newDib;
+				result = new FreeImageBitmap(newDib);
 			}
 			return result;
 		}
@@ -12541,14 +13090,7 @@ namespace FreeImageAPI
 		/// <returns>The <see cref="FreeImageBitmap"/> this method creates.</returns>
 		public static FreeImageBitmap FromStream(Stream stream)
 		{
-			try
-			{
-				return new FreeImageBitmap(stream);
-			}
-			catch
-			{
-				return null;
-			}
+			return new FreeImageBitmap(stream);
 		}
 
 		/// <summary>
@@ -12734,8 +13276,7 @@ namespace FreeImageAPI
 
 		/// <summary>
 		/// Adds a specified frame to the file specified using the specified parameters.
-		/// Use this method to save selected frames from a multiple-frame image to
-		/// another multiple-frame image.
+		/// Use this method to save selected frames from an to a multiple-frame image.
 		/// </summary>
 		/// <param name="filename">File to add this frame to.</param>
 		/// <param name="bitmap">A <see cref="FreeImageBitmap"/> that contains the frame to add.</param>
@@ -12767,25 +13308,87 @@ namespace FreeImageAPI
 				throw new ArgumentNullException("bitmap");
 			}
 			bitmap.EnsureNotDisposed();
-			if (bitmap.dib.IsNull)
-			{
-				throw new Exception();
-			}
+
+			FIBITMAP dib = bitmap.dib;
+			if (dib.IsNull)
+				throw new ArgumentNullException("bitmap");
 
 			FIMULTIBITMAP mpBitmap =
 				FreeImage.OpenMultiBitmapEx(filename, ref format, loadFlags, false, false, true);
 
 			if (mpBitmap.IsNull)
-			{
-				throw new Exception();
-			}
+				throw new Exception(ErrorLoadingBitmap);
 
 			FreeImage.AppendPage(mpBitmap, bitmap.dib);
 
 			if (!FreeImage.CloseMultiBitmap(mpBitmap, saveFlags))
+				throw new Exception(ErrorUnloadBitmap);
+		}
+
+		/// <summary>
+		/// Adds a specified frame to the file specified using the specified parameters.
+		/// Use this method to save selected frames from an image to a multiple-frame image.
+		/// </summary>
+		/// <param name="filename">File to add this frame to.</param>
+		/// <param name="bitmap">A <see cref="FreeImageBitmap"/> that contains the frame to add.</param>
+		/// <param name="insertPosition">The position of the inserted frame.</param>
+		/// <param name="format">Format of the image.</param>
+		/// <param name="loadFlags">Flags to enable or disable plugin-features.</param>
+		/// <param name="saveFlags">Flags to enable or disable plugin-features.</param>
+		/// <exception cref="ArgumentNullException">
+		/// <paramref name="filename"/> or <paramref name="bitmap"/> is null.
+		/// </exception>
+		/// <exception cref="FileNotFoundException"><paramref name="filename"/> does not exist.</exception>
+		/// <exception cref="Exception">Saving the image failed.</exception>
+		/// <exception cref="ArgumentOutOfRangeException"><paramref name="insertPosition"/> is out of range.</exception>
+		public static void SaveAdd(
+			string filename,
+			FreeImageBitmap bitmap,
+			int insertPosition,
+			FREE_IMAGE_FORMAT format,
+			FREE_IMAGE_LOAD_FLAGS loadFlags,
+			FREE_IMAGE_SAVE_FLAGS saveFlags)
+		{
+			if (filename == null)
 			{
-				throw new Exception();
+				throw new ArgumentNullException("filename");
 			}
+			if (!File.Exists(filename))
+			{
+				throw new FileNotFoundException("filename");
+			}
+			if (bitmap == null)
+			{
+				throw new ArgumentNullException("bitmap");
+			}
+			if (insertPosition < 0)
+			{
+				throw new ArgumentOutOfRangeException("insertPosition");
+			}
+			bitmap.EnsureNotDisposed();
+
+			FIBITMAP dib = bitmap.dib;
+			if (dib.IsNull)
+				throw new ArgumentNullException("bitmap");
+
+			FIMULTIBITMAP mpBitmap =
+				FreeImage.OpenMultiBitmapEx(filename, ref format, loadFlags, false, false, true);
+
+			if (mpBitmap.IsNull)
+				throw new Exception(ErrorLoadingBitmap);
+
+			int pageCount = FreeImage.GetPageCount(mpBitmap);
+
+			if (insertPosition > pageCount)
+				throw new ArgumentOutOfRangeException("insertPosition");
+
+			if (insertPosition == pageCount)
+				FreeImage.AppendPage(mpBitmap, bitmap.dib);
+			else
+				FreeImage.InsertPage(mpBitmap, insertPosition, bitmap.dib);
+
+			if (!FreeImage.CloseMultiBitmap(mpBitmap, saveFlags))
+				throw new Exception(ErrorUnloadBitmap);
 		}
 
 		/// <summary>
@@ -12829,10 +13432,11 @@ namespace FreeImageAPI
 		private bool ReplaceDib(FIBITMAP newDib)
 		{
 			bool result = false;
-			if (dib != newDib && (!newDib.IsNull))
+			if ((dib != newDib) && (!newDib.IsNull))
 			{
 				UnloadDib();
 				dib = newDib;
+				AddMemoryPressure();
 				result = true;
 			}
 			return result;
@@ -12844,15 +13448,57 @@ namespace FreeImageAPI
 		/// </summary>
 		private void UnloadDib()
 		{
-			if (mdib.IsNull || FreeImage.GetLockedPageCount(mdib) == 0)
+			if (!dib.IsNull)
 			{
+				long size = FreeImage.GetDIBSize(dib);
 				FreeImage.UnloadEx(ref dib);
+				if (size > 0L)
+					GC.RemoveMemoryPressure(size);
 			}
-			else if (!dib.IsNull)
+		}
+
+		/// <summary>
+		/// Informs the runtime about unmanaged allocoted memory.
+		/// </summary>
+		private void AddMemoryPressure()
+		{
+			long dataSize;
+			if ((dataSize = DataSize) > 0L)
+				GC.AddMemoryPressure(dataSize);
+		}
+
+		/// <summary>
+		/// Opens the stream and reads the number of available pages.
+		/// Then loads the first page to this instance.
+		/// </summary>
+		private void LoadFromStream(Stream stream, FREE_IMAGE_FORMAT format, FREE_IMAGE_LOAD_FLAGS flags)
+		{
+			FIMULTIBITMAP mdib = FreeImage.OpenMultiBitmapFromStream(stream, ref format, flags);
+			if (mdib.IsNull)
 			{
-				FreeImage.UnlockPage(mdib, dib, false);
-				dib = 0;
+				throw new Exception(ErrorLoadingBitmap);
 			}
+			try
+			{
+				frameCount = FreeImage.GetPageCount(mdib);
+			}
+			finally
+			{
+				if (!FreeImage.CloseMultiBitmapEx(ref mdib))
+				{
+					throw new Exception(ErrorUnloadBitmap);
+				}
+			}
+
+			dib = FreeImage.LoadFromStream(stream, flags, ref format);
+			if (dib.IsNull)
+			{
+				throw new Exception(ErrorLoadingBitmap);
+			}
+
+			saveInformation.loadFlags = flags;
+			originalFormat = format;
+			AddMemoryPressure();
 		}
 
 		#endregion
@@ -12862,9 +13508,9 @@ namespace FreeImageAPI
 		/// <summary>
 		/// Helper class to store informations for <see cref="FreeImageBitmap.SaveAdd()"/>.
 		/// </summary>
-		private class SaveInformation : ICloneable
+		private sealed class SaveInformation : ICloneable
 		{
-			public string filename = null;
+			public string filename;
 			public FREE_IMAGE_FORMAT format = FREE_IMAGE_FORMAT.FIF_UNKNOWN;
 			public FREE_IMAGE_LOAD_FLAGS loadFlags = FREE_IMAGE_LOAD_FLAGS.DEFAULT;
 			public FREE_IMAGE_SAVE_FLAGS saveFlags = FREE_IMAGE_SAVE_FLAGS.DEFAULT;
@@ -12886,9 +13532,8 @@ namespace FreeImageAPI
 			FIBITMAP newDib = FreeImage.Clone(dib);
 			if (!dib.IsNull)
 			{
-				result = new FreeImageBitmap();
-				result.dib = newDib;
-				result.saveInformation = saveInformation.Clone() as SaveInformation;
+				result = new FreeImageBitmap(newDib);
+				result.saveInformation = (SaveInformation)saveInformation.Clone();
 				result.tag = tag;
 				result.originalFormat = originalFormat;
 			}
@@ -12925,12 +13570,21 @@ namespace FreeImageAPI
 			// Clean up managed resources
 			if (disposing)
 			{
-				tag = null;
+				if (stream != null)
+				{
+					if (disposeStream)
+					{
+						stream.Dispose();
+					}
+					stream = null;
+				}
 			}
+
+			tag = null;
+			saveInformation = null;
 
 			// Clean up unmanaged resources
 			UnloadDib();
-			FreeImage.CloseMultiBitmapEx(ref mdib);
 		}
 
 		/// <summary>
@@ -12948,7 +13602,7 @@ namespace FreeImageAPI
 			EnsureNotDisposed();
 			using (MemoryStream memory = new MemoryStream(DataSize))
 			{
-				if (!FreeImage.SaveToStream(ref dib, memory, FREE_IMAGE_FORMAT.FIF_TIFF, FREE_IMAGE_SAVE_FLAGS.TIFF_LZW, false))
+				if (!FreeImage.SaveToStream(dib, memory, FREE_IMAGE_FORMAT.FIF_TIFF, FREE_IMAGE_SAVE_FLAGS.TIFF_LZW))
 				{
 					throw new SerializationException();
 				}
@@ -12968,6 +13622,43 @@ namespace FreeImageAPI
 	/// </summary>
 	public static class FreeImageEngine
 	{
+		#region Callback
+
+		// Callback delegate
+		[DebuggerBrowsable(DebuggerBrowsableState.Never)]
+		private static readonly OutputMessageFunction outputMessageFunction;
+
+		static FreeImageEngine()
+		{
+			// Check if FreeImage.dll is present and cancel setting the callbackfuntion if not
+			if (!IsAvailable)
+			{
+				return;
+			}
+			// Create a delegate (function pointer) to 'OnMessage'
+			outputMessageFunction = new OutputMessageFunction(OnMessage);
+			// Set the callback
+			FreeImage.SetOutputMessage(outputMessageFunction);
+		}
+
+		/// <summary>
+		/// Internal callback
+		/// </summary>
+		private static void OnMessage(FREE_IMAGE_FORMAT fif, string message)
+		{
+			// Get a local copy of the multicast-delegate
+			OutputMessageFunction m = Message;
+
+			// Check the local copy instead of the static instance
+			// to prevent a second thread from setting the delegate
+			// to null, which would cause a nullreference exception
+			if (m != null)
+			{
+				// Invoke the multicast-delegate
+				m.Invoke(fif, message);
+			}
+		}
+
 		/// <summary>
 		/// Gets a value indicating if the FreeImage DLL is available or not.
 		/// </summary>
@@ -12983,17 +13674,9 @@ namespace FreeImageAPI
 		/// Internal errors in FreeImage generate a logstring that can be
 		/// captured by this event.
 		/// </summary>
-		public static event OutputMessageFunction Message
-		{
-			add
-			{
-				FreeImage.Message += value;
-			}
-			remove
-			{
-				FreeImage.Message -= value;
-			}
-		}
+		public static event OutputMessageFunction Message;
+
+		#endregion
 
 		/// <summary>
 		/// Gets a string containing the current version of the library.
@@ -13037,6 +13720,7 @@ namespace FreeImageAPI.Plugins
 	/// </summary>
 	public sealed class FreeImagePlugin
 	{
+		[DebuggerBrowsable(DebuggerBrowsableState.Never)]
 		private readonly FREE_IMAGE_FORMAT fif;
 
 		/// <summary>
@@ -13243,24 +13927,15 @@ namespace FreeImageAPI.IO
 	/// the loading and saving from and to streams. It implements the funtions FreeImage needs
 	/// to load data from an an arbitrary source.
 	/// <para/>
-	/// FreeImage requests a <see cref="FreeImageAPI.IO.FreeImageIO"/> structure containing pointers (delegates) to these
-	/// functions. <b>FreeImageStreamIO</b> implements the function creates the structure and
-	/// prevents the garbage collector from moving these functions in memory.
-	/// <para/>
 	/// The class is for internal use only.
 	/// </remarks>
 	internal static class FreeImageStreamIO
 	{
-		private static GCHandle readHandle;
-		private static GCHandle writeHandle;
-		private static GCHandle seekHandle;
-		private static GCHandle tellHandle;
-
 		/// <summary>
 		/// <see cref="FreeImageAPI.IO.FreeImageIO"/> structure that can be used to read from streams via
 		/// <see cref="FreeImageAPI.FreeImage.LoadFromHandle(FREE_IMAGE_FORMAT, ref FreeImageIO, fi_handle, FREE_IMAGE_LOAD_FLAGS)"/>.
 		/// </summary>
-		public static FreeImageIO io;
+		public static readonly FreeImageIO io;
 
 		/// <summary>
 		/// Initializes a new instances which can be used to
@@ -13272,10 +13947,6 @@ namespace FreeImageAPI.IO
 			io.writeProc = new WriteProc(streamWrite);
 			io.seekProc = new SeekProc(streamSeek);
 			io.tellProc = new TellProc(streamTell);
-			readHandle = GCHandle.Alloc(io.readProc, GCHandleType.Normal);
-			writeHandle = GCHandle.Alloc(io.writeProc, GCHandleType.Normal);
-			seekHandle = GCHandle.Alloc(io.seekProc, GCHandleType.Normal);
-			tellHandle = GCHandle.Alloc(io.tellProc, GCHandleType.Normal);
 		}
 
 		/// <summary>
@@ -13373,12 +14044,143 @@ namespace FreeImageAPI.IO
 namespace FreeImageAPI.Metadata
 {
 	/// <summary>
+	/// Provides additional information specific for GIF files. This class cannot be inherited.
+	/// </summary>
+	public class GifInformation : MDM_ANIMATION
+	{
+		/// <summary>
+		/// Initializes a new instance of the <see cref="GifInformation"/> class
+		/// with the specified <see cref="FreeImageBitmap"/>.
+		/// </summary>
+		/// <param name="bitmap">A reference to a <see cref="FreeImageBitmap"/> instance.</param>
+		public GifInformation(FreeImageBitmap bitmap)
+			: base(bitmap.Dib)
+		{
+		}
+
+		/// <summary>
+		/// Gets or sets a value indicating whether this frame uses the
+		/// GIF image's global palette. If set to <b>false</b>, this
+		/// frame uses its local palette.
+		/// </summary>
+		/// <remarks>
+		/// <b>Handling of null values</b><para/>
+		/// A null value indicates, that the corresponding metadata tag is not
+		/// present in the metadata model.
+		/// Setting this property's value to a non-null reference creates the
+		/// metadata tag if necessary.
+		/// Setting this property's value to a null reference deletes the
+		/// metadata tag from the metadata model.
+		/// </remarks>
+		public bool? UseGlobalPalette
+		{
+			get
+			{
+				byte? useGlobalPalette = GetTagValue<byte>("NoLocalPalette");
+				return useGlobalPalette.HasValue ? (useGlobalPalette.Value != 0) : default(bool?);
+			}
+			set
+			{
+				byte? val = null;
+				if (value.HasValue)
+				{
+					val = (byte)(value.Value ? 1 : 0);
+				}
+				SetTagValue("NoLocalPalette", val);
+			}
+		}
+
+		/// <summary>
+		/// Creates a global palette for the GIF image, intialized with all entries of the
+		/// current local palette.
+		/// The property <see cref="UseGlobalPalette"/> will be set to <b>true</b> when
+		/// invoking this method. This effectively enables the newly created global palette.
+		/// </summary>
+		/// <exception cref="InvalidOperationException">
+		/// The image does not have a palette.
+		/// </exception>
+		public void CreateGlobalPalette()
+		{
+			CreateGlobalPalette(new Palette(dib));
+		}
+
+		/// <summary>
+		/// Creates a global palette for the GIF image with the specified size, intialized
+		/// with the first <paramref name="size"/> entries of the current local palette.
+		/// The property <see cref="UseGlobalPalette"/> will be set to <b>true</b> when
+		/// invoking this method. This effectively enables the newly created global palette.
+		/// </summary>
+		/// <param name="size">The size of the newly created global palette.</param>
+		/// <exception cref="ArgumentNullException">
+		/// <paramref name="palette"/> is a null reference.</exception>
+		public void CreateGlobalPalette(int size)
+		{
+			CreateGlobalPalette(new Palette(dib), size);
+		}
+
+		/// <summary>
+		/// Creates a global palette for the GIF image, intialized with the entries
+		/// of the specified palette.
+		/// The property <see cref="UseGlobalPalette"/> will be set to <b>true</b> when
+		/// invoking this method. This effectively enables the newly created global palette.
+		/// </summary>
+		/// <param name="palette">The palette that contains the initial values for
+		/// the newly created global palette.</param>
+		/// <exception cref="ArgumentNullException">
+		/// <paramref name="palette"/> is a null reference.</exception>
+		public void CreateGlobalPalette(Palette palette)
+		{
+			if (palette == null)
+			{
+				throw new ArgumentNullException("palette");
+			}
+
+			GlobalPalette = palette;
+			UseGlobalPalette = true;
+		}
+
+		/// <summary>
+		/// Creates a global palette for the GIF image with the specified size, intialized
+		/// with the first <paramref name="size"/> entries of the specified palette.
+		/// The property <see cref="UseGlobalPalette"/> will be set to <b>true</b> when
+		/// invoking this method. This effectively enables the newly created global palette.
+		/// </summary>
+		/// <param name="palette">The palette that contains the initial values for
+		/// the newly created global palette.</param>
+		/// <param name="size">The size of the newly created global palette.</param>
+		/// <exception cref="ArgumentNullException">
+		/// <paramref name="palette"/> is a null reference.</exception>
+		public void CreateGlobalPalette(Palette palette, int size)
+		{
+			if (palette == null)
+			{
+				throw new ArgumentNullException("palette");
+			}
+			if (size <= 0)
+			{
+				throw new ArgumentOutOfRangeException("size");
+			}
+
+			Palette pal = new Palette(size);
+			pal.CopyFrom(palette);
+			GlobalPalette = palette;
+			UseGlobalPalette = true;
+		}
+	}
+}
+
+namespace FreeImageAPI.Metadata
+{
+	/// <summary>
 	/// Class handling metadata of a FreeImage bitmap.
 	/// </summary>
 	public class ImageMetadata : IEnumerable, IComparable, IComparable<ImageMetadata>
 	{
+		[DebuggerBrowsable(DebuggerBrowsableState.Never)]
 		private readonly List<MetadataModel> data;
+		[DebuggerBrowsable(DebuggerBrowsableState.Never)]
 		private readonly FIBITMAP dib;
+		[DebuggerBrowsable(DebuggerBrowsableState.Never)]
 		private bool hideEmptyModels;
 
 		/// <summary>
@@ -13402,25 +14204,18 @@ namespace FreeImageAPI.Metadata
 			this.dib = dib;
 			this.hideEmptyModels = hideEmptyModels;
 
-			foreach (Type exportedType in Assembly.GetAssembly(this.GetType()).GetExportedTypes())
-			{
-				if (exportedType.IsClass &&
-					exportedType.IsPublic &&
-					exportedType.BaseType != null &&
-					exportedType.BaseType == typeof(MetadataModel))
-				{
-					ConstructorInfo constructorInfo = exportedType.GetConstructor(new Type[] { typeof(FIBITMAP) });
-					if (constructorInfo != null)
-					{
-						MetadataModel model = (MetadataModel)constructorInfo.Invoke(new object[] { dib });
-						if (model != null)
-						{
-							data.Add(model);
-						}
-					}
-				}
-			}
-			data.Capacity = data.Count;
+			data.Add(new MDM_ANIMATION(dib));
+			data.Add(new MDM_COMMENTS(dib));
+			data.Add(new MDM_CUSTOM(dib));
+			data.Add(new MDM_EXIF_EXIF(dib));
+			data.Add(new MDM_EXIF_GPS(dib));
+			data.Add(new MDM_INTEROP(dib));
+			data.Add(new MDM_EXIF_MAIN(dib));
+			data.Add(new MDM_MAKERNOTE(dib));
+			data.Add(new MDM_GEOTIFF(dib));
+			data.Add(new MDM_IPTC(dib));
+			data.Add(new MDM_NODATA(dib));
+			data.Add(new MDM_XMP(dib));
 		}
 
 		/// <summary>
@@ -13602,7 +14397,7 @@ namespace FreeImageAPI.Metadata
 			}
 			if (!(obj is ImageMetadata))
 			{
-				throw new ArgumentException();
+				throw new ArgumentException("obj");
 			}
 			return CompareTo((ImageMetadata)obj);
 		}
@@ -13645,7 +14440,7 @@ namespace FreeImageAPI.Plugins
 	/// <see cref="FreeImageAPI.Plugins.LocalPlugin.GetImplementedMethods"/> is used by the constructor
 	/// of the abstract class. FreeImage wants a list of the implemented functions. Each function is
 	/// represented by a function pointer (a .NET <see cref="System.Delegate"/>). In case a function
-	/// is not implemented FreeImage recieves an empty <b>delegate</b>). To tell the constructor
+	/// is not implemented FreeImage receives an empty <b>delegate</b>). To tell the constructor
 	/// which functions have been implemented the information is represented by a disjunction of
 	/// <see cref="FreeImageAPI.Plugins.LocalPlugin.MethodFlags"/>.
 	/// <para/>
@@ -13667,26 +14462,31 @@ namespace FreeImageAPI.Plugins
 		/// <summary>
 		/// Struct containing function pointers.
 		/// </summary>
+		[DebuggerBrowsable(DebuggerBrowsableState.Never)]
 		private Plugin plugin;
+
 		/// <summary>
 		/// Delegate for register callback by FreeImage.
 		/// </summary>
+		[DebuggerBrowsable(DebuggerBrowsableState.Never)]
 		private InitProc initProc;
-		/// <summary>
-		/// GCHandles to prevent the garbage collector from chaning function addresses.
-		/// </summary>
-		private GCHandle[] handles = new GCHandle[16];
+
 		/// <summary>
 		/// The format id assiged to the plugin.
 		/// </summary>
+		[DebuggerBrowsable(DebuggerBrowsableState.Never)]
 		protected FREE_IMAGE_FORMAT format = FREE_IMAGE_FORMAT.FIF_UNKNOWN;
+
 		/// <summary>
 		/// When true the plugin was registered successfully else false.
 		/// </summary>
+		[DebuggerBrowsable(DebuggerBrowsableState.Never)]
 		protected readonly bool registered = false;
+
 		/// <summary>
 		/// A copy of the functions used to register.
 		/// </summary>
+		[DebuggerBrowsable(DebuggerBrowsableState.Never)]
 		protected readonly MethodFlags implementedMethods;
 
 		/// <summary>
@@ -13820,7 +14620,7 @@ namespace FreeImageAPI.Plugins
 		/// <summary>
 		/// Function that can be implemented.
 		/// </summary>
-		protected virtual FIBITMAP LoadProc(ref FreeImageIO io, fi_handle handle, int page, int flags, IntPtr data) { return 0; }
+		protected virtual FIBITMAP LoadProc(ref FreeImageIO io, fi_handle handle, int page, int flags, IntPtr data) { return FIBITMAP.Zero; }
 		/// <summary>
 		/// Function that can be implemented.
 		/// </summary>
@@ -13855,87 +14655,70 @@ namespace FreeImageAPI.Plugins
 		/// </summary>
 		public LocalPlugin()
 		{
-			int i = 0;
 			implementedMethods = GetImplementedMethods();
 
 			if ((implementedMethods & MethodFlags.DescriptionProc) != 0)
 			{
 				plugin.descriptionProc = new DescriptionProc(DescriptionProc);
-				handles[i++] = GetHandle(plugin.descriptionProc);
 			}
 			if ((implementedMethods & MethodFlags.ExtensionListProc) != 0)
 			{
 				plugin.extensionListProc = new ExtensionListProc(ExtensionListProc);
-				handles[i++] = GetHandle(plugin.extensionListProc);
 			}
 			if ((implementedMethods & MethodFlags.RegExprProc) != 0)
 			{
 				plugin.regExprProc = new RegExprProc(RegExprProc);
-				handles[i++] = GetHandle(plugin.regExprProc);
 			}
 			if ((implementedMethods & MethodFlags.OpenProc) != 0)
 			{
 				plugin.openProc = new OpenProc(OpenProc);
-				handles[i++] = GetHandle(plugin.openProc);
 			}
 			if ((implementedMethods & MethodFlags.CloseProc) != 0)
 			{
 				plugin.closeProc = new CloseProc(CloseProc);
-				handles[i++] = GetHandle(plugin.closeProc);
 			}
 			if ((implementedMethods & MethodFlags.PageCountProc) != 0)
 			{
 				plugin.pageCountProc = new PageCountProc(PageCountProc);
-				handles[i++] = GetHandle(plugin.pageCountProc);
 			}
 			if ((implementedMethods & MethodFlags.PageCapabilityProc) != 0)
 			{
 				plugin.pageCapabilityProc = new PageCapabilityProc(PageCapabilityProc);
-				handles[i++] = GetHandle(plugin.pageCapabilityProc);
 			}
 			if ((implementedMethods & MethodFlags.LoadProc) != 0)
 			{
 				plugin.loadProc = new LoadProc(LoadProc);
-				handles[i++] = GetHandle(plugin.loadProc);
 			}
 			if ((implementedMethods & MethodFlags.SaveProc) != 0)
 			{
 				plugin.saveProc = new SaveProc(SaveProc);
-				handles[i++] = GetHandle(plugin.saveProc);
 			}
 			if ((implementedMethods & MethodFlags.ValidateProc) != 0)
 			{
 				plugin.validateProc = new ValidateProc(ValidateProc);
-				handles[i++] = GetHandle(plugin.validateProc);
 			}
 			if ((implementedMethods & MethodFlags.MimeProc) != 0)
 			{
 				plugin.mimeProc = new MimeProc(MimeProc);
-				handles[i++] = GetHandle(plugin.mimeProc);
 			}
 			if ((implementedMethods & MethodFlags.SupportsExportBPPProc) != 0)
 			{
 				plugin.supportsExportBPPProc = new SupportsExportBPPProc(SupportsExportBPPProc);
-				handles[i++] = GetHandle(plugin.supportsExportBPPProc);
 			}
 			if ((implementedMethods & MethodFlags.SupportsExportTypeProc) != 0)
 			{
 				plugin.supportsExportTypeProc = new SupportsExportTypeProc(SupportsExportTypeProc);
-				handles[i++] = GetHandle(plugin.supportsExportTypeProc);
 			}
 			if ((implementedMethods & MethodFlags.SupportsICCProfilesProc) != 0)
 			{
 				plugin.supportsICCProfilesProc = new SupportsICCProfilesProc(SupportsICCProfilesProc);
-				handles[i++] = GetHandle(plugin.supportsICCProfilesProc);
 			}
 
 			// FormatProc is always implemented
 			plugin.formatProc = new FormatProc(FormatProc);
-			handles[i++] = GetHandle(plugin.formatProc);
 
 			// InitProc is the register call back.
 			initProc = new InitProc(RegisterProc);
-			handles[i++] = GetHandle(initProc);
 
 			// Register the plugin. The result will be saved and can be accessed later.
 			registered = FreeImage.RegisterLocalPlugin(initProc, null, null, null, null) != FREE_IMAGE_FORMAT.FIF_UNKNOWN;
@@ -13943,25 +14726,6 @@ namespace FreeImageAPI.Plugins
 			{
 				PluginRepository.RegisterLocalPlugin(this);
 			}
-		}
-
-		/// <summary>
-		/// Releases all resources used by the instance.
-		/// </summary>
-		~LocalPlugin()
-		{
-			for (int i = 0; i < handles.Length; i++)
-			{
-				if (handles[i].IsAllocated)
-				{
-					handles[i].Free();
-				}
-			}
-		}
-
-		private GCHandle GetHandle(Delegate d)
-		{
-			return GCHandle.Alloc(d, GCHandleType.Normal);
 		}
 
 		private void RegisterProc(ref Plugin plugin, int format_id)
@@ -14089,53 +14853,79 @@ namespace FreeImageAPI
 	/// Use <see cref="System.Int32"/> instead of <see cref="System.Boolean"/> and
 	/// <see cref="System.Byte"/> instead of <see cref="System.Char"/>.
 	/// </remarks>
-	public unsafe class MemoryArray<T> : ICloneable, ICollection, IEnumerable<T>, IEquatable<MemoryArray<T>> where T : struct
+	public unsafe class MemoryArray<T> : IDisposable, ICloneable, ICollection, IEnumerable<T>, IEquatable<MemoryArray<T>> where T : struct
 	{
 		/// <summary>
 		/// Baseaddress of the wrapped memory.
 		/// </summary>
-		protected readonly byte* baseAddress;
+		[DebuggerBrowsable(DebuggerBrowsableState.Never)]
+		protected byte* baseAddress;
 
 		/// <summary>
 		/// Number of elements being wrapped.
 		/// </summary>
-		protected readonly int length;
+		[DebuggerBrowsable(DebuggerBrowsableState.Never)]
+		protected int length;
 
 		/// <summary>
 		/// Size, in bytes, of each element.
 		/// </summary>
-		protected readonly int size;
+		[DebuggerBrowsable(DebuggerBrowsableState.Never)]
+		private static readonly int size;
 
 		/// <summary>
 		/// Array of <b>T</b> containing a single element.
 		/// The array is used as a workaround, because there are no pointer for generic types.
 		/// </summary>
-		protected readonly T[] buffer;
+		[DebuggerBrowsable(DebuggerBrowsableState.Never)]
+		protected T[] buffer;
 
 		/// <summary>
 		/// Pointer to the element of <b>buffer</b>.
 		/// </summary>
-		protected readonly byte* ptr;
+		[DebuggerBrowsable(DebuggerBrowsableState.Never)]
+		protected byte* ptr;
 
 		/// <summary>
 		/// Handle for pinning <b>buffer</b>.
 		/// </summary>
-		protected readonly GCHandle handle;
+		[DebuggerBrowsable(DebuggerBrowsableState.Never)]
+		protected GCHandle handle;
 
 		/// <summary>
 		/// Indicates whether the wrapped memory is handled like a bitfield.
 		/// </summary>
+		[DebuggerBrowsable(DebuggerBrowsableState.Never)]
 		protected readonly bool isOneBit;
 
 		/// <summary>
 		/// Indicates whther the wrapped memory is handles like 4-bit blocks.
 		/// </summary>
+		[DebuggerBrowsable(DebuggerBrowsableState.Never)]
 		protected readonly bool isFourBit;
 
 		/// <summary>
 		/// An object that can be used to synchronize access to the <see cref="MemoryArray&lt;T&gt;"/>.
 		/// </summary>
+		[DebuggerBrowsable(DebuggerBrowsableState.Never)]
 		protected object syncRoot = null;
+
+		static MemoryArray()
+		{
+			T[] dummy = new T[2];
+			long marshalledSize = Marshal.SizeOf(typeof(T));
+			long structureSize =
+				Marshal.UnsafeAddrOfPinnedArrayElement(dummy, 1).ToInt64() -
+				Marshal.UnsafeAddrOfPinnedArrayElement(dummy, 0).ToInt64();
+			if (marshalledSize != structureSize)
+			{
+				throw new NotSupportedException(
+					"The desired type can not be handled, " +
+					"because its managed and unmanaged size in bytes are different.");
+			}
+
+			size = (int)marshalledSize;
+		}
 
 		/// <summary>
 		/// Initializes a new instance.
@@ -14181,20 +14971,6 @@ namespace FreeImageAPI
 			{
 				isFourBit = true;
 			}
-			else
-			{
-				T[] dummy = new T[2];
-				long marshalledSize = Marshal.SizeOf(typeof(T));
-				long structureSize =
-					Marshal.UnsafeAddrOfPinnedArrayElement(dummy, 1).ToInt64() -
-					Marshal.UnsafeAddrOfPinnedArrayElement(dummy, 0).ToInt64();
-				if (marshalledSize != structureSize)
-				{
-					throw new NotSupportedException(
-						"The desired type can not be handled, " +
-						"because it's managed and unmanaged size in bytes are different.");
-				}
-			}
 
 			if (baseAddress == null)
 			{
@@ -14210,7 +14986,6 @@ namespace FreeImageAPI
 
 			if (!isOneBit && !isFourBit)
 			{
-				this.size = Marshal.SizeOf(typeof(T));
 				// Create an array containing a single element.
 				// Due to the fact, that it's not possible to create pointers
 				// of generic types, an array is used to obtain the memory
@@ -14222,7 +14997,7 @@ namespace FreeImageAPI
 				// The array and its content have beed pinned, so that its address
 				// can be safely requested and stored for the whole lifetime
 				// of the instace.
-				this.ptr = (byte*)Marshal.UnsafeAddrOfPinnedArrayElement(this.buffer, 0);
+				this.ptr = (byte*)handle.AddrOfPinnedObject();
 			}
 		}
 
@@ -14231,10 +15006,7 @@ namespace FreeImageAPI
 		/// </summary>
 		~MemoryArray()
 		{
-			if (handle.IsAllocated)
-			{
-				handle.Free();
-			}
+			Dispose(false);
 		}
 
 		/// <summary>
@@ -14298,6 +15070,7 @@ namespace FreeImageAPI
 
 		private T GetValueInternal(int index)
 		{
+			EnsureNotDisposed();
 			if (isOneBit)
 			{
 				return (T)(object)(FI1BIT)(((baseAddress[index / 8] & ((1 << (7 - (index % 8))))) == 0) ? 0 : 1);
@@ -14333,6 +15106,7 @@ namespace FreeImageAPI
 
 		private void SetValueInternal(T value, int index)
 		{
+			EnsureNotDisposed();
 			if (isOneBit)
 			{
 				if ((FI1BIT)(object)value != 0)
@@ -14376,6 +15150,7 @@ namespace FreeImageAPI
 		/// from <paramref name="index"/> to the end of the unmanaged array.</exception>
 		public T[] GetValues(int index, int length)
 		{
+			EnsureNotDisposed();
 			if ((index >= this.length) || (index < 0))
 			{
 				throw new ArgumentOutOfRangeException("index");
@@ -14417,6 +15192,7 @@ namespace FreeImageAPI
 		/// from <paramref name="index"/> to the end of the array.</exception>
 		public void SetValues(T[] values, int index)
 		{
+			EnsureNotDisposed();
 			if (values == null)
 			{
 				throw new ArgumentNullException("values");
@@ -14457,6 +15233,7 @@ namespace FreeImageAPI
 		/// at which copying begins.</param>
 		public void CopyTo(Array array, int index)
 		{
+			EnsureNotDisposed();
 			if (!(array is T[]))
 			{
 				throw new InvalidCastException("array");
@@ -14496,6 +15273,7 @@ namespace FreeImageAPI
 		/// </exception>
 		public void CopyTo(T[] array, int sourceIndex, int destinationIndex, int length)
 		{
+			EnsureNotDisposed();
 			if (array == null)
 			{
 				throw new ArgumentNullException("array");
@@ -14556,6 +15334,7 @@ namespace FreeImageAPI
 		/// </exception>
 		public void CopyFrom(T[] array, int sourceIndex, int destinationIndex, int length)
 		{
+			EnsureNotDisposed();
 			if (array == null)
 			{
 				throw new ArgumentNullException("array");
@@ -14597,6 +15376,7 @@ namespace FreeImageAPI
 		/// <returns>The represented block of memory.</returns>
 		public byte[] ToByteArray()
 		{
+			EnsureNotDisposed();
 			byte[] result;
 			if (isOneBit)
 			{
@@ -14668,6 +15448,7 @@ namespace FreeImageAPI
 		{
 			get
 			{
+				EnsureNotDisposed();
 				return length;
 			}
 		}
@@ -14679,6 +15460,7 @@ namespace FreeImageAPI
 		{
 			get
 			{
+				EnsureNotDisposed();
 				return new IntPtr(baseAddress);
 			}
 		}
@@ -14689,6 +15471,7 @@ namespace FreeImageAPI
 		/// <returns>A shallow copy of the <see cref="MemoryArray&lt;T&gt;"/>.</returns>
 		public object Clone()
 		{
+			EnsureNotDisposed();
 			return new MemoryArray<T>(baseAddress, length);
 		}
 
@@ -14698,7 +15481,7 @@ namespace FreeImageAPI
 		/// </summary>
 		public int Count
 		{
-			get { return length; }
+			get { EnsureNotDisposed(); return length; }
 		}
 
 		/// <summary>
@@ -14707,7 +15490,7 @@ namespace FreeImageAPI
 		/// </summary>
 		public bool IsSynchronized
 		{
-			get { return false; }
+			get { EnsureNotDisposed(); return false; }
 		}
 
 		/// <summary>
@@ -14717,6 +15500,7 @@ namespace FreeImageAPI
 		{
 			get
 			{
+				EnsureNotDisposed();
 				if (syncRoot == null)
 				{
 					System.Threading.Interlocked.CompareExchange(ref syncRoot, new object(), null);
@@ -14732,6 +15516,7 @@ namespace FreeImageAPI
 		/// <returns>An <see cref="IEnumerator"/> for the <see cref="MemoryArray&lt;T&gt;"/>.</returns>
 		public IEnumerator GetEnumerator()
 		{
+			EnsureNotDisposed();
 			T[] values = GetValues(0, length);
 			for (int i = 0; i != values.Length; i++)
 			{
@@ -14746,11 +15531,48 @@ namespace FreeImageAPI
 		/// <returns>An <see cref="IEnumerator&lt;T&gt;"/> for the <see cref="MemoryArray&lt;T&gt;"/>.</returns>
 		IEnumerator<T> IEnumerable<T>.GetEnumerator()
 		{
+			EnsureNotDisposed();
 			T[] values = GetValues(0, length);
 			for (int i = 0; i != values.Length; i++)
 			{
 				yield return values[i];
 			}
+		}
+
+		/// <summary>
+		/// Releases all ressources.
+		/// </summary>
+		public void Dispose()
+		{
+			Dispose(true);
+			GC.SuppressFinalize(this);
+		}
+
+		/// <summary>
+		/// Releases allocated handles associated with this instance.
+		/// </summary>
+		/// <param name="disposing"><b>true</b> to release managed resources.</param>
+		protected virtual void Dispose(bool disposing)
+		{
+			if (baseAddress != null)
+			{
+				if (handle.IsAllocated)
+					handle.Free();
+				baseAddress = null;
+				buffer = null;
+				length = 0;
+				syncRoot = null;
+			}
+		}
+
+		/// <summary>
+		/// Throws an <see cref="ObjectDisposedException"/> if
+		/// this instance is disposed.
+		/// </summary>
+		protected virtual void EnsureNotDisposed()
+		{
+			if (baseAddress == null)
+				throw new ObjectDisposedException("This instance is disposed.");
 		}
 
 		/// <summary>
@@ -14763,6 +15585,7 @@ namespace FreeImageAPI
 		/// <b>false</b>.</returns>
 		public override bool Equals(object obj)
 		{
+			EnsureNotDisposed();
 			return ((obj is MemoryArray<T>) && Equals((MemoryArray<T>)obj));
 		}
 
@@ -14776,6 +15599,7 @@ namespace FreeImageAPI
 		/// <b>false</b>.</returns>
 		public bool Equals(MemoryArray<T> other)
 		{
+			EnsureNotDisposed();
 			return ((this.baseAddress == other.baseAddress) && (this.length == other.length));
 		}
 
@@ -14785,6 +15609,7 @@ namespace FreeImageAPI
 		/// <returns>A hash code for the current <see cref="MemoryArray&lt;T&gt;"/>.</returns>
 		public override int GetHashCode()
 		{
+			EnsureNotDisposed();
 			return (int)baseAddress ^ length;
 		}
 
@@ -14851,9 +15676,10 @@ namespace FreeImageAPI.Metadata
 	public abstract class MetadataModel : IEnumerable
 	{
 		/// <summary>
-		/// Handle to a FreeImage-bitmap.
+		/// Handle to the encapsulated FreeImage-bitmap.
 		/// </summary>
-		private readonly FIBITMAP dib;
+		[DebuggerBrowsable(DebuggerBrowsableState.Never)]
+		protected readonly FIBITMAP dib;
 
 		/// <summary>
 		/// Initializes a new instance of this class.
@@ -14939,7 +15765,7 @@ namespace FreeImageAPI.Metadata
 			{
 				throw new ArgumentNullException("key");
 			}
-			return FreeImage.SetMetadata(Model, dib, key, 0);
+			return FreeImage.SetMetadata(Model, dib, key, FITAG.Zero);
 		}
 
 		/// <summary>
@@ -14949,7 +15775,7 @@ namespace FreeImageAPI.Metadata
 		/// <returns>Returns true on success, false on failure.</returns>
 		public bool DestoryModel()
 		{
-			return FreeImage.SetMetadata(Model, dib, null, 0);
+			return FreeImage.SetMetadata(Model, dib, null, FITAG.Zero);
 		}
 
 		/// <summary>
@@ -15039,7 +15865,7 @@ namespace FreeImageAPI.Metadata
 				finally
 				{
 					FreeImage.FindCloseMetadata(mdHandle);
-				}				
+				}
 			}
 			return tag;
 		}
@@ -15135,6 +15961,600 @@ namespace FreeImageAPI.Metadata
 		}
 
 		/// <summary>
+		/// Returns the value of the specified tag.
+		/// </summary>
+		/// <typeparam name="T">Type of the tag's data.</typeparam>
+		/// <param name="key">The key of the tag.</param>
+		/// <returns>The value of the specified tag.</returns>
+		protected T? GetTagValue<T>(string key) where T : struct
+		{
+			if (string.IsNullOrEmpty(key))
+			{
+				throw new ArgumentNullException("key");
+			}
+			MetadataTag tag = GetTag(key);
+			if (tag != null)
+			{
+				T[] value = tag.Value as T[];
+				if ((value != null) && (value.Length != 0))
+				{
+					return value[0];
+				}
+			}
+			return null;
+		}
+
+		/// <summary>
+		/// Returns an array containing the data of the specified tag.
+		/// </summary>
+		/// <typeparam name="T">The type of the tag's data.</typeparam>
+		/// <param name="key">The key of the tag.</param>
+		/// <returns>An array containing the data of the specified tag.</returns>
+		protected T[] GetTagArray<T>(string key) where T : struct
+		{
+			if (string.IsNullOrEmpty(key))
+			{
+				throw new ArgumentNullException("key");
+			}
+			MetadataTag tag = GetTag(key);
+			return (tag == null) ? null : tag.Value as T[];
+		}
+
+		/// <summary>
+		/// Returns the string contained by the specified tag.
+		/// </summary>
+		/// <param name="key">The key of the tag.</param>
+		/// <returns>The string contained by the specified tag.</returns>
+		protected string GetTagText(string key)
+		{
+			if (string.IsNullOrEmpty(key))
+			{
+				throw new ArgumentNullException("key");
+			}
+			MetadataTag tag = GetTag(key);
+			return (tag == null) ? null : tag.Value as string;
+		}
+
+		/// <summary>
+		/// Returns an array containg the data of the specified tag
+		/// as unsigned 32bit integer.
+		/// </summary>
+		/// <param name="key">The key of the tag.</param>
+		/// <returns>An array containg the data of the specified tag
+		/// as unsigned 32bit integer.</returns>
+		protected uint[] GetUInt32Array(string key)
+		{
+			if (string.IsNullOrEmpty(key))
+			{
+				throw new ArgumentNullException("key");
+			}
+			uint[] result = null;
+			MetadataTag tag = GetTag(key);
+			if (tag != null)
+			{
+				object value = tag.Value;
+				if (value != null)
+				{
+					if (value is ushort[])
+					{
+						ushort[] array = (ushort[])value;
+						result = new uint[array.Length];
+						for (int i = 0, j = array.Length; i < j; i++)
+						{
+							result[i] = (uint)array[i];
+						}
+					}
+					else if (value is uint[])
+					{
+						result = (uint[])value;
+					}
+				}
+			}
+			return result;
+		}
+
+		/// <summary>
+		/// Returns the value of the tag as unsigned 32bit integer.
+		/// </summary>
+		/// <param name="key">The key of the tag.</param>
+		/// <returns>The value of the tag as unsigned 32bit integer.</returns>
+		protected uint? GetUInt32Value(string key)
+		{
+			uint[] value = GetUInt32Array(key);
+			return value == null ? default(uint?) : value[0];
+		}	
+
+		/// <summary>
+		/// Sets the value of the specified tag.
+		/// </summary>
+		/// <typeparam name="T">The type of the tag's data.</typeparam>
+		/// <param name="key">The key of the tag.</param>
+		/// <param name="value">The new value of the specified tag or null.</param>
+		protected void SetTagValue<T>(string key, T? value) where T : struct
+		{
+			SetTagValue(key, value.HasValue ? new T[] { value.Value } : null);
+		}
+
+		/// <summary>
+		/// Sets the value of the specified tag.
+		/// </summary>
+		/// <param name="key">The key of the tag.</param>
+		/// <param name="value">The new value of the specified tag or null.</param>
+		protected void SetTagValue(string key, object value)
+		{
+			if (string.IsNullOrEmpty(key))
+			{
+				throw new ArgumentNullException("key");
+			}
+			if (value == null)
+			{
+				RemoveTag(key);
+			}
+			else
+			{
+				MetadataTag tag = GetTag(key);
+				if (tag == null)
+				{
+					tag = new MetadataTag(Model);
+					tag.Key = key;
+					tag.Value = value;
+					AddTag(tag);
+				}
+				else
+				{
+					tag.Value = value;
+				}
+			}
+		}
+
+		/// <summary>
+		/// Sets the value of the specified tag as undefined.
+		/// </summary>
+		/// <param name="key">The key of the tag.</param>
+		/// <param name="value">The new value of the specified tag or null.</param>
+		protected void SetTagValueUndefined(string key, byte[] value)
+		{
+			if (string.IsNullOrEmpty(key))
+			{
+				throw new ArgumentNullException("key");
+			}
+			if (value == null)
+			{
+				RemoveTag(key);
+			}
+			else
+			{
+				MetadataTag tag = GetTag(key);
+				if (tag == null)
+				{
+					tag = new MetadataTag(Model);
+					tag.Key = key;
+					tag.SetValue(value, FREE_IMAGE_MDTYPE.FIDT_UNDEFINED);
+					AddTag(tag);
+				}
+				else
+				{
+					tag.Value = value;
+				}
+			}
+		}
+
+		/// <summary>
+		/// Returns the equivalent <see cref="DirectionReference"/> for the
+		/// specified <see cref="String"/>.
+		/// </summary>
+		/// <param name="s">The string containing the <see cref="DirectionReference"/>.</param>
+		/// <returns>The equivalent <see cref="DirectionReference"/> for the
+		/// specified <see cref="String"/>.</returns>
+		protected static DirectionReference? ToDirectionType(string s)
+		{
+			if (string.IsNullOrEmpty(s))
+				return null;
+			switch (s[0])
+			{
+				case 'T':
+					return DirectionReference.TrueDirection;
+				case 'M':
+					return DirectionReference.MagneticDirection;
+				default:
+					return DirectionReference.Undefined;
+			}
+		}
+
+		/// <summary>
+		/// Returns the equivalent <see cref="String"/> for the
+		/// specified <see cref="DirectionReference"/>.
+		/// </summary>
+		/// <param name="type">The <see cref="DirectionReference"/> to convert.</param>
+		/// <returns>The equivalent <see cref="String"/> for the
+		/// specified <see cref="DirectionReference"/>.</returns>
+		protected static string ToString(DirectionReference? type)
+		{
+			if (type.HasValue)
+			{
+				switch (type.Value)
+				{
+					case DirectionReference.TrueDirection:
+						return "T";
+					case DirectionReference.MagneticDirection:
+						return "M";
+					default:
+						return "\0";
+				}
+			}
+			return null;
+		}
+
+		/// <summary>
+		/// Returns the equivalent <see cref="VelocityUnit"/> for the
+		/// specified <see cref="String"/>.
+		/// </summary>
+		/// <param name="s">The string containing the <see cref="VelocityUnit"/>.</param>
+		/// <returns>The equivalent <see cref="VelocityUnit"/> for the
+		/// specified <see cref="String"/>.</returns>
+		protected static VelocityUnit? ToUnitType(string s)
+		{
+			if (string.IsNullOrEmpty(s))
+				return null;
+			switch (s[0])
+			{
+				case 'K':
+					return VelocityUnit.Kilometers;
+				case 'M':
+					return VelocityUnit.Miles;
+				case 'N':
+					return VelocityUnit.Knots;
+				default:
+					return VelocityUnit.Undefinied;
+			}
+		}
+
+		/// <summary>
+		/// Returns the equivalent <see cref="String"/> for the
+		/// specified <see cref="VelocityUnit"/>.
+		/// </summary>
+		/// <param name="type">The <see cref="VelocityUnit"/> to convert.</param>
+		/// <returns>The equivalent <see cref="String"/> for the
+		/// specified <see cref="VelocityUnit"/>.</returns>
+		protected static string ToString(VelocityUnit? type)
+		{
+			if (type.HasValue)
+			{
+				switch (type.Value)
+				{
+					case VelocityUnit.Kilometers:
+						return "K";
+					case VelocityUnit.Miles:
+						return "M";
+					case VelocityUnit.Knots:
+						return "N";
+					default:
+						return "\0";
+				}
+			}
+			return null;
+		}
+
+		/// <summary>
+		/// Returns the equivalent <see cref="LongitudeType"/> for the
+		/// specified <see cref="String"/>.
+		/// </summary>
+		/// <param name="s">The string containing the <see cref="LongitudeType"/>.</param>
+		/// <returns>The equivalent <see cref="LongitudeType"/> for the
+		/// specified <see cref="String"/>.</returns>
+		protected static LongitudeType? ToLongitudeType(string s)
+		{
+			if (string.IsNullOrEmpty(s))
+				return null;
+			switch (s[0])
+			{
+				case 'E':
+					return LongitudeType.East;
+				case 'W':
+					return LongitudeType.West;
+				default:
+					return LongitudeType.Undefined;
+			}
+		}
+
+		/// <summary>
+		/// Returns the equivalent <see cref="String"/> for the
+		/// specified <see cref="LongitudeType"/>.
+		/// </summary>
+		/// <param name="type">The <see cref="LongitudeType"/> to convert.</param>
+		/// <returns>The equivalent <see cref="String"/> for the
+		/// specified <see cref="LongitudeType"/>.</returns>
+		protected static string ToString(LongitudeType? type)
+		{
+			if (type.HasValue)
+			{
+				switch (type.Value)
+				{
+					case LongitudeType.East:
+						return "E";
+					case LongitudeType.West:
+						return "W";
+					default:
+						return "\0";
+				}
+			}
+			return null;
+		}
+
+		/// <summary>
+		/// Returns the equivalent <see cref="LatitudeType"/> for the
+		/// specified <see cref="String"/>.
+		/// </summary>
+		/// <param name="s">The string containing the <see cref="LatitudeType"/>.</param>
+		/// <returns>The equivalent <see cref="LatitudeType"/> for the
+		/// specified <see cref="String"/>.</returns>
+		protected static LatitudeType? ToLatitudeType(string s)
+		{
+			if (string.IsNullOrEmpty(s))
+				return null;
+			switch (s[0])
+			{
+				case 'N':
+					return LatitudeType.North;
+				case 'S':
+					return LatitudeType.South;
+				default:
+					return LatitudeType.Undefined;
+			}
+		}
+
+		/// <summary>
+		/// Returns the equivalent <see cref="String"/> for the
+		/// specified <see cref="LatitudeType"/>.
+		/// </summary>
+		/// <param name="type">The <see cref="LatitudeType"/> to convert.</param>
+		/// <returns>The equivalent <see cref="String"/> for the
+		/// specified <see cref="LatitudeType"/>.</returns>
+		protected static string ToString(LatitudeType? type)
+		{
+			if (type.HasValue)
+			{
+				switch (type.Value)
+				{
+					case LatitudeType.North:
+						return "N";
+					case LatitudeType.South:
+						return "S";
+					default:
+						return "\0";
+				}
+			}
+			return null;
+		}
+
+		/// <summary>
+		/// Returns the equivalent <see cref="InteroperabilityMode"/> for the
+		/// specified <see cref="String"/>.
+		/// </summary>
+		/// <param name="s">The string containing the <see cref="InteroperabilityMode"/>.</param>
+		/// <returns>The equivalent <see cref="InteroperabilityMode"/> for the
+		/// specified <see cref="String"/>.</returns>
+		protected static InteroperabilityMode? ToInteroperabilityType(string s)
+		{
+			if (string.IsNullOrEmpty(s))
+				return null;
+			if (s.StartsWith("R98"))
+				return InteroperabilityMode.R98;
+			if (s.StartsWith("THM"))
+				return InteroperabilityMode.THM;
+			return InteroperabilityMode.Undefined;
+		}
+
+		/// <summary>
+		/// Returns the equivalent <see cref="String"/> for the
+		/// specified <see cref="InteroperabilityMode"/>.
+		/// </summary>
+		/// <param name="type">The <see cref="InteroperabilityMode"/> to convert.</param>
+		/// <returns>The equivalent <see cref="String"/> for the
+		/// specified <see cref="InteroperabilityMode"/>.</returns>
+		protected static string ToString(InteroperabilityMode? type)
+		{
+			if (type.HasValue)
+			{
+				switch (type.Value)
+				{
+					case InteroperabilityMode.R98:
+						return "R98";
+					case InteroperabilityMode.THM:
+						return "THM";
+					default:
+						return "\0\0\0";
+				}
+			}
+			return null;
+		}
+
+		/// <summary>
+		/// Specified different unit types.
+		/// </summary>
+		public enum VelocityUnit
+		{
+			/// <summary>
+			/// No or unknown type.
+			/// </summary>
+			Undefinied,
+
+			/// <summary>
+			/// Kilometers per hour.
+			/// </summary>
+			Kilometers,
+
+			/// <summary>
+			/// Miles per hour.
+			/// </summary>
+			Miles,
+
+			/// <summary>
+			/// Knots.
+			/// </summary>
+			Knots,
+		}
+
+		/// <summary>
+		/// Specifies different direction types.
+		/// </summary>
+		public enum DirectionReference
+		{
+			/// <summary>
+			/// No or unknown direction type.
+			/// </summary>
+			Undefined,
+
+			/// <summary>
+			/// True direction.
+			/// </summary>
+			TrueDirection,
+
+			/// <summary>
+			/// Magnatic direction.
+			/// </summary>
+			MagneticDirection,
+		}
+
+		/// <summary>
+		/// Specifies the type of a latitude value.
+		/// </summary>
+		public enum LatitudeType
+		{
+			/// <summary>
+			/// No or unknown type.
+			/// </summary>
+			Undefined,
+
+			/// <summary>
+			/// North.
+			/// </summary>
+			North,
+
+			/// <summary>
+			/// South.
+			/// </summary>
+			South,
+		}
+
+		/// <summary>
+		/// Specifies the type of a longitude value.
+		/// </summary>
+		public enum LongitudeType
+		{
+			/// <summary>
+			/// No or unknown type.
+			/// </summary>
+			Undefined,
+
+			/// <summary>
+			/// East.
+			/// </summary>
+			East,
+
+			/// <summary>
+			/// West.
+			/// </summary>
+			West,
+		}
+
+		/// <summary>
+		/// Specifies different altitude types.
+		/// </summary>
+		public enum AltitudeType
+		{
+			/// <summary>
+			/// No or unknown type.
+			/// </summary>
+			Undefined,
+
+			/// <summary>
+			/// East.
+			/// </summary>
+			AboveSeaLevel,
+
+			/// <summary>
+			/// West.
+			/// </summary>
+			BelowSeaLevel,
+		}
+
+		/// <summary>
+		/// Specifies interoperability types.
+		/// </summary>
+		public enum InteroperabilityMode
+		{
+			/// <summary>
+			/// No or unknown type.
+			/// </summary>
+			Undefined,
+
+			/// <summary>
+			/// Indicates a file conforming to R98 file specification of Recommended
+			/// Exif Interoperability Rules (ExifR98) or to DCF basic file stipulated
+			/// by Design Rule for Camera File System.
+			/// </summary>
+			R98,
+
+			/// <summary>
+			/// Indicates a file conforming to DCF thumbnail file stipulated by Design
+			/// rule for Camera File System. 
+			/// </summary>
+			THM,
+		}
+
+		/// <summary>
+		/// Specifies orientation of images.
+		/// </summary>
+		public enum ExifImageOrientation : ushort
+		{
+			/// <summary>
+			/// Undefinied orientation.
+			/// </summary>
+			Undefined,
+
+			/// <summary>
+			/// TopLeft.
+			/// </summary>
+			TopLeft = 1,
+
+			/// <summary>
+			/// TopRight.
+			/// </summary>
+			TopRight,
+
+			/// <summary>
+			/// BottomRight.
+			/// </summary>
+			BottomRight,
+
+			/// <summary>
+			/// BottomLeft.
+			/// </summary>
+			BottomLeft,
+
+			/// <summary>
+			/// LeftTop.
+			/// </summary>
+			LeftTop,
+
+			/// <summary>
+			/// RightTop.
+			/// </summary>
+			RightTop,
+
+			/// <summary>
+			/// RightBottom.
+			/// </summary>
+			RightBottom,
+
+			/// <summary>
+			/// LeftBottom.
+			/// </summary>
+			LeftBottom,
+		}
+
+		/// <summary>
 		/// Converts the model of the MetadataModel object to its equivalent string representation.
 		/// </summary>
 		/// <returns>The string representation of the value of this instance.</returns>
@@ -15149,245 +16569,6687 @@ namespace FreeImageAPI.Metadata
 
 namespace FreeImageAPI.Metadata
 {
-	/// <summary>
-	/// Represents a collection of all tags contained in the metadata model <see cref="FREE_IMAGE_MDMODEL.FIMD_ANIMATION"/>.
-	/// </summary>
-	public sealed class MDM_ANIMATION : MetadataModel
-	{
-		/// <summary>
-		/// Initializes a new instance of this class.
-		/// </summary>
-		/// <param name="dib">Handle to a FreeImage bitmap.</param>
-		public MDM_ANIMATION(FIBITMAP dib) : base(dib) { }
+    /// <summary>
+    /// Represents a collection of all tags contained in the metadata model
+    /// <see cref="FREE_IMAGE_MDMODEL.FIMD_ANIMATION"/>.
+    /// </summary>
+    public class MDM_ANIMATION : MetadataModel
+    {
+        /// <summary>
+        /// Initializes a new instance of this class.
+        /// </summary>
+        /// <param name="dib">Handle to a FreeImage bitmap.</param>
+        public MDM_ANIMATION(FIBITMAP dib) : base(dib) { }
 
-		/// <summary>
-		/// Retrieves the datamodel that this instance represents.
-		/// </summary>
-		public override FREE_IMAGE_MDMODEL Model
-		{
-			get { return FREE_IMAGE_MDMODEL.FIMD_ANIMATION; }
-		}
-	}
+        /// <summary>
+        /// Retrieves the datamodel that this instance represents.
+        /// </summary>
+        public override FREE_IMAGE_MDMODEL Model
+        {
+            get { return FREE_IMAGE_MDMODEL.FIMD_ANIMATION; }
+        }
 
-	/// <summary>
-	/// Represents a collection of all tags contained in the metadata model <see cref="FREE_IMAGE_MDMODEL.FIMD_COMMENTS"/>.
-	/// </summary>
-	public sealed class MDM_COMMENTS : MetadataModel
-	{
-		/// <summary>
-		/// Initializes a new instance of this class.
-		/// </summary>
-		/// <param name="dib">Handle to a FreeImage bitmap.</param>
-		public MDM_COMMENTS(FIBITMAP dib) : base(dib) { }
+        /// <summary>
+        /// Gets or sets the width of the entire canvas area, that each page is displayed in.
+        /// </summary>
+        /// <remarks>
+        /// <b>Handling of null values</b><para/>
+        /// A null value indicates, that the corresponding metadata tag is not
+        /// present in the metadata model.
+        /// Setting this property's value to a non-null reference creates the
+        /// metadata tag if necessary.
+        /// Setting this property's value to a null reference deletes the
+        /// metadata tag from the metadata model.
+        /// </remarks>
+        public ushort? LogicalWidth
+        {
+            get
+            {
+                return GetTagValue<ushort>("LogicalWidth");
+            }
+            set
+            {
+                SetTagValue("LogicalWidth", value);
+            }
+        }
 
-		/// <summary>
-		/// Retrieves the datamodel that this instance represents.
-		/// </summary>
-		public override FREE_IMAGE_MDMODEL Model
-		{
-			get { return FREE_IMAGE_MDMODEL.FIMD_COMMENTS; }
-		}
-	}
+        /// <summary>
+        /// Gets or sets the height of the entire canvas area, that each page is displayed in.
+        /// </summary>
+        /// <remarks>
+        /// <b>Handling of null values</b><para/>
+        /// A null value indicates, that the corresponding metadata tag is not
+        /// present in the metadata model.
+        /// Setting this property's value to a non-null reference creates the
+        /// metadata tag if necessary.
+        /// Setting this property's value to a null reference deletes the
+        /// metadata tag from the metadata model.
+        /// </remarks>
+        public ushort? LogicalHeight
+        {
+            get
+            {
+                return GetTagValue<ushort>("LogicalHeight");
+            }
+            set
+            {
+                SetTagValue("LogicalHeight", value);
+            }
+        }
 
-	/// <summary>
-	/// Represents a collection of all tags contained in the metadata model <see cref="FREE_IMAGE_MDMODEL.FIMD_CUSTOM"/>.
-	/// </summary>
-	public sealed class MDM_CUSTOM : MetadataModel
-	{
-		/// <summary>
-		/// Initializes a new instance of this class.
-		/// </summary>
-		/// <param name="dib">Handle to a FreeImage bitmap.</param>
-		public MDM_CUSTOM(FIBITMAP dib) : base(dib) { }
+        /// <summary>
+        /// Gets or sets the global palette of the GIF image.
+        /// </summary>
+        /// <remarks>
+        /// <b>Handling of null values</b><para/>
+        /// A null value indicates, that the corresponding metadata tag is not
+        /// present in the metadata model.
+        /// Setting this property's value to a non-null reference creates the
+        /// metadata tag if necessary.
+        /// Setting this property's value to a null reference deletes the
+        /// metadata tag from the metadata model.
+        /// </remarks>
+        public Palette GlobalPalette
+        {
+            get
+            {
+                MetadataTag mdtag = GetTag("GlobalPalette");
+                return (mdtag == null) ? null : new Palette(mdtag);
+            }
+            set
+            {
+                SetTagValue("GlobalPalette", (value != null) ? null : value.Data);
+            }
+        }
 
-		/// <summary>
-		/// Retrieves the datamodel that this instance represents.
-		/// </summary>
-		public override FREE_IMAGE_MDMODEL Model
-		{
-			get { return FREE_IMAGE_MDMODEL.FIMD_CUSTOM; }
-		}
-	}
+        /// <summary>
+        /// Gets or sets the number of replays for the animation.
+        /// Use 0 (zero) to specify an infinte number of replays.
+        /// </summary>
+        /// <remarks>
+        /// <b>Handling of null values</b><para/>
+        /// A null value indicates, that the corresponding metadata tag is not
+        /// present in the metadata model.
+        /// Setting this property's value to a non-null reference creates the
+        /// metadata tag if necessary.
+        /// Setting this property's value to a null reference deletes the
+        /// metadata tag from the metadata model.
+        /// </remarks>
+        public uint? LoopCount
+        {
+            get
+            {
+                return GetTagValue<uint>("Loop");
+            }
+            set
+            {
+                SetTagValue("Loop", value);
+            }
+        }
 
-	/// <summary>
-	/// Represents a collection of all tags contained in the metadata model <see cref="FREE_IMAGE_MDMODEL.FIMD_EXIF_EXIF"/>.
-	/// </summary>
-	public sealed class MDM_EXIF_EXIF : MetadataModel
-	{
-		/// <summary>
-		/// Initializes a new instance of this class.
-		/// </summary>
-		/// <param name="dib">Handle to a FreeImage bitmap.</param>
-		public MDM_EXIF_EXIF(FIBITMAP dib) : base(dib) { }
+        /// <summary>
+        /// Gets or sets the horizontal offset within the logical canvas area, this frame is to be displayed at.
+        /// </summary>
+        /// <remarks>
+        /// <b>Handling of null values</b><para/>
+        /// A null value indicates, that the corresponding metadata tag is not
+        /// present in the metadata model.
+        /// Setting this property's value to a non-null reference creates the
+        /// metadata tag if necessary.
+        /// Setting this property's value to a null reference deletes the
+        /// metadata tag from the metadata model.
+        /// </remarks>
+        public ushort? FrameLeft
+        {
+            get
+            {
+                return GetTagValue<ushort>("FrameLeft");
+            }
+            set
+            {
+                SetTagValue("FrameLeft", value);
+            }
+        }
 
-		/// <summary>
-		/// Retrieves the datamodel that this instance represents.
-		/// </summary>
-		public override FREE_IMAGE_MDMODEL Model
-		{
-			get { return FREE_IMAGE_MDMODEL.FIMD_EXIF_EXIF; }
-		}
-	}
+        /// <summary>
+        /// Gets or sets the vertical offset within the logical canvas area, this frame is to be displayed at.
+        /// </summary>
+        /// <remarks>
+        /// <b>Handling of null values</b><para/>
+        /// A null value indicates, that the corresponding metadata tag is not
+        /// present in the metadata model.
+        /// Setting this property's value to a non-null reference creates the
+        /// metadata tag if necessary.
+        /// Setting this property's value to a null reference deletes the
+        /// metadata tag from the metadata model.
+        /// </remarks>
+        public ushort? FrameTop
+        {
+            get
+            {
+                return GetTagValue<ushort>("FrameTop");
+            }
+            set
+            {
+                SetTagValue("FrameTop", value);
+            }
+        }
 
-	/// <summary>
-	/// Represents a collection of all tags contained in the metadata model <see cref="FREE_IMAGE_MDMODEL.FIMD_EXIF_GPS"/>.
-	/// </summary>
-	public sealed class MDM_EXIF_GPS : MetadataModel
-	{
-		/// <summary>
-		/// Initializes a new instance of this class.
-		/// </summary>
-		/// <param name="dib">Handle to a FreeImage bitmap.</param>
-		public MDM_EXIF_GPS(FIBITMAP dib) : base(dib) { }
+        /// <summary>
+        /// Gets or sets a flag to supress saving the dib's attached palette
+        /// (making it use the global palette). The local palette is the palette used by a page.
+        /// </summary>
+        /// <remarks>
+        /// <b>Handling of null values</b><para/>
+        /// A null value indicates, that the corresponding metadata tag is not
+        /// present in the metadata model.
+        /// Setting this property's value to a non-null reference creates the
+        /// metadata tag if necessary.
+        /// Setting this property's value to a null reference deletes the
+        /// metadata tag from the metadata model.
+        /// </remarks>
+        public bool? NoLocalPalette
+        {
+            get
+            {
+                byte? useGlobalPalette = GetTagValue<byte>("NoLocalPalette");
+                return useGlobalPalette.HasValue ? (useGlobalPalette.Value != 0) : default(bool?);
+            }
+            set
+            {
+                byte? val = null;
+                if (value.HasValue)
+                {
+                    val = (byte)(value.Value ? 1 : 0);
+                }
+                SetTagValue("NoLocalPalette", val);
+            }
+        }
 
-		/// <summary>
-		/// Retrieves the datamodel that this instance represents.
-		/// </summary>
-		public override FREE_IMAGE_MDMODEL Model
-		{
-			get { return FREE_IMAGE_MDMODEL.FIMD_EXIF_GPS; }
-		}
-	}
+        /// <summary>
+        /// Gets or sets a value indicating whether the image is interlaced.
+        /// </summary>
+        /// <remarks>
+        /// <b>Handling of null values</b><para/>
+        /// A null value indicates, that the corresponding metadata tag is not
+        /// present in the metadata model.
+        /// Setting this property's value to a non-null reference creates the
+        /// metadata tag if necessary.
+        /// Setting this property's value to a null reference deletes the
+        /// metadata tag from the metadata model.
+        /// </remarks>
+        public bool? Interlaced
+        {
+            get
+            {
+                byte? useGlobalPalette = GetTagValue<byte>("Interlaced");
+                return useGlobalPalette.HasValue ? (useGlobalPalette.Value != 0) : default(bool?);
+            }
+            set
+            {
+                byte? val = null;
+                if (value.HasValue)
+                {
+                    val = (byte)(value.Value ? 1 : 0);
+                }
+                SetTagValue("Interlaced", val);
+            }
+        }
 
-	/// <summary>
-	/// Represents a collection of all tags contained in the metadata model <see cref="FREE_IMAGE_MDMODEL.FIMD_EXIF_INTEROP"/>.
-	/// </summary>
-	public sealed class MDM_INTEROP : MetadataModel
-	{
-		/// <summary>
-		/// Initializes a new instance of this class.
-		/// </summary>
-		/// <param name="dib">Handle to a FreeImage bitmap.</param>
-		public MDM_INTEROP(FIBITMAP dib) : base(dib) { }
+        /// <summary>
+        /// Gets or sets the amout of time in milliseconds this frame is to be displayed.
+        /// </summary>
+        /// <remarks>
+        /// <b>Handling of null values</b><para/>
+        /// A null value indicates, that the corresponding metadata tag is not
+        /// present in the metadata model.
+        /// Setting this property's value to a non-null reference creates the
+        /// metadata tag if necessary.
+        /// Setting this property's value to a null reference deletes the
+        /// metadata tag from the metadata model.
+        /// </remarks>
+        public uint? FrameTime
+        {
+            get
+            {
+                return GetTagValue<uint>("FrameTime");
+            }
+            set
+            {
+                SetTagValue("FrameTime", value);
+            }
+        }
 
-		/// <summary>
-		/// Retrieves the datamodel that this instance represents.
-		/// </summary>
-		public override FREE_IMAGE_MDMODEL Model
-		{
-			get { return FREE_IMAGE_MDMODEL.FIMD_EXIF_INTEROP; }
-		}
-	}
+        /// <summary>
+        /// Gets or sets this frame's disposal method. Generally, this method defines, how to
+        /// remove or replace a frame when the next frame has to be drawn.<para/>
+        /// </summary>
+        /// <remarks>
+        /// <b>Handling of null values</b><para/>
+        /// A null value indicates, that the corresponding metadata tag is not
+        /// present in the metadata model.
+        /// Setting this property's value to a non-null reference creates the
+        /// metadata tag if necessary.
+        /// Setting this property's value to a null reference deletes the
+        /// metadata tag from the metadata model.
+        /// </remarks>
+        public DisposalMethodType? DisposalMethod
+        {
+            get
+            {
+                return GetTagValue<DisposalMethodType>("DisposalMethod");
+            }
+            set
+            {
+                SetTagValue("DisposalMethod", value);
+            }
+        }
+    }
 
-	/// <summary>
-	/// Represents a collection of all tags contained in the metadata model <see cref="FREE_IMAGE_MDMODEL.FIMD_EXIF_MAIN"/>.
-	/// </summary>
-	public class MDM_MAIN : MetadataModel
-	{
-		/// <summary>
-		/// Initializes a new instance of this class.
-		/// </summary>
-		/// <param name="dib">Handle to a FreeImage bitmap.</param>
-		public MDM_MAIN(FIBITMAP dib) : base(dib) { }
+    /// <summary>
+    /// Represents a collection of all tags contained in the metadata model
+    /// <see cref="FREE_IMAGE_MDMODEL.FIMD_COMMENTS"/>.
+    /// </summary>
+    public class MDM_COMMENTS : MetadataModel
+    {
+        /// <summary>
+        /// Initializes a new instance of this class.
+        /// </summary>
+        /// <param name="dib">Handle to a FreeImage bitmap.</param>
+        public MDM_COMMENTS(FIBITMAP dib) : base(dib) { }
 
-		/// <summary>
-		/// Retrieves the datamodel that this instance represents.
-		/// </summary>
-		public override FREE_IMAGE_MDMODEL Model
-		{
-			get { return FREE_IMAGE_MDMODEL.FIMD_EXIF_MAIN; }
-		}
-	}
+        /// <summary>
+        /// Retrieves the datamodel that this instance represents.
+        /// </summary>
+        public override FREE_IMAGE_MDMODEL Model
+        {
+            get { return FREE_IMAGE_MDMODEL.FIMD_COMMENTS; }
+        }
 
-	/// <summary>
-	/// Represents a collection of all tags contained in the metadata model <see cref="FREE_IMAGE_MDMODEL.FIMD_EXIF_MAKERNOTE"/>.
-	/// </summary>
-	public sealed class MDM_MAKERNOTE : MetadataModel
-	{
-		/// <summary>
-		/// Initializes a new instance of this class.
-		/// </summary>
-		/// <param name="dib">Handle to a FreeImage bitmap.</param>
-		public MDM_MAKERNOTE(FIBITMAP dib) : base(dib) { }
+        /// <summary>
+        /// Gets or sets the comment of the image.
+        /// Supported formats are JPEG, PNG and GIF.
+        /// </summary>
+        /// <remarks>
+        /// <b>Handling of null values</b><para/>
+        /// A null value indicates, that the corresponding metadata tag is not
+        /// present in the metadata model.
+        /// Setting this property's value to a non-null reference creates the
+        /// metadata tag if necessary.
+        /// Setting this property's value to a null reference deletes the
+        /// metadata tag from the metadata model.
+        /// </remarks>
+        public string Comment
+        {
+            get
+            {
+                return GetTagText("Comment");
+            }
+            set
+            {
+                SetTagValue("Comment", value);
+            }
+        }
+    }
 
-		/// <summary>
-		/// Retrieves the datamodel that this instance represents.
-		/// </summary>
-		public override FREE_IMAGE_MDMODEL Model
-		{
-			get { return FREE_IMAGE_MDMODEL.FIMD_EXIF_MAKERNOTE; }
-		}
-	}
+    /// <summary>
+    /// Represents a collection of all tags contained in the metadata model
+    /// <see cref="FREE_IMAGE_MDMODEL.FIMD_CUSTOM"/>.
+    /// </summary>
+    public class MDM_CUSTOM : MetadataModel
+    {
+        /// <summary>
+        /// Initializes a new instance of this class.
+        /// </summary>
+        /// <param name="dib">Handle to a FreeImage bitmap.</param>
+        public MDM_CUSTOM(FIBITMAP dib) : base(dib) { }
 
-	/// <summary>
-	/// Represents a collection of all tags contained in the metadata model <see cref="FREE_IMAGE_MDMODEL.FIMD_GEOTIFF"/>.
-	/// </summary>
-	public sealed class MDM_GEOTIFF : MetadataModel
-	{
-		/// <summary>
-		/// Initializes a new instance of this class.
-		/// </summary>
-		/// <param name="dib">Handle to a FreeImage bitmap.</param>
-		public MDM_GEOTIFF(FIBITMAP dib) : base(dib) { }
+        /// <summary>
+        /// Retrieves the datamodel that this instance represents.
+        /// </summary>
+        public override FREE_IMAGE_MDMODEL Model
+        {
+            get { return FREE_IMAGE_MDMODEL.FIMD_CUSTOM; }
+        }
+    }
 
-		/// <summary>
-		/// Retrieves the datamodel that this instance represents.
-		/// </summary>
-		public override FREE_IMAGE_MDMODEL Model
-		{
-			get { return FREE_IMAGE_MDMODEL.FIMD_GEOTIFF; }
-		}
-	}
+    /// <summary>
+    /// Represents a collection of all tags contained in the metadata model
+    /// <see cref="FREE_IMAGE_MDMODEL.FIMD_EXIF_EXIF"/>.
+    /// </summary>
+    public class MDM_EXIF_EXIF : MetadataModel
+    {
+        /// <summary>
+        /// Initializes a new instance of this class.
+        /// </summary>
+        /// <param name="dib">Handle to a FreeImage bitmap.</param>
+        public MDM_EXIF_EXIF(FIBITMAP dib) : base(dib) { }
 
-	/// <summary>
-	/// Represents a collection of all tags contained in the metadata model <see cref="FREE_IMAGE_MDMODEL.FIMD_IPTC"/>.
-	/// </summary>
-	public sealed class MDM_IPTC : MetadataModel
-	{
-		/// <summary>
-		/// Initializes a new instance of this class.
-		/// </summary>
-		/// <param name="dib">Handle to a FreeImage bitmap.</param>
-		public MDM_IPTC(FIBITMAP dib) : base(dib) { }
+        /// <summary>
+        /// Retrieves the datamodel that this instance represents.
+        /// </summary>
+        public override FREE_IMAGE_MDMODEL Model
+        {
+            get { return FREE_IMAGE_MDMODEL.FIMD_EXIF_EXIF; }
+        }
 
-		/// <summary>
-		/// Retrieves the datamodel that this instance represents.
-		/// </summary>
-		public override FREE_IMAGE_MDMODEL Model
-		{
-			get { return FREE_IMAGE_MDMODEL.FIMD_IPTC; }
-		}
-	}
+        /// <summary>
+        /// Gets or sets the version of this standard supported.
+        /// Constant length or 4.
+        /// </summary>
+        /// <remarks>
+        /// <b>Handling of null values</b><para/>
+        /// A null value indicates, that the corresponding metadata tag is not
+        /// present in the metadata model.
+        /// Setting this property's value to a non-null reference creates the
+        /// metadata tag if necessary.
+        /// Setting this property's value to a null reference deletes the
+        /// metadata tag from the metadata model.
+        /// </remarks>
+        public byte[] ExifVersion
+        {
+            get
+            {
+                return GetTagArray<byte>("ExifVersion");
+            }
+            set
+            {
+                FreeImage.Resize(ref value, 4);
+                SetTagValueUndefined("ExifVersion", value);
+            }
+        }
 
-	/// <summary>
-	/// Represents a collection of all tags contained in the metadata model <see cref="FREE_IMAGE_MDMODEL.FIMD_NODATA"/>.
-	/// </summary>
-	public sealed class MDM_NODATA : MetadataModel
-	{
-		/// <summary>
-		/// Initializes a new instance of this class.
-		/// </summary>
-		/// <param name="dib">Handle to a FreeImage bitmap.</param>
-		public MDM_NODATA(FIBITMAP dib) : base(dib) { }
+        /// <summary>
+        /// Gets or sets the Flashpix format version supported by a FPXR file.
+        /// Constant length or 4.
+        /// </summary>
+        /// <remarks>
+        /// <b>Handling of null values</b><para/>
+        /// A null value indicates, that the corresponding metadata tag is not
+        /// present in the metadata model.
+        /// Setting this property's value to a non-null reference creates the
+        /// metadata tag if necessary.
+        /// Setting this property's value to a null reference deletes the
+        /// metadata tag from the metadata model.
+        /// </remarks>
+        public byte[] FlashpixVersion
+        {
+            get
+            {
+                return GetTagArray<byte>("FlashpixVersion");
+            }
+            set
+            {
+                FreeImage.Resize(ref value, 4);
+                SetTagValueUndefined("FlashpixVersion", value);
+            }
+        }
 
-		/// <summary>
-		/// Retrieves the datamodel that this instance represents.
-		/// </summary>
-		public override FREE_IMAGE_MDMODEL Model
-		{
-			get { return FREE_IMAGE_MDMODEL.FIMD_NODATA; }
-		}
-	}
+        /// <summary>
+        /// Gets or sets the color space information tag.
+        /// See remarks for further information.
+        /// </summary>
+        /// <remarks>
+        /// The following values are defined:<para/>
+        /// <list type="table">
+        ///		<listheader>
+        ///			<term>ID</term>
+        ///			<description>Description</description>
+        ///		</listheader>
+        ///		<item>
+        ///			<term>1</term>
+        ///			<description>sRGB (default)</description>
+        ///		</item>
+        ///		<item>
+        ///			<term>0xFFFF</term>
+        ///			<description>uncalibrated</description>
+        ///		</item>
+        ///		<item>
+        ///			<term>other</term>
+        ///			<description>reserved</description>
+        ///		</item>
+        /// </list>
+        /// <para/>
+        /// <br/><b>Handling of null values</b><para/>
+        /// A null value indicates, that the corresponding metadata tag is not
+        /// present in the metadata model.
+        /// Setting this property's value to a non-null reference creates the
+        /// metadata tag if necessary.
+        /// Setting this property's value to a null reference deletes the
+        /// metadata tag from the metadata model.
+        /// </remarks>
+        public ushort? ColorSpace
+        {
+            get
+            {
+                return GetTagValue<ushort>("ColorSpace");
+            }
+            set
+            {
+                SetTagValue("ColorSpace", value);
+            }
+        }
 
-	/// <summary>
-	/// Represents a collection of all tags contained in the metadata model <see cref="FREE_IMAGE_MDMODEL.FIMD_XMP"/>.
-	/// </summary>
-	public sealed class MDM_XMP : MetadataModel
-	{
-		/// <summary>
-		/// Initializes a new instance of this class.
-		/// </summary>
-		/// <param name="dib">Handle to a FreeImage bitmap.</param>
-		public MDM_XMP(FIBITMAP dib) : base(dib) { }
+        /// <summary>
+        /// Gets or sets the valid width of a compressed image.
+        /// </summary>
+        /// <remarks>
+        /// <b>Handling of null values</b><para/>
+        /// A null value indicates, that the corresponding metadata tag is not
+        /// present in the metadata model.
+        /// Setting this property's value to a non-null reference creates the
+        /// metadata tag if necessary.
+        /// Setting this property's value to a null reference deletes the
+        /// metadata tag from the metadata model.
+        /// </remarks>
+        public uint? PixelXDimension
+        {
+            get
+            {
+                return GetUInt32Value("PixelXDimension");
+            }
+            set
+            {
+                RemoveTag("PixelXDimension");
+                if (value.HasValue)
+                {
+                    SetTagValue("PixelXDimension", value.Value);
+                }
+            }
+        }
 
-		/// <summary>
-		/// Retrieves the datamodel that this instance represents.
-		/// </summary>
-		public override FREE_IMAGE_MDMODEL Model
-		{
-			get { return FREE_IMAGE_MDMODEL.FIMD_XMP; }
-		}
-	}
+        /// <summary>
+        /// Gets or sets the valid height of a compressed image.
+        /// </summary>
+        /// <remarks>
+        /// <b>Handling of null values</b><para/>
+        /// A null value indicates, that the corresponding metadata tag is not
+        /// present in the metadata model.
+        /// Setting this property's value to a non-null reference creates the
+        /// metadata tag if necessary.
+        /// Setting this property's value to a null reference deletes the
+        /// metadata tag from the metadata model.
+        /// </remarks>
+        public uint? PixelYDimension
+        {
+            get
+            {
+                return GetUInt32Value("PixelYDimension");
+            }
+            set
+            {
+                RemoveTag("PixelYDimension");
+                if (value.HasValue)
+                {
+                    SetTagValue("PixelYDimension", value.Value);
+                }
+            }
+        }
+
+        /// <summary>
+        /// Gets or sets components configuration. See remarks for further information.
+        /// Constant length of 4.
+        /// </summary>
+        /// <remarks>
+        /// The channels of each component are arranged in order from the 1st component to the 4th.
+        /// For uncompressed data the data arrangement is given in the PhotometricInterpretation tag.
+        /// However, since PhotometricInterpretation can only express the order of Y,Cb and Cr,
+        /// this tag is provided for cases when compressed data uses components other than Y, Cb,
+        /// and Cr and to enable support of other sequences.<para/>
+        /// Default = 4 5 6 0 (if RGB uncompressed)<para/>
+        /// The following values are defined:<para/>
+        /// <list type="table">
+        ///		<listheader>
+        ///			<term>ID</term>
+        ///			<description>Description</description>
+        ///		</listheader>
+        ///		<item>
+        ///			<term>0</term>
+        ///			<description>does not exist</description>
+        ///		</item>
+        ///		<item>
+        ///			<term>1</term>
+        ///			<description>Y</description>
+        ///		</item>
+        ///		<item>
+        ///			<term>2</term>
+        ///			<description>Cb</description>
+        ///		</item>
+        ///		<item>
+        ///			<term>3</term>
+        ///			<description>Cr</description>
+        ///		</item>
+        ///		<item>
+        ///			<term>4</term>
+        ///			<description>R</description>
+        ///		</item>
+        ///		<item>
+        ///			<term>5</term>
+        ///			<description>R</description>
+        ///		</item>
+        ///		<item>
+        ///			<term>6</term>
+        ///			<description>R</description>
+        ///		</item>
+        ///		<item>
+        ///			<term>other</term>
+        ///			<description>reserved</description>
+        ///		</item>
+        /// </list>
+        /// <para/>
+        /// <br/><b>Handling of null values</b><para/>
+        /// A null value indicates, that the corresponding metadata tag is not
+        /// present in the metadata model.
+        /// Setting this property's value to a non-null reference creates the
+        /// metadata tag if necessary.
+        /// Setting this property's value to a null reference deletes the
+        /// metadata tag from the metadata model.
+        /// </remarks>
+        public byte[] ComponentsConfiguration
+        {
+            get
+            {
+                return GetTagArray<byte>("ComponentsConfiguration");
+            }
+            set
+            {
+                FreeImage.Resize(ref value, 4);
+                SetTagValueUndefined("ComponentsConfiguration", value);
+            }
+        }
+
+        /// <summary>
+        /// Gets or sets compression mode used for a compressed image is indicated
+        /// in unit bits per pixel.
+        /// </summary>
+        /// <remarks>
+        /// <b>Handling of null values</b><para/>
+        /// A null value indicates, that the corresponding metadata tag is not
+        /// present in the metadata model.
+        /// Setting this property's value to a non-null reference creates the
+        /// metadata tag if necessary.
+        /// Setting this property's value to a null reference deletes the
+        /// metadata tag from the metadata model.
+        /// </remarks>
+        public FIURational? CompressedBitsPerPixel
+        {
+            get
+            {
+                return GetTagValue<FIURational>("CompressedBitsPerPixel");
+            }
+            set
+            {
+                SetTagValue("CompressedBitsPerPixel", value);
+            }
+        }
+
+        /// <summary>
+        /// Gets or sets a tag for manufacturers of Exif writers to record any desired information.
+        /// The contents are up to the manufacturer, but this tag should not be used for any other
+        /// than its intended purpose.
+        /// </summary>
+        /// <remarks>
+        /// <b>Handling of null values</b><para/>
+        /// A null value indicates, that the corresponding metadata tag is not
+        /// present in the metadata model.
+        /// Setting this property's value to a non-null reference creates the
+        /// metadata tag if necessary.
+        /// Setting this property's value to a null reference deletes the
+        /// metadata tag from the metadata model.
+        /// </remarks>
+        public byte[] MakerNote
+        {
+            get
+            {
+                return GetTagArray<byte>("FlashpixVersion");
+            }
+            set
+            {
+                SetTagValueUndefined("FlashpixVersion", value);
+            }
+        }
+
+        /// <summary>
+        /// Gets or sets a tag for Exif users to write keywords or comments on the image besides
+        /// those in ImageDescription, and without the character code limitations of the ImageDescription tag.
+        /// Minimum length of 8. See remarks for further information.
+        /// </summary>
+        /// <remarks>
+        /// The character code used in the UserComment tag is identified based on an ID code in a fixed 8-byte
+        /// area at the start of the tag data area. The unused portion of the area is padded with NULL.
+        /// The ID code for the UserComment area may be a Defined code such as JIS or ASCII, or may be Undefined.
+        /// <para/>
+        /// <br/><b>Handling of null values</b><para/>
+        /// A null value indicates, that the corresponding metadata tag is not
+        /// present in the metadata model.
+        /// Setting this property's value to a non-null reference creates the
+        /// metadata tag if necessary.
+        /// Setting this property's value to a null reference deletes the
+        /// metadata tag from the metadata model.
+        /// </remarks>
+        public byte[] UserComment
+        {
+            get
+            {
+                return GetTagArray<byte>("UserComment");
+            }
+            set
+            {
+                FreeImage.Resize(ref value, 8, int.MaxValue);
+                SetTagValueUndefined("UserComment", value);
+            }
+        }
+
+        /// <summary>
+        /// Gets or sets the name of an audio file related to the image data.
+        /// The format is 8.3.
+        /// Constant length of 12
+        /// </summary>
+        /// <remarks>
+        /// <b>Handling of null values</b><para/>
+        /// A null value indicates, that the corresponding metadata tag is not
+        /// present in the metadata model.
+        /// Setting this property's value to a non-null reference creates the
+        /// metadata tag if necessary.
+        /// Setting this property's value to a null reference deletes the
+        /// metadata tag from the metadata model.
+        /// </remarks>
+        public string RelatedSoundFile
+        {
+            get
+            {
+                string text = GetTagText("RelatedSoundFile");
+                if (!string.IsNullOrEmpty(text))
+                {
+                    text = text.Substring(0, text.Length - 1);
+                }
+                return text;
+            }
+            set
+            {
+                if (value != null)
+                {
+                    FreeImage.Resize(ref value, 12);
+                    value += '\0';
+                }
+                SetTagValue("RelatedSoundFile", value);
+            }
+        }
+
+        /// <summary>
+        /// Gets or sets the date and time when the original image data was generated.
+        /// </summary>
+        /// <remarks>
+        /// <b>Handling of null values</b><para/>
+        /// A null value indicates, that the corresponding metadata tag is not
+        /// present in the metadata model.
+        /// Setting this property's value to a non-null reference creates the
+        /// metadata tag if necessary.
+        /// Setting this property's value to a null reference deletes the
+        /// metadata tag from the metadata model.
+        /// </remarks>
+        public DateTime? DateTimeOriginal
+        {
+            get
+            {
+                DateTime? result = null;
+                string text = GetTagText("DateTimeOriginal");
+                if (text != null)
+                {
+                    try
+                    {
+                        result = System.DateTime.ParseExact(text, "yyyy:MM:dd HH:mm:ss\0", null);
+                    }
+                    catch
+                    {
+                    }
+                }
+                return result;
+            }
+            set
+            {
+                string val = null;
+                if (value.HasValue)
+                {
+                    try
+                    {
+                        val = value.Value.ToString("yyyy:MM:dd HH:mm:ss\0");
+                    }
+                    catch
+                    {
+                    }
+                }
+                SetTagValue("DateTimeOriginal", val);
+            }
+        }
+
+        /// <summary>
+        /// Gets or sets the date and time when the image was stored as digital data.
+        /// </summary>
+        /// <remarks>
+        /// <b>Handling of null values</b><para/>
+        /// A null value indicates, that the corresponding metadata tag is not
+        /// present in the metadata model.
+        /// Setting this property's value to a non-null reference creates the
+        /// metadata tag if necessary.
+        /// Setting this property's value to a null reference deletes the
+        /// metadata tag from the metadata model.
+        /// </remarks>
+        public DateTime? DateTimeDigitized
+        {
+            get
+            {
+                DateTime? result = null;
+                string text = GetTagText("DateTimeDigitized");
+                if (text != null)
+                {
+                    try
+                    {
+                        result = System.DateTime.ParseExact(text, "yyyy:MM:dd HH:mm:ss\0", null);
+                    }
+                    catch
+                    {
+                    }
+                }
+                return result;
+            }
+            set
+            {
+                string val = null;
+                if (value.HasValue)
+                {
+                    try
+                    {
+                        val = value.Value.ToString("yyyy:MM:dd HH:mm:ss\0");
+                    }
+                    catch
+                    {
+                    }
+                }
+                SetTagValue("DateTimeDigitized", val);
+            }
+        }
+
+        /// <summary>
+        /// Gets or sets a tag used to record fractions of seconds for the DateTime tag.
+        /// </summary>
+        /// <remarks>
+        /// <b>Handling of null values</b><para/>
+        /// A null value indicates, that the corresponding metadata tag is not
+        /// present in the metadata model.
+        /// Setting this property's value to a non-null reference creates the
+        /// metadata tag if necessary.
+        /// Setting this property's value to a null reference deletes the
+        /// metadata tag from the metadata model.
+        /// </remarks>
+        public string SubsecTime
+        {
+            get
+            {
+                string text = GetTagText("SubsecTime");
+                if (!string.IsNullOrEmpty(text))
+                {
+                    text = text.Substring(0, text.Length - 1);
+                }
+                return text;
+            }
+            set
+            {
+                if (value != null)
+                {
+                    value += '\0';
+                }
+                SetTagValue("SubsecTime", value);
+            }
+        }
+
+        /// <summary>
+        /// Gets or sets a tag used to record fractions of seconds for the DateTimeOriginal tag.
+        /// </summary>
+        /// <remarks>
+        /// <b>Handling of null values</b><para/>
+        /// A null value indicates, that the corresponding metadata tag is not
+        /// present in the metadata model.
+        /// Setting this property's value to a non-null reference creates the
+        /// metadata tag if necessary.
+        /// Setting this property's value to a null reference deletes the
+        /// metadata tag from the metadata model.
+        /// </remarks>
+        public string SubsecTimeOriginal
+        {
+            get
+            {
+                string text = GetTagText("SubsecTimeOriginal");
+                if (!string.IsNullOrEmpty(text))
+                {
+                    text = text.Substring(0, text.Length - 1);
+                }
+                return text;
+            }
+            set
+            {
+                if (value != null)
+                {
+                    value += '\0';
+                }
+                SetTagValue("SubsecTimeOriginal", value);
+            }
+        }
+
+        /// <summary>
+        /// Gets or sets a tag used to record fractions of seconds for the DateTimeDigitized tag.
+        /// </summary>
+        /// <remarks>
+        /// <b>Handling of null values</b><para/>
+        /// A null value indicates, that the corresponding metadata tag is not
+        /// present in the metadata model.
+        /// Setting this property's value to a non-null reference creates the
+        /// metadata tag if necessary.
+        /// Setting this property's value to a null reference deletes the
+        /// metadata tag from the metadata model.
+        /// </remarks>
+        public string SubsecTimeDigitized
+        {
+            get
+            {
+                string text = GetTagText("SubsecTimeDigitized");
+                if (!string.IsNullOrEmpty(text))
+                {
+                    text = text.Substring(0, text.Length - 1);
+                }
+                return text;
+            }
+            set
+            {
+                if (value != null)
+                {
+                    value += '\0';
+                }
+                SetTagValue("SubsecTimeDigitized", value);
+            }
+        }
+
+        /// <summary>
+        /// Gets or the exposure time, given in seconds (sec).
+        /// </summary>
+        /// <remarks>
+        /// <b>Handling of null values</b><para/>
+        /// A null value indicates, that the corresponding metadata tag is not
+        /// present in the metadata model.
+        /// Setting this property's value to a non-null reference creates the
+        /// metadata tag if necessary.
+        /// Setting this property's value to a null reference deletes the
+        /// metadata tag from the metadata model.
+        /// </remarks>
+        public FIURational? ExposureTime
+        {
+            get
+            {
+                return GetTagValue<FIURational>("ExposureTime");
+            }
+            set
+            {
+                SetTagValue("ExposureTime", value);
+            }
+        }
+
+        /// <summary>
+        /// Gets or the F number.
+        /// </summary>
+        /// <remarks>
+        /// <b>Handling of null values</b><para/>
+        /// A null value indicates, that the corresponding metadata tag is not
+        /// present in the metadata model.
+        /// Setting this property's value to a non-null reference creates the
+        /// metadata tag if necessary.
+        /// Setting this property's value to a null reference deletes the
+        /// metadata tag from the metadata model.
+        /// </remarks>
+        public FIURational? FNumber
+        {
+            get
+            {
+                return GetTagValue<FIURational>("FNumber");
+            }
+            set
+            {
+                SetTagValue("FNumber", value);
+            }
+        }
+
+        /// <summary>
+        /// Gets or sets the class of the program used by the camera to set exposure when the
+        /// picture is taken.
+        /// See remarks for further information.
+        /// </summary>
+        /// <remarks>
+        /// The following values are defined:<para/>
+        /// <list type="table">
+        ///		<listheader>
+        ///			<term>ID</term>
+        ///			<description>Description</description>
+        ///		</listheader>
+        ///		<item>
+        ///			<term>0</term>
+        ///			<description>not defined</description>
+        ///		</item>
+        ///		<item>
+        ///			<term>1</term>
+        ///			<description>manual</description>
+        ///		</item>
+        ///		<item>
+        ///			<term>2</term>
+        ///			<description>normal program</description>
+        ///		</item>
+        ///		<item>
+        ///			<term>3</term>
+        ///			<description>aperture priority</description>
+        ///		</item>
+        ///		<item>
+        ///			<term>4</term>
+        ///			<description>shutter priority</description>
+        ///		</item>
+        ///		<item>
+        ///			<term>5</term>
+        ///			<description>create program</description>
+        ///		</item>
+        ///		<item>
+        ///			<term>6</term>
+        ///			<description>action program</description>
+        ///		</item>
+        ///		<item>
+        ///			<term>7</term>
+        ///			<description>portrait mode</description>
+        ///		</item>
+        ///		<item>
+        ///			<term>8</term>
+        ///			<description>landscape mode</description>
+        ///		</item>
+        ///		<item>
+        ///			<term>others</term>
+        ///			<description>reserved</description>
+        ///		</item>
+        /// </list>
+        /// <para/>
+        /// <br/><b>Handling of null values</b><para/>
+        /// A null value indicates, that the corresponding metadata tag is not
+        /// present in the metadata model.
+        /// Setting this property's value to a non-null reference creates the
+        /// metadata tag if necessary.
+        /// Setting this property's value to a null reference deletes the
+        /// metadata tag from the metadata model.
+        /// </remarks>
+        public ushort? ExposureProgram
+        {
+            get
+            {
+                return GetTagValue<ushort>("ExposureProgram");
+            }
+            set
+            {
+                SetTagValue("ExposureProgram", value);
+            }
+        }
+
+        /// <summary>
+        /// Gets or sets the spectral sensitivity of each channel of the camera used.
+        /// </summary>
+        /// <remarks>
+        /// <b>Handling of null values</b><para/>
+        /// A null value indicates, that the corresponding metadata tag is not
+        /// present in the metadata model.
+        /// Setting this property's value to a non-null reference creates the
+        /// metadata tag if necessary.
+        /// Setting this property's value to a null reference deletes the
+        /// metadata tag from the metadata model.
+        /// </remarks>
+        public string SpectralSensitivity
+        {
+            get
+            {
+                string text = GetTagText("SpectralSensitivity");
+                if (!string.IsNullOrEmpty(text))
+                {
+                    text = text.Substring(0, text.Length - 1);
+                }
+                return text;
+            }
+            set
+            {
+                if (value != null)
+                {
+                    value += '\0';
+                }
+                SetTagValue("SpectralSensitivity", value);
+            }
+        }
+
+        /// <summary>
+        /// Gets or sets the the ISO Speed and ISO Latitude of the camera or input device as
+        /// specified in ISO 12232.
+        /// </summary>
+        /// <remarks>
+        /// <b>Handling of null values</b><para/>
+        /// A null value indicates, that the corresponding metadata tag is not
+        /// present in the metadata model.
+        /// Setting this property's value to a non-null reference creates the
+        /// metadata tag if necessary.
+        /// Setting this property's value to a null reference deletes the
+        /// metadata tag from the metadata model.
+        /// </remarks>
+        public ushort[] ISOSpeedRatings
+        {
+            get
+            {
+                return GetTagArray<ushort>("ISOSpeedRatings");
+            }
+            set
+            {
+                SetTagValue("ISOSpeedRatings", value);
+            }
+        }
+
+        /// <summary>
+        /// Gets or sets the Opto-Electric Conversion Function (OECF) specified in ISO 14524.
+        /// OECF is the relationship between the camera optical input and the image values.
+        /// </summary>
+        /// <remarks>
+        /// <b>Handling of null values</b><para/>
+        /// A null value indicates, that the corresponding metadata tag is not
+        /// present in the metadata model.
+        /// Setting this property's value to a non-null reference creates the
+        /// metadata tag if necessary.
+        /// Setting this property's value to a null reference deletes the
+        /// metadata tag from the metadata model.
+        /// </remarks>
+        public byte[] OECF
+        {
+            get
+            {
+                return GetTagArray<byte>("OECF");
+            }
+            set
+            {
+                SetTagValueUndefined("OECF", value);
+            }
+        }
+
+        /// <summary>
+        /// Gets or sets the shutter speed. The unit is the APEX (Additive System of Photographic Exposure).
+        /// </summary>
+        /// <remarks>
+        /// <b>Handling of null values</b><para/>
+        /// A null value indicates, that the corresponding metadata tag is not
+        /// present in the metadata model.
+        /// Setting this property's value to a non-null reference creates the
+        /// metadata tag if necessary.
+        /// Setting this property's value to a null reference deletes the
+        /// metadata tag from the metadata model.
+        /// </remarks>
+        public FIRational? ShutterSpeedValue
+        {
+            get
+            {
+                return GetTagValue<FIRational>("ShutterSpeedValue");
+            }
+            set
+            {
+                SetTagValue("ShutterSpeedValue", value);
+            }
+        }
+
+        /// <summary>
+        /// Gets or sets the lens aperture. The unit is the APEX value.
+        /// </summary>
+        /// <remarks>
+        /// <b>Handling of null values</b><para/>
+        /// A null value indicates, that the corresponding metadata tag is not
+        /// present in the metadata model.
+        /// Setting this property's value to a non-null reference creates the
+        /// metadata tag if necessary.
+        /// Setting this property's value to a null reference deletes the
+        /// metadata tag from the metadata model.
+        /// </remarks>
+        public FIURational? ApertureValue
+        {
+            get
+            {
+                return GetTagValue<FIURational>("ApertureValue");
+            }
+            set
+            {
+                SetTagValue("ApertureValue", value);
+            }
+        }
+
+        /// <summary>
+        /// Gets or sets the value of brightness. The unit is the APEX value.
+        /// Ordinarily it is given in the range of -99.99 to 99.99.
+        /// </summary>
+        /// <remarks>
+        /// <b>Handling of null values</b><para/>
+        /// A null value indicates, that the corresponding metadata tag is not
+        /// present in the metadata model.
+        /// Setting this property's value to a non-null reference creates the
+        /// metadata tag if necessary.
+        /// Setting this property's value to a null reference deletes the
+        /// metadata tag from the metadata model.
+        /// </remarks>
+        public FIRational? BrightnessValue
+        {
+            get
+            {
+                return GetTagValue<FIRational>("BrightnessValue");
+            }
+            set
+            {
+                SetTagValue("BrightnessValue", value);
+            }
+        }
+
+        /// <summary>
+        /// Gets or sets the exposure bias. The unit is the APEX value.
+        /// Ordinarily it is given in the range of �99.99 to 99.99.
+        /// </summary>
+        /// <remarks>
+        /// <b>Handling of null values</b><para/>
+        /// A null value indicates, that the corresponding metadata tag is not
+        /// present in the metadata model.
+        /// Setting this property's value to a non-null reference creates the
+        /// metadata tag if necessary.
+        /// Setting this property's value to a null reference deletes the
+        /// metadata tag from the metadata model.
+        /// </remarks>
+        public FIRational? ExposureBiasValue
+        {
+            get
+            {
+                return GetTagValue<FIRational>("ExposureBiasValue");
+            }
+            set
+            {
+                SetTagValue("ExposureBiasValue", value);
+            }
+        }
+
+        /// <summary>
+        /// Gets or sets the smallest F number of the lens. The unit is the APEX value.
+        /// Ordinarily it is given in the range of 00.00 to 99.99,
+        /// but it is not limited to this range.
+        /// </summary>
+        /// <remarks>
+        /// <b>Handling of null values</b><para/>
+        /// A null value indicates, that the corresponding metadata tag is not
+        /// present in the metadata model.
+        /// Setting this property's value to a non-null reference creates the
+        /// metadata tag if necessary.
+        /// Setting this property's value to a null reference deletes the
+        /// metadata tag from the metadata model.
+        /// </remarks>
+        public FIURational? MaxApertureValue
+        {
+            get
+            {
+                return GetTagValue<FIURational>("MaxApertureValue");
+            }
+            set
+            {
+                SetTagValue("MaxApertureValue", value);
+            }
+        }
+
+        /// <summary>
+        /// Gets or sets distance to the subject, given in meters.
+        /// Note that if the numerator of the recorded value is FFFFFFFF, infinity shall be indicated;
+        /// and if the numerator is 0, distance unknown shall be indicated.
+        /// </summary>
+        /// <remarks>
+        /// <b>Handling of null values</b><para/>
+        /// A null value indicates, that the corresponding metadata tag is not
+        /// present in the metadata model.
+        /// Setting this property's value to a non-null reference creates the
+        /// metadata tag if necessary.
+        /// Setting this property's value to a null reference deletes the
+        /// metadata tag from the metadata model.
+        /// </remarks>
+        public FIURational? SubjectDistance
+        {
+            get
+            {
+                return GetTagValue<FIURational>("SubjectDistance");
+            }
+            set
+            {
+                SetTagValue("SubjectDistance", value);
+            }
+        }
+
+        /// <summary>
+        /// Gets or sets the metering mode. See remarks for further information.
+        /// </summary>
+        /// <remarks>
+        /// The following values are defined:<para/>
+        /// <list type="table">
+        ///		<listheader>
+        ///			<term>ID</term>
+        ///			<description>Description</description>
+        ///		</listheader>
+        ///		<item>
+        ///			<term>0</term>
+        ///			<description>unknown</description>
+        ///		</item>
+        ///		<item>
+        ///			<term>1</term>
+        ///			<description>average</description>
+        ///		</item>
+        ///		<item>
+        ///			<term>2</term>
+        ///			<description>center-weighted-average</description>
+        ///		</item>
+        ///		<item>
+        ///			<term>3</term>
+        ///			<description>spot</description>
+        ///		</item>
+        ///		<item>
+        ///			<term>4</term>
+        ///			<description>multi-spot</description>
+        ///		</item>
+        ///		<item>
+        ///			<term>5</term>
+        ///			<description>pattern</description>
+        ///		</item>
+        ///		<item>
+        ///			<term>6</term>
+        ///			<description>partial</description>
+        ///		</item>
+        ///		<item>
+        ///			<term>other</term>
+        ///			<description>reserved</description>
+        ///		</item>
+        ///		<item>
+        ///			<term>255</term>
+        ///			<description>other</description>
+        ///		</item>
+        /// </list>
+        /// <para/>
+        /// <br/><b>Handling of null values</b><para/>
+        /// A null value indicates, that the corresponding metadata tag is not
+        /// present in the metadata model.
+        /// Setting this property's value to a non-null reference creates the
+        /// metadata tag if necessary.
+        /// Setting this property's value to a null reference deletes the
+        /// metadata tag from the metadata model.
+        /// </remarks>
+        public ushort? MeteringMode
+        {
+            get
+            {
+                return GetTagValue<ushort>("MeteringMode");
+            }
+            set
+            {
+                SetTagValue("MeteringMode", value);
+            }
+        }
+
+        /// <summary>
+        /// Gets or sets the kind of light source.
+        /// See remarks for further information.
+        /// </summary>
+        /// <remarks>
+        /// The following values are defined:<para/>
+        /// <list type="table">
+        ///		<listheader>
+        ///			<term>ID</term>
+        ///			<description>Description</description>
+        ///		</listheader>
+        ///		<item>
+        ///			<term>0</term>
+        ///			<description>unknown</description>
+        ///		</item>
+        ///		<item>
+        ///			<term>1</term>
+        ///			<description>daylight</description>
+        ///		</item>
+        ///		<item>
+        ///			<term>2</term>
+        ///			<description>fluorescent</description>
+        ///		</item>
+        ///		<item>
+        ///			<term>3</term>
+        ///			<description>tungsten</description>
+        ///		</item>
+        ///		<item>
+        ///			<term>4</term>
+        ///			<description>flash</description>
+        ///		</item>
+        ///		<item>
+        ///			<term>9</term>
+        ///			<description>fine weather</description>
+        ///		</item>
+        ///		<item>
+        ///			<term>10</term>
+        ///			<description>cloudy weather</description>
+        ///		</item>
+        ///		<item>
+        ///			<term>11</term>
+        ///			<description>shade</description>
+        ///		</item>
+        ///		<item>
+        ///			<term>12</term>
+        ///			<description>daylight fluorecent (D 5700 - 7100K)</description>
+        ///		</item>
+        ///		<item>
+        ///			<term>13</term>
+        ///			<description>day white fluorescent (N 4600 - 5400K)</description>
+        ///		</item>
+        ///		<item>
+        ///			<term>14</term>
+        ///			<description>cool white fluorescent (W 3900 - 4500K)</description>
+        ///		</item>
+        ///		<item>
+        ///			<term>15</term>
+        ///			<description>white fluorescent (WW 3200 - 3700K)</description>
+        ///		</item>
+        ///		<item>
+        ///			<term>17</term>
+        ///			<description>standard light A</description>
+        ///		</item>
+        ///		<item>
+        ///			<term>18</term>
+        ///			<description>standard light B</description>
+        ///		</item>
+        ///		<item>
+        ///			<term>19</term>
+        ///			<description>standard light C</description>
+        ///		</item>
+        ///		<item>
+        ///			<term>20</term>
+        ///			<description>D55</description>
+        ///		</item>
+        ///		<item>
+        ///			<term>21</term>
+        ///			<description>D65</description>
+        ///		</item>
+        ///		<item>
+        ///			<term>22</term>
+        ///			<description>D75</description>
+        ///		</item>
+        ///		<item>
+        ///			<term>23</term>
+        ///			<description>D50</description>
+        ///		</item>
+        ///		<item>
+        ///			<term>24</term>
+        ///			<description>ISO studio tungsten</description>
+        ///		</item>
+        ///		<item>
+        ///			<term>255</term>
+        ///			<description>other light source</description>
+        ///		</item>
+        ///		<item>
+        ///			<term>other</term>
+        ///			<description>reserved</description>
+        ///		</item>
+        /// </list>
+        /// <para/>
+        /// <br/><b>Handling of null values</b><para/>
+        /// A null value indicates, that the corresponding metadata tag is not
+        /// present in the metadata model.
+        /// Setting this property's value to a non-null reference creates the
+        /// metadata tag if necessary.
+        /// Setting this property's value to a null reference deletes the
+        /// metadata tag from the metadata model.
+        /// </remarks>
+        public ushort? LightSource
+        {
+            get
+            {
+                return GetTagValue<ushort>("LightSource");
+            }
+            set
+            {
+                SetTagValue("LightSource", value);
+            }
+        }
+
+        /// <summary>
+        /// Gets or sets a value indicating the status of flash when the image was shot.
+        /// Bit 0 indicates the flash firing status, bits 1 and 2 indicate the flash return
+        /// status, bits 3 and 4 indicate the flash mode, bit 5 indicates whether the flash
+        /// function is present, and bit 6 indicates "red eye" mode.
+        /// </summary>
+        /// <remarks>
+        /// <b>Handling of null values</b><para/>
+        /// A null value indicates, that the corresponding metadata tag is not
+        /// present in the metadata model.
+        /// Setting this property's value to a non-null reference creates the
+        /// metadata tag if necessary.
+        /// Setting this property's value to a null reference deletes the
+        /// metadata tag from the metadata model.
+        /// </remarks>
+        public ushort? Flash
+        {
+            get
+            {
+                return GetTagValue<ushort>("Flash");
+            }
+            set
+            {
+                SetTagValue("Flash", value);
+            }
+        }
+
+        /// <summary>
+        /// Gets or sets a value indicating the location and area of the main subject in
+        /// the overall scene. Variable length between 2 and 4.
+        /// </summary>
+        /// <remarks>
+        /// <b>Handling of null values</b><para/>
+        /// A null value indicates, that the corresponding metadata tag is not
+        /// present in the metadata model.
+        /// Setting this property's value to a non-null reference creates the
+        /// metadata tag if necessary.
+        /// Setting this property's value to a null reference deletes the
+        /// metadata tag from the metadata model.
+        /// </remarks>
+        public ushort[] SubjectArea
+        {
+            get
+            {
+                return GetTagArray<ushort>("SubjectArea");
+            }
+            set
+            {
+                FreeImage.Resize(ref value, 2, 4);
+                SetTagValue("SubjectArea", value);
+            }
+        }
+
+        /// <summary>
+        /// Gets or sets the actual focal length of the lens, in mm.
+        /// Conversion is not made to the focal length of a 35 mm film camera.
+        /// </summary>
+        /// <remarks>
+        /// <b>Handling of null values</b><para/>
+        /// A null value indicates, that the corresponding metadata tag is not
+        /// present in the metadata model.
+        /// Setting this property's value to a non-null reference creates the
+        /// metadata tag if necessary.
+        /// Setting this property's value to a null reference deletes the
+        /// metadata tag from the metadata model.
+        /// </remarks>
+        public FIURational? FocalLength
+        {
+            get
+            {
+                return GetTagValue<FIURational>("FocalLength");
+            }
+            set
+            {
+                SetTagValue("FocalLength", value);
+            }
+        }
+
+        /// <summary>
+        /// Gets or sets the strobe energy at the time the image is captured,
+        /// as measured in Beam Candle Power Seconds (BCPS).
+        /// </summary>
+        /// <remarks>
+        /// <b>Handling of null values</b><para/>
+        /// A null value indicates, that the corresponding metadata tag is not
+        /// present in the metadata model.
+        /// Setting this property's value to a non-null reference creates the
+        /// metadata tag if necessary.
+        /// Setting this property's value to a null reference deletes the
+        /// metadata tag from the metadata model.
+        /// </remarks>
+        public FIURational? FlashEnergy
+        {
+            get
+            {
+                return GetTagValue<FIURational>("FlashEnergy");
+            }
+            set
+            {
+                SetTagValue("FlashEnergy", value);
+            }
+        }
+
+        /// <summary>
+        /// Gets or sets the camera or input device spatial frequency table and SFR values
+        /// in the direction of image width, image height, and diagonal direction,
+        /// as specified in ISO 12233.
+        /// </summary>
+        /// <remarks>
+        /// <b>Handling of null values</b><para/>
+        /// A null value indicates, that the corresponding metadata tag is not
+        /// present in the metadata model.
+        /// Setting this property's value to a non-null reference creates the
+        /// metadata tag if necessary.
+        /// Setting this property's value to a null reference deletes the
+        /// metadata tag from the metadata model.
+        /// </remarks>
+        public byte[] SpatialFrequencyResponse
+        {
+            get
+            {
+                return GetTagArray<byte>("SpatialFrequencyResponse");
+            }
+            set
+            {
+                SetTagValueUndefined("SpatialFrequencyResponse", value);
+            }
+        }
+
+        /// <summary>
+        /// Gets or sets the number of pixels in the image width (X) direction per
+        /// FocalPlaneResolutionUnit on the camera focal plane.
+        /// </summary>
+        /// <remarks>
+        /// <b>Handling of null values</b><para/>
+        /// A null value indicates, that the corresponding metadata tag is not
+        /// present in the metadata model.
+        /// Setting this property's value to a non-null reference creates the
+        /// metadata tag if necessary.
+        /// Setting this property's value to a null reference deletes the
+        /// metadata tag from the metadata model.
+        /// </remarks>
+        public FIURational? FocalPlaneXResolution
+        {
+            get
+            {
+                return GetTagValue<FIURational>("FocalPlaneXResolution");
+            }
+            set
+            {
+                SetTagValue("FocalPlaneXResolution", value);
+            }
+        }
+
+        /// <summary>
+        /// Gets or sets the number of pixels in the image height (Y) direction per
+        /// FocalPlaneResolutionUnit on the camera focal plane.
+        /// </summary>
+        /// <remarks>
+        /// <b>Handling of null values</b><para/>
+        /// A null value indicates, that the corresponding metadata tag is not
+        /// present in the metadata model.
+        /// Setting this property's value to a non-null reference creates the
+        /// metadata tag if necessary.
+        /// Setting this property's value to a null reference deletes the
+        /// metadata tag from the metadata model.
+        /// </remarks>
+        public FIURational? FocalPlaneYResolution
+        {
+            get
+            {
+                return GetTagValue<FIURational>("FocalPlaneYResolution");
+            }
+            set
+            {
+                SetTagValue("FocalPlaneYResolution", value);
+            }
+        }
+
+        /// <summary>
+        /// Gets or sets the unit for measuring FocalPlaneXResolution and FocalPlaneYResolution.
+        /// This value is the same as the ResolutionUnit.
+        /// </summary>
+        /// <remarks>
+        /// <b>Handling of null values</b><para/>
+        /// A null value indicates, that the corresponding metadata tag is not
+        /// present in the metadata model.
+        /// Setting this property's value to a non-null reference creates the
+        /// metadata tag if necessary.
+        /// Setting this property's value to a null reference deletes the
+        /// metadata tag from the metadata model.
+        /// </remarks>
+        public ushort? FocalPlaneResolutionUnit
+        {
+            get
+            {
+                return GetTagValue<ushort>("FocalPlaneResolutionUnit");
+            }
+            set
+            {
+                SetTagValue("FocalPlaneResolutionUnit", value);
+            }
+        }
+
+        /// <summary>
+        /// Gets or sets the location of the main subject in the scene.
+        /// The value of this tag represents the pixel at the center of the main subject
+        /// relative to the left edge, prior to rotation processing as per the Rotation tag.
+        /// The first value indicates the X column number and second indicates the Y row number.
+        /// </summary>
+        /// <remarks>
+        /// <b>Handling of null values</b><para/>
+        /// A null value indicates, that the corresponding metadata tag is not
+        /// present in the metadata model.
+        /// Setting this property's value to a non-null reference creates the
+        /// metadata tag if necessary.
+        /// Setting this property's value to a null reference deletes the
+        /// metadata tag from the metadata model.
+        /// </remarks>
+        public ushort? SubjectLocation
+        {
+            get
+            {
+                return GetTagValue<ushort>("SubjectLocation");
+            }
+            set
+            {
+                SetTagValue("SubjectLocation", value);
+            }
+        }
+
+        /// <summary>
+        /// Gets or sets the exposure index selected on the camera or input device at the
+        /// time the image was captured.
+        /// </summary>
+        /// <remarks>
+        /// <b>Handling of null values</b><para/>
+        /// A null value indicates, that the corresponding metadata tag is not
+        /// present in the metadata model.
+        /// Setting this property's value to a non-null reference creates the
+        /// metadata tag if necessary.
+        /// Setting this property's value to a null reference deletes the
+        /// metadata tag from the metadata model.
+        /// </remarks>
+        public FIURational? ExposureIndex
+        {
+            get
+            {
+                return GetTagValue<FIURational>("ExposureIndex");
+            }
+            set
+            {
+                SetTagValue("ExposureIndex", value);
+            }
+        }
+
+        /// <summary>
+        /// Gets or sets the image sensor type on the camera or input device.
+        /// See remarks for further information.
+        /// </summary>
+        /// <remarks>
+        /// The following values are defined:<para/>
+        /// <list type="table">
+        ///		<listheader>
+        ///			<term>ID</term>
+        ///			<description>Description</description>
+        ///		</listheader>
+        ///		<item>
+        ///			<term>1</term>
+        ///			<description>not defined</description>
+        ///		</item>
+        ///		<item>
+        ///			<term>2</term>
+        ///			<description>one-chip color area sensor</description>
+        ///		</item>
+        ///		<item>
+        ///			<term>3</term>
+        ///			<description>two-chip color area sensor</description>
+        ///		</item>
+        ///		<item>
+        ///			<term>4</term>
+        ///			<description>three-chip color area sensor</description>
+        ///		</item>
+        ///		<item>
+        ///			<term>5</term>
+        ///			<description>color sequential area sensor</description>
+        ///		</item>
+        ///		<item>
+        ///			<term>7</term>
+        ///			<description>trilinear sensor</description>
+        ///		</item>
+        ///		<item>
+        ///			<term>8</term>
+        ///			<description>color sequential linear sensor</description>
+        ///		</item>
+        ///		<item>
+        ///			<term>other</term>
+        ///			<description>reserved</description>
+        ///		</item>
+        /// </list>
+        /// <para/>
+        /// <br/><b>Handling of null values</b><para/>
+        /// A null value indicates, that the corresponding metadata tag is not
+        /// present in the metadata model.
+        /// Setting this property's value to a non-null reference creates the
+        /// metadata tag if necessary.
+        /// Setting this property's value to a null reference deletes the
+        /// metadata tag from the metadata model.
+        /// </remarks>
+        public ushort? SensingMethod
+        {
+            get
+            {
+                return GetTagValue<ushort>("SensingMethod");
+            }
+            set
+            {
+                SetTagValue("SensingMethod", value);
+            }
+        }
+
+        /// <summary>
+        /// Gets or sets the image source. If a DSC recorded the image, this tag value of this
+        /// tag always be set to 3, indicating that the image was recorded on a DSC.
+        /// </summary>
+        /// <remarks>
+        /// <b>Handling of null values</b><para/>
+        /// A null value indicates, that the corresponding metadata tag is not
+        /// present in the metadata model.
+        /// Setting this property's value to a non-null reference creates the
+        /// metadata tag if necessary.
+        /// Setting this property's value to a null reference deletes the
+        /// metadata tag from the metadata model.
+        /// </remarks>
+        public byte? FileSource
+        {
+            get
+            {
+                return GetTagValue<byte>("FileSource");
+            }
+            set
+            {
+                SetTagValueUndefined("FileSource", value.HasValue ? new byte[] { value.Value } : null);
+            }
+        }
+
+        /// <summary>
+        /// Gets or sets the type of scene. If a DSC recorded the image, this tag value shall
+        /// always be set to 1, indicating that the image was directly photographed.
+        /// </summary>
+        /// <remarks>
+        /// <b>Handling of null values</b><para/>
+        /// A null value indicates, that the corresponding metadata tag is not
+        /// present in the metadata model.
+        /// Setting this property's value to a non-null reference creates the
+        /// metadata tag if necessary.
+        /// Setting this property's value to a null reference deletes the
+        /// metadata tag from the metadata model.
+        /// </remarks>
+        public byte? SceneType
+        {
+            get
+            {
+                return GetTagValue<byte>("SceneType");
+            }
+            set
+            {
+                SetTagValueUndefined("SceneType", value.HasValue ? new byte[] { value.Value } : null);
+            }
+        }
+
+        /// <summary>
+        /// Gets or sets the color filter array (CFA) geometric pattern of the image sensor
+        /// when a one-chip color area sensor is used. It does not apply to all sensing methods.
+        /// </summary>
+        /// <remarks>
+        /// <b>Handling of null values</b><para/>
+        /// A null value indicates, that the corresponding metadata tag is not
+        /// present in the metadata model.
+        /// Setting this property's value to a non-null reference creates the
+        /// metadata tag if necessary.
+        /// Setting this property's value to a null reference deletes the
+        /// metadata tag from the metadata model.
+        /// </remarks>
+        public byte[] CFAPattern
+        {
+            get
+            {
+                return GetTagArray<byte>("CFAPattern");
+            }
+            set
+            {
+                SetTagValueUndefined("CFAPattern", value);
+            }
+        }
+
+        /// <summary>
+        /// Gets or sets the use of special processing on image data, such as rendering geared to output.
+        /// When special processing is performed, the reader is expected to disable or minimize any
+        /// further processing. See remarks for further information.
+        /// </summary>
+        /// <remarks>
+        /// The following values are definied:<para/>
+        /// <list type="table">
+        ///		<listheader>
+        ///			<term>ID</term>
+        ///			<description>Description</description>
+        ///		</listheader>
+        ///		<item>
+        ///			<term>0</term>
+        ///			<description>normal process</description>
+        ///		</item>
+        ///		<item>
+        ///			<term>1</term>
+        ///			<description>custom process</description>
+        ///		</item>
+        ///		<item>
+        ///			<term>other</term>
+        ///			<description>reserved</description>
+        ///		</item>
+        /// </list>
+        /// <para/>
+        /// <br/><b>Handling of null values</b><para/>
+        /// A null value indicates, that the corresponding metadata tag is not
+        /// present in the metadata model.
+        /// Setting this property's value to a non-null reference creates the
+        /// metadata tag if necessary.
+        /// Setting this property's value to a null reference deletes the
+        /// metadata tag from the metadata model.
+        /// </remarks>
+        public ushort? CustomRendered
+        {
+            get
+            {
+                return GetTagValue<ushort>("CustomRendered");
+            }
+            set
+            {
+                SetTagValue("CustomRendered", value);
+            }
+        }
+
+        /// <summary>
+        /// Gets or sets the exposure mode set when the image was shot.
+        /// In auto-bracketing mode, the camera shoots a series of frames of the same scene
+        /// at different exposure settings. See remarks for further information.
+        /// </summary>
+        /// <remarks>
+        /// The following values are definied:<para/>
+        /// <list type="table">
+        ///		<listheader>
+        ///			<term>ID</term>
+        ///			<description>Description</description>
+        ///		</listheader>
+        ///		<item>
+        ///			<term>0</term>
+        ///			<description>auto exposure</description>
+        ///		</item>
+        ///		<item>
+        ///			<term>1</term>
+        ///			<description>manual exposure</description>
+        ///		</item>
+        ///		<item>
+        ///			<term>2</term>
+        ///			<description>auto bracket</description>
+        ///		</item>
+        ///		<item>
+        ///			<term>other</term>
+        ///			<description>reserved</description>
+        ///		</item>
+        /// </list>
+        /// <para/>
+        /// <br/><b>Handling of null values</b><para/>
+        /// A null value indicates, that the corresponding metadata tag is not
+        /// present in the metadata model.
+        /// Setting this property's value to a non-null reference creates the
+        /// metadata tag if necessary.
+        /// Setting this property's value to a null reference deletes the
+        /// metadata tag from the metadata model.
+        /// </remarks>
+        public ushort? ExposureMode
+        {
+            get
+            {
+                return GetTagValue<ushort>("ExposureMode");
+            }
+            set
+            {
+                SetTagValue("ExposureMode", value);
+            }
+        }
+
+        /// <summary>
+        /// Gets or sets the white balance mode set when the image was shot.
+        /// See remarks for further information.
+        /// </summary>
+        /// <remarks>
+        /// The following values are definied:<para/>
+        /// <list type="table">
+        ///		<listheader>
+        ///			<term>ID</term>
+        ///			<description>Description</description>
+        ///		</listheader>
+        ///		<item>
+        ///			<term>0</term>
+        ///			<description>auto white balance</description>
+        ///		</item>
+        ///		<item>
+        ///			<term>1</term>
+        ///			<description>manual white balance</description>
+        ///		</item>
+        ///		<item>
+        ///			<term>other</term>
+        ///			<description>reserved</description>
+        ///		</item>
+        /// </list>
+        /// <para/>
+        /// <br/><b>Handling of null values</b><para/>
+        /// A null value indicates, that the corresponding metadata tag is not
+        /// present in the metadata model.
+        /// Setting this property's value to a non-null reference creates the
+        /// metadata tag if necessary.
+        /// Setting this property's value to a null reference deletes the
+        /// metadata tag from the metadata model.
+        /// </remarks>
+        public ushort? WhiteBalance
+        {
+            get
+            {
+                return GetTagValue<ushort>("WhiteBalance");
+            }
+            set
+            {
+                SetTagValue("WhiteBalance", value);
+            }
+        }
+
+        /// <summary>
+        /// Gets or sets the digital zoom ratio when the image was shot.
+        /// If the numerator of the recorded value is 0, this indicates that digital zoom was not used.
+        /// </summary>
+        /// <remarks>
+        /// <b>Handling of null values</b><para/>
+        /// A null value indicates, that the corresponding metadata tag is not
+        /// present in the metadata model.
+        /// Setting this property's value to a non-null reference creates the
+        /// metadata tag if necessary.
+        /// Setting this property's value to a null reference deletes the
+        /// metadata tag from the metadata model.
+        /// </remarks>
+        public FIURational? DigitalZoomRatio
+        {
+            get
+            {
+                return GetTagValue<FIURational>("DigitalZoomRatio");
+            }
+            set
+            {
+                SetTagValue("DigitalZoomRatio", value);
+            }
+        }
+
+        /// <summary>
+        /// Gets or sets the equivalent focal length assuming a 35mm film camera, in mm.
+        /// A value of 0 means the focal length is unknown. Note that this tag differs
+        /// from the FocalLength tag.
+        /// </summary>
+        /// <remarks>
+        /// <b>Handling of null values</b><para/>
+        /// A null value indicates, that the corresponding metadata tag is not
+        /// present in the metadata model.
+        /// Setting this property's value to a non-null reference creates the
+        /// metadata tag if necessary.
+        /// Setting this property's value to a null reference deletes the
+        /// metadata tag from the metadata model.
+        /// </remarks>
+        public ushort? FocalLengthIn35mmFilm
+        {
+            get
+            {
+                return GetTagValue<ushort>("DigitalZoomRatio");
+            }
+            set
+            {
+                SetTagValue("DigitalZoomRatio", value);
+            }
+        }
+
+        /// <summary>
+        /// Gets or sets the type of scene that was shot.
+        /// It can also be used to record the mode in which the image was shot.
+        /// See remarks for further information.
+        /// </summary>
+        /// <remarks>
+        /// The following values are definied:<para/>
+        /// <list type="table">
+        ///		<listheader>
+        ///			<term>ID</term>
+        ///			<description>Description</description>
+        ///		</listheader>
+        ///		<item>
+        ///			<term>0</term>
+        ///			<description>standard</description>
+        ///		</item>
+        ///		<item>
+        ///			<term>1</term>
+        ///			<description>landscape</description>
+        ///		</item>
+        ///		<item>
+        ///			<term>2</term>
+        ///			<description>portrait</description>
+        ///		</item>
+        ///		<item>
+        ///			<term>3</term>
+        ///			<description>night scene</description>
+        ///		</item>
+        ///		<item>
+        ///			<term>other</term>
+        ///			<description>reserved</description>
+        ///		</item>
+        /// </list>
+        /// <para/>
+        /// <br/><b>Handling of null values</b><para/>
+        /// A null value indicates, that the corresponding metadata tag is not
+        /// present in the metadata model.
+        /// Setting this property's value to a non-null reference creates the
+        /// metadata tag if necessary.
+        /// Setting this property's value to a null reference deletes the
+        /// metadata tag from the metadata model.
+        /// </remarks>
+        public ushort? SceneCaptureType
+        {
+            get
+            {
+                return GetTagValue<ushort>("SceneCaptureType");
+            }
+            set
+            {
+                SetTagValue("SceneCaptureType", value);
+            }
+        }
+
+        /// <summary>
+        /// Gets or sets the degree of overall image gain adjustment.
+        /// See remarks for further information.
+        /// </summary>
+        /// <remarks>
+        /// The following values are definied:<para/>
+        /// <list type="table">
+        ///		<listheader>
+        ///			<term>ID</term>
+        ///			<description>Description</description>
+        ///		</listheader>
+        ///		<item>
+        ///			<term>0</term>
+        ///			<description>none</description>
+        ///		</item>
+        ///		<item>
+        ///			<term>1</term>
+        ///			<description>low gain up</description>
+        ///		</item>
+        ///		<item>
+        ///			<term>2</term>
+        ///			<description>high gain up</description>
+        ///		</item>
+        ///		<item>
+        ///			<term>3</term>
+        ///			<description>low gain down</description>
+        ///		</item>
+        ///		<item>
+        ///			<term>4</term>
+        ///			<description>high gain down</description>
+        ///		</item>
+        ///		<item>
+        ///			<term>other</term>
+        ///			<description>reserved</description>
+        ///		</item>
+        /// </list>
+        /// <para/>
+        /// <br/><b>Handling of null values</b><para/>
+        /// A null value indicates, that the corresponding metadata tag is not
+        /// present in the metadata model.
+        /// Setting this property's value to a non-null reference creates the
+        /// metadata tag if necessary.
+        /// Setting this property's value to a null reference deletes the
+        /// metadata tag from the metadata model.
+        /// </remarks>
+        public ushort? GainControl
+        {
+            get
+            {
+                return GetTagValue<ushort>("GainControl");
+            }
+            set
+            {
+                SetTagValue("GainControl", value);
+            }
+        }
+
+        /// <summary>
+        /// Gets or sets the direction of contrast processing applied by the camera
+        /// when the image was shot.
+        /// See remarks for further information.
+        /// </summary>
+        /// <remarks>
+        /// The following values are definied:<para/>
+        /// <list type="table">
+        ///		<listheader>
+        ///			<term>ID</term>
+        ///			<description>Description</description>
+        ///		</listheader>
+        ///		<item>
+        ///			<term>0</term>
+        ///			<description>normal</description>
+        ///		</item>
+        ///		<item>
+        ///			<term>1</term>
+        ///			<description>soft</description>
+        ///		</item>
+        ///		<item>
+        ///			<term>2</term>
+        ///			<description>hard</description>
+        ///		</item>
+        ///		<item>
+        ///			<term>other</term>
+        ///			<description>reserved</description>
+        ///		</item>
+        /// </list>
+        /// <para/>
+        /// <br/><b>Handling of null values</b><para/>
+        /// A null value indicates, that the corresponding metadata tag is not
+        /// present in the metadata model.
+        /// Setting this property's value to a non-null reference creates the
+        /// metadata tag if necessary.
+        /// Setting this property's value to a null reference deletes the
+        /// metadata tag from the metadata model.
+        /// </remarks>
+        public ushort? Contrast
+        {
+            get
+            {
+                return GetTagValue<ushort>("Contrast");
+            }
+            set
+            {
+                SetTagValue("Contrast", value);
+            }
+        }
+
+        /// <summary>
+        /// Gets or sets the direction of saturation processing applied by the camera
+        /// when the image was shot.
+        /// See remarks for further information.
+        /// </summary>
+        /// <remarks>
+        /// The following values are definied:<para/>
+        /// <list type="table">
+        ///		<listheader>
+        ///			<term>ID</term>
+        ///			<description>Description</description>
+        ///		</listheader>
+        ///		<item>
+        ///			<term>0</term>
+        ///			<description>normal</description>
+        ///		</item>
+        ///		<item>
+        ///			<term>1</term>
+        ///			<description>low saturation</description>
+        ///		</item>
+        ///		<item>
+        ///			<term>2</term>
+        ///			<description>high saturation</description>
+        ///		</item>
+        ///		<item>
+        ///			<term>other</term>
+        ///			<description>reserved</description>
+        ///		</item>
+        /// </list>
+        /// <para/>
+        /// <br/><b>Handling of null values</b><para/>
+        /// A null value indicates, that the corresponding metadata tag is not
+        /// present in the metadata model.
+        /// Setting this property's value to a non-null reference creates the
+        /// metadata tag if necessary.
+        /// Setting this property's value to a null reference deletes the
+        /// metadata tag from the metadata model.
+        /// </remarks>
+        public ushort? Saturation
+        {
+            get
+            {
+                return GetTagValue<ushort>("Saturation");
+            }
+            set
+            {
+                SetTagValue("Saturation", value);
+            }
+        }
+
+        /// <summary>
+        /// Gets or sets the direction of sharpness processing applied by the camera
+        /// when the image was shot.
+        /// See remarks for further information.
+        /// </summary>
+        /// <remarks>
+        /// The following values are definied:<para/>
+        /// <list type="table">
+        ///		<listheader>
+        ///			<term>ID</term>
+        ///			<description>Description</description>
+        ///		</listheader>
+        ///		<item>
+        ///			<term>0</term>
+        ///			<description>normal</description>
+        ///		</item>
+        ///		<item>
+        ///			<term>1</term>
+        ///			<description>soft</description>
+        ///		</item>
+        ///		<item>
+        ///			<term>2</term>
+        ///			<description>hard</description>
+        ///		</item>
+        ///		<item>
+        ///			<term>other</term>
+        ///			<description>reserved</description>
+        ///		</item>
+        /// </list>
+        /// <para/>
+        /// <br/><b>Handling of null values</b><para/>
+        /// A null value indicates, that the corresponding metadata tag is not
+        /// present in the metadata model.
+        /// Setting this property's value to a non-null reference creates the
+        /// metadata tag if necessary.
+        /// Setting this property's value to a null reference deletes the
+        /// metadata tag from the metadata model.
+        /// </remarks>
+        public ushort? Sharpness
+        {
+            get
+            {
+                return GetTagValue<ushort>("Sharpness");
+            }
+            set
+            {
+                SetTagValue("Sharpness", value);
+            }
+        }
+
+        /// <summary>
+        /// Gets or sets information on the picture-taking conditions of a particular camera model.
+        /// The tag is used only to indicate the picture-taking conditions in the reader.
+        /// </summary>
+        /// <remarks>
+        /// <b>Handling of null values</b><para/>
+        /// A null value indicates, that the corresponding metadata tag is not
+        /// present in the metadata model.
+        /// Setting this property's value to a non-null reference creates the
+        /// metadata tag if necessary.
+        /// Setting this property's value to a null reference deletes the
+        /// metadata tag from the metadata model.
+        /// </remarks>
+        public byte[] DeviceSettingDescription
+        {
+            get
+            {
+                return GetTagArray<byte>("DeviceSettingDescription");
+            }
+            set
+            {
+                SetTagValueUndefined("DeviceSettingDescription", value);
+            }
+        }
+
+        /// <summary>
+        /// Gets or sets the distance to the subject.
+        /// See remarks for further information.
+        /// </summary>
+        /// <remarks>
+        /// The following values are definied:<para/>
+        /// <list type="table">
+        ///		<listheader>
+        ///			<term>ID</term>
+        ///			<description>Description</description>
+        ///		</listheader>
+        ///		<item>
+        ///			<term>0</term>
+        ///			<description>unknown</description>
+        ///		</item>
+        ///		<item>
+        ///			<term>1</term>
+        ///			<description>macro</description>
+        ///		</item>
+        ///		<item>
+        ///			<term>2</term>
+        ///			<description>close view</description>
+        ///		</item>
+        ///		<item>
+        ///			<term>3</term>
+        ///			<description>distant view</description>
+        ///		</item>
+        ///		<item>
+        ///			<term>other</term>
+        ///			<description>reserved</description>
+        ///		</item>
+        /// </list>
+        /// <para/>
+        /// <br/><b>Handling of null values</b><para/>
+        /// A null value indicates, that the corresponding metadata tag is not
+        /// present in the metadata model.
+        /// Setting this property's value to a non-null reference creates the
+        /// metadata tag if necessary.
+        /// Setting this property's value to a null reference deletes the
+        /// metadata tag from the metadata model.
+        /// </remarks>
+        public ushort? SubjectDistanceRange
+        {
+            get
+            {
+                return GetTagValue<ushort>("SubjectDistanceRange");
+            }
+            set
+            {
+                SetTagValue("SubjectDistanceRange", value);
+            }
+        }
+
+        /// <summary>
+        /// Gets or sets an identifier assigned uniquely to each image.
+        /// It is recorded as an ASCII string equivalent to hexadecimal notation and 128-bit fixed length.
+        /// Constant length of 32.
+        /// </summary>
+        /// <remarks>
+        /// <b>Handling of null values</b><para/>
+        /// A null value indicates, that the corresponding metadata tag is not
+        /// present in the metadata model.
+        /// Setting this property's value to a non-null reference creates the
+        /// metadata tag if necessary.
+        /// Setting this property's value to a null reference deletes the
+        /// metadata tag from the metadata model.
+        /// </remarks>
+        public string ImageUniqueID
+        {
+            get
+            {
+                string text = GetTagText("ImageUniqueID");
+                if (!string.IsNullOrEmpty(text))
+                {
+                    text = text.Substring(0, text.Length - 1);
+                }
+                return text;
+            }
+            set
+            {
+                if (value != null)
+                {
+                    FreeImage.Resize(ref value, 32);
+                    value += '\0';
+                }
+                SetTagValue("ImageUniqueID", value);
+            }
+        }
+    }
+
+    /// <summary>
+    /// Represents a collection of all tags contained in the metadata model
+    /// <see cref="FREE_IMAGE_MDMODEL.FIMD_EXIF_GPS"/>.
+    /// </summary>
+    public class MDM_EXIF_GPS : MetadataModel
+    {
+        /// <summary>
+        /// Initializes a new instance of this class.
+        /// </summary>
+        /// <param name="dib">Handle to a FreeImage bitmap.</param>
+        public MDM_EXIF_GPS(FIBITMAP dib) : base(dib) { }
+
+        /// <summary>
+        /// Retrieves the datamodel that this instance represents.
+        /// </summary>
+        public override FREE_IMAGE_MDMODEL Model
+        {
+            get { return FREE_IMAGE_MDMODEL.FIMD_EXIF_GPS; }
+        }
+
+        /// <summary>
+        /// Gets or sets the GPS version ID. Constant length of 4.
+        /// </summary>
+        /// <remarks>
+        /// <b>Handling of null values</b><para/>
+        /// A null value indicates, that the corresponding metadata tag is not
+        /// present in the metadata model.
+        /// Setting this property's value to a non-null reference creates the
+        /// metadata tag if necessary.
+        /// Setting this property's value to a null reference deletes the
+        /// metadata tag from the metadata model.
+        /// </remarks>
+        public byte[] VersionID
+        {
+            get
+            {
+                return GetTagArray<byte>("GPSVersionID");
+            }
+            set
+            {
+                FreeImage.Resize(ref value, 4);
+                SetTagValue("GPSVersionID", value);
+            }
+        }
+
+        /// <summary>
+        /// Gets or sets a value indicating whether the <see cref="Latitude"/>
+        /// is north or south latitude.
+        /// </summary>
+        /// <remarks>
+        /// <b>Handling of null values</b><para/>
+        /// A null value indicates, that the corresponding metadata tag is not
+        /// present in the metadata model.
+        /// Setting this property's value to a non-null reference creates the
+        /// metadata tag if necessary.
+        /// Setting this property's value to a null reference deletes the
+        /// metadata tag from the metadata model.
+        /// </remarks>
+        public LatitudeType? LatitudeDirection
+        {
+            get
+            {
+                return ToLatitudeType(GetTagText("GPSLatitudeRef"));
+            }
+            set
+            {
+                SetTagValue("GPSLatitudeRef", ToString(value) + '\0');
+            }
+        }
+
+        /// <summary>
+        /// Gets or sets the latitude of the image. The latitude is expressed as three rational
+        /// values giving the degrees, minutes, and seconds, respectively. Constant length of 3.
+        /// </summary>
+        /// <remarks>
+        /// <b>Handling of null values</b><para/>
+        /// A null value indicates, that the corresponding metadata tag is not
+        /// present in the metadata model.
+        /// Setting this property's value to a non-null reference creates the
+        /// metadata tag if necessary.
+        /// Setting this property's value to a null reference deletes the
+        /// metadata tag from the metadata model.
+        /// </remarks>
+        /// <seealso cref="LatitudeDirection"/>
+        public FIURational[] Latitude
+        {
+            get
+            {
+                return GetTagArray<FIURational>("GPSLatitude");
+            }
+            set
+            {
+                FreeImage.Resize(ref value, 3);
+                SetTagValue("GPSLatitude", value);
+            }
+        }
+
+        /// <summary>
+        /// Gets or sets a value indicating whether <see cref="Longitude"/>
+        /// is east or west longitude.
+        /// </summary>
+        /// <remarks>
+        /// <b>Handling of null values</b><para/>
+        /// A null value indicates, that the corresponding metadata tag is not
+        /// present in the metadata model.
+        /// Setting this property's value to a non-null reference creates the
+        /// metadata tag if necessary.
+        /// Setting this property's value to a null reference deletes the
+        /// metadata tag from the metadata model.
+        /// </remarks>
+        public LongitudeType? LongitudeDirection
+        {
+            get
+            {
+                return ToLongitudeType(GetTagText("GPSLongitudeRef"));
+            }
+            set
+            {
+                SetTagValue("GPSLongitudeRef", ToString(value) + '\0');
+            }
+        }
+
+        /// <summary>
+        /// Gets or sets the longitude of the image. The longitude is expressed as three rational
+        /// values giving the degrees, minutes, and seconds, respectively. Constant length of 3.
+        /// </summary>
+        /// <remarks>
+        /// <b>Handling of null values</b><para/>
+        /// A null value indicates, that the corresponding metadata tag is not
+        /// present in the metadata model.
+        /// Setting this property's value to a non-null reference creates the
+        /// metadata tag if necessary.
+        /// Setting this property's value to a null reference deletes the
+        /// metadata tag from the metadata model.
+        /// </remarks>
+        /// <seealso cref="LongitudeDirection"/>
+        public FIURational[] Longitude
+        {
+            get
+            {
+                return GetTagArray<FIURational>("GPSLongitude");
+            }
+            set
+            {
+                FreeImage.Resize(ref value, 3);
+                SetTagValue("GPSLongitude", value);
+            }
+        }
+
+        /// <summary>
+        /// Gets a value indicating whether <see cref="Altitude"/> is sea level and the altitude
+        /// is above sea level. If the altitude is below sea level <see cref="Altitude"/> is
+        /// indicated as an absolute value.
+        /// </summary>
+        /// <remarks>
+        /// <b>Handling of null values</b><para/>
+        /// A null value indicates, that the corresponding metadata tag is not
+        /// present in the metadata model.
+        /// Setting this property's value to a non-null reference creates the
+        /// metadata tag if necessary.
+        /// Setting this property's value to a null reference deletes the
+        /// metadata tag from the metadata model.
+        /// </remarks>
+        public AltitudeType? AltitudeDirection
+        {
+            get
+            {
+                byte? flag = GetTagValue<byte>("GPSAltitudeRef");
+                if (flag.HasValue)
+                {
+                    switch (flag.Value)
+                    {
+                        case 0:
+                            return AltitudeType.AboveSeaLevel;
+                        case 1:
+                            return AltitudeType.BelowSeaLevel;
+                        default:
+                            return AltitudeType.Undefined;
+                    }
+                }
+                return null;
+            }
+            set
+            {
+                byte? val = null;
+                if (value.HasValue)
+                {
+                    switch (value.Value)
+                    {
+                        case AltitudeType.AboveSeaLevel:
+                            val = 0;
+                            break;
+
+                        case AltitudeType.BelowSeaLevel:
+                            val = 1;
+                            break;
+
+                        default:
+                            val = 2;
+                            break;
+                    }
+                }
+                SetTagValue("GPSAltitudeRef", val);
+            }
+        }
+
+        /// <summary>
+        /// Gets or sets the altitude based on the reference in <see cref="AltitudeDirection"/>.
+        /// Altitude is expressed as one rational value. The reference unit is meters.
+        /// </summary>
+        /// <remarks>
+        /// <b>Handling of null values</b><para/>
+        /// A null value indicates, that the corresponding metadata tag is not
+        /// present in the metadata model.
+        /// Setting this property's value to a non-null reference creates the
+        /// metadata tag if necessary.
+        /// Setting this property's value to a null reference deletes the
+        /// metadata tag from the metadata model.
+        /// </remarks>
+        public FIURational? Altitude
+        {
+            get
+            {
+                return GetTagValue<FIURational>("GPSAltitude");
+            }
+            set
+            {
+                SetTagValue("GPSAltitude", value);
+            }
+        }
+
+        /// <summary>
+        /// Gets or sets the sign of the <see cref="SignedAltitude"/>.
+        /// </summary>
+        /// <remarks>
+        /// This is a derived property. There is no metadata tag directly associated
+        /// with this property value.
+        /// <para/>
+        /// <br/><b>Handling of null values</b><para/>
+        /// A null value indicates, that the corresponding metadata tag is not
+        /// present in the metadata model.
+        /// Setting this property's value to a non-null reference creates the
+        /// metadata tag if necessary.
+        /// Setting this property's value to a null reference deletes the
+        /// metadata tag from the metadata model.
+        /// </remarks>
+        public int? AltitudeSign
+        {
+            get
+            {
+                AltitudeType? seaLevel = AltitudeDirection;
+                if (seaLevel.HasValue)
+                {
+                    return (seaLevel.Value == AltitudeType.BelowSeaLevel) ? -1 : 1;
+                }
+                return null;
+            }
+            set
+            {
+                if (value.HasValue)
+                {
+                    AltitudeDirection = value.Value >= 0 ? AltitudeType.AboveSeaLevel : AltitudeType.BelowSeaLevel;
+                }
+                else
+                {
+                    AltitudeDirection = null;
+                }
+            }
+        }
+
+        /// <summary>
+        /// Gets or sets the signed altitude.
+        /// Altitude is expressed as one rational value. The reference unit is meters.
+        /// </summary>
+        /// <exception cref="OverflowException">
+        /// Altitude is too large to fit into a FIRational.
+        /// </exception>
+        /// <remarks>
+        /// This is a derived property. There is no metadata tag directly associated
+        /// with this property value.
+        /// <para/>
+        /// <br/><b>Handling of null values</b><para/>
+        /// A null value indicates, that the corresponding metadata tag is not
+        /// present in the metadata model.
+        /// Setting this property's value to a non-null reference creates the
+        /// metadata tag if necessary.
+        /// Setting this property's value to a null reference deletes the
+        /// metadata tag from the metadata model.
+        /// </remarks>
+        public FIRational? SignedAltitude
+        {
+            get
+            {
+                FIRational? result = null;
+                FIURational? altitude = Altitude;
+                if (altitude.HasValue)
+                {
+                    int sign = AltitudeSign ?? 1;
+                    if (((int)altitude.Value.Numerator < 0) || ((int)altitude.Value.Denominator < 0))
+                        throw new OverflowException();
+                    result = new FIRational((int)altitude.Value.Numerator * sign, (int)altitude.Value.Denominator);
+                }
+                return result;
+            }
+            set
+            {
+                FIURational? val = null;
+                if (value.HasValue)
+                {
+                    if (value.Value < 0)
+                    {
+                        AltitudeSign = -1;
+                        value = -value.Value;
+                    }
+                    else
+                    {
+                        AltitudeSign = 1;
+                    }
+                    val = new FIURational((uint)value.Value.Numerator, (uint)value.Value.Denominator);
+                }
+                Altitude = val;
+            }
+        }
+
+
+        /// <summary>
+        /// Gets or sets the time as UTC (Coordinated Universal Time). Constant length of 3.
+        /// </summary>
+        /// <remarks>
+        /// <b>Handling of null values</b><para/>
+        /// A null value indicates, that the corresponding metadata tag is not
+        /// present in the metadata model.
+        /// Setting this property's value to a non-null reference creates the
+        /// metadata tag if necessary.
+        /// Setting this property's value to a null reference deletes the
+        /// metadata tag from the metadata model.
+        /// </remarks>
+        public TimeSpan? TimeStamp
+        {
+            get
+            {
+                FIURational[] stamp = GetTagArray<FIURational>("GPSTimeStamp");
+                if ((stamp == null) || stamp.Length != 3)
+                {
+                    return null;
+                }
+                else
+                {
+                    return new TimeSpan((int)stamp[0], (int)stamp[1], (int)stamp[2]);
+                }
+            }
+            set
+            {
+                FIURational[] stamp = null;
+                if (value.HasValue)
+                {
+                    TimeSpan span = value.Value;
+                    stamp = new FIURational[3];
+                    stamp[0] = span.Hours;
+                    stamp[1] = span.Minutes;
+                    stamp[2] = span.Seconds;
+                }
+                SetTagValue("GPSTimeStamp", stamp);
+            }
+        }
+
+        /// <summary>
+        /// Gets or sets the GPS satellites used for measurements. This tag can be used to describe
+        /// the number of satellites, their ID number, angle of elevation, azimuth, SNR and other
+        /// information in ASCII notation. The format is not specified.
+        /// </summary>
+        /// <remarks>
+        /// <b>Handling of null values</b><para/>
+        /// A null value indicates, that the corresponding metadata tag is not
+        /// present in the metadata model.
+        /// Setting this property's value to a non-null reference creates the
+        /// metadata tag if necessary.
+        /// Setting this property's value to a null reference deletes the
+        /// metadata tag from the metadata model.
+        /// </remarks>
+        public string Satellites
+        {
+            get
+            {
+                string result = GetTagText("GPSSatellites");
+                if (!string.IsNullOrEmpty(result))
+                {
+                    result = result.Substring(0, result.Length - 1);
+                }
+                return result;
+            }
+            set
+            {
+                if (value != null)
+                {
+                    value += '\0';
+                }
+                SetTagValue("GPSTimeStamp", value);
+            }
+        }
+
+        /// <summary>
+        /// Gets or sets a value indicating the status of the GPS receiver when the image was recorded.
+        /// <b>true</b> indicates measurement was in progress;
+        /// <b>false</b> indicates measurement was Interoperability.
+        /// </summary>
+        /// <remarks>
+        /// <b>Handling of null values</b><para/>
+        /// A null value indicates, that the corresponding metadata tag is not
+        /// present in the metadata model.
+        /// Setting this property's value to a non-null reference creates the
+        /// metadata tag if necessary.
+        /// Setting this property's value to a null reference deletes the
+        /// metadata tag from the metadata model.
+        /// </remarks>
+        public bool? Status
+        {
+            get
+            {
+                string text = GetTagText("GPSStatus");
+                return string.IsNullOrEmpty(text) ? default(bool?) : text[0] == 'A';
+            }
+            set
+            {
+                SetTagValue("GPSStatus", value.HasValue ? (value.Value ? "A\0" : "V\0") : null);
+            }
+        }
+
+        /// <summary>
+        /// Gets or sets a value indicating the GPS measurement mode.
+        /// <b>true</b> indicates three-dimensional measurement;
+        /// <b>false</b> indicated two-dimensional measurement was in progress.
+        /// </summary>
+        /// <remarks>
+        /// <b>Handling of null values</b><para/>
+        /// A null value indicates, that the corresponding metadata tag is not
+        /// present in the metadata model.
+        /// Setting this property's value to a non-null reference creates the
+        /// metadata tag if necessary.
+        /// Setting this property's value to a null reference deletes the
+        /// metadata tag from the metadata model.
+        /// </remarks>
+        public bool? MeasureMode3D
+        {
+            get
+            {
+                string text = GetTagText("GPSMeasureMode");
+                return string.IsNullOrEmpty(text) ? default(bool?) : text[0] == '3';
+            }
+            set
+            {
+                SetTagValue("GPSMeasureMode", value.HasValue ? (value.Value ? "3\0" : "2\0") : null);
+            }
+        }
+
+        /// <summary>
+        /// Gets or sets the GPS DOP (data degree of precision). An HDOP value is written during
+        /// two-dimensional measurement, and PDOP during three-dimensional measurement.
+        /// </summary>
+        /// <remarks>
+        /// <b>Handling of null values</b><para/>
+        /// A null value indicates, that the corresponding metadata tag is not
+        /// present in the metadata model.
+        /// Setting this property's value to a non-null reference creates the
+        /// metadata tag if necessary.
+        /// Setting this property's value to a null reference deletes the
+        /// metadata tag from the metadata model.
+        /// </remarks>
+        public FIURational? DOP
+        {
+            get
+            {
+                return GetTagValue<FIURational>("GPSDOP");
+            }
+            set
+            {
+                SetTagValue("GPSDOP", value);
+            }
+        }
+
+        /// <summary>
+        /// Gets or sets the unit used to express the GPS receiver <see cref="Speed"/> of movement.
+        /// </summary>
+        /// <remarks>
+        /// <b>Handling of null values</b><para/>
+        /// A null value indicates, that the corresponding metadata tag is not
+        /// present in the metadata model.
+        /// Setting this property's value to a non-null reference creates the
+        /// metadata tag if necessary.
+        /// Setting this property's value to a null reference deletes the
+        /// metadata tag from the metadata model.
+        /// </remarks>
+        /// <seealso cref="Speed"/>
+        public VelocityUnit? SpeedUnit
+        {
+            get
+            {
+                return ToUnitType(GetTagText("GPSSpeedRef"));
+            }
+            set
+            {
+                SetTagValue("GPSSpeedRef", ToString(value) + '\0');
+            }
+        }
+
+        /// <summary>
+        /// Gets or sets the speed of GPS receiver movement.
+        /// </summary>
+        /// <remarks>
+        /// <b>Handling of null values</b><para/>
+        /// A null value indicates, that the corresponding metadata tag is not
+        /// present in the metadata model.
+        /// Setting this property's value to a non-null reference creates the
+        /// metadata tag if necessary.
+        /// Setting this property's value to a null reference deletes the
+        /// metadata tag from the metadata model.
+        /// </remarks>
+        /// <seealso cref="SpeedUnit"/>
+        public FIURational? Speed
+        {
+            get
+            {
+                return GetTagValue<FIURational>("GPSSpeed");
+            }
+            set
+            {
+                SetTagValue("GPSSpeed", value);
+            }
+        }
+
+        /// <summary>
+        /// Gets or sets the reference for giving the direction of GPS receiver movement.
+        /// </summary>
+        /// <remarks>
+        /// <b>Handling of null values</b><para/>
+        /// A null value indicates, that the corresponding metadata tag is not
+        /// present in the metadata model.
+        /// Setting this property's value to a non-null reference creates the
+        /// metadata tag if necessary.
+        /// Setting this property's value to a null reference deletes the
+        /// metadata tag from the metadata model.
+        /// </remarks>
+        /// <seealso cref="Track"/>
+        public DirectionReference? TrackDirectionReference
+        {
+            get
+            {
+                return ToDirectionType(GetTagText("GPSTrackRef"));
+            }
+            set
+            {
+                SetTagValue("GPSTrackRef", ToString(value) + '\0');
+            }
+        }
+
+        /// <summary>
+        /// Gets or sets the direction of GPS receiver movement.
+        /// The range of values is from 0.00 to 359.99.
+        /// </summary>
+        /// <remarks>
+        /// <b>Handling of null values</b><para/>
+        /// A null value indicates, that the corresponding metadata tag is not
+        /// present in the metadata model.
+        /// Setting this property's value to a non-null reference creates the
+        /// metadata tag if necessary.
+        /// Setting this property's value to a null reference deletes the
+        /// metadata tag from the metadata model.
+        /// </remarks>
+        /// <seealso cref="TrackDirectionReference"/>
+        public FIURational? Track
+        {
+            get
+            {
+                return GetTagValue<FIURational>("GPSTrack");
+            }
+            set
+            {
+                SetTagValue("GPSTrack", value);
+            }
+        }
+
+        /// <summary>
+        /// Gets or sets the reference for giving the direction of GPS receiver movement.
+        /// </summary>
+        /// <remarks>
+        /// <b>Handling of null values</b><para/>
+        /// A null value indicates, that the corresponding metadata tag is not
+        /// present in the metadata model.
+        /// Setting this property's value to a non-null reference creates the
+        /// metadata tag if necessary.
+        /// Setting this property's value to a null reference deletes the
+        /// metadata tag from the metadata model.
+        /// </remarks>
+        /// <seealso cref="ImageDirection"/>
+        public DirectionReference? ImageDirectionReference
+        {
+            get
+            {
+                return ToDirectionType(GetTagText("GPSImgDirectionRef"));
+            }
+            set
+            {
+                SetTagValue("GPSImgDirectionRef", ToString(value) + '\0');
+            }
+        }
+
+        /// <summary>
+        /// Gets or sets the direction of the image when it was captured.
+        /// The range of values is from 0.00 to 359.99.
+        /// </summary>
+        /// <remarks>
+        /// <b>Handling of null values</b><para/>
+        /// A null value indicates, that the corresponding metadata tag is not
+        /// present in the metadata model.
+        /// Setting this property's value to a non-null reference creates the
+        /// metadata tag if necessary.
+        /// Setting this property's value to a null reference deletes the
+        /// metadata tag from the metadata model.
+        /// </remarks>
+        /// <seealso cref="ImageDirectionReference"/>
+        public FIURational? ImageDirection
+        {
+            get
+            {
+                return GetTagValue<FIURational>("GPSImgDirection");
+            }
+            set
+            {
+                SetTagValue("GPSImgDirection", value);
+            }
+        }
+
+        /// <summary>
+        /// Gets or sets the geodetic survey data used by the GPS receiver. If the survey data
+        /// is restricted to Japan, the value of this tag is 'TOKYO' or 'WGS-84'.
+        /// </summary>
+        /// <remarks>
+        /// <b>Handling of null values</b><para/>
+        /// A null value indicates, that the corresponding metadata tag is not
+        /// present in the metadata model.
+        /// Setting this property's value to a non-null reference creates the
+        /// metadata tag if necessary.
+        /// Setting this property's value to a null reference deletes the
+        /// metadata tag from the metadata model.
+        /// </remarks>
+        public string MapDatum
+        {
+            get
+            {
+                string result = GetTagText("GPSMapDatum");
+                if (!string.IsNullOrEmpty(result))
+                {
+                    result = result.Substring(0, result.Length - 1);
+                }
+                return result;
+            }
+            set
+            {
+                SetTagValue("GPSMapDatum", value + '\0');
+            }
+        }
+
+        /// <summary>
+        /// Gets or sets a value indicating whether the destination point
+        /// is north or south latitude.
+        /// </summary>
+        /// <remarks>
+        /// <b>Handling of null values</b><para/>
+        /// A null value indicates, that the corresponding metadata tag is not
+        /// present in the metadata model.
+        /// Setting this property's value to a non-null reference creates the
+        /// metadata tag if necessary.
+        /// Setting this property's value to a null reference deletes the
+        /// metadata tag from the metadata model.
+        /// </remarks>
+        /// <seealso cref="Latitude"/>
+        public LatitudeType? DestinationLatitudeDirection
+        {
+            get
+            {
+                return ToLatitudeType(GetTagText("GPSDestLatitudeRef"));
+            }
+            set
+            {
+                SetTagValue("GPSDestLatitudeRef", ToString(value) + '\0');
+            }
+        }
+
+        /// <summary>
+        /// Gets or sets the latitude of the destination point. The latitude is expressed as three rational
+        /// values giving the degrees, minutes, and seconds, respectively. Constant length of 3.
+        /// </summary>
+        /// <remarks>
+        /// <b>Handling of null values</b><para/>
+        /// A null value indicates, that the corresponding metadata tag is not
+        /// present in the metadata model.
+        /// Setting this property's value to a non-null reference creates the
+        /// metadata tag if necessary.
+        /// Setting this property's value to a null reference deletes the
+        /// metadata tag from the metadata model.
+        /// </remarks>
+        /// <seealso cref="DestinationLatitudeDirection"/>
+        public FIURational[] DestinationLatitude
+        {
+            get
+            {
+                return GetTagArray<FIURational>("GPSDestLatitude");
+            }
+            set
+            {
+                FreeImage.Resize(ref value, 3);
+                SetTagValue("GPSDestLatitude", value);
+            }
+        }
+
+        /// <summary>
+        /// Gets or sets a value indicating whether the destination point
+        /// is east or west longitude.
+        /// </summary>
+        /// <remarks>
+        /// <b>Handling of null values</b><para/>
+        /// A null value indicates, that the corresponding metadata tag is not
+        /// present in the metadata model.
+        /// Setting this property's value to a non-null reference creates the
+        /// metadata tag if necessary.
+        /// Setting this property's value to a null reference deletes the
+        /// metadata tag from the metadata model.
+        /// </remarks>
+        /// <seealso cref="Latitude"/>
+        public LongitudeType? DestinationLongitudeDirection
+        {
+            get
+            {
+                return ToLongitudeType(GetTagText("GPSDestLongitudeRef"));
+            }
+            set
+            {
+                SetTagValue("GPSDestLongitudeRef", ToString(value) + '\0');
+            }
+        }
+
+        /// <summary>
+        /// Gets or sets the longitude of the destination point. The longitude is expressed as three rational
+        /// values giving the degrees, minutes, and seconds, respectively. Constant length of 3.
+        /// </summary>
+        /// <remarks>
+        /// <b>Handling of null values</b><para/>
+        /// A null value indicates, that the corresponding metadata tag is not
+        /// present in the metadata model.
+        /// Setting this property's value to a non-null reference creates the
+        /// metadata tag if necessary.
+        /// Setting this property's value to a null reference deletes the
+        /// metadata tag from the metadata model.
+        /// </remarks>
+        public FIURational[] DestinationLongitude
+        {
+            get
+            {
+                return GetTagArray<FIURational>("GPSDestLongitude");
+            }
+            set
+            {
+                FreeImage.Resize(ref value, 3);
+                SetTagValue("GPSDestLongitude", value);
+            }
+        }
+
+        /// <summary>
+        /// Gets or sets the reference used for giving the bearing to the destination point.
+        /// </summary>
+        /// <remarks>
+        /// <b>Handling of null values</b><para/>
+        /// A null value indicates, that the corresponding metadata tag is not
+        /// present in the metadata model.
+        /// Setting this property's value to a non-null reference creates the
+        /// metadata tag if necessary.
+        /// Setting this property's value to a null reference deletes the
+        /// metadata tag from the metadata model.
+        /// </remarks>
+        /// <seealso cref="DestinationBearing"/>
+        public DirectionReference? DestinationDirectionReference
+        {
+            get
+            {
+                return ToDirectionType(GetTagText("GPSDestBearingRef"));
+            }
+            set
+            {
+                SetTagValue("GPSDestBearingRef", ToString(value) + '\0');
+            }
+        }
+
+        /// <summary>
+        /// Gets or sets the bearing to the destination point.
+        /// The range of values is from 0.00 to 359.99.
+        /// </summary>
+        /// <remarks>
+        /// <b>Handling of null values</b><para/>
+        /// A null value indicates, that the corresponding metadata tag is not
+        /// present in the metadata model.
+        /// Setting this property's value to a non-null reference creates the
+        /// metadata tag if necessary.
+        /// Setting this property's value to a null reference deletes the
+        /// metadata tag from the metadata model.
+        /// </remarks>
+        /// <seealso cref="DestinationDirectionReference"/>
+        public FIURational? DestinationBearing
+        {
+            get
+            {
+                return GetTagValue<FIURational>("GPSDestBearing");
+            }
+            set
+            {
+                SetTagValue("GPSDestBearing", value);
+            }
+        }
+
+        /// <summary>
+        /// Gets or sets the unit used to express the distance to the destination point.
+        /// </summary>
+        /// <remarks>
+        /// <b>Handling of null values</b><para/>
+        /// A null value indicates, that the corresponding metadata tag is not
+        /// present in the metadata model.
+        /// Setting this property's value to a non-null reference creates the
+        /// metadata tag if necessary.
+        /// Setting this property's value to a null reference deletes the
+        /// metadata tag from the metadata model.
+        /// </remarks>
+        /// <seealso cref="DestinationBearing"/>
+        public VelocityUnit? DestinationUnit
+        {
+            get
+            {
+                return ToUnitType(GetTagText("GPSDestDistanceRef"));
+            }
+            set
+            {
+                SetTagValue("GPSDestDistanceRef", ToString(value) + '\0');
+            }
+        }
+
+        /// <summary>
+        /// Gets or sets a character string recording the name of the method used
+        /// for location finding. The first byte indicates the character code used,
+        /// and this is followed by the name of the method. Since the Type is not ASCII,
+        /// NULL termination is not necessary.
+        /// </summary>
+        /// <remarks>
+        /// <b>Handling of null values</b><para/>
+        /// A null value indicates, that the corresponding metadata tag is not
+        /// present in the metadata model.
+        /// Setting this property's value to a non-null reference creates the
+        /// metadata tag if necessary.
+        /// Setting this property's value to a null reference deletes the
+        /// metadata tag from the metadata model.
+        /// </remarks>
+        public byte[] ProcessingMethod
+        {
+            get
+            {
+                return GetTagArray<byte>("GPSProcessingMethod");
+            }
+            set
+            {
+                SetTagValue("GPSProcessingMethod", value);
+            }
+        }
+
+        /// <summary>
+        /// Gets or sets a character string recording the name of the GPS area.
+        /// The first byte indicates the character code used, and this is followed by
+        /// the name of the GPS area. Since the Type is not ASCII, NULL termination is
+        /// not necessary. 
+        /// </summary>
+        /// <remarks>
+        /// <b>Handling of null values</b><para/>
+        /// A null value indicates, that the corresponding metadata tag is not
+        /// present in the metadata model.
+        /// Setting this property's value to a non-null reference creates the
+        /// metadata tag if necessary.
+        /// Setting this property's value to a null reference deletes the
+        /// metadata tag from the metadata model.
+        /// </remarks>
+        public byte[] AreaInformation
+        {
+            get
+            {
+                return GetTagArray<byte>("GPSAreaInformation");
+            }
+            set
+            {
+                SetTagValue("GPSAreaInformation", value);
+            }
+        }
+
+        /// <summary>
+        /// Gets or sets date and time information relative to UTC (Coordinated Universal Time). 
+        /// </summary>
+        /// <remarks>
+        /// This is a derived property. There is no metadata tag directly associated
+        /// with this property value.
+        /// <para/>
+        /// <br/><b>Handling of null values</b><para/>
+        /// A null value indicates, that the corresponding metadata tag is not
+        /// present in the metadata model.
+        /// Setting this property's value to a non-null reference creates the
+        /// metadata tag if necessary.
+        /// Setting this property's value to a null reference deletes the
+        /// metadata tag from the metadata model.
+        /// </remarks>
+        public DateTime? DateTimeStamp
+        {
+            get
+            {
+                DateTime? date = DateStamp;
+                TimeSpan? time = TimeStamp;
+                if ((date == null) && (time == null))
+                {
+                    return null;
+                }
+                else
+                {
+                    if (date == null)
+                    {
+                        date = DateTime.MinValue;
+                    }
+                    if (time == null)
+                    {
+                        time = TimeSpan.MinValue;
+                    }
+                    return date.Value.Add(time.Value);
+                }
+            }
+            set
+            {
+                if (value.HasValue)
+                {
+                    DateStamp = value.Value.Date;
+                    TimeStamp = value.Value.TimeOfDay;
+                }
+                else
+                {
+                    DateStamp = null;
+                    TimeStamp = null;
+                }
+            }
+        }
+
+        /// <summary>
+        /// Gets or sets date information relative to UTC (Coordinated Universal Time).
+        /// </summary>
+        /// <remarks>
+        /// <b>Handling of null values</b><para/>
+        /// A null value indicates, that the corresponding metadata tag is not
+        /// present in the metadata model.
+        /// Setting this property's value to a non-null reference creates the
+        /// metadata tag if necessary.
+        /// Setting this property's value to a null reference deletes the
+        /// metadata tag from the metadata model.
+        /// </remarks>
+        public DateTime? DateStamp
+        {
+            get
+            {
+                string stamp = GetTagText("GPSDateStamp");
+                if (stamp != null)
+                {
+                    try
+                    {
+                        return DateTime.ParseExact(stamp, "yyyy:MM:dd\0", null);
+                    }
+                    catch
+                    {
+                    }
+                }
+                return null;
+            }
+            set
+            {
+                string val = null;
+                if (value.HasValue)
+                {
+                    try
+                    {
+                        val = value.Value.ToString("yyyy:MM:dd\0");
+                    }
+                    catch
+                    {
+                    }
+                }
+                SetTagValue("GPSDateStamp", val);
+            }
+        }
+
+        /// <summary>
+        /// Gets or sets a value indicating whether differential correction was applied to
+        /// the GPS receiver. 
+        /// </summary>
+        /// <remarks>
+        /// <b>Handling of null values</b><para/>
+        /// A null value indicates, that the corresponding metadata tag is not
+        /// present in the metadata model.
+        /// Setting this property's value to a non-null reference creates the
+        /// metadata tag if necessary.
+        /// Setting this property's value to a null reference deletes the
+        /// metadata tag from the metadata model.
+        /// </remarks>
+        public bool? IsDifferential
+        {
+            get
+            {
+                ushort? value = GetTagValue<ushort>("GPSDifferential");
+                return value.HasValue ? (value != 0) : (default(bool?));
+            }
+            set
+            {
+                SetTagValue("GPSDifferential", value.HasValue ? (object)(value.Value ? (ushort)1 : (ushort)0) : (null));
+            }
+        }
+    }
+
+    /// <summary>
+    /// Represents a collection of all tags contained in the metadata model
+    /// <see cref="FREE_IMAGE_MDMODEL.FIMD_EXIF_INTEROP"/>.
+    /// </summary>
+    public class MDM_INTEROP : MetadataModel
+    {
+        /// <summary>
+        /// Initializes a new instance of this class.
+        /// </summary>
+        /// <param name="dib">Handle to a FreeImage bitmap.</param>
+        public MDM_INTEROP(FIBITMAP dib) : base(dib) { }
+
+        /// <summary>
+        /// Retrieves the datamodel that this instance represents.
+        /// </summary>
+        public override FREE_IMAGE_MDMODEL Model
+        {
+            get { return FREE_IMAGE_MDMODEL.FIMD_EXIF_INTEROP; }
+        }
+
+        /// <summary>
+        /// Gets or sets the identification of the Interoperability rule.
+        /// </summary>
+        /// <remarks>
+        /// <b>Handling of null values</b><para/>
+        /// A null value indicates, that the corresponding metadata tag is not
+        /// present in the metadata model.
+        /// Setting this property's value to a non-null reference creates the
+        /// metadata tag if necessary.
+        /// Setting this property's value to a null reference deletes the
+        /// metadata tag from the metadata model.
+        /// </remarks>
+        public InteroperabilityMode? Identification
+        {
+            get
+            {
+                return ToInteroperabilityType(GetTagText("InteroperabilityIndex"));
+            }
+            set
+            {
+                SetTagValue("InteroperabilityIndex", ToString(value) + '\0');
+            }
+        }
+    }
+
+    /// <summary>
+    /// Represents a collection of all tags contained in the metadata model
+    /// <see cref="FREE_IMAGE_MDMODEL.FIMD_EXIF_MAIN"/>.
+    /// <para/>
+    /// <b>This class is obsolete. Use class <see cref="MDM_EXIF_MAIN"/> instead.</b>
+    /// </summary>
+    [Obsolete("To be removed in future releases. Use MDM_EXIF_MAIN instead.")]
+    public class MDM_MAIN : MDM_EXIF_MAIN
+    {
+        /// <summary>
+        /// Initializes a new instance of this class.
+        /// </summary>
+        /// <param name="dib">Handle to a FreeImage bitmap.</param>
+        public MDM_MAIN(FIBITMAP dib) : base(dib) { }
+    }
+
+    /// <summary>
+    /// Represents a collection of all tags contained in the metadata model
+    /// <see cref="FREE_IMAGE_MDMODEL.FIMD_EXIF_MAIN"/>.
+    /// </summary>
+    public class MDM_EXIF_MAIN : MetadataModel
+    {
+        /// <summary>
+        /// Initializes a new instance of this class.
+        /// </summary>
+        /// <param name="dib">Handle to a FreeImage bitmap.</param>
+        public MDM_EXIF_MAIN(FIBITMAP dib) : base(dib) { }
+
+        /// <summary>
+        /// Retrieves the datamodel that this instance represents.
+        /// </summary>
+        public override FREE_IMAGE_MDMODEL Model
+        {
+            get { return FREE_IMAGE_MDMODEL.FIMD_EXIF_MAIN; }
+        }
+
+        /// <summary>
+        /// Gets or sets the number of columns of image data, equal to the number
+        /// of pixels per row. In JPEG compressed data a JPEG marker is used
+        /// instead of this tag.
+        /// </summary>
+        /// <remarks>
+        /// <b>Handling of null values</b><para/>
+        /// A null value indicates, that the corresponding metadata tag is not
+        /// present in the metadata model.
+        /// Setting this property's value to a non-null reference creates the
+        /// metadata tag if necessary.
+        /// Setting this property's value to a null reference deletes the
+        /// metadata tag from the metadata model.
+        /// </remarks>
+        public uint? ImageWidth
+        {
+            get
+            {
+                return GetUInt32Value("ImageWidth");
+            }
+            set
+            {
+                RemoveTag("ImageWidth");
+                if (value.HasValue)
+                {
+                    SetTagValue("ImageWidth", value);
+                }
+            }
+        }
+
+        /// <summary>
+        /// Gets or sets number of rows of image data. In JPEG compressed data a JPEG marker
+        /// is used instead of this tag.
+        /// </summary>
+        /// <remarks>
+        /// <b>Handling of null values</b><para/>
+        /// A null value indicates, that the corresponding metadata tag is not
+        /// present in the metadata model.
+        /// Setting this property's value to a non-null reference creates the
+        /// metadata tag if necessary.
+        /// Setting this property's value to a null reference deletes the
+        /// metadata tag from the metadata model.
+        /// </remarks>
+        public uint? ImageHeight
+        {
+            get
+            {
+                return GetUInt32Value("ImageLength");
+            }
+            set
+            {
+                RemoveTag("ImageLength");
+                if (value.HasValue)
+                {
+                    SetTagValue("ImageLength", value);
+                }
+            }
+        }
+
+        /// <summary>
+        /// Gets or sets number of bits per image component. In this standard
+        /// each component of the image is 8 bits, so the value for this tag is 8.
+        /// Constant length of 3.
+        /// </summary>
+        /// <remarks>
+        /// <b>Handling of null values</b><para/>
+        /// A null value indicates, that the corresponding metadata tag is not
+        /// present in the metadata model.
+        /// Setting this property's value to a non-null reference creates the
+        /// metadata tag if necessary.
+        /// Setting this property's value to a null reference deletes the
+        /// metadata tag from the metadata model.
+        /// </remarks>
+        public ushort[] BitsPerSample
+        {
+            get
+            {
+                return GetTagArray<ushort>("BitsPerSample");
+            }
+            set
+            {
+                FreeImage.Resize(ref value, 3);
+                SetTagValue("BitsPerSample", value);
+            }
+        }
+
+        /// <summary>
+        /// Gets or sets compression scheme used for the image data. When a primary image
+        /// is JPEG compressed, this designation is not necessary and is omitted.
+        /// When thumbnails use JPEG compression, this tag value is set to 6.
+        /// </summary>
+        /// <remarks>
+        /// <b>Handling of null values</b><para/>
+        /// A null value indicates, that the corresponding metadata tag is not
+        /// present in the metadata model.
+        /// Setting this property's value to a non-null reference creates the
+        /// metadata tag if necessary.
+        /// Setting this property's value to a null reference deletes the
+        /// metadata tag from the metadata model.
+        /// </remarks>
+        public ushort? Compression
+        {
+            get
+            {
+                return GetTagValue<ushort>("Compression");
+            }
+            set
+            {
+                SetTagValue("Compression", value);
+            }
+        }
+
+        /// <summary>
+        /// Gets or sets pixel composition. In JPEG compressed data a JPEG marker is
+        /// used instead of this tag. See remarks for further information.
+        /// </summary>
+        /// <remarks>
+        /// The following values are definied:<para/>
+        /// <list type="table">
+        ///		<listheader>
+        ///			<term>ID</term>
+        ///			<description>Description</description>
+        ///		</listheader>
+        ///		<item>
+        ///			<term>2</term>
+        ///			<description>RGB</description>
+        ///		</item>
+        ///		<item>
+        ///			<term>6</term>
+        ///			<description>YCbCr</description>
+        ///		</item>
+        ///		<item>
+        ///			<term>other</term>
+        ///			<description>reserved</description>
+        ///		</item>
+        /// </list>
+        /// <para/>
+        /// <br/><b>Handling of null values</b><para/>
+        /// A null value indicates, that the corresponding metadata tag is not
+        /// present in the metadata model.
+        /// Setting this property's value to a non-null reference creates the
+        /// metadata tag if necessary.
+        /// Setting this property's value to a null reference deletes the
+        /// metadata tag from the metadata model.
+        /// </remarks>
+        public ushort? PhotometricInterpretation
+        {
+            get
+            {
+                return GetTagValue<ushort>("PhotometricInterpretation");
+            }
+            set
+            {
+                SetTagValue("PhotometricInterpretation", value);
+            }
+        }
+
+        /// <summary>
+        /// Gets or sets the image orientation viewed in terms of rows and columns.
+        /// </summary>
+        /// <remarks>
+        /// <b>Handling of null values</b><para/>
+        /// A null value indicates, that the corresponding metadata tag is not
+        /// present in the metadata model.
+        /// Setting this property's value to a non-null reference creates the
+        /// metadata tag if necessary.
+        /// Setting this property's value to a null reference deletes the
+        /// metadata tag from the metadata model.
+        /// </remarks>
+        public ExifImageOrientation? Orientation
+        {
+            get
+            {
+                return (ExifImageOrientation?)GetTagValue<ushort>("Orientation");
+            }
+            set
+            {
+                SetTagValue("Orientation", (ushort?)value);
+            }
+        }
+
+        /// <summary>
+        /// Gets or sets the number of components per pixel. Since this standard applies
+        /// to RGB and YCbCr images, the value set for this tag is 3. In JPEG compressed
+        /// data a JPEG marker is used instead of this tag.
+        /// </summary>
+        /// <remarks>
+        /// <b>Handling of null values</b><para/>
+        /// A null value indicates, that the corresponding metadata tag is not
+        /// present in the metadata model.
+        /// Setting this property's value to a non-null reference creates the
+        /// metadata tag if necessary.
+        /// Setting this property's value to a null reference deletes the
+        /// metadata tag from the metadata model.
+        /// </remarks>
+        public ushort? SamplesPerPixel
+        {
+            get
+            {
+                return GetTagValue<ushort>("SamplesPerPixel");
+            }
+            set
+            {
+                SetTagValue("SamplesPerPixel", value);
+            }
+        }
+
+        /// <summary>
+        /// Gets or sets a value that indicates whether pixel components are recorded in
+        /// chunky or planar format. In JPEG compressed files a JPEG marker is used instead
+        /// of this tag. If this field does not exist, the TIFF default of 1 (chunky) is assumed.
+        /// See remarks for further information.
+        /// </summary>
+        /// <remarks>
+        /// The following values are definied:<para/>
+        /// <list type="table">
+        ///		<listheader>
+        ///			<term>ID</term>
+        ///			<description>Description</description>
+        ///		</listheader>
+        ///		<item>
+        ///			<term>1</term>
+        ///			<description>chunky format</description>
+        ///		</item>
+        ///		<item>
+        ///			<term>2</term>
+        ///			<description>planar format</description>
+        ///		</item>
+        ///		<item>
+        ///			<term>other</term>
+        ///			<description>reserved</description>
+        ///		</item>
+        /// </list>
+        /// <para/>
+        /// <br/><b>Handling of null values</b><para/>
+        /// A null value indicates, that the corresponding metadata tag is not
+        /// present in the metadata model.
+        /// Setting this property's value to a non-null reference creates the
+        /// metadata tag if necessary.
+        /// Setting this property's value to a null reference deletes the
+        /// metadata tag from the metadata model.
+        /// </remarks>
+        public ushort? PlanarConfiguration
+        {
+            get
+            {
+                return GetTagValue<ushort>("PlanarConfiguration");
+            }
+            set
+            {
+                SetTagValue("PlanarConfiguration", value);
+            }
+        }
+
+        /// <summary>
+        /// Gets or sets the sampling ratio of chrominance components in relation to
+        /// the luminance component. In JPEG compressed dat a JPEG marker is used
+        /// instead of this tag.
+        /// See remarks for further information.
+        /// </summary>
+        /// <remarks>
+        /// The following values are definied:<para/>
+        /// <list type="table">
+        ///		<listheader>
+        ///			<term>ID</term>
+        ///			<description>Description</description>
+        ///		</listheader>
+        ///		<item>
+        ///			<term>[2,1]</term>
+        ///			<description>YCbCr4:2:2</description>
+        ///		</item>
+        ///		<item>
+        ///			<term>[2,2]</term>
+        ///			<description>YCbCr4:2:0</description>
+        ///		</item>
+        ///		<item>
+        ///			<term>other</term>
+        ///			<description>reserved</description>
+        ///		</item>
+        /// </list>
+        /// <para/>
+        /// <br/><b>Handling of null values</b><para/>
+        /// A null value indicates, that the corresponding metadata tag is not
+        /// present in the metadata model.
+        /// Setting this property's value to a non-null reference creates the
+        /// metadata tag if necessary.
+        /// Setting this property's value to a null reference deletes the
+        /// metadata tag from the metadata model.
+        /// </remarks>
+        public ushort[] YCbCrSubSampling
+        {
+            get
+            {
+                return GetTagArray<ushort>("YCbCrSubSampling");
+            }
+            set
+            {
+                FreeImage.Resize(ref value, 2);
+                SetTagValue("YCbCrSubSampling", value);
+            }
+        }
+
+        /// <summary>
+        /// Gets or sets position of chrominance components in relation to the luminance component.
+        /// See remarks for further information.
+        /// </summary>
+        /// <remarks>
+        /// This field is designated only for JPEG compressed data or uncompressed YCbCr data.
+        /// The TIFF default is 1 (centered); but when Y:Cb:Cr = 4:2:2 it is recommended in
+        /// this standard that 2 (co-sited) be used to record data, in order to improve the
+        /// image quality when viewed on TV systems.
+        /// <para/>
+        /// When this field does not exist, the reader shall assume the TIFF default.
+        /// In the case of Y:Cb:Cr = 4:2:0, the TIFF default (centered) is recommended.
+        /// If the reader does not have the capability of supporting both kinds of YCbCrPositioning,
+        /// it shall follow the TIFF default regardless of the value in this field.
+        /// It is preferable that readers be able to support both centered and co-sited positioning.
+        /// <para/>
+        /// The following values are definied:<para/>
+        /// <list type="table">
+        ///		<listheader>
+        ///			<term>ID</term>
+        ///			<description>Description</description>
+        ///		</listheader>
+        ///		<item>
+        ///			<term>1</term>
+        ///			<description>centered</description>
+        ///		</item>
+        ///		<item>
+        ///			<term>2</term>
+        ///			<description>co-sited</description>
+        ///		</item>
+        ///		<item>
+        ///			<term>other</term>
+        ///			<description>reserved</description>
+        ///		</item>
+        /// </list>
+        /// <para/>
+        /// <br/><b>Handling of null values</b><para/>
+        /// A null value indicates, that the corresponding metadata tag is not
+        /// present in the metadata model.
+        /// Setting this property's value to a non-null reference creates the
+        /// metadata tag if necessary.
+        /// Setting this property's value to a null reference deletes the
+        /// metadata tag from the metadata model.
+        /// </remarks>
+        public ushort? YCbCrPositioning
+        {
+            get
+            {
+                return GetTagValue<ushort>("YCbCrPositioning");
+            }
+            set
+            {
+                SetTagValue("YCbCrPositioning", value);
+            }
+        }
+
+        /// <summary>
+        /// Gets or sets the number of pixels per <see cref="ResolutionUnit"/>
+        /// in the <see cref="ImageWidth"/> direction. When the image resolution is unknown,
+        /// 72 [dpi] is designated.
+        /// </summary>
+        /// <remarks>
+        /// <b>Handling of null values</b><para/>
+        /// A null value indicates, that the corresponding metadata tag is not
+        /// present in the metadata model.
+        /// Setting this property's value to a non-null reference creates the
+        /// metadata tag if necessary.
+        /// Setting this property's value to a null reference deletes the
+        /// metadata tag from the metadata model.
+        /// </remarks>
+        public FIURational? XResolution
+        {
+            get
+            {
+                return GetTagValue<FIURational>("XResolution");
+            }
+            set
+            {
+                SetTagValue("XResolution", value);
+            }
+        }
+
+        /// <summary>
+        /// Gets or sets the number of pixels per <see cref="ResolutionUnit"/>
+        /// in the <see cref="ImageHeight"/> direction. When the image resolution is unknown,
+        /// 72 [dpi] is designated.
+        /// </summary>
+        /// <remarks>
+        /// <b>Handling of null values</b><para/>
+        /// A null value indicates, that the corresponding metadata tag is not
+        /// present in the metadata model.
+        /// Setting this property's value to a non-null reference creates the
+        /// metadata tag if necessary.
+        /// Setting this property's value to a null reference deletes the
+        /// metadata tag from the metadata model.
+        /// </remarks>
+        public FIURational? YResolution
+        {
+            get
+            {
+                return GetTagValue<FIURational>("YResolution");
+            }
+            set
+            {
+                SetTagValue("YResolution", value);
+            }
+        }
+
+        /// <summary>
+        /// Gets or sets the unit for measuring <see cref="XResolution"/> and <see cref="YResolution"/>.
+        /// The same unit is used for both <see cref="XResolution"/> and <see cref="YResolution"/>.
+        /// If the image resolution in unknown, 2 (inches) is designated.
+        /// See remarks for further information.
+        /// </summary>
+        /// <remarks>
+        /// The following values are definied:<para/>
+        /// <list type="table">
+        ///		<listheader>
+        ///			<term>ID</term>
+        ///			<description>Description</description>
+        ///		</listheader>
+        ///		<item>
+        ///			<term>2</term>
+        ///			<description>inches</description>
+        ///		</item>
+        ///		<item>
+        ///			<term>3</term>
+        ///			<description>YCbCr4:2:0</description>
+        ///		</item>
+        ///		<item>
+        ///			<term>other</term>
+        ///			<description>centimeters</description>
+        ///		</item>
+        /// </list>
+        /// <para/>
+        /// <br/><b>Handling of null values</b><para/>
+        /// A null value indicates, that the corresponding metadata tag is not
+        /// present in the metadata model.
+        /// Setting this property's value to a non-null reference creates the
+        /// metadata tag if necessary.
+        /// Setting this property's value to a null reference deletes the
+        /// metadata tag from the metadata model.
+        /// </remarks>
+        public ushort? ResolutionUnit
+        {
+            get
+            {
+                return GetTagValue<ushort>("ResolutionUnit");
+            }
+            set
+            {
+                SetTagValue("ResolutionUnit", value);
+            }
+        }
+
+        /// <summary>
+        /// Gets or sets the byte offset of that strip.
+        /// It is recommended that this be selected so the number of strip bytes
+        /// does not exceed 64 Kbytes.
+        /// With JPEG compressed data this designation is not needed and is omitted.
+        /// Constant length of <see cref="SamplesPerPixel"/> * StripsPerImage.
+        /// </summary>
+        /// <remarks>
+        /// <b>Handling of null values</b><para/>
+        /// A null value indicates, that the corresponding metadata tag is not
+        /// present in the metadata model.
+        /// Setting this property's value to a non-null reference creates the
+        /// metadata tag if necessary.
+        /// Setting this property's value to a null reference deletes the
+        /// metadata tag from the metadata model.
+        /// </remarks>
+        /// <seealso cref="RowsPerStrip"/>
+        /// <see cref="StripByteCounts"/>
+        public uint[] StripOffsets
+        {
+            get
+            {
+                return GetUInt32Array("StripOffsets");
+            }
+            set
+            {
+                RemoveTag("StripOffsets");
+                if (value != null)
+                {
+                    SetTagValue("StripOffsets", value);
+                }
+            }
+        }
+
+        /// <summary>
+        /// Gets or sets number of rows per strip. This is the number of rows in the image of
+        /// one strip when an image is divided into strips. With JPEG compressed data this
+        /// designation is not needed and is omitted.
+        /// </summary>
+        /// <remarks>
+        /// <b>Handling of null values</b><para/>
+        /// A null value indicates, that the corresponding metadata tag is not
+        /// present in the metadata model.
+        /// Setting this property's value to a non-null reference creates the
+        /// metadata tag if necessary.
+        /// Setting this property's value to a null reference deletes the
+        /// metadata tag from the metadata model.
+        /// </remarks>
+        /// <seealso cref="StripByteCounts"/>
+        public uint? RowsPerStrip
+        {
+            get
+            {
+                return GetUInt32Value("RowsPerStrip");
+            }
+            set
+            {
+                RemoveTag("RowsPerStrip");
+                if (value.HasValue)
+                {
+                    SetTagValue("RowsPerStrip", value);
+                }
+            }
+        }
+
+        /// <summary>
+        /// Gets or sets the total number of bytes in each strip.
+        /// With JPEG compressed data this designation is not needed and is omitted.
+        /// Constant length of <see cref="SamplesPerPixel"/> * StripsPerImage.
+        /// </summary>
+        /// <remarks>
+        /// <b>Handling of null values</b><para/>
+        /// A null value indicates, that the corresponding metadata tag is not
+        /// present in the metadata model.
+        /// Setting this property's value to a non-null reference creates the
+        /// metadata tag if necessary.
+        /// Setting this property's value to a null reference deletes the
+        /// metadata tag from the metadata model.
+        /// </remarks>
+        public uint[] StripByteCounts
+        {
+            get
+            {
+                return GetUInt32Array("StripByteCounts");
+            }
+            set
+            {
+                RemoveTag("StripByteCounts");
+                if (value != null)
+                {
+                    SetTagValue("StripByteCounts", value);
+                }
+            }
+        }
+
+        /// <summary>
+        /// Gets or sets the offset to the start byte (SOI) of JPEG compressed thumbnail data.
+        /// This is not used for primary image JPEG data.
+        /// </summary>
+        /// <remarks>
+        /// <b>Handling of null values</b><para/>
+        /// A null value indicates, that the corresponding metadata tag is not
+        /// present in the metadata model.
+        /// Setting this property's value to a non-null reference creates the
+        /// metadata tag if necessary.
+        /// Setting this property's value to a null reference deletes the
+        /// metadata tag from the metadata model.
+        /// </remarks>
+        public uint? JPEGInterchangeFormat
+        {
+            get
+            {
+                return GetTagValue<uint>("JPEGInterchangeFormat");
+            }
+            set
+            {
+                SetTagValue("JPEGInterchangeFormat", value);
+            }
+        }
+
+        /// <summary>
+        /// Gets or sets the number of bytes of JPEG compressed thumbnail data.
+        /// </summary>
+        /// <remarks>
+        /// This is not used for primary image JPEG data.
+        /// JPEG thumbnails are not divided but are recorded as a continuous
+        /// JPEG bitstream from SOI to EOI. APPn and COM markers should not be recorded.
+        /// Compressed thumbnails shall be recorded in no more than 64 Kbytes,
+        /// including all other data to be recorded in APP1.
+        /// <para/>
+        /// <br/><b>Handling of null values</b><para/>
+        /// A null value indicates, that the corresponding metadata tag is not
+        /// present in the metadata model.
+        /// Setting this property's value to a non-null reference creates the
+        /// metadata tag if necessary.
+        /// Setting this property's value to a null reference deletes the
+        /// metadata tag from the metadata model.
+        /// </remarks>
+        public uint? JPEGInterchangeFormatLength
+        {
+            get
+            {
+                return GetTagValue<uint>("JPEGInterchangeFormatLength");
+            }
+            set
+            {
+                SetTagValue("JPEGInterchangeFormatLength", value);
+            }
+        }
+
+        /// <summary>
+        /// Gets or sets a transfer function for the image, described in tabular style.
+        /// Constant length of 3 * 256.
+        /// </summary>
+        /// <remarks>
+        /// <b>Handling of null values</b><para/>
+        /// A null value indicates, that the corresponding metadata tag is not
+        /// present in the metadata model.
+        /// Setting this property's value to a non-null reference creates the
+        /// metadata tag if necessary.
+        /// Setting this property's value to a null reference deletes the
+        /// metadata tag from the metadata model.
+        /// </remarks>
+        public ushort[] TransferFunction
+        {
+            get
+            {
+                return GetTagArray<ushort>("TransferFunction");
+            }
+            set
+            {
+                FreeImage.Resize(ref value, 3 * 256);
+                SetTagValue("TransferFunction", value);
+            }
+        }
+
+        /// <summary>
+        /// Gets or sets the chromaticity of the white point of the image.
+        /// Constant length of 2.
+        /// </summary>
+        /// <remarks>
+        /// <b>Handling of null values</b><para/>
+        /// A null value indicates, that the corresponding metadata tag is not
+        /// present in the metadata model.
+        /// Setting this property's value to a non-null reference creates the
+        /// metadata tag if necessary.
+        /// Setting this property's value to a null reference deletes the
+        /// metadata tag from the metadata model.
+        /// </remarks>
+        public FIURational[] WhitePoint
+        {
+            get
+            {
+                return GetTagArray<FIURational>("WhitePoint");
+            }
+            set
+            {
+                FreeImage.Resize(ref value, 2);
+                SetTagValue("WhitePoint", value);
+            }
+        }
+
+        /// <summary>
+        /// Gets or sets the chromaticity of the three primary colors of the image.
+        /// Constant length of 6.
+        /// </summary>
+        /// <remarks>
+        /// <b>Handling of null values</b><para/>
+        /// A null value indicates, that the corresponding metadata tag is not
+        /// present in the metadata model.
+        /// Setting this property's value to a non-null reference creates the
+        /// metadata tag if necessary.
+        /// Setting this property's value to a null reference deletes the
+        /// metadata tag from the metadata model.
+        /// </remarks>
+        public FIURational[] PrimaryChromaticities
+        {
+            get
+            {
+                return GetTagArray<FIURational>("PrimaryChromaticities");
+            }
+            set
+            {
+                FreeImage.Resize(ref value, 6);
+                SetTagValue("PrimaryChromaticities", value);
+            }
+        }
+
+        /// <summary>
+        /// Gets or sets the matrix coefficients for transformation from RGB to YCbCr image data.
+        /// Constant length of 3.
+        /// </summary>
+        /// <remarks>
+        /// <b>Handling of null values</b><para/>
+        /// A null value indicates, that the corresponding metadata tag is not
+        /// present in the metadata model.
+        /// Setting this property's value to a non-null reference creates the
+        /// metadata tag if necessary.
+        /// Setting this property's value to a null reference deletes the
+        /// metadata tag from the metadata model.
+        /// </remarks>
+        public FIURational[] YCbCrCoefficients
+        {
+            get
+            {
+                return GetTagArray<FIURational>("YCbCrCoefficients");
+            }
+            set
+            {
+                FreeImage.Resize(ref value, 3);
+                SetTagValue("PrimaryChromaticities", value);
+            }
+        }
+
+        /// <summary>
+        /// Gets or sets the reference black point value and reference white point value.
+        /// Constant length of 6.
+        /// </summary>
+        /// <remarks>
+        /// <b>Handling of null values</b><para/>
+        /// A null value indicates, that the corresponding metadata tag is not
+        /// present in the metadata model.
+        /// Setting this property's value to a non-null reference creates the
+        /// metadata tag if necessary.
+        /// Setting this property's value to a null reference deletes the
+        /// metadata tag from the metadata model.
+        /// </remarks>
+        public FIURational[] ReferenceBlackWhite
+        {
+            get
+            {
+                return GetTagArray<FIURational>("ReferenceBlackWhite");
+            }
+            set
+            {
+                FreeImage.Resize(ref value, 6);
+                SetTagValue("ReferenceBlackWhite", value);
+            }
+        }
+
+        /// <summary>
+        /// Gets or sets the date and time of image creation.
+        /// </summary>
+        /// <remarks>
+        /// <b>Handling of null values</b><para/>
+        /// A null value indicates, that the corresponding metadata tag is not
+        /// present in the metadata model.
+        /// Setting this property's value to a non-null reference creates the
+        /// metadata tag if necessary.
+        /// Setting this property's value to a null reference deletes the
+        /// metadata tag from the metadata model.
+        /// </remarks>
+        public DateTime? DateTime
+        {
+            get
+            {
+                DateTime? result = null;
+                string text = GetTagText("DateTime");
+                if (text != null)
+                {
+                    try
+                    {
+                        result = System.DateTime.ParseExact(text, "yyyy:MM:dd HH:mm:ss\0", null);
+                    }
+                    catch
+                    {
+                    }
+                }
+                return result;
+            }
+            set
+            {
+                string val = null;
+                if (value.HasValue)
+                {
+                    try
+                    {
+                        val = value.Value.ToString("yyyy:MM:dd HH:mm:ss\0");
+                    }
+                    catch
+                    {
+                    }
+                }
+                SetTagValue("DateTime", val);
+            }
+        }
+
+        /// <summary>
+        /// Gets or sets a string giving the title of the image.
+        /// </summary>
+        /// <remarks>
+        /// <b>Handling of null values</b><para/>
+        /// A null value indicates, that the corresponding metadata tag is not
+        /// present in the metadata model.
+        /// Setting this property's value to a non-null reference creates the
+        /// metadata tag if necessary.
+        /// Setting this property's value to a null reference deletes the
+        /// metadata tag from the metadata model.
+        /// </remarks>
+        public string ImageDescription
+        {
+            get
+            {
+                string result = GetTagText("ImageDescription");
+                if (!string.IsNullOrEmpty(result))
+                {
+                    result = result.Substring(0, result.Length - 1);
+                }
+                return result;
+            }
+            set
+            {
+                if (value != null)
+                {
+                    value += '\0';
+                }
+                SetTagValue("ImageDescription", value);
+            }
+        }
+
+        /// <summary>
+        /// Gets or sets the manufacturer of the recording equipment.
+        /// </summary>
+        /// <remarks>
+        /// <b>Handling of null values</b><para/>
+        /// A null value indicates, that the corresponding metadata tag is not
+        /// present in the metadata model.
+        /// Setting this property's value to a non-null reference creates the
+        /// metadata tag if necessary.
+        /// Setting this property's value to a null reference deletes the
+        /// metadata tag from the metadata model.
+        /// </remarks>
+        public string Make
+        {
+            get
+            {
+                string result = GetTagText("Make");
+                if (!string.IsNullOrEmpty(result))
+                {
+                    result = result.Substring(0, result.Length - 1);
+                }
+                return result;
+            }
+            set
+            {
+                if (value != null)
+                {
+                    value += '\0';
+                }
+                SetTagValue("Make", value);
+            }
+        }
+
+        /// <summary>
+        /// Gets or sets the model name or model number of the equipment.
+        /// </summary>
+        /// <remarks>
+        /// <b>Handling of null values</b><para/>
+        /// A null value indicates, that the corresponding metadata tag is not
+        /// present in the metadata model.
+        /// Setting this property's value to a non-null reference creates the
+        /// metadata tag if necessary.
+        /// Setting this property's value to a null reference deletes the
+        /// metadata tag from the metadata model.
+        /// </remarks>
+        public string EquipmentModel
+        {
+            get
+            {
+                string result = GetTagText("Model");
+                if (!string.IsNullOrEmpty(result))
+                {
+                    result = result.Substring(0, result.Length - 1);
+                }
+                return result;
+            }
+            set
+            {
+                if (value != null)
+                {
+                    value += '\0';
+                }
+                SetTagValue("Model", value);
+            }
+        }
+
+        /// <summary>
+        /// Gets or sets the name and version of the software or firmware of the camera
+        /// or image input device used to generate the image.
+        /// </summary>
+        /// <remarks>
+        /// <b>Handling of null values</b><para/>
+        /// A null value indicates, that the corresponding metadata tag is not
+        /// present in the metadata model.
+        /// Setting this property's value to a non-null reference creates the
+        /// metadata tag if necessary.
+        /// Setting this property's value to a null reference deletes the
+        /// metadata tag from the metadata model.
+        /// </remarks>
+        public string Software
+        {
+            get
+            {
+                string result = GetTagText("Software");
+                if (!string.IsNullOrEmpty(result))
+                {
+                    result = result.Substring(0, result.Length - 1);
+                }
+                return result;
+            }
+            set
+            {
+                if (value != null)
+                {
+                    value += '\0';
+                }
+                SetTagValue("Software", value);
+            }
+        }
+
+        /// <summary>
+        /// Gets or sets the name of the camera owner, photographer or image creator.
+        /// </summary>
+        /// <remarks>
+        /// <b>Handling of null values</b><para/>
+        /// A null value indicates, that the corresponding metadata tag is not
+        /// present in the metadata model.
+        /// Setting this property's value to a non-null reference creates the
+        /// metadata tag if necessary.
+        /// Setting this property's value to a null reference deletes the
+        /// metadata tag from the metadata model.
+        /// </remarks>
+        public string Artist
+        {
+            get
+            {
+                string result = GetTagText("Artist");
+                if (!string.IsNullOrEmpty(result))
+                {
+                    result = result.Substring(0, result.Length - 1);
+                }
+                return result;
+            }
+            set
+            {
+                if (value != null)
+                {
+                    value += '\0';
+                }
+                SetTagValue("Artist", value);
+            }
+        }
+
+        /// <summary>
+        /// Gets or sets the photographer and editor copyrights.
+        /// Constant length of 1-2.
+        /// </summary>
+        /// <remarks>
+        /// <b>Handling of null values</b><para/>
+        /// A null value indicates, that the corresponding metadata tag is not
+        /// present in the metadata model.
+        /// Setting this property's value to a non-null reference creates the
+        /// metadata tag if necessary.
+        /// Setting this property's value to a null reference deletes the
+        /// metadata tag from the metadata model.
+        /// </remarks>
+        public string[] Copyright
+        {
+            get
+            {
+                string[] result = null;
+                string text = GetTagText("Copyright");
+                if (!string.IsNullOrEmpty(text))
+                {
+                    result = text.Split(new char[] { '\0' }, StringSplitOptions.RemoveEmptyEntries);
+                }
+                return result;
+            }
+            set
+            {
+                string val = null;
+                if (value != null)
+                {
+                    if (value.Length == 1)
+                    {
+                        if (value[0] != null)
+                        {
+                            val = value[0] + '\0';
+                        }
+                    }
+                    else if (value.Length == 2)
+                    {
+                        if ((value[0] != null) && (value[1] != null))
+                        {
+                            val = value[0] + '\0' + value[1] + '\0';
+                        }
+                    }
+                }
+                SetTagValue("Copyright", val);
+            }
+        }
+    }
+
+    /// <summary>
+    /// Represents a collection of all tags contained in the metadata model
+    /// <see cref="FREE_IMAGE_MDMODEL.FIMD_EXIF_MAKERNOTE"/>.
+    /// </summary>
+    public class MDM_MAKERNOTE : MetadataModel
+    {
+        /// <summary>
+        /// Initializes a new instance of this class.
+        /// </summary>
+        /// <param name="dib">Handle to a FreeImage bitmap.</param>
+        public MDM_MAKERNOTE(FIBITMAP dib) : base(dib) { }
+
+        /// <summary>
+        /// Retrieves the datamodel that this instance represents.
+        /// </summary>
+        public override FREE_IMAGE_MDMODEL Model
+        {
+            get { return FREE_IMAGE_MDMODEL.FIMD_EXIF_MAKERNOTE; }
+        }
+    }
+
+    /// <summary>
+    /// Represents a collection of all tags contained in the metadata model
+    /// <see cref="FREE_IMAGE_MDMODEL.FIMD_GEOTIFF"/>.
+    /// </summary>
+    public class MDM_GEOTIFF : MetadataModel
+    {
+        /// <summary>
+        /// Initializes a new instance of this class.
+        /// </summary>
+        /// <param name="dib">Handle to a FreeImage bitmap.</param>
+        public MDM_GEOTIFF(FIBITMAP dib) : base(dib) { }
+
+        /// <summary>
+        /// Retrieves the datamodel that this instance represents.
+        /// </summary>
+        public override FREE_IMAGE_MDMODEL Model
+        {
+            get { return FREE_IMAGE_MDMODEL.FIMD_GEOTIFF; }
+        }
+
+        /// <summary>
+        /// Gets or sets the value of the GeoTIFF GeoASCIIParamsTag.
+        /// </summary>
+        /// <remarks>
+        /// The GeoASCIIParamsTag is used to store all of the <see cref="String"/> valued
+        /// GeoKeys, referenced by the <see cref="GeoKeyDirectory"/> property. Since keys
+        /// defined in the GeoKeyDirectoryTag use offsets into this tag, any special
+        /// comments may be placed at the beginning of this tag.
+        /// For the most part, the only keys that are <see cref="String"/> valued are
+        /// <i>Citation</i> keys, giving documentation and references for obscure
+        /// projections, datums, etc.
+        /// <para/>
+        /// Special handling is required for <see cref="String"/>-valued keys. While it
+        /// is true that TIFF 6.0 permits multiple NULL-delimited strings within a single
+        /// ASCII tag, the secondary strings might not appear in the output of naive
+        /// <i>tiffdump</i> programs. For this reason, the NULL delimiter of each ASCII key
+        /// value shall be converted to a "|" (pipe) character before being installed
+        /// back into the <see cref="String"/> holding tag, so that a dump of the tag
+        /// will look like this.
+        /// <para/>
+        /// AsciiTag="first_value|second_value|etc...last_value|"
+        /// <para/>
+        /// A baseline GeoTIFF-reader must check for and convert the final "|" pipe 
+        /// character of a key back into a NULL before returning it to the client 
+        /// software.
+        /// <para/>
+        /// <br/><b>Handling of null values</b><para/>
+        /// A null value indicates, that the corresponding metadata tag is not
+        /// present in the metadata model.
+        /// Setting this property's value to a non-null reference creates the
+        /// metadata tag if necessary.
+        /// Setting this property's value to a null reference deletes the
+        /// metadata tag from the metadata model.
+        /// </remarks>
+        public string GeoASCIIParams
+        {
+            get
+            {
+                string text = GetTagText("GeoASCIIParams");
+                if (!string.IsNullOrEmpty(text))
+                {
+                    text = text.Substring(0, text.Length - 1);
+                }
+                return text;
+            }
+            set
+            {
+                if (value != null)
+                {
+                    value += '\0';
+                }
+                SetTagValue("GeoASCIIParams", value);
+            }
+        }
+
+        /// <summary>
+        /// Gets or sets the value of the GeoTIFF GeoDoubleParamsTag.
+        /// </summary>
+        /// <remarks>
+        /// The GeoDoubleParamsTag is used to store all of the <see cref="Double"/> valued
+        /// GeoKeys, referenced by the <see cref="GeoKeyDirectory"/> property. The meaning of
+        /// any value of this double array is determined from the GeoKeyDirectoryTag reference
+        /// pointing to it. <see cref="Single"/> values should first be converted to
+        /// <see cref="Double"/> and stored here.
+        /// <para/>
+        /// <br/><b>Handling of null values</b><para/>
+        /// A null value indicates, that the corresponding metadata tag is not
+        /// present in the metadata model.
+        /// Setting this property's value to a non-null reference creates the
+        /// metadata tag if necessary.
+        /// Setting this property's value to a null reference deletes the
+        /// metadata tag from the metadata model.
+        /// </remarks>
+        public double[] GeoDoubleParams
+        {
+            get
+            {
+                return GetTagArray<double>("GeoDoubleParams");
+            }
+            set
+            {
+                SetTagValue("GeoDoubleParams", value);
+            }
+        }
+
+        /// <summary>
+        /// Gets or sets the value of the GeoTIFF GeoKeyDirectoryTag.
+        /// </summary>
+        /// <remarks>
+        /// The GeoKeyDirectoryTag may be used to store the GeoKey Directory, which defines and
+        /// references the <i>GeoKeys</i>.
+        /// <para/>
+        /// The tag is an array of unsigned <see cref="UInt16"/> values, which are primarily
+        /// grouped into blocks of 4. The first 4 values are special, and contain GeoKey directory
+        /// header information. The header values consist of the following information, in order:
+        /// <para/>
+        /// Header={KeyDirectoryVersion, KeyRevision, MinorRevision, NumberOfKeys}
+        /// <para/>
+        /// where
+        /// <para/>
+        /// <i>KeyDirectoryVersion</i> indicates the current version of Key implementation, and will
+        /// only change if this Tag's Key structure is changed. (Similar to the TIFFVersion (42)).
+        /// The current DirectoryVersion number is 1. This value will most likely never change,
+        /// and may be used to ensure that this is a valid Key-implementation.
+        /// <para/>
+        /// <i>KeyRevision</i> indicates what revision of Key-Sets are used.
+        /// <para/>
+        /// <i>MinorRevision</i> indicates what set of Key-Codes are used. The complete revision number
+        /// is denoted &lt;KeyRevision&gt;.&lt;MinorRevision&gt;.
+        /// <para/>
+        /// <i>NumberOfKeys</i> indicates how many Keys are defined by the rest of this Tag.
+        /// <para/>
+        /// This header is immediately followed by a collection of &lt;NumberOfKeys&gt; KeyEntry
+        /// sets, each of which is also 4-<see cref="UInt16"/> long. Each KeyEntry is modeled on the
+        /// <i>TIFFEntry</i> format of the TIFF directory header, and is of the form:
+        /// <para/>
+        /// KeyEntry = { KeyID, TIFFTagLocation, Count, Value_Offset }
+        /// <para/>
+        /// where
+        /// <para/>
+        /// <i>KeyID</i> gives the Key-ID value of the Key (identical in function to TIFF tag ID,
+        /// but completely independent of TIFF tag-space),
+        /// <para/>
+        /// <i>TIFFTagLocation</i> indicates which TIFF tag contains the value(s) of the Key: if
+        /// TIFFTagLocation is 0, then the value is <see cref="UInt16"/>, and is contained in the
+        /// <i>Value_Offset</i> entry. Otherwise, the type (format) of the value is implied by the
+        /// TIFF-Type of the tag containing the value.
+        /// <para/>
+        /// <i>Count</i> indicates the number of values in this key.
+        /// <para/>
+        /// <i>Value_Offset</i> Value_Offset indicates the index-offset into the TagArray indicated
+        /// by TIFFTagLocation, if it is nonzero. If TIFFTagLocation is 0 (zero) , then Value_Offset 
+        /// contains the actual (<see cref="UInt16"/>) value of the Key, and Count=1 is implied.
+        /// Note that the offset is not a byte-offset, but rather an index based on the natural data
+        /// type of the specified tag array.
+        /// <para/>
+        /// Following the KeyEntry definitions, the KeyDirectory tag may also contain additional
+        /// values. For example, if a key requires multiple <see cref="UInt16"/> values, they shall
+        /// be placed at the end of this tag, and the KeyEntry will set
+        /// TIFFTagLocation=GeoKeyDirectoryTag, with the Value_Offset pointing to the location of the
+        /// value(s).
+        /// <para/>
+        /// <br/><b>Handling of null values</b><para/>
+        /// A null value indicates, that the corresponding metadata tag is not
+        /// present in the metadata model.
+        /// Setting this property's value to a non-null reference creates the
+        /// metadata tag if necessary.
+        /// Setting this property's value to a null reference deletes the
+        /// metadata tag from the metadata model.
+        /// </remarks>
+        public ushort[] GeoKeyDirectory
+        {
+            get
+            {
+                return GetTagArray<ushort>("GeoKeyDirectory");
+            }
+            set
+            {
+                SetTagValue("GeoKeyDirectory", value);
+            }
+        }
+
+        /// <summary>
+        /// Gets or sets the value of the GeoTIFF ModelPixelScaleTag.
+        /// </summary>
+        /// <remarks>
+        /// The ModelPixelScaleTag tag may be used to specify the size of raster pixel spacing
+        /// in the model space units, when the raster space can be embedded in the model space
+        /// coordinate system without rotation, and consists of the following 3 values:
+        /// <para/>
+        /// ModelPixelScaleTag = (ScaleX, ScaleY, ScaleZ)
+        /// <para/>
+        /// where <i>ScaleX</i> and <i>ScaleY</i> give the horizontal and vertical spacing of
+        /// raster pixels. The <i>ScaleZ</i> is primarily used to map the pixel value of a
+        /// digital elevation model into the correct Z-scale, and so for most other purposes
+        /// this value should be zero (since most model spaces are 2-D, with Z=0).
+        /// <para/>
+        /// A single tiepoint in the <see cref="ModelTiePoints"/> tag, together with this tag,
+        /// completely determine the relationship between raster and model space; thus they
+        /// comprise the two tags which Baseline GeoTIFF files most often will use to place a
+        /// raster image into a "standard position" in model space.
+        /// <para/>
+        /// Like the <see cref="ModelTiePoints"/> tag, this tag information is independent of the
+        /// XPosition, YPosition, Resolution and Orientation tags of the standard TIFF 6.0 spec.
+        /// However, simple reversals of orientation between raster and model space
+        /// (e.g. horizontal or vertical flips) may be indicated by reversal of sign in the
+        /// corresponding component of the ModelPixelScaleTag. GeoTIFF compliant readers must
+        /// honor this signreversal convention.
+        /// <para/>
+        /// This tag must not be used if the raster image requires rotation or shearing to place
+        /// it into the standard model space. In such cases the transformation shall be defined
+        /// with the more general <see cref="ModelTransformationMatrix"/>.
+        /// <para/>
+        /// <br/><b>Naming differences</b><para/>
+        /// In the native FreeImage library and thus, in the FreeImage API documentation, this
+        /// property's key is named <i>GeoPixelScale</i>. Since the GeoTIFF specification
+        /// as well as Java's <c>EXIFTIFFTagSet</c> class call this tag
+        /// <see cref="ModelPixelScale"/>, this property was renamed accordingly.
+        /// However, when accessing this property's tag by its <see cref="MetadataTag"/> object,
+        /// the native FreeImage tag key <i>GeoPixelScale</i> must be used.
+        /// <para/>
+        /// <br/><b>Handling of null values</b><para/>
+        /// A null value indicates, that the corresponding metadata tag is not
+        /// present in the metadata model.
+        /// Setting this property's value to a non-null reference creates the
+        /// metadata tag if necessary.
+        /// Setting this property's value to a null reference deletes the
+        /// metadata tag from the metadata model.
+        /// </remarks>
+        public double[] ModelPixelScale
+        {
+            get
+            {
+                return GetTagArray<double>("GeoPixelScale");
+            }
+            set
+            {
+                SetTagValue("GeoPixelScale", value);
+            }
+        }
+
+        /// <summary>
+        /// Gets or sets the value of the GeoTIFF GeoTiePointsTag.
+        /// </summary>
+        /// <remarks>
+        /// The GeoTiePointsTag stores raster -> model tiepoint pairs in the order
+        /// <para/>
+        /// ModelTiePoints = (...,I,J,K, X,Y,Z...),
+        /// <para/>
+        /// where <i>(I,J,K)</i> is the point at location <i>(I,J)</i> in raster space with 
+        /// pixel-value <i>K</i>, and <i>(X,Y,Z)</i> is a vector in model space. In most cases
+        /// the model space is only two-dimensional, in which case both K and Z should be set
+        /// to zero; this third dimension is provided in anticipation of future support for 3D
+        /// digital elevation models and vertical coordinate systems.
+        /// <para/>
+        /// A raster image may be georeferenced simply by specifying its location, size and
+        /// orientation in the model coordinate space M. This may be done by specifying the
+        /// location of three of the four bounding corner points. However, tiepoints are only
+        /// to be considered exact at the points specified; thus defining such a set of
+        /// bounding tiepoints does not imply that the model space locations of the interior
+        /// of the image may be exactly computed by a linear interpolation of these tiepoints.
+        /// <para/>
+        /// However, since the relationship between the Raster space and the model space will
+        /// often be an exact, affine transformation, this relationship can be defined using
+        /// one set of tiepoints and the <see cref="ModelPixelScale"/>, described below, which
+        /// gives the vertical and horizontal raster grid cell size, specified in model units.
+        /// <para/>
+        /// If possible, the first tiepoint placed in this tag shall be the one establishing
+        /// the location of the point (0,0) in raster space. However, if this is not possible
+        /// (for example, if (0,0) is goes to a part of model space in which the projection is
+        /// ill-defined), then there is no particular order in which the tiepoints need be
+        /// listed.
+        /// <para/>
+        /// For orthorectification or mosaicking applications a large number of tiepoints may
+        /// be specified on a mesh over the raster image. However, the definition of associated
+        /// grid interpolation methods is not in the scope of the current GeoTIFF spec.
+        /// <para/>
+        /// <br/><b>Naming differences</b><para/>
+        /// In the native FreeImage library and thus, in the FreeImage API documentation, this
+        /// property's key is named <i>GeoTiePoints</i>. Since the GeoTIFF specification
+        /// as well as Java's <c>EXIFTIFFTagSet</c> class call this tag
+        /// <see cref="ModelTiePoints"/>, this property was renamed accordingly.
+        /// However, when accessing this property's tag by its <see cref="MetadataTag"/> object,
+        /// the native FreeImage tag key <i>GeoTiePoints</i> must be used.
+        /// <para/>
+        /// <br/><b>Handling of null values</b><para/>
+        /// A null value indicates, that the corresponding metadata tag is not
+        /// present in the metadata model.
+        /// Setting this property's value to a non-null reference creates the
+        /// metadata tag if necessary.
+        /// Setting this property's value to a null reference deletes the
+        /// metadata tag from the metadata model.
+        /// </remarks>
+        public double[] ModelTiePoints
+        {
+            get
+            {
+                return GetTagArray<double>("GeoTiePoints");
+            }
+            set
+            {
+                SetTagValue("GeoTiePoints", value);
+            }
+        }
+
+        /// <summary>
+        /// Gets or sets the value of the GeoTIFF ModelTransformationMatrixTag.
+        /// </summary>
+        /// <remarks>
+        /// This tag may be used to specify the transformation matrix between the raster space
+        /// (and its dependent pixel-value space) and the (possibly 3D) model space.
+        /// <para/>
+        /// <br/><b>Naming differences</b><para/>
+        /// In the native FreeImage library and thus, in the FreeImage API documentation, this
+        /// property's key is named <i>GeoTransformationMatrix</i>. Since the GeoTIFF specification
+        /// as well as Java's <c>EXIFTIFFTagSet</c> class call this tag
+        /// <see cref="ModelTransformationMatrix"/>, this property was renamed accordingly.
+        /// However, when accessing this property's tag by its <see cref="MetadataTag"/> object,
+        /// the native FreeImage tag key <i>GeoTransformationMatrix</i> must be used.
+        /// <para/>
+        /// <br/><b>Handling of null values</b><para/>
+        /// A null value indicates, that the corresponding metadata tag is not
+        /// present in the metadata model.
+        /// Setting this property's value to a non-null reference creates the
+        /// metadata tag if necessary.
+        /// Setting this property's value to a null reference deletes the
+        /// metadata tag from the metadata model.
+        /// </remarks>
+        public double[] ModelTransformationMatrix
+        {
+            get
+            {
+                return GetTagArray<double>("GeoTransformationMatrix");
+            }
+            set
+            {
+                SetTagValue("GeoTransformationMatrix", value);
+            }
+        }
+
+        /// <summary>
+        /// Gets or sets the value of the GeoTIFF IntergraphTransformationMatrixTag.
+        /// </summary>
+        /// <remarks>
+        /// The IntergraphTransformationMatrixTag conflicts with an internal software implementation
+        /// at Intergraph, and so its use is no longer encouraged. A GeoTIFF reader should look first
+        /// for the new tag, and only if it is not found should it check for this older tag. If found,
+        /// it should only consider it to be contain valid GeoTIFF matrix information if the tag-count
+        /// is 16; the Intergraph version uses 17 values.
+        /// <para/>
+        /// <br/><b>Handling of null values</b><para/>
+        /// A null value indicates, that the corresponding metadata tag is not
+        /// present in the metadata model.
+        /// Setting this property's value to a non-null reference creates the
+        /// metadata tag if necessary.
+        /// Setting this property's value to a null reference deletes the
+        /// metadata tag from the metadata model.
+        /// </remarks>
+        public double[] IntergraphTransformationMatrix
+        {
+            get
+            {
+                return GetTagArray<double>("Intergraph TransformationMatrix");
+            }
+            set
+            {
+                SetTagValue("Intergraph TransformationMatrix", value);
+            }
+        }
+
+        /// <summary>
+        /// Gets or sets the value of the GeoTIFF JPLCartoIFDOffsetTag.
+        /// </summary>
+        /// <remarks>
+        /// <b>Handling of null values</b><para/>
+        /// A null value indicates, that the corresponding metadata tag is not
+        /// present in the metadata model.
+        /// Setting this property's value to a non-null reference creates the
+        /// metadata tag if necessary.
+        /// Setting this property's value to a null reference deletes the
+        /// metadata tag from the metadata model.
+        /// </remarks>
+        public uint? JPLCartoIFDOffset
+        {
+            get
+            {
+                return GetTagValue<uint>("JPL Carto IFD offset");
+            }
+            set
+            {
+                SetTagValue("JPL Carto IFD offset", value);
+            }
+        }
+    }
+
+    /// <summary>
+    /// Represents a collection of all tags contained in the metadata model
+    /// <see cref="FREE_IMAGE_MDMODEL.FIMD_IPTC"/>.
+    /// </summary>
+    public class MDM_IPTC : MetadataModel
+    {
+        /// <summary>
+        /// Initializes a new instance of this class.
+        /// </summary>
+        /// <param name="dib">Handle to a FreeImage bitmap.</param>
+        public MDM_IPTC(FIBITMAP dib) : base(dib) { }
+
+        /// <summary>
+        /// Retrieves the datamodel that this instance represents.
+        /// </summary>
+        /// <remarks>
+        /// <b>Handling of null values</b><para/>
+        /// A null value indicates, that the corresponding metadata tag is not
+        /// present in the metadata model.
+        /// Setting this property's value to a non-null reference creates the
+        /// metadata tag if necessary.
+        /// Setting this property's value to a null reference deletes the
+        /// metadata tag from the metadata model.
+        /// </remarks>
+        public override FREE_IMAGE_MDMODEL Model
+        {
+            get { return FREE_IMAGE_MDMODEL.FIMD_IPTC; }
+        }
+
+        /// <summary>
+        /// Gets the Application Record Version.
+        /// </summary>
+        /// <remarks>
+        /// <b>Handling of null values</b><para/>
+        /// A null value indicates, that the corresponding metadata tag is not
+        /// present in the metadata model.
+        /// Setting this property's value to a non-null reference creates the
+        /// metadata tag if necessary.
+        /// Setting this property's value to a null reference deletes the
+        /// metadata tag from the metadata model.
+        /// </remarks>
+        public short? ApplicationRecordVersion
+        {
+            get
+            {
+                return GetTagValue<short>("ApplicationRecordVersion");
+            }
+        }
+
+        /// <summary>
+        /// Gets or sets the value of the IPTC/NAA tag Object Type Reference.
+        /// </summary>
+        /// <remarks>
+        /// <b>Handling of null values</b><para/>
+        /// A null value indicates, that the corresponding metadata tag is not
+        /// present in the metadata model.
+        /// Setting this property's value to a non-null reference creates the
+        /// metadata tag if necessary.
+        /// Setting this property's value to a null reference deletes the
+        /// metadata tag from the metadata model.
+        /// </remarks>
+        public string ObjectTypeReference
+        {
+            get
+            {
+                return GetTagText("ObjectTypeReference");
+            }
+            set
+            {
+                SetTagValue("ObjectTypeReference", value);
+            }
+        }
+
+        /// <summary>
+        /// Gets or sets the value of the IPTC/NAA tag Object Attribute Reference.
+        /// </summary>
+        /// <remarks>
+        /// <b>Handling of null values</b><para/>
+        /// A null value indicates, that the corresponding metadata tag is not
+        /// present in the metadata model.
+        /// Setting this property's value to a non-null reference creates the
+        /// metadata tag if necessary.
+        /// Setting this property's value to a null reference deletes the
+        /// metadata tag from the metadata model.
+        /// </remarks>
+        public string ObjectAttributeReference
+        {
+            get
+            {
+                return GetTagText("ObjectAttributeReference");
+            }
+            set
+            {
+                SetTagValue("ObjectAttributeReference", value);
+            }
+        }
+
+        /// <summary>
+        /// Gets or sets the value of the IPTC/NAA tag Object Name.
+        /// This is also referred to as Title.
+        /// </summary>
+        /// <remarks>
+        /// <b>Handling of null values</b><para/>
+        /// A null value indicates, that the corresponding metadata tag is not
+        /// present in the metadata model.
+        /// Setting this property's value to a non-null reference creates the
+        /// metadata tag if necessary.
+        /// Setting this property's value to a null reference deletes the
+        /// metadata tag from the metadata model.
+        /// </remarks>
+        public string ObjectName
+        {
+            get
+            {
+                return GetTagText("ObjectName");
+            }
+            set
+            {
+                SetTagValue("ObjectName", value);
+            }
+        }
+
+        /// <summary>
+        /// Gets or sets the value of the IPTC/NAA tag Edit Status.
+        /// </summary>
+        /// <remarks>
+        /// <b>Handling of null values</b><para/>
+        /// A null value indicates, that the corresponding metadata tag is not
+        /// present in the metadata model.
+        /// Setting this property's value to a non-null reference creates the
+        /// metadata tag if necessary.
+        /// Setting this property's value to a null reference deletes the
+        /// metadata tag from the metadata model.
+        /// </remarks>
+        public string EditStatus
+        {
+            get
+            {
+                return GetTagText("EditStatus");
+            }
+            set
+            {
+                SetTagValue("EditStatus", value);
+            }
+        }
+
+        /// <summary>
+        /// Gets or sets the value of the IPTC/NAA tag Editorial Update.
+        /// </summary>
+        /// <remarks>
+        /// <b>Handling of null values</b><para/>
+        /// A null value indicates, that the corresponding metadata tag is not
+        /// present in the metadata model.
+        /// Setting this property's value to a non-null reference creates the
+        /// metadata tag if necessary.
+        /// Setting this property's value to a null reference deletes the
+        /// metadata tag from the metadata model.
+        /// </remarks>
+        public string EditorialUpdate
+        {
+            get
+            {
+                return GetTagText("EditorialUpdate");
+            }
+            set
+            {
+                SetTagValue("EditorialUpdate", value);
+            }
+        }
+
+        /// <summary>
+        /// Gets or sets the value of the IPTC/NAA tag Urgency.
+        /// </summary>
+        /// <remarks>
+        /// <b>Handling of null values</b><para/>
+        /// A null value indicates, that the corresponding metadata tag is not
+        /// present in the metadata model.
+        /// Setting this property's value to a non-null reference creates the
+        /// metadata tag if necessary.
+        /// Setting this property's value to a null reference deletes the
+        /// metadata tag from the metadata model.
+        /// </remarks>
+        public string Urgency
+        {
+            get
+            {
+                return GetTagText("Urgency");
+            }
+            set
+            {
+                SetTagValue("Urgency", value);
+            }
+        }
+
+        /// <summary>
+        /// Gets or sets the value of the IPTC/NAA tag Subject Reference.
+        /// </summary>
+        /// <remarks>
+        /// <b>Handling of null values</b><para/>
+        /// A null value indicates, that the corresponding metadata tag is not
+        /// present in the metadata model.
+        /// Setting this property's value to a non-null reference creates the
+        /// metadata tag if necessary.
+        /// Setting this property's value to a null reference deletes the
+        /// metadata tag from the metadata model.
+        /// </remarks>
+        public string SubjectReference
+        {
+            get
+            {
+                return GetTagText("SubjectReference");
+            }
+            set
+            {
+                SetTagValue("SubjectReference", value);
+            }
+        }
+
+        /// <summary>
+        /// Gets or sets the value of the IPTC/NAA tag Category.
+        /// </summary>
+        /// <remarks>
+        /// <b>Handling of null values</b><para/>
+        /// A null value indicates, that the corresponding metadata tag is not
+        /// present in the metadata model.
+        /// Setting this property's value to a non-null reference creates the
+        /// metadata tag if necessary.
+        /// Setting this property's value to a null reference deletes the
+        /// metadata tag from the metadata model.
+        /// </remarks>
+        public string Category
+        {
+            get
+            {
+                return GetTagText("Category");
+            }
+            set
+            {
+                SetTagValue("Category", value);
+            }
+        }
+
+        /// <summary>
+        /// Gets or sets the value of the IPTC/NAA tag Supplemental Categories.
+        /// </summary>
+        /// <remarks>
+        /// <b>Handling of null values</b><para/>
+        /// A null value indicates, that the corresponding metadata tag is not
+        /// present in the metadata model.
+        /// Setting this property's value to a non-null reference creates the
+        /// metadata tag if necessary.
+        /// Setting this property's value to a null reference deletes the
+        /// metadata tag from the metadata model.
+        /// </remarks>
+        public string SupplementalCategories
+        {
+            get
+            {
+                return GetTagText("SupplementalCategories");
+            }
+            set
+            {
+                SetTagValue("SupplementalCategories", value);
+            }
+        }
+
+        /// <summary>
+        /// Gets or sets the value of the IPTC/NAA tag Fixture Identifier.
+        /// </summary>
+        /// <remarks>
+        /// <b>Handling of null values</b><para/>
+        /// A null value indicates, that the corresponding metadata tag is not
+        /// present in the metadata model.
+        /// Setting this property's value to a non-null reference creates the
+        /// metadata tag if necessary.
+        /// Setting this property's value to a null reference deletes the
+        /// metadata tag from the metadata model.
+        /// </remarks>
+        public string FixtureIdentifier
+        {
+            get
+            {
+                return GetTagText("FixtureIdentifier");
+            }
+            set
+            {
+                SetTagValue("FixtureIdentifier", value);
+            }
+        }
+
+        /// <summary>
+        /// Gets or sets the value of the IPTC/NAA tag Keywords.
+        /// </summary>
+        /// <remarks>
+        /// <b>Handling of null values</b><para/>
+        /// A null value indicates, that the corresponding metadata tag is not
+        /// present in the metadata model.
+        /// Setting this property's value to a non-null reference creates the
+        /// metadata tag if necessary.
+        /// Setting this property's value to a null reference deletes the
+        /// metadata tag from the metadata model.
+        /// </remarks>
+        public string Keywords
+        {
+            get
+            {
+                return GetTagText("Keywords");
+            }
+            set
+            {
+                SetTagValue("Keywords", value);
+            }
+        }
+
+        /// <summary>
+        /// Gets or sets the value of the IPTC/NAA tag Content Location Code.
+        /// </summary>
+        /// <remarks>
+        /// <b>Handling of null values</b><para/>
+        /// A null value indicates, that the corresponding metadata tag is not
+        /// present in the metadata model.
+        /// Setting this property's value to a non-null reference creates the
+        /// metadata tag if necessary.
+        /// Setting this property's value to a null reference deletes the
+        /// metadata tag from the metadata model.
+        /// </remarks>
+        public string ContentLocationCode
+        {
+            get
+            {
+                return GetTagText("ContentLocationCode");
+            }
+            set
+            {
+                SetTagValue("ContentLocationCode", value);
+            }
+        }
+
+        /// <summary>
+        /// Gets or sets the value of the IPTC/NAA tag Content Location Name.
+        /// </summary>
+        /// <remarks>
+        /// <b>Handling of null values</b><para/>
+        /// A null value indicates, that the corresponding metadata tag is not
+        /// present in the metadata model.
+        /// Setting this property's value to a non-null reference creates the
+        /// metadata tag if necessary.
+        /// Setting this property's value to a null reference deletes the
+        /// metadata tag from the metadata model.
+        /// </remarks>
+        public string ContentLocationName
+        {
+            get
+            {
+                return GetTagText("ContentLocationName");
+            }
+            set
+            {
+                SetTagValue("ContentLocationName", value);
+            }
+        }
+
+        /// <summary>
+        /// Gets or sets the value of the IPTC/NAA tag Release Date.
+        /// </summary>
+        /// <remarks>
+        /// <b>Handling of null values</b><para/>
+        /// A null value indicates, that the corresponding metadata tag is not
+        /// present in the metadata model.
+        /// Setting this property's value to a non-null reference creates the
+        /// metadata tag if necessary.
+        /// Setting this property's value to a null reference deletes the
+        /// metadata tag from the metadata model.
+        /// </remarks>
+        public string ReleaseDate
+        {
+            get
+            {
+                return GetTagText("ReleaseDate");
+            }
+            set
+            {
+                SetTagValue("ReleaseDate", value);
+            }
+        }
+
+        /// <summary>
+        /// Gets or sets the value of the IPTC/NAA tag Release Time.
+        /// </summary>
+        /// <remarks>
+        /// <b>Handling of null values</b><para/>
+        /// A null value indicates, that the corresponding metadata tag is not
+        /// present in the metadata model.
+        /// Setting this property's value to a non-null reference creates the
+        /// metadata tag if necessary.
+        /// Setting this property's value to a null reference deletes the
+        /// metadata tag from the metadata model.
+        /// </remarks>
+        public string ReleaseTime
+        {
+            get
+            {
+                return GetTagText("ReleaseTime");
+            }
+            set
+            {
+                SetTagValue("ReleaseTime", value);
+            }
+        }
+
+        /// <summary>
+        /// Gets or sets the value of the IPTC/NAA tag Expiration Date.
+        /// </summary>
+        /// <remarks>
+        /// <b>Handling of null values</b><para/>
+        /// A null value indicates, that the corresponding metadata tag is not
+        /// present in the metadata model.
+        /// Setting this property's value to a non-null reference creates the
+        /// metadata tag if necessary.
+        /// Setting this property's value to a null reference deletes the
+        /// metadata tag from the metadata model.
+        /// </remarks>
+        public string ExpirationDate
+        {
+            get
+            {
+                return GetTagText("ExpirationDate");
+            }
+            set
+            {
+                SetTagValue("ExpirationDate", value);
+            }
+        }
+
+        /// <summary>
+        /// Gets or sets the value of the IPTC/NAA tag Expiration Time.
+        /// </summary>
+        /// <remarks>
+        /// <b>Handling of null values</b><para/>
+        /// A null value indicates, that the corresponding metadata tag is not
+        /// present in the metadata model.
+        /// Setting this property's value to a non-null reference creates the
+        /// metadata tag if necessary.
+        /// Setting this property's value to a null reference deletes the
+        /// metadata tag from the metadata model.
+        /// </remarks>
+        public string ExpirationTime
+        {
+            get
+            {
+                return GetTagText("ExpirationTime");
+            }
+            set
+            {
+                SetTagValue("ExpirationTime", value);
+            }
+        }
+
+        /// <summary>
+        /// Gets or sets the value of the IPTC/NAA tag Special Instructions.
+        /// </summary>
+        /// <remarks>
+        /// <b>Handling of null values</b><para/>
+        /// A null value indicates, that the corresponding metadata tag is not
+        /// present in the metadata model.
+        /// Setting this property's value to a non-null reference creates the
+        /// metadata tag if necessary.
+        /// Setting this property's value to a null reference deletes the
+        /// metadata tag from the metadata model.
+        /// </remarks>
+        public string SpecialInstructions
+        {
+            get
+            {
+                return GetTagText("SpecialInstructions");
+            }
+            set
+            {
+                SetTagValue("SpecialInstructions", value);
+            }
+        }
+
+        /// <summary>
+        /// Gets or sets the value of the IPTC/NAA tag Action Advised.
+        /// </summary>
+        /// <remarks>
+        /// <b>Handling of null values</b><para/>
+        /// A null value indicates, that the corresponding metadata tag is not
+        /// present in the metadata model.
+        /// Setting this property's value to a non-null reference creates the
+        /// metadata tag if necessary.
+        /// Setting this property's value to a null reference deletes the
+        /// metadata tag from the metadata model.
+        /// </remarks>
+        public string ActionAdvised
+        {
+            get
+            {
+                return GetTagText("ActionAdvised");
+            }
+            set
+            {
+                SetTagValue("ActionAdvised", value);
+            }
+        }
+
+        /// <summary>
+        /// Gets or sets the value of the IPTC/NAA tag Reference Service.
+        /// </summary>
+        /// <remarks>
+        /// <b>Handling of null values</b><para/>
+        /// A null value indicates, that the corresponding metadata tag is not
+        /// present in the metadata model.
+        /// Setting this property's value to a non-null reference creates the
+        /// metadata tag if necessary.
+        /// Setting this property's value to a null reference deletes the
+        /// metadata tag from the metadata model.
+        /// </remarks>
+        public string ReferenceService
+        {
+            get
+            {
+                return GetTagText("ReferenceService");
+            }
+            set
+            {
+                SetTagValue("ReferenceService", value);
+            }
+        }
+
+        /// <summary>
+        /// Gets or sets the value of the IPTC/NAA tag Reference Date.
+        /// </summary>
+        /// <remarks>
+        /// <b>Handling of null values</b><para/>
+        /// A null value indicates, that the corresponding metadata tag is not
+        /// present in the metadata model.
+        /// Setting this property's value to a non-null reference creates the
+        /// metadata tag if necessary.
+        /// Setting this property's value to a null reference deletes the
+        /// metadata tag from the metadata model.
+        /// </remarks>
+        public string ReferenceDate
+        {
+            get
+            {
+                return GetTagText("ReferenceDate");
+            }
+            set
+            {
+                SetTagValue("ReferenceDate", value);
+            }
+        }
+
+        /// <summary>
+        /// Gets or sets the value of the IPTC/NAA tag Reference Number.
+        /// </summary>
+        /// <remarks>
+        /// <b>Handling of null values</b><para/>
+        /// A null value indicates, that the corresponding metadata tag is not
+        /// present in the metadata model.
+        /// Setting this property's value to a non-null reference creates the
+        /// metadata tag if necessary.
+        /// Setting this property's value to a null reference deletes the
+        /// metadata tag from the metadata model.
+        /// </remarks>
+        public string ReferenceNumber
+        {
+            get
+            {
+                return GetTagText("ReferenceNumber");
+            }
+            set
+            {
+                SetTagValue("ReferenceNumber", value);
+            }
+        }
+
+        /// <summary>
+        /// Gets or sets the value of the IPTC/NAA tag Date Created.
+        /// </summary>
+        /// <remarks>
+        /// <b>Handling of null values</b><para/>
+        /// A null value indicates, that the corresponding metadata tag is not
+        /// present in the metadata model.
+        /// Setting this property's value to a non-null reference creates the
+        /// metadata tag if necessary.
+        /// Setting this property's value to a null reference deletes the
+        /// metadata tag from the metadata model.
+        /// </remarks>
+        public string DateCreated
+        {
+            get
+            {
+                return GetTagText("DateCreated");
+            }
+            set
+            {
+                SetTagValue("DateCreated", value);
+            }
+        }
+
+        /// <summary>
+        /// Gets or sets the value of the IPTC/NAA tag Time Created.
+        /// </summary>
+        /// <remarks>
+        /// <b>Handling of null values</b><para/>
+        /// A null value indicates, that the corresponding metadata tag is not
+        /// present in the metadata model.
+        /// Setting this property's value to a non-null reference creates the
+        /// metadata tag if necessary.
+        /// Setting this property's value to a null reference deletes the
+        /// metadata tag from the metadata model.
+        /// </remarks>
+        public string TimeCreated
+        {
+            get
+            {
+                return GetTagText("TimeCreated");
+            }
+            set
+            {
+                SetTagValue("TimeCreated", value);
+            }
+        }
+
+        /// <summary>
+        /// Gets or sets the value of the IPTC/NAA tag Digital Creation Date.
+        /// </summary>
+        /// <remarks>
+        /// <b>Handling of null values</b><para/>
+        /// A null value indicates, that the corresponding metadata tag is not
+        /// present in the metadata model.
+        /// Setting this property's value to a non-null reference creates the
+        /// metadata tag if necessary.
+        /// Setting this property's value to a null reference deletes the
+        /// metadata tag from the metadata model.
+        /// </remarks>
+        public string DigitalCreationDate
+        {
+            get
+            {
+                return GetTagText("DigitalCreationDate");
+            }
+            set
+            {
+                SetTagValue("DigitalCreationDate", value);
+            }
+        }
+
+        /// <summary>
+        /// Gets or sets the value of the IPTC/NAA tag Digital Creation Time.
+        /// </summary>
+        /// <remarks>
+        /// <b>Handling of null values</b><para/>
+        /// A null value indicates, that the corresponding metadata tag is not
+        /// present in the metadata model.
+        /// Setting this property's value to a non-null reference creates the
+        /// metadata tag if necessary.
+        /// Setting this property's value to a null reference deletes the
+        /// metadata tag from the metadata model.
+        /// </remarks>
+        public string DigitalCreationTime
+        {
+            get
+            {
+                return GetTagText("DigitalCreationTime");
+            }
+            set
+            {
+                SetTagValue("DigitalCreationTime", value);
+            }
+        }
+
+        /// <summary>
+        /// Gets or sets the value of the IPTC/NAA tag Originating Program.
+        /// </summary>
+        /// <remarks>
+        /// <b>Handling of null values</b><para/>
+        /// A null value indicates, that the corresponding metadata tag is not
+        /// present in the metadata model.
+        /// Setting this property's value to a non-null reference creates the
+        /// metadata tag if necessary.
+        /// Setting this property's value to a null reference deletes the
+        /// metadata tag from the metadata model.
+        /// </remarks>
+        public string OriginatingProgram
+        {
+            get
+            {
+                return GetTagText("OriginatingProgram");
+            }
+            set
+            {
+                SetTagValue("OriginatingProgram", value);
+            }
+        }
+
+        /// <summary>
+        /// Gets or sets the value of the IPTC/NAA tag Program Version.
+        /// </summary>
+        /// <remarks>
+        /// <b>Handling of null values</b><para/>
+        /// A null value indicates, that the corresponding metadata tag is not
+        /// present in the metadata model.
+        /// Setting this property's value to a non-null reference creates the
+        /// metadata tag if necessary.
+        /// Setting this property's value to a null reference deletes the
+        /// metadata tag from the metadata model.
+        /// </remarks>
+        public string ProgramVersion
+        {
+            get
+            {
+                return GetTagText("ProgramVersion");
+            }
+            set
+            {
+                SetTagValue("ProgramVersion", value);
+            }
+        }
+
+        /// <summary>
+        /// Gets or sets the value of the IPTC/NAA tag Object Cycle.
+        /// </summary>
+        /// <remarks>
+        /// <b>Handling of null values</b><para/>
+        /// A null value indicates, that the corresponding metadata tag is not
+        /// present in the metadata model.
+        /// Setting this property's value to a non-null reference creates the
+        /// metadata tag if necessary.
+        /// Setting this property's value to a null reference deletes the
+        /// metadata tag from the metadata model.
+        /// </remarks>
+        public string ObjectCycle
+        {
+            get
+            {
+                return GetTagText("ObjectCycle");
+            }
+            set
+            {
+                SetTagValue("ObjectCycle", value);
+            }
+        }
+
+        /// <summary>
+        /// Gets or sets the value of the IPTC/NAA tag By Line.
+        /// This is the author's name.
+        /// </summary>
+        /// <remarks>
+        /// <b>Handling of null values</b><para/>
+        /// A null value indicates, that the corresponding metadata tag is not
+        /// present in the metadata model.
+        /// Setting this property's value to a non-null reference creates the
+        /// metadata tag if necessary.
+        /// Setting this property's value to a null reference deletes the
+        /// metadata tag from the metadata model.
+        /// </remarks>
+        public string ByLine
+        {
+            get
+            {
+                return GetTagText("By-line");
+            }
+            set
+            {
+                SetTagValue("By-line", value);
+            }
+        }
+
+        /// <summary>
+        /// Gets or sets the value of the IPTC/NAA tag By Line Title.
+        /// This is the author's position.
+        /// </summary>
+        /// <remarks>
+        /// <b>Handling of null values</b><para/>
+        /// A null value indicates, that the corresponding metadata tag is not
+        /// present in the metadata model.
+        /// Setting this property's value to a non-null reference creates the
+        /// metadata tag if necessary.
+        /// Setting this property's value to a null reference deletes the
+        /// metadata tag from the metadata model.
+        /// </remarks>
+        public string ByLineTitle
+        {
+            get
+            {
+                return GetTagText("By-lineTitle");
+            }
+            set
+            {
+                SetTagValue("By-lineTitle", value);
+            }
+        }
+
+        /// <summary>
+        /// Gets or sets the value of the IPTC/NAA tag City.
+        /// </summary>
+        /// <remarks>
+        /// <b>Handling of null values</b><para/>
+        /// A null value indicates, that the corresponding metadata tag is not
+        /// present in the metadata model.
+        /// Setting this property's value to a non-null reference creates the
+        /// metadata tag if necessary.
+        /// Setting this property's value to a null reference deletes the
+        /// metadata tag from the metadata model.
+        /// </remarks>
+        public string City
+        {
+            get
+            {
+                return GetTagText("City");
+            }
+            set
+            {
+                SetTagValue("City", value);
+            }
+        }
+
+        /// <summary>
+        /// Gets or sets the value of the IPTC/NAA tag Sub Location.
+        /// </summary>
+        /// <remarks>
+        /// <b>Handling of null values</b><para/>
+        /// A null value indicates, that the corresponding metadata tag is not
+        /// present in the metadata model.
+        /// Setting this property's value to a non-null reference creates the
+        /// metadata tag if necessary.
+        /// Setting this property's value to a null reference deletes the
+        /// metadata tag from the metadata model.
+        /// </remarks>
+        public string SubLocation
+        {
+            get
+            {
+                return GetTagText("SubLocation");
+            }
+            set
+            {
+                SetTagValue("SubLocation", value);
+            }
+        }
+
+        /// <summary>
+        /// Gets or sets the value of the IPTC/NAA tag Province State.
+        /// </summary>
+        /// <remarks>
+        /// <b>Handling of null values</b><para/>
+        /// A null value indicates, that the corresponding metadata tag is not
+        /// present in the metadata model.
+        /// Setting this property's value to a non-null reference creates the
+        /// metadata tag if necessary.
+        /// Setting this property's value to a null reference deletes the
+        /// metadata tag from the metadata model.
+        /// </remarks>
+        public string ProvinceState
+        {
+            get
+            {
+                return GetTagText("ProvinceState");
+            }
+            set
+            {
+                SetTagValue("ProvinceState", value);
+            }
+        }
+
+        /// <summary>
+        /// Gets or sets the value of the IPTC/NAA tag Country Primary Location Code.
+        /// </summary>
+        /// <remarks>
+        /// <b>Handling of null values</b><para/>
+        /// A null value indicates, that the corresponding metadata tag is not
+        /// present in the metadata model.
+        /// Setting this property's value to a non-null reference creates the
+        /// metadata tag if necessary.
+        /// Setting this property's value to a null reference deletes the
+        /// metadata tag from the metadata model.
+        /// </remarks>
+        public string CountryPrimaryLocationCode
+        {
+            get
+            {
+                return GetTagText("Country-PrimaryLocationCode");
+            }
+            set
+            {
+                SetTagValue("Country-PrimaryLocationCode", value);
+            }
+        }
+
+        /// <summary>
+        /// Gets or sets the value of the IPTC/NAA tag Country Primary Location Name.
+        /// </summary>
+        /// <remarks>
+        /// <b>Handling of null values</b><para/>
+        /// A null value indicates, that the corresponding metadata tag is not
+        /// present in the metadata model.
+        /// Setting this property's value to a non-null reference creates the
+        /// metadata tag if necessary.
+        /// Setting this property's value to a null reference deletes the
+        /// metadata tag from the metadata model.
+        /// </remarks>
+        public string CountryPrimaryLocationName
+        {
+            get
+            {
+                return GetTagText("Country-PrimaryLocationName");
+            }
+            set
+            {
+                SetTagValue("Country-PrimaryLocationName", value);
+            }
+        }
+
+        /// <summary>
+        /// Gets or sets the value of the IPTC/NAA tag Original Transmission Reference.
+        /// </summary>
+        /// <remarks>
+        /// <b>Handling of null values</b><para/>
+        /// A null value indicates, that the corresponding metadata tag is not
+        /// present in the metadata model.
+        /// Setting this property's value to a non-null reference creates the
+        /// metadata tag if necessary.
+        /// Setting this property's value to a null reference deletes the
+        /// metadata tag from the metadata model.
+        /// </remarks>
+        public string OriginalTransmissionReference
+        {
+            get
+            {
+                return GetTagText("OriginalTransmissionReference");
+            }
+            set
+            {
+                SetTagValue("OriginalTransmissionReference", value);
+            }
+        }
+
+        /// <summary>
+        /// Gets or sets the value of the IPTC/NAA tag Headline.
+        /// </summary>
+        /// <remarks>
+        /// <b>Handling of null values</b><para/>
+        /// A null value indicates, that the corresponding metadata tag is not
+        /// present in the metadata model.
+        /// Setting this property's value to a non-null reference creates the
+        /// metadata tag if necessary.
+        /// Setting this property's value to a null reference deletes the
+        /// metadata tag from the metadata model.
+        /// </remarks>
+        public string Headline
+        {
+            get
+            {
+                return GetTagText("Headline");
+            }
+            set
+            {
+                SetTagValue("Headline", value);
+            }
+        }
+
+        /// <summary>
+        /// Gets or sets the value of the IPTC/NAA tag Credit.
+        /// </summary>
+        /// <remarks>
+        /// <b>Handling of null values</b><para/>
+        /// A null value indicates, that the corresponding metadata tag is not
+        /// present in the metadata model.
+        /// Setting this property's value to a non-null reference creates the
+        /// metadata tag if necessary.
+        /// Setting this property's value to a null reference deletes the
+        /// metadata tag from the metadata model.
+        /// </remarks>
+        public string Credit
+        {
+            get
+            {
+                return GetTagText("Credit");
+            }
+            set
+            {
+                SetTagValue("Credit", value);
+            }
+        }
+
+        /// <summary>
+        /// Gets or sets the value of the IPTC/NAA tag Source.
+        /// </summary>
+        /// <remarks>
+        /// <b>Handling of null values</b><para/>
+        /// A null value indicates, that the corresponding metadata tag is not
+        /// present in the metadata model.
+        /// Setting this property's value to a non-null reference creates the
+        /// metadata tag if necessary.
+        /// Setting this property's value to a null reference deletes the
+        /// metadata tag from the metadata model.
+        /// </remarks>
+        public string Source
+        {
+            get
+            {
+                return GetTagText("Source");
+            }
+            set
+            {
+                SetTagValue("Source", value);
+            }
+        }
+
+        /// <summary>
+        /// Gets or sets the value of the IPTC/NAA tag Copyright Notice.
+        /// </summary>
+        /// <remarks>
+        /// <b>Handling of null values</b><para/>
+        /// A null value indicates, that the corresponding metadata tag is not
+        /// present in the metadata model.
+        /// Setting this property's value to a non-null reference creates the
+        /// metadata tag if necessary.
+        /// Setting this property's value to a null reference deletes the
+        /// metadata tag from the metadata model.
+        /// </remarks>
+        public string CopyrightNotice
+        {
+            get
+            {
+                return GetTagText("CopyrightNotice");
+            }
+            set
+            {
+                SetTagValue("CopyrightNotice", value);
+            }
+        }
+
+        /// <summary>
+        /// Gets or sets the value of the IPTC/NAA tag Contact.
+        /// </summary>
+        /// <remarks>
+        /// <b>Handling of null values</b><para/>
+        /// A null value indicates, that the corresponding metadata tag is not
+        /// present in the metadata model.
+        /// Setting this property's value to a non-null reference creates the
+        /// metadata tag if necessary.
+        /// Setting this property's value to a null reference deletes the
+        /// metadata tag from the metadata model.
+        /// </remarks>
+        public string Contact
+        {
+            get
+            {
+                return GetTagText("Contact");
+            }
+            set
+            {
+                SetTagValue("Contact", value);
+            }
+        }
+
+        /// <summary>
+        /// Gets or sets the value of the IPTC/NAA tag Caption Abstract.
+        /// </summary>
+        /// <remarks>
+        /// <b>Handling of null values</b><para/>
+        /// A null value indicates, that the corresponding metadata tag is not
+        /// present in the metadata model.
+        /// Setting this property's value to a non-null reference creates the
+        /// metadata tag if necessary.
+        /// Setting this property's value to a null reference deletes the
+        /// metadata tag from the metadata model.
+        /// </remarks>
+        public string CaptionAbstract
+        {
+            get
+            {
+                return GetTagText("CaptionAbstract");
+            }
+            set
+            {
+                SetTagValue("CaptionAbstract", value);
+            }
+        }
+
+        /// <summary>
+        /// Gets or sets the value of the IPTC/NAA tag Writer Editor.
+        /// This is also referred to as Caption Writer.
+        /// </summary>
+        /// <remarks>
+        /// <b>Handling of null values</b><para/>
+        /// A null value indicates, that the corresponding metadata tag is not
+        /// present in the metadata model.
+        /// Setting this property's value to a non-null reference creates the
+        /// metadata tag if necessary.
+        /// Setting this property's value to a null reference deletes the
+        /// metadata tag from the metadata model.
+        /// </remarks>
+        public string WriterEditor
+        {
+            get
+            {
+                return GetTagText("WriterEditor");
+            }
+            set
+            {
+                SetTagValue("WriterEditor", value);
+            }
+        }
+
+        /// <summary>
+        /// Gets or sets the value of the IPTC/NAA tag Rasterized Caption.
+        /// </summary>
+        /// <remarks>
+        /// <b>Handling of null values</b><para/>
+        /// A null value indicates, that the corresponding metadata tag is not
+        /// present in the metadata model.
+        /// Setting this property's value to a non-null reference creates the
+        /// metadata tag if necessary.
+        /// Setting this property's value to a null reference deletes the
+        /// metadata tag from the metadata model.
+        /// </remarks>
+        public string RasterizedCaption
+        {
+            get
+            {
+                return GetTagText("RasterizedCaption");
+            }
+            set
+            {
+                SetTagValue("RasterizedCaption", value);
+            }
+        }
+
+        /// <summary>
+        /// Gets or sets the value of the IPTC/NAA tag Image Type.
+        /// </summary>
+        /// <remarks>
+        /// <b>Handling of null values</b><para/>
+        /// A null value indicates, that the corresponding metadata tag is not
+        /// present in the metadata model.
+        /// Setting this property's value to a non-null reference creates the
+        /// metadata tag if necessary.
+        /// Setting this property's value to a null reference deletes the
+        /// metadata tag from the metadata model.
+        /// </remarks>
+        public string ImageType
+        {
+            get
+            {
+                return GetTagText("ImageType");
+            }
+            set
+            {
+                SetTagValue("ImageType", value);
+            }
+        }
+
+        /// <summary>
+        /// Gets or sets the value of the IPTC/NAA tag Image Orientation.
+        /// </summary>
+        /// <remarks>
+        /// <b>Handling of null values</b><para/>
+        /// A null value indicates, that the corresponding metadata tag is not
+        /// present in the metadata model.
+        /// Setting this property's value to a non-null reference creates the
+        /// metadata tag if necessary.
+        /// Setting this property's value to a null reference deletes the
+        /// metadata tag from the metadata model.
+        /// </remarks>
+        public string ImageOrientation
+        {
+            get
+            {
+                return GetTagText("ImageOrientation");
+            }
+            set
+            {
+                SetTagValue("ImageOrientation", value);
+            }
+        }
+
+        /// <summary>
+        /// Gets or sets the value of the IPTC/NAA tag Language Identifier.
+        /// </summary>
+        /// <remarks>
+        /// <b>Handling of null values</b><para/>
+        /// A null value indicates, that the corresponding metadata tag is not
+        /// present in the metadata model.
+        /// Setting this property's value to a non-null reference creates the
+        /// metadata tag if necessary.
+        /// Setting this property's value to a null reference deletes the
+        /// metadata tag from the metadata model.
+        /// </remarks>
+        public string LanguageIdentifier
+        {
+            get
+            {
+                return GetTagText("LanguageIdentifier");
+            }
+            set
+            {
+                SetTagValue("LanguageIdentifier", value);
+            }
+        }
+
+        /// <summary>
+        /// Gets or sets the value of the IPTC/NAA tag Audio Type.
+        /// </summary>
+        /// <remarks>
+        /// <b>Handling of null values</b><para/>
+        /// A null value indicates, that the corresponding metadata tag is not
+        /// present in the metadata model.
+        /// Setting this property's value to a non-null reference creates the
+        /// metadata tag if necessary.
+        /// Setting this property's value to a null reference deletes the
+        /// metadata tag from the metadata model.
+        /// </remarks>
+        public string AudioType
+        {
+            get
+            {
+                return GetTagText("AudioType");
+            }
+            set
+            {
+                SetTagValue("AudioType", value);
+            }
+        }
+
+        /// <summary>
+        /// Gets or sets the value of the IPTC/NAA tag Audio Sampling Rate.
+        /// </summary>
+        /// <remarks>
+        /// <b>Handling of null values</b><para/>
+        /// A null value indicates, that the corresponding metadata tag is not
+        /// present in the metadata model.
+        /// Setting this property's value to a non-null reference creates the
+        /// metadata tag if necessary.
+        /// Setting this property's value to a null reference deletes the
+        /// metadata tag from the metadata model.
+        /// </remarks>
+        public string AudioSamplingRate
+        {
+            get
+            {
+                return GetTagText("AudioSamplingRate");
+            }
+            set
+            {
+                SetTagValue("AudioSamplingRate", value);
+            }
+        }
+
+        /// <summary>
+        /// Gets or sets the value of the IPTC/NAA tag Audio Sampling Resolution.
+        /// </summary>
+        /// <remarks>
+        /// <b>Handling of null values</b><para/>
+        /// A null value indicates, that the corresponding metadata tag is not
+        /// present in the metadata model.
+        /// Setting this property's value to a non-null reference creates the
+        /// metadata tag if necessary.
+        /// Setting this property's value to a null reference deletes the
+        /// metadata tag from the metadata model.
+        /// </remarks>
+        public string AudioSamplingResolution
+        {
+            get
+            {
+                return GetTagText("AudioSamplingResolution");
+            }
+            set
+            {
+                SetTagValue("AudioSamplingResolution", value);
+            }
+        }
+
+        /// <summary>
+        /// Gets or sets the value of the IPTC/NAA tag Audio Duration.
+        /// </summary>
+        /// <remarks>
+        /// <b>Handling of null values</b><para/>
+        /// A null value indicates, that the corresponding metadata tag is not
+        /// present in the metadata model.
+        /// Setting this property's value to a non-null reference creates the
+        /// metadata tag if necessary.
+        /// Setting this property's value to a null reference deletes the
+        /// metadata tag from the metadata model.
+        /// </remarks>
+        public string AudioDuration
+        {
+            get
+            {
+                return GetTagText("AudioDuration");
+            }
+            set
+            {
+                SetTagValue("AudioDuration", value);
+            }
+        }
+
+        /// <summary>
+        /// Gets or sets the value of the IPTC/NAA tag Audio Outcue.
+        /// </summary>
+        /// <remarks>
+        /// <b>Handling of null values</b><para/>
+        /// A null value indicates, that the corresponding metadata tag is not
+        /// present in the metadata model.
+        /// Setting this property's value to a non-null reference creates the
+        /// metadata tag if necessary.
+        /// Setting this property's value to a null reference deletes the
+        /// metadata tag from the metadata model.
+        /// </remarks>
+        public string AudioOutcue
+        {
+            get
+            {
+                return GetTagText("AudioOutcue");
+            }
+            set
+            {
+                SetTagValue("AudioOutcue", value);
+            }
+        }
+
+        /// <summary>
+        /// Gets or sets the value of the IPTC/NAA tag Job I D.
+        /// </summary>
+        /// <remarks>
+        /// <b>Handling of null values</b><para/>
+        /// A null value indicates, that the corresponding metadata tag is not
+        /// present in the metadata model.
+        /// Setting this property's value to a non-null reference creates the
+        /// metadata tag if necessary.
+        /// Setting this property's value to a null reference deletes the
+        /// metadata tag from the metadata model.
+        /// </remarks>
+        public string JobID
+        {
+            get
+            {
+                return GetTagText("JobID");
+            }
+            set
+            {
+                SetTagValue("JobID", value);
+            }
+        }
+
+        /// <summary>
+        /// Gets or sets the value of the IPTC/NAA tag Master Document I D.
+        /// </summary>
+        /// <remarks>
+        /// <b>Handling of null values</b><para/>
+        /// A null value indicates, that the corresponding metadata tag is not
+        /// present in the metadata model.
+        /// Setting this property's value to a non-null reference creates the
+        /// metadata tag if necessary.
+        /// Setting this property's value to a null reference deletes the
+        /// metadata tag from the metadata model.
+        /// </remarks>
+        public string MasterDocumentID
+        {
+            get
+            {
+                return GetTagText("MasterDocumentID");
+            }
+            set
+            {
+                SetTagValue("MasterDocumentID", value);
+            }
+        }
+
+        /// <summary>
+        /// Gets or sets the value of the IPTC/NAA tag Short Document I D.
+        /// </summary>
+        /// <remarks>
+        /// <b>Handling of null values</b><para/>
+        /// A null value indicates, that the corresponding metadata tag is not
+        /// present in the metadata model.
+        /// Setting this property's value to a non-null reference creates the
+        /// metadata tag if necessary.
+        /// Setting this property's value to a null reference deletes the
+        /// metadata tag from the metadata model.
+        /// </remarks>
+        public string ShortDocumentID
+        {
+            get
+            {
+                return GetTagText("ShortDocumentID");
+            }
+            set
+            {
+                SetTagValue("ShortDocumentID", value);
+            }
+        }
+
+        /// <summary>
+        /// Gets or sets the value of the IPTC/NAA tag Unique Document I D.
+        /// </summary>
+        /// <remarks>
+        /// <b>Handling of null values</b><para/>
+        /// A null value indicates, that the corresponding metadata tag is not
+        /// present in the metadata model.
+        /// Setting this property's value to a non-null reference creates the
+        /// metadata tag if necessary.
+        /// Setting this property's value to a null reference deletes the
+        /// metadata tag from the metadata model.
+        /// </remarks>
+        public string UniqueDocumentID
+        {
+            get
+            {
+                return GetTagText("UniqueDocumentID");
+            }
+            set
+            {
+                SetTagValue("UniqueDocumentID", value);
+            }
+        }
+
+        /// <summary>
+        /// Gets or sets the value of the IPTC/NAA tag Owner I D.
+        /// </summary>
+        /// <remarks>
+        /// <b>Handling of null values</b><para/>
+        /// A null value indicates, that the corresponding metadata tag is not
+        /// present in the metadata model.
+        /// Setting this property's value to a non-null reference creates the
+        /// metadata tag if necessary.
+        /// Setting this property's value to a null reference deletes the
+        /// metadata tag from the metadata model.
+        /// </remarks>
+        public string OwnerID
+        {
+            get
+            {
+                return GetTagText("OwnerID");
+            }
+            set
+            {
+                SetTagValue("OwnerID", value);
+            }
+        }
+
+        /// <summary>
+        /// Gets or sets the value of the IPTC/NAA tag Object Preview File Format.
+        /// </summary>
+        /// <remarks>
+        /// <b>Handling of null values</b><para/>
+        /// A null value indicates, that the corresponding metadata tag is not
+        /// present in the metadata model.
+        /// Setting this property's value to a non-null reference creates the
+        /// metadata tag if necessary.
+        /// Setting this property's value to a null reference deletes the
+        /// metadata tag from the metadata model.
+        /// </remarks>
+        public string ObjectPreviewFileFormat
+        {
+            get
+            {
+                return GetTagText("ObjectPreviewFileFormat");
+            }
+            set
+            {
+                SetTagValue("ObjectPreviewFileFormat", value);
+            }
+        }
+
+        /// <summary>
+        /// Gets or sets the value of the IPTC/NAA tag Object Preview File Version.
+        /// </summary>
+        /// <remarks>
+        /// <b>Handling of null values</b><para/>
+        /// A null value indicates, that the corresponding metadata tag is not
+        /// present in the metadata model.
+        /// Setting this property's value to a non-null reference creates the
+        /// metadata tag if necessary.
+        /// Setting this property's value to a null reference deletes the
+        /// metadata tag from the metadata model.
+        /// </remarks>
+        public string ObjectPreviewFileVersion
+        {
+            get
+            {
+                return GetTagText("ObjectPreviewFileVersion");
+            }
+            set
+            {
+                SetTagValue("ObjectPreviewFileVersion", value);
+            }
+        }
+
+        /// <summary>
+        /// Gets or sets the value of the IPTC/NAA tag Object Preview Data.
+        /// This is also referred to as Audio Outcue.
+        /// </summary>
+        /// <remarks>
+        /// <b>Handling of null values</b><para/>
+        /// A null value indicates, that the corresponding metadata tag is not
+        /// present in the metadata model.
+        /// Setting this property's value to a non-null reference creates the
+        /// metadata tag if necessary.
+        /// Setting this property's value to a null reference deletes the
+        /// metadata tag from the metadata model.
+        /// </remarks>
+        public string ObjectPreviewData
+        {
+            get
+            {
+                return GetTagText("ObjectPreviewData");
+            }
+            set
+            {
+                SetTagValue("ObjectPreviewData", value);
+            }
+        }
+
+        /// <summary>
+        /// Gets or sets the value of the IPTC/NAA tag Prefs.
+        /// This is also referred to as photo-mechanic preferences.
+        /// </summary>
+        /// <remarks>
+        /// <b>Handling of null values</b><para/>
+        /// A null value indicates, that the corresponding metadata tag is not
+        /// present in the metadata model.
+        /// Setting this property's value to a non-null reference creates the
+        /// metadata tag if necessary.
+        /// Setting this property's value to a null reference deletes the
+        /// metadata tag from the metadata model.
+        /// </remarks>
+        public string Prefs
+        {
+            get
+            {
+                return GetTagText("Prefs");
+            }
+            set
+            {
+                SetTagValue("Prefs", value);
+            }
+        }
+
+        /// <summary>
+        /// Gets or sets the value of the IPTC/NAA tag Classify State.
+        /// </summary>
+        /// <remarks>
+        /// <b>Handling of null values</b><para/>
+        /// A null value indicates, that the corresponding metadata tag is not
+        /// present in the metadata model.
+        /// Setting this property's value to a non-null reference creates the
+        /// metadata tag if necessary.
+        /// Setting this property's value to a null reference deletes the
+        /// metadata tag from the metadata model.
+        /// </remarks>
+        public string ClassifyState
+        {
+            get
+            {
+                return GetTagText("ClassifyState");
+            }
+            set
+            {
+                SetTagValue("ClassifyState", value);
+            }
+        }
+
+        /// <summary>
+        /// Gets or sets the value of the IPTC/NAA tag Similarity Index.
+        /// </summary>
+        /// <remarks>
+        /// <b>Handling of null values</b><para/>
+        /// A null value indicates, that the corresponding metadata tag is not
+        /// present in the metadata model.
+        /// Setting this property's value to a non-null reference creates the
+        /// metadata tag if necessary.
+        /// Setting this property's value to a null reference deletes the
+        /// metadata tag from the metadata model.
+        /// </remarks>
+        public string SimilarityIndex
+        {
+            get
+            {
+                return GetTagText("SimilarityIndex");
+            }
+            set
+            {
+                SetTagValue("SimilarityIndex", value);
+            }
+        }
+
+        /// <summary>
+        /// Gets or sets the value of the IPTC/NAA tag Document Notes.
+        /// </summary>
+        /// <remarks>
+        /// <b>Handling of null values</b><para/>
+        /// A null value indicates, that the corresponding metadata tag is not
+        /// present in the metadata model.
+        /// Setting this property's value to a non-null reference creates the
+        /// metadata tag if necessary.
+        /// Setting this property's value to a null reference deletes the
+        /// metadata tag from the metadata model.
+        /// </remarks>
+        public string DocumentNotes
+        {
+            get
+            {
+                return GetTagText("DocumentNotes");
+            }
+            set
+            {
+                SetTagValue("DocumentNotes", value);
+            }
+        }
+
+        /// <summary>
+        /// Gets or sets the value of the IPTC/NAA tag Document History.
+        /// </summary>
+        /// <remarks>
+        /// <b>Handling of null values</b><para/>
+        /// A null value indicates, that the corresponding metadata tag is not
+        /// present in the metadata model.
+        /// Setting this property's value to a non-null reference creates the
+        /// metadata tag if necessary.
+        /// Setting this property's value to a null reference deletes the
+        /// metadata tag from the metadata model.
+        /// </remarks>
+        public string DocumentHistory
+        {
+            get
+            {
+                return GetTagText("DocumentHistory");
+            }
+            set
+            {
+                SetTagValue("DocumentHistory", value);
+            }
+        }
+
+        /// <summary>
+        /// Gets or sets the value of the IPTC/NAA tag Exif Camera Info.
+        /// </summary>
+        /// <remarks>
+        /// <b>Handling of null values</b><para/>
+        /// A null value indicates, that the corresponding metadata tag is not
+        /// present in the metadata model.
+        /// Setting this property's value to a non-null reference creates the
+        /// metadata tag if necessary.
+        /// Setting this property's value to a null reference deletes the
+        /// metadata tag from the metadata model.
+        /// </remarks>
+        public string ExifCameraInfo
+        {
+            get
+            {
+                return GetTagText("ExifCameraInfo");
+            }
+            set
+            {
+                SetTagValue("ExifCameraInfo", value);
+            }
+        }
+    }
+
+    /// <summary>
+    /// Represents a collection of all tags contained in the metadata model
+    /// <see cref="FREE_IMAGE_MDMODEL.FIMD_NODATA"/>.
+    /// </summary>
+    public class MDM_NODATA : MetadataModel
+    {
+        /// <summary>
+        /// Initializes a new instance of this class.
+        /// </summary>
+        /// <param name="dib">Handle to a FreeImage bitmap.</param>
+        public MDM_NODATA(FIBITMAP dib) : base(dib) { }
+
+        /// <summary>
+        /// Retrieves the datamodel that this instance represents.
+        /// </summary>
+        public override FREE_IMAGE_MDMODEL Model
+        {
+            get { return FREE_IMAGE_MDMODEL.FIMD_NODATA; }
+        }
+    }
+
+    /// <summary>
+    /// Represents a collection of all tags contained in the metadata model
+    /// <see cref="FREE_IMAGE_MDMODEL.FIMD_XMP"/>.
+    /// </summary>
+    public class MDM_XMP : MetadataModel
+    {
+        /// <summary>
+        /// Initializes a new instance of this class.
+        /// </summary>
+        /// <param name="dib">Handle to a FreeImage bitmap.</param>
+        public MDM_XMP(FIBITMAP dib) : base(dib) { }
+
+        /// <summary>
+        /// Retrieves the datamodel that this instance represents.
+        /// </summary>
+        public override FREE_IMAGE_MDMODEL Model
+        {
+            get { return FREE_IMAGE_MDMODEL.FIMD_XMP; }
+        }
+
+        /// <summary>
+        /// Gets or sets the XMP XML content.
+        /// </summary>
+        /// <remarks>
+        /// <b>Handling of null values</b><para/>
+        /// A null value indicates, that the corresponding metadata tag is not
+        /// present in the metadata model.
+        /// Setting this property's value to a non-null reference creates the
+        /// metadata tag if necessary.
+        /// Setting this property's value to a null reference deletes the
+        /// metadata tag from the metadata model.
+        /// </remarks>
+        public string Xml
+        {
+            get
+            {
+                return GetTagText("XMLPacket");
+            }
+            set
+            {
+                SetTagValue("XMLPacket", value);
+            }
+        }
+
+        /// <summary>
+        /// Gets an <see cref="XmlReader"/> initialized to read the XMP XML content.
+        /// Returns null, if the metadata tag <i>XMLPacket</i> is not present in
+        /// this model.
+        /// </summary>
+        public XmlReader XmlReader
+        {
+            get
+            {
+                string xmlString = Xml;
+                if (xmlString == null)
+                {
+                    return null;
+                }
+                else
+                {
+                    MemoryStream stream = new MemoryStream();
+                    StreamWriter writer = new StreamWriter(stream);
+                    writer.Write(xmlString);
+                    return XmlReader.Create(stream);
+                }
+            }
+        }
+    }
 }
 
 	#endregion
@@ -15402,27 +23264,38 @@ namespace FreeImageAPI.Metadata
 		/// <summary>
 		/// The encapsulated FreeImage-tag.
 		/// </summary>
+		[DebuggerBrowsable(DebuggerBrowsableState.Never)]
 		internal FITAG tag;
+
 		/// <summary>
 		/// The metadata model of <see cref="tag"/>.
 		/// </summary>
+		[DebuggerBrowsable(DebuggerBrowsableState.Never)]
 		private FREE_IMAGE_MDMODEL model;
+
 		/// <summary>
 		/// Indicates whether this instance has already been disposed.
 		/// </summary>
+		[DebuggerBrowsable(DebuggerBrowsableState.Never)]
 		private bool disposed = false;
+
 		/// <summary>
 		/// Indicates whether this instance was created by FreeImage or
 		/// by the user.
 		/// </summary>
+		[DebuggerBrowsable(DebuggerBrowsableState.Never)]
 		private bool selfCreated;
+
 		/// <summary>
 		/// List linking metadata-model and Type.
 		/// </summary>
+		[DebuggerBrowsable(DebuggerBrowsableState.Never)]
 		private static readonly Dictionary<FREE_IMAGE_MDTYPE, Type> idList;
+
 		/// <summary>
 		/// List linking Type and metadata-model.
 		/// </summary>
+		[DebuggerBrowsable(DebuggerBrowsableState.Never)]
 		private static readonly Dictionary<Type, FREE_IMAGE_MDTYPE> typeList;
 
 		/// <summary>
@@ -15521,8 +23394,8 @@ namespace FreeImageAPI.Metadata
 			typeList.Add(typeof(FIURational[]), FREE_IMAGE_MDTYPE.FIDT_RATIONAL);
 			typeList.Add(typeof(sbyte), FREE_IMAGE_MDTYPE.FIDT_SBYTE);
 			typeList.Add(typeof(sbyte[]), FREE_IMAGE_MDTYPE.FIDT_SBYTE);
-			typeList.Add(typeof(byte), FREE_IMAGE_MDTYPE.FIDT_UNDEFINED);
-			typeList.Add(typeof(byte[]), FREE_IMAGE_MDTYPE.FIDT_UNDEFINED);
+			typeList.Add(typeof(byte), FREE_IMAGE_MDTYPE.FIDT_BYTE);
+			typeList.Add(typeof(byte[]), FREE_IMAGE_MDTYPE.FIDT_BYTE);
 			typeList.Add(typeof(short), FREE_IMAGE_MDTYPE.FIDT_SSHORT);
 			typeList.Add(typeof(short[]), FREE_IMAGE_MDTYPE.FIDT_SSHORT);
 			typeList.Add(typeof(int), FREE_IMAGE_MDTYPE.FIDT_SLONG);
@@ -15556,12 +23429,11 @@ namespace FreeImageAPI.Metadata
 		public static bool operator ==(MetadataTag left, MetadataTag right)
 		{
 			// Check whether both are null
-			if (Object.ReferenceEquals(left, null) && Object.ReferenceEquals(right, null))
+			if ((object)left == (object)right)
 			{
 				return true;
 			}
-			// Check whether only one is null
-			if (Object.ReferenceEquals(left, null) || Object.ReferenceEquals(right, null))
+			else if ((object)left == null || (object)right == null)
 			{
 				return false;
 			}
@@ -15690,7 +23562,7 @@ namespace FreeImageAPI.Metadata
 		public FREE_IMAGE_MDTYPE Type
 		{
 			get { CheckDisposed(); return FreeImage.GetTagType(tag); }
-			private set { FreeImage.SetTagType(tag, value); }
+			internal set { FreeImage.SetTagType(tag, value); }
 		}
 
 		/// <summary>
@@ -15698,7 +23570,7 @@ namespace FreeImageAPI.Metadata
 		/// </summary>
 		public uint Count
 		{
-			get { CheckDisposed(); return Type == FREE_IMAGE_MDTYPE.FIDT_ASCII ? FreeImage.GetTagCount(tag) - 1 : FreeImage.GetTagCount(tag); }
+			get { CheckDisposed(); return FreeImage.GetTagCount(tag); }
 			private set { FreeImage.SetTagCount(tag, value); }
 		}
 
@@ -15707,7 +23579,7 @@ namespace FreeImageAPI.Metadata
 		/// </summary>
 		public uint Length
 		{
-			get { CheckDisposed(); return Type == FREE_IMAGE_MDTYPE.FIDT_ASCII ? FreeImage.GetTagLength(tag) - 1 : FreeImage.GetTagLength(tag); }
+			get { CheckDisposed(); return FreeImage.GetTagLength(tag); }
 			private set { FreeImage.SetTagLength(tag, value); }
 		}
 
@@ -15725,38 +23597,36 @@ namespace FreeImageAPI.Metadata
 
 		/// <summary>
 		/// Gets or sets the value of the metadata.
-		/// <para> In case value is of byte or byte[], <see cref="FREE_IMAGE_MDTYPE.FIDT_UNDEFINED"/> is assumed.</para>
-		/// <para> In case value is of uint or uint[], <see cref="FREE_IMAGE_MDTYPE.FIDT_LONG"/> is assumed.</para>
 		/// </summary>
-		public unsafe object Value
+		public object Value
 		{
 			get
 			{
-				CheckDisposed();
-				int cnt = (int)Count;
-
-				if (Type == FREE_IMAGE_MDTYPE.FIDT_ASCII)
+				unsafe
 				{
-					byte* value = (byte*)FreeImage.GetTagValue(tag);
-					StringBuilder sb = new StringBuilder();
-					for (int i = 0; i < cnt; i++)
+					CheckDisposed();
+					int cnt = (int)Count;
+
+					if (Type == FREE_IMAGE_MDTYPE.FIDT_ASCII)
 					{
-						sb.Append(Convert.ToChar(value[i]));
+						byte* value = (byte*)FreeImage.GetTagValue(tag);
+						StringBuilder sb = new StringBuilder();
+						for (int i = 0; i < cnt; i++)
+						{
+							sb.Append(Convert.ToChar(value[i]));
+						}
+						return sb.ToString();
 					}
-					return sb.ToString();
-				}
-				else if (Type == FREE_IMAGE_MDTYPE.FIDT_NOTYPE)
-				{
-					return null;
-				}
+					else if (Type == FREE_IMAGE_MDTYPE.FIDT_NOTYPE)
+					{
+						return null;
+					}
 
-				Array array = Array.CreateInstance(idList[Type], Count);
-				void* src = (void*)FreeImage.GetTagValue(tag);
-				GCHandle handle = GCHandle.Alloc(array, GCHandleType.Pinned);
-				void* dst = (void*)Marshal.UnsafeAddrOfPinnedArrayElement(array, 0);
-				FreeImage.CopyMemory(dst, src, Length);
-				handle.Free();
-				return array;
+					Array array = Array.CreateInstance(idList[Type], Count);
+					void* src = (void*)FreeImage.GetTagValue(tag);
+					FreeImage.CopyMemory(array, src, Length);
+					return array;
+				}
 			}
 			set
 			{
@@ -15780,7 +23650,7 @@ namespace FreeImageAPI.Metadata
 			Type type = value.GetType();
 			if (!typeList.ContainsKey(type))
 			{
-				throw new NotSupportedException();
+				throw new NotSupportedException("The type of value is not supported");
 			}
 			return SetValue(value, typeList[type]);
 		}
@@ -15843,19 +23713,17 @@ namespace FreeImageAPI.Metadata
 					throw new ArgumentException("value");
 				}
 				Type = type;
-				Count = (uint)(tempValue.Length + 1);
-				Length = (uint)((tempValue.Length * sizeof(byte)) + 1);
-				data = new byte[Length + 1];
+				Length = Count = (uint)tempValue.Length;
+				data = new byte[Length];
 
 				for (int i = 0; i < tempValue.Length; i++)
 				{
 					data[i] = (byte)tempValue[i];
 				}
-				data[data.Length - 1] = 0;
 			}
 			else if (type == FREE_IMAGE_MDTYPE.FIDT_NOTYPE)
 			{
-				throw new NotSupportedException();
+				throw new NotSupportedException("type is not supported.");
 			}
 			else
 			{
@@ -15864,20 +23732,58 @@ namespace FreeImageAPI.Metadata
 				{
 					throw new ArgumentException("value");
 				}
+
+				if (array.Length != 0)
+					if (!CheckType(array.GetValue(0).GetType(), type))
+						throw new ArgumentException("The type of value is incorrect.");
+
 				Type = type;
 				Count = (uint)array.Length;
 				Length = (uint)(array.Length * Marshal.SizeOf(idList[type]));
 				data = new byte[Length];
-				GCHandle handle = GCHandle.Alloc(array, GCHandleType.Pinned);
-				void* src = (void*)Marshal.UnsafeAddrOfPinnedArrayElement(array, 0);
-				fixed (byte* dst = data)
-				{
-					FreeImage.CopyMemory(dst, src, Length);
-				}
-				handle.Free();
+				FreeImage.CopyMemory(data, array, Length);
 			}
 
 			return FreeImage.SetTagValue(tag, data);
+		}
+
+		private static bool CheckType(Type dataType, FREE_IMAGE_MDTYPE type)
+		{
+			if (dataType != null)
+				switch (type)
+				{
+					case FREE_IMAGE_MDTYPE.FIDT_ASCII:
+						return dataType == typeof(string);
+					case FREE_IMAGE_MDTYPE.FIDT_BYTE:
+						return dataType == typeof(byte);
+					case FREE_IMAGE_MDTYPE.FIDT_DOUBLE:
+						return dataType == typeof(double);
+					case FREE_IMAGE_MDTYPE.FIDT_FLOAT:
+						return dataType == typeof(float);
+					case FREE_IMAGE_MDTYPE.FIDT_IFD:
+						return dataType == typeof(uint);
+					case FREE_IMAGE_MDTYPE.FIDT_LONG:
+						return dataType == typeof(uint);
+					case FREE_IMAGE_MDTYPE.FIDT_NOTYPE:
+						return false;
+					case FREE_IMAGE_MDTYPE.FIDT_PALETTE:
+						return dataType == typeof(RGBQUAD);
+					case FREE_IMAGE_MDTYPE.FIDT_RATIONAL:
+						return dataType == typeof(FIURational);
+					case FREE_IMAGE_MDTYPE.FIDT_SBYTE:
+						return dataType == typeof(sbyte);
+					case FREE_IMAGE_MDTYPE.FIDT_SHORT:
+						return dataType == typeof(ushort);
+					case FREE_IMAGE_MDTYPE.FIDT_SLONG:
+						return dataType == typeof(int);
+					case FREE_IMAGE_MDTYPE.FIDT_SRATIONAL:
+						return dataType == typeof(FIRational);
+					case FREE_IMAGE_MDTYPE.FIDT_SSHORT:
+						return dataType == typeof(short);
+					case FREE_IMAGE_MDTYPE.FIDT_UNDEFINED:
+						return dataType == typeof(byte);
+				}
+			return false;
 		}
 
 		/// <summary>
@@ -15901,7 +23807,7 @@ namespace FreeImageAPI.Metadata
 				tag = FreeImage.CloneTag(tag);
 				if (tag.IsNull)
 				{
-					throw new Exception();
+					throw new Exception("FreeImage.CloneTag() failed.");
 				}
 				selfCreated = true;
 			}
@@ -15926,13 +23832,7 @@ namespace FreeImageAPI.Metadata
 			item.Id = ID;
 			item.Len = (int)Length;
 			item.Type = (short)Type;
-			byte[] data = new byte[item.Len];
-			byte* ptr = (byte*)FreeImage.GetTagValue(tag);
-			for (int i = 0; i < data.Length; i++)
-			{
-				data[i] = ptr[i];
-			}
-			item.Value = data;
+			FreeImage.CopyMemory(item.Value = new byte[item.Len], FreeImage.GetTagValue(tag), item.Len);
 			return item;
 		}
 
@@ -16016,7 +23916,7 @@ namespace FreeImageAPI.Metadata
 			}
 			if (!(obj is MetadataTag))
 			{
-				throw new ArgumentException();
+				throw new ArgumentException("obj");
 			}
 			return CompareTo((MetadataTag)obj);
 		}
@@ -16044,6 +23944,7 @@ namespace FreeImageAPI.Metadata
 				if (selfCreated)
 				{
 					FreeImage.DeleteTag(tag);
+					tag = FITAG.Zero;
 				}
 			}
 		}
@@ -16077,16 +23978,26 @@ namespace FreeImageAPI
 	/// </summary>
 	public sealed class Palette : MemoryArray<RGBQUAD>
 	{
+		[DebuggerBrowsable(DebuggerBrowsableState.Never)]
+		private GCHandle paletteHandle;
+
+		[DebuggerBrowsable(DebuggerBrowsableState.Never)]
+		private RGBQUAD[] array;
+
 		/// <summary>
 		/// Initializes a new instance for the given FreeImage bitmap.
 		/// </summary>
 		/// <param name="dib">Handle to a FreeImage bitmap.</param>
+		/// <exception cref="ArgumentNullException"><paramref name="dib"/> is null.</exception>
+		/// <exception cref="ArgumentException"><paramref name="dib"/> is not
+		/// <see cref="FREE_IMAGE_TYPE.FIT_BITMAP"/><para/>-or-<para/>
+		/// <paramref name="dib"/> has more than 8bpp.</exception>
 		public Palette(FIBITMAP dib)
 			: base(FreeImage.GetPalette(dib), (int)FreeImage.GetColorsUsed(dib))
 		{
 			if (dib.IsNull)
 			{
-				throw new ArgumentNullException();
+				throw new ArgumentNullException("dib");
 			}
 			if (FreeImage.GetImageType(dib) != FREE_IMAGE_TYPE.FIT_BITMAP)
 			{
@@ -16096,6 +24007,89 @@ namespace FreeImageAPI
 			{
 				throw new ArgumentException("dib");
 			}
+		}
+
+		/// <summary>
+		/// Initializes a new instance for the given FITAG that contains
+		/// a palette.
+		/// </summary>
+		/// <param name="tag">The tag containing the palette.</param>
+		/// <exception cref="ArgumentNullException"><paramref name="tag"/> is null.</exception>
+		/// <exception cref="ArgumentException"><paramref name="tag"/> is not
+		/// <see cref="FREE_IMAGE_MDTYPE.FIDT_PALETTE"/>.</exception>
+		public Palette(FITAG tag)
+			: base(FreeImage.GetTagValue(tag), (int)FreeImage.GetTagCount(tag))
+		{
+			if (FreeImage.GetTagType(tag) != FREE_IMAGE_MDTYPE.FIDT_PALETTE)
+			{
+				throw new ArgumentException("tag");
+			}
+		}
+
+		/// <summary>
+		/// Initializes a new instance for the given MetadataTag that contains
+		/// a palette.
+		/// </summary>
+		/// <param name="tag">The tag containing the palette.</param>
+		/// <exception cref="ArgumentNullException"><paramref name="dib"/> is null.</exception>
+		/// <exception cref="ArgumentException"><paramref name="tag"/> is not
+		/// <see cref="FREE_IMAGE_MDTYPE.FIDT_PALETTE"/>.</exception>
+		public Palette(MetadataTag tag)
+			: base(FreeImage.GetTagValue(tag.tag), (int)tag.Count)
+		{
+			if (FreeImage.GetTagType(tag) != FREE_IMAGE_MDTYPE.FIDT_PALETTE)
+			{
+				throw new ArgumentException("tag");
+			}
+		}
+
+		/// <summary>
+		/// Initializes a new instance for the given array of <see cref="RGBQUAD"/> that contains
+		/// a palette.
+		/// </summary>
+		/// <param name="palette">A RGBQUAD array containing the palette data to initialize this instance.</param>
+		public Palette(RGBQUAD[] palette)
+		{
+			unsafe
+			{
+				this.array = (RGBQUAD[])palette.Clone();
+				this.paletteHandle = GCHandle.Alloc(array, GCHandleType.Pinned);
+
+				base.baseAddress = (byte*)this.paletteHandle.AddrOfPinnedObject();
+				base.length = (int)this.array.Length;
+
+				// Create an array containing a single element.
+				// Due to the fact, that it's not possible to create pointers
+				// of generic types, an array is used to obtain the memory
+				// address of an element of T.
+				base.buffer = new RGBQUAD[1];
+				// The array is pinned immediately to prevent the GC from
+				// moving it to a different position in memory.
+				base.handle = GCHandle.Alloc(buffer, GCHandleType.Pinned);
+				// The array and its content have beed pinned, so that its address
+				// can be safely requested and stored for the whole lifetime
+				// of the instace.
+				base.ptr = (byte*)base.handle.AddrOfPinnedObject();
+			}
+		}
+
+		/// <summary>
+		/// Initializes a new instance for the given array of <see cref="Color"/> that contains
+		/// a palette.
+		/// </summary>
+		/// <param name="palette">A Color array containing the palette data to initialize this instance.</param>
+		public Palette(Color[] palette)
+			: this(RGBQUAD.ToRGBQUAD(palette))
+		{
+		}
+
+		/// <summary>
+		/// Initializes a new instance with the specified size.
+		/// </summary>
+		/// <param name="size">The size of the palette.</param>
+		public Palette(int size)
+			: this(new RGBQUAD[size])
+		{
 		}
 
 		/// <summary>
@@ -16121,6 +24115,7 @@ namespace FreeImageAPI
 		{
 			get
 			{
+				EnsureNotDisposed();
 				Color[] data = new Color[length];
 				for (int i = 0; i < length; i++)
 				{
@@ -16176,6 +24171,7 @@ namespace FreeImageAPI
 		/// </remarks>
 		public void Colorize(Color color, int splitSize)
 		{
+			EnsureNotDisposed();
 			if (splitSize < 1 || splitSize >= length)
 			{
 				throw new ArgumentOutOfRangeException("splitSize");
@@ -16216,6 +24212,89 @@ namespace FreeImageAPI
 		}
 
 		/// <summary>
+		/// Creates a linear grayscale palette.
+		/// </summary>
+		public void CreateGrayscalePalette()
+		{
+			Colorize(Color.White, length - 1);
+		}
+
+		/// <summary>
+		/// Creates a linear grayscale palette.
+		/// </summary>
+		/// <param name="inverse"><b>true</b> to create an inverse grayscale palette.</param>
+		public void CreateGrayscalePalette(bool inverse)
+		{
+			Colorize(Color.White, inverse ? 0 : length - 1);
+		}
+
+		/// <summary>
+		/// Creates a linear palette with the specified <see cref="Color"/>.
+		/// </summary>
+		/// <remarks>
+		/// A linear grayscale palette contains all shades of colors from
+		/// black to white. This method creates a similar palette with the white
+		/// color being replaced by the specified color.
+		/// </remarks>
+		/// <param name="color">The <see cref="Color"/> used to create the palette.</param>
+		/// <param name="inverse"><b>true</b> to create an inverse palette.</param>
+		public void CreateGrayscalePalette(Color color, bool inverse)
+		{
+			Colorize(color, inverse ? 0 : length - 1);
+		}
+
+		/// <summary>
+		/// Reverses the palette.
+		/// </summary>
+		public void Reverse()
+		{
+			EnsureNotDisposed();
+			if (array != null)
+			{
+				Array.Reverse(array);
+			}
+			else
+			{
+				RGBQUAD[] localArray = Data;
+				Array.Reverse(localArray);
+				Data = localArray;
+			}
+		}
+
+		/// <summary>
+		/// Copies the values from the specified <see cref="Palette"/> to this instance.
+		/// </summary>
+		/// <param name="palette">The palette to copy from.</param>
+		/// <exception cref="ArgumentNullException">
+		/// <paramref name="palette"/> is a null reference.</exception>
+		public void CopyFrom(Palette palette)
+		{
+			EnsureNotDisposed();
+			if (palette == null)
+			{
+				throw new ArgumentNullException("palette");
+			}
+			CopyFrom(palette.Data, 0, 0, Math.Min(palette.Length, this.Length));
+		}
+
+		/// <summary>
+		/// Copies the values from the specified <see cref="Palette"/> to this instance,
+		/// starting at the specified <paramref name="offset"/>.
+		/// </summary>
+		/// <param name="palette">The palette to copy from.</param>
+		/// <param name="offset">The position in this instance where the values
+		/// will be copied to.</param>
+		/// <exception cref="ArgumentNullException">
+		/// <paramref name="palette"/> is a null reference.</exception>
+		/// <exception cref="ArgumentOutOfRangeException">
+		/// <paramref name="offset"/> is outside the range of valid indexes.</exception>
+		public void CopyFrom(Palette palette, int offset)
+		{
+			EnsureNotDisposed();
+			CopyFrom(palette.Data, 0, offset, Math.Min(palette.Length, this.Length - offset));
+		}
+
+		/// <summary>
 		/// Saves this <see cref="Palette"/> to the specified file.
 		/// </summary>
 		/// <param name="filename">
@@ -16248,6 +24327,7 @@ namespace FreeImageAPI
 		/// </param>
 		public void Save(BinaryWriter writer)
 		{
+			EnsureNotDisposed();
 			writer.Write(ToByteArray());
 		}
 
@@ -16276,14 +24356,31 @@ namespace FreeImageAPI
 		/// Loads a palette from the reader.
 		/// </summary>
 		/// <param name="reader">The reader to load the palette from.</param>
-		public unsafe void Load(BinaryReader reader)
+		public void Load(BinaryReader reader)
 		{
-			int size = length * sizeof(RGBQUAD);
-			byte[] data = reader.ReadBytes(size);
-			fixed(byte* src = data)
+			EnsureNotDisposed();
+			unsafe
 			{
-				CopyMemory(baseAddress, src, data.Length);
+				int size = length * sizeof(RGBQUAD);
+				byte[] data = reader.ReadBytes(size);
+				fixed (byte* src = data)
+				{
+					CopyMemory(baseAddress, src, data.Length);
+				}
 			}
+		}
+
+		/// <summary>
+		/// Releases allocated handles associated with this instance.
+		/// </summary>
+		/// <param name="disposing"><b>true</b> to release managed resources.</param>
+		protected override void Dispose(bool disposing)
+		{
+			if (paletteHandle.IsAllocated)
+				paletteHandle.Free();
+			array = null;
+
+			base.Dispose(disposing);
 		}
 	}
 }
@@ -16295,7 +24392,10 @@ namespace FreeImageAPI.Plugins
 	/// </summary>
 	public static class PluginRepository
 	{
+		[DebuggerBrowsable(DebuggerBrowsableState.Never)]
 		private static readonly List<FreeImagePlugin> plugins = null;
+		
+		[DebuggerBrowsable(DebuggerBrowsableState.Never)]
 		private static readonly List<FreeImagePlugin> localPlugins = null;
 
 		static PluginRepository()
@@ -16712,13 +24812,28 @@ namespace FreeImageAPI.Plugins
 		/// JPEG-2000 format (*.JP2)
 		/// </summary>
 		public static FreeImagePlugin JP2 { get { return plugins[31]; } }
+
+		/// <summary>
+		/// Portable FloatMap (*.PFM)
+		/// </summary>
+		public static FreeImagePlugin PFM { get { return plugins[32]; } }
+
+		/// <summary>
+		/// Macintosh PICT (*.PICT)
+		/// </summary>
+		public static FreeImagePlugin PICT { get { return plugins[33]; } }
+
+		/// <summary>
+		/// RAW camera image (*.*)
+		/// </summary>
+		public static FreeImagePlugin RAW { get { return plugins[34]; } }
 	}
 }
 
 namespace FreeImageAPI
 {
 	/// <summary>
-	/// Provides mathods for working with generic bitmap scanlines.
+	/// Provides methods for working with generic bitmap scanlines.
 	/// </summary>
 	/// <typeparam name="T">Type of the bitmaps' scanlines.</typeparam>
 	public sealed class Scanline<T> : MemoryArray<T> where T : struct
@@ -16782,22 +24897,31 @@ namespace FreeImageAPI.IO
 		/// <summary>
 		/// The stream to wrap
 		/// </summary>
+		[DebuggerBrowsable(DebuggerBrowsableState.Never)]
 		private readonly Stream stream;
+
 		/// <summary>
 		/// The caching stream
 		/// </summary>
+		[DebuggerBrowsable(DebuggerBrowsableState.Never)]
 		private MemoryStream memoryStream = new MemoryStream();
+
 		/// <summary>
 		/// Indicates if the wrapped stream reached its end
 		/// </summary>
+		[DebuggerBrowsable(DebuggerBrowsableState.Never)]
 		private bool eos = false;
+
 		/// <summary>
 		/// Tells the wrapper to block readings or not
 		/// </summary>
+		[DebuggerBrowsable(DebuggerBrowsableState.Never)]
 		private bool blocking = false;
+
 		/// <summary>
 		/// Indicates if the wrapped stream is disposed or not
 		/// </summary>
+		[DebuggerBrowsable(DebuggerBrowsableState.Never)]
 		private bool disposed = false;
 
 		/// <summary>
@@ -16938,7 +25062,7 @@ namespace FreeImageAPI.IO
 					newPosition = memoryStream.Length + offset;
 					break;
 				default:
-					throw new ArgumentOutOfRangeException();
+					throw new ArgumentOutOfRangeException("origin");
 			}
 			// in case the new position is beyond the memory-streams end
 			// and the original streams end hasn't been reached
@@ -17196,11 +25320,15 @@ namespace FreeImageAPI
 			(FREE_IMAGE_MDMODEL[])Enum.GetValues(typeof(FREE_IMAGE_MDMODEL));
 
 		/// <summary>
-		/// Saved instance for faster access.
+		/// Stores handles used to read from streams.
 		/// </summary>
-		private static readonly ConstructorInfo PropertyItemConstructor =
-			typeof(PropertyItem).GetConstructor(
-			BindingFlags.NonPublic | BindingFlags.Instance, null, new Type[] { }, null);
+		private static Dictionary<FIMULTIBITMAP, fi_handle> streamHandles =
+			new Dictionary<FIMULTIBITMAP, fi_handle>();
+
+		/// <summary>
+		/// Version of the wrapper library.
+		/// </summary>
+		private static Version WrapperVersion;
 
 		private const int DIB_RGB_COLORS = 0;
 		private const int DIB_PAL_COLORS = 1;
@@ -17242,71 +25370,77 @@ namespace FreeImageAPI
 
 		#endregion
 
-		#region Callback
-
-		// Callback delegate
-		private static OutputMessageFunction outputMessageFunction;
-		// Handle to pin the functions address
-		private static GCHandle outputMessageHandle;
-
-		static FreeImage()
-		{
-			// Check if FreeImage.dll is present and cancel setting the callbackfuntion if not
-			if (!IsAvailable())
-			{
-				return;
-			}
-			// Create a delegate (function pointer) to 'OnMessage'
-			outputMessageFunction = new OutputMessageFunction(OnMessage);
-			// Pin the object so the garbage collector does not move it around in memory
-			outputMessageHandle = GCHandle.Alloc(outputMessageFunction, GCHandleType.Normal);
-			// Set the callback
-			SetOutputMessage(outputMessageFunction);
-		}
-
-		/// <summary>
-		/// Internal callback
-		/// </summary>
-		private static void OnMessage(FREE_IMAGE_FORMAT fif, string message)
-		{
-			// Invoke the message
-			if (Message != null)
-			{
-				Message.Invoke(fif, message);
-			}
-		}
-
-		/// <summary>
-		/// Internal errors in FreeImage generate a logstring that can be
-		/// captured by this event.
-		/// </summary>
-		public static event OutputMessageFunction Message;
-
-		#endregion
-
 		#region General functions
 
 		/// <summary>
-		/// Returns the internal version of this FreeImage 3 .NET wrapper.
+		/// Returns the internal version of this FreeImage .NET wrapper.
 		/// </summary>
-		/// <returns>The internal version of this FreeImage 3 .NET wrapper.</returns>
-		public static string GetWrapperVersion()
+		/// <returns>The internal version of this FreeImage .NET wrapper.</returns>
+		public static Version GetWrapperVersion()
 		{
-			return FREEIMAGE_MAJOR_VERSION + "." + FREEIMAGE_MINOR_VERSION + "." + FREEIMAGE_RELEASE_SERIAL;
+			if (WrapperVersion == null)
+			{
+				try
+				{
+					object[] attributes = Assembly.GetAssembly(typeof(FreeImage))
+					.GetCustomAttributes(typeof(AssemblyFileVersionAttribute), false);
+					if ((attributes != null) && (attributes.Length != 0))
+					{
+						AssemblyFileVersionAttribute attribute =
+						attributes[0] as AssemblyFileVersionAttribute;
+						if ((attribute != null) && (attribute.Version != null))
+						{
+							return (WrapperVersion = new Version(attribute.Version));
+						}
+					}
+				}
+				catch
+				{
+
+				}
+
+				WrapperVersion = new Version();
+			}
+
+			return WrapperVersion;
 		}
 
 		/// <summary>
-		/// Returns a value indicating if the FreeImage DLL is available or not.
+		/// Returns the version of the native FreeImage library.
 		/// </summary>
-		/// <returns>True, if the FreeImage DLL is available, false otherwise.</returns>
+		/// <returns>The version of the native FreeImage library.</returns>
+		public static Version GetNativeVersion()
+		{
+			return new Version(GetVersion());
+		}
+
+		/// <summary>
+		/// Returns a value indicating if the FreeImage library is available or not.
+		/// See remarks for further details.
+		/// </summary>
+		/// <returns><c>false</c> if the file is not available or out of date;
+		/// <c>true</c>, otherwise.</returns>
+		/// <remarks>
+		/// The FreeImage.NET library is a wrapper for the native C++ library
+		/// (FreeImage.dll ... dont mix ist up with this library FreeImageNet.dll).
+		/// The native library <b>must</b> be either in the same folder as the program's
+		/// executable or in a folder contained in the envirent variable <i>PATH</i>
+		/// (for example %WINDIR%\System32).<para/>
+		/// Further more must both libraries, including the program itself,
+		/// be the same architecture (x86 or x64).
+		/// </remarks>
 		public static bool IsAvailable()
 		{
 			try
 			{
 				// Call a static fast executing function
-				GetVersion();
-				// No exception thrown, the dll seems to be present
-				return true;
+				Version nativeVersion = new Version(GetVersion());
+				Version wrapperVersion = GetWrapperVersion();
+				// No exception thrown, the library seems to be present
+				return
+				(nativeVersion.Major >= wrapperVersion.Major) &&
+				(nativeVersion.Minor >= wrapperVersion.Minor) &&
+				(nativeVersion.Build >= wrapperVersion.Build);
 			}
 			catch (DllNotFoundException)
 			{
@@ -17316,11 +25450,353 @@ namespace FreeImageAPI
 			{
 				return false;
 			}
+			catch (BadImageFormatException)
+			{
+				return false;
+			}
 		}
 
 		#endregion
 
 		#region Bitmap management functions
+
+		/// <summary>
+		/// Creates a new bitmap in memory.
+		/// </summary>
+		/// <param name="width">Width of the new bitmap.</param>
+		/// <param name="height">Height of the new bitmap.</param>
+		/// <param name="bpp">Bit depth of the new Bitmap.
+		/// Supported pixel depth: 1-, 4-, 8-, 16-, 24-, 32-bit per pixel for standard bitmap</param>
+		/// <returns>Handle to a FreeImage bitmap.</returns>
+		public static FIBITMAP Allocate(int width, int height, int bpp)
+		{
+			return Allocate(width, height, bpp, 0, 0, 0);
+		}
+
+		/// <summary>
+		/// Creates a new bitmap in memory.
+		/// </summary>
+		/// <param name="type">Type of the image.</param>
+		/// <param name="width">Width of the new bitmap.</param>
+		/// <param name="height">Height of the new bitmap.</param>
+		/// <param name="bpp">Bit depth of the new Bitmap.
+		/// Supported pixel depth: 1-, 4-, 8-, 16-, 24-, 32-bit per pixel for standard bitmap</param>
+		/// <returns>Handle to a FreeImage bitmap.</returns>
+		public static FIBITMAP AllocateT(FREE_IMAGE_TYPE type, int width, int height, int bpp)
+		{
+			return AllocateT(type, width, height, bpp, 0, 0, 0);
+		}
+
+		/// <summary>
+		/// Allocates a new image of the specified width, height and bit depth and optionally
+		/// fills it with the specified color. See remarks for further details.
+		/// </summary>
+		/// <param name="width">Width of the new bitmap.</param>
+		/// <param name="height">Height of the new bitmap.</param>
+		/// <param name="bpp">Bit depth of the new bitmap.
+		/// Supported pixel depth: 1-, 4-, 8-, 16-, 24-, 32-bit per pixel for standard bitmaps.</param>
+		/// <param name="color">The color to fill the bitmap with or <c>null</c>.</param>
+		/// <param name="options">Options to enable or disable function-features.</param>
+		/// <param name="palette">The palette of the bitmap or <c>null</c>.</param>
+		/// <returns>Handle to a FreeImage bitmap.</returns>
+		/// <remarks>
+		/// This function is an extension to <see cref="Allocate"/>, which additionally supports
+		/// specifying a palette to be set for the newly create image, as well as specifying a
+		/// background color, the newly created image should initially be filled with.
+		/// <para/>
+		/// Basically, this function internally relies on function <see cref="Allocate"/>, followed by a
+		/// call to <see cref="FillBackground&lt;T&gt;"/>. This is why both parameters
+		/// <paramref name="color"/> and <paramref name="options"/> behave the same as it is
+		/// documented for function <see cref="FillBackground&lt;T&gt;"/>.
+		/// So, please refer to the documentation of <see cref="FillBackground&lt;T&gt;"/> to
+		/// learn more about parameters <paramref name="color"/> and <paramref name="options"/>.
+		/// <para/>
+		/// The palette specified through parameter <paramref name="palette"/> is only copied to the
+		/// newly created image, if the desired bit depth is smaller than or equal to 8 bits per pixel.
+		/// In other words, the <paramref name="palette"/> parameter is only taken into account for
+		/// palletized images. So, for an 8-bit image, the length is 256, for an 4-bit image it is 16
+		/// and it is 2 for a 1-bit image. In other words, this function does not support partial palettes.
+		/// <para/>
+		/// However, specifying a palette is not necesarily needed, even for palletized images. This
+		/// function is capable of implicitly creating a palette, if <paramref name="palette"/> is <c>null</c>.
+		/// If the specified background color is a greyscale value (red = green = blue) or if option
+		/// <see cref="FREE_IMAGE_COLOR_OPTIONS.FICO_ALPHA_IS_INDEX"/> is specified, a greyscale palette
+		/// is created. For a 1-bit image, only if the specified background color is either black or white,
+		/// a monochrome palette, consisting of black and white only is created. In any case, the darker
+		/// colors are stored at the smaller palette indices.
+		/// <para/>
+		/// If the specified background color is not a greyscale value, or is neither black nor white
+		/// for a 1-bit image, solely this specified color is injected into the otherwise black-initialized
+		/// palette. For this operation, option <see cref="FREE_IMAGE_COLOR_OPTIONS.FICO_ALPHA_IS_INDEX"/>
+		/// is implicit, so the specified <paramref name="color"/> is applied to the palette entry,
+		/// specified by the background color's <see cref="RGBQUAD.rgbReserved"/> field.
+		/// The image is then filled with this palette index.
+		/// <para/>
+		/// This function returns a newly created image as function <see cref="Allocate"/> does, if both
+		/// parameters <paramref name="color"/> and <paramref name="palette"/> are <c>null</c>.
+		/// If only <paramref name="color"/> is <c>null</c>, the palette pointed to by
+		/// parameter <paramref name="palette"/> is initially set for the new image, if a palletized
+		/// image of type <see cref="FREE_IMAGE_TYPE.FIT_BITMAP"/> is created.
+		/// However, in the latter case, this function returns an image, whose
+		/// pixels are all initialized with zeros so, the image will be filled with the color of the
+		/// first palette entry.
+		/// </remarks>
+		public static FIBITMAP AllocateEx(int width, int height, int bpp,
+			RGBQUAD? color, FREE_IMAGE_COLOR_OPTIONS options, RGBQUAD[] palette)
+		{
+			return AllocateEx(width, height, bpp, color, options, palette, 0, 0, 0);
+		}
+
+		/// <summary>
+		/// Allocates a new image of the specified width, height and bit depth and optionally
+		/// fills it with the specified color. See remarks for further details.
+		/// </summary>
+		/// <param name="width">Width of the new bitmap.</param>
+		/// <param name="height">Height of the new bitmap.</param>
+		/// <param name="bpp">Bit depth of the new bitmap.
+		/// Supported pixel depth: 1-, 4-, 8-, 16-, 24-, 32-bit per pixel for standard bitmaps.</param>
+		/// <param name="color">The color to fill the bitmap with or <c>null</c>.</param>
+		/// <param name="options">Options to enable or disable function-features.</param>
+		/// <param name="palette">The palette of the bitmap or <c>null</c>.</param>
+		/// <param name="red_mask">Red part of the color layout.
+		/// eg: 0xFF0000</param>
+		/// <param name="green_mask">Green part of the color layout.
+		/// eg: 0x00FF00</param>
+		/// <param name="blue_mask">Blue part of the color layout.
+		/// eg: 0x0000FF</param>
+		/// <returns>Handle to a FreeImage bitmap.</returns>
+		/// <remarks>
+		/// This function is an extension to <see cref="Allocate"/>, which additionally supports
+		/// specifying a palette to be set for the newly create image, as well as specifying a
+		/// background color, the newly created image should initially be filled with.
+		/// <para/>
+		/// Basically, this function internally relies on function <see cref="Allocate"/>, followed by a
+		/// call to <see cref="FillBackground&lt;T&gt;"/>. This is why both parameters
+		/// <paramref name="color"/> and <paramref name="options"/> behave the same as it is
+		/// documented for function <see cref="FillBackground&lt;T&gt;"/>.
+		/// So, please refer to the documentation of <see cref="FillBackground&lt;T&gt;"/> to
+		/// learn more about parameters <paramref name="color"/> and <paramref name="options"/>.
+		/// <para/>
+		/// The palette specified through parameter <paramref name="palette"/> is only copied to the
+		/// newly created image, if the desired bit depth is smaller than or equal to 8 bits per pixel.
+		/// In other words, the <paramref name="palette"/> parameter is only taken into account for
+		/// palletized images. So, for an 8-bit image, the length is 256, for an 4-bit image it is 16
+		/// and it is 2 for a 1-bit image. In other words, this function does not support partial palettes.
+		/// <para/>
+		/// However, specifying a palette is not necesarily needed, even for palletized images. This
+		/// function is capable of implicitly creating a palette, if <paramref name="palette"/> is <c>null</c>.
+		/// If the specified background color is a greyscale value (red = green = blue) or if option
+		/// <see cref="FREE_IMAGE_COLOR_OPTIONS.FICO_ALPHA_IS_INDEX"/> is specified, a greyscale palette
+		/// is created. For a 1-bit image, only if the specified background color is either black or white,
+		/// a monochrome palette, consisting of black and white only is created. In any case, the darker
+		/// colors are stored at the smaller palette indices.
+		/// <para/>
+		/// If the specified background color is not a greyscale value, or is neither black nor white
+		/// for a 1-bit image, solely this specified color is injected into the otherwise black-initialized
+		/// palette. For this operation, option <see cref="FREE_IMAGE_COLOR_OPTIONS.FICO_ALPHA_IS_INDEX"/>
+		/// is implicit, so the specified <paramref name="color"/> is applied to the palette entry,
+		/// specified by the background color's <see cref="RGBQUAD.rgbReserved"/> field.
+		/// The image is then filled with this palette index.
+		/// <para/>
+		/// This function returns a newly created image as function <see cref="Allocate"/> does, if both
+		/// parameters <paramref name="color"/> and <paramref name="palette"/> are <c>null</c>.
+		/// If only <paramref name="color"/> is <c>null</c>, the palette pointed to by
+		/// parameter <paramref name="palette"/> is initially set for the new image, if a palletized
+		/// image of type <see cref="FREE_IMAGE_TYPE.FIT_BITMAP"/> is created.
+		/// However, in the latter case, this function returns an image, whose
+		/// pixels are all initialized with zeros so, the image will be filled with the color of the
+		/// first palette entry.
+		/// </remarks>
+		public static FIBITMAP AllocateEx(int width, int height, int bpp,
+			RGBQUAD? color, FREE_IMAGE_COLOR_OPTIONS options, RGBQUAD[] palette,
+			uint red_mask, uint green_mask, uint blue_mask)
+		{
+			if ((palette != null) && (bpp <= 8) && (palette.Length < (1 << bpp)))
+				return FIBITMAP.Zero;
+
+			if (color.HasValue)
+			{
+				GCHandle handle = new GCHandle();
+				try
+				{
+					RGBQUAD[] buffer = new RGBQUAD[] { color.Value };
+					handle = GCHandle.Alloc(buffer, GCHandleType.Pinned);
+					return AllocateEx(width, height, bpp, handle.AddrOfPinnedObject(),
+						options, palette, red_mask, green_mask, blue_mask);
+				}
+				finally
+				{
+					if (handle.IsAllocated)
+						handle.Free();
+				}
+			}
+			else
+			{
+				return AllocateEx(width, height, bpp, IntPtr.Zero,
+					options, palette, red_mask, green_mask, blue_mask);
+			}
+		}
+
+		/// <summary>
+		/// Allocates a new image of the specified type, width, height and bit depth and optionally
+		/// fills it with the specified color. See remarks for further details.
+		/// </summary>
+		/// <typeparam name="T">The type of the specified color.</typeparam>
+		/// <param name="type">Type of the image.</param>
+		/// <param name="width">Width of the new bitmap.</param>
+		/// <param name="height">Height of the new bitmap.</param>
+		/// <param name="bpp">Bit depth of the new bitmap.
+		/// Supported pixel depth: 1-, 4-, 8-, 16-, 24-, 32-bit per pixel for standard bitmap</param>
+		/// <param name="color">The color to fill the bitmap with or <c>null</c>.</param>
+		/// <param name="options">Options to enable or disable function-features.</param>
+		/// <param name="palette">The palette of the bitmap or <c>null</c>.</param>
+		/// <returns>Handle to a FreeImage bitmap.</returns>
+		/// <remarks>
+		/// This function is an extension to <see cref="AllocateT"/>, which additionally supports
+		/// specifying a palette to be set for the newly create image, as well as specifying a
+		/// background color, the newly created image should initially be filled with.
+		/// <para/>
+		/// Basically, this function internally relies on function <see cref="AllocateT"/>, followed by a
+		/// call to <see cref="FillBackground&lt;T&gt;"/>. This is why both parameters 
+		/// <paramref name="color"/> and <paramref name="options"/> behave the same as it is
+		/// documented for function <see cref="FillBackground&lt;T&gt;"/>. So, please refer to the
+		/// documentation of <see cref="FillBackground&lt;T&gt;"/> to learn more about parameters color and options.
+		/// <para/>
+		/// The palette specified through parameter palette is only copied to the newly created
+		/// image, if its image type is <see cref="FREE_IMAGE_TYPE.FIT_BITMAP"/> and the desired bit
+		/// depth is smaller than or equal to 8 bits per pixel. In other words, the <paramref name="palette"/>
+		/// palette is only taken into account for palletized images. However, if the preceding conditions
+		/// match and if <paramref name="palette"/> is not <c>null</c>, the palette is assumed to be at
+		/// least as large as the size of a fully populated palette for the desired bit depth.
+		/// So, for an 8-bit image, this length is 256, for an 4-bit image it is 16 and it is
+		/// 2 for a 1-bit image. In other words, this function does not support partial palettes.
+		/// <para/>
+		/// However, specifying a palette is not necesarily needed, even for palletized images. This
+		/// function is capable of implicitly creating a palette, if <paramref name="palette"/> is <c>null</c>.
+		/// If the specified background color is a greyscale value (red = green = blue) or if option
+		/// <see cref="FREE_IMAGE_COLOR_OPTIONS.FICO_ALPHA_IS_INDEX"/> is specified, a greyscale palette
+		/// is created. For a 1-bit image, only if the specified background color is either black or white,
+		/// a monochrome palette, consisting of black and white only is created. In any case, the darker
+		/// colors are stored at the smaller palette indices.
+		/// <para/>
+		/// If the specified background color is not a greyscale value, or is neither black nor white
+		/// for a 1-bit image, solely this specified color is injected into the otherwise black-initialized
+		/// palette. For this operation, option <see cref="FREE_IMAGE_COLOR_OPTIONS.FICO_ALPHA_IS_INDEX"/>
+		/// is implicit, so the specified color is applied to the palette entry, specified by the
+		/// background color's <see cref="RGBQUAD.rgbReserved"/> field. The image is then filled with
+		/// this palette index.
+		/// <para/>
+		/// This function returns a newly created image as function <see cref="AllocateT"/> does, if both
+		/// parameters <paramref name="color"/> and <paramref name="palette"/> are <c>null</c>.
+		/// If only <paramref name="color"/> is <c>null</c>, the palette pointed to by
+		/// parameter <paramref name="palette"/> is initially set for the new image, if a palletized
+		/// image of type <see cref="FREE_IMAGE_TYPE.FIT_BITMAP"/> is created.
+		/// However, in the latter case, this function returns an image, whose
+		/// pixels are all initialized with zeros so, the image will be filled with the color of the
+		/// first palette entry.
+		/// </remarks>
+		public static FIBITMAP AllocateExT<T>(FREE_IMAGE_TYPE type, int width, int height, int bpp,
+			T? color, FREE_IMAGE_COLOR_OPTIONS options, RGBQUAD[] palette) where T : struct
+		{
+			return AllocateExT(type, width, height, bpp, color, options, palette, 0, 0, 0);
+		}
+
+		/// <summary>
+		/// Allocates a new image of the specified type, width, height and bit depth and optionally
+		/// fills it with the specified color. See remarks for further details.
+		/// </summary>
+		/// <typeparam name="T">The type of the specified color.</typeparam>
+		/// <param name="type">Type of the image.</param>
+		/// <param name="width">Width of the new bitmap.</param>
+		/// <param name="height">Height of the new bitmap.</param>
+		/// <param name="bpp">Bit depth of the new bitmap.
+		/// Supported pixel depth: 1-, 4-, 8-, 16-, 24-, 32-bit per pixel for standard bitmap</param>
+		/// <param name="color">The color to fill the bitmap with or <c>null</c>.</param>
+		/// <param name="options">Options to enable or disable function-features.</param>
+		/// <param name="palette">The palette of the bitmap or <c>null</c>.</param>
+		/// <param name="red_mask">Red part of the color layout.
+		/// eg: 0xFF0000</param>
+		/// <param name="green_mask">Green part of the color layout.
+		/// eg: 0x00FF00</param>
+		/// <param name="blue_mask">Blue part of the color layout.
+		/// eg: 0x0000FF</param>
+		/// <returns>Handle to a FreeImage bitmap.</returns>
+		/// <remarks>
+		/// This function is an extension to <see cref="AllocateT"/>, which additionally supports
+		/// specifying a palette to be set for the newly create image, as well as specifying a
+		/// background color, the newly created image should initially be filled with.
+		/// <para/>
+		/// Basically, this function internally relies on function <see cref="AllocateT"/>, followed by a
+		/// call to <see cref="FillBackground&lt;T&gt;"/>. This is why both parameters 
+		/// <paramref name="color"/> and <paramref name="options"/> behave the same as it is
+		/// documented for function <see cref="FillBackground&lt;T&gt;"/>. So, please refer to the
+		/// documentation of <see cref="FillBackground&lt;T&gt;"/> to learn more about parameters color and options.
+		/// <para/>
+		/// The palette specified through parameter palette is only copied to the newly created
+		/// image, if its image type is <see cref="FREE_IMAGE_TYPE.FIT_BITMAP"/> and the desired bit
+		/// depth is smaller than or equal to 8 bits per pixel. In other words, the <paramref name="palette"/>
+		/// palette is only taken into account for palletized images. However, if the preceding conditions
+		/// match and if <paramref name="palette"/> is not <c>null</c>, the palette is assumed to be at
+		/// least as large as the size of a fully populated palette for the desired bit depth.
+		/// So, for an 8-bit image, this length is 256, for an 4-bit image it is 16 and it is
+		/// 2 for a 1-bit image. In other words, this function does not support partial palettes.
+		/// <para/>
+		/// However, specifying a palette is not necesarily needed, even for palletized images. This
+		/// function is capable of implicitly creating a palette, if <paramref name="palette"/> is <c>null</c>.
+		/// If the specified background color is a greyscale value (red = green = blue) or if option
+		/// <see cref="FREE_IMAGE_COLOR_OPTIONS.FICO_ALPHA_IS_INDEX"/> is specified, a greyscale palette
+		/// is created. For a 1-bit image, only if the specified background color is either black or white,
+		/// a monochrome palette, consisting of black and white only is created. In any case, the darker
+		/// colors are stored at the smaller palette indices.
+		/// <para/>
+		/// If the specified background color is not a greyscale value, or is neither black nor white
+		/// for a 1-bit image, solely this specified color is injected into the otherwise black-initialized
+		/// palette. For this operation, option <see cref="FREE_IMAGE_COLOR_OPTIONS.FICO_ALPHA_IS_INDEX"/>
+		/// is implicit, so the specified color is applied to the palette entry, specified by the
+		/// background color's <see cref="RGBQUAD.rgbReserved"/> field. The image is then filled with
+		/// this palette index.
+		/// <para/>
+		/// This function returns a newly created image as function <see cref="AllocateT"/> does, if both
+		/// parameters <paramref name="color"/> and <paramref name="palette"/> are <c>null</c>.
+		/// If only <paramref name="color"/> is <c>null</c>, the palette pointed to by
+		/// parameter <paramref name="palette"/> is initially set for the new image, if a palletized
+		/// image of type <see cref="FREE_IMAGE_TYPE.FIT_BITMAP"/> is created.
+		/// However, in the latter case, this function returns an image, whose
+		/// pixels are all initialized with zeros so, the image will be filled with the color of the
+		/// first palette entry.
+		/// </remarks>
+		public static FIBITMAP AllocateExT<T>(FREE_IMAGE_TYPE type, int width, int height, int bpp,
+			T? color, FREE_IMAGE_COLOR_OPTIONS options, RGBQUAD[] palette,
+			uint red_mask, uint green_mask, uint blue_mask) where T : struct
+		{
+			if ((palette != null) && (bpp <= 8) && (palette.Length < (1 << bpp)))
+				return FIBITMAP.Zero;
+
+			if (!CheckColorType(type, color))
+				return FIBITMAP.Zero;
+
+			if (color.HasValue)
+			{
+				GCHandle handle = new GCHandle();
+				try
+				{
+					T[] buffer = new T[] { color.Value };
+					handle = GCHandle.Alloc(buffer, GCHandleType.Pinned);
+					return AllocateExT(type, width, height, bpp, handle.AddrOfPinnedObject(),
+						options, palette, red_mask, green_mask, blue_mask);
+				}
+				finally
+				{
+					if (handle.IsAllocated)
+						handle.Free();
+				}
+			}
+			else
+			{
+				return AllocateExT(type, width, height, bpp, IntPtr.Zero,
+					options, palette, red_mask, green_mask, blue_mask);
+			}
+		}
 
 		/// <summary>
 		/// Converts a FreeImage bitmap to a .NET <see cref="System.Drawing.Bitmap"/>.
@@ -17390,16 +25866,36 @@ namespace FreeImageAPI
 				ColorPalette palette = result.Palette;
 				// Get the orgininal palette
 				Color[] colorPalette = new Palette(dib).ColorData;
-				// Copy each value
-				if (palette.Entries.Length == colorPalette.Length)
+				// Get the maximum number of palette entries to copy
+				int entriesToCopy = Math.Min(colorPalette.Length, palette.Entries.Length);
+
+				// Check whether the bitmap is transparent
+				if (IsTransparent(dib))
 				{
-					for (int i = 0; i < colorPalette.Length; i++)
+					byte[] transTable = GetTransparencyTableEx(dib);
+					int i = 0;
+					int maxEntriesWithTrans = Math.Min(entriesToCopy, transTable.Length);
+					// Copy palette entries and include transparency
+					for (; i < maxEntriesWithTrans; i++)
+					{
+						palette.Entries[i] = Color.FromArgb(transTable[i], colorPalette[i]);
+					}
+					// Copy palette entries and that have no transparancy
+					for (; i < entriesToCopy; i++)
+					{
+						palette.Entries[i] = Color.FromArgb(0xFF, colorPalette[i]);
+					}
+				}
+				else
+				{
+					for (int i = 0; i < entriesToCopy; i++)
 					{
 						palette.Entries[i] = colorPalette[i];
 					}
-					// Set the bitmaps palette
-					result.Palette = palette;
 				}
+
+				// Set the bitmaps palette
+				result.Palette = palette;
 			}
 			// Copy metadata
 			if (copyMetadata)
@@ -17429,7 +25925,7 @@ namespace FreeImageAPI
 								byte* src = (byte*)GetTagValue(tag);
 								fixed (byte* dst = buffer)
 								{
-									MoveMemory(dst, src, (uint)propItem.Len);
+									CopyMemory(dst, src, (uint)propItem.Len);
 								}
 							}
 
@@ -17486,37 +25982,46 @@ namespace FreeImageAPI
 				throw new ArgumentNullException("bitmap");
 			}
 			uint bpp, red_mask, green_mask, blue_mask;
-			if (!GetFormatParameters(bitmap.PixelFormat, out bpp, out red_mask, out green_mask, out blue_mask))
+			FREE_IMAGE_TYPE type;
+			if (!GetFormatParameters(bitmap.PixelFormat, out type, out bpp, out red_mask, out green_mask, out blue_mask))
 			{
 				throw new ArgumentException("The bitmaps pixelformat is invalid.");
 			}
+
 			// Locking the complete bitmap in readonly mode
 			BitmapData data = bitmap.LockBits(
-				new Rectangle(0, 0, bitmap.Width, bitmap.Height),
-				ImageLockMode.ReadOnly, bitmap.PixelFormat);
+				new Rectangle(0, 0, bitmap.Width, bitmap.Height), ImageLockMode.ReadOnly, bitmap.PixelFormat);
 			// Copying the bitmap data directly from the .NET bitmap
-			FIBITMAP result =
-				ConvertFromRawBits(
-					data.Scan0,
-					data.Width,
-					data.Height,
-					data.Stride,
-					bpp,
-					red_mask,
-					green_mask,
-					blue_mask,
-					true);
+			FIBITMAP result = ConvertFromRawBits(
+				data.Scan0,
+				type,
+				data.Width,
+				data.Height,
+				data.Stride,
+				bpp,
+				red_mask,
+				green_mask,
+				blue_mask,
+				true);
 			bitmap.UnlockBits(data);
 			// Handle palette
 			if (GetPalette(result) != IntPtr.Zero)
 			{
 				Palette palette = new Palette(result);
-				if (palette.Length == bitmap.Palette.Entries.Length)
+				Color[] colors = bitmap.Palette.Entries;
+				// Only copy available palette entries
+				int entriesToCopy = Math.Min(palette.Length, colors.Length);
+				byte[] transTable = new byte[entriesToCopy];
+				for (int i = 0; i < entriesToCopy; i++)
 				{
-					for (int i = 0; i < palette.Length; i++)
-					{
-						palette[i] = (RGBQUAD)bitmap.Palette.Entries[i];
-					}
+					RGBQUAD color = (RGBQUAD)colors[i];
+					color.rgbReserved = 0x00;
+					palette[i] = color;
+					transTable[i] = colors[i].A;
+				}
+				if ((bitmap.Flags & (int)ImageFlags.HasAlpha) != 0)
+				{
+					FreeImage.SetTransparencyTable(result, transTable);
 				}
 			}
 			// Handle meta data
@@ -17537,6 +26042,113 @@ namespace FreeImageAPI
 		}
 
 		/// <summary>
+		/// Converts a raw bitmap to a FreeImage bitmap.
+		/// </summary>
+		/// <param name="bits">Array of bytes containing the raw bitmap.</param>
+		/// <param name="type">The type of the raw bitmap.</param>
+		/// <param name="width">The width in pixels of the raw bitmap.</param>
+		/// <param name="height">The height in pixels of the raw bitmap.</param>
+		/// <param name="pitch">Defines the total width of a scanline in the raw bitmap,
+		/// including padding bytes.</param>
+		/// <param name="bpp">The bit depth (bits per pixel) of the raw bitmap.</param>
+		/// <param name="red_mask">The bit mask describing the bits used to store a single 
+		/// pixel's red component in the raw bitmap. This is only applied to 16-bpp raw bitmaps.</param>
+		/// <param name="green_mask">The bit mask describing the bits used to store a single
+		/// pixel's green component in the raw bitmap. This is only applied to 16-bpp raw bitmaps.</param>
+		/// <param name="blue_mask">The bit mask describing the bits used to store a single
+		/// pixel's blue component in the raw bitmap. This is only applied to 16-bpp raw bitmaps.</param>
+		/// <param name="topdown">If true, the raw bitmap is stored in top-down order (top-left pixel first)
+		/// and in bottom-up order (bottom-left pixel first) otherwise.</param>
+		/// <returns>Handle to a FreeImage bitmap.</returns>
+		public static unsafe FIBITMAP ConvertFromRawBits(
+			byte[] bits,
+			FREE_IMAGE_TYPE type,
+			int width,
+			int height,
+			int pitch,
+			uint bpp,
+			uint red_mask,
+			uint green_mask,
+			uint blue_mask,
+			bool topdown)
+		{
+			fixed (byte* ptr = bits)
+			{
+				return ConvertFromRawBits(
+					(IntPtr)ptr,
+					type,
+					width,
+					height,
+					pitch,
+					bpp,
+					red_mask,
+					green_mask,
+					blue_mask,
+					topdown);
+			}
+		}
+
+		/// <summary>
+		/// Converts a raw bitmap to a FreeImage bitmap.
+		/// </summary>
+		/// <param name="bits">Pointer to the memory block containing the raw bitmap.</param>
+		/// <param name="type">The type of the raw bitmap.</param>
+		/// <param name="width">The width in pixels of the raw bitmap.</param>
+		/// <param name="height">The height in pixels of the raw bitmap.</param>
+		/// <param name="pitch">Defines the total width of a scanline in the raw bitmap,
+		/// including padding bytes.</param>
+		/// <param name="bpp">The bit depth (bits per pixel) of the raw bitmap.</param>
+		/// <param name="red_mask">The bit mask describing the bits used to store a single 
+		/// pixel's red component in the raw bitmap. This is only applied to 16-bpp raw bitmaps.</param>
+		/// <param name="green_mask">The bit mask describing the bits used to store a single
+		/// pixel's green component in the raw bitmap. This is only applied to 16-bpp raw bitmaps.</param>
+		/// <param name="blue_mask">The bit mask describing the bits used to store a single
+		/// pixel's blue component in the raw bitmap. This is only applied to 16-bpp raw bitmaps.</param>
+		/// <param name="topdown">If true, the raw bitmap is stored in top-down order (top-left pixel first)
+		/// and in bottom-up order (bottom-left pixel first) otherwise.</param>
+		/// <returns>Handle to a FreeImage bitmap.</returns>
+		public static unsafe FIBITMAP ConvertFromRawBits(
+			IntPtr bits,
+			FREE_IMAGE_TYPE type,
+			int width,
+			int height,
+			int pitch,
+			uint bpp,
+			uint red_mask,
+			uint green_mask,
+			uint blue_mask,
+			bool topdown)
+		{
+			byte* addr = (byte*)bits;
+			if ((addr == null) || (width <= 0) || (height <= 0))
+			{
+				return FIBITMAP.Zero;
+			}
+
+			FIBITMAP dib = AllocateT(type, width, height, (int)bpp, red_mask, green_mask, blue_mask);
+			if (dib != FIBITMAP.Zero)
+			{
+				if (topdown)
+				{
+					for (int i = height - 1; i >= 0; --i)
+					{
+						CopyMemory((byte*)GetScanLine(dib, i), addr, (int)GetLine(dib));
+						addr += pitch;
+					}
+				}
+				else
+				{
+					for (int i = 0; i < height; ++i)
+					{
+						CopyMemory((byte*)GetScanLine(dib, i), addr, (int)GetLine(dib));
+						addr += pitch;
+					}
+				}
+			}
+			return dib;
+		}
+
+		/// <summary>
 		/// Saves a .NET <see cref="System.Drawing.Bitmap"/> to a file.
 		/// </summary>
 		/// <param name="bitmap">The .NET <see cref="System.Drawing.Bitmap"/> to save.</param>
@@ -17546,9 +26158,7 @@ namespace FreeImageAPI
 		/// <paramref name="bitmap"/> or <paramref name="filename"/> is null.</exception>
 		/// <exception cref="ArgumentException">
 		/// The bitmaps pixelformat is invalid.</exception>
-		public static bool SaveBitmap(
-			Bitmap bitmap,
-			string filename)
+		public static bool SaveBitmap(Bitmap bitmap, string filename)
 		{
 			return SaveBitmap(
 				bitmap,
@@ -17568,10 +26178,7 @@ namespace FreeImageAPI
 		/// <paramref name="bitmap"/> or <paramref name="filename"/> is null.</exception>
 		/// <exception cref="ArgumentException">
 		/// The bitmaps pixelformat is invalid.</exception>
-		public static bool SaveBitmap(
-			Bitmap bitmap,
-			string filename,
-			FREE_IMAGE_SAVE_FLAGS flags)
+		public static bool SaveBitmap(Bitmap bitmap, string filename, FREE_IMAGE_SAVE_FLAGS flags)
 		{
 			return SaveBitmap(
 				bitmap,
@@ -17676,7 +26283,7 @@ namespace FreeImageAPI
 			{
 				throw new FileNotFoundException(filename + " could not be found.");
 			}
-			FIBITMAP dib = 0;
+			FIBITMAP dib = new FIBITMAP();
 			if (format == FREE_IMAGE_FORMAT.FIF_UNKNOWN)
 			{
 				// query all plugins to see if one can read the file
@@ -17719,7 +26326,7 @@ namespace FreeImageAPI
 			if (!dib.IsNull)
 			{
 				Unload(dib);
-				dib = 0;
+				dib.SetNull();
 			}
 		}
 
@@ -17735,9 +26342,7 @@ namespace FreeImageAPI
 		/// <returns>Returns true on success, false on failure.</returns>
 		/// <exception cref="ArgumentNullException">
 		/// <paramref name="dib"/> or <paramref name="filename"/> is null.</exception>
-		public static bool SaveEx(
-			FIBITMAP dib,
-			string filename)
+		public static bool SaveEx(FIBITMAP dib, string filename)
 		{
 			return SaveEx(
 				ref dib,
@@ -17987,33 +26592,27 @@ namespace FreeImageAPI
 					// Check valid filename and correct it if needed
 					if (!IsFilenameValidForFIF(format, filename))
 					{
-						int index = filename.LastIndexOf('.');
 						string extension = GetPrimaryExtensionFromFIF(format);
-
-						if (index == -1)
-						{
-							// We have no '.' (dot) so just add the extension
-							filename += "." + extension;
-						}
-						else
-						{
-							// Overwrite the old extension
-							filename = filename.Substring(0, filename.LastIndexOf('.')) + extension;
-						}
+						filename = Path.ChangeExtension(filename, extension);
 					}
 
 					FIBITMAP dibToSave = PrepareBitmapColorDepth(dib, format, colorDepth);
-					result = Save(format, dibToSave, filename, flags);
-
-					// Always unload a temporary created bitmap.
-					if (dibToSave != dib)
+					try
 					{
-						UnloadEx(ref dibToSave);
+						result = Save(format, dibToSave, filename, flags);
 					}
-					// On success unload the bitmap
-					if (result && unloadSource)
+					finally
 					{
-						UnloadEx(ref dib);
+						// Always unload a temporary created bitmap.
+						if (dibToSave != dib)
+						{
+							UnloadEx(ref dibToSave);
+						}
+						// On success unload the bitmap
+						if (result && unloadSource)
+						{
+							UnloadEx(ref dib);
+						}
 					}
 				}
 			}
@@ -18030,8 +26629,7 @@ namespace FreeImageAPI
 		/// <paramref name="stream"/> is null.</exception>
 		/// <exception cref="ArgumentException">
 		/// <paramref name="stream"/> is not capable of reading.</exception>
-		public static FIBITMAP LoadFromStream(
-			Stream stream)
+		public static FIBITMAP LoadFromStream(Stream stream)
 		{
 			FREE_IMAGE_FORMAT format = FREE_IMAGE_FORMAT.FIF_UNKNOWN;
 			return LoadFromStream(stream, FREE_IMAGE_LOAD_FLAGS.DEFAULT, ref format);
@@ -18048,9 +26646,7 @@ namespace FreeImageAPI
 		/// <paramref name="stream"/> is null.</exception>
 		/// <exception cref="ArgumentException">
 		/// <paramref name="stream"/> is not capable of reading.</exception>
-		public static FIBITMAP LoadFromStream(
-			Stream stream,
-			FREE_IMAGE_LOAD_FLAGS flags)
+		public static FIBITMAP LoadFromStream(Stream stream, FREE_IMAGE_LOAD_FLAGS flags)
 		{
 			FREE_IMAGE_FORMAT format = FREE_IMAGE_FORMAT.FIF_UNKNOWN;
 			return LoadFromStream(stream, flags, ref format);
@@ -18071,9 +26667,7 @@ namespace FreeImageAPI
 		/// <paramref name="stream"/> is null.</exception>
 		/// <exception cref="ArgumentException">
 		/// <paramref name="stream"/> is not capable of reading.</exception>
-		public static FIBITMAP LoadFromStream(
-			Stream stream,
-			ref FREE_IMAGE_FORMAT format)
+		public static FIBITMAP LoadFromStream(Stream stream, ref FREE_IMAGE_FORMAT format)
 		{
 			return LoadFromStream(stream, FREE_IMAGE_LOAD_FLAGS.DEFAULT, ref format);
 		}
@@ -18109,18 +26703,18 @@ namespace FreeImageAPI
 			}
 			// Wrap the source stream if it is unable to seek (which is required by FreeImage)
 			stream = (stream.CanSeek) ? stream : new StreamWrapper(stream, true);
-			// Save the streams position
+
+			stream.Position = 0L;
 			if (format == FREE_IMAGE_FORMAT.FIF_UNKNOWN)
 			{
-				long position = stream.Position;
 				// Get the format of the bitmap
 				format = GetFileTypeFromStream(stream);
 				// Restore the streams position
-				stream.Position = position;
+				stream.Position = 0L;
 			}
 			if (!FIFSupportsReading(format))
 			{
-				return 0;
+				return FIBITMAP.Zero;
 			}
 			// Create a 'FreeImageIO' structure for calling 'LoadFromHandle'
 			// using the internal structure 'FreeImageStreamIO'.
@@ -18315,7 +26909,7 @@ namespace FreeImageAPI
 			{
 				throw new ArgumentException("stream is not capable of writing.");
 			}
-			if ((!FIFSupportsWriting(format)) || (!FIFSupportsExportType(format, FREE_IMAGE_TYPE.FIT_BITMAP)))
+			if ((!FIFSupportsWriting(format)) || (!FIFSupportsExportType(format, GetImageType(dib))))
 			{
 				return false;
 			}
@@ -18333,7 +26927,7 @@ namespace FreeImageAPI
 					result = SaveToHandle(format, dibToSave, ref io, handle, flags);
 				}
 			}
-			catch
+			finally
 			{
 				// Always unload a temporary created bitmap.
 				if (dibToSave != dib)
@@ -18364,7 +26958,7 @@ namespace FreeImageAPI
 		/// <paramref name="extension"/> is null.</exception>
 		public static bool IsExtensionValidForFIF(FREE_IMAGE_FORMAT fif, string extension)
 		{
-			return IsExtensionValidForFIF(fif, extension, StringComparison.CurrentCulture);
+			return IsExtensionValidForFIF(fif, extension, StringComparison.CurrentCultureIgnoreCase);
 		}
 
 		/// <summary>
@@ -18410,7 +27004,7 @@ namespace FreeImageAPI
 		/// <paramref name="filename"/> is null.</exception>
 		public static bool IsFilenameValidForFIF(FREE_IMAGE_FORMAT fif, string filename)
 		{
-			return IsFilenameValidForFIF(fif, filename, StringComparison.CurrentCulture);
+			return IsFilenameValidForFIF(fif, filename, StringComparison.CurrentCultureIgnoreCase);
 		}
 
 		/// <summary>
@@ -18430,10 +27024,11 @@ namespace FreeImageAPI
 			}
 			bool result = false;
 			// Extract the filenames extension if it exists
-			int position = filename.LastIndexOf('.');
-			if (position >= 0)
+			string extension = Path.GetExtension(filename);
+			if (extension.Length != 0)
 			{
-				result = IsExtensionValidForFIF(fif, filename.Substring(position + 1), comparisonType);
+				extension = extension.Remove(0, 1);
+				result = IsExtensionValidForFIF(fif, extension, comparisonType);
 			}
 			return result;
 		}
@@ -18475,8 +27070,7 @@ namespace FreeImageAPI
 		/// <returns>Handle to a FreeImage multi-paged bitmap.</returns>
 		/// <exception cref="FileNotFoundException">
 		/// <paramref name="filename"/> does not exists while opening.</exception>
-		public static FIMULTIBITMAP OpenMultiBitmapEx(
-			string filename)
+		public static FIMULTIBITMAP OpenMultiBitmapEx(string filename)
 		{
 			FREE_IMAGE_FORMAT format = FREE_IMAGE_FORMAT.FIF_UNKNOWN;
 			return OpenMultiBitmapEx(
@@ -18496,9 +27090,7 @@ namespace FreeImageAPI
 		/// <returns>Handle to a FreeImage multi-paged bitmap.</returns>
 		/// <exception cref="FileNotFoundException">
 		/// <paramref name="filename"/> does not exists while opening.</exception>
-		public static FIMULTIBITMAP OpenMultiBitmapEx(
-			string filename,
-			bool keep_cache_in_memory)
+		public static FIMULTIBITMAP OpenMultiBitmapEx(string filename, bool keep_cache_in_memory)
 		{
 			FREE_IMAGE_FORMAT format = FREE_IMAGE_FORMAT.FIF_UNKNOWN;
 			return OpenMultiBitmapEx(
@@ -18627,7 +27219,7 @@ namespace FreeImageAPI
 				// Check if a plugin can read the data
 				format = GetFileType(filename, 0);
 			}
-			FIMULTIBITMAP dib = 0;
+			FIMULTIBITMAP dib = new FIMULTIBITMAP();
 			if (FIFSupportsReading(format))
 			{
 				dib = OpenMultiBitmap(format, filename, create_new, read_only, keep_cache_in_memory, flags);
@@ -18636,15 +27228,97 @@ namespace FreeImageAPI
 		}
 
 		/// <summary>
-		/// Closes a previously opened multi-page bitmap and, when the bitmap was not opened read-only,
-		/// applies any changes made to it.
-		/// On success the handle will be reset to null.
+		/// Loads a FreeImage multi-paged bitmap.
 		/// </summary>
-		/// <param name="dib">Handle to a FreeImage multi-paged bitmap.</param>
-		/// <returns>Returns true on success, false on failure.</returns>
-		public static bool CloseMultiBitmapEx(ref FIMULTIBITMAP dib)
+		/// <param name="stream">The stream to load the bitmap from.</param>
+		/// <returns>Handle to a FreeImage multi-paged bitmap.</returns>
+		public static FIMULTIBITMAP OpenMultiBitmapFromStream(Stream stream)
 		{
-			return CloseMultiBitmapEx(ref dib, FREE_IMAGE_SAVE_FLAGS.DEFAULT);
+			FREE_IMAGE_FORMAT format = FREE_IMAGE_FORMAT.FIF_UNKNOWN;
+			return OpenMultiBitmapFromStream(stream, ref format, FREE_IMAGE_LOAD_FLAGS.DEFAULT);
+		}
+
+		/// <summary>
+		/// Loads a FreeImage multi-paged bitmap.
+		/// In case the loading format is <see cref="FREE_IMAGE_FORMAT.FIF_UNKNOWN"/> the files
+		/// real format is being analysed. If no plugin can read the file, format remains
+		/// <see cref="FREE_IMAGE_FORMAT.FIF_UNKNOWN"/> and 0 is returned.
+		/// Load flags can be provided by the flags parameter.
+		/// </summary>
+		/// <param name="stream">The stream to load the bitmap from.</param>
+		/// <param name="format">Format of the image. If the format is unknown use 
+		/// <see cref="FREE_IMAGE_FORMAT.FIF_UNKNOWN"/></param>.
+		/// <param name="flags">Flags to enable or disable plugin-features.</param>
+		/// <returns>Handle to a FreeImage multi-paged bitmap.</returns>
+		public static FIMULTIBITMAP OpenMultiBitmapFromStream(Stream stream, ref FREE_IMAGE_FORMAT format, FREE_IMAGE_LOAD_FLAGS flags)
+		{
+			if (stream == null)
+				return FIMULTIBITMAP.Zero;
+
+			if (!stream.CanSeek)
+				stream = new StreamWrapper(stream, true);
+
+			FIMULTIBITMAP mdib = FIMULTIBITMAP.Zero;
+			FreeImageIO io = FreeImageStreamIO.io;
+			fi_handle handle = new fi_handle(stream);
+
+			try
+			{
+				if (format == FREE_IMAGE_FORMAT.FIF_UNKNOWN)
+				{
+					format = GetFileTypeFromHandle(ref io, handle, checked((int)stream.Length));
+				}
+
+				mdib = OpenMultiBitmapFromHandle(format, ref io, handle, flags);
+
+				if (mdib.IsNull)
+				{
+					handle.Dispose();
+				}
+				else
+				{
+					lock (streamHandles)
+					{
+						streamHandles.Add(mdib, handle);
+					}
+				}
+
+				return mdib;
+			}
+			catch
+			{
+				if (!mdib.IsNull)
+					CloseMultiBitmap(mdib, FREE_IMAGE_SAVE_FLAGS.DEFAULT);
+
+				if (handle != null)
+					handle.Dispose();
+
+				throw;
+			}
+		}
+
+		/// <summary>
+		/// Closes a previously opened multi-page bitmap and, when the bitmap was not opened read-only, applies any changes made to it.
+		/// </summary>
+		/// <param name="bitmap">Handle to a FreeImage multi-paged bitmap.</param>
+		/// <param name="flags">Flags to enable or disable plugin-features.</param>
+		/// <returns>Returns true on success, false on failure.</returns>
+		public static bool CloseMultiBitmap(FIMULTIBITMAP bitmap, FREE_IMAGE_SAVE_FLAGS flags)
+		{
+			if (CloseMultiBitmap_(bitmap, flags))
+			{
+				fi_handle handle;
+				lock (streamHandles)
+				{
+					if (streamHandles.TryGetValue(bitmap, out handle))
+					{
+						streamHandles.Remove(bitmap);
+						handle.Dispose();
+					}
+				}
+				return true;
+			}
+			return false;
 		}
 
 		/// <summary>
@@ -18652,17 +27326,29 @@ namespace FreeImageAPI
 		/// applies any changes made to it.
 		/// On success the handle will be reset to null.
 		/// </summary>
-		/// <param name="dib">Handle to a FreeImage multi-paged bitmap.</param>
+		/// <param name="bitmap">Handle to a FreeImage multi-paged bitmap.</param>
+		/// <returns>Returns true on success, false on failure.</returns>
+		public static bool CloseMultiBitmapEx(ref FIMULTIBITMAP bitmap)
+		{
+			return CloseMultiBitmapEx(ref bitmap, FREE_IMAGE_SAVE_FLAGS.DEFAULT);
+		}
+
+		/// <summary>
+		/// Closes a previously opened multi-page bitmap and, when the bitmap was not opened read-only,
+		/// applies any changes made to it.
+		/// On success the handle will be reset to null.
+		/// </summary>
+		/// <param name="bitmap">Handle to a FreeImage multi-paged bitmap.</param>
 		/// <param name="flags">Flags to enable or disable plugin-features.</param>
 		/// <returns>Returns true on success, false on failure.</returns>
-		public static bool CloseMultiBitmapEx(ref FIMULTIBITMAP dib, FREE_IMAGE_SAVE_FLAGS flags)
+		public static bool CloseMultiBitmapEx(ref FIMULTIBITMAP bitmap, FREE_IMAGE_SAVE_FLAGS flags)
 		{
 			bool result = false;
-			if (!dib.IsNull)
+			if (!bitmap.IsNull)
 			{
-				if (CloseMultiBitmap(dib, flags))
+				if (CloseMultiBitmap(bitmap, flags))
 				{
-					dib = 0;
+					bitmap.SetNull();
 					result = true;
 				}
 			}
@@ -18839,10 +27525,7 @@ namespace FreeImageAPI
 				if (hBitmap != IntPtr.Zero && ppvBits != IntPtr.Zero)
 				{
 					// Copy the data into the dc
-					CopyMemory(
-						ppvBits,
-						GetBits(dib),
-						(GetHeight(dib) * GetPitch(dib)));
+					CopyMemory(ppvBits, GetBits(dib), (GetHeight(dib) * GetPitch(dib)));
 					// Success: we unload the bitmap
 					if (unload)
 					{
@@ -18921,7 +27604,7 @@ namespace FreeImageAPI
 				throw new ArgumentNullException("hbitmap");
 			}
 
-			FIBITMAP dib = 0;
+			FIBITMAP dib = new FIBITMAP();
 			BITMAP bm;
 			uint colors;
 			bool release;
@@ -18937,13 +27620,13 @@ namespace FreeImageAPI
 						hdc = GetDC(IntPtr.Zero);
 					}
 					if (GetDIBits(
-							hdc,
-							hbitmap,
-							0,
-							(uint)bm.bmHeight,
-							GetBits(dib),
-							GetInfo(dib),
-							DIB_RGB_COLORS) != 0)
+						hdc,
+						hbitmap,
+						0,
+						(uint)bm.bmHeight,
+						GetBits(dib),
+						GetInfo(dib),
+						DIB_RGB_COLORS) != 0)
 					{
 						if (colors != 0)
 						{
@@ -19208,20 +27891,23 @@ namespace FreeImageAPI
 		/// </summary>
 		/// <param name="format">The <see cref="System.Drawing.Imaging.PixelFormat"/>
 		/// of the .NET <see cref="System.Drawing.Image"/>.</param>
+		/// <param name="type">Returns the type used for the new bitmap.</param>
 		/// <param name="bpp">Returns the color depth for the new bitmap.</param>
 		/// <param name="red_mask">Returns the red_mask for the new bitmap.</param>
 		/// <param name="green_mask">Returns the green_mask for the new bitmap.</param>
 		/// <param name="blue_mask">Returns the blue_mask for the new bitmap.</param>
-		/// <returns>True in case <paramref name="format"/> is
-		/// <see cref="FREE_IMAGE_TYPE.FIT_BITMAP"/>, else false.</returns>
+		/// <returns>True in case a matching conversion exists; else false.
+		/// </returns>
 		public static bool GetFormatParameters(
 			PixelFormat format,
+			out FREE_IMAGE_TYPE type,
 			out uint bpp,
 			out uint red_mask,
 			out uint green_mask,
 			out uint blue_mask)
 		{
 			bool result = false;
+			type = FREE_IMAGE_TYPE.FIT_UNKNOWN;
 			bpp = 0;
 			red_mask = 0;
 			green_mask = 0;
@@ -19229,18 +27915,22 @@ namespace FreeImageAPI
 			switch (format)
 			{
 				case PixelFormat.Format1bppIndexed:
+					type = FREE_IMAGE_TYPE.FIT_BITMAP;
 					bpp = 1;
 					result = true;
 					break;
 				case PixelFormat.Format4bppIndexed:
+					type = FREE_IMAGE_TYPE.FIT_BITMAP;
 					bpp = 4;
 					result = true;
 					break;
 				case PixelFormat.Format8bppIndexed:
+					type = FREE_IMAGE_TYPE.FIT_BITMAP;
 					bpp = 8;
 					result = true;
 					break;
 				case PixelFormat.Format16bppRgb565:
+					type = FREE_IMAGE_TYPE.FIT_BITMAP;
 					bpp = 16;
 					red_mask = FI16_565_RED_MASK;
 					green_mask = FI16_565_GREEN_MASK;
@@ -19248,6 +27938,8 @@ namespace FreeImageAPI
 					result = true;
 					break;
 				case PixelFormat.Format16bppRgb555:
+				case PixelFormat.Format16bppArgb1555:
+					type = FREE_IMAGE_TYPE.FIT_BITMAP;
 					bpp = 16;
 					red_mask = FI16_555_RED_MASK;
 					green_mask = FI16_555_GREEN_MASK;
@@ -19255,6 +27947,7 @@ namespace FreeImageAPI
 					result = true;
 					break;
 				case PixelFormat.Format24bppRgb:
+					type = FREE_IMAGE_TYPE.FIT_BITMAP;
 					bpp = 24;
 					red_mask = FI_RGBA_RED_MASK;
 					green_mask = FI_RGBA_GREEN_MASK;
@@ -19263,10 +27956,113 @@ namespace FreeImageAPI
 					break;
 				case PixelFormat.Format32bppRgb:
 				case PixelFormat.Format32bppArgb:
+				case PixelFormat.Format32bppPArgb:
+					type = FREE_IMAGE_TYPE.FIT_BITMAP;
 					bpp = 32;
 					red_mask = FI_RGBA_RED_MASK;
 					green_mask = FI_RGBA_GREEN_MASK;
 					blue_mask = FI_RGBA_BLUE_MASK;
+					result = true;
+					break;
+				case PixelFormat.Format16bppGrayScale:
+					type = FREE_IMAGE_TYPE.FIT_UINT16;
+					bpp = 16;
+					result = true;
+					break;
+				case PixelFormat.Format48bppRgb:
+					type = FREE_IMAGE_TYPE.FIT_RGB16;
+					bpp = 48;
+					result = true;
+					break;
+				case PixelFormat.Format64bppArgb:
+				case PixelFormat.Format64bppPArgb:
+					type = FREE_IMAGE_TYPE.FIT_RGBA16;
+					bpp = 64;
+					result = true;
+					break;
+			}
+			return result;
+		}
+
+		/// <summary>
+		/// Returns the <see cref="FREE_IMAGE_FORMAT"/> for the specified
+		/// <see cref="ImageFormat"/>.
+		/// </summary>
+		/// <param name="imageFormat">The <see cref="ImageFormat"/>
+		/// for which to return the corresponding <see cref="FREE_IMAGE_FORMAT"/>.</param>
+		/// <returns>The <see cref="FREE_IMAGE_FORMAT"/> for the specified
+		/// <see cref="ImageFormat"/></returns>
+		public static FREE_IMAGE_FORMAT GetFormat(ImageFormat imageFormat)
+		{
+			if (imageFormat != null)
+			{
+				if (imageFormat.Equals(ImageFormat.Bmp))
+					return FREE_IMAGE_FORMAT.FIF_BMP;
+				if (imageFormat.Equals(ImageFormat.Gif))
+					return FREE_IMAGE_FORMAT.FIF_GIF;
+				if (imageFormat.Equals(ImageFormat.Icon))
+					return FREE_IMAGE_FORMAT.FIF_ICO;
+				if (imageFormat.Equals(ImageFormat.Jpeg))
+					return FREE_IMAGE_FORMAT.FIF_JPEG;
+				if (imageFormat.Equals(ImageFormat.Png))
+					return FREE_IMAGE_FORMAT.FIF_PNG;
+				if (imageFormat.Equals(ImageFormat.Tiff))
+					return FREE_IMAGE_FORMAT.FIF_TIFF;
+			}
+			return FREE_IMAGE_FORMAT.FIF_UNKNOWN;
+		}
+
+		/// <summary>
+		/// Retrieves all parameters needed to create a new FreeImage bitmap from
+		/// raw bits <see cref="System.Drawing.Image"/>.
+		/// </summary>
+		/// <param name="type">The <see cref="FREE_IMAGE_TYPE"/>
+		/// of the data in memory.</param>
+		/// <param name="bpp">The color depth for the data.</param>
+		/// <param name="red_mask">Returns the red_mask for the data.</param>
+		/// <param name="green_mask">Returns the green_mask for the data.</param>
+		/// <param name="blue_mask">Returns the blue_mask for the data.</param>
+		/// <returns>True in case a matching conversion exists; else false.
+		/// </returns>
+		public static bool GetTypeParameters(
+			FREE_IMAGE_TYPE type,
+			int bpp,
+			out uint red_mask,
+			out uint green_mask,
+			out uint blue_mask)
+		{
+			bool result = false;
+			red_mask = 0;
+			green_mask = 0;
+			blue_mask = 0;
+			switch (type)
+			{
+				case FREE_IMAGE_TYPE.FIT_BITMAP:
+					switch (bpp)
+					{
+						case 1:
+						case 4:
+						case 8:
+							result = true;
+							break;
+						case 16:
+							result = true;
+							red_mask = FI16_555_RED_MASK;
+							green_mask = FI16_555_GREEN_MASK;
+							blue_mask = FI16_555_BLUE_MASK;
+							break;
+						case 24:
+						case 32:
+							result = true;
+							red_mask = FI_RGBA_RED_MASK;
+							green_mask = FI_RGBA_GREEN_MASK;
+							blue_mask = FI_RGBA_BLUE_MASK;
+							break;
+					}
+					break;
+				case FREE_IMAGE_TYPE.FIT_UNKNOWN:
+					break;
+				default:
 					result = true;
 					break;
 			}
@@ -19365,6 +28161,18 @@ namespace FreeImageAPI
 			{
 				return false;
 			}
+			if (GetRedMask(dib1) != GetRedMask(dib2))
+			{
+				return false;
+			}
+			if (GetGreenMask(dib1) != GetGreenMask(dib2))
+			{
+				return false;
+			}
+			if (GetBlueMask(dib1) != GetBlueMask(dib2))
+			{
+				return false;
+			}
 
 			byte* ptr1, ptr2;
 			int fullBytes;
@@ -19399,15 +28207,31 @@ namespace FreeImageAPI
 						break;
 					case 16:
 						short* sPtr1, sPtr2;
-						for (int i = 0; i < height; i++)
+						short mask = (short)(GetRedMask(dib1) | GetGreenMask(dib1) | GetBlueMask(dib1));
+						if (mask == -1)
 						{
-							sPtr1 = (short*)GetScanLine(dib1, i);
-							sPtr2 = (short*)GetScanLine(dib2, i);
-							for (int x = 0; x < width; x++)
+							for (int i = 0; i < height; i++)
 							{
-								if ((sPtr1[x] << 1) != (sPtr2[x] << 1))
+								sPtr1 = (short*)GetScanLine(dib1, i);
+								sPtr2 = (short*)GetScanLine(dib2, i);
+								if (!CompareMemory(sPtr1, sPtr1, line))
 								{
 									return false;
+								}
+							}
+						}
+						else
+						{
+							for (int i = 0; i < height; i++)
+							{
+								sPtr1 = (short*)GetScanLine(dib1, i);
+								sPtr2 = (short*)GetScanLine(dib2, i);
+								for (int x = 0; x < width; x++)
+								{
+									if ((sPtr1[x] & mask) != (sPtr2[x] & mask))
+									{
+										return false;
+									}
 								}
 							}
 						}
@@ -19474,7 +28298,7 @@ namespace FreeImageAPI
 						}
 						break;
 					default:
-						throw new NotSupportedException();
+						throw new NotSupportedException("Only 1, 4, 8, 16, 24 and 32 bpp bitmaps are supported.");
 				}
 			}
 			else
@@ -19515,8 +28339,7 @@ namespace FreeImageAPI
 				}
 				do
 				{
-					if ((!GetMetadata(metadataModel, dib2, tag1.Key, out tag2)) ||
-						(tag1 != tag2))
+					if ((!GetMetadata(metadataModel, dib2, tag1.Key, out tag2)) || (tag1 != tag2))
 					{
 						FindCloseMetadata(mdHandle);
 						return false;
@@ -19548,7 +28371,7 @@ namespace FreeImageAPI
 			byte* ptr = (byte*)GetTransparencyTable(dib);
 			fixed (byte* dst = result)
 			{
-				MoveMemory(dst, ptr, count);
+				CopyMemory(dst, ptr, count);
 			}
 			return result;
 		}
@@ -19570,7 +28393,7 @@ namespace FreeImageAPI
 			{
 				throw new ArgumentNullException("table");
 			}
-			SetTransparencyTable_(dib, table, table.Length);
+			SetTransparencyTable(dib, table, table.Length);
 		}
 
 		/// <summary>
@@ -19776,8 +28599,8 @@ namespace FreeImageAPI
 		public static bool IsRGB555(FIBITMAP dib)
 		{
 			return ((GetRedMask(dib) == FI16_555_RED_MASK) &&
-					(GetGreenMask(dib) == FI16_555_GREEN_MASK) &&
-					(GetBlueMask(dib) == FI16_555_BLUE_MASK));
+				(GetGreenMask(dib) == FI16_555_GREEN_MASK) &&
+				(GetBlueMask(dib) == FI16_555_BLUE_MASK));
 		}
 
 		/// <summary>
@@ -19788,8 +28611,8 @@ namespace FreeImageAPI
 		public static bool IsRGB565(FIBITMAP dib)
 		{
 			return ((GetRedMask(dib) == FI16_565_RED_MASK) &&
-					(GetGreenMask(dib) == FI16_565_GREEN_MASK) &&
-					(GetBlueMask(dib) == FI16_565_BLUE_MASK));
+				(GetGreenMask(dib) == FI16_565_GREEN_MASK) &&
+				(GetBlueMask(dib) == FI16_565_BLUE_MASK));
 		}
 
 		#endregion
@@ -20057,159 +28880,182 @@ namespace FreeImageAPI
 				throw new ArgumentNullException("dib");
 			}
 
-			FIBITMAP result = 0;
-			FIBITMAP dibTemp = 0;
+			FIBITMAP result = new FIBITMAP();
+			FIBITMAP dibTemp = new FIBITMAP();
 			uint bpp = GetBPP(dib);
 			bool reorderPalette = ((conversion & FREE_IMAGE_COLOR_DEPTH.FICD_REORDER_PALETTE) > 0);
 			bool forceGreyscale = ((conversion & FREE_IMAGE_COLOR_DEPTH.FICD_FORCE_GREYSCALE) > 0);
 
-			switch (conversion & (FREE_IMAGE_COLOR_DEPTH)0xFF)
+			if (GetImageType(dib) == FREE_IMAGE_TYPE.FIT_BITMAP)
 			{
-				case FREE_IMAGE_COLOR_DEPTH.FICD_01_BPP_THRESHOLD:
+				switch (conversion & (FREE_IMAGE_COLOR_DEPTH)0xFF)
+				{
+					case FREE_IMAGE_COLOR_DEPTH.FICD_01_BPP_THRESHOLD:
 
-					if (bpp != 1)
-					{
-						result = Threshold(dib, threshold);
-					}
-					else
-					{
-						bool isGreyscale = IsGreyscaleImage(dib);
-						if ((forceGreyscale && (!isGreyscale)) ||
-						(reorderPalette && isGreyscale))
+						if (bpp != 1)
 						{
-							result = Threshold(dib, threshold);
+							if (forceGreyscale)
+							{
+								result = Threshold(dib, threshold);
+							}
+							else
+							{
+								dibTemp = ConvertTo24Bits(dib);
+								result = ColorQuantizeEx(dibTemp, quantizationMethod, 2, null, 1);
+								Unload(dibTemp);
+							}
 						}
-					}
-					break;
-
-				case FREE_IMAGE_COLOR_DEPTH.FICD_01_BPP_DITHER:
-
-					if (bpp != 1)
-					{
-						result = Dither(dib, ditherMethod);
-					}
-					else
-					{
-						bool isGreyscale = IsGreyscaleImage(dib);
-						if ((forceGreyscale && (!isGreyscale)) ||
-						(reorderPalette && isGreyscale))
-						{
-							result = Dither(dib, ditherMethod);
-						}
-					}
-					break;
-
-				case FREE_IMAGE_COLOR_DEPTH.FICD_04_BPP:
-
-					if (bpp != 4)
-					{
-						// Special case when 1bpp and FIC_PALETTE
-						if (forceGreyscale && (bpp == 1) && (GetColorType(dib) == FREE_IMAGE_COLOR_TYPE.FIC_PALETTE))
-						{
-							dibTemp = ConvertToGreyscale(dib);
-							result = ConvertTo4Bits(dibTemp);
-							Unload(dibTemp);
-						}
-						// All other cases are converted directly
 						else
 						{
-							result = ConvertTo4Bits(dib);
+							bool isGreyscale = IsGreyscaleImage(dib);
+							if ((forceGreyscale && (!isGreyscale)) ||
+								(reorderPalette && isGreyscale))
+							{
+								result = Threshold(dib, threshold);
+							}
 						}
-					}
-					else
-					{
-						bool isGreyscale = IsGreyscaleImage(dib);
-						if ((forceGreyscale && (!isGreyscale)) ||
-							(reorderPalette && isGreyscale))
+						break;
+
+					case FREE_IMAGE_COLOR_DEPTH.FICD_01_BPP_DITHER:
+
+						if (bpp != 1)
 						{
-							dibTemp = ConvertToGreyscale(dib);
-							result = ConvertTo4Bits(dibTemp);
-							Unload(dibTemp);
+							if (forceGreyscale)
+							{
+								result = Dither(dib, ditherMethod);
+							}
+							else
+							{
+								dibTemp = ConvertTo24Bits(dib);
+								result = ColorQuantizeEx(dibTemp, quantizationMethod, 2, null, 1);
+								Unload(dibTemp);
+							}
 						}
-					}
+						else
+						{
+							bool isGreyscale = IsGreyscaleImage(dib);
+							if ((forceGreyscale && (!isGreyscale)) ||
+								(reorderPalette && isGreyscale))
+							{
+								result = Dither(dib, ditherMethod);
+							}
+						}
+						break;
 
-					break;
+					case FREE_IMAGE_COLOR_DEPTH.FICD_04_BPP:
 
-				case FREE_IMAGE_COLOR_DEPTH.FICD_08_BPP:
+						if (bpp != 4)
+						{
+							// Special case when 1bpp and FIC_PALETTE
+							if (forceGreyscale ||
+								((bpp == 1) && (GetColorType(dib) == FREE_IMAGE_COLOR_TYPE.FIC_PALETTE)))
+							{
+								dibTemp = ConvertToGreyscale(dib);
+								result = ConvertTo4Bits(dibTemp);
+								Unload(dibTemp);
+							}
+							else
+							{
+								dibTemp = ConvertTo24Bits(dib);
+								result = ColorQuantizeEx(dibTemp, quantizationMethod, 16, null, 4);
+								Unload(dibTemp);
+							}
+						}
+						else
+						{
+							bool isGreyscale = IsGreyscaleImage(dib);
+							if ((forceGreyscale && (!isGreyscale)) ||
+								(reorderPalette && isGreyscale))
+							{
+								dibTemp = ConvertToGreyscale(dib);
+								result = ConvertTo4Bits(dibTemp);
+								Unload(dibTemp);
+							}
+						}
 
-					if (bpp != 8)
-					{
+						break;
+
+					case FREE_IMAGE_COLOR_DEPTH.FICD_08_BPP:
+
+						if (bpp != 8)
+						{
+							if (forceGreyscale)
+							{
+								result = ConvertToGreyscale(dib);
+							}
+							else
+							{
+								dibTemp = ConvertTo24Bits(dib);
+								result = ColorQuantize(dibTemp, quantizationMethod);
+								Unload(dibTemp);
+							}
+						}
+						else
+						{
+							bool isGreyscale = IsGreyscaleImage(dib);
+							if ((forceGreyscale && (!isGreyscale)) || (reorderPalette && isGreyscale))
+							{
+								result = ConvertToGreyscale(dib);
+							}
+						}
+						break;
+
+					case FREE_IMAGE_COLOR_DEPTH.FICD_16_BPP_555:
+
 						if (forceGreyscale)
 						{
-							result = ConvertToGreyscale(dib);
-						}
-						else
-						{
-							dibTemp = ConvertTo24Bits(dib);
-							result = ColorQuantize(dibTemp, quantizationMethod);
+							dibTemp = ConvertToGreyscale(dib);
+							result = ConvertTo16Bits555(dibTemp);
 							Unload(dibTemp);
 						}
-					}
-					else
-					{
-						bool isGreyscale = IsGreyscaleImage(dib);
-						if ((forceGreyscale && (!isGreyscale)) || (reorderPalette && isGreyscale))
+						else if (bpp != 16 || GetRedMask(dib) != FI16_555_RED_MASK || GetGreenMask(dib) != FI16_555_GREEN_MASK || GetBlueMask(dib) != FI16_555_BLUE_MASK)
 						{
-							result = ConvertToGreyscale(dib);
+							result = ConvertTo16Bits555(dib);
 						}
-					}
-					break;
+						break;
 
-				case FREE_IMAGE_COLOR_DEPTH.FICD_16_BPP_555:
+					case FREE_IMAGE_COLOR_DEPTH.FICD_16_BPP:
 
-					if (forceGreyscale)
-					{
-						dibTemp = ConvertToGreyscale(dib);
-						result = ConvertTo16Bits555(dibTemp);
-						Unload(dibTemp);
-					}
-					else if (bpp != 16 || GetRedMask(dib) != FI16_555_RED_MASK || GetGreenMask(dib) != FI16_555_GREEN_MASK || GetBlueMask(dib) != FI16_555_BLUE_MASK)
-					{
-						result = ConvertTo16Bits555(dib);
-					}
-					break;
+						if (forceGreyscale)
+						{
+							dibTemp = ConvertToGreyscale(dib);
+							result = ConvertTo16Bits565(dibTemp);
+							Unload(dibTemp);
+						}
+						else if (bpp != 16 || GetRedMask(dib) != FI16_565_RED_MASK || GetGreenMask(dib) != FI16_565_GREEN_MASK || GetBlueMask(dib) != FI16_565_BLUE_MASK)
+						{
+							result = ConvertTo16Bits565(dib);
+						}
+						break;
 
-				case FREE_IMAGE_COLOR_DEPTH.FICD_16_BPP:
+					case FREE_IMAGE_COLOR_DEPTH.FICD_24_BPP:
 
-					if (forceGreyscale)
-					{
-						dibTemp = ConvertToGreyscale(dib);
-						result = ConvertTo16Bits565(dibTemp);
-						Unload(dibTemp);
-					}
-					else if (bpp != 16 || GetRedMask(dib) != FI16_565_RED_MASK || GetGreenMask(dib) != FI16_565_GREEN_MASK || GetBlueMask(dib) != FI16_565_BLUE_MASK)
-					{
-						result = ConvertTo16Bits565(dib);
-					}
-					break;
+						if (forceGreyscale)
+						{
+							dibTemp = ConvertToGreyscale(dib);
+							result = ConvertTo24Bits(dibTemp);
+							Unload(dibTemp);
+						}
+						else if (bpp != 24)
+						{
+							result = ConvertTo24Bits(dib);
+						}
+						break;
 
-				case FREE_IMAGE_COLOR_DEPTH.FICD_24_BPP:
+					case FREE_IMAGE_COLOR_DEPTH.FICD_32_BPP:
 
-					if (forceGreyscale)
-					{
-						dibTemp = ConvertToGreyscale(dib);
-						result = ConvertTo24Bits(dibTemp);
-						Unload(dibTemp);
-					}
-					else if (bpp != 24)
-					{
-						result = ConvertTo24Bits(dib);
-					}
-					break;
-
-				case FREE_IMAGE_COLOR_DEPTH.FICD_32_BPP:
-
-					if (forceGreyscale)
-					{
-						dibTemp = ConvertToGreyscale(dib);
-						result = ConvertTo32Bits(dibTemp);
-						Unload(dibTemp);
-					}
-					else if (bpp != 32)
-					{
-						result = ConvertTo32Bits(dib);
-					}
-					break;
+						if (forceGreyscale)
+						{
+							dibTemp = ConvertToGreyscale(dib);
+							result = ConvertTo32Bits(dibTemp);
+							Unload(dibTemp);
+						}
+						else if (bpp != 32)
+						{
+							result = ConvertTo32Bits(dib);
+						}
+						break;
+				}
 			}
 
 			if (result.IsNull)
@@ -20222,6 +29068,112 @@ namespace FreeImageAPI
 			}
 
 			return result;
+		}
+
+		/// <summary>
+		/// ColorQuantizeEx is an extension to the <see cref="ColorQuantize(FIBITMAP, FREE_IMAGE_QUANTIZE)"/>
+		/// method that provides additional options used to quantize a 24-bit image to any
+		/// number of colors (up to 256), as well as quantize a 24-bit image using a
+		/// provided palette.
+		/// </summary>
+		/// <param name="dib">Handle to a FreeImage bitmap.</param>
+		/// <param name="quantize">Specifies the color reduction algorithm to be used.</param>
+		/// <param name="PaletteSize">Size of the desired output palette.</param>
+		/// <param name="ReservePalette">The provided palette.</param>
+		/// <param name="minColorDepth"><b>true</b> to create a bitmap with the smallest possible
+		/// color depth for the specified <paramref name="PaletteSize"/>.</param>
+		/// <returns>Handle to a FreeImage bitmap.</returns>
+		public static FIBITMAP ColorQuantizeEx(FIBITMAP dib, FREE_IMAGE_QUANTIZE quantize, int PaletteSize, RGBQUAD[] ReservePalette, bool minColorDepth)
+		{
+			FIBITMAP result;
+			if (minColorDepth)
+			{
+				int bpp;
+				if (PaletteSize >= 256)
+					bpp = 8;
+				else if (PaletteSize > 2)
+					bpp = 4;
+				else
+					bpp = 1;
+				result = ColorQuantizeEx(dib, quantize, PaletteSize, ReservePalette, bpp);
+			}
+			else
+			{
+				result = ColorQuantizeEx(dib, quantize, PaletteSize, ReservePalette, 8);
+			}
+			return result;
+		}
+
+		/// <summary>
+		/// ColorQuantizeEx is an extension to the <see cref="ColorQuantize(FIBITMAP, FREE_IMAGE_QUANTIZE)"/>
+		/// method that provides additional options used to quantize a 24-bit image to any
+		/// number of colors (up to 256), as well as quantize a 24-bit image using a
+		/// partial or full provided palette.
+		/// </summary>
+		/// <param name="dib">Handle to a FreeImage bitmap.</param>
+		/// <param name="quantize">Specifies the color reduction algorithm to be used.</param>
+		/// <param name="PaletteSize">Size of the desired output palette.</param>
+		/// <param name="ReservePalette">The provided palette.</param>
+		/// <param name="bpp">The desired color depth of the created image.</param>
+		/// <returns>Handle to a FreeImage bitmap.</returns>
+		public static FIBITMAP ColorQuantizeEx(FIBITMAP dib, FREE_IMAGE_QUANTIZE quantize, int PaletteSize, RGBQUAD[] ReservePalette, int bpp)
+		{
+			unsafe
+			{
+				FIBITMAP result = FIBITMAP.Zero;
+				FIBITMAP temp = FIBITMAP.Zero;
+				int reservedSize = (ReservePalette == null) ? 0 : ReservePalette.Length;
+
+				if (bpp == 8)
+				{
+					result = ColorQuantizeEx(dib, quantize, PaletteSize, reservedSize, ReservePalette);
+				}
+				else if (bpp == 4)
+				{
+					temp = ColorQuantizeEx(dib, quantize, Math.Min(16, PaletteSize), reservedSize, ReservePalette);
+					if (!temp.IsNull)
+					{
+						result = Allocate((int)GetWidth(temp), (int)GetHeight(temp), 4, 0, 0, 0);
+						CloneMetadata(result, temp);
+						CopyMemory(GetPalette(result), GetPalette(temp), sizeof(RGBQUAD) * 16);
+
+						for (int y = (int)GetHeight(temp) - 1; y >= 0; y--)
+						{
+							Scanline<byte> srcScanline = new Scanline<byte>(temp, y);
+							Scanline<FI4BIT> dstScanline = new Scanline<FI4BIT>(result, y);
+
+							for (int x = (int)GetWidth(temp) - 1; x >= 0; x--)
+							{
+								dstScanline[x] = srcScanline[x];
+							}
+						}
+					}
+				}
+				else if (bpp == 1)
+				{
+					temp = ColorQuantizeEx(dib, quantize, 2, reservedSize, ReservePalette);
+					if (!temp.IsNull)
+					{
+						result = Allocate((int)GetWidth(temp), (int)GetHeight(temp), 1, 0, 0, 0);
+						CloneMetadata(result, temp);
+						CopyMemory(GetPalette(result), GetPalette(temp), sizeof(RGBQUAD) * 2);
+
+						for (int y = (int)GetHeight(temp) - 1; y >= 0; y--)
+						{
+							Scanline<byte> srcScanline = new Scanline<byte>(temp, y);
+							Scanline<FI1BIT> dstScanline = new Scanline<FI1BIT>(result, y);
+
+							for (int x = (int)GetWidth(temp) - 1; x >= 0; x--)
+							{
+								dstScanline[x] = srcScanline[x];
+							}
+						}
+					}
+				}
+
+				UnloadEx(ref temp);
+				return result;
+			}
 		}
 
 		#endregion
@@ -20248,7 +29200,7 @@ namespace FreeImageAPI
 				throw new ArgumentNullException("dst");
 			}
 
-			FITAG tag = 0, tag2 = 0;
+			FITAG tag = new FITAG(), tag2 = new FITAG();
 			int copied = 0;
 
 			// Clear all existing metadata
@@ -20336,7 +29288,7 @@ namespace FreeImageAPI
 			}
 			else
 			{
-				result = SetMetadata(FREE_IMAGE_MDMODEL.FIMD_COMMENTS, dib, "Comment", 0);
+				result = SetMetadata(FREE_IMAGE_MDMODEL.FIMD_COMMENTS, dib, "Comment", FITAG.Zero);
 			}
 			return result;
 		}
@@ -20483,7 +29435,53 @@ namespace FreeImageAPI
 
 		#endregion
 
-		#region Rotation and flipping
+		#region Rotation and Flipping
+
+		/// <summary>
+		/// This function rotates a 1-, 8-bit greyscale or a 24-, 32-bit color image by means of 3 shears.
+		/// 1-bit images rotation is limited to integer multiple of 90�.
+		/// <c>null</c> is returned for other values.
+		/// </summary>
+		/// <param name="dib">Handle to a FreeImage bitmap.</param>
+		/// <param name="angle">The angle of rotation.</param>
+		/// <returns>Handle to a FreeImage bitmap.</returns>
+		public static FIBITMAP Rotate(FIBITMAP dib, double angle)
+		{
+			return Rotate(dib, angle, IntPtr.Zero);
+		}
+
+		/// <summary>
+		/// This function rotates a 1-, 8-bit greyscale or a 24-, 32-bit color image by means of 3 shears.
+		/// 1-bit images rotation is limited to integer multiple of 90�.
+		/// <c>null</c> is returned for other values.
+		/// </summary>
+		/// <typeparam name="T">The type of the color to use as background.</typeparam>
+		/// <param name="dib">Handle to a FreeImage bitmap.</param>
+		/// <param name="angle">The angle of rotation.</param>
+		/// <param name="backgroundColor">The color used used to fill the bitmap's background.</param>
+		/// <returns>Handle to a FreeImage bitmap.</returns>
+		public static FIBITMAP Rotate<T>(FIBITMAP dib, double angle, T? backgroundColor) where T : struct
+		{
+			if (backgroundColor.HasValue)
+			{
+				GCHandle handle = new GCHandle();
+				try
+				{
+					T[] buffer = new T[] { backgroundColor.Value };
+					handle = GCHandle.Alloc(buffer, GCHandleType.Pinned);
+					return Rotate(dib, angle, handle.AddrOfPinnedObject());
+				}
+				finally
+				{
+					if (handle.IsAllocated)
+						handle.Free();
+				}
+			}
+			else
+			{
+				return Rotate(dib, angle, IntPtr.Zero);
+			}
+		}
 
 		/// <summary>
 		/// Rotates a 4-bit color FreeImage bitmap.
@@ -20509,7 +29507,7 @@ namespace FreeImageAPI
 				throw new ArgumentNullException("dib");
 			}
 
-			FIBITMAP result = 0;
+			FIBITMAP result = new FIBITMAP();
 			int ang = (int)angle;
 
 			if ((GetImageType(dib) == FREE_IMAGE_TYPE.FIT_BITMAP) &&
@@ -20589,6 +29587,210 @@ namespace FreeImageAPI
 				}
 			}
 			return result;
+		}
+
+		#endregion
+
+		#region Upsampling / downsampling
+
+		/// <summary>
+		/// Enlarges or shrinks the FreeImage bitmap selectively per side and fills newly added areas
+		/// with the specified background color. See remarks for further details.
+		/// </summary>
+		/// <typeparam name="T">The type of the specified color.</typeparam>
+		/// <param name="dib">Handle to a FreeImage bitmap.</param>
+		/// <param name="left">The number of pixels, the image should be enlarged on its left side.
+		/// Negative values shrink the image on its left side.</param>
+		/// <param name="top">The number of pixels, the image should be enlarged on its top side.
+		/// Negative values shrink the image on its top side.</param>
+		/// <param name="right">The number of pixels, the image should be enlarged on its right side.
+		/// Negative values shrink the image on its right side.</param>
+		/// <param name="bottom">The number of pixels, the image should be enlarged on its bottom side.
+		/// Negative values shrink the image on its bottom side.</param>
+		/// <param name="color">The color, the enlarged sides of the image should be filled with.</param>
+		/// <param name="options">Options that affect the color search process for palletized images.</param>
+		/// <returns>Handle to a FreeImage bitmap.</returns>
+		/// <remarks>
+		/// This function enlarges or shrinks an image selectively per side.
+		/// The main purpose of this function is to add borders to an image.
+		/// To add a border to any of the image's sides, a positive integer value must be passed in
+		/// any of the parameters <paramref name="left"/>, <paramref name="top"/>, <paramref name="right"/>
+		/// or <paramref name="bottom"/>. This value represents the border's
+		/// width in pixels. Newly created parts of the image (the border areas) are filled with the
+		/// specified <paramref name="color"/>.
+		/// Specifying a negative integer value for a certain side, will shrink or crop the image on
+		/// this side. Consequently, specifying zero for a certain side will not change the image's
+		/// extension on that side.
+		/// <para/>
+		/// So, calling this function with all parameters <paramref name="left"/>, <paramref name="top"/>,
+		/// <paramref name="right"/> and <paramref name="bottom"/> set to zero, is
+		/// effectively the same as calling function <see cref="Clone"/>; setting all parameters
+		/// <paramref name="left"/>, <paramref name="top"/>, <paramref name="right"/> and
+		/// <paramref name="bottom"/> to value equal to or smaller than zero, my easily be substituted
+		/// by a call to function <see cref="Copy"/>. Both these cases produce a new image, which is
+		/// guaranteed not to be larger than the input image. Thus, since the specified
+		/// <paramref name="color"/> is not needed in these cases, <paramref name="color"/>
+		/// may be <c>null</c>.
+		/// <para/>
+		/// Both parameters <paramref name="color"/> and <paramref name="options"/> work according to
+		/// function <see cref="FillBackground&lt;T&gt;"/>. So, please refer to the documentation of
+		/// <see cref="FillBackground&lt;T&gt;"/> to learn more about parameters <paramref name="color"/>
+		/// and <paramref name="options"/>. For palletized images, the palette of the input image is
+		/// transparently copied to the newly created enlarged or shrunken image, so any color look-ups
+		/// are performed on this palette.
+		/// </remarks>
+		/// <example>
+		/// // create a white color<br/>
+		/// RGBQUAD c;<br/>
+		/// c.rgbRed = 0xFF;<br/>
+		/// c.rgbGreen = 0xFF;<br/>
+		/// c.rgbBlue = 0xFF;<br/>
+		/// c.rgbReserved = 0x00;<br/>
+		/// <br/>
+		/// // add a white, symmetric 10 pixel wide border to the image<br/>
+		/// dib2 = FreeImage_EnlargeCanvas(dib, 10, 10, 10, 10, c, FREE_IMAGE_COLOR_OPTIONS.FICO_RGB);<br/>
+		/// <br/>
+		/// // add white, 20 pixel wide stripes to the top and bottom side of the image<br/>
+		/// dib3 = FreeImage_EnlargeCanvas(dib, 0, 20, 0, 20, c, FREE_IMAGE_COLOR_OPTIONS.FICO_RGB);<br/>
+		/// <br/>
+		/// // add white, 30 pixel wide stripes to the right side of the image and<br/>
+		/// // cut off the 40 leftmost pixel columns<br/>
+		/// dib3 = FreeImage_EnlargeCanvas(dib, -40, 0, 30, 0, c, FREE_IMAGE_COLOR_OPTIONS.FICO_RGB);<br/>
+		/// </example>
+		public static FIBITMAP EnlargeCanvas<T>(FIBITMAP dib, int left, int top, int right, int bottom,
+			T? color, FREE_IMAGE_COLOR_OPTIONS options) where T : struct
+		{
+			if (dib.IsNull)
+				return FIBITMAP.Zero;
+
+			if (!CheckColorType(GetImageType(dib), color))
+				return FIBITMAP.Zero;
+
+			if (color.HasValue)
+			{
+				GCHandle handle = new GCHandle();
+				try
+				{
+					T[] buffer = new T[] { color.Value };
+					handle = GCHandle.Alloc(buffer, GCHandleType.Pinned);
+					return EnlargeCanvas(dib, left, top, right, bottom, handle.AddrOfPinnedObject(), options);
+				}
+				finally
+				{
+					if (handle.IsAllocated)
+						handle.Free();
+				}
+			}
+			else
+			{
+				return EnlargeCanvas(dib, left, top, right, bottom, IntPtr.Zero, options);
+			}
+		}
+
+		#endregion
+
+		#region Color
+
+		/// <summary>
+		/// Sets all pixels of the specified image to the color provided through the
+		/// <paramref name="color"/> parameter. See remarks for further details.
+		/// </summary>
+		/// <typeparam name="T">The type of the specified color.</typeparam>
+		/// <param name="dib">Handle to a FreeImage bitmap.</param>
+		/// <param name="color">The color to fill the bitmap with. See remarks for further details.</param>
+		/// <param name="options">Options that affect the color search process for palletized images.</param>
+		/// <returns><c>true</c> on success, <c>false</c> on failure.</returns>
+		/// <remarks>
+		/// This function sets all pixels of an image to the color provided through
+		/// the <paramref name="color"/> parameter. <see cref="RGBQUAD"/> is used for standard type images.
+		/// For non standard type images the underlaying structure is used.
+		/// <para/>
+		/// So, <paramref name="color"/> must be of type <see cref="Double"/>, if the image to be filled is of type
+		/// <see cref="FREE_IMAGE_TYPE.FIT_DOUBLE"/> and must be a <see cref="FIRGBF"/> structure if the
+		/// image is of type <see cref="FREE_IMAGE_TYPE.FIT_RGBF"/> and so on.
+		/// <para/>
+		/// However, the fill color is always specified through a <see cref="RGBQUAD"/> structure
+		/// for all images of type <see cref="FREE_IMAGE_TYPE.FIT_BITMAP"/>.
+		/// So, for 32- and 24-bit images, the red, green and blue members of the <see cref="RGBQUAD"/>
+		/// structure are directly used for the image's red, green and blue channel respectively.
+		/// Although alpha transparent <see cref="RGBQUAD"/> colors are
+		/// supported, the alpha channel of a 32-bit image never gets modified by this function.
+		/// A fill color with an alpha value smaller than 255 gets blended with the image's actual
+		/// background color, which is determined from the image's bottom-left pixel.
+		/// So, currently using alpha enabled colors, assumes the image to be unicolor before the
+		/// fill operation. However, the <see cref="RGBQUAD.rgbReserved"/> field is only taken into account,
+		/// if option <see cref="FREE_IMAGE_COLOR_OPTIONS.FICO_RGBA"/> has been specified.
+		/// <para/>
+		/// For 16-bit images, the red-, green- and blue components of the specified color are
+		/// transparently translated into either the 16-bit 555 or 565 representation. This depends
+		/// on the image's actual red- green- and blue masks.
+		/// <para/>
+		/// Special attention must be payed for palletized images. Generally, the RGB color specified
+		/// is looked up in the image's palette. The found palette index is then used to fill the image.
+		/// There are some option flags, that affect this lookup process:
+		/// <list type="table">
+		/// <listheader>
+		/// <term>Value</term>
+		/// <description>Meaning</description>
+		/// </listheader>
+		/// <item>
+		/// <term><see cref="FREE_IMAGE_COLOR_OPTIONS.FICO_DEFAULT"/></term>
+		/// <description>
+		/// Uses the color, that is nearest to the specified color.
+		/// This is the default behavior and should always find a
+		/// color in the palette. However, the visual result may
+		/// far from what was expected and mainly depends on the
+		/// image's palette.
+		/// </description>
+		/// </item>
+		/// <item>
+		/// <term><see cref="FREE_IMAGE_COLOR_OPTIONS.FICO_EQUAL_COLOR"/></term>
+		/// <description>
+		/// Searches the image's palette for the specified color
+		/// but only uses the returned palette index, if the specified
+		/// color exactly matches the palette entry. Of course,
+		/// depending on the image's actual palette entries, this
+		/// operation may fail. In this case, the function falls back
+		/// to option <see cref="FREE_IMAGE_COLOR_OPTIONS.FICO_ALPHA_IS_INDEX"/>
+		/// and uses the RGBQUAD's rgbReserved member (or its low nibble for 4-bit images
+		/// or its least significant bit (LSB) for 1-bit images) as
+		/// the palette index used for the fill operation.
+		/// </description>
+		/// </item>
+		/// <item>
+		/// <term><see cref="FREE_IMAGE_COLOR_OPTIONS.FICO_ALPHA_IS_INDEX"/></term>
+		/// <description>
+		/// Does not perform any color lookup from the palette, but
+		/// uses the RGBQUAD's alpha channel member rgbReserved as
+		/// the palette index to be used for the fill operation.
+		/// However, for 4-bit images, only the low nibble of the
+		/// rgbReserved member are used and for 1-bit images, only
+		/// the least significant bit (LSB) is used.
+		/// </description>
+		/// </item>
+		/// </list>
+		/// </remarks>
+		public static bool FillBackground<T>(FIBITMAP dib, T color, FREE_IMAGE_COLOR_OPTIONS options)
+			where T : struct
+		{
+			if (dib.IsNull)
+				return false;
+
+			if (!CheckColorType(GetImageType(dib), color))
+				return false;
+
+			GCHandle handle = new GCHandle();
+			try
+			{
+				T[] buffer = new T[] { color };
+				handle = GCHandle.Alloc(buffer, GCHandleType.Pinned);
+				return FillBackground(dib, handle.AddrOfPinnedObject(), options);
+			}
+			finally
+			{
+				if (handle.IsAllocated)
+					handle.Free();
+			}
 		}
 
 		#endregion
@@ -20712,15 +29914,7 @@ namespace FreeImageAPI
 
 		internal static PropertyItem CreatePropertyItem()
 		{
-			PropertyItem result = null;
-			try
-			{
-				result = (PropertyItem)PropertyItemConstructor.Invoke(null);
-			}
-			catch
-			{
-			}
-			return result;
+			return (PropertyItem)Activator.CreateInstance(typeof(PropertyItem), true);
 		}
 
 		private static unsafe void CopyPalette(FIBITMAP src, FIBITMAP dst)
@@ -20728,7 +29922,7 @@ namespace FreeImageAPI
 			RGBQUAD* orgPal = (RGBQUAD*)GetPalette(src);
 			RGBQUAD* newPal = (RGBQUAD*)GetPalette(dst);
 			uint size = (uint)(sizeof(RGBQUAD) * GetColorsUsed(src));
-			MoveMemory(newPal, orgPal, size);
+			CopyMemory(newPal, orgPal, size);
 		}
 
 		private static unsafe Scanline<FI4BIT>[] Get04BitScanlines(FIBITMAP dib)
@@ -20744,51 +29938,55 @@ namespace FreeImageAPI
 
 		/// <summary>
 		/// Changes a bitmaps color depth.
-		/// Used by SaveEx and SaveToStream
+		/// Used by SaveEx and SaveToStream.
 		/// </summary>
 		private static FIBITMAP PrepareBitmapColorDepth(FIBITMAP dibToSave, FREE_IMAGE_FORMAT format, FREE_IMAGE_COLOR_DEPTH colorDepth)
 		{
-			int bpp = (int)GetBPP(dibToSave);
-			int targetBpp = (int)(colorDepth & FREE_IMAGE_COLOR_DEPTH.FICD_COLOR_MASK);
-
-			if (colorDepth != FREE_IMAGE_COLOR_DEPTH.FICD_AUTO)
+			FREE_IMAGE_TYPE type = GetImageType(dibToSave);
+			if (type == FREE_IMAGE_TYPE.FIT_BITMAP)
 			{
-				// A fix colordepth was chosen
-				if (FIFSupportsExportBPP(format, targetBpp))
+				int bpp = (int)GetBPP(dibToSave);
+				int targetBpp = (int)(colorDepth & FREE_IMAGE_COLOR_DEPTH.FICD_COLOR_MASK);
+
+				if (colorDepth != FREE_IMAGE_COLOR_DEPTH.FICD_AUTO)
 				{
-					dibToSave = ConvertColorDepth(dibToSave, colorDepth, false);
+					// A fix colordepth was chosen
+					if (FIFSupportsExportBPP(format, targetBpp))
+					{
+						dibToSave = ConvertColorDepth(dibToSave, colorDepth, false);
+					}
+					else
+					{
+						throw new ArgumentException("FreeImage\n\nFreeImage Library plugin " +
+							GetFormatFromFIF(format) + " is unable to write images with a color depth of " +
+							targetBpp + " bpp.");
+					}
 				}
 				else
 				{
-					throw new ArgumentException("FreeImage\n\nFreeImage Library plugin " +
-						GetFormatFromFIF(format) + " is unable to write images with a color depth of " +
-						targetBpp + " bpp.");
-				}
-			}
-			else
-			{
-				// Auto selection was chosen
-				if (!FIFSupportsExportBPP(format, bpp))
-				{
-					// The color depth is not supported
-					int bppUpper = bpp;
-					int bppLower = bpp;
-					// Check from the bitmaps current color depth in both directions
-					do
+					// Auto selection was chosen
+					if (!FIFSupportsExportBPP(format, bpp))
 					{
-						bppUpper = GetNextColorDepth(bppUpper);
-						if (FIFSupportsExportBPP(format, bppUpper))
+						// The color depth is not supported
+						int bppUpper = bpp;
+						int bppLower = bpp;
+						// Check from the bitmaps current color depth in both directions
+						do
 						{
-							dibToSave = ConvertColorDepth(dibToSave, (FREE_IMAGE_COLOR_DEPTH)bppUpper, false);
-							break;
-						}
-						bppLower = GetPrevousColorDepth(bppLower);
-						if (FIFSupportsExportBPP(format, bppLower))
-						{
-							dibToSave = ConvertColorDepth(dibToSave, (FREE_IMAGE_COLOR_DEPTH)bppLower, false);
-							break;
-						}
-					} while (!((bppLower == 0) && (bppUpper == 0)));
+							bppUpper = GetNextColorDepth(bppUpper);
+							if (FIFSupportsExportBPP(format, bppUpper))
+							{
+								dibToSave = ConvertColorDepth(dibToSave, (FREE_IMAGE_COLOR_DEPTH)bppUpper, false);
+								break;
+							}
+							bppLower = GetPrevousColorDepth(bppLower);
+							if (FIFSupportsExportBPP(format, bppLower))
+							{
+								dibToSave = ConvertColorDepth(dibToSave, (FREE_IMAGE_COLOR_DEPTH)bppLower, false);
+								break;
+							}
+						} while (!((bppLower == 0) && (bppUpper == 0)));
+					}
 				}
 			}
 			return dibToSave;
@@ -20797,10 +29995,10 @@ namespace FreeImageAPI
 		/// <summary>
 		/// Compares blocks of memory.
 		/// </summary>
-		/// <param name="buf1">Pointer to a block of memory to compare.</param>
-		/// <param name="buf2">Pointer to a block of memory to compare.</param>
+		/// <param name="buf1">A pointer to a block of memory to compare.</param>
+		/// <param name="buf2">A pointer to a block of memory to compare.</param>
 		/// <param name="length">Specifies the number of bytes to be compared.</param>
-		/// <returns>If all bytes compare as equal, true is returned.</returns>
+		/// <returns>true, if all bytes compare as equal, false otherwise.</returns>
 		public static unsafe bool CompareMemory(void* buf1, void* buf2, uint length)
 		{
 			return (length == RtlCompareMemory(buf1, buf2, length));
@@ -20809,10 +30007,10 @@ namespace FreeImageAPI
 		/// <summary>
 		/// Compares blocks of memory.
 		/// </summary>
-		/// <param name="buf1">Pointer to a block of memory to compare.</param>
-		/// <param name="buf2">Pointer to a block of memory to compare.</param>
+		/// <param name="buf1">A pointer to a block of memory to compare.</param>
+		/// <param name="buf2">A pointer to a block of memory to compare.</param>
 		/// <param name="length">Specifies the number of bytes to be compared.</param>
-		/// <returns>If all bytes compare as equal, true is returned.</returns>
+		/// <returns>true, if all bytes compare as equal, false otherwise.</returns>
 		public static unsafe bool CompareMemory(void* buf1, void* buf2, long length)
 		{
 			return (length == RtlCompareMemory(buf1, buf2, checked((uint)length)));
@@ -20821,10 +30019,10 @@ namespace FreeImageAPI
 		/// <summary>
 		/// Compares blocks of memory.
 		/// </summary>
-		/// <param name="buf1">Pointer to a block of memory to compare.</param>
-		/// <param name="buf2">Pointer to a block of memory to compare.</param>
+		/// <param name="buf1">A pointer to a block of memory to compare.</param>
+		/// <param name="buf2">A pointer to a block of memory to compare.</param>
 		/// <param name="length">Specifies the number of bytes to be compared.</param>
-		/// <returns>If all bytes compare as equal, true is returned.</returns>
+		/// <returns>true, if all bytes compare as equal, false otherwise.</returns>
 		public static unsafe bool CompareMemory(IntPtr buf1, IntPtr buf2, uint length)
 		{
 			return (length == RtlCompareMemory(buf1.ToPointer(), buf2.ToPointer(), length));
@@ -20833,10 +30031,10 @@ namespace FreeImageAPI
 		/// <summary>
 		/// Compares blocks of memory.
 		/// </summary>
-		/// <param name="buf1">Pointer to a block of memory to compare.</param>
-		/// <param name="buf2">Pointer to a block of memory to compare.</param>
+		/// <param name="buf1">A pointer to a block of memory to compare.</param>
+		/// <param name="buf2">A pointer to a block of memory to compare.</param>
 		/// <param name="length">Specifies the number of bytes to be compared.</param>
-		/// <returns>If all bytes compare as equal, true is returned.</returns>
+		/// <returns>true, if all bytes compare as equal, false otherwise.</returns>
 		public static unsafe bool CompareMemory(IntPtr buf1, IntPtr buf2, long length)
 		{
 			return (length == RtlCompareMemory(buf1.ToPointer(), buf2.ToPointer(), checked((uint)length)));
@@ -20845,9 +30043,9 @@ namespace FreeImageAPI
 		/// <summary>
 		/// Moves a block of memory from one location to another.
 		/// </summary>
-		/// <param name="dst">Pointer to the starting address of the move destination.</param>
-		/// <param name="src">Pointer to the starting address of the block of memory to be moved.</param>
-		/// <param name="size">Size of the block of memory to move, in bytes.</param>
+		/// <param name="dst">A pointer to the starting address of the move destination.</param>
+		/// <param name="src">A pointer to the starting address of the block of memory to be moved.</param>
+		/// <param name="size">The size of the block of memory to move, in bytes.</param>
 		public static unsafe void MoveMemory(void* dst, void* src, long size)
 		{
 			MoveMemory(dst, src, checked((uint)size));
@@ -20856,9 +30054,9 @@ namespace FreeImageAPI
 		/// <summary>
 		/// Moves a block of memory from one location to another.
 		/// </summary>
-		/// <param name="dst">Pointer to the starting address of the move destination.</param>
-		/// <param name="src">Pointer to the starting address of the block of memory to be moved.</param>
-		/// <param name="size">Size of the block of memory to move, in bytes.</param>
+		/// <param name="dst">A pointer to the starting address of the move destination.</param>
+		/// <param name="src">A pointer to the starting address of the block of memory to be moved.</param>
+		/// <param name="size">The size of the block of memory to move, in bytes.</param>
 		public static unsafe void MoveMemory(IntPtr dst, IntPtr src, uint size)
 		{
 			MoveMemory(dst.ToPointer(), src.ToPointer(), size);
@@ -20867,9 +30065,9 @@ namespace FreeImageAPI
 		/// <summary>
 		/// Moves a block of memory from one location to another.
 		/// </summary>
-		/// <param name="dst">Pointer to the starting address of the move destination.</param>
-		/// <param name="src">Pointer to the starting address of the block of memory to be moved.</param>
-		/// <param name="size">Size of the block of memory to move, in bytes.</param>
+		/// <param name="dst">A pointer to the starting address of the move destination.</param>
+		/// <param name="src">A pointer to the starting address of the block of memory to be moved.</param>
+		/// <param name="size">The size of the block of memory to move, in bytes.</param>
 		public static unsafe void MoveMemory(IntPtr dst, IntPtr src, long size)
 		{
 			MoveMemory(dst.ToPointer(), src.ToPointer(), checked((uint)size));
@@ -20878,9 +30076,9 @@ namespace FreeImageAPI
 		/// <summary>
 		/// Copies a block of memory from one location to another.
 		/// </summary>
-		/// <param name="dest">Pointer to the starting address of the copy destination.</param>
-		/// <param name="src">Pointer to the starting address of the block of memory to be copied.</param>
-		/// <param name="len">Size of the block of memory to copy, in bytes.</param>
+		/// <param name="dest">A pointer to the starting address of the copied block's destination.</param>
+		/// <param name="src">A pointer to the starting address of the block of memory to copy.</param>
+		/// <param name="len">The size of the block of memory to copy, in bytes.</param>
 		/// <remarks>
 		/// <b>CopyMemory</b> runs faster than <see cref="MoveMemory(void*, void*, uint)"/>.
 		/// However, if both blocks overlap the result is undefined.
@@ -20931,61 +30129,218 @@ namespace FreeImageAPI
 		/// <summary>
 		/// Copies a block of memory from one location to another.
 		/// </summary>
-		/// <param name="dest">Pointer to the starting address of the copy destination.</param>
-		/// <param name="src">Pointer to the starting address of the block of memory to be copied.</param>
-		/// <param name="size">Size of the block of memory to copy, in bytes.</param>
+		/// <param name="dest">A pointer to the starting address of the copied block's destination.</param>
+		/// <param name="src">A pointer to the starting address of the block of memory to copy.</param>
+		/// <param name="len">The size of the block of memory to copy, in bytes.</param>
 		/// <remarks>
 		/// <b>CopyMemory</b> runs faster than <see cref="MoveMemory(void*, void*, long)"/>.
 		/// However, if both blocks overlap the result is undefined.
 		/// </remarks>
-		public static unsafe void CopyMemory(void* dest, void* src, long size)
+		public static unsafe void CopyMemory(byte* dest, byte* src, long len)
 		{
-			CopyMemory((byte*)dest, (byte*)src, checked((int)size));
+			CopyMemory(dest, src, checked((int)len));
 		}
 
 		/// <summary>
 		/// Copies a block of memory from one location to another.
 		/// </summary>
-		/// <param name="dest">Pointer to the starting address of the copy destination.</param>
-		/// <param name="src">Pointer to the starting address of the block of memory to be copied.</param>
-		/// <param name="size">Size of the block of memory to copy, in bytes.</param>
+		/// <param name="dest">A pointer to the starting address of the copied block's destination.</param>
+		/// <param name="src">A pointer to the starting address of the block of memory to copy.</param>
+		/// <param name="len">The size of the block of memory to copy, in bytes.</param>
 		/// <remarks>
 		/// <b>CopyMemory</b> runs faster than <see cref="MoveMemory(void*, void*, long)"/>.
 		/// However, if both blocks overlap the result is undefined.
 		/// </remarks>
-		public static unsafe void CopyMemory(void* dest, void* src, int size)
+		public static unsafe void CopyMemory(void* dest, void* src, long len)
 		{
-			CopyMemory((byte*)dest, (byte*)src, size);
+			CopyMemory((byte*)dest, (byte*)src, checked((int)len));
 		}
 
 		/// <summary>
 		/// Copies a block of memory from one location to another.
 		/// </summary>
-		/// <param name="dest">Pointer to the starting address of the copy destination.</param>
-		/// <param name="src">Pointer to the starting address of the block of memory to be copied.</param>
-		/// <param name="size">Size of the block of memory to copy, in bytes.</param>
+		/// <param name="dest">A pointer to the starting address of the copied block's destination.</param>
+		/// <param name="src">A pointer to the starting address of the block of memory to copy.</param>
+		/// <param name="len">The size of the block of memory to copy, in bytes.</param>
+		/// <remarks>
+		/// <b>CopyMemory</b> runs faster than <see cref="MoveMemory(void*, void*, uint)"/>.
+		/// However, if both blocks overlap the result is undefined.
+		/// </remarks>
+		public static unsafe void CopyMemory(void* dest, void* src, int len)
+		{
+			CopyMemory((byte*)dest, (byte*)src, len);
+		}
+
+		/// <summary>
+		/// Copies a block of memory from one location to another.
+		/// </summary>
+		/// <param name="dest">A pointer to the starting address of the copied block's destination.</param>
+		/// <param name="src">A pointer to the starting address of the block of memory to copy.</param>
+		/// <param name="len">The size of the block of memory to copy, in bytes.</param>
 		/// <remarks>
 		/// <b>CopyMemory</b> runs faster than <see cref="MoveMemory(IntPtr, IntPtr, uint)"/>.
 		/// However, if both blocks overlap the result is undefined.
 		/// </remarks>
-		public static unsafe void CopyMemory(IntPtr dest, IntPtr src, int size)
+		public static unsafe void CopyMemory(IntPtr dest, IntPtr src, int len)
 		{
-			CopyMemory((byte*)dest, (byte*)src, size);
+			CopyMemory((byte*)dest, (byte*)src, len);
 		}
 
 		/// <summary>
 		/// Copies a block of memory from one location to another.
 		/// </summary>
-		/// <param name="dest">Pointer to the starting address of the copy destination.</param>
-		/// <param name="src">Pointer to the starting address of the block of memory to be copied.</param>
-		/// <param name="size">Size of the block of memory to copy, in bytes.</param>
+		/// <param name="dest">A pointer to the starting address of the copied block's destination.</param>
+		/// <param name="src">A pointer to the starting address of the block of memory to copy.</param>
+		/// <param name="len">The size of the block of memory to copy, in bytes.</param>
 		/// <remarks>
 		/// <b>CopyMemory</b> runs faster than <see cref="MoveMemory(IntPtr, IntPtr, long)"/>.
 		/// However, if both blocks overlap the result is undefined.
 		/// </remarks>
-		public static unsafe void CopyMemory(IntPtr dest, IntPtr src, long size)
+		public static unsafe void CopyMemory(IntPtr dest, IntPtr src, long len)
 		{
-			CopyMemory((byte*)dest, (byte*)src, checked((int)size));
+			CopyMemory((byte*)dest, (byte*)src, checked((int)len));
+		}
+
+		/// <summary>
+		/// Copies a block of memory into an array.
+		/// </summary>
+		/// <param name="dest">An array used as the destination of the copy process.</param>
+		/// <param name="src">A pointer to the starting address of the block of memory to copy.</param>
+		/// <param name="len">The size of the block of memory to copy, in bytes.</param>
+		public static unsafe void CopyMemory(Array dest, void* src, int len)
+		{
+			GCHandle handle = GCHandle.Alloc(dest, GCHandleType.Pinned);
+			try
+			{
+				CopyMemory((byte*)handle.AddrOfPinnedObject(), (byte*)src, len);
+			}
+			finally
+			{
+				handle.Free();
+			}
+		}
+
+		/// <summary>
+		/// Copies a block of memory into an array.
+		/// </summary>
+		/// <param name="dest">An array used as the destination of the copy process.</param>
+		/// <param name="src">A pointer to the starting address of the block of memory to copy.</param>
+		/// <param name="len">The size of the block of memory to copy, in bytes.</param>
+		public static unsafe void CopyMemory(Array dest, void* src, long len)
+		{
+			CopyMemory(dest, (byte*)src, checked((int)len));
+		}
+
+		/// <summary>
+		/// Copies a block of memory into an array.
+		/// </summary>
+		/// <param name="dest">An array used as the destination of the copy process.</param>
+		/// <param name="src">A pointer to the starting address of the block of memory to copy.</param>
+		/// <param name="len">The size of the block of memory to copy, in bytes.</param>
+		public static unsafe void CopyMemory(Array dest, IntPtr src, int len)
+		{
+			CopyMemory(dest, (byte*)src, len);
+		}
+
+		/// <summary>
+		/// Copies a block of memory into an array.
+		/// </summary>
+		/// <param name="dest">An array used as the destination of the copy process.</param>
+		/// <param name="src">A pointer to the starting address of the block of memory to copy.</param>
+		/// <param name="len">The size of the block of memory to copy, in bytes.</param>
+		public static unsafe void CopyMemory(Array dest, IntPtr src, long len)
+		{
+			CopyMemory(dest, (byte*)src, checked((int)len));
+		}
+
+		/// <summary>
+		/// Copies the content of an array to a memory location.
+		/// </summary>
+		/// <param name="dest">A pointer to the starting address of the copied block's destination.</param>
+		/// <param name="src">An array used as the source of the copy process.</param>
+		/// <param name="len">The size of the block of memory to copy, in bytes.</param>
+		public static unsafe void CopyMemory(void* dest, Array src, int len)
+		{
+			GCHandle handle = GCHandle.Alloc(src, GCHandleType.Pinned);
+			try
+			{
+				CopyMemory((byte*)dest, (byte*)handle.AddrOfPinnedObject(), len);
+			}
+			finally
+			{
+				handle.Free();
+			}
+		}
+
+		/// <summary>
+		/// Copies the content of an array to a memory location.
+		/// </summary>
+		/// <param name="dest">A pointer to the starting address of the copied block's destination.</param>
+		/// <param name="src">An array used as the source of the copy process.</param>
+		/// <param name="len">The size of the block of memory to copy, in bytes.</param>
+		public static unsafe void CopyMemory(void* dest, Array src, long len)
+		{
+			CopyMemory((byte*)dest, src, checked((int)len));
+		}
+
+		/// <summary>
+		/// Copies the content of an array to a memory location.
+		/// </summary>
+		/// <param name="dest">A pointer to the starting address of the copied block's destination.</param>
+		/// <param name="src">An array used as the source of the copy process.</param>
+		/// <param name="len">The size of the block of memory to copy, in bytes.</param>
+		public static unsafe void CopyMemory(IntPtr dest, Array src, int len)
+		{
+			CopyMemory((byte*)dest, src, len);
+		}
+
+		/// <summary>
+		/// Copies the content of an array to a memory location.
+		/// </summary>
+		/// <param name="dest">A pointer to the starting address of the copied block's destination.</param>
+		/// <param name="src">An array used as the source of the copy process.</param>
+		/// <param name="len">The size of the block of memory to copy, in bytes.</param>
+		public static unsafe void CopyMemory(IntPtr dest, Array src, long len)
+		{
+			CopyMemory((byte*)dest, src, checked((int)len));
+		}
+
+		/// <summary>
+		/// Copies the content of one array into another array.
+		/// </summary>
+		/// <param name="dest">An array used as the destination of the copy process.</param>
+		/// <param name="src">An array used as the source of the copy process.</param>
+		/// <param name="len">The size of the content to copy, in bytes.</param>
+		public static unsafe void CopyMemory(Array dest, Array src, int len)
+		{
+			GCHandle dHandle = GCHandle.Alloc(dest, GCHandleType.Pinned);
+			try
+			{
+				GCHandle sHandle = GCHandle.Alloc(src, GCHandleType.Pinned);
+				try
+				{
+					CopyMemory((byte*)dHandle.AddrOfPinnedObject(), (byte*)sHandle.AddrOfPinnedObject(), len);
+				}
+				finally
+				{
+					sHandle.Free();
+				}
+			}
+			finally
+			{
+				dHandle.Free();
+			}
+		}
+
+		/// <summary>
+		/// Copies the content of one array into another array.
+		/// </summary>
+		/// <param name="dest">An array used as the destination of the copy process.</param>
+		/// <param name="src">An array used as the source of the copy process.</param>
+		/// <param name="len">The size of the content to copy, in bytes.</param>
+		public static unsafe void CopyMemory(Array dest, Array src, long len)
+		{
+			CopyMemory(dest, src, checked((int)len));
 		}
 
 		internal static string ColorToString(Color color)
@@ -20994,6 +30349,94 @@ namespace FreeImageAPI
 				System.Globalization.CultureInfo.CurrentCulture,
 				"{{Name={0}, ARGB=({1}, {2}, {3}, {4})}}",
 				new object[] { color.Name, color.A, color.R, color.G, color.B });
+		}
+
+		internal static void Resize(ref string str, int length)
+		{
+			if ((str != null) && (length >= 0) && (str.Length != length))
+			{
+				char[] chars = str.ToCharArray();
+				Array.Resize(ref chars, length);
+				str = new string(chars);
+			}
+		}
+
+		internal static void Resize(ref string str, int min, int max)
+		{
+			if ((str != null) && (min >= 0) && (max >= 0) && (min <= max))
+			{
+				if (str.Length < min)
+				{
+					char[] chars = str.ToCharArray();
+					Array.Resize(ref chars, min);
+					str = new string(chars);
+				}
+				else if (str.Length > max)
+				{
+					char[] chars = str.ToCharArray();
+					Array.Resize(ref chars, max);
+					str = new string(chars);
+				}
+			}
+		}
+
+		internal static void Resize<T>(ref T[] array, int length)
+		{
+			if ((array != null) && (length >= 0) && (array.Length != length))
+			{
+				Array.Resize(ref array, length);
+			}
+		}
+
+		internal static void Resize<T>(ref T[] array, int min, int max)
+		{
+			if ((array != null) && (min >= 0) && (max >= 0) && (min <= max))
+			{
+				if (array.Length < min)
+				{
+					Array.Resize(ref array, min);
+				}
+				else if (array.Length > max)
+				{
+					Array.Resize(ref array, max);
+				}
+			}
+		}
+
+		internal static bool CheckColorType<T>(FREE_IMAGE_TYPE imageType, T color)
+		{
+			Type type = typeof(T);
+			bool result;
+			switch (imageType)
+			{
+				case FREE_IMAGE_TYPE.FIT_BITMAP:
+					result = (type == typeof(RGBQUAD)); break;
+				case FREE_IMAGE_TYPE.FIT_COMPLEX:
+					result = (type == typeof(FICOMPLEX)); break;
+				case FREE_IMAGE_TYPE.FIT_DOUBLE:
+					result = (type == typeof(double)); break;
+				case FREE_IMAGE_TYPE.FIT_FLOAT:
+					result = (type == typeof(float)); break;
+				case FREE_IMAGE_TYPE.FIT_INT16:
+					result = (type == typeof(Int16)); break;
+				case FREE_IMAGE_TYPE.FIT_INT32:
+					result = (type == typeof(Int32)); break;
+				case FREE_IMAGE_TYPE.FIT_RGB16:
+					result = (type == typeof(FIRGB16)); break;
+				case FREE_IMAGE_TYPE.FIT_RGBA16:
+					result = (type == typeof(FIRGBA16)); break;
+				case FREE_IMAGE_TYPE.FIT_RGBAF:
+					result = (type == typeof(FIRGBAF)); break;
+				case FREE_IMAGE_TYPE.FIT_RGBF:
+					result = (type == typeof(FIRGBF)); break;
+				case FREE_IMAGE_TYPE.FIT_UINT16:
+					result = (type == typeof(UInt16)); break;
+				case FREE_IMAGE_TYPE.FIT_UINT32:
+					result = (type == typeof(UInt32)); break;
+				default:
+					result = false; break;
+			}
+			return result;
 		}
 
 		#endregion
@@ -21128,8 +30571,8 @@ namespace FreeImageAPI
 		/// The RtlCompareMemory routine compares blocks of memory
 		/// and returns the number of bytes that are equivalent.
 		/// </summary>
-		/// <param name="buf1">Pointer to a block of memory to compare.</param>
-		/// <param name="buf2">Pointer to a block of memory to compare.</param>
+		/// <param name="buf1">A pointer to a block of memory to compare.</param>
+		/// <param name="buf2">A pointer to a block of memory to compare.</param>
 		/// <param name="count">Specifies the number of bytes to be compared.</param>
 		/// <returns>RtlCompareMemory returns the number of bytes that compare as equal.
 		/// If all bytes compare as equal, the input Length is returned.</returns>

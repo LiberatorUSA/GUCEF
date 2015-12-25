@@ -39,15 +39,22 @@ struct Plugin;
 // =====================================================================
 
 FI_STRUCT (PluginNode) {
+	/** FREE_IMAGE_FORMAT attached to this plugin */
 	int m_id;
+	/** Handle to a user plugin DLL (NULL for standard plugins) */
 	void *m_instance;
+	/** The actual plugin, holding the function pointers */
 	Plugin *m_plugin;
-	PluginNode *m_next;
+	/** Enable/Disable switch */
 	BOOL m_enabled;
 
+	/** Unique format string for the plugin */
 	const char *m_format;
+	/** Description string for the plugin */
 	const char *m_description;
+	/** Comma separated list of file extensions indicating what files this plugin can open */
 	const char *m_extension;
+	/** optional regular expression to help	software identifying a bitmap type */
 	const char *m_regexpr;
 };
 
@@ -127,5 +134,11 @@ void DLL_CALLCONV InitSGI(Plugin *plugin, int format_id);
 void DLL_CALLCONV InitEXR(Plugin *plugin, int format_id);
 void DLL_CALLCONV InitJ2K(Plugin *plugin, int format_id);
 void DLL_CALLCONV InitJP2(Plugin *plugin, int format_id);
+void DLL_CALLCONV InitPFM(Plugin *plugin, int format_id);
+void DLL_CALLCONV InitPICT(Plugin *plugin, int format_id);
+void DLL_CALLCONV InitRAW(Plugin *plugin, int format_id);
+void DLL_CALLCONV InitJNG(Plugin *plugin, int format_id);
+void DLL_CALLCONV InitWEBP(Plugin *plugin, int format_id);
+void DLL_CALLCONV InitJXR(Plugin *plugin, int format_id);
 
 #endif //!PLUGIN_H

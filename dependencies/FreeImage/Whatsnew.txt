@@ -5,6 +5,338 @@ What's New for FreeImage
 ! : changed
 + : added
 
+March 15th, 2015 - 3.17.0
+! FreeImage now uses LibPNG 1.6.16
+! FreeImage now uses LibWebP 0.4.2 (GIT patch 2015-03-03)
+! FreeImage now uses LibRaw 0.17-Alpha1
+! FreeImage now uses LibTIFF 4.0.4 (CVS patch 2015-01-26)
+! FreeImage now uses OpenEXR 2.2.0
+- [Herve Drolon] removed VS 2003 project files : this IDE is no longer supported because of its outdated C++ compiler
++ [Mihail Naydenov] added FreeImage_ConvertFromRawBitsEx
++ [Herve Drolon] added RAW_UNPROCESSED load flag to the RAW plugin
++ [Herve Drolon] added FreeImage_SetMetadataKeyValue
++ [Herve Drolon] added support for metadata writing to the JPEG-JXR plugin
++ [Herve Drolon] added VS 2013 project files
++ [Herve Drolon] added support for PNG tIME metadata (read/write, handle as Exif-TIFF DateTime)
++ [Carsten Klein] added explicit definition of endianness and color order in compiler options
++ [Carsten Klein] added FIQ_LFPQUANT quantizer algorithm
++ [Carsten Klein] added support for input 32-bit dib in Wu quantizer
++ [Tanner Helland] added FreeImage_ConvertToRGBAF and updated conversions in FreeImage_ConvertToType
++ [Herve Drolon] added FreeImage_ConvertToRGBA16 and updated conversions in FreeImage_ConvertToType
++ [Carsten Klein] added FreeImage_CreateView
++ [Carsten Klein] added FreeImage_RescaleRect
++ [Carsten Klein] added FreeImage_GetMemorySize
+* [Tanner Helland] ICO plugin: improved support for Vista icons
+* [fpgaminer] fixed a rounding error in RGB to greyscale conversion formula
+* [Sven-Hendrik Haase] fixed Makefile.fip so that it installs symlinks
+* [Joachim Reichel] fixed a potential memory access violation in PluginHDR Save function
+* [Christian Schluchter] fixed a bug in FreeImage_LookupSVGColor ("green" color was not found)
+* [Marco Altomonte] fixed TARGA signature validation for TARGA versions < 2.0
+* [Jeremy Reyniers] fixed FreeImage_GetScanLine not working with very large images on x64 platforms
+* [Herve Drolon] improved PluginTIFF compatibility with LibTIFF 4
+* [Aaron Shumate] fixed a segfault occuring on a corrupted animated GIF
+* [Herve Drolon] improved memory allocation in PluginRAW
+* [Herve Drolon] fixed loading/saving of TIFF containing a GPS IFD inside the Exif-TIFF metadata segment (the solution is to ignore the tag) 
+* [Mihail Naydenov] fixed a bug in FreeImage_JPEGCrop*/_JPEGTransform* functions occuring when using the same source / destination filename
+* [Herve Drolon] fixed a bug with output image quality in PluginJP2::Save & PluginJ2K::Save functions (regression from FI 3.15.4)
+* [Herve Drolon] improved RAW file format detection
+* [Aaron Shumate] fixed FreeImage_GetFileType behavior with ANI file formats
+* [Herve Drolon] improved Exif reader so as to handle Exif IFD with a suspicious offset (can occur with maker notes)
+* [Herve Drolon] fixed a memory leak in PluginPNG:Save occuring when dealing with invalid PNG files
+* [Tanner Helland] fixed PNG plugin handling of 16-bit grayscale + 16-bit alpha images
+* [Tanner Helland] fixed PNG plugin handling of 16-bit grayscale + tRNS chunk images
+* [Tanner Helland] fixed PNG plugin handling of 24-bit RGB + tRNS chunk images
+* [Tanner Helland] fixed PNG plugin handling of 1-,4-bit greyscale/palettized + tRNS chunk images
+* [ekpyron] fixed invalid directory delimiter in include statement (mingw-w64) in Source/LibJXR/image/sys/strcodec.h
+* [ekpyron] fixed Invalid condition for defining _byteswap_ulong (mingw-w64) in Source/LibJXR/image/sys/strcodec.c
+* [tostercx] fixed FreeImage_Get*Mask not returning 0 for greyscale images
+* [robpats] fixed loading of external plugins when using UNICODE directory names to store plugins
+* [Herve Drolon] fixed loading of JXR files when using memory streams
+* [Carsten Klein] added Dist/ directory creation in Makefiles (in case it is not already present)
+
+March 23rd, 2014 - 3.16.0
+! FreeImage now uses LibJPEG 9a
+! FreeImage now uses LibPNG 1.6.10
+! FreeImage now uses LibTIFF 4.0.3 (CVS patch 2013-11-30)
+! FreeImage now uses LibRaw 0.16.0
+! FreeImage now uses OpenJPEG 2.1.0 (SVN patch 2748)
+! FreeImage now uses ZLib 1.2.8
+! FreeImage now uses LibWebP 0.4.0 (GIT patch 2014-03-21)
+! FreeImage now uses LibJXR 1.1 (GIT patch 2014-01-31)
++ [Herve Drolon] added loading & writing support for the JPEG-XR image format (also support the FIF_LOAD_NOPIXELS flag)
++ [Herve Drolon] added loading & writing support for the WebP image format (also support the FIF_LOAD_NOPIXELS flag)
++ [Herve Drolon] added support for FIF_LOAD_NOPIXELS flag to JP2/J2K plugins
++ [Gaël Zimmermann] added basic support for BMP v4, v5 in BMP plugin (useful for drag and drop from another application such as Firefox)
++ [Mihail Naydenov] FreeImage_GetFIFFromFilename[U] : added support for *rgb,*rgba,*.bw extensions to the SGI plugin
++ [Mihail Naydenov] improved FreeImage_Rescale speed & spatial accuracy
++ [Mihail Naydenov] improved JPEG transform functions and added new functions (see below) :
+		added FreeImage_JPEGTransformFromHandle
+		added FreeImage_JPEGTransformCombined
+		added FreeImage_JPEGTransformCombinedU
+		added FreeImage_JPEGTransformCombinedFromMemory
+* [Herve Drolon] fixed FreeImage_CloneTag behavior with ASCII data handling (regression that appeared in 3.15.2, affect metadata writing)
+* [Carsten Klein] ICO plugin: avoid using the AND mask when loading a 32-bit (already transparent) icon
+* [Andreas Baumann] HDR plugin: removed a comma at end of an enumerator list
+* [mark] added missing <string.h> in OpenEXR (needed with mingw)
+* [Herve Drolon] added support for FIC_MINISWHITE color type inside FreeImage_GetColorType for FIT_UINT16 images
+* [Takamasa Mitsuji] FreeImage_Rescale : fixed a NULL-pointer access bug occurring for transparent images with a linear palette
+* [Herve Drolon] fixed PSD parser when reading PSD files with corrupted resources
+* [Herve Drolon] fixed TIFF plugin truncating metadata tag on loading if type is ASCII and it's value is of variable size (TIFF_VARIABLE) 
+* [Herve Drolon] fixed loading of TGA 8-bit files with a palette size greater that 256
+* [Anton Kukoba] TIFF parser didn't initialize the memory with zeros in stripped mode. This caused random bitmap data if the tiff file was corrupted/invalid.
+* [Herve Drolon] improved TGA file detection when the format version is < 2.0
+* [Christian Heimes] fixed compiler errors on 64bit Linux (INT64 / UINT64 type mismatches and missing prototype for memset)
+* [Christian Heimes] fixed FreeImage_Get*Mask() returning 0 on 24-, -32-bit FIT_BITMAP images
+* [Mihail Naydenov] fixed GIF plugin LZW decoder failing on some images
+* [Herve Drolon] fixed the TIFF plugin against race condition when used simultaneously in multiple threads
+* [Herve Drolon]  fixed float <--> rgb[a]f conversions when pixels are out of [0..1] range
+
+October 27th, 2012 - 3.15.4
+! FreeImage now uses LibPNG 1.5.13
+! FreeImage now uses LibRaw 0.14.7
+! FreeImage now uses ZLib 1.2.7
+! FreeImage now uses LibTIFF 4.0.3
+! FreeImage now uses OpenJPEG 1.5.1
+! FreeImage now uses OpenEXR 1.7.1
++ [Herve Drolon] improved the speed of RAW files detection in FreeImage_GetFileType* functions
++ [Herve Drolon] added JPEG_GREYSCALE load flag to the JPEG plugin (force to load as 8-bit greyscale)
++ [Herve Drolon] added 64-bit RGBA to 24-bit conversion support in FreeImage_ConvertTo24Bits
++ [Carsten Klein] improved the speed of FreeImage_Rescale for FIT_BITMAP & UINT16, RGB[A]16 types
++ [Carsten Klein] improved the speed of FreeImage_ConvertToGreyscale
+* [Carsten Klein] updated makefile for building FreeImage with MinGW
+* [Herve Drolon] fixed BigTIFF signature validation in FreeImage_GetFileType* functions
+* [Carsten Klein] fixed handling of RGB-565 16-bit images (needed for conversion from HBITMAP to FIBITMAP)
+* [Herve Drolon] fixed loading of JPEG with invalid IPTC marker
+* [Herve Drolon] changed default TIF RowsPerStrips to image height when saving as TIF G3 or TIF G4 (improved compression)
+* [Herve Drolon] improved the memory behavior of the RAW plugin (do not allocate huge variables on the stack)
+* [Herve Drolon] fixed FreeImage_AllocateT so that it returns NULL with images with a zero width and/or height
+* [Herve Drolon] replaced FIUINT64/FIINT64 with standard types UINT64/INT64
+* [Rustam Abdullaev] fixed PNG plugin with saving of transparent monochrome images
+* [Floris van den Berg] improved plugin registering when replacing an existing internal plugin with a new equivalent plugin
+* [Herve Drolon] fixed a crash when calling FreeImage_GetColorType on a 32-bit RGBA images loaded with the FIF_LOAD_NOPIXELS flag
+* [Herve Drolon] fixed FreeImage_SetTransparencyTable falsely setting a dib to 'transparent' when called with a count of 0
+* [Carsten Klein] fixed storing of RGB masks for 16-bit RGB standard images in order to be in a MSDN compatible way
+* [Herve Drolon] added an error handling message inside HDR plugin when trying to save an unsupported format
+* [Corey Taylor] fixed DDS plugin color channel swapping for RGB color order, when using FREEIMAGE_COLORORDER_RGB color order
+* [Herve Drolon] fixed internal TagLib singleton initialization against double-checked locking so that it is multi-thread safe
+
+March 17th, 2012 - 3.15.3
+! FreeImage now uses LibPNG 1.5.9
+! FreeImage now uses LibTIFF 4.0.1
++ [Herve Drolon] added new 64-bit data types FIINT64, FIUINT64
++ [Herve Drolon] added new 64-bit metadata types to FREE_IMAGE_MDTYPE (FIDT_LONG8, FIDT_SLONG8, FIDT_IFD8)
++ [Herve Drolon] added support for 64-bit metadata types to FreeImage_TagToString
+* [Herve Drolon] fixed a regression with Fax3/Fax4 TIFF images on 64-bit OS (introduced with FI 3.15.2)
+* [Herve Drolon] fixed some gcc 4.4.6 warnings
+* [Petr Pytelka] refactored FreeImage_InsertPage and FreeImage_AppendPage
+* [Herve Drolon] fixed JP2/J2K plugins with saving of 32-bit dib with a fully opaque layer
+* [Herve Drolon] fixed loading of CMYK JPEG when using JPEG_CMYK load flag (need to invert pixels)
+* [Herve Drolon] fixed loading of CMYK PSD when using PSD_CMYK load flag
+
+February 20th, 2012 - 3.15.2
+! FreeImage now uses LibRaw 0.14.5
+! FreeImage now uses LibPNG 1.5.8
+! FreeImage now uses LibJPEG 8d
+! FreeImage now uses ZLib 1.2.6
+! FreeImage now uses OpenJPEG 1.5.0 (released version)
+! FreeImage now uses LibTIFF 4.0.0
+- [Herve Drolon] removed dependency on LibMNG 1.0.10 (MNG and JNG files are now handled internally)
++ [Herve Drolon] replaced the MNG plugin with a new MNG internal FreeImage plugin (with read support)
++ [Herve Drolon] added a new JNG internal FreeImage plugin (with read/write support)
++ [Christian Heimes] added write support to the TIFF plugin for EXIF_MAIN tags
++ [Herve Drolon] added new Exif maker note tags
++ [Herve Drolon] added TAG_COMPRESSION conversion to FreeImage_TagToString
+* [Mylek Grey] enabled the use of multi-component transforms (MCT) in J2K and JP2 saving
+* [Herve Drolon] refactored PluginICO in order to correctly support Windows Vista 256x256 icons
+* [Herve Drolon] added minor speed improvements to FreeImage_Rescale
+* [Herve Drolon] fixed dib allocation failing with very large images (i.e. more than 4GB)
+* [Herve Drolon] fixed FreeImage_CloneTag behavior with ASCII data handling
+* [Herve Drolon] improved JPEG plugin behavior with very big images
+* [Herve Drolon] improved JPEG plugin behavior with C++ exceptions
+* [Herve Drolon] fixed loading of palettized PNG with more that 256 palette entries
+* [Herve Drolon] fixed a bug inside IFF plugin occuring when loading a 24-bit dib with a palette
+* [Herve Drolon] fixed a bug with loading of PNG images containing a cHRM chunk (regression introduced by LibPNG 1.5.4 and fixed by LibPNG 1.5.5)
+* [Herve Drolon] allowed loading of PNG with benign errors (such as images with too many IDATs)
+* [Mihail Naydenov] fixed some incorrect MIME types returned by FreeImage_GetFIFMimeType
+* [Herve Drolon] fixed loading of Exif with bad thumbnail data or with a bad first offset size
+
+July 25th, 2011 - 3.15.1
+! FreeImage now uses LibRaw 0.13.7
+! FreeImage now uses LibPNG 1.5.4
+! FreeImage now uses LibTIFF 3.9.5
+! FreeImage now uses OpenJPEG 1.5.0 (SVN patch 2011-07-23)
++ [Herve Drolon] added FreeImage_ConvertToRGB16 and updated FreeImage_ConvertToType
++ [Herve Drolon] added RAW_HALFSIZE flag to RAW plugin
+* [Herve Drolon] fixed a memory leak in JPEG plugin occuring when loading some corrupted images
+* [Eberhard Mattes] improved thread safety behavior inside internal TagLib class
+* [Hew How Chee] fixed a bug in FreeImage_EnlargeCanvas when called with negative left and right parameters and bpp <= 4
+* [Herve Drolon] improved memory allocation checking in FreeImage_ConvertTo[Float/RGBF/UINT16]
+* [Herve Drolon] allowed loading of TIF with missing bitspersample/samplesperpixel/photometric tags
+* [Herve Drolon] fixed FreeImage_AllocateHeaderT against possible malloc overflow
+* [Herve Drolon] fixed CUT plugin against heap corruption vulnerability
+* [Herve Drolon] fixed BMP plugin for images with a truncated input data stream
+* [Herve Drolon] improved PCX format detection in FreeImage_GetFileType* functions
+* [Christian Heimes] fixed a TIFF G4 compression bug occuring with gcc-Version 4.1.2 20080704 (Red Hat 4.1.2-50)
+
+January 24th, 2011 - 3.15.0
+! FreeImage now uses LibRaw 0.13-Beta3
+! FreeImage now uses LibPNG 1.4.5
+! FreeImage now uses LibTIFF 3.9.4 (CVS patch 2011-01-03)
+! FreeImage now uses LibJPEG 8c
+! FreeImage now uses OpenJPEG 1.4.0 (SVN patch 2011-01-18)
+! [Herve Drolon] FreeImage_CloneMetadata now clone resolution info returned by FreeImage_GetDotsPerMeter(X / Y)
++ [Herve Drolon] added loading support for "half float" format to TIF plugin
++ [Herve Drolon] FreeImage_IsTransparent is now independant of FREE_IMAGE_TYPE
++ [Herve Drolon] added FIT_UINT16 to FIT_RGBF conversion to FreeImage_ConvertToRGBF & FreeImage_ConvertToType
++ [Herve Drolon] added FreeImage_ConvertToUINT16 and updated FreeImage_ConvertToType
++ [Mihail Naydenov] added FreeImage_GetThumbnail / FreeImage_SetThumbnail
++ [Mihail Naydenov] added thumbnail support to Exif, JPEG, EXR, PSD, TGA, TIF formats
++ [Mihail Naydenov] added JPEG_BASELINE save flag to the JPEG plugin
++ [Herve Drolon] added new Exif-TIFF tags (PageName, PageNumber, XPosition, YPosition) and Exif WinXP tags
++ [Herve Drolon] added support for 256x256 icon size to PluginICO:Save
+* [Domingo Stephan] fixed a compilation error in TARGA plugin when using a big endian OS (OS X 10.6)
+* [Christian Heimes] fixed a compilation error with gcc 4.3.x and OpenEXR
+* [Eric Fruhinsholz] fixed a crash in JPEG plugin when reading a JPEG with corrupted XMP data
+* [Herve Drolon] improved FreeImage_MultigridPoissonSolver for images whose size is a power-of-two
+* [Herve Drolon] fixed a crash in PSD plugin when loading a PSD with a CMYK embedded thumbnail
+* [Herve Drolon] fixed loading of JPEG images with a not null but zero length IPTC segment (bad files produced by Picasa)
+* [Carsten Klein] fixed a bug in FreeImage_ColorQuantizeEx when using FIQ_WUQUANT quantizer
+* [Herve Drolon] added support for RGBA[16][F] to FreeImage_IsTransparent
+* [Herve Drolon] fixed loading of resolution info in TIFF CMYK images (bug introduced with 3.14.0)
+* [Tom May] fixed JPEG plugin crashing on some Exif files containing tags with an invalid tag length
+* [Herve Drolon] fixed a crash when loading TIFF images with a TIFFTAG_TRANSFERFUNCTION Exif tag
+* [Tom May] removed assertions in PSD plugin, causing crashes on some malformed images in debug mode
+* [Mihail Naydenov] fixed a crash in TIFF plugin when reading an uncommon 24-bit palettized file
+* [Carsten Klein] fixed a bug in FreeImage_EnlargeCanvas when using the function as a FreeImage_Copy function
+* [Herve Drolon] fixed a bug in PluginBMP with loading of OS/2 2.x palettized BMP
+* [luispedro] fixed a bug in PluginBMP when reading malformed 16-bit RGB-555 BMP
+
+August 12th, 2010 - 3.14.1
++ [Mihail Naydenov] added support for FIF_LOAD_NOPIXELS flag to EXR plugin
++ [Herve Drolon] added support for FIF_LOAD_NOPIXELS flag to CUT, HDR, RAS, ICO, PNM, RAW, BMP, PFM, XPM plugins
+* [Eberhard Mattes] fixed memory allocation checking in multipage API
+* [Herve Drolon] (compiler options) removed Win32 OpenMP support introduced in 3.14.0
+
+August 9th, 2010 - 3.14.0
+! FreeImage now uses OpenEXR 1.7.0
+! FreeImage now uses ZLib 1.2.5
+! FreeImage now uses LibPNG 1.4.3
+! FreeImage now uses LibJPEG 8b
+! FreeImage now uses LibTIFF 3.9.4 (CVS patch 2010-07-13)
+! FreeImage now uses LibRaw 0.10-Beta3
+! FreeImage now uses OpenJPEG 1.4.0 (SVN patch 2010-04-16)
+! [Herve Drolon] FreeImage_AllocateT now builds a default greyscale palette for 8-bit images
+! [Volodymyr Goncharov] FreeImage_LoadMultiBitmapFromMemory now supports read/write operations
+! [Herve Drolon] FreeImage_OpenMultiBitmapFromHandle now supports read/write operations
+! [Herve Drolon] greyscale conversions now use the Rec. 709 formula
+! [Mihail Naydenov] saving RGBF images to TIFF no longer use LogLuv encoding (unless you use the TIFF_LOGLUV save flag)
++ [Herve Drolon] added FIT_FLOAT to FIT_RGBF conversion to FreeImage_ConvertToRGBF & FreeImage_ConvertToType
++ [Herve Drolon] added VS 2008 project files
++ [Herve Drolon] added FreeImage_ConvertToFloat
++ [Mihail Naydenov] added RLE saving to the Targa plugin (see flag TARGA_SAVE_RLE)
++ [Volodymyr Goncharov] added FreeImage_SaveMultiBitmapToHandle
++ [Herve Drolon] added FreeImage_SaveMultiBitmapToMemory
++ [Herve Drolon] added new Exif maker note tags
++ [Lucian Sabo] added JPEG_OPTIMIZE to PluginJPEG:Save
++ [Mihail Naydenov] improved support for Exif tag reading in TIFF plugin
++ [Mihail Naydenov] allowed dataWindow with minimal bounds different from zero in OpenEXR plugin
++ [Herve Drolon] added FIMD_EXIF_RAW metadata model
++ [Herve Drolon] JPEG plugin can load & save raw Exif data (see FIMD_EXIF_RAW)
++ [Herve Drolon] added FIF_LOAD_NOPIXELS load flag constant - used to load header & metadata only
++ [Herve Drolon] added FreeImage_HasPixels
++ [Herve Drolon] added FreeImage_FIFSupportsNoPixels
++ [Herve Drolon] added support for FIF_LOAD_NOPIXELS flag to JPEG, PNG, PCD, PCX plugins
++ [Mihail Naydenov] added support for FIF_LOAD_NOPIXELS flag to TGA, PSD, TIFF plugins
++ [Mihail Naydenov] added support for 16-bit image types to FreeImage_Invert
++ [Mihail Naydenov] improved PSD plugin (faster code, added support for CMYK and LAB loading) + added load flags PSD_CMYK & PSD_LAB
++ [Mihail Naydenov] improved TIFF plugin (CMYK 16-bit loading and saving / RGBAF saving) + added TIFF_LOGLUV save flag
+* [Herve Drolon] fixed FreeImage_GetFileType behavior with ANI file formats
+* [Herve Drolon] fixed loading of JNG with progressive-JPEG formats
+* [Mihail Naydenov] fixed loading of TGA with a corrupted rle count
+* [Herve Drolon] fixed conversion formula in FreeImage_PreMultiplyWithAlpha
+* [Christoph Brill] removed the use of libmng_data.h private API in MNG Plugin
+* [phe02sf] fixed handling of bad Exif-GPS data in a Nikon D5000 image
+* [Atsuhiro Igarashi] fixed handling of last data block in PluginGIF::Save (sometimes it saves corrupted images)
+* [Christian Heimes] fixed saving of G3 & G4 compressed TIFF with 1bpp on 64bit Linux
+* [Herve Drolon] fixed long data type being 64-bit on Unix/Linux platforms (use LONG/DWORD instead of long/unsigned long)
+* [Herve Drolon] fixed a memory leak in FreeImage_DeletePage
+* [Herve Drolon] fixed the loading of RGBZ images in OpenEXR plugin
+* [Lucian Sabo] improved conversion from 1-, 4-, 8-bpp transparent images to 32-bpp
+* [Roy F.] fixed a bug in FreeImage_EnlargeCanvas (unable to crop an image on the right)
+* [Herve Drolon] fixed the loading of Exif with unusual IFD offset value
+* [Eberhard Mattes] fixed page numbering info when saving multipage TIFF
+* [Herve Drolon] fixed PluginPICT causing an infinite loop on a malformed PICT image
+* [Eberhard Mattes] improved memory allocation checking when using the new operator
+* [Herve Drolon] (multipage internals) fixed a potential buffer overflow in ReplaceExtension
+* [Eberhard Mattes] improved error checking in FreeImage_CloseMultiBitmap
+
+December 22, 2009 - 3.13.1
+! FreeImage now uses libTIFF 3.9.2
+! FreeImage now uses OpenJPEG 1.3.0 (SVN patch 2009-11-05)
+! FreeImage now uses libPNG 1.2.41
++ [Berend Engelbrecht] added loading of Exif orientation tag in TIFF plugin
++ [Herve Drolon] added decoding support for the old and outdated JPEG-in-TIFF 6.0 format in TIFF plugin
++ [Herve Drolon] added new 'non standard' Exif tags
++ [Herve Drolon] added new Exif makernote tags
+* [Herve Drolon] fixed TIF plugin crashing on a malformed TIFF-JPEG compressed image
+* [Herve Drolon] fixed MNG plugin crashing on some old mng images
+* [Herve Drolon] fixed handling of 2-bit grayscale transparent PNG
+* [Herve Drolon] fixed a bug with the compression rate of JP2 and J2K encoders
+* [zestony] fixed TIF plugin with the '65535 bytes' pitch size limitation on saving
+* [Herve Drolon] fixed handling of PSD files with a non zero file header reserved member
+* [Lucian Sabo] PNG plugin now keep transparency when saving 1- or 4-bit transparent images
+
+September 28th, 2009 - 3.13.0
+! FreeImage now uses LibJPEG 7
+! FreeImage now uses LibRaw-Lite 0.7.2
+! FreeImage now uses libPNG 1.2.40
+! FreeImage now uses libTIFF 3.9.1
+! FreeImage_RotateClassic is deprecated (use FreeImage_Rotate instead)
++ [Herve Drolon] added support for all Photoshop supported color modes to PSD plugin
++ [Herve Drolon] added support for 32-bit to JNG/MNG plugin
++ [Amir Ebrahimi] added loading support for the PICT format
++ [Herve Drolon] added loading support for camera RAW formats (using LibRawLite wrapper for dcraw)
++ [Mihail Naydenov] added UNICODE functions FreeImage_JPEGTransformU and FreeImage_JPEGCropU
++ [Carsten Klein] added FreeImage_OpenMultiBitmapFromHandle
++ [Carsten Klein] added FreeImage_FillBackground
++ [Carsten Klein] added FreeImage_EnlargeCanvas
++ [Carsten Klein] added FreeImage_AllocateEx / FreeImage_AllocateExT
++ [Mihail Naydenov/Herve Drolon] added FreeImage_TmoReinhard05Ex
++ [Herve Drolon] added FIT_RGBA16 to FIT_RGBF conversion to FreeImage_ConvertToRGBF  
++ [Herve Drolon] added FreeImage_Rotate (support for most image types, support background color) 
+* [Christian Heimes] fixed function prototypes to use a void argument when no argument exist
+* [Herve Drolon] fixed RGB color ordering on Intel macs
+* [Herve Drolon] FreeImage_RotateClassic now keep transparency when applied to 8-bit images
+* [Herve Drolon] fixed handling of transparency info in FreeImage_Copy
+* [Herve Drolon] fixed a normalization error in FreeImage_GetAdjustColorsLookupTable
+* [Herve Drolon] fixed invalid Exif rotation in PluginJPEG for orientation cases 2 and 4
+* [Mihail Naydenov / Carsten Klein] fixed compilation issues with MinGW32
+* [Mihail Naydenov] improved the loading speed of all targa images
+* [Herve Drolon] FreeImage_TagToString now handles the Exif UserComment tag
+
+April 14th, 2009 - 3.12.0
+! FreeImage now uses libPNG 1.2.35
+! FreeImage now uses libTIFF 3.9.0beta (CVS patch 2009-02-12)
+! FreeImage now uses OpenJPEG 1.3.0 (SVN patch 2008-08-21)
+! [Herve Drolon] FreeImage_CloneMetadata no longer clone the FIMD_ANIMATION metadata (this was causing problems when saving to GIF format)
++ [Herve Drolon] added full support for the PFM format
++ [Herve Drolon] added JPEG_EXIFROTATE load flag to the JPEG plugin
++ [Herve Drolon] added 16-bit RGB(A) and float RGB(A)F support to FreeImage_GetChannel / FreeImage_SetChannel 
++ [Herve Drolon] added src FIT_RGBA16 to dst 32-bit FIT_BITMAP conversion to FreeImage_ConvertToType
+* [Carsten Klein] FreeImage_Copy now copies transparency info, resolution info, ICC profile and metadata
+* [Carsten Klein] check for negative top/left values in FreeImage_Paste
+* [Christian Heimes] changed exceptions with a "catch(char *text)" to a "catch(const char *text)" to make GCC 4.1 happy
+* [Deif Lou] fixed a bug in FreeImage_SetTransparentIndex
+* [Thomas Maiwald] BMP plugin: on saving, fixed correct setting of bfSize BMP file header for palettized images
+* [Timothy Lee] fixed handling of frame disposal in GIF_PLAYBACK mode (GIF plugin)
+* [Herve Drolon] fixed handling of Exif Olympus Type 2 maker notes (not yet supported but now safely ignored)
+* [Rich Geldreich] fixed DXT1 color endpoint precision problem in DDS plugin
+* [Mihail Naydenov] improved loading speed of 24-bit targa images
+* [Eugene Golushkov] improved big endian / little endian swapping functions
+* [Carsten Klein/Jean-Philippe Goerke] improved FreeImage_SetMetadata / FreeImage_GetMetadata accessors
+* [Christian Ruppert] improved Linux Makefiles
+* [Eugene Golushkov] fixed PluginBMP alignment bug while saving 16 or 24bit BMP on big endian or Apple machines
+
 July 28th, 2008 - 3.11.0
 ! FreeImage now uses libTIFF 3.9.0beta (CVS patch 2008-05-24)
 ! FreeImage now uses OpenJPEG 1.3.0 (SVN patch 2008-05-22)

@@ -101,11 +101,20 @@ GUCEF_OSMAIN_BEGIN
         GUCEF::CORE::CPlatformNativeConsoleLogger consoleOut;
         GUCEF::CORE::CCoreGlobal::Instance()->GetLogManager().AddLogger( consoleOut.GetLogger() );
 
+        GUCEF::IMAGE::CImageGlobal::Instance();
+        
         LoadConfig();
         
         GUCEF::IMAGE::CImage image;
         image.Load( "C:\\CODE\\intovoid\\RES\\IV_MATB_IDX\\8000.1" );
 
+        GUCEF::IMAGE::CImage palette;
+        palette.Load( "C:\\CODE\\intovoid\\RES\\IV_PAL_IDX\\100.5" );
+
+        image.GetPixelMap()->ApplyPalette( palette.GetPixelMap() );
+
+        image.Save( "C:\\CODE\\intovoid\\RES\\IV_MATB_IDX\\8000.png" );
+        
         return 1;                                                                            
     }
     catch ( ... )

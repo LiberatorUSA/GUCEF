@@ -28,14 +28,15 @@
 
 // ==========================================================
 // CVS
-// $Revision: 1.3 $
-// $Date: 2008/06/16 15:17:37 $
-// $Id: FIURational.cs,v 1.3 2008/06/16 15:17:37 cklein05 Exp $
+// $Revision: 1.5 $
+// $Date: 2009/02/27 16:36:23 $
+// $Id: FIURational.cs,v 1.5 2009/02/27 16:36:23 cklein05 Exp $
 // ==========================================================
 
 using System;
 using System.Collections.Generic;
 using System.Runtime.InteropServices;
+using System.Diagnostics;
 
 namespace FreeImageAPI
 {
@@ -56,7 +57,10 @@ namespace FreeImageAPI
 	[Serializable, StructLayout(LayoutKind.Sequential), ComVisible(true)]
 	public struct FIURational : IConvertible, IComparable, IFormattable, IComparable<FIURational>, IEquatable<FIURational>
 	{
+		[DebuggerBrowsable(DebuggerBrowsableState.Never)]
 		private uint numerator;
+
+		[DebuggerBrowsable(DebuggerBrowsableState.Never)]
 		private uint denominator;
 
 		/// <summary>
@@ -72,7 +76,7 @@ namespace FreeImageAPI
 		/// <summary>
 		/// Represents the smallest positive <see cref="FIURational"/> value greater than zero. This field is constant.
 		/// </summary>
-		public static readonly FIURational Epsilon = new FIURational(1, Int32.MaxValue);
+		public static readonly FIURational Epsilon = new FIURational(1u, UInt32.MaxValue);
 
 		/// <summary>
 		/// Initializes a new instance based on the specified parameters.
@@ -111,12 +115,15 @@ namespace FreeImageAPI
 		/// <param name="value">The value to convert into a fraction.</param>
 		/// <exception cref="OverflowException">
 		/// <paramref name="value"/> cannot be converted into a fraction
-		/// represented by two integer values.</exception>
+		/// represented by two unsigned integer values.</exception>
 		public FIURational(decimal value)
 		{
 			try
 			{
-				if (value < 0) throw new ArgumentOutOfRangeException("value");
+				if (value < 0)
+				{
+					throw new OverflowException("value");
+				}
 				try
 				{
 					int[] contFract = CreateContinuedFraction(value);
@@ -136,7 +143,7 @@ namespace FreeImageAPI
 					Normalize();
 					if (Math.Abs(((decimal)numerator / (decimal)denominator) - value) > 0.0001m)
 					{
-						throw new OverflowException();
+						throw new OverflowException("Unable to convert value into a fraction");
 					}
 				}
 				Normalize();
@@ -145,17 +152,6 @@ namespace FreeImageAPI
 			{
 				throw new OverflowException("Unable to calculate fraction.", ex);
 			}
-		}
-
-		/// <summary>
-		/// Initializes a new instance based on the specified parameters.
-		/// </summary>
-		/// <param name="r">The structure to clone from.</param>
-		public FIURational(FIURational r)
-		{
-			numerator = r.numerator;
-			denominator = r.denominator;
-			Normalize();
 		}
 
 		/// <summary>

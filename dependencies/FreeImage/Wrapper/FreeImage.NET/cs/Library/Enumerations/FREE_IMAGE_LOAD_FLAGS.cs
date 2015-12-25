@@ -28,9 +28,9 @@
 
 // ==========================================================
 // CVS
-// $Revision: 1.1 $
-// $Date: 2007/11/28 15:33:39 $
-// $Id: FREE_IMAGE_LOAD_FLAGS.cs,v 1.1 2007/11/28 15:33:39 cklein05 Exp $
+// $Revision: 1.2 $
+// $Date: 2009/09/15 11:45:16 $
+// $Id: FREE_IMAGE_LOAD_FLAGS.cs,v 1.2 2009/09/15 11:45:16 cklein05 Exp $
 // ==========================================================
 
 namespace FreeImageAPI
@@ -66,9 +66,13 @@ namespace FreeImageAPI
 		/// </summary>
 		JPEG_ACCURATE = 0x0002,
 		/// <summary>
-		/// load separated CMYK "as is" (use | to combine with other load flags).
+		/// Load separated CMYK "as is" (use | to combine with other load flags).
 		/// </summary>
 		JPEG_CMYK = 0x0004,
+		/// <summary>
+		/// Load and rotate according to Exif 'Orientation' tag if available.
+		/// </summary>
+		JPEG_EXIFROTATE = 0x0008,
 		/// <summary>
 		/// Load the bitmap sized 768 x 512.
 		/// </summary>
@@ -92,6 +96,16 @@ namespace FreeImageAPI
 		/// <summary>
 		/// Reads tags for separated CMYK.
 		/// </summary>
-		TIFF_CMYK = 0x0001
+		TIFF_CMYK = 0x0001,
+		/// <summary>
+		/// Tries to load the JPEG preview image, embedded in
+		/// Exif Metadata or load the image as RGB 24-bit if no 
+		/// preview image is available.
+		/// </summary>
+		RAW_PREVIEW = 0x1,
+		/// <summary>
+		/// Loads the image as RGB 24-bit.
+		/// </summary>
+		RAW_DISPLAY = 0x2,
 	}
 }

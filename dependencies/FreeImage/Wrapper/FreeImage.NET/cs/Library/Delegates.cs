@@ -28,9 +28,9 @@
 
 // ==========================================================
 // CVS
-// $Revision: 1.3 $
-// $Date: 2008/06/17 13:50:59 $
-// $Id: Delegates.cs,v 1.3 2008/06/17 13:50:59 cklein05 Exp $
+// $Revision: 1.4 $
+// $Date: 2009/09/15 11:39:10 $
+// $Id: Delegates.cs,v 1.4 2009/09/15 11:39:10 cklein05 Exp $
 // ==========================================================
 
 using System;
@@ -48,7 +48,7 @@ namespace FreeImageAPI
 	/// <param name="fif">The format of the image.</param>
 	/// <param name="message">The errormessage.</param>
 	// DLL_API is missing in the definition of the callbackfuntion.
-	[UnmanagedFunctionPointer(CallingConvention.Cdecl)]
+	[UnmanagedFunctionPointer(CallingConvention.Cdecl, CharSet = CharSet.Ansi, ThrowOnUnmappableChar = false)]
 	public delegate void OutputMessageFunction(FREE_IMAGE_FORMAT fif, string message);
 }
 

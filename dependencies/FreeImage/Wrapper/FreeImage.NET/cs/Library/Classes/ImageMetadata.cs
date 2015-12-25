@@ -28,15 +28,16 @@
 
 // ==========================================================
 // CVS
-// $Revision: 1.4 $
-// $Date: 2008/06/17 13:48:48 $
-// $Id: ImageMetadata.cs,v 1.4 2008/06/17 13:48:48 cklein05 Exp $
+// $Revision: 1.7 $
+// $Date: 2009/02/27 16:34:59 $
+// $Id: ImageMetadata.cs,v 1.7 2009/02/27 16:34:59 cklein05 Exp $
 // ==========================================================
 
 using System;
 using System.Collections;
 using System.Collections.Generic;
 using System.Reflection;
+using System.Diagnostics;
 
 namespace FreeImageAPI.Metadata
 {
@@ -45,8 +46,11 @@ namespace FreeImageAPI.Metadata
 	/// </summary>
 	public class ImageMetadata : IEnumerable, IComparable, IComparable<ImageMetadata>
 	{
+		[DebuggerBrowsable(DebuggerBrowsableState.Never)]
 		private readonly List<MetadataModel> data;
+		[DebuggerBrowsable(DebuggerBrowsableState.Never)]
 		private readonly FIBITMAP dib;
+		[DebuggerBrowsable(DebuggerBrowsableState.Never)]
 		private bool hideEmptyModels;
 
 		/// <summary>
@@ -70,25 +74,18 @@ namespace FreeImageAPI.Metadata
 			this.dib = dib;
 			this.hideEmptyModels = hideEmptyModels;
 
-			foreach (Type exportedType in Assembly.GetAssembly(this.GetType()).GetExportedTypes())
-			{
-				if (exportedType.IsClass &&
-					exportedType.IsPublic &&
-					exportedType.BaseType != null &&
-					exportedType.BaseType == typeof(MetadataModel))
-				{
-					ConstructorInfo constructorInfo = exportedType.GetConstructor(new Type[] { typeof(FIBITMAP) });
-					if (constructorInfo != null)
-					{
-						MetadataModel model = (MetadataModel)constructorInfo.Invoke(new object[] { dib });
-						if (model != null)
-						{
-							data.Add(model);
-						}
-					}
-				}
-			}
-			data.Capacity = data.Count;
+			data.Add(new MDM_ANIMATION(dib));
+			data.Add(new MDM_COMMENTS(dib));
+			data.Add(new MDM_CUSTOM(dib));
+			data.Add(new MDM_EXIF_EXIF(dib));
+			data.Add(new MDM_EXIF_GPS(dib));
+			data.Add(new MDM_INTEROP(dib));
+			data.Add(new MDM_EXIF_MAIN(dib));
+			data.Add(new MDM_MAKERNOTE(dib));
+			data.Add(new MDM_GEOTIFF(dib));
+			data.Add(new MDM_IPTC(dib));
+			data.Add(new MDM_NODATA(dib));
+			data.Add(new MDM_XMP(dib));
 		}
 
 		/// <summary>
@@ -270,7 +267,7 @@ namespace FreeImageAPI.Metadata
 			}
 			if (!(obj is ImageMetadata))
 			{
-				throw new ArgumentException();
+				throw new ArgumentException("obj");
 			}
 			return CompareTo((ImageMetadata)obj);
 		}

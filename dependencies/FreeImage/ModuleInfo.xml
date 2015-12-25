@@ -2,18 +2,17 @@
     <Module Name="FreeImage" Type="SharedLibrary" Platform="mswin;linux">
         <Preprocessor>
             <Define String="FREEIMAGE_EXPORTS" />
-            <Define String="OPJ_EXPORTS" />
             <Define String="OPJ_STATIC" />
             <Define String="ZENO_STATIC" />
-            <Define String="HALF_EXPORTS" />
-            <Define String="IMATH_EXPORTS" />
-            <Define String="ILMIMF_EXPORTS" />
+            <Define String="LIBRAW_LIBRARY_BUILD" />
+            <Define String="NO_JASPER" />
+            <Define String="USE_JPIP" />
+			<Define String="LIBRAW_NODLL" />
         </Preprocessor>
     </Module>
     <Module Platform="mswin">
         <Preprocessor>
             <Define String="_CRT_SECURE_NO_WARNINGS" />
-            <Define String="OPENEXR_DLL" />
         </Preprocessor>
     </Module>
 </ModuleInfoEntry>

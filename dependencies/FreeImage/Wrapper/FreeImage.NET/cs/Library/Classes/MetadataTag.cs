@@ -28,15 +28,16 @@
 
 // ==========================================================
 // CVS
-// $Revision: 1.5 $
-// $Date: 2008/07/25 07:30:13 $
-// $Id: MetadataTag.cs,v 1.5 2008/07/25 07:30:13 cklein05 Exp $
+// $Revision: 1.9 $
+// $Date: 2009/02/27 16:35:12 $
+// $Id: MetadataTag.cs,v 1.9 2009/02/27 16:35:12 cklein05 Exp $
 // ==========================================================
 
 using System;
 using System.Text;
 using System.Runtime.InteropServices;
 using System.Collections.Generic;
+using System.Diagnostics;
 
 namespace FreeImageAPI.Metadata
 {
@@ -48,27 +49,38 @@ namespace FreeImageAPI.Metadata
 		/// <summary>
 		/// The encapsulated FreeImage-tag.
 		/// </summary>
+		[DebuggerBrowsable(DebuggerBrowsableState.Never)]
 		internal FITAG tag;
+
 		/// <summary>
 		/// The metadata model of <see cref="tag"/>.
 		/// </summary>
+		[DebuggerBrowsable(DebuggerBrowsableState.Never)]
 		private FREE_IMAGE_MDMODEL model;
+
 		/// <summary>
 		/// Indicates whether this instance has already been disposed.
 		/// </summary>
+		[DebuggerBrowsable(DebuggerBrowsableState.Never)]
 		private bool disposed = false;
+
 		/// <summary>
 		/// Indicates whether this instance was created by FreeImage or
 		/// by the user.
 		/// </summary>
+		[DebuggerBrowsable(DebuggerBrowsableState.Never)]
 		private bool selfCreated;
+
 		/// <summary>
 		/// List linking metadata-model and Type.
 		/// </summary>
+		[DebuggerBrowsable(DebuggerBrowsableState.Never)]
 		private static readonly Dictionary<FREE_IMAGE_MDTYPE, Type> idList;
+
 		/// <summary>
 		/// List linking Type and metadata-model.
 		/// </summary>
+		[DebuggerBrowsable(DebuggerBrowsableState.Never)]
 		private static readonly Dictionary<Type, FREE_IMAGE_MDTYPE> typeList;
 
 		/// <summary>
@@ -167,8 +179,8 @@ namespace FreeImageAPI.Metadata
 			typeList.Add(typeof(FIURational[]), FREE_IMAGE_MDTYPE.FIDT_RATIONAL);
 			typeList.Add(typeof(sbyte), FREE_IMAGE_MDTYPE.FIDT_SBYTE);
 			typeList.Add(typeof(sbyte[]), FREE_IMAGE_MDTYPE.FIDT_SBYTE);
-			typeList.Add(typeof(byte), FREE_IMAGE_MDTYPE.FIDT_UNDEFINED);
-			typeList.Add(typeof(byte[]), FREE_IMAGE_MDTYPE.FIDT_UNDEFINED);
+			typeList.Add(typeof(byte), FREE_IMAGE_MDTYPE.FIDT_BYTE);
+			typeList.Add(typeof(byte[]), FREE_IMAGE_MDTYPE.FIDT_BYTE);
 			typeList.Add(typeof(short), FREE_IMAGE_MDTYPE.FIDT_SSHORT);
 			typeList.Add(typeof(short[]), FREE_IMAGE_MDTYPE.FIDT_SSHORT);
 			typeList.Add(typeof(int), FREE_IMAGE_MDTYPE.FIDT_SLONG);
@@ -202,12 +214,11 @@ namespace FreeImageAPI.Metadata
 		public static bool operator ==(MetadataTag left, MetadataTag right)
 		{
 			// Check whether both are null
-			if (Object.ReferenceEquals(left, null) && Object.ReferenceEquals(right, null))
+			if ((object)left == (object)right)
 			{
 				return true;
 			}
-			// Check whether only one is null
-			if (Object.ReferenceEquals(left, null) || Object.ReferenceEquals(right, null))
+			else if ((object)left == null || (object)right == null)
 			{
 				return false;
 			}
@@ -336,7 +347,7 @@ namespace FreeImageAPI.Metadata
 		public FREE_IMAGE_MDTYPE Type
 		{
 			get { CheckDisposed(); return FreeImage.GetTagType(tag); }
-			private set { FreeImage.SetTagType(tag, value); }
+			internal set { FreeImage.SetTagType(tag, value); }
 		}
 
 		/// <summary>
@@ -344,7 +355,7 @@ namespace FreeImageAPI.Metadata
 		/// </summary>
 		public uint Count
 		{
-			get { CheckDisposed(); return Type == FREE_IMAGE_MDTYPE.FIDT_ASCII ? FreeImage.GetTagCount(tag) - 1 : FreeImage.GetTagCount(tag); }
+			get { CheckDisposed(); return FreeImage.GetTagCount(tag); }
 			private set { FreeImage.SetTagCount(tag, value); }
 		}
 
@@ -353,7 +364,7 @@ namespace FreeImageAPI.Metadata
 		/// </summary>
 		public uint Length
 		{
-			get { CheckDisposed(); return Type == FREE_IMAGE_MDTYPE.FIDT_ASCII ? FreeImage.GetTagLength(tag) - 1 : FreeImage.GetTagLength(tag); }
+			get { CheckDisposed(); return FreeImage.GetTagLength(tag); }
 			private set { FreeImage.SetTagLength(tag, value); }
 		}
 
@@ -371,38 +382,36 @@ namespace FreeImageAPI.Metadata
 
 		/// <summary>
 		/// Gets or sets the value of the metadata.
-		/// <para> In case value is of byte or byte[], <see cref="FREE_IMAGE_MDTYPE.FIDT_UNDEFINED"/> is assumed.</para>
-		/// <para> In case value is of uint or uint[], <see cref="FREE_IMAGE_MDTYPE.FIDT_LONG"/> is assumed.</para>
 		/// </summary>
-		public unsafe object Value
+		public object Value
 		{
 			get
 			{
-				CheckDisposed();
-				int cnt = (int)Count;
-
-				if (Type == FREE_IMAGE_MDTYPE.FIDT_ASCII)
+				unsafe
 				{
-					byte* value = (byte*)FreeImage.GetTagValue(tag);
-					StringBuilder sb = new StringBuilder();
-					for (int i = 0; i < cnt; i++)
+					CheckDisposed();
+					int cnt = (int)Count;
+
+					if (Type == FREE_IMAGE_MDTYPE.FIDT_ASCII)
 					{
-						sb.Append(Convert.ToChar(value[i]));
+						byte* value = (byte*)FreeImage.GetTagValue(tag);
+						StringBuilder sb = new StringBuilder();
+						for (int i = 0; i < cnt; i++)
+						{
+							sb.Append(Convert.ToChar(value[i]));
+						}
+						return sb.ToString();
 					}
-					return sb.ToString();
-				}
-				else if (Type == FREE_IMAGE_MDTYPE.FIDT_NOTYPE)
-				{
-					return null;
-				}
+					else if (Type == FREE_IMAGE_MDTYPE.FIDT_NOTYPE)
+					{
+						return null;
+					}
 
-				Array array = Array.CreateInstance(idList[Type], Count);
-				void* src = (void*)FreeImage.GetTagValue(tag);
-				GCHandle handle = GCHandle.Alloc(array, GCHandleType.Pinned);
-				void* dst = (void*)Marshal.UnsafeAddrOfPinnedArrayElement(array, 0);
-				FreeImage.CopyMemory(dst, src, Length);
-				handle.Free();
-				return array;
+					Array array = Array.CreateInstance(idList[Type], Count);
+					void* src = (void*)FreeImage.GetTagValue(tag);
+					FreeImage.CopyMemory(array, src, Length);
+					return array;
+				}
 			}
 			set
 			{
@@ -426,7 +435,7 @@ namespace FreeImageAPI.Metadata
 			Type type = value.GetType();
 			if (!typeList.ContainsKey(type))
 			{
-				throw new NotSupportedException();
+				throw new NotSupportedException("The type of value is not supported");
 			}
 			return SetValue(value, typeList[type]);
 		}
@@ -489,19 +498,17 @@ namespace FreeImageAPI.Metadata
 					throw new ArgumentException("value");
 				}
 				Type = type;
-				Count = (uint)(tempValue.Length + 1);
-				Length = (uint)((tempValue.Length * sizeof(byte)) + 1);
-				data = new byte[Length + 1];
+				Length = Count = (uint)tempValue.Length;
+				data = new byte[Length];
 
 				for (int i = 0; i < tempValue.Length; i++)
 				{
 					data[i] = (byte)tempValue[i];
 				}
-				data[data.Length - 1] = 0;
 			}
 			else if (type == FREE_IMAGE_MDTYPE.FIDT_NOTYPE)
 			{
-				throw new NotSupportedException();
+				throw new NotSupportedException("type is not supported.");
 			}
 			else
 			{
@@ -510,20 +517,58 @@ namespace FreeImageAPI.Metadata
 				{
 					throw new ArgumentException("value");
 				}
+
+				if (array.Length != 0)
+					if (!CheckType(array.GetValue(0).GetType(), type))
+						throw new ArgumentException("The type of value is incorrect.");
+
 				Type = type;
 				Count = (uint)array.Length;
 				Length = (uint)(array.Length * Marshal.SizeOf(idList[type]));
 				data = new byte[Length];
-				GCHandle handle = GCHandle.Alloc(array, GCHandleType.Pinned);
-				void* src = (void*)Marshal.UnsafeAddrOfPinnedArrayElement(array, 0);
-				fixed (byte* dst = data)
-				{
-					FreeImage.CopyMemory(dst, src, Length);
-				}
-				handle.Free();
+				FreeImage.CopyMemory(data, array, Length);
 			}
 
 			return FreeImage.SetTagValue(tag, data);
+		}
+
+		private static bool CheckType(Type dataType, FREE_IMAGE_MDTYPE type)
+		{
+			if (dataType != null)
+				switch (type)
+				{
+					case FREE_IMAGE_MDTYPE.FIDT_ASCII:
+						return dataType == typeof(string);
+					case FREE_IMAGE_MDTYPE.FIDT_BYTE:
+						return dataType == typeof(byte);
+					case FREE_IMAGE_MDTYPE.FIDT_DOUBLE:
+						return dataType == typeof(double);
+					case FREE_IMAGE_MDTYPE.FIDT_FLOAT:
+						return dataType == typeof(float);
+					case FREE_IMAGE_MDTYPE.FIDT_IFD:
+						return dataType == typeof(uint);
+					case FREE_IMAGE_MDTYPE.FIDT_LONG:
+						return dataType == typeof(uint);
+					case FREE_IMAGE_MDTYPE.FIDT_NOTYPE:
+						return false;
+					case FREE_IMAGE_MDTYPE.FIDT_PALETTE:
+						return dataType == typeof(RGBQUAD);
+					case FREE_IMAGE_MDTYPE.FIDT_RATIONAL:
+						return dataType == typeof(FIURational);
+					case FREE_IMAGE_MDTYPE.FIDT_SBYTE:
+						return dataType == typeof(sbyte);
+					case FREE_IMAGE_MDTYPE.FIDT_SHORT:
+						return dataType == typeof(ushort);
+					case FREE_IMAGE_MDTYPE.FIDT_SLONG:
+						return dataType == typeof(int);
+					case FREE_IMAGE_MDTYPE.FIDT_SRATIONAL:
+						return dataType == typeof(FIRational);
+					case FREE_IMAGE_MDTYPE.FIDT_SSHORT:
+						return dataType == typeof(short);
+					case FREE_IMAGE_MDTYPE.FIDT_UNDEFINED:
+						return dataType == typeof(byte);
+				}
+			return false;
 		}
 
 		/// <summary>
@@ -547,7 +592,7 @@ namespace FreeImageAPI.Metadata
 				tag = FreeImage.CloneTag(tag);
 				if (tag.IsNull)
 				{
-					throw new Exception();
+					throw new Exception("FreeImage.CloneTag() failed.");
 				}
 				selfCreated = true;
 			}
@@ -572,13 +617,7 @@ namespace FreeImageAPI.Metadata
 			item.Id = ID;
 			item.Len = (int)Length;
 			item.Type = (short)Type;
-			byte[] data = new byte[item.Len];
-			byte* ptr = (byte*)FreeImage.GetTagValue(tag);
-			for (int i = 0; i < data.Length; i++)
-			{
-				data[i] = ptr[i];
-			}
-			item.Value = data;
+			FreeImage.CopyMemory(item.Value = new byte[item.Len], FreeImage.GetTagValue(tag), item.Len);
 			return item;
 		}
 
@@ -662,7 +701,7 @@ namespace FreeImageAPI.Metadata
 			}
 			if (!(obj is MetadataTag))
 			{
-				throw new ArgumentException();
+				throw new ArgumentException("obj");
 			}
 			return CompareTo((MetadataTag)obj);
 		}
@@ -690,6 +729,7 @@ namespace FreeImageAPI.Metadata
 				if (selfCreated)
 				{
 					FreeImage.DeleteTag(tag);
+					tag = FITAG.Zero;
 				}
 			}
 		}

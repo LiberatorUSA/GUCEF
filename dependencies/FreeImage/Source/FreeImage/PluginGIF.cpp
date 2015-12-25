@@ -4,6 +4,7 @@
 // Design and implementation by
 // - Ryan Rubley <ryan@lostreality.org>
 // - Raphaël Gaquer <raphael.gaquer@alcer.com>
+// - Aaron Shumate <aaron@shumate.us>
 //
 // This file is part of FreeImage 3
 //
@@ -182,7 +183,7 @@ StringTable::StringTable()
 	// Maximum number of entries in the map is MAX_LZW_CODE * 256 
 	// (aka 2**12 * 2**8 => a 20 bits key)
 	// This Map could be optmized to only handle MAX_LZW_CODE * 2**(m_bpp)
-	m_strmap = (int*)new int[1<<20];
+	m_strmap = new(std::nothrow) int[1<<20];
 }
 
 StringTable::~StringTable()
@@ -219,11 +220,11 @@ void StringTable::Initialize(int minCodeSize)
 BYTE *StringTable::FillInputBuffer(int len)
 {
 	if( m_buffer == NULL ) {
-		m_buffer = new BYTE[len];
+		m_buffer = new(std::nothrow) BYTE[len];
 		m_bufferRealSize = len;
 	} else if( len > m_bufferRealSize ) {
 		delete [] m_buffer;
-		m_buffer = new BYTE[len];
+		m_buffer = new(std::nothrow) BYTE[len];
 		m_bufferRealSize = len;
 	}
 	m_bufferSize = len;
@@ -376,7 +377,7 @@ bool StringTable::Decompress(BYTE *buf, int *len)
 			m_partial >>= m_codeSize;
 			m_partialSize -= m_codeSize;
 
-			if( code > m_nextCode || (m_nextCode == MAX_LZW_CODE && code != m_clearCode) || code == m_endCode ) {
+			if( code > m_nextCode || /*(m_nextCode == MAX_LZW_CODE && code != m_clearCode) || */code == m_endCode ) {
 				m_done = true;
 				*len = (int)(bufpos - buf);
 				return true;
@@ -387,7 +388,7 @@ bool StringTable::Decompress(BYTE *buf, int *len)
 			}
 
 			//add new string to string table, if not the first pass since a clear code
-			if( m_oldCode != MAX_LZW_CODE ) {
+			if( m_oldCode != MAX_LZW_CODE && m_nextCode < MAX_LZW_CODE) {
 				m_strings[m_nextCode] = m_strings[m_oldCode] + m_strings[code == m_nextCode ? m_oldCode : code][0];
 			}
 
@@ -524,7 +525,7 @@ SupportsExportType(FREE_IMAGE_TYPE type) {
 
 static void *DLL_CALLCONV 
 Open(FreeImageIO *io, fi_handle handle, BOOL read) {
-	GIFinfo *info = new GIFinfo;
+	GIFinfo *info = new(std::nothrow) GIFinfo;
 	if( info == NULL ) {
 		return NULL;
 	}
@@ -538,7 +539,7 @@ Open(FreeImageIO *io, fi_handle handle, BOOL read) {
 		try {
 			//Header
 			if( !Validate(io, handle) ) {
-				throw "Not a GIF file";
+				throw FI_MSG_ERROR_MAGIC_NUMBER;
 			}
 			io->seek_proc(handle, 6, SEEK_CUR);
 
@@ -706,7 +707,7 @@ Load(FreeImageIO *io, fi_handle handle, int page, int flags, void *data) {
 			//allocate entire logical area
 			dib = FreeImage_Allocate(logicalwidth, logicalheight, 32);
 			if( dib == NULL ) {
-				throw "DIB allocated failed";
+				throw FI_MSG_ERROR_DIB_MEMORY;
 			}
 
 			//fill with background color to start
@@ -763,6 +764,7 @@ Load(FreeImageIO *io, fi_handle handle, int page, int flags, void *data) {
 			}
 
 			//draw each page into the logical area
+			delay_time = 0;
 			for( page = start; page <= end; page++ ) {
 				PageInfo &info = pageinfo[end - page];
 				//things we can skip having to decode
@@ -772,11 +774,16 @@ Load(FreeImageIO *io, fi_handle handle, int page, int flags, void *data) {
 					}
 					if( info.disposal_method == GIF_DISPOSAL_BACKGROUND ) {
 						for( y = 0; y < info.height; y++ ) {
-							scanline = (RGBQUAD *)FreeImage_GetScanLine(dib, logicalheight - (y + info.top) - 1) + info.left;
+							const int scanidx = logicalheight - (y + info.top) - 1;
+							if ( scanidx < 0 ) {
+								break;  // If data is corrupt, don't calculate in invalid scanline
+							}
+							scanline = (RGBQUAD *)FreeImage_GetScanLine(dib, scanidx) + info.left;
 							for( x = 0; x < info.width; x++ ) {
 								*scanline++ = background;
 							}
 						}
+						continue;
 					}
 				}
 
@@ -798,7 +805,11 @@ Load(FreeImageIO *io, fi_handle handle, int page, int flags, void *data) {
 					}
 					//copy page data into logical buffer, with full alpha opaqueness
 					for( y = 0; y < info.height; y++ ) {
-						scanline = (RGBQUAD *)FreeImage_GetScanLine(dib, logicalheight - (y + info.top) - 1) + info.left;
+						const int scanidx = logicalheight - (y + info.top) - 1;
+						if ( scanidx < 0 ) {
+							break;  // If data is corrupt, don't calculate in invalid scanline
+						}
+						scanline = (RGBQUAD *)FreeImage_GetScanLine(dib, scanidx) + info.left;
 						BYTE *pageline = FreeImage_GetScanLine(pagedib, info.height - y - 1);
 						for( x = 0; x < info.width; x++ ) {
 							if( !have_transparent || *pageline != transparent_color ) {
@@ -809,10 +820,19 @@ Load(FreeImageIO *io, fi_handle handle, int page, int flags, void *data) {
 							pageline++;
 						}
 					}
+					//copy frame time
+					if( page == end ) {
+						FITAG *tag;
+						if( FreeImage_GetMetadataEx(FIMD_ANIMATION, pagedib, "FrameTime", FIDT_LONG, &tag) ) {
+							delay_time = *(LONG *)FreeImage_GetTagValue(tag);
+						}
+					}
 					FreeImage_Unload(pagedib);
 				}
 			}
 
+			//setup frame time
+			FreeImage_SetMetadataEx(FIMD_ANIMATION, dib, "FrameTime", ANIMTAG_FRAMETIME, FIDT_LONG, 1, 4, &delay_time);
 			return dib;
 		}
 
@@ -847,7 +867,7 @@ Load(FreeImageIO *io, fi_handle handle, int page, int flags, void *data) {
 		}
 		dib = FreeImage_Allocate(width, height, bpp);
 		if( dib == NULL ) {
-			throw "DIB allocated failed";
+			throw FI_MSG_ERROR_DIB_MEMORY;
 		}
 
 		FreeImage_SetMetadataEx(FIMD_ANIMATION, dib, "FrameLeft", ANIMTAG_FRAMELEFT, FIDT_SHORT, 1, 2, &left);
@@ -893,7 +913,7 @@ Load(FreeImageIO *io, fi_handle handle, int page, int flags, void *data) {
 
 		//LZW Minimum Code Size
 		io->read_proc(&b, 1, 1, handle);
-		StringTable *stringtable = new StringTable;
+		StringTable *stringtable = new(std::nothrow) StringTable;
 		stringtable->Initialize(b);
 
 		//Image Data Sub-blocks
@@ -1294,7 +1314,7 @@ Save(FreeImageIO *io, FIBITMAP *dib, fi_handle handle, int page, int flags, void
 		//LZW Minimum Code Size
 		b = (BYTE)(bpp == 1 ? 2 : bpp);
 		io->write_proc(&b, 1, 1, handle);
-		StringTable *stringtable = new StringTable;
+		StringTable *stringtable = new(std::nothrow) StringTable;
 		stringtable->Initialize(b);
 		stringtable->CompressStart(bpp, width);
 
@@ -1337,7 +1357,7 @@ Save(FreeImageIO *io, FIBITMAP *dib, fi_handle handle, int page, int flags, void
 			b = (BYTE)(w - (sizeof(buf) - size));
 			if( b > 0 ) {
 				io->write_proc(&b, 1, 1, handle);
-				io->write_proc(last, b, 1, handle);
+				io->write_proc(last + w - b, b, 1, handle);
 			}
 		} else {
 			//last sub-block less than full size

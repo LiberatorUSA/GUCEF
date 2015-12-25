@@ -103,8 +103,10 @@ class CResArchive : public VFS::CIArchive
     // SDEF: Star definitions
     // STR: misc string table
     // FDEF: Propulsion definitions
+    // 16) SNDEF: Sensor definitions
     // 1) MATB: material (mineral/resource) gfx?
     // 1) OTHERB: misc bitmaps?
+    // 1) RBMP: ?
     // HDEF: Hull definitions
     // MOUSE: mouse mask?
     // 4) FONT: Font info/bitmap?
@@ -113,12 +115,14 @@ class CResArchive : public VFS::CIArchive
     // 12) PPDEF: Propulsion definitions
     // 9) MDEF: Material (mineral/resource) definitions
     //
-    // Sound format:
+    // 10) Sound format:
     //  tried:
     //   - wave / riff
     //   - midi
     //   - mus
     //   -
+    //  4 byte data length field at offset 37
+    //  Some segments look like SMF
 
     // seems to be 8 bytes per entry
     struct SIdxRecord

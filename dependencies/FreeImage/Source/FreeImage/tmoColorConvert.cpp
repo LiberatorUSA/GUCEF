@@ -3,6 +3,7 @@
 //
 // Design and implementation by
 // - Hervé Drolon (drolon@infonie.fr)
+// - Mihail Naydenov (mnaydenov@users.sourceforge.net)
 //
 // This file is part of FreeImage 3
 //
@@ -134,9 +135,9 @@ ConvertInPlaceRGBFToYxy(FIBITMAP *dib) {
 	if(FreeImage_GetImageType(dib) != FIT_RGBF)
 		return FALSE;
 
-	unsigned width  = FreeImage_GetWidth(dib);
-	unsigned height = FreeImage_GetHeight(dib);
-	unsigned pitch  = FreeImage_GetPitch(dib);
+	const unsigned width  = FreeImage_GetWidth(dib);
+	const unsigned height = FreeImage_GetHeight(dib);
+	const unsigned pitch  = FreeImage_GetPitch(dib);
 	
 	BYTE *bits = (BYTE*)FreeImage_GetBits(dib);
 	for(unsigned y = 0; y < height; y++) {
@@ -148,8 +149,8 @@ ConvertInPlaceRGBFToYxy(FIBITMAP *dib) {
 				result[i] += RGB2XYZ[i][1] * pixel[x].green;
 				result[i] += RGB2XYZ[i][2] * pixel[x].blue;
 			}
-			float W = result[0] + result[1] + result[2];
-			float Y = result[1];
+			const float W = result[0] + result[1] + result[2];
+			const float Y = result[1];
 			if(W > 0) { 
 				pixel[x].red   = Y;			    // Y 
 				pixel[x].green = result[0] / W;	// x 
@@ -179,9 +180,9 @@ ConvertInPlaceYxyToRGBF(FIBITMAP *dib) {
 	if(FreeImage_GetImageType(dib) != FIT_RGBF)
 		return FALSE;
 
-	unsigned width  = FreeImage_GetWidth(dib);
-	unsigned height = FreeImage_GetHeight(dib);
-	unsigned pitch  = FreeImage_GetPitch(dib);
+	const unsigned width  = FreeImage_GetWidth(dib);
+	const unsigned height = FreeImage_GetHeight(dib);
+	const unsigned pitch  = FreeImage_GetPitch(dib);
 
 	BYTE *bits = (BYTE*)FreeImage_GetBits(dib);
 	for(unsigned y = 0; y < height; y++) {
@@ -230,9 +231,9 @@ LuminanceFromYxy(FIBITMAP *Yxy, float *maxLum, float *minLum, float *worldLum) {
 	if(FreeImage_GetImageType(Yxy) != FIT_RGBF)
 		return FALSE;
 
-	unsigned width  = FreeImage_GetWidth(Yxy);
-	unsigned height = FreeImage_GetHeight(Yxy);
-	unsigned pitch  = FreeImage_GetPitch(Yxy);
+	const unsigned width  = FreeImage_GetWidth(Yxy);
+	const unsigned height = FreeImage_GetHeight(Yxy);
+	const unsigned pitch  = FreeImage_GetPitch(Yxy);
 
 	float max_lum = 0, min_lum = 0;
 	double sum = 0;
@@ -241,10 +242,10 @@ LuminanceFromYxy(FIBITMAP *Yxy, float *maxLum, float *minLum, float *worldLum) {
 	for(unsigned y = 0; y < height; y++) {
 		const FIRGBF *pixel = (FIRGBF*)bits;
 		for(unsigned x = 0; x < width; x++) {
-			const float Y = pixel[x].red;
+			const float Y = MAX(0.0F, pixel[x].red);// avoid negative values
 			max_lum = (max_lum < Y) ? Y : max_lum;	// max Luminance in the scene
-			min_lum = (min_lum < Y) ? min_lum : Y;	// max Luminance in the scene
-			sum += log(2.3e-5 + Y);					// contrast constant in Tumblin paper
+			min_lum = (min_lum < Y) ? min_lum : Y;	// min Luminance in the scene
+			sum += log(2.3e-5F + Y);				// contrast constant in Tumblin paper
 		}
 		// next line
 		bits += pitch;
@@ -270,14 +271,14 @@ ClampConvertRGBFTo24(FIBITMAP *src) {
 	if(FreeImage_GetImageType(src) != FIT_RGBF)
 		return FALSE;
 
-	unsigned width  = FreeImage_GetWidth(src);
-	unsigned height = FreeImage_GetHeight(src);
+	const unsigned width  = FreeImage_GetWidth(src);
+	const unsigned height = FreeImage_GetHeight(src);
 
 	FIBITMAP *dst = FreeImage_Allocate(width, height, 24, FI_RGBA_RED_MASK, FI_RGBA_GREEN_MASK, FI_RGBA_BLUE_MASK);
 	if(!dst) return NULL;
 
-	unsigned src_pitch  = FreeImage_GetPitch(src);
-	unsigned dst_pitch  = FreeImage_GetPitch(dst);
+	const unsigned src_pitch  = FreeImage_GetPitch(src);
+	const unsigned dst_pitch  = FreeImage_GetPitch(dst);
 
 	BYTE *src_bits = (BYTE*)FreeImage_GetBits(src);
 	BYTE *dst_bits = (BYTE*)FreeImage_GetBits(dst);
@@ -290,9 +291,9 @@ ClampConvertRGBFTo24(FIBITMAP *src) {
 			const float green = (src_pixel[x].green > 1) ? 1 : src_pixel[x].green;
 			const float blue  = (src_pixel[x].blue > 1)  ? 1 : src_pixel[x].blue;
 			
-			dst_pixel[FI_RGBA_RED]   = (BYTE)(255 * red   + 0.5);
-			dst_pixel[FI_RGBA_GREEN] = (BYTE)(255 * green + 0.5);
-			dst_pixel[FI_RGBA_BLUE]  = (BYTE)(255 * blue  + 0.5);
+			dst_pixel[FI_RGBA_RED]   = (BYTE)(255.0F * red   + 0.5F);
+			dst_pixel[FI_RGBA_GREEN] = (BYTE)(255.0F * green + 0.5F);
+			dst_pixel[FI_RGBA_BLUE]  = (BYTE)(255.0F * blue  + 0.5F);
 			dst_pixel += 3;
 		}
 		src_bits += src_pitch;
@@ -316,14 +317,14 @@ ConvertRGBFToY(FIBITMAP *src) {
 	if(FreeImage_GetImageType(src) != FIT_RGBF)
 		return FALSE;
 
-	unsigned width  = FreeImage_GetWidth(src);
-	unsigned height = FreeImage_GetHeight(src);
+	const unsigned width  = FreeImage_GetWidth(src);
+	const unsigned height = FreeImage_GetHeight(src);
 
 	FIBITMAP *dst = FreeImage_AllocateT(FIT_FLOAT, width, height);
 	if(!dst) return NULL;
 
-	unsigned src_pitch  = FreeImage_GetPitch(src);
-	unsigned dst_pitch  = FreeImage_GetPitch(dst);
+	const unsigned src_pitch  = FreeImage_GetPitch(src);
+	const unsigned dst_pitch  = FreeImage_GetPitch(dst);
 
 	
 	BYTE *src_bits = (BYTE*)FreeImage_GetBits(src);
@@ -333,7 +334,7 @@ ConvertRGBFToY(FIBITMAP *src) {
 		const FIRGBF *src_pixel = (FIRGBF*)src_bits;
 		float  *dst_pixel = (float*)dst_bits;
 		for(unsigned x = 0; x < width; x++) {
-			float L = 0.2126F * src_pixel[x].red + 0.7152F * src_pixel[x].green + 0.0722F * src_pixel[x].blue;
+			const float L = LUMA_REC709(src_pixel[x].red, src_pixel[x].green, src_pixel[x].blue);
 			dst_pixel[x] = (L > 0) ? L : 0;
 		}
 		// next line
@@ -345,16 +346,17 @@ ConvertRGBFToY(FIBITMAP *src) {
 }
 
 /**
-Get the maximum, minimum and average luminance
+Get the maximum, minimum, average luminance and log average luminance from a Y image
 @param dib Source Y image to analyze
 @param maxLum Maximum luminance
 @param minLum Minimum luminance
-@param worldLum Average luminance (world adaptation luminance)
+@param Lav Average luminance
+@param Llav Log average luminance (also known as 'world adaptation luminance')
 @return Returns TRUE if successful, returns FALSE otherwise
-@see ConvertRGBFToY
+@see ConvertRGBFToY, FreeImage_TmoReinhard05Ex
 */
 BOOL 
-LuminanceFromY(FIBITMAP *dib, float *maxLum, float *minLum, float *worldLum) {
+LuminanceFromY(FIBITMAP *dib, float *maxLum, float *minLum, float *Lav, float *Llav) {
 	if(FreeImage_GetImageType(dib) != FIT_FLOAT)
 		return FALSE;
 
@@ -363,7 +365,7 @@ LuminanceFromY(FIBITMAP *dib, float *maxLum, float *minLum, float *worldLum) {
 	unsigned pitch  = FreeImage_GetPitch(dib);
 
 	float max_lum = -1e20F, min_lum = 1e20F;
-	double sum = 0;
+	double sumLum = 0, sumLogLum = 0;
 
 	BYTE *bits = (BYTE*)FreeImage_GetBits(dib);
 	for(unsigned y = 0; y < height; y++) {
@@ -372,19 +374,21 @@ LuminanceFromY(FIBITMAP *dib, float *maxLum, float *minLum, float *worldLum) {
 			const float Y = pixel[x];
 			max_lum = (max_lum < Y) ? Y : max_lum;				// max Luminance in the scene
 			min_lum = ((Y > 0) && (min_lum < Y)) ? min_lum : Y;	// min Luminance in the scene
-			sum += log(2.3e-5 + Y);								// contrast constant in Tumblin paper
+			sumLum += Y;										// average luminance
+			sumLogLum += log(2.3e-5F + Y);						// contrast constant in Tumblin paper
 		}
 		// next line
 		bits += pitch;
 	}
+
 	// maximum luminance
 	*maxLum = max_lum;
 	// minimum luminance
 	*minLum = min_lum;
-	// average log luminance
-	double avgLogLum = (sum / (width * height));
-	// world adaptation luminance
-	*worldLum = (float)exp(avgLogLum);
+	// average luminance
+	*Lav = (float)(sumLum / (width * height));
+	// average log luminance, a.k.a. world adaptation luminance
+	*Llav = (float)exp(sumLogLum / (width * height));
 
 	return TRUE;
 }

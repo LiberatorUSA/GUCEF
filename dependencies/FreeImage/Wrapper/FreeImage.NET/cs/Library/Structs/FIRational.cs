@@ -28,14 +28,15 @@
 
 // ==========================================================
 // CVS
-// $Revision: 1.3 $
-// $Date: 2008/06/16 15:17:37 $
-// $Id: FIRational.cs,v 1.3 2008/06/16 15:17:37 cklein05 Exp $
+// $Revision: 1.5 $
+// $Date: 2009/02/27 16:36:23 $
+// $Id: FIRational.cs,v 1.5 2009/02/27 16:36:23 cklein05 Exp $
 // ==========================================================
 
 using System;
 using System.Collections.Generic;
 using System.Runtime.InteropServices;
+using System.Diagnostics;
 
 namespace FreeImageAPI
 {
@@ -56,7 +57,10 @@ namespace FreeImageAPI
 	[Serializable, StructLayout(LayoutKind.Sequential), ComVisible(true)]
 	public struct FIRational : IConvertible, IComparable, IFormattable, IComparable<FIRational>, IEquatable<FIRational>
 	{
+		[DebuggerBrowsable(DebuggerBrowsableState.Never)]
 		private int numerator;
+
+		[DebuggerBrowsable(DebuggerBrowsableState.Never)]
 		private int denominator;
 
 		/// <summary>
@@ -137,7 +141,7 @@ namespace FreeImageAPI
 					Normalize();
 					if (Math.Abs(((decimal)numerator / (decimal)denominator) - value) > 0.0001m)
 					{
-						throw new OverflowException();
+						throw new OverflowException("Unable to convert value into a fraction");
 					}
 				}
 				numerator *= sign;
@@ -147,17 +151,6 @@ namespace FreeImageAPI
 			{
 				throw new OverflowException("Unable to calculate fraction.", ex);
 			}
-		}
-
-		/// <summary>
-		/// Initializes a new instance based on the specified parameters.
-		/// </summary>
-		/// <param name="r">The structure to clone from.</param>
-		public FIRational(FIRational r)
-		{
-			numerator = r.numerator;
-			denominator = r.denominator;
-			Normalize();
 		}
 
 		/// <summary>

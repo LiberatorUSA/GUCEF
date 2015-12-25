@@ -28,9 +28,9 @@
 
 // ==========================================================
 // CVS
-// $Revision: 1.4 $
-// $Date: 2008/06/16 15:17:37 $
-// $Id: FIICCPROFILE.cs,v 1.4 2008/06/16 15:17:37 cklein05 Exp $
+// $Revision: 1.5 $
+// $Date: 2008/11/05 13:19:06 $
+// $Id: FIICCPROFILE.cs,v 1.5 2008/11/05 13:19:06 cklein05 Exp $
 // ==========================================================
 
 using System;
@@ -113,11 +113,8 @@ namespace FreeImageAPI
 		{
 			get
 			{
-				byte[] result = new byte[size];
-				fixed (byte* dst = result)
-				{
-					FreeImage.CopyMemory(dst, data.ToPointer(), size);
-				}
+				byte[] result;
+				FreeImage.CopyMemory(result = new byte[size], data.ToPointer(), size);
 				return result;
 			}
 		}

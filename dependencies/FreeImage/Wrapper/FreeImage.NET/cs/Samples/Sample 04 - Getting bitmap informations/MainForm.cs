@@ -19,12 +19,12 @@ namespace Sample04
 		public MainForm()
 		{
 			InitializeComponent();
-			FreeImage.Message += new OutputMessageFunction(FreeImage_Message);
+			FreeImageEngine.Message += new OutputMessageFunction(FreeImage_Message);
 		}
 
 		~MainForm()
 		{
-			FreeImage.Message -= new OutputMessageFunction(FreeImage_Message);
+			FreeImageEngine.Message -= new OutputMessageFunction(FreeImage_Message);
 		}
 
 		void FreeImage_Message(FREE_IMAGE_FORMAT fif, string message)
@@ -74,7 +74,7 @@ namespace Sample04
 					lWidth.Text = String.Format("Width: {0}", FreeImage.GetWidth(dib));
 					
 					// Read height
-					lHeight.Text = String.Format("Width: {0}", FreeImage.GetWidth(dib));
+					lHeight.Text = String.Format("Height: {0}", FreeImage.GetHeight(dib));
 					
 					// Read color depth
 					lBPP.Text = String.Format("Color Depth: {0}", FreeImage.GetBPP(dib));

@@ -227,6 +227,11 @@ GUCEF_OSMAIN_BEGIN
 
             VFS::CVFS& vfs = VFS::CVfsGlobal::Instance()->GetVfs();
 
+            if ( archiveDir.IsNULLOrEmpty() )
+            {
+                archiveDir = CORE::RelativePath( "$CURWORKDIR$" );
+            }
+
             // Add the archive dir as a VFS root named root
             vfs.AddRoot( archiveDir, "root", false, false );
 

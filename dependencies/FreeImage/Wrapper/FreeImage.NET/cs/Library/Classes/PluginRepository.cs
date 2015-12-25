@@ -1,6 +1,7 @@
 using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
+using System.Diagnostics;
 
 namespace FreeImageAPI.Plugins
 {
@@ -9,7 +10,10 @@ namespace FreeImageAPI.Plugins
 	/// </summary>
 	public static class PluginRepository
 	{
+		[DebuggerBrowsable(DebuggerBrowsableState.Never)]
 		private static readonly List<FreeImagePlugin> plugins = null;
+		
+		[DebuggerBrowsable(DebuggerBrowsableState.Never)]
 		private static readonly List<FreeImagePlugin> localPlugins = null;
 
 		static PluginRepository()
@@ -426,5 +430,20 @@ namespace FreeImageAPI.Plugins
 		/// JPEG-2000 format (*.JP2)
 		/// </summary>
 		public static FreeImagePlugin JP2 { get { return plugins[31]; } }
+
+		/// <summary>
+		/// Portable FloatMap (*.PFM)
+		/// </summary>
+		public static FreeImagePlugin PFM { get { return plugins[32]; } }
+
+		/// <summary>
+		/// Macintosh PICT (*.PICT)
+		/// </summary>
+		public static FreeImagePlugin PICT { get { return plugins[33]; } }
+
+		/// <summary>
+		/// RAW camera image (*.*)
+		/// </summary>
+		public static FreeImagePlugin RAW { get { return plugins[34]; } }
 	}
 }

@@ -28,9 +28,9 @@
 
 // ==========================================================
 // CVS
-// $Revision: 1.3 $
-// $Date: 2008/06/16 15:17:37 $
-// $Id: FICOMPLEX.cs,v 1.3 2008/06/16 15:17:37 cklein05 Exp $
+// $Revision: 1.4 $
+// $Date: 2009/02/20 07:41:08 $
+// $Id: FICOMPLEX.cs,v 1.4 2009/02/20 07:41:08 cklein05 Exp $
 // ==========================================================
 
 using System;
@@ -95,7 +95,7 @@ namespace FreeImageAPI
 			}
 			if (!(obj is FICOMPLEX))
 			{
-				throw new ArgumentException();
+				throw new ArgumentException("obj");
 			}
 			return CompareTo((FICOMPLEX)obj);
 		}

@@ -28,9 +28,9 @@
 
 // ==========================================================
 // CVS
-// $Revision: 1.2 $
-// $Date: 2008/06/17 13:46:42 $
-// $Id: FI16RGB555.cs,v 1.2 2008/06/17 13:46:42 cklein05 Exp $
+// $Revision: 1.3 $
+// $Date: 2009/02/20 07:41:08 $
+// $Id: FI16RGB555.cs,v 1.3 2009/02/20 07:41:08 cklein05 Exp $
 // ==========================================================
 
 using System;
@@ -216,7 +216,7 @@ namespace FreeImageAPI
 			}
 			if (!(obj is FI16RGB555))
 			{
-				throw new ArgumentException();
+				throw new ArgumentException("obj");
 			}
 			return CompareTo((FI16RGB555)obj);
 		}

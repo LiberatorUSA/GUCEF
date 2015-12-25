@@ -25,10 +25,6 @@
 #include "Utilities.h"
 
 // ----------------------------------------------------------
-
-#define RGB565(b, g, r) ((((b) >> 3) << FI16_565_BLUE_SHIFT) | (((g) >> 2) << FI16_565_GREEN_SHIFT) | (((r) >> 3) << FI16_565_RED_SHIFT))
-
-// ----------------------------------------------------------
 //  internal conversions X to 16 bits (565)
 // ----------------------------------------------------------
 
@@ -115,7 +111,7 @@ FreeImage_ConvertLine32To16_565(BYTE *target, BYTE *source, int width_in_pixels)
 
 FIBITMAP * DLL_CALLCONV
 FreeImage_ConvertTo16Bits565(FIBITMAP *dib) {
-	if(!dib || (FreeImage_GetImageType(dib) != FIT_BITMAP)) return NULL;
+	if(!FreeImage_HasPixels(dib) || (FreeImage_GetImageType(dib) != FIT_BITMAP)) return NULL;
 
 	const int width = FreeImage_GetWidth(dib);
 	const int height = FreeImage_GetHeight(dib);

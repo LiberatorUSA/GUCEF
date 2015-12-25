@@ -2,6 +2,7 @@
  * jdapimin.c
  *
  * Copyright (C) 1994-1998, Thomas G. Lane.
+ * Modified 2009-2013 by Guido Vollbeding.
  * This file is part of the Independent JPEG Group's software.
  * For conditions of distribution and use, see the accompanying README file.
  *
@@ -20,16 +21,6 @@
 #include "jinclude.h"
 #include "jpeglib.h"
 
-#ifdef HAVE_MMX_INTEL_MNEMONICS
-int MMXAvailable;
-static int mmxsupport();
-#endif
-
-#ifdef HAVE_SSE2_INTEL_MNEMONICS
-int SSE2Available = 0;
-static int sse2support();
-#endif
-
 
 /*
  * Initialization of a JPEG decompression object.
@@ -40,28 +31,6 @@ GLOBAL(void)
 jpeg_CreateDecompress (j_decompress_ptr cinfo, int version, size_t structsize)
 {
   int i;
-
-#ifdef HAVE_MMX_INTEL_MNEMONICS
-  static int cpuidDetected = 0;
-
-  if(!cpuidDetected)
-  {
-	MMXAvailable = mmxsupport();
-
-#ifdef HAVE_SSE2_INTEL_MNEMONICS
-	/* only do the sse2 support check if mmx is supported (so
-	   we know the processor supports cpuid) */
-	if (MMXAvailable)
-	    SSE2Available = sse2support();
-#endif
-
-	cpuidDetected = 1;
-  }
-#endif
-
-  /* For debugging purposes, zero the whole master structure.
-   * But error manager pointer is already there, so save and restore it.
-   */
 
   /* Guard against version mismatches between library and caller. */
   cinfo->mem = NULL;		/* so jpeg_destroy knows mem mgr not called */
@@ -137,6 +106,7 @@ jpeg_abort_decompress (j_decompress_ptr cinfo)
   jpeg_abort((j_common_ptr) cinfo); /* use common routine */
 }
 
+
 /*
  * Set default decompression parameters.
  */
@@ -144,8 +114,9 @@ jpeg_abort_decompress (j_decompress_ptr cinfo)
 LOCAL(void)
 default_decompress_parms (j_decompress_ptr cinfo)
 {
+  int cid0, cid1, cid2;
+
   /* Guess the input colorspace, and set output colorspace accordingly. */
-  /* (Wish JPEG committee had provided a real way to specify this...) */
   /* Note application may override our guesses. */
   switch (cinfo->num_components) {
   case 1:
@@ -154,9 +125,22 @@ default_decompress_parms (j_decompress_ptr cinfo)
     break;
     
   case 3:
-    if (cinfo->saw_JFIF_marker) {
-      cinfo->jpeg_color_space = JCS_YCbCr; /* JFIF implies YCbCr */
-    } else if (cinfo->saw_Adobe_marker) {
+    cid0 = cinfo->comp_info[0].component_id;
+    cid1 = cinfo->comp_info[1].component_id;
+    cid2 = cinfo->comp_info[2].component_id;
+
+    /* First try to guess from the component IDs */
+    if      (cid0 == 0x01 && cid1 == 0x02 && cid2 == 0x03)
+      cinfo->jpeg_color_space = JCS_YCbCr;
+    else if (cid0 == 0x01 && cid1 == 0x22 && cid2 == 0x23)
+      cinfo->jpeg_color_space = JCS_BG_YCC;
+    else if (cid0 == 0x52 && cid1 == 0x47 && cid2 == 0x42)
+      cinfo->jpeg_color_space = JCS_RGB;	/* ASCII 'R', 'G', 'B' */
+    else if (cid0 == 0x72 && cid1 == 0x67 && cid2 == 0x62)
+      cinfo->jpeg_color_space = JCS_BG_RGB;	/* ASCII 'r', 'g', 'b' */
+    else if (cinfo->saw_JFIF_marker)
+      cinfo->jpeg_color_space = JCS_YCbCr;	/* assume it's YCbCr */
+    else if (cinfo->saw_Adobe_marker) {
       switch (cinfo->Adobe_transform) {
       case 0:
 	cinfo->jpeg_color_space = JCS_RGB;
@@ -166,23 +150,12 @@ default_decompress_parms (j_decompress_ptr cinfo)
 	break;
       default:
 	WARNMS1(cinfo, JWRN_ADOBE_XFORM, cinfo->Adobe_transform);
-	cinfo->jpeg_color_space = JCS_YCbCr; /* assume it's YCbCr */
+	cinfo->jpeg_color_space = JCS_YCbCr;	/* assume it's YCbCr */
 	break;
       }
     } else {
-      /* Saw no special markers, try to guess from the component IDs */
-      int cid0 = cinfo->comp_info[0].component_id;
-      int cid1 = cinfo->comp_info[1].component_id;
-      int cid2 = cinfo->comp_info[2].component_id;
-
-      if (cid0 == 1 && cid1 == 2 && cid2 == 3)
-	cinfo->jpeg_color_space = JCS_YCbCr; /* assume JFIF w/out marker */
-      else if (cid0 == 82 && cid1 == 71 && cid2 == 66)
-	cinfo->jpeg_color_space = JCS_RGB; /* ASCII 'R', 'G', 'B' */
-      else {
-	TRACEMS3(cinfo, 1, JTRC_UNKNOWN_IDS, cid0, cid1, cid2);
-	cinfo->jpeg_color_space = JCS_YCbCr; /* assume it's YCbCr */
-      }
+      TRACEMS3(cinfo, 1, JTRC_UNKNOWN_IDS, cid0, cid1, cid2);
+      cinfo->jpeg_color_space = JCS_YCbCr;	/* assume it's YCbCr */
     }
     /* Always guess RGB is proper output colorspace. */
     cinfo->out_color_space = JCS_RGB;
@@ -199,7 +172,7 @@ default_decompress_parms (j_decompress_ptr cinfo)
 	break;
       default:
 	WARNMS1(cinfo, JWRN_ADOBE_XFORM, cinfo->Adobe_transform);
-	cinfo->jpeg_color_space = JCS_YCCK; /* assume it's YCCK */
+	cinfo->jpeg_color_space = JCS_YCCK;	/* assume it's YCCK */
 	break;
       }
     } else {
@@ -216,8 +189,8 @@ default_decompress_parms (j_decompress_ptr cinfo)
   }
 
   /* Set defaults for other decompression parameters. */
-  cinfo->scale_num = 1;		/* 1:1 scaling */
-  cinfo->scale_denom = 1;
+  cinfo->scale_num = cinfo->block_size;		/* 1:1 scaling */
+  cinfo->scale_denom = cinfo->block_size;
   cinfo->output_gamma = 1.0;
   cinfo->buffered_image = FALSE;
   cinfo->raw_data_out = FALSE;
@@ -424,76 +397,3 @@ jpeg_finish_decompress (j_decompress_ptr cinfo)
   jpeg_abort((j_common_ptr) cinfo);
   return TRUE;
 }
-
-
-#ifdef HAVE_MMX_INTEL_MNEMONICS
-
-
-static int mmxsupport()
-{
-	int mmx_supported = 0;
-
-	_asm {
-		pushfd					//Save Eflag to stack
-		pop eax					//Get Eflag from stack into eax
-		mov ecx, eax			//Make another copy of Eflag in ecx
-		xor eax, 0x200000		//Toggle ID bit in Eflag [i.e. bit(21)] 
-		push eax				//Save modified Eflag back to stack
-
-		popfd					//Restored modified value back to Eflag reg 
-		pushfd					//Save Eflag to stack
-		pop eax					//Get Eflag from stack
-		xor eax, ecx			//Compare the new Eflag with the original Eflag
-		jz NOT_SUPPORTED		//If the same, CPUID instruction is not supported,
-								//skip following instructions and jump to
-								//NOT_SUPPORTED label
-
-		xor eax, eax			//Set eax to zero
-					
-		cpuid
-		
-		cmp eax, 1				//make sure eax return non-zero value
-		jl NOT_SUPPORTED		//If eax is zero, mmx not supported
-
-		xor eax, eax			//set eax to zero
-		inc eax					//Now increment eax to 1.  This instruction is 
-								//faster than the instruction "mov eax, 1"
-		
-		cpuid
-
-		and edx, 0x00800000		//mask out all bits but mmx bit(24)
-		cmp edx, 0				// 0 = mmx not supported
-		jz	NOT_SUPPORTED		// non-zero = Yes, mmx IS supported
-
-		mov	mmx_supported, 1	//set return value to 1
-
-NOT_SUPPORTED:
-		mov	eax, mmx_supported	//move return value to eax	
-
-	}
-
-	return mmx_supported;		
-}
-#endif
-
-#ifdef HAVE_SSE2_INTEL_MNEMONICS
-
-static int sse2support()
-{
-	int sse2available = 0;
-	int my_edx;
-	_asm
-	{
-		mov eax, 01                       
-		cpuid                                    
-		mov my_edx, edx    
-	}
-	if (my_edx & (0x1 << 26)) 
-		sse2available = 1; 
-	else sse2available = 2;
-
-	return sse2available;
-}
-
-#endif
-

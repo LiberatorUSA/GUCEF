@@ -22,11 +22,13 @@
 
 #include "fipTest.h"
 
+using namespace std;
+
 // --------------------------------------------------------------------------
 // Multipage test scripts
 
 BOOL testCloneMultiPage(const char *input, const char *output, int output_flag) {
-
+	BOOL bSuccess = FALSE;
 	BOOL bMemoryCache = TRUE;
 
 	fipMultiPage src(bMemoryCache);
@@ -37,11 +39,13 @@ BOOL testCloneMultiPage(const char *input, const char *output, int output_flag) 
 	fipImage image;
 
 	// Open src file (read-only, use memory cache)
-	src.open(input, FALSE, TRUE);
+	bSuccess = src.open(input, FALSE, TRUE);
+	assert(bSuccess);
 
 	if(src.isValid()) {
 		// Open dst file (creation, use memory cache)
-		dst.open(output, TRUE, FALSE);
+		bSuccess = dst.open(output, TRUE, FALSE);
+		assert(bSuccess);
 
 		// Get src page count
 		int count = src.getPageCount();
@@ -59,9 +63,12 @@ BOOL testCloneMultiPage(const char *input, const char *output, int output_flag) 
 		}
 
 		// Close src
-		src.close(0);
+		bSuccess = src.close(0);
+		assert(bSuccess);
+
 		// Save and close dst
-		dst.close(output_flag);
+		bSuccess = dst.close(output_flag);
+		assert(bSuccess);
 
 		return TRUE;
 	}
@@ -69,7 +76,11 @@ BOOL testCloneMultiPage(const char *input, const char *output, int output_flag) 
 	return FALSE;
 }
 
+// ----------------------------------------------------------
+
 void testMultiPage(const char *lpszMultiPage) {
+	cout << "testMultiPage ...\n";
+
 	testCloneMultiPage(lpszMultiPage, "clone.tif", 0);
 }
 

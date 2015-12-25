@@ -45,25 +45,21 @@ BOOL testClone(const char *lpszPathName) {
 	catch(int) {
 		if(dib1) FreeImage_Unload(dib1); 
 		if(dib2) FreeImage_Unload(dib2); 
-		return FALSE;
 	}
 	
 	return FALSE; 
 }
 
 void testAllocateCloneUnload(const char *lpszPathName) {
-	printf("testAllocateCloneUnload ...");
+	printf("testAllocateCloneUnload ...\n");
 
 	BOOL bResult = testClone(lpszPathName);
 	assert(bResult);
-
-	printf("\tOK\n");
 }
 
 BOOL testAllocateCloneUnloadType(FREE_IMAGE_TYPE image_type, unsigned width, unsigned height) {
 	FIBITMAP *image = NULL;
 	FIBITMAP *clone = NULL;
-	FIBITMAP *standard = NULL;
 
 	unsigned x, y;
 
@@ -105,7 +101,7 @@ BOOL testAllocateCloneUnloadType(FREE_IMAGE_TYPE image_type, unsigned width, uns
 				break;
 			case FIT_UINT32:
 				for(y = 0; y < FreeImage_GetHeight(image); y++) {
-					unsigned long *bits = (unsigned long *)FreeImage_GetScanLine(image, y);
+					DWORD *bits = (DWORD *)FreeImage_GetScanLine(image, y);
 					for(x = 0; x < FreeImage_GetWidth(image); x++) {
 						bits[x] = 128;
 					}
@@ -113,7 +109,7 @@ BOOL testAllocateCloneUnloadType(FREE_IMAGE_TYPE image_type, unsigned width, uns
 				break;
 			case FIT_INT32:
 				for(y = 0; y < FreeImage_GetHeight(image); y++) {
-					long *bits = (long *)FreeImage_GetScanLine(image, y);
+					LONG *bits = (LONG *)FreeImage_GetScanLine(image, y);
 					for(x = 0; x < FreeImage_GetWidth(image); x++) {
 						bits[x] = 128;
 					}
@@ -227,7 +223,7 @@ BOOL testAllocateCloneUnloadType(FREE_IMAGE_TYPE image_type, unsigned width, uns
 				break;
 			case FIT_UINT32:
 				for(y = 0; y < FreeImage_GetHeight(clone); y++) {
-					unsigned long *bits = (unsigned long *)FreeImage_GetScanLine(clone, y);
+					DWORD *bits = (DWORD *)FreeImage_GetScanLine(clone, y);
 					for(x = 0; x < FreeImage_GetWidth(clone); x++) {
 						if(bits[x] != 128)
 							throw(1);
@@ -236,7 +232,7 @@ BOOL testAllocateCloneUnloadType(FREE_IMAGE_TYPE image_type, unsigned width, uns
 				break;
 			case FIT_INT32:
 				for(y = 0; y < FreeImage_GetHeight(clone); y++) {
-					long *bits = (long *)FreeImage_GetScanLine(clone, y);
+					LONG *bits = (LONG *)FreeImage_GetScanLine(clone, y);
 					for(x = 0; x < FreeImage_GetWidth(clone); x++) {
 						if(bits[x] != 128)
 							throw(1);
@@ -323,7 +319,7 @@ BOOL testAllocateCloneUnloadType(FREE_IMAGE_TYPE image_type, unsigned width, uns
 	return TRUE;
 }
 
-BOOL testLoadSaveConvertImageType(FIBITMAP *src, FREE_IMAGE_TYPE image_type, unsigned width, unsigned height) {
+BOOL testLoadSaveConvertImageType(FIBITMAP *src, FREE_IMAGE_TYPE image_type) {
 	FIBITMAP *dst = NULL;
 	FIBITMAP *chk = NULL;
 	BOOL bResult = TRUE;
@@ -367,7 +363,7 @@ BOOL testLoadSaveConvertImageType(FIBITMAP *src, FREE_IMAGE_TYPE image_type, uns
 	return TRUE;
 }
 
-BOOL testLoadSaveConvertComplexType(FIBITMAP *src, unsigned width, unsigned height, FREE_IMAGE_COLOR_CHANNEL channel) {
+BOOL testLoadSaveConvertComplexType(FIBITMAP *src, FREE_IMAGE_COLOR_CHANNEL channel) {
 	FIBITMAP *dst = NULL;
 	FIBITMAP *chk_double = NULL;
 	FIBITMAP *chk = NULL;
@@ -426,7 +422,7 @@ BOOL testLoadSaveConvertComplexType(FIBITMAP *src, unsigned width, unsigned heig
 void testImageType(unsigned width, unsigned height) {
 	BOOL bResult = FALSE;
 
-	printf("testImageType ...");
+	printf("testImageType ...\n");
 
 	bResult = testAllocateCloneUnloadType(FIT_BITMAP, width, height);
 	assert(bResult);
@@ -452,16 +448,13 @@ void testImageType(unsigned width, unsigned height) {
 	assert(bResult);
 	bResult = testAllocateCloneUnloadType(FIT_RGBAF, width, height);
 	assert(bResult);
-
-
-	printf("\tOK\n");
 }
 
 
 void testImageTypeTIFF(unsigned width, unsigned height) {
 	BOOL bResult = FALSE;
 
-	printf("testImageTypeTIFF ...");
+	printf("testImageTypeTIFF ...\n");
 
 	// create a test 8-bit image
 	FIBITMAP *src = createZonePlateImage(width, height, 128);
@@ -474,33 +467,32 @@ void testImageTypeTIFF(unsigned width, unsigned height) {
 	// test load /save / convert
 	// -------------------------	
 
-	bResult = testLoadSaveConvertImageType(src, FIT_BITMAP, width, height);
+	bResult = testLoadSaveConvertImageType(src, FIT_BITMAP);
 	assert(bResult);
-	bResult = testLoadSaveConvertImageType(src, FIT_UINT16, width, height);
+	bResult = testLoadSaveConvertImageType(src, FIT_UINT16);
 	assert(bResult);
-	bResult = testLoadSaveConvertImageType(src, FIT_INT16, width, height);
+	bResult = testLoadSaveConvertImageType(src, FIT_INT16);
 	assert(bResult);
-	bResult = testLoadSaveConvertImageType(src, FIT_UINT32, width, height);
+	bResult = testLoadSaveConvertImageType(src, FIT_UINT32);
 	assert(bResult);
-	bResult = testLoadSaveConvertImageType(src, FIT_INT32, width, height);
+	bResult = testLoadSaveConvertImageType(src, FIT_INT32);
 	assert(bResult);
-	bResult = testLoadSaveConvertImageType(src, FIT_FLOAT, width, height);
+	bResult = testLoadSaveConvertImageType(src, FIT_FLOAT);
 	assert(bResult);
-	bResult = testLoadSaveConvertImageType(src, FIT_DOUBLE, width, height);
+	bResult = testLoadSaveConvertImageType(src, FIT_DOUBLE);
 	assert(bResult);
 
 	// complex type
-	bResult = testLoadSaveConvertComplexType(src, width, height, FICC_REAL);
+	bResult = testLoadSaveConvertComplexType(src, FICC_REAL);
 	assert(bResult);
-	bResult = testLoadSaveConvertComplexType(src, width, height, FICC_IMAG);
+	bResult = testLoadSaveConvertComplexType(src, FICC_IMAG);
 	assert(bResult);
-	bResult = testLoadSaveConvertComplexType(src, width, height, FICC_MAG);
+	bResult = testLoadSaveConvertComplexType(src, FICC_MAG);
 	assert(bResult);
-	bResult = testLoadSaveConvertComplexType(src, width, height, FICC_PHASE);
+	bResult = testLoadSaveConvertComplexType(src, FICC_PHASE);
 	assert(bResult);
 
 	// free test image
 	FreeImage_Unload(src);
 
-	printf("\tOK\n");
 }

@@ -5,6 +5,52 @@ What's New for FreeImage Delphi Wrapper
 ! : changed
 + : added
 
+May 5, 2014
++ [Lorenzo Monti] updated wrapper for FreeImage 3.16.1
++ [Lorenzo Monti] added preprocessor tests for Delphi XE2..XE6
++ [Lorenzo Monti] merged changes for OSX compatibility (submitted by Maurício)
+
+December 8, 2012
++ [Lorenzo Monti] updated wrapper for FreeImage 3.15.4
+
+June 4, 2012
++ [Lorenzo Monti] updated wrapper for FreeImage 3.15.3
+
+March 4, 2011
+* [Jean-Marc Bottura] some bugfixes in FreeBitmap.pas
++ [Jean-Marc Bottura] added support for 64 bit compilers
+
+February 15, 2011
++ [Lorenzo Monti] updated wrapper for FreeImage 3.15.0
+
+January 4, 2011
++ [Lorenzo Monti] updated ImagePreview demo to support latest Graphics32 components (1.9) and Delphi 2010 / XE
+
+November 12, 2010
++ [Lorenzo Monti] updated wrapper for FreeImage 3.14.1
++ [Lorenzo Monti] added Delphi XE support
+
+July 29, 2010
++ [Lorenzo Monti] added Free Pascal / Lazarus 32 bit support
+
+July 14, 2010
++ [Lorenzo Monti] updated wrapper for FreeImage 3.13.1
+* [Lorenzo Monti] fixed declaration of FreeImageIO functions (FI_ReadProc, FI_WriteProc, FI_SeekProc, FI_TellProc)
+! [Lorenzo Monti] renamed structure PluginStruct to Plugin, according to FreeImage.h
+* [Lorenzo Monti] fixed declaration of JPEG_CMYK constant
+* [Lorenzo Monti] fixed declaration of type FreeImage_OutputMessageFunction
+* [Lorenzo Monti] fixed declaration of FreeImage_OutputMessageProc
++ [Lorenzo Monti] added wrapper for FreeImage_OutputMessageProc for older Delphi compilers (<6) not supporting varargs
+* [Lorenzo Monti] fixed declaration of FreeImage_LookupX11Color and FreeImage_LookupSVGColor
+! [Lorenzo Monti] changed declaration of FreeImage_GetPixelIndex, FreeImage_GetPixelColor, FreeImage_SetPixelIndex, FreeImage_SetPixelColor
+! [Lorenzo Monti] changed declaration of FreeImage_GetInfo
+! [Lorenzo Monti] changed declaration of FreeImage_GetICCProfile, FreeImage_CreateICCProfile, FreeImage_DestroyICCProfile
+* [Lorenzo Monti] fixed declaration of FreeImage_SetComplexChannel
++ [Lorenzo Monti] added Delphi 2010 support
++ [Lorenzo Monti] added Version.inc to determine compiler version
+! [Lorenzo Monti] moved all "external" definitions to implementation section
+! [Lorenzo Monti] changed FreeBitmap.pas, FreeUtils.pas and TargaImage.pas to reflect changes in the FreeImage.pas unit
+
 July 17, 2006
 + [Hervé Drolon] added FIF_FAXG3 and FIF_SGI definitions, added FreeImage_MakeThumbnail definition. 
 

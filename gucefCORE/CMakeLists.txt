@@ -27,7 +27,6 @@ set( HEADER_FILES
   include/CDStoreCodecPluginManager.h
   include/CDStoreCodecRegistry.h
   include/CDVString.h
-  include/CDynamicArray.h
   include/CDynamicBuffer.h
   include/CDynamicBufferAccess.h
   include/CEvent.h
@@ -75,7 +74,6 @@ set( HEADER_FILES
   include/CPluginControl.h
   include/CPluginManager.h
   include/CPPWrapFileAccess.h
-  include/CPropertyList.h
   include/CPumpedObserver.h
   include/CROIOAccess.h
   include/CStack.h
@@ -88,8 +86,6 @@ set( HEADER_FILES
   include/CStdLogger.h
   include/CSTDOStreamAdapter.h
   include/CStreamerEvents.h
-  include/CStringList.h
-  include/CStringMap.h
   include/CSysConsole.h
   include/CSysConsoleClient.h
   include/CTAbstractFactory.h
@@ -207,7 +203,6 @@ set( SOURCE_FILES
   src/CDStoreCodecPluginManager.cpp
   src/CDStoreCodecRegistry.cpp
   src/CDVString.cpp
-  src/CDynamicArray.cpp
   src/CDynamicBuffer.cpp
   src/CDynamicBufferAccess.cpp
   src/CEvent.cpp
@@ -251,7 +246,6 @@ set( SOURCE_FILES
   src/CPFileChunkAccess.cpp
   src/CPluginControl.cpp
   src/CPluginManager.cpp
-  src/CPropertyList.cpp
   src/CPumpedObserver.cpp
   src/CROIOAccess.cpp
   src/CStack.cpp
@@ -264,8 +258,6 @@ set( SOURCE_FILES
   src/CStdLogger.cpp
   src/CSTDOStreamAdapter.cpp
   src/CStreamerEvents.cpp
-  src/CStringList.cpp
-  src/CStringMap.cpp
   src/CSysConsole.cpp
   src/CSysConsoleClient.cpp
   src/CTAbstractFactory.cpp

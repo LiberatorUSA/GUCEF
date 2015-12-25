@@ -2,6 +2,7 @@
  * jerror.c
  *
  * Copyright (C) 1991-1998, Thomas G. Lane.
+ * Modified 2012 by Guido Vollbeding.
  * This file is part of the Independent JPEG Group's software.
  * For conditions of distribution and use, see the accompanying README file.
  *
@@ -23,6 +24,10 @@
 #include "jpeglib.h"
 #include "jversion.h"
 #include "jerror.h"
+
+#ifdef USE_WINDOWS_MESSAGEBOX
+#include <windows.h>
+#endif
 
 #ifndef EXIT_FAILURE		/* define exit() codes if not provided */
 #define EXIT_FAILURE  1
@@ -62,7 +67,7 @@ const char * const jpeg_std_message_table[] = {
  * or jpeg_destroy) at some point.
  */
 
-METHODDEF(void)
+METHODDEF(noreturn_t)
 error_exit (j_common_ptr cinfo)
 {
   /* Always display the message */

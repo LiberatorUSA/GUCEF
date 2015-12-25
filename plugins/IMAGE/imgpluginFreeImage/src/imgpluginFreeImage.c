@@ -1,4 +1,4 @@
-/*
+﻿/*
  *  imgpluginFreeImage: GUCEF image codec plugin using FreeImage as the backend
  *  Copyright (C) 2002 - 2012.  Dinand Vanvelzen
  *
@@ -827,7 +827,42 @@ IMGCODECPLUGIN_EncodeImage( void* pluginData      ,
                             TImage* inputImage    ,
                             TIOAccess* output     )
 {
-    /* @TODO */
+    UInt32 i=0, n=0, mipmapCount=0, frameCount=0;
+    FREE_IMAGE_FORMAT fif = FIF_UNKNOWN;
+    FREE_IMAGE_TYPE fit = FIT_UNKNOWN;
+    FIBITMAP* dib = NULL;
+    TFreeImageDataLinks* imageDataLinks = NULL;
+
+    /* input sanity check */
+    if ( ( NULL == inputImage ) || ( NULL == codecType ) || ( NULL == output ) ) return 0;
+
+    if ( inputImage->imageInfo.nrOfFramesInImage > 0 )
+    {
+        TImageFrame* frame = &inputImage->frames[ 0 ];
+        if ( frame->frameInfo.nrOfMipmapLevels > 0 )
+        {
+            TImageMipMapLevel* level = &frame->mipmapLevel[ 0 ];
+
+            int pixelSizeInBytes = GetPixelSize( level->mipLevelInfo.pixelStorageFormat     ,
+                                                 level->mipLevelInfo.pixelComponentDataType );
+            int bpp = pixelSizeInBytes * 8;
+            int pitch = pixelSizeInBytes * level->mipLevelInfo.frameWidth; 
+            FIBITMAP* bitmap = FreeImage_ConvertFromRawBits( (BYTE*) level->pixelData        ,
+                                                             level->mipLevelInfo.frameWidth  , 
+                                                             level->mipLevelInfo.frameHeight ,
+                                                             pitch                           ,
+                                                             bpp                             ,
+                                                             0, 0, 0                         ,
+                                                             1                               );
+            if ( NULL == bitmap )
+            {
+                return 0;
+            }
+
+i f ( FreeImage_Save (FIF PNG, bitmap , ” t e st . png” , 0 ))
+cout << ”Image s u c c e ssf u l l y saved ! ” << endl ;
+        }
+    }
     return 0;
 }
 

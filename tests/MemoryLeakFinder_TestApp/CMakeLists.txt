@@ -15,7 +15,7 @@
 
 if (WIN32)
   set( PLATFORM_SOURCE_FILES 
-    src/gucefGUI_TestApp.cpp
+    src/MemoryLeakFinder_TestApp.cpp
   )
 
   set( PLATFORM_SOURCE_INSTALL "WIN32" )
@@ -23,7 +23,7 @@ if (WIN32)
 
 elseif (WIN64)
   set( PLATFORM_SOURCE_FILES 
-    src/gucefGUI_TestApp.cpp
+    src/MemoryLeakFinder_TestApp.cpp
   )
 
   set( PLATFORM_SOURCE_INSTALL "WIN64" )

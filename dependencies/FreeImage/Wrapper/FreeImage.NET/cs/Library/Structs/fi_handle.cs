@@ -28,9 +28,9 @@
 
 // ==========================================================
 // CVS
-// $Revision: 1.5 $
-// $Date: 2008/06/20 08:29:21 $
-// $Id: fi_handle.cs,v 1.5 2008/06/20 08:29:21 cklein05 Exp $
+// $Revision: 1.7 $
+// $Date: 2009/02/20 07:41:08 $
+// $Id: fi_handle.cs,v 1.7 2009/02/20 07:41:08 cklein05 Exp $
 // ==========================================================
 
 using System;
@@ -50,12 +50,12 @@ namespace FreeImageAPI.IO
 	/// we can simply pass through to the given functions in a 'FreeImageIO'
 	/// structure.
 	/// But when we want to use LoadFromhandle or SaveToHandle we need
-	/// a fi_handle (that we recieve again in our own functions).
+	/// a fi_handle (that we receive again in our own functions).
 	/// This handle is for example a stream (see LoadFromStream / SaveToStream)
 	/// that we want to work with. To know which stream a read/write is meant for
 	/// we could use a hash value that the wrapper itself handles or we can
 	/// go the unmanaged way of using a handle.
-	/// Therefor we use a <see cref="GCHandle"/> to recieve a unique pointer that we can
+	/// Therefor we use a <see cref="GCHandle"/> to receive a unique pointer that we can
 	/// convert back into a .NET object.
 	/// When the <b>fi_handle</b> instance is no longer needed the instance must be disposed
 	/// by the creater manually! It is recommended to use the <c>using</c> statement to
@@ -216,7 +216,7 @@ namespace FreeImageAPI.IO
 			}
 			if (!(obj is fi_handle))
 			{
-				throw new ArgumentException();
+				throw new ArgumentException("obj");
 			}
 			return CompareTo((fi_handle)obj);
 		}

@@ -13,7 +13,7 @@ INSTALLDIR = /usr
 # Converts cr/lf to just lf
 DOS2UNIX = dos2unix
 
-COMPILERFLAGS = -O3
+COMPILERFLAGS = -O3 -DNO_LCMS
 LIBRARIES = -lstdc++
 
 MODULES = $(SRCS:.c=.o)
@@ -33,10 +33,11 @@ default: all
 all: dist
 
 dist: FreeImage
-	cp *.a Dist
-	cp *.dll Dist
-	cp *.dll.a Dist
-	cp $(HEADER) Dist
+	mkdir -p Dist
+	cp *.a Dist/
+	cp *.dll Dist/
+	cp *.dll.a Dist/
+	cp $(HEADER) Dist/
 
 dos2unix:
 	@$(DOS2UNIX) $(SRCS) $(INCLS)

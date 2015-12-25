@@ -28,9 +28,9 @@
 
 // ==========================================================
 // CVS
-// $Revision: 1.1 $
-// $Date: 2007/11/28 15:33:39 $
-// $Id: FREE_IMAGE_FORMAT.cs,v 1.1 2007/11/28 15:33:39 cklein05 Exp $
+// $Revision: 1.2 $
+// $Date: 2009/09/15 11:44:42 $
+// $Id: FREE_IMAGE_FORMAT.cs,v 1.2 2009/09/15 11:44:42 cklein05 Exp $
 // ==========================================================
 
 namespace FreeImageAPI
@@ -175,6 +175,18 @@ namespace FreeImageAPI
 		/// <summary>
 		/// JPEG-2000 format (*.JP2)
 		/// </summary>
-		FIF_JP2 = 31
+		FIF_JP2 = 31,
+		/// <summary>
+		/// Portable FloatMap (*.PFM)
+		/// </summary>
+		FIF_PFM = 32,
+		/// <summary>
+		/// Macintosh PICT (*.PICT)
+		/// </summary>
+		FIF_PICT = 33,
+		/// <summary>
+		/// RAW camera image (*.*)
+		/// </summary>
+		FIF_RAW = 34,
 	}
 }

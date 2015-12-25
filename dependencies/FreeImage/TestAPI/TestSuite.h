@@ -52,6 +52,14 @@ BOOL testAllocateCloneUnloadType(FREE_IMAGE_TYPE image_type, unsigned width, uns
 void testImageType(unsigned width, unsigned height);
 void testImageTypeTIFF(unsigned width, unsigned height);
 
+// Header loading test suite
+// ==========================================================
+void testHeaderOnly();
+
+// Exif raw metadata loading & saving test suite
+// ==========================================================
+void testExifRaw();
+
 // IO test suite
 // ==========================================================
 
@@ -60,13 +68,29 @@ void testMemIO(const char *lpszPathName);
 // Multipage test suite
 // ==========================================================
 
-void testBuildMPage(char *src_filename, char *dst_filename, FREE_IMAGE_FORMAT dst_fif, unsigned bpp);
-void testMPageCache(char *src_filename);
+void testMultiPage(const char *lpszPathName);
+void testStreamMultiPage(const char *lpszPathName);
+void testMultiPageMemory(const char *lpszPathName);
 
 // JPEG test suite
 // ==========================================================
 
 void testJPEG();
+
+// Channels test suite
+// ==========================================================
+
+void testImageChannels(unsigned width, unsigned height);
+
+
+// Thumbnails test suite
+// ==========================================================
+void testThumbnail(const char *lpszPathName, int flags);
+
+// Wrapped buffer test suite
+// ==========================================================
+
+void testWrappedBuffer(const char *lpszPathName, int flags);
 
 #endif // TEST_FREEIMAGE_API_H
 

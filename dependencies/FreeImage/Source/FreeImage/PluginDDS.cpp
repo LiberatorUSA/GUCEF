@@ -210,11 +210,17 @@ SwapHeader(DDSHEADER *header) {
 static void 
 GetBlockColors (const DXTColBlock &block, Color8888 colors[4], bool isDXT1) {
 	int i;
+	// expand from 565 to 888
 	for (i = 0; i < 2; i++)	{
 		colors[i].a = 0xff;
+		/*
 		colors[i].r = (BYTE)(block.colors[i].r * 0xff / 0x1f);
 		colors[i].g = (BYTE)(block.colors[i].g * 0xff / 0x3f);
 		colors[i].b = (BYTE)(block.colors[i].b * 0xff / 0x1f);
+		*/
+		colors[i].r = (BYTE)((block.colors[i].r << 3U) | (block.colors[i].r >> 2U));
+		colors[i].g = (BYTE)((block.colors[i].g << 2U) | (block.colors[i].g >> 4U));
+		colors[i].b = (BYTE)((block.colors[i].b << 3U) | (block.colors[i].b >> 2U));
 	}
 
 	WORD *wCol = (WORD *)block.colors;
@@ -372,6 +378,10 @@ template <class DECODER> void DecodeDXTBlock (BYTE *dstData, const BYTE *srcBloc
 		decoder.SetY (y);
 		for (int x = 0; x < bw; x++) {
 			decoder.GetColor (x, y, (Color8888 &)*dst);
+
+#if FREEIMAGE_COLORORDER == FREEIMAGE_COLORORDER_RGB 
+			INPLACESWAP(dst[FI_RGBA_RED], dst[FI_RGBA_BLUE]);
+#endif 
 			dst += 4;
 		}
 	}
@@ -437,7 +447,9 @@ LoadDXT_Helper (FreeImageIO *io, fi_handle handle, int page, int flags, void *da
 	typedef typename DECODER::INFO INFO;
 	typedef typename INFO::Block Block;
 
-	Block *input_buffer = new Block[(width + 3) / 4];
+	Block *input_buffer = new(std::nothrow) Block[(width + 3) / 4];
+	if(!input_buffer) return;
+
 	int widthRest = (int) width & 3;
 	int heightRest = (int) height & 3;
 	int inputLine = (width + 3) / 4;
@@ -539,7 +551,7 @@ RegExpr() {
 
 static const char * DLL_CALLCONV
 MimeType() {
-	return "image/freeimage-dds";
+	return "image/x-dds";
 }
 
 static BOOL DLL_CALLCONV
@@ -565,7 +577,7 @@ SupportsExportDepth(int depth) {
 
 static BOOL DLL_CALLCONV 
 SupportsExportType(FREE_IMAGE_TYPE type) {
-	return (type == FIT_BITMAP) ? TRUE : FALSE;
+	return FALSE;
 }
 
 // ----------------------------------------------------------

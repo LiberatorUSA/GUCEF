@@ -28,15 +28,16 @@
 
 // ==========================================================
 // CVS
-// $Revision: 1.4 $
-// $Date: 2008/06/17 13:48:22 $
-// $Id: LocalPlugin.cs,v 1.4 2008/06/17 13:48:22 cklein05 Exp $
+// $Revision: 1.9 $
+// $Date: 2009/09/15 11:47:46 $
+// $Id: LocalPlugin.cs,v 1.9 2009/09/15 11:47:46 cklein05 Exp $
 // ==========================================================
 
 using System;
 using System.IO;
 using System.Runtime.InteropServices;
 using FreeImageAPI.IO;
+using System.Diagnostics;
 
 namespace FreeImageAPI.Plugins
 {
@@ -63,7 +64,7 @@ namespace FreeImageAPI.Plugins
 	/// <see cref="FreeImageAPI.Plugins.LocalPlugin.GetImplementedMethods"/> is used by the constructor
 	/// of the abstract class. FreeImage wants a list of the implemented functions. Each function is
 	/// represented by a function pointer (a .NET <see cref="System.Delegate"/>). In case a function
-	/// is not implemented FreeImage recieves an empty <b>delegate</b>). To tell the constructor
+	/// is not implemented FreeImage receives an empty <b>delegate</b>). To tell the constructor
 	/// which functions have been implemented the information is represented by a disjunction of
 	/// <see cref="FreeImageAPI.Plugins.LocalPlugin.MethodFlags"/>.
 	/// <para/>
@@ -85,26 +86,31 @@ namespace FreeImageAPI.Plugins
 		/// <summary>
 		/// Struct containing function pointers.
 		/// </summary>
+		[DebuggerBrowsable(DebuggerBrowsableState.Never)]
 		private Plugin plugin;
+
 		/// <summary>
 		/// Delegate for register callback by FreeImage.
 		/// </summary>
+		[DebuggerBrowsable(DebuggerBrowsableState.Never)]
 		private InitProc initProc;
-		/// <summary>
-		/// GCHandles to prevent the garbage collector from chaning function addresses.
-		/// </summary>
-		private GCHandle[] handles = new GCHandle[16];
+
 		/// <summary>
 		/// The format id assiged to the plugin.
 		/// </summary>
+		[DebuggerBrowsable(DebuggerBrowsableState.Never)]
 		protected FREE_IMAGE_FORMAT format = FREE_IMAGE_FORMAT.FIF_UNKNOWN;
+
 		/// <summary>
 		/// When true the plugin was registered successfully else false.
 		/// </summary>
+		[DebuggerBrowsable(DebuggerBrowsableState.Never)]
 		protected readonly bool registered = false;
+
 		/// <summary>
 		/// A copy of the functions used to register.
 		/// </summary>
+		[DebuggerBrowsable(DebuggerBrowsableState.Never)]
 		protected readonly MethodFlags implementedMethods;
 
 		/// <summary>
@@ -238,7 +244,7 @@ namespace FreeImageAPI.Plugins
 		/// <summary>
 		/// Function that can be implemented.
 		/// </summary>
-		protected virtual FIBITMAP LoadProc(ref FreeImageIO io, fi_handle handle, int page, int flags, IntPtr data) { return 0; }
+		protected virtual FIBITMAP LoadProc(ref FreeImageIO io, fi_handle handle, int page, int flags, IntPtr data) { return FIBITMAP.Zero; }
 		/// <summary>
 		/// Function that can be implemented.
 		/// </summary>
@@ -273,87 +279,70 @@ namespace FreeImageAPI.Plugins
 		/// </summary>
 		public LocalPlugin()
 		{
-			int i = 0;
 			implementedMethods = GetImplementedMethods();
 
 			if ((implementedMethods & MethodFlags.DescriptionProc) != 0)
 			{
 				plugin.descriptionProc = new DescriptionProc(DescriptionProc);
-				handles[i++] = GetHandle(plugin.descriptionProc);
 			}
 			if ((implementedMethods & MethodFlags.ExtensionListProc) != 0)
 			{
 				plugin.extensionListProc = new ExtensionListProc(ExtensionListProc);
-				handles[i++] = GetHandle(plugin.extensionListProc);
 			}
 			if ((implementedMethods & MethodFlags.RegExprProc) != 0)
 			{
 				plugin.regExprProc = new RegExprProc(RegExprProc);
-				handles[i++] = GetHandle(plugin.regExprProc);
 			}
 			if ((implementedMethods & MethodFlags.OpenProc) != 0)
 			{
 				plugin.openProc = new OpenProc(OpenProc);
-				handles[i++] = GetHandle(plugin.openProc);
 			}
 			if ((implementedMethods & MethodFlags.CloseProc) != 0)
 			{
 				plugin.closeProc = new CloseProc(CloseProc);
-				handles[i++] = GetHandle(plugin.closeProc);
 			}
 			if ((implementedMethods & MethodFlags.PageCountProc) != 0)
 			{
 				plugin.pageCountProc = new PageCountProc(PageCountProc);
-				handles[i++] = GetHandle(plugin.pageCountProc);
 			}
 			if ((implementedMethods & MethodFlags.PageCapabilityProc) != 0)
 			{
 				plugin.pageCapabilityProc = new PageCapabilityProc(PageCapabilityProc);
-				handles[i++] = GetHandle(plugin.pageCapabilityProc);
 			}
 			if ((implementedMethods & MethodFlags.LoadProc) != 0)
 			{
 				plugin.loadProc = new LoadProc(LoadProc);
-				handles[i++] = GetHandle(plugin.loadProc);
 			}
 			if ((implementedMethods & MethodFlags.SaveProc) != 0)
 			{
 				plugin.saveProc = new SaveProc(SaveProc);
-				handles[i++] = GetHandle(plugin.saveProc);
 			}
 			if ((implementedMethods & MethodFlags.ValidateProc) != 0)
 			{
 				plugin.validateProc = new ValidateProc(ValidateProc);
-				handles[i++] = GetHandle(plugin.validateProc);
 			}
 			if ((implementedMethods & MethodFlags.MimeProc) != 0)
 			{
 				plugin.mimeProc = new MimeProc(MimeProc);
-				handles[i++] = GetHandle(plugin.mimeProc);
 			}
 			if ((implementedMethods & MethodFlags.SupportsExportBPPProc) != 0)
 			{
 				plugin.supportsExportBPPProc = new SupportsExportBPPProc(SupportsExportBPPProc);
-				handles[i++] = GetHandle(plugin.supportsExportBPPProc);
 			}
 			if ((implementedMethods & MethodFlags.SupportsExportTypeProc) != 0)
 			{
 				plugin.supportsExportTypeProc = new SupportsExportTypeProc(SupportsExportTypeProc);
-				handles[i++] = GetHandle(plugin.supportsExportTypeProc);
 			}
 			if ((implementedMethods & MethodFlags.SupportsICCProfilesProc) != 0)
 			{
 				plugin.supportsICCProfilesProc = new SupportsICCProfilesProc(SupportsICCProfilesProc);
-				handles[i++] = GetHandle(plugin.supportsICCProfilesProc);
 			}
 
 			// FormatProc is always implemented
 			plugin.formatProc = new FormatProc(FormatProc);
-			handles[i++] = GetHandle(plugin.formatProc);
 
 			// InitProc is the register call back.
 			initProc = new InitProc(RegisterProc);
-			handles[i++] = GetHandle(initProc);
 
 			// Register the plugin. The result will be saved and can be accessed later.
 			registered = FreeImage.RegisterLocalPlugin(initProc, null, null, null, null) != FREE_IMAGE_FORMAT.FIF_UNKNOWN;
@@ -361,25 +350,6 @@ namespace FreeImageAPI.Plugins
 			{
 				PluginRepository.RegisterLocalPlugin(this);
 			}
-		}
-
-		/// <summary>
-		/// Releases all resources used by the instance.
-		/// </summary>
-		~LocalPlugin()
-		{
-			for (int i = 0; i < handles.Length; i++)
-			{
-				if (handles[i].IsAllocated)
-				{
-					handles[i].Free();
-				}
-			}
-		}
-
-		private GCHandle GetHandle(Delegate d)
-		{
-			return GCHandle.Alloc(d, GCHandleType.Normal);
 		}
 
 		private void RegisterProc(ref Plugin plugin, int format_id)

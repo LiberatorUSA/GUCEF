@@ -4,6 +4,7 @@
 // Design and implementation by
 // - Hervé Drolon (drolon@infonie.fr)
 // - Carsten Klein (c.klein@datagis.com)
+// - Mihail Naydenov (mnaydenov@users.sourceforge.net)
 //
 // This file is part of FreeImage 3
 //
@@ -27,12 +28,6 @@
 //   Macros + structures
 // ----------------------------------------------------------
 
-#define RGB555(b, g, r) ((((b) >> 3) << FI16_555_BLUE_SHIFT) | (((g) >> 3) << FI16_555_GREEN_SHIFT) | (((r) >> 3) << FI16_555_RED_SHIFT))
-#define RGB565(b, g, r) ((((b) >> 3) << FI16_565_BLUE_SHIFT) | (((g) >> 2) << FI16_565_GREEN_SHIFT) | (((r) >> 3) << FI16_565_RED_SHIFT))
-
-#define FORMAT_RGB565(dib) ((FreeImage_GetRedMask(dib) == FI16_565_RED_MASK) &&(FreeImage_GetGreenMask(dib) == FI16_565_GREEN_MASK) &&(FreeImage_GetBlueMask(dib) == FI16_565_BLUE_MASK))
-#define RGBQUAD_TO_WORD(dib, color) (FORMAT_RGB565(dib) ? RGB565((color)->rgbBlue, (color)->rgbGreen, (color)->rgbRed) : RGB555((color)->rgbBlue, (color)->rgbGreen, (color)->rgbRed))
-
 #define GET_HI_NIBBLE(byte)     ((byte) >> 4)
 #define SET_HI_NIBBLE(byte, n)  byte &= 0x0F, byte |= ((n) << 4)
 #define GET_LO_NIBBLE(byte)     ((byte) & 0x0F)
@@ -50,61 +45,88 @@
 */
 BOOL DLL_CALLCONV 
 FreeImage_Invert(FIBITMAP *src) {
-	unsigned i, x, y, k;
-	BYTE *bits;
 
-	if (!src) return FALSE;
-
-	int bpp = FreeImage_GetBPP(src);
+	if (!FreeImage_HasPixels(src)) return FALSE;
 	
-	switch(bpp) {
-        case 1 :
-		case 4 :
-		case 8 :
-		{
-			// if the dib has a colormap, just invert it
-			// else, keep the linear grayscale
+	unsigned i, x, y, k;
+	
+	const unsigned width = FreeImage_GetWidth(src);
+	const unsigned height = FreeImage_GetHeight(src);
+	const unsigned bpp = FreeImage_GetBPP(src);
 
-			if (FreeImage_GetColorType(src) == FIC_PALETTE) {
-				RGBQUAD *pal = FreeImage_GetPalette(src);
+	FREE_IMAGE_TYPE image_type = FreeImage_GetImageType(src);
 
-				for(i = 0; i < FreeImage_GetColorsUsed(src); i++) {
-					pal[i].rgbRed	= 255 - pal[i].rgbRed;
-					pal[i].rgbGreen = 255 - pal[i].rgbGreen;
-					pal[i].rgbBlue	= 255 - pal[i].rgbBlue;
-				}
-			} else {
-				for(y = 0; y < FreeImage_GetHeight(src); y++) {
-					bits = FreeImage_GetScanLine(src, y);
+	if(image_type == FIT_BITMAP) {
+		switch(bpp) {
+			case 1 :
+			case 4 :
+			case 8 :
+			{
+				// if the dib has a colormap, just invert it
+				// else, keep the linear grayscale
 
-					for (x = 0; x < FreeImage_GetLine(src); x++) {
-						bits[x] = ~bits[x];
+				if (FreeImage_GetColorType(src) == FIC_PALETTE) {
+					RGBQUAD *pal = FreeImage_GetPalette(src);
+
+					for(i = 0; i < FreeImage_GetColorsUsed(src); i++) {
+						pal[i].rgbRed	= 255 - pal[i].rgbRed;
+						pal[i].rgbGreen = 255 - pal[i].rgbGreen;
+						pal[i].rgbBlue	= 255 - pal[i].rgbBlue;
+					}
+				} else {
+					for(y = 0; y < height; y++) {
+						BYTE *bits = FreeImage_GetScanLine(src, y);
+
+						for (x = 0; x < FreeImage_GetLine(src); x++) {
+							bits[x] = ~bits[x];
+						}
 					}
 				}
-			}
 
-			break;
-		}		
+				break;
+			}		
 
-		case 24 :
-		case 32 :
-		{
-			unsigned bytespp = FreeImage_GetLine(src) / FreeImage_GetWidth(src);
+			case 24 :
+			case 32 :
+			{
+				// Calculate the number of bytes per pixel (3 for 24-bit or 4 for 32-bit)
+				const unsigned bytespp = FreeImage_GetLine(src) / width;
 
-			for(y = 0; y < FreeImage_GetHeight(src); y++) {
-				bits =  FreeImage_GetScanLine(src, y);
-				for(x = 0; x < FreeImage_GetWidth(src); x++) {
-					for(k = 0; k < bytespp; k++) {
-						bits[k] = ~bits[k];
+				for(y = 0; y < height; y++) {
+					BYTE *bits = FreeImage_GetScanLine(src, y);
+					for(x = 0; x < width; x++) {
+						for(k = 0; k < bytespp; k++) {
+							bits[k] = ~bits[k];
+						}
+						bits += bytespp;
 					}
-					bits += bytespp;
 				}
-			}
 
-			break;
+				break;
+			}
+			default:
+				return FALSE;
 		}
-
 	}
+	else if((image_type == FIT_UINT16) || (image_type == FIT_RGB16) || (image_type == FIT_RGBA16)) {
+		// Calculate the number of words per pixel (1 for 16-bit, 3 for 48-bit or 4 for 64-bit)
+		const unsigned wordspp = (FreeImage_GetLine(src) / width) / sizeof(WORD);
+
+		for(y = 0; y < height; y++) {
+			WORD *bits = (WORD*)FreeImage_GetScanLine(src, y);
+			for(x = 0; x < width; x++) {
+				for(k = 0; k < wordspp; k++) {
+					bits[k] = ~bits[k];
+				}
+				bits += wordspp;
+			}
+		}
+	}
+	else {
+		// anything else ... 
+		return FALSE;
+	}
+		
 	return TRUE;
 }
 
@@ -127,7 +149,7 @@ FreeImage_AdjustCurve(FIBITMAP *src, BYTE *LUT, FREE_IMAGE_COLOR_CHANNEL channel
 	unsigned x, y;
 	BYTE *bits = NULL;
 
-	if(!src || !LUT || (FreeImage_GetImageType(src) != FIT_BITMAP))
+	if(!FreeImage_HasPixels(src) || !LUT || (FreeImage_GetImageType(src) != FIT_BITMAP))
 		return FALSE;
 
 	int bpp = FreeImage_GetBPP(src);
@@ -249,7 +271,7 @@ BOOL DLL_CALLCONV
 FreeImage_AdjustGamma(FIBITMAP *src, double gamma) {
 	BYTE LUT[256];		// Lookup table
 
-	if(!src || (gamma <= 0))
+	if(!FreeImage_HasPixels(src) || (gamma <= 0))
 		return FALSE;
 	
 	// Build the lookup table
@@ -280,12 +302,13 @@ FreeImage_AdjustBrightness(FIBITMAP *src, double percentage) {
 	BYTE LUT[256];		// Lookup table
 	double value;
 
-	if(!src)
+	if(!FreeImage_HasPixels(src))
 		return FALSE;
 	
 	// Build the lookup table
+	const double scale = (100 + percentage) / 100;
 	for(int i = 0; i < 256; i++) {
-		value = (i * (100 + percentage)) / 100;
+		value = i * scale;
 		value = MAX(0.0, MIN(value, 255.0));
 		LUT[i] = (BYTE)floor(value + 0.5);
 	}
@@ -305,12 +328,13 @@ FreeImage_AdjustContrast(FIBITMAP *src, double percentage) {
 	BYTE LUT[256];		// Lookup table
 	double value;
 
-	if(!src)
+	if(!FreeImage_HasPixels(src))
 		return FALSE;
 	
 	// Build the lookup table
+	const double scale = (100 + percentage) / 100;
 	for(int i = 0; i < 256; i++) {
-		value = 128 + (i - 128) * (100 + percentage) / 100;
+		value = 128 + (i - 128) * scale;
 		value = MAX(0.0, MIN(value, 255.0));
 		LUT[i] = (BYTE)floor(value + 0.5);
 	}
@@ -333,7 +357,7 @@ FreeImage_GetHistogram(FIBITMAP *src, DWORD *histo, FREE_IMAGE_COLOR_CHANNEL cha
 	BYTE *bits = NULL;
 	unsigned x, y;
 
-	if(!src || !histo) return FALSE;
+	if(!FreeImage_HasPixels(src) || !histo) return FALSE;
 
 	unsigned width  = FreeImage_GetWidth(src);
 	unsigned height = FreeImage_GetHeight(src);
@@ -441,18 +465,18 @@ FreeImage_GetHistogram(FIBITMAP *src, DWORD *histo, FREE_IMAGE_COLOR_CHANNEL cha
  results:
  
  // snippet 1: contrast, brightness
- FreeImage_AdjustContrast(dib, 150.0);
+ FreeImage_AdjustContrast(dib, 15.0);
  FreeImage_AdjustBrightness(dib, 50.0); 
  
  // snippet 2: brightness, contrast
  FreeImage_AdjustBrightness(dib, 50.0);
- FreeImage_AdjustContrast(dib, 150.0);
+ FreeImage_AdjustContrast(dib, 15.0);
  
  Better and even faster would be snippet 3:
  
  // snippet 3:
  BYTE LUT[256];
- FreeImage_GetAdjustColorsLookupTable(LUT, 50.0, 150.0, 1.0, FALSE); 
+ FreeImage_GetAdjustColorsLookupTable(LUT, 50.0, 15.0, 1.0, FALSE); 
  FreeImage_AdjustCurve(dib, LUT, FICC_RGB);
  
  This function is also used internally by FreeImage_AdjustColors(), which does
@@ -478,6 +502,7 @@ FreeImage_GetHistogram(FIBITMAP *src, DWORD *histo, FREE_IMAGE_COLOR_CHANNEL cha
 int DLL_CALLCONV
 FreeImage_GetAdjustColorsLookupTable(BYTE *LUT, double brightness, double contrast, double gamma, BOOL invert) {
 	double dblLUT[256];
+	double value;
 	int result = 0;
 
 	if ((brightness == 0.0) && (contrast == 0.0) && (gamma == 1.0) && (!invert)) {
@@ -498,7 +523,8 @@ FreeImage_GetAdjustColorsLookupTable(BYTE *LUT, double brightness, double contra
 		// modify lookup table with contrast adjustment data
 		const double v = (100.0 + contrast) / 100.0;
 		for (int i = 0; i < 256; i++) {
-			dblLUT[i] = 128 + (dblLUT[i] - 128) * v;
+			value = 128 + (dblLUT[i] - 128) * v;
+			dblLUT[i] = MAX(0.0, MIN(value, 255.0));
 		}
 		result++;
 	}
@@ -507,28 +533,30 @@ FreeImage_GetAdjustColorsLookupTable(BYTE *LUT, double brightness, double contra
 		// modify lookup table with brightness adjustment data
 		const double v = (100.0 + brightness) / 100.0;
 		for (int i = 0; i < 256; i++) {
-			dblLUT[i] = dblLUT[i] * v;
+			value = dblLUT[i] * v;
+			dblLUT[i] = MAX(0.0, MIN(value, 255.0));
 		}
 		result++;
 	}
 
-	if (gamma != 1.0) {
+	if ((gamma > 0) && (gamma != 1.0)) {
 		// modify lookup table with gamma adjustment data
 		double exponent = 1 / gamma;
 		const double v = 255.0 * (double)pow((double)255, -exponent);
 		for (int i = 0; i < 256; i++) {
-			dblLUT[i] = pow(dblLUT[i], exponent) * v;
+			value = pow(dblLUT[i], exponent) * v;
+			dblLUT[i] = MAX(0.0, MIN(value, 255.0));
 		}
 		result++;
 	}
 
 	if (!invert) {
 		for (int i = 0; i < 256; i++) {
-			LUT[i] = (BYTE)floor(MAX(0.0, MIN(dblLUT[i], 255.0)) + 0.5);
+			LUT[i] = (BYTE)floor(dblLUT[i] + 0.5);
 		}
 	} else {
 		for (int i = 0; i < 256; i++) {
-			LUT[i] = 255 - (BYTE)floor(MAX(0.0, MIN(dblLUT[i], 255.0)) + 0.5);
+			LUT[i] = 255 - (BYTE)floor(dblLUT[i] + 0.5);
 		}
 		result++;
 	}
@@ -555,17 +583,17 @@ FreeImage_GetAdjustColorsLookupTable(BYTE *LUT, double brightness, double contra
  snippets most likely produce different results:
  
  // snippet 1: contrast, brightness
- FreeImage_AdjustContrast(dib, 150.0);
+ FreeImage_AdjustContrast(dib, 15.0);
  FreeImage_AdjustBrightness(dib, 50.0); 
  
  // snippet 2: brightness, contrast
  FreeImage_AdjustBrightness(dib, 50.0);
- FreeImage_AdjustContrast(dib, 150.0);
+ FreeImage_AdjustContrast(dib, 15.0);
  
  Better and even faster would be snippet 3:
  
  // snippet 3:
- FreeImage_AdjustColors(dib, 50.0, 150.0, 1.0, FALSE);
+ FreeImage_AdjustColors(dib, 50.0, 15.0, 1.0, FALSE);
  
  @param dib Input/output image to be processed.
  @param brightness Percentage brightness value where -100 <= brightness <= 100<br>
@@ -586,7 +614,7 @@ BOOL DLL_CALLCONV
 FreeImage_AdjustColors(FIBITMAP *dib, double brightness, double contrast, double gamma, BOOL invert) {
 	BYTE LUT[256];
 
-	if ((!dib) || (FreeImage_GetImageType(dib) != FIT_BITMAP)) {
+	if (!FreeImage_HasPixels(dib) || (FreeImage_GetImageType(dib) != FIT_BITMAP)) {
 		return FALSE;
 	}
 
@@ -639,7 +667,7 @@ unsigned DLL_CALLCONV
 FreeImage_ApplyColorMapping(FIBITMAP *dib, RGBQUAD *srccolors, RGBQUAD *dstcolors, unsigned count, BOOL ignore_alpha, BOOL swap) {
 	unsigned result = 0;
 
-	if ((!dib) || (FreeImage_GetImageType(dib) != FIT_BITMAP)) {
+	if (!FreeImage_HasPixels(dib) || (FreeImage_GetImageType(dib) != FIT_BITMAP)) {
 		return 0;
 	}
 
@@ -840,7 +868,7 @@ unsigned DLL_CALLCONV
 FreeImage_ApplyPaletteIndexMapping(FIBITMAP *dib, BYTE *srcindices,	BYTE *dstindices, unsigned count, BOOL swap) {
 	unsigned result = 0;
 
-	if ((!dib) || (FreeImage_GetImageType(dib) != FIT_BITMAP)) {
+	if (!FreeImage_HasPixels(dib) || (FreeImage_GetImageType(dib) != FIT_BITMAP)) {
 		return 0;
 	}
 

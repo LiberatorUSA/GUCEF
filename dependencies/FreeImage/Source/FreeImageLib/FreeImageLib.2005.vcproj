@@ -10,6 +10,9 @@
 		<Platform
 			Name="Win32"
 		/>
+		<Platform
+			Name="x64"
+		/>
 	</Platforms>
 	<ToolFiles>
 	</ToolFiles>
@@ -42,8 +45,8 @@
 			<Tool
 				Name="VCCLCompilerTool"
 				Optimization="0"
-				AdditionalIncludeDirectories="..\;..\ZLib;..\DeprecationManager;..\OpenEXR\Half;..\OpenEXR\Iex;..\OpenEXR\IlmImf;..\OpenEXR\Imath;..\OpenEXR\IlmThread"
-				PreprocessorDefinitions="WIN32;_DEBUG;OPJ_STATIC;FREEIMAGE_LIB;_CRT_SECURE_NO_DEPRECATE"
+				AdditionalIncludeDirectories="..\;..\ZLib;..\DeprecationManager;..\OpenEXR\Half;..\OpenEXR\Iex;..\OpenEXR\IlmImf;..\OpenEXR\Imath;..\OpenEXR\IlmThread;..\LibJXR\image\sys;..\LibJXR\jxrgluelib"
+				PreprocessorDefinitions="WIN32;_DEBUG;OPJ_STATIC;FREEIMAGE_LIB;_CRT_SECURE_NO_DEPRECATE;LIBRAW_NODLL"
 				StringPooling="true"
 				BasicRuntimeChecks="3"
 				RuntimeLibrary="1"
@@ -123,8 +126,167 @@
 				EnableIntrinsicFunctions="true"
 				FavorSizeOrSpeed="1"
 				OmitFramePointers="true"
+				AdditionalIncludeDirectories="..\;..\ZLib;..\DeprecationManager;..\OpenEXR\Half;..\OpenEXR\Iex;..\OpenEXR\IlmImf;..\OpenEXR\Imath;..\OpenEXR\IlmThread;..\LibJXR\image\sys;..\LibJXR\jxrgluelib"
+				PreprocessorDefinitions="WIN32;NDEBUG;OPJ_STATIC;FREEIMAGE_LIB;_CRT_SECURE_NO_DEPRECATE;LIBRAW_NODLL"
+				StringPooling="true"
+				RuntimeLibrary="0"
+				BufferSecurityCheck="false"
+				UsePrecompiledHeader="0"
+				PrecompiledHeaderFile=".\Release/FreeImageLib.pch"
+				AssemblerListingLocation=".\Release/"
+				ObjectFile=".\Release/"
+				ProgramDataBaseFileName=".\Release/"
+				WarningLevel="3"
+				SuppressStartupBanner="true"
+				CompileAs="0"
+			/>
+			<Tool
+				Name="VCManagedResourceCompilerTool"
+			/>
+			<Tool
+				Name="VCResourceCompilerTool"
+				PreprocessorDefinitions="NDEBUG"
+				Culture="1033"
+			/>
+			<Tool
+				Name="VCPreLinkEventTool"
+			/>
+			<Tool
+				Name="VCLibrarianTool"
+				LinkLibraryDependencies="true"
+				OutputFile="Release\FreeImage.lib"
+				SuppressStartupBanner="true"
+			/>
+			<Tool
+				Name="VCALinkTool"
+			/>
+			<Tool
+				Name="VCXDCMakeTool"
+			/>
+			<Tool
+				Name="VCBscMakeTool"
+			/>
+			<Tool
+				Name="VCFxCopTool"
+			/>
+			<Tool
+				Name="VCPostBuildEventTool"
+				CommandLine="copy Release\FreeImage.lib ..\..\Dist&#x0D;&#x0A;copy ..\FreeImage.h ..\..\Dist&#x0D;&#x0A;"
+			/>
+		</Configuration>
+		<Configuration
+			Name="Debug|x64"
+			OutputDirectory="$(PlatformName)\$(ConfigurationName)"
+			IntermediateDirectory="$(PlatformName)\$(ConfigurationName)"
+			ConfigurationType="4"
+			InheritedPropertySheets="$(VCInstallDir)VCProjectDefaults\UpgradeFromVC71.vsprops"
+			UseOfMFC="0"
+			ATLMinimizesCRunTimeLibraryUsage="false"
+			CharacterSet="2"
+			>
+			<Tool
+				Name="VCPreBuildEventTool"
+			/>
+			<Tool
+				Name="VCCustomBuildTool"
+			/>
+			<Tool
+				Name="VCXMLDataGeneratorTool"
+			/>
+			<Tool
+				Name="VCWebServiceProxyGeneratorTool"
+			/>
+			<Tool
+				Name="VCMIDLTool"
+				TargetEnvironment="3"
+			/>
+			<Tool
+				Name="VCCLCompilerTool"
+				Optimization="0"
 				AdditionalIncludeDirectories="..\;..\ZLib;..\DeprecationManager;..\OpenEXR\Half;..\OpenEXR\Iex;..\OpenEXR\IlmImf;..\OpenEXR\Imath;..\OpenEXR\IlmThread"
-				PreprocessorDefinitions="WIN32;NDEBUG;OPJ_STATIC;FREEIMAGE_LIB;_CRT_SECURE_NO_DEPRECATE"
+				PreprocessorDefinitions="WIN32;_DEBUG;OPJ_STATIC;FREEIMAGE_LIB;_CRT_SECURE_NO_DEPRECATE;LIBRAW_NODLL"
+				StringPooling="true"
+				BasicRuntimeChecks="3"
+				RuntimeLibrary="1"
+				UsePrecompiledHeader="0"
+				PrecompiledHeaderFile=".\Debug/FreeImageLib.pch"
+				AssemblerListingLocation=".\Debug/"
+				ObjectFile=".\Debug/"
+				ProgramDataBaseFileName=".\Debug/"
+				WarningLevel="3"
+				SuppressStartupBanner="true"
+				DebugInformationFormat="3"
+				CompileAs="0"
+			/>
+			<Tool
+				Name="VCManagedResourceCompilerTool"
+			/>
+			<Tool
+				Name="VCResourceCompilerTool"
+				PreprocessorDefinitions="_DEBUG"
+				Culture="1043"
+			/>
+			<Tool
+				Name="VCPreLinkEventTool"
+			/>
+			<Tool
+				Name="VCLibrarianTool"
+				LinkLibraryDependencies="true"
+				OutputFile="Debug\FreeImaged.lib"
+				SuppressStartupBanner="true"
+			/>
+			<Tool
+				Name="VCALinkTool"
+			/>
+			<Tool
+				Name="VCXDCMakeTool"
+			/>
+			<Tool
+				Name="VCBscMakeTool"
+			/>
+			<Tool
+				Name="VCFxCopTool"
+			/>
+			<Tool
+				Name="VCPostBuildEventTool"
+				CommandLine="copy Debug\FreeImaged.lib ..\..\Dist&#x0D;&#x0A;copy ..\FreeImage.h ..\..\Dist&#x0D;&#x0A;"
+			/>
+		</Configuration>
+		<Configuration
+			Name="Release|x64"
+			OutputDirectory="$(PlatformName)\$(ConfigurationName)"
+			IntermediateDirectory="$(PlatformName)\$(ConfigurationName)"
+			ConfigurationType="4"
+			InheritedPropertySheets="$(VCInstallDir)VCProjectDefaults\UpgradeFromVC71.vsprops"
+			UseOfMFC="0"
+			ATLMinimizesCRunTimeLibraryUsage="false"
+			CharacterSet="2"
+			>
+			<Tool
+				Name="VCPreBuildEventTool"
+			/>
+			<Tool
+				Name="VCCustomBuildTool"
+			/>
+			<Tool
+				Name="VCXMLDataGeneratorTool"
+			/>
+			<Tool
+				Name="VCWebServiceProxyGeneratorTool"
+			/>
+			<Tool
+				Name="VCMIDLTool"
+				TargetEnvironment="3"
+			/>
+			<Tool
+				Name="VCCLCompilerTool"
+				Optimization="2"
+				InlineFunctionExpansion="2"
+				EnableIntrinsicFunctions="true"
+				FavorSizeOrSpeed="1"
+				OmitFramePointers="true"
+				AdditionalIncludeDirectories="..\;..\ZLib;..\DeprecationManager;..\OpenEXR\Half;..\OpenEXR\Iex;..\OpenEXR\IlmImf;..\OpenEXR\Imath;..\OpenEXR\IlmThread"
+				PreprocessorDefinitions="WIN32;NDEBUG;OPJ_STATIC;FREEIMAGE_LIB;_CRT_SECURE_NO_DEPRECATE;LIBRAW_NODLL"
 				StringPooling="true"
 				RuntimeLibrary="0"
 				BufferSecurityCheck="false"
@@ -211,6 +373,10 @@
 				Name="Quantizers"
 				>
 				<File
+					RelativePath="..\FreeImage\LFPQuantizer.cpp"
+					>
+				</File>
+				<File
 					RelativePath="..\FreeImage\NNQuantizer.cpp"
 					>
 				</File>
@@ -251,11 +417,31 @@
 					>
 				</File>
 				<File
+					RelativePath="..\FreeImage\ConversionFloat.cpp"
+					>
+				</File>
+				<File
+					RelativePath="..\FreeImage\ConversionRGB16.cpp"
+					>
+				</File>
+				<File
+					RelativePath="..\FreeImage\ConversionRGBA16.cpp"
+					>
+				</File>
+				<File
+					RelativePath="..\FreeImage\ConversionRGBAF.cpp"
+					>
+				</File>
+				<File
 					RelativePath="..\FreeImage\ConversionRGBF.cpp"
 					>
 				</File>
 				<File
 					RelativePath="..\FreeImage\ConversionType.cpp"
+					>
+				</File>
+				<File
+					RelativePath="..\FreeImage\ConversionUINT16.cpp"
 					>
 				</File>
 				<File
@@ -288,6 +474,10 @@
 				>
 				<File
 					RelativePath="..\FreeImage\J2KHelper.cpp"
+					>
+				</File>
+				<File
+					RelativePath="..\FreeImage\MNGHelper.cpp"
 					>
 				</File>
 				<File
@@ -335,11 +525,19 @@
 					>
 				</File>
 				<File
+					RelativePath="..\FreeImage\PluginJNG.cpp"
+					>
+				</File>
+				<File
 					RelativePath="..\FreeImage\PluginJP2.cpp"
 					>
 				</File>
 				<File
 					RelativePath="..\FreeImage\PluginJPEG.cpp"
+					>
+				</File>
+				<File
+					RelativePath="..\FreeImage\PluginJXR.cpp"
 					>
 				</File>
 				<File
@@ -359,6 +557,14 @@
 					>
 				</File>
 				<File
+					RelativePath="..\FreeImage\PluginPFM.cpp"
+					>
+				</File>
+				<File
+					RelativePath="..\FreeImage\PluginPICT.cpp"
+					>
+				</File>
+				<File
 					RelativePath="..\FreeImage\PluginPNG.cpp"
 					>
 				</File>
@@ -372,6 +578,10 @@
 				</File>
 				<File
 					RelativePath="..\FreeImage\PluginRAS.cpp"
+					>
+				</File>
+				<File
+					RelativePath="..\FreeImage\PluginRAW.cpp"
 					>
 				</File>
 				<File
@@ -391,11 +601,19 @@
 					>
 				</File>
 				<File
+					RelativePath="..\FreeImage\PluginWebP.cpp"
+					>
+				</File>
+				<File
 					RelativePath="..\FreeImage\PluginXBM.cpp"
 					>
 				</File>
 				<File
 					RelativePath="..\FreeImage\PluginXPM.cpp"
+					>
+				</File>
+				<File
+					RelativePath="..\FreeImage\PSDParser.cpp"
 					>
 				</File>
 				<File
@@ -406,6 +624,10 @@
 			<Filter
 				Name="DeprecationMgr"
 				>
+				<File
+					RelativePath="..\DeprecationManager\Deprecated.cpp"
+					>
+				</File>
 				<File
 					RelativePath="..\DeprecationManager\DeprecationMgr.cpp"
 					>
@@ -489,7 +711,19 @@
 				>
 			</File>
 			<File
+				RelativePath="..\FreeImage\J2KHelper.h"
+				>
+			</File>
+			<File
+				RelativePath="..\MapIntrospector.h"
+				>
+			</File>
+			<File
 				RelativePath="..\Plugin.h"
+				>
+			</File>
+			<File
+				RelativePath="..\FreeImage\PSDParser.h"
 				>
 			</File>
 			<File
@@ -508,6 +742,10 @@
 		<Filter
 			Name="Toolkit Files"
 			>
+			<File
+				RelativePath="..\FreeImageToolkit\Background.cpp"
+				>
+			</File>
 			<File
 				RelativePath="..\FreeImageToolkit\BSplineRotate.cpp"
 				>
