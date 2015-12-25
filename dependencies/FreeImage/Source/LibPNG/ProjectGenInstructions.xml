@@ -1,5 +1,6 @@
 <PROJECTGENERATOR>
     <EXCLUDES PLATFORM="ALL">
         <ITEM NAME="pngtest.c" TYPE="FILE" />
+        <ITEM NAME="example.c" TYPE="FILE" />
     </EXCLUDES>
 </PROJECTGENERATOR>

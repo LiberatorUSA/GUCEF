@@ -280,6 +280,10 @@ class GUCEF_CORE_PUBLIC_CPP CString
     std::vector< CString > ParseElements( char seperator               ,
                                           bool addEmptyElements = true ) const;
 
+    bool WildcardEquals( const CString& otherStr         ,
+                         const char wildCardToken = '*'  ,
+                         const bool caseSensitive = true ) const;
+
     bool Equals( const CString& otherStr        ,
                  const bool caseSensitive = true ) const;
 

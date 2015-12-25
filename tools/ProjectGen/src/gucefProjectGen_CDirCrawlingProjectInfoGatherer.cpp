@@ -274,7 +274,8 @@ RemoveString( TStringVector& list            ,
 static bool
 IsStringInList( const TStringVector& list       ,
                 bool caseSensitive              ,
-                const CORE::CString& testString )
+                const CORE::CString& testString ,
+                bool wildcardMatching = false   )
 {GUCEF_TRACE;
 
     TStringVector::const_iterator i = list.begin();
@@ -283,6 +284,13 @@ IsStringInList( const TStringVector& list       ,
         if ( (*i).Equals( testString, caseSensitive ) )
         {
             return true;
+        }
+        if ( wildcardMatching )
+        {
+            if ( testString.WildcardEquals( (*i), '*', caseSensitive ) )
+            {
+                return true;
+            }
         }
         ++i;
     }
@@ -1045,23 +1053,27 @@ GetProcessingInstructions( TProjectInfo& projectInfo ,
         TStringVector::iterator n = simpleExcludeList.begin();
         while ( n != simpleExcludeList.end() )
         {
-            if ( (*n).HasChar( '*' ) != -1 )
+            CORE::CString& entry = (*n);
+            if ( !entry.IsNULLOrEmpty() )
             {
-                GUCEF_LOG( CORE::LOGLEVEL_BELOW_NORMAL, "Determined that the simple exclude list wildcard item \"" + (*n) + "\" is a directory" );
-                instructions.dirExcludeList[ AllPlatforms ].push_back( (*n) );
-                GUCEF_LOG( CORE::LOGLEVEL_BELOW_NORMAL, "Determined that the simple exclude list wildcard item \"" + (*n) + "\" is a file" );
-                instructions.fileExcludeList[ AllPlatforms ].push_back( (*n) );
-            }
-            else
-            if ( IsProcessingInstructionsItemADir( dir, (*n) ) )
-            {
-                GUCEF_LOG( CORE::LOGLEVEL_BELOW_NORMAL, "Determined that the simple exclude list item \"" + (*n) + "\" is a directory" );
-                instructions.dirExcludeList[ AllPlatforms ].push_back( (*n) );
-            }
-            else
-            {
-                GUCEF_LOG( CORE::LOGLEVEL_BELOW_NORMAL, "Determined that the simple exclude list item \"" + (*n) + "\" is a file" );
-                instructions.fileExcludeList[ AllPlatforms ].push_back( (*n) );
+                if ( entry.HasChar( '*' ) != -1 )
+                {
+                    GUCEF_LOG( CORE::LOGLEVEL_BELOW_NORMAL, "Determined that the simple exclude list wildcard item \"" + entry + "\" is a directory" );
+                    instructions.dirExcludeList[ AllPlatforms ].push_back( entry );
+                    GUCEF_LOG( CORE::LOGLEVEL_BELOW_NORMAL, "Determined that the simple exclude list wildcard item \"" + entry + "\" is a file" );
+                    instructions.fileExcludeList[ AllPlatforms ].push_back( entry );
+                }
+                else
+                if ( IsProcessingInstructionsItemADir( dir, entry ) )
+                {
+                    GUCEF_LOG( CORE::LOGLEVEL_BELOW_NORMAL, "Determined that the simple exclude list item \"" + entry + "\" is a directory" );
+                    instructions.dirExcludeList[ AllPlatforms ].push_back( entry );
+                }
+                else
+                {
+                    GUCEF_LOG( CORE::LOGLEVEL_BELOW_NORMAL, "Determined that the simple exclude list item \"" + entry + "\" is a file" );
+                    instructions.fileExcludeList[ AllPlatforms ].push_back( entry );
+                }
             }
             ++n;
         }
@@ -1107,12 +1119,18 @@ LoadAllProcessingInstructions( TProjectInfo& projectInfo    ,
                     // If so then we don't even look for processing instructions in said sub-dir
                     // Note that this optimization can only be applied for dirs that are excluded on all platforms
                     bool skipSubDir = false;
+                    if ( IsStringInList( projectInfo.globalDirExcludeList, true, dirName, true ) )
+                    {
+                        skipSubDir = true;
+                        GUCEF_LOG( CORE::LOGLEVEL_BELOW_NORMAL, "Skipping the search for processing instructions, based on global dir exclude list, for dir \"" + subRoot + "\"" );
+                    }
+                    else
                     if ( NULL != dirInstructions )
                     {
                         TStringVectorMap::iterator i = dirInstructions->dirExcludeList.find( AllPlatforms );
                         if ( i != dirInstructions->dirExcludeList.end() )
                         {
-                            skipSubDir = IsStringInList( (*i).second, true, dirName );
+                            skipSubDir = IsStringInList( (*i).second, true, dirName, true );
                             if ( skipSubDir )
                             {
                                 GUCEF_LOG( CORE::LOGLEVEL_BELOW_NORMAL, "Skipping the search for processing instructions, based on already located processing instructions, for dir \"" + subRoot + "\"" );

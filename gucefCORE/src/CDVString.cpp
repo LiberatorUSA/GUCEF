@@ -1327,6 +1327,30 @@ CString::HasSubstr( const CString& substr ,
 /*-------------------------------------------------------------------------*/
 
 bool
+CString::WildcardEquals( const CString& otherStr               ,
+                         const char wildCardToken /* = '*' */  ,
+                         const bool caseSensitive /* = true */ ) const
+{GUCEF_TRACE;
+
+    if ( otherStr == wildCardToken || *this == wildCardToken )
+        return true;
+    
+    std::vector< CString > segs = otherStr.ParseElements( wildCardToken, false );
+    Int32 lastSeg = 0;
+    std::vector< CString >::iterator i = segs.begin();
+    while ( i != segs.end() )
+    {
+        lastSeg = HasSubstr( (*i), lastSeg, true );
+        if ( 0 > lastSeg ) 
+            return false;
+        ++i;
+    }
+    return true;    
+}
+
+/*-------------------------------------------------------------------------*/
+
+bool
 CString::Equals( const CString& otherStr               ,
                  const bool caseSensitive /* = true */ ) const
 {GUCEF_TRACE;

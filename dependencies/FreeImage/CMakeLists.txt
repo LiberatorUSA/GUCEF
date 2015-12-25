@@ -542,7 +542,6 @@ if (LINUX)
     Source/LibOpenJPEG/tgt.c
     Source/LibOpenJPEG/thix_manager.c
     Source/LibOpenJPEG/tpix_manager.c
-    Source/LibPNG/example.c
     Source/LibPNG/png.c
     Source/LibPNG/pngerror.c
     Source/LibPNG/pngget.c
@@ -558,7 +557,6 @@ if (LINUX)
     Source/LibPNG/pngwrite.c
     Source/LibPNG/pngwtran.c
     Source/LibPNG/pngwutil.c
-    Source/LibRawLite/dcraw/dcraw.c
     Source/LibRawLite/internal/dcraw_common.cpp
     Source/LibRawLite/internal/dcraw_fileio.cpp
     Source/LibRawLite/internal/libraw_x3f.cpp
@@ -708,7 +706,6 @@ if (LINUX)
     Source/OpenEXR/IexMath/IexMathFloatExc.cpp
     Source/OpenEXR/IexMath/IexMathFpu.cpp
     Source/OpenEXR/IlmImf/b44ExpLogTable.cpp
-    Source/OpenEXR/IlmImf/dwaLookups.cpp
     Source/OpenEXR/IlmImf/ImfAcesFile.cpp
     Source/OpenEXR/IlmImf/ImfAttribute.cpp
     Source/OpenEXR/IlmImf/ImfB44Compressor.cpp
@@ -819,7 +816,6 @@ if (LINUX)
     Source/ZLib/gzwrite.c
     Source/ZLib/infback.c
     Source/ZLib/inffast.c
-    Source/ZLib/inflate.c
     Source/ZLib/inftrees.c
     Source/ZLib/trees.c
     Source/ZLib/uncompr.c
@@ -1366,7 +1362,6 @@ elseif (WIN32)
     Source/LibOpenJPEG/tgt.c
     Source/LibOpenJPEG/thix_manager.c
     Source/LibOpenJPEG/tpix_manager.c
-    Source/LibPNG/example.c
     Source/LibPNG/png.c
     Source/LibPNG/pngerror.c
     Source/LibPNG/pngget.c
@@ -1382,7 +1377,6 @@ elseif (WIN32)
     Source/LibPNG/pngwrite.c
     Source/LibPNG/pngwtran.c
     Source/LibPNG/pngwutil.c
-    Source/LibRawLite/dcraw/dcraw.c
     Source/LibRawLite/internal/dcraw_common.cpp
     Source/LibRawLite/internal/dcraw_fileio.cpp
     Source/LibRawLite/internal/libraw_x3f.cpp
@@ -1532,7 +1526,6 @@ elseif (WIN32)
     Source/OpenEXR/IexMath/IexMathFloatExc.cpp
     Source/OpenEXR/IexMath/IexMathFpu.cpp
     Source/OpenEXR/IlmImf/b44ExpLogTable.cpp
-    Source/OpenEXR/IlmImf/dwaLookups.cpp
     Source/OpenEXR/IlmImf/ImfAcesFile.cpp
     Source/OpenEXR/IlmImf/ImfAttribute.cpp
     Source/OpenEXR/IlmImf/ImfB44Compressor.cpp
@@ -1643,7 +1636,6 @@ elseif (WIN32)
     Source/ZLib/gzwrite.c
     Source/ZLib/infback.c
     Source/ZLib/inffast.c
-    Source/ZLib/inflate.c
     Source/ZLib/inftrees.c
     Source/ZLib/trees.c
     Source/ZLib/uncompr.c
@@ -2182,7 +2174,6 @@ elseif (WIN64)
     Source/LibOpenJPEG/tgt.c
     Source/LibOpenJPEG/thix_manager.c
     Source/LibOpenJPEG/tpix_manager.c
-    Source/LibPNG/example.c
     Source/LibPNG/png.c
     Source/LibPNG/pngerror.c
     Source/LibPNG/pngget.c
@@ -2198,7 +2189,6 @@ elseif (WIN64)
     Source/LibPNG/pngwrite.c
     Source/LibPNG/pngwtran.c
     Source/LibPNG/pngwutil.c
-    Source/LibRawLite/dcraw/dcraw.c
     Source/LibRawLite/internal/dcraw_common.cpp
     Source/LibRawLite/internal/dcraw_fileio.cpp
     Source/LibRawLite/internal/libraw_x3f.cpp
@@ -2348,7 +2338,6 @@ elseif (WIN64)
     Source/OpenEXR/IexMath/IexMathFloatExc.cpp
     Source/OpenEXR/IexMath/IexMathFpu.cpp
     Source/OpenEXR/IlmImf/b44ExpLogTable.cpp
-    Source/OpenEXR/IlmImf/dwaLookups.cpp
     Source/OpenEXR/IlmImf/ImfAcesFile.cpp
     Source/OpenEXR/IlmImf/ImfAttribute.cpp
     Source/OpenEXR/IlmImf/ImfB44Compressor.cpp
@@ -2459,7 +2448,6 @@ elseif (WIN64)
     Source/ZLib/gzwrite.c
     Source/ZLib/infback.c
     Source/ZLib/inffast.c
-    Source/ZLib/inflate.c
     Source/ZLib/inftrees.c
     Source/ZLib/trees.c
     Source/ZLib/uncompr.c
