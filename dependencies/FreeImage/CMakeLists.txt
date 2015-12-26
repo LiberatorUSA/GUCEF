@@ -332,17 +332,6 @@ if (LINUX)
     Source/OpenEXR/Imath/ImathSphere.h
     Source/OpenEXR/Imath/ImathVec.h
     Source/OpenEXR/Imath/ImathVecAlgo.h
-    Source/ZLib/crc32.h
-    Source/ZLib/deflate.h
-    Source/ZLib/gzguts.h
-    Source/ZLib/inffast.h
-    Source/ZLib/inffixed.h
-    Source/ZLib/inflate.h
-    Source/ZLib/inftrees.h
-    Source/ZLib/trees.h
-    Source/ZLib/zconf.h
-    Source/ZLib/zlib.h
-    Source/ZLib/zutil.h
   )
 
   set( PLATFORM_HEADER_INSTALL "LINUX" )
@@ -559,10 +548,8 @@ if (LINUX)
     Source/LibPNG/pngwutil.c
     Source/LibRawLite/internal/dcraw_common.cpp
     Source/LibRawLite/internal/dcraw_fileio.cpp
-    Source/LibRawLite/internal/libraw_x3f.cpp
-    Source/LibRawLite/internal/wf_filtering.cpp
+    Source/LibRawLite/internal/demosaic_packs.cpp
     Source/LibRawLite/src/libraw_cxx.cpp
-    Source/LibRawLite/src/libraw_c_api.cpp
     Source/LibRawLite/src/libraw_datastream.cpp
     Source/LibTIFF4/tif_aux.c
     Source/LibTIFF4/tif_close.c
@@ -806,20 +793,6 @@ if (LINUX)
     Source/OpenEXR/Imath/ImathRandom.cpp
     Source/OpenEXR/Imath/ImathShear.cpp
     Source/OpenEXR/Imath/ImathVec.cpp
-    Source/ZLib/adler32.c
-    Source/ZLib/compress.c
-    Source/ZLib/crc32.c
-    Source/ZLib/deflate.c
-    Source/ZLib/gzclose.c
-    Source/ZLib/gzlib.c
-    Source/ZLib/gzread.c
-    Source/ZLib/gzwrite.c
-    Source/ZLib/infback.c
-    Source/ZLib/inffast.c
-    Source/ZLib/inftrees.c
-    Source/ZLib/trees.c
-    Source/ZLib/uncompr.c
-    Source/ZLib/zutil.c
   )
 
   set( PLATFORM_SOURCE_INSTALL "LINUX" )
@@ -1152,17 +1125,6 @@ elseif (WIN32)
     Source/OpenEXR/Imath/ImathSphere.h
     Source/OpenEXR/Imath/ImathVec.h
     Source/OpenEXR/Imath/ImathVecAlgo.h
-    Source/ZLib/crc32.h
-    Source/ZLib/deflate.h
-    Source/ZLib/gzguts.h
-    Source/ZLib/inffast.h
-    Source/ZLib/inffixed.h
-    Source/ZLib/inflate.h
-    Source/ZLib/inftrees.h
-    Source/ZLib/trees.h
-    Source/ZLib/zconf.h
-    Source/ZLib/zlib.h
-    Source/ZLib/zutil.h
   )
 
   set( PLATFORM_HEADER_INSTALL "WIN32" )
@@ -1379,10 +1341,8 @@ elseif (WIN32)
     Source/LibPNG/pngwutil.c
     Source/LibRawLite/internal/dcraw_common.cpp
     Source/LibRawLite/internal/dcraw_fileio.cpp
-    Source/LibRawLite/internal/libraw_x3f.cpp
-    Source/LibRawLite/internal/wf_filtering.cpp
+    Source/LibRawLite/internal/demosaic_packs.cpp
     Source/LibRawLite/src/libraw_cxx.cpp
-    Source/LibRawLite/src/libraw_c_api.cpp
     Source/LibRawLite/src/libraw_datastream.cpp
     Source/LibTIFF4/tif_aux.c
     Source/LibTIFF4/tif_close.c
@@ -1626,20 +1586,6 @@ elseif (WIN32)
     Source/OpenEXR/Imath/ImathRandom.cpp
     Source/OpenEXR/Imath/ImathShear.cpp
     Source/OpenEXR/Imath/ImathVec.cpp
-    Source/ZLib/adler32.c
-    Source/ZLib/compress.c
-    Source/ZLib/crc32.c
-    Source/ZLib/deflate.c
-    Source/ZLib/gzclose.c
-    Source/ZLib/gzlib.c
-    Source/ZLib/gzread.c
-    Source/ZLib/gzwrite.c
-    Source/ZLib/infback.c
-    Source/ZLib/inffast.c
-    Source/ZLib/inftrees.c
-    Source/ZLib/trees.c
-    Source/ZLib/uncompr.c
-    Source/ZLib/zutil.c
   )
 
   set( PLATFORM_SOURCE_INSTALL "WIN32" )
@@ -1964,17 +1910,6 @@ elseif (WIN64)
     Source/OpenEXR/Imath/ImathSphere.h
     Source/OpenEXR/Imath/ImathVec.h
     Source/OpenEXR/Imath/ImathVecAlgo.h
-    Source/ZLib/crc32.h
-    Source/ZLib/deflate.h
-    Source/ZLib/gzguts.h
-    Source/ZLib/inffast.h
-    Source/ZLib/inffixed.h
-    Source/ZLib/inflate.h
-    Source/ZLib/inftrees.h
-    Source/ZLib/trees.h
-    Source/ZLib/zconf.h
-    Source/ZLib/zlib.h
-    Source/ZLib/zutil.h
   )
 
   set( PLATFORM_HEADER_INSTALL "WIN64" )
@@ -2191,10 +2126,8 @@ elseif (WIN64)
     Source/LibPNG/pngwutil.c
     Source/LibRawLite/internal/dcraw_common.cpp
     Source/LibRawLite/internal/dcraw_fileio.cpp
-    Source/LibRawLite/internal/libraw_x3f.cpp
-    Source/LibRawLite/internal/wf_filtering.cpp
+    Source/LibRawLite/internal/demosaic_packs.cpp
     Source/LibRawLite/src/libraw_cxx.cpp
-    Source/LibRawLite/src/libraw_c_api.cpp
     Source/LibRawLite/src/libraw_datastream.cpp
     Source/LibTIFF4/tif_aux.c
     Source/LibTIFF4/tif_close.c
@@ -2438,20 +2371,6 @@ elseif (WIN64)
     Source/OpenEXR/Imath/ImathRandom.cpp
     Source/OpenEXR/Imath/ImathShear.cpp
     Source/OpenEXR/Imath/ImathVec.cpp
-    Source/ZLib/adler32.c
-    Source/ZLib/compress.c
-    Source/ZLib/crc32.c
-    Source/ZLib/deflate.c
-    Source/ZLib/gzclose.c
-    Source/ZLib/gzlib.c
-    Source/ZLib/gzread.c
-    Source/ZLib/gzwrite.c
-    Source/ZLib/infback.c
-    Source/ZLib/inffast.c
-    Source/ZLib/inftrees.c
-    Source/ZLib/trees.c
-    Source/ZLib/uncompr.c
-    Source/ZLib/zutil.c
   )
 
   set( PLATFORM_SOURCE_INSTALL "WIN64" )
@@ -2479,27 +2398,33 @@ elseif( WIN64 )
 endif()
 
 if ( LINUX )
+  add_dependencies( ${MODULE_NAME} zlib )
+  target_link_libraries( ${MODULE_NAME} zlib )
   set_property( TARGET ${MODULE_NAME} APPEND_STRING PROPERTY COMPILE_DEFINITIONS "FREEIMAGE_EXPORTS;LIBRAW_LIBRARY_BUILD;LIBRAW_NODLL;NO_JASPER;OPJ_STATIC;USE_JPIP;ZENO_STATIC" )
 endif( LINUX )
 
 if ( WIN32 )
+  add_dependencies( ${MODULE_NAME} zlib )
+  target_link_libraries( ${MODULE_NAME} zlib )
   set_property( TARGET ${MODULE_NAME} APPEND_STRING PROPERTY COMPILE_DEFINITIONS "FREEIMAGE_EXPORTS;LIBRAW_LIBRARY_BUILD;LIBRAW_NODLL;NO_JASPER;OPJ_STATIC;USE_JPIP;ZENO_STATIC;_CRT_SECURE_NO_WARNINGS" )
 endif( WIN32 )
 
 if ( WIN64 )
+  add_dependencies( ${MODULE_NAME} zlib )
+  target_link_libraries( ${MODULE_NAME} zlib )
   set_property( TARGET ${MODULE_NAME} APPEND_STRING PROPERTY COMPILE_DEFINITIONS "FREEIMAGE_EXPORTS;LIBRAW_LIBRARY_BUILD;LIBRAW_NODLL;NO_JASPER;OPJ_STATIC;USE_JPIP;ZENO_STATIC;_CRT_SECURE_NO_WARNINGS" )
 endif( WIN64 )
 
 if ( LINUX )
-  include_directories( Source Source/DeprecationManager Source/FreeImage Source/FreeImageToolkit Source/LibJPEG Source/LibJXR/common/include Source/LibJXR/image/decode Source/LibJXR/image/encode Source/LibJXR/image/sys Source/LibJXR/image/x86 Source/LibJXR/jxrgluelib Source/LibOpenJPEG Source/LibPNG Source/LibRawLite/internal Source/LibRawLite/libraw Source/LibTIFF4 Source/LibWebP/src/dec Source/LibWebP/src/dsp Source/LibWebP/src/enc Source/LibWebP/src/mux Source/LibWebP/src/utils Source/LibWebP/src/webp Source/Metadata Source/OpenEXR Source/OpenEXR/Half Source/OpenEXR/Iex Source/OpenEXR/IexMath Source/OpenEXR/IlmImf Source/OpenEXR/IlmThread Source/OpenEXR/Imath Source/ZLib )
+  include_directories( ../zlib Source Source/DeprecationManager Source/FreeImage Source/FreeImageToolkit Source/LibJPEG Source/LibJXR/common/include Source/LibJXR/image/decode Source/LibJXR/image/encode Source/LibJXR/image/sys Source/LibJXR/image/x86 Source/LibJXR/jxrgluelib Source/LibOpenJPEG Source/LibPNG Source/LibRawLite/internal Source/LibRawLite/libraw Source/LibTIFF4 Source/LibWebP/src/dec Source/LibWebP/src/dsp Source/LibWebP/src/enc Source/LibWebP/src/mux Source/LibWebP/src/utils Source/LibWebP/src/webp Source/Metadata Source/OpenEXR Source/OpenEXR/Half Source/OpenEXR/Iex Source/OpenEXR/IexMath Source/OpenEXR/IlmImf Source/OpenEXR/IlmThread Source/OpenEXR/Imath )
 endif( LINUX )
 
 if ( WIN32 )
-  include_directories( Source Source/DeprecationManager Source/FreeImage Source/FreeImageToolkit Source/LibJPEG Source/LibJXR/common/include Source/LibJXR/image/decode Source/LibJXR/image/encode Source/LibJXR/image/sys Source/LibJXR/image/x86 Source/LibJXR/jxrgluelib Source/LibOpenJPEG Source/LibPNG Source/LibRawLite/internal Source/LibRawLite/libraw Source/LibTIFF4 Source/LibWebP/src/dec Source/LibWebP/src/dsp Source/LibWebP/src/enc Source/LibWebP/src/mux Source/LibWebP/src/utils Source/LibWebP/src/webp Source/Metadata Source/OpenEXR Source/OpenEXR/Half Source/OpenEXR/Iex Source/OpenEXR/IexMath Source/OpenEXR/IlmImf Source/OpenEXR/IlmThread Source/OpenEXR/Imath Source/ZLib )
+  include_directories( ../zlib Source Source/DeprecationManager Source/FreeImage Source/FreeImageToolkit Source/LibJPEG Source/LibJXR/common/include Source/LibJXR/image/decode Source/LibJXR/image/encode Source/LibJXR/image/sys Source/LibJXR/image/x86 Source/LibJXR/jxrgluelib Source/LibOpenJPEG Source/LibPNG Source/LibRawLite/internal Source/LibRawLite/libraw Source/LibTIFF4 Source/LibWebP/src/dec Source/LibWebP/src/dsp Source/LibWebP/src/enc Source/LibWebP/src/mux Source/LibWebP/src/utils Source/LibWebP/src/webp Source/Metadata Source/OpenEXR Source/OpenEXR/Half Source/OpenEXR/Iex Source/OpenEXR/IexMath Source/OpenEXR/IlmImf Source/OpenEXR/IlmThread Source/OpenEXR/Imath )
 endif( WIN32 )
 
 if ( WIN64 )
-  include_directories( Source Source/DeprecationManager Source/FreeImage Source/FreeImageToolkit Source/LibJPEG Source/LibJXR/common/include Source/LibJXR/image/decode Source/LibJXR/image/encode Source/LibJXR/image/sys Source/LibJXR/image/x86 Source/LibJXR/jxrgluelib Source/LibOpenJPEG Source/LibPNG Source/LibRawLite/internal Source/LibRawLite/libraw Source/LibTIFF4 Source/LibWebP/src/dec Source/LibWebP/src/dsp Source/LibWebP/src/enc Source/LibWebP/src/mux Source/LibWebP/src/utils Source/LibWebP/src/webp Source/Metadata Source/OpenEXR Source/OpenEXR/Half Source/OpenEXR/Iex Source/OpenEXR/IexMath Source/OpenEXR/IlmImf Source/OpenEXR/IlmThread Source/OpenEXR/Imath Source/ZLib )
+  include_directories( ../zlib Source Source/DeprecationManager Source/FreeImage Source/FreeImageToolkit Source/LibJPEG Source/LibJXR/common/include Source/LibJXR/image/decode Source/LibJXR/image/encode Source/LibJXR/image/sys Source/LibJXR/image/x86 Source/LibJXR/jxrgluelib Source/LibOpenJPEG Source/LibPNG Source/LibRawLite/internal Source/LibRawLite/libraw Source/LibTIFF4 Source/LibWebP/src/dec Source/LibWebP/src/dsp Source/LibWebP/src/enc Source/LibWebP/src/mux Source/LibWebP/src/utils Source/LibWebP/src/webp Source/Metadata Source/OpenEXR Source/OpenEXR/Half Source/OpenEXR/Iex Source/OpenEXR/IexMath Source/OpenEXR/IlmImf Source/OpenEXR/IlmThread Source/OpenEXR/Imath )
 endif( WIN64 )
 
 

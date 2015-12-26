@@ -1,4 +1,5 @@
 aahd_demosaic.cpp
-dcb_demosaicing.c
-demosaic_packs.cpp
 dht_demosaic.cpp
+dcb_demosaicing.c
+libraw_x3f.cpp
+wf_filtering.cpp

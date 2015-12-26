@@ -686,7 +686,11 @@ IMGCODECPLUGIN_DecodeImage( void* pluginData      ,
 
     if ( fif == FIF_UNKNOWN )
     {
-        fif = GetFileTypeFromExt( codecType );
+        fif = FreeImage_GetFIFFromFormat( codecType );
+        if ( fif == FIF_UNKNOWN )
+        {
+            fif = GetFileTypeFromExt( codecType );
+        }
     }
 
     if( fif != FIF_UNKNOWN )
@@ -847,20 +851,25 @@ IMGCODECPLUGIN_EncodeImage( void* pluginData      ,
                                                  level->mipLevelInfo.pixelComponentDataType );
             int bpp = pixelSizeInBytes * 8;
             int pitch = pixelSizeInBytes * level->mipLevelInfo.frameWidth; 
-            FIBITMAP* bitmap = FreeImage_ConvertFromRawBits( (BYTE*) level->pixelData        ,
-                                                             level->mipLevelInfo.frameWidth  , 
-                                                             level->mipLevelInfo.frameHeight ,
-                                                             pitch                           ,
-                                                             bpp                             ,
-                                                             0, 0, 0                         ,
-                                                             1                               );
+            FIBITMAP* bitmap = FreeImage_ConvertFromRawBitsEx( 0                               ,
+                                                               (BYTE*) level->pixelData        ,
+                                                               FIT_BITMAP                      ,
+                                                               level->mipLevelInfo.frameWidth  , 
+                                                               level->mipLevelInfo.frameHeight ,
+                                                               pitch                           ,
+                                                               bpp                             ,
+                                                               0, 0, 0                         ,
+                                                               1                               );
             if ( NULL == bitmap )
             {
                 return 0;
             }
 
-i f ( FreeImage_Save (FIF PNG, bitmap , ” t e st . png” , 0 ))
-cout << ”Image s u c c e ssf u l l y saved ! ” << endl ;
+            fif = FreeImage_GetFIFFromFormat( codecType );            
+            if ( 0 != FreeImage_SaveToHandle( fif, bitmap, &io, (fi_handle) output, 0 ) )
+            {
+                return 1;
+            }
         }
     }
     return 0;

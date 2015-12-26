@@ -30,6 +30,11 @@
 #define GUCEF_CORE_DVFILEUTILS_H
 #endif /* GUCEF_CORE_DVFILEUTILS_H ? */
 
+#ifndef GUCEF_CORE_DVCPPSTRINGUTILS_H
+#include "dvcppstringutils.h" 
+#define GUCEF_CORE_DVCPPSTRINGUTILS_H
+#endif /* GUCEF_CORE_DVCPPSTRINGUTILS_H ? */
+
 #include "CFileAccess.h"      /* definition of the class implemented here */
 
 #ifndef GUCEF_CORE_UCEF_ESSENTIALS_H
@@ -114,6 +119,16 @@ CFileAccess::Open( const CString& file ,
     
     _readable = ( strchr( mode, 'r' ) != NULL ) || ( strchr( mode, 'a' ) != NULL );
     _writeable = ( strchr( mode, 'w' ) != NULL ) || ( strchr( mode, 'a' ) != NULL );
+
+    if ( _writeable )
+    {
+        CString path = StripFilename( file );
+        if ( !CreateDirs( path ) )
+        {
+            GUCEF_DEBUG_LOG( LOGLEVEL_NORMAL, "FileAccess:Open: Failed to recursively create directories" )
+            return false;
+        }
+    }
     
     _size = Filesize( file.C_String() );
     m_file = fopen( file.C_String() ,

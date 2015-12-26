@@ -229,6 +229,8 @@ CPixelMap::ApplyPalette( TPixelMapPtr palette )
     TPixelMapPtr resultImage; 
     if ( ApplyPalette( palette, resultImage ) )
     {
+        Clear();
+        
         // for efficiency we just steal the data
         m_widthInPixels = resultImage->m_widthInPixels;
         m_heightInPixels = resultImage->m_heightInPixels;

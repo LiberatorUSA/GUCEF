@@ -7,8 +7,14 @@
             <Define String="LIBRAW_LIBRARY_BUILD" />
             <Define String="NO_JASPER" />
             <Define String="USE_JPIP" />
-			<Define String="LIBRAW_NODLL" />
+	    <Define String="LIBRAW_NODLL" />
         </Preprocessor>
+        <Dependencies>
+            <Dependency Name="zlib" />
+        </Dependencies>
+        <Linker>
+            <Dependency Name="zlib" />
+        </Linker>
     </Module>
     <Module Platform="mswin">
         <Preprocessor>
