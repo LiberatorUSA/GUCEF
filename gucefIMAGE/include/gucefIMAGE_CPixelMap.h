@@ -148,15 +148,24 @@ class GUCEF_IMAGE_EXPORT_CPP CPixelMap
                          Float32 b );    
 
     /**
+     *  Attempts to convert the current pixel format into the given format
+     */
+    bool ConvertFormatTo( const TPixelStorageFormat pixelStorageFormat  , 
+                          const TBuildinDataType pixelComponentDataType );
+
+    /**
      *  Attempts to convert the pixel format into the given format and gives back the new pixelmap
      */
     bool ConvertFormatTo( const TPixelStorageFormat pixelStorageFormat  , 
                           const TBuildinDataType pixelComponentDataType ,
                           TPixelMapPtr& newMap                          );
 
+    bool ConvertFormatTo( const TPixelStorageFormat pixelStorageFormat );
 
     bool ConvertFormatTo( const TPixelStorageFormat pixelStorageFormat  , 
                           TPixelMapPtr& newMap                          );
+
+    bool ConvertFormatTo( const TBuildinDataType pixelComponentDataType );
 
     bool ConvertFormatTo( const TBuildinDataType pixelComponentDataType , 
                           TPixelMapPtr& newMap                          );

@@ -337,7 +337,12 @@ CResArchive::LoadIndex( void )
         CORE::UInt32 fileSize = file.GetSize();        
         GUCEF_DEBUG_LOG( CORE::LOGLEVEL_BELOW_NORMAL, "CResArchive:LoadIndex: Successfully opened index file of " + CORE::UInt32ToString( fileSize ) + " bytes"  );
         
-        if ( 1 != file.Read( &m_index.recordType, 2, 1 ) ) { file.Close(); return false; }
+        if ( 1 != file.Read( &m_index.recordType, 2, 1 ) ) 
+        { 
+            GUCEF_ERROR_LOG( CORE::LOGLEVEL_IMPORTANT, "Failed to read index header at position " + CORE::UInt32ToString( file.Tell() ) );
+            file.Close(); 
+            return false; 
+        }
 
         // Get the nr of index entries plus do a sanity check
         CORE::UInt32 nrOfEntries = fileSize - 2;
@@ -352,9 +357,21 @@ CResArchive::LoadIndex( void )
         {
             IdxRecord idxRecord;
             if ( 1 != file.Read( &idxRecord.resourceNr, 4, 1 ) ) 
-                { file.Close(); return false; }
+            { 
+                GUCEF_ERROR_LOG( CORE::LOGLEVEL_IMPORTANT, "Failed to read index entry at pos in index " + CORE::UInt32ToString( file.Tell() ) + 
+                    " Entry " + CORE::UInt32ToString( i+1 ) + "/" + CORE::UInt32ToString( nrOfEntries ) );
+
+                file.Close(); 
+                return false; 
+            }
             if ( 1 != file.Read( &idxRecord.offset, 4, 1 ) ) 
-                { file.Close(); return false; }
+            { 
+                GUCEF_ERROR_LOG( CORE::LOGLEVEL_IMPORTANT, "Failed to read index entry at pos in index " + CORE::UInt32ToString( file.Tell() ) + 
+                    " Entry " + CORE::UInt32ToString( i+1 ) + "/" + CORE::UInt32ToString( nrOfEntries ) );
+
+                file.Close(); 
+                return false; 
+            }
 
             GUCEF_DEBUG_LOG( CORE::LOGLEVEL_BELOW_NORMAL, "Read index entry: id " + CORE::Int32ToString( idxRecord.resourceNr ) + 
                 ", offset " + CORE::Int32ToString( idxRecord.offset ) + ". Pos in index " + CORE::UInt32ToString( file.Tell() ) + 

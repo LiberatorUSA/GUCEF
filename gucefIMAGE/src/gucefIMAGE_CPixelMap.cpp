@@ -141,6 +141,8 @@ CPixelMap::ApplyPalette( TPixelMapPtr palette, TPixelMapPtr& resultImage ) const
         // Allocate a new blank pixelmap with the right dimensions
         resultImage = new CPixelMap( NULL, m_widthInPixels, m_heightInPixels, palette->GetPixelStorageFormat(), palette->GetPixelComponentDataType() );
         
+        UInt32 totalPaletteBytes = palette->GetTotalSizeInBytes();
+        UInt32 totalNewImageBytes = resultImage->GetTotalSizeInBytes();
         UInt32 pixelByteSize = palette->GetSizeOfPixelInBytes();        
         for ( UInt32 i=0; i<m_heightInPixels; ++i )
         {
@@ -210,10 +212,20 @@ CPixelMap::ApplyPalette( TPixelMapPtr palette, TPixelMapPtr& resultImage ) const
                 UInt32 srcPixelOffset = paletteIndex*pixelByteSize;
                 UInt32 dstPixelOffset = pixelIndex*pixelByteSize;
 
-                memcpy( resultImage->m_pixelMapData+dstPixelOffset, palette->m_pixelMapData+srcPixelOffset, pixelByteSize );
+                // Make sure we cannot cause memory corruption by copying beyond the buffers
+                if ( srcPixelOffset+pixelByteSize < totalPaletteBytes && dstPixelOffset+pixelByteSize < totalNewImageBytes )
+                {
+                    memcpy( resultImage->m_pixelMapData+dstPixelOffset, palette->m_pixelMapData+srcPixelOffset, pixelByteSize );
+                }
+                else
+                {
+                    // this should not happen if a valid palette is used for this palettized image
+                    // the index is out of the range of the palette
+                    GUCEF_WARNING_LOG( CORE::LOGLEVEL_NORMAL, "Image:ApplyPalette: Aborted pixel asssignment since the operation would exceed the buffer size" );
+                    return false;
+                }
             }
-        }
-        
+        }        
         
         return true;
     }
@@ -1117,19 +1129,9 @@ CPixelMap::ConvertFormatToImp( T* pixelMapData                               ,
                     return true;
                 }
                 case PSF_SINGLE_CHANNEL_RED:
-                {
-                    // copy segments and alter/supplement
-                    for ( UInt32 i=0; i<pixelCount; ++i )
-                    {                            
-                        T* orgPixelData = pixelMapData+(i*channelCount);                        
-                        T pixelData[ 1 ] = { orgPixelData[ 0 ] };
-
-                        // Assign new pixel value and convert data type from T to its type
-                        newMap->AssignToPixel< T >( i, pixelData );
-                    }
-                    return true;
-                }
                 case PSF_SINGLE_CHANNEL_GREEN:
+                case PSF_SINGLE_CHANNEL_BLUE:
+                case PSF_SINGLE_CHANNEL_ALPHA:
                 {
                     // copy segments and alter/supplement
                     for ( UInt32 i=0; i<pixelCount; ++i )
@@ -1142,19 +1144,44 @@ CPixelMap::ConvertFormatToImp( T* pixelMapData                               ,
                     }
                     return true;
                 }
-                case PSF_SINGLE_CHANNEL_BLUE:
+            }
+            break;
+        }
+        case PSF_PALETTE_INDICES:
+        {
+            switch ( pixelStorageFormat )
+            {
+                case PSF_BGR:
+                case PSF_RGB:
                 {
                     // copy segments and alter/supplement
                     for ( UInt32 i=0; i<pixelCount; ++i )
                     {                            
                         T* orgPixelData = pixelMapData+(i*channelCount);                        
-                        T pixelData[ 1 ] = { orgPixelData[ 0 ] };
+                        T pixelData[ 3 ] = { orgPixelData[ 0 ], orgPixelData[ 0 ], orgPixelData[ 0 ] };
 
                         // Assign new pixel value and convert data type from T to its type
                         newMap->AssignToPixel< T >( i, pixelData );
                     }
                     return true;
-                }         
+                }
+                case PSF_RGBA:
+                case PSF_BGRA:
+                {
+                    // copy segments and alter/supplement
+                    for ( UInt32 i=0; i<pixelCount; ++i )
+                    {                            
+                        T* orgPixelData = pixelMapData+(i*channelCount);                        
+                        T pixelData[ 4 ] = { orgPixelData[ 0 ], orgPixelData[ 0 ], orgPixelData[ 0 ], 0 };  // fully opaque
+
+                        // Assign new pixel value and convert data type from T to its type
+                        newMap->AssignToPixel< T >( i, pixelData );
+                    }
+                    return true;
+                }
+                case PSF_SINGLE_CHANNEL_RED:
+                case PSF_SINGLE_CHANNEL_GREEN:
+                case PSF_SINGLE_CHANNEL_BLUE:
                 case PSF_SINGLE_CHANNEL_ALPHA:
                 {
                     // copy segments and alter/supplement
@@ -1189,12 +1216,54 @@ CPixelMap::ConvertFormatTo( const TBuildinDataType pixelComponentDataType ,
 
 /*--------------------------------------------------------------------------*/
 
+bool 
+CPixelMap::ConvertFormatTo( const TBuildinDataType pixelComponentDataType )
+{GUCEF_TRACE;
+
+    return ConvertFormatTo( m_pixelStorageFormat, pixelComponentDataType );
+}
+
+/*--------------------------------------------------------------------------*/
+
 bool
 CPixelMap::ConvertFormatTo( const TPixelStorageFormat pixelStorageFormat  , 
                             TPixelMapPtr& newMap                          )
 {GUCEF_TRACE;
 
     return ConvertFormatTo( pixelStorageFormat, m_pixelComponentDataType, newMap );
+}
+
+/*--------------------------------------------------------------------------*/
+
+bool
+CPixelMap::ConvertFormatTo( const TPixelStorageFormat pixelStorageFormat )
+{GUCEF_TRACE;
+
+    return ConvertFormatTo( pixelStorageFormat, m_pixelComponentDataType );
+}
+
+/*--------------------------------------------------------------------------*/
+
+bool
+CPixelMap::ConvertFormatTo( const TPixelStorageFormat pixelStorageFormat  , 
+                            const TBuildinDataType pixelComponentDataType )
+{GUCEF_TRACE;
+
+    TPixelMapPtr resultImage; 
+    if ( ConvertFormatTo( pixelStorageFormat, pixelComponentDataType, resultImage ) )
+    {
+        Clear();
+        
+        // for efficiency we just steal the data
+        m_widthInPixels = resultImage->m_widthInPixels;
+        m_heightInPixels = resultImage->m_heightInPixels;
+        m_pixelStorageFormat = resultImage->m_pixelStorageFormat;
+        m_pixelComponentDataType = resultImage->m_pixelComponentDataType;
+        m_pixelMapData = resultImage->m_pixelMapData;
+        resultImage->m_pixelMapData = NULL;
+        return true;
+    }
+    return false;
 }
 
 /*--------------------------------------------------------------------------*/
@@ -1293,16 +1362,20 @@ CPixelMap::GetChannelCountForFormat( const TPixelStorageFormat pixelStorageForma
         {
             return 4;
         }
+        case PSF_SINGLE_CHANNEL_GRAYSCALE :
         case PSF_SINGLE_CHANNEL_RED :
         case PSF_SINGLE_CHANNEL_GREEN :
         case PSF_SINGLE_CHANNEL_BLUE :
+        case PSF_SINGLE_CHANNEL_ALPHA :
         case PSF_SINGLE_CHANNEL_STD_LUMINANCE :
         case PSF_SINGLE_CHANNEL_P1_LUMINANCE :
         case PSF_SINGLE_CHANNEL_P2_LUMINANCE :
-        case PSF_SINGLE_CHANNEL_ALPHA :
+        case PSF_LUMINANCE_ALPHA :
+        case PSF_PALETTE_INDICES :
         {
             return 1;
         }
+        case PSF_COUNT :
         default :
         {
             return 0;

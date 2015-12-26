@@ -211,6 +211,7 @@ GUCEF_OSMAIN_BEGIN
     if ( argc > 0 )
     {
         CORE::CString archivePath = keyValueList.GetValueAlways( "archive" );
+        archivePath = archivePath.Trim( true ).Trim( false );
         if ( !archivePath.IsNULLOrEmpty() )
         {
             CORE::CString archiveType = keyValueList.GetValueAlways( "archiveType" );
@@ -218,9 +219,11 @@ GUCEF_OSMAIN_BEGIN
             {
                 archiveType = CORE::ExtractFileExtention( archivePath ).Lowercase();
             }
+            archiveType = archiveType.Trim( true ).Trim( false );
 
             bool listArchiveContents = CORE::StringToBool( keyValueList.GetValueAlways( "list", "true" ) );
             bool extractArchiveContents = CORE::StringToBool( keyValueList.GetValueAlways( "extract", "false" ) );
+            bool overwrite = CORE::StringToBool( keyValueList.GetValueAlways( "overwrite", "false" ) ); 
 
             CORE::CString archiveFilename = CORE::ExtractFilename( archivePath );
             CORE::CString archiveDir = CORE::StripFilename( archivePath );
@@ -285,6 +288,8 @@ GUCEF_OSMAIN_BEGIN
                             // Get the contents of the archive
                             VFS::CVFS::TStringSet archiveContent;
                             vfs.GetList( archiveContent, mount, true, true, CORE::CString::Empty, true, false );
+                            
+                            GUCEF_LOG( CORE::LOGLEVEL_NORMAL, "archive contains " + CORE::UInt32ToString( archiveContent.size() ) + " entries" );
 
                             // prepare the output folder
                             CORE::CString archiveOutputDir = archiveFilename.ReplaceChar( '.', '_' );
@@ -299,13 +304,25 @@ GUCEF_OSMAIN_BEGIN
                                 {
                                     CORE::CString filename = CORE::ExtractFilename( (*i) );
                                     CORE::CString vfsFilePath = CORE::CombinePath( mount, filename );
+
+                                    CORE::CString extractedFilePath = filename;
+                                    extractedFilePath = CORE::CombinePath( archiveOutputDir, extractedFilePath );
+
+                                    if ( !overwrite )
+                                    {
+                                        // Check if destination file already exists
+                                        if ( CORE::FileExists( extractedFilePath ) )
+                                        {
+                                            GUCEF_LOG( CORE::LOGLEVEL_NORMAL, "Skipping extraction of file since the destination path already exists and 'overwrite=false'. Path: " + extractedFilePath );
+                                            ++i;
+                                            continue;
+                                        }
+                                    }
+
                                     VFS::CVFS::CVFSHandlePtr file = vfs.GetFile( vfsFilePath, "rb", false );
                                     if ( !file.IsNULL() )
                                     {
                                         GUCEF_LOG( CORE::LOGLEVEL_NORMAL, "Obtained access to resource: " + (*i) );
-                                
-                                        CORE::CString extractedFilePath = filename;
-                                        extractedFilePath = CORE::CombinePath( archiveOutputDir, extractedFilePath );
 
                                         CORE::CFileAccess extractedFile;
                                         if ( extractedFile.Open( extractedFilePath, "wb" ) )

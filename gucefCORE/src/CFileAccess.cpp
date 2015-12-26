@@ -129,8 +129,11 @@ CFileAccess::Open( const CString& file ,
             return false;
         }
     }
+    if ( _readable )
+    {
+        _size = Filesize( file.C_String() );
+    }
     
-    _size = Filesize( file.C_String() );
     m_file = fopen( file.C_String() ,
                     mode            );
 
