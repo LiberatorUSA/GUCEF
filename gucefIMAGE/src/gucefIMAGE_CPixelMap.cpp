@@ -37,6 +37,11 @@
 #define GUCEF_CORE_CMFILEACCESS_H
 #endif /* GUCEF_CORE_CMFILEACCESS_H ? */
 
+#ifndef GUCEF_IMAGE_CPIXEL_H
+#include "gucefIMAGE_CPixel.h"
+#define GUCEF_IMAGE_CPIXEL_H
+#endif /* GUCEF_IMAGE_CPIXEL_H ? */
+
 #include "gucefIMAGE_CPixelMap.h"
 
 /*-------------------------------------------------------------------------//
@@ -213,7 +218,7 @@ CPixelMap::ApplyPalette( TPixelMapPtr palette, TPixelMapPtr& resultImage ) const
                 UInt32 dstPixelOffset = pixelIndex*pixelByteSize;
 
                 // Make sure we cannot cause memory corruption by copying beyond the buffers
-                if ( srcPixelOffset+pixelByteSize < totalPaletteBytes && dstPixelOffset+pixelByteSize < totalNewImageBytes )
+                if ( srcPixelOffset+pixelByteSize <= totalPaletteBytes && dstPixelOffset+pixelByteSize <= totalNewImageBytes )
                 {
                     memcpy( resultImage->m_pixelMapData+dstPixelOffset, palette->m_pixelMapData+srcPixelOffset, pixelByteSize );
                 }
@@ -480,7 +485,19 @@ bool
 CPixelMap::GetHasAlpha( void ) const
 {GUCEF_TRACE;
 
-    return ( m_pixelStorageFormat == PSF_RGBA ) || ( m_pixelStorageFormat == PSF_SINGLE_CHANNEL_ALPHA );
+    return GetHasAlpha( m_pixelStorageFormat );    
+}
+
+/*--------------------------------------------------------------------------*/
+
+bool
+CPixelMap::GetHasAlpha( const TPixelStorageFormat pixelStorageFormat )
+{GUCEF_TRACE;
+
+    return ( pixelStorageFormat == PSF_RGBA ) || 
+           ( pixelStorageFormat == PSF_BGRA ) ||
+           ( pixelStorageFormat == PSF_SINGLE_CHANNEL_ALPHA ) ||
+           ( pixelStorageFormat == PSF_LUMINANCE_ALPHA );
 }
    
 /*--------------------------------------------------------------------------*/
@@ -1445,6 +1462,24 @@ CPixelMap::CopyTo( CORE::CIOAccess& resource )
     UInt32 dataSize = GetTotalSizeInBytes();
     CORE::CMFileAccess memoryFile( m_pixelMapData, dataSize );
     return resource.Write( memoryFile ) == dataSize;
+}
+
+/*--------------------------------------------------------------------------*/
+
+UInt32
+CPixelMap::DetermineActualColorCount( void ) const
+{GUCEF_TRACE;
+
+    std::map< CPixel, UInt32 > colorCounters;
+
+    UInt32 pixelCount = GetPixelCount();
+    for ( UInt32 i=0; i<pixelCount; ++i )
+    {
+        CPixel pixel( GetDataPtr( i ), m_pixelStorageFormat, m_pixelComponentDataType, true );
+        ++( colorCounters[ pixel ] );
+    }
+
+    return colorCounters.size();
 }
 
 /*-------------------------------------------------------------------------//

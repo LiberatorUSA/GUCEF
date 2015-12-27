@@ -24,6 +24,7 @@ set( HEADER_FILES
   include/gucefIMAGE_CImageGlobal.h
   include/gucefIMAGE_CIMGCodec.h
   include/gucefIMAGE_config.h
+  include/gucefIMAGE_CPixel.h
   include/gucefIMAGE_CPixelMap.h
   include/gucefIMAGE_CPluginImageCodecItem.h
   include/gucefIMAGE_ETypes.h
@@ -43,6 +44,7 @@ set( SOURCE_FILES
   src/gucefIMAGE_CImageCodecRegistry.cpp
   src/gucefIMAGE_CImageGlobal.cpp
   src/gucefIMAGE_CIMGCodec.cpp
+  src/gucefIMAGE_CPixel.cpp
   src/gucefIMAGE_CPixelMap.cpp
 )
 

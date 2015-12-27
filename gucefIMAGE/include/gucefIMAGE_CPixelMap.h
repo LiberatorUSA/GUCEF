@@ -218,6 +218,11 @@ class GUCEF_IMAGE_EXPORT_CPP CPixelMap
      *  @param resource the resource to which the pixel map will be written
      */
     bool CopyTo( CORE::CIOAccess& resource );
+
+    /**
+     *  Determines the actual number of unique colors 
+     */
+    UInt32 DetermineActualColorCount( void ) const;
     
     static UInt32 GetChannelCountForFormat( const TPixelStorageFormat pixelStorageFormat );
     
@@ -234,6 +239,8 @@ class GUCEF_IMAGE_EXPORT_CPP CPixelMap
                                            const UInt32 heightInPixels                   ,
                                            const TPixelStorageFormat pixelStorageFormat  ,
                                            const TBuildinDataType pixelComponentDataType );
+
+    static bool GetHasAlpha( const TPixelStorageFormat pixelStorageFormat );
     
     /**
      *  Utility member function allowing assignment to the channels of a pixel without
