@@ -41,6 +41,11 @@
 #define GUCEF_IMAGE_IMAGEDATA_H
 #endif /* GUCEF_IMAGE_IMAGEDATA_H ? */
 
+#ifndef GUCEF_IMAGE_CPIXEL_H
+#include "gucefIMAGE_CPixel.h"
+#define GUCEF_IMAGE_CPIXEL_H
+#endif /* GUCEF_IMAGE_CPIXEL_H ? */
+
 /*-------------------------------------------------------------------------//
 //                                                                         //
 //      CLASSES                                                            //
@@ -70,6 +75,7 @@ class GUCEF_IMAGE_EXPORT_CPP CPixelMap
     public:
 
     typedef CORE::CTSharedPtr< CPixelMap > TPixelMapPtr;
+    typedef std::map< CPixel, UInt32 > TColorCounters; 
     
     CPixelMap( const TImageMipMapLevel& mipmapLevel );
     
@@ -223,6 +229,8 @@ class GUCEF_IMAGE_EXPORT_CPP CPixelMap
      *  Determines the actual number of unique colors 
      */
     UInt32 DetermineActualColorCount( void ) const;
+
+    bool GetColorCounters( TColorCounters& colorCountMap ) const;
     
     static UInt32 GetChannelCountForFormat( const TPixelStorageFormat pixelStorageFormat );
     

@@ -37,11 +37,6 @@
 #define GUCEF_CORE_CMFILEACCESS_H
 #endif /* GUCEF_CORE_CMFILEACCESS_H ? */
 
-#ifndef GUCEF_IMAGE_CPIXEL_H
-#include "gucefIMAGE_CPixel.h"
-#define GUCEF_IMAGE_CPIXEL_H
-#endif /* GUCEF_IMAGE_CPIXEL_H ? */
-
 #include "gucefIMAGE_CPixelMap.h"
 
 /*-------------------------------------------------------------------------//
@@ -160,55 +155,55 @@ CPixelMap::ApplyPalette( TPixelMapPtr palette, TPixelMapPtr& resultImage ) const
                 {
                     case MT::DATATYPE_FLOAT32:
                     {
-                        Float32 index = *(Float32*) m_pixelMapData + ( sizeof(Float32) * pixelIndex );
+                        Float32 index = *(Float32*) ( m_pixelMapData + ( sizeof(Float32) * pixelIndex ) );
                         paletteIndex = (UInt32) index;
                         break;
                     }                            
                     case MT::DATATYPE_FLOAT64:
                     {
-                        Float64 index = *(Float64*) m_pixelMapData + ( sizeof(Float64) * pixelIndex );
+                        Float64 index = *(Float64*) ( m_pixelMapData + ( sizeof(Float64) * pixelIndex ) );
                         paletteIndex = (UInt32) index;
                         break;
                     }
                     case MT::DATATYPE_UINT8:
                     {
-                        paletteIndex = *(UInt8*) m_pixelMapData + ( sizeof(UInt8) * pixelIndex );
+                        paletteIndex = *(UInt8*) ( m_pixelMapData + ( sizeof(UInt8) * pixelIndex ) );
                         break;
                     }
                     case MT::DATATYPE_INT8:
                     {
-                        paletteIndex = *(Int8*) m_pixelMapData + ( sizeof(Int8) * pixelIndex );
+                        paletteIndex = *(Int8*) ( m_pixelMapData + ( sizeof(Int8) * pixelIndex ) );
                         break;
                     }
                     case MT::DATATYPE_UINT16:
                     {
-                        paletteIndex = *(UInt16*) m_pixelMapData + ( sizeof(UInt16) * pixelIndex );
+                        paletteIndex = *(UInt16*) ( m_pixelMapData + ( sizeof(UInt16) * pixelIndex ) );
                         break;
                     }
                     case MT::DATATYPE_INT16:
                     {
-                        paletteIndex = *(UInt16*) m_pixelMapData + ( sizeof(UInt16) * pixelIndex );
+                        paletteIndex = *(UInt16*) ( m_pixelMapData + ( sizeof(UInt16) * pixelIndex ) );
                         break;
                     }
                     case MT::DATATYPE_UINT32:
                     {
-                        paletteIndex = *(UInt32*) m_pixelMapData + ( sizeof(UInt32) * pixelIndex );
+                        paletteIndex = *(UInt32*) ( m_pixelMapData + ( sizeof(UInt32) * pixelIndex ) );
                         break;
                     }
                     case MT::DATATYPE_INT32:
                     {
-                        paletteIndex = *(UInt32*) m_pixelMapData + ( sizeof(UInt32) * pixelIndex );
+                        paletteIndex = *(UInt32*) ( m_pixelMapData + ( sizeof(UInt32) * pixelIndex ) );
                         break;
                     }
                     case MT::DATATYPE_UINT64:
                     {
-                        UInt64 index = *(UInt64*) m_pixelMapData + ( sizeof(UInt64) * pixelIndex );
+                        UInt64 index = *(UInt64*) ( m_pixelMapData + ( sizeof(UInt64) * pixelIndex ) );
                         paletteIndex = (UInt32) index;
                         break;
                     }
                     case MT::DATATYPE_INT64:
                     {
-                        Int64 index = *(Int64*) m_pixelMapData + ( sizeof(Int64) * pixelIndex );
+                        Int64 index = *(Int64*) ( m_pixelMapData + ( sizeof(Int64) * pixelIndex ) );
                         paletteIndex = (UInt32) index;
                         break;
                     }
@@ -227,7 +222,7 @@ CPixelMap::ApplyPalette( TPixelMapPtr palette, TPixelMapPtr& resultImage ) const
                     // this should not happen if a valid palette is used for this palettized image
                     // the index is out of the range of the palette
                     GUCEF_WARNING_LOG( CORE::LOGLEVEL_NORMAL, "Image:ApplyPalette: Aborted pixel asssignment since the operation would exceed the buffer size" );
-                    return false;
+                    //return false;
                 }
             }
         }        
@@ -1466,20 +1461,31 @@ CPixelMap::CopyTo( CORE::CIOAccess& resource )
 
 /*--------------------------------------------------------------------------*/
 
-UInt32
-CPixelMap::DetermineActualColorCount( void ) const
+bool 
+CPixelMap::GetColorCounters( TColorCounters& colorCountMap ) const
 {GUCEF_TRACE;
-
-    std::map< CPixel, UInt32 > colorCounters;
 
     UInt32 pixelCount = GetPixelCount();
     for ( UInt32 i=0; i<pixelCount; ++i )
     {
         CPixel pixel( GetDataPtr( i ), m_pixelStorageFormat, m_pixelComponentDataType, true );
-        ++( colorCounters[ pixel ] );
+        ++( colorCountMap[ pixel ] );
     }
+    return true;
+}
 
-    return colorCounters.size();
+/*--------------------------------------------------------------------------*/
+
+UInt32
+CPixelMap::DetermineActualColorCount( void ) const
+{GUCEF_TRACE;
+
+    TColorCounters colorCounters;
+    if ( GetColorCounters( colorCounters ) )
+    {
+        return colorCounters.size();
+    }
+    return 0;
 }
 
 /*-------------------------------------------------------------------------//

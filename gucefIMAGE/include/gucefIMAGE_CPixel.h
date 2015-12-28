@@ -65,6 +65,9 @@ namespace IMAGE {
 //                                                                         //
 //-------------------------------------------------------------------------*/
 
+/**
+ *  Helper class to deal with a single pixel
+ */
 class GUCEF_IMAGE_EXPORT_CPP CPixel
 {
     public:

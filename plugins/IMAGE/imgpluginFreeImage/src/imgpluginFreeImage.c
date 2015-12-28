@@ -665,6 +665,81 @@ GetNrOfPixelBuffers( TImage* image )
 
 /*---------------------------------------------------------------------------*/
 
+BOOL
+ConvertToFreeImageNative( TImageMipMapLevel* level, UInt8** adjustedBuffer )
+{
+    #if ( FREEIMAGE_COLORORDER == FREEIMAGE_COLORORDER_BGR )
+
+    if ( PSF_RGB == level->mipLevelInfo.pixelStorageFormat ||
+         PSF_RGBA == level->mipLevelInfo.pixelStorageFormat )
+    {    
+        UInt32 sizeOfChannelInBytes = GetPixelChannelSize( level->mipLevelInfo.pixelComponentDataType );
+        UInt32 channelCount = GetChannelCountForFormat( level->mipLevelInfo.pixelStorageFormat );
+        UInt32 pixelSizeInBytes = sizeOfChannelInBytes * channelCount;
+        UInt32 pixelCount = level->pixelDataSizeInBytes / pixelSizeInBytes;
+        UInt32 i=0;
+
+        UInt8* pixelData = (UInt8*) level->pixelData;    
+        UInt8* swapBuffer = (UInt8*) malloc( sizeOfChannelInBytes );        
+
+        *adjustedBuffer = (UInt8*) malloc( level->pixelDataSizeInBytes );
+        memcpy( *adjustedBuffer, pixelData, level->pixelDataSizeInBytes );
+        pixelData = *adjustedBuffer;
+
+        for ( i=0; i<pixelCount; ++i )
+        {
+            UInt8* pixelAddrA = pixelData + ( i * pixelSizeInBytes );
+            UInt8* pixelAddrB = pixelData + ( i * pixelSizeInBytes ) + ( 2 * sizeOfChannelInBytes );
+            memcpy( swapBuffer, pixelAddrA, sizeOfChannelInBytes );
+            memcpy( pixelAddrA, pixelAddrB, sizeOfChannelInBytes );
+            memcpy( pixelAddrB, swapBuffer, sizeOfChannelInBytes );
+        }
+
+        free( swapBuffer );
+
+        return TRUE;
+    }
+
+    #elif ( FREEIMAGE_COLORORDER == FREEIMAGE_COLORORDER_RGB )
+
+    if ( PSF_BGR == level->mipLevelInfo.pixelStorageFormat ||
+         PSF_BGRA == level->mipLevelInfo.pixelStorageFormat )
+    {    
+        UInt32 sizeOfChannelInBytes = GetPixelChannelSize( level->mipLevelInfo.pixelComponentDataType );
+        UInt32 channelCount = GetChannelCountForFormat( level->mipLevelInfo.pixelStorageFormat );
+        UInt32 pixelSizeInBytes = sizeOfChannelInBytes * channelCount;
+        UInt32 pixelCount = level->pixelDataSizeInBytes / pixelSizeInBytes;
+        UInt32 i=0;
+
+        UInt8* pixelData = (UInt8*) level->pixelData;    
+        UInt8* swapBuffer = (UInt8*) malloc( sizeOfChannelInBytes );
+
+        *adjustedBuffer = (UInt8*) malloc( level->pixelDataSizeInBytes );
+        memcpy( *adjustedBuffer, pixelData, level->pixelDataSizeInBytes );
+        pixelData = *adjustedBuffer;
+
+        for ( i=0; i<pixelCount; ++i )
+        {
+            UInt8* pixelAddrA = pixelData + ( i * pixelSizeInBytes );
+            UInt8* pixelAddrB = pixelData + ( i * pixelSizeInBytes ) + ( 2 * sizeOfChannelInBytes );
+            memcpy( swapBuffer, pixelAddrA, sizeOfChannelInBytes );
+            memcpy( pixelAddrA, pixelAddrB, sizeOfChannelInBytes );
+            memcpy( pixelAddrB, swapBuffer, sizeOfChannelInBytes );
+        }
+
+        free( swapBuffer );
+
+        return TRUE;
+    }
+
+    #endif
+
+    *adjustedBuffer = (UInt8*) level->pixelData;
+    return FALSE;
+}
+
+/*---------------------------------------------------------------------------*/
+
 UInt32 GUCEF_PLUGIN_CALLSPEC_PREFIX
 IMGCODECPLUGIN_DecodeImage( void* pluginData      ,
                             void* codecData       ,
@@ -847,12 +922,16 @@ IMGCODECPLUGIN_EncodeImage( void* pluginData      ,
         {
             TImageMipMapLevel* level = &frame->mipmapLevel[ 0 ];
 
+            UInt8* pixelData = (UInt8*) level->pixelData;
+            BOOL pixelsConverted = ConvertToFreeImageNative( level, &pixelData );
+
             int pixelSizeInBytes = GetPixelSize( level->mipLevelInfo.pixelStorageFormat     ,
                                                  level->mipLevelInfo.pixelComponentDataType );
+            
             int bpp = pixelSizeInBytes * 8;
             int pitch = pixelSizeInBytes * level->mipLevelInfo.frameWidth; 
             FIBITMAP* bitmap = FreeImage_ConvertFromRawBitsEx( 0                               ,
-                                                               (BYTE*) level->pixelData        ,
+                                                               (BYTE*) pixelData               ,
                                                                FIT_BITMAP                      ,
                                                                level->mipLevelInfo.frameWidth  , 
                                                                level->mipLevelInfo.frameHeight ,
@@ -862,14 +941,20 @@ IMGCODECPLUGIN_EncodeImage( void* pluginData      ,
                                                                1                               );
             if ( NULL == bitmap )
             {
+                if ( TRUE == pixelsConverted )
+                    free( pixelData );
                 return 0;
             }
 
             fif = FreeImage_GetFIFFromFormat( codecType );            
             if ( 0 != FreeImage_SaveToHandle( fif, bitmap, &io, (fi_handle) output, 0 ) )
             {
+                if ( TRUE == pixelsConverted )
+                    free( pixelData );
                 return 1;
             }
+            if ( TRUE == pixelsConverted )
+                free( pixelData );
         }
     }
     return 0;
