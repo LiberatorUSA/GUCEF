@@ -50,6 +50,7 @@ set( HEADER_FILES
   include/guidriverCEGUI_pluginAPI.h
   include/guidriverCEGUI_VFSResourceProvider.h
   include/guidriverCEGUI_widgets.h
+  include/guidriverCEGUI_XMLParserAdapter.h
 )
 
 set( SOURCE_FILES 
@@ -88,6 +89,7 @@ set( SOURCE_FILES
   src/guidriverCEGUI_pluginAPI.cpp
   src/guidriverCEGUI_VFSResourceProvider.cpp
   src/guidriverCEGUI_widgets.cpp
+  src/guidriverCEGUI_XMLParserAdapter.cpp
 )
 
 # Make sure the PLATFORM_HEADER_FILES variable is always defined

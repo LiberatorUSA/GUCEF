@@ -1,0 +1,19 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<GUILayout version="4" >
+    <Window type="TaharezLook/FrameWindow" name="FrameWindow" >
+        <Property name="Area" value="{{0,262},{0,145},{0.3,310},{0.3,252}}" />
+        <Window type="TaharezLook/Button" name="Button" >
+            <Property name="Area" value="{{0,82},{0,163},{0,196},{0,195}}" />
+            <Property name="Text" value="Exit" />
+        </Window>
+        <Window type="TaharezLook/Button" name="Button2" >
+            <Property name="Area" value="{{0,80},{0,30},{0,206},{0,62}}" />
+            <Property name="Text" value="Single Player" />
+        </Window>
+        <Window type="TaharezLook/Button" name="Button3" >
+            <Property name="Area" value="{{0,80},{0,94},{0,202},{0,126}}" />
+            <Property name="Text" value="Multi Player" />
+        </Window>
+    </Window>
+</GUILayout>

@@ -47,8 +47,7 @@ namespace CORE {
 
 CDataNode::CDataNode( void )
         : _pparent( NULL ) ,
-          _pfchild( NULL ) ,
-          _plchild( NULL ) ,
+          m_children()     ,
           _pnext( NULL )   ,
           _pprev( NULL )   ,
           _name()          ,
@@ -62,8 +61,7 @@ CDataNode::CDataNode( const CString& name )
         : _name( name )    ,
           m_value()        ,
           _pparent( NULL ) ,
-          _pfchild( NULL ) ,
-          _plchild( NULL ) ,
+          m_children()     ,
           _pnext( NULL )   ,
           _pprev( NULL )
 {GUCEF_TRACE;
@@ -78,15 +76,14 @@ CDataNode::CDataNode( const CDataNode& src )
           _pparent( src._pparent ) ,
           _pnext( src._pnext )     ,
           _pprev( src._pprev )     ,
-          _pfchild( NULL )         ,
-          _plchild( NULL )
+          m_children()
 {GUCEF_TRACE;
     
-    const CDataNode* n = src._pfchild;
-    while ( 0 != n )
+    TDataNodeList::const_iterator n = src.m_children.cbegin();
+    while ( n != src.m_children.cend() )
     {
-        AddChild( *n );
-        n = n->_pnext;
+        AddChild( *(*n) );
+        ++n;
     }             
 }
 
@@ -132,45 +129,28 @@ void
 CDataNode::DetachChild( CDataNode* child )
 {GUCEF_TRACE;       
 
-        if ( !child )
-        {
-                return;
+    if ( nullptr == child ) return;
+    
+    TDataNodeList::iterator i = m_children.begin();
+    while ( i != m_children.end() )
+    {
+        if ( (*i) == child )
+        {   
+            if ( nullptr != child->_pnext )
+            {
+                child->_pnext->_pprev = child->_pprev;
+            }
+            if ( nullptr != child->_pprev )
+            {
+                child->_pprev->_pnext = child->_pnext;
+            }            
+
+            // remove the entry but dont delete the object
+            m_children.erase( i );
+            return;
         }
-        
-        /*
-         *      Check if the given node is the last of the nodes
-         */
-        if ( ( _pfchild == _plchild ) &&
-             ( _plchild == child ) )
-        {
-                _pfchild = NULL;
-                _plchild = NULL;
-                return;                
-        }
-        /*
-         *      Check if the given node is the first node in our list
-         */             
-        if ( child == _pfchild )
-        {
-                _pfchild = _pfchild->_pnext;
-                _pfchild->_pprev = NULL;
-                return;                        
-        }
-        /*
-         *      Check if the given node is the last node in our list
-         */          
-        if ( child == _plchild ) 
-        {
-                _plchild = _plchild->_pprev;
-                _plchild->_pnext = NULL;
-                return;
-        }
-        
-        /*
-         *      
-         */
-        child->_pnext->_pprev = child->_pprev;
-        child->_pprev->_pnext = child->_pnext;                           
+        ++i;
+    }                     
 }
 
 /*-------------------------------------------------------------------------*/
@@ -445,13 +425,12 @@ void
 CDataNode::CopySubTree( const CDataNode& root )
 {GUCEF_TRACE;
 
-        CDataNode* n = root._pfchild;
-        while ( n )
-        {
-                CHECKMEM( n, sizeof(CDataNode) );
-                AddChild( *n );
-                n = n->_pnext;
-        }                                
+    TDataNodeList::const_iterator n = root.m_children.cbegin();
+    while ( n != root.m_children.cend() )
+    {
+        AddChild( *(*n) );
+        ++n;
+    }                                
 }
 
 /*-------------------------------------------------------------------------*/
@@ -480,30 +459,16 @@ CDataNode::FindRoot( void ) const
 
 CDataNode* 
 CDataNode::FindChild( const CString& name ) const
-{        
-        GUCEF_BEGIN;
-        if ( _pfchild )
-        {
-                if ( _pfchild->_name == name )
-                {
-                        GUCEF_END;
-                        return _pfchild;
-                }
-                
-                CDataNode* nn = _pfchild->_pnext;
-                while ( ( nn != _pfchild ) &&
-                        ( nn != NULL ) )
-                {
-                        if ( nn->_name == name )
-                        {
-                                GUCEF_END;
-                                return nn;
-                        }
-                        nn = nn->_pnext;
-                }
-        }
-        GUCEF_END;
-        return NULL;
+{GUCEF_TRACE;
+        
+    TDataNodeList::const_iterator i = m_children.cbegin();
+    while ( i != m_children.end() )
+    {
+        if ( (*i)->_name == name )
+            return (*i);
+        ++i;
+    }
+    return nullptr;
 }
 
 /*-------------------------------------------------------------------------*/
@@ -514,16 +479,17 @@ CDataNode::FindChildrenOfType( const CString& name  ,
 {GUCEF_TRACE;
 
     TConstDataNodeSet children;
-    const CDataNode* child = _pfchild;
-    
-    while ( 0 != child )
+    TDataNodeList::const_iterator m = m_children.cbegin();
+    while ( m != m_children.cend() )
     {
+        const CDataNode* child = (*m);
         if ( child->_name == name )
         {
             children.insert( child );            
         }
         if ( recursive )
         {
+            
             TConstDataNodeSet subSet( child->FindChildrenOfType( name, recursive ) );
             TConstDataNodeSet::const_iterator i = subSet.begin();
             while ( i != subSet.end() )
@@ -532,7 +498,7 @@ CDataNode::FindChildrenOfType( const CString& name  ,
                 ++i;
             }
         }        
-        child = child->_pnext;
+        ++m;
     }
     return children;
 }
@@ -545,26 +511,24 @@ CDataNode::FindChildrenOfType( const CString& name  ,
 {GUCEF_TRACE;
 
     TDataNodeSet children;
-    CDataNode* child = _pfchild;
-    
-    while ( 0 != child )
+    TDataNodeList::iterator m = m_children.begin();
+    while ( m != m_children.end() )
     {
-        if ( child->_name == name )
+        if ( (*m)->_name == name )
         {
-            children.insert( child );            
+            children.insert( (*m) );            
         }
         if ( recursive )
         {
-            TDataNodeSet subSet( child->FindChildrenOfType( name, recursive ) );
+            TDataNodeSet subSet( (*m)->FindChildrenOfType( name, recursive ) );
             TDataNodeSet::const_iterator i = subSet.begin();
             while ( i != subSet.end() )
             {
                 children.insert( (*i) );
                 ++i;
             }
-        }                
-        child = child->_pnext;
-        if ( child == _pfchild ) break;
+        }
+        ++m;
     }
     return children;
 }
@@ -577,32 +541,26 @@ CDataNode::FindChild( const CString& name        ,
                       const CString& attribValue )
 {GUCEF_TRACE;
 
-    if ( _pfchild != NULL )
+    TDataNodeList::iterator i = m_children.begin();
+    while ( i != m_children.end() )
     {
-        CDataNode* node = _pfchild;
-        do
+        // Check if the name matches
+        if ( (*i)->_name == name )
         {
-            // Check if the name matches
-            if ( node->_name == name )
+            // See if the node has the attribute we want
+            TKeyValuePair* att = (*i)->GetAttribute( attribName );
+            if ( att != NULL )
             {
-                // See if the node has the attribute we want
-                TKeyValuePair* att = node->GetAttribute( attribName );
-                if ( att != NULL )
+                // See if the node attribute has the value we want
+                if ( att->second == attribValue )
                 {
-                    // See if the node attribute has the value we want
-                    if ( att->second == attribValue )
-                    {
-                        return node;
-                    }
+                    return (*i);
                 }
             }
-            
-            // Move to the next node
-            node = node->_pnext;
-            
-        } while ( node != _pfchild );
-    }
-    return NULL;    
+        }
+        ++i;
+    }  
+    return nullptr;    
 }
 
 /*-------------------------------------------------------------------------*/
@@ -792,49 +750,47 @@ CDataNode::Find( const CString& name )
 {GUCEF_TRACE;    
 
     CDataNode* n = FindSibling( name );
-    if ( n ) 
+    if ( nullptr != n ) 
     {
         return n;
     }                
 
-    n = _pfchild;
-    CDataNode* result = NULL;
-    while ( n != NULL )
+    TDataNodeList::iterator m = m_children.begin();
+    while ( m != m_children.end() )
     {
-        result = n->Find( name );
-        if ( NULL != result )
+        n = (*m)->Find( name );
+        if ( nullptr != n )
         {
-            return result;
+            return n;
         }
-        n = n->_pnext;
+        ++m;
     }
-    return NULL;       
+    return nullptr;       
 }
 
 /*-------------------------------------------------------------------------*/
 
 const CDataNode* 
 CDataNode::Find( const CString& name ) const
-{GUCEF_TRACE;
+{GUCEF_TRACE;    
 
     const CDataNode* n = FindSibling( name );
-    if ( n ) 
+    if ( nullptr != n ) 
     {
         return n;
     }                
 
-    n = _pfchild;
-    const CDataNode* result = NULL;
-    while ( n != NULL )
+    TDataNodeList::const_iterator m = m_children.cbegin();
+    while ( m != m_children.cend() )
     {
-        result = n->Find( name );
-        if ( NULL != result )
+        n = (*m)->Find( name );
+        if ( nullptr != n )
         {
-            return result;
+            return n;
         }
-        n = n->_pnext;
+        ++m;
     }
-    return NULL;      
+    return nullptr;       
 }
 
 /*-------------------------------------------------------------------------*/
@@ -844,11 +800,11 @@ CDataNode::GetNrOfChildNodes( void ) const
 {GUCEF_TRACE;
 
     UInt32 count = 0;
-    const CDataNode* childNode = _pfchild;
-    while ( childNode != NULL )
+    TDataNodeList::const_iterator i = m_children.cbegin();
+    while ( i != m_children.cend() )
     {
-        count += childNode->GetNrOfChildNodes()+1;
-        childNode = childNode->_pnext;
+        count += (*i)->GetNrOfChildNodes()+1;
+        ++i;
     }
     return count;
 }
@@ -927,7 +883,8 @@ CDataNode*
 CDataNode::WalkTreeImp( CString& sleftover ,
                         char seperator     ) const
 {GUCEF_TRACE;
-        if ( _pfchild )
+        
+        if ( !m_children.empty() )
         {
                 CDataNode* sn = (CDataNode*) this;
                 CDataNode* retval = (CDataNode*) this;        
@@ -936,7 +893,7 @@ CDataNode::WalkTreeImp( CString& sleftover ,
                 CString searchseg( sleftover.SubstrToChar( seperator, true ) );        
                 CString left( sleftover.CutChars( searchseg.Length()+1, true ) );
                                                   
-                CDataNode* n = _pfchild;                                                                                    
+                CDataNode* n = m_children.front();                                                                                    
                 while ( n )
                 {
                         if ( n->_name == searchseg )
@@ -1062,50 +1019,37 @@ CDataNode::Structure( const CString& nodeName       ,
 
 void 
 CDataNode::DelSubTree( void )
-{
-        GUCEF_BEGIN;
-        if ( _pfchild )
-        {
-                CDataNode* n = _pfchild;
-                CDataNode* nn;
-                while ( n )
-                {
-                        nn = n->_pnext;
-                        delete n;
-                        n = nn;        
-                }
-                _pfchild = NULL;
-        }
-        GUCEF_END;        
+{GUCEF_TRACE;
+
+    TDataNodeList::iterator i = m_children.begin();
+    while ( !m_children.empty() )
+    {
+        CDataNode* child = m_children.front();
+        m_children.erase( m_children.begin() );
+        delete child;
+    }  
 }        
 
 /*-------------------------------------------------------------------------*/
       
 CDataNode* 
 CDataNode::AddChild( const CDataNode& newnode )
-{
-        GUCEF_BEGIN;
-        CDataNode* n = new CDataNode( newnode );
-        
-        /*
-         *      Attach the new node to this tree
-         */
-        if ( _plchild )
-        {          
-                n->_pprev = _plchild;
-                _plchild = n;
-                n->_pprev->_pnext = n;
-        }
-        else
-        {               
-                n->_pprev = NULL;                
-                _pfchild = n;
-                _plchild = n;
-        }
-        n->_pnext = NULL;
-        n->_pparent = this;
-        GUCEF_END;
-        return n;                                  
+{GUCEF_TRACE;
+
+    CDataNode* n = new CDataNode( newnode );
+    n->_pprev = nullptr;
+    n->_pnext = nullptr;
+    n->_pparent = this;        
+
+    if ( !m_children.empty() )
+    {
+        CDataNode* last = m_children.back();
+        last->_pnext = n;
+        n->_pprev = last;
+    }
+
+    m_children.push_back( n );
+    return n;                                  
 }
 
 /*-------------------------------------------------------------------------*/
@@ -1197,40 +1141,40 @@ CDataNode::DelChild( const CString& name )
 
 bool
 CDataNode::HasChildren( void ) const
-{
-        GUCEF_BEGIN;
-        GUCEF_END;
-        return _pfchild != NULL;
+{GUCEF_TRACE;
+
+    return !m_children.empty();
 }
 
 /*-------------------------------------------------------------------------*/
 
 CDataNode* 
 CDataNode::GetParent( void ) const
-{
-        GUCEF_BEGIN;
-        GUCEF_END;
-        return _pparent;
+{GUCEF_TRACE;
+
+    return _pparent;
 }
 
 /*-------------------------------------------------------------------------*/
         
 CDataNode* 
 CDataNode::GetFirstChild( void ) const
-{
-        GUCEF_BEGIN;
-        GUCEF_END;
-        return _pfchild;
+{GUCEF_TRACE;
+
+    if ( !m_children.empty() )
+        return m_children.front();
+    return nullptr;
 }
 
 /*-------------------------------------------------------------------------*/
 
 CDataNode* 
 CDataNode::GetLastChild( void ) const
-{
-        GUCEF_BEGIN;
-        GUCEF_END;
-        return _plchild;
+{GUCEF_TRACE;
+
+    if ( !m_children.empty() )
+        return m_children.back();
+    return nullptr;
 }
 
 /*-------------------------------------------------------------------------*/
@@ -1338,9 +1282,9 @@ CDataNode::const_iterator::const_iterator( const CDataNode* parent )
         GUCEF_BEGIN;
         if ( parent )
         {
-                if ( parent->_pfchild )
+                if ( !parent->m_children.empty() )
                 {
-                        _pfchild = parent->_pfchild;
+                        _pfchild = parent->m_children.front();
                         _pos = _pfchild;
                         _atstart = true;
                         _atend = false;
@@ -1481,10 +1425,10 @@ CDataNode::iterator::iterator( CDataNode* parent )
         GUCEF_BEGIN;
         if ( parent )
         {
-                if ( parent->_pfchild )
+                if ( !parent->m_children.empty() )
                 {
-                        _pfchild = parent->_pfchild;
-                        _pos = parent->_pfchild;
+                        _pos = parent->m_children.front();
+                        _pfchild = _pos;
                         _atstart = true;
                         _atend = false;                        
                 }

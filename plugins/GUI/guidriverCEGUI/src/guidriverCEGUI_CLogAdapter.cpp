@@ -64,15 +64,51 @@ CLogAdapter::~CLogAdapter()
 
 void
 CLogAdapter::logEvent( const CEGUI::String& message                      ,
-                               CEGUI::LoggingLevel level /* = CEGUI::Standard */ )
+                       CEGUI::LoggingLevel level /* = CEGUI::Standard */ )
 {GUCEF_TRACE;
-
+    
     if ( getLoggingLevel() >= level )
     {
+        CORE::CLogManager::TLogMsgType logMsgType = CORE::CLogManager::LOG_SYSTEM;
+        Int32 platformLevel = CORE::LOGLEVEL_NORMAL;
+        switch ( platformLevel )
+        {
+            case CEGUI::Errors:         //!< Only actual error conditions will be logged.
+            {
+                logMsgType = CORE::CLogManager::LOG_ERROR;
+                platformLevel = CORE::LOGLEVEL_IMPORTANT;
+                break;
+            }
+            case CEGUI::Warnings:       //!< Warnings will be logged as well.
+            {
+                logMsgType = CORE::CLogManager::LOG_WARNING;
+                platformLevel = CORE::LOGLEVEL_IMPORTANT;
+                break;
+            }
+            case CEGUI::Standard:       //!< Basic events will be logged (default level).
+            {
+                logMsgType = CORE::CLogManager::LOG_SYSTEM;
+                platformLevel = CORE::LOGLEVEL_IMPORTANT;
+                break;
+            }
+            case CEGUI::Informative:    //!< Useful tracing (object creations etc) information will be logged.
+            {
+                logMsgType = CORE::CLogManager::LOG_SYSTEM;
+                platformLevel = CORE::LOGLEVEL_IMPORTANT;
+                break;
+            }
+            case CEGUI::Insane:         //!< Mostly everything gets logged (use for heavy tracing only, log WILL be big).
+            {
+                logMsgType = CORE::CLogManager::LOG_SYSTEM;
+                platformLevel = CORE::LOGLEVEL_EVERYTHING;
+                break;
+            }		
+        }
+
         static const GUCEF::CORE::CString logMsgPrefix = "[CEGUI] ";
-        m_logManager->Log( GUCEF::CORE::CLogManager::LOG_SYSTEM ,
-                           static_cast< Int32 >( level )        ,
-                           logMsgPrefix + message.c_str()       );
+        m_logManager->Log( logMsgType                     ,
+                           platformLevel                  ,
+                           logMsgPrefix + message.c_str() );
     }
 }
 

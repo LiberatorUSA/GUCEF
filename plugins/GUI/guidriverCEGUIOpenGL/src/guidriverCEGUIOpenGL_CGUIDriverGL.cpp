@@ -60,6 +60,11 @@
 #define GUCEF_GUIDRIVERCEGUI_IMAGECODECADAPTER_H
 #endif /* GUCEF_GUIDRIVERCEGUI_IMAGECODECADAPTER_H ? */
 
+#ifndef GUCEF_GUIDRIVERCEGUIGL_XMLPARSERADAPTER_H
+#include "guidriverCEGUI_XMLParserAdapter.h"
+#define GUCEF_GUIDRIVERCEGUIGL_XMLPARSERADAPTER_H
+#endif /* GUCEF_GUIDRIVERCEGUIGL_XMLPARSERADAPTER_H ? */
+
 #ifndef GUCEF_GUIDRIVERCEGUI_CLOGADAPTER_H
 #include "guidriverCEGUI_CLogAdapter.h"
 #define GUCEF_GUIDRIVERCEGUI_CLOGADAPTER_H
@@ -131,7 +136,8 @@ CGUIDriverGL::CreateGUIContext( GUI::TWindowContextPtr windowContext )
         m_guiRenderer = &CEGUI::OpenGLRenderer::create( displaySize, CEGUI::OpenGLRenderer::TTT_AUTO );
         GUIDRIVERCEGUI::VfsResourceProvider* vfsResourceProvider = new GUIDRIVERCEGUI::VfsResourceProvider();
         GUIDRIVERCEGUI::ImageCodecAdapter* imageCodecAdaper = new GUIDRIVERCEGUI::ImageCodecAdapter();
-        m_guiSystem = &CEGUI::System::create( *m_guiRenderer, vfsResourceProvider, NULL, imageCodecAdaper );     
+        GUIDRIVERCEGUI::XMLParserAdapter* xmlParserAdapter = new GUIDRIVERCEGUI::XMLParserAdapter();
+        m_guiSystem = &CEGUI::System::create( *m_guiRenderer, vfsResourceProvider, xmlParserAdapter, imageCodecAdaper );     
         
         m_ceGuiInitialized = true;
     }
@@ -143,7 +149,13 @@ CGUIDriverGL::CreateGUIContext( GUI::TWindowContextPtr windowContext )
     inputContextParams.Set( "WINDOW", windowContext->GetProperty( "WINDOW" ) );
     INPUT::CInputContext* inputContext = INPUT::CInputGlobal::Instance()->GetInputController().CreateContext( inputContextParams );
 
-    CEGUI::GUIContext* ceGuiContext = &m_guiSystem->createGUIContext( *m_guiRenderer->getActiveRenderTarget() );
+    CEGUI::RenderTarget* renderTarget = m_guiRenderer->getActiveRenderTarget();
+    if ( nullptr == renderTarget )
+    {
+        renderTarget = &m_guiRenderer->getDefaultRenderTarget();
+    }
+    
+    CEGUI::GUIContext* ceGuiContext = &m_guiSystem->createGUIContext( *renderTarget );
     GUI::TGuiContextPtr guiContextPtr = new CGUIContextGL( *this         ,
                                                            windowContext ,
                                                            inputContext  ,
@@ -251,7 +263,7 @@ CGUIDriverGL::LoadConfig( const CORE::CDataNode& treeroot )
 //                                                                         //
 //-------------------------------------------------------------------------*/
 
-}; /* namespace MYGUIGL */
+}; /* namespace GUIDRIVERCEGUIGL */
 }; /* namespace GUCEF */
 
 /*-------------------------------------------------------------------------*/

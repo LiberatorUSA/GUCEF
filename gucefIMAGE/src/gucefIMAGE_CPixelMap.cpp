@@ -133,6 +133,125 @@ CPixelMap::operator=( const CPixelMap& src )
 /*--------------------------------------------------------------------------*/
 
 bool
+CPixelMap::ApplyGamma( Float32 gamma, TPixelMapPtr& resultImage ) const
+{
+    // Allocate a duplicate pixelmap
+    resultImage = new CPixelMap( *this );
+    
+    // Apply the gamma to the duplicate
+    return resultImage->ApplyGamma( gamma );
+}
+
+/*--------------------------------------------------------------------------*/
+
+bool
+CPixelMap::ApplyGamma( Float32 gamma )
+{GUCEF_TRACE;
+
+    UInt32 pixelCount = GetPixelCount();
+    UInt32 valueCount = pixelCount * GetNumberOfChannelsPerPixel();
+
+    Float32 gammaPow = 1 / gamma;
+    switch ( m_pixelComponentDataType )
+    {
+        case MT::DATATYPE_FLOAT32:
+        {
+            for ( UInt32 n=0; n<valueCount; ++n )
+            {
+                Float32* value = (Float32*) ( m_pixelMapData + ( sizeof(Float32) * n ) );
+                *value = std::numeric_limits< Float32 >::max() * pow( *value / std::numeric_limits< Float32 >::max(), gammaPow );
+            }
+            break;
+        }                            
+        case MT::DATATYPE_FLOAT64:
+        {
+            for (UInt32 n = 0; n < valueCount; ++n)
+            {
+                Float64* value = (Float64*)(m_pixelMapData + (sizeof(Float64) * n));
+                *value = std::numeric_limits< Float64 >::max() * pow( *value / std::numeric_limits< Float64 >::max(), gammaPow );
+            }
+            break;
+        }
+        case MT::DATATYPE_UINT8:
+        {
+            for ( UInt32 n=0; n<valueCount; ++n )
+            {
+                UInt8* value = (UInt8*) ( m_pixelMapData + ( sizeof(UInt8) * n ) );
+                *value = (UInt8) ( std::numeric_limits< UInt8 >::max() * pow( *value / std::numeric_limits< UInt8 >::max(), gammaPow ) );
+            }
+            break;        
+        }
+        case MT::DATATYPE_INT8:
+        {
+            for ( UInt32 n=0; n<valueCount; ++n )
+            {
+                Int8* value = (Int8*) ( m_pixelMapData + ( sizeof(Int8) * n ) );
+                *value = (Int8) ( std::numeric_limits< Int8 >::max() * pow( *value / std::numeric_limits< Int8 >::max(), gammaPow ) );
+            }
+            break;        
+        }
+        case MT::DATATYPE_UINT16:
+        {
+            for ( UInt32 n=0; n<valueCount; ++n )
+            {
+                UInt16* value = (UInt16*) ( m_pixelMapData + ( sizeof(UInt16) * n ) );
+                *value = (UInt16) ( std::numeric_limits< UInt16 >::max() * pow( *value / std::numeric_limits< UInt16 >::max(), gammaPow ) );
+            }
+            break;        
+        }
+        case MT::DATATYPE_INT16:
+        {
+            for ( UInt32 n=0; n<valueCount; ++n )
+            {
+                Int16* value = (Int16*) ( m_pixelMapData + ( sizeof(Int16) * n ) );
+                *value = (Int16) ( std::numeric_limits< Int16 >::max() * pow( *value / std::numeric_limits< Int16 >::max(), gammaPow ) );
+            }
+            break;        
+        }
+        case MT::DATATYPE_UINT32:
+        {
+            for (UInt32 n = 0; n < valueCount; ++n)
+            {
+                UInt32* value = (UInt32*)(m_pixelMapData + (sizeof(UInt32) * n));
+                *value = (UInt32) ( std::numeric_limits< UInt32 >::max() * pow( *value / std::numeric_limits< UInt32 >::max(), gammaPow ) );
+            }
+            break;
+        }
+        case MT::DATATYPE_INT32:
+        {
+            for (UInt32 n = 0; n < valueCount; ++n)
+            {
+                Int32* value = (Int32*)(m_pixelMapData + (sizeof(Int32) * n));
+                *value = (Int32) ( std::numeric_limits< Int32 >::max() * pow( *value / std::numeric_limits< Int32 >::max(), gammaPow ) );
+            }
+            break;
+        }
+        case MT::DATATYPE_UINT64:
+        {
+            for (UInt32 n = 0; n < valueCount; ++n)
+            {
+                UInt64* value = (UInt64*)(m_pixelMapData + (sizeof(UInt64) * n));
+                *value = (UInt64) ( std::numeric_limits< UInt64 >::max() * pow( *value / std::numeric_limits< UInt64 >::max(), gammaPow ) );
+            }
+            break;
+        }
+        case MT::DATATYPE_INT64:
+        {
+            for (UInt32 n = 0; n < valueCount; ++n)
+            {
+                Int64* value = (Int64*)(m_pixelMapData + (sizeof(Int64) * n));
+                *value = (Int64) ( std::numeric_limits< Int64 >::max() * pow( *value / std::numeric_limits< Int64 >::max(), gammaPow ) );
+            }
+            break;
+        }
+    }
+
+    return true;
+}
+
+/*--------------------------------------------------------------------------*/
+
+bool
 CPixelMap::ApplyPalette( TPixelMapPtr palette, TPixelMapPtr& resultImage ) const
 {GUCEF_TRACE;
 
@@ -142,6 +261,7 @@ CPixelMap::ApplyPalette( TPixelMapPtr palette, TPixelMapPtr& resultImage ) const
         resultImage = new CPixelMap( NULL, m_widthInPixels, m_heightInPixels, palette->GetPixelStorageFormat(), palette->GetPixelComponentDataType() );
         
         UInt32 totalPaletteBytes = palette->GetTotalSizeInBytes();
+        UInt32 maxPaletteIndex = palette->GetPixelCount()-1;
         UInt32 totalNewImageBytes = resultImage->GetTotalSizeInBytes();
         UInt32 pixelByteSize = palette->GetSizeOfPixelInBytes();        
         for ( UInt32 i=0; i<m_heightInPixels; ++i )
@@ -209,6 +329,13 @@ CPixelMap::ApplyPalette( TPixelMapPtr palette, TPixelMapPtr& resultImage ) const
                     }
                 }
 
+                if ( paletteIndex > maxPaletteIndex )
+                {
+                    GUCEF_WARNING_LOG( CORE::LOGLEVEL_NORMAL, "Image:ApplyPalette: Found a palette index which is out of bounds: " 
+                        + CORE::UInt32ToString( paletteIndex ) + " with a max of " + CORE::UInt32ToString( maxPaletteIndex ) );
+                    paletteIndex = maxPaletteIndex;
+                }
+                                                   // paletteIndex++;
                 UInt32 srcPixelOffset = paletteIndex*pixelByteSize;
                 UInt32 dstPixelOffset = pixelIndex*pixelByteSize;
 
@@ -644,7 +771,8 @@ CPixelMap::ConvertFormatToImp( T* pixelMapData                               ,
                     {                            
                         T* orgPixelData = pixelMapData+(i*channelCount);
                         
-                        // Luminance (perceived option 1): (0.299*R + 0.587*G + 0.114*B)                       
+                        // Luminance (perceived option 1): (0.299*R + 0.587*G + 0.114*B)
+                        // Note that both of these emphasize the physiological aspects: the human eyeball is most sensitive to green light, less to red and least to blue.                       
                         CORE::Float64 luminance = ( 0.114f * orgPixelData[ 0 ] ) + ( 0.587f * orgPixelData[ 1 ] ) + ( 0.299f * orgPixelData[ 2 ] );
                         T pixelData[ 1 ] = { (T) round( luminance ) };
 
@@ -660,7 +788,8 @@ CPixelMap::ConvertFormatToImp( T* pixelMapData                               ,
                     {                            
                         T* orgPixelData = pixelMapData+(i*channelCount);
                         
-                        // Luminance (perceived option 1): sqrt( 0.299*R^2 + 0.587*G^2 + 0.114*B^2 )                      
+                        // Luminance (perceived option 2): sqrt( 0.299*R^2 + 0.587*G^2 + 0.114*B^2 )                      
+                        // Note that both of these emphasize the physiological aspects: the human eyeball is most sensitive to green light, less to red and least to blue.
                         CORE::Float64 luminance = sqrt( ( 0.114f * pow( orgPixelData[ 0 ], 2 ) ) + ( 0.587f * pow( orgPixelData[ 1 ], 2 ) ) + ( 0.299f * pow( orgPixelData[ 2 ], 2 ) ) );
                         T pixelData[ 1 ] = { (T) round( luminance ) };
 

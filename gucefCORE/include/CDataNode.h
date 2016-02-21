@@ -29,6 +29,7 @@
 #include <vector>
 #include <set>
 #include <map>
+#include <list>
 
 #ifndef GUCEF_CORE_CDVSTRING_H
 #include "CDVString.h"
@@ -65,6 +66,7 @@ class GUCEF_CORE_PUBLIC_CPP CDataNode
     typedef std::set< CString > TStringSet;
     typedef std::pair< const CString, CString > TKeyValuePair;
     typedef std::set< CDataNode* > TDataNodeSet;
+    typedef std::list< CDataNode* > TDataNodeList;
     typedef std::set< const CDataNode* > TConstDataNodeSet;
     typedef std::map< CString, CString > TAttributeMap;
 
@@ -480,8 +482,7 @@ class GUCEF_CORE_PUBLIC_CPP CDataNode
     CString m_value;      /**< simplistic value field of the node */
     TAttributeMap _atts;  /**< list of node attributes */
     CDataNode* _pparent;  /**< parent node */
-    CDataNode* _pfchild;  /**< first child node */
-    CDataNode* _plchild;  /**< last child node */
+    TDataNodeList m_children; /**< child nodes */
     CDataNode* _pnext;    /**< next sibling node */
     CDataNode* _pprev;    /**< previous sibling node */
 };

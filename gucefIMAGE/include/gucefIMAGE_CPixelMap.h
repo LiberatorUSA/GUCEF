@@ -199,6 +199,11 @@ class GUCEF_IMAGE_EXPORT_CPP CPixelMap
      *  Doing so will 'inflate' the pixelmap into a non-palettized image
      */
     bool ApplyPalette( TPixelMapPtr pallete, TPixelMapPtr& resultImage ) const;
+
+    bool ApplyGamma( Float32 gamma );
+
+    bool ApplyGamma( Float32 gamma, TPixelMapPtr& resultImage ) const;
+
     
     /**
      *  Assigns the data to the object.
