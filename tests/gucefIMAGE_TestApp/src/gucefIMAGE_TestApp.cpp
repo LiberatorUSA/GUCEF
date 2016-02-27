@@ -106,14 +106,51 @@ GUCEF_OSMAIN_BEGIN
         LoadConfig();
         
         GUCEF::IMAGE::CImage image;
-        image.Load( "C:\\CODE\\intovoid\\RES\\IV_MATB_IDX\\8000.1" );
+        image.Load( "C:\\CODE\\intovoid\\RES\\IV_SCRB_RES\\870501.1" );
+
+        //GUCEF::IMAGE::CPixelMap::TColorCounters colorCountMap;
+        //image.GetPixelMap()->GetColorCounters( colorCountMap );
 
         GUCEF::IMAGE::CImage palette;
-        palette.Load( "C:\\CODE\\intovoid\\RES\\IV_PAL_IDX\\100.5" );
+        palette.Load( "C:\\CODE\\intovoid\\RES\\IV_PAL_RES\\100.5" );
+        palette.GetPixelMap()->ApplyGamma( 0.2 );
 
+        //GUCEF::IMAGE::CPixelMap::TColorCounters colorCountMap2;
+        //palette.GetPixelMap()->GetColorCounters( colorCountMap2 );
+
+        //
+        //const IMAGE::CPixel& lowPixel = (*colorCountMap.begin()).first;
+        //const IMAGE::CPixel& highPixel = (*colorCountMap.rbegin()).first;
+        //
+        //CORE::UInt8 lowIndex = *(CORE::UInt8*) lowPixel.GetDataPtr();
+        //CORE::UInt8 highIndex = *(CORE::UInt8*) highPixel.GetDataPtr();
+        //
+        //GUCEF::IMAGE::CPixelMap::TColorCounters::iterator i = colorCountMap.begin();        
+        //while ( i != colorCountMap.end() )
+        //{
+        //    CORE::UInt8 index = *(CORE::UInt8*) (*i).first.GetDataPtr();
+        //    if ( index > highIndex )
+        //        highIndex = index;
+        //    if ( index < lowIndex )
+        //        lowIndex = index;
+        //    ++i;
+        //}
+
+        //CORE::CFileAccess imageDump;
+        //imageDump.Open( "C:\\CODE\\intovoid\\RES\\IV_SCRB_RES\\700000.1.raw", "wb" );
+        //image.GetPixelMap()->CopyTo( imageDump );
+        //imageDump.Close();
+
+        //CORE::CFileAccess paletteDump;
+        //paletteDump.Open( "C:\\CODE\\intovoid\\RES\\IV_PAL_RES\\100.5.raw", "wb" );
+        //palette.GetPixelMap()->CopyTo( paletteDump );
+        //paletteDump.Close();
+
+        //image.GetPixelMap()->ConvertFormatTo( GUCEF::IMAGE::PSF_RGB );
+        
         image.GetPixelMap()->ApplyPalette( palette.GetPixelMap() );
 
-        image.Save( "C:\\CODE\\intovoid\\RES\\IV_MATB_IDX\\8000.png" );
+        image.Save( "C:\\CODE\\intovoid\\RES\\IV_SCRB_RES\\870501.png" );
         
         return 1;                                                                            
     }

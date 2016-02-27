@@ -72,8 +72,9 @@ CGUIDriver::RegisterEvents( void )
 
 /*-------------------------------------------------------------------------*/
 
-CGUIDriver::CGUIDriver( void )
-    : CObservingNotifier()
+CGUIDriver::CGUIDriver( bool useglobalconfig )
+    : CObservingNotifier()                    ,
+      CORE::CIConfigurable( useglobalconfig )
 {GUCEF_TRACE;
 
     RegisterEvents();

@@ -900,6 +900,7 @@ CDataNode::WalkTreeImp( CString& sleftover ,
                         {
                                 deepest = left;
                                 leftover = left;
+                                retval = n;
                                 
                                 if ( 0 == left.Length() )
                                 {

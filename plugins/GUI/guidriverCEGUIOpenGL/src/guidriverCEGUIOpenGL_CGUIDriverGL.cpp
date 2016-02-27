@@ -33,6 +33,11 @@
 #define GUCEF_CORE_CICONFIGURABLE_H
 #endif /* GUCEF_CORE_CICONFIGURABLE_H ? */
 
+#ifndef GUCEF_CORE_CDATANODE_H
+#include "CDataNode.h"
+#define GUCEF_CORE_CDATANODE_H
+#endif /* GUCEF_CORE_CDATANODE_H ? */
+
 #ifndef GUCEF_INPUT_CINPUTGLOBAL_H
 #include "gucefINPUT_CInputGlobal.h"
 #define GUCEF_INPUT_CINPUTGLOBAL_H
@@ -134,10 +139,16 @@ CGUIDriverGL::CreateGUIContext( GUI::TWindowContextPtr windowContext )
         
         CEGUI::Sizef displaySize( (float) windowContext->GetWidth(), (float) windowContext->GetHeight() );
         m_guiRenderer = &CEGUI::OpenGLRenderer::create( displaySize, CEGUI::OpenGLRenderer::TTT_AUTO );
-        GUIDRIVERCEGUI::VfsResourceProvider* vfsResourceProvider = new GUIDRIVERCEGUI::VfsResourceProvider();
         GUIDRIVERCEGUI::ImageCodecAdapter* imageCodecAdaper = new GUIDRIVERCEGUI::ImageCodecAdapter();
         GUIDRIVERCEGUI::XMLParserAdapter* xmlParserAdapter = new GUIDRIVERCEGUI::XMLParserAdapter();
-        m_guiSystem = &CEGUI::System::create( *m_guiRenderer, vfsResourceProvider, xmlParserAdapter, imageCodecAdaper );     
+        m_guiSystem = &CEGUI::System::create( *m_guiRenderer, &m_vfsResourceProvider, xmlParserAdapter, imageCodecAdaper );
+        
+        // Load the scheme
+        CEGUI::SchemeManager::getSingleton().createFromFile( m_schemeToUse );
+        
+        // Set the defaults
+        CEGUI::System::getSingleton().getDefaultGUIContext().setDefaultFont( m_defaultFont );
+        CEGUI::System::getSingleton().getDefaultGUIContext().getMouseCursor().setDefaultImage( m_defaultCursorImage );                     
         
         m_ceGuiInitialized = true;
     }
@@ -245,7 +256,7 @@ bool
 CGUIDriverGL::SaveConfig( CORE::CDataNode& tree )
 {GUCEF_TRACE;
 
-    return false;
+    return CCEGUIDriver::SaveConfig( tree );
 }
 
 /*-------------------------------------------------------------------------*/
@@ -254,7 +265,7 @@ bool
 CGUIDriverGL::LoadConfig( const CORE::CDataNode& treeroot )
 {GUCEF_TRACE;
 
-    return true;
+    return CCEGUIDriver::LoadConfig( treeroot );
 }
 
 /*-------------------------------------------------------------------------//

@@ -121,11 +121,14 @@ class GUCEF_GUIDRIVERCEGUI_EXPORT_CPP VfsResourceProvider : public ::CEGUI::Reso
                                               const CEGUI::String& file_pattern   ,
                                               const CEGUI::String& resource_group );
 
+    void setDefaultResourceGroup( const CEGUI::String& resourceGroup );
+
     private:
 
     typedef std::map< CEGUI::String, CEGUI::String >    TCEStringMap;
 
     TCEStringMap m_groupMap;
+    CEGUI::String m_defaultResourceGroup;
 };
 
 /*-------------------------------------------------------------------------//

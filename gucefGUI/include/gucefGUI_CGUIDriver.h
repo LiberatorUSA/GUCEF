@@ -105,7 +105,7 @@ class GUCEF_GUI_PUBLIC_CPP CGUIDriver : public CORE::CObservingNotifier ,
     
     protected:
     
-    CGUIDriver( void );
+    CGUIDriver( bool useglobalconfig = true );
     
     CGUIDriver( const CGUIDriver& src );
     

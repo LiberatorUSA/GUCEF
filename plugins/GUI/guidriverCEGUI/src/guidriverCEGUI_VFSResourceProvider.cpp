@@ -70,6 +70,14 @@ VfsResourceProvider::~VfsResourceProvider()
 /*-------------------------------------------------------------------------*/
 
 void
+VfsResourceProvider::setDefaultResourceGroup( const CEGUI::String& resourceGroup )
+{GUCEF_TRACE;
+
+    m_defaultResourceGroup = resourceGroup;
+}
+/*-------------------------------------------------------------------------*/
+
+void
 VfsResourceProvider::setResourceGroupDirectory( const CEGUI::String& resourceGroup , 
                                                 const CEGUI::String& directory     )
 {GUCEF_TRACE;
@@ -103,9 +111,17 @@ VfsResourceProvider::loadRawDataContainer( const CEGUI::String& filename      ,
                                            const CEGUI::String& resourceGroup )
 {GUCEF_TRACE;
     
+    // everything in CEGUI works based on resource groups
+    // make sure we dont use an empty one
+    const CEGUI::String* rscGroup = &resourceGroup;
+    if ( resourceGroup.empty() )
+    {
+        rscGroup = &m_defaultResourceGroup;
+    }
+
     CORE::CString filePath;
     CORE::CString fileName = filename;
-    TCEStringMap::iterator i = m_groupMap.find( resourceGroup );
+    TCEStringMap::iterator i = m_groupMap.find( *rscGroup );
     if ( i != m_groupMap.end() )
     {
         filePath = (*i).second;

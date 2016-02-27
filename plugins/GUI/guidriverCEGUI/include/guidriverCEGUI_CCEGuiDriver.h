@@ -46,6 +46,11 @@
 #define GUCEF_GUIDRIVERMYGUI_CFORMBACKENDIMP_H
 #endif /* GUCEF_GUIDRIVERMYGUI_CFORMBACKENDIMP_H ? */
 
+#ifndef GUCEF_GUIDRIVERCEGUI_VFSRESOURCEPROVIDER_H
+#include "guidriverCEGUI_VFSResourceProvider.h"
+#define GUCEF_GUIDRIVERCEGUI_VFSRESOURCEPROVIDER_H
+#endif /* GUCEF_GUIDRIVERCEGUI_VFSRESOURCEPROVIDER_H ? */
+
 /*-------------------------------------------------------------------------//
 //                                                                         //
 //      NAMESPACE                                                          //
@@ -65,7 +70,7 @@ class GUCEF_GUIDRIVERCEGUI_EXPORT_CPP CCEGUIDriver : public GUI::CGUIDriver
 {
     public:
 
-    CCEGUIDriver( void );
+    CCEGUIDriver( bool useglobalconfig = true );
 
     virtual ~CCEGUIDriver();
      
@@ -84,6 +89,32 @@ class GUCEF_GUIDRIVERCEGUI_EXPORT_CPP CCEGUIDriver : public GUI::CGUIDriver
     virtual void DestroyFormBackend( GUI::CFormBackend* formBackend );
 
     virtual CEGUI::System* GetCEGui( void ) = 0;
+
+    /**
+     *      Attempts to store the given tree in the file
+     *      given according to the method of the codec metadata
+     *
+     *      @param tree the data tree you wish to store
+     *      @return wheter storing the tree was successfull
+     */
+    virtual bool SaveConfig( CORE::CDataNode& tree );
+
+    /**
+     *      Attempts to load data from the given file to the
+     *      root node given. The root data will be replaced
+     *      and any children the node may already have will be deleted.
+     *
+     *      @param treeroot pointer to the node that is to act as root of the data tree
+     *      @return whether building the tree from the given file was successfull.
+     */
+    virtual bool LoadConfig( const CORE::CDataNode& treeroot );
+
+    protected:
+
+    VfsResourceProvider m_vfsResourceProvider;
+    CORE::CString m_schemeToUse;
+    CORE::CString m_defaultFont;
+    CORE::CString m_defaultCursorImage;
 };
 
 /*-------------------------------------------------------------------------//

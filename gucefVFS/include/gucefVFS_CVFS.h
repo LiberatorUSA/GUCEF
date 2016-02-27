@@ -79,10 +79,11 @@ class GUCEF_VFS_PUBLIC_CPP CVFS : public CORE::CIConfigurable
     typedef CIArchive::TStringList                        TStringList;
     typedef CIArchive::TStringSet                         TStringSet;
     
-    void AddRoot( const CString& rootdir               ,
-                  const CString& archiveName           ,
-                  const bool writeable = false         ,
-                  const bool autoMountArchives = false );
+    void AddRoot( const CString& rootdir                     ,
+                  const CString& archiveName                 ,
+                  const bool writeable = false               ,
+                  const bool autoMountArchives = false       ,
+                  const CString& mountPoint = CString::Empty );
 
     bool MountArchive( const CString& archiveName  ,
                        const CString& archivePath  ,

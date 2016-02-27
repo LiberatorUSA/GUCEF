@@ -23,6 +23,11 @@
 //                                                                         //
 //-------------------------------------------------------------------------*/
 
+#ifndef GUCEF_CORE_CDATANODE_H
+#include "CDataNode.h"
+#define GUCEF_CORE_CDATANODE_H
+#endif /* GUCEF_CORE_CDATANODE_H ? */
+
 #ifndef GUCEF_GUIDRIVERCEGUI_CFORMBACKENDIMP_H
 #include "guidriverCEGUI_CFormBackendImp.h"
 #define GUCEF_GUIDRIVERCEGUI_CFORMBACKENDIMP_H
@@ -50,8 +55,12 @@ namespace GUIDRIVERCEGUI {
 //                                                                         //
 //-------------------------------------------------------------------------*/
 
-CCEGUIDriver::CCEGUIDriver( void )
-    : GUI::CGUIDriver()
+CCEGUIDriver::CCEGUIDriver( bool useglobalconfig )
+    : GUI::CGUIDriver( useglobalconfig ) ,
+      m_vfsResourceProvider()            ,
+      m_schemeToUse()                    ,
+      m_defaultFont()                    ,
+      m_defaultCursorImage() 
 {GUCEF_TRACE;
 
 }
@@ -159,6 +168,58 @@ CCEGUIDriver::DestroyFormBackend( GUI::CFormBackend* formBackend )
 {GUCEF_TRACE;
 
     delete static_cast< CFormBackendImp* >( formBackend );
+}
+
+/*-------------------------------------------------------------------------*/
+
+bool
+CCEGUIDriver::SaveConfig( CORE::CDataNode& tree )
+{GUCEF_TRACE;
+
+    return false;
+}
+
+/*-------------------------------------------------------------------------*/
+
+bool
+CCEGUIDriver::LoadConfig( const CORE::CDataNode& treeroot )
+{GUCEF_TRACE;
+
+    const CORE::CDataNode* ceguiConfig = treeroot.Find( "CEGUI" );
+    if ( nullptr == ceguiConfig )
+    {   
+        GUCEF_ERROR_LOG( CORE::LOGLEVEL_IMPORTANT, "CGUIDriver:LoadConfig: Cannot find CEGUI config and as such will not be able to initialize" );
+        return false;
+    }
+
+     m_schemeToUse = ceguiConfig->GetAttributeValueOrChildValueByName( "Scheme" );
+     m_defaultFont = ceguiConfig->GetAttributeValueOrChildValueByName( "DefaultFont" );
+     m_defaultCursorImage = ceguiConfig->GetAttributeValueOrChildValueByName( "DefaultCursorImage" );
+     
+     CORE::CString defaultResourceGroup = ceguiConfig->GetAttributeValueOrChildValueByName( "DefaultResourceGroup" );
+     if ( defaultResourceGroup.IsNULLOrEmpty() )
+        defaultResourceGroup = "CEGUI";
+     m_vfsResourceProvider.setDefaultResourceGroup( defaultResourceGroup );
+     CEGUI::AnimationManager::setDefaultResourceGroup( defaultResourceGroup );
+     CEGUI::ImageManager::setImagesetDefaultResourceGroup( defaultResourceGroup );
+
+    const CORE::CDataNode* ceguiVfsConfig = treeroot.Search( "CEGUI/VFSAdapter", '/', false );
+    if ( nullptr != ceguiVfsConfig )
+    {   
+        CORE::CDataNode::TConstDataNodeSet grpNodes = ceguiVfsConfig->FindChildrenOfType( "ResourceGroup" );
+        CORE::CDataNode::TConstDataNodeSet::iterator i = grpNodes.begin();
+        while ( i != grpNodes.end() )
+        {
+            CORE::CString groupName = (*i)->GetAttributeValueOrChildValueByName( "Name" );
+            CORE::CString vfsPath = (*i)->GetAttributeValueOrChildValueByName( "Path" );
+
+            m_vfsResourceProvider.setResourceGroupDirectory( groupName, vfsPath );
+
+            ++i;
+        }
+    }
+
+    return true;
 }
 
 /*-------------------------------------------------------------------------//

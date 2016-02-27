@@ -478,7 +478,8 @@ void
 CVFS::AddRoot( const CORE::CString& rootpath              ,
                const CString& archiveName                 ,
                const bool writeable                       ,
-               const bool autoMountArchives /* = false */ )
+               const bool autoMountArchives /* = false */ ,
+               const CString& mountPoint /* = "" */       )
 {GUCEF_TRACE;
 
     if ( rootpath.Length() > 0 )
@@ -487,6 +488,7 @@ CVFS::AddRoot( const CORE::CString& rootpath              ,
         mountEntry.path = rootpath;
         mountEntry.abspath = CORE::RelativePath( rootpath );
         mountEntry.writeable = writeable;
+        mountEntry.mountPath = mountPoint;
 
         if ( mountEntry.abspath.Length() == 0 )
         {
@@ -665,12 +667,14 @@ CVFS::LoadConfig( const CORE::CDataNode& tree )
                     archiveName = path;
                 }
 
+                CString mountPath = rootNode->GetAttributeValueOrChildValueByName( "MountPath" );
                 bool mountArchives = CORE::StringToBool( rootNode->GetAttributeValueOrChildValueByName( "MountArchives" ) );
                 bool writeable = CORE::StringToBool( rootNode->GetAttributeValueOrChildValueByName( "Writeable" ) );
                 AddRoot( path          ,
                          archiveName   ,
                          writeable     ,
-                         mountArchives );
+                         mountArchives ,
+                         mountPath     );
             }
             ++i;
         }
