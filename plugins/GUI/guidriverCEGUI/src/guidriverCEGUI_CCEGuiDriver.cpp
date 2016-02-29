@@ -28,6 +28,11 @@
 #define GUCEF_CORE_CDATANODE_H
 #endif /* GUCEF_CORE_CDATANODE_H ? */
 
+#ifndef GUCEF_GUIDRIVERCEGUI_MACROS_H
+#include "guidriverCEGUI_macros.h" 
+#define GUCEF_GUIDRIVERCEGUI_MACROS_H
+#endif /* GUCEF_GUIDRIVERCEGUI_MACROS_H ? */
+
 #ifndef GUCEF_GUIDRIVERCEGUI_CFORMBACKENDIMP_H
 #include "guidriverCEGUI_CFormBackendImp.h"
 #define GUCEF_GUIDRIVERCEGUI_CFORMBACKENDIMP_H
@@ -58,9 +63,13 @@ namespace GUIDRIVERCEGUI {
 CCEGUIDriver::CCEGUIDriver( bool useglobalconfig )
     : GUI::CGUIDriver( useglobalconfig ) ,
       m_vfsResourceProvider()            ,
+      m_logAdapter()                     ,
+      m_imageCodecAdapter()              ,
+      m_xmlParserAdapter()               ,
       m_schemeToUse()                    ,
       m_defaultFont()                    ,
-      m_defaultCursorImage() 
+      m_defaultCursorImage()             ,
+      m_schemasResourceGroup()
 {GUCEF_TRACE;
 
 }
@@ -192,16 +201,42 @@ CCEGUIDriver::LoadConfig( const CORE::CDataNode& treeroot )
         return false;
     }
 
-     m_schemeToUse = ceguiConfig->GetAttributeValueOrChildValueByName( "Scheme" );
-     m_defaultFont = ceguiConfig->GetAttributeValueOrChildValueByName( "DefaultFont" );
-     m_defaultCursorImage = ceguiConfig->GetAttributeValueOrChildValueByName( "DefaultCursorImage" );
+    m_schemeToUse = ceguiConfig->GetAttributeValueOrChildValueByName( "Scheme" );
+    m_defaultFont = ceguiConfig->GetAttributeValueOrChildValueByName( "DefaultFont" );
+    m_defaultCursorImage = ceguiConfig->GetAttributeValueOrChildValueByName( "DefaultCursorImage" );
      
-     CORE::CString defaultResourceGroup = ceguiConfig->GetAttributeValueOrChildValueByName( "DefaultResourceGroup" );
-     if ( defaultResourceGroup.IsNULLOrEmpty() )
+    // the default is the fallback resource group if none is passed to the adapter
+    CORE::CString defaultResourceGroup = ceguiConfig->GetAttributeValueOrChildValueByName( "DefaultResourceGroup" );
+    if ( defaultResourceGroup.IsNULLOrEmpty() )
         defaultResourceGroup = "CEGUI";
-     m_vfsResourceProvider.setDefaultResourceGroup( defaultResourceGroup );
-     CEGUI::AnimationManager::setDefaultResourceGroup( defaultResourceGroup );
-     CEGUI::ImageManager::setImagesetDefaultResourceGroup( defaultResourceGroup );
+    m_vfsResourceProvider.setDefaultResourceGroup( defaultResourceGroup );
+
+    CORE::CString imageSetsResourceGroup = ceguiConfig->GetAttributeValueOrChildValueByName( "ImageSetsResourceGroup" );
+    CORE::CString fontsResourceGroup = ceguiConfig->GetAttributeValueOrChildValueByName( "FontsResourceGroup" );
+    CORE::CString schemesResourceGroup = ceguiConfig->GetAttributeValueOrChildValueByName( "SchemesResourceGroup" );
+    CORE::CString lookNFeelResourceGroup = ceguiConfig->GetAttributeValueOrChildValueByName( "LookNFeelsResourceGroup" );
+    CORE::CString layoutsResourceGroup = ceguiConfig->GetAttributeValueOrChildValueByName( "LayoutsResourceGroup" );
+    CORE::CString animationsResourceGroup = ceguiConfig->GetAttributeValueOrChildValueByName( "AnimationsResourceGroup" );
+    CORE::CString scriptsResourceGroup = ceguiConfig->GetAttributeValueOrChildValueByName( "ScriptsResourceGroup" );
+    m_schemasResourceGroup = ceguiConfig->GetAttributeValueOrChildValueByName( "SchemasResourceGroup" );
+
+    // set the default resource groups to be used
+    CEGUI::ImageManager::setImagesetDefaultResourceGroup( imageSetsResourceGroup );
+    CEGUI::Font::setDefaultResourceGroup( fontsResourceGroup );
+    CEGUI::Scheme::setDefaultResourceGroup( schemesResourceGroup );
+    CEGUI::WidgetLookManager::setDefaultResourceGroup( lookNFeelResourceGroup );
+    CEGUI::WindowManager::setDefaultResourceGroup( layoutsResourceGroup );
+    CEGUI::AnimationManager::setDefaultResourceGroup( animationsResourceGroup );
+    CEGUI::ScriptModule::setDefaultResourceGroup( scriptsResourceGroup );
+
+    // setup default group for validation schemas
+    CEGUI::System* ceguiSystem = CEGUI::System::getSingletonPtr();
+    if ( nullptr != ceguiSystem )
+    {
+        CEGUI::XMLParser* parser = ceguiSystem->getXMLParser();
+        if ( nullptr != parser && parser->isPropertyPresent( "SchemaDefaultResourceGroup" )  )
+            parser->setProperty( "SchemaDefaultResourceGroup", m_schemasResourceGroup );
+    }
 
     const CORE::CDataNode* ceguiVfsConfig = treeroot.Search( "CEGUI/VFSAdapter", '/', false );
     if ( nullptr != ceguiVfsConfig )

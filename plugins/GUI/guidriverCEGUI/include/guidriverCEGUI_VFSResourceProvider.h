@@ -142,7 +142,7 @@ class GUCEF_GUIDRIVERCEGUI_EXPORT_CPP VfsResourceProvider : public ::CEGUI::Reso
 
 /*-------------------------------------------------------------------------*/
 
-#endif /* GUCEF_GUIDRIVERCEGUIGL_CGUIDRIVERGL_H ? */
+#endif /* GUCEF_GUIDRIVERCEGUI_VFSRESOURCEPROVIDER_H ? */
 
 /*-------------------------------------------------------------------------//
 //                                                                         //

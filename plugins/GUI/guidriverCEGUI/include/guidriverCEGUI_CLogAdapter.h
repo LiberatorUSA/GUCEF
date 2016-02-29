@@ -37,7 +37,7 @@
 #endif /* GUCEF_CORE_LOGGING_H ? */
 
 #ifndef GUCEF_GUIDRIVERCEGUI_MACROS_H
-#include "guidriverCEGUI_macros.h"     /* often used guceMyGUIOGRE macros */
+#include "guidriverCEGUI_macros.h"    
 #define GUCEF_GUIDRIVERCEGUI_MACROS_H
 #endif /* GUCEF_GUIDRIVERCEGUI_MACROS_H ? */
 
@@ -59,7 +59,7 @@ namespace GUIDRIVERCEGUI {
 /**
  *  Adapter class that redirects all CEGUI logging to the GUCEF log manager
  */ 
-class GUCEF_GUIDRIVERCEGUI_EXPORT_CPP CLogAdapter : public CEGUI::Logger
+class GUCEF_GUIDRIVERCEGUI_EXPORT_CPP CLogAdapter : public ::CEGUI::Logger
 {
     public:
     

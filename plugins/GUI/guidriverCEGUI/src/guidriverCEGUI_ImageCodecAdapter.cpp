@@ -48,6 +48,11 @@
 #define GUCEF_IMAGE_CIMAGECODECREGISTRY_H
 #endif /* GUCEF_IMAGE_CIMAGECODECREGISTRY_H ? */
 
+#ifndef GUCEF_GUIDRIVERCEGUI_MACROS_H
+#include "guidriverCEGUI_macros.h" 
+#define GUCEF_GUIDRIVERCEGUI_MACROS_H
+#endif /* GUCEF_GUIDRIVERCEGUI_MACROS_H ? */
+
 #include "guidriverCEGUI_ImageCodecAdapter.h" 
 
 /*-------------------------------------------------------------------------//

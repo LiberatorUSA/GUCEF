@@ -17,8 +17,8 @@
  *  Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA
  */
 
-#ifndef GUCEF_GUIDRIVERCEGUIGL_XMLPARSERADAPTER_H
-#define GUCEF_GUIDRIVERCEGUIGL_XMLPARSERADAPTER_H
+#ifndef GUCEF_GUIDRIVERCEGUI_XMLPARSERADAPTER_H
+#define GUCEF_GUIDRIVERCEGUI_XMLPARSERADAPTER_H
 
 /*-------------------------------------------------------------------------//
 //                                                                         //
@@ -95,7 +95,7 @@ class GUCEF_GUIDRIVERCEGUI_EXPORT_CPP XMLParserAdapter : public ::CEGUI::XMLPars
 
 /*-------------------------------------------------------------------------*/
 
-#endif /* GUCEF_GUIDRIVERCEGUIGL_CGUIDRIVERGL_H ? */
+#endif /* GUCEF_GUIDRIVERCEGUI_XMLPARSERADAPTER_H ? */
 
 /*-------------------------------------------------------------------------//
 //                                                                         //

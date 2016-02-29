@@ -41,6 +41,11 @@
 #define GUCEF_GUI_CGUIDRIVER_H
 #endif /* GUCEF_GUI_CGUIDRIVER_H ? */
 
+#ifndef GUCEF_GUIDRIVERCEGUI_MACROS_H
+#include "guidriverCEGUI_macros.h" 
+#define GUCEF_GUIDRIVERCEGUI_MACROS_H
+#endif /* GUCEF_GUIDRIVERCEGUI_MACROS_H ? */
+
 #ifndef GUCEF_GUIDRIVERMYGUI_CFORMBACKENDIMP_H
 #include "guidriverCEGUI_CFormBackendImp.h"
 #define GUCEF_GUIDRIVERMYGUI_CFORMBACKENDIMP_H
@@ -50,6 +55,22 @@
 #include "guidriverCEGUI_VFSResourceProvider.h"
 #define GUCEF_GUIDRIVERCEGUI_VFSRESOURCEPROVIDER_H
 #endif /* GUCEF_GUIDRIVERCEGUI_VFSRESOURCEPROVIDER_H ? */
+
+#ifndef GUCEF_GUIDRIVERCEGUI_IMAGECODECADAPTER_H
+#include "guidriverCEGUI_ImageCodecAdapter.h"
+#define GUCEF_GUIDRIVERCEGUI_IMAGECODECADAPTER_H
+#endif /* GUCEF_GUIDRIVERCEGUI_IMAGECODECADAPTER_H ? */
+
+#ifndef GUCEF_GUIDRIVERCEGUI_XMLPARSERADAPTER_H
+#include "guidriverCEGUI_XMLParserAdapter.h"
+#define GUCEF_GUIDRIVERCEGUI_XMLPARSERADAPTER_H
+#endif /* GUCEF_GUIDRIVERCEGUI_XMLPARSERADAPTER_H ? */
+
+#ifndef GUCEF_GUIDRIVERCEGUI_CLOGADAPTER_H
+#include "guidriverCEGUI_CLogAdapter.h"
+#define GUCEF_GUIDRIVERCEGUI_CLOGADAPTER_H
+#endif /* GUCEF_GUIDRIVERCEGUI_CLOGADAPTER_H ? */
+
 
 /*-------------------------------------------------------------------------//
 //                                                                         //
@@ -112,9 +133,13 @@ class GUCEF_GUIDRIVERCEGUI_EXPORT_CPP CCEGUIDriver : public GUI::CGUIDriver
     protected:
 
     VfsResourceProvider m_vfsResourceProvider;
+    CLogAdapter m_logAdapter;
+    ImageCodecAdapter m_imageCodecAdapter;
+    XMLParserAdapter m_xmlParserAdapter;
     CORE::CString m_schemeToUse;
     CORE::CString m_defaultFont;
     CORE::CString m_defaultCursorImage;
+    CORE::CString m_schemasResourceGroup;
 };
 
 /*-------------------------------------------------------------------------//

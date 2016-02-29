@@ -38,6 +38,11 @@
 #define GUCEF_VFS_CVFS_H
 #endif /* GUCEF_VFS_CVFS_H ? */
 
+#ifndef GUCEF_GUIDRIVERCEGUI_MACROS_H
+#include "guidriverCEGUI_macros.h" 
+#define GUCEF_GUIDRIVERCEGUI_MACROS_H
+#endif /* GUCEF_GUIDRIVERCEGUI_MACROS_H ? */
+
 #include "guidriverCEGUI_VFSResourceProvider.h" 
 
 /*-------------------------------------------------------------------------//
@@ -156,6 +161,8 @@ VfsResourceProvider::unloadRawDataContainer( CEGUI::RawDataContainer& data )
 {GUCEF_TRACE;
     
     delete[] data.getDataPtr();
+    data.setData( (CEGUI::uint8*) nullptr );
+    data.setSize( 0 );
 }
 
 /*-------------------------------------------------------------------------*/

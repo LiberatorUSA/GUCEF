@@ -33,10 +33,10 @@
 #define GUCEF_GUI_CGUIMANAGER_H
 #endif /* GUCEF_GUI_CGUIMANAGER_H ? */
 
-#ifndef GUCEF_GUIDRIVERCEGUI_H
-#include "guidriverCEGUI.h"
-#define GUCEF_GUIDRIVERCEGUI_H
-#endif /* GUCEF_GUIDRIVERCEGUI_H ? */
+//#ifndef GUCEF_GUIDRIVERCEGUI_H
+//#include "guidriverCEGUI.h"
+//#define GUCEF_GUIDRIVERCEGUI_H
+//#endif /* GUCEF_GUIDRIVERCEGUI_H ? */
 
 #include "guidriverCEGUI_CModule.h"
 

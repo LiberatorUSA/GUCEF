@@ -55,21 +55,6 @@
 
 #include "guidriverCEGUIOpenGL_CGUIDriverGL.h"
 
-#ifndef GUCEF_GUIDRIVERCEGUI_VFSRESOURCEPROVIDER_H
-#include "guidriverCEGUI_VFSResourceProvider.h"
-#define GUCEF_GUIDRIVERCEGUI_VFSRESOURCEPROVIDER_H
-#endif /* GUCEF_GUIDRIVERCEGUI_VFSRESOURCEPROVIDER_H ? */
-
-#ifndef GUCEF_GUIDRIVERCEGUI_IMAGECODECADAPTER_H
-#include "guidriverCEGUI_ImageCodecAdapter.h"
-#define GUCEF_GUIDRIVERCEGUI_IMAGECODECADAPTER_H
-#endif /* GUCEF_GUIDRIVERCEGUI_IMAGECODECADAPTER_H ? */
-
-#ifndef GUCEF_GUIDRIVERCEGUIGL_XMLPARSERADAPTER_H
-#include "guidriverCEGUI_XMLParserAdapter.h"
-#define GUCEF_GUIDRIVERCEGUIGL_XMLPARSERADAPTER_H
-#endif /* GUCEF_GUIDRIVERCEGUIGL_XMLPARSERADAPTER_H ? */
-
 #ifndef GUCEF_GUIDRIVERCEGUI_CLOGADAPTER_H
 #include "guidriverCEGUI_CLogAdapter.h"
 #define GUCEF_GUIDRIVERCEGUI_CLOGADAPTER_H
@@ -132,16 +117,14 @@ CGUIDriverGL::CreateGUIContext( GUI::TWindowContextPtr windowContext )
     // Lazy initialize if needed
     if ( !m_ceGuiInitialized )
     {
-        if ( NULL == m_logAdapter )
-        {
-            m_logAdapter = new GUIDRIVERCEGUI::CLogAdapter();
-        }
-        
         CEGUI::Sizef displaySize( (float) windowContext->GetWidth(), (float) windowContext->GetHeight() );
         m_guiRenderer = &CEGUI::OpenGLRenderer::create( displaySize, CEGUI::OpenGLRenderer::TTT_AUTO );
-        GUIDRIVERCEGUI::ImageCodecAdapter* imageCodecAdaper = new GUIDRIVERCEGUI::ImageCodecAdapter();
-        GUIDRIVERCEGUI::XMLParserAdapter* xmlParserAdapter = new GUIDRIVERCEGUI::XMLParserAdapter();
-        m_guiSystem = &CEGUI::System::create( *m_guiRenderer, &m_vfsResourceProvider, xmlParserAdapter, imageCodecAdaper );
+        m_guiSystem = &CEGUI::System::create( *m_guiRenderer, &m_vfsResourceProvider, &m_xmlParserAdapter, &m_imageCodecAdapter );
+
+        // setup default group for validation schemas
+        CEGUI::XMLParser* parser = m_guiSystem->getXMLParser();
+        if ( nullptr != parser && parser->isPropertyPresent( "SchemaDefaultResourceGroup" )  )
+            parser->setProperty( "SchemaDefaultResourceGroup", m_schemasResourceGroup );
         
         // Load the scheme
         CEGUI::SchemeManager::getSingleton().createFromFile( m_schemeToUse );

@@ -71,7 +71,7 @@ class CCEGUIDriver;
 /*-------------------------------------------------------------------------*/
 
 /**
- *  Implementation of the GUI context for MyGUI
+ *  Implementation of the GUI context for CEGUI
  */
 class GUCEF_GUIDRIVERCEGUI_EXPORT_CPP CGUIContext : public GUI::CIGUIContext
 {
