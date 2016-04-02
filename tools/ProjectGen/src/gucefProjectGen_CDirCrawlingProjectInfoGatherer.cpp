@@ -2275,45 +2275,69 @@ LegacyCMakeProcessProjectDir( TProjectInfo& projectInfo         ,
 /*---------------------------------------------------------------------------*/
 
 void
-ProcessProjectDir( TProjectInfo& projectInfo         ,
-                   TModuleInfoEntry& moduleInfoEntry )
+ProcessProjectDir( TProjectInfo& projectInfo                 ,
+                   const CORE::CString& rootDir              ,
+                   TModuleInfoEntryVector& moduleInfoEntries )
 {GUCEF_TRACE;
 
-    CORE::CString pathToModuleInfoFile = moduleInfoEntry.rootDir;
+    CORE::CString pathToModuleInfoFile = rootDir;
     CORE::AppendToPath( pathToModuleInfoFile, "ModuleInfo.xml" );
     
     if ( CORE::FileExists( pathToModuleInfoFile ) )
     {
-        GUCEF_LOG( CORE::LOGLEVEL_NORMAL, "Processing ModuleInfo file " + pathToModuleInfoFile );        
-        DeserializeModuleInfo( moduleInfoEntry, pathToModuleInfoFile );
-        
-        // If there is any module info specified for 'AllPlatforms' but it does not have a 
-        // module name set then we shall determine a default which is the based ont he directory the
-        // project is in. Note that platform specific info can overwrite this of course but at least
-        // this gives us a default if they don't have a name specified either.
-        TModuleInfo* moduleInfo = FindModuleInfoForPlatform( moduleInfoEntry, AllPlatforms, false );
-        if ( NULL != moduleInfo && moduleInfo->name.IsNULLOrEmpty() )
+        GUCEF_LOG( CORE::LOGLEVEL_NORMAL, "Processing ModuleInfo file " + pathToModuleInfoFile );
+        if ( DeserializeModuleInfo( moduleInfoEntries, pathToModuleInfoFile ) )
         {        
-            // Set a project name based off the module sub-dir name
-            moduleInfo->name = CORE::LastSubDir( moduleInfoEntry.rootDir ); 
-            GUCEF_LOG( CORE::LOGLEVEL_NORMAL, "Setting module name to " + moduleInfo->name + " based on the sub-dir name because no other name is available" ); 
+            // Do some extra processing which does not apply to the legacy cmake files...
+            TModuleInfoEntryVector::iterator i = moduleInfoEntries.begin();
+            while ( i != moduleInfoEntries.end() )
+            {            
+                TModuleInfoEntry& moduleInfoEntry = (*i); 
+                
+                // If there is any module info specified for 'AllPlatforms' but it does not have a 
+                // module name set then we shall determine a default which is the based on the directory the
+                // project is in. Note that platform specific info can overwrite this of course but at least
+                // this gives us a default if they don't have a name specified either.
+                TModuleInfo* moduleInfo = FindModuleInfoForPlatform( moduleInfoEntry, AllPlatforms, false );
+                if ( NULL != moduleInfo && moduleInfo->name.IsNULLOrEmpty() )
+                {        
+                    // Set a project name based off the module sub-dir name
+                    moduleInfo->name = CORE::LastSubDir( moduleInfoEntry.rootDir ); 
+                    GUCEF_LOG( CORE::LOGLEVEL_NORMAL, "Setting module name to " + moduleInfo->name + " based on the sub-dir name because no other name is available" ); 
+                }
+                ++i;
+            }
         }
     }
     else
     {
         GUCEF_LOG( CORE::LOGLEVEL_NORMAL, "Attempting to process legacy cmake suffix file" );
-        LegacyCMakeProcessProjectDir( projectInfo     ,
-                                      moduleInfoEntry );
+
+        TModuleInfoEntry moduleInfoEntry;
+        InitializeModuleInfoEntry( moduleInfoEntry );
+        LegacyCMakeProcessProjectDir( projectInfo, moduleInfoEntry );
+        moduleInfoEntries.push_back( moduleInfoEntry );
     }
 
-    FindSubDirsWithHeaders( projectInfo, moduleInfoEntry );
-    FindSubDirsWithSource( projectInfo, moduleInfoEntry );
+    TModuleInfoEntryVector::iterator i = moduleInfoEntries.begin();
+    while ( i != moduleInfoEntries.end() )
+    {            
+        TModuleInfoEntry& moduleInfoEntry = (*i); 
+                
+        // Assign the rootdir to the entry, we don't save this inside the files
+        moduleInfoEntry.rootDir = rootDir;
 
-    // If we have a module name then use it for our logging output
-    // we want to be able to see in the log which modules where successfully processed
-    CORE::CString consensusModuleName = GetConsensusModuleName( moduleInfoEntry );
+        FindSubDirsWithHeaders( projectInfo, moduleInfoEntry );
+        FindSubDirsWithSource( projectInfo, moduleInfoEntry );
 
-    GUCEF_LOG( CORE::LOGLEVEL_NORMAL, "Processed module " + consensusModuleName + " from project dir: " + moduleInfoEntry.rootDir );
+        // If we have a module name then use it for our logging output
+        // we want to be able to see in the log which modules where successfully processed
+        CORE::CString consensusModuleName = GetConsensusModuleName( moduleInfoEntry );
+
+        GUCEF_LOG( CORE::LOGLEVEL_NORMAL, "Processed module " + consensusModuleName + " from project dir: " + moduleInfoEntry.rootDir );
+
+        ++i;
+    }
 }
 
 /*---------------------------------------------------------------------------*/
@@ -2360,11 +2384,14 @@ LocateAndProcessProjectDirsRecusively( TProjectInfo& projectInfo        ,
         GUCEF_LOG( CORE::LOGLEVEL_NORMAL, "Determined that the following directory is a project directory: " + topLevelDir );
 
         // Process this dir
-        TModuleInfoEntry moduleInfoEntry;
-        InitializeModuleInfoEntry( moduleInfoEntry );        
-        moduleInfoEntry.rootDir = topLevelDir;
-        ProcessProjectDir( projectInfo, moduleInfoEntry );
-        projectInfo.modules.push_back( moduleInfoEntry );
+        TModuleInfoEntryVector moduleInfoEntries;
+        ProcessProjectDir( projectInfo, topLevelDir, moduleInfoEntries );
+        TModuleInfoEntryVector::iterator i = moduleInfoEntries.begin();
+        while ( i != moduleInfoEntries.end() )
+        {
+            projectInfo.modules.push_back( (*i) );
+            ++i;
+        }
     }
 
     // Get all subdir's

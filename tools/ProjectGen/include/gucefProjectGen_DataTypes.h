@@ -360,8 +360,8 @@ DeserializeModuleInfo( TModuleInfoEntry& moduleInfo    ,
 
 GUCEF_PROJECTGEN_PUBLIC_CPP
 bool
-DeserializeModuleInfo( TModuleInfoEntry& moduleInfo       ,
-                       const CORE::CString& inputFilepath );
+DeserializeModuleInfo( TModuleInfoEntryVector& moduleInfoEntries ,
+                       const CORE::CString& inputFilepath        );
 
 
 /*-------------------------------------------------------------------------*/

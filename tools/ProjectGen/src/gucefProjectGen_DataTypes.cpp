@@ -1311,8 +1311,8 @@ DeserializeModuleInfo( TModuleInfoEntry& moduleInfoEntry ,
 /*-------------------------------------------------------------------------*/
 
 bool
-DeserializeModuleInfo( TModuleInfoEntry& moduleInfoEntry  ,
-                       const CORE::CString& inputFilepath )
+DeserializeModuleInfo( TModuleInfoEntryVector& moduleInfoEntries ,
+                       const CORE::CString& inputFilepath        )
 {GUCEF_TRACE;
 
     CORE::CDStoreCodecRegistry::TDStoreCodecPtr codec = GetXmlDStoreCodec();
@@ -1321,9 +1321,31 @@ DeserializeModuleInfo( TModuleInfoEntry& moduleInfoEntry  ,
         CORE::CDataNode rootNode;
         if ( codec->BuildDataTree( &rootNode, inputFilepath ) )
         {
-            GUCEF_LOG( CORE::LOGLEVEL_NORMAL, "Successfully loaded module information from file \"" + inputFilepath + "\", now we will parse the information" );
-            return DeserializeModuleInfo( moduleInfoEntry ,
-                                          rootNode        );
+            GUCEF_LOG( CORE::LOGLEVEL_NORMAL, "DeserializeModuleInfo: Successfully loaded module information from file \"" + inputFilepath + "\", now we will parse the information" );
+
+            CORE::CDataNode::TDataNodeSet moduleEntryNodes = rootNode.FindChildrenOfType( "ModuleInfoEntry" );
+            if ( moduleEntryNodes.empty() )
+            {
+                GUCEF_ERROR_LOG( CORE::LOGLEVEL_NORMAL, "DeserializeModuleInfo: No ModuleInfoEntry nodes were obtained from file \"" + inputFilepath + "\"" );
+                return false;
+            }
+
+            UInt32 n=0; UInt32 errorCount = 0;
+            CORE::CDataNode::TDataNodeSet::iterator i = moduleEntryNodes.begin();
+            while ( i != moduleEntryNodes.end() )
+            {
+                TModuleInfoEntry entry;
+                InitializeModuleInfoEntry( entry );
+                
+                if ( !DeserializeModuleInfo( entry, *(*i) ) )
+                    ++errorCount;
+                
+                moduleInfoEntries.push_back( entry );
+                ++i;
+            }
+
+            GUCEF_LOG( CORE::LOGLEVEL_NORMAL, "DeserializeModuleInfo: Successfully deserialized " + CORE::UInt32ToString( moduleEntryNodes.size()-errorCount ) + "/" + CORE::UInt32ToString( moduleEntryNodes.size() ) + " entries from file \"" + inputFilepath + "\"" );
+            return 0 == errorCount;
         }
         else
         {
@@ -1331,7 +1353,7 @@ DeserializeModuleInfo( TModuleInfoEntry& moduleInfoEntry  ,
             return false;
         }
     }
-    GUCEF_ERROR_LOG( CORE::LOGLEVEL_NORMAL, "SerializeProjectInfo: Cannot serialize since no codec is registered that can be used for serialization" );
+    GUCEF_ERROR_LOG( CORE::LOGLEVEL_NORMAL, "DeserializeModuleInfo: Cannot deserialize since no codec is registered that can be used for deserialization" );
     return false;
 }
 
