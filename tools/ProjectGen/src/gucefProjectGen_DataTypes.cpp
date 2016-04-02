@@ -429,6 +429,12 @@ ResolveMultiPlatformName( const CORE::CString& platformName )
             resultSet.insert( "win64" );
         }
         else
+        if ( (*i).Equals( "linux", false ) )
+        {
+            resultSet.insert( "linux32" );
+            resultSet.insert( "linux64" );
+        }
+        else
         {
             resultSet.insert( (*i).Lowercase() );
         }
@@ -461,9 +467,36 @@ SerializeModuleInfo( const TModuleInfoEntry& moduleEntry ,
     {
         moduleInfoNode.SetAttribute( "BuildOrder", CORE::Int32ToString( moduleInfo.buildOrder ) );
     }
+    if ( moduleInfo.buildChain != -1 )
+    {
+        moduleInfoNode.SetAttribute( "BuildChain", CORE::Int32ToString( moduleInfo.buildChain ) );
+    }
+    if ( !moduleInfo.buildChainDependencies.empty() )
+    {
+        TInt32Set::iterator n = moduleInfo.buildChainDependencies.begin();
+        CORE::CString buildChainDepsValue;
+        for ( UInt32 i=0; i+1 < moduleInfo.buildChainDependencies.size(); ++i )
+        {                     
+            buildChainDepsValue += (*n) + ';';
+            ++n;
+        }
+        buildChainDepsValue += (*n);
+        moduleInfoNode.SetAttribute( "BuildChainDeps", buildChainDepsValue );
+    }
     if ( moduleInfo.moduleType != MODULETYPE_UNDEFINED )
     {
         moduleInfoNode.SetAttribute( "Type", ModuleTypeToString( moduleInfo.moduleType ) );
+    }
+    if ( !moduleInfo.tags.empty() )
+    {
+        UInt32 i=0;
+        CORE::CString tagValue;
+        for ( i; i+1 < moduleInfo.tags.size(); ++i )
+        {                     
+            tagValue += moduleInfo.tags[ i ] + ';';
+        }
+        tagValue += moduleInfo.tags[ i ];
+        moduleInfoNode.SetAttribute( "Tags", tagValue );
     }
 
     moduleInfoNode.SetAttribute( "Platform", platform );
@@ -913,6 +946,22 @@ DeserializeModuleInfo( TModuleInfo& moduleInfo           ,
     // Find the overall module properties
     CORE::CString tmpStr = moduleInfoNode->GetAttributeValue( "BuildOrder", "-1" );
     moduleInfo.buildOrder = CORE::StringToInt32( tmpStr );
+    tmpStr = moduleInfoNode->GetAttributeValue( "BuildChain", "-1" );
+    moduleInfo.buildChain = CORE::StringToInt32( tmpStr );
+    tmpStr = moduleInfoNode->GetAttributeValue( "BuildChainDeps" );
+    if ( !tmpStr.IsNULLOrEmpty() )
+    {
+        TStringVector tmpStrVec = tmpStr.ParseElements( ';', false );
+        if ( tmpStrVec.empty() )
+        {
+            for ( UInt32 i=0; i<tmpStrVec.size(); ++i )
+            {
+                Int32 chainId = CORE::StringToInt32( tmpStrVec[ i ] );
+                moduleInfo.buildChainDependencies.insert( chainId );
+            }
+        }
+    }
+    moduleInfo.tags = moduleInfoNode->GetAttributeValue( "Tags" ).ParseElements( ';', false );
     moduleInfo.moduleType = StringToModuleType( moduleInfoNode->GetAttributeValue( "Type" ) );
     moduleInfo.considerSubDirs = CORE::StringToBool( moduleInfoNode->GetAttributeValue( "ConsiderSubDirs", "True" ) );
 
@@ -1294,7 +1343,10 @@ InitializeModuleInfo( TModuleInfo& moduleInfo )
 
     // reset all fields
     moduleInfo.buildOrder = -1;
+    moduleInfo.buildChain = -1;
+    moduleInfo.buildChainDependencies.clear();
     moduleInfo.name.Clear();
+    moduleInfo.tags.clear();
     moduleInfo.includeDirs.clear();
     moduleInfo.sourceDirs.clear();
     moduleInfo.dependencyIncludeDirs.clear();
@@ -1358,6 +1410,15 @@ MergeModuleInfo( TModuleInfo& targetModuleInfo          ,
     {
         targetModuleInfo.buildOrder = moduleInfoToMergeIn.buildOrder;
     }
+    if ( moduleInfoToMergeIn.buildChain > -1 )
+    {
+        targetModuleInfo.buildChain = moduleInfoToMergeIn.buildChain;
+    }
+    TInt32Set::iterator i = moduleInfoToMergeIn.buildChainDependencies.begin();
+    while ( i != moduleInfoToMergeIn.buildChainDependencies.end() )
+    {
+        targetModuleInfo.buildChainDependencies.insert( (*i) );
+    }
     if ( !moduleInfoToMergeIn.name.IsNULLOrEmpty() )
     {
         targetModuleInfo.name = moduleInfoToMergeIn.name;
@@ -1372,6 +1433,9 @@ MergeModuleInfo( TModuleInfo& targetModuleInfo          ,
     }
 
     // Now combine the other items without overwriting
+    MergeStringVector( targetModuleInfo.tags    ,
+                       moduleInfoToMergeIn.tags ,
+                       true                     );
     MergeStringSet( targetModuleInfo.compilerSettings.languagesUsed    ,
                     moduleInfoToMergeIn.compilerSettings.languagesUsed ,
                     false                                              );

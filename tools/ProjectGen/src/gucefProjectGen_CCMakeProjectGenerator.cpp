@@ -1208,47 +1208,42 @@ WriteCMakeListsFilesToDisk( const TProjectInfo& projectInfo  ,
 
 void
 WriteCMakeModulesListToDisk( const TProjectInfo& projectInfo ,
-                             const CORE::CString& outputDir  )
+                             const CORE::CString& outputDir  ,
+                             bool addCompileDate             )
 {GUCEF_TRACE;
 
-    //TModuleInfoEntryVector::const_iterator i = projectInfo.modules.begin();
-    //while ( i != projectInfo.modules.end() )
-    //{
-    //    const TModuleInfoEntry& moduleInfoEntry = (*i);
+    CORE::CString fileContent = GetCMakeListsFileHeader( addCompileDate );
+    
+    TModuleInfoEntryVector::const_iterator i = projectInfo.modules.begin();
+    while ( i != projectInfo.modules.end() )
+    {
+        const TModuleInfoEntry& moduleInfoEntry = (*i);
 
-
-
-    //    TModuleType allPlatformsType = GetModuleType( moduleInfoEntry, AllPlatforms );
-    //    if ( ( MODULETYPE_HEADER_INCLUDE_LOCATION != allPlatformsType ) &&
-    //         ( MODULETYPE_CODE_INCLUDE_LOCATION != allPlatformsType )    )
-    //    {
-    //        CORE::CString fileContent = GenerateCMakeListsFileContent( projectInfo, moduleInfoEntry, addCompileDate );
-    //        if ( logFilename.Length() > 0 )
-    //        {
-    //            fileContent += "\n# Generator logfile can be found at: " + logFilename;
-    //        }
-
-    //        CORE::CString pathToCMakeListsFile = moduleInfoEntry.rootDir;
-    //        CORE::AppendToPath( pathToCMakeListsFile, "CMakeLists.txt" );
-
-    //        if ( CORE::WriteStringAsTextFile( pathToCMakeListsFile, fileContent ) )
-    //        {
-    //            GUCEF_LOG( CORE::LOGLEVEL_NORMAL, "Created CMakeLists.txt file for project dir: " + moduleInfoEntry.rootDir );
-    //        }
-    //        else
-    //        {
-    //            GUCEF_ERROR_LOG( CORE::LOGLEVEL_IMPORTANT, "Failed to write CMakeLists.txt file content to disk at path " + moduleInfoEntry.rootDir );
-    //        }
-    //    }
-    //    else
-    //    {
-    //        GUCEF_LOG( CORE::LOGLEVEL_NORMAL, "Skipping CMakeLists.txt generation for module of type \"HeaderIncludeLocation\"" );
-    //    }
-    //    ++i;
-    //}
-    //outputDir
-    //
-    //"add_subdirectory("  ")"
+        TModuleType allPlatformsType = GetModuleType( moduleInfoEntry, AllPlatforms );
+        if ( ( MODULETYPE_HEADER_INCLUDE_LOCATION != allPlatformsType )   &&
+             ( MODULETYPE_HEADER_INTEGRATE_LOCATION != allPlatformsType ) &&
+             ( MODULETYPE_CODE_INTEGRATE_LOCATION != allPlatformsType )    )
+        {
+            CORE::CString pathToModuleDir = CORE::GetRelativePathToOtherPathRoot( outputDir, moduleInfoEntry.rootDir );
+            CORE::CString cmakeLine = "add_subdirectory(" + pathToModuleDir + ")\n";
+            fileContent += cmakeLine;
+        }
+        else
+        {
+            GUCEF_LOG( CORE::LOGLEVEL_NORMAL, "Skipping CMakeLists.txt generation for module of type \"HeaderIncludeLocation\"" );
+        }
+        ++i;
+    }
+   
+    CORE::CString pathToCMakeModuleDirsFile = CORE::CombinePath( outputDir, "ModuleDirs.cmake" );
+    if ( CORE::WriteStringAsTextFile( pathToCMakeModuleDirsFile, fileContent ) )
+    {
+        GUCEF_LOG( CORE::LOGLEVEL_NORMAL, "Created ModuleDirs.cmake file in output dir: " + outputDir );
+    }
+    else
+    {
+        GUCEF_ERROR_LOG( CORE::LOGLEVEL_IMPORTANT, "Failed to write ModuleDirs.cmake file content to disk at path " + outputDir );
+    }
 }
 
 /*--------------------------------------------------------------------------*/
@@ -1290,7 +1285,7 @@ CCMakeProjectGenerator::GenerateProject( TProjectInfo& projectInfo            ,
     }
     WriteCMakeListsFilesToDisk( projectInfo, logfilePath, addGeneratorCompileTimeToOutput );
 
-    WriteCMakeModulesListToDisk( projectInfo, outputDir );
+    WriteCMakeModulesListToDisk( projectInfo, outputDir, addGeneratorCompileTimeToOutput );
 
     return true;
 }

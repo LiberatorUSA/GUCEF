@@ -66,6 +66,7 @@ namespace PROJECTGEN {
 //-------------------------------------------------------------------------*/
 
 typedef std::set< CORE::CString > TStringSet;
+typedef std::set< CORE::Int32 > TInt32Set;
 typedef std::map< CORE::CString, CORE::CString > TStringMap;
 typedef std::map< CORE::CString, TStringSet > TStringSetMap;
 typedef std::vector< CORE::CString > TStringVector;
@@ -133,6 +134,7 @@ struct SModuleInfo
 {
     CORE::CString name;                          // the name of the module
     TModuleType moduleType;                      // The type of module we are dealing with
+    TStringVector tags;                          // optional tags that can be associated which allows filtering of modules
     
     TStringVector dependencies;                  // list of module names of all modules this module depends on
     TStringSet dependencyIncludeDirs;            // include directories needed for the headers of the dependencies, paths only no files
@@ -140,7 +142,9 @@ struct SModuleInfo
     TStringVectorMap includeDirs;                // include directories of this module's own headers
     TStringVectorMap sourceDirs;                 // source directories of this module's own source
 
-    int buildOrder;                              // order number of this module in the build queue
+    int buildOrder;                              // order number of this module in the build dependency chain
+    int buildChain;                              // index of the build chain, different build chains can be build independently but may depend on other chains
+    TInt32Set buildChainDependencies;            // other build chains this build chain is dependent on, if any
     bool considerSubDirs;                        // Whether only the dir with the ModuleInfo is to be considered or whether subdirs are recursively considered
 
     TLinkerSettings linkerSettings;              // all linker related settings for this module
