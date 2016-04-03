@@ -1225,7 +1225,8 @@ WriteCMakeModulesListToDisk( const TProjectInfo& projectInfo ,
              ( MODULETYPE_CODE_INTEGRATE_LOCATION != allPlatformsType )    )
         {
             CORE::CString pathToModuleDir = CORE::GetRelativePathToOtherPathRoot( outputDir, moduleInfoEntry.rootDir );
-            CORE::CString cmakeLine = "add_subdirectory(" + pathToModuleDir + ")\n";
+            pathToModuleDir = pathToModuleDir.ReplaceChar( '\\', '/' );
+            CORE::CString cmakeLine = "add_subdirectory( " + pathToModuleDir + " )\n";
             fileContent += cmakeLine;
         }
         else

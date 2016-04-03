@@ -1323,7 +1323,7 @@ DeserializeModuleInfo( TModuleInfoEntryVector& moduleInfoEntries ,
         {
             GUCEF_LOG( CORE::LOGLEVEL_NORMAL, "DeserializeModuleInfo: Successfully loaded module information from file \"" + inputFilepath + "\", now we will parse the information" );
 
-            CORE::CDataNode::TDataNodeSet moduleEntryNodes = rootNode.FindChildrenOfType( "ModuleInfoEntry" );
+            CORE::CDataNode::TDataNodeSet moduleEntryNodes = rootNode.FindNodesOfType( "ModuleInfoEntry", true );
             if ( moduleEntryNodes.empty() )
             {
                 GUCEF_ERROR_LOG( CORE::LOGLEVEL_NORMAL, "DeserializeModuleInfo: No ModuleInfoEntry nodes were obtained from file \"" + inputFilepath + "\"" );
