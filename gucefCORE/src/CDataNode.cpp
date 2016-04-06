@@ -506,6 +506,21 @@ CDataNode::FindChildrenOfType( const CString& name  ,
 /*-------------------------------------------------------------------------*/
 
 CDataNode::TDataNodeSet
+CDataNode::FindNodesOfType( const CString& name  ,
+                            const bool recursive )
+{GUCEF_TRACE;
+
+    TDataNodeSet children = FindChildrenOfType( name, recursive );
+    if ( _name == name )
+    {
+        children.insert( this );            
+    }
+    return children;
+}
+
+/*-------------------------------------------------------------------------*/
+
+CDataNode::TDataNodeSet
 CDataNode::FindChildrenOfType( const CString& name  ,
                                const bool recursive )
 {GUCEF_TRACE;
