@@ -2315,6 +2315,7 @@ ProcessProjectDir( TProjectInfo& projectInfo                 ,
 
         TModuleInfoEntry moduleInfoEntry;
         InitializeModuleInfoEntry( moduleInfoEntry );
+        moduleInfoEntry.rootDir = rootDir;
         LegacyCMakeProcessProjectDir( projectInfo, moduleInfoEntry );
         moduleInfoEntries.push_back( moduleInfoEntry );
     }

@@ -87,6 +87,8 @@ GetSupportedPlatformDirMap( void )
         platformMap[ "WIN64" ].insert( "mswin" );
         platformMap[ "WIN64" ].insert( "win64" );
         platformMap[ "UNIX" ].insert( "linux" );
+        platformMap[ "UNIX" ].insert( "linux32" );
+        platformMap[ "UNIX" ].insert( "linux64" );
         platformMap[ "UNIX" ].insert( "unix" );
         platformMap[ "IPHONEOS" ].insert( "iphone" );
         platformMap[ "SYMBIAN" ].insert( "symbian" );

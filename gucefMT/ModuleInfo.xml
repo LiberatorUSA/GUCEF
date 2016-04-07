@@ -1,3 +1,4 @@
+<ModuleInfoEntries>
 <ModuleInfoEntry>
     <Module Name="gucefMT" Type="SharedLibrary" Platform="All">
         <Dependencies>
@@ -38,3 +39,4 @@
         </Linker>
     </Module>
 </ModuleInfoEntry>
+</ModuleInfoEntries>

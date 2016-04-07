@@ -117,23 +117,34 @@ CGUIDriverGL::CreateGUIContext( GUI::TWindowContextPtr windowContext )
     // Lazy initialize if needed
     if ( !m_ceGuiInitialized )
     {
-        CEGUI::Sizef displaySize( (float) windowContext->GetWidth(), (float) windowContext->GetHeight() );
-        m_guiRenderer = &CEGUI::OpenGLRenderer::create( displaySize, CEGUI::OpenGLRenderer::TTT_AUTO );
-        m_guiSystem = &CEGUI::System::create( *m_guiRenderer, &m_vfsResourceProvider, &m_xmlParserAdapter, &m_imageCodecAdapter );
+        try
+        {
+            CEGUI::Sizef displaySize( (float) windowContext->GetWidth(), (float) windowContext->GetHeight() );
+            m_guiRenderer = &CEGUI::OpenGLRenderer::create( displaySize, CEGUI::OpenGLRenderer::TTT_AUTO );
+            m_guiSystem = &CEGUI::System::create( *m_guiRenderer, &m_vfsResourceProvider, &m_xmlParserAdapter, &m_imageCodecAdapter );
 
-        // setup default group for validation schemas
-        CEGUI::XMLParser* parser = m_guiSystem->getXMLParser();
-        if ( nullptr != parser && parser->isPropertyPresent( "SchemaDefaultResourceGroup" )  )
-            parser->setProperty( "SchemaDefaultResourceGroup", m_schemasResourceGroup );
+            // setup default group for validation schemas
+            CEGUI::XMLParser* parser = m_guiSystem->getXMLParser();
+            if ( nullptr != parser && parser->isPropertyPresent( "SchemaDefaultResourceGroup" )  )
+                parser->setProperty( "SchemaDefaultResourceGroup", m_schemasResourceGroup );
         
-        // Load the scheme
-        CEGUI::SchemeManager::getSingleton().createFromFile( m_schemeToUse );
+            // Load the scheme
+            CEGUI::SchemeManager::getSingleton().createFromFile( m_schemeToUse );
         
-        // Set the defaults
-        CEGUI::System::getSingleton().getDefaultGUIContext().setDefaultFont( m_defaultFont );
-        CEGUI::System::getSingleton().getDefaultGUIContext().getMouseCursor().setDefaultImage( m_defaultCursorImage );                     
+            // Set the defaults
+            CEGUI::System::getSingleton().getDefaultGUIContext().setDefaultFont( m_defaultFont );
+            CEGUI::System::getSingleton().getDefaultGUIContext().getMouseCursor().setDefaultImage( m_defaultCursorImage );                     
         
-        m_ceGuiInitialized = true;
+            m_ceGuiInitialized = true;
+        }
+        catch ( CEGUI::Exception& e )
+        {
+            CORE::CString info = e.getMessage() + " - at - " + e.getFileName() + ":" + e.getFunctionName() + ":" + CORE::UInt32ToString( e.getLine );
+            GUCEF_EXCEPTION_LOG( CORE::LOGLEVEL_IMPORTANT, "Unhandled exception during CEGUI initialization: " + info );
+
+            m_ceGuiInitialized = false;
+            return GUI::TGuiContextPtr();
+        }
     }
     
     // Create an input context using the default driver and set it for this GUI context so that we can interact
