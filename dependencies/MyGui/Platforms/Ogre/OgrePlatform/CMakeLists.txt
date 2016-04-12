@@ -13,7 +13,7 @@
 
 
 
-if (LINUX)
+if (LINUX32)
   set( PLATFORM_HEADER_FILES 
     include/MyGUI_LastHeader.h
     include/MyGUI_OgreDataManager.h
@@ -26,7 +26,7 @@ if (LINUX)
     include/MyGUI_OgreVertexBuffer.h
   )
 
-  set( PLATFORM_HEADER_INSTALL "LINUX" )
+  set( PLATFORM_HEADER_INSTALL "LINUX32" )
   source_group( "Platform Header Files" FILES ${PLATFORM_HEADER_FILES} )
 
   set( PLATFORM_SOURCE_FILES 
@@ -38,7 +38,35 @@ if (LINUX)
     src/MyGUI_OgreVertexBuffer.cpp
   )
 
-  set( PLATFORM_SOURCE_INSTALL "LINUX" )
+  set( PLATFORM_SOURCE_INSTALL "LINUX32" )
+  source_group( "Platform Source Files" FILES ${PLATFORM_SOURCE_FILES} )
+
+elseif (LINUX64)
+  set( PLATFORM_HEADER_FILES 
+    include/MyGUI_LastHeader.h
+    include/MyGUI_OgreDataManager.h
+    include/MyGUI_OgreDataStream.h
+    include/MyGUI_OgreDiagnostic.h
+    include/MyGUI_OgrePlatform.h
+    include/MyGUI_OgreRenderManager.h
+    include/MyGUI_OgreRTTexture.h
+    include/MyGUI_OgreTexture.h
+    include/MyGUI_OgreVertexBuffer.h
+  )
+
+  set( PLATFORM_HEADER_INSTALL "LINUX64" )
+  source_group( "Platform Header Files" FILES ${PLATFORM_HEADER_FILES} )
+
+  set( PLATFORM_SOURCE_FILES 
+    src/MyGUI_OgreDataManager.cpp
+    src/MyGUI_OgreDataStream.cpp
+    src/MyGUI_OgreRenderManager.cpp
+    src/MyGUI_OgreRTTexture.cpp
+    src/MyGUI_OgreTexture.cpp
+    src/MyGUI_OgreVertexBuffer.cpp
+  )
+
+  set( PLATFORM_SOURCE_INSTALL "LINUX64" )
   source_group( "Platform Source Files" FILES ${PLATFORM_SOURCE_FILES} )
 
 elseif (WIN32)
@@ -75,21 +103,30 @@ endif ()
 set( ALL_FILES ${HEADER_FILES} ${SOURCE_FILES} ${PLATFORM_HEADER_FILES} ${PLATFORM_SOURCE_FILES} )
 
 
-if( LINUX )
+if( LINUX32 )
+  set( MODULE_NAME "MyGUI.OgrePlatform" )
+elseif( LINUX64 )
   set( MODULE_NAME "MyGUI.OgrePlatform" )
 elseif( WIN32 )
   set( MODULE_NAME "MyGUI.OgrePlatform" )
 endif()
-if( LINUX )
+if( LINUX32 )
+  add_library( ${MODULE_NAME} ${ALL_FILES} )
+elseif( LINUX64 )
   add_library( ${MODULE_NAME} ${ALL_FILES} )
 elseif( WIN32 )
   add_library( ${MODULE_NAME} ${ALL_FILES} )
 endif()
 
-if ( LINUX )
+if ( LINUX32 )
   add_dependencies( ${MODULE_NAME} MyGUI.Common.FileSystemInfo MyGUI.Engine OgreMain )
   target_link_libraries( ${MODULE_NAME} MyGUI.Engine OgreMain )
-endif( LINUX )
+endif( LINUX32 )
+
+if ( LINUX64 )
+  add_dependencies( ${MODULE_NAME} MyGUI.Common.FileSystemInfo MyGUI.Engine OgreMain )
+  target_link_libraries( ${MODULE_NAME} MyGUI.Engine OgreMain )
+endif( LINUX64 )
 
 if ( WIN32 )
   add_dependencies( ${MODULE_NAME} MyGUI.Common.FileSystemInfo MyGUI.Engine OgreMain )
@@ -98,9 +135,13 @@ endif( WIN32 )
 
 include_directories( ../../../../freetype/include ../../../../freetype/include/freetype ../../../../freetype/include/freetype/config ../../../../freetype/include/freetype/internal ../../../../freetype/include/freetype/internal/services ../../../../freetype/src/winfonts ../../../Common/FileSystemInfo ../../../MyGUIEngine/include )
 
-if ( LINUX )
+if ( LINUX32 )
   include_directories( include )
-endif( LINUX )
+endif( LINUX32 )
+
+if ( LINUX64 )
+  include_directories( include )
+endif( LINUX64 )
 
 if ( WIN32 )
   include_directories( include )
@@ -113,7 +154,9 @@ endif( WIN32 )
 
 
 
-if (LINUX)
+if (LINUX32)
+GUCEF_config_lib( ${MODULE_NAME} )
+elseif (LINUX64)
 GUCEF_config_lib( ${MODULE_NAME} )
 elseif (WIN32)
 GUCEF_config_lib( ${MODULE_NAME} )

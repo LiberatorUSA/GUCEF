@@ -93,14 +93,14 @@ elseif (IPHONEOS)
   set( PLATFORM_SOURCE_INSTALL "IPHONEOS" )
   source_group( "Platform Source Files" FILES ${PLATFORM_SOURCE_FILES} )
 
-elseif (LINUX)
+elseif (LINUX32)
   set( PLATFORM_HEADER_FILES 
     ../../gucefMT/include/gucefMT_mutex.h
     ../../gucefMT/include/gucefMT_CMutex.h
     ../../gucefMT/include/gucefMT_CScopeMutex.h
   )
 
-  set( PLATFORM_HEADER_INSTALL "LINUX" )
+  set( PLATFORM_HEADER_INSTALL "LINUX32" )
   source_group( "Platform Header Files" FILES ${PLATFORM_HEADER_FILES} )
 
   set( PLATFORM_SOURCE_FILES 
@@ -110,7 +110,27 @@ elseif (LINUX)
     src/MemoryManager.cpp
   )
 
-  set( PLATFORM_SOURCE_INSTALL "LINUX" )
+  set( PLATFORM_SOURCE_INSTALL "LINUX32" )
+  source_group( "Platform Source Files" FILES ${PLATFORM_SOURCE_FILES} )
+
+elseif (LINUX64)
+  set( PLATFORM_HEADER_FILES 
+    ../../gucefMT/include/gucefMT_mutex.h
+    ../../gucefMT/include/gucefMT_CMutex.h
+    ../../gucefMT/include/gucefMT_CScopeMutex.h
+  )
+
+  set( PLATFORM_HEADER_INSTALL "LINUX64" )
+  source_group( "Platform Header Files" FILES ${PLATFORM_HEADER_FILES} )
+
+  set( PLATFORM_SOURCE_FILES 
+    ../../gucefMT/src/gucefMT_MUTEX.c
+    ../../gucefMT/src/gucefMT_CMutex.cpp
+    ../../gucefMT/src/gucefMT_CScopeMutex.cpp
+    src/MemoryManager.cpp
+  )
+
+  set( PLATFORM_SOURCE_INSTALL "LINUX64" )
   source_group( "Platform Source Files" FILES ${PLATFORM_SOURCE_FILES} )
 
 elseif (OSX)
@@ -290,9 +310,13 @@ if ( IPHONEOS )
   include_directories( ../../gucefMT/include/ )
 endif( IPHONEOS )
 
-if ( LINUX )
+if ( LINUX32 )
   include_directories( ../../gucefMT/include/ )
-endif( LINUX )
+endif( LINUX32 )
+
+if ( LINUX64 )
+  include_directories( ../../gucefMT/include/ )
+endif( LINUX64 )
 
 if ( OSX )
   include_directories( ../../gucefMT/include/ )

@@ -40,7 +40,7 @@ if (IPHONEOS)
   set( PLATFORM_SOURCE_INSTALL "IPHONEOS" )
   source_group( "Platform Source Files" FILES ${PLATFORM_SOURCE_FILES} )
 
-elseif (LINUX)
+elseif (LINUX32)
   set( PLATFORM_HEADER_FILES 
     includes/OIS.h
     includes/OISConfig.h
@@ -69,7 +69,7 @@ elseif (LINUX)
     src/extras/LIRC/OISLIRCRingBuffer.h
   )
 
-  set( PLATFORM_HEADER_INSTALL "LINUX" )
+  set( PLATFORM_HEADER_INSTALL "LINUX32" )
   source_group( "Platform Header Files" FILES ${PLATFORM_HEADER_FILES} )
 
   set( PLATFORM_SOURCE_FILES 
@@ -90,7 +90,60 @@ elseif (LINUX)
     src/linux/LinuxMouse.cpp
   )
 
-  set( PLATFORM_SOURCE_INSTALL "LINUX" )
+  set( PLATFORM_SOURCE_INSTALL "LINUX32" )
+  source_group( "Platform Source Files" FILES ${PLATFORM_SOURCE_FILES} )
+
+elseif (LINUX64)
+  set( PLATFORM_HEADER_FILES 
+    includes/OIS.h
+    includes/OISConfig.h
+    includes/OISEffect.h
+    includes/OISEvents.h
+    includes/OISException.h
+    includes/OISFactoryCreator.h
+    includes/OISForceFeedback.h
+    includes/OISInputManager.h
+    includes/OISInterface.h
+    includes/OISJoyStick.h
+    includes/OISKeyboard.h
+    includes/OISMouse.h
+    includes/OISMultiTouch.h
+    includes/OISObject.h
+    includes/OISPrereqs.h
+    includes/linux/EventHelpers.h
+    includes/linux/LinuxForceFeedback.h
+    includes/linux/LinuxInputManager.h
+    includes/linux/LinuxJoyStickEvents.h
+    includes/linux/LinuxKeyboard.h
+    includes/linux/LinuxMouse.h
+    includes/linux/LinuxPrereqs.h
+    src/extras/LIRC/OISLIRC.h
+    src/extras/LIRC/OISLIRCFactoryCreator.h
+    src/extras/LIRC/OISLIRCRingBuffer.h
+  )
+
+  set( PLATFORM_HEADER_INSTALL "LINUX64" )
+  source_group( "Platform Header Files" FILES ${PLATFORM_HEADER_FILES} )
+
+  set( PLATFORM_SOURCE_FILES 
+    src/OISEffect.cpp
+    src/OISException.cpp
+    src/OISForceFeedback.cpp
+    src/OISInputManager.cpp
+    src/OISJoyStick.cpp
+    src/OISKeyboard.cpp
+    src/OISObject.cpp
+    src/extras/LIRC/OISLIRC.cpp
+    src/extras/LIRC/OISLIRCFactoryCreator.cpp
+    src/linux/EventHelpers.cpp
+    src/linux/LinuxForceFeedback.cpp
+    src/linux/LinuxInputManager.cpp
+    src/linux/LinuxJoyStickEvents.cpp
+    src/linux/LinuxKeyboard.cpp
+    src/linux/LinuxMouse.cpp
+  )
+
+  set( PLATFORM_SOURCE_INSTALL "LINUX64" )
   source_group( "Platform Source Files" FILES ${PLATFORM_SOURCE_FILES} )
 
 elseif (OSX)
@@ -274,7 +327,9 @@ endif ()
 set( ALL_FILES ${HEADER_FILES} ${SOURCE_FILES} ${PLATFORM_HEADER_FILES} ${PLATFORM_SOURCE_FILES} )
 
 
-if( LINUX )
+if( LINUX32 )
+  set( MODULE_NAME "OIS" )
+elseif( LINUX64 )
   set( MODULE_NAME "OIS" )
 elseif( OSX )
   set( MODULE_NAME "OIS" )
@@ -283,7 +338,9 @@ elseif( WIN32 )
 elseif( WIN64 )
   set( MODULE_NAME "OIS" )
 endif()
-if( LINUX )
+if( LINUX32 )
+  add_library( ${MODULE_NAME} ${ALL_FILES} )
+elseif( LINUX64 )
   add_library( ${MODULE_NAME} ${ALL_FILES} )
 elseif( OSX )
   add_library( ${MODULE_NAME} ${ALL_FILES} )
@@ -293,10 +350,15 @@ elseif( WIN64 )
   add_library( ${MODULE_NAME} ${ALL_FILES} )
 endif()
 
-if ( LINUX )
+if ( LINUX32 )
   target_link_libraries( ${MODULE_NAME} X11 )
   set_property( TARGET ${MODULE_NAME} APPEND_STRING PROPERTY COMPILE_DEFINITIONS "OIS_DYNAMIC_LIB;OIS_LINUX_PLATFORM;OIS_NONCLIENT_BUILD" )
-endif( LINUX )
+endif( LINUX32 )
+
+if ( LINUX64 )
+  target_link_libraries( ${MODULE_NAME} X11 )
+  set_property( TARGET ${MODULE_NAME} APPEND_STRING PROPERTY COMPILE_DEFINITIONS "OIS_DYNAMIC_LIB;OIS_LINUX_PLATFORM;OIS_NONCLIENT_BUILD" )
+endif( LINUX64 )
 
 if ( OSX )
   set_property( TARGET ${MODULE_NAME} APPEND_STRING PROPERTY COMPILE_DEFINITIONS "OIS_APPLE_PLATFORM;OIS_DYNAMIC_LIB;OIS_NONCLIENT_BUILD" )
@@ -316,9 +378,13 @@ if ( IPHONEOS )
   include_directories( includes/iphone )
 endif( IPHONEOS )
 
-if ( LINUX )
+if ( LINUX32 )
   include_directories( includes includes/linux src/extras/LIRC )
-endif( LINUX )
+endif( LINUX32 )
+
+if ( LINUX64 )
+  include_directories( includes includes/linux src/extras/LIRC )
+endif( LINUX64 )
 
 if ( OSX )
   include_directories( includes includes/mac src/extras/LIRC )
@@ -343,7 +409,9 @@ endif( WIN64 )
 
 
 
-if (LINUX)
+if (LINUX32)
+GUCEF_config_lib( ${MODULE_NAME} )
+elseif (LINUX64)
 GUCEF_config_lib( ${MODULE_NAME} )
 elseif (OSX)
 GUCEF_config_lib( ${MODULE_NAME} )

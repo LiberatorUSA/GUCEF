@@ -183,12 +183,20 @@ if (ANDROID)
   set( PLATFORM_SOURCE_INSTALL "ANDROID" )
   source_group( "Platform Source Files" FILES ${PLATFORM_SOURCE_FILES} )
 
-elseif (LINUX)
+elseif (LINUX32)
   set( PLATFORM_SOURCE_FILES 
     src/IconvStringTranscoder.cpp
   )
 
-  set( PLATFORM_SOURCE_INSTALL "LINUX" )
+  set( PLATFORM_SOURCE_INSTALL "LINUX32" )
+  source_group( "Platform Source Files" FILES ${PLATFORM_SOURCE_FILES} )
+
+elseif (LINUX64)
+  set( PLATFORM_SOURCE_FILES 
+    src/IconvStringTranscoder.cpp
+  )
+
+  set( PLATFORM_SOURCE_INSTALL "LINUX64" )
   source_group( "Platform Source Files" FILES ${PLATFORM_SOURCE_FILES} )
 
 elseif (WIN32)
@@ -240,7 +248,9 @@ include_directories( ../../freetype/include ../../freetype/include/freetype ../.
 
 if (ANDROID)
 GUCEF_config_lib( ${MODULE_NAME} )
-elseif (LINUX)
+elseif (LINUX32)
+GUCEF_config_lib( ${MODULE_NAME} )
+elseif (LINUX64)
 GUCEF_config_lib( ${MODULE_NAME} )
 elseif (OSX)
 GUCEF_config_lib( ${MODULE_NAME} )

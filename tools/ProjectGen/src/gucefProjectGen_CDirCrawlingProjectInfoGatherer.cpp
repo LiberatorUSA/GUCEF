@@ -109,7 +109,10 @@ GetSupportedPlatformDirMap( void )
         platformMap[ "win32" ].insert( "win32" );
         platformMap[ "win64" ].insert( "mswin" );
         platformMap[ "win64" ].insert( "win64" );
-        platformMap[ "linux" ].insert( "linux" );
+        platformMap[ "linux32" ].insert( "linux" );
+        platformMap[ "linux32" ].insert( "linux32" );
+        platformMap[ "linux64" ].insert( "linux" );
+        platformMap[ "linux64" ].insert( "linux64" );
         platformMap[ "unix" ].insert( "unix" );
         platformMap[ "iphoneos" ].insert( "iphone" );
         platformMap[ "symbian" ].insert( "symbian" );
@@ -138,6 +141,7 @@ GetSourceFileExtensions( void )
         fileTypes.push_back( "cpp" );
         fileTypes.push_back( "cxx" );
         fileTypes.push_back( "asm" );
+        fileTypes.push_back( "cs" );
     }
     return fileTypes;
 }
@@ -154,6 +158,7 @@ GetHeaderFileExtensions( void )
     {
         fileTypes.push_back( "h" );
         fileTypes.push_back( "hpp" );
+        fileTypes.push_back( "hxx" );
     }
     return fileTypes;
 }

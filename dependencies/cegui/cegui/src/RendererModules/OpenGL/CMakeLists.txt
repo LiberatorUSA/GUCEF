@@ -30,12 +30,20 @@ set( SOURCE_FILES
 
 
 
-if (LINUX)
+if (LINUX32)
   set( PLATFORM_SOURCE_FILES 
     GLXPBTextureTarget.cpp
   )
 
-  set( PLATFORM_SOURCE_INSTALL "LINUX" )
+  set( PLATFORM_SOURCE_INSTALL "LINUX32" )
+  source_group( "Platform Source Files" FILES ${PLATFORM_SOURCE_FILES} )
+
+elseif (LINUX64)
+  set( PLATFORM_SOURCE_FILES 
+    GLXPBTextureTarget.cpp
+  )
+
+  set( PLATFORM_SOURCE_INSTALL "LINUX64" )
   source_group( "Platform Source Files" FILES ${PLATFORM_SOURCE_FILES} )
 
 elseif (WIN32)
@@ -79,7 +87,9 @@ include_directories( ../../../../../glew/include ../../../../../glm ../../../inc
 
 if (ANDROID)
 GUCEF_config_lib( ${MODULE_NAME} )
-elseif (LINUX)
+elseif (LINUX32)
+GUCEF_config_lib( ${MODULE_NAME} )
+elseif (LINUX64)
 GUCEF_config_lib( ${MODULE_NAME} )
 elseif (OSX)
 GUCEF_config_lib( ${MODULE_NAME} )

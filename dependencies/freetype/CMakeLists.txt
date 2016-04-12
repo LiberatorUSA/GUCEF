@@ -281,7 +281,7 @@ elseif (IPHONEOS)
   set( PLATFORM_SOURCE_INSTALL "IPHONEOS" )
   source_group( "Platform Source Files" FILES ${PLATFORM_SOURCE_FILES} )
 
-elseif (LINUX)
+elseif (LINUX32)
   set( PLATFORM_SOURCE_FILES 
     src/autofit/autofit.c
     src/base/ftbase.c
@@ -315,7 +315,44 @@ elseif (LINUX)
     src/type42/type42.c
   )
 
-  set( PLATFORM_SOURCE_INSTALL "LINUX" )
+  set( PLATFORM_SOURCE_INSTALL "LINUX32" )
+  source_group( "Platform Source Files" FILES ${PLATFORM_SOURCE_FILES} )
+
+elseif (LINUX64)
+  set( PLATFORM_SOURCE_FILES 
+    src/autofit/autofit.c
+    src/base/ftbase.c
+    src/base/ftsystem.c
+    src/base/ftglyph.c
+    src/base/ftbitmap.c
+    src/base/ftinit.c
+    src/bdf/bdf.c
+    src/cache/ftcache.c
+    src/cff/cff.c
+    src/cid/cidriver.c
+    src/cid/cidobjs.c
+    src/cid/cidgload.c
+    src/cid/cidload.c
+    src/cid/cidparse.c
+    src/gxvalid/gxvalid.c
+    src/gzip/ftgzip.c
+    src/lzw/ftlzw.c
+    src/otvalid/otvalid.c
+    src/pcf/pcf.c
+    src/pfr/pfr.c
+    src/psaux/psaux.c
+    src/pshinter/pshinter.c
+    src/psnames/psnames.c
+    src/raster/raster.c
+    src/sfnt/sfnt.c
+    src/smooth/ftsmooth.c
+    src/smooth/ftgrays.c
+    src/truetype/truetype.c
+    src/type1/type1.c
+    src/type42/type42.c
+  )
+
+  set( PLATFORM_SOURCE_INSTALL "LINUX64" )
   source_group( "Platform Source Files" FILES ${PLATFORM_SOURCE_FILES} )
 
 elseif (OSX)
@@ -556,10 +593,15 @@ if ( ANDROID )
   target_link_libraries( ${MODULE_NAME} z )
 endif( ANDROID )
 
-if ( LINUX )
+if ( LINUX32 )
   add_dependencies( ${MODULE_NAME} zlib )
   target_link_libraries( ${MODULE_NAME} zlib )
-endif( LINUX )
+endif( LINUX32 )
+
+if ( LINUX64 )
+  add_dependencies( ${MODULE_NAME} zlib )
+  target_link_libraries( ${MODULE_NAME} zlib )
+endif( LINUX64 )
 
 if ( WIN32 )
   add_dependencies( ${MODULE_NAME} zlib )
@@ -573,9 +615,13 @@ endif( WIN64 )
 
 include_directories( include include/freetype include/freetype/config include/freetype/internal include/freetype/internal/services src/winfonts )
 
-if ( LINUX )
+if ( LINUX32 )
   include_directories( ../zlib )
-endif( LINUX )
+endif( LINUX32 )
+
+if ( LINUX64 )
+  include_directories( ../zlib )
+endif( LINUX64 )
 
 if ( WIN32 )
   include_directories( ../zlib )
@@ -600,7 +646,9 @@ elseif (GTK)
 GUCEF_config_lib( ${MODULE_NAME} )
 elseif (IPHONEOS)
 GUCEF_config_lib( ${MODULE_NAME} )
-elseif (LINUX)
+elseif (LINUX32)
+GUCEF_config_lib( ${MODULE_NAME} )
+elseif (LINUX64)
 GUCEF_config_lib( ${MODULE_NAME} )
 elseif (OSX)
 GUCEF_config_lib( ${MODULE_NAME} )

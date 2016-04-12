@@ -13,7 +13,7 @@
 
 
 
-if (LINUX)
+if (LINUX32)
   set( PLATFORM_HEADER_FILES 
     include/DLLMainInputDriverOIS.h
     include/gucefINPUT_OISJoystickListener.h
@@ -21,7 +21,7 @@ if (LINUX)
     include/gucefINPUT_OISMouseListener.h
   )
 
-  set( PLATFORM_HEADER_INSTALL "LINUX" )
+  set( PLATFORM_HEADER_INSTALL "LINUX32" )
   source_group( "Platform Header Files" FILES ${PLATFORM_HEADER_FILES} )
 
   set( PLATFORM_SOURCE_FILES 
@@ -31,7 +31,28 @@ if (LINUX)
     src/gucefINPUT_OISMouseListener.cpp
   )
 
-  set( PLATFORM_SOURCE_INSTALL "LINUX" )
+  set( PLATFORM_SOURCE_INSTALL "LINUX32" )
+  source_group( "Platform Source Files" FILES ${PLATFORM_SOURCE_FILES} )
+
+elseif (LINUX64)
+  set( PLATFORM_HEADER_FILES 
+    include/DLLMainInputDriverOIS.h
+    include/gucefINPUT_OISJoystickListener.h
+    include/gucefINPUT_OISKeyboardListener.h
+    include/gucefINPUT_OISMouseListener.h
+  )
+
+  set( PLATFORM_HEADER_INSTALL "LINUX64" )
+  source_group( "Platform Header Files" FILES ${PLATFORM_HEADER_FILES} )
+
+  set( PLATFORM_SOURCE_FILES 
+    src/DLLMainInputDriverOIS.cpp
+    src/gucefINPUT_OISJoystickListener.cpp
+    src/gucefINPUT_OISKeyboardListener.cpp
+    src/gucefINPUT_OISMouseListener.cpp
+  )
+
+  set( PLATFORM_SOURCE_INSTALL "LINUX64" )
   source_group( "Platform Source Files" FILES ${PLATFORM_SOURCE_FILES} )
 
 elseif (WIN32)
@@ -82,14 +103,18 @@ endif ()
 set( ALL_FILES ${HEADER_FILES} ${SOURCE_FILES} ${PLATFORM_HEADER_FILES} ${PLATFORM_SOURCE_FILES} )
 
 
-if( LINUX )
+if( LINUX32 )
+  set( MODULE_NAME "inputdriverOIS" )
+elseif( LINUX64 )
   set( MODULE_NAME "inputdriverOIS" )
 elseif( WIN32 )
   set( MODULE_NAME "inputdriverOIS" )
 elseif( WIN64 )
   set( MODULE_NAME "inputdriverOIS" )
 endif()
-if( LINUX )
+if( LINUX32 )
+  add_library( ${MODULE_NAME} ${ALL_FILES} )
+elseif( LINUX64 )
   add_library( ${MODULE_NAME} ${ALL_FILES} )
 elseif( WIN32 )
   add_library( ${MODULE_NAME} ${ALL_FILES} )
@@ -97,11 +122,17 @@ elseif( WIN64 )
   add_library( ${MODULE_NAME} ${ALL_FILES} )
 endif()
 
-if ( LINUX )
+if ( LINUX32 )
   add_dependencies( ${MODULE_NAME} OIS gucefCORE gucefINPUT gucefMT )
   target_link_libraries( ${MODULE_NAME} OIS )
   set_property( TARGET ${MODULE_NAME} APPEND_STRING PROPERTY COMPILE_DEFINITIONS "BUILD_GUCEF_INPUT_PLUGIN_DLL;INPUTDRIVEROIS_BUILD_MODULE" )
-endif( LINUX )
+endif( LINUX32 )
+
+if ( LINUX64 )
+  add_dependencies( ${MODULE_NAME} OIS gucefCORE gucefINPUT gucefMT )
+  target_link_libraries( ${MODULE_NAME} OIS )
+  set_property( TARGET ${MODULE_NAME} APPEND_STRING PROPERTY COMPILE_DEFINITIONS "BUILD_GUCEF_INPUT_PLUGIN_DLL;INPUTDRIVEROIS_BUILD_MODULE" )
+endif( LINUX64 )
 
 if ( WIN32 )
   add_dependencies( ${MODULE_NAME} OIS gucefCORE gucefINPUT gucefMT )
@@ -117,9 +148,13 @@ endif( WIN64 )
 
 include_directories( ../../../common/include ../../../gucefCORE/include ../../../gucefINPUT/include ../../../gucefMT/include )
 
-if ( LINUX )
+if ( LINUX32 )
   include_directories( ../../../dependencies/OIS/includes ../../../dependencies/OIS/includes/linux ../../../dependencies/OIS/src/extras/LIRC ../../../gucefCORE/include/linux include )
-endif( LINUX )
+endif( LINUX32 )
+
+if ( LINUX64 )
+  include_directories( ../../../dependencies/OIS/includes ../../../dependencies/OIS/includes/linux ../../../dependencies/OIS/src/extras/LIRC ../../../gucefCORE/include/linux include )
+endif( LINUX64 )
 
 if ( WIN32 )
   include_directories( ../../../dependencies/OIS/includes ../../../dependencies/OIS/includes/win32 ../../../dependencies/OIS/src/extras/LIRC ../../../gucefCORE/include/mswin include )
@@ -136,7 +171,9 @@ endif( WIN64 )
 
 
 
-if (LINUX)
+if (LINUX32)
+GUCEF_config_lib( ${MODULE_NAME} )
+elseif (LINUX64)
 GUCEF_config_lib( ${MODULE_NAME} )
 elseif (WIN32)
 GUCEF_config_lib( ${MODULE_NAME} )

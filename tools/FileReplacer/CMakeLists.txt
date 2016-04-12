@@ -53,9 +53,13 @@ if ( ANDROID )
   include_directories( ../../gucefCORE/include/android )
 endif( ANDROID )
 
-if ( LINUX )
+if ( LINUX32 )
   include_directories( ../../gucefCORE/include/linux )
-endif( LINUX )
+endif( LINUX32 )
+
+if ( LINUX64 )
+  include_directories( ../../gucefCORE/include/linux )
+endif( LINUX64 )
 
 if ( WIN32 )
   include_directories( ../../gucefCORE/include/mswin )

@@ -13,7 +13,7 @@
 
 
 
-if (LINUX)
+if (LINUX32)
   set( PLATFORM_HEADER_FILES 
     Application.h
     AreaSelectorControl.h
@@ -96,7 +96,7 @@ if (LINUX)
     WorkspaceControl.h
   )
 
-  set( PLATFORM_HEADER_INSTALL "LINUX" )
+  set( PLATFORM_HEADER_INSTALL "LINUX32" )
   source_group( "Platform Header Files" FILES ${PLATFORM_HEADER_FILES} )
 
   set( PLATFORM_SOURCE_FILES 
@@ -168,7 +168,165 @@ if (LINUX)
     WorkspaceControl.cpp
   )
 
-  set( PLATFORM_SOURCE_INSTALL "LINUX" )
+  set( PLATFORM_SOURCE_INSTALL "LINUX32" )
+  source_group( "Platform Source Files" FILES ${PLATFORM_SOURCE_FILES} )
+
+elseif (LINUX64)
+  set( PLATFORM_HEADER_FILES 
+    Application.h
+    AreaSelectorControl.h
+    BackgroundControl.h
+    BackwardCompatibilityManager.h
+    CodeGenerator.h
+    ColourManager.h
+    ColourPanel.h
+    CommandManager.h
+    Common.h
+    CyclicBuffer.h
+    EditorState.h
+    EditorToolTip.h
+    EditorWidgets.h
+    GroupMessage.h
+    HotKeyCommand.h
+    HotKeyManager.h
+    IPropertyField.h
+    Localise.h
+    MainMenuControl.h
+    MainPaneControl.h
+    MainWorkspaceControl.h
+    MessageBoxFadeControl.h
+    MessageBoxManager.h
+    MyGUI_FilterNoneSkin.h
+    MyGUI_RTTLayer.h
+    PanelControllers.h
+    PanelExtensionProperties.h
+    PanelItems.h
+    PanelMainProperties.h
+    PanelProperties.h
+    PanelTemplateProperties.h
+    PanelUserData.h
+    PanelView.h
+    PanelViewCell.h
+    Parse.h
+    PositionSelectorControl.h
+    PossibleValue.h
+    ProjectControl.h
+    PropertiesPanelView.h
+    PropertyFieldAlpha.h
+    PropertyFieldColour.h
+    PropertyFieldComboBox.h
+    PropertyFieldEditBox.h
+    PropertyFieldFileName.h
+    PropertyFieldFont.h
+    PropertyFieldManager.h
+    PropertyFieldName.h
+    PropertyFieldNumeric.h
+    PropertyFieldPosition.h
+    PropertyFieldSkin.h
+    PropertyFieldType.h
+    RecentFilesManager.h
+    resource.h
+    SelectorControl.h
+    SeparatorPartControl.h
+    SettingsGeneralControl.h
+    SettingsManager.h
+    SettingsResourcePathsControl.h
+    SettingsResourcesControl.h
+    SettingsSector.h
+    SettingsUpdateResourcesControl.h
+    SettingsWidgetsControl.h
+    SettingsWindow.h
+    SkinInfo.h
+    StateController.h
+    StateManager.h
+    TestState.h
+    TextFieldControl.h
+    TextureControl.h
+    TextureToolControl.h
+    ToolsControl.h
+    UndoManager.h
+    WidgetContainer.h
+    WidgetCreatorManager.h
+    WidgetSelectorManager.h
+    WidgetStyle.h
+    WidgetsWindow.h
+    WidgetTypes.h
+    WorkspaceControl.h
+  )
+
+  set( PLATFORM_HEADER_INSTALL "LINUX64" )
+  source_group( "Platform Header Files" FILES ${PLATFORM_HEADER_FILES} )
+
+  set( PLATFORM_SOURCE_FILES 
+    Application.cpp
+    AreaSelectorControl.cpp
+    BackgroundControl.cpp
+    BackwardCompatibilityManager.cpp
+    CodeGenerator.cpp
+    ColourManager.cpp
+    ColourPanel.cpp
+    CommandManager.cpp
+    EditorState.cpp
+    EditorToolTip.cpp
+    EditorWidgets.cpp
+    GroupMessage.cpp
+    HotKeyManager.cpp
+    MainMenuControl.cpp
+    MainPaneControl.cpp
+    MainWorkspaceControl.cpp
+    MessageBoxFadeControl.cpp
+    MessageBoxManager.cpp
+    MyGUI_FilterNoneSkin.cpp
+    MyGUI_RTTLayer.cpp
+    PanelControllers.cpp
+    PanelExtensionProperties.cpp
+    PanelItems.cpp
+    PanelMainProperties.cpp
+    PanelProperties.cpp
+    PanelTemplateProperties.cpp
+    PanelUserData.cpp
+    Parse.cpp
+    PositionSelectorControl.cpp
+    ProjectControl.cpp
+    PropertiesPanelView.cpp
+    PropertyFieldAlpha.cpp
+    PropertyFieldColour.cpp
+    PropertyFieldComboBox.cpp
+    PropertyFieldEditBox.cpp
+    PropertyFieldFileName.cpp
+    PropertyFieldFont.cpp
+    PropertyFieldManager.cpp
+    PropertyFieldName.cpp
+    PropertyFieldNumeric.cpp
+    PropertyFieldPosition.cpp
+    PropertyFieldSkin.cpp
+    PropertyFieldType.cpp
+    RecentFilesManager.cpp
+    SelectorControl.cpp
+    SeparatorPartControl.cpp
+    SettingsGeneralControl.cpp
+    SettingsManager.cpp
+    SettingsResourcePathsControl.cpp
+    SettingsResourcesControl.cpp
+    SettingsSector.cpp
+    SettingsUpdateResourcesControl.cpp
+    SettingsWidgetsControl.cpp
+    SettingsWindow.cpp
+    StateManager.cpp
+    TestState.cpp
+    TextFieldControl.cpp
+    TextureControl.cpp
+    TextureToolControl.cpp
+    ToolsControl.cpp
+    UndoManager.cpp
+    WidgetCreatorManager.cpp
+    WidgetSelectorManager.cpp
+    WidgetsWindow.cpp
+    WidgetTypes.cpp
+    WorkspaceControl.cpp
+  )
+
+  set( PLATFORM_SOURCE_INSTALL "LINUX64" )
   source_group( "Platform Source Files" FILES ${PLATFORM_SOURCE_FILES} )
 
 elseif (WIN32)
@@ -493,14 +651,18 @@ endif ()
 set( ALL_FILES ${HEADER_FILES} ${SOURCE_FILES} ${PLATFORM_HEADER_FILES} ${PLATFORM_SOURCE_FILES} )
 
 
-if( LINUX )
+if( LINUX32 )
+  set( MODULE_NAME "MyGUI.LayoutEditor" )
+elseif( LINUX64 )
   set( MODULE_NAME "MyGUI.LayoutEditor" )
 elseif( WIN32 )
   set( MODULE_NAME "MyGUI.LayoutEditor" )
 elseif( WIN64 )
   set( MODULE_NAME "MyGUI.LayoutEditor" )
 endif()
-if( LINUX )
+if( LINUX32 )
+  add_executable( ${MODULE_NAME} ${ALL_FILES} )
+elseif( LINUX64 )
   add_executable( ${MODULE_NAME} ${ALL_FILES} )
 elseif( WIN32 )
   add_executable( ${MODULE_NAME} WIN32 ${ALL_FILES} )
@@ -508,11 +670,17 @@ elseif( WIN64 )
   add_executable( ${MODULE_NAME} WIN32 ${ALL_FILES} )
 endif()
 
-if ( LINUX )
+if ( LINUX32 )
   add_dependencies( ${MODULE_NAME} MyGUI.Common.Base MyGUI.Common.Base.OpenGL MyGUI.Common.Input MyGUI.Common.Input.OIS MyGUI.Common.Precompiled MyGUI.Engine MyGUI.OpenGLPlatform MyGui.Common.Tools freetype )
   target_link_libraries( ${MODULE_NAME} MyGUI.Engine MyGUI.OpenGLPlatform OIS freetype )
   set_property( TARGET ${MODULE_NAME} APPEND_STRING PROPERTY COMPILE_DEFINITIONS "MYGUI_USE_FREETYPE" )
-endif( LINUX )
+endif( LINUX32 )
+
+if ( LINUX64 )
+  add_dependencies( ${MODULE_NAME} MyGUI.Common.Base MyGUI.Common.Base.OpenGL MyGUI.Common.Input MyGUI.Common.Input.OIS MyGUI.Common.Precompiled MyGUI.Engine MyGUI.OpenGLPlatform MyGui.Common.Tools freetype )
+  target_link_libraries( ${MODULE_NAME} MyGUI.Engine MyGUI.OpenGLPlatform OIS freetype )
+  set_property( TARGET ${MODULE_NAME} APPEND_STRING PROPERTY COMPILE_DEFINITIONS "MYGUI_USE_FREETYPE" )
+endif( LINUX64 )
 
 if ( WIN32 )
   add_dependencies( ${MODULE_NAME} MyGUI.Common.Base MyGUI.Common.Base.OpenGL MyGUI.Common.Input MyGUI.Common.Input.Win32 MyGUI.Common.Precompiled MyGUI.Engine MyGUI.OpenGLPlatform MyGui.Common.Tools freetype )
@@ -535,7 +703,9 @@ include_directories( ../../../freetype/include ../../../freetype/include/freetyp
 
 
 
-if (LINUX)
+if (LINUX32)
+GUCEF_config_tool( ${MODULE_NAME} )
+elseif (LINUX64)
 GUCEF_config_tool( ${MODULE_NAME} )
 elseif (WIN32)
 GUCEF_config_tool( ${MODULE_NAME} )

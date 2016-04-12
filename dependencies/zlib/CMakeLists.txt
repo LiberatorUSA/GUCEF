@@ -13,7 +13,7 @@
 
 
 
-if (LINUX)
+if (LINUX32)
   set( PLATFORM_HEADER_FILES 
     crc32.h
     deflate.h
@@ -28,7 +28,7 @@ if (LINUX)
     zutil.h
   )
 
-  set( PLATFORM_HEADER_INSTALL "LINUX" )
+  set( PLATFORM_HEADER_INSTALL "LINUX32" )
   source_group( "Platform Header Files" FILES ${PLATFORM_HEADER_FILES} )
 
   set( PLATFORM_SOURCE_FILES 
@@ -46,7 +46,43 @@ if (LINUX)
     zutil.c
   )
 
-  set( PLATFORM_SOURCE_INSTALL "LINUX" )
+  set( PLATFORM_SOURCE_INSTALL "LINUX32" )
+  source_group( "Platform Source Files" FILES ${PLATFORM_SOURCE_FILES} )
+
+elseif (LINUX64)
+  set( PLATFORM_HEADER_FILES 
+    crc32.h
+    deflate.h
+    inffast.h
+    inffixed.h
+    inflate.h
+    inftrees.h
+    trees.h
+    zconf.h
+    zconf.in.h
+    zlib.h
+    zutil.h
+  )
+
+  set( PLATFORM_HEADER_INSTALL "LINUX64" )
+  source_group( "Platform Header Files" FILES ${PLATFORM_HEADER_FILES} )
+
+  set( PLATFORM_SOURCE_FILES 
+    adler32.c
+    compress.c
+    crc32.c
+    deflate.c
+    gzio.c
+    infback.c
+    inffast.c
+    inflate.c
+    inftrees.c
+    trees.c
+    uncompr.c
+    zutil.c
+  )
+
+  set( PLATFORM_SOURCE_INSTALL "LINUX64" )
   source_group( "Platform Source Files" FILES ${PLATFORM_SOURCE_FILES} )
 
 elseif (WIN32)
@@ -127,14 +163,18 @@ endif ()
 set( ALL_FILES ${HEADER_FILES} ${SOURCE_FILES} ${PLATFORM_HEADER_FILES} ${PLATFORM_SOURCE_FILES} )
 
 
-if( LINUX )
+if( LINUX32 )
+  set( MODULE_NAME "zlib" )
+elseif( LINUX64 )
   set( MODULE_NAME "zlib" )
 elseif( WIN32 )
   set( MODULE_NAME "zlib" )
 elseif( WIN64 )
   set( MODULE_NAME "zlib" )
 endif()
-if( LINUX )
+if( LINUX32 )
+  add_library( ${MODULE_NAME} ${ALL_FILES} )
+elseif( LINUX64 )
   add_library( ${MODULE_NAME} ${ALL_FILES} )
 elseif( WIN32 )
   add_library( ${MODULE_NAME} ${ALL_FILES} )
@@ -142,9 +182,13 @@ elseif( WIN64 )
   add_library( ${MODULE_NAME} ${ALL_FILES} )
 endif()
 
-if ( LINUX )
+if ( LINUX32 )
   set_property( TARGET ${MODULE_NAME} APPEND_STRING PROPERTY COMPILE_DEFINITIONS "ZLIB_DLL;ZLIB_INTERNAL;ZZIP_HAVE_STDINT_H" )
-endif( LINUX )
+endif( LINUX32 )
+
+if ( LINUX64 )
+  set_property( TARGET ${MODULE_NAME} APPEND_STRING PROPERTY COMPILE_DEFINITIONS "ZLIB_DLL;ZLIB_INTERNAL;ZZIP_HAVE_STDINT_H" )
+endif( LINUX64 )
 
 if ( WIN32 )
   set_property( TARGET ${MODULE_NAME} APPEND_STRING PROPERTY COMPILE_DEFINITIONS "ZLIB_DLL;ZLIB_INTERNAL;ZZIP_HAVE_STDINT_H" )
@@ -161,7 +205,9 @@ endif( WIN64 )
 
 
 
-if (LINUX)
+if (LINUX32)
+GUCEF_config_lib( ${MODULE_NAME} )
+elseif (LINUX64)
 GUCEF_config_lib( ${MODULE_NAME} )
 elseif (WIN32)
 GUCEF_config_lib( ${MODULE_NAME} )

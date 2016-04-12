@@ -13,7 +13,7 @@
 
 
 
-if (LINUX)
+if (LINUX32)
   set( PLATFORM_HEADER_FILES 
     DemoKeeper.h
     FontPanel.h
@@ -21,7 +21,7 @@ if (LINUX)
     TextureView.h
   )
 
-  set( PLATFORM_HEADER_INSTALL "LINUX" )
+  set( PLATFORM_HEADER_INSTALL "LINUX32" )
   source_group( "Platform Header Files" FILES ${PLATFORM_HEADER_FILES} )
 
   set( PLATFORM_SOURCE_FILES 
@@ -31,7 +31,28 @@ if (LINUX)
     TextureView.cpp
   )
 
-  set( PLATFORM_SOURCE_INSTALL "LINUX" )
+  set( PLATFORM_SOURCE_INSTALL "LINUX32" )
+  source_group( "Platform Source Files" FILES ${PLATFORM_SOURCE_FILES} )
+
+elseif (LINUX64)
+  set( PLATFORM_HEADER_FILES 
+    DemoKeeper.h
+    FontPanel.h
+    FontView.h
+    TextureView.h
+  )
+
+  set( PLATFORM_HEADER_INSTALL "LINUX64" )
+  source_group( "Platform Header Files" FILES ${PLATFORM_HEADER_FILES} )
+
+  set( PLATFORM_SOURCE_FILES 
+    DemoKeeper.cpp
+    FontPanel.cpp
+    FontView.cpp
+    TextureView.cpp
+  )
+
+  set( PLATFORM_SOURCE_INSTALL "LINUX64" )
   source_group( "Platform Source Files" FILES ${PLATFORM_SOURCE_FILES} )
 
 elseif (WIN32)
@@ -82,14 +103,18 @@ endif ()
 set( ALL_FILES ${HEADER_FILES} ${SOURCE_FILES} ${PLATFORM_HEADER_FILES} ${PLATFORM_SOURCE_FILES} )
 
 
-if( LINUX )
+if( LINUX32 )
+  set( MODULE_NAME "MyGUI.FontViewer" )
+elseif( LINUX64 )
   set( MODULE_NAME "MyGUI.FontViewer" )
 elseif( WIN32 )
   set( MODULE_NAME "MyGUI.FontViewer" )
 elseif( WIN64 )
   set( MODULE_NAME "MyGUI.FontViewer" )
 endif()
-if( LINUX )
+if( LINUX32 )
+  add_executable( ${MODULE_NAME} ${ALL_FILES} )
+elseif( LINUX64 )
   add_executable( ${MODULE_NAME} ${ALL_FILES} )
 elseif( WIN32 )
   add_executable( ${MODULE_NAME} WIN32 ${ALL_FILES} )
@@ -97,11 +122,17 @@ elseif( WIN64 )
   add_executable( ${MODULE_NAME} WIN32 ${ALL_FILES} )
 endif()
 
-if ( LINUX )
+if ( LINUX32 )
   add_dependencies( ${MODULE_NAME} MyGUI.Common.Base MyGUI.Common.Base.OpenGL MyGUI.Common.Input MyGUI.Common.Input.OIS MyGUI.Common.Precompiled MyGUI.Engine MyGUI.OpenGLPlatform freetype )
   target_link_libraries( ${MODULE_NAME} MyGUI.Engine MyGUI.OpenGLPlatform freetype )
   set_property( TARGET ${MODULE_NAME} APPEND_STRING PROPERTY COMPILE_DEFINITIONS "MYGUI_USE_FREETYPE" )
-endif( LINUX )
+endif( LINUX32 )
+
+if ( LINUX64 )
+  add_dependencies( ${MODULE_NAME} MyGUI.Common.Base MyGUI.Common.Base.OpenGL MyGUI.Common.Input MyGUI.Common.Input.OIS MyGUI.Common.Precompiled MyGUI.Engine MyGUI.OpenGLPlatform freetype )
+  target_link_libraries( ${MODULE_NAME} MyGUI.Engine MyGUI.OpenGLPlatform freetype )
+  set_property( TARGET ${MODULE_NAME} APPEND_STRING PROPERTY COMPILE_DEFINITIONS "MYGUI_USE_FREETYPE" )
+endif( LINUX64 )
 
 if ( WIN32 )
   add_dependencies( ${MODULE_NAME} MyGUI.Common.Base MyGUI.Common.Base.OpenGL MyGUI.Common.Input MyGUI.Common.Input.Win32 MyGUI.Common.Precompiled MyGUI.Engine MyGUI.OpenGLPlatform freetype )
@@ -124,7 +155,9 @@ include_directories( ../../../freetype/include ../../../freetype/include/freetyp
 
 
 
-if (LINUX)
+if (LINUX32)
+GUCEF_config_tool( ${MODULE_NAME} )
+elseif (LINUX64)
 GUCEF_config_tool( ${MODULE_NAME} )
 elseif (WIN32)
 GUCEF_config_tool( ${MODULE_NAME} )

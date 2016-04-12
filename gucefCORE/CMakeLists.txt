@@ -357,7 +357,7 @@ if (ANDROID)
   set( PLATFORM_SOURCE_INSTALL "ANDROID" )
   source_group( "Platform Source Files" FILES ${PLATFORM_SOURCE_FILES} )
 
-elseif (LINUX)
+elseif (LINUX32)
   set( PLATFORM_HEADER_FILES 
     include/linux/CXTermConsoleLogger.h
     include/linux/gucefCORE_CX11EventDispatcher.h
@@ -365,7 +365,7 @@ elseif (LINUX)
     include/linux/gucefCORE_pty.h
   )
 
-  set( PLATFORM_HEADER_INSTALL "LINUX" )
+  set( PLATFORM_HEADER_INSTALL "LINUX32" )
   source_group( "Platform Header Files" FILES ${PLATFORM_HEADER_FILES} )
 
   set( PLATFORM_SOURCE_FILES 
@@ -375,7 +375,28 @@ elseif (LINUX)
     src/linux/gucefCORE_pty.c
   )
 
-  set( PLATFORM_SOURCE_INSTALL "LINUX" )
+  set( PLATFORM_SOURCE_INSTALL "LINUX32" )
+  source_group( "Platform Source Files" FILES ${PLATFORM_SOURCE_FILES} )
+
+elseif (LINUX64)
+  set( PLATFORM_HEADER_FILES 
+    include/linux/CXTermConsoleLogger.h
+    include/linux/gucefCORE_CX11EventDispatcher.h
+    include/linux/gucefCORE_CX11Window.h
+    include/linux/gucefCORE_pty.h
+  )
+
+  set( PLATFORM_HEADER_INSTALL "LINUX64" )
+  source_group( "Platform Header Files" FILES ${PLATFORM_HEADER_FILES} )
+
+  set( PLATFORM_SOURCE_FILES 
+    src/linux/CXTermConsoleLogger.cpp
+    src/linux/gucefCORE_CX11EventDispatcher.cpp
+    src/linux/gucefCORE_CX11Window.cpp
+    src/linux/gucefCORE_pty.c
+  )
+
+  set( PLATFORM_SOURCE_INSTALL "LINUX64" )
   source_group( "Platform Source Files" FILES ${PLATFORM_SOURCE_FILES} )
 
 elseif (WIN32)
@@ -447,9 +468,13 @@ if ( ANDROID )
   target_link_libraries( ${MODULE_NAME} dl )
 endif( ANDROID )
 
-if ( LINUX )
+if ( LINUX32 )
   target_link_libraries( ${MODULE_NAME} X11 dl rt )
-endif( LINUX )
+endif( LINUX32 )
+
+if ( LINUX64 )
+  target_link_libraries( ${MODULE_NAME} X11 dl rt )
+endif( LINUX64 )
 
 include_directories( ../common/include ../gucefMT/include include )
 
@@ -457,9 +482,13 @@ if ( ANDROID )
   include_directories( include/android )
 endif( ANDROID )
 
-if ( LINUX )
+if ( LINUX32 )
   include_directories( include/linux )
-endif( LINUX )
+endif( LINUX32 )
+
+if ( LINUX64 )
+  include_directories( include/linux )
+endif( LINUX64 )
 
 if ( WIN32 )
   include_directories( include/mswin )
@@ -478,7 +507,9 @@ endif( WIN64 )
 
 if (ANDROID)
 GUCEF_config_lib( ${MODULE_NAME} )
-elseif (LINUX)
+elseif (LINUX32)
+GUCEF_config_lib( ${MODULE_NAME} )
+elseif (LINUX64)
 GUCEF_config_lib( ${MODULE_NAME} )
 elseif (OSX)
 GUCEF_config_lib( ${MODULE_NAME} )

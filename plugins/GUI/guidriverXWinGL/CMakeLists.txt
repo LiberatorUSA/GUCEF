@@ -13,7 +13,7 @@
 
 
 
-if (LINUX)
+if (LINUX32)
   set( PLATFORM_HEADER_FILES 
     include/guidriverXWinGL.h
     include/guidriverXWinGL_config.h
@@ -23,7 +23,7 @@ if (LINUX)
     include/guidriverXWinGL_pluginAPI.h
   )
 
-  set( PLATFORM_HEADER_INSTALL "LINUX" )
+  set( PLATFORM_HEADER_INSTALL "LINUX32" )
   source_group( "Platform Header Files" FILES ${PLATFORM_HEADER_FILES} )
 
   set( PLATFORM_SOURCE_FILES 
@@ -32,7 +32,29 @@ if (LINUX)
     src/guidriverXWinGL_pluginAPI.cpp
   )
 
-  set( PLATFORM_SOURCE_INSTALL "LINUX" )
+  set( PLATFORM_SOURCE_INSTALL "LINUX32" )
+  source_group( "Platform Source Files" FILES ${PLATFORM_SOURCE_FILES} )
+
+elseif (LINUX64)
+  set( PLATFORM_HEADER_FILES 
+    include/guidriverXWinGL.h
+    include/guidriverXWinGL_config.h
+    include/guidriverXWinGL_CXWinGLWindowContext.h
+    include/guidriverXWinGL_CXWinGLWindowManagerImp.h
+    include/guidriverXWinGL_macros.h
+    include/guidriverXWinGL_pluginAPI.h
+  )
+
+  set( PLATFORM_HEADER_INSTALL "LINUX64" )
+  source_group( "Platform Header Files" FILES ${PLATFORM_HEADER_FILES} )
+
+  set( PLATFORM_SOURCE_FILES 
+    src/guidriverXWinGL_CXWinGLWindowContext.cpp
+    src/guidriverXWinGL_CXWinGLWindowManagerImp.cpp
+    src/guidriverXWinGL_pluginAPI.cpp
+  )
+
+  set( PLATFORM_SOURCE_INSTALL "LINUX64" )
   source_group( "Platform Source Files" FILES ${PLATFORM_SOURCE_FILES} )
 
 endif ()
@@ -41,24 +63,38 @@ endif ()
 set( ALL_FILES ${HEADER_FILES} ${SOURCE_FILES} ${PLATFORM_HEADER_FILES} ${PLATFORM_SOURCE_FILES} )
 
 
-if( LINUX )
+if( LINUX32 )
+  set( MODULE_NAME "guidriverXWinGL" )
+elseif( LINUX64 )
   set( MODULE_NAME "guidriverXWinGL" )
 endif()
-if( LINUX )
+if( LINUX32 )
+  add_library( ${MODULE_NAME} ${ALL_FILES} )
+elseif( LINUX64 )
   add_library( ${MODULE_NAME} ${ALL_FILES} )
 endif()
 
-if ( LINUX )
+if ( LINUX32 )
   add_dependencies( ${MODULE_NAME} gucefCORE gucefGUI gucefMT )
   target_link_libraries( ${MODULE_NAME} GL X11 gucefCORE gucefGUI gucefMT )
   set_property( TARGET ${MODULE_NAME} APPEND_STRING PROPERTY COMPILE_DEFINITIONS "GUIDRIVERXWINGL_BUILD_MODULE" )
-endif( LINUX )
+endif( LINUX32 )
+
+if ( LINUX64 )
+  add_dependencies( ${MODULE_NAME} gucefCORE gucefGUI gucefMT )
+  target_link_libraries( ${MODULE_NAME} GL X11 gucefCORE gucefGUI gucefMT )
+  set_property( TARGET ${MODULE_NAME} APPEND_STRING PROPERTY COMPILE_DEFINITIONS "GUIDRIVERXWINGL_BUILD_MODULE" )
+endif( LINUX64 )
 
 include_directories( ../../../common/include ../../../gucefCORE/include ../../../gucefGUI/include ../../../gucefIMAGE/include ../../../gucefMT/include ../../../gucefVFS/include )
 
-if ( LINUX )
+if ( LINUX32 )
   include_directories( ../../../gucefCORE/include/linux include )
-endif( LINUX )
+endif( LINUX32 )
+
+if ( LINUX64 )
+  include_directories( ../../../gucefCORE/include/linux include )
+endif( LINUX64 )
 
 
 
@@ -67,7 +103,9 @@ endif( LINUX )
 
 
 
-if (LINUX)
+if (LINUX32)
+GUCEF_config_lib( ${MODULE_NAME} )
+elseif (LINUX64)
 GUCEF_config_lib( ${MODULE_NAME} )
 endif()
 

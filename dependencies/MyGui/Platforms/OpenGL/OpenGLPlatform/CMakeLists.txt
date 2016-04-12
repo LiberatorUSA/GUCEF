@@ -53,9 +53,13 @@ if ( ANDROID )
   target_link_libraries( ${MODULE_NAME} GLESv1_CM )
 endif( ANDROID )
 
-if ( LINUX )
+if ( LINUX32 )
   target_link_libraries( ${MODULE_NAME} GL )
-endif( LINUX )
+endif( LINUX32 )
+
+if ( LINUX64 )
+  target_link_libraries( ${MODULE_NAME} GL )
+endif( LINUX64 )
 
 if ( WIN32 )
   target_link_libraries( ${MODULE_NAME} opengl32 )
@@ -76,7 +80,9 @@ include_directories( ../../../../freetype/include ../../../../freetype/include/f
 
 if (ANDROID)
 GUCEF_config_lib( ${MODULE_NAME} )
-elseif (LINUX)
+elseif (LINUX32)
+GUCEF_config_lib( ${MODULE_NAME} )
+elseif (LINUX64)
 GUCEF_config_lib( ${MODULE_NAME} )
 elseif (OSX)
 GUCEF_config_lib( ${MODULE_NAME} )

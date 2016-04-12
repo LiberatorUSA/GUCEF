@@ -13,19 +13,34 @@
 
 
 
-if (LINUX)
+if (LINUX32)
   set( PLATFORM_HEADER_FILES 
     include/imgpluginFreeImage.h
   )
 
-  set( PLATFORM_HEADER_INSTALL "LINUX" )
+  set( PLATFORM_HEADER_INSTALL "LINUX32" )
   source_group( "Platform Header Files" FILES ${PLATFORM_HEADER_FILES} )
 
   set( PLATFORM_SOURCE_FILES 
     src/imgpluginFreeImage.c
   )
 
-  set( PLATFORM_SOURCE_INSTALL "LINUX" )
+  set( PLATFORM_SOURCE_INSTALL "LINUX32" )
+  source_group( "Platform Source Files" FILES ${PLATFORM_SOURCE_FILES} )
+
+elseif (LINUX64)
+  set( PLATFORM_HEADER_FILES 
+    include/imgpluginFreeImage.h
+  )
+
+  set( PLATFORM_HEADER_INSTALL "LINUX64" )
+  source_group( "Platform Header Files" FILES ${PLATFORM_HEADER_FILES} )
+
+  set( PLATFORM_SOURCE_FILES 
+    src/imgpluginFreeImage.c
+  )
+
+  set( PLATFORM_SOURCE_INSTALL "LINUX64" )
   source_group( "Platform Source Files" FILES ${PLATFORM_SOURCE_FILES} )
 
 elseif (WIN32)
@@ -64,14 +79,18 @@ endif ()
 set( ALL_FILES ${HEADER_FILES} ${SOURCE_FILES} ${PLATFORM_HEADER_FILES} ${PLATFORM_SOURCE_FILES} )
 
 
-if( LINUX )
+if( LINUX32 )
+  set( MODULE_NAME "imgpluginFreeImage" )
+elseif( LINUX64 )
   set( MODULE_NAME "imgpluginFreeImage" )
 elseif( WIN32 )
   set( MODULE_NAME "imgpluginFreeImage" )
 elseif( WIN64 )
   set( MODULE_NAME "imgpluginFreeImage" )
 endif()
-if( LINUX )
+if( LINUX32 )
+  add_library( ${MODULE_NAME} ${ALL_FILES} )
+elseif( LINUX64 )
   add_library( ${MODULE_NAME} ${ALL_FILES} )
 elseif( WIN32 )
   add_library( ${MODULE_NAME} ${ALL_FILES} )
@@ -79,11 +98,17 @@ elseif( WIN64 )
   add_library( ${MODULE_NAME} ${ALL_FILES} )
 endif()
 
-if ( LINUX )
+if ( LINUX32 )
   add_dependencies( ${MODULE_NAME} FreeImage gucefCORE gucefIMAGE gucefMT )
   target_link_libraries( ${MODULE_NAME} FreeImage )
   set_property( TARGET ${MODULE_NAME} APPEND_STRING PROPERTY COMPILE_DEFINITIONS "GUCEF_CODECPLUGIN_BUILD_MODULE" )
-endif( LINUX )
+endif( LINUX32 )
+
+if ( LINUX64 )
+  add_dependencies( ${MODULE_NAME} FreeImage gucefCORE gucefIMAGE gucefMT )
+  target_link_libraries( ${MODULE_NAME} FreeImage )
+  set_property( TARGET ${MODULE_NAME} APPEND_STRING PROPERTY COMPILE_DEFINITIONS "GUCEF_CODECPLUGIN_BUILD_MODULE" )
+endif( LINUX64 )
 
 if ( WIN32 )
   add_dependencies( ${MODULE_NAME} FreeImage gucefCORE gucefIMAGE gucefMT )
@@ -99,9 +124,13 @@ endif( WIN64 )
 
 include_directories( ../../../common/include ../../../gucefCORE/include ../../../gucefIMAGE/include ../../../gucefMT/include )
 
-if ( LINUX )
+if ( LINUX32 )
   include_directories( ../../../dependencies/FreeImage/Source ../../../dependencies/FreeImage/Source/DeprecationManager ../../../dependencies/FreeImage/Source/FreeImage ../../../dependencies/FreeImage/Source/FreeImageToolkit ../../../dependencies/FreeImage/Source/LibJPEG ../../../dependencies/FreeImage/Source/LibJXR/common/include ../../../dependencies/FreeImage/Source/LibJXR/image/decode ../../../dependencies/FreeImage/Source/LibJXR/image/encode ../../../dependencies/FreeImage/Source/LibJXR/image/sys ../../../dependencies/FreeImage/Source/LibJXR/image/x86 ../../../dependencies/FreeImage/Source/LibJXR/jxrgluelib ../../../dependencies/FreeImage/Source/LibOpenJPEG ../../../dependencies/FreeImage/Source/LibPNG ../../../dependencies/FreeImage/Source/LibRawLite/internal ../../../dependencies/FreeImage/Source/LibRawLite/libraw ../../../dependencies/FreeImage/Source/LibTIFF4 ../../../dependencies/FreeImage/Source/LibWebP/src/dec ../../../dependencies/FreeImage/Source/LibWebP/src/dsp ../../../dependencies/FreeImage/Source/LibWebP/src/enc ../../../dependencies/FreeImage/Source/LibWebP/src/mux ../../../dependencies/FreeImage/Source/LibWebP/src/utils ../../../dependencies/FreeImage/Source/LibWebP/src/webp ../../../dependencies/FreeImage/Source/Metadata ../../../dependencies/FreeImage/Source/OpenEXR ../../../dependencies/FreeImage/Source/OpenEXR/Half ../../../dependencies/FreeImage/Source/OpenEXR/Iex ../../../dependencies/FreeImage/Source/OpenEXR/IexMath ../../../dependencies/FreeImage/Source/OpenEXR/IlmImf ../../../dependencies/FreeImage/Source/OpenEXR/IlmThread ../../../dependencies/FreeImage/Source/OpenEXR/Imath ../../../dependencies/zlib ../../../gucefCORE/include/linux include )
-endif( LINUX )
+endif( LINUX32 )
+
+if ( LINUX64 )
+  include_directories( ../../../dependencies/FreeImage/Source ../../../dependencies/FreeImage/Source/DeprecationManager ../../../dependencies/FreeImage/Source/FreeImage ../../../dependencies/FreeImage/Source/FreeImageToolkit ../../../dependencies/FreeImage/Source/LibJPEG ../../../dependencies/FreeImage/Source/LibJXR/common/include ../../../dependencies/FreeImage/Source/LibJXR/image/decode ../../../dependencies/FreeImage/Source/LibJXR/image/encode ../../../dependencies/FreeImage/Source/LibJXR/image/sys ../../../dependencies/FreeImage/Source/LibJXR/image/x86 ../../../dependencies/FreeImage/Source/LibJXR/jxrgluelib ../../../dependencies/FreeImage/Source/LibOpenJPEG ../../../dependencies/FreeImage/Source/LibPNG ../../../dependencies/FreeImage/Source/LibRawLite/internal ../../../dependencies/FreeImage/Source/LibRawLite/libraw ../../../dependencies/FreeImage/Source/LibTIFF4 ../../../dependencies/FreeImage/Source/LibWebP/src/dec ../../../dependencies/FreeImage/Source/LibWebP/src/dsp ../../../dependencies/FreeImage/Source/LibWebP/src/enc ../../../dependencies/FreeImage/Source/LibWebP/src/mux ../../../dependencies/FreeImage/Source/LibWebP/src/utils ../../../dependencies/FreeImage/Source/LibWebP/src/webp ../../../dependencies/FreeImage/Source/Metadata ../../../dependencies/FreeImage/Source/OpenEXR ../../../dependencies/FreeImage/Source/OpenEXR/Half ../../../dependencies/FreeImage/Source/OpenEXR/Iex ../../../dependencies/FreeImage/Source/OpenEXR/IexMath ../../../dependencies/FreeImage/Source/OpenEXR/IlmImf ../../../dependencies/FreeImage/Source/OpenEXR/IlmThread ../../../dependencies/FreeImage/Source/OpenEXR/Imath ../../../dependencies/zlib ../../../gucefCORE/include/linux include )
+endif( LINUX64 )
 
 if ( WIN32 )
   include_directories( ../../../dependencies/FreeImage/Source ../../../dependencies/FreeImage/Source/DeprecationManager ../../../dependencies/FreeImage/Source/FreeImage ../../../dependencies/FreeImage/Source/FreeImageToolkit ../../../dependencies/FreeImage/Source/LibJPEG ../../../dependencies/FreeImage/Source/LibJXR/common/include ../../../dependencies/FreeImage/Source/LibJXR/image/decode ../../../dependencies/FreeImage/Source/LibJXR/image/encode ../../../dependencies/FreeImage/Source/LibJXR/image/sys ../../../dependencies/FreeImage/Source/LibJXR/image/x86 ../../../dependencies/FreeImage/Source/LibJXR/jxrgluelib ../../../dependencies/FreeImage/Source/LibOpenJPEG ../../../dependencies/FreeImage/Source/LibPNG ../../../dependencies/FreeImage/Source/LibRawLite/internal ../../../dependencies/FreeImage/Source/LibRawLite/libraw ../../../dependencies/FreeImage/Source/LibTIFF4 ../../../dependencies/FreeImage/Source/LibWebP/src/dec ../../../dependencies/FreeImage/Source/LibWebP/src/dsp ../../../dependencies/FreeImage/Source/LibWebP/src/enc ../../../dependencies/FreeImage/Source/LibWebP/src/mux ../../../dependencies/FreeImage/Source/LibWebP/src/utils ../../../dependencies/FreeImage/Source/LibWebP/src/webp ../../../dependencies/FreeImage/Source/Metadata ../../../dependencies/FreeImage/Source/OpenEXR ../../../dependencies/FreeImage/Source/OpenEXR/Half ../../../dependencies/FreeImage/Source/OpenEXR/Iex ../../../dependencies/FreeImage/Source/OpenEXR/IexMath ../../../dependencies/FreeImage/Source/OpenEXR/IlmImf ../../../dependencies/FreeImage/Source/OpenEXR/IlmThread ../../../dependencies/FreeImage/Source/OpenEXR/Imath ../../../dependencies/zlib ../../../gucefCORE/include/mswin include )
@@ -118,7 +147,9 @@ endif( WIN64 )
 
 
 
-if (LINUX)
+if (LINUX32)
+GUCEF_config_lib( ${MODULE_NAME} )
+elseif (LINUX64)
 GUCEF_config_lib( ${MODULE_NAME} )
 elseif (WIN32)
 GUCEF_config_lib( ${MODULE_NAME} )
