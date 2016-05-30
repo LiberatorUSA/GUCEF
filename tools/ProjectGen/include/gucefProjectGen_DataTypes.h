@@ -45,6 +45,11 @@
 #define GUCEF_CORE_CDATANODE_H
 #endif /* GUCEF_CORE_CDATANODE_H ? */
 
+#ifndef GUCEF_CORE_CVERSIONRANGE_H
+#include "gucefCORE_CVersionRange.h"
+#define GUCEF_CORE_CVERSIONRANGE_H
+#endif /* GUCEF_CORE_CVERSIONRANGE_H ? */
+
 #ifndef GUCEF_PROJECTGEN_MACROS_H
 #include "gucefProjectGen_macros.h"
 #define GUCEF_PROJECTGEN_MACROS_H
@@ -77,17 +82,19 @@ typedef std::map< CORE::CString, TStringVectorMap > TStringVectorMapMap;
 
 enum EModuleType
 {
-    MODULETYPE_UNDEFINED                ,    // <- this is the initialization value
+    MODULETYPE_UNDEFINED                  = 0 ,    // <- this is the initialization value
     
-    MODULETYPE_EXECUTABLE               ,
-    MODULETYPE_SHARED_LIBRARY           ,    // <- shared library (.dll on win32, .so on linux/android)
-    MODULETYPE_STATIC_LIBRARY           ,    // <- static library (.lib on win32, .a on linux/android)
-    MODULETYPE_HEADER_INCLUDE_LOCATION  ,    // <- location where headers can be placed for reference by other modules
-    MODULETYPE_CODE_INTEGRATE_LOCATION  ,    // <- location where shared code can be placed for inclusion as part of other modules
-    MODULETYPE_HEADER_INTEGRATE_LOCATION,    // <- location where shared headers can be placed for inclusion as part of other modules
-    MODULETYPE_REFERENCE_LIBRARY        ,    // <- managed code library
+    MODULETYPE_EXECUTABLE                 = 1 ,
+    MODULETYPE_SHARED_LIBRARY             = 2 ,    // <- shared library (.dll on win32, .so on linux/android)
+    MODULETYPE_STATIC_LIBRARY             = 3 ,    // <- static library (.lib on win32, .a on linux/android)
+    MODULETYPE_HEADER_INCLUDE_LOCATION    = 4 ,    // <- location where headers can be placed for reference by other modules
+    MODULETYPE_CODE_INTEGRATE_LOCATION    = 5 ,    // <- location where shared code can be placed for inclusion as part of other modules
+    MODULETYPE_HEADER_INTEGRATE_LOCATION  = 6 ,    // <- location where shared headers can be placed for inclusion as part of other modules
+    MODULETYPE_REFERENCE_LIBRARY          = 7 ,    // <- C# code library
     
-    MODULETYPE_UNKNOWN             // <- to be used when initialized BUT we cannot determine the module type
+    MODULETYPE_BINARY_PACKAGE             = 8,     // <- definition of a compiled binary package, usually with headers
+    
+    MODULETYPE_UNKNOWN                    = 999    // <- to be used when initialized BUT we cannot determine the module type
 };
 typedef enum EModuleType TModuleType;
 
@@ -116,6 +123,19 @@ struct SCompilerSettings
     TStringMap compilerFlags;                // map of flags to pass to the specific compilers
 };
 typedef struct SCompilerSettings TCompilerSettings;
+
+/**
+ *  Structure where all dependency related information should be stored
+ */
+struct SDependencyInfo
+{
+    CORE::CString name;                // name of the dependency
+    TStringSet includePaths;           // include directories needed for the headers of the dependencies, paths only no files
+    
+    CORE::CVersionRange version;
+    bool ignoreVersion;
+};
+typedef struct SDependencyInfo TDependencyInfo;
 
 /*---------------------------------------------------------------------------*/
 
@@ -150,6 +170,8 @@ struct SModuleInfo
     TLinkerSettings linkerSettings;              // all linker related settings for this module
     TCompilerSettings compilerSettings;          // all compiler related settings for this module
     TPreprocessorSettings preprocessorSettings;  // all preprocessor related settings for this module
+
+    bool ignoreModule;                           // whether this module should be included in the build
 };
 typedef struct SModuleInfo TModuleInfo;
 
@@ -454,6 +476,14 @@ GetAllPlatformsUsed( const TProjectInfo& projectInfo ,
 
 /*-------------------------------------------------------------------------*/
 
+// Collects a list of all unique tag values used
+GUCEF_PROJECTGEN_PUBLIC_CPP
+void
+GetAllTagsUsed( const TProjectInfo& projectInfo ,
+                TStringSet& tagsUsed            );
+
+/*-------------------------------------------------------------------------*/
+
 GUCEF_PROJECTGEN_PUBLIC_CPP
 CORE::CString
 GetLanguageForModule( const TModuleInfo& moduleInfo );
@@ -462,7 +492,7 @@ GetLanguageForModule( const TModuleInfo& moduleInfo );
 
 // Determines whether the given list of module definitions has an indepdendant definition
 // An independent definition is a module who has a module type defined which is not a purely logical
-// module type used to structure modules (such as code/header include locations)
+// module type used to structure modules (such as code/header integrate locations)
 GUCEF_PROJECTGEN_PUBLIC_CPP
 bool
 HasIndependentModuleType( const TModuleInfoMap& moduleDefs );
@@ -475,6 +505,21 @@ HasIndependentModuleType( const TModuleInfoMap& moduleDefs );
 GUCEF_PROJECTGEN_PUBLIC_CPP
 TStringSet
 ResolveMultiPlatformName( const CORE::CString& platformName );
+
+/*-------------------------------------------------------------------------*/
+
+GUCEF_PROJECTGEN_PUBLIC_CPP
+bool
+ShouldModuleBeIgnored( const TModuleInfoEntry& moduleInfo ,
+                       const CORE::CString& platformName  );
+
+/*-------------------------------------------------------------------------*/
+
+GUCEF_PROJECTGEN_PUBLIC_CPP
+bool
+IsModuleTaggedWith( const TModuleInfoEntry& moduleInfo ,
+                    const CORE::CString& platformName  ,
+                    const CORE::CString& tag           );
 
 /*-------------------------------------------------------------------------//
 //                                                                         //

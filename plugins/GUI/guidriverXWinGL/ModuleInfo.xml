@@ -1,5 +1,5 @@
 <ModuleInfoEntry>
-    <Module Name="guidriverXWinGL" Type="SharedLibrary" Platform="linux">
+    <Module Name="guidriverXWinGL" Type="SharedLibrary" Platform="linux" Tags="plugin">
         <Dependencies>
             <Dependency Name="gucefGUI" />
             <Dependency Name="gucefCORE" />

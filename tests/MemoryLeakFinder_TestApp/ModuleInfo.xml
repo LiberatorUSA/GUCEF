@@ -1,5 +1,5 @@
 <ModuleInfoEntry>
-    <Module Name="MemoryLeakFinder_TestApp" Type="Executable" Platform="mswin">
+    <Module Name="MemoryLeakFinder_TestApp" Type="Executable" Platform="mswin" Tags="test">
         <Dependencies>
             <Dependency Name="gucefMT" />
             <Dependency Name="gucefCORE" />

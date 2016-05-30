@@ -396,7 +396,8 @@ GetLanguageForModule( const TModuleInfo& moduleInfo )
         }
         else
         if ( ( ContainsFileWithFileExtension( moduleInfo.sourceDirs, "CPP" ) ) ||
-             ( ContainsFileWithFileExtension( moduleInfo.sourceDirs, "CXX" ) )  )
+             ( ContainsFileWithFileExtension( moduleInfo.sourceDirs, "CXX" ) ) ||
+             ( ContainsFileWithFileExtension( moduleInfo.sourceDirs, "CHH" ) ) )
         {
             return "C++";
         }
@@ -1377,6 +1378,7 @@ InitializeModuleInfo( TModuleInfo& moduleInfo )
     moduleInfo.preprocessorSettings.defines.clear();
     moduleInfo.dependencies.clear();
     moduleInfo.considerSubDirs = true;
+    moduleInfo.ignoreModule = false;
     moduleInfo.moduleType = MODULETYPE_UNDEFINED;
 }
 
@@ -1452,6 +1454,10 @@ MergeModuleInfo( TModuleInfo& targetModuleInfo          ,
     if ( !moduleInfoToMergeIn.linkerSettings.targetName.IsNULLOrEmpty() )
     {
         targetModuleInfo.linkerSettings.targetName = moduleInfoToMergeIn.linkerSettings.targetName; 
+    }
+    if ( moduleInfoToMergeIn.ignoreModule )
+    {
+        targetModuleInfo.ignoreModule = moduleInfoToMergeIn.ignoreModule;
     }
 
     // Now combine the other items without overwriting
@@ -1988,6 +1994,78 @@ GetAllPlatformsUsed( const TProjectInfo& projectInfo ,
         }
         ++i;
     }
+}
+
+/*---------------------------------------------------------------------------*/
+
+void
+GetAllTagsUsed( const TProjectInfo& projectInfo ,
+                TStringSet& tagsUsed            )
+{GUCEF_TRACE;
+
+    TModuleInfoEntryVector::const_iterator i = projectInfo.modules.begin();
+    while ( i != projectInfo.modules.end() )
+    {
+        const TModuleInfoMap& modulesPerPlatform = (*i).modulesPerPlatform;
+        TModuleInfoMap::const_iterator n = modulesPerPlatform.begin();
+        while ( n != modulesPerPlatform.end() )
+        {
+            const TStringVector& moduleTags = (*n).second.tags;
+            TStringVector::const_iterator m = moduleTags.begin();
+            while ( m != moduleTags.end() )
+            {
+                tagsUsed.insert( (*m) );
+                ++m;
+            }
+            ++n;
+        }
+        ++i;
+    }
+}
+
+/*---------------------------------------------------------------------------*/
+
+bool
+ShouldModuleBeIgnored( const TModuleInfoEntry& moduleInfo ,
+                       const CORE::CString& platformName  )
+{GUCEF_TRACE;
+
+    const TModuleInfoMap& modulesPerPlatform = moduleInfo.modulesPerPlatform;
+    TModuleInfoMap::const_iterator i = modulesPerPlatform.find( platformName );
+    if ( i != modulesPerPlatform.end() )
+    {
+        return (*i).second.ignoreModule;
+    }
+    i = modulesPerPlatform.find( AllPlatforms );
+    if ( i != modulesPerPlatform.end() )
+    {
+        return (*i).second.ignoreModule;
+    }
+    return false;
+}
+
+/*---------------------------------------------------------------------------*/
+
+bool
+IsModuleTaggedWith( const TModuleInfoEntry& moduleInfo ,
+                    const CORE::CString& platformName  ,
+                    const CORE::CString& tag           )
+{GUCEF_TRACE;
+
+    const TModuleInfoMap& modulesPerPlatform = moduleInfo.modulesPerPlatform;
+    TModuleInfoMap::const_iterator i = modulesPerPlatform.find( platformName );
+    if ( i != modulesPerPlatform.end() )
+    {
+        if ( IsStringInList( (*i).second.tags, false, tag ) )
+            return true;
+    }
+    i = modulesPerPlatform.find( AllPlatforms );
+    if ( i != modulesPerPlatform.end() )
+    {
+        if ( IsStringInList( (*i).second.tags, false, tag ) )
+            return true;
+    }
+    return false;
 }
 
 /*---------------------------------------------------------------------------*/

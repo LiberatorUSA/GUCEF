@@ -1,5 +1,5 @@
 <ModuleInfoEntry>
-    <Module Name="inputdriverDIRECTINPUT8" Type="SharedLibrary" Platform="mswin">
+    <Module Name="inputdriverDIRECTINPUT8" Type="SharedLibrary" Platform="mswin" Tags="plugin">
 	    <Dependencies>
 		    <Dependency Name="gucefINPUT" />
             <Dependency Name="gucefCORE" />

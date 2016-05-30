@@ -36,6 +36,11 @@
 #define GUCEF_PROJECTGEN_MACROS_H
 #endif /* GUCEF_PROJECTGEN_MACROS_H ? */
 
+#ifndef GUCEF_CORE_CVALUELIST_H
+#include "CValueList.h"
+#define GUCEF_CORE_CVALUELIST_H
+#endif /* GUCEF_CORE_CVALUELIST_H ? */
+
 /*-------------------------------------------------------------------------//
 //                                                                         //
 //      NAMESPACE                                                          //
@@ -63,8 +68,9 @@ class GUCEF_PROJECTGEN_PUBLIC_CPP CIProjectInfoGatherer
     
     CIProjectInfoGatherer& operator=( const CIProjectInfoGatherer& src );
     
-    virtual bool GatherInfo( const TStringVector& rootDirs ,
-                             TProjectInfo& projectInfo     ) = 0;
+    virtual bool GatherInfo( const TStringVector& rootDirs  ,
+                             TProjectInfo& projectInfo      ,
+                             const CORE::CValueList& params ) = 0;
 };
 
 /*-------------------------------------------------------------------------//

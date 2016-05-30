@@ -3162,6 +3162,39 @@ MergeIntegrationLocationsIntoModule( TProjectInfo& projectInfo )
 
 /*-------------------------------------------------------------------------*/
 
+void
+FlagTaggedModulesToIgnoreAsSpecified( TProjectInfo& projectInfo      ,
+                                      const CORE::CValueList& params )
+{GUCEF_TRACE;
+
+    TStringVector tagsOfModulesToRemove = params.GetValueAlways( "TagsOfModulesToRemove" ).ParseElements( ';', false );
+    if ( tagsOfModulesToRemove.empty() )
+        return;
+
+    TModuleInfoEntryVector::iterator n = projectInfo.modules.begin();
+    while ( n != projectInfo.modules.end() )
+    {
+        TModuleInfoMap::iterator m = (*n).modulesPerPlatform.begin();
+        while ( m != (*n).modulesPerPlatform.end() )
+        {
+            TStringVector::iterator i = tagsOfModulesToRemove.begin();
+            while ( i != tagsOfModulesToRemove.end() )
+            {
+                (*m).second.ignoreModule = IsModuleTaggedWith( (*n), (*m).first, (*i) );
+                if ( (*m).second.ignoreModule )
+                {
+                    GUCEF_LOG( CORE::LOGLEVEL_NORMAL, "Setting ignore flag on module " + GetConsensusModuleName( (*n) ) + " for platform " + (*m).first + ", based on tag " + (*i) );
+                }
+                ++i;
+            }
+            ++m;            
+        }
+        ++n;
+    }
+}
+
+/*-------------------------------------------------------------------------*/
+
 CDirCrawlingProjectInfoGatherer::CDirCrawlingProjectInfoGatherer( void )
 {GUCEF_TRACE;
 
@@ -3177,8 +3210,9 @@ CDirCrawlingProjectInfoGatherer::~CDirCrawlingProjectInfoGatherer()
 /*-------------------------------------------------------------------------*/
 
 bool
-CDirCrawlingProjectInfoGatherer::GatherInfo( const TStringVector& rootDirs ,
-                                             TProjectInfo& projectInfo     )
+CDirCrawlingProjectInfoGatherer::GatherInfo( const TStringVector& rootDirs  ,
+                                             TProjectInfo& projectInfo      ,
+                                             const CORE::CValueList& params )
 {GUCEF_TRACE;
 
     // Gather all processing instructions
@@ -3201,6 +3235,11 @@ CDirCrawlingProjectInfoGatherer::GatherInfo( const TStringVector& rootDirs ,
 
     // Merge headers and code from integration locations into modules
     MergeIntegrationLocationsIntoModule( projectInfo );
+
+    // By default no modules are ignored but if so specified tags can cause a module to be set to ignore
+    // This is just an advisory flag and it is up to the generator backends to not include the module
+    // in the output while still ensuring the build remains functional
+    FlagTaggedModulesToIgnoreAsSpecified( projectInfo, params );
 
     // Based on all the information we have gathered we can now determine the correct build order
     // for all platforms

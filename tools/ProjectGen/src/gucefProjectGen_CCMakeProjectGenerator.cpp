@@ -870,7 +870,7 @@ GenerateCMakeModuleDefinesLine( const TModuleInfo& moduleInfo     ,
     return CORE::CString();
 }
 
-/*---------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------*/          
 
 CORE::CString
 GenerateCMakeListsModuleNameSection( const TModuleInfoEntry& moduleInfoEntry )
@@ -1100,6 +1100,7 @@ GenerateCMakeListsModuleInfoSection( const TProjectInfo& projectInfo         ,
 CORE::CString
 GenerateCMakeListsFileContent( const TProjectInfo& projectInfo         ,
                                const TModuleInfoEntry& moduleInfoEntry ,
+                               bool treatTagsAsOptions                 ,
                                bool addCompileDate = false             )
 {GUCEF_TRACE;
 
@@ -1167,6 +1168,7 @@ GenerateCMakeListsFileContent( const TProjectInfo& projectInfo         ,
 void
 WriteCMakeListsFilesToDisk( const TProjectInfo& projectInfo  ,
                             const CORE::CString& logFilename ,
+                            bool treatTagsAsOptions          ,
                             bool addCompileDate = false      )
 {GUCEF_TRACE;
 
@@ -1180,7 +1182,7 @@ WriteCMakeListsFilesToDisk( const TProjectInfo& projectInfo  ,
              ( MODULETYPE_HEADER_INTEGRATE_LOCATION != allPlatformsType ) &&
              ( MODULETYPE_CODE_INTEGRATE_LOCATION != allPlatformsType )    )
         {
-            CORE::CString fileContent = GenerateCMakeListsFileContent( projectInfo, moduleInfoEntry, addCompileDate );
+            CORE::CString fileContent = GenerateCMakeListsFileContent( projectInfo, moduleInfoEntry, treatTagsAsOptions, addCompileDate );
             if ( logFilename.Length() > 0 )
             {
                 fileContent += "\n# Generator logfile can be found at: " + logFilename;
@@ -1203,6 +1205,68 @@ WriteCMakeListsFilesToDisk( const TProjectInfo& projectInfo  ,
             GUCEF_LOG( CORE::LOGLEVEL_NORMAL, "Skipping CMakeLists.txt generation for module of type \"HeaderIncludeLocation\"" );
         }
         ++i;
+    }
+}
+/*--------------------------------------------------------------------------*/
+
+void
+WriteCMakeOptionsListToDisk( const TProjectInfo& projectInfo  ,
+                             const CORE::CString& outputDir   ,
+                             bool addCompileDate              ,
+                             bool treatTagsAsOptions          ,
+                             bool taggedOptionsEnabledDefault )
+{GUCEF_TRACE;
+
+    // Creates a list with all the options
+    // They can be explicitly defined but then you have no overview and the intial value would always be OFF
+    // option(<option_variable> "help string describing option" [initial value])
+
+    bool hasOptions = false;
+    CORE::CString fileContent;
+    if ( treatTagsAsOptions )
+    {
+        TStringSet tagsUsed;
+        GetAllTagsUsed( projectInfo, tagsUsed );
+        if ( !tagsUsed.empty() )
+        {
+            hasOptions = true;
+            CORE::CString optionValue = taggedOptionsEnabledDefault ? "ON" : "OFF";
+
+            // Define default CMake option states for all tags
+            TStringSet::iterator i = tagsUsed.begin();
+            while ( i != tagsUsed.end() )
+            {
+                fileContent += "option( TAGGED_BUILD_OPTION_" + (*i) + " \"build option based on tag " + (*i) + "\" " + optionValue + ")\n";
+                ++i;
+            }
+            fileContent += "\n\n";
+
+            // Make the build print out the available options to help the devs reviewing build logs
+            // The settings above are just defaults, this will print out the actual state when CMake runs
+            i = tagsUsed.begin();
+            while ( i != tagsUsed.end() )
+            {
+                fileContent += "message( STATUS \"TAGGED_BUILD_OPTION_" + (*i) + ": ${TAGGED_BUILD_OPTION_" + (*i) + "} )\n";
+                ++i;
+            }
+        }
+    }
+
+    // @TODO: Alternate option management? scripts?
+
+    if ( hasOptions )
+    {        
+        fileContent = GetCMakeListsFileHeader( addCompileDate ) + "\n\n" + fileContent;
+
+        CORE::CString pathToOptionsListFile = CORE::CombinePath( outputDir, "OptionsList.cmake" );
+        if ( CORE::WriteStringAsTextFile( pathToOptionsListFile, fileContent ) )
+        {
+            GUCEF_LOG( CORE::LOGLEVEL_NORMAL, "Created OptionsList.cmake file in output dir: " + outputDir );
+        }
+        else
+        {
+            GUCEF_ERROR_LOG( CORE::LOGLEVEL_IMPORTANT, "Failed to write OptionsList.cmake file content to disk at path " + outputDir );
+        }
     }
 }
 
@@ -1286,9 +1350,22 @@ CCMakeProjectGenerator::GenerateProject( TProjectInfo& projectInfo            ,
     {
         logfilePath = params.GetValueAlways( "logfile" );
     }
-    WriteCMakeListsFilesToDisk( projectInfo, logfilePath, addGeneratorCompileTimeToOutput );
+
+    bool treatTagsAsOptions = CORE::StringToBool( params.GetValueAlways( "TreatTagsAsOptions", "true" ) );
+    bool taggedOptionsEnabledDefault = CORE::StringToBool( params.GetValueAlways( "TaggedOptionsEnabledDefault", "true" ) );
+
+    WriteCMakeListsFilesToDisk( projectInfo                     , 
+                                logfilePath                     , 
+                                treatTagsAsOptions              , 
+                                addGeneratorCompileTimeToOutput );
 
     WriteCMakeModulesListToDisk( projectInfo, outputDir, addGeneratorCompileTimeToOutput );
+
+    WriteCMakeOptionsListToDisk( projectInfo                     , 
+                                 outputDir                       , 
+                                 addGeneratorCompileTimeToOutput , 
+                                 treatTagsAsOptions              , 
+                                 taggedOptionsEnabledDefault     );
 
     return true;
 }

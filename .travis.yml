@@ -1,0 +1,13 @@
+language: cpp
+compiler:
+  - gcc
+script:
+  - cd projects
+  - cd CMake
+  - cmake -DCMAKE_BUILD_TYPE=Debug .. && cmake --build . && cmake --build . --target coveralls
+notifications:
+  recipients:
+    - ci@vanvelzen.us
+  email:
+    on_success: change
+    on_failure: always

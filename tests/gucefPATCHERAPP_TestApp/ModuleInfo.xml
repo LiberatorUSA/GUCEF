@@ -1,5 +1,5 @@
 <ModuleInfoEntry>
-    <Module Name="gucefPATCHERAPP_TestApp" Type="Executable" Platform="All">
+    <Module Name="gucefPATCHERAPP_TestApp" Type="Executable" Platform="All" Tags="test">
         <Dependencies>
             <Dependency Name="gucefLOADER" />
         </Dependencies>

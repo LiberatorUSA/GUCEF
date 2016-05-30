@@ -1,5 +1,5 @@
 <ModuleInfoEntry>
-    <Module Name="guidriverMyGUI" Type="SharedLibrary" Platform="All">
+    <Module Name="guidriverMyGUI" Type="SharedLibrary" Platform="All" Tags="plugin">
         <Dependencies>
             <Dependency Name="gucefVFS" />
             <Dependency Name="gucefINPUT" />

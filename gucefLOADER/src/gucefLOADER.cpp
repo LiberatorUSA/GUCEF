@@ -145,6 +145,7 @@ typedef int ( GUCEF_CALLSPEC_PREFIX *TGUCEFCORECINTERFACE_GucefLoadConfig ) ( co
 typedef int ( GUCEF_CALLSPEC_PREFIX *TGUCEFCORECINTERFACE_GucefLoadPlugin ) ( const char* pluginPath, const char* pluginType, const char* groupName, int argc, char** argv ) GUCEF_CALLSPEC_SUFFIX;
 typedef void ( GUCEF_CALLSPEC_PREFIX *TGUCEFCORECINTERFACE_GucefAddPluginDir ) ( const char* pluginDir ) GUCEF_CALLSPEC_SUFFIX;
 typedef void ( GUCEF_CALLSPEC_PREFIX *TGUCEFCORECINTERFACE_GucefSetDefaultPluginLoaderLogicType ) ( const char* pluginLoaderLogicTypeName ) GUCEF_CALLSPEC_SUFFIX;
+typedef void ( GUCEF_CALLSPEC_PREFIX *TGUCEFCORECINTERFACE_GucefLog ) ( int logType, int logLevel, const char* msg ) GUCEF_CALLSPEC_SUFFIX;
 
 struct SGucefCoreCInterface
 {
@@ -153,6 +154,7 @@ struct SGucefCoreCInterface
     TGUCEFCORECINTERFACE_GucefLoadPlugin gucefLoadPlugin;
     TGUCEFCORECINTERFACE_GucefAddPluginDir gucefAddPluginDir;
     TGUCEFCORECINTERFACE_GucefSetDefaultPluginLoaderLogicType gucefSetDefaultPluginLoaderLogicType;
+    TGUCEFCORECINTERFACE_GucefLog gucefLog;
 };
 typedef struct SGucefCoreCInterface TGucefCoreCInterface;
 
@@ -807,20 +809,24 @@ LinkGucefCoreCInterface( TModuleGroup& moduleGroup        ,
              CORE::GetFunctionAddress( coreModulePtr                                     ,
                                        "GUCEF_CORE_GucefSetDefaultPluginLoaderLogicType" ,
                                        sizeof(const char*)                               ).funcPtr;
+    cInterface.gucefLog = (TGUCEFCORECINTERFACE_GucefLog)
+             CORE::GetFunctionAddress( coreModulePtr         ,
+                                       "GUCEF_CORE_GucefLog" ,
+                                       sizeof(int)*2 +
+                                       sizeof(const char*)   ).funcPtr;
+
 
     if ( NULL != cInterface.gucefLoadConfig                      &&
          NULL != cInterface.gucefLoadPlugin                      &&
          NULL != cInterface.gucefMain                            &&
          NULL != cInterface.gucefAddPluginDir                    &&
-         NULL != cInterface.gucefSetDefaultPluginLoaderLogicType )
+         NULL != cInterface.gucefSetDefaultPluginLoaderLogicType &&
+         NULL != cInterface.gucefLog                              )
     {
         return true;
     }
 
-    cInterface.gucefMain = NULL;
-    cInterface.gucefLoadConfig = NULL;
-    cInterface.gucefLoadPlugin = NULL;
-    cInterface.gucefAddPluginDir = NULL;
+    memset( &cInterface, 0, sizeof( cInterface ) );
     return false;
 }
 

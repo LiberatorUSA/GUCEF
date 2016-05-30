@@ -115,6 +115,18 @@ typedef struct SVersion TVersion;
 
 /*--------------------------------------------------------------------------*/
 
+struct SVersionRange
+{
+    TVersion min;
+    UInt8 includeMin;
+    TVersion max;
+    UInt8 includeMax;
+};
+
+typedef struct SVersionRange TVersionRange;
+
+/*--------------------------------------------------------------------------*/
+
 struct SPoint2DI
 {
         Int32 x;

@@ -1,5 +1,5 @@
 <ModuleInfoEntry>
-    <Module Name="inputdriverNANDROID" Type="SharedLibrary" Platform="android">
+    <Module Name="inputdriverNANDROID" Type="SharedLibrary" Platform="android" Tags="plugin">
         <Dependencies>
             <Dependency Name="gucefINPUT" />
             <Dependency Name="gucefCORE" />

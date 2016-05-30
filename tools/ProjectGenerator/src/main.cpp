@@ -85,6 +85,11 @@
 #define GUCEF_PROJECTGEN_CPREMAKE4PROJECTGENERATOR_H
 #endif /* GUCEF_PROJECTGEN_CPREMAKE4PROJECTGENERATOR_H ? */
 
+#ifndef GUCEF_PROJECTGEN_CPREMAKE5PROJECTGENERATOR_H
+#include "gucefProjectGen_CPremake5ProjectGenerator.h"
+#define GUCEF_PROJECTGEN_CPREMAKE5PROJECTGENERATOR_H
+#endif /* GUCEF_PROJECTGEN_CPREMAKE5PROJECTGENERATOR_H ? */
+
 #ifndef GUCEF_PROJECTGEN_CPROJECTGENGLOBAL_H
 #include "gucefProjectGen_CProjectGenGlobal.h"
 #define GUCEF_PROJECTGEN_CPROJECTGENGLOBAL_H
@@ -292,8 +297,9 @@ GUCEF_OSMAIN_BEGIN
     {
         // Use an info gatherer to get all the project information for us
         CDirCrawlingProjectInfoGatherer infoGatherer;
-        infoGatherer.GatherInfo( rootDirs    ,
-                                 projectInfo );
+        infoGatherer.GatherInfo( rootDirs     ,
+                                 projectInfo  ,
+                                 keyValueList );
     }
 
     // Before we hand the data we collected and generated to the generator(s) for the desired output we will check
@@ -345,6 +351,15 @@ GUCEF_OSMAIN_BEGIN
         {
             CPremake4ProjectGenerator premake4Generator;
             premake4Generator.GenerateProject( projectInfo                ,
+                                               outputDir                  ,
+                                               addToolCompileTimeToOutput ,
+                                               keyValueList               );
+        }
+        else
+        if ( (*i).Lowercase() == "premake5" )
+        {
+            CPremake5ProjectGenerator premake5Generator;
+            premake5Generator.GenerateProject( projectInfo                ,
                                                outputDir                  ,
                                                addToolCompileTimeToOutput ,
                                                keyValueList               );

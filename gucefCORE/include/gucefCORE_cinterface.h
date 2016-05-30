@@ -85,6 +85,13 @@ GUCEF_CORE_GucefSetDefaultPluginLoaderLogicType( const char* defaultLoaderLogicT
 
 /*--------------------------------------------------------------------------*/
 
+GUCEF_CORE_PUBLIC_C void
+GUCEF_CORE_GucefLog( int logType     , 
+                     int logLevel    , 
+                     const char* msg );
+
+/*--------------------------------------------------------------------------*/
+
 #ifdef __cplusplus
    }
 #endif /* __cplusplus */

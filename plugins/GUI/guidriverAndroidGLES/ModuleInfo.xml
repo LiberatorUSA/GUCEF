@@ -1,5 +1,5 @@
 <ModuleInfoEntry>
-    <Module Name="guidriverAndroidGLES" Type="SharedLibrary" Platform="Android">
+    <Module Name="guidriverAndroidGLES" Type="SharedLibrary" Platform="Android" Tags="plugin" >
         <Dependencies>
             <Dependency Name="gucefGUI" />
             <Dependency Name="gucefCORE" />

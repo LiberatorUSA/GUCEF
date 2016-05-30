@@ -1,5 +1,5 @@
 <ModuleInfoEntry>
-    <Module Name="inputdriverXWINMSG" Type="SharedLibrary" Platform="linux">
+    <Module Name="inputdriverXWINMSG" Type="SharedLibrary" Platform="linux" Tags="plugin">
         <Dependencies>
             <Dependency Name="gucefINPUT" />
             <Dependency Name="gucefCORE" />

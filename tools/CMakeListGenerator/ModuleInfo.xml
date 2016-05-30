@@ -1,5 +1,5 @@
 <ModuleInfoEntry>
-    <Module Name="CMakeListGenerator" Type="Executable" Platform="mswin;linux">
+    <Module Name="CMakeListGenerator" Type="Executable" Platform="mswin;linux" Tags="obsolete">
         <Dependencies>
             <Dependency Name="gucefMT" />
             <Dependency Name="gucefCORE" />

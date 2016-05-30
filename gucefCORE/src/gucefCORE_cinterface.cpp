@@ -148,7 +148,7 @@ GUCEF_CORE_GucefAddPluginDir( const char* pluginDir )
 
 /*-------------------------------------------------------------------------*/
 
-GUCEF_CORE_PUBLIC_C void
+void
 GUCEF_CORE_GucefSetDefaultPluginLoaderLogicType( const char* defaultLoaderLogicType )
 {GUCEF_TRACE;
 
@@ -156,6 +156,18 @@ GUCEF_CORE_GucefSetDefaultPluginLoaderLogicType( const char* defaultLoaderLogicT
 
     CString defaultLoaderLogicTypeStr( defaultLoaderLogicType );
     CCoreGlobal::Instance()->GetPluginControl().SetDefaultPluginLoadLogicType( defaultLoaderLogicTypeStr );
+}
+
+/*-------------------------------------------------------------------------*/
+
+GUCEF_CORE_PUBLIC_C void
+GUCEF_CORE_GucefLog( int logType     , 
+                     int logLevel    , 
+                     const char* msg )
+{GUCEF_TRACE;
+
+    CLogManager::TLogMsgType msgType = (CLogManager::TLogMsgType) logType;
+    CCoreGlobal::Instance()->GetLogManager().Log( msgType, logLevel, msg );
 }
 
 /*-------------------------------------------------------------------------*/

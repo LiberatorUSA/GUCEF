@@ -1,5 +1,5 @@
 <ModuleInfoEntry>
-    <Module Name="guidriverRocket" Type="SharedLibrary" Platform="All">
+    <Module Name="guidriverRocket" Type="SharedLibrary" Platform="All" Tags="plugin">
         <Dependencies>
             <Dependency Name="RocketCore" />
             <Dependency Name="RocketControls" />
