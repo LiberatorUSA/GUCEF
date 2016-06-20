@@ -28,6 +28,11 @@
 
 #include <map>
 
+#ifndef GUCEF_VFS_CVFS_H
+#include "gucefVFS_CVFS.h"
+#define GUCEF_VFS_CVFS_H
+#endif /* GUCEF_VFS_CVFS_H ? */
+
 #ifndef _CEGUIBase_h_
 #include "CEGUI/Base.h"
 #define _CEGUIBase_h_
@@ -61,6 +66,16 @@ namespace GUIDRIVERCEGUI {
 class GUCEF_GUIDRIVERCEGUI_EXPORT_CPP VfsResourceProvider : public ::CEGUI::ResourceProvider
 {
     public :
+
+    struct SDataContainerInfo
+    {
+        VFS::CVFS::CVFSHandlePtr fileHandle;
+        CEGUI::RawDataContainer ceContainer;
+        CORE::CString requestFilename;
+        CORE::CString requestresourceGroup;
+    };
+    typedef struct SDataContainerInfo TDataContainerInfo;
+    typedef CORE::CTSharedPtr< TDataContainerInfo > DataContainerInfoPtr;
 
     VfsResourceProvider();
 
@@ -123,10 +138,15 @@ class GUCEF_GUIDRIVERCEGUI_EXPORT_CPP VfsResourceProvider : public ::CEGUI::Reso
 
     void setDefaultResourceGroup( const CEGUI::String& resourceGroup );
 
+    DataContainerInfoPtr GetInfoOnLoadedContainer( const CEGUI::RawDataContainer& container );
+
     private:
+
+    typedef std::map< void*, DataContainerInfoPtr > TContainerMap;
 
     typedef std::map< CEGUI::String, CEGUI::String >    TCEStringMap;
 
+    TContainerMap m_containerMap;
     TCEStringMap m_groupMap;
     CEGUI::String m_defaultResourceGroup;
 };

@@ -46,6 +46,11 @@
 #define GUCEF_GUIDRIVERCEGUI_MACROS_H
 #endif /* GUCEF_GUIDRIVERCEGUI_MACROS_H ? */
 
+#ifndef GUCEF_GUIDRIVERCEGUI_VFSRESOURCEPROVIDER_H
+#include "guidriverCEGUI_VFSResourceProvider.h" 
+#define GUCEF_GUIDRIVERCEGUI_VFSRESOURCEPROVIDER_H
+#endif /* GUCEF_GUIDRIVERCEGUI_VFSRESOURCEPROVIDER_H ? */
+
 /*-------------------------------------------------------------------------//
 //                                                                         //
 //      NAMESPACE                                                          //
@@ -65,7 +70,7 @@ class GUCEF_GUIDRIVERCEGUI_EXPORT_CPP ImageCodecAdapter : public ::CEGUI::ImageC
 {
     public :
 
-    ImageCodecAdapter();
+    ImageCodecAdapter( VfsResourceProvider* vfsResourceProvider = 0 );
 
     virtual ~ImageCodecAdapter();
 
@@ -110,6 +115,7 @@ class GUCEF_GUIDRIVERCEGUI_EXPORT_CPP ImageCodecAdapter : public ::CEGUI::ImageC
     private:
 
     CEGUI::String m_codecName;
+    VfsResourceProvider* m_vfsResourceProvider;
 };
 
 /*-------------------------------------------------------------------------//

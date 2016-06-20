@@ -134,7 +134,7 @@ class GUCEF_GUIDRIVERCEGUI_EXPORT_CPP CCEGUIDriver : public GUI::CGUIDriver
 
     VfsResourceProvider m_vfsResourceProvider;
     CLogAdapter m_logAdapter;
-    ImageCodecAdapter m_imageCodecAdapter;
+    ImageCodecAdapter* m_imageCodecAdapter;
     XMLParserAdapter m_xmlParserAdapter;
     CORE::CString m_schemeToUse;
     CORE::CString m_defaultFont;

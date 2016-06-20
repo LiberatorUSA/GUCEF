@@ -64,7 +64,7 @@ CCEGUIDriver::CCEGUIDriver( bool useglobalconfig )
     : GUI::CGUIDriver( useglobalconfig ) ,
       m_vfsResourceProvider()            ,
       m_logAdapter()                     ,
-      m_imageCodecAdapter()              ,
+      m_imageCodecAdapter( 0 )           ,
       m_xmlParserAdapter()               ,
       m_schemeToUse()                    ,
       m_defaultFont()                    ,
@@ -72,12 +72,16 @@ CCEGUIDriver::CCEGUIDriver( bool useglobalconfig )
       m_schemasResourceGroup()
 {GUCEF_TRACE;
 
+    m_imageCodecAdapter = new ImageCodecAdapter( &m_vfsResourceProvider );
 }
 
 /*-------------------------------------------------------------------------*/
 
 CCEGUIDriver::~CCEGUIDriver()
 {GUCEF_TRACE;
+
+    delete m_imageCodecAdapter;
+    m_imageCodecAdapter = 0;
 }
 
 /*-------------------------------------------------------------------------*/

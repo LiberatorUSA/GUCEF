@@ -70,9 +70,10 @@ namespace GUIDRIVERCEGUI {
 //                                                                         //
 //-------------------------------------------------------------------------*/
 
-ImageCodecAdapter::ImageCodecAdapter()
+ImageCodecAdapter::ImageCodecAdapter( VfsResourceProvider* vfsResourceProvider )
     : ::CEGUI::ImageCodec( "gucefIMAGE" ) ,
-      m_codecName( "gucefIMAGE" )
+      m_codecName( "gucefIMAGE" )         ,
+      m_vfsResourceProvider( vfsResourceProvider )
 {GUCEF_TRACE;
 
 }
@@ -160,6 +161,18 @@ ImageCodecAdapter::load( const CEGUI::RawDataContainer& data ,
     }
 
     CORE::CString imgType = CORE::ExtractFileExtention( result->getName() );
+    if ( imgType.IsNULLOrEmpty() )
+    {
+        if ( NULL != m_vfsResourceProvider )
+        {
+            VfsResourceProvider::DataContainerInfoPtr containerInfo = m_vfsResourceProvider->GetInfoOnLoadedContainer( data );
+            if ( !containerInfo.IsNULL() )
+            {
+                imgType = CORE::ExtractFileExtention( containerInfo->requestFilename );
+            }
+        }
+    }
+
     if ( imgType.IsNULLOrEmpty() )
     {
         GUCEF_WARNING_LOG( CORE::LOGLEVEL_NORMAL, "ImageCodecAdapter:load: Unable to load texture since no image type could be derived from the the texture name" );

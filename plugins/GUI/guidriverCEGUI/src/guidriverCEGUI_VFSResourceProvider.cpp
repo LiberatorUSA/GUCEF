@@ -33,11 +33,6 @@
 #define GUCEF_VFS_CVFSGLOBAL_H
 #endif /* GUCEF_VFS_CVFSGLOBAL_H ? */
 
-#ifndef GUCEF_VFS_CVFS_H
-#include "gucefVFS_CVFS.h"
-#define GUCEF_VFS_CVFS_H
-#endif /* GUCEF_VFS_CVFS_H ? */
-
 #ifndef GUCEF_GUIDRIVERCEGUI_MACROS_H
 #include "guidriverCEGUI_macros.h" 
 #define GUCEF_GUIDRIVERCEGUI_MACROS_H
@@ -61,6 +56,9 @@ namespace GUIDRIVERCEGUI {
 //-------------------------------------------------------------------------*/
 
 VfsResourceProvider::VfsResourceProvider()
+    : m_containerMap() ,
+      m_groupMap() ,
+      m_defaultResourceGroup()
 {GUCEF_TRACE;
 
 }
@@ -150,6 +148,14 @@ VfsResourceProvider::loadRawDataContainer( const CEGUI::String& filename      ,
 
             output.setData( (CEGUI::uint8*) buffer );
             output.setSize( dataSize );
+
+            DataContainerInfoPtr info = new TDataContainerInfo;
+            info->fileHandle = file;
+            info->requestFilename = fileName;
+            info->requestresourceGroup = resourceGroup;
+            info->ceContainer = output;
+
+            m_containerMap[ buffer ] = info;
         } 
     }
 }
@@ -160,9 +166,31 @@ void
 VfsResourceProvider::unloadRawDataContainer( CEGUI::RawDataContainer& data )
 {GUCEF_TRACE;
     
+    TContainerMap::iterator i = m_containerMap.find( (void*) data.getDataPtr() );
+    if ( i != m_containerMap.end() )
+    {
+        (*i).second->ceContainer.setData( (CEGUI::uint8*) nullptr );
+        (*i).second->ceContainer.setSize( 0 );
+        m_containerMap.erase( i );
+    }
+    
     delete[] data.getDataPtr();
     data.setData( (CEGUI::uint8*) nullptr );
     data.setSize( 0 );
+}
+
+/*-------------------------------------------------------------------------*/
+
+VfsResourceProvider::DataContainerInfoPtr 
+VfsResourceProvider::GetInfoOnLoadedContainer( const CEGUI::RawDataContainer& container )
+{GUCEF_TRACE;
+
+    TContainerMap::iterator i = m_containerMap.find( (void*) container.getDataPtr() );
+    if ( i != m_containerMap.end() )
+    {
+        return (*i).second;
+    }
+    return DataContainerInfoPtr();
 }
 
 /*-------------------------------------------------------------------------*/

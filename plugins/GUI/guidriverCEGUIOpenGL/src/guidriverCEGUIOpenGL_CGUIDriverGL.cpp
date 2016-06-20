@@ -121,7 +121,7 @@ CGUIDriverGL::CreateGUIContext( GUI::TWindowContextPtr windowContext )
         {
             CEGUI::Sizef displaySize( (float) windowContext->GetWidth(), (float) windowContext->GetHeight() );
             m_guiRenderer = &CEGUI::OpenGLRenderer::create( displaySize, CEGUI::OpenGLRenderer::TTT_AUTO );
-            m_guiSystem = &CEGUI::System::create( *m_guiRenderer, &m_vfsResourceProvider, &m_xmlParserAdapter, &m_imageCodecAdapter );
+            m_guiSystem = &CEGUI::System::create( *m_guiRenderer, &m_vfsResourceProvider, &m_xmlParserAdapter, m_imageCodecAdapter );
 
             // setup default group for validation schemas
             CEGUI::XMLParser* parser = m_guiSystem->getXMLParser();
@@ -139,7 +139,7 @@ CGUIDriverGL::CreateGUIContext( GUI::TWindowContextPtr windowContext )
         }
         catch ( CEGUI::Exception& e )
         {
-            CORE::CString info = e.getMessage() + " - at - " + e.getFileName() + ":" + e.getFunctionName() + ":" + CORE::UInt32ToString( e.getLine );
+            CORE::CString info = e.getMessage() + " - at - " + e.getFileName() + ":" + e.getFunctionName() + ":" + CORE::UInt32ToString( e.getLine() ).STL_String();
             GUCEF_EXCEPTION_LOG( CORE::LOGLEVEL_IMPORTANT, "Unhandled exception during CEGUI initialization: " + info );
 
             m_ceGuiInitialized = false;
