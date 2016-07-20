@@ -136,7 +136,9 @@ CGUIDriverGL::CreateGUIContext( GUI::TWindowContextPtr windowContext )
         
             // Set the defaults
             CEGUI::System::getSingleton().getDefaultGUIContext().setDefaultFont( m_defaultFont );
-            CEGUI::System::getSingleton().getDefaultGUIContext().getMouseCursor().setDefaultImage( m_defaultCursorImage );                     
+            CEGUI::System::getSingleton().getDefaultGUIContext().getMouseCursor().setDefaultImage( m_defaultCursorImage );
+            CEGUI::Window* rootWindow = CEGUI::WindowManager::getSingleton().createWindow( "DefaultWindow", "root" );
+            CEGUI::System::getSingleton().getDefaultGUIContext().setRootWindow( rootWindow );                                 
         
             m_ceGuiInitialized = true;
         }

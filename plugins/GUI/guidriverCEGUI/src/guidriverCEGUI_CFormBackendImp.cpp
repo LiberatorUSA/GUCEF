@@ -158,11 +158,11 @@ CFormBackendImp::CreateAndHookWrapperForWindow( CEGUI::Window* window )
     //    static_cast< CTabContentPaneImp* >( widgetWrapper )->Hook( window );        
     //}        
     //else        
-    //if ( "FrameWindow" == typeName )
-    //{
-    //    widgetWrapper = new CWindowImp();
-    //    static_cast< CWindowImp* >( widgetWrapper )->Hook( static_cast< CEGUI::FrameWindow* >( window ) );        
-    //}
+    if ( "FrameWindow" == typeName )
+    {
+        widgetWrapper = new CWindowImp();
+        static_cast< CWindowImp* >( widgetWrapper )->Hook( static_cast< CEGUI::FrameWindow* >( window ) );        
+    }
     //else        
     //if ( "MultiColumnList" == typeName )
     //{
@@ -246,10 +246,14 @@ CFormBackendImp::LoadLayout( GUCEF::CORE::CIOAccess& layoutStorage )
     {
         CORE::CDynamicBuffer memBuffer( layoutStorage );
         CEGUI::RawDataContainer container;
+
         container.setData( (CEGUI::uint8*) memBuffer.GetBufferPtr() );
         container.setSize( (size_t) memBuffer.GetDataSize() );
 
         rootWindow = wmgr->loadLayoutFromContainer( container );
+
+        container.setData( (CEGUI::uint8*) NULL );
+        container.setSize( (size_t) 0 );
     }
     catch ( CEGUI::Exception& e )
     {
