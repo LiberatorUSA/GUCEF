@@ -3,7 +3,7 @@
 	<Imageset filename="TaharezLook.imageset" />
 	<Font filename="DejaVuSans-12.font" />
 	<LookNFeel filename="TaharezLook.looknfeel" />
-	<WindowRendererSet filename="CEGUICoreWindowRendererSet" />
+	<WindowRendererSet filename="CEGUI.WindowRendererSets.Core" />
 
 	<FalagardMapping windowType="TaharezLook/Label"       targetType="DefaultWindow"     renderer="Core/Default"      lookNFeel="TaharezLook/Label" />
 	<FalagardMapping windowType="TaharezLook/Button"      targetType="CEGUI/PushButton"  renderer="Core/Button"       lookNFeel="TaharezLook/Button" />

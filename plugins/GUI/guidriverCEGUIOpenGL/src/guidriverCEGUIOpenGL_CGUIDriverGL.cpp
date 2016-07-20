@@ -127,6 +127,9 @@ CGUIDriverGL::CreateGUIContext( GUI::TWindowContextPtr windowContext )
             CEGUI::XMLParser* parser = m_guiSystem->getXMLParser();
             if ( nullptr != parser && parser->isPropertyPresent( "SchemaDefaultResourceGroup" )  )
                 parser->setProperty( "SchemaDefaultResourceGroup", m_schemasResourceGroup );
+
+            // Load the fonts
+            CEGUI::FontManager::getSingleton().createAll( m_defaultFont, CEGUI::Font::getDefaultResourceGroup() );
         
             // Load the scheme
             CEGUI::SchemeManager::getSingleton().createFromFile( m_schemeToUse );

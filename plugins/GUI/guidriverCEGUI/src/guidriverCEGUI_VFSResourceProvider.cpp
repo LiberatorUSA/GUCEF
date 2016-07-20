@@ -156,6 +156,10 @@ VfsResourceProvider::loadRawDataContainer( const CEGUI::String& filename      ,
             info->ceContainer = output;
 
             m_containerMap[ buffer ] = info;
+        }
+        else
+        {
+            GUCEF_ERROR_LOG( CORE::LOGLEVEL_NORMAL, "VfsResourceProvider:loadRawDataContainer: Unable to load resource from path: " + filePath );
         } 
     }
 }
@@ -212,8 +216,14 @@ VfsResourceProvider::getResourceGroupFileNames( std::vector<CEGUI::String>& out_
 
     VFS::CVFS::TStringSet fileList;
     vfs.GetList( fileList, filePath, false, false, file_pattern, true, false );
+    VFS::CVFS::TStringSet::iterator n = fileList.begin();
+    while ( n != fileList.end() )
+    {   
+        out_vec.push_back( (*n) );
+        ++n;
+    }
 
-    return fileList.size();
+    return out_vec.size();
 }
 /*-------------------------------------------------------------------------//
 //                                                                         //
