@@ -76,6 +76,7 @@ CGUIContext::CGUIContext( CCEGUIDriver& guiDriver            ,
 
     assert( NULL != m_driver );
     m_inputAdapter.SetInputContext( inputContext );
+    m_inputAdapter.SetCEGUIContext( ceGuiContext );
     m_inputAdapter.StartListningForInputEvents();
 }
 

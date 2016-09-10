@@ -120,7 +120,9 @@ ConvertButtonIndexToCEGui( const UInt32 buttonindex )
 CCEGUIInputAdapter::CCEGUIInputAdapter( void )
     : GUCEF::CORE::CObserver()  ,
       m_guisystem( CEGUI::System::getSingletonPtr() )  ,
-      m_inputContext( NULL )
+      m_inputContext( NULL )                           ,
+      m_ceGuiContext( NULL )                           ,
+      m_inputController( &INPUT::CInputGlobal::Instance()->GetInputController() )
 {GUCEF_TRACE;
 
 }
@@ -131,6 +133,7 @@ CCEGUIInputAdapter::~CCEGUIInputAdapter()
 {GUCEF_TRACE;
 
     m_inputContext = NULL;
+    m_ceGuiContext = NULL;
 }
 
 /*-------------------------------------------------------------------------*/
@@ -153,6 +156,15 @@ CCEGUIInputAdapter::StopListningForInputEvents( void )
 {GUCEF_TRACE;
 
     UnsubscribeAllFromObserver();
+}
+
+/*-------------------------------------------------------------------------*/
+
+void
+CCEGUIInputAdapter::SetCEGUIContext( CEGUI::GUIContext* ceGuiContext )
+{GUCEF_TRACE;
+
+    m_ceGuiContext = ceGuiContext;
 }
 
 /*-------------------------------------------------------------------------*/
@@ -191,68 +203,68 @@ CCEGUIInputAdapter::OnNotify( GUCEF::CORE::CNotifier* notifier                 ,
                               GUCEF::CORE::CICloneable* eventdata /* = NULL */ )
 {GUCEF_TRACE;
 
-    //if ( NULL != m_guisystem )
-    //{
-    //    if ( GUCEF::INPUT::CMouse::MouseButtonEvent == eventid )
-    //    {
-    //        GUCEF::INPUT::CMouseButtonEventData* eData = static_cast< GUCEF::INPUT::CMouseButtonEventData* >( eventdata );
-    //        if ( eData->GetPressedState() )
-    //        {
-    //            m_guisystem->injectMouseButtonDown( ConvertButtonIndexToCEGui( eData->GetButtonIndex() ) );
-    //        }
-    //        else
-    //        {
-    //            m_guisystem->injectMouseButtonUp( ConvertButtonIndexToCEGui( eData->GetButtonIndex() ) );
-    //        }
-    //        return;
-    //    }
-    //    if ( GUCEF::INPUT::CMouse::MouseMovedEvent == eventid )
-    //    {
-    //        GUCEF::INPUT::CMouseMovedEventData* eData = static_cast< GUCEF::INPUT::CMouseMovedEventData* >( eventdata );
-    //        m_guisystem->injectMousePosition( (float) eData->GetXPos() ,
-    //                                          (float) eData->GetYPos() );
-    //        return;
-    //    }
-    //    if ( GUCEF::INPUT::CKeyboard::KeyStateChangedEvent == eventid )
-    //    {
-    //        GUCEF::INPUT::CKeyStateChangedEventData* eData = static_cast< GUCEF::INPUT::CKeyStateChangedEventData* >( eventdata );
-    //        if ( eData->GetKeyPressedState() )
-    //        {
-    //            UInt32 unicode = 0;
-    //            GUCEF::INPUT::CKeyboard& keyboard = m_inputController->GetKeyboard( eData->GetDeviceID() );
-    //            if ( keyboard.GetUnicodeForKeyCode( eData->GetKeyCode()             ,
-    //                                                eData->GetKeyModPressedStates() ,
-    //                                                unicode                         ) )
-    //            {
-    //                m_guisystem->injectChar( unicode );
-    //            }
-    //            
-    //            // The CEGUI scancode values are the same as those used by gucefINPUT
-    //            // as such a simple cast is sufficient to perform the translation
-    //            m_guisystem->injectKeyDown( (CEGUI::uint32) eData->GetKeyCode() );
-    //        }
-    //        else
-    //        {
-    //            // The CEGUI scancode values are the same as those used by gucefINPUT
-    //            // as such a simple cast is sufficient to perform the translation
-    //            m_guisystem->injectKeyUp( (CEGUI::uint32) eData->GetKeyCode() );
-    //        }                
-    //        return;
-    //    }
-    //}
-    //
-    //if ( GUCEF::INPUT::CInputController::MouseAttachedEvent == eventid )
-    //{
-    //    Int32 deviceID = static_cast< GUCEF::INPUT::CInputController::TMouseAttachedEventData* >( eventdata )->GetData();
-    //    GUCEF::INPUT::CMouse& mouse = m_inputController->GetMouse( deviceID );
-    //    SubscribeTo( &mouse );
-    //}
-    //if ( GUCEF::INPUT::CInputController::KeyboardAttachedEvent == eventid )
-    //{
-    //    Int32 deviceID = static_cast< GUCEF::INPUT::CInputController::TKeyboardAttachedEventData* >( eventdata )->GetData();
-    //    GUCEF::INPUT::CKeyboard& keyboard = m_inputController->GetKeyboard( deviceID );
-    //    SubscribeTo( &keyboard );
-    //}
+    if ( NULL != m_ceGuiContext )
+    {
+        if ( GUCEF::INPUT::CMouse::MouseButtonEvent == eventid )
+        {
+            GUCEF::INPUT::CMouseButtonEventData* eData = static_cast< GUCEF::INPUT::CMouseButtonEventData* >( eventdata );
+            if ( eData->GetPressedState() )
+            {
+                m_ceGuiContext->injectMouseButtonDown( ConvertButtonIndexToCEGui( eData->GetButtonIndex() ) );
+            }
+            else
+            {
+                m_ceGuiContext->injectMouseButtonUp( ConvertButtonIndexToCEGui( eData->GetButtonIndex() ) );
+            }
+            return;
+        }
+        if ( GUCEF::INPUT::CMouse::MouseMovedEvent == eventid )
+        {
+            GUCEF::INPUT::CMouseMovedEventData* eData = static_cast< GUCEF::INPUT::CMouseMovedEventData* >( eventdata );
+            m_ceGuiContext->injectMousePosition( (float) eData->GetXPos() ,
+                                                 (float) eData->GetYPos() );
+            return;
+        }
+        if ( GUCEF::INPUT::CKeyboard::KeyStateChangedEvent == eventid )
+        {
+            GUCEF::INPUT::CKeyStateChangedEventData* eData = static_cast< GUCEF::INPUT::CKeyStateChangedEventData* >( eventdata );
+            if ( eData->GetKeyPressedState() )
+            {
+                UInt32 unicode = 0;
+                GUCEF::INPUT::CKeyboard& keyboard = m_inputController->GetKeyboard( eData->GetDeviceID() );
+                if ( keyboard.GetUnicodeForKeyCode( eData->GetKeyCode()             ,
+                                                    eData->GetKeyModPressedStates() ,
+                                                    unicode                         ) )
+                {
+                    m_ceGuiContext->injectChar( unicode );
+                }
+                
+                // The CEGUI scancode values are the same as those used by gucefINPUT
+                // as such a simple cast is sufficient to perform the translation
+                m_ceGuiContext->injectKeyDown( (CEGUI::Key::Scan) eData->GetKeyCode() );
+            }
+            else
+            {
+                // The CEGUI scancode values are the same as those used by gucefINPUT
+                // as such a simple cast is sufficient to perform the translation
+                m_ceGuiContext->injectKeyUp( (CEGUI::Key::Scan) eData->GetKeyCode() );
+            }                
+            return;
+        }
+    }
+    
+    if ( GUCEF::INPUT::CInputController::MouseAttachedEvent == eventid )
+    {
+        Int32 deviceID = static_cast< GUCEF::INPUT::CInputController::TMouseAttachedEventData* >( eventdata )->GetData();
+        GUCEF::INPUT::CMouse& mouse = m_inputController->GetMouse( deviceID );
+        SubscribeTo( &mouse );
+    }
+    if ( GUCEF::INPUT::CInputController::KeyboardAttachedEvent == eventid )
+    {
+        Int32 deviceID = static_cast< GUCEF::INPUT::CInputController::TKeyboardAttachedEventData* >( eventdata )->GetData();
+        GUCEF::INPUT::CKeyboard& keyboard = m_inputController->GetKeyboard( deviceID );
+        SubscribeTo( &keyboard );
+    }
 }
 
 /*-------------------------------------------------------------------------//
@@ -261,7 +273,7 @@ CCEGUIInputAdapter::OnNotify( GUCEF::CORE::CNotifier* notifier                 ,
 //                                                                         //
 //-------------------------------------------------------------------------*/
 
-}; /* namespace MYGUI */
+}; /* namespace GUIDRIVERCEGUI */
 }; /* namespace GUCEF */
 
 /*-------------------------------------------------------------------------*/
