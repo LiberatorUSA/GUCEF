@@ -123,7 +123,8 @@ GetSupportedPlatformDirMap( void )
         platformMap[ "glx" ].insert( "glx" );
         platformMap[ "gtk" ].insert( "gtk" );
         platformMap[ "sdl" ].insert( "sdl" );
-        platformMap[ "emscripten" ].insert( "emscripten" );        
+        platformMap[ "emscripten" ].insert( "emscripten" );
+        platformMap[ "nacl" ].insert( "nacl" );        
     }
     return platformMap;
 }
