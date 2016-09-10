@@ -1,0 +1,27 @@
+<ModuleInfoEntry>
+    <Module Name="Ogre" Type="SharedLibrary" Platform="All">
+        <Dependencies>
+            <Dependency Name="Ogre.CommonInclude" />
+	    <Dependency Name="freetype" />
+        </Dependencies>
+        <Linker>
+            <Dependency Name="freetype" />
+        </Linker>
+        <Preprocessor>
+            <Define String="OGRE_NONCLIENT_BUILD" />
+            <Define String="OGRE_NO_CONFIG_DIALOG" />
+        </Preprocessor>
+    </Module>
+    <Module Platform="Linux">
+        <Linker>
+            <Dependency Name="dl" />
+	   <Dependency Name="atomic" />
+        </Linker>
+    </Module>
+    <Module Platform="Android">
+        <Linker>
+            <Dependency Name="dl" />
+			<Dependency Name="atomic" />
+        </Linker>
+    </Module>	
+</ModuleInfoEntry>

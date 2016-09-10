@@ -1,0 +1,2 @@
+OgreErrorDialog.cpp
+OgreConfigDialog.cpp

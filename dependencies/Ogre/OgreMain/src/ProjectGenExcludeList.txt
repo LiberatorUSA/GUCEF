@@ -1,0 +1,3 @@
+OgreFreeImageCodec.cpp
+OgrePOSIXTimer.cpp
+OgreSearchOps.cpp
