@@ -3,9 +3,11 @@
         <Dependencies>
             <Dependency Name="CEGUI" />
             <Dependency Name="CEGUI.Includes" />
+            <Dependency Name="Ogre" />
         </Dependencies>
         <Linker>
             <Dependency Name="CEGUI" />
+            <Dependency Name="Ogre" />
         </Linker>
         <Preprocessor>
             <Define String="CEGUIOGRERENDERER_EXPORTS" />

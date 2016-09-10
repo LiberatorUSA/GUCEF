@@ -32,11 +32,39 @@ set( ALL_FILES ${HEADER_FILES} ${SOURCE_FILES} ${PLATFORM_HEADER_FILES} ${PLATFO
 
 set( MODULE_NAME "CEGUI.RendererModule.Ogre" )
 add_library( ${MODULE_NAME} ${ALL_FILES} )
-add_dependencies( ${MODULE_NAME} CEGUI )
-target_link_libraries( ${MODULE_NAME} CEGUI )
+add_dependencies( ${MODULE_NAME} CEGUI Ogre )
+target_link_libraries( ${MODULE_NAME} CEGUI Ogre )
 set_property( TARGET ${MODULE_NAME} APPEND_STRING PROPERTY COMPILE_DEFINITIONS "CEGUIOGRERENDERER_EXPORTS" )
 
-include_directories( ../../../include )
+include_directories( ../../../../../Ogre/OgreMain/include ../../../../../Ogre/OgreMain/include/Hash ../../../../../Ogre/OgreMain/include/Threading ../../../../../Ogre/OgreMain/src ../../../../../Ogre/OgreMain/src/nedmalloc ../../../../../Ogre/OgreMain/src/stbi ../../../../../Ogre/include ../../../../../freetype/include ../../../../../freetype/include/freetype ../../../../../freetype/include/freetype/config ../../../../../freetype/include/freetype/internal ../../../../../freetype/include/freetype/internal/services ../../../../../freetype/src/winfonts ../../../include )
+
+if ( ANDROID )
+  include_directories( ../../../../../Ogre/OgreMain/include/Android )
+endif( ANDROID )
+
+if ( EMSCRIPTEN )
+  include_directories( ../../../../../Ogre/OgreMain/include/Emscripten )
+endif( EMSCRIPTEN )
+
+if ( GLX )
+  include_directories( ../../../../../Ogre/OgreMain/src/GLX )
+endif( GLX )
+
+if ( GTK )
+  include_directories( ../../../../../Ogre/OgreMain/include/gtk ../../../../../Ogre/OgreMain/src/gtk )
+endif( GTK )
+
+if ( IOS )
+  include_directories( ../../../../../Ogre/OgreMain/include/iOS )
+endif( IOS )
+
+if ( OSX )
+  include_directories( ../../../../../Ogre/OgreMain/include/OSX )
+endif( OSX )
+
+if ( WIN32 )
+  include_directories( ../../../../../Ogre/OgreMain/include/WIN32 ../../../../../Ogre/OgreMain/src/WIN32 )
+endif( WIN32 )
 
 
 
@@ -46,6 +74,14 @@ include_directories( ../../../include )
 
 
 if (ANDROID)
+GUCEF_config_lib( ${MODULE_NAME} )
+elseif (EMSCRIPTEN)
+GUCEF_config_lib( ${MODULE_NAME} )
+elseif (GLX)
+GUCEF_config_lib( ${MODULE_NAME} )
+elseif (GTK)
+GUCEF_config_lib( ${MODULE_NAME} )
+elseif (IOS)
 GUCEF_config_lib( ${MODULE_NAME} )
 elseif (LINUX32)
 GUCEF_config_lib( ${MODULE_NAME} )
