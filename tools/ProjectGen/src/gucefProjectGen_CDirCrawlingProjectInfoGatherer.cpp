@@ -114,7 +114,8 @@ GetSupportedPlatformDirMap( void )
         platformMap[ "linux64" ].insert( "linux" );
         platformMap[ "linux64" ].insert( "linux64" );
         platformMap[ "unix" ].insert( "unix" );
-        platformMap[ "iphoneos" ].insert( "iphone" );
+        platformMap[ "ios" ].insert( "iphoneos" );
+        platformMap[ "ios" ].insert( "ios" );
         platformMap[ "symbian" ].insert( "symbian" );
         platformMap[ "osx" ].insert( "osx" );
         platformMap[ "osx" ].insert( "mac" );
@@ -122,6 +123,7 @@ GetSupportedPlatformDirMap( void )
         platformMap[ "glx" ].insert( "glx" );
         platformMap[ "gtk" ].insert( "gtk" );
         platformMap[ "sdl" ].insert( "sdl" );
+        platformMap[ "emscripten" ].insert( "emscripten" );        
     }
     return platformMap;
 }
@@ -215,9 +217,23 @@ bool
 IsDirAPlatformDir( const CORE::CString& path )
 {GUCEF_TRACE;
 
-    CORE::CString lastSubDir = CORE::LastSubDir( path ).Lowercase();
+    // A directory is a platform dir not only if the last subdir matches a platform dir name
+    // but also if a parent dir is a platform dir, since platform dirs can also have dir hierachies of course
+    
+    TStringVector searchPathSegs = path.Lowercase().ReplaceChar( '\\', '/' ).ParseElements( '/', false );    
     const TStringSet& supportedPlatformDirs = GetSupportedPlatformDirs();
-    return supportedPlatformDirs.end() != supportedPlatformDirs.find( lastSubDir );
+
+    TStringVector::const_iterator i = searchPathSegs.begin();
+    while ( i != searchPathSegs.end() )
+    {
+        if ( supportedPlatformDirs.end() != supportedPlatformDirs.find( (*i) ) )
+        {
+            // Found a platform dir in the path hierarchy
+            return true;
+        }
+        ++i;
+    }
+    return false;
 }
 
 /*---------------------------------------------------------------------------*/
@@ -227,17 +243,26 @@ IsDirAPlatformDirForPlatform( const CORE::CString& path     ,
                               const CORE::CString& platform )
 {GUCEF_TRACE;
 
-    CORE::CString lastSubDir = CORE::LastSubDir( path ).Lowercase();
     const TStringSetMap& platformDirMap = GetSupportedPlatformDirMap();
     TStringSetMap::const_iterator i = platformDirMap.find( platform );
     if ( i != platformDirMap.end() )
     {
+        // A directory is a platform dir not only if the last subdir matches a platform dir name
+        // but also if a parent dir is a platform dir, since platform dirs can also have dir hierachies of course
+        
+        TStringVector searchPathSegs = path.Lowercase().ReplaceChar( '\\', '/' ).ParseElements( '/', false );
         const TStringSet& dirsForPlatform = (*i).second;
-        TStringSet::const_iterator n = dirsForPlatform.find( lastSubDir.Lowercase() );
-        if ( n != dirsForPlatform.end() )
+        
+        TStringVector::const_iterator n = searchPathSegs.begin();
+        while ( n != searchPathSegs.end() )
         {
-            return true;
-        }        
+            if ( dirsForPlatform.end() != dirsForPlatform.find( (*n) ) )
+            {
+                // Found a platform dir belonging to the given platform in the path hierarchy
+                return true;
+            }
+            ++n;
+        }    
     }
     return false;
 }
