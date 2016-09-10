@@ -76,6 +76,8 @@ class GUCEF_GUIDRIVERCEGUI_EXPORT_CPP CCEGUIInputAdapter : public GUCEF::CORE::C
 
     INPUT::CInputContext* GetInputContext( void ) const;
 
+    void SetCEGUIContext( CEGUI::GUIContext* ceGuiContext );
+
     protected:
 
     virtual void OnNotify( GUCEF::CORE::CNotifier* notifier                 ,
@@ -90,7 +92,9 @@ class GUCEF_GUIDRIVERCEGUI_EXPORT_CPP CCEGUIInputAdapter : public GUCEF::CORE::C
     private:
 
     CEGUI::System* m_guisystem;
+    CEGUI::GUIContext* m_ceGuiContext;
     INPUT::CInputContext* m_inputContext;
+    INPUT::CInputController* m_inputController;
 };
 
 /*-------------------------------------------------------------------------//
