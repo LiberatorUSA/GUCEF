@@ -1,0 +1,30 @@
+<ModuleInfoEntry>
+    <Module Name="guidriverCEGUIOgre" Type="SharedLibrary" Platform="All" Tags="plugin">
+        <Dependencies>
+            <Dependency Name="gucefVFS" />
+            <Dependency Name="gucefINPUT" />
+            <Dependency Name="gucefIMAGE" />
+            <Dependency Name="gucefGUI" />
+            <Dependency Name="gucefCORE" />
+            <Dependency Name="gucefMT" />
+            <Dependency Name="CEGUI" />
+            <Dependency Name="CEGUI.Includes" />
+            <Dependency Name="guidriverCEGUI" />
+            <Dependency Name="CEGUI.RendererModule.Ogre" />
+        </Dependencies>
+        <Linker>
+            <Dependency Name="gucefVFS" />
+            <Dependency Name="gucefINPUT" />
+            <Dependency Name="gucefIMAGE" />
+            <Dependency Name="gucefGUI" />
+            <Dependency Name="gucefCORE" />
+            <Dependency Name="gucefMT" />
+            <Dependency Name="CEGUI" />
+            <Dependency Name="guidriverCEGUI" />
+            <Dependency Name="CEGUI.RendererModule.Ogre" />
+        </Linker>
+        <Preprocessor>
+            <Define String="GUCEF_GUIDRIVERCEGUIOGRE_BUILD_MODULE" />
+        </Preprocessor>
+    </Module>
+</ModuleInfoEntry>
