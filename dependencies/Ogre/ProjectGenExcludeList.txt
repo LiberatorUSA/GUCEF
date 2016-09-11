@@ -5,7 +5,6 @@ Docs
 inst
 Other
 PlugIns
-RenderSystems
 Samples
 Scripts
 SDK

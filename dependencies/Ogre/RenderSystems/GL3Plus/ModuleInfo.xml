@@ -1,0 +1,24 @@
+<ModuleInfoEntry>
+    <Module Name="OgreRenderSystem_GL3Plus" Type="SharedLibrary" Platform="All">
+        <Dependencies>
+            <Dependency Name="Ogre.CommonInclude" />
+	        <Dependency Name="Ogre" />
+        </Dependencies>
+        <Linker>
+            <Dependency Name="Ogre" />
+        </Linker>
+        <Preprocessor>
+            <Define String="RenderSystem_GL3Plus_EXPORTS" />
+        </Preprocessor>
+    </Module>
+    <Module Platform="mswin">
+        <Linker>
+            <Dependency Name="opengl32" />
+        </Linker>
+    </Module>
+    <Module Platform="linux">
+        <Linker>
+            <Dependency Name="GL" />
+        </Linker>
+    </Module>
+</ModuleInfoEntry>
