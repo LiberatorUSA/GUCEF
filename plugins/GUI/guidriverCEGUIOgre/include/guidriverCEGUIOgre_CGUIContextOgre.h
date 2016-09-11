@@ -17,8 +17,8 @@
  *  Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA
  */
 
-#ifndef GUCEF_GUIDRIVERCEGUIGL_CGUICONTEXTGL_H
-#define GUCEF_GUIDRIVERCEGUIGL_CGUICONTEXTGL_H
+#ifndef GUCEF_GUIDRIVERCEGUIOGRE_CGUICONTEXTOGRE_H
+#define GUCEF_GUIDRIVERCEGUIOGRE_CGUICONTEXTOGRE_H
 
 /*-------------------------------------------------------------------------//
 //                                                                         //
@@ -43,10 +43,10 @@
 #define GUCEF_GUIDRIVERCEGUI_CGUICONTEXT_H
 #endif /* GUCEF_GUIDRIVERCEGUI_CGUICONTEXT_H ? */
 
-#ifndef GUCEF_GUIDRIVERCEGUIGL_MACROS_H
-#include "guidriverCEGUIOpenGL_macros.h"
-#define GUCEF_GUIDRIVERCEGUIGL_MACROS_H
-#endif /* GUCEF_GUIDRIVERCEGUIGL_MACROS_H ? */
+#ifndef GUCEF_GUIDRIVERCEGUIOGRE_MACROS_H
+#include "guidriverCEGUIOgre_macros.h"
+#define GUCEF_GUIDRIVERCEGUIOGRE_MACROS_H
+#endif /* GUCEF_GUIDRIVERCEGUIOGRE_MACROS_H ? */
 
 /*-------------------------------------------------------------------------//
 //                                                                         //
@@ -55,7 +55,7 @@
 //-------------------------------------------------------------------------*/
 
 namespace GUCEF {
-namespace GUIDRIVERCEGUIGL {
+namespace GUIDRIVERCEGUIOGRE {
 
 /*-------------------------------------------------------------------------//
 //                                                                         //
@@ -63,22 +63,22 @@ namespace GUIDRIVERCEGUIGL {
 //                                                                         //
 //-------------------------------------------------------------------------*/
 
-class CGUIDriverGL;
+class CGUIDriverOgre;
 
 /**
- *  Implementation of the GUI context for the MyGUI & OpenGL combo
+ *  Implementation of the GUI context for the CEGUI & Ogre combo
  */
-class GUCEF_GUIDRIVERCEGUIGL_EXPORT_CPP CGUIContextGL : public GUIDRIVERCEGUI::CGUIContext ,
-                                                        public CORE::CObserver
+class GUCEF_GUIDRIVERCEGUIOGRE_EXPORT_CPP CGUIContextOgre : public GUIDRIVERCEGUI::CGUIContext ,
+                                                            public CORE::CObserver
 {
     public:
 
-    CGUIContextGL( CGUIDriverGL& guiDriver              ,
-                   GUI::TWindowContextPtr windowContext ,
-                   INPUT::CInputContext* inputContext   ,
-                   CEGUI::GUIContext* ceGuiContext      );
+    CGUIContextOgre( CGUIDriverOgre& guiDriver            ,
+                     GUI::TWindowContextPtr windowContext ,
+                     INPUT::CInputContext* inputContext   ,
+                     CEGUI::GUIContext* ceGuiContext      );
 
-    virtual ~CGUIContextGL();
+    virtual ~CGUIContextOgre();
 
     virtual const CORE::CString& GetClassTypeName( void ) const;
 
@@ -90,8 +90,8 @@ class GUCEF_GUIDRIVERCEGUIGL_EXPORT_CPP CGUIContextGL : public GUIDRIVERCEGUI::C
 
     private:
 
-    CGUIContextGL( const CGUIContextGL& src );
-    CGUIContextGL& operator=( const CGUIContextGL& src );
+    CGUIContextOgre( const CGUIContextOgre& src );
+    CGUIContextOgre& operator=( const CGUIContextOgre& src );
 
     private:
 
@@ -105,12 +105,12 @@ class GUCEF_GUIDRIVERCEGUIGL_EXPORT_CPP CGUIContextGL : public GUIDRIVERCEGUI::C
 //                                                                         //
 //-------------------------------------------------------------------------*/
 
-} /* namespace MYGUIGL */
+} /* namespace GUIDRIVERCEGUIOGRE */
 } /* namespace GUCEF */
 
 /*-------------------------------------------------------------------------*/
 
-#endif /* GUCEF_GUIDRIVERCEGUIGL_CGUICONTEXTGL_H ? */
+#endif /* GUCEF_GUIDRIVERCEGUIOGRE_CGUICONTEXTOGRE_H ? */
 
 /*-------------------------------------------------------------------------//
 //                                                                         //

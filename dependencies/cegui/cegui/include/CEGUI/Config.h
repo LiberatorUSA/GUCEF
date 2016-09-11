@@ -111,13 +111,13 @@ setting CMake options and regenerating, rather than editing directly.
 // (Will be all zeroes if Ogre was not found)
 //////////////////////////////////////////////////////////////////////////
 #ifndef CEGUI_OGRE_VERSION_MAJOR
-#   define CEGUI_OGRE_VERSION_MAJOR ${CEGUI_FOUND_OGRE_VERSION_MAJOR}
+#   define CEGUI_OGRE_VERSION_MAJOR 1
 #endif
 #ifndef CEGUI_OGRE_VERSION_MINOR
-#   define CEGUI_OGRE_VERSION_MINOR ${CEGUI_FOUND_OGRE_VERSION_MINOR}
+#   define CEGUI_OGRE_VERSION_MINOR 10
 #endif
 #ifndef CEGUI_OGRE_VERSION_PATCH
-#   define CEGUI_OGRE_VERSION_PATCH ${CEGUI_FOUND_OGRE_VERSION_PATCH}
+#   define CEGUI_OGRE_VERSION_PATCH 0
 #endif
 #ifndef CEGUI_OGRE_VERSION
 #   define CEGUI_OGRE_VERSION ((CEGUI_OGRE_VERSION_MAJOR << 16) | (CEGUI_OGRE_VERSION_MINOR << 8) | CEGUI_OGRE_VERSION_PATCH)

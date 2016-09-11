@@ -24,8 +24,8 @@
  *      based on CEGUI with Ogre doing the rendering.
  */
 
-#ifndef GUCEF_GUIDRIVERCEGUIGL_H
-#define GUCEF_GUIDRIVERCEGUIGL_H
+#ifndef GUCEF_GUIDRIVERCEGUIOGRE_H
+#define GUCEF_GUIDRIVERCEGUIOGRE_H
 
 /*-------------------------------------------------------------------------//
 //                                                                         //
@@ -36,18 +36,18 @@
 /*
  *      Library build configuration      
  */
-#ifndef GUCEF_GUIDRIVERCEGUIGL_CONFIG_H
-#include "guidriverCEGUIOpenGL_config.h"
-#define GUCEF_GUIDRIVERCEGUIGL_CONFIG_H
-#endif /* GUCEF_GUIDRIVERCEGUIGL_CONFIG_H ? */
+#ifndef GUCEF_GUIDRIVERCEGUIOGRE_CONFIG_H
+#include "guidriverCEGUIOgre_config.h"
+#define GUCEF_GUIDRIVERCEGUIOGRE_CONFIG_H
+#endif /* GUCEF_GUIDRIVERCEGUIOGRE_CONFIG_H ? */
 
 /*
  *      Library specific macros and generic macros
  */
-#ifndef GUCEF_GUIDRIVERCEGUIGL_MACROS_H
-#include "guidriverCEGUIOpenGL_macros.h"
-#define GUCEF_GUIDRIVERCEGUIGL_MACROS_H
-#endif /* GUCEF_GUIDRIVERCEGUIGL_MACROS_H ? */
+#ifndef GUCEF_GUIDRIVERCEGUIOGRE_MACROS_H
+#include "guidriverCEGUIOgre_macros.h"
+#define GUCEF_GUIDRIVERCEGUIOGRE_MACROS_H
+#endif /* GUCEF_GUIDRIVERCEGUIOGRE_MACROS_H ? */
 
 /*---------------------------------------------------------------------------/
 
@@ -56,15 +56,15 @@
 /---------------------------------------------------------------------------*/
 #ifdef __cplusplus
 
-#ifndef GUCEF_GUIDRIVERCEGUIGL_CGUIDRIVERGL_H
-#include "guidriverCEGUIOpenGL_CGUIDriverGL.h"
-#define GUCEF_GUIDRIVERCEGUIGL_CGUIDRIVERGL_H
-#endif /* GUCEF_GUIDRIVERCEGUIGL_CGUIDRIVERGL_H ? */
+#ifndef GUCEF_GUIDRIVERCEGUIGL_CGUIDRIVEROGRE_H
+#include "guidriverCEGUIOgre_CGUIDriverOgre.h"
+#define GUCEF_GUIDRIVERCEGUIGL_CGUIDRIVEROGRE_H
+#endif /* GUCEF_GUIDRIVERCEGUIGL_CGUIDRIVEROGRE_H ? */
 
-#ifndef GUCEF_GUIDRIVERCEGUIGL_CGUICONTEXTGL_H
-#include "guidriverCEGUIOpenGL_CGUIContextGL.h"
-#define GUCEF_GUIDRIVERCEGUIGL_CGUICONTEXTGL_H
-#endif /* GUCEF_GUIDRIVERCEGUIGL_CGUICONTEXTGL_H ? */
+#ifndef GUCEF_GUIDRIVERCEGUIOGRE_CGUICONTEXTOGRE_H
+#include "guidriverCEGUIOgre_CGUIContextOgre.h"
+#define GUCEF_GUIDRIVERCEGUIOGRE_CGUICONTEXTOGRE_H
+#endif /* GUCEF_GUIDRIVERCEGUIOGRE_CGUICONTEXTOGRE_H ? */
 
 #endif /* __cplusplus ? */
 
@@ -74,11 +74,11 @@
 //                                                                         //
 //-------------------------------------------------------------------------*/
 
-GUCEF_GUIDRIVERCEGUIGL_EXPORT_C const char* GUCEF_CEGUIGL_ModuleCompileTimeStamp( void );
+GUCEF_GUIDRIVERCEGUIOGRE_EXPORT_C const char* GUCEF_CEGUIOGRE_ModuleCompileTimeStamp( void );
 
-/*--------------------------------------------------------------------------*/
+/*-------------------------------------------------------------------------*/
 
-#endif /* GUCEF_GUIDRIVERCEGUIGL_H ? */
+#endif /* GUCEF_GUIDRIVERCEGUIOGRE_H ? */
 
 /*-------------------------------------------------------------------------//
 //                                                                         //
@@ -89,4 +89,4 @@ GUCEF_GUIDRIVERCEGUIGL_EXPORT_C const char* GUCEF_CEGUIGL_ModuleCompileTimeStamp
 - 21-04-2007 :
        - Made the initial version of the library header.
 
------------------------------------------------------------------------------*/
+---------------------------------------------------------------------------*/

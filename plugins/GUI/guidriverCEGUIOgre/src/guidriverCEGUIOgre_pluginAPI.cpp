@@ -38,12 +38,12 @@
 #define GUCEF_GUI_CGUIGLOBAL_H
 #endif /* GUCEF_GUI_CGUIGLOBAL_H ? */
 
-#ifndef GUCEF_GUIDRIVERCEGUIGL_CGUIDRIVERGL_H
-#include "guidriverCEGUIOpenGL_CGUIDriverGL.h"
-#define GUCEF_GUIDRIVERCEGUIGL_CGUIDRIVERGL_H
-#endif /* GUCEF_GUIDRIVERCEGUIGL_CGUIDRIVERGL_H ? */
+#ifndef GUCEF_GUIDRIVERCEGUIOGRE_CGUIDRIVEROGRE_H
+#include "guidriverCEGUIOgre_CGUIDriverOgre.h"
+#define GUCEF_GUIDRIVERCEGUIOGRE_CGUIDRIVEROGRE_H
+#endif /* GUCEF_GUIDRIVERCEGUIOGRE_CGUIDRIVEROGRE_H ? */
 
-#include "guidriverCEGUIOpenGL_pluginAPI.h"
+#include "guidriverCEGUIOgre_pluginAPI.h"
 
 /*-------------------------------------------------------------------------//
 //                                                                         //
@@ -52,7 +52,7 @@
 //-------------------------------------------------------------------------*/
 
 namespace GUCEF {
-namespace GUIDRIVERCEGUIGL {
+namespace GUIDRIVERCEGUIOGRE {
 
 /*-------------------------------------------------------------------------//
 //                                                                         //
@@ -60,7 +60,7 @@ namespace GUIDRIVERCEGUIGL {
 //                                                                         //
 //-------------------------------------------------------------------------*/
 
-static CGUIDriverGL* g_guiDriver = NULL;
+static CGUIDriverOgre* g_guiDriver = NULL;
 
 /*-------------------------------------------------------------------------//
 //                                                                         //
@@ -72,10 +72,10 @@ CORE::Int32 GUCEF_PLUGIN_CALLSPEC_PREFIX
 GUCEFPlugin_Load( CORE::UInt32 argc, const char** argv ) GUCEF_PLUGIN_CALLSPEC_SUFFIX
 {GUCEF_TRACE;
     
-    GUCEF_SYSTEM_LOG( GUCEF::CORE::LOGLEVEL_NORMAL, "Load called on plugin guidriverCEGUIOpenGL" );    
+    GUCEF_SYSTEM_LOG( GUCEF::CORE::LOGLEVEL_NORMAL, "Load called on plugin guidriverCEGUIOgre" );    
     
-    g_guiDriver = new CGUIDriverGL();
-    GUI::CGuiGlobal::Instance()->GetGuiManager().RegisterGUIDriver( "CEGUIOpenGL", g_guiDriver );
+    g_guiDriver = new CGUIDriverOgre();
+    GUI::CGuiGlobal::Instance()->GetGuiManager().RegisterGUIDriver( "CEGUIOgre", g_guiDriver );
 
     return 1;
 }
@@ -88,7 +88,7 @@ GUCEFPlugin_Unload( void ) GUCEF_PLUGIN_CALLSPEC_SUFFIX
 
     GUCEF_SYSTEM_LOG( GUCEF::CORE::LOGLEVEL_NORMAL, "Unload called on plugin guidriverCEGUIOpenGL" );
     
-    GUI::CGuiGlobal::Instance()->GetGuiManager().UnregisterGUIDriverByName( "CEGUIOpenGL" );
+    GUI::CGuiGlobal::Instance()->GetGuiManager().UnregisterGUIDriverByName( "CEGUIOgre" );
     delete g_guiDriver;
     g_guiDriver = NULL;
 }
@@ -120,7 +120,7 @@ const char* GUCEF_PLUGIN_CALLSPEC_PREFIX
 GUCEFPlugin_GetDescription( void ) GUCEF_PLUGIN_CALLSPEC_SUFFIX
 {GUCEF_TRACE;
 
-    return "Generic GUCEF plugin which provides a GUI driver using CEGUI and OpenGL as the backend";
+    return "Generic GUCEF plugin which provides a GUI driver using CEGUI and Ogre as the backend";
 }
 
 /*-------------------------------------------------------------------------//
@@ -129,7 +129,7 @@ GUCEFPlugin_GetDescription( void ) GUCEF_PLUGIN_CALLSPEC_SUFFIX
 //                                                                         //
 //-------------------------------------------------------------------------*/
 
-}; /* namespace MYGUIGL */
-}; /* namespace GUCE */
+}; /* namespace GUIDRIVERCEGUIOGRE */
+}; /* namespace GUCEF */
 
 /*--------------------------------------------------------------------------*/

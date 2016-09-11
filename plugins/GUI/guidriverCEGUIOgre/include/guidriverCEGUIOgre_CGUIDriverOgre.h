@@ -17,8 +17,8 @@
  *  Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA
  */
 
-#ifndef GUCEF_GUIDRIVERCEGUIGL_CGUIDRIVERGL_H
-#define GUCEF_GUIDRIVERCEGUIGL_CGUIDRIVERGL_H
+#ifndef GUCEF_GUIDRIVERCEGUIOGRE_CGUIDRIVEROGRE_H
+#define GUCEF_GUIDRIVERCEGUIOGRE_CGUIDRIVEROGRE_H
 
 /*-------------------------------------------------------------------------//
 //                                                                         //
@@ -41,12 +41,12 @@
 #define GUCEF_GUIDRIVERCEGUI_CCEGUIDRIVER_H
 #endif /* GUCEF_GUIDRIVERCEGUI_CCEGUIDRIVER_H ? */
 
-#ifndef GUCEF_GUIDRIVERCEGUIGL_MACROS_H
-#include "guidriverCEGUIOpenGL_macros.h"
-#define GUCEF_GUIDRIVERCEGUIGL_MACROS_H
-#endif /* GUCEF_GUIDRIVERCEGUIGL_MACROS_H ? */
+#ifndef GUCEF_GUIDRIVERCEGUIOGRE_MACROS_H
+#include "guidriverCEGUIOgre_macros.h"
+#define GUCEF_GUIDRIVERCEGUIOGRE_MACROS_H
+#endif /* GUCEF_GUIDRIVERCEGUIOGRE_MACROS_H ? */
 
-namespace CEGUI { class OpenGLRenderer; class OpenGL3Renderer; }
+namespace CEGUI { class OgreRenderer; }
 
 /*-------------------------------------------------------------------------//
 //                                                                         //
@@ -55,7 +55,7 @@ namespace CEGUI { class OpenGLRenderer; class OpenGL3Renderer; }
 //-------------------------------------------------------------------------*/
 
 namespace GUCEF {
-namespace GUIDRIVERCEGUIGL {
+namespace GUIDRIVERCEGUIOGRE {
 
 /*-------------------------------------------------------------------------//
 //                                                                         //
@@ -63,13 +63,13 @@ namespace GUIDRIVERCEGUIGL {
 //                                                                         //
 //-------------------------------------------------------------------------*/
 
-class GUCEF_GUIDRIVERCEGUIGL_EXPORT_CPP CGUIDriverGL : public GUCEF::GUIDRIVERCEGUI::CCEGUIDriver
+class GUCEF_GUIDRIVERCEGUIOGRE_EXPORT_CPP CGUIDriverOgre : public GUCEF::GUIDRIVERCEGUI::CCEGUIDriver
 {
     public:
 
-    CGUIDriverGL( void );
+    CGUIDriverOgre( void );
 
-    virtual ~CGUIDriverGL();
+    virtual ~CGUIDriverOgre();
 
     virtual GUI::TGuiContextPtr CreateGUIContext( GUI::TWindowContextPtr windowContext );
 
@@ -110,7 +110,7 @@ class GUCEF_GUIDRIVERCEGUIGL_EXPORT_CPP CGUIDriverGL : public GUCEF::GUIDRIVERCE
 
     private:
 
-    CGUIDriverGL( const CGUIDriverGL& src );
+    CGUIDriverOgre( const CGUIDriverOgre& src );
 
     bool Init( GUI::TWindowContextPtr windowContext );
 
@@ -121,7 +121,7 @@ class GUCEF_GUIDRIVERCEGUIGL_EXPORT_CPP CGUIDriverGL : public GUCEF::GUIDRIVERCE
 
     GUIDRIVERCEGUI::CLogAdapter* m_logAdapter;
     CEGUI::System* m_guiSystem;
-    CEGUI::OpenGL3Renderer* m_guiRenderer;
+    CEGUI::OgreRenderer* m_guiRenderer;
     bool m_ceGuiInitialized;
 };
 
@@ -131,12 +131,12 @@ class GUCEF_GUIDRIVERCEGUIGL_EXPORT_CPP CGUIDriverGL : public GUCEF::GUIDRIVERCE
 //                                                                         //
 //-------------------------------------------------------------------------*/
 
-}; /* namespace MYGUIGL */
+}; /* namespace GUIDRIVERCEGUIOGRE */
 }; /* namespace GUCEF */
 
 /*-------------------------------------------------------------------------*/
 
-#endif /* GUCEF_GUIDRIVERCEGUIGL_CGUIDRIVERGL_H ? */
+#endif /* GUCEF_GUIDRIVERCEGUIOGRE_CGUIDRIVEROGRE_H ? */
 
 /*-------------------------------------------------------------------------//
 //                                                                         //

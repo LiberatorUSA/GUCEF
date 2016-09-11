@@ -23,7 +23,7 @@
 //                                                                         //
 //-------------------------------------------------------------------------*/
 
-#include "guidriverCEGUIOpenGL.h"
+#include "guidriverCEGUIOgre.h"
 
 /*-------------------------------------------------------------------------//
 //                                                                         //
@@ -32,7 +32,7 @@
 //-------------------------------------------------------------------------*/
 
 const char*
-GUCEF_CEGUIGL_ModuleCompileTimeStamp( void )
+GUCEF_CEGUIOGRE_ModuleCompileTimeStamp( void )
 {
     return __TIMESTAMP__;
 }

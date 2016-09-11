@@ -17,8 +17,8 @@
  *  Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA 
  */
 
-#ifndef GUCEF_GUIDRIVERCEGUIGL_PLUGINAPI_H
-#define GUCEF_GUIDRIVERCEGUIGL_PLUGINAPI_H
+#ifndef GUCEF_GUIDRIVERCEGUIOGRE_PLUGINAPI_H
+#define GUCEF_GUIDRIVERCEGUIOGRE_PLUGINAPI_H
 
 /*-------------------------------------------------------------------------//
 //                                                                         //
@@ -31,10 +31,10 @@
 #define GUCEF_CORE_ESTRUCTS_H
 #endif /* GUCEF_CORE_ESTRUCTS_H ? */
 
-#ifndef GUCEF_GUIDRIVERCEGUIGL_MACROS_H
-#include "guidriverCEGUIOpenGL_macros.h"
-#define GUCEF_GUIDRIVERCEGUIGL_MACROS_H
-#endif /* GUCEF_GUIDRIVERCEGUIGL_MACROS_H ? */
+#ifndef GUCEF_GUIDRIVERCEGUIOGRE_MACROS_H
+#include "guidriverCEGUIOgre_macros.h"
+#define GUCEF_GUIDRIVERCEGUIOGRE_MACROS_H
+#endif /* GUCEF_GUIDRIVERCEGUIOGRE_MACROS_H ? */
 
 /*-------------------------------------------------------------------------//
 //                                                                         //
@@ -43,7 +43,7 @@
 //-------------------------------------------------------------------------*/
 
 namespace GUCEF {
-namespace GUIDRIVERCEGUIGL {
+namespace GUIDRIVERCEGUIOGRE {
 
 /*-------------------------------------------------------------------------//
 //                                                                         //
@@ -60,27 +60,27 @@ extern "C" {
 
 /*---------------------------------------------------------------------------*/
 
-GUCEF_GUIDRIVERCEGUIGL_EXPORT_C GUCEF::CORE::Int32 GUCEF_PLUGIN_CALLSPEC_PREFIX 
+GUCEF_GUIDRIVERCEGUIOGRE_EXPORT_C GUCEF::CORE::Int32 GUCEF_PLUGIN_CALLSPEC_PREFIX 
 GUCEFPlugin_Load( GUCEF::CORE::UInt32 argc, const char** argv ) GUCEF_PLUGIN_CALLSPEC_SUFFIX;
 
 /*--------------------------------------------------------------------------*/
 
-GUCEF_GUIDRIVERCEGUIGL_EXPORT_C void GUCEF_PLUGIN_CALLSPEC_PREFIX 
+GUCEF_GUIDRIVERCEGUIOGRE_EXPORT_C void GUCEF_PLUGIN_CALLSPEC_PREFIX 
 GUCEFPlugin_Unload( void ) GUCEF_PLUGIN_CALLSPEC_SUFFIX;
 
 /*--------------------------------------------------------------------------*/
 
-GUCEF_GUIDRIVERCEGUIGL_EXPORT_C void GUCEF_PLUGIN_CALLSPEC_PREFIX 
+GUCEF_GUIDRIVERCEGUIOGRE_EXPORT_C void GUCEF_PLUGIN_CALLSPEC_PREFIX 
 GUCEFPlugin_GetVersion( GUCEF::CORE::TVersion* versionInfo ) GUCEF_PLUGIN_CALLSPEC_SUFFIX;
 
 /*--------------------------------------------------------------------------*/
 
-GUCEF_GUIDRIVERCEGUIGL_EXPORT_C const char* GUCEF_PLUGIN_CALLSPEC_PREFIX 
+GUCEF_GUIDRIVERCEGUIOGRE_EXPORT_C const char* GUCEF_PLUGIN_CALLSPEC_PREFIX 
 GUCEFPlugin_GetCopyright( void ) GUCEF_PLUGIN_CALLSPEC_SUFFIX;
 
 /*--------------------------------------------------------------------------*/
 
-GUCEF_GUIDRIVERCEGUIGL_EXPORT_C const char* GUCEF_PLUGIN_CALLSPEC_PREFIX 
+GUCEF_GUIDRIVERCEGUIOGRE_EXPORT_C const char* GUCEF_PLUGIN_CALLSPEC_PREFIX 
 GUCEFPlugin_GetDescription( void ) GUCEF_PLUGIN_CALLSPEC_SUFFIX;
 
 /*---------------------------------------------------------------------------*/                 
@@ -95,12 +95,12 @@ GUCEFPlugin_GetDescription( void ) GUCEF_PLUGIN_CALLSPEC_SUFFIX;
 //                                                                         //
 //-------------------------------------------------------------------------*/
 
-}; /* namespace MYGUIGL */
-}; /* namespace GUCE */
+}; /* namespace GUIDRIVERCEGUIOGRE */
+}; /* namespace GUCEF */
 
 /*--------------------------------------------------------------------------*/
 
-#endif /* GUCEF_GUIDRIVERCEGUIGL_PLUGINAPI_H ? */
+#endif /* GUCEF_GUIDRIVERCEGUIOGRE_PLUGINAPI_H ? */
 
 /*-------------------------------------------------------------------------//
 //                                                                         //

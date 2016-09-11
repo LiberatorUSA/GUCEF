@@ -48,27 +48,22 @@
 #define GUCEF_INPUT_CINPUTCONTROLLER_H
 #endif /* GUCEF_INPUT_CINPUTCONTROLLER_H ? */
 
-#ifndef GUCEF_GUIDRIVERCEGUIGL_CGUICONTEXTGL_H
-#include "guidriverCEGUIOpenGL_CGUIContextGL.h"
-#define GUCEF_GUIDRIVERCEGUIGL_CGUICONTEXTGL_H
-#endif /* GUCEF_GUIDRIVERCEGUIGL_CGUICONTEXTGL_H ? */
+#ifndef GUCEF_GUIDRIVERCEGUIOGRE_CGUICONTEXTOGRE_H
+#include "guidriverCEGUIOgre_CGUIContextOgre.h"
+#define GUCEF_GUIDRIVERCEGUIOGRE_CGUICONTEXTOGRE_H
+#endif /* GUCEF_GUIDRIVERCEGUIOGRE_CGUICONTEXTOGRE_H ? */
 
-#include "guidriverCEGUIOpenGL_CGUIDriverGL.h"
+#include "guidriverCEGUIOgre_CGUIDriverOgre.h"
 
 #ifndef GUCEF_GUIDRIVERCEGUI_CLOGADAPTER_H
 #include "guidriverCEGUI_CLogAdapter.h"
 #define GUCEF_GUIDRIVERCEGUI_CLOGADAPTER_H
 #endif /* GUCEF_GUIDRIVERCEGUI_CLOGADAPTER_H ? */
 
-#ifndef _CEGUIOpenGLRenderer_h_
-#include "CEGUI/RendererModules/OpenGL/GLRenderer.h"
-#define _CEGUIOpenGLRenderer_h_
-#endif /* _CEGUIOpenGLRenderer_h_ */
-
-#ifndef _CEGUIOpenGL3Renderer_h_
-#include "CEGUI/RendererModules/OpenGL/GL3Renderer.h"
-#define _CEGUIOpenGL3Renderer_h_
-#endif /* _CEGUIOpenGL3Renderer_h_ */
+#ifndef _CEGUIOgreRenderer_h_
+#include "CEGUI/RendererModules/Ogre/Renderer.h"
+#define _CEGUIOgreRenderer_h_
+#endif /* _CEGUIOgreRenderer_h_ */
 
 /*-------------------------------------------------------------------------//
 //                                                                         //
@@ -77,7 +72,7 @@
 //-------------------------------------------------------------------------*/
 
 namespace GUCEF {
-namespace GUIDRIVERCEGUIGL {
+namespace GUIDRIVERCEGUIOGRE {
 
 /*-------------------------------------------------------------------------//
 //                                                                         //
@@ -85,7 +80,7 @@ namespace GUIDRIVERCEGUIGL {
 //                                                                         //
 //-------------------------------------------------------------------------*/
 
-CGUIDriverGL::CGUIDriverGL( void )
+CGUIDriverOgre::CGUIDriverOgre( void )
     : GUIDRIVERCEGUI::CCEGUIDriver()       ,
       m_contextSet()              ,
       m_logAdapter()              ,
@@ -96,7 +91,7 @@ CGUIDriverGL::CGUIDriverGL( void )
 
 /*-------------------------------------------------------------------------*/
 
-CGUIDriverGL::~CGUIDriverGL()
+CGUIDriverOgre::~CGUIDriverOgre()
 {GUCEF_TRACE;
 
     m_contextSet.clear();
@@ -108,7 +103,7 @@ CGUIDriverGL::~CGUIDriverGL()
 /*-------------------------------------------------------------------------*/
 
 CEGUI::System*
-CGUIDriverGL::GetCEGui( void )
+CGUIDriverOgre::GetCEGui( void )
 {
     return m_guiSystem;
 }
@@ -116,14 +111,14 @@ CGUIDriverGL::GetCEGui( void )
 /*-------------------------------------------------------------------------*/
 
 bool
-CGUIDriverGL::Init( GUI::TWindowContextPtr windowContext )
+CGUIDriverOgre::Init( GUI::TWindowContextPtr windowContext )
 {
     if ( !m_ceGuiInitialized )
     {
         try
         {
             CEGUI::Sizef displaySize( (float) windowContext->GetWidth(), (float) windowContext->GetHeight() );
-            m_guiRenderer = &CEGUI::OpenGL3Renderer::create( displaySize );//, CEGUI::OpenGLRenderer::TTT_AUTO );
+            m_guiRenderer = &CEGUI::OgreRenderer::create();// displaySize );//, CEGUI::OpenGLRenderer::TTT_AUTO );
             m_guiSystem = &CEGUI::System::create( *m_guiRenderer, &m_vfsResourceProvider, &m_xmlParserAdapter, m_imageCodecAdapter );
 
             // setup default group for validation schemas
@@ -171,7 +166,7 @@ CGUIDriverGL::Init( GUI::TWindowContextPtr windowContext )
 /*-------------------------------------------------------------------------*/
 
 GUI::TGuiContextPtr
-CGUIDriverGL::CreateGUIContext( GUI::TWindowContextPtr windowContext )
+CGUIDriverOgre::CreateGUIContext( GUI::TWindowContextPtr windowContext )
 {GUCEF_TRACE;
 
     // Lazy initialize if needed
@@ -187,18 +182,19 @@ CGUIDriverGL::CreateGUIContext( GUI::TWindowContextPtr windowContext )
     inputContextParams.Set( "WINDOW", windowContext->GetProperty( "WINDOW" ) );
     INPUT::CInputContext* inputContext = INPUT::CInputGlobal::Instance()->GetInputController().CreateContext( inputContextParams );
 
-    CEGUI::RenderTarget* renderTarget = m_guiRenderer->getActiveRenderTarget();
-    if ( nullptr == renderTarget )
-    {
-        renderTarget = &m_guiRenderer->getDefaultRenderTarget();
-    }
+    //CEGUI::RenderTarget* renderTarget = m_guiRenderer->getActiveRenderTarget();
+    //if ( nullptr == renderTarget )
+    //{
+    //    renderTarget = &m_guiRenderer->getDefaultRenderTarget();
+    //}
+    CEGUI::RenderTarget* renderTarget = &m_guiRenderer->getDefaultRenderTarget();
     
     CEGUI::GUIContext* ceGuiContext = &m_guiSystem->createGUIContext( *renderTarget );
     ceGuiContext->setRootWindow( CEGUI::System::getSingleton().getDefaultGUIContext().getRootWindow() );
-    GUI::TGuiContextPtr guiContextPtr = new CGUIContextGL( *this         ,
-                                                           windowContext ,
-                                                           inputContext  ,
-                                                           ceGuiContext  );
+    GUI::TGuiContextPtr guiContextPtr = new CGUIContextOgre( *this         ,
+                                                             windowContext ,
+                                                             inputContext  ,
+                                                             ceGuiContext  );
     // Add a reference to the context in our set
     m_contextSet.insert( guiContextPtr );
 
@@ -208,7 +204,7 @@ CGUIDriverGL::CreateGUIContext( GUI::TWindowContextPtr windowContext )
 /*-------------------------------------------------------------------------*/
 
 GUI::CGUIDriver::TGUIContextSet
-CGUIDriverGL::GetContextList( void )
+CGUIDriverOgre::GetContextList( void )
 {GUCEF_TRACE;
 
     return m_contextSet;
@@ -217,7 +213,7 @@ CGUIDriverGL::GetContextList( void )
 /*-------------------------------------------------------------------------*/
 
 GUI::UInt32
-CGUIDriverGL::GetContextCount( void )
+CGUIDriverOgre::GetContextCount( void )
 {GUCEF_TRACE;
 
     return m_contextSet.size();
@@ -226,16 +222,16 @@ CGUIDriverGL::GetContextCount( void )
 /*-------------------------------------------------------------------------*/
 
 GUI::CString
-CGUIDriverGL::GetDriverName( void )
+CGUIDriverOgre::GetDriverName( void )
 {GUCEF_TRACE;
 
-    return "CEGUIOpenGL";
+    return "CEGUIOgre";
 }
 
 /*-------------------------------------------------------------------------*/
 
 GUI::CGUIDriver::TStringSet
-CGUIDriverGL::GetAvailableFonts( void )
+CGUIDriverOgre::GetAvailableFonts( void )
 {GUCEF_TRACE;
 
     return m_fontTypes;
@@ -244,35 +240,26 @@ CGUIDriverGL::GetAvailableFonts( void )
 /*-------------------------------------------------------------------------*/
 
 bool
-CGUIDriverGL::LoadFontFromAsset( const GUI::CString& assetPath )
+CGUIDriverOgre::LoadFontFromAsset( const GUI::CString& assetPath )
 {GUCEF_TRACE;
 
-    //// Simple pass on the load request to Rocket, all the callback inerfaces will take
-    //// care of integrating with GUCEF
-    //if ( Rocket::Core::FontDatabase::LoadFontFace( assetPath.C_String() ) )
-    //{
-    //    // @TODO: fix somehow
-    //    // This is not correct but at present Rocket cant give you the name of the font back
-    //    m_fontTypes.insert( assetPath );
-    //    return true;
-    //}
     return false;
 }
 
 /*-------------------------------------------------------------------------*/
 
 const GUI::CString&
-CGUIDriverGL::GetClassTypeName( void ) const
+CGUIDriverOgre::GetClassTypeName( void ) const
 {GUCEF_TRACE;
 
-    static GUI::CString classTypeName = "GUCEF::GUIDRIVERCEGUIGL::CGUIDriverGL";
+    static GUI::CString classTypeName = "GUCEF::GUIDRIVERCEGUIOgre::CGUIDriverOgre";
     return classTypeName;
 }
 
 /*-------------------------------------------------------------------------*/
 
 GUI::CString
-CGUIDriverGL::GetDriverProperty( const GUI::CString& propertyName ) const
+CGUIDriverOgre::GetDriverProperty( const GUI::CString& propertyName ) const
 {GUCEF_TRACE;
 
     return GUI::CString();
@@ -281,7 +268,7 @@ CGUIDriverGL::GetDriverProperty( const GUI::CString& propertyName ) const
 /*-------------------------------------------------------------------------*/
 
 bool
-CGUIDriverGL::SaveConfig( CORE::CDataNode& tree )
+CGUIDriverOgre::SaveConfig( CORE::CDataNode& tree )
 {GUCEF_TRACE;
 
     return CCEGUIDriver::SaveConfig( tree );
@@ -290,7 +277,7 @@ CGUIDriverGL::SaveConfig( CORE::CDataNode& tree )
 /*-------------------------------------------------------------------------*/
 
 bool
-CGUIDriverGL::LoadConfig( const CORE::CDataNode& treeroot )
+CGUIDriverOgre::LoadConfig( const CORE::CDataNode& treeroot )
 {GUCEF_TRACE;
 
     return CCEGUIDriver::LoadConfig( treeroot );
@@ -302,7 +289,7 @@ CGUIDriverGL::LoadConfig( const CORE::CDataNode& treeroot )
 //                                                                         //
 //-------------------------------------------------------------------------*/
 
-}; /* namespace GUIDRIVERCEGUIGL */
+}; /* namespace GUIDRIVERCEGUIOGRE */
 }; /* namespace GUCEF */
 
 /*-------------------------------------------------------------------------*/

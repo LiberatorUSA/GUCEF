@@ -23,12 +23,12 @@
 //                                                                         //
 //-------------------------------------------------------------------------*/
 
-#ifndef GUCEF_GUIDRIVERCEGUIGL_CGUIDRIVERGL_H
-#include "guidriverCEGUIOpenGL_CGUIDriverGL.h"
-#define GUCEF_GUIDRIVERCEGUIGL_CGUIDRIVERGL_H
-#endif /* GUCEF_GUIDRIVERCEGUIGL_CGUIDRIVERGL_H ? */
+#ifndef GUCEF_GUIDRIVERCEGUIOGRE_CGUIDRIVEROGRE_H
+#include "guidriverCEGUIOgre_CGUIDriverOgre.h"
+#define GUCEF_GUIDRIVERCEGUIOGRE_CGUIDRIVEROGRE_H
+#endif /* GUCEF_GUIDRIVERCEGUIOGRE_CGUIDRIVEROGRE_H ? */
 
-#include "guidriverCEGUIOpenGL_CGUIContextGL.h"
+#include "guidriverCEGUIOgre_CGUIContextOgre.h"
 
 /*-------------------------------------------------------------------------//
 //                                                                         //
@@ -37,7 +37,7 @@
 //-------------------------------------------------------------------------*/
 
 namespace GUCEF {
-namespace GUIDRIVERCEGUIGL {
+namespace GUIDRIVERCEGUIOGRE {
 
 /*-------------------------------------------------------------------------//
 //                                                                         //
@@ -45,10 +45,10 @@ namespace GUIDRIVERCEGUIGL {
 //                                                                         //
 //-------------------------------------------------------------------------*/
 
-CGUIContextGL::CGUIContextGL( CGUIDriverGL& guiDriver                   ,
-                              GUI::TWindowContextPtr windowContext      ,
-                              INPUT::CInputContext* inputContext        ,
-                              CEGUI::GUIContext* ceGuiContext           )
+CGUIContextOgre::CGUIContextOgre( CGUIDriverOgre& guiDriver                 ,
+                                  GUI::TWindowContextPtr windowContext      ,
+                                  INPUT::CInputContext* inputContext        ,
+                                  CEGUI::GUIContext* ceGuiContext           )
     : GUIDRIVERCEGUI::CGUIContext( guiDriver    ,
                                    inputContext ,
                                    ceGuiContext )  ,
@@ -61,7 +61,7 @@ CGUIContextGL::CGUIContextGL( CGUIDriverGL& guiDriver                   ,
 
 /*-------------------------------------------------------------------------*/
 
-CGUIContextGL::~CGUIContextGL()
+CGUIContextOgre::~CGUIContextOgre()
 {GUCEF_TRACE;
 
 }
@@ -69,19 +69,19 @@ CGUIContextGL::~CGUIContextGL()
 /*-------------------------------------------------------------------------*/
 
 const CORE::CString&
-CGUIContextGL::GetClassTypeName( void ) const
+CGUIContextOgre::GetClassTypeName( void ) const
 {GUCEF_TRACE;
 
-    static const CORE::CString classTypeName = "GUCEF::CEGUIGL::CGUIContextGL";
+    static const CORE::CString classTypeName = "GUCEF::GUIDRIVERCEGUIOGRE::CGUIContextOgre";
     return classTypeName;
 }
 
 /*-------------------------------------------------------------------------*/
 
 void
-CGUIContextGL::OnNotify( CORE::CNotifier* notifier   ,
-                         const CORE::CEvent& eventID ,
-                         CORE::CICloneable* evenData )
+CGUIContextOgre::OnNotify( CORE::CNotifier* notifier   ,
+                           const CORE::CEvent& eventID ,
+                           CORE::CICloneable* evenData )
 {GUCEF_TRACE;
 
     if ( eventID == GUI::CWindowContext::WindowContextRedrawEvent   ||
@@ -130,7 +130,7 @@ CGUIContextGL::OnNotify( CORE::CNotifier* notifier   ,
 //                                                                         //
 //-------------------------------------------------------------------------*/
 
-}; /* namespace GUIDRIVERCEGUIGL */
+}; /* namespace GUIDRIVERCEGUIOGRE */
 }; /* namespace GUCEF */
 
 /*-------------------------------------------------------------------------*/
