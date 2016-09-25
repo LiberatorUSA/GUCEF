@@ -35,15 +35,10 @@
 
 #include <X11/Xlib.h>
 
-#ifndef GUCEF_CORE_CDVSTRING_H
-#include "CDVString.h"
-#define GUCEF_CORE_CDVSTRING_H
-#endif /* GUCEF_CORE_CDVSTRING_H ? */
-
-#ifndef GUCEF_CORE_COBSERVINGNOTIFIER_H
-#include "CObservingNotifier.h"
-#define GUCEF_CORE_COBSERVINGNOTIFIER_H
-#endif /* GUCEF_CORE_COBSERVINGNOTIFIER_H ? */
+#ifndef GUCEF_CORE_COSWINDOW_H
+#include "gucefCORE_COSWindow.h"
+#define GUCEF_CORE_COSWINDOW_H
+#endif /* GUCEF_CORE_COSWINDOW_H ? */
 
 /*-------------------------------------------------------------------------//
 //                                                                         //
@@ -63,18 +58,8 @@ namespace CORE {
 /**
  *  Class with basic utilities for creating a X11 window
  */
-class GUCEF_CORE_PUBLIC_CPP CX11Window : public CObservingNotifier
+class GUCEF_CORE_PUBLIC_CPP CX11Window : public COSWindow
 {
-    public:
-
-    static const CEvent WindowCloseEvent;
-    static const CEvent WindowDestroyEvent;
-    static const CEvent WindowActivationEvent;
-    static const CEvent WindowResizeEvent;
-    static const CEvent WindowPaintEvent;
-
-    static void RegisterEvents( void );
-
     public:
 
     CX11Window();
@@ -110,6 +95,8 @@ class GUCEF_CORE_PUBLIC_CPP CX11Window : public CObservingNotifier
                                ::Window parentWindow = 0 );
 
     void WindowDestroy( void );
+
+    virtual CString GetProperty( const CString& propertyName ) const;
 
     bool Show( void );
 

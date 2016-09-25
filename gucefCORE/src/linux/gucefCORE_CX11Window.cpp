@@ -58,34 +58,9 @@ namespace CORE {
 
 /*-------------------------------------------------------------------------//
 //                                                                         //
-//      GLOBAL VARS                                                        //
-//                                                                         //
-//-------------------------------------------------------------------------*/
-
-const CEvent CX11Window::WindowCloseEvent = "GUCEF::CORE::CX11Window::WindowCloseEvent";
-const CEvent CX11Window::WindowDestroyEvent = "GUCEF::CORE::CX11Window::WindowDestroyEvent";
-const CEvent CX11Window::WindowActivationEvent = "GUCEF::CORE::CX11Window::WindowActivationEvent";
-const CEvent CX11Window::WindowResizeEvent = "GUCEF::CORE::CX11Window::WindowResizeEvent";
-const CEvent CX11Window::WindowPaintEvent = "GUCEF::CORE::CX11Window::WindowPaintEvent";
-
-/*-------------------------------------------------------------------------//
-//                                                                         //
 //      UTILTIIES                                                          //
 //                                                                         //
 //-------------------------------------------------------------------------*/
-
-void
-CX11Window::RegisterEvents( void )
-{GUCEF_TRACE;
-
-    WindowCloseEvent.Initialize();
-    WindowDestroyEvent.Initialize();
-    WindowActivationEvent.Initialize();
-    WindowResizeEvent.Initialize();
-    WindowPaintEvent.Initialize();
-}
-
-/*-------------------------------------------------------------------------*/
 
 CX11Window::CX11Window( void )
     : m_display( NULL )   ,
@@ -94,7 +69,6 @@ CX11Window::CX11Window( void )
       m_wmDeleteWindow()
 {GUCEF_TRACE;
 
-    RegisterEvents();
 }
 
 /*-------------------------------------------------------------------------*/
@@ -669,6 +643,21 @@ CX11Window::GetText( void ) const
 
         return (const char*) windowName.value;
     }
+}
+
+/*-------------------------------------------------------------------------*/
+
+CString
+CX11Window::GetProperty( const CString& propertyName ) const
+{GUCEF_TRACE;
+
+    if ( ( propertyName == "WINDOW" || propertyName == "HWND" )       ||
+         ( propertyName == "WINDOWINT" || propertyName == "HWNDINT" )  )
+    {
+        Int64 windowAsInt = (Int64) GetWindow();
+        return Int64ToString( windowAsInt );
+    }
+    return CString();
 }
 
 /*-------------------------------------------------------------------------*/

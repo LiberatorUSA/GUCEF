@@ -46,6 +46,11 @@
 #define GUCEF_CORE_COBSERVINGNOTIFIER_H
 #endif /* GUCEF_CORE_COBSERVINGNOTIFIER_H ? */
 
+#ifndef GUCEF_CORE_CICONFIGURABLE_H
+#include "CIConfigurable.h"
+#define GUCEF_CORE_CICONFIGURABLE_H
+#endif /* GUCEF_CORE_CICONFIGURABLE_H ? */
+
 #ifndef GUCEF_GUI_CWINDOWCONTEXT_H
 #include "gucefGUI_CWindowContext.h"
 #define GUCEF_GUI_CWINDOWCONTEXT_H
@@ -70,7 +75,8 @@ class CVideoSettings;
 
 /*-------------------------------------------------------------------------*/
 
-class GUCEF_GUI_PUBLIC_CPP CWindowManagerBackend : public CORE::CObservingNotifier
+class GUCEF_GUI_PUBLIC_CPP CWindowManagerBackend : public CORE::CObservingNotifier ,
+                                                   public CORE::CIConfigurable
 {
     public:
     
@@ -112,6 +118,10 @@ class GUCEF_GUI_PUBLIC_CPP CWindowManagerBackend : public CORE::CObservingNotifi
     
     virtual bool ApplyVideoSettings( TWindowContextPtr& windowContext ,
                                      const CVideoSettings& settings   ) = 0;
+
+    virtual bool SaveConfig( CORE::CDataNode& config );
+
+    virtual bool LoadConfig( const CORE::CDataNode& config );
 
     private:
 

@@ -41,7 +41,9 @@ namespace GUI {
 //-------------------------------------------------------------------------*/
 
 CWindowManager::CWindowManager( void )
-    : m_backends() ,
+    : CORE::CObservingNotifier()   ,
+      CORE::CIConfigurable( true ) ,
+      m_backends() ,
       m_lock()
 {GUCEF_TRACE;
 
@@ -103,6 +105,46 @@ CWindowManager::GetListOfAvailableBackends( TWindowManagerBackendMap& map )
     m_lock.Lock();
     map = m_backends;
     m_lock.Unlock();
+}
+
+/*-------------------------------------------------------------------------*/
+
+bool
+CWindowManager::SaveConfig( CORE::CDataNode& config )
+{GUCEF_TRACE;
+
+    bool overallSuccess = true;
+    m_lock.Lock();
+    TWindowManagerBackendMap::iterator i = m_backends.begin();
+    while ( i != m_backends.end() )
+    {
+        bool success = (*i).second->SaveConfig( config );
+        if ( !success )
+            overallSuccess = false;
+        ++i;
+    }
+    m_lock.Unlock();
+    return overallSuccess;
+}
+
+/*-------------------------------------------------------------------------*/
+
+bool
+CWindowManager::LoadConfig( const CORE::CDataNode& config )
+{GUCEF_TRACE;
+
+    bool overallSuccess = true;
+    m_lock.Lock();
+    TWindowManagerBackendMap::iterator i = m_backends.begin();
+    while ( i != m_backends.end() )
+    {
+        bool success = (*i).second->LoadConfig( config );
+        if ( !success )
+            overallSuccess = false;
+        ++i;
+    }
+    m_lock.Unlock();
+    return overallSuccess;
 }
 
 /*-------------------------------------------------------------------------//

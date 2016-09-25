@@ -33,15 +33,10 @@
 
 #ifdef GUCEF_MSWIN_BUILD
 
-#ifndef GUCEF_CORE_CDVSTRING_H
-#include "CDVString.h"
-#define GUCEF_CORE_CDVSTRING_H
-#endif /* GUCEF_CORE_CDVSTRING_H ? */
-
-#ifndef GUCEF_CORE_COBSERVINGNOTIFIER_H
-#include "CObservingNotifier.h"
-#define GUCEF_CORE_COBSERVINGNOTIFIER_H
-#endif /* GUCEF_CORE_COBSERVINGNOTIFIER_H ? */
+#ifndef GUCEF_CORE_COSWINDOW_H
+#include "gucefCORE_COSWindow.h"
+#define GUCEF_CORE_COSWINDOW_H
+#endif /* GUCEF_CORE_COSWINDOW_H ? */
 
 /*-------------------------------------------------------------------------//
 //                                                                         //
@@ -61,18 +56,8 @@ namespace CORE {
 /**
  *  Class with basic utilities for creating a Win32 window
  */
-class GUCEF_CORE_PUBLIC_CPP CMsWin32Window : public CObservingNotifier
+class GUCEF_CORE_PUBLIC_CPP CMsWin32Window : public COSWindow
 {
-    public:
-    
-    static const CEvent WindowCloseEvent; 
-    static const CEvent WindowDestroyEvent;
-    static const CEvent WindowActivationEvent;
-    static const CEvent WindowResizeEvent;
-    static const CEvent WindowPaintEvent;
-    
-    static void RegisterEvents( void );
-    
     public:
     
     CMsWin32Window();
@@ -99,7 +84,15 @@ class GUCEF_CORE_PUBLIC_CPP CMsWin32Window : public CObservingNotifier
                                const UInt32 height            ,
                                const HWND hWndParent = NULL   );
 
-    void WindowDestroy( void );
+    virtual bool WindowCreate( const CString& windowTitle     ,
+                               const Int32 xPosition          ,
+                               const Int32 yPosition          ,
+                               const UInt32 width             ,
+                               const UInt32 height            );
+
+    virtual void WindowDestroy( void );
+
+    virtual CString GetProperty( const CString& propertyName ) const;
 
     static bool RegisterWindowClass( const CString& windowClassName );
 
@@ -124,6 +117,8 @@ class GUCEF_CORE_PUBLIC_CPP CMsWin32Window : public CObservingNotifier
     bool GetClientAreaPosition( int& x, int& y ) const;
     
     bool GetWindowArea( int& x, int& y, int& width, int& height ) const;
+
+    virtual int GetWidthOfClientAreaBorder( void ) const;
     
     bool GetWindowAreaRelativeToParentClientArea( Float32& x      , 
                                                   Float32& y      ,

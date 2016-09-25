@@ -54,7 +54,8 @@ namespace GUI {
 /**
  *  Central location were window manager backends can be obtained.
  */
-class GUCEF_GUI_PUBLIC_CPP CWindowManager : public CORE::CObservingNotifier
+class GUCEF_GUI_PUBLIC_CPP CWindowManager : public CORE::CObservingNotifier ,
+                                            public CORE::CIConfigurable
 {    
     public:
 
@@ -68,6 +69,10 @@ class GUCEF_GUI_PUBLIC_CPP CWindowManager : public CORE::CObservingNotifier
     void UnregisterBackend( const CORE::CString& typeName );
 
     void GetListOfAvailableBackends( TWindowManagerBackendMap& map );
+
+    virtual bool SaveConfig( CORE::CDataNode& config );
+
+    virtual bool LoadConfig( const CORE::CDataNode& config );
 
     private:
     friend class CGuiGlobal;

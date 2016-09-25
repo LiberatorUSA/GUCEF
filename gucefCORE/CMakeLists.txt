@@ -155,6 +155,7 @@ set( HEADER_FILES
   include/gucefCORE_CLoggingTask.h
   include/gucefCORE_CObserverSwitch.h
   include/gucefCORE_config.h
+  include/gucefCORE_COSWindow.h
   include/gucefCORE_CPlatformNativeConsoleLogger.h
   include/gucefCORE_CPlatformNativeConsoleWindow.h
   include/gucefCORE_CPluginGroup.h
@@ -319,6 +320,7 @@ set( SOURCE_FILES
   src/gucefCORE_CLoaderDelegatedPluginLoadLogic.cpp
   src/gucefCORE_CLoggingTask.cpp
   src/gucefCORE_CObserverSwitch.cpp
+  src/gucefCORE_COSWindow.cpp
   src/gucefCORE_CPlatformNativeConsoleLogger.cpp
   src/gucefCORE_CPlatformNativeConsoleWindow.cpp
   src/gucefCORE_CPluginGroup.cpp

@@ -147,6 +147,24 @@ CWindowManagerBackend::CreateWindowContextViaConfig( const GUCEF::CORE::CDataNod
     }
     return NULL;          
 }
+
+/*-------------------------------------------------------------------------*/
+
+bool
+CWindowManagerBackend::SaveConfig( CORE::CDataNode& config )
+{GUCEF_TRACE;
+
+    return false;
+}
+
+/*-------------------------------------------------------------------------*/
+
+bool
+CWindowManagerBackend::LoadConfig( const CORE::CDataNode& config )
+{GUCEF_TRACE;
+
+    return true;
+}
        
 /*-------------------------------------------------------------------------//
 //                                                                         //

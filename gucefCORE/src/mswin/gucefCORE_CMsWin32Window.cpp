@@ -58,43 +58,17 @@ namespace CORE {
 
 /*-------------------------------------------------------------------------//
 //                                                                         //
-//      GLOBAL VARS                                                        //
-//                                                                         //
-//-------------------------------------------------------------------------*/
-
-const CEvent CMsWin32Window::WindowCloseEvent = "GUCEF::CORE::CMsWin32Window::WindowCloseEvent";
-const CEvent CMsWin32Window::WindowDestroyEvent = "GUCEF::CORE::CMsWin32Window::WindowDestroyEvent";
-const CEvent CMsWin32Window::WindowActivationEvent = "GUCEF::CORE::CMsWin32Window::WindowActivationEvent";
-const CEvent CMsWin32Window::WindowResizeEvent = "GUCEF::CORE::CMsWin32Window::WindowResizeEvent";
-const CEvent CMsWin32Window::WindowPaintEvent = "GUCEF::CORE::CMsWin32Window::WindowPaintEvent";
-
-/*-------------------------------------------------------------------------//
-//                                                                         //
 //      UTILTIIES                                                          //
 //                                                                         //
 //-------------------------------------------------------------------------*/
 
-void
-CMsWin32Window::RegisterEvents( void )
-{GUCEF_TRACE;
-
-    WindowCloseEvent.Initialize();    
-    WindowDestroyEvent.Initialize();
-    WindowActivationEvent.Initialize();
-    WindowResizeEvent.Initialize();
-    WindowPaintEvent.Initialize();
-}
-
-/*-------------------------------------------------------------------------*/
-
 CMsWin32Window::CMsWin32Window( void )
-    : m_hwnd( 0 ) ,
+    : COSWindow(),
+      m_hwnd( 0 ) ,
       m_orgWinProc( 0 )
 {GUCEF_TRACE;
 
     SubscribeTo( &CCoreGlobal::Instance()->GetPulseGenerator(), CPulseGenerator::PulseEvent );
-
-    RegisterEvents();
 }
 
 /*-------------------------------------------------------------------------*/
@@ -103,6 +77,24 @@ CMsWin32Window::~CMsWin32Window()
 {GUCEF_TRACE;
 
     SetHwnd( 0 );
+}
+
+/*-------------------------------------------------------------------------*/
+
+CString
+CMsWin32Window::GetProperty( const CString& propertyName ) const
+{GUCEF_TRACE;
+
+    if ( propertyName == "WINDOW" || propertyName == "HWND" ) 
+    {
+        return PointerToString( GetHwnd() );
+    }
+    if ( propertyName == "WINDOWINT" || propertyName == "HWNDINT" ) 
+    {
+        Int64 hwndAsInt = (Int64) GetHwnd();
+        return Int64ToString( hwndAsInt );
+    }
+    return CString(); 
 }
 
 /*-------------------------------------------------------------------------*/
@@ -305,6 +297,25 @@ CMsWin32Window::Close( void )
     if ( 0 != m_hwnd )
     {
         ::CloseWindow( m_hwnd );
+    }
+}
+
+/*-------------------------------------------------------------------------*/
+
+int
+CMsWin32Window::GetWidthOfClientAreaBorder( void ) const
+{GUCEF_TRACE;
+    
+    if ( 0 != m_hwnd )
+    {
+        RECT rcClient; RECT rcWind;
+        ::GetClientRect( m_hwnd, &rcClient); 
+        ::GetWindowRect( m_hwnd, &rcWind); 
+        return ( ( rcWind.right - rcWind.left ) - rcClient.right ) / 2; 
+    }
+    else
+    {
+        return ::GetSystemMetrics( SM_CXSIZEFRAME );
     }
 }
 
@@ -628,6 +639,25 @@ CMsWin32Window::GetOriginalWinProc( void )
         return m_orgWinProc;
     }
     return DefWindowProc;
+}
+
+/*-------------------------------------------------------------------------*/
+
+bool 
+CMsWin32Window::WindowCreate( const CString& windowTitle     ,
+                              const Int32 xPosition          ,
+                              const Int32 yPosition          ,
+                              const UInt32 width             ,
+                              const UInt32 height            )
+{GUCEF_TRACE;
+
+    return WindowCreate( GetClassTypeName() ,
+                         windowTitle        ,
+                         xPosition          ,
+                         yPosition          ,
+                         width              ,
+                         height             ,
+                         0                  );
 }
 
 /*-------------------------------------------------------------------------*/
