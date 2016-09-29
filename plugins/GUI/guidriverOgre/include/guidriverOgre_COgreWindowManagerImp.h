@@ -84,6 +84,10 @@ class GUIDRIVEROGRE_PUBLIC_CPP COgreWindowManagerImp : public GUI::CWindowManage
     virtual bool ApplyVideoSettings( GUI::TWindowContextPtr& windowContext ,
                                      const GUI::CVideoSettings& settings   );
 
+    virtual bool SaveConfig( CORE::CDataNode& config );
+
+    virtual bool LoadConfig( const CORE::CDataNode& config );
+
     private:
 
     COgreWindowManagerImp( const COgreWindowManagerImp& src );

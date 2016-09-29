@@ -23,6 +23,11 @@
 //                                                                         //
 //-------------------------------------------------------------------------*/
 
+#ifndef _Ogre_H__
+#include "Ogre.h"
+#define _Ogre_H__
+#endif /* _Ogre_H__ ? */ 
+
 #ifndef GUIDRIVEROGRE_COGREWINDOWCONTEXT_H
 #include "guidriverOgre_COgreWindowContext.h"
 #define GUIDRIVEROGRE_COGREWINDOWCONTEXT_H
@@ -132,6 +137,34 @@ COgreWindowManagerImp::ApplyVideoSettings( GUI::TWindowContextPtr& windowContext
 {GUCEF_TRACE;
 
     return false;
+}
+
+/*-------------------------------------------------------------------------*/
+
+bool
+COgreWindowManagerImp::SaveConfig( CORE::CDataNode& config )
+{GUCEF_TRACE;
+
+    return false;
+}
+
+/*-------------------------------------------------------------------------*/
+
+bool
+COgreWindowManagerImp::LoadConfig( const CORE::CDataNode& config )
+{GUCEF_TRACE;
+      
+    const CORE::CDataNode* n = config.Find( "OgreWindowManager" );
+    if ( nullptr != n )
+    {
+        Ogre::Root* root = Ogre::Root::getSingletonPtr();
+        if ( nullptr == root )
+        {
+            // No plugins file or config file specified
+            root = new Ogre::Root( "", "", "ogre.log" );
+        }        
+    }
+    return true;
 }
 
 /*-------------------------------------------------------------------------//

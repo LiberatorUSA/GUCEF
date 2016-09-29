@@ -38,6 +38,11 @@
 #define GUIDRIVEROGRE_COGREWINDOWMANAGERIMP_H
 #endif /* GUIDRIVEROGRE_COGREWINDOWMANAGERIMP_H ? */
 
+#ifndef GUCEF_CORE_COGREPLUGINMANAGER_H
+#include "guidriverOgre_COgrePluginManager.h"
+#define GUCEF_CORE_COGREPLUGINMANAGER_H
+#endif /* GUCEF_CORE_COGREPLUGINMANAGER_H ? */
+
 #include "guidriverOgre_pluginAPI.h"
 
 /*-------------------------------------------------------------------------//
@@ -55,6 +60,7 @@ namespace GUIDRIVEROGRE {
 //                                                                         //
 //-------------------------------------------------------------------------*/
 
+static GUIDRIVEROGRE::COgrePluginManager ogrePluginManager;
 static TOgreWindowManagerImpPtr ogreWindowManager = new COgreWindowManagerImp();
 
 /*-------------------------------------------------------------------------//
