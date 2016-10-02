@@ -699,6 +699,17 @@ PointerToString( const void* value )
 
 /*-------------------------------------------------------------------------*/
 
+void*
+StringToPointer( const CString& value )
+{GUCEF_TRACE;
+
+    void* ptr = nullptr;
+    sscanf( value.C_String(), "%p", &ptr );
+    return ptr;
+}
+
+/*-------------------------------------------------------------------------*/
+
 #ifndef GUCEF_CORE_NO_MD5_SUPPORT
 
 CString

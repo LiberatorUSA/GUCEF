@@ -117,8 +117,15 @@ CGUIDriverOgre::Init( GUI::TWindowContextPtr windowContext )
     {
         try
         {
+            Ogre::RenderTarget* renderTarget = nullptr;
+            CORE::CString renderTargetPtrStr = windowContext->GetProperty( "Ogre::RenderTarget" );
+            if ( !renderTargetPtrStr.IsNULLOrEmpty() )
+            {
+                renderTarget = static_cast< Ogre::RenderTarget* >( CORE::StringToPointer( renderTargetPtrStr ) );
+            }
+
             CEGUI::Sizef displaySize( (float) windowContext->GetWidth(), (float) windowContext->GetHeight() );
-            m_guiRenderer = &CEGUI::OgreRenderer::create();// displaySize );//, CEGUI::OpenGLRenderer::TTT_AUTO );
+            m_guiRenderer = &CEGUI::OgreRenderer::create( *renderTarget );// displaySize );//, CEGUI::OpenGLRenderer::TTT_AUTO );
             m_guiSystem = &CEGUI::System::create( *m_guiRenderer, &m_vfsResourceProvider, &m_xmlParserAdapter, m_imageCodecAdapter );
 
             // setup default group for validation schemas

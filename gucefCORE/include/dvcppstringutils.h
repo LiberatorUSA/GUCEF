@@ -217,6 +217,11 @@ PointerToString( const void* value );
 
 /*-------------------------------------------------------------------------*/
 
+GUCEF_CORE_PUBLIC_CPP void*
+StringToPointer( const CString& value );
+
+/*-------------------------------------------------------------------------*/
+
 #ifndef GUCEF_CORE_NO_MD5_SUPPORT
 
 GUCEF_CORE_PUBLIC_CPP CString

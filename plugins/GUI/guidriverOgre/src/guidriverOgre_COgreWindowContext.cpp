@@ -204,6 +204,15 @@ GUI::CString
 COgreWindowContext::GetProperty( const GUI::CString& propertyName ) const
 {GUCEF_TRACE;
 
+    if ( "Ogre::RenderWindow" == propertyName )
+    {
+        return CORE::PointerToString( m_renderWindow );
+    }
+    if ( "Ogre::RenderTarget" == propertyName )
+    {
+        Ogre::RenderTarget* renderTaget = static_cast< Ogre::RenderTarget* >( m_renderWindow );
+        return CORE::PointerToString( renderTaget );
+    }
     return m_osWindow->GetProperty( propertyName );
 }
 
