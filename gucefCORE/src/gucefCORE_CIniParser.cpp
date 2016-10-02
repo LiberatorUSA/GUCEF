@@ -120,10 +120,20 @@ CIniParser::SaveTo( CDataNode& rootNode ) const
             sectionName = iniSection.sectionName.CutChars( nodeName.Length()+1, false );
         }
 
+        // We use the ordering in the ini of the different sections to implicitly denote going up and down
+        // a tree thus allowing branches to be defined in an ini file which otherwise does not support this concept
         CDataNode* sectionNodeParent = NULL;
         if ( !sectionName.IsNULLOrEmpty() )
         {
-            sectionNodeParent = rootNode.Structure( sectionName, '\\' );
+            CDataNode::TDataNodeVector existingPaths = rootNode.SearchForAll( sectionName, '\\', true, true );
+            if ( !existingPaths.empty() )
+            {
+                sectionNodeParent = *existingPaths.rbegin();
+            }
+            else
+            {
+                sectionNodeParent = rootNode.Structure( sectionName, '\\' );
+            }
         }
         else
         {

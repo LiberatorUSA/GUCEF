@@ -67,6 +67,7 @@ class GUCEF_CORE_PUBLIC_CPP CDataNode
     typedef std::pair< const CString, CString > TKeyValuePair;
     typedef std::set< CDataNode* > TDataNodeSet;
     typedef std::list< CDataNode* > TDataNodeList;
+    typedef std::vector< CDataNode* > TDataNodeVector;
     typedef std::set< const CDataNode* > TConstDataNodeSet;
     typedef std::map< CString, CString > TAttributeMap;
 
@@ -291,9 +292,24 @@ class GUCEF_CORE_PUBLIC_CPP CDataNode
      *      @param fromcurrent wheter the requested structure must start at the current node.
      *      @return last node in the search structure
      */
-    CDataNode* Search( const CString& query ,
-                       char seperator       ,
-                       bool fromcurrent     ) const;
+    CDataNode* Search( const CString& query             ,
+                       char seperator                   ,
+                       bool fromCurrent                 ,
+                       bool treatChildAsCurrent = false ) const;
+
+    /**
+     *      Searches for the structure provided in the query.
+     *      If the structure is found an entry pointer to the last node is added to the result list
+     *
+     *      @param sequence the node structure sequence you wish to search for
+     *      @param seperator the char you used to seperate node names
+     *      @param fromcurrent wheter the requested structure must start at the current node.
+     *      @return last node in the search structure
+     */
+    TDataNodeVector SearchForAll( const CString& query             ,
+                                  char seperator                   ,
+                                  bool fromCurrent                 ,
+                                  bool treatChildAsCurrent = false ) const;
 
     /**
      *  'Walks' the data node tree to find the sequence
@@ -301,16 +317,16 @@ class GUCEF_CORE_PUBLIC_CPP CDataNode
      *  as possible using the specified node sequence.
      *  If no nodes where found that have an name as specified in the sequence
      *  at the correct location then that part of the sequence is considdered to
-     *  be a leftover. A pointer to the 'deepest' node is returned.
+     *  be a leftover. Pointers to the 'deepest' nodes are returned.
      *
      *  @param sequence the sequence of node names you are looking for, each name seperated with a seperator char
      *  @param seperator char that is used to seperate the different node names
      *  @param sleftover outputvar: the section of the sequence that could not be resolved.
-     *  @return pointer to the deepest node found.
+     *  @return pointers to the deepest nodes found. Equally good matches.
      */
-    CDataNode* WalkTree( const CString& sequence ,
-                         char seperator          ,
-                         CString& sleftover      ) const;
+    TDataNodeVector WalkTree( const CString& sequence ,
+                              char seperator          ,
+                              CString& sleftover      ) const;
 
     /**
      *  Returns wheter the current node has any children
@@ -473,8 +489,8 @@ class GUCEF_CORE_PUBLIC_CPP CDataNode
     bool AddAttribute( const CString& name  ,
                        const CString& value );
 
-    CDataNode* WalkTreeImp( CString& sleftover ,
-                            char seperator     ) const;
+    TDataNodeVector WalkTreeImp( CString& sleftover ,
+                                 char seperator     ) const;
 
     void Detach( void );      /**< detaches the node from the tree */
     void DetachChild( CDataNode* child ); /**< detaches the given child node */

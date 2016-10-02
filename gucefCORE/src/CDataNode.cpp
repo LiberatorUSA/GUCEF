@@ -836,114 +836,221 @@ CDataNode::GetNrOfTreeNodes( void ) const
 /*-------------------------------------------------------------------------*/
 
 CDataNode* 
-CDataNode::Search( const CString& query ,
-                   char seperator       ,
-                   bool fromcurrent     ) const
-{
-        GUCEF_BEGIN;
-        
-        if ( fromcurrent )
+CDataNode::Search( const CString& query     ,
+                   char seperator           ,
+                   bool fromcurrent         ,
+                   bool treatChildAsCurrent ) const
+{GUCEF_TRACE;
+
+    if ( fromcurrent )
+    {
+        CString thisname( query.SubstrToChar( seperator, true ) );
+        if ( thisname == _name )
         {
-                CString thisname( query.SubstrToChar( seperator, true ) );
-                if ( thisname == _name )
-                {
-                        CString remnant( query.CutChars( thisname.Length()+1, true ) );
-                        
-                        CString leftover;
-                        CDataNode* n = WalkTree( remnant   ,
-                                                 seperator ,
-                                                 leftover  );
-                        if ( !leftover.Length() )
-                        {       
-                                GUCEF_END;
-                                return n;
-                        }                                 
-                }
-                GUCEF_END;
-                return NULL;                                            
+            CString remnant( query.CutChars( thisname.Length()+1, true ) );
+            if ( remnant.Length() > 0 )
+            {            
+                CString leftover;
+                TDataNodeVector results = WalkTree( remnant   ,
+                                                    seperator ,
+                                                    leftover  );
+                if ( 0 == leftover.Length() && !results.empty() )
+                {       
+                    return *results.begin();
+                }                                 
+            }
+            else
+            {   
+                // this node is the leaf node we are searching for
+                return const_cast< CDataNode* >( this );
+            }
         }
         else
+        if ( treatChildAsCurrent )
         {
-                CString leftover;
-                CDataNode* n = WalkTree( query     ,
-                                         seperator ,
-                                         leftover  );
-                if ( !leftover.Length() )
-                {       
-                        GUCEF_END;
-                        return n;
-                }
-                GUCEF_END;
-                return NULL;
-        }                
+            TDataNodeList::const_iterator i = m_children.begin();
+            while ( i != m_children.end()  )
+            {
+                CDataNode* result = (*i)->Search( query       ,
+                                                  seperator   ,
+                                                  fromcurrent ,
+                                                  false       );                
+                if ( nullptr != result )
+                    return result;
+            }
+        }
+        return nullptr;                                            
+    }
+    else
+    {
+        CString leftover;
+        TDataNodeVector results = WalkTree( query     ,
+                                            seperator ,
+                                            leftover  );
+        if ( 0 == leftover.Length() && !results.empty() )
+        {       
+            return *results.begin();
+        }
+        return nullptr;
+    }                
 }
 
 /*-------------------------------------------------------------------------*/
 
-CDataNode*
+CDataNode::TDataNodeVector 
+CDataNode::SearchForAll( const CString& query     ,
+                         char seperator           ,
+                         bool fromcurrent         ,
+                         bool treatChildAsCurrent ) const
+{GUCEF_TRACE;
+
+    if ( fromcurrent )
+    {
+        CString thisname( query.SubstrToChar( seperator, true ) );
+        if ( thisname == _name )
+        {
+            CString remnant( query.CutChars( thisname.Length()+1, true ) );
+            if ( remnant.Length() > 0 )
+            {            
+                CString leftover;
+                TDataNodeVector results = WalkTree( remnant   ,
+                                                    seperator ,
+                                                    leftover  );
+                if ( 0 == leftover.Length() )
+                {       
+                    return results;
+                }                                 
+            }
+            else
+            {   
+                // this node is the leaf node we are searching for
+                TDataNodeVector result;
+                result.push_back( const_cast< CDataNode* >( this ) );
+                return result;
+            }
+        }
+        else
+        if ( treatChildAsCurrent )
+        {
+            TDataNodeVector results;
+            TDataNodeList::const_iterator i = m_children.begin();
+            while ( i != m_children.end()  )
+            {
+                TDataNodeVector childResults = (*i)->SearchForAll( query       ,
+                                                                   seperator   ,
+                                                                   fromcurrent ,
+                                                                   false       );                
+                TDataNodeVector::iterator n = childResults.begin();
+                while ( n != childResults.end() )
+                {
+                    results.push_back( (*n) );
+                    ++n;
+                }
+                ++i;
+            }
+            return results;
+        }
+        return TDataNodeVector();                                            
+    }
+    else
+    {
+        CString leftover;
+        TDataNodeVector results = WalkTree( query     ,
+                                            seperator ,
+                                            leftover  );
+        if ( 0 == leftover.Length() )
+        {       
+            return results;
+        }
+        return TDataNodeVector();
+    }
+}
+
+/*-------------------------------------------------------------------------*/
+
+CDataNode::TDataNodeVector
 CDataNode::WalkTree( const CString& sequence ,
                      char seperator          ,
                      CString& sleftover      ) const
-{
-        GUCEF_BEGIN;
-        sleftover = sequence;
+{GUCEF_TRACE;
+
+    sleftover = sequence;
         
-        GUCEF_END_RET( CDataNode*, WalkTreeImp( sleftover ,
-                                                seperator ) );
+    return WalkTreeImp( sleftover ,
+                        seperator );
 }                     
 
 /*-------------------------------------------------------------------------*/
 
-CDataNode*
+CDataNode::TDataNodeVector
 CDataNode::WalkTreeImp( CString& sleftover ,
                         char seperator     ) const
 {GUCEF_TRACE;
+          
+    if ( !m_children.empty() )
+    {
+        TDataNodeVector resultSet;                
         
-        if ( !m_children.empty() )
-        {
-                CDataNode* sn = (CDataNode*) this;
-                CDataNode* retval = (CDataNode*) this;        
-                CString leftover( sleftover );
-                CString deepest( sleftover );
-                CString searchseg( sleftover.SubstrToChar( seperator, true ) );        
-                CString left( sleftover.CutChars( searchseg.Length()+1, true ) );
+        CDataNode* sn = (CDataNode*) this;       
+        CString searchseg( sleftover.SubstrToChar( seperator, true ) );        
+        CString left( sleftover.CutChars( searchseg.Length()+1, true ) );
+        CString bestMatchLeftover( left );
                                                   
-                CDataNode* n = m_children.front();                                                                                    
-                while ( n )
+        CDataNode* n = m_children.front();                                                                                    
+        while ( n )
+        {
+            // Are we looking for more nesting or a leaf node?
+            if ( 0 == left.Length() )
+            {
+                // We are looking for a leaf node. Check if the current child matches
+                if ( n->_name == searchseg )
                 {
-                        if ( n->_name == searchseg )
-                        {
-                                deepest = left;
-                                leftover = left;
-                                retval = n;
-                                
-                                if ( 0 == left.Length() )
-                                {
-                                        // nothing left to search for so
-                                        // no point in continuing
-                                        sleftover = deepest;
-                                        return n;
-                                }
-                        }        
+                    // nothing left to search for, so
+                    // no point in continuing
+                    resultSet.push_back( n );
+                }        
+            }
+            else
+            {            
+                // check if this node could be a link in the search chain
+                if ( n->_name == searchseg )
+                {
+                    // search the tree for our leftover
+                    CString childLeftover = left;
+                    TDataNodeVector childResultSet = n->WalkTreeImp( childLeftover, seperator );
                         
-                        // search the tree for our leftover
-                        sn = n->WalkTreeImp( leftover  ,
-                                             seperator );
-                        
-                        // if what we found is better then what we found so far then
-                        // substitute the current deepest node for the new node.
-                        if ( deepest.Length() > leftover.Length() )                  
+                    // if what we found is better then what we found so far then
+                    // substitute the current deepest nodes with the new deeper nodes.
+                    if ( bestMatchLeftover.Length() > childLeftover.Length() )                  
+                    {
+                        // We found a better match, switch to that one
+                        resultSet = childResultSet;
+                        bestMatchLeftover = childLeftover;
+                    }
+                    else
+                    if ( bestMatchLeftover.Length() == childLeftover.Length() )
+                    {
+                        // We found more equally good matches
+                        TDataNodeVector::iterator m = childResultSet.begin();
+                        while ( m != childResultSet.end() )
                         {
-                                deepest = leftover;
-                                retval = sn;
-                                CHECKMEM( retval, sizeof(CDataNode) );
-                        }                       
-                        n = n->_pnext;
+                            resultSet.push_back( (*m) );
+                            ++m;
+                        }
+                    }
                 }
-                sleftover = deepest;
-                return retval;
+            }
+            n = n->_pnext;
         }
-        return (CDataNode*)this;                                                                          
+
+        if ( !resultSet.empty() )
+            sleftover = bestMatchLeftover;
+        return resultSet;
+    }
+    
+    TDataNodeVector resultSet;
+    resultSet.push_back( const_cast<CDataNode*>( this ) );
+    return resultSet;                                                                          
 }                     
 
 /*-------------------------------------------------------------------------*/
@@ -951,32 +1058,36 @@ CDataNode::WalkTreeImp( CString& sleftover ,
 CDataNode* 
 CDataNode::Structure( const CString& sequence ,
                       char seperator          )
-{
-        // walk the tree
-        GUCEF_BEGIN;
-        CString buildseg;
-        CDataNode* sn( WalkTree( sequence  ,
-                                 seperator ,
-                                 buildseg  ) );
-        CHECKMEM( sn, sizeof(CDataNode) );
+{GUCEF_TRACE;
+
+    // walk the tree
+    CString buildseg;
+    TDataNodeVector walkResults = WalkTree( sequence  ,
+                                            seperator ,
+                                            buildseg  );
                  
-        // do we need to add nodes ?
-        if ( buildseg.Length() )
+    // do we need to add nodes ?
+    if ( 0 < buildseg.Length() )
+    {
+        CDataNode* parentNode = this;
+        if ( !walkResults.empty() )
+            parentNode = *walkResults.begin(); 
+        
+        CDataNode child;
+        CString name;
+        while ( buildseg.Length() )
         {
-                CDataNode child;
-                CString name;
-                while ( buildseg.Length() )
-                {
-                        name = buildseg.SubstrToChar( seperator, true );
-                        child.SetName( name );                        
-                        buildseg = buildseg.CutChars( name.Length()+1, true );                        
-                        sn = sn->AddChild( child );
-                        
-                        CHECKMEM( sn, sizeof(CDataNode) );
-                }
+            name = buildseg.SubstrToChar( seperator, true );
+            child.SetName( name );                        
+            buildseg = buildseg.CutChars( name.Length()+1, true );                        
+            parentNode = parentNode->AddChild( child );
         }
-        GUCEF_END;
-        return sn;        
+        return parentNode;
+    }
+    
+    if ( walkResults.empty() )
+        return nullptr;
+    return *walkResults.begin();        
 }                      
 
 /*-------------------------------------------------------------------------*/

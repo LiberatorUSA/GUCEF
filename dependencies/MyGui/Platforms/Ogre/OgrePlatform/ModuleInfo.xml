@@ -3,11 +3,11 @@
         <Dependencies>
             <Dependency Name="MyGUI.Engine" />
             <Dependency Name="MyGUI.Common.FileSystemInfo" />
-            <Dependency Name="OgreMain" />
+            <Dependency Name="Ogre" />
         </Dependencies>
         <Linker>
             <Dependency Name="MyGUI.Engine" />
-            <Dependency Name="OgreMain" />
+            <Dependency Name="Ogre" />
         </Linker>
     </Module>
 </ModuleInfoEntry>

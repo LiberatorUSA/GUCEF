@@ -229,8 +229,10 @@ CPluginControl::LoadPluginGroup( const CString& groupName )
     TPluginGroupMap::iterator i = m_pluginGroups.find( groupName );
     if ( i != m_pluginGroups.end() )
     {
+        // Pull a copy of the plugin group info, it will get altered as we load invalidating the collection
+        // hence we have to copy it here
         CPluginGroup& pluginGroup = (*i).second;
-        CPluginGroup::TPluginMetaDataSet& pluginMetaDataSet = pluginGroup.GetPluginMetaData();
+        CPluginGroup::TPluginMetaDataSet pluginMetaDataSet = pluginGroup.GetPluginMetaData();
 
         CPluginGroup::TPluginMetaDataSet::iterator n = pluginMetaDataSet.begin();
         while ( n != pluginMetaDataSet.end() )

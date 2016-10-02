@@ -266,7 +266,7 @@ COgreWindowContext::Initialize( const GUI::CString& title                ,
             while ( i != rsList.end() )
             {
                 GUCEF_SYSTEM_LOG( CORE::LOGLEVEL_NORMAL, "OgreWindowContext: Available Ogre render system: " + (*i)->getFriendlyName() );
-                if ( ogreRenderSystem == (*i)->getFriendlyName() )
+                if ( ogreRenderSystem == (*i)->getName() )
                 {
                     GUCEF_SYSTEM_LOG( CORE::LOGLEVEL_NORMAL, "OgreWindowContext: Found desired/preferred Ogre render system: " + (*i)->getFriendlyName() );
                     renderSystem = (*i); 
