@@ -1025,6 +1025,11 @@ CPluginControl::LoadConfig( const CDataNode& treeroot )
         CDataNode::TConstDataNodeSet::iterator n = pluginMetaDataNodes.begin();
         while ( n != pluginMetaDataNodes.end() ) 
         {
+            // Check for per-plugin override of load settings, overriding group default
+            bool loadImmediately = loadPlugins;
+            loadImBoolStr = (*n )->GetAttributeValueOrChildValueByName( "LoadImmediately" );
+            if ( !loadImBoolStr.IsNULLOrEmpty() ) loadImmediately = StringToBool( loadImBoolStr );
+
             // Since we have to report whether loading the config settings went ok
             // Check to see if allow the loading of this plugin to fail and still report success
             bool loadFailAllowed = false;
@@ -1034,7 +1039,7 @@ CPluginControl::LoadConfig( const CDataNode& treeroot )
             CPluginMetaData metaData;
             if ( metaData.LoadConfig( *(*n ) ) )
             {                
-                if ( !AddPluginMetaData( metaData, groupName, loadPlugins ) )
+                if ( !AddPluginMetaData( metaData, groupName, loadImmediately ) )
                 {
                     GUCEF_ERROR_LOG( LOGLEVEL_NORMAL, "PluginControl: Failed to add plugin meta data" );
                     if ( !loadFailAllowed ) errorOccured = true;

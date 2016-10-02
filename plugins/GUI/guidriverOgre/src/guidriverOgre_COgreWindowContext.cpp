@@ -43,6 +43,16 @@
 #define GUCEF_CORE_CPULSEGENERATOR_H
 #endif /* GUCEF_CORE_CPULSEGENERATOR_H ? */
 
+#ifndef GUCEF_CORE_CCOREGLOBAL_H
+#include "gucefCORE_CCoreGlobal.h"
+#define GUCEF_CORE_CCOREGLOBAL_H
+#endif /* GUCEF_CORE_CCOREGLOBAL_H ? */
+
+#ifndef GUCEF_CORE_CPLUGINCONTROL_H
+#include "CPluginControl.h"
+#define GUCEF_CORE_CPLUGINCONTROL_H
+#endif /* GUCEF_CORE_CPLUGINCONTROL_H ? */
+
 #ifndef GUCEF_GUI_CWINDOWCONTEXT_H
 #include "gucefGUI_CWindowContext.h"
 #define GUCEF_GUI_CWINDOWCONTEXT_H
@@ -71,7 +81,8 @@ COgreWindowContext::COgreWindowContext( void )
       m_id()                   ,
       m_name()                 ,
       m_osWindow( 0 )          ,
-      m_renderWindow( 0 )
+      m_renderWindow( 0 )      ,
+      m_initialized( false )
 {GUCEF_TRACE;
 
     m_osWindow = CORE::COSWindow::Create();
@@ -84,8 +95,11 @@ COgreWindowContext::~COgreWindowContext()
 {GUCEF_TRACE;
 
     Shutdown();
-    CORE::COSWindow::Destroy( m_osWindow );
-    m_osWindow = 0;
+    if ( nullptr != m_osWindow )
+    {
+        CORE::COSWindow::Destroy( m_osWindow );
+        m_osWindow = 0;
+    }
 }
 
 /*-------------------------------------------------------------------------*/
@@ -138,14 +152,19 @@ COgreWindowContext::GetName( void ) const
 void
 COgreWindowContext::Shutdown( void )
 {GUCEF_TRACE;
+    
+    if ( m_initialized )
+	{
+        CORE::CPulseGenerator& pulseGenerator = CORE::CCoreGlobal::Instance()->GetPulseGenerator();
+        pulseGenerator.RequestStopOfPeriodicUpdates( this );
+        UnsubscribeFrom( &pulseGenerator );
 
-	CORE::CPulseGenerator& pulseGenerator = CORE::CCoreGlobal::Instance()->GetPulseGenerator();
-    pulseGenerator.RequestStopOfPeriodicUpdates( this );
-    UnsubscribeFrom( &pulseGenerator );
+        if ( NULL != m_osWindow )
+        {
+            m_osWindow->WindowDestroy();
+        }
 
-    if ( NULL != m_osWindow )
-    {
-        m_osWindow->WindowDestroy();
+        m_initialized = false;
     }
 }
 
@@ -192,13 +211,14 @@ COgreWindowContext::GetProperty( const GUI::CString& propertyName ) const
 
 bool
 COgreWindowContext::Initialize( const GUI::CString& title                ,
-                                const GUI::CVideoSettings& videoSettings )
+                                const GUI::CVideoSettings& videoSettings ,
+                                const GUI::CString& ogreRenderSystem     )
 {GUCEF_TRACE;
 
     // Do not initialize twice
     Shutdown();
 
-    // First create a regular Win32 window
+    // First create a regular O/S window
     if ( m_osWindow->WindowCreate( title                                       ,
                                    0                                           ,
                                    0                                           ,
@@ -224,6 +244,46 @@ COgreWindowContext::Initialize( const GUI::CString& title                ,
         options[ "externalWindowHandle" ] = Ogre::StringConverter::toString( (size_t) windowRef ); 
 
         Ogre::Root* ogreRoot = Ogre::Root::getSingletonPtr();
+        if ( ogreRoot == nullptr )
+        {            
+            ogreRoot = OGRE_NEW Ogre::Root( "", "", "" ); 
+        }
+
+        if ( !ogreRoot->isInitialised() )
+        {
+            // Load any Ogre plugins not loaded yet from the bootstrap group
+            CORE::CCoreGlobal::Instance()->GetPluginControl().LoadPluginGroup( "Ogre" );
+            
+            const Ogre::RenderSystemList& rsList = ogreRoot->getAvailableRenderers();
+            if ( rsList.size() == 0 )
+            {
+                GUCEF_ERROR_LOG( CORE::LOGLEVEL_IMPORTANT, "OgreWindowContext: No Ogre render systems are available, cannot initialize" );
+                return false;
+            }
+
+            Ogre::RenderSystem* renderSystem = nullptr;
+            Ogre::RenderSystemList::const_iterator i = rsList.begin();
+            while ( i != rsList.end() )
+            {
+                GUCEF_SYSTEM_LOG( CORE::LOGLEVEL_NORMAL, "OgreWindowContext: Available Ogre render system: " + (*i)->getFriendlyName() );
+                if ( ogreRenderSystem == (*i)->getFriendlyName() )
+                {
+                    GUCEF_SYSTEM_LOG( CORE::LOGLEVEL_NORMAL, "OgreWindowContext: Found desired/preferred Ogre render system: " + (*i)->getFriendlyName() );
+                    renderSystem = (*i); 
+                }
+                ++i;
+            }
+            if ( renderSystem == nullptr )
+            {
+                GUCEF_WARNING_LOG( CORE::LOGLEVEL_IMPORTANT, "OgreWindowContext: Preferred Ogre render systems not available, using first available alternative: " + (*rsList.begin())->getFriendlyName() );
+                renderSystem = *rsList.begin();
+            }
+
+            ogreRoot->setRenderSystem( renderSystem );
+
+            m_renderWindow = ogreRoot->initialise( false, title );
+        }
+
         m_renderWindow = ogreRoot->createRenderWindow( title, 
                                                        videoSettings.GetResolutionWidthInPixels(), 
                                                        videoSettings.GetResolutionHeightInPixels(), 
@@ -236,6 +296,7 @@ COgreWindowContext::Initialize( const GUI::CString& title                ,
         SubscribeTo( &pulseGenerator );
 
         GUCEF_SYSTEM_LOG( CORE::LOGLEVEL_NORMAL, "OgreWindowContext: Succesfully created Ogre rendering context" );
+        m_initialized = true;
         return true;
     }
     return false;
@@ -269,7 +330,8 @@ COgreWindowContext::OnNotify( CORE::CNotifier* notifier   ,
     if ( eventID == CORE::COSWindow::WindowResizeEvent )
     {
         GUCEF_DEBUG_LOG( CORE::LOGLEVEL_NORMAL, "OgreWindowContext: Window resize event received" );
-        m_renderWindow->windowMovedOrResized();
+        if ( nullptr != m_renderWindow )
+            m_renderWindow->windowMovedOrResized();
         NotifyObservers( WindowContextSizeEvent );
     }
     else
@@ -283,7 +345,8 @@ COgreWindowContext::OnNotify( CORE::CNotifier* notifier   ,
          ( eventID == CORE::COSWindow::WindowDestroyEvent ) )
     {
         GUCEF_DEBUG_LOG( CORE::LOGLEVEL_NORMAL, "OgreWindowContext: Window close/destroy event received" );
-        m_renderWindow->destroy(); // cleanup and call DestroyWindow 
+        if ( nullptr != m_renderWindow )
+            m_renderWindow->destroy(); // cleanup and call DestroyWindow 
         Shutdown();
     }
 }

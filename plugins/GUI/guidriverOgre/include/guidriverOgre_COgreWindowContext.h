@@ -95,8 +95,9 @@ class GUIDRIVEROGRE_PUBLIC_CPP COgreWindowContext : public GUI::CWindowContext
 
     virtual GUI::CString GetProperty( const GUI::CString& propertyName ) const;
 
-    bool Initialize( const GUI::CString& title                ,
-                     const GUI::CVideoSettings& videoSettings );
+    bool Initialize( const GUI::CString& title                 ,
+                     const GUI::CVideoSettings& videoSettings  ,
+                     const GUI::CString& ogreRenderSystem = "" );
 
     void Shutdown( void );
 
@@ -120,6 +121,7 @@ class GUIDRIVEROGRE_PUBLIC_CPP COgreWindowContext : public GUI::CWindowContext
     GUI::TGuiContextPtr m_guiContext;
     GUI::UInt32 m_id;
     GUI::CString m_name;
+    bool m_initialized;
 };
 
 /*-------------------------------------------------------------------------*/

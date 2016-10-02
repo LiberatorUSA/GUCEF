@@ -13,6 +13,9 @@
 
 set( HEADER_FILES 
   include/guidriverOgre.h
+  include/guidriverOgre_COgreLogAdapter.h
+  include/guidriverOgre_COgrePluginAdapter.h
+  include/guidriverOgre_COgrePluginManager.h
   include/guidriverOgre_COgreWindowContext.h
   include/guidriverOgre_COgreWindowManagerImp.h
   include/guidriverOgre_config.h
@@ -21,6 +24,9 @@ set( HEADER_FILES
 )
 
 set( SOURCE_FILES 
+  src/guidriverOgre_COgreLogAdapter.cpp
+  src/guidriverOgre_COgrePluginAdapter.cpp
+  src/guidriverOgre_COgrePluginManager.cpp
   src/guidriverOgre_COgreWindowContext.cpp
   src/guidriverOgre_COgreWindowManagerImp.cpp
   src/guidriverOgre_pluginAPI.cpp

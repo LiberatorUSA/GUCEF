@@ -17,31 +17,23 @@
  *  Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA
  */
 
-#ifndef GUIDRIVEROGRE_COGREPLUGINMANAGER_H
-#define GUIDRIVEROGRE_COGREPLUGINMANAGER_H
-
 /*-------------------------------------------------------------------------//
 //                                                                         //
 //      INCLUDES                                                           //
 //                                                                         //
 //-------------------------------------------------------------------------*/
 
-#include <vector>
+#ifndef __LogManager_H__
+#include "OgreLogManager.h"
+#define __LogManager_H__
+#endif /* __LogManager_H__ ? */
 
-#ifndef GUCEF_CORE_CPLUGINMANAGER_H
-#include "CPluginManager.h"
-#define GUCEF_CORE_CPLUGINMANAGER_H
-#endif /* GUCEF_CORE_CPLUGINMANAGER_H ? */
+#ifndef GUCEF_CORE_LOGGING_H
+#include "gucefCORE_Logging.h"
+#define GUCEF_CORE_LOGGING_H
+#endif /* GUCEF_CORE_LOGGING_H ? */
 
-#ifndef GUCEF_CORE_CICONFIGURABLE_H
-#include "CIConfigurable.h"
-#define GUCEF_CORE_CICONFIGURABLE_H
-#endif /* GUCEF_CORE_CICONFIGURABLE_H ? */
-
-#ifndef GUCEF_CORE_CVALUELIST_H
-#include "CValueList.h"
-#define GUCEF_CORE_CVALUELIST_H
-#endif /* GUCEF_CORE_CVALUELIST_H ? */
+#include "guidriverOgre_COgreLogAdapter.h"
 
 /*-------------------------------------------------------------------------//
 //                                                                         //
@@ -54,39 +46,70 @@ namespace GUIDRIVEROGRE {
 
 /*-------------------------------------------------------------------------//
 //                                                                         //
-//      CLASSES                                                            //
+//      IMPLEMENTATION                                                     //
 //                                                                         //
 //-------------------------------------------------------------------------*/
 
-/**
- *  Plugin manager for Ogre plugins
- */
-class COgrePluginManager : public CORE::CPluginManager
-{
-    public:
+COgreLogAdapter::COgreLogAdapter( void )
+    : Ogre::LogListener() ,
+      m_log( nullptr )
+{GUCEF_TRACE;
 
-    virtual CORE::CString GetPluginType( void ) const;
-
-    protected:
-
-    virtual CORE::TPluginPtr RegisterPlugin( void* modulePtr                         ,
-                                             CORE::TPluginMetaDataPtr pluginMetaData );
-
-    virtual void UnregisterPlugin( CORE::TPluginPtr plugin );
-
-    public:
+    Ogre::LogManager* logManager = Ogre::LogManager::getSingletonPtr();
+    if ( nullptr == logManager )
+    {
+        logManager = OGRE_NEW Ogre::LogManager();
+    }
     
-    COgrePluginManager( void );
+    m_log = logManager->createLog( "OgreLogAdapter", true , true, true ); 
+    if ( nullptr != m_log )
+    {
+        m_log->addListener( this );
+    }
+}
 
-    virtual ~COgrePluginManager();
+/*-------------------------------------------------------------------------*/
 
-    private:
-    
-    COgrePluginManager( const COgrePluginManager& src );
+COgreLogAdapter::~COgreLogAdapter()
+{GUCEF_TRACE;
 
-    COgrePluginManager& operator=( const COgrePluginManager& src );
-};
+    if ( nullptr != m_log )
+    {
+        m_log->removeListener( this );
+        Ogre::LogManager::getSingleton().destroyLog( m_log );
+    }
+}
 
+/*-------------------------------------------------------------------------*/
+
+void
+COgreLogAdapter::messageLogged( const Ogre::String& message , 
+                                Ogre::LogMessageLevel lml   , 
+                                bool maskDebug              , 
+                                const Ogre::String &logName , 
+                                bool& skipThisMessage       )
+{GUCEF_TRACE;
+
+    switch ( lml )
+    {
+        case Ogre::LogMessageLevel::LML_CRITICAL :
+        {        
+            GUCEF_SYSTEM_LOG( CORE::LOGLEVEL_CRITICAL, message );
+            break;
+        }
+        case Ogre::LogMessageLevel::LML_TRIVIAL :
+        {
+            GUCEF_SYSTEM_LOG( CORE::LOGLEVEL_BELOW_NORMAL, message );
+            break;
+        }
+        case Ogre::LogMessageLevel::LML_NORMAL :
+        default:
+        {
+            GUCEF_SYSTEM_LOG( CORE::LOGLEVEL_NORMAL, message );
+            break;
+        }
+    }
+}
 
 /*-------------------------------------------------------------------------//
 //                                                                         //
@@ -98,16 +121,3 @@ class COgrePluginManager : public CORE::CPluginManager
 }; /* namespace GUCEF */
 
 /*-------------------------------------------------------------------------*/
-
-#endif /* GUIDRIVEROGRE_COGREPLUGINMANAGER_H ? */
-
-/*-------------------------------------------------------------------------//
-//                                                                         //
-//      Info & Changes                                                     //
-//                                                                         //
-//-------------------------------------------------------------------------//
-
-- 27-11-2004 :
-        - Dinand: Initial implementation
-
-----------------------------------------------------------------------------*/

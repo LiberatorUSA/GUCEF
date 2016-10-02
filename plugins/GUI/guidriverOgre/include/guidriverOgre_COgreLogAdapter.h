@@ -17,8 +17,8 @@
  *  Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA
  */
 
-#ifndef GUIDRIVEROGRE_COGREPLUGINMANAGER_H
-#define GUIDRIVEROGRE_COGREPLUGINMANAGER_H
+#ifndef GUIDRIVEROGRE_COGRELOGADAPTER_H
+#define GUIDRIVEROGRE_COGRELOGADAPTER_H
 
 /*-------------------------------------------------------------------------//
 //                                                                         //
@@ -26,22 +26,10 @@
 //                                                                         //
 //-------------------------------------------------------------------------*/
 
-#include <vector>
-
-#ifndef GUCEF_CORE_CPLUGINMANAGER_H
-#include "CPluginManager.h"
-#define GUCEF_CORE_CPLUGINMANAGER_H
-#endif /* GUCEF_CORE_CPLUGINMANAGER_H ? */
-
-#ifndef GUCEF_CORE_CICONFIGURABLE_H
-#include "CIConfigurable.h"
-#define GUCEF_CORE_CICONFIGURABLE_H
-#endif /* GUCEF_CORE_CICONFIGURABLE_H ? */
-
-#ifndef GUCEF_CORE_CVALUELIST_H
-#include "CValueList.h"
-#define GUCEF_CORE_CVALUELIST_H
-#endif /* GUCEF_CORE_CVALUELIST_H ? */
+#ifndef __Log_H__
+#include "OgreLog.h"
+#define __Log_H__
+#endif /* __Log_H__ ? */
 
 /*-------------------------------------------------------------------------//
 //                                                                         //
@@ -59,34 +47,31 @@ namespace GUIDRIVEROGRE {
 //-------------------------------------------------------------------------*/
 
 /**
- *  Plugin manager for Ogre plugins
+ *  Adapter class which directs Ogre log entries to the GUCEF LogManager
  */
-class COgrePluginManager : public CORE::CPluginManager
+class COgreLogAdapter : public Ogre::LogListener
 {
     public:
 
-    virtual CORE::CString GetPluginType( void ) const;
+    COgreLogAdapter( void );
 
-    protected:
+    virtual ~COgreLogAdapter();
 
-    virtual CORE::TPluginPtr RegisterPlugin( void* modulePtr                         ,
-                                             CORE::TPluginMetaDataPtr pluginMetaData );
-
-    virtual void UnregisterPlugin( CORE::TPluginPtr plugin );
-
-    public:
-    
-    COgrePluginManager( void );
-
-    virtual ~COgrePluginManager();
+    virtual void messageLogged( const Ogre::String& message , 
+                                Ogre::LogMessageLevel lml   , 
+                                bool maskDebug              , 
+                                const Ogre::String &logName , 
+                                bool& skipThisMessage       );
 
     private:
     
-    COgrePluginManager( const COgrePluginManager& src );
+    COgreLogAdapter( const COgreLogAdapter& src );
+    COgreLogAdapter& operator=( const COgreLogAdapter& src );
 
-    COgrePluginManager& operator=( const COgrePluginManager& src );
+    private:
+
+    Ogre::Log* m_log;
 };
-
 
 /*-------------------------------------------------------------------------//
 //                                                                         //
@@ -99,7 +84,7 @@ class COgrePluginManager : public CORE::CPluginManager
 
 /*-------------------------------------------------------------------------*/
 
-#endif /* GUIDRIVEROGRE_COGREPLUGINMANAGER_H ? */
+#endif /* GUIDRIVEROGRE_COGRELOGADAPTER_H ? */
 
 /*-------------------------------------------------------------------------//
 //                                                                         //
