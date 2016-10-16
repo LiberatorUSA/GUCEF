@@ -1,3 +1,4 @@
+script: ./projects/CMake/RunCMake_Shared_UnixMake.sh
 language: cpp
 compiler:
   - gcc
