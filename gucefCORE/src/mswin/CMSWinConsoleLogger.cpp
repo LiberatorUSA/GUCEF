@@ -35,10 +35,10 @@
 #define GUCEF_CORE_CIOACCESS_H
 #endif /* GUCEF_CORE_CIOACCESS_H ? */
 
-#ifndef GUCEF_CORE_CTRACER_H
-#include "CTracer.h"
-#define GUCEF_CORE_CTRACER_H
-#endif /* GUCEF_CORE_CTRACER_H ? */
+#ifndef GUCEF_CORE_ESSENTIALS_H
+#include "gucef_essentials.h"
+#define GUCEF_CORE_ESSENTIALS_H
+#endif /* GUCEF_CORE_ESSENTIALS_H ? */
 
 #ifdef GUCEF_MSWIN_BUILD
 #include <windows.h>
@@ -81,6 +81,9 @@ CMSWinConsoleLogger::CMSWinConsoleLogger( void )
 
 CMSWinConsoleLogger::~CMSWinConsoleLogger()
 {GUCEF_TRACE;
+
+    CCoreGlobal::Instance()->GetLogManager().RemoveLogger( this );
+    FlushLog();
 
     FreeConsole();
     fclose( m_consoleFptr );

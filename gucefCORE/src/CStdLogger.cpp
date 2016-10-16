@@ -82,6 +82,8 @@ CStdLogger::CStdLogger( CIOAccess& output )
 CStdLogger::~CStdLogger()
 {GUCEF_TRACE;
 
+    CCoreGlobal::Instance()->GetLogManager().RemoveLogger( this );
+    FlushLog();
 }
 
 /*-------------------------------------------------------------------------*/
