@@ -9,7 +9,7 @@
 #-------------------------------------------------------------------
 #
 
-# Configuration for module: CEGUI.WindowRendererSets.Core
+# Configuration for module: CEGUICoreWindowRendererSet
 
 set( SOURCE_FILES 
   Button.cpp
@@ -51,7 +51,7 @@ set( SOURCE_FILES
 # For ease of use make a variable that has all files for this module
 set( ALL_FILES ${HEADER_FILES} ${SOURCE_FILES} ${PLATFORM_HEADER_FILES} ${PLATFORM_SOURCE_FILES} )
 
-set( MODULE_NAME "CEGUI.WindowRendererSets.Core" )
+set( MODULE_NAME "CEGUICoreWindowRendererSet" )
 add_library( ${MODULE_NAME} ${ALL_FILES} )
 add_dependencies( ${MODULE_NAME} CEGUI )
 target_link_libraries( ${MODULE_NAME} CEGUI )

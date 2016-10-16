@@ -1,5 +1,5 @@
 <ModuleInfoEntry>
-    <Module Name="CEGUI.WindowRendererSets.Core" Type="SharedLibrary" Platform="All">
+    <Module Name="CEGUICoreWindowRendererSet" Type="SharedLibrary" Platform="All">
         <Dependencies>
             <Dependency Name="CEGUI" />
             <Dependency Name="CEGUI.Includes" />

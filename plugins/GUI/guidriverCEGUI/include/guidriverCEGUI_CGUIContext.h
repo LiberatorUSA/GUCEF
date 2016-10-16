@@ -112,7 +112,7 @@ class GUCEF_GUIDRIVERCEGUI_EXPORT_CPP CGUIContext : public GUI::CIGUIContext
     CGUIContext( const CGUIContext& src );            
     CGUIContext& operator=( const CGUIContext& src );
     
-    private:
+    protected:
 
     CCEGUIDriver* m_driver;
     TWidgetSet m_widgetSet;
