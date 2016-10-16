@@ -213,6 +213,10 @@ COgreWindowContext::GetProperty( const GUI::CString& propertyName ) const
         Ogre::RenderTarget* renderTaget = static_cast< Ogre::RenderTarget* >( m_renderWindow );
         return CORE::PointerToString( renderTaget );
     }
+    if ( "Ogre::SceneManager" == propertyName )
+    {
+        return CORE::PointerToString( m_sceneManager );
+    }
     return m_osWindow->GetProperty( propertyName );
 }
 
@@ -289,6 +293,7 @@ COgreWindowContext::Initialize( const GUI::CString& title                ,
             }
 
             ogreRoot->setRenderSystem( renderSystem );
+            m_sceneManager = ogreRoot->createSceneManager( Ogre::ST_GENERIC );
 
             m_renderWindow = ogreRoot->initialise( false, title );
         }

@@ -877,6 +877,7 @@ CDataNode::Search( const CString& query     ,
                                                   false       );                
                 if ( nullptr != result )
                     return result;
+                ++i;
             }
         }
         return nullptr;                                            

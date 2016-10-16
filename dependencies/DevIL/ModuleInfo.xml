@@ -1,13 +1,8 @@
 <ModuleInfoEntry>
     <Module Name="DevIL" Type="SharedLibrary" Platform="All">
         <Dependencies>
-            <Dependency Name="gucefHeaders" />
-            <Dependency Name="gucefMT" />
-            <Dependency Name="gucefCORE" />
         </Dependencies>
         <Linker>
-            <Dependency Name="gucefMT" />
-            <Dependency Name="gucefCORE" />
         </Linker>
         <Preprocessor>
             <Define String="JPEGSTATIC" />

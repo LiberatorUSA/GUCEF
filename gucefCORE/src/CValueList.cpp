@@ -165,7 +165,7 @@ bool
 CValueList::LoadConfig( const CDataNode& treeroot )
 {GUCEF_TRACE;
 
-    const CDataNode* nodeNamespaceRoot = treeroot.Search( m_configNamespace, '/', false );
+    const CDataNode* nodeNamespaceRoot = treeroot.Search( m_configNamespace, '/', true, true );
     if ( NULL != nodeNamespaceRoot )
     {
         // Get the key-value combos from the attributes

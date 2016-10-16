@@ -23,6 +23,26 @@
 //                                                                         //
 //-------------------------------------------------------------------------*/
 
+#ifndef __RenderTarget_H__
+#include "OgreRenderTarget.h"
+#define __RenderTarget_H__
+#endif /* __RenderTarget_H__ ? */
+
+#ifndef __SceneManager_H__
+#include "OgreSceneManager.h"
+#define __SceneManager_H__
+#endif /* __SceneManager_H__ ? */
+
+#ifndef __Viewport_H__
+#include "OgreViewport.h"
+#define __Viewport_H__
+#endif /* __Viewport_H__ ? */
+
+#ifndef __Camera_H__
+#include "OgreCamera.h"
+#define __Camera_H__
+#endif /* __Camera_H__ ? */
+
 #ifndef GUCEF_CORE_COBSERVINGNOTIFIER_H
 #include "CObservingNotifier.h"
 #define GUCEF_CORE_COBSERVINGNOTIFIER_H
@@ -123,9 +143,34 @@ CGUIDriverOgre::Init( GUI::TWindowContextPtr windowContext )
             {
                 renderTarget = static_cast< Ogre::RenderTarget* >( CORE::StringToPointer( renderTargetPtrStr ) );
             }
+            Ogre::SceneManager* sceneManager = nullptr;
+            CORE::CString sceneManagerPtrStr = windowContext->GetProperty( "Ogre::SceneManager" );
+            if ( !sceneManagerPtrStr.IsNULLOrEmpty() )
+            {
+                sceneManager = static_cast< Ogre::SceneManager* >( CORE::StringToPointer( sceneManagerPtrStr ) );
+            }
+            
+            // Auto-create a viewport here if none exists yet
+            unsigned short viewportCount = renderTarget->getNumViewports();
+            if ( 0 == viewportCount )
+            {
+                Ogre::Camera* camera = sceneManager->createCamera( "CEGUI" );
+                camera->setPosition( Ogre::Vector3( 0, 0, 500 ) );
+                camera->lookAt( Ogre::Vector3( 0, 0, -300 ) );
+                camera->setNearClipDistance( 5 );
+
+                // Create a viewport covering whole window
+                Ogre::Viewport* viewport = renderTarget->addViewport( camera );
+                viewport->setBackgroundColour( Ogre::ColourValue( 0.0f, 0.0f, 0.0f, 0.0f ) );
+                viewport->setOverlaysEnabled( true );
+                                                  
+                // Update the camera aspect ratio to that of the viewport
+                camera->setAspectRatio( Ogre::Real( viewport->getActualWidth() ) / Ogre::Real( viewport->getActualHeight() ) );                
+            }
 
             CEGUI::Sizef displaySize( (float) windowContext->GetWidth(), (float) windowContext->GetHeight() );
             m_guiRenderer = &CEGUI::OgreRenderer::create( *renderTarget );// displaySize );//, CEGUI::OpenGLRenderer::TTT_AUTO );
+            m_guiRenderer->setDefaultRootRenderTarget( *renderTarget );
             m_guiSystem = &CEGUI::System::create( *m_guiRenderer, &m_vfsResourceProvider, &m_xmlParserAdapter, m_imageCodecAdapter );
 
             // setup default group for validation schemas

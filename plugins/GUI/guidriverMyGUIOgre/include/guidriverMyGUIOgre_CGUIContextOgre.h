@@ -1,6 +1,6 @@
 /*
- *  guidriverWin32GL: module implementing GL based window management for Win32
- *  Copyright (C) 2002 - 2011.  Dinand Vanvelzen
+ *  guidriverMyGUIOgre: glue module for the MyGUI GUI backend using OpenGL
+ *  Copyright (C) 2002 - 2008.  Dinand Vanvelzen
  *
  *  This library is free software; you can redistribute it and/or
  *  modify it under the terms of the GNU Lesser General Public
@@ -17,8 +17,8 @@
  *  Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA
  */
 
-#ifndef GUIDRIVEROGRE_COGREWINDOWCONTEXT_H
-#define GUIDRIVEROGRE_COGREWINDOWCONTEXT_H 
+#ifndef GUCEF_MYGUIOGRE_CGUICONTEXTOGRE_H
+#define GUCEF_MYGUIOGRE_CGUICONTEXTOGRE_H
 
 /*-------------------------------------------------------------------------//
 //                                                                         //
@@ -26,36 +26,30 @@
 //                                                                         //
 //-------------------------------------------------------------------------*/
 
-#ifndef GUCEF_CORE_CTSHAREDPTR_H
-#include "CTSharedPtr.h"
-#define GUCEF_CORE_CTSHAREDPTR_H
-#endif /* GUCEF_CORE_CTSHAREDPTR_H ? */
-
-#ifndef GUCEF_CORE_COSWINDOW_H
-#include "gucefCORE_COSWindow.h"
-#define GUCEF_CORE_COSWINDOW_H
-#endif /* GUCEF_CORE_COSWINDOW_H ? */
+#ifndef GUCEF_CORE_COBSERVINGNOTIFIER_H
+#include "CObservingNotifier.h"
+#define GUCEF_CORE_COBSERVINGNOTIFIER_H
+#endif /* GUCEF_CORE_COBSERVINGNOTIFIER_H ? */
 
 #ifndef GUCEF_GUI_CWINDOWCONTEXT_H
 #include "gucefGUI_CWindowContext.h"
 #define GUCEF_GUI_CWINDOWCONTEXT_H
 #endif /* GUCEF_GUI_CWINDOWCONTEXT_H ? */
 
-#ifndef GUCEF_GUI_CVIDEOSETTINGS_H
-#include "gucefGUI_CVideoSettings.h"
-#define GUCEF_GUI_CVIDEOSETTINGS_H
-#endif /* GUCEF_GUI_CVIDEOSETTINGS_H ? */
+#ifndef __MYGUI_OGRE_RENDER_MANAGER_H__
+#include "MyGUI_OgreRenderManager.h"
+#define __MYGUI_OGRE_RENDER_MANAGER_H__
+#endif /* __MYGUI_OGRE_RENDER_MANAGER_H__ ? */
 
-#ifndef GUIDRIVEROGRE_MACROS_H
-#include "guidriverOgre_macros.h"
-#define GUIDRIVEROGRE_MACROS_H
-#endif /* GUIDRIVEROGRE_MACROS_H ? */
+#ifndef GUCEF_MYGUI_CGUICONTEXT_H
+#include "guceMyGUI_CGUIContext.h"
+#define GUCEF_MYGUI_CGUICONTEXT_H
+#endif /* GUCEF_MYGUI_CGUICONTEXT_H ? */
 
-namespace Ogre
-{
-    class RenderWindow;
-    class SceneManager;
-}
+#ifndef GUCEF_MYGUIOGRE_MACROS_H
+#include "guidriverMyGUIOgre_macros.h"
+#define GUCEF_MYGUIOGRE_MACROS_H
+#endif /* GUCEF_MYGUIOGRE_MACROS_H ? */
 
 /*-------------------------------------------------------------------------//
 //                                                                         //
@@ -64,7 +58,7 @@ namespace Ogre
 //-------------------------------------------------------------------------*/
 
 namespace GUCEF {
-namespace GUIDRIVEROGRE {
+namespace MYGUIOGRE {
 
 /*-------------------------------------------------------------------------//
 //                                                                         //
@@ -72,63 +66,43 @@ namespace GUIDRIVEROGRE {
 //                                                                         //
 //-------------------------------------------------------------------------*/
 
-class GUIDRIVEROGRE_PUBLIC_CPP COgreWindowContext : public GUI::CWindowContext
-{        
+class CGUIDriverOgre;
+
+/*-------------------------------------------------------------------------*/
+
+/**
+ *  Implementation of the GUI context for the MyGUI & OpenGL combo
+ */
+class GUCEF_MYGUIOGRE_EXPORT_CPP CGUIContextOgre : public MYGUI::CGUIContext ,
+                                                   public CORE::CObserver
+{
     public:
-    
-    COgreWindowContext( void );
-    
-    virtual ~COgreWindowContext();
-    
-    virtual void SetGuiContext( GUI::TGuiContextPtr& context );
-    
-    virtual GUI::TGuiContextPtr GetGuiContext( void );
 
-    virtual GUI::UInt32 GetWidth( void ) const;
+    CGUIContextOgre( CGUIDriverOgre& guiDriver               ,
+                     MyGUI::OgreRenderManager* renderManager ,
+                     GUI::TWindowContextPtr windowContext    ,
+                     INPUT::CInputContext* inputContext      );
 
-    virtual GUI::UInt32 GetHeight( void ) const;
-    
-    virtual GUI::UInt32 GetID( void ) const;
-    
-    virtual bool IsActive( void ) const;
-    
-    virtual GUI::CString GetName( void ) const;
-
-    virtual GUI::CString GetProperty( const GUI::CString& propertyName ) const;
-
-    bool Initialize( const GUI::CString& title                 ,
-                     const GUI::CVideoSettings& videoSettings  ,
-                     const GUI::CString& ogreRenderSystem = "" );
-
-    void Shutdown( void );
+    virtual ~CGUIContextOgre();
 
     virtual const CORE::CString& GetClassTypeName( void ) const;
 
     protected:
-   
+
     virtual void OnNotify( CORE::CNotifier* notifier          ,
                            const CORE::CEvent& eventID        ,
                            CORE::CICloneable* evenData = NULL );
-    
-    private:
-    
-    COgreWindowContext( const COgreWindowContext& src );            /**< private because: must be unique */ 
-    COgreWindowContext& operator=( const COgreWindowContext& src ); /**< private because: must be unique */
 
     private:
 
-    Ogre::SceneManager* m_sceneManager;
-    Ogre::RenderWindow* m_renderWindow;
-    CORE::COSWindow* m_osWindow;
-    GUI::TGuiContextPtr m_guiContext;
-    GUI::UInt32 m_id;
-    GUI::CString m_name;
-    bool m_initialized;
+    CGUIContextOgre( const CGUIContextOgre& src );
+    CGUIContextOgre& operator=( const CGUIContextOgre& src );
+
+    private:
+
+    MyGUI::OgreRenderManager* m_renderManager;
+    GUI::TWindowContextPtr m_windowContext;
 };
-
-/*-------------------------------------------------------------------------*/
-
-typedef CORE::CTSharedPtr< COgreWindowContext >  TOgreWindowContextPtr;
 
 /*-------------------------------------------------------------------------//
 //                                                                         //
@@ -136,12 +110,12 @@ typedef CORE::CTSharedPtr< COgreWindowContext >  TOgreWindowContextPtr;
 //                                                                         //
 //-------------------------------------------------------------------------*/
 
-} /* namespace GUIDRIVEROGRE */
+} /* namespace MYGUIGL */
 } /* namespace GUCEF */
 
 /*-------------------------------------------------------------------------*/
 
-#endif /* GUIDRIVEROGRE_COGREWINDOWCONTEXT_H ? */
+#endif /* GUCEF_MYGUIOGRE_CGUICONTEXTGL_H ? */
 
 /*-------------------------------------------------------------------------//
 //                                                                         //
@@ -149,7 +123,7 @@ typedef CORE::CTSharedPtr< COgreWindowContext >  TOgreWindowContextPtr;
 //                                                                         //
 //-------------------------------------------------------------------------//
 
-- 08-10-2005 :
-        - Initial version
+- 08-04-2007 :
+        - Initial implementation
 
 ---------------------------------------------------------------------------*/

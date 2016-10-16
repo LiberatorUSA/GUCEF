@@ -62,6 +62,27 @@ set( HEADER_FILES
   src/StateCacheManager/OgreGLNullUniformCacheImp.h
   src/StateCacheManager/OgreGLStateCacheManagerImp.h
   src/StateCacheManager/OgreGLUniformCacheImp.h
+  src/atifs/include/ATI_FS_GLGpuProgram.h
+  src/atifs/include/Compiler2Pass.h
+  src/atifs/include/ps_1_4.h
+  src/nvparse/macro.h
+  src/nvparse/nvparse.h
+  src/nvparse/nvparse_errors.h
+  src/nvparse/nvparse_externs.h
+  src/nvparse/ps1.0_program.h
+  src/nvparse/rc1.0_combiners.h
+  src/nvparse/rc1.0_final.h
+  src/nvparse/rc1.0_general.h
+  src/nvparse/rc1.0_register.h
+  src/nvparse/ts1.0_inst.h
+  src/nvparse/ts1.0_inst_list.h
+  src/nvparse/vs1.0_inst.h
+  src/nvparse/vs1.0_inst_list.h
+  src/nvparse/_ps1.0_parser.h
+  src/nvparse/_rc1.0_parser.h
+  src/nvparse/_ts1.0_parser.h
+  src/nvparse/_vs1.0_parser.h
+  src/nvparse/winheaders/unistd.h
 )
 
 set( SOURCE_FILES 
@@ -104,6 +125,31 @@ set( SOURCE_FILES
   src/StateCacheManager/OgreGLNullUniformCacheImp.cpp
   src/StateCacheManager/OgreGLStateCacheManagerImp.cpp
   src/StateCacheManager/OgreGLUniformCacheImp.cpp
+  src/atifs/src/ATI_FS_GLGpuProgram.cpp
+  src/atifs/src/Compiler2Pass.cpp
+  src/atifs/src/ps_1_4.cpp
+  src/nvparse/avp1.0_impl.cpp
+  src/nvparse/nvparse.cpp
+  src/nvparse/nvparse_errors.cpp
+  src/nvparse/ps1.0_program.cpp
+  src/nvparse/rc1.0_combiners.cpp
+  src/nvparse/rc1.0_final.cpp
+  src/nvparse/rc1.0_general.cpp
+  src/nvparse/ts1.0_inst.cpp
+  src/nvparse/ts1.0_inst_list.cpp
+  src/nvparse/vcp1.0_impl.cpp
+  src/nvparse/vp1.0_impl.cpp
+  src/nvparse/vs1.0_inst.cpp
+  src/nvparse/vs1.0_inst_list.cpp
+  src/nvparse/vsp1.0_impl.cpp
+  src/nvparse/_ps1.0_lexer.cpp
+  src/nvparse/_ps1.0_parser.cpp
+  src/nvparse/_rc1.0_lexer.cpp
+  src/nvparse/_rc1.0_parser.cpp
+  src/nvparse/_ts1.0_lexer.cpp
+  src/nvparse/_ts1.0_parser.cpp
+  src/nvparse/_vs1.0_lexer.cpp
+  src/nvparse/_vs1.0_parser.cpp
 )
 
 
@@ -246,7 +292,7 @@ if ( WIN64 )
   target_link_libraries( ${MODULE_NAME} opengl32 )
 endif( WIN64 )
 
-include_directories( ../../../freetype/include ../../../freetype/include/freetype ../../../freetype/include/freetype/config ../../../freetype/include/freetype/internal ../../../freetype/include/freetype/internal/services ../../../freetype/src/winfonts ../../OgreMain/include ../../OgreMain/include/Hash ../../OgreMain/include/Threading ../../OgreMain/src ../../OgreMain/src/nedmalloc ../../OgreMain/src/stbi ../../include include include/GL src/GLSL/include src/StateCacheManager )
+include_directories( ../../../freetype/include ../../../freetype/include/freetype ../../../freetype/include/freetype/config ../../../freetype/include/freetype/internal ../../../freetype/include/freetype/internal/services ../../../freetype/src/winfonts ../../OgreMain/include ../../OgreMain/include/Hash ../../OgreMain/include/Threading ../../OgreMain/src ../../OgreMain/src/nedmalloc ../../OgreMain/src/stbi ../../include include include/GL src/GLSL/include src/StateCacheManager src/atifs/include src/nvparse src/nvparse/winheaders )
 
 if ( ANDROID )
   include_directories( ../../OgreMain/include/Android )

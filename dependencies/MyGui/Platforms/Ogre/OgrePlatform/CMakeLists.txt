@@ -119,21 +119,21 @@ elseif( WIN32 )
 endif()
 
 if ( LINUX32 )
-  add_dependencies( ${MODULE_NAME} MyGUI.Common.FileSystemInfo MyGUI.Engine OgreMain )
-  target_link_libraries( ${MODULE_NAME} MyGUI.Engine OgreMain )
+  add_dependencies( ${MODULE_NAME} MyGUI.Common.FileSystemInfo MyGUI.Engine Ogre )
+  target_link_libraries( ${MODULE_NAME} MyGUI.Engine Ogre )
 endif( LINUX32 )
 
 if ( LINUX64 )
-  add_dependencies( ${MODULE_NAME} MyGUI.Common.FileSystemInfo MyGUI.Engine OgreMain )
-  target_link_libraries( ${MODULE_NAME} MyGUI.Engine OgreMain )
+  add_dependencies( ${MODULE_NAME} MyGUI.Common.FileSystemInfo MyGUI.Engine Ogre )
+  target_link_libraries( ${MODULE_NAME} MyGUI.Engine Ogre )
 endif( LINUX64 )
 
 if ( WIN32 )
-  add_dependencies( ${MODULE_NAME} MyGUI.Common.FileSystemInfo MyGUI.Engine OgreMain )
-  target_link_libraries( ${MODULE_NAME} MyGUI.Engine OgreMain )
+  add_dependencies( ${MODULE_NAME} MyGUI.Common.FileSystemInfo MyGUI.Engine Ogre )
+  target_link_libraries( ${MODULE_NAME} MyGUI.Engine Ogre )
 endif( WIN32 )
 
-include_directories( ../../../../freetype/include ../../../../freetype/include/freetype ../../../../freetype/include/freetype/config ../../../../freetype/include/freetype/internal ../../../../freetype/include/freetype/internal/services ../../../../freetype/src/winfonts ../../../Common/FileSystemInfo ../../../MyGUIEngine/include )
+include_directories( ../../../../Ogre/OgreMain/include ../../../../Ogre/OgreMain/include/Hash ../../../../Ogre/OgreMain/include/Threading ../../../../Ogre/OgreMain/src ../../../../Ogre/OgreMain/src/nedmalloc ../../../../Ogre/OgreMain/src/stbi ../../../../Ogre/include ../../../../freetype/include ../../../../freetype/include/freetype ../../../../freetype/include/freetype/config ../../../../freetype/include/freetype/internal ../../../../freetype/include/freetype/internal/services ../../../../freetype/src/winfonts ../../../Common/FileSystemInfo ../../../MyGUIEngine/include )
 
 if ( LINUX32 )
   include_directories( include )
@@ -144,7 +144,7 @@ if ( LINUX64 )
 endif( LINUX64 )
 
 if ( WIN32 )
-  include_directories( include )
+  include_directories( ../../../../Ogre/OgreMain/include/WIN32 ../../../../Ogre/OgreMain/src/WIN32 include )
 endif( WIN32 )
 
 

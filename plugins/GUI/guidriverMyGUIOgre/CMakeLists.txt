@@ -9,22 +9,24 @@
 #-------------------------------------------------------------------
 #
 
-# Configuration for module: guidriverCEGUIOgre
+# Configuration for module: guidriverMyGUIOgre
 
 set( HEADER_FILES 
-  include/guidriverCEGUIOgre.h
-  include/guidriverCEGUIOgre_CGUIContextOgre.h
-  include/guidriverCEGUIOgre_CGUIDriverOgre.h
-  include/guidriverCEGUIOgre_config.h
-  include/guidriverCEGUIOgre_macros.h
-  include/guidriverCEGUIOgre_pluginAPI.h
+  include/guidriverMyGUIOgre.h
+  include/guidriverMyGUIOgre_CGUIContextOgre.h
+  include/guidriverMyGUIOgre_CGUIDriverOgre.h
+  include/guidriverMyGUIOgre_CImageLoader.h
+  include/guidriverMyGUIOgre_config.h
+  include/guidriverMyGUIOgre_macros.h
+  include/guidriverMyGUIOgre_pluginAPI.h
 )
 
 set( SOURCE_FILES 
-  src/guidriverCEGUIOgre.cpp
-  src/guidriverCEGUIOgre_CGUIContextOgre.cpp
-  src/guidriverCEGUIOgre_CGUIDriverOgre.cpp
-  src/guidriverCEGUIOgre_pluginAPI.cpp
+  src/guidriverMyGUIOgre.cpp
+  src/guidriverMyGUIOgre_CGUIContextOgre.cpp
+  src/guidriverMyGUIOgre_CGUIDriverOgre.cpp
+  src/guidriverMyGUIOgre_CImageLoader.cpp
+  src/guidriverMyGUIOgre_pluginAPI.cpp
 )
 
 # Make sure the PLATFORM_HEADER_FILES variable is always defined
@@ -36,13 +38,13 @@ set( SOURCE_FILES
 # For ease of use make a variable that has all files for this module
 set( ALL_FILES ${HEADER_FILES} ${SOURCE_FILES} ${PLATFORM_HEADER_FILES} ${PLATFORM_SOURCE_FILES} )
 
-set( MODULE_NAME "guidriverCEGUIOgre" )
+set( MODULE_NAME "guidriverMyGUIOgre" )
 add_library( ${MODULE_NAME} ${ALL_FILES} )
-add_dependencies( ${MODULE_NAME} CEGUI CEGUI.RendererModule.Ogre Ogre gucefCORE gucefGUI gucefIMAGE gucefINPUT gucefMT gucefVFS guidriverCEGUI )
-target_link_libraries( ${MODULE_NAME} CEGUI CEGUI.RendererModule.Ogre Ogre gucefCORE gucefGUI gucefIMAGE gucefINPUT gucefMT gucefVFS guidriverCEGUI )
-set_property( TARGET ${MODULE_NAME} APPEND_STRING PROPERTY COMPILE_DEFINITIONS "GUCEF_GUIDRIVERCEGUIOGRE_BUILD_MODULE" )
+add_dependencies( ${MODULE_NAME} MyGUI.Engine MyGUI.OgrePlatform Ogre freetype gucefCORE gucefGUI gucefIMAGE gucefINPUT gucefMT gucefVFS guidriverMyGUI )
+target_link_libraries( ${MODULE_NAME} MyGUI.Engine MyGUI.OgrePlatform Ogre freetype gucefCORE gucefGUI gucefIMAGE gucefINPUT gucefMT gucefVFS guidriverMyGUI )
+set_property( TARGET ${MODULE_NAME} APPEND_STRING PROPERTY COMPILE_DEFINITIONS "GUIDRIVERMYGUIOGRE_BUILD_MODULE" )
 
-include_directories( ../../../common/include ../../../dependencies/Ogre/OgreMain/include ../../../dependencies/Ogre/OgreMain/include/Hash ../../../dependencies/Ogre/OgreMain/include/Threading ../../../dependencies/Ogre/OgreMain/src ../../../dependencies/Ogre/OgreMain/src/nedmalloc ../../../dependencies/Ogre/OgreMain/src/stbi ../../../dependencies/Ogre/include ../../../dependencies/cegui/cegui/include ../../../dependencies/freetype/include ../../../dependencies/freetype/include/freetype ../../../dependencies/freetype/include/freetype/config ../../../dependencies/freetype/include/freetype/internal ../../../dependencies/freetype/include/freetype/internal/services ../../../dependencies/freetype/src/winfonts ../../../gucefCORE/include ../../../gucefGUI/include ../../../gucefIMAGE/include ../../../gucefINPUT/include ../../../gucefMT/include ../../../gucefVFS/include ../guidriverCEGUI/include include )
+include_directories( ../../../common/include ../../../dependencies/MyGui/MyGUIEngine/include ../../../dependencies/Ogre/OgreMain/include ../../../dependencies/Ogre/OgreMain/include/Hash ../../../dependencies/Ogre/OgreMain/include/Threading ../../../dependencies/Ogre/OgreMain/src ../../../dependencies/Ogre/OgreMain/src/nedmalloc ../../../dependencies/Ogre/OgreMain/src/stbi ../../../dependencies/Ogre/include ../../../dependencies/freetype/include ../../../dependencies/freetype/include/freetype ../../../dependencies/freetype/include/freetype/config ../../../dependencies/freetype/include/freetype/internal ../../../dependencies/freetype/include/freetype/internal/services ../../../dependencies/freetype/src/winfonts ../../../gucefCORE/include ../../../gucefGUI/include ../../../gucefIMAGE/include ../../../gucefINPUT/include ../../../gucefMT/include ../../../gucefVFS/include ../guidriverMyGUI/include include )
 
 if ( ANDROID )
   include_directories( ../../../dependencies/Ogre/OgreMain/include/Android ../../../gucefCORE/include/android )
@@ -65,11 +67,11 @@ if ( IOS )
 endif( IOS )
 
 if ( LINUX32 )
-  include_directories( ../../../gucefCORE/include/linux )
+  include_directories( ../../../dependencies/MyGui/Platforms/Ogre/OgrePlatform/include ../../../gucefCORE/include/linux )
 endif( LINUX32 )
 
 if ( LINUX64 )
-  include_directories( ../../../gucefCORE/include/linux )
+  include_directories( ../../../dependencies/MyGui/Platforms/Ogre/OgrePlatform/include ../../../gucefCORE/include/linux )
 endif( LINUX64 )
 
 if ( OSX )
@@ -77,7 +79,7 @@ if ( OSX )
 endif( OSX )
 
 if ( WIN32 )
-  include_directories( ../../../dependencies/Ogre/OgreMain/include/WIN32 ../../../dependencies/Ogre/OgreMain/src/WIN32 ../../../gucefCORE/include/mswin )
+  include_directories( ../../../dependencies/MyGui/Platforms/Ogre/OgrePlatform/include ../../../dependencies/Ogre/OgreMain/include/WIN32 ../../../dependencies/Ogre/OgreMain/src/WIN32 ../../../gucefCORE/include/mswin )
 endif( WIN32 )
 
 if ( WIN64 )

@@ -1,0 +1,17 @@
+<ModuleInfoEntry>
+    <Module Name="OgreRenderSystem_Direct3D9" Type="SharedLibrary" Platform="mswin">
+        <Dependencies>
+            <Dependency Name="Ogre.CommonInclude" />
+            <Dependency Name="Ogre" />
+        </Dependencies>
+        <Linker>
+            <Dependency Name="Ogre" />
+        </Linker>
+        <Preprocessor>
+            <Define String="OGRED3DENGINEDLL_EXPORTS
+" />
+            <Define String="_USRDLL
+" />
+        </Preprocessor>
+    </Module>
+</ModuleInfoEntry>
