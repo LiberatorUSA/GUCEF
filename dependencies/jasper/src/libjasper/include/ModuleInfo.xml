@@ -1,0 +1,10 @@
+<ModuleInfoEntry>
+    <Module Name="jasper.Include" Type="HeaderIncludeLocation" Platform="All">
+        <Dependencies>
+        </Dependencies>
+        <Linker>
+        </Linker>
+        <Preprocessor>
+        </Preprocessor>
+    </Module>
+</ModuleInfoEntry>

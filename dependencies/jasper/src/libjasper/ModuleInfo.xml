@@ -1,0 +1,14 @@
+<ModuleInfoEntry>
+    <Module Name="jasper" Type="SharedLibrary" Platform="All">
+        <Dependencies>
+            <Dependency Name="jasper.Include" />
+            <Dependency Name="libjpeg" />
+        </Dependencies>
+        <Linker>
+            <Dependency Name="libjpeg" />
+        </Linker>
+        <Preprocessor>
+            <Define String="JAS_ENABLE_SHARED" />
+        </Preprocessor>
+    </Module>
+</ModuleInfoEntry>
