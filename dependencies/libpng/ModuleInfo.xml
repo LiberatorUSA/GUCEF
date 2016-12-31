@@ -1,0 +1,14 @@
+<ModuleInfoEntry>
+    <Module Name="libpng" Type="SharedLibrary" Platform="All">
+        <Dependencies>
+            <Dependency Name="zlib" />
+        </Dependencies>
+        <Linker>
+            <Dependency Name="zlib" />
+        </Linker>
+        <Preprocessor>
+            <Define String="PNG_NO_CONFIG_H" />
+            <Define String="PNG_USE_DLL" />
+        </Preprocessor>
+    </Module>
+</ModuleInfoEntry>
