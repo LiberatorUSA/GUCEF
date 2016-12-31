@@ -1,0 +1,11 @@
+<ModuleInfoEntry>
+    <Module Name="libjpeg" Type="SharedLibrary" Platform="All">
+        <Dependencies>
+        </Dependencies>
+        <Linker>
+        </Linker>
+        <Preprocessor>
+            <Define String="JPEG_NO_CONFIG_H" />
+        </Preprocessor>
+    </Module>
+</ModuleInfoEntry>
