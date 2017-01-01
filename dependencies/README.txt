@@ -15,6 +15,7 @@ CEGUI is version 0.8.3
 libiconv is version 1.14
 libpng is version 1.6.26
 libmng is version 2.0.3
+libtiff is version 4.0.7
 glew is version 1.13
 glm is version 0.9.6
 Little-CMS is version >=2.8 HEAD from https://github.com/mm2/Little-CMS
