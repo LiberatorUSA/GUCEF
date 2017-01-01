@@ -16,6 +16,8 @@
 #include <jasper/jasper.h>
 #include "il_jp2.h"
 
+typedef unsigned char uchar;
+
 #if defined(_WIN32) && defined(IL_USE_PRAGMA_LIBS)
 	#if defined(_MSC_VER) || defined(__BORLANDC__)
 		#ifndef _DEBUG
