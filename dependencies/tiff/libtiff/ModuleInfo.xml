@@ -1,14 +1,8 @@
 <ModuleInfoEntry>
-    <Module Name="libmng" Type="SharedLibrary" Platform="All">
+    <Module Name="libtiff" Type="SharedLibrary" Platform="All">
         <Dependencies>
-            <Dependency Name="zlib" />
-            <Dependency Name="lcms2" />
-            <Dependency Name="libjpeg" />
         </Dependencies>
         <Linker>
-            <Dependency Name="zlib" />
-            <Dependency Name="lcms2" />
-            <Dependency Name="libjpeg" />
         </Linker>
         <Preprocessor>
             <Define String="MNG_BUILD_SO" />

@@ -18,9 +18,9 @@
             <Dependency Name="lcms2" />
         </Linker>
         <Preprocessor>
-            <Define String="JPEGSTATIC" />
             <Define String="CMS_DLL" />
             <Define String="HAVE_CONFIG_H" />
+            <Define String="IL_NO_WDP" />
         </Preprocessor>
     </Module>
 </ModuleInfoEntry>
