@@ -1,11 +1,21 @@
 <ModuleInfoEntry>
     <Module Name="DevIL" Type="SharedLibrary" Platform="All">
         <Dependencies>
+            <Dependency Name="DevIL.Include" />
+            <Dependency Name="libpng" />
+            <Dependency Name="libjpeg" />
+            <Dependency Name="jasper" />
+            <Dependency Name="zlib" />
         </Dependencies>
         <Linker>
+            <Dependency Name="libpng" />
+            <Dependency Name="libjpeg" />
+            <Dependency Name="jasper" />
+            <Dependency Name="zlib" />
         </Linker>
         <Preprocessor>
             <Define String="JPEGSTATIC" />
+            <Define String="HAVE_CONFIG_H" />
         </Preprocessor>
     </Module>
 </ModuleInfoEntry>

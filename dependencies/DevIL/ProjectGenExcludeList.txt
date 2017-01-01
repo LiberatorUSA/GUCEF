@@ -1,0 +1,13 @@
+.settings
+.externalToolBuilders
+bin
+cmake
+cpp wrapper
+data
+docs
+examples
+lib
+libtools
+m4
+projects
+test

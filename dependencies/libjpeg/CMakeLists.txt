@@ -14,6 +14,7 @@
 set( HEADER_FILES 
   cderror.h
   cdjpeg.h
+  jconfig.h
   jdct.h
   jerror.h
   jinclude.h
@@ -27,10 +28,6 @@ set( HEADER_FILES
 
 set( SOURCE_FILES 
   cdjpeg.c
-  cjpeg.c
-  ckconfig.c
-  djpeg.c
-  example.c
   jaricom.c
   jcapimin.c
   jcapistd.c
@@ -73,12 +70,8 @@ set( SOURCE_FILES
   jidctfst.c
   jidctint.c
   jmemansi.c
-  jmemdos.c
   jmemdosa.asm
-  jmemmac.c
   jmemmgr.c
-  jmemname.c
-  jmemnobs.c
   jpegtran.c
   jquant1.c
   jquant2.c
@@ -86,7 +79,6 @@ set( SOURCE_FILES
   rdbmp.c
   rdcolmap.c
   rdgif.c
-  rdjpgcom.c
   rdppm.c
   rdrle.c
   rdswitch.c
@@ -94,7 +86,6 @@ set( SOURCE_FILES
   transupp.c
   wrbmp.c
   wrgif.c
-  wrjpgcom.c
   wrppm.c
   wrrle.c
   wrtarga.c

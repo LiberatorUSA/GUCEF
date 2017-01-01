@@ -6,6 +6,7 @@
         </Linker>
         <Preprocessor>
             <Define String="JPEG_NO_CONFIG_H" />
+            <Define String="LIBJPEG_EXPORTS" />
         </Preprocessor>
     </Module>
 </ModuleInfoEntry>

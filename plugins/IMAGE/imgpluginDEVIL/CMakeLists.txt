@@ -122,7 +122,7 @@ if ( WIN64 )
   set_property( TARGET ${MODULE_NAME} APPEND_STRING PROPERTY COMPILE_DEFINITIONS "GUCEF_CODECPLUGIN_BUILD_MODULE" )
 endif( WIN64 )
 
-include_directories( ../../../common/include ../../../gucefCORE/include ../../../gucefMT/include )
+include_directories( ../../../common/include ../../../dependencies/DevIL/include ../../../dependencies/DevIL/include/IL ../../../dependencies/DevIL/src-IL/include ../../../dependencies/DevIL/src-IL/msvc8 ../../../dependencies/DevIL/src-IL/msvc9 ../../../dependencies/DevIL/src-ILU/include ../../../dependencies/DevIL/src-ILU/include/ilu_error ../../../dependencies/DevIL/src-ILU/msvc8 ../../../dependencies/DevIL/src-ILU/msvc9 ../../../dependencies/DevIL/src-ILUT/include ../../../dependencies/DevIL/src-ILUT/msvc8 ../../../dependencies/DevIL/src-ILUT/msvc9 ../../../dependencies/jasper/src/libjasper/bmp ../../../dependencies/jasper/src/libjasper/include ../../../dependencies/jasper/src/libjasper/include/jasper ../../../dependencies/jasper/src/libjasper/jp2 ../../../dependencies/jasper/src/libjasper/jpc ../../../dependencies/jasper/src/libjasper/jpg ../../../dependencies/jasper/src/libjasper/mif ../../../dependencies/jasper/src/libjasper/pgx ../../../dependencies/jasper/src/libjasper/pnm ../../../dependencies/jasper/src/libjasper/ras ../../../dependencies/libjpeg ../../../dependencies/libpng ../../../gucefCORE/include ../../../gucefMT/include )
 
 if ( LINUX32 )
   include_directories( ../../../gucefCORE/include/linux include )
