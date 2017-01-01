@@ -200,7 +200,7 @@ set( MODULE_NAME "DevIL" )
 add_library( ${MODULE_NAME} ${ALL_FILES} )
 add_dependencies( ${MODULE_NAME} jasper lcms2 libjpeg libmng libpng zlib )
 target_link_libraries( ${MODULE_NAME} jasper lcms2 libjpeg libmng libpng zlib )
-set_property( TARGET ${MODULE_NAME} APPEND_STRING PROPERTY COMPILE_DEFINITIONS "HAVE_CONFIG_H;JPEGSTATIC" )
+set_property( TARGET ${MODULE_NAME} APPEND_STRING PROPERTY COMPILE_DEFINITIONS "CMS_DLL;HAVE_CONFIG_H;JPEGSTATIC" )
 
 include_directories( ../Little-CMS/include ../Little-CMS/src ../jasper/src/libjasper/bmp ../jasper/src/libjasper/include ../jasper/src/libjasper/include/jasper ../jasper/src/libjasper/jp2 ../jasper/src/libjasper/jpc ../jasper/src/libjasper/jpg ../jasper/src/libjasper/mif ../jasper/src/libjasper/pgx ../jasper/src/libjasper/pnm ../jasper/src/libjasper/ras ../libjpeg ../libmng ../libpng include include/IL src-ILUT/include src-ILUT/msvc8 src-ILUT/msvc9 src-ILU/include src-ILU/include/ilu_error src-ILU/msvc8 src-ILU/msvc9 src-IL/include src-IL/msvc8 src-IL/msvc9 )
 

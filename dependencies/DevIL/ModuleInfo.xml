@@ -19,6 +19,7 @@
         </Linker>
         <Preprocessor>
             <Define String="JPEGSTATIC" />
+            <Define String="CMS_DLL" />
             <Define String="HAVE_CONFIG_H" />
         </Preprocessor>
     </Module>
