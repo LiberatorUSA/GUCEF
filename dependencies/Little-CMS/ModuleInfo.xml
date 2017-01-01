@@ -1,14 +1,16 @@
 <ModuleInfoEntry>
-    <Module Name="lcms" Type="SharedLibrary" Platform="All">
+    <Module Name="lcms2" Type="SharedLibrary" Platform="All">
         <Dependencies>
-            <Dependency Name="zlib" />
         </Dependencies>
         <Linker>
-            <Dependency Name="zlib" />
         </Linker>
         <Preprocessor>
-            <Define String="PNG_NO_CONFIG_H" />
-            <Define String="PNG_USE_DLL" />
+            <Define String="CMS_DLL_BUILD" />
+        </Preprocessor>
+    </Module>
+    <Module Platform="mswin">
+        <Preprocessor>
+            <Define String="CMS_RELY_ON_WINDOWS_STATIC_MUTEX_INIT" />
         </Preprocessor>
     </Module>
 </ModuleInfoEntry>

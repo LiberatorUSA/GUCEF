@@ -1,7 +1,7 @@
 #ifndef __CONFIG_H__
 #define __CONFIG_H__
 
-#define IL_USE_PRAGMA_LIBS  // Links to only the libraries that are requested.
+//#define IL_USE_PRAGMA_LIBS  // Links to only the libraries that are requested.
 #define IL_INLINE_ASM 1  // Define if you can support at least some ASM
 
 // Supported images formats (IL)

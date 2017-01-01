@@ -4,14 +4,18 @@
             <Dependency Name="DevIL.Include" />
             <Dependency Name="libpng" />
             <Dependency Name="libjpeg" />
+            <Dependency Name="libmng" />
             <Dependency Name="jasper" />
             <Dependency Name="zlib" />
+            <Dependency Name="lcms2" />
         </Dependencies>
         <Linker>
             <Dependency Name="libpng" />
             <Dependency Name="libjpeg" />
+            <Dependency Name="libmng" />
             <Dependency Name="jasper" />
             <Dependency Name="zlib" />
+            <Dependency Name="lcms2" />
         </Linker>
         <Preprocessor>
             <Define String="JPEGSTATIC" />

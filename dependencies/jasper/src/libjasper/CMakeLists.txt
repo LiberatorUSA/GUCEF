@@ -91,7 +91,6 @@ set( SOURCE_FILES
   jpc/jpc_tsfb.c
   jpc/jpc_util.c
   jpg/jpg_dec.c
-  jpg/jpg_dummy.c
   jpg/jpg_enc.c
   jpg/jpg_val.c
   mif/mif_cod.c
