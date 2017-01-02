@@ -5,6 +5,7 @@
             <Dependency Name="libpng" />
             <Dependency Name="libjpeg" />
             <Dependency Name="libmng" />
+            <Dependency Name="libtiff" />
             <Dependency Name="jasper" />
             <Dependency Name="zlib" />
             <Dependency Name="lcms2" />
@@ -13,6 +14,7 @@
             <Dependency Name="libpng" />
             <Dependency Name="libjpeg" />
             <Dependency Name="libmng" />
+            <Dependency Name="libtiff" />
             <Dependency Name="jasper" />
             <Dependency Name="zlib" />
             <Dependency Name="lcms2" />

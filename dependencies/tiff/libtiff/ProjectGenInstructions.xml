@@ -1,0 +1,13 @@
+<PROJECTGENERATOR>
+    <EXCLUDES PLATFORM="All">
+        <ITEM NAME="mkg3states.c" TYPE="FILE" />
+        <ITEM NAME="tif_unix.c" TYPE="FILE" />
+        <ITEM NAME="tif_win32.c" TYPE="FILE" />
+    </EXCLUDES>
+    <INCLUDES PLATFORM="mswin">
+        <ITEM NAME="tif_win32.c" TYPE="FILE" />
+    </INCLUDES>
+    <INCLUDES PLATFORM="linux">
+        <ITEM NAME="tif_unix.c" TYPE="FILE" />
+    </INCLUDES>
+</PROJECTGENERATOR>

@@ -31,7 +31,6 @@ set( HEADER_FILES
 )
 
 set( SOURCE_FILES 
-  mkg3states.c
   tif_aux.c
   tif_close.c
   tif_codec.c
@@ -67,27 +66,76 @@ set( SOURCE_FILES
   tif_swab.c
   tif_thunder.c
   tif_tile.c
-  tif_unix.c
   tif_version.c
   tif_warning.c
-  tif_win32.c
   tif_write.c
   tif_zip.c
 )
 
+
+
+if (LINUX32)
+  set( PLATFORM_SOURCE_FILES 
+    tif_unix.c
+  )
+
+  set( PLATFORM_SOURCE_INSTALL "LINUX32" )
+  source_group( "Platform Source Files" FILES ${PLATFORM_SOURCE_FILES} )
+
+elseif (LINUX64)
+  set( PLATFORM_SOURCE_FILES 
+    tif_unix.c
+  )
+
+  set( PLATFORM_SOURCE_INSTALL "LINUX64" )
+  source_group( "Platform Source Files" FILES ${PLATFORM_SOURCE_FILES} )
+
+elseif (WIN32)
+  set( PLATFORM_SOURCE_FILES 
+    tif_win32.c
+  )
+
+  set( PLATFORM_SOURCE_INSTALL "WIN32" )
+  source_group( "Platform Source Files" FILES ${PLATFORM_SOURCE_FILES} )
+
+elseif (WIN64)
+  set( PLATFORM_SOURCE_FILES 
+    tif_win32.c
+  )
+
+  set( PLATFORM_SOURCE_INSTALL "WIN64" )
+  source_group( "Platform Source Files" FILES ${PLATFORM_SOURCE_FILES} )
+
+endif ()
+
 # Make sure the PLATFORM_HEADER_FILES variable is always defined
  set( PLATFORM_HEADER_FILES "" )
-
-# Make sure the PLATFORM_SOURCE_FILES variable is always defined
- set( PLATFORM_SOURCE_FILES "" )
 
 # For ease of use make a variable that has all files for this module
 set( ALL_FILES ${HEADER_FILES} ${SOURCE_FILES} ${PLATFORM_HEADER_FILES} ${PLATFORM_SOURCE_FILES} )
 
 set( MODULE_NAME "libtiff" )
 add_library( ${MODULE_NAME} ${ALL_FILES} )
-set_property( TARGET ${MODULE_NAME} APPEND_STRING PROPERTY COMPILE_DEFINITIONS "CMS_DLL;MNG_BUILD_SO" )
+add_dependencies( ${MODULE_NAME} libjpeg zlib )
+target_link_libraries( ${MODULE_NAME} libjpeg zlib )
 
+include_directories( ../../libjpeg )
+
+if ( LINUX32 )
+  include_directories( ../../zlib )
+endif( LINUX32 )
+
+if ( LINUX64 )
+  include_directories( ../../zlib )
+endif( LINUX64 )
+
+if ( WIN32 )
+  include_directories( ../../zlib )
+endif( WIN32 )
+
+if ( WIN64 )
+  include_directories( ../../zlib )
+endif( WIN64 )
 
 
 
@@ -96,7 +144,15 @@ set_property( TARGET ${MODULE_NAME} APPEND_STRING PROPERTY COMPILE_DEFINITIONS "
 
 
 
-if (OSX)
+if (LINUX32)
+GUCEF_config_lib( ${MODULE_NAME} )
+elseif (LINUX64)
+GUCEF_config_lib( ${MODULE_NAME} )
+elseif (OSX)
+GUCEF_config_lib( ${MODULE_NAME} )
+elseif (WIN32)
+GUCEF_config_lib( ${MODULE_NAME} )
+elseif (WIN64)
 GUCEF_config_lib( ${MODULE_NAME} )
 else()
 GUCEF_config_lib( ${MODULE_NAME} )

@@ -1,12 +1,14 @@
 <ModuleInfoEntry>
     <Module Name="libtiff" Type="SharedLibrary" Platform="All">
         <Dependencies>
+            <Dependency Name="libjpeg" />
+            <Dependency Name="zlib" />
         </Dependencies>
         <Linker>
+            <Dependency Name="libjpeg" />
+            <Dependency Name="zlib" />
         </Linker>
         <Preprocessor>
-            <Define String="MNG_BUILD_SO" />
-            <Define String="CMS_DLL" />
         </Preprocessor>
     </Module>
 </ModuleInfoEntry>
