@@ -14,7 +14,7 @@
 // #define IL_NO_DDS
 // #define IL_NO_DICOM
 // #define IL_NO_DOOM
-// #define IL_NO_EXR
+ #define IL_NO_EXR
 // #define IL_NO_FITS
 // #define IL_NO_FTX
 // #define IL_NO_GIF
@@ -49,7 +49,7 @@
 // #define IL_NO_XPM
 
 #define IL_USE_JPEGLIB_UNMODIFIED 1
-#define IL_USE_DXTC_NVIDIA
+//#define IL_USE_DXTC_NVIDIA
 #define IL_USE_DXTC_SQUISH
 
 //#define IL_NO_GAMES
