@@ -12,6 +12,8 @@
 # Configuration for module: OpenEXR
 
 set( HEADER_FILES 
+  IlmImf/b44ExpLogTable.h
+  IlmImf/dwaLookups.h
   IlmImf/ImfAcesFile.h
   IlmImf/ImfArray.h
   IlmImf/ImfAttribute.h
@@ -122,76 +124,6 @@ set( HEADER_FILES
   IlmImf/ImfXdr.h
   IlmImf/ImfZip.h
   IlmImf/ImfZipCompressor.h
-  IlmImfExamples/drawImage.h
-  IlmImfExamples/generalInterfaceExamples.h
-  IlmImfExamples/generalInterfaceTiledExamples.h
-  IlmImfExamples/lowLevelIoExamples.h
-  IlmImfExamples/namespaceAlias.h
-  IlmImfExamples/previewImageExamples.h
-  IlmImfExamples/rgbaInterfaceExamples.h
-  IlmImfExamples/rgbaInterfaceTiledExamples.h
-  IlmImfFuzzTest/fuzzFile.h
-  IlmImfFuzzTest/testFuzzDeepScanLines.h
-  IlmImfFuzzTest/testFuzzDeepTiles.h
-  IlmImfFuzzTest/testFuzzScanLines.h
-  IlmImfFuzzTest/testFuzzTiles.h
-  IlmImfFuzzTest/tmpDir.h
-  IlmImfTest/compareB44.h
-  IlmImfTest/compareDwa.h
-  IlmImfTest/compareFloat.h
-  IlmImfTest/testAttributes.h
-  IlmImfTest/testBackwardCompatibility.h
-  IlmImfTest/testBadTypeAttributes.h
-  IlmImfTest/testChannels.h
-  IlmImfTest/testCompositeDeepScanLine.h
-  IlmImfTest/testCompression.h
-  IlmImfTest/testConversion.h
-  IlmImfTest/testCopyDeepScanLine.h
-  IlmImfTest/testCopyDeepTiled.h
-  IlmImfTest/testCopyMultiPartFile.h
-  IlmImfTest/testCopyPixels.h
-  IlmImfTest/testCustomAttributes.h
-  IlmImfTest/testDeepScanLineBasic.h
-  IlmImfTest/testDeepScanLineHuge.h
-  IlmImfTest/testDeepScanLineMultipleRead.h
-  IlmImfTest/testDeepTiledBasic.h
-  IlmImfTest/testDwaCompressorSimd.h
-  IlmImfTest/testExistingStreams.h
-  IlmImfTest/testFutureProofing.h
-  IlmImfTest/testHuf.h
-  IlmImfTest/testInputPart.h
-  IlmImfTest/testIsComplete.h
-  IlmImfTest/testLineOrder.h
-  IlmImfTest/testLut.h
-  IlmImfTest/testMagic.h
-  IlmImfTest/testMultiPartApi.h
-  IlmImfTest/testMultiPartFileMixingBasic.h
-  IlmImfTest/testMultiPartSharedAttributes.h
-  IlmImfTest/testMultiPartThreading.h
-  IlmImfTest/testMultiScanlinePartThreading.h
-  IlmImfTest/testMultiTiledPartThreading.h
-  IlmImfTest/testMultiView.h
-  IlmImfTest/testNativeFormat.h
-  IlmImfTest/testOptimized.h
-  IlmImfTest/testOptimizedInterleavePatterns.h
-  IlmImfTest/testPartHelper.h
-  IlmImfTest/testPreviewImage.h
-  IlmImfTest/testRgba.h
-  IlmImfTest/testRgbaThreading.h
-  IlmImfTest/testRle.h
-  IlmImfTest/testSampleImages.h
-  IlmImfTest/testScanLineApi.h
-  IlmImfTest/testSharedFrameBuffer.h
-  IlmImfTest/testStandardAttributes.h
-  IlmImfTest/testTiledCompression.h
-  IlmImfTest/testTiledCopyPixels.h
-  IlmImfTest/testTiledLineOrder.h
-  IlmImfTest/testTiledRgba.h
-  IlmImfTest/testTiledYa.h
-  IlmImfTest/testWav.h
-  IlmImfTest/testXdr.h
-  IlmImfTest/testYca.h
-  IlmImfTest/tmpDir.h
   IlmImfUtil/ImfDeepImage.h
   IlmImfUtil/ImfDeepImageChannel.h
   IlmImfUtil/ImfDeepImageIO.h
@@ -207,25 +139,7 @@ set( HEADER_FILES
   IlmImfUtil/ImfImageIO.h
   IlmImfUtil/ImfImageLevel.h
   IlmImfUtil/ImfSampleCountChannel.h
-  IlmImfUtilTest/testDeepImage.h
-  IlmImfUtilTest/testFlatImage.h
-  IlmImfUtilTest/testIO.h
-  IlmImfUtilTest/tmpDir.h
   config.windows/OpenEXRConfig.h
-  exrenvmap/blurImage.h
-  exrenvmap/EnvmapImage.h
-  exrenvmap/makeCubeMap.h
-  exrenvmap/makeLatLongMap.h
-  exrenvmap/namespaceAlias.h
-  exrenvmap/readInputImage.h
-  exrenvmap/resizeImage.h
-  exrmakepreview/makePreview.h
-  exrmaketiled/Image.h
-  exrmaketiled/makeTiled.h
-  exrmaketiled/namespaceAlias.h
-  exrmultiview/Image.h
-  exrmultiview/makeMultiView.h
-  exrmultiview/namespaceAlias.h
 )
 
 set( SOURCE_FILES 
@@ -320,76 +234,6 @@ set( SOURCE_FILES
   IlmImf/ImfWav.cpp
   IlmImf/ImfZip.cpp
   IlmImf/ImfZipCompressor.cpp
-  IlmImfExamples/drawImage.cpp
-  IlmImfExamples/generalInterfaceExamples.cpp
-  IlmImfExamples/generalInterfaceTiledExamples.cpp
-  IlmImfExamples/lowLevelIoExamples.cpp
-  IlmImfExamples/main.cpp
-  IlmImfExamples/previewImageExamples.cpp
-  IlmImfExamples/rgbaInterfaceExamples.cpp
-  IlmImfExamples/rgbaInterfaceTiledExamples.cpp
-  IlmImfFuzzTest/fuzzFile.cpp
-  IlmImfFuzzTest/main.cpp
-  IlmImfFuzzTest/testFuzzDeepScanLines.cpp
-  IlmImfFuzzTest/testFuzzDeepTiles.cpp
-  IlmImfFuzzTest/testFuzzScanLines.cpp
-  IlmImfFuzzTest/testFuzzTiles.cpp
-  IlmImfTest/compareB44.cpp
-  IlmImfTest/compareDwa.cpp
-  IlmImfTest/compareFloat.cpp
-  IlmImfTest/main.cpp
-  IlmImfTest/testAttributes.cpp
-  IlmImfTest/testBackwardCompatibility.cpp
-  IlmImfTest/testBadTypeAttributes.cpp
-  IlmImfTest/testChannels.cpp
-  IlmImfTest/testCompositeDeepScanLine.cpp
-  IlmImfTest/testCompression.cpp
-  IlmImfTest/testConversion.cpp
-  IlmImfTest/testCopyDeepScanLine.cpp
-  IlmImfTest/testCopyDeepTiled.cpp
-  IlmImfTest/testCopyMultiPartFile.cpp
-  IlmImfTest/testCopyPixels.cpp
-  IlmImfTest/testCustomAttributes.cpp
-  IlmImfTest/testDeepScanLineBasic.cpp
-  IlmImfTest/testDeepScanLineHuge.cpp
-  IlmImfTest/testDeepScanLineMultipleRead.cpp
-  IlmImfTest/testDeepTiledBasic.cpp
-  IlmImfTest/testDwaCompressorSimd.cpp
-  IlmImfTest/testExistingStreams.cpp
-  IlmImfTest/testFutureProofing.cpp
-  IlmImfTest/testHuf.cpp
-  IlmImfTest/testInputPart.cpp
-  IlmImfTest/testIsComplete.cpp
-  IlmImfTest/testLineOrder.cpp
-  IlmImfTest/testLut.cpp
-  IlmImfTest/testMagic.cpp
-  IlmImfTest/testMultiPartApi.cpp
-  IlmImfTest/testMultiPartFileMixingBasic.cpp
-  IlmImfTest/testMultiPartSharedAttributes.cpp
-  IlmImfTest/testMultiPartThreading.cpp
-  IlmImfTest/testMultiScanlinePartThreading.cpp
-  IlmImfTest/testMultiTiledPartThreading.cpp
-  IlmImfTest/testMultiView.cpp
-  IlmImfTest/testNativeFormat.cpp
-  IlmImfTest/testOptimized.cpp
-  IlmImfTest/testOptimizedInterleavePatterns.cpp
-  IlmImfTest/testPartHelper.cpp
-  IlmImfTest/testPreviewImage.cpp
-  IlmImfTest/testRgba.cpp
-  IlmImfTest/testRgbaThreading.cpp
-  IlmImfTest/testRle.cpp
-  IlmImfTest/testSampleImages.cpp
-  IlmImfTest/testScanLineApi.cpp
-  IlmImfTest/testSharedFrameBuffer.cpp
-  IlmImfTest/testStandardAttributes.cpp
-  IlmImfTest/testTiledCompression.cpp
-  IlmImfTest/testTiledCopyPixels.cpp
-  IlmImfTest/testTiledLineOrder.cpp
-  IlmImfTest/testTiledRgba.cpp
-  IlmImfTest/testTiledYa.cpp
-  IlmImfTest/testWav.cpp
-  IlmImfTest/testXdr.cpp
-  IlmImfTest/testYca.cpp
   IlmImfUtil/ImfDeepImage.cpp
   IlmImfUtil/ImfDeepImageChannel.cpp
   IlmImfUtil/ImfDeepImageIO.cpp
@@ -404,30 +248,7 @@ set( SOURCE_FILES
   IlmImfUtil/ImfImageIO.cpp
   IlmImfUtil/ImfImageLevel.cpp
   IlmImfUtil/ImfSampleCountChannel.cpp
-  IlmImfUtilTest/main.cpp
-  IlmImfUtilTest/testDeepImage.cpp
-  IlmImfUtilTest/testFlatImage.cpp
-  IlmImfUtilTest/testIO.cpp
-  exr2aces/main.cpp
-  exrbuild/exrbuild.cpp
-  exrenvmap/blurImage.cpp
-  exrenvmap/EnvmapImage.cpp
-  exrenvmap/main.cpp
-  exrenvmap/makeCubeMap.cpp
-  exrenvmap/makeLatLongMap.cpp
-  exrenvmap/readInputImage.cpp
-  exrenvmap/resizeImage.cpp
-  exrheader/main.cpp
-  exrmakepreview/main.cpp
-  exrmakepreview/makePreview.cpp
-  exrmaketiled/Image.cpp
-  exrmaketiled/main.cpp
-  exrmaketiled/makeTiled.cpp
   exrmultipart/exrmultipart.cpp
-  exrmultiview/Image.cpp
-  exrmultiview/main.cpp
-  exrmultiview/makeMultiView.cpp
-  exrstdattr/main.cpp
 )
 
 # Make sure the PLATFORM_HEADER_FILES variable is always defined
@@ -441,8 +262,8 @@ set( ALL_FILES ${HEADER_FILES} ${SOURCE_FILES} ${PLATFORM_HEADER_FILES} ${PLATFO
 
 set( MODULE_NAME "OpenEXR" )
 add_library( ${MODULE_NAME} ${ALL_FILES} )
-add_dependencies( ${MODULE_NAME} ilmBase )
-target_link_libraries( ${MODULE_NAME} ilmBase )
+add_dependencies( ${MODULE_NAME} ilmBase zlib )
+target_link_libraries( ${MODULE_NAME} ilmBase zlib )
 
 if ( WIN32 )
   set_property( TARGET ${MODULE_NAME} APPEND_STRING PROPERTY COMPILE_DEFINITIONS "ILMIMF_EXPORTS;OPENEXR_DLL" )
@@ -452,7 +273,23 @@ if ( WIN64 )
   set_property( TARGET ${MODULE_NAME} APPEND_STRING PROPERTY COMPILE_DEFINITIONS "ILMIMF_EXPORTS;OPENEXR_DLL" )
 endif( WIN64 )
 
-include_directories( ../IlmBase/Half ../IlmBase/Iex ../IlmBase/IexMath ../IlmBase/IlmThread ../IlmBase/Imath ../IlmBase/config.windows IlmImf IlmImfExamples IlmImfFuzzTest IlmImfTest IlmImfUtil IlmImfUtilTest config.windows exrenvmap exrmakepreview exrmaketiled exrmultiview )
+include_directories( ../IlmBase/Half ../IlmBase/Iex ../IlmBase/IexMath ../IlmBase/IlmThread ../IlmBase/Imath ../IlmBase/config.windows IlmImf IlmImfUtil config.windows )
+
+if ( LINUX32 )
+  include_directories( ../../zlib )
+endif( LINUX32 )
+
+if ( LINUX64 )
+  include_directories( ../../zlib )
+endif( LINUX64 )
+
+if ( WIN32 )
+  include_directories( ../../zlib )
+endif( WIN32 )
+
+if ( WIN64 )
+  include_directories( ../../zlib )
+endif( WIN64 )
 
 
 

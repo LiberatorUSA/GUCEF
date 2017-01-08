@@ -1,2 +1,16 @@
+IlmTest
+exrbuild
+exrenvmap
+IlmImfUtilTest
+IlmImfTest
+exrmakepreview
+exrmaketiled
+exrmultipart
+IlmImfFuzzTest
+exrstdattr
+exr2aces
+exrheader
+IlmImfExamples
+exrmultiview
 doc
 m4

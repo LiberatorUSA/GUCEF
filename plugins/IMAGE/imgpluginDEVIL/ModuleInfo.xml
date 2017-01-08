@@ -3,11 +3,10 @@
         <Dependencies>
             <Dependency Name="gucefCORE" />
             <Dependency Name="gucefMT" />
+            <Dependency Name="gucefIMAGE" />
             <Dependency Name="DevIL" />
         </Dependencies>
         <Linker>
-            <Dependency Name="gucefCORE" />
-            <Dependency Name="gucefMT" />
             <Dependency Name="DevIL" />
         </Linker>
         <Preprocessor>

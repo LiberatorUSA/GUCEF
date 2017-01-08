@@ -1,0 +1,22 @@
+<ModuleInfoEntry>
+    <Module Name="OpenEXR" Type="SharedLibrary" Platform="All">
+        <Dependencies>
+            <Dependency Name="zlib" />
+        </Dependencies>
+        <Linker>
+            <Dependency Name="zlib" />
+        </Linker>
+        <Preprocessor>
+        </Preprocessor>
+    </Module>
+    <Module Platform="mswin">
+        <Preprocessor>
+            <Define String="OPENEXR_DLL" />
+            <Define String="ILMIMF_EXPORTS" />
+            <Define String="IEX_EXPORTS" />
+            <Define String="IMATH_EXPORTS" />
+            <Define String="HALF_EXPORTS" />
+            <Define String="ILMTHREAD_EXPORTS" />
+        </Preprocessor>
+    </Module>
+</ModuleInfoEntry>

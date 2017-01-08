@@ -9,6 +9,7 @@
             <Dependency Name="jasper" />
             <Dependency Name="zlib" />
             <Dependency Name="lcms2" />
+            <Dependency Name="OpenEXR" />
         </Dependencies>
         <Linker>
             <Dependency Name="libpng" />
@@ -18,6 +19,7 @@
             <Dependency Name="jasper" />
             <Dependency Name="zlib" />
             <Dependency Name="lcms2" />
+            <Dependency Name="OpenEXR" />
         </Linker>
         <Preprocessor>
             <Define String="CMS_DLL" />
