@@ -9,6 +9,9 @@
         </Linker>
         <Preprocessor>
             <Define String="JAS_ENABLE_SHARED" />
+            <Define String="JAS_DLL" />
+            <Define String="JAS_BUILDING_DLL" />
+            <Define String="JAS_HAVE_VISIBILITY" />
         </Preprocessor>
     </Module>
 </ModuleInfoEntry>

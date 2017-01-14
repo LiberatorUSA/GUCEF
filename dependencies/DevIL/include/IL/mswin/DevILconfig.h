@@ -14,7 +14,8 @@
 // #define IL_NO_DDS
 // #define IL_NO_DICOM
 // #define IL_NO_DOOM
- #define IL_NO_EXR
+ #define IL_NO_EXR  // <- Compile errors using OpenEXR
+ #define IL_NO_UTX  // <- Compile errors
 // #define IL_NO_FITS
 // #define IL_NO_FTX
 // #define IL_NO_GIF

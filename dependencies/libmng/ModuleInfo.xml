@@ -12,6 +12,7 @@
         </Linker>
         <Preprocessor>
             <Define String="MNG_BUILD_SO" />
+            <Define String="MNG_BUILD_DLL" />
             <Define String="CMS_DLL" />
         </Preprocessor>
     </Module>

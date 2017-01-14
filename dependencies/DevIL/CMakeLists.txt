@@ -16,8 +16,6 @@ set( HEADER_FILES
   src-ILUT/include/ilut_internal.h
   src-ILUT/include/ilut_opengl.h
   src-ILUT/include/ilut_states.h
-  src-ILUT/msvc8/resource.h
-  src-ILUT/msvc9/resource.h
   src-ILU/include/ilu_alloc.h
   src-ILU/include/ilu_filter.h
   src-ILU/include/ilu_internal.h
@@ -31,8 +29,6 @@ set( HEADER_FILES
   src-ILU/include/ilu_error/ilu_err-italian.h
   src-ILU/include/ilu_error/ilu_err-japanese.h
   src-ILU/include/ilu_error/ilu_err-spanish.h
-  src-ILU/msvc8/resource.h
-  src-ILU/msvc9/resource.h
   src-IL/include/altivec_common.h
   src-IL/include/altivec_typeconversion.h
   src-IL/include/il_alloc.h
@@ -71,8 +67,6 @@ set( HEADER_FILES
   src-IL/include/il_utx.h
   src-IL/include/il_vtf.h
   src-IL/include/il_wdp.h
-  src-IL/msvc8/resource.h
-  src-IL/msvc9/resource.h
 )
 
 set( SOURCE_FILES 
@@ -82,19 +76,16 @@ set( SOURCE_FILES
   src-ILUT/src/ilut_directx9.c
   src-ILUT/src/ilut_directxm.c
   src-ILUT/src/ilut_internal.c
-  src-ILUT/src/ilut_main.c
   src-ILUT/src/ilut_opengl.c
   src-ILUT/src/ilut_sdlsurface.c
   src-ILUT/src/ilut_states.c
   src-ILUT/src/ilut_win32.c
   src-ILUT/src/ilut_x11.c
-  src-ILU/ilur/ilur.c
   src-ILU/src/ilu_alloc.c
   src-ILU/src/ilu_error.c
   src-ILU/src/ilu_filter.c
   src-ILU/src/ilu_filter_rcg.c
   src-ILU/src/ilu_internal.c
-  src-ILU/src/ilu_main.c
   src-ILU/src/ilu_manip.c
   src-ILU/src/ilu_mipmap.c
   src-ILU/src/ilu_noise.c
@@ -143,7 +134,6 @@ set( SOURCE_FILES
   src-IL/src/il_jp2.c
   src-IL/src/il_jpeg.c
   src-IL/src/il_lif.c
-  src-IL/src/il_main.c
   src-IL/src/il_manip.c
   src-IL/src/il_mdl.c
   src-IL/src/il_mng.c
@@ -198,11 +188,11 @@ set( ALL_FILES ${HEADER_FILES} ${SOURCE_FILES} ${PLATFORM_HEADER_FILES} ${PLATFO
 
 set( MODULE_NAME "DevIL" )
 add_library( ${MODULE_NAME} ${ALL_FILES} )
-add_dependencies( ${MODULE_NAME} jasper lcms2 libjpeg libmng libpng libtiff zlib )
-target_link_libraries( ${MODULE_NAME} jasper lcms2 libjpeg libmng libpng libtiff zlib )
-set_property( TARGET ${MODULE_NAME} APPEND_STRING PROPERTY COMPILE_DEFINITIONS "CMS_DLL;HAVE_CONFIG_H;IL_NO_WDP" )
+add_dependencies( ${MODULE_NAME} OpenEXR jasper lcms2 libjpeg libmng libpng libtiff squish zlib )
+target_link_libraries( ${MODULE_NAME} OpenEXR jasper lcms2 libjpeg libmng libpng libtiff squish zlib )
+set_property( TARGET ${MODULE_NAME} APPEND_STRING PROPERTY COMPILE_DEFINITIONS "CMS_DLL;HAVE_CONFIG_H;IL_NO_WDP;JAS_DLL;MNG_DLL;MNG_USE_DLL" )
 
-include_directories( ../Little-CMS/include ../Little-CMS/src ../jasper/src/libjasper/bmp ../jasper/src/libjasper/include ../jasper/src/libjasper/include/jasper ../jasper/src/libjasper/jp2 ../jasper/src/libjasper/jpc ../jasper/src/libjasper/jpg ../jasper/src/libjasper/mif ../jasper/src/libjasper/pgx ../jasper/src/libjasper/pnm ../jasper/src/libjasper/ras ../libjpeg ../libmng ../libpng ../tiff/libtiff include include/IL src-ILUT/include src-ILUT/msvc8 src-ILUT/msvc9 src-ILU/include src-ILU/include/ilu_error src-ILU/msvc8 src-ILU/msvc9 src-IL/include src-IL/msvc8 src-IL/msvc9 )
+include_directories( ../Little-CMS/include ../Little-CMS/src ../jasper/src/libjasper/bmp ../jasper/src/libjasper/include ../jasper/src/libjasper/include/jasper ../jasper/src/libjasper/jp2 ../jasper/src/libjasper/jpc ../jasper/src/libjasper/jpg ../jasper/src/libjasper/mif ../jasper/src/libjasper/pgx ../jasper/src/libjasper/pnm ../jasper/src/libjasper/ras ../libjpeg ../libmng ../libpng ../libsquish ../openexr/IlmBase/Half ../openexr/IlmBase/Iex ../openexr/IlmBase/IexMath ../openexr/IlmBase/IlmThread ../openexr/IlmBase/Imath ../openexr/IlmBase/config.windows ../openexr/OpenEXR/IlmImf ../openexr/OpenEXR/IlmImfUtil ../openexr/OpenEXR/config.windows ../tiff/libtiff include include/IL src-ILUT/include src-ILU/include src-ILU/include/ilu_error src-IL/include )
 
 if ( LINUX32 )
   include_directories( ../zlib include/IL/linux )

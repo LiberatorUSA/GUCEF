@@ -89,10 +89,10 @@ extern "C" {
 \******************************************************************************/
 
 /* Allocate memory. */
-void *jas_malloc(size_t size);
+JAS_DLLEXPORT void *jas_malloc(size_t size);
 
 /* Free memory. */
-void jas_free(void *ptr);
+JAS_DLLEXPORT void jas_free(void *ptr);
 
 /* Resize a block of allocated memory. */
 void *jas_realloc(void *ptr, size_t size);

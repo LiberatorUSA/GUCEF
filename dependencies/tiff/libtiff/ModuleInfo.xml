@@ -1,5 +1,5 @@
 <ModuleInfoEntry>
-    <Module Name="libtiff" Type="SharedLibrary" Platform="All">
+    <Module Name="libtiff" Type="StaticLibrary" Platform="All">
         <Dependencies>
             <Dependency Name="libjpeg" />
             <Dependency Name="zlib" />
