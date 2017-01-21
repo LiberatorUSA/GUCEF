@@ -49,92 +49,16 @@
 //                                                                         //
 //-------------------------------------------------------------------------*/
 
-#define IMGPLUGIN_DEVIL_MAYOR_VERSION       1
+#define IMGPLUGIN_DEVIL_MAYOR_VERSION       2
 #define IMGPLUGIN_DEVIL_MINOR_VERSION       0
 #define IMGPLUGIN_DEVIL_PATCH_VERSION       0
-#define IMGPLUGIN_DEVIL_RELEASE_VERSION     1
+#define IMGPLUGIN_DEVIL_RELEASE_VERSION     0
 
 /*---------------------------------------------------------------------------*/
 
 static TIOAccess* currentResource = NULL;
 static UInt32 codecCount = 0;
-
-static char* supportedTypes[] = {
-
-    #ifdef IL_TGA
-    "tga", "vda", "icb", "vst",
-    #endif  
-    #ifdef IL_JPG
-    "jpg", "jpe", "jpeg",
-    #endif
-    #ifdef IL_PNG
-    "png",
-    #endif
-    #ifdef IL_BMP
-    "bmp", "dib",
-    #endif
-    #ifdef IL_GIF
-    "gif",
-    #endif
-    #ifdef IL_CUT
-    "cut",
-    #endif
-    #ifdef IL_HDR
-    "hdr",
-    #endif
-    #ifdef IL_ICO
-    "ico",
-    #endif
-    #ifdef IL_JNG
-    "jng",
-    #endif
-    #ifdef IL_LIF
-    "lif",
-    #endif
-    #ifdef IL_MDL
-    "mdl",
-    #endif    
-    #ifdef IL_MNG
-    "mng", "jng",
-    #endif 
-    #ifdef IL_PCD
-    "pcd",
-    #endif
-    #ifdef IL_PCX
-    "pcx",
-    #endif
-    #ifdef IL_PIC
-    "pic",
-    #endif
-    #ifdef IL_PIX
-    "pix",
-    #endif
-    #ifdef IL_PNM
-    "pbm", "pgm", "pnm", "ppm",
-    #endif
-    #ifdef IL_PSD
-    "psd", "pdd",
-    #endif
-    #ifdef IL_PSP
-    "psp",
-    #endif    
-    #ifdef IL_PXR
-    "pxr",
-    #endif
-    #ifdef IL_SGI
-    "sgi", "bw", "rgb", "rgba",
-    #endif
-    #ifdef IL_TIF
-    "tif", "tiff",
-    #endif
-    #ifdef IL_WAL
-    "wal",
-    #endif 
-    #ifdef IL_XPM
-    "xpm",
-    #endif                   
-    NULL
-};
+static char** supportedTypes = NULL;
 
 /*-------------------------------------------------------------------------//
 //                                                                         //
@@ -311,6 +235,12 @@ GetPixelChannelSize( const int pixelComponentDataType )
         {
             return 4;
         }
+        case DATATYPE_INT64 :
+        case DATATYPE_UINT64 :
+        case DATATYPE_FLOAT64 :
+        {
+            return 8;
+        }
         default :
         {
             return 0;
@@ -320,20 +250,60 @@ GetPixelChannelSize( const int pixelComponentDataType )
 
 /*---------------------------------------------------------------------------*/
 
+int
+InitCodecList( void )
+{
+    const char* ilSpaceDelimLoadOpts = NULL;
+    int i=0, n=0, m=0, k=0, d=0; 
+
+    /* Currently our API does not differ between loading/saving when calling out supported types, use Load for now */
+    ilSpaceDelimLoadOpts = ilGetString( IL_LOAD_EXT );
+    if ( ilSpaceDelimLoadOpts == NULL )
+        return 0;
+    
+    k = strlen( ilSpaceDelimLoadOpts );
+    codecCount = 0;
+    for ( i=0; i<k; ++i )
+    {
+        if ( ilSpaceDelimLoadOpts[ i ] == ' ' )
+        {
+            ++codecCount;
+        }
+    }
+    supportedTypes = (char**) malloc( codecCount * sizeof( char* ) );
+
+    n=0; d=0;
+    for ( i=0; i<k; ++i )
+    {
+        if ( ilSpaceDelimLoadOpts[ i ] == ' ' )
+        {
+            m = i-n;
+            char* opt = (char*) malloc( m+1 );
+            memcpy( opt, ilSpaceDelimLoadOpts+n, m );
+            opt[ m ] = '\0';
+
+            supportedTypes[ d ] = opt;            
+            n=i+1; ++d;
+        }
+    }
+    return 1;
+}
+
+/*---------------------------------------------------------------------------*/
+
 UInt32 GUCEF_PLUGIN_CALLSPEC_PREFIX
 CODECPLUGIN_Init( void** plugdata   ,
                   const int argc    ,
                   const char** argv ) GUCEF_PLUGIN_CALLSPEC_SUFFIX
-{
-    /* count the total number of available codecs */
-    const char** sTypes = supportedTypes;
-    while ( *sTypes != NULL )
-    {
-        ++codecCount;
-        ++sTypes;
-    }
+{    
+    *plugdata = NULL;
 
-    if ( ilGetInteger( IL_VERSION_NUM ) < IL_VERSION ) return 0;    
+    /* Ensure that the version we are build with is not newer then the version we are running with */
+    if ( ilGetInteger( IL_VERSION_NUM ) < IL_VERSION ) 
+        return 0;   
+    
+    if ( 0 == InitCodecList() )
+        return 0;
     
     ilInit();
     
@@ -360,6 +330,11 @@ CODECPLUGIN_Init( void** plugdata   ,
 UInt32 GUCEF_PLUGIN_CALLSPEC_PREFIX
 CODECPLUGIN_Shutdown( void* plugdata ) GUCEF_PLUGIN_CALLSPEC_SUFFIX
 {
+    currentResource = NULL;
+    codecCount = 0;
+    free( supportedTypes );
+    supportedTypes = NULL;
+
     ilSetRead( NULL , 
                NULL , 
                NULL , 
@@ -424,7 +399,10 @@ ConvertILPixelFormatToGUCEFPixelFormat( ILint devilType )
         case IL_BGRA : return PSF_BGRA;
         case IL_LUMINANCE : return PSF_SINGLE_CHANNEL_STD_LUMINANCE;
         case IL_LUMINANCE_ALPHA : return PSF_LUMINANCE_ALPHA;
-        default: return -1;
+        case IL_COLOUR_INDEX : return PSF_PALETTE_INDICES;
+        case IL_ALPHA : return PSF_SINGLE_CHANNEL_ALPHA;
+        default: 
+            return -1;
     }
 }
 
@@ -441,7 +419,10 @@ ConvertGUCEFPixelFormatToILPixelFormat( Int32 gucefType )
         case PSF_BGRA : return IL_BGRA;
         case PSF_SINGLE_CHANNEL_STD_LUMINANCE : return IL_LUMINANCE;
         case PSF_LUMINANCE_ALPHA : return IL_LUMINANCE_ALPHA;
-        default: return -1;
+        case PSF_PALETTE_INDICES : return IL_COLOUR_INDEX;
+        case PSF_SINGLE_CHANNEL_ALPHA : return IL_ALPHA;
+        default: 
+            return -1;
     }    
 }
 
@@ -617,105 +598,63 @@ CODECPLUGIN_Encode( void* plugdata         ,
 /*---------------------------------------------------------------------------*/
 
 UInt32 GUCEF_PLUGIN_CALLSPEC_PREFIX
-CODECPLUGIN_Decode( void* plugdata         ,
+CODECPLUGIN_Decode( void* pluginData       ,
                     void* codecData        ,
                     const char* familyType ,
                     const char* codecType  ,
                     TIOAccess* input       ,
                     TIOAccess* output      ) GUCEF_PLUGIN_CALLSPEC_SUFFIX
 {
-    UInt32 i=0, n=0, mipmapCount=0, frameCount=0;
-    ILint imageID = 0, imageSize = 0;
-    TImageInfo imageInfo;
-    TImageFrameInfo imageFrameInfo;
-    TImageMipMapLevelInfo imageMMInfo;
-    
-    if ( ( NULL == familyType ) || ( NULL == codecType ) || ( NULL == input ) || ( NULL == output ) ) return 0;
-    
-    /* generate an image ID and make that ID the ID of the current image */
-    imageID = ilGenImage();
-    ilBindImage( imageID );
-    
-    currentResource = input;
-    
-    if ( IL_TRUE == ilLoadF( ilTypeFromExt( codecType ), input ) )
-    {        
-        /* write the TImageInfo section */
-        imageInfo.version = GUCEF_IMAGE_TIMAGEINFO_VERSION;
-        frameCount = imageInfo.nrOfFramesInImage = (UInt32) ilGetInteger( IL_NUM_IMAGES );
-        if ( frameCount == 0 )
-        {
-            /* DevIL returns a image count of 0 for single-image images */
-            frameCount = imageInfo.nrOfFramesInImage = 1;
-        }
-        output->write( output, &imageInfo, sizeof( imageInfo ), 1  );
+    TImage* image;
+    void* imageData;
 
-        /* Only 1 layer is supported atm */
-        ilActiveLayer( 0 );
-        
-        for ( i=0; i<frameCount; ++i )
+    /* input sanity check */
+    if ( ( NULL == familyType ) || ( NULL == codecType ) || ( NULL == input ) || ( NULL == output ) ) return 0;
+    if ( 0 != strcmp( familyType, "ImageCodec" ) ) return 0;
+
+    /* this plugin only supports image codecs so we can redirect to the specialized image API */
+    if ( 0 != IMGCODECPLUGIN_DecodeImage( pluginData ,
+                                          codecData  ,
+                                          codecType  ,
+                                          input      ,
+                                          &image     ,
+                                          &imageData ) )
+    {
+        /* now that we have the image data we can write it to the output, we start with the metadata */
+        UInt32 i, n;
+
+        output->write( output, &image->imageInfo, sizeof( TImageInfo ), 1  );
+
+        for ( i=0; i<image->imageInfo.nrOfFramesInImage; ++i )
         {
-            /* activate the frame */
-            ilActiveImage( i );
-            
-            /* write the TImageFrameInfo section */
-            imageFrameInfo.version = GUCEF_IMAGE_TIMAGEFRAMEINFO_VERSION;
-            mipmapCount = imageFrameInfo.nrOfMipmapLevels = (UInt32) ilGetInteger( IL_NUM_MIPMAPS );
-            if ( mipmapCount == 0 )
+            TImageFrame* frame = &image->frames[ i ];
+            output->write( output, &frame->frameInfo, sizeof( TImageFrameInfo ), 1 );
+
+            for ( n=0; n<frame->frameInfo.nrOfMipmapLevels; ++n )
             {
-                /* DevIL returns a mipmap count of 0 images without mipmapping, we use 0 for the base image */
-                mipmapCount = imageFrameInfo.nrOfMipmapLevels = 1;
-            }            
-            output->write( output, &imageFrameInfo, sizeof( imageFrameInfo ), 1 );
-        
-            for ( n=0; n<mipmapCount; ++n )
-            {
-                /* activate the mip-map */
-                ilActiveMipmap( n );
-                
-                // Converted paletted images
-                if( ilGetInteger( IL_IMAGE_FORMAT ) == IL_COLOUR_INDEX )
-                {
-                    ilConvertImage( IL_BGRA, IL_UNSIGNED_BYTE );
-                }
-                
-                /* write the TImageMipMapLevelInfo section */
-                imageMMInfo.version = GUCEF_IMAGE_TIMAGEMIPMAPLEVELINFO_VERSION;
-                imageMMInfo.pixelComponentDataType = DATATYPE_UINT8; /* DevIL only supports this type */
-                imageMMInfo.frameHeight = ilGetInteger( IL_IMAGE_HEIGHT );
-                imageMMInfo.frameWidth = ilGetInteger( IL_IMAGE_WIDTH );
-                imageMMInfo.pixelStorageFormat = ConvertILPixelFormatToGUCEFPixelFormat( ilGetInteger( IL_IMAGE_FORMAT ) );
-                output->write( output, &imageMMInfo, sizeof( imageMMInfo ), 1 );
+                TImageMipMapLevelInfo* imageMMInfo = &frame->mipmapLevel[ n ].mipLevelInfo;
+                output->write( output, imageMMInfo, sizeof( TImageMipMapLevelInfo ), 1 );
             }
         }
-        
-        /* now we append the pixel data */
-        for ( i=0; i<frameCount; ++i )
+
+        /* now write the pixel data */
+        for ( i=0; i<image->imageInfo.nrOfFramesInImage; ++i )
         {
-            /* activate the frame */
-            ilActiveImage( i );
-            
-            for ( n=0; n<mipmapCount; ++n )
+            TImageFrame* frame = &image->frames[ i ];
+            for ( n=0; n<frame->frameInfo.nrOfMipmapLevels; ++n )
             {
-                /* activate the mip-map */
-                ilActiveMipmap( n );
-                ilCompressFunc( IL_COMPRESS_NONE );
-                
-                /* write the pixel data */
-                output->write( output, ilGetData(), ilGetInteger( IL_IMAGE_SIZE_OF_DATA ), 1 );
-            }            
+                TImageMipMapLevel* mipMapLevel = &frame->mipmapLevel[ n ];
+                output->write( output, mipMapLevel->pixelData, mipMapLevel->pixelDataSizeInBytes, 1 );
+            }
         }
+
+        /* Now that we have written the image to output we can deallocate the access structures */
+        IMGCODECPLUGIN_FreeImageStorage( image, imageData );
+
+        return 1;
     }
-    
-    /*
-     *  the image has been loaded into our GUCEF structures so we have no need for
-     *  DevIL to store the data any more 
-     */
-    ilDeleteImage( imageID );
-    
-    currentResource = NULL;
-    
-    return 1;
+
+    return 0;
 }
 
 /*---------------------------------------------------------------------------*/
@@ -844,11 +783,93 @@ IMGCODECPLUGIN_DecodeImage( void* pluginData      ,
                             TImage** imageOutput  ,
                             void** imageData      )
 {
+    UInt32 i=0, n=0, mipmapCount=0, frameCount=0;
+    ILint imageID = 0, imageSize = 0;
+    TImage* image = NULL;
 
-    /* input sanity check */
-    if ( ( NULL == imageOutput ) || ( NULL == codecType ) || ( NULL == input ) || ( NULL == imageOutput ) ) return 0;
- 
-    return 0;
+    if ( ( NULL == codecType ) || ( NULL == input ) ) 
+        return 0;
+    
+    /* generate an image ID and make that ID the ID of the current image */
+    imageID = ilGenImage();
+    ilBindImage( imageID );
+    
+    currentResource = input;
+    
+    if ( IL_TRUE == ilLoadF( ilTypeFromExt( codecType ), input ) )
+    {        
+        image = malloc( sizeof(TImage) );
+        image->version = GUCEF_IMAGE_TIMAGE_VERSION;
+        image->imageInfo.version = GUCEF_IMAGE_TIMAGEINFO_VERSION;
+        frameCount = image->imageInfo.nrOfFramesInImage = (UInt32) ilGetInteger( IL_NUM_IMAGES );
+        if ( frameCount == 0 )
+        {
+            /* DevIL returns a image count of 0 for single-image images */
+            frameCount = image->imageInfo.nrOfFramesInImage = 1;
+        }
+        image->frames = (TImageFrame*) malloc( frameCount * sizeof( TImageFrame ) );
+
+        /* Only 1 layer is supported atm */
+        ilActiveLayer( 0 );
+        
+        for ( i=0; i<frameCount; ++i )
+        {
+            TImageFrame* imageFrame = &image->frames[ i ]; 
+            imageFrame->version = GUCEF_IMAGE_TIMAGEFRAME_VERSION;
+
+            /* activate the frame */
+            ilActiveImage( i );
+            
+            /* init the TImageFrameInfo section */
+            imageFrame->frameInfo.version = GUCEF_IMAGE_TIMAGEFRAMEINFO_VERSION;
+            mipmapCount = imageFrame->frameInfo.nrOfMipmapLevels = (UInt32) ilGetInteger( IL_NUM_MIPMAPS );
+            if ( mipmapCount == 0 )
+            {
+                /* DevIL returns a mipmap count of 0 images without mipmapping, we use 0 for the base image */
+                mipmapCount = imageFrame->frameInfo.nrOfMipmapLevels = 1;
+            }
+            imageFrame->mipmapLevel = (TImageMipMapLevel*) malloc( mipmapCount * sizeof(TImageMipMapLevel) );
+        
+            for ( n=0; n<mipmapCount; ++n )
+            {
+                TImageMipMapLevel* mipmapLevel = &imageFrame->mipmapLevel[ n ]; 
+                mipmapLevel->version = GUCEF_IMAGE_TIMAGEMIPMAPLEVEL_VERSION;
+                
+                /* activate the mip-map */
+                ilActiveMipmap( n );
+                
+                // Converted paletted images
+                if( ilGetInteger( IL_IMAGE_FORMAT ) == IL_COLOUR_INDEX )
+                {
+                    ilConvertImage( IL_BGRA, IL_UNSIGNED_BYTE );
+                }
+                
+                /* init the TImageMipMapLevelInfo section */
+                mipmapLevel->mipLevelInfo.version = GUCEF_IMAGE_TIMAGEMIPMAPLEVELINFO_VERSION;
+                mipmapLevel->mipLevelInfo.pixelComponentDataType = DATATYPE_UINT8; /* DevIL only supports this type */
+                mipmapLevel->mipLevelInfo.frameHeight = ilGetInteger( IL_IMAGE_HEIGHT );
+                mipmapLevel->mipLevelInfo.frameWidth = ilGetInteger( IL_IMAGE_WIDTH );
+                mipmapLevel->mipLevelInfo.pixelStorageFormat = ConvertILPixelFormatToGUCEFPixelFormat( ilGetInteger( IL_IMAGE_FORMAT ) );
+
+                /* now we grab the pixel data */
+                ilCompressFunc( IL_COMPRESS_NONE );
+                mipmapLevel->pixelDataSizeInBytes = ilGetInteger( IL_IMAGE_SIZE_OF_DATA );
+                mipmapLevel->pixelData = malloc( mipmapLevel->pixelDataSizeInBytes );
+                memcpy( mipmapLevel->pixelData, ilGetData(), mipmapLevel->pixelDataSizeInBytes );
+            }
+        }
+    }
+    
+    /*
+     *  the image has been loaded into our GUCEF structures so we have no need for
+     *  DevIL to store the data any more 
+     */
+    ilDeleteImage( imageID );
+    
+    *imageOutput = image;
+    currentResource = NULL;
+    
+    return 1;
 }
 
 /*---------------------------------------------------------------------------*/

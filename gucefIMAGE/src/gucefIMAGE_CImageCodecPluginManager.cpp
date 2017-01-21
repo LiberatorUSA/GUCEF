@@ -89,6 +89,13 @@ CImageCodecPluginManager::RegisterPlugin( void* modulePtr                       
     if ( plugin->Link( modulePtr      ,
                        pluginMetaData ) )
     {
+        CORE::CValueList pluginParams;
+        pluginMetaData->GetParams( pluginParams );
+
+        bool overrideExistingCodecs = false;
+        CORE::CString overrideSettingStr = pluginParams.GetValueAlways( "overrideExistingCodecs", "false" );
+        overrideExistingCodecs = CORE::StringToBool( overrideSettingStr );
+
         CImageCodecRegistry& registry = CImageGlobal::Instance()->GetImageCodecRegistry();
         CORE::CStdCodecPlugin::CCodecList codecList;
         plugin->GetCodecList( codecList );
@@ -99,7 +106,7 @@ CImageCodecPluginManager::RegisterPlugin( void* modulePtr                       
         CORE::CStdCodecPlugin::CCodecFamilyList::iterator n = imageCodecList.begin();
         while ( n != imageCodecList.end() )
         {
-            if ( !registry.IsRegistered( *n ) )
+            if ( overrideExistingCodecs || !registry.IsRegistered( *n ) )
             {
                 TPluginImageCodecItemPtr codecItem = new CPluginImageCodecItem( plugin, (*n) );
                 registry.Register( codecItem->GetType(), codecItem );
