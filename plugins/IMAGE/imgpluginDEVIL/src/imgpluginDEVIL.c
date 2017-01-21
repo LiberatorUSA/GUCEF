@@ -142,7 +142,7 @@ static char* supportedTypes[] = {
 //                                                                         //
 //-------------------------------------------------------------------------*/
 
-ILvoid ILAPIENTRY
+void ILAPIENTRY
 ilfCloseProc( ILHANDLE handle )
 {
     TIOAccess* input = (TIOAccess*) handle;
@@ -256,6 +256,70 @@ ilfWriteProc( const void* data ,
 
 /*---------------------------------------------------------------------------*/
 
+UInt32
+GetChannelCountForFormat( const int pixelStorageFormat )
+{
+    switch ( pixelStorageFormat )
+    {
+        case PSF_BGR :
+        case PSF_RGB :
+        {
+            return 3;
+        }
+        case PSF_BGRA :
+        case PSF_RGBA :
+        {
+            return 4;
+        }
+        case PSF_SINGLE_CHANNEL_RED :
+        case PSF_SINGLE_CHANNEL_GREEN :
+        case PSF_SINGLE_CHANNEL_BLUE :
+        case PSF_SINGLE_CHANNEL_STD_LUMINANCE :
+        case PSF_SINGLE_CHANNEL_P1_LUMINANCE :
+        case PSF_SINGLE_CHANNEL_P2_LUMINANCE :
+        case PSF_SINGLE_CHANNEL_ALPHA :
+        {
+            return 1;
+        }
+        default :
+        {
+            return 0;
+        }
+    }
+}
+
+/*---------------------------------------------------------------------------*/
+
+UInt32
+GetPixelChannelSize( const int pixelComponentDataType )
+{
+    switch ( pixelComponentDataType )
+    {
+        case DATATYPE_INT8 :
+        case DATATYPE_UINT8 :
+        {
+            return 1;
+        }
+        case DATATYPE_INT16 :
+        case DATATYPE_UINT16 :
+        {
+            return 2;
+        }
+        case DATATYPE_INT32 :
+        case DATATYPE_UINT32 :
+        case DATATYPE_FLOAT32 :
+        {
+            return 4;
+        }
+        default :
+        {
+            return 0;
+        }
+    }
+}
+
+/*---------------------------------------------------------------------------*/
+
 UInt32 GUCEF_PLUGIN_CALLSPEC_PREFIX
 CODECPLUGIN_Init( void** plugdata   ,
                   const int argc    ,
@@ -358,8 +422,8 @@ ConvertILPixelFormatToGUCEFPixelFormat( ILint devilType )
         case IL_RGBA : return PSF_RGBA;
         case IL_BGR : return PSF_BGR;
         case IL_BGRA : return PSF_BGRA;
-        case IL_LUMINANCE : return PSF_SINGLE_CHANNEL_LUMINANCE;
-        case IL_LUMINANCE_ALPHA : return PSF_SINGLE_CHANNEL_ALPHA;
+        case IL_LUMINANCE : return PSF_SINGLE_CHANNEL_STD_LUMINANCE;
+        case IL_LUMINANCE_ALPHA : return PSF_LUMINANCE_ALPHA;
         default: return -1;
     }
 }
@@ -375,8 +439,8 @@ ConvertGUCEFPixelFormatToILPixelFormat( Int32 gucefType )
         case PSF_RGBA : return IL_RGBA;
         case PSF_BGR : return IL_BGR;
         case PSF_BGRA : return IL_BGRA;
-        case PSF_SINGLE_CHANNEL_LUMINANCE : return IL_LUMINANCE;
-        case PSF_SINGLE_CHANNEL_ALPHA : return IL_LUMINANCE_ALPHA;
+        case PSF_SINGLE_CHANNEL_STD_LUMINANCE : return IL_LUMINANCE;
+        case PSF_LUMINANCE_ALPHA : return IL_LUMINANCE_ALPHA;
         default: return -1;
     }    
 }
@@ -388,14 +452,14 @@ ConvertGUCEFTypeToILType( Int32 gucefType )
 {
     switch ( gucefType )
     {
-        case DT_FLOAT32 : return IL_FLOAT;
-        case DT_FLOAT64 : return IL_DOUBLE;
-        case DT_UINT8 : return IL_UNSIGNED_BYTE;
-        case DT_INT8 : return IL_BYTE;
-        case DT_UINT16 : return IL_UNSIGNED_SHORT;
-        case DT_INT16 : return IL_SHORT;
-        case DT_UINT32 : return IL_UNSIGNED_INT;
-        case DT_INT32 : return IL_INT;
+        case DATATYPE_FLOAT32 : return IL_FLOAT;
+        case DATATYPE_FLOAT64 : return IL_DOUBLE;
+        case DATATYPE_UINT8 : return IL_UNSIGNED_BYTE;
+        case DATATYPE_INT8 : return IL_BYTE;
+        case DATATYPE_UINT16 : return IL_UNSIGNED_SHORT;
+        case DATATYPE_INT16 : return IL_SHORT;
+        case DATATYPE_UINT32 : return IL_UNSIGNED_INT;
+        case DATATYPE_INT32 : return IL_INT;
         default: return -1;
     }
 }
@@ -490,7 +554,7 @@ CODECPLUGIN_Encode( void* plugdata         ,
             mipInfo = &imageFrames[ i ].mipmapLevel[ n ].mipLevelInfo;
             
             /* calculate the size of the pixel map */
-            pixeMapSize = ( mipInfo->channelComponentSize * mipInfo->channelCountPerPixel ) * 
+            pixeMapSize = ( GetPixelChannelSize( mipInfo->pixelComponentDataType ) * GetChannelCountForFormat( mipInfo->pixelStorageFormat ) ) * 
                           ( mipInfo->frameWidth * mipInfo->frameHeight )                    ;
                           
             /* check if our local buffer is large enough to hold the pixel data */
@@ -517,10 +581,10 @@ CODECPLUGIN_Encode( void* plugdata         ,
             if ( IL_TRUE != ilTexImage( (ILuint)mipInfo->frameWidth                                                   ,
                                         (ILuint)mipInfo->frameHeight                                                  ,
                                         (ILuint)1                                                                     ,
-                                        (ILubyte)mipInfo->channelCountPerPixel                                        ,
+                                        (ILubyte) GetChannelCountForFormat( mipInfo->pixelStorageFormat )             ,
                                         (ILenum)ConvertGUCEFPixelFormatToILPixelFormat( mipInfo->pixelStorageFormat ) ,
                                         (ILenum)ConvertGUCEFTypeToILType( mipInfo->pixelComponentDataType )           ,
-                                        (ILvoid*)imageBuffer                                                          ) )
+                                        (void*)imageBuffer                                                            ) )
             {
                 /* Failed to transfer the data over to DevIL */
                 for ( m=n; m<imageInfo.nrOfFramesInImage; ++m ) free( imageFrames[ i ].mipmapLevel );
@@ -540,7 +604,7 @@ CODECPLUGIN_Encode( void* plugdata         ,
     
     /* now we can perform the actual save */
     currentResource = output;
-    if ( IL_TRUE == ilSaveF( ilTypeFromExt( (const wchar_t*) codecType ), output ) )
+    if ( IL_TRUE == ilSaveF( ilTypeFromExt( codecType ), output ) )
     {
         currentResource = NULL;
         return 1;
@@ -574,7 +638,7 @@ CODECPLUGIN_Decode( void* plugdata         ,
     
     currentResource = input;
     
-    if ( IL_TRUE == ilLoadF( ilTypeFromExt( (const wchar_t*) codecType ), input ) )
+    if ( IL_TRUE == ilLoadF( ilTypeFromExt( codecType ), input ) )
     {        
         /* write the TImageInfo section */
         imageInfo.version = GUCEF_IMAGE_TIMAGEINFO_VERSION;
@@ -617,11 +681,9 @@ CODECPLUGIN_Decode( void* plugdata         ,
                 
                 /* write the TImageMipMapLevelInfo section */
                 imageMMInfo.version = GUCEF_IMAGE_TIMAGEMIPMAPLEVELINFO_VERSION;
-                imageMMInfo.channelComponentSize = 8; /* DevIL only supports UInt8 */
-                imageMMInfo.channelCountPerPixel = ilGetInteger( IL_IMAGE_BPP );
+                imageMMInfo.pixelComponentDataType = DATATYPE_UINT8; /* DevIL only supports this type */
                 imageMMInfo.frameHeight = ilGetInteger( IL_IMAGE_HEIGHT );
                 imageMMInfo.frameWidth = ilGetInteger( IL_IMAGE_WIDTH );
-                imageMMInfo.pixelComponentDataType = DT_UINT8; /* DevIL only supports this type */
                 imageMMInfo.pixelStorageFormat = ConvertILPixelFormatToGUCEFPixelFormat( ilGetInteger( IL_IMAGE_FORMAT ) );
                 output->write( output, &imageMMInfo, sizeof( imageMMInfo ), 1 );
             }
@@ -727,6 +789,78 @@ CODECPLUGIN_GetCodecSetNextItem( void* plugdata ,
     }
     
     /* There are no more codecs */
+    return 0;
+}
+
+/*---------------------------------------------------------------------------*/
+
+UInt32 GUCEF_PLUGIN_CALLSPEC_PREFIX
+IMGCODECPLUGIN_FreeImageStorage( TImage* image   ,
+                                 void* imageData )
+{
+    if ( NULL != image )
+    {
+        /* free the image access structures */
+        UInt32 i;
+        UInt32 frameCount = image->imageInfo.nrOfFramesInImage;
+        for ( i=0; i<frameCount; ++i )
+        {
+            TImageFrame* frame = &image->frames[ i ];
+            free( frame->mipmapLevel );
+        }
+        free( image->frames );
+        free( image );
+
+        return 1;
+    }
+    return 0;
+}
+
+/*---------------------------------------------------------------------------*/
+
+UInt32
+GetNrOfPixelBuffers( TImage* image )
+{
+    if ( NULL != image )
+    {
+        UInt32 i, count=0;
+        for ( i=0; i<image->imageInfo.nrOfFramesInImage; ++i )
+        {
+            TImageFrame* frame = &image->frames[ i ];
+            count += frame->frameInfo.nrOfMipmapLevels;
+        }
+        return count;
+    }
+    return 0;
+}
+
+/*---------------------------------------------------------------------------*/
+
+UInt32 GUCEF_PLUGIN_CALLSPEC_PREFIX
+IMGCODECPLUGIN_DecodeImage( void* pluginData      ,
+                            void* codecData       ,
+                            const char* codecType ,
+                            TIOAccess* input      ,
+                            TImage** imageOutput  ,
+                            void** imageData      )
+{
+
+    /* input sanity check */
+    if ( ( NULL == imageOutput ) || ( NULL == codecType ) || ( NULL == input ) || ( NULL == imageOutput ) ) return 0;
+ 
+    return 0;
+}
+
+/*---------------------------------------------------------------------------*/
+
+UInt32 GUCEF_PLUGIN_CALLSPEC_PREFIX
+IMGCODECPLUGIN_EncodeImage( void* pluginData      ,
+                            void* codecData       ,
+                            const char* codecType ,
+                            TImage* inputImage    ,
+                            TIOAccess* output     )
+{
+    /* @TODO */
     return 0;
 }
 
