@@ -1,0 +1,5 @@
+cmake
+msvc
+msvc8
+msvc9
+pkgconfig

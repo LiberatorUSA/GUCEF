@@ -4,10 +4,10 @@
             <Dependency Name="gucefCORE" />
             <Dependency Name="gucefMT" />
             <Dependency Name="gucefIMAGE" />
-            <Dependency Name="DevIL" />
+            <Dependency Name="DevIL2" />
         </Dependencies>
         <Linker>
-            <Dependency Name="DevIL" />
+            <Dependency Name="DevIL2" />
         </Linker>
         <Preprocessor>
             <Define String="GUCEF_CODECPLUGIN_BUILD_MODULE" />

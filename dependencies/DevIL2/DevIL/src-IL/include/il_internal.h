@@ -13,8 +13,9 @@
 #define INTERNAL_H
 #define _IL_BUILD_LIBRARY
 
+// DV edit: made filename lib specific to avoid clash
 // config.h is auto-generated
-#include "config.h"
+#include "DevILconfig.h"
 
 #if defined(__GNUC__) && __STDC_VERSION__ >= 199901L
     // this makes various common-but-not-C99 functions visable in gcc -std-c99

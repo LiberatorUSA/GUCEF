@@ -1,7 +1,7 @@
 <ModuleInfoEntry>
     <Module Name="DevIL2" Type="SharedLibrary" Platform="All">
         <Dependencies>
-            <Dependency Name="DevIL.Include" />
+            <Dependency Name="DevIL2.Include" />
             <Dependency Name="libpng" />
             <Dependency Name="libjpeg" />
             <Dependency Name="libmng" />
@@ -26,7 +26,6 @@
         <Preprocessor>
             <Define String="CMS_DLL" />
             <Define String="HAVE_CONFIG_H" />
-            <Define String="IL_NO_WDP" />
             <Define String="MNG_DLL" />
             <Define String="MNG_USE_DLL" />
             <Define String="JAS_DLL" />
