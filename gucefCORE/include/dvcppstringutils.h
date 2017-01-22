@@ -57,21 +57,26 @@ namespace CORE {
  *  Supported variables are:
  *      - $CURWORKDIR$ -> Is resolved to the current working directory
  *      - $MODULEDIR$  -> Is resolved to the directory this module is located in
+ *      - $ENVVAR:FOO$ -> Resolves to the environment variable FOO's content
  *      - ..           -> If dir segments are available before this one the path is shortened
+ *  Note that if 'resolveVars' is false only dir segments are processed
  */
 GUCEF_CORE_PUBLIC_CPP CString
-RelativePath( const CString& relpath );
+RelativePath( const CString& relpath  ,
+              bool resolveVars = true );
 
 /*-------------------------------------------------------------------------*/
 
 /**
  *  Determines the most compact relative path between the two paths given.
  *  the given paths can have variables in them, these will be resolved via
- *  RelativePath()
+ *  RelativePath(). If 'resolveVars' is false only dir segments are processed
+ *  not variables.
  */
 GUCEF_CORE_PUBLIC_CPP CString
 GetRelativePathToOtherPathRoot( const CString& fromPath ,
-                                const CString& toPath   );
+                                const CString& toPath   ,
+                                bool resolveVars = true );
 
 /*-------------------------------------------------------------------------*/
 

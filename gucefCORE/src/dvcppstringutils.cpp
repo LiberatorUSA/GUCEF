@@ -204,59 +204,67 @@ ConvertBytesToHexString( const void* byteBuffer ,
 /*-------------------------------------------------------------------------*/
 
 CString
-RelativePath( const CString& relpath )
+RelativePath( const CString& relpath , 
+              bool resolveVars       )
 {GUCEF_TRACE;
 
     CString relPath = relpath;
     CString resultStr;
 
-    // First resolve any environment variables which in turn could contain other variables
-    Int32 idx = 0;
-    do
+    if ( resolveVars )
     {
-        idx = relPath.HasSubstr( "$ENVVAR:", idx, true );
-        if ( idx > -1 )
+        // First resolve any environment variables which in turn could contain other variables
+        Int32 idx = 0;
+        do
         {
-            Int32 endIndex = relPath.HasChar( '$', idx+8, true );
+            idx = relPath.HasSubstr( "$ENVVAR:", idx, true );
+            if ( idx > -1 )
+            {
+                Int32 endIndex = relPath.HasChar( '$', idx+8, true );
             
-            // Break out if there is no closing char, this is invalid
-            if ( endIndex < 0 ) break;
+                // Break out if there is no closing char, this is invalid
+                if ( endIndex < 0 ) break;
 
-            CString varName = relPath.SubstrFromRange( idx+8, endIndex );
-            CString varValue = ::GUCEF::CORE::GetEnv( varName );
-            relPath = relPath.ReplaceSubStr( idx, endIndex-idx, varValue );
+                CString varName = relPath.SubstrFromRange( idx+8, endIndex );
+                CString varValue = ::GUCEF::CORE::GetEnv( varName );
+                relPath = relPath.ReplaceSubStr( idx, endIndex-idx, varValue );
+            }
         }
-    }
-    while ( idx > -1 );
+        while ( idx > -1 );
 
-    idx = relPath.HasSubstr( "$MODULEDIR$", true );
-    if ( idx > -1 )
-    {
-        CString moduleDir = ModuleDir();
-        CString prefix = relPath.SubstrToIndex( idx, true );
-        CString postfix = relPath.CutChars( idx+11, true );
-
-        resultStr = prefix;
-        AppendToPath( resultStr, moduleDir );
-        AppendToPath( resultStr, postfix );
-    }
-    else
-    {
-        Int32 idx = relPath.HasSubstr( "$CURWORKDIR$", true );
+        idx = relPath.HasSubstr( "$MODULEDIR$", true );
         if ( idx > -1 )
         {
-            CString workingDir = CurrentWorkingDir();
+            CString moduleDir = ModuleDir();
             CString prefix = relPath.SubstrToIndex( idx, true );
-            CString postfix = relPath.CutChars( idx+12, true );
+            CString postfix = relPath.CutChars( idx+11, true );
 
             resultStr = prefix;
-            AppendToPath( resultStr, workingDir );
+            AppendToPath( resultStr, moduleDir );
             AppendToPath( resultStr, postfix );
         }
         else
         {
-            resultStr = relPath;
+            Int32 idx = relPath.HasSubstr( "$CURWORKDIR$", true );
+            if ( idx > -1 )
+            {
+                CString workingDir = CurrentWorkingDir();
+                CString prefix = relPath.SubstrToIndex( idx, true );
+                CString postfix = relPath.CutChars( idx+12, true );
+
+                resultStr = prefix;
+                AppendToPath( resultStr, workingDir );
+                AppendToPath( resultStr, postfix );
+            }
+            else
+            {
+                resultStr = relPath;
+            }
         }
+    }
+    else
+    {
+        resultStr = relPath;
     }
 
     // Now the up dir segments,...
@@ -303,14 +311,15 @@ RelativePath( const CString& relpath )
 
 CString
 GetRelativePathToOtherPathRoot( const CString& fromPath ,
-                                const CString& toPath   )
+                                const CString& toPath   ,
+                                bool resolveVars        )
 {GUCEF_TRACE;
 
     typedef std::vector< CString >  TStringVector;
 
     // First resolve any variables in the paths,.. normalize
-    CString absFromPath = RelativePath( fromPath );
-    CString absToPath = RelativePath( toPath );
+    CString absFromPath = RelativePath( fromPath, resolveVars );
+    CString absToPath = RelativePath( toPath, resolveVars );
 
     #if GUCEF_PLATFORM == GUCEF_PLATFORM_MSWIN
 
@@ -347,7 +356,7 @@ GetRelativePathToOtherPathRoot( const CString& fromPath ,
             relativePath += "../";
         }
         AppendToPath( relativePath, toPathRemainder );
-        return RelativePath( relativePath );
+        return RelativePath( relativePath, resolveVars );
     }
     return toPathRemainder;
 }
