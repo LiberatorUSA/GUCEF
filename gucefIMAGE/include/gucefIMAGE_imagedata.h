@@ -76,7 +76,11 @@ enum EPixelStorageFormat
     PSF_RGB = 1                      ,
     PSF_RGBA                         ,
     PSF_BGR                          ,
-    PSF_BGRA                         ,
+    PSF_BGRA                         , 
+    PSF_HSV                          , /* aka HSB */
+    PSF_HSVA                         , /* aka HSBA */
+    PSF_HSL                          ,
+    PSF_HSLA                         ,
     PSF_SINGLE_CHANNEL_GRAYSCALE     ,
     PSF_SINGLE_CHANNEL_RED           ,
     PSF_SINGLE_CHANNEL_GREEN         ,

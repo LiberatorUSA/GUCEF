@@ -59,6 +59,7 @@ CPixelMap::CPixelMap( const TImageMipMapLevel& mipmapLevel )
       m_pixelStorageFormat( (TPixelStorageFormat) mipmapLevel.mipLevelInfo.pixelStorageFormat )      ,
       m_heightInPixels( mipmapLevel.mipLevelInfo.frameHeight )                                       ,
       m_widthInPixels( mipmapLevel.mipLevelInfo.frameWidth )                                         ,
+      m_isNormalizedAsPercentage( false )                                                            ,
       m_pixelMapData( NULL )
 {GUCEF_TRACE;
 
@@ -77,6 +78,7 @@ CPixelMap::CPixelMap( const void* pixelMapData                      ,
       m_pixelStorageFormat( pixelStorageFormat )         ,
       m_heightInPixels( 0 )                              ,
       m_widthInPixels( 0 )                               ,
+      m_isNormalizedAsPercentage( false )                ,
       m_pixelMapData( NULL )
 {GUCEF_TRACE;
 
@@ -94,6 +96,7 @@ CPixelMap::CPixelMap( const CPixelMap& src )
       m_pixelStorageFormat( src.m_pixelStorageFormat )         ,
       m_heightInPixels( 0 )                                    ,
       m_widthInPixels( 0 )                                     ,
+      m_isNormalizedAsPercentage( src.m_isNormalizedAsPercentage ) ,
       m_pixelMapData( NULL )
 {GUCEF_TRACE;
 
@@ -128,6 +131,313 @@ CPixelMap::operator=( const CPixelMap& src )
     }
     
     return *this;
+}
+
+/*--------------------------------------------------------------------------*/
+
+bool
+CPixelMap::IsNormalizedAsPercentage( void ) const
+{GUCEF_TRACE;
+    
+    return m_isNormalizedAsPercentage;
+}
+
+/*--------------------------------------------------------------------------*/
+
+bool
+CPixelMap::SetIsNormalizedAsPercentage( bool isNormalizedAsPercentage )
+{GUCEF_TRACE;
+    
+    if ( m_pixelComponentDataType == MT::DATATYPE_FLOAT32 ||
+         m_pixelComponentDataType == MT::DATATYPE_FLOAT64  )
+    {
+        m_isNormalizedAsPercentage = isNormalizedAsPercentage;
+        return true;
+    }
+    return false;
+}
+
+/*--------------------------------------------------------------------------*/
+
+bool
+CPixelMap::NormalizeAsPercentage( void )
+{GUCEF_TRACE;
+
+    if ( m_isNormalizedAsPercentage )
+        return true;
+    
+    // First we convert the pixel component format to Float64
+    // This will give us the precision we want for normalization except when int64 was used
+    // but that is such an edge case we dont worry about it right now
+    if ( ConvertFormatTo( MT::DATATYPE_FLOAT64 ) )
+    {
+        Float64* pixelMapData = (Float64*) m_pixelMapData;
+        Float64 percentage = std::numeric_limits< Float64 >::max() / 100.0;
+        UInt64 valueCount = GetTotalNumberOfChannelComponentValues();
+
+        for ( UInt64 i=0; i<valueCount; ++i )
+        {
+            pixelMapData[ i ] /= percentage;
+        }
+
+        m_isNormalizedAsPercentage = true;
+        return true;
+    }
+    return false;
+}
+
+/*--------------------------------------------------------------------------*/
+
+bool
+CPixelMap::NormalizeAsPercentage( TPixelMapPtr& resultImage ) const
+{GUCEF_TRACE;
+
+    TPixelMapPtr conversionImage = new CPixelMap( *this );
+    if ( conversionImage->NormalizeAsPercentage() )
+    {
+        resultImage = conversionImage;
+        return true;
+    }
+    return false;
+}
+
+/*--------------------------------------------------------------------------*/
+
+template < typename T >
+bool
+CPixelMap::ApplyContrastImp( Float32 adjustmentPercentage )
+{GUCEF_TRACE;
+   
+    // adjustment of 100% is max of T
+    // adjustment of -100% is negative max of T
+
+    if ( adjustmentPercentage > 100.0 )
+        adjustmentPercentage = 100.0;
+    else
+    if ( adjustmentPercentage < -100.0 )
+        adjustmentPercentage = -100.0;
+
+    T theMax = std::numeric_limits< T >::max();
+    Float64 adjustedMax = (Float64) theMax;
+    bool tIsFloat = m_pixelComponentDataType == MT::DATATYPE_FLOAT32 || m_pixelComponentDataType == MT::DATATYPE_FLOAT64;
+    if ( tIsFloat && m_isNormalizedAsPercentage )
+    {
+        adjustedMax = 1.0;
+    }
+    Float64 adjustmentPerc = adjustmentPercentage;
+
+    // color correction factor should be in range 0-1 for a reduction in contrast with -100% being 0
+    // 1-2 is an increase with 2 being 100%
+    Float64 c = 0.0;
+    if ( adjustmentPerc < 0 )
+    {
+        c = 1.0 - ( adjustmentPerc / -100.0 );       
+    }
+    else
+    {
+        c = 1.0 + ( adjustmentPerc / 100.0 );
+    }
+    
+    Float64 halfMax = 0.5 * theMax;
+    T* pixelMapData = (T*) m_pixelMapData;
+    UInt64 vMax = GetTotalNumberOfChannelComponentValues();
+    for ( UInt64 i=0; i<vMax; ++i )
+    {
+        T value = pixelMapData[ i ];
+        Float64 newValue = ( c * ( value - halfMax ) ) + halfMax;
+        if ( !tIsFloat )
+            newValue = round( newValue );
+        if ( newValue > adjustedMax )
+            newValue = adjustedMax;
+        pixelMapData[ i ] = (T) newValue;
+    }
+
+    return true;
+}
+
+/*--------------------------------------------------------------------------*/
+
+bool
+CPixelMap::ApplyContrast( Float32 adjustmentPercentage )
+{GUCEF_TRACE;
+
+    switch ( m_pixelComponentDataType )
+    {
+        case MT::DATATYPE_FLOAT32:
+        {
+            return ApplyContrastImp< CORE::Float32 >( adjustmentPercentage );
+        }
+        case MT::DATATYPE_FLOAT64:
+        {
+            return ApplyContrastImp< CORE::Float64 >( adjustmentPercentage );
+        }
+        case MT::DATATYPE_UINT8:
+        {
+            return ApplyContrastImp< CORE::UInt8 >( adjustmentPercentage );
+        }
+        case MT::DATATYPE_INT8:
+        {
+            return ApplyContrastImp< CORE::Int8 >( adjustmentPercentage );
+        }
+        case MT::DATATYPE_UINT16:
+        {
+            return ApplyContrastImp< CORE::UInt16 >( adjustmentPercentage );
+        }
+        case MT::DATATYPE_INT16:
+        {
+            return ApplyContrastImp< CORE::Int16 >( adjustmentPercentage );
+        }
+        case MT::DATATYPE_UINT32:
+        {
+            return ApplyContrastImp< CORE::UInt32 >( adjustmentPercentage );
+        }
+        case MT::DATATYPE_INT32:
+        {
+            return ApplyContrastImp< CORE::Int32 >( adjustmentPercentage );
+        }
+        case MT::DATATYPE_UINT64:
+        {
+            return ApplyContrastImp< CORE::UInt64 >( adjustmentPercentage );
+        }
+        case MT::DATATYPE_INT64:
+        {
+            return ApplyContrastImp< CORE::Int64 >( adjustmentPercentage );
+        }
+        default:
+        {
+            // this should not happen
+            return false;
+        }
+    }     
+}
+
+/*--------------------------------------------------------------------------*/
+
+bool
+CPixelMap::ApplyContrast( Float32 adjustmentPercentage, TPixelMapPtr& resultImage ) const
+{GUCEF_TRACE;
+
+    TPixelMapPtr conversionImage = new CPixelMap( *this );    
+    if ( conversionImage->ApplyContrast( adjustmentPercentage ) )
+    {
+        resultImage = conversionImage;
+        return true;
+    }
+    return false;
+}
+
+/*--------------------------------------------------------------------------*/
+
+bool
+CPixelMap::ApplyBrightness( Float32 adjustmentPercentage, TPixelMapPtr& resultImage ) const
+{
+    TPixelMapPtr conversionImage = new CPixelMap( *this );    
+    if ( conversionImage->ApplyBrightness( adjustmentPercentage ) )
+    {
+        resultImage = conversionImage;
+        return true;
+    }
+    return false;
+}
+
+/*--------------------------------------------------------------------------*/
+
+bool
+CPixelMap::ApplyBrightness( Float32 adjustmentPercentage )
+{GUCEF_TRACE;
+
+
+    switch ( m_pixelComponentDataType )
+    {
+        case MT::DATATYPE_FLOAT32:
+        {
+            return ApplyBrightnessImp< CORE::Float32 >( adjustmentPercentage );
+        }
+        case MT::DATATYPE_FLOAT64:
+        {
+            return ApplyBrightnessImp< CORE::Float64 >( adjustmentPercentage );
+        }
+        case MT::DATATYPE_UINT8:
+        {
+            return ApplyBrightnessImp< CORE::UInt8 >( adjustmentPercentage );
+        }
+        case MT::DATATYPE_INT8:
+        {
+            return ApplyBrightnessImp< CORE::Int8 >( adjustmentPercentage );
+        }
+        case MT::DATATYPE_UINT16:
+        {
+            return ApplyBrightnessImp< CORE::UInt16 >( adjustmentPercentage );
+        }
+        case MT::DATATYPE_INT16:
+        {
+            return ApplyBrightnessImp< CORE::Int16 >( adjustmentPercentage );
+        }
+        case MT::DATATYPE_UINT32:
+        {
+            return ApplyBrightnessImp< CORE::UInt32 >( adjustmentPercentage );
+        }
+        case MT::DATATYPE_INT32:
+        {
+            return ApplyBrightnessImp< CORE::Int32 >( adjustmentPercentage );
+        }
+        case MT::DATATYPE_UINT64:
+        {
+            return ApplyBrightnessImp< CORE::UInt64 >( adjustmentPercentage );
+        }
+        case MT::DATATYPE_INT64:
+        {
+            return ApplyBrightnessImp< CORE::Int64 >( adjustmentPercentage );
+        }
+        default:
+        {
+            // this should not happen
+            return false;
+        }
+    }
+}
+
+/*--------------------------------------------------------------------------*/
+
+template < typename T >
+bool
+CPixelMap::ApplyBrightnessImp( Float32 adjustmentPercentage )
+{GUCEF_TRACE;
+
+    if ( adjustmentPercentage > 100.0 )
+        adjustmentPercentage = 100.0;
+    else
+    if ( adjustmentPercentage < -100.0 )
+        adjustmentPercentage = -100.0;
+                
+    T theMax = std::numeric_limits< T >::max();
+    Float64 adjustedMax = (Float64) theMax;
+    bool tIsFloat = m_pixelComponentDataType == MT::DATATYPE_FLOAT32 || m_pixelComponentDataType == MT::DATATYPE_FLOAT64;
+    if ( tIsFloat && m_isNormalizedAsPercentage )
+    {
+        adjustedMax = 1.0;
+    }
+
+    Float64 brightnessAdjustment = adjustmentPercentage * ( adjustedMax / 100.0 );
+
+    T* pixelMapData = (T*) m_pixelMapData;
+    UInt64 vMax = GetTotalNumberOfChannelComponentValues();
+    for ( UInt64 i=0; i<vMax; ++i )
+    {
+        T value = pixelMapData[ i ];
+        Float64 newValue = value + brightnessAdjustment;
+        if ( !tIsFloat )
+            newValue = round( newValue );
+        if ( newValue > adjustedMax )
+            newValue = adjustedMax;
+        else
+        if ( newValue < 0.0 )
+            newValue = 0.0;
+
+        pixelMapData[ i ] = (T) newValue;
+    }
+
+    return true;
 }
 
 /*--------------------------------------------------------------------------*/
@@ -531,6 +841,15 @@ CPixelMap::GetSizeOfPixelInBytes( void ) const
 {GUCEF_TRACE;
 
     return GetNumberOfChannelsPerPixel() * GetPixelChannelSize();
+}
+
+/*--------------------------------------------------------------------------*/
+
+UInt64
+CPixelMap::GetTotalNumberOfChannelComponentValues( void ) const
+{GUCEF_TRACE;
+
+    return GetNumberOfChannelsPerPixel() * GetPixelCount();    
 }
 
 /*--------------------------------------------------------------------------*/
@@ -990,6 +1309,78 @@ CPixelMap::ConvertFormatToImp( T* pixelMapData                               ,
                     }
                     return true;
                 }
+                case PSF_HSV:
+                {
+                    for ( UInt32 i=0; i<pixelCount; ++i )
+                    {                            
+                        T* orgPixelData = pixelMapData+(i*channelCount);
+
+                        // find the lowest value component
+                        T min = orgPixelData[ 0 ] < orgPixelData[ 1 ] ? orgPixelData[ 0 ] : orgPixelData[ 1 ];
+                        min = min < orgPixelData[ 2 ] ? min : orgPixelData[ 2 ];
+                                                 
+                        // find the highest value component, this is the V in HSV
+                        T max = orgPixelData[ 0 ] > orgPixelData[ 1 ] ? orgPixelData[ 0 ] : orgPixelData[ 1 ];
+                        max = max > orgPixelData[ 2 ] ? max : orgPixelData[ 2 ];
+
+                        T s=0; T h=0; T v=max;
+                        T delta = max - min;
+                        if ( delta < 0.00001 )
+                        {
+                            s = 0;
+                            h = 0; // undefined, maybe nan?
+                        }
+                        else
+                        {
+                            if ( max > 0.0 ) 
+                            {   
+                                // NOTE: if Max is == 0, this divide would cause a crash
+                                s = (delta / max);
+                            }
+                        }
+
+                        // Assign new pixel value and convert data type from T to its type
+                        T pixelData[ 3 ] = { h, s, v };
+                        newMap->AssignToPixel< T >( i, pixelData );
+                    }
+                    return true;
+                }
+                case PSF_HSVA:
+                {
+                    for ( UInt32 i=0; i<pixelCount; ++i )
+                    {                            
+                        T* orgPixelData = pixelMapData+(i*channelCount);
+
+                        // find the lowest value component
+                        T min = orgPixelData[ 0 ] < orgPixelData[ 1 ] ? orgPixelData[ 0 ] : orgPixelData[ 1 ];
+                        min = min < orgPixelData[ 2 ] ? min : orgPixelData[ 2 ];
+                                                 
+                        // find the highest value component, this is the V in HSV
+                        T max = orgPixelData[ 0 ] > orgPixelData[ 1 ] ? orgPixelData[ 0 ] : orgPixelData[ 1 ];
+                        max = max > orgPixelData[ 2 ] ? max : orgPixelData[ 2 ];
+
+                        T s=0; T h=0; T v=max;
+                        T delta = max - min;
+                        if ( delta < 0.00001 )
+                        {
+                            s = 0;
+                            h = 0; // undefined, maybe nan?
+                        }
+                        else
+                        {
+                            if ( max > 0.0 ) 
+                            {   
+                                // NOTE: if Max is == 0, this divide would cause a crash
+                                s = (delta / max);
+                            }
+                        }
+
+                        // Assign new pixel value and convert data type from T to its type
+                        T pixelData[ 4 ] = { h, s, v, std::numeric_limits< T >::max() };
+                        newMap->AssignToPixel< T >( i, pixelData );
+                    }
+                    return true;
+                }
                 case PSF_SINGLE_CHANNEL_RED:
                 {
                     // copy segments and alter/supplement
@@ -1123,6 +1514,78 @@ CPixelMap::ConvertFormatToImp( T* pixelMapData                               ,
                     }
                     return true;
                 }
+                //case PSF_HSV:
+                //{
+                //    for ( UInt32 i=0; i<pixelCount; ++i )
+                //    {                            
+                //        T* orgPixelData = pixelMapData+(i*channelCount);
+
+                //        // find the lowest value component
+                //        T min = orgPixelData[ 0 ] < orgPixelData[ 1 ] ? orgPixelData[ 0 ] : orgPixelData[ 1 ];
+                //        min = min < orgPixelData[ 2 ] ? min : orgPixelData[ 2 ];
+                //                                 
+                //        // find the highest value component, this is the V in HSV
+                //        T max = orgPixelData[ 0 ] > orgPixelData[ 1 ] ? orgPixelData[ 0 ] : orgPixelData[ 1 ];
+                //        max = max > orgPixelData[ 2 ] ? max : orgPixelData[ 2 ];
+
+                //        T s=0, T h=0; T v=max;
+                //        T delta = max - min;
+                //        if ( delta < 0.00001 )
+                //        {
+                //            s = 0;
+                //            h = 0; // undefined, maybe nan?
+                //        }
+                //        else
+                //        {
+                //            if ( max > 0.0 ) 
+                //            {   
+                //                // NOTE: if Max is == 0, this divide would cause a crash
+                //                s = (delta / max);
+                //            }
+                //        }
+
+                //        // Assign new pixel value and convert data type from T to its type
+                //        T pixelData[ 3 ] = { h, s, v };
+                //        newMap->AssignToPixel< T >( i, pixelData );
+                //    }
+                //    return true;
+                //}
+                //case PSF_HSVA:
+                //{
+                //    for ( UInt32 i=0; i<pixelCount; ++i )
+                //    {                            
+                //        T* orgPixelData = pixelMapData+(i*channelCount);
+
+                //        // find the lowest value component
+                //        T min = orgPixelData[ 0 ] < orgPixelData[ 1 ] ? orgPixelData[ 0 ] : orgPixelData[ 1 ];
+                //        min = min < orgPixelData[ 2 ] ? min : orgPixelData[ 2 ];
+                //                                 
+                //        // find the highest value component, this is the V in HSV
+                //        T max = orgPixelData[ 0 ] > orgPixelData[ 1 ] ? orgPixelData[ 0 ] : orgPixelData[ 1 ];
+                //        max = max > orgPixelData[ 2 ] ? max : orgPixelData[ 2 ];
+
+                //        T s=0, T h=0; T v=max;
+                //        T delta = max - min;
+                //        if ( delta < 0.00001 )
+                //        {
+                //            s = 0;
+                //            h = 0; // undefined, maybe nan?
+                //        }
+                //        else
+                //        {
+                //            if ( max > 0.0 ) 
+                //            {   
+                //                // NOTE: if Max is == 0, this divide would cause a crash
+                //                s = (delta / max);
+                //            }
+                //        }
+
+                //        // Assign new pixel value and convert data type from T to its type
+                //        T pixelData[ 4 ] = { h, s, v, orgPixelData[ 3 ] };
+                //        newMap->AssignToPixel< T >( i, pixelData );
+                //    }
+                //    return true;
+                //}
                 case PSF_SINGLE_CHANNEL_RED:
                 {
                     // copy segments and alter/supplement
@@ -1226,6 +1689,86 @@ CPixelMap::ConvertFormatToImp( T* pixelMapData                               ,
             }
             break;
         }
+        //case PSF_HSV:
+        //{
+        //    switch ( pixelStorageFormat )
+        //    {
+        //        case PSF_RGB:
+        //        {
+        //            for ( UInt32 i=0; i<pixelCount; ++i )
+        //            {                            
+        //                T* orgPixelData = pixelMapData+(i*channelCount);
+        //                T h = orgPixelData[ 0 ];  // angle in degrees
+        //                T s = orgPixelData[ 1 ];  // percent
+        //                T v = orgPixelData[ 2 ];  // percent
+
+        //                if ( s <= 0.0 ) 
+        //                {    
+        //                    // special case, just shuts up warnings
+        //                    // Assign new pixel value and convert data type from T to its type
+        //                    T pixelData[ 3 ] = { v, v, v };
+        //                    newMap->AssignToPixel< T >( i, pixelData );
+        //                }
+        //                else
+        //                {
+        //                    Float64 hh = h;
+        //                    if ( hh >= 360.0 ) 
+        //                        hh = 0.0;
+        //                    hh /= 60.0;
+        //                    Int32 order = (Int32) hh;
+        //                    Float64 ff = hh - i;
+        //                    Float64 p = v * ( 1.0 - s );
+        //                    Float64 q = v * ( 1.0 - ( s * ff ) );
+        //                    Float64 t = v * ( 1.0 - ( s * ( 1.0 - ff) ) );
+
+        //                    switch( order )
+        //                    {
+        //                        case 0:
+        //                        {
+        //                            Float64 percPixelData[ 3 ] = { v, t, p };
+        //                            T pixelData[ 3 ] = { v * std::max, t, p };
+        //                            newMap->AssignToPixel< T >( i, pixelData );
+        //                            break;
+        //                        }
+        //                        case 1:
+        //                        {
+        //                            T pixelData[ 3 ] = { q, v, p };
+        //                            newMap->AssignToPixel< T >( i, pixelData );
+        //                            break;
+        //                        }
+        //                        case 2:
+        //                        {
+        //                            T pixelData[ 3 ] = { p, v, t };
+        //                            newMap->AssignToPixel< T >( i, pixelData );
+        //                            break;
+        //                        }
+        //                        case 3:
+        //                        {
+        //                            T pixelData[ 3 ] = { p, q, v };
+        //                            newMap->AssignToPixel< T >( i, pixelData );
+        //                            break;
+        //                        }
+        //                        case 4:
+        //                        {
+        //                            T pixelData[ 3 ] = { t, p, v };
+        //                            newMap->AssignToPixel< T >( i, pixelData );
+        //                            break;
+        //                        }
+        //                        case 5:
+        //                        default:
+        //                        {
+        //                            T pixelData[ 3 ] = { v, p, q };
+        //                            newMap->AssignToPixel< T >( i, pixelData );
+        //                            break;
+        //                        }
+        //                    }
+        //                }
+        //            }
+        //            return true;
+        //        }
+        //    }
+        //    break;
+        //}
         case PSF_SINGLE_CHANNEL_GRAYSCALE:
         {
             switch ( pixelStorageFormat )
@@ -1495,11 +2038,15 @@ CPixelMap::GetChannelCountForFormat( const TPixelStorageFormat pixelStorageForma
     {
         case PSF_BGR :
         case PSF_RGB :
+        case PSF_HSV :
+        case PSF_HSL :
         {
             return 3;
         }
         case PSF_BGRA :
         case PSF_RGBA :
+        case PSF_HSVA :
+        case PSF_HSLA :
         {
             return 4;
         }
@@ -1547,6 +2094,12 @@ CPixelMap::GetPixelChannelSize( const TBuildinDataType pixelComponentDataType )
         case GUCEF::MT::DATATYPE_FLOAT32 :
         {
             return 4;
+        }
+        case GUCEF::MT::DATATYPE_INT64 :
+        case GUCEF::MT::DATATYPE_UINT64 :
+        case GUCEF::MT::DATATYPE_FLOAT64 :
+        {
+            return 8;
         }
         default :
         {

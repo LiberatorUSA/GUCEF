@@ -16,11 +16,12 @@ libiconv is version 1.14
 libpng is version 1.6.26
 libmng is version 2.0.3
 libtiff is version 4.0.7
+libsquish is version 1.14
 OpenEXR is version 2.2.0
 glew is version 1.13
 glm is version 0.9.6
 Little-CMS is version >=2.8 HEAD from https://github.com/mm2/Little-CMS
-DevIL is version 1.7.8, see https://github.com/DentonW/DevIL
+DevIL is version 1.8.0, see https://github.com/DentonW/DevIL
 
 The OIS dependency is at version 1.3 and can be obtained from http://sourceforge.net/projects/wgois
 Note for MS Windows builds: that to build the DirectInput dependent code you must have the DirectX SDK installed on your system.

@@ -107,7 +107,9 @@ class GUCEF_IMAGE_EXPORT_CPP CPixelMap
     
     UInt32 GetTotalSizeInBytes( void ) const; 
     
-    UInt32 GetNumberOfChannelsPerPixel( void ) const;   
+    UInt32 GetNumberOfChannelsPerPixel( void ) const;
+    
+    UInt64 GetTotalNumberOfChannelComponentValues( void ) const;
     
     TPixelStorageFormat GetPixelStorageFormat( void ) const;
     
@@ -204,6 +206,35 @@ class GUCEF_IMAGE_EXPORT_CPP CPixelMap
 
     bool ApplyGamma( Float32 gamma, TPixelMapPtr& resultImage ) const;
 
+    bool ApplyBrightness( Float32 adjustmentPercentage );
+
+    bool ApplyBrightness( Float32 adjustmentPercentage, TPixelMapPtr& resultImage ) const;
+
+    bool ApplyContrast( Float32 adjustmentPercentage );
+
+    bool ApplyContrast( Float32 adjustmentPercentage, TPixelMapPtr& resultImage ) const;
+
+    /**
+     *  Normalizes all the current pixel component values from the current range of min-max
+     *  to 0.0-1.0 with 0.0 being the minimum and 1.0 being the maximum
+     */
+    bool NormalizeAsPercentage( void );
+
+    /**
+     *  Normalizes all the current pixel component values from the current range of min-max
+     *  to 0.0-1.0 with 0.0 being the minimum and 1.0 being the maximum
+     */
+    bool NormalizeAsPercentage( TPixelMapPtr& resultImage ) const;
+
+    /**
+     *  Sets the normalization flag. This can only be set if the pixel component type is not an integer
+     */
+    bool SetIsNormalizedAsPercentage( bool isNormalizeAsPercentage );
+
+    /**
+     *  Returns the normalization flag. This can only be 'true' if the pixel component type is not an integer
+     */
+    bool IsNormalizedAsPercentage( void ) const;
     
     /**
      *  Assigns the data to the object.
@@ -273,12 +304,19 @@ class GUCEF_IMAGE_EXPORT_CPP CPixelMap
                              const TBuildinDataType pixelComponentDataType ,
                              TPixelMapPtr& newMap                          );
 
+    template < typename T >
+    bool ApplyContrastImp( Float32 adjustmentPercentage );
+
+    template < typename T >
+    bool ApplyBrightnessImp( Float32 adjustmentPercentage );    
+
     private:
     
     UInt32 m_widthInPixels;
     UInt32 m_heightInPixels;
     TPixelStorageFormat m_pixelStorageFormat;
     TBuildinDataType m_pixelComponentDataType;
+    bool m_isNormalizedAsPercentage;
     
     UInt8* m_pixelMapData; 
 };
