@@ -254,6 +254,7 @@ ModuleTypeToString( const TModuleType moduleType )
         case MODULETYPE_HEADER_INTEGRATE_LOCATION: return "HeaderIntegrateLocation";
         case MODULETYPE_CODE_INTEGRATE_LOCATION: return "CodeIntegrateLocation";
         case MODULETYPE_REFERENCE_LIBRARY: return "ReferenceLibrary";
+        case MODULETYPE_BINARY_PACKAGE : return "BinaryPackage";
         case MODULETYPE_UNKNOWN: return "Unknown";
         default: return "";
     }
@@ -273,6 +274,7 @@ StringToModuleType( const CORE::CString moduleTypeStr )
     if ( moduleTypeString == "headerintegratelocation" ) return MODULETYPE_HEADER_INTEGRATE_LOCATION;
     if ( moduleTypeString == "codeintegratelocation" ) return MODULETYPE_CODE_INTEGRATE_LOCATION;
     if ( moduleTypeString == "referencelibrary" ) return MODULETYPE_REFERENCE_LIBRARY;
+    if ( moduleTypeString == "binarypackage" ) return MODULETYPE_BINARY_PACKAGE;
     if ( moduleTypeString == "unknown" ) return MODULETYPE_UNKNOWN;
     return MODULETYPE_UNDEFINED;
 }
@@ -1014,7 +1016,7 @@ DeserializeModuleInfo( TModuleInfo& moduleInfo           ,
 
     // Find dependency includes
     CORE::CDataNode::TConstDataNodeSet includesNodes = moduleInfoNode->FindChildrenOfType( "Includes" );
-     i = includesNodes.begin();
+    i = includesNodes.begin();
     while ( i != includesNodes.end() )
     {
         const CORE::CDataNode* includesNode = (*i);
@@ -2082,6 +2084,7 @@ HasIndependentModuleType( const TModuleInfoMap& moduleDefs )
         if ( ( moduleType != MODULETYPE_HEADER_INCLUDE_LOCATION )   &&
              ( moduleType != MODULETYPE_HEADER_INTEGRATE_LOCATION ) &&
              ( moduleType != MODULETYPE_CODE_INTEGRATE_LOCATION )   &&
+             ( moduleType != MODULETYPE_BINARY_PACKAGE )            &&
              ( moduleType != MODULETYPE_UNDEFINED )                 &&
              ( moduleType != MODULETYPE_UNKNOWN )                    )
         {

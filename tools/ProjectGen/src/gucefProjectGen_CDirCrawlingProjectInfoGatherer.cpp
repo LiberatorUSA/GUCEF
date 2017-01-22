@@ -1779,7 +1779,8 @@ GenerateModuleDependencyIncludes( TModuleInfoEntry& moduleInfoEntry             
         // location regardless of whether headers were found there. This takes care of the
         // use-case whereby people use complex relative paths in their headers which need a particular
         // starting point
-        if ( dependencyModule.moduleType == MODULETYPE_HEADER_INCLUDE_LOCATION )
+        if ( ( dependencyModule.moduleType == MODULETYPE_HEADER_INCLUDE_LOCATION ) ||
+             ( dependencyModule.moduleType == MODULETYPE_BINARY_PACKAGE )           )
         {
             moduleInfo = FindModuleInfoForPlatform( moduleInfoEntry, platformName, true );
             

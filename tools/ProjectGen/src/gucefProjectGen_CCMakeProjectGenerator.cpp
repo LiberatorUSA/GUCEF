@@ -98,6 +98,8 @@ GetSupportedPlatformDirMap( void )
         platformMap[ "GLX" ].insert( "glx" );
         platformMap[ "GTK" ].insert( "gtk" );
         platformMap[ "SDL" ].insert( "sdl" );
+        platformMap[ "EMSCRIPTEN" ].insert( "emscripten" );
+        platformMap[ "NACL" ].insert( "nacl" );
     }
     return platformMap;
 }
@@ -364,6 +366,9 @@ GenerateCMakeListsFileSection( const CORE::CString& sectionContent ,
             CORE::AppendToPath( path, (*n) );
             path = path.ReplaceChar( '\\', '/' );
 
+            // CMake needs spaces in paths to be escaped
+            path = path.ReplaceSubstr( " ", "\\ " );
+
             newSectionContent += "  " + path + "\n";
             ++n;
         }
@@ -452,9 +457,11 @@ GenerateCMakeListsFilePlatformFilesSection( const TModuleInfoEntry& moduleInfoEn
                 TStringVector::const_iterator i = platformHeaderFilesDir.begin();
                 while ( i != platformHeaderFilesDir.end() )
                 {
-                    CORE::CString path = (*n).first;
-                    CORE::AppendToPath( path, (*i) );
+                    CORE::CString path = CORE::CombinePath( (*n).first, (*i) );
                     path = path.ReplaceChar( '\\', '/' );
+
+                    // CMake needs spaces in paths to be escaped
+                    path = path.ReplaceSubstr( " ", "\\ " );
 
                     headerSection += "    " + path + "\n";
 
@@ -491,9 +498,11 @@ GenerateCMakeListsFilePlatformFilesSection( const TModuleInfoEntry& moduleInfoEn
                 TStringVector::const_iterator i = platformSourceFilesDir.begin();
                 while ( i != platformSourceFilesDir.end() )
                 {
-                    CORE::CString path = (*n).first;
-                    CORE::AppendToPath( path, (*i) );
+                    CORE::CString path = CORE::CombinePath( (*n).first, (*i) );
                     path = path.ReplaceChar( '\\', '/' );
+
+                    // CMake needs spaces in paths to be escaped
+                    path = path.ReplaceSubstr( " ", "\\ " );
 
                     sourceSection += "    " + path + "\n";
                     ++i;
@@ -579,21 +588,33 @@ GenerateCMakeModuleIncludesSection( const TModuleInfo& moduleInfo ,
                                     const CORE::CString& rootDir  )
 {GUCEF_TRACE;
 
+    if ( moduleInfo.name == "CEGUI.RendererModule.Direct3D9" )
+    {
+        int b=0;
+    }
+    
     // Add include dirs for each dependency we know about
     CORE::CString allRelDependencyPaths;
     const TStringSet& includeDirs = moduleInfo.dependencyIncludeDirs;
     TStringSet::const_iterator i = includeDirs.begin();
     while ( i != includeDirs.end() )
     {
-        allRelDependencyPaths += ConvertEnvVarStrings( (*i) ) + " ";
+        // CMake needs spaces in paths to be escaped
+        CORE::CString path = (*i).ReplaceSubstr( " ", "\\ " );
+
+        allRelDependencyPaths += ConvertEnvVarStrings( path ) + " ";
         ++i;
     }
 
     // Add all the regular include dirs for this module
     TStringVectorMap::const_iterator n = moduleInfo.includeDirs.begin();
     while ( n != moduleInfo.includeDirs.end() )
-    {
-        CORE::CString includeDir = ConvertEnvVarStrings( (*n).first ).ReplaceChar( '\\', '/' );
+    {        
+        CORE::CString includeDir = ConvertEnvVarStrings( (*n).first ).ReplaceChar( '\\', '/' ); 
+
+        // CMake needs spaces in paths to be escaped
+        includeDir = includeDir.ReplaceSubstr( " ", "\\ " );
+
         if ( 0 != includeDir.Length() )
         {
             allRelDependencyPaths += includeDir + " ";
@@ -606,7 +627,9 @@ GenerateCMakeModuleIncludesSection( const TModuleInfo& moduleInfo ,
             // subdir.
             if ( 1 < moduleInfo.includeDirs.size() )
             {
-                allRelDependencyPaths += "../" + CORE::LastSubDir( rootDir ) + " ";
+                CORE::CString path = "../" + CORE::LastSubDir( rootDir );
+                path = path.ReplaceSubstr( " ", "\\ " );
+                allRelDependencyPaths += path + " ";
             }
         }
         ++n;
@@ -777,7 +800,8 @@ GenerateCMakeModuleDependenciesLine( const TProjectInfo& projectInfo   ,
                 TModuleType moduleType = GetModuleType( *dependencyModule, AllPlatforms );
                 if ( ( MODULETYPE_HEADER_INCLUDE_LOCATION != moduleType )   &&
                      ( MODULETYPE_HEADER_INTEGRATE_LOCATION != moduleType ) &&
-                     ( MODULETYPE_CODE_INTEGRATE_LOCATION != moduleType )    )
+                     ( MODULETYPE_CODE_INTEGRATE_LOCATION != moduleType )   &&
+                     ( MODULETYPE_BINARY_PACKAGE != moduleType )             )
                 {
                     dependencies.insert( (*i) );
                 }
@@ -1180,7 +1204,8 @@ WriteCMakeListsFilesToDisk( const TProjectInfo& projectInfo  ,
         TModuleType allPlatformsType = GetModuleType( moduleInfoEntry, AllPlatforms );
         if ( ( MODULETYPE_HEADER_INCLUDE_LOCATION != allPlatformsType )   &&
              ( MODULETYPE_HEADER_INTEGRATE_LOCATION != allPlatformsType ) &&
-             ( MODULETYPE_CODE_INTEGRATE_LOCATION != allPlatformsType )    )
+             ( MODULETYPE_CODE_INTEGRATE_LOCATION != allPlatformsType )   &&
+             ( MODULETYPE_BINARY_PACKAGE != allPlatformsType )             )
         {
             CORE::CString fileContent = GenerateCMakeListsFileContent( projectInfo, moduleInfoEntry, treatTagsAsOptions, addCompileDate );
             if ( logFilename.Length() > 0 )
@@ -1288,7 +1313,8 @@ WriteCMakeModulesListToDisk( const TProjectInfo& projectInfo ,
         TModuleType allPlatformsType = GetModuleType( moduleInfoEntry, AllPlatforms );
         if ( ( MODULETYPE_HEADER_INCLUDE_LOCATION != allPlatformsType )   &&
              ( MODULETYPE_HEADER_INTEGRATE_LOCATION != allPlatformsType ) &&
-             ( MODULETYPE_CODE_INTEGRATE_LOCATION != allPlatformsType )    )
+             ( MODULETYPE_CODE_INTEGRATE_LOCATION != allPlatformsType )   &&
+             ( MODULETYPE_BINARY_PACKAGE != allPlatformsType )             )
         {
             CORE::CString pathToModuleDir = CORE::GetRelativePathToOtherPathRoot( outputDir, moduleInfoEntry.rootDir );
             pathToModuleDir = pathToModuleDir.ReplaceChar( '\\', '/' );
