@@ -201,15 +201,76 @@ TextureTarget* OpenGL3Renderer::createTextureTarget_impl()
     return d_textureTargetFactory->create(*this);
 }
 
+#define WIDTH 800
+#define HEIGHT 600
+#define OFFSET 200
+
+void drawline (float x1, float y1, float x2, float y2)
+{
+    glBegin (GL_LINES);
+    glVertex2f (x1, y1);
+    glVertex2f (x2, y2);
+    glEnd();
+}
+
+void drawgrid()
+{
+    glClearColor (1.0, 1.0, 1.0, 1.0);
+    glColor3ub (240, 57, 53);
+
+    for (float i = 0; i < HEIGHT; i += 10)
+    {
+        if ((int) i % 100 == 0) glLineWidth (3.0);
+        else if ((int) i % 50 == 0) glLineWidth (2.0);
+        else glLineWidth (1.0);
+        drawline (0, i, (float) WIDTH, i);
+    }
+
+    for (float i = 0; i < WIDTH; i += 10)
+    {
+        if ((int) i % 100 == 0) glLineWidth (3.0);
+        else if ((int) i % 50 == 0) glLineWidth (2.0);
+        else glLineWidth (1.0);
+        drawline (i, 0, i, (float) HEIGHT);
+    }
+}
+
+
 //----------------------------------------------------------------------------//
 void OpenGL3Renderer::beginRendering()
 {
     // do required set-up.  yes, it really is this minimal ;)
-    glEnable(GL_SCISSOR_TEST);
-    glEnable(GL_BLEND);
+    //glEnable(GL_SCISSOR_TEST);
+    //glEnable(GL_BLEND);
+
+//glDisable(GL_BLEND);
+//glColor4f( 0.75, 0.75, 0.75, 1.0f);
+//glDisable(GL_CULL_FACE);
+//glDisable(GL_LIGHTING); 
+glClear(GL_COLOR_BUFFER_BIT);
+
+//glDisable(GL_TEXTURE_2D);
+
+
+//glClear (GL_COLOR_BUFFER_BIT);
+//glMatrixMode (GL_PROJECTION);
+//glLoadIdentity();
+//glOrtho (0.0, 5.0, 0.0, 5.0, -2.0, 2.0);
+//glOrtho(0, WIDTH, 0, HEIGHT, -2.0, 2.0);
+
+
+//glMatrixMode (GL_MODELVIEW);
+//glLoadIdentity();
+
+//glClearColor (1.0, 1.0, 1.0, 1.0);
+//glColor3ub (240, 57, 53);
+
+//drawgrid();
+//glFlush();
+
 
     // force set blending ops to get to a known state.
-    setupRenderingBlendMode(BM_NORMAL, true);
+    //setupRenderingBlendMode(BM_NORMAL, true);
 
     // if enabled, restores a subset of the GL state back to default values.
     if (d_initExtraStates)
