@@ -1,0 +1,173 @@
+.\" Copyright (c) 2005-2011 Hypertriton, Inc. <http://hypertriton.com/>
+.\" All rights reserved.
+.\"
+.\" Redistribution and use in source and binary forms, with or without
+.\" modification, are permitted provided that the following conditions
+.\" are met:
+.\" 1. Redistributions of source code must retain the above copyright
+.\"    notice, this list of conditions and the following disclaimer.
+.\" 2. Redistributions in binary form must reproduce the above copyright
+.\"    notice, this list of conditions and the following disclaimer in the
+.\"    documentation and/or other materials provided with the distribution.
+.\" 
+.\" THIS SOFTWARE IS PROVIDED BY THE AUTHOR ``AS IS'' AND ANY EXPRESS OR
+.\" IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED
+.\" WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE
+.\" ARE DISCLAIMED. IN NO EVENT SHALL THE AUTHOR BE LIABLE FOR ANY DIRECT,
+.\" INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES
+.\" (INCLUDING BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR
+.\" SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION)
+.\" HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT,
+.\" STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING
+.\" IN ANY WAY OUT OF THE USE OF THIS SOFTWARE EVEN IF ADVISED OF THE
+.\" POSSIBILITY OF SUCH DAMAGE.
+.\"
+.Dd May 21, 2005
+.Dt AG_HSVPAL 3
+.Os
+.ds vT Agar API Reference
+.ds oS Agar 1.0
+.Sh NAME
+.Nm AG_HSVPal
+.Nd agar HSV color wheel widget
+.Sh SYNOPSIS
+.Bd -literal
+#include <agar/core.h>
+#include <agar/gui.h>
+.Ed
+.Sh DESCRIPTION
+.\" IMAGE(http://libagar.org/widgets/AG_HSVPal.png, "The AG_HSVPal(3) widget")
+The
+.Nm
+widget is a HSV (Hue, Saturation, Value) color editor which allows the user
+to edit a color's hue, saturation, value and alpha components.
+The widget can bind directly to different color representations:
+.Pp
+.Bl -bullet -compact
+.It
+Individual Hue / Saturation / Value / Alpha floats.
+.It
+Individual R/G/B/A component integers or floats.
+.It
+An
+.Xr AG_Color 3
+structure.
+.It
+A pixel element in packed-pixel format (e.g., an
+.Ft Uint32
+and a corresponding
+.Xr AG_PixelFormat 3 ) .
+.El
+.Sh INHERITANCE HIERARCHY
+.Xr AG_Object 3 ->
+.Xr AG_Widget 3 ->
+.Nm .
+.Sh INITIALIZATION
+.nr nS 1
+.Ft "AG_HSVPal *"
+.Fn AG_HSVPalNew "AG_Widget *parent" "Uint flags"
+.Pp
+.nr nS 0
+The
+.Fn AG_HSVPalNew
+function allocates, initializes, and attaches a new
+.Nm
+widget.
+Acceptable
+.Fa flags
+include:
+.Bl -tag -width "AG_HSVPAL_NOPREVIEW "
+.It AG_HSVPAL_NOALPHA
+Disable the alpha component editor.
+This flag is automatically set or cleared whenever
+.Va pixel-format
+is bound to a pixel format with or without alpha channel.
+.It AG_HSVPAL_FORCE_NOALPHA
+Disable the alpha component editor, regardless of whether the
+pixel format includes alpha support.
+.It AG_HSVPAL_NOPREVIEW
+Disable the color preview band.
+.It AG_HSVPAL_HFILL
+Expand horizontally in parent (equivalent to invoking
+.Xr AG_ExpandHoriz 3 ) .
+.It AG_HSVPAL_VFILL
+Expand vertically in parent (equivalent to invoking
+.Xr AG_ExpandVert 3 ) .
+.It AG_HSVPAL_EXPAND
+Shorthand for
+.Dv AG_HSVPAL_HFILL|AG_HSVPAL_VFILL .
+.El
+.Sh BINDINGS
+The
+.Nm
+widget provides the following bindings:
+.Pp
+.Bl -tag -compact -width "AG_PixelFormat **pixel-format "
+.It Va float *hue
+Color hue (0..1).
+.It Va float *saturation
+Color saturation (0..1).
+.It Va float *value
+Color brightness (0..1).
+.It Va float *alpha
+Alpha component value (0..1).
+.It Va AG_PixelFormat **pixel-format
+Pointer to the
+.Xr AG_PixelFormat 3
+to use for generating the
+.Va pixel
+value.
+The
+.Dv AG_HSVPAL_NOALPHA
+flag will be set automatically depending on the presence of an
+alpha component in the newly bound format (use
+.Dv AG_HSVPAL_FORCE_NOALPHA
+to disable this test).
+.It Va Uint32 *pixel
+Resulting pixel value.
+The pixel's components are extracted immediately when this binding is made
+(using the current
+.Va pixel-format )
+so make sure to always bind
+.Va pixel-format
+prior to
+.Va pixel .
+.It Va void *RGBv
+A three-element array containing the RGB components.
+Acceptable binding types include FLOAT and DOUBLE, INT and UINT8.
+For floating point types, the values are scaled to 0.0-1.0.
+For integral types, the values are scaled to 0-255.
+.It Va void *RGBAv
+Same as above, except that the array has 4 elements where the last element
+is the alpha component.
+.El
+.Sh EVENTS
+The
+.Nm
+widget generates the following events:
+.Pp
+.Bl -tag -compact -width 2n
+.It Fn h-changed "void"
+The hue has changed.
+.It Fn sv-changed "void"
+The saturation or the value has changed.
+.El
+.Sh TROUBLETONS
+The conversion between integer RGB and HSV triplets is not reversible without
+loss of precision.
+In cases where it is desirable to maintain the same hue throughout changes in
+saturation, the color should be stored in HSV format.
+.Sh SEE ALSO
+.Xr AG_Intro 3 ,
+.Xr AG_Widget 3 ,
+.Xr AG_Window 3
+.Pp
+.Lk http://www.easyrgb.com/ EasyRGB
+.Pp
+.Lk https://en.wikipedia.org/wiki/HSV_color_space The HSV color model
+.Pp
+.Lk https://en.wikipedia.org/wiki/RGB_color_model The RGB color model
+.Sh HISTORY
+The
+.Nm
+widget first appeared in Agar 1.0.

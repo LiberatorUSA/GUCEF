@@ -1,0 +1,177 @@
+.\" Copyright (c) 2011-2012 Hypertriton, Inc. <http://hypertriton.com/>
+.\" All rights reserved.
+.\"
+.\" Redistribution and use in source and binary forms, with or without
+.\" modification, are permitted provided that the following conditions
+.\" are met:
+.\" 1. Redistributions of source code must retain the above copyright
+.\"    notice, this list of conditions and the following disclaimer.
+.\" 2. Redistributions in binary form must reproduce the above copyright
+.\"    notice, this list of conditions and the following disclaimer in the
+.\"    documentation and/or other materials provided with the distribution.
+.\"
+.\" THIS SOFTWARE IS PROVIDED BY THE AUTHOR ``AS IS'' AND ANY EXPRESS OR
+.\" IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED
+.\" WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE
+.\" ARE DISCLAIMED. IN NO EVENT SHALL THE AUTHOR BE LIABLE FOR ANY DIRECT,
+.\" INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES
+.\" (INCLUDING BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR
+.\" SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION)
+.\" HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT,
+.\" STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING
+.\" IN ANY WAY OUT OF THE USE OF THIS SOFTWARE EVEN IF ADVISED OF THE
+.\" POSSIBILITY OF SUCH DAMAGE.
+.\"
+.Dd March 1, 2008
+.Dt AG_SLIDER 3
+.Os
+.ds vT Agar API Reference
+.ds oS Agar 1.3.2
+.Sh NAME
+.Nm AG_Slider
+.Nd agar slider widget
+.Sh SYNOPSIS
+.Bd -literal
+#include <agar/core.h>
+#include <agar/gui.h>
+.Ed
+.Sh DESCRIPTION
+.\" IMAGE(http://libagar.org/widgets/AG_Slider.png, "An horizontal AG_Slider")
+The
+.Nm
+widget allows the user to control an integer or floating-point value within a
+specified range.
+It can be thought as a graphical alternative to
+.Xr AG_Numerical 3 .
+.Sh INHERITANCE HIERARCHY
+.Xr AG_Object 3 ->
+.Xr AG_Widget 3 ->
+.Nm .
+.Sh INTERFACE
+.nr nS 1
+.Ft "AG_Slider *"
+.Fn AG_SliderNew "AG_Widget *parent" "enum ag_slider_type type" "Uint flags"
+.Pp
+.Ft void
+.Fn AG_SliderSetControlSize "AG_Slider *slider" "int pixels"
+.Pp
+.nr nS 0
+The
+.Fn AG_SliderNew
+function allocates, initializes, and attaches a new
+.Nm
+widget.
+.Fa type
+defines the orientation of the slider:
+.Bd -literal
+enum ag_slider_type {
+	AG_SLIDER_HORIZ,
+	AG_SLIDER_VERT
+};
+.Ed
+.Pp
+Acceptable
+.Fa flags
+include:
+.Bl -tag -width "AG_SLIDER_EXPAND "
+.It AG_SLIDER_EXCL
+Advise that no external changes to the
+.Va value ,
+.Va min
+and
+.Va max
+bindings are expected.
+By default, the binding values are periodically checked and the slider is
+redrawn if a change is detected.
+Note that this setting only influences redraw -- external changes to the
+binding values are handled safely regardless.
+.It AG_SLIDER_HFILL
+Expand horizontally in parent (equivalent to invoking
+.Xr AG_ExpandHoriz 3 ) .
+.It AG_SLIDER_VFILL
+Expand vertically in parent (equivalent to invoking
+.Xr AG_ExpandVert 3 ) .
+.It AG_SLIDER_EXPAND
+Shorthand for
+.Dv AG_SLIDER_HFILL|AG_SLIDER_VFILL .
+.El
+.Pp
+The
+.Fn AG_SliderSetControlSize
+function specifies a preferred size for the slider control, in pixels.
+.Sh BINDINGS
+The
+.Nm
+widget provides the following bindings:
+.Pp
+.Bl -tag -compact -width "long double *{value,min,max,inc} "
+.It Va float *{value,min,max,inc}
+Single precision number
+.It Va double *{value,min,max,inc}
+Double precision number
+.It Va long double *{value,min,max,inc}
+Quad precision number
+.It Va int *{value,min,max,inc}
+Natural integer
+.It Va Uint *{value,min,max,inc}
+Unsigned integer
+.It Va [SU]int8 *{value,min,max,inc}
+Fixed 8-bit integer
+.It Va [SU]int16 *{value,min,max,inc}
+Fixed 16-bit integer
+.It Va [SU]int32 *{value,min,max,inc}
+Fixed 32-bit integer
+.It Va [SU]int64 *{value,min,max,inc}
+Fixed 64-bit integer
+.El
+.Pp
+The slider is positioned to represent
+.Va value
+inside of the range defined by
+.Va min
+and
+.Va max .
+.Pp
+The optional
+.Va inc
+binding specifies the increment effected by the buttons, or keyboard.
+If not specified, it defaults to 0.1 (for floating-point values),
+or 1 (for integer values).
+.Pp
+Note that the
+.Va min ,
+.Va max
+and
+.Va inc
+bindings must share the same type as
+.Va value .
+The 64-bit types are only available if
+.Dv AG_HAVE_64BIT
+is set, and
+.Ft long double
+is only available if
+.Dv AG_HAVE_LONG_DOUBLE
+is set.
+.Sh EVENTS
+The
+.Nm
+widget generates the following events:
+.Pp
+.Bl -tag -compact -width 2n
+.It Fn slider-changed "void"
+The slider's value has changed.
+.It Fn slider-drag-begin "void"
+User is starting to drag the slider.
+.It Fn slider-drag-end "void"
+User is done dragging the slider.
+.El
+.Sh SEE ALSO
+.Xr AG_Intro 3 ,
+.Xr AG_Numerical 3 ,
+.Xr AG_Scrollbar 3 ,
+.Xr AG_Widget 3 ,
+.Xr AG_Window 3
+.Sh HISTORY
+The
+.Nm
+widget first appeared in Agar 1.3.2.

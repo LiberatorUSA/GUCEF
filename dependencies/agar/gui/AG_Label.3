@@ -1,0 +1,291 @@
+.\" Copyright (c) 2002-2012 Hypertriton, Inc. <http://hypertriton.com/>
+.\" All rights reserved.
+.\"
+.\" Redistribution and use in source and binary forms, with or without
+.\" modification, are permitted provided that the following conditions
+.\" are met:
+.\" 1. Redistributions of source code must retain the above copyright
+.\"    notice, this list of conditions and the following disclaimer.
+.\" 2. Redistributions in binary form must reproduce the above copyright
+.\"    notice, this list of conditions and the following disclaimer in the
+.\"    documentation and/or other materials provided with the distribution.
+.\"
+.\" THIS SOFTWARE IS PROVIDED BY THE AUTHOR ``AS IS'' AND ANY EXPRESS OR
+.\" IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED
+.\" WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE
+.\" ARE DISCLAIMED. IN NO EVENT SHALL THE AUTHOR BE LIABLE FOR ANY DIRECT,
+.\" INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES
+.\" (INCLUDING BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR
+.\" SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION)
+.\" HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT,
+.\" STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING
+.\" IN ANY WAY OUT OF THE USE OF THIS SOFTWARE EVEN IF ADVISED OF THE
+.\" POSSIBILITY OF SUCH DAMAGE.
+.\"
+.Dd August 21, 2002
+.Dt AG_LABEL 3
+.Os
+.ds vT Agar API Reference
+.ds oS Agar 1.0
+.Sh NAME
+.Nm AG_Label
+.Nd agar label widget
+.Sh SYNOPSIS
+.Bd -literal
+#include <agar/core.h>
+#include <agar/gui.h>
+.Ed
+.Sh DESCRIPTION
+.\" IMAGE(http://libagar.org/widgets/AG_Label.png, "Two AG_Labels")
+The
+.Nm
+widget displays single-line or multi-line text.
+In the case of
+.Sq polled
+labels, the text can contain elements which are going to be dereferenced
+on rendering.
+.Sh INHERITANCE HIERARCHY
+.Xr AG_Object 3 ->
+.Xr AG_Widget 3 ->
+.Nm .
+.Sh INITIALIZATION
+.nr nS 1
+.Ft "AG_Label *"
+.Fn AG_LabelNew "AG_Widget *parent" "Uint flags" "const char *fmt" "..."
+.Pp
+.Ft "AG_Label *"
+.Fn AG_LabelNewS "AG_Widget *parent" "Uint flags" "const char *text"
+.Pp
+.Ft "AG_Label *"
+.Fn AG_LabelNewPolled "AG_Widget *parent" "Uint flags" "const char *fmt" "..."
+.Pp
+.Ft "AG_Label *"
+.Fn AG_LabelNewPolledMT "AG_Widget *parent" "Uint flags" "AG_Mutex *mutex" "const char *fmt" "..."
+.Pp
+.Ft void
+.Fn AG_LabelText "AG_Label *label" "const char *format" "..."
+.Pp
+.Ft void
+.Fn AG_LabelTextS "AG_Label *label" "const char *s"
+.Pp
+.Ft "void"
+.Fn AG_LabelSetFont "AG_Label *label" "AG_Font *font"
+.Pp
+.Ft "void"
+.Fn AG_LabelSetColor "AG_Label *label" "AG_Color C"
+.Pp
+.Ft "void"
+.Fn AG_LabelSetColorBG "AG_Label *label" "AG_Color C"
+.Pp
+.Ft "void"
+.Fn AG_LabelSetPadding "AG_Label *label" "int left" "int right" "int top" "int bottom"
+.Pp
+.Ft "void"
+.Fn AG_LabelJustify "AG_Label *label" "enum ag_text_justify justify"
+.Pp
+.Ft "void"
+.Fn AG_LabelValign "AG_Label *label" "enum ag_text_valign valign"
+.Pp
+.Ft "void"
+.Fn AG_LabelSizeHint "AG_Label *label" "Uint nlines" "const char *text"
+.Pp
+.nr nS 0
+The
+.Fn AG_LabelNew
+function allocates, initializes and attaches a
+.Nm
+widget initially displaying the given text.
+.Pp
+The
+.Fn AG_LabelNewPolled
+function creates a new
+.Nm
+widget displaying a string of text which contains references to variables.
+The
+.Fn AG_LabelNewPolledMT
+variant accepts a pointer to a mutex that will be automatically acquired
+and release as the widget accesses the referenced data.
+See the
+.Sx POLLED LABELS
+section for more details.
+.Pp
+See
+.Sx LABEL FLAGS
+section for a the accepted
+.Fa flags
+values for
+.Fn AG_LabelNew
+and
+.Fn AG_LabelNewPolled .
+.Pp
+The
+.Fn AG_LabelText
+function changes the current label text.
+.Pp
+The
+.Fn AG_LabelSetFont
+function configures an alternate font which will be used to display the
+label.
+The
+.Fa font
+argument is not duplicated (i.e., the referenced font should remain valid
+as long as the widget exists).
+To set the font of a label back to the default Agar font, NULL can be passed.
+See
+.Xr AG_FetchFont 3
+for details on Agar fonts.
+.Pp
+.Fn AG_LabelSetColor
+and
+.Fn AG_LabelSetColorBG
+configure an alternate text and background color for the label (see
+.Xr AG_Color 3 ) .
+.Pp
+.Fn AG_LabelSetPadding
+sets the label padding parameters in pixels.
+If a parameter is -1, its current value is preserved.
+.Pp
+The
+.Fn AG_LabelJustify
+function sets the text justification:
+.Bd -literal
+enum ag_text_justify {
+	AG_TEXT_LEFT,
+	AG_TEXT_CENTER,
+	AG_TEXT_RIGHT
+};
+.Ed
+.Pp
+.Fn AG_LabelValign
+sets the vertical text alignment:
+.Bd -literal
+enum ag_text_valign {
+	AG_TEXT_TOP,
+	AG_TEXT_MIDDLE,
+	AG_TEXT_BOTTOM
+};
+.Ed
+.Pp
+The
+.Fn AG_LabelSizeHint
+function arranges for the minimum scaling of the label to accomodate at
+least
+.Fa nlines
+lines of the given text string.
+If
+.Fa nlines
+is 0, the number of lines will be based on the contents of the text string.
+.Sh POLLED LABELS
+.Fn AG_LabelNewPolled
+and
+.Fn AG_LabelNewPolledMT
+may be used to display a label containing dynamically accessed elements
+(i.e., the actual string will be compiled on rendering).
+.Fn AG_LabelNewPolled
+accepts an Agar-style format string (see
+.Xr AG_String 3
+for details).
+Subsequent arguments must be pointers (as opposed to literal data),
+and the formatting engine also provides Agar-specific extensions.
+.Pp
+Note that the length of polled labels is difficult to determine automatically,
+so
+.Fn AG_LabelSizeHint
+and
+.Xr AG_ExpandHoriz 3
+are typically used with polled labels.
+.Sh EVENTS
+The
+.Nm
+widget does not generate any event.
+.Sh LABEL FLAGS
+The following
+.Nm
+.Fa flags
+are defined:
+.Bl -tag -width "AG_LABEL_NOMINSIZE "
+.It AG_LABEL_FRAME
+Draw a visible frame around the label.
+.It AG_LABEL_NOMINSIZE
+Don't enforce a minimum size on the label.
+If the label becomes partially hidden, the text will be truncated with a
+.Sq ...
+string.
+.It AG_LABEL_PARTIAL
+The label is partially hidden (read-only).
+.It AG_LABEL_REGEN
+Force re-rendering of the text at next draw (used internally by
+.Fn AG_LabelString ,
+etc.)
+.It AG_LABEL_HFILL
+Expand horizontally in parent (equivalent to invoking
+.Xr AG_ExpandHoriz 3 ) .
+Polled labels, whenever possible, should use this option (otherwise a
+.Fn AG_LabelSizeHint
+call is needed).
+.It AG_LABEL_VFILL
+Expand vertically in parent (equivalent to invoking
+.Xr AG_ExpandVert 3 ) .
+This option is useful with dynamically changing multi-line labels.
+.It AG_LABEL_EXPAND
+Shorthand for
+.Dv AG_LABEL_HFILL|AG_LABEL_VFILL .
+.El
+.Sh EXAMPLES
+The following code snippet creates a window containing both a static label
+and a polled label:
+.Bd -literal -offset indent
+AG_Window *win;
+int myInt = 1234;
+AG_Label *myLbl;
+
+win = AG_WindowNew(0);
+AG_LabelNew(win, 0, "Foo");
+myLbl = AG_LabelNewPolled(win, 0, "myInt=%i", &myInt);
+AG_LabelSizeHint(myLbl, 1, "myInt=0000");
+.Ed
+.Pp
+Thread-safe code can associate polled labels with mutexes protecting
+the data to access:
+.Bd -literal -offset indent
+int myInt = 1234;
+AG_Mutex myMutex = AG_MUTEX_INITIALIZER;
+
+AG_LabelNewPolledMT(win, 0, &myMutex, "myInt=%i", &myInt);
+.Ed
+.Pp
+The following code fragment defines a custom format specifier, which
+can be used in polled labels (and is also recognized by
+.Fn AG_Printf ) .
+For more details on custom format specifiers, refer to
+.Xr AG_String 3 .
+.Bd -literal -offset indent
+size_t
+PrintMyVector(AG_FmtString *fs, char *dst, size_t dstSize)
+{
+	struct my_vector *my = AG_LABEL_ARG(fs);
+	return AG_Snprintf(dst, dstSize, "[%f,%f]", my->x, my->y);
+}
+
+.Li ...
+
+struct my_vector v;
+
+AG_RegisterFmtStringExt("myVec", PrintMyVector);
+
+AG_LabelNewS(parent, 0, "Static label: %[myVec]", &v);
+AG_LabelNewPolled(parent, 0, "Polled label: %[myVec]", &v);
+.Ed
+.Sh SEE ALSO
+.Xr AG_FetchFont 3 ,
+.Xr AG_Intro 3 ,
+.Xr AG_Pixmap 3 ,
+.Xr AG_String 3 ,
+.Xr AG_Widget 3 ,
+.Xr AG_Window 3
+.Sh HISTORY
+The
+.Nm
+widget first appeared in Agar 1.0.
+In Agar 1.5.0, the formatting engine for "polled labels" was rewritten
+and generalized.

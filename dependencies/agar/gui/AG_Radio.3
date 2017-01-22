@@ -1,0 +1,201 @@
+.\" Copyright (c) 2002-2007 Hypertriton, Inc. <http://hypertriton.com/>
+.\" All rights reserved.
+.\"
+.\" Redistribution and use in source and binary forms, with or without
+.\" modification, are permitted provided that the following conditions
+.\" are met:
+.\" 1. Redistributions of source code must retain the above copyright
+.\"    notice, this list of conditions and the following disclaimer.
+.\" 2. Redistributions in binary form must reproduce the above copyright
+.\"    notice, this list of conditions and the following disclaimer in the
+.\"    documentation and/or other materials provided with the distribution.
+.\" 
+.\" THIS SOFTWARE IS PROVIDED BY THE AUTHOR ``AS IS'' AND ANY EXPRESS OR
+.\" IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED
+.\" WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE
+.\" ARE DISCLAIMED. IN NO EVENT SHALL THE AUTHOR BE LIABLE FOR ANY DIRECT,
+.\" INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES
+.\" (INCLUDING BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR
+.\" SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION)
+.\" HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT,
+.\" STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING
+.\" IN ANY WAY OUT OF THE USE OF THIS SOFTWARE EVEN IF ADVISED OF THE
+.\" POSSIBILITY OF SUCH DAMAGE.
+.\"
+.Dd August 21, 2002
+.Dt AG_RADIO 3
+.Os
+.ds vT Agar API Reference
+.ds oS Agar 1.0
+.Sh NAME
+.Nm AG_Radio
+.Nd agar radio group widget
+.Sh SYNOPSIS
+.Bd -literal
+#include <agar/core.h>
+#include <agar/gui.h>
+.Ed
+.Sh DESCRIPTION
+.\" IMAGE(http://libagar.org/widgets/AG_Radio.png, "An AG_Radio widget")
+The
+.Nm
+widget implements a group of "radio" buttons.
+.Sh INHERITANCE HIERARCHY
+.Xr AG_Object 3 ->
+.Xr AG_Widget 3 ->
+.Nm .
+.Sh INITIALIZATION
+.nr nS 1
+.Ft "AG_Radio *"
+.Fn AG_RadioNew "AG_Widget *parent" "Uint flags" "const char *items[]"
+.Pp
+.Ft "AG_Radio *"
+.Fn AG_RadioNewFn "AG_Widget *parent" "Uint flags" "const char *items[]" "AG_EventFn fn" "const char *fmt" "..."
+.Pp
+.\" MANLINK(AG_RadioNewInt)
+.\" MANLINK(AG_RadioNewUint)
+.Ft "AG_Radio *"
+.Fn AG_RadioNew{Int,Uint} "AG_Widget *parent" "Uint flags" "const char *items[]" "<Type> *value"
+.Pp
+.Ft void
+.Fn AG_RadioItemsFromArray "AG_Radio *radio" "const char *items[]"
+.Pp
+.Ft int
+.Fn AG_RadioAddItem "AG_Radio *radio" "const char *format" "..."
+.Pp
+.Ft int
+.Fn AG_RadioAddItemS "AG_Radio *radio" "const char *text"
+.Pp
+.Ft int
+.Fn AG_RadioAddItemHK "AG_Radio *radio" "AG_KeySym hotkey" "const char *format" "..."
+.Pp
+.Ft int
+.Fn AG_RadioAddItemHKS "AG_Radio *radio" "AG_KeySym hotkey" "const char *text"
+.Pp
+.Ft void
+.Fn AG_RadioClearItems "AG_Radio *radio"
+.Pp
+.nr nS 0
+The
+.Fn AG_RadioNew
+function allocates, initializes, and attaches a new
+.Nm
+widget.
+If
+.Fa items
+is not NULL, it should point to a NULL-terminated array of strings.
+Acceptable
+.Fa flags
+include:
+.Bl -tag -width "AG_RADIO_EXPAND "
+.It AG_RADIO_HFILL
+Expand horizontally in parent (equivalent to invoking
+.Xr AG_ExpandHoriz 3 ) .
+.It AG_RADIO_VFILL
+Expand vertically in parent (equivalent to invoking
+.Xr AG_ExpandVert 3 ) .
+.It AG_RADIO_EXPAND
+Shorthand for
+.Dv AG_RADIO_HFILL|AG_RADIO_VFILL .
+.El
+.Pp
+The
+.Fn AG_RadioNewFn
+variant sets an event handler for the
+.Sq radio-changed
+event.
+The
+.Fn AG_RadioNew{Int,Uint}
+variants tie the radio button with the specified
+.Fa int
+or
+.Fa Uint
+variable.
+.Pp
+The
+.Fn AG_RadioItemsFromArray
+function inserts a set of radio buttons from the given NULL-terminated
+array of strings.
+If there are already buttons in the group, they are preserved.
+.Pp
+.Fn AG_RadioAddItem
+inserts a single radio button.
+The
+.Fn AG_RadioAddItemHK
+variant also assigns a hotkey to the button.
+.Pp
+.Fn AG_RadioClearItems
+removes all radio buttons from the group.
+.Sh BINDINGS
+The
+.Nm
+widget provides the following bindings:
+.Pp
+.Bl -tag -compact -width "int *value"
+.It Va int *value
+Index of selected item, or -1 if there is no selection.
+.El
+.Sh EVENTS
+The
+.Nm
+widget generates the following events:
+.Bl -tag -width 2n
+.It Fn radio-changed "int index"
+Selection changed to item at index
+.Fa index .
+The
+.Sq value
+binding remains locked throughout the event handler's execution.
+.El
+.Sh STRUCTURE DATA
+For the
+.Ft AG_Radio
+object:
+.Bl -tag -width "int oversel "
+.It Ft int oversel
+Index of last selection under the cursor (read-only).
+.El
+.Sh EXAMPLES
+The following code fragment binds
+.Nm
+to an enum:
+.Bd -literal -offset indent
+enum fruit {
+	APPLE,
+	ORANGE,
+	BANANA
+} fruit = APPLE;
+
+const char *fruitNames[] = {
+	"Apple",
+	"Orange",
+	"Banana",
+	NULL
+};
+
+AG_Radio *r = AG_RadioNew(NULL, 0, fruitNames);
+AG_BindInt(r, "value", &fruit);
+.Ed
+.Pp
+To specify a callback routine:
+.Bd -literal -offset indent
+void
+MyCallback(AG_Event *event)
+{
+	int newSelection = AG_INT(1);
+	printf("Selected item %d\\n", newSelection);
+}
+
+.Li ...
+
+AG_Radio *r = AG_RadioNewFn(NULL, 0, fruitNames, MyCallback, NULL);
+AG_BindInt(r, "value", &fruit);
+.Ed
+.Sh SEE ALSO
+.Xr AG_Intro 3 ,
+.Xr AG_Widget 3 ,
+.Xr AG_Window 3
+.Sh HISTORY
+The
+.Nm
+widget first appeared in Agar 1.0.

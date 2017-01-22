@@ -1,0 +1,222 @@
+--
+-- Do not edit!
+-- This file was generated from Makefile by BSDbuild 3.2.
+--
+-- To regenerate this file, get the latest BSDbuild release from
+-- http://hypertriton.com/bsdbuild/, the latest Premake release
+-- (v3 series) from http://premake.sourceforge.net/, and execute:
+--
+--     $ make proj
+--
+package = newpackage()
+package.name = "ag_gui_static"
+package.kind = "lib"
+package.language = "c"
+package.guid = "71a13512-13e7-44a6-ba69-e868296cdc34"
+dofile("../configure.lua")
+tinsert(package.links,{"ag_core_static"})
+tinsert(package.links,{"pthreadVC2"})
+tinsert(package.links,{"winmm"})
+tinsert(package.links,{"wsock32"})
+tinsert(package.links,{"ws2_32"})
+tinsert(package.links,{"iphlpapi"})
+tinsert(package.links,{"SDL"})
+tinsert(package.links,{"freetype"})
+tinsert(package.links,{"opengl32"})
+package.files = {
+	"drv_sdl_common.c",
+	"drv_sdlfb.c",
+	"drv_sdlgl.c",
+	"drv_gl_common.c",
+	"drv_wgl.c",
+	"drv.c",
+	"drv_sw.c",
+	"drv_mw.c",
+	"gui.c",
+	"widget.c",
+	"window.c",
+	"iconmgr.c",
+	"geometry.c",
+	"colors.c",
+	"cursors.c",
+	"ttf.c",
+	"text.c",
+	"keymap.c",
+	"keymap_latin1.c",
+	"keymap_compose.c",
+	"keysyms.c",
+	"editable.c",
+	"box.c",
+	"label.c",
+	"button.c",
+	"checkbox.c",
+	"textbox.c",
+	"radio.c",
+	"fixed_plotter.c",
+	"tlist.c",
+	"scrollbar.c",
+	"spinbutton.c",
+	"titlebar.c",
+	"toolbar.c",
+	"fspinbutton.c",
+	"combo.c",
+	"ucombo.c",
+	"units.c",
+	"nlunits.c",
+	"hsvpal.c",
+	"mspinbutton.c",
+	"mfspinbutton.c",
+	"statusbar.c",
+	"menu.c",
+	"menu_view.c",
+	"treetbl.c",
+	"separator.c",
+	"notebook.c",
+	"pixmap.c",
+	"file_dlg.c",
+	"objsel.c",
+	"fixed.c",
+	"numerical.c",
+	"table.c",
+	"glview.c",
+	"mpane.c",
+	"pane.c",
+	"console.c",
+	"graph.c",
+	"socket.c",
+	"icon.c",
+	"progress_bar.c",
+	"slider.c",
+	"text_cache.c",
+	"load_surface.c",
+	"load_color.c",
+	"load_xcf.c",
+	"file_selector.c",
+	"scrollview.c",
+	"font_selector.c",
+	"time_sdl.c",
+	"debugger.c",
+	"surface.c",
+	"widget_legacy.c",
+	"global_keys.c",
+	"input_device.c",
+	"mouse.c",
+	"keyboard.c",
+	"packedpixel.c",
+	"load_bmp.c",
+	"load_jpg.c",
+	"load_png.c",
+	"dir_dlg.c",
+	"anim.c",
+	"stylesheet.c",
+}
+tinsert(package.defines,{"_AGAR_INTERNAL"})
+tinsert(package.defines,{"_BSD_SOURCE"})
+tinsert(package.includepaths,{"/home/vedge/src/agar-1.5.0/include"})
+tinsert(package.defines,{"_AGAR_GUI_INTERNAL"})
+package = newpackage()
+package.name = "ag_gui"
+package.kind = "dll"
+package.language = "c"
+package.guid = "71a13512-13e7-44a6-ba69-e868296cdc34"
+dofile("../configure.lua")
+tinsert(package.links,{"ag_core_static"})
+tinsert(package.links,{"pthreadVC2"})
+tinsert(package.links,{"winmm"})
+tinsert(package.links,{"wsock32"})
+tinsert(package.links,{"ws2_32"})
+tinsert(package.links,{"iphlpapi"})
+tinsert(package.links,{"SDL"})
+tinsert(package.links,{"freetype"})
+tinsert(package.links,{"opengl32"})
+package.files = {
+	"drv_sdl_common.c",
+	"drv_sdlfb.c",
+	"drv_sdlgl.c",
+	"drv_gl_common.c",
+	"drv_wgl.c",
+	"drv.c",
+	"drv_sw.c",
+	"drv_mw.c",
+	"gui.c",
+	"widget.c",
+	"window.c",
+	"iconmgr.c",
+	"geometry.c",
+	"colors.c",
+	"cursors.c",
+	"ttf.c",
+	"text.c",
+	"keymap.c",
+	"keymap_latin1.c",
+	"keymap_compose.c",
+	"keysyms.c",
+	"editable.c",
+	"box.c",
+	"label.c",
+	"button.c",
+	"checkbox.c",
+	"textbox.c",
+	"radio.c",
+	"fixed_plotter.c",
+	"tlist.c",
+	"scrollbar.c",
+	"spinbutton.c",
+	"titlebar.c",
+	"toolbar.c",
+	"fspinbutton.c",
+	"combo.c",
+	"ucombo.c",
+	"units.c",
+	"nlunits.c",
+	"hsvpal.c",
+	"mspinbutton.c",
+	"mfspinbutton.c",
+	"statusbar.c",
+	"menu.c",
+	"menu_view.c",
+	"treetbl.c",
+	"separator.c",
+	"notebook.c",
+	"pixmap.c",
+	"file_dlg.c",
+	"objsel.c",
+	"fixed.c",
+	"numerical.c",
+	"table.c",
+	"glview.c",
+	"mpane.c",
+	"pane.c",
+	"console.c",
+	"graph.c",
+	"socket.c",
+	"icon.c",
+	"progress_bar.c",
+	"slider.c",
+	"text_cache.c",
+	"load_surface.c",
+	"load_color.c",
+	"load_xcf.c",
+	"file_selector.c",
+	"scrollview.c",
+	"font_selector.c",
+	"time_sdl.c",
+	"debugger.c",
+	"surface.c",
+	"widget_legacy.c",
+	"global_keys.c",
+	"input_device.c",
+	"mouse.c",
+	"keyboard.c",
+	"packedpixel.c",
+	"load_bmp.c",
+	"load_jpg.c",
+	"load_png.c",
+	"dir_dlg.c",
+	"anim.c",
+	"stylesheet.c",
+}
+tinsert(package.defines,{"_AGAR_INTERNAL"})
+tinsert(package.defines,{"_BSD_SOURCE"})
+tinsert(package.includepaths,{"/home/vedge/src/agar-1.5.0/include"})
+tinsert(package.defines,{"_AGAR_GUI_INTERNAL"})

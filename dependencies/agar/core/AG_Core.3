@@ -1,0 +1,176 @@
+.\" Copyright (c) 2001-2013 Hypertriton, Inc. <http://hypertriton.com/>
+.\" All rights reserved.
+.\"
+.\" Redistribution and use in source and binary forms, with or without
+.\" modification, are permitted provided that the following conditions
+.\" are met:
+.\" 1. Redistributions of source code must retain the above copyright
+.\"    notice, this list of conditions and the following disclaimer.
+.\" 2. Redistributions in binary form must reproduce the above copyright
+.\"    notice, this list of conditions and the following disclaimer in the
+.\"    documentation and/or other materials provided with the distribution.
+.\" 
+.\" THIS SOFTWARE IS PROVIDED BY THE AUTHOR ``AS IS'' AND ANY EXPRESS OR
+.\" IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED
+.\" WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE
+.\" ARE DISCLAIMED. IN NO EVENT SHALL THE AUTHOR BE LIABLE FOR ANY DIRECT,
+.\" INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES
+.\" (INCLUDING BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR
+.\" SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION)
+.\" HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT,
+.\" STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING
+.\" IN ANY WAY OUT OF THE USE OF THIS SOFTWARE EVEN IF ADVISED OF THE
+.\" POSSIBILITY OF SUCH DAMAGE.
+.\"
+.\"	$OpenBSD: mdoc.template,v 1.6 2001/02/03 08:22:44 niklas Exp $
+.\"
+.Dd NOVEMBER 26, 2001
+.Dt AG_CORE 3
+.Os
+.ds vT Agar API Reference
+.ds oS Agar 1.0
+.Sh NAME
+.Nm AG_Core
+.Nd agar core library initialization
+.Sh SYNOPSIS
+.Bd -literal
+#include <agar/core.h>
+.Ed
+.Sh DESCRIPTION
+The Agar
+.Nm
+library implements the base Agar object system along with portable interfaces
+to operating system services (e.g., filesystems, network, threads).
+Even though the Agar-GUI library is built on top of it,
+.Nm
+is an independent, general utility library containing no GUI-related code.
+.Pp
+For a complete listing of available subsystems and interfaces, see the
+.Dq AGAR-CORE
+section of the
+.Xr AG_Intro 3
+manual page, or the
+.Sx SEE ALSO
+section below.
+.Sh INITIALIZATION
+.nr nS 1
+.Ft "int"
+.Fn AG_InitCore "const char *progname" "Uint flags"
+.Pp
+.Ft "void"
+.Fn AG_AtExitFunc "void (*fn)(void)"
+.Pp
+.Ft "void"
+.Fn AG_Quit "void"
+.Pp
+.Ft "void"
+.Fn AG_Destroy "void"
+.Pp
+.nr nS 0
+The
+.Fn AG_InitCore
+function initializes the
+.Nm
+library.
+The optional
+.Fa progname
+argument sets an application name (this name may be used by ag_gui and
+.Nm
+to set various platform-dependent defaults).
+.Fa progname
+may be set to NULL.
+.Pp
+Available
+.Fa flags
+options include:
+.Bl -tag -width "AG_CREATE_DATADIR "
+.It AG_VERBOSE
+Allow errors/warnings on the standard error output.
+.It AG_CREATE_DATADIR
+Create a data directory for the application.
+The exact location of the directory is platform-dependent (and may
+depend on
+.Fa progname ) .
+On Unix-like platforms, the default would be
+.Pa ~/.<progname> .
+.It AG_SOFT_TIMERS
+Disable use of hardware timers.
+Indicate that the application will be updating the software-based timing
+wheel using
+.Xr AG_ProcessTimeouts 3 .
+.El
+.Pp
+The
+.Fn AG_AtExitFunc
+registers a function that will be invoked automatically by
+.Fn AG_Destroy .
+.Pp
+.Fn AG_Quit
+terminates the application by releasing resources allocated by
+.Nm
+and invoking
+.Xr exit 2 .
+.Pp
+The
+.Fn AG_Destroy
+function releases all resources allocated by the
+.Nm
+library.
+.Sh AGAR VERSION INFORMATION
+.nr nS 1
+.Ft void
+.Fn AG_GetVersion "AG_AgarVersion *ver"
+.Pp
+.Ft bool
+.Fn AG_VERSION_ATLEAST "int major" "int minor" "int patchlevel"
+.Pp
+.nr nS 0
+The
+.Fn AG_GetVersion
+function fills an
+.Ft AG_AgarVersion
+structure with version information:
+.Bd -literal
+typedef struct ag_agar_version {
+	int major;
+	int minor;
+	int patch;
+	const char *release;
+} AG_AgarVersion;
+.Ed
+.Pp
+Agar does not need to have been previously initialized for
+.Fn AG_GetVersion
+to work.
+.Pp
+The
+.Fn AG_VERSION_ATLEAST
+macro evaluates to true if the current Agar version is equal to, or exceeds
+the given version number.
+.\" SYNC WITH AG_Intro(3) "AGAR-CORE"
+.Sh SEE ALSO
+.Xr AG_Config 3 ,
+.Xr AG_DataSource 3 ,
+.Xr AG_Db 3 ,
+.Xr AG_DSO 3 ,
+.Xr AG_Error 3 ,
+.Xr AG_Event 3 ,
+.Xr AG_EventLoop 3 ,
+.Xr AG_Execute 3 ,
+.Xr AG_File 3 ,
+.Xr AG_Intro 3 ,
+.Xr AG_Limits 3 ,
+.Xr AG_Net 3 ,
+.Xr AG_Object 3 ,
+.Xr AG_String 3 ,
+.Xr AG_TextElement 3 ,
+.Xr AG_Threads 3 ,
+.Xr AG_Time 3 ,
+.Xr AG_Timer 3 ,
+.Xr AG_User 3 ,
+.Xr AG_Variable 3 ,
+.Xr AG_Version 3
+.Sh HISTORY
+The
+.Fn AG_InitCore
+function first appeared in Agar 1.0.

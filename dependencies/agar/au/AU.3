@@ -1,0 +1,89 @@
+.\"
+.\" Copyright (c) 2011-2014 Hypertriton, Inc. <http://hypertriton.com/>
+.\" All rights reserved.
+.\"
+.\" Redistribution and use in source and binary forms, with or without
+.\" modification, are permitted provided that the following conditions
+.\" are met:
+.\" 1. Redistributions of source code must retain the above copyright
+.\"    notice, this list of conditions and the following disclaimer.
+.\" 2. Redistributions in binary form must reproduce the above copyright
+.\"    notice, this list of conditions and the following disclaimer in the
+.\"    documentation and/or other materials provided with the distribution.
+.\" 
+.\" THIS SOFTWARE IS PROVIDED BY THE AUTHOR ``AS IS'' AND ANY EXPRESS OR
+.\" IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED
+.\" WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE
+.\" ARE DISCLAIMED. IN NO EVENT SHALL THE AUTHOR BE LIABLE FOR ANY DIRECT,
+.\" INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES
+.\" (INCLUDING BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR
+.\" SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION)
+.\" HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT,
+.\" STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING
+.\" IN ANY WAY OUT OF THE USE OF THIS SOFTWARE EVEN IF ADVISED OF THE
+.\" POSSIBILITY OF SUCH DAMAGE.
+.\"
+.Dd March 19, 2011
+.Dt AU 3
+.Os
+.ds vT Agar-AU API Reference
+.ds oS Agar-AU 1.0
+.Sh NAME
+.Nm AU
+.Nd agar audio interface
+.Sh SYNOPSIS
+.Bd -literal
+#include <agar/au.h>
+.Ed
+.Sh DESCRIPTION
+The Agar-AU library provides a portable interface to audio hardware
+and manipulation of digital audio streams.
+It aims to accomodate the constraints of real-time audio playback,
+as well as the high-quality requirements of offline rendering.
+.Pp
+The typical usage involves first opening an output audio stream (an
+.Xr AU_DevOut 3
+object), using
+.Xr AU_OpenOut 3 ,
+with a specified sample rate and number of output channels (subject to
+the limitations of the output device, where applicable).
+.Pp
+Output devices may also have any number of associated
+.Em virtual channels .
+.\" each with separate volume levels and effects chains.
+.\" Virtual channels may be added or removed at runtime.
+.\" Mixing can be performed in different ways, at different quality
+.\" levels according to the mixing policy of the output device.
+.\" Default mixing policy establishes a one-to-one correspondence between
+.\" the virtual channels and the output channels.
+.\" If number of virtual vs. output channels differs, the policy can specify
+.\" one-to-many or many-to-one correspondences.
+.Pp
+In a multithreaded application, in order that the
+.Nm
+library correctly process and mix audio generated from concurrent threads,
+virtual channels are further divided into
+.Em thread-specific
+channels which are automatically created (and may also have their own volume
+levels and effects chains).
+.Sh INITIALIZATION
+.nr nS 1
+.Ft "int"
+.Fn AU_InitSubsystem "void"
+.Pp
+.Ft "void"
+.Fn AU_DestroySubsystem "void"
+.Pp
+.nr nS 0
+The
+.Fn AU_InitSubsystem
+function initializes the Agar-AU library.
+.Fn AU_DestroySubsystem
+releases all resources allocated by Agar-AU.
+.Sh SEE ALSO
+.Xr AU_DevOut 3 ,
+.Xr AU_Wave 3
+.Sh HISTORY
+The
+.Nm
+library first appeared in Agar 1.4.2.

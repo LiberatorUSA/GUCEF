@@ -1,0 +1,140 @@
+.\" Copyright (c) 2010-2011 Hypertriton, Inc. <http://hypertriton.com/>
+.\" All rights reserved.
+.\"
+.\" Redistribution and use in source and binary forms, with or without
+.\" modification, are permitted provided that the following conditions
+.\" are met:
+.\" 1. Redistributions of source code must retain the above copyright
+.\"    notice, this list of conditions and the following disclaimer.
+.\" 2. Redistributions in binary form must reproduce the above copyright
+.\"    notice, this list of conditions and the following disclaimer in the
+.\"    documentation and/or other materials provided with the distribution.
+.\" 
+.\" THIS SOFTWARE IS PROVIDED BY THE AUTHOR ``AS IS'' AND ANY EXPRESS OR
+.\" IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED
+.\" WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE
+.\" ARE DISCLAIMED. IN NO EVENT SHALL THE AUTHOR BE LIABLE FOR ANY DIRECT,
+.\" INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES
+.\" (INCLUDING BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR
+.\" SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION)
+.\" HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT,
+.\" STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING
+.\" IN ANY WAY OUT OF THE USE OF THIS SOFTWARE EVEN IF ADVISED OF THE
+.\" POSSIBILITY OF SUCH DAMAGE.
+.\"
+.Dd April 18, 2010
+.Dt AG_INITGRAPHICS 3
+.Os
+.ds vT Agar API Reference
+.ds oS Agar 1.4.1
+.Sh NAME
+.Nm AG_InitGraphics
+.Nd agar graphics initialization
+.Sh SYNOPSIS
+.Bd -literal
+#include <agar/core.h>
+#include <agar/gui.h>
+.Ed
+.Sh DESCRIPTION
+.\" IMAGE(http://libagar.org/widgets/AG_DriverGLX.png, "The Xorg/glx driver")
+After having initialized the Agar-Core library with
+.Xr AG_InitCore 3 ,
+Agar-GUI applications must initialize the GUI system and select a driver.
+.Sh AVAILABLE DRIVERS
+As of Agar-1.5.0, the driver modules included in the distribution are:
+.Pp
+.Bl -tag -width "sdlfb " -compact
+.It glx
+Native X11 interface (GL); see
+.Xr AG_DriverGLX 3 .
+.It wgl
+Native Microsoft Windows interface (GL); see
+.Xr AG_DriverWGL 3 .
+.It cocoa
+Native MacOS X Cocoa interface (GL); see
+.Xr AG_DriverCocoa 3 .
+.It sdlfb
+SDL 1.x interface (framebuffer); see
+.Xr AG_DriverSDLFB 3 .
+.It sdlgl
+SDL 1.x interface (GL); see
+.Xr AG_DriverSDLGL 3 .
+.El
+.Sh INITIALIZATION
+.nr nS 1
+.Ft "int"
+.Fn AG_InitGraphics "const char *drivers"
+.Pp
+.Ft "void"
+.Fn AG_DestroyGraphics "void"
+.Pp
+.Ft "int"
+.Fn AG_InitGUI "Uint flags"
+.Pp
+.Ft "void"
+.Fn AG_DestroyGUI "void"
+.Pp
+.nr nS 0
+The
+.Fn AG_InitGraphics
+function initializes the Agar GUI system.
+If the
+.Fa drivers
+argument is NULL (the usual case), Agar selects the "best" driver available
+on the current platform.
+If
+.Fa drivers
+is non-NULL, it should be a comma-separated list of drivers, in order of
+preference (the special strings "<OpenGL>" and "<SDL>" may be used to select
+any driver with GL or SDL capability).
+The list of compiled-in drivers may be obtained by calling
+.Xr AG_ListDriverNames 3 .
+Driver-specific parameters (which are documented on the driver's respective
+manual page) may be specified as a colon-separated list between
+parentheses:
+.Bd -literal
+	sdlfb,sdlgl(width=640:height=480:depth=32)
+	<OpenGL>(stereo=1)
+	<SDL>(width=640:height=480:depth=32)
+.Ed
+.Pp
+The
+.Fn AG_DestroyGraphics
+routine shuts down and releases all resources allocated by the Agar-GUI
+library.
+.Pp
+The
+.Fn AG_InitGUI
+routine provides an alternative to
+.Fn AG_InitGraphics ,
+which does not create any driver instance on initialization.
+While
+.Fn AG_InitGraphics
+is limited to a single Agar driver instance, specialized applications may
+need to create multiple driver instances (e.g., an Agar application using
+X11 may establish multiple connections to multiple X servers).
+This may be done by calling
+.Fn AG_InitGUI ,
+and creating one or more driver instances with
+.Xr AG_DriverOpen 3 .
+.Sh SEE ALSO
+.Xr AG_Core 3 ,
+.Xr AG_CustomEventLoop 3 ,
+.Xr AG_Driver 3 ,
+.Xr AG_EventLoop 3 ,
+.Xr AG_InitVideoSDL 3 ,
+.Xr AG_Intro 3
+.Pp
+.Lk http://www.opengl.org/ OpenGL
+.Pp
+.Lk https://www.libsdl.org/ Simple DirectMedia Layer
+.Pp
+.Lk https://developer.apple.com/cocoa/ Apple Developer: Cocoa Frameworks
+.Pp
+.Lk http://msdn.microsoft.com/ Microsoft Developer Network
+.Sh HISTORY
+The
+.Fn AG_InitVideo
+function first appeared in Agar 1.0, and was replaced by
+.Fn AG_InitGraphics
+in Agar 1.4.

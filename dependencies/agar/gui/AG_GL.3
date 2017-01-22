@@ -1,0 +1,265 @@
+.\" Copyright (c) 2010 Hypertriton, Inc. <http://hypertriton.com/>
+.\" All rights reserved.
+.\"
+.\" Redistribution and use in source and binary forms, with or without
+.\" modification, are permitted provided that the following conditions
+.\" are met:
+.\" 1. Redistributions of source code must retain the above copyright
+.\"    notice, this list of conditions and the following disclaimer.
+.\" 2. Redistributions in binary form must reproduce the above copyright
+.\"    notice, this list of conditions and the following disclaimer in the
+.\"    documentation and/or other materials provided with the distribution.
+.\"
+.\" THIS SOFTWARE IS PROVIDED BY THE AUTHOR ``AS IS'' AND ANY EXPRESS OR
+.\" IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED
+.\" WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE
+.\" ARE DISCLAIMED. IN NO EVENT SHALL THE AUTHOR BE LIABLE FOR ANY DIRECT,
+.\" INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES
+.\" (INCLUDING BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR
+.\" SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION)
+.\" HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT,
+.\" STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING
+.\" IN ANY WAY OUT OF THE USE OF THIS SOFTWARE EVEN IF ADVISED OF THE
+.\" POSSIBILITY OF SUCH DAMAGE.
+.\"
+.Dd August 15, 2010
+.Dt AG_GL 3
+.Os
+.ds vT Agar API Reference
+.ds oS Agar 1.4
+.Sh NAME
+.Nm AG_GL
+.Nd agar OpenGL specific routines
+.Sh SYNOPSIS
+.Bd -literal
+#include <agar/core.h>
+#include <agar/gui.h>
+#include <agar/gui/opengl.h>
+.Ed
+.Sh DESCRIPTION
+.\" IMAGE(http://libagar.org/widgets/AG_GLView.png, "The AG_GLView(3) widget")
+This manual page documents the OpenGL-specific functions exported by Agar.
+These functions are available if Agar was compiled with OpenGL support
+(i.e.,
+.Dv HAVE_OPENGL
+is defined after including the headers above).
+.Pp
+Those functions are mostly useful for implementing new OpenGL-based
+Agar drivers (see
+.Xr AG_Driver 3 ) .
+Some of these functions are also useful to simplify texture management when
+implementing OpenGL-specific Agar-GUI widgets.
+.Sh OPENGL CONTEXT MANAGEMENT
+.nr nS 1
+.Ft "int"
+.Fn AG_GL_InitContext "void *drv" "AG_GL_Context *gl"
+.Pp
+.Ft "void"
+.Fn AG_GL_SetViewport "void *drv" "AG_Rect rect"
+.Pp
+.Ft "void"
+.Fn AG_GL_DestroyContext "void *drv"
+.Pp
+.nr nS 0
+The
+.Fn AG_GL_InitContext
+function is to be invoked by OpenGL-specific Agar drivers to initialize
+the GL context for rendering Agar GUI elements.
+This involves setting the projection and view matrices as well as various
+OpenGL options.
+.Fn AG_GL_InitContext
+saves the current OpenGL state so that it can be later restored.
+The
+.Fa gl
+argument should point to an uninitialized
+.Ft AG_GL_Context
+structure.
+.Pp
+The
+.Fn AG_GL_SetViewPort
+function configures the GL viewport.
+In addition to invoking
+.Xr glViewport 3 ,
+this function also updates internal resolution-dependent states.
+.Pp
+The
+.Fn AG_GL_DestroyContext
+routines frees Agar's internal OpenGL state (restoring the state
+previously saved in
+.Fn AG_GL_InitContext ) .
+.Pp
+Multiple-window drivers will typically create a single OpenGL context
+per window, but single-window drivers may initialize and destroy the GL
+state more than once (see the
+.Dv AG_DRIVER_SW_OVERLAY
+option in
+.Xr AG_DriverSw 3 ) .
+.Sh TEXTURE/SURFACE MANAGEMENT
+.nr nS 1
+.Ft "void"
+.Fn AG_GL_UploadTexture "AG_Driver *drv" "Uint *texName" "AG_Surface *suSrc" "AG_TexCoord *tc"
+.Pp
+.Ft "void"
+.Fn AG_GL_UpdateTexture "AG_Driver *drv" "Uint texName" "AG_Surface *suSrc" "AG_TexCoord *tc"
+.Pp
+.Ft "void"
+.Fn AG_GL_DeleteTexture "AG_Driver *drv" "Uint texName"
+.Pp
+.Ft "void"
+.Fn AG_GL_DeleteList "AG_Driver *drv" "Uint listName"
+.Pp
+.Ft "void"
+.Fn AG_GL_BlitSurface "AG_Driver *drv" "AG_Widget *wid" "AG_Surface *s" "int x" "int y"
+.Pp
+.Ft "void"
+.Fn AG_GL_BlitSurfaceFrom "AG_Driver *drv" "AG_Widget *widSrc" "int surfName" "AG_Rect *r" "int x" "int y"
+.Pp
+.Ft "void"
+.Fn AG_GL_BlitSurfaceGL "AG_Driver *drv" "AG_Widget *wid" "AG_Surface *s" "float w" "float h"
+.Pp
+.Ft "void"
+.Fn AG_GL_BlitSurfaceFromGL "AG_Driver *drv" "AG_Widget *wid" "int surfName" "float w" "float h"
+.Pp
+.Ft "void"
+.Fn AG_GL_BlitSurfaceFlippedGL "AG_Driver *drv" "AG_Widget *wid" "int surfName" "float w" "float h"
+.Pp
+.Ft "void"
+.Fn AG_GL_BackupSurfaces "AG_Driver *drv" "AG_Widget *wid"
+.Pp
+.Ft "void"
+.Fn AG_GL_RestoreSurfaces "AG_Driver *drv" "AG_Widget *wid"
+.Pp
+.Ft "void"
+.Fn AG_GL_RenderToSurface "AG_Driver *drv" "AG_Widget *wid" "AG_Surface **sDst"
+.Pp
+.nr nS 0
+The
+.Fn AG_GL_UploadTexture
+operation converts the specified
+.Xr AG_Surface 3
+to an OpenGL texture, returning the GL texture handle in
+.Fa texName .
+Texture coordinates are returned into
+.Fa tc
+if non-NULL (i.e., X/Y coordinates are 0.0 and width/height are computed from
+the original dimensions divided by the texture's power-of-two dimensions).
+.Pp
+The
+.Fn AG_GL_UpdateTexture
+operation uploads a new surface as the specified texture ID.
+Similarly to
+.Fn AG_GL_UploadTexture ,
+texture coordinates are returned into
+.Fa tc
+if non-NULL.
+.Pp
+The
+.Fn AG_GL_DeleteTexture
+operation arranges for the specified GL texture to be deleted as soon
+as possible.
+Unlike a direct call to
+.Xr glDeleteTextures 3 ,
+using the
+.Fn AG_GL_DeleteTexture
+function is thread-safe.
+.Pp
+Similarly,
+.Fn AG_GL_DeleteList
+arranges for the given GL display list to be deleted as soon as possible.
+.Pp
+The remaining functions
+.Fn AG_GL_BlitSurface ,
+.Fn AG_GL_BlitSurfaceFrom ,
+etc. are generic OpenGL backends to the corresponding driver
+surface/texture operations (i.e.,
+.Fn blitSurface ,
+.Fn blitSurfaceFrom ,
+etc.)
+See
+.Xr AG_Driver 3
+for details.
+.Sh RENDERING PRIMITIVES
+.nr nS 1
+.Ft void
+.Fn AG_GL_FillRect "AG_Driver *drv" "AG_Rect r" "AG_Color c"
+.Pp
+.Ft void
+.Fn AG_GL_PutPixel "AG_Driver *drv" "int x" "int y" "AG_Color c"
+.Pp
+.Ft void
+.Fn AG_GL_PutPixel32 "AG_Driver *drv" "int x" "int y" "Uint32 c"
+.Pp
+.Ft void
+.Fn AG_GL_PutPixelRGB "AG_Driver *drv" "int x" "int y" "Uint8 r" "Uint8 g" "Uint8 b"
+.Pp
+.Ft void
+.Fn AG_GL_BlendPixel "AG_Driver *drv" "int x" "int y" "AG_Color C" "AG_BlendFn fnSrc" "AG_BlendFn fnDst"
+.Pp
+.Ft void
+.Fn AG_GL_DrawLine "AG_Driver *drv" "int x1" "int y1" "int x2" "int y2" "AG_Color C"
+.Pp
+.Ft void
+.Fn AG_GL_DrawLineH "AG_Driver *drv" "int x1" "int x2" "int y" "AG_Color c"
+.Pp
+.Ft void
+.Fn AG_GL_DrawLineV "AG_Driver *drv" "int x" "int y1" "int y2" "AG_Color c"
+.Pp
+.Ft void
+.Fn AG_GL_DrawLineBlended "AG_Driver *drv" "int x1" "int y1" "int x2" "int y2" "AG_Color c" "AG_BlendFn fnSrc" "AG_BlendFn fnDst"
+.Pp
+.Ft void
+.Fn AG_GL_DrawArrowUp "AG_Driver *drv" "int x" "int y" "int h" "AG_Color C[2]"
+.Pp
+.Ft void
+.Fn AG_GL_DrawArrowDown "AG_Driver *drv" "int x" "int y" "int h" "AG_Color C[2]"
+.Pp
+.Ft void
+.Fn AG_GL_DrawArrowLeft "AG_Driver *drv" "int x" "int y" "int h" "AG_Color C[2]"
+.Pp
+.Ft void
+.Fn AG_GL_DrawArrowRight "AG_Driver *drv" "int x" "int y" "int h" "AG_Color C[2]"
+.Pp
+.Ft void
+.Fn AG_GL_DrawRectDithered "AG_Driver *drv" "AG_Rect r" "AG_Color c"
+.Pp
+.Ft void
+.Fn AG_GL_DrawBoxRounded "AG_Driver *drv" "AG_Rect r" "int z" "int radius" "AG_Color C[3]"
+.Pp
+.Ft void
+.Fn AG_GL_DrawBoxRoundedTop "AG_Driver *drv" "AG_Rect r" "int z" "int radius" "AG_Color C[3]"
+.Pp
+.Ft void
+.Fn AG_GL_DrawCircle "AG_Driver *drv" "int x" "int y" "int r" "AG_Color C"
+.Pp
+.Ft void
+.Fn AG_GL_DrawCircle2 "AG_Driver *drv" "int x" "int y" "int r" "AG_Color C"
+.Pp
+.Ft void
+.Fn AG_GL_DrawRectFilled "AG_Driver *drv" "AG_Rect r" "AG_Color c"
+.Pp
+.Ft void
+.Fn AG_GL_DrawRectBlended "AG_Driver *drv" "AG_Rect r" "AG_Color c" "AG_BlendFn fnSrc" "AG_BlendFn fnDst"
+.Pp
+.Ft void
+.Fn AG_GL_UpdateGlyph "AG_Driver *drv" "AG_Glyph *glyph"
+.Pp
+.Ft void
+.Fn AG_GL_DrawGlyph "AG_Driver *drv" "const AG_Glyph *glyph" "int x" "int y"
+.Pp
+.nr nS 0
+These functions are generic OpenGL backends to the corresponding driver
+surface/texture operations (e.g.,
+.Fn fillRect ,
+.Fn putPixel ,
+etc); see
+.Xr AG_Driver 3
+for details.
+.Sh SEE ALSO
+.Xr AG_Driver 3 ,
+.Xr AG_Intro 3 ,
+.Xr AG_Widget 3 ,
+.Xr AG_Window 3
+.Sh HISTORY
+The
+.Nm
+interface first appeared in Agar 1.4.0.

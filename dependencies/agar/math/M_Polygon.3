@@ -1,0 +1,217 @@
+.\"
+.\" Copyright (c) 2009-2011 Hypertriton, Inc. <http://hypertriton.com/>
+.\"
+.\" Redistribution and use in source and binary forms, with or without
+.\" modification, are permitted provided that the following conditions
+.\" are met:
+.\" 1. Redistributions of source code must retain the above copyright
+.\"    notice, this list of conditions and the following disclaimer.
+.\" 2. Redistributions in binary form must reproduce the above copyright
+.\"    notice, this list of conditions and the following disclaimer in the
+.\"    documentation and/or other materials provided with the distribution.
+.\" 
+.\" THIS SOFTWARE IS PROVIDED BY THE AUTHOR ``AS IS'' AND ANY EXPRESS OR
+.\" IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED
+.\" WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE
+.\" ARE DISCLAIMED. IN NO EVENT SHALL THE AUTHOR BE LIABLE FOR ANY DIRECT,
+.\" INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES
+.\" (INCLUDING BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR
+.\" SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION)
+.\" HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT,
+.\" STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING
+.\" IN ANY WAY OUT OF THE USE OF THIS SOFTWARE EVEN IF ADVISED OF THE
+.\" POSSIBILITY OF SUCH DAMAGE.
+.\"
+.Dd July 17, 2009
+.Dt M_POLYGON 3
+.Os
+.ds vT Agar-Math API Reference
+.ds oS Agar 1.3.4
+.Sh NAME
+.Nm M_Polygon
+.Nd Agar-Math polygon structure
+.Sh SYNOPSIS
+.Bd -literal
+#include <agar/math.h>
+.Ed
+.Sh DESCRIPTION
+.\" IMAGE(http://libagar.org/widgets/VG_Polygon.png, "A polygon")
+The
+.Ft M_Polygon
+structure describes a simple polygon.
+The polygon may be convex or concave.
+Self-intersections and holes are not allowed.
+.Bd -literal
+typedef struct m_polygon {
+	M_Vector2 *v;	/* Vertices */
+	Uint n;		/* Vertex count */
+} M_Polygon;
+.Ed
+.Sh INITIALIZATION
+.nr nS 1
+.Ft void
+.Fn M_PolygonInit "M_Polygon *P"
+.Pp
+.Ft M_Polygon
+.Fn M_POLYGON_INITIALIZER "void"
+.Pp
+.Ft void
+.Fn M_PolygonFree "M_Polygon *P"
+.Pp
+.Ft M_Polygon
+.Fn M_PolygonFromPts "Uint n" "const M_Vector2 *v"
+.Pp
+.Ft M_Polygon
+.Fn M_PolygonFromPointSet2 "const M_PointSet2 *ps"
+.Pp
+.Ft M_Polygon
+.Fn M_PolygonFromPointSet2i "const M_PointSet2i *ps"
+.Pp
+.Ft M_Polygon
+.Fn M_PolygonFromLines "Uint n" "const M_Line2 *L"
+.Pp
+.Ft M_PointSet2
+.Fn M_PolygonToPointSet2 "const M_Polygon *P"
+.Pp
+.Ft M_PointSet2i
+.Fn M_PolygonToPointSet2i "const M_Polygon *P" "M_Real w" "M_Real h"
+.Pp
+.Ft M_Polygon
+.Fn M_PolygonRead "AG_DataSource *ds"
+.Pp
+.Ft void
+.Fn M_PolygonWrite "AG_DataSource *ds" "const M_Polygon *P"
+.Pp
+.nr nS 0
+The
+.Fn M_PolygonInit
+function initializes a
+.Ft M_Polygon
+structure.
+The
+.Fn M_POLYGON_INITIALIZER
+macro may also be used as a static initializer.
+.Pp
+The
+.Fn M_PolygonFree
+function releases the memory allocated for vertices.
+.Pp
+The
+.Fn M_PolygonFromPts
+function returns a polygon structure given an array of points.
+The
+.Fn M_PolygonFromPointSet
+variant accepts a
+.Xr M_PointSet2 3
+argument.
+.Fn M_PolygonFromLines
+returns a polygon from an array of lines
+.Fa L .
+.Fa n
+is the number of elements in the array.
+.Pp
+The
+.Fn M_PolygonToPointSet2
+and
+.Fn M_PolygonToPointSet2i
+routines convert a
+.Nm
+to a
+.Xr M_PointSet2
+or
+.Xr M_PointSet2i
+structure.
+.Pp
+The
+.Fn M_PolygonRead
+and
+.Fn M_PolygonWrite
+functions read or write a polygon structure from/to an
+.Xr AG_DataSource 3 .
+.Sh OPERATIONS
+.nr nS 1
+.Ft int
+.Fn M_PolygonAddVertex "M_Polygon *P" "M_Vector2 v"
+.Pp
+.Ft int
+.Fn M_PolygonAddLine "M_Polygon *P" "M_Line2 L"
+.Pp
+.Ft int
+.Fn M_PolygonDelVertex "M_Polygon *P" "int v"
+.Pp
+.Ft int
+.Fn M_PolygonCopy "M_Polygon *Pdst" "const M_Polygon *Psrc"
+.Pp
+.Ft void
+.Fn M_PolygonScale "M_Polygon *P" "M_Real xScale" "M_Real yScale"
+.Pp
+.Ft void
+.Fn M_PolygonOffset "M_Polygon *P" "M_Real xOffs" "M_Real yOffs"
+.Pp
+.Ft int
+.Fn M_PointInPolygon "const M_Polygon *P" "M_Vector2 p"
+.Pp
+.Ft int
+.Fn M_PolygonIsConvex "const M_Polygon *P"
+.Pp
+.nr nS 0
+The
+.Fn M_PolygonAddVertex
+function adds a new vertex to a polygon.
+Returns index of new vertex on success, -1 on failure.
+The
+.Fn M_PolygonAddLine
+variant accepts a
+.Xr M_Line 3
+argument instead of a vector.
+.Pp
+.Fn M_PolygonDelVertex
+removes the vertex at given index
+.Fa v .
+.Pp
+The
+.Fn M_PolygonCopy
+function copies the vertices of a source polygon
+.Fa Psrc
+to a destination polygon
+.Fa Pdst .
+The destination structure does not need to be initialized.
+Any existing vertices in
+.Fa Pdst
+will be overwritten.
+The function returns 0 on success or -1 if insufficient memory is
+available.
+.Pp
+.Fn M_PolygonScale
+multiplies all vertices of a polygon with the given scaling factors
+.Fa xScale ,
+.Fa yScale .
+.Fn M_PolygonOffset
+translates all vertices against
+.Fa xOffs ,
+.Fa yOffs .
+.Pp
+The
+.Fn M_PointInPolygon
+function returns 1 if the point
+.Fa p
+lies inside the polygon.
+.Pp
+.Fn M_PolygonIsConvex
+returns 1 if the polygon is convex.
+.Sh SEE ALSO
+.Xr AG_DataSource 3 ,
+.Xr AG_Intro 3 ,
+.Xr M_Circle 3 ,
+.Xr M_Geometry 3 ,
+.Xr M_Plane 3 ,
+.Xr M_PointSet 3 ,
+.Xr M_Polygon 3 ,
+.Xr M_Rectangle 3 ,
+.Xr M_Sphere 3 ,
+.Xr M_Triangle 3 ,
+.Xr M_Vector 3
+.Sh HISTORY
+The
+.Nm
+structure first appeared in Agar 1.3.4.

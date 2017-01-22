@@ -1,0 +1,199 @@
+.\" Copyright (c) 2007-2014 Hypertriton, Inc. <http://hypertriton.com/>
+.\" All rights reserved.
+.\"
+.\" Redistribution and use in source and binary forms, with or without
+.\" modification, are permitted provided that the following conditions
+.\" are met:
+.\" 1. Redistributions of source code must retain the above copyright
+.\"    notice, this list of conditions and the following disclaimer.
+.\" 2. Redistributions in binary form must reproduce the above copyright
+.\"    notice, this list of conditions and the following disclaimer in the
+.\"    documentation and/or other materials provided with the distribution.
+.\" 
+.\" THIS SOFTWARE IS PROVIDED BY THE AUTHOR ``AS IS'' AND ANY EXPRESS OR
+.\" IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED
+.\" WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE
+.\" ARE DISCLAIMED. IN NO EVENT SHALL THE AUTHOR BE LIABLE FOR ANY DIRECT,
+.\" INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES
+.\" (INCLUDING BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR
+.\" SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION)
+.\" HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT,
+.\" STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING
+.\" IN ANY WAY OUT OF THE USE OF THIS SOFTWARE EVEN IF ADVISED OF THE
+.\" POSSIBILITY OF SUCH DAMAGE.
+.\"
+.Dd November 16, 2007
+.Dt AG_ERROR 3
+.Os
+.ds vT Agar API Reference
+.ds oS Agar 1.3
+.Sh NAME
+.Nm AG_Error
+.Nd agar error handling
+.Sh SYNOPSIS
+.Bd -literal
+#define _USE_AGAR_STD /* If macros without AG_ prefix are desired */
+#include <agar/core.h>
+.Ed
+.Sh DESCRIPTION
+This manual page describes the error handling system which is used by
+all Agar libraries, and available to applications as well.
+.Sh ERROR RETURNS
+.nr nS 1
+.Ft void
+.Fn AG_SetError "const char *fmt" "..."
+.Pp
+.Ft "const char *"
+.Fn AG_GetError "void"
+.Pp
+.Ft void
+.Fn AG_FatalError "const char *fmt" "..."
+.Pp
+.Ft void
+.Fn AG_SetFatalCallback "void (*callback)(const char *msg)"
+.Pp
+.Ft "const char *"
+.Fn AG_Strerror "int errno"
+.Pp
+.nr nS 0
+The
+.Fn AG_SetError
+function sets the error message string using a
+.Xr printf 3
+like format string.
+.Fn AG_GetError
+returns the error message string last set by
+.Fn AG_SetError .
+If Agar was compiled with thread support, the error message string is
+kept in thread-local storage, so these functions are thread-safe.
+.Pp
+The
+.Fn AG_FatalError
+function outputs the given error message to the user and causes abnormal
+termination of the program.
+.Pp
+.Fn AG_SetFatalCallback
+function sets a user provided callback to be called by
+.Fn AG_FatalError
+instead of simply terminating the process. The callback is expected
+to do program-specific cleanup and then terminate the program itself.
+An error message is passed to the callback via the
+.Fa msg
+argument.
+.Pp
+The
+.Fn AG_Strerror
+function returns an error message for the given platform-specific error
+code (e.g., on POSIX platforms, the argument should be a valid
+.Xr errno 2
+value).
+.Sh DEBUG ROUTINES
+.nr nS 1
+.Ft void
+.Fn AG_Verbose "const char *fmt" "..."
+.Pp
+.Ft void
+.Fn AG_Debug "AG_Object *obj" "const char *fmt" "..."
+.Pp
+.Ft void
+.Fn AG_SetVerboseCallback "int (*fn)(const char *msg)"
+.Pp
+.Ft void
+.Fn AG_SetDebugCallback "int (*fn)(const char *msg)"
+.Pp
+.nr nS 0
+These functions output a string to the debugging console used by the
+application (usually
+.Xr stdio 3 ) .
+.Pp
+.Fn AG_Verbose
+outputs a string if the global
+.Va agVerbose
+variable is set.
+.Pp
+The
+.Fn AG_Debug
+function outputs a string on the debugging console of
+.Fa obj ,
+assuming the object either has the
+.Dv AG_OBJECT_DEBUG
+flag set, or the global
+.Va agDebugLvl
+is >= 1.
+The name of the object is included in the message string.
+The
+.Fa obj
+parameter can be NULL in which case the message is output on the debug
+console when
+.Va agDebugLvl
+is >= 1.
+.Pp
+.Fn AG_SetVerboseCallback
+and
+.Fn AG_SetDebugCallback
+arrange for the specified function to be invoked by
+.Fn AG_Verbose
+and
+.Fn AG_Debug .
+If the callback routine returns 1, the message will not be printed.
+.Sh ERROR WRAPPERS
+.nr nS 1
+.Ft "void *"
+.Fn AG_Malloc "size_t len"
+.Pp
+.Ft "void *"
+.Fn AG_TryMalloc "size_t len"
+.Pp
+.Ft "void *"
+.Fn AG_Realloc "void *p" "size_t len"
+.Pp
+.Ft "void *"
+.Fn AG_TryRealloc "void *p" "size_t len"
+.Pp
+.Ft void
+.Fn AG_Free "void *p"
+.Pp
+.nr nS 0
+The
+.Fn AG_Malloc
+function calls
+.Xr malloc 3
+and raises a fatal error if the memory cannot be allocated.
+The
+.Fn AG_TryMalloc
+variant also calls
+.Xr malloc 3 ,
+but sets the standard error message and returns NULL if the memory cannot
+be allocated.
+.Pp
+.Fn AG_Realloc
+calls
+.Xr realloc 3
+and raises a fatal error if the memory cannot be allocated.
+The
+.Fn AG_TryRealloc
+variant sets the standard error message and returns NULL if the memory cannot
+be reallocated.
+If
+.Fa p
+is NULL,
+.Fn AG_Realloc
+and
+.Fn AG_TryRealloc
+simply invoke
+.Xr malloc 3 .
+.Pp
+.Fn AG_Free
+calls
+.Xr free 3 .
+If
+.Fa p
+is NULL, it is a no-op.
+.Sh SEE ALSO
+.Xr AG_Intro 3 ,
+.Xr AG_Object 3 ,
+.Xr AG_Threads 3
+.Sh HISTORY
+The
+.Nm
+interface first appeared in Agar 1.0

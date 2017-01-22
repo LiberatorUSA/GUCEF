@@ -1,0 +1,368 @@
+.\" Copyright (c) 2008 Hypertriton, Inc. <http://hypertriton.com/>
+.\" All rights reserved.
+.\"
+.\" Redistribution and use in source and binary forms, with or without
+.\" modification, are permitted provided that the following conditions
+.\" are met:
+.\" 1. Redistributions of source code must retain the above copyright
+.\"    notice, this list of conditions and the following disclaimer.
+.\" 2. Redistributions in binary form must reproduce the above copyright
+.\"    notice, this list of conditions and the following disclaimer in the
+.\"    documentation and/or other materials provided with the distribution.
+.\" 
+.\" THIS SOFTWARE IS PROVIDED BY THE AUTHOR ``AS IS'' AND ANY EXPRESS OR
+.\" IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED
+.\" WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE
+.\" ARE DISCLAIMED. IN NO EVENT SHALL THE AUTHOR BE LIABLE FOR ANY DIRECT,
+.\" INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES
+.\" (INCLUDING BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR
+.\" SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION)
+.\" HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT,
+.\" STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING
+.\" IN ANY WAY OUT OF THE USE OF THIS SOFTWARE EVEN IF ADVISED OF THE
+.\" POSSIBILITY OF SUCH DAMAGE.
+.\"
+.Dd August 20, 2002
+.Dt AG_TREETBL 3
+.Os
+.ds vT Agar API Reference
+.ds oS Agar 1.0
+.Sh NAME
+.Nm AG_Treetbl
+.Nd agar tree-based table widget
+.Sh SYNOPSIS
+.Bd -literal
+#include <agar/core.h>
+#include <agar/gui.h>
+.Ed
+.Sh DESCRIPTION
+.\" IMAGE(http://libagar.org/widgets/AG_Treetbl.png, "An AG_Treetbl widget")
+The
+.Nm
+widget displays a tree in table format (i.e., rows are organized in a tree
+structure).
+It is an alternative implementation of
+.Xr AG_Table 3
+optimized for the storage of the table data in tree form.
+It also differs from
+.Ft AG_Table
+in that rows and columns are uniquely identified.
+.Sh INHERITANCE HIERARCHY
+.Xr AG_Object 3 ->
+.Xr AG_Widget 3 ->
+.Nm .
+.Sh INITIALIZATION
+.nr nS 1
+.Ft "AG_Treetbl *"
+.Fn AG_TreetblNew "AG_Widget *parent" "Uint flags" "AG_TreetblDataFn dataFn" "AG_TreetblSortFn sortFn"
+.Pp
+.Ft "void"
+.Fn AG_TreetblSizeHint "AG_Treetbl *tbl" "int width" "int nrows"
+.Pp
+.Ft "void"
+.Fn AG_TreetblSetRefreshRate "AG_Treetbl *tbl" "Uint ms"
+.Pp
+.Ft "void"
+.Fn AG_TreetblSetColHeight "AG_Treetbl *tbl" "int height"
+.Pp
+.Ft "void"
+.Fn AG_TreetblSetSortCol "AG_Treetbl *tbl" "AG_TreetblCol *col"
+.Pp
+.Ft "void"
+.Fn AG_TreetblSetSortMode "AG_Treetbl *tbl" "enum ag_treetbl_sort_mode mode"
+.Pp
+.Ft "void"
+.Fn AG_TreetblSetExpanderCol "AG_Treetbl *tbl" "AG_TreetblCol *col"
+.Pp
+.nr nS 0
+The
+.Fn AG_TreetblNew
+function allocates, initializes, and attaches a new
+.Nm
+widget.
+The
+.Fn dataFn
+argument specifies the callback function from which to obtain the text
+to display for a given cell.
+The callback function should return a pointer to a valid C string to
+display under the given cell, and is declared as:
+.Pp
+.nr nS 1
+.\" NOMANLINK
+.Ft "char *"
+.Fn MyDataFn "AG_Treetbl *tbl" "int col" "int row"
+.Pp
+.nr nS 0
+The
+.Fn sortFn
+argument, if not NULL, specifies an optional comparison function to
+use in sorting cells, and is declared as:
+.Pp
+.nr nS 1
+.\" NOMANLINK
+.Ft int
+.Fn MySortFn "AG_Treetbl *tbl" "int col1" "int row1" "int col2" "int row2"
+.Pp
+.nr nS 0
+The
+.Fa flags
+argument to
+.Fn AG_TreetblNew
+may include:
+.Bl -tag -width "AG_TREETBL_REORDERCOLS "
+.It AG_TREETBL_MULTI
+Allow selection of multiple rows at once while holding
+.Dv CTRL
+or
+.Dv SHIFT .
+.It AG_TREETBL_MULTITOGGLE
+Allow selection of multiple rows at once without holding
+.Dv CTRL
+or
+.Dv SHIFT .
+.It AG_TREETBL_REORDERCOLS
+Allow reordering of the columns through dragging and dropping of the column
+headers.
+.It AG_TREETBL_NODUPCHECKS
+Disable the safety check for duplicate row and column IDs.
+This option avoids a lookup in
+.Fn AG_TreetblAddCol
+and
+.Fn AG_TreetblAddRow .
+.It AG_TREETBL_SORT
+Enable sorting of the rows.
+.It AG_TREETBL_POLLED
+Enable polling mode such that the table can be repopulated automatically
+to reflect some external data.
+When a row is deleted,
+.Nm
+will remember selection information for later use by
+.Fn AG_TreetblRowRestoreAll .
+.It AG_TREETBL_HFILL
+Expand horizontally in parent (equivalent to invoking
+.Xr AG_ExpandHoriz 3 ) .
+.It AG_TREETBL_VFILL
+Expand vertically in parent (equivalent to invoking
+.Xr AG_ExpandVert 3 ) .
+.It AG_TREETBL_EXPAND
+Shorthand for
+.Dv AG_TREETBL_HFILL|AG_TREETBL_VFILL .
+This is recommended as an alternative to
+.Fn AG_TreetblSizeHint .
+.El
+.Pp
+The
+.Fn AG_TreetblSizeHint
+function requests an initial sizing, where
+.Fa width
+is the width in pixels and
+.Fa nrows
+is the number of rows to display.
+.Pp
+.Fn AG_TreetblSetRefreshRate
+sets the default update rate for dynamically updated cells.
+.Pp
+.Fn AG_TreetblSetColHeight
+sets the height of column headers in pixels.
+.Pp
+.Fn AG_TreetblSetSortCol
+specifies the column controlling the sorting of rows.
+.Fn AG_TreetblSetSortMode
+sets the sort method, where
+.Fa mode
+is one of:
+.Pp
+.Bl -tag -compact -width "AG_TREETBL_SORT_NOT "
+.It AG_TREETBL_SORT_NOT
+No sorting
+.It AG_TREETBL_SORT_ASC
+Sort in ascending order
+.It AG_TREETBL_SORT_DSC
+Sort in descending order
+.El
+.Pp
+.Fn AG_TreetblSetExpanderCol
+specifies an alternate column for the tree expand/collapse controls.
+By default, the first column is used.
+.Sh ROWS AND COLUMNS
+.nr nS 1
+.Ft "AG_TreetblCol *"
+.Fn AG_TreetblAddCol "AG_Treetbl *tbl" "int colID" "const char *width" "const char *text" "..."
+.Pp
+.Ft "AG_TreetblRow *"
+.Fn AG_TreetblAddRow "AG_Treetbl *tbl" "AG_TreetblRow *parent" "int rowID" "const char *argSpec" "..."
+.Pp
+.Ft "AG_TreetblRow *"
+.Fn AG_TreetblLookupRow "AG_Treetbl *tbl" "int rowID"
+.Pp
+.Ft "void"
+.Fn AG_TreetblDelRow "AG_Treetbl *tbl" "AG_TreetblRow *row"
+.Pp
+.Ft "void"
+.Fn AG_TreetblDelRowID "AG_Treetbl *tbl" "int rowID"
+.Pp
+.Ft "void"
+.Fn AG_TreetblClearRows "AG_Treetbl *tbl"
+.Pp
+.Ft "void"
+.Fn AG_TreetblRestoreRows "AG_Treetbl *tbl"
+.Pp
+.nr nS 0
+.Fn AG_TreetblAddCol
+creates a new table column.
+.Fa colID
+is a unique identifier for the new column.
+If
+.Fa width
+is non-NULL, it is a
+.Xr AG_SizeSpec 3
+specifying a default width for the new column.
+.Fa text
+is the text initially displayed in the column header.
+.Pp
+The
+.Fn AG_TreetblAddRow
+function inserts a new row into the table.
+.Fa rowID
+is a unique identifier for the row.
+.Fa parent
+specifies the parent row in the tree.
+The data of the individual cells of the row are specified in
+.Fa argSpec
+and following arguments (in standard Agar argument format).
+.Pp
+.Fn AG_TreetblLookupRow
+looks up the row identified by
+.Fa rowID .
+If there is no such row, the function returns NULL.
+.Pp
+.Fn AG_TreetblDelRow
+removes the specified row from the table.
+The
+.Fn AG_TreetblDelRowID
+variant looks up the row by ID.
+.Pp
+.Fn AG_TreetblClearRows
+(alternatively
+.Fn AG_TreetblBegin )
+clears all the rows from the table.
+If
+.Dv AG_TREETBL_POLLED
+is in effect, the row-specific widget states are remembered, to be later
+recovered by
+.Fn AG_TreetblRestoreRows
+(alternatively
+.Fn AG_TreetblEnd ) .
+.Sh SELECTIONS
+.nr nS 1
+.Ft "void"
+.Fn AG_TreetblSelectCol "AG_Treetbl *tbl" "AG_TreetblCol *col"
+.Pp
+.Ft "void"
+.Fn AG_TreetblDeselectCol "AG_Treetbl *tbl" "AG_TreetblCol *col"
+.Pp
+.Ft "void"
+.Fn AG_TreetblSelectColID "AG_Treetbl *tbl" "int colID"
+.Pp
+.Ft "void"
+.Fn AG_TreetblDeselectColID "AG_Treetbl *tbl" "int colID"
+.Pp
+.Ft void
+.Fn AG_TreetblSelectRow "AG_Treetbl *tbl" "AG_TreetblRow *row"
+.Pp
+.Ft void
+.Fn AG_TreetblSelectRowID "AG_Treetbl *tbl" "int rowID"
+.Pp
+.Ft void
+.Fn AG_TreetblDeselectRow "AG_Treetbl *tbl" "AG_TreetblRow *row"
+.Pp
+.Ft void
+.Fn AG_TreetblDeselectRowID "AG_Treetbl *tbl" "int rowID"
+.Pp
+.Ft void
+.Fn AG_TreetblSelectedRow "AG_Treetbl *tbl"
+.Pp
+.Ft void
+.Fn AG_TreetblSelectAll "AG_Treetbl *tbl" "AG_TreetblRow *row"
+.Pp
+.Ft void
+.Fn AG_TreetblDeselectAll "AG_Treetbl *tbl" "AG_TreetblRow *row"
+.Pp
+.nr nS 0
+The
+.Fn AG_TreetblSelectCol
+and
+.Fn AG_TreetblDeselectCol
+routines select and deselect the specified column.
+The
+.Fn AG_TreetblSelectColID
+and
+.Fn AG_TreetblDeselectColID
+variants look up the column by index and return -1 if no such column exists.
+.Pp
+.Fn AG_TreetblSelectRow
+and
+.Fn AG_TreetblDeselectRow
+select or deselect the specified row.
+The
+.Fn AG_TreetblSelectRowID
+and
+.Fn AG_TreetblDeselectRowID
+variants lookup the row by ID and return -1 if it is invalid.
+.Pp
+.Fn AG_TreetblSelectedRow
+returns the currently selected row or NULL if there is none.
+If the
+.Dv AG_TREETBL_MULTI
+or
+.Dv AG_TREETBL_MULTITOGGLE
+flags are in effect, the first selected row is returned.
+.Pp
+The
+.Fn AG_TreetblSelectAll
+and
+.Fn AG_TreetblDeselectAll
+variants also select/deselect the child rows.
+.Sh CHILDREN VISIBILITY
+.nr nS 1
+.Ft void
+.Fn AG_TreetblExpandRow "AG_Treetbl *tbl" "AG_TreetblRow *row"
+.Pp
+.Ft void
+.Fn AG_TreetblCollapseRow "AG_Treetbl *tbl" "AG_TreetblRow *row"
+.Pp
+.nr nS 0
+The
+.Fn AG_TreetblExpandRow
+and
+.Fn AG_TreetblCollapseRow
+routines control whether child rows of
+.Fa row
+are visible or hidden.
+This state is also controlled by the tree expand/collapse controls.
+.Sh EVENTS
+The
+.Nm
+widget does not generate any event.
+.\" .Sh STRUCTURE DATA
+.\" For the
+.\" .Ft AG_Dummy
+.\" object:
+.\" .Pp
+.\" .Bl -tag -width "int foo "
+.\" .It Ft int foo
+.\" Foo
+.\" .El
+.Sh SEE ALSO
+.Xr AG_Intro 3 ,
+.Xr AG_Widget 3 ,
+.Xr AG_Window 3
+.Sh HISTORY
+The
+.Nm
+widget was written by John Blitch in 2004 and first appeared in Agar 1.0
+as
+.Ft AG_Tableview.
+Agar-1.3.4 first featured the new
+.Nm
+interface.

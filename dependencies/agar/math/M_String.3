@@ -1,0 +1,88 @@
+.\"
+.\" Copyright (c) 2012 Hypertriton, Inc. <http://hypertriton.com/>
+.\"
+.\" Redistribution and use in source and binary forms, with or without
+.\" modification, are permitted provided that the following conditions
+.\" are met:
+.\" 1. Redistributions of source code must retain the above copyright
+.\"    notice, this list of conditions and the following disclaimer.
+.\" 2. Redistributions in binary form must reproduce the above copyright
+.\"    notice, this list of conditions and the following disclaimer in the
+.\"    documentation and/or other materials provided with the distribution.
+.\" 
+.\" THIS SOFTWARE IS PROVIDED BY THE AUTHOR ``AS IS'' AND ANY EXPRESS OR
+.\" IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED
+.\" WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE
+.\" ARE DISCLAIMED. IN NO EVENT SHALL THE AUTHOR BE LIABLE FOR ANY DIRECT,
+.\" INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES
+.\" (INCLUDING BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR
+.\" SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION)
+.\" HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT,
+.\" STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING
+.\" IN ANY WAY OUT OF THE USE OF THIS SOFTWARE EVEN IF ADVISED OF THE
+.\" POSSIBILITY OF SUCH DAMAGE.
+.\"
+.Dd August 21, 2010
+.Dt M_STRING 3
+.Os
+.ds vT Agar-Math API Reference
+.ds oS Agar 1.4.1
+.Sh NAME
+.Nm M_String
+.Nd Agar-Math extensions to AG_Printf
+.Sh SYNOPSIS
+.Bd -literal
+#include <agar/core.h>
+#include <agar/gui.h>
+#include <agar/math.h>
+.Ed
+.Sh DESCRIPTION
+.\" IMAGE(http://libagar.org/widgets/AG_Label.png, "The AG_Label widget")
+The formatting engine used by
+.Xr AG_Printf 3
+and
+.Xr AG_PrintfP 3
+allow the registration of format string extensions.
+Once the Agar-Math library is initialized, the following format specifiers
+become available:
+.Pp
+.Bl -tag -compact -width "%[M44] "
+.It %[R]
+Real-number (of
+.Xr M_Real 3
+type).
+.It %[T]
+A time value (of
+.Xr M_Time 3
+type).
+.It %[C]
+A complex number (of
+.Xr M_Complex 3
+type).
+.It %[V]
+A general vector in R^n (of
+.Xr M_Vector 3
+type).
+.It %[V2]
+A vector in R^2 (of
+.Ft M_Vector2
+type).
+.It %[V3]
+A vector in R^3 (of
+.Ft M_Vector3
+type).
+.It %[V4]
+A vector in R^4 (of
+.Ft M_Vector4
+type).
+.It %[M]
+A general matrix (of
+.Xr M_Matrix 3
+type).
+.It %[M44]
+A 4x4 matrix (of
+.Ft M_Matrix44
+type).
+.El
+.Sh SEE ALSO
+.Xr AG_String 3

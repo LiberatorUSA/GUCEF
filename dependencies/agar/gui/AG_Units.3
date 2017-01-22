@@ -1,0 +1,267 @@
+.\" Copyright (c) 2004-2012 Hypertriton, Inc. <http://hypertriton.com/>
+.\" All rights reserved.
+.\"
+.\" Redistribution and use in source and binary forms, with or without
+.\" modification, are permitted provided that the following conditions
+.\" are met:
+.\" 1. Redistributions of source code must retain the above copyright
+.\"    notice, this list of conditions and the following disclaimer.
+.\" 2. Redistributions in binary form must reproduce the above copyright
+.\"    notice, this list of conditions and the following disclaimer in the
+.\"    documentation and/or other materials provided with the distribution.
+.\"
+.\" THIS SOFTWARE IS PROVIDED BY THE AUTHOR ``AS IS'' AND ANY EXPRESS OR
+.\" IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED
+.\" WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE
+.\" ARE DISCLAIMED. IN NO EVENT SHALL THE AUTHOR BE LIABLE FOR ANY DIRECT,
+.\" INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES
+.\" (INCLUDING BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR
+.\" SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION)
+.\" HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT,
+.\" STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING
+.\" IN ANY WAY OUT OF THE USE OF THIS SOFTWARE EVEN IF ADVISED OF THE
+.\" POSSIBILITY OF SUCH DAMAGE.
+.\"
+.Dd May 10, 2004
+.Dt AG_UNITS 3
+.Os
+.ds vT Agar API Reference
+.ds oS Agar 1.0
+.Sh NAME
+.Nm AG_Units
+.Nd agar unit conversion facility
+.Sh SYNOPSIS
+.Bd -literal
+#include <agar/core.h>
+#include <agar/gui.h>
+.Ed
+.Sh DESCRIPTION
+.\" IMAGE(http://libagar.org/widgets/AG_UnitConv.png, "Unit conversion test")
+The Agar
+.Nm
+interface implements unit conversion.
+The
+.Ft AG_Unit
+structure is defined as follows:
+.Bd -literal
+typedef struct ag_unit {
+	char *key;
+	char *abbr;
+	char *name;
+	double divider;
+	double (*func)(double, int mode);
+} AG_Unit;
+.Ed
+.Pp
+The
+.Va key
+member is a unique identifier for this unit.
+.Va abbr
+is an abbreviated symbol, and
+.Va name
+is the full name of the unit.
+.Pp
+The linear conversion factor is specified in
+.Va divider .
+For non-linear conversions,
+.Va func
+can be defined instead (the first argument to the function is
+the value to convert; if
+.Fa mode
+is 1, the function make the reverse conversion).
+.Pp
+A set of standard conversion unit groups are defined in
+.Pa gui/units.c
+in the Agar sources.
+The standard groups are summarized below.
+.Sh GENERAL
+.Bl -tag -compact -width "agPercentageUnits "
+.It agPercentageUnits
+Value in percentile
+.It agFrequencyUnits
+Units of frequency
+.It agTimeUnits
+Units of time
+.El
+.Sh LENGTHS & ANGLES
+.Bl -tag -compact -width "agLengthUnits "
+.It agLengthUnits
+Units of length/distance
+.It agAngleUnits
+Units of angular measurement
+.It agVideoUnits
+Units of video pixel resolution
+.It agAreaUnits
+Units of area
+.It agVolumeUnits
+Units of volume
+.It agSpeedUnits
+Units of velocity
+.El
+.Sh PHYSICAL
+.Bl -tag -compact -width "agThermalConductivityUnits "
+.It agMassUnits
+Units of weight
+.It agPressureUnits
+Units of pressure and stress (general)
+.It agVacuumUnits
+Units of pressure (low pressures)
+.It agThermalConductivityUnits
+Units of thermal conductivity
+.It agThermalExpansionUnits
+Units of thermal expansion
+.It agDensityUnits
+Units of density
+.It agLightUnits
+Units of light intensity
+.It agSubstanceAmountUnits
+Units of substance amount (moles)
+.El
+.Sh THERMODYNAMICS
+.Bl -tag -compact -width "agEnergyPerSubstanceAmountUnits "
+.It agPowerUnits
+Units of power
+.It agTemperatureUnits
+Units of temperature
+.It agEnergyPerSubstanceAmountUnits
+Units of energy per substance amount
+.It agMolarHeatCapacityUnits
+Units of molar heat capacity
+.El
+.Sh ELECTRICAL
+.Bl -tag -compact -width "agResistanceTC1Units "
+.It agEMFUnits
+Units of electromotive force / voltage
+.It agCurrentUnits
+Units of electrical current
+.It agResistanceUnits
+Units of electrical resistance
+.It agResistanceTC1Units
+Units of first-order temperature coefficients
+.It agResistanceTC2Units
+Units of second-order temperature coefficients
+.It agResistivityUnits
+Units of resistivity of a material
+.It agCapacitanceUnits
+Units of electrical capacitance
+.It agInductanceUnits
+Units of electrical inductance
+.El
+.Sh INTERFACE
+.nr nS 1
+.Ft "const AG_Unit *"
+.Fn AG_FindUnit "const char *key"
+.Pp
+.Ft "const AG_Unit *"
+.Fn AG_BestUnit "const AG_Unit *unit_group" "double n"
+.Pp
+.Ft "char *"
+.Fn AG_UnitFormat "double n" "const AG_Unit unit_group[]"
+.Pp
+.Ft "const char *"
+.Fn AG_UnitAbbr "const AG_Unit *unit"
+.Pp
+.Ft "double"
+.Fn AG_Unit2Base "double n" "const AG_Unit *unit"
+.Pp
+.Ft "double"
+.Fn AG_Base2Unit "double n" "const AG_Unit *unit"
+.Pp
+.Ft "long double"
+.Fn AG_Unit2BaseLDBL "long double n" "const AG_Unit *unit"
+.Pp
+.Ft "long double"
+.Fn AG_Base2UnitLDBL "long double n" "const AG_Unit *unit"
+.Pp
+.Ft "double"
+.Fn AG_Unit2Unit "double n" "const AG_Unit *unit_from" "const AG_Unit *unit_to"
+.Pp
+.nr nS 0
+The
+.Fn AG_FindUnit
+function searches the unit database for a unit matching the given
+.Fa key ,
+and returns a pointer to the unit on success or NULL if none was found.
+.Pp
+The
+.Fn AG_BestUnit
+function returns the unit expected to yield the least number of
+non-significant figures when formatting the given number
+.Fa n .
+.Fn AG_UnitFormat
+formats the given number
+.Fa n
+using the best unit in
+.Fa unit_group .
+.Pp
+.Fn AG_UnitAbbr
+returns the abbreviation string associated with the given unit.
+.Pp
+The
+.Fn AG_Unit2Base
+function converts from
+.Fa n
+in specified units to the equivalent number of base units.
+.Fn AG_Base2Unit
+converts
+.Fa n
+base units to the equivalent number of specified units.
+.Pp
+The
+.Fn AG_Unit2BaseLDBL
+and
+.Fn AG_Base2UnitLDBL
+variants accept a
+.Ft long double
+argument (only available if
+.Dv AG_HAVE_LONG_DOUBLE
+is defined).
+.Sh EXAMPLES
+One widget which uses this interface is
+.Xr AG_Numerical 3 ,
+which accepts
+.Fa unit
+arguments.
+The following code fragment creates a widget for editing
+a length value given in meters:
+.Bd -literal -offset indent
+float length = 1.234;
+AG_Numerical *num;
+num = AG_NumericalNewFlt(parent, 0, "m", "Length: ", &length)
+.Ed
+.Pp
+The following code fragment prints the equivalent milliseconds for a given
+.Va n
+number of seconds:
+.Bd -literal -offset indent
+printf("%f seconds = %f milliseconds", n,
+    AG_Base2Unit(n, AG_FindUnit("ms")));
+.Ed
+.Pp
+The following code fragment prints the equivalent of 27 degrees Celsius,
+in kilo Kelvins:
+.Bd -literal -offset indent
+const AG_Unit *degC = AG_FindUnit("degC");
+const AG_Unit *kk = AG_FindUnit("kk");
+
+printf("27C = %fkk", AG_Unit2Unit(27.0, degC, kk));
+.Ed
+.Pp
+This code fragment displays the value of
+.Va r
+using the resistance unit most suitable to its magnitude.
+.Bd -literal -offset indent
+printf("Resistance = %s", AG_UnitFormat(r, agResistanceUnits));
+.Ed
+.Pp
+Also see
+.Pa tests/unitconv.c
+in the Agar source distribution.
+.Sh SEE ALSO
+.Xr AG_Intro 3 ,
+.Xr AG_Numerical 3 ,
+.Xr AG_Widget 3
+.Sh HISTORY
+The
+.Nm
+facility first appeared in Agar 1.0.

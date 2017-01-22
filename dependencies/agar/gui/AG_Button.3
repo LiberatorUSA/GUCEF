@@ -1,0 +1,346 @@
+.\" Copyright (c) 2002-2012 Hypertriton, Inc. <http://hypertriton.com/>
+.\" All rights reserved.
+.\"
+.\" Redistribution and use in source and binary forms, with or without
+.\" modification, are permitted provided that the following conditions
+.\" are met:
+.\" 1. Redistributions of source code must retain the above copyright
+.\"    notice, this list of conditions and the following disclaimer.
+.\" 2. Redistributions in binary form must reproduce the above copyright
+.\"    notice, this list of conditions and the following disclaimer in the
+.\"    documentation and/or other materials provided with the distribution.
+.\"
+.\" THIS SOFTWARE IS PROVIDED BY THE AUTHOR ``AS IS'' AND ANY EXPRESS OR
+.\" IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED
+.\" WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE
+.\" ARE DISCLAIMED. IN NO EVENT SHALL THE AUTHOR BE LIABLE FOR ANY DIRECT,
+.\" INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES
+.\" (INCLUDING BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR
+.\" SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION)
+.\" HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT,
+.\" STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING
+.\" IN ANY WAY OUT OF THE USE OF THIS SOFTWARE EVEN IF ADVISED OF THE
+.\" POSSIBILITY OF SUCH DAMAGE.
+.\"
+.Dd August 20, 2002
+.Dt AG_BUTTON 3
+.Os
+.ds vT Agar API Reference
+.ds oS Agar 1.0
+.Sh NAME
+.Nm AG_Button
+.Nd agar button widget
+.Sh SYNOPSIS
+.Bd -literal
+#include <agar/core.h>
+#include <agar/gui.h>
+.Ed
+.Sh DESCRIPTION
+.\" IMAGE(http://libagar.org/widgets/AG_Button.png, "A row of buttons")
+The
+.Nm
+widget implements a simple push-button displaying an image or a text label.
+.Nm
+can be used to trigger events, or control a boolean value.
+.Sh INHERITANCE HIERARCHY
+.Xr AG_Object 3 ->
+.Xr AG_Widget 3 ->
+.Nm .
+.Sh INTERFACE
+.nr nS 1
+.Ft "AG_Button *"
+.Fn AG_ButtonNew "AG_Widget *parent" "Uint flags" "const char *format" "..."
+.Pp
+.Ft "AG_Button *"
+.Fn AG_ButtonNewS "AG_Widget *parent" "Uint flags" "const char *label"
+.Pp
+.Ft "AG_Button *"
+.Fn AG_ButtonNewFn "AG_Widget *parent" "Uint flags" "const char *label" "void (*fn)(AG_Event *)" "const char *fnArgs" "..."
+.Pp
+.\" MANLINK(AG_ButtonNewInt)
+.\" MANLINK(AG_ButtonNewUint8)
+.\" MANLINK(AG_ButtonNewUint16)
+.\" MANLINK(AG_ButtonNewUint32)
+.Ft "AG_Button *"
+.Fn AG_ButtonNew{Int,Uint8,Uint16,Uint32} "AG_Widget *parent" "Uint flags" "const char *label" "<Type> *p"
+.Pp
+.\" MANLINK(AG_ButtonNewFlag)
+.\" MANLINK(AG_ButtonNewFlag8)
+.\" MANLINK(AG_ButtonNewFlag16)
+.\" MANLINK(AG_ButtonNewFlag32)
+.Ft "AG_Button *"
+.Fn AG_ButtonNew{Flag,Flag8,Flag16,Flag32} "AG_Widget *parent" "Uint flags" "const char *label" "Uint *p" "<Type> bitmask"
+.Pp
+.Ft void
+.Fn AG_ButtonSetPadding "AG_Button *button" "int lPad" "int rPad" "int tPad" "int bPad"
+.Pp
+.Ft void
+.Fn AG_ButtonSetFocusable "AG_Button *button" "int flag"
+.Pp
+.Ft void
+.Fn AG_ButtonSetSticky "AG_Button *button" "int flag"
+.Pp
+.Ft void
+.Fn AG_ButtonInvertState "AG_Button *button" "int flag"
+.Pp
+.Ft void
+.Fn AG_ButtonJustify "AG_Button *button" "enum ag_text_justify justify"
+.Pp
+.Ft void
+.Fn AG_ButtonValign "AG_Button *button" "enum ag_text_valign valign"
+.Pp
+.Ft void
+.Fn AG_ButtonSetRepeatMode "AG_Button *button" "int repeat_flag"
+.Pp
+.Ft void
+.Fn AG_ButtonSurface "AG_Button *button" "const AG_Surface *su"
+.Pp
+.Ft void
+.Fn AG_ButtonSurfaceNODUP "AG_Button *button" "AG_Surface *su"
+.Pp
+.Ft void
+.Fn AG_ButtonText "AG_Button *button" "const char *format" "..."
+.Pp
+.Ft void
+.Fn AG_ButtonTextS "AG_Button *button" "const char *label"
+.Pp
+.nr nS 0
+The
+.Fn AG_ButtonNew
+function allocates, initializes, and attaches a
+.Nm
+widget.
+If the
+.Fa label
+argument is given, it sets a default text caption.
+For the list of acceptable
+.Fa flags ,
+see
+.Sx BUTTON FLAGS
+section.
+.Pp
+The
+.Fn AG_ButtonNewFn
+variant creates a button and implicitely sets a callback (event handler)
+function to be executed whenever the button is pressed.
+See
+.Xr AG_Event 3
+for details on Agar event handlers.
+Since function-triggering buttons rarely make use of the "state" binding,
+.Fn AG_ButtonNewFn
+implies
+.Dv AG_BUTTON_EXCL
+(unless
+.Dv AG_BUTTON_NOEXCL
+is passed).
+.Pp
+The
+.Fn AG_ButtonNew{Int,Uint8,Uint16,Uint32}
+functions tie the state of the button (the
+.Sq state
+binding) with the given integer variable, where 1 = True and 0 = False.
+.Pp
+The
+.Fn AG_ButtonNew{Flag,Flag8,Flag16,Flag32} ,
+functions tie the state of the button with the state of the bits
+described by
+.Fa bitmask
+in the specified integer variable.
+.Fn AG_ButtonNewFlag
+binds to an
+.Ft int ,
+.Fn AG_ButtonNewFlag8
+binds to an
+.Ft Uint8 ,
+etc.
+.Pp
+The
+.Fn AG_ButtonSetPadding
+function sets the padding around the label in pixels.
+If a parameter is -1, its current value is preserved.
+Note that when using a text label, this setting is independent from that of
+the label (use
+.Xr AG_LabelSetPadding 3
+on the
+.Va lbl
+member of the
+.Nm
+to configure the text label padding as well).
+.Pp
+The
+.Fn AG_ButtonSetFocusable
+function with an argument of 0 prevents the button from gaining focus.
+The default is to allow buttons to gain focus.
+.Pp
+The
+.Fn AG_ButtonSetSticky
+function enables or disable sticky mode.
+Under sticky mode, the button will not spring back to its previous state
+following a click event.
+This mode is mostly useful when the button's state is bound to a boolean
+variable.
+.Pp
+The
+.Fn AG_ButtonInvertState
+function defines whether to invert the meaning of the boolean variable
+bound to the button.
+.Pp
+.Fn AG_ButtonJustify
+sets the justification for the button text label (or icon):
+.Bd -literal
+enum ag_text_justify {
+	AG_TEXT_LEFT,
+	AG_TEXT_CENTER,
+	AG_TEXT_RIGHT
+};
+.Ed
+.Pp
+.Fn AG_ButtonValign
+sets the vertical alignment for the button text label (or icon):
+.Bd -literal
+enum ag_text_valign {
+	AG_TEXT_TOP,
+	AG_TEXT_MIDDLE,
+	AG_TEXT_BOTTOM
+};
+.Ed
+.Pp
+The
+.Fn AG_ButtonSetRepeatMode
+flag enables or disables repeat mode.
+Repeat mode causes multiple
+.Sq button-pushed
+events to be posted periodically for as long as the button is triggered.
+Repeat mode is used notably by
+.Xr AG_Numerical 3 .
+.Pp
+.Fn AG_ButtonSurface
+sets the button label to a copy of the given surface.
+The
+.Fn AG_ButtonSurfaceNODUP
+variant uses the given surface as source without copying.
+If a text label currently exists, it is removed.
+.Pp
+.Fn AG_ButtonText
+sets the label of the button from the specified text string.
+If a surface is currently set, it is removed.
+.Sh BUTTON FLAGS
+The following
+.Va flags
+are provided:
+.Bl -tag -width "AG_BUTTON_MOUSEOVER "
+.It AG_BUTTON_STICKY
+Prevent the button from springing back to its previous state following
+a click.
+Set on initialization or by
+.Fn AG_ButtonSetSticky .
+.It AG_BUTTON_MOUSEOVER
+The cursor is over the button area (read-only).
+.It AG_BUTTON_REPEAT
+Repeat mode is enabled (read-only, see
+.Fn AG_ButtonSetRepeatMode ) .
+.It AG_BUTTON_INVSTATE
+Invert the interpretation of the "state" binding.
+By default, a value of 1 causes the button to be pressed.
+.It AG_BUTTON_EXCL
+Disable the test for redrawing the button upon external changes to the
+"state" binding.
+.It AG_BUTTON_HFILL
+Expand horizontally in parent (equivalent to invoking
+.Xr AG_ExpandHoriz 3 ) .
+.It AG_BUTTON_VFILL
+Expand vertically in parent (equivalent to invoking
+.Xr AG_ExpandVert 3 ) .
+.It AG_BUTTON_EXPAND
+Shorthand for
+.Dv AG_BUTTON_HFILL|AG_BUTTON_VFILL .
+.El
+.Sh EVENTS
+The
+.Nm
+widget generates the following events:
+.Pp
+.Bl -tag -compact -width 2n
+.It Fn button-pushed "int new_state"
+The button was pressed.
+If using
+.Dv AG_BUTTON_STICKY ,
+the
+.Fa new_state
+argument indicates the new state of the button.
+.El
+.Sh BINDINGS
+The
+.Nm
+widget provides the following bindings.
+In all cases, a value of 1 is considered boolean TRUE, and a value of 0
+is considered boolean FALSE.
+.Pp
+.Bl -tag -compact -width "FLAGS32 *state "
+.It Va BOOL *state
+Value (1/0) of natural integer
+.It Va INT *state
+Value (1/0) of natural integer
+.It Va UINT8 *state
+Value (1/0) of 8-bit integer
+.It Va UINT16 *state
+Value (1/0) of 16-bit integer
+.It Va UINT32 *state
+Value (1/0) of 32-bit integer
+.It Va FLAGS *state
+Bits in an int
+.It Va FLAGS8 *state
+Bits in 8-bit word
+.It Va FLAGS16 *state
+Bits in 16-bit word
+.It Va FLAGS32 *state
+Bits in 32-bit word
+.El
+.Sh EXAMPLES
+The following code fragment creates a button and sets a handler function
+for the
+.Sq button-pushed
+event:
+.Bd -literal -offset indent
+void
+MyHandlerFn(AG_Event *event)
+{
+	AG_TextMsg(AG_MSG_INFO, "Hello, %s!", AG_STRING(1));
+}
+
+.Li ...
+
+AG_ButtonNewFn(parent, 0, "Hello", MyHandlerFn, "%s", "world");
+.Ed
+.Pp
+The following code fragment uses buttons to control specific bits in
+a 32-bit word:
+.Bd -literal -offset indent
+Uint32 MyFlags = 0;
+
+AG_ButtonNewFlag32(parent, 0, "Bit 1", &MyFlags, 0x01);
+AG_ButtonNewFlag32(parent, 0, "Bit 2", &MyFlags, 0x02);
+.Ed
+.Pp
+The following code fragment uses a button to control an int protected
+by a mutex device:
+.Bd -literal -offset indent
+int MyInt = 0;
+AG_Mutex MyMutex;
+AG_Button *btn;
+
+AG_MutexInit(&MyMutex);
+btn = AG_ButtonNew(parent, 0, "Mutex-protected flag");
+AG_BindIntMp(btn, "state", &MyInt, &MyMutex);
+.Ed
+.Sh SEE ALSO
+.Xr AG_Event 3 ,
+.Xr AG_Intro 3 ,
+.Xr AG_Surface 3 ,
+.Xr AG_Toolbar 3 ,
+.Xr AG_Widget 3 ,
+.Xr AG_Window 3
+.Sh HISTORY
+The
+.Nm
+widget first appeared in Agar 1.0.

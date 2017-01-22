@@ -1,0 +1,63 @@
+#
+# Sample Agar GUI stylesheet
+# Refer to AG_StyleSheet(3).
+#
+
+AG_Widget {
+	color: rgb(125,125,125);
+	color#focused: rgb(200,0,0);
+	color#disabled: rgb(160,160,160);
+	color#hover: rgb(130,130,130);
+	color#selected: rgb(50,50,120);
+	text-color: rgb(250,250,250);
+	line-color: rgb(50,50,50);
+	line-color#hover: rgb(70,70,70);
+	shape-color: rgb(100,100,100);
+}
+AG_Window {
+	border-color: rgb(100,100,100);
+}
+AG_Titlebar {
+	color: rgb(40,50,60);
+	color#disabled: rgb(35,35,35);
+}
+AG_Menu {
+	color: rgb(70,70,70);
+	color#selected: rgb(40,40,110);
+	color#disabled: rgb(40,40,110);
+	text-color#selected: rgb(230,230,230);
+	text-color#disabled: rgb(170,170,170);
+}
+AG_MenuView {
+	color: rgb(70,70,70);
+	color#selected: rgb(40,40,110);
+	color#disabled: rgb(40,40,110);
+	text-color#selected: rgb(230,230,230);
+	text-color#disabled: rgb(170,170,170);
+}
+AG_Notebook {
+	color#selected: rgb(117,117,117);
+}
+AG_Editable {
+	color#selected: rgb(0,0,100);
+}
+AG_Tlist {
+	color: rgb(125,125,125);
+	color#selected: rgb(50,50,120);
+	text-color#selected: rgb(255,255,200);
+}
+AG_Console {
+	color: rgb(0,0,30);
+	color#hover: rgb(0,0,30);
+	color#focused: rgb(10,10,28);
+	color#selected: rgb(0,15,80);
+	text-color: rgb(240,240,240);
+}
+AG_ProgressBar {
+	color#selected: rgb(50,50,120);
+	text-color#selected: rgb(255,255,255);
+}
+AG_FixedPlotter {
+	color: rgb(50,50,50);
+	line-color: rgb(70,70,70);
+}

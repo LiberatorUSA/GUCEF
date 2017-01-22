@@ -1,0 +1,242 @@
+.\" Copyright (c) 2002-2007 Hypertriton, Inc. <http://hypertriton.com/>
+.\" All rights reserved.
+.\"
+.\" Redistribution and use in source and binary forms, with or without
+.\" modification, are permitted provided that the following conditions
+.\" are met:
+.\" 1. Redistributions of source code must retain the above copyright
+.\"    notice, this list of conditions and the following disclaimer.
+.\" 2. Redistributions in binary form must reproduce the above copyright
+.\"    notice, this list of conditions and the following disclaimer in the
+.\"    documentation and/or other materials provided with the distribution.
+.\" 
+.\" THIS SOFTWARE IS PROVIDED BY THE AUTHOR ``AS IS'' AND ANY EXPRESS OR
+.\" IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED
+.\" WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE
+.\" ARE DISCLAIMED. IN NO EVENT SHALL THE AUTHOR BE LIABLE FOR ANY DIRECT,
+.\" INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES
+.\" (INCLUDING BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR
+.\" SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION)
+.\" HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT,
+.\" STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING
+.\" IN ANY WAY OUT OF THE USE OF THIS SOFTWARE EVEN IF ADVISED OF THE
+.\" POSSIBILITY OF SUCH DAMAGE.
+.\"
+.Dd August 20, 2002
+.Dt AG_CHECKBOX 3
+.Os
+.ds vT Agar API Reference
+.ds oS Agar 1.0
+.Sh NAME
+.Nm AG_Checkbox
+.Nd agar checkbox widget
+.Sh SYNOPSIS
+.Bd -literal
+#include <agar/core.h>
+#include <agar/gui.h>
+.Ed
+.Sh DESCRIPTION
+.\" IMAGE(http://libagar.org/widgets/AG_Checkbox.png, "Two checkboxes")
+The
+.Nm
+widget controls a boolean variable (i.e., an
+.Ft int
+or a set of bits in an integer).
+If a text label is specified, it is displayed next to the control.
+.Sh INHERITANCE HIERARCHY
+.Xr AG_Object 3 ->
+.Xr AG_Widget 3 ->
+.Nm .
+.Sh INITIALIZATION
+.nr nS 1
+.Ft "AG_Checkbox *"
+.Fn AG_CheckboxNew "AG_Widget *parent" "Uint flags" "const char *format" "..."
+.Pp
+.Ft "AG_Checkbox *"
+.Fn AG_CheckboxNewS "AG_Widget *parent" "Uint flags" "const char *label"
+.Pp
+.Ft "AG_Checkbox *"
+.Fn AG_CheckboxNewFn "AG_Widget *parent" "Uint flags" "const char *label" "AG_EventFn fn" "const char *fmt" "..."
+.Pp
+.Ft "AG_Checkbox *"
+.Fn AG_CheckboxNewInt "AG_Widget *parent" "Uint flags" "const char *label" "int *pBool"
+.Pp
+.Ft "AG_Checkbox *"
+.Fn AG_CheckboxNewFlag "AG_Widget *parent" "Uint flags" "const char *label" "Uint *pFlags" "Uint bitmask"
+.Pp
+.Ft "AG_Checkbox *"
+.Fn AG_CheckboxNewFlag32 "AG_Widget *parent" "Uint flags" "const char *label" "Uint32 *pFlags" "Uint32 bitmask"
+.Pp
+.Fn "AG_Checkbox *"
+.Fn AG_CheckboxSetFromFlags "AG_Widget *parent" "Uint flags" "Uint *pFlags" "const AG_FlagDescr *flagsDescr"
+.Pp
+.Fn "AG_Checkbox *"
+.Fn AG_CheckboxSetFromFlags32 "AG_Widget *parent" "Uint flags" "Uint32 *pFlags" "const AG_FlagDescr *flagsDescr"
+.Pp
+.Ft "void"
+.Fn AG_CheckboxToggle "AG_Checkbox *checkbox"
+.Pp
+.nr nS 0
+The
+.Fn AG_CheckboxNew
+function allocates, initializes, and attaches a
+.Nm
+widget.
+.Fn AG_CheckboxNew
+accepts an optional text label argument.
+The
+.Fn AG_CheckboxNewFn
+variant also assigns the specified callback function to the
+.Sq checkbox-changed
+event.
+.Pp
+Acceptable values for the
+.Fa flags
+argument include:
+.Bl -tag -width "AG_CHECKBOX_EXPAND "
+.It AG_CHECKBOX_SET
+Set the state to 1 on initialization.
+.It AG_CHECKBOX_HFILL
+Expand horizontally in parent (equivalent to invoking
+.Xr AG_ExpandHoriz 3 ) .
+.It AG_CHECKBOX_VFILL
+Expand vertically in parent (equivalent to invoking
+.Xr AG_ExpandVert 3 ) .
+.It AG_CHECKBOX_EXPAND
+Shorthand for
+.Dv AG_CHECKBOX_HFILL|AG_CHECKBOX_VFILL .
+.El
+.Pp
+The
+.Fn AG_CheckboxNewInt
+variant binds the state to a boolean integer.
+.Pp
+.Fn AG_CheckboxNewFlag
+binds the state to a specified set of bits
+.Fa bitmask
+in
+.Fa pFlags .
+.Pp
+The utility function
+.Fn AG_CheckboxSetFromFlags
+creates a set of checkboxes for the given set of flags, described
+by an array of
+.Ft AG_FlagDescr
+structures:
+.Bd -literal
+typedef struct ag_flag_descr {
+	Uint bitmask;			/* Bitmask */
+	const char *descr;		/* Bit(s) description */
+	int writeable;			/* User-editable */
+} AG_FlagDescr;
+.Ed
+.Pp
+The
+.Fn AG_CheckboxToggle
+function inverts the current state of
+.Fa checkbox .
+.Sh BINDINGS
+The
+.Nm
+widget provides the following bindings:
+.Pp
+.Bl -tag -compact -width "FLAGS32 *state "
+.It Va BOOL *state
+Value (1/0) of natural integer
+.It Va INT *state
+Value (1/0) of natural integer
+.It Va UINT8 *state
+Value (1/0) of 8-bit integer
+.It Va UINT16 *state
+Value (1/0) of 16-bit integer
+.It Va UINT32 *state
+Value (1/0) of 32-bit integer
+.It Va FLAGS *state
+Bits in an int
+.It Va FLAGS8 *state
+Bits in 8-bit word
+.It Va FLAGS16 *state
+Bits in 16-bit word
+.It Va FLAGS32 *state
+Bits in 32-bit word
+.El
+.Sh EVENTS
+The
+.Nm
+widget generates the following events:
+.Bl -tag -width 2n
+.It Fn checkbox-changed "int state"
+Checkbox state changed (1=enabled, 0=disabled).
+The
+.Sq state
+binding remains locked during the event handler's execution.
+.El
+.Sh STRUCTURE DATA
+For the
+.Ft AG_Checkbox
+object:
+.Bl -tag -width "AG_Label *lbl "
+.It Ft AG_Label *lbl
+Pointer to the
+.Xr AG_Label 3
+displaying the caption text.
+.El
+.Sh EXAMPLES
+The following code fragment ties an
+.Nm
+to a boolean variable represented by an
+.Ft int :
+.Bd -literal -offset indent
+int someOption = 0;
+
+AG_Window *win = AG_WindowNew(0);
+AG_CheckboxNewInt(win, 0, "Some option", &someOption);
+AG_WindowShow(win);
+.Ed
+.Pp
+The following code fragment uses an
+.Nm
+to trigger a callback function:
+.Bd -literal -offset indent
+static void
+MyCallback(AG_Event *event)
+{
+	AG_TextInfo(NULL, "Callback invoked");
+}
+
+AG_Window *win = AG_WindowNew(0);
+AG_CheckboxNewFn(win, 0, "Execute callback", MyCallback, NULL);
+AG_WindowShow(win);
+.Ed
+.Pp
+The following code fragment creates an array of checkboxes, each tied to
+a specific bit in a word:
+.Bd -literal -offset indent
+#define FLAG_FOO	0x01
+#define FLAG_BAR	0x02
+#define FLAG_BAZ	0x04
+
+int myWord = 0;
+
+AG_FlagDescr myFlagDescr[] = {
+	{ FLAG_FOO,	"foo flag",		1 },
+	{ FLAG_BAR,	"bar flag",		1 },
+	{ FLAG_BAZ,	"baz flag (readonly)",	0 },
+	{ 0,		NULL,			0 }
+};
+
+AG_Window *win = AG_WindowNew(0);
+AG_CheckboxSetFromFlags(win, 0, &myWord, myFlagDescr);
+AG_WindowShow(win);
+.Ed
+.Sh SEE ALSO
+.Xr AG_Button 3 ,
+.Xr AG_Event 3 ,
+.Xr AG_Intro 3 ,
+.Xr AG_Radio 3 ,
+.Xr AG_Widget 3 ,
+.Xr AG_Window 3
+.Sh HISTORY
+The
+.Nm
+widget first appeared in Agar 1.0.

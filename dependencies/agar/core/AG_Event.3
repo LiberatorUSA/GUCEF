@@ -1,0 +1,699 @@
+.\" Copyright (c) 2002-2015 Hypertriton, Inc. <http://hypertriton.com/>
+.\" All rights reserved.
+.\"
+.\" Redistribution and use in source and binary forms, with or without
+.\" modification, are permitted provided that the following conditions
+.\" are met:
+.\" 1. Redistributions of source code must retain the above copyright
+.\"    notice, this list of conditions and the following disclaimer.
+.\" 2. Redistributions in binary form must reproduce the above copyright
+.\"    notice, this list of conditions and the following disclaimer in the
+.\"    documentation and/or other materials provided with the distribution.
+.\"
+.\" THIS SOFTWARE IS PROVIDED BY THE AUTHOR ``AS IS'' AND ANY EXPRESS OR
+.\" IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED
+.\" WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE
+.\" ARE DISCLAIMED. IN NO EVENT SHALL THE AUTHOR BE LIABLE FOR ANY DIRECT,
+.\" INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES
+.\" (INCLUDING BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR
+.\" SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION)
+.\" HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT,
+.\" STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING
+.\" IN ANY WAY OUT OF THE USE OF THIS SOFTWARE EVEN IF ADVISED OF THE
+.\" POSSIBILITY OF SUCH DAMAGE.
+.\"
+.Dd September 16, 2002
+.Dt AG_EVENT 3
+.Os
+.ds vT Agar API Reference
+.ds oS Agar 1.0
+.Sh NAME
+.Nm AG_Event
+.Nd agar event system
+.Sh SYNOPSIS
+.Bd -literal
+#include <agar/core.h>
+.Ed
+.Sh DESCRIPTION
+The
+.Nm
+interface implements a system of virtual functions for purposes of servicing
+.Em events .
+An
+.Xr AG_Object 3
+may act as an event sender, or an event receiver.
+Event handler functions are passed a list of zero or more arguments.
+Execution of event handlers can be delayed for a set amount of time, or marked
+for execution in a separate thread (where thread support is available).
+.Pp
+Event processing is triggered by the
+.Fn AG_PostEvent
+function, which causes the execution the event handler routine(s)
+previously registered by
+.Fn AG_SetEvent
+or
+.Fn AG_AddEvent .
+Event handlers are declared as:
+.Pp
+.nr nS 1
+.\" NOMANLINK
+.Ft void
+.Fn MyEventHandler "AG_Event *event"
+.Pp
+.nr nS 0
+The
+.Fa event
+structure contains the event arguments, which are most convenient retrieved
+using macros; see
+.Sx EVENT ARGUMENTS
+below for details.
+.Pp
+NOTE: This manual page documents Agar's high-level event processing interface.
+For more information on low-level event processing, see
+.Xr AG_EventLoop 3 .
+.Sh EVENT PROCESSING
+.nr nS 1
+.Ft "AG_Event *"
+.Fn AG_SetEvent "AG_Object *obj" "const char *event_name" "void (*fn)(AG_Event *event)" "const char *fnArgs" "..."
+.Pp
+.Ft "AG_Event *"
+.Fn AG_AddEvent "AG_Object *obj" "const char *event_name" "void (*fn)(AG_Event *event)" "const char *fnArgs" "..."
+.Pp
+.Ft "AG_Function *"
+.Fn AG_SetVoidFn "AG_Object *obj" "void (*fn)(AG_Event *event)" "const char *fnArgs" "..."
+.Pp
+.Ft "AG_Function *"
+.Fn AG_SetIntFn "AG_Object *obj" "int (*fn)(AG_Event *event)" "const char *fnArgs" "..."
+.Pp
+.Ft "AG_Function *"
+.Fn AG_SetUint8Fn "AG_Object *obj" "Uint8 (*fn)(AG_Event *event)" "const char *fnArgs" "..."
+.Pp
+.Ft "AG_Function *"
+.Fn AG_SetSint8Fn "AG_Object *obj" "Sint8 (*fn)(AG_Event *event)" "const char *fnArgs" "..."
+.Pp
+.Ft "AG_Function *"
+.Fn AG_SetUint16Fn "AG_Object *obj" "Uint16 (*fn)(AG_Event *event)" "const char *fnArgs" "..."
+.Pp
+.Ft "AG_Function *"
+.Fn AG_SetSint16Fn "AG_Object *obj" "Sint16 (*fn)(AG_Event *event)" "const char *fnArgs" "..."
+.Pp
+.Ft "AG_Function *"
+.Fn AG_SetUint32Fn "AG_Object *obj" "Uint32 (*fn)(AG_Event *event)" "const char *fnArgs" "..."
+.Pp
+.Ft "AG_Function *"
+.Fn AG_SetSint32Fn "AG_Object *obj" "Sint32 (*fn)(AG_Event *event)" "const char *fnArgs" "..."
+.Pp
+.Ft "AG_Function *"
+.Fn AG_SetUint64Fn "AG_Object *obj" "Uint64 (*fn)(AG_Event *event)" "const char *fnArgs" "..."
+.Pp
+.Ft "AG_Function *"
+.Fn AG_SetSint64Fn "AG_Object *obj" "Sint64 (*fn)(AG_Event *event)" "const char *fnArgs" "..."
+.Pp
+.Ft "AG_Function *"
+.Fn AG_SetFloatFn "AG_Object *obj" "float (*fn)(AG_Event *event)" "const char *fnArgs" "..."
+.Pp
+.Ft "AG_Function *"
+.Fn AG_SetDoubleFn "AG_Object *obj" "double (*fn)(AG_Event *event)" "const char *fnArgs" "..."
+.Pp
+.Ft "AG_Function *"
+.Fn AG_SetLongDoubleFn "AG_Object *obj" "long double (*fn)(AG_Event *event)" "const char *fnArgs" "..."
+.Pp
+.Ft "AG_Function *"
+.Fn AG_SetStringFn "AG_Object *obj" "size_t (*fn)(AG_Event *event, char *buf, size_f buf_size)" "const char *fnArgs" "..."
+.Pp
+.Ft "AG_Function *"
+.Fn AG_SetPointerFn "AG_Object *obj" "void *(*fn)(AG_Event *event)" "const char *fnArgs" "..."
+.Pp
+.Ft "AG_Function *"
+.Fn AG_SetConstPointerFn "AG_Object *obj" "const void *(*fn)(AG_Event *event)" "const char *fnArgs" "..."
+.Pp
+.Ft "AG_Function *"
+.Fn AG_SetTextFn "AG_Object *obj" "AG_Text *(*fn)(AG_Event *event)" "const char *fnArgs" "..."
+.Pp
+.Ft "AG_Event *"
+.Fn AG_FindEventHandler "AG_Object *obj" "const char *name"
+.Pp
+.Ft "void"
+.Fn AG_UnsetEvent "AG_Object *obj" "const char *event_name"
+.Pp
+.Ft "int"
+.Fn AG_PostEvent "AG_Object *sndr" "AG_Object *rcvr" "const char *event_name" "const char *fmt" "..."
+.Pp
+.Ft "int"
+.Fn AG_PostEventByPtr "AG_Object *sndr" "AG_Object *rcvr" "AG_Event *event" "const char *fmt" "..."
+.Pp
+.Ft "int"
+.Fn AG_SchedEvent "AG_Object *sndr" "AG_Object *rcvr" "Uint32 ticks" "const char *event_name" "const char *fmt" "..."
+.Pp
+.Ft "void"
+.Fn AG_ForwardEvent "AG_Object *sndr" "AG_Object *rcvr" "AG_Event *event"
+.Pp
+.nr nS 0
+The
+.Fn AG_SetEvent
+function registers a new event handler to service events of type
+.Fa name .
+If an event handler is already registered for the given event type, it
+is replaced.
+The
+.Fn AG_AddEvent
+variant preserves any existing event handler, such that multiple handlers
+can be invoked when the event is raised.
+The
+.Fa fn
+argument is a pointer to the event handler function, and
+.Fa fnArgs
+is a special kind of format string specifying a list of arguments that
+should be passed on to the event handler function.
+See
+.Sx EVENT ARGUMENTS
+below for details.
+.Pp
+The
+.Fn AG_Set<TYPE>Fn
+family of functions create a virtual function with a return value of the
+specified TYPE.
+By default, virtual functions are unnamed (and referenced by the returned
+.Fn AG_Function
+handle).
+Names can still be assigned to virtual functions by setting the
+.Va name
+field.
+Since event handlers and virtual functions are implemented
+identically, the
+.Fn AG_Function
+type is just an alias for
+.Fn AG_Event .
+.Pp
+The
+.Fn AG_FindEventHandler
+function searches for an event handler by name, returning a pointer to the
+.Nm
+element on success or NULL if there is no match.
+.Pp
+The
+.Fn AG_UnsetEvent
+function deletes the named event handler.
+.Pp
+The
+.Fn AG_PostEvent
+function immediately executes the event handler function associated with the
+given event type, if there is any.
+The
+.Fa fn
+and
+.Fa fnArgs
+arguments to
+.Fn AG_PostEvent
+are interpreted in the same way as
+.Fn AG_SetEvent
+and
+.Fn AG_AddEvent ,
+but the arguments are appended at the end of the argument list.
+When the event handler function retrieves arguments by index (as opposed to
+using argument names), it is important to remember that the arguments to
+.Fn AG_PostEvent
+follow the arguments given to
+.Fn AG_SetEvent
+or
+.Fn AG_AddEvent .
+.Pp
+The
+.Fn AG_PostEvent
+function returns 1 if an event handler was invoked, or 0 if there is no
+registered event handler for the specified event.
+.Pp
+The
+.Fn AG_PostEventByPtr
+variant accepts a pointer to an
+.Nm
+element, as opposed to looking up the event handler by name.
+.Pp
+The
+.Fn AG_SchedEvent
+function provides an interface similar to
+.Fn AG_PostEvent ,
+except that the event is scheduled to occur in the given number of ticks
+.Fn AG_SchedEvent
+returns 0 on success or -1 if the timer could not be created.
+If the object is detached or destroyed, all events scheduled for execution
+are automatically cancelled.
+A more flexible interface for implementing timers is described in
+.Xr AG_Timer 3
+(which
+.Fn AG_SchedEvent
+uses internally).
+.Pp
+The
+.Fn AG_ForwardEvent
+function relays the given event to object
+.Fa rcvr ,
+passing
+.Fa sndr
+as the sender pointer.
+.Sh EVENT ARGUMENTS
+The
+.Fn AG_SetEvent ,
+.Fn AG_AddEvent
+and
+.Fn AG_PostEvent
+routines accept a special
+.Fa fnArgs
+format string specifying a list of arguments to be passed to the event handler
+function.
+For example, the
+.Sq %s,%p,%i
+string specifies that the following arguments are a string, a pointer and an
+.Ft int .
+The arguments would retrieved by the event handler function like so:
+.Bd -literal -offset indent
+void
+MyEventHandler(AG_Event *event)
+{
+	char *s = AG_STRING(1);
+	void *p = AG_PTR(2);
+	int i = AG_INT(3);
+}
+.Ed
+.Pp
+Named arguments are also supported.
+For example, the format string
+.Sq %s(foo),%p(bar),%i(baz)
+specifies string, pointer and integer arguments, which can be retrieved using:
+.Bd -literal -offset indent
+void
+MyEventHandler(AG_Event *event)
+{
+	char *s = AG_STRING_NAMED("foo");
+	void *p = AG_PTR_NAMED("bar");
+	int i = AG_INT_NAMED("baz");
+}
+.Ed
+.Pp
+The following argument specifiers are accepted:
+.Bl -tag -compact -width "%Cp "
+.It "%p"
+An arbitrary pointer (void *).
+.It "%Cp"
+An arbitrary pointer (const void *).
+.It "%i"
+A signed integer argument (int).
+.It "%u"
+An unsigned integer argument (Uint).
+.It "%li"
+A signed long integer argument (long).
+.It "%lu"
+An unsigned long integer argument (Ulong).
+.It "%f"
+A real argument (float).
+.It "%d"
+A real argument (double).
+.It "%s"
+A string argument (char *).
+.It "%Cs"
+A string argument (const char *).
+.El
+.Pp
+The following macros allow event handler routines to retrieve the arguments
+passed to them.
+Variable arguments are supported - in that case, arguments can be retrieved
+directly from the
+.Fa event
+structure (see
+.Sx STRUCTURE DATA ) .
+.Pp
+.nr nS 1
+.Ft "AG_Object *"
+.Fn AG_SELF "void"
+.Pp
+.Ft "AG_Object *"
+.Fn AG_SENDER "void"
+.Pp
+.Ft "void *"
+.Fn AG_PTR "int index"
+.Pp
+.\" NOMANLINK
+.Ft "AG_Object *"
+.Fn AG_OBJECT "int index" "const char *classSpec"
+.Pp
+.Ft "char *"
+.Fn AG_STRING "int index"
+.Pp
+.Ft "int"
+.Fn AG_INT "int index"
+.Pp
+.Ft "Uint"
+.Fn AG_UINT "int index"
+.Pp
+.Ft "long"
+.Fn AG_LONG "int index"
+.Pp
+.Ft "Ulong"
+.Fn AG_ULONG "int index"
+.Pp
+.Ft "float"
+.Fn AG_FLOAT "int index"
+.Pp
+.Ft "double"
+.Fn AG_DOUBLE "int index"
+.Pp
+.Ft "void *"
+.Fn AG_PTR_NAMED "const char *key"
+.Pp
+.Ft "AG_Object *"
+.Fn AG_OBJECT_NAMED "const char *key" "const char *classSpec"
+.Pp
+.Ft "char *"
+.Fn AG_STRING_NAMED "const char *key"
+.Pp
+.Ft "int"
+.Fn AG_INT_NAMED "const char *key"
+.Pp
+.Ft "Uint"
+.Fn AG_UINT_NAMED "const char *key"
+.Pp
+.Ft "long"
+.Fn AG_LONG_NAMED "const char *key"
+.Pp
+.Ft "Ulong"
+.Fn AG_ULONG_NAMED "const char *key"
+.Pp
+.Ft "float"
+.Fn AG_FLOAT_NAMED "const char *key"
+.Pp
+.Ft "double"
+.Fn AG_DOUBLE_NAMED "const char *key"
+.Pp
+.nr nS 0
+The
+.Fn AG_SELF
+macro (equivalent to AG_PTR(0)) returns a pointer to the
+.Xr AG_Object 3
+receiving the event (the
+.Fa rcvr
+argument to
+.Fn AG_PostEvent ) .
+.Fn AG_SENDER
+returns a pointer to the object sending the event (the
+.Fa sndr
+argument to
+.Fn AG_PostEvent ) ,
+if there is one.
+.Pp
+The following macros return a specific item in the list of arguments.
+When retrieving arguments by index, keep in mind that the list of arguments
+passed by
+.Fn AG_PostEvent
+.Em follow
+the list of arguments provided by
+.Fn AG_SetEvent .
+If debugging was enabled at compile time, these macros also ensure type
+safety.
+.Pp
+.Fn AG_PTR
+returns a pointer, previously passed as a
+.Sq %p
+argument.
+.Pp
+.Fn AG_OBJECT
+returns a pointer to an
+.Xr AG_Object 3
+(previously passed as a
+.Sq %p
+argument).
+It differs from
+.Fn AG_PTR
+in that the object pointer is verified against the specified object class
+and a fatal error is raised if runtime type checking is in effect.
+.Pp
+.Fn AG_STRING
+returns a pointer to a string, previously passed as a
+.Sq %s
+argument.
+The event handler is not allowed to modify the string.
+.Pp
+.Fn AG_INT ,
+.Fn AG_UINT ,
+.Fn AG_LONG
+and
+.Fn AG_ULONG
+return the specified native integral number, previously passed as a
+.Sq %i ,
+.Sq %u ,
+.Sq %li
+or
+.Sq %lu
+argument respectively.
+.Pp
+.Fn AG_FLOAT
+and
+.Fn AG_DOUBLE
+return the specified native floating-point number, previously passed as
+.Sq %f
+or
+.Sq %F
+argument respectively.
+.Pp
+The
+.Fn AG_*_NAMED
+macros retrieve the given argument by name instead of by index.
+If there is no argument matching the name, a fatal error is raised.
+.Sh ARGUMENT MANIPULATION
+In some cases it is desirable for functions to accept a list of event handler
+arguments like
+.Fn AG_SetEvent ,
+and possibly manipulate its entries directly.
+For example, the
+.Xr AG_MenuAction 3
+function of the GUI widget
+.Xr AG_Menu 3
+accepts a pointer to an event handler function, followed by an
+.Fn AG_SetEvent
+style format string and a variable list of arguments.
+The following functions allow such manipulations.
+.Pp
+.nr nS 1
+.Ft void
+.Fn AG_EventInit "AG_Event *ev"
+.Pp
+.Ft void
+.Fn AG_EventArgs "AG_Event *ev" "const char *fmt" "..."
+.Pp
+.Ft void
+.Fn AG_EventPushPointer "AG_Event *ev" "const char *key" "void *val"
+.Pp
+.Ft void
+.Fn AG_EventPushString "AG_Event *ev" "const char *key" "char *val"
+.Pp
+.Ft void
+.Fn AG_EventPushInt "AG_Event *ev" "const char *key" "int val"
+.Pp
+.Ft void
+.Fn AG_EventPushUint "AG_Event *ev" "const char *key" "Uint val"
+.Pp
+.Ft void
+.Fn AG_EventPushLong "AG_Event *ev" "const char *key" "long val"
+.Pp
+.Ft void
+.Fn AG_EventPushULong "AG_Event *ev" "const char *key" "Ulong val"
+.Pp
+.Ft void
+.Fn AG_EventPushFloat "AG_Event *ev" "const char *key" "float val"
+.Pp
+.Ft void
+.Fn AG_EventPushDouble "AG_Event *ev" "const char *key" "douvle val"
+.Pp
+.Ft void
+.Fn AG_EVENT_PUSH_ARG "va_list ap" "char formatChar" "AG_Event *ev"
+.Pp
+.Ft void
+.Fn AG_EventPopArgument "AG_Event *ev"
+.Pp
+.nr nS 0
+The
+.Fn AG_EventInit
+routine initializes an
+.Ft AG_Event
+structure with no arguments.
+.Pp
+.Fn AG_EventArgs
+initializes
+.Fa ev
+and also specifies a list of arguments (in the same format as
+.Fn AG_SetEvent ) .
+.Pp
+The
+.Fn AG_EventPush*
+functions append an argument to the end of the argument list for the specified
+.Nm
+structure.
+.Pp
+The
+.Fn AG_EVENT_PUSH_ARG
+macro also insert an argument, except that the type is obtained from
+.Fa formatChar ,
+assumed to be a character from an
+.Fn AG_SetEvent
+style format string, and the argument is retrieved using
+.Xr va_arg 3 .
+.Pp
+.Fn AG_EventPopArgument
+removes the last argument from the list.
+.Sh EVENT QUEUES
+Under some circumstances, it is useful to gather
+.Ft AG_Event
+objects into a simple queue.
+For example, a custom event loop routine (see
+.Xr AG_EventLoop 3 )
+or a low-level Agar driver (see
+.Xr AG_Driver 3 )
+may gather events from input devices and later process them.
+The
+.Ft AG_EventQ
+structure describes a queue of events:
+.Bd -literal
+typedef struct ag_event_queue {
+	Uint     nEvents;
+	AG_Event *events;
+} AG_EventQ;
+.Ed
+.Pp
+The following routines operate on the
+.Ft AG_EventQ
+structure:
+.Pp
+.nr nS 1
+.Ft void
+.Fn AG_InitEventQ "AG_EventQ *eq"
+.Pp
+.Ft void
+.Fn AG_FreeEventQ "AG_EventQ *eq"
+.Pp
+.Ft void
+.Fn AG_QueueEvent "AG_EventQ *eq" "const char *event_name" "const char *fmt" "..."
+.Pp
+.nr nS 0
+The
+.Fn AG_InitEventQ
+function initializes an
+.Ft AG_EventQ
+structure.
+.Fn AG_FreeEventQ
+releases all resources allocated under an event queue.
+.Pp
+.Fn AG_QueueEvent
+inserts an event in an event queue structure.
+The meaning of
+.Fa event_name
+as well as the syntax of
+.Fa fmt
+are identical to.
+.Fn AG_PostEvent .
+.Sh STRUCTURE DATA
+For the
+.Ft AG_Event
+structure:
+.Pp
+.Bl -tag -compact -width "AG_Variable *argv "
+.It Ft char * name
+String identifier for the event.
+.It Ft Uint flags
+See
+.Sx EVENT FLAGS
+section below.
+.It Ft int argc
+Argument count.
+.It Ft AG_Variable *argv
+Argument data (see
+.Xr AG_Variable 3 ) .
+.El
+.Sh EVENT FLAGS
+Acceptable
+.Va flags
+for the
+.Nm
+structure include:
+.Bl -tag -width "AG_EVENT_PROPAGATE "
+.It AG_EVENT_ASYNC
+Arrange for the event handler to execute inside a separate thread that will
+be automatically created (and managed by the receiver object).
+This flag is only available if Agar was compiled with the
+.Dv AG_THREADS
+option.
+.It AG_EVENT_PROPAGATE
+Automatically forward events of this type to all attached child objects.
+If
+.Dv AG_EVENT_ASYNC
+is also set, the event handlers of the child objects are executed concurrently.
+.El
+.Sh EXAMPLES
+The following code fragment demonstrates a typical
+.Nm
+usage in the Agar-GUI library.
+We bind an action to the button press event, which is called
+.Sq button-pushed .
+This event is documented in the
+.Xr AG_Button 3
+manual, and so are the arguments it appends to the list of arguments passed
+to the event handler (in this case, a single
+.Ft int ) .
+.Bd -literal -offset indent
+void
+SayHello(AG_Event *event)
+{
+	char *s = AG_STRING(1);    /* Given in AG_SetEvent() */
+	int new_state = AG_INT(2); /* Passed by 'button-pushed',
+	                              see AG_Button(3) */
+
+	AG_TextMsg(AG_MSG_INFO, "Hello, %s! (state = %d)",
+	    s, new_state);
+}
+
+AG_Button *btn = AG_ButtonNew(NULL, 0, "Say hello");
+AG_SetEvent(btn, "button-pushed", SayHello, "%s", "World");
+.Ed
+.Pp
+The
+.Ft AG_Button
+API provides a shorthand constructor routine,
+.Fn AG_ButtonNewFn ,
+which accepts the
+.Sq button-pushed
+event handler as argument:
+.Bd -literal -offset indent
+AG_ButtonNewFn(NULL, 0, "Say hello", SayHello, "%s", "World");
+.Ed
+.Pp
+The following code fragment is equivalent:
+.Bd -literal -offset indent
+AG_Button *btn = AG_ButtonNew(NULL, 0, "Say hello");
+AG_Event *event = AG_SetEvent(btn, "button-pushed", SayHello, NULL);
+AG_EventPushString(event, NULL, "World");
+.Ed
+.Pp
+The following code fragment invokes a handler routine artificially:
+.Bd -literal -offset indent
+void
+SayHello(AG_Event *event)
+{
+	char *foostring = AG_STRING(1);
+	int fooint = AG_INT(2);
+}
+
+AG_Event event;
+AG_EventArgs(&event, "%s,%d", "Foo string", 1234);
+SayHello(&event);
+.Ed
+.Sh SEE ALSO
+.Xr AG_EventLoop 3 ,
+.Xr AG_Intro 3 ,
+.Xr AG_Object 3 ,
+.Xr AG_Timer 3 ,
+.Xr AG_Variable 3
+.Sh HISTORY
+The
+.Nm
+mechanism first appeared in Agar 1.0.
+The
+.Xr AG_Variable 3
+structure was first used to represent event handler arguments in Agar 1.3.4.

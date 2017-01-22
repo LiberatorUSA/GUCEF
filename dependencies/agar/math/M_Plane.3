@@ -1,0 +1,120 @@
+.\"
+.\" Copyright (c) 2009-2011 Hypertriton, Inc. <http://hypertriton.com/>
+.\"
+.\" Redistribution and use in source and binary forms, with or without
+.\" modification, are permitted provided that the following conditions
+.\" are met:
+.\" 1. Redistributions of source code must retain the above copyright
+.\"    notice, this list of conditions and the following disclaimer.
+.\" 2. Redistributions in binary form must reproduce the above copyright
+.\"    notice, this list of conditions and the following disclaimer in the
+.\"    documentation and/or other materials provided with the distribution.
+.\" 
+.\" THIS SOFTWARE IS PROVIDED BY THE AUTHOR ``AS IS'' AND ANY EXPRESS OR
+.\" IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED
+.\" WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE
+.\" ARE DISCLAIMED. IN NO EVENT SHALL THE AUTHOR BE LIABLE FOR ANY DIRECT,
+.\" INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES
+.\" (INCLUDING BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR
+.\" SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION)
+.\" HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT,
+.\" STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING
+.\" IN ANY WAY OUT OF THE USE OF THIS SOFTWARE EVEN IF ADVISED OF THE
+.\" POSSIBILITY OF SUCH DAMAGE.
+.\"
+.Dd July 17, 2009
+.Dt M_PLANE 3
+.Os
+.ds vT Agar-Math API Reference
+.ds oS Agar 1.3.4
+.Sh NAME
+.Nm M_Line
+.Nd Agar-Math plane structure
+.Sh SYNOPSIS
+.Bd -literal
+#include <agar/math.h>
+.Ed
+.Sh DESCRIPTION
+The
+.Ft M_Plane
+structure describes a plane in R^3 (Ax+By+Cz+D=0):
+.Bd -literal
+typedef struct m_plane {
+	M_Vector3 n;		/* Normal vector */
+	M_Real d;		/* Distance to origin */
+} M_Plane;
+.Ed
+.Pp
+The plane satisfies the equation A(n.x) + B(n.y) + C(n.z) = d.
+.Sh INITIALIZATION
+.nr nS 1
+.Ft M_Plane
+.Fn M_PlaneFromPts "M_Vector3 p1" "M_Vector p2" "M_Vector p3"
+.Pp
+.Ft M_Plane
+.Fn M_PlaneFromParallel "M_Plane P" "M_Real d"
+.Pp
+.Ft M_Plane
+.Fn M_PlaneRead "AG_DataSource *ds"
+.Pp
+.Ft void
+.Fn M_PlaneWrite "AG_DataSource *ds" "M_Plane *P"
+.Pp
+.Ft M_Plane
+.Fn M_PLANE_INITIALIZER "M_Real a" "M_Real b" "M_Real c" "M_Real d"
+.Pp
+.nr nS 0
+The
+.Fn M_PlaneFromPts
+function returns a plane from three (non-colinear) points
+.Fa p1 ,
+.Fa p2
+and
+.Fa p3 .
+.Fn M_PlaneFromParallel
+returns the parallel plane at distance
+.Fa d
+from the specified plane
+.Fa P .
+.Pp
+The
+.Fn M_PlaneRead
+and
+.Fn M_PlaneWrite
+functions read or write a plane structure from/to an
+.Xr AG_DataSource 3 .
+.Pp
+The macro
+.Fn M_PLANE_INITIALIZER
+expands to a static initializer for a
+.Ft M_Plane
+from the coefficients of the plane equation
+.Fa a ,
+.Fa b ,
+.Fa c ,
+.Fa d .
+.Sh TESTS
+.nr nS 1
+.Ft M_Real
+.Fn M_PlaneVectorAngle "M_Plane P" "M_Vector3 v"
+.Pp
+.nr nS 0
+The
+.Fn M_PlaneVectorAngle
+function computes the angle between the plane and specified vector,
+in radians.
+.Sh SEE ALSO
+.Xr AG_DataSource 3 ,
+.Xr AG_Intro 3 ,
+.Xr M_Circle 3 ,
+.Xr M_Geometry 3 ,
+.Xr M_Plane 3 ,
+.Xr M_Polygon 3 ,
+.Xr M_Rectangle 3 ,
+.Xr M_Sphere 3 ,
+.Xr M_Triangle 3 ,
+.Xr M_Vector 3
+.Sh HISTORY
+The
+.Nm
+structure first appeared in Agar 1.3.4.

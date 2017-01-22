@@ -1,0 +1,760 @@
+.\" Copyright (c) 2006-2010 Hypertriton, Inc. <http://hypertriton.com/>
+.\" All rights reserved.
+.\"
+.\" Redistribution and use in source and binary forms, with or without
+.\" modification, are permitted provided that the following conditions
+.\" are met:
+.\" 1. Redistributions of source code must retain the above copyright
+.\"    notice, this list of conditions and the following disclaimer.
+.\" 2. Redistributions in binary form must reproduce the above copyright
+.\"    notice, this list of conditions and the following disclaimer in the
+.\"    documentation and/or other materials provided with the distribution.
+.\" 
+.\" THIS SOFTWARE IS PROVIDED BY THE AUTHOR ``AS IS'' AND ANY EXPRESS OR
+.\" IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED
+.\" WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE
+.\" ARE DISCLAIMED. IN NO EVENT SHALL THE AUTHOR BE LIABLE FOR ANY DIRECT,
+.\" INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES
+.\" (INCLUDING BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR
+.\" SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION)
+.\" HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT,
+.\" STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING
+.\" IN ANY WAY OUT OF THE USE OF THIS SOFTWARE EVEN IF ADVISED OF THE
+.\" POSSIBILITY OF SUCH DAMAGE.
+.\"
+.Dd June 26, 2006
+.Dt AG_TABLE 3
+.Os
+.ds vT Agar API Reference
+.ds oS Agar 1.0
+.Sh NAME
+.Nm AG_Table
+.Nd agar table display widget
+.Sh SYNOPSIS
+.Bd -literal
+#include <agar/core.h>
+#include <agar/gui.h>
+.Ed
+.Sh DESCRIPTION
+.\" IMAGE(http://libagar.org/widgets/AG_Table.png, "An AG_Table displaying numerical data")
+The
+.Nm
+widget displays a set of cells organized in one or more columns.
+Cells can be associated with text, numerical values, pointers to numerical
+values, or custom functions.
+.Nm
+is optimized for tables that must be rebuilt frequently.
+Individual cells, entire rows or entire columns can be selected indepedently.
+.Pp
+Note that another table display widget,
+.Xr AG_Treetbl 3 ,
+is also available.
+It stores row information in a tree structure and provides a very different
+interface from
+.Nm .
+.Sh INHERITANCE HIERARCHY
+.Xr AG_Object 3 ->
+.Xr AG_Widget 3 ->
+.Nm .
+.Sh INITIALIZATION
+.nr nS 1
+.Ft "AG_Table *"
+.Fn AG_TableNew "AG_Widget *parent" "Uint flags"
+.Pp
+.Ft "AG_Table *"
+.Fn AG_TableNewPolled "AG_Widget *parent" "Uint flags" "void (*event_fn)(AG_Event *)" "const char *event_args" "..."
+.Pp
+.Ft "void"
+.Fn AG_TableSetPollInterval "AG_Table *tbl" "Uint ms"
+.Pp
+.Ft "void"
+.Fn AG_TableSizeHint "AG_Table *tbl" "int width" "int nrows"
+.Pp
+.Ft "void"
+.Fn AG_TableSetColHeight "AG_Table *tbl" "int height"
+.Pp
+.Ft "void"
+.Fn AG_TableSetRowHeight "AG_Table *tbl" "int height"
+.Pp
+.Ft "void"
+.Fn AG_TableSetColMin "AG_Table *tbl" "int width"
+.Pp
+.Ft "void"
+.Fn AG_TableSetDefaultColWidth "AG_Table *tbl" "int width"
+.Pp
+.Ft "void"
+.Fn AG_TableSetSelectionMode "AG_Table *tbl" "enum ag_table_selmode mode"
+.Pp
+.Ft "void"
+.Fn AG_TableSetSelectionColor "AG_Table *tbl" "Uint8 r" "Uint8 g" "Uint8 b" "Uint8 a"
+.Pp
+.Ft "void"
+.Fn AG_TableSetSeparator "AG_Table *tbl" "const char *sep"
+.Pp
+.Ft "AG_MenuItem *"
+.Fn AG_TableSetPopup "AG_Table *tbl" "int row" "int col"
+.Pp
+.Ft "void"
+.Fn AG_TableSetRowClickFn "AG_Table *tbl" "AG_EventFn fn" "const char *fn_args" "..."
+.Pp
+.Ft "void"
+.Fn AG_TableSetColClickFn "AG_Table *tbl" "AG_EventFn fn" "const char *fn_args" "..."
+.Pp
+.Ft "void"
+.Fn AG_TableSetCellClickFn "AG_Table *tbl" "AG_EventFn fn" "const char *fn_args" "..."
+.Pp
+.Ft "void"
+.Fn AG_TableSetRowDblClickFn "AG_Table *tbl" "AG_EventFn fn" "const char *fn_args" "..."
+.Pp
+.Ft "void"
+.Fn AG_TableSetColDblClickFn "AG_Table *tbl" "AG_EventFn fn" "const char *fn_args" "..."
+.Pp
+.Ft "void"
+.Fn AG_TableSetCellDblClickFn "AG_Table *tbl" "AG_EventFn fn" "const char *fn_args" "..."
+.Pp
+.Ft "void"
+.Fn AG_TableSetColumnAction "AG_Table *tbl" "Uint action"
+.Pp
+.nr nS 0
+The
+.Fn AG_TableNew
+function allocates, initializes and attaches a new
+.Nm
+widget.
+.Pp
+The
+.Fn AG_TableNewPolled
+variant sets the polling flag and configures the
+.Sq table-poll
+event.
+.Fa event_fn
+is a pointer to the event-handler function responsible for populating
+the table (see
+.Fn AG_TableBegin
+and
+.Fn AG_TableEnd
+for details).
+.Fa event_args
+and the following arguments are optional
+.Xr AG_Event 3
+style parameters that will be passed on to
+.Fa event_fn .
+.Pp
+Acceptable
+.Fa flags
+include:
+.Bl -tag -width "AG_TABLE_HIGHLIGHT_COLS "
+.It AG_TABLE_MULTI
+Allow the user to select multiple items while holding
+.Dv CTRL
+or
+.Dv SHIFT .
+.It AG_TABLE_MULTITOGGLE
+Allow the user to select multiple items without holding
+.Dv CTRL
+or
+.Dv SHIFT .
+.It AG_TABLE_POLL
+Table contents are updated dynamically by the
+.Sq table-poll
+event handler (implied by
+.Fn AG_TableNewPolled ) .
+.It AG_TABLE_SCROLL_TO_SEL
+If the selection is not visible, scroll towards it.
+This flag is writeable, but is automatically set or cleared by keyboard events.
+.It AG_TABLE_HIGHLIGHT_COLS
+Highlight the currently selected column(s) using transparency.
+.It AG_TABLE_HFILL
+Expand horizontally in parent (equivalent to invoking
+.Xr AG_ExpandHoriz 3 ) .
+.It AG_TABLE_VFILL
+Expand vertically in parent (equivalent to invoking
+.Xr AG_ExpandVert 3 ) .
+.It AG_TABLE_EXPAND
+Shorthand for
+.Dv AG_TABLE_HFILL|AG_TABLE_VFILL .
+This is recommended as an alternative to calling
+.Fn AG_TableSizeHint .
+.It AG_TABLE_NOAUTOSORT
+Disable automatic sorting (see
+.Fn AG_TableSort ) .
+.El
+.Pp
+The
+.Fn AG_TableSetPollInterval
+function specifies an alternate update interval for polled tables in
+milliseconds (default is 250ms).
+Polling may be paused by calling
+.Fn AG_TableSetPollInterval
+with an argument of 0.
+.Pp
+The
+.Fn AG_TableSizeHint
+function requests an initial sizing, where
+.Fa width
+is the width in pixels and
+.Fa nrows
+is the number of rows to display.
+.Pp
+.Fn AG_TableSetColHeight
+sets the size of column headers in pixels.
+.Fn AG_TableSetRowHeight
+sets the size of rows in pixels.
+In both cases, the default is dependent on the height of the default font.
+.Pp
+.Fn AG_TableSetColMin
+sets the minimum allowed column width, in pixels.
+The default is a small value intended to prevent the user from resizing
+columns to zero size.
+If existing columns are smaller than the specified value,
+.Fn AG_TableSetColMin
+will resize them.
+.Pp
+.Fn AG_TableSetDefaultColWidth
+specifies a "default" width in pixels, to use during initial size requisition
+for columns using FILL or a size specification in "%".
+.Pp
+.Fn AG_TableSetSelectionMode
+defines the effect of cursor selections on the table.
+Possible values for
+.Fa mode
+are:
+.Bd -literal
+enum ag_table_selmode {
+	AG_TABLE_SEL_ROWS,	/* Select entire rows */
+	AG_TABLE_SEL_CELLS,	/* Select individual cells */
+	AG_TABLE_SEL_COLS	/* Select entire columns */
+};
+.Ed
+.Pp
+.Fn AG_TableSetSelectionColor
+sets the color of the rectangle that will be blended onto selected cells, rows
+or columns in order to indicate selection.
+.Pp
+.Fn AG_TableSetSeparator
+changes the set of accepted field-separator characters in
+.Fn AG_TableAddRow
+(default is ":").
+.Pp
+The
+.Fn AG_TableSetPopup
+function creates a contextual
+.Xr AG_Menu 3
+item associated with a row, column or cell.
+If
+.Fa col
+is a valid index and
+.Fa row
+is -1, the menu is shown when clicking on the header of the given column.
+If
+.Fa col
+is -1 and
+.Fa row
+is a valid index, the menu is shown when clicking on any cell of the given row.
+If
+.Fa col
+and
+.Fa row
+are both valid indices, the menu is shown when clicking on the given cell.
+If both indices are -1, the menu is shown when clicking on any cell.
+If a contextual menu already exists for the specified indices,
+.Fn AG_TableSetPopup
+returns a pointer to the existing menu item.
+.Pp
+The
+.Fn AG_TableSetRowClickFn ,
+.Fn AG_TableSetColClickFn
+and
+.Fn AG_TableSetCellClickFn
+functions register a callback routine to invoke upon single-click on a
+row, column or cell, respectively, depending on the current selection mode.
+The callback routine for
+.Fn AG_TableSetRowClickFn
+is passed the row index as an
+.Ft int
+argument.
+.Fn AG_TableSetColClickFn
+is passed the column index and
+.Fn AG_TableSetCellClickFn
+is passed the row and column indices in order.
+.Pp
+The
+.Fn AG_TableSetRowDblClickFn ,
+.Fn AG_TableSetColDblClickFn ,
+and
+.Fn AG_TableSetCellDblClickFn
+variants register callbacks to invoke on double-click.
+If both single and double-click callbacks are defined, only the single-click
+callback is used.
+.Pp
+The
+.Fn AG_TableSetColumnAction
+specifies the action(s) to take whenever a column header is pressed.
+Acceptable arguments to
+.Fa flags
+include:
+.Bl -tag -width "AG_TABLE_SELECT "
+.It AG_TABLE_SELECT
+Select the entire column.
+.It AG_TABLE_SORT
+Change the sort direction of the column.
+.El
+.Sh TABLE FUNCTIONS
+.nr nS 1
+.Ft "void"
+.Fn AG_TableBegin "AG_Table *tbl"
+.Pp
+.Ft "void"
+.Fn AG_TableEnd "AG_Table *tbl"
+.Pp
+.Ft "void"
+.Fn AG_TableSort "AG_Table *tbl"
+.Pp
+.nr nS 0
+Tables created with
+.Fn AG_TableNewPolled
+are periodically repopulated, using a callback routine.
+In this callback routine, calls to
+.Fn AG_TableAddRow
+should be enclosed between
+.Fn AG_TableBegin
+and
+.Fn AG_TableEnd .
+It is not allowed to add or remove columns from the callback routine.
+The
+.Fn AG_TableBegin
+function, notably, saves current selection information (to keep selections
+consistent across table re-population), and clears all rows.
+.Pp
+This method of repopulating a table using a function nicely separates the
+GUI from the underlying application.
+It is also more efficient than it seems, since
+.Fn AG_TableBegin
+will re-use the resources (e.g., already rendered text surfaces) of
+unchanged cells.
+.Pp
+The
+.Fn AG_TableSort
+function sorts the rows of the table.
+This function is useful in combination with the
+.Dv AG_TABLE_NOAUTOSORT
+option.
+.Sh COLUMN FUNCTIONS
+.nr nS 1
+.Ft "int"
+.Fn AG_TableAddCol "AG_Table *tbl" "const char *name" "const char *size_spec" "int (*sortFn)(const void *, const void *)"
+.Pp
+.Ft "void"
+.Fn AG_TableSelectCol "AG_Table *tbl" "int col"
+.Pp
+.Ft "void"
+.Fn AG_TableDeselectCol "AG_Table *tbl" "int col"
+.Pp
+.Ft "void"
+.Fn AG_TableSelectAllCols "AG_Table *tbl"
+.Pp
+.Ft "void"
+.Fn AG_TableDeselectAllCols "AG_Table *tbl"
+.Pp
+.Ft "int"
+.Fn AG_TableColSelected "AG_Table *tbl" "int col"
+.Pp
+.nr nS 0
+The
+.Fn AG_TableAddCol
+function inserts a new column into the table, returning the number of the
+new column if successful, or -1 if an error occured.
+.Fa name
+specifies the text to display in the column header.
+.Fa size_spec
+is an optional size specification (see
+.Xr AG_SizeSpec 3 )
+used in initial sizing of the column.
+.Fa sortFn ,
+if not NULL, is the compare function to use for items of this column.
+It is passed pointers to two
+.Ft AG_TableCell
+structures to compare.
+.Pp
+The
+.Fn AG_TableSelectCol
+and
+.Fn AG_TableDeselectCol
+functions control the selection flag on the given column.
+.Fn AG_TableSelectAllCols
+and
+.Fn AG_TableDeselectAllCols
+set the selection flag on all columns of the table.
+.Fn AG_TableColSelected
+returns 1 if the given column is selected, 0 otherwise.
+.Pp
+Note that the of the column selection flags are independent from the
+selection flag of individual cells; their meaning is application-specific.
+.Sh ROW FUNCTIONS
+.nr nS 1
+.Ft "int"
+.Fn AG_TableAddRow "AG_Table *tbl" "const char *fmt" "..."
+.Pp
+.Ft "void"
+.Fn AG_TableSelectRow "AG_Table *tbl" "int row"
+.Pp
+.Ft "void"
+.Fn AG_TableDeselectRow "AG_Table *tbl" "int row"
+.Pp
+.Ft "void"
+.Fn AG_TableSelectAllRows "AG_Table *tbl"
+.Pp
+.Ft "void"
+.Fn AG_TableDeselectAllRows "AG_Table *tbl"
+.Pp
+.Ft "void"
+.Fn AG_TableRowSelected "AG_Table *tbl" "int row"
+.Pp
+.nr nS 0
+The
+.Fn AG_TableAddRow
+function inserts a new row into the table and returns the new row number,
+or -1 if a failure occured.
+The
+.Fa fmt
+argument describes the individual fields (or cells) of this row.
+By default, the fields are comma-separated (the separator can be changed
+using
+.Fn AG_TableSetSeparator ) .
+Note that it is possible to mix fields of differing types into a same column
+as long as the sorting function of that column can handle the combinations.
+.Pp
+Acceptable specifiers include:
+.Bl -tag -width "%[s8], %[s16], %[s32] "
+.It %s
+Text string
+.It %i, %d
+Signed integer
+.It %li, %ld
+Long integer
+.It %lli, %lld
+Long long integer
+.It %u
+Unsigned integer
+.It %lu
+Unsigned long integer
+.It %llu
+Unsigned long long integer
+.It %[s8], %[s16], %[s32]
+Signed 8-bit, 16-bit or 32-bit value
+.It %[u8], %[u16], %[u32]
+Unsigned 8-bit, 16-bit or 32-bit value
+.It %f, %g
+Floating-point value (precision modifiers like %.03f are accepted)
+.It %p
+User pointer (usually stored in hidden columns)
+.It %[Ft]
+User-specified function of the form:
+.Pp
+.Ft "void"
+.Fn MyTextFn "void *tbl" "char *buf" "size_t len"
+.Pp
+The text copied into
+.Fa buf
+(which is
+.Fa len
+bytes in size) will be displayed in the cell.
+.It %[Fs]
+User-specified function of the form:
+.Pp
+.Ft "AG_Surface *"
+.Fn MySurfFn "void *tbl" "int x" "int y"
+.Pp
+The returned
+.Xr AG_Surface 3
+will be displayed in the cell.
+Note that this surface will be automatically freed once the
+widget is destroyed (similarly to
+.Xr AG_WidgetMapSurface 3 ,
+see %[FS] variant below).
+The
+.Fa x
+and
+.Fa y
+parameters can be ignored.
+.It %[FS]
+Same as "%[Fs]", except that Agar will never try to free
+the returned surface (similarly to
+.Xr AG_WidgetMapSurfaceNODUP 3 ) .
+.It %[W]
+A widget to insert into the table.
+The widget must have the
+.Dv AG_WIDGET_TABLE_EMBEDDABLE
+flag set or the operation will fail.
+Note that for efficiency reasons,
+.Nm
+is not treated like a standard widget container, so widgets that are
+inserted into the table in this way should not be attached to any parent
+(e.g., the
+.Fa parent
+argument of standard constructor routines should be NULL).
+Embedded widgets are automatically freed when cells are deleted.
+.El
+.Pp
+The functions
+.Fn AG_TableSelectRow
+and
+.Fn AG_TableDeselectRow
+set the selection flag on all cells of the given row.
+.Fn AG_TableSelectAllRows
+and
+.Fn AG_TableDeselectAllRows
+set the selection on all cells of the table.
+.Fn AG_TableRowSelected
+returns 1 if the given row is selected, 0 otherwise.
+.Sh CELL FUNCTIONS
+.nr nS 1
+.Ft "AG_TableCell *"
+.Fn AG_TableGetCell "AG_Table *tbl" "int row" "int col"
+.Pp
+.Ft "void"
+.Fn AG_TableSelectCell "AG_Table *tbl" "int row" "int col"
+.Pp
+.Ft "void"
+.Fn AG_TableDeselectCell "AG_Table *tbl" "int row" "int col"
+.Pp
+.Ft "void"
+.Fn AG_TableCellSelected "AG_Table *tbl" "int row" "int col"
+.Pp
+.Ft "void"
+.Fn AG_TableCompareCells "const AG_TableCell *c1" "const AG_TableCell *c2"
+.Pp
+.Ft "void"
+.Fn AG_TablePrintCell "AG_Table *tbl" "const AG_TableCell *c" "char *dst" "size_t dstLen"
+.Pp
+.nr nS 0
+The
+.Fn AG_TableGetCell
+routine returns a pointer to the table cell currently at the specified
+row and column position.
+.Pp
+.Fn AG_TableSelectCell ,
+.Fn AG_TableDeselectCell
+and
+.Fn AG_TableCellSelected
+control and query the selection flag on an individual cell located at the
+given row and column.
+.Pp
+The
+.Fn AG_TableCompareCells
+function compares cells
+.Fa c1
+and
+.Fa c2 .
+It returns 0 if the contents of the two cells is identical, otherwise the
+returned value depends on the type.
+If the cells have different types, it returns 1.
+If they are text-based, the return value of
+.Xr strcmp 3
+is returned.
+If they are numerical, the difference is returned.
+For pointer and surface cells, the return value is 1 if they differ.
+.Pp
+The
+.Fn AG_TablePrintCell
+function writes a formatted string representation of the current cell value,
+to the fixed-size buffer
+.Fa dst .
+.Sh MISCELLANEOUS FUNCTIONS
+.nr nS 1
+.Ft "int"
+.Fn AG_TableSaveASCII "AG_Table *tbl" "FILE *f" "char separator"
+.Pp
+.nr nS 0
+.Fn AG_TableSaveASCII
+writes the formatted contents of the table into an ASCII file
+.Fa f .
+Each row is separated by a newline, and cells are separated by the character
+given by the
+.Fa separator
+argument.
+The function returns 0 on success, -1 on failure.
+.Sh EVENTS
+The
+.Nm
+widget generates the following events:
+.Pp
+.Bl -tag -compact -width 2n
+.It Fn row-selected "int index"
+The row at specified
+.Fa index
+was selected.
+.El
+.Sh STRUCTURE DATA
+For the
+.Ft AG_Table
+object:
+.Pp
+.Bl -tag -compact -width "AG_TableCell *cells "
+.It Ft AG_TableCell *cells
+Cell data in sorted rows (read-only).
+.It Ft AG_TableCol *cols
+Column data (read-only);
+.It Ft int n
+Number of columns (read-only).
+.It Ft int m
+Number of rows (read-only).
+.El
+.Pp
+For the
+.Ft AG_TableCell
+structure:
+.Pp
+.Bl -tag -compact -width "AG_Widget *widget "
+.It enum ag_table_cell_type type
+Cell data type (see below).
+.It Uint id
+Optional user-specified ID or 0.
+.It Uint flags
+Option flags.
+If
+.Dv AG_TABLE_CELL_NOCOMPARE
+is set, this cell will be ignored when comparing cells of a polled table
+against the backing store in order to restore selection state.
+.It char fmt[]
+Format string (read-only; see
+.Fn AG_TableAddRow ) .
+.It AG_Widget *widget
+Embedded widget for
+.Dv AG_CELL_WIDGET
+type cells (read-only).
+.It int selected
+Selection flag (1 = selected, 0 = not selected).
+.It AG_Table *tbl
+Back pointer to
+.Nm
+widget.
+.El
+.Pp
+For the
+.Ft AG_TableCol
+structure:
+.Pp
+.Bl -tag -compact -width "char name[] "
+.It char name[]
+Column header text string (read-only).
+.It int selected
+Column is selected (assuming column selection mode).
+.It int w
+Column width in pixels (read-only).
+.It int x
+Current column position (local widget coordinates).
+.El
+.Sh CELL DATA TYPES
+The cell data type is determined by
+.Ft enum ag_table_cell_type :
+.Bl -tag -compact -width "AG_CELL_FN_SU_NODUP "
+.It AG_CELL_NULL
+Empty cell.
+.It AG_CELL_STRING
+C string.
+.It AG_CELL_INT
+Integer value.
+.It AG_CELL_UINT
+Unsigned integer value.
+.It AG_CELL_LONG
+Native
+.Ft long
+integer.
+.It AG_CELL_LONG
+Native
+.Ft unsigned long
+integer.
+.It AG_CELL_FLOAT
+Floating point number (single-precision).
+.It AG_CELL_DOUBLE
+Floating point number (double-precision).
+.It AG_CELL_PSTRING
+Pointer to a C string.
+.It AG_CELL_PINT
+Pointer to an integer.
+.It AG_CELL_PUINT
+Pointer to an unsigned integer.
+.It AG_CELL_PLONG
+Pointer to a
+.Ft long
+integer.
+.It AG_CELL_PULONG
+Pointer to a
+.Ft unsigned long
+integer.
+.It AG_CELL_INT64
+64-bit integer (if
+.Dv HAVE_64BIT
+only).
+.It AG_CELL_PUINT8
+.It AG_CELL_PSINT8
+.It AG_CELL_PUINT16
+.It AG_CELL_PSINT16
+.It AG_CELL_PUINT32
+.It AG_CELL_PSINT32
+.It AG_CELL_PUINT64
+.It AG_CELL_PSINT64
+Pointer to an integer in specified format.
+.It AG_CELL_PFLOAT
+.It AG_CELL_PDOUBLE
+Pointer to a floating-point number.
+.It AG_CELL_POINTER
+Generic pointer.
+.It AG_CELL_FN_SU
+Function returning a surface (see %[Fs]).
+.It AG_CELL_FN_SU_NODUP
+Function returning a surface that should not be freed (see %[FS]).
+.It AG_CELL_FN_TXT
+Function returning a text string.
+.It AG_CELL_WIDGET
+Embedded widget (see %[W]).
+.El
+.Sh EXAMPLES
+The following code fragment creates a table and immediately populates it:
+.Bd -literal -offset indent
+AG_Table *tbl;
+
+tbl = AG_TableNew(win, AG_TABLE_EXPAND);
+AG_TableAddCol(tbl, "Column 1", "<ExpectedSize>", NULL);
+AG_TableAddCol(tbl, "Column 2", NULL, NULL);
+AG_TableAddRow(tbl, "%s:%i", "Item1", 123);
+AG_TableAddRow(tbl, "%s:%i", "Item2", 456);
+AG_TableAddRow(tbl, "%s:%i", "Item3", 789);
+.Ed
+.Pp
+The following code fragment creates a table and arranges for periodical
+update of its contents from an
+.Fn UpdateMyTable
+function:
+.Bd -literal -offset indent
+
+void
+UpdateMyTable(AG_Event *event)
+{
+	AG_Table *tbl = AG_SELF();
+
+	AG_TableBegin(tbl);
+	AG_TableAddRow(tbl, "%s:%d", "foo", 1234);
+	AG_TableEnd(tbl);
+}
+
+.Li ...
+
+AG_Table *tbl;
+
+tbl = AG_TableNewPolled(win, AG_TABLE_EXPAND, UpdateMyTable, NULL);
+.Ed
+.Pp
+For more example usages, see
+.Pa tests/table.c
+in the Agar source distribution.
+.Sh SEE ALSO
+.Xr AG_Intro 3 ,
+.Xr AG_Surface 3 ,
+.Xr AG_Widget 3 ,
+.Xr AG_Window 3
+.Sh HISTORY
+The
+.Nm
+widget first appeared in Agar 1.0.

@@ -1,0 +1,59 @@
+20080822 version: agar-gui-ada 0.1
+20080827 code: added window API.
+20080827 code: moved init_video to agar.gui from agar.gui.view.
+20080827 code: better handling of format strings in agar.gui.text.
+20080827 code: better handling of format strings in agar.gui.window.
+20080828 code: added event_loop.
+20080828 code: removed C prototypes from agar.gui.window.
+20080828 code: removed C prototypes for all current API functions.
+20080829 code: added agar.gui.widget.box.
+20080829 code: added agar.gui.widget.button.
+20080831 code: added agar.gui.widget.checkbox.
+20080901 code: added agar.gui.widget.combo
+20080901 code: added agar.gui.widget.console
+20080901 code: added agar.gui.widget.editable
+20080901 code: added agar.gui.widget.file_dialog
+20080901 code: added agar.gui.widget.pane
+20080901 code: added agar.gui.widget.textbox
+20080901 code: added agar.gui.widget.fixed
+20080901 code: added agar.gui.widget.graph
+20080903 code: added all remaining API sections (types only).
+20080905 code: fixed graph structures.
+20080905 code: use subpackages instead of prefixes for C-typed functions.
+20080905 code: move private data into private record types.
+20080905 code: added agar.gui.widget.combo API functions.
+20080905 code: added agar.gui.widget.console API functions.
+20080906 code: added agar.gui.widget.editable API functions.
+20080906 code: added agar.gui.widget.file_dialog API functions.
+20080909 code: added agar.gui.widget.file_dialog.add_filetype.
+20080909 code: agar.gui.widget.fixed is now a generic package.
+20080910 code: added agar.gui.widget.fixed API functions.
+20080910 code: added helloworld1 demo.
+20080910 code: added agar.gui.widget.fixed_plotter API functions.
+20080913 code: added agar.gui.widget.graph API functions.
+20080913 code: added agar.gui.widget.hbox API functions.
+20080913 code: added agar.gui.widget.vbox API functions.
+20080914 code: added agar.gui.widget.label API functions.
+20080914 code: added agar.gui.widget.hsvpal API functions.
+20080914 code: added agar.gui.widget.mpane API functions.
+20080914 code: added agar.gui.widget.notebook API functions.
+20080914 code: added agar.gui.widget.menu API functions.
+20080916 code: added agar.gui.widget.numerical API functions.
+20080917 code: added agar.gui.widget.pixmap API functions.
+20080917 code: added agar.gui.widget.pane API functions.
+20080917 code: added agar.gui.widget.progress_bar API functions.
+20080917 code: added agar.gui.widget.radio API functions.
+20080917 code: added agar.gui.widget.scrollbar API functions.
+20080917 code: added agar.gui.widget.separator API functions.
+20080917 code: added agar.gui.widget.slider API functions.
+20080918 code: use stronger typing for flags_t in interfaces (not subtypes).
+20080918 code: added agar.gui.widget.socket API functions.
+20080918 code: added agar.gui.widget.textbox API functions.
+20080919 code: added agar.gui.widget.table API functions.
+20080919 code: added agar.gui.widget.tlist API functions.
+20080919 code: added agar.gui.widget.toolbar API functions.
+20080919 code: added agar.gui.widget.ucombo API functions.
+20080921 code: restructure. some types moved into agar.gui.types and then
+               imported and renamed with subtypes into original packages.
+20080927 code: update code for core type changes and window minsize data.
+20081002 code: updated sysdeps.
