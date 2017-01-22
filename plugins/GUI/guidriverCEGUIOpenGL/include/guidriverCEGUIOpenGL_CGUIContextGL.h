@@ -26,6 +26,8 @@
 //                                                                         //
 //-------------------------------------------------------------------------*/
 
+#include <time.h>
+
 #ifndef GUCEF_CORE_COBSERVINGNOTIFIER_H
 #include "CObservingNotifier.h"
 #define GUCEF_CORE_COBSERVINGNOTIFIER_H
@@ -94,6 +96,7 @@ class GUCEF_GUIDRIVERCEGUIGL_EXPORT_CPP CGUIContextGL : public GUIDRIVERCEGUI::C
     private:
 
     GUI::TWindowContextPtr m_windowContext;
+    clock_t m_lastTimeInjection;
 };
 
 /*-------------------------------------------------------------------------//

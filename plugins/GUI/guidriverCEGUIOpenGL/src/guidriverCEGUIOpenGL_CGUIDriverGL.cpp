@@ -65,6 +65,11 @@
 #define _CEGUIOpenGLRenderer_h_
 #endif /* _CEGUIOpenGLRenderer_h_ */
 
+#ifndef _CEGUIOpenGL3Renderer_h_
+#include "CEGUI/RendererModules/OpenGL/GL3Renderer.h"
+#define _CEGUIOpenGL3Renderer_h_
+#endif /* _CEGUIOpenGL3Renderer_h_ */
+
 /*-------------------------------------------------------------------------//
 //                                                                         //
 //      NAMESPACE                                                          //
@@ -110,17 +115,15 @@ CGUIDriverGL::GetCEGui( void )
 
 /*-------------------------------------------------------------------------*/
 
-GUI::TGuiContextPtr
-CGUIDriverGL::CreateGUIContext( GUI::TWindowContextPtr windowContext )
-{GUCEF_TRACE;
-
-    // Lazy initialize if needed
+bool
+CGUIDriverGL::Init( GUI::TWindowContextPtr windowContext )
+{
     if ( !m_ceGuiInitialized )
     {
         try
         {
             CEGUI::Sizef displaySize( (float) windowContext->GetWidth(), (float) windowContext->GetHeight() );
-            m_guiRenderer = &CEGUI::OpenGLRenderer::create( displaySize, CEGUI::OpenGLRenderer::TTT_AUTO );
+            m_guiRenderer = &CEGUI::OpenGL3Renderer::create( displaySize );//, CEGUI::OpenGLRenderer::TTT_AUTO );
             m_guiSystem = &CEGUI::System::create( *m_guiRenderer, &m_vfsResourceProvider, &m_xmlParserAdapter, m_imageCodecAdapter );
 
             // setup default group for validation schemas
@@ -132,13 +135,25 @@ CGUIDriverGL::CreateGUIContext( GUI::TWindowContextPtr windowContext )
             CEGUI::FontManager::getSingleton().createAll( m_defaultFont, CEGUI::Font::getDefaultResourceGroup() );
         
             // Load the scheme
+            try
+            {
+                CEGUI::SchemeManager::getSingleton().createFromFile( "Generic.scheme" );
+            }
+            catch ( CEGUI::Exception& e )
+            {
+                CORE::CString info = e.getMessage() + " - at - " + e.getFileName() + ":" + e.getFunctionName() + ":" + CORE::UInt32ToString( e.getLine() ).STL_String();
+                GUCEF_EXCEPTION_LOG( CORE::LOGLEVEL_IMPORTANT, "Unhandled exception during CEGUI initialization: " + info );
+            }
             CEGUI::SchemeManager::getSingleton().createFromFile( m_schemeToUse );
         
             // Set the defaults
             CEGUI::System::getSingleton().getDefaultGUIContext().setDefaultFont( m_defaultFont );
             CEGUI::System::getSingleton().getDefaultGUIContext().getMouseCursor().setDefaultImage( m_defaultCursorImage );
             CEGUI::Window* rootWindow = CEGUI::WindowManager::getSingleton().createWindow( "DefaultWindow", "root" );
-            CEGUI::System::getSingleton().getDefaultGUIContext().setRootWindow( rootWindow );                                 
+            CEGUI::System::getSingleton().getDefaultGUIContext().setRootWindow( rootWindow );
+            
+            // clearing this queue actually makes sure it's created(!)
+            CEGUI::System::getSingleton().getDefaultGUIContext().clearGeometry( CEGUI::RQ_OVERLAY );                                             
         
             m_ceGuiInitialized = true;
         }
@@ -148,10 +163,23 @@ CGUIDriverGL::CreateGUIContext( GUI::TWindowContextPtr windowContext )
             GUCEF_EXCEPTION_LOG( CORE::LOGLEVEL_IMPORTANT, "Unhandled exception during CEGUI initialization: " + info );
 
             m_ceGuiInitialized = false;
-            return GUI::TGuiContextPtr();
         }
     }
-    
+    return m_ceGuiInitialized;
+}
+
+/*-------------------------------------------------------------------------*/
+
+GUI::TGuiContextPtr
+CGUIDriverGL::CreateGUIContext( GUI::TWindowContextPtr windowContext )
+{GUCEF_TRACE;
+
+    // Lazy initialize if needed
+    if ( !Init( windowContext ) )
+    {
+        return GUI::TGuiContextPtr();
+    }
+
     // Create an input context using the default driver and set it for this GUI context so that we can interact
     // with the GUI based on input events. Note that in order to correctly tie in the input system we have to pass the
     // correct parameters for the O/S
@@ -166,6 +194,7 @@ CGUIDriverGL::CreateGUIContext( GUI::TWindowContextPtr windowContext )
     }
     
     CEGUI::GUIContext* ceGuiContext = &m_guiSystem->createGUIContext( *renderTarget );
+    ceGuiContext->setRootWindow( CEGUI::System::getSingleton().getDefaultGUIContext().getRootWindow() );
     GUI::TGuiContextPtr guiContextPtr = new CGUIContextGL( *this         ,
                                                            windowContext ,
                                                            inputContext  ,

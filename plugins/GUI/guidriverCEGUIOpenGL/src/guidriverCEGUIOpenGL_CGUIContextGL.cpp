@@ -52,7 +52,8 @@ CGUIContextGL::CGUIContextGL( CGUIDriverGL& guiDriver                   ,
     : GUIDRIVERCEGUI::CGUIContext( guiDriver    ,
                                    inputContext ,
                                    ceGuiContext )  ,
-      m_windowContext( windowContext ) 
+      m_windowContext( windowContext ),
+      m_lastTimeInjection( clock() ) 
 {GUCEF_TRACE;
 
     SubscribeTo( m_windowContext.GetPointer() );
@@ -71,7 +72,7 @@ const CORE::CString&
 CGUIContextGL::GetClassTypeName( void ) const
 {GUCEF_TRACE;
 
-    static const CORE::CString classTypeName = "GUCEF::MYGUIGL::CGUIContextGL";
+    static const CORE::CString classTypeName = "GUCEF::CEGUIGL::CGUIContextGL";
     return classTypeName;
 }
 
@@ -83,20 +84,44 @@ CGUIContextGL::OnNotify( CORE::CNotifier* notifier   ,
                          CORE::CICloneable* evenData )
 {GUCEF_TRACE;
 
-  //  if ( eventID == GUI::CWindowContext::WindowContextRedrawEvent   ||
-  //       eventID == GUI::CWindowContext::WindowContextActivateEvent  )
-  //  {
-  //      m_renderManager->drawOneFrame();
-  //  }
-  //  else
-  //  if ( eventID == GUI::CWindowContext::WindowContextSizeEvent )
-  //  {        
-  //      GUCEF_DEBUG_LOG( CORE::LOGLEVEL_NORMAL, "GUIContext: Resizing MyGUI GUI context to " + CORE::UInt32ToString( m_windowContext->GetWidth() ) + "x" +
-  //                                                                                             CORE::UInt32ToString( m_windowContext->GetHeight() ) );
+    if ( eventID == GUI::CWindowContext::WindowContextRedrawEvent   ||
+         eventID == GUI::CWindowContext::WindowContextActivateEvent  )
+    {
+        CEGUI::System* guiSystem = m_driver->GetCEGui();
+        if ( NULL != guiSystem && NULL != m_ceGuiContext ) 
+        {       
+            clock_t now = clock();
+            float elapsedGuiTime = ( now - m_lastTimeInjection ) * 0.001f;        
+            guiSystem->injectTimePulse( elapsedGuiTime );
+            m_ceGuiContext->injectTimePulse( elapsedGuiTime );
+            m_lastTimeInjection = now;
+        
+            CEGUI::Renderer* guiRenderer = guiSystem->getRenderer();
+            guiRenderer->beginRendering();
+        
+            m_ceGuiContext->markAsDirty();
+            m_ceGuiContext->draw();
 
-		//m_renderManager->setViewSize( m_windowContext->GetWidth(), m_windowContext->GetHeight() );
-  //      m_renderManager->drawOneFrame();
-  //  }
+            guiRenderer->endRendering();
+        }
+    }
+    else
+    if ( eventID == GUI::CWindowContext::WindowContextSizeEvent )
+    {        
+        GUCEF_SYSTEM_LOG( CORE::LOGLEVEL_NORMAL, "GUIContext: Resizing CEGUI GUI context to " + CORE::UInt32ToString( m_windowContext->GetWidth() ) + "x" +
+                                                                                                CORE::UInt32ToString( m_windowContext->GetHeight() ) );
+
+		CEGUI::System::getSingleton().notifyDisplaySizeChanged( CEGUI::Sizef( (float) m_windowContext->GetWidth(), (float) m_windowContext->GetHeight() ) );
+        //m_ceGuiContext->getRenderTarget().setArea( m_windowContext->GetWidth(), m_windowContext->GetHeight() );
+
+        //CEGUI::Renderer* guiRenderer = m_driver->GetCEGui()->getRenderer();
+        //guiRenderer->beginRendering();
+
+        //m_ceGuiContext->markAsDirty();
+        //m_ceGuiContext->draw();
+
+        //guiRenderer->endRendering();
+    }
 }
 
 /*-------------------------------------------------------------------------//
@@ -105,7 +130,7 @@ CGUIContextGL::OnNotify( CORE::CNotifier* notifier   ,
 //                                                                         //
 //-------------------------------------------------------------------------*/
 
-}; /* namespace MYGUI */
-}; /* namespace GUCE */
+}; /* namespace GUIDRIVERCEGUIGL */
+}; /* namespace GUCEF */
 
 /*-------------------------------------------------------------------------*/

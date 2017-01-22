@@ -116,13 +116,10 @@ class CResArchive : public VFS::CIArchive
     // 9) MDEF: Material (mineral/resource) definitions
     //
     // 10) Sound format:
-    //  tried:
-    //   - wave / riff
-    //   - midi
-    //   - mus
-    //   -
-    //  4 byte data length field at offset 37
-    //  Some segments look like SMF
+    //  PCM stream. - Sampling freq: 22Khz
+    //              - Sampling Depth: 8 bit unsigned
+    //              - All mono (single channel)
+
 
     // seems to be 8 bytes per entry
     struct SIdxRecord

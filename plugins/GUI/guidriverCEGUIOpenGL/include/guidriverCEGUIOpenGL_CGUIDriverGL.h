@@ -46,7 +46,7 @@
 #define GUCEF_GUIDRIVERCEGUIGL_MACROS_H
 #endif /* GUCEF_GUIDRIVERCEGUIGL_MACROS_H ? */
 
-namespace CEGUI { class OpenGLRenderer; }
+namespace CEGUI { class OpenGLRenderer; class OpenGL3Renderer; }
 
 /*-------------------------------------------------------------------------//
 //                                                                         //
@@ -112,6 +112,8 @@ class GUCEF_GUIDRIVERCEGUIGL_EXPORT_CPP CGUIDriverGL : public GUCEF::GUIDRIVERCE
 
     CGUIDriverGL( const CGUIDriverGL& src );
 
+    bool Init( GUI::TWindowContextPtr windowContext );
+
     private:
 
     GUI::CGUIDriver::TGUIContextSet m_contextSet;
@@ -119,7 +121,7 @@ class GUCEF_GUIDRIVERCEGUIGL_EXPORT_CPP CGUIDriverGL : public GUCEF::GUIDRIVERCE
 
     GUIDRIVERCEGUI::CLogAdapter* m_logAdapter;
     CEGUI::System* m_guiSystem;
-    CEGUI::OpenGLRenderer* m_guiRenderer;
+    CEGUI::OpenGL3Renderer* m_guiRenderer;
     bool m_ceGuiInitialized;
 };
 

@@ -368,7 +368,7 @@ CODECPLUGIN_Description( void* plugdata ) GUCEF_PLUGIN_CALLSPEC_SUFFIX
 const char* GUCEF_PLUGIN_CALLSPEC_PREFIX
 CODECPLUGIN_Copyright( void* plugdata ) GUCEF_PLUGIN_CALLSPEC_SUFFIX
 {
-    return "Copyright (C) Dinand Vanvelzen. 2002 - 2007.  All rights reserved.\0";
+    return "Copyright (C) Dinand Vanvelzen. 2002 - 2017.  All rights reserved.\0";
 }
 
 /*---------------------------------------------------------------------------*/
