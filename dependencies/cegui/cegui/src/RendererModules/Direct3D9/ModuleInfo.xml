@@ -1,0 +1,16 @@
+<ModuleInfoEntry>
+    <Module Name="CEGUI.RendererModule.Direct3D9" Type="SharedLibrary" Platform="All">
+        <Dependencies>
+            <Dependency Name="CEGUI" />
+            <Dependency Name="CEGUI.Includes" />
+            <Dependency Name="Direct3D9" />
+        </Dependencies>
+        <Linker>
+            <Dependency Name="CEGUI" />
+            <Dependency Name="Direct3D9" />
+        </Linker>
+        <Preprocessor>
+            <Define String="CEGUIDIRECT3D9RENDERER_EXPORTS" />
+        </Preprocessor>
+    </Module>
+</ModuleInfoEntry>

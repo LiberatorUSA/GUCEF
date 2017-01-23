@@ -1682,8 +1682,12 @@ GetModuleName( const TModuleInfoEntry& moduleInfoEntry ,
 /*---------------------------------------------------------------------------*/
 
 CORE::CString
-GetConsensusModuleName( const TModuleInfoEntry& moduleInfoEntry )
+GetConsensusModuleName( const TModuleInfoEntry& moduleInfoEntry ,
+                        const TModuleInfo** moduleInfo          )
 {GUCEF_TRACE;
+
+    if ( NULL != moduleInfo )
+        *moduleInfo = NULL;
 
     TModuleInfoMap::const_iterator n = moduleInfoEntry.modulesPerPlatform.find( AllPlatforms );
     if ( n != moduleInfoEntry.modulesPerPlatform.end() )
@@ -1692,6 +1696,8 @@ GetConsensusModuleName( const TModuleInfoEntry& moduleInfoEntry )
         // an all platform name always counts as the general consensus name
         if ( !(*n).second.name.IsNULLOrEmpty() )
         {
+            if ( NULL != moduleInfo )
+                *moduleInfo = &(*n).second;
             return (*n).second.name;
         }
     }
@@ -1708,17 +1714,17 @@ GetConsensusModuleName( const TModuleInfoEntry& moduleInfoEntry )
     n = moduleInfoEntry.modulesPerPlatform.begin();
     while ( n != moduleInfoEntry.modulesPerPlatform.end() )
     {
-        const TModuleInfo& moduleInfo = (*n).second;
-        if ( !moduleInfo.name.IsNULLOrEmpty() )
+        const TModuleInfo& mInfo = (*n).second;
+        if ( !mInfo.name.IsNULLOrEmpty() )
         {
-            TStringCountMap::iterator m = countMap.find( moduleInfo.name );
+            TStringCountMap::iterator m = countMap.find( mInfo.name );
             if ( m != countMap.end() )
             {
                 ++((*m).second);
             }
             else
             {
-                countMap[ moduleInfo.name ] = 1;
+                countMap[ mInfo.name ] = 1;
             }
         }
         ++n;
@@ -1758,20 +1764,36 @@ GetConsensusModuleName( const TModuleInfoEntry& moduleInfoEntry )
 
     //@TODO: popular platform check
 
-    return (*topNames.begin());
+    CString consensusName = (*topNames.begin());
+    if ( NULL != moduleInfo )
+    {
+        // Now turn the consensus name back into a module pointer
+        n = moduleInfoEntry.modulesPerPlatform.begin();
+        while ( n != moduleInfoEntry.modulesPerPlatform.end() )
+        {
+            if ( (*n).second.name == consensusName )
+            {
+                *moduleInfo = &(*n).second;
+                break;
+            }
+            ++n;
+        }
+    }
+    return consensusName;
 }
 
 /*---------------------------------------------------------------------------*/
 
 CORE::CString
 GetModuleNameAlways( const TModuleInfoEntry& moduleInfoEntry ,
-                     const CORE::CString& targetPlatform     )
+                     const CORE::CString& targetPlatform     ,
+                     const TModuleInfo** moduleInfo          )
 {GUCEF_TRACE;
 
-    const CORE::CString* strPtr = GetModuleName( moduleInfoEntry, targetPlatform );
+    const CORE::CString* strPtr = GetModuleName( moduleInfoEntry, targetPlatform, moduleInfo );
     if ( NULL == strPtr )
     {
-        return GetConsensusModuleName( moduleInfoEntry );
+        return GetConsensusModuleName( moduleInfoEntry, moduleInfo );
     }
     return *strPtr;
 }
@@ -1857,6 +1879,23 @@ GetModuleType( const TModuleInfoEntry& moduleInfoEntry ,
             return moduleInfo->moduleType;
         }
     }
+
+    // Since there is no specific info for the given platform and no AllPlatform info
+    // we will see if we can derive from another if there is consensus
+    std::set< TModuleType > typeSet;
+    TModuleInfoMap::const_iterator i = moduleInfoEntry.modulesPerPlatform.begin();
+    while ( i != moduleInfoEntry.modulesPerPlatform.end() )
+    {
+        const TModuleInfo& platformModuleInfo = (*i).second;
+        if ( MODULETYPE_UNDEFINED != platformModuleInfo.moduleType )
+            typeSet.insert( platformModuleInfo.moduleType );
+        ++i;
+    }
+    if ( 1 == typeSet.size() )
+    {
+        return *typeSet.begin();
+    }
+
     return MODULETYPE_UNDEFINED;
 }
 
@@ -1964,13 +2003,10 @@ GetModuleInfoEntry( const TProjectInfo& projectInfo ,
     TModuleInfoEntryVector::const_iterator i = projectInfo.modules.begin();
     while ( i != projectInfo.modules.end() )
     {
-        const CORE::CString* nameOfCurrentModule = GetModuleName( (*i), platform, moduleInfo );
-        if ( NULL != nameOfCurrentModule )
+        CORE::CString nameOfCurrentModule = GetModuleNameAlways( (*i), platform, moduleInfo );
+        if ( nameOfCurrentModule == moduleName )
         {
-            if ( *nameOfCurrentModule == moduleName )
-            {
-                return &(*i);
-            }
+            return &(*i);
         }
         ++i;
     }

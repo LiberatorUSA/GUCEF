@@ -288,7 +288,8 @@ GetModuleName( const TModuleInfoEntry& moduleInfoEntry ,
 // a platform
 GUCEF_PROJECTGEN_PUBLIC_CPP
 CORE::CString
-GetConsensusModuleName( const TModuleInfoEntry& moduleInfoEntry );
+GetConsensusModuleName( const TModuleInfoEntry& moduleInfoEntry ,
+                        const TModuleInfo** moduleInfo = NULL   );
 
 /*-------------------------------------------------------------------------*/
 
@@ -298,7 +299,8 @@ GetConsensusModuleName( const TModuleInfoEntry& moduleInfoEntry );
 GUCEF_PROJECTGEN_PUBLIC_CPP
 CORE::CString
 GetModuleNameAlways( const TModuleInfoEntry& moduleInfoEntry ,
-                     const CORE::CString& targetPlatform     );
+                     const CORE::CString& targetPlatform     ,
+                     const TModuleInfo** moduleInfo = NULL   );
                      
 /*-------------------------------------------------------------------------*/
                      

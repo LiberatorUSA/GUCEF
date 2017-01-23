@@ -319,6 +319,14 @@ WriteStringAsTextFile( const CString& filePath      ,
 GUCEF_CORE_PUBLIC_CPP bool
 CreateDirs( const CString& path );
 
+/*-------------------------------------------------------------------------*/
+
+/**
+ *  Attempts to determine if the given path is an absolute path
+ */
+GUCEF_CORE_PUBLIC_CPP bool
+IsAbsolutePath( const CString& path );
+
 /*-------------------------------------------------------------------------//
 //                                                                         //
 //      NAMESPACE                                                          //

@@ -1,0 +1,20 @@
+<ModuleInfoEntry>
+    <Module Name="Direct3D9" Type="BinaryPackage" Platform="mswin">
+        <Includes Source="Self" >
+            <Include Path="#$#ENVVAR:DXSDK_DIR#$#\Include" />
+        </Includes>
+        <Linker>
+            <Dependency Name="d3d9" Type="SharedLibrary" />
+        </Linker>
+    </Module>
+</ModuleInfoEntry>
+<ModuleInfoEntry>
+    <Module Name="Direct3D10" Type="BinaryPackage" Platform="mswin">
+        <Includes Source="Self" >
+            <Include Path="#$#ENVVAR:DXSDK_DIR#$#\Include" />
+        </Includes>
+        <Linker>
+            <Dependency Name="d3d10" Type="SharedLibrary" />
+        </Linker>
+    </Module>
+</ModuleInfoEntry>

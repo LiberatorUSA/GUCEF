@@ -1812,9 +1812,13 @@ GenerateModuleDependencyIncludes( TModuleInfoEntry& moduleInfoEntry             
             TStringVectorMap::const_iterator n = headerFiles.begin();
             while ( n != headerFiles.end() )
             {
-                CORE::CString dependencyInclDir = relativePath;
-                CORE::AppendToPath( dependencyInclDir, (*n).first );
-                dependencyInclDir = CORE::RelativePath( dependencyInclDir );
+                // If the path is a relative path we refine it to be from this module's location
+                CORE::CString dependencyInclDir = CORE::RelativePath( (*n).first );
+                if ( !CORE::IsAbsolutePath( dependencyInclDir ) && 0 != dependencyInclDir.HasSubstr( "#$#ENVVAR:", true ) )
+                {
+                    dependencyInclDir = CORE::CombinePath( relativePath, (*n).first );
+                    dependencyInclDir = CORE::RelativePath( dependencyInclDir );
+                }                
                 dependencyInclDir = dependencyInclDir.ReplaceChar( '\\', '/' );
 
                 // Add the contructed include directory to the list of dependency directories

@@ -1034,6 +1034,27 @@ CreateDirs( const CString& path )
     return 0 != Create_Directory( actualPath.C_String() );
 }
 
+/*-------------------------------------------------------------------------*/
+
+bool
+IsAbsolutePath( const CString& path )
+{GUCEF_TRACE;
+    
+    // Check for MS Windows drive letter segment or MS Windows UNC path
+    if ( 1 == path.HasSubstr( ":\\", true ) || 0 == path.HasSubstr( "\\", true ) )
+        return true;
+
+    // Check for Linux Root designator
+    if ( !path.IsNULLOrEmpty() && path[ 0 ] == '/' )
+        return true;
+
+    // Check for 
+    if ( 1 == path.HasSubstr( ":\\", true ) )
+        return true;
+
+    return false;
+}
+
 /*-------------------------------------------------------------------------//
 //                                                                         //
 //      NAMESPACE                                                          //

@@ -30,18 +30,18 @@ set( ALL_FILES ${HEADER_FILES} ${SOURCE_FILES} ${PLATFORM_HEADER_FILES} ${PLATFO
 
 set( MODULE_NAME "CEGUI.RendererModule.Direct3D9" )
 add_library( ${MODULE_NAME} ${ALL_FILES} )
-add_dependencies( ${MODULE_NAME} CEGUI Direct3D9 )
-target_link_libraries( ${MODULE_NAME} CEGUI d3d9 )
+add_dependencies( ${MODULE_NAME} CEGUI )
+target_link_libraries( ${MODULE_NAME} CEGUI )
 set_property( TARGET ${MODULE_NAME} APPEND_STRING PROPERTY COMPILE_DEFINITIONS "CEGUIDIRECT3D9RENDERER_EXPORTS" )
 
 include_directories( ../../../include )
 
 if ( WIN32 )
-  include_directories( ../../../../../external ../../../../../external/C:/Program\ Files\ (x86)/Microsoft\ DirectX\ SDK\ (June\ 2010)/Include )
+  include_directories( $ENV{DXSDK_DIR}/Include ../../../../../external )
 endif( WIN32 )
 
 if ( WIN64 )
-  include_directories( ../../../../../external ../../../../../external/C:/Program\ Files\ (x86)/Microsoft\ DirectX\ SDK\ (June\ 2010)/Include )
+  include_directories( $ENV{DXSDK_DIR}/Include ../../../../../external )
 endif( WIN64 )
 
 

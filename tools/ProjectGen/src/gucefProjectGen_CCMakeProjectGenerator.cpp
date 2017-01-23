@@ -130,7 +130,10 @@ static CString
 ConvertEnvVarStrings( const CString& inStr )
 {GUCEF_TRACE;
 
-    return inStr.ReplaceEnvelopingSubstr( "$ENVVAR:", "$", "$ENV{", "}" );
+    // We support 2 variants of this, 1 is the standard th GU platform uses but first we also
+    // check for an alternate which would intentionally never be resolve by those functions
+    CString result = inStr.ReplaceEnvelopingSubstr( "#$#ENVVAR:", "#$#", "$ENV{", "}" );
+    return result.ReplaceEnvelopingSubstr( "$ENVVAR:", "$", "$ENV{", "}" );
 }
 
 /*-------------------------------------------------------------------------*/
@@ -782,6 +785,11 @@ GenerateCMakeModuleDependenciesLine( const TProjectInfo& projectInfo   ,
                                      const CORE::CString& platformName )
 {GUCEF_TRACE;
 
+    if ( moduleInfo.name == "CEGUI.RendererModule.Direct3D9" )
+    {
+        int b=0;
+    }
+
     if ( !moduleInfo.dependencies.empty() )
     {
         GUCEF_LOG( CORE::LOGLEVEL_BELOW_NORMAL, "Generating CMake module dependencies line for module " + moduleName + " and platform " + platformName );
@@ -794,10 +802,10 @@ GenerateCMakeModuleDependenciesLine( const TProjectInfo& projectInfo   ,
         {
             // We add all dependencies except for header include locations which are not real modules
             // and CMake will not be using a make file for those.
-            const TModuleInfoEntry* dependencyModule = GetModuleInfoEntry( projectInfo, (*i), AllPlatforms );
+            const TModuleInfoEntry* dependencyModule = GetModuleInfoEntry( projectInfo, (*i), platformName );
             if ( NULL != dependencyModule )
             {
-                TModuleType moduleType = GetModuleType( *dependencyModule, AllPlatforms );
+                TModuleType moduleType = GetModuleType( *dependencyModule, platformName );
                 if ( ( MODULETYPE_HEADER_INCLUDE_LOCATION != moduleType )   &&
                      ( MODULETYPE_HEADER_INTEGRATE_LOCATION != moduleType ) &&
                      ( MODULETYPE_CODE_INTEGRATE_LOCATION != moduleType )   &&
@@ -834,7 +842,8 @@ GenerateCMakeModuleDependenciesLine( const TProjectInfo& projectInfo   ,
 /*---------------------------------------------------------------------------*/
 
 CORE::CString
-GenerateCMakeModuleLinkerLine( const TModuleInfo& moduleInfo     ,
+GenerateCMakeModuleLinkerLine( const TProjectInfo& projectInfo   ,
+                               const TModuleInfo& moduleInfo     ,
                                const CORE::CString& moduleName   ,
                                const CORE::CString& platformName )
 {GUCEF_TRACE;
@@ -848,7 +857,24 @@ GenerateCMakeModuleLinkerLine( const TModuleInfo& moduleInfo     ,
         TModuleTypeMap::const_iterator i = moduleInfo.linkerSettings.linkedLibraries.begin();
         while ( i != moduleInfo.linkerSettings.linkedLibraries.end() )
         {
-            sectionContent += ' ' + ConvertEnvVarStrings( (*i).first );
+            // We add all dependencies except for header include locations which are not real modules
+            // and CMake will not be using a make file for those.
+            const TModuleInfoEntry* dependencyModule = GetModuleInfoEntry( projectInfo, (*i).first, platformName );
+            if ( NULL != dependencyModule )
+            {
+                TModuleType moduleType = GetModuleType( *dependencyModule, platformName );
+                if ( ( MODULETYPE_HEADER_INCLUDE_LOCATION != moduleType )   &&
+                     ( MODULETYPE_HEADER_INTEGRATE_LOCATION != moduleType ) &&
+                     ( MODULETYPE_CODE_INTEGRATE_LOCATION != moduleType )   &&
+                     ( MODULETYPE_BINARY_PACKAGE != moduleType )             )
+                {
+                    sectionContent += ' ' + ConvertEnvVarStrings( (*i).first );
+                }
+            }
+            else
+            {
+                sectionContent += ' ' + ConvertEnvVarStrings( (*i).first );
+            }
             ++i;
         }
         sectionContent += " )\n";
@@ -1059,7 +1085,7 @@ GenerateCMakeListsModuleInfoSection( const TProjectInfo& projectInfo         ,
 
         // Generate the different instructions for all platforms (if any exist)
         CORE::CString moduleDependenciesStr = GenerateCMakeModuleDependenciesLine( projectInfo, moduleInfo, consensusName, platformName );
-        CORE::CString moduleLinkingStr = GenerateCMakeModuleLinkerLine( moduleInfo, consensusName, platformName );
+        CORE::CString moduleLinkingStr = GenerateCMakeModuleLinkerLine( projectInfo, moduleInfo, consensusName, platformName );
         CORE::CString moduleDefinesStr = GenerateCMakeModuleDefinesLine( moduleInfo, consensusName, platformName );
 
         // make sure we actually have any instructions
@@ -1083,7 +1109,7 @@ GenerateCMakeListsModuleInfoSection( const TProjectInfo& projectInfo         ,
 
             // Generate the different instructions for this platform (if any exist)
             CORE::CString moduleDependenciesStr = GenerateCMakeModuleDependenciesLine( projectInfo, moduleInfo, consensusName, platformName );
-            CORE::CString moduleLinkingStr = GenerateCMakeModuleLinkerLine( moduleInfo, consensusName, platformName );
+            CORE::CString moduleLinkingStr = GenerateCMakeModuleLinkerLine( projectInfo, moduleInfo, consensusName, platformName );
             CORE::CString moduleDefinesStr = GenerateCMakeModuleDefinesLine( moduleInfo, consensusName, platformName );
 
             // Encompass inside an if section if we have any instructions
