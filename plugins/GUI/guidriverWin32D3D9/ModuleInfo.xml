@@ -1,0 +1,19 @@
+<ModuleInfoEntry>
+    <Module Name="guidriverWin32D3D9" Type="SharedLibrary" Platform="mswin" Tags="plugin">
+        <Dependencies>
+            <Dependency Name="gucefGUI" />
+            <Dependency Name="gucefCORE" />
+            <Dependency Name="gucefMT" />
+            <Dependency Name="Direct3D9" />
+        </Dependencies>
+        <Linker>
+            <Dependency Name="gucefGUI" />
+            <Dependency Name="gucefCORE" />
+            <Dependency Name="gucefMT" />
+            <Dependency Name="Direct3D9" />
+        </Linker>
+        <Preprocessor>
+            <Define String="GUIDRIVERWIN32D3D9_BUILD_MODULE" />
+        </Preprocessor>
+    </Module>
+</ModuleInfoEntry>
