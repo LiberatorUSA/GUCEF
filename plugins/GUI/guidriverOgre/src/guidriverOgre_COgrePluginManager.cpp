@@ -107,6 +107,11 @@ void
 COgrePluginManager::UnregisterPlugin( CORE::TPluginPtr plugin )
 {GUCEF_TRACE;
 
+    COgrePluginAdapter* ogrePlugin = static_cast< COgrePluginAdapter* >( plugin.GetPointerAlways() );
+    if ( NULL != ogrePlugin )
+    {
+        ogrePlugin->Unlink();
+    }
 }
 
 /*-------------------------------------------------------------------------*/

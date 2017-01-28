@@ -238,11 +238,6 @@ COgreWindowContext::Initialize( const GUI::CString& title                ,
                                    videoSettings.GetResolutionWidthInPixels()  ,
                                    videoSettings.GetResolutionHeightInPixels() ) )
     {
-        // Display the new window
-        m_osWindow->Show();
-        m_osWindow->SendToForegound();
-        m_osWindow->GrabFocus();
-
 	    // Now proceed with setting up the Ogre specifics
         
         // We grab the O/S window identifier 'the handle' 
@@ -295,8 +290,14 @@ COgreWindowContext::Initialize( const GUI::CString& title                ,
             ogreRoot->setRenderSystem( renderSystem );
             m_sceneManager = ogreRoot->createSceneManager( Ogre::ST_GENERIC );
 
+            //renderSystem->setConfigOption( "Full Screen", "False" );
             m_renderWindow = ogreRoot->initialise( false, title );
         }
+
+        // Display the new window
+        m_osWindow->Show();
+        m_osWindow->SendToForegound();
+        m_osWindow->GrabFocus();
 
         m_renderWindow = ogreRoot->createRenderWindow( title, 
                                                        videoSettings.GetResolutionWidthInPixels(), 
@@ -338,6 +339,11 @@ COgreWindowContext::OnNotify( CORE::CNotifier* notifier   ,
          ( eventID == CORE::COSWindow::WindowPaintEvent ) )
     {
         // Notify that we are going to redraw the window
+        Ogre::Root* root = Ogre::Root::getSingletonPtr();
+        if ( nullptr != root )
+        {   
+            root->renderOneFrame();
+        }
         NotifyObservers( WindowContextRedrawEvent );        
     }
     else
@@ -352,6 +358,11 @@ COgreWindowContext::OnNotify( CORE::CNotifier* notifier   ,
     if ( eventID == CORE::COSWindow::WindowActivationEvent )
     {
         GUCEF_DEBUG_LOG( CORE::LOGLEVEL_NORMAL, "OgreWindowContext: Window activation event received" );
+        Ogre::Root* root = Ogre::Root::getSingletonPtr();
+        if ( nullptr != root )
+        {   
+            root->renderOneFrame();
+        }
         NotifyObservers( WindowContextActivateEvent );
     }
     else
