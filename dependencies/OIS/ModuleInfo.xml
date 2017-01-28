@@ -6,9 +6,11 @@
         </Preprocessor>
     </Module>
     <Module Platform="mswin">
+        <Dependencies>
+            <Dependency Name="DirectInput8" />
+        </Dependencies>
         <Linker>
-            <Dependency Name="dinput8.lib" />
-            <Dependency Name="dxguid.lib" />
+            <Dependency Name="DirectInput8" />
         </Linker>
     </Module>
     <Module Platform="linux">

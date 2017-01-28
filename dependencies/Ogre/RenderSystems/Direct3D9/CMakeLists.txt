@@ -168,6 +168,14 @@ endif ()
 # For ease of use make a variable that has all files for this module
 set( ALL_FILES ${HEADER_FILES} ${SOURCE_FILES} ${PLATFORM_HEADER_FILES} ${PLATFORM_SOURCE_FILES} )
 
+# Per CMake limitation, we must set any additional library search paths before defining the target
+if ( WIN32 )
+  link_directories( $ENV{DXSDK_DIR}/Lib/x86 )
+endif( WIN32 )
+if ( WIN64 )
+  link_directories( $ENV{DXSDK_DIR}/Lib/x86 )
+endif( WIN64 )
+
 
 if( WIN32 )
   set( MODULE_NAME "OgreRenderSystem_Direct3D9" )
@@ -182,24 +190,24 @@ endif()
 
 if ( WIN32 )
   add_dependencies( ${MODULE_NAME} Ogre )
-  target_link_libraries( ${MODULE_NAME} Ogre )
+  target_link_libraries( ${MODULE_NAME} Ogre d3d9 d3dx9 )
   set_property( TARGET ${MODULE_NAME} APPEND_STRING PROPERTY COMPILE_DEFINITIONS "OGRED3DENGINEDLL_EXPORTS ;_USRDLL " )
 endif( WIN32 )
 
 if ( WIN64 )
   add_dependencies( ${MODULE_NAME} Ogre )
-  target_link_libraries( ${MODULE_NAME} Ogre )
+  target_link_libraries( ${MODULE_NAME} Ogre d3d9 d3dx9 )
   set_property( TARGET ${MODULE_NAME} APPEND_STRING PROPERTY COMPILE_DEFINITIONS "OGRED3DENGINEDLL_EXPORTS ;_USRDLL " )
 endif( WIN64 )
 
 include_directories( ../../../freetype/include ../../../freetype/include/freetype ../../../freetype/include/freetype/config ../../../freetype/include/freetype/internal ../../../freetype/include/freetype/internal/services ../../../freetype/src/winfonts ../../OgreMain/include ../../OgreMain/include/Hash ../../OgreMain/include/Threading ../../OgreMain/src ../../OgreMain/src/nedmalloc ../../OgreMain/src/stbi ../../include )
 
 if ( WIN32 )
-  include_directories( ../../OgreMain/include/WIN32 ../../OgreMain/src/WIN32 include )
+  include_directories( $ENV{DXSDK_DIR}/Include ../../../external ../../OgreMain/include/WIN32 ../../OgreMain/src/WIN32 include )
 endif( WIN32 )
 
 if ( WIN64 )
-  include_directories( include )
+  include_directories( $ENV{DXSDK_DIR}/Include ../../../external include )
 endif( WIN64 )
 
 

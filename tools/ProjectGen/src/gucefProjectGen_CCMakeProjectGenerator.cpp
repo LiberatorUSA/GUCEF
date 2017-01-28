@@ -785,11 +785,6 @@ GenerateCMakeModuleDependenciesLine( const TProjectInfo& projectInfo   ,
                                      const CORE::CString& platformName )
 {GUCEF_TRACE;
 
-    if ( moduleInfo.name == "CEGUI.RendererModule.Direct3D9" )
-    {
-        int b=0;
-    }
-
     if ( !moduleInfo.dependencies.empty() )
     {
         GUCEF_LOG( CORE::LOGLEVEL_BELOW_NORMAL, "Generating CMake module dependencies line for module " + moduleName + " and platform " + platformName );
@@ -842,19 +837,127 @@ GenerateCMakeModuleDependenciesLine( const TProjectInfo& projectInfo   ,
 /*---------------------------------------------------------------------------*/
 
 CORE::CString
+ConcatPaths( const TStringSet& pathList )
+{
+    CORE::CString allPaths;    
+    TStringSet::const_iterator m = pathList.begin();
+    while ( m != pathList.end() )
+    {
+        // CMake needs spaces in paths to be escaped
+        CORE::CString path = ConvertEnvVarStrings( (*m) ).ReplaceChar( '\\', '/' ).ReplaceSubstr( " ", "\\ " );
+        if ( allPaths.IsNULLOrEmpty() )
+        {
+            allPaths = path;
+        }
+        else
+        {
+            allPaths += ' ' + path;
+        }
+        ++m;
+    }
+    return allPaths;
+}
+
+/*---------------------------------------------------------------------------*/
+
+CORE::CString
+GenerateCMakeModuleLinkerDirsLine( const TProjectInfo& projectInfo ,
+                                   const TModuleInfo& moduleInfo   ,
+                                   const CORE::CString& moduleName )
+{GUCEF_TRACE;
+
+    CORE::CString libPaths = ConcatPaths( moduleInfo.linkerSettings.libPaths );
+        
+    TLinkedLibrarySettingsMap::const_iterator n = moduleInfo.linkerSettings.linkedLibraries.begin();
+    while ( n != moduleInfo.linkerSettings.linkedLibraries.end() )
+    {
+        const CORE::CString& origPath = (*n).second.libPath;
+        if ( !origPath.IsNULLOrEmpty() )
+        {
+            CORE::CString path = ConvertEnvVarStrings( origPath ).ReplaceChar( '\\', '/' ).ReplaceSubstr( " ", "\\ " );
+            if ( libPaths.IsNULLOrEmpty() )
+            {
+                libPaths = path;
+            }
+            else
+            {
+                libPaths += ' ' + path;
+            }
+        }
+        ++n;
+    }
+
+    if ( !libPaths.IsNULLOrEmpty() )
+    {
+        return "link_directories( " + libPaths + " )\n";
+    }
+    return libPaths;
+}
+
+/*---------------------------------------------------------------------------*/
+
+CORE::CString
+GenerateCMakeModuleLinkerDirsLines( const TProjectInfo& projectInfo         ,
+                                    const TModuleInfoEntry& moduleInfoEntry ,
+                                    const CORE::CString& moduleName         )
+{GUCEF_TRACE;
+
+    GUCEF_LOG( CORE::LOGLEVEL_BELOW_NORMAL, "Generating CMake module linker library dirs (if any) for module " + moduleName );
+    CORE::CString sectionContent;
+
+    // First take care of dirs for any platform
+    TModuleInfoMap::const_iterator i = moduleInfoEntry.modulesPerPlatform.find( AllPlatforms );
+    if ( i != moduleInfoEntry.modulesPerPlatform.end() )
+    {
+        const TModuleInfo& moduleInfo = (*i).second;
+        sectionContent = GenerateCMakeModuleLinkerDirsLine( projectInfo, moduleInfo, moduleName );
+    }
+
+    // Now the additional platforms if any. 
+    i = moduleInfoEntry.modulesPerPlatform.begin();
+    while ( i != moduleInfoEntry.modulesPerPlatform.end() )
+    {
+        const CORE::CString& platformName = (*i).first;
+        if ( platformName != AllPlatforms )
+        {
+            const TModuleInfo& moduleInfo = (*i).second;
+            CORE::CString libDirsLine = GenerateCMakeModuleLinkerDirsLine( projectInfo, moduleInfo, moduleName );
+            if ( !libDirsLine.IsNULLOrEmpty() )
+            {
+                sectionContent += "if ( "+ platformName.Uppercase() + " )\n  " + libDirsLine + "endif( " + platformName.Uppercase() + " )\n";
+            }
+        }
+        ++i;
+    }
+    if ( !sectionContent.IsNULLOrEmpty() )
+    {
+        sectionContent = "# Per CMake limitation, we must set any additional library search paths before defining the target\n" + sectionContent + "\n";
+    }
+    return sectionContent;
+}
+
+/*---------------------------------------------------------------------------*/
+
+CORE::CString
 GenerateCMakeModuleLinkerLine( const TProjectInfo& projectInfo   ,
                                const TModuleInfo& moduleInfo     ,
                                const CORE::CString& moduleName   ,
                                const CORE::CString& platformName )
 {GUCEF_TRACE;
 
+    GUCEF_LOG( CORE::LOGLEVEL_BELOW_NORMAL, "Generating CMake module linker line for module " + moduleName + " and platform " + platformName );
+    CORE::CString sectionContent;
+
+    if ( !moduleInfo.linkerSettings.targetName.IsNULLOrEmpty() )
+    {
+        sectionContent += "set_target_properties( ${MODULE_NAME} PROPERTIES OUTPUT_NAME " + moduleInfo.linkerSettings.targetName + " )\n";
+    }
+        
     if ( !moduleInfo.linkerSettings.linkedLibraries.empty() )
     {
-        GUCEF_LOG( CORE::LOGLEVEL_BELOW_NORMAL, "Generating CMake module linker line for module " + moduleName + " and platform " + platformName );
+        sectionContent += "target_link_libraries( ${MODULE_NAME}";
 
-        CORE::CString sectionContent = "target_link_libraries( ${MODULE_NAME}";
-
-        TModuleTypeMap::const_iterator i = moduleInfo.linkerSettings.linkedLibraries.begin();
+        TLinkedLibrarySettingsMap::const_iterator i = moduleInfo.linkerSettings.linkedLibraries.begin();
         while ( i != moduleInfo.linkerSettings.linkedLibraries.end() )
         {
             // We add all dependencies except for header include locations which are not real modules
@@ -878,10 +981,9 @@ GenerateCMakeModuleLinkerLine( const TProjectInfo& projectInfo   ,
             ++i;
         }
         sectionContent += " )\n";
-        return sectionContent;
     }
 
-    return CORE::CString();
+    return sectionContent;
 }
 
 /*---------------------------------------------------------------------------*/
@@ -1069,8 +1171,12 @@ GenerateCMakeListsModuleInfoSection( const TProjectInfo& projectInfo         ,
 
     CORE::CString consensusName = GetConsensusModuleName( moduleInfoEntry );
 
-    // First we define the module name which can differ per platform
-    CORE::CString sectionContent = GenerateCMakeListsModuleNameSection( moduleInfoEntry );
+    // First we set the linker search directories where the linker is told to look as additional
+    // library paths. Per CMake limitations, this must be done before the target itself is defined or it wont work
+    CORE::CString sectionContent = GenerateCMakeModuleLinkerDirsLines( projectInfo, moduleInfoEntry, consensusName );
+    
+    // Next we define the module name which can differ per platform
+    sectionContent += GenerateCMakeListsModuleNameSection( moduleInfoEntry );
 
     // Add the module description which says what type of module this is
     sectionContent += GenerateCMakeModuleDescriptionSection( moduleInfoEntry, consensusName );

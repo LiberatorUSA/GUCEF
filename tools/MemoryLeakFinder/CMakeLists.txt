@@ -33,6 +33,26 @@ if (ANDROID)
   set( PLATFORM_SOURCE_INSTALL "ANDROID" )
   source_group( "Platform Source Files" FILES ${PLATFORM_SOURCE_FILES} )
 
+elseif (EMSCRIPTEN)
+  set( PLATFORM_HEADER_FILES 
+    ../../gucefMT/include/gucefMT_mutex.h
+    ../../gucefMT/include/gucefMT_CMutex.h
+    ../../gucefMT/include/gucefMT_CScopeMutex.h
+  )
+
+  set( PLATFORM_HEADER_INSTALL "EMSCRIPTEN" )
+  source_group( "Platform Header Files" FILES ${PLATFORM_HEADER_FILES} )
+
+  set( PLATFORM_SOURCE_FILES 
+    ../../gucefMT/src/gucefMT_MUTEX.c
+    ../../gucefMT/src/gucefMT_CMutex.cpp
+    ../../gucefMT/src/gucefMT_CScopeMutex.cpp
+    src/MemoryManager.cpp
+  )
+
+  set( PLATFORM_SOURCE_INSTALL "EMSCRIPTEN" )
+  source_group( "Platform Source Files" FILES ${PLATFORM_SOURCE_FILES} )
+
 elseif (GLX)
   set( PLATFORM_HEADER_FILES 
     ../../gucefMT/include/gucefMT_mutex.h
@@ -73,14 +93,14 @@ elseif (GTK)
   set( PLATFORM_SOURCE_INSTALL "GTK" )
   source_group( "Platform Source Files" FILES ${PLATFORM_SOURCE_FILES} )
 
-elseif (IPHONEOS)
+elseif (IOS)
   set( PLATFORM_HEADER_FILES 
     ../../gucefMT/include/gucefMT_mutex.h
     ../../gucefMT/include/gucefMT_CMutex.h
     ../../gucefMT/include/gucefMT_CScopeMutex.h
   )
 
-  set( PLATFORM_HEADER_INSTALL "IPHONEOS" )
+  set( PLATFORM_HEADER_INSTALL "IOS" )
   source_group( "Platform Header Files" FILES ${PLATFORM_HEADER_FILES} )
 
   set( PLATFORM_SOURCE_FILES 
@@ -90,7 +110,7 @@ elseif (IPHONEOS)
     src/MemoryManager.cpp
   )
 
-  set( PLATFORM_SOURCE_INSTALL "IPHONEOS" )
+  set( PLATFORM_SOURCE_INSTALL "IOS" )
   source_group( "Platform Source Files" FILES ${PLATFORM_SOURCE_FILES} )
 
 elseif (LINUX32)
@@ -131,6 +151,26 @@ elseif (LINUX64)
   )
 
   set( PLATFORM_SOURCE_INSTALL "LINUX64" )
+  source_group( "Platform Source Files" FILES ${PLATFORM_SOURCE_FILES} )
+
+elseif (NACL)
+  set( PLATFORM_HEADER_FILES 
+    ../../gucefMT/include/gucefMT_mutex.h
+    ../../gucefMT/include/gucefMT_CMutex.h
+    ../../gucefMT/include/gucefMT_CScopeMutex.h
+  )
+
+  set( PLATFORM_HEADER_INSTALL "NACL" )
+  source_group( "Platform Header Files" FILES ${PLATFORM_HEADER_FILES} )
+
+  set( PLATFORM_SOURCE_FILES 
+    ../../gucefMT/src/gucefMT_MUTEX.c
+    ../../gucefMT/src/gucefMT_CMutex.cpp
+    ../../gucefMT/src/gucefMT_CScopeMutex.cpp
+    src/MemoryManager.cpp
+  )
+
+  set( PLATFORM_SOURCE_INSTALL "NACL" )
   source_group( "Platform Source Files" FILES ${PLATFORM_SOURCE_FILES} )
 
 elseif (OSX)
@@ -298,6 +338,10 @@ if ( ANDROID )
   include_directories( ../../gucefMT/include/ )
 endif( ANDROID )
 
+if ( EMSCRIPTEN )
+  include_directories( ../../gucefMT/include/ )
+endif( EMSCRIPTEN )
+
 if ( GLX )
   include_directories( ../../gucefMT/include/ )
 endif( GLX )
@@ -306,9 +350,9 @@ if ( GTK )
   include_directories( ../../gucefMT/include/ )
 endif( GTK )
 
-if ( IPHONEOS )
+if ( IOS )
   include_directories( ../../gucefMT/include/ )
-endif( IPHONEOS )
+endif( IOS )
 
 if ( LINUX32 )
   include_directories( ../../gucefMT/include/ )
@@ -317,6 +361,10 @@ endif( LINUX32 )
 if ( LINUX64 )
   include_directories( ../../gucefMT/include/ )
 endif( LINUX64 )
+
+if ( NACL )
+  include_directories( ../../gucefMT/include/ )
+endif( NACL )
 
 if ( OSX )
   include_directories( ../../gucefMT/include/ )

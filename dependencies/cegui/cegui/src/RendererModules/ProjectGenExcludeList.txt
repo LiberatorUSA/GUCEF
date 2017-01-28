@@ -1,3 +1,2 @@
-Direct3D11
 DirectFB
 Irrlicht

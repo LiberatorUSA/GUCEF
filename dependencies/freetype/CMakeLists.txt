@@ -170,6 +170,43 @@ if (ANDROID)
   set( PLATFORM_SOURCE_INSTALL "ANDROID" )
   source_group( "Platform Source Files" FILES ${PLATFORM_SOURCE_FILES} )
 
+elseif (EMSCRIPTEN)
+  set( PLATFORM_SOURCE_FILES 
+    src/autofit/autofit.c
+    src/base/ftbase.c
+    src/base/ftsystem.c
+    src/base/ftglyph.c
+    src/base/ftbitmap.c
+    src/base/ftinit.c
+    src/bdf/bdf.c
+    src/cache/ftcache.c
+    src/cff/cff.c
+    src/cid/cidriver.c
+    src/cid/cidobjs.c
+    src/cid/cidgload.c
+    src/cid/cidload.c
+    src/cid/cidparse.c
+    src/gxvalid/gxvalid.c
+    src/gzip/ftgzip.c
+    src/lzw/ftlzw.c
+    src/otvalid/otvalid.c
+    src/pcf/pcf.c
+    src/pfr/pfr.c
+    src/psaux/psaux.c
+    src/pshinter/pshinter.c
+    src/psnames/psnames.c
+    src/raster/raster.c
+    src/sfnt/sfnt.c
+    src/smooth/ftsmooth.c
+    src/smooth/ftgrays.c
+    src/truetype/truetype.c
+    src/type1/type1.c
+    src/type42/type42.c
+  )
+
+  set( PLATFORM_SOURCE_INSTALL "EMSCRIPTEN" )
+  source_group( "Platform Source Files" FILES ${PLATFORM_SOURCE_FILES} )
+
 elseif (GLX)
   set( PLATFORM_SOURCE_FILES 
     src/autofit/autofit.c
@@ -244,7 +281,7 @@ elseif (GTK)
   set( PLATFORM_SOURCE_INSTALL "GTK" )
   source_group( "Platform Source Files" FILES ${PLATFORM_SOURCE_FILES} )
 
-elseif (IPHONEOS)
+elseif (IOS)
   set( PLATFORM_SOURCE_FILES 
     src/autofit/autofit.c
     src/base/ftbase.c
@@ -278,7 +315,7 @@ elseif (IPHONEOS)
     src/type42/type42.c
   )
 
-  set( PLATFORM_SOURCE_INSTALL "IPHONEOS" )
+  set( PLATFORM_SOURCE_INSTALL "IOS" )
   source_group( "Platform Source Files" FILES ${PLATFORM_SOURCE_FILES} )
 
 elseif (LINUX32)
@@ -353,6 +390,43 @@ elseif (LINUX64)
   )
 
   set( PLATFORM_SOURCE_INSTALL "LINUX64" )
+  source_group( "Platform Source Files" FILES ${PLATFORM_SOURCE_FILES} )
+
+elseif (NACL)
+  set( PLATFORM_SOURCE_FILES 
+    src/autofit/autofit.c
+    src/base/ftbase.c
+    src/base/ftsystem.c
+    src/base/ftglyph.c
+    src/base/ftbitmap.c
+    src/base/ftinit.c
+    src/bdf/bdf.c
+    src/cache/ftcache.c
+    src/cff/cff.c
+    src/cid/cidriver.c
+    src/cid/cidobjs.c
+    src/cid/cidgload.c
+    src/cid/cidload.c
+    src/cid/cidparse.c
+    src/gxvalid/gxvalid.c
+    src/gzip/ftgzip.c
+    src/lzw/ftlzw.c
+    src/otvalid/otvalid.c
+    src/pcf/pcf.c
+    src/pfr/pfr.c
+    src/psaux/psaux.c
+    src/pshinter/pshinter.c
+    src/psnames/psnames.c
+    src/raster/raster.c
+    src/sfnt/sfnt.c
+    src/smooth/ftsmooth.c
+    src/smooth/ftgrays.c
+    src/truetype/truetype.c
+    src/type1/type1.c
+    src/type42/type42.c
+  )
+
+  set( PLATFORM_SOURCE_INSTALL "NACL" )
   source_group( "Platform Source Files" FILES ${PLATFORM_SOURCE_FILES} )
 
 elseif (OSX)
@@ -640,15 +714,19 @@ endif( WIN64 )
 
 if (ANDROID)
 GUCEF_config_lib( ${MODULE_NAME} )
+elseif (EMSCRIPTEN)
+GUCEF_config_lib( ${MODULE_NAME} )
 elseif (GLX)
 GUCEF_config_lib( ${MODULE_NAME} )
 elseif (GTK)
 GUCEF_config_lib( ${MODULE_NAME} )
-elseif (IPHONEOS)
+elseif (IOS)
 GUCEF_config_lib( ${MODULE_NAME} )
 elseif (LINUX32)
 GUCEF_config_lib( ${MODULE_NAME} )
 elseif (LINUX64)
+GUCEF_config_lib( ${MODULE_NAME} )
+elseif (NACL)
 GUCEF_config_lib( ${MODULE_NAME} )
 elseif (OSX)
 GUCEF_config_lib( ${MODULE_NAME} )

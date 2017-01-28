@@ -1616,7 +1616,7 @@ CMakeParseSuffixFile( TModuleInfo& moduleInfo, const CORE::CString& cmakeListSuf
             TStringVector::iterator n = elements.begin();
             while ( n != elements.end() )
             {
-                moduleInfo.linkerSettings.linkedLibraries[ (*n) ] = MODULETYPE_UNDEFINED;
+                moduleInfo.linkerSettings.linkedLibraries[ (*n) ].moduleType = MODULETYPE_UNDEFINED;
                 ++n;
             }
         }
@@ -2806,9 +2806,9 @@ DetermineBuildOrderForAllModules( TProjectInfo& projectInfo )
 /*-------------------------------------------------------------------------*/
 
 TMutableModuleInfoEntryPairVector
-FindModulesWhichDependOnModule( TProjectInfo& projectInfo           ,
-                                const CORE::CString& targetPlatform ,
-                                const CORE::CString& dependencyName )
+FindModulesWhichDependOnModuleForPlatform( TProjectInfo& projectInfo           ,
+                                           const CORE::CString& targetPlatform ,
+                                           const CORE::CString& dependencyName )
 {GUCEF_TRACE;
 
     // Loop trough all modules and check if they depend on the given module
@@ -2837,6 +2837,32 @@ FindModulesWhichDependOnModule( TProjectInfo& projectInfo           ,
 
 /*-------------------------------------------------------------------------*/
 
+TMutableModuleInfoEntryPairVector
+FindModulesWhichDependOnModule( TProjectInfo& projectInfo           ,
+                                const CORE::CString& dependencyName )
+{GUCEF_TRACE;
+
+    // Loop trough all platforms
+    TMutableModuleInfoEntryPairVector results;
+    TStringSet platforms = GetSupportedPlatforms();
+    platforms.insert( AllPlatforms );
+    TStringSet::const_iterator i = platforms.begin();
+    while ( i != platforms.end() )
+    {
+        TMutableModuleInfoEntryPairVector subSet = FindModulesWhichDependOnModuleForPlatform( projectInfo, (*i), dependencyName ); 
+        TMutableModuleInfoEntryPairVector::iterator n = subSet.begin();
+        while ( n != subSet.end() )
+        {
+            results.push_back( (*n) );
+            ++n;
+        }
+        ++i;
+    }
+    return results;
+}
+
+/*-------------------------------------------------------------------------*/
+
 void
 MergeIntegrationLocationsIntoModuleForPlatform( TProjectInfo& projectInfo              ,
                                                 const CORE::CString& targetPlatform    ,
@@ -2846,9 +2872,9 @@ MergeIntegrationLocationsIntoModuleForPlatform( TProjectInfo& projectInfo       
 {GUCEF_TRACE;
 
     // First find all the modules which depend on this integration location
-    TMutableModuleInfoEntryPairVector targetModules = FindModulesWhichDependOnModule( projectInfo              ,
-                                                                                      targetPlatform           ,
-                                                                                      moduleInfoToMergeIn.name );
+    TMutableModuleInfoEntryPairVector targetModules = FindModulesWhichDependOnModuleForPlatform( projectInfo              ,
+                                                                                                 targetPlatform           ,
+                                                                                                 moduleInfoToMergeIn.name );
 
     // Now for each of these modules merge in the files
     TMutableModuleInfoEntryPairVector::iterator i = targetModules.begin();
@@ -2940,8 +2966,8 @@ MergeIntegrationLocationsIntoModuleForPlatform( TProjectInfo& projectInfo       
 /*-------------------------------------------------------------------------*/
 
 TModuleInfoEntryPtrSet
-FindModulesWhichDependOnModule( TProjectInfo& projectInfo           ,
-                                const CORE::CString& dependencyName )
+FindModulesInfoEntryWhichDependOnModule( TProjectInfo& projectInfo           ,
+                                         const CORE::CString& dependencyName )
 {GUCEF_TRACE;
 
     // Loop trough all modules and check if they depend on the given module
@@ -2977,8 +3003,8 @@ MergeIntegrationLocationsIntoModuleForAllPlatformsPlatform( TProjectInfo& projec
 {GUCEF_TRACE;
 
     // First find all the modules which depend on this code include location
-    TModuleInfoEntryPtrSet targetModules = FindModulesWhichDependOnModule( projectInfo              ,
-                                                                           moduleInfoToMergeIn.name );
+    TModuleInfoEntryPtrSet targetModules = FindModulesInfoEntryWhichDependOnModule( projectInfo              ,
+                                                                                    moduleInfoToMergeIn.name );
 
     // Now for each of these modules merge in the files
     TModuleInfoEntryPtrSet::iterator i = targetModules.begin();
@@ -3191,6 +3217,55 @@ MergeIntegrationLocationsIntoModule( TProjectInfo& projectInfo )
     RemoveDependenciesOnIntegrationLocations( projectInfo );
 }
 
+
+
+/*-------------------------------------------------------------------------*/
+
+void
+MergeBinaryPackageLinkerDepsIntoModule( TProjectInfo& projectInfo )
+{GUCEF_TRACE;
+
+    // Loop trough all modules and process each code as we go
+    TModuleInfoEntryVector::iterator i = projectInfo.modules.begin();
+    while ( i != projectInfo.modules.end() )
+    {
+        TModuleInfoEntry& moduleInfoEntry = (*i);
+        TModuleInfoMap::iterator n = moduleInfoEntry.modulesPerPlatform.begin();
+        while ( n != moduleInfoEntry.modulesPerPlatform.end() )
+        {
+            const CORE::CString& platformName = (*n).first;
+            TModuleInfo& moduleInfo = (*n).second;
+            if ( MODULETYPE_BINARY_PACKAGE == moduleInfo.moduleType )
+            {
+                CORE::CString moduleName = GetModuleNameAlways( moduleInfoEntry, (*n).first );
+                TMutableModuleInfoEntryPairVector links = FindModulesWhichDependOnModule( projectInfo, moduleName );
+                TMutableModuleInfoEntryPairVector::iterator m = links.begin();
+                while ( m != links.end() )
+                {
+                    TModuleInfo* depModuleInfo = (*m).second;
+                    auto logicalLink = depModuleInfo->linkerSettings.linkedLibraries.find( moduleName );
+                    if ( logicalLink != depModuleInfo->linkerSettings.linkedLibraries.end() )
+                    {
+                        depModuleInfo->linkerSettings.linkedLibraries.erase( logicalLink );
+
+                        MergeStringSet( depModuleInfo->linkerSettings.libPaths, moduleInfo.linkerSettings.libPaths, true );
+                        TLinkedLibrarySettingsMap::iterator k = moduleInfo.linkerSettings.linkedLibraries.begin();
+                        while ( k != moduleInfo.linkerSettings.linkedLibraries.end() )
+                        {
+                            depModuleInfo->linkerSettings.linkedLibraries[ (*k).first ] = (*k).second;
+                            ++k;
+                        }
+                    }
+                    ++m;
+                }
+            }
+            ++n;
+        }
+        
+        ++i;
+    }
+}
+
 /*-------------------------------------------------------------------------*/
 
 void
@@ -3266,6 +3341,9 @@ CDirCrawlingProjectInfoGatherer::GatherInfo( const TStringVector& rootDirs  ,
 
     // Merge headers and code from integration locations into modules
     MergeIntegrationLocationsIntoModule( projectInfo );
+
+    // Merge linker dependencies from binary packages into modules
+    MergeBinaryPackageLinkerDepsIntoModule( projectInfo );
 
     // By default no modules are ignored but if so specified tags can cause a module to be set to ignore
     // This is just an advisory flag and it is up to the generator backends to not include the module

@@ -104,10 +104,25 @@ typedef std::map< CORE::CString, TModuleType > TModuleTypeMap;
 
 /**
  *  Structure where all linker related information should be stored
+ *  for a specific linked library
+ */
+struct SLinkedLibrarySettings
+{
+    TModuleType moduleType;               // Module type of the linked library if already known
+    CORE::CString libPath;                // optional extra path for the linker to search for the given library
+};
+typedef struct SLinkedLibrarySettings TLinkedLibrarySettings;
+typedef std::map< CORE::CString, TLinkedLibrarySettings > TLinkedLibrarySettingsMap;
+
+/*---------------------------------------------------------------------------*/
+
+/**
+ *  Structure where all linker related information should be stored
  */
 struct SLinkerSettings
 {
-    TModuleTypeMap linkedLibraries;               // list of all libraries the module links against
+    TLinkedLibrarySettingsMap linkedLibraries;    // list of all libraries the module links against
+    TStringSet libPaths;                          // list of hint paths where to look for libraries
     CORE::CString targetName;                     // optional name for the linker target if desired from the module name
 };
 typedef struct SLinkerSettings TLinkerSettings;
@@ -317,6 +332,14 @@ void
 MergeStringVectorMap( TStringVectorMap& targetMap          ,
                       const TStringVectorMap& mapToMergeIn ,
                       bool caseSensitive                   );
+
+/*-------------------------------------------------------------------------*/
+
+GUCEF_PROJECTGEN_PUBLIC_CPP
+void
+MergeStringSet( TStringSet& targetList          ,
+                const TStringSet& listToMergeIn ,
+                bool caseSensitive              );
 
 /*-------------------------------------------------------------------------*/
 

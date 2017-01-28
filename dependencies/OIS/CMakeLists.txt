@@ -13,34 +13,7 @@
 
 
 
-if (IPHONEOS)
-  set( PLATFORM_HEADER_FILES 
-    includes/iphone/iPhoneAccelerometer.h
-    includes/iphone/iPhoneHelpers.h
-    includes/iphone/iPhoneInputManager.h
-    includes/iphone/iPhoneMultiTouch.h
-    includes/iphone/iPhonePrereqs.h
-  )
-
-  set( PLATFORM_HEADER_INSTALL "IPHONEOS" )
-  source_group( "Platform Header Files" FILES ${PLATFORM_HEADER_FILES} )
-
-  set( PLATFORM_SOURCE_FILES 
-    src/OISEffect.cpp
-    src/OISException.cpp
-    src/OISForceFeedback.cpp
-    src/OISInputManager.cpp
-    src/OISJoyStick.cpp
-    src/OISKeyboard.cpp
-    src/OISObject.cpp
-    src/extras/LIRC/OISLIRC.cpp
-    src/extras/LIRC/OISLIRCFactoryCreator.cpp
-  )
-
-  set( PLATFORM_SOURCE_INSTALL "IPHONEOS" )
-  source_group( "Platform Source Files" FILES ${PLATFORM_SOURCE_FILES} )
-
-elseif (LINUX32)
+if (LINUX32)
   set( PLATFORM_HEADER_FILES 
     includes/OIS.h
     includes/OISConfig.h
@@ -57,6 +30,11 @@ elseif (LINUX32)
     includes/OISMultiTouch.h
     includes/OISObject.h
     includes/OISPrereqs.h
+    includes/iphone/iPhoneAccelerometer.h
+    includes/iphone/iPhoneHelpers.h
+    includes/iphone/iPhoneInputManager.h
+    includes/iphone/iPhoneMultiTouch.h
+    includes/iphone/iPhonePrereqs.h
     includes/linux/EventHelpers.h
     includes/linux/LinuxForceFeedback.h
     includes/linux/LinuxInputManager.h
@@ -110,6 +88,11 @@ elseif (LINUX64)
     includes/OISMultiTouch.h
     includes/OISObject.h
     includes/OISPrereqs.h
+    includes/iphone/iPhoneAccelerometer.h
+    includes/iphone/iPhoneHelpers.h
+    includes/iphone/iPhoneInputManager.h
+    includes/iphone/iPhoneMultiTouch.h
+    includes/iphone/iPhonePrereqs.h
     includes/linux/EventHelpers.h
     includes/linux/LinuxForceFeedback.h
     includes/linux/LinuxInputManager.h
@@ -163,6 +146,11 @@ elseif (OSX)
     includes/OISMultiTouch.h
     includes/OISObject.h
     includes/OISPrereqs.h
+    includes/iphone/iPhoneAccelerometer.h
+    includes/iphone/iPhoneHelpers.h
+    includes/iphone/iPhoneInputManager.h
+    includes/iphone/iPhoneMultiTouch.h
+    includes/iphone/iPhonePrereqs.h
     includes/mac/MacHelpers.h
     includes/mac/MacHIDManager.h
     includes/mac/MacInputManager.h
@@ -247,6 +235,11 @@ elseif (WIN32)
     includes/OISMultiTouch.h
     includes/OISObject.h
     includes/OISPrereqs.h
+    includes/iphone/iPhoneAccelerometer.h
+    includes/iphone/iPhoneHelpers.h
+    includes/iphone/iPhoneInputManager.h
+    includes/iphone/iPhoneMultiTouch.h
+    includes/iphone/iPhonePrereqs.h
     includes/win32/Win32ForceFeedback.h
     includes/win32/Win32InputManager.h
     includes/win32/Win32JoyStick.h
@@ -256,6 +249,12 @@ elseif (WIN32)
     src/extras/LIRC/OISLIRC.h
     src/extras/LIRC/OISLIRCFactoryCreator.h
     src/extras/LIRC/OISLIRCRingBuffer.h
+    src/win32/extras/WiiMote/hiddevice.h
+    src/win32/extras/WiiMote/OISWiiMote.h
+    src/win32/extras/WiiMote/OISWiiMoteFactoryCreator.h
+    src/win32/extras/WiiMote/OISWiiMoteForceFeedback.h
+    src/win32/extras/WiiMote/OISWiiMoteRingBuffer.h
+    src/win32/extras/WiiMote/wiimote.h
   )
 
   set( PLATFORM_HEADER_INSTALL "WIN32" )
@@ -276,6 +275,13 @@ elseif (WIN32)
     src/win32/Win32JoyStick.cpp
     src/win32/Win32KeyBoard.cpp
     src/win32/Win32Mouse.cpp
+    src/win32/extras/WiiMote/hiddevice.cpp
+    src/win32/extras/WiiMote/main.cpp
+    src/win32/extras/WiiMote/OISWiiMote.cpp
+    src/win32/extras/WiiMote/OISWiiMoteFactoryCreator.cpp
+    src/win32/extras/WiiMote/OISWiiMoteForceFeedback.cpp
+    src/win32/extras/WiiMote/OISWiiMoteRingBuffer.cpp
+    src/win32/extras/WiiMote/wiimote.cpp
   )
 
   set( PLATFORM_SOURCE_INSTALL "WIN32" )
@@ -298,6 +304,11 @@ elseif (WIN64)
     includes/OISMultiTouch.h
     includes/OISObject.h
     includes/OISPrereqs.h
+    includes/iphone/iPhoneAccelerometer.h
+    includes/iphone/iPhoneHelpers.h
+    includes/iphone/iPhoneInputManager.h
+    includes/iphone/iPhoneMultiTouch.h
+    includes/iphone/iPhonePrereqs.h
     src/extras/LIRC/OISLIRC.h
     src/extras/LIRC/OISLIRCFactoryCreator.h
     src/extras/LIRC/OISLIRCRingBuffer.h
@@ -325,6 +336,14 @@ endif ()
 
 # For ease of use make a variable that has all files for this module
 set( ALL_FILES ${HEADER_FILES} ${SOURCE_FILES} ${PLATFORM_HEADER_FILES} ${PLATFORM_SOURCE_FILES} )
+
+# Per CMake limitation, we must set any additional library search paths before defining the target
+if ( WIN32 )
+  link_directories( $ENV{DXSDK_DIR}/Lib/x86 )
+endif( WIN32 )
+if ( WIN64 )
+  link_directories( $ENV{DXSDK_DIR}/Lib/x86 )
+endif( WIN64 )
 
 
 if( LINUX32 )
@@ -365,29 +384,25 @@ if ( OSX )
 endif( OSX )
 
 if ( WIN32 )
-  target_link_libraries( ${MODULE_NAME} dinput8.lib dxguid.lib )
+  target_link_libraries( ${MODULE_NAME} dinput8 dxguid )
   set_property( TARGET ${MODULE_NAME} APPEND_STRING PROPERTY COMPILE_DEFINITIONS "OIS_DYNAMIC_LIB;OIS_NONCLIENT_BUILD" )
 endif( WIN32 )
 
 if ( WIN64 )
-  target_link_libraries( ${MODULE_NAME} dinput8.lib dxguid.lib )
+  target_link_libraries( ${MODULE_NAME} dinput8 dxguid )
   set_property( TARGET ${MODULE_NAME} APPEND_STRING PROPERTY COMPILE_DEFINITIONS "OIS_DYNAMIC_LIB;OIS_NONCLIENT_BUILD" )
 endif( WIN64 )
 
-if ( IPHONEOS )
-  include_directories( includes/iphone )
-endif( IPHONEOS )
-
 if ( LINUX32 )
-  include_directories( includes includes/linux src/extras/LIRC )
+  include_directories( includes includes/iphone includes/linux src/extras/LIRC )
 endif( LINUX32 )
 
 if ( LINUX64 )
-  include_directories( includes includes/linux src/extras/LIRC )
+  include_directories( includes includes/iphone includes/linux src/extras/LIRC )
 endif( LINUX64 )
 
 if ( OSX )
-  include_directories( includes includes/mac src/extras/LIRC )
+  include_directories( includes includes/iphone includes/mac src/extras/LIRC )
 endif( OSX )
 
 if ( SDL )
@@ -395,11 +410,11 @@ if ( SDL )
 endif( SDL )
 
 if ( WIN32 )
-  include_directories( includes includes/win32 src/extras/LIRC )
+  include_directories( $ENV{DXSDK_DIR}/Include ../external includes includes/iphone includes/win32 src/extras/LIRC src/win32/extras/WiiMote )
 endif( WIN32 )
 
 if ( WIN64 )
-  include_directories( includes src/extras/LIRC )
+  include_directories( includes includes/iphone src/extras/LIRC )
 endif( WIN64 )
 
 

@@ -28,6 +28,11 @@
 #include "CEGUI/RendererModules/Direct3D9/Texture.h"
 #include "CEGUI/RenderEffect.h"
 #include "CEGUI/Vertex.h"
+
+//DV Edit:macro gets mucked up below
+#undef min
+#undef max
+
 #include <d3d9.h>
 
 // Start of CEGUI namespace section

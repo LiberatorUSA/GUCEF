@@ -65,6 +65,33 @@ if (ANDROID)
   set( PLATFORM_SOURCE_INSTALL "ANDROID" )
   source_group( "Platform Source Files" FILES ${PLATFORM_SOURCE_FILES} )
 
+elseif (EMSCRIPTEN)
+  set( PLATFORM_HEADER_FILES 
+    ../gucefCORE/include/DVOSWRAP.h
+    ../gucefCORE/include/dvstrutils.h
+    ../gucefCORE/include/CDVString.h
+    ../gucefCORE/include/dvfileutils.h
+    ../gucefCORE/include/dvcppstringutils.h
+    ../gucefCORE/include/md5.h
+    ../gucefCORE/include/dvmd5utils.h
+  )
+
+  set( PLATFORM_HEADER_INSTALL "EMSCRIPTEN" )
+  source_group( "Platform Header Files" FILES ${PLATFORM_HEADER_FILES} )
+
+  set( PLATFORM_SOURCE_FILES 
+    ../gucefCORE/src/DVOSWRAP.cpp
+    ../gucefCORE/src/dvstrutils.c
+    ../gucefCORE/src/CDVString.cpp
+    ../gucefCORE/src/dvfileutils.c
+    ../gucefCORE/src/dvcppstringutils.cpp
+    ../gucefCORE/src/md5.c
+    ../gucefCORE/src/dvmd5utils.c
+  )
+
+  set( PLATFORM_SOURCE_INSTALL "EMSCRIPTEN" )
+  source_group( "Platform Source Files" FILES ${PLATFORM_SOURCE_FILES} )
+
 elseif (GLX)
   set( PLATFORM_HEADER_FILES 
     ../gucefCORE/include/DVOSWRAP.h
@@ -119,7 +146,7 @@ elseif (GTK)
   set( PLATFORM_SOURCE_INSTALL "GTK" )
   source_group( "Platform Source Files" FILES ${PLATFORM_SOURCE_FILES} )
 
-elseif (IPHONEOS)
+elseif (IOS)
   set( PLATFORM_HEADER_FILES 
     ../gucefCORE/include/DVOSWRAP.h
     ../gucefCORE/include/dvstrutils.h
@@ -130,7 +157,7 @@ elseif (IPHONEOS)
     ../gucefCORE/include/dvmd5utils.h
   )
 
-  set( PLATFORM_HEADER_INSTALL "IPHONEOS" )
+  set( PLATFORM_HEADER_INSTALL "IOS" )
   source_group( "Platform Header Files" FILES ${PLATFORM_HEADER_FILES} )
 
   set( PLATFORM_SOURCE_FILES 
@@ -143,7 +170,7 @@ elseif (IPHONEOS)
     ../gucefCORE/src/dvmd5utils.c
   )
 
-  set( PLATFORM_SOURCE_INSTALL "IPHONEOS" )
+  set( PLATFORM_SOURCE_INSTALL "IOS" )
   source_group( "Platform Source Files" FILES ${PLATFORM_SOURCE_FILES} )
 
 elseif (LINUX32)
@@ -198,6 +225,33 @@ elseif (LINUX64)
   )
 
   set( PLATFORM_SOURCE_INSTALL "LINUX64" )
+  source_group( "Platform Source Files" FILES ${PLATFORM_SOURCE_FILES} )
+
+elseif (NACL)
+  set( PLATFORM_HEADER_FILES 
+    ../gucefCORE/include/DVOSWRAP.h
+    ../gucefCORE/include/dvstrutils.h
+    ../gucefCORE/include/CDVString.h
+    ../gucefCORE/include/dvfileutils.h
+    ../gucefCORE/include/dvcppstringutils.h
+    ../gucefCORE/include/md5.h
+    ../gucefCORE/include/dvmd5utils.h
+  )
+
+  set( PLATFORM_HEADER_INSTALL "NACL" )
+  source_group( "Platform Header Files" FILES ${PLATFORM_HEADER_FILES} )
+
+  set( PLATFORM_SOURCE_FILES 
+    ../gucefCORE/src/DVOSWRAP.cpp
+    ../gucefCORE/src/dvstrutils.c
+    ../gucefCORE/src/CDVString.cpp
+    ../gucefCORE/src/dvfileutils.c
+    ../gucefCORE/src/dvcppstringutils.cpp
+    ../gucefCORE/src/md5.c
+    ../gucefCORE/src/dvmd5utils.c
+  )
+
+  set( PLATFORM_SOURCE_INSTALL "NACL" )
   source_group( "Platform Source Files" FILES ${PLATFORM_SOURCE_FILES} )
 
 elseif (OSX)
@@ -390,6 +444,10 @@ if ( ANDROID )
   include_directories( ../gucefCORE/include/android ../gucefCORE/include/ )
 endif( ANDROID )
 
+if ( EMSCRIPTEN )
+  include_directories( ../gucefCORE/include/ )
+endif( EMSCRIPTEN )
+
 if ( GLX )
   include_directories( ../gucefCORE/include/ )
 endif( GLX )
@@ -398,9 +456,9 @@ if ( GTK )
   include_directories( ../gucefCORE/include/ )
 endif( GTK )
 
-if ( IPHONEOS )
+if ( IOS )
   include_directories( ../gucefCORE/include/ )
-endif( IPHONEOS )
+endif( IOS )
 
 if ( LINUX32 )
   include_directories( ../gucefCORE/include/linux ../gucefCORE/include/ )
@@ -409,6 +467,10 @@ endif( LINUX32 )
 if ( LINUX64 )
   include_directories( ../gucefCORE/include/linux ../gucefCORE/include/ )
 endif( LINUX64 )
+
+if ( NACL )
+  include_directories( ../gucefCORE/include/ )
+endif( NACL )
 
 if ( OSX )
   include_directories( ../gucefCORE/include/ )
@@ -443,15 +505,19 @@ endif( WIN64 )
 
 if (ANDROID)
 GUCEF_config_lib( ${MODULE_NAME} )
+elseif (EMSCRIPTEN)
+GUCEF_config_lib( ${MODULE_NAME} )
 elseif (GLX)
 GUCEF_config_lib( ${MODULE_NAME} )
 elseif (GTK)
 GUCEF_config_lib( ${MODULE_NAME} )
-elseif (IPHONEOS)
+elseif (IOS)
 GUCEF_config_lib( ${MODULE_NAME} )
 elseif (LINUX32)
 GUCEF_config_lib( ${MODULE_NAME} )
 elseif (LINUX64)
+GUCEF_config_lib( ${MODULE_NAME} )
+elseif (NACL)
 GUCEF_config_lib( ${MODULE_NAME} )
 elseif (OSX)
 GUCEF_config_lib( ${MODULE_NAME} )

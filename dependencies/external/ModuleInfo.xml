@@ -1,20 +1,95 @@
+<root>
 <ModuleInfoEntry>
-    <Module Name="Direct3D9" Type="BinaryPackage" Platform="mswin">
+    <Module Name="DirectInput8" Type="BinaryPackage" Platform="win32">
         <Includes Source="Self" >
             <Include Path="#$#ENVVAR:DXSDK_DIR#$#\Include" />
         </Includes>
-        <Linker>
+        <Linker LibPaths="#$#ENVVAR:DXSDK_DIR#$#\Lib\x86" >
+            <Dependency Name="dinput8" Type="SharedLibrary" />
+            <Dependency Name="dxguid" Type="SharedLibrary" />
+        </Linker>
+    </Module>
+</ModuleInfoEntry>
+<ModuleInfoEntry>
+    <Module Name="Direct3D8" Type="BinaryPackage" Platform="win32">
+        <Includes Source="Self" >
+            <Include Path="#$#ENVVAR:DXSDK_DIR#$#\Include" />
+        </Includes>
+        <Linker LibPaths="#$#ENVVAR:DXSDK_DIR#$#\Lib\x86" >
+            <Dependency Name="d3d8" Type="SharedLibrary" />
+            <Dependency Name="d3dx8" Type="SharedLibrary" />
+        </Linker>
+    </Module>
+    <Module Name="Direct3D8" Type="BinaryPackage" Platform="win64">
+        <Includes Source="Self" >
+            <Include Path="#$#ENVVAR:DXSDK_DIR#$#\Include" />
+        </Includes>
+        <Linker LibPaths="#$#ENVVAR:DXSDK_DIR#$#\Lib\x64" >
+            <Dependency Name="d3d8" Type="SharedLibrary" />
+            <Dependency Name="d3dx8" Type="SharedLibrary" />
+        </Linker>
+    </Module>
+</ModuleInfoEntry>
+<ModuleInfoEntry>
+    <Module Name="Direct3D9" Type="BinaryPackage" Platform="win32">
+        <Includes Source="Self" >
+            <Include Path="#$#ENVVAR:DXSDK_DIR#$#\Include" />
+        </Includes>
+        <Linker LibPaths="#$#ENVVAR:DXSDK_DIR#$#\Lib\x86" >
             <Dependency Name="d3d9" Type="SharedLibrary" />
+            <Dependency Name="d3dx9" Type="SharedLibrary" />
+        </Linker>
+    </Module>
+    <Module Name="Direct3D9" Type="BinaryPackage" Platform="win64">
+        <Includes Source="Self" >
+            <Include Path="#$#ENVVAR:DXSDK_DIR#$#\Include" />
+        </Includes>
+        <Linker LibPaths="#$#ENVVAR:DXSDK_DIR#$#\Lib\x64" >
+            <Dependency Name="d3d9" Type="SharedLibrary" />
+            <Dependency Name="d3dx9" Type="SharedLibrary" />
         </Linker>
     </Module>
 </ModuleInfoEntry>
 <ModuleInfoEntry>
-    <Module Name="Direct3D10" Type="BinaryPackage" Platform="mswin">
+    <Module Name="Direct3D10" Type="BinaryPackage" Platform="win32">
         <Includes Source="Self" >
             <Include Path="#$#ENVVAR:DXSDK_DIR#$#\Include" />
         </Includes>
-        <Linker>
+        <Linker LibPaths="#$#ENVVAR:DXSDK_DIR#$#\Lib\x86" >
             <Dependency Name="d3d10" Type="SharedLibrary" />
+            <Dependency Name="d3dx10" Type="SharedLibrary" />
+        </Linker>
+    </Module>
+    <Module Name="Direct3D10" Type="BinaryPackage" Platform="win64">
+        <Includes Source="Self" >
+            <Include Path="#$#ENVVAR:DXSDK_DIR#$#\Include" />
+        </Includes>
+        <Linker LibPaths="#$#ENVVAR:DXSDK_DIR#$#\Lib\x64" >
+            <Dependency Name="d3d10" Type="SharedLibrary" />
+            <Dependency Name="d3dx10" Type="SharedLibrary" />
         </Linker>
     </Module>
 </ModuleInfoEntry>
+<ModuleInfoEntry>
+    <Module Name="Direct3D11" Type="BinaryPackage" Platform="win32">
+        <Includes Source="Self" >
+            <Include Path="#$#ENVVAR:DXSDK_DIR#$#\Include" />
+        </Includes>
+        <Linker LibPaths="#$#ENVVAR:DXSDK_DIR#$#\Lib\x86" >
+            <Dependency Name="d3d11" Type="SharedLibrary" />
+            <Dependency Name="d3dx11" Type="SharedLibrary" />
+            <Dependency Name="d3dcompiler" Type="SharedLibrary" />
+        </Linker>
+    </Module>
+    <Module Name="Direct3D11" Type="BinaryPackage" Platform="win64">
+        <Includes Source="Self" >
+            <Include Path="#$#ENVVAR:DXSDK_DIR#$#\Include" />
+        </Includes>
+        <Linker LibPaths="#$#ENVVAR:DXSDK_DIR#$#\Lib\x64" >
+            <Dependency Name="d3d11" Type="SharedLibrary" />
+            <Dependency Name="d3dx11" Type="SharedLibrary" />
+            <Dependency Name="d3dcompiler" Type="SharedLibrary" />
+        </Linker>
+    </Module>
+</ModuleInfoEntry>
+</root>

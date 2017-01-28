@@ -39,11 +39,20 @@ set( SOURCE_FILES
   src/xmlvect.c
 )
 
+
+
+if (WIN32)
+  set( PLATFORM_SOURCE_FILES 
+    win32/vc6/dllmain.c
+  )
+
+  set( PLATFORM_SOURCE_INSTALL "WIN32" )
+  source_group( "Platform Source Files" FILES ${PLATFORM_SOURCE_FILES} )
+
+endif ()
+
 # Make sure the PLATFORM_HEADER_FILES variable is always defined
  set( PLATFORM_HEADER_FILES "" )
-
-# Make sure the PLATFORM_SOURCE_FILES variable is always defined
- set( PLATFORM_SOURCE_FILES "" )
 
 # For ease of use make a variable that has all files for this module
 set( ALL_FILES ${HEADER_FILES} ${SOURCE_FILES} ${PLATFORM_HEADER_FILES} ${PLATFORM_SOURCE_FILES} )

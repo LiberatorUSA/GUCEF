@@ -242,11 +242,11 @@ GenerateContentForAndroidMakefile( const TModuleInfoEntryPairVector& mergeLinks 
     TStringSet linkedSharedLibraries;
     TStringSet linkedStaticLibraries;
     TStringSet linkedRuntimeLibraries;
-    TModuleTypeMap::const_iterator m = moduleInfo.linkerSettings.linkedLibraries.begin();
+    TLinkedLibrarySettingsMap::const_iterator m = moduleInfo.linkerSettings.linkedLibraries.begin();
     while ( m != moduleInfo.linkerSettings.linkedLibraries.end() )
     {
         const CORE::CString& linkedLibName = (*m).first;
-        TModuleType linkedLibType = (*m).second;
+        TModuleType linkedLibType = (*m).second.moduleType;
         switch ( linkedLibType )
         {
             case MODULETYPE_EXECUTABLE:

@@ -11,28 +11,71 @@
 
 # Configuration for module: CEGUI.RendererModule.Direct3D9
 
-set( SOURCE_FILES 
-  GeometryBuffer.cpp
-  Renderer.cpp
-  Texture.cpp
-  TextureTarget.cpp
-  ViewportTarget.cpp
-)
+
+
+if (WIN32)
+  set( PLATFORM_SOURCE_FILES 
+    GeometryBuffer.cpp
+    Renderer.cpp
+    Texture.cpp
+    TextureTarget.cpp
+    ViewportTarget.cpp
+  )
+
+  set( PLATFORM_SOURCE_INSTALL "WIN32" )
+  source_group( "Platform Source Files" FILES ${PLATFORM_SOURCE_FILES} )
+
+elseif (WIN64)
+  set( PLATFORM_SOURCE_FILES 
+    GeometryBuffer.cpp
+    Renderer.cpp
+    Texture.cpp
+    TextureTarget.cpp
+    ViewportTarget.cpp
+  )
+
+  set( PLATFORM_SOURCE_INSTALL "WIN64" )
+  source_group( "Platform Source Files" FILES ${PLATFORM_SOURCE_FILES} )
+
+endif ()
 
 # Make sure the PLATFORM_HEADER_FILES variable is always defined
  set( PLATFORM_HEADER_FILES "" )
 
-# Make sure the PLATFORM_SOURCE_FILES variable is always defined
- set( PLATFORM_SOURCE_FILES "" )
-
 # For ease of use make a variable that has all files for this module
 set( ALL_FILES ${HEADER_FILES} ${SOURCE_FILES} ${PLATFORM_HEADER_FILES} ${PLATFORM_SOURCE_FILES} )
 
-set( MODULE_NAME "CEGUI.RendererModule.Direct3D9" )
-add_library( ${MODULE_NAME} ${ALL_FILES} )
-add_dependencies( ${MODULE_NAME} CEGUI )
-target_link_libraries( ${MODULE_NAME} CEGUI )
-set_property( TARGET ${MODULE_NAME} APPEND_STRING PROPERTY COMPILE_DEFINITIONS "CEGUIDIRECT3D9RENDERER_EXPORTS" )
+# Per CMake limitation, we must set any additional library search paths before defining the target
+if ( WIN32 )
+  link_directories( $ENV{DXSDK_DIR}/Lib/x86 )
+endif( WIN32 )
+if ( WIN64 )
+  link_directories( $ENV{DXSDK_DIR}/Lib/x86 )
+endif( WIN64 )
+
+
+if( WIN32 )
+  set( MODULE_NAME "CEGUI.RendererModule.Direct3D9" )
+elseif( WIN64 )
+  set( MODULE_NAME "CEGUI.RendererModule.Direct3D9" )
+endif()
+if( WIN32 )
+  add_library( ${MODULE_NAME} ${ALL_FILES} )
+elseif( WIN64 )
+  add_library( ${MODULE_NAME} ${ALL_FILES} )
+endif()
+
+if ( WIN32 )
+  add_dependencies( ${MODULE_NAME} CEGUI )
+  target_link_libraries( ${MODULE_NAME} CEGUI d3d9 d3dx9 )
+  set_property( TARGET ${MODULE_NAME} APPEND_STRING PROPERTY COMPILE_DEFINITIONS "CEGUIDIRECT3D9RENDERER_EXPORTS" )
+endif( WIN32 )
+
+if ( WIN64 )
+  add_dependencies( ${MODULE_NAME} CEGUI )
+  target_link_libraries( ${MODULE_NAME} CEGUI d3d9 d3dx9 )
+  set_property( TARGET ${MODULE_NAME} APPEND_STRING PROPERTY COMPILE_DEFINITIONS "CEGUIDIRECT3D9RENDERER_EXPORTS" )
+endif( WIN64 )
 
 include_directories( ../../../include )
 
@@ -51,19 +94,9 @@ endif( WIN64 )
 
 
 
-if (ANDROID)
-GUCEF_config_lib( ${MODULE_NAME} )
-elseif (LINUX32)
-GUCEF_config_lib( ${MODULE_NAME} )
-elseif (LINUX64)
-GUCEF_config_lib( ${MODULE_NAME} )
-elseif (OSX)
-GUCEF_config_lib( ${MODULE_NAME} )
-elseif (WIN32)
+if (WIN32)
 GUCEF_config_lib( ${MODULE_NAME} )
 elseif (WIN64)
-GUCEF_config_lib( ${MODULE_NAME} )
-else()
 GUCEF_config_lib( ${MODULE_NAME} )
 endif()
 

@@ -37,6 +37,10 @@
 
 #include <algorithm>
 
+// DV Edit: macro gets mucked up below
+#undef min
+#undef max
+
 // Start of CEGUI namespace section
 namespace CEGUI
 {

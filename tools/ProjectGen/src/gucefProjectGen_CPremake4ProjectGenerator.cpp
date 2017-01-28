@@ -828,7 +828,7 @@ GeneratePremake4ModuleLinkerLine( const TModuleInfo& moduleInfo     ,
 
         bool first = true;
         CORE::CString sectionContent = "links( {";
-        TModuleTypeMap::const_iterator i = moduleInfo.linkerSettings.linkedLibraries.begin();
+        TLinkedLibrarySettingsMap::const_iterator i = moduleInfo.linkerSettings.linkedLibraries.begin();
         while ( i != moduleInfo.linkerSettings.linkedLibraries.end() )
         {
             if ( first )

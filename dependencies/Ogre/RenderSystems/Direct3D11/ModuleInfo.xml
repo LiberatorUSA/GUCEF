@@ -3,9 +3,11 @@
         <Dependencies>
             <Dependency Name="Ogre.CommonInclude" />
             <Dependency Name="Ogre" />
+            <Dependency Name="Direct3D11" />
         </Dependencies>
         <Linker>
             <Dependency Name="Ogre" />
+            <Dependency Name="Direct3D11" />
         </Linker>
         <Preprocessor>
             <Define String="OGRED3DENGINEDLL_EXPORTS

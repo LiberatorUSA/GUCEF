@@ -1,5 +1,5 @@
 <ModuleInfoEntry>
-    <Module Name="CEGUI.RendererModule.Direct3D9" Type="SharedLibrary" Platform="All">
+    <Module Name="CEGUI.RendererModule.Direct3D9" Type="SharedLibrary" Platform="mswin">
         <Dependencies>
             <Dependency Name="CEGUI" />
             <Dependency Name="CEGUI.Includes" />

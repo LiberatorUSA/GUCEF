@@ -1,16 +1,18 @@
 <ModuleInfoEntry>
-    <Module Name="CEGUI.RendererModule.Direct3D10" Type="SharedLibrary" Platform="mswin">
+    <Module Name="CEGUI.RendererModule.Direct3D11" Type="SharedLibrary" Platform="mswin">
         <Dependencies>
             <Dependency Name="CEGUI" />
             <Dependency Name="CEGUI.Includes" />
             <Dependency Name="Direct3D10" />
+            <Dependency Name="Direct3D11" />
         </Dependencies>
         <Linker>
             <Dependency Name="CEGUI" />
             <Dependency Name="Direct3D10" />
+            <Dependency Name="Direct3D11" />
         </Linker>
         <Preprocessor>
-            <Define String="CEGUIDIRECT3D10RENDERER_EXPORTS" />
+            <Define String="CEGUIDIRECT3D11RENDERER_EXPORTS" />
         </Preprocessor>
     </Module>
 </ModuleInfoEntry>

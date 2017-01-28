@@ -194,7 +194,7 @@ MergeStringMap( TStringMap& targetMap          ,
 
 /*---------------------------------------------------------------------------*/
 
-static void
+void
 MergeStringSet( TStringSet& targetList          ,
                 const TStringSet& listToMergeIn ,
                 bool caseSensitive              )
@@ -689,18 +689,22 @@ SerializeModuleInfo( const TModuleInfoEntry& moduleEntry ,
     if ( moduleInfo.linkerSettings.linkedLibraries.size() > 0 )
     {
         addedLinkedSettings = true;
-        TModuleTypeMap::const_iterator m = moduleInfo.linkerSettings.linkedLibraries.begin();
+        TLinkedLibrarySettingsMap::const_iterator m = moduleInfo.linkerSettings.linkedLibraries.begin();
         while ( m != moduleInfo.linkerSettings.linkedLibraries.end() )
         {
             CORE::CDataNode libraryNode;
             libraryNode.SetName( "Dependency" );
             libraryNode.SetAttribute( "Name", (*m).first );
 
-            TModuleType linkedLibType = (*m).second;
+            TModuleType linkedLibType = (*m).second.moduleType;
             if ( ( MODULETYPE_UNDEFINED == linkedLibType ) ||
                  ( MODULETYPE_UNKNOWN == linkedLibType )    )
             {
                 libraryNode.SetAttribute( "Type", ModuleTypeToString( linkedLibType ) );
+            }
+            if ( !(*m).second.libPath.IsNULLOrEmpty() )
+            {
+                libraryNode.SetAttribute( "Path", (*m).second.libPath );
             }
             linkerNode.AddChild( libraryNode );
             ++m;
@@ -711,6 +715,26 @@ SerializeModuleInfo( const TModuleInfoEntry& moduleEntry ,
     {
         addedLinkedSettings = true;
         linkerNode.SetAttribute( "TargetName", moduleInfo.linkerSettings.targetName ); 
+    }
+
+    if ( !moduleInfo.linkerSettings.libPaths.empty() )
+    {
+        CORE::CString libPaths;
+        TStringSet::const_iterator r = moduleInfo.linkerSettings.libPaths.begin();
+        while ( r != moduleInfo.linkerSettings.libPaths.end() )
+        {
+            if ( libPaths.IsNULLOrEmpty() )
+            {
+                libPaths = (*r);
+            }
+            else
+            {
+                libPaths += ';' + (*r);
+            }
+            ++r;
+        }
+        linkerNode.SetAttribute( "LibPaths", libPaths );
+        addedLinkedSettings = true;
     }
 
     if ( addedLinkedSettings )
@@ -1084,6 +1108,11 @@ DeserializeModuleInfo( TModuleInfo& moduleInfo           ,
     {
         moduleInfo.linkerSettings.targetName = linkerNode->GetAttributeValueOrChildValueByName( "TargetName" );
         
+        // If general paths were defined at the linker level add them to each dependency
+        // They should be added after the dependency paths this could have been added above because
+        // those should take priority in a linker search for paths        
+        moduleInfo.linkerSettings.libPaths = StringVectorToStringSet( linkerNode->GetAttributeValueOrChildValueByName( "LibPaths" ).ParseElements( ';' ) );
+        
         // Find all the libraries that are linked but not part of the overall project
         CORE::CDataNode::TConstDataNodeSet linkedLibs = linkerNode->FindChildrenOfType( "Dependency" );
         i = linkedLibs.begin();
@@ -1093,13 +1122,19 @@ DeserializeModuleInfo( TModuleInfo& moduleInfo           ,
             CORE::CString linkedLibName = linkedLibNode->GetAttributeValue( "Name" );
             if ( !linkedLibName.IsNULLOrEmpty() )
             {
+                TLinkedLibrarySettings& libSettings = moduleInfo.linkerSettings.linkedLibraries[ linkedLibName ]; 
+                
                 CORE::CString linkedLibType = linkedLibNode->GetAttributeValue( "Type" );
-                TModuleType libType = MODULETYPE_UNDEFINED;
                 if ( !linkedLibType.IsNULLOrEmpty() )
                 {
-                    libType = StringToModuleType( linkedLibType );
+                    libSettings.moduleType = StringToModuleType( linkedLibType );
                 }
-                moduleInfo.linkerSettings.linkedLibraries[ linkedLibName ] = libType;
+                else
+                {
+                    libSettings.moduleType = MODULETYPE_UNDEFINED;
+                }
+
+                libSettings.libPath = linkedLibNode->GetAttributeValue( "Path" );
             }
             ++i;
         }
@@ -1327,6 +1362,11 @@ DeserializeModuleInfo( TModuleInfoEntryVector& moduleInfoEntries ,
             GUCEF_LOG( CORE::LOGLEVEL_NORMAL, "DeserializeModuleInfo: Successfully loaded module information from file \"" + inputFilepath + "\", now we will parse the information" );
 
             CORE::CDataNode::TDataNodeSet moduleEntryNodes = rootNode.FindNodesOfType( "ModuleInfoEntry", true );
+            if ( moduleEntryNodes.size()  > 1 )
+            {
+                int a=0;
+            }
+
             if ( moduleEntryNodes.empty() )
             {
                 GUCEF_ERROR_LOG( CORE::LOGLEVEL_NORMAL, "DeserializeModuleInfo: No ModuleInfoEntry nodes were obtained from file \"" + inputFilepath + "\"" );
@@ -1425,6 +1465,34 @@ MergeModuleTypeMap( TModuleTypeMap& baseMap           ,
 /*-------------------------------------------------------------------------*/
 
 void
+MergeLinkedLibrarySettingsMap( TLinkedLibrarySettingsMap& baseMap           ,
+                               const TLinkedLibrarySettingsMap& incomingMap )
+{GUCEF_TRACE;
+
+    TLinkedLibrarySettingsMap::const_iterator i = incomingMap.begin();
+    while ( i != incomingMap.end() )
+    {
+        TLinkedLibrarySettingsMap::iterator n = baseMap.find( (*i).first );
+        if ( n != baseMap.end() )
+        {
+            TModuleType moduleType = (*i).second.moduleType;
+            if ( ( MODULETYPE_UNDEFINED != moduleType ) &&
+                 ( MODULETYPE_UNKNOWN != moduleType )    )
+            {
+                baseMap[ (*i).first ].moduleType = moduleType;
+            }
+        }
+        else
+        {
+            baseMap[ (*i).first ] = (*i).second;
+        }
+        ++i;
+    }
+}
+
+/*-------------------------------------------------------------------------*/
+
+void
 MergeModuleInfo( TModuleInfo& targetModuleInfo          ,
                  const TModuleInfo& moduleInfoToMergeIn )
 {GUCEF_TRACE;
@@ -1476,8 +1544,8 @@ MergeModuleInfo( TModuleInfo& targetModuleInfo          ,
     MergeStringSet( targetModuleInfo.preprocessorSettings.defines    ,
                     moduleInfoToMergeIn.preprocessorSettings.defines ,
                     true                                             );
-    MergeModuleTypeMap( targetModuleInfo.linkerSettings.linkedLibraries    ,
-                        moduleInfoToMergeIn.linkerSettings.linkedLibraries );
+    MergeLinkedLibrarySettingsMap( targetModuleInfo.linkerSettings.linkedLibraries    ,
+                                   moduleInfoToMergeIn.linkerSettings.linkedLibraries );
     MergeStringVector( targetModuleInfo.dependencies    ,
                        moduleInfoToMergeIn.dependencies ,
                        false                            );

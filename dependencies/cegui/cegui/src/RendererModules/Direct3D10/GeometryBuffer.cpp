@@ -30,6 +30,10 @@
 #include "CEGUI/Vertex.h"
 #include "CEGUI/Exceptions.h"
 
+// DV Edit:
+#undef max
+#undef min
+
 // Start of CEGUI namespace section
 namespace CEGUI
 {
