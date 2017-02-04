@@ -32,6 +32,7 @@ set( MODULE_NAME "CEGUI.CommonDialogs" )
 add_library( ${MODULE_NAME} ${ALL_FILES} )
 add_dependencies( ${MODULE_NAME} CEGUI )
 target_link_libraries( ${MODULE_NAME} CEGUI )
+set_property( TARGET ${MODULE_NAME} APPEND_STRING PROPERTY COMPILE_DEFINITIONS "CEGUICOMMONDIALOGS_EXPORTS" )
 
 include_directories( ../../include )
 

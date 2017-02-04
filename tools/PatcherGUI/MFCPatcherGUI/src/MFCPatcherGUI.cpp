@@ -39,6 +39,21 @@
 #define GUCEF_VFS_CVFS_H
 #endif /* GUCEF_VFS_CVFS_H ? */
 
+#ifndef GUCEF_VFS_CVFSGLOBAL_H
+#include "gucefVFS_CVfsGlobal.h"
+#define GUCEF_VFS_CVFSGLOBAL_H
+#endif /* GUCEF_VFS_CVFSGLOBAL_H ? */
+
+#ifndef GUCEF_COMCORE_CCOMCOREGLOBAL_H
+#include "gucefCOMCORE_CComCoreGlobal.h"
+#define GUCEF_COMCORE_CCOMCOREGLOBAL_H
+#endif /* GUCEF_COMCORE_CCOMCOREGLOBAL_H ? */
+
+#ifndef GUCEF_COM_CCOMGLOBAL_H
+#include "gucefCOM_CComGlobal.h"
+#define GUCEF_COM_CCOMGLOBAL_H
+#endif /* GUCEF_COM_CCOMGLOBAL_H ? */
+
 #ifndef GUCEF_COMCORE_CCOM_H
 #include "CCom.h"
 #define GUCEF_COMCORE_CCOM_H
@@ -71,18 +86,18 @@ CMFCPatcherGUIApp::CMFCPatcherGUIApp()
     GUCEF::CORE::AppendToPath( logFilename, "MFCPatcherGUI_Log.txt" );
     GUCEF::CORE::CFileAccess logFileAccess( logFilename, "w" );
     
-    GUCEF::CORE::CLogManager::Instance()->AddLogger( &m_logger );
+    GUCEF::CORE::CCoreGlobal::Instance()->GetLogManager().AddLogger( &m_logger );
     
     #if defined( GUCEF_MSWIN_BUILD ) && defined( GUCEF_PATCHER_DEBUG_MODE )
-    GUCEF::CORE::CLogManager::Instance()->AddLogger( &m_consoleOut );
+    GUCEF::CORE::CCoreGlobal::Instance()->GetLogManager().AddLogger( &m_consoleOut );
     #endif /* GUCEF_MSWIN_BUILD && GUCEF_PATCHER_DEBUG_MODE ? */    
     
     // We have to call some code in several modules as a hacky method for those modules to actually
     // be linked and loaded. Those modules can auto-register functionality.
     // Some compilers/linkers attempt to optimize by removing dependencies on modules that have no 
     // direct calls from this app.
-    GUCEF::VFS::CVFS::Instance();
-    GUCEF::COMCORE::CCom::Instance();
+    GUCEF::VFS::CVfsGlobal::Instance();
+    GUCEF::COMCORE::CComCoreGlobal::Instance();
     GUCEF::COM::CHTTPClient::RegisterEvents();
         
 	// Place all significant initialization in InitInstance
@@ -123,8 +138,8 @@ BOOL CMFCPatcherGUIApp::InitInstance()
     }
     
     // Load all plugins
-    GUCEF::CORE::CPluginControl* pluginControl = GUCEF::CORE::CPluginControl::Instance();
-    pluginControl->SetPluginDir( pluginDir );
+    GUCEF::CORE::CPluginControl* pluginControl = &GUCEF::CORE::CCoreGlobal::Instance()->GetPluginControl();
+    pluginControl->AddPluginDir( pluginDir );
     pluginControl->LoadAll();
 
     // Check for mandatory command line params

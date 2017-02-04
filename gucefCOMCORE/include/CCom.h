@@ -70,7 +70,7 @@ namespace COMCORE {
 
 class CSocket;
 class CActiveComPump;
-class CGUCEFCOMCOREModule;
+class CComCoreGlobal;
 
 /*-------------------------------------------------------------------------*/
 

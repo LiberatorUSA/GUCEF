@@ -73,7 +73,7 @@ CChildView::CChildView()
     m_patchEngine.Subscribe( this );
     
     // Subscribe the patch engine to the GUCEF application object
-    CORE::CGUCEFApplication* gucefApp = CORE::CGUCEFApplication::Instance();
+    CORE::CGUCEFApplication* gucefApp = &CORE::CCoreGlobal::Instance()->GetApplication();
     m_patchEngine.SubscribeTo( gucefApp, CORE::CGUCEFApplication::AppInitEvent );
     m_patchEngine.SubscribeTo( gucefApp, CORE::CGUCEFApplication::AppShutdownEvent );
     
@@ -187,7 +187,7 @@ CChildView::LoadPatchEngineConfig( void )
     }
     
     // Load the config for the patch engine
-    GUCEF::CORE::CDStoreCodecRegistry* codecRegistry = GUCEF::CORE::CDStoreCodecRegistry::Instance();
+    GUCEF::CORE::CDStoreCodecRegistry* codecRegistry = &GUCEF::CORE::CCoreGlobal::Instance()->GetDStoreCodecRegistry();
     if ( codecRegistry->IsRegistered( configFileCodec ) )
     {
         GUCEF::CORE::CDataNode configData;
@@ -225,8 +225,8 @@ int CChildView::OnCreate(LPCREATESTRUCT lpcs)
     // Hook the GUCEF application driver into the window message loop
     m_gucefDriver = new CGUCEFAppWin32MFCDriver();
     assert( m_gucefDriver );
-    if ( m_gucefDriver->Init( this                                                     ,
-                              CORE::CGUCEFApplication::Instance()->GetPulseGenerator() ) )
+    if ( m_gucefDriver->Init( this                                                                ,
+                              CORE::CCoreGlobal::Instance()->GetApplication().GetPulseGenerator() ) )
     {
         // Create our listbox
         m_listBox = new CListBox();
@@ -261,10 +261,10 @@ int CChildView::OnCreate(LPCREATESTRUCT lpcs)
         m_totalProgress->SetRange( 0, 100 );
         
         // Start the application from the GUCEF point of view
-        CORE::CGUCEFApplication::Instance()->Main( AfxGetInstanceHandle() ,
-                                                   NULL                   ,
-                                                   0                      ,
-                                                   false                  );
+        CORE::CCoreGlobal::Instance()->GetApplication().Main( AfxGetInstanceHandle() ,
+                                                              NULL                   ,
+                                                              0                      ,
+                                                              false                  );
         return 0;                                                  
     }
     
