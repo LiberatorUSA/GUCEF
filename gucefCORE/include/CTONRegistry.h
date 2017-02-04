@@ -107,6 +107,9 @@ class CTONRegistry : public CTObservingNotifierExpansion< CTRegistry< T > > ,
     virtual void Register( const CString& name                ,
                            const TRegisteredObjPtr& sharedPtr );
 
+    virtual bool TryRegister( const CString& name                ,
+                              const TRegisteredObjPtr& sharedPtr );
+
     virtual void Unregister( const CString& name );
 
     virtual void UnregisterAll( void );
@@ -179,11 +182,40 @@ CTONRegistry< T >::Register( const CString& name                ,
 
     TExpansionBase::LockData();
 
-    CTObservingNotifierExpansion< CTRegistry< T > >::Register( name, sharedPtr );
-    ItemRegisteredEventData eData( name );
-    TExpansionBase::NotifyObservers( ItemRegisteredEvent, &eData );
+    try
+    {
+        CTObservingNotifierExpansion< CTRegistry< T > >::Register( name, sharedPtr );
+        ItemRegisteredEventData eData( name );
+        TExpansionBase::NotifyObservers( ItemRegisteredEvent, &eData );
+    }
+    catch ( CTRegistry< T >::EAlreadyRegistered& e )
+    {
+        TExpansionBase::UnlockData();
+        throw e;
+    }
+    TExpansionBase::UnlockData();
+}
+
+/*-------------------------------------------------------------------------*/
+
+template< class T >
+bool
+CTONRegistry< T >::TryRegister( const CString& name                ,
+                                const TRegisteredObjPtr& sharedPtr )
+{GUCEF_TRACE;
+
+    TExpansionBase::LockData();
+
+    bool wasRegistered = CTObservingNotifierExpansion< CTRegistry< T > >::TryRegister( name, sharedPtr );
+    if ( wasRegistered )
+    {
+        ItemRegisteredEventData eData( name );
+        TExpansionBase::NotifyObservers( ItemRegisteredEvent, &eData );
+    }
 
     TExpansionBase::UnlockData();
+    
+    return wasRegistered;
 }
 
 /*-------------------------------------------------------------------------*/

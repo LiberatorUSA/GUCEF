@@ -106,10 +106,20 @@ CImageCodecPluginManager::RegisterPlugin( void* modulePtr                       
         CORE::CStdCodecPlugin::CCodecFamilyList::iterator n = imageCodecList.begin();
         while ( n != imageCodecList.end() )
         {
-            if ( overrideExistingCodecs || !registry.IsRegistered( *n ) )
+            bool isAlreadyRegistered = registry.IsRegistered( *n );
+            if ( overrideExistingCodecs || !isAlreadyRegistered )
             {
+                if ( isAlreadyRegistered && overrideExistingCodecs )
+                {
+                    GUCEF_LOG( CORE::LOGLEVEL_NORMAL, "ImageCodec " + *n + " is already registered but overrideExistingCodecs=True, will unregister current codec" );
+                    registry.Unregister( *n );
+                }
+                
                 TPluginImageCodecItemPtr codecItem = new CPluginImageCodecItem( plugin, (*n) );
-                registry.Register( codecItem->GetType(), codecItem );
+                if ( !registry.TryRegister( codecItem->GetType(), codecItem ) )
+                {
+                    GUCEF_ERROR_LOG( CORE::LOGLEVEL_NORMAL, "Unable to register image codec " + codecItem->GetType() );
+                }
             }
             ++n;
         }

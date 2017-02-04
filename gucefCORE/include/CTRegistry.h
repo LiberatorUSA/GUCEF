@@ -102,6 +102,9 @@ class CTRegistry
     virtual void Register( const CString& name                ,
                            const TRegisteredObjPtr& sharedPtr );
 
+    virtual bool TryRegister( const CString& name                ,
+                              const TRegisteredObjPtr& sharedPtr );
+
     virtual void Unregister( const CString& name );
 
     virtual void UnregisterAll( void );
@@ -264,6 +267,25 @@ CTRegistry< T >::Register( const CString& name                ,
     }
 
     GUCEF_EMSGTHROW( EAlreadyRegistered, "gucefCORE::CTRegistry::Register(): the given name is already registered" );
+}
+
+
+/*-------------------------------------------------------------------------*/
+
+template< class T >
+bool
+CTRegistry< T >::TryRegister( const CString& name                ,
+                              const TRegisteredObjPtr& sharedPtr )
+{GUCEF_TRACE;
+
+    typename TRegisteredObjList::iterator i = m_list.find( name );
+    if ( i == m_list.end() )
+    {
+        m_list[ name ] = new TRegisteredObjPtr( sharedPtr );
+        return true;
+    }
+
+    return false;
 }
 
 /*-------------------------------------------------------------------------*/

@@ -227,9 +227,10 @@ CDStoreCodecPluginManager::RegisterPlugin( void* modulePtr                   ,
                        pluginMetaData ) )
     {
         TDStoreCodecPluginPtr pointerToPlugin = plugin;
-        CCoreGlobal::Instance()->GetDStoreCodecRegistry().Register( plugin->GetTypeName(), pointerToPlugin );
-
-        return pointerToPlugin;
+        if ( CCoreGlobal::Instance()->GetDStoreCodecRegistry().TryRegister( plugin->GetTypeName(), pointerToPlugin ) )
+        {
+            return pointerToPlugin;
+        }
     }
 
     delete plugin;

@@ -125,7 +125,7 @@ CFileAccess::Open( const CString& file ,
         CString path = StripFilename( file );
         if ( !CreateDirs( path ) )
         {
-            GUCEF_DEBUG_LOG( LOGLEVEL_NORMAL, "FileAccess:Open: Failed to recursively create directories" )
+            GUCEF_DEBUG_LOG( LOGLEVEL_NORMAL, "FileAccess:Open: Failed to recursively create directories" );
             return false;
         }
     }
