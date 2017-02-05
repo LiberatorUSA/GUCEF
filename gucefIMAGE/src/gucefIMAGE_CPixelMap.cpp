@@ -404,12 +404,22 @@ bool
 CPixelMap::ApplyBrightnessImp( Float32 adjustmentPercentage )
 {GUCEF_TRACE;
 
-    if ( adjustmentPercentage > 100.0 )
-        adjustmentPercentage = 100.0;
+    //if ( adjustmentPercentage > 100.0 )
+    //    adjustmentPercentage = 100.0;
+    //else
+    //if ( adjustmentPercentage < -100.0 )
+    //    adjustmentPercentage = -100.0;
+
+    Float64 adjustmentFactor = adjustmentPercentage / 100;
+    if ( adjustmentPercentage > 0 )
+    {
+        adjustmentFactor += 1; // Increase in brightness 1.x factor
+    }
     else
-    if ( adjustmentPercentage < -100.0 )
-        adjustmentPercentage = -100.0;
-                
+    {
+        adjustmentFactor *= -1; // Decrease in brightness 0.x factor
+    }                 
+    
     T theMax = std::numeric_limits< T >::max();
     Float64 adjustedMax = (Float64) theMax;
     bool tIsFloat = m_pixelComponentDataType == MT::DATATYPE_FLOAT32 || m_pixelComponentDataType == MT::DATATYPE_FLOAT64;
@@ -418,14 +428,18 @@ CPixelMap::ApplyBrightnessImp( Float32 adjustmentPercentage )
         adjustedMax = 1.0;
     }
 
-    Float64 brightnessAdjustment = adjustmentPercentage * ( adjustedMax / 100.0 );
+    //Float64 brightnessAdjustment = adjustmentPercentage * ( adjustedMax / 100.0 );
 
     T* pixelMapData = (T*) m_pixelMapData;
     UInt64 vMax = GetTotalNumberOfChannelComponentValues();
+
     for ( UInt64 i=0; i<vMax; ++i )
     {
         T value = pixelMapData[ i ];
-        Float64 newValue = value + brightnessAdjustment;
+        
+        //Float64 newValue = value + brightnessAdjustment;
+        Float64 newValue = adjustmentFactor * value;
+
         if ( !tIsFloat )
             newValue = round( newValue );
         if ( newValue > adjustedMax )

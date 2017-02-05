@@ -24,6 +24,7 @@
 //-------------------------------------------------------------------------*/ 
 
 #include <string.h>            /* needed for memcpy() */
+#include <errno.h>
 
 #ifndef GUCEF_CORE_DVFILEUTILS_H
 #include "dvfileutils.h"       /* cross-platform file utils */
@@ -97,6 +98,45 @@ CFileAccess::~CFileAccess()
 
 /*-------------------------------------------------------------------------*/
 
+CString
+CFileAccess::GetErrorString( int errorCode )
+{GUCEF_TRACE;
+
+    switch ( errorCode )
+    {
+        case EACCES:
+            return "EACCES: Search permission is denied on a component of the path prefix, or the file exists and the permissions specified by mode are denied, or the file does not exist and write permission is denied for the parent directory of the file to be created.";
+        case EINTR:
+            return "EINTR: A signal was caught during fopen()";
+        case EISDIR:
+            return "EISDIR: The named file is a directory and mode requires write access";
+        case ELOOP:
+            return "ELOOP: A loop exists in symbolic links encountered during resolution of the path argument";
+        case EMFILE:
+            return "EMFILE: {OPEN_MAX} file descriptors are currently open in the calling process";
+        case ENAMETOOLONG:
+            return "ENAMETOOLONG: The length of the filename argument exceeds {PATH_MAX} or a pathname component is longer than {NAME_MAX}";
+        case ENFILE:
+            return "ENFILE: The maximum allowable number of files is currently open in the system";
+        case ENOENT:
+            return "ENOENT: A component of filename does not name an existing file or filename is an empty string";
+        case ENOSPC:
+            return "ENOSPC: The directory or file system that would contain the new file cannot be expanded, the file does not exist, and the file was to be created";
+        case ENOTDIR:
+            return "ENOTDIR: A component of the path prefix is not a directory";
+        case ENXIO:
+            return "ENXIO: The named file is a character special or block special file, and the device associated with this special file does not exist";
+        case EOVERFLOW:
+            return "EOVERFLOW: The named file is a regular file and the size of the file cannot be represented correctly in an object of type off_t";
+        case EROFS:
+            return "EROFS: The named file resides on a read-only file system and mode requires write access";
+        default:
+            return Int32ToString( errorCode );
+    }
+}
+
+/*-------------------------------------------------------------------------*/
+
 void 
 CFileAccess::Open( void )
 {GUCEF_TRACE;
@@ -134,9 +174,13 @@ CFileAccess::Open( const CString& file ,
         _size = Filesize( file.C_String() );
     }
     
+    errno = 0;
     m_file = fopen( file.C_String() ,
                     mode            );
 
+    if ( m_file == NULL && 0 != errno )
+        GUCEF_DEBUG_LOG( LOGLEVEL_NORMAL, "FileAccess:Open: Failed to open file \"" + file + "\". mode=" + CString(mode) + " error=" + GetErrorString( errno ) );
+    
     return m_file != NULL;
 }
 

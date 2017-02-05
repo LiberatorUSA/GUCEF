@@ -225,7 +225,7 @@ CDynamicBufferAccess::Read( void *dest      ,
                                            esize*elements , 
                                            dest           );
     m_carat += bytesCopied;
-    return bytesCopied;
+    return bytesCopied / esize;
 }
 
 /*-------------------------------------------------------------------------*/

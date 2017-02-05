@@ -683,7 +683,7 @@ CVFS::LoadConfig( const CORE::CDataNode& tree )
 
         return true;
     }
-    return false;
+    return true;
 }
 
 /*-------------------------------------------------------------------------*/

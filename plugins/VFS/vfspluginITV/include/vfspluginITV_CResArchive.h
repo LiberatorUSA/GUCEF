@@ -104,8 +104,9 @@ class CResArchive : public VFS::CIArchive
     // STR: misc string table
     // FDEF: Propulsion definitions
     // 16) SNDEF: Sensor definitions
-    // 1) MATB: material (mineral/resource) gfx?
+    // 1) MATB: material (mineral/resource) gfx
     // 1) OTHERB: misc bitmaps?
+    // 1) TUTB: tutorial gfx
     // 1) RBMP: ?
     // HDEF: Hull definitions
     // MOUSE: mouse mask?

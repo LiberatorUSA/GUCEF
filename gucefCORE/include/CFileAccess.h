@@ -160,6 +160,8 @@ class GUCEF_CORE_PUBLIC_CPP CFileAccess : public CIOAccess
     
     const CString& GetFilename( void ) const;
 
+    static CString GetErrorString( int errorCode );
+
     private:
 
     bool _writeable;
