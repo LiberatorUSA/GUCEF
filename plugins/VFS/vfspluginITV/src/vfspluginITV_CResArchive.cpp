@@ -140,7 +140,7 @@ CResArchive::GetList( TStringSet& outputList       ,
     IndexVector::const_iterator i = m_index.index.begin();
     while ( i != m_index.index.end() )
     {
-        CORE::CString resourceId = CORE::Int32ToString( (*i).resourceNr ) + '.' + resourceType;
+        CORE::CString resourceId = CORE::Int32ToString( (*i).resourceNr ) + ".itv" + resourceType;
         if ( includePathInFilename )
         {
             resourceId = CORE::CombinePath( m_resPath, resourceId );
@@ -157,11 +157,15 @@ CResArchive::FileExists( const VFS::CString& filePath ) const
 {GUCEF_TRACE;
 
     // First perform a sanity check on the resource type
-    CORE::Int32 fileType = CORE::StringToInt32( filePath.SubstrToChar( '.', false ) );
-    if ( fileType != m_index.recordType )
+    VFS::CString typeIdStr = filePath.SubstrToChar( '.', false );
+    typeIdStr = typeIdStr.CutChars( 3, true, 0 );
+    CORE::UInt32 typeId = CORE::StringToUInt32( typeIdStr );
+    if ( typeId != m_index.recordType )
         return false;
 
-    CORE::UInt32 resourceId = CORE::StringToUInt32( filePath.SubstrToChar( '.', true ) );
+    VFS::CString resourceIdStr = filePath.SubstrToChar( '.', true );
+    CORE::UInt32 resourceId = CORE::StringToUInt32( resourceIdStr );
+    
     IndexVector::const_iterator i = m_index.index.begin();
     while ( i != m_index.index.end() )
     {
@@ -182,9 +186,11 @@ CResArchive::GetFileSize( const VFS::CString& filePath ) const
 {GUCEF_TRACE;
 
     // First perform a sanity check on the resource type
-    CORE::Int32 fileType = CORE::StringToInt32( filePath.SubstrToChar( '.', false ) );
-    if ( fileType != m_index.recordType )
-        return 0;
+    VFS::CString typeIdStr = filePath.SubstrToChar( '.', false );
+    typeIdStr = typeIdStr.CutChars( 3, true, 0 );
+    CORE::UInt32 typeId = CORE::StringToUInt32( typeIdStr );
+    if ( typeId != m_index.recordType )
+        return false;
 
     CORE::Int32 offset = 0;
     CORE::Int32 size = 0;
@@ -244,9 +250,11 @@ CResArchive::LoadFile( const VFS::CString& file      ,
 {GUCEF_TRACE;
 
     // First perform a sanity check on the resource type
-    CORE::Int32 fileType = CORE::StringToInt32( file.SubstrToChar( '.', false ) );
-    if ( fileType != m_index.recordType )
-        return NULL;
+    VFS::CString typeIdStr = file.SubstrToChar( '.', false );
+    typeIdStr = typeIdStr.CutChars( 3, true, 0 );
+    CORE::UInt32 typeId = CORE::StringToUInt32( typeIdStr );
+    if ( typeId != m_index.recordType )
+        return false;
     
     CORE::Int32 offset = 0;
     CORE::Int32 size = 0;
@@ -444,6 +452,9 @@ void
 CResArchive::DestroyObject( VFS::CVFSHandle* objectToBeDestroyed )
 {GUCEF_TRACE;
 
+    CORE::CIOAccess* ioAccess = objectToBeDestroyed->GetAccess();
+    if ( NULL != ioAccess )
+        delete ioAccess;
     delete objectToBeDestroyed;
 }
 

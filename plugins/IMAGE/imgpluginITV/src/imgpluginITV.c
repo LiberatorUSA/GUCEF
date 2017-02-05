@@ -54,7 +54,7 @@
 /*---------------------------------------------------------------------------*/
 
 static char* supportedTypes[] = {
-    "1", "5"
+    "itv1", "itv5"
 };
 
 static const UInt32 codecCount = sizeof( supportedTypes ) / sizeof(char*); // 31;
@@ -321,7 +321,7 @@ IMGCODECPLUGIN_DecodeImage( void* pluginData      ,
     /* input sanity check */
     if ( ( NULL == imageOutput ) || ( NULL == codecType ) || ( NULL == input ) || ( NULL == imageOutput ) ) return 0;
 
-    if ( 0 == strcmp( codecType, "1" ) )  // Palettized image
+    if ( 0 == strcmp( codecType, "itv1" ) )  // Palettized image
     {
         UInt16 ui16 = 0;
         
@@ -363,7 +363,7 @@ IMGCODECPLUGIN_DecodeImage( void* pluginData      ,
         return 1;
     }
     else
-    if ( 0 == strcmp( codecType, "5" ) ) // Image Palette
+    if ( 0 == strcmp( codecType, "itv5" ) ) // Image Palette
     {
         UInt16 ui16 = 0;
         UInt32 dataSize = 0;
