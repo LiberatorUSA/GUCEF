@@ -1,0 +1,10 @@
+<ModuleInfoEntry>
+    <Module Name="fliclib" Type="StaticLibrary" Platform="All">
+        <Dependencies>
+        </Dependencies>
+        <Linker>
+        </Linker>
+        <Preprocessor>
+        </Preprocessor>
+    </Module>
+</ModuleInfoEntry>
