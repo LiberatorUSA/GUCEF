@@ -20,6 +20,7 @@ libsquish is version 1.14
 OpenEXR is version 2.2.0
 glew is version 1.13
 glm is version 0.9.6
+LUA is version 5.3.4
 Little-CMS is version >=2.8 HEAD from https://github.com/mm2/Little-CMS
 DevIL is version 1.8.0, see https://github.com/DentonW/DevIL
 

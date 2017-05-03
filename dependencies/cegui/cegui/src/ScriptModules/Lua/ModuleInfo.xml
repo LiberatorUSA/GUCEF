@@ -3,11 +3,18 @@
         <Dependencies>
             <Dependency Name="CEGUI" />
             <Dependency Name="CEGUI.Includes" />
+            <Dependency Name="lua" />
+            <Dependency Name="tolua" />
+            <Dependency Name="toluapp" />
         </Dependencies>
         <Linker>
             <Dependency Name="CEGUI" />
+            <Dependency Name="lua" />
+            <Dependency Name="tolua" />
+            <Dependency Name="toluapp" />
         </Linker>
         <Preprocessor>
+            <Define String="LUA_BUILD_AS_DLL" />
         </Preprocessor>
     </Module>
 </ModuleInfoEntry>

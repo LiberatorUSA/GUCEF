@@ -9,20 +9,72 @@
 #-------------------------------------------------------------------
 #
 
-# Configuration for module: CEGUI.ScriptModule.Lua
+# Configuration for module: lua
 
 set( HEADER_FILES 
-  required.h
-  support/tolua++bin/toluabind.h
+  src/lapi.h
+  src/lauxlib.h
+  src/lcode.h
+  src/lctype.h
+  src/ldebug.h
+  src/ldo.h
+  src/lfunc.h
+  src/lgc.h
+  src/llex.h
+  src/llimits.h
+  src/lmem.h
+  src/lobject.h
+  src/lopcodes.h
+  src/lparser.h
+  src/lprefix.h
+  src/lstate.h
+  src/lstring.h
+  src/ltable.h
+  src/ltm.h
+  src/lua.h
+  src/lua.hpp
+  src/luaconf.h
+  src/lualib.h
+  src/lundump.h
+  src/lvm.h
+  src/lzio.h
 )
 
 set( SOURCE_FILES 
-  Functor.cpp
-  lua_CEGUI.cpp
-  required.cpp
-  ScriptModule.cpp
-  support/tolua++bin/tolua.c
-  support/tolua++bin/toluabind.c
+  src/lapi.c
+  src/lauxlib.c
+  src/lbaselib.c
+  src/lbitlib.c
+  src/lcode.c
+  src/lcorolib.c
+  src/lctype.c
+  src/ldblib.c
+  src/ldebug.c
+  src/ldo.c
+  src/ldump.c
+  src/lfunc.c
+  src/lgc.c
+  src/linit.c
+  src/liolib.c
+  src/llex.c
+  src/lmathlib.c
+  src/lmem.c
+  src/loadlib.c
+  src/lobject.c
+  src/lopcodes.c
+  src/loslib.c
+  src/lparser.c
+  src/lstate.c
+  src/lstring.c
+  src/lstrlib.c
+  src/ltable.c
+  src/ltablib.c
+  src/ltm.c
+  src/luac.c
+  src/lundump.c
+  src/lutf8lib.c
+  src/lvm.c
+  src/lzio.c
 )
 
 # Make sure the PLATFORM_HEADER_FILES variable is always defined
@@ -34,13 +86,11 @@ set( SOURCE_FILES
 # For ease of use make a variable that has all files for this module
 set( ALL_FILES ${HEADER_FILES} ${SOURCE_FILES} ${PLATFORM_HEADER_FILES} ${PLATFORM_SOURCE_FILES} )
 
-set( MODULE_NAME "CEGUI.ScriptModule.Lua" )
+set( MODULE_NAME "lua" )
 add_library( ${MODULE_NAME} ${ALL_FILES} )
-add_dependencies( ${MODULE_NAME} CEGUI lua tolua toluapp )
-target_link_libraries( ${MODULE_NAME} CEGUI lua tolua toluapp )
 set_property( TARGET ${MODULE_NAME} APPEND_STRING PROPERTY COMPILE_DEFINITIONS "LUA_BUILD_AS_DLL" )
 
-include_directories( ../../../../../lua/src ../../../../../tolua/include ../../../../../tolua/src/lib ../../../../../toluapp/include ../../../../../toluapp/src/lib ../../../include ../Lua support/tolua++bin )
+include_directories( src )
 
 
 
@@ -49,13 +99,9 @@ include_directories( ../../../../../lua/src ../../../../../tolua/include ../../.
 
 
 
-if (ANDROID)
-GUCEF_config_lib( ${MODULE_NAME} )
-elseif (LINUX32)
+if (LINUX32)
 GUCEF_config_lib( ${MODULE_NAME} )
 elseif (LINUX64)
-GUCEF_config_lib( ${MODULE_NAME} )
-elseif (OSX)
 GUCEF_config_lib( ${MODULE_NAME} )
 elseif (WIN32)
 GUCEF_config_lib( ${MODULE_NAME} )

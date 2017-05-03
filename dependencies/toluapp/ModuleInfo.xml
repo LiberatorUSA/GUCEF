@@ -1,0 +1,14 @@
+<ModuleInfoEntry>
+    <Module Name="toluapp" Type="StaticLibrary" Platform="All">
+        <Dependencies>
+            <Dependency Name="lua" />
+            <Dependency Name="tolua" />
+        </Dependencies>
+        <Linker>
+            <Dependency Name="lua" />
+            <Dependency Name="tolua" />
+        </Linker>
+        <Preprocessor>
+        </Preprocessor>
+    </Module>
+</ModuleInfoEntry>

@@ -1,0 +1,17 @@
+<ModuleInfoEntry>
+    <Module Name="tolua" Type="SharedLibrary" Platform="All">
+        <Dependencies>
+            <Dependency Name="lua" />
+        </Dependencies>
+        <Linker>
+            <Dependency Name="lua" />
+        </Linker>
+        <Preprocessor>
+        </Preprocessor>
+    </Module>
+    <Module Platform="mswin">
+        <Preprocessor>
+            <Define String="TOLUA5_DLL" />
+        </Preprocessor>
+    </Module>
+</ModuleInfoEntry>

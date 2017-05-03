@@ -1,0 +1,11 @@
+<ModuleInfoEntry>
+    <Module Name="lua" Type="SharedLibrary" Platform="All">
+        <Dependencies>
+        </Dependencies>
+        <Linker>
+        </Linker>
+        <Preprocessor>
+            <Define String="LUA_BUILD_AS_DLL" />
+        </Preprocessor>
+    </Module>
+</ModuleInfoEntry>
