@@ -419,7 +419,7 @@ CDirPreprocessor::ProccessProjectFiles( const CORE::CString& path             ,
                         PROJECTGEN::TStringVector::iterator m = additionalDependencies.begin();
                         while ( m != additionalDependencies.end() )
                         {
-                            moduleInfo.linkerSettings.linkedLibraries[ ReplaceVisualStudioVariables( (*m), globals, true ) ] = PROJECTGEN::MODULETYPE_UNKNOWN;
+                            moduleInfo.linkerSettings.linkedLibraries[ ReplaceVisualStudioVariables( (*m), globals, true ) ].moduleType = PROJECTGEN::MODULETYPE_UNKNOWN;
                             ++m;
                         }
                     }                
@@ -518,7 +518,7 @@ CDirPreprocessor::ProccessProjectFiles( const CORE::CString& path             ,
                     vsRelPath = vsRelPath.CutChars( referenceFilename.Length(), false );
                     CORE::CString relPath = ReplaceVisualStudioVariables( vsRelPath, globals, true );
 
-                    moduleInfo.linkerSettings.linkedLibraries[ referenceFilename ] = MODULETYPE_REFERENCE_LIBRARY;
+                    moduleInfo.linkerSettings.linkedLibraries[ referenceFilename ].moduleType = MODULETYPE_REFERENCE_LIBRARY;
                     GUCEF_LOG( CORE::LOGLEVEL_BELOW_NORMAL, "The module has a managed reference to " + referenceFilename );
                 }
                 ++m;
