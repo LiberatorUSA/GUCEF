@@ -1,0 +1,3 @@
+#ifndef GETADDRINFO_CFLAGS
+#define GETADDRINFO_CFLAGS ""
+#endif

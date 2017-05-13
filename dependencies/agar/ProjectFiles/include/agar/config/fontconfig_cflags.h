@@ -1,0 +1,3 @@
+#ifndef FONTCONFIG_CFLAGS
+#define FONTCONFIG_CFLAGS ""
+#endif

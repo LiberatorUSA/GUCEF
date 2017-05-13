@@ -1,0 +1,187 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project DefaultTargets="Build" ToolsVersion="12.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <ItemGroup Label="ProjectConfigurations">
+    <ProjectConfiguration Include="Debug|Win32">
+      <Configuration>Debug</Configuration>
+      <Platform>Win32</Platform>
+    </ProjectConfiguration>
+    <ProjectConfiguration Include="Release|Win32">
+      <Configuration>Release</Configuration>
+      <Platform>Win32</Platform>
+    </ProjectConfiguration>
+  </ItemGroup>
+  <PropertyGroup Label="Globals">
+    <ProjectGuid>{71a13512-13e7-44a6-ba69-e868296cdc34}</ProjectGuid>
+    <RootNamespace>ag_gui_static</RootNamespace>
+    <Keyword>Win32Proj</Keyword>
+  </PropertyGroup>
+  <Import Project="$(VCTargetsPath)\Microsoft.Cpp.Default.props" />
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'" Label="Configuration">
+    <ConfigurationType>StaticLibrary</ConfigurationType>
+    <PlatformToolset>v120</PlatformToolset>
+    <CharacterSet>MultiByte</CharacterSet>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'" Label="Configuration">
+    <ConfigurationType>StaticLibrary</ConfigurationType>
+    <PlatformToolset>v120</PlatformToolset>
+    <CharacterSet>MultiByte</CharacterSet>
+  </PropertyGroup>
+  <Import Project="$(VCTargetsPath)\Microsoft.Cpp.props" />
+  <ImportGroup Label="ExtensionSettings">
+  </ImportGroup>
+  <ImportGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'" Label="PropertySheets">
+    <Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" Label="LocalAppDataPlatform" />
+  </ImportGroup>
+  <ImportGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'" Label="PropertySheets">
+    <Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" Label="LocalAppDataPlatform" />
+  </ImportGroup>
+  <PropertyGroup Label="UserMacros" />
+  <PropertyGroup>
+    <_ProjectFileVersion>12.0.30501.0</_ProjectFileVersion>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
+    <OutDir>..\</OutDir>
+    <IntDir>obj/Debug\</IntDir>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
+    <OutDir>..\</OutDir>
+    <IntDir>obj/Release\</IntDir>
+  </PropertyGroup>
+  <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
+    <ClCompile>
+      <Optimization>Disabled</Optimization>
+      <AdditionalIncludeDirectories>$(SolutionDir)/include;/home/vedge/src/agar-1.5.0/include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <PreprocessorDefinitions>_AGAR_INTERNAL;_BSD_SOURCE;_CRT_SECURE_NO_WARNINGS;_CRT_SECURE_NO_DEPRECATE;_AGAR_INTERNAL;_BSD_SOURCE;_AGAR_GUI_INTERNAL;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <MinimalRebuild>true</MinimalRebuild>
+      <BasicRuntimeChecks>EnableFastChecks</BasicRuntimeChecks>
+      <RuntimeLibrary>MultiThreadedDebugDLL</RuntimeLibrary>
+      <FunctionLevelLinking>true</FunctionLevelLinking>
+      <PrecompiledHeader />
+      <WarningLevel>Level3</WarningLevel>
+      <DebugInformationFormat>EditAndContinue</DebugInformationFormat>
+    </ClCompile>
+    <ResourceCompile>
+      <PreprocessorDefinitions>_AGAR_INTERNAL;_BSD_SOURCE;_CRT_SECURE_NO_WARNINGS;_CRT_SECURE_NO_DEPRECATE;_AGAR_INTERNAL;_BSD_SOURCE;_AGAR_GUI_INTERNAL;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <AdditionalIncludeDirectories>$(SolutionDir)/include;/home/vedge/src/agar-1.5.0/include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+    </ResourceCompile>
+    <Lib>
+      <OutputFile>$(OutDir)ag_gui_static.lib</OutputFile>
+    </Lib>
+  </ItemDefinitionGroup>
+  <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
+    <ClCompile>
+      <Optimization>Full</Optimization>
+      <AdditionalIncludeDirectories>$(SolutionDir)/include;/home/vedge/src/agar-1.5.0/include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <PreprocessorDefinitions>_AGAR_INTERNAL;_BSD_SOURCE;_CRT_SECURE_NO_WARNINGS;_CRT_SECURE_NO_DEPRECATE;_AGAR_INTERNAL;_BSD_SOURCE;_AGAR_GUI_INTERNAL;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <StringPooling>true</StringPooling>
+      <RuntimeLibrary>MultiThreadedDLL</RuntimeLibrary>
+      <FunctionLevelLinking>true</FunctionLevelLinking>
+      <PrecompiledHeader />
+      <WarningLevel>Level3</WarningLevel>
+      <DebugInformationFormat />
+    </ClCompile>
+    <ResourceCompile>
+      <PreprocessorDefinitions>_AGAR_INTERNAL;_BSD_SOURCE;_CRT_SECURE_NO_WARNINGS;_CRT_SECURE_NO_DEPRECATE;_AGAR_INTERNAL;_BSD_SOURCE;_AGAR_GUI_INTERNAL;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <AdditionalIncludeDirectories>$(SolutionDir)/include;/home/vedge/src/agar-1.5.0/include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+    </ResourceCompile>
+    <Lib>
+      <OutputFile>$(OutDir)ag_gui_static.lib</OutputFile>
+    </Lib>
+  </ItemDefinitionGroup>
+  <ItemGroup>
+    <ClCompile Include="anim.c" />
+    <ClCompile Include="box.c" />
+    <ClCompile Include="button.c" />
+    <ClCompile Include="checkbox.c" />
+    <ClCompile Include="colors.c" />
+    <ClCompile Include="combo.c" />
+    <ClCompile Include="console.c" />
+    <ClCompile Include="cursors.c" />
+    <ClCompile Include="debugger.c" />
+    <ClCompile Include="dir_dlg.c" />
+    <ClCompile Include="drv.c" />
+    <ClCompile Include="drv_gl_common.c" />
+    <ClCompile Include="drv_mw.c" />
+    <ClCompile Include="drv_sdlfb.c" />
+    <ClCompile Include="drv_sdlgl.c" />
+    <ClCompile Include="drv_sdl_common.c" />
+    <ClCompile Include="drv_sw.c" />
+    <ClCompile Include="drv_wgl.c" />
+    <ClCompile Include="editable.c" />
+    <ClCompile Include="file_dlg.c" />
+    <ClCompile Include="file_selector.c" />
+    <ClCompile Include="fixed.c" />
+    <ClCompile Include="fixed_plotter.c" />
+    <ClCompile Include="font_selector.c" />
+    <ClCompile Include="fspinbutton.c" />
+    <ClCompile Include="geometry.c" />
+    <ClCompile Include="global_keys.c" />
+    <ClCompile Include="glview.c" />
+    <ClCompile Include="graph.c" />
+    <ClCompile Include="gui.c" />
+    <ClCompile Include="hsvpal.c" />
+    <ClCompile Include="icon.c" />
+    <ClCompile Include="iconmgr.c" />
+    <ClCompile Include="input_device.c" />
+    <ClCompile Include="keyboard.c" />
+    <ClCompile Include="keymap.c" />
+    <ClCompile Include="keymap_compose.c" />
+    <ClCompile Include="keymap_latin1.c" />
+    <ClCompile Include="keysyms.c" />
+    <ClCompile Include="label.c" />
+    <ClCompile Include="load_bmp.c" />
+    <ClCompile Include="load_color.c" />
+    <ClCompile Include="load_jpg.c" />
+    <ClCompile Include="load_png.c" />
+    <ClCompile Include="load_surface.c" />
+    <ClCompile Include="load_xcf.c" />
+    <ClCompile Include="menu.c" />
+    <ClCompile Include="menu_view.c" />
+    <ClCompile Include="mfspinbutton.c" />
+    <ClCompile Include="mouse.c" />
+    <ClCompile Include="mpane.c" />
+    <ClCompile Include="mspinbutton.c" />
+    <ClCompile Include="nlunits.c" />
+    <ClCompile Include="notebook.c" />
+    <ClCompile Include="numerical.c" />
+    <ClCompile Include="objsel.c" />
+    <ClCompile Include="packedpixel.c" />
+    <ClCompile Include="pane.c" />
+    <ClCompile Include="pixmap.c" />
+    <ClCompile Include="progress_bar.c" />
+    <ClCompile Include="radio.c" />
+    <ClCompile Include="scrollbar.c" />
+    <ClCompile Include="scrollview.c" />
+    <ClCompile Include="separator.c" />
+    <ClCompile Include="slider.c" />
+    <ClCompile Include="socket.c" />
+    <ClCompile Include="spinbutton.c" />
+    <ClCompile Include="statusbar.c" />
+    <ClCompile Include="stylesheet.c" />
+    <ClCompile Include="surface.c" />
+    <ClCompile Include="table.c" />
+    <ClCompile Include="text.c" />
+    <ClCompile Include="textbox.c" />
+    <ClCompile Include="text_cache.c" />
+    <ClCompile Include="time_sdl.c" />
+    <ClCompile Include="titlebar.c" />
+    <ClCompile Include="tlist.c" />
+    <ClCompile Include="toolbar.c" />
+    <ClCompile Include="treetbl.c" />
+    <ClCompile Include="ttf.c" />
+    <ClCompile Include="ucombo.c" />
+    <ClCompile Include="units.c" />
+    <ClCompile Include="widget.c" />
+    <ClCompile Include="widget_legacy.c" />
+    <ClCompile Include="window.c" />
+  </ItemGroup>
+  <ItemGroup>
+    <ProjectReference Include="..\core\ag_core_static.vcxproj">
+      <Project>{9d6bb497-1d2a-4ac0-9f7b-7be68b9077e8}</Project>
+      <ReferenceOutputAssembly>false</ReferenceOutputAssembly>
+    </ProjectReference>
+  </ItemGroup>
+  <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
+  <ImportGroup Label="ExtensionTargets">
+  </ImportGroup>
+</Project>

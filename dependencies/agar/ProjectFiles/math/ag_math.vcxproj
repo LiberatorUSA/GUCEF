@@ -1,0 +1,163 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project DefaultTargets="Build" ToolsVersion="12.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <ItemGroup Label="ProjectConfigurations">
+    <ProjectConfiguration Include="Debug|Win32">
+      <Configuration>Debug</Configuration>
+      <Platform>Win32</Platform>
+    </ProjectConfiguration>
+    <ProjectConfiguration Include="Release|Win32">
+      <Configuration>Release</Configuration>
+      <Platform>Win32</Platform>
+    </ProjectConfiguration>
+  </ItemGroup>
+  <PropertyGroup Label="Globals">
+    <ProjectGuid>{EEDAA3AF-756C-4302-A3EE-895257540B72}</ProjectGuid>
+    <RootNamespace>ag_math</RootNamespace>
+    <Keyword>Win32Proj</Keyword>
+  </PropertyGroup>
+  <Import Project="$(VCTargetsPath)\Microsoft.Cpp.Default.props" />
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'" Label="Configuration">
+    <ConfigurationType>DynamicLibrary</ConfigurationType>
+    <PlatformToolset>v120</PlatformToolset>
+    <CharacterSet>MultiByte</CharacterSet>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'" Label="Configuration">
+    <ConfigurationType>DynamicLibrary</ConfigurationType>
+    <PlatformToolset>v120</PlatformToolset>
+    <CharacterSet>MultiByte</CharacterSet>
+  </PropertyGroup>
+  <Import Project="$(VCTargetsPath)\Microsoft.Cpp.props" />
+  <ImportGroup Label="ExtensionSettings">
+  </ImportGroup>
+  <ImportGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'" Label="PropertySheets">
+    <Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" Label="LocalAppDataPlatform" />
+  </ImportGroup>
+  <ImportGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'" Label="PropertySheets">
+    <Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" Label="LocalAppDataPlatform" />
+  </ImportGroup>
+  <PropertyGroup Label="UserMacros" />
+  <PropertyGroup>
+    <_ProjectFileVersion>12.0.30501.0</_ProjectFileVersion>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
+    <OutDir>..\</OutDir>
+    <IntDir>obj/Debug\</IntDir>
+    <LinkIncremental>true</LinkIncremental>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
+    <OutDir>..\</OutDir>
+    <IntDir>obj/Release\</IntDir>
+    <LinkIncremental>false</LinkIncremental>
+  </PropertyGroup>
+  <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
+    <ClCompile>
+      <Optimization>Disabled</Optimization>
+      <AdditionalIncludeDirectories>$(SolutionDir)/include;/home/vedge/src/agar-1.5.0/include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <PreprocessorDefinitions>_AGAR_INTERNAL;_BSD_SOURCE;_CRT_SECURE_NO_WARNINGS;_CRT_SECURE_NO_DEPRECATE;_AGAR_INTERNAL;_BSD_SOURCE;_AGAR_MATH_INTERNAL;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <MinimalRebuild>true</MinimalRebuild>
+      <BasicRuntimeChecks>EnableFastChecks</BasicRuntimeChecks>
+      <RuntimeLibrary>MultiThreadedDebugDLL</RuntimeLibrary>
+      <FunctionLevelLinking>true</FunctionLevelLinking>
+      <PrecompiledHeader />
+      <WarningLevel>Level3</WarningLevel>
+      <DebugInformationFormat>EditAndContinue</DebugInformationFormat>
+    </ClCompile>
+    <ResourceCompile>
+      <PreprocessorDefinitions>_AGAR_INTERNAL;_BSD_SOURCE;_CRT_SECURE_NO_WARNINGS;_CRT_SECURE_NO_DEPRECATE;_AGAR_INTERNAL;_BSD_SOURCE;_AGAR_MATH_INTERNAL;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <AdditionalIncludeDirectories>$(SolutionDir)/include;/home/vedge/src/agar-1.5.0/include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+    </ResourceCompile>
+    <Link>
+      <AdditionalDependencies>../ag_core_static.lib;pthreadVC2.lib;winmm.lib;wsock32.lib;../ag_gui_static.lib;SDL.lib;freetype.lib;opengl32.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <OutputFile>$(OutDir)ag_math.dll</OutputFile>
+      <AdditionalLibraryDirectories>..;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
+      <GenerateDebugInformation>true</GenerateDebugInformation>
+      <ProgramDatabaseFile>$(OutDir)ag_math.pdb</ProgramDatabaseFile>
+      <SubSystem>Windows</SubSystem>
+      <ImportLibrary>../ag_math.lib</ImportLibrary>
+      <TargetMachine>MachineX86</TargetMachine>
+    </Link>
+  </ItemDefinitionGroup>
+  <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
+    <ClCompile>
+      <Optimization>Full</Optimization>
+      <AdditionalIncludeDirectories>$(SolutionDir)/include;/home/vedge/src/agar-1.5.0/include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <PreprocessorDefinitions>_AGAR_INTERNAL;_BSD_SOURCE;_CRT_SECURE_NO_WARNINGS;_CRT_SECURE_NO_DEPRECATE;_AGAR_INTERNAL;_BSD_SOURCE;_AGAR_MATH_INTERNAL;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <StringPooling>true</StringPooling>
+      <RuntimeLibrary>MultiThreadedDLL</RuntimeLibrary>
+      <FunctionLevelLinking>true</FunctionLevelLinking>
+      <PrecompiledHeader />
+      <WarningLevel>Level3</WarningLevel>
+      <DebugInformationFormat />
+    </ClCompile>
+    <ResourceCompile>
+      <PreprocessorDefinitions>_AGAR_INTERNAL;_BSD_SOURCE;_CRT_SECURE_NO_WARNINGS;_CRT_SECURE_NO_DEPRECATE;_AGAR_INTERNAL;_BSD_SOURCE;_AGAR_MATH_INTERNAL;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <AdditionalIncludeDirectories>$(SolutionDir)/include;/home/vedge/src/agar-1.5.0/include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+    </ResourceCompile>
+    <Link>
+      <AdditionalDependencies>../ag_core_static.lib;pthreadVC2.lib;winmm.lib;wsock32.lib;../ag_gui_static.lib;SDL.lib;freetype.lib;opengl32.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <OutputFile>$(OutDir)ag_math.dll</OutputFile>
+      <AdditionalLibraryDirectories>..;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
+      <GenerateDebugInformation>false</GenerateDebugInformation>
+      <SubSystem>Windows</SubSystem>
+      <OptimizeReferences>true</OptimizeReferences>
+      <EnableCOMDATFolding>true</EnableCOMDATFolding>
+      <ImportLibrary>../ag_math.lib</ImportLibrary>
+      <TargetMachine>MachineX86</TargetMachine>
+    </Link>
+  </ItemDefinitionGroup>
+  <ItemGroup>
+    <ClCompile Include="m_circle.c" />
+    <ClCompile Include="m_color.c" />
+    <ClCompile Include="m_complex.c" />
+    <ClCompile Include="m_coordinates.c" />
+    <ClCompile Include="m_gui.c" />
+    <ClCompile Include="m_heapsort.c" />
+    <ClCompile Include="m_line.c" />
+    <ClCompile Include="m_math.c" />
+    <ClCompile Include="m_matrix.c" />
+    <ClCompile Include="m_matrix44_fpu.c" />
+    <ClCompile Include="m_matrix44_sse.c" />
+    <ClCompile Include="m_matrix_fpu.c" />
+    <ClCompile Include="m_matrix_sparse.c" />
+    <ClCompile Include="m_matview.c" />
+    <ClCompile Include="m_mergesort.c" />
+    <ClCompile Include="m_plane.c" />
+    <ClCompile Include="m_plotter.c" />
+    <ClCompile Include="m_point_set.c" />
+    <ClCompile Include="m_polygon.c" />
+    <ClCompile Include="m_polyhedron.c" />
+    <ClCompile Include="m_qsort.c" />
+    <ClCompile Include="m_quaternion.c" />
+    <ClCompile Include="m_radixsort.c" />
+    <ClCompile Include="m_rectangle.c" />
+    <ClCompile Include="m_sparse_allocate.c" />
+    <ClCompile Include="m_sparse_build.c" />
+    <ClCompile Include="m_sparse_eda.c" />
+    <ClCompile Include="m_sparse_factor.c" />
+    <ClCompile Include="m_sparse_output.c" />
+    <ClCompile Include="m_sparse_solve.c" />
+    <ClCompile Include="m_sparse_utils.c" />
+    <ClCompile Include="m_sphere.c" />
+    <ClCompile Include="m_triangle.c" />
+    <ClCompile Include="m_vector.c" />
+    <ClCompile Include="m_vector2_fpu.c" />
+    <ClCompile Include="m_vector3_fpu.c" />
+    <ClCompile Include="m_vector3_sse.c" />
+    <ClCompile Include="m_vector4_fpu.c" />
+    <ClCompile Include="m_vectorz.c" />
+    <ClCompile Include="m_vector_fpu.c" />
+  </ItemGroup>
+  <ItemGroup>
+    <ProjectReference Include="..\core\ag_core_static.vcxproj">
+      <Project>{9d6bb497-1d2a-4ac0-9f7b-7be68b9077e8}</Project>
+      <ReferenceOutputAssembly>false</ReferenceOutputAssembly>
+    </ProjectReference>
+    <ProjectReference Include="..\gui\ag_gui_static.vcxproj">
+      <Project>{71a13512-13e7-44a6-ba69-e868296cdc34}</Project>
+      <ReferenceOutputAssembly>false</ReferenceOutputAssembly>
+    </ProjectReference>
+  </ItemGroup>
+  <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
+  <ImportGroup Label="ExtensionTargets">
+  </ImportGroup>
+</Project>

@@ -1,0 +1,134 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project DefaultTargets="Build" ToolsVersion="12.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <ItemGroup Label="ProjectConfigurations">
+    <ProjectConfiguration Include="Debug|Win32">
+      <Configuration>Debug</Configuration>
+      <Platform>Win32</Platform>
+    </ProjectConfiguration>
+    <ProjectConfiguration Include="Release|Win32">
+      <Configuration>Release</Configuration>
+      <Platform>Win32</Platform>
+    </ProjectConfiguration>
+  </ItemGroup>
+  <PropertyGroup Label="Globals">
+    <ProjectGuid>{9d6bb497-1d2a-4ac0-9f7b-7be68b9077e8}</ProjectGuid>
+    <RootNamespace>ag_core_static</RootNamespace>
+    <Keyword>Win32Proj</Keyword>
+  </PropertyGroup>
+  <Import Project="$(VCTargetsPath)\Microsoft.Cpp.Default.props" />
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'" Label="Configuration">
+    <ConfigurationType>StaticLibrary</ConfigurationType>
+    <PlatformToolset>v120</PlatformToolset>
+    <CharacterSet>MultiByte</CharacterSet>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'" Label="Configuration">
+    <ConfigurationType>StaticLibrary</ConfigurationType>
+    <PlatformToolset>v120</PlatformToolset>
+    <CharacterSet>MultiByte</CharacterSet>
+  </PropertyGroup>
+  <Import Project="$(VCTargetsPath)\Microsoft.Cpp.props" />
+  <ImportGroup Label="ExtensionSettings">
+  </ImportGroup>
+  <ImportGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'" Label="PropertySheets">
+    <Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" Label="LocalAppDataPlatform" />
+  </ImportGroup>
+  <ImportGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'" Label="PropertySheets">
+    <Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" Label="LocalAppDataPlatform" />
+  </ImportGroup>
+  <PropertyGroup Label="UserMacros" />
+  <PropertyGroup>
+    <_ProjectFileVersion>12.0.30501.0</_ProjectFileVersion>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
+    <OutDir>..\</OutDir>
+    <IntDir>obj/Debug\</IntDir>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
+    <OutDir>..\</OutDir>
+    <IntDir>obj/Release\</IntDir>
+  </PropertyGroup>
+  <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
+    <ClCompile>
+      <Optimization>Disabled</Optimization>
+      <AdditionalIncludeDirectories>$(SolutionDir)/include;/home/vedge/src/agar-1.5.0/include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <PreprocessorDefinitions>_AGAR_INTERNAL;_BSD_SOURCE;_CRT_SECURE_NO_WARNINGS;_CRT_SECURE_NO_DEPRECATE;_AGAR_INTERNAL;_BSD_SOURCE;_AGAR_CORE_INTERNAL;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <MinimalRebuild>true</MinimalRebuild>
+      <BasicRuntimeChecks>EnableFastChecks</BasicRuntimeChecks>
+      <RuntimeLibrary>MultiThreadedDebugDLL</RuntimeLibrary>
+      <FunctionLevelLinking>true</FunctionLevelLinking>
+      <PrecompiledHeader />
+      <WarningLevel>Level3</WarningLevel>
+      <DebugInformationFormat>EditAndContinue</DebugInformationFormat>
+    </ClCompile>
+    <ResourceCompile>
+      <PreprocessorDefinitions>_AGAR_INTERNAL;_BSD_SOURCE;_CRT_SECURE_NO_WARNINGS;_CRT_SECURE_NO_DEPRECATE;_AGAR_INTERNAL;_BSD_SOURCE;_AGAR_CORE_INTERNAL;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <AdditionalIncludeDirectories>$(SolutionDir)/include;/home/vedge/src/agar-1.5.0/include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+    </ResourceCompile>
+    <Lib>
+      <OutputFile>$(OutDir)ag_core_static.lib</OutputFile>
+    </Lib>
+  </ItemDefinitionGroup>
+  <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
+    <ClCompile>
+      <Optimization>Full</Optimization>
+      <AdditionalIncludeDirectories>$(SolutionDir)/include;/home/vedge/src/agar-1.5.0/include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <PreprocessorDefinitions>_AGAR_INTERNAL;_BSD_SOURCE;_CRT_SECURE_NO_WARNINGS;_CRT_SECURE_NO_DEPRECATE;_AGAR_INTERNAL;_BSD_SOURCE;_AGAR_CORE_INTERNAL;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <StringPooling>true</StringPooling>
+      <RuntimeLibrary>MultiThreadedDLL</RuntimeLibrary>
+      <FunctionLevelLinking>true</FunctionLevelLinking>
+      <PrecompiledHeader />
+      <WarningLevel>Level3</WarningLevel>
+      <DebugInformationFormat />
+    </ClCompile>
+    <ResourceCompile>
+      <PreprocessorDefinitions>_AGAR_INTERNAL;_BSD_SOURCE;_CRT_SECURE_NO_WARNINGS;_CRT_SECURE_NO_DEPRECATE;_AGAR_INTERNAL;_BSD_SOURCE;_AGAR_CORE_INTERNAL;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <AdditionalIncludeDirectories>$(SolutionDir)/include;/home/vedge/src/agar-1.5.0/include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+    </ResourceCompile>
+    <Lib>
+      <OutputFile>$(OutDir)ag_core_static.lib</OutputFile>
+    </Lib>
+  </ItemDefinitionGroup>
+  <ItemGroup>
+    <ClCompile Include="asprintf.c" />
+    <ClCompile Include="class.c" />
+    <ClCompile Include="config.c" />
+    <ClCompile Include="core.c" />
+    <ClCompile Include="cpuinfo.c" />
+    <ClCompile Include="data_source.c" />
+    <ClCompile Include="db.c" />
+    <ClCompile Include="dir.c" />
+    <ClCompile Include="dso.c" />
+    <ClCompile Include="error.c" />
+    <ClCompile Include="event.c" />
+    <ClCompile Include="exec.c" />
+    <ClCompile Include="file.c" />
+    <ClCompile Include="getopt.c" />
+    <ClCompile Include="load_string.c" />
+    <ClCompile Include="load_version.c" />
+    <ClCompile Include="md5.c" />
+    <ClCompile Include="net.c" />
+    <ClCompile Include="net_dummy.c" />
+    <ClCompile Include="net_winsock1.c" />
+    <ClCompile Include="object.c" />
+    <ClCompile Include="prop.c" />
+    <ClCompile Include="rmd160.c" />
+    <ClCompile Include="sha1.c" />
+    <ClCompile Include="snprintf.c" />
+    <ClCompile Include="string.c" />
+    <ClCompile Include="tbl.c" />
+    <ClCompile Include="text.c" />
+    <ClCompile Include="time.c" />
+    <ClCompile Include="timeout.c" />
+    <ClCompile Include="time_dummy.c" />
+    <ClCompile Include="time_win32.c" />
+    <ClCompile Include="tree.c" />
+    <ClCompile Include="user.c" />
+    <ClCompile Include="user_dummy.c" />
+    <ClCompile Include="variable.c" />
+    <ClCompile Include="vasprintf.c" />
+    <ClCompile Include="vsnprintf.c" />
+  </ItemGroup>
+  <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
+  <ImportGroup Label="ExtensionTargets">
+  </ImportGroup>
+</Project>
