@@ -38,7 +38,7 @@ set( MODULE_NAME "CEGUI.ScriptModule.Lua" )
 add_library( ${MODULE_NAME} ${ALL_FILES} )
 add_dependencies( ${MODULE_NAME} CEGUI lua tolua toluapp )
 target_link_libraries( ${MODULE_NAME} CEGUI lua tolua toluapp )
-set_property( TARGET ${MODULE_NAME} APPEND_STRING PROPERTY COMPILE_DEFINITIONS "LUA_BUILD_AS_DLL" )
+set_property( TARGET ${MODULE_NAME} APPEND_STRING PROPERTY COMPILE_DEFINITIONS "CEGUILUASCRIPTMODULE_EXPORTS;LUA_BUILD_AS_DLL" )
 
 include_directories( ../../../../../lua/src ../../../../../tolua/include ../../../../../tolua/src/lib ../../../../../toluapp/include ../../../../../toluapp/src/lib ../../../include ../Lua support/tolua++bin )
 

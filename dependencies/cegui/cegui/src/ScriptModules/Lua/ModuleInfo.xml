@@ -15,6 +15,7 @@
         </Linker>
         <Preprocessor>
             <Define String="LUA_BUILD_AS_DLL" />
+            <Define String="CEGUILUASCRIPTMODULE_EXPORTS" />
         </Preprocessor>
     </Module>
 </ModuleInfoEntry>
