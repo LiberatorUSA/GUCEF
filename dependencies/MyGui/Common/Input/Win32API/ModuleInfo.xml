@@ -1,3 +1,10 @@
 <ModuleInfoEntry>
-    <Module Name="MyGUI.Common.Input.Win32" Type="CodeIncludeLocation" Platform="All"/>
+    <Module Name="MyGUI.Common.Input.Win32" Type="CodeIntegrateLocation" Platform="mswin">
+        <Dependencies>
+        </Dependencies>
+        <Linker>
+        </Linker>
+        <Preprocessor>
+        </Preprocessor>
+    </Module>
 </ModuleInfoEntry>

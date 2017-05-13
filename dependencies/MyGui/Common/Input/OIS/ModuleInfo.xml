@@ -1,3 +1,12 @@
 <ModuleInfoEntry>
-    <Module Name="MyGUI.Common.Input.OIS" Type="CodeIncludeLocation" Platform="All"/>
+    <Module Name="MyGUI.Common.Input.OIS" Type="CodeIntegrateLocation" Platform="All">
+        <Dependencies>
+            <Dependency Name="OIS" />
+        </Dependencies>
+        <Linker>
+            <Dependency Name="OIS" />
+        </Linker>
+        <Preprocessor>
+        </Preprocessor>
+    </Module>
 </ModuleInfoEntry>
