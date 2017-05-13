@@ -23,6 +23,7 @@ glm is version 0.9.6
 LUA is version 5.3.4
 Little-CMS is version >=2.8 HEAD from https://github.com/mm2/Little-CMS
 DevIL is version 1.8.0, see https://github.com/DentonW/DevIL
+toluapp is a LUA 5.3 patched version from : https://github.com/waltervn/toluapp
 
 The OIS dependency is at version 1.3 and can be obtained from http://sourceforge.net/projects/wgois
 Note for MS Windows builds: that to build the DirectInput dependent code you must have the DirectX SDK installed on your system.
