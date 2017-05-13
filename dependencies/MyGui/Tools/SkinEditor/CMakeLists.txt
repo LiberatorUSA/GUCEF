@@ -91,6 +91,15 @@ if (LINUX32)
     TextureToolControl.h
     VerticalSelectorBlackControl.h
     VerticalSelectorControl.h
+    ../../Common/Base/InputFocusInfo.h
+    ../../Common/Base/Main.h
+    ../../Common/Base/StatisticInfo.h
+    ../../Common/Base/OpenGL/BaseManager.h
+    ../../Common/Input/OIS/InputManager.h
+    ../../Common/Input/OIS/PointerManager.h
+    ../../Common/ItemBox/BaseCellView.h
+    ../../Common/ItemBox/BaseItemBox.h
+    ../../Common/ItemBox/ItemDropInfo.h
   )
 
   set( PLATFORM_HEADER_INSTALL "LINUX32" )
@@ -167,6 +176,9 @@ if (LINUX32)
     TextureToolControl.cpp
     VerticalSelectorBlackControl.cpp
     VerticalSelectorControl.cpp
+    ../../Common/Base/OpenGL/BaseManager.cpp
+    ../../Common/Input/OIS/InputManager.cpp
+    ../../Common/Input/OIS/PointerManager.cpp
   )
 
   set( PLATFORM_SOURCE_INSTALL "LINUX32" )
@@ -250,6 +262,15 @@ elseif (LINUX64)
     TextureToolControl.h
     VerticalSelectorBlackControl.h
     VerticalSelectorControl.h
+    ../../Common/Base/InputFocusInfo.h
+    ../../Common/Base/Main.h
+    ../../Common/Base/StatisticInfo.h
+    ../../Common/Base/OpenGL/BaseManager.h
+    ../../Common/Input/OIS/InputManager.h
+    ../../Common/Input/OIS/PointerManager.h
+    ../../Common/ItemBox/BaseCellView.h
+    ../../Common/ItemBox/BaseItemBox.h
+    ../../Common/ItemBox/ItemDropInfo.h
   )
 
   set( PLATFORM_HEADER_INSTALL "LINUX64" )
@@ -326,6 +347,9 @@ elseif (LINUX64)
     TextureToolControl.cpp
     VerticalSelectorBlackControl.cpp
     VerticalSelectorControl.cpp
+    ../../Common/Base/OpenGL/BaseManager.cpp
+    ../../Common/Input/OIS/InputManager.cpp
+    ../../Common/Input/OIS/PointerManager.cpp
   )
 
   set( PLATFORM_SOURCE_INSTALL "LINUX64" )
@@ -409,6 +433,13 @@ elseif (WIN32)
     TextureToolControl.h
     VerticalSelectorBlackControl.h
     VerticalSelectorControl.h
+    ../../Common/Base/InputFocusInfo.h
+    ../../Common/Base/Main.h
+    ../../Common/Base/StatisticInfo.h
+    ../../Common/Base/OpenGL/BaseManager.h
+    ../../Common/ItemBox/BaseCellView.h
+    ../../Common/ItemBox/BaseItemBox.h
+    ../../Common/ItemBox/ItemDropInfo.h
   )
 
   set( PLATFORM_HEADER_INSTALL "WIN32" )
@@ -485,6 +516,7 @@ elseif (WIN32)
     TextureToolControl.cpp
     VerticalSelectorBlackControl.cpp
     VerticalSelectorControl.cpp
+    ../../Common/Base/OpenGL/BaseManager.cpp
   )
 
   set( PLATFORM_SOURCE_INSTALL "WIN32" )
@@ -568,6 +600,13 @@ elseif (WIN64)
     TextureToolControl.h
     VerticalSelectorBlackControl.h
     VerticalSelectorControl.h
+    ../../Common/Base/InputFocusInfo.h
+    ../../Common/Base/Main.h
+    ../../Common/Base/StatisticInfo.h
+    ../../Common/Base/OpenGL/BaseManager.h
+    ../../Common/ItemBox/BaseCellView.h
+    ../../Common/ItemBox/BaseItemBox.h
+    ../../Common/ItemBox/ItemDropInfo.h
   )
 
   set( PLATFORM_HEADER_INSTALL "WIN64" )
@@ -644,6 +683,7 @@ elseif (WIN64)
     TextureToolControl.cpp
     VerticalSelectorBlackControl.cpp
     VerticalSelectorControl.cpp
+    ../../Common/Base/OpenGL/BaseManager.cpp
   )
 
   set( PLATFORM_SOURCE_INSTALL "WIN64" )
@@ -675,30 +715,46 @@ elseif( WIN64 )
 endif()
 
 if ( LINUX32 )
-  add_dependencies( ${MODULE_NAME} MyGUI.Common.Base MyGUI.Common.Base.OpenGL MyGUI.Common.Input MyGUI.Common.Input.OIS MyGUI.Common.ItemBox MyGUI.Common.Precompiled MyGUI.Engine MyGUI.OpenGLPlatform freetype )
+  add_dependencies( ${MODULE_NAME} MyGUI.Engine MyGUI.OpenGLPlatform freetype )
   target_link_libraries( ${MODULE_NAME} MyGUI.Engine MyGUI.OpenGLPlatform freetype )
   set_property( TARGET ${MODULE_NAME} APPEND_STRING PROPERTY COMPILE_DEFINITIONS "MYGUI_USE_FREETYPE" )
 endif( LINUX32 )
 
 if ( LINUX64 )
-  add_dependencies( ${MODULE_NAME} MyGUI.Common.Base MyGUI.Common.Base.OpenGL MyGUI.Common.Input MyGUI.Common.Input.OIS MyGUI.Common.ItemBox MyGUI.Common.Precompiled MyGUI.Engine MyGUI.OpenGLPlatform freetype )
+  add_dependencies( ${MODULE_NAME} MyGUI.Engine MyGUI.OpenGLPlatform freetype )
   target_link_libraries( ${MODULE_NAME} MyGUI.Engine MyGUI.OpenGLPlatform freetype )
   set_property( TARGET ${MODULE_NAME} APPEND_STRING PROPERTY COMPILE_DEFINITIONS "MYGUI_USE_FREETYPE" )
 endif( LINUX64 )
 
 if ( WIN32 )
-  add_dependencies( ${MODULE_NAME} MyGUI.Common.Base MyGUI.Common.Base.OpenGL MyGUI.Common.Input MyGUI.Common.Input.Win32 MyGUI.Common.ItemBox MyGUI.Common.Precompiled MyGUI.Engine MyGUI.OpenGLPlatform freetype )
+  add_dependencies( ${MODULE_NAME} MyGUI.Engine MyGUI.OpenGLPlatform freetype )
   target_link_libraries( ${MODULE_NAME} MyGUI.Engine MyGUI.OpenGLPlatform freetype )
   set_property( TARGET ${MODULE_NAME} APPEND_STRING PROPERTY COMPILE_DEFINITIONS "MYGUI_USE_FREETYPE" )
 endif( WIN32 )
 
 if ( WIN64 )
-  add_dependencies( ${MODULE_NAME} MyGUI.Common.Base MyGUI.Common.Base.OpenGL MyGUI.Common.Input MyGUI.Common.Input.Win32 MyGUI.Common.ItemBox MyGUI.Common.Precompiled MyGUI.Engine MyGUI.OpenGLPlatform freetype )
+  add_dependencies( ${MODULE_NAME} MyGUI.Engine MyGUI.OpenGLPlatform freetype )
   target_link_libraries( ${MODULE_NAME} MyGUI.Engine MyGUI.OpenGLPlatform freetype )
   set_property( TARGET ${MODULE_NAME} APPEND_STRING PROPERTY COMPILE_DEFINITIONS "MYGUI_USE_FREETYPE" )
 endif( WIN64 )
 
-include_directories( ../../../freetype/include ../../../freetype/include/freetype ../../../freetype/include/freetype/config ../../../freetype/include/freetype/internal ../../../freetype/include/freetype/internal/services ../../../freetype/src/winfonts ../../Common ../../Common/Base ../../Common/Base/OpenGL ../../Common/FileSystemInfo ../../Common/Input ../../Common/Input/OIS ../../Common/Input/Win32API ../../Common/ItemBox ../../MyGUIEngine/include ../../Platforms/OpenGL/OpenGLPlatform/include ../../Platforms/OpenGL/OpenGLPlatform/include/GL )
+include_directories( ../../../freetype/include ../../../freetype/include/freetype ../../../freetype/include/freetype/config ../../../freetype/include/freetype/internal ../../../freetype/include/freetype/internal/services ../../../freetype/src/winfonts ../../Common ../../Common/FileSystemInfo ../../Common/Input ../../MyGUIEngine/include ../../Platforms/OpenGL/OpenGLPlatform/include ../../Platforms/OpenGL/OpenGLPlatform/include/GL )
+
+if ( LINUX32 )
+  include_directories( ../SkinEditor ../../Common/Base ../../Common/Base/OpenGL ../../Common/Input/OIS ../../Common/ItemBox )
+endif( LINUX32 )
+
+if ( LINUX64 )
+  include_directories( ../SkinEditor ../../Common/Base ../../Common/Base/OpenGL ../../Common/Input/OIS ../../Common/ItemBox )
+endif( LINUX64 )
+
+if ( WIN32 )
+  include_directories( ../SkinEditor ../../Common/Base ../../Common/Base/OpenGL ../../Common/ItemBox )
+endif( WIN32 )
+
+if ( WIN64 )
+  include_directories( ../SkinEditor ../../Common/Base ../../Common/Base/OpenGL ../../Common/ItemBox )
+endif( WIN64 )
 
 
 

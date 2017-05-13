@@ -1,3 +1,6 @@
 <ModuleInfoEntry>
-    <Module Name="MyGUI.Common.Precompiled" Type="CodeIncludeLocation" Platform="All"/>
+    <Module Name="MyGUI.Common.Precompiled" Type="HeaderIncludeLocation" Platform="All">
+        <Dependencies>
+        </Dependencies>
+    </Module>
 </ModuleInfoEntry>

@@ -15,6 +15,7 @@
 
 if (LINUX32)
   set( PLATFORM_HEADER_FILES 
+    ../../../Common/FileSystemInfo/FileSystemInfo.h
     include/MyGUI_LastHeader.h
     include/MyGUI_OgreDataManager.h
     include/MyGUI_OgreDataStream.h
@@ -43,6 +44,7 @@ if (LINUX32)
 
 elseif (LINUX64)
   set( PLATFORM_HEADER_FILES 
+    ../../../Common/FileSystemInfo/FileSystemInfo.h
     include/MyGUI_LastHeader.h
     include/MyGUI_OgreDataManager.h
     include/MyGUI_OgreDataStream.h
@@ -71,6 +73,7 @@ elseif (LINUX64)
 
 elseif (WIN32)
   set( PLATFORM_HEADER_FILES 
+    ../../../Common/FileSystemInfo/FileSystemInfo.h
     include/MyGUI_LastHeader.h
     include/MyGUI_OgreDataManager.h
     include/MyGUI_OgreDataStream.h
@@ -119,32 +122,32 @@ elseif( WIN32 )
 endif()
 
 if ( LINUX32 )
-  add_dependencies( ${MODULE_NAME} MyGUI.Common.FileSystemInfo MyGUI.Engine Ogre )
+  add_dependencies( ${MODULE_NAME} MyGUI.Engine Ogre )
   target_link_libraries( ${MODULE_NAME} MyGUI.Engine Ogre )
 endif( LINUX32 )
 
 if ( LINUX64 )
-  add_dependencies( ${MODULE_NAME} MyGUI.Common.FileSystemInfo MyGUI.Engine Ogre )
+  add_dependencies( ${MODULE_NAME} MyGUI.Engine Ogre )
   target_link_libraries( ${MODULE_NAME} MyGUI.Engine Ogre )
 endif( LINUX64 )
 
 if ( WIN32 )
-  add_dependencies( ${MODULE_NAME} MyGUI.Common.FileSystemInfo MyGUI.Engine Ogre )
+  add_dependencies( ${MODULE_NAME} MyGUI.Engine Ogre )
   target_link_libraries( ${MODULE_NAME} MyGUI.Engine Ogre )
 endif( WIN32 )
 
-include_directories( ../../../../Ogre/OgreMain/include ../../../../Ogre/OgreMain/include/Hash ../../../../Ogre/OgreMain/include/Threading ../../../../Ogre/OgreMain/src ../../../../Ogre/OgreMain/src/nedmalloc ../../../../Ogre/OgreMain/src/stbi ../../../../Ogre/include ../../../../freetype/include ../../../../freetype/include/freetype ../../../../freetype/include/freetype/config ../../../../freetype/include/freetype/internal ../../../../freetype/include/freetype/internal/services ../../../../freetype/src/winfonts ../../../Common/FileSystemInfo ../../../MyGUIEngine/include )
+include_directories( ../../../../Ogre/OgreMain/include ../../../../Ogre/OgreMain/include/Hash ../../../../Ogre/OgreMain/include/Threading ../../../../Ogre/OgreMain/src ../../../../Ogre/OgreMain/src/nedmalloc ../../../../Ogre/OgreMain/src/stbi ../../../../Ogre/include ../../../../freetype/include ../../../../freetype/include/freetype ../../../../freetype/include/freetype/config ../../../../freetype/include/freetype/internal ../../../../freetype/include/freetype/internal/services ../../../../freetype/src/winfonts ../../../MyGUIEngine/include )
 
 if ( LINUX32 )
-  include_directories( include )
+  include_directories( ../../../Common/FileSystemInfo include )
 endif( LINUX32 )
 
 if ( LINUX64 )
-  include_directories( include )
+  include_directories( ../../../Common/FileSystemInfo include )
 endif( LINUX64 )
 
 if ( WIN32 )
-  include_directories( ../../../../Ogre/OgreMain/include/WIN32 ../../../../Ogre/OgreMain/src/WIN32 include )
+  include_directories( ../../../../Ogre/OgreMain/include/WIN32 ../../../../Ogre/OgreMain/src/WIN32 ../../../Common/FileSystemInfo include )
 endif( WIN32 )
 
 

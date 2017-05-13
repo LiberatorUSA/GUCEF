@@ -94,6 +94,15 @@ if (LINUX32)
     WidgetsWindow.h
     WidgetTypes.h
     WorkspaceControl.h
+    ../../Common/Base/InputFocusInfo.h
+    ../../Common/Base/Main.h
+    ../../Common/Base/StatisticInfo.h
+    ../../Common/Base/OpenGL/BaseManager.h
+    ../../Common/Input/OIS/InputManager.h
+    ../../Common/Input/OIS/PointerManager.h
+    ../../Common/Tools/Dialog.h
+    ../../Common/Tools/DialogManager.h
+    ../../Common/Tools/OpenSaveFileDialog.h
   )
 
   set( PLATFORM_HEADER_INSTALL "LINUX32" )
@@ -166,6 +175,12 @@ if (LINUX32)
     WidgetsWindow.cpp
     WidgetTypes.cpp
     WorkspaceControl.cpp
+    ../../Common/Base/OpenGL/BaseManager.cpp
+    ../../Common/Input/OIS/InputManager.cpp
+    ../../Common/Input/OIS/PointerManager.cpp
+    ../../Common/Tools/Dialog.cpp
+    ../../Common/Tools/DialogManager.cpp
+    ../../Common/Tools/OpenSaveFileDialog.cpp
   )
 
   set( PLATFORM_SOURCE_INSTALL "LINUX32" )
@@ -252,6 +267,15 @@ elseif (LINUX64)
     WidgetsWindow.h
     WidgetTypes.h
     WorkspaceControl.h
+    ../../Common/Base/InputFocusInfo.h
+    ../../Common/Base/Main.h
+    ../../Common/Base/StatisticInfo.h
+    ../../Common/Base/OpenGL/BaseManager.h
+    ../../Common/Input/OIS/InputManager.h
+    ../../Common/Input/OIS/PointerManager.h
+    ../../Common/Tools/Dialog.h
+    ../../Common/Tools/DialogManager.h
+    ../../Common/Tools/OpenSaveFileDialog.h
   )
 
   set( PLATFORM_HEADER_INSTALL "LINUX64" )
@@ -324,6 +348,12 @@ elseif (LINUX64)
     WidgetsWindow.cpp
     WidgetTypes.cpp
     WorkspaceControl.cpp
+    ../../Common/Base/OpenGL/BaseManager.cpp
+    ../../Common/Input/OIS/InputManager.cpp
+    ../../Common/Input/OIS/PointerManager.cpp
+    ../../Common/Tools/Dialog.cpp
+    ../../Common/Tools/DialogManager.cpp
+    ../../Common/Tools/OpenSaveFileDialog.cpp
   )
 
   set( PLATFORM_SOURCE_INSTALL "LINUX64" )
@@ -410,6 +440,13 @@ elseif (WIN32)
     WidgetsWindow.h
     WidgetTypes.h
     WorkspaceControl.h
+    ../../Common/Base/InputFocusInfo.h
+    ../../Common/Base/Main.h
+    ../../Common/Base/StatisticInfo.h
+    ../../Common/Base/OpenGL/BaseManager.h
+    ../../Common/Tools/Dialog.h
+    ../../Common/Tools/DialogManager.h
+    ../../Common/Tools/OpenSaveFileDialog.h
   )
 
   set( PLATFORM_HEADER_INSTALL "WIN32" )
@@ -482,6 +519,10 @@ elseif (WIN32)
     WidgetsWindow.cpp
     WidgetTypes.cpp
     WorkspaceControl.cpp
+    ../../Common/Base/OpenGL/BaseManager.cpp
+    ../../Common/Tools/Dialog.cpp
+    ../../Common/Tools/DialogManager.cpp
+    ../../Common/Tools/OpenSaveFileDialog.cpp
   )
 
   set( PLATFORM_SOURCE_INSTALL "WIN32" )
@@ -568,6 +609,13 @@ elseif (WIN64)
     WidgetsWindow.h
     WidgetTypes.h
     WorkspaceControl.h
+    ../../Common/Base/InputFocusInfo.h
+    ../../Common/Base/Main.h
+    ../../Common/Base/StatisticInfo.h
+    ../../Common/Base/OpenGL/BaseManager.h
+    ../../Common/Tools/Dialog.h
+    ../../Common/Tools/DialogManager.h
+    ../../Common/Tools/OpenSaveFileDialog.h
   )
 
   set( PLATFORM_HEADER_INSTALL "WIN64" )
@@ -640,6 +688,10 @@ elseif (WIN64)
     WidgetsWindow.cpp
     WidgetTypes.cpp
     WorkspaceControl.cpp
+    ../../Common/Base/OpenGL/BaseManager.cpp
+    ../../Common/Tools/Dialog.cpp
+    ../../Common/Tools/DialogManager.cpp
+    ../../Common/Tools/OpenSaveFileDialog.cpp
   )
 
   set( PLATFORM_SOURCE_INSTALL "WIN64" )
@@ -671,30 +723,46 @@ elseif( WIN64 )
 endif()
 
 if ( LINUX32 )
-  add_dependencies( ${MODULE_NAME} MyGUI.Common.Base MyGUI.Common.Base.OpenGL MyGUI.Common.Input MyGUI.Common.Input.OIS MyGUI.Common.Precompiled MyGUI.Engine MyGUI.OpenGLPlatform MyGui.Common.Tools freetype )
+  add_dependencies( ${MODULE_NAME} MyGUI.Engine MyGUI.OpenGLPlatform freetype )
   target_link_libraries( ${MODULE_NAME} MyGUI.Engine MyGUI.OpenGLPlatform OIS freetype )
   set_property( TARGET ${MODULE_NAME} APPEND_STRING PROPERTY COMPILE_DEFINITIONS "MYGUI_USE_FREETYPE" )
 endif( LINUX32 )
 
 if ( LINUX64 )
-  add_dependencies( ${MODULE_NAME} MyGUI.Common.Base MyGUI.Common.Base.OpenGL MyGUI.Common.Input MyGUI.Common.Input.OIS MyGUI.Common.Precompiled MyGUI.Engine MyGUI.OpenGLPlatform MyGui.Common.Tools freetype )
+  add_dependencies( ${MODULE_NAME} MyGUI.Engine MyGUI.OpenGLPlatform freetype )
   target_link_libraries( ${MODULE_NAME} MyGUI.Engine MyGUI.OpenGLPlatform OIS freetype )
   set_property( TARGET ${MODULE_NAME} APPEND_STRING PROPERTY COMPILE_DEFINITIONS "MYGUI_USE_FREETYPE" )
 endif( LINUX64 )
 
 if ( WIN32 )
-  add_dependencies( ${MODULE_NAME} MyGUI.Common.Base MyGUI.Common.Base.OpenGL MyGUI.Common.Input MyGUI.Common.Input.Win32 MyGUI.Common.Precompiled MyGUI.Engine MyGUI.OpenGLPlatform MyGui.Common.Tools freetype )
+  add_dependencies( ${MODULE_NAME} MyGUI.Engine MyGUI.OpenGLPlatform freetype )
   target_link_libraries( ${MODULE_NAME} MyGUI.Engine MyGUI.OpenGLPlatform freetype glu32.lib opengl32.lib )
   set_property( TARGET ${MODULE_NAME} APPEND_STRING PROPERTY COMPILE_DEFINITIONS "MYGUI_USE_FREETYPE" )
 endif( WIN32 )
 
 if ( WIN64 )
-  add_dependencies( ${MODULE_NAME} MyGUI.Common.Base MyGUI.Common.Base.OpenGL MyGUI.Common.Input MyGUI.Common.Input.Win32 MyGUI.Common.Precompiled MyGUI.Engine MyGUI.OpenGLPlatform MyGui.Common.Tools freetype )
+  add_dependencies( ${MODULE_NAME} MyGUI.Engine MyGUI.OpenGLPlatform freetype )
   target_link_libraries( ${MODULE_NAME} MyGUI.Engine MyGUI.OpenGLPlatform freetype glu32.lib opengl32.lib )
   set_property( TARGET ${MODULE_NAME} APPEND_STRING PROPERTY COMPILE_DEFINITIONS "MYGUI_USE_FREETYPE" )
 endif( WIN64 )
 
-include_directories( ../../../freetype/include ../../../freetype/include/freetype ../../../freetype/include/freetype/config ../../../freetype/include/freetype/internal ../../../freetype/include/freetype/internal/services ../../../freetype/src/winfonts ../../Common ../../Common/Base ../../Common/Base/OpenGL ../../Common/FileSystemInfo ../../Common/Input ../../Common/Input/OIS ../../Common/Input/Win32API ../../Common/Tools ../../MyGUIEngine/include ../../Platforms/OpenGL/OpenGLPlatform/include ../../Platforms/OpenGL/OpenGLPlatform/include/GL )
+include_directories( ../../../freetype/include ../../../freetype/include/freetype ../../../freetype/include/freetype/config ../../../freetype/include/freetype/internal ../../../freetype/include/freetype/internal/services ../../../freetype/src/winfonts ../../Common ../../Common/FileSystemInfo ../../Common/Input ../../MyGUIEngine/include ../../Platforms/OpenGL/OpenGLPlatform/include ../../Platforms/OpenGL/OpenGLPlatform/include/GL )
+
+if ( LINUX32 )
+  include_directories( ../LayoutEditor ../../Common/Base ../../Common/Base/OpenGL ../../Common/Input/OIS ../../Common/Tools )
+endif( LINUX32 )
+
+if ( LINUX64 )
+  include_directories( ../LayoutEditor ../../Common/Base ../../Common/Base/OpenGL ../../Common/Input/OIS ../../Common/Tools )
+endif( LINUX64 )
+
+if ( WIN32 )
+  include_directories( ../LayoutEditor ../../Common/Base ../../Common/Base/OpenGL ../../Common/Tools )
+endif( WIN32 )
+
+if ( WIN64 )
+  include_directories( ../LayoutEditor ../../Common/Base ../../Common/Base/OpenGL ../../Common/Tools )
+endif( WIN64 )
 
 
 

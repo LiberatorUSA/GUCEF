@@ -15,6 +15,7 @@
 
 if (WIN32)
   set( PLATFORM_HEADER_FILES 
+    ../../../Common/FileSystemInfo/FileSystemInfo.h
     include/MyGUI_DirectXDataManager.h
     include/MyGUI_DirectXDiagnostic.h
     include/MyGUI_DirectXPlatform.h
@@ -40,6 +41,7 @@ if (WIN32)
 
 elseif (WIN64)
   set( PLATFORM_HEADER_FILES 
+    ../../../Common/FileSystemInfo/FileSystemInfo.h
     include/MyGUI_DirectXDataManager.h
     include/MyGUI_DirectXDiagnostic.h
     include/MyGUI_DirectXPlatform.h
@@ -89,23 +91,23 @@ elseif( WIN64 )
 endif()
 
 if ( WIN32 )
-  add_dependencies( ${MODULE_NAME} MyGUI.Common.FileSystemInfo MyGUI.Engine )
+  add_dependencies( ${MODULE_NAME} MyGUI.Engine )
   target_link_libraries( ${MODULE_NAME} MyGUI.Engine d3d9 d3dx9 )
 endif( WIN32 )
 
 if ( WIN64 )
-  add_dependencies( ${MODULE_NAME} MyGUI.Common.FileSystemInfo MyGUI.Engine )
+  add_dependencies( ${MODULE_NAME} MyGUI.Engine )
   target_link_libraries( ${MODULE_NAME} MyGUI.Engine d3d9 d3dx9 )
 endif( WIN64 )
 
-include_directories( ../../../../freetype/include ../../../../freetype/include/freetype ../../../../freetype/include/freetype/config ../../../../freetype/include/freetype/internal ../../../../freetype/include/freetype/internal/services ../../../../freetype/src/winfonts ../../../Common/FileSystemInfo ../../../MyGUIEngine/include )
+include_directories( ../../../../freetype/include ../../../../freetype/include/freetype ../../../../freetype/include/freetype/config ../../../../freetype/include/freetype/internal ../../../../freetype/include/freetype/internal/services ../../../../freetype/src/winfonts ../../../MyGUIEngine/include )
 
 if ( WIN32 )
-  include_directories( $ENV{DXSDK_DIR}/Include ../../../../external include )
+  include_directories( $ENV{DXSDK_DIR}/Include ../../../../external ../../../Common/FileSystemInfo include )
 endif( WIN32 )
 
 if ( WIN64 )
-  include_directories( $ENV{DXSDK_DIR}/Include ../../../../external include )
+  include_directories( $ENV{DXSDK_DIR}/Include ../../../../external ../../../Common/FileSystemInfo include )
 endif( WIN64 )
 
 

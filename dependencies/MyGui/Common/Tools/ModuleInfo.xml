@@ -1,3 +1,3 @@
 <ModuleInfoEntry>
-    <Module Name="MyGui.Common.Tools" Type="CodeIncludeLocation" Platform="All" />
+    <Module Name="MyGui.Common.Tools" Type="CodeIntegrateLocation" Platform="All" />
 </ModuleInfoEntry>
