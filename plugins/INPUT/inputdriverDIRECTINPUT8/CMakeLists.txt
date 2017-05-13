@@ -48,6 +48,14 @@ endif ()
 # For ease of use make a variable that has all files for this module
 set( ALL_FILES ${HEADER_FILES} ${SOURCE_FILES} ${PLATFORM_HEADER_FILES} ${PLATFORM_SOURCE_FILES} )
 
+# Per CMake limitation, we must set any additional library search paths before defining the target
+if ( WIN32 )
+  link_directories( $ENV{DXSDK_DIR}/Lib/x86 )
+endif( WIN32 )
+if ( WIN64 )
+  link_directories( $ENV{DXSDK_DIR}/Lib/x86 )
+endif( WIN64 )
+
 
 if( WIN32 )
   set( MODULE_NAME "inputdriverDIRECTINPUT8" )
@@ -62,18 +70,20 @@ endif()
 
 if ( WIN32 )
   add_dependencies( ${MODULE_NAME} gucefCORE gucefINPUT gucefMT )
+  target_link_libraries( ${MODULE_NAME} dinput8 dxguid )
   set_property( TARGET ${MODULE_NAME} APPEND_STRING PROPERTY COMPILE_DEFINITIONS "BUILD_GUCEF_INPUT_PLUGIN_DLL;INPUTDRIVERDIRECTINPUT8_BUILD_MODULE" )
 endif( WIN32 )
 
 if ( WIN64 )
   add_dependencies( ${MODULE_NAME} gucefCORE gucefINPUT gucefMT )
+  target_link_libraries( ${MODULE_NAME} dinput8 dxguid )
   set_property( TARGET ${MODULE_NAME} APPEND_STRING PROPERTY COMPILE_DEFINITIONS "BUILD_GUCEF_INPUT_PLUGIN_DLL;INPUTDRIVERDIRECTINPUT8_BUILD_MODULE" )
 endif( WIN64 )
 
 include_directories( ../../../common/include ../../../gucefCORE/include ../../../gucefINPUT/include ../../../gucefMT/include )
 
 if ( WIN32 )
-  include_directories( ../../../gucefCORE/include/mswin include )
+  include_directories( $ENV{DXSDK_DIR}/Include ../../../dependencies/external ../../../gucefCORE/include/mswin include )
 endif( WIN32 )
 
 if ( WIN64 )
