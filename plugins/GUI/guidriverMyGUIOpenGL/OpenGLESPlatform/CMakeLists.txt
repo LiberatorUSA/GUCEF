@@ -15,6 +15,7 @@
 
 if (ANDROID)
   set( PLATFORM_HEADER_FILES 
+    ../../../../dependencies/MyGui/Common/FileSystemInfo/FileSystemInfo.h
     include/MyGUI_OpenGLDiagnostic.h
     include/MyGUI_OpenGLImageLoader.h
     include/MyGUI_OpenGLRenderManager.h
@@ -50,14 +51,14 @@ if( ANDROID )
 endif()
 
 if ( ANDROID )
-  add_dependencies( ${MODULE_NAME} MyGUI.Common.FileSystemInfo MyGUI.Engine )
+  add_dependencies( ${MODULE_NAME} MyGUI.Engine )
   target_link_libraries( ${MODULE_NAME} GLESv1_CM MyGUI.Engine )
 endif( ANDROID )
 
-include_directories( ../../../../dependencies/MyGui/Common/FileSystemInfo ../../../../dependencies/MyGui/MyGUIEngine/include ../../../../dependencies/freetype/include ../../../../dependencies/freetype/include/freetype ../../../../dependencies/freetype/include/freetype/config ../../../../dependencies/freetype/include/freetype/internal ../../../../dependencies/freetype/include/freetype/internal/services ../../../../dependencies/freetype/src/winfonts )
+include_directories( ../../../../dependencies/MyGui/MyGUIEngine/include ../../../../dependencies/freetype/include ../../../../dependencies/freetype/include/freetype ../../../../dependencies/freetype/include/freetype/config ../../../../dependencies/freetype/include/freetype/internal ../../../../dependencies/freetype/include/freetype/internal/services ../../../../dependencies/freetype/src/winfonts )
 
 if ( ANDROID )
-  include_directories( include )
+  include_directories( ../../../../dependencies/MyGui/Common/FileSystemInfo include )
 endif( ANDROID )
 
 

@@ -47,7 +47,9 @@ include_directories( ../lua/src ../tolua/include ../tolua/src/lib include src/li
 
 
 
-if (LINUX32)
+if (ANDROID)
+GUCEF_config_lib( ${MODULE_NAME} )
+elseif (LINUX32)
 GUCEF_config_lib( ${MODULE_NAME} )
 elseif (LINUX64)
 GUCEF_config_lib( ${MODULE_NAME} )

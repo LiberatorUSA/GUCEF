@@ -72,7 +72,7 @@ endif( WIN64 )
 include_directories( ../../../common/include ../../../dependencies/MyGui/Common/FileSystemInfo ../../../dependencies/MyGui/MyGUIEngine/include ../../../dependencies/MyGui/Platforms/OpenGL/OpenGLPlatform/include ../../../dependencies/MyGui/Platforms/OpenGL/OpenGLPlatform/include/GL ../../../dependencies/freetype/include ../../../dependencies/freetype/include/freetype ../../../dependencies/freetype/include/freetype/config ../../../dependencies/freetype/include/freetype/internal ../../../dependencies/freetype/include/freetype/internal/services ../../../dependencies/freetype/src/winfonts ../../../gucefCORE/include ../../../gucefGUI/include ../../../gucefIMAGE/include ../../../gucefINPUT/include ../../../gucefMT/include ../../../gucefVFS/include ../guidriverMyGUI/include include )
 
 if ( ANDROID )
-  include_directories( ../../../gucefCORE/include/android OpenGLESPlatform/include )
+  include_directories( ../../../dependencies/MyGui/Common/FileSystemInfo ../../../gucefCORE/include/android OpenGLESPlatform/include )
 endif( ANDROID )
 
 if ( LINUX32 )

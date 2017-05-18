@@ -67,11 +67,11 @@ if ( IOS )
 endif( IOS )
 
 if ( LINUX32 )
-  include_directories( ../../../dependencies/MyGui/Platforms/Ogre/OgrePlatform/include ../../../gucefCORE/include/linux )
+  include_directories( ../../../dependencies/MyGui/Common/FileSystemInfo ../../../dependencies/MyGui/Platforms/Ogre/OgrePlatform/include ../../../gucefCORE/include/linux )
 endif( LINUX32 )
 
 if ( LINUX64 )
-  include_directories( ../../../dependencies/MyGui/Platforms/Ogre/OgrePlatform/include ../../../gucefCORE/include/linux )
+  include_directories( ../../../dependencies/MyGui/Common/FileSystemInfo ../../../dependencies/MyGui/Platforms/Ogre/OgrePlatform/include ../../../gucefCORE/include/linux )
 endif( LINUX64 )
 
 if ( OSX )
@@ -79,7 +79,7 @@ if ( OSX )
 endif( OSX )
 
 if ( WIN32 )
-  include_directories( ../../../dependencies/MyGui/Platforms/Ogre/OgrePlatform/include ../../../dependencies/Ogre/OgreMain/include/WIN32 ../../../dependencies/Ogre/OgreMain/src/WIN32 ../../../gucefCORE/include/mswin )
+  include_directories( ../../../dependencies/MyGui/Common/FileSystemInfo ../../../dependencies/MyGui/Platforms/Ogre/OgrePlatform/include ../../../dependencies/Ogre/OgreMain/include/WIN32 ../../../dependencies/Ogre/OgreMain/src/WIN32 ../../../gucefCORE/include/mswin )
 endif( WIN32 )
 
 if ( WIN64 )
