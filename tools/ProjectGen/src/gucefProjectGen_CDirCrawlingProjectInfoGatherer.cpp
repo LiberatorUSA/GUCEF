@@ -2328,7 +2328,7 @@ ProcessProjectDir( TProjectInfo& projectInfo                 ,
             TModuleInfoEntryVector::iterator i = moduleInfoEntries.begin();
             while ( i != moduleInfoEntries.end() )
             {            
-                TModuleInfoEntry& moduleInfoEntry = (*i); 
+                TModuleInfoEntry& moduleInfoEntry = (*i);
                 
                 // If there is any module info specified for 'AllPlatforms' but it does not have a 
                 // module name set then we shall determine a default which is the based on the directory the
@@ -2882,7 +2882,7 @@ MergeIntegrationLocationsIntoModuleForPlatform( TProjectInfo& projectInfo       
     {
         TModuleInfoEntry& moduleInfoEntry = *(*i).first;
         TModuleInfo& moduleInfo = *(*i).second;
-        
+
         // Determine the relative path to this other module
         CORE::CString pathToCodeLocation = CORE::GetRelativePathToOtherPathRoot( moduleInfoEntry.rootDir ,
                                                                                  codeIncludeRoot         );
@@ -2890,25 +2890,21 @@ MergeIntegrationLocationsIntoModuleForPlatform( TProjectInfo& projectInfo       
         // merge in the headers for both header integration locations as well as code integration locations
         TStringVectorMap::const_iterator n;
         
-        if ( ( MODULETYPE_CODE_INTEGRATE_LOCATION == moduleInfo.moduleType )  ||
-             ( MODULETYPE_HEADER_INTEGRATE_LOCATION == moduleInfo.moduleType ) )
+        n = moduleInfoToMergeIn.includeDirs.begin();
+        while ( n != moduleInfoToMergeIn.includeDirs.end() )
         {
-            n = moduleInfoToMergeIn.includeDirs.begin();
-            while ( n != moduleInfoToMergeIn.includeDirs.end() )
-            {
-                // Create the full path to the files
-                CORE::CString fullPathToIncludeLocation = pathToCodeLocation;
-                CORE::AppendToPath( fullPathToIncludeLocation, (*n).first );
+            // Create the full path to the files
+            CORE::CString fullPathToIncludeLocation = pathToCodeLocation;
+            CORE::AppendToPath( fullPathToIncludeLocation, (*n).first );
 
-                // Use the merge function just in case this location is already added by other means
-                TStringVector& targetVector = moduleInfo.includeDirs[ fullPathToIncludeLocation ];
-                MergeStringVector( targetVector, (*n).second, true );
+            // Use the merge function just in case this location is already added by other means
+            TStringVector& targetVector = moduleInfo.includeDirs[ fullPathToIncludeLocation ];
+            MergeStringVector( targetVector, (*n).second, true );
                               
-                ++n;
-            }
+            ++n;
         }
 
-        if ( MODULETYPE_CODE_INTEGRATE_LOCATION == moduleInfo.moduleType )
+        if ( MODULETYPE_CODE_INTEGRATE_LOCATION == moduleInfoToMergeIn.moduleType )
         {
             n = moduleInfoToMergeIn.sourceDirs.begin();
             while ( n != moduleInfoToMergeIn.sourceDirs.end() )
