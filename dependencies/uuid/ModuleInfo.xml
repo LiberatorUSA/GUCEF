@@ -1,4 +1,4 @@
 <ModuleInfoEntry>
-    <Module Name="uuid" Type="StaticLibrary" Platform="All">
+    <Module Name="uuid.Includes" Type="HeaderIncludeLocation" ConsiderSubDirs="False" Platform="All" >
     </Module>
 </ModuleInfoEntry>

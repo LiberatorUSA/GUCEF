@@ -45,6 +45,7 @@ set( ALL_FILES ${HEADER_FILES} ${SOURCE_FILES} ${PLATFORM_HEADER_FILES} ${PLATFO
 set( MODULE_NAME "uuid" )
 add_library( ${MODULE_NAME} STATIC ${ALL_FILES} )
 
+include_directories( ../../uuid )
 
 
 
@@ -53,7 +54,11 @@ add_library( ${MODULE_NAME} STATIC ${ALL_FILES} )
 
 
 
-if (OSX)
+if (LINUX32)
+GUCEF_config_lib( ${MODULE_NAME} )
+elseif (LINUX64)
+GUCEF_config_lib( ${MODULE_NAME} )
+elseif (OSX)
 GUCEF_config_lib( ${MODULE_NAME} )
 elseif (WIN32)
 GUCEF_config_lib( ${MODULE_NAME} )

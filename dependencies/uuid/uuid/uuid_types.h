@@ -8,14 +8,14 @@
 
 typedef unsigned char uint8_t;
 typedef signed char int8_t;
-            __int32
-#if (@SIZEOF_INT@ == 8)
+
+#if (4 == 8)
 typedef int		int64_t;
 typedef unsigned int	uint64_t;
-#elif (@SIZEOF_LONG@ == 8)
+#elif (4 == 8)
 typedef long		int64_t;
 typedef unsigned long	uint64_t;
-#elif (@SIZEOF_LONG_LONG@ == 8)
+#elif (8 == 8)
 #if defined(__GNUC__)
 typedef __signed__ long long 	int64_t;
 #else
@@ -24,23 +24,23 @@ typedef signed long long 	int64_t;
 typedef unsigned long long	uint64_t;
 #endif
 
-#if (@SIZEOF_INT@ == 2)
+#if (4 == 2)
 typedef	int		int16_t;
 typedef	unsigned int	uint16_t;
-#elif (@SIZEOF_SHORT@ == 2)
+#elif (2 == 2)
 typedef	short		int16_t;
 typedef	unsigned short	uint16_t;
 #else
   ?==error: undefined 16 bit type
 #endif
 
-#if (@SIZEOF_INT@ == 4)
+#if (4 == 4)
 typedef	int		int32_t;
 typedef	unsigned int	uint32_t;
-#elif (@SIZEOF_LONG@ == 4)
+#elif (4 == 4)
 typedef	long		int32_t;
 typedef	unsigned long	uint32_t;
-#elif (@SIZEOF_SHORT@ == 4)
+#elif (2 == 4)
 typedef	short		int32_t;
 typedef	unsigned short	uint32_t;
 #else

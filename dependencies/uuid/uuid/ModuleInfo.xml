@@ -1,0 +1,11 @@
+<ModuleInfoEntry>
+    <Module Name="uuid" Type="StaticLibrary" Platform="All">
+        <Dependencies>
+            <Dependency Name="uuid.Includes" />
+        </Dependencies>
+        <Linker>
+        </Linker>
+        <Preprocessor>
+        </Preprocessor>
+    </Module>
+</ModuleInfoEntry>
