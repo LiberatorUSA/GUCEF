@@ -22,6 +22,9 @@
         <Dependencies>
             <Dependency Name="MyGUI.Common.Input.Win32" />
         </Dependencies>
+        <Linker>
+            <Dependency Name="glu32.lib" />
+        </Linker>
     </Module>
     <Module Platform="linux">
         <Dependencies>

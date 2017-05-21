@@ -4,17 +4,18 @@
 	@date		07/2008
 */
 #include "Precompiled.h"
-#include "ItemBox.h"
+//#include "ItemBox.h"
+#include "TextureBrowseItemBox.h"
 
 namespace demo
 {
 
-	ItemBox::ItemBox(MyGUI::Widget* _parent) :
-		wraps::BaseItemBox<TextureBrowseCell>("", _parent)
+	TextureBrowseItemBox::TextureBrowseItemBox(MyGUI::Widget* _parent) :
+		wraps::BaseItemBox<tools::TextureBrowseCell>( _parent)
 	{
 	}
 
-	ItemBox::~ItemBox()
+	TextureBrowseItemBox::~TextureBrowseItemBox()
 	{
 	}
 

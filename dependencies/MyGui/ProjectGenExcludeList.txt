@@ -1,5 +1,4 @@
 CMake
-Demos
 Docs
 Media
 Plugins

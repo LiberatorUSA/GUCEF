@@ -3,8 +3,8 @@
 	@author		Albert Semenov
 	@date		01/2009
 */
-#ifndef __ITEM_BOX_H__
-#define __ITEM_BOX_H__
+#ifndef __TEXTUREBROWSEITEM_BOX_H__
+#define __TEXTUREBROWSEITEM_BOX_H__
 
 #include <MyGUI.h>
 #include "ItemBox/BaseItemBox.h"
@@ -13,14 +13,14 @@
 namespace demo
 {
 
-	class ItemBox :
-		public wraps::BaseItemBox<TextureBrowseCell>
+	class TextureBrowseItemBox :
+		public wraps::BaseItemBox<tools::TextureBrowseCell>
 	{
 	public:
-		ItemBox(MyGUI::Widget* _parent);
-		virtual ~ItemBox();
+		TextureBrowseItemBox(MyGUI::Widget* _parent);
+		virtual ~TextureBrowseItemBox();
 	};
 
 } // namespace demo
 
-#endif // __ITEM_BOXV_H__
+#endif // __TEXTUREBROWSEITEM_BOX_H__

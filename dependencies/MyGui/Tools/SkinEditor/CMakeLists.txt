@@ -100,6 +100,9 @@ if (LINUX32)
     ../../Common/ItemBox/BaseCellView.h
     ../../Common/ItemBox/BaseItemBox.h
     ../../Common/ItemBox/ItemDropInfo.h
+    ../../Common/Tools/Dialog.h
+    ../../Common/Tools/DialogManager.h
+    ../../Common/Tools/OpenSaveFileDialog.h
   )
 
   set( PLATFORM_HEADER_INSTALL "LINUX32" )
@@ -179,6 +182,9 @@ if (LINUX32)
     ../../Common/Base/OpenGL/BaseManager.cpp
     ../../Common/Input/OIS/InputManager.cpp
     ../../Common/Input/OIS/PointerManager.cpp
+    ../../Common/Tools/Dialog.cpp
+    ../../Common/Tools/DialogManager.cpp
+    ../../Common/Tools/OpenSaveFileDialog.cpp
   )
 
   set( PLATFORM_SOURCE_INSTALL "LINUX32" )
@@ -271,6 +277,9 @@ elseif (LINUX64)
     ../../Common/ItemBox/BaseCellView.h
     ../../Common/ItemBox/BaseItemBox.h
     ../../Common/ItemBox/ItemDropInfo.h
+    ../../Common/Tools/Dialog.h
+    ../../Common/Tools/DialogManager.h
+    ../../Common/Tools/OpenSaveFileDialog.h
   )
 
   set( PLATFORM_HEADER_INSTALL "LINUX64" )
@@ -350,6 +359,9 @@ elseif (LINUX64)
     ../../Common/Base/OpenGL/BaseManager.cpp
     ../../Common/Input/OIS/InputManager.cpp
     ../../Common/Input/OIS/PointerManager.cpp
+    ../../Common/Tools/Dialog.cpp
+    ../../Common/Tools/DialogManager.cpp
+    ../../Common/Tools/OpenSaveFileDialog.cpp
   )
 
   set( PLATFORM_SOURCE_INSTALL "LINUX64" )
@@ -442,6 +454,9 @@ elseif (WIN32)
     ../../Common/ItemBox/BaseCellView.h
     ../../Common/ItemBox/BaseItemBox.h
     ../../Common/ItemBox/ItemDropInfo.h
+    ../../Common/Tools/Dialog.h
+    ../../Common/Tools/DialogManager.h
+    ../../Common/Tools/OpenSaveFileDialog.h
   )
 
   set( PLATFORM_HEADER_INSTALL "WIN32" )
@@ -521,6 +536,9 @@ elseif (WIN32)
     ../../Common/Base/OpenGL/BaseManager.cpp
     ../../Common/Input/Win32API/InputManager.cpp
     ../../Common/Input/Win32API/PointerManager.cpp
+    ../../Common/Tools/Dialog.cpp
+    ../../Common/Tools/DialogManager.cpp
+    ../../Common/Tools/OpenSaveFileDialog.cpp
   )
 
   set( PLATFORM_SOURCE_INSTALL "WIN32" )
@@ -613,6 +631,9 @@ elseif (WIN64)
     ../../Common/ItemBox/BaseCellView.h
     ../../Common/ItemBox/BaseItemBox.h
     ../../Common/ItemBox/ItemDropInfo.h
+    ../../Common/Tools/Dialog.h
+    ../../Common/Tools/DialogManager.h
+    ../../Common/Tools/OpenSaveFileDialog.h
   )
 
   set( PLATFORM_HEADER_INSTALL "WIN64" )
@@ -692,6 +713,9 @@ elseif (WIN64)
     ../../Common/Base/OpenGL/BaseManager.cpp
     ../../Common/Input/Win32API/InputManager.cpp
     ../../Common/Input/Win32API/PointerManager.cpp
+    ../../Common/Tools/Dialog.cpp
+    ../../Common/Tools/DialogManager.cpp
+    ../../Common/Tools/OpenSaveFileDialog.cpp
   )
 
   set( PLATFORM_SOURCE_INSTALL "WIN64" )
@@ -736,32 +760,32 @@ endif( LINUX64 )
 
 if ( WIN32 )
   add_dependencies( ${MODULE_NAME} MyGUI.Engine MyGUI.OpenGLPlatform freetype )
-  target_link_libraries( ${MODULE_NAME} MyGUI.Engine MyGUI.OpenGLPlatform freetype )
+  target_link_libraries( ${MODULE_NAME} MyGUI.Engine MyGUI.OpenGLPlatform freetype glu32.lib )
   set_property( TARGET ${MODULE_NAME} APPEND_STRING PROPERTY COMPILE_DEFINITIONS "MYGUI_USE_FREETYPE" )
 endif( WIN32 )
 
 if ( WIN64 )
   add_dependencies( ${MODULE_NAME} MyGUI.Engine MyGUI.OpenGLPlatform freetype )
-  target_link_libraries( ${MODULE_NAME} MyGUI.Engine MyGUI.OpenGLPlatform freetype )
+  target_link_libraries( ${MODULE_NAME} MyGUI.Engine MyGUI.OpenGLPlatform freetype glu32.lib )
   set_property( TARGET ${MODULE_NAME} APPEND_STRING PROPERTY COMPILE_DEFINITIONS "MYGUI_USE_FREETYPE" )
 endif( WIN64 )
 
 include_directories( ../../../freetype/include ../../../freetype/include/freetype ../../../freetype/include/freetype/config ../../../freetype/include/freetype/internal ../../../freetype/include/freetype/internal/services ../../../freetype/src/winfonts ../../Common ../../Common/FileSystemInfo ../../Common/Input ../../MyGUIEngine/include ../../Platforms/OpenGL/OpenGLPlatform/include ../../Platforms/OpenGL/OpenGLPlatform/include/GL )
 
 if ( LINUX32 )
-  include_directories( ../SkinEditor ../../Common/Base ../../Common/Base/OpenGL ../../Common/Input/OIS ../../Common/ItemBox )
+  include_directories( ../SkinEditor ../../Common/Base ../../Common/Base/OpenGL ../../Common/Input/OIS ../../Common/ItemBox ../../Common/Tools )
 endif( LINUX32 )
 
 if ( LINUX64 )
-  include_directories( ../SkinEditor ../../Common/Base ../../Common/Base/OpenGL ../../Common/Input/OIS ../../Common/ItemBox )
+  include_directories( ../SkinEditor ../../Common/Base ../../Common/Base/OpenGL ../../Common/Input/OIS ../../Common/ItemBox ../../Common/Tools )
 endif( LINUX64 )
 
 if ( WIN32 )
-  include_directories( ../SkinEditor ../../Common/Base ../../Common/Base/OpenGL ../../Common/Input/Win32API ../../Common/ItemBox )
+  include_directories( ../SkinEditor ../../Common/Base ../../Common/Base/OpenGL ../../Common/Input/Win32API ../../Common/ItemBox ../../Common/Tools )
 endif( WIN32 )
 
 if ( WIN64 )
-  include_directories( ../SkinEditor ../../Common/Base ../../Common/Base/OpenGL ../../Common/Input/Win32API ../../Common/ItemBox )
+  include_directories( ../SkinEditor ../../Common/Base ../../Common/Base/OpenGL ../../Common/Input/Win32API ../../Common/ItemBox ../../Common/Tools )
 endif( WIN64 )
 
 
