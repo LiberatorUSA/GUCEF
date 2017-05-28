@@ -23,6 +23,8 @@
 //                                                                         //
 //-------------------------------------------------------------------------*/
 
+#include <map>
+#include <string>
 #include <assert.h>
 
 #ifndef GUCEF_CORE_LOGGING_H
