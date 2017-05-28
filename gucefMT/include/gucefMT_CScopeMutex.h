@@ -31,6 +31,11 @@
 #define GUCEF_MT_GUCEFMT_MACROS_H
 #endif /* GUCEF_MT_GUCEFMT_MACROS_H ? */
 
+#ifndef GUCEF_MT_CMUTEX_H
+#include "gucefMT_CMutex.h"
+#define GUCEF_MT_CMUTEX_H
+#endif /* GUCEF_MT_CMUTEX_H ? */
+
 /*-------------------------------------------------------------------------//
 //                                                                         //
 //      NAMESPACE                                                          //
