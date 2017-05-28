@@ -1,3 +1,0 @@
-msvc8
-msvc9
-ilur
