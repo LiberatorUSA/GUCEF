@@ -32,10 +32,10 @@
 #include "OgreLogManager.h"
 #include "OgreRoot.h"
 
-#if OGRE_NO_GL_STATE_CACHE_SUPPORT == 0
-#   include "OgreGLStateCacheManagerImp.h"
-#else
+#if OGRE_NO_GL_STATE_CACHE_SUPPORT
 #   include "OgreGLNullStateCacheManagerImp.h"
+#else
+#   include "OgreGLStateCacheManagerImp.h"
 #endif
 
 namespace Ogre {

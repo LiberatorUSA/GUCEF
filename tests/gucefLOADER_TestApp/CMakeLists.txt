@@ -33,62 +33,62 @@ endif()
 add_dependencies( ${MODULE_NAME} gucefLOADER )
 target_link_libraries( ${MODULE_NAME} gucefLOADER )
 
-include_directories( ../../common/include ../../gucefCORE/include ../../gucefCORE/include/ ../../gucefLOADER/include ../../gucefMT/include )
+include_directories( ../../common/include ../../gucefCORE/include ../../gucefCORE/include/ ../../gucefLOADER/include ../../gucefMT/include ../../gucefMT/include/ )
 
 if ( ANDROID )
-  include_directories( ../../gucefCORE/include/ ../../gucefCORE/include/android )
+  include_directories( ../../gucefCORE/include/ ../../gucefCORE/include/android ../../gucefMT/include/ )
 endif( ANDROID )
 
 if ( EMSCRIPTEN )
-  include_directories( ../../gucefCORE/include/ )
+  include_directories( ../../gucefCORE/include/ ../../gucefMT/include/ )
 endif( EMSCRIPTEN )
 
 if ( GLX )
-  include_directories( ../../gucefCORE/include/ )
+  include_directories( ../../gucefCORE/include/ ../../gucefMT/include/ )
 endif( GLX )
 
 if ( GTK )
-  include_directories( ../../gucefCORE/include/ )
+  include_directories( ../../gucefCORE/include/ ../../gucefMT/include/ )
 endif( GTK )
 
 if ( IOS )
-  include_directories( ../../gucefCORE/include/ )
+  include_directories( ../../gucefCORE/include/ ../../gucefMT/include/ )
 endif( IOS )
 
 if ( LINUX32 )
-  include_directories( ../../gucefCORE/include/ ../../gucefCORE/include/linux )
+  include_directories( ../../gucefCORE/include/ ../../gucefCORE/include/linux ../../gucefMT/include/ )
 endif( LINUX32 )
 
 if ( LINUX64 )
-  include_directories( ../../gucefCORE/include/ ../../gucefCORE/include/linux )
+  include_directories( ../../gucefCORE/include/ ../../gucefCORE/include/linux ../../gucefMT/include/ )
 endif( LINUX64 )
 
 if ( NACL )
-  include_directories( ../../gucefCORE/include/ )
+  include_directories( ../../gucefCORE/include/ ../../gucefMT/include/ )
 endif( NACL )
 
 if ( OSX )
-  include_directories( ../../gucefCORE/include/ )
+  include_directories( ../../gucefCORE/include/ ../../gucefMT/include/ )
 endif( OSX )
 
 if ( SDL )
-  include_directories( ../../gucefCORE/include/ )
+  include_directories( ../../gucefCORE/include/ ../../gucefMT/include/ )
 endif( SDL )
 
 if ( SYMBIAN )
-  include_directories( ../../gucefCORE/include/ )
+  include_directories( ../../gucefCORE/include/ ../../gucefMT/include/ )
 endif( SYMBIAN )
 
 if ( UNIX )
-  include_directories( ../../gucefCORE/include/ )
+  include_directories( ../../gucefCORE/include/ ../../gucefMT/include/ )
 endif( UNIX )
 
 if ( WIN32 )
-  include_directories( ../../gucefCORE/include/ ../../gucefCORE/include/mswin )
+  include_directories( ../../gucefCORE/include/ ../../gucefCORE/include/mswin ../../gucefMT/include/ )
 endif( WIN32 )
 
 if ( WIN64 )
-  include_directories( ../../gucefCORE/include/ ../../gucefCORE/include/mswin )
+  include_directories( ../../gucefCORE/include/ ../../gucefCORE/include/mswin ../../gucefMT/include/ )
 endif( WIN64 )
 
 

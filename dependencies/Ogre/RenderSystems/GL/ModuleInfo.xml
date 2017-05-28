@@ -14,11 +14,13 @@
     <Module Platform="mswin">
         <Linker>
             <Dependency Name="opengl32" />
+            <Dependency Name="glu32.lib" />
         </Linker>
     </Module>
     <Module Platform="linux">
         <Linker>
             <Dependency Name="GL" />
+            <Dependency Name="GLU" />
         </Linker>
     </Module>
 </ModuleInfoEntry>

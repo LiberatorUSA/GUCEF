@@ -1,7 +1,15 @@
 <PROJECTGENERATOR>
     <INCLUDES PLATFORM="ALL">
+        <ITEM NAME="../gucefMT/src/gucefMT_mutex.c" TYPE="FILE" />
+        <ITEM NAME="../gucefMT/include/gucefMT_mutex.h" TYPE="FILE" />
+        <ITEM NAME="../gucefMT/src/gucefMT_CMutex.cpp" TYPE="FILE" />
+        <ITEM NAME="../gucefMT/include/gucefMT_CMutex.h" TYPE="FILE" />
+        <ITEM NAME="../gucefMT/src/gucefMT_CScopeMutex.cpp" TYPE="FILE" />
+        <ITEM NAME="../gucefMT/include/gucefMT_CScopeMutex.h" TYPE="FILE" />
         <ITEM NAME="../gucefCORE/src/DVOSWRAP.cpp" TYPE="FILE" />
         <ITEM NAME="../gucefCORE/include/DVOSWRAP.h" TYPE="FILE" />
+        <ITEM NAME="../gucefCORE/src/DVCPPOSWRAP.cpp" TYPE="FILE" />
+        <ITEM NAME="../gucefCORE/include/DVCPPOSWRAP.h" TYPE="FILE" />
         <ITEM NAME="../gucefCORE/src/dvstrutils.c" TYPE="FILE" />
         <ITEM NAME="../gucefCORE/include/dvstrutils.h" TYPE="FILE" />
         <ITEM NAME="../gucefCORE/src/CDVString.cpp" TYPE="FILE" />
