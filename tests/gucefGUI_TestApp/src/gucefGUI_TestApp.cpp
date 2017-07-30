@@ -480,6 +480,12 @@ GUCEF_OSMAIN_BEGIN
         CORE::GUCEF_DumpCallstack( "gucefGUI_TestApp_callstack.txt" );
         #endif /* GUCEF_GUI_DEBUG_MODE ? */
 
+        try
+        {
+            CORE::CCoreGlobal::Instance()->GetLogManager().ClearLoggers();
+        }
+        catch ( ... ) {}
+
         CORE::ShowErrorMessage( "Unknown exception"                                                                 ,
                                 "Unhandled exception during program execution, the application will now terminate"  );
     }

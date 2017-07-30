@@ -151,7 +151,7 @@ CGUIDriverOgre::Init( GUI::TWindowContextPtr windowContext )
             {
                 sceneManager = static_cast< Ogre::SceneManager* >( CORE::StringToPointer( sceneManagerPtrStr ) );
                 if ( NULL == sceneManager )
-                    return false
+                    return false;
             }
             
             // Auto-create a viewport here if none exists yet
