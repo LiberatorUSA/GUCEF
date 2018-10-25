@@ -275,7 +275,7 @@ GUCEF_OSMAIN_BEGIN
     if ( generatorList.size() == 0  )
     {
         // No specific generators where specified, defaulting...
-        generatorList.push_back( "xml" );
+        generatorList.push_back( "cmake" );
     }
 
     // Set any global dir excludes that where passed as cmd parameters

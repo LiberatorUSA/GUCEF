@@ -19,6 +19,7 @@ set( SOURCE_FILES
   src/DLLMainDSTOREpluginPARSIFALXML.c
 )
 
+
 # Make sure the PLATFORM_HEADER_FILES variable is always defined
  set( PLATFORM_HEADER_FILES "" )
 
@@ -29,7 +30,7 @@ set( SOURCE_FILES
 set( ALL_FILES ${HEADER_FILES} ${SOURCE_FILES} ${PLATFORM_HEADER_FILES} ${PLATFORM_SOURCE_FILES} )
 
 set( MODULE_NAME "dstorepluginPARSIFALXML" )
-add_library( ${MODULE_NAME} ${ALL_FILES} )
+add_library( ${MODULE_NAME} SHARED ${ALL_FILES} )
 add_dependencies( ${MODULE_NAME} gucefCORE gucefMT libparsifal )
 target_link_libraries( ${MODULE_NAME} libparsifal )
 set_property( TARGET ${MODULE_NAME} APPEND_STRING PROPERTY COMPILE_DEFINITIONS "DSTOREPLUGINPARSIFALXML_BUILD_MODULE" )
