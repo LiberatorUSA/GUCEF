@@ -165,7 +165,7 @@ set(GUCEF_CONFIG_ALLOCATOR 2 CACHE STRING
 )
 option(GUCEF_CONFIG_MEMTRACK_DEBUG "Enable GUCEF's memory tracker in debug mode" FALSE)
 option(GUCEF_CONFIG_MEMTRACK_RELEASE "Enable GUCEF's memory tracker in release mode" FALSE)
-
+option(PROJECT_GENERATOR_ONLY TRUE)
 
 ###################################################################
 # configure global build settings based on selected build options

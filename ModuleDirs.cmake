@@ -8,6 +8,20 @@
 # free to make use of it in any way you like.
 #-------------------------------------------------------------------
 #
+
+
+add_subdirectory( gucefCORE )
+add_subdirectory( gucefMT )
+
+add_subdirectory( tools/ProjectGen )
+add_subdirectory( tools/ProjectGen/plugins/ProjectGenDependsFilter )
+add_subdirectory( tools/ProjectGen/plugins/ProjectGenVSImporter )
+
+add_subdirectory( tools/ProjectGenerator )
+
+
+if (NOT PROJECT_GENERATOR_ONLY)
+
 add_subdirectory( apps/gucefPATCHERAPP )
 add_subdirectory( apps/gucefPRODMANAPP )
 add_subdirectory( dependencies/cegui/cegui )
@@ -63,14 +77,12 @@ add_subdirectory( dependencies/zziplib )
 add_subdirectory( gucefANDROIDGLUE/Gingerbread/jni )
 add_subdirectory( gucefCOM )
 add_subdirectory( gucefCOMCORE )
-add_subdirectory( gucefCORE )
 add_subdirectory( gucefDRN )
 add_subdirectory( gucefGUI )
 add_subdirectory( gucefIMAGE )
 add_subdirectory( gucefINPUT )
 add_subdirectory( gucefLOADER )
 add_subdirectory( gucefMATH )
-add_subdirectory( gucefMT )
 add_subdirectory( gucefMULTIPLAY )
 add_subdirectory( gucefPATCHER )
 add_subdirectory( gucefPRODMAN )
@@ -135,11 +147,9 @@ add_subdirectory( tools/itvExporter )
 add_subdirectory( tools/MemoryLeakFinder )
 add_subdirectory( tools/PatcherGUI/MFCPatcherGUI )
 add_subdirectory( tools/PatchSetGenerator )
-add_subdirectory( tools/ProjectGen )
-add_subdirectory( tools/ProjectGen/plugins/ProjectGenDependsFilter )
-add_subdirectory( tools/ProjectGen/plugins/ProjectGenVSImporter )
-add_subdirectory( tools/ProjectGenerator )
 add_subdirectory( tools/ReferenceUpdater )
 add_subdirectory( tools/ServerPortExtender )
 add_subdirectory( tools/SocketSink )
 add_subdirectory( tools/SVNMagicMerge )
+
+endif (NOT PROJECT_GENERATOR_ONLY)
