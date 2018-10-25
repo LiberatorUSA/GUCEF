@@ -595,7 +595,7 @@ void
 CMsWin32Window::SetText( const CString& text )
 {GUCEF_TRACE;
 
-    SetWindowText( m_hwnd, text.C_String() );
+    SetWindowTextA( m_hwnd, text.C_String() );
 }
 
 /*-------------------------------------------------------------------------*/
@@ -608,7 +608,7 @@ CMsWin32Window::GetText( void ) const
     if( len > 0 )
     {
         char* buf = (char*) GlobalAlloc( GPTR, len + 1 );
-        GetWindowText( m_hwnd, buf, len + 1);
+        GetWindowTextA( m_hwnd, buf, len + 1);
 
         CString returnValue( buf, len );
 
@@ -678,7 +678,7 @@ CMsWin32Window::WindowCreate( const CString& windowClassName ,
         m_hwnd = 0;
     }
 
-    m_hwnd = CreateWindowEx( WS_EX_APPWINDOW,
+    m_hwnd = CreateWindowExA( WS_EX_APPWINDOW,
                              windowClassName.C_String(),
                              windowTitle.C_String(),
                              WS_OVERLAPPEDWINDOW,
@@ -723,8 +723,8 @@ bool
 CMsWin32Window::RegisterWindowClass( const CString& windowClassName )
 {GUCEF_TRACE;
 
-    WNDCLASSEX wc;
-    if ( FALSE == ::GetClassInfoEx( GetCurrentModuleHandle()   ,
+    WNDCLASSEXA wc;
+    if ( FALSE == ::GetClassInfoExA( GetCurrentModuleHandle()   ,
                                     windowClassName.C_String() ,
                                     &wc                        ) )
     {
@@ -741,7 +741,7 @@ CMsWin32Window::RegisterWindowClass( const CString& windowClassName )
         wc.lpszClassName = windowClassName.C_String();
         wc.hIconSm       = LoadIcon(NULL, IDI_APPLICATION);
 
-        if ( 0 == RegisterClassEx( &wc ) )
+        if ( 0 == RegisterClassExA( &wc ) )
         {
             GUCEF_SYSTEM_LOG( LOGLEVEL_IMPORTANT, "CMsWin32Window::RegisterWindowClass(): Failed to register a window class with name \"" + windowClassName + "\"" );
             return false;

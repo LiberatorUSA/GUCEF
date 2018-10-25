@@ -1009,7 +1009,7 @@ Int32
 PtrToInt32( const void* ptr )
 {
         char ptrstr[ 64 ];
-        sprintf( ptrstr, "%d", (Int64)ptr );
+        sprintf( ptrstr, "%lld", (Int64)ptr );
         return Str_To_Int( ptrstr );
 }
 

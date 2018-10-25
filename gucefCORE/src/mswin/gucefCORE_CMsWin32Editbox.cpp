@@ -90,7 +90,7 @@ CMsWin32Editbox::~CMsWin32Editbox()
 void
 CMsWin32Editbox::Clear( void )
 {
-    SetWindowText( GetHwnd(), "" );
+    SetWindowTextA( GetHwnd(), "" );
 }
 
 /*-------------------------------------------------------------------------*/
@@ -98,7 +98,7 @@ CMsWin32Editbox::Clear( void )
 void
 CMsWin32Editbox::SetText( const CString& text )
 {
-    SetWindowText( GetHwnd(), text.C_String() );
+    SetWindowTextA( GetHwnd(), text.C_String() );
 }
 
 /*-------------------------------------------------------------------------*/
@@ -110,7 +110,7 @@ CMsWin32Editbox::GetText( void ) const
     if( len > 0 )
     {
         char* buf = (char*) GlobalAlloc( GPTR, len + 1 );
-        GetWindowText( GetHwnd(), buf, len + 1);
+        GetWindowTextA( GetHwnd(), buf, len + 1);
 
         CString returnValue( buf, len );
 
@@ -229,7 +229,7 @@ CMsWin32Editbox::EditboxCreate( CMsWin32Window& parent           ,
     {        
         dwStyle |= WS_VISIBLE|WS_CHILD|WS_BORDER|WS_VSCROLL|WS_HSCROLL|ES_MULTILINE|ES_WANTRETURN|ES_AUTOHSCROLL|ES_AUTOVSCROLL;
         
-        SetHwnd( CreateWindow( "edit", 
+        SetHwnd( CreateWindowA( "edit", 
                                windowTitle.C_String(),
                                dwStyle,
                                xPosition, yPosition, (int)width, (int)height, 
@@ -239,7 +239,7 @@ CMsWin32Editbox::EditboxCreate( CMsWin32Window& parent           ,
     {        
         dwStyle |= WS_VISIBLE|WS_CHILD|WS_BORDER|ES_AUTOHSCROLL|ES_AUTOVSCROLL;
         
-        SetHwnd( CreateWindow( "edit", 
+        SetHwnd( CreateWindowA( "edit", 
                                windowTitle.C_String(),
                                dwStyle,
                                xPosition, yPosition, (int)width, (int)height, 

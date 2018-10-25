@@ -33,8 +33,8 @@
  */
 #undef GUCEF_PROJECTGEN_PUBLIC_CPP_CODE        /* do not change this line */ 
 #undef GUCEF_PROJECTGEN_PUBLIC_C_CODE          /* do not change this line */  
-#define GUCEF_PROJECTGEN_PUBLIC_CPP_CODE /* do you want to enable the C++ exports ? */
-#define GUCEF_PROJECTGEN_PUBLIC_C_CODE   /* do you want to enable the C exports ? */
+//#define GUCEF_PROJECTGEN_PUBLIC_CPP_CODE /* do you want to enable the C++ exports ? */
+//#define GUCEF_PROJECTGEN_PUBLIC_C_CODE   /* do you want to enable the C exports ? */
 
 /*-------------------------------------------------------------------------*/
 

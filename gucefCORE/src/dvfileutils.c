@@ -636,7 +636,7 @@ create_directory( const char *new_dir, UInt32 offset )
         dir = (char*)calloc( idx+2, 1 );
         strncpy( dir, new_dir, idx );
         dir[ idx+1 ] = '\0';
-        if ( !CreateDirectory( dir, NULL ) )
+        if ( !CreateDirectoryA( dir, NULL ) )
         {
             /*
             *	An error occurred.
@@ -655,7 +655,7 @@ create_directory( const char *new_dir, UInt32 offset )
     }
     else
     {
-             if ( !CreateDirectory( new_dir, NULL ) )
+             if ( !CreateDirectoryA( new_dir, NULL ) )
              {
              	/*
                      *	An error occured.
@@ -801,7 +801,7 @@ Remove_Directory( const char *dir  ,
      *      dir.
      */
 
-    return RemoveDirectory( dir );
+    return RemoveDirectoryA( dir );
 
     #elif ( ( GUCEF_PLATFORM == GUCEF_PLATFORM_LINUX ) || ( GUCEF_PLATFORM == GUCEF_PLATFORM_ANDROID ) )
 
@@ -832,7 +832,7 @@ Module_Path( char *dest, UInt32 dest_size )
 {
     #if ( GUCEF_PLATFORM == GUCEF_PLATFORM_MSWIN )
 
-    return !GetModuleFileName( NULL, dest, dest_size );
+    return !GetModuleFileNameA( NULL, dest, dest_size );
 
     #elif ( GUCEF_PLATFORM == GUCEF_PLATFORM_APPLE )
 
@@ -905,7 +905,7 @@ Delete_File( const char *filename )
 {
     #if ( GUCEF_PLATFORM == GUCEF_PLATFORM_MSWIN )
 
-    return DeleteFile( filename );
+    return DeleteFileA( filename );
 
     #elif ( ( GUCEF_PLATFORM == GUCEF_PLATFORM_LINUX ) || ( GUCEF_PLATFORM == GUCEF_PLATFORM_ANDROID ) )
 
@@ -961,7 +961,7 @@ Copy_File( const char *dst, const char *src )
 
     #if ( GUCEF_PLATFORM == GUCEF_PLATFORM_MSWIN )
 
-    return 0 != CopyFile( src, dst, TRUE ) ? 1 : 0;
+    return 0 != CopyFileA( src, dst, TRUE ) ? 1 : 0;
 
     #elif ( ( GUCEF_PLATFORM == GUCEF_PLATFORM_LINUX ) || ( GUCEF_PLATFORM == GUCEF_PLATFORM_ANDROID ) )
 
@@ -1051,7 +1051,7 @@ Move_File( const char *dst, const char *src )
 
     #if ( GUCEF_PLATFORM == GUCEF_PLATFORM_MSWIN )
 
-    return MoveFile( src, dst );
+    return MoveFileA( src, dst );
 
     #elif ( ( GUCEF_PLATFORM == GUCEF_PLATFORM_LINUX ) || ( GUCEF_PLATFORM == GUCEF_PLATFORM_ANDROID ) )
 
@@ -1087,7 +1087,7 @@ static HANDLE
 ExecuteProgramEx( const char *filename,
                   const char *cmdline )
 {
-    STARTUPINFO si;
+    STARTUPINFOA si;
     PROCESS_INFORMATION pi;
     BOOL bres;
     char *tmp_lstr;
@@ -1109,12 +1109,12 @@ ExecuteProgramEx( const char *filename,
          */
         tmp_lstr = calloc( strlen( filename )+strlen( cmdline )+2, 1 );
         sprintf( tmp_lstr, "%s %s", filename, cmdline );
-        bres = CreateProcess( NULL, tmp_lstr, NULL, NULL, FALSE, 0, NULL, NULL, &si, &pi);
+        bres = CreateProcessA( NULL, tmp_lstr, NULL, NULL, FALSE, 0, NULL, NULL, &si, &pi);
         free( tmp_lstr );
     }
     else
     {
-        bres = CreateProcess( filename, NULL, NULL, NULL, FALSE, 0, NULL, NULL, &si, &pi);
+        bres = CreateProcessA( filename, NULL, NULL, NULL, FALSE, 0, NULL, NULL, &si, &pi);
     }
     if ( bres ) return pi.hProcess;
     return NULL;
@@ -1162,9 +1162,9 @@ Filesize( const char *filename )
         #if ( GUCEF_PLATFORM == GUCEF_PLATFORM_MSWIN )
 
         UInt32 lfilesize;
-        WIN32_FIND_DATA FileInfo;
+        WIN32_FIND_DATAA FileInfo;
         HANDLE hFind;
-        hFind = FindFirstFile( filename, &FileInfo );
+        hFind = FindFirstFileA( filename, &FileInfo );
         if ( hFind == INVALID_HANDLE_VALUE )
         {
             lfilesize = 0;
@@ -1208,9 +1208,9 @@ File_Exists( const char *filename )
     {
         #if ( GUCEF_PLATFORM == GUCEF_PLATFORM_MSWIN )
 
-        WIN32_FIND_DATA FileInfo;
+        WIN32_FIND_DATAA FileInfo;
         HANDLE hFind;
-        hFind = FindFirstFile( filename, &FileInfo );
+        hFind = FindFirstFileA( filename, &FileInfo );
         if ( hFind != INVALID_HANDLE_VALUE )
         {
                 FindClose( hFind );
@@ -1362,7 +1362,7 @@ Is_Path_Valid( const char* path )
 {
     #if ( GUCEF_PLATFORM == GUCEF_PLATFORM_MSWIN )
 
-    return GetFileAttributes( path ) != INVALID_FILE_ATTRIBUTES;
+    return GetFileAttributesA( path ) != INVALID_FILE_ATTRIBUTES;
 
     #elif ( ( GUCEF_PLATFORM == GUCEF_PLATFORM_LINUX ) || ( GUCEF_PLATFORM == GUCEF_PLATFORM_ANDROID ) )
 
@@ -1403,7 +1403,7 @@ Get_Modification_Time( const char* path )
     #if ( GUCEF_PLATFORM == GUCEF_PLATFORM_MSWIN )
 
     WIN32_FILE_ATTRIBUTE_DATA data;
-    if ( 0 != GetFileAttributesEx( path, GetFileExInfoStandard, &data ) )
+    if ( 0 != GetFileAttributesExA( path, GetFileExInfoStandard, &data ) )
     {
         return FileTimeToUnixTime( &data.ftLastWriteTime );
     }

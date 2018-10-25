@@ -153,7 +153,7 @@ LoadModuleDynamicly( const char* filename )
 
     #elif ( GUCEF_PLATFORM == GUCEF_PLATFORM_MSWIN )
 
-    modulePtr = (void*) LoadLibrary( fName );
+    modulePtr = (void*) LoadLibraryA( fName );
 
     #endif
 
@@ -464,7 +464,7 @@ StringFromClipboard( char *dest     ,
                 hglb = GetClipboardData( CF_TEXT );
                 if ( hglb != NULL )
                 {
-                        LPTSTR lptstr = (LPTSTR) GlobalLock( hglb );
+                        LPSTR lptstr = (LPSTR) GlobalLock( hglb );
                         if ( lptstr != NULL )
                         {
                                 UInt32 offset = *wbytes;
@@ -566,7 +566,7 @@ ShowErrorMessage( const char* message     ,
                   const char* description )
 {
     #ifdef GUCEF_MSWIN_BUILD
-    MessageBox( GetCurrentHWND()                    ,
+    MessageBoxA( GetCurrentHWND()                    ,
                 description                         ,
                 message                             ,
                 MB_OK | MB_ICONERROR | MB_TASKMODAL );

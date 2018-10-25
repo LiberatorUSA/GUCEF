@@ -45,8 +45,8 @@
  */
 /* #define GUCEF_MT_BUILD_MODULE */
 
-#define GUCEF_MT_PUBLIC_C_CODE
-#define GUCEF_MT_PUBLIC_CPP_CODE
+//#define GUCEF_MT_PUBLIC_C_CODE
+//#define GUCEF_MT_PUBLIC_CPP_CODE
 
 /*-------------------------------------------------------------------------*/
 

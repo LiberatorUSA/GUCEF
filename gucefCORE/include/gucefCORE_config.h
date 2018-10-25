@@ -48,8 +48,8 @@
  *      export only C code or perhaps only C++ code. You can do this with the
  *      following defines
  */
-#define GUCEF_CORE_PUBLIC_CPP_CODE /* do you want to enable the C++ exports ? */
-#define GUCEF_CORE_PUBLIC_C_CODE   /* do you want to enable the C exports ? */
+//#define GUCEF_CORE_PUBLIC_CPP_CODE /* do you want to enable the C++ exports ? */
+//#define GUCEF_CORE_PUBLIC_C_CODE   /* do you want to enable the C exports ? */
 
 /*
  *      Wheter or not to use the build swiches here to specify manually what
