@@ -483,14 +483,22 @@ IsDirAProjectDir( const CORE::CString& dir )
 {GUCEF_TRACE;
 
     // The dir is a module dir if it has a suffix file in it
-    CORE::CString moduleInfoFilePath = dir;
-    CORE::AppendToPath( moduleInfoFilePath, "ModuleInfo.xml" );
-
-    if ( !CORE::FileExists( moduleInfoFilePath ) )
+    auto appendLambda = [&dir](const CString& addition) {
+        auto moduleInfoFilePath = dir;
+        CORE::AppendToPath(moduleInfoFilePath, addition);
+        return moduleInfoFilePath;
+    };
+        
+    if ( CORE::FileExists(appendLambda("ModuleInfo.xml")) )
     {
-        return IsDirALegacyProjectDir( dir );
+        return true;
     }
-    return true;
+    // BDE stuff
+    if (CORE::IsPathValid(appendLambda("package")))
+    {
+        return true;
+    }
+    return IsDirALegacyProjectDir(dir);
 }
 
 /*---------------------------------------------------------------------------*/
@@ -2258,7 +2266,7 @@ FindSubDirsWithSource( TProjectInfo& projectInfo         ,
 
 /*---------------------------------------------------------------------------*/
 
-void
+bool
 LegacyCMakeProcessProjectDir( TProjectInfo& projectInfo         ,
                               TModuleInfoEntry& moduleInfoEntry )
 {GUCEF_TRACE;
@@ -2270,7 +2278,7 @@ LegacyCMakeProcessProjectDir( TProjectInfo& projectInfo         ,
     if ( !CORE::LoadTextFileAsString( pathToSuffixFile, cmakeListSuffixFileContent ) )
     {
         GUCEF_ERROR_LOG( CORE::LOGLEVEL_NORMAL, "Failed to load legacy project file: " + pathToSuffixFile );
-        return;
+        return false;
     }
     
     if ( CORE::LoadTextFileAsString( pathToSuffixFile, cmakeListSuffixFileContent ) )
@@ -2301,11 +2309,10 @@ LegacyCMakeProcessProjectDir( TProjectInfo& projectInfo         ,
         }
 
         GUCEF_LOG( CORE::LOGLEVEL_NORMAL, "Processed suffix file for project " + moduleInfo.name );
+        return true;
     }
-    else
-    {
-        GUCEF_ERROR_LOG( CORE::LOGLEVEL_NORMAL, "Unable to locate the required module file " + pathToSuffixFile );
-    }
+    GUCEF_ERROR_LOG( CORE::LOGLEVEL_NORMAL, "Unable to locate the required module file " + pathToSuffixFile );
+    return false;
 }
 
 /*---------------------------------------------------------------------------*/
@@ -2352,7 +2359,16 @@ ProcessProjectDir( TProjectInfo& projectInfo                 ,
         TModuleInfoEntry moduleInfoEntry;
         InitializeModuleInfoEntry( moduleInfoEntry );
         moduleInfoEntry.rootDir = rootDir;
-        LegacyCMakeProcessProjectDir( projectInfo, moduleInfoEntry );
+        if (!LegacyCMakeProcessProjectDir(projectInfo, moduleInfoEntry))
+        {
+            // get a platform entry to use
+            // this legacy system only supported AllPlatforms via CMake
+            TModuleInfo& moduleInfo = *FindModuleInfoForPlatform(moduleInfoEntry, AllPlatforms, true);
+
+            // Set a project name based off the module sub-dir name
+            // Best we can do unless we can get it from the suffix file later
+            moduleInfo.name = CORE::LastSubDir(moduleInfoEntry.rootDir);
+        }
         moduleInfoEntries.push_back( moduleInfoEntry );
     }
 

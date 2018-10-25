@@ -1800,7 +1800,8 @@ GetConsensusModuleName( const TModuleInfoEntry& moduleInfoEntry ,
 
     if ( countMap.empty() )
     {
-        return CORE::CString();
+        //return CORE::CString();
+        return ExtractFilename(moduleInfoEntry.rootDir);
     }
 
     // Now that we have the popularity count of each name get the highest count
