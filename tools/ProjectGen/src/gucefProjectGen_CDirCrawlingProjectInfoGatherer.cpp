@@ -76,6 +76,10 @@
 #include "gucefProjectGen_CDirCrawlingProjectInfoGatherer.h"
 
 #include <algorithm>
+#include <cctype>
+#include <fstream>
+#include <string>
+
 
 /*-------------------------------------------------------------------------//
 //                                                                         //
@@ -85,6 +89,8 @@
 
 namespace GUCEF {
 namespace PROJECTGEN {
+
+namespace {
 
 /*-------------------------------------------------------------------------//
 //                                                                         //
@@ -2319,6 +2325,32 @@ LegacyCMakeProcessProjectDir( TProjectInfo& projectInfo         ,
 
 /*---------------------------------------------------------------------------*/
 
+std::string TrimSpace(const std::string& input)
+{
+    auto end = std::find_if_not(input.rbegin(), input.rend(), static_cast<int(*)(int)>(std::isspace)).base();
+    auto begin = std::find_if_not(input.begin(), end, static_cast<int(*)(int)>(std::isspace));
+    return { begin, end };
+}
+
+// BDE stuff
+TStringVector GetModuleDependenciesFromDep(CORE::CString path)
+{
+    CORE::AppendToPath(path, "package/" + CORE::ExtractFilename(path) + ".dep");
+
+    TStringVector result;
+
+    std::ifstream s(path.C_String());
+    std::string buffer;
+    while (std::getline(s, buffer))
+    {
+        buffer = TrimSpace(buffer);
+        if (!buffer.empty() && buffer[0] != '#')
+            result.push_back(buffer);
+    }
+
+    return result;
+}
+
 void
 ProcessProjectDir( TProjectInfo& projectInfo                 ,
                    const CORE::CString& rootDir              ,
@@ -2370,6 +2402,10 @@ ProcessProjectDir( TProjectInfo& projectInfo                 ,
             // Set a project name based off the module sub-dir name
             // Best we can do unless we can get it from the suffix file later
             moduleInfo.name = CORE::LastSubDir(moduleInfoEntry.rootDir);
+
+            moduleInfo.moduleType = MODULETYPE_STATIC_LIBRARY;
+
+            moduleInfo.dependencies = GetModuleDependenciesFromDep(moduleInfoEntry.rootDir);
         }
         moduleInfoEntries.push_back( moduleInfoEntry );
     }
@@ -3326,6 +3362,8 @@ FlagTaggedModulesToIgnoreAsSpecified( TProjectInfo& projectInfo      ,
         ++n;
     }
 }
+
+} // namespace
 
 /*-------------------------------------------------------------------------*/
 
