@@ -502,7 +502,12 @@ IsDirAProjectDir( const CORE::CString& dir )
         return true;
     }
     // BDE stuff
-    if (CORE::FileExists(appendLambda("package/" + CORE::ExtractFilename(dir) + ".dep")))
+    const auto instanceName = CORE::ExtractFilename(dir);
+    if (CORE::FileExists(appendLambda("package/" + instanceName + ".dep")))
+    {
+        return true;
+    }
+    if (CORE::FileExists(appendLambda("group/" + instanceName + ".dep")))
     {
         return true;
     }
@@ -2333,23 +2338,42 @@ std::string TrimSpace(const std::string& input)
 }
 
 // BDE stuff
-TStringVector GetModuleDependenciesFromDep(CORE::CString path)
+std::pair<TStringVector, bool> 
+GetModuleDependenciesFromDep(const CORE::CString& dir)
 {
+    std::pair<TStringVector, bool> result{};
+    CORE::CString path = dir;
     CORE::AppendToPath(path, "package/" + CORE::ExtractFilename(path) + ".dep");
 
-    TStringVector result;
-
     std::ifstream s(path.C_String());
+    if (!s)
+    {
+        path = dir;
+        CORE::AppendToPath(path, "group/" + CORE::ExtractFilename(path) + ".dep");
+        s.open(path.C_String());
+        result.second = true;
+    }
+    else
+    {
+        path = StripLastSubDir(dir);
+        auto candidate = CORE::ExtractFilename(path);
+        CORE::AppendToPath(path, "group/" + candidate + ".dep");
+        if (CORE::FileExists(path))
+            result.first.push_back(candidate);
+    }
     std::string buffer;
     while (std::getline(s, buffer))
     {
         buffer = TrimSpace(buffer);
+        // TOOO split
         if (!buffer.empty() && buffer[0] != '#')
-            result.push_back(buffer);
+            result.first.push_back(buffer);
     }
 
     return result;
 }
+
+
 
 void
 ProcessProjectDir( TProjectInfo& projectInfo                 ,
@@ -2403,9 +2427,28 @@ ProcessProjectDir( TProjectInfo& projectInfo                 ,
             // Best we can do unless we can get it from the suffix file later
             moduleInfo.name = CORE::LastSubDir(moduleInfoEntry.rootDir);
 
-            moduleInfo.moduleType = MODULETYPE_STATIC_LIBRARY;
+            bool isGroup;
+            std::tie(moduleInfo.dependencies, isGroup) = GetModuleDependenciesFromDep(moduleInfoEntry.rootDir);
 
-            moduleInfo.dependencies = GetModuleDependenciesFromDep(moduleInfoEntry.rootDir);
+            if (isGroup)
+            {
+                CORE::CString path = moduleInfoEntry.rootDir;
+                CORE::AppendToPath(path, "group/" + CORE::ExtractFilename(path) + ".mem");
+                std::ifstream s(path.C_String());
+                std::string buffer;
+                while (std::getline(s, buffer))
+                {
+                    buffer = TrimSpace(buffer);
+                    if (!buffer.empty() && buffer[0] != '#')
+                        //moduleInfo.dependencyIncludeDirs.insert(moduleInfoEntry.rootDir + ("/" + buffer).c_str());
+                        //moduleInfo.includeDirs[moduleInfoEntry.rootDir + ("/" + buffer).c_str()];
+                        moduleInfo.includeDirs[buffer];
+                }
+            }
+            else
+                moduleInfo.dependencyIncludeDirs.insert("."); // ?
+
+            moduleInfo.moduleType = isGroup? MODULETYPE_HEADER_INCLUDE_LOCATION : MODULETYPE_STATIC_LIBRARY;
         }
         moduleInfoEntries.push_back( moduleInfoEntry );
     }
