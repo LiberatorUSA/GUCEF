@@ -494,7 +494,7 @@ IsDirAProjectDir( const CORE::CString& dir )
         return true;
     }
     // BDE stuff
-    if (CORE::IsPathValid(appendLambda("package")))
+    if (CORE::FileExists(appendLambda("package/" + CORE::ExtractFilename(dir) + ".dep")))
     {
         return true;
     }
