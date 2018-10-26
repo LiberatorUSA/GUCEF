@@ -75,6 +75,8 @@
 
 #include "gucefProjectGen_CDirCrawlingProjectInfoGatherer.h"
 
+#include <algorithm>
+
 /*-------------------------------------------------------------------------//
 //                                                                         //
 //      NAMESPACE                                                          //
@@ -2382,6 +2384,20 @@ ProcessProjectDir( TProjectInfo& projectInfo                 ,
 
         FindSubDirsWithHeaders( projectInfo, moduleInfoEntry );
         FindSubDirsWithSource( projectInfo, moduleInfoEntry );
+
+        // filter out tests TODO handle
+        for (auto& module : moduleInfoEntry.modulesPerPlatform)
+        {
+            for (auto& dir : module.second.sourceDirs)
+            {
+                auto& files = dir.second;
+                files.erase(std::remove_if(
+                        files.begin(), 
+                        files.end(), 
+                        [](const CORE::CString& s) { return s.WildcardEquals("*.t.cpp", '*', false); }),
+                    files.end());
+            }
+        }
 
         // If we have a module name then use it for our logging output
         // we want to be able to see in the log which modules where successfully processed
