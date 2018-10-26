@@ -2394,7 +2394,7 @@ ProcessProjectDir( TProjectInfo& projectInfo                 ,
                 files.erase(std::remove_if(
                         files.begin(), 
                         files.end(), 
-                        [](const CORE::CString& s) { return s.WildcardEquals("*.t.cpp", '*', false); }),
+                        [](const CORE::CString& s) { return s.Length() > 6 && _strcmpi(s.C_String() + s.Length() - 6, ".t.cpp") == 0; }),
                     files.end());
             }
         }
