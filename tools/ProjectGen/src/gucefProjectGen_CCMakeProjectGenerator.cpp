@@ -634,6 +634,8 @@ GenerateCMakeModuleIncludesSection( const TModuleInfo& moduleInfo ,
                 path = path.ReplaceSubstr( " ", "\\ " );
                 allRelDependencyPaths += path + " ";
             }
+
+            allRelDependencyPaths += ". ";
         }
         ++n;
     }

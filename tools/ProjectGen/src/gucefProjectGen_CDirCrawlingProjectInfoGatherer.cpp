@@ -2445,8 +2445,8 @@ ProcessProjectDir( TProjectInfo& projectInfo                 ,
                         moduleInfo.includeDirs[buffer];
                 }
             }
-            else
-                moduleInfo.dependencyIncludeDirs.insert("."); // ?
+            //else
+            //    moduleInfo.dependencyIncludeDirs.insert("."); // ?
 
             moduleInfo.moduleType = isGroup? MODULETYPE_HEADER_INCLUDE_LOCATION : MODULETYPE_STATIC_LIBRARY;
         }
