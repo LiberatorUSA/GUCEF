@@ -172,10 +172,12 @@ struct SModuleInfo
     TStringVector tags;                          // optional tags that can be associated which allows filtering of modules
     
     TStringVector dependencies;                  // list of module names of all modules this module depends on
+    TStringVector recursiveDependencies;                  // list of module names of all modules this module depends on
     TStringSet dependencyIncludeDirs;            // include directories needed for the headers of the dependencies, paths only no files
        
     TStringVectorMap includeDirs;                // include directories of this module's own headers
     TStringVectorMap sourceDirs;                 // source directories of this module's own source
+    TStringVectorMap testDirs;                   // source directories of this module's own tests
 
     int buildOrder;                              // order number of this module in the build dependency chain
     int buildChain;                              // index of the build chain, different build chains can be build independently but may depend on other chains

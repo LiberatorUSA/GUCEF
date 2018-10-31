@@ -50,6 +50,8 @@
 
 #include "gucefProjectGen_CCMakeProjectGenerator.h"
 
+#include "gucefProjectGen_DataTypes.h"
+
 /*-------------------------------------------------------------------------//
 //                                                                         //
 //      NAMESPACE                                                          //
@@ -686,6 +688,162 @@ GenerateCMakeModuleIncludesSection( const TModuleInfoEntry& moduleInfoEntry )
     return sectionContent;
 }
 
+
+/*---------------------------------------------------------------------------*/
+
+
+void GetDependencies(TStringSet& dependencies,
+    const TProjectInfo& projectInfo,
+    //const TModuleInfo& moduleInfo,
+    const TStringVector& deps,
+    const CORE::CString& platformName,
+    bool recursive)
+{
+    TStringVector::const_iterator i = deps.begin();
+    while (i != deps.end())
+    {
+        // We add all dependencies except for header include locations which are not real modules
+        // and CMake will not be using a make file for those.
+        if (auto dependencyModule = GetModuleInfoEntry(projectInfo, (*i), platformName))
+        {
+            TModuleType moduleType = GetModuleType(*dependencyModule, platformName);
+            const bool inserted = (MODULETYPE_HEADER_INCLUDE_LOCATION != moduleType) &&
+                (MODULETYPE_HEADER_INTEGRATE_LOCATION != moduleType) &&
+                (MODULETYPE_CODE_INTEGRATE_LOCATION != moduleType) &&
+                (MODULETYPE_BINARY_PACKAGE != moduleType) &&
+                dependencies.insert((*i)).second;
+            if ((inserted || MODULETYPE_HEADER_INCLUDE_LOCATION == moduleType) && recursive)
+            {
+                if (auto moduleInfo = FindModuleInfoForPlatform(*dependencyModule, platformName))
+                {
+                    GetDependencies(dependencies, projectInfo, moduleInfo->dependencies, platformName, true);
+                    GetDependencies(dependencies, projectInfo, moduleInfo->recursiveDependencies, platformName, true);
+                }
+            }
+        }
+        else
+        {
+            dependencies.insert((*i));
+        }
+        ++i;
+    }
+}
+
+
+
+/*
+
+set(EXECUTABLE_OUTPUT_PATH ${PROJECT_BINARY_DIR}/tests)
+set(CTEST_BINARY_DIRECTORY ${PROJECT_BINARY_DIR}/tests)
+
+file(GLOB files "test_*.cc")
+
+foreach(file ${files})
+    string(REGEX REPLACE "(^./* | \\.[^.] * $)" "" file_without_ext ${file})
+    add_executable(${ file_without_ext } ${ file })
+    target_link_libraries(${ file_without_ext } ${ PROJECT_LIBS })
+    add_test(${ file_without_ext } ${ file_without_ext })
+    set_tests_properties(${ file_without_ext }
+        PROPERTIES
+        PASS_REGULAR_EXPRESSION "Test passed")
+    set_tests_properties(${ file_without_ext }
+        PROPERTIES
+        FAIL_REGULAR_EXPRESSION "(Exception|Test failed)")
+    set_tests_properties(${ file_without_ext }
+        PROPERTIES
+        TIMEOUT 120)
+    endforeach()
+
+ */
+
+const char TestsSectionTemplate[] = R"#(
+    add_executable( %s "%s" )
+    target_link_libraries( %s ${MODULE_NAME} %s)
+    add_test( %s %s )
+    set_tests_properties( %s 
+        PROPERTIES
+        PASS_REGULAR_EXPRESSION "Test passed")
+    set_tests_properties( %s 
+        PROPERTIES
+        FAIL_REGULAR_EXPRESSION "(Exception|Test failed)")
+        set_tests_properties( %s 
+            PROPERTIES
+            TIMEOUT 120)
+    )#";
+
+CORE::CString
+GenerateCMakeModuleTestsSection(const TProjectInfo& projectInfo,
+    const TModuleInfo& moduleInfo,
+    const CORE::CString& rootDir,
+    const CORE::CString& platformName)
+{
+    GUCEF_TRACE;
+
+    if (moduleInfo.testDirs.empty())
+        return {};
+
+    TStringSet dependencies;
+    GetDependencies(dependencies, projectInfo, moduleInfo.dependencies, platformName, true);
+
+    CORE::CString dependenciesList;
+    for (const auto& v : dependencies)
+    {
+        dependenciesList += ' ' + ConvertEnvVarStrings((v));
+    }
+
+    CORE::CString sectionContent;
+
+    for (const auto& dir : moduleInfo.testDirs)
+    {
+        for (const auto& file : dir.second)
+        {
+            CORE::CString path = dir.first;
+            path = ConvertEnvVarStrings(path);
+
+            CORE::AppendToPath(path, file);
+            path = path.ReplaceChar('\\', '/');
+
+            // CMake needs spaces in paths to be escaped
+            path = path.ReplaceSubstr(" ", "\\ ");
+
+            CString file_without_ext(file.C_String(), file.Length() - 6);
+            file_without_ext = (moduleInfo.name + "_") + file_without_ext;
+            char buffer[65536];
+            sprintf(buffer, TestsSectionTemplate,
+                file_without_ext.C_String(),
+                path.C_String(),
+                file_without_ext.C_String(),
+                dependenciesList.C_String(),
+                file_without_ext.C_String(),
+                file_without_ext.C_String(),
+                file_without_ext.C_String(),
+                file_without_ext.C_String(),
+                file_without_ext.C_String());
+            sectionContent += buffer;
+        }
+    }
+
+    return sectionContent;
+}
+
+CORE::CString
+GenerateCMakeModuleTestsSection(const TProjectInfo& projectInfo,
+    const TModuleInfoEntry& moduleInfoEntry)
+{
+    GUCEF_TRACE;
+
+    CORE::CString sectionContent;
+
+    TModuleInfoMap::const_iterator i = moduleInfoEntry.modulesPerPlatform.find(AllPlatforms);
+    if (i != moduleInfoEntry.modulesPerPlatform.end())
+    {
+        sectionContent += "\n";
+        sectionContent += GenerateCMakeModuleTestsSection(projectInfo, (*i).second, moduleInfoEntry.rootDir, AllPlatforms);
+    }
+
+    return sectionContent;
+}
+
 /*---------------------------------------------------------------------------*/
 
 CORE::CString
@@ -794,29 +952,7 @@ GenerateCMakeModuleDependenciesLine( const TProjectInfo& projectInfo   ,
         CORE::CString sectionContent = "add_dependencies( ${MODULE_NAME}";
 
         TStringSet dependencies;
-        TStringVector::const_iterator i = moduleInfo.dependencies.begin();
-        while ( i != moduleInfo.dependencies.end() )
-        {
-            // We add all dependencies except for header include locations which are not real modules
-            // and CMake will not be using a make file for those.
-            const TModuleInfoEntry* dependencyModule = GetModuleInfoEntry( projectInfo, (*i), platformName );
-            if ( NULL != dependencyModule )
-            {
-                TModuleType moduleType = GetModuleType( *dependencyModule, platformName );
-                if ( ( MODULETYPE_HEADER_INCLUDE_LOCATION != moduleType )   &&
-                     ( MODULETYPE_HEADER_INTEGRATE_LOCATION != moduleType ) &&
-                     ( MODULETYPE_CODE_INTEGRATE_LOCATION != moduleType )   &&
-                     ( MODULETYPE_BINARY_PACKAGE != moduleType )             )
-                {
-                    dependencies.insert( (*i) );
-                }
-            }
-            else
-            {
-                dependencies.insert( (*i) );
-            }
-            ++i;
-        }
+        GetDependencies(dependencies, projectInfo, moduleInfo.dependencies, platformName, false);
 
         // The reason we first put the dependency strings in a set is to sort them alphabetically.
         // this way the output remains the same regardless of what order the modules were processed in.
@@ -1316,6 +1452,8 @@ GenerateCMakeListsFileContent( const TProjectInfo& projectInfo         ,
         // addition and completely autogenerated content
         fileContent += GenerateCMakeTemplatedAdditionSection( moduleInfoEntry );
     }
+
+    fileContent += GenerateCMakeModuleTestsSection(projectInfo, moduleInfoEntry);
 
     // We are done generating the content for the CMake file
     return fileContent;

@@ -2440,13 +2440,14 @@ ProcessProjectDir( TProjectInfo& projectInfo                 ,
                 {
                     buffer = TrimSpace(buffer);
                     if (!buffer.empty() && buffer[0] != '#')
+                    {
                         //moduleInfo.dependencyIncludeDirs.insert(moduleInfoEntry.rootDir + ("/" + buffer).c_str());
                         //moduleInfo.includeDirs[moduleInfoEntry.rootDir + ("/" + buffer).c_str()];
                         moduleInfo.includeDirs[buffer];
+                        moduleInfo.recursiveDependencies.push_back(buffer);
+                    }
                 }
             }
-            //else
-            //    moduleInfo.dependencyIncludeDirs.insert("."); // ?
 
             moduleInfo.moduleType = isGroup? MODULETYPE_HEADER_INCLUDE_LOCATION : MODULETYPE_STATIC_LIBRARY;
         }
@@ -2470,11 +2471,12 @@ ProcessProjectDir( TProjectInfo& projectInfo                 ,
             for (auto& dir : module.second.sourceDirs)
             {
                 auto& files = dir.second;
-                files.erase(std::remove_if(
-                        files.begin(), 
-                        files.end(), 
-                        [](const CORE::CString& s) { return s.Length() > 6 && _strcmpi(s.C_String() + s.Length() - 6, ".t.cpp") == 0; }),
-                    files.end());
+                auto filesEnd = std::partition(
+                    files.begin(),
+                    files.end(),
+                    [](const CORE::CString& s) { return !(s.Length() > 6 && _strcmpi(s.C_String() + s.Length() - 6, ".t.cpp") == 0); });
+                module.second.testDirs[dir.first] = { std::make_move_iterator(filesEnd), std::make_move_iterator(files.end()) };
+                files.erase(filesEnd, files.end());
             }
         }
 

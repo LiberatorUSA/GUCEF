@@ -222,6 +222,10 @@ GUCEF_OSMAIN_BEGIN
         minLogLevel = CORE::StringToInt32( valueStr );
         CORE::CCoreGlobal::Instance()->GetLogManager().SetMinLogLevel( minLogLevel );
     }
+    else
+    {
+        CORE::CCoreGlobal::Instance()->GetLogManager().SetMinLogLevel(CORE::LOGLEVEL_IMPORTANT);
+    }
 
     // Support overriding environment variables from a file.
     // This can be important for build environments which rely on such variables
