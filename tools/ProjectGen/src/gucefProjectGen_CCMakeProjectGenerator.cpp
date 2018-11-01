@@ -589,38 +589,32 @@ GenerateCMakeListsFilePlatformFilesSection( const TModuleInfoEntry& moduleInfoEn
 /*---------------------------------------------------------------------------*/
 
 CORE::CString
-GenerateCMakeModuleIncludesSection( const TModuleInfo& moduleInfo ,
-                                    const CORE::CString& rootDir  )
-{GUCEF_TRACE;
-
-    if ( moduleInfo.name == "CEGUI.RendererModule.Direct3D9" )
-    {
-        int b=0;
-    }
-    
+GetAllRelDependencyPaths(const TModuleInfo& moduleInfo,
+    const CORE::CString& rootDir)
+{
     // Add include dirs for each dependency we know about
     CORE::CString allRelDependencyPaths;
     const TStringSet& includeDirs = moduleInfo.dependencyIncludeDirs;
     TStringSet::const_iterator i = includeDirs.begin();
-    while ( i != includeDirs.end() )
+    while (i != includeDirs.end())
     {
         // CMake needs spaces in paths to be escaped
-        CORE::CString path = (*i).ReplaceSubstr( " ", "\\ " );
+        CORE::CString path = (*i).ReplaceSubstr(" ", "\\ ");
 
-        allRelDependencyPaths += ConvertEnvVarStrings( path ) + " ";
+        allRelDependencyPaths += ConvertEnvVarStrings(path) + " ";
         ++i;
     }
 
     // Add all the regular include dirs for this module
     TStringVectorMap::const_iterator n = moduleInfo.includeDirs.begin();
-    while ( n != moduleInfo.includeDirs.end() )
-    {        
-        CORE::CString includeDir = ConvertEnvVarStrings( (*n).first ).ReplaceChar( '\\', '/' ); 
+    while (n != moduleInfo.includeDirs.end())
+    {
+        CORE::CString includeDir = ConvertEnvVarStrings((*n).first).ReplaceChar('\\', '/');
 
         // CMake needs spaces in paths to be escaped
-        includeDir = includeDir.ReplaceSubstr( " ", "\\ " );
+        includeDir = includeDir.ReplaceSubstr(" ", "\\ ");
 
-        if ( 0 != includeDir.Length() )
+        if (0 != includeDir.Length())
         {
             allRelDependencyPaths += includeDir + " ";
         }
@@ -630,10 +624,10 @@ GenerateCMakeModuleIncludesSection( const TModuleInfo& moduleInfo ,
             // If so we have create an include for an empty include dir
             // to ensure files in subdirs can include the file with the zero length
             // subdir.
-            if ( 1 < moduleInfo.includeDirs.size() )
+            if (1 < moduleInfo.includeDirs.size())
             {
-                CORE::CString path = "../" + CORE::LastSubDir( rootDir );
-                path = path.ReplaceSubstr( " ", "\\ " );
+                CORE::CString path = "../" + CORE::LastSubDir(rootDir);
+                path = path.ReplaceSubstr(" ", "\\ ");
                 allRelDependencyPaths += path + " ";
             }
 
@@ -641,6 +635,21 @@ GenerateCMakeModuleIncludesSection( const TModuleInfo& moduleInfo ,
         }
         ++n;
     }
+
+    return allRelDependencyPaths;
+}
+
+CORE::CString
+GenerateCMakeModuleIncludesSection( const TModuleInfo& moduleInfo ,
+                                    const CORE::CString& rootDir  )
+{GUCEF_TRACE;
+
+    if ( moduleInfo.name == "CEGUI.RendererModule.Direct3D9" )
+    {
+        int b=0;
+    }
+    
+    auto allRelDependencyPaths = GetAllRelDependencyPaths(moduleInfo, rootDir);
 
     CORE::CString sectionContent;
     if ( allRelDependencyPaths.Length() > 0 )
@@ -759,6 +768,7 @@ foreach(file ${files})
 const char TestsSectionTemplate[] = R"#(
     add_executable( %s "%s" )
     target_link_libraries( %s ${MODULE_NAME} %s)
+    target_include_directories( %s PRIVATE %s )
     add_test( %s %s )
     set_tests_properties( %s 
         PROPERTIES
@@ -791,6 +801,8 @@ GenerateCMakeModuleTestsSection(const TProjectInfo& projectInfo,
         dependenciesList += ' ' + ConvertEnvVarStrings((v));
     }
 
+    auto allRelDependencyPaths = GetAllRelDependencyPaths(moduleInfo, rootDir);
+
     CORE::CString sectionContent;
 
     for (const auto& dir : moduleInfo.testDirs)
@@ -814,6 +826,10 @@ GenerateCMakeModuleTestsSection(const TProjectInfo& projectInfo,
                 path.C_String(),
                 file_without_ext.C_String(),
                 dependenciesList.C_String(),
+
+                file_without_ext.C_String(),
+                allRelDependencyPaths.C_String(),
+
                 file_without_ext.C_String(),
                 file_without_ext.C_String(),
                 file_without_ext.C_String(),
