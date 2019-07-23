@@ -584,7 +584,7 @@ GetCPUCountPerPackage( void )
     UInt32 coreCount = 1;
 
     /* Initialize to 1 to support older processors. */
-    #if ( GUCEF_COMPILER == GUCEF_COMPILER_MSVC )
+    #if ( !(defined GUCEF_64BIT) && ( GUCEF_COMPILER == GUCEF_COMPILER_MSVC ) )
     _asm
     {
         mov		eax, 1

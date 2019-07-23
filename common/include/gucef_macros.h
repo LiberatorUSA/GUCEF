@@ -101,6 +101,18 @@
  *      Bit target
  */
 #if !( defined(GUCEF_32BIT) || defined(GUCEF_64BIT) )
+    #if ( GUCEF_PLATFORM == GUCEF_PLATFORM_MSWIN )
+        #ifdef _WIN64
+            #define GUCEF_64BIT
+        #endif
+    #elif ( ( GUCEF_PLATFORM == GUCEF_PLATFORM_LINUX ) || ( GUCEF_PLATFORM == GUCEF_PLATFORM_ANDROID ) )
+        #ifdef __LP64__
+            #define GUCEF_64BIT
+        #endif
+    #endif
+#endif
+
+#if !( defined(GUCEF_32BIT) || defined(GUCEF_64BIT) )
     #define GUCEF_32BIT
 #endif
 
