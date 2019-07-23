@@ -340,6 +340,15 @@ CUDPSocket::SetRecievedDataBufferSize( const UInt32 newBufferSize )
 /*-------------------------------------------------------------------------*/
 
 Int32
+CUDPSocket::Recieve( void )
+{GUCEF_TRACE;
+    
+    return Recieve( nullptr, 0 );
+}
+
+/*-------------------------------------------------------------------------*/
+
+Int32
 CUDPSocket::Recieve( CIPAddress& src ,
                      void* destbuf   ,
                      UInt16 bufsize  )

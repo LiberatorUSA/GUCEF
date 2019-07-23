@@ -227,13 +227,23 @@ class GUCEF_COMCORE_EXPORT_CPP CUDPSocket : public CSocket
      *      Same as the other version of Recieve() except here
      *      you do not have to pass in a structure for source info.
      *      Only use this version if you don't care where the packet
-     *      came from
+     *      came from and you will use eventing to handle the payload
      *
      *      @param destbuf buffer the received data will be written to.
      *      @param bufsize size of the destination buffer in bytes.
+     *      @return the number of bytes written to the given buffer, returns -1 on error.
      */
     Int32 Recieve( void* destbuf      ,
                    UInt16 bufsize     );
+
+
+    /**
+     *      Same as the other version of Recieve() except here
+     *      you soley rely on the eventing mechanism
+     *
+     *      @return the number of bytes written to the given buffer, returns -1 on error.
+     */
+    Int32 Recieve( void );
 
     /**
      *      returns whether this socket is a blocking socket
