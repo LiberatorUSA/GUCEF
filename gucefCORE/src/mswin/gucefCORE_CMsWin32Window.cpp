@@ -270,15 +270,23 @@ CMsWin32Window::WndProc( HWND hwnd     ,
     if ( msg == WM_NCCREATE )
     {
         windowObj = (CMsWin32Window*) ((LPCREATESTRUCT) lParam)->lpCreateParams;
-        ::SetWindowLongPtr( hwnd, GWL_USERDATA, (LONG_PTR) windowObj );
-	
+        #ifdef GUCEF_32BIT
+        ::SetWindowLong( hwnd, GWL_USERDATA, (LONG_PTR) windowObj );
+	    #else
+        ::SetWindowLongPtr( hwnd, GWLP_USERDATA, (LONG_PTR) windowObj );
+        #endif
+
 	    //If you process any messages that are sent before CreateWindowEx returns
 	    //the HWND, you need something in the place of your HWND member.
 	    windowObj->SetHwnd( hwnd );
     }
     else
     {
+        #ifdef GUCEF_32BIT
         windowObj = (CMsWin32Window*) ::GetWindowLong( hwnd, GWL_USERDATA );
+        #else
+        windowObj = (CMsWin32Window*) ::GetWindowLongPtr( hwnd, GWLP_USERDATA );
+        #endif
     }
     
     if ( 0 != windowObj )

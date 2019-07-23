@@ -59,7 +59,7 @@
  *      Switches for manually setting the bit target
  *      Default is 32bit, may be able to autodetect
  */
-#define GUCEF_32BIT
+/* #define GUCEF_32BIT */
 /* #define GUCEF_64BIT */
 
 /*-------------------------------------------------------------------------*/
