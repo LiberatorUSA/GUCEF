@@ -1,0 +1,13 @@
+<ModuleInfoEntry>
+    <Module Name="RdKafka" Type="SharedLibrary" Platform="All">
+        <Preprocessor>
+            <Define String="LIBRDKAFKACPP_EXPORTS" />
+        </Preprocessor>
+        <Dependencies>
+            <Dependency Name="zlib" />
+        </Dependencies>
+        <Linker>
+            <Dependency Name="zlib" />
+        </Linker>		
+    </Module>
+</ModuleInfoEntry>

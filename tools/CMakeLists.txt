@@ -35,4 +35,5 @@ add_subdirectory(FileDiff)
 add_subdirectory(MemoryLeakFinder)
 add_subdirectory(SocketSink)
 add_subdirectory(DCSBruteInstaller)
+add_subdirectory(udp2kafka)
 
