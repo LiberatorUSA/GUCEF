@@ -11,6 +11,159 @@
 
 # Configuration for module: RdKafka
 
+set( HEADER_FILES 
+  src/crc32c.h
+  src/lz4.h
+  src/lz4frame.h
+  src/lz4frame_static.h
+  src/lz4hc.h
+  src/lz4opt.h
+  src/queue.h
+  src/rd.h
+  src/rdaddr.h
+  src/rdatomic.h
+  src/rdavg.h
+  src/rdavl.h
+  src/rdbuf.h
+  src/rdcrc32.h
+  src/rddl.h
+  src/rdendian.h
+  src/rdfloat.h
+  src/rdgz.h
+  src/rdhdrhistogram.h
+  src/rdinterval.h
+  src/rdkafka.h
+  src/rdkafka_admin.h
+  src/rdkafka_assignor.h
+  src/rdkafka_aux.h
+  src/rdkafka_broker.h
+  src/rdkafka_buf.h
+  src/rdkafka_cert.h
+  src/rdkafka_cgrp.h
+  src/rdkafka_conf.h
+  src/rdkafka_confval.h
+  src/rdkafka_event.h
+  src/rdkafka_feature.h
+  src/rdkafka_header.h
+  src/rdkafka_idempotence.h
+  src/rdkafka_int.h
+  src/rdkafka_interceptor.h
+  src/rdkafka_lz4.h
+  src/rdkafka_metadata.h
+  src/rdkafka_msg.h
+  src/rdkafka_msgbatch.h
+  src/rdkafka_msgset.h
+  src/rdkafka_offset.h
+  src/rdkafka_op.h
+  src/rdkafka_partition.h
+  src/rdkafka_pattern.h
+  src/rdkafka_plugin.h
+  src/rdkafka_proto.h
+  src/rdkafka_queue.h
+  src/rdkafka_request.h
+  src/rdkafka_sasl.h
+  src/rdkafka_sasl_int.h
+  src/rdkafka_sasl_oauthbearer.h
+  src/rdkafka_ssl.h
+  src/rdkafka_timer.h
+  src/rdkafka_topic.h
+  src/rdkafka_transport.h
+  src/rdkafka_transport_int.h
+  src/rdkafka_zstd.h
+  src/rdlist.h
+  src/rdlog.h
+  src/rdmurmur2.h
+  src/rdports.h
+  src/rdposix.h
+  src/rdrand.h
+  src/rdregex.h
+  src/rdsignal.h
+  src/rdstring.h
+  src/rdsysqueue.h
+  src/rdtime.h
+  src/rdtypes.h
+  src/rdunittest.h
+  src/rdvarint.h
+  src/rdwin32.h
+  src/regexp.h
+  src/snappy.h
+  src/snappy_compat.h
+  src/tinycthread.h
+  src/tinycthread_extra.h
+  src/win32_config.h
+  src/xxhash.h
+)
+
+set( SOURCE_FILES 
+  src/crc32c.c
+  src/lz4.c
+  src/lz4frame.c
+  src/lz4hc.c
+  src/rdaddr.c
+  src/rdavl.c
+  src/rdbuf.c
+  src/rdcrc32.c
+  src/rddl.c
+  src/rdgz.c
+  src/rdhdrhistogram.c
+  src/rdkafka.c
+  src/rdkafka_admin.c
+  src/rdkafka_assignor.c
+  src/rdkafka_aux.c
+  src/rdkafka_background.c
+  src/rdkafka_broker.c
+  src/rdkafka_buf.c
+  src/rdkafka_cert.c
+  src/rdkafka_cgrp.c
+  src/rdkafka_conf.c
+  src/rdkafka_event.c
+  src/rdkafka_feature.c
+  src/rdkafka_header.c
+  src/rdkafka_idempotence.c
+  src/rdkafka_interceptor.c
+  src/rdkafka_lz4.c
+  src/rdkafka_metadata.c
+  src/rdkafka_metadata_cache.c
+  src/rdkafka_msg.c
+  src/rdkafka_msgset_reader.c
+  src/rdkafka_msgset_writer.c
+  src/rdkafka_offset.c
+  src/rdkafka_op.c
+  src/rdkafka_partition.c
+  src/rdkafka_pattern.c
+  src/rdkafka_plugin.c
+  src/rdkafka_queue.c
+  src/rdkafka_range_assignor.c
+  src/rdkafka_request.c
+  src/rdkafka_roundrobin_assignor.c
+  src/rdkafka_sasl.c
+  src/rdkafka_sasl_cyrus.c
+  src/rdkafka_sasl_oauthbearer.c
+  src/rdkafka_sasl_plain.c
+  src/rdkafka_sasl_scram.c
+  src/rdkafka_sasl_win32.c
+  src/rdkafka_ssl.c
+  src/rdkafka_subscription.c
+  src/rdkafka_timer.c
+  src/rdkafka_topic.c
+  src/rdkafka_transport.c
+  src/rdkafka_zstd.c
+  src/rdlist.c
+  src/rdlog.c
+  src/rdmurmur2.c
+  src/rdports.c
+  src/rdrand.c
+  src/rdregex.c
+  src/rdstring.c
+  src/rdunittest.c
+  src/rdvarint.c
+  src/regexp.c
+  src/snappy.c
+  src/tinycthread.c
+  src/tinycthread_extra.c
+  src/xxhash.c
+)
+
 # Make sure the PLATFORM_HEADER_FILES variable is always defined
  set( PLATFORM_HEADER_FILES "" )
 
@@ -26,6 +179,7 @@ add_dependencies( ${MODULE_NAME} zlib )
 target_link_libraries( ${MODULE_NAME} zlib )
 set_property( TARGET ${MODULE_NAME} APPEND_STRING PROPERTY COMPILE_DEFINITIONS "LIBRDKAFKACPP_EXPORTS" )
 
+include_directories( src )
 
 if ( LINUX32 )
   include_directories( ../zlib )
