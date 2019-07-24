@@ -3,6 +3,5 @@ debian
 examples
 mklove
 packaging
-src-cpp
 tests
 win32

@@ -38,8 +38,6 @@ Udp2KafkaChannel::Udp2KafkaChannel()
 {GUCEF_TRACE;
 
     RegisterEventHandlers();
-
-    m_kafkaMsgQueueOverflowQueue.reserve( 1024 );
 }
 
 /*-------------------------------------------------------------------------*/
@@ -198,7 +196,7 @@ Udp2KafkaChannel::OnTaskStart( CORE::CICloneable* taskData )
 {GUCEF_TRACE;
 
 	std::string errStr;
-	RdKafka::Producer* producer = RdKafka::Producer::create( conf, errStr );
+	RdKafka::Producer* producer = nullptr;//= RdKafka::Producer::create( conf, errStr );
 	if ( producer == nullptr ) 
     {
 		GUCEF_ERROR_LOG( CORE::LOGLEVEL_IMPORTANT, "Udp2KafkaChannel: Failed to create Kafka producer, error message: " + errStr );
@@ -354,10 +352,12 @@ Udp2Kafka::Setup( void )
 
 	std::string errStr;
 
-    kafkaConf->set( "metadata.broker.list", brokers, errStr );
+    //kafkaConf->set( "metadata.broker.list", brokers, errStr );
     // Set the event callback
 	kafkaConf->set( "event_cb", static_cast< RdKafka::EventCb* >( this ), errStr );
     // Set the delivery report callback
 	kafkaConf->set( "dr_cb", static_cast< RdKafka::DeliveryReportCb* >( this ), errStr );
+
+    return true;
 }
 

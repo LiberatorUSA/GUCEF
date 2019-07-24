@@ -92,6 +92,8 @@ set( HEADER_FILES
   src/tinycthread_extra.h
   src/win32_config.h
   src/xxhash.h
+  src-cpp/rdkafkacpp.h
+  src-cpp/rdkafkacpp_int.h
 )
 
 set( SOURCE_FILES 
@@ -137,17 +139,11 @@ set( SOURCE_FILES
   src/rdkafka_request.c
   src/rdkafka_roundrobin_assignor.c
   src/rdkafka_sasl.c
-  src/rdkafka_sasl_cyrus.c
-  src/rdkafka_sasl_oauthbearer.c
   src/rdkafka_sasl_plain.c
-  src/rdkafka_sasl_scram.c
-  src/rdkafka_sasl_win32.c
-  src/rdkafka_ssl.c
   src/rdkafka_subscription.c
   src/rdkafka_timer.c
   src/rdkafka_topic.c
   src/rdkafka_transport.c
-  src/rdkafka_zstd.c
   src/rdlist.c
   src/rdlog.c
   src/rdmurmur2.c
@@ -162,13 +158,42 @@ set( SOURCE_FILES
   src/tinycthread.c
   src/tinycthread_extra.c
   src/xxhash.c
+  src-cpp/ConfImpl.cpp
+  src-cpp/ConsumerImpl.cpp
+  src-cpp/HandleImpl.cpp
+  src-cpp/HeadersImpl.cpp
+  src-cpp/KafkaConsumerImpl.cpp
+  src-cpp/MessageImpl.cpp
+  src-cpp/MetadataImpl.cpp
+  src-cpp/ProducerImpl.cpp
+  src-cpp/QueueImpl.cpp
+  src-cpp/RdKafka.cpp
+  src-cpp/TopicImpl.cpp
+  src-cpp/TopicPartitionImpl.cpp
 )
+
+
+
+if (WIN32)
+  set( PLATFORM_SOURCE_FILES 
+    src/rdkafka_sasl_win32.c
+  )
+
+  set( PLATFORM_SOURCE_INSTALL "WIN32" )
+  source_group( "Platform Source Files" FILES ${PLATFORM_SOURCE_FILES} )
+
+elseif (WIN64)
+  set( PLATFORM_SOURCE_FILES 
+    src/rdkafka_sasl_win32.c
+  )
+
+  set( PLATFORM_SOURCE_INSTALL "WIN64" )
+  source_group( "Platform Source Files" FILES ${PLATFORM_SOURCE_FILES} )
+
+endif ()
 
 # Make sure the PLATFORM_HEADER_FILES variable is always defined
  set( PLATFORM_HEADER_FILES "" )
-
-# Make sure the PLATFORM_SOURCE_FILES variable is always defined
- set( PLATFORM_SOURCE_FILES "" )
 
 # For ease of use make a variable that has all files for this module
 set( ALL_FILES ${HEADER_FILES} ${SOURCE_FILES} ${PLATFORM_HEADER_FILES} ${PLATFORM_SOURCE_FILES} )
@@ -177,9 +202,9 @@ set( MODULE_NAME "RdKafka" )
 add_library( ${MODULE_NAME} ${ALL_FILES} )
 add_dependencies( ${MODULE_NAME} zlib )
 target_link_libraries( ${MODULE_NAME} zlib )
-set_property( TARGET ${MODULE_NAME} APPEND_STRING PROPERTY COMPILE_DEFINITIONS "LIBRDKAFKACPP_EXPORTS" )
+set_property( TARGET ${MODULE_NAME} APPEND_STRING PROPERTY COMPILE_DEFINITIONS "LIBRDKAFKACPP_EXPORTS;LIBRDKAFKA_EXPORTS" )
 
-include_directories( src )
+include_directories( src src-cpp )
 
 if ( LINUX32 )
   include_directories( ../zlib )
