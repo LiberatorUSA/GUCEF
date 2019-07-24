@@ -34,6 +34,16 @@
 #define GUCEF_COMCORE_CUDPSOCKET_H
 #endif /* GUCEF_COMCORE_CUDPSOCKET_H ? */
 
+#ifndef GUCEF_CORE_CICONFIGURABLE_H
+#include "CIConfigurable.h"
+#define GUCEF_CORE_CICONFIGURABLE_H
+#endif /* GUCEF_CORE_CICONFIGURABLE_H ? */
+
+#ifndef GUCEF_CORE_CVALUELIST_H
+#include "CValueList.h"
+#define GUCEF_CORE_CVALUELIST_H
+#endif /* GUCEF_CORE_CVALUELIST_H ? */
+
 #include "rdkafkacpp.h"
 
 /*-------------------------------------------------------------------------//
@@ -57,6 +67,7 @@ class Udp2KafkaChannel : public CORE::CTaskConsumer
     typedef CORE::CTEventHandlerFunctor< Udp2KafkaChannel > TEventCallback;
 
     Udp2KafkaChannel();
+    Udp2KafkaChannel( const Udp2KafkaChannel& src );
     virtual ~Udp2KafkaChannel();
 
     virtual bool OnTaskStart( CORE::CICloneable* taskData );
@@ -64,6 +75,12 @@ class Udp2KafkaChannel : public CORE::CTaskConsumer
     virtual bool OnTaskCycle( CORE::CICloneable* taskData );
     
     virtual void OnTaskEnd( CORE::CICloneable* taskData );
+
+    virtual CORE::CString GetType( void ) const;
+
+    bool LoadConfig( CORE::UInt16 udpPort                ,
+                     const CORE::CString& kafkaTopicName ,
+                     RdKafka::Conf* kafkaConf            );
 
     private:
 
@@ -97,25 +114,29 @@ class Udp2KafkaChannel : public CORE::CTaskConsumer
 
     typedef std::deque< CORE::CDynamicBuffer > TDynamicBufferQueue;
 
+    CORE::UInt16 m_udpPort;
+    RdKafka::Conf* m_kafkaConf;
+    CORE::CString m_kafkaTopicName;
+
     GUCEF::COMCORE::CUDPSocket m_udpSocket;
     TDynamicBufferQueue m_kafkaMsgQueueOverflowQueue;
     RdKafka::Producer* m_kafkaProducer;
     RdKafka::Topic* m_kafkaTopic;
-    CORE::CString m_kafkaTopicName;
 };
 
 /*-------------------------------------------------------------------------*/
 
-class Udp2Kafka //: GUCEF::CORE::CIConfigurable
-                : private RdKafka::EventCb ,
+class Udp2Kafka : private RdKafka::EventCb ,
                   private RdKafka::DeliveryReportCb 
 {
     public:
 
     Udp2Kafka( void );
-    ~Udp2Kafka();
+    virtual ~Udp2Kafka();
 
-    bool Setup( void );
+    bool Start( void );
+
+    bool LoadConfig( const CORE::CValueList& config );
 
     private:
 
@@ -124,5 +145,11 @@ class Udp2Kafka //: GUCEF::CORE::CIConfigurable
 
     private:
 
+    RdKafka::Conf* m_kafkaConf;
+    CORE::UInt16 m_udpStartPort;
+    CORE::UInt16 m_channelCount;
+    CORE::Int32 m_kafkaTopicStartChannelID;
+    CORE::CString m_kafkaTopicName;
+    CORE::CString m_kafkaBrokers;
     std::vector< Udp2KafkaChannel > m_channels;
 };

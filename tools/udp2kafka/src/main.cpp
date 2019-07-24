@@ -139,7 +139,7 @@ LoadConfig( const CORE::CString& configPath ,
     }
     GUCEF_LOG( CORE::LOGLEVEL_NORMAL, "Located config file @ " + configFilePath );
 
-    keyValueList.SetConfigNamespace( "Bootstrap/Main/AppArgs" );
+    keyValueList.SetConfigNamespace( "Main/AppArgs" );
     keyValueList.SetUseGlobalConfig( true );
     keyValueList.SetAllowDuplicates( false );
     keyValueList.SetAllowMultipleValues( true );
@@ -206,17 +206,6 @@ GUCEF_OSMAIN_BEGIN
         CORE::CCoreGlobal::Instance()->GetLogManager().SetMinLogLevel( minLogLevel );
     }
 
-    // Support overriding environment variables from a file.
-    CORE::CString envOverrideFile = keyValueList.GetValueAlways( "envOverridesFile" );
-    if ( !envOverrideFile.IsNULLOrEmpty() )
-    {
-        CORE::CString fileContent;
-        if ( CORE::LoadTextFileAsString( envOverrideFile, fileContent, true, "\n" ) )
-        {
-            CORE::SetEnvOverrides( fileContent );
-        }
-    }
-
     CORE::CString outputDir = CORE::RelativePath( keyValueList.GetValueAlways( "outputDir" ) );
     if ( outputDir.IsNULLOrEmpty() )
     {
@@ -239,10 +228,19 @@ GUCEF_OSMAIN_BEGIN
     GUCEF_LOG( CORE::LOGLEVEL_NORMAL, "Flushed to log @ " + logFilename );
 
     Udp2Kafka udp2Kafka;
+    if ( !udp2Kafka.LoadConfig( keyValueList ) )
+    {
+        GUCEF_ERROR_LOG( CORE::LOGLEVEL_CRITICAL, "Udp2Kafka: Exiting because LoadConfig failed" );
+        return -1;
+    }
 
+    if ( !udp2Kafka.Start() )
+    {
+        GUCEF_ERROR_LOG( CORE::LOGLEVEL_CRITICAL, "Udp2Kafka: Failed to Start()" );
+        return -2;
+    }
 
-    //GUCEF_ERROR_LOG( CORE::LOGLEVEL_IMPORTANT, "SocketSink: Exiting because setup failed" );
-    return -1;
+    return 0;
 }
 GUCEF_OSMAIN_END
 

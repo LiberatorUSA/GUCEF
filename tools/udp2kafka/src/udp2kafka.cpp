@@ -22,6 +22,11 @@
 //                                                                         //
 //-------------------------------------------------------------------------*/
 
+#ifndef GUCEF_CORE_CTASKMANAGER_H
+#include "gucefCORE_CTaskManager.h"
+#define GUCEF_CORE_CTASKMANAGER_H
+#endif /* GUCEF_CORE_CTASKMANAGER_H */
+
 #include "udp2kafka.h"
 
 /*-------------------------------------------------------------------------//
@@ -32,9 +37,29 @@
 
 Udp2KafkaChannel::Udp2KafkaChannel()
     : CORE::CTaskConsumer()
+    , m_udpPort( 0 )
+    , m_kafkaConf( nullptr )
+    , m_kafkaTopicName()
     , m_udpSocket( true )
+    , m_kafkaMsgQueueOverflowQueue()
     , m_kafkaProducer( nullptr )
     , m_kafkaTopic( nullptr )
+{GUCEF_TRACE;
+
+    RegisterEventHandlers();
+}
+
+/*-------------------------------------------------------------------------*/
+
+Udp2KafkaChannel::Udp2KafkaChannel( const Udp2KafkaChannel& src )
+    : CORE::CTaskConsumer()
+    , m_udpPort( src.m_udpPort )
+    , m_kafkaConf( src.m_kafkaConf )
+    , m_kafkaTopicName( src.m_kafkaTopicName )
+    , m_udpSocket( src.m_udpSocket.IsBlocking() )
+    , m_kafkaMsgQueueOverflowQueue( src.m_kafkaMsgQueueOverflowQueue )
+    , m_kafkaProducer( src.m_kafkaProducer )
+    , m_kafkaTopic( src.m_kafkaTopic )
 {GUCEF_TRACE;
 
     RegisterEventHandlers();
@@ -70,6 +95,29 @@ Udp2KafkaChannel::RegisterEventHandlers( void )
     SubscribeTo( &m_udpSocket                                ,
                  COMCORE::CUDPSocket::UDPPacketRecievedEvent ,
                  callback4                                   );
+}
+
+/*-------------------------------------------------------------------------*/
+
+bool 
+Udp2KafkaChannel::LoadConfig( CORE::UInt16 udpPort                ,
+                              const CORE::CString& kafkaTopicName ,
+                              RdKafka::Conf* kafkaConf            )
+{GUCEF_TRACE;
+
+    m_udpPort = udpPort;
+    m_kafkaTopicName = kafkaTopicName;
+    m_kafkaConf = kafkaConf;
+    return true;
+}
+
+/*-------------------------------------------------------------------------*/
+
+CORE::CString
+Udp2KafkaChannel::GetType( void ) const
+{GUCEF_TRACE;
+
+    return "Udp2KafkaChannel";
 }
 
 /*-------------------------------------------------------------------------*/
@@ -210,7 +258,7 @@ Udp2KafkaChannel::OnTaskStart( CORE::CICloneable* taskData )
         return false;
 	}
     m_kafkaTopic = topic;
-
+    return true;
 }
 
 /*-------------------------------------------------------------------------*/
@@ -221,7 +269,7 @@ Udp2KafkaChannel::OnTaskCycle( CORE::CICloneable* taskData )
 
     m_udpSocket.Recieve();
 
-    // You are required to periodically call poll() on a producer to trigger queud callbacks if any
+    // You are required to periodically call poll() on a producer to trigger queued callbacks if any
     if ( NULL != m_kafkaProducer ) 
         m_kafkaProducer->poll( 0 );
 
@@ -345,19 +393,53 @@ Udp2Kafka::dr_cb( RdKafka::Message& message )
 /*-------------------------------------------------------------------------*/
 
 bool
-Udp2Kafka::Setup( void )
+Udp2Kafka::Start( void )
 {GUCEF_TRACE;
 
-    RdKafka::Conf* kafkaConf = RdKafka::Conf::create( RdKafka::Conf::CONF_GLOBAL );
+    m_channels.resize( m_channelCount );
 
-	std::string errStr;
+    CORE::CTaskManager& taskManager = CORE::CCoreGlobal::Instance()->GetTaskManager();
+    
+    CORE::UInt16 udpPort = m_udpStartPort;
+    CORE::Int32 channelId = m_kafkaTopicStartChannelID;
+    auto& i = m_channels.begin();
+    while ( i != m_channels.end() )
+    {
+        Udp2KafkaChannel& channel = (*i);
+        
+        CORE::CString channelTopicName = m_kafkaTopicName.ReplaceSubstr( "{channelID}", CORE::Int32ToString( channelId ) ); 
+        channel.LoadConfig( udpPort, channelTopicName, m_kafkaConf );
 
-    //kafkaConf->set( "metadata.broker.list", brokers, errStr );
-    // Set the event callback
-	kafkaConf->set( "event_cb", static_cast< RdKafka::EventCb* >( this ), errStr );
-    // Set the delivery report callback
-	kafkaConf->set( "dr_cb", static_cast< RdKafka::DeliveryReportCb* >( this ), errStr );
+        taskManager.StartTask( channel );
+        
+        ++udpPort;
+        ++i;
+    }
 
     return true;
 }
 
+/*-------------------------------------------------------------------------*/
+
+bool 
+Udp2Kafka::LoadConfig( const CORE::CValueList& config )
+{GUCEF_TRACE;
+
+    m_udpStartPort = CORE::StringToUInt16( config.GetValueAlways( "UdpStartPort", "20000" ) );
+    m_channelCount = CORE::StringToUInt16( config.GetValueAlways( "ChannelCount", "1" ) );
+    m_kafkaTopicStartChannelID = CORE::StringToInt32( config.GetValueAlways( "KafkaTopicStartChannelID", "1" ) );
+    m_kafkaTopicName = config.GetValueAlways( "KafkaTopicStartChannelID", "udp-ingress-ch{channelID}" );
+    m_kafkaBrokers = config.GetValueAlways( "KafkaBrokers" );
+
+    //if ( m_kafkaBrokers.IsNULLOrEmpty() )
+    //    return false;
+    
+    std::string errStr;
+    RdKafka::Conf* kafkaConf = RdKafka::Conf::create( RdKafka::Conf::CONF_GLOBAL );
+    kafkaConf->set( "metadata.broker.list", m_kafkaBrokers, errStr );
+	kafkaConf->set( "event_cb", static_cast< RdKafka::EventCb* >( this ), errStr );
+	kafkaConf->set( "dr_cb", static_cast< RdKafka::DeliveryReportCb* >( this ), errStr );
+
+    m_kafkaConf = kafkaConf;
+    return true;
+}
