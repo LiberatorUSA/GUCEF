@@ -244,20 +244,30 @@ Udp2KafkaChannel::OnTaskStart( CORE::CICloneable* taskData )
 {GUCEF_TRACE;
 
 	std::string errStr;
-	RdKafka::Producer* producer = nullptr;//= RdKafka::Producer::create( conf, errStr );
+	RdKafka::Producer* producer = RdKafka::Producer::create( m_kafkaConf, errStr );
 	if ( producer == nullptr ) 
     {
-		GUCEF_ERROR_LOG( CORE::LOGLEVEL_IMPORTANT, "Udp2KafkaChannel: Failed to create Kafka producer, error message: " + errStr );
+		GUCEF_ERROR_LOG( CORE::LOGLEVEL_IMPORTANT, "Udp2KafkaChannel:OnTaskStart: Failed to create Kafka producer, error message: " + errStr );
         return false;
 	}
+    m_kafkaProducer = producer;
+    GUCEF_LOG( CORE::LOGLEVEL_NORMAL, "Udp2KafkaChannel:OnTaskStart: Successfully created Kafka producer" );
 
     RdKafka::Topic* topic = RdKafka::Topic::create( m_kafkaProducer, m_kafkaTopicName, NULL, errStr );
 	if ( topic == nullptr ) 
     {
-		GUCEF_ERROR_LOG( CORE::LOGLEVEL_IMPORTANT, "Udp2KafkaChannel: Failed to obtain Kafka Topic handle for topic " + m_kafkaTopicName + " error message: " + errStr );
+		GUCEF_ERROR_LOG( CORE::LOGLEVEL_IMPORTANT, "Udp2KafkaChannel:OnTaskStart: Failed to obtain Kafka Topic handle for topic " + m_kafkaTopicName + " error message: " + errStr );
         return false;
 	}
     m_kafkaTopic = topic;
+    GUCEF_LOG( CORE::LOGLEVEL_NORMAL, "Udp2KafkaChannel:OnTaskStart: Successfully created Kafka Topic handle for topic: " + m_kafkaTopicName );
+
+    if ( !m_udpSocket.Open( m_udpPort ) )
+    {
+		GUCEF_ERROR_LOG( CORE::LOGLEVEL_IMPORTANT, "Udp2KafkaChannel:OnTaskStart: Failed to open UDP socket on port " + CORE::UInt16ToString( m_udpPort ) );
+        return false;
+    }
+    GUCEF_LOG( CORE::LOGLEVEL_NORMAL, "Udp2KafkaChannel:OnTaskStart: Successfully opened UDP socket on port " + CORE::UInt16ToString( m_udpPort ) );
     return true;
 }
 
@@ -428,7 +438,7 @@ Udp2Kafka::LoadConfig( const CORE::CValueList& config )
     m_udpStartPort = CORE::StringToUInt16( config.GetValueAlways( "UdpStartPort", "20000" ) );
     m_channelCount = CORE::StringToUInt16( config.GetValueAlways( "ChannelCount", "1" ) );
     m_kafkaTopicStartChannelID = CORE::StringToInt32( config.GetValueAlways( "KafkaTopicStartChannelID", "1" ) );
-    m_kafkaTopicName = config.GetValueAlways( "KafkaTopicStartChannelID", "udp-ingress-ch{channelID}" );
+    m_kafkaTopicName = config.GetValueAlways( "KafkaTopicName", "udp-ingress-ch{channelID}" );
     m_kafkaBrokers = config.GetValueAlways( "KafkaBrokers" );
 
     //if ( m_kafkaBrokers.IsNULLOrEmpty() )

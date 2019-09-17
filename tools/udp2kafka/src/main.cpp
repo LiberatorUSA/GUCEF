@@ -120,7 +120,7 @@ LoadConfig( const CORE::CString& configPath ,
 
     if ( !foundViaParam )
     {
-        CORE::CString configFilePath = CORE::CombinePath( "$CURWORKDIR$", configFile );
+        configFilePath = CORE::CombinePath( "$CURWORKDIR$", configFile );
         configFilePath = CORE::RelativePath( configFilePath );
 
         GUCEF_LOG( CORE::LOGLEVEL_BELOW_NORMAL, "Checking for config file @ " + configFilePath );
