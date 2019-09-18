@@ -82,9 +82,23 @@
                                                                                                        \
     void WINAPI Win32ServiceMain( DWORD argc, LPTSTR* argv );                                          \
                                                                                                        \
-    int                                                                                                \
-    main( int argc, char* argv[] )                                                                     \
+    int __stdcall                                                                                      \
+    WinMain( HINSTANCE hinstance     ,                                                                 \
+             HINSTANCE hprevinstance ,                                                                 \
+             LPSTR lpcmdline         ,                                                                 \
+             int ncmdshow            )                                                                 \
     {                                                                                                  \
+                                                                                                       \
+        int argc = 0;                                                                                  \
+        char** argv = &lpcmdline;                                                                      \
+        if ( lpcmdline != NULL )                                                                       \
+        {                                                                                              \
+            if ( *lpcmdline != '\0' )                                                                  \
+            {                                                                                          \
+                argc = 1;                                                                              \
+            }                                                                                          \
+        }                                                                                              \
+                                                                                                       \
         ::SERVICE_TABLE_ENTRY win32ServiceTable[] = {                                                  \
             { "", &Win32ServiceMain },                                                                 \
             { NULL, NULL }                                                                             \
@@ -143,6 +157,7 @@
             {                                                                                          \
                 Win32ReportStatus( SERVICE_STOP_PENDING );                                             \
                 ::SetEvent( g_win32StopEvent );                                                        \
+                ::GUCEF::CORE::CCoreGlobal::Instance()->GetApplication().Stop();                       \
                 break;                                                                                 \
             }                                                                                          \
             default:                                                                                   \
@@ -154,26 +169,28 @@
         return NO_ERROR;                                                                               \
     }                                                                                                  \
                                                                                                        \
+    int Win32ServiceInitializer( int argc, char** argv );                                              \
+                                                                                                       \
     void WINAPI Win32ServiceMain( DWORD argc, LPTSTR *argv )                                           \
     {                                                                                                  \
         g_win32ServiceStatusHandle =                                                                   \
             ::RegisterServiceCtrlHandlerEx( serviceName, &Win32HandlerEx, NULL);                       \
                                                                                                        \
-        Win32ReportStatus( SERVICE_START_PENDING );                                                    \
+        Win32ReportStatus( SERVICE_RUNNING );                                                          \
         g_win32StopEvent = ::CreateEvent( NULL, TRUE, FALSE, NULL );                                   \
-                                                                                                       \
-        auto& application = ::GUCEF::CORE::CCoreGlobal::Instance()->GetApplication();                  \
-        int appResult = application.main( (int)argc, (char**)argv, true );                             \
-                                                                                                       \
+        int appResult = Win32ServiceInitializer( argc, argv );                                         \
         ::CloseHandle( g_win32StopEvent );                                                             \
                                                                                                        \
         if ( appResult != 0 )                                                                          \
             Win32ReportErrorStatus( (DWORD)appResult );                                                \
         else                                                                                           \
             Win32ReportStatus( SERVICE_STOPPED );                                                      \
+    }                                                                                                  \
                                                                                                        \
-    }
-
+    int                                                                                                \
+    Win32ServiceInitializer( int argc, char** argv )                                                   \
+    {                                                                                                  
+    
     #define GUCEF_OSSERVICEMAIN_END }
 
 #else
