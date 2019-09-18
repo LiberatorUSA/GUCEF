@@ -7,7 +7,6 @@ MyGui: is version 3.2.0
 zzlib version is: 0.13.49
 zlib version is: 1.2.3
 FreeImage version is: 3110
-android-ndk-**: Recommended to use latest (r8)
 android-sdk-*: Update to get latest API, minimum needed is API level 9
 freetype is actually Freetype2 which is version 2.6.3
 pcre is version 8.37
@@ -24,6 +23,10 @@ LUA is version 5.3.4
 Little-CMS is version >=2.8 HEAD from https://github.com/mm2/Little-CMS
 DevIL is version 1.8.0, see https://github.com/DentonW/DevIL
 toluapp is a LUA 5.3 patched version from : https://github.com/waltervn/toluapp
+hiredis is version 0.14.0 from https://github.com/redis/hiredis
+OIS is at version 1.3 and can be obtained from http://sourceforge.net/projects/wgois
 
-The OIS dependency is at version 1.3 and can be obtained from http://sourceforge.net/projects/wgois
+Possibly outdated:
+android-ndk-**: Recommended to use latest (r8)
+
 Note for MS Windows builds: that to build the DirectInput dependent code you must have the DirectX SDK installed on your system.

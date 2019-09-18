@@ -1,0 +1,14 @@
+<PROJECTGENERATOR>
+    <EXCLUDES PLATFORM="All">
+		<ITEM NAME="*" />
+	</EXCLUDES>
+	<INCLUDES PLATFORM="All">
+        <ITEM NAME="async.c" TYPE="FILE" />
+        <ITEM NAME="dict.c" TYPE="FILE" />
+		<ITEM NAME="hiredis.c" TYPE="FILE" />
+		<ITEM NAME="net.c" TYPE="FILE" />
+		<ITEM NAME="read.c" TYPE="FILE" />		
+		<ITEM NAME="sds.c" TYPE="FILE" />
+		<ITEM NAME="sockcompat.c" TYPE="FILE" />
+    </INCLUDES>
+</PROJECTGENERATOR>
