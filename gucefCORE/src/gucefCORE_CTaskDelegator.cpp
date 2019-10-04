@@ -76,12 +76,16 @@ CTaskDelegator::RegisterEvents( void )
 /*-------------------------------------------------------------------------*/
 
 CTaskDelegator::CTaskDelegator( void )
-    : MT::CActiveObject()    ,
-      CNotifier()            ,
-      m_taskConsumer( NULL )
+    : MT::CActiveObject()    
+    , CNotifier()   
+    , CIPulseGeneratorDriver()         
+    , m_pulseGenerator()     
+    , m_taskConsumer( GUCEF_NULL )
 {GUCEF_TRACE;
 
     RegisterEvents();
+
+    m_pulseGenerator.SetPulseGeneratorDriver( this );
 
     CCoreGlobal::Instance()->GetTaskManager().RegisterTaskDelegator( *this );
 }
@@ -92,6 +96,64 @@ CTaskDelegator::~CTaskDelegator()
 {GUCEF_TRACE;
 
     CCoreGlobal::Instance()->GetTaskManager().UnregisterTaskDelegator( *this );
+}
+
+/*-------------------------------------------------------------------------*/
+
+CPulseGenerator&
+CTaskDelegator::GetPulseGenerator( void )
+{GUCEF_TRACE;
+
+    return m_pulseGenerator;
+}
+
+/*-------------------------------------------------------------------------*/
+
+void
+CTaskDelegator::RequestPulse( CPulseGenerator& pulseGenerator ) 
+{GUCEF_TRACE;
+
+    SendDriverPulse( m_pulseGenerator );
+}
+
+/*-------------------------------------------------------------------------*/
+
+void
+CTaskDelegator::RequestPeriodicPulses( CPulseGenerator& pulseGenerator    ,
+                                       const UInt32 pulseDeltaInMilliSecs )
+
+{GUCEF_TRACE;
+
+    if ( &pulseGenerator == &m_pulseGenerator )
+    {
+        m_delay = pulseDeltaInMilliSecs;
+        Resume();
+    }
+}
+
+/*-------------------------------------------------------------------------*/
+
+void
+CTaskDelegator::RequestPulseInterval( CPulseGenerator& pulseGenerator    ,
+                                      const UInt32 pulseDeltaInMilliSecs )
+{GUCEF_TRACE;
+
+    if ( &pulseGenerator == &m_pulseGenerator )
+    {
+        m_delay = pulseDeltaInMilliSecs;
+    }
+}
+
+/*-------------------------------------------------------------------------*/
+
+void
+CTaskDelegator::RequestStopOfPeriodicUpdates( CPulseGenerator& pulseGenerator )
+{GUCEF_TRACE;
+
+    if ( &pulseGenerator == &m_pulseGenerator )
+    {
+        Pause( false );
+    }
 }
 
 /*-------------------------------------------------------------------------*/
@@ -122,7 +184,7 @@ CTaskDelegator::TaskCleanup( CTaskConsumer* taskConsumer ,
     CCoreGlobal::Instance()->GetTaskManager().TaskCleanup( taskConsumer ,
                                                            taskData     );
 
-    m_taskConsumer = NULL;
+    m_taskConsumer = GUCEF_NULL;
 }
 
 /*-------------------------------------------------------------------------*/
@@ -131,7 +193,7 @@ bool
 CTaskDelegator::OnTaskCycle( void* taskdata )
 {GUCEF_TRACE;
 
-    CICloneable* taskData = NULL;
+    CICloneable* taskData = GUCEF_NULL;
 
     if ( CCoreGlobal::Instance()->GetTaskManager().GetQueuedTask( &m_taskConsumer ,
                                                                   &taskData       ) )
@@ -141,7 +203,7 @@ CTaskDelegator::OnTaskCycle( void* taskdata )
 
         TaskCleanup( m_taskConsumer ,
                      taskData       );
-        m_taskConsumer = NULL;
+        m_taskConsumer = GUCEF_NULL;
     }
 
     // Return false, this is an infinate task processing thread

@@ -150,14 +150,17 @@ class GUCEF_MT_PUBLIC_CPP CActiveObject
 
     void* GetTaskData( void ) const;
 
+    protected:
+
+    UInt32 m_delay;
+    Float64 m_minimalCycleDelta;
+
     private:
     CActiveObject& operator=( const CActiveObject& src );
     static UInt32 GUCEF_CALLSPEC_STD_PREFIX OnActivate( void* thisobject ) GUCEF_CALLSPEC_STD_SUFFIX;
 
     struct SThreadData* _td;
     void* _taskdata;
-    UInt32 _delay;
-    Float64 m_minimalCycleDelta;
     bool m_isDeactivationRequested;
     bool _suspend;
     bool _active;

@@ -41,6 +41,16 @@
 #define GUCEF_CORE_CTNUMERICID_H
 #endif /* GUCEF_CORE_CTNUMERICID_H ? */
 
+#ifndef GUCEF_CORE_CPULSEGENERATOR_H
+#include "gucefCORE_CPulseGenerator.h"
+#define GUCEF_CORE_CPULSEGENERATOR_H
+#endif /* GUCEF_CORE_CPULSEGENERATOR_H ? */
+
+#ifndef GUCEF_CORE_CIPULSEGENERATORDRIVER_H
+#include "gucefCORE_CIPulseGeneratorDriver.h"
+#define GUCEF_CORE_CIPULSEGENERATORDRIVER_H
+#endif /* GUCEF_CORE_CIPULSEGENERATORDRIVER_H ? */
+
 /*-------------------------------------------------------------------------//
 //                                                                         //
 //      NAMESPACE                                                          //
@@ -71,8 +81,9 @@ class CTaskConsumer;
  *  tasks by invoking as many consumers as desired without having to (re)create
  *  a thread.
  */
-class GUCEF_CORE_PRIVATE_CPP CTaskDelegator : public MT::CActiveObject ,
-                                              public CNotifier
+class GUCEF_CORE_PRIVATE_CPP CTaskDelegator : public MT::CActiveObject      ,
+                                              public CNotifier              ,
+                                              private CIPulseGeneratorDriver
 {
     public:
     
@@ -89,6 +100,8 @@ class GUCEF_CORE_PRIVATE_CPP CTaskDelegator : public MT::CActiveObject ,
     bool SetTaskConsumer( CTaskConsumer* taskConsumer );
 
     CTaskConsumer* GetTaskConsumer( void );
+
+    CPulseGenerator& GetPulseGenerator( void );
 
     protected:
     friend class CTaskManager;
@@ -135,11 +148,25 @@ class GUCEF_CORE_PRIVATE_CPP CTaskDelegator : public MT::CActiveObject ,
                               
     virtual void TaskCleanup( CTaskConsumer* taskConsumer ,
                               CICloneable* taskData       );
+    
+    protected:
 
+    CPulseGenerator m_pulseGenerator;
+    
     private:
 
     CTaskDelegator( const CTaskDelegator& src );
     CTaskDelegator& operator=( const CTaskDelegator& src );
+
+    virtual void RequestPulse( CPulseGenerator& pulseGenerator );
+
+    virtual void RequestPeriodicPulses( CPulseGenerator& pulseGenerator    ,
+                                        const UInt32 pulseDeltaInMilliSecs );
+
+    virtual void RequestPulseInterval( CPulseGenerator& pulseGenerator    ,
+                                       const UInt32 pulseDeltaInMilliSecs );
+
+    virtual void RequestStopOfPeriodicUpdates( CPulseGenerator& pulseGenerator );
 
     private:
 

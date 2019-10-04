@@ -91,6 +91,8 @@ class GUCEF_CORE_PUBLIC_CPP CTaskConsumer : public CObservingNotifier
 
     CTaskDelegator* GetTaskDelegator( void );
 
+    CPulseGenerator* GetPulseGenerator( void );
+
     UInt32 GetTaskId( void ) const;
 
     virtual const CString& GetClassTypeName( void ) const;

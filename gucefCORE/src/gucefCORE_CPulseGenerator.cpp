@@ -342,12 +342,14 @@ CPulseGenerator::SetPulseGeneratorDriver( CIPulseGeneratorDriver* driver )
     if ( IsPulsingPeriodicly() )
     {
         UnlockData();
-        m_driver->RequestPulseInterval( *this, m_updateDeltaInMilliSecs );
+        if ( GUCEF_NULL != m_driver )
+            m_driver->RequestPulseInterval( *this, m_updateDeltaInMilliSecs );
     }
     else
     {
-        UnlockData();
-        m_driver->RequestPulse( *this );
+        UnlockData();        
+        if ( GUCEF_NULL != m_driver )
+            m_driver->RequestPulse( *this );
     }
 }
 

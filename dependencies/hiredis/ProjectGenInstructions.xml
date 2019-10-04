@@ -4,11 +4,18 @@
 	</EXCLUDES>
 	<INCLUDES PLATFORM="All">
         <ITEM NAME="async.c" TYPE="FILE" />
+		<ITEM NAME="async.h" TYPE="FILE" />
         <ITEM NAME="dict.c" TYPE="FILE" />
+		<ITEM NAME="dict.h" TYPE="FILE" />
 		<ITEM NAME="hiredis.c" TYPE="FILE" />
+		<ITEM NAME="hiredis.h" TYPE="FILE" />
 		<ITEM NAME="net.c" TYPE="FILE" />
-		<ITEM NAME="read.c" TYPE="FILE" />		
+		<ITEM NAME="net.h" TYPE="FILE" />
+		<ITEM NAME="read.c" TYPE="FILE" />
+		<ITEM NAME="read.h" TYPE="FILE" />
 		<ITEM NAME="sds.c" TYPE="FILE" />
+		<ITEM NAME="sds.h" TYPE="FILE" />
 		<ITEM NAME="sockcompat.c" TYPE="FILE" />
+		<ITEM NAME="sockcompat.h" TYPE="FILE" />
     </INCLUDES>
 </PROJECTGENERATOR>

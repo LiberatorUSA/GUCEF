@@ -47,7 +47,7 @@ namespace MT {
 
 CActiveObject::CActiveObject( void )
         : _taskdata( NULL )                  ,
-          _delay( 10 )                       ,
+          m_delay( 10 )                      ,
           m_isDeactivationRequested( false ) ,
           _suspend( false )                  ,
           _active( false )                   ,
@@ -61,7 +61,7 @@ CActiveObject::CActiveObject( void )
 
 CActiveObject::CActiveObject( const CActiveObject& src )
         : _taskdata( src._taskdata )         ,
-          _delay( src._delay )               ,
+          m_delay( src.m_delay )             ,
           m_isDeactivationRequested( false ) ,
           _suspend( false )                  ,
           _active( false )                   ,
@@ -136,7 +136,7 @@ CActiveObject::OnActivate( void* thisobject )
                 timeDelta = ( tickCount - newTime ) / timerRes;
                 if ( timeDelta < tao->m_minimalCycleDelta )
                 {
-                    PrecisionDelay( tao->_delay );
+                    PrecisionDelay( tao->m_delay );
                     tickCount = PrecisionTickCount();
                 }
                 else
@@ -163,7 +163,7 @@ CActiveObject::Activate( void* taskdata /* = NULL */               ,
     if ( _active ) return false;
 
     _taskdata = taskdata;
-    _delay = cycleDelay;
+    m_delay = cycleDelay;
     m_minimalCycleDelta = minimalCycleDelta / 1000.0; // <- the unit used here is seconds not milliseconds
     m_isDeactivationRequested = false;
     _suspend = false;
@@ -291,7 +291,7 @@ CActiveObject::operator=( const CActiveObject& src )
     Deactivate( true, true );
 
     _taskdata = src._taskdata;
-    _delay = src._delay;
+    m_delay = src.m_delay;
     _suspend = false;
 
     if ( src.IsActive() )

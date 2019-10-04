@@ -11,6 +11,16 @@
 
 # Configuration for module: hiredis
 
+set( HEADER_FILES 
+  async.h
+  dict.h
+  hiredis.h
+  net.h
+  read.h
+  sds.h
+  sockcompat.h
+)
+
 set( SOURCE_FILES 
   async.c
   dict.c
@@ -24,6 +34,19 @@ set( SOURCE_FILES
 
 
 if (ANDROID)
+  set( PLATFORM_HEADER_FILES 
+    async.h
+    dict.h
+    hiredis.h
+    net.h
+    read.h
+    sds.h
+    sockcompat.h
+  )
+
+  set( PLATFORM_HEADER_INSTALL "ANDROID" )
+  source_group( "Platform Header Files" FILES ${PLATFORM_HEADER_FILES} )
+
   set( PLATFORM_SOURCE_FILES 
     async.c
     dict.c
@@ -38,6 +61,19 @@ if (ANDROID)
   source_group( "Platform Source Files" FILES ${PLATFORM_SOURCE_FILES} )
 
 elseif (EMSCRIPTEN)
+  set( PLATFORM_HEADER_FILES 
+    async.h
+    dict.h
+    hiredis.h
+    net.h
+    read.h
+    sds.h
+    sockcompat.h
+  )
+
+  set( PLATFORM_HEADER_INSTALL "EMSCRIPTEN" )
+  source_group( "Platform Header Files" FILES ${PLATFORM_HEADER_FILES} )
+
   set( PLATFORM_SOURCE_FILES 
     async.c
     dict.c
@@ -52,6 +88,19 @@ elseif (EMSCRIPTEN)
   source_group( "Platform Source Files" FILES ${PLATFORM_SOURCE_FILES} )
 
 elseif (GLX)
+  set( PLATFORM_HEADER_FILES 
+    async.h
+    dict.h
+    hiredis.h
+    net.h
+    read.h
+    sds.h
+    sockcompat.h
+  )
+
+  set( PLATFORM_HEADER_INSTALL "GLX" )
+  source_group( "Platform Header Files" FILES ${PLATFORM_HEADER_FILES} )
+
   set( PLATFORM_SOURCE_FILES 
     async.c
     dict.c
@@ -66,6 +115,19 @@ elseif (GLX)
   source_group( "Platform Source Files" FILES ${PLATFORM_SOURCE_FILES} )
 
 elseif (GTK)
+  set( PLATFORM_HEADER_FILES 
+    async.h
+    dict.h
+    hiredis.h
+    net.h
+    read.h
+    sds.h
+    sockcompat.h
+  )
+
+  set( PLATFORM_HEADER_INSTALL "GTK" )
+  source_group( "Platform Header Files" FILES ${PLATFORM_HEADER_FILES} )
+
   set( PLATFORM_SOURCE_FILES 
     async.c
     dict.c
@@ -80,6 +142,19 @@ elseif (GTK)
   source_group( "Platform Source Files" FILES ${PLATFORM_SOURCE_FILES} )
 
 elseif (IOS)
+  set( PLATFORM_HEADER_FILES 
+    async.h
+    dict.h
+    hiredis.h
+    net.h
+    read.h
+    sds.h
+    sockcompat.h
+  )
+
+  set( PLATFORM_HEADER_INSTALL "IOS" )
+  source_group( "Platform Header Files" FILES ${PLATFORM_HEADER_FILES} )
+
   set( PLATFORM_SOURCE_FILES 
     async.c
     dict.c
@@ -94,6 +169,19 @@ elseif (IOS)
   source_group( "Platform Source Files" FILES ${PLATFORM_SOURCE_FILES} )
 
 elseif (LINUX32)
+  set( PLATFORM_HEADER_FILES 
+    async.h
+    dict.h
+    hiredis.h
+    net.h
+    read.h
+    sds.h
+    sockcompat.h
+  )
+
+  set( PLATFORM_HEADER_INSTALL "LINUX32" )
+  source_group( "Platform Header Files" FILES ${PLATFORM_HEADER_FILES} )
+
   set( PLATFORM_SOURCE_FILES 
     async.c
     dict.c
@@ -108,6 +196,19 @@ elseif (LINUX32)
   source_group( "Platform Source Files" FILES ${PLATFORM_SOURCE_FILES} )
 
 elseif (LINUX64)
+  set( PLATFORM_HEADER_FILES 
+    async.h
+    dict.h
+    hiredis.h
+    net.h
+    read.h
+    sds.h
+    sockcompat.h
+  )
+
+  set( PLATFORM_HEADER_INSTALL "LINUX64" )
+  source_group( "Platform Header Files" FILES ${PLATFORM_HEADER_FILES} )
+
   set( PLATFORM_SOURCE_FILES 
     async.c
     dict.c
@@ -122,6 +223,19 @@ elseif (LINUX64)
   source_group( "Platform Source Files" FILES ${PLATFORM_SOURCE_FILES} )
 
 elseif (NACL)
+  set( PLATFORM_HEADER_FILES 
+    async.h
+    dict.h
+    hiredis.h
+    net.h
+    read.h
+    sds.h
+    sockcompat.h
+  )
+
+  set( PLATFORM_HEADER_INSTALL "NACL" )
+  source_group( "Platform Header Files" FILES ${PLATFORM_HEADER_FILES} )
+
   set( PLATFORM_SOURCE_FILES 
     async.c
     dict.c
@@ -136,6 +250,19 @@ elseif (NACL)
   source_group( "Platform Source Files" FILES ${PLATFORM_SOURCE_FILES} )
 
 elseif (OSX)
+  set( PLATFORM_HEADER_FILES 
+    async.h
+    dict.h
+    hiredis.h
+    net.h
+    read.h
+    sds.h
+    sockcompat.h
+  )
+
+  set( PLATFORM_HEADER_INSTALL "OSX" )
+  source_group( "Platform Header Files" FILES ${PLATFORM_HEADER_FILES} )
+
   set( PLATFORM_SOURCE_FILES 
     async.c
     dict.c
@@ -150,6 +277,19 @@ elseif (OSX)
   source_group( "Platform Source Files" FILES ${PLATFORM_SOURCE_FILES} )
 
 elseif (SDL)
+  set( PLATFORM_HEADER_FILES 
+    async.h
+    dict.h
+    hiredis.h
+    net.h
+    read.h
+    sds.h
+    sockcompat.h
+  )
+
+  set( PLATFORM_HEADER_INSTALL "SDL" )
+  source_group( "Platform Header Files" FILES ${PLATFORM_HEADER_FILES} )
+
   set( PLATFORM_SOURCE_FILES 
     async.c
     dict.c
@@ -164,6 +304,19 @@ elseif (SDL)
   source_group( "Platform Source Files" FILES ${PLATFORM_SOURCE_FILES} )
 
 elseif (SYMBIAN)
+  set( PLATFORM_HEADER_FILES 
+    async.h
+    dict.h
+    hiredis.h
+    net.h
+    read.h
+    sds.h
+    sockcompat.h
+  )
+
+  set( PLATFORM_HEADER_INSTALL "SYMBIAN" )
+  source_group( "Platform Header Files" FILES ${PLATFORM_HEADER_FILES} )
+
   set( PLATFORM_SOURCE_FILES 
     async.c
     dict.c
@@ -178,6 +331,19 @@ elseif (SYMBIAN)
   source_group( "Platform Source Files" FILES ${PLATFORM_SOURCE_FILES} )
 
 elseif (UNIX)
+  set( PLATFORM_HEADER_FILES 
+    async.h
+    dict.h
+    hiredis.h
+    net.h
+    read.h
+    sds.h
+    sockcompat.h
+  )
+
+  set( PLATFORM_HEADER_INSTALL "UNIX" )
+  source_group( "Platform Header Files" FILES ${PLATFORM_HEADER_FILES} )
+
   set( PLATFORM_SOURCE_FILES 
     async.c
     dict.c
@@ -192,6 +358,19 @@ elseif (UNIX)
   source_group( "Platform Source Files" FILES ${PLATFORM_SOURCE_FILES} )
 
 elseif (WIN32)
+  set( PLATFORM_HEADER_FILES 
+    async.h
+    dict.h
+    hiredis.h
+    net.h
+    read.h
+    sds.h
+    sockcompat.h
+  )
+
+  set( PLATFORM_HEADER_INSTALL "WIN32" )
+  source_group( "Platform Header Files" FILES ${PLATFORM_HEADER_FILES} )
+
   set( PLATFORM_SOURCE_FILES 
     async.c
     dict.c
@@ -206,6 +385,19 @@ elseif (WIN32)
   source_group( "Platform Source Files" FILES ${PLATFORM_SOURCE_FILES} )
 
 elseif (WIN64)
+  set( PLATFORM_HEADER_FILES 
+    async.h
+    dict.h
+    hiredis.h
+    net.h
+    read.h
+    sds.h
+    sockcompat.h
+  )
+
+  set( PLATFORM_HEADER_INSTALL "WIN64" )
+  source_group( "Platform Header Files" FILES ${PLATFORM_HEADER_FILES} )
+
   set( PLATFORM_SOURCE_FILES 
     async.c
     dict.c
@@ -220,9 +412,6 @@ elseif (WIN64)
   source_group( "Platform Source Files" FILES ${PLATFORM_SOURCE_FILES} )
 
 endif ()
-
-# Make sure the PLATFORM_HEADER_FILES variable is always defined
- set( PLATFORM_HEADER_FILES "" )
 
 # For ease of use make a variable that has all files for this module
 set( ALL_FILES ${HEADER_FILES} ${SOURCE_FILES} ${PLATFORM_HEADER_FILES} ${PLATFORM_SOURCE_FILES} )

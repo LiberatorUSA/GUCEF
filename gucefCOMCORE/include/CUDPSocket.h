@@ -270,6 +270,10 @@ class GUCEF_COMCORE_EXPORT_CPP CUDPSocket : public CSocket
 
     bool IsIncomingDataQueued( void );
 
+    void SetAutoReOpenOnError( bool autoReOpen );
+
+    bool GetAutoReOpenOnError( void ) const;
+
     private:
     typedef CORE::CTEventHandlerFunctor< CUDPSocket > TEventCallback;
 
@@ -288,6 +292,7 @@ class GUCEF_COMCORE_EXPORT_CPP CUDPSocket : public CSocket
     struct SUDPSockData;            /**< forward declaration of platform data storage structure */
     typedef struct CUDPSocket::SUDPSockData TUDPSockData;
 
+    bool m_autoReopenOnError;       /**< flag for feature to auto re-open the socket when after a socket error occurred */
     bool _blocking;                 /**< is this socket blocking ? */
     bool _checkfordata;             /**< check for data and dispatch event next update cycle ? */
     struct SUDPSockData* _data;     /**< container for platform specific data */

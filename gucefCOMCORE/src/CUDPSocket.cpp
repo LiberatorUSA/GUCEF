@@ -93,12 +93,13 @@ struct CUDPSocket::SUDPSockData
 
 CUDPSocket::CUDPSocket( CORE::CPulseGenerator& pulseGenerator ,
                         bool blocking                         )
-    : CSocket()                           ,
-      _blocking( blocking )               ,
-      _data( NULL )                       ,
-      m_hostAddress()                     ,
-      m_buffer()                          ,
-      m_pulseGenerator( &pulseGenerator )
+    : CSocket()                           
+    , m_autoReopenOnError( false )        
+    , _blocking( blocking )               
+    , _data( NULL )                       
+    , m_hostAddress()                     
+    , m_buffer()                          
+    , m_pulseGenerator( &pulseGenerator )
 {GUCEF_TRACE;
 
     RegisterEvents();
@@ -121,12 +122,13 @@ CUDPSocket::CUDPSocket( CORE::CPulseGenerator& pulseGenerator ,
 /*-------------------------------------------------------------------------*/
 
 CUDPSocket::CUDPSocket( bool blocking )
-    : CSocket()             ,
-      _blocking( blocking ) ,
-      _data( NULL )         ,
-      m_hostAddress()       ,
-      m_buffer()            ,
-      m_pulseGenerator( &CORE::CCoreGlobal::Instance()->GetPulseGenerator() )
+    : CSocket()            
+    , m_autoReopenOnError( false )
+    , _blocking( blocking )
+    , _data( NULL )        
+    , m_hostAddress()      
+    , m_buffer()           
+    , m_pulseGenerator( &CORE::CCoreGlobal::Instance()->GetPulseGenerator() )
 {GUCEF_TRACE;
 
     RegisterEvents();
@@ -262,6 +264,10 @@ CUDPSocket::Update( bool performRead )
                 if ( !NotifyObservers( UDPSocketErrorEvent, &eData ) ) return false;
 
                 UnlockData();
+
+                if ( m_autoReopenOnError )
+                    Open();
+
                 return false;
             }
             else
@@ -277,6 +283,8 @@ CUDPSocket::Update( bool performRead )
                 }
                 return true;
             }
+
+            UnlockData();
         }
         else
         {
@@ -285,9 +293,12 @@ CUDPSocket::Update( bool performRead )
 
             TSocketErrorEventData eData( errorCode );
             NotifyObservers( UDPSocketErrorEvent, &eData );
-        }
 
-        UnlockData();
+            UnlockData();
+            
+            if ( m_autoReopenOnError )
+                Open();
+        }
     }
 
     return false;
@@ -538,6 +549,24 @@ CUDPSocket::GetPort( void ) const
 {GUCEF_TRACE;
 
     return m_hostAddress.GetPortInHostByteOrder();
+}
+
+/*-------------------------------------------------------------------------*/
+
+void
+CUDPSocket::SetAutoReOpenOnError( bool autoReOpen )
+{GUCEF_TRACE;
+
+    m_autoReopenOnError = autoReOpen;
+}
+
+/*-------------------------------------------------------------------------*/
+
+bool
+CUDPSocket::GetAutoReOpenOnError( void ) const
+{GUCEF_TRACE;
+
+    return m_autoReopenOnError;
 }
 
 /*-------------------------------------------------------------------------//
