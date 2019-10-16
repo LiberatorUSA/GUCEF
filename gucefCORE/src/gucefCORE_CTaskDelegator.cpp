@@ -231,7 +231,10 @@ CTaskDelegator::ProcessTask( CTaskConsumer& taskConsumer ,
         taskConsumer.OnTaskStarted( taskData );
 
         // cycle the task as long as it is not "done"
-        while ( !IsDeactivationRequested() && !taskConsumer.OnTaskCycle( taskData ) ) {}
+        while ( !IsDeactivationRequested() && !taskConsumer.OnTaskCycle( taskData ) ) 
+        {
+            SendDriverPulse( m_pulseGenerator );
+        }
 
         taskConsumer.OnTaskEnd( taskData );
         taskConsumer.OnTaskEnded( taskData, false );
