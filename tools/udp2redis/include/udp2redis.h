@@ -1,5 +1,5 @@
 /*
- *  udp2kafka: service which pushes UDP packets into kafka topics
+ *  Udp2Redis: service which pushes UDP packets into kafka topics
  *
  *  This library is free software; you can redistribute it and/or
  *  modify it under the terms of the GNU Lesser General Public
@@ -44,7 +44,8 @@
 #define GUCEF_CORE_CVALUELIST_H
 #endif /* GUCEF_CORE_CVALUELIST_H ? */
 
-#include "rdkafkacpp.h"
+#include "hiredis.h"
+#include "async.h"
 
 /*-------------------------------------------------------------------------//
 //                                                                         //
@@ -60,15 +61,15 @@ using namespace GUCEF;
 //                                                                         //
 //-------------------------------------------------------------------------*/
 
-class Udp2KafkaChannel : public CORE::CTaskConsumer
+class Udp2RedisChannel : public CORE::CTaskConsumer
 {
     public:
 
-    typedef CORE::CTEventHandlerFunctor< Udp2KafkaChannel > TEventCallback;
+    typedef CORE::CTEventHandlerFunctor< Udp2RedisChannel > TEventCallback;
 
-    Udp2KafkaChannel();
-    Udp2KafkaChannel( const Udp2KafkaChannel& src );
-    virtual ~Udp2KafkaChannel();
+    Udp2RedisChannel();
+    Udp2RedisChannel( const Udp2RedisChannel& src );
+    virtual ~Udp2RedisChannel();
 
     virtual bool OnTaskStart( CORE::CICloneable* taskData );
     
@@ -78,9 +79,10 @@ class Udp2KafkaChannel : public CORE::CTaskConsumer
 
     virtual CORE::CString GetType( void ) const;
 
-    bool LoadConfig( CORE::UInt16 udpPort                ,
-                     const CORE::CString& kafkaTopicName ,
-                     RdKafka::Conf* kafkaConf            );
+    bool LoadConfig( CORE::UInt16 udpPort                   ,
+                     const CORE::CString& redisHost         ,
+                     CORE::UInt16 redisPort                 ,
+                     const CORE::CString& channelStreamName );
 
     private:
 
@@ -108,48 +110,57 @@ class Udp2KafkaChannel : public CORE::CTaskConsumer
 
     void RegisterEventHandlers( void );
     
-    RdKafka::ErrorCode KafkaProduce( const CORE::CDynamicBuffer& udpPacket );
+    int RedisSend( const CORE::CDynamicBuffer& udpPacket );
+
+    static void 
+    OnRedisASyncReply( redisAsyncContext* context , 
+                       void *reply                , 
+                       void *privdata             );
+
+
+    static void
+    OnRedisASyncConnect( const struct redisAsyncContext* context , 
+                         int status                              );
+
+    static void
+    OnRedisASyncDisconnect( const struct redisAsyncContext* context , 
+                            int status                              );
 
     private:
 
     typedef std::deque< CORE::CDynamicBuffer > TDynamicBufferQueue;
 
     CORE::UInt16 m_udpPort;
-    RdKafka::Conf* m_kafkaConf;
-    CORE::CString m_kafkaTopicName;
-
+    CORE::CString m_redisStreamName;
+    CORE::CString m_redisHost;
+    CORE::UInt16 m_redisPort;
+    redisAsyncContext* m_redisContext;
     GUCEF::COMCORE::CUDPSocket* m_udpSocket;
-    TDynamicBufferQueue m_kafkaMsgQueueOverflowQueue;
-    RdKafka::Producer* m_kafkaProducer;
-    RdKafka::Topic* m_kafkaTopic;
+    TDynamicBufferQueue m_redisMsgQueueOverflowQueue;
+    redisOptions m_redisOptions;
 };
 
 /*-------------------------------------------------------------------------*/
 
-class Udp2Kafka : private RdKafka::EventCb ,
-                  private RdKafka::DeliveryReportCb 
+class Udp2Redis
 {
     public:
 
-    Udp2Kafka( void );
-    virtual ~Udp2Kafka();
+    Udp2Redis( void );
+    virtual ~Udp2Redis();
 
     bool Start( void );
 
     bool LoadConfig( const CORE::CValueList& config );
 
-    private:
-
-    virtual void event_cb( RdKafka::Event& event );
-    virtual void dr_cb( RdKafka::Message& message );
 
     private:
 
-    RdKafka::Conf* m_kafkaConf;
     CORE::UInt16 m_udpStartPort;
     CORE::UInt16 m_channelCount;
-    CORE::Int32 m_kafkaTopicStartChannelID;
-    CORE::CString m_kafkaTopicName;
-    CORE::CString m_kafkaBrokers;
-    std::vector< Udp2KafkaChannel > m_channels;
+    CORE::Int32 m_redisStreamStartChannelID;
+    CORE::CString m_redisStreamName;
+    CORE::CString m_redisHost;
+    CORE::UInt16 m_redisPort;
+    std::vector< Udp2RedisChannel > m_channels;
 };

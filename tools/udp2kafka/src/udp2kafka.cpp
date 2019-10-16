@@ -40,7 +40,7 @@ Udp2KafkaChannel::Udp2KafkaChannel()
     , m_udpPort( 0 )
     , m_kafkaConf( nullptr )
     , m_kafkaTopicName()
-    , m_udpSocket( true )
+    , m_udpSocket( GUCEF_NULL )
     , m_kafkaMsgQueueOverflowQueue()
     , m_kafkaProducer( nullptr )
     , m_kafkaTopic( nullptr )
@@ -56,13 +56,12 @@ Udp2KafkaChannel::Udp2KafkaChannel( const Udp2KafkaChannel& src )
     , m_udpPort( src.m_udpPort )
     , m_kafkaConf( src.m_kafkaConf )
     , m_kafkaTopicName( src.m_kafkaTopicName )
-    , m_udpSocket( src.m_udpSocket.IsBlocking() )
+    , m_udpSocket( GUCEF_NULL )
     , m_kafkaMsgQueueOverflowQueue( src.m_kafkaMsgQueueOverflowQueue )
     , m_kafkaProducer( src.m_kafkaProducer )
     , m_kafkaTopic( src.m_kafkaTopic )
 {GUCEF_TRACE;
 
-    RegisterEventHandlers();
 }
 
 /*-------------------------------------------------------------------------*/
@@ -70,6 +69,8 @@ Udp2KafkaChannel::Udp2KafkaChannel( const Udp2KafkaChannel& src )
 Udp2KafkaChannel::~Udp2KafkaChannel()
 {GUCEF_TRACE;
 
+    delete m_udpSocket;
+    m_udpSocket = GUCEF_NULL;
 }
 
 /*-------------------------------------------------------------------------*/
@@ -80,19 +81,19 @@ Udp2KafkaChannel::RegisterEventHandlers( void )
 
     // Register UDP socket event handlers
     TEventCallback callback( this, &Udp2KafkaChannel::OnUDPSocketError );
-    SubscribeTo( &m_udpSocket                             ,
+    SubscribeTo( m_udpSocket                              ,
                  COMCORE::CUDPSocket::UDPSocketErrorEvent ,
                  callback                                 );
     TEventCallback callback2( this, &Udp2KafkaChannel::OnUDPSocketClosed );
-    SubscribeTo( &m_udpSocket                              ,
+    SubscribeTo( m_udpSocket                               ,
                  COMCORE::CUDPSocket::UDPSocketClosedEvent ,
                  callback2                                 );
     TEventCallback callback3( this, &Udp2KafkaChannel::OnUDPSocketOpened );
-    SubscribeTo( &m_udpSocket                              ,
+    SubscribeTo( m_udpSocket                               ,
                  COMCORE::CUDPSocket::UDPSocketOpenedEvent ,
                  callback3                                 );
     TEventCallback callback4( this, &Udp2KafkaChannel::OnUDPPacketRecieved );
-    SubscribeTo( &m_udpSocket                                ,
+    SubscribeTo( m_udpSocket                                 ,
                  COMCORE::CUDPSocket::UDPPacketRecievedEvent ,
                  callback4                                   );
 }
@@ -123,20 +124,21 @@ Udp2KafkaChannel::GetType( void ) const
 /*-------------------------------------------------------------------------*/
 
 void
-Udp2KafkaChannel::OnUDPSocketError( CORE::CNotifier* notifier   ,
-                                    const CORE::CEvent& eventID ,
-                                    CORE::CICloneable* evenData )
+Udp2KafkaChannel::OnUDPSocketError( CORE::CNotifier* notifier    ,
+                                    const CORE::CEvent& eventID  ,
+                                    CORE::CICloneable* eventData )
 {GUCEF_TRACE;
 
-    GUCEF_LOG( CORE::LOGLEVEL_IMPORTANT, "Udp2KafkaChannel: UDP Socket experienced an error" );
+    COMCORE::CUDPSocket::TSocketErrorEventData* eData = static_cast< COMCORE::CUDPSocket::TSocketErrorEventData* >( eventData );    
+    GUCEF_LOG( CORE::LOGLEVEL_IMPORTANT, "Udp2KafkaChannel: UDP Socket experienced error " + CORE::Int32ToString( eData->GetData() ) );    
 }
 
 /*-------------------------------------------------------------------------*/
 
 void
-Udp2KafkaChannel::OnUDPSocketClosed( CORE::CNotifier* notifier   ,
-                                     const CORE::CEvent& eventID ,
-                                     CORE::CICloneable* evenData )
+Udp2KafkaChannel::OnUDPSocketClosed( CORE::CNotifier* notifier    ,
+                                     const CORE::CEvent& eventID  ,
+                                     CORE::CICloneable* eventData )
 {GUCEF_TRACE;
 
     GUCEF_LOG( CORE::LOGLEVEL_IMPORTANT, "Udp2KafkaChannel: UDP Socket has been closed" );
@@ -243,7 +245,10 @@ bool
 Udp2KafkaChannel::OnTaskStart( CORE::CICloneable* taskData )
 {GUCEF_TRACE;
 
-	std::string errStr;
+	m_udpSocket = new GUCEF::COMCORE::CUDPSocket( *GetPulseGenerator(), true );    
+    RegisterEventHandlers();
+    
+    std::string errStr;
 	RdKafka::Producer* producer = RdKafka::Producer::create( m_kafkaConf, errStr );
 	if ( producer == nullptr ) 
     {
@@ -262,7 +267,8 @@ Udp2KafkaChannel::OnTaskStart( CORE::CICloneable* taskData )
     m_kafkaTopic = topic;
     GUCEF_LOG( CORE::LOGLEVEL_NORMAL, "Udp2KafkaChannel:OnTaskStart: Successfully created Kafka Topic handle for topic: " + m_kafkaTopicName );
 
-    if ( !m_udpSocket.Open( m_udpPort ) )
+    m_udpSocket->SetAutoReOpenOnError( true );
+    if ( !m_udpSocket->Open( m_udpPort ) )
     {
 		GUCEF_ERROR_LOG( CORE::LOGLEVEL_IMPORTANT, "Udp2KafkaChannel:OnTaskStart: Failed to open UDP socket on port " + CORE::UInt16ToString( m_udpPort ) );
         return false;
@@ -276,8 +282,6 @@ Udp2KafkaChannel::OnTaskStart( CORE::CICloneable* taskData )
 bool
 Udp2KafkaChannel::OnTaskCycle( CORE::CICloneable* taskData )
 {GUCEF_TRACE;
-
-    m_udpSocket.Recieve();
 
     // You are required to periodically call poll() on a producer to trigger queued callbacks if any
     if ( NULL != m_kafkaProducer ) 
