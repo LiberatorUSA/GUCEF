@@ -1,5 +1,5 @@
 <ModuleInfoEntry>
-    <Module Name="hiredis" Type="SharedLibrary" Platform="All">
+    <Module Name="hiredis" Type="StaticLibrary" Platform="All">
     </Module>
     <Module Platform="mswin">
         <Linker>

@@ -112,6 +112,10 @@ class Udp2RedisChannel : public CORE::CTaskConsumer
     
     int RedisSend( const CORE::CDynamicBuffer& udpPacket );
 
+    bool SendQueuedPackagesIfAny( void );
+
+    bool RedisConnect( void );
+
     static void 
     OnRedisASyncReply( redisAsyncContext* context , 
                        void *reply                , 
@@ -132,6 +136,7 @@ class Udp2RedisChannel : public CORE::CTaskConsumer
 
     CORE::UInt16 m_udpPort;
     CORE::CString m_redisStreamName;
+    CORE::CString m_redisStreamSendCmd;
     CORE::CString m_redisHost;
     CORE::UInt16 m_redisPort;
     redisAsyncContext* m_redisContext;

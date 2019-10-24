@@ -417,7 +417,7 @@ endif ()
 set( ALL_FILES ${HEADER_FILES} ${SOURCE_FILES} ${PLATFORM_HEADER_FILES} ${PLATFORM_SOURCE_FILES} )
 
 set( MODULE_NAME "hiredis" )
-add_library( ${MODULE_NAME} ${ALL_FILES} )
+add_library( ${MODULE_NAME} STATIC ${ALL_FILES} )
 
 if ( WIN32 )
   target_link_libraries( ${MODULE_NAME} ws2_32 )

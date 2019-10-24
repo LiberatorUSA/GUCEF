@@ -29,6 +29,10 @@
 
 #include "udp2redis.h"
 
+#if ( GUCEF_PLATFORM == GUCEF_PLATFORM_MSWIN )
+    #include <winsock2.h>
+#endif
+
 /*-------------------------------------------------------------------------//
 //                                                                         //
 //      UTILITIES                                                          //
@@ -71,6 +75,11 @@ Udp2RedisChannel::Udp2RedisChannel( const Udp2RedisChannel& src )
 Udp2RedisChannel::~Udp2RedisChannel()
 {GUCEF_TRACE;
 
+    delete m_redisOptions.timeout;
+    m_redisOptions.timeout = GUCEF_NULL;
+
+    delete m_udpSocket;
+    m_udpSocket = GUCEF_NULL;
 }
 
 /*-------------------------------------------------------------------------*/
@@ -174,7 +183,24 @@ Udp2RedisChannel::OnRedisASyncConnect( const struct redisAsyncContext* context ,
                                        int status                              )
 {GUCEF_TRACE;
 
-    GUCEF_LOG( CORE::LOGLEVEL_IMPORTANT, "Udp2RedisChannel: Connected to Redis" );
+    if ( status == REDIS_OK )
+    {
+        GUCEF_LOG( CORE::LOGLEVEL_IMPORTANT, "Udp2RedisChannel: Connected to Redis" );
+    }
+    else
+    {
+        GUCEF_ERROR_LOG( CORE::LOGLEVEL_IMPORTANT, "Udp2RedisChannel: Failed to connect to Redis due to an error, retrying" );
+        if ( context != GUCEF_NULL && context->data != GUCEF_NULL )
+        {
+            Udp2RedisChannel* thisObj = static_cast< Udp2RedisChannel* >( context->data );
+            
+            redisAsyncContext* disconnectedContext = thisObj->m_redisContext;
+            thisObj->m_redisContext = GUCEF_NULL;
+            redisAsyncFree( disconnectedContext );
+
+            thisObj->RedisConnect();
+        }
+    }
 }
 
 /*-------------------------------------------------------------------------*/
@@ -183,8 +209,25 @@ void
 Udp2RedisChannel::OnRedisASyncDisconnect( const struct redisAsyncContext* context , 
                                           int status                              )
 {GUCEF_TRACE;
+    
+    if ( status == REDIS_OK )
+    {
+        GUCEF_LOG( CORE::LOGLEVEL_IMPORTANT, "Udp2RedisChannel: Disconnected from Redis as requested" );
+    }
+    else
+    {
+        GUCEF_ERROR_LOG( CORE::LOGLEVEL_IMPORTANT, "Udp2RedisChannel: Disconnected from Redis due to an error, attempting to reconnect" );
+        if ( context != GUCEF_NULL && context->data != GUCEF_NULL )
+        {
+            Udp2RedisChannel* thisObj = static_cast< Udp2RedisChannel* >( context->data );
+            
+            redisAsyncContext* disconnectedContext = thisObj->m_redisContext;
+            thisObj->m_redisContext = GUCEF_NULL;
+            redisAsyncFree( disconnectedContext );
 
-    GUCEF_LOG( CORE::LOGLEVEL_IMPORTANT, "Udp2RedisChannel: Disconnected from Redis" );
+            thisObj->RedisConnect();
+        }
+    }
 }
 
 /*-------------------------------------------------------------------------*/
@@ -193,9 +236,50 @@ int
 Udp2RedisChannel::RedisSend( const CORE::CDynamicBuffer& udpPacket )
 {GUCEF_TRACE;
 
+    int retCode = redisAsyncCommand( m_redisContext, 
+                                     &OnRedisASyncReply, 
+                                     this, 
+                                     m_redisStreamSendCmd.C_String(), 
+                                     udpPacket.GetConstBufferPtr(), 
+                                     udpPacket.GetDataSize() );
+    if ( retCode != REDIS_OK )
+    {
+        GUCEF_ERROR_LOG( CORE::LOGLEVEL_IMPORTANT, "Udp2RedisChannel:RedisSend: Failed executing async send command" );
+    }    
+    #ifdef GUCEF_DEBUG_MODE
+    else
+    {    
+        GUCEF_DEBUG_LOG( CORE::LOGLEVEL_EVERYTHING, "Udp2RedisChannel:RedisSend: Successfully executed async send command" );
+    }
+    #endif
+    return retCode;
+}
 
-    //redisAsyncCommand( m_redisContext, &OnRedisASyncReply, this, );
-    return 0;
+/*-------------------------------------------------------------------------*/
+                                                                             
+bool
+Udp2RedisChannel::SendQueuedPackagesIfAny( void )
+{GUCEF_TRACE;
+
+    if ( GUCEF_NULL != m_redisContext )
+    {
+        int retCode = REDIS_OK;
+
+        while ( !m_redisMsgQueueOverflowQueue.empty() && ( retCode == REDIS_OK ) )
+        {
+            const CORE::CDynamicBuffer& queuedUdpPacket = m_redisMsgQueueOverflowQueue.front();
+            retCode = RedisSend( queuedUdpPacket );
+            if ( retCode == REDIS_OK )
+            {
+                m_redisMsgQueueOverflowQueue.pop_front();
+            }
+            else
+                break;            
+        }
+        
+        return retCode == REDIS_OK;
+    }
+    return false;
 }
 
 /*-------------------------------------------------------------------------*/
@@ -215,35 +299,16 @@ Udp2RedisChannel::OnUDPPacketRecieved( CORE::CNotifier* notifier   ,
         #ifdef GUCEF_DEBUG_MODE
         GUCEF_DEBUG_LOG( CORE::LOGLEVEL_IMPORTANT, "Udp2RedisChannel: UDP Socket received a packet from " + data.sourceAddress.AddressAndPortAsString() );
         #endif
-        
-        if ( GUCEF_NULL != m_redisContext )
-        {
-            int retCode = REDIS_OK;
 
-            do
-            {
-                const CORE::CDynamicBuffer& queuedUdpPacket = m_redisMsgQueueOverflowQueue.front();
-                retCode = RedisSend( queuedUdpPacket );
-                if ( retCode == REDIS_OK )
-                {
-                    m_redisMsgQueueOverflowQueue.pop_front();
-                }
-                else
-                    break;            
-            }
-            while ( !m_redisMsgQueueOverflowQueue.empty() && ( retCode == REDIS_OK ) );
-            
-            
-            if ( retCode == REDIS_OK )
-            {
-                retCode = retCode = RedisSend( udpPacketBuffer );
-                if ( retCode == REDIS_ERR )
-                    m_redisMsgQueueOverflowQueue.push_back( udpPacketBuffer );
-            }
-            else
-            {
+        if ( SendQueuedPackagesIfAny() )
+        {
+            int retCode = RedisSend( udpPacketBuffer );
+            if ( retCode == REDIS_ERR )
                 m_redisMsgQueueOverflowQueue.push_back( udpPacketBuffer );
-            }
+        }
+        else
+        {
+            m_redisMsgQueueOverflowQueue.push_back( udpPacketBuffer );
         }
     }
     else
@@ -255,25 +320,27 @@ Udp2RedisChannel::OnUDPPacketRecieved( CORE::CNotifier* notifier   ,
 /*-------------------------------------------------------------------------*/
 
 bool
-Udp2RedisChannel::OnTaskStart( CORE::CICloneable* taskData )
-{GUCEF_TRACE;
-
-	m_udpSocket = new GUCEF::COMCORE::CUDPSocket( *GetPulseGenerator(), true );    
-    RegisterEventHandlers();
+Udp2RedisChannel::RedisConnect( void )
+{
+    delete m_redisOptions.timeout;
+    m_redisOptions.timeout = GUCEF_NULL;
 
     memset( &m_redisOptions, 0, sizeof(m_redisOptions) );
     REDIS_OPTIONS_SET_TCP( &m_redisOptions, m_redisHost.C_String(), m_redisPort );
-    //struct timeval tv = { 1, 500000 }; // 1.5 seconds
+    struct timeval* timeoutSetting = new struct timeval;
+    m_redisOptions.timeout = timeoutSetting;
 
+    GUCEF_LOG( CORE::LOGLEVEL_NORMAL, "Udp2RedisChannel:RedisConnect: Connecting to Redis on " + m_redisHost + ":" + CORE::UInt16ToString( m_redisPort ) );
+    
     redisAsyncContext* rContext = redisAsyncConnectWithOptions( &m_redisOptions );
-	if ( rContext == nullptr ) 
+	if ( rContext == GUCEF_NULL ) 
     {
-		GUCEF_ERROR_LOG( CORE::LOGLEVEL_IMPORTANT, "Udp2RedisChannel:OnTaskStart: Failed to create Redis context" );
+		GUCEF_ERROR_LOG( CORE::LOGLEVEL_IMPORTANT, "Udp2RedisChannel:RedisConnect: Failed to create Redis context" );
         return false;
 	}
 	if ( rContext->err != 0 ) 
     {
-		GUCEF_ERROR_LOG( CORE::LOGLEVEL_IMPORTANT, "Udp2RedisChannel:OnTaskStart: Failed to create Redis context, error code " + 
+		GUCEF_ERROR_LOG( CORE::LOGLEVEL_IMPORTANT, "Udp2RedisChannel:RedisConnect: Failed to create Redis context, error code " + 
                 CORE::Int32ToString( rContext->err ) +  ", message: " + CORE::CString( rContext->errstr ) );
         return false;
 	}
@@ -281,11 +348,29 @@ Udp2RedisChannel::OnTaskStart( CORE::CICloneable* taskData )
     // Allow ourselves to find this object again from the C callbacks
     rContext->data = this;
 
+    // Set the stream publish command formatting here which will remain constant for this session
+    m_redisStreamSendCmd = "PUBLISH " + m_redisStreamName + " %b";
+
     redisAsyncSetConnectCallback( rContext, &OnRedisASyncConnect );
     redisAsyncSetDisconnectCallback( rContext, &OnRedisASyncDisconnect );
 
     m_redisContext = rContext;
-    GUCEF_LOG( CORE::LOGLEVEL_NORMAL, "Udp2RedisChannel:OnTaskStart: Successfully created a Redis context" );
+
+    GUCEF_LOG( CORE::LOGLEVEL_NORMAL, "Udp2RedisChannel:RedisConnect: Successfully created a Redis context" );
+    return true;
+}
+
+/*-------------------------------------------------------------------------*/
+
+bool
+Udp2RedisChannel::OnTaskStart( CORE::CICloneable* taskData )
+{GUCEF_TRACE;
+
+	m_udpSocket = new GUCEF::COMCORE::CUDPSocket( *GetPulseGenerator(), true );    
+    RegisterEventHandlers();
+
+    if ( !RedisConnect() )
+        return false;
 
     m_udpSocket->SetAutoReOpenOnError( true );
     if ( !m_udpSocket->Open( m_udpPort ) )
@@ -303,6 +388,14 @@ bool
 Udp2RedisChannel::OnTaskCycle( CORE::CICloneable* taskData )
 {GUCEF_TRACE;
 
+    if ( GUCEF_NULL != m_redisContext )
+    {
+        // Poll the Redis socket etc,..
+        redisAsyncHandleRead( m_redisContext );
+        redisAsyncHandleWrite( m_redisContext );
+        redisAsyncHandleTimeout( m_redisContext );
+    }
+        
     // We are never 'done' so return false
     return false;
 }
