@@ -23,6 +23,11 @@
 //                                                                         //
 //-------------------------------------------------------------------------*/
 
+#ifndef GUCEF_MT_DVMTOSWRAP_H
+#include "gucefMT_dvmtoswrap.h"         /* OS wrappers for threading functionality */
+#define GUCEF_MT_DVMTOSWRAP_H
+#endif /* GUCEF_MT_DVMTOSWRAP_H ? */
+
 #ifndef GUCEF_CORE_CTRACER_H
 #include "CTracer.h"
 #define GUCEF_CORE_CTRACER_H
@@ -230,10 +235,30 @@ CTaskDelegator::ProcessTask( CTaskConsumer& taskConsumer ,
     {
         taskConsumer.OnTaskStarted( taskData );
 
+        Float64 timerRes = ( MT::PrecisionTimerResolution() * 1.0 );
+        UInt64 tickCount = MT::PrecisionTickCount();
+        UInt64 newTime = tickCount;
+        Float64 timeDelta = 0;
+
         // cycle the task as long as it is not "done"
         while ( !IsDeactivationRequested() && !taskConsumer.OnTaskCycle( taskData ) ) 
         {
             SendDriverPulse( m_pulseGenerator );
+
+            // If we are going to do another cycle then make sure we
+            // stay within the time slice range requested.
+            // Here we calculate the time that has passed in seconds
+            newTime = MT::PrecisionTickCount();
+            timeDelta = ( tickCount - newTime ) / timerRes;
+            if ( timeDelta < m_minimalCycleDelta )
+            {
+                MT::PrecisionDelay( m_delay );
+                tickCount = MT::PrecisionTickCount();
+            }
+            else
+            {
+                tickCount = newTime;
+            }
         }
 
         taskConsumer.OnTaskEnd( taskData );
