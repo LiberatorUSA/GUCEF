@@ -44,6 +44,11 @@
 #define GUCEF_CORE_CVALUELIST_H
 #endif /* GUCEF_CORE_CVALUELIST_H ? */
 
+#ifndef GUCEF_CORE_CTIMER_H
+#include "CTimer.h"
+#define GUCEF_CORE_CTIMER_H
+#endif /* GUCEF_CORE_CTIMER_H ? */
+
 #include "hiredis.h"
 #include "async.h"
 
@@ -105,7 +110,11 @@ class Udp2RedisChannel : public CORE::CTaskConsumer
     OnUDPPacketRecieved( CORE::CNotifier* notifier   ,
                          const CORE::CEvent& eventID ,
                          CORE::CICloneable* evenData );
-    
+
+    void
+    OnRedisReconnectTimer( CORE::CNotifier* notifier   ,
+                           const CORE::CEvent& eventID ,
+                           CORE::CICloneable* evenData );
     private:
 
     void RegisterEventHandlers( void );
@@ -133,16 +142,19 @@ class Udp2RedisChannel : public CORE::CTaskConsumer
     private:
 
     typedef std::deque< CORE::CDynamicBuffer > TDynamicBufferQueue;
+    typedef std::vector< redisAsyncContext* > redisAsyncContextVector;
 
     CORE::UInt16 m_udpPort;
     CORE::CString m_redisStreamName;
     CORE::CString m_redisStreamSendCmd;
     CORE::CString m_redisHost;
     CORE::UInt16 m_redisPort;
+    CORE::CTimer *m_redisReconnectTimer;
     redisAsyncContext* m_redisContext;
     GUCEF::COMCORE::CUDPSocket* m_udpSocket;
     TDynamicBufferQueue m_redisMsgQueueOverflowQueue;
     redisOptions m_redisOptions;
+    redisAsyncContextVector m_oldRedisContexts;
 };
 
 /*-------------------------------------------------------------------------*/
