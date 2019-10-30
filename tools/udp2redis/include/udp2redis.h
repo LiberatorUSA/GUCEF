@@ -126,10 +126,13 @@ class Udp2RedisChannel : public CORE::CTaskConsumer
     bool RedisConnect( void );
 
     static void 
-    OnRedisASyncReply( redisAsyncContext* context , 
-                       void *reply                , 
-                       void *privdata             );
+    OnRedisASyncVoidReply( redisAsyncContext* context , 
+                           void *reply                , 
+                           void *privdata             );
 
+    void 
+    OnRedisASyncReply( redisAsyncContext* context , 
+                       redisReply* reply          );
 
     static void
     OnRedisASyncConnect( const struct redisAsyncContext* context , 
@@ -138,6 +141,24 @@ class Udp2RedisChannel : public CORE::CTaskConsumer
     static void
     OnRedisASyncDisconnect( const struct redisAsyncContext* context , 
                             int status                              );
+
+    static void
+    OnRedisAddReadEvent( void* privData );
+
+    static void
+    OnRedisDelReadEvent( void* privData );
+
+    static void
+    OnRedisAddWriteEvent( void* privData );
+
+    static void
+    OnRedisDelWriteEvent( void* privData );
+
+    static void
+    OnRedisCleanupEvent( void* privData );
+
+    static void
+    OnRedisScheduleTimerEvent( void* privData, struct timeval tv );
 
     private:
 
@@ -154,7 +175,9 @@ class Udp2RedisChannel : public CORE::CTaskConsumer
     GUCEF::COMCORE::CUDPSocket* m_udpSocket;
     TDynamicBufferQueue m_redisMsgQueueOverflowQueue;
     redisOptions m_redisOptions;
-    redisAsyncContextVector m_oldRedisContexts;
+    bool m_redisReadFlag;
+    bool m_redisWriteFlag;
+    bool m_redisTimeoutFlag;
 };
 
 /*-------------------------------------------------------------------------*/
