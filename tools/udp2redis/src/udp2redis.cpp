@@ -255,8 +255,8 @@ Udp2RedisChannel::OnRedisScheduleTimerEvent( void* privdata, struct timeval tv )
     Udp2RedisChannel* thisObj = static_cast< Udp2RedisChannel* >( privdata );
     if ( GUCEF_NULL != thisObj )
     {
-        thisObj->m_redisReadFlag = false;
-        thisObj->m_redisWriteFlag = false;
+        //thisObj->m_redisReadFlag = false;
+        //thisObj->m_redisWriteFlag = false;
     }
 }
 
@@ -569,7 +569,8 @@ Udp2RedisChannel::OnTaskStart( CORE::CICloneable* taskData )
     // Setup connection to Redis and open the UDP port.
     // Note that if there is an error here we will just keep on trying
     RedisConnect();
-    m_udpSocket->SetAutoReOpenOnError( true );
+    m_udpSocket->SetMaxUpdatesPerCycle( 10 );
+    m_udpSocket->SetAutoReOpenOnError( true );    
     if ( !m_udpSocket->Open( m_udpPort ) )
     {
 		GUCEF_ERROR_LOG( CORE::LOGLEVEL_IMPORTANT, "Udp2RedisChannel:OnTaskStart: Failed to open UDP socket on port " + CORE::UInt16ToString( m_udpPort ) );
