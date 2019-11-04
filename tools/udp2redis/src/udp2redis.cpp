@@ -277,20 +277,28 @@ Udp2RedisChannel::OnRedisASyncReply( redisAsyncContext* context ,
         {
             break;
         }
+        case REDIS_REPLY_STRING:
+        {
+            GUCEF_DEBUG_LOG( CORE::LOGLEVEL_NORMAL, "Udp2RedisChannel:OnRedisASyncReply(" + CORE::PointerToString( context ) + 
+                    "): Redis replied with: \"" + CORE::CString( reply->str ) + "\"" );
+            break;
+        }
+        case REDIS_REPLY_ARRAY:
+        {
+            break;
+        }
         case REDIS_REPLY_ERROR:
         {
             GUCEF_ERROR_LOG( CORE::LOGLEVEL_IMPORTANT, "Udp2RedisChannel:OnRedisASyncReply(" + CORE::PointerToString( context ) + 
                     "): Redis replied with error: \"" + CORE::CString( reply->str ) + "\"" );
             break;
         }
-        case REDIS_REPLY_STRING:
+        default:
         {
+            GUCEF_ERROR_LOG( CORE::LOGLEVEL_IMPORTANT, "Udp2RedisChannel:OnRedisASyncReply(" + CORE::PointerToString( context ) + 
+                    "): Redis replied with unknown reply type " + CORE::Int32ToString( reply->type ) );
             break;
-        }
-        case REDIS_REPLY_ARRAY:
-        {
-            break;
-        }    
+        }            
     }    
 }
 
@@ -536,7 +544,7 @@ Udp2RedisChannel::RedisConnect( void )
 	}
 
     // Set the stream publish command formatting here which will remain constant for this session
-    m_redisStreamSendCmd = "XADD " + m_redisStreamName + " * %b";
+    m_redisStreamSendCmd = "XADD " + m_redisStreamName + " * UDP %b";
 
     redisAsyncSetConnectCallback( rContext, &OnRedisASyncConnect );
     redisAsyncSetDisconnectCallback( rContext, &OnRedisASyncDisconnect );
