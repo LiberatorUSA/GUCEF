@@ -108,12 +108,16 @@ class GUCEF_COM_EXPORT_CPP CHTTPServer : CORE::CObserver
     /** 
      *  listen on default NIC with port given 
      */
-    bool ListenOnPort( const UInt16 port );   
+    bool ListenOnPort( const UInt16 port );
+    
+    bool Listen( void );
     
     /**
      *  stop listening for clients, close server socket 
      */
     void Close( void ); 
+    
+    bool SetPort( UInt16 port );
     
     UInt16 GetPort( void ) const;
     

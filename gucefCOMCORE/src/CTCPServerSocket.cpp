@@ -399,6 +399,15 @@ CTCPServerSocket::IsBlocking( void ) const
 /*-------------------------------------------------------------------------*/
 
 bool
+CTCPServerSocket::Listen( void )
+{GUCEF_TRACE;
+
+    return ListenOnPort( m_port );
+}
+
+/*-------------------------------------------------------------------------*/
+
+bool
 CTCPServerSocket::ListenOnPort( UInt16 servport )
 {GUCEF_TRACE;
 
@@ -545,6 +554,19 @@ CTCPServerSocket::Close( void )
     m_pulseGenerator->RequestStopOfPeriodicUpdates( this );
 }
 
+/*-------------------------------------------------------------------------*/
+
+bool 
+CTCPServerSocket::SetPort( UInt16 port )
+{GUCEF_TRACE;
+
+    if ( !IsActive() )
+    {
+        m_port = port;
+        return true;
+    }
+    return false;
+}
 
 /*-------------------------------------------------------------------------*/
 

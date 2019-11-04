@@ -130,8 +130,12 @@ class GUCEF_COMCORE_EXPORT_CPP CTCPServerSocket : public CSocket
      *      Methods that activate or de-activate the socket
      */
     bool ListenOnPort( UInt16 port );   /* listen on default NIC with port given */
+
+    bool Listen( void );   /* listen on default NIC with the currently configured port */
     
     void Close( void ); /* stop listening for clients, close server socket */
+    
+    bool SetPort( UInt16 port );
     
     UInt16 GetPort( void ) const;
     

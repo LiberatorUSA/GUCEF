@@ -35,10 +35,10 @@ if ( WIN32 )
 else()
   add_executable( ${MODULE_NAME} ${ALL_FILES} )
 endif()
-add_dependencies( ${MODULE_NAME} gucefCOMCORE gucefCORE gucefMT hiredis )
-target_link_libraries( ${MODULE_NAME} gucefCOMCORE gucefCORE gucefMT hiredis )
+add_dependencies( ${MODULE_NAME} gucefCOM gucefCOMCORE gucefCORE gucefMT hiredis )
+target_link_libraries( ${MODULE_NAME} gucefCOM gucefCOMCORE gucefCORE gucefMT hiredis )
 
-include_directories( ../../common/include ../../dependencies/hiredis ../../gucefCOMCORE/include ../../gucefCORE/include ../../gucefMT/include include )
+include_directories( ../../common/include ../../dependencies/hiredis ../../gucefCOM/include ../../gucefCOMCORE/include ../../gucefCORE/include ../../gucefMT/include include )
 
 if ( ANDROID )
   include_directories( ../../dependencies/hiredis ../../gucefCORE/include/android )

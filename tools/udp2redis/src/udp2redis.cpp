@@ -646,7 +646,7 @@ Udp2Redis::Start( void )
         ++i;
     }
 
-    return true;
+    return m_httpServer.Listen();
 }
 
 /*-------------------------------------------------------------------------*/
@@ -661,6 +661,8 @@ Udp2Redis::LoadConfig( const CORE::CValueList& config )
     m_redisStreamName = config.GetValueAlways( "RedisStreamName", "udp-ingress-ch{channelID}" );
     m_redisHost = config.GetValueAlways( "RedisHost", "127.0.0.1" );
     m_redisPort = CORE::StringToUInt16( config.GetValueAlways( "RedisPort", "6379" ) );
+    
+    m_httpServer.SetPort( CORE::StringToUInt16( config.GetValueAlways( "RestApiPort", "10000" ) ) );
 
     return true;
 }

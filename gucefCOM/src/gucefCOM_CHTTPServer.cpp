@@ -575,11 +575,29 @@ CHTTPServer::ListenOnPort( const UInt16 port )
 
 /*-------------------------------------------------------------------------*/
 
+bool 
+CHTTPServer::Listen( void )
+{GUCEF_TRACE;
+
+    return m_tcpServerSocket.Listen();
+}
+
+/*-------------------------------------------------------------------------*/
+
 void
 CHTTPServer::Close( void )
 {GUCEF_TRACE;
 
     m_tcpServerSocket.Close();
+}
+
+/*-------------------------------------------------------------------------*/
+
+bool 
+CHTTPServer::SetPort( UInt16 port )
+{GUCEF_TRACE;
+    
+    return m_tcpServerSocket.SetPort( port );
 }
 
 /*-------------------------------------------------------------------------*/

@@ -49,6 +49,11 @@
 #define GUCEF_CORE_CTIMER_H
 #endif /* GUCEF_CORE_CTIMER_H ? */
 
+#ifndef GUCEF_COM_CHTTPSERVER_H
+#include "gucefCOM_CHTTPServer.h"
+#define GUCEF_COM_CHTTPSERVER_H
+#endif /* GUCEF_COM_CHTTPSERVER_H ? */
+
 #include "hiredis.h"
 #include "async.h"
 
@@ -203,4 +208,5 @@ class Udp2Redis
     CORE::CString m_redisHost;
     CORE::UInt16 m_redisPort;
     std::vector< Udp2RedisChannel > m_channels;
+    COM::CHTTPServer m_httpServer;
 };
