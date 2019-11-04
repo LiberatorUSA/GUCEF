@@ -274,6 +274,19 @@ class GUCEF_COMCORE_EXPORT_CPP CUDPSocket : public CSocket
 
     bool GetAutoReOpenOnError( void ) const;
 
+    /**
+     *  sets the max number of updates to perform on the socket for a given update cycle
+     *  This setting applies to running a socket in non-blocking event driven mode.
+     *  If you have a very busy socket you don't want the socket to get 'stuck' reading from the socket for example
+     *  due to the fact that data is coming in so fast that by the time you finished reading from the socket more 
+     *  data is waiting on the socket. In such cases you should use this setting to avoid this scenario.
+     *
+     *  @param maxUpdates number of updates to perform per update cycle
+     */
+    void SetMaxUpdatesPerCycle( UInt32 maxUpdates );
+
+    UInt32 GetMaxUpdatesPerCycle( void ) const;
+
     private:
     typedef CORE::CTEventHandlerFunctor< CUDPSocket > TEventCallback;
 
@@ -300,6 +313,7 @@ class GUCEF_COMCORE_EXPORT_CPP CUDPSocket : public CSocket
     MT::CMutex _datalock;           /**< mutex for thread-safety when manipulating the socket */
     CORE::CDynamicBuffer m_buffer;
     CORE::CPulseGenerator* m_pulseGenerator;
+    UInt32 m_maxUpdatesPerCycle;    /**< setting aimed at preventing a busy socket from hogging all the processing */
 };
 
 /*-------------------------------------------------------------------------//

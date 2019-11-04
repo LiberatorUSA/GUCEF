@@ -100,6 +100,7 @@ CUDPSocket::CUDPSocket( CORE::CPulseGenerator& pulseGenerator ,
     , m_hostAddress()                     
     , m_buffer()                          
     , m_pulseGenerator( &pulseGenerator )
+    , m_maxUpdatesPerCycle( 0 )
 {GUCEF_TRACE;
 
     RegisterEvents();
@@ -129,6 +130,7 @@ CUDPSocket::CUDPSocket( bool blocking )
     , m_hostAddress()      
     , m_buffer()           
     , m_pulseGenerator( &CORE::CCoreGlobal::Instance()->GetPulseGenerator() )
+    , m_maxUpdatesPerCycle( 0 )
 {GUCEF_TRACE;
 
     RegisterEvents();
@@ -307,12 +309,42 @@ CUDPSocket::Update( bool performRead )
 /*-------------------------------------------------------------------------*/
 
 void
+CUDPSocket::SetMaxUpdatesPerCycle( UInt32 maxUpdates )
+{GUCEF_TRACE;
+
+    m_maxUpdatesPerCycle = maxUpdates;
+}
+
+/*-------------------------------------------------------------------------*/
+
+
+UInt32
+CUDPSocket::GetMaxUpdatesPerCycle( void ) const
+{GUCEF_TRACE;
+
+    return m_maxUpdatesPerCycle;
+}
+
+/*-------------------------------------------------------------------------*/
+
+void
 CUDPSocket::OnPulse( CORE::CNotifier* notifier                 ,
                      const CORE::CEvent& eventid               ,
                      CORE::CICloneable* eventdata /* = NULL */ )
 {GUCEF_TRACE;
 
-    while( Update( true ) );
+    if ( m_maxUpdatesPerCycle > 0 )
+    {
+        UInt32 cycleCount = 0;
+        while( ( cycleCount < m_maxUpdatesPerCycle ) && Update( true ) ) 
+        {
+            ++cycleCount;
+        }
+    }
+    else
+    {
+        while( Update( true ) );
+    }
 }
 
 /*-------------------------------------------------------------------------*/
@@ -404,12 +436,12 @@ CUDPSocket::Recieve( CIPAddress& src ,
     }
 
     // Send an event notifying people that the data was recieved
-    struct SUDPPacketRecievedEventData infoStruct;
+    UDPPacketRecievedEventData eventData;
+    TUDPPacketRecievedEventData& infoStruct = eventData.GetData();
     infoStruct.sourceAddress.SetPort( remote.sin_port );
     infoStruct.sourceAddress.SetAddress( remote.sin_addr.s_addr );
-    infoStruct.dataBuffer = CORE::TLinkedCloneableBuffer( &m_buffer );
-
-    UDPPacketRecievedEventData eventData( infoStruct );
+    infoStruct.dataBuffer.LinkTo( &m_buffer );
+    
     NotifyObservers( UDPPacketRecievedEvent, &eventData );
 
     return retval;
