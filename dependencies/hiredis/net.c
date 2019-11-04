@@ -456,9 +456,16 @@ addrretry:
                 redisNetClose(c);
                 continue;
             } else if (errno == EINPROGRESS) {
+            /*  DV Edit: For non-blocking this continues to the call redisSetTcpNoDelay() which will error out in most cases
+                due to a timing issue. As a temp hack we will always wait for a reply.
+
                 if (blocking) {
                     goto wait_for_ready;
                 }
+            */
+                goto wait_for_ready;
+
+
                 /* This is ok.
                  * Note that even when it's in blocking mode, we unset blocking
                  * for `connect()`
