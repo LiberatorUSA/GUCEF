@@ -138,7 +138,8 @@ CDynamicBuffer::CDynamicBuffer( UInt32 initialsize ,
 
 /*-------------------------------------------------------------------------*/
 
-CDynamicBuffer::CDynamicBuffer( const CDynamicBuffer &src )
+CDynamicBuffer::CDynamicBuffer( const CDynamicBuffer &src ,
+                                bool shrinkToDataSize     )
         : _buffer( NULL )                  ,
           _bsize( 0 )                      ,
           m_dataSize( 0 )                  ,
@@ -146,10 +147,20 @@ CDynamicBuffer::CDynamicBuffer( const CDynamicBuffer &src )
           m_linked( false )
 {GUCEF_TRACE;
 
-    _buffer = (Int8*) malloc( src._bsize );
-    _bsize = src._bsize;
     m_dataSize = src.m_dataSize;
-    memcpy( _buffer, src._buffer, m_dataSize ); 
+    
+    if ( shrinkToDataSize )
+    {
+        _bsize = src.m_dataSize;
+        _buffer = (Int8*) malloc( src.m_dataSize );    
+        memcpy( _buffer, src._buffer, m_dataSize ); 
+    }
+    else
+    {
+        _bsize = src._bsize;
+        _buffer = (Int8*) malloc( src._bsize );    
+        memcpy( _buffer, src._buffer, m_dataSize ); 
+    }
 }
 
 /*-------------------------------------------------------------------------*/

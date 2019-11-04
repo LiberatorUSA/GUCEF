@@ -85,7 +85,8 @@ class GUCEF_CORE_PUBLIC_CPP CDynamicBuffer
          *      Copy constructor, creates a dynamic buffer that is an exact copy
          *      of the given src.
          */
-        CDynamicBuffer( const CDynamicBuffer &src );
+        CDynamicBuffer( const CDynamicBuffer &src    ,
+                        bool shrinkToDataSize = true );
 
         /**
          *      Destructor, de-alloctes the buffer.
