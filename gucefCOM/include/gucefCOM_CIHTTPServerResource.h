@@ -101,7 +101,7 @@ class GUCEF_COM_EXPORT_CPP CIHTTPServerResource
     /**
      *  Identifier of the resource, relative to the context of the handler.
      */
-    virtual void SetURL( const CString& url ) const = 0;
+    virtual void SetURL( const CString& url ) = 0;
 
     /**
      *  Identifier of the resource, relative to the context of the handler.

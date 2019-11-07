@@ -24,6 +24,8 @@ set( HEADER_FILES
   include/gucefCOM.h
   include/gucefCOMDLLInit.h
   include/gucefCOM_CComGlobal.h
+  include/gucefCOM_CDefaultHTTPServerResource.h
+  include/gucefCOM_CDefaultHTTPServerRouter.h
   include/gucefCOM_CDefaultHTTPServerRouterController.h
   include/gucefCOM_CHTTPServer.h
   include/gucefCOM_CIHTTPServerResource.h
@@ -44,6 +46,8 @@ set( SOURCE_FILES
   src/CPHUDPSocket.cpp
   src/gucefCOM.cpp
   src/gucefCOM_CComGlobal.cpp
+  src/gucefCOM_CDefaultHTTPServerResource.cpp
+  src/gucefCOM_CDefaultHTTPServerRouter.cpp
   src/gucefCOM_CDefaultHTTPServerRouterController.cpp
   src/gucefCOM_CHTTPServer.cpp
   src/gucefCOM_CIHTTPServerResource.cpp
