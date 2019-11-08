@@ -122,6 +122,8 @@ class GUCEF_COM_EXPORT_CPP CHTTPServer : CORE::CObserver
     UInt16 GetPort( void ) const;
     
     CString GetLastRequestUri( void ) const;
+
+    CIHTTPServerRouterController* GetRouterController( void ) const;
     
     private:
 

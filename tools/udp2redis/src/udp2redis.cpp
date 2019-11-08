@@ -1,5 +1,5 @@
 /*
- *  Udp2Redis: service which pushes UDP packets into kafka topics
+ *  Udp2Redis: service which pushes UDP packets into Redis
  *
  *  This library is free software; you can redistribute it and/or
  *  modify it under the terms of the GNU Lesser General Public
@@ -646,6 +646,7 @@ Udp2Redis::Start( void )
         ++i;
     }
 
+    m_httpServer.GetRouterController()->AddRouterMapping( &m_httpRouter, "", "" ); 
     return m_httpServer.Listen();
 }
 

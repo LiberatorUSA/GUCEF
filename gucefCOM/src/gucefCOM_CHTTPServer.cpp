@@ -973,6 +973,15 @@ CHTTPServer::ParseResponse( const THttpReturnData& returnData  ,
     }
 }
 
+/*-------------------------------------------------------------------------*/
+
+CIHTTPServerRouterController* 
+CHTTPServer::GetRouterController( void ) const
+{GUCEF_TRACE;
+
+    return m_routerController;
+}
+
 /*-------------------------------------------------------------------------//
 //                                                                         //
 //      NAMESPACE                                                          //

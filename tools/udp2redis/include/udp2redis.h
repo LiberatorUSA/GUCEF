@@ -54,6 +54,11 @@
 #define GUCEF_COM_CHTTPSERVER_H
 #endif /* GUCEF_COM_CHTTPSERVER_H ? */
 
+#ifndef GUCEF_COM_CDEFAULTHTTPSERVERROUTER_H
+#include "gucefCOM_CDefaultHTTPServerRouter.h"
+#define GUCEF_COM_CDEFAULTHTTPSERVERROUTER_H
+#endif /* GUCEF_COM_CDEFAULTHTTPSERVERROUTER_H ? */
+
 #include "hiredis.h"
 #include "async.h"
 
@@ -209,4 +214,5 @@ class Udp2Redis
     CORE::UInt16 m_redisPort;
     std::vector< Udp2RedisChannel > m_channels;
     COM::CHTTPServer m_httpServer;
+    COM::CDefaultHTTPServerRouter m_httpRouter;
 };
