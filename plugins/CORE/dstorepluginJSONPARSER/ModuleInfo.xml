@@ -1,0 +1,16 @@
+<ModuleInfoEntry>
+    <Module Name="dstorepluginJSONPARSER" Type="SharedLibrary" Platform="All" Tags="plugin">
+        <Dependencies>
+            <Dependency Name="gucefHeaders" />
+            <Dependency Name="gucefMT" />
+            <Dependency Name="gucefCORE" />
+            <Dependency Name="jsonparser" />
+        </Dependencies>
+        <Linker>
+            <Dependency Name="jsonparser" />
+        </Linker>
+        <Preprocessor>
+            <Define String="DSTOREPLUGINJSONPARSER_BUILD_MODULE" />
+        </Preprocessor>
+    </Module>
+</ModuleInfoEntry>

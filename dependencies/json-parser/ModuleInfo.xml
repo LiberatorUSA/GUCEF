@@ -1,0 +1,6 @@
+<ModuleInfoEntry>
+    <Module Name="jsonparser" Type="StaticLibrary" Platform="All">
+    </Module>
+    <Module Platform="All">		
+    </Module>
+</ModuleInfoEntry>

@@ -25,6 +25,7 @@ DevIL is version 1.8.0, see https://github.com/DentonW/DevIL
 toluapp is a LUA 5.3 patched version from : https://github.com/waltervn/toluapp
 hiredis is version 0.14.0 from https://github.com/redis/hiredis
 OIS is at version 1.3 and can be obtained from http://sourceforge.net/projects/wgois
+json-parser is at version 1.1.0 and can be obtained from https://github.com/udp/json-parser
 
 Possibly outdated:
 android-ndk-**: Recommended to use latest (r8)
