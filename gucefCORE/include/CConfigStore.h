@@ -62,6 +62,7 @@ namespace CORE {
  *      Forward declaration of the abstract base for configurable items.
  */
 class CIConfigurable;
+class CDataNode;
 
 /*-------------------------------------------------------------------------*/
 
@@ -81,7 +82,7 @@ class GUCEF_CORE_PUBLIC_CPP CConfigStore
     bool SaveConfig( const CString& name  ,
                      bool preserve = true );
 
-    bool LoadConfig( void );
+    bool LoadConfig( CDataNode* loadedConfig = GUCEF_NULL );
 
     void SetCodec( const CString& codectype );
 

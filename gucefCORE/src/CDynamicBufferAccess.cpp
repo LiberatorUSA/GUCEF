@@ -337,7 +337,7 @@ bool
 CDynamicBufferAccess::IsReadable( void ) const
 {GUCEF_TRACE;
 
-    return false;
+    return m_buffer != GUCEF_NULL;
 }
 
 /*-------------------------------------------------------------------------*/
@@ -346,7 +346,7 @@ bool
 CDynamicBufferAccess::IsWriteable( void ) const
 {GUCEF_TRACE;
 
-    return false;
+    return ( m_buffer != GUCEF_NULL ) && ( !m_buffer->IsLinked() );
 }
 
 /*-------------------------------------------------------------------------*/

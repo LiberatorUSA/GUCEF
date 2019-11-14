@@ -39,9 +39,11 @@
 #endif /* GUCEF_CORE_CDSTORECODEC_H ? */
 
 #ifndef GUCEF_CORE_CINIPARSER_H
-#include "gucefCORE_CIniDataStoreCodec.h"
+#include "gucefCORE_CIniParser.h"
 #define GUCEF_CORE_CINIPARSER_H
 #endif /* GUCEF_CORE_CINIPARSER_H ? */
+
+#include "gucefCORE_CIniDataStoreCodec.h"
 
 /*-------------------------------------------------------------------------//
 //                                                                         //
@@ -59,8 +61,7 @@ namespace CORE {
 //-------------------------------------------------------------------------*/
 
 CIniDataStoreCodec::CIniDataStoreCodec( void )
-    : CDStoreCodec() ,
-      m_iniParser()
+    : CDStoreCodec()
 {GUCEF_TRACE;
 
 }
@@ -99,9 +100,10 @@ CIniDataStoreCodec::StoreDataTree( const CDataNode* tree   ,
                                    CIOAccess* file         )
 {GUCEF_TRACE;
 
-    if ( m_iniParser.LoadFrom( *tree ) )
+    CIniParser parser;
+    if ( parser.LoadFrom( *tree ) )
     {
-        return m_iniParser.SaveTo( *file );
+        return parser.SaveTo( *file );
     }
     return false;
 }
@@ -124,9 +126,10 @@ CIniDataStoreCodec::BuildDataTree( CDataNode* treeroot ,
                                    CIOAccess* file     )
 {GUCEF_TRACE;
 
-    if ( m_iniParser.LoadFrom( *file ) )
+    CIniParser parser;
+    if ( parser.LoadFrom( *file ) )
     {
-        return m_iniParser.SaveTo( *treeroot );
+        return parser.SaveTo( *treeroot );
     }
     return false;
 }

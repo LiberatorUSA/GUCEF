@@ -96,6 +96,7 @@ CValueList::operator=( const CValueList& src )
         m_list = src.m_list;
         m_allowDuplicates = src.m_allowDuplicates;
         m_allowMultipleValues = src.m_allowMultipleValues;
+        m_configNamespace = src.m_configNamespace;
      }
      return *this;
 }
@@ -155,8 +156,39 @@ bool
 CValueList::SaveConfig( CDataNode& tree ) const
 {GUCEF_TRACE;
 
-    // not currently supported
-    return true;
+    CDataNode* nodeNamespaceRoot = tree.Structure( m_configNamespace, '/' );
+    if ( GUCEF_NULL != nodeNamespaceRoot )
+    {    
+        if ( m_allowDuplicates || m_allowMultipleValues )
+        {
+            TValueMap::const_iterator i = m_list.begin();
+            while ( i != m_list.end() )
+            {
+                const TStringVector& values = (*i).second;
+                TStringVector::const_iterator n = values.begin();
+                while ( n != values.end() )
+                {
+                    CDataNode* child = nodeNamespaceRoot->AddChild( (*i).first );
+                    child->SetValue( (*n) );
+                    ++n;
+                }
+                ++i;
+            }
+        }
+        else
+        {        
+            TValueMap::const_iterator i = m_list.begin();
+            while ( i != m_list.end() )
+            {
+                const TStringVector& values = (*i).second;
+                if ( !values.empty() )
+                    nodeNamespaceRoot->SetAttribute( (*i).first, values.front() );
+                ++i;
+            }
+        }
+        return true;
+    }
+    return false;
 }
 
 /*-------------------------------------------------------------------------*/
@@ -166,7 +198,7 @@ CValueList::LoadConfig( const CDataNode& treeroot )
 {GUCEF_TRACE;
 
     const CDataNode* nodeNamespaceRoot = treeroot.Search( m_configNamespace, '/', true, true );
-    if ( NULL != nodeNamespaceRoot )
+    if ( GUCEF_NULL != nodeNamespaceRoot )
     {
         // Get the key-value combos from the attributes
         CDataNode::TAttributeMap::const_iterator i = nodeNamespaceRoot->AttributeBegin();
@@ -502,6 +534,7 @@ CValueList::GetAllPairs( const CString& seperatorStr ) const
             }
             
             resultStr += key + '=' + (*n);
+            ++n;
         }
         ++i;
     }

@@ -201,7 +201,7 @@ CConfigStore::SaveConfig( const CString& name ,
 /*-------------------------------------------------------------------------*/
 
 bool
-CConfigStore::LoadConfig( void )
+CConfigStore::LoadConfig( CDataNode* loadedConfig )
 {GUCEF_TRACE;
 
         GUCEF_SYSTEM_LOG( LOGLEVEL_NORMAL, "CConfigStore: Loading all config" );
@@ -226,7 +226,9 @@ CConfigStore::LoadConfig( void )
             if ( 0 != codec )
             {
                 CDataNode rootnode;
-                if ( codec->BuildDataTree( &rootnode   ,
+                if ( loadedConfig == GUCEF_NULL )
+                    loadedConfig = &rootnode;
+                if ( codec->BuildDataTree( loadedConfig ,
                                             _configfile ) )
                 {
                         GUCEF_SYSTEM_LOG( LOGLEVEL_BELOW_NORMAL, "CConfigStore: Used codec " + _codectype + " to successfully build a config data tree from file " + _configfile );
@@ -235,7 +237,7 @@ CConfigStore::LoadConfig( void )
                         TConfigurableSet::iterator i = _configobjs.begin();
                         while ( i != _configobjs.end() )
                         {
-                            if ( !(*i)->LoadConfig( rootnode ) )
+                            if ( !(*i)->LoadConfig( *loadedConfig ) )
                             {
                                 errorOccured = true;
                                 GUCEF_ERROR_LOG( LOGLEVEL_IMPORTANT, "CConfigStore: Loading of config failed for a configureable" );

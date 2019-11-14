@@ -31,11 +31,6 @@
 #define GUCEF_CORE_CDSTORECODEC_H
 #endif /* GUCEF_CORE_CDSTORECODEC_H ? */
 
-#ifndef GUCEF_CORE_CINIPARSER_H
-#include "gucefCORE_CIniParser.h"
-#define GUCEF_CORE_CINIPARSER_H
-#endif /* GUCEF_CORE_CINIPARSER_H ? */
-
 /*-------------------------------------------------------------------------//
 //                                                                         //
 //      NAMESPACE                                                          //
@@ -156,9 +151,6 @@ class GUCEF_CORE_PUBLIC_CPP CIniDataStoreCodec : public CDStoreCodec
     CIniDataStoreCodec( const CIniDataStoreCodec& src );             /**< no sense in an copied codec */
     CIniDataStoreCodec& operator=( const CIniDataStoreCodec& src );  /**< no sense in an copied codec */
     
-    private:
-    
-    CIniParser m_iniParser;
 };
 
 /*-------------------------------------------------------------------------//
