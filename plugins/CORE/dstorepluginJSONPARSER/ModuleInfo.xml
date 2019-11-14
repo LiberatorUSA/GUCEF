@@ -5,9 +5,11 @@
             <Dependency Name="gucefMT" />
             <Dependency Name="gucefCORE" />
             <Dependency Name="jsonparser" />
+			<Dependency Name="jsonbuilder" />
         </Dependencies>
         <Linker>
             <Dependency Name="jsonparser" />
+			<Dependency Name="jsonbuilder" />
         </Linker>
         <Preprocessor>
             <Define String="DSTOREPLUGINJSONPARSER_BUILD_MODULE" />

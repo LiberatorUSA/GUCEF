@@ -102,6 +102,7 @@ DSTOREPLUG_EXPORT_C void GUCEF_PLUGIN_CALLSPEC_PREFIX
 DSTOREPLUG_Begin_Node_Store( void** plugdata      , 
                              void** filedata      , 
                              const char* nodename , 
+                             Int32 nodeType       ,
                              UInt32 attscount     ,
                              UInt32 haschildren   ) GUCEF_PLUGIN_CALLSPEC_SUFFIX;
 
@@ -124,6 +125,7 @@ DSTOREPLUG_Store_Node_Att( void** plugdata      ,
                            UInt32 attindex      , 
                            const char* attname  , 
                            const char* attvalue ,
+                           int atttype          ,
                            UInt32 haschildren   ) GUCEF_PLUGIN_CALLSPEC_SUFFIX;
                            
 /*---------------------------------------------------------------------------*/

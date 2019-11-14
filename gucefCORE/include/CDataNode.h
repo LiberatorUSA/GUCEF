@@ -62,16 +62,22 @@ class GUCEF_CORE_PUBLIC_CPP CDataNode
 {
     public:
 
+    struct SValue
+    {
+        CString value;
+        int type;
+    };
+    typedef struct SValue TValue;
     typedef std::vector< CString > TStringVector;
     typedef std::set< CString > TStringSet;
-    typedef std::pair< const CString, CString > TKeyValuePair;
+    typedef std::pair< const CString, TValue > TKeyValuePair;
     typedef std::set< CDataNode* > TDataNodeSet;
     typedef std::list< CDataNode* > TDataNodeList;
     typedef std::vector< CDataNode* > TDataNodeVector;
     typedef std::set< const CDataNode* > TConstDataNodeSet;
-    typedef std::map< CString, CString > TAttributeMap;
+    typedef std::map< CString, TValue > TAttributeMap;
 
-    CDataNode( void );
+    CDataNode( int nodeType = GUCEF_DATATYPE_OBJECT );
 
     /**
      *      Constructs a datanode with the given name
@@ -79,7 +85,8 @@ class GUCEF_CORE_PUBLIC_CPP CDataNode
      *
      *      @param name The name of the node
      */
-    CDataNode( const CString& name );
+    CDataNode( const CString& name                  ,
+               int nodeType = GUCEF_DATATYPE_OBJECT );
 
     /**
      *      Constructs a datanode tree that is an excact duplicate
@@ -146,6 +153,12 @@ class GUCEF_CORE_PUBLIC_CPP CDataNode
      */
     const CString& GetValue( void ) const;
 
+    void SetValueType( int typeId );
+
+    int GetValueType( void ) const;
+    
+    int GetNodeType( void ) const;
+
     bool IsAttribute( const CString& name ) const;
 
     const TKeyValuePair* operator[]( UInt32 index ) const;
@@ -168,8 +181,9 @@ class GUCEF_CORE_PUBLIC_CPP CDataNode
     
     CString GetAttributeValue( const CString& name, const CString& defaultValue ) const;
 
-    bool SetAttribute( const CString& name  ,
-                       const CString& value );
+    bool SetAttribute( const CString& name                     ,
+                       const CString& value                    ,
+                       int typeOfValue = GUCEF_DATATYPE_STRING );
 
     void DelAttribute( const CString& name );
 
@@ -351,7 +365,8 @@ class GUCEF_CORE_PUBLIC_CPP CDataNode
      *  @param nodeName name of the new child node
      *  @return pointer to the new child.
      */
-    CDataNode* AddChild( const CString& nodeName );
+    CDataNode* AddChild( const CString& nodeName              , 
+                         int nodeType = GUCEF_DATATYPE_OBJECT );
 
     bool DelChild( const CString& name );
 
@@ -486,8 +501,9 @@ class GUCEF_CORE_PUBLIC_CPP CDataNode
 
     bool AddAttribute( const TKeyValuePair& att );
 
-    bool AddAttribute( const CString& name  ,
-                       const CString& value );
+    bool AddAttribute( const CString& name                     ,
+                       const CString& value                    ,
+                       int typeOfValue = GUCEF_DATATYPE_STRING );
 
     TDataNodeVector WalkTreeImp( CString& sleftover ,
                                  char seperator     ) const;
@@ -496,9 +512,10 @@ class GUCEF_CORE_PUBLIC_CPP CDataNode
     void DetachChild( CDataNode* child ); /**< detaches the given child node */
 
     
-
+    int m_nodeType;       /**< metadata encoding the type of the node */
     CString _name;        /**< name of the node */
     CString m_value;      /**< simplistic value field of the node */
+    int m_typeOfValue;    /**< metadata encoding the type of the value field */
     TAttributeMap _atts;  /**< list of node attributes */
     CDataNode* _pparent;  /**< parent node */
     TDataNodeList m_children; /**< child nodes */

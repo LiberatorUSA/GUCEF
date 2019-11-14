@@ -1,0 +1,7 @@
+<ModuleInfoEntry>
+    <Module Name="jsonbuilder" Type="StaticLibrary" Platform="All">
+        <Dependencies>
+            <Dependency Name="jsonparser" />
+        </Dependencies>
+    </Module>
+</ModuleInfoEntry>

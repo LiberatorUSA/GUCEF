@@ -164,32 +164,33 @@ ParsifalElementStart( void* userdata         ,
                       const XMLCH *qname     ,
                       LPXMLVECTOR atts       )
 {
-        Int32 i;
-        LPXMLRUNTIMEATT att;
+    Int32 i;
+    LPXMLRUNTIMEATT att;
 
-        TSrcFileData* sd = (TSrcFileData*) userdata;
+    TSrcFileData* sd = (TSrcFileData*) userdata;
 
-        (*sd->handlers.OnNodeBegin)( sd->privdata, qname );
-        if ( atts->length )
+    (*sd->handlers.OnNodeBegin)( sd->privdata, qname, GUCEF_DATATYPE_OBJECT );
+    if ( atts->length )
+    {
+        for ( i=0; i<atts->length; ++i )
         {
-                for ( i=0; i<atts->length; ++i )
-                {
-                        att = (LPXMLRUNTIMEATT) XMLVector_Get( atts, i );
-                        (*sd->handlers.OnNodeAtt)( sd->privdata ,
-                                                   qname        ,
-                                                   att->qname   ,
-                                                   att->value   );
-                }
+            att = (LPXMLRUNTIMEATT) XMLVector_Get( atts, i );
+            (*sd->handlers.OnNodeAtt)( sd->privdata           ,
+                                        qname                 ,
+                                        att->qname            ,
+                                        att->value            ,
+                                        GUCEF_DATATYPE_STRING );
         }
-        return XML_OK;
+    }
+    return XML_OK;
 }
 
 /*---------------------------------------------------------------------------*/
 
 void
-GaranteeMinBufferSize( char** destBuffer        ,
-                       UInt32* destBufferLength ,
-                       UInt32 desiredSize       )
+GuaranteeMinBufferSize( char** destBuffer        ,
+                        UInt32* destBufferLength ,
+                        UInt32 desiredSize       )
 {
     if ( NULL != destBuffer && NULL != destBufferLength )
     {
@@ -240,7 +241,7 @@ HandleEscapeCharacterSet( const char* srcStr         ,
     }
 
     *strLen = srcStrLen-replCount+replSize;
-    GaranteeMinBufferSize( destBuffer, destBufferLength, (*strLen)+1 );
+    GuaranteeMinBufferSize( destBuffer, destBufferLength, (*strLen)+1 );
     bufferPtr = *destBuffer;
     memset( bufferPtr, 0, (*strLen)+1 );
 
@@ -335,10 +336,11 @@ ParsifalElementEnd( void* userdata         ,
 
         if ( len > 0 )
         {
-            (*sd->handlers.OnNodeAtt)( sd->privdata ,
-                                       qname        ,
-                                       0            ,
-                                       text         );
+            (*sd->handlers.OnNodeAtt)( sd->privdata          ,
+                                       qname                 ,
+                                       0                     ,
+                                       text                  ,
+                                       GUCEF_DATATYPE_STRING );
         }
 
         /* we'll reuse Stringbuf just setting its length to 0: */
@@ -429,6 +431,7 @@ void GUCEF_PLUGIN_CALLSPEC_PREFIX
 DSTOREPLUG_Begin_Node_Store( void** plugdata      ,
                              void** filedata      ,
                              const char* nodename ,
+                             Int32 nodeType       ,
                              UInt32 attscount     ,
                              UInt32 haschildren   ) GUCEF_PLUGIN_CALLSPEC_SUFFIX
 {
@@ -510,6 +513,7 @@ DSTOREPLUG_Store_Node_Att( void** plugdata      ,
                            UInt32 attindex      ,
                            const char* attname  ,
                            const char* attvalue ,
+                           int atttype          ,
                            UInt32 haschildren   ) GUCEF_PLUGIN_CALLSPEC_SUFFIX
 {
     TDestFileData* fd = (TDestFileData*)*filedata;

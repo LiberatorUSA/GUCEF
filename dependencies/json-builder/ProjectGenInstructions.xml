@@ -1,0 +1,9 @@
+<PROJECTGENERATOR>
+    <EXCLUDES PLATFORM="All">
+		<ITEM NAME="*" />
+	</EXCLUDES>
+	<INCLUDES PLATFORM="All">
+		<ITEM NAME="json-builder.c" TYPE="FILE" />
+		<ITEM NAME="json-builder.h" TYPE="FILE" />
+    </INCLUDES>
+</PROJECTGENERATOR>

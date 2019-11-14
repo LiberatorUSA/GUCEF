@@ -172,7 +172,7 @@ CValueList::LoadConfig( const CDataNode& treeroot )
         CDataNode::TAttributeMap::const_iterator i = nodeNamespaceRoot->AttributeBegin();
         while ( i != nodeNamespaceRoot->AttributeEnd() )
         {
-            Set( (*i).first, (*i).second );
+            Set( (*i).first, (*i).second.value );
             ++i;
         }
 

@@ -722,17 +722,17 @@ CSysConsole::LoadConfig( const CDataNode& treeroot )
                 const GUCEF::CORE::CDataNode::TKeyValuePair* att = m->GetAttribute( "name" );
                 if ( att != NULL )
                 {
-                    CString aliasName = att->second;
+                    CString aliasName = att->second.value;
                     att = m->GetAttribute( "path" );
                     if ( att != NULL )
                     {
-                        CString path = att->second;
+                        CString path = att->second.value;
                         att = m->GetAttribute( "function" );
                         if ( att != NULL )
                         {
-                            RegisterAlias( aliasName   ,
-                                           path        ,
-                                           att->second );
+                            RegisterAlias( aliasName         ,
+                                           path              ,
+                                           att->second.value );
                         }
                     }
                 }

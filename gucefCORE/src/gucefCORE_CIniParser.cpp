@@ -289,7 +289,7 @@ CIniParser::LoadFrom( const CDataNode& node       ,
                 CDataNode::TAttributeMap::const_iterator i = node.AttributeBegin();
                 while ( i != node.AttributeEnd() )
                 {
-                    iniSection->sectionData.Set( (*i).first, (*i).second );
+                    iniSection->sectionData.Set( (*i).first, (*i).second.value );
                     ++i;
                 }
             }

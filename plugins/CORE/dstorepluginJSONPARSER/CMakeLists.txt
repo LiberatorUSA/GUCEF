@@ -30,66 +30,66 @@ set( ALL_FILES ${HEADER_FILES} ${SOURCE_FILES} ${PLATFORM_HEADER_FILES} ${PLATFO
 
 set( MODULE_NAME "dstorepluginJSONPARSER" )
 add_library( ${MODULE_NAME} ${ALL_FILES} )
-add_dependencies( ${MODULE_NAME} gucefCORE gucefMT jsonparser )
-target_link_libraries( ${MODULE_NAME} jsonparser )
+add_dependencies( ${MODULE_NAME} gucefCORE gucefMT jsonbuilder jsonparser )
+target_link_libraries( ${MODULE_NAME} jsonbuilder jsonparser )
 set_property( TARGET ${MODULE_NAME} APPEND_STRING PROPERTY COMPILE_DEFINITIONS "DSTOREPLUGINJSONPARSER_BUILD_MODULE" )
 
-include_directories( ../../../common/include ../../../dependencies/json-parser ../../../gucefCORE/include ../../../gucefMT/include include )
+include_directories( ../../../common/include ../../../dependencies/json-builder ../../../dependencies/json-parser ../../../gucefCORE/include ../../../gucefMT/include include )
 
 if ( ANDROID )
-  include_directories( ../../../dependencies/json-parser ../../../gucefCORE/include/android )
+  include_directories( ../../../dependencies/json-builder ../../../dependencies/json-parser ../../../gucefCORE/include/android )
 endif( ANDROID )
 
 if ( EMSCRIPTEN )
-  include_directories( ../../../dependencies/json-parser )
+  include_directories( ../../../dependencies/json-builder ../../../dependencies/json-parser )
 endif( EMSCRIPTEN )
 
 if ( GLX )
-  include_directories( ../../../dependencies/json-parser )
+  include_directories( ../../../dependencies/json-builder ../../../dependencies/json-parser )
 endif( GLX )
 
 if ( GTK )
-  include_directories( ../../../dependencies/json-parser )
+  include_directories( ../../../dependencies/json-builder ../../../dependencies/json-parser )
 endif( GTK )
 
 if ( IOS )
-  include_directories( ../../../dependencies/json-parser )
+  include_directories( ../../../dependencies/json-builder ../../../dependencies/json-parser )
 endif( IOS )
 
 if ( LINUX32 )
-  include_directories( ../../../dependencies/json-parser ../../../gucefCORE/include/linux )
+  include_directories( ../../../dependencies/json-builder ../../../dependencies/json-parser ../../../gucefCORE/include/linux )
 endif( LINUX32 )
 
 if ( LINUX64 )
-  include_directories( ../../../dependencies/json-parser ../../../gucefCORE/include/linux )
+  include_directories( ../../../dependencies/json-builder ../../../dependencies/json-parser ../../../gucefCORE/include/linux )
 endif( LINUX64 )
 
 if ( NACL )
-  include_directories( ../../../dependencies/json-parser )
+  include_directories( ../../../dependencies/json-builder ../../../dependencies/json-parser )
 endif( NACL )
 
 if ( OSX )
-  include_directories( ../../../dependencies/json-parser )
+  include_directories( ../../../dependencies/json-builder ../../../dependencies/json-parser )
 endif( OSX )
 
 if ( SDL )
-  include_directories( ../../../dependencies/json-parser )
+  include_directories( ../../../dependencies/json-builder ../../../dependencies/json-parser )
 endif( SDL )
 
 if ( SYMBIAN )
-  include_directories( ../../../dependencies/json-parser )
+  include_directories( ../../../dependencies/json-builder ../../../dependencies/json-parser )
 endif( SYMBIAN )
 
 if ( UNIX )
-  include_directories( ../../../dependencies/json-parser )
+  include_directories( ../../../dependencies/json-builder ../../../dependencies/json-parser )
 endif( UNIX )
 
 if ( WIN32 )
-  include_directories( ../../../dependencies/json-parser ../../../gucefCORE/include/mswin )
+  include_directories( ../../../dependencies/json-builder ../../../dependencies/json-parser ../../../gucefCORE/include/mswin )
 endif( WIN32 )
 
 if ( WIN64 )
-  include_directories( ../../../dependencies/json-parser ../../../gucefCORE/include/mswin )
+  include_directories( ../../../dependencies/json-builder ../../../dependencies/json-parser ../../../gucefCORE/include/mswin )
 endif( WIN64 )
 
 

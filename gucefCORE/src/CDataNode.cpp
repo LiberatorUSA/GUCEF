@@ -45,38 +45,44 @@ namespace CORE {
 //                                                                         //
 //-------------------------------------------------------------------------*/
 
-CDataNode::CDataNode( void )
-        : _pparent( NULL ) ,
-          m_children()     ,
-          _pnext( NULL )   ,
-          _pprev( NULL )   ,
-          _name()          ,
-          m_value()
+CDataNode::CDataNode( int nodeType )
+    : m_nodeType( nodeType )
+    , _pparent( NULL ) 
+    , m_children()     
+    , _pnext( NULL )   
+    , _pprev( NULL )   
+    , _name()          
+    , m_value()
+    , m_typeOfValue( MT::DATATYPE_STRING )
 {GUCEF_TRACE;
 }
 
 /*-------------------------------------------------------------------------*/
 
-CDataNode::CDataNode( const CString& name )
-        : _name( name )    ,
-          m_value()        ,
-          _pparent( NULL ) ,
-          m_children()     ,
-          _pnext( NULL )   ,
-          _pprev( NULL )
+CDataNode::CDataNode( const CString& name, int nodeType )
+    : m_nodeType( nodeType )
+    , _name( name )    
+    , m_value()
+    , m_typeOfValue( MT::DATATYPE_STRING )        
+    , _pparent( NULL ) 
+    , m_children()     
+    , _pnext( NULL )   
+    , _pprev( NULL )
 {GUCEF_TRACE;
 }
 
 /*-------------------------------------------------------------------------*/
 
 CDataNode::CDataNode( const CDataNode& src )
-        : _name( src._name )       ,
-          m_value( src.m_value )   ,
-          _atts( src._atts )       ,
-          _pparent( src._pparent ) ,
-          _pnext( src._pnext )     ,
-          _pprev( src._pprev )     ,
-          m_children()
+    : m_nodeType( src.m_nodeType )
+    , _name( src._name )       
+    , m_value( src.m_value ) 
+    , m_typeOfValue( src.m_typeOfValue )  
+    , _atts( src._atts )       
+    , _pparent( src._pparent ) 
+    , _pnext( src._pnext )     
+    , _pprev( src._pprev )     
+    , m_children()
 {GUCEF_TRACE;
     
     TDataNodeList::const_iterator n = src.m_children.cbegin();
@@ -102,6 +108,7 @@ void
 CDataNode::Clear( void )
 {GUCEF_TRACE;
 
+    m_nodeType = GUCEF_DATATYPE_OBJECT;
     _name.Clear();
     m_value.Clear();
     DelSubTree();
@@ -165,8 +172,10 @@ CDataNode::operator=( const CDataNode& src )
         Detach();
         DelSubTree();
         
+        m_nodeType = src.m_nodeType;
         _name = src._name;
         m_value = src.m_value;
+        m_typeOfValue = src.m_typeOfValue;
         _atts = src._atts;
 
     }               
@@ -216,6 +225,33 @@ const CString&
 CDataNode::GetValue( void ) const
 {
     return m_value;
+}
+
+/*-------------------------------------------------------------------------*/
+
+void 
+CDataNode::SetValueType( int typeId )
+{GUCEF_TRACE;
+
+    m_typeOfValue = typeId;
+}
+
+/*-------------------------------------------------------------------------*/
+
+int 
+CDataNode::GetValueType( void ) const
+{GUCEF_TRACE;
+
+    return m_typeOfValue;
+}
+
+/*-------------------------------------------------------------------------*/
+
+int 
+CDataNode::GetNodeType( void ) const
+{GUCEF_TRACE;
+
+    return m_nodeType;
 }
 
 /*-------------------------------------------------------------------------*/
@@ -349,7 +385,7 @@ CDataNode::GetAttributeValue( const CString& name         ,
     TAttributeMap::const_iterator i = _atts.find( name );
     if ( i != _atts.end() )
     {
-        return (*i).second;
+        return (*i).second.value;
     }
     return defaultValue;
 }
@@ -387,13 +423,16 @@ CDataNode::AddAttribute( const TKeyValuePair& att )
         
 bool 
 CDataNode::AddAttribute( const CString& name  ,
-                         const CString& value )
+                         const CString& value ,
+                         int typeOfValue      )
 {GUCEF_TRACE;
 
     TAttributeMap::iterator i = _atts.find( name );
     if ( i == _atts.end() )
     {
-        _atts.insert( TKeyValuePair( name, value ) );
+        auto& att = _atts[ name ]; 
+        att.value = value;
+        att.type = typeOfValue;
         return true;
     }
     return false;                       
@@ -403,10 +442,13 @@ CDataNode::AddAttribute( const CString& name  ,
 
 bool 
 CDataNode::SetAttribute( const CString& name  ,
-                         const CString& value )
+                         const CString& value ,
+                         int typeOfValue      )
 {GUCEF_TRACE;
 
-    _atts[ name ] = value;
+    auto& att = _atts[ name ];
+    att.value = value;
+    att.type = typeOfValue;
     return true;                      
 }
 
@@ -567,7 +609,7 @@ CDataNode::FindChild( const CString& name        ,
             if ( att != NULL )
             {
                 // See if the node attribute has the value we want
-                if ( att->second == attribValue )
+                if ( att->second.value == attribValue )
                 {
                     return (*i);
                 }
@@ -606,7 +648,7 @@ CDataNode::Compare( const CDataNode& other        ,
                             att2 = GetAttribute( att->first );
                             if ( att2 )
                             {
-                                if ( att->second != att2->second )
+                                if ( att->second.value != att2->second.value )
                                 {
                                         return false;
                                 }
@@ -1183,9 +1225,9 @@ CDataNode::AddChild( const CDataNode& newnode )
 /*-------------------------------------------------------------------------*/
 
 CDataNode*
-CDataNode::AddChild( const CString& nodeName )
+CDataNode::AddChild( const CString& nodeName, int nodeType )
 {
-    CDataNode newNode( nodeName );
+    CDataNode newNode( nodeName, nodeType );
     return AddChild( newNode );
 }
 

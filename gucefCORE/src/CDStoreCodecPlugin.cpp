@@ -125,9 +125,9 @@ typedef const char* ( GUCEF_PLUGIN_CALLSPEC_PREFIX *TDSTOREPLUGFPTR_Type )      
 
 typedef UInt32 ( GUCEF_PLUGIN_CALLSPEC_PREFIX *TDSTOREPLUGFPTR_Dest_File_Open )      ( void** plugdata, void** filedata, TIOAccess* file ) GUCEF_PLUGIN_CALLSPEC_SUFFIX;
 typedef void ( GUCEF_PLUGIN_CALLSPEC_PREFIX *TDSTOREPLUGFPTR_Dest_File_Close )       ( void** plugdata, void** filedata ) GUCEF_PLUGIN_CALLSPEC_SUFFIX;
-typedef void ( GUCEF_PLUGIN_CALLSPEC_PREFIX *TDSTOREPLUGFPTR_Begin_Node_Store )      ( void** plugdata, void** filedata, const char* nodename, UInt32 attscount, UInt32 haschildren ) GUCEF_PLUGIN_CALLSPEC_SUFFIX;
+typedef void ( GUCEF_PLUGIN_CALLSPEC_PREFIX *TDSTOREPLUGFPTR_Begin_Node_Store )      ( void** plugdata, void** filedata, const char* nodename, int nodeType, UInt32 attscount, UInt32 haschildren ) GUCEF_PLUGIN_CALLSPEC_SUFFIX;
 typedef void ( GUCEF_PLUGIN_CALLSPEC_PREFIX *TDSTOREPLUGFPTR_End_Node_Store )        ( void** plugdata, void** filedata, const char* nodename, UInt32 attscount, UInt32 haschildren ) GUCEF_PLUGIN_CALLSPEC_SUFFIX;
-typedef void ( GUCEF_PLUGIN_CALLSPEC_PREFIX *TDSTOREPLUGFPTR_Store_Node_Att )        ( void** plugdata, void** filedata, const char* nodename, UInt32 attscount, UInt32 attindex, const char* attname, const char* attvalue, UInt32 haschildren ) GUCEF_PLUGIN_CALLSPEC_SUFFIX;
+typedef void ( GUCEF_PLUGIN_CALLSPEC_PREFIX *TDSTOREPLUGFPTR_Store_Node_Att )        ( void** plugdata, void** filedata, const char* nodename, UInt32 attscount, UInt32 attindex, const char* attname, const char* attvalue, int atttype, UInt32 haschildren ) GUCEF_PLUGIN_CALLSPEC_SUFFIX;
 typedef void ( GUCEF_PLUGIN_CALLSPEC_PREFIX *TDSTOREPLUGFPTR_Begin_Node_Children )   ( void** plugdata, void** filedata, const char* nodename ) GUCEF_PLUGIN_CALLSPEC_SUFFIX;
 typedef void ( GUCEF_PLUGIN_CALLSPEC_PREFIX *TDSTOREPLUGFPTR_End_Node_Children )     ( void** plugdata, void** filedata, const char* nodename ) GUCEF_PLUGIN_CALLSPEC_SUFFIX;
 
@@ -164,15 +164,15 @@ OnTreeEndHandler( void* privdata ) GUCEF_PLUGIN_CALLSPEC_SUFFIX
 
 void GUCEF_PLUGIN_CALLSPEC_PREFIX
 OnNodeBeginHandler( void* privdata       ,
-                    const char* nodename ) GUCEF_PLUGIN_CALLSPEC_SUFFIX
+                    const char* nodename ,
+                    int nodeType         ) GUCEF_PLUGIN_CALLSPEC_SUFFIX
 {GUCEF_TRACE;
         TParserData* pd = static_cast<TParserData*>(privdata);
         if ( pd )
         {
                 if ( pd->curnode )
                 {
-                        CDataNode newchild( nodename );
-                        pd->curnode = pd->curnode->AddChild( newchild );
+                        pd->curnode = pd->curnode->AddChild( nodename, nodeType );
                         return;
                 }
 
@@ -206,7 +206,8 @@ void GUCEF_PLUGIN_CALLSPEC_PREFIX
 OnNodeAttHandler( void* privdata       ,
                   const char* nodename ,
                   const char* attname  ,
-                  const char* attvalue ) GUCEF_PLUGIN_CALLSPEC_SUFFIX
+                  const char* attvalue ,
+                  int atttype          ) GUCEF_PLUGIN_CALLSPEC_SUFFIX
 {GUCEF_TRACE;
 
     TParserData* pd = static_cast<TParserData*>(privdata);
@@ -314,13 +315,13 @@ CDStoreCodecPlugin::Link( void* modulePtr                   ,
                                                                      2*sizeof(void*)              ).funcPtr;
         _fptable[ DSTOREPLUG_BEGIN_NODE_STORE ] = GetFunctionAddress( _sohandle                    ,
                                                                      "DSTOREPLUG_Begin_Node_Store" ,
-                                                                     3*sizeof(void*)+8             ).funcPtr;
+                                                                     3*sizeof(void*)+12            ).funcPtr;
         _fptable[ DSTOREPLUG_END_NODE_STORE ] = GetFunctionAddress( _sohandle                   ,
                                                                     "DSTOREPLUG_End_Node_Store" ,
                                                                     3*sizeof(void*)+8           ).funcPtr;
         _fptable[ DSTOREPLUG_STORE_NODE_ATT ] = GetFunctionAddress( _sohandle                   ,
                                                                     "DSTOREPLUG_Store_Node_Att" ,
-                                                                    5*sizeof(void*)+12          ).funcPtr;
+                                                                    5*sizeof(void*)+16          ).funcPtr;
         _fptable[ DSTOREPLUG_BEGIN_NODE_CHILDREN ] = GetFunctionAddress( _sohandle                        ,
                                                                          "DSTOREPLUG_Begin_Node_Children" ,
                                                                          3*sizeof(void*)                  ).funcPtr;
@@ -465,6 +466,8 @@ void
 CDStoreCodecPlugin::StoreNode( const CDataNode* n ,
                                void** filedata    )
 {GUCEF_TRACE;
+        
+        int nodeType( n->GetNodeType() );
         UInt32 count( n->GetAttCount() );
         const char* name( n->GetName().C_String() );
         const CDataNode::TKeyValuePair* att;
@@ -475,6 +478,7 @@ CDStoreCodecPlugin::StoreNode( const CDataNode* n ,
         ((TDSTOREPLUGFPTR_Begin_Node_Store)_fptable[ DSTOREPLUG_BEGIN_NODE_STORE ] )( &_plugdata       ,
                                                                                       filedata         ,
                                                                                       name             ,
+                                                                                      nodeType         ,
                                                                                       count            ,
                                                                                       n->HasChildren() );
 
@@ -490,7 +494,8 @@ CDStoreCodecPlugin::StoreNode( const CDataNode* n ,
                                                                                          count                  ,
                                                                                          i                      ,
                                                                                          att->first.C_String()  ,
-                                                                                         att->second.C_String() ,
+                                                                                         att->second.value.C_String() ,
+                                                                                         att->second.type       ,
                                                                                          n->HasChildren()       );
         }
 
