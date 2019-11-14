@@ -48,6 +48,15 @@ namespace CORE {
 //                                                                         //
 //-------------------------------------------------------------------------*/
 
+// Get rid of compiler warning for MVC compiler:
+//      warning C4275: non dll-interface class 'std::exception' used as base for dll-interface class 'GUCEF::CORE::CException'
+#ifdef _MSC_VER
+    #pragma warning( push )
+    #pragma warning( disable : 4275 )
+#endif
+
+/*-------------------------------------------------------------------------*/
+
 /**
  *  Generic exception class.
  *  Can be used to throw an exception that does not provide any additional information
@@ -84,6 +93,12 @@ class GUCEF_CORE_PUBLIC_CPP CException : public std::exception
     const char* m_originFile;
     Int32 m_originLineNr;
 };
+
+/*-------------------------------------------------------------------------*/
+
+#ifdef _MSC_VER
+    #pragma warning( pop )
+#endif
 
 /*-------------------------------------------------------------------------//
 //                                                                         //
