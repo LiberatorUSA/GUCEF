@@ -246,7 +246,7 @@ CRocketGuiDriver::GetDriverProperty( const GUI::CString& propertyName ) const
 /*-------------------------------------------------------------------------*/
 
 bool
-CRocketGuiDriver::SaveConfig( CORE::CDataNode& tree )
+CRocketGuiDriver::SaveConfig( CORE::CDataNode& tree ) const
 {GUCEF_TRACE;
 
     return false;

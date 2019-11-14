@@ -186,7 +186,7 @@ CCEGUIDriver::DestroyFormBackend( GUI::CFormBackend* formBackend )
 /*-------------------------------------------------------------------------*/
 
 bool
-CCEGUIDriver::SaveConfig( CORE::CDataNode& tree )
+CCEGUIDriver::SaveConfig( CORE::CDataNode& tree ) const
 {GUCEF_TRACE;
 
     return false;

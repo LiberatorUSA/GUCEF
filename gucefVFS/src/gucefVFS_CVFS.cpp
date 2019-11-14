@@ -604,7 +604,7 @@ CVFS::GetMemloadSize( void ) const
 /*-------------------------------------------------------------------------*/
 
 bool
-CVFS::SaveConfig( CORE::CDataNode& tree )
+CVFS::SaveConfig( CORE::CDataNode& tree ) const
 {GUCEF_TRACE;
 
     CORE::CDataNode* n = tree.Structure( "GUCEF%VFS%CVFS" ,

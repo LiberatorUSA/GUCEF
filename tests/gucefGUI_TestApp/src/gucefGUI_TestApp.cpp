@@ -177,7 +177,7 @@ class CGucefGuiTestAppSettings : public CORE::CIConfigurable
 
     /*-------------------------------------------------------------*/
 
-    virtual bool SaveConfig( CORE::CDataNode& tree )
+    virtual bool SaveConfig( CORE::CDataNode& tree ) const
     {
         return true;
     }

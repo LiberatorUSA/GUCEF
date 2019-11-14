@@ -150,6 +150,15 @@ CURLDataRetriever::SetFileAsStorage( const CString& filePath )
 
 /*-------------------------------------------------------------------------*/
     
+const CURL&
+CURLDataRetriever::GetURL( void ) const
+{GUCEF_TRACE;
+
+    return m_url;
+}
+
+/*-------------------------------------------------------------------------*/
+    
 CURL&
 CURLDataRetriever::GetURL( void )
 {GUCEF_TRACE;

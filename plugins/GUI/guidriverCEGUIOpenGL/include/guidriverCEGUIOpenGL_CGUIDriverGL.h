@@ -94,7 +94,7 @@ class GUCEF_GUIDRIVERCEGUIGL_EXPORT_CPP CGUIDriverGL : public GUCEF::GUIDRIVERCE
      *      @param tree the data tree you wish to store
      *      @return wheter storing the tree was successfull
      */
-    virtual bool SaveConfig( CORE::CDataNode& tree );
+    virtual bool SaveConfig( CORE::CDataNode& tree ) const;
 
     /**
      *      Attempts to load data from the given file to the

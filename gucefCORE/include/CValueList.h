@@ -215,7 +215,7 @@ class GUCEF_CORE_PUBLIC_CPP CValueList : public CIConfigurable
     /**
      *      Attempts to store the given tree in the value list
      */
-    virtual bool SaveConfig( CDataNode& tree );
+    virtual bool SaveConfig( CDataNode& tree ) const;
 
     /**
      *      Attempts to load data 

@@ -46,7 +46,7 @@ namespace COMCORE {
 //                                                                         //
 //-------------------------------------------------------------------------*/
 
-typedef enum TSocketError
+enum ESocketError
 {
         SOCKERR_NO_ERROR = 0      ,
         SOCKERR_INTERNAL_ERROR    ,
@@ -59,6 +59,7 @@ typedef enum TSocketError
         SOCKERR_CANT_OPEN_SOCKET  
         
 };
+typedef enum ESocketError TSocketError;
 
 /*-------------------------------------------------------------------------//
 //                                                                         //

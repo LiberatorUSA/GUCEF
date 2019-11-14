@@ -110,12 +110,12 @@ CWindowManager::GetListOfAvailableBackends( TWindowManagerBackendMap& map )
 /*-------------------------------------------------------------------------*/
 
 bool
-CWindowManager::SaveConfig( CORE::CDataNode& config )
+CWindowManager::SaveConfig( CORE::CDataNode& config ) const
 {GUCEF_TRACE;
 
     bool overallSuccess = true;
     m_lock.Lock();
-    TWindowManagerBackendMap::iterator i = m_backends.begin();
+    TWindowManagerBackendMap::const_iterator i = m_backends.begin();
     while ( i != m_backends.end() )
     {
         bool success = (*i).second->SaveConfig( config );

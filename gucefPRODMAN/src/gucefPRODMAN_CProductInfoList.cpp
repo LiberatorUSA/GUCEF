@@ -100,7 +100,7 @@ CProductInfoList::operator=( const CProductInfoList& src )
 /*-------------------------------------------------------------------------*/
 
 bool
-CProductInfoList::SaveConfig( GUCEF::CORE::CDataNode& node )
+CProductInfoList::SaveConfig( GUCEF::CORE::CDataNode& node ) const
 {GUCEF_TRACE;
 
     // @TODO @MAKEME

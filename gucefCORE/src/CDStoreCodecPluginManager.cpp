@@ -126,7 +126,7 @@ CDStoreCodecPluginManager::GetCodec( const CString& codectype ) const
 /*-------------------------------------------------------------------------*/
 //
 //bool
-//CDStoreCodecPluginManager::SaveConfig( CDataNode& tree )
+//CDStoreCodecPluginManager::SaveConfig( CDataNode& tree ) const
 //{GUCEF_TRACE;
 //
 //    _datalock.Lock();

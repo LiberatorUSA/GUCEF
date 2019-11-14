@@ -83,7 +83,7 @@ class GUCEF_PATCHER_EXPORT_CPP CPatchConfig : public CORE::CIConfigurable
     
     CPatchConfig& operator=( const CPatchConfig& src );
     
-    virtual bool SaveConfig( CORE::CDataNode& tree );
+    virtual bool SaveConfig( CORE::CDataNode& tree ) const;
                                    
     virtual bool LoadConfig( const CORE::CDataNode& treeroot );
     

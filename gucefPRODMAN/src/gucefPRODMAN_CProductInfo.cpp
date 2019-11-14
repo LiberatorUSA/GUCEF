@@ -377,7 +377,7 @@ CProductInfo::StringToDeploymentState( const CString& deploymentState )
 /*-------------------------------------------------------------------------*/
 
 bool
-CProductInfo::SaveConfig( GUCEF::CORE::CDataNode& node )
+CProductInfo::SaveConfig( GUCEF::CORE::CDataNode& node ) const
 {GUCEF_TRACE;
 
     GUCEF::CORE::CDataNode newNode( "ProductInfo" );

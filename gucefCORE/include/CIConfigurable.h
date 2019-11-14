@@ -82,7 +82,7 @@ class GUCEF_CORE_PUBLIC_CPP CIConfigurable
      *      @param tree the data tree you wish to store
      *      @return wheter storing the tree was successfull
      */
-    virtual bool SaveConfig( CDataNode& tree ) = 0;
+    virtual bool SaveConfig( CDataNode& tree ) const = 0;
 
     /**
      *      Attempts to load data from the given file to the

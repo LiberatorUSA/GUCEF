@@ -74,7 +74,7 @@ class GUCEF_PRODMAN_PUBLIC_CPP CProductInfoList : public CORE::CIConfigurable
 
     CProductInfoList& operator=( const CProductInfoList& src );
 
-    virtual bool SaveConfig( CORE::CDataNode& node );
+    virtual bool SaveConfig( CORE::CDataNode& node ) const;
                                 
     virtual bool LoadConfig( const CORE::CDataNode& node );
     

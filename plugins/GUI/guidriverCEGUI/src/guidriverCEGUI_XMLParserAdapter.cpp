@@ -92,7 +92,7 @@ XMLParserAdapter::parseDataNodes( ::CEGUI::XMLHandler& handler     ,
     CORE::CDataNode::TAttributeMap::const_iterator a = dataNodes.AttributeBegin();
     while ( a != dataNodes.AttributeEnd() )
     {
-        attrs.add( (*a).first, (*a).second );
+        attrs.add( (*a).first, (*a).second.value );
         ++a;
     }
 

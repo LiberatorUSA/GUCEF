@@ -146,7 +146,7 @@ class GUCEF_CORE_PUBLIC_CPP CGUCEFApplication : public CNotifier             ,
      *      @param tree the data tree you wish to store
      *      @return whether storing the tree was successful
      */
-    virtual bool SaveConfig( CDataNode& tree );
+    virtual bool SaveConfig( CDataNode& tree ) const;
 
     /**
      *      Attempts to load data from the given file to the
@@ -167,9 +167,9 @@ class GUCEF_CORE_PUBLIC_CPP CGUCEFApplication : public CNotifier             ,
                                       const std::vector< CString >& args ,
                                       std::vector< CString >& resultdata );
 
-    virtual void LockData( void );
+    virtual void LockData( void ) const;
 
-    virtual void UnlockData( void );
+    virtual void UnlockData( void ) const;
 
     private:
     friend class CCoreGlobal;
@@ -191,7 +191,7 @@ class GUCEF_CORE_PUBLIC_CPP CGUCEFApplication : public CNotifier             ,
     CString _appdir;
     CPulseGenerator m_pulseGenerator;
     CBusyWaitPulseGeneratorDriver m_busyWaitPulseDriver;
-    MT::CMutex m_mutex;
+    mutable MT::CMutex m_mutex;
 };
 
 

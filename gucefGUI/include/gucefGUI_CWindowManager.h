@@ -70,7 +70,7 @@ class GUCEF_GUI_PUBLIC_CPP CWindowManager : public CORE::CObservingNotifier ,
 
     void GetListOfAvailableBackends( TWindowManagerBackendMap& map );
 
-    virtual bool SaveConfig( CORE::CDataNode& config );
+    virtual bool SaveConfig( CORE::CDataNode& config ) const;
 
     virtual bool LoadConfig( const CORE::CDataNode& config );
 

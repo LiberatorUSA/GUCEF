@@ -105,11 +105,11 @@ CWindowManagerBackend::CreateWindowContextViaConfig( const GUCEF::CORE::CDataNod
         bool fullscreen( false );                        
             
         att = n->GetAttribute( "width" );
-        if ( att ) width = att->second.GetInt();
+        if ( att ) width = att->second.value.GetInt();
         att = n->GetAttribute( "height" );        
-        if ( att ) height = att->second.GetInt();
+        if ( att ) height = att->second.value.GetInt();
         att = n->GetAttribute( "fullscreen" );
-        if ( att ) fullscreen = CORE::StringToBool( att->second );
+        if ( att ) fullscreen = CORE::StringToBool( att->second.value );
             
         const CORE::CDataNode::TKeyValuePair* att2;
         const CORE::CString name( "name" );
@@ -128,7 +128,7 @@ CWindowManagerBackend::CreateWindowContextViaConfig( const GUCEF::CORE::CDataNod
                     att2 = cn->GetAttribute( value );
                     if ( NULL != att2 )
                     {
-                        valuelist[ att->second ] = att2->second;
+                        valuelist[ att->second.value ] = att2->second.value;
                     }        
                 }
             }
@@ -151,7 +151,7 @@ CWindowManagerBackend::CreateWindowContextViaConfig( const GUCEF::CORE::CDataNod
 /*-------------------------------------------------------------------------*/
 
 bool
-CWindowManagerBackend::SaveConfig( CORE::CDataNode& config )
+CWindowManagerBackend::SaveConfig( CORE::CDataNode& config ) const
 {GUCEF_TRACE;
 
     return false;

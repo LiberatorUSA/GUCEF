@@ -202,56 +202,56 @@ ConvertToPCDT( const FREE_IMAGE_TYPE imageType )
     {
         case FIT_BITMAP :
         {
-            return DATATYPE_UINT8;
+            return GUCEF_DATATYPE_UINT8;
         }
         case FIT_COMPLEX :
         case FIT_UNKNOWN :
         {
-            return DATATYPE_UNKNOWN;
+            return GUCEF_DATATYPE_UNKNOWN;
         }
         case FIT_UINT32 :
         {
-            return DATATYPE_UINT32;
+            return GUCEF_DATATYPE_UINT32;
         }
         case FIT_INT32 :
         {
-            return DATATYPE_INT32;
+            return GUCEF_DATATYPE_INT32;
         }
         case FIT_FLOAT :
         {
-            return DATATYPE_FLOAT32;
+            return GUCEF_DATATYPE_FLOAT32;
         }
         case FIT_DOUBLE :
         {
-            return DATATYPE_FLOAT64;
+            return GUCEF_DATATYPE_FLOAT64;
         }
         case FIT_UINT16 :
         {
-            return DATATYPE_UINT16;
+            return GUCEF_DATATYPE_UINT16;
         }
         case FIT_INT16 :
         {
-            return DATATYPE_INT16;
+            return GUCEF_DATATYPE_INT16;
         }
         case FIT_RGBF :
         {
-            return DATATYPE_FLOAT32;
+            return GUCEF_DATATYPE_FLOAT32;
         }
         case FIT_RGB16 :
         {
-            return DATATYPE_UINT16;
+            return GUCEF_DATATYPE_UINT16;
         }
         case FIT_RGBAF :
         {
-            return DATATYPE_FLOAT32;
+            return GUCEF_DATATYPE_FLOAT32;
         }
         case FIT_RGBA16 :
         {
-            return DATATYPE_UINT16;
+            return GUCEF_DATATYPE_UINT16;
         }
         default :
         {
-            return DATATYPE_UNKNOWN;
+            return GUCEF_DATATYPE_UNKNOWN;
         }
     }
 }
@@ -354,19 +354,19 @@ GetPixelChannelSize( const int pixelComponentDataType )
 {
     switch ( pixelComponentDataType )
     {
-        case DATATYPE_INT8 :
-        case DATATYPE_UINT8 :
+        case GUCEF_DATATYPE_INT8 :
+        case GUCEF_DATATYPE_UINT8 :
         {
             return 1;
         }
-        case DATATYPE_INT16 :
-        case DATATYPE_UINT16 :
+        case GUCEF_DATATYPE_INT16 :
+        case GUCEF_DATATYPE_UINT16 :
         {
             return 2;
         }
-        case DATATYPE_INT32 :
-        case DATATYPE_UINT32 :
-        case DATATYPE_FLOAT32 :
+        case GUCEF_DATATYPE_INT32 :
+        case GUCEF_DATATYPE_UINT32 :
+        case GUCEF_DATATYPE_FLOAT32 :
         {
             return 4;
         }

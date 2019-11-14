@@ -253,7 +253,7 @@ CVideoSettings::GetFrequency( void ) const
 /*-------------------------------------------------------------------------*/
 
 bool
-CVideoSettings::SaveConfig( GUCEF::CORE::CDataNode& tree )
+CVideoSettings::SaveConfig( GUCEF::CORE::CDataNode& tree ) const
 {GUCEF_TRACE;
 
     return false;

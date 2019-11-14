@@ -152,7 +152,7 @@ CValueList::GetConfigNamespace( void ) const
 /*-------------------------------------------------------------------------*/
 
 bool
-CValueList::SaveConfig( CDataNode& tree )
+CValueList::SaveConfig( CDataNode& tree ) const
 {GUCEF_TRACE;
 
     // not currently supported

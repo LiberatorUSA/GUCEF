@@ -996,7 +996,7 @@ CPluginControl::AddPluginMetaData( const CIPluginMetaData& pluginMetaData ,
 /*-------------------------------------------------------------------------*/
 
 bool
-CPluginControl::SaveConfig( CDataNode& tree )
+CPluginControl::SaveConfig( CDataNode& tree ) const
 {GUCEF_TRACE;
 
     return false;

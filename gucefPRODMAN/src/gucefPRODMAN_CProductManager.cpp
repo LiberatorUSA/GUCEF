@@ -172,7 +172,7 @@ CProductManager::MergeProductList( const CProductInfoList& productList )
 /*-------------------------------------------------------------------------*/
 
 bool
-CProductManager::SaveConfig( GUCEF::CORE::CDataNode& node )
+CProductManager::SaveConfig( GUCEF::CORE::CDataNode& node ) const
 {GUCEF_TRACE;
 
     GUCEF_SYSTEM_LOG( 0, "Saving the product manager configuration" );
@@ -200,18 +200,18 @@ CProductManager::LoadConfig( const GUCEF::CORE::CDataNode& node )
         att = n->GetAttribute( "ProductListPath" );
         if ( NULL != att )
         {
-            m_productListPath = att->second;
+            m_productListPath = att->second.value;
         }
         att = n->GetAttribute( "ProductListCodec" );
         if ( NULL != att )
         {
-            m_productListCodec = att->second;
+            m_productListCodec = att->second.value;
         }
 
         att = n->GetAttribute( "CommonProductRoot" );
         if ( NULL != att )
         {
-            m_productRoot = att->second;
+            m_productRoot = att->second.value;
         }
 
         //GUCEF::CORE::CDataNode productList;

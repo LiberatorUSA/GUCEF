@@ -142,7 +142,7 @@ COgreWindowManagerImp::ApplyVideoSettings( GUI::TWindowContextPtr& windowContext
 /*-------------------------------------------------------------------------*/
 
 bool
-COgreWindowManagerImp::SaveConfig( CORE::CDataNode& config )
+COgreWindowManagerImp::SaveConfig( CORE::CDataNode& config ) const
 {GUCEF_TRACE;
 
     return false;

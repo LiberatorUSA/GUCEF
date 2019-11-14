@@ -250,7 +250,7 @@ CDownloadsManager::OnADListRetrievalEvent( GUCEF::CORE::CNotifier* notifier    ,
 /*-------------------------------------------------------------------------*/
 
 bool
-CDownloadsManager::SaveConfig( GUCEF::CORE::CDataNode& node )
+CDownloadsManager::SaveConfig( GUCEF::CORE::CDataNode& node ) const
 {GUCEF_TRACE;
 
     GUCEF::CORE::CDataNode* n = node.Structure( "GU%CORE%CDownloadsManager", '%' );
@@ -272,12 +272,12 @@ CDownloadsManager::LoadConfig( const GUCEF::CORE::CDataNode& node )
         att = n->GetAttribute( "AvailableDownloadsListURL" );
         if ( NULL != att )
         {
-            m_adListUrlRetiever.GetURL().SetURL( att->second );
+            m_adListUrlRetiever.GetURL().SetURL( att->second.value );
         }
         att = n->GetAttribute( "ResumeDownloadsOnStartup" );
         if ( NULL != att )
         {
-            m_resumeDownloadsOnStartup = GUCEF::CORE::StringToBool( att->second );
+            m_resumeDownloadsOnStartup = GUCEF::CORE::StringToBool( att->second.value );
         }
     }
     return false;

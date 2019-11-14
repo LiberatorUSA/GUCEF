@@ -68,6 +68,8 @@ class GUCEF_CORE_PUBLIC_CPP CURLDataRetriever : public CForwardingNotifier ,
 
     CURL& GetURL( void );
 
+    const CURL& GetURL( void ) const;
+
     // utility function for using memory storage
     void SetMemoryBufferAsStorage( void );
 

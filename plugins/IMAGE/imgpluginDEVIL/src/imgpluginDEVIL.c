@@ -219,25 +219,25 @@ GetPixelChannelSize( const int pixelComponentDataType )
 {
     switch ( pixelComponentDataType )
     {
-        case DATATYPE_INT8 :
-        case DATATYPE_UINT8 :
+        case GUCEF_DATATYPE_INT8 :
+        case GUCEF_DATATYPE_UINT8 :
         {
             return 1;
         }
-        case DATATYPE_INT16 :
-        case DATATYPE_UINT16 :
+        case GUCEF_DATATYPE_INT16 :
+        case GUCEF_DATATYPE_UINT16 :
         {
             return 2;
         }
-        case DATATYPE_INT32 :
-        case DATATYPE_UINT32 :
-        case DATATYPE_FLOAT32 :
+        case GUCEF_DATATYPE_INT32 :
+        case GUCEF_DATATYPE_UINT32 :
+        case GUCEF_DATATYPE_FLOAT32 :
         {
             return 4;
         }
-        case DATATYPE_INT64 :
-        case DATATYPE_UINT64 :
-        case DATATYPE_FLOAT64 :
+        case GUCEF_DATATYPE_INT64 :
+        case GUCEF_DATATYPE_UINT64 :
+        case GUCEF_DATATYPE_FLOAT64 :
         {
             return 8;
         }
@@ -433,14 +433,14 @@ ConvertGUCEFTypeToILType( Int32 gucefType )
 {
     switch ( gucefType )
     {
-        case DATATYPE_FLOAT32 : return IL_FLOAT;
-        case DATATYPE_FLOAT64 : return IL_DOUBLE;
-        case DATATYPE_UINT8 : return IL_UNSIGNED_BYTE;
-        case DATATYPE_INT8 : return IL_BYTE;
-        case DATATYPE_UINT16 : return IL_UNSIGNED_SHORT;
-        case DATATYPE_INT16 : return IL_SHORT;
-        case DATATYPE_UINT32 : return IL_UNSIGNED_INT;
-        case DATATYPE_INT32 : return IL_INT;
+        case GUCEF_DATATYPE_FLOAT32 : return IL_FLOAT;
+        case GUCEF_DATATYPE_FLOAT64 : return IL_DOUBLE;
+        case GUCEF_DATATYPE_UINT8 : return IL_UNSIGNED_BYTE;
+        case GUCEF_DATATYPE_INT8 : return IL_BYTE;
+        case GUCEF_DATATYPE_UINT16 : return IL_UNSIGNED_SHORT;
+        case GUCEF_DATATYPE_INT16 : return IL_SHORT;
+        case GUCEF_DATATYPE_UINT32 : return IL_UNSIGNED_INT;
+        case GUCEF_DATATYPE_INT32 : return IL_INT;
         default: return -1;
     }
 }
@@ -846,7 +846,7 @@ IMGCODECPLUGIN_DecodeImage( void* pluginData      ,
                 
                 /* init the TImageMipMapLevelInfo section */
                 mipmapLevel->mipLevelInfo.version = GUCEF_IMAGE_TIMAGEMIPMAPLEVELINFO_VERSION;
-                mipmapLevel->mipLevelInfo.pixelComponentDataType = DATATYPE_UINT8; /* DevIL only supports this type */
+                mipmapLevel->mipLevelInfo.pixelComponentDataType = GUCEF_DATATYPE_UINT8; /* DevIL only supports this type */
                 mipmapLevel->mipLevelInfo.frameHeight = ilGetInteger( IL_IMAGE_HEIGHT );
                 mipmapLevel->mipLevelInfo.frameWidth = ilGetInteger( IL_IMAGE_WIDTH );
                 mipmapLevel->mipLevelInfo.pixelStorageFormat = ConvertILPixelFormatToGUCEFPixelFormat( ilGetInteger( IL_IMAGE_FORMAT ) );

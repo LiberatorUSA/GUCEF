@@ -119,7 +119,7 @@ class GUCEF_GUI_PUBLIC_CPP CWindowManagerBackend : public CORE::CObservingNotifi
     virtual bool ApplyVideoSettings( TWindowContextPtr& windowContext ,
                                      const CVideoSettings& settings   ) = 0;
 
-    virtual bool SaveConfig( CORE::CDataNode& config );
+    virtual bool SaveConfig( CORE::CDataNode& config ) const;
 
     virtual bool LoadConfig( const CORE::CDataNode& config );
 

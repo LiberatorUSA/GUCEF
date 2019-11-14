@@ -124,8 +124,8 @@ class GUCEF_COM_EXPORT_CPP CDefaultHTTPServerResource : public CIHTTPServerResou
     /**
      *  Serializes the resource into a stream according to the representation.
      */
-    virtual bool Serialize( CORE::CDynamicBuffer& outputBuffer ,
-                            const CString& representation      );
+    virtual bool Serialize( CORE::CDynamicBuffer& outputBuffer  ,
+                            const CORE::CString& representation );
 
     /**
      *  Deserialize the resource from the given stream with given resource representation.

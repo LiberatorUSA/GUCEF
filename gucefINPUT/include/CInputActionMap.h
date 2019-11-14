@@ -103,7 +103,7 @@ class GUCEF_INPUT_PUBLIC_CPP CInputActionMap : public CORE::CObservingNotifier
     
     TStateActionMap& GetDeviceVarChanged( const UInt32 deviceIndex );
                                         
-    bool SaveConfig( CORE::CDataNode& tree );
+    bool SaveConfig( CORE::CDataNode& tree ) const;
                                                            
     bool LoadConfig( const CORE::CDataNode& treeroot );
     

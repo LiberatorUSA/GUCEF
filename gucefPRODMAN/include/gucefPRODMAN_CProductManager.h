@@ -98,7 +98,7 @@ class GUCEF_PRODMAN_PUBLIC_CPP CProductManager : public CORE::CObservingNotifier
 
     bool MergeProduct( const CProductInfo& productInfo );
 
-    virtual bool SaveConfig( GUCEF::CORE::CDataNode& node );
+    virtual bool SaveConfig( GUCEF::CORE::CDataNode& node ) const;
 
     virtual bool LoadConfig( const GUCEF::CORE::CDataNode& node );
 

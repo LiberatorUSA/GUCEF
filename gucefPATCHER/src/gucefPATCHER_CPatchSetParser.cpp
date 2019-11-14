@@ -103,19 +103,19 @@ CPatchSetParser::ValidateAndParseFileLocEntries( const CORE::CDataNode& patchSet
             if ( attData != NULL )
             {
                 TFileLocation fileLocation;
-                fileLocation.URL = attData->second;
+                fileLocation.URL = attData->second.value;
 
                 // Check for an optional codec property
                 const CORE::CDataNode::TKeyValuePair* attData = locationEntry->GetAttribute( "Codec" );
                 if ( attData != NULL )
                 {
-                    fileLocation.codec = attData->second;
+                    fileLocation.codec = attData->second.value;
 
                     // Check for an optional codec parameter property
                     const CORE::CDataNode::TKeyValuePair* attData = locationEntry->GetAttribute( "CodecParams" );
                     if ( attData != NULL )
                     {
-                        fileLocation.codecParams = attData->second;
+                        fileLocation.codecParams = attData->second.value;
                     }
                 }
 
@@ -157,21 +157,21 @@ CPatchSetParser::ValidateAndParseFileEntry( const CORE::CDataNode& patchSetFileN
     if ( attData != NULL )
     {
         // We found our filename
-        const CORE::CString& filename = attData->second;
+        const CORE::CString& filename = attData->second.value;
 
         // Validate that the file has a size property
         const CORE::CDataNode::TKeyValuePair* attData = patchSetFileNode.GetAttribute( "Size" );
         if ( attData != NULL )
         {
             // We found our file's size
-            const CORE::CString& fileSizeStr = attData->second;
+            const CORE::CString& fileSizeStr = attData->second.value;
             UInt32 fileSize = CORE::StringToInt32( fileSizeStr );
 
             // Validate that the file has a hash property
             const CORE::CDataNode::TKeyValuePair* attData = patchSetFileNode.GetAttribute( "Hash" );
             if ( attData != NULL )
             {
-                const CORE::CString& fileHash = attData->second;
+                const CORE::CString& fileHash = attData->second.value;
 
                 // Our file entry has everything we expected
                 // We will now parse the file location entries for this file
@@ -205,14 +205,14 @@ CPatchSetParser::ValidateAndParseDirEntry( const CORE::CDataNode& patchSetDirNod
     if ( attData != NULL )
     {
         // We found our directory name
-        const CORE::CString& dirName = attData->second;
+        const CORE::CString& dirName = attData->second.value;
 
         // Validate that the directory has a total size property
         const CORE::CDataNode::TKeyValuePair* attData = patchSetDirNode.GetAttribute( "TotalSize" );
         if ( attData != NULL )
         {
             // We found our directory's total size
-            const CORE::CString& dirTotalSizeStr = attData->second;
+            const CORE::CString& dirTotalSizeStr = attData->second.value;
             UInt32 totalDirSize = CORE::StringToInt32( dirTotalSizeStr );
 
             // Validate that the directory has a hash property
@@ -221,7 +221,7 @@ CPatchSetParser::ValidateAndParseDirEntry( const CORE::CDataNode& patchSetDirNod
             {
                 // Our directory entry has everything we expected
                 // It can now be added to the patch set
-                dirEntry.hash = attData->second;
+                dirEntry.hash = attData->second.value;
                 dirEntry.name = dirName;
                 dirEntry.sizeInBytes = totalDirSize;
 

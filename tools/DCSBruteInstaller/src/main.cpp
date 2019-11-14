@@ -159,7 +159,7 @@ class DCSBruteInstaller : public CORE::CObserver
         hiChecksumNibble = TrimLeadingZeros( CORE::ConvertBytesToHexString( &hiChecksumNibble, 1, false, false ) )[ 0 ];
         loChecksumNibble = TrimLeadingZeros( CORE::ConvertBytesToHexString( &loChecksumNibble, 1, false, false ) )[ 0 ];
 
-        char suffix[ 4 ] = { hiChecksumNibble, loChecksumNibble, '\r', '\n' };
+        char suffix[ 4 ] = { (char) hiChecksumNibble, (char) loChecksumNibble, '\r', '\n' };
         CORE::CString newMsg( msg );
         newMsg.Append( suffix, 4 ); 
 

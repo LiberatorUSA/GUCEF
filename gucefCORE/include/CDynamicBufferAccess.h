@@ -61,6 +61,8 @@ class GUCEF_CORE_PUBLIC_CPP CDynamicBufferAccess : public CIOAccess
     CDynamicBufferAccess( CDynamicBuffer* buffer                         ,
                           const bool deleteBufferUponDestruction = false );
 
+    CDynamicBufferAccess( const CDynamicBuffer& buffer );
+
     virtual ~CDynamicBufferAccess();
 
     bool LoadContentFromFile( const CString& filePath       ,

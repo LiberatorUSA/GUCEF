@@ -65,13 +65,25 @@ CDynamicBufferAccess::CDynamicBufferAccess( void )
 
 CDynamicBufferAccess::CDynamicBufferAccess( CDynamicBuffer* buffer                               ,
                                             const bool deleteBufferUponDestruction /* = false */ )
-        : CIOAccess()                                                  ,
-          m_buffer( buffer )                                           ,
-          m_carat( 0 )                                                 ,
-          m_deleteBufferUponDestruction( deleteBufferUponDestruction )
+    : CIOAccess()                                                  
+    , m_buffer( buffer )                                          
+    , m_carat( 0 )                                                 
+    , m_deleteBufferUponDestruction( deleteBufferUponDestruction )
 {GUCEF_TRACE;
         
     assert( m_buffer != NULL );                    
+}
+
+/*-------------------------------------------------------------------------*/
+
+CDynamicBufferAccess::CDynamicBufferAccess( const CDynamicBuffer& buffer )
+    : CIOAccess()                                                  
+    , m_buffer( GUCEF_NULL )                                          
+    , m_carat( 0 )                                                 
+    , m_deleteBufferUponDestruction( false )
+{GUCEF_TRACE;
+
+    LinkTo( buffer.GetConstBufferPtr(), buffer.GetDataSize() );
 }
 
 /*-------------------------------------------------------------------------*/

@@ -230,7 +230,7 @@ CInputActionMap::Clear( void )
 /*-------------------------------------------------------------------------*/
                                             
 bool 
-CInputActionMap::SaveConfig( CORE::CDataNode& tree )
+CInputActionMap::SaveConfig( CORE::CDataNode& tree ) const
 {GUCEF_TRACE;
 /*
 

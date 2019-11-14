@@ -382,7 +382,7 @@ CGUCEFApplication::GetApplicationDir( void ) const
 /*-------------------------------------------------------------------------*/
 
 bool
-CGUCEFApplication::SaveConfig( CDataNode& tree )
+CGUCEFApplication::SaveConfig( CDataNode& tree )  const
 {GUCEF_TRACE;
 
     LockData();
@@ -463,7 +463,7 @@ CGUCEFApplication::OnUpdate( const UInt64 tickcount               ,
 /*-------------------------------------------------------------------------*/
 
 void
-CGUCEFApplication::LockData( void )
+CGUCEFApplication::LockData( void ) const
 {GUCEF_TRACE;
 
     m_mutex.Lock();
@@ -472,7 +472,7 @@ CGUCEFApplication::LockData( void )
 /*-------------------------------------------------------------------------*/
 
 void
-CGUCEFApplication::UnlockData( void )
+CGUCEFApplication::UnlockData( void ) const
 {GUCEF_TRACE;
 
     m_mutex.Unlock();

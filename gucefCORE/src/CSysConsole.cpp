@@ -694,7 +694,7 @@ CSysConsole::OnSysConsoleCommand( const CString& path                ,
 /*-------------------------------------------------------------------------*/
 
 bool
-CSysConsole::SaveConfig( CDataNode& tree )
+CSysConsole::SaveConfig( CDataNode& tree ) const
 {GUCEF_TRACE;
 
     return true;

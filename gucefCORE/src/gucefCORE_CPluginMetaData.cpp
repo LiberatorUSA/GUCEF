@@ -302,7 +302,7 @@ CPluginMetaData::SetParams( const CValueList& params )
 /*-------------------------------------------------------------------------*/
 
 bool
-CPluginMetaData::SaveConfig( CDataNode& tree )
+CPluginMetaData::SaveConfig( CDataNode& tree ) const
 {GUCEF_TRACE;
 
     return false;

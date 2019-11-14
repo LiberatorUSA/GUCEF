@@ -338,7 +338,7 @@ IMGCODECPLUGIN_DecodeImage( void* pluginData      ,
         image->frames[ 0 ].mipmapLevel[ 0 ].mipLevelInfo.version = GUCEF_IMAGE_TIMAGEMIPMAPLEVELINFO_VERSION;
 
         /* setup properties which are fixed due to the codecType */
-        image->frames[ 0 ].mipmapLevel[ 0 ].mipLevelInfo.pixelComponentDataType = DATATYPE_UINT8;
+        image->frames[ 0 ].mipmapLevel[ 0 ].mipLevelInfo.pixelComponentDataType = GUCEF_DATATYPE_UINT8;
         image->frames[ 0 ].mipmapLevel[ 0 ].mipLevelInfo.pixelStorageFormat = PSF_PALETTE_INDICES;
 
         /* skip bytes till image size fields */
@@ -381,7 +381,7 @@ IMGCODECPLUGIN_DecodeImage( void* pluginData      ,
         image->frames[ 0 ].mipmapLevel[ 0 ].mipLevelInfo.version = GUCEF_IMAGE_TIMAGEMIPMAPLEVELINFO_VERSION;
 
         /* setup properties which are fixed due to the codecType */
-        image->frames[ 0 ].mipmapLevel[ 0 ].mipLevelInfo.pixelComponentDataType = DATATYPE_UINT8;
+        image->frames[ 0 ].mipmapLevel[ 0 ].mipLevelInfo.pixelComponentDataType = GUCEF_DATATYPE_UINT8;
         image->frames[ 0 ].mipmapLevel[ 0 ].mipLevelInfo.pixelStorageFormat = PSF_RGB;
         
         input->seek( input, 0, SEEK_END );

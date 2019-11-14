@@ -182,15 +182,15 @@ CPassiveURLServerListProvider::ParseList( const CORE::CDataNode& listRoot )
                 att = entryNode->GetAttribute( "Name" );
                 if ( NULL != att )
                 {
-                    serverInfo.name = att->second;
+                    serverInfo.name = att->second.value;
                     att = entryNode->GetAttribute( "Address" );
                     if ( NULL != att )
                     {
-                        serverInfo.hostAddress.SetHostname( att->second );
+                        serverInfo.hostAddress.SetHostname( att->second.value );
                         att = entryNode->GetAttribute( "Port" );
                         if ( NULL != att )
                         {
-                            serverInfo.hostAddress.SetPortInHostByteOrder( CORE::StringToUInt16( att->second ) );
+                            serverInfo.hostAddress.SetPortInHostByteOrder( CORE::StringToUInt16( att->second.value ) );
 
                             // We now have enough info to consider this a valid entry
                             // We will add the rest to the optional parameter list
@@ -202,8 +202,8 @@ CPassiveURLServerListProvider::ParseList( const CORE::CDataNode& listRoot )
                                      ( "Address" != att->first ) &&
                                      ( "Port" != att->first )     )
                                 {
-                                    valueList.Set( att->first  ,
-                                                   att->second );
+                                    valueList.Set( att->first        ,
+                                                   att->second.value );
                                 }
                             }
 

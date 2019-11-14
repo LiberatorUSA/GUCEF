@@ -126,7 +126,7 @@ class GUCEF_PRODMAN_PUBLIC_CPP CProductInfo : public CORE::CIConfigurable
     
     bool operator<( const CProductInfo& other ) const;
 
-    virtual bool SaveConfig( GUCEF::CORE::CDataNode& node );
+    virtual bool SaveConfig( GUCEF::CORE::CDataNode& node ) const;
                                 
     virtual bool LoadConfig( const GUCEF::CORE::CDataNode& node );
     

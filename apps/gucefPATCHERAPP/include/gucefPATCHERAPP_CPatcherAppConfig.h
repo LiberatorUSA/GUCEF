@@ -89,7 +89,7 @@ class CPatcherAppConfig : public CORE::CIConfigurable
 
     const CString& GetPatchEngineConfigFileCodec( void ) const;
 
-    virtual bool SaveConfig( CORE::CDataNode& tree );
+    virtual bool SaveConfig( CORE::CDataNode& tree ) const;
 
     virtual bool LoadConfig( const CORE::CDataNode& treeroot );
 

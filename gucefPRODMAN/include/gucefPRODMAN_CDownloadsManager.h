@@ -118,7 +118,7 @@ class GUCEF_PRODMAN_PUBLIC_CPP CDownloadsManager : public CORE::CObservingNotifi
     
     void RefreshAvailableDownloadsList( void );
     
-    bool SaveConfig( CORE::CDataNode& node );
+    bool SaveConfig( CORE::CDataNode& node ) const;
                                 
     bool LoadConfig( const CORE::CDataNode& node );    
     

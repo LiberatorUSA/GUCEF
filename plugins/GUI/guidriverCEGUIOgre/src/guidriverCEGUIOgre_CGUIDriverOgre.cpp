@@ -324,7 +324,7 @@ CGUIDriverOgre::GetDriverProperty( const GUI::CString& propertyName ) const
 /*-------------------------------------------------------------------------*/
 
 bool
-CGUIDriverOgre::SaveConfig( CORE::CDataNode& tree )
+CGUIDriverOgre::SaveConfig( CORE::CDataNode& tree ) const
 {GUCEF_TRACE;
 
     return CCEGUIDriver::SaveConfig( tree );

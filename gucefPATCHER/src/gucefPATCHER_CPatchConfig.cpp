@@ -143,7 +143,7 @@ CPatchConfig::HasEngineStopTriggerEvent( const CORE::CEvent& triggerEvent )
 /*-------------------------------------------------------------------------*/
 
 bool
-CPatchConfig::SaveConfig( CORE::CDataNode& tree )
+CPatchConfig::SaveConfig( CORE::CDataNode& tree ) const
 {GUCEF_TRACE;
 
     //@TODO
@@ -164,19 +164,19 @@ CPatchConfig::LoadConfig( const CORE::CDataNode& treeroot )
         // First we obtain the mandatory atributes
         const CORE::CDataNode::TKeyValuePair* att = infoNode->GetAttribute( "LocalRootDir" );
         if ( att == NULL ) return false;
-        SetLocalRootDir( att->second );
+        SetLocalRootDir( att->second.value );
 
         att = infoNode->GetAttribute( "TempStorageRoot" );
         if ( att == NULL ) return false;
-        SetLocalTempStorageRootDir( att->second );
+        SetLocalTempStorageRootDir( att->second.value );
 
         att = infoNode->GetAttribute( "PatchListURL" );
         if ( att == NULL ) return false;
-        SetPatchListURL( att->second );
+        SetPatchListURL( att->second.value );
 
         att = infoNode->GetAttribute( "PatchListCodec" );
         if ( att == NULL ) return false;
-        SetPatchListCodec( att->second );
+        SetPatchListCodec( att->second.value );
 
         // Load optional attributes
         att = infoNode->GetAttribute( "StopOnFileReplacementFailure" );
@@ -186,7 +186,7 @@ CPatchConfig::LoadConfig( const CORE::CDataNode& treeroot )
         }
         else
         {
-            SetStopOnFileReplacementFailure( CORE::StringToBool( att->second ) );
+            SetStopOnFileReplacementFailure( CORE::StringToBool( att->second.value ) );
         }
 
         // Try and find some optional engine trigger events
@@ -200,7 +200,7 @@ CPatchConfig::LoadConfig( const CORE::CDataNode& treeroot )
                 att = infoNode->GetAttribute( "Event" );
                 if ( att != NULL )
                 {
-                    AddEngineStartTriggerEvent( att->second );
+                    AddEngineStartTriggerEvent( att->second.value );
                 }
             }
             else
@@ -209,7 +209,7 @@ CPatchConfig::LoadConfig( const CORE::CDataNode& treeroot )
                 att = infoNode->GetAttribute( "Event" );
                 if ( att != NULL )
                 {
-                    AddEngineStopTriggerEvent( att->second );
+                    AddEngineStopTriggerEvent( att->second.value );
                 }
             }
             ++i;

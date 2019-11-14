@@ -199,7 +199,7 @@ CPatcherAppConfig::GetPatchEngineConfigFileCodec( void ) const
 /*-------------------------------------------------------------------------*/
 
 bool
-CPatcherAppConfig::SaveConfig( CORE::CDataNode& tree )
+CPatcherAppConfig::SaveConfig( CORE::CDataNode& tree ) const
 {GUCEF_TRACE;
 
     return false;

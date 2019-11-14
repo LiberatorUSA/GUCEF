@@ -204,7 +204,7 @@ CGUIDriverGL::GetDriverProperty( const GUI::CString& propertyName ) const
 /*-------------------------------------------------------------------------*/
 
 bool
-CGUIDriverGL::SaveConfig( CORE::CDataNode& tree )
+CGUIDriverGL::SaveConfig( CORE::CDataNode& tree ) const
 {GUCEF_TRACE;
 
     return false;
