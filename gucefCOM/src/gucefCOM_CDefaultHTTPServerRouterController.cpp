@@ -85,17 +85,22 @@ CIHTTPServerRouter*
 CDefaultHTTPServerRouterController::GetHandler( const CString& uri )
 {GUCEF_TRACE;
 
+    // Find the router for which the path is the longest match we can find (if any)
+    UInt32 bestMatchLength = 0;
+    CIHTTPServerRouter* bestMatchRouter = GUCEF_NULL;
+
     CString searchStr = GetUriPathFromFullUri( uri );
     TRouterMap::iterator i = m_routerMap.begin();
     while ( i != m_routerMap.end() )
     {
-        if ( (*i).first.HasSubstr( searchStr, true ) )
+        UInt32 equality = (*i).first.FindMaxSubstrEquality( searchStr, 0, true, true );
+        if ( equality > bestMatchLength )
         {
-            return (*i).second;
+            bestMatchRouter = (*i).second;
         }
         ++i;
     }
-    return NULL;
+    return bestMatchRouter;
 }
 
 /*-------------------------------------------------------------------------*/

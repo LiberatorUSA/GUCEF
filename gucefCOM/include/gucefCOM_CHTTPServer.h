@@ -157,6 +157,9 @@ class GUCEF_COM_EXPORT_CPP CHTTPServer : CORE::CObserver
     void ExtractCommaSeparatedValues( const CString& stringToExtractFrom ,
                                       TStringVector& list                ) const;
 
+    void StripItems( TStringVector& list ,
+                     char stripDelim     ) const;
+
     void ProcessReceivedData( const CORE::CDynamicBuffer& inputBuffer ,
                               CORE::CDynamicBuffer& outputBuffer      );
 

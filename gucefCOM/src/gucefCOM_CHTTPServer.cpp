@@ -182,7 +182,7 @@ CHTTPServer::PerformReadOperation( const THttpRequestData& request ,
         returnData->contentType = resource->GetBestMatchedSerializationRepresentation( request.resourceRepresentations );
 
         // Did we find a supported type match?
-        if ( returnData->contentType.Length() > 0 )
+        if ( returnData->contentType.IsNULLOrEmpty() )
         {
             // Unsupported media type
             returnData->statusCode = 415;
@@ -265,7 +265,7 @@ CHTTPServer::OnUpdate( const THttpRequestData& request )
         }
 
         // Check if the client send the content for the update
-        if ( request.content.GetDataSize() > 0 )
+        if ( request.content.GetDataSize() == 0 )
         {
             returnData->statusCode = 400; // Bad request
             return returnData;
@@ -666,6 +666,21 @@ CHTTPServer::ExtractCommaSeparatedValues( const CString& stringToExtractFrom ,
 /*-------------------------------------------------------------------------*/
 
 void
+CHTTPServer::StripItems( TStringVector& list ,
+                         char stripDelim     ) const
+{GUCEF_TRACE;
+
+    TStringVector::iterator i = list.begin();
+    while ( i != list.end() )
+    {
+        (*i) = (*i).SubstrToChar( stripDelim, true );
+        ++i;
+    }
+}
+
+/*-------------------------------------------------------------------------*/
+
+void
 CHTTPServer::ProcessReceivedData( const CORE::CDynamicBuffer& inputBuffer ,
                                   CORE::CDynamicBuffer& outputBuffer      )
 {GUCEF_TRACE;
@@ -859,12 +874,14 @@ CHTTPServer::ParseRequest( const CORE::CDynamicBuffer& inputBuffer )
             {
                 ExtractCommaSeparatedValues( headerValue                      ,
                                              request->resourceRepresentations );
+                StripItems( request->resourceRepresentations, ';' );
             }
             else
             if ( headerName == "content-type" )
             {
                 ExtractCommaSeparatedValues( headerValue               ,
                                              request->resourceVersions );
+                StripItems( request->resourceRepresentations, ';' );
             }
             else
             if ( headerName == "if-match" )
@@ -941,6 +958,7 @@ CHTTPServer::ParseResponse( const THttpReturnData& returnData  ,
         while ( i != returnData.acceptedTypes.end() )
         {
             response += (*i) + ',';
+            ++i;
         }
         response += "\r\n";
     }
@@ -954,6 +972,7 @@ CHTTPServer::ParseResponse( const THttpReturnData& returnData  ,
         while ( i != returnData.allowedMethods.end() )
         {
             response += (*i) + ',';
+            ++i;
         }
         response += "\r\n";
     }
