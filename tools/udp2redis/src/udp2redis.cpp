@@ -608,7 +608,77 @@ Udp2RedisChannel::OnTaskEnd( CORE::CICloneable* taskData )
 
 /*-------------------------------------------------------------------------*/
 
+RestApiUdp2RedisInfoResource::RestApiUdp2RedisInfoResource( Udp2Redis* app )
+    : COM::CCodecBasedHTTPServerResource()
+    , m_app( app )
+{GUCEF_TRACE;
+
+    m_allowSerialize = true;
+}
+
+/*-------------------------------------------------------------------------*/
+
+RestApiUdp2RedisInfoResource::~RestApiUdp2RedisInfoResource()
+{GUCEF_TRACE;
+
+}
+
+/*-------------------------------------------------------------------------*/
+
+bool
+RestApiUdp2RedisInfoResource::Serialize( CORE::CDataNode& output             ,
+                                         const CORE::CString& representation )
+{GUCEF_TRACE;
+
+    output.SetName( "info" );
+    output.SetAttribute( "application", "udp2redis" );
+    output.SetAttribute( "buildDateTime", __TIMESTAMP__ );
+    return true;
+}
+
+/*-------------------------------------------------------------------------*/
+
+RestApiUdp2RedisConfigResource::RestApiUdp2RedisConfigResource( Udp2Redis* app )
+    : COM::CCodecBasedHTTPServerResource()
+    , m_app( app )
+{GUCEF_TRACE;
+
+    m_allowSerialize = true;
+}
+
+/*-------------------------------------------------------------------------*/
+
+RestApiUdp2RedisConfigResource::~RestApiUdp2RedisConfigResource()
+{GUCEF_TRACE;
+
+}
+
+/*-------------------------------------------------------------------------*/
+
+bool
+RestApiUdp2RedisConfigResource::Serialize( CORE::CDataNode& output             ,
+                                           const CORE::CString& representation )
+{GUCEF_TRACE;
+
+    const CORE::CValueList& loadedConfig = m_app->GetAppConfig();
+    return loadedConfig.SaveConfig( output );
+    return true;
+}
+
+/*-------------------------------------------------------------------------*/
+
 Udp2Redis::Udp2Redis( void )
+    : m_udpStartPort()
+    , m_channelCount()
+    , m_redisStreamStartChannelID()
+    , m_redisStreamName()
+    , m_redisHost()
+    , m_redisPort()
+    , m_channels()
+    , m_httpServer()
+    , m_httpRouter()
+    , m_appConfig()
+    , m_globalConfig()
 {GUCEF_TRACE;
     
 }
@@ -618,6 +688,7 @@ Udp2Redis::Udp2Redis( void )
 Udp2Redis::~Udp2Redis()
 {GUCEF_TRACE;
 
+    m_httpServer.Close();
 }
 
 /*-------------------------------------------------------------------------*/
@@ -646,6 +717,8 @@ Udp2Redis::Start( void )
         ++i;
     }
 
+    m_httpRouter.SetResourceMapping( "/info", RestApiUdp2RedisInfoResource::THTTPServerResourcePtr( new RestApiUdp2RedisInfoResource( this ) )  );
+    m_httpRouter.SetResourceMapping( "/config/appargs", RestApiUdp2RedisInfoResource::THTTPServerResourcePtr( new RestApiUdp2RedisConfigResource( this ) )  );
     m_httpServer.GetRouterController()->AddRouterMapping( &m_httpRouter, "", "" ); 
     return m_httpServer.Listen();
 }
@@ -653,17 +726,38 @@ Udp2Redis::Start( void )
 /*-------------------------------------------------------------------------*/
 
 bool 
-Udp2Redis::LoadConfig( const CORE::CValueList& config )
+Udp2Redis::LoadConfig( const CORE::CValueList& appConfig   ,
+                       const CORE::CDataNode& globalConfig )
 {GUCEF_TRACE;
 
-    m_udpStartPort = CORE::StringToUInt16( config.GetValueAlways( "UdpStartPort", "20000" ) );
-    m_channelCount = CORE::StringToUInt16( config.GetValueAlways( "ChannelCount", "1" ) );
-    m_redisStreamStartChannelID = CORE::StringToInt32( config.GetValueAlways( "RedisStreamStartChannelID", "1" ) );
-    m_redisStreamName = config.GetValueAlways( "RedisStreamName", "udp-ingress-ch{channelID}" );
-    m_redisHost = config.GetValueAlways( "RedisHost", "127.0.0.1" );
-    m_redisPort = CORE::StringToUInt16( config.GetValueAlways( "RedisPort", "6379" ) );
+    m_udpStartPort = CORE::StringToUInt16( appConfig.GetValueAlways( "UdpStartPort", "20000" ) );
+    m_channelCount = CORE::StringToUInt16( appConfig.GetValueAlways( "ChannelCount", "1" ) );
+    m_redisStreamStartChannelID = CORE::StringToInt32( appConfig.GetValueAlways( "RedisStreamStartChannelID", "1" ) );
+    m_redisStreamName = appConfig.GetValueAlways( "RedisStreamName", "udp-ingress-ch{channelID}" );
+    m_redisHost = appConfig.GetValueAlways( "RedisHost", "127.0.0.1" );
+    m_redisPort = CORE::StringToUInt16( appConfig.GetValueAlways( "RedisPort", "6379" ) );
     
-    m_httpServer.SetPort( CORE::StringToUInt16( config.GetValueAlways( "RestApiPort", "10000" ) ) );
+    m_httpServer.SetPort( CORE::StringToUInt16( appConfig.GetValueAlways( "RestApiPort", "10000" ) ) );
 
+    m_appConfig = appConfig;
+    m_globalConfig = globalConfig;
     return true;
 }
+
+/*-------------------------------------------------------------------------*/
+
+const CORE::CValueList& 
+Udp2Redis::GetAppConfig( void ) const
+{
+    return m_appConfig;
+}
+
+/*-------------------------------------------------------------------------*/
+
+const CORE::CDataNode& 
+Udp2Redis::GetGlobalConfig( void ) const
+{
+    return m_globalConfig;
+}
+
+/*-------------------------------------------------------------------------*/

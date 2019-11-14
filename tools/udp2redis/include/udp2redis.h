@@ -44,6 +44,11 @@
 #define GUCEF_CORE_CVALUELIST_H
 #endif /* GUCEF_CORE_CVALUELIST_H ? */
 
+#ifndef GUCEF_CORE_CDATANODE_H
+#include "CDataNode.h"
+#define GUCEF_CORE_CDATANODE_H
+#endif /* GUCEF_CORE_CDATANODE_H ? */
+
 #ifndef GUCEF_CORE_CTIMER_H
 #include "CTimer.h"
 #define GUCEF_CORE_CTIMER_H
@@ -58,6 +63,11 @@
 #include "gucefCOM_CDefaultHTTPServerRouter.h"
 #define GUCEF_COM_CDEFAULTHTTPSERVERROUTER_H
 #endif /* GUCEF_COM_CDEFAULTHTTPSERVERROUTER_H ? */
+
+#ifndef GUCEF_COM_CCODECBASEDHTTPSERVERRESOURCE_H
+#include "gucefCOM_CCodecBasedHTTPServerResource.h"
+#define GUCEF_COM_CCODECBASEDHTTPSERVERRESOURCE_H
+#endif /* GUCEF_COM_CCODECBASEDHTTPSERVERRESOURCE_H ? */
 
 #include "hiredis.h"
 #include "async.h"
@@ -192,6 +202,42 @@ class Udp2RedisChannel : public CORE::CTaskConsumer
 
 /*-------------------------------------------------------------------------*/
 
+class Udp2Redis;
+
+class RestApiUdp2RedisInfoResource : public COM::CCodecBasedHTTPServerResource
+{
+    public:
+
+    RestApiUdp2RedisInfoResource( Udp2Redis* app );
+
+    virtual ~RestApiUdp2RedisInfoResource();
+
+    virtual bool Serialize( CORE::CDataNode& output             ,
+                            const CORE::CString& representation );
+
+    private:
+
+    Udp2Redis* m_app;
+};
+
+class RestApiUdp2RedisConfigResource : public COM::CCodecBasedHTTPServerResource
+{
+    public:
+
+    RestApiUdp2RedisConfigResource( Udp2Redis* app );
+
+    virtual ~RestApiUdp2RedisConfigResource();
+
+    virtual bool Serialize( CORE::CDataNode& output             ,
+                            const CORE::CString& representation );
+
+    private:
+
+    Udp2Redis* m_app;
+};
+
+/*-------------------------------------------------------------------------*/
+
 class Udp2Redis
 {
     public:
@@ -201,8 +247,12 @@ class Udp2Redis
 
     bool Start( void );
 
-    bool LoadConfig( const CORE::CValueList& config );
+    bool LoadConfig( const CORE::CValueList& appConfig   ,
+                     const CORE::CDataNode& globalConfig );
 
+    const CORE::CValueList& GetAppConfig( void ) const;
+
+    const CORE::CDataNode& GetGlobalConfig( void ) const;
 
     private:
 
@@ -215,4 +265,6 @@ class Udp2Redis
     std::vector< Udp2RedisChannel > m_channels;
     COM::CHTTPServer m_httpServer;
     COM::CDefaultHTTPServerRouter m_httpRouter;
+    CORE::CValueList m_appConfig;
+    CORE::CDataNode m_globalConfig;
 };

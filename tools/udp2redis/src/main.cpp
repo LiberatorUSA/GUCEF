@@ -99,8 +99,9 @@ using namespace GUCEF;
 //-------------------------------------------------------------------------*/
 
 bool
-LoadConfig( const CORE::CString& configPath ,
-            CORE::CValueList& keyValueList  )
+LoadConfig( const CORE::CString& configPath            ,
+            CORE::CValueList& keyValueList             ,
+            CORE::CDataNode* loadedConfig = GUCEF_NULL )
 {GUCEF_TRACE;
 
     #ifdef GUCEF_DEBUG_MODE
@@ -146,7 +147,7 @@ LoadConfig( const CORE::CString& configPath ,
 
     CORE::CConfigStore& configStore = CORE::CCoreGlobal::Instance()->GetConfigStore();
     configStore.SetConfigFile( configFilePath );
-    return configStore.LoadConfig();
+    return configStore.LoadConfig( loadedConfig );
 }
 
 /*-------------------------------------------------------------------------*/
@@ -196,7 +197,8 @@ GUCEF_OSMAIN_BEGIN
     keyValueList.Clear();
 
     // Load settings from a config file (if any) and then override with params (if any)
-    LoadConfig( configPathParam, keyValueList );
+    CORE::CDataNode globalConfig;
+    LoadConfig( configPathParam, keyValueList, &globalConfig );
     ParseParams( argc, argv, keyValueList );
 
     CORE::Int32 minLogLevel = CORE::LOGLEVEL_BELOW_NORMAL;
@@ -229,7 +231,7 @@ GUCEF_OSMAIN_BEGIN
     GUCEF_LOG( CORE::LOGLEVEL_NORMAL, "Flushed to log @ " + logFilename );
 
     Udp2Redis Udp2Redis;
-    if ( !Udp2Redis.LoadConfig( keyValueList ) )
+    if ( !Udp2Redis.LoadConfig( keyValueList, globalConfig ) )
     {
         GUCEF_ERROR_LOG( CORE::LOGLEVEL_CRITICAL, "Udp2Redis: Exiting because LoadConfig failed" );
         return -1;
