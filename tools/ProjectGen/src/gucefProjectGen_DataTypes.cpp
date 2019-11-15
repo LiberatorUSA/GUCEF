@@ -1904,19 +1904,20 @@ GetModuleTargetName( const TModuleInfoEntry& moduleInfoEntry ,
 /*---------------------------------------------------------------------------*/
 
 void
-GetModuleDependencies( TModuleInfoEntry& moduleInfoEntry   ,
-                       const CORE::CString& targetPlatform ,
-                       TStringVector& dependencies         )
+GetModuleDependencies( const TModuleInfoEntry& moduleInfoEntry ,
+                       const CORE::CString& targetPlatform     ,
+                       TStringVector& dependencies             )
 {GUCEF_TRACE;
 
-    TModuleInfo* moduleInfo = FindModuleInfoForPlatform( moduleInfoEntry, targetPlatform, false );
+    TModuleInfoEntry& mutableModuleInfoEntry = const_cast< TModuleInfoEntry& >( moduleInfoEntry );
+    TModuleInfo* moduleInfo = FindModuleInfoForPlatform( mutableModuleInfoEntry, targetPlatform, false );
     if ( NULL != moduleInfo )
     {
         MergeStringVector( dependencies, moduleInfo->dependencies, false );
     }
     if ( targetPlatform != AllPlatforms && !targetPlatform.IsNULLOrEmpty() )
     {
-        moduleInfo = FindModuleInfoForPlatform( moduleInfoEntry, AllPlatforms, false );
+        moduleInfo = FindModuleInfoForPlatform( mutableModuleInfoEntry, AllPlatforms, false );
         if ( NULL != moduleInfo )
         {
             MergeStringVector( dependencies, moduleInfo->dependencies, false );
@@ -2212,6 +2213,86 @@ MergeStringVectorMap( TStringVectorMap& targetMap          ,
     {
         MergeStringVector( targetMap[ (*i).first ], (*i).second, caseSensitive );
         ++i;
+    }
+}
+
+/*---------------------------------------------------------------------------*/
+
+void
+GetExecutables( const TProjectInfo& projectInfo                ,
+                TModuleInfoEntryConstPtrSet& executableTargets ,
+                const CORE::CString& platform                  )
+{GUCEF_TRACE;
+
+    TModuleInfoEntryVector::const_iterator i = projectInfo.modules.begin();
+    while ( i != projectInfo.modules.end() )
+    {
+        const TModuleInfoMap& modulesPerPlatform = (*i).modulesPerPlatform;
+        TModuleInfoMap::const_iterator n = modulesPerPlatform.find( platform );
+        if ( n != modulesPerPlatform.end() )
+        {
+            if ( MODULETYPE_EXECUTABLE == (*n).second.moduleType )
+            {
+                executableTargets.insert( &(*i) );
+            }
+        }
+        else
+        {
+            n = modulesPerPlatform.find( AllPlatforms );
+            if ( n != modulesPerPlatform.end() )
+            {
+                if ( MODULETYPE_EXECUTABLE == (*n).second.moduleType )
+                {
+                    executableTargets.insert( &(*i) );
+                }
+            }
+        }
+        ++i;
+    }
+}
+
+/*---------------------------------------------------------------------------*/
+
+void
+SplitProjectPerTarget( const TProjectInfo& projectInfo    ,
+                       TProjectTargetInfoMapMap& targets  )
+{GUCEF_TRACE;
+
+    TStringSet platformsUsed;
+    GetAllPlatformsUsed( projectInfo, platformsUsed );
+
+    TStringSet::iterator p = platformsUsed.begin();
+    while ( p != platformsUsed.end() )
+    {
+        TProjectTargetInfoMap& targetsForPlatform = targets[ (*p) ];
+        
+        TModuleInfoEntryConstPtrSet executables;
+        GetExecutables( projectInfo, executables, (*p) );
+
+        TModuleInfoEntryConstPtrSet::iterator i = executables.begin();
+        while ( i != executables.end() )
+        {
+            CORE::CString targetName = GetModuleNameAlways( *(*i), (*p) );
+            TProjectTargetInfo& target = targetsForPlatform[ targetName ];
+
+            target.projectName = projectInfo.projectName + "_exe_" + targetName;
+
+            target.modules.push_back( (*i) );
+            
+            TStringVector targetDependencies;
+            GetModuleDependencies( *(*i), (*p), targetDependencies );
+
+            TStringVector::iterator m = targetDependencies.begin();
+            while ( m != targetDependencies.end() )
+            {
+                const TModuleInfoEntry* dependency = GetModuleInfoEntry( projectInfo, targetName, (*p) );
+                if ( GUCEF_NULL != dependency )
+                    target.modules.push_back( dependency );
+                ++m;
+            }
+            ++i;
+        }
+        ++p;
     }
 }
 

@@ -1415,7 +1415,7 @@ WriteCMakeOptionsListToDisk( const TProjectInfo& projectInfo  ,
     {        
         fileContent = GetCMakeListsFileHeader( addCompileDate ) + "\n\n" + fileContent;
 
-        CORE::CString pathToOptionsListFile = CORE::CombinePath( outputDir, "OptionsList.cmake" );
+        CORE::CString pathToOptionsListFile = CORE::CombinePath( outputDir, projectInfo.projectName + "_OptionsList.cmake" );
         if ( CORE::WriteStringAsTextFile( pathToOptionsListFile, fileContent ) )
         {
             GUCEF_LOG( CORE::LOGLEVEL_NORMAL, "Created OptionsList.cmake file in output dir: " + outputDir );
@@ -1460,7 +1460,7 @@ WriteCMakeModulesListToDisk( const TProjectInfo& projectInfo ,
         ++i;
     }
    
-    CORE::CString pathToCMakeModuleDirsFile = CORE::CombinePath( outputDir, "ModuleDirs.cmake" );
+    CORE::CString pathToCMakeModuleDirsFile = CORE::CombinePath( outputDir, projectInfo.projectName + "_ModuleDirs.cmake" );
     if ( CORE::WriteStringAsTextFile( pathToCMakeModuleDirsFile, fileContent ) )
     {
         GUCEF_LOG( CORE::LOGLEVEL_NORMAL, "Created ModuleDirs.cmake file in output dir: " + outputDir );

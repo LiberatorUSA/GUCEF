@@ -216,7 +216,9 @@ typedef std::pair< TModuleInfoEntry*, TModuleInfo* > TMutableModuleInfoEntryPair
 typedef std::vector< TModuleInfoEntryPair > TModuleInfoEntryPairVector;
 typedef std::vector< TMutableModuleInfoEntryPair > TMutableModuleInfoEntryPairVector;
 typedef std::vector< TModuleInfoEntry* > TModuleInfoEntryPtrVector;
+typedef std::vector< const TModuleInfoEntry* > TModuleInfoEntryConstPtrVector;
 typedef std::set< TModuleInfoEntry* > TModuleInfoEntryPtrSet;
+typedef std::set< const TModuleInfoEntry* > TModuleInfoEntryConstPtrSet;
 typedef std::map< int, TModuleInfoEntry* > TModuleInfoEntryPrioMap;
 
 /*---------------------------------------------------------------------------*/
@@ -247,6 +249,17 @@ struct SProjectInfo
     TStringVector globalDirExcludeList;                      // Dirs that should never be included in processing regardless of path
 };
 typedef struct SProjectInfo TProjectInfo;
+
+/*---------------------------------------------------------------------------*/
+
+struct SProjectTargetInfo
+{
+    CORE::CString projectName;                               // Name of the overall project
+    TModuleInfoEntryConstPtrVector modules;                  // All generated module information
+};
+typedef struct SProjectTargetInfo TProjectTargetInfo;
+typedef std::map< CORE::CString, TProjectTargetInfo > TProjectTargetInfoMap;
+typedef std::map< CORE::CString, TProjectTargetInfoMap > TProjectTargetInfoMapMap;
 
 /*-------------------------------------------------------------------------//
 //                                                                         //
@@ -443,9 +456,9 @@ DeserializeProjectInfo( TProjectInfo& projectInfo            ,
 
 GUCEF_PROJECTGEN_PUBLIC_CPP
 void
-GetModuleDependencies( TModuleInfoEntry& moduleInfoEntry   ,
-                       const CORE::CString& targetPlatform ,
-                       TStringVector& dependencies         );
+GetModuleDependencies( const TModuleInfoEntry& moduleInfoEntry ,
+                       const CORE::CString& targetPlatform     ,
+                       TStringVector& dependencies             );
                        
 
 /*-------------------------------------------------------------------------*/
@@ -545,6 +558,24 @@ bool
 IsModuleTaggedWith( const TModuleInfoEntry& moduleInfo ,
                     const CORE::CString& platformName  ,
                     const CORE::CString& tag           );
+
+/*-------------------------------------------------------------------------*/
+
+GUCEF_PROJECTGEN_PUBLIC_CPP
+void
+GetExecutables( const TProjectInfo& projectInfo                ,
+                TModuleInfoEntryConstPtrSet& executableTargets ,
+                const CORE::CString& platform                  );
+
+/*-------------------------------------------------------------------------*/
+
+/**
+ *  Splits out the projectInfo into different projects per platform
+ */
+GUCEF_PROJECTGEN_PUBLIC_CPP
+void
+SplitProjectPerTarget( const TProjectInfo& projectInfo    ,
+                       TProjectTargetInfoMapMap& targets  );
 
 /*-------------------------------------------------------------------------//
 //                                                                         //
