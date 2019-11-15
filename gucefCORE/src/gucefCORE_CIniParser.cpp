@@ -183,7 +183,7 @@ CIniParser::SaveTo( CIOAccess& file ) const
         while ( i != m_iniData.end() )
         {
             CString keyString = GUCEF_EOL "[" + (*i).sectionName + "]" GUCEF_EOL;
-            CString values = (*i).sectionData.GetAllPairs( valueSepStr );
+            CString values = (*i).sectionData.GetAllPairs( valueSepStr, true, "\"" );
 
             file.Write( keyString );
             file.Write( values );
@@ -263,6 +263,8 @@ CIniParser::LoadFrom( const CDataNode& node       ,
         {
             // Base the new section path off of the path to the root node
             CString sectionName = node.GetPathToRoot( '\\', true );
+            if ( !sectionName.IsNULLOrEmpty() && sectionName[ 0 ] == '\\' )
+                sectionName = sectionName.CutChars( 1, true, 0 );
 
             // Add each attribute as a key value pair is this section
             TIniSection dummySection;

@@ -224,7 +224,7 @@ class RestApiUdp2RedisConfigResource : public COM::CCodecBasedHTTPServerResource
 {
     public:
 
-    RestApiUdp2RedisConfigResource( Udp2Redis* app );
+    RestApiUdp2RedisConfigResource( Udp2Redis* app, bool appConfig );
 
     virtual ~RestApiUdp2RedisConfigResource();
 
@@ -234,6 +234,7 @@ class RestApiUdp2RedisConfigResource : public COM::CCodecBasedHTTPServerResource
     private:
 
     Udp2Redis* m_app;
+    bool m_appConfig;
 };
 
 /*-------------------------------------------------------------------------*/

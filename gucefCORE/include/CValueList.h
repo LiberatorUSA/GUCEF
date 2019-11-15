@@ -185,7 +185,9 @@ class GUCEF_CORE_PUBLIC_CPP CValueList : public CIConfigurable
     
     CString GetAllPairs( const UInt32 index, const CString& seperatorStr ) const;
     
-    CString GetAllPairs( const CString& seperatorStr ) const;
+    CString GetAllPairs( const CString& seperatorStr                , 
+                         bool envelopElements = false               , 
+                         const CString& envelopStr = CString::Empty ) const;
 
     /**
      *  Returns the key associated with the given index.

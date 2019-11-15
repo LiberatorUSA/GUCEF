@@ -638,9 +638,10 @@ RestApiUdp2RedisInfoResource::Serialize( CORE::CDataNode& output             ,
 
 /*-------------------------------------------------------------------------*/
 
-RestApiUdp2RedisConfigResource::RestApiUdp2RedisConfigResource( Udp2Redis* app )
+RestApiUdp2RedisConfigResource::RestApiUdp2RedisConfigResource( Udp2Redis* app, bool appConfig )
     : COM::CCodecBasedHTTPServerResource()
     , m_app( app )
+    , m_appConfig( appConfig )
 {GUCEF_TRACE;
 
     m_allowSerialize = true;
@@ -660,8 +661,14 @@ RestApiUdp2RedisConfigResource::Serialize( CORE::CDataNode& output             ,
                                            const CORE::CString& representation )
 {GUCEF_TRACE;
 
-    const CORE::CValueList& loadedConfig = m_app->GetAppConfig();
-    return loadedConfig.SaveConfig( output );
+    if ( m_appConfig )
+    {
+        const CORE::CValueList& loadedConfig = m_app->GetAppConfig();
+        return loadedConfig.SaveConfig( output );
+    }
+
+    const CORE::CDataNode& globalConfig = m_app->GetGlobalConfig();
+    output.Copy( globalConfig );
     return true;
 }
 
@@ -718,7 +725,8 @@ Udp2Redis::Start( void )
     }
 
     m_httpRouter.SetResourceMapping( "/info", RestApiUdp2RedisInfoResource::THTTPServerResourcePtr( new RestApiUdp2RedisInfoResource( this ) )  );
-    m_httpRouter.SetResourceMapping( "/config/appargs", RestApiUdp2RedisInfoResource::THTTPServerResourcePtr( new RestApiUdp2RedisConfigResource( this ) )  );
+    m_httpRouter.SetResourceMapping( "/config/appargs", RestApiUdp2RedisInfoResource::THTTPServerResourcePtr( new RestApiUdp2RedisConfigResource( this, true ) )  );
+    m_httpRouter.SetResourceMapping( "/config", RestApiUdp2RedisInfoResource::THTTPServerResourcePtr( new RestApiUdp2RedisConfigResource( this, false ) )  );
     m_httpServer.GetRouterController()->AddRouterMapping( &m_httpRouter, "", "" ); 
     return m_httpServer.Listen();
 }
@@ -740,7 +748,7 @@ Udp2Redis::LoadConfig( const CORE::CValueList& appConfig   ,
     m_httpServer.SetPort( CORE::StringToUInt16( appConfig.GetValueAlways( "RestApiPort", "10000" ) ) );
 
     m_appConfig = appConfig;
-    m_globalConfig = globalConfig;
+    m_globalConfig.Copy( globalConfig );
     return true;
 }
 

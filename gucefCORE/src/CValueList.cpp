@@ -510,7 +510,9 @@ CValueList::GetAllPairs( const UInt32 index          ,
 /*-------------------------------------------------------------------------*/
 
 CString
-CValueList::GetAllPairs( const CString& seperatorStr ) const
+CValueList::GetAllPairs( const CString& seperatorStr , 
+                         bool envelopElements        , 
+                         const CString& envelopStr   ) const
 {GUCEF_TRACE;
 
     CString resultStr;
@@ -533,7 +535,10 @@ CValueList::GetAllPairs( const CString& seperatorStr ) const
                 first = false;
             }
             
-            resultStr += key + '=' + (*n);
+            if ( envelopElements )
+                resultStr += envelopStr + key + envelopStr + '=' + envelopStr + (*n) + envelopStr;
+            else
+                resultStr += key + '=' + (*n);
             ++n;
         }
         ++i;
