@@ -83,6 +83,8 @@ elseif (WIN32)
     ../../Common/Base/Main.h
     ../../Common/Base/StatisticInfo.h
     ../../Common/Base/OpenGL/BaseManager.h
+    ../../Common/Input/Win32API/InputManager.h
+    ../../Common/Input/Win32API/PointerManager.h
   )
 
   set( PLATFORM_HEADER_INSTALL "WIN32" )
@@ -94,6 +96,8 @@ elseif (WIN32)
     FontView.cpp
     TextureView.cpp
     ../../Common/Base/OpenGL/BaseManager.cpp
+    ../../Common/Input/Win32API/InputManager.cpp
+    ../../Common/Input/Win32API/PointerManager.cpp
   )
 
   set( PLATFORM_SOURCE_INSTALL "WIN32" )
@@ -109,6 +113,8 @@ elseif (WIN64)
     ../../Common/Base/Main.h
     ../../Common/Base/StatisticInfo.h
     ../../Common/Base/OpenGL/BaseManager.h
+    ../../Common/Input/Win32API/InputManager.h
+    ../../Common/Input/Win32API/PointerManager.h
   )
 
   set( PLATFORM_HEADER_INSTALL "WIN64" )
@@ -120,6 +126,8 @@ elseif (WIN64)
     FontView.cpp
     TextureView.cpp
     ../../Common/Base/OpenGL/BaseManager.cpp
+    ../../Common/Input/Win32API/InputManager.cpp
+    ../../Common/Input/Win32API/PointerManager.cpp
   )
 
   set( PLATFORM_SOURCE_INSTALL "WIN64" )
@@ -185,11 +193,11 @@ if ( LINUX64 )
 endif( LINUX64 )
 
 if ( WIN32 )
-  include_directories( ../FontViewer ../../Common/Base ../../Common/Base/OpenGL )
+  include_directories( ../FontViewer ../../Common/Base ../../Common/Base/OpenGL ../../Common/Input/Win32API )
 endif( WIN32 )
 
 if ( WIN64 )
-  include_directories( ../FontViewer ../../Common/Base ../../Common/Base/OpenGL )
+  include_directories( ../FontViewer ../../Common/Base ../../Common/Base/OpenGL ../../Common/Input/Win32API )
 endif( WIN64 )
 
 

@@ -1,7 +1,7 @@
 @echo off
 
 SET GUCEF_THEBATCHDIR=%CD%
-GOTO FIND_GUCEF_CMAKE_SLN_DEBUG_MVC13_CMAKELISTGENERATOR
+GOTO FIND_GUCEF_CMAKE_SLN_DEBUG_MVC14_CMAKELISTGENERATOR
 
 
 REM -----------------------------------------------------
@@ -28,20 +28,20 @@ GOTO RUN_CMAKELISTGENERATOR
 
 REM -----------------------------------------------------
 
-:FIND_GUCEF_CMAKE_SLN_DEBUG_MVC13_CMAKELISTGENERATOR
+:FIND_GUCEF_CMAKE_SLN_DEBUG_MVC14_CMAKELISTGENERATOR
 
-SET GENERATORPATH=%GUCEF_THEBATCHDIR%\..\..\common\bin\MVC13\bin\Debug
+SET GENERATORPATH=%GUCEF_THEBATCHDIR%\..\..\common\bin\MVC14\bin\Debug
 SET GENERATOREXE=ProjectGenerator.exe
 SET EXETEST=%GENERATORPATH%\%GENERATOREXE%
 
 ECHO Test path = "%EXETEST%"
 IF EXIST "%EXETEST%" (
-  ECHO Warning: Using VC13 CMake debug development version of the ProjectGenerator
+  ECHO Warning: Using VC14 CMake debug development version of the ProjectGenerator
   GOTO RUN_CMAKELISTGENERATOR
 )
 
 IF NOT EXIST "%EXETEST%" (
-  ECHO Cannot locate VC13 CMake debug development version of the ProjectGenerator
+  ECHO Cannot locate VC14 CMake debug development version of the ProjectGenerator
   GOTO FIND_GUCEF_RELEASE_CMAKELISTGENERATOR
 )
 

@@ -139,6 +139,10 @@ class GUCEF_COMCORE_EXPORT_CPP CIPAddress
     bool ResolveDNS( const CORE::CString& address     ,
                      const UInt16 portInHostByteOrder );
 
+    char GetIPClass( void ) const;
+
+    bool IsMulticast( void ) const;
+
     protected:
     
     virtual void OnChange( const bool addressChanged ,

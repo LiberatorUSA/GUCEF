@@ -444,6 +444,8 @@ elseif (WIN32)
     ../../Common/Base/Main.h
     ../../Common/Base/StatisticInfo.h
     ../../Common/Base/OpenGL/BaseManager.h
+    ../../Common/Input/Win32API/InputManager.h
+    ../../Common/Input/Win32API/PointerManager.h
     ../../Common/Tools/Dialog.h
     ../../Common/Tools/DialogManager.h
     ../../Common/Tools/OpenSaveFileDialog.h
@@ -520,6 +522,8 @@ elseif (WIN32)
     WidgetTypes.cpp
     WorkspaceControl.cpp
     ../../Common/Base/OpenGL/BaseManager.cpp
+    ../../Common/Input/Win32API/InputManager.cpp
+    ../../Common/Input/Win32API/PointerManager.cpp
     ../../Common/Tools/Dialog.cpp
     ../../Common/Tools/DialogManager.cpp
     ../../Common/Tools/OpenSaveFileDialog.cpp
@@ -613,6 +617,8 @@ elseif (WIN64)
     ../../Common/Base/Main.h
     ../../Common/Base/StatisticInfo.h
     ../../Common/Base/OpenGL/BaseManager.h
+    ../../Common/Input/Win32API/InputManager.h
+    ../../Common/Input/Win32API/PointerManager.h
     ../../Common/Tools/Dialog.h
     ../../Common/Tools/DialogManager.h
     ../../Common/Tools/OpenSaveFileDialog.h
@@ -689,6 +695,8 @@ elseif (WIN64)
     WidgetTypes.cpp
     WorkspaceControl.cpp
     ../../Common/Base/OpenGL/BaseManager.cpp
+    ../../Common/Input/Win32API/InputManager.cpp
+    ../../Common/Input/Win32API/PointerManager.cpp
     ../../Common/Tools/Dialog.cpp
     ../../Common/Tools/DialogManager.cpp
     ../../Common/Tools/OpenSaveFileDialog.cpp
@@ -757,11 +765,11 @@ if ( LINUX64 )
 endif( LINUX64 )
 
 if ( WIN32 )
-  include_directories( ../LayoutEditor ../../Common/Base ../../Common/Base/OpenGL ../../Common/Tools )
+  include_directories( ../LayoutEditor ../../Common/Base ../../Common/Base/OpenGL ../../Common/Input/Win32API ../../Common/Tools )
 endif( WIN32 )
 
 if ( WIN64 )
-  include_directories( ../LayoutEditor ../../Common/Base ../../Common/Base/OpenGL ../../Common/Tools )
+  include_directories( ../LayoutEditor ../../Common/Base ../../Common/Base/OpenGL ../../Common/Input/Win32API ../../Common/Tools )
 endif( WIN64 )
 
 

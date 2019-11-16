@@ -319,6 +319,35 @@ CIPAddress::AddressAndPortAsString( void ) const
 
 /*-------------------------------------------------------------------------*/
 
+char 
+CIPAddress::GetIPClass( void ) const
+{GUCEF_TRACE;
+
+    if ( m_address & 0xE ) // First octet starts with 1110
+        return 'D';
+    if ( m_address & 0x6 ) // First octet starts with 110
+        return 'C';
+    if ( m_address & 0x2 ) // First octet starts with 10
+        return 'B';
+    if ( !( m_address & 0x1 ) ) // First octet starts with 0
+        return 'A';
+    return 'E';
+}
+
+/*-------------------------------------------------------------------------*/
+
+bool 
+CIPAddress::IsMulticast( void ) const
+{GUCEF_TRACE;
+
+    // Multicast is always a class D address
+    if ( m_address & 0xE ) // First octet starts with 1110
+        return true;
+    return false;
+}
+
+/*-------------------------------------------------------------------------*/
+
 CIPAddress&
 CIPAddress::operator=( const CIPAddress& src )
 {GUCEF_TRACE;
