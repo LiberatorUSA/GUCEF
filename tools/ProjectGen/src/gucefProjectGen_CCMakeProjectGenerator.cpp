@@ -1430,44 +1430,66 @@ WriteCMakeOptionsListToDisk( const TProjectInfo& projectInfo  ,
 /*--------------------------------------------------------------------------*/
 
 void
-WriteCMakeModulesListToDisk( const TProjectInfo& projectInfo ,
-                             const CORE::CString& outputDir  ,
-                             bool addCompileDate             )
+WriteCMakeModulesListToDisk( const TProjectInfo& projectInfo         ,
+                             const TProjectTargetInfoMapMap& targets ,
+                             const CORE::CString& outputDir          ,
+                             bool addCompileDate                     )
 {GUCEF_TRACE;
 
-    CORE::CString fileContent = GetCMakeListsFileHeader( addCompileDate );
-    
-    TModuleInfoEntryVector::const_iterator i = projectInfo.modules.begin();
-    while ( i != projectInfo.modules.end() )
+    TProjectTargetInfoMapMap::const_iterator t = targets.begin();
+    while ( t != targets.end() )
     {
-        const TModuleInfoEntry& moduleInfoEntry = (*i);
+        const CORE::CString& targetName = (*t).first;
+        const TProjectTargetInfoMap& targetPlatforms = (*t).second;
+        TProjectTargetInfoMap::const_iterator p = targetPlatforms.begin();
+        while ( p != targetPlatforms.end() )
+        {
+            const CORE::CString& targetPlatform = (*p).first;
+            const TProjectTargetInfo& targetProjectInfo = (*p).second;
 
-        TModuleType allPlatformsType = GetModuleType( moduleInfoEntry, AllPlatforms );
-        if ( ( MODULETYPE_HEADER_INCLUDE_LOCATION != allPlatformsType )   &&
-             ( MODULETYPE_HEADER_INTEGRATE_LOCATION != allPlatformsType ) &&
-             ( MODULETYPE_CODE_INTEGRATE_LOCATION != allPlatformsType )   &&
-             ( MODULETYPE_BINARY_PACKAGE != allPlatformsType )             )
-        {
-            CORE::CString pathToModuleDir = CORE::GetRelativePathToOtherPathRoot( outputDir, moduleInfoEntry.rootDir );
-            pathToModuleDir = pathToModuleDir.ReplaceChar( '\\', '/' );
-            CORE::CString cmakeLine = "add_subdirectory( " + pathToModuleDir + " )\n";
-            fileContent += cmakeLine;
-        }
-        else
-        {
-            GUCEF_LOG( CORE::LOGLEVEL_NORMAL, "Skipping CMakeLists.txt generation for module of type \"HeaderIncludeLocation\"" );
-        }
-        ++i;
-    }
+            CORE::CString fileContent = GetCMakeListsFileHeader( addCompileDate );
+    
+            TModuleInfoEntryConstPtrVector::const_iterator i = targetProjectInfo.modules.begin();
+            while ( i != targetProjectInfo.modules.end() )
+            {
+                const TModuleInfoEntry& moduleInfoEntry = *(*i);
+
+                TModuleType allPlatformsType = GetModuleType( moduleInfoEntry, targetPlatform );
+                if ( ( MODULETYPE_HEADER_INCLUDE_LOCATION != allPlatformsType )   &&
+                     ( MODULETYPE_HEADER_INTEGRATE_LOCATION != allPlatformsType ) &&
+                     ( MODULETYPE_CODE_INTEGRATE_LOCATION != allPlatformsType )   &&
+                     ( MODULETYPE_BINARY_PACKAGE != allPlatformsType )             )
+                {
+                    CORE::CString pathToModuleDir = CORE::GetRelativePathToOtherPathRoot( outputDir, moduleInfoEntry.rootDir );
+                    pathToModuleDir = pathToModuleDir.ReplaceChar( '\\', '/' );
+                    CORE::CString cmakeLine = "add_subdirectory( " + pathToModuleDir + " )\n";
+                    fileContent += cmakeLine;
+                }
+                else
+                {
+                    GUCEF_LOG( CORE::LOGLEVEL_NORMAL, "Skipping CMakeLists.txt generation for module of type \"HeaderIncludeLocation\"" );
+                }
+                ++i;
+            }
    
-    CORE::CString pathToCMakeModuleDirsFile = CORE::CombinePath( outputDir, projectInfo.projectName + "_ModuleDirs.cmake" );
-    if ( CORE::WriteStringAsTextFile( pathToCMakeModuleDirsFile, fileContent ) )
-    {
-        GUCEF_LOG( CORE::LOGLEVEL_NORMAL, "Created ModuleDirs.cmake file in output dir: " + outputDir );
-    }
-    else
-    {
-        GUCEF_ERROR_LOG( CORE::LOGLEVEL_IMPORTANT, "Failed to write ModuleDirs.cmake file content to disk at path " + outputDir );
+            CORE::CString qualifiedName;
+            if ( targetName == projectInfo.projectName )
+                qualifiedName = targetName + "_ModuleDirs.cmake";
+            else
+                qualifiedName = targetPlatform.Lowercase() + "_" + targetName + "_ModuleDirs.cmake";
+
+            CORE::CString pathToCMakeModuleDirsFile = CORE::CombinePath( outputDir, qualifiedName );
+            if ( CORE::WriteStringAsTextFile( pathToCMakeModuleDirsFile, fileContent ) )
+            {
+                GUCEF_LOG( CORE::LOGLEVEL_NORMAL, "Created " + qualifiedName + " file in output dir: " + outputDir );
+            }
+            else
+            {
+                GUCEF_ERROR_LOG( CORE::LOGLEVEL_IMPORTANT, "Failed to write " + qualifiedName + " file content to disk at path " + outputDir );
+            }
+            ++p;
+        }
+        ++t;
     }
 }
 
@@ -1509,6 +1531,7 @@ CCMakeProjectGenerator::GenerateProject( TProjectInfo& projectInfo            ,
         logfilePath = params.GetValueAlways( "logfile" );
     }
 
+    bool treatTagsAsTargets = CORE::StringToBool( params.GetValueAlways( "TreatTagsAsTargets", "true" ) );
     bool treatTagsAsOptions = CORE::StringToBool( params.GetValueAlways( "TreatTagsAsOptions", "true" ) );
     bool taggedOptionsEnabledDefault = CORE::StringToBool( params.GetValueAlways( "TaggedOptionsEnabledDefault", "true" ) );
 
@@ -1517,13 +1540,19 @@ CCMakeProjectGenerator::GenerateProject( TProjectInfo& projectInfo            ,
                                 treatTagsAsOptions              , 
                                 addGeneratorCompileTimeToOutput );
 
-    WriteCMakeModulesListToDisk( projectInfo, outputDir, addGeneratorCompileTimeToOutput );
-
     WriteCMakeOptionsListToDisk( projectInfo                     , 
                                  outputDir                       , 
                                  addGeneratorCompileTimeToOutput , 
                                  treatTagsAsOptions              , 
                                  taggedOptionsEnabledDefault     );
+
+    TProjectTargetInfoMapMap targets;
+    SplitProjectPerTarget( projectInfo, targets, treatTagsAsTargets, true ); 
+
+    WriteCMakeModulesListToDisk( projectInfo                     , 
+                                 targets                         ,
+                                 outputDir                       , 
+                                 addGeneratorCompileTimeToOutput );
 
     return true;
 }

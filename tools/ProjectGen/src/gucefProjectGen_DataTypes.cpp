@@ -494,11 +494,14 @@ SerializeModuleInfo( const TModuleInfoEntry& moduleEntry ,
     {
         UInt32 i=0;
         CORE::CString tagValue;
-        for ( i; i+1 < moduleInfo.tags.size(); ++i )
+        TStringSet::iterator s = moduleInfo.tags.begin();
+        while ( s != moduleInfo.tags.end() )
         {                     
-            tagValue += moduleInfo.tags[ i ] + ';';
+            tagValue += (*s) + ';';
+            ++s;
         }
-        tagValue += moduleInfo.tags[ i ];
+        if ( !tagValue.IsNULLOrEmpty() )
+            tagValue = tagValue.CutChars( 1, false, 0 );
         moduleInfoNode.SetAttribute( "Tags", tagValue );
     }
 
@@ -988,7 +991,7 @@ DeserializeModuleInfo( TModuleInfo& moduleInfo           ,
             }
         }
     }
-    moduleInfo.tags = moduleInfoNode->GetAttributeValue( "Tags" ).ParseElements( ';', false );
+    moduleInfo.tags = StringVectorToStringSet( moduleInfoNode->GetAttributeValue( "Tags" ).ParseElements( ';', false ) );
     moduleInfo.moduleType = StringToModuleType( moduleInfoNode->GetAttributeValue( "Type" ) );
     moduleInfo.considerSubDirs = CORE::StringToBool( moduleInfoNode->GetAttributeValue( "ConsiderSubDirs", "True" ) );
 
@@ -1531,9 +1534,9 @@ MergeModuleInfo( TModuleInfo& targetModuleInfo          ,
     }
 
     // Now combine the other items without overwriting
-    MergeStringVector( targetModuleInfo.tags    ,
-                       moduleInfoToMergeIn.tags ,
-                       true                     );
+    MergeStringSet( targetModuleInfo.tags    ,
+                    moduleInfoToMergeIn.tags ,
+                    true                     );
     MergeStringSet( targetModuleInfo.compilerSettings.languagesUsed    ,
                     moduleInfoToMergeIn.compilerSettings.languagesUsed ,
                     false                                              );
@@ -1927,6 +1930,35 @@ GetModuleDependencies( const TModuleInfoEntry& moduleInfoEntry ,
 
 /*---------------------------------------------------------------------------*/
 
+bool
+GetModuleDependencies( const TProjectInfo& projectInfo           ,
+                       const TModuleInfoEntry& moduleInfoEntry   ,
+                       const CORE::CString& targetPlatform       ,
+                       TModuleInfoEntryConstPtrSet& dependencies )
+{GUCEF_TRACE;
+
+    TStringVector deps;
+    GetModuleDependencies( moduleInfoEntry, targetPlatform, deps );  
+
+    bool foundAllDeps = true;
+    TModuleInfoEntryConstPtrSet foundDependencies;
+    TStringVector::iterator m = deps.begin();
+    while ( m != deps.end() )
+    {
+        const TModuleInfoEntry* dependency = GetModuleInfoEntry( projectInfo, (*m), targetPlatform );
+        if ( GUCEF_NULL != dependency )
+            dependencies.insert( dependency );
+        else
+        {
+            foundAllDeps = false; // We cannot satisfy the full dependency chain for the executable for the given platform
+        }
+        ++m;
+    }
+    return foundAllDeps;
+}
+
+/*---------------------------------------------------------------------------*/
+
 TModuleType
 GetModuleType( const TModuleInfoEntry& moduleInfoEntry ,
                const CORE::CString& targetPlatform     )
@@ -2117,15 +2149,50 @@ GetAllTagsUsed( const TProjectInfo& projectInfo ,
         TModuleInfoMap::const_iterator n = modulesPerPlatform.begin();
         while ( n != modulesPerPlatform.end() )
         {
-            const TStringVector& moduleTags = (*n).second.tags;
-            TStringVector::const_iterator m = moduleTags.begin();
-            while ( m != moduleTags.end() )
-            {
-                tagsUsed.insert( (*m) );
-                ++m;
-            }
+            MergeStringSet( tagsUsed, (*n).second.tags, true );
             ++n;
         }
+        ++i;
+    }
+}
+
+/*---------------------------------------------------------------------------*/
+
+bool
+IsModuleTagged( const TModuleInfoEntry& module ,
+                const CORE::CString& tag       ,
+                const CORE::CString& platform  )
+{GUCEF_TRACE;
+
+    TModuleInfoMap::const_iterator i = module.modulesPerPlatform.find( AllPlatforms );
+    if ( i != module.modulesPerPlatform.end() )
+    {
+        if ( (*i).second.tags.find( tag ) != (*i).second.tags.end() )
+            return true;
+    }
+    i = module.modulesPerPlatform.find( platform );
+    if ( i != module.modulesPerPlatform.end() )
+    {
+        if ( (*i).second.tags.find( tag ) != (*i).second.tags.end() )
+            return true;
+    }
+    return false;
+}
+
+/*---------------------------------------------------------------------------*/
+
+void
+GetTaggedModules( const TProjectInfo& projectInfo            ,
+                  const CORE::CString& tag                   ,
+                  TModuleInfoEntryConstPtrSet& taggedModules ,
+                  const CORE::CString& platform              )
+{GUCEF_TRACE;
+
+    TModuleInfoEntryVector::const_iterator i = projectInfo.modules.begin();
+    while ( i != projectInfo.modules.end() )
+    {
+        if ( IsModuleTagged( (*i), tag, platform ) )
+            taggedModules.insert( &(*i) );
         ++i;
     }
 }
@@ -2227,26 +2294,8 @@ GetExecutables( const TProjectInfo& projectInfo                ,
     TModuleInfoEntryVector::const_iterator i = projectInfo.modules.begin();
     while ( i != projectInfo.modules.end() )
     {
-        const TModuleInfoMap& modulesPerPlatform = (*i).modulesPerPlatform;
-        TModuleInfoMap::const_iterator n = modulesPerPlatform.find( platform );
-        if ( n != modulesPerPlatform.end() )
-        {
-            if ( MODULETYPE_EXECUTABLE == (*n).second.moduleType )
-            {
-                executableTargets.insert( &(*i) );
-            }
-        }
-        else
-        {
-            n = modulesPerPlatform.find( AllPlatforms );
-            if ( n != modulesPerPlatform.end() )
-            {
-                if ( MODULETYPE_EXECUTABLE == (*n).second.moduleType )
-                {
-                    executableTargets.insert( &(*i) );
-                }
-            }
-        }
+        if ( MODULETYPE_EXECUTABLE == GetModuleType( (*i), platform ) )
+            executableTargets.insert( &(*i) );
         ++i;
     }
 }
@@ -2255,7 +2304,9 @@ GetExecutables( const TProjectInfo& projectInfo                ,
 
 void
 SplitProjectPerTarget( const TProjectInfo& projectInfo    ,
-                       TProjectTargetInfoMapMap& targets  )
+                       TProjectTargetInfoMapMap& targets  ,
+                       bool tagsAsTargets                 ,
+                       bool collapseRedundantPlatforms    )
 {GUCEF_TRACE;
 
     TStringSet platformsUsed;
@@ -2264,35 +2315,136 @@ SplitProjectPerTarget( const TProjectInfo& projectInfo    ,
     TStringSet::iterator p = platformsUsed.begin();
     while ( p != platformsUsed.end() )
     {
-        TProjectTargetInfoMap& targetsForPlatform = targets[ (*p) ];
-        
         TModuleInfoEntryConstPtrSet executables;
         GetExecutables( projectInfo, executables, (*p) );
 
         TModuleInfoEntryConstPtrSet::iterator i = executables.begin();
         while ( i != executables.end() )
         {
-            CORE::CString targetName = GetModuleNameAlways( *(*i), (*p) );
-            TProjectTargetInfo& target = targetsForPlatform[ targetName ];
-
-            target.projectName = projectInfo.projectName + "_exe_" + targetName;
-
-            target.modules.push_back( (*i) );
-            
-            TStringVector targetDependencies;
-            GetModuleDependencies( *(*i), (*p), targetDependencies );
-
-            TStringVector::iterator m = targetDependencies.begin();
-            while ( m != targetDependencies.end() )
+            TModuleInfoEntryConstPtrSet foundDependencies;
+            if ( GetModuleDependencies( projectInfo, *(*i), (*p), foundDependencies ) )
             {
-                const TModuleInfoEntry* dependency = GetModuleInfoEntry( projectInfo, targetName, (*p) );
-                if ( GUCEF_NULL != dependency )
-                    target.modules.push_back( dependency );
-                ++m;
+                // if we made it here we found the executable and were able to satisfy all dependencies
+                // for the current platform
+            
+                CORE::CString targetName = GetModuleNameAlways( *(*i), (*p) );
+                CORE::CString projectName = projectInfo.projectName + "_[exe]_" + targetName; 
+                TProjectTargetInfoMap& targetPerPlatform = targets[ projectName ];
+                TProjectTargetInfo& target = targetPerPlatform[ (*p) ];
+
+                target.projectName = projectName;
+                target.modules.push_back( (*i) );
+                TModuleInfoEntryConstPtrSet::iterator j = foundDependencies.begin();
+                while ( j != foundDependencies.end() )
+                {
+                    target.modules.push_back( (*j) );
+                    ++j;
+                }                
             }
+            //else: We cannot satisfy the full dependency chain for the executable for the given platform
+
             ++i;
         }
         ++p;
+    }
+
+    if ( tagsAsTargets )
+    {
+        TStringSet tagsUsed;
+        GetAllTagsUsed( projectInfo, tagsUsed );
+
+        TStringSet::iterator p = platformsUsed.begin();
+        while ( p != platformsUsed.end() )
+        {
+            TStringSet::iterator i = tagsUsed.begin();
+            while ( i != tagsUsed.end() )
+            {
+                TModuleInfoEntryConstPtrSet taggedModules;
+                GetTaggedModules( projectInfo, (*i), taggedModules, (*p) );
+                CORE::CString projectName = projectInfo.projectName + "_[tag]_" + (*i);
+
+                TModuleInfoEntryConstPtrSet::iterator m = taggedModules.begin();
+                while ( m != taggedModules.end() )
+                {
+                    // Tagged or not we need to include the dependencies of tagged modules as well
+                    // We don't want to make projects that cannot compile
+                    TModuleInfoEntryConstPtrSet foundDependencies;
+                    if ( GetModuleDependencies( projectInfo, *(*m), (*p), foundDependencies ) )
+                    {
+                        TProjectTargetInfoMap& targetPerPlatform = targets[ projectName ];
+                        TProjectTargetInfo& target = targetPerPlatform[ (*p) ];
+
+                        target.projectName = projectName;
+                        target.modules.push_back( (*m) );
+                        TModuleInfoEntryConstPtrSet::iterator j = foundDependencies.begin();
+                        while ( j != foundDependencies.end() )
+                        {
+                            target.modules.push_back( (*j) );
+                            ++j;
+                        }
+                    }
+                    ++m;
+                }
+                ++i;
+            }
+            ++p;
+        }
+    }
+
+    if ( collapseRedundantPlatforms )
+    {
+        TProjectTargetInfoMapMap::iterator t = targets.begin();
+        while ( t != targets.end() )
+        {
+            TProjectTargetInfoMap& targetByPlatform = (*t).second;
+            TProjectTargetInfoMap::iterator a = targetByPlatform.find( AllPlatforms );
+            if ( a != targetByPlatform.end() )
+            {
+                TProjectTargetInfo& allPlatformsTarget = (*a).second;
+                
+                // We now check to see if the modules match across platforms which is all that is needed here
+                // The modules themselves will deal with platform specifics at an intra-module level
+                // The use-case we look for are cases where some platforms have different modules then others
+                // in which case we need to keep them as distinct targets
+                TStringSet redundantPlatforms; 
+                TProjectTargetInfoMap::iterator m = targetByPlatform.begin();
+                while (  m != targetByPlatform.end() )
+                {
+                     const CORE::CString& currentPlatform = (*m).first;
+                     if ( currentPlatform != AllPlatforms )
+                     {
+                         TProjectTargetInfo& somePlatformTarget = (*m).second;
+                         if ( somePlatformTarget.modules == allPlatformsTarget.modules )
+                            redundantPlatforms.insert( (*m).first );
+                    }
+                    ++m;
+                }
+                TStringSet::iterator r = redundantPlatforms.begin();
+                while ( r != redundantPlatforms.end() )
+                {
+                    targetByPlatform.erase( (*r) );
+                    ++r;
+                }
+            }
+            // else: targets that don't have a 'AllPlatforms' target cannot be collapsed
+            ++t;
+        }
+    }
+
+    // In order to facilitate uniform processing we also include the complete project as its own target
+    // This ensures that backend code doesnt need different code to process the complete project vs some
+    // target based subset
+    // Note that the full project is by definition "all" platforms because there is no target differntiation
+    // It relies soley on module level per-platform differenes to be processed
+
+    TProjectTargetInfoMap& fullProjectTargets = targets[ projectInfo.projectName ];
+    TProjectTargetInfo& fullProjectTarget = fullProjectTargets[ AllPlatforms ];
+    fullProjectTarget.projectName = projectInfo.projectName;
+    TModuleInfoEntryVector::const_iterator w = projectInfo.modules.begin();
+    while ( w != projectInfo.modules.end() )
+    {
+        fullProjectTarget.modules.push_back( &(*w) );
+        ++w;
     }
 }
 

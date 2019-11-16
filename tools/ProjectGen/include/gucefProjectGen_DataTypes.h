@@ -169,7 +169,7 @@ struct SModuleInfo
 {
     CORE::CString name;                          // the name of the module
     TModuleType moduleType;                      // The type of module we are dealing with
-    TStringVector tags;                          // optional tags that can be associated which allows filtering of modules
+    TStringSet tags;                             // optional tags that can be associated which allows filtering of modules
     
     TStringVector dependencies;                  // list of module names of all modules this module depends on
     TStringSet dependencyIncludeDirs;            // include directories needed for the headers of the dependencies, paths only no files
@@ -460,6 +460,14 @@ GetModuleDependencies( const TModuleInfoEntry& moduleInfoEntry ,
                        const CORE::CString& targetPlatform     ,
                        TStringVector& dependencies             );
                        
+/*-------------------------------------------------------------------------*/
+
+GUCEF_PROJECTGEN_PUBLIC_CPP
+bool
+GetModuleDependencies( const TProjectInfo& projectInfo           ,
+                       const TModuleInfoEntry& moduleInfoEntry   ,
+                       const CORE::CString& targetPlatform       ,
+                       TModuleInfoEntryConstPtrSet& dependencies );
 
 /*-------------------------------------------------------------------------*/
 
@@ -523,6 +531,23 @@ GetAllTagsUsed( const TProjectInfo& projectInfo ,
 /*-------------------------------------------------------------------------*/
 
 GUCEF_PROJECTGEN_PUBLIC_CPP
+bool
+IsModuleTagged( const TModuleInfoEntry& module ,
+                const CORE::CString& tag       ,
+                const CORE::CString& platform  );
+
+/*-------------------------------------------------------------------------*/
+
+GUCEF_PROJECTGEN_PUBLIC_CPP
+void
+GetTaggedModules( const TProjectInfo& projectInfo            ,
+                  const CORE::CString& tag                   ,
+                  TModuleInfoEntryConstPtrSet& taggedModules ,
+                  const CORE::CString& platform              );
+
+/*-------------------------------------------------------------------------*/
+
+GUCEF_PROJECTGEN_PUBLIC_CPP
 CORE::CString
 GetLanguageForModule( const TModuleInfo& moduleInfo );
                       
@@ -574,8 +599,10 @@ GetExecutables( const TProjectInfo& projectInfo                ,
  */
 GUCEF_PROJECTGEN_PUBLIC_CPP
 void
-SplitProjectPerTarget( const TProjectInfo& projectInfo    ,
-                       TProjectTargetInfoMapMap& targets  );
+SplitProjectPerTarget( const TProjectInfo& projectInfo   ,
+                       TProjectTargetInfoMapMap& targets ,
+                       bool tagsAsTargets                ,
+                       bool collapseRedundantPlatforms   );
 
 /*-------------------------------------------------------------------------//
 //                                                                         //
