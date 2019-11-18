@@ -2321,28 +2321,33 @@ SplitProjectPerTarget( const TProjectInfo& projectInfo    ,
         TModuleInfoEntryConstPtrSet::iterator i = executables.begin();
         while ( i != executables.end() )
         {
-            TModuleInfoEntryConstPtrSet foundDependencies;
-            if ( GetModuleDependencies( projectInfo, *(*i), (*p), foundDependencies ) )
-            {
-                // if we made it here we found the executable and were able to satisfy all dependencies
-                // for the current platform
+            const TModuleInfoEntry& executable = *(*i);
             
-                CORE::CString targetName = GetModuleNameAlways( *(*i), (*p) );
-                CORE::CString projectName = projectInfo.projectName + "_[exe]_" + targetName; 
-                TProjectTargetInfoMap& targetPerPlatform = targets[ projectName ];
-                TProjectTargetInfo& target = targetPerPlatform[ (*p) ];
-
-                target.projectName = projectName;
-                target.modules.push_back( (*i) );
-                TModuleInfoEntryConstPtrSet::iterator j = foundDependencies.begin();
-                while ( j != foundDependencies.end() )
+            // Don't bother if the executable doesnt have a platform definition for the current platform            
+            if ( executable.modulesPerPlatform.find( (*p) ) != executable.modulesPerPlatform.end() )
+            {            
+                TModuleInfoEntryConstPtrSet foundDependencies;
+                if ( GetModuleDependencies( projectInfo, executable, (*p), foundDependencies ) )
                 {
-                    target.modules.push_back( (*j) );
-                    ++j;
-                }                
-            }
-            //else: We cannot satisfy the full dependency chain for the executable for the given platform
+                    // if we made it here we found the executable and were able to satisfy all dependencies
+                    // for the current platform
+            
+                    CORE::CString targetName = GetModuleNameAlways( executable, (*p) );
+                    CORE::CString projectName = projectInfo.projectName + "_[exe]_" + targetName; 
+                    TProjectTargetInfoMap& targetPerPlatform = targets[ projectName ];
+                    TProjectTargetInfo& target = targetPerPlatform[ (*p) ];
 
+                    target.projectName = projectName;
+                    target.modules.insert( &executable );
+                    TModuleInfoEntryConstPtrSet::iterator j = foundDependencies.begin();
+                    while ( j != foundDependencies.end() )
+                    {
+                        target.modules.insert( (*j) );
+                        ++j;
+                    }                
+                }
+                //else: We cannot satisfy the full dependency chain for the executable for the given platform
+            }
             ++i;
         }
         ++p;
@@ -2366,21 +2371,27 @@ SplitProjectPerTarget( const TProjectInfo& projectInfo    ,
                 TModuleInfoEntryConstPtrSet::iterator m = taggedModules.begin();
                 while ( m != taggedModules.end() )
                 {
-                    // Tagged or not we need to include the dependencies of tagged modules as well
-                    // We don't want to make projects that cannot compile
-                    TModuleInfoEntryConstPtrSet foundDependencies;
-                    if ( GetModuleDependencies( projectInfo, *(*m), (*p), foundDependencies ) )
-                    {
-                        TProjectTargetInfoMap& targetPerPlatform = targets[ projectName ];
-                        TProjectTargetInfo& target = targetPerPlatform[ (*p) ];
-
-                        target.projectName = projectName;
-                        target.modules.push_back( (*m) );
-                        TModuleInfoEntryConstPtrSet::iterator j = foundDependencies.begin();
-                        while ( j != foundDependencies.end() )
+                    const TModuleInfoEntry& taggedModule = *(*m);
+                    
+                    // Don't include this module if it doesnt have a definition for the current platform
+                    if ( taggedModule.modulesPerPlatform.find( (*p) ) != taggedModule.modulesPerPlatform.end() )
+                    {                    
+                        // Tagged or not we need to include the dependencies of tagged modules as well
+                        // We don't want to make projects that cannot compile
+                        TModuleInfoEntryConstPtrSet foundDependencies;
+                        if ( GetModuleDependencies( projectInfo, taggedModule, (*p), foundDependencies ) )
                         {
-                            target.modules.push_back( (*j) );
-                            ++j;
+                            TProjectTargetInfoMap& targetPerPlatform = targets[ projectName ];
+                            TProjectTargetInfo& target = targetPerPlatform[ (*p) ];
+
+                            target.projectName = projectName;
+                            target.modules.insert( &taggedModule );
+                            TModuleInfoEntryConstPtrSet::iterator j = foundDependencies.begin();
+                            while ( j != foundDependencies.end() )
+                            {
+                                target.modules.insert( (*j) );
+                                ++j;
+                            }
                         }
                     }
                     ++m;
@@ -2443,7 +2454,7 @@ SplitProjectPerTarget( const TProjectInfo& projectInfo    ,
     TModuleInfoEntryVector::const_iterator w = projectInfo.modules.begin();
     while ( w != projectInfo.modules.end() )
     {
-        fullProjectTarget.modules.push_back( &(*w) );
+        fullProjectTarget.modules.insert( &(*w) );
         ++w;
     }
 }

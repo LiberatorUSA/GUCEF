@@ -1367,11 +1367,12 @@ WriteCMakeListsFilesToDisk( const TProjectInfo& projectInfo  ,
 /*--------------------------------------------------------------------------*/
 
 void
-WriteCMakeOptionsListToDisk( const TProjectInfo& projectInfo  ,
-                             const CORE::CString& outputDir   ,
-                             bool addCompileDate              ,
-                             bool treatTagsAsOptions          ,
-                             bool taggedOptionsEnabledDefault )
+WriteCMakeOptionsListToDisk( const TProjectInfo& projectInfo       ,
+                             const CORE::CString& outputDir        ,
+                             const CORE::CString& targetsOutputDir ,
+                             bool addCompileDate                   ,
+                             bool treatTagsAsOptions               ,
+                             bool taggedOptionsEnabledDefault      )
 {GUCEF_TRACE;
 
     // Creates a list with all the options
@@ -1415,7 +1416,7 @@ WriteCMakeOptionsListToDisk( const TProjectInfo& projectInfo  ,
     {        
         fileContent = GetCMakeListsFileHeader( addCompileDate ) + "\n\n" + fileContent;
 
-        CORE::CString pathToOptionsListFile = CORE::CombinePath( outputDir, projectInfo.projectName + "_OptionsList.cmake" );
+        CORE::CString pathToOptionsListFile = CORE::CombinePath( targetsOutputDir, projectInfo.projectName + "_OptionsList.cmake" );
         if ( CORE::WriteStringAsTextFile( pathToOptionsListFile, fileContent ) )
         {
             GUCEF_LOG( CORE::LOGLEVEL_NORMAL, "Created OptionsList.cmake file in output dir: " + outputDir );
@@ -1430,68 +1431,136 @@ WriteCMakeOptionsListToDisk( const TProjectInfo& projectInfo  ,
 /*--------------------------------------------------------------------------*/
 
 void
-WriteCMakeModulesListToDisk( const TProjectInfo& projectInfo         ,
-                             const TProjectTargetInfoMapMap& targets ,
-                             const CORE::CString& outputDir          ,
-                             bool addCompileDate                     )
+WriteCMakeTargetsToDisk( const TProjectInfo& projectInfo         ,
+                         const TProjectTargetInfoMapMap& targets ,
+                         const CORE::CString& outputDir          ,
+                         const CORE::CString& targetsOutputDir   ,
+                         bool addCompileDate                     )
 {GUCEF_TRACE;
 
     TProjectTargetInfoMapMap::const_iterator t = targets.begin();
     while ( t != targets.end() )
     {
+        CORE::CString fileContent = GetCMakeListsFileHeader( addCompileDate );
+        
         const CORE::CString& targetName = (*t).first;
         const TProjectTargetInfoMap& targetPlatforms = (*t).second;
         TProjectTargetInfoMap::const_iterator p = targetPlatforms.begin();
+        bool firstPlatform = true;
+        CORE::CString allPlatformsSection;
         while ( p != targetPlatforms.end() )
         {
             const CORE::CString& targetPlatform = (*p).first;
             const TProjectTargetInfo& targetProjectInfo = (*p).second;
+            CORE::CString platformSection;
 
-            CORE::CString fileContent = GetCMakeListsFileHeader( addCompileDate );
-    
-            TModuleInfoEntryConstPtrVector::const_iterator i = targetProjectInfo.modules.begin();
+            TModuleInfoEntryConstPtrSet::const_iterator i = targetProjectInfo.modules.begin();
             while ( i != targetProjectInfo.modules.end() )
             {
                 const TModuleInfoEntry& moduleInfoEntry = *(*i);
 
-                TModuleType allPlatformsType = GetModuleType( moduleInfoEntry, targetPlatform );
-                if ( ( MODULETYPE_HEADER_INCLUDE_LOCATION != allPlatformsType )   &&
-                     ( MODULETYPE_HEADER_INTEGRATE_LOCATION != allPlatformsType ) &&
-                     ( MODULETYPE_CODE_INTEGRATE_LOCATION != allPlatformsType )   &&
-                     ( MODULETYPE_BINARY_PACKAGE != allPlatformsType )             )
+                TModuleType moduleType = GetModuleType( moduleInfoEntry, targetPlatform );
+                if ( ( MODULETYPE_HEADER_INCLUDE_LOCATION != moduleType )   &&
+                     ( MODULETYPE_HEADER_INTEGRATE_LOCATION != moduleType ) &&
+                     ( MODULETYPE_CODE_INTEGRATE_LOCATION != moduleType )   &&
+                     ( MODULETYPE_BINARY_PACKAGE != moduleType )            &&
+                     ( MODULETYPE_UNDEFINED != moduleType )                  )
                 {
-                    CORE::CString pathToModuleDir = CORE::GetRelativePathToOtherPathRoot( outputDir, moduleInfoEntry.rootDir );
+                    CORE::CString pathToModuleDir = CORE::GetRelativePathToOtherPathRoot( targetsOutputDir, moduleInfoEntry.rootDir );
                     pathToModuleDir = pathToModuleDir.ReplaceChar( '\\', '/' );
                     CORE::CString cmakeLine = "add_subdirectory( " + pathToModuleDir + " )\n";
-                    fileContent += cmakeLine;
-                }
-                else
-                {
-                    GUCEF_LOG( CORE::LOGLEVEL_NORMAL, "Skipping CMakeLists.txt generation for module of type \"HeaderIncludeLocation\"" );
+                    platformSection += cmakeLine;
                 }
                 ++i;
             }
-   
-            CORE::CString qualifiedName;
-            if ( targetName == projectInfo.projectName )
-                qualifiedName = targetName + "_ModuleDirs.cmake";
-            else
-                qualifiedName = targetPlatform.Lowercase() + "_" + targetName + "_ModuleDirs.cmake";
 
-            CORE::CString pathToCMakeModuleDirsFile = CORE::CombinePath( outputDir, qualifiedName );
-            if ( CORE::WriteStringAsTextFile( pathToCMakeModuleDirsFile, fileContent ) )
+            if ( !platformSection.IsNULLOrEmpty() )
             {
-                GUCEF_LOG( CORE::LOGLEVEL_NORMAL, "Created " + qualifiedName + " file in output dir: " + outputDir );
-            }
-            else
-            {
-                GUCEF_ERROR_LOG( CORE::LOGLEVEL_IMPORTANT, "Failed to write " + qualifiedName + " file content to disk at path " + outputDir );
+                if ( targetPlatform == AllPlatforms )
+                {
+                    allPlatformsSection = platformSection;
+                }
+                else
+                {
+                    if ( firstPlatform )
+                    {
+                        platformSection = "\n\nif (" + targetPlatform.Uppercase() + ")\n" + platformSection;
+                        firstPlatform = false;
+                    }
+                    else
+                    {
+                        platformSection = "elseif (" + targetPlatform.Uppercase() + ")\n" + platformSection;
+                    }                
+                    fileContent += platformSection;
+                }                
             }
             ++p;
+        }
+        if ( !firstPlatform )
+        {
+            if ( !allPlatformsSection.IsNULLOrEmpty() )
+            {
+                fileContent += "else()\n" + allPlatformsSection;
+            }
+            fileContent += "endif()\n";
+        }
+        else
+        {
+            fileContent += allPlatformsSection;
+        }
+        
+        CORE::CString targetOutputDir = CORE::CombinePath( targetsOutputDir, targetName );
+        if ( CORE::CreateDirs( targetOutputDir ) )
+        {        
+            CORE::CString qualifiedName = targetName + "_ModuleDirs.cmake";
+            CORE::CString pathToCMakeModuleDirsFile = CORE::CombinePath( targetOutputDir, qualifiedName );
+            if ( CORE::WriteStringAsTextFile( pathToCMakeModuleDirsFile, fileContent ) )
+            {
+                GUCEF_LOG( CORE::LOGLEVEL_NORMAL, "Created " + qualifiedName + " file in output dir: " + targetOutputDir );
+            }
+            else
+            {
+                GUCEF_ERROR_LOG( CORE::LOGLEVEL_IMPORTANT, "Failed to write " + qualifiedName + " file content to disk at path " + pathToCMakeModuleDirsFile );
+            }
+
+            // Now also take care of the main project file for this target.....
+            // Note that the reason we do it this way is because CMake requires a singular CMakeLists.txt to be in the "root" for your project
+            // You cannot name it anything else and it can only define a singular project in such a file.
+            // To work around this limitation we create targets in target sub dirs so that each dir can have a CMakeLists.txt per target without stepping
+            // on eachother. It all still works because the ModuleDirs file will actually pull in the directories containing the modules which can actually
+            // live in a different part of the directory tree which is perfectly legal per CMake.
+            
+            TStringMap::iterator i = cmakeAdditionTemplates.find( "cmakelists" );
+            if ( i != cmakeAdditionTemplates.end() )
+            {
+                GUCEF_LOG( CORE::LOGLEVEL_NORMAL, "Processing CMakeLists.cmt template for target \"" + targetName + "\"" );
+
+                // Pull a copy based on the template
+                CORE::CString projectfileContent = (*i).second;
+
+                // resolve template variables
+                projectfileContent = projectfileContent.ReplaceSubstr( "$#$PROJECTNAME$#$", targetName );
+                // ... Add additional variables here to resolve
+
+                CORE::CString pathToCMakeListsFile = CORE::CombinePath( targetOutputDir, "CMakeLists.txt" );
+                if ( CORE::WriteStringAsTextFile( pathToCMakeListsFile, projectfileContent ) )
+                {
+                    GUCEF_LOG( CORE::LOGLEVEL_NORMAL, "Created CMakeLists.txt file for target " + targetName + " in output dir: " + targetOutputDir );
+                }
+                else
+                {
+                    GUCEF_ERROR_LOG( CORE::LOGLEVEL_IMPORTANT, "Failed to write CMakeLists.txt file for target " + targetName + " in output dir: " + targetOutputDir );
+                }
+            }
+            else
+            {
+                GUCEF_ERROR_LOG( CORE::LOGLEVEL_IMPORTANT, "Failed to obtain template for a CMakeLists.txt for project target \"" + targetName + "\". This file cannot be auto-generated in its entirety" );
+            }
         }
         ++t;
     }
 }
+
 
 /*--------------------------------------------------------------------------*/
 
@@ -1516,14 +1585,16 @@ CCMakeProjectGenerator::GenerateProject( TProjectInfo& projectInfo            ,
                                          const CORE::CValueList& params       )
 {GUCEF_TRACE;
 
-    // Prepare by loading up templates if any where provided
-    CORE::CString templateDir = params.GetValueAlways( "cmakgen:TemplateDir" );
+    // Prepare by loading up templates if any were provided
+
+    CORE::CString templateDir = params.GetValueAlways( "cmakegen:TemplateDir" );
     if ( !templateDir.IsNULLOrEmpty() )
     {
         LoadCMakeFileAdditionTemplates( templateDir );
     }
-
-    // Write the gathered info to disk in CMakeList.txt format
+    
+    // Gather some settings of relevance to this backend
+    
     CORE::CString logfilePath;
     bool addLogfilePathToOutput = CORE::StringToBool( params.GetValueAlways( "writeLogLocationToOutput" ) );
     if ( addLogfilePathToOutput )
@@ -1535,13 +1606,28 @@ CCMakeProjectGenerator::GenerateProject( TProjectInfo& projectInfo            ,
     bool treatTagsAsOptions = CORE::StringToBool( params.GetValueAlways( "TreatTagsAsOptions", "true" ) );
     bool taggedOptionsEnabledDefault = CORE::StringToBool( params.GetValueAlways( "TaggedOptionsEnabledDefault", "true" ) );
 
+    // Write the gathered info to disk in CMakeList.txt format per module
+
     WriteCMakeListsFilesToDisk( projectInfo                     , 
                                 logfilePath                     , 
                                 treatTagsAsOptions              , 
                                 addGeneratorCompileTimeToOutput );
 
+    // Now we tie the different modules together into different CMake projects as targets
+    // This next step is especially usefull for large codebases where various projects are intertwined but
+    // someone who obtained the code repository might only be interested in a much smaller subset
+    // This functionality allows this audiance to only have to deal with the smaller crosssection
+
+    CORE::CString targetsOutputDir = params.GetValueAlways( "cmakegen:TargetsDir" );
+    if ( targetsOutputDir.IsNULLOrEmpty() )
+        targetsOutputDir = outputDir;    
+    targetsOutputDir = CORE::RelativePath( targetsOutputDir, true );
+    if ( !CORE::CreateDirs( targetsOutputDir ) )
+        GUCEF_ERROR_LOG( CORE::LOGLEVEL_IMPORTANT, "Failed to create CMake project targets output folder: " + targetsOutputDir );
+    
     WriteCMakeOptionsListToDisk( projectInfo                     , 
                                  outputDir                       , 
+                                 targetsOutputDir                ,
                                  addGeneratorCompileTimeToOutput , 
                                  treatTagsAsOptions              , 
                                  taggedOptionsEnabledDefault     );
@@ -1549,10 +1635,11 @@ CCMakeProjectGenerator::GenerateProject( TProjectInfo& projectInfo            ,
     TProjectTargetInfoMapMap targets;
     SplitProjectPerTarget( projectInfo, targets, treatTagsAsTargets, true ); 
 
-    WriteCMakeModulesListToDisk( projectInfo                     , 
-                                 targets                         ,
-                                 outputDir                       , 
-                                 addGeneratorCompileTimeToOutput );
+    WriteCMakeTargetsToDisk( projectInfo                     , 
+                             targets                         ,
+                             outputDir                       , 
+                             targetsOutputDir                ,
+                             addGeneratorCompileTimeToOutput );
 
     return true;
 }

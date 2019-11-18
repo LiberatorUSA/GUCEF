@@ -255,7 +255,7 @@ typedef struct SProjectInfo TProjectInfo;
 struct SProjectTargetInfo
 {
     CORE::CString projectName;                               // Name of the overall project
-    TModuleInfoEntryConstPtrVector modules;                  // All generated module information
+    TModuleInfoEntryConstPtrSet modules;                     // All generated module information
 };
 typedef struct SProjectTargetInfo TProjectTargetInfo;
 typedef std::map< CORE::CString, TProjectTargetInfo > TProjectTargetInfoMap;
