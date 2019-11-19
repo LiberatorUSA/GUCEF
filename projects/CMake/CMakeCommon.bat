@@ -1,6 +1,6 @@
 @echo off
 
-SET BATCHSTARTDIR=%CD%
+SET BATCHSTARTDIR=%~dp0
 
 ECHO *** Enable command extensions ***
 
@@ -36,33 +36,10 @@ cd..
 SET GUCEF_HOME=%CD%
 SET SRCROOTDIR=%CD%
 SET OUTPUTDIR=%GUCEF_HOME%\common\bin
+SET GUCEF_SOURCE_DIR=%SRCROOTDIR%
 
-IF NOT DEFINED OIS_HOME (
-  ECHO OIS environment variable not found, setting it
-  SET OIS_HOME=%GUCEF_HOME%\gucefINPUT\plugins\inputdriverOIS\dependency\OIS
-)
-ECHO OIS_HOME = %OIS_HOME%
+ECHO SRCROOTDIR: %SRCROOTDIR%
+ECHO GUCEF_HOME: %GUCEF_HOME%
+ECHO root OUTPUTDIR: %OUTPUTDIR%
 
-IF NOT DEFINED FREEIMAGE_HOME (
-  ECHO FreeImage environment variable not found, setting it
-  SET FREEIMAGE_HOME=%GUCEF_HOME%\gucefIMAGE\plugins\imgpluginFreeImage\dependencies\FreeImage
-)
-ECHO FREEIMAGE_HOME = %FREEIMAGE_HOME%
-  
-IF NOT DEFINED DEVIL_HOME (
-  ECHO DevIL environment variable not found, setting it
-  SET DEVIL_HOME=%GUCEF_HOME%\gucefIMAGE\plugins\imgpluginDEVIL\dependancy\Devil
-)
-ECHO DEVIL_HOME = %DEVIL_HOME%
 
-IF NOT DEFINED ZLIB_HOME (
-  ECHO ZLib environment variable not found, setting it
-  SET ZLIB_HOME=%GUCEF_HOME%\gucefVFS\plugins\vfspluginZIP\dependencies\zlib
-)
-ECHO ZLIB_HOME = %ZLIB_HOME%
-
-IF NOT DEFINED ZZIPLIB_HOME (
-  ECHO zzipLib environment variable not found, setting it
-  SET ZZIPLIB_HOME=%GUCEF_HOME%\gucefVFS\plugins\vfspluginZIP\dependencies\zziplib
-)
-ECHO ZZIPLIB_HOME = %ZZIPLIB_HOME%

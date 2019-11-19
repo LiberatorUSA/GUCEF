@@ -18,6 +18,11 @@ cmake_minimum_required(VERSION 2.6)
 set(CMAKE_ALLOW_LOOSE_LOOP_CONSTRUCTS TRUE)
 cmake_policy(SET CMP0003 NEW)
 
+if ( DEFINED ENV{GUCEF_SOURCE_DIR} )
+  set( GUCEF_SOURCE_DIR "$ENV{GUCEF_SOURCE_DIR}" )
+  STRING(REGEX REPLACE "\\\\" "/" GUCEF_SOURCE_DIR ${GUCEF_SOURCE_DIR})
+endif()
+
 project( $#$PROJECTNAME$#$ )
 
 # Include necessary submodules
@@ -180,7 +185,7 @@ include(ConfigureBuild)
 include( $#$PROJECTNAME$#$_ModuleDirs.cmake )
 
 # Install documentation
-add_subdirectory(docs)
+#add_subdirectory(docs)
 
 # Install CMake modules
 #add_subdirectory(CMake)
