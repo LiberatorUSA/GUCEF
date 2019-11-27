@@ -8,8 +8,8 @@
 #-------------------------------------------------------------------
 
 ######################################################################
-# GUCEF_[exe]_DuplicateFileFinder BUILD SYSTEM
-# Welcome to the CMake build system for GUCEF_[exe]_DuplicateFileFinder.
+# GUCEF_[tag]_platform BUILD SYSTEM
+# Welcome to the CMake build system for GUCEF_[tag]_platform.
 # This is the main file where we prepare the general build environment
 # and provide build configuration options.
 ######################################################################
@@ -23,7 +23,7 @@ if ( DEFINED ENV{GUCEF_SOURCE_DIR} )
   STRING(REGEX REPLACE "\\\\" "/" GUCEF_SOURCE_DIR ${GUCEF_SOURCE_DIR})
 endif()
 
-project( GUCEF_[exe]_DuplicateFileFinder )
+project( GUCEF_[tag]_platform )
 
 # Include necessary submodules
 set(CMAKE_MODULE_PATH
@@ -49,10 +49,10 @@ if (CMAKE_BUILD_TYPE STREQUAL "")
   set(CMAKE_BUILD_TYPE "RelWithDebInfo" CACHE STRING "Choose the type of build, options are: None (CMAKE_CXX_FLAGS or CMAKE_C_FLAGS used) Debug Release RelWithDebInfo MinSizeRel." FORCE)
 endif ()
 
-# determine GUCEF_[exe]_DuplicateFileFinder version numbers
+# determine GUCEF_[tag]_platform version numbers
 include(GUCEFGetVersion)
 GUCEF_get_version(${GUCEF_SOURCE_DIR}/common/include/gucef_prerequisites.h)
-message(STATUS "Configuring GUCEF_[exe]_DuplicateFileFinder ${GUCEF_VERSION}")
+message(STATUS "Configuring GUCEF_[tag]_platform ${GUCEF_VERSION}")
 
 if (NOT APPLE)
   # Create debug libraries with _d postfix
@@ -182,7 +182,7 @@ include(ConfigureBuild)
 # Now setup targets
 ##################################################################
 
-include( GUCEF_[exe]_DuplicateFileFinder_ModuleDirs.cmake )
+include( GUCEF_[tag]_platform_ModuleDirs.cmake )
 
 # Install documentation
 #add_subdirectory(docs)

@@ -191,7 +191,7 @@ include( GUCEF_[tag]_test_ModuleDirs.cmake )
 #add_subdirectory(CMake)
 
 # Provide CPack packaging target
-#include(Packaging)
+include(Packaging)
 
 # Show feature summary
 #include(FeatureSummary)

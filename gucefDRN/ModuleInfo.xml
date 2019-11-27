@@ -1,5 +1,5 @@
 <ModuleInfoEntry>
-    <Module Name="gucefDRN" Type="SharedLibrary" Platform="All">
+    <Module Name="gucefDRN" Type="SharedLibrary" Platform="All" Tags="platform">
         <Dependencies>
             <Dependency Name="gucefMT" />
             <Dependency Name="gucefCORE" />

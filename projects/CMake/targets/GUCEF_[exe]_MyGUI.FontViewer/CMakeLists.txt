@@ -191,7 +191,7 @@ include( GUCEF_[exe]_MyGUI.FontViewer_ModuleDirs.cmake )
 #add_subdirectory(CMake)
 
 # Provide CPack packaging target
-#include(Packaging)
+include(Packaging)
 
 # Show feature summary
 #include(FeatureSummary)
