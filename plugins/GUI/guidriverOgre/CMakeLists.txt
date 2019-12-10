@@ -47,10 +47,10 @@ add_dependencies( ${MODULE_NAME} Ogre gucefCORE gucefGUI gucefMT )
 target_link_libraries( ${MODULE_NAME} Ogre gucefCORE gucefGUI gucefMT )
 set_property( TARGET ${MODULE_NAME} APPEND_STRING PROPERTY COMPILE_DEFINITIONS "GUIDRIVEROGRE_BUILD_MODULE" )
 
-include_directories( ../../../common/include ../../../dependencies/Ogre/OgreMain/include ../../../dependencies/Ogre/OgreMain/include/Hash ../../../dependencies/Ogre/OgreMain/include/Threading ../../../dependencies/Ogre/OgreMain/src ../../../dependencies/Ogre/OgreMain/src/nedmalloc ../../../dependencies/Ogre/OgreMain/src/stbi ../../../dependencies/Ogre/include ../../../dependencies/freetype/include ../../../dependencies/freetype/include/freetype ../../../dependencies/freetype/include/freetype/config ../../../dependencies/freetype/include/freetype/internal ../../../dependencies/freetype/include/freetype/internal/services ../../../dependencies/freetype/src/winfonts ../../../gucefCORE/include ../../../gucefGUI/include ../../../gucefIMAGE/include ../../../gucefMT/include ../../../gucefVFS/include include )
+include_directories( ../../../common/include ../../../dependencies/Ogre/OgreMain/include ../../../dependencies/Ogre/OgreMain/include/Hash ../../../dependencies/Ogre/OgreMain/include/Threading ../../../dependencies/Ogre/OgreMain/src ../../../dependencies/Ogre/OgreMain/src/nedmalloc ../../../dependencies/Ogre/OgreMain/src/stbi ../../../dependencies/Ogre/include ../../../dependencies/freetype/include ../../../dependencies/freetype/include/freetype ../../../dependencies/freetype/include/freetype/config ../../../dependencies/freetype/include/freetype/internal ../../../dependencies/freetype/include/freetype/internal/services ../../../dependencies/freetype/src/winfonts ../../../platform/gucefCORE/include ../../../platform/gucefGUI/include ../../../platform/gucefIMAGE/include ../../../platform/gucefMT/include ../../../platform/gucefVFS/include include )
 
 if ( ANDROID )
-  include_directories( ../../../dependencies/Ogre/OgreMain/include/Android ../../../gucefCORE/include/android )
+  include_directories( ../../../dependencies/Ogre/OgreMain/include/Android ../../../platform/gucefCORE/include/android )
 endif( ANDROID )
 
 if ( EMSCRIPTEN )
@@ -70,11 +70,11 @@ if ( IOS )
 endif( IOS )
 
 if ( LINUX32 )
-  include_directories( ../../../gucefCORE/include/linux )
+  include_directories( ../../../platform/gucefCORE/include/linux )
 endif( LINUX32 )
 
 if ( LINUX64 )
-  include_directories( ../../../gucefCORE/include/linux )
+  include_directories( ../../../platform/gucefCORE/include/linux )
 endif( LINUX64 )
 
 if ( OSX )
@@ -82,11 +82,11 @@ if ( OSX )
 endif( OSX )
 
 if ( WIN32 )
-  include_directories( ../../../dependencies/Ogre/OgreMain/include/WIN32 ../../../dependencies/Ogre/OgreMain/src/WIN32 ../../../gucefCORE/include/mswin )
+  include_directories( ../../../dependencies/Ogre/OgreMain/include/WIN32 ../../../dependencies/Ogre/OgreMain/src/WIN32 ../../../platform/gucefCORE/include/mswin )
 endif( WIN32 )
 
 if ( WIN64 )
-  include_directories( ../../../gucefCORE/include/mswin )
+  include_directories( ../../../platform/gucefCORE/include/mswin )
 endif( WIN64 )
 
 

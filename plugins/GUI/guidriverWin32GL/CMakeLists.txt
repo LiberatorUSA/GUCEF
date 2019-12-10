@@ -86,14 +86,14 @@ if ( WIN64 )
   set_property( TARGET ${MODULE_NAME} APPEND_STRING PROPERTY COMPILE_DEFINITIONS "GUIDRIVERWIN32GL_BUILD_MODULE" )
 endif( WIN64 )
 
-include_directories( ../../../common/include ../../../gucefCORE/include ../../../gucefGUI/include ../../../gucefIMAGE/include ../../../gucefMT/include ../../../gucefVFS/include )
+include_directories( ../../../common/include ../../../platform/gucefCORE/include ../../../platform/gucefGUI/include ../../../platform/gucefIMAGE/include ../../../platform/gucefMT/include ../../../platform/gucefVFS/include )
 
 if ( WIN32 )
-  include_directories( ../../../gucefCORE/include/mswin include )
+  include_directories( ../../../platform/gucefCORE/include/mswin include )
 endif( WIN32 )
 
 if ( WIN64 )
-  include_directories( ../../../gucefCORE/include/mswin include )
+  include_directories( ../../../platform/gucefCORE/include/mswin include )
 endif( WIN64 )
 
 

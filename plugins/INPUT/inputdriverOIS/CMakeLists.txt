@@ -146,22 +146,22 @@ if ( WIN64 )
   set_property( TARGET ${MODULE_NAME} APPEND_STRING PROPERTY COMPILE_DEFINITIONS "BUILD_GUCEF_INPUT_PLUGIN_DLL;INPUTDRIVEROIS_BUILD_MODULE" )
 endif( WIN64 )
 
-include_directories( ../../../common/include ../../../gucefCORE/include ../../../gucefINPUT/include ../../../gucefMT/include )
+include_directories( ../../../common/include ../../../platform/gucefCORE/include ../../../platform/gucefINPUT/include ../../../platform/gucefMT/include )
 
 if ( LINUX32 )
-  include_directories( ../../../dependencies/OIS/includes ../../../dependencies/OIS/includes/iphone ../../../dependencies/OIS/includes/linux ../../../dependencies/OIS/src/extras/LIRC ../../../gucefCORE/include/linux include )
+  include_directories( ../../../dependencies/OIS/includes ../../../dependencies/OIS/includes/iphone ../../../dependencies/OIS/includes/linux ../../../dependencies/OIS/src/extras/LIRC ../../../platform/gucefCORE/include/linux include )
 endif( LINUX32 )
 
 if ( LINUX64 )
-  include_directories( ../../../dependencies/OIS/includes ../../../dependencies/OIS/includes/iphone ../../../dependencies/OIS/includes/linux ../../../dependencies/OIS/src/extras/LIRC ../../../gucefCORE/include/linux include )
+  include_directories( ../../../dependencies/OIS/includes ../../../dependencies/OIS/includes/iphone ../../../dependencies/OIS/includes/linux ../../../dependencies/OIS/src/extras/LIRC ../../../platform/gucefCORE/include/linux include )
 endif( LINUX64 )
 
 if ( WIN32 )
-  include_directories( ../../../dependencies/OIS/$ENV{DXSDK_DIR}/Include ../../../dependencies/OIS/includes ../../../dependencies/OIS/includes/iphone ../../../dependencies/OIS/includes/win32 ../../../dependencies/OIS/src/extras/LIRC ../../../dependencies/OIS/src/win32/extras/WiiMote ../../../dependencies/external ../../../gucefCORE/include/mswin include )
+  include_directories( ../../../dependencies/OIS/$ENV{DXSDK_DIR}/Include ../../../dependencies/OIS/includes ../../../dependencies/OIS/includes/iphone ../../../dependencies/OIS/includes/win32 ../../../dependencies/OIS/src/extras/LIRC ../../../dependencies/OIS/src/win32/extras/WiiMote ../../../dependencies/external ../../../platform/gucefCORE/include/mswin include )
 endif( WIN32 )
 
 if ( WIN64 )
-  include_directories( ../../../dependencies/OIS/includes ../../../dependencies/OIS/includes/iphone ../../../dependencies/OIS/src/extras/LIRC ../../../gucefCORE/include/mswin include )
+  include_directories( ../../../dependencies/OIS/includes ../../../dependencies/OIS/includes/iphone ../../../dependencies/OIS/src/extras/LIRC ../../../platform/gucefCORE/include/mswin include )
 endif( WIN64 )
 
 

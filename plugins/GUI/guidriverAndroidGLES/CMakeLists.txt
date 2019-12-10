@@ -54,10 +54,10 @@ if ( ANDROID )
   set_property( TARGET ${MODULE_NAME} APPEND_STRING PROPERTY COMPILE_DEFINITIONS "GUIDRIVERANDROIDGLES_BUILD_MODULE" )
 endif( ANDROID )
 
-include_directories( ../../../common/include ../../../gucefCORE/include ../../../gucefGUI/include ../../../gucefIMAGE/include ../../../gucefMT/include ../../../gucefVFS/include )
+include_directories( ../../../common/include ../../../platform/gucefCORE/include ../../../platform/gucefGUI/include ../../../platform/gucefIMAGE/include ../../../platform/gucefMT/include ../../../platform/gucefVFS/include )
 
 if ( ANDROID )
-  include_directories( ../../../gucefCORE/include/android include )
+  include_directories( ../../../platform/gucefCORE/include/android include )
 endif( ANDROID )
 
 

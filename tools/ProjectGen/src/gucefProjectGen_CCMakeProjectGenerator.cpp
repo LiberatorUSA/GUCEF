@@ -1482,7 +1482,7 @@ WriteCMakeTargetsToDisk( const TProjectInfo& projectInfo              ,
                     // The target dir is NOT a sub-dir of the module so we are required to specify a binary dir
                     CORE::CString moduleName = GetConsensusModuleName( moduleInfoEntry );
                     pathToModuleDir = pathToModuleDir.ReplaceChar( '\\', '/' );
-                    CORE::CString cmakeLine = "add_subdirectory( ${CMAKE_CURRENT_SOURCE_DIR}/" + pathToModuleDir + " ${CMAKE_BINARY_DIR}" + moduleName + " )\n";
+                    CORE::CString cmakeLine = "add_subdirectory( ${CMAKE_CURRENT_SOURCE_DIR}/" + pathToModuleDir + " ${CMAKE_BINARY_DIR}/" + moduleName + " )\n";
                     platformSection += cmakeLine;
                 }
             }

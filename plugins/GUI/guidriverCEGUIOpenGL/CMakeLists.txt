@@ -67,26 +67,26 @@ if ( WIN64 )
   target_link_libraries( ${MODULE_NAME} CEGUI.RendererModule.OpenGL OpenGL32 )
 endif( WIN64 )
 
-include_directories( ../../../common/include ../../../dependencies/cegui/cegui/include ../../../dependencies/freetype/include ../../../dependencies/freetype/include/freetype ../../../dependencies/freetype/include/freetype/config ../../../dependencies/freetype/include/freetype/internal ../../../dependencies/freetype/include/freetype/internal/services ../../../dependencies/freetype/src/winfonts ../../../gucefCORE/include ../../../gucefGUI/include ../../../gucefIMAGE/include ../../../gucefINPUT/include ../../../gucefMT/include ../../../gucefVFS/include ../guidriverCEGUI/include include )
+include_directories( ../../../common/include ../../../dependencies/cegui/cegui/include ../../../dependencies/freetype/include ../../../dependencies/freetype/include/freetype ../../../dependencies/freetype/include/freetype/config ../../../dependencies/freetype/include/freetype/internal ../../../dependencies/freetype/include/freetype/internal/services ../../../dependencies/freetype/src/winfonts ../../../platform/gucefCORE/include ../../../platform/gucefGUI/include ../../../platform/gucefIMAGE/include ../../../platform/gucefINPUT/include ../../../platform/gucefMT/include ../../../platform/gucefVFS/include ../guidriverCEGUI/include include )
 
 if ( ANDROID )
-  include_directories( ../../../gucefCORE/include/android )
+  include_directories( ../../../platform/gucefCORE/include/android )
 endif( ANDROID )
 
 if ( LINUX32 )
-  include_directories( ../../../gucefCORE/include/linux )
+  include_directories( ../../../platform/gucefCORE/include/linux )
 endif( LINUX32 )
 
 if ( LINUX64 )
-  include_directories( ../../../gucefCORE/include/linux )
+  include_directories( ../../../platform/gucefCORE/include/linux )
 endif( LINUX64 )
 
 if ( WIN32 )
-  include_directories( ../../../gucefCORE/include/mswin )
+  include_directories( ../../../platform/gucefCORE/include/mswin )
 endif( WIN32 )
 
 if ( WIN64 )
-  include_directories( ../../../gucefCORE/include/mswin )
+  include_directories( ../../../platform/gucefCORE/include/mswin )
 endif( WIN64 )
 
 

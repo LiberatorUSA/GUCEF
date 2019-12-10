@@ -33,26 +33,26 @@ endif()
 add_dependencies( ${MODULE_NAME} gucefCOMCORE gucefCORE gucefMT )
 target_link_libraries( ${MODULE_NAME} gucefCOMCORE gucefCORE gucefMT )
 
-include_directories( ../../common/include ../../gucefCOMCORE/include ../../gucefCORE/include ../../gucefMT/include )
+include_directories( ../../common/include ../../platform/gucefCOMCORE/include ../../platform/gucefCORE/include ../../platform/gucefMT/include )
 
 if ( ANDROID )
-  include_directories( ../../gucefCORE/include/android )
+  include_directories( ../../platform/gucefCORE/include/android )
 endif( ANDROID )
 
 if ( LINUX32 )
-  include_directories( ../../gucefCORE/include/linux )
+  include_directories( ../../platform/gucefCORE/include/linux )
 endif( LINUX32 )
 
 if ( LINUX64 )
-  include_directories( ../../gucefCORE/include/linux )
+  include_directories( ../../platform/gucefCORE/include/linux )
 endif( LINUX64 )
 
 if ( WIN32 )
-  include_directories( ../../gucefCOMCORE/include/mswin ../../gucefCORE/include/mswin )
+  include_directories( ../../platform/gucefCOMCORE/include/mswin ../../platform/gucefCORE/include/mswin )
 endif( WIN32 )
 
 if ( WIN64 )
-  include_directories( ../../gucefCOMCORE/include/mswin ../../gucefCORE/include/mswin )
+  include_directories( ../../platform/gucefCOMCORE/include/mswin ../../platform/gucefCORE/include/mswin )
 endif( WIN64 )
 
 
