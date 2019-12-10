@@ -9,6 +9,6 @@
 #-------------------------------------------------------------------
 #
 add_subdirectory( ${CMAKE_CURRENT_SOURCE_DIR}/../../../../dependencies/DVPACKSYS ${CMAKE_BINARY_DIR}/DVPACKSYS )
-add_subdirectory( ${CMAKE_CURRENT_SOURCE_DIR}/../../../../gucefCORE ${CMAKE_BINARY_DIR}/gucefCORE )
-add_subdirectory( ${CMAKE_CURRENT_SOURCE_DIR}/../../../../gucefMT ${CMAKE_BINARY_DIR}/gucefMT )
+add_subdirectory( ${CMAKE_CURRENT_SOURCE_DIR}/../../../../platform/gucefCORE ${CMAKE_BINARY_DIR}/gucefCORE )
+add_subdirectory( ${CMAKE_CURRENT_SOURCE_DIR}/../../../../platform/gucefMT ${CMAKE_BINARY_DIR}/gucefMT )
 add_subdirectory( ${CMAKE_CURRENT_SOURCE_DIR}/../../../../tools/DVPPackTool ${CMAKE_BINARY_DIR}/DVPPackTool )

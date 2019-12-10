@@ -558,7 +558,7 @@ if ( LINUX64 )
   target_link_libraries( ${MODULE_NAME} dl rt )
 endif( LINUX64 )
 
-include_directories( ../common/include ../gucefCORE/include ../gucefMT/include ../gucefCORE/include/ ../gucefMT/include/ include )
+include_directories( ../../common/include ../gucefCORE/include ../gucefMT/include ../gucefCORE/include/ ../gucefMT/include/ include )
 
 if ( ANDROID )
   include_directories( ../gucefCORE/include/android ../gucefCORE/include/ ../gucefMT/include/ )

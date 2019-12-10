@@ -482,7 +482,7 @@ if ( LINUX64 )
   target_link_libraries( ${MODULE_NAME} X11 dl rt )
 endif( LINUX64 )
 
-include_directories( ../common/include ../gucefMT/include include )
+include_directories( ../../common/include ../gucefMT/include include )
 
 if ( ANDROID )
   include_directories( include/android )

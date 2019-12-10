@@ -8,7 +8,7 @@
 # free to make use of it in any way you like.
 #-------------------------------------------------------------------
 #
-add_subdirectory( ${CMAKE_CURRENT_SOURCE_DIR}/../../../../gucefCORE ${CMAKE_BINARY_DIR}/gucefCORE )
-add_subdirectory( ${CMAKE_CURRENT_SOURCE_DIR}/../../../../gucefMT ${CMAKE_BINARY_DIR}/gucefMT )
-add_subdirectory( ${CMAKE_CURRENT_SOURCE_DIR}/../../../../gucefVFS ${CMAKE_BINARY_DIR}/gucefVFS )
+add_subdirectory( ${CMAKE_CURRENT_SOURCE_DIR}/../../../../platform/gucefCORE ${CMAKE_BINARY_DIR}/gucefCORE )
+add_subdirectory( ${CMAKE_CURRENT_SOURCE_DIR}/../../../../platform/gucefMT ${CMAKE_BINARY_DIR}/gucefMT )
+add_subdirectory( ${CMAKE_CURRENT_SOURCE_DIR}/../../../../platform/gucefVFS ${CMAKE_BINARY_DIR}/gucefVFS )
 add_subdirectory( ${CMAKE_CURRENT_SOURCE_DIR}/../../../../tools/GucefArchiver ${CMAKE_BINARY_DIR}/GucefArchiver )

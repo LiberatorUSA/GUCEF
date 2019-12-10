@@ -64,26 +64,26 @@ if ( WIN64 )
   target_link_libraries( ${MODULE_NAME} zlib )
 endif( WIN64 )
 
-include_directories( ../../../common/include ../../../dependencies/zziplib ../../../dependencies/zziplib/zzip ../../../gucefCORE/include ../../../gucefMT/include ../../../gucefVFS/include include )
+include_directories( ../../../common/include ../../../dependencies/zziplib ../../../dependencies/zziplib/zzip ../../../platform/gucefCORE/include ../../../platform/gucefMT/include ../../../platform/gucefVFS/include include )
 
 if ( ANDROID )
-  include_directories( ../../../gucefCORE/include/android )
+  include_directories( ../../../platform/gucefCORE/include/android )
 endif( ANDROID )
 
 if ( LINUX32 )
-  include_directories( ../../../dependencies/zlib ../../../gucefCORE/include/linux )
+  include_directories( ../../../dependencies/zlib ../../../platform/gucefCORE/include/linux )
 endif( LINUX32 )
 
 if ( LINUX64 )
-  include_directories( ../../../dependencies/zlib ../../../gucefCORE/include/linux )
+  include_directories( ../../../dependencies/zlib ../../../platform/gucefCORE/include/linux )
 endif( LINUX64 )
 
 if ( WIN32 )
-  include_directories( ../../../dependencies/zlib ../../../gucefCORE/include/mswin )
+  include_directories( ../../../dependencies/zlib ../../../platform/gucefCORE/include/mswin )
 endif( WIN32 )
 
 if ( WIN64 )
-  include_directories( ../../../dependencies/zlib ../../../gucefCORE/include/mswin )
+  include_directories( ../../../dependencies/zlib ../../../platform/gucefCORE/include/mswin )
 endif( WIN64 )
 
 

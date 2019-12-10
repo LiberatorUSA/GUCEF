@@ -38,26 +38,26 @@ add_dependencies( ${MODULE_NAME} gucefCORE gucefMT gucefVFS )
 target_link_libraries( ${MODULE_NAME} gucefCORE gucefMT gucefVFS )
 set_property( TARGET ${MODULE_NAME} APPEND_STRING PROPERTY COMPILE_DEFINITIONS "GUCEF_VFSPLUGIN_ITV_BUILD_MODULE" )
 
-include_directories( ../../../common/include ../../../gucefCORE/include ../../../gucefMT/include ../../../gucefVFS/include include )
+include_directories( ../../../common/include ../../../platform/gucefCORE/include ../../../platform/gucefMT/include ../../../platform/gucefVFS/include include )
 
 if ( ANDROID )
-  include_directories( ../../../gucefCORE/include/android )
+  include_directories( ../../../platform/gucefCORE/include/android )
 endif( ANDROID )
 
 if ( LINUX32 )
-  include_directories( ../../../gucefCORE/include/linux )
+  include_directories( ../../../platform/gucefCORE/include/linux )
 endif( LINUX32 )
 
 if ( LINUX64 )
-  include_directories( ../../../gucefCORE/include/linux )
+  include_directories( ../../../platform/gucefCORE/include/linux )
 endif( LINUX64 )
 
 if ( WIN32 )
-  include_directories( ../../../gucefCORE/include/mswin )
+  include_directories( ../../../platform/gucefCORE/include/mswin )
 endif( WIN32 )
 
 if ( WIN64 )
-  include_directories( ../../../gucefCORE/include/mswin )
+  include_directories( ../../../platform/gucefCORE/include/mswin )
 endif( WIN64 )
 
 

@@ -11,13 +11,13 @@
 
 
 if (WIN32)
-add_subdirectory( ${CMAKE_CURRENT_SOURCE_DIR}/../../../../gucefCORE ${CMAKE_BINARY_DIR}/gucefCORE )
-add_subdirectory( ${CMAKE_CURRENT_SOURCE_DIR}/../../../../gucefMT ${CMAKE_BINARY_DIR}/gucefMT )
+add_subdirectory( ${CMAKE_CURRENT_SOURCE_DIR}/../../../../platform/gucefCORE ${CMAKE_BINARY_DIR}/gucefCORE )
+add_subdirectory( ${CMAKE_CURRENT_SOURCE_DIR}/../../../../platform/gucefMT ${CMAKE_BINARY_DIR}/gucefMT )
 add_subdirectory( ${CMAKE_CURRENT_SOURCE_DIR}/../../../../tests/MemoryLeakFinder_TestApp ${CMAKE_BINARY_DIR}/MemoryLeakFinder_TestApp )
 add_subdirectory( ${CMAKE_CURRENT_SOURCE_DIR}/../../../../tools/MemoryLeakFinder ${CMAKE_BINARY_DIR}/MemoryLeakFinder )
 elseif (WIN64)
-add_subdirectory( ${CMAKE_CURRENT_SOURCE_DIR}/../../../../gucefCORE ${CMAKE_BINARY_DIR}/gucefCORE )
-add_subdirectory( ${CMAKE_CURRENT_SOURCE_DIR}/../../../../gucefMT ${CMAKE_BINARY_DIR}/gucefMT )
+add_subdirectory( ${CMAKE_CURRENT_SOURCE_DIR}/../../../../platform/gucefCORE ${CMAKE_BINARY_DIR}/gucefCORE )
+add_subdirectory( ${CMAKE_CURRENT_SOURCE_DIR}/../../../../platform/gucefMT ${CMAKE_BINARY_DIR}/gucefMT )
 add_subdirectory( ${CMAKE_CURRENT_SOURCE_DIR}/../../../../tests/MemoryLeakFinder_TestApp ${CMAKE_BINARY_DIR}/MemoryLeakFinder_TestApp )
 add_subdirectory( ${CMAKE_CURRENT_SOURCE_DIR}/../../../../tools/MemoryLeakFinder ${CMAKE_BINARY_DIR}/MemoryLeakFinder )
 else()

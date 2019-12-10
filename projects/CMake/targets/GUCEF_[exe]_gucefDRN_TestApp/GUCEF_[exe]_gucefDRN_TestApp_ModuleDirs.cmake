@@ -8,8 +8,8 @@
 # free to make use of it in any way you like.
 #-------------------------------------------------------------------
 #
-add_subdirectory( ${CMAKE_CURRENT_SOURCE_DIR}/../../../../gucefCOMCORE ${CMAKE_BINARY_DIR}/gucefCOMCORE )
-add_subdirectory( ${CMAKE_CURRENT_SOURCE_DIR}/../../../../gucefCORE ${CMAKE_BINARY_DIR}/gucefCORE )
-add_subdirectory( ${CMAKE_CURRENT_SOURCE_DIR}/../../../../gucefDRN ${CMAKE_BINARY_DIR}/gucefDRN )
-add_subdirectory( ${CMAKE_CURRENT_SOURCE_DIR}/../../../../gucefMT ${CMAKE_BINARY_DIR}/gucefMT )
+add_subdirectory( ${CMAKE_CURRENT_SOURCE_DIR}/../../../../platform/gucefCOMCORE ${CMAKE_BINARY_DIR}/gucefCOMCORE )
+add_subdirectory( ${CMAKE_CURRENT_SOURCE_DIR}/../../../../platform/gucefCORE ${CMAKE_BINARY_DIR}/gucefCORE )
+add_subdirectory( ${CMAKE_CURRENT_SOURCE_DIR}/../../../../platform/gucefDRN ${CMAKE_BINARY_DIR}/gucefDRN )
+add_subdirectory( ${CMAKE_CURRENT_SOURCE_DIR}/../../../../platform/gucefMT ${CMAKE_BINARY_DIR}/gucefMT )
 add_subdirectory( ${CMAKE_CURRENT_SOURCE_DIR}/../../../../tests/gucefDRN_TestApp ${CMAKE_BINARY_DIR}/gucefDRN_TestApp )

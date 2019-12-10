@@ -78,7 +78,7 @@ if ( WIN64 )
   target_link_libraries( ${MODULE_NAME} Winmm )
 endif( WIN64 )
 
-include_directories( ../common/include include )
+include_directories( ../../common/include include )
 
 
 

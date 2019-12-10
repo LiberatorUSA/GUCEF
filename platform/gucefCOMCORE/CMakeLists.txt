@@ -116,7 +116,7 @@ if ( WIN64 )
   target_link_libraries( ${MODULE_NAME} Advapi32.lib Ws2_32.lib )
 endif( WIN64 )
 
-include_directories( ../common/include ../gucefCORE/include ../gucefMT/include include )
+include_directories( ../../common/include ../gucefCORE/include ../gucefMT/include include )
 
 if ( ANDROID )
   include_directories( ../gucefCORE/include/android )

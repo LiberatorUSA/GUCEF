@@ -42,7 +42,7 @@ if ( ANDROID )
   target_link_libraries( ${MODULE_NAME} android android_native_app_glue )
 endif( ANDROID )
 
-include_directories( ../../../common/include ../../../gucefCORE/include ../../../gucefCORE/include/ ../../../gucefLOADER/include ../../../gucefMT/include ../../../gucefMT/include/ )
+include_directories( ../../../../common/include ../../../gucefCORE/include ../../../gucefCORE/include/ ../../../gucefLOADER/include ../../../gucefMT/include ../../../gucefMT/include/ )
 
 if ( ANDROID )
   include_directories( ../../../gucefCORE/include/ ../../../gucefCORE/include/android ../../../gucefMT/include/ )

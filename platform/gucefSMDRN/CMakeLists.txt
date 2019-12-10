@@ -55,7 +55,7 @@ add_dependencies( ${MODULE_NAME} gucefCOM gucefCOMCORE gucefCORE gucefDRN gucefM
 target_link_libraries( ${MODULE_NAME} gucefCOM gucefCOMCORE gucefCORE gucefDRN gucefMT )
 set_property( TARGET ${MODULE_NAME} APPEND_STRING PROPERTY COMPILE_DEFINITIONS "GUCEF_SMDRN_BUILD_MODULE" )
 
-include_directories( ../common/include ../gucefCOM/include ../gucefCOMCORE/include ../gucefCORE/include ../gucefDRN/include ../gucefMT/include include )
+include_directories( ../../common/include ../gucefCOM/include ../gucefCOMCORE/include ../gucefCORE/include ../gucefDRN/include ../gucefMT/include include )
 
 if ( ANDROID )
   include_directories( ../gucefCORE/include/android )

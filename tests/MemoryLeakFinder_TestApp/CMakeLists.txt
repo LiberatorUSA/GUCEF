@@ -61,14 +61,14 @@ if ( WIN64 )
   set_property( TARGET ${MODULE_NAME} APPEND_STRING PROPERTY COMPILE_DEFINITIONS "GUCEF_MLF_TESTAPP_BUILD_MODULE;MEMCHECK_OLEAPI" )
 endif( WIN64 )
 
-include_directories( ../../common/include ../../gucefCORE/include ../../gucefMT/include )
+include_directories( ../../common/include ../../platform/gucefCORE/include ../../platform/gucefMT/include )
 
 if ( WIN32 )
-  include_directories( ../../gucefCORE/include/mswin ../../gucefMT/include/ ../../tools/MemoryLeakFinder/include )
+  include_directories( ../../gucefMT/include/ ../../platform/gucefCORE/include/mswin ../../tools/MemoryLeakFinder/include )
 endif( WIN32 )
 
 if ( WIN64 )
-  include_directories( ../../gucefCORE/include/mswin ../../gucefMT/include/ ../../tools/MemoryLeakFinder/include )
+  include_directories( ../../gucefMT/include/ ../../platform/gucefCORE/include/mswin ../../tools/MemoryLeakFinder/include )
 endif( WIN64 )
 
 

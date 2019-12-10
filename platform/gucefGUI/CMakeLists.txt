@@ -115,7 +115,7 @@ add_dependencies( ${MODULE_NAME} gucefCORE gucefIMAGE gucefMT gucefVFS )
 target_link_libraries( ${MODULE_NAME} gucefCORE gucefIMAGE gucefMT gucefVFS )
 set_property( TARGET ${MODULE_NAME} APPEND_STRING PROPERTY COMPILE_DEFINITIONS "GUCEF_GUI_BUILD_MODULE" )
 
-include_directories( ../common/include ../gucefCORE/include ../gucefIMAGE/include ../gucefMT/include ../gucefVFS/include include )
+include_directories( ../../common/include ../gucefCORE/include ../gucefIMAGE/include ../gucefMT/include ../gucefVFS/include include )
 
 if ( ANDROID )
   include_directories( ../gucefCORE/include/android )

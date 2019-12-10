@@ -9,7 +9,7 @@
 #-------------------------------------------------------------------
 #
 add_subdirectory( ${CMAKE_CURRENT_SOURCE_DIR}/../../../../dependencies/librdkafka ${CMAKE_BINARY_DIR}/RdKafka )
-add_subdirectory( ${CMAKE_CURRENT_SOURCE_DIR}/../../../../gucefCOMCORE ${CMAKE_BINARY_DIR}/gucefCOMCORE )
-add_subdirectory( ${CMAKE_CURRENT_SOURCE_DIR}/../../../../gucefCORE ${CMAKE_BINARY_DIR}/gucefCORE )
-add_subdirectory( ${CMAKE_CURRENT_SOURCE_DIR}/../../../../gucefMT ${CMAKE_BINARY_DIR}/gucefMT )
+add_subdirectory( ${CMAKE_CURRENT_SOURCE_DIR}/../../../../platform/gucefCOMCORE ${CMAKE_BINARY_DIR}/gucefCOMCORE )
+add_subdirectory( ${CMAKE_CURRENT_SOURCE_DIR}/../../../../platform/gucefCORE ${CMAKE_BINARY_DIR}/gucefCORE )
+add_subdirectory( ${CMAKE_CURRENT_SOURCE_DIR}/../../../../platform/gucefMT ${CMAKE_BINARY_DIR}/gucefMT )
 add_subdirectory( ${CMAKE_CURRENT_SOURCE_DIR}/../../../../tools/udp2kafka ${CMAKE_BINARY_DIR}/udp2kafka )

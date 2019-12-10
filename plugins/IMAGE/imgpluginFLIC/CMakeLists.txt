@@ -34,26 +34,26 @@ add_dependencies( ${MODULE_NAME} fliclib gucefCORE gucefIMAGE gucefMT )
 target_link_libraries( ${MODULE_NAME} fliclib )
 set_property( TARGET ${MODULE_NAME} APPEND_STRING PROPERTY COMPILE_DEFINITIONS "GUCEF_CODECPLUGIN_BUILD_MODULE" )
 
-include_directories( ../../../common/include ../../../dependencies/flic ../../../gucefCORE/include ../../../gucefIMAGE/include ../../../gucefMT/include include )
+include_directories( ../../../common/include ../../../dependencies/flic ../../../platform/gucefCORE/include ../../../platform/gucefIMAGE/include ../../../platform/gucefMT/include include )
 
 if ( ANDROID )
-  include_directories( ../../../gucefCORE/include/android )
+  include_directories( ../../../platform/gucefCORE/include/android )
 endif( ANDROID )
 
 if ( LINUX32 )
-  include_directories( ../../../gucefCORE/include/linux )
+  include_directories( ../../../platform/gucefCORE/include/linux )
 endif( LINUX32 )
 
 if ( LINUX64 )
-  include_directories( ../../../gucefCORE/include/linux )
+  include_directories( ../../../platform/gucefCORE/include/linux )
 endif( LINUX64 )
 
 if ( WIN32 )
-  include_directories( ../../../gucefCORE/include/mswin )
+  include_directories( ../../../platform/gucefCORE/include/mswin )
 endif( WIN32 )
 
 if ( WIN64 )
-  include_directories( ../../../gucefCORE/include/mswin )
+  include_directories( ../../../platform/gucefCORE/include/mswin )
 endif( WIN64 )
 
 

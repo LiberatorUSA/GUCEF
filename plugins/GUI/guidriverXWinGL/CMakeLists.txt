@@ -86,14 +86,14 @@ if ( LINUX64 )
   set_property( TARGET ${MODULE_NAME} APPEND_STRING PROPERTY COMPILE_DEFINITIONS "GUIDRIVERXWINGL_BUILD_MODULE" )
 endif( LINUX64 )
 
-include_directories( ../../../common/include ../../../gucefCORE/include ../../../gucefGUI/include ../../../gucefIMAGE/include ../../../gucefMT/include ../../../gucefVFS/include )
+include_directories( ../../../common/include ../../../platform/gucefCORE/include ../../../platform/gucefGUI/include ../../../platform/gucefIMAGE/include ../../../platform/gucefMT/include ../../../platform/gucefVFS/include )
 
 if ( LINUX32 )
-  include_directories( ../../../gucefCORE/include/linux include )
+  include_directories( ../../../platform/gucefCORE/include/linux include )
 endif( LINUX32 )
 
 if ( LINUX64 )
-  include_directories( ../../../gucefCORE/include/linux include )
+  include_directories( ../../../platform/gucefCORE/include/linux include )
 endif( LINUX64 )
 
 
