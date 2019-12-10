@@ -633,6 +633,11 @@ RestApiUdp2RedisInfoResource::Serialize( CORE::CDataNode& output             ,
     output.SetName( "info" );
     output.SetAttribute( "application", "udp2redis" );
     output.SetAttribute( "buildDateTime", __TIMESTAMP__ );
+    #ifdef GUCEF_DEBUG_MODE
+    output.SetAttribute( "isReleaseBuild", "false" );
+    #else
+    output.SetAttribute( "isReleaseBuild", "true" );
+    #endif
     return true;
 }
 
