@@ -150,3 +150,4 @@ add_subdirectory( ${CMAKE_CURRENT_SOURCE_DIR}/../../../../tools/SocketSink ${CMA
 add_subdirectory( ${CMAKE_CURRENT_SOURCE_DIR}/../../../../tools/SVNMagicMerge ${CMAKE_BINARY_DIR}/SVNMagicMerge )
 add_subdirectory( ${CMAKE_CURRENT_SOURCE_DIR}/../../../../tools/udp2kafka ${CMAKE_BINARY_DIR}/udp2kafka )
 add_subdirectory( ${CMAKE_CURRENT_SOURCE_DIR}/../../../../tools/udp2redis ${CMAKE_BINARY_DIR}/udp2redis )
+add_subdirectory( ${CMAKE_CURRENT_SOURCE_DIR}/../../../../tools/UdpViaTcp ${CMAKE_BINARY_DIR}/udp2redis )
