@@ -624,6 +624,41 @@ CDynamicBuffer::Append( const void* data                            ,
 
 /*-------------------------------------------------------------------------*/
 
+Int32
+CDynamicBuffer::Find( const void* data        ,
+                      const UInt32 size       ,
+                      UInt32 offset /* = 0 */ ) const
+{GUCEF_TRACE;
+    
+    if ( offset+size > m_dataSize )
+        return -1;
+
+    UInt32 max = m_dataSize - size;
+    for ( UInt32 i=offset; i<max; ++i )
+    {
+        if ( 0 == memcmp( _buffer+i, data, size ) )
+            return (Int32) i;
+    }
+    return -1;
+}
+
+/*-------------------------------------------------------------------------*/
+
+bool
+CDynamicBuffer::Downshift( const UInt32 bytesToWipe )
+{GUCEF_TRACE;
+
+    SecureLinkBeforeMutation();
+    
+    if ( bytesToWipe > m_dataSize )
+        return false;
+
+    // todo
+    return false;
+}
+
+/*-------------------------------------------------------------------------*/
+
 void 
 CDynamicBuffer::Clear( const bool logicalClearOnly /* = true */ )
 {GUCEF_TRACE;

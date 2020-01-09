@@ -473,6 +473,11 @@ CTCPServerSocket::ListenOnPort( UInt16 servport )
 	    return false;
 	}
 
+    // Before we actually open the socket lets give observers the change to pre-allocate things if needed
+    // based on the max number of connections.
+    TServerSocketMaxConnectionsChangedEventData maxConEData( _data->maxcon );
+    NotifyObservers( ServerSocketMaxConnectionsChangedEvent, &maxConEData );
+
     /*
      *      Make the socket listen
      *
@@ -605,6 +610,26 @@ CTCPServerSocket::GetListenAddress( CHostAddress& listenAddress ) const
     listenAddress.SetPortInHostByteOrder( m_port );
     listenAddress.SetHostname( "localhost" );
     _datalock.Unlock();
+}
+
+/*-------------------------------------------------------------------------*/
+
+bool
+CTCPServerSocket::SendToAllClients( const void* dataSource , 
+                                    const UInt32 dataSize  )
+{GUCEF_TRACE;
+
+    bool totalSuccess = true;
+    _datalock.Lock();
+    if ( IsActive() )
+    {
+        for( UInt32 i=0; i<_connections.size(); ++i )
+        {
+            totalSuccess = totalSuccess && _connections[ i ]->Send( dataSource, dataSize );
+        }
+    }
+    _datalock.Unlock();
+    return totalSuccess;
 }
 
 /*-------------------------------------------------------------------------//

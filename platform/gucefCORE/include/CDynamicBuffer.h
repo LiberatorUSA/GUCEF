@@ -250,6 +250,20 @@ class GUCEF_CORE_PUBLIC_CPP CDynamicBuffer
         void Append( const void* data                      ,
                      const UInt32 size                     ,
                      const bool appendToLogicalData = true );
+
+        /**
+         *  Attempts to find a matching block of bytes if any from the given offset and returns the offset
+         *  at which the block was found. If no matching block is found -1 is returned.
+         */
+        Int32 Find( const void* data   ,
+                    const UInt32 size  ,
+                    UInt32 offset = 0  ) const;
+
+        /**
+         *  Down shifts the data in the buffer by "bytesToWipe" bytes and adjust the data size indicator accordingly
+         *  Returns false if out of bounds.
+         */
+        bool Downshift( const UInt32 bytesToWipe );
                      
         /**
          *  Trys to fill the dynamic buffer with the contents of the file given

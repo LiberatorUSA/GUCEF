@@ -103,6 +103,7 @@ class GUCEF_COMCORE_EXPORT_CPP CTCPServerSocket : public CSocket
     typedef CORE::CTCloneableObj< TConnectionInfo > TClientConnectedEventData;
     typedef CORE::CTCloneableObj< TDisconnectInfo > TClientDisconnectedEventData;
     typedef CORE::TLinkedCloneableBuffer TClientDataRecievedEventData;
+    typedef CORE::TCloneableInt32   TServerSocketMaxConnectionsChangedEventData;
 
     static void RegisterEvents( void );
     
@@ -149,6 +150,12 @@ class GUCEF_COMCORE_EXPORT_CPP CTCPServerSocket : public CSocket
     UInt32 GetMaxConnections( void ) const;
     
     void GetListenAddress( CHostAddress& listenAddress ) const;          
+
+    /**
+     *      Send data to ALL client connections
+     */
+    virtual bool SendToAllClients( const void* dataSource , 
+                                   const UInt32 dataSize  );
 
     virtual ~CTCPServerSocket();   
     
