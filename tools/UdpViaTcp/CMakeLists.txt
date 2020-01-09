@@ -9,7 +9,7 @@
 #-------------------------------------------------------------------
 #
 
-# Configuration for module: udp2redis
+# Configuration for module: UdpViaTcp
 
 set( HEADER_FILES 
   include/UdpViaTcp.h
@@ -29,71 +29,35 @@ set( SOURCE_FILES
 # For ease of use make a variable that has all files for this module
 set( ALL_FILES ${HEADER_FILES} ${SOURCE_FILES} ${PLATFORM_HEADER_FILES} ${PLATFORM_SOURCE_FILES} )
 
-set( MODULE_NAME "udp2redis" )
+set( MODULE_NAME "UdpViaTcp" )
 if ( WIN32 )
   add_executable( ${MODULE_NAME} WIN32 ${ALL_FILES} )
 else()
   add_executable( ${MODULE_NAME} ${ALL_FILES} )
 endif()
-add_dependencies( ${MODULE_NAME} gucefCOM gucefCOMCORE gucefCORE gucefMT hiredis )
-target_link_libraries( ${MODULE_NAME} gucefCOM gucefCOMCORE gucefCORE gucefMT hiredis )
+add_dependencies( ${MODULE_NAME} gucefCOM gucefCOMCORE gucefCORE gucefMT )
+target_link_libraries( ${MODULE_NAME} gucefCOM gucefCOMCORE gucefCORE gucefMT )
 
-include_directories( ../../common/include ../../dependencies/hiredis ../../platform/gucefCOM/include ../../platform/gucefCOMCORE/include ../../platform/gucefCORE/include ../../platform/gucefMT/include include )
+include_directories( ../../common/include ../../platform/gucefCOM/include ../../platform/gucefCOMCORE/include ../../platform/gucefCORE/include ../../platform/gucefMT/include include )
 
 if ( ANDROID )
-  include_directories( ../../dependencies/hiredis ../../platform/gucefCORE/include/android )
+  include_directories( ../../platform/gucefCORE/include/android )
 endif( ANDROID )
 
-if ( EMSCRIPTEN )
-  include_directories( ../../dependencies/hiredis )
-endif( EMSCRIPTEN )
-
-if ( GLX )
-  include_directories( ../../dependencies/hiredis )
-endif( GLX )
-
-if ( GTK )
-  include_directories( ../../dependencies/hiredis )
-endif( GTK )
-
-if ( IOS )
-  include_directories( ../../dependencies/hiredis )
-endif( IOS )
-
 if ( LINUX32 )
-  include_directories( ../../dependencies/hiredis ../../platform/gucefCORE/include/linux )
+  include_directories( ../../platform/gucefCORE/include/linux )
 endif( LINUX32 )
 
 if ( LINUX64 )
-  include_directories( ../../dependencies/hiredis ../../platform/gucefCORE/include/linux )
+  include_directories( ../../platform/gucefCORE/include/linux )
 endif( LINUX64 )
 
-if ( NACL )
-  include_directories( ../../dependencies/hiredis )
-endif( NACL )
-
-if ( OSX )
-  include_directories( ../../dependencies/hiredis )
-endif( OSX )
-
-if ( SDL )
-  include_directories( ../../dependencies/hiredis )
-endif( SDL )
-
-if ( SYMBIAN )
-  include_directories( ../../dependencies/hiredis )
-endif( SYMBIAN )
-
-if ( UNIX )
-  include_directories( ../../dependencies/hiredis )
-endif( UNIX )
-
 if ( WIN32 )
-  include_directories( ../../dependencies/hiredis ../../platform/gucefCOMCORE/include/mswin ../../platform/gucefCORE/include/mswin )
+  include_directories( ../../platform/gucefCOMCORE/include/mswin ../../platform/gucefCORE/include/mswin )
 endif( WIN32 )
 
 if ( WIN64 )
-  include_directories( ../../dependencies/hiredis ../../platform/gucefCOMCORE/include/mswin ../../platform/gucefCORE/include/mswin )
+  include_directories( ../../platform/gucefCOMCORE/include/mswin ../../platform/gucefCORE/include/mswin )
 endif( WIN64 )
 
 
@@ -105,27 +69,11 @@ endif( WIN64 )
 
 if (ANDROID)
 GUCEF_config_tool( ${MODULE_NAME} )
-elseif (EMSCRIPTEN)
-GUCEF_config_tool( ${MODULE_NAME} )
-elseif (GLX)
-GUCEF_config_tool( ${MODULE_NAME} )
-elseif (GTK)
-GUCEF_config_tool( ${MODULE_NAME} )
-elseif (IOS)
-GUCEF_config_tool( ${MODULE_NAME} )
 elseif (LINUX32)
 GUCEF_config_tool( ${MODULE_NAME} )
 elseif (LINUX64)
 GUCEF_config_tool( ${MODULE_NAME} )
-elseif (NACL)
-GUCEF_config_tool( ${MODULE_NAME} )
 elseif (OSX)
-GUCEF_config_tool( ${MODULE_NAME} )
-elseif (SDL)
-GUCEF_config_tool( ${MODULE_NAME} )
-elseif (SYMBIAN)
-GUCEF_config_tool( ${MODULE_NAME} )
-elseif (UNIX)
 GUCEF_config_tool( ${MODULE_NAME} )
 elseif (WIN32)
 GUCEF_config_tool( ${MODULE_NAME} )

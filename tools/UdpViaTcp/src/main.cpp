@@ -82,7 +82,7 @@
 #define GUCEF_COMCORE_CCOMCOREGLOBAL_H
 #endif /* GUCEF_COMCORE_CCOMCOREGLOBAL_H ? */
 
-#include "udp2redis.h"
+#include "UdpViaTcp.h"
 
 /*-------------------------------------------------------------------------//
 //                                                                         //
@@ -105,9 +105,9 @@ LoadConfig( const CORE::CString& configPath            ,
 {GUCEF_TRACE;
 
     #ifdef GUCEF_DEBUG_MODE
-    const CORE::CString configFile = "udp2redis_d.ini";
+    const CORE::CString configFile = "UdpViaTcp_d.ini";
     #else
-    const CORE::CString configFile = "udp2redis.ini";
+    const CORE::CString configFile = "UdpViaTcp.ini";
     #endif
 
     CORE::CString configFilePath;
@@ -182,7 +182,7 @@ ParseParams( const int argc                 ,
  *      Application entry point
  */
 GUCEF_OSMAIN_BEGIN
-//GUCEF_OSSERVICEMAIN_BEGIN( "udp2redis" )
+//GUCEF_OSSERVICEMAIN_BEGIN( "UdpViaTcp" )
 {GUCEF_TRACE;
 
     GUCEF_LOG( CORE::LOGLEVEL_NORMAL, "This tool was compiled on: " __DATE__ " @ " __TIME__ );
@@ -230,18 +230,18 @@ GUCEF_OSMAIN_BEGIN
     CORE::CCoreGlobal::Instance()->GetLogManager().FlushBootstrapLogEntriesToLogs();
     GUCEF_LOG( CORE::LOGLEVEL_NORMAL, "Flushed to log @ " + logFilename );
 
-    Udp2Redis Udp2Redis;
-    if ( !Udp2Redis.LoadConfig( keyValueList, *globalConfig ) )
+    UdpViaTcp udp2ViaTcp;
+    if ( !udp2ViaTcp.LoadConfig( keyValueList, *globalConfig ) )
     {
         delete globalConfig;
-        GUCEF_ERROR_LOG( CORE::LOGLEVEL_CRITICAL, "Udp2Redis: Exiting because LoadConfig failed" );
+        GUCEF_ERROR_LOG( CORE::LOGLEVEL_CRITICAL, "UdpViaTcp: Exiting because LoadConfig failed" );
         return -1;
     }
     delete globalConfig;
 
-    if ( !Udp2Redis.Start() )
+    if ( !udp2ViaTcp.Start() )
     {
-        GUCEF_ERROR_LOG( CORE::LOGLEVEL_CRITICAL, "Udp2Redis: Failed to Start()" );
+        GUCEF_ERROR_LOG( CORE::LOGLEVEL_CRITICAL, "UdpViaTcp: Failed to Start()" );
         return -2;
     }
 

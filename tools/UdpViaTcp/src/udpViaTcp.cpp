@@ -27,7 +27,7 @@
 #define GUCEF_CORE_CTASKMANAGER_H
 #endif /* GUCEF_CORE_CTASKMANAGER_H */
 
-#include "udp2redis.h"
+#include "UdpViaTcp.h"
 
 #if ( GUCEF_PLATFORM == GUCEF_PLATFORM_MSWIN )
     #include <winsock2.h>
@@ -39,576 +39,7 @@
 //                                                                         //
 //-------------------------------------------------------------------------*/
 
-Udp2RedisChannel::Udp2RedisChannel()
-    : CORE::CTaskConsumer()
-    , m_udpPort( 0 )
-    , m_redisStreamName()
-    , m_redisHost()
-    , m_redisPort()
-    , m_redisReconnectTimer( GUCEF_NULL )
-    , m_redisContext( GUCEF_NULL )
-    , m_udpSocket( GUCEF_NULL )
-    , m_redisMsgQueueOverflowQueue()
-    , m_redisOptions()
-    , m_redisReadFlag( false )
-    , m_redisWriteFlag( false )
-    , m_redisTimeoutFlag( false )
-{GUCEF_TRACE;
-
-    memset( &m_redisOptions, 0, sizeof(m_redisOptions) );
-}
-
-/*-------------------------------------------------------------------------*/
-
-Udp2RedisChannel::Udp2RedisChannel( const Udp2RedisChannel& src )
-    : CORE::CTaskConsumer()
-    , m_udpPort( src.m_udpPort )
-    , m_redisStreamName( src.m_redisStreamName )
-    , m_redisHost( src.m_redisHost )
-    , m_redisPort( src.m_redisPort )
-    , m_redisReconnectTimer( GUCEF_NULL )
-    , m_redisContext( src.m_redisContext )
-    , m_udpSocket( GUCEF_NULL )
-    , m_redisMsgQueueOverflowQueue( src.m_redisMsgQueueOverflowQueue )
-    , m_redisOptions( src.m_redisOptions )
-    , m_redisReadFlag( src.m_redisReadFlag )
-    , m_redisWriteFlag( src.m_redisWriteFlag )
-    , m_redisTimeoutFlag( src.m_redisTimeoutFlag )
-{GUCEF_TRACE;
-
-}
-
-/*-------------------------------------------------------------------------*/
-
-Udp2RedisChannel::~Udp2RedisChannel()
-{GUCEF_TRACE;
-
-    delete m_redisReconnectTimer;
-    m_redisReconnectTimer = GUCEF_NULL;
-
-    delete m_redisOptions.timeout;
-    m_redisOptions.timeout = GUCEF_NULL;
-
-    delete m_udpSocket;
-    m_udpSocket = GUCEF_NULL;
-}
-
-/*-------------------------------------------------------------------------*/
-
-void
-Udp2RedisChannel::RegisterEventHandlers( void )
-{GUCEF_TRACE;
-
-    // Register UDP socket event handlers
-    TEventCallback callback( this, &Udp2RedisChannel::OnUDPSocketError );
-    SubscribeTo( m_udpSocket                              ,
-                 COMCORE::CUDPSocket::UDPSocketErrorEvent ,
-                 callback                                 );
-    TEventCallback callback2( this, &Udp2RedisChannel::OnUDPSocketClosed );
-    SubscribeTo( m_udpSocket                               ,
-                 COMCORE::CUDPSocket::UDPSocketClosedEvent ,
-                 callback2                                 );
-    TEventCallback callback3( this, &Udp2RedisChannel::OnUDPSocketOpened );
-    SubscribeTo( m_udpSocket                               ,
-                 COMCORE::CUDPSocket::UDPSocketOpenedEvent ,
-                 callback3                                 );
-    TEventCallback callback4( this, &Udp2RedisChannel::OnUDPPacketRecieved );
-    SubscribeTo( m_udpSocket                                 ,
-                 COMCORE::CUDPSocket::UDPPacketRecievedEvent ,
-                 callback4                                   );
-    TEventCallback callback5( this, &Udp2RedisChannel::OnRedisReconnectTimer );
-    SubscribeTo( m_redisReconnectTimer          ,
-                 CORE::CTimer::TimerUpdateEvent ,
-                 callback5                      );
-}
-
-/*-------------------------------------------------------------------------*/
-
-bool 
-Udp2RedisChannel::LoadConfig( CORE::UInt16 udpPort                   ,
-                              const CORE::CString& redisHost         ,
-                              CORE::UInt16 redisPort                 ,
-                              const CORE::CString& channelStreamName )
-{GUCEF_TRACE;
-
-    m_udpPort = udpPort;
-    m_redisStreamName = channelStreamName;
-    m_redisHost = redisHost;
-    m_redisPort = redisPort;
-    return true;
-}
-
-/*-------------------------------------------------------------------------*/
-
-CORE::CString
-Udp2RedisChannel::GetType( void ) const
-{GUCEF_TRACE;
-
-    return "Udp2RedisChannel";
-}
-
-/*-------------------------------------------------------------------------*/
-
-void
-Udp2RedisChannel::OnUDPSocketError( CORE::CNotifier* notifier    ,
-                                    const CORE::CEvent& eventID  ,
-                                    CORE::CICloneable* eventData )
-{GUCEF_TRACE;
-
-    COMCORE::CUDPSocket::TSocketErrorEventData* eData = static_cast< COMCORE::CUDPSocket::TSocketErrorEventData* >( eventData );    
-    GUCEF_LOG( CORE::LOGLEVEL_IMPORTANT, "Udp2RedisChannel: UDP Socket experienced error " + CORE::Int32ToString( eData->GetData() ) );
-}
-
-/*-------------------------------------------------------------------------*/
-
-void
-Udp2RedisChannel::OnUDPSocketClosed( CORE::CNotifier* notifier   ,
-                                     const CORE::CEvent& eventID ,
-                                     CORE::CICloneable* evenData )
-{GUCEF_TRACE;
-
-    GUCEF_LOG( CORE::LOGLEVEL_IMPORTANT, "Udp2RedisChannel: UDP Socket has been closed" );
-}
-
-/*-------------------------------------------------------------------------*/
-
-void
-Udp2RedisChannel::OnUDPSocketOpened( CORE::CNotifier* notifier   ,
-                                     const CORE::CEvent& eventID ,
-                                     CORE::CICloneable* evenData )
-{GUCEF_TRACE;
-
-    GUCEF_LOG( CORE::LOGLEVEL_IMPORTANT, "Udp2RedisChannel: UDP Socket has been opened" );
-}
-
-/*-------------------------------------------------------------------------*/
-
-void
-Udp2RedisChannel::OnRedisAddReadEvent( void* privdata )
-{GUCEF_TRACE;
-
-    Udp2RedisChannel* thisObj = static_cast< Udp2RedisChannel* >( privdata );
-    if ( GUCEF_NULL != thisObj )
-    {
-        thisObj->m_redisReadFlag = true;
-    }
-}
-
-/*-------------------------------------------------------------------------*/
-
-void
-Udp2RedisChannel::OnRedisDelReadEvent( void* privdata )
-{GUCEF_TRACE;
-
-    Udp2RedisChannel* thisObj = static_cast< Udp2RedisChannel* >( privdata );
-    if ( GUCEF_NULL != thisObj )
-    {
-        thisObj->m_redisReadFlag = false;
-    }
-}
-
-/*-------------------------------------------------------------------------*/
-
-void
-Udp2RedisChannel::OnRedisAddWriteEvent( void* privdata )
-{GUCEF_TRACE;
-
-    Udp2RedisChannel* thisObj = static_cast< Udp2RedisChannel* >( privdata );
-    if ( GUCEF_NULL != thisObj )
-    {
-        thisObj->m_redisWriteFlag = true;
-    }
-}
-
-/*-------------------------------------------------------------------------*/
-
-void
-Udp2RedisChannel::OnRedisDelWriteEvent( void* privdata )
-{GUCEF_TRACE;
-
-    Udp2RedisChannel* thisObj = static_cast< Udp2RedisChannel* >( privdata );
-    if ( GUCEF_NULL != thisObj )
-    {
-        thisObj->m_redisWriteFlag = false;
-    }
-}
-
-/*-------------------------------------------------------------------------*/
-
-void
-Udp2RedisChannel::OnRedisCleanupEvent( void* privdata )
-{GUCEF_TRACE;
-
-    Udp2RedisChannel* thisObj = static_cast< Udp2RedisChannel* >( privdata );
-    if ( GUCEF_NULL != thisObj )
-    {
-        thisObj->m_redisContext = GUCEF_NULL;
-    }
-}
-
-/*-------------------------------------------------------------------------*/
-
-void
-Udp2RedisChannel::OnRedisScheduleTimerEvent( void* privdata, struct timeval tv )
-{GUCEF_TRACE;
-
-    Udp2RedisChannel* thisObj = static_cast< Udp2RedisChannel* >( privdata );
-    if ( GUCEF_NULL != thisObj )
-    {
-        //thisObj->m_redisReadFlag = false;
-        //thisObj->m_redisWriteFlag = false;
-    }
-}
-
-/*-------------------------------------------------------------------------*/
-
-void 
-Udp2RedisChannel::OnRedisASyncReply( redisAsyncContext* context , 
-                                     redisReply* reply          )
-{GUCEF_TRACE;
-
-    switch ( reply->type )
-    {
-        case REDIS_REPLY_INTEGER:
-        {
-            break;
-        }
-        case REDIS_REPLY_DOUBLE:
-        {
-            break;
-        }
-        case REDIS_REPLY_STRING:
-        {
-            GUCEF_DEBUG_LOG( CORE::LOGLEVEL_NORMAL, "Udp2RedisChannel:OnRedisASyncReply(" + CORE::PointerToString( context ) + 
-                    "): Redis replied with: \"" + CORE::CString( reply->str ) + "\"" );
-            break;
-        }
-        case REDIS_REPLY_ARRAY:
-        {
-            break;
-        }
-        case REDIS_REPLY_ERROR:
-        {
-            GUCEF_ERROR_LOG( CORE::LOGLEVEL_IMPORTANT, "Udp2RedisChannel:OnRedisASyncReply(" + CORE::PointerToString( context ) + 
-                    "): Redis replied with error: \"" + CORE::CString( reply->str ) + "\"" );
-            break;
-        }
-        default:
-        {
-            GUCEF_ERROR_LOG( CORE::LOGLEVEL_IMPORTANT, "Udp2RedisChannel:OnRedisASyncReply(" + CORE::PointerToString( context ) + 
-                    "): Redis replied with unknown reply type " + CORE::Int32ToString( reply->type ) );
-            break;
-        }            
-    }    
-}
-
-/*-------------------------------------------------------------------------*/
-
-void
-Udp2RedisChannel::OnRedisASyncVoidReply( redisAsyncContext* context , 
-                                         void *reply                , 
-                                         void *privdata             )
-{GUCEF_TRACE;
-    
-    if ( context != GUCEF_NULL && context->data != GUCEF_NULL )
-    {
-        Udp2RedisChannel* thisObj = static_cast< Udp2RedisChannel* >( context->data );
-
-        if ( context == thisObj->m_redisContext )
-        { 
-            redisReply* rReply = static_cast< redisReply* >( reply );
-            if ( GUCEF_NULL != rReply )
-            {
-                thisObj->OnRedisASyncReply( context, rReply );
-            }
-        }
-        else
-        {
-            GUCEF_DEBUG_LOG( CORE::LOGLEVEL_NORMAL, "Udp2RedisChannel:OnRedisASyncReply: Triggered by old context " + CORE::PointerToString( context ) );
-        }
-    }
-}
-
-/*-------------------------------------------------------------------------*/
-
-void
-Udp2RedisChannel::OnRedisASyncConnect( const struct redisAsyncContext* context , 
-                                       int status                              )
-{GUCEF_TRACE;
-
-    if ( context != GUCEF_NULL && context->data != GUCEF_NULL )
-    {
-        Udp2RedisChannel* thisObj = static_cast< Udp2RedisChannel* >( context->data );
-
-        if ( context == thisObj->m_redisContext )
-        { 
-            if ( status == REDIS_OK )
-            {
-                GUCEF_LOG( CORE::LOGLEVEL_IMPORTANT, "Udp2RedisChannel:OnRedisASyncConnect(" + CORE::PointerToString( context ) + "): Connected to Redis" );
-            }
-            else
-            {
-                GUCEF_ERROR_LOG( CORE::LOGLEVEL_IMPORTANT, "Udp2RedisChannel:OnRedisASyncConnect(" + CORE::PointerToString( context ) + 
-                        "): Failed to connect to Redis due to an error ( Code=" + CORE::Int32ToString( context->err ) + ", Str=\"" + CORE::CString( context->errstr ) + 
-                        "\" ), attempting to reconnect" );
-                                    
-                redisAsyncContext* disconnectedContext = thisObj->m_redisContext;
-                thisObj->m_redisContext = GUCEF_NULL;
-                thisObj->m_redisReconnectTimer->SetEnabled( true );
-            }
-        }
-        else
-        {
-            GUCEF_DEBUG_LOG( CORE::LOGLEVEL_NORMAL, "Udp2RedisChannel:OnRedisASyncConnect: Triggered by old context " + CORE::PointerToString( context ) );
-        }
-    }
-}
-
-/*-------------------------------------------------------------------------*/
-
-void
-Udp2RedisChannel::OnRedisASyncDisconnect( const struct redisAsyncContext* context , 
-                                          int status                              )
-{GUCEF_TRACE;
-    
-    if ( context != GUCEF_NULL && context->data != GUCEF_NULL )
-    {
-        Udp2RedisChannel* thisObj = static_cast< Udp2RedisChannel* >( context->data );
-
-        if ( context == thisObj->m_redisContext )
-        {    
-            if ( status == REDIS_OK )
-            {
-                GUCEF_LOG( CORE::LOGLEVEL_IMPORTANT, "Udp2RedisChannel:OnRedisASyncDisconnect(" + CORE::PointerToString( context ) + "): Disconnected from Redis as requested" );
-            }
-            else
-            {
-                GUCEF_ERROR_LOG( CORE::LOGLEVEL_IMPORTANT, "Udp2RedisChannel:OnRedisASyncDisconnect(" + CORE::PointerToString( context ) + 
-                        "): Disconnected from Redis due to an error ( Code=" + CORE::Int32ToString( context->err ) + ", Str=\"" + CORE::CString( context->errstr ) + 
-                        "\" ), attempting to reconnect" );
-            
-                redisAsyncContext* disconnectedContext = thisObj->m_redisContext;
-                thisObj->m_redisContext = GUCEF_NULL;
-                thisObj->m_redisReconnectTimer->SetEnabled( true );
-            }
-        }
-        else
-        {
-            GUCEF_DEBUG_LOG( CORE::LOGLEVEL_NORMAL, "Udp2RedisChannel:OnRedisASyncDisconnect: Triggered by old context " + CORE::PointerToString( context ) );
-        }
-    }
-}
-
-/*-------------------------------------------------------------------------*/
-
-void
-Udp2RedisChannel::OnRedisReconnectTimer( CORE::CNotifier* notifier   ,
-                                         const CORE::CEvent& eventID ,
-                                         CORE::CICloneable* evenData )
-{GUCEF_TRACE;
-
-    m_redisReconnectTimer->SetEnabled( false );
-    GUCEF_LOG( CORE::LOGLEVEL_IMPORTANT, "Udp2RedisChannel:OnRedisReconnectTimer(" + CORE::PointerToString( m_redisContext ) + "): Trying to reconnect" );
-    RedisConnect();
-}
-
-/*-------------------------------------------------------------------------*/
-
-int
-Udp2RedisChannel::RedisSend( const CORE::CDynamicBuffer& udpPacket )
-{GUCEF_TRACE;
-
-    int retCode = redisAsyncCommand( m_redisContext, 
-                                     &OnRedisASyncVoidReply, 
-                                     this, 
-                                     m_redisStreamSendCmd.C_String(), 
-                                     udpPacket.GetConstBufferPtr(), 
-                                     udpPacket.GetDataSize() );
-    if ( retCode != REDIS_OK )
-    {
-        GUCEF_ERROR_LOG( CORE::LOGLEVEL_IMPORTANT, "Udp2RedisChannel:RedisSend: Failed executing async send command" );
-    }    
-    #ifdef GUCEF_DEBUG_MODE
-    else
-    {    
-        GUCEF_DEBUG_LOG( CORE::LOGLEVEL_EVERYTHING, "Udp2RedisChannel:RedisSend: Successfully executed async send command" );
-    }
-    #endif
-    return retCode;
-}
-
-/*-------------------------------------------------------------------------*/
-                                                                             
-bool
-Udp2RedisChannel::SendQueuedPackagesIfAny( void )
-{GUCEF_TRACE;
-
-    if ( GUCEF_NULL != m_redisContext )
-    {
-        int retCode = REDIS_OK;
-
-        while ( !m_redisMsgQueueOverflowQueue.empty() && ( retCode == REDIS_OK ) )
-        {
-            const CORE::CDynamicBuffer& queuedUdpPacket = m_redisMsgQueueOverflowQueue.front();
-            retCode = RedisSend( queuedUdpPacket );
-            if ( retCode == REDIS_OK )
-            {
-                m_redisMsgQueueOverflowQueue.pop_front();
-            }
-            else
-                break;            
-        }
-        
-        return retCode == REDIS_OK;
-    }
-    return false;
-}
-
-/*-------------------------------------------------------------------------*/
-
-void
-Udp2RedisChannel::OnUDPPacketRecieved( CORE::CNotifier* notifier   ,
-                                       const CORE::CEvent& eventID ,
-                                       CORE::CICloneable* evenData )
-{GUCEF_TRACE;
-
-    COMCORE::CUDPSocket::UDPPacketRecievedEventData* udpPacketData = static_cast< COMCORE::CUDPSocket::UDPPacketRecievedEventData* >( evenData );
-    if ( GUCEF_NULL != udpPacketData )
-    {
-        const COMCORE::CUDPSocket::TUDPPacketRecievedEventData& data = udpPacketData->GetData();
-        const CORE::CDynamicBuffer& udpPacketBuffer = data.dataBuffer.GetData();
-
-        #ifdef GUCEF_DEBUG_MODE
-        GUCEF_DEBUG_LOG( CORE::LOGLEVEL_IMPORTANT, "Udp2RedisChannel: UDP Socket received a packet from " + data.sourceAddress.AddressAndPortAsString() );
-        #endif
-
-        if ( SendQueuedPackagesIfAny() )
-        {
-            int retCode = RedisSend( udpPacketBuffer );
-            if ( retCode == REDIS_ERR )
-                m_redisMsgQueueOverflowQueue.push_back( udpPacketBuffer );
-        }
-        else
-        {
-            m_redisMsgQueueOverflowQueue.push_back( udpPacketBuffer );
-        }
-    }
-    else
-    {
-        GUCEF_ERROR_LOG( CORE::LOGLEVEL_IMPORTANT, "Udp2RedisChannel: UDP Socket has a data received event but no data was provided" );
-    }
-}
-
-/*-------------------------------------------------------------------------*/
-
-bool
-Udp2RedisChannel::RedisConnect( void )
-{
-    delete m_redisOptions.timeout;
-    m_redisOptions.timeout = GUCEF_NULL;
-
-    memset( &m_redisOptions, 0, sizeof(m_redisOptions) );
-    REDIS_OPTIONS_SET_TCP( &m_redisOptions, m_redisHost.C_String(), m_redisPort );
-    struct timeval* timeoutSetting = new struct timeval;
-    timeoutSetting->tv_sec = 10;
-    timeoutSetting->tv_usec = 0;
-    m_redisOptions.timeout = timeoutSetting;
-
-    GUCEF_LOG( CORE::LOGLEVEL_NORMAL, "Udp2RedisChannel:RedisConnect: Connecting to Redis on " + m_redisHost + ":" + CORE::UInt16ToString( m_redisPort ) );
-    
-    redisAsyncContext* rContext = redisAsyncConnectWithOptions( &m_redisOptions );
-	if ( rContext == GUCEF_NULL ) 
-    {
-		GUCEF_ERROR_LOG( CORE::LOGLEVEL_IMPORTANT, "Udp2RedisChannel:RedisConnect: Failed to create Redis context" );
-        m_redisReconnectTimer->SetEnabled( true );
-        return false;
-	}
-
-    // Allow ourselves to find this object again from the C callbacks
-    rContext->data = this;
-    rContext->ev.data = this;
-    // Hook up to the event callbacks into hiredis since we also act as the app engine
-    rContext->ev.addRead = &OnRedisAddReadEvent;
-    rContext->ev.addWrite = &OnRedisAddWriteEvent;
-    rContext->ev.delRead = &OnRedisDelReadEvent;
-    rContext->ev.delWrite = &OnRedisDelWriteEvent;
-    rContext->ev.cleanup = &OnRedisCleanupEvent;
-    rContext->ev.scheduleTimer = &OnRedisScheduleTimerEvent;
-
-	if ( rContext->err != REDIS_OK ) 
-    {
-		GUCEF_ERROR_LOG( CORE::LOGLEVEL_IMPORTANT, "Udp2RedisChannel:RedisConnect(" + CORE::PointerToString( rContext ) +
-                            "): Failed to create Redis context: Error " + CORE::Int32ToString( rContext->err ) + " : " + CORE::CString( rContext->errstr ) );
-        m_redisReconnectTimer->SetEnabled( true );
-        return false;
-	}
-
-    // Set the stream publish command formatting here which will remain constant for this session
-    m_redisStreamSendCmd = "XADD " + m_redisStreamName + " * UDP %b";
-
-    redisAsyncSetConnectCallback( rContext, &OnRedisASyncConnect );
-    redisAsyncSetDisconnectCallback( rContext, &OnRedisASyncDisconnect );
-
-    m_redisContext = rContext;
-
-    GUCEF_LOG( CORE::LOGLEVEL_NORMAL, "Udp2RedisChannel:RedisConnect(" + CORE::PointerToString( rContext ) + "): Successfully created a Redis context" );
-    return true;
-}
-
-/*-------------------------------------------------------------------------*/
-
-bool
-Udp2RedisChannel::OnTaskStart( CORE::CICloneable* taskData )
-{GUCEF_TRACE;
-
-	m_udpSocket = new GUCEF::COMCORE::CUDPSocket( *GetPulseGenerator(), false );
-    m_redisReconnectTimer = new GUCEF::CORE::CTimer( *GetPulseGenerator(), 10 );
-        
-    RegisterEventHandlers();
-
-    // Setup connection to Redis and open the UDP port.
-    // Note that if there is an error here we will just keep on trying
-    RedisConnect();
-    m_udpSocket->SetMaxUpdatesPerCycle( 10 );
-    m_udpSocket->SetAutoReOpenOnError( true );    
-    if ( !m_udpSocket->Open( m_udpPort ) )
-    {
-		GUCEF_ERROR_LOG( CORE::LOGLEVEL_IMPORTANT, "Udp2RedisChannel:OnTaskStart: Failed to open UDP socket on port " + CORE::UInt16ToString( m_udpPort ) );
-    }
-    GUCEF_LOG( CORE::LOGLEVEL_NORMAL, "Udp2RedisChannel:OnTaskStart: Successfully opened UDP socket on port " + CORE::UInt16ToString( m_udpPort ) );
-    return true;
-}
-
-/*-------------------------------------------------------------------------*/
-    
-bool
-Udp2RedisChannel::OnTaskCycle( CORE::CICloneable* taskData )
-{GUCEF_TRACE;
-
-    // Poll the Redis socket etc,..
-    if ( GUCEF_NULL != m_redisContext && m_redisWriteFlag )
-        redisAsyncHandleWrite( m_redisContext );
-    if ( GUCEF_NULL != m_redisContext && m_redisReadFlag )
-        redisAsyncHandleRead( m_redisContext );
-    //if ( GUCEF_NULL != m_redisContext )
-    //    redisAsyncHandleTimeout( m_redisContext );
-    
-    // We are never 'done' so return false
-    return false;
-}
-
-/*-------------------------------------------------------------------------*/
-    
-void
-Udp2RedisChannel::OnTaskEnd( CORE::CICloneable* taskData )
-{GUCEF_TRACE;
-
-    redisAsyncDisconnect( m_redisContext );
-}
-
-/*-------------------------------------------------------------------------*/
-
-RestApiUdp2RedisInfoResource::RestApiUdp2RedisInfoResource( Udp2Redis* app )
+RestApiUdpViaTcpInfoResource::RestApiUdpViaTcpInfoResource( UdpViaTcp* app )
     : COM::CCodecBasedHTTPServerResource()
     , m_app( app )
 {GUCEF_TRACE;
@@ -618,7 +49,7 @@ RestApiUdp2RedisInfoResource::RestApiUdp2RedisInfoResource( Udp2Redis* app )
 
 /*-------------------------------------------------------------------------*/
 
-RestApiUdp2RedisInfoResource::~RestApiUdp2RedisInfoResource()
+RestApiUdpViaTcpInfoResource::~RestApiUdpViaTcpInfoResource()
 {GUCEF_TRACE;
 
 }
@@ -626,12 +57,12 @@ RestApiUdp2RedisInfoResource::~RestApiUdp2RedisInfoResource()
 /*-------------------------------------------------------------------------*/
 
 bool
-RestApiUdp2RedisInfoResource::Serialize( CORE::CDataNode& output             ,
+RestApiUdpViaTcpInfoResource::Serialize( CORE::CDataNode& output             ,
                                          const CORE::CString& representation )
 {GUCEF_TRACE;
 
     output.SetName( "info" );
-    output.SetAttribute( "application", "udp2redis" );
+    output.SetAttribute( "application", "UdpViaTcp" );
     output.SetAttribute( "buildDateTime", __TIMESTAMP__ );
     #ifdef GUCEF_DEBUG_MODE
     output.SetAttribute( "isReleaseBuild", "false" );
@@ -643,7 +74,7 @@ RestApiUdp2RedisInfoResource::Serialize( CORE::CDataNode& output             ,
 
 /*-------------------------------------------------------------------------*/
 
-RestApiUdp2RedisConfigResource::RestApiUdp2RedisConfigResource( Udp2Redis* app, bool appConfig )
+RestApiUdpViaTcpConfigResource::RestApiUdpViaTcpConfigResource( UdpViaTcp* app, bool appConfig )
     : COM::CCodecBasedHTTPServerResource()
     , m_app( app )
     , m_appConfig( appConfig )
@@ -654,7 +85,7 @@ RestApiUdp2RedisConfigResource::RestApiUdp2RedisConfigResource( Udp2Redis* app, 
 
 /*-------------------------------------------------------------------------*/
 
-RestApiUdp2RedisConfigResource::~RestApiUdp2RedisConfigResource()
+RestApiUdpViaTcpConfigResource::~RestApiUdpViaTcpConfigResource()
 {GUCEF_TRACE;
 
 }
@@ -662,7 +93,7 @@ RestApiUdp2RedisConfigResource::~RestApiUdp2RedisConfigResource()
 /*-------------------------------------------------------------------------*/
 
 bool
-RestApiUdp2RedisConfigResource::Serialize( CORE::CDataNode& output             ,
+RestApiUdpViaTcpConfigResource::Serialize( CORE::CDataNode& output             ,
                                            const CORE::CString& representation )
 {GUCEF_TRACE;
 
@@ -679,25 +110,29 @@ RestApiUdp2RedisConfigResource::Serialize( CORE::CDataNode& output             ,
 
 /*-------------------------------------------------------------------------*/
 
-Udp2Redis::Udp2Redis( void )
-    : m_udpStartPort()
-    , m_channelCount()
-    , m_redisStreamStartChannelID()
-    , m_redisStreamName()
-    , m_redisHost()
-    , m_redisPort()
-    , m_channels()
+UdpViaTcp::UdpViaTcp( void )
+    : m_tcpServerSocket( false )
+    , m_tcpClientSocket( false )
+    , m_udpTransmitSocket( false )
+    , m_udpReceiveSocket( false )
+    , m_receivePacketBuffers()
+    , m_mode( UDPVIATCPMODE_UDP_RECEIVER_ONLY )
+    , m_tcpDestination()
+    , m_tcpReceiver()
+    , m_udpDestination()
+    , m_udpReceiver()
     , m_httpServer()
     , m_httpRouter()
     , m_appConfig()
     , m_globalConfig()
 {GUCEF_TRACE;
-    
+
+    RegisterEventHandlers();    
 }
 
 /*-------------------------------------------------------------------------*/
 
-Udp2Redis::~Udp2Redis()
+UdpViaTcp::~UdpViaTcp()
 {GUCEF_TRACE;
 
     m_httpServer.Close();
@@ -705,33 +140,382 @@ Udp2Redis::~Udp2Redis()
 
 /*-------------------------------------------------------------------------*/
 
-bool
-Udp2Redis::Start( void )
+void
+UdpViaTcp::RegisterEventHandlers( void )
 {GUCEF_TRACE;
 
-    m_channels.resize( m_channelCount );
+    // Register UDP socket event handlers
+    TEventCallback callback( this, &UdpViaTcp::OnUDPReceiveSocketError );
+    SubscribeTo( &m_udpReceiveSocket                      ,
+                 COMCORE::CUDPSocket::UDPSocketErrorEvent ,
+                 callback                                 );
+    TEventCallback callback2( this, &UdpViaTcp::OnUDPReceiveSocketClosed );
+    SubscribeTo( &m_udpReceiveSocket                       ,
+                 COMCORE::CUDPSocket::UDPSocketClosedEvent ,
+                 callback2                                 );
+    TEventCallback callback3( this, &UdpViaTcp::OnUDPReceiveSocketOpened );
+    SubscribeTo( &m_udpReceiveSocket                       ,
+                 COMCORE::CUDPSocket::UDPSocketOpenedEvent ,
+                 callback3                                 );
+    TEventCallback callback4( this, &UdpViaTcp::OnUDPReceiveSocketPacketRecieved );
+    SubscribeTo( &m_udpReceiveSocket                         ,
+                 COMCORE::CUDPSocket::UDPPacketRecievedEvent ,
+                 callback4                                   );
 
-    CORE::CTaskManager& taskManager = CORE::CCoreGlobal::Instance()->GetTaskManager();
-    
-    CORE::UInt16 udpPort = m_udpStartPort;
-    CORE::Int32 channelId = m_redisStreamStartChannelID;
-    auto& i = m_channels.begin();
-    while ( i != m_channels.end() )
+
+    TEventCallback callback5( this, &UdpViaTcp::OnUDPTransmitSocketError );
+    SubscribeTo( &m_udpTransmitSocket                     ,
+                 COMCORE::CUDPSocket::UDPSocketErrorEvent ,
+                 callback5                                );
+    TEventCallback callback6( this, &UdpViaTcp::OnUDPTransmitSocketClosed );
+    SubscribeTo( &m_udpTransmitSocket                      ,
+                 COMCORE::CUDPSocket::UDPSocketClosedEvent ,
+                 callback6                                 );
+    TEventCallback callback7( this, &UdpViaTcp::OnUDPTransmitSocketOpened );
+    SubscribeTo( &m_udpTransmitSocket                      ,
+                 COMCORE::CUDPSocket::UDPSocketOpenedEvent ,
+                 callback7                                 );
+    TEventCallback callback8( this, &UdpViaTcp::OnUDPTransmitSocketPacketRecieved );
+    SubscribeTo( &m_udpTransmitSocket                        ,
+                 COMCORE::CUDPSocket::UDPPacketRecievedEvent ,
+                 callback8                                   );
+
+
+    TEventCallback callback9( this, &UdpViaTcp::OnTCPServerClientConnected );
+    SubscribeTo( &m_tcpServerSocket                              ,
+                 COMCORE::CTCPServerSocket::ClientConnectedEvent ,
+                 callback9                                       );
+    TEventCallback callback10( this, &UdpViaTcp::OnTCPServerClientDisconnected );
+    SubscribeTo( &m_tcpServerSocket                                 ,
+                 COMCORE::CTCPServerSocket::ClientDisconnectedEvent ,
+                 callback10                                         );
+    TEventCallback callback11( this, &UdpViaTcp::OnTCPServerClientError );
+    SubscribeTo( &m_tcpServerSocket                          ,
+                 COMCORE::CTCPServerSocket::ClientErrorEvent ,
+                 callback11                                  );
+    TEventCallback callback12( this, &UdpViaTcp::OnTCPServerSocketOpened );
+    SubscribeTo( &m_tcpServerSocket                                 ,
+                 COMCORE::CTCPServerSocket::ServerSocketOpenedEvent ,
+                 callback12                                         );
+    TEventCallback callback13( this, &UdpViaTcp::OnTCPServerSocketClosed );
+    SubscribeTo( &m_tcpServerSocket                                 ,
+                 COMCORE::CTCPServerSocket::ServerSocketClosedEvent ,
+                 callback13                                         );
+    TEventCallback callback14( this, &UdpViaTcp::OnTCPServerSocketError );
+    SubscribeTo( &m_tcpServerSocket                                ,
+                 COMCORE::CTCPServerSocket::ServerSocketErrorEvent ,
+                 callback14                                        );
+    TEventCallback callback15( this, &UdpViaTcp::OnTCPServerSocketClientError );
+    SubscribeTo( &m_tcpServerSocket                                      ,
+                 COMCORE::CTCPServerSocket::ServerSocketClientErrorEvent ,
+                 callback15                                              );
+    TEventCallback callback16( this, &UdpViaTcp::OnTCPServerSocketMaxConnectionsChanged );
+    SubscribeTo( &m_tcpServerSocket                                                ,
+                 COMCORE::CTCPServerSocket::ServerSocketMaxConnectionsChangedEvent ,
+                 callback16                                                        );
+
+}
+
+/*-------------------------------------------------------------------------*/
+
+void
+UdpViaTcp::OnUDPReceiveSocketError( CORE::CNotifier* notifier    ,
+                                    const CORE::CEvent& eventID  ,
+                                    CORE::CICloneable* eventData )
+{GUCEF_TRACE;
+
+    COMCORE::CUDPSocket::TSocketErrorEventData* eData = static_cast< COMCORE::CUDPSocket::TSocketErrorEventData* >( eventData );    
+    GUCEF_LOG( CORE::LOGLEVEL_IMPORTANT, "UdpViaTcp: UDP Receive Socket experienced error " + CORE::Int32ToString( eData->GetData() ) );
+}
+
+/*-------------------------------------------------------------------------*/
+
+void
+UdpViaTcp::OnUDPReceiveSocketClosed( CORE::CNotifier* notifier    ,
+                                     const CORE::CEvent& eventID  ,
+                                     CORE::CICloneable* eventData )
+{GUCEF_TRACE;
+
+    GUCEF_LOG( CORE::LOGLEVEL_IMPORTANT, "UdpViaTcp: UDP Receive Socket has been closed" );
+}
+
+/*-------------------------------------------------------------------------*/
+
+void
+UdpViaTcp::OnUDPReceiveSocketOpened( CORE::CNotifier* notifier   ,
+                                     const CORE::CEvent& eventID ,
+                                     CORE::CICloneable* evenData )
+{GUCEF_TRACE;
+
+    GUCEF_LOG( CORE::LOGLEVEL_IMPORTANT, "UdpViaTcp: UDP Receive Socket has been opened" );
+}
+
+/*-------------------------------------------------------------------------*/
+
+void
+UdpViaTcp::OnUDPReceiveSocketPacketRecieved( CORE::CNotifier* notifier    ,
+                                             const CORE::CEvent& eventID  ,
+                                             CORE::CICloneable* eventData )
+{GUCEF_TRACE;
+
+    COMCORE::CUDPSocket::UDPPacketRecievedEventData* udpPacketData = static_cast< COMCORE::CUDPSocket::UDPPacketRecievedEventData* >( eventData );
+    if ( GUCEF_NULL != udpPacketData )
     {
-        Udp2RedisChannel& channel = (*i);
-        
-        CORE::CString channelTopicName = m_redisStreamName.ReplaceSubstr( "{channelID}", CORE::Int32ToString( channelId ) ); 
-        channel.LoadConfig( udpPort, m_redisHost, m_redisPort, channelTopicName );
+        const COMCORE::CUDPSocket::TUDPPacketRecievedEventData& data = udpPacketData->GetData();
+        const CORE::CDynamicBuffer& udpPacketBuffer = data.dataBuffer.GetData();
 
-        taskManager.StartTask( channel );
-        
-        ++udpPort;
-        ++i;
+        #ifdef GUCEF_DEBUG_MODE
+        GUCEF_DEBUG_LOG( CORE::LOGLEVEL_IMPORTANT, "UdpViaTcp: UDP Receive Socket received a packet from " + data.sourceAddress.AddressAndPortAsString() );
+        #endif
+
+
+    }
+    else
+    {
+        GUCEF_ERROR_LOG( CORE::LOGLEVEL_IMPORTANT, "UdpViaTcp: UDP Receive Socket has a data received event but no data was provided" );
+    }
+}
+
+/*-------------------------------------------------------------------------*/
+
+void
+UdpViaTcp::OnUDPTransmitSocketError( CORE::CNotifier* notifier    ,
+                                     const CORE::CEvent& eventID  ,
+                                     CORE::CICloneable* eventData )
+{GUCEF_TRACE;
+
+    COMCORE::CUDPSocket::TSocketErrorEventData* eData = static_cast< COMCORE::CUDPSocket::TSocketErrorEventData* >( eventData );    
+    GUCEF_LOG( CORE::LOGLEVEL_IMPORTANT, "UdpViaTcp: UDP Transmit Socket experienced error " + CORE::Int32ToString( eData->GetData() ) );
+}
+
+/*-------------------------------------------------------------------------*/
+
+void
+UdpViaTcp::OnUDPTransmitSocketClosed( CORE::CNotifier* notifier    ,
+                                      const CORE::CEvent& eventID  ,
+                                      CORE::CICloneable* eventData )
+{GUCEF_TRACE;
+
+    GUCEF_LOG( CORE::LOGLEVEL_IMPORTANT, "UdpViaTcp: UDP Transmit Socket has been closed" );
+}
+
+/*-------------------------------------------------------------------------*/
+
+void
+UdpViaTcp::OnUDPTransmitSocketOpened( CORE::CNotifier* notifier    ,
+                                      const CORE::CEvent& eventID  ,
+                                      CORE::CICloneable* eventData )
+{GUCEF_TRACE;
+
+    GUCEF_LOG( CORE::LOGLEVEL_IMPORTANT, "UdpViaTcp: UDP Transmit Socket has been opened" );
+}
+
+/*-------------------------------------------------------------------------*/
+
+void
+UdpViaTcp::OnUDPTransmitSocketPacketRecieved( CORE::CNotifier* notifier   ,
+                                              const CORE::CEvent& eventID ,
+                                              CORE::CICloneable* evenData )
+{GUCEF_TRACE;
+
+    COMCORE::CUDPSocket::UDPPacketRecievedEventData* udpPacketData = static_cast< COMCORE::CUDPSocket::UDPPacketRecievedEventData* >( evenData );
+    if ( GUCEF_NULL != udpPacketData )
+    {
+        const COMCORE::CUDPSocket::TUDPPacketRecievedEventData& data = udpPacketData->GetData();
+        const CORE::CDynamicBuffer& udpPacketBuffer = data.dataBuffer.GetData();
+
+        #ifdef GUCEF_DEBUG_MODE
+        GUCEF_DEBUG_LOG( CORE::LOGLEVEL_IMPORTANT, "UdpViaTcp: UDP Transmit Socket received a packet from " + data.sourceAddress.AddressAndPortAsString() );
+        #endif
+
+        char packetHeader[ 7 ]; 
+        CORE::UInt32 packetSize = udpPacketBuffer.GetDataSize();
+        memcpy( packetHeader, "UDP", 3 );
+        memcpy( packetHeader+3, &packetSize, 4 );        
+        m_tcpServerSocket.SendToAllClients( packetHeader, 7 );
+        m_tcpServerSocket.SendToAllClients( udpPacketBuffer.GetConstBufferPtr(), packetSize );
+
+    }
+    else
+    {
+        GUCEF_ERROR_LOG( CORE::LOGLEVEL_IMPORTANT, "UdpViaTcp: UDP Receive Socket has a data received event but no data was provided" );
+    }
+}
+
+/*-------------------------------------------------------------------------*/
+
+void
+UdpViaTcp::OnTCPServerConnectionDataRecieved( CORE::CNotifier* notifier    ,
+                                              const CORE::CEvent& eventId  ,
+                                              CORE::CICloneable* eventData )
+{GUCEF_TRACE;
+
+    const COMCORE::CTCPServerConnection::TDataRecievedEventData* eData = static_cast< COMCORE::CTCPServerConnection::TDataRecievedEventData* >( eventData );
+    const CORE::CDynamicBuffer& receivedData = eData->GetData();
+    COMCORE::CTCPServerConnection* connection = static_cast< COMCORE::CTCPServerConnection* >( notifier );
+
+    #ifdef GUCEF_DEBUG_MODE
+    GUCEF_DEBUG_LOG( CORE::LOGLEVEL_NORMAL, "UdpViaTcp(" + CORE::PointerToString( this ) + "): " + CORE::UInt32ToString( receivedData.GetDataSize() ) + " Bytes received from TCP client " + connection->GetRemoteHostName() );
+    #endif
+
+    // Since TCP is streaming we may or may not have received a full packet
+    // As such we concat bytes into a packet buffer and split according to the protocol this app uses
+    CORE::CDynamicBuffer& packetBuffer = m_receivePacketBuffers[ connection->GetConnectionIndex() ];
+    packetBuffer.Append( receivedData.GetConstBufferPtr(), receivedData.GetDataSize(), true );
+    
+    // Check to see if we received full UDP packets and if so transmit them
+    CORE::UInt32 offset = 0;
+    CORE::Int32 index = 0;
+    while ( ( index = packetBuffer.Find( "UDP", 3, offset ) ) >= 0 )
+    {
+        if ( offset+7 > packetBuffer.GetDataSize() )
+            break;
+
+        CORE::UInt32 packetSize = packetBuffer.AsConstType< CORE::UInt32 >( offset+3 );                
+        if ( offset+7+packetSize > packetBuffer.GetDataSize() )
+            break;
+
+        // We have received a complete UDP packet, transmit it
+        CORE::Int32 bytesTransmitted = m_udpTransmitSocket.SendPacketTo( m_udpDestination                           , 
+                                                                         packetBuffer.GetConstBufferPtr( offset+7 ) , 
+                                                                         packetSize                                 );
+    
+        // If we could not transmit all the bytes just try again later and keep the bytes in the packet buffer
+        if ( bytesTransmitted != packetSize )
+            break;
+
+        offset = ( (CORE::UInt32) index ) + 7 + packetSize;
     }
 
-    m_httpRouter.SetResourceMapping( "/info", RestApiUdp2RedisInfoResource::THTTPServerResourcePtr( new RestApiUdp2RedisInfoResource( this ) )  );
-    m_httpRouter.SetResourceMapping( "/config/appargs", RestApiUdp2RedisInfoResource::THTTPServerResourcePtr( new RestApiUdp2RedisConfigResource( this, true ) )  );
-    m_httpRouter.SetResourceMapping( "/config", RestApiUdp2RedisInfoResource::THTTPServerResourcePtr( new RestApiUdp2RedisConfigResource( this, false ) )  );
+    // Get rid of stuff we successfully transmitted in the packet buffer
+    packetBuffer.Downshift( offset );
+}
+
+/*-------------------------------------------------------------------------*/
+
+void
+UdpViaTcp::OnTCPServerClientConnected( CORE::CNotifier* notifier    ,
+                                       const CORE::CEvent& eventId  ,
+                                       CORE::CICloneable* eventData )
+{GUCEF_TRACE;
+
+    const COMCORE::CTCPServerSocket::TClientConnectedEventData* eData = static_cast< COMCORE::CTCPServerSocket::TClientConnectedEventData* >( eventData );
+    const COMCORE::CTCPServerSocket::TConnectionInfo& info = eData->GetData();
+
+    GUCEF_DEBUG_LOG( CORE::LOGLEVEL_NORMAL, "UdpViaTcp: TCP Client connected" );
+
+    // Subscribe to the connection
+    TEventCallback callback( this, &UdpViaTcp::OnTCPServerConnectionDataRecieved );
+    SubscribeTo( info.connection                                  ,
+                 COMCORE::CTCPServerConnection::DataRecievedEvent ,
+                 callback                                         );
+}
+
+/*-------------------------------------------------------------------------*/
+    
+void
+UdpViaTcp::OnTCPServerClientDisconnected( CORE::CNotifier* notifier    ,
+                                          const CORE::CEvent& eventId  ,
+                                          CORE::CICloneable* eventData )
+{GUCEF_TRACE;
+
+    const COMCORE::CTCPServerSocket::TClientConnectedEventData* eData = static_cast< COMCORE::CTCPServerSocket::TClientConnectedEventData* >( eventData );
+    const COMCORE::CTCPServerSocket::TConnectionInfo& info = eData->GetData();
+
+    GUCEF_DEBUG_LOG( CORE::LOGLEVEL_NORMAL, "UdpViaTcp: TCP Client disconnected" );
+
+    // Wipe data stored for this connection
+    m_receivePacketBuffers[ info.connection->GetConnectionIndex() ].Clear( true );
+}
+
+/*-------------------------------------------------------------------------*/
+
+void
+UdpViaTcp::OnTCPServerClientError( CORE::CNotifier* notifier    ,
+                                   const CORE::CEvent& eventId  ,
+                                   CORE::CICloneable* eventData )
+{GUCEF_TRACE;
+
+}
+    
+/*-------------------------------------------------------------------------*/
+
+void 
+UdpViaTcp::OnTCPServerSocketOpened( CORE::CNotifier* notifier    ,
+                                    const CORE::CEvent& eventId  ,
+                                    CORE::CICloneable* eventData )
+{GUCEF_TRACE;
+
+}
+    
+/*-------------------------------------------------------------------------*/
+
+void
+UdpViaTcp::OnTCPServerSocketClosed( CORE::CNotifier* notifier    ,
+                                    const CORE::CEvent& eventId  ,
+                                    CORE::CICloneable* eventData )
+{GUCEF_TRACE;
+
+}
+
+/*-------------------------------------------------------------------------*/
+
+void
+UdpViaTcp::OnTCPServerSocketError( CORE::CNotifier* notifier    ,
+                                   const CORE::CEvent& eventId  ,
+                                   CORE::CICloneable* eventData )
+{GUCEF_TRACE;
+
+}
+
+/*-------------------------------------------------------------------------*/
+
+void
+UdpViaTcp::OnTCPServerSocketClientError( CORE::CNotifier* notifier    ,
+                                         const CORE::CEvent& eventId  ,
+                                         CORE::CICloneable* eventData )
+{GUCEF_TRACE;
+
+}
+
+/*-------------------------------------------------------------------------*/
+
+void
+UdpViaTcp::OnTCPServerSocketMaxConnectionsChanged( CORE::CNotifier* notifier    ,
+                                                   const CORE::CEvent& eventId  ,
+                                                   CORE::CICloneable* eventData )
+{GUCEF_TRACE;
+
+    const COMCORE::CTCPServerSocket::TServerSocketMaxConnectionsChangedEventData* eData = static_cast< COMCORE::CTCPServerSocket::TServerSocketMaxConnectionsChangedEventData* >( eventData );
+    CORE::Int32 maxConnections = eData->GetData();
+    
+    m_receivePacketBuffers.resize( (size_t) maxConnections );
+
+    GUCEF_LOG( CORE::LOGLEVEL_IMPORTANT, "UdpViaTcp: Max TCP Client connections set to " + CORE::Int32ToString( maxConnections ) );
+}
+
+/*-------------------------------------------------------------------------*/
+
+bool
+UdpViaTcp::Start( void )
+{GUCEF_TRACE;
+
+    if ( UDPVIATCPMODE_BIDIRECTIONAL_UDP == m_mode || UDPVIATCPMODE_UDP_TRANSMITTER_ONLY == m_mode )
+    {
+        // We will be receiving wrapped UDP packets over the TCP tunnel and transmitting them as regular UDP again
+        m_tcpServerSocket.ListenOnPort( m_tcpReceiver.GetPortInHostByteOrder() );
+    }
+    if ( UDPVIATCPMODE_BIDIRECTIONAL_UDP == m_mode || UDPVIATCPMODE_UDP_RECEIVER_ONLY == m_mode )
+    {
+        // We will be receiving regular UDP packets and will be pushing them into the TCP tunnel
+        m_tcpClientSocket.SetMaxRead( 102400 );
+        m_tcpClientSocket.ConnectTo( m_tcpDestination, false );
+        m_udpReceiveSocket.Open( m_udpReceiver.GetPortInHostByteOrder() );
+    }
+    
+    m_httpRouter.SetResourceMapping( "/info", RestApiUdpViaTcpInfoResource::THTTPServerResourcePtr( new RestApiUdpViaTcpInfoResource( this ) )  );
+    m_httpRouter.SetResourceMapping( "/config/appargs", RestApiUdpViaTcpInfoResource::THTTPServerResourcePtr( new RestApiUdpViaTcpConfigResource( this, true ) )  );
+    m_httpRouter.SetResourceMapping( "/config", RestApiUdpViaTcpInfoResource::THTTPServerResourcePtr( new RestApiUdpViaTcpConfigResource( this, false ) )  );
     m_httpServer.GetRouterController()->AddRouterMapping( &m_httpRouter, "", "" ); 
     return m_httpServer.Listen();
 }
@@ -739,16 +523,33 @@ Udp2Redis::Start( void )
 /*-------------------------------------------------------------------------*/
 
 bool 
-Udp2Redis::LoadConfig( const CORE::CValueList& appConfig   ,
+UdpViaTcp::LoadConfig( const CORE::CValueList& appConfig   ,
                        const CORE::CDataNode& globalConfig )
 {GUCEF_TRACE;
 
-    m_udpStartPort = CORE::StringToUInt16( appConfig.GetValueAlways( "UdpStartPort", "20000" ) );
-    m_channelCount = CORE::StringToUInt16( appConfig.GetValueAlways( "ChannelCount", "1" ) );
-    m_redisStreamStartChannelID = CORE::StringToInt32( appConfig.GetValueAlways( "RedisStreamStartChannelID", "1" ) );
-    m_redisStreamName = appConfig.GetValueAlways( "RedisStreamName", "udp-ingress-ch{channelID}" );
-    m_redisHost = appConfig.GetValueAlways( "RedisHost", "127.0.0.1" );
-    m_redisPort = CORE::StringToUInt16( appConfig.GetValueAlways( "RedisPort", "6379" ) );
+    CORE::CString modeAsString = appConfig.GetValueAlways( "Mode", "Receiver" ).Lowercase();
+    if ( "receiver" == modeAsString )
+        m_mode = UDPVIATCPMODE_UDP_RECEIVER_ONLY;
+    else
+    if ( "transmitter" == modeAsString )
+        m_mode = UDPVIATCPMODE_UDP_TRANSMITTER_ONLY;
+    else
+    if ( "bidirectional" == modeAsString )
+        m_mode = UDPVIATCPMODE_BIDIRECTIONAL_UDP;
+    else
+    {
+        GUCEF_ERROR_LOG( CORE::LOGLEVEL_IMPORTANT, "UdpViaTcp:LoadConfig: Unknown application mode specified: " + modeAsString );
+        return false;
+    }
+
+    // Note: We dont support binding to specific interfaces at this time
+    m_udpReceiver.SetPort( CORE::StringToUInt16( appConfig.GetValueAlways( "UdpReceivePort", "20000" ) ) );
+    m_tcpReceiver.SetPort( CORE::StringToUInt16( appConfig.GetValueAlways( "TcpTunnelReceivePort", "30000" ) ) );
+    
+    m_udpDestination.SetPort( CORE::StringToUInt16( appConfig.GetValueAlways( "UdpDestinationPort", "20000" ) ) );
+    m_udpDestination.SetHostname( appConfig.GetValueAlways( "UdpDestinationAddr", "127.0.0.1" ) );
+    m_tcpDestination.SetPort( CORE::StringToUInt16( appConfig.GetValueAlways( "TcpTunnelDestinationPort", "30000" ) ) );
+    m_tcpDestination.SetHostname( appConfig.GetValueAlways( "TcpTunnelDestinationAddr", "127.0.0.1" ) );
     
     m_httpServer.SetPort( CORE::StringToUInt16( appConfig.GetValueAlways( "RestApiPort", "10000" ) ) );
 
@@ -760,7 +561,7 @@ Udp2Redis::LoadConfig( const CORE::CValueList& appConfig   ,
 /*-------------------------------------------------------------------------*/
 
 const CORE::CValueList& 
-Udp2Redis::GetAppConfig( void ) const
+UdpViaTcp::GetAppConfig( void ) const
 {
     return m_appConfig;
 }
@@ -768,7 +569,7 @@ Udp2Redis::GetAppConfig( void ) const
 /*-------------------------------------------------------------------------*/
 
 const CORE::CDataNode& 
-Udp2Redis::GetGlobalConfig( void ) const
+UdpViaTcp::GetGlobalConfig( void ) const
 {
     return m_globalConfig;
 }

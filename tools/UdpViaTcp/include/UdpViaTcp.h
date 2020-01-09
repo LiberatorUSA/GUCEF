@@ -34,6 +34,16 @@
 #define GUCEF_COMCORE_CUDPSOCKET_H
 #endif /* GUCEF_COMCORE_CUDPSOCKET_H ? */
 
+#ifndef GUCEF_COMCORE_CTCPSERVERSOCKET_H
+#include "CTCPServerSocket.h"
+#define GUCEF_COMCORE_CTCPSERVERSOCKET_H
+#endif /* GUCEF_COMCORE_CTCPSERVERSOCKET_H ? */
+
+#ifndef GUCEF_COMCORE_CTCPCLIENTSOCKET_H
+#include "CTCPClientSocket.h"
+#define GUCEF_COMCORE_CTCPCLIENTSOCKET_H
+#endif /* GUCEF_COMCORE_CTCPCLIENTSOCKET_H ? */
+
 #ifndef GUCEF_CORE_CICONFIGURABLE_H
 #include "CIConfigurable.h"
 #define GUCEF_CORE_CICONFIGURABLE_H
@@ -69,9 +79,6 @@
 #define GUCEF_COM_CCODECBASEDHTTPSERVERRESOURCE_H
 #endif /* GUCEF_COM_CCODECBASEDHTTPSERVERRESOURCE_H ? */
 
-#include "hiredis.h"
-#include "async.h"
-
 /*-------------------------------------------------------------------------//
 //                                                                         //
 //      NAMESPACE                                                          //
@@ -86,165 +93,51 @@ using namespace GUCEF;
 //                                                                         //
 //-------------------------------------------------------------------------*/
 
-class Udp2RedisChannel : public CORE::CTaskConsumer
+class UdpViaTcp;
+
+class RestApiUdpViaTcpInfoResource : public COM::CCodecBasedHTTPServerResource
 {
     public:
 
-    typedef CORE::CTEventHandlerFunctor< Udp2RedisChannel > TEventCallback;
+    RestApiUdpViaTcpInfoResource( UdpViaTcp* app );
 
-    Udp2RedisChannel();
-    Udp2RedisChannel( const Udp2RedisChannel& src );
-    virtual ~Udp2RedisChannel();
+    virtual ~RestApiUdpViaTcpInfoResource();
 
-    virtual bool OnTaskStart( CORE::CICloneable* taskData );
-    
-    virtual bool OnTaskCycle( CORE::CICloneable* taskData );
-    
-    virtual void OnTaskEnd( CORE::CICloneable* taskData );
-
-    virtual CORE::CString GetType( void ) const;
-
-    bool LoadConfig( CORE::UInt16 udpPort                   ,
-                     const CORE::CString& redisHost         ,
-                     CORE::UInt16 redisPort                 ,
-                     const CORE::CString& channelStreamName );
+    virtual bool Serialize( CORE::CDataNode& output             ,
+                            const CORE::CString& representation );
 
     private:
 
-    void
-    OnUDPSocketError( CORE::CNotifier* notifier   ,
-                      const CORE::CEvent& eventID ,
-                      CORE::CICloneable* evenData );
-
-    void
-    OnUDPSocketClosed( CORE::CNotifier* notifier   ,
-                       const CORE::CEvent& eventID ,
-                       CORE::CICloneable* evenData );
-
-    void
-    OnUDPSocketOpened( CORE::CNotifier* notifier   ,
-                       const CORE::CEvent& eventID ,
-                       CORE::CICloneable* evenData );
-
-    void
-    OnUDPPacketRecieved( CORE::CNotifier* notifier   ,
-                         const CORE::CEvent& eventID ,
-                         CORE::CICloneable* evenData );
-
-    void
-    OnRedisReconnectTimer( CORE::CNotifier* notifier   ,
-                           const CORE::CEvent& eventID ,
-                           CORE::CICloneable* evenData );
-    private:
-
-    void RegisterEventHandlers( void );
-    
-    int RedisSend( const CORE::CDynamicBuffer& udpPacket );
-
-    bool SendQueuedPackagesIfAny( void );
-
-    bool RedisConnect( void );
-
-    static void 
-    OnRedisASyncVoidReply( redisAsyncContext* context , 
-                           void *reply                , 
-                           void *privdata             );
-
-    void 
-    OnRedisASyncReply( redisAsyncContext* context , 
-                       redisReply* reply          );
-
-    static void
-    OnRedisASyncConnect( const struct redisAsyncContext* context , 
-                         int status                              );
-
-    static void
-    OnRedisASyncDisconnect( const struct redisAsyncContext* context , 
-                            int status                              );
-
-    static void
-    OnRedisAddReadEvent( void* privData );
-
-    static void
-    OnRedisDelReadEvent( void* privData );
-
-    static void
-    OnRedisAddWriteEvent( void* privData );
-
-    static void
-    OnRedisDelWriteEvent( void* privData );
-
-    static void
-    OnRedisCleanupEvent( void* privData );
-
-    static void
-    OnRedisScheduleTimerEvent( void* privData, struct timeval tv );
-
-    private:
-
-    typedef std::deque< CORE::CDynamicBuffer > TDynamicBufferQueue;
-    typedef std::vector< redisAsyncContext* > redisAsyncContextVector;
-
-    CORE::UInt16 m_udpPort;
-    CORE::CString m_redisStreamName;
-    CORE::CString m_redisStreamSendCmd;
-    CORE::CString m_redisHost;
-    CORE::UInt16 m_redisPort;
-    CORE::CTimer *m_redisReconnectTimer;
-    redisAsyncContext* m_redisContext;
-    GUCEF::COMCORE::CUDPSocket* m_udpSocket;
-    TDynamicBufferQueue m_redisMsgQueueOverflowQueue;
-    redisOptions m_redisOptions;
-    bool m_redisReadFlag;
-    bool m_redisWriteFlag;
-    bool m_redisTimeoutFlag;
+    UdpViaTcp* m_app;
 };
 
 /*-------------------------------------------------------------------------*/
 
-class Udp2Redis;
-
-class RestApiUdp2RedisInfoResource : public COM::CCodecBasedHTTPServerResource
+class RestApiUdpViaTcpConfigResource : public COM::CCodecBasedHTTPServerResource
 {
     public:
 
-    RestApiUdp2RedisInfoResource( Udp2Redis* app );
+    RestApiUdpViaTcpConfigResource( UdpViaTcp* app, bool appConfig );
 
-    virtual ~RestApiUdp2RedisInfoResource();
+    virtual ~RestApiUdpViaTcpConfigResource();
 
     virtual bool Serialize( CORE::CDataNode& output             ,
                             const CORE::CString& representation );
 
     private:
 
-    Udp2Redis* m_app;
-};
-
-class RestApiUdp2RedisConfigResource : public COM::CCodecBasedHTTPServerResource
-{
-    public:
-
-    RestApiUdp2RedisConfigResource( Udp2Redis* app, bool appConfig );
-
-    virtual ~RestApiUdp2RedisConfigResource();
-
-    virtual bool Serialize( CORE::CDataNode& output             ,
-                            const CORE::CString& representation );
-
-    private:
-
-    Udp2Redis* m_app;
+    UdpViaTcp* m_app;
     bool m_appConfig;
 };
 
 /*-------------------------------------------------------------------------*/
 
-class Udp2Redis
+class UdpViaTcp : public CORE::CObservingNotifier
 {
     public:
 
-    Udp2Redis( void );
-    virtual ~Udp2Redis();
+    UdpViaTcp( void );
+    virtual ~UdpViaTcp();
 
     bool Start( void );
 
@@ -257,13 +150,116 @@ class Udp2Redis
 
     private:
 
-    CORE::UInt16 m_udpStartPort;
-    CORE::UInt16 m_channelCount;
-    CORE::Int32 m_redisStreamStartChannelID;
-    CORE::CString m_redisStreamName;
-    CORE::CString m_redisHost;
-    CORE::UInt16 m_redisPort;
-    std::vector< Udp2RedisChannel > m_channels;
+    void RegisterEventHandlers( void );
+
+    void
+    OnUDPReceiveSocketError( CORE::CNotifier* notifier   ,
+                             const CORE::CEvent& eventID ,
+                             CORE::CICloneable* evenData );
+
+    void
+    OnUDPReceiveSocketClosed( CORE::CNotifier* notifier   ,
+                              const CORE::CEvent& eventID ,
+                              CORE::CICloneable* evenData );
+
+    void
+    OnUDPReceiveSocketOpened( CORE::CNotifier* notifier   ,
+                              const CORE::CEvent& eventID ,
+                              CORE::CICloneable* evenData );
+
+    void
+    OnUDPReceiveSocketPacketRecieved( CORE::CNotifier* notifier   ,
+                                      const CORE::CEvent& eventID ,
+                                      CORE::CICloneable* evenData );
+
+    void
+    OnUDPTransmitSocketError( CORE::CNotifier* notifier   ,
+                              const CORE::CEvent& eventID ,
+                              CORE::CICloneable* evenData );
+
+    void
+    OnUDPTransmitSocketClosed( CORE::CNotifier* notifier   ,
+                               const CORE::CEvent& eventID ,
+                               CORE::CICloneable* evenData );
+
+    void
+    OnUDPTransmitSocketOpened( CORE::CNotifier* notifier   ,
+                               const CORE::CEvent& eventID ,
+                               CORE::CICloneable* evenData );
+
+    void
+    OnUDPTransmitSocketPacketRecieved( CORE::CNotifier* notifier   ,
+                                       const CORE::CEvent& eventID ,
+                                       CORE::CICloneable* evenData );
+
+    void
+    OnTCPServerClientConnected( CORE::CNotifier* notifier    ,
+                                const CORE::CEvent& eventId  ,
+                                CORE::CICloneable* eventData );
+    
+    void
+    OnTCPServerClientDisconnected( CORE::CNotifier* notifier    ,
+                                   const CORE::CEvent& eventId  ,
+                                   CORE::CICloneable* eventData );
+    void
+    OnTCPServerClientError( CORE::CNotifier* notifier    ,
+                            const CORE::CEvent& eventId  ,
+                            CORE::CICloneable* eventData );
+    
+    void 
+    OnTCPServerSocketOpened( CORE::CNotifier* notifier    ,
+                             const CORE::CEvent& eventId  ,
+                             CORE::CICloneable* eventData );
+    
+    void
+    OnTCPServerSocketClosed( CORE::CNotifier* notifier    ,
+                             const CORE::CEvent& eventId  ,
+                             CORE::CICloneable* eventData );
+
+    void
+    OnTCPServerSocketError( CORE::CNotifier* notifier    ,
+                            const CORE::CEvent& eventId  ,
+                            CORE::CICloneable* eventData );
+
+    void
+    OnTCPServerSocketClientError( CORE::CNotifier* notifier    ,
+                                  const CORE::CEvent& eventId  ,
+                                  CORE::CICloneable* eventData );
+
+    void
+    OnTCPServerSocketMaxConnectionsChanged( CORE::CNotifier* notifier    ,
+                                            const CORE::CEvent& eventId  ,
+                                            CORE::CICloneable* eventData );
+
+    void
+    OnTCPServerConnectionDataRecieved( CORE::CNotifier* notifier    ,
+                                       const CORE::CEvent& eventId  ,
+                                       CORE::CICloneable* eventData );
+
+    private:
+
+    typedef CORE::CTEventHandlerFunctor< UdpViaTcp > TEventCallback;
+
+    enum EUdpViaTcpMode
+    {
+        UDPVIATCPMODE_UDP_RECEIVER_ONLY    ,
+        UDPVIATCPMODE_UDP_TRANSMITTER_ONLY ,
+        UDPVIATCPMODE_BIDIRECTIONAL_UDP
+    };
+    typedef enum EUdpViaTcpMode TUdpViaTcpMode;
+
+    COMCORE::CTCPServerSocket m_tcpServerSocket;
+    COMCORE::CTCPClientSocket m_tcpClientSocket;
+    COMCORE::CUDPSocket m_udpTransmitSocket;
+    COMCORE::CUDPSocket m_udpReceiveSocket;
+    std::vector< CORE::CDynamicBuffer > m_receivePacketBuffers;
+    
+    TUdpViaTcpMode m_mode;
+    COMCORE::CHostAddress m_tcpDestination;
+    COMCORE::CHostAddress m_tcpReceiver;
+    COMCORE::CHostAddress m_udpDestination;
+    COMCORE::CHostAddress m_udpReceiver;
+
     COM::CHTTPServer m_httpServer;
     COM::CDefaultHTTPServerRouter m_httpRouter;
     CORE::CValueList m_appConfig;
