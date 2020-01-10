@@ -160,10 +160,9 @@ class GUCEF_COMCORE_EXPORT_CPP CTCPServerConnection : public CTCPConnection
     /**                 
      *      polls the socket ect. as needed and update stats.
      *
-     *      @param tickcount the tick count when the Update process commenced.
-     *      @param deltaticks ticks since the last Update process commenced.          
+     *      @param maxUpdatesPerCycle Max number of socket operation update cycles per pulse
      */
-    virtual void Update( void );
+    virtual void Update( UInt32 maxUpdatesPerCycle );
     
     virtual void LockData( void ) const;
     

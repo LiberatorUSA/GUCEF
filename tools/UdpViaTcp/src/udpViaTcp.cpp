@@ -268,7 +268,12 @@ UdpViaTcp::OnUDPReceiveSocketPacketRecieved( CORE::CNotifier* notifier    ,
         GUCEF_DEBUG_LOG( CORE::LOGLEVEL_IMPORTANT, "UdpViaTcp: UDP Receive Socket received a packet from " + data.sourceAddress.AddressAndPortAsString() );
         #endif
 
-
+        char packetHeader[ 7 ]; 
+        CORE::UInt32 packetSize = udpPacketBuffer.GetDataSize();
+        memcpy( packetHeader, "UDP", 3 );
+        memcpy( packetHeader+3, &packetSize, 4 );        
+        m_tcpClientSocket.Send( packetHeader, 7 );
+        m_tcpClientSocket.Send( udpPacketBuffer.GetConstBufferPtr(), packetSize );
     }
     else
     {
@@ -503,6 +508,8 @@ UdpViaTcp::Start( void )
     if ( UDPVIATCPMODE_BIDIRECTIONAL_UDP == m_mode || UDPVIATCPMODE_UDP_TRANSMITTER_ONLY == m_mode )
     {
         // We will be receiving wrapped UDP packets over the TCP tunnel and transmitting them as regular UDP again
+        m_tcpServerSocket.SetMaxUpdatesPerCycle( 10 );
+        m_tcpServerSocket.SetAutoReOpenOnError( true );
         m_tcpServerSocket.ListenOnPort( m_tcpReceiver.GetPortInHostByteOrder() );
     }
     if ( UDPVIATCPMODE_BIDIRECTIONAL_UDP == m_mode || UDPVIATCPMODE_UDP_RECEIVER_ONLY == m_mode )
@@ -510,6 +517,9 @@ UdpViaTcp::Start( void )
         // We will be receiving regular UDP packets and will be pushing them into the TCP tunnel
         m_tcpClientSocket.SetMaxRead( 102400 );
         m_tcpClientSocket.ConnectTo( m_tcpDestination, false );
+
+        m_udpReceiveSocket.SetMaxUpdatesPerCycle( 10 );
+        m_udpReceiveSocket.SetAutoReOpenOnError( true ); 
         m_udpReceiveSocket.Open( m_udpReceiver.GetPortInHostByteOrder() );
     }
     
@@ -543,12 +553,12 @@ UdpViaTcp::LoadConfig( const CORE::CValueList& appConfig   ,
     }
 
     // Note: We dont support binding to specific interfaces at this time
-    m_udpReceiver.SetPort( CORE::StringToUInt16( appConfig.GetValueAlways( "UdpReceivePort", "20000" ) ) );
-    m_tcpReceiver.SetPort( CORE::StringToUInt16( appConfig.GetValueAlways( "TcpTunnelReceivePort", "30000" ) ) );
+    m_udpReceiver.SetPortInHostByteOrder( CORE::StringToUInt16( appConfig.GetValueAlways( "UdpReceivePort", "20000" ) ) );
+    m_tcpReceiver.SetPortInHostByteOrder( CORE::StringToUInt16( appConfig.GetValueAlways( "TcpTunnelReceivePort", "30000" ) ) );
     
-    m_udpDestination.SetPort( CORE::StringToUInt16( appConfig.GetValueAlways( "UdpDestinationPort", "20000" ) ) );
+    m_udpDestination.SetPortInHostByteOrder( CORE::StringToUInt16( appConfig.GetValueAlways( "UdpDestinationPort", "40000" ) ) );
     m_udpDestination.SetHostname( appConfig.GetValueAlways( "UdpDestinationAddr", "127.0.0.1" ) );
-    m_tcpDestination.SetPort( CORE::StringToUInt16( appConfig.GetValueAlways( "TcpTunnelDestinationPort", "30000" ) ) );
+    m_tcpDestination.SetPortInHostByteOrder( CORE::StringToUInt16( appConfig.GetValueAlways( "TcpTunnelDestinationPort", "30000" ) ) );
     m_tcpDestination.SetHostname( appConfig.GetValueAlways( "TcpTunnelDestinationAddr", "127.0.0.1" ) );
     
     m_httpServer.SetPort( CORE::StringToUInt16( appConfig.GetValueAlways( "RestApiPort", "10000" ) ) );

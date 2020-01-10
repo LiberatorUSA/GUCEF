@@ -137,6 +137,16 @@ CHostAddress::GetHostname( void ) const
 
 /*-------------------------------------------------------------------------*/
 
+bool
+CHostAddress::Refresh( void )
+{GUCEF_TRACE;
+
+    return ResolveDNS( m_hostname               ,
+                       GetPortInHostByteOrder() );
+}
+
+/*-------------------------------------------------------------------------*/
+
 CORE::CString
 CHostAddress::HostnameAndPortAsString( void ) const
 {GUCEF_TRACE;

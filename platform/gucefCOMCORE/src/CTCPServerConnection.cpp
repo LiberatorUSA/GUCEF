@@ -431,7 +431,7 @@ CTCPServerConnection::GetConnectionIndex( void ) const
 /*-------------------------------------------------------------------------*/
 
 void
-CTCPServerConnection::Update( void )
+CTCPServerConnection::Update( UInt32 maxUpdatesPerCycle )
 {GUCEF_TRACE;
 
     if ( !_blocking && _active )

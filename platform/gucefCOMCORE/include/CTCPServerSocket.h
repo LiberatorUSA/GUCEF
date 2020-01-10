@@ -151,6 +151,23 @@ class GUCEF_COMCORE_EXPORT_CPP CTCPServerSocket : public CSocket
     
     void GetListenAddress( CHostAddress& listenAddress ) const;          
 
+    void SetAutoReOpenOnError( bool autoReOpen );
+
+    bool GetAutoReOpenOnError( void ) const;
+
+    /**
+     *  sets the max number of updates to perform on the socket for a given update cycle
+     *  This setting applies to running a socket in non-blocking event driven mode.
+     *  If you have a very busy socket you don't want the socket to get 'stuck' reading from the socket for example
+     *  due to the fact that data is coming in so fast that by the time you finished reading from the socket more 
+     *  data is waiting on the socket. In such cases you should use this setting to avoid this scenario.
+     *
+     *  @param maxUpdates number of updates to perform per update cycle
+     */
+    void SetMaxUpdatesPerCycle( UInt32 maxUpdates );
+
+    UInt32 GetMaxUpdatesPerCycle( void ) const;
+
     /**
      *      Send data to ALL client connections
      */
@@ -189,12 +206,14 @@ class GUCEF_COMCORE_EXPORT_CPP CTCPServerSocket : public CSocket
     struct STCPServerSockData* _data;
     bool _active; 
     bool _blocking;                        
-    TConnectionVector _connections;          /**< array of connection objects */
+    TConnectionVector _connections;            /**< array of connection objects */
     UInt16 m_port;
     MT::CMutex _datalock;
     UInt32 _timeout;   
     UInt32 _acount;                            /**< the number of active connections */        
     CORE::CPulseGenerator* m_pulseGenerator;
+    UInt32 m_maxUpdatesPerCycle;               /**< setting aimed at preventing a busy socket from hogging all the processing */
+    bool m_autoReopenOnError;                  /**< flag for feature to auto re-open the listen socket after a socket error occurred */
 };
 
 /*-------------------------------------------------------------------------//

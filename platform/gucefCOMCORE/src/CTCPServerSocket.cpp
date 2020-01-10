@@ -125,12 +125,14 @@ typedef struct STCPServerSockData TTCPServerSockData;
 
 CTCPServerSocket::CTCPServerSocket( CORE::CPulseGenerator& pulseGenerator ,
                                     bool blocking                         )
-        : CSocket()                               ,
-          _connections( DEFAULT_MAX_CONNECTIONS ) ,
-          _active( false )                        ,
-          _blocking( blocking )                   ,
-          m_port( 0 )                             ,
-          m_pulseGenerator( &pulseGenerator )
+        : CSocket()                               
+        , _connections( DEFAULT_MAX_CONNECTIONS ) 
+        , _active( false )                        
+        , _blocking( blocking )                   
+        , m_port( 0 )                             
+        , m_pulseGenerator( &pulseGenerator )
+        , m_maxUpdatesPerCycle( 10 )
+        , m_autoReopenOnError( false )
 {GUCEF_TRACE;
 
     _data = new TTCPServerSockData;
@@ -154,12 +156,14 @@ CTCPServerSocket::CTCPServerSocket( CORE::CPulseGenerator& pulseGenerator ,
 /*-------------------------------------------------------------------------*/
 
 CTCPServerSocket::CTCPServerSocket( bool blocking )
-        : CSocket()                               ,
-          _connections( DEFAULT_MAX_CONNECTIONS ) ,
-          _active( false )                        ,
-          _blocking( blocking )                   ,
-          m_port( 0 )                             ,
-          m_pulseGenerator( &CORE::CCoreGlobal::Instance()->GetPulseGenerator() )
+        : CSocket()                               
+        , _connections( DEFAULT_MAX_CONNECTIONS ) 
+        , _active( false )                        
+        , _blocking( blocking )                   
+        , m_port( 0 )                             
+        , m_pulseGenerator( &CORE::CCoreGlobal::Instance()->GetPulseGenerator() )
+        , m_maxUpdatesPerCycle( 10 )
+        , m_autoReopenOnError( false )
 {GUCEF_TRACE;
 
     _data = new TTCPServerSockData;
@@ -263,7 +267,7 @@ CTCPServerSocket::OnPulse( CORE::CNotifier* notifier                 ,
         {
             for ( UInt32 i=0; i<_connections.size(); ++i )
             {
-                _connections[ i ]->Update();
+                _connections[ i ]->Update( m_maxUpdatesPerCycle );
             }
         }
     }
@@ -272,20 +276,42 @@ CTCPServerSocket::OnPulse( CORE::CNotifier* notifier                 ,
 /*-------------------------------------------------------------------------*/
 
 void
+CTCPServerSocket::SetMaxUpdatesPerCycle( UInt32 maxUpdates )
+{GUCEF_TRACE;
+
+    m_maxUpdatesPerCycle = maxUpdates;
+}
+
+/*-------------------------------------------------------------------------*/
+
+
+UInt32
+CTCPServerSocket::GetMaxUpdatesPerCycle( void ) const
+{GUCEF_TRACE;
+
+    return m_maxUpdatesPerCycle;
+}
+
+/*-------------------------------------------------------------------------*/
+
+void
 CTCPServerSocket::AcceptClients( void )
 {GUCEF_TRACE;
 
-    int s;          /* s is where the data is stored from the select function */
-    int nfds;       /* This is used for Compatibility */
-    fd_set conn;    /* Setup the read variable for the Select function */
-
     if ( _data->connectcount < _data->maxcon )
     {
-        FD_ZERO( &conn ); // Set the data in conn to nothing
-        FD_SET( _data->sockid ,
-                &conn         ); // Tell it to get the data from the Listening Socket
+        int s = 0;           /* s is where the data is stored from the select function */
+        int nfds = 0;        /* This is used for Compatibility */
+    
+        fd_set conn;         /* Setup the read variable for the Select function */
+        fd_set exceptfds;    /* Setup the except variable for the select function */
 
-        s = 0;
+        FD_ZERO( &conn );       // Set the data in conn to nothing
+        FD_ZERO( &exceptfds );
+
+        FD_SET( _data->sockid, &conn );   // Tell it to get the data from the Listening Socket
+        FD_SET( _data->sockid, &exceptfds );
+
         if ( !_data->blocking )
         {
             /*
@@ -303,7 +329,7 @@ CTCPServerSocket::AcceptClients( void )
             s = select( nfds            ,
                         &conn           ,
                         NULL            ,
-                        NULL            ,
+                        &exceptfds      ,
                         &_data->timeout ); // Is there any data coming in?
 
             if ( s > 0 ) /* Someone is trying to Connect */

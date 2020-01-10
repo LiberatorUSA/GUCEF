@@ -75,6 +75,11 @@ class GUCEF_COMCORE_EXPORT_CPP CHostAddress : public CIPAddress
     const CORE::CString& GetHostname( void ) const;
 
     /**
+     *  Refreshes the DNS resolution of the hostname
+     */
+    virtual bool Refresh( void );
+
+    /**
      *  Address and port as a string with the network to host
      *  conversion applied
      */
