@@ -653,8 +653,22 @@ CDynamicBuffer::Downshift( const UInt32 bytesToWipe )
     if ( bytesToWipe > m_dataSize )
         return false;
 
-    // todo
-    return false;
+    UInt32 offset = 0;
+    UInt32 remnant = m_dataSize;
+    while ( remnant > 0 )
+    {
+        UInt32 toWipe = bytesToWipe;
+        if ( toWipe > remnant )
+            toWipe = remnant;
+
+        memcpy( _buffer+offset, _buffer+offset+bytesToWipe, toWipe );
+
+        remnant -= toWipe;
+        offset += toWipe;    
+    }
+    m_dataSize -= bytesToWipe;
+
+    return true;
 }
 
 /*-------------------------------------------------------------------------*/
