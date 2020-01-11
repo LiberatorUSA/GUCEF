@@ -344,6 +344,21 @@ CValueList::Set( const CString& key   ,
     }
 }
 
+/*-------------------------------------------------------------------------*/
+
+CValueList::TStringVector 
+CValueList::GetValueVectorAlways( const CString& key ) const
+{GUCEF_TRACE;
+
+    TStringVector results;
+    TValueMap::const_iterator i = m_list.find( key );
+    if ( i != m_list.end() )
+    {
+        results = (*i).second;
+    }
+    return results;    
+}
+
 /*-------------------------------------------------------------------------*/                
         
 CString

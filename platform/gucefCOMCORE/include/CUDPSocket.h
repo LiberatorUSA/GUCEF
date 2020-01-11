@@ -161,12 +161,73 @@ class GUCEF_COMCORE_EXPORT_CPP CUDPSocket : public CSocket
      */
     bool Open( const CIPAddress& localaddr );
 
+    /**
+     *  Attempts to join the given multicast group using exclusive mode
+     *  This will accept multicast data from any source.
+     *  To prevent receiving data from specific sources use Block/Unblock   
+     *
+     *  @param multicastGroup The multicast group to join
+     */
+    bool Join( const CIPAddress& multicastGroup );
+
+    /**
+     *  Attempts to join the given multicast group using inclusive mode
+     *  This will accept multicast data from the source specified.
+     *  To add additional allowed source addresses simply invoke this repeatedly per allowed source    
+     *
+     *  @param multicastGroup The multicast group to join
+     *  @param srcAddr The allowed source address of multicast data
+     */
+    bool Join( const CIPAddress& multicastGroup ,
+               const CIPAddress& srcAddr        );
+
+    /**
+     *  Attempts to join the leave multicast group using exclusive mode
+     *  This will stop accepting multicast data from any source. 
+     *
+     *  @param multicastGroup The multicast group to join
+     */
+    bool Leave( const CIPAddress& multicastGroup );
+
+    /**
+     *  Attempts to leave the given multicast group using inclusive mode
+     *  This will stop accepting multicast data from the source specified.
+     *  To leave for additional allowed source addresses simply invoke this repeatedly per allowed source    
+     *
+     *  @param multicastGroup The multicast group to leave
+     *  @param srcAddr The allowed source address of multicast data
+     */
+    bool Leave( const CIPAddress& multicastGroup ,
+                const CIPAddress& srcAddr        );
+
+    /**
+     *  Attempts to block data from the given multicast group for a specific source using exclusive mode
+     *  This will stop accepting multicast data from the source specified.
+     *  To block additional allowed source addresses simply invoke this repeatedly per allowed source    
+     *
+     *  @param multicastGroup The multicast group to leave
+     *  @param srcAddr The allowed source address of multicast data
+     */
+    bool Block( const CIPAddress& multicastGroup ,
+                const CIPAddress& srcAddr        );
+
+    /**
+     *   Attempts to unblock data from the given multicast group for a specific source using exclusive mode
+     *  This will (re)start accepting multicast data from the source specified.
+     *  To unblock additional blocked source addresses simply invoke this repeatedly per blocked source    
+     *
+     *  @param multicastGroup The multicast group to leave
+     *  @param srcAddr The allowed source address of multicast data
+     */
+    bool Unblock( const CIPAddress& multicastGroup ,
+                  const CIPAddress& srcAddr        );
+
     UInt16 GetPort( void ) const;
 
     /**
      *      Closes the socket connection.
      */
-    void Close( bool force = false );
+    void Close( bool shutdownOnly = false );
 
     /**
      *      Attempts to send a UDP packet to the given destination.

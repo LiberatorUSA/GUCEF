@@ -116,11 +116,15 @@ UdpViaTcp::UdpViaTcp( void )
     , m_udpTransmitSocket( false )
     , m_udpReceiveSocket( false )
     , m_receivePacketBuffers()
+    , m_udpReceiveUnicast( true )
+    , m_udpReceiveMulticast( false )
     , m_mode( UDPVIATCPMODE_UDP_RECEIVER_ONLY )
     , m_tcpDestination()
     , m_tcpReceiver()
     , m_udpDestination()
     , m_udpReceiver()
+    , m_udpTransmitter()
+    , m_udpReceiverMulticastSources()
     , m_httpServer()
     , m_httpRouter()
     , m_appConfig()
@@ -248,6 +252,18 @@ UdpViaTcp::OnUDPReceiveSocketOpened( CORE::CNotifier* notifier   ,
 {GUCEF_TRACE;
 
     GUCEF_LOG( CORE::LOGLEVEL_IMPORTANT, "UdpViaTcp: UDP Receive Socket has been opened" );
+
+    if ( m_udpReceiveMulticast )
+    {
+        CORE::CValueList::TStringVector::iterator i = m_udpReceiverMulticastSources.begin();
+        while ( i != m_udpReceiverMulticastSources.end() )
+        {
+            COMCORE::CHostAddress multicastGroup;
+            multicastGroup.SetHostname( (*i) );
+            m_udpReceiveSocket.Join( multicastGroup );
+            ++i;
+        }
+    }
 }
 
 /*-------------------------------------------------------------------------*/
@@ -425,6 +441,7 @@ UdpViaTcp::OnTCPServerClientDisconnected( CORE::CNotifier* notifier    ,
 {GUCEF_TRACE;
 
     const COMCORE::CTCPServerSocket::TClientConnectedEventData* eData = static_cast< COMCORE::CTCPServerSocket::TClientConnectedEventData* >( eventData );
+    if ( GUCEF_NULL == eData ) return;
     const COMCORE::CTCPServerSocket::TConnectionInfo& info = eData->GetData();
 
     GUCEF_DEBUG_LOG( CORE::LOGLEVEL_NORMAL, "UdpViaTcp: TCP Client disconnected" );
@@ -511,6 +528,10 @@ UdpViaTcp::Start( void )
         m_tcpServerSocket.SetMaxUpdatesPerCycle( 10 );
         m_tcpServerSocket.SetAutoReOpenOnError( true );
         m_tcpServerSocket.ListenOnPort( m_tcpReceiver.GetPortInHostByteOrder() );
+        
+        m_udpTransmitSocket.SetMaxUpdatesPerCycle( 10 );
+        m_udpTransmitSocket.SetAutoReOpenOnError( true ); 
+        m_udpTransmitSocket.Open( m_udpTransmitter );
     }
     if ( UDPVIATCPMODE_BIDIRECTIONAL_UDP == m_mode || UDPVIATCPMODE_UDP_RECEIVER_ONLY == m_mode )
     {
@@ -522,7 +543,7 @@ UdpViaTcp::Start( void )
 
         m_udpReceiveSocket.SetMaxUpdatesPerCycle( 10 );
         m_udpReceiveSocket.SetAutoReOpenOnError( true ); 
-        m_udpReceiveSocket.Open( m_udpReceiver.GetPortInHostByteOrder() );
+        m_udpReceiveSocket.Open( m_udpReceiver );
     }
     
     m_httpRouter.SetResourceMapping( "/info", RestApiUdpViaTcpInfoResource::THTTPServerResourcePtr( new RestApiUdpViaTcpInfoResource( this ) )  );
@@ -554,15 +575,22 @@ UdpViaTcp::LoadConfig( const CORE::CValueList& appConfig   ,
         return false;
     }
 
-    // Note: We dont support binding to specific interfaces at this time
-    m_udpReceiver.SetPortInHostByteOrder( CORE::StringToUInt16( appConfig.GetValueAlways( "UdpReceivePort", "20000" ) ) );
-    m_tcpReceiver.SetPortInHostByteOrder( CORE::StringToUInt16( appConfig.GetValueAlways( "TcpTunnelReceivePort", "30000" ) ) );
+    m_udpReceiveUnicast = CORE::StringToBool( appConfig.GetValueAlways( "UdpReceiverAcceptsUnicast", "true" ) );
+    m_udpReceiveMulticast = CORE::StringToBool( appConfig.GetValueAlways( "UdpReceiverAcceptsMulticast", "false" ) );
+    m_udpReceiver.SetPortInHostByteOrder( CORE::StringToUInt16( appConfig.GetValueAlways( "UdpReceiverPort", "20000" ) ) );
+    m_udpReceiver.SetHostname( appConfig.GetValueAlways( "UdpReceiverInterface", "0.0.0.0" ) );
+    m_udpReceiverMulticastSources = appConfig.GetValueVectorAlways( "UdpReceiverMulticastSource" );
     
-    m_udpDestination.SetPortInHostByteOrder( CORE::StringToUInt16( appConfig.GetValueAlways( "UdpDestinationPort", "40000" ) ) );
-    m_udpDestination.SetHostname( appConfig.GetValueAlways( "UdpDestinationAddr", "127.0.0.1" ) );
     m_tcpDestination.SetPortInHostByteOrder( CORE::StringToUInt16( appConfig.GetValueAlways( "TcpTunnelDestinationPort", "30000" ) ) );
     m_tcpDestination.SetHostname( appConfig.GetValueAlways( "TcpTunnelDestinationAddr", "127.0.0.1" ) );
-    
+    m_tcpReceiver.SetPortInHostByteOrder( CORE::StringToUInt16( appConfig.GetValueAlways( "TcpTunnelReceivePort", "30000" ) ) );
+    m_tcpReceiver.SetHostname( appConfig.GetValueAlways( "TcpTunnelReceiveInterface", "0.0.0.0" ) );
+        
+    m_udpTransmitter.SetPortInHostByteOrder( CORE::StringToUInt16( appConfig.GetValueAlways( "UdpTransmitterPort", "20001" ) ) );
+    m_udpTransmitter.SetHostname( appConfig.GetValueAlways( "UdpTransmitterInterface", "0.0.0.0" ) ); 
+    m_udpDestination.SetPortInHostByteOrder( CORE::StringToUInt16( appConfig.GetValueAlways( "UdpDestinationPort", "40000" ) ) );
+    m_udpDestination.SetHostname( appConfig.GetValueAlways( "UdpDestinationAddr", "127.0.0.1" ) );
+        
     m_httpServer.SetPort( CORE::StringToUInt16( appConfig.GetValueAlways( "RestApiPort", "10000" ) ) );
 
     m_appConfig = appConfig;

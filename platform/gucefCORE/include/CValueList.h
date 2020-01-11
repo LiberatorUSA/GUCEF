@@ -165,6 +165,12 @@ class GUCEF_CORE_PUBLIC_CPP CValueList : public CIConfigurable
 
     /**
      *  Returns the value vector associated with the
+     *  given key if any. Otherwise returns an empty list and will not throw an exception
+     */
+    TStringVector GetValueVectorAlways( const CString& key ) const;
+
+    /**
+     *  Returns the value vector associated with the
      *  given key.
      *
      *  @exception EUnknownKey thrown if the given key is unknown

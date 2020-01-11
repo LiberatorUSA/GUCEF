@@ -61,8 +61,9 @@ bool
 SetBlockingMode( SOCKET sock ,
                  bool block  )
 {
-    #ifdef GUCEF_LINUX_BUILD
-	int opts;
+    #if ( ( GUCEF_PLATFORM == GUCEF_PLATFORM_LINUX ) || ( GUCEF_PLATFORM == GUCEF_PLATFORM_ANDROID ) )
+
+	int opts = 0;
 
 	opts = fcntl( sock,F_GETFL);
 	if ( opts < 0 )
@@ -84,9 +85,7 @@ SetBlockingMode( SOCKET sock ,
 	}
 	return true;
 
-	#endif /* GUCEF_LINUX_BUILD ? */
-
-	#ifdef GUCEF_MSWIN_BUILD
+	#elif ( GUCEF_PLATFORM == GUCEF_PLATFORM_MSWIN )
 
     // About ioctlsocket():
     // *argp value       Nonblocking mode
@@ -97,8 +96,10 @@ SetBlockingMode( SOCKET sock ,
     return ioctlsocket( sock                    ,
                         FIONBIO                 ,
                         (u_long FAR*)&blockmode ) != SOCKET_ERROR;
-    #endif /* GUCEF_MSWIN_BUILD ? */
-
+    
+    #else
+    return false;
+    #endif
 }
 
 /*-------------------------------------------------------------------------//
