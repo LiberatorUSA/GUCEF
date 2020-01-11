@@ -256,7 +256,7 @@ CUDPSocket::Update( bool performRead )
 
             if ( FD_ISSET( _data->sockid, &exceptfds ) )
             {
-                GUCEF_DEBUG_LOG( CORE::LOGLEVEL_NORMAL, "CUDPSocket(" + CORE::PointerToString( this ) + "): Socket error occured: " + CORE::Int32ToString( errorCode ) );
+                GUCEF_ERROR_LOG( CORE::LOGLEVEL_NORMAL, "CUDPSocket(" + CORE::PointerToString( this ) + "): Socket error occured: " + CORE::Int32ToString( errorCode ) );
 
                 int lastError = errorCode;
                 dvsocket_closesocket( _data->sockid, &errorCode );
@@ -291,7 +291,7 @@ CUDPSocket::Update( bool performRead )
         else
         {
             /* select call failed */
-            GUCEF_DEBUG_LOG( CORE::LOGLEVEL_NORMAL, "CUDPSocket(" + CORE::PointerToString( this ) + "): Socket error occured (select call failed): " + CORE::Int32ToString( errorCode ) );
+            GUCEF_ERROR_LOG( CORE::LOGLEVEL_NORMAL, "CUDPSocket(" + CORE::PointerToString( this ) + "): Socket error occured (select call failed): " + CORE::Int32ToString( errorCode ) );
 
             TSocketErrorEventData eData( errorCode );
             NotifyObservers( UDPSocketErrorEvent, &eData );
@@ -509,6 +509,9 @@ CUDPSocket::Open( const CIPAddress& localaddr )
                                             IPPROTO_UDP , 
                                             &errorCode  ) ) == INVALID_SOCKET )
     {
+        if ( m_autoReopenOnError )
+            m_pulseGenerator->RequestPeriodicPulses( this, PULSEUPDATEINTERVAL );
+        
         GUCEF_ERROR_LOG( CORE::LOGLEVEL_IMPORTANT, "UDPSocket: Failed to open socket at " + m_hostAddress.AddressAndPortAsString() + ". Error code: " + CORE::Int32ToString( errorCode ) );
         return false;
     }
@@ -516,6 +519,9 @@ CUDPSocket::Open( const CIPAddress& localaddr )
     // Set the desired blocking mode
     if ( !SetBlockingMode( _data->sockid, _blocking ) )
     {
+        if ( m_autoReopenOnError )
+            m_pulseGenerator->RequestPeriodicPulses( this, PULSEUPDATEINTERVAL );
+
         return false;
     }
 
@@ -528,6 +534,7 @@ CUDPSocket::Open( const CIPAddress& localaddr )
                         sizeof(struct sockaddr_in)               ,
                         &errorCode                               ) == 0 )
     {
+        GUCEF_DEBUG_LOG( CORE::LOGLEVEL_NORMAL, "UDPSocket: Successfully opened socket at " + m_hostAddress.AddressAndPortAsString() );
         NotifyObservers( UDPSocketOpenedEvent );
 
         // We will now be requiring periodic updates to poll for data
@@ -535,6 +542,9 @@ CUDPSocket::Open( const CIPAddress& localaddr )
 
         return true;
     }
+
+    if ( m_autoReopenOnError )
+        m_pulseGenerator->RequestPeriodicPulses( this, PULSEUPDATEINTERVAL );
     return false;
 }
 
@@ -550,7 +560,8 @@ CUDPSocket::Close( bool force )
         force ? dvsocket_closesocket( _data->sockid, &error ) : shutdown( _data->sockid, 1 );
 
         // We now no longer require periodic updates to poll for data
-        m_pulseGenerator->RequestStopOfPeriodicUpdates( this );
+        if ( !m_autoReopenOnError )
+            m_pulseGenerator->RequestStopOfPeriodicUpdates( this );
 
         NotifyObservers( UDPSocketClosedEvent );
     }

@@ -648,6 +648,9 @@ bool
 CDynamicBuffer::Downshift( const UInt32 bytesToWipe )
 {GUCEF_TRACE;
 
+    if ( 0 == bytesToWipe )
+        return true;
+
     SecureLinkBeforeMutation();
     
     if ( bytesToWipe > m_dataSize )

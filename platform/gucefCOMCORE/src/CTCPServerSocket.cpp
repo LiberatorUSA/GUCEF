@@ -133,6 +133,7 @@ CTCPServerSocket::CTCPServerSocket( CORE::CPulseGenerator& pulseGenerator ,
         , m_pulseGenerator( &pulseGenerator )
         , m_maxUpdatesPerCycle( 10 )
         , m_autoReopenOnError( false )
+        , m_lastListenFailed( false )
 {GUCEF_TRACE;
 
     _data = new TTCPServerSockData;
@@ -164,6 +165,7 @@ CTCPServerSocket::CTCPServerSocket( bool blocking )
         , m_pulseGenerator( &CORE::CCoreGlobal::Instance()->GetPulseGenerator() )
         , m_maxUpdatesPerCycle( 10 )
         , m_autoReopenOnError( false )
+        , m_lastListenFailed( false )
 {GUCEF_TRACE;
 
     _data = new TTCPServerSockData;
@@ -253,6 +255,11 @@ CTCPServerSocket::OnPulse( CORE::CNotifier* notifier                 ,
                            CORE::CICloneable* eventdata /* = NULL */ )
 {GUCEF_TRACE;
 
+    if ( !_active && m_autoReopenOnError && m_lastListenFailed )
+    {
+        Listen();
+    }     
+    
     if ( _active )
     {
         /*
@@ -271,6 +278,24 @@ CTCPServerSocket::OnPulse( CORE::CNotifier* notifier                 ,
             }
         }
     }
+}
+
+/*-------------------------------------------------------------------------*/
+
+void
+CTCPServerSocket::SetAutoReOpenOnError( bool autoReOpen )
+{GUCEF_TRACE;
+
+    m_autoReopenOnError = autoReOpen;
+}
+
+/*-------------------------------------------------------------------------*/
+
+bool
+CTCPServerSocket::GetAutoReOpenOnError( void ) const
+{GUCEF_TRACE;
+
+    return m_autoReopenOnError;
 }
 
 /*-------------------------------------------------------------------------*/
@@ -444,6 +469,7 @@ CTCPServerSocket::ListenOnPort( UInt16 servport )
     {
             Close();
     }
+    m_port = servport;
 
     int error = 0;
     _data->sockid = dvsocket_socket( AF_INET     ,    /* Go over TCP/IP */
@@ -453,6 +479,10 @@ CTCPServerSocket::ListenOnPort( UInt16 servport )
 
     if ( _data->sockid == INVALID_SOCKET )
     {
+        m_lastListenFailed = true;
+        if ( m_autoReopenOnError ) 
+            m_pulseGenerator->RequestPeriodicPulses( this, 10 );
+
         GUCEF_ERROR_LOG( 1, "CTCPServerSocket: Socket error: " + CORE::Int32ToString( error ) );
         TServerSocketErrorEventData eData( error );
         NotifyObservers( ServerSocketErrorEvent, &eData );
@@ -463,8 +493,12 @@ CTCPServerSocket::ListenOnPort( UInt16 servport )
     if ( !SetBlockingMode( _data->sockid ,
                            _blocking     ) )
     {
-            NotifyObservers( ServerSocketErrorEvent );
-            return false;
+        m_lastListenFailed = true;
+        if ( m_autoReopenOnError ) 
+            m_pulseGenerator->RequestPeriodicPulses( this, 10 );
+
+        NotifyObservers( ServerSocketErrorEvent );
+        return false;
     }
 
 	/*
@@ -493,6 +527,10 @@ CTCPServerSocket::ListenOnPort( UInt16 servport )
 
 	if ( retval == SOCKET_ERROR )
 	{
+        m_lastListenFailed = true;
+        if ( m_autoReopenOnError ) 
+            m_pulseGenerator->RequestPeriodicPulses( this, 10 );
+
         GUCEF_ERROR_LOG( 1, "CTCPServerSocket: Socket error: " + CORE::Int32ToString( error ) );
 	    TServerSocketErrorEventData eData( error );
 	    NotifyObservers( ServerSocketErrorEvent, &eData );
@@ -516,15 +554,17 @@ CTCPServerSocket::ListenOnPort( UInt16 servport )
 
 	if ( retval == SOCKET_ERROR )
 	{
-		TServerSocketErrorEventData eData( error );
+		m_lastListenFailed = true;
+        if ( m_autoReopenOnError ) 
+            m_pulseGenerator->RequestPeriodicPulses( this, 10 );
+
+        TServerSocketErrorEventData eData( error );
 		NotifyObservers( ServerSocketErrorEvent, &eData );
 		return false;
 	}
 	_active = true;
-
+    m_lastListenFailed = false;
     NotifyObservers( ServerSocketOpenedEvent );
-
-	m_port = servport;
 
 	/*
 	 *      Accept new connections if there are any.

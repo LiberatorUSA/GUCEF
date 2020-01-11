@@ -171,6 +171,23 @@ class GUCEF_COMCORE_EXPORT_CPP CTCPClientSocket : public CTCPConnection
 
     virtual bool GetUseTcpSendCoalescing( void ) const;
 
+    void SetAutoReconnectOnError( bool autoReOpen );
+
+    bool GetAutoReconnectOnError( void ) const;
+
+    /**
+     *  sets the max number of updates to perform on the socket for a given update cycle
+     *  This setting applies to running a socket in non-blocking event driven mode.
+     *  If you have a very busy socket you don't want the socket to get 'stuck' reading from the socket for example
+     *  due to the fact that data is coming in so fast that by the time you finished reading from the socket more 
+     *  data is waiting on the socket. In such cases you should use this setting to avoid this scenario.
+     *
+     *  @param maxUpdates number of updates to perform per update cycle
+     */
+    void SetMaxUpdatesPerCycle( UInt32 maxUpdates );
+
+    UInt32 GetMaxUpdatesPerCycle( void ) const;
+
     virtual const CORE::CString& GetClassTypeName( void ) const;
 
     public:
@@ -196,6 +213,8 @@ class GUCEF_COMCORE_EXPORT_CPP CTCPClientSocket : public CTCPConnection
     void CheckRecieveBuffer( void );
 
     bool Connect( bool blocking );
+
+    void CloseImp( void );
     
     private:
             
@@ -211,6 +230,9 @@ class GUCEF_COMCORE_EXPORT_CPP CTCPClientSocket : public CTCPConnection
     CHostAddress m_hostAddress;             /**< network order IP address */
     CORE::CPulseGenerator* m_pulseGenerator;
     bool m_coaleseDataSends;
+    UInt32 m_maxUpdatesPerCycle;            /**< setting aimed at preventing a busy socket from hogging all the processing */
+    bool m_autoReconnectOnError;            /**< flag for feature to auto reconnect after a socket error occurred */
+    bool m_lastConnFailed;
 };
 
 /*-------------------------------------------------------------------------//

@@ -125,18 +125,21 @@ typedef struct CTCPClientSocket::STCPClientSockData TTCPClientSockData;
 
 CTCPClientSocket::CTCPClientSocket( CORE::CPulseGenerator& pulseGenerator ,
                                     bool blocking                         )
-        : CTCPConnection()                    ,
-          _blocking( blocking )               ,
-          _active( false )                    ,
-          datalock()                          ,
-          m_readbuffer()                      ,
-          m_sendBuffer()                      ,
-          m_sendOpBuffer()                    ,
-          m_maxreadbytes( 0 )                 ,
-          m_hostAddress()                     ,
-          m_isConnecting( false )             ,
-          m_pulseGenerator( &pulseGenerator ) ,
-          m_coaleseDataSends( true )
+        : CTCPConnection()                    
+        , _blocking( blocking )               
+        , _active( false )                    
+        , datalock()                          
+        , m_readbuffer()                      
+        , m_sendBuffer()                      
+        , m_sendOpBuffer()                    
+        , m_maxreadbytes( 0 )                 
+        , m_hostAddress()                     
+        , m_isConnecting( false )             
+        , m_pulseGenerator( &pulseGenerator ) 
+        , m_coaleseDataSends( true )
+        , m_maxUpdatesPerCycle( 10 )
+        , m_autoReconnectOnError( false )
+        , m_lastConnFailed( false )
 {GUCEF_TRACE;
 
     RegisterEvents();
@@ -154,18 +157,21 @@ CTCPClientSocket::CTCPClientSocket( CORE::CPulseGenerator& pulseGenerator ,
 /*-------------------------------------------------------------------------*/
 
 CTCPClientSocket::CTCPClientSocket( bool blocking )
-        : CTCPConnection()         ,
-          _blocking( blocking )    ,
-          _active( false )         ,
-          datalock()               ,
-          m_readbuffer()           ,
-          m_sendBuffer()           ,
-          m_sendOpBuffer()         ,
-          m_maxreadbytes( 0 )      ,
-          m_hostAddress()          ,
-          m_isConnecting( false )  ,
-          m_pulseGenerator( &CORE::CCoreGlobal::Instance()->GetPulseGenerator() ) ,
-          m_coaleseDataSends( true )
+        : CTCPConnection()         
+        , _blocking( blocking )    
+        , _active( false )         
+        , datalock()               
+        , m_readbuffer()           
+        , m_sendBuffer()           
+        , m_sendOpBuffer()         
+        , m_maxreadbytes( 0 )      
+        , m_hostAddress()          
+        , m_isConnecting( false )  
+        , m_pulseGenerator( &CORE::CCoreGlobal::Instance()->GetPulseGenerator() ) 
+        , m_coaleseDataSends( true )
+        , m_maxUpdatesPerCycle( 10 )
+        , m_autoReconnectOnError( false )
+        , m_lastConnFailed( false )
 {GUCEF_TRACE;
 
     RegisterEvents();
@@ -264,7 +270,7 @@ CTCPClientSocket::ConnectTo( const CORE::CString& remoteaddr ,
     if ( !remoteAddress.SetHostname( remoteaddr ) ) return false;
     remoteAddress.SetPortInHostByteOrder( port );
 
-    Close();
+    CloseImp();
 
     LockData();
     m_hostAddress = remoteAddress;
@@ -279,7 +285,7 @@ CTCPClientSocket::ConnectTo( const CIPAddress& address ,
                              bool blocking             )
 {GUCEF_TRACE;
 
-    Close();
+    CloseImp();
 
     LockData();
     m_hostAddress = address;
@@ -294,7 +300,7 @@ CTCPClientSocket::ConnectTo( const CHostAddress& address ,
                              bool blocking               )
 {GUCEF_TRACE;
 
-    Close();
+    CloseImp();
 
     LockData();
     m_hostAddress = address;
@@ -369,7 +375,7 @@ CTCPClientSocket::Connect( bool blocking )
     int noDelayFlag = (m_coaleseDataSends ? 1 : 0);
     if ( -1 == setsockopt( _data->sockid, IPPROTO_TCP, TCP_NODELAY, (char*) &noDelayFlag, sizeof(noDelayFlag) ) )
     {
-        _active = false;
+        _active = m_lastConnFailed = false;
         UnlockData();
         return false;
     }
@@ -387,8 +393,6 @@ CTCPClientSocket::Connect( bool blocking )
         // for the connection to be established.
         if ( errorcode != DVSOCKET_EWOULDBLOCK )
         {
-            _active = false;
-
             // After a socket error you must always close the connection.
             _active = false;
             UnlockData();
@@ -425,7 +429,8 @@ CTCPClientSocket::Connect( bool blocking )
                              CORE::CPulseGenerator::PulseEvent ,
                              NULL                              );
 
-                    if ( m_isConnecting && _active ) MT::PrecisionDelay( 10 );
+                    if ( m_isConnecting && _active ) 
+                        MT::PrecisionDelay( 10 );
                 }
 
                 m_pulseGenerator->RequestPeriodicPulses( this, MAX_PULSE_INTERVAL_IN_MS );
@@ -514,7 +519,7 @@ CTCPClientSocket::CheckRecieveBuffer( void )
                 if ( !NotifyObservers( SocketErrorEvent, &eData ) ) return;
 
                 // After a socket error you must always close the connection.
-                Close();
+                CloseImp();
 
                 UnlockData();
                 return;
@@ -525,7 +530,7 @@ CTCPClientSocket::CheckRecieveBuffer( void )
                 GUCEF_DEBUG_LOG( CORE::LOGLEVEL_NORMAL, "CTCPClientSocket(" + CORE::PointerToString( this ) + "): The server has closed the connection" );
 
                 // The connection has been closed on us
-                Close();
+                CloseImp();
 
                 UnlockData();
                 return;
@@ -568,6 +573,11 @@ CTCPClientSocket::OnPulse( CORE::CNotifier* notifier                 ,
                            CORE::CICloneable* eventdata /* = NULL */ )
 {GUCEF_TRACE;
 
+    if ( !_active && m_autoReconnectOnError && m_lastConnFailed && !m_isConnecting )
+    {
+        Reconnect( false );
+    }
+    
     if ( !_blocking && _active )
     {
         GUCEF_DEBUG_LOG( CORE::LOGLEVEL_EVERYTHING, "CTCPClientSocket(" + CORE::PointerToString( this ) + "): Pulse received" );
@@ -600,11 +610,13 @@ CTCPClientSocket::OnPulse( CORE::CNotifier* notifier                 ,
             {
                 GUCEF_DEBUG_LOG( CORE::LOGLEVEL_NORMAL, "CTCPClientSocket(" + CORE::PointerToString( this ) + "): Socket error occured: " + CORE::Int32ToString( errorcode ) );
 
+                m_lastConnFailed = true;
+                
                 TSocketErrorEventData eData( errorcode );
                 if ( !NotifyObservers( SocketErrorEvent, &eData ) ) return;
                 UnlockData();
 
-                Close();
+                CloseImp();
                 return;
             }
             else
@@ -630,11 +642,12 @@ CTCPClientSocket::OnPulse( CORE::CNotifier* notifier                 ,
         else
         {
             GUCEF_DEBUG_LOG( CORE::LOGLEVEL_NORMAL, "CTCPClientSocket(" + CORE::PointerToString( this ) + "): Socket error occured (select call failed): " + CORE::Int32ToString( errorcode ) );
+            m_lastConnFailed = true;
 
             /* select call failed */
             TSocketErrorEventData eData( errorcode );
             if ( !NotifyObservers( SocketErrorEvent, &eData ) ) return;
-            Close();
+            CloseImp();
         }
 
         // Check if we still have data queued to be sent,..
@@ -653,10 +666,10 @@ CTCPClientSocket::OnPulse( CORE::CNotifier* notifier                 ,
                     const Int8* data = static_cast< const Int8* >( m_sendOpBuffer.GetConstBufferPtr() );
                     Int32 remnant = m_sendOpBuffer.GetDataSize() - totalBytesSent;
                     wbytes = dvsocket_send( _data->sockid       ,
-                                        data+totalBytesSent ,
-                                        remnant             ,
-                                        0                   ,
-                                        &error              );
+                                            data+totalBytesSent ,
+                                            remnant             ,
+                                            0                   ,
+                                            &error              );
                     if ( wbytes != SOCKET_ERROR )
                     {
                         // we where able to send at least some of the data
@@ -683,6 +696,7 @@ CTCPClientSocket::OnPulse( CORE::CNotifier* notifier                 ,
                         }
                         else
                         {
+                            m_lastConnFailed = true;
                             UnlockData();
 
                             GUCEF_DEBUG_LOG( CORE::LOGLEVEL_NORMAL, "CTCPClientSocket(" + CORE::PointerToString( this ) + "): Socket error occured: " + CORE::Int32ToString( error ) );
@@ -704,6 +718,18 @@ CTCPClientSocket::OnPulse( CORE::CNotifier* notifier                 ,
 
 void
 CTCPClientSocket::Close( void )
+{GUCEF_TRACE;
+
+    // This is an explicit close request so clear the last fail flag to prevent reconnects
+    m_lastConnFailed = false;
+    
+    CloseImp();
+}
+
+/*-------------------------------------------------------------------------*/
+
+void
+CTCPClientSocket::CloseImp( void )
 {GUCEF_TRACE;
 
     /*
@@ -729,13 +755,15 @@ CTCPClientSocket::Close( void )
         m_sendOpBuffer.Clear( false );
         m_readbuffer.Clear( false );
 
-        UnlockData();
+        if ( !m_lastConnFailed || ( !m_autoReconnectOnError && m_lastConnFailed ) )
+            m_pulseGenerator->RequestStopOfPeriodicUpdates( this );
 
-        m_pulseGenerator->RequestStopOfPeriodicUpdates( this );
+        UnlockData();
 
         if ( !NotifyObservers( DisconnectedEvent ) ) return;
     }
-    else UnlockData();
+    else 
+        UnlockData();
 }
 
 /*-------------------------------------------------------------------------*/
@@ -781,18 +809,18 @@ CTCPClientSocket::Send( const void* data ,
         }
 
         // We will try looping until we have transmitted all the data
-        int error;
+        int error = 0;
         UInt32 totalBytesSent = 0;
-        Int32 wbytes;
+        Int32 wbytes = 0;
         while ( totalBytesSent < length )
         {
             // perform a send, trying to send as much of the given data as possible
             Int32 remnant = length - totalBytesSent;
             wbytes = dvsocket_send( _data->sockid                 ,
-                                ((Int8*)data)+totalBytesSent  ,
-                                remnant                       ,
-                                0                             ,
-                                &error                        );
+                                    ((Int8*)data)+totalBytesSent  ,
+                                    remnant                       ,
+                                    0                             ,
+                                    &error                        );
             if ( wbytes != SOCKET_ERROR )
             {
                 // we where able to send at least some of the data
@@ -811,6 +839,7 @@ CTCPClientSocket::Send( const void* data ,
                 }
                 else
                 {
+                    m_lastConnFailed = true;
                     UnlockData();
 
                     GUCEF_DEBUG_LOG( CORE::LOGLEVEL_NORMAL, "CTCPClientSocket(" + CORE::PointerToString( this ) + "): Socket error occured: " + CORE::Int32ToString( error ) );
@@ -881,6 +910,43 @@ bool
 CTCPClientSocket::GetUseTcpSendCoalescing( void ) const
 {
     return m_coaleseDataSends;
+}
+
+/*-------------------------------------------------------------------------*/
+
+void
+CTCPClientSocket::SetAutoReconnectOnError( bool autoReconnect )
+{GUCEF_TRACE;
+
+    m_autoReconnectOnError = autoReconnect;
+}
+
+/*-------------------------------------------------------------------------*/
+
+bool
+CTCPClientSocket::GetAutoReconnectOnError( void ) const
+{GUCEF_TRACE;
+
+    return m_autoReconnectOnError;
+}
+
+/*-------------------------------------------------------------------------*/
+
+void
+CTCPClientSocket::SetMaxUpdatesPerCycle( UInt32 maxUpdates )
+{GUCEF_TRACE;
+
+    m_maxUpdatesPerCycle = maxUpdates;
+}
+
+/*-------------------------------------------------------------------------*/
+
+
+UInt32
+CTCPClientSocket::GetMaxUpdatesPerCycle( void ) const
+{GUCEF_TRACE;
+
+    return m_maxUpdatesPerCycle;
 }
 
 /*-------------------------------------------------------------------------//

@@ -214,6 +214,7 @@ class GUCEF_COMCORE_EXPORT_CPP CTCPServerSocket : public CSocket
     CORE::CPulseGenerator* m_pulseGenerator;
     UInt32 m_maxUpdatesPerCycle;               /**< setting aimed at preventing a busy socket from hogging all the processing */
     bool m_autoReopenOnError;                  /**< flag for feature to auto re-open the listen socket after a socket error occurred */
+    bool m_lastListenFailed;
 };
 
 /*-------------------------------------------------------------------------//

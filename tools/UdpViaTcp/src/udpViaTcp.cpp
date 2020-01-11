@@ -516,6 +516,8 @@ UdpViaTcp::Start( void )
     {
         // We will be receiving regular UDP packets and will be pushing them into the TCP tunnel
         m_tcpClientSocket.SetMaxRead( 102400 );
+        m_tcpClientSocket.SetAutoReconnectOnError( true );
+        m_tcpClientSocket.SetMaxUpdatesPerCycle( 10 );
         m_tcpClientSocket.ConnectTo( m_tcpDestination, false );
 
         m_udpReceiveSocket.SetMaxUpdatesPerCycle( 10 );
