@@ -698,9 +698,10 @@ CUDPSocket::Leave( const CIPAddress& multicastGroup ,
 {GUCEF_TRACE;
 
     struct ip_mreq_source imr; 
-    imr.imr_multiaddr.s_addr  = multicastGroup.GetAddress();
-    imr.imr_sourceaddr.s_addr = srcAddr.GetAddress();
-    imr.imr_interface.s_addr  = m_hostAddress.GetAddress();
+    memset( &imr, 0, sizeof( imr ) );
+    imr.imr_multiaddr.S_un.S_addr  = multicastGroup.GetAddress();
+    imr.imr_sourceaddr.S_un.S_addr = srcAddr.GetAddress();
+    imr.imr_interface.S_un.S_addr  = m_hostAddress.GetAddress();
     
     int errorCode = 0;
     if ( 0 > dvsocket_setsockopt( _data->sockid, IPPROTO_IP, IP_DROP_SOURCE_MEMBERSHIP, (char*) &imr, sizeof(imr), &errorCode ) )
@@ -722,8 +723,9 @@ CUDPSocket::Leave( const CIPAddress& multicastGroup )
 {GUCEF_TRACE;
 
     struct ip_mreq_source imr; 
-    imr.imr_multiaddr.s_addr  = multicastGroup.GetAddress();
-    imr.imr_interface.s_addr  = m_hostAddress.GetAddress();
+    memset( &imr, 0, sizeof( imr ) );
+    imr.imr_multiaddr.S_un.S_addr  = multicastGroup.GetAddress();
+    imr.imr_interface.S_un.S_addr  = m_hostAddress.GetAddress();
     
     int errorCode = 0;
     if ( 0 > dvsocket_setsockopt( _data->sockid, IPPROTO_IP, IP_DROP_MEMBERSHIP, (char*) &imr, sizeof(imr), &errorCode ) )
@@ -746,9 +748,10 @@ CUDPSocket::Block( const CIPAddress& multicastGroup ,
 {GUCEF_TRACE;
 
     struct ip_mreq_source imr; 
-    imr.imr_multiaddr.s_addr  = multicastGroup.GetAddress();
-    imr.imr_sourceaddr.s_addr = srcAddr.GetAddress();
-    imr.imr_interface.s_addr  = m_hostAddress.GetAddress();
+    memset( &imr, 0, sizeof( imr ) );
+    imr.imr_multiaddr.S_un.S_addr  = multicastGroup.GetAddress();
+    imr.imr_sourceaddr.S_un.S_addr = srcAddr.GetAddress();
+    imr.imr_interface.S_un.S_addr  = m_hostAddress.GetAddress();
     
     int errorCode = 0;
     if ( 0 > dvsocket_setsockopt( _data->sockid, IPPROTO_IP, IP_BLOCK_SOURCE, (char*) &imr, sizeof(imr), &errorCode ) )
@@ -771,9 +774,10 @@ CUDPSocket::Unblock( const CIPAddress& multicastGroup ,
 {GUCEF_TRACE;
 
     struct ip_mreq_source imr; 
-    imr.imr_multiaddr.s_addr  = multicastGroup.GetAddress();
-    imr.imr_sourceaddr.s_addr = srcAddr.GetAddress();
-    imr.imr_interface.s_addr  = m_hostAddress.GetAddress();
+    memset( &imr, 0, sizeof( imr ) );
+    imr.imr_multiaddr.S_un.S_addr  = multicastGroup.GetAddress();
+    imr.imr_sourceaddr.S_un.S_addr = srcAddr.GetAddress();
+    imr.imr_interface.S_un.S_addr  = m_hostAddress.GetAddress();
 
     int errorCode = 0;
     if ( 0 > dvsocket_setsockopt( _data->sockid, IPPROTO_IP, IP_UNBLOCK_SOURCE, (char*) &imr, sizeof(imr), &errorCode ) )
