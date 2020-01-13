@@ -615,9 +615,25 @@ CUDPSocket::Join( const CIPAddress& multicastGroup ,
 {GUCEF_TRACE;
 
     struct ip_mreq_source imr; 
-    imr.imr_multiaddr.s_addr  = multicastGroup.GetAddress();
-    imr.imr_sourceaddr.s_addr = srcAddr.GetAddress();
-    imr.imr_interface.s_addr  = m_hostAddress.GetAddress();
+    memset( &imr, 0, sizeof( imr ) );
+    struct sockaddr_in* group  = (struct sockaddr_in*) &(imr.imr_multiaddr);
+    struct sockaddr_in* source = (struct sockaddr_in*) &(imr.imr_sourceaddr);
+    struct sockaddr_in* interface = (struct sockaddr_in*) &(imr.imr_interface);
+
+	// Group
+	group->sin_family = AF_INET;
+	group->sin_addr.s_addr = multicastGroup.GetAddress();
+	group->sin_port = htons(0);
+   
+    // Source
+    source->sin_family = AF_INET;
+	source->sin_addr.s_addr = srcAddr.GetAddress();
+    source->sin_port = htons(0);
+
+    // Interface
+    interface->sin_family = AF_INET;
+	interface->sin_addr.s_addr = m_hostAddress.GetAddress();
+    interface->sin_port = htons(0);
     
     int errorCode = 0;
     if ( 0 > dvsocket_setsockopt( _data->sockid, IPPROTO_IP, IP_ADD_SOURCE_MEMBERSHIP, (char*) &imr, sizeof(imr), &errorCode ) )
@@ -639,14 +655,27 @@ CUDPSocket::Join( const CIPAddress& multicastGroup )
 {GUCEF_TRACE;
 
     struct ip_mreq_source imr; 
-    imr.imr_multiaddr.s_addr  = multicastGroup.GetAddress();
-    imr.imr_interface.s_addr  = m_hostAddress.GetAddress();
+    memset( &imr, 0, sizeof( imr ) );
+    struct sockaddr_in* group  = (struct sockaddr_in*) &(imr.imr_multiaddr);
+    struct sockaddr_in* interface = (struct sockaddr_in*) &(imr.imr_interface);
+
+	// Group
+	group->sin_family = AF_INET;
+	group->sin_addr.s_addr = multicastGroup.GetAddress();
+	group->sin_port = htons(0);
+
+    // Interface
+    interface->sin_family = AF_INET;
+	interface->sin_addr.s_addr = m_hostAddress.GetAddress();
+    interface->sin_port = htons(0);
     
     int errorCode = 0;
     if ( 0 > dvsocket_setsockopt( _data->sockid, IPPROTO_IP, IP_ADD_MEMBERSHIP, (char*) &imr, sizeof(imr), &errorCode ) )
     {
         GUCEF_ERROR_LOG( CORE::LOGLEVEL_NORMAL, "UDPSocket: Failed to join multicast group " + multicastGroup.AddressAsString() 
-            + ", using interface " + m_hostAddress.AddressAsString() + ", for all data on the multicast group except explicit blocks"
+            + ", using interface " + m_hostAddress.AddressAsString() 
+            + " aka " + CORE::UInt32ToString( m_hostAddress.GetAddress() ) + ":" + CORE::UInt16ToString( m_hostAddress.GetPort() ) + " in network format"
+            + ", for all data on the multicast group except explicit blocks"
             + ". Error code: " + CORE::UInt32ToString( errorCode ) )
         return false;    
     }
