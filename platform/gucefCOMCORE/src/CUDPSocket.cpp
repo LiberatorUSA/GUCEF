@@ -102,6 +102,7 @@ CUDPSocket::CUDPSocket( CORE::CPulseGenerator& pulseGenerator ,
     , m_pulseGenerator( &pulseGenerator )
     , m_maxUpdatesPerCycle( 0 )
     , m_allowMulticastLoopback( false )
+    , m_multicastTTL( 8 )
 {GUCEF_TRACE;
 
     RegisterEvents();
@@ -133,6 +134,7 @@ CUDPSocket::CUDPSocket( bool blocking )
     , m_pulseGenerator( &CORE::CCoreGlobal::Instance()->GetPulseGenerator() )
     , m_maxUpdatesPerCycle( 0 )
     , m_allowMulticastLoopback( false )
+    , m_multicastTTL( 8 )
 {GUCEF_TRACE;
 
     RegisterEvents();
@@ -402,6 +404,24 @@ CUDPSocket::GetAllowMulticastLoopback( void ) const
 
 /*-------------------------------------------------------------------------*/
 
+void
+CUDPSocket::SetMulticastTTL( Int32 ttl )
+{GUCEF_TRACE;
+
+    m_multicastTTL = ttl;
+}
+
+/*-------------------------------------------------------------------------*/
+
+Int32
+CUDPSocket::GetMulticastTTL( void ) const
+{GUCEF_TRACE;
+
+    return m_multicastTTL;
+}
+
+/*-------------------------------------------------------------------------*/
+
 Int32
 CUDPSocket::Recieve( void )
 {GUCEF_TRACE;
@@ -534,7 +554,7 @@ CUDPSocket::Open( const CIPAddress& localaddr )
                                             &errorCode  ) ) == INVALID_SOCKET )
     {
         TSocketErrorEventData eData( errorCode );
-        NotifyObservers( UDPSocketErrorEvent, &eData );
+        if ( !NotifyObservers( UDPSocketErrorEvent, &eData ) ) return false;
         
         if ( m_autoReopenOnError )
             m_pulseGenerator->RequestPeriodicPulses( this, PULSEUPDATEINTERVAL );
@@ -553,6 +573,7 @@ CUDPSocket::Open( const CIPAddress& localaddr )
 
         return false;
     }
+    GUCEF_DEBUG_LOG( CORE::LOGLEVEL_BELOW_NORMAL, "UDPSocket: Successfully set blocking mode \"" + CORE::BoolToString( _blocking ) + "\" on socket" );
 
     int allowAddressReuse = 1;
     if ( 0 > dvsocket_setsockopt( _data->sockid, SOL_SOCKET, SO_REUSEADDR, (const char*) &allowAddressReuse, sizeof(int), &errorCode ) )
@@ -560,22 +581,32 @@ CUDPSocket::Open( const CIPAddress& localaddr )
         GUCEF_ERROR_LOG( CORE::LOGLEVEL_NORMAL, "UDPSocket: Failed to set address reuse mode \"" + CORE::BoolToString( allowAddressReuse != 0 ) 
             + "\" on socket. Error code: " + CORE::UInt32ToString( errorCode ) );
     }
-    
+    GUCEF_DEBUG_LOG( CORE::LOGLEVEL_BELOW_NORMAL, "UDPSocket: Successfully set address reuse mode \"" + CORE::BoolToString( allowAddressReuse != 0 ) + "\" on socket" );
+                
     #ifdef SO_REUSEPORT
     int allowPortReuse = 1;
     if ( 0 > dvsocket_setsockopt( _data->sockid, SOL_SOCKET, SO_REUSEPORT, (const char*) &allowPortReuse, sizeof(int), &errorCode ) )
     {
-        GUCEF_ERROR_LOG( CORE::LOGLEVEL_NORMAL, "UDPSocket: Failed to port reuse mode \"" + CORE::BoolToString( allowPortReuse ) 
+        GUCEF_ERROR_LOG( CORE::LOGLEVEL_NORMAL, "UDPSocket: Failed to port reuse mode \"" + CORE::BoolToString( allowPortReuse != 0 ) 
             + "\" on socket. Error code: " + CORE::UInt32ToString( errorCode ) );
     }
+    GUCEF_DEBUG_LOG( CORE::LOGLEVEL_BELOW_NORMAL, "UDPSocket: Successfully set port reuse mode \"" + CORE::BoolToString( allowPortReuse != 0 ) + "\" on socket" );
     #endif
 
     char loopch = m_allowMulticastLoopback ? (char)1 : (char)0;
-    if ( 0 > dvsocket_setsockopt( _data->sockid, IPPROTO_IP, IP_MULTICAST_LOOP, (char*)&loopch, sizeof(loopch), &errorCode ) )
+    if ( 0 > dvsocket_setsockopt( _data->sockid, IPPROTO_IP, IP_MULTICAST_LOOP, (const char*) &loopch, sizeof(loopch), &errorCode ) )
     {
-        GUCEF_ERROR_LOG( CORE::LOGLEVEL_NORMAL, "UDPSocket: Failed to set loopback (dis)allowed mode \"" + CORE::BoolToString( loopch != 0 ) 
+        GUCEF_ERROR_LOG( CORE::LOGLEVEL_NORMAL, "UDPSocket: Failed to set multicast loopback (dis)allowed mode \"" + CORE::BoolToString( loopch != 0 ) 
             + "\" on socket. Error code: " + CORE::UInt32ToString( errorCode ) );
     }
+    GUCEF_DEBUG_LOG( CORE::LOGLEVEL_BELOW_NORMAL, "UDPSocket: Successfully set multicast loopback mode \"" + CORE::BoolToString( loopch != 0 ) + "\" on socket" );
+                
+    if ( 0 > dvsocket_setsockopt( _data->sockid, IPPROTO_IP, IP_MULTICAST_TTL, (const char*) &m_multicastTTL, sizeof(m_multicastTTL), &errorCode ) )
+    {
+        GUCEF_ERROR_LOG( CORE::LOGLEVEL_NORMAL, "UDPSocket: Failed to set multicast TTL to " + CORE::Int32ToString( m_multicastTTL ) 
+            + "\" on socket. Error code: " + CORE::UInt32ToString( errorCode ) );
+    }
+    GUCEF_DEBUG_LOG( CORE::LOGLEVEL_BELOW_NORMAL, "UDPSocket: Successfully set multicast TTL to \"" + CORE::Int32ToString( m_multicastTTL ) + "\" on socket" );
 
     _data->localaddress.sin_family = AF_INET;
     _data->localaddress.sin_port = m_hostAddress.GetPort();
@@ -588,7 +619,7 @@ CUDPSocket::Open( const CIPAddress& localaddr )
     {
         GUCEF_DEBUG_LOG( CORE::LOGLEVEL_NORMAL, "UDPSocket: Successfully bound and opened socket at " + m_hostAddress.AddressAndPortAsString() 
             + " aka " + CORE::UInt32ToString( m_hostAddress.GetAddress() ) + ":" + CORE::UInt16ToString( m_hostAddress.GetPort() ) + " in network format" );
-        NotifyObservers( UDPSocketOpenedEvent );
+        if ( !NotifyObservers( UDPSocketOpenedEvent ) ) return true;
 
         // We will now be requiring periodic updates to poll for data
         m_pulseGenerator->RequestPeriodicPulses( this, PULSEUPDATEINTERVAL );
@@ -599,7 +630,7 @@ CUDPSocket::Open( const CIPAddress& localaddr )
     {
         GUCEF_ERROR_LOG( CORE::LOGLEVEL_NORMAL, "UDPSocket: Failed to bind to " + m_hostAddress.AddressAndPortAsString() + ". Error code: " + CORE::Int32ToString( errorCode ) );
         TSocketErrorEventData eData( errorCode );
-        NotifyObservers( UDPSocketErrorEvent, &eData );
+        if ( !NotifyObservers( UDPSocketErrorEvent, &eData ) ) return false;
 
         if ( m_autoReopenOnError )
             m_pulseGenerator->RequestPeriodicPulses( this, PULSEUPDATEINTERVAL );
