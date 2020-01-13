@@ -557,21 +557,24 @@ CUDPSocket::Open( const CIPAddress& localaddr )
     int allowAddressReuse = 1;
     if ( 0 > dvsocket_setsockopt( _data->sockid, SOL_SOCKET, SO_REUSEADDR, (const char*) &allowAddressReuse, sizeof(int), &errorCode ) )
     {
-        GUCEF_ERROR_LOG( CORE::LOGLEVEL_NORMAL, "UDPSocket: Failed to set address reuse mode \"" + CORE::BoolToString( allowAddressReuse != 0 ) + "\" on socket. Error code: " + CORE::UInt32ToString( errorCode ) );
+        GUCEF_ERROR_LOG( CORE::LOGLEVEL_NORMAL, "UDPSocket: Failed to set address reuse mode \"" + CORE::BoolToString( allowAddressReuse != 0 ) 
+            + "\" on socket. Error code: " + CORE::UInt32ToString( errorCode ) );
     }
     
     #ifdef SO_REUSEPORT
     int allowPortReuse = 1;
     if ( 0 > dvsocket_setsockopt( _data->sockid, SOL_SOCKET, SO_REUSEPORT, (const char*) &allowPortReuse, sizeof(int), &errorCode ) )
     {
-        GUCEF_ERROR_LOG( CORE::LOGLEVEL_NORMAL, "UDPSocket: Failed to port reuse mode \"" + CORE::BoolToString( allowPortReuse ) + "\" on socket. Error code: " + CORE::UInt32ToString( errorCode ) );
+        GUCEF_ERROR_LOG( CORE::LOGLEVEL_NORMAL, "UDPSocket: Failed to port reuse mode \"" + CORE::BoolToString( allowPortReuse ) 
+            + "\" on socket. Error code: " + CORE::UInt32ToString( errorCode ) );
     }
     #endif
 
     char loopch = m_allowMulticastLoopback ? (char)1 : (char)0;
     if ( 0 > dvsocket_setsockopt( _data->sockid, IPPROTO_IP, IP_MULTICAST_LOOP, (char*)&loopch, sizeof(loopch), &errorCode ) )
     {
-        GUCEF_ERROR_LOG( CORE::LOGLEVEL_NORMAL, "UDPSocket: Failed to set loopback (dis)allowed mode \"" + CORE::BoolToString( loopch != 0 ) + "\" on socket. Error code: " + CORE::UInt32ToString( errorCode ) );
+        GUCEF_ERROR_LOG( CORE::LOGLEVEL_NORMAL, "UDPSocket: Failed to set loopback (dis)allowed mode \"" + CORE::BoolToString( loopch != 0 ) 
+            + "\" on socket. Error code: " + CORE::UInt32ToString( errorCode ) );
     }
 
     _data->localaddress.sin_family = AF_INET;
@@ -583,7 +586,8 @@ CUDPSocket::Open( const CIPAddress& localaddr )
                         sizeof(struct sockaddr_in)               ,
                         &errorCode                               ) == 0 )
     {
-        GUCEF_DEBUG_LOG( CORE::LOGLEVEL_NORMAL, "UDPSocket: Successfully opened socket at " + m_hostAddress.AddressAndPortAsString() );
+        GUCEF_DEBUG_LOG( CORE::LOGLEVEL_NORMAL, "UDPSocket: Successfully bound and opened socket at " + m_hostAddress.AddressAndPortAsString() 
+            + " aka " + CORE::UInt32ToString( m_hostAddress.GetAddress() ) + ":" + CORE::UInt16ToString( m_hostAddress.GetPort() ) + " in network format" );
         NotifyObservers( UDPSocketOpenedEvent );
 
         // We will now be requiring periodic updates to poll for data
@@ -619,7 +623,8 @@ CUDPSocket::Join( const CIPAddress& multicastGroup ,
     if ( 0 > dvsocket_setsockopt( _data->sockid, IPPROTO_IP, IP_ADD_SOURCE_MEMBERSHIP, (char*) &imr, sizeof(imr), &errorCode ) )
     {
         GUCEF_ERROR_LOG( CORE::LOGLEVEL_NORMAL, "UDPSocket: Failed to join multicast group " + multicastGroup.AddressAsString() 
-            + ", using interface " + m_hostAddress.AddressAsString() + ", for data coming from " + srcAddr.AddressAsString() );
+            + ", using interface " + m_hostAddress.AddressAsString() + ", for data coming from " + srcAddr.AddressAsString()
+            + ". Error code: " + CORE::UInt32ToString( errorCode ) )
         return false;    
     }
     GUCEF_DEBUG_LOG( CORE::LOGLEVEL_NORMAL, "UDPSocket: Joined multicast group " + multicastGroup.AddressAsString() 
@@ -641,7 +646,8 @@ CUDPSocket::Join( const CIPAddress& multicastGroup )
     if ( 0 > dvsocket_setsockopt( _data->sockid, IPPROTO_IP, IP_ADD_MEMBERSHIP, (char*) &imr, sizeof(imr), &errorCode ) )
     {
         GUCEF_ERROR_LOG( CORE::LOGLEVEL_NORMAL, "UDPSocket: Failed to join multicast group " + multicastGroup.AddressAsString() 
-            + ", using interface " + m_hostAddress.AddressAsString() + ", for all data on the multicast group except explicit blocks" );
+            + ", using interface " + m_hostAddress.AddressAsString() + ", for all data on the multicast group except explicit blocks"
+            + ". Error code: " + CORE::UInt32ToString( errorCode ) )
         return false;    
     }
     GUCEF_DEBUG_LOG( CORE::LOGLEVEL_NORMAL, "UDPSocket: Joined multicast group " + multicastGroup.AddressAsString() 
