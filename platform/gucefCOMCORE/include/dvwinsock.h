@@ -265,6 +265,16 @@ int
 dvsocket_closesocket( SOCKET s   ,
                       int* error );
 
+/*-------------------------------------------------------------------------*/
+
+int
+dvsocket_setsockopt( SOCKET s           ,
+                     int level          ,
+                     int optname        ,
+                     const char* optval ,
+                     int optlen         ,
+                     int* error         );
+
 /*--------------------------------------------------------------------------*/
 
 #ifdef __cplusplus

@@ -101,6 +101,7 @@ CUDPSocket::CUDPSocket( CORE::CPulseGenerator& pulseGenerator ,
     , m_buffer()                          
     , m_pulseGenerator( &pulseGenerator )
     , m_maxUpdatesPerCycle( 0 )
+    , m_allowMulticastLoopback( false )
 {GUCEF_TRACE;
 
     RegisterEvents();
@@ -131,6 +132,7 @@ CUDPSocket::CUDPSocket( bool blocking )
     , m_buffer()           
     , m_pulseGenerator( &CORE::CCoreGlobal::Instance()->GetPulseGenerator() )
     , m_maxUpdatesPerCycle( 0 )
+    , m_allowMulticastLoopback( false )
 {GUCEF_TRACE;
 
     RegisterEvents();
@@ -382,6 +384,24 @@ CUDPSocket::SetRecievedDataBufferSize( const UInt32 newBufferSize )
 
 /*-------------------------------------------------------------------------*/
 
+void
+CUDPSocket::SetAllowMulticastLoopback( bool allowLoopback )
+{GUCEF_TRACE;
+
+    m_allowMulticastLoopback = allowLoopback;
+}
+
+/*-------------------------------------------------------------------------*/
+
+bool
+CUDPSocket::GetAllowMulticastLoopback( void ) const
+{GUCEF_TRACE;
+
+    return m_allowMulticastLoopback;
+}
+
+/*-------------------------------------------------------------------------*/
+
 Int32
 CUDPSocket::Recieve( void )
 {GUCEF_TRACE;
@@ -420,7 +440,7 @@ CUDPSocket::Recieve( CIPAddress& src ,
         Close( false );
         return 0;
     }
-
+                                                                                             
     // Set the actual usefull bytes of data in the buffer
     // to match the number of retrieved bytes
     m_buffer.SetDataSize( retval );
@@ -535,18 +555,24 @@ CUDPSocket::Open( const CIPAddress& localaddr )
     }
 
     int allowAddressReuse = 1;
-    if ( 0 > setsockopt( _data->sockid, SOL_SOCKET, SO_REUSEADDR, (const char*) &allowAddressReuse, sizeof(int) ) )
+    if ( 0 > dvsocket_setsockopt( _data->sockid, SOL_SOCKET, SO_REUSEADDR, (const char*) &allowAddressReuse, sizeof(int), &errorCode ) )
     {
-        GUCEF_ERROR_LOG( CORE::LOGLEVEL_NORMAL, "UDPSocket: Failed to set address reuse mode \"" + CORE::BoolToString( allowAddressReuse != 0 ) + "\" on socket" );
+        GUCEF_ERROR_LOG( CORE::LOGLEVEL_NORMAL, "UDPSocket: Failed to set address reuse mode \"" + CORE::BoolToString( allowAddressReuse != 0 ) + "\" on socket. Error code: " + CORE::UInt32ToString( errorCode ) );
     }
     
     #ifdef SO_REUSEPORT
     int allowPortReuse = 1;
-    if ( 0 > setsockopt( _data->sockid, SOL_SOCKET, SO_REUSEPORT, (const char*) &allowPortReuse, sizeof(int) ) )
+    if ( 0 > dvsocket_setsockopt( _data->sockid, SOL_SOCKET, SO_REUSEPORT, (const char*) &allowPortReuse, sizeof(int), &errorCode ) )
     {
-        GUCEF_ERROR_LOG( CORE::LOGLEVEL_NORMAL, "UDPSocket: Failed to port reuse mode \"" + CORE::BoolToString( allowPortReuse ) + "\" on socket" );
+        GUCEF_ERROR_LOG( CORE::LOGLEVEL_NORMAL, "UDPSocket: Failed to port reuse mode \"" + CORE::BoolToString( allowPortReuse ) + "\" on socket. Error code: " + CORE::UInt32ToString( errorCode ) );
     }
     #endif
+
+    char loopch = m_allowMulticastLoopback ? (char)1 : (char)0;
+    if ( 0 > dvsocket_setsockopt( _data->sockid, IPPROTO_IP, IP_MULTICAST_LOOP, (char*)&loopch, sizeof(loopch), &errorCode ) )
+    {
+        GUCEF_ERROR_LOG( CORE::LOGLEVEL_NORMAL, "UDPSocket: Failed to set loopback (dis)allowed mode \"" + CORE::BoolToString( loopch != 0 ) + "\" on socket. Error code: " + CORE::UInt32ToString( errorCode ) );
+    }
 
     _data->localaddress.sin_family = AF_INET;
     _data->localaddress.sin_port = m_hostAddress.GetPort();
@@ -588,7 +614,9 @@ CUDPSocket::Join( const CIPAddress& multicastGroup ,
     imr.imr_multiaddr.s_addr  = multicastGroup.GetAddress();
     imr.imr_sourceaddr.s_addr = srcAddr.GetAddress();
     imr.imr_interface.s_addr  = m_hostAddress.GetAddress();
-    if ( 0 > setsockopt( _data->sockid, IPPROTO_IP, IP_ADD_SOURCE_MEMBERSHIP, (char*) &imr, sizeof(imr) ) )
+    
+    int errorCode = 0;
+    if ( 0 > dvsocket_setsockopt( _data->sockid, IPPROTO_IP, IP_ADD_SOURCE_MEMBERSHIP, (char*) &imr, sizeof(imr), &errorCode ) )
     {
         GUCEF_ERROR_LOG( CORE::LOGLEVEL_NORMAL, "UDPSocket: Failed to join multicast group " + multicastGroup.AddressAsString() 
             + ", using interface " + m_hostAddress.AddressAsString() + ", for data coming from " + srcAddr.AddressAsString() );
@@ -608,7 +636,9 @@ CUDPSocket::Join( const CIPAddress& multicastGroup )
     struct ip_mreq_source imr; 
     imr.imr_multiaddr.s_addr  = multicastGroup.GetAddress();
     imr.imr_interface.s_addr  = m_hostAddress.GetAddress();
-    if ( 0 > setsockopt( _data->sockid, IPPROTO_IP, IP_ADD_MEMBERSHIP, (char*) &imr, sizeof(imr) ) )
+    
+    int errorCode = 0;
+    if ( 0 > dvsocket_setsockopt( _data->sockid, IPPROTO_IP, IP_ADD_MEMBERSHIP, (char*) &imr, sizeof(imr), &errorCode ) )
     {
         GUCEF_ERROR_LOG( CORE::LOGLEVEL_NORMAL, "UDPSocket: Failed to join multicast group " + multicastGroup.AddressAsString() 
             + ", using interface " + m_hostAddress.AddressAsString() + ", for all data on the multicast group except explicit blocks" );
@@ -630,10 +660,13 @@ CUDPSocket::Leave( const CIPAddress& multicastGroup ,
     imr.imr_multiaddr.s_addr  = multicastGroup.GetAddress();
     imr.imr_sourceaddr.s_addr = srcAddr.GetAddress();
     imr.imr_interface.s_addr  = m_hostAddress.GetAddress();
-    if ( 0 > setsockopt( _data->sockid, IPPROTO_IP, IP_DROP_SOURCE_MEMBERSHIP, (char*) &imr, sizeof(imr) ) )
+    
+    int errorCode = 0;
+    if ( 0 > dvsocket_setsockopt( _data->sockid, IPPROTO_IP, IP_DROP_SOURCE_MEMBERSHIP, (char*) &imr, sizeof(imr), &errorCode ) )
     {
         GUCEF_ERROR_LOG( CORE::LOGLEVEL_NORMAL, "UDPSocket: Failed to leave multicast group " + multicastGroup.AddressAsString() 
-            + ", using interface " + m_hostAddress.AddressAsString() + ", for data coming data from " + srcAddr.AddressAsString() );
+            + ", using interface " + m_hostAddress.AddressAsString() + ", for data coming data from " + srcAddr.AddressAsString()
+            + ". Error code: " + CORE::UInt32ToString( errorCode ) );
         return false;    
     }
     GUCEF_DEBUG_LOG( CORE::LOGLEVEL_NORMAL, "UDPSocket: Left multicast group " + multicastGroup.AddressAsString() 
@@ -650,10 +683,13 @@ CUDPSocket::Leave( const CIPAddress& multicastGroup )
     struct ip_mreq_source imr; 
     imr.imr_multiaddr.s_addr  = multicastGroup.GetAddress();
     imr.imr_interface.s_addr  = m_hostAddress.GetAddress();
-    if ( 0 > setsockopt( _data->sockid, IPPROTO_IP, IP_DROP_MEMBERSHIP, (char*) &imr, sizeof(imr) ) )
+    
+    int errorCode = 0;
+    if ( 0 > dvsocket_setsockopt( _data->sockid, IPPROTO_IP, IP_DROP_MEMBERSHIP, (char*) &imr, sizeof(imr), &errorCode ) )
     {
         GUCEF_ERROR_LOG( CORE::LOGLEVEL_NORMAL, "UDPSocket: Failed to leave multicast group " + multicastGroup.AddressAsString() 
-            + ", using interface " + m_hostAddress.AddressAsString() + ", for all data on the multicast group" );
+            + ", using interface " + m_hostAddress.AddressAsString() + ", for all data on the multicast group" 
+            + ". Error code: " + CORE::UInt32ToString( errorCode ) );
         return false;    
     }
     GUCEF_DEBUG_LOG( CORE::LOGLEVEL_NORMAL, "UDPSocket: Left multicast group " + multicastGroup.AddressAsString() 
@@ -672,10 +708,13 @@ CUDPSocket::Block( const CIPAddress& multicastGroup ,
     imr.imr_multiaddr.s_addr  = multicastGroup.GetAddress();
     imr.imr_sourceaddr.s_addr = srcAddr.GetAddress();
     imr.imr_interface.s_addr  = m_hostAddress.GetAddress();
-    if ( 0 > setsockopt( _data->sockid, IPPROTO_IP, IP_BLOCK_SOURCE, (char*) &imr, sizeof(imr) ) )
+    
+    int errorCode = 0;
+    if ( 0 > dvsocket_setsockopt( _data->sockid, IPPROTO_IP, IP_BLOCK_SOURCE, (char*) &imr, sizeof(imr), &errorCode ) )
     {
         GUCEF_ERROR_LOG( CORE::LOGLEVEL_NORMAL, "UDPSocket: Failed to block data for multicast group " + multicastGroup.AddressAsString() 
-            + ", using interface " + m_hostAddress.AddressAsString() + ", for data coming data from " + srcAddr.AddressAsString() );
+            + ", using interface " + m_hostAddress.AddressAsString() + ", for data coming data from " + srcAddr.AddressAsString() 
+            + ". Error code: " + CORE::UInt32ToString( errorCode ) );
         return false;    
     }
     GUCEF_DEBUG_LOG( CORE::LOGLEVEL_NORMAL, "UDPSocket: Blocking data for multicast group " + multicastGroup.AddressAsString() 
@@ -694,10 +733,13 @@ CUDPSocket::Unblock( const CIPAddress& multicastGroup ,
     imr.imr_multiaddr.s_addr  = multicastGroup.GetAddress();
     imr.imr_sourceaddr.s_addr = srcAddr.GetAddress();
     imr.imr_interface.s_addr  = m_hostAddress.GetAddress();
-    if ( 0 > setsockopt( _data->sockid, IPPROTO_IP, IP_UNBLOCK_SOURCE, (char*) &imr, sizeof(imr) ) )
+
+    int errorCode = 0;
+    if ( 0 > dvsocket_setsockopt( _data->sockid, IPPROTO_IP, IP_UNBLOCK_SOURCE, (char*) &imr, sizeof(imr), &errorCode ) )
     {
         GUCEF_ERROR_LOG( CORE::LOGLEVEL_NORMAL, "UDPSocket: Failed to unblock data for multicast group " + multicastGroup.AddressAsString() 
-            + ", using interface " + m_hostAddress.AddressAsString() + ", for data coming data from " + srcAddr.AddressAsString() );
+            + ", using interface " + m_hostAddress.AddressAsString() + ", for data coming data from " + srcAddr.AddressAsString() 
+            + ". Error code: " + CORE::UInt32ToString( errorCode ) );
         return false;    
     }
     GUCEF_DEBUG_LOG( CORE::LOGLEVEL_NORMAL, "UDPSocket: Unblocking data for multicast group " + multicastGroup.AddressAsString() 

@@ -409,6 +409,26 @@ dvsocket_closesocket( SOCKET s   ,
     return retval;
 }
 
+/*-------------------------------------------------------------------------*/
+
+int
+dvsocket_setsockopt( SOCKET s           ,
+                     int level          ,
+                     int optname        ,
+                     const char* optval ,
+                     int optlen         ,
+                     int* error         )
+{
+    int retval;
+    if ( ( retval = setsockopt( s, level, optname, optval, optlen ) ) == SOCKET_ERROR )
+    {
+        *error = LastSocketError;
+        return retval;
+    }
+    *error = 0;
+    return retval;
+}
+
 /*-------------------------------------------------------------------------//
 //                                                                         //
 //      NAMESPACE                                                          //

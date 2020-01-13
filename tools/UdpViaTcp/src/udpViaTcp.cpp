@@ -580,6 +580,7 @@ UdpViaTcp::LoadConfig( const CORE::CValueList& appConfig   ,
     m_udpReceiver.SetPortInHostByteOrder( CORE::StringToUInt16( appConfig.GetValueAlways( "UdpReceiverPort", "20000" ) ) );
     m_udpReceiver.SetHostname( appConfig.GetValueAlways( "UdpReceiverInterface", "0.0.0.0" ) );
     m_udpReceiverMulticastSources = appConfig.GetValueVectorAlways( "UdpReceiverMulticastSource" );
+    m_udpReceiveSocket.SetAllowMulticastLoopback( CORE::StringToBool( appConfig.GetValueAlways( "UdpReceiverAllowMulticastLoopback", "false" ) ) );
     
     m_tcpDestination.SetPortInHostByteOrder( CORE::StringToUInt16( appConfig.GetValueAlways( "TcpTunnelDestinationPort", "30000" ) ) );
     m_tcpDestination.SetHostname( appConfig.GetValueAlways( "TcpTunnelDestinationAddr", "127.0.0.1" ) );
