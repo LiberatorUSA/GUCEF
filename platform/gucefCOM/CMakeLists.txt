@@ -28,6 +28,7 @@ set( HEADER_FILES
   include/gucefCOM_CDefaultHTTPServerResource.h
   include/gucefCOM_CDefaultHTTPServerRouter.h
   include/gucefCOM_CDefaultHTTPServerRouterController.h
+  include/gucefCOM_CDummyHTTPServerResource.h
   include/gucefCOM_CHTTPServer.h
   include/gucefCOM_CIHTTPServerResource.h
   include/gucefCOM_CIHTTPServerRouter.h
@@ -51,6 +52,7 @@ set( SOURCE_FILES
   src/gucefCOM_CDefaultHTTPServerResource.cpp
   src/gucefCOM_CDefaultHTTPServerRouter.cpp
   src/gucefCOM_CDefaultHTTPServerRouterController.cpp
+  src/gucefCOM_CDummyHTTPServerResource.cpp
   src/gucefCOM_CHTTPServer.cpp
   src/gucefCOM_CIHTTPServerResource.cpp
   src/gucefCOM_CIHTTPServerRouter.cpp

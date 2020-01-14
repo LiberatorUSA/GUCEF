@@ -27,6 +27,11 @@
 #define GUCEF_CORE_CTASKMANAGER_H
 #endif /* GUCEF_CORE_CTASKMANAGER_H */
 
+#ifndef GUCEF_COM_CDUMMYHTTPSERVERRESOURCE_H
+#include "gucefCOM_CDummyHTTPServerResource.h"
+#define GUCEF_COM_CDUMMYHTTPSERVERRESOURCE_H
+#endif /* GUCEF_COM_CDUMMYHTTPSERVERRESOURCE_H ? */
+
 #include "UdpViaTcp.h"
 
 #if ( GUCEF_PLATFORM == GUCEF_PLATFORM_MSWIN )
@@ -545,11 +550,7 @@ UdpViaTcp::Start( void )
         m_udpReceiveSocket.SetAutoReOpenOnError( true ); 
         m_udpReceiveSocket.Open( m_udpReceiver );
     }
-    
-    m_httpRouter.SetResourceMapping( "/info", RestApiUdpViaTcpInfoResource::THTTPServerResourcePtr( new RestApiUdpViaTcpInfoResource( this ) )  );
-    m_httpRouter.SetResourceMapping( "/config/appargs", RestApiUdpViaTcpInfoResource::THTTPServerResourcePtr( new RestApiUdpViaTcpConfigResource( this, true ) )  );
-    m_httpRouter.SetResourceMapping( "/config", RestApiUdpViaTcpInfoResource::THTTPServerResourcePtr( new RestApiUdpViaTcpConfigResource( this, false ) )  );
-    m_httpServer.GetRouterController()->AddRouterMapping( &m_httpRouter, "", "" ); 
+   
     return m_httpServer.Listen();
 }
 
@@ -594,6 +595,13 @@ UdpViaTcp::LoadConfig( const CORE::CValueList& appConfig   ,
     m_udpDestination.SetHostname( appConfig.GetValueAlways( "UdpDestinationAddr", "127.0.0.1" ) );
         
     m_httpServer.SetPort( CORE::StringToUInt16( appConfig.GetValueAlways( "RestApiPort", "10000" ) ) );
+
+    m_httpRouter.SetResourceMapping( "/info", RestApiUdpViaTcpInfoResource::THTTPServerResourcePtr( new RestApiUdpViaTcpInfoResource( this ) )  );
+    m_httpRouter.SetResourceMapping( "/config/appargs", RestApiUdpViaTcpInfoResource::THTTPServerResourcePtr( new RestApiUdpViaTcpConfigResource( this, true ) )  );
+    m_httpRouter.SetResourceMapping( "/config", RestApiUdpViaTcpInfoResource::THTTPServerResourcePtr( new RestApiUdpViaTcpConfigResource( this, false ) )  );
+    m_httpRouter.SetResourceMapping(  appConfig.GetValueAlways( "RestBasicHealthUri", "/health/basic" ), RestApiUdpViaTcpInfoResource::THTTPServerResourcePtr( new COM::CDummyHTTPServerResource() )  );
+    
+    m_httpServer.GetRouterController()->AddRouterMapping( &m_httpRouter, "", "" ); 
 
     m_appConfig = appConfig;
     m_globalConfig.Copy( globalConfig );
