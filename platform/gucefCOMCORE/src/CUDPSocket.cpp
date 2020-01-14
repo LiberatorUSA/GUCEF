@@ -103,6 +103,7 @@ CUDPSocket::CUDPSocket( CORE::CPulseGenerator& pulseGenerator ,
     , m_maxUpdatesPerCycle( 0 )
     , m_allowMulticastLoopback( false )
     , m_multicastTTL( 8 )
+    , m_allowBroadcast( false )
 {GUCEF_TRACE;
 
     RegisterEvents();
@@ -135,6 +136,7 @@ CUDPSocket::CUDPSocket( bool blocking )
     , m_maxUpdatesPerCycle( 0 )
     , m_allowMulticastLoopback( false )
     , m_multicastTTL( 8 )
+    , m_allowBroadcast( false )
 {GUCEF_TRACE;
 
     RegisterEvents();
@@ -387,6 +389,24 @@ CUDPSocket::SetRecievedDataBufferSize( const UInt32 newBufferSize )
 /*-------------------------------------------------------------------------*/
 
 void
+CUDPSocket::SetAllowBroadcast( bool allowBroadcast )
+{GUCEF_TRACE;
+
+    m_allowBroadcast = allowBroadcast;
+}
+
+/*-------------------------------------------------------------------------*/
+
+bool
+CUDPSocket::GetAllowBroadcast( void ) const
+{GUCEF_TRACE;
+
+    return m_allowBroadcast;
+}
+
+/*-------------------------------------------------------------------------*/
+
+void
 CUDPSocket::SetAllowMulticastLoopback( bool allowLoopback )
 {GUCEF_TRACE;
 
@@ -593,7 +613,7 @@ CUDPSocket::Open( const CIPAddress& localaddr )
     GUCEF_DEBUG_LOG( CORE::LOGLEVEL_BELOW_NORMAL, "UDPSocket: Successfully set port reuse mode \"" + CORE::BoolToString( allowPortReuse != 0 ) + "\" on socket" );
     #endif
 
-    char loopch = m_allowMulticastLoopback ? (char)1 : (char)0;
+    Int32 loopch = m_allowMulticastLoopback ? (Int32)1 : (Int32)0;
     if ( 0 > dvsocket_setsockopt( _data->sockid, IPPROTO_IP, IP_MULTICAST_LOOP, (const char*) &loopch, sizeof(loopch), &errorCode ) )
     {
         GUCEF_ERROR_LOG( CORE::LOGLEVEL_NORMAL, "UDPSocket: Failed to set multicast loopback (dis)allowed mode \"" + CORE::BoolToString( loopch != 0 ) 
@@ -607,6 +627,16 @@ CUDPSocket::Open( const CIPAddress& localaddr )
             + "\" on socket. Error code: " + CORE::UInt32ToString( errorCode ) );
     }
     GUCEF_DEBUG_LOG( CORE::LOGLEVEL_BELOW_NORMAL, "UDPSocket: Successfully set multicast TTL to \"" + CORE::Int32ToString( m_multicastTTL ) + "\" on socket" );
+
+    // This option is needed on the socket in order to be able to receive broadcast messages
+    // If not set the socket will not receive broadcast messages in the local network.
+    Int32 broadcastOption = m_allowBroadcast ? 1 : 0;
+    if ( 0 > dvsocket_setsockopt( _data->sockid, SOL_SOCKET, SO_BROADCAST, (const char*) &broadcastOption, sizeof(broadcastOption), &errorCode ) )
+    {
+        GUCEF_ERROR_LOG( CORE::LOGLEVEL_NORMAL, "UDPSocket: Failed to set broadcast option to " + CORE::BoolToString( m_allowBroadcast ) 
+            + "\" on socket. Error code: " + CORE::UInt32ToString( errorCode ) );
+    }
+    GUCEF_DEBUG_LOG( CORE::LOGLEVEL_BELOW_NORMAL, "UDPSocket: Successfully set broadcast option to \"" + CORE::BoolToString( m_allowBroadcast ) + "\" on socket" );
 
     _data->localaddress.sin_family = AF_INET;
     _data->localaddress.sin_port = m_hostAddress.GetPort();

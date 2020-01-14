@@ -343,6 +343,10 @@ class GUCEF_COMCORE_EXPORT_CPP CUDPSocket : public CSocket
 
     Int32 GetMulticastTTL( void ) const;
 
+    void SetAllowBroadcast( bool allowBroadcast );
+
+    bool GetAllowBroadcast( void ) const;
+
     /**
      *  sets the max number of updates to perform on the socket for a given update cycle
      *  This setting applies to running a socket in non-blocking event driven mode.
@@ -385,6 +389,7 @@ class GUCEF_COMCORE_EXPORT_CPP CUDPSocket : public CSocket
     UInt32 m_maxUpdatesPerCycle;    /**< setting aimed at preventing a busy socket from hogging all the processing */
     bool m_allowMulticastLoopback;
     int m_multicastTTL;
+    bool m_allowBroadcast;
 };
 
 /*-------------------------------------------------------------------------//
