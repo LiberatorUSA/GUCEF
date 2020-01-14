@@ -216,7 +216,7 @@ GUCEF_OSMAIN_BEGIN
     }
     CORE::CreateDirs( outputDir );
 
-    CORE::CString logFilename = CORE::CombinePath( outputDir, "Udp2Redis_log.txt" );
+    CORE::CString logFilename = CORE::CombinePath( outputDir, "UdpViaTcp_log.txt" );
 
     keyValueList.Set( "logfile", logFilename );
 
