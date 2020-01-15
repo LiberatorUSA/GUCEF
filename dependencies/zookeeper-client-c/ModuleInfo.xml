@@ -1,0 +1,6 @@
+<ModuleInfoEntry>
+    <Module Name="zookeeper" Type="StaticLibrary" Platform="All">
+        <Dependencies>
+        </Dependencies>
+    </Module>
+</ModuleInfoEntry>
