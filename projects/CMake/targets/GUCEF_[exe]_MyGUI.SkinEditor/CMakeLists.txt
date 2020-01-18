@@ -22,6 +22,7 @@ if ( DEFINED ENV{GUCEF_SOURCE_DIR} )
   set( GUCEF_SOURCE_DIR "$ENV{GUCEF_SOURCE_DIR}" )
   STRING(REGEX REPLACE "\\\\" "/" GUCEF_SOURCE_DIR ${GUCEF_SOURCE_DIR})
 endif()
+message(STATUS "Source dir: ${GUCEF_SOURCE_DIR}")
 
 project( GUCEF_[exe]_MyGUI.SkinEditor )
 

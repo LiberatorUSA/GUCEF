@@ -52,6 +52,7 @@ class CDStoreCodecRegistry;
 class CExclusiveActivationManager;
 class CGUCEFApplication;
 class CLogManager;
+class CMetricsClientManager;
 class CDStoreCodecPluginManager;
 class CGenericPluginManager;
 class CPluginControl;
@@ -84,6 +85,8 @@ class GUCEF_CORE_PUBLIC_CPP CCoreGlobal
     CTaskManager& GetTaskManager( void );
 
     CLogManager& GetLogManager( void );
+
+    CMetricsClientManager& GetMetricsClientManager( void );
 
     CPluginControl& GetPluginControl( void );
 
@@ -128,6 +131,7 @@ class GUCEF_CORE_PUBLIC_CPP CCoreGlobal
     CExclusiveActivationManager* m_exclusiveActivationManager;
     CGUCEFApplication* m_application;
     CLogManager* m_logManager;
+    CMetricsClientManager* m_metricsClientManager;
     CDStoreCodecPluginManager* m_dstoreCodecPluginManager;
     CGenericPluginManager* m_genericPluginManager;
     CPluginControl* m_pluginControl;

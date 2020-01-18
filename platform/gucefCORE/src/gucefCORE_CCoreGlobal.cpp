@@ -78,6 +78,11 @@
 #define GUCEF_CORE_CLOGMANAGER_H
 #endif /* GUCEF_CORE_CLOGMANAGER_H ? */
 
+#ifndef GUCEF_CORE_CMETRICSCLIENTMANAGER_H
+#include "gucefCORE_CMetricsClientManager.h"
+#define GUCEF_CORE_CMETRICSCLIENTMANAGER_H
+#endif /* GUCEF_CORE_CMETRICSCLIENTMANAGER_H ? */
+
 #ifndef GUCEF_CORE_CPLUGINCONTROL_H
 #include "CPluginControl.h"
 #define GUCEF_CORE_CPLUGINCONTROL_H
@@ -223,6 +228,7 @@ CCoreGlobal::Initialize( void )
      *  if a logger is registered at an early stage
      */
     m_logManager = new CLogManager();
+    m_metricsClientManager = new CMetricsClientManager();
     m_notificationIdRegistry = new CNotificationIDRegistry();
 
     /*
@@ -283,6 +289,7 @@ CCoreGlobal::CCoreGlobal( void )
       m_exclusiveActivationManager( NULL ) ,
       m_application( NULL )                ,
       m_logManager( NULL )                 ,
+      m_metricsClientManager( NULL )       ,
       m_dstoreCodecPluginManager( NULL )   ,
       m_genericPluginManager( NULL )       ,
       m_pluginControl( NULL )              ,
