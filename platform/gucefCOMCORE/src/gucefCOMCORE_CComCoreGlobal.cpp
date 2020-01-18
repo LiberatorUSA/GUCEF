@@ -73,6 +73,11 @@
 #define GUCEF_COMCORE_CPINGTASKCONSUMER_H
 #endif /* GUCEF_COMCORE_CPINGTASKCONSUMER_H ? */
 
+#ifndef GUCEF_COMCORE_CDISCOVERYMANAGER_H
+#include "gucefCOMCORE_CDiscoveryManager.h"
+#define GUCEF_COMCORE_CDISCOVERYMANAGER_H
+#endif /* GUCEF_COMCORE_CDISCOVERYMANAGER_H ? */
+
 #include "gucefCOMCORE_CComCoreGlobal.h"  /* definition of the class implemented here */
 
 /*-------------------------------------------------------------------------//
@@ -139,6 +144,7 @@ CComCoreGlobal::Initialize( void )
                                                                                  new TPingTaskConsumerFactory()     );
 
     m_com = new CCom();
+    m_discoveryManager = new CDiscoveryManager();
 }
 
 /*-------------------------------------------------------------------------*/
@@ -188,6 +194,14 @@ CCom&
 CComCoreGlobal::GetCom( void )
 {
     return *m_com;
+}
+
+/*-------------------------------------------------------------------------*/
+
+CDiscoveryManager&
+CComCoreGlobal::GetDiscoveryManager( void )
+{
+    return *m_discoveryManager;
 }
 
 /*-------------------------------------------------------------------------//

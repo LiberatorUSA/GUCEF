@@ -17,19 +17,13 @@
  *  Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA
  */
 
-#ifndef GUCEF_COMCORE_CCOMCOREGLOBAL_H
-#define GUCEF_COMCORE_CCOMCOREGLOBAL_H
-
 /*-------------------------------------------------------------------------//
 //                                                                         //
 //      INCLUDES                                                           //
 //                                                                         //
 //-------------------------------------------------------------------------*/
 
-#ifndef GUCEF_COMCORE_MACROS_H
-#include "gucefCOMCORE_macros.h"      /* often used gucefCOMCORE macros */
-#define GUCEF_COMCORE_MACROS_H
-#endif /* GUCEF_COMCORE_MACROS_H ? */
+#include "gucefCOMCORE_CIDiscovery.h"
 
 /*-------------------------------------------------------------------------//
 //                                                                         //
@@ -46,39 +40,32 @@ namespace COMCORE {
 //                                                                         //
 //-------------------------------------------------------------------------*/
 
-class CCom;
-class CDiscoveryManager;
+CIDiscovery::CIDiscovery( void )
+{GUCEF_TRACE;
+
+}
 
 /*-------------------------------------------------------------------------*/
 
-class GUCEF_COMCORE_EXPORT_CPP CComCoreGlobal
-{
-    public:
+CIDiscovery::CIDiscovery( const CIDiscovery& src )
+{GUCEF_TRACE;
 
-    static CComCoreGlobal* Instance( void );
+}
 
-    CCom& GetCom( void );
+/*-------------------------------------------------------------------------*/
 
-    CDiscoveryManager& GetDiscoveryManager( void );
+CIDiscovery::~CIDiscovery()
+{GUCEF_TRACE;
+}
 
-    private:
+/*-------------------------------------------------------------------------*/
 
-    static void Deinstance( void );
+CIDiscovery& 
+CIDiscovery::operator=( const CIDiscovery& src )
+{GUCEF_TRACE;
 
-    void Initialize( void );
-
-    CComCoreGlobal( void );
-    CComCoreGlobal( const CComCoreGlobal& src );
-    ~CComCoreGlobal();
-    CComCoreGlobal& operator=( const CComCoreGlobal& src );
-
-    private:
-
-    CCom* m_com;
-    CDiscoveryManager* m_discoveryManager;
-
-    static CComCoreGlobal* g_instance;
-};
+    return *this;
+}
 
 /*-------------------------------------------------------------------------//
 //                                                                         //
@@ -90,16 +77,3 @@ class GUCEF_COMCORE_EXPORT_CPP CComCoreGlobal
 }; /* namespace GUCEF */
 
 /*-------------------------------------------------------------------------*/
-
-#endif /* GUCEF_COMCORE_CCOMCOREGLOBAL_H ? */
-
-/*-------------------------------------------------------------------------//
-//                                                                         //
-//      Info & Changes                                                     //
-//                                                                         //
-//-------------------------------------------------------------------------//
-
-- 12-02-2005 :
-        - Initial implementation
-
------------------------------------------------------------------------------*/

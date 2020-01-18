@@ -17,14 +17,16 @@
  *  Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA
  */
 
-#ifndef GUCEF_COMCORE_CCOMCOREGLOBAL_H
-#define GUCEF_COMCORE_CCOMCOREGLOBAL_H
+#ifndef GUCEF_COMCORE_CIDISCOVERYCAPABILITY_H
+#define GUCEF_COMCORE_CIDISCOVERYCAPABILITY_H
 
 /*-------------------------------------------------------------------------//
 //                                                                         //
 //      INCLUDES                                                           //
 //                                                                         //
 //-------------------------------------------------------------------------*/
+
+#include <set>
 
 #ifndef GUCEF_COMCORE_MACROS_H
 #include "gucefCOMCORE_macros.h"      /* often used gucefCOMCORE macros */
@@ -46,38 +48,40 @@ namespace COMCORE {
 //                                                                         //
 //-------------------------------------------------------------------------*/
 
-class CCom;
-class CDiscoveryManager;
-
-/*-------------------------------------------------------------------------*/
-
-class GUCEF_COMCORE_EXPORT_CPP CComCoreGlobal
+/**
+ *  Interface class which serves as the base class for all discovery clients
+ */
+class GUCEF_COMCORE_EXPORT_CPP CIDiscoveryCapability
 {
     public:
 
-    static CComCoreGlobal* Instance( void );
+    typedef std::set< CORE::CString > TStringSet;
 
-    CCom& GetCom( void );
+    CIDiscoveryCapability( void );
 
-    CDiscoveryManager& GetDiscoveryManager( void );
+    CIDiscoveryCapability( const CIDiscoveryCapability& src );
 
-    private:
+    virtual ~CIDiscoveryCapability();
 
-    static void Deinstance( void );
+    CIDiscoveryCapability& operator=( const CIDiscoveryCapability& src );
+    
+    /**
+     *  Identifier of the application providing the relevant capabilities
+     */
+    virtual bool SetCapability( const CORE::CString& capability ) = 0;
 
-    void Initialize( void );
+    virtual bool GetCapability( CORE::CString& capability ) const = 0;
 
-    CComCoreGlobal( void );
-    CComCoreGlobal( const CComCoreGlobal& src );
-    ~CComCoreGlobal();
-    CComCoreGlobal& operator=( const CComCoreGlobal& src );
+    /**
+     *  Identifier of the communication method to be used by applications 
+     *  interested in utilizing the provided capability
+     *  This would determine whether the communication method utilized is compatible between client and server
+     *  These identifiers are essentially the IDs of the possible contracts between clients and the server
+     */
+    virtual bool SetCapabilityAccessMethods( const TStringSet& capabilityAccessMethods ) = 0;
 
-    private:
+    virtual bool GetCapabilityAccessMethods( TStringSet& capabilityAccessMethods ) const = 0;
 
-    CCom* m_com;
-    CDiscoveryManager* m_discoveryManager;
-
-    static CComCoreGlobal* g_instance;
 };
 
 /*-------------------------------------------------------------------------//
@@ -91,7 +95,7 @@ class GUCEF_COMCORE_EXPORT_CPP CComCoreGlobal
 
 /*-------------------------------------------------------------------------*/
 
-#endif /* GUCEF_COMCORE_CCOMCOREGLOBAL_H ? */
+#endif /* GUCEF_COMCORE_CIDISCOVERYCAPABILITIES_H ? */
 
 /*-------------------------------------------------------------------------//
 //                                                                         //
@@ -102,4 +106,4 @@ class GUCEF_COMCORE_EXPORT_CPP CComCoreGlobal
 - 12-02-2005 :
         - Initial implementation
 
------------------------------------------------------------------------------*/
+---------------------------------------------------------------------------*/

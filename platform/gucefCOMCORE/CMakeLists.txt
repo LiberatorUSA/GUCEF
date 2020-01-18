@@ -28,7 +28,12 @@ set( HEADER_FILES
   include/dvwinsock.h
   include/gucefCOMCORE.h
   include/gucefCOMCORE_CComCoreGlobal.h
+  include/gucefCOMCORE_CDiscoveryManager.h
   include/gucefCOMCORE_CICommunicationPort.h
+  include/gucefCOMCORE_CIDiscovery.h
+  include/gucefCOMCORE_CIDiscoveryCapability.h
+  include/gucefCOMCORE_CIDiscoveryClient.h
+  include/gucefCOMCORE_CIDiscoveryEntry.h
   include/gucefCOMCORE_config.h
   include/gucefCOMCORE_CPingTaskConsumer.h
   include/gucefCOMCORE_CSerialPort.h
@@ -55,7 +60,12 @@ set( SOURCE_FILES
   src/dvwinsock.c
   src/gucefCOMCORE.cpp
   src/gucefCOMCORE_CComCoreGlobal.cpp
+  src/gucefCOMCORE_CDiscoveryManager.cpp
   src/gucefCOMCORE_CICommunicationPort.cpp
+  src/gucefCOMCORE_CIDiscovery.cpp
+  src/gucefCOMCORE_CIDiscoveryCapability.cpp
+  src/gucefCOMCORE_CIDiscoveryClient.cpp
+  src/gucefCOMCORE_CIDiscoveryEntry.cpp
   src/gucefCOMCORE_CPingTaskConsumer.cpp
   src/gucefCOMCORE_CSerialPort.cpp
   src/socketutils.cpp

@@ -62,7 +62,7 @@ class GUCEF_COMCORE_EXPORT_CPP CICommunicationPort : public virtual CORE::CIType
 
     CICommunicationPort( const CICommunicationPort& src );
 
-    ~CICommunicationPort();
+    virtual ~CICommunicationPort();
 
     CICommunicationPort& operator=( const CICommunicationPort& src );
 
