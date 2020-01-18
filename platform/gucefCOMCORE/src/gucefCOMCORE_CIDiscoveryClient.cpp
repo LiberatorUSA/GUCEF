@@ -17,19 +17,13 @@
  *  Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA
  */
 
-#ifndef GUCEF_COMCORE_CCOMCOREGLOBAL_H
-#define GUCEF_COMCORE_CCOMCOREGLOBAL_H
-
 /*-------------------------------------------------------------------------//
 //                                                                         //
 //      INCLUDES                                                           //
 //                                                                         //
 //-------------------------------------------------------------------------*/
 
-#ifndef GUCEF_COMCORE_MACROS_H
-#include "gucefCOMCORE_macros.h"      /* often used gucefCOMCORE macros */
-#define GUCEF_COMCORE_MACROS_H
-#endif /* GUCEF_COMCORE_MACROS_H ? */
+#include "gucefCOMCORE_CIDiscoveryClient.h"
 
 /*-------------------------------------------------------------------------//
 //                                                                         //
@@ -46,39 +40,38 @@ namespace COMCORE {
 //                                                                         //
 //-------------------------------------------------------------------------*/
 
-class CCom;
-class CDiscoveryManager;
+CIDiscoveryClient::CIDiscoveryClient( void )
+    : CORE::CITypeNamed()
+    , CORE::CIConfigurable()
+    , CIDiscovery()
+{GUCEF_TRACE;
+
+}
 
 /*-------------------------------------------------------------------------*/
 
-class GUCEF_COMCORE_EXPORT_CPP CComCoreGlobal
-{
-    public:
+CIDiscoveryClient::CIDiscoveryClient( const CIDiscoveryClient& src )
+    : CORE::CITypeNamed( src )
+    , CORE::CIConfigurable( src )
+    , CIDiscovery( src )
+{GUCEF_TRACE;
 
-    static CComCoreGlobal* Instance( void );
+}
 
-    CCom& GetCom( void );
+/*-------------------------------------------------------------------------*/
 
-    CDiscoveryManager& GetDiscoveryManager( void );
+CIDiscoveryClient::~CIDiscoveryClient()
+{GUCEF_TRACE;
+}
 
-    private:
+/*-------------------------------------------------------------------------*/
 
-    static void Deinstance( void );
+CIDiscoveryClient& 
+CIDiscoveryClient::operator=( const CIDiscoveryClient& src )
+{GUCEF_TRACE;
 
-    void Initialize( void );
-
-    CComCoreGlobal( void );
-    CComCoreGlobal( const CComCoreGlobal& src );
-    ~CComCoreGlobal();
-    CComCoreGlobal& operator=( const CComCoreGlobal& src );
-
-    private:
-
-    CCom* m_com;
-    CDiscoveryManager* m_discoveryManager;
-
-    static CComCoreGlobal* g_instance;
-};
+    return *this;
+}
 
 /*-------------------------------------------------------------------------//
 //                                                                         //
@@ -90,16 +83,3 @@ class GUCEF_COMCORE_EXPORT_CPP CComCoreGlobal
 }; /* namespace GUCEF */
 
 /*-------------------------------------------------------------------------*/
-
-#endif /* GUCEF_COMCORE_CCOMCOREGLOBAL_H ? */
-
-/*-------------------------------------------------------------------------//
-//                                                                         //
-//      Info & Changes                                                     //
-//                                                                         //
-//-------------------------------------------------------------------------//
-
-- 12-02-2005 :
-        - Initial implementation
-
------------------------------------------------------------------------------*/

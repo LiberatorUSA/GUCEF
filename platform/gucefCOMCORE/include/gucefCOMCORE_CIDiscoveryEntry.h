@@ -17,14 +17,41 @@
  *  Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA
  */
 
-#ifndef GUCEF_COMCORE_CCOMCOREGLOBAL_H
-#define GUCEF_COMCORE_CCOMCOREGLOBAL_H
+#ifndef GUCEF_COMCORE_CIDISCOVERYENTRY_H
+#define GUCEF_COMCORE_CIDISCOVERYENTRY_H
 
 /*-------------------------------------------------------------------------//
 //                                                                         //
 //      INCLUDES                                                           //
 //                                                                         //
 //-------------------------------------------------------------------------*/
+
+#include <set>
+
+#ifndef GUCEF_CORE_CITYPENAMED_H
+#include "CITypeNamed.h"
+#define GUCEF_CORE_CITYPENAMED_H
+#endif /* GUCEF_CORE_CITYPENAMED_H ? */
+
+#ifndef GUCEF_CORE_CICONFIGURABLE_H
+#include "CIConfigurable.h"
+#define GUCEF_CORE_CICONFIGURABLE_H
+#endif /* GUCEF_CORE_CICONFIGURABLE_H ? */
+
+#ifndef GUCEF_CORE_CTSHAREDPTR_H
+#include "CTSharedPtr.h"
+#define GUCEF_CORE_CTSHAREDPTR_H
+#endif /* GUCEF_CORE_CTSHAREDPTR_H ? */
+
+#ifndef GUCEF_COMCORE_CHOSTADDRESS_H
+#include "CHostAddress.h"
+#define GUCEF_COMCORE_CHOSTADDRESS_H
+#endif /* GUCEF_COMCORE_CHOSTADDRESS_H ? */
+
+#ifndef GUCEF_COMCORE_CIDISCOVERYCAPABILITY_H
+#include "gucefCOMCORE_CIDiscoveryCapability.h"
+#define GUCEF_COMCORE_CIDISCOVERYCAPABILITY_H
+#endif /* GUCEF_COMCORE_CIDISCOVERYCAPABILITY_H ? */
 
 #ifndef GUCEF_COMCORE_MACROS_H
 #include "gucefCOMCORE_macros.h"      /* often used gucefCOMCORE macros */
@@ -46,39 +73,61 @@ namespace COMCORE {
 //                                                                         //
 //-------------------------------------------------------------------------*/
 
-class CCom;
-class CDiscoveryManager;
-
-/*-------------------------------------------------------------------------*/
-
-class GUCEF_COMCORE_EXPORT_CPP CComCoreGlobal
+/**
+ *  Interface class which serves as the base class for all discovery clients
+ */
+class GUCEF_COMCORE_EXPORT_CPP CIDiscoveryEntry
 {
     public:
 
-    static CComCoreGlobal* Instance( void );
+    typedef std::set< CORE::CString > TStringSet;
 
-    CCom& GetCom( void );
+    CIDiscoveryEntry( void );
 
-    CDiscoveryManager& GetDiscoveryManager( void );
+    CIDiscoveryEntry( const CIDiscoveryEntry& src );
 
-    private:
+    virtual ~CIDiscoveryEntry();
 
-    static void Deinstance( void );
+    CIDiscoveryEntry& operator=( const CIDiscoveryEntry& src );
 
-    void Initialize( void );
+    /**
+     *  Identifier of the application providing the relevant capabilities
+     */
+    virtual bool SetApplicationId( const CORE::CString& appId ) = 0;
 
-    CComCoreGlobal( void );
-    CComCoreGlobal( const CComCoreGlobal& src );
-    ~CComCoreGlobal();
-    CComCoreGlobal& operator=( const CComCoreGlobal& src );
+    virtual bool GetApplicationId( CORE::CString& appId ) const = 0;
 
-    private:
+    /**
+     *  Identifier of the application providing the relevant capabilities
+     */
+    virtual bool SetApplicationInstanceId( const CORE::CString& appId ) = 0;
 
-    CCom* m_com;
-    CDiscoveryManager* m_discoveryManager;
+    virtual bool GetApplicationInstanceId( CORE::CString& appId ) const = 0;
 
-    static CComCoreGlobal* g_instance;
+    /**
+     *  Identifier of the host where the relevant capabilities are running
+     */
+    virtual bool SetHostInstanceId( const CORE::CString& appId ) = 0;
+
+    virtual bool GetHostInstanceId( CORE::CString& appId ) const = 0;
+
+    /**
+     *  Identifier of the host where the relevant capabilities are running
+     */
+    virtual bool SetHost( const COMCORE::CHostAddress& host ) = 0;
+
+    virtual bool GetHost( COMCORE::CHostAddress& host ) const = 0;
+
+    /**
+     *  Identifier of the application providing the relevant capabilities
+     */
+    virtual bool SetCapabilities( const CORE::CString& capability ) = 0;
+
+    virtual bool GetCapabilities( CORE::CString& capability ) const = 0;
+
 };
+
+typedef CORE::CTSharedPtr< CIDiscoveryEntry > CIDiscoveryEntryPtr;
 
 /*-------------------------------------------------------------------------//
 //                                                                         //
@@ -91,7 +140,7 @@ class GUCEF_COMCORE_EXPORT_CPP CComCoreGlobal
 
 /*-------------------------------------------------------------------------*/
 
-#endif /* GUCEF_COMCORE_CCOMCOREGLOBAL_H ? */
+#endif /* GUCEF_COMCORE_CIDISCOVERYENTRY_H ? */
 
 /*-------------------------------------------------------------------------//
 //                                                                         //
@@ -102,4 +151,4 @@ class GUCEF_COMCORE_EXPORT_CPP CComCoreGlobal
 - 12-02-2005 :
         - Initial implementation
 
------------------------------------------------------------------------------*/
+---------------------------------------------------------------------------*/

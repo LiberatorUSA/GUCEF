@@ -17,8 +17,8 @@
  *  Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA
  */
 
-#ifndef GUCEF_COMCORE_CCOMCOREGLOBAL_H
-#define GUCEF_COMCORE_CCOMCOREGLOBAL_H
+#ifndef GUCEF_COMCORE_CIDISCOVERYCLIENT_H
+#define GUCEF_COMCORE_CIDISCOVERYCLIENT_H
 
 /*-------------------------------------------------------------------------//
 //                                                                         //
@@ -26,10 +26,25 @@
 //                                                                         //
 //-------------------------------------------------------------------------*/
 
-#ifndef GUCEF_COMCORE_MACROS_H
-#include "gucefCOMCORE_macros.h"      /* often used gucefCOMCORE macros */
-#define GUCEF_COMCORE_MACROS_H
-#endif /* GUCEF_COMCORE_MACROS_H ? */
+#ifndef GUCEF_CORE_CITYPENAMED_H
+#include "CITypeNamed.h"
+#define GUCEF_CORE_CITYPENAMED_H
+#endif /* GUCEF_CORE_CITYPENAMED_H ? */
+
+#ifndef GUCEF_CORE_CICONFIGURABLE_H
+#include "CIConfigurable.h"
+#define GUCEF_CORE_CICONFIGURABLE_H
+#endif /* GUCEF_CORE_CICONFIGURABLE_H ? */
+
+#ifndef GUCEF_CORE_CTSHAREDPTR_H
+#include "CTSharedPtr.h"
+#define GUCEF_CORE_CTSHAREDPTR_H
+#endif /* GUCEF_CORE_CTSHAREDPTR_H ? */
+
+#ifndef GUCEF_COMCORE_CIDISCOVERY_H
+#include "gucefCOMCORE_CIDiscovery.h"
+#define GUCEF_COMCORE_CIDISCOVERY_H
+#endif /* GUCEF_COMCORE_CIDISCOVERY_H ? */
 
 /*-------------------------------------------------------------------------//
 //                                                                         //
@@ -46,39 +61,28 @@ namespace COMCORE {
 //                                                                         //
 //-------------------------------------------------------------------------*/
 
-class CCom;
-class CDiscoveryManager;
-
-/*-------------------------------------------------------------------------*/
-
-class GUCEF_COMCORE_EXPORT_CPP CComCoreGlobal
+/**
+ *  Interface class which serves as the base class for all discovery clients
+ */
+class GUCEF_COMCORE_EXPORT_CPP CIDiscoveryClient : public virtual CORE::CITypeNamed    ,
+                                                   public virtual CORE::CIConfigurable ,
+                                                   public virtual CIDiscovery
 {
     public:
 
-    static CComCoreGlobal* Instance( void );
+    CIDiscoveryClient( void );
 
-    CCom& GetCom( void );
+    CIDiscoveryClient( const CIDiscoveryClient& src );
 
-    CDiscoveryManager& GetDiscoveryManager( void );
+    virtual ~CIDiscoveryClient();
 
-    private:
+    CIDiscoveryClient& operator=( const CIDiscoveryClient& src );
 
-    static void Deinstance( void );
+    virtual const CORE::CString& GetDiscoveryClientName( void ) const = 0;
 
-    void Initialize( void );
-
-    CComCoreGlobal( void );
-    CComCoreGlobal( const CComCoreGlobal& src );
-    ~CComCoreGlobal();
-    CComCoreGlobal& operator=( const CComCoreGlobal& src );
-
-    private:
-
-    CCom* m_com;
-    CDiscoveryManager* m_discoveryManager;
-
-    static CComCoreGlobal* g_instance;
 };
+
+typedef CORE::CTSharedPtr< CIDiscoveryClient > CIDiscoveryClientPtr;
 
 /*-------------------------------------------------------------------------//
 //                                                                         //
@@ -91,7 +95,7 @@ class GUCEF_COMCORE_EXPORT_CPP CComCoreGlobal
 
 /*-------------------------------------------------------------------------*/
 
-#endif /* GUCEF_COMCORE_CCOMCOREGLOBAL_H ? */
+#endif /* GUCEF_COMCORE_CIDISCOVERYCLIENT_H ? */
 
 /*-------------------------------------------------------------------------//
 //                                                                         //
@@ -102,4 +106,4 @@ class GUCEF_COMCORE_EXPORT_CPP CComCoreGlobal
 - 12-02-2005 :
         - Initial implementation
 
------------------------------------------------------------------------------*/
+---------------------------------------------------------------------------*/

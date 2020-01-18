@@ -17,8 +17,8 @@
  *  Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA
  */
 
-#ifndef GUCEF_COMCORE_CCOMCOREGLOBAL_H
-#define GUCEF_COMCORE_CCOMCOREGLOBAL_H
+#ifndef GUCEF_COMCORE_CIDISCOVERY_H
+#define GUCEF_COMCORE_CIDISCOVERY_H
 
 /*-------------------------------------------------------------------------//
 //                                                                         //
@@ -26,10 +26,30 @@
 //                                                                         //
 //-------------------------------------------------------------------------*/
 
+#ifndef GUCEF_CORE_CITYPENAMED_H
+#include "CITypeNamed.h"
+#define GUCEF_CORE_CITYPENAMED_H
+#endif /* GUCEF_CORE_CITYPENAMED_H ? */
+
+#ifndef GUCEF_CORE_CICONFIGURABLE_H
+#include "CIConfigurable.h"
+#define GUCEF_CORE_CICONFIGURABLE_H
+#endif /* GUCEF_CORE_CICONFIGURABLE_H ? */
+
+#ifndef GUCEF_CORE_CTSHAREDPTR_H
+#include "CTSharedPtr.h"
+#define GUCEF_CORE_CTSHAREDPTR_H
+#endif /* GUCEF_CORE_CTSHAREDPTR_H ? */
+
 #ifndef GUCEF_COMCORE_MACROS_H
 #include "gucefCOMCORE_macros.h"      /* often used gucefCOMCORE macros */
 #define GUCEF_COMCORE_MACROS_H
 #endif /* GUCEF_COMCORE_MACROS_H ? */
+
+#ifndef GUCEF_COMCORE_CIDISCOVERYENTRY_H
+#include "gucefCOMCORE_CIDiscoveryEntry.h"
+#define GUCEF_COMCORE_CIDISCOVERYENTRY_H
+#endif /* GUCEF_COMCORE_CIDISCOVERYENTRY_H ? */ 
 
 /*-------------------------------------------------------------------------//
 //                                                                         //
@@ -46,38 +66,35 @@ namespace COMCORE {
 //                                                                         //
 //-------------------------------------------------------------------------*/
 
-class CCom;
-class CDiscoveryManager;
-
-/*-------------------------------------------------------------------------*/
-
-class GUCEF_COMCORE_EXPORT_CPP CComCoreGlobal
+/**
+ *  Interface class which serves as the base class for all discovery clients
+ */
+class GUCEF_COMCORE_EXPORT_CPP CIDiscovery
 {
     public:
 
-    static CComCoreGlobal* Instance( void );
+    typedef std::set< CIDiscoveryEntryPtr > TIDiscoveryEntrySet;
 
-    CCom& GetCom( void );
+    CIDiscovery( void );
 
-    CDiscoveryManager& GetDiscoveryManager( void );
+    CIDiscovery( const CIDiscovery& src );
 
-    private:
+    virtual ~CIDiscovery();
 
-    static void Deinstance( void );
+    CIDiscovery& operator=( const CIDiscovery& src );
 
-    void Initialize( void );
+    virtual bool FindCapability( const CORE::CString& capabilityId ,
+                                 TIDiscoveryEntrySet& entries      ) const = 0;
 
-    CComCoreGlobal( void );
-    CComCoreGlobal( const CComCoreGlobal& src );
-    ~CComCoreGlobal();
-    CComCoreGlobal& operator=( const CComCoreGlobal& src );
+    virtual bool FindApplication( const CORE::CString& applicationId ,
+                                 TIDiscoveryEntrySet& entries        ) const = 0;
 
-    private:
+    virtual bool FindHost( const COMCORE::CHostAddress& host ,
+                           TIDiscoveryEntrySet& entries      ) const = 0;
 
-    CCom* m_com;
-    CDiscoveryManager* m_discoveryManager;
+    virtual bool Register( CIDiscoveryEntryPtr entry ) = 0;
 
-    static CComCoreGlobal* g_instance;
+    virtual bool Unregister( CIDiscoveryEntryPtr entry ) = 0;
 };
 
 /*-------------------------------------------------------------------------//
@@ -91,7 +108,7 @@ class GUCEF_COMCORE_EXPORT_CPP CComCoreGlobal
 
 /*-------------------------------------------------------------------------*/
 
-#endif /* GUCEF_COMCORE_CCOMCOREGLOBAL_H ? */
+#endif /* GUCEF_COMCORE_CIDISCOVERYCLIENT_H ? */
 
 /*-------------------------------------------------------------------------//
 //                                                                         //
@@ -102,4 +119,4 @@ class GUCEF_COMCORE_EXPORT_CPP CComCoreGlobal
 - 12-02-2005 :
         - Initial implementation
 
------------------------------------------------------------------------------*/
+---------------------------------------------------------------------------*/

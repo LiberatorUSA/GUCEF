@@ -203,8 +203,8 @@ class GUCEF_COMCORE_EXPORT_CPP CCom
 
     private:
 
-    CCom( const CCom& src );            /** not implementated */
-    CCom& operator=( const CCom& src ); /** not implementated */
+    CCom( const CCom& src );            /** not implemented */
+    CCom& operator=( const CCom& src ); /** not implemented */
 
     private:
 
