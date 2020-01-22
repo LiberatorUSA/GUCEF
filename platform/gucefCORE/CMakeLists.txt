@@ -142,6 +142,7 @@ set( HEADER_FILES
   include/gucefCORE_CForwardingNotifier.h
   include/gucefCORE_CIConsoleLogger.h
   include/gucefCORE_CIEventHandlerFunctorBase.h
+  include/gucefCORE_CIMetricsSystemClient.h
   include/gucefCORE_CIniDataStoreCodec.h
   include/gucefCORE_CIniParser.h
   include/gucefCORE_cinterface.h
@@ -153,6 +154,7 @@ set( HEADER_FILES
   include/gucefCORE_CLinkedTransferBuffer.h
   include/gucefCORE_CLoaderDelegatedPluginLoadLogic.h
   include/gucefCORE_CLoggingTask.h
+  include/gucefCORE_CMetricsClientManager.h
   include/gucefCORE_CObserverSwitch.h
   include/gucefCORE_config.h
   include/gucefCORE_COSWindow.h
@@ -319,6 +321,7 @@ set( SOURCE_FILES
   src/gucefCORE_CLinkedTransferBuffer.cpp
   src/gucefCORE_CLoaderDelegatedPluginLoadLogic.cpp
   src/gucefCORE_CLoggingTask.cpp
+  src/gucefCORE_CMetricsClientManager.cpp
   src/gucefCORE_CObserverSwitch.cpp
   src/gucefCORE_COSWindow.cpp
   src/gucefCORE_CPlatformNativeConsoleLogger.cpp

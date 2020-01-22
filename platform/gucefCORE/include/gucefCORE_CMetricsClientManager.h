@@ -39,10 +39,10 @@
 #define GUCEF_CORE_CDVSTRING_H
 #endif /* GUCEF_CORE_CDVSTRING_H ? */
 
-#ifndef GUCEF_CORE_MACROS_H
-#include "gucefCORE_macros.h"           /* often used gucef macros */
-#define GUCEF_CORE_MACROS_H
-#endif /* GUCEF_CORE_MACROS_H ? */
+#ifndef GUCEF_CORE_CIMETRICSSYSTEMCLIENT_H
+#include "gucefCORE_CIMetricsSystemClient.h"
+#define GUCEF_CORE_CIMETRICSSYSTEMCLIENT_H
+#endif /* GUCEF_CORE_CIMETRICSSYSTEMCLIENT_H ? */
 
 /*-------------------------------------------------------------------------//
 //                                                                         //
@@ -59,7 +59,6 @@ namespace CORE {
 //                                                                         //
 //-------------------------------------------------------------------------*/
 
-class CILogger;
 class CString;
 
 /*-------------------------------------------------------------------------*/
@@ -68,15 +67,12 @@ class GUCEF_CORE_PUBLIC_CPP CMetricsClientManager
 {
     public:
 
-    void AddMetricsClient( CILogger* loggerImp );
+    void AddMetricsClient( CIMetricsSystemClient* client );
 
-    void RemoveMetricsClient( CILogger* loggerImp );
+    void RemoveMetricsClient( CIMetricsSystemClient* client );
 
     void ClearMetricsClients( void );
 
-    void Log( const TLogMsgType logMsgType ,
-              const Int32 logLevel         ,
-              const CString& logMessage    );
 
     private:
     friend class CCoreGlobal;
@@ -90,31 +86,9 @@ class GUCEF_CORE_PUBLIC_CPP CMetricsClientManager
     CMetricsClientManager( const CMetricsClientManager& src );              /**< not implemented, don't use */
     CMetricsClientManager& operator=( const CMetricsClientManager& src );   /**< not implemented, don't use */
 
-    void Log( const TLogMsgType logMsgType ,
-              const Int32 logLevel         ,
-              const CString& logMessage    ,
-              const UInt32 threadId        );
 
     private:
 
-    typedef std::set< CILogger* > TLoggerList;
-
-    struct SBootstrapLogEntry
-    {
-        TLogMsgType logMsgType;
-        Int32 logLevel;
-        CString logMessage;
-        UInt32 threadId;
-    };
-    typedef struct SBootstrapLogEntry TBootstrapLogEntry;
-    typedef std::vector< TBootstrapLogEntry > TBootstrapLogVector;
-
-    TLoggerList m_loggers;
-    std::map< TLogMsgType, bool > m_msgTypeEnablers;
-    Int32 m_minLogLevel;
-    TBootstrapLogVector m_bootstrapLog;
-    bool m_busyLogging;
-    bool m_redirectToLogQueue;
     MT::CMutex m_dataLock;
 };
 

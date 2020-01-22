@@ -17,32 +17,18 @@
  *  Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA
  */
 
-#ifndef GUCEF_CORE_CMETRICSCLIENTMANAGER_H
-#define GUCEF_CORE_CMETRICSCLIENTMANAGER_H
-
 /*-------------------------------------------------------------------------//
 //                                                                         //
 //      INCLUDES                                                           //
 //                                                                         //
 //-------------------------------------------------------------------------*/
 
-#include <set>
-#include <map>
+#ifndef GUCEF_CORE_LOGGING_H
+#include "gucefCORE_Logging.h"
+#define GUCEF_CORE_LOGGING_H
+#endif /* GUCEF_CORE_LOGGING_H ? */
 
-#ifndef GUCEF_MT_CMUTEX_H
-#include "gucefMT_CMutex.h"
-#define GUCEF_MT_CMUTEX_H
-#endif /* GUCEF_MT_CMUTEX_H ? */
-
-#ifndef GUCEF_CORE_CDVSTRING_H
-#include "CDVString.h"
-#define GUCEF_CORE_CDVSTRING_H
-#endif /* GUCEF_CORE_CDVSTRING_H ? */
-
-#ifndef GUCEF_CORE_MACROS_H
-#include "gucefCORE_macros.h"           /* often used gucef macros */
-#define GUCEF_CORE_MACROS_H
-#endif /* GUCEF_CORE_MACROS_H ? */
+#include "gucefCORE_CMetricsClientManager.h"
 
 /*-------------------------------------------------------------------------//
 //                                                                         //
@@ -55,68 +41,45 @@ namespace CORE {
 
 /*-------------------------------------------------------------------------//
 //                                                                         //
-//      CLASSES                                                            //
+//      IMPLEMENTATION                                                     //
 //                                                                         //
 //-------------------------------------------------------------------------*/
 
-class CILogger;
-class CString;
+void
+CMetricsClientManager::AddMetricsClient( CIMetricsSystemClient* client )
+{GUCEF_TRACE;
+
+}
 
 /*-------------------------------------------------------------------------*/
 
-class GUCEF_CORE_PUBLIC_CPP CMetricsClientManager
-{
-    public:
+void
+CMetricsClientManager::RemoveMetricsClient( CIMetricsSystemClient* client )
+{GUCEF_TRACE;
 
-    void AddMetricsClient( CILogger* loggerImp );
+}
 
-    void RemoveMetricsClient( CILogger* loggerImp );
+/*-------------------------------------------------------------------------*/
 
-    void ClearMetricsClients( void );
+void
+CMetricsClientManager::ClearMetricsClients( void )
+{GUCEF_TRACE;
 
-    void Log( const TLogMsgType logMsgType ,
-              const Int32 logLevel         ,
-              const CString& logMessage    );
+}
 
-    private:
-    friend class CCoreGlobal;
+/*-------------------------------------------------------------------------*/
 
-    CMetricsClientManager( void );
+CMetricsClientManager::CMetricsClientManager( void )
+{GUCEF_TRACE;
 
-    ~CMetricsClientManager();
+}
 
-    private:
+/*-------------------------------------------------------------------------*/
 
-    CMetricsClientManager( const CMetricsClientManager& src );              /**< not implemented, don't use */
-    CMetricsClientManager& operator=( const CMetricsClientManager& src );   /**< not implemented, don't use */
+CMetricsClientManager::~CMetricsClientManager()
+{GUCEF_TRACE;
 
-    void Log( const TLogMsgType logMsgType ,
-              const Int32 logLevel         ,
-              const CString& logMessage    ,
-              const UInt32 threadId        );
-
-    private:
-
-    typedef std::set< CILogger* > TLoggerList;
-
-    struct SBootstrapLogEntry
-    {
-        TLogMsgType logMsgType;
-        Int32 logLevel;
-        CString logMessage;
-        UInt32 threadId;
-    };
-    typedef struct SBootstrapLogEntry TBootstrapLogEntry;
-    typedef std::vector< TBootstrapLogEntry > TBootstrapLogVector;
-
-    TLoggerList m_loggers;
-    std::map< TLogMsgType, bool > m_msgTypeEnablers;
-    Int32 m_minLogLevel;
-    TBootstrapLogVector m_bootstrapLog;
-    bool m_busyLogging;
-    bool m_redirectToLogQueue;
-    MT::CMutex m_dataLock;
-};
+}
 
 /*-------------------------------------------------------------------------//
 //                                                                         //
@@ -126,10 +89,6 @@ class GUCEF_CORE_PUBLIC_CPP CMetricsClientManager
 
 }; /* namespace CORE */
 }; /* namespace GUCEF */
-
-/*-------------------------------------------------------------------------*/
-
-#endif /* GUCEF_CORE_CMETRICSCLIENTMANAGER_H ? */
 
 /*-------------------------------------------------------------------------//
 //                                                                         //
