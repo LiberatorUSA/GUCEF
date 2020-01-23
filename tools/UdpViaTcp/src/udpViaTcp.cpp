@@ -572,27 +572,27 @@ UdpViaTcp::LoadConfig( const CORE::CValueList& appConfig   ,
         m_mode = UDPVIATCPMODE_BIDIRECTIONAL_UDP;
     else
     {
-        GUCEF_ERROR_LOG( CORE::LOGLEVEL_IMPORTANT, "UdpViaTcp:LoadConfig: Unknown application mode specified: " + modeAsString );
+        GUCEF_ERROR_LOG( CORE::LOGLEVEL_CRITICAL, "UdpViaTcp:LoadConfig: Unknown application mode specified: " + modeAsString );
         return false;
     }
 
     m_udpReceiveUnicast = CORE::StringToBool( appConfig.GetValueAlways( "UdpReceiverAcceptsUnicast", "true" ) );
     m_udpReceiveMulticast = CORE::StringToBool( appConfig.GetValueAlways( "UdpReceiverAcceptsMulticast", "false" ) );
     m_udpReceiver.SetPortInHostByteOrder( CORE::StringToUInt16( appConfig.GetValueAlways( "UdpReceiverPort", "20000" ) ) );
-    m_udpReceiver.SetHostname( appConfig.GetValueAlways( "UdpReceiverInterface", "0.0.0.0" ) );
+    m_udpReceiver.SetHostname( CORE::ResolveVars( appConfig.GetValueAlways( "UdpReceiverInterface", "0.0.0.0" ) ) );
     m_udpReceiverMulticastSources = appConfig.GetValueVectorAlways( "UdpReceiverMulticastSource" );
     m_udpReceiveSocket.SetAllowMulticastLoopback( CORE::StringToBool( appConfig.GetValueAlways( "UdpReceiverAllowMulticastLoopback", "false" ) ) );
     m_udpReceiveSocket.SetMulticastTTL( CORE::StringToInt32( appConfig.GetValueAlways( "UdpReceiverMulticastTTL", "8" ) ) );
     
     m_tcpDestination.SetPortInHostByteOrder( CORE::StringToUInt16( appConfig.GetValueAlways( "TcpTunnelDestinationPort", "30000" ) ) );
-    m_tcpDestination.SetHostname( appConfig.GetValueAlways( "TcpTunnelDestinationAddr", "127.0.0.1" ) );
+    m_tcpDestination.SetHostname( CORE::ResolveVars( appConfig.GetValueAlways( "TcpTunnelDestinationAddr", "127.0.0.1" ) ) );
     m_tcpReceiver.SetPortInHostByteOrder( CORE::StringToUInt16( appConfig.GetValueAlways( "TcpTunnelReceivePort", "30000" ) ) );
-    m_tcpReceiver.SetHostname( appConfig.GetValueAlways( "TcpTunnelReceiveInterface", "0.0.0.0" ) );
+    m_tcpReceiver.SetHostname( CORE::ResolveVars( appConfig.GetValueAlways( "TcpTunnelReceiveInterface", "0.0.0.0" ) ) );
         
     m_udpTransmitter.SetPortInHostByteOrder( CORE::StringToUInt16( appConfig.GetValueAlways( "UdpTransmitterPort", "20001" ) ) );
-    m_udpTransmitter.SetHostname( appConfig.GetValueAlways( "UdpTransmitterInterface", "0.0.0.0" ) ); 
+    m_udpTransmitter.SetHostname( CORE::ResolveVars( appConfig.GetValueAlways( "UdpTransmitterInterface", "0.0.0.0" ) ) ); 
     m_udpDestination.SetPortInHostByteOrder( CORE::StringToUInt16( appConfig.GetValueAlways( "UdpDestinationPort", "40000" ) ) );
-    m_udpDestination.SetHostname( appConfig.GetValueAlways( "UdpDestinationAddr", "127.0.0.1" ) );
+    m_udpDestination.SetHostname( CORE::ResolveVars( appConfig.GetValueAlways( "UdpDestinationAddr", "127.0.0.1" ) ) );
         
     m_httpServer.SetPort( CORE::StringToUInt16( appConfig.GetValueAlways( "RestApiPort", "10000" ) ) );
 

@@ -204,67 +204,73 @@ ConvertBytesToHexString( const void* byteBuffer ,
 /*-------------------------------------------------------------------------*/
 
 CString
+ResolveVars( const CString& strWithVars )
+{GUCEF_TRACE;
+
+    // First resolve any environment variables which in turn could contain other variables
+    CString resultStr = strWithVars;
+    Int32 idx = 0;
+    do
+    {
+        idx = resultStr.HasSubstr( "$ENVVAR:", idx, true );
+        if ( idx > -1 )
+        {
+            Int32 endIndex = resultStr.HasChar( '$', idx+8, true );
+            
+            // Break out if there is no closing char, this is invalid
+            if ( endIndex < 0 ) break;
+
+            CString varName = resultStr.SubstrFromRange( idx+8, endIndex );
+            CString varValue = ::GUCEF::CORE::GetEnv( varName );
+            resultStr = resultStr.ReplaceSubStr( idx, endIndex-idx, varValue );
+        }
+    }
+    while ( idx > -1 );
+
+    idx = resultStr.HasSubstr( "$MODULEDIR$", true );
+    if ( idx > -1 )
+    {
+        CString moduleDir = ModuleDir();
+        CString prefix = resultStr.SubstrToIndex( idx, true );
+        CString postfix = resultStr.CutChars( idx+11, true );
+
+        resultStr = prefix;
+        AppendToPath( resultStr, moduleDir );
+        AppendToPath( resultStr, postfix );
+    }
+
+    idx = resultStr.HasSubstr( "$CURWORKDIR$", true );
+    if ( idx > -1 )
+    {
+        CString workingDir = CurrentWorkingDir();
+        CString prefix = resultStr.SubstrToIndex( idx, true );
+        CString postfix = resultStr.CutChars( idx+12, true );
+
+        resultStr = prefix;
+        AppendToPath( resultStr, workingDir );
+        AppendToPath( resultStr, postfix );
+    }
+
+    return resultStr;
+}
+
+/*-------------------------------------------------------------------------*/
+
+CString
 RelativePath( const CString& relpath , 
               bool resolveVars       )
 {GUCEF_TRACE;
 
-    CString relPath = relpath;
     CString resultStr;
 
     if ( resolveVars )
     {
         // First resolve any environment variables which in turn could contain other variables
-        Int32 idx = 0;
-        do
-        {
-            idx = relPath.HasSubstr( "$ENVVAR:", idx, true );
-            if ( idx > -1 )
-            {
-                Int32 endIndex = relPath.HasChar( '$', idx+8, true );
-            
-                // Break out if there is no closing char, this is invalid
-                if ( endIndex < 0 ) break;
-
-                CString varName = relPath.SubstrFromRange( idx+8, endIndex );
-                CString varValue = ::GUCEF::CORE::GetEnv( varName );
-                relPath = relPath.ReplaceSubStr( idx, endIndex-idx, varValue );
-            }
-        }
-        while ( idx > -1 );
-
-        idx = relPath.HasSubstr( "$MODULEDIR$", true );
-        if ( idx > -1 )
-        {
-            CString moduleDir = ModuleDir();
-            CString prefix = relPath.SubstrToIndex( idx, true );
-            CString postfix = relPath.CutChars( idx+11, true );
-
-            resultStr = prefix;
-            AppendToPath( resultStr, moduleDir );
-            AppendToPath( resultStr, postfix );
-        }
-        else
-        {
-            Int32 idx = relPath.HasSubstr( "$CURWORKDIR$", true );
-            if ( idx > -1 )
-            {
-                CString workingDir = CurrentWorkingDir();
-                CString prefix = relPath.SubstrToIndex( idx, true );
-                CString postfix = relPath.CutChars( idx+12, true );
-
-                resultStr = prefix;
-                AppendToPath( resultStr, workingDir );
-                AppendToPath( resultStr, postfix );
-            }
-            else
-            {
-                resultStr = relPath;
-            }
-        }
+        resultStr = ResolveVars( relpath );
     }
     else
     {
-        resultStr = relPath;
+        resultStr = relpath;
     }
 
     // Now the up dir segments,...

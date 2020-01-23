@@ -54,16 +54,30 @@ namespace CORE {
 /**
  *  Turns the given relative path into an absolute path
  *  You can use this function to implement support for variables in path names
- *  Supported variables are:
- *      - $CURWORKDIR$ -> Is resolved to the current working directory
- *      - $MODULEDIR$  -> Is resolved to the directory this module is located in
- *      - $ENVVAR:FOO$ -> Resolves to the environment variable FOO's content
- *      - ..           -> If dir segments are available before this one the path is shortened
+ *  This function will also unify the dir seperators to the O/S standard.
+ *
  *  Note that if 'resolveVars' is false only dir segments are processed
+ *  this function uses ResolveVars(), see it's documentation on supported variables
+ *
+ *  Additional supported variables are:
+ *      - ..           -> If dir segments are available before this one the path is shortened
  */
 GUCEF_CORE_PUBLIC_CPP CString
 RelativePath( const CString& relpath  ,
               bool resolveVars = true );
+
+
+/*-------------------------------------------------------------------------*/
+
+/**
+ *  You can use this function to implement support for certain supported variables in strings
+ *  Supported variables are:
+ *      - $CURWORKDIR$ -> Is resolved to the current working directory
+ *      - $MODULEDIR$  -> Is resolved to the directory this module is located in
+ *      - $ENVVAR:FOO$ -> Resolves to the environment variable FOO's content
+ */
+GUCEF_CORE_PUBLIC_CPP CString
+ResolveVars( const CString& strWithVars );
 
 /*-------------------------------------------------------------------------*/
 
