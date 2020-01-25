@@ -63,6 +63,7 @@ add_subdirectory( ${CMAKE_CURRENT_SOURCE_DIR}/../../../../dependencies/tiff/libt
 add_subdirectory( ${CMAKE_CURRENT_SOURCE_DIR}/../../../../dependencies/tolua ${CMAKE_BINARY_DIR}/tolua )
 add_subdirectory( ${CMAKE_CURRENT_SOURCE_DIR}/../../../../dependencies/toluapp ${CMAKE_BINARY_DIR}/toluapp )
 add_subdirectory( ${CMAKE_CURRENT_SOURCE_DIR}/../../../../dependencies/zlib ${CMAKE_BINARY_DIR}/zlib )
+add_subdirectory( ${CMAKE_CURRENT_SOURCE_DIR}/../../../../dependencies/zookeeper-client-c ${CMAKE_BINARY_DIR}/zookeeper )
 add_subdirectory( ${CMAKE_CURRENT_SOURCE_DIR}/../../../../dependencies/zziplib ${CMAKE_BINARY_DIR}/zziplib )
 add_subdirectory( ${CMAKE_CURRENT_SOURCE_DIR}/../../../../platform/gucefANDROIDGLUE/Gingerbread/jni ${CMAKE_BINARY_DIR}/main )
 add_subdirectory( ${CMAKE_CURRENT_SOURCE_DIR}/../../../../platform/gucefCOM ${CMAKE_BINARY_DIR}/gucefCOM )

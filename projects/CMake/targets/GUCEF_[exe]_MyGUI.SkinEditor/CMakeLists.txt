@@ -18,11 +18,24 @@ cmake_minimum_required(VERSION 2.6)
 set(CMAKE_ALLOW_LOOSE_LOOP_CONSTRUCTS TRUE)
 cmake_policy(SET CMP0003 NEW)
 
+if ( DEFINED ENV{GUCEF_HOME} )
+  set( GUCEF_HOME_DIR "$ENV{GUCEF_HOME}" )
+  STRING(REGEX REPLACE "\\\\" "/" GUCEF_HOME_DIR ${GUCEF_HOME_DIR})
+endif()
+
 if ( DEFINED ENV{GUCEF_SOURCE_DIR} )
   set( GUCEF_SOURCE_DIR "$ENV{GUCEF_SOURCE_DIR}" )
   STRING(REGEX REPLACE "\\\\" "/" GUCEF_SOURCE_DIR ${GUCEF_SOURCE_DIR})
 endif()
+if ( NOT DEFINED GUCEF_SOURCE_DIR )
+  set( GUCEF_SOURCE_DIR GUCEF_HOME_DIR )
+endif()
 message(STATUS "Source dir: ${GUCEF_SOURCE_DIR}")
+
+if ( NOT DEFINED GUCEF_BINARY_DIR )
+  set( GUCEF_BINARY_DIR "${GUCEF_SOURCE_DIR}/common/bin/GUCEF_[exe]_MyGUI.SkinEditor" )
+endif()
+message(STATUS "Binary dir: ${GUCEF_BINARY_DIR}")
 
 project( GUCEF_[exe]_MyGUI.SkinEditor )
 
