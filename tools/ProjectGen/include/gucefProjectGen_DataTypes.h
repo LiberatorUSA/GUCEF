@@ -467,7 +467,8 @@ bool
 GetModuleDependencies( const TProjectInfo& projectInfo           ,
                        const TModuleInfoEntry& moduleInfoEntry   ,
                        const CORE::CString& targetPlatform       ,
-                       TModuleInfoEntryConstPtrSet& dependencies );
+                       TModuleInfoEntryConstPtrSet& dependencies ,
+                       bool includeDependenciesOfDependencies    );
 
 /*-------------------------------------------------------------------------*/
 

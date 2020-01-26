@@ -8,5 +8,7 @@
 # free to make use of it in any way you like.
 #-------------------------------------------------------------------
 #
+add_subdirectory( ${CMAKE_CURRENT_SOURCE_DIR}/../../../../platform/gucefCORE ${CMAKE_BINARY_DIR}/gucefCORE )
 add_subdirectory( ${CMAKE_CURRENT_SOURCE_DIR}/../../../../platform/gucefLOADER ${CMAKE_BINARY_DIR}/gucefLOADER )
+add_subdirectory( ${CMAKE_CURRENT_SOURCE_DIR}/../../../../platform/gucefMT ${CMAKE_BINARY_DIR}/gucefMT )
 add_subdirectory( ${CMAKE_CURRENT_SOURCE_DIR}/../../../../tests/gucefPATCHERAPP_TestApp ${CMAKE_BINARY_DIR}/gucefPATCHERAPP_TestApp )

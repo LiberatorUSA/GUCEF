@@ -1934,14 +1934,14 @@ bool
 GetModuleDependencies( const TProjectInfo& projectInfo           ,
                        const TModuleInfoEntry& moduleInfoEntry   ,
                        const CORE::CString& targetPlatform       ,
-                       TModuleInfoEntryConstPtrSet& dependencies )
+                       TModuleInfoEntryConstPtrSet& dependencies ,
+                       bool includeDependenciesOfDependencies    )
 {GUCEF_TRACE;
 
     TStringVector deps;
     GetModuleDependencies( moduleInfoEntry, targetPlatform, deps );  
 
     bool foundAllDeps = true;
-    TModuleInfoEntryConstPtrSet foundDependencies;
     TStringVector::iterator m = deps.begin();
     while ( m != deps.end() )
     {
@@ -1953,6 +1953,24 @@ GetModuleDependencies( const TProjectInfo& projectInfo           ,
             foundAllDeps = false; // We cannot satisfy the full dependency chain for the executable for the given platform
         }
         ++m;
+    }
+    
+    if ( includeDependenciesOfDependencies )
+    {
+        TModuleInfoEntryConstPtrSet depsOfdependencies;
+        TModuleInfoEntryConstPtrSet::iterator i = dependencies.begin();
+        while ( i != dependencies.end() )
+        {
+            const TModuleInfoEntry* entry = (*i);
+            foundAllDeps = foundAllDeps && GetModuleDependencies( projectInfo, *entry, targetPlatform, depsOfdependencies, includeDependenciesOfDependencies ); 
+            ++i;
+        }
+        TModuleInfoEntryConstPtrSet::iterator n = depsOfdependencies.begin();
+        while ( n != depsOfdependencies.end() )
+        {
+            dependencies.insert( (*n) );
+            ++n;
+        }
     }
     return foundAllDeps;
 }
@@ -2327,7 +2345,7 @@ SplitProjectPerTarget( const TProjectInfo& projectInfo    ,
             if ( executable.modulesPerPlatform.find( (*p) ) != executable.modulesPerPlatform.end() )
             {            
                 TModuleInfoEntryConstPtrSet foundDependencies;
-                if ( GetModuleDependencies( projectInfo, executable, (*p), foundDependencies ) )
+                if ( GetModuleDependencies( projectInfo, executable, (*p), foundDependencies, true ) )
                 {
                     // if we made it here we found the executable and were able to satisfy all dependencies
                     // for the current platform
@@ -2372,14 +2390,14 @@ SplitProjectPerTarget( const TProjectInfo& projectInfo    ,
                 while ( m != taggedModules.end() )
                 {
                     const TModuleInfoEntry& taggedModule = *(*m);
-                    
+                                            
                     // Don't include this module if it doesnt have a definition for the current platform
                     if ( taggedModule.modulesPerPlatform.find( (*p) ) != taggedModule.modulesPerPlatform.end() )
                     {                    
                         // Tagged or not we need to include the dependencies of tagged modules as well
                         // We don't want to make projects that cannot compile
                         TModuleInfoEntryConstPtrSet foundDependencies;
-                        if ( GetModuleDependencies( projectInfo, taggedModule, (*p), foundDependencies ) )
+                        if ( GetModuleDependencies( projectInfo, taggedModule, (*p), foundDependencies, true ) )
                         {
                             TProjectTargetInfoMap& targetPerPlatform = targets[ projectName ];
                             TProjectTargetInfo& target = targetPerPlatform[ (*p) ];
