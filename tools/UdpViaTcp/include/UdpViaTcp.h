@@ -248,6 +248,8 @@ class UdpViaTcp : public CORE::CObservingNotifier
     };
     typedef enum EUdpViaTcpMode TUdpViaTcpMode;
 
+    typedef std::vector< COMCORE::CHostAddress > THostAddressVector;
+
     COMCORE::CTCPServerSocket m_tcpServerSocket;
     COMCORE::CTCPClientSocket m_tcpClientSocket;
     COMCORE::CUDPSocket m_udpTransmitSocket;
@@ -260,7 +262,7 @@ class UdpViaTcp : public CORE::CObservingNotifier
     TUdpViaTcpMode m_mode;
     COMCORE::CHostAddress m_tcpDestination;
     COMCORE::CHostAddress m_tcpReceiver;
-    COMCORE::CHostAddress m_udpDestination;
+    THostAddressVector m_udpDestinations;
     COMCORE::CHostAddress m_udpReceiver;
     COMCORE::CHostAddress m_udpTransmitter;
     CORE::CValueList::TStringVector m_udpReceiverMulticastSources;

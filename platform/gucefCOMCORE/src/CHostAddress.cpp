@@ -33,6 +33,11 @@
 #define GUCEF_COMCORE_SOCKETUTILS_H
 #endif /* GUCEF_COMCORE_SOCKETUTILS_H ? */
 
+#ifndef GUCEF_CORE_DVCPPSTRINGUTILS_H
+#include "dvcppstringutils.h"
+#define GUCEF_CORE_DVCPPSTRINGUTILS_H
+#endif /* GUCEF_CORE_DVCPPSTRINGUTILS_H ? */
+
 #include "CHostAddress.h"
 
 /*-------------------------------------------------------------------------//
@@ -93,6 +98,34 @@ CHostAddress::CHostAddress( const CORE::CString& hostname ,
     {
         SetAddress( INADDR_ANY );
     }
+}
+
+/*-------------------------------------------------------------------------*/
+
+CHostAddress::CHostAddress( const CORE::CString& hostAndPort )
+    : CIPAddress() ,
+      m_hostname()
+{GUCEF_TRACE;
+
+    Int32 sepCharIndex = hostAndPort.HasChar( ':', false );
+    if ( sepCharIndex >= 0 )
+    {
+        m_hostname = hostAndPort.SubstrToIndex( sepCharIndex, true );
+        SetPortInHostByteOrder( CORE::StringToUInt16( hostAndPort.SubstrToIndex( sepCharIndex, false ) ) );
+    }
+    else
+    {    
+        m_hostname = hostAndPort;
+    }
+
+    if ( !m_hostname.IsNULLOrEmpty() )
+    {
+        ResolveDNS( m_hostname, GetPortInHostByteOrder() );
+    }
+    else
+    {
+        SetAddress( INADDR_ANY );
+    }    
 }
 
 /*-------------------------------------------------------------------------*/

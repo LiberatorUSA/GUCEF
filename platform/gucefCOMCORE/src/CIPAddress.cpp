@@ -174,7 +174,7 @@ CIPAddress::ResolveDNS( const CORE::CString& address     ,
                 return true;
             }
         }
-        GUCEF_DEBUG_LOG( CORE::LOGLEVEL_NORMAL, "CIPAddress: Failed to resolve DNS name: " + address );
+        GUCEF_DEBUG_LOG( CORE::LOGLEVEL_NORMAL, "CIPAddress: Failed to resolve DNS name: " + address + " - ErrorCode: " + Int32ToString( errorCode ) );
         return false;
 
         #else

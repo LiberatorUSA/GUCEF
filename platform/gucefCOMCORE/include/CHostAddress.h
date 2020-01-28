@@ -64,6 +64,14 @@ class GUCEF_COMCORE_EXPORT_CPP CHostAddress : public CIPAddress
      */
     CHostAddress( const CORE::CString& hostname ,
                   const UInt16 port             );
+
+    /**
+     *  The host (DNS) and port together in a single string
+     *  takes the forms:
+     *      <DNS>:<Port>
+     *      <IP>:<Port>
+     */
+    CHostAddress( const CORE::CString& hostAndPort );
                     
     CHostAddress( const CIPAddress& ipAddress   ,
                   const CORE::CString& hostname );
