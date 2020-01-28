@@ -166,7 +166,7 @@ CIPAddress::ResolveDNS( const CORE::CString& address     ,
         {
             GUCEF_DEBUG_LOG( CORE::LOGLEVEL_NORMAL, CORE::CString( "CIPAddress::CIPAddress() DNS resolution: gethostbyname(): full name: " ) + retval->h_name );
             char* addrStr = inet_ntoa( *( struct ::in_addr*)( retval->h_addr_list[0] ) );
-            Int32 netaddr = inet_addr( addrStr );
+            UInt32 netaddr = inet_addr( addrStr );
             if ( netaddr >= 0 )
             {
                 m_address = netaddr;
@@ -174,7 +174,8 @@ CIPAddress::ResolveDNS( const CORE::CString& address     ,
                 return true;
             }
         }
-        GUCEF_DEBUG_LOG( CORE::LOGLEVEL_NORMAL, "CIPAddress: Failed to resolve DNS name: " + address + " - ErrorCode: " + Int32ToString( errorCode ) );
+
+        GUCEF_DEBUG_LOG( CORE::LOGLEVEL_NORMAL, "CIPAddress: Failed to resolve DNS name: " + address + " - ErrorCode: " + CORE::Int32ToString( errorCode ) );
         return false;
 
         #else
