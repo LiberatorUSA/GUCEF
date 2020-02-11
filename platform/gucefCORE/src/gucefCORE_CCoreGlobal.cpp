@@ -173,6 +173,7 @@ namespace CORE {
 //                                                                         //
 //-------------------------------------------------------------------------*/
 
+MT::CMutex CCoreGlobal::g_dataLock;
 CCoreGlobal* CCoreGlobal::g_instance = NULL;
 
 /*-------------------------------------------------------------------------//
@@ -187,8 +188,13 @@ CCoreGlobal::Instance()
 
     if ( NULL == g_instance )
     {
-        g_instance = new CCoreGlobal();
-        g_instance->Initialize();
+        g_dataLock.Lock();
+        if ( NULL == g_instance )
+        {
+            g_instance = new CCoreGlobal();
+            g_instance->Initialize();
+        }
+        g_dataLock.Unlock();
     }
     return g_instance;
 }
@@ -199,8 +205,10 @@ void
 CCoreGlobal::Deinstance( void )
 {GUCEF_TRACE;
 
+    g_dataLock.Lock();
     delete g_instance;
     g_instance = NULL;
+    g_dataLock.Unlock();
 }
 
 /*-------------------------------------------------------------------------*/
@@ -325,6 +333,8 @@ CCoreGlobal::~CCoreGlobal()
     m_application = NULL;
     delete m_logManager;
     m_logManager = NULL;
+    delete m_metricsClientManager;
+    m_metricsClientManager = NULL;
     delete m_dstoreCodecPluginManager;
     m_dstoreCodecPluginManager = NULL;
     delete m_genericPluginManager;
@@ -349,7 +359,7 @@ CCoreGlobal::~CCoreGlobal()
     MEMMAN_Shutdown();
     #endif
 
-    // it important to shutdown the call stack tracer as the last
+    // it important to shutdown the call stack tracer last
     GUCEF_ShutdowntCallstackUtility();
 }
 
@@ -396,6 +406,14 @@ CCoreGlobal::GetLogManager( void )
 {GUCEF_TRACE;
 
     return *m_logManager;
+}
+
+/*-------------------------------------------------------------------------*/
+
+CMetricsClientManager&
+CCoreGlobal::GetMetricsClientManager( void )
+{
+    return *m_metricsClientManager;
 }
 
 /*-------------------------------------------------------------------------*/

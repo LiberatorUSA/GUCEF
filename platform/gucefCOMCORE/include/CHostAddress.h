@@ -80,6 +80,14 @@ class GUCEF_COMCORE_EXPORT_CPP CHostAddress : public CIPAddress
     
     bool SetHostname( const CORE::CString& hostName );
 
+    /**
+     *  The host (DNS) and port together in a single string
+     *  takes the forms:
+     *      <DNS>:<Port>
+     *      <IP>:<Port>
+     */
+    bool SetHostnameAndPort( const CORE::CString& hostAndPort );
+
     const CORE::CString& GetHostname( void ) const;
 
     /**

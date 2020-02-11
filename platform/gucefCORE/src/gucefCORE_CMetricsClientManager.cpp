@@ -46,17 +46,19 @@ namespace CORE {
 //-------------------------------------------------------------------------*/
 
 void
-CMetricsClientManager::AddMetricsClient( CIMetricsSystemClient* client )
+CMetricsClientManager::AddMetricsClient( CIMetricsSystemClientPtr client )
 {GUCEF_TRACE;
 
+    m_clients.insert( client );
 }
 
 /*-------------------------------------------------------------------------*/
 
 void
-CMetricsClientManager::RemoveMetricsClient( CIMetricsSystemClient* client )
+CMetricsClientManager::RemoveMetricsClient( CIMetricsSystemClientPtr client )
 {GUCEF_TRACE;
 
+    m_clients.erase( client );
 }
 
 /*-------------------------------------------------------------------------*/
@@ -65,11 +67,15 @@ void
 CMetricsClientManager::ClearMetricsClients( void )
 {GUCEF_TRACE;
 
+    m_clients.clear();
 }
 
 /*-------------------------------------------------------------------------*/
 
 CMetricsClientManager::CMetricsClientManager( void )
+    : CIMetricsSystemClient( true )
+    , m_clients()
+    , m_dataLock()
 {GUCEF_TRACE;
 
 }
@@ -79,6 +85,143 @@ CMetricsClientManager::CMetricsClientManager( void )
 CMetricsClientManager::~CMetricsClientManager()
 {GUCEF_TRACE;
 
+}
+
+/*-------------------------------------------------------------------------*/
+
+bool
+CMetricsClientManager::Open( void )
+{GUCEF_TRACE;
+
+    bool totalSuccess = true;
+    TMetricsSystemClientPtrSet::iterator i = m_clients.begin();
+    while ( i != m_clients.end() )
+    {
+        CIMetricsSystemClientPtr client = (*i);
+        totalSuccess &= client->Open();
+        ++i;
+    }
+    return totalSuccess;
+}
+
+/*-------------------------------------------------------------------------*/
+
+bool
+CMetricsClientManager::Close( void )
+{GUCEF_TRACE;
+
+    bool totalSuccess = true;
+    TMetricsSystemClientPtrSet::iterator i = m_clients.begin();
+    while ( i != m_clients.end() )
+    {
+        CIMetricsSystemClientPtr client = (*i);
+        totalSuccess &= client->Close();
+        ++i;
+    }
+    return totalSuccess;
+}
+
+/*-------------------------------------------------------------------------*/
+
+bool
+CMetricsClientManager::SaveConfig( CORE::CDataNode& tree ) const
+{GUCEF_TRACE;
+
+    bool totalSuccess = true;
+    TMetricsSystemClientPtrSet::iterator i = m_clients.begin();
+    while ( i != m_clients.end() )
+    {
+        totalSuccess &= (*i)->SaveConfig( tree );
+        ++i;
+    }
+    return totalSuccess;
+}
+
+/*-------------------------------------------------------------------------*/
+
+bool
+CMetricsClientManager::LoadConfig( const CORE::CDataNode& treeroot )
+{GUCEF_TRACE;
+
+    bool totalSuccess = true;
+    TMetricsSystemClientPtrSet::iterator i = m_clients.begin();
+    while ( i != m_clients.end() )
+    {
+        CIMetricsSystemClientPtr client = (*i);
+        totalSuccess &= client->LoadConfig( treeroot );
+        ++i;
+    }
+    return totalSuccess;
+}
+
+/*-------------------------------------------------------------------------*/
+
+void
+CMetricsClientManager::Increment( const CString& key, const Float32 frequency ) const
+{GUCEF_TRACE;
+
+    TMetricsSystemClientPtrSet::const_iterator i = m_clients.begin();
+    while ( i != m_clients.end() )
+    {
+        (*i)->Increment( key, frequency );        
+        ++i;
+    }
+}
+
+/*-------------------------------------------------------------------------*/
+
+void
+CMetricsClientManager::Decrement( const CString& key, const Float32 frequency ) const
+{GUCEF_TRACE;
+
+    TMetricsSystemClientPtrSet::const_iterator i = m_clients.begin();
+    while ( i != m_clients.end() )
+    {
+        (*i)->Decrement( key, frequency );        
+        ++i;
+    }
+}
+
+/*-------------------------------------------------------------------------*/
+
+void
+CMetricsClientManager::Count( const CString& key, const Int32 delta, const Float32 frequency ) const
+{GUCEF_TRACE;
+
+    TMetricsSystemClientPtrSet::const_iterator i = m_clients.begin();
+    while ( i != m_clients.end() )
+    {
+        (*i)->Count( key, delta, frequency );        
+        ++i;
+    }
+}
+
+/*-------------------------------------------------------------------------*/
+
+void
+CMetricsClientManager::Gauge( const CString& key, const UInt32 value, const Float32 frequency ) const
+{GUCEF_TRACE;
+
+    TMetricsSystemClientPtrSet::const_iterator i = m_clients.begin();
+    while ( i != m_clients.end() )
+    {
+        (*i)->Gauge( key, value, frequency );
+        ++i;
+    }
+}
+
+/*-------------------------------------------------------------------------*/
+
+void 
+CMetricsClientManager::Timing( const CString& key, const UInt32 ms, const Float32 frequency ) const
+{GUCEF_TRACE;
+
+    TMetricsSystemClientPtrSet::const_iterator i = m_clients.begin();
+    while ( i != m_clients.end() )
+    {
+        (*i)->Timing( key, ms, frequency );        
+        ++i;
+    }
 }
 
 /*-------------------------------------------------------------------------//
@@ -99,4 +242,4 @@ CMetricsClientManager::~CMetricsClientManager()
 - 16-02-2007 :
         - Dinand: Added this class
 
------------------------------------------------------------------------------*/
+---------------------------------------------------------------------------*/

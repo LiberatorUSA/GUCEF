@@ -26,6 +26,11 @@
 //                                                                         //
 //-------------------------------------------------------------------------*/
 
+#ifndef GUCEF_MT_CMUTEX_H
+#include "gucefMT_CMutex.h"
+#define GUCEF_MT_CMUTEX_H
+#endif /* GUCEF_MT_CMUTEX_H ? */
+
 #ifndef GUCEF_CORE_MACROS_H
 #include "gucefCORE_macros.h"
 #define GUCEF_CORE_MACROS_H
@@ -141,6 +146,7 @@ class GUCEF_CORE_PUBLIC_CPP CCoreGlobal
     CConfigStore* m_configStore;
     CCodecRegistry* m_codecRegistry;
 
+    static MT::CMutex g_dataLock;
     static CCoreGlobal* g_instance;
 };
 

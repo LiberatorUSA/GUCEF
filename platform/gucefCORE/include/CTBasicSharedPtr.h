@@ -38,7 +38,10 @@
 #define GUCEF_CORE_MACROS_H
 #endif /* GUCEF_CORE_MACROS_H ? */
 
+#ifndef GUCEF_CORE_EXCEPTIONMACROS_H
 #include "ExceptionMacros.h"
+#define GUCEF_CORE_EXCEPTIONMACROS_H
+#endif /* GUCEF_CORE_EXCEPTIONMACROS_H ? */
 
 #ifndef GUCEF_CORE_CTRACER_H
 #include "CTracer.h"

@@ -28,6 +28,11 @@
 #define GUCEF_CORE_CCOREGLOBAL_H
 #endif /* GUCEF_CORE_CCOREGLOBAL_H ? */
 
+#ifndef GUCEF_CORE_CMETRICSCLIENTMANAGER_H
+#include "gucefCORE_CMetricsClientManager.h"
+#define GUCEF_CORE_CMETRICSCLIENTMANAGER_H
+#endif /* GUCEF_CORE_CMETRICSCLIENTMANAGER_H ? */
+
 #ifndef GUCEF_COMCORE_CCOMCOREGLOBAL_H
 #include "gucefCOMCORE_CComCoreGlobal.h"
 #define GUCEF_COMCORE_CCOMCOREGLOBAL_H
@@ -47,6 +52,11 @@
 #include "CPHUDPSocket.h"
 #define GUCEF_COM_CPHUDPSOCKET_H
 #endif /* GUCEF_COM_CPHUDPSOCKET_H ? */
+
+#ifndef GUCEF_COM_CSTATSDCLIENT_H
+#include "gucefCOM_CStatsDClient.h"
+#define GUCEF_COM_CSTATSDCLIENT_H
+#endif /* GUCEF_COM_CSTATSDCLIENT_H ? */
 
 #include "gucefCOM_CComGlobal.h"  /* definition of the class implemented here */
 
@@ -93,6 +103,9 @@ CComGlobal::Initialize( void )
     CHTTPClient::RegisterEvents();
     CHTTPURLHandler::Register();
     CPHUDPSocket::RegisterEvents();
+
+    CORE::CMetricsClientManager::CIMetricsSystemClientPtr statsDClient( new CStatsDClient() );
+    CORE::CCoreGlobal::Instance()->GetMetricsClientManager().AddMetricsClient( statsDClient );
 }
 
 /*-------------------------------------------------------------------------*/

@@ -177,6 +177,7 @@ set( HEADER_FILES
   include/gucefCORE_Logging.h
   include/gucefCORE_LoggingMacros.h
   include/gucefCORE_macros.h
+  include/gucefCORE_MetricsMacros.h
   include/gucef_essentials.h
   include/gucef_new_off.h
   include/gucef_new_on.h
@@ -310,6 +311,7 @@ set( SOURCE_FILES
   src/gucefCORE_CForwardingNotifier.cpp
   src/gucefCORE_CIConsoleLogger.cpp
   src/gucefCORE_CIEventHandlerFunctorBase.cpp
+  src/gucefCORE_CIMetricsSystemClient.cpp
   src/gucefCORE_CIniDataStoreCodec.cpp
   src/gucefCORE_CIniParser.cpp
   src/gucefCORE_cinterface.cpp

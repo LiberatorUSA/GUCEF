@@ -34,6 +34,7 @@ set( HEADER_FILES
   include/gucefCOM_CIHTTPServerRouter.h
   include/gucefCOM_CIHTTPServerRouterController.h
   include/gucefCOM_config.h
+  include/gucefCOM_CStatsDClient.h
   include/gucefCOM_ETypes.h
   include/gucefCOM_HTTPCode.h
   include/gucefCOM_macros.h
@@ -57,6 +58,7 @@ set( SOURCE_FILES
   src/gucefCOM_CIHTTPServerResource.cpp
   src/gucefCOM_CIHTTPServerRouter.cpp
   src/gucefCOM_CIHTTPServerRouterController.cpp
+  src/gucefCOM_CStatsDClient.cpp
 )
 
 # Make sure the PLATFORM_HEADER_FILES variable is always defined

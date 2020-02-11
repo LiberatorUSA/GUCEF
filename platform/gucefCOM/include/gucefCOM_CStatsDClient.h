@@ -1,5 +1,6 @@
 /*
- *  gucefCORE: GUCEF module providing O/S abstraction and generic solutions
+ *  gucefCOM: GUCEF module providing communication 
+ *  implementations for standardized protocols.
  *  Copyright (C) 2002 - 2007.  Dinand Vanvelzen
  *
  *  This library is free software; you can redistribute it and/or
@@ -14,11 +15,11 @@
  *
  *  You should have received a copy of the GNU Lesser General Public
  *  License along with this library; if not, write to the Free Software
- *  Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA
+ *  Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA 
  */
 
-#ifndef GUCEF_CORE_CIMETRICSSYSTEMCLIENT_H
-#define GUCEF_CORE_CIMETRICSSYSTEMCLIENT_H
+#ifndef GUCEF_COM_CSTATSDCLIENT_H
+#define GUCEF_COM_CSTATSDCLIENT_H
 
 /*-------------------------------------------------------------------------//
 //                                                                         //
@@ -26,20 +27,20 @@
 //                                                                         //
 //-------------------------------------------------------------------------*/
 
-#ifndef GUCEF_CORE_MACROS_H
-#include "gucefCORE_macros.h"       /* module macro's */
-#define GUCEF_CORE_MACROS_H
-#endif /* GUCEF_CORE_MACROS_H ? */
+#ifndef GUCEF_CORE_CIMETRICSSYSTEMCLIENT_H
+#include "gucefCORE_CIMetricsSystemClient.h"
+#define GUCEF_CORE_CIMETRICSSYSTEMCLIENT_H
+#endif /* GUCEF_CORE_CIMETRICSSYSTEMCLIENT_H ? */
 
-#ifndef GUCEF_CORE_CDVSTRING_H
-#include "CDVString.h"
-#define GUCEF_CORE_CDVSTRING_H
-#endif /* GUCEF_CORE_CDVSTRING_H ? */
+#ifndef GUCEF_COMCORE_CUDPSOCKET_H
+#include "CUDPSocket.h"
+#define GUCEF_COMCORE_CUDPSOCKET_H
+#endif /* GUCEF_COMCORE_CUDPSOCKET_H ? */
 
-#ifndef GUCEF_CORE_CICONFIGURABLE_H
-#include "CIConfigurable.h"
-#define GUCEF_CORE_CICONFIGURABLE_H
-#endif /* GUCEF_CORE_CICONFIGURABLE_H ? */
+#ifndef GUCEF_COM_MACROS_H
+#include "gucefCOM_macros.h"      /* often used gucefCOM macros */
+#define GUCEF_COM_MACROS_H
+#endif /* GUCEF_COM_MACROS_H ? */
 
 /*-------------------------------------------------------------------------//
 //                                                                         //
@@ -48,7 +49,7 @@
 //-------------------------------------------------------------------------*/
 
 namespace GUCEF {
-namespace CORE {
+namespace COM {
 
 /*-------------------------------------------------------------------------//
 //                                                                         //
@@ -56,49 +57,78 @@ namespace CORE {
 //                                                                         //
 //-------------------------------------------------------------------------*/
 
-class GUCEF_CORE_PUBLIC_CPP CIMetricsSystemClient : public CIConfigurable
+class GUCEF_COM_EXPORT_CPP CStatsDClient : public CORE::CIMetricsSystemClient
 {
     public:
+    
+    CStatsDClient( void );
 
-    CIMetricsSystemClient( void );
+    CStatsDClient( CORE::CPulseGenerator& pulseGenerator );
+    
+    virtual ~CStatsDClient();
 
-    CIMetricsSystemClient( bool useGlobalConfig );
+    virtual bool Open( void );
 
-    CIMetricsSystemClient( const CIMetricsSystemClient& src );
-
-    virtual ~CIMetricsSystemClient();
-
-    CIMetricsSystemClient& operator=( const CIMetricsSystemClient& src );
-
-    virtual bool Open( void ) = 0;
-
-    virtual bool Close( void ) = 0;
+    virtual bool Close( void );
 
     /**
      *  Increments the key, at a given frequency rate
      */
-    virtual void Increment( const CString& key, const Float32 frequency = 1.0f ) const = 0;
+    virtual void Increment( const CString& key, const Float32 frequency = 1.0f ) const;
 
     /**
      *  Increments the key, at a given frequency rate
      */
-    virtual void Decrement( const CString& key, const Float32 frequency = 1.0f ) const = 0;
+    virtual void Decrement( const CString& key, const Float32 frequency = 1.0f ) const;
 
     /**
      *   Adjusts the specified key by a given delta, at a given frequency rate
      */
-    virtual void Count( const CString& key, const Int32 delta, const Float32 frequency = 1.0f ) const = 0;
+    virtual void Count( const CString& key, const Int32 delta, const Float32 frequency = 1.0f ) const;
 
     /**
      *  Records a gauge for the key, with a given value, at a given frequency rate
      */
-    virtual void Gauge( const CString& key, const UInt32 value, const Float32 frequency = 1.0f ) const = 0;
+    virtual void Gauge( const CString& key, const UInt32 value, const Float32 frequency = 1.0f ) const;
 
     /**
      *  Records a timing for a key, at a given frequency
      */
-    virtual void Timing( const CString& key, const UInt32 ms, const Float32 frequency = 1.0f ) const = 0;
+    virtual void Timing( const CString& key, const UInt32 ms, const Float32 frequency = 1.0f ) const;
 
+    virtual bool SaveConfig( CORE::CDataNode& tree ) const;
+
+    virtual bool LoadConfig( const CORE::CDataNode& treeroot );
+
+    void SetStatsDestination( const COMCORE::CHostAddress& dest );
+
+    const COMCORE::CHostAddress& GetStatsDestination( void ) const;
+
+    void SetStatsInterface( const COMCORE::CHostAddress& interface );
+
+    const COMCORE::CHostAddress& GetStatsInterface( void ) const;
+
+    void SetStatNamePrefix( const CString& prefix );
+
+    const CString& GetStatNamePrefix( void ) const;
+
+    private:
+
+    CStatsDClient( const CStatsDClient& src );             /** not implemented */
+    CStatsDClient& operator=( const CStatsDClient& src );  /** not implemented */
+
+    void 
+    Transmit( const CString& key      , 
+              const Int32 value       , 
+              const CString& type     , 
+              const Float32 frequency ) const;
+
+    private:
+    
+    COMCORE::CUDPSocket m_udpSender;
+    COMCORE::CHostAddress m_statsDestination;
+    COMCORE::CHostAddress m_statsInterface;
+    CString m_statNamePrefix;
 };
 
 /*-------------------------------------------------------------------------//
@@ -107,12 +137,12 @@ class GUCEF_CORE_PUBLIC_CPP CIMetricsSystemClient : public CIConfigurable
 //                                                                         //
 //-------------------------------------------------------------------------*/
 
-}; /* namespace CORE */
-}; /* namespace GUCEF */
+} /* namespace COM */
+} /* namespace GUCEF */
 
 /*-------------------------------------------------------------------------*/
 
-#endif /* GUCEF_CORE_CIMETRICSSYSTEMCLIENT_H ? */
+#endif /* GUCEF_COM_CSTATSDCLIENT_H ? */
 
 /*-------------------------------------------------------------------------//
 //                                                                         //
@@ -120,7 +150,7 @@ class GUCEF_CORE_PUBLIC_CPP CIMetricsSystemClient : public CIConfigurable
 //                                                                         //
 //-------------------------------------------------------------------------//
 
-- 16-02-2007 :
-        - Dinand: Added this class
+- 03-03-2007 :
+        - Dinand: Added this section
 
 ---------------------------------------------------------------------------*/

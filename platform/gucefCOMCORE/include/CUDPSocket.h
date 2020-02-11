@@ -263,6 +263,20 @@ class GUCEF_COMCORE_EXPORT_CPP CUDPSocket : public CSocket
                         UInt16 datasize        );
 
     /**
+     *      Attempts to send a UDP packet to the given destination.
+     *      Note that the data you send must fit within the payload
+     *      space of a UDP packet.
+     *
+     *      @param dest Information about the packet destination.
+     *      @param data pointer to the data you wish to send
+     *      @param datasize size in bytes of the data block pointed to by data
+     *      @return the actual number of bytes that where sent. -1 indicates an error.
+     */
+    Int32 SendPacketTo( const CIPAddress& dest ,
+                        const void* data       ,
+                        UInt16 datasize        ) const;
+
+    /**
      *      For blocking sockets this call will not return until data is
      *      received. For non-blocking sockets this call returns immediately
      *      if there is no data and returns an error value.

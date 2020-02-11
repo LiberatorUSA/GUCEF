@@ -107,25 +107,7 @@ CHostAddress::CHostAddress( const CORE::CString& hostAndPort )
       m_hostname()
 {GUCEF_TRACE;
 
-    Int32 sepCharIndex = hostAndPort.HasChar( ':', false );
-    if ( sepCharIndex >= 0 )
-    {
-        m_hostname = hostAndPort.SubstrToIndex( sepCharIndex, true );
-        SetPortInHostByteOrder( CORE::StringToUInt16( hostAndPort.SubstrToIndex( sepCharIndex, false ) ) );
-    }
-    else
-    {    
-        m_hostname = hostAndPort;
-    }
-
-    if ( !m_hostname.IsNULLOrEmpty() )
-    {
-        ResolveDNS( m_hostname, GetPortInHostByteOrder() );
-    }
-    else
-    {
-        SetAddress( INADDR_ANY );
-    }    
+    SetHostnameAndPort( hostAndPort );
 }
 
 /*-------------------------------------------------------------------------*/
@@ -146,6 +128,34 @@ CHostAddress::OnChange( const bool addressChanged ,
     {
         m_hostname = AddressAsString();
     }
+}
+
+/*-------------------------------------------------------------------------*/
+
+bool
+CHostAddress::SetHostnameAndPort( const CORE::CString& hostAndPort )
+{GUCEF_TRACE;
+
+    Int32 sepCharIndex = hostAndPort.HasChar( ':', false );
+    if ( sepCharIndex >= 0 )
+    {
+        m_hostname = hostAndPort.SubstrToIndex( sepCharIndex, true );
+        SetPortInHostByteOrder( CORE::StringToUInt16( hostAndPort.SubstrToIndex( sepCharIndex, false ) ) );
+    }
+    else
+    {    
+        m_hostname = hostAndPort;
+    }
+
+    if ( !m_hostname.IsNULLOrEmpty() )
+    {
+        return ResolveDNS( m_hostname, GetPortInHostByteOrder() );
+    }
+    else
+    {
+        SetAddress( INADDR_ANY );
+    }
+    return true;
 }
 
 /*-------------------------------------------------------------------------*/

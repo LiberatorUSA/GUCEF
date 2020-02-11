@@ -189,8 +189,20 @@ CUDPSocket::SendPacketTo( const CIPAddress& dest ,
 
     if ( !_data->sockid )
     {
-            Open();
+        Open();
     }
+    return SendPacketTo( dest     ,
+                         data     ,
+                         datasize );
+}
+
+/*-------------------------------------------------------------------------*/
+
+Int32
+CUDPSocket::SendPacketTo( const CIPAddress& dest ,
+                          const void* data       ,
+                          UInt16 datasize        ) const
+{GUCEF_TRACE;
 
     struct sockaddr_in remote;
     memset( &remote, 0, sizeof( remote ) ); // should this be CLEAR_ADDR( &remote ); ?

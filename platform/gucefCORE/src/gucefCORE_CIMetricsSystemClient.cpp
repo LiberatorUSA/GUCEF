@@ -17,29 +17,18 @@
  *  Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA
  */
 
-#ifndef GUCEF_CORE_CIMETRICSSYSTEMCLIENT_H
-#define GUCEF_CORE_CIMETRICSSYSTEMCLIENT_H
-
 /*-------------------------------------------------------------------------//
 //                                                                         //
 //      INCLUDES                                                           //
 //                                                                         //
 //-------------------------------------------------------------------------*/
 
-#ifndef GUCEF_CORE_MACROS_H
-#include "gucefCORE_macros.h"       /* module macro's */
-#define GUCEF_CORE_MACROS_H
-#endif /* GUCEF_CORE_MACROS_H ? */
+#ifndef GUCEF_CORE_LOGGING_H
+#include "gucefCORE_Logging.h"
+#define GUCEF_CORE_LOGGING_H
+#endif /* GUCEF_CORE_LOGGING_H ? */
 
-#ifndef GUCEF_CORE_CDVSTRING_H
-#include "CDVString.h"
-#define GUCEF_CORE_CDVSTRING_H
-#endif /* GUCEF_CORE_CDVSTRING_H ? */
-
-#ifndef GUCEF_CORE_CICONFIGURABLE_H
-#include "CIConfigurable.h"
-#define GUCEF_CORE_CICONFIGURABLE_H
-#endif /* GUCEF_CORE_CICONFIGURABLE_H ? */
+#include "gucefCORE_CIMetricsSystemClient.h"
 
 /*-------------------------------------------------------------------------//
 //                                                                         //
@@ -52,54 +41,48 @@ namespace CORE {
 
 /*-------------------------------------------------------------------------//
 //                                                                         //
-//      CLASSES                                                            //
+//      IMPLEMENTATION                                                     //
 //                                                                         //
 //-------------------------------------------------------------------------*/
 
-class GUCEF_CORE_PUBLIC_CPP CIMetricsSystemClient : public CIConfigurable
-{
-    public:
+CIMetricsSystemClient::CIMetricsSystemClient( void )
+    : CIConfigurable()
+{GUCEF_TRACE;
 
-    CIMetricsSystemClient( void );
+}
 
-    CIMetricsSystemClient( bool useGlobalConfig );
+/*-------------------------------------------------------------------------*/
 
-    CIMetricsSystemClient( const CIMetricsSystemClient& src );
+CIMetricsSystemClient::CIMetricsSystemClient( bool useGlobalConfig )
+    : CIConfigurable( useGlobalConfig )
+{GUCEF_TRACE;
 
-    virtual ~CIMetricsSystemClient();
+    
+}
 
-    CIMetricsSystemClient& operator=( const CIMetricsSystemClient& src );
+/*-------------------------------------------------------------------------*/
 
-    virtual bool Open( void ) = 0;
+CIMetricsSystemClient::CIMetricsSystemClient( const CIMetricsSystemClient& src )
+    : CIConfigurable( src )
+{GUCEF_TRACE;
 
-    virtual bool Close( void ) = 0;
+}
 
-    /**
-     *  Increments the key, at a given frequency rate
-     */
-    virtual void Increment( const CString& key, const Float32 frequency = 1.0f ) const = 0;
+/*-------------------------------------------------------------------------*/
 
-    /**
-     *  Increments the key, at a given frequency rate
-     */
-    virtual void Decrement( const CString& key, const Float32 frequency = 1.0f ) const = 0;
+CIMetricsSystemClient::~CIMetricsSystemClient()
+{GUCEF_TRACE;
 
-    /**
-     *   Adjusts the specified key by a given delta, at a given frequency rate
-     */
-    virtual void Count( const CString& key, const Int32 delta, const Float32 frequency = 1.0f ) const = 0;
+}
 
-    /**
-     *  Records a gauge for the key, with a given value, at a given frequency rate
-     */
-    virtual void Gauge( const CString& key, const UInt32 value, const Float32 frequency = 1.0f ) const = 0;
+/*-------------------------------------------------------------------------*/
 
-    /**
-     *  Records a timing for a key, at a given frequency
-     */
-    virtual void Timing( const CString& key, const UInt32 ms, const Float32 frequency = 1.0f ) const = 0;
+CIMetricsSystemClient& 
+CIMetricsSystemClient::operator=( const CIMetricsSystemClient& src )
+{GUCEF_TRACE;
 
-};
+    return *this;
+}
 
 /*-------------------------------------------------------------------------//
 //                                                                         //
@@ -111,16 +94,3 @@ class GUCEF_CORE_PUBLIC_CPP CIMetricsSystemClient : public CIConfigurable
 }; /* namespace GUCEF */
 
 /*-------------------------------------------------------------------------*/
-
-#endif /* GUCEF_CORE_CIMETRICSSYSTEMCLIENT_H ? */
-
-/*-------------------------------------------------------------------------//
-//                                                                         //
-//      Info & Changes                                                     //
-//                                                                         //
-//-------------------------------------------------------------------------//
-
-- 16-02-2007 :
-        - Dinand: Added this class
-
----------------------------------------------------------------------------*/

@@ -27,7 +27,6 @@
 //-------------------------------------------------------------------------*/
 
 #include <set>
-#include <map>
 
 #ifndef GUCEF_MT_CMUTEX_H
 #include "gucefMT_CMutex.h"
@@ -38,6 +37,11 @@
 #include "CDVString.h"
 #define GUCEF_CORE_CDVSTRING_H
 #endif /* GUCEF_CORE_CDVSTRING_H ? */
+
+#ifndef GUCEF_CORE_CTSHAREDPTR_H
+#include "CTSharedPtr.h"
+#define GUCEF_CORE_CTSHAREDPTR_H
+#endif /* GUCEF_CORE_CTSHAREDPTR_H ? */
 
 #ifndef GUCEF_CORE_CIMETRICSSYSTEMCLIENT_H
 #include "gucefCORE_CIMetricsSystemClient.h"
@@ -59,36 +63,68 @@ namespace CORE {
 //                                                                         //
 //-------------------------------------------------------------------------*/
 
-class CString;
 
-/*-------------------------------------------------------------------------*/
-
-class GUCEF_CORE_PUBLIC_CPP CMetricsClientManager
+class GUCEF_CORE_PUBLIC_CPP CMetricsClientManager : public CIMetricsSystemClient
 {
     public:
 
-    void AddMetricsClient( CIMetricsSystemClient* client );
+    typedef CTSharedPtr< CIMetricsSystemClient > CIMetricsSystemClientPtr;
 
-    void RemoveMetricsClient( CIMetricsSystemClient* client );
+    void AddMetricsClient( CIMetricsSystemClientPtr client );
+
+    void RemoveMetricsClient( CIMetricsSystemClientPtr client );
 
     void ClearMetricsClients( void );
 
+    virtual bool Open( void );
+
+    virtual bool Close( void );
+
+    /**
+     *  Increments the key, at a given frequency rate
+     */
+    virtual void Increment( const CString& key, const Float32 frequency = 1.0f ) const;
+
+    /**
+     *  Increments the key, at a given frequency rate
+     */
+    virtual void Decrement( const CString& key, const Float32 frequency = 1.0f ) const;
+
+    /**
+     *   Adjusts the specified key by a given delta, at a given frequency rate
+     */
+    virtual void Count( const CString& key, const Int32 delta, const Float32 frequency = 1.0f ) const;
+
+    /**
+     *  Records a gauge for the key, with a given value, at a given frequency rate
+     */
+    virtual void Gauge( const CString& key, const UInt32 value, const Float32 frequency = 1.0f ) const;
+
+    /**
+     *  Records a timing for a key, at a given frequency
+     */
+    virtual void Timing( const CString& key, const UInt32 ms, const Float32 frequency = 1.0f ) const;
+
+    virtual bool SaveConfig( CDataNode& tree ) const;
+
+    virtual bool LoadConfig( const CDataNode& treeroot );
 
     private:
     friend class CCoreGlobal;
 
     CMetricsClientManager( void );
 
-    ~CMetricsClientManager();
+    virtual ~CMetricsClientManager();
 
     private:
 
     CMetricsClientManager( const CMetricsClientManager& src );              /**< not implemented, don't use */
     CMetricsClientManager& operator=( const CMetricsClientManager& src );   /**< not implemented, don't use */
 
-
     private:
+    typedef std::set< CIMetricsSystemClientPtr > TMetricsSystemClientPtrSet;
 
+    TMetricsSystemClientPtrSet m_clients;
     MT::CMutex m_dataLock;
 };
 
