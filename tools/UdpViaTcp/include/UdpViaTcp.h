@@ -236,6 +236,11 @@ class UdpViaTcp : public CORE::CObservingNotifier
                                        const CORE::CEvent& eventId  ,
                                        CORE::CICloneable* eventData );
 
+    void
+    OnMetricsTimerCycle( CORE::CNotifier* notifier    ,
+                         const CORE::CEvent& eventId  ,
+                         CORE::CICloneable* eventData );
+
     private:
 
     typedef CORE::CTEventHandlerFunctor< UdpViaTcp > TEventCallback;
@@ -271,4 +276,7 @@ class UdpViaTcp : public CORE::CObservingNotifier
     COM::CDefaultHTTPServerRouter m_httpRouter;
     CORE::CValueList m_appConfig;
     CORE::CDataNode m_globalConfig;
+
+    CORE::CTimer m_metricsTimer;
+    bool m_transmitMetrics;
 };

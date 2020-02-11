@@ -38,6 +38,11 @@
     #include <winsock2.h>
 #endif
 
+#ifndef GUCEF_CORE_METRICSMACROS_H
+#include "gucefCORE_MetricsMacros.h"
+#define GUCEF_CORE_METRICSMACROS_H
+#endif /* GUCEF_CORE_METRICSMACROS_H ? */
+
 /*-------------------------------------------------------------------------//
 //                                                                         //
 //      UTILITIES                                                          //
@@ -134,6 +139,8 @@ UdpViaTcp::UdpViaTcp( void )
     , m_httpRouter()
     , m_appConfig()
     , m_globalConfig()
+    , m_metricsTimer()
+    , m_transmitMetrics( true )
 {GUCEF_TRACE;
 
     RegisterEventHandlers();    
@@ -223,6 +230,43 @@ UdpViaTcp::RegisterEventHandlers( void )
                  COMCORE::CTCPServerSocket::ServerSocketMaxConnectionsChangedEvent ,
                  callback16                                                        );
 
+    TEventCallback callback17( this, &UdpViaTcp::OnMetricsTimerCycle );
+    SubscribeTo( &m_metricsTimer                ,
+                 CORE::CTimer::TimerUpdateEvent ,
+                 callback17                     );
+
+}
+
+/*-------------------------------------------------------------------------*/
+
+void
+UdpViaTcp::OnMetricsTimerCycle( CORE::CNotifier* notifier    ,
+                                const CORE::CEvent& eventId  ,
+                                CORE::CICloneable* eventData )
+{GUCEF_TRACE;
+
+    if ( m_transmitMetrics )
+    {
+        if ( UDPVIATCPMODE_BIDIRECTIONAL_UDP == m_mode || UDPVIATCPMODE_UDP_TRANSMITTER_ONLY == m_mode )
+        {
+            GUCEF_METRIC_GAUGE( "UdpViaTcp.TcpServer.ConnectedClients", m_tcpServerSocket.GetActiveCount(), 1.0f );
+            GUCEF_METRIC_GAUGE( "UdpViaTcp.TcpServer.BytesReceived", m_tcpServerSocket.GetBytesReceived( true ), 1.0f );
+            GUCEF_METRIC_GAUGE( "UdpViaTcp.UdpTransmitter.BytesSent", m_udpTransmitSocket.GetBytesTransmitted( true ), 1.0f );
+        }
+        if ( UDPVIATCPMODE_BIDIRECTIONAL_UDP == m_mode || UDPVIATCPMODE_UDP_RECEIVER_ONLY == m_mode )
+        {
+            GUCEF_METRIC_GAUGE( "UdpViaTcp.TcpClient.BufferedSendDataInBytes", m_tcpClientSocket.GetBufferedDataToSendInBytes(), 1.0f );
+            GUCEF_METRIC_GAUGE( "UdpViaTcp.TcpClient.BytesSent", m_tcpClientSocket.GetBytesTransmitted( true ), 1.0f );
+            GUCEF_METRIC_GAUGE( "UdpViaTcp.UdpReceiver.BytesReceived", m_udpReceiveSocket.GetBytesReceived( true ), 1.0f );
+        }
+        if ( UDPVIATCPMODE_BIDIRECTIONAL_UDP == m_mode )
+        {
+            GUCEF_METRIC_GAUGE( "UdpViaTcp.TcpServer.BytesSent", m_tcpServerSocket.GetBytesTransmitted( true ), 1.0f );
+            GUCEF_METRIC_GAUGE( "UdpViaTcp.TcpClient.BytesReceived", m_tcpClientSocket.GetBytesReceived( true ), 1.0f );
+            GUCEF_METRIC_GAUGE( "UdpViaTcp.UdpTransmitter.BytesReceived", m_udpTransmitSocket.GetBytesReceived( true ), 1.0f );
+            GUCEF_METRIC_GAUGE( "UdpViaTcp.UdpReceiver.BytesSent", m_udpReceiveSocket.GetBytesTransmitted( true ), 1.0f );
+        }
+    }
 }
 
 /*-------------------------------------------------------------------------*/
@@ -440,7 +484,7 @@ UdpViaTcp::OnTCPServerClientConnected( CORE::CNotifier* notifier    ,
     const COMCORE::CTCPServerSocket::TClientConnectedEventData* eData = static_cast< COMCORE::CTCPServerSocket::TClientConnectedEventData* >( eventData );
     const COMCORE::CTCPServerSocket::TConnectionInfo& info = eData->GetData();
 
-    GUCEF_DEBUG_LOG( CORE::LOGLEVEL_NORMAL, "UdpViaTcp: TCP Client connected" );
+    GUCEF_LOG( CORE::LOGLEVEL_NORMAL, "UdpViaTcp: TCP Client connected" );
 
     // Subscribe to the connection
     TEventCallback callback( this, &UdpViaTcp::OnTCPServerConnectionDataRecieved );
@@ -461,7 +505,7 @@ UdpViaTcp::OnTCPServerClientDisconnected( CORE::CNotifier* notifier    ,
     if ( GUCEF_NULL == eData ) return;
     const COMCORE::CTCPServerSocket::TConnectionInfo& info = eData->GetData();
 
-    GUCEF_DEBUG_LOG( CORE::LOGLEVEL_NORMAL, "UdpViaTcp: TCP Client disconnected" );
+    GUCEF_LOG( CORE::LOGLEVEL_NORMAL, "UdpViaTcp: TCP Client disconnected" );
 
     // Wipe data stored for this connection
     m_receivePacketBuffers[ info.connection->GetConnectionIndex() ].Clear( true );
@@ -475,6 +519,7 @@ UdpViaTcp::OnTCPServerClientError( CORE::CNotifier* notifier    ,
                                    CORE::CICloneable* eventData )
 {GUCEF_TRACE;
 
+    GUCEF_LOG( CORE::LOGLEVEL_NORMAL, "UdpViaTcp: TCP Client Error" );
 }
     
 /*-------------------------------------------------------------------------*/
@@ -485,6 +530,7 @@ UdpViaTcp::OnTCPServerSocketOpened( CORE::CNotifier* notifier    ,
                                     CORE::CICloneable* eventData )
 {GUCEF_TRACE;
 
+    GUCEF_LOG( CORE::LOGLEVEL_NORMAL, "UdpViaTcp: TCP Server socket has been opened" );
 }
     
 /*-------------------------------------------------------------------------*/
@@ -495,6 +541,7 @@ UdpViaTcp::OnTCPServerSocketClosed( CORE::CNotifier* notifier    ,
                                     CORE::CICloneable* eventData )
 {GUCEF_TRACE;
 
+    GUCEF_LOG( CORE::LOGLEVEL_NORMAL, "UdpViaTcp: TCP Server socket has been closed" );
 }
 
 /*-------------------------------------------------------------------------*/
@@ -505,6 +552,7 @@ UdpViaTcp::OnTCPServerSocketError( CORE::CNotifier* notifier    ,
                                    CORE::CICloneable* eventData )
 {GUCEF_TRACE;
 
+    GUCEF_LOG( CORE::LOGLEVEL_NORMAL, "UdpViaTcp: TCP Server socket error occured" );
 }
 
 /*-------------------------------------------------------------------------*/
@@ -515,6 +563,7 @@ UdpViaTcp::OnTCPServerSocketClientError( CORE::CNotifier* notifier    ,
                                          CORE::CICloneable* eventData )
 {GUCEF_TRACE;
 
+    GUCEF_LOG( CORE::LOGLEVEL_NORMAL, "UdpViaTcp: TCP Server socket client error occured" );
 }
 
 /*-------------------------------------------------------------------------*/
@@ -562,7 +611,14 @@ UdpViaTcp::Start( void )
         m_udpReceiveSocket.SetAutoReOpenOnError( true ); 
         m_udpReceiveSocket.Open( m_udpReceiver );
     }
+
+    if ( m_transmitMetrics )
+    {
+        m_metricsTimer.SetInterval( 1000 );
+        m_metricsTimer.SetEnabled( true );
+    }
    
+    GUCEF_LOG( CORE::LOGLEVEL_IMPORTANT, "UdpViaTcp: Opening REST API" );
     return m_httpServer.Listen();
 }
 
@@ -588,6 +644,8 @@ UdpViaTcp::LoadConfig( const CORE::CValueList& appConfig   ,
         return false;
     }
 
+    m_transmitMetrics = CORE::StringToBool( appConfig.GetValueAlways( "TransmitMetrics", "true" ) );
+    
     m_udpReceiveUnicast = CORE::StringToBool( appConfig.GetValueAlways( "UdpReceiverAcceptsUnicast", "true" ) );
     m_udpReceiveMulticast = CORE::StringToBool( appConfig.GetValueAlways( "UdpReceiverAcceptsMulticast", "false" ) );
     m_udpReceiver.SetPortInHostByteOrder( CORE::StringToUInt16( CORE::ResolveVars( appConfig.GetValueAlways( "UdpReceiverPort", "20000" ) ) ) );
