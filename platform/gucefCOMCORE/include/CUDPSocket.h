@@ -343,6 +343,10 @@ class GUCEF_COMCORE_EXPORT_CPP CUDPSocket : public CSocket
      */
     void SetRecievedDataBufferSize( const UInt32 newBufferSize );
 
+    virtual UInt32 GetBytesReceived( bool resetCounter );
+
+    virtual UInt32 GetBytesTransmitted( bool resetCounter );
+
     bool IsIncomingDataQueued( void );
 
     void SetAutoReOpenOnError( bool autoReOpen );
@@ -404,6 +408,8 @@ class GUCEF_COMCORE_EXPORT_CPP CUDPSocket : public CSocket
     bool m_allowMulticastLoopback;
     int m_multicastTTL;
     bool m_allowBroadcast;
+    mutable UInt32 m_bytesReceived;
+    mutable UInt32 m_bytesTransmitted;
 };
 
 /*-------------------------------------------------------------------------//

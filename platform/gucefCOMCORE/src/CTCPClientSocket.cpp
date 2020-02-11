@@ -36,6 +36,11 @@
 #define GUCEF_MT_DVMTOSWRAP_H
 #endif /* GUCEF_MT_DVMTOSWRAP_H ? */
 
+#ifndef GUCEF_MT_CSCOPEMUTEX_H
+#include "gucefMT_CScopeMutex.h"
+#define GUCEF_MT_CSCOPEMUTEX_H
+#endif /* GUCEF_MT_CSCOPEMUTEX_H ? */
+
 #ifndef GUCEF_CORE_CLOGMANAGER_H
 #include "CLogManager.h"
 #define GUCEF_CORE_CLOGMANAGER_H
@@ -125,21 +130,23 @@ typedef struct CTCPClientSocket::STCPClientSockData TTCPClientSockData;
 
 CTCPClientSocket::CTCPClientSocket( CORE::CPulseGenerator& pulseGenerator ,
                                     bool blocking                         )
-        : CTCPConnection()                    
-        , _blocking( blocking )               
-        , _active( false )                    
-        , datalock()                          
-        , m_readbuffer()                      
-        , m_sendBuffer()                      
-        , m_sendOpBuffer()                    
-        , m_maxreadbytes( 0 )                 
-        , m_hostAddress()                     
-        , m_isConnecting( false )             
-        , m_pulseGenerator( &pulseGenerator ) 
-        , m_coaleseDataSends( true )
-        , m_maxUpdatesPerCycle( 10 )
-        , m_autoReconnectOnError( false )
-        , m_lastConnFailed( false )
+    : CTCPConnection()                    
+    , _blocking( blocking )               
+    , _active( false )                    
+    , datalock()                          
+    , m_readbuffer()                      
+    , m_sendBuffer()                      
+    , m_sendOpBuffer()                    
+    , m_maxreadbytes( 0 )                 
+    , m_hostAddress()                     
+    , m_isConnecting( false )             
+    , m_pulseGenerator( &pulseGenerator ) 
+    , m_coaleseDataSends( true )
+    , m_maxUpdatesPerCycle( 10 )
+    , m_autoReconnectOnError( false )
+    , m_lastConnFailed( false )
+    , m_bytesReceived( 0 )
+    , m_bytesTransmitted( 0 )
 {GUCEF_TRACE;
 
     RegisterEvents();
@@ -157,21 +164,23 @@ CTCPClientSocket::CTCPClientSocket( CORE::CPulseGenerator& pulseGenerator ,
 /*-------------------------------------------------------------------------*/
 
 CTCPClientSocket::CTCPClientSocket( bool blocking )
-        : CTCPConnection()         
-        , _blocking( blocking )    
-        , _active( false )         
-        , datalock()               
-        , m_readbuffer()           
-        , m_sendBuffer()           
-        , m_sendOpBuffer()         
-        , m_maxreadbytes( 0 )      
-        , m_hostAddress()          
-        , m_isConnecting( false )  
-        , m_pulseGenerator( &CORE::CCoreGlobal::Instance()->GetPulseGenerator() ) 
-        , m_coaleseDataSends( true )
-        , m_maxUpdatesPerCycle( 10 )
-        , m_autoReconnectOnError( false )
-        , m_lastConnFailed( false )
+    : CTCPConnection()         
+    , _blocking( blocking )    
+    , _active( false )         
+    , datalock()               
+    , m_readbuffer()           
+    , m_sendBuffer()           
+    , m_sendOpBuffer()         
+    , m_maxreadbytes( 0 )      
+    , m_hostAddress()          
+    , m_isConnecting( false )  
+    , m_pulseGenerator( &CORE::CCoreGlobal::Instance()->GetPulseGenerator() ) 
+    , m_coaleseDataSends( true )
+    , m_maxUpdatesPerCycle( 10 )
+    , m_autoReconnectOnError( false )
+    , m_lastConnFailed( false )
+    , m_bytesReceived( 0 )
+    , m_bytesTransmitted( 0 )
 {GUCEF_TRACE;
 
     RegisterEvents();
@@ -538,6 +547,7 @@ CTCPClientSocket::CheckRecieveBuffer( void )
 
             // Increase the logical data size delimiter by the amount we just copied into the buffer
             m_readbuffer.SetDataSize( m_readbuffer.GetDataSize() + bytesrecv );
+            m_bytesReceived += bytesrecv;
 
             // Is there a limit on the number of bytes we want to read ?
             if ( m_maxreadbytes > 0 )
@@ -780,6 +790,50 @@ CTCPClientSocket::Send( const void* dataSource ,
 
 /*-------------------------------------------------------------------------*/
 
+UInt32 
+CTCPClientSocket::GetBufferedDataToSendInBytes( void ) const
+{GUCEF_TRACE;
+
+    LockData();
+    UInt32 bBytes = m_sendBuffer.GetBufferedDataSizeInBytes();
+    UnlockData();
+    return bBytes;
+}
+
+/*-------------------------------------------------------------------------*/
+
+UInt32
+CTCPClientSocket::GetBytesReceived( bool resetCounter )
+{GUCEF_TRACE;
+
+    if ( resetCounter )
+    {
+        UInt32 bytesReceived = m_bytesReceived;
+        m_bytesReceived = 0;
+        return bytesReceived;
+    }
+    else
+        return m_bytesReceived;
+}
+
+/*-------------------------------------------------------------------------*/
+
+UInt32 
+CTCPClientSocket::GetBytesTransmitted( bool resetCounter )
+{GUCEF_TRACE;
+
+    if ( resetCounter )
+    {
+        UInt32 bytesTransmitted = m_bytesTransmitted;
+        m_bytesTransmitted = 0;
+        return bytesTransmitted;
+    }
+    else
+        return m_bytesTransmitted;
+}
+
+/*-------------------------------------------------------------------------*/
+
 bool
 CTCPClientSocket::Send( const void* data ,
                         UInt32 length    ,
@@ -825,6 +879,7 @@ CTCPClientSocket::Send( const void* data ,
             {
                 // we where able to send at least some of the data
                 totalBytesSent += wbytes;
+                m_bytesTransmitted += wbytes;
 
                 GUCEF_DEBUG_LOG( CORE::LOGLEVEL_BELOW_NORMAL, "CTCPClientSocket(" + CORE::PointerToString( this ) + "): Succeeded in sending " + CORE::UInt32ToString( wbytes ) + " bytes of data" );
             }

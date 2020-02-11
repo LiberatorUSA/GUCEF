@@ -148,6 +148,10 @@ class GUCEF_COMCORE_EXPORT_CPP CTCPServerSocket : public CSocket
     bool IsBlocking( void ) const;
     
     UInt32 GetMaxConnections( void ) const;
+
+    virtual UInt32 GetBytesReceived( bool resetCounter );
+
+    virtual UInt32 GetBytesTransmitted( bool resetCounter );
     
     void GetListenAddress( CHostAddress& listenAddress ) const;          
 

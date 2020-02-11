@@ -104,6 +104,8 @@ CUDPSocket::CUDPSocket( CORE::CPulseGenerator& pulseGenerator ,
     , m_allowMulticastLoopback( false )
     , m_multicastTTL( 8 )
     , m_allowBroadcast( false )
+    , m_bytesReceived( 0 )
+    , m_bytesTransmitted( 0 )
 {GUCEF_TRACE;
 
     RegisterEvents();
@@ -111,7 +113,8 @@ CUDPSocket::CUDPSocket( CORE::CPulseGenerator& pulseGenerator ,
     _data = new TUDPSockData;
     memset( _data, 0, sizeof( TUDPSockData ) );
 
-    m_buffer.SetBufferSize( 1024 );
+    // Set a default buffer size large enough to handle Jumbo frames
+    m_buffer.SetBufferSize( 9000 );
 
     TEventCallback callback( this, &CUDPSocket::OnPulse );
     SubscribeTo( m_pulseGenerator                  ,
@@ -137,6 +140,8 @@ CUDPSocket::CUDPSocket( bool blocking )
     , m_allowMulticastLoopback( false )
     , m_multicastTTL( 8 )
     , m_allowBroadcast( false )
+    , m_bytesReceived( 0 )
+    , m_bytesTransmitted( 0 )
 {GUCEF_TRACE;
 
     RegisterEvents();
@@ -144,7 +149,8 @@ CUDPSocket::CUDPSocket( bool blocking )
     _data = new TUDPSockData;
     memset( _data, 0, sizeof( TUDPSockData ) );
 
-    m_buffer.SetBufferSize( 1024 );
+    // Set a default buffer size large enough to handle Jumbo frames
+    m_buffer.SetBufferSize( 9000 );
 
     TEventCallback callback( this, &CUDPSocket::OnPulse );
     SubscribeTo( m_pulseGenerator                  ,
@@ -191,9 +197,9 @@ CUDPSocket::SendPacketTo( const CIPAddress& dest ,
     {
         Open();
     }
-    return SendPacketTo( dest     ,
-                         data     ,
-                         datasize );
+    return const_cast< const CUDPSocket* >( this )->SendPacketTo( dest     ,
+                                                                  data     ,
+                                                                  datasize );
 }
 
 /*-------------------------------------------------------------------------*/
@@ -205,16 +211,24 @@ CUDPSocket::SendPacketTo( const CIPAddress& dest ,
 {GUCEF_TRACE;
 
     struct sockaddr_in remote;
-    memset( &remote, 0, sizeof( remote ) ); // should this be CLEAR_ADDR( &remote ); ?
+    memset( &remote, 0, sizeof( remote ) );
     remote.sin_addr.s_addr = dest.GetAddress();
     remote.sin_port = dest.GetPort();
     remote.sin_family = AF_INET;
-    return sendto( _data->sockid             ,
-                   (const char*)data         ,
-                   datasize                  ,
-                   0                         ,
-                   (struct sockaddr*)&remote ,
-                   sizeof(remote)            );
+    
+    Int32 returnValue = sendto( _data->sockid             ,
+                                (const char*)data         ,
+                                datasize                  ,
+                                0                         ,
+                                (struct sockaddr*)&remote ,
+                                sizeof(remote)            );
+    
+    if ( returnValue >= 0 )
+        m_bytesTransmitted += returnValue;
+    else
+        GUCEF_ERROR_LOG( CORE::LOGLEVEL_NORMAL, "UDPSocket:SendPacketTo: Failed to send " + CORE::UInt16ToString( datasize ) + " bytes to " + dest.AddressAndPortAsString() );
+
+    return returnValue;
 }
 
 /*-------------------------------------------------------------------------*/
@@ -229,7 +243,7 @@ CUDPSocket::SendPacketTo( const CORE::CString& dnsname ,
     CIPAddress dest;
     if ( ConvertToIPAddress( dnsname, port, dest ) )
     {
-            return SendPacketTo( dest, data, datasize );
+        return SendPacketTo( dest, data, datasize );
     }
     return -1;
 }
@@ -454,6 +468,38 @@ CUDPSocket::GetMulticastTTL( void ) const
 
 /*-------------------------------------------------------------------------*/
 
+UInt32
+CUDPSocket::GetBytesReceived( bool resetCounter )
+{GUCEF_TRACE;
+
+    if ( resetCounter )
+    {
+        UInt32 bytesReceived = m_bytesReceived;
+        m_bytesReceived = 0;
+        return bytesReceived;
+    }
+    else
+        return m_bytesReceived;
+}
+
+/*-------------------------------------------------------------------------*/
+
+UInt32 
+CUDPSocket::GetBytesTransmitted( bool resetCounter )
+{GUCEF_TRACE;
+
+    if ( resetCounter )
+    {
+        UInt32 bytesTransmitted = m_bytesTransmitted;
+        m_bytesTransmitted = 0;
+        return bytesTransmitted;
+    }
+    else
+        return m_bytesTransmitted;
+}
+
+/*-------------------------------------------------------------------------*/
+
 Int32
 CUDPSocket::Recieve( void )
 {GUCEF_TRACE;
@@ -496,6 +542,7 @@ CUDPSocket::Recieve( CIPAddress& src ,
     // Set the actual usefull bytes of data in the buffer
     // to match the number of retrieved bytes
     m_buffer.SetDataSize( retval );
+    m_bytesReceived += retval;
 
     // Copy the data directly to our user
     src.SetPort( remote.sin_port );

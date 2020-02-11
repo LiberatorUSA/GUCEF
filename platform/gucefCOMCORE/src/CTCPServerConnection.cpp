@@ -85,18 +85,20 @@ typedef struct STCPServerConData TTCPServerConData;
 
 CTCPServerConnection::CTCPServerConnection( CTCPServerSocket *tcp_serversock ,
                                             UInt32 connection_idx            )
-        : CTCPConnection()                    ,
-          _data( NULL )                       ,
-          _blocking( false )                  ,
-          _active( false )                    ,
-          m_readbuffer()                      ,
-          m_sendBuffer()                      ,
-          m_sendOpBuffer()                    ,
-          _datalock()                         ,
-          m_maxreadbytes( 0 )                 ,
-          m_connectionidx( connection_idx )   ,
-          m_parentsock( tcp_serversock )      ,
-          m_coaleseDataSends( true )
+    : CTCPConnection()                    
+    , _data( NULL )                       
+    , _blocking( false )                  
+    , _active( false )                    
+    , m_readbuffer()                      
+    , m_sendBuffer()                      
+    , m_sendOpBuffer()                    
+    , _datalock()                         
+    , m_maxreadbytes( 0 )                 
+    , m_connectionidx( connection_idx )   
+    , m_parentsock( tcp_serversock )      
+    , m_coaleseDataSends( true )          
+    , m_bytesReceived( 0 )
+    , m_bytesTransmitted( 0 )
 {GUCEF_TRACE;
 
     _data = new TTCPServerConData;
@@ -250,6 +252,7 @@ CTCPServerConnection::Send( const void* dataSource ,
             {
                 // we where able to send at least some of the data
                 totalBytesSent += wbytes;
+                m_bytesTransmitted += wbytes;
 
                 GUCEF_DEBUG_LOG( CORE::LOGLEVEL_BELOW_NORMAL, "CTCPServerConnection(" + CORE::PointerToString( this ) + "): Succeeded in sending " + CORE::UInt32ToString( wbytes ) + " bytes of data" );
             }
@@ -410,10 +413,9 @@ CTCPServerConnection::CheckRecieveBuffer( void )
 
     if ( totalrecieved > 0 )
     {
+        ++m_bytesReceived;
+
         GUCEF_DEBUG_LOG( CORE::LOGLEVEL_BELOW_NORMAL, "CTCPServerConnection(" + CORE::PointerToString( this ) + "): Received " + CORE::UInt32ToString( totalrecieved ) + " bytes of data" );
-
-        UInt16 keepbytes(0);
-
         TDataRecievedEventData eData( &m_readbuffer );
         NotifyObservers( DataRecievedEvent, &eData );
     }
@@ -548,6 +550,38 @@ CTCPServerConnection::Update( UInt32 maxUpdatesPerCycle )
 
         UnlockData();
     }
+}
+
+/*-------------------------------------------------------------------------*/
+
+UInt32
+CTCPServerConnection::GetBytesReceived( bool resetCounter )
+{GUCEF_TRACE;
+
+    if ( resetCounter )
+    {
+        UInt32 bytesReceived = m_bytesReceived;
+        m_bytesReceived = 0;
+        return bytesReceived;
+    }
+    else
+        return m_bytesReceived;
+}
+
+/*-------------------------------------------------------------------------*/
+
+UInt32 
+CTCPServerConnection::GetBytesTransmitted( bool resetCounter )
+{GUCEF_TRACE;
+
+    if ( resetCounter )
+    {
+        UInt32 bytesTransmitted = m_bytesTransmitted;
+        m_bytesTransmitted = 0;
+        return bytesTransmitted;
+    }
+    else
+        return m_bytesTransmitted;
 }
 
 /*-------------------------------------------------------------------------*/

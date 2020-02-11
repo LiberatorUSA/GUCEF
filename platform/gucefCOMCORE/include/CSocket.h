@@ -107,6 +107,10 @@ class GUCEF_COMCORE_EXPORT_CPP CSocket : public CORE::CObservingNotifier
                                       UInt16& srcport           );
         
     virtual ~CSocket();
+
+    virtual UInt32 GetBytesReceived( bool resetCounter ) = 0;
+
+    virtual UInt32 GetBytesTransmitted( bool resetCounter ) = 0;
     
     protected:
     

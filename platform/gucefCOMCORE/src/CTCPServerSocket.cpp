@@ -125,15 +125,18 @@ typedef struct STCPServerSockData TTCPServerSockData;
 
 CTCPServerSocket::CTCPServerSocket( CORE::CPulseGenerator& pulseGenerator ,
                                     bool blocking                         )
-        : CSocket()                               
-        , _connections( DEFAULT_MAX_CONNECTIONS ) 
-        , _active( false )                        
-        , _blocking( blocking )                   
-        , m_port( 0 )                             
-        , m_pulseGenerator( &pulseGenerator )
-        , m_maxUpdatesPerCycle( 10 )
-        , m_autoReopenOnError( false )
-        , m_lastListenFailed( false )
+    : CSocket()                               
+    , _connections( DEFAULT_MAX_CONNECTIONS ) 
+    , _active( false )                        
+    , _blocking( blocking )                   
+    , m_port( 0 )                             
+    , _datalock()
+    , _timeout( 0 )
+    , _acount( 0 )
+    , m_pulseGenerator( &pulseGenerator )
+    , m_maxUpdatesPerCycle( 10 )
+    , m_autoReopenOnError( false )
+    , m_lastListenFailed( false )
 {GUCEF_TRACE;
 
     _data = new TTCPServerSockData;
@@ -157,15 +160,18 @@ CTCPServerSocket::CTCPServerSocket( CORE::CPulseGenerator& pulseGenerator ,
 /*-------------------------------------------------------------------------*/
 
 CTCPServerSocket::CTCPServerSocket( bool blocking )
-        : CSocket()                               
-        , _connections( DEFAULT_MAX_CONNECTIONS ) 
-        , _active( false )                        
-        , _blocking( blocking )                   
-        , m_port( 0 )                             
-        , m_pulseGenerator( &CORE::CCoreGlobal::Instance()->GetPulseGenerator() )
-        , m_maxUpdatesPerCycle( 10 )
-        , m_autoReopenOnError( false )
-        , m_lastListenFailed( false )
+    : CSocket()                               
+    , _connections( DEFAULT_MAX_CONNECTIONS ) 
+    , _active( false )                        
+    , _blocking( blocking )                   
+    , m_port( 0 )      
+    , _datalock()                       
+    , _timeout( 0 )
+    , _acount( 0 )
+    , m_pulseGenerator( &CORE::CCoreGlobal::Instance()->GetPulseGenerator() )
+    , m_maxUpdatesPerCycle( 10 )
+    , m_autoReopenOnError( false )
+    , m_lastListenFailed( false )
 {GUCEF_TRACE;
 
     _data = new TTCPServerSockData;
@@ -418,6 +424,9 @@ CTCPServerSocket::AcceptClients( void )
                         eData.hostAddress.SetPort( clientcon->_data->clientaddr.sin_port );
                         eData.connection = clientcon;
                         eData.connectionIndex = i;
+
+                        ++_acount;
+
                         TClientConnectedEventData cloneableEventData( eData );
                         NotifyObservers( ClientConnectedEvent, &cloneableEventData );
 
@@ -596,6 +605,38 @@ CTCPServerSocket::GetActiveCount( void ) const
 
 /*-------------------------------------------------------------------------*/
 
+UInt32
+CTCPServerSocket::GetBytesReceived( bool resetCounter )
+{GUCEF_TRACE;
+
+    UInt32 bytesReceived = 0;
+    _datalock.Lock();
+    for( UInt32 i=0; i<_connections.size(); ++i )
+    {
+        bytesReceived += _connections[ i ]->GetBytesReceived( resetCounter );
+    }
+    _datalock.Unlock();
+    return bytesReceived;
+}
+
+/*-------------------------------------------------------------------------*/
+
+UInt32 
+CTCPServerSocket::GetBytesTransmitted( bool resetCounter )
+{GUCEF_TRACE;
+
+    UInt32 bytesTransmitted = 0;
+    _datalock.Lock();
+    for( UInt32 i=0; i<_connections.size(); ++i )
+    {
+        bytesTransmitted += _connections[ i ]->GetBytesTransmitted( resetCounter );
+    }
+    _datalock.Unlock();
+    return bytesTransmitted;
+}
+
+/*-------------------------------------------------------------------------*/
+
 void
 CTCPServerSocket::Close( void )
 {GUCEF_TRACE;
@@ -662,6 +703,8 @@ CTCPServerSocket::OnClientConnectionClosed( CTCPServerConnection* connection ,
     eData.connectionInfo.connection = connection;
     eData.connectionInfo.connectionIndex = connectionid;
     eData.closedByClient = closedByClient;
+
+    --_acount;
 
     NotifyObservers( ClientDisconnectedEvent, &cloneableEventData );
 }

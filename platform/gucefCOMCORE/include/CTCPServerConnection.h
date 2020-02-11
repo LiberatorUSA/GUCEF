@@ -153,6 +153,10 @@ class GUCEF_COMCORE_EXPORT_CPP CTCPServerConnection : public CTCPConnection
     virtual bool SetUseTcpSendCoalescing( bool coaleseData );
 
     virtual bool GetUseTcpSendCoalescing( void ) const;
+
+    virtual UInt32 GetBytesReceived( bool resetCounter );
+
+    virtual UInt32 GetBytesTransmitted( bool resetCounter );
     
     protected:
     friend class CTCPServerSocket;
@@ -186,6 +190,8 @@ class GUCEF_COMCORE_EXPORT_CPP CTCPServerConnection : public CTCPConnection
     UInt32 m_connectionidx;      
     CTCPServerSocket* m_parentsock;
     bool m_coaleseDataSends;
+    UInt32 m_bytesReceived;
+    UInt32 m_bytesTransmitted;
 
     CTCPServerConnection( void ); /* private default constructor because we need data */                             
 };
