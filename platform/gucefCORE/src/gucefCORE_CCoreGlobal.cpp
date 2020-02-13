@@ -234,10 +234,13 @@ CCoreGlobal::Initialize( void )
      *  Instantiate all the singletons
      *  We start with the log manager so that it is possible to log everything from that point on
      *  if a logger is registered at an early stage
+     *  Next the Config Store because everything that used the global config will need it including perhaps
+     *  other singletons
      */
     m_logManager = new CLogManager();
-    m_metricsClientManager = new CMetricsClientManager();
+    m_configStore = new CConfigStore();                 
     m_notificationIdRegistry = new CNotificationIDRegistry();
+    m_metricsClientManager = new CMetricsClientManager();
 
     /*
      *  Make sure all events are registered from the start
@@ -267,7 +270,6 @@ CCoreGlobal::Initialize( void )
     /*
      *  Instantiate the rest of the singletons
      */
-    m_configStore = new CConfigStore();
     m_dstoreCodecRegistry = new CDStoreCodecRegistry();
     m_urlHandlerRegistry = new CURLHandlerRegistry();
     m_sysConsole = new CSysConsole();

@@ -82,6 +82,11 @@
 #define GUCEF_COMCORE_CCOMCOREGLOBAL_H
 #endif /* GUCEF_COMCORE_CCOMCOREGLOBAL_H ? */
 
+#ifndef GUCEF_COM_CCOMGLOBAL_H
+#include "gucefCOM_CComGlobal.h"
+#define GUCEF_COM_CCOMGLOBAL_H
+#endif /* GUCEF_COM_CCOMGLOBAL_H ? */
+
 #include "UdpViaTcp.h"
 
 /*-------------------------------------------------------------------------//
@@ -181,14 +186,15 @@ ParseParams( const int argc                 ,
 /*
  *      Application entry point
  */
-//GUCEF_OSMAIN_BEGIN
-GUCEF_OSSERVICEMAIN_BEGIN( "UdpViaTcp" )
+GUCEF_OSMAIN_BEGIN
+//GUCEF_OSSERVICEMAIN_BEGIN( "UdpViaTcp" )
 {GUCEF_TRACE;
 
     GUCEF_LOG( CORE::LOGLEVEL_NORMAL, "This tool was compiled on: " __DATE__ " @ " __TIME__ );
 
     CORE::CCoreGlobal::Instance();
     COMCORE::CComCoreGlobal::Instance();
+    COM::CComGlobal::Instance();
 
     // Check for config param first
     CORE::CValueList keyValueList;

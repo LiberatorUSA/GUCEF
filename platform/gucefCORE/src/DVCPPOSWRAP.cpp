@@ -42,6 +42,16 @@
 #define GUCEF_CORE_DVCPPOSWRAP_H
 #endif /* GUCEF_CORE_DVCPPOSWRAP_H ? */
 
+#if ( GUCEF_PLATFORM == GUCEF_PLATFORM_MSWIN )
+
+  #include <WinSock2.h>
+
+#elif ( ( GUCEF_PLATFORM == GUCEF_PLATFORM_LINUX ) || ( GUCEF_PLATFORM == GUCEF_PLATFORM_ANDROID ) )
+
+  #include <unistd.h>
+
+#endif
+
 /*-------------------------------------------------------------------------//
 //                                                                         //
 //      NAMESPACE                                                          //
@@ -143,6 +153,27 @@ GetEnv( const CString& key )
         }
     }
     return GUCEFGetEnv( key.C_String() );
+}
+
+/*-------------------------------------------------------------------------*/
+
+CString
+GetHostname( void )
+{GUCEF_TRACE;
+
+#if ( ( GUCEF_PLATFORM == GUCEF_PLATFORM_MSWIN ) || ( GUCEF_PLATFORM == GUCEF_PLATFORM_LINUX ) || ( GUCEF_PLATFORM == GUCEF_PLATFORM_ANDROID ) )
+
+    // Use the POSIX function gethostname()
+    char nameBuffer[ 256 ];
+    if ( 0 == gethostname( nameBuffer, sizeof(nameBuffer) ) )
+    {
+        nameBuffer[ 255 ] = 0;
+        return nameBuffer;
+    }
+
+#endif    
+    
+    return CString(); 
 }
 
 /*-------------------------------------------------------------------------//

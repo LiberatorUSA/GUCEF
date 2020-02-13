@@ -227,30 +227,54 @@ ResolveVars( const CString& strWithVars )
     }
     while ( idx > -1 );
 
-    idx = resultStr.HasSubstr( "$MODULEDIR$", true );
-    if ( idx > -1 )
+    idx = 0;
+    do
     {
-        CString moduleDir = ModuleDir();
-        CString prefix = resultStr.SubstrToIndex( idx, true );
-        CString postfix = resultStr.CutChars( idx+11, true );
-
-        resultStr = prefix;
-        AppendToPath( resultStr, moduleDir );
-        AppendToPath( resultStr, postfix );
+        idx = resultStr.HasSubstr( "$HOSTNAME$", true );
+        if ( idx > -1 )
+        {
+            CString hostname = GetHostname();
+            CString prefix = resultStr.SubstrToIndex( idx, true );
+            CString postfix = resultStr.CutChars( idx+10, true );
+            resultStr = prefix + hostname + postfix;
+        }
     }
+    while ( idx > -1 );
 
-    idx = resultStr.HasSubstr( "$CURWORKDIR$", true );
-    if ( idx > -1 )
+    idx = 0;
+    do
     {
-        CString workingDir = CurrentWorkingDir();
-        CString prefix = resultStr.SubstrToIndex( idx, true );
-        CString postfix = resultStr.CutChars( idx+12, true );
+        idx = resultStr.HasSubstr( "$MODULEDIR$", true );
+        if ( idx > -1 )
+        {
+            CString moduleDir = ModuleDir();
+            CString prefix = resultStr.SubstrToIndex( idx, true );
+            CString postfix = resultStr.CutChars( idx+11, true );
 
-        resultStr = prefix;
-        AppendToPath( resultStr, workingDir );
-        AppendToPath( resultStr, postfix );
+            resultStr = prefix;
+            AppendToPath( resultStr, moduleDir );
+            AppendToPath( resultStr, postfix );
+        }
     }
+    while ( idx > -1 );
 
+    idx = 0;
+    do
+    {
+        idx = resultStr.HasSubstr( "$CURWORKDIR$", true );
+        if ( idx > -1 )
+        {
+            CString workingDir = CurrentWorkingDir();
+            CString prefix = resultStr.SubstrToIndex( idx, true );
+            CString postfix = resultStr.CutChars( idx+12, true );
+
+            resultStr = prefix;
+            AppendToPath( resultStr, workingDir );
+            AppendToPath( resultStr, postfix );
+        }
+    }
+    while ( idx > -1 );
+    
     return resultStr;
 }
 

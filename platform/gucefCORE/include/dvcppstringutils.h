@@ -341,6 +341,11 @@ CreateDirs( const CString& path );
 GUCEF_CORE_PUBLIC_CPP bool
 IsAbsolutePath( const CString& path );
 
+/*-------------------------------------------------------------------------*/
+
+GUCEF_CORE_PUBLIC_CPP CString
+GetHostname( void );
+
 /*-------------------------------------------------------------------------//
 //                                                                         //
 //      NAMESPACE                                                          //
