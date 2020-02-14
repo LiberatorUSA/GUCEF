@@ -227,7 +227,10 @@ CIniParser::LoadFrom( const CDataNode& rootNode )
         // we will have to perform a best effort translation. Not finding a section header 
         // in such a case can be mitigated by creating a default section
         TIniSection defaultSection;
-        defaultSection.sectionName = "default";
+        if ( !rootNode.GetName().IsNULLOrEmpty() )
+            defaultSection.sectionName = rootNode.GetName();
+        else
+            defaultSection.sectionName = "default";
         m_iniData.push_back( defaultSection );
         TIniSection* iniSection = &(*m_iniData.rbegin());
         
