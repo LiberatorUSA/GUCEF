@@ -27,11 +27,21 @@
 #define GUCEF_CORE_CTASKMANAGER_H
 #endif /* GUCEF_CORE_CTASKMANAGER_H */
 
+#ifndef GUCEF_COM_CDUMMYHTTPSERVERRESOURCE_H
+#include "gucefCOM_CDummyHTTPServerResource.h"
+#define GUCEF_COM_CDUMMYHTTPSERVERRESOURCE_H
+#endif /* GUCEF_COM_CDUMMYHTTPSERVERRESOURCE_H ? */
+
 #include "udp2redis.h"
 
 #if ( GUCEF_PLATFORM == GUCEF_PLATFORM_MSWIN )
     #include <winsock2.h>
 #endif
+
+#ifndef GUCEF_CORE_METRICSMACROS_H
+#include "gucefCORE_MetricsMacros.h"
+#define GUCEF_CORE_METRICSMACROS_H
+#endif /* GUCEF_CORE_METRICSMACROS_H ? */
 
 /*-------------------------------------------------------------------------//
 //                                                                         //
@@ -53,6 +63,9 @@ Udp2RedisChannel::Udp2RedisChannel()
     , m_redisReadFlag( false )
     , m_redisWriteFlag( false )
     , m_redisTimeoutFlag( false )
+    , m_metricsTimer( GUCEF_NULL )
+    , m_metrics()
+
 {GUCEF_TRACE;
 
     memset( &m_redisOptions, 0, sizeof(m_redisOptions) );
@@ -74,6 +87,8 @@ Udp2RedisChannel::Udp2RedisChannel( const Udp2RedisChannel& src )
     , m_redisReadFlag( src.m_redisReadFlag )
     , m_redisWriteFlag( src.m_redisWriteFlag )
     , m_redisTimeoutFlag( src.m_redisTimeoutFlag )
+    , m_metricsTimer( GUCEF_NULL )
+    , m_metrics()
 {GUCEF_TRACE;
 
 }
@@ -85,6 +100,9 @@ Udp2RedisChannel::~Udp2RedisChannel()
 
     delete m_redisReconnectTimer;
     m_redisReconnectTimer = GUCEF_NULL;
+
+    delete m_metricsTimer;
+    m_metricsTimer = GUCEF_NULL;
 
     delete m_redisOptions.timeout;
     m_redisOptions.timeout = GUCEF_NULL;
@@ -120,6 +138,10 @@ Udp2RedisChannel::RegisterEventHandlers( void )
     SubscribeTo( m_redisReconnectTimer          ,
                  CORE::CTimer::TimerUpdateEvent ,
                  callback5                      );
+    TEventCallback callback6( this, &Udp2RedisChannel::OnMetricsTimerCycle );
+    SubscribeTo( m_metricsTimer                 ,
+                 CORE::CTimer::TimerUpdateEvent ,
+                 callback6                      );
 }
 
 /*-------------------------------------------------------------------------*/
@@ -145,6 +167,28 @@ Udp2RedisChannel::GetType( void ) const
 {GUCEF_TRACE;
 
     return "Udp2RedisChannel";
+}
+
+/*-------------------------------------------------------------------------*/
+
+void
+Udp2RedisChannel::OnMetricsTimerCycle( CORE::CNotifier* notifier    ,
+                                       const CORE::CEvent& eventId  ,
+                                       CORE::CICloneable* eventData )
+{GUCEF_TRACE;
+
+    m_metrics.udpBytesReceived = m_udpSocket->GetBytesReceived( true );
+    m_metrics.udpMessagesReceived = m_udpSocket->GetNrOfDataReceivedEvents( true );
+    m_metrics.redisTransmitOverflowQueueSize = (CORE::UInt32) m_redisMsgQueueOverflowQueue.size();
+}
+
+/*-------------------------------------------------------------------------*/
+
+const Udp2RedisChannel::ChannelMetrics& 
+Udp2RedisChannel::GetMetrics( void ) const
+{GUCEF_TRACE;
+
+    return m_metrics;
 }
 
 /*-------------------------------------------------------------------------*/
@@ -561,8 +605,9 @@ bool
 Udp2RedisChannel::OnTaskStart( CORE::CICloneable* taskData )
 {GUCEF_TRACE;
 
-	m_udpSocket = new GUCEF::COMCORE::CUDPSocket( *GetPulseGenerator(), false );
-    m_redisReconnectTimer = new GUCEF::CORE::CTimer( *GetPulseGenerator(), 10 );
+	m_udpSocket = new COMCORE::CUDPSocket( *GetPulseGenerator(), false );
+    m_redisReconnectTimer = new CORE::CTimer( *GetPulseGenerator(), 10 );
+    m_metricsTimer = new CORE::CTimer( *GetPulseGenerator(), 1000 );
         
     RegisterEventHandlers();
 
@@ -680,7 +725,8 @@ RestApiUdp2RedisConfigResource::Serialize( CORE::CDataNode& output             ,
 /*-------------------------------------------------------------------------*/
 
 Udp2Redis::Udp2Redis( void )
-    : m_udpStartPort()
+    : CORE::CObserver()
+    , m_udpStartPort()
     , m_channelCount()
     , m_redisStreamStartChannelID()
     , m_redisStreamName()
@@ -691,8 +737,14 @@ Udp2Redis::Udp2Redis( void )
     , m_httpRouter()
     , m_appConfig()
     , m_globalConfig()
+    , m_metricsTimer()
+    , m_transmitMetrics( true )
 {GUCEF_TRACE;
     
+    TEventCallback callback1( this, &Udp2Redis::OnMetricsTimerCycle );
+    SubscribeTo( &m_metricsTimer                ,
+                 CORE::CTimer::TimerUpdateEvent ,
+                 callback1                      );
 }
 
 /*-------------------------------------------------------------------------*/
@@ -729,10 +781,13 @@ Udp2Redis::Start( void )
         ++i;
     }
 
-    m_httpRouter.SetResourceMapping( "/info", RestApiUdp2RedisInfoResource::THTTPServerResourcePtr( new RestApiUdp2RedisInfoResource( this ) )  );
-    m_httpRouter.SetResourceMapping( "/config/appargs", RestApiUdp2RedisInfoResource::THTTPServerResourcePtr( new RestApiUdp2RedisConfigResource( this, true ) )  );
-    m_httpRouter.SetResourceMapping( "/config", RestApiUdp2RedisInfoResource::THTTPServerResourcePtr( new RestApiUdp2RedisConfigResource( this, false ) )  );
-    m_httpServer.GetRouterController()->AddRouterMapping( &m_httpRouter, "", "" ); 
+    if ( m_transmitMetrics )
+    {
+        m_metricsTimer.SetInterval( 1000 );
+        m_metricsTimer.SetEnabled( true );
+    }
+
+    GUCEF_LOG( CORE::LOGLEVEL_IMPORTANT, "Udp2Redis: Opening REST API" );
     return m_httpServer.Listen();
 }
 
@@ -743,18 +798,50 @@ Udp2Redis::LoadConfig( const CORE::CValueList& appConfig   ,
                        const CORE::CDataNode& globalConfig )
 {GUCEF_TRACE;
 
-    m_udpStartPort = CORE::StringToUInt16( appConfig.GetValueAlways( "UdpStartPort", "20000" ) );
-    m_channelCount = CORE::StringToUInt16( appConfig.GetValueAlways( "ChannelCount", "1" ) );
-    m_redisStreamStartChannelID = CORE::StringToInt32( appConfig.GetValueAlways( "RedisStreamStartChannelID", "1" ) );
-    m_redisStreamName = appConfig.GetValueAlways( "RedisStreamName", "udp-ingress-ch{channelID}" );
-    m_redisHost = appConfig.GetValueAlways( "RedisHost", "127.0.0.1" );
-    m_redisPort = CORE::StringToUInt16( appConfig.GetValueAlways( "RedisPort", "6379" ) );
+    m_transmitMetrics = CORE::StringToBool( appConfig.GetValueAlways( "TransmitMetrics", "true" ) );
     
-    m_httpServer.SetPort( CORE::StringToUInt16( appConfig.GetValueAlways( "RestApiPort", "10000" ) ) );
+    m_udpStartPort = CORE::StringToUInt16( CORE::ResolveVars( appConfig.GetValueAlways( "UdpStartPort", "20000" ) ) );
+    m_channelCount = CORE::StringToUInt16( CORE::ResolveVars( appConfig.GetValueAlways( "ChannelCount", "1" ) ) );
+    m_redisStreamStartChannelID = CORE::StringToInt32( CORE::ResolveVars(  appConfig.GetValueAlways( "RedisStreamStartChannelID", "1" ) ) );
+    m_redisStreamName = CORE::ResolveVars( appConfig.GetValueAlways( "RedisStreamName", "udp-ingress-ch{channelID}" ) );
+    m_redisHost = CORE::ResolveVars( appConfig.GetValueAlways( "RedisHost", "127.0.0.1" ) );
+    m_redisPort = CORE::StringToUInt16( CORE::ResolveVars( appConfig.GetValueAlways( "RedisPort", "6379" ) ) );
 
     m_appConfig = appConfig;
     m_globalConfig.Copy( globalConfig );
+
+    m_httpServer.SetPort( CORE::StringToUInt16( CORE::ResolveVars( appConfig.GetValueAlways( "RestApiPort", "10000" ) ) ) );
+    
+    m_httpRouter.SetResourceMapping( "/info", RestApiUdp2RedisInfoResource::THTTPServerResourcePtr( new RestApiUdp2RedisInfoResource( this ) )  );
+    m_httpRouter.SetResourceMapping( "/config/appargs", RestApiUdp2RedisInfoResource::THTTPServerResourcePtr( new RestApiUdp2RedisConfigResource( this, true ) )  );
+    m_httpRouter.SetResourceMapping( "/config", RestApiUdp2RedisInfoResource::THTTPServerResourcePtr( new RestApiUdp2RedisConfigResource( this, false ) )  );    
+    m_httpRouter.SetResourceMapping(  appConfig.GetValueAlways( "RestBasicHealthUri", "/health/basic" ), RestApiUdp2RedisInfoResource::THTTPServerResourcePtr( new COM::CDummyHTTPServerResource() )  );
+    
+    m_httpServer.GetRouterController()->AddRouterMapping( &m_httpRouter, "", "" );
     return true;
+}
+
+/*-------------------------------------------------------------------------*/
+
+void
+Udp2Redis::OnMetricsTimerCycle( CORE::CNotifier* notifier    ,
+                                const CORE::CEvent& eventId  ,
+                                CORE::CICloneable* eventData )
+{GUCEF_TRACE;
+
+    CORE::Int32 channelId = m_redisStreamStartChannelID;
+    auto& i = m_channels.begin();
+    while ( i != m_channels.end() )
+    {
+        const Udp2RedisChannel::ChannelMetrics& metrics = (*i).GetMetrics();
+        CORE::CString metricPrefix = "udp2redis.ch" + CORE::Int32ToString( channelId ) + ".";
+
+        GUCEF_METRIC_GAUGE( metricPrefix + "redisMessagesTransmitted", metrics.redisMessagesTransmitted, 1.0f );
+        GUCEF_METRIC_GAUGE( metricPrefix + "redisTransmitOverflowQueueSize", metrics.redisTransmitOverflowQueueSize, 1.0f );
+        GUCEF_METRIC_GAUGE( metricPrefix + "udpBytesReceived", metrics.udpBytesReceived, 1.0f );
+        GUCEF_METRIC_GAUGE( metricPrefix + "udpMessagesReceived", metrics.udpMessagesReceived, 1.0f );
+        ++i;
+    }
 }
 
 /*-------------------------------------------------------------------------*/

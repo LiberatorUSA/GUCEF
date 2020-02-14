@@ -718,7 +718,7 @@ UdpViaTcp::LoadConfig( const CORE::CValueList& appConfig   ,
     m_httpRouter.SetResourceMapping( "/config", RestApiUdpViaTcpInfoResource::THTTPServerResourcePtr( new RestApiUdpViaTcpConfigResource( this, false ) )  );
     m_httpRouter.SetResourceMapping(  appConfig.GetValueAlways( "RestBasicHealthUri", "/health/basic" ), RestApiUdpViaTcpInfoResource::THTTPServerResourcePtr( new COM::CDummyHTTPServerResource() )  );
     
-    m_httpServer.GetRouterController()->AddRouterMapping( &m_httpRouter, "", "" ); 
+    m_httpServer.GetRouterController()->AddRouterMapping( &m_httpRouter, "", "" );
 
     m_appConfig = appConfig;
     m_globalConfig.Copy( globalConfig );

@@ -109,6 +109,18 @@ class Udp2RedisChannel : public CORE::CTaskConsumer
                      CORE::UInt16 redisPort                 ,
                      const CORE::CString& channelStreamName );
 
+    class ChannelMetrics
+    {
+        public:
+
+        CORE::UInt32 udpBytesReceived;
+        CORE::UInt32 udpMessagesReceived;
+        CORE::UInt32 redisMessagesTransmitted;
+        CORE::UInt32 redisTransmitOverflowQueueSize;
+    };
+
+    const ChannelMetrics& GetMetrics( void ) const;
+    
     private:
 
     void
@@ -135,6 +147,12 @@ class Udp2RedisChannel : public CORE::CTaskConsumer
     OnRedisReconnectTimer( CORE::CNotifier* notifier   ,
                            const CORE::CEvent& eventID ,
                            CORE::CICloneable* evenData );
+
+    void
+    OnMetricsTimerCycle( CORE::CNotifier* notifier    ,
+                         const CORE::CEvent& eventId  ,
+                         CORE::CICloneable* eventData );
+
     private:
 
     void RegisterEventHandlers( void );
@@ -190,7 +208,7 @@ class Udp2RedisChannel : public CORE::CTaskConsumer
     CORE::CString m_redisStreamSendCmd;
     CORE::CString m_redisHost;
     CORE::UInt16 m_redisPort;
-    CORE::CTimer *m_redisReconnectTimer;
+    CORE::CTimer* m_redisReconnectTimer;
     redisAsyncContext* m_redisContext;
     GUCEF::COMCORE::CUDPSocket* m_udpSocket;
     TDynamicBufferQueue m_redisMsgQueueOverflowQueue;
@@ -198,6 +216,8 @@ class Udp2RedisChannel : public CORE::CTaskConsumer
     bool m_redisReadFlag;
     bool m_redisWriteFlag;
     bool m_redisTimeoutFlag;
+    CORE::CTimer* m_metricsTimer;
+    ChannelMetrics m_metrics;
 };
 
 /*-------------------------------------------------------------------------*/
@@ -239,7 +259,7 @@ class RestApiUdp2RedisConfigResource : public COM::CCodecBasedHTTPServerResource
 
 /*-------------------------------------------------------------------------*/
 
-class Udp2Redis
+class Udp2Redis : public CORE::CObserver
 {
     public:
 
@@ -256,6 +276,15 @@ class Udp2Redis
     const CORE::CDataNode& GetGlobalConfig( void ) const;
 
     private:
+    
+    typedef CORE::CTEventHandlerFunctor< Udp2Redis > TEventCallback;
+    
+    void
+    OnMetricsTimerCycle( CORE::CNotifier* notifier    ,
+                         const CORE::CEvent& eventId  ,
+                         CORE::CICloneable* eventData );    
+
+    private:
 
     CORE::UInt16 m_udpStartPort;
     CORE::UInt16 m_channelCount;
@@ -268,4 +297,7 @@ class Udp2Redis
     COM::CDefaultHTTPServerRouter m_httpRouter;
     CORE::CValueList m_appConfig;
     CORE::CDataNode m_globalConfig;
+
+    CORE::CTimer m_metricsTimer;
+    bool m_transmitMetrics;
 };

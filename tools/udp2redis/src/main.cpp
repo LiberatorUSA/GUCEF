@@ -82,6 +82,11 @@
 #define GUCEF_COMCORE_CCOMCOREGLOBAL_H
 #endif /* GUCEF_COMCORE_CCOMCOREGLOBAL_H ? */
 
+#ifndef GUCEF_COM_CCOMGLOBAL_H
+#include "gucefCOM_CComGlobal.h"
+#define GUCEF_COM_CCOMGLOBAL_H
+#endif /* GUCEF_COM_CCOMGLOBAL_H ? */
+
 #include "udp2redis.h"
 
 /*-------------------------------------------------------------------------//
@@ -189,6 +194,7 @@ GUCEF_OSMAIN_BEGIN
 
     CORE::CCoreGlobal::Instance();
     COMCORE::CComCoreGlobal::Instance();
+    COM::CComGlobal::Instance();
 
     // Check for config param first
     CORE::CValueList keyValueList;
