@@ -219,7 +219,21 @@ bool
 CIniParser::LoadFrom( const CDataNode& rootNode )
 {GUCEF_TRACE;
 
-    return LoadFrom( rootNode, NULL );
+    bool foundASection = false;
+    bool loadSuccess = LoadFrom( rootNode, GUCEF_NULL, foundASection );
+    if ( !foundASection && loadSuccess )
+    {
+        // If this parser is used to decode data that is not really following ini rules
+        // we will have to perform a best effort translation. Not finding a section header 
+        // in such a case can be mitigated by creating a default section
+        TIniSection defaultSection;
+        defaultSection.sectionName = "default";
+        m_iniData.push_back( defaultSection );
+        TIniSection* iniSection = &(*m_iniData.rbegin());
+        
+        loadSuccess = LoadFrom( rootNode, iniSection, foundASection );
+    }
+    return loadSuccess;
 }
 
 /*-------------------------------------------------------------------------*/
@@ -247,7 +261,8 @@ CIniParser::HasChildWithValueOrAttribs( const CDataNode& node )
 
 bool
 CIniParser::LoadFrom( const CDataNode& node       ,
-                      TIniSection* currentSection )
+                      TIniSection* currentSection ,
+                      bool& foundASection         )
 {GUCEF_TRACE;
 
     TIniSection* iniSection = currentSection;
@@ -271,6 +286,8 @@ CIniParser::LoadFrom( const CDataNode& node       ,
             m_iniData.push_back( dummySection );
             iniSection = &(*m_iniData.rbegin());
             iniSection->sectionName = sectionName;
+
+            foundASection = true;
         }
     }
     else
@@ -302,7 +319,7 @@ CIniParser::LoadFrom( const CDataNode& node       ,
     CDataNode::const_iterator n = node.Begin();
     while ( n != node.End() )
     {
-        if ( !LoadFrom( *(*n), iniSection ) )
+        if ( !LoadFrom( *(*n), iniSection, foundASection ) )
         {
             return false;
         }

@@ -110,7 +110,8 @@ class GUCEF_CORE_PUBLIC_CPP CIniParser
     private:
 
     bool LoadFrom( const CDataNode& node       ,
-                   TIniSection* currentSection );
+                   TIniSection* currentSection ,
+                   bool& foundASection         );
     
     static bool IsCharIndexWithinQuotes( const CString& testString  , 
                                          UInt32 charIndex           ,

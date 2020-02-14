@@ -123,6 +123,7 @@ CCodecBasedHTTPServerResource::InitCodecLinks( void )
     CORE::CDStoreCodecRegistry::TDStoreCodecPtr codec;
     if ( codecRegistry.TryLookup( "INI", codec, false ) )
     {
+        m_serializeRepToCodecMap[ MimeTypeAny ] = codec;
         m_serializeRepToCodecMap[ MimeTypeIni ] = codec;
         m_deserializeRepToCodecMap[ MimeTypeIni ] = codec;
         m_serializeRepToCodecMap[ MimeTypeIniProper ] = codec;
