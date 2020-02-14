@@ -106,6 +106,7 @@ CUDPSocket::CUDPSocket( CORE::CPulseGenerator& pulseGenerator ,
     , m_allowBroadcast( false )
     , m_bytesReceived( 0 )
     , m_bytesTransmitted( 0 )
+    , m_nrOfDataReceivedEvents( 0 )
 {GUCEF_TRACE;
 
     RegisterEvents();
@@ -142,6 +143,7 @@ CUDPSocket::CUDPSocket( bool blocking )
     , m_allowBroadcast( false )
     , m_bytesReceived( 0 )
     , m_bytesTransmitted( 0 )
+    , m_nrOfDataReceivedEvents( 0 )
 {GUCEF_TRACE;
 
     RegisterEvents();
@@ -469,6 +471,22 @@ CUDPSocket::GetMulticastTTL( void ) const
 /*-------------------------------------------------------------------------*/
 
 UInt32
+CUDPSocket::GetNrOfDataReceivedEvents( bool resetCounter )
+{GUCEF_TRACE;
+
+    if ( resetCounter )
+    {
+        UInt32 nrOfDataReceivedEvents = m_nrOfDataReceivedEvents;
+        m_nrOfDataReceivedEvents = 0;
+        return nrOfDataReceivedEvents;
+    }
+    else
+        return m_nrOfDataReceivedEvents;
+}
+
+/*-------------------------------------------------------------------------*/
+
+UInt32
 CUDPSocket::GetBytesReceived( bool resetCounter )
 {GUCEF_TRACE;
 
@@ -564,6 +582,8 @@ CUDPSocket::Recieve( CIPAddress& src ,
     infoStruct.sourceAddress.SetPort( remote.sin_port );
     infoStruct.sourceAddress.SetAddress( remote.sin_addr.s_addr );
     infoStruct.dataBuffer.LinkTo( &m_buffer );
+    
+    ++m_nrOfDataReceivedEvents;
     
     NotifyObservers( UDPPacketRecievedEvent, &eventData );
 
