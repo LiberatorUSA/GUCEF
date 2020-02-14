@@ -104,19 +104,35 @@ class Udp2RedisChannel : public CORE::CTaskConsumer
 
     virtual CORE::CString GetType( void ) const;
 
-    bool LoadConfig( CORE::UInt16 udpPort                   ,
-                     const CORE::CString& redisHost         ,
-                     CORE::UInt16 redisPort                 ,
-                     const CORE::CString& channelStreamName );
+    class ChannelSettings
+    {
+        public:
+
+        typedef std::vector< COMCORE::CHostAddress > HostAddressVector;
+
+        ChannelSettings( void );
+        ChannelSettings( const ChannelSettings& src );
+        ChannelSettings& operator=( const ChannelSettings& src );
+
+        COMCORE::CHostAddress redisAddress;
+        CORE::CString channelStreamName;
+        COMCORE::CHostAddress udpInterface;
+        HostAddressVector udpMulticastToJoin;
+    };
+
+    bool LoadConfig( const ChannelSettings& channelSettings );
 
     class ChannelMetrics
     {
         public:
 
+        ChannelMetrics( void );
+
         CORE::UInt32 udpBytesReceived;
         CORE::UInt32 udpMessagesReceived;
         CORE::UInt32 redisMessagesTransmitted;
         CORE::UInt32 redisTransmitOverflowQueueSize;
+        CORE::UInt32 redisErrorReplies;
     };
 
     const ChannelMetrics& GetMetrics( void ) const;
@@ -152,6 +168,8 @@ class Udp2RedisChannel : public CORE::CTaskConsumer
     OnMetricsTimerCycle( CORE::CNotifier* notifier    ,
                          const CORE::CEvent& eventId  ,
                          CORE::CICloneable* eventData );
+
+    CORE::UInt32 GetRedisErrorRepliesCounter( bool resetCounter );
 
     private:
 
@@ -203,11 +221,8 @@ class Udp2RedisChannel : public CORE::CTaskConsumer
     typedef std::deque< CORE::CDynamicBuffer > TDynamicBufferQueue;
     typedef std::vector< redisAsyncContext* > redisAsyncContextVector;
 
-    CORE::UInt16 m_udpPort;
-    CORE::CString m_redisStreamName;
+    ChannelSettings m_channelSettings;   
     CORE::CString m_redisStreamSendCmd;
-    CORE::CString m_redisHost;
-    CORE::UInt16 m_redisPort;
     CORE::CTimer* m_redisReconnectTimer;
     redisAsyncContext* m_redisContext;
     GUCEF::COMCORE::CUDPSocket* m_udpSocket;
@@ -218,6 +233,7 @@ class Udp2RedisChannel : public CORE::CTaskConsumer
     bool m_redisTimeoutFlag;
     CORE::CTimer* m_metricsTimer;
     ChannelMetrics m_metrics;
+    CORE::UInt32 m_redisErrorReplies;
 };
 
 /*-------------------------------------------------------------------------*/
@@ -286,13 +302,17 @@ class Udp2Redis : public CORE::CObserver
 
     private:
 
+    typedef std::map< CORE::Int32, Udp2RedisChannel::ChannelSettings > ChannelSettingsMap;
+    typedef std::vector< Udp2RedisChannel > Udp2RedisChannelVector;
+    
     CORE::UInt16 m_udpStartPort;
     CORE::UInt16 m_channelCount;
     CORE::Int32 m_redisStreamStartChannelID;
     CORE::CString m_redisStreamName;
     CORE::CString m_redisHost;
     CORE::UInt16 m_redisPort;
-    std::vector< Udp2RedisChannel > m_channels;
+    Udp2RedisChannelVector m_channels;
+    ChannelSettingsMap m_channelSettings;
     COM::CHTTPServer m_httpServer;
     COM::CDefaultHTTPServerRouter m_httpRouter;
     CORE::CValueList m_appConfig;

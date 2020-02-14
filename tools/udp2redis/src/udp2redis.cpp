@@ -51,10 +51,7 @@
 
 Udp2RedisChannel::Udp2RedisChannel()
     : CORE::CTaskConsumer()
-    , m_udpPort( 0 )
-    , m_redisStreamName()
-    , m_redisHost()
-    , m_redisPort()
+    , m_channelSettings()
     , m_redisReconnectTimer( GUCEF_NULL )
     , m_redisContext( GUCEF_NULL )
     , m_udpSocket( GUCEF_NULL )
@@ -65,6 +62,7 @@ Udp2RedisChannel::Udp2RedisChannel()
     , m_redisTimeoutFlag( false )
     , m_metricsTimer( GUCEF_NULL )
     , m_metrics()
+    , m_redisErrorReplies( 0 )
 
 {GUCEF_TRACE;
 
@@ -75,10 +73,7 @@ Udp2RedisChannel::Udp2RedisChannel()
 
 Udp2RedisChannel::Udp2RedisChannel( const Udp2RedisChannel& src )
     : CORE::CTaskConsumer()
-    , m_udpPort( src.m_udpPort )
-    , m_redisStreamName( src.m_redisStreamName )
-    , m_redisHost( src.m_redisHost )
-    , m_redisPort( src.m_redisPort )
+    , m_channelSettings( src.m_channelSettings )
     , m_redisReconnectTimer( GUCEF_NULL )
     , m_redisContext( src.m_redisContext )
     , m_udpSocket( GUCEF_NULL )
@@ -89,6 +84,7 @@ Udp2RedisChannel::Udp2RedisChannel( const Udp2RedisChannel& src )
     , m_redisTimeoutFlag( src.m_redisTimeoutFlag )
     , m_metricsTimer( GUCEF_NULL )
     , m_metrics()
+    , m_redisErrorReplies( 0 )
 {GUCEF_TRACE;
 
 }
@@ -146,18 +142,66 @@ Udp2RedisChannel::RegisterEventHandlers( void )
 
 /*-------------------------------------------------------------------------*/
 
-bool 
-Udp2RedisChannel::LoadConfig( CORE::UInt16 udpPort                   ,
-                              const CORE::CString& redisHost         ,
-                              CORE::UInt16 redisPort                 ,
-                              const CORE::CString& channelStreamName )
+Udp2RedisChannel::ChannelSettings::ChannelSettings( void )
+    : redisAddress()
+    , channelStreamName()
+    , udpInterface()
+    , udpMulticastToJoin()
 {GUCEF_TRACE;
 
-    m_udpPort = udpPort;
-    m_redisStreamName = channelStreamName;
-    m_redisHost = redisHost;
-    m_redisPort = redisPort;
+}
+
+/*-------------------------------------------------------------------------*/
+
+Udp2RedisChannel::ChannelSettings::ChannelSettings( const ChannelSettings& src )
+    : redisAddress( src.redisAddress )
+    , channelStreamName( src.channelStreamName )
+    , udpInterface( src.udpInterface )
+    , udpMulticastToJoin( src.udpMulticastToJoin )
+{GUCEF_TRACE;
+
+}
+
+/*-------------------------------------------------------------------------*/
+
+Udp2RedisChannel::ChannelSettings& 
+Udp2RedisChannel::ChannelSettings::operator=( const ChannelSettings& src )
+{GUCEF_TRACE;
+
+    if ( this != &src )
+    {
+        redisAddress = src.redisAddress;
+        channelStreamName = src.channelStreamName;
+        udpInterface = src.udpInterface;
+        udpMulticastToJoin = src.udpMulticastToJoin;
+    }
+    return *this;
+}
+
+/*-------------------------------------------------------------------------*/
+
+bool 
+Udp2RedisChannel::LoadConfig( const ChannelSettings& channelSettings )
+{GUCEF_TRACE;
+
+    m_channelSettings = channelSettings;
     return true;
+}
+
+/*-------------------------------------------------------------------------*/
+
+CORE::UInt32 
+Udp2RedisChannel::GetRedisErrorRepliesCounter( bool resetCounter )
+{GUCEF_TRACE;
+
+    if ( resetCounter )
+    {
+        CORE::UInt32 redisErrorReplies = m_redisErrorReplies;
+        m_redisErrorReplies = 0;
+        return m_redisErrorReplies;
+    }
+    else
+        return m_redisErrorReplies;
 }
 
 /*-------------------------------------------------------------------------*/
@@ -171,6 +215,18 @@ Udp2RedisChannel::GetType( void ) const
 
 /*-------------------------------------------------------------------------*/
 
+Udp2RedisChannel::ChannelMetrics::ChannelMetrics( void )
+    : udpBytesReceived( 0 )
+    , udpMessagesReceived( 0 )
+    , redisMessagesTransmitted( 0 )
+    , redisTransmitOverflowQueueSize( 0 )
+    , redisErrorReplies( 0 )
+{GUCEF_TRACE;
+
+}
+
+/*-------------------------------------------------------------------------*/
+
 void
 Udp2RedisChannel::OnMetricsTimerCycle( CORE::CNotifier* notifier    ,
                                        const CORE::CEvent& eventId  ,
@@ -180,6 +236,7 @@ Udp2RedisChannel::OnMetricsTimerCycle( CORE::CNotifier* notifier    ,
     m_metrics.udpBytesReceived = m_udpSocket->GetBytesReceived( true );
     m_metrics.udpMessagesReceived = m_udpSocket->GetNrOfDataReceivedEvents( true );
     m_metrics.redisTransmitOverflowQueueSize = (CORE::UInt32) m_redisMsgQueueOverflowQueue.size();
+    m_metrics.redisErrorReplies = GetRedisErrorRepliesCounter( true );
 }
 
 /*-------------------------------------------------------------------------*/
@@ -333,6 +390,8 @@ Udp2RedisChannel::OnRedisASyncReply( redisAsyncContext* context ,
         }
         case REDIS_REPLY_ERROR:
         {
+            ++m_redisErrorReplies;
+
             GUCEF_ERROR_LOG( CORE::LOGLEVEL_IMPORTANT, "Udp2RedisChannel:OnRedisASyncReply(" + CORE::PointerToString( context ) + 
                     "): Redis replied with error: \"" + CORE::CString( reply->str ) + "\"" );
             break;
@@ -552,13 +611,13 @@ Udp2RedisChannel::RedisConnect( void )
     m_redisOptions.timeout = GUCEF_NULL;
 
     memset( &m_redisOptions, 0, sizeof(m_redisOptions) );
-    REDIS_OPTIONS_SET_TCP( &m_redisOptions, m_redisHost.C_String(), m_redisPort );
+    REDIS_OPTIONS_SET_TCP( &m_redisOptions, m_channelSettings.redisAddress.GetHostname().C_String(), m_channelSettings.redisAddress.GetPortInHostByteOrder() );
     struct timeval* timeoutSetting = new struct timeval;
     timeoutSetting->tv_sec = 10;
     timeoutSetting->tv_usec = 0;
     m_redisOptions.timeout = timeoutSetting;
 
-    GUCEF_LOG( CORE::LOGLEVEL_NORMAL, "Udp2RedisChannel:RedisConnect: Connecting to Redis on " + m_redisHost + ":" + CORE::UInt16ToString( m_redisPort ) );
+    GUCEF_LOG( CORE::LOGLEVEL_NORMAL, "Udp2RedisChannel:RedisConnect: Connecting to Redis on " + m_channelSettings.redisAddress.AddressAndPortAsString() );
     
     redisAsyncContext* rContext = redisAsyncConnectWithOptions( &m_redisOptions );
 	if ( rContext == GUCEF_NULL ) 
@@ -588,7 +647,7 @@ Udp2RedisChannel::RedisConnect( void )
 	}
 
     // Set the stream publish command formatting here which will remain constant for this session
-    m_redisStreamSendCmd = "XADD " + m_redisStreamName + " * UDP %b";
+    m_redisStreamSendCmd = "XADD " + m_channelSettings.channelStreamName + " * UDP %b";
 
     redisAsyncSetConnectCallback( rContext, &OnRedisASyncConnect );
     redisAsyncSetDisconnectCallback( rContext, &OnRedisASyncDisconnect );
@@ -616,11 +675,31 @@ Udp2RedisChannel::OnTaskStart( CORE::CICloneable* taskData )
     RedisConnect();
     m_udpSocket->SetMaxUpdatesPerCycle( 10 );
     m_udpSocket->SetAutoReOpenOnError( true );    
-    if ( !m_udpSocket->Open( m_udpPort ) )
+    if ( m_udpSocket->Open( m_channelSettings.udpInterface ) )
     {
-		GUCEF_ERROR_LOG( CORE::LOGLEVEL_IMPORTANT, "Udp2RedisChannel:OnTaskStart: Failed to open UDP socket on port " + CORE::UInt16ToString( m_udpPort ) );
+		GUCEF_LOG( CORE::LOGLEVEL_NORMAL, "Udp2RedisChannel:OnTaskStart: Successfully opened UDP socket on " + m_channelSettings.udpInterface.AddressAndPortAsString() );
+        
+        ChannelSettings::HostAddressVector::iterator m = m_channelSettings.udpMulticastToJoin.begin();
+        while ( m != m_channelSettings.udpMulticastToJoin.end() )
+        {
+            const COMCORE::CHostAddress& multicastAddr = (*m);
+            if ( m_udpSocket->Join( multicastAddr ) )
+            {
+                GUCEF_LOG( CORE::LOGLEVEL_NORMAL, "Udp2RedisChannel:OnTaskStart: Successfully to joined multicast " + multicastAddr.AddressAndPortAsString() + 
+                        " for UDP socket on " + m_channelSettings.udpInterface.AddressAndPortAsString() );
+            }
+            else
+            {
+                GUCEF_ERROR_LOG( CORE::LOGLEVEL_IMPORTANT, "Udp2RedisChannel:OnTaskStart: Failed to join multicast " + multicastAddr.AddressAndPortAsString() + 
+                        " for UDP socket on " + m_channelSettings.udpInterface.AddressAndPortAsString() );
+            }
+            ++m;
+        }
     }
-    GUCEF_LOG( CORE::LOGLEVEL_NORMAL, "Udp2RedisChannel:OnTaskStart: Successfully opened UDP socket on port " + CORE::UInt16ToString( m_udpPort ) );
+    else
+    {
+        GUCEF_ERROR_LOG( CORE::LOGLEVEL_IMPORTANT, "Udp2RedisChannel:OnTaskStart: Failed to open UDP socket on " + m_channelSettings.udpInterface.AddressAndPortAsString() );
+    }
     return true;
 }
 
@@ -733,6 +812,7 @@ Udp2Redis::Udp2Redis( void )
     , m_redisHost()
     , m_redisPort()
     , m_channels()
+    , m_channelSettings()
     , m_httpServer()
     , m_httpRouter()
     , m_appConfig()
@@ -761,6 +841,7 @@ bool
 Udp2Redis::Start( void )
 {GUCEF_TRACE;
 
+    bool errorOccured = false;
     m_channels.resize( m_channelCount );
 
     CORE::CTaskManager& taskManager = CORE::CCoreGlobal::Instance()->GetTaskManager();
@@ -771,24 +852,41 @@ Udp2Redis::Start( void )
     while ( i != m_channels.end() )
     {
         Udp2RedisChannel& channel = (*i);
-        
-        CORE::CString channelTopicName = m_redisStreamName.ReplaceSubstr( "{channelID}", CORE::Int32ToString( channelId ) ); 
-        channel.LoadConfig( udpPort, m_redisHost, m_redisPort, channelTopicName );
+        ChannelSettingsMap::iterator n = m_channelSettings.find( channelId );
+        if ( n != m_channelSettings.end() )
+        {
+            const Udp2RedisChannel::ChannelSettings& channelSettings = (*n).second;
+            if ( !channel.LoadConfig( channelSettings ) )
+            {
+                GUCEF_ERROR_LOG( CORE::LOGLEVEL_IMPORTANT, "Udp2Redis:Start: Failed to set channel settings on channel " + CORE::Int32ToString( channelId ) );
+                errorOccured = true;
+                break;
+            }
 
-        taskManager.StartTask( channel );
-        
-        ++udpPort;
+            if ( !taskManager.StartTask( channel ) )
+            {
+                GUCEF_ERROR_LOG( CORE::LOGLEVEL_IMPORTANT, "Udp2Redis:Start: Failed to start task (dedicated thread) for channel " + CORE::Int32ToString( channelId ) );
+                errorOccured = true;
+                break;
+            }
+        }
+
+        ++channelId;
         ++i;
     }
 
-    if ( m_transmitMetrics )
+    if ( !errorOccured && m_transmitMetrics )
     {
         m_metricsTimer.SetInterval( 1000 );
         m_metricsTimer.SetEnabled( true );
     }
 
-    GUCEF_LOG( CORE::LOGLEVEL_IMPORTANT, "Udp2Redis: Opening REST API" );
-    return m_httpServer.Listen();
+    if ( !errorOccured )
+    {
+        GUCEF_LOG( CORE::LOGLEVEL_IMPORTANT, "Udp2Redis: Opening REST API" );
+        return m_httpServer.Listen();
+    }
+    return errorOccured;
 }
 
 /*-------------------------------------------------------------------------*/
@@ -807,6 +905,53 @@ Udp2Redis::LoadConfig( const CORE::CValueList& appConfig   ,
     m_redisHost = CORE::ResolveVars( appConfig.GetValueAlways( "RedisHost", "127.0.0.1" ) );
     m_redisPort = CORE::StringToUInt16( CORE::ResolveVars( appConfig.GetValueAlways( "RedisPort", "6379" ) ) );
 
+    CORE::UInt16 udpPort = m_udpStartPort;
+    CORE::Int32 maxChannelId = m_redisStreamStartChannelID + m_channelCount;
+    for ( CORE::Int32 channelId = m_redisStreamStartChannelID; channelId < maxChannelId; ++channelId )
+    {
+        Udp2RedisChannel::ChannelSettings& channelSettings = m_channelSettings[ channelId ];
+
+        channelSettings.redisAddress.SetHostname( m_redisHost );
+        channelSettings.redisAddress.SetPortInHostByteOrder( m_redisPort );
+        
+        CORE::CString settingName = "ChannelSetting." + CORE::Int32ToString( channelId ) + ".RedisStreamName";
+        CORE::CString settingValue = appConfig.GetValueAlways( settingName );
+        if ( !settingValue.IsNULLOrEmpty() )
+        {
+            channelSettings.channelStreamName = CORE::ResolveVars( settingValue.ReplaceSubstr( "{channelID}", CORE::Int32ToString( channelId ) ) );
+        }
+        else
+        {
+            // Use the auto naming and numbering scheme based on a single template name instead
+            channelSettings.channelStreamName = CORE::ResolveVars( m_redisStreamName.ReplaceSubstr( "{channelID}", CORE::Int32ToString( channelId ) ) ); 
+        }
+
+        settingName = "ChannelSetting." + CORE::Int32ToString( channelId ) + ".UdpInterface";
+        settingValue = appConfig.GetValueAlways( settingName );
+        if ( !settingValue.IsNULLOrEmpty() )
+        {
+            channelSettings.udpInterface.SetHostnameAndPort( settingValue );
+        }
+        else
+        {
+            // Use the auto numbering scheme instead
+            channelSettings.udpInterface.SetPortInHostByteOrder( udpPort );
+        }
+
+        settingName = "ChannelSetting." + CORE::Int32ToString( channelId ) + ".Multicast.Join";
+        CORE::CValueList::TStringVector settingValues = appConfig.GetValueVectorAlways( settingName );
+        CORE::CValueList::TStringVector::iterator n = settingValues.begin();
+        while ( n != settingValues.end() )
+        {
+            const CORE::CString& settingValue = (*n);
+            COMCORE::CHostAddress multicastAddress( settingValue );
+            channelSettings.udpMulticastToJoin.push_back( multicastAddress );
+            ++n;
+        }
+
+        ++udpPort;
+    }
+
     m_appConfig = appConfig;
     m_globalConfig.Copy( globalConfig );
 
@@ -815,7 +960,7 @@ Udp2Redis::LoadConfig( const CORE::CValueList& appConfig   ,
     m_httpRouter.SetResourceMapping( "/info", RestApiUdp2RedisInfoResource::THTTPServerResourcePtr( new RestApiUdp2RedisInfoResource( this ) )  );
     m_httpRouter.SetResourceMapping( "/config/appargs", RestApiUdp2RedisInfoResource::THTTPServerResourcePtr( new RestApiUdp2RedisConfigResource( this, true ) )  );
     m_httpRouter.SetResourceMapping( "/config", RestApiUdp2RedisInfoResource::THTTPServerResourcePtr( new RestApiUdp2RedisConfigResource( this, false ) )  );    
-    m_httpRouter.SetResourceMapping(  appConfig.GetValueAlways( "RestBasicHealthUri", "/health/basic" ), RestApiUdp2RedisInfoResource::THTTPServerResourcePtr( new COM::CDummyHTTPServerResource() )  );
+    m_httpRouter.SetResourceMapping(  CORE::ResolveVars( appConfig.GetValueAlways( "RestBasicHealthUri", "/health/basic" ) ), RestApiUdp2RedisInfoResource::THTTPServerResourcePtr( new COM::CDummyHTTPServerResource() )  );
     
     m_httpServer.GetRouterController()->AddRouterMapping( &m_httpRouter, "", "" );
     return true;
