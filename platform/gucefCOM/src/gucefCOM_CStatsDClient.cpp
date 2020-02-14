@@ -53,6 +53,8 @@ CStatsDClient::CStatsDClient( void )
     , m_statsInterface()
     , m_statNamePrefix()
 {GUCEF_TRACE;
+
+    m_statsDestination.SetPortInHostByteOrder( 8125 );
 }
 
 /*-------------------------------------------------------------------------*/
@@ -60,7 +62,12 @@ CStatsDClient::CStatsDClient( void )
 CStatsDClient::CStatsDClient( CORE::CPulseGenerator& pulseGenerator )
     : CORE::CIMetricsSystemClient() 
     , m_udpSender( pulseGenerator, false )
+    , m_statsDestination()
+    , m_statsInterface()
+    , m_statNamePrefix()
 {GUCEF_TRACE;
+
+    m_statsDestination.SetPortInHostByteOrder( 8125 );
 }
     
 /*-------------------------------------------------------------------------*/
@@ -148,23 +155,25 @@ CStatsDClient::Transmit( const CString& key      ,
         {
             return;
         }
-    }
-
+    }   
+    
     // Prepare the buffer, with a sampling rate if specified different from 1.0f
-    char buffer[256];
+    char buffer[256]; 
+    int msgSize=0;
     if ( isFrequencyOne( frequency ) ) 
     {
         // Sampling rate is 1.0f, no need to specify it
-        std::snprintf( buffer, sizeof(buffer), "%s%s:%d|%s", m_statNamePrefix.C_String(), key.C_String(), value, type.C_String() );
+        msgSize = std::snprintf( buffer, sizeof(buffer), "%s%s:%d|%s", m_statNamePrefix.C_String(), key.C_String(), value, type.C_String() );
     } 
     else 
     {
         // Sampling rate is different from 1.0f, hence specify it
-        std::snprintf( buffer, sizeof(buffer), "%s%s:%d|%s|@%.2f", m_statNamePrefix.C_String(), key.C_String(), value, type.C_String(), frequency );
+        msgSize = std::snprintf( buffer, sizeof(buffer), "%s%s:%d|%s|@%.2f", m_statNamePrefix.C_String(), key.C_String(), value, type.C_String(), frequency );
     }
 
     // Send the message via the UDP sender
-    m_udpSender.SendPacketTo( m_statsDestination, buffer, sizeof( buffer ) );
+    if ( msgSize > 0 )
+        m_udpSender.SendPacketTo( m_statsDestination, buffer, (UInt16) msgSize );
 }
 
 /*-------------------------------------------------------------------------*/

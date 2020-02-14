@@ -525,7 +525,9 @@ const char*
 CString::C_String( void ) const
 {GUCEF_TRACE;
 
-    return m_string;
+    if ( GUCEF_NULL != m_string )
+        return m_string;
+    return "";
 }
 
 /*-------------------------------------------------------------------------*/
