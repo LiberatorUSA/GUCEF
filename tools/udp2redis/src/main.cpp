@@ -37,10 +37,10 @@
 #define GUCEF_CORE_DVCPPOSWRAP_H
 #endif /* GUCEF_CORE_DVCPPOSWRAP_H ? */
 
-#ifndef GUCEF_CORE_CFILEACCESS_H
-#include "CFileAccess.h"
-#define GUCEF_CORE_CFILEACCESS_H
-#endif /* GUCEF_CORE_CFILEACCESS_H ? */
+#ifndef GUCEF_CORE_CROLLINGFILEACCESS_H
+#include "gucefCORE_CRollingFileAccess.h"
+#define GUCEF_CORE_CROLLINGFILEACCESS_H
+#endif /* GUCEF_CORE_CROLLINGFILEACCESS_H ? */
 
 #ifndef GUCEF_CORE_CONFIGSTORE_H
 #include "CConfigStore.h"
@@ -186,8 +186,8 @@ ParseParams( const int argc                 ,
 /*
  *      Application entry point
  */
-GUCEF_OSMAIN_BEGIN
-//GUCEF_OSSERVICEMAIN_BEGIN( "udp2redis" )
+//GUCEF_OSMAIN_BEGIN
+GUCEF_OSSERVICEMAIN_BEGIN( "udp2redis" )
 {GUCEF_TRACE;
 
     GUCEF_LOG( CORE::LOGLEVEL_NORMAL, "This tool was compiled on: " __DATE__ " @ " __TIME__ );
@@ -226,7 +226,7 @@ GUCEF_OSMAIN_BEGIN
 
     keyValueList.Set( "logfile", logFilename );
 
-    CORE::CFileAccess logFileAccess( logFilename, "w" );
+    CORE::CRollingFileAccess logFileAccess( logFilename, "w" );
     CORE::CStdLogger logger( logFileAccess );
     CORE::CCoreGlobal::Instance()->GetLogManager().AddLogger( &logger );
 

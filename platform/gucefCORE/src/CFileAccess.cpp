@@ -38,7 +38,7 @@
 
 #include "CFileAccess.h"      /* definition of the class implemented here */
 
-#ifndef GUCEF_CORE_UCEF_ESSENTIALS_H
+#ifndef GUCEF_CORE_GUCEF_ESSENTIALS_H
 #include "gucef_essentials.h"
 #define GUCEF_CORE_GUCEF_ESSENTIALS_H
 #endif /* GUCEF_CORE_GUCEF_ESSENTIALS_H ? */ 

@@ -29,12 +29,14 @@
 
 #if ( GUCEF_PLATFORM == GUCEF_PLATFORM_MSWIN )
   #include <Mmsystem.h>  /* needed for timeBeginPeriod() etc */
+  #include <processthreadsapi.h>
 #elif ( ( GUCEF_PLATFORM == GUCEF_PLATFORM_LINUX ) || ( GUCEF_PLATFORM == GUCEF_PLATFORM_ANDROID ) )
   #include <stdio.h>
   #include <stdlib.h>
   #include <unistd.h>
   #include <pthread.h>
   #include <signal.h>
+#include "..\include\gucefMT_dvmtoswrap.h"
 #endif
 
 /*-------------------------------------------------------------------------//
@@ -429,6 +431,21 @@ PrecisionTimerShutdown( void )
          */
         timeEndPeriod( 1 );
     }
+    #endif
+}
+
+/*--------------------------------------------------------------------------*/
+
+UInt32 
+GetProcessID( void )
+{
+    #if ( GUCEF_PLATFORM == GUCEF_PLATFORM_MSWIN )
+    return (UInt32) GetCurrentProcessId();
+    #elif ( ( GUCEF_PLATFORM == GUCEF_PLATFORM_LINUX ) || ( GUCEF_PLATFORM == GUCEF_PLATFORM_ANDROID ) )
+    return (UInt32) getpid();
+    #else
+    #error unsupported target platform
+    return 0;
     #endif
 }
 

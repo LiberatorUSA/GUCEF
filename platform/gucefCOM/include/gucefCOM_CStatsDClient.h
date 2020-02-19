@@ -129,6 +129,7 @@ class GUCEF_COM_EXPORT_CPP CStatsDClient : public CORE::CIMetricsSystemClient
     COMCORE::CHostAddress m_statsDestination;
     COMCORE::CHostAddress m_statsInterface;
     CString m_statNamePrefix;
+    bool m_transmit;
 };
 
 /*-------------------------------------------------------------------------//

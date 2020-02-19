@@ -48,6 +48,7 @@
  
 #if GUCEF_PLATFORM == GUCEF_PLATFORM_MSWIN
 
+    #include <string.h>
     #include <windows.h>
     #undef min
     #undef max
@@ -81,6 +82,7 @@
     bool g_win32SystemShutdown = false;                                                                \
                                                                                                        \
     void WINAPI Win32ServiceMain( DWORD argc, LPTSTR* argv );                                          \
+    int Win32ServiceInitializer( int argc, char** argv );                                              \
                                                                                                        \
     int __stdcall                                                                                      \
     WinMain( HINSTANCE hinstance     ,                                                                 \
@@ -96,6 +98,10 @@
             if ( *lpcmdline != '\0' )                                                                  \
             {                                                                                          \
                 argc = 1;                                                                              \
+                if ( NULL != strstr( lpcmdline, "--console" ) )                                        \
+                {                                                                                      \
+                    return Win32ServiceInitializer( argc, argv );                                      \
+                }                                                                                      \
             }                                                                                          \
         }                                                                                              \
                                                                                                        \
@@ -168,8 +174,6 @@
         }                                                                                              \
         return NO_ERROR;                                                                               \
     }                                                                                                  \
-                                                                                                       \
-    int Win32ServiceInitializer( int argc, char** argv );                                              \
                                                                                                        \
     void WINAPI Win32ServiceMain( DWORD argc, LPTSTR *argv )                                           \
     {                                                                                                  \

@@ -75,6 +75,8 @@ RelativePath( const CString& relpath  ,
  *      - $CURWORKDIR$ -> Is resolved to the current working directory
  *      - $MODULEDIR$  -> Is resolved to the directory this module is located in
  *      - $ENVVAR:FOO$ -> Resolves to the environment variable FOO's content
+ *      - $HOSTNAME$   -> Is resolved to the hostname of the system
+ *      - $PID$        -> Is resolved to the process ID of the current process
  */
 GUCEF_CORE_PUBLIC_CPP CString
 ResolveVars( const CString& strWithVars );

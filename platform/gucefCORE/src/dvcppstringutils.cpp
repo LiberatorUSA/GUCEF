@@ -26,6 +26,11 @@
 #include <string.h>
 #include <stdio.h>
 
+#ifndef GUCEF_MT_DVMTOSWRAP_H
+#include "gucefMT_dvmtoswrap.h"
+#define GUCEF_MT_DVMTOSWRAP_H
+#endif /* GUCEF_MT_DVMTOSWRAP_H ? */
+
 #ifndef GUCEF_CORE_DVSTRUTILS_H
 #include "dvstrutils.h"         /* C string utils */
 #define GUCEF_CORE_DVSTRUTILS_H
@@ -227,53 +232,10 @@ ResolveVars( const CString& strWithVars )
     }
     while ( idx > -1 );
 
-    idx = 0;
-    do
-    {
-        idx = resultStr.HasSubstr( "$HOSTNAME$", true );
-        if ( idx > -1 )
-        {
-            CString hostname = GetHostname();
-            CString prefix = resultStr.SubstrToIndex( idx, true );
-            CString postfix = resultStr.CutChars( idx+10, true );
-            resultStr = prefix + hostname + postfix;
-        }
-    }
-    while ( idx > -1 );
-
-    idx = 0;
-    do
-    {
-        idx = resultStr.HasSubstr( "$MODULEDIR$", true );
-        if ( idx > -1 )
-        {
-            CString moduleDir = ModuleDir();
-            CString prefix = resultStr.SubstrToIndex( idx, true );
-            CString postfix = resultStr.CutChars( idx+11, true );
-
-            resultStr = prefix;
-            AppendToPath( resultStr, moduleDir );
-            AppendToPath( resultStr, postfix );
-        }
-    }
-    while ( idx > -1 );
-
-    idx = 0;
-    do
-    {
-        idx = resultStr.HasSubstr( "$CURWORKDIR$", true );
-        if ( idx > -1 )
-        {
-            CString workingDir = CurrentWorkingDir();
-            CString prefix = resultStr.SubstrToIndex( idx, true );
-            CString postfix = resultStr.CutChars( idx+12, true );
-
-            resultStr = prefix;
-            AppendToPath( resultStr, workingDir );
-            AppendToPath( resultStr, postfix );
-        }
-    }
-    while ( idx > -1 );
+    resultStr = resultStr.ReplaceSubstr( "$HOSTNAME$", GetHostname() );
+    resultStr = resultStr.ReplaceSubstr( "$PID$", UInt32ToString( MT::GetProcessID() ) );
+    resultStr = resultStr.ReplaceSubstr( "$MODULEDIR$", ModuleDir() );
+    resultStr = resultStr.ReplaceSubstr( "$CURWORKDIR$", CurrentWorkingDir() );
     
     return resultStr;
 }

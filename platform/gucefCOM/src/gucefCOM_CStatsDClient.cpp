@@ -26,6 +26,11 @@
 
 #include <cmath>
 
+#ifndef GUCEF_CORE_DVCPPSTRINGUTILS_H
+#include "dvcppstringutils.h" 
+#define GUCEF_CORE_DVCPPSTRINGUTILS_H
+#endif /* GUCEF_CORE_DVCPPSTRINGUTILS_H ? */
+
 #ifndef GUCEF_CORE_CDATANODE_H
 #include "CDataNode.h"
 #define GUCEF_CORE_CDATANODE_H
@@ -54,6 +59,7 @@ CStatsDClient::CStatsDClient( void )
     , m_statsDestination()
     , m_statsInterface()
     , m_statNamePrefix()
+    , m_transmit( false )
 {GUCEF_TRACE;
 
     m_statsDestination.SetPortInHostByteOrder( 8125 );
@@ -67,6 +73,7 @@ CStatsDClient::CStatsDClient( CORE::CPulseGenerator& pulseGenerator )
     , m_statsDestination()
     , m_statsInterface()
     , m_statNamePrefix()
+    , m_transmit( false )
 {GUCEF_TRACE;
 
     m_statsDestination.SetPortInHostByteOrder( 8125 );
@@ -137,6 +144,9 @@ CStatsDClient::Transmit( const CString& key      ,
                          const Float32 frequency ) const
 {GUCEF_TRACE;
 
+    if ( !m_transmit )
+        return;
+
     if ( !m_udpSender.IsActive() )
     {
         CStatsDClient* thisObj = const_cast< CStatsDClient* >( this ); 
@@ -195,6 +205,7 @@ CStatsDClient::SaveConfig( CORE::CDataNode& tree ) const
     node->SetAttribute( "StatsDestination", m_statsDestination.AddressAndPortAsString() );
     node->SetAttribute( "StatsNamePrefix", m_statNamePrefix );
     node->SetAttribute( "StatsInterface", m_statsInterface.AddressAndPortAsString() );
+    node->SetAttribute( "Transmit", CORE::BoolToString( m_transmit ) );
     return true;
 }
 
@@ -230,8 +241,11 @@ CStatsDClient::LoadConfig( const CORE::CDataNode& treeroot )
             value = CORE::ResolveVars( value );
             m_statsInterface.SetHostnameAndPort( value );
         }
-
-        return true;
+        value = node->GetAttributeValueOrChildValueByName( "Transmit" );
+        if ( !value.IsNULLOrEmpty() )
+        {
+            m_transmit = CORE::StringToBool( value );
+        }
     }
     return true;
 }
