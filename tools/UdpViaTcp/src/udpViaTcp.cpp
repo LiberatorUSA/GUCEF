@@ -620,8 +620,16 @@ UdpViaTcp::Start( void )
         m_metricsTimer.SetEnabled( true );
     }
    
-    GUCEF_LOG( CORE::LOGLEVEL_IMPORTANT, "UdpViaTcp: Opening REST API" );
-    return m_httpServer.Listen();
+    
+    if ( m_httpServer.Listen() )
+    {
+        GUCEF_LOG( CORE::LOGLEVEL_IMPORTANT, "UdpViaTcp: Opened REST API on port " + CORE::UInt16ToString( m_httpServer.GetPort() ) );
+        return true;
+    }
+
+    GUCEF_ERROR_LOG( CORE::LOGLEVEL_IMPORTANT, "UdpViaTcp: Failed to open REST API on port " + CORE::UInt16ToString( m_httpServer.GetPort() ) );
+    return false;
+
 }
 
 /*-------------------------------------------------------------------------*/
@@ -632,6 +640,8 @@ UdpViaTcp::LoadConfig( const CORE::CValueList& appConfig   ,
 {GUCEF_TRACE;
 
     CORE::CString modeAsString = appConfig.GetValueAlways( "Mode", "Receiver" ).Lowercase();
+    GUCEF_LOG( CORE::LOGLEVEL_IMPORTANT, "UdpViaTcp: Application mode: " + modeAsString );
+
     if ( "receiver" == modeAsString )
         m_mode = UDPVIATCPMODE_UDP_RECEIVER_ONLY;
     else

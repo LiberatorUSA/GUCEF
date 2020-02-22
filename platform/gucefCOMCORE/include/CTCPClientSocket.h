@@ -177,6 +177,14 @@ class GUCEF_COMCORE_EXPORT_CPP CTCPClientSocket : public CTCPConnection
 
     virtual bool GetUseTcpSendCoalescing( void ) const;
 
+    bool SetUseTcpKeepAlive( bool keepAlive );
+
+    bool GetUseTcpKeepAlive( void ) const;
+
+    bool SetTcpKeepAliveProbeFailMax( UInt8 maxFails );
+
+    UInt8 GetTcpKeepAliveProbeFailMax( void ) const;
+
     void SetAutoReconnectOnError( bool autoReOpen );
 
     bool GetAutoReconnectOnError( void ) const;
@@ -239,6 +247,8 @@ class GUCEF_COMCORE_EXPORT_CPP CTCPClientSocket : public CTCPConnection
     UInt32 m_maxUpdatesPerCycle;            /**< setting aimed at preventing a busy socket from hogging all the processing */
     bool m_autoReconnectOnError;            /**< flag for feature to auto reconnect after a socket error occurred */
     bool m_lastConnFailed;
+    bool m_useTcpKeepAlive;
+    UInt8 m_maxKeepAliveProbeFails;
     UInt32 m_bytesReceived;
     UInt32 m_bytesTransmitted;
 };

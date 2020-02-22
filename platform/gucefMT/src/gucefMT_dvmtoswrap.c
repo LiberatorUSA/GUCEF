@@ -36,7 +36,6 @@
   #include <unistd.h>
   #include <pthread.h>
   #include <signal.h>
-#include "..\include\gucefMT_dvmtoswrap.h"
 #endif
 
 /*-------------------------------------------------------------------------//
