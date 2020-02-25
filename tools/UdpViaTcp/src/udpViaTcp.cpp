@@ -331,9 +331,7 @@ UdpViaTcp::OnUDPReceiveSocketPacketRecieved( CORE::CNotifier* notifier    ,
         const COMCORE::CUDPSocket::TUDPPacketRecievedEventData& data = udpPacketData->GetData();
         const CORE::CDynamicBuffer& udpPacketBuffer = data.dataBuffer.GetData();
 
-        #ifdef GUCEF_DEBUG_MODE
         GUCEF_DEBUG_LOG( CORE::LOGLEVEL_IMPORTANT, "UdpViaTcp: UDP Receive Socket received a packet from " + data.sourceAddress.AddressAndPortAsString() );
-        #endif
 
         char packetHeader[ 7 ]; 
         CORE::UInt32 packetSize = udpPacketBuffer.GetDataSize();
@@ -396,9 +394,7 @@ UdpViaTcp::OnUDPTransmitSocketPacketRecieved( CORE::CNotifier* notifier   ,
         const COMCORE::CUDPSocket::TUDPPacketRecievedEventData& data = udpPacketData->GetData();
         const CORE::CDynamicBuffer& udpPacketBuffer = data.dataBuffer.GetData();
 
-        #ifdef GUCEF_DEBUG_MODE
         GUCEF_DEBUG_LOG( CORE::LOGLEVEL_IMPORTANT, "UdpViaTcp: UDP Transmit Socket received a packet from " + data.sourceAddress.AddressAndPortAsString() );
-        #endif
 
         char packetHeader[ 7 ]; 
         CORE::UInt32 packetSize = udpPacketBuffer.GetDataSize();
@@ -426,9 +422,7 @@ UdpViaTcp::OnTCPServerConnectionDataRecieved( CORE::CNotifier* notifier    ,
     const CORE::CDynamicBuffer& receivedData = eData->GetData();
     COMCORE::CTCPServerConnection* connection = static_cast< COMCORE::CTCPServerConnection* >( notifier );
 
-    #ifdef GUCEF_DEBUG_MODE
     GUCEF_DEBUG_LOG( CORE::LOGLEVEL_NORMAL, "UdpViaTcp(" + CORE::PointerToString( this ) + "): " + CORE::UInt32ToString( receivedData.GetDataSize() ) + " Bytes received from TCP client " + connection->GetRemoteHostName() );
-    #endif
 
     // Since TCP is streaming we may or may not have received a full packet
     // As such we concat bytes into a packet buffer and split according to the protocol this app uses
