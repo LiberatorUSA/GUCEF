@@ -1072,20 +1072,24 @@ CTCPClientSocket::GetUseTcpKeepAlive( void ) const
 bool
 CTCPClientSocket::SetTcpKeepAliveProbeFailMax( UInt8 maxFails )
 {
-    if ( _active )
-    {
-        int errorCode = 0;
-        int flag = (int)maxFails;
-        if ( 0 > ( _data->sockid, IPPROTO_TCP, TCP_KEEPCNT, (const char*) &flag, sizeof(flag), &errorCode ) )
-        {
-            GUCEF_ERROR_LOG( CORE::LOGLEVEL_NORMAL, "CTCPClientSocket(" + CORE::PointerToString( this ) + "): Failed to apply max keep alive probe failures setting \"" 
-                + CORE::Int32ToString( flag ) + "\" to active socket. ErrorCode: " + CORE::Int32ToString( errorCode ) );
-            return false;
-        }
-    }
+    // @TODO
+    
+    //if ( _active )
+    //{
+    //    int errorCode = 0;
+    //    int flag = (int)maxFails;
+    //    if ( 0 > ( _data->sockid, IPPROTO_TCP, TCP_KEEPCNT, (const char*) &flag, sizeof(flag), &errorCode ) )
+    //    {
+    //        GUCEF_ERROR_LOG( CORE::LOGLEVEL_NORMAL, "CTCPClientSocket(" + CORE::PointerToString( this ) + "): Failed to apply max keep alive probe failures setting \"" 
+    //            + CORE::Int32ToString( flag ) + "\" to active socket. ErrorCode: " + CORE::Int32ToString( errorCode ) );
+    //        return false;
+    //    }
+    //}
 
-    m_maxKeepAliveProbeFails = maxFails;
-    return true;
+    //m_maxKeepAliveProbeFails = maxFails;
+    //return true;
+
+    return false;
 }
 
 /*-------------------------------------------------------------------------*/
