@@ -1047,7 +1047,7 @@ CTCPClientSocket::SetUseTcpKeepAlive( bool keepAlive )
     {
         int errorCode = 0;
         int flag = (keepAlive ? 1 : 0);
-        if ( 0 > ( _data->sockid, SOL_SOCKET, SO_KEEPALIVE, (const char*) &flag, sizeof(flag), &errorCode ) )
+        if ( 0 > dvsocket_setsockopt( _data->sockid, SOL_SOCKET, SO_KEEPALIVE, (const char*) &flag, sizeof(flag), &errorCode ) )
         {
             GUCEF_ERROR_LOG( CORE::LOGLEVEL_NORMAL, "CTCPClientSocket(" + CORE::PointerToString( this ) + "): Failed to apply keep alive (TCP_NODELAY) setting \"" 
                 + CORE::BoolToString( keepAlive ) + "\" to active socket. ErrorCode: " + CORE::Int32ToString( errorCode ) );
