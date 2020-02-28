@@ -411,7 +411,7 @@ CTCPClientSocket::Connect( bool blocking )
     int allowPortReuse = 1;
     if ( 0 > dvsocket_setsockopt( _data->sockid, SOL_SOCKET, SO_REUSEPORT, (const char*) &allowPortReuse, sizeof(int), &errorCode ) )
     {
-        GUCEF_ERROR_LOG( CORE::LOGLEVEL_NORMAL, "CTCPClientSocket(" + CORE::PointerToString( this ) + "): Failed to port reuse mode \"" + CORE::BoolToString( allowPortReuse != 0 ) 
+        GUCEF_ERROR_LOG( CORE::LOGLEVEL_NORMAL, "CTCPClientSocket(" + CORE::PointerToString( this ) + "): Failed to set port reuse mode \"" + CORE::BoolToString( allowPortReuse != 0 ) 
             + "\" on socket. Error code: " + CORE::UInt32ToString( errorCode ) );
     }
     else
@@ -680,7 +680,7 @@ CTCPClientSocket::OnPulse( CORE::CNotifier* notifier                 ,
                 // exceptional condition has occurred.
 
                 m_lastConnFailed = true;
-                GUCEF_SYSTEM_LOG( CORE::LOGLEVEL_NORMAL, "CTCPClientSocket(" + CORE::PointerToString( this ) + "): An exception flag was set on the socket file descriptor. Typically this signals out-of-band data" );
+                GUCEF_ERROR_LOG( CORE::LOGLEVEL_NORMAL, "CTCPClientSocket(" + CORE::PointerToString( this ) + "): An exception flag was set on the socket file descriptor. Typically this signals out-of-band data" );
                 UnlockData();
 
                 TSocketErrorEventData eData( errorCode );
