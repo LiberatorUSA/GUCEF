@@ -754,7 +754,7 @@ GeneratePremake4ModuleDependenciesLine( const TProjectInfo& projectInfo   ,
         GUCEF_LOG( CORE::LOGLEVEL_BELOW_NORMAL, "Generating Premake4 module dependencies line for module " + moduleName + " and platform " + platformName );
 
         TStringSet dependencies;
-        TStringVector::const_iterator i = moduleInfo.dependencies.begin();
+        TStringSet::const_iterator i = moduleInfo.dependencies.begin();
         while ( i != moduleInfo.dependencies.end() )
         {
             // We add all dependencies except for header include locations which are not real modules

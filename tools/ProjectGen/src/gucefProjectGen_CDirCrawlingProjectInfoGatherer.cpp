@@ -300,6 +300,38 @@ RemoveString( TStringVector& list            ,
     return removedString;
 }
 
+/*--------------------------------------------------------------------------*/
+
+bool
+RemoveString( TStringSet& list               ,
+              const CORE::CString& searchStr )
+{GUCEF_TRACE;
+
+    //@TODO: make wildcard processing more advanced then this :)
+    if ( searchStr == "*" )
+    {
+        list.clear();
+        return true;
+    }
+
+    bool removedString = false;
+    TStringSet::iterator i = list.begin();
+    while ( i != list.end() )
+    {
+        if ( (*i) == searchStr )
+        {
+            list.erase( i );
+            i = list.begin();
+            removedString = true;
+        }
+        else
+        {
+            ++i;
+        }
+    }
+    return removedString;
+}
+
 /*---------------------------------------------------------------------------*/
 
 static bool
@@ -310,6 +342,34 @@ IsStringInList( const TStringVector& list       ,
 {GUCEF_TRACE;
 
     TStringVector::const_iterator i = list.begin();
+    while ( i != list.end() )
+    {
+        if ( (*i).Equals( testString, caseSensitive ) )
+        {
+            return true;
+        }
+        if ( wildcardMatching )
+        {
+            if ( testString.WildcardEquals( (*i), '*', caseSensitive ) )
+            {
+                return true;
+            }
+        }
+        ++i;
+    }
+    return false;
+}
+
+/*---------------------------------------------------------------------------*/
+
+static bool
+IsStringInList( const TStringSet& list          ,
+                bool caseSensitive              ,
+                const CORE::CString& testString ,
+                bool wildcardMatching = false   )
+{GUCEF_TRACE;
+
+    TStringSet::const_iterator i = list.begin();
     while ( i != list.end() )
     {
         if ( (*i).Equals( testString, caseSensitive ) )
@@ -1626,12 +1686,12 @@ CMakeParseSuffixFile( TModuleInfo& moduleInfo, const CORE::CString& cmakeListSuf
 
 /*---------------------------------------------------------------------------*/
 
-TStringVector
+TStringSet
 CMakeParseDependencies( const CORE::CString& fileSuffix ,
                         CORE::CString& moduleName       )
 {GUCEF_TRACE;
 
-    TStringVector dependencies;
+    TStringSet dependencies;
 
     TStringVector suffixFileLines = CMakeParseFileLines( fileSuffix );
     TStringVector::iterator i = suffixFileLines.begin();
@@ -1670,7 +1730,7 @@ CMakeParseDependencies( const CORE::CString& fileSuffix ,
             TStringVector::iterator n = elements.begin();
             while ( n != elements.end() )
             {
-                dependencies.push_back( (*n) );
+                dependencies.insert( (*n) );
                 ++n;
             }
         }
@@ -1888,8 +1948,8 @@ GenerateModuleDependencyIncludesForPlatform( const TProjectInfo& projectInfo   ,
     
     // First we grab all the dependencies for this module. 
     // We are going to check each of the dependent modules for platform specific includes
-    TStringVector dependencies;
-    GetModuleDependencies( moduleInfoEntry, platformName, dependencies );
+    TStringSet dependencies;
+    GetModuleDependencies( moduleInfoEntry, platformName, dependencies, false );
     
     // Check whether we need to add 'AllPlatforms' includes of dependencies to the includes
     // for this platform instead of relying on them being added via a 'AllPlatforms' version of this module
@@ -1899,7 +1959,7 @@ GenerateModuleDependencyIncludesForPlatform( const TProjectInfo& projectInfo   ,
         addAllPlatformsIncludes = moduleInfoEntry.modulesPerPlatform.find( AllPlatforms ) == moduleInfoEntry.modulesPerPlatform.end();
     }
     
-    TStringVector::iterator i = dependencies.begin();
+    TStringSet::iterator i = dependencies.begin();
     while ( i != dependencies.end() )
     {
         GenerateModuleDependencyIncludesForPlatform( projectInfo     ,
@@ -2608,7 +2668,7 @@ DetermineBuildOrderForAllModules( TProjectInfo& projectInfo            ,
             {
                 GUCEF_LOG( CORE::LOGLEVEL_BELOW_NORMAL, "Module \"" + moduleInfo->name + "\" currently has build order " + CORE::Int32ToString( moduleInfo->buildOrder ) + ". The target platform is \"" + targetPlatform + "\""  );
             
-                TStringVector::iterator m = moduleInfo->dependencies.begin();
+                TStringSet::iterator m = moduleInfo->dependencies.begin();
                 while ( m != moduleInfo->dependencies.end() )
                 {
                     // Logically we cannot have a prio higher then the dependency

@@ -792,7 +792,7 @@ GenerateCMakeModuleDependenciesLine( const TProjectInfo& projectInfo   ,
         CORE::CString sectionContent = "add_dependencies( ${MODULE_NAME}";
 
         TStringSet dependencies;
-        TStringVector::const_iterator i = moduleInfo.dependencies.begin();
+        TStringSet::const_iterator i = moduleInfo.dependencies.begin();
         while ( i != moduleInfo.dependencies.end() )
         {
             // We add all dependencies except for header include locations which are not real modules

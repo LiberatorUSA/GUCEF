@@ -171,8 +171,9 @@ struct SModuleInfo
     TModuleType moduleType;                      // The type of module we are dealing with
     TStringSet tags;                             // optional tags that can be associated which allows filtering of modules
     
-    TStringVector dependencies;                  // list of module names of all modules this module depends on
+    TStringSet dependencies;                     // list of module names of all modules this module depends on
     TStringSet dependencyIncludeDirs;            // include directories needed for the headers of the dependencies, paths only no files
+    TStringSet runtimeDependencies;              // dependencies not relative for builds but desired to be easily accessable due to runtime dependency, typically plugins
        
     TStringVectorMap includeDirs;                // include directories of this module's own headers
     TStringVectorMap sourceDirs;                 // source directories of this module's own source
@@ -458,7 +459,8 @@ GUCEF_PROJECTGEN_PUBLIC_CPP
 void
 GetModuleDependencies( const TModuleInfoEntry& moduleInfoEntry ,
                        const CORE::CString& targetPlatform     ,
-                       TStringVector& dependencies             );
+                       TStringSet& dependencies                ,
+                       bool includeRuntimeDependencies         );
                        
 /*-------------------------------------------------------------------------*/
 
@@ -468,7 +470,8 @@ GetModuleDependencies( const TProjectInfo& projectInfo           ,
                        const TModuleInfoEntry& moduleInfoEntry   ,
                        const CORE::CString& targetPlatform       ,
                        TModuleInfoEntryConstPtrSet& dependencies ,
-                       bool includeDependenciesOfDependencies    );
+                       bool includeDependenciesOfDependencies    ,
+                       bool includeRuntimeDependencies           );
 
 /*-------------------------------------------------------------------------*/
 

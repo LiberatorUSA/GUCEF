@@ -654,11 +654,29 @@ SerializeModuleInfo( const TModuleInfoEntry& moduleEntry ,
         CORE::CDataNode dependenciesNode;
         dependenciesNode.SetName( "Dependencies" );
         dependenciesNode.SetAttribute( "Count", CORE::UInt32ToString( moduleInfo.dependencies.size() ) );
-        TStringVector::const_iterator m = moduleInfo.dependencies.begin();
+        TStringSet::const_iterator m = moduleInfo.dependencies.begin();
         while ( m != moduleInfo.dependencies.end() )
         {
             CORE::CDataNode dependencyNode;
             dependencyNode.SetName( "Dependency" );
+            dependencyNode.SetAttribute( "Name", (*m) );
+            dependenciesNode.AddChild( dependencyNode );
+            ++m;
+        }
+        moduleInfoNode.AddChild( dependenciesNode );
+    }
+
+    // Add all the runtime module dependencies
+    if ( moduleInfo.runtimeDependencies.size() > 0 )
+    {
+        CORE::CDataNode dependenciesNode;
+        dependenciesNode.SetName( "RuntimeDependencies" );
+        dependenciesNode.SetAttribute( "Count", CORE::UInt32ToString( moduleInfo.runtimeDependencies.size() ) );
+        TStringSet::const_iterator m = moduleInfo.runtimeDependencies.begin();
+        while ( m != moduleInfo.runtimeDependencies.end() )
+        {
+            CORE::CDataNode dependencyNode;
+            dependencyNode.SetName( "RuntimeDependency" );
             dependencyNode.SetAttribute( "Name", (*m) );
             dependenciesNode.AddChild( dependencyNode );
             ++m;
@@ -1099,7 +1117,25 @@ DeserializeModuleInfo( TModuleInfo& moduleInfo           ,
             CORE::CString dependencyName = dependencyNode->GetAttributeValue( "Name" );
             if ( !dependencyName.IsNULLOrEmpty() )
             {
-                moduleInfo.dependencies.push_back( dependencyName );
+                moduleInfo.dependencies.insert( dependencyName );
+            }
+            ++i;
+        }
+    }
+
+    // Get all the runtime module dependencies if any
+    const CORE::CDataNode* rdependenciesNode = moduleInfoNode->Find( "RuntimeDependencies" );
+    if ( NULL != rdependenciesNode )
+    {
+        CORE::CDataNode::TConstDataNodeSet dependencies = rdependenciesNode->FindChildrenOfType( "RuntimeDependency" );
+        i = dependencies.begin();
+        while ( i != dependencies.end() )
+        {
+            const CORE::CDataNode* dependencyNode = (*i);
+            CORE::CString dependencyName = dependencyNode->GetAttributeValue( "Name" );
+            if ( !dependencyName.IsNULLOrEmpty() )
+            {
+                moduleInfo.runtimeDependencies.insert( dependencyName );
             }
             ++i;
         }
@@ -1422,6 +1458,7 @@ InitializeModuleInfo( TModuleInfo& moduleInfo )
     moduleInfo.compilerSettings.languagesUsed.clear();
     moduleInfo.preprocessorSettings.defines.clear();
     moduleInfo.dependencies.clear();
+    moduleInfo.runtimeDependencies.clear();
     moduleInfo.considerSubDirs = true;
     moduleInfo.ignoreModule = false;
     moduleInfo.moduleType = MODULETYPE_UNDEFINED;
@@ -1549,9 +1586,12 @@ MergeModuleInfo( TModuleInfo& targetModuleInfo          ,
                     true                                             );
     MergeLinkedLibrarySettingsMap( targetModuleInfo.linkerSettings.linkedLibraries    ,
                                    moduleInfoToMergeIn.linkerSettings.linkedLibraries );
-    MergeStringVector( targetModuleInfo.dependencies    ,
-                       moduleInfoToMergeIn.dependencies ,
-                       false                            );
+    MergeStringSet( targetModuleInfo.dependencies    ,
+                    moduleInfoToMergeIn.dependencies ,
+                    false                            );
+    MergeStringSet( targetModuleInfo.runtimeDependencies    ,
+                    moduleInfoToMergeIn.runtimeDependencies ,
+                    true                                    );
     MergeStringSet( targetModuleInfo.dependencyIncludeDirs    ,
                     moduleInfoToMergeIn.dependencyIncludeDirs ,
                     true                                      );
@@ -1909,21 +1949,26 @@ GetModuleTargetName( const TModuleInfoEntry& moduleInfoEntry ,
 void
 GetModuleDependencies( const TModuleInfoEntry& moduleInfoEntry ,
                        const CORE::CString& targetPlatform     ,
-                       TStringVector& dependencies             )
+                       TStringSet& dependencies                ,
+                       bool includeRuntimeDependencies         )
 {GUCEF_TRACE;
 
     TModuleInfoEntry& mutableModuleInfoEntry = const_cast< TModuleInfoEntry& >( moduleInfoEntry );
     TModuleInfo* moduleInfo = FindModuleInfoForPlatform( mutableModuleInfoEntry, targetPlatform, false );
     if ( NULL != moduleInfo )
     {
-        MergeStringVector( dependencies, moduleInfo->dependencies, false );
+        MergeStringSet( dependencies, moduleInfo->dependencies, false );
+        if ( includeRuntimeDependencies )
+            MergeStringSet( dependencies, moduleInfo->runtimeDependencies, false );
     }
     if ( targetPlatform != AllPlatforms && !targetPlatform.IsNULLOrEmpty() )
     {
         moduleInfo = FindModuleInfoForPlatform( mutableModuleInfoEntry, AllPlatforms, false );
         if ( NULL != moduleInfo )
         {
-            MergeStringVector( dependencies, moduleInfo->dependencies, false );
+            MergeStringSet( dependencies, moduleInfo->dependencies, false );
+            if ( includeRuntimeDependencies )
+                MergeStringSet( dependencies, moduleInfo->runtimeDependencies, false );
         }
     }
 }
@@ -1935,14 +1980,15 @@ GetModuleDependencies( const TProjectInfo& projectInfo           ,
                        const TModuleInfoEntry& moduleInfoEntry   ,
                        const CORE::CString& targetPlatform       ,
                        TModuleInfoEntryConstPtrSet& dependencies ,
-                       bool includeDependenciesOfDependencies    )
+                       bool includeDependenciesOfDependencies    ,
+                       bool includeRuntimeDependencies           )
 {GUCEF_TRACE;
 
-    TStringVector deps;
-    GetModuleDependencies( moduleInfoEntry, targetPlatform, deps );  
+    TStringSet deps;
+    GetModuleDependencies( moduleInfoEntry, targetPlatform, deps, includeRuntimeDependencies );  
 
     bool foundAllDeps = true;
-    TStringVector::iterator m = deps.begin();
+    TStringSet::iterator m = deps.begin();
     while ( m != deps.end() )
     {
         const TModuleInfoEntry* dependency = GetModuleInfoEntry( projectInfo, (*m), targetPlatform );
@@ -1962,7 +2008,12 @@ GetModuleDependencies( const TProjectInfo& projectInfo           ,
         while ( i != dependencies.end() )
         {
             const TModuleInfoEntry* entry = (*i);
-            foundAllDeps = foundAllDeps && GetModuleDependencies( projectInfo, *entry, targetPlatform, depsOfdependencies, includeDependenciesOfDependencies ); 
+            foundAllDeps = foundAllDeps && GetModuleDependencies( projectInfo, 
+                                                                  *entry, 
+                                                                  targetPlatform, 
+                                                                  depsOfdependencies, 
+                                                                  includeDependenciesOfDependencies, 
+                                                                  includeRuntimeDependencies ); 
             ++i;
         }
         TModuleInfoEntryConstPtrSet::iterator n = depsOfdependencies.begin();
@@ -2345,7 +2396,7 @@ SplitProjectPerTarget( const TProjectInfo& projectInfo    ,
             if ( executable.modulesPerPlatform.find( (*p) ) != executable.modulesPerPlatform.end() )
             {            
                 TModuleInfoEntryConstPtrSet foundDependencies;
-                if ( GetModuleDependencies( projectInfo, executable, (*p), foundDependencies, true ) )
+                if ( GetModuleDependencies( projectInfo, executable, (*p), foundDependencies, true, true ) )
                 {
                     // if we made it here we found the executable and were able to satisfy all dependencies
                     // for the current platform
@@ -2397,7 +2448,7 @@ SplitProjectPerTarget( const TProjectInfo& projectInfo    ,
                         // Tagged or not we need to include the dependencies of tagged modules as well
                         // We don't want to make projects that cannot compile
                         TModuleInfoEntryConstPtrSet foundDependencies;
-                        if ( GetModuleDependencies( projectInfo, taggedModule, (*p), foundDependencies, true ) )
+                        if ( GetModuleDependencies( projectInfo, taggedModule, (*p), foundDependencies, true, true ) )
                         {
                             TProjectTargetInfoMap& targetPerPlatform = targets[ projectName ];
                             TProjectTargetInfo& target = targetPerPlatform[ (*p) ];
