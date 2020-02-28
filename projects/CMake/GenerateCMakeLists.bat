@@ -8,13 +8,13 @@ REM -----------------------------------------------------
 
 :FIND_GUCEF_RELEASE_CMAKELISTGENERATOR
 
-SET GENERATORPATH=%GUCEF_THEBATCHDIR%\..\..\tools\ProjectGenerator\bin\ReleasedBins\Win32\2019.12.16\
+SET GENERATORPATH=%GUCEF_THEBATCHDIR%\..\..\tools\ProjectGenerator\bin\ReleasedBins\Win32\2020.02.28\
 SET GENERATOREXE=ProjectGenerator.exe
 SET EXETEST=%GENERATORPATH%\%GENERATOREXE%
 
 ECHO Test path = "%EXETEST%"
 IF EXIST "%EXETEST%" (
-  ECHO Using released version of ProjectGenerator dated Dec 16th 2019
+  ECHO Using released version of ProjectGenerator dated Feb 28th 2020
   GOTO RUN_CMAKELISTGENERATOR
 )
 

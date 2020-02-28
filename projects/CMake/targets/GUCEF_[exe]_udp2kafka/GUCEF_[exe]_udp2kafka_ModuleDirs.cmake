@@ -8,9 +8,14 @@
 # free to make use of it in any way you like.
 #-------------------------------------------------------------------
 #
+add_subdirectory( ${CMAKE_CURRENT_SOURCE_DIR}/../../../../dependencies/json-builder ${CMAKE_BINARY_DIR}/jsonbuilder )
+add_subdirectory( ${CMAKE_CURRENT_SOURCE_DIR}/../../../../dependencies/json-parser ${CMAKE_BINARY_DIR}/jsonparser )
+add_subdirectory( ${CMAKE_CURRENT_SOURCE_DIR}/../../../../dependencies/libparsifal ${CMAKE_BINARY_DIR}/libparsifal )
 add_subdirectory( ${CMAKE_CURRENT_SOURCE_DIR}/../../../../dependencies/librdkafka ${CMAKE_BINARY_DIR}/RdKafka )
 add_subdirectory( ${CMAKE_CURRENT_SOURCE_DIR}/../../../../dependencies/zlib ${CMAKE_BINARY_DIR}/zlib )
 add_subdirectory( ${CMAKE_CURRENT_SOURCE_DIR}/../../../../platform/gucefCOMCORE ${CMAKE_BINARY_DIR}/gucefCOMCORE )
 add_subdirectory( ${CMAKE_CURRENT_SOURCE_DIR}/../../../../platform/gucefCORE ${CMAKE_BINARY_DIR}/gucefCORE )
 add_subdirectory( ${CMAKE_CURRENT_SOURCE_DIR}/../../../../platform/gucefMT ${CMAKE_BINARY_DIR}/gucefMT )
+add_subdirectory( ${CMAKE_CURRENT_SOURCE_DIR}/../../../../plugins/CORE/dstorepluginJSONPARSER ${CMAKE_BINARY_DIR}/dstorepluginJSONPARSER )
+add_subdirectory( ${CMAKE_CURRENT_SOURCE_DIR}/../../../../plugins/CORE/dstorepluginPARSIFALXML ${CMAKE_BINARY_DIR}/dstorepluginPARSIFALXML )
 add_subdirectory( ${CMAKE_CURRENT_SOURCE_DIR}/../../../../tools/udp2kafka ${CMAKE_BINARY_DIR}/udp2kafka )

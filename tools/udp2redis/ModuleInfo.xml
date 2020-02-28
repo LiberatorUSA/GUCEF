@@ -1,19 +1,23 @@
 <?xml version="1.0" encoding="ISO-8859-1" ?>
-	<ModuleInfoEntry>
-		<Module Name="udp2redis" Platform="All" Type="Executable" >
-			<Dependencies>
-				<Dependency Name="gucefCOM" />
-				<Dependency Name="gucefCOMCORE" />
-				<Dependency Name="gucefCORE" />
-				<Dependency Name="gucefMT" />
-				<Dependency Name="hiredis" />
-			</Dependencies>
-			<Linker>
-				<Dependency Name="gucefCOM" />
-				<Dependency Name="gucefCOMCORE" />
-				<Dependency Name="gucefCORE" />
-				<Dependency Name="gucefMT" />
-				<Dependency Name="hiredis" />
-			</Linker>
-		</Module>
-	</ModuleInfoEntry>
+<ModuleInfoEntry>
+	<Module Name="udp2redis" Platform="All" Type="Executable" >
+		<Dependencies>
+			<Dependency Name="gucefCOM" />
+			<Dependency Name="gucefCOMCORE" />
+			<Dependency Name="gucefCORE" />
+			<Dependency Name="gucefMT" />
+			<Dependency Name="hiredis" />
+		</Dependencies>
+		<Linker>
+			<Dependency Name="gucefCOM" />
+			<Dependency Name="gucefCOMCORE" />
+			<Dependency Name="gucefCORE" />
+			<Dependency Name="gucefMT" />
+			<Dependency Name="hiredis" />
+		</Linker>
+		<RuntimeDependencies>
+			<RuntimeDependency Name="dstorepluginPARSIFALXML" />
+			<RuntimeDependency Name="dstorepluginJSONPARSER" />
+		</RuntimeDependencies>			
+	</Module>
+</ModuleInfoEntry>
