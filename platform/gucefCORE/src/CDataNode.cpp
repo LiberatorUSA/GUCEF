@@ -229,6 +229,15 @@ CDataNode::GetValue( void ) const
 
 /*-------------------------------------------------------------------------*/
 
+bool 
+CDataNode::HasValue( void ) const
+{GUCEF_TRACE;
+    
+    return !m_value.IsNULLOrEmpty();
+}
+
+/*-------------------------------------------------------------------------*/
+
 void 
 CDataNode::SetValueType( int typeId )
 {GUCEF_TRACE;

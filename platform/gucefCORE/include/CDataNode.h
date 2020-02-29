@@ -153,6 +153,8 @@ class GUCEF_CORE_PUBLIC_CPP CDataNode
      */
     const CString& GetValue( void ) const;
 
+    bool HasValue( void ) const;
+
     void SetValueType( int typeId );
 
     int GetValueType( void ) const;

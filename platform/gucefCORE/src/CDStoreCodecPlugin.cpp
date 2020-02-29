@@ -467,70 +467,87 @@ CDStoreCodecPlugin::StoreNode( const CDataNode* n ,
                                void** filedata    )
 {GUCEF_TRACE;
         
-        int nodeType( n->GetNodeType() );
-        UInt32 count( n->GetAttCount() );
-        const char* name( n->GetName().C_String() );
-        const CDataNode::TKeyValuePair* att;
+    int nodeType( n->GetNodeType() );
+    UInt32 count( n->GetAttCount() );
+    const char* name( n->GetName().C_String() );
+    const CDataNode::TKeyValuePair* att = GUCEF_NULL;
+
+    /*
+     *  Begin storing the node
+     */
+    UInt32 valueAsAtt = n->HasValue() ? 1 : 0;
+    ((TDSTOREPLUGFPTR_Begin_Node_Store)_fptable[ DSTOREPLUG_BEGIN_NODE_STORE ] )( &_plugdata         ,
+                                                                                  filedata           ,
+                                                                                  name               ,
+                                                                                  nodeType           ,
+                                                                                  count + valueAsAtt ,
+                                                                                  n->HasChildren()   );
+
+    /*
+     *  Store all node attributes
+     */
+    for ( UInt32 i=0; i<count; ++i )
+    {
+            att = n->GetAttribute( i );
+            ((TDSTOREPLUGFPTR_Store_Node_Att)_fptable[ DSTOREPLUG_STORE_NODE_ATT ])( &_plugdata             ,
+                                                                                     filedata               ,
+                                                                                     name                   ,
+                                                                                     count                  ,
+                                                                                     i                      ,
+                                                                                     att->first.C_String()  ,
+                                                                                     att->second.value.C_String() ,
+                                                                                     att->second.type       ,
+                                                                                     n->HasChildren()       );
+    }
+
+    /*
+     *  Store node value
+     */
+    if ( n->HasValue() )
+    {
+        ((TDSTOREPLUGFPTR_Store_Node_Att)_fptable[ DSTOREPLUG_STORE_NODE_ATT ])( &_plugdata               ,
+                                                                                 filedata                 ,
+                                                                                 name                     ,
+                                                                                 count + valueAsAtt       ,
+                                                                                 count                    ,
+                                                                                 GUCEF_NULL               ,
+                                                                                 n->GetValue().C_String() ,
+                                                                                 n->GetValueType()        ,
+                                                                                 n->HasChildren()         );
+    }
+
+    /*
+     *      If the node has any children we will store them and their children ect.
+     */
+    if ( n->HasChildren() )
+    {
+        ((TDSTOREPLUGFPTR_Begin_Node_Children)_fptable[ DSTOREPLUG_BEGIN_NODE_CHILDREN ])( &_plugdata ,
+                                                                                           filedata   ,
+                                                                                           name       );
 
         /*
-         *      Begin storing the node
+         *      Iterate the child node recursively storing each node level
          */
-        ((TDSTOREPLUGFPTR_Begin_Node_Store)_fptable[ DSTOREPLUG_BEGIN_NODE_STORE ] )( &_plugdata       ,
-                                                                                      filedata         ,
-                                                                                      name             ,
-                                                                                      nodeType         ,
-                                                                                      count            ,
-                                                                                      n->HasChildren() );
-
-        /*
-         *      Store all node attributes
-         */
-        for ( UInt32 i=0; i<count; ++i )
+        CDataNode::const_iterator i = n->ConstBegin();
+        while ( i != n->ConstEnd() )
         {
-                att = n->GetAttribute( i );
-                ((TDSTOREPLUGFPTR_Store_Node_Att)_fptable[ DSTOREPLUG_STORE_NODE_ATT ])( &_plugdata             ,
-                                                                                         filedata               ,
-                                                                                         name                   ,
-                                                                                         count                  ,
-                                                                                         i                      ,
-                                                                                         att->first.C_String()  ,
-                                                                                         att->second.value.C_String() ,
-                                                                                         att->second.type       ,
-                                                                                         n->HasChildren()       );
+                StoreNode( (*i), filedata );
+                ++i;
         }
 
-        /*
-         *      If the node has any children we will store them and their children ect.
-         */
-        if ( n->HasChildren() )
-        {
-                ((TDSTOREPLUGFPTR_Begin_Node_Children)_fptable[ DSTOREPLUG_BEGIN_NODE_CHILDREN ])( &_plugdata ,
-                                                                                                   filedata   ,
-                                                                                                   name       );
+        ((TDSTOREPLUGFPTR_End_Node_Children)_fptable[ DSTOREPLUG_END_NODE_CHILDREN ])( &_plugdata ,
+                                                                                       filedata   ,
+                                                                                       name       );
+    }
 
-                /*
-                 *      Iterate the child node recursively storing each node level
-                 */
-                CDataNode::const_iterator i = n->ConstBegin();
-                while ( i != n->ConstEnd() )
-                {
-                        StoreNode( (*i), filedata );
-                        ++i;
-                }
-
-                ((TDSTOREPLUGFPTR_End_Node_Children)_fptable[ DSTOREPLUG_END_NODE_CHILDREN ])( &_plugdata ,
-                                                                                               filedata   ,
-                                                                                               name       );
-        }
-
-        /*
-         *      We are finished with this node
-         */
-        ((TDSTOREPLUGFPTR_End_Node_Store)_fptable[ DSTOREPLUG_END_NODE_STORE ])( &_plugdata       ,
-                                                                                 filedata         ,
-                                                                                 name             ,
-                                                                                 count            ,
-                                                                                 n->HasChildren() );
+    /*
+     *      We are finished with this node
+     */
+    ((TDSTOREPLUGFPTR_End_Node_Store)_fptable[ DSTOREPLUG_END_NODE_STORE ])( &_plugdata       ,
+                                                                             filedata         ,
+                                                                             name             ,
+                                                                             count            ,
+                                                                             n->HasChildren() );
 }
 
 /*-------------------------------------------------------------------------*/
