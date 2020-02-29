@@ -147,6 +147,13 @@ DSTOREPLUG_Dest_File_Close( void** plugdata ,
         json_builder_free( fd->jsonDoc );
         fd->jsonDoc = fd->currentJsonNode = GUCEF_NULL;
             
+       /*   
+        *   the json_measure and json_serialize functions include a null terminator
+        *   When writing to a file type media it is not appropriote to include a null terminator
+        */
+       if ( measured > 0 )
+            --measured;
+        
         fd->fptr->write( fd->fptr, serializationBuffer, 1, measured );
         fd->fptr->close( fd->fptr );
     }
