@@ -66,6 +66,7 @@ struct SDestFileData
     TIOAccess* fptr;
     json_value* jsonDoc;
     json_value* currentJsonNode;
+    char activeNodeIsValueNode;
 };
 typedef struct SDestFileData TDestFileData;
 
@@ -115,6 +116,7 @@ DSTOREPLUG_Dest_File_Open( void** plugdata    ,
         TDestFileData* fd = (TDestFileData*) malloc( sizeof( TDestFileData ) );
         memset( fd, 0, sizeof( TDestFileData ) );
         fd->fptr = outFile;
+        fd->activeNodeIsValueNode = 0;
         *filedata = fd;
         return 1;
     }
@@ -173,6 +175,8 @@ DSTOREPLUG_Begin_Node_Store( void** plugdata      ,
                              UInt32 haschildren   ) GUCEF_PLUGIN_CALLSPEC_SUFFIX
 {
     TDestFileData* fd = (TDestFileData*)*filedata;
+    fd->activeNodeIsValueNode = 0;
+
     if ( GUCEF_NULL == fd->currentJsonNode )
     {
         fd->jsonDoc = fd->currentJsonNode = json_object_new( attscount + haschildren );
@@ -187,7 +191,10 @@ DSTOREPLUG_Begin_Node_Store( void** plugdata      ,
         else
         if ( nodeType == GUCEF_DATATYPE_OBJECT )
         {
-            childNode = json_object_new( attscount + haschildren );
+            if ( 1 != attscount || 0 != haschildren )
+                childNode = json_object_new( attscount + haschildren );
+            else
+                fd->activeNodeIsValueNode = 1;
         }
 
         if ( GUCEF_NULL != childNode )
@@ -214,7 +221,9 @@ DSTOREPLUG_End_Node_Store( void** plugdata      ,
                            UInt32 haschildren   ) GUCEF_PLUGIN_CALLSPEC_SUFFIX
 {
     TDestFileData* fd = (TDestFileData*)*filedata;
-    fd->currentJsonNode = fd->currentJsonNode->parent;
+    if ( ( GUCEF_NULL != fd->currentJsonNode ) && ( 0 == fd->activeNodeIsValueNode ) )
+        fd->currentJsonNode = fd->currentJsonNode->parent;
+    fd->activeNodeIsValueNode = 0;
 }
 
 /*---------------------------------------------------------------------------*/
@@ -232,7 +241,8 @@ DSTOREPLUG_Store_Node_Att( void** plugdata      ,
 {
     TDestFileData* fd = (TDestFileData*)*filedata;
 
-    if ( GUCEF_NULL == attname || 0 == attscount ) return;
+    if ( 0 == attscount ) 
+        return;
 
     if ( NULL == attvalue )
     {
@@ -263,7 +273,10 @@ DSTOREPLUG_Store_Node_Att( void** plugdata      ,
                     json_array_push( fd->currentJsonNode, att );
                 else
                 if ( fd->currentJsonNode->type == json_object )
-                    json_object_push( fd->currentJsonNode, attname, att );
+                    if ( GUCEF_NULL != attname )
+                        json_object_push( fd->currentJsonNode, attname, att );
+                    else
+                        json_object_push( fd->currentJsonNode, nodename, att );
             }
             break;
         }
@@ -277,7 +290,10 @@ DSTOREPLUG_Store_Node_Att( void** plugdata      ,
                     json_array_push( fd->currentJsonNode, att );
                 else
                 if ( fd->currentJsonNode->type == json_object )
-                    json_object_push( fd->currentJsonNode, attname, att );
+                    if ( GUCEF_NULL != attname )
+                        json_object_push( fd->currentJsonNode, attname, att );
+                    else
+                        json_object_push( fd->currentJsonNode, nodename, att );
             }
             break;
         }
@@ -293,7 +309,10 @@ DSTOREPLUG_Store_Node_Att( void** plugdata      ,
                     json_array_push( fd->currentJsonNode, att );
                 else
                 if ( fd->currentJsonNode->type == json_object )
-                    json_object_push( fd->currentJsonNode, attname, att );
+                    if ( GUCEF_NULL != attname )
+                        json_object_push( fd->currentJsonNode, attname, att );
+                    else
+                        json_object_push( fd->currentJsonNode, nodename, att );
             }
             break;
         }
@@ -314,7 +333,10 @@ DSTOREPLUG_Store_Node_Att( void** plugdata      ,
                     json_array_push( fd->currentJsonNode, att );
                 else
                 if ( fd->currentJsonNode->type == json_object )
-                    json_object_push( fd->currentJsonNode, attname, att );
+                    if ( GUCEF_NULL != attname )
+                        json_object_push( fd->currentJsonNode, attname, att );
+                    else
+                        json_object_push( fd->currentJsonNode, nodename, att );
             }
             break;
         }
@@ -326,7 +348,10 @@ DSTOREPLUG_Store_Node_Att( void** plugdata      ,
                 json_array_push( fd->currentJsonNode, att );
             else
             if ( fd->currentJsonNode->type == json_object )
-                json_object_push( fd->currentJsonNode, attname, att );
+                if ( GUCEF_NULL != attname )
+                    json_object_push( fd->currentJsonNode, attname, att );
+                else
+                    json_object_push( fd->currentJsonNode, nodename, att );
             break;
         }
     }
