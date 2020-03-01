@@ -74,6 +74,7 @@ class GUCEF_CORE_PUBLIC_CPP CBusyWaitPulseGeneratorDriver : public CIPulseGenera
 
     bool m_loop;
     Float64 m_desiredPulseDelta;
+    bool m_immediatePulseRequested;
 };
 
 /*-------------------------------------------------------------------------//

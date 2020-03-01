@@ -52,10 +52,11 @@ namespace COM {
 //-------------------------------------------------------------------------*/
 
 CHTTPServer::CHTTPServer( CIHTTPServerRouterController* routerController /* = NULL */ )
-    : CObserver()                ,
-      m_tcpServerSocket( false ) ,
-      m_routerController( NULL ) ,
-      m_lastRequestUri()
+    : CObserver()              
+    , m_tcpServerSocket( false )
+    , m_routerController( NULL )
+    , m_lastRequestUri()
+    , m_keepAliveConnections( true )
 {GUCEF_TRACE;
 
     if ( NULL == routerController )
@@ -74,10 +75,11 @@ CHTTPServer::CHTTPServer( CIHTTPServerRouterController* routerController /* = NU
 
 CHTTPServer::CHTTPServer( CORE::CPulseGenerator& pulsGenerator                        ,
                           CIHTTPServerRouterController* routerController /* = NULL */ )
-    : CObserver()                               ,
-      m_tcpServerSocket( pulsGenerator, false ) ,
-      m_routerController( NULL )                ,
-      m_lastRequestUri()
+    : CObserver()                               
+    , m_tcpServerSocket( pulsGenerator, false ) 
+    , m_routerController( NULL )                
+    , m_lastRequestUri()
+    , m_keepAliveConnections( true )
 {GUCEF_TRACE;
 
     if ( NULL == routerController )
@@ -642,7 +644,8 @@ CHTTPServer::OnNotify( CORE::CNotifier* notifier                 ,
 
         // Send the reponse back to the client
         connection->Send( responseBuffer.GetConstBufferPtr(), responseBuffer.GetDataSize() );
-        connection->Close();
+        if ( !m_keepAliveConnections )
+            connection->Close();
     }
 }
 
@@ -924,7 +927,11 @@ CHTTPServer::ParseResponse( const THttpReturnData& returnData  ,
                             CORE::CDynamicBuffer& outputBuffer )
 {GUCEF_TRACE;
 
-    CString response = "HTTP/1.1 " + CORE::Int32ToString( returnData.statusCode ) + "\r\nServer: gucefCOM\r\nConnection: close\r\n";
+    CString response = "HTTP/1.1 " + CORE::Int32ToString( returnData.statusCode ) + "\r\nServer: gucefCOM\r\n";
+    if ( m_keepAliveConnections )
+        response += "Connection: keep-alive\r\n";
+    else
+        response += "Connection: close\r\n";
     if ( !returnData.location.IsNULLOrEmpty() )
     {
         response += "Content-Location: " + returnData.location + "\r\n";

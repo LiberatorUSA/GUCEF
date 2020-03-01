@@ -56,9 +56,10 @@ namespace CORE {
 //-------------------------------------------------------------------------*/
 
 CBusyWaitPulseGeneratorDriver::CBusyWaitPulseGeneratorDriver( void )
-    : CIPulseGeneratorDriver()  ,
-      m_loop( false )           ,
-      m_desiredPulseDelta( 10 )
+    : CIPulseGeneratorDriver()  
+    , m_loop( false )           
+    , m_desiredPulseDelta( 10 )
+    , m_immediatePulseRequested( false )
 {GUCEF_TRACE;
 
 }
@@ -66,9 +67,10 @@ CBusyWaitPulseGeneratorDriver::CBusyWaitPulseGeneratorDriver( void )
 /*--------------------------------------------------------------------------*/
 
 CBusyWaitPulseGeneratorDriver::CBusyWaitPulseGeneratorDriver( const CBusyWaitPulseGeneratorDriver& src )
-    : CIPulseGeneratorDriver( src ) ,
-      m_loop( false )               ,
-      m_desiredPulseDelta( 10 )
+    : CIPulseGeneratorDriver( src ) 
+    , m_loop( false )               
+    , m_desiredPulseDelta( 10 )     
+    , m_immediatePulseRequested( false )
 {GUCEF_TRACE;
 
 }
@@ -78,6 +80,7 @@ CBusyWaitPulseGeneratorDriver::CBusyWaitPulseGeneratorDriver( const CBusyWaitPul
 CBusyWaitPulseGeneratorDriver::~CBusyWaitPulseGeneratorDriver()
 {GUCEF_TRACE;
 
+    m_loop = false;
 }
 
 /*--------------------------------------------------------------------------*/
@@ -86,7 +89,10 @@ void
 CBusyWaitPulseGeneratorDriver::RequestPulse( CPulseGenerator& pulseGenerator )
 {GUCEF_TRACE;
 
-    SendDriverPulse( pulseGenerator );
+    if ( m_loop )
+        m_immediatePulseRequested = true;
+    else
+        SendDriverPulse( pulseGenerator );
 }
 
 /*--------------------------------------------------------------------------*/
@@ -100,8 +106,9 @@ CBusyWaitPulseGeneratorDriver::Run( CPulseGenerator& pulseGenerator )
     while ( m_loop )
     {
         remainingDelta = m_desiredPulseDelta - pulseGenerator.GetActualPulseDeltaInMilliSecs();
-        if ( remainingDelta <= 0.0 )
+        if ( remainingDelta <= 0.0 || m_immediatePulseRequested )
         {
+            m_immediatePulseRequested = false;
             SendDriverPulse( pulseGenerator );
         }
         else

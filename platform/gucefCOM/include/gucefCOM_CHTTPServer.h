@@ -180,6 +180,7 @@ class GUCEF_COM_EXPORT_CPP CHTTPServer : CORE::CObserver
     COMCORE::CTCPServerSocket m_tcpServerSocket;
     CIHTTPServerRouterController* m_routerController;
     CString m_lastRequestUri;
+    bool m_keepAliveConnections;
 };
 
 /*-------------------------------------------------------------------------//
