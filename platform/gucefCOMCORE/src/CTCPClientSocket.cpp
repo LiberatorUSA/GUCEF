@@ -608,6 +608,8 @@ CTCPClientSocket::CheckRecieveBuffer( void )
                 // Check to make sure we do not exceed the maximum
                 if ( m_maxreadbytes <= m_readbuffer.GetDataSize() )
                 {
+                    // This is a busy socket, don't yield to the scheduler
+                    m_pulseGenerator->RequestPulse();
                     break;
                 }
             }

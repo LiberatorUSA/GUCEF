@@ -374,6 +374,11 @@ CUDPSocket::OnPulse( CORE::CNotifier* notifier                 ,
         {
             ++cycleCount;
         }
+        if ( cycleCount >= m_maxUpdatesPerCycle )
+        {
+            // This is a busy socket, don't yield to the scheduler
+            m_pulseGenerator->RequestPulse();
+        }
     }
     else
     {

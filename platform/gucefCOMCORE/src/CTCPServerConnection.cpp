@@ -401,10 +401,12 @@ CTCPServerConnection::CheckRecieveBuffer( void )
         totalrecieved += bytesrecv;
         m_readbuffer.SetDataSize( totalrecieved );
 
-        if ( m_maxreadbytes )
+        if ( m_maxreadbytes > 0 )
         {
             if ( m_maxreadbytes <= totalrecieved )
             {
+                // This is a busy socket, don't yield to the scheduler
+                m_parentsock->m_pulseGenerator->RequestPulse();
                 break;
             }
         }

@@ -210,7 +210,7 @@ class GUCEF_COMCORE_EXPORT_CPP CTCPServerSocket : public CSocket
     struct STCPServerSockData* _data;
     bool _active; 
     bool _blocking;                        
-    TConnectionVector _connections;            /**< array of connection objects */
+    TConnectionVector _connections;            /**< array of all pre-allocated connection objects */
     UInt16 m_port;
     MT::CMutex _datalock;
     UInt32 _timeout;   
