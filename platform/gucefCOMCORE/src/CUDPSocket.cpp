@@ -237,7 +237,9 @@ CUDPSocket::SendPacketTo( const CIPAddress& dest ,
     {
         GUCEF_ERROR_LOG( CORE::LOGLEVEL_NORMAL, "UDPSocket(" + CORE::PointerToString( this ) + "):SendPacketTo: Failed to send " + CORE::UInt16ToString( datasize ) + 
             " bytes to " + dest.AddressAndPortAsString()+ " from " + m_hostAddress.AddressAndPortAsString() + ". ErrorCode: " + CORE::Int32ToString( socketError ) );
-
+        
+        TSocketErrorEventData eData( socketError );
+        NotifyObservers( UDPSocketErrorEvent, &eData );  
     }
     return returnValue;
 }
