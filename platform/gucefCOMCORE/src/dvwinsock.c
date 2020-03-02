@@ -279,6 +279,32 @@ dvsocket_send( SOCKET s        ,
 /*-------------------------------------------------------------------------*/
 
 int
+dvsocket_sendto( SOCKET s                  ,
+                 const void* buf           ,
+                 int len                   ,
+                 int flags                 ,
+                 const struct sockaddr* to ,
+                 int tolen                 ,
+                 int* error                )
+{
+    int retval;
+    if ( ( retval = sendto( s     ,
+                            buf   ,
+                            len   ,
+                            flags ,
+                            to    ,
+                            tolen ) ) == SOCKET_ERROR )
+    {
+        *error = LastSocketError;
+        return retval;
+    }
+    *error = 0;
+    return retval;
+}
+
+/*-------------------------------------------------------------------------*/
+
+int
 dvsocket_recv( SOCKET s   ,
                void* buf  ,
                int len    ,

@@ -218,13 +218,15 @@ CUDPSocket::SendPacketTo( const CIPAddress& dest ,
     remote.sin_port = dest.GetPort();
     remote.sin_family = AF_INET;
     
-    Int32 returnValue = sendto( _data->sockid             ,
-                                (const char*)data         ,
-                                datasize                  ,
-                                0                         ,
-                                (struct sockaddr*)&remote ,
-                                sizeof(remote)            );
-    
+    int socketError = 0;
+    Int32 returnValue = dvsocket_sendto( _data->sockid             ,
+                                         (const char*)data         ,
+                                         datasize                  ,
+                                         0                         ,
+                                         (struct sockaddr*)&remote ,
+                                         sizeof(remote)            ,
+                                         &socketError              );
+      
     if ( returnValue >= 0 )
     {
         m_bytesTransmitted += returnValue;
@@ -234,7 +236,7 @@ CUDPSocket::SendPacketTo( const CIPAddress& dest ,
     else
     {
         GUCEF_ERROR_LOG( CORE::LOGLEVEL_NORMAL, "UDPSocket(" + CORE::PointerToString( this ) + "):SendPacketTo: Failed to send " + CORE::UInt16ToString( datasize ) + 
-            " bytes to " + dest.AddressAndPortAsString()+ " from " + m_hostAddress.AddressAndPortAsString() );
+            " bytes to " + dest.AddressAndPortAsString()+ " from " + m_hostAddress.AddressAndPortAsString() + ". ErrorCode: " + CORE::Int32ToString( socketError ) );
 
     }
     return returnValue;

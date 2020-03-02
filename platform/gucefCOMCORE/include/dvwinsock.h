@@ -222,6 +222,17 @@ dvsocket_send( SOCKET s        ,
 /*-------------------------------------------------------------------------*/
 
 int
+dvsocket_sendto( SOCKET s                  ,
+                 const void* buf           ,
+                 int len                   ,
+                 int flags                 ,
+                 const struct sockaddr* to ,
+                 int tolen                 ,
+                 int* error                );
+
+/*-------------------------------------------------------------------------*/
+
+int
 dvsocket_recv( SOCKET s   ,
                void* buf  ,
                int len    ,
