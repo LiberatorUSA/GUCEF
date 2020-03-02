@@ -200,7 +200,7 @@ CNotifier::UnsubscribeAllFromNotifier( void )
 /*-------------------------------------------------------------------------*/
 
 bool
-CNotifier::NotifyObservers( void )
+CNotifier::NotifyObservers( void ) const
 {GUCEF_TRACE;
 
     if ( NULL != m_imp )
@@ -214,7 +214,7 @@ CNotifier::NotifyObservers( void )
 
 bool
 CNotifier::NotifyObservers( const CEvent& eventid  ,
-                            CICloneable* eventData )
+                            CICloneable* eventData ) const
 {GUCEF_TRACE;
 
     if ( NULL != m_imp )
@@ -230,7 +230,7 @@ CNotifier::NotifyObservers( const CEvent& eventid  ,
 bool
 CNotifier::NotifyObservers( CNotifier& sender                   ,
                             const CEvent& eventid               ,
-                            CICloneable* eventData /* = NULL */ )
+                            CICloneable* eventData /* = NULL */ ) const
 {GUCEF_TRACE;
 
     if ( NULL != m_imp )
@@ -248,7 +248,7 @@ bool
 CNotifier::NotifySpecificObserver( CNotifier& sender           ,
                                    CObserver& specificObserver ,
                                    const CEvent& eventid       ,
-                                   CICloneable* eventData      )
+                                   CICloneable* eventData      ) const
 {GUCEF_TRACE;
 
     if ( NULL != m_imp )
@@ -266,7 +266,7 @@ CNotifier::NotifySpecificObserver( CNotifier& sender           ,
 bool
 CNotifier::NotifySpecificObserver( CObserver& specificObserver ,
                                    const CEvent& eventid       ,
-                                   CICloneable* eventData      )
+                                   CICloneable* eventData      ) const
 {GUCEF_TRACE;
 
     if ( NULL != m_imp )

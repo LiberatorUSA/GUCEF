@@ -187,7 +187,7 @@ class GUCEF_CORE_PUBLIC_CPP CNotifier : public CITypeNamed
      *
      *  @return Alive state of the notifier, if false then the notifier died itself as a result of the notification.
      */
-    bool NotifyObservers( void );
+    bool NotifyObservers( void ) const;
 
     /**
      *  Dispatches the given eventid and eventData to all observers
@@ -204,7 +204,7 @@ class GUCEF_CORE_PUBLIC_CPP CNotifier : public CITypeNamed
      *  @return Alive state of the notifier, if false then the notifier died itself as a result of the notification.
      */
     bool NotifyObservers( const CEvent& eventid         ,
-                          CICloneable* eventData = NULL );
+                          CICloneable* eventData = NULL ) const;
 
     /**
      *  The same as NotifyObservers( CEvent, CICloneable )
@@ -218,7 +218,7 @@ class GUCEF_CORE_PUBLIC_CPP CNotifier : public CITypeNamed
      */
     bool NotifyObservers( CNotifier& sender             ,
                           const CEvent& eventid         ,
-                          CICloneable* eventData = NULL );
+                          CICloneable* eventData = NULL ) const;
 
     /**
      *  The same as NotifyObservers( CEvent, CICloneable )
@@ -233,7 +233,7 @@ class GUCEF_CORE_PUBLIC_CPP CNotifier : public CITypeNamed
      */
     bool NotifySpecificObserver( CObserver& specificObserver   ,
                                  const CEvent& eventid         ,
-                                 CICloneable* eventData = NULL );
+                                 CICloneable* eventData = NULL ) const;
 
     /**
      *  The same as NotifyObservers( CNotifier, CEvent, CICloneable )
@@ -249,7 +249,7 @@ class GUCEF_CORE_PUBLIC_CPP CNotifier : public CITypeNamed
     bool NotifySpecificObserver( CNotifier& sender             ,
                                  CObserver& specificObserver   ,
                                  const CEvent& eventid         ,
-                                 CICloneable* eventData = NULL );
+                                 CICloneable* eventData = NULL ) const;
 
     virtual void LockData( void ) const;
 
