@@ -140,7 +140,7 @@ CHostAddress::SetHostnameAndPort( const CORE::CString& hostAndPort )
     if ( sepCharIndex >= 0 )
     {
         m_hostname = hostAndPort.SubstrToIndex( sepCharIndex, true );
-        SetPortInHostByteOrder( CORE::StringToUInt16( hostAndPort.SubstrToIndex( sepCharIndex, false ) ) );
+        SetPortInHostByteOrder( CORE::StringToUInt16( hostAndPort.SubstrToIndex( sepCharIndex+1, false ) ) );
     }
     else
     {    
