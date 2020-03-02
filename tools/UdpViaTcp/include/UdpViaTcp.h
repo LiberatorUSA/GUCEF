@@ -259,6 +259,7 @@ class UdpViaTcp : public CORE::CObservingNotifier
     COMCORE::CTCPClientSocket m_tcpClientSocket;
     COMCORE::CUDPSocket m_udpTransmitSocket;
     COMCORE::CUDPSocket m_udpReceiveSocket;
+    CORE::CDynamicBuffer m_udpReceiveSocketBuffer;
     std::vector< CORE::CDynamicBuffer > m_receivePacketBuffers;
     
     bool m_udpReceiveUnicast;

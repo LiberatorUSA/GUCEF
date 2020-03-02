@@ -125,6 +125,7 @@ UdpViaTcp::UdpViaTcp( void )
     , m_tcpClientSocket( false )
     , m_udpTransmitSocket( false )
     , m_udpReceiveSocket( false )
+    , m_udpReceiveSocketBuffer()
     , m_receivePacketBuffers()
     , m_udpReceiveUnicast( true )
     , m_udpReceiveMulticast( false )
@@ -337,8 +338,19 @@ UdpViaTcp::OnUDPReceiveSocketPacketRecieved( CORE::CNotifier* notifier    ,
         CORE::UInt32 packetSize = udpPacketBuffer.GetDataSize();
         memcpy( packetHeader, "UDP", 3 );
         memcpy( packetHeader+3, &packetSize, 4 );        
-        m_tcpClientSocket.Send( packetHeader, 7 );
-        m_tcpClientSocket.Send( udpPacketBuffer.GetConstBufferPtr(), packetSize );
+        
+        bool successfullSend = false;
+        if ( m_tcpClientSocket.IsActive() )
+        {            
+            if ( m_tcpClientSocket.Send( packetHeader, 7 ) )
+                if ( m_tcpClientSocket.Send( udpPacketBuffer.GetConstBufferPtr(), packetSize ) )
+                    successfullSend = true;
+        }
+        if ( !successfullSend )
+        {
+            m_udpReceiveSocketBuffer.Append( packetHeader, 7 );
+            m_udpReceiveSocketBuffer.Append( udpPacketBuffer.GetConstBufferPtr(), packetSize );
+        }
     }
     else
     {
