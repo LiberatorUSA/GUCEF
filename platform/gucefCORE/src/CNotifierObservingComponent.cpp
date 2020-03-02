@@ -80,6 +80,8 @@ CNotifierObservingComponent::UnlockData( void )
 /*-------------------------------------------------------------------------*/
 
 CNotifierObservingComponent::CNotifierObservingComponent( void )
+    : CObserver()
+    , m_owner( GUCEF_NULL )
 {GUCEF_TRACE;
 
 }
@@ -87,6 +89,8 @@ CNotifierObservingComponent::CNotifierObservingComponent( void )
 /*-------------------------------------------------------------------------*/
     
 CNotifierObservingComponent::CNotifierObservingComponent( const CNotifierObservingComponent& src )
+    : CObserver( src )
+    , m_owner( GUCEF_NULL )
 {GUCEF_TRACE;
 
 }
