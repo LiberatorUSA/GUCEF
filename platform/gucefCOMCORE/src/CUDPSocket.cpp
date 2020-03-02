@@ -226,10 +226,17 @@ CUDPSocket::SendPacketTo( const CIPAddress& dest ,
                                 sizeof(remote)            );
     
     if ( returnValue >= 0 )
+    {
         m_bytesTransmitted += returnValue;
+        GUCEF_DEBUG_LOG( CORE::LOGLEVEL_BELOW_NORMAL, "UDPSocket(" + CORE::PointerToString( this ) + "):SendPacketTo: Sent " + CORE::UInt16ToString( datasize ) + 
+            " bytes to " + dest.AddressAndPortAsString() + " from " + m_hostAddress.AddressAndPortAsString() );
+    }
     else
-        GUCEF_ERROR_LOG( CORE::LOGLEVEL_NORMAL, "UDPSocket:SendPacketTo: Failed to send " + CORE::UInt16ToString( datasize ) + " bytes to " + dest.AddressAndPortAsString() );
+    {
+        GUCEF_ERROR_LOG( CORE::LOGLEVEL_NORMAL, "UDPSocket(" + CORE::PointerToString( this ) + "):SendPacketTo: Failed to send " + CORE::UInt16ToString( datasize ) + 
+            " bytes to " + dest.AddressAndPortAsString()+ " from " + m_hostAddress.AddressAndPortAsString() );
 
+    }
     return returnValue;
 }
 
@@ -550,7 +557,8 @@ CUDPSocket::Recieve( CIPAddress& src ,
                                     &sockError                     );
     if ( retval < 0 )
     {       
-        GUCEF_ERROR_LOG( CORE::LOGLEVEL_IMPORTANT, "UDPSocket: Failure trying to receive data on socket " + m_hostAddress.AddressAndPortAsString() + ". Error code: " + CORE::Int32ToString( sockError ) );
+        GUCEF_ERROR_LOG( CORE::LOGLEVEL_IMPORTANT, "UDPSocket(" + CORE::PointerToString( this ) + "): Failure trying to receive data on socket " + 
+            m_hostAddress.AddressAndPortAsString() + ". Error code: " + CORE::Int32ToString( sockError ) );
         
         TSocketErrorEventData eData( sockError );
         NotifyObservers( UDPSocketErrorEvent, &eData );        
@@ -663,64 +671,67 @@ CUDPSocket::Open( const CIPAddress& localaddr )
         if ( m_autoReopenOnError )
             m_pulseGenerator->RequestPeriodicPulses( this, PULSEUPDATEINTERVAL );
         
-        GUCEF_ERROR_LOG( CORE::LOGLEVEL_IMPORTANT, "UDPSocket: Failed to open socket at " + m_hostAddress.AddressAndPortAsString() + ". Error code: " + CORE::Int32ToString( errorCode ) );
+        GUCEF_ERROR_LOG( CORE::LOGLEVEL_IMPORTANT, "UDPSocket(" + CORE::PointerToString( this ) + "): Failed to open socket at " + 
+            m_hostAddress.AddressAndPortAsString() + ". Error code: " + CORE::Int32ToString( errorCode ) );
         return false;
     }
 
     // Set the desired blocking mode
     if ( !SetBlockingMode( _data->sockid, _blocking ) )
     {
-        GUCEF_ERROR_LOG( CORE::LOGLEVEL_IMPORTANT, "UDPSocket: Failed to set blocking mode \"" + CORE::BoolToString( _blocking ) + "\" on socket" );
+        GUCEF_ERROR_LOG( CORE::LOGLEVEL_IMPORTANT, "UDPSocket(" + CORE::PointerToString( this ) + "): Failed to set blocking mode \"" + 
+            CORE::BoolToString( _blocking ) + "\" on socket" );
         
         if ( m_autoReopenOnError )
             m_pulseGenerator->RequestPeriodicPulses( this, PULSEUPDATEINTERVAL );
 
         return false;
     }
-    GUCEF_DEBUG_LOG( CORE::LOGLEVEL_BELOW_NORMAL, "UDPSocket: Successfully set blocking mode \"" + CORE::BoolToString( _blocking ) + "\" on socket" );
+    GUCEF_DEBUG_LOG( CORE::LOGLEVEL_BELOW_NORMAL, "UDPSocket(" + CORE::PointerToString( this ) + "): Successfully set blocking mode \"" + 
+        CORE::BoolToString( _blocking ) + "\" on socket" );
 
     int allowAddressReuse = 1;
     if ( 0 > dvsocket_setsockopt( _data->sockid, SOL_SOCKET, SO_REUSEADDR, (const char*) &allowAddressReuse, sizeof(int), &errorCode ) )
     {
-        GUCEF_ERROR_LOG( CORE::LOGLEVEL_NORMAL, "UDPSocket: Failed to set address reuse mode \"" + CORE::BoolToString( allowAddressReuse != 0 ) 
+        GUCEF_ERROR_LOG( CORE::LOGLEVEL_NORMAL, "UDPSocket(" + CORE::PointerToString( this ) + "): Failed to set address reuse mode \"" + CORE::BoolToString( allowAddressReuse != 0 ) 
             + "\" on socket. Error code: " + CORE::UInt32ToString( errorCode ) );
     }
-    GUCEF_DEBUG_LOG( CORE::LOGLEVEL_BELOW_NORMAL, "UDPSocket: Successfully set address reuse mode \"" + CORE::BoolToString( allowAddressReuse != 0 ) + "\" on socket" );
+    GUCEF_DEBUG_LOG( CORE::LOGLEVEL_BELOW_NORMAL, "UDPSocket(" + CORE::PointerToString( this ) + "): Successfully set address reuse mode \"" + CORE::BoolToString( allowAddressReuse != 0 ) + "\" on socket" );
                 
     #ifdef SO_REUSEPORT
     int allowPortReuse = 1;
     if ( 0 > dvsocket_setsockopt( _data->sockid, SOL_SOCKET, SO_REUSEPORT, (const char*) &allowPortReuse, sizeof(int), &errorCode ) )
     {
-        GUCEF_ERROR_LOG( CORE::LOGLEVEL_NORMAL, "UDPSocket: Failed to port reuse mode \"" + CORE::BoolToString( allowPortReuse != 0 ) 
+        GUCEF_ERROR_LOG( CORE::LOGLEVEL_NORMAL, "UDPSocket(" + CORE::PointerToString( this ) + "): Failed to port reuse mode \"" + CORE::BoolToString( allowPortReuse != 0 ) 
             + "\" on socket. Error code: " + CORE::UInt32ToString( errorCode ) );
     }
-    GUCEF_DEBUG_LOG( CORE::LOGLEVEL_BELOW_NORMAL, "UDPSocket: Successfully set port reuse mode \"" + CORE::BoolToString( allowPortReuse != 0 ) + "\" on socket" );
+    GUCEF_DEBUG_LOG( CORE::LOGLEVEL_BELOW_NORMAL, "UDPSocket(" + CORE::PointerToString( this ) + "): Successfully set port reuse mode \"" + CORE::BoolToString( allowPortReuse != 0 ) + "\" on socket" );
     #endif
 
     Int32 loopch = m_allowMulticastLoopback ? (Int32)1 : (Int32)0;
     if ( 0 > dvsocket_setsockopt( _data->sockid, IPPROTO_IP, IP_MULTICAST_LOOP, (const char*) &loopch, sizeof(loopch), &errorCode ) )
     {
-        GUCEF_ERROR_LOG( CORE::LOGLEVEL_NORMAL, "UDPSocket: Failed to set multicast loopback (dis)allowed mode \"" + CORE::BoolToString( loopch != 0 ) 
+        GUCEF_ERROR_LOG( CORE::LOGLEVEL_NORMAL, "UDPSocket(" + CORE::PointerToString( this ) + "): Failed to set multicast loopback (dis)allowed mode \"" + CORE::BoolToString( loopch != 0 ) 
             + "\" on socket. Error code: " + CORE::UInt32ToString( errorCode ) );
     }
-    GUCEF_DEBUG_LOG( CORE::LOGLEVEL_BELOW_NORMAL, "UDPSocket: Successfully set multicast loopback mode \"" + CORE::BoolToString( loopch != 0 ) + "\" on socket" );
+    GUCEF_DEBUG_LOG( CORE::LOGLEVEL_BELOW_NORMAL, "UDPSocket(" + CORE::PointerToString( this ) + "): Successfully set multicast loopback mode \"" + CORE::BoolToString( loopch != 0 ) + "\" on socket" );
                 
     if ( 0 > dvsocket_setsockopt( _data->sockid, IPPROTO_IP, IP_MULTICAST_TTL, (const char*) &m_multicastTTL, sizeof(m_multicastTTL), &errorCode ) )
     {
-        GUCEF_ERROR_LOG( CORE::LOGLEVEL_NORMAL, "UDPSocket: Failed to set multicast TTL to " + CORE::Int32ToString( m_multicastTTL ) 
+        GUCEF_ERROR_LOG( CORE::LOGLEVEL_NORMAL, "UDPSocket(" + CORE::PointerToString( this ) + "): Failed to set multicast TTL to " + CORE::Int32ToString( m_multicastTTL ) 
             + "\" on socket. Error code: " + CORE::UInt32ToString( errorCode ) );
     }
-    GUCEF_DEBUG_LOG( CORE::LOGLEVEL_BELOW_NORMAL, "UDPSocket: Successfully set multicast TTL to \"" + CORE::Int32ToString( m_multicastTTL ) + "\" on socket" );
+    GUCEF_DEBUG_LOG( CORE::LOGLEVEL_BELOW_NORMAL, "UDPSocket(" + CORE::PointerToString( this ) + "): Successfully set multicast TTL to \"" + CORE::Int32ToString( m_multicastTTL ) + "\" on socket" );
 
     // This option is needed on the socket in order to be able to receive broadcast messages
     // If not set the socket will not receive broadcast messages in the local network.
     Int32 broadcastOption = m_allowBroadcast ? 1 : 0;
     if ( 0 > dvsocket_setsockopt( _data->sockid, SOL_SOCKET, SO_BROADCAST, (const char*) &broadcastOption, sizeof(broadcastOption), &errorCode ) )
     {
-        GUCEF_ERROR_LOG( CORE::LOGLEVEL_NORMAL, "UDPSocket: Failed to set broadcast option to " + CORE::BoolToString( m_allowBroadcast ) 
+        GUCEF_ERROR_LOG( CORE::LOGLEVEL_NORMAL, "UDPSocket(" + CORE::PointerToString( this ) + "): Failed to set broadcast option to " + CORE::BoolToString( m_allowBroadcast ) 
             + "\" on socket. Error code: " + CORE::UInt32ToString( errorCode ) );
     }
-    GUCEF_DEBUG_LOG( CORE::LOGLEVEL_BELOW_NORMAL, "UDPSocket: Successfully set broadcast option to \"" + CORE::BoolToString( m_allowBroadcast ) + "\" on socket" );
+    GUCEF_DEBUG_LOG( CORE::LOGLEVEL_BELOW_NORMAL, "UDPSocket(" + CORE::PointerToString( this ) + "): Successfully set broadcast option to \"" + CORE::BoolToString( m_allowBroadcast ) + "\" on socket" );
 
     _data->localaddress.sin_family = AF_INET;
     _data->localaddress.sin_port = m_hostAddress.GetPort();
@@ -731,7 +742,7 @@ CUDPSocket::Open( const CIPAddress& localaddr )
                         sizeof(struct sockaddr_in)               ,
                         &errorCode                               ) == 0 )
     {
-        GUCEF_DEBUG_LOG( CORE::LOGLEVEL_NORMAL, "UDPSocket: Successfully bound and opened socket at " + m_hostAddress.AddressAndPortAsString() 
+        GUCEF_DEBUG_LOG( CORE::LOGLEVEL_NORMAL, "UDPSocket(" + CORE::PointerToString( this ) + "): Successfully bound and opened socket at " + m_hostAddress.AddressAndPortAsString() 
             + " aka " + CORE::UInt32ToString( m_hostAddress.GetAddress() ) + ":" + CORE::UInt16ToString( m_hostAddress.GetPort() ) + " in network format" );
         if ( !NotifyObservers( UDPSocketOpenedEvent ) ) return true;
 
@@ -742,7 +753,7 @@ CUDPSocket::Open( const CIPAddress& localaddr )
     }
     else
     {
-        GUCEF_ERROR_LOG( CORE::LOGLEVEL_NORMAL, "UDPSocket: Failed to bind to " + m_hostAddress.AddressAndPortAsString() + ". Error code: " + CORE::Int32ToString( errorCode ) );
+        GUCEF_ERROR_LOG( CORE::LOGLEVEL_NORMAL, "UDPSocket(" + CORE::PointerToString( this ) + "): Failed to bind to " + m_hostAddress.AddressAndPortAsString() + ". Error code: " + CORE::Int32ToString( errorCode ) );
         TSocketErrorEventData eData( errorCode );
         if ( !NotifyObservers( UDPSocketErrorEvent, &eData ) ) return false;
 
@@ -768,12 +779,12 @@ CUDPSocket::Join( const CIPAddress& multicastGroup ,
     int errorCode = 0;
     if ( 0 > dvsocket_setsockopt( _data->sockid, IPPROTO_IP, IP_ADD_SOURCE_MEMBERSHIP, (char*) &imr, sizeof(imr), &errorCode ) )
     {
-        GUCEF_ERROR_LOG( CORE::LOGLEVEL_NORMAL, "UDPSocket: Failed to join multicast group " + multicastGroup.AddressAsString() 
+        GUCEF_ERROR_LOG( CORE::LOGLEVEL_NORMAL, "UDPSocket(" + CORE::PointerToString( this ) + "): Failed to join multicast group " + multicastGroup.AddressAsString() 
             + ", using interface " + m_hostAddress.AddressAsString() + ", for data coming from " + srcAddr.AddressAsString()
             + ". Error code: " + CORE::UInt32ToString( errorCode ) )
         return false;    
     }
-    GUCEF_DEBUG_LOG( CORE::LOGLEVEL_NORMAL, "UDPSocket: Joined multicast group " + multicastGroup.AddressAsString() 
+    GUCEF_DEBUG_LOG( CORE::LOGLEVEL_NORMAL, "UDPSocket(" + CORE::PointerToString( this ) + "): Joined multicast group " + multicastGroup.AddressAsString() 
         + ", using interface " + m_hostAddress.AddressAsString() + ", for data coming from " + srcAddr.AddressAsString() );
     return true;
 }
@@ -792,14 +803,14 @@ CUDPSocket::Join( const CIPAddress& multicastGroup )
     int errorCode = 0;
     if ( 0 > dvsocket_setsockopt( _data->sockid, IPPROTO_IP, IP_ADD_MEMBERSHIP, (char*) &imr, sizeof(imr), &errorCode ) )
     {
-        GUCEF_ERROR_LOG( CORE::LOGLEVEL_NORMAL, "UDPSocket: Failed to join multicast group " + multicastGroup.AddressAsString() 
+        GUCEF_ERROR_LOG( CORE::LOGLEVEL_NORMAL, "UDPSocket(" + CORE::PointerToString( this ) + "): Failed to join multicast group " + multicastGroup.AddressAsString() 
             + ", using interface " + m_hostAddress.AddressAsString() 
             + " aka " + CORE::UInt32ToString( m_hostAddress.GetAddress() ) + ":" + CORE::UInt16ToString( m_hostAddress.GetPort() ) + " in network format"
             + ", for all data on the multicast group except explicit blocks"
             + ". Error code: " + CORE::UInt32ToString( errorCode ) )
         return false;    
     }
-    GUCEF_DEBUG_LOG( CORE::LOGLEVEL_NORMAL, "UDPSocket: Joined multicast group " + multicastGroup.AddressAsString() 
+    GUCEF_DEBUG_LOG( CORE::LOGLEVEL_NORMAL, "UDPSocket(" + CORE::PointerToString( this ) + "): Joined multicast group " + multicastGroup.AddressAsString() 
         + ", using interface " + m_hostAddress.AddressAsString() + ", for all data on the multicast group except explicit blocks" );
     return true;
 }
@@ -820,12 +831,12 @@ CUDPSocket::Leave( const CIPAddress& multicastGroup ,
     int errorCode = 0;
     if ( 0 > dvsocket_setsockopt( _data->sockid, IPPROTO_IP, IP_DROP_SOURCE_MEMBERSHIP, (char*) &imr, sizeof(imr), &errorCode ) )
     {
-        GUCEF_ERROR_LOG( CORE::LOGLEVEL_NORMAL, "UDPSocket: Failed to leave multicast group " + multicastGroup.AddressAsString() 
+        GUCEF_ERROR_LOG( CORE::LOGLEVEL_NORMAL, "UDPSocket(" + CORE::PointerToString( this ) + "): Failed to leave multicast group " + multicastGroup.AddressAsString() 
             + ", using interface " + m_hostAddress.AddressAsString() + ", for data coming data from " + srcAddr.AddressAsString()
             + ". Error code: " + CORE::UInt32ToString( errorCode ) );
         return false;    
     }
-    GUCEF_DEBUG_LOG( CORE::LOGLEVEL_NORMAL, "UDPSocket: Left multicast group " + multicastGroup.AddressAsString() 
+    GUCEF_DEBUG_LOG( CORE::LOGLEVEL_NORMAL, "UDPSocket(" + CORE::PointerToString( this ) + "): Left multicast group " + multicastGroup.AddressAsString() 
         + ", using interface " + m_hostAddress.AddressAsString() + ", for data coming from " + srcAddr.AddressAsString() );
     return true;
 }
@@ -844,12 +855,12 @@ CUDPSocket::Leave( const CIPAddress& multicastGroup )
     int errorCode = 0;
     if ( 0 > dvsocket_setsockopt( _data->sockid, IPPROTO_IP, IP_DROP_MEMBERSHIP, (char*) &imr, sizeof(imr), &errorCode ) )
     {
-        GUCEF_ERROR_LOG( CORE::LOGLEVEL_NORMAL, "UDPSocket: Failed to leave multicast group " + multicastGroup.AddressAsString() 
+        GUCEF_ERROR_LOG( CORE::LOGLEVEL_NORMAL, "UDPSocket(" + CORE::PointerToString( this ) + "): Failed to leave multicast group " + multicastGroup.AddressAsString() 
             + ", using interface " + m_hostAddress.AddressAsString() + ", for all data on the multicast group" 
             + ". Error code: " + CORE::UInt32ToString( errorCode ) );
         return false;    
     }
-    GUCEF_DEBUG_LOG( CORE::LOGLEVEL_NORMAL, "UDPSocket: Left multicast group " + multicastGroup.AddressAsString() 
+    GUCEF_DEBUG_LOG( CORE::LOGLEVEL_NORMAL, "UDPSocket(" + CORE::PointerToString( this ) + "): Left multicast group " + multicastGroup.AddressAsString() 
         + ", using interface " + m_hostAddress.AddressAsString() + ", for all data on the multicast group" );
     return true;
 }
@@ -870,12 +881,12 @@ CUDPSocket::Block( const CIPAddress& multicastGroup ,
     int errorCode = 0;
     if ( 0 > dvsocket_setsockopt( _data->sockid, IPPROTO_IP, IP_BLOCK_SOURCE, (char*) &imr, sizeof(imr), &errorCode ) )
     {
-        GUCEF_ERROR_LOG( CORE::LOGLEVEL_NORMAL, "UDPSocket: Failed to block data for multicast group " + multicastGroup.AddressAsString() 
+        GUCEF_ERROR_LOG( CORE::LOGLEVEL_NORMAL, "UDPSocket(" + CORE::PointerToString( this ) + "): Failed to block data for multicast group " + multicastGroup.AddressAsString() 
             + ", using interface " + m_hostAddress.AddressAsString() + ", for data coming data from " + srcAddr.AddressAsString() 
             + ". Error code: " + CORE::UInt32ToString( errorCode ) );
         return false;    
     }
-    GUCEF_DEBUG_LOG( CORE::LOGLEVEL_NORMAL, "UDPSocket: Blocking data for multicast group " + multicastGroup.AddressAsString() 
+    GUCEF_DEBUG_LOG( CORE::LOGLEVEL_NORMAL, "UDPSocket(" + CORE::PointerToString( this ) + "): Blocking data for multicast group " + multicastGroup.AddressAsString() 
         + ", using interface " + m_hostAddress.AddressAsString() + ", for data coming from " + srcAddr.AddressAsString() );
     return true;
 }
@@ -896,12 +907,12 @@ CUDPSocket::Unblock( const CIPAddress& multicastGroup ,
     int errorCode = 0;
     if ( 0 > dvsocket_setsockopt( _data->sockid, IPPROTO_IP, IP_UNBLOCK_SOURCE, (char*) &imr, sizeof(imr), &errorCode ) )
     {
-        GUCEF_ERROR_LOG( CORE::LOGLEVEL_NORMAL, "UDPSocket: Failed to unblock data for multicast group " + multicastGroup.AddressAsString() 
+        GUCEF_ERROR_LOG( CORE::LOGLEVEL_NORMAL, "UDPSocket(" + CORE::PointerToString( this ) + "): Failed to unblock data for multicast group " + multicastGroup.AddressAsString() 
             + ", using interface " + m_hostAddress.AddressAsString() + ", for data coming data from " + srcAddr.AddressAsString() 
             + ". Error code: " + CORE::UInt32ToString( errorCode ) );
         return false;    
     }
-    GUCEF_DEBUG_LOG( CORE::LOGLEVEL_NORMAL, "UDPSocket: Unblocking data for multicast group " + multicastGroup.AddressAsString() 
+    GUCEF_DEBUG_LOG( CORE::LOGLEVEL_NORMAL, "UDPSocket(" + CORE::PointerToString( this ) + "): Unblocking data for multicast group " + multicastGroup.AddressAsString() 
         + ", using interface " + m_hostAddress.AddressAsString() + ", for data coming from " + srcAddr.AddressAsString() );
     return true;
 }
@@ -921,7 +932,7 @@ CUDPSocket::Close( bool shutdownOnly )
             int errorCode = 0;
             if ( 0 == dvsocket_closesocket( _data->sockid, &errorCode ) )
             {
-                GUCEF_DEBUG_LOG( CORE::LOGLEVEL_NORMAL, "UDPSocket: Closed socket at " + m_hostAddress.AddressAndPortAsString() );
+                GUCEF_DEBUG_LOG( CORE::LOGLEVEL_NORMAL, "UDPSocket(" + CORE::PointerToString( this ) + "): Closed socket at " + m_hostAddress.AddressAndPortAsString() );
 
                 // We now no longer require periodic updates to poll for data
                 if ( !m_autoReopenOnError )
@@ -931,7 +942,7 @@ CUDPSocket::Close( bool shutdownOnly )
             }
             else
             {
-                GUCEF_ERROR_LOG( CORE::LOGLEVEL_NORMAL, "UDPSocket: Failed close socket at " + m_hostAddress.AddressAndPortAsString() );
+                GUCEF_ERROR_LOG( CORE::LOGLEVEL_NORMAL, "UDPSocket(" + CORE::PointerToString( this ) + "): Failed close socket at " + m_hostAddress.AddressAndPortAsString() );
                 
                 TSocketErrorEventData eData( errorCode );
                 NotifyObservers( UDPSocketErrorEvent, &eData );
@@ -939,7 +950,7 @@ CUDPSocket::Close( bool shutdownOnly )
         }
         else
         {
-            GUCEF_DEBUG_LOG( CORE::LOGLEVEL_NORMAL, "UDPSocket: shutting down socket at " + m_hostAddress.AddressAndPortAsString() );
+            GUCEF_DEBUG_LOG( CORE::LOGLEVEL_NORMAL, "UDPSocket(" + CORE::PointerToString( this ) + "): shutting down socket at " + m_hostAddress.AddressAndPortAsString() );
             shutdown( _data->sockid, 1 );
         }        
     }
