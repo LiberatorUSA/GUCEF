@@ -185,25 +185,50 @@ void
 CTCPServerConnection::Close( void )
 {GUCEF_TRACE;
 
-    LockData();
+    CloseImp( false, true, true, true );
+}
+
+/*-------------------------------------------------------------------------*/
+
+void
+CTCPServerConnection::CloseImp( bool byUser            , 
+                                bool lock              , 
+                                bool updateActiveLists ,
+                                bool notify            )
+{GUCEF_TRACE;
+
+    if ( lock )
+        LockData();
 
     if ( _active )
     {
-        int errorCode;
-        dvsocket_closesocket( _data->sockid, &errorCode );
-        _active = false;
+        int errorCode = 0;
+        if ( 0 == dvsocket_closesocket( _data->sockid, &errorCode ) )
+        {
+            GUCEF_DEBUG_LOG( CORE::LOGLEVEL_NORMAL, "TCPServerConnection(" + CORE::PointerToString( this ) + "): Closed socket for connection " + GetRemoteIP().AddressAndPortAsString() );
+        
+            _active = false;
 
-        NotifyObservers( DisconnectedEvent );
+            m_parentsock->OnClientConnectionClosed( this              ,
+                                                    m_connectionidx   ,
+                                                    byUser            ,
+                                                    updateActiveLists );
 
-        m_parentsock->OnClientConnectionClosed( this            ,
-                                                m_connectionidx ,
-                                                false           );
-
-		m_readbuffer.Clear( false );
-		m_sendBuffer.Clear( false );
-		m_sendOpBuffer.Clear( false );
+		    m_readbuffer.Clear( false );
+		    m_sendBuffer.Clear( false );
+		    m_sendOpBuffer.Clear( false );
+        }
+        else
+        {
+            GUCEF_ERROR_LOG( CORE::LOGLEVEL_NORMAL, "TCPServerConnection(" + CORE::PointerToString( this ) + "): Failed close socket at " + GetRemoteIP().AddressAndPortAsString() );
+        }
     }
-    UnlockData();
+
+    if ( lock )
+        UnlockData();
+
+    if ( notify )
+        NotifyObservers( DisconnectedEvent );
 }
 
 /*-------------------------------------------------------------------------*/
@@ -369,13 +394,11 @@ CTCPServerConnection::CheckRecieveBuffer( void )
         {
             GUCEF_DEBUG_LOG( CORE::LOGLEVEL_NORMAL, "CTCPServerConnection(" + CORE::PointerToString( this ) + "): Socket error occured: " + CORE::Int32ToString( errorcode ) );
 
-            // After a socket error you must always close the connection.
-            dvsocket_closesocket( _data->sockid, &errorcode );
-            _active = false;
-
             // Notify our users of the error
             TSocketErrorEventData eData( errorcode );
             NotifyObservers( SocketErrorEvent, &eData );
+
+            CloseImp( true, false, true, false );
             return;
         }
 
@@ -388,14 +411,7 @@ CTCPServerConnection::CheckRecieveBuffer( void )
              *      we arrived here because the read flag was set, however no data is available
              *      This means that the client closed the connection
              */
-            dvsocket_closesocket( _data->sockid, &errorcode );
-            _active = false;
-
-            NotifyObservers( DisconnectedEvent );
-
-            m_parentsock->OnClientConnectionClosed( this            ,
-                                                    m_connectionidx ,
-                                                    true            );
+            CloseImp( true, false, true, true );
             return;
         }
         totalrecieved += bytesrecv;
@@ -465,13 +481,11 @@ CTCPServerConnection::Update( UInt32 maxUpdatesPerCycle )
             {
                 GUCEF_DEBUG_LOG( CORE::LOGLEVEL_NORMAL, "CTCPServerConnection(" + CORE::PointerToString( this ) + "): Socket error occured: " + CORE::Int32ToString( errorCode ) );
 
-                int lastError = errorCode;
-                dvsocket_closesocket( _data->sockid, &errorCode );
-                _active = false;
-
-                TSocketErrorEventData eData( lastError );
+                TSocketErrorEventData eData( errorCode );
                 if ( !NotifyObservers( SocketErrorEvent, &eData ) ) return;
 
+                CloseImp( true, false, true, false );
+                
                 UnlockData();
                 return;
             }
@@ -489,6 +503,8 @@ CTCPServerConnection::Update( UInt32 maxUpdatesPerCycle )
 
             TSocketErrorEventData eData( errorCode );
             NotifyObservers( SocketErrorEvent, &eData );
+
+            CloseImp( false, false, true, false );
         }
 
         // Check if we still have data queued to be sent,..
@@ -603,7 +619,8 @@ CTCPServerConnection::SetUseTcpSendCoalescing( bool coaleseData )
     if ( _active )
     {
         int flag = (coaleseData ? 1 : 0);
-        if ( -1 == setsockopt( _data->sockid, IPPROTO_TCP, TCP_NODELAY, (char *)&flag, sizeof(flag) ) )
+        int errorCode = 0;
+        if ( -1 == dvsocket_setsockopt( _data->sockid, IPPROTO_TCP, TCP_NODELAY, (char *)&flag, sizeof(flag), &errorCode ) )
         {
             return false;
         }

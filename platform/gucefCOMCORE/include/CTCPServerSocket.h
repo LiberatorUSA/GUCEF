@@ -135,6 +135,8 @@ class GUCEF_COMCORE_EXPORT_CPP CTCPServerSocket : public CSocket
     bool Listen( void );   /* listen on default NIC with the currently configured port */
     
     void Close( void ); /* stop listening for clients, close server socket */
+
+    bool CloseClientConnection( UInt32 connectionIndex );
     
     bool SetPort( UInt16 port );
     
@@ -178,14 +180,21 @@ class GUCEF_COMCORE_EXPORT_CPP CTCPServerSocket : public CSocket
     virtual bool SendToAllClients( const void* dataSource , 
                                    const UInt32 dataSize  );
 
-    virtual ~CTCPServerSocket();   
+    virtual ~CTCPServerSocket(); 
+    
+    protected:
+    
+    virtual void LockData( void ) const;
+
+    virtual void UnlockData( void ) const;      
     
     private:
     friend class CTCPServerConnection;
 
     void OnClientConnectionClosed( CTCPServerConnection* connection ,
                                    const UInt32 connectionid        ,
-                                   bool closedbyclient              );
+                                   bool closedbyclient              ,
+                                   bool updateActiveLists           );
 
     private:
     
@@ -206,15 +215,17 @@ class GUCEF_COMCORE_EXPORT_CPP CTCPServerSocket : public CSocket
     private :
     
     typedef std::vector< CTCPServerConnection* > TConnectionVector;
+    typedef std::set< CTCPServerConnection* > TConnectionSet;
     
     struct STCPServerSockData* _data;
     bool _active; 
     bool _blocking;                        
     TConnectionVector _connections;            /**< array of all pre-allocated connection objects */
+    TConnectionSet m_activeConnections;        /**< set of all currently active connections */
+    TConnectionSet m_inactiveConnections;      /**< set of all currently inactive connection objects ready for reuse */
     UInt16 m_port;
     MT::CMutex _datalock;
-    UInt32 _timeout;   
-    UInt32 _acount;                            /**< the number of active connections */        
+    UInt32 _timeout;         
     CORE::CPulseGenerator* m_pulseGenerator;
     UInt32 m_maxUpdatesPerCycle;               /**< setting aimed at preventing a busy socket from hogging all the processing */
     bool m_autoReopenOnError;                  /**< flag for feature to auto re-open the listen socket after a socket error occurred */

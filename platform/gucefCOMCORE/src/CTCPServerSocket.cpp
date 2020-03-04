@@ -109,7 +109,6 @@ typedef struct STCPServerConData TTCPServerConData;
 struct STCPServerSockData
 {
     SOCKET sockid;           /* Winsock socket number */
-    UInt32 connectcount;     /* number of clients connected to the server socket */
     UInt32 maxcon;           /* maximum number of connections for this server socket */
     bool blocking;           /* is this a blocking or non-blocking server ? */
     SOCKADDR_IN serverinfo;  /* winsock info on the listening socket */
@@ -126,13 +125,14 @@ typedef struct STCPServerSockData TTCPServerSockData;
 CTCPServerSocket::CTCPServerSocket( CORE::CPulseGenerator& pulseGenerator ,
                                     bool blocking                         )
     : CSocket()                               
-    , _connections( DEFAULT_MAX_CONNECTIONS ) 
+    , _connections( DEFAULT_MAX_CONNECTIONS )
+    , m_activeConnections() 
+    , m_inactiveConnections()
     , _active( false )                        
     , _blocking( blocking )                   
     , m_port( 0 )                             
     , _datalock()
     , _timeout( 0 )
-    , _acount( 0 )
     , m_pulseGenerator( &pulseGenerator )
     , m_maxUpdatesPerCycle( 10 )
     , m_autoReopenOnError( false )
@@ -142,13 +142,13 @@ CTCPServerSocket::CTCPServerSocket( CORE::CPulseGenerator& pulseGenerator ,
     _data = new TTCPServerSockData;
     _data->blocking = blocking;
     _data->sockid = 0;
-    _data->connectcount = 0;
     _data->maxcon = DEFAULT_MAX_CONNECTIONS;
 
     _connections.reserve( DEFAULT_MAX_CONNECTIONS );
     for ( UInt32 i=0; i<DEFAULT_MAX_CONNECTIONS; ++i )
     {
         _connections[ i ] = new CTCPServerConnection( this, i );
+        m_inactiveConnections.insert( _connections[ i ] );
     }
 
     TEventCallback callback( this, &CTCPServerSocket::OnPulse );
@@ -162,12 +162,13 @@ CTCPServerSocket::CTCPServerSocket( CORE::CPulseGenerator& pulseGenerator ,
 CTCPServerSocket::CTCPServerSocket( bool blocking )
     : CSocket()                               
     , _connections( DEFAULT_MAX_CONNECTIONS ) 
+    , m_activeConnections() 
+    , m_inactiveConnections()
     , _active( false )                        
     , _blocking( blocking )                   
     , m_port( 0 )      
     , _datalock()                       
     , _timeout( 0 )
-    , _acount( 0 )
     , m_pulseGenerator( &CORE::CCoreGlobal::Instance()->GetPulseGenerator() )
     , m_maxUpdatesPerCycle( 10 )
     , m_autoReopenOnError( false )
@@ -177,13 +178,13 @@ CTCPServerSocket::CTCPServerSocket( bool blocking )
     _data = new TTCPServerSockData;
     _data->blocking = blocking;
     _data->sockid = 0;
-    _data->connectcount = 0;
     _data->maxcon = DEFAULT_MAX_CONNECTIONS;
 
     _connections.reserve( DEFAULT_MAX_CONNECTIONS );
     for ( UInt32 i=0; i<DEFAULT_MAX_CONNECTIONS; ++i )
     {
         _connections[ i ] = new CTCPServerConnection( this, i );
+        m_inactiveConnections.insert( _connections[ i ] );
     }
 
     TEventCallback callback( this, &CTCPServerSocket::OnPulse );
@@ -210,6 +211,8 @@ CTCPServerSocket::~CTCPServerSocket()
         delete _connections[ i ];
     }
     _connections.clear();
+    m_inactiveConnections.clear();
+    m_activeConnections.clear();
 }
 
 /*-------------------------------------------------------------------------*/
@@ -278,9 +281,11 @@ CTCPServerSocket::OnPulse( CORE::CNotifier* notifier                 ,
          */
         if ( !_blocking )
         {
-            for ( UInt32 i=0; i<_connections.size(); ++i )
+            TConnectionSet::iterator i = m_activeConnections.begin();
+            while ( i != m_activeConnections.end() )
             {
-                _connections[ i ]->Update( m_maxUpdatesPerCycle );
+                (*i)->Update( m_maxUpdatesPerCycle );
+                ++i;
             }
         }
     }
@@ -329,7 +334,7 @@ void
 CTCPServerSocket::AcceptClients( void )
 {GUCEF_TRACE;
 
-    if ( _data->connectcount < _data->maxcon )
+    if ( (UInt32)m_activeConnections.size() < _data->maxcon )
     {
         int s = 0;           /* s is where the data is stored from the select function */
         int nfds = 0;        /* This is used for Compatibility */
@@ -365,15 +370,14 @@ CTCPServerSocket::AcceptClients( void )
 
             if ( s > 0 ) /* Someone is trying to Connect */
             {
-                CTCPServerConnection* clientcon;
-                int aint;
-                for ( UInt32 i=0; i<_data->maxcon; ++i )
+                TConnectionSet::iterator i = m_inactiveConnections.begin();
+                if ( i != m_inactiveConnections.end() )
                 {
-                    clientcon = (CTCPServerConnection*)(_connections[ i ]);
+                    CTCPServerConnection* clientcon = (*i);
                     if ( !clientcon->IsActive() )
                     {
                         int error = 0;
-                        aint = sizeof( struct sockaddr );
+                        int aint = sizeof( struct sockaddr );
                         clientcon->_data->sockid = dvsocket_accept( _data->sockid                                    ,
                                                                     (struct sockaddr*) &clientcon->_data->clientaddr ,
                                                                     &aint                                            ,
@@ -408,30 +412,24 @@ CTCPServerSocket::AcceptClients( void )
                             memset( &clientcon->_data->timeout, 0, sizeof( struct timeval ) );
                         }
 
-                        ++_data->connectcount;
                         clientcon->_active = true;
+                        m_inactiveConnections.erase( clientcon );
+                        m_activeConnections.insert( clientcon );
 
                         /*
                          *      Call the on client connect event handler
                          */
                         struct SConnectionInfo eData;
-                        eData.hostAddress.SetHostname( clientcon->_data->clientip );
-                        #if ( GUCEF_PLATFORM == GUCEF_PLATFORM_MSWIN )
-                        eData.hostAddress.SetAddress( clientcon->_data->clientaddr.sin_addr.S_un.S_addr );
-                        #elif ( ( GUCEF_PLATFORM == GUCEF_PLATFORM_LINUX ) || ( GUCEF_PLATFORM == GUCEF_PLATFORM_ANDROID ) )
-                        eData.hostAddress.SetAddress( clientcon->_data->clientaddr.sin_addr.s_addr );
-                        #endif
-                        eData.hostAddress.SetPort( clientcon->_data->clientaddr.sin_port );
+                        eData.hostAddress = clientcon->GetRemoteHostAddress();
                         eData.connection = clientcon;
-                        eData.connectionIndex = i;
-
-                        ++_acount;
+                        eData.connectionIndex = clientcon->GetConnectionIndex();
 
                         TClientConnectedEventData cloneableEventData( eData );
                         NotifyObservers( ClientConnectedEvent, &cloneableEventData );
 
                         return;
                     }
+                    ++i;
                 }
             }
         }
@@ -492,7 +490,7 @@ CTCPServerSocket::ListenOnPort( UInt16 servport )
         if ( m_autoReopenOnError ) 
             m_pulseGenerator->RequestPeriodicPulses( this, 10 );
 
-        GUCEF_ERROR_LOG( 1, "CTCPServerSocket: Socket error: " + CORE::Int32ToString( error ) );
+        GUCEF_ERROR_LOG( CORE::LOGLEVEL_IMPORTANT, "CTCPServerSocket: Socket error: " + CORE::Int32ToString( error ) );
         TServerSocketErrorEventData eData( error );
         NotifyObservers( ServerSocketErrorEvent, &eData );
         return false;
@@ -520,15 +518,15 @@ CTCPServerSocket::ListenOnPort( UInt16 servport )
 	 */
 	_data->serverinfo.sin_addr.s_addr = INADDR_ANY;
 
-        /*
-         *      Convert integer servport to network-byte order
-         *      and insert into the port field
-         */
+    /*
+     *      Convert integer servport to network-byte order
+     *      and insert into the port field
+     */
 	_data->serverinfo.sin_port = htons( servport );
 
-        /*
-         *      Bind the socket to our local server address
-         */
+    /*
+     *      Bind the socket to our local server address
+     */
 	int retval = dvsocket_bind( _data->sockid                  ,
 	                            (LPSOCKADDR)&_data->serverinfo ,
 	                            sizeof( _data->serverinfo )    ,
@@ -546,7 +544,7 @@ CTCPServerSocket::ListenOnPort( UInt16 servport )
 	    return false;
 	}
 
-    // Before we actually open the socket lets give observers the change to pre-allocate things if needed
+    // Before we actually open the socket lets give observers the chance to pre-allocate things if needed
     // based on the max number of connections.
     TServerSocketMaxConnectionsChangedEventData maxConEData( _data->maxcon );
     NotifyObservers( ServerSocketMaxConnectionsChangedEvent, &maxConEData );
@@ -600,7 +598,7 @@ UInt32
 CTCPServerSocket::GetActiveCount( void ) const
 {GUCEF_TRACE;
 
-    return _acount;
+    return (UInt32) m_activeConnections.size();
 }
 
 /*-------------------------------------------------------------------------*/
@@ -611,10 +609,21 @@ CTCPServerSocket::GetBytesReceived( bool resetCounter )
 
     UInt32 bytesReceived = 0;
     _datalock.Lock();
-    for( UInt32 i=0; i<_connections.size(); ++i )
+
+    // As a performance compromise we only retrieve and sum for active connections
+    // this has the downside that if a connection closed between counter polling cycles you would miss
+    // whatever the extra count would have been from that connection
+    TConnectionSet::iterator i = m_activeConnections.begin();
+    while ( i != m_activeConnections.end() )
     {
-        bytesReceived += _connections[ i ]->GetBytesReceived( resetCounter );
+        bytesReceived += (*i)->GetBytesReceived( resetCounter );
+        ++i;
     }
+    //for( UInt32 i=0; i<_connections.size(); ++i )
+    //{
+    //    bytesReceived += _connections[ i ]->GetBytesReceived( resetCounter );
+    //}
+    
     _datalock.Unlock();
     return bytesReceived;
 }
@@ -627,10 +636,21 @@ CTCPServerSocket::GetBytesTransmitted( bool resetCounter )
 
     UInt32 bytesTransmitted = 0;
     _datalock.Lock();
-    for( UInt32 i=0; i<_connections.size(); ++i )
+
+    // As a performance compromise we only retrieve and sum for active connections
+    // this has the downside that if a connection closed between counter polling cycles you would miss
+    // whatever the extra count would have been from that connection
+    TConnectionSet::iterator i = m_activeConnections.begin();
+    while ( i != m_activeConnections.end() )
     {
-        bytesTransmitted += _connections[ i ]->GetBytesTransmitted( resetCounter );
+        bytesTransmitted += (*i)->GetBytesTransmitted( resetCounter );
+        ++i;
     }
+    //for( UInt32 i=0; i<_connections.size(); ++i )
+    //{
+    //    bytesTransmitted += _connections[ i ]->GetBytesTransmitted( resetCounter );
+    //}
+    
     _datalock.Unlock();
     return bytesTransmitted;
 }
@@ -649,21 +669,40 @@ CTCPServerSocket::Close( void )
 
     if ( IsActive() )
     {
-	    //StopAndWait();
-
-        int errorCode;
+        int errorCode = 0;
         dvsocket_closesocket( _data->sockid, &errorCode );
 
         NotifyObservers( ServerSocketClosedEvent );
 
-        for( UInt32 i=0; i<_connections.size(); ++i )
+        TConnectionSet::iterator i = m_activeConnections.begin();
+        while ( i != m_activeConnections.end() )
         {
-            _connections[ i ]->Close();
+            (*i)->CloseImp( false, true, false, true );
+            m_inactiveConnections.insert( (*i) );
+            ++i;
         }
+        m_activeConnections.clear();
     }
     _datalock.Unlock();
 
     m_pulseGenerator->RequestStopOfPeriodicUpdates( this );
+}
+
+/*-------------------------------------------------------------------------*/
+
+bool 
+CTCPServerSocket::CloseClientConnection( UInt32 connectionIndex )
+{GUCEF_TRACE;
+
+    LockData();
+    if ( connectionIndex < _connections.size() )
+    {
+        _connections[ connectionIndex ]->Close();
+        UnlockData();
+        return true;
+    }
+    UnlockData();
+    return false;
 }
 
 /*-------------------------------------------------------------------------*/
@@ -694,7 +733,8 @@ CTCPServerSocket::GetPort( void ) const
 void
 CTCPServerSocket::OnClientConnectionClosed( CTCPServerConnection* connection ,
                                             const UInt32 connectionid        ,
-                                            bool closedByClient              )
+                                            bool closedByClient              ,
+                                            bool updateActiveLists           )
 {GUCEF_TRACE;
 
     TClientDisconnectedEventData cloneableEventData;    
@@ -704,8 +744,11 @@ CTCPServerSocket::OnClientConnectionClosed( CTCPServerConnection* connection ,
     eData.connectionInfo.connectionIndex = connectionid;
     eData.closedByClient = closedByClient;
 
-    --_acount;
-
+    if ( updateActiveLists )
+    {
+        m_activeConnections.erase( connection );
+        m_inactiveConnections.insert( connection );
+    }
     NotifyObservers( ClientDisconnectedEvent, &cloneableEventData );
 }
 
@@ -732,13 +775,33 @@ CTCPServerSocket::SendToAllClients( const void* dataSource ,
     _datalock.Lock();
     if ( IsActive() )
     {
-        for( UInt32 i=0; i<_connections.size(); ++i )
+        TConnectionSet::iterator i = m_activeConnections.begin();
+        while ( i != m_activeConnections.end() )
         {
-            totalSuccess = totalSuccess && _connections[ i ]->Send( dataSource, dataSize );
+            totalSuccess = totalSuccess && (*i)->Send( dataSource, dataSize );
+            ++i;
         }
     }
     _datalock.Unlock();
     return totalSuccess;
+}
+
+/*-------------------------------------------------------------------------*/
+
+void 
+CTCPServerSocket::LockData( void ) const
+{GUCEF_TRACE;
+
+    _datalock.Lock();
+}
+
+/*-------------------------------------------------------------------------*/
+
+void 
+CTCPServerSocket::UnlockData( void ) const
+{GUCEF_TRACE;
+
+    _datalock.Unlock();
 }
 
 /*-------------------------------------------------------------------------//

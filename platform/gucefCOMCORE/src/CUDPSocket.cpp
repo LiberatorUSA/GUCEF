@@ -214,7 +214,11 @@ CUDPSocket::SendPacketTo( const CIPAddress& dest ,
 
     struct sockaddr_in remote;
     memset( &remote, 0, sizeof( remote ) );
+    #if ( GUCEF_PLATFORM == GUCEF_PLATFORM_MSWIN )
+    remote.sin_addr.S_un.S_addr = dest.GetAddress();
+    #elif ( ( GUCEF_PLATFORM == GUCEF_PLATFORM_LINUX ) || ( GUCEF_PLATFORM == GUCEF_PLATFORM_ANDROID ) )
     remote.sin_addr.s_addr = dest.GetAddress();
+    #endif
     remote.sin_port = dest.GetPort();
     remote.sin_family = AF_INET;
     

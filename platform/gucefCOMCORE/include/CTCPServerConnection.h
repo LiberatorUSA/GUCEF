@@ -175,6 +175,8 @@ class GUCEF_COMCORE_EXPORT_CPP CTCPServerConnection : public CTCPConnection
     private:
     
     void CheckRecieveBuffer( void );
+
+    void CloseImp( bool byUser, bool lock, bool updateActiveLists, bool notify );
     
     private:
     friend class CTCPServerSocket;
