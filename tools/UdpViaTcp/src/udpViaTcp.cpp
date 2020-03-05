@@ -350,6 +350,7 @@ UdpViaTcp::OnUDPReceiveSocketPacketRecieved( CORE::CNotifier* notifier    ,
             {
                 CORE::CDynamicBuffer& packet = m_tcpClientSendPacketBuffers.front();
                 CORE::UInt32 packetSize = packet.GetDataSize();
+                memcpy( packetHeader+3, &packetSize, 4 );
                 if ( m_tcpClientSocket.Send( packetHeader, 7 ) )
                 {
                     if ( m_tcpClientSocket.Send( packet.GetConstBufferPtr(), packetSize ) )
@@ -520,10 +521,11 @@ UdpViaTcp::OnTCPClientConnected( CORE::CNotifier* notifier    ,
                                  CORE::CICloneable* eventData )
 {GUCEF_TRACE;
     
-    GUCEF_LOG( CORE::LOGLEVEL_IMPORTANT, "UdpViaTcp: TCP client connectedReceive Socket has been closed" );
-    
     if ( !m_tcpClientSendPacketBuffers.empty() )
     {
+        GUCEF_LOG( CORE::LOGLEVEL_IMPORTANT, "UdpViaTcp: TCP client connected. Will attempt to send " + 
+            CORE::UInt32ToString( (CORE::UInt32) m_tcpClientSendPacketBuffers.size() ) + " queued packages" );
+        
         char packetHeader[ 7 ]; 
         memcpy( packetHeader, "UDP", 3 );
 
@@ -531,6 +533,7 @@ UdpViaTcp::OnTCPClientConnected( CORE::CNotifier* notifier    ,
         {
             CORE::CDynamicBuffer& packet = m_tcpClientSendPacketBuffers.front();
             CORE::UInt32 packetSize = packet.GetDataSize();
+            memcpy( packetHeader+3, &packetSize, 4 );
             if ( m_tcpClientSocket.Send( packetHeader, 7 ) )
             {
                 if ( m_tcpClientSocket.Send( packet.GetConstBufferPtr(), packetSize ) )
