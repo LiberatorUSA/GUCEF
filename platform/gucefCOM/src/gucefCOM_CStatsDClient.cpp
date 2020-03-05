@@ -185,7 +185,10 @@ CStatsDClient::Transmit( const CString& key      ,
 
     // Send the message via the UDP sender
     if ( msgSize > 0 )
+    {
+        GUCEF_DEBUG_LOG( CORE::LOGLEVEL_BELOW_NORMAL, CORE::CString( "StatsDClient:Transmit: " ) + buffer );
         m_udpSender.SendPacketTo( m_statsDestination, buffer, (UInt16) msgSize );
+    }
 }
 
 /*-------------------------------------------------------------------------*/

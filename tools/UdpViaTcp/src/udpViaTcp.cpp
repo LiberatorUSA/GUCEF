@@ -256,23 +256,24 @@ UdpViaTcp::OnMetricsTimerCycle( CORE::CNotifier* notifier    ,
         if ( UDPVIATCPMODE_BIDIRECTIONAL_UDP == m_mode || UDPVIATCPMODE_UDP_TRANSMITTER_ONLY == m_mode )
         {
             GUCEF_METRIC_GAUGE( "UdpViaTcp.TcpServer.ConnectedClients", m_tcpServerSocket.GetActiveCount(), 1.0f );
-            GUCEF_METRIC_GAUGE( "UdpViaTcp.TcpServer.BytesReceived", m_tcpServerSocket.GetBytesReceived( true ), 1.0f );
-            GUCEF_METRIC_GAUGE( "UdpViaTcp.UdpTransmitter.BytesSent", m_udpTransmitSocket.GetBytesTransmitted( true ), 1.0f );
+            GUCEF_METRIC_COUNT( "UdpViaTcp.TcpServer.BytesReceived", m_tcpServerSocket.GetBytesReceived( true ), 1.0f );
+            GUCEF_METRIC_COUNT( "UdpViaTcp.UdpTransmitter.BytesSent", m_udpTransmitSocket.GetBytesTransmitted( true ), 1.0f );
         }
         if ( UDPVIATCPMODE_BIDIRECTIONAL_UDP == m_mode || UDPVIATCPMODE_UDP_RECEIVER_ONLY == m_mode )
         {
-            GUCEF_METRIC_GAUGE( "UdpViaTcp.TcpClient.BufferedSendDataInBytes", m_tcpClientSocket.GetBufferedDataToSendInBytes(), 1.0f );
-            GUCEF_METRIC_GAUGE( "UdpViaTcp.TcpClient.BytesSent", m_tcpClientSocket.GetBytesTransmitted( true ), 1.0f );
-            GUCEF_METRIC_GAUGE( "UdpViaTcp.UdpReceiver.BytesReceived", m_udpReceiveSocket.GetBytesReceived( true ), 1.0f );
-            GUCEF_METRIC_GAUGE( "UdpViaTcp.UdpReceiver.MsgsReceived", m_udpReceiveSocket.GetNrOfDataReceivedEvents( true ), 1.0f );
+            GUCEF_METRIC_COUNT( "UdpViaTcp.TcpClient.BufferedSendDataInBytes", m_tcpClientSocket.GetBufferedDataToSendInBytes(), 1.0f );
+            GUCEF_METRIC_COUNT( "UdpViaTcp.TcpClient.BytesSent", m_tcpClientSocket.GetBytesTransmitted( true ), 1.0f );
+            GUCEF_METRIC_GAUGE( "UdpViaTcp.TcpClient.PackagesQueued", m_tcpClientSendPacketBuffers.size(), 1.0f );
+            GUCEF_METRIC_COUNT( "UdpViaTcp.UdpReceiver.BytesReceived", m_udpReceiveSocket.GetBytesReceived( true ), 1.0f );
+            GUCEF_METRIC_COUNT( "UdpViaTcp.UdpReceiver.MsgsReceived", m_udpReceiveSocket.GetNrOfDataReceivedEvents( true ), 1.0f );
         }
         if ( UDPVIATCPMODE_BIDIRECTIONAL_UDP == m_mode )
         {
-            GUCEF_METRIC_GAUGE( "UdpViaTcp.TcpServer.BytesSent", m_tcpServerSocket.GetBytesTransmitted( true ), 1.0f );
-            GUCEF_METRIC_GAUGE( "UdpViaTcp.TcpClient.BytesReceived", m_tcpClientSocket.GetBytesReceived( true ), 1.0f );
-            GUCEF_METRIC_GAUGE( "UdpViaTcp.UdpTransmitter.BytesReceived", m_udpTransmitSocket.GetBytesReceived( true ), 1.0f );
-            GUCEF_METRIC_GAUGE( "UdpViaTcp.UdpTransmitter.MsgsReceived", m_udpTransmitSocket.GetNrOfDataReceivedEvents( true ), 1.0f );
-            GUCEF_METRIC_GAUGE( "UdpViaTcp.UdpReceiver.BytesSent", m_udpReceiveSocket.GetBytesTransmitted( true ), 1.0f );
+            GUCEF_METRIC_COUNT( "UdpViaTcp.TcpServer.BytesSent", m_tcpServerSocket.GetBytesTransmitted( true ), 1.0f );
+            GUCEF_METRIC_COUNT( "UdpViaTcp.TcpClient.BytesReceived", m_tcpClientSocket.GetBytesReceived( true ), 1.0f );
+            GUCEF_METRIC_COUNT( "UdpViaTcp.UdpTransmitter.BytesReceived", m_udpTransmitSocket.GetBytesReceived( true ), 1.0f );
+            GUCEF_METRIC_COUNT( "UdpViaTcp.UdpTransmitter.MsgsReceived", m_udpTransmitSocket.GetNrOfDataReceivedEvents( true ), 1.0f );
+            GUCEF_METRIC_COUNT( "UdpViaTcp.UdpReceiver.BytesSent", m_udpReceiveSocket.GetBytesTransmitted( true ), 1.0f );
         }
     }
 }
