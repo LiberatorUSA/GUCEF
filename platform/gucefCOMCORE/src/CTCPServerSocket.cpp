@@ -287,6 +287,22 @@ CTCPServerSocket::OnPulse( CORE::CNotifier* notifier                 ,
                 (*i)->Update( m_maxUpdatesPerCycle );
                 ++i;
             }
+            
+            // If the update caused connnections to become (in)active in some way we deal with those here
+            while ( !m_almostInactiveConnections.empty() )
+            {
+                CTCPServerConnection* connection = m_almostInactiveConnections.front();
+                m_activeConnections.erase( connection );
+                m_inactiveConnections.insert( connection );
+                m_almostInactiveConnections.pop();
+            }
+            while ( !m_almostActiveConnections.empty() )
+            {
+                CTCPServerConnection* connection = m_almostActiveConnections.front();
+                m_inactiveConnections.erase( connection );
+                m_activeConnections.insert( connection );
+                m_almostActiveConnections.pop();
+            }
         }
     }
 }
@@ -413,8 +429,7 @@ CTCPServerSocket::AcceptClients( void )
                         }
 
                         clientcon->_active = true;
-                        m_inactiveConnections.erase( clientcon );
-                        m_activeConnections.insert( clientcon );
+                        m_almostActiveConnections.push( clientcon );
 
                         /*
                          *      Call the on client connect event handler
@@ -619,10 +634,6 @@ CTCPServerSocket::GetBytesReceived( bool resetCounter )
         bytesReceived += (*i)->GetBytesReceived( resetCounter );
         ++i;
     }
-    //for( UInt32 i=0; i<_connections.size(); ++i )
-    //{
-    //    bytesReceived += _connections[ i ]->GetBytesReceived( resetCounter );
-    //}
     
     _datalock.Unlock();
     return bytesReceived;
@@ -646,10 +657,6 @@ CTCPServerSocket::GetBytesTransmitted( bool resetCounter )
         bytesTransmitted += (*i)->GetBytesTransmitted( resetCounter );
         ++i;
     }
-    //for( UInt32 i=0; i<_connections.size(); ++i )
-    //{
-    //    bytesTransmitted += _connections[ i ]->GetBytesTransmitted( resetCounter );
-    //}
     
     _datalock.Unlock();
     return bytesTransmitted;
@@ -746,8 +753,7 @@ CTCPServerSocket::OnClientConnectionClosed( CTCPServerConnection* connection ,
 
     if ( updateActiveLists )
     {
-        m_activeConnections.erase( connection );
-        m_inactiveConnections.insert( connection );
+        m_almostInactiveConnections.push( connection );
     }
     NotifyObservers( ClientDisconnectedEvent, &cloneableEventData );
 }

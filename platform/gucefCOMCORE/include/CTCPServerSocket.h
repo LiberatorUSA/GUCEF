@@ -26,6 +26,8 @@
 //                                                                         //
 //-------------------------------------------------------------------------*/
 
+#include <queue>
+
 #ifndef GUCEFCOMCORE_MACROS_H
 #include "gucefCOMCORE_macros.h"       /* build defines */
 #define GUCEFCOMCORE_MACROS_H
@@ -216,12 +218,15 @@ class GUCEF_COMCORE_EXPORT_CPP CTCPServerSocket : public CSocket
     
     typedef std::vector< CTCPServerConnection* > TConnectionVector;
     typedef std::set< CTCPServerConnection* > TConnectionSet;
+    typedef std::queue< CTCPServerConnection* > TConnectionQueue;
     
     struct STCPServerSockData* _data;
     bool _active; 
     bool _blocking;                        
     TConnectionVector _connections;            /**< array of all pre-allocated connection objects */
     TConnectionSet m_activeConnections;        /**< set of all currently active connections */
+    TConnectionQueue m_almostInactiveConnections;
+    TConnectionQueue m_almostActiveConnections;
     TConnectionSet m_inactiveConnections;      /**< set of all currently inactive connection objects ready for reuse */
     UInt16 m_port;
     MT::CMutex _datalock;
