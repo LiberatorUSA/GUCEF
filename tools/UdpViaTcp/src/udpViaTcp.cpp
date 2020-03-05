@@ -125,8 +125,8 @@ UdpViaTcp::UdpViaTcp( void )
     , m_tcpClientSocket( false )
     , m_udpTransmitSocket( false )
     , m_udpReceiveSocket( false )
-    , m_udpReceiveSocketBuffer()
-    , m_receivePacketBuffers()
+    , m_tcpClientSendPacketBuffers()
+    , m_tcpServerReceivePacketBuffers()
     , m_udpReceiveUnicast( true )
     , m_udpReceiveMulticast( false )
     , m_mode( UDPVIATCPMODE_UDP_RECEIVER_ONLY )
@@ -236,6 +236,11 @@ UdpViaTcp::RegisterEventHandlers( void )
                  CORE::CTimer::TimerUpdateEvent ,
                  callback17                     );
 
+    TEventCallback callback18( this, &UdpViaTcp::OnTCPClientConnected );
+    SubscribeTo( &m_tcpClientSocket                        ,
+                 COMCORE::CTCPClientSocket::ConnectedEvent ,
+                 callback18                                );
+
 }
 
 /*-------------------------------------------------------------------------*/
@@ -332,24 +337,50 @@ UdpViaTcp::OnUDPReceiveSocketPacketRecieved( CORE::CNotifier* notifier    ,
         const COMCORE::CUDPSocket::TUDPPacketRecievedEventData& data = udpPacketData->GetData();
         const CORE::CDynamicBuffer& udpPacketBuffer = data.dataBuffer.GetData();
 
-        GUCEF_DEBUG_LOG( CORE::LOGLEVEL_IMPORTANT, "UdpViaTcp: UDP Receive Socket received a packet from " + data.sourceAddress.AddressAndPortAsString() );
+        GUCEF_DEBUG_LOG( CORE::LOGLEVEL_NORMAL, "UdpViaTcp: UDP Receive Socket received a packet from " + data.sourceAddress.AddressAndPortAsString() );
 
         char packetHeader[ 7 ]; 
-        CORE::UInt32 packetSize = udpPacketBuffer.GetDataSize();
         memcpy( packetHeader, "UDP", 3 );
-        memcpy( packetHeader+3, &packetSize, 4 );        
         
         bool successfullSend = false;
+        bool failedToSendQueued = false;
         if ( m_tcpClientSocket.IsActive() )
         {            
-            if ( m_tcpClientSocket.Send( packetHeader, 7 ) )
-                if ( m_tcpClientSocket.Send( udpPacketBuffer.GetConstBufferPtr(), packetSize ) )
-                    successfullSend = true;
+            while ( !m_tcpClientSendPacketBuffers.empty() )
+            {
+                CORE::CDynamicBuffer& packet = m_tcpClientSendPacketBuffers.front();
+                CORE::UInt32 packetSize = packet.GetDataSize();
+                if ( m_tcpClientSocket.Send( packetHeader, 7 ) )
+                {
+                    if ( m_tcpClientSocket.Send( packet.GetConstBufferPtr(), packetSize ) )
+                    {
+                        m_tcpClientSendPacketBuffers.pop();
+                    }
+                    else
+                    {
+                        failedToSendQueued = true;
+                        break;
+                    }
+                }
+                else
+                {
+                    failedToSendQueued = true;
+                    break;
+                }
+            }
+
+            if ( !failedToSendQueued )
+            {
+                CORE::UInt32 packetSize = udpPacketBuffer.GetDataSize();
+                memcpy( packetHeader+3, &packetSize, 4 );
+                if ( m_tcpClientSocket.Send( packetHeader, 7 ) )
+                    if ( m_tcpClientSocket.Send( udpPacketBuffer.GetConstBufferPtr(), packetSize ) )
+                        successfullSend = true;
+            }
         }
         if ( !successfullSend )
         {
-            m_udpReceiveSocketBuffer.Append( packetHeader, 7 );
-            m_udpReceiveSocketBuffer.Append( udpPacketBuffer.GetConstBufferPtr(), packetSize );
+            m_tcpClientSendPacketBuffers.push( udpPacketBuffer );
         }
     }
     else
@@ -438,7 +469,7 @@ UdpViaTcp::OnTCPServerConnectionDataRecieved( CORE::CNotifier* notifier    ,
 
     // Since TCP is streaming we may or may not have received a full packet
     // As such we concat bytes into a packet buffer and split according to the protocol this app uses
-    CORE::CDynamicBuffer& packetBuffer = m_receivePacketBuffers[ connection->GetConnectionIndex() ];
+    CORE::CDynamicBuffer& packetBuffer = m_tcpServerReceivePacketBuffers[ connection->GetConnectionIndex() ];
     packetBuffer.Append( receivedData.GetConstBufferPtr(), receivedData.GetDataSize(), true );
     
     // Check to see if we received full UDP packets and if so transmit them
@@ -484,6 +515,48 @@ UdpViaTcp::OnTCPServerConnectionDataRecieved( CORE::CNotifier* notifier    ,
 /*-------------------------------------------------------------------------*/
 
 void
+UdpViaTcp::OnTCPClientConnected( CORE::CNotifier* notifier    ,
+                                 const CORE::CEvent& eventId  ,
+                                 CORE::CICloneable* eventData )
+{GUCEF_TRACE;
+    
+    GUCEF_LOG( CORE::LOGLEVEL_IMPORTANT, "UdpViaTcp: TCP client connectedReceive Socket has been closed" );
+    
+    if ( !m_tcpClientSendPacketBuffers.empty() )
+    {
+        char packetHeader[ 7 ]; 
+        memcpy( packetHeader, "UDP", 3 );
+
+        while ( !m_tcpClientSendPacketBuffers.empty() )
+        {
+            CORE::CDynamicBuffer& packet = m_tcpClientSendPacketBuffers.front();
+            CORE::UInt32 packetSize = packet.GetDataSize();
+            if ( m_tcpClientSocket.Send( packetHeader, 7 ) )
+            {
+                if ( m_tcpClientSocket.Send( packet.GetConstBufferPtr(), packetSize ) )
+                {
+                    m_tcpClientSendPacketBuffers.pop();
+                }
+                else
+                {
+                    return;
+                }
+            }
+            else
+            {
+                return;
+            }
+        }
+    }
+    else
+    {
+        GUCEF_LOG( CORE::LOGLEVEL_IMPORTANT, "UdpViaTcp: TCP client connected, no packages were queued for transmission" );
+    }
+}
+
+/*-------------------------------------------------------------------------*/
+
+void
 UdpViaTcp::OnTCPServerClientConnected( CORE::CNotifier* notifier    ,
                                        const CORE::CEvent& eventId  ,
                                        CORE::CICloneable* eventData )
@@ -516,7 +589,7 @@ UdpViaTcp::OnTCPServerClientDisconnected( CORE::CNotifier* notifier    ,
     GUCEF_LOG( CORE::LOGLEVEL_NORMAL, "UdpViaTcp: TCP Client disconnected" );
 
     // Wipe data stored for this connection
-    m_receivePacketBuffers[ info.connection->GetConnectionIndex() ].Clear( true );
+    m_tcpServerReceivePacketBuffers[ info.connection->GetConnectionIndex() ].Clear( true );
 }
 
 /*-------------------------------------------------------------------------*/
@@ -585,7 +658,7 @@ UdpViaTcp::OnTCPServerSocketMaxConnectionsChanged( CORE::CNotifier* notifier    
     const COMCORE::CTCPServerSocket::TServerSocketMaxConnectionsChangedEventData* eData = static_cast< COMCORE::CTCPServerSocket::TServerSocketMaxConnectionsChangedEventData* >( eventData );
     CORE::Int32 maxConnections = eData->GetData();
     
-    m_receivePacketBuffers.resize( (size_t) maxConnections );
+    m_tcpServerReceivePacketBuffers.resize( (size_t) maxConnections );
 
     GUCEF_LOG( CORE::LOGLEVEL_IMPORTANT, "UdpViaTcp: Max TCP Client connections set to " + CORE::Int32ToString( maxConnections ) );
 }

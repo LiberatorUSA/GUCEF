@@ -22,7 +22,7 @@
 //                                                                         //
 //-------------------------------------------------------------------------*/
 
-#include <deque>
+#include <queue>
 
 #ifndef GUCEF_CORE_CITASKCONSUMER_H
 #include "gucefCORE_CITaskConsumer.h"
@@ -193,6 +193,11 @@ class UdpViaTcp : public CORE::CObservingNotifier
                                        CORE::CICloneable* evenData );
 
     void
+    OnTCPClientConnected( CORE::CNotifier* notifier    ,
+                          const CORE::CEvent& eventId  ,
+                          CORE::CICloneable* eventData );
+
+    void
     OnTCPServerClientConnected( CORE::CNotifier* notifier    ,
                                 const CORE::CEvent& eventId  ,
                                 CORE::CICloneable* eventData );
@@ -254,13 +259,15 @@ class UdpViaTcp : public CORE::CObservingNotifier
     typedef enum EUdpViaTcpMode TUdpViaTcpMode;
 
     typedef std::vector< COMCORE::CHostAddress > THostAddressVector;
+    typedef std::vector< CORE::CDynamicBuffer > TDynamicBufferVector;
+    typedef std::queue< CORE::CDynamicBuffer > TDynamicBufferQueue;
 
     COMCORE::CTCPServerSocket m_tcpServerSocket;
     COMCORE::CTCPClientSocket m_tcpClientSocket;
     COMCORE::CUDPSocket m_udpTransmitSocket;
     COMCORE::CUDPSocket m_udpReceiveSocket;
-    CORE::CDynamicBuffer m_udpReceiveSocketBuffer;
-    std::vector< CORE::CDynamicBuffer > m_receivePacketBuffers;
+    TDynamicBufferQueue m_tcpClientSendPacketBuffers;
+    TDynamicBufferVector m_tcpServerReceivePacketBuffers;
     
     bool m_udpReceiveUnicast;
     bool m_udpReceiveMulticast;
