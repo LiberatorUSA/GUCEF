@@ -1,6 +1,6 @@
 CALL CMakeCommon.bat
 
-ECHO *** Set MVC14 specifics and run CMake ***
+ECHO *** Set VS2019 specifics and run CMake ***
 
 SET MAINCMAKE=%SRCROOTDIR%\projects\CMake\targets\GUCEF_[exe]_udp2redis
 SET VS19_OUTPUTDIR="%OUTPUTDIR%\VS2019_udp2redis"

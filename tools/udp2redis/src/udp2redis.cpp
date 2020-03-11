@@ -981,10 +981,10 @@ Udp2Redis::OnMetricsTimerCycle( CORE::CNotifier* notifier    ,
         const Udp2RedisChannel::ChannelMetrics& metrics = (*i).GetMetrics();
         CORE::CString metricPrefix = "udp2redis.ch" + CORE::Int32ToString( channelId ) + ".";
 
-        GUCEF_METRIC_GAUGE( metricPrefix + "redisMessagesTransmitted", metrics.redisMessagesTransmitted, 1.0f );
+        GUCEF_METRIC_COUNT( metricPrefix + "redisMessagesTransmitted", metrics.redisMessagesTransmitted, 1.0f );
         GUCEF_METRIC_GAUGE( metricPrefix + "redisTransmitOverflowQueueSize", metrics.redisTransmitOverflowQueueSize, 1.0f );
-        GUCEF_METRIC_GAUGE( metricPrefix + "udpBytesReceived", metrics.udpBytesReceived, 1.0f );
-        GUCEF_METRIC_GAUGE( metricPrefix + "udpMessagesReceived", metrics.udpMessagesReceived, 1.0f );
+        GUCEF_METRIC_COUNT( metricPrefix + "udpBytesReceived", metrics.udpBytesReceived, 1.0f );
+        GUCEF_METRIC_COUNT( metricPrefix + "udpMessagesReceived", metrics.udpMessagesReceived, 1.0f );
         ++i;
     }
 }
