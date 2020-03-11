@@ -431,7 +431,7 @@ CTCPServerConnection::CheckRecieveBuffer( void )
 
     if ( totalrecieved > 0 )
     {
-        ++m_bytesReceived;
+        m_bytesReceived += totalrecieved;
 
         GUCEF_DEBUG_LOG( CORE::LOGLEVEL_BELOW_NORMAL, "CTCPServerConnection(" + CORE::PointerToString( this ) + "): Received " + CORE::UInt32ToString( totalrecieved ) + " bytes of data" );
         TDataRecievedEventData eData( &m_readbuffer );
