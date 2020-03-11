@@ -127,6 +127,7 @@ UdpViaTcp::UdpViaTcp( void )
     , m_udpReceiveSocket( false )
     , m_tcpClientSendPacketBuffers()
     , m_tcpServerReceivePacketBuffers()
+    , m_tcpServerCompleteUdpPacketsReceived( 0 )
     , m_udpReceiveUnicast( true )
     , m_udpReceiveMulticast( false )
     , m_mode( UDPVIATCPMODE_UDP_RECEIVER_ONLY )
@@ -257,6 +258,7 @@ UdpViaTcp::OnMetricsTimerCycle( CORE::CNotifier* notifier    ,
         {
             GUCEF_METRIC_GAUGE( "UdpViaTcp.TcpServer.ConnectedClients", m_tcpServerSocket.GetActiveCount(), 1.0f );
             GUCEF_METRIC_COUNT( "UdpViaTcp.TcpServer.BytesReceived", m_tcpServerSocket.GetBytesReceived( true ), 1.0f );
+            GUCEF_METRIC_COUNT( "UdpViaTcp.TcpServer.UdpPacketsReceived", GetTcpServerCompleteUdpPacketsReceived( true ), 1.0f );
             GUCEF_METRIC_COUNT( "UdpViaTcp.UdpTransmitter.BytesSent", m_udpTransmitSocket.GetBytesTransmitted( true ), 1.0f );
         }
         if ( UDPVIATCPMODE_BIDIRECTIONAL_UDP == m_mode || UDPVIATCPMODE_UDP_RECEIVER_ONLY == m_mode )
@@ -457,6 +459,22 @@ UdpViaTcp::OnUDPTransmitSocketPacketRecieved( CORE::CNotifier* notifier   ,
 
 /*-------------------------------------------------------------------------*/
 
+CORE::UInt32
+UdpViaTcp::GetTcpServerCompleteUdpPacketsReceived( bool resetCounter )
+{GUCEF_TRACE;
+
+    if ( resetCounter )
+    {
+        CORE::UInt32 tcpServerCompleteUdpPacketsReceived = m_tcpServerCompleteUdpPacketsReceived;
+        m_tcpServerCompleteUdpPacketsReceived = 0;
+        return tcpServerCompleteUdpPacketsReceived;
+    }
+    else
+        return m_tcpServerCompleteUdpPacketsReceived;
+}
+
+/*-------------------------------------------------------------------------*/
+
 void
 UdpViaTcp::OnTCPServerConnectionDataRecieved( CORE::CNotifier* notifier    ,
                                               const CORE::CEvent& eventId  ,
@@ -486,6 +504,8 @@ UdpViaTcp::OnTCPServerConnectionDataRecieved( CORE::CNotifier* notifier    ,
         if ( offset+7+packetSize > packetBuffer.GetDataSize() )
             break;
 
+        ++m_tcpServerCompleteUdpPacketsReceived;
+        
         // We have received a complete UDP packet, transmit it
         bool sendError = false;
         THostAddressVector::iterator i = m_udpDestinations.begin();

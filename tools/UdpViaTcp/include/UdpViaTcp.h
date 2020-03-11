@@ -246,6 +246,8 @@ class UdpViaTcp : public CORE::CObservingNotifier
                          const CORE::CEvent& eventId  ,
                          CORE::CICloneable* eventData );
 
+    CORE::UInt32 GetTcpServerCompleteUdpPacketsReceived( bool resetCounter );
+    
     private:
 
     typedef CORE::CTEventHandlerFunctor< UdpViaTcp > TEventCallback;
@@ -268,6 +270,7 @@ class UdpViaTcp : public CORE::CObservingNotifier
     COMCORE::CUDPSocket m_udpReceiveSocket;
     TDynamicBufferQueue m_tcpClientSendPacketBuffers;
     TDynamicBufferVector m_tcpServerReceivePacketBuffers;
+    CORE::UInt32 m_tcpServerCompleteUdpPacketsReceived;
     
     bool m_udpReceiveUnicast;
     bool m_udpReceiveMulticast;
