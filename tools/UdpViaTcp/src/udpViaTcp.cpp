@@ -128,6 +128,8 @@ UdpViaTcp::UdpViaTcp( void )
     , m_tcpClientSendPacketBuffers()
     , m_tcpServerReceivePacketBuffers()
     , m_tcpServerCompleteUdpPacketsReceived( 0 )
+    , m_tcpClientAppLvlKeepAliveTimer()
+    , m_useTcpClientAppLvlKeepAlive( true )
     , m_udpReceiveUnicast( true )
     , m_udpReceiveMulticast( false )
     , m_mode( UDPVIATCPMODE_UDP_RECEIVER_ONLY )
@@ -232,16 +234,44 @@ UdpViaTcp::RegisterEventHandlers( void )
                  COMCORE::CTCPServerSocket::ServerSocketMaxConnectionsChangedEvent ,
                  callback16                                                        );
 
-    TEventCallback callback17( this, &UdpViaTcp::OnMetricsTimerCycle );
-    SubscribeTo( &m_metricsTimer                ,
-                 CORE::CTimer::TimerUpdateEvent ,
-                 callback17                     );
-
-    TEventCallback callback18( this, &UdpViaTcp::OnTCPClientConnected );
+    TEventCallback callback17( this, &UdpViaTcp::OnTCPClientConnected );
     SubscribeTo( &m_tcpClientSocket                        ,
                  COMCORE::CTCPClientSocket::ConnectedEvent ,
-                 callback18                                );
+                 callback17                                );
+    TEventCallback callback18( this, &UdpViaTcp::OnTCPClientDisconnected );
+    SubscribeTo( &m_tcpClientSocket                           ,
+                 COMCORE::CTCPClientSocket::DisconnectedEvent ,
+                 callback18                                   );
 
+    TEventCallback callback19( this, &UdpViaTcp::OnMetricsTimerCycle );
+    SubscribeTo( &m_metricsTimer                ,
+                 CORE::CTimer::TimerUpdateEvent ,
+                 callback19                     );
+
+    TEventCallback callback20( this, &UdpViaTcp::OnTcpClientAppLvlKeepAliveTimerCycle );
+    SubscribeTo( &m_tcpClientAppLvlKeepAliveTimer ,
+                 CORE::CTimer::TimerUpdateEvent   ,
+                 callback20                       );
+
+}
+
+/*-------------------------------------------------------------------------*/
+
+void
+UdpViaTcp::OnTcpClientAppLvlKeepAliveTimerCycle( CORE::CNotifier* notifier    ,
+                                                 const CORE::CEvent& eventId  ,
+                                                 CORE::CICloneable* eventData )
+{GUCEF_TRACE;
+
+    static char noPayloadPacket[ 7 ] = { 'U', 'D', 'P', 0, 0, 0, 0 };
+    if ( m_tcpClientSocket.Send( noPayloadPacket, 7 ) )
+    {
+        GUCEF_DEBUG_LOG( CORE::LOGLEVEL_NORMAL, "UdpViaTcp: Successfully sent zero-payload app level keep alive message over the TCP link" );
+    }
+    else
+    {
+        GUCEF_ERROR_LOG( CORE::LOGLEVEL_NORMAL, "UdpViaTcp: Failed to send zero-payload app level keep alive message over the TCP link" );
+    }
 }
 
 /*-------------------------------------------------------------------------*/
@@ -359,6 +389,7 @@ UdpViaTcp::OnUDPReceiveSocketPacketRecieved( CORE::CNotifier* notifier    ,
                     if ( m_tcpClientSocket.Send( packet.GetConstBufferPtr(), packetSize ) )
                     {
                         m_tcpClientSendPacketBuffers.pop();
+                        m_tcpClientAppLvlKeepAliveTimer.Reset();
                     }
                     else
                     {
@@ -378,8 +409,13 @@ UdpViaTcp::OnUDPReceiveSocketPacketRecieved( CORE::CNotifier* notifier    ,
                 CORE::UInt32 packetSize = udpPacketBuffer.GetDataSize();
                 memcpy( packetHeader+3, &packetSize, 4 );
                 if ( m_tcpClientSocket.Send( packetHeader, 7 ) )
+                {
                     if ( m_tcpClientSocket.Send( udpPacketBuffer.GetConstBufferPtr(), packetSize ) )
+                    {
                         successfullSend = true;
+                        m_tcpClientAppLvlKeepAliveTimer.Reset();
+                    }
+                }
             }
         }
         if ( !successfullSend )
@@ -506,6 +542,14 @@ UdpViaTcp::OnTCPServerConnectionDataRecieved( CORE::CNotifier* notifier    ,
 
         ++m_tcpServerCompleteUdpPacketsReceived;
         
+        // Don't try to send 0 length packages.
+        // These are used as an application level keep-alive mechanism
+        if ( 0 == packetSize )
+        {
+            offset = ( (CORE::UInt32) index ) + 7 + packetSize;
+            break;
+        }
+        
         // We have received a complete UDP packet, transmit it
         bool sendError = false;
         THostAddressVector::iterator i = m_udpDestinations.begin();
@@ -542,6 +586,12 @@ UdpViaTcp::OnTCPClientConnected( CORE::CNotifier* notifier    ,
                                  CORE::CICloneable* eventData )
 {GUCEF_TRACE;
     
+    if ( m_useTcpClientAppLvlKeepAlive )
+    {
+        m_tcpClientAppLvlKeepAliveTimer.Reset();
+        m_tcpClientAppLvlKeepAliveTimer.SetEnabled( true );
+    }
+    
     if ( !m_tcpClientSendPacketBuffers.empty() )
     {
         GUCEF_LOG( CORE::LOGLEVEL_IMPORTANT, "UdpViaTcp: TCP client connected. Will attempt to send " + 
@@ -560,6 +610,7 @@ UdpViaTcp::OnTCPClientConnected( CORE::CNotifier* notifier    ,
                 if ( m_tcpClientSocket.Send( packet.GetConstBufferPtr(), packetSize ) )
                 {
                     m_tcpClientSendPacketBuffers.pop();
+                    m_tcpClientAppLvlKeepAliveTimer.Reset();
                 }
                 else
                 {
@@ -576,6 +627,20 @@ UdpViaTcp::OnTCPClientConnected( CORE::CNotifier* notifier    ,
     {
         GUCEF_LOG( CORE::LOGLEVEL_IMPORTANT, "UdpViaTcp: TCP client connected, no packages were queued for transmission" );
     }
+}
+
+/*-------------------------------------------------------------------------*/
+
+void
+UdpViaTcp::OnTCPClientDisconnected( CORE::CNotifier* notifier    ,
+                                    const CORE::CEvent& eventId  ,
+                                    CORE::CICloneable* eventData )
+{GUCEF_TRACE;
+    
+    m_tcpClientAppLvlKeepAliveTimer.Reset();
+    m_tcpClientAppLvlKeepAliveTimer.SetEnabled( false );
+
+    GUCEF_LOG( CORE::LOGLEVEL_NORMAL, "UdpViaTcp: TCP client disconnected" );
 }
 
 /*-------------------------------------------------------------------------*/
@@ -721,8 +786,7 @@ UdpViaTcp::Start( void )
     {
         m_metricsTimer.SetInterval( 1000 );
         m_metricsTimer.SetEnabled( true );
-    }
-   
+    }  
     
     if ( m_httpServer.Listen() )
     {
@@ -760,7 +824,10 @@ UdpViaTcp::LoadConfig( const CORE::CValueList& appConfig   ,
     }
 
     m_transmitMetrics = CORE::StringToBool( appConfig.GetValueAlways( "TransmitMetrics", "true" ) );
-    
+
+    m_useTcpClientAppLvlKeepAlive = CORE::StringToBool( appConfig.GetValueAlways( "UseTcpClientAppLvlKeepAlive", "true" ) );
+    m_tcpClientAppLvlKeepAliveTimer.SetInterval( CORE::StringToUInt32( appConfig.GetValueAlways( "TcpClientAppLvlKeepAliveInterval", "10000" ) ) );
+
     m_udpReceiveUnicast = CORE::StringToBool( appConfig.GetValueAlways( "UdpReceiverAcceptsUnicast", "true" ) );
     m_udpReceiveMulticast = CORE::StringToBool( appConfig.GetValueAlways( "UdpReceiverAcceptsMulticast", "false" ) );
     m_udpReceiver.SetPortInHostByteOrder( CORE::StringToUInt16( CORE::ResolveVars( appConfig.GetValueAlways( "UdpReceiverPort", "20000" ) ) ) );

@@ -198,6 +198,11 @@ class UdpViaTcp : public CORE::CObservingNotifier
                           CORE::CICloneable* eventData );
 
     void
+    OnTCPClientDisconnected( CORE::CNotifier* notifier    ,
+                             const CORE::CEvent& eventId  ,
+                             CORE::CICloneable* eventData );
+                       
+    void
     OnTCPServerClientConnected( CORE::CNotifier* notifier    ,
                                 const CORE::CEvent& eventId  ,
                                 CORE::CICloneable* eventData );
@@ -246,6 +251,11 @@ class UdpViaTcp : public CORE::CObservingNotifier
                          const CORE::CEvent& eventId  ,
                          CORE::CICloneable* eventData );
 
+    void
+    OnTcpClientAppLvlKeepAliveTimerCycle( CORE::CNotifier* notifier    ,
+                                          const CORE::CEvent& eventId  ,
+                                          CORE::CICloneable* eventData );
+    
     CORE::UInt32 GetTcpServerCompleteUdpPacketsReceived( bool resetCounter );
     
     private:
@@ -271,6 +281,8 @@ class UdpViaTcp : public CORE::CObservingNotifier
     TDynamicBufferQueue m_tcpClientSendPacketBuffers;
     TDynamicBufferVector m_tcpServerReceivePacketBuffers;
     CORE::UInt32 m_tcpServerCompleteUdpPacketsReceived;
+    CORE::CTimer m_tcpClientAppLvlKeepAliveTimer;
+    bool m_useTcpClientAppLvlKeepAlive;
     
     bool m_udpReceiveUnicast;
     bool m_udpReceiveMulticast;
