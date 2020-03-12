@@ -827,6 +827,9 @@ UdpViaTcp::LoadConfig( const CORE::CValueList& appConfig   ,
 
     m_useTcpClientAppLvlKeepAlive = CORE::StringToBool( appConfig.GetValueAlways( "UseTcpClientAppLvlKeepAlive", "true" ) );
     m_tcpClientAppLvlKeepAliveTimer.SetInterval( CORE::StringToUInt32( appConfig.GetValueAlways( "TcpClientAppLvlKeepAliveInterval", "10000" ) ) );
+    
+    m_tcpServerSocket.SetDisconnectClientConnectionIfIdle( CORE::StringToBool( appConfig.GetValueAlways( "UseTcpServerIdleClientDisconnect", "true" ) ) );
+    m_tcpServerSocket.SetClientConnectionMaxIdleDurationInMs( CORE::StringToUInt32( appConfig.GetValueAlways( "TcpServerMaxClientIdleDurationInMs", "600000" ) ) );
 
     m_udpReceiveUnicast = CORE::StringToBool( appConfig.GetValueAlways( "UdpReceiverAcceptsUnicast", "true" ) );
     m_udpReceiveMulticast = CORE::StringToBool( appConfig.GetValueAlways( "UdpReceiverAcceptsMulticast", "false" ) );

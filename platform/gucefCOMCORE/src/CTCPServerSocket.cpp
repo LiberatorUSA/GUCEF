@@ -137,6 +137,8 @@ CTCPServerSocket::CTCPServerSocket( CORE::CPulseGenerator& pulseGenerator ,
     , m_maxUpdatesPerCycle( 10 )
     , m_autoReopenOnError( false )
     , m_lastListenFailed( false )
+    , m_disconnectClientsIfIdle( false )
+    , m_maxClientConnectionIdleTime( 600000 )
 {GUCEF_TRACE;
 
     _data = new TTCPServerSockData;
@@ -309,6 +311,56 @@ CTCPServerSocket::OnPulse( CORE::CNotifier* notifier                 ,
 
 /*-------------------------------------------------------------------------*/
 
+void 
+CTCPServerSocket::SetDisconnectClientConnectionIfIdle( bool disconnectIfIdle )
+{GUCEF_TRACE;
+
+    m_disconnectClientsIfIdle = disconnectIfIdle;
+
+    TConnectionSet::iterator i = m_activeConnections.begin();
+    while ( i != m_activeConnections.end() )
+    {
+        (*i)->SetDisconnectIfIdle( disconnectIfIdle );
+        ++i;
+    }
+}
+
+/*-------------------------------------------------------------------------*/
+
+bool 
+CTCPServerSocket::GetDisconnectClientConnectionIfIdle( void ) const
+{GUCEF_TRACE;
+
+    return m_disconnectClientsIfIdle;
+}
+
+/*-------------------------------------------------------------------------*/
+
+void 
+CTCPServerSocket::SetClientConnectionMaxIdleDurationInMs( UInt32 maxIdleTimeInMs )
+{GUCEF_TRACE;
+
+    m_maxClientConnectionIdleTime = maxIdleTimeInMs;
+
+    TConnectionSet::iterator i = m_activeConnections.begin();
+    while ( i != m_activeConnections.end() )
+    {
+        (*i)->SetMaxIdleDurationInMs( maxIdleTimeInMs );
+        ++i;
+    }
+}
+
+/*-------------------------------------------------------------------------*/
+
+UInt32 
+CTCPServerSocket::GeClientConnectiontMaxIdleDurationInMs( void ) const 
+{GUCEF_TRACE;
+
+    return m_maxClientConnectionIdleTime;
+}
+
+/*-------------------------------------------------------------------------*/
+
 void
 CTCPServerSocket::SetAutoReOpenOnError( bool autoReOpen )
 {GUCEF_TRACE;
@@ -429,6 +481,8 @@ CTCPServerSocket::AcceptClients( void )
                         }
 
                         clientcon->_active = true;
+                        clientcon->SetMaxIdleDurationInMs( m_maxClientConnectionIdleTime );
+                        clientcon->SetDisconnectIfIdle( m_disconnectClientsIfIdle );
                         m_almostActiveConnections.push( clientcon );
 
                         /*

@@ -29,7 +29,12 @@
 #ifndef GUCEF_CORE_CCYCLICDYNAMICBUFFER_H
 #include "CCyclicDynamicBuffer.h"
 #define GUCEF_CORE_CCYCLICDYNAMICBUFFER_H
-#endif /* GUCEF_CORE_CCYCLICDYNAMICBUFFER_H ? */
+#endif /* GUCEF_CORE_CCYCLICDYNAMICBUFFER_H ? */ 
+                
+#ifndef GUCEF_CORE_CTIMER_H
+#include "CTimer.h"
+#define GUCEF_CORE_CTIMER_H
+#endif /* GUCEF_CORE_CTIMER_H ? */
 
 #ifndef GUCEF_COMCORE_CTCPCONNECTION_H
 #include "CTCPConnection.h"                     /* TCP connection base class */
@@ -157,6 +162,14 @@ class GUCEF_COMCORE_EXPORT_CPP CTCPServerConnection : public CTCPConnection
     virtual UInt32 GetBytesReceived( bool resetCounter );
 
     virtual UInt32 GetBytesTransmitted( bool resetCounter );
+
+    void SetDisconnectIfIdle( bool disconnectIfIdle );
+
+    bool GetDisconnectIfIdle( void ) const;
+
+    void SetMaxIdleDurationInMs( UInt32 maxIdleTimeInMs );
+
+    UInt32 GetMaxIdleDurationInMs( void ) const;
     
     protected:
     friend class CTCPServerSocket;
@@ -177,9 +190,16 @@ class GUCEF_COMCORE_EXPORT_CPP CTCPServerConnection : public CTCPConnection
     void CheckRecieveBuffer( void );
 
     void CloseImp( bool byUser, bool lock, bool updateActiveLists, bool notify );
+
+    void
+    OnIdleTimerTriggered( CORE::CNotifier* notifier    ,
+                          const CORE::CEvent& eventId  ,
+                          CORE::CICloneable* eventData );
     
     private:
     friend class CTCPServerSocket;
+
+    typedef CORE::CTEventHandlerFunctor< CTCPServerConnection > TEventCallback;
     
     struct STCPServerConData* _data;
     bool _blocking;  
@@ -194,6 +214,8 @@ class GUCEF_COMCORE_EXPORT_CPP CTCPServerConnection : public CTCPConnection
     bool m_coaleseDataSends;
     UInt32 m_bytesReceived;
     UInt32 m_bytesTransmitted;
+    bool m_disconnectIfIdle;
+    CORE::CTimer m_idleTimer;
 
     CTCPServerConnection( void ); /* private default constructor because we need data */                             
 };

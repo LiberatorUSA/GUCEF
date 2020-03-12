@@ -182,6 +182,14 @@ class GUCEF_COMCORE_EXPORT_CPP CTCPServerSocket : public CSocket
     virtual bool SendToAllClients( const void* dataSource , 
                                    const UInt32 dataSize  );
 
+    void SetDisconnectClientConnectionIfIdle( bool disconnectIfIdle );
+
+    bool GetDisconnectClientConnectionIfIdle( void ) const;
+
+    void SetClientConnectionMaxIdleDurationInMs( UInt32 maxIdleTimeInMs );
+
+    UInt32 GeClientConnectiontMaxIdleDurationInMs( void ) const;    
+    
     virtual ~CTCPServerSocket(); 
     
     protected:
@@ -235,6 +243,8 @@ class GUCEF_COMCORE_EXPORT_CPP CTCPServerSocket : public CSocket
     UInt32 m_maxUpdatesPerCycle;               /**< setting aimed at preventing a busy socket from hogging all the processing */
     bool m_autoReopenOnError;                  /**< flag for feature to auto re-open the listen socket after a socket error occurred */
     bool m_lastListenFailed;
+    bool m_disconnectClientsIfIdle;
+    UInt32 m_maxClientConnectionIdleTime;
 };
 
 /*-------------------------------------------------------------------------//

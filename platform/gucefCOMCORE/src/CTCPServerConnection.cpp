@@ -99,12 +99,19 @@ CTCPServerConnection::CTCPServerConnection( CTCPServerSocket *tcp_serversock ,
     , m_coaleseDataSends( true )          
     , m_bytesReceived( 0 )
     , m_bytesTransmitted( 0 )
+    , m_disconnectIfIdle( false )
+    , m_idleTimer( *tcp_serversock->m_pulseGenerator, 600000 )
 {GUCEF_TRACE;
 
     _data = new TTCPServerConData;
     _data->sockid = 0;
     memset( &_data->timeout, 0, sizeof( _data->timeout ) );
     memset( &_data->clientaddr, 0, sizeof(_data->clientaddr) );
+
+    TEventCallback callback1( this, &CTCPServerConnection::OnIdleTimerTriggered );
+    SubscribeTo( &m_idleTimer                   ,
+                 CORE::CTimer::TimerUpdateEvent ,
+                 callback1                      );
 }
 
 /*-------------------------------------------------------------------------*/
@@ -431,6 +438,7 @@ CTCPServerConnection::CheckRecieveBuffer( void )
 
     if ( totalrecieved > 0 )
     {
+        m_idleTimer.Reset();
         m_bytesReceived += totalrecieved;
 
         GUCEF_DEBUG_LOG( CORE::LOGLEVEL_BELOW_NORMAL, "CTCPServerConnection(" + CORE::PointerToString( this ) + "): Received " + CORE::UInt32ToString( totalrecieved ) + " bytes of data" );
@@ -446,6 +454,58 @@ CTCPServerConnection::GetConnectionIndex( void ) const
 {GUCEF_TRACE;
 
     return m_connectionidx;
+}
+
+/*-------------------------------------------------------------------------*/
+
+void
+CTCPServerConnection::OnIdleTimerTriggered( CORE::CNotifier* notifier    ,
+                                            const CORE::CEvent& eventId  ,
+                                            CORE::CICloneable* eventData )
+{GUCEF_TRACE;
+
+    GUCEF_LOG( CORE::LOGLEVEL_NORMAL, "CTCPServerConnection(" + CORE::PointerToString( this ) + "): Idle timer tiggered. Closing connection due to inactivity" );
+    Close();
+}
+
+/*-------------------------------------------------------------------------*/
+
+void 
+CTCPServerConnection::SetDisconnectIfIdle( bool disconnectIfIdle )
+{GUCEF_TRACE;
+
+    if ( m_disconnectIfIdle != disconnectIfIdle )
+    {
+        m_disconnectIfIdle = disconnectIfIdle;
+        m_idleTimer.SetEnabled( m_disconnectIfIdle );
+    }
+}
+
+/*-------------------------------------------------------------------------*/
+
+bool 
+CTCPServerConnection::GetDisconnectIfIdle( void ) const
+{GUCEF_TRACE;
+
+    return m_disconnectIfIdle;
+}
+
+/*-------------------------------------------------------------------------*/
+
+void 
+CTCPServerConnection::SetMaxIdleDurationInMs( UInt32 maxIdleTimeInMs )
+{GUCEF_TRACE;
+
+    m_idleTimer.SetInterval( maxIdleTimeInMs );
+}
+
+/*-------------------------------------------------------------------------*/
+
+UInt32 
+CTCPServerConnection::GetMaxIdleDurationInMs( void ) const
+{GUCEF_TRACE;
+
+    return m_idleTimer.GetInterval();
 }
 
 /*-------------------------------------------------------------------------*/
