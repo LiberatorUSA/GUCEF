@@ -55,6 +55,11 @@
 #define GUCEF_ARCHITECTURE_32 1
 #define GUCEF_ARCHITECTURE_64 2
 
+#define GUCEF_CPU_ARCHITECTURE_ARM      1
+#define GUCEF_CPU_ARCHITECTURE_ARM64    2
+#define GUCEF_CPU_ARCHITECTURE_X86      3
+#define GUCEF_CPU_ARCHITECTURE_AMD64    4
+
 /*-------------------------------------------------------------------------//
 //                                                                         //
 //      MACROS                                                             //
@@ -66,6 +71,15 @@
 #if defined( _MSC_VER )
 #   define GUCEF_COMPILER GUCEF_COMPILER_MSVC
 #   define GUCEF_COMP_VER _MSC_VER
+#   ifdef _M_ARM
+#       define GUCEF_CPU_ARCHITECTURE GUCEF_CPU_ARCHITECTURE_ARM
+#   elif _M_ARM64
+#       define GUCEF_CPU_ARCHITECTURE GUCEF_CPU_ARCHITECTURE_ARM64
+#   elif _M_AMD64
+#       define GUCEF_CPU_ARCHITECTURE GUCEF_CPU_ARCHITECTURE_AMD64
+#   elif _M_IX86
+#       define GUCEF_CPU_ARCHITECTURE GUCEF_CPU_ARCHITECTURE_X86
+#   endif
 
 #elif defined( __GNUC__ )
 #   define GUCEF_COMPILER GUCEF_COMPILER_GNUC
