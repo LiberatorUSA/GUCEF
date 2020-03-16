@@ -35,6 +35,16 @@
 #define GUCEF_CORE_CILOGGER_H
 #endif /* GUCEF_CORE_CILOGGER_H ? */
 
+#ifndef GUCEF_CORE_CMULTILOGGER_H
+#include "gucefCORE_CMultiLogger.h"
+#define GUCEF_CORE_CMULTILOGGER_H
+#endif /* GUCEF_CORE_CMULTILOGGER_H ? */
+
+#ifndef GUCEF_CORE_CLOGGINGTASK_H
+#include "gucefCORE_CLoggingTask.h"
+#define GUCEF_CORE_CLOGGINGTASK_H
+#endif /* GUCEF_CORE_CLOGGINGTASK_H ? */
+
 #ifndef GUCEF_CORE_DVCPPSTRINGUTILS_H
 #include "dvcppstringutils.h"
 #define GUCEF_CORE_DVCPPSTRINGUTILS_H
@@ -93,27 +103,14 @@ static CAndroidSystemLogger androidSystemLogger;
 //-------------------------------------------------------------------------*/
 
 CLogManager::CLogManager( void )
-    : m_loggers()                            ,
-      m_msgTypeEnablers()                    ,
-      m_minLogLevel( LOGLEVEL_BELOW_NORMAL ) ,
-      m_bootstrapLog()                       ,
-      m_busyLogging( false )                 ,
-      m_redirectToLogQueue( false )          ,
-      m_dataLock()
+    : m_loggers( new CMultiLogger() )
+    , m_loggingTask( GUCEF_NULL )
+    , m_useLogThread( false )
+    , m_bootstrapLog() 
+    , m_busyLogging( false ) 
+    , m_redirectToLogQueue( false )
+    , m_dataLock()
 {GUCEF_TRACE;
-
-    m_msgTypeEnablers[ LOG_ERROR ] = true;
-    m_msgTypeEnablers[ LOG_WARNING ] = true;
-    m_msgTypeEnablers[ LOG_STANDARD ] = true;
-    m_msgTypeEnablers[ LOG_USER ] = true;
-    m_msgTypeEnablers[ LOG_SYSTEM ] = true;
-    m_msgTypeEnablers[ LOG_DEV ] = true;
-    m_msgTypeEnablers[ LOG_DEBUG ] = true;
-    m_msgTypeEnablers[ LOG_SERVICE ] = true;
-    m_msgTypeEnablers[ LOG_PROTECTED ] = true;
-    m_msgTypeEnablers[ LOG_CALLSTACK ] = true;
-    m_msgTypeEnablers[ LOG_EXCEPTION ] = true;
-    m_msgTypeEnablers[ LOG_CONSOLE ] = true;
 
     #if ( GUCEF_PLATFORM == GUCEF_PLATFORM_ANDROID )
     AddLogger( &androidSystemLogger);
@@ -125,9 +122,13 @@ CLogManager::CLogManager( void )
 CLogManager::~CLogManager()
 {GUCEF_TRACE;
 
-    #if ( GUCEF_PLATFORM == GUCEF_PLATFORM_ANDROID )
-    RemoveLogger( &androidSystemLogger);
-    #endif /* GUCEF_PLATFORM == GUCEF_PLATFORM_ANDROID ? */
+    ClearLoggers();
+
+    delete m_loggingTask;
+    m_loggingTask = GUCEF_NULL;
+    
+    delete m_loggers;
+    m_loggers = GUCEF_NULL;
 }
 
 /*-------------------------------------------------------------------------*/
@@ -162,7 +163,7 @@ CLogManager::FlushBootstrapLogEntriesToLogs( void )
 
     m_dataLock.Lock();
 
-    if ( m_loggers.size() > 0 )
+    if ( m_loggers->GetLoggerCount() > 0 )
     {
         TBootstrapLogVector::iterator i = m_bootstrapLog.begin();
         while ( i != m_bootstrapLog.end() )
@@ -193,19 +194,13 @@ void
 CLogManager::AddLogger( CILogger* loggerImp )
 {GUCEF_TRACE;
 
-    // Do not add bogus loggers
-    if ( NULL != loggerImp )
-    {
-        m_dataLock.Lock();
-        m_loggers.insert( loggerImp );
-        m_dataLock.Unlock();
-
-        GUCEF_SYSTEM_LOG( LOGLEVEL_NORMAL, "Added logger" );
-    }
-    else
-    {
-        GUCEF_ERROR_LOG( LOGLEVEL_NORMAL, "Null given for logger" );
-    }
+    m_dataLock.Lock();
+    if ( m_useLogThread )
+        m_loggingTask->PauseTask();    
+    m_loggers->AddLogger( loggerImp );
+    if ( m_useLogThread )
+        m_loggingTask->ResumeTask();
+    m_dataLock.Unlock();
 }
 
 /*-------------------------------------------------------------------------*/
@@ -214,13 +209,12 @@ void
 CLogManager::RemoveLogger( CILogger* loggerImp )
 {GUCEF_TRACE;
 
-    // Do not pass in bogus pointers
-    assert( NULL != loggerImp );
-
-    GUCEF_SYSTEM_LOG( LOGLEVEL_NORMAL, "Removing logger" );
-
     m_dataLock.Lock();
-    m_loggers.erase( loggerImp );
+    if ( m_useLogThread )
+        m_loggingTask->PauseTask();
+    m_loggers->RemoveLogger( loggerImp );
+    if ( m_useLogThread )
+        m_loggingTask->ResumeTask();
     m_dataLock.Unlock();
 }
 
@@ -231,7 +225,11 @@ CLogManager::ClearLoggers( void )
 {GUCEF_TRACE;
 
     m_dataLock.Lock();
-    m_loggers.clear();
+    if ( m_useLogThread )
+        m_loggingTask->PauseTask();
+    m_loggers->ClearLoggers();
+    if ( m_useLogThread )
+        m_loggingTask->ResumeTask();
     m_dataLock.Unlock();
 }
 
@@ -243,13 +241,7 @@ CLogManager::ClearLoggers( void )
 {GUCEF_TRACE;
 
     m_dataLock.Lock();
-
-    bool retValue = false;
-    if ( logLevel < m_minLogLevel )
-    {
-        retValue = (*m_msgTypeEnablers.find( logMsgType )).second;
-    }
-
+    bool retValue = m_loggers->IsLoggingEnabled( logMsgType, logLevel );
     m_dataLock.Unlock();
     return retValue;
 }
@@ -260,7 +252,7 @@ void
 CLogManager::SetMinLogLevel( const Int32 logLevel )
 {GUCEF_TRACE;
 
-    m_minLogLevel = logLevel;
+    m_loggers->SetMinLogLevel( logLevel );
 }
 
 /*-------------------------------------------------------------------------*/
@@ -271,10 +263,7 @@ CLogManager::Log( const TLogMsgType logMsgType ,
                   const CString& logMessage    )
 {GUCEF_TRACE;
 
-    Log( logMsgType             ,
-         logLevel               ,
-         logMessage             ,
-         MT::GetCurrentTaskID() );
+    Log( logMsgType, logLevel, logMessage, MT::GetCurrentTaskID() );
 }
 
 /*-------------------------------------------------------------------------*/
@@ -295,53 +284,40 @@ CLogManager::Log( const TLogMsgType logMsgType ,
     // if this flag is true then log messages will be dropped since the thread is within
     // the logger->Log() call and thus the message is generated due to the logging
     // activity itself.
-    if ( logLevel >= m_minLogLevel && !m_busyLogging )
+    if ( !m_busyLogging )
     {
-        if ( (*m_msgTypeEnablers.find( logMsgType )).second )
+     
+        if ( m_loggers->GetLoggerCount() > 0  && !m_redirectToLogQueue )
         {
-            if ( m_loggers.size() > 0  && !m_redirectToLogQueue )
+            m_busyLogging = true;
+            if ( m_useLogThread )
             {
-                TLoggerList::const_iterator i = m_loggers.begin();
-                while ( i != m_loggers.end() )
-                {
-                    CILogger* logger = (*i);
-                    if ( NULL != logger )
-                    {
-                        m_busyLogging = true;
-
-                        logger->Log( logMsgType ,
-                                     logLevel   ,
-                                     logMessage ,
-                                     threadId   );
-
-                        m_busyLogging = false;
-                    }
-                    ++i;
-                }
-
-                // We want to make certain that errors are always in the log file.
-                // We might crash moments later which might cause some loggers not
-                // to write the error entry to their respective output media
-                if ( LOG_ERROR == logMsgType )
-                {
-                    FlushLogs();
-                }
+                m_loggingTask->Log( logMsgType ,
+                                    logLevel   ,
+                                    logMessage ,
+                                    threadId   );
             }
             else
             {
-                // We do not have any loggers yet so we will add the log entry to
-                // the bootstrap log
-                TBootstrapLogEntry entry;
-                entry.logLevel = logLevel;
-                entry.logMsgType = logMsgType;
-                entry.logMessage = logMessage;
-                entry.threadId = threadId;
-                m_bootstrapLog.push_back( entry );
+                m_loggers->Log( logMsgType ,
+                                logLevel   ,
+                                logMessage ,
+                                threadId   );
             }
+            m_busyLogging = false;
+        }
+        else
+        {
+            // We do not have any loggers yet so we will add the log entry to
+            // the bootstrap log
+            TBootstrapLogEntry entry;
+            entry.logLevel = logLevel;
+            entry.logMsgType = logMsgType;
+            entry.logMessage = logMessage;
+            entry.threadId = threadId;
+            m_bootstrapLog.push_back( entry );
         }
     }
-
-
 
     m_dataLock.Unlock();
 }
@@ -429,19 +405,53 @@ CLogManager::FlushLogs( void )
 {GUCEF_TRACE;
 
     m_dataLock.Lock();
-
-    TLoggerList::const_iterator i = m_loggers.begin();
-    while ( i != m_loggers.end() )
+    if ( m_useLogThread )
     {
-        CILogger* logger = (*i);
-        if ( NULL != logger )
-        {
-            logger->FlushLog();
-        }
-        ++i;
+        m_loggingTask->FlushLog();
     }
-
+    else
+    {
+        m_loggers->FlushLog();
+    }
     m_dataLock.Unlock();
+}
+
+/*-------------------------------------------------------------------------*/
+
+void 
+CLogManager::SetUseLoggingThread( bool useLogThread )
+{GUCEF_TRACE;
+
+    m_dataLock.Lock();
+    if ( useLogThread != m_useLogThread )
+    {
+        if ( useLogThread )
+        {
+            m_loggingTask = new CLoggingTask( *m_loggers );
+            if ( m_loggingTask->StartTask() )
+                m_useLogThread = useLogThread;
+        }
+        else
+        {
+            if ( m_loggingTask->StopTask() )
+            {
+                m_useLogThread = useLogThread;
+
+                delete m_loggingTask;
+                m_loggingTask = GUCEF_NULL;
+            }
+        }
+    }
+    m_dataLock.Unlock();
+}
+
+/*-------------------------------------------------------------------------*/
+
+bool 
+CLogManager::GetUseLoggingThread( void ) const
+{GUCEF_TRACE;
+
+    return m_useLogThread;
 }
 
 /*-------------------------------------------------------------------------*/

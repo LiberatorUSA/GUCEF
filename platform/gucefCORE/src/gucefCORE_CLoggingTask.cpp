@@ -153,6 +153,24 @@ CLoggingTask::StopTask( void )
 
 /*-------------------------------------------------------------------------*/
 
+bool
+CLoggingTask::PauseTask( void )
+{GUCEF_TRACE;
+
+    return CCoreGlobal::Instance()->GetTaskManager().PauseTask( GetTaskId(), true );
+}
+
+/*-------------------------------------------------------------------------*/
+
+bool
+CLoggingTask::ResumeTask( void )
+{GUCEF_TRACE;
+
+    return CCoreGlobal::Instance()->GetTaskManager().ResumeTask( GetTaskId() );
+}
+
+/*-------------------------------------------------------------------------*/
+
 void
 CLoggingTask::FlushLog( void )
 {GUCEF_TRACE;

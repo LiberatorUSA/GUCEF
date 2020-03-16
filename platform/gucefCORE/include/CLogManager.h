@@ -60,6 +60,8 @@ namespace CORE {
 //-------------------------------------------------------------------------*/
 
 class CILogger;
+class CMultiLogger;
+class CLoggingTask;
 class CString;
 
 /*-------------------------------------------------------------------------*/
@@ -104,6 +106,10 @@ class GUCEF_CORE_PUBLIC_CPP CLogManager
 
     void FlushLogs( void );
 
+    void SetUseLoggingThread( bool useLogThread );
+
+    bool GetUseLoggingThread( void ) const;
+
     /**
      *  About the bootstrap log:
      *  At application startup there will be log messages entered before any logger
@@ -145,8 +151,6 @@ class GUCEF_CORE_PUBLIC_CPP CLogManager
 
     private:
 
-    typedef std::set< CILogger* > TLoggerList;
-
     struct SBootstrapLogEntry
     {
         TLogMsgType logMsgType;
@@ -157,9 +161,9 @@ class GUCEF_CORE_PUBLIC_CPP CLogManager
     typedef struct SBootstrapLogEntry TBootstrapLogEntry;
     typedef std::vector< TBootstrapLogEntry > TBootstrapLogVector;
 
-    TLoggerList m_loggers;
-    std::map< TLogMsgType, bool > m_msgTypeEnablers;
-    Int32 m_minLogLevel;
+    CMultiLogger* m_loggers;
+    CLoggingTask* m_loggingTask;
+    bool m_useLogThread;
     TBootstrapLogVector m_bootstrapLog;
     bool m_busyLogging;
     bool m_redirectToLogQueue;

@@ -115,6 +115,18 @@ class GUCEF_CORE_PUBLIC_CPP CLoggingTask : public CTaskConsumer ,
      */
     bool StopTask( void );
 
+    /**
+     *  Utility function for convenience, Pauses the task using 
+     *  the taskmanager
+     */
+    bool PauseTask( void );
+
+    /**
+     *  Utility function for convenience, Pauses the task using 
+     *  the taskmanager
+     */
+    bool ResumeTask( void );
+
     void SetLoggerBackend( CILogger& loggerBackend );
 
     /**
