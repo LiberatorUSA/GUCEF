@@ -232,6 +232,8 @@ struct SDirProcessingInstructions
     TStringVectorMap fileExcludeList;       // list of files that are to be excluded, maps a list of per platform
     TStringVectorMap fileIncludeList;       // list of files that are to be included, maps a list of per platform
 
+    TStringVectorMapMap platformDirs;       // 
+
     CORE::CDataNode processingInstructions; // All unparsed processing instruction data
 };
 typedef struct SDirProcessingInstructions TDirProcessingInstructions;
@@ -242,12 +244,23 @@ typedef std::map< CORE::CString, TDirProcessingInstructions > TDirProcessingInst
 
 /*---------------------------------------------------------------------------*/
 
+struct SPlatformDefinition
+{
+    TStringSet aliases;                                    // alternate names for this platform, can be 1-N across multiple platforms as a group name
+    TStringSet platformDirs;                               // Directory names which will be considered holders of platform specific files
+};
+typedef struct SPlatformDefinition TPlatformDefinition;
+typedef std::map< CORE::CString, TPlatformDefinition > TPlatformDefinitionMap;
+
+/*---------------------------------------------------------------------------*/
+
 struct SProjectInfo
 {
     CORE::CString projectName;                               // Name of the overall project
     TModuleInfoEntryVector modules;                          // All generated module information
     TDirProcessingInstructionsMap dirProcessingInstructions; // All loaded processing instructions mapped per path
     TStringVector globalDirExcludeList;                      // Dirs that should never be included in processing regardless of path
+    TPlatformDefinitionMap platforms;                        // All supported platforms for this project
 };
 typedef struct SProjectInfo TProjectInfo;
 
@@ -271,6 +284,13 @@ typedef std::map< CORE::CString, TProjectTargetInfoMap > TProjectTargetInfoMapMa
 GUCEF_PROJECTGEN_PUBLIC_CPP 
 CORE::CDStoreCodecRegistry::TDStoreCodecPtr
 GetXmlDStoreCodec( void );
+
+/*-------------------------------------------------------------------------*/
+
+GUCEF_PROJECTGEN_PUBLIC_CPP 
+void
+ApplyConfigToProject( const CORE::CDataNode& loadedConfig , 
+                      TProjectInfo& projectInfo           );
 
 /*-------------------------------------------------------------------------*/
 

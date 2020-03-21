@@ -51,8 +51,6 @@ set( HEADER_FILES
   include/GL/glxtokens.h
   include/GL/wglew.h
   include/GL/wglext.h
-  src/StateCacheManager/OgreGLNullUniformCacheImp.h
-  src/StateCacheManager/OgreGLNullStateCacheManagerImp.h
   src/GLSL/include/OgreGLSLExtSupport.h
   src/GLSL/include/OgreGLSLGpuProgram.h
   src/GLSL/include/OgreGLSLLinkProgram.h
@@ -60,6 +58,8 @@ set( HEADER_FILES
   src/GLSL/include/OgreGLSLPreprocessor.h
   src/GLSL/include/OgreGLSLProgram.h
   src/GLSL/include/OgreGLSLProgramFactory.h
+  src/StateCacheManager/OgreGLNullUniformCacheImp.h
+  src/StateCacheManager/OgreGLNullStateCacheManagerImp.h
   src/atifs/include/ATI_FS_GLGpuProgram.h
   src/atifs/include/Compiler2Pass.h
   src/atifs/include/ps_1_4.h
@@ -112,8 +112,6 @@ set( SOURCE_FILES
   src/OgreGLTexture.cpp
   src/OgreGLTextureManager.cpp
   src/OgreGLUniformCache.cpp
-  src/StateCacheManager/OgreGLNullUniformCacheImp.cpp
-  src/StateCacheManager/OgreGLNullStateCacheManagerImp.cpp
   src/GLSL/src/OgreGLSLExtSupport.cpp
   src/GLSL/src/OgreGLSLGpuProgram.cpp
   src/GLSL/src/OgreGLSLLinkProgram.cpp
@@ -121,6 +119,8 @@ set( SOURCE_FILES
   src/GLSL/src/OgreGLSLPreprocessor.cpp
   src/GLSL/src/OgreGLSLProgram.cpp
   src/GLSL/src/OgreGLSLProgramFactory.cpp
+  src/StateCacheManager/OgreGLNullUniformCacheImp.cpp
+  src/StateCacheManager/OgreGLNullStateCacheManagerImp.cpp
   src/atifs/src/ATI_FS_GLGpuProgram.cpp
   src/atifs/src/Compiler2Pass.cpp
   src/atifs/src/ps_1_4.cpp
@@ -191,21 +191,21 @@ elseif (GLX)
     include/GLX/OgreGLXRenderTexture.h
     include/GLX/OgreGLXUtils.h
     include/GLX/OgreGLXWindow.h
+    src/GLX/OgreGLUtil.h
     src/StateCacheManager/OgreGLNullUniformCacheImp.h
     src/StateCacheManager/OgreGLNullStateCacheManagerImp.h
-    src/GLX/OgreGLUtil.h
   )
 
   set( PLATFORM_HEADER_INSTALL "GLX" )
   source_group( "Platform Header Files" FILES ${PLATFORM_HEADER_FILES} )
 
   set( PLATFORM_SOURCE_FILES 
-    src/StateCacheManager/OgreGLNullUniformCacheImp.cpp
-    src/StateCacheManager/OgreGLNullStateCacheManagerImp.cpp
     src/GLX/OgreGLXContext.cpp
     src/GLX/OgreGLXGLSupport.cpp
     src/GLX/OgreGLXRenderTexture.cpp
     src/GLX/OgreGLXWindow.cpp
+    src/StateCacheManager/OgreGLNullUniformCacheImp.cpp
+    src/StateCacheManager/OgreGLNullStateCacheManagerImp.cpp
   )
 
   set( PLATFORM_SOURCE_INSTALL "GLX" )
@@ -314,23 +314,23 @@ elseif (OSX)
     include/OSX/OgreOSXGLSupport.h
     include/OSX/OgreOSXRenderTexture.h
     include/OSX/OgreOSXWindow.h
+    src/OSX/OgreGLUtil.h
     src/StateCacheManager/OgreGLNullUniformCacheImp.h
     src/StateCacheManager/OgreGLNullStateCacheManagerImp.h
-    src/OSX/OgreGLUtil.h
   )
 
   set( PLATFORM_HEADER_INSTALL "OSX" )
   source_group( "Platform Header Files" FILES ${PLATFORM_HEADER_FILES} )
 
   set( PLATFORM_SOURCE_FILES 
-    src/StateCacheManager/OgreGLNullUniformCacheImp.cpp
-    src/StateCacheManager/OgreGLNullStateCacheManagerImp.cpp
     src/OSX/OgreOSXCarbonContext.cpp
     src/OSX/OgreOSXCarbonWindow.cpp
     src/OSX/OgreOSXCGLContext.cpp
     src/OSX/OgreOSXContext.cpp
     src/OSX/OgreOSXRenderTexture.cpp
     src/OSX/OgreOSXWindow.cpp
+    src/StateCacheManager/OgreGLNullUniformCacheImp.cpp
+    src/StateCacheManager/OgreGLNullStateCacheManagerImp.cpp
   )
 
   set( PLATFORM_SOURCE_INSTALL "OSX" )
@@ -338,19 +338,19 @@ elseif (OSX)
 
 elseif (SDL)
   set( PLATFORM_HEADER_FILES 
+    src/SDL/OgreGLUtil.h
     src/StateCacheManager/OgreGLNullUniformCacheImp.h
     src/StateCacheManager/OgreGLNullStateCacheManagerImp.h
-    src/SDL/OgreGLUtil.h
   )
 
   set( PLATFORM_HEADER_INSTALL "SDL" )
   source_group( "Platform Header Files" FILES ${PLATFORM_HEADER_FILES} )
 
   set( PLATFORM_SOURCE_FILES 
-    src/StateCacheManager/OgreGLNullUniformCacheImp.cpp
-    src/StateCacheManager/OgreGLNullStateCacheManagerImp.cpp
     src/SDL/OgreSDLGLSupport.cpp
     src/SDL/OgreSDLWindow.cpp
+    src/StateCacheManager/OgreGLNullUniformCacheImp.cpp
+    src/StateCacheManager/OgreGLNullStateCacheManagerImp.cpp
   )
 
   set( PLATFORM_SOURCE_INSTALL "SDL" )
@@ -461,7 +461,7 @@ if ( WIN64 )
   target_link_libraries( ${MODULE_NAME} glu32.lib opengl32 )
 endif( WIN64 )
 
-include_directories( ../../../freetype/include ../../../freetype/include/freetype ../../../freetype/include/freetype/config ../../../freetype/include/freetype/internal ../../../freetype/include/freetype/internal/services ../../../freetype/src/winfonts ../../OgreMain/include ../../OgreMain/include/Hash ../../OgreMain/include/Threading ../../OgreMain/src ../../OgreMain/src/nedmalloc ../../OgreMain/src/stbi ../../include include include/GL src/StateCacheManager src/GLSL/include src/atifs/include src/nvparse src/nvparse/winheaders )
+include_directories( ../../../freetype/include ../../../freetype/include/freetype ../../../freetype/include/freetype/config ../../../freetype/include/freetype/internal ../../../freetype/include/freetype/internal/services ../../../freetype/src/winfonts ../../OgreMain/include ../../OgreMain/include/Hash ../../OgreMain/include/Threading ../../OgreMain/src ../../OgreMain/src/nedmalloc ../../OgreMain/src/stbi ../../include include include/GL src/GLSL/include src/StateCacheManager src/atifs/include src/nvparse src/nvparse/winheaders )
 
 if ( ANDROID )
   include_directories( ../../OgreMain/include/Android src/StateCacheManager )
@@ -472,7 +472,7 @@ if ( EMSCRIPTEN )
 endif( EMSCRIPTEN )
 
 if ( GLX )
-  include_directories( ../../OgreMain/src/GLX include/GLX src/StateCacheManager src/GLX )
+  include_directories( ../../OgreMain/src/GLX include/GLX src/GLX src/StateCacheManager )
 endif( GLX )
 
 if ( GTK )
@@ -496,11 +496,11 @@ if ( NACL )
 endif( NACL )
 
 if ( OSX )
-  include_directories( ../../OgreMain/include/OSX include/OSX src/StateCacheManager src/OSX )
+  include_directories( ../../OgreMain/include/OSX include/OSX src/OSX src/StateCacheManager )
 endif( OSX )
 
 if ( SDL )
-  include_directories( src/StateCacheManager src/SDL )
+  include_directories( src/SDL src/StateCacheManager )
 endif( SDL )
 
 if ( SYMBIAN )

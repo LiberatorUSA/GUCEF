@@ -12,23 +12,6 @@
 # Configuration for module: DevIL2
 
 set( HEADER_FILES 
-  src-ILUT/include/ilut_allegro.h
-  src-ILUT/include/ilut_internal.h
-  src-ILUT/include/ilut_opengl.h
-  src-ILUT/include/ilut_states.h
-  src-ILU/include/ilu_alloc.h
-  src-ILU/include/ilu_filter.h
-  src-ILU/include/ilu_internal.h
-  src-ILU/include/ilu_region.h
-  src-ILU/include/ilu_states.h
-  src-ILU/include/ilu_error/ilu_err-arabic.h
-  src-ILU/include/ilu_error/ilu_err-dutch.h
-  src-ILU/include/ilu_error/ilu_err-english.h
-  src-ILU/include/ilu_error/ilu_err-french.h
-  src-ILU/include/ilu_error/ilu_err-german.h
-  src-ILU/include/ilu_error/ilu_err-italian.h
-  src-ILU/include/ilu_error/ilu_err-japanese.h
-  src-ILU/include/ilu_error/ilu_err-spanish.h
   src-IL/include/altivec_common.h
   src-IL/include/altivec_typeconversion.h
   src-IL/include/il_alloc.h
@@ -68,36 +51,26 @@ set( HEADER_FILES
   src-IL/include/il_vtf.h
   src-IL/include/il_wdp.h
   src-IL/include/rg_etc1.h
+  src-ILU/include/ilu_alloc.h
+  src-ILU/include/ilu_filter.h
+  src-ILU/include/ilu_internal.h
+  src-ILU/include/ilu_region.h
+  src-ILU/include/ilu_states.h
+  src-ILU/include/ilu_error/ilu_err-arabic.h
+  src-ILU/include/ilu_error/ilu_err-dutch.h
+  src-ILU/include/ilu_error/ilu_err-english.h
+  src-ILU/include/ilu_error/ilu_err-french.h
+  src-ILU/include/ilu_error/ilu_err-german.h
+  src-ILU/include/ilu_error/ilu_err-italian.h
+  src-ILU/include/ilu_error/ilu_err-japanese.h
+  src-ILU/include/ilu_error/ilu_err-spanish.h
+  src-ILUT/include/ilut_allegro.h
+  src-ILUT/include/ilut_internal.h
+  src-ILUT/include/ilut_opengl.h
+  src-ILUT/include/ilut_states.h
 )
 
 set( SOURCE_FILES 
-  src-ILUT/src/ilut_allegro.cpp
-  src-ILUT/src/ilut_directx.cpp
-  src-ILUT/src/ilut_directx10.cpp
-  src-ILUT/src/ilut_directx9.cpp
-  src-ILUT/src/ilut_directxm.cpp
-  src-ILUT/src/ilut_internal.cpp
-  src-ILUT/src/ilut_opengl.cpp
-  src-ILUT/src/ilut_sdlsurface.cpp
-  src-ILUT/src/ilut_states.cpp
-  src-ILUT/src/ilut_win32.cpp
-  src-ILUT/src/ilut_x11.cpp
-  src-ILU/src/ilu_alloc.cpp
-  src-ILU/src/ilu_error.cpp
-  src-ILU/src/ilu_filter.cpp
-  src-ILU/src/ilu_filter_rcg.cpp
-  src-ILU/src/ilu_internal.cpp
-  src-ILU/src/ilu_manip.cpp
-  src-ILU/src/ilu_mipmap.cpp
-  src-ILU/src/ilu_noise.cpp
-  src-ILU/src/ilu_region.cpp
-  src-ILU/src/ilu_rotate.cpp
-  src-ILU/src/ilu_scale.cpp
-  src-ILU/src/ilu_scale2d.cpp
-  src-ILU/src/ilu_scale3d.cpp
-  src-ILU/src/ilu_scaling.cpp
-  src-ILU/src/ilu_states.cpp
-  src-ILU/src/ilu_utilities.cpp
   src-IL/src/altivec_common.cpp
   src-IL/src/altivec_typeconversion.cpp
   src-IL/src/il_alloc.cpp
@@ -178,6 +151,33 @@ set( SOURCE_FILES
   src-IL/src/il_wdp.cpp
   src-IL/src/il_xpm.cpp
   src-IL/src/rg_etc1.cpp
+  src-ILU/src/ilu_alloc.cpp
+  src-ILU/src/ilu_error.cpp
+  src-ILU/src/ilu_filter.cpp
+  src-ILU/src/ilu_filter_rcg.cpp
+  src-ILU/src/ilu_internal.cpp
+  src-ILU/src/ilu_manip.cpp
+  src-ILU/src/ilu_mipmap.cpp
+  src-ILU/src/ilu_noise.cpp
+  src-ILU/src/ilu_region.cpp
+  src-ILU/src/ilu_rotate.cpp
+  src-ILU/src/ilu_scale.cpp
+  src-ILU/src/ilu_scale2d.cpp
+  src-ILU/src/ilu_scale3d.cpp
+  src-ILU/src/ilu_scaling.cpp
+  src-ILU/src/ilu_states.cpp
+  src-ILU/src/ilu_utilities.cpp
+  src-ILUT/src/ilut_allegro.cpp
+  src-ILUT/src/ilut_directx.cpp
+  src-ILUT/src/ilut_directx10.cpp
+  src-ILUT/src/ilut_directx9.cpp
+  src-ILUT/src/ilut_directxm.cpp
+  src-ILUT/src/ilut_internal.cpp
+  src-ILUT/src/ilut_opengl.cpp
+  src-ILUT/src/ilut_sdlsurface.cpp
+  src-ILUT/src/ilut_states.cpp
+  src-ILUT/src/ilut_win32.cpp
+  src-ILUT/src/ilut_x11.cpp
 )
 
 # Make sure the PLATFORM_HEADER_FILES variable is always defined
@@ -195,7 +195,7 @@ add_dependencies( ${MODULE_NAME} OpenEXR jasper lcms2 libjpeg libmng libpng libt
 target_link_libraries( ${MODULE_NAME} OpenEXR jasper lcms2 libjpeg libmng libpng libtiff squish zlib )
 set_property( TARGET ${MODULE_NAME} APPEND_STRING PROPERTY COMPILE_DEFINITIONS "CMS_DLL;HAVE_CONFIG_H;JAS_DLL;MNG_DLL;MNG_USE_DLL" )
 
-include_directories( ../../Little-CMS/include ../../Little-CMS/src ../../jasper/src/libjasper/bmp ../../jasper/src/libjasper/include ../../jasper/src/libjasper/include/jasper ../../jasper/src/libjasper/jp2 ../../jasper/src/libjasper/jpc ../../jasper/src/libjasper/jpg ../../jasper/src/libjasper/mif ../../jasper/src/libjasper/pgx ../../jasper/src/libjasper/pnm ../../jasper/src/libjasper/ras ../../libjpeg ../../libmng ../../libpng ../../libsquish ../../openexr/IlmBase/Half ../../openexr/IlmBase/Iex ../../openexr/IlmBase/IexMath ../../openexr/IlmBase/IlmThread ../../openexr/IlmBase/Imath ../../openexr/IlmBase/config.windows ../../openexr/OpenEXR/IlmImf ../../openexr/OpenEXR/IlmImfUtil ../../openexr/OpenEXR/config.windows ../../tiff/libtiff include include/IL src-ILUT/include src-ILU/include src-ILU/include/ilu_error src-IL/include )
+include_directories( ../../Little-CMS/include ../../Little-CMS/src ../../jasper/src/libjasper/bmp ../../jasper/src/libjasper/include ../../jasper/src/libjasper/include/jasper ../../jasper/src/libjasper/jp2 ../../jasper/src/libjasper/jpc ../../jasper/src/libjasper/jpg ../../jasper/src/libjasper/mif ../../jasper/src/libjasper/pgx ../../jasper/src/libjasper/pnm ../../jasper/src/libjasper/ras ../../libjpeg ../../libmng ../../libpng ../../libsquish ../../openexr/IlmBase/Half ../../openexr/IlmBase/Iex ../../openexr/IlmBase/IexMath ../../openexr/IlmBase/IlmThread ../../openexr/IlmBase/Imath ../../openexr/IlmBase/config.windows ../../openexr/OpenEXR/IlmImf ../../openexr/OpenEXR/IlmImfUtil ../../openexr/OpenEXR/config.windows ../../tiff/libtiff include include/IL src-IL/include src-ILU/include src-ILU/include/ilu_error src-ILUT/include )
 
 if ( LINUX32 )
   include_directories( ../../zlib include/IL/linux )

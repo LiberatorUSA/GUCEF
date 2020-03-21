@@ -383,6 +383,36 @@ ContainsFileWithFileExtension( const TStringVectorMap& files ,
 
 /*---------------------------------------------------------------------------*/
 
+void
+ApplyConfigToProject( const CORE::CDataNode& loadedConfig , 
+                      TProjectInfo& projectInfo           )
+{GUCEF_TRACE;
+    
+    CORE::CDataNode::TConstDataNodeSet platformDefs = loadedConfig.FindChildrenOfType( "PlatformDefinitions", true );
+    CORE::CDataNode::TConstDataNodeSet::const_iterator i = platformDefs.begin();
+    while ( i != platformDefs.end() )
+    {
+        const CORE::CDataNode* definitionGroup = (*i);
+        CORE::CDataNode::const_iterator n = definitionGroup->ConstBegin();
+        while ( n != definitionGroup->ConstEnd() )
+        {
+            const CORE::CDataNode* platform = (*n);
+            const CORE::CString platformName = platform->GetName();
+            CORE::CString aliases = platform->GetAttributeValueOrChildValueByName( "Aliases" );
+            CORE::CString platformDirs = platform->GetAttributeValueOrChildValueByName( "PlatformDirs" );
+
+            TPlatformDefinition& platformDef = (projectInfo.platforms)[ platformName ];
+            platformDef.aliases = StringVectorToStringSet( aliases.ParseElements( ';', false ) );
+            platformDef.platformDirs = StringVectorToStringSet( platformDirs.ParseElements( ';', false ) );
+
+            ++n;
+        }
+        ++i;
+    }
+}
+
+/*---------------------------------------------------------------------------*/
+
 CORE::CString
 GetLanguageForModule( const TModuleInfo& moduleInfo )
 {GUCEF_TRACE;

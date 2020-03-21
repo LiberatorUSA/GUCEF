@@ -117,7 +117,8 @@ using namespace GUCEF::PROJECTGEN;
 
 bool
 LoadConfig( const CORE::CString& configPath ,
-            CORE::CValueList& keyValueList  )
+            CORE::CValueList& keyValueList  ,
+            CORE::CDataNode* loadedConfig   )
 {GUCEF_TRACE;
 
     #ifdef GUCEF_DEBUG_MODE
@@ -137,7 +138,7 @@ LoadConfig( const CORE::CString& configPath ,
 
     if ( !foundViaParam )
     {
-        CORE::CString configFilePath = CORE::CombinePath( "$CURWORKDIR$", configFile );
+        configFilePath = CORE::CombinePath( "$CURWORKDIR$", configFile );
         configFilePath = CORE::RelativePath( configFilePath );
 
         GUCEF_LOG( CORE::LOGLEVEL_BELOW_NORMAL, "Checking for config file @ " + configFilePath );
@@ -163,7 +164,7 @@ LoadConfig( const CORE::CString& configPath ,
 
     CORE::CConfigStore& configStore = CORE::CCoreGlobal::Instance()->GetConfigStore();
     configStore.SetConfigFile( configFilePath );
-    return configStore.LoadConfig();
+    return configStore.LoadConfig( loadedConfig );
 }
 
 /*-------------------------------------------------------------------------*/
@@ -210,9 +211,10 @@ GUCEF_OSMAIN_BEGIN
     ParseParams( argc, argv, keyValueList );
     CORE::CString configPathParam = keyValueList.GetValueAlways( "ConfigPath" );
     keyValueList.Clear();
-
+    
     // Load settings from a config file (if any) and then override with params (if any)
-    LoadConfig( configPathParam, keyValueList );
+    CORE::CDataNode loadedConfig;
+    LoadConfig( configPathParam, keyValueList, &loadedConfig );
     ParseParams( argc, argv, keyValueList );
 
     CORE::Int32 minLogLevel = CORE::LOGLEVEL_BELOW_NORMAL;
@@ -278,8 +280,10 @@ GUCEF_OSMAIN_BEGIN
         generatorList.push_back( "xml" );
     }
 
-    // Set any global dir excludes that where passed as cmd parameters
     TProjectInfo projectInfo;
+    ApplyConfigToProject( loadedConfig, projectInfo );
+
+    // Set any global dir excludes that where passed as cmd parameters
     projectInfo.globalDirExcludeList = keyValueList.GetValueAlways( "dirsToIgnore" ).ParseElements( ';', false );
     GUCEF_LOG( CORE::LOGLEVEL_NORMAL, "There are " + CORE::UInt32ToString( projectInfo.globalDirExcludeList.size() ) + " dirs in the global dir ignore list" );
 

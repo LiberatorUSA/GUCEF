@@ -488,15 +488,15 @@ if (ANDROID)
   source_group( "Platform Header Files" FILES ${PLATFORM_HEADER_FILES} )
 
   set( PLATFORM_SOURCE_FILES 
-    src/Threading/OgreBarrierPThreads.cpp
-    src/Threading/OgreLightweightMutexPThreads.cpp
-    src/Threading/OgreThreadsPThreads.cpp
-    src/Threading/OgreDefaultWorkQueueStandard.cpp
     src/Android/OgreAndroidLogListener.cpp
     src/Android/OgreAPKFileSystemArchive.cpp
     src/Android/OgreAPKZipArchive.cpp
     src/Android/OgreFileSystemLayer.cpp
     src/Android/JNI/OgreActivityJNI.cpp
+    src/Threading/OgreBarrierPThreads.cpp
+    src/Threading/OgreLightweightMutexPThreads.cpp
+    src/Threading/OgreThreadsPThreads.cpp
+    src/Threading/OgreDefaultWorkQueueStandard.cpp
   )
 
   set( PLATFORM_SOURCE_INSTALL "ANDROID" )

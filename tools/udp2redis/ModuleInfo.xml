@@ -18,6 +18,6 @@
 		<RuntimeDependencies>
 			<RuntimeDependency Name="dstorepluginPARSIFALXML" />
 			<RuntimeDependency Name="dstorepluginJSONPARSER" />
-		</RuntimeDependencies>			
+		</RuntimeDependencies>
 	</Module>
 </ModuleInfoEntry>
