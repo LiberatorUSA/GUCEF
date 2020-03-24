@@ -189,9 +189,7 @@ Udp2KafkaChannel::OnUDPPacketRecieved( CORE::CNotifier* notifier   ,
         const COMCORE::CUDPSocket::TUDPPacketRecievedEventData& data = udpPacketData->GetData();
         const CORE::CDynamicBuffer& udpPacketBuffer = data.dataBuffer.GetData();
 
-        #ifdef GUCEF_DEBUG_MODE
         GUCEF_DEBUG_LOG( CORE::LOGLEVEL_IMPORTANT, "Udp2KafkaChannel: UDP Socket received a packet from " + data.sourceAddress.AddressAndPortAsString() );
-        #endif
         
         if ( NULL != m_kafkaProducer )
         {
@@ -284,7 +282,7 @@ Udp2KafkaChannel::OnTaskCycle( CORE::CICloneable* taskData )
 {GUCEF_TRACE;
 
     // You are required to periodically call poll() on a producer to trigger queued callbacks if any
-    if ( NULL != m_kafkaProducer ) 
+    if ( GUCEF_NULL != m_kafkaProducer ) 
         m_kafkaProducer->poll( 0 );
 
     // We are never 'done' so return false
@@ -394,13 +392,11 @@ Udp2Kafka::dr_cb( RdKafka::Message& message )
     }
     else 
     {
-        #ifdef GUCEF_DEBUG_MODE
-        GUCEF_LOG( CORE::LOGLEVEL_NORMAL, "Kafka delivery report: success: topic: " + message.topic_name() + 
-                                                        ", partition: " + CORE::Int32ToString( message.partition() ).STL_String() +
-                                                        ", offset: " + CORE::Int32ToString( message.offset() ).STL_String() +
-                                                        ", key: " + ( message.key() ? (*message.key()) : std::string( "NULL" ) ) + 
-                                                        ", payload size: " + CORE::UInt32ToString( message.len() ).STL_String() );
-        #endif
+        GUCEF_DEBUG_LOG( CORE::LOGLEVEL_NORMAL, "Kafka delivery report: success: topic: " + message.topic_name() + 
+                                                ", partition: " + CORE::Int32ToString( message.partition() ).STL_String() +
+                                                ", offset: " + CORE::Int32ToString( message.offset() ).STL_String() +
+                                                ", key: " + ( message.key() ? (*message.key()) : std::string( "NULL" ) ) + 
+                                                ", payload size: " + CORE::UInt32ToString( message.len() ).STL_String() );
     }
 }
 
@@ -426,6 +422,7 @@ Udp2Kafka::Start( void )
 
         taskManager.StartTask( channel );
         
+        ++channelId;
         ++udpPort;
         ++i;
     }
