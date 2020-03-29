@@ -1,7 +1,6 @@
 #!/bin/bash
 #
 
-
 # Turn on tracing, we want to see what's going on
 #set -x
 
@@ -14,11 +13,15 @@ echo "RUNCMAKE_SCRIPTSTARTDIR = $RUNCMAKE_SCRIPTSTARTDIR"
 
 echo "*** Invoking CMakeCommon ***"
 . $RUNCMAKE_SCRIPTSTARTDIR/CMakeCommon.sh
-echo "*** Invoking CMake ***"
+
+# Set target specific folders
+MAINCMAKE=$SRCROOTDIR/projects/CMake/targets/GUCEF
 CBNIX_OUTPUTDIR="$OUTPUTDIR/CBNIXDBG"
+
+echo "*** Invoking CMake ***"
 echo "Output dir for this CMake target = $CBNIX_OUTPUTDIR"
-echo "CMake will use source root: $SRCROOTDIR"
-cmake -DBUILD_SHARED_LIBS=ON -DCMAKE_BUILD_TYPE=debug -G"CodeBlocks - Unix Makefiles" -H"$SRCROOTDIR" -B$CBNIX_OUTPUTDIR
+echo "CMake will use source root: $MAINCMAKE"
+cmake -DBUILD_SHARED_LIBS=ON -DCMAKE_BUILD_TYPE=debug -G"CodeBlocks - Unix Makefiles" -H"$MAINCMAKE" -B$CBNIX_OUTPUTDIR
 echo "Press enter to continue..."
 line=""
 read line

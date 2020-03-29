@@ -15,13 +15,13 @@ echo "*** Invoking CMakeCommon ***"
 . $RUNCMAKE_SCRIPTSTARTDIR/CMakeCommon.sh
 
 # Set target specific folders
-MAINCMAKE=$SRCROOTDIR/projects/CMake/targets/GUCEF
-NIXMAKE_OUTPUTDIR="$OUTPUTDIR/UnixMake"
+MAINCMAKE=$SRCROOTDIR/projects/CMake/targets/GUCEF_[exe]_udp2redis
+CBNIX_OUTPUTDIR="$OUTPUTDIR/CBNIXDBG_udp2redis"
 
 echo "*** Invoking CMake ***"
-echo "Output dir for this CMake target = $NIXMAKE_OUTPUTDIR"
+echo "Output dir for this CMake target = $CBNIX_OUTPUTDIR"
 echo "CMake will use source root: $MAINCMAKE"
-cmake -DBUILD_SHARED_LIBS=ON -G"Unix Makefiles" -H"$MAINCMAKE" -B$NIXMAKE_OUTPUTDIR -DCMAKE_BUILD_TYPE:STRING=Release
+cmake -DBUILD_SHARED_LIBS=ON -DCMAKE_BUILD_TYPE=debug -G"CodeBlocks - Unix Makefiles" -H"$MAINCMAKE" -B$CBNIX_OUTPUTDIR
 echo "Press enter to continue..."
 line=""
 read line
