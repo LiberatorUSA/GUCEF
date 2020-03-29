@@ -44,6 +44,7 @@ endif()
 message(STATUS "Source dir: ${GUCEF_SOURCE_DIR}")
 message(STATUS "Binary dir: ${GUCEF_BINARY_DIR}")
 
+
 project( GUCEF_[exe]_udp2redis )
 
 # Include necessary submodules

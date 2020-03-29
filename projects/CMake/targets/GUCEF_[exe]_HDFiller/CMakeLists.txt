@@ -21,21 +21,29 @@ cmake_policy(SET CMP0003 NEW)
 if ( DEFINED ENV{GUCEF_HOME} )
   set( GUCEF_HOME_DIR "$ENV{GUCEF_HOME}" )
   STRING(REGEX REPLACE "\\\\" "/" GUCEF_HOME_DIR ${GUCEF_HOME_DIR})
+  message(STATUS "Setting CMake variable GUCEF_HOME_DIR based on env var GUCEF_HOME to ${GUCEF_HOME_DIR}")
 endif()
-
 if ( DEFINED ENV{GUCEF_SOURCE_DIR} )
   set( GUCEF_SOURCE_DIR "$ENV{GUCEF_SOURCE_DIR}" )
   STRING(REGEX REPLACE "\\\\" "/" GUCEF_SOURCE_DIR ${GUCEF_SOURCE_DIR})
+  message(STATUS "Setting CMake variable GUCEF_SOURCE_DIR based on env var GUCEF_SOURCE_DIR to ${GUCEF_SOURCE_DIR}")
+endif()
+
+if ( NOT DEFINED GUCEF_HOME_DIR )
+  set( GUCEF_HOME_DIR "${CMAKE_CURRENT_SOURCE_DIR}/../../../../" )
+  message(STATUS "GUCEF_HOME_DIR not defined, defaulting to CMake file relative dir: ${GUCEF_HOME_DIR}")
 endif()
 if ( NOT DEFINED GUCEF_SOURCE_DIR )
-  set( GUCEF_SOURCE_DIR GUCEF_HOME_DIR )
+  set( GUCEF_SOURCE_DIR ${GUCEF_HOME_DIR} )
+  message(STATUS "GUCEF_SOURCE_DIR not defined, defaulting to GUCEF_HOME_DIR: ${GUCEF_HOME_DIR}")
 endif()
-message(STATUS "Source dir: ${GUCEF_SOURCE_DIR}")
-
 if ( NOT DEFINED GUCEF_BINARY_DIR )
   set( GUCEF_BINARY_DIR "${GUCEF_SOURCE_DIR}/common/bin/GUCEF_[exe]_HDFiller" )
 endif()
+
+message(STATUS "Source dir: ${GUCEF_SOURCE_DIR}")
 message(STATUS "Binary dir: ${GUCEF_BINARY_DIR}")
+
 
 project( GUCEF_[exe]_HDFiller )
 
