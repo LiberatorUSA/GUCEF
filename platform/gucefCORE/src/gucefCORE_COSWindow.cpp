@@ -14,7 +14,7 @@
  *
  *  You should have received a copy of the GNU Lesser General Public
  *  License along with this library; if not, write to the Free Software
- *  Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA 
+ *  Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA
  */
 
 /*-------------------------------------------------------------------------//
@@ -37,7 +37,7 @@
     #define GUCEF_CORE_CMSWIN32WINDOW_H
     #endif /* GUCEF_CORE_CMSWIN32WINDOW_H ? */
 
-#elif ( GUCEF_PLATFORM == GUCEF_PLATFORM_LINUX ) 
+#elif ( GUCEF_PLATFORM == GUCEF_PLATFORM_LINUX )
 
     #ifndef GUCEF_CORE_CX11WINDOW_H
     #include "gucefCORE_CX11Window.h"
@@ -77,7 +77,7 @@ void
 COSWindow::RegisterEvents( void )
 {GUCEF_TRACE;
 
-    WindowCloseEvent.Initialize();    
+    WindowCloseEvent.Initialize();
     WindowDestroyEvent.Initialize();
     WindowActivationEvent.Initialize();
     WindowResizeEvent.Initialize();
@@ -106,7 +106,7 @@ COSWindow*
 COSWindow::Create( void )
 {GUCEF_TRACE;
 
-    // Build-in stragety pattern, there is only 1 right answer per graphical platform
+    // Build-in strategy pattern, there is only 1 right answer per graphical platform
     #if ( GUCEF_PLATFORM == GUCEF_PLATFORM_MSWIN )
     CMsWin32Window* window = new CMsWin32Window();
     if ( !CORE::CMsWin32Window::RegisterWindowClass( window->GetClassTypeName() ) )
@@ -129,7 +129,7 @@ COSWindow::Create( void )
 void
 COSWindow::Destroy( COSWindow* osWindow )
 {GUCEF_TRACE;
-    
+
     delete osWindow;
 }
 

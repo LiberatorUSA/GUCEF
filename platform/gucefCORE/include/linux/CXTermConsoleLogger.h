@@ -28,10 +28,10 @@
 
 #include <stdio.h>
 
-#ifndef GUCEF_CORE_CILOGGER_H
-#include "CILogger.h"
-#define GUCEF_CORE_CILOGGER_H
-#endif /* GUCEF_CORE_CILOGGER_H ? */
+#ifndef GUCEF_CORE_CICONSOLELOGGER_H
+#include "gucefCORE_CIConsoleLogger.h"
+#define GUCEF_CORE_CICONSOLELOGGER_H
+#endif /* GUCEF_CORE_CICONSOLELOGGER_H ? */
 
 #ifdef GUCEF_LINUX_BUILD
 /*-------------------------------------------------------------------------//
@@ -53,7 +53,7 @@ namespace CORE {
  *  GUCEF logger implementation for Linux's X11 environment which
  *  displays log output in a console window.
  */
-class GUCEF_CORE_PUBLIC_CPP CXTermConsoleLogger : public CILogger
+class GUCEF_CORE_PUBLIC_CPP CXTermConsoleLogger : public CIConsoleLogger
 {
     public:
 
@@ -77,6 +77,10 @@ class GUCEF_CORE_PUBLIC_CPP CXTermConsoleLogger : public CILogger
 
     Int32 GetMinimalLogLevel( void ) const;
 
+    virtual void SetFormatAsConsoleUI( bool formatForUiPurpose );
+
+    virtual bool GetFormatAsConsoleUI( void ) const;
+
     bool Initialize( void );
 
     private:
@@ -87,6 +91,7 @@ class GUCEF_CORE_PUBLIC_CPP CXTermConsoleLogger : public CILogger
     private:
 
     Int32 m_minimalLogLevel;
+    bool m_formatForUiPurpose;
     int m_xtermpid;
     int m_masterfd;
     int m_slavefd;

@@ -88,11 +88,18 @@ class GUCEF_CORE_PUBLIC_CPP CX11Window : public COSWindow
 
     virtual const CString& GetClassTypeName( void ) const;
 
-    virtual bool WindowCreate( const Int32 xPosition     ,
-                               const Int32 yPosition     ,
-                               const UInt32 width        ,
-                               const UInt32 height       ,
-                               ::Window parentWindow = 0 );
+    virtual bool WindowCreate( const CString& windowTitle ,
+                               const Int32 xPosition      ,
+                               const Int32 yPosition      ,
+                               const UInt32 width         ,
+                               const UInt32 height        );
+
+    virtual bool X11WindowCreate( const CString& windowTitle ,
+                                  const Int32 xPosition      ,
+                                  const Int32 yPosition      ,
+                                  const UInt32 width         ,
+                                  const UInt32 height        ,
+                                  ::Window parentWindow = 0  );
 
     void WindowDestroy( void );
 

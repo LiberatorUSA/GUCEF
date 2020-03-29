@@ -32,6 +32,11 @@
 #include <X11/keysym.h>
 #include <X11/cursorfont.h>
 
+#ifndef GUCEF_CORE_DVCPPSTRINGUTILS_H
+#include "dvcppstringutils.h"
+#define GUCEF_CORE_DVCPPSTRINGUTILS_H
+#endif /* GUCEF_CORE_DVCPPSTRINGUTILS_H ? */
+
 #ifndef GUCEF_CORE_CPULSEGENERATOR_H
 #include "gucefCORE_CPulseGenerator.h"
 #define GUCEF_CORE_CPULSEGENERATOR_H
@@ -663,11 +668,29 @@ CX11Window::GetProperty( const CString& propertyName ) const
 /*-------------------------------------------------------------------------*/
 
 bool
-CX11Window::WindowCreate( const Int32 xPosition ,
-                          const Int32 yPosition ,
-                          const UInt32 width    ,
-                          const UInt32 height   ,
-                          ::Window parentWindow )
+CX11Window::WindowCreate( const CString& windowTitle ,
+                          const Int32 xPosition      ,
+                          const Int32 yPosition      ,
+                          const UInt32 width         ,
+                          const UInt32 height        )
+{GUCEF_TRACE;
+
+    return X11WindowCreate( windowTitle ,
+                            xPosition   ,
+                            yPosition   ,
+                            width       ,
+                            height      );
+}
+
+/*-------------------------------------------------------------------------*/
+
+bool
+CX11Window::X11WindowCreate( const CString& windowTitle ,
+                             const Int32 xPosition      ,
+                             const Int32 yPosition      ,
+                             const UInt32 width         ,
+                             const UInt32 height        ,
+                             ::Window parentWindow      )
 {GUCEF_TRACE;
 
     // If we already have a window destroy it
@@ -702,6 +725,8 @@ CX11Window::WindowCreate( const Int32 xPosition ,
     // register interest in the delete window message
 //    m_wmDeleteWindow = ::XInternAtom( m_display, "WM_DELETE_WINDOW", False );
 //    ::XSetWMProtocols( m_display, m_window, &m_wmDeleteWindow, 1 );
+
+    SetText( windowTitle );
 
     Show();
     Repaint();

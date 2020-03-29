@@ -72,12 +72,13 @@ namespace CORE {
 //-------------------------------------------------------------------------*/
 
 CXTermConsoleLogger::CXTermConsoleLogger( bool initialize )
-    : CILogger()                                 ,
-      m_minimalLogLevel( LOGLEVEL_BELOW_NORMAL ) ,
-      m_xtermpid( -1 )                           ,
-      m_masterfd( -1 )                           ,
-      m_slavefd( -1 )                            ,
-      m_slaveFptr( NULL )
+    : CIConsoleLogger()
+    , m_minimalLogLevel( LOGLEVEL_BELOW_NORMAL )
+    , m_formatForUiPurpose( false )
+    , m_xtermpid( -1 )
+    , m_masterfd( -1 )
+    , m_slavefd( -1 )
+    , m_slaveFptr( NULL )
 {GUCEF_TRACE;
 
     if ( initialize )
@@ -217,6 +218,24 @@ CXTermConsoleLogger::Initialize( void )
 /*-------------------------------------------------------------------------*/
 
 void
+CXTermConsoleLogger::SetFormatAsConsoleUI( bool formatForUiPurpose )
+{GUCEF_TRACE;
+
+    m_formatForUiPurpose = formatForUiPurpose;
+}
+
+/*-------------------------------------------------------------------------*/
+
+bool
+CXTermConsoleLogger::GetFormatAsConsoleUI( void ) const
+{GUCEF_TRACE;
+
+    return m_formatForUiPurpose;
+}
+
+/*-------------------------------------------------------------------------*/
+
+void
 CXTermConsoleLogger::Log( const TLogMsgType logMsgType ,
                           const Int32 logLevel         ,
                           const CString& logMessage    ,
@@ -225,14 +244,25 @@ CXTermConsoleLogger::Log( const TLogMsgType logMsgType ,
 
     if ( m_slavefd != -1 && m_xtermpid != -1 && m_slaveFptr != NULL )
     {
-        if ( logLevel >= m_minimalLogLevel )
+        if ( !m_formatForUiPurpose )
         {
-            CString actualLogMsg( FormatStdLogMessage( logMsgType ,
-                                                       logLevel   ,
-                                                       logMessage ,
-                                                       threadId   ) + "\n" );
+            if ( logLevel >= m_minimalLogLevel )
+            {
+                CString actualLogMsg( FormatStdLogMessage( logMsgType ,
+                                                           logLevel   ,
+                                                           logMessage ,
+                                                           threadId   ) + "\n" );
 
-            fprintf( m_slaveFptr, actualLogMsg.C_String() );
+                fprintf( m_slaveFptr, actualLogMsg.C_String() );
+            }
+        }
+        else
+        {
+            if ( logMsgType == CORE::CLogManager::LOG_CONSOLE )
+            {
+                CString actualLogMsg( logMessage + "\n" );
+                fprintf( m_slaveFptr, actualLogMsg.C_String() );
+            }
         }
     }
 }
@@ -248,10 +278,21 @@ CXTermConsoleLogger::LogWithoutFormatting( const TLogMsgType logMsgType ,
 
     if ( m_slavefd != -1 && m_xtermpid != -1 && m_slaveFptr != NULL )
     {
-        if ( logLevel >= m_minimalLogLevel )
+        if ( !m_formatForUiPurpose )
         {
-            CString actualLogMsg( logMessage + "\n" );
-            fprintf( m_slaveFptr, actualLogMsg.C_String() );
+            if ( logLevel >= m_minimalLogLevel )
+            {
+                CString actualLogMsg( logMessage + "\n" );
+                fprintf( m_slaveFptr, actualLogMsg.C_String() );
+            }
+        }
+        else
+        {
+            if ( logMsgType == CORE::CLogManager::LOG_CONSOLE )
+            {
+                CString actualLogMsg( logMessage + "\n" );
+                fprintf( m_slaveFptr, actualLogMsg.C_String() );
+            }
         }
     }
 }

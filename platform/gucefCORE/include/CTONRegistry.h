@@ -188,7 +188,7 @@ CTONRegistry< T >::Register( const CString& name                ,
         ItemRegisteredEventData eData( name );
         TExpansionBase::NotifyObservers( ItemRegisteredEvent, &eData );
     }
-    catch ( CTRegistry< T >::EAlreadyRegistered& e )
+    catch ( typename TExpansionBase::EAlreadyRegistered& e )
     {
         TExpansionBase::UnlockData();
         throw e;
@@ -214,7 +214,7 @@ CTONRegistry< T >::TryRegister( const CString& name                ,
     }
 
     TExpansionBase::UnlockData();
-    
+
     return wasRegistered;
 }
 
