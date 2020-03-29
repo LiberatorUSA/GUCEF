@@ -44,6 +44,27 @@ endif()
 message(STATUS "Source dir: ${GUCEF_SOURCE_DIR}")
 message(STATUS "Binary dir: ${GUCEF_BINARY_DIR}")
 
+if ( NOT DEFINED GUCEF_SYSTEM_NAME )
+  if ( DEFINED CMAKE_SYSTEM_NAME )
+    set( GUCEF_SYSTEM_NAME ${CMAKE_SYSTEM_NAME} )
+  else()
+    set( GUCEF_SYSTEM_NAME ${CMAKE_HOST_SYSTEM_NAME} )
+  endif()
+endif()
+
+if ( GUCEF_SYSTEM_NAME STREQUAL "Linux" )
+  if ( CMAKE_SIZEOF_VOID_P EQUAL 8 )
+    set( LINUX64 TRUE )
+    set( GUCEF_TARGET_PLATFORM "LINUX64" )
+  else ()
+    set( LINUX32 TRUE )
+    set( GUCEF_TARGET_PLATFORM "LINUX32" )
+  endif()
+endif()
+
+message(STATUS "CMAKE_SYSTEM_NAME: ${CMAKE_SYSTEM_NAME}" )
+message(STATUS "GUCEF_TARGET_PLATFORM: ${GUCEF_TARGET_PLATFORM}" )
+
 
 project( GUCEF_[exe]_udp2redis )
 
