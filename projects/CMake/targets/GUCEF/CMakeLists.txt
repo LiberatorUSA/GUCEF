@@ -44,6 +44,27 @@ endif()
 message(STATUS "Source dir: ${GUCEF_SOURCE_DIR}")
 message(STATUS "Binary dir: ${GUCEF_BINARY_DIR}")
 
+if ( NOT DEFINED GUCEF_SYSTEM_NAME )
+  if ( DEFINED CMAKE_SYSTEM_NAME )
+    set( GUCEF_SYSTEM_NAME ${CMAKE_SYSTEM_NAME} )
+  else()
+    set( GUCEF_SYSTEM_NAME ${CMAKE_HOST_SYSTEM_NAME} )
+  endif()
+endif()
+
+if ( GUCEF_SYSTEM_NAME STREQUAL "Linux" )
+  if ( CMAKE_SIZEOF_VOID_P EQUAL 8 )
+    set( LINUX64 TRUE )
+    set( GUCEF_TARGET_PLATFORM "LINUX64" )
+  else ()
+    set( LINUX32 TRUE )
+    set( GUCEF_TARGET_PLATFORM "LINUX32" )
+  endif()
+endif()
+
+message(STATUS "CMAKE_SYSTEM_NAME: ${CMAKE_SYSTEM_NAME}" )
+message(STATUS "GUCEF_TARGET_PLATFORM: ${GUCEF_TARGET_PLATFORM}" )
+
 
 project( GUCEF )
 
@@ -117,10 +138,6 @@ test_big_endian(GUCEF_TEST_BIG_ENDIAN)
 
 # Add common include path
 include_directories("${GUCEF_SOURCE_DIR}/common/include")
-#include_directories("${GUCEF_BINARY_DIR}/include")
-if (APPLE)
-  include_directories("${CMAKE_SOURCE_DIR}/GUCEFMain/include/OSX")
-endif (APPLE)
 
 # Find dependencies
 include(Dependencies)
@@ -147,8 +164,6 @@ if (GUCEF_BUILD_PLATFORM_IPHONE)
   include(CMakeForceCompiler)
   CMAKE_FORCE_C_COMPILER(gcc-4.2 GNU)
   CMAKE_FORCE_CXX_COMPILER(gcc-4.2 GNU)
-
-  include_directories("${CMAKE_SOURCE_DIR}/GUCEFMain/include/iPhone")
 
   # Set build variables
   set(CMAKE_OSX_SYSROOT iphoneos3.0)

@@ -138,10 +138,6 @@ test_big_endian(GUCEF_TEST_BIG_ENDIAN)
 
 # Add common include path
 include_directories("${GUCEF_SOURCE_DIR}/common/include")
-#include_directories("${GUCEF_BINARY_DIR}/include")
-if (APPLE)
-  include_directories("${CMAKE_SOURCE_DIR}/GUCEFMain/include/OSX")
-endif (APPLE)
 
 # Find dependencies
 include(Dependencies)
@@ -168,8 +164,6 @@ if (GUCEF_BUILD_PLATFORM_IPHONE)
   include(CMakeForceCompiler)
   CMAKE_FORCE_C_COMPILER(gcc-4.2 GNU)
   CMAKE_FORCE_CXX_COMPILER(gcc-4.2 GNU)
-
-  include_directories("${CMAKE_SOURCE_DIR}/GUCEFMain/include/iPhone")
 
   # Set build variables
   set(CMAKE_OSX_SYSROOT iphoneos3.0)
