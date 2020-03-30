@@ -448,28 +448,64 @@ GetLanguageForModule( const TModuleInfo& moduleInfo )
 /*-------------------------------------------------------------------------*/
 
 TStringSet
-ResolveMultiPlatformName( const CORE::CString& platformName )
+ResolveMultiPlatformName( const CORE::CString& platformName          ,
+                          const TPlatformDefinitionMap* platformDefs )
 {GUCEF_TRACE;
 
     TStringSet resultSet;    
-    TStringVector elements = platformName.ParseElements( ';', false );
+    TStringVector elements = platformName.Lowercase().ParseElements( ';', false );
     TStringVector::iterator i = elements.begin();
     while ( i != elements.end() )
     {        
-        if ( (*i).Equals( "mswin", false ) )
+        const CORE::CString& element = (*i);
+        
+        if ( GUCEF_NULL != platformDefs )
         {
-            resultSet.insert( "win32" );
-            resultSet.insert( "win64" );
+            TPlatformDefinitionMap::const_iterator n = platformDefs->begin();
+            while ( n != platformDefs->end() )
+            {
+                // Check to see if this is a regular platform name in its own right
+                if ( (*n).first == element )
+                {
+                    resultSet.insert( element );
+                    ++n;
+                    continue;
+                }
+                
+                // Check to see if this is an alias for the current platform
+                const TPlatformDefinition& platformDef = (*n).second;
+                const TStringSet& aliases = platformDef.aliases;
+                TStringSet::const_iterator m = aliases.begin();
+                while ( m != aliases.end() )
+                {
+                    if ( (*m) == element )
+                    {
+                        resultSet.insert( element );
+                    }
+                    ++m;
+                }
+                ++n;
+            }
         }
         else
-        if ( (*i).Equals( "linux", false ) )
         {
-            resultSet.insert( "linux32" );
-            resultSet.insert( "linux64" );
-        }
-        else
-        {
-            resultSet.insert( (*i).Lowercase() );
+            // Use the legacy hardcoded aliases
+
+            if ( (*i).Equals( "mswin", false ) )
+            {
+                resultSet.insert( "win32" );
+                resultSet.insert( "win64" );
+            }
+            else
+            if ( (*i).Equals( "linux", false ) )
+            {
+                resultSet.insert( "linux32" );
+                resultSet.insert( "linux64" );
+            }
+            else
+            {
+                resultSet.insert( (*i).Lowercase() );
+            }
         }
         ++i;
     }
@@ -927,7 +963,7 @@ DeserializeProjectInfo( TProjectInfo& projectInfo       ,
         projectInfo.modules.push_back( newModuleInfo );
         TModuleInfoEntry& moduleInfoEntry = projectInfo.modules.back();
 
-        if ( !DeserializeModuleInfo( moduleInfoEntry, *(*i) ) )
+        if ( !DeserializeModuleInfo( projectInfo, moduleInfoEntry, *(*i) ) )
         {
             GUCEF_ERROR_LOG( CORE::LOGLEVEL_NORMAL, "DeserializeProjectInfo: Failed deserialize module info entry" );
             ++errorCount;
@@ -1345,7 +1381,8 @@ SetModuleInfo( TModuleInfoEntry& moduleInfoEntry ,
 /*-------------------------------------------------------------------------*/
 
 bool
-DeserializeModuleInfo( TModuleInfoEntry& moduleInfoEntry ,
+DeserializeModuleInfo( const TProjectInfo& projectInfo   ,
+                       TModuleInfoEntry& moduleInfoEntry ,
                        const CORE::CDataNode& parentNode )
 {GUCEF_TRACE;
 
@@ -1394,7 +1431,7 @@ DeserializeModuleInfo( TModuleInfoEntry& moduleInfoEntry ,
             TStringVector::iterator i = platforms.begin();
             while ( i != platforms.end() )
             {
-                TStringSet actualPlatforms = ResolveMultiPlatformName( (*i) );
+                TStringSet actualPlatforms = ResolveMultiPlatformName( (*i), &projectInfo.platforms );
                 TStringSet::iterator n = actualPlatforms.begin();
                 while ( n != actualPlatforms.end() )
                 {
@@ -1418,7 +1455,8 @@ DeserializeModuleInfo( TModuleInfoEntry& moduleInfoEntry ,
 /*-------------------------------------------------------------------------*/
 
 bool
-DeserializeModuleInfo( TModuleInfoEntryVector& moduleInfoEntries ,
+DeserializeModuleInfo( const TProjectInfo& projectInfo           ,
+                       TModuleInfoEntryVector& moduleInfoEntries ,
                        const CORE::CString& inputFilepath        )
 {GUCEF_TRACE;
 
@@ -1449,7 +1487,7 @@ DeserializeModuleInfo( TModuleInfoEntryVector& moduleInfoEntries ,
                 TModuleInfoEntry entry;
                 InitializeModuleInfoEntry( entry );
                 
-                if ( !DeserializeModuleInfo( entry, *(*i) ) )
+                if ( !DeserializeModuleInfo( projectInfo, entry, *(*i) ) )
                     ++errorCount;
                 
                 moduleInfoEntries.push_back( entry );

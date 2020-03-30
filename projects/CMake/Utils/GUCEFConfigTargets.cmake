@@ -356,3 +356,29 @@ function(GUCEF_config_tool TOOLNAME)
   endif ()
 
 endfunction(GUCEF_config_tool)
+
+# setup GUCEF tool build
+function(GUCEF_config_app APPNAME)
+  GUCEF_config_common(${APPNAME})
+
+  # set install RPATH for Unix systems
+  if (UNIX AND GUCEF_FULL_RPATH)
+    set_property(TARGET ${APPNAME} APPEND PROPERTY
+      INSTALL_RPATH ${CMAKE_INSTALL_PREFIX}/lib)
+    set_property(TARGET ${APPNAME} PROPERTY INSTALL_RPATH_USE_LINK_PATH TRUE)
+  endif ()
+
+    GUCEF_install_target(${APPNAME} "")
+    if (GUCEF_INSTALL_PDB)
+      # install debug pdb files
+      install(FILES ${GUCEF_BINARY_DIR}/bin${GUCEF_DEBUG_PATH}/${APPNAME}.pdb
+        DESTINATION bin${GUCEF_DEBUG_PATH}
+        CONFIGURATIONS Debug
+        )
+      install(FILES ${GUCEF_BINARY_DIR}/bin${GUCEF_RELWDBG_PATH}/${APPNAME}.pdb
+        DESTINATION bin${GUCEF_RELWDBG_PATH}
+        CONFIGURATIONS RelWithDebInfo
+        )
+    endif ()
+
+endfunction(GUCEF_config_app)

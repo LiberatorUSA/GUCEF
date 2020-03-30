@@ -10,6 +10,7 @@
 #
 add_subdirectory( ${CMAKE_CURRENT_SOURCE_DIR}/../../../../apps/gucefPATCHERAPP ${CMAKE_BINARY_DIR}/gucefPATCHERAPP )
 add_subdirectory( ${CMAKE_CURRENT_SOURCE_DIR}/../../../../apps/gucefPRODMANAPP ${CMAKE_BINARY_DIR}/gucefPRODMANAPP )
+add_subdirectory( ${CMAKE_CURRENT_SOURCE_DIR}/../../../../dependencies/aws-cpp-sdk-core ${CMAKE_BINARY_DIR}/aws-cpp-sdk-core )
 add_subdirectory( ${CMAKE_CURRENT_SOURCE_DIR}/../../../../dependencies/cegui/cegui ${CMAKE_BINARY_DIR}/CEGUI )
 add_subdirectory( ${CMAKE_CURRENT_SOURCE_DIR}/../../../../dependencies/cegui/cegui/src/CommonDialogs ${CMAKE_BINARY_DIR}/CEGUI.CommonDialogs )
 add_subdirectory( ${CMAKE_CURRENT_SOURCE_DIR}/../../../../dependencies/cegui/cegui/src/RendererModules/Direct3D10 ${CMAKE_BINARY_DIR}/CEGUI.RendererModule.Direct3D10 )

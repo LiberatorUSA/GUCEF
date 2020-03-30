@@ -887,7 +887,8 @@ IsProcessingInstructionsItemADir( const CORE::CString& instructionDir ,
 /*---------------------------------------------------------------------------*/
 
 void
-ParseProcessingInstructions( const CORE::CString& instructionsDir           ,
+ParseProcessingInstructions( const TProjectInfo& projectInfo                ,
+                             const CORE::CString& instructionsDir           ,
                              TDirProcessingInstructions& instructionStorage )
 {GUCEF_TRACE;
 
@@ -917,9 +918,30 @@ ParseProcessingInstructions( const CORE::CString& instructionsDir           ,
         }
         if ( 0 != rootNode )
         {
-            CORE::CDataNode::TConstDataNodeSet platforms = rootNode->FindChildrenOfType( platformsNodeName, false );
-            if ( !platforms.empty() )
+            CORE::CDataNode::TConstDataNodeSet platformsNodes = rootNode->FindChildrenOfType( platformsNodeName, false );
+            CORE::CDataNode::TConstDataNodeSet::iterator w = platformsNodes.begin();
+            while ( w != platformsNodes.end() )
             {
+                CORE::CDataNode::TConstDataNodeSet platformNodes = rootNode->FindChildrenOfType( platformNodeName, false );
+                CORE::CDataNode::TConstDataNodeSet::iterator q = platformsNodes.begin();
+                while ( q != platformsNodes.end() )
+                {
+                    const CORE::CDataNode* platformNode = (*q);
+                    TStringVector platformNames = platformNode->GetAttributeValueOrChildValueByName( "NAME" ).Lowercase().ParseElements( ';', false );
+                    TStringVector::iterator j = platformNames.begin();
+                    while ( j != platformNames.end() )
+                    {
+                        const CORE::CString& platformName = (*j);
+                        if ( !platformName.IsNULLOrEmpty() )
+                        {
+                            TPlatformDefinition& platformDefinition = instructionStorage.platforms[ platformName ];
+                            platformDefinition.aliases = StringVectorToStringSet( platformNode->GetAttributeValueOrChildValueByName( "ALIASES" ).Lowercase().ParseElements( ';', false ) );
+                            platformDefinition.platformDirs = StringVectorToStringSet( platformNode->GetAttributeValueOrChildValueByName( "PLATFORMDIRS" ).ParseElements( ';', false ) );
+                        }
+                    }
+                    ++q;
+                }
+                ++w;
             }
             
             CORE::CDataNode::const_iterator i = rootNode->ConstBegin();
@@ -932,7 +954,8 @@ ParseProcessingInstructions( const CORE::CString& instructionsDir           ,
                     CORE::CString platformValue = curNode->GetAttributeValue( platformNodeName ).Lowercase();
 
                     // apply 1 to n platform mappings if applicable
-                    TStringSet platforms = ResolveMultiPlatformName( platformValue );
+                    TStringSet platforms = ResolveMultiPlatformName( platformValue, &projectInfo.platforms );
+                    MergeStringSet( platforms, ResolveMultiPlatformName( platformValue, &instructionStorage.platforms ), false );
                     TStringSet::iterator p = platforms.begin();
                     while ( p != platforms.end() )
                     {
@@ -1017,7 +1040,8 @@ ParseProcessingInstructions( const CORE::CString& instructionsDir           ,
                     CORE::CString platformValue = curNode->GetAttributeValue( platformNodeName ).Lowercase();
 
                     // apply 1 to n platform mappings if applicable
-                    TStringSet platforms = ResolveMultiPlatformName( platformValue );
+                    TStringSet platforms = ResolveMultiPlatformName( platformValue, &projectInfo.platforms );
+                    MergeStringSet( platforms, ResolveMultiPlatformName( platformValue, &instructionStorage.platforms ), false );
                     TStringSet::iterator p = platforms.begin();
                     while ( p != platforms.end() )
                     {
@@ -1167,7 +1191,7 @@ GetProcessingInstructions( TProjectInfo& projectInfo ,
         if ( GetProcessingInstructions( dir, instructions.processingInstructions ) )
         {
             GUCEF_LOG( CORE::LOGLEVEL_NORMAL, "Parsing advanced processing instructions for directory \"" + dir + "\"" );
-            ParseProcessingInstructions( dir, instructions );
+            ParseProcessingInstructions( projectInfo, dir, instructions );
         }
         return &instructions;
     }
@@ -2379,7 +2403,7 @@ ProcessProjectDir( TProjectInfo& projectInfo                 ,
     if ( CORE::FileExists( pathToModuleInfoFile ) )
     {
         GUCEF_LOG( CORE::LOGLEVEL_NORMAL, "Processing ModuleInfo file " + pathToModuleInfoFile );
-        if ( DeserializeModuleInfo( moduleInfoEntries, pathToModuleInfoFile ) )
+        if ( DeserializeModuleInfo( projectInfo, moduleInfoEntries, pathToModuleInfoFile ) )
         {        
             // Do some extra processing which does not apply to the legacy cmake files...
             TModuleInfoEntryVector::iterator i = moduleInfoEntries.begin();

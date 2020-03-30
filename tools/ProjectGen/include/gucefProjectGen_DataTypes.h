@@ -203,9 +203,9 @@ typedef std::map< CORE::CString, const TModuleInfo* > TConstModuleInfoPtrMap;
 
 struct SModuleInfoEntry
 {
-    TModuleInfoMap  modulesPerPlatform;     // ModuleInfo per platform
-    CORE::CString   rootDir;                // the absolute path to the root of this module's directory tree
-    CORE::CString   lastEditBy;             // optional info listing who last updated the information
+    TModuleInfoMap modulesPerPlatform;     // ModuleInfo per platform
+    CORE::CString  rootDir;                // the absolute path to the root of this module's directory tree
+    CORE::CString  lastEditBy;             // optional info listing who last updated the information
 };
 typedef struct SModuleInfoEntry TModuleInfoEntry;
 
@@ -224,6 +224,16 @@ typedef std::map< int, TModuleInfoEntry* > TModuleInfoEntryPrioMap;
 
 /*---------------------------------------------------------------------------*/
 
+struct SPlatformDefinition
+{
+    TStringSet aliases;                                    // alternate names for this platform, can be 1-N across multiple platforms as a group name
+    TStringSet platformDirs;                               // Directory names which will be considered holders of platform specific files
+};
+typedef struct SPlatformDefinition TPlatformDefinition;
+typedef std::map< CORE::CString, TPlatformDefinition > TPlatformDefinitionMap;
+
+/*---------------------------------------------------------------------------*/
+
 struct SDirProcessingInstructions
 {
     TStringVectorMap dirExcludeList;        // list of directories that are to be excluded, maps a list of per platform  
@@ -232,8 +242,8 @@ struct SDirProcessingInstructions
     TStringVectorMap fileExcludeList;       // list of files that are to be excluded, maps a list of per platform
     TStringVectorMap fileIncludeList;       // list of files that are to be included, maps a list of per platform
 
-    TStringVectorMapMap platformDirs;       // 
-
+    TPlatformDefinitionMap platforms;       // Supplemental platform definitions
+    
     CORE::CDataNode processingInstructions; // All unparsed processing instruction data
 };
 typedef struct SDirProcessingInstructions TDirProcessingInstructions;
@@ -241,16 +251,6 @@ typedef struct SDirProcessingInstructions TDirProcessingInstructions;
 /*---------------------------------------------------------------------------*/
 
 typedef std::map< CORE::CString, TDirProcessingInstructions > TDirProcessingInstructionsMap;
-
-/*---------------------------------------------------------------------------*/
-
-struct SPlatformDefinition
-{
-    TStringSet aliases;                                    // alternate names for this platform, can be 1-N across multiple platforms as a group name
-    TStringSet platformDirs;                               // Directory names which will be considered holders of platform specific files
-};
-typedef struct SPlatformDefinition TPlatformDefinition;
-typedef std::map< CORE::CString, TPlatformDefinition > TPlatformDefinitionMap;
 
 /*---------------------------------------------------------------------------*/
 
@@ -434,14 +434,16 @@ SerializeModuleInfo( const TModuleInfoEntry& moduleInfo  ,
 
 GUCEF_PROJECTGEN_PUBLIC_CPP
 bool
-DeserializeModuleInfo( TModuleInfoEntry& moduleInfo    ,
+DeserializeModuleInfo( const TProjectInfo& projectInfo ,  
+                       TModuleInfoEntry& moduleInfo    ,
                        const CORE::CDataNode& rootNode );
 
 /*-------------------------------------------------------------------------*/
 
 GUCEF_PROJECTGEN_PUBLIC_CPP
 bool
-DeserializeModuleInfo( TModuleInfoEntryVector& moduleInfoEntries ,
+DeserializeModuleInfo( const TProjectInfo& projectInfo           ,
+                       TModuleInfoEntryVector& moduleInfoEntries ,
                        const CORE::CString& inputFilepath        );
 
 
@@ -591,7 +593,8 @@ HasIndependentModuleType( const TModuleInfoMap& moduleDefs );
 // a multiplatform name the same name is returned
 GUCEF_PROJECTGEN_PUBLIC_CPP
 TStringSet
-ResolveMultiPlatformName( const CORE::CString& platformName );
+ResolveMultiPlatformName( const CORE::CString& platformName          ,
+                          const TPlatformDefinitionMap* platformDefs );
 
 /*-------------------------------------------------------------------------*/
 

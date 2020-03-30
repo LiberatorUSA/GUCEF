@@ -79,9 +79,9 @@ endif( WIN64 )
 
 
 if (WIN32)
-GUCEF_config_tool( ${MODULE_NAME} )
+GUCEF_config_app( ${MODULE_NAME} )
 elseif (WIN64)
-GUCEF_config_tool( ${MODULE_NAME} )
+GUCEF_config_app( ${MODULE_NAME} )
 endif()
 
 
