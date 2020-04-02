@@ -139,12 +139,6 @@ test_big_endian(GUCEF_TEST_BIG_ENDIAN)
 # Add common include path
 include_directories("${GUCEF_SOURCE_DIR}/common/include")
 
-# Find dependencies
-include(Dependencies)
-# definitions for samples
-#set(GUCEF_LIBRARIES gucefCORE )
-
-
 # Specify build paths
 set(CMAKE_ARCHIVE_OUTPUT_DIRECTORY "${GUCEF_BINARY_DIR}/lib")
 set(CMAKE_LIBRARY_OUTPUT_DIRECTORY "${GUCEF_BINARY_DIR}/lib")
@@ -187,10 +181,7 @@ elseif (APPLE AND NOT GUCEF_BUILD_PLATFORM_IPHONE)
 
   # Set 10.4 as the base SDK by default
   set(XCODE_ATTRIBUTE_SDKROOT macosx10.4)
-
-  # Make sure that the OpenGL render system is selected for non-iPhone Apple builds
-  set(GUCEF_BUILD_RENDERSYSTEM_GL TRUE)
-  set(GUCEF_BUILD_RENDERSYSTEM_GLES FALSE)
+  
 endif ()
 
 ######################################################################
@@ -221,15 +212,5 @@ include(ConfigureBuild)
 
 include( GUCEF_[exe]_ServerPortExtender_ModuleDirs.cmake )
 
-# Install documentation
-#add_subdirectory(docs)
-
-# Install CMake modules
-#add_subdirectory(CMake)
-
 # Provide CPack packaging target
 include(Packaging)
-
-# Show feature summary
-#include(FeatureSummary)
-

@@ -46,25 +46,25 @@ endfunction(GUCEF_create_vcproj_userfile)
 # install targets according to current build type
 function(GUCEF_install_target TARGETNAME SUFFIX)
   install(TARGETS ${TARGETNAME}
-    RUNTIME DESTINATION "bin${GUCEF_RELEASE_PATH}" CONFIGURATIONS Release None ""
+    RUNTIME DESTINATION "bin${GUCEF_RELEASE_PATH}${SUFFIX}" CONFIGURATIONS Release None ""
     LIBRARY DESTINATION "lib${GUCEF_LIB_RELEASE_PATH}${SUFFIX}" CONFIGURATIONS Release None ""
     ARCHIVE DESTINATION "lib${GUCEF_LIB_RELEASE_PATH}${SUFFIX}" CONFIGURATIONS Release None ""
     FRAMEWORK DESTINATION "bin${GUCEF_RELEASE_PATH}" CONFIGURATIONS Release None ""
   )
   install(TARGETS ${TARGETNAME}
-    RUNTIME DESTINATION "bin${GUCEF_RELWDBG_PATH}" CONFIGURATIONS RelWithDebInfo
+    RUNTIME DESTINATION "bin${GUCEF_RELWDBG_PATH}${SUFFIX}" CONFIGURATIONS RelWithDebInfo
     LIBRARY DESTINATION "lib${GUCEF_LIB_RELWDBG_PATH}${SUFFIX}" CONFIGURATIONS RelWithDebInfo
     ARCHIVE DESTINATION "lib${GUCEF_LIB_RELWDBG_PATH}${SUFFIX}" CONFIGURATIONS RelWithDebInfo
     FRAMEWORK DESTINATION "bin${GUCEF_RELWDBG_PATH}" CONFIGURATIONS RelWithDebInfo
   )
   install(TARGETS ${TARGETNAME}
-    RUNTIME DESTINATION "bin${GUCEF_MINSIZE_PATH}" CONFIGURATIONS MinSizeRel
+    RUNTIME DESTINATION "bin${GUCEF_MINSIZE_PATH}${SUFFIX}" CONFIGURATIONS MinSizeRel
     LIBRARY DESTINATION "lib${GUCEF_LIB_MINSIZE_PATH}${SUFFIX}" CONFIGURATIONS MinSizeRel
     ARCHIVE DESTINATION "lib${GUCEF_LIB_MINSIZE_PATH}${SUFFIX}" CONFIGURATIONS MinSizeRel
     FRAMEWORK DESTINATION "bin${GUCEF_MINSIZE_PATH}" CONFIGURATIONS MinSizeRel
   )
   install(TARGETS ${TARGETNAME}
-    RUNTIME DESTINATION "bin${GUCEF_DEBUG_PATH}" CONFIGURATIONS Debug
+    RUNTIME DESTINATION "bin${GUCEF_DEBUG_PATH}${SUFFIX}" CONFIGURATIONS Debug
     LIBRARY DESTINATION "lib${GUCEF_LIB_DEBUG_PATH}${SUFFIX}" CONFIGURATIONS Debug
     ARCHIVE DESTINATION "lib${GUCEF_LIB_DEBUG_PATH}${SUFFIX}" CONFIGURATIONS Debug
     FRAMEWORK DESTINATION "bin${GUCEF_DEBUG_PATH}" CONFIGURATIONS Debug
@@ -256,61 +256,6 @@ function(GUCEF_config_sample SAMPLENAME)
         COMMAND ln ARGS -s -f ${CMAKE_BINARY_DIR}/bin/quake3settings.cfg
           ${GUCEF_SAMPLE_CONTENTS_PATH}/Resources/
       )
-      # now plugins
-      add_custom_command(TARGET ${SAMPLENAME} POST_BUILD
-        COMMAND mkdir ARGS -p ${GUCEF_SAMPLE_CONTENTS_PATH}/Plugins)
-      if (GUCEF_BUILD_RENDERSYSTEM_GL)
-        add_custom_command(TARGET ${SAMPLENAME} POST_BUILD
-          COMMAND ln ARGS -s -f ${CMAKE_BINARY_DIR}/lib/$(CONFIGURATION)/RenderSystem_GL.dylib
-            ${GUCEF_SAMPLE_CONTENTS_PATH}/Plugins/
-        )
-      endif ()
-      if (GUCEF_BUILD_RENDERSYSTEM_GLES)
-        add_custom_command(TARGET ${SAMPLENAME} POST_BUILD
-          COMMAND ln ARGS -s -f ${CMAKE_BINARY_DIR}/lib/$(CONFIGURATION)/RenderSystem_GLES.a
-            ${GUCEF_SAMPLE_CONTENTS_PATH}/Plugins/
-        )
-      endif ()
-      if (GUCEF_BUILD_PLUGIN_BSP)
-        add_custom_command(TARGET ${SAMPLENAME} POST_BUILD
-        COMMAND ln ARGS -s -f ${CMAKE_BINARY_DIR}/lib/$(CONFIGURATION)/Plugin_BSPSceneManager.dylib
-          ${GUCEF_SAMPLE_CONTENTS_PATH}/Plugins/
-        )
-      endif()
-      if (GUCEF_BUILD_PLUGIN_CG)
-        add_custom_command(TARGET ${SAMPLENAME} POST_BUILD
-        COMMAND ln ARGS -s -f ${CMAKE_BINARY_DIR}/lib/$(CONFIGURATION)/Plugin_CgProgramManager.dylib
-          ${GUCEF_SAMPLE_CONTENTS_PATH}/Plugins/
-        )
-      endif()
-      if (GUCEF_BUILD_PLUGIN_OCTREE)
-        add_custom_command(TARGET ${SAMPLENAME} POST_BUILD
-        COMMAND ln ARGS -s -f ${CMAKE_BINARY_DIR}/lib/$(CONFIGURATION)/Plugin_OctreeSceneManager.dylib
-          ${GUCEF_SAMPLE_CONTENTS_PATH}/Plugins/
-       )
-      endif()
-      if (GUCEF_BUILD_PLUGIN_PCZ)
-        add_custom_command(TARGET ${SAMPLENAME} POST_BUILD
-          COMMAND ln ARGS -s -f ${CMAKE_BINARY_DIR}/lib/$(CONFIGURATION)/Plugin_PCZSceneManager.dylib
-            ${GUCEF_SAMPLE_CONTENTS_PATH}/Plugins/
-        )
-        add_custom_command(TARGET ${SAMPLENAME} POST_BUILD
-        COMMAND ln ARGS -s -f ${CMAKE_BINARY_DIR}/lib/$(CONFIGURATION)/Plugin_OctreeZone.dylib
-          ${GUCEF_SAMPLE_CONTENTS_PATH}/Plugins/
-      )
-      endif()
-      if (GUCEF_BUILD_PLUGIN_PFX)
-        add_custom_command(TARGET ${SAMPLENAME} POST_BUILD
-        COMMAND ln ARGS -s -f ${CMAKE_BINARY_DIR}/lib/$(CONFIGURATION)/Plugin_ParticleFX.dylib
-          ${GUCEF_SAMPLE_CONTENTS_PATH}/Plugins/
-        )
-      endif()
-      if (GUCEF_BUILD_CEGUIRENDERER)
-        add_custom_command(TARGET ${SAMPLENAME} POST_BUILD
-        COMMAND ln ARGS -s -f ${CMAKE_BINARY_DIR}/lib/$(CONFIGURATION)/libCEGUIGUCEFRenderer.dylib
-          ${GUCEF_SAMPLE_CONTENTS_PATH}/Plugins/
-        )
-      endif()
     endif()
   endif (APPLE)
 

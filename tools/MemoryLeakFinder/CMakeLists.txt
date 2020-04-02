@@ -15,18 +15,18 @@
 
 if (ANDROID)
   set( PLATFORM_HEADER_FILES 
-    ../../gucefMT/include/gucefMT_mutex.h
-    ../../gucefMT/include/gucefMT_CMutex.h
-    ../../gucefMT/include/gucefMT_CScopeMutex.h
+    ../../platform/gucefMT/include/gucefMT_mutex.h
+    ../../platform/gucefMT/include/gucefMT_CMutex.h
+    ../../platform/gucefMT/include/gucefMT_CScopeMutex.h
   )
 
   set( PLATFORM_HEADER_INSTALL "ANDROID" )
   source_group( "Platform Header Files" FILES ${PLATFORM_HEADER_FILES} )
 
   set( PLATFORM_SOURCE_FILES 
-    ../../gucefMT/src/gucefMT_MUTEX.c
-    ../../gucefMT/src/gucefMT_CMutex.cpp
-    ../../gucefMT/src/gucefMT_CScopeMutex.cpp
+    ../../platform/gucefMT/src/gucefMT_MUTEX.c
+    ../../platform/gucefMT/src/gucefMT_CMutex.cpp
+    ../../platform/gucefMT/src/gucefMT_CScopeMutex.cpp
     src/MemoryManager.cpp
   )
 
@@ -35,18 +35,18 @@ if (ANDROID)
 
 elseif (EMSCRIPTEN)
   set( PLATFORM_HEADER_FILES 
-    ../../gucefMT/include/gucefMT_mutex.h
-    ../../gucefMT/include/gucefMT_CMutex.h
-    ../../gucefMT/include/gucefMT_CScopeMutex.h
+    ../../platform/gucefMT/include/gucefMT_mutex.h
+    ../../platform/gucefMT/include/gucefMT_CMutex.h
+    ../../platform/gucefMT/include/gucefMT_CScopeMutex.h
   )
 
   set( PLATFORM_HEADER_INSTALL "EMSCRIPTEN" )
   source_group( "Platform Header Files" FILES ${PLATFORM_HEADER_FILES} )
 
   set( PLATFORM_SOURCE_FILES 
-    ../../gucefMT/src/gucefMT_MUTEX.c
-    ../../gucefMT/src/gucefMT_CMutex.cpp
-    ../../gucefMT/src/gucefMT_CScopeMutex.cpp
+    ../../platform/gucefMT/src/gucefMT_MUTEX.c
+    ../../platform/gucefMT/src/gucefMT_CMutex.cpp
+    ../../platform/gucefMT/src/gucefMT_CScopeMutex.cpp
     src/MemoryManager.cpp
   )
 
@@ -55,18 +55,18 @@ elseif (EMSCRIPTEN)
 
 elseif (GLX)
   set( PLATFORM_HEADER_FILES 
-    ../../gucefMT/include/gucefMT_mutex.h
-    ../../gucefMT/include/gucefMT_CMutex.h
-    ../../gucefMT/include/gucefMT_CScopeMutex.h
+    ../../platform/gucefMT/include/gucefMT_mutex.h
+    ../../platform/gucefMT/include/gucefMT_CMutex.h
+    ../../platform/gucefMT/include/gucefMT_CScopeMutex.h
   )
 
   set( PLATFORM_HEADER_INSTALL "GLX" )
   source_group( "Platform Header Files" FILES ${PLATFORM_HEADER_FILES} )
 
   set( PLATFORM_SOURCE_FILES 
-    ../../gucefMT/src/gucefMT_MUTEX.c
-    ../../gucefMT/src/gucefMT_CMutex.cpp
-    ../../gucefMT/src/gucefMT_CScopeMutex.cpp
+    ../../platform/gucefMT/src/gucefMT_MUTEX.c
+    ../../platform/gucefMT/src/gucefMT_CMutex.cpp
+    ../../platform/gucefMT/src/gucefMT_CScopeMutex.cpp
     src/MemoryManager.cpp
   )
 
@@ -75,18 +75,18 @@ elseif (GLX)
 
 elseif (GTK)
   set( PLATFORM_HEADER_FILES 
-    ../../gucefMT/include/gucefMT_mutex.h
-    ../../gucefMT/include/gucefMT_CMutex.h
-    ../../gucefMT/include/gucefMT_CScopeMutex.h
+    ../../platform/gucefMT/include/gucefMT_mutex.h
+    ../../platform/gucefMT/include/gucefMT_CMutex.h
+    ../../platform/gucefMT/include/gucefMT_CScopeMutex.h
   )
 
   set( PLATFORM_HEADER_INSTALL "GTK" )
   source_group( "Platform Header Files" FILES ${PLATFORM_HEADER_FILES} )
 
   set( PLATFORM_SOURCE_FILES 
-    ../../gucefMT/src/gucefMT_MUTEX.c
-    ../../gucefMT/src/gucefMT_CMutex.cpp
-    ../../gucefMT/src/gucefMT_CScopeMutex.cpp
+    ../../platform/gucefMT/src/gucefMT_MUTEX.c
+    ../../platform/gucefMT/src/gucefMT_CMutex.cpp
+    ../../platform/gucefMT/src/gucefMT_CScopeMutex.cpp
     src/MemoryManager.cpp
   )
 
@@ -95,18 +95,18 @@ elseif (GTK)
 
 elseif (IOS)
   set( PLATFORM_HEADER_FILES 
-    ../../gucefMT/include/gucefMT_mutex.h
-    ../../gucefMT/include/gucefMT_CMutex.h
-    ../../gucefMT/include/gucefMT_CScopeMutex.h
+    ../../platform/gucefMT/include/gucefMT_mutex.h
+    ../../platform/gucefMT/include/gucefMT_CMutex.h
+    ../../platform/gucefMT/include/gucefMT_CScopeMutex.h
   )
 
   set( PLATFORM_HEADER_INSTALL "IOS" )
   source_group( "Platform Header Files" FILES ${PLATFORM_HEADER_FILES} )
 
   set( PLATFORM_SOURCE_FILES 
-    ../../gucefMT/src/gucefMT_MUTEX.c
-    ../../gucefMT/src/gucefMT_CMutex.cpp
-    ../../gucefMT/src/gucefMT_CScopeMutex.cpp
+    ../../platform/gucefMT/src/gucefMT_MUTEX.c
+    ../../platform/gucefMT/src/gucefMT_CMutex.cpp
+    ../../platform/gucefMT/src/gucefMT_CScopeMutex.cpp
     src/MemoryManager.cpp
   )
 
@@ -115,18 +115,18 @@ elseif (IOS)
 
 elseif (LINUX32)
   set( PLATFORM_HEADER_FILES 
-    ../../gucefMT/include/gucefMT_mutex.h
-    ../../gucefMT/include/gucefMT_CMutex.h
-    ../../gucefMT/include/gucefMT_CScopeMutex.h
+    ../../platform/gucefMT/include/gucefMT_mutex.h
+    ../../platform/gucefMT/include/gucefMT_CMutex.h
+    ../../platform/gucefMT/include/gucefMT_CScopeMutex.h
   )
 
   set( PLATFORM_HEADER_INSTALL "LINUX32" )
   source_group( "Platform Header Files" FILES ${PLATFORM_HEADER_FILES} )
 
   set( PLATFORM_SOURCE_FILES 
-    ../../gucefMT/src/gucefMT_MUTEX.c
-    ../../gucefMT/src/gucefMT_CMutex.cpp
-    ../../gucefMT/src/gucefMT_CScopeMutex.cpp
+    ../../platform/gucefMT/src/gucefMT_MUTEX.c
+    ../../platform/gucefMT/src/gucefMT_CMutex.cpp
+    ../../platform/gucefMT/src/gucefMT_CScopeMutex.cpp
     src/MemoryManager.cpp
   )
 
@@ -135,18 +135,18 @@ elseif (LINUX32)
 
 elseif (LINUX64)
   set( PLATFORM_HEADER_FILES 
-    ../../gucefMT/include/gucefMT_mutex.h
-    ../../gucefMT/include/gucefMT_CMutex.h
-    ../../gucefMT/include/gucefMT_CScopeMutex.h
+    ../../platform/gucefMT/include/gucefMT_mutex.h
+    ../../platform/gucefMT/include/gucefMT_CMutex.h
+    ../../platform/gucefMT/include/gucefMT_CScopeMutex.h
   )
 
   set( PLATFORM_HEADER_INSTALL "LINUX64" )
   source_group( "Platform Header Files" FILES ${PLATFORM_HEADER_FILES} )
 
   set( PLATFORM_SOURCE_FILES 
-    ../../gucefMT/src/gucefMT_MUTEX.c
-    ../../gucefMT/src/gucefMT_CMutex.cpp
-    ../../gucefMT/src/gucefMT_CScopeMutex.cpp
+    ../../platform/gucefMT/src/gucefMT_MUTEX.c
+    ../../platform/gucefMT/src/gucefMT_CMutex.cpp
+    ../../platform/gucefMT/src/gucefMT_CScopeMutex.cpp
     src/MemoryManager.cpp
   )
 
@@ -155,18 +155,18 @@ elseif (LINUX64)
 
 elseif (NACL)
   set( PLATFORM_HEADER_FILES 
-    ../../gucefMT/include/gucefMT_mutex.h
-    ../../gucefMT/include/gucefMT_CMutex.h
-    ../../gucefMT/include/gucefMT_CScopeMutex.h
+    ../../platform/gucefMT/include/gucefMT_mutex.h
+    ../../platform/gucefMT/include/gucefMT_CMutex.h
+    ../../platform/gucefMT/include/gucefMT_CScopeMutex.h
   )
 
   set( PLATFORM_HEADER_INSTALL "NACL" )
   source_group( "Platform Header Files" FILES ${PLATFORM_HEADER_FILES} )
 
   set( PLATFORM_SOURCE_FILES 
-    ../../gucefMT/src/gucefMT_MUTEX.c
-    ../../gucefMT/src/gucefMT_CMutex.cpp
-    ../../gucefMT/src/gucefMT_CScopeMutex.cpp
+    ../../platform/gucefMT/src/gucefMT_MUTEX.c
+    ../../platform/gucefMT/src/gucefMT_CMutex.cpp
+    ../../platform/gucefMT/src/gucefMT_CScopeMutex.cpp
     src/MemoryManager.cpp
   )
 
@@ -175,18 +175,18 @@ elseif (NACL)
 
 elseif (OSX)
   set( PLATFORM_HEADER_FILES 
-    ../../gucefMT/include/gucefMT_mutex.h
-    ../../gucefMT/include/gucefMT_CMutex.h
-    ../../gucefMT/include/gucefMT_CScopeMutex.h
+    ../../platform/gucefMT/include/gucefMT_mutex.h
+    ../../platform/gucefMT/include/gucefMT_CMutex.h
+    ../../platform/gucefMT/include/gucefMT_CScopeMutex.h
   )
 
   set( PLATFORM_HEADER_INSTALL "OSX" )
   source_group( "Platform Header Files" FILES ${PLATFORM_HEADER_FILES} )
 
   set( PLATFORM_SOURCE_FILES 
-    ../../gucefMT/src/gucefMT_MUTEX.c
-    ../../gucefMT/src/gucefMT_CMutex.cpp
-    ../../gucefMT/src/gucefMT_CScopeMutex.cpp
+    ../../platform/gucefMT/src/gucefMT_MUTEX.c
+    ../../platform/gucefMT/src/gucefMT_CMutex.cpp
+    ../../platform/gucefMT/src/gucefMT_CScopeMutex.cpp
     src/MemoryManager.cpp
   )
 
@@ -195,18 +195,18 @@ elseif (OSX)
 
 elseif (SDL)
   set( PLATFORM_HEADER_FILES 
-    ../../gucefMT/include/gucefMT_mutex.h
-    ../../gucefMT/include/gucefMT_CMutex.h
-    ../../gucefMT/include/gucefMT_CScopeMutex.h
+    ../../platform/gucefMT/include/gucefMT_mutex.h
+    ../../platform/gucefMT/include/gucefMT_CMutex.h
+    ../../platform/gucefMT/include/gucefMT_CScopeMutex.h
   )
 
   set( PLATFORM_HEADER_INSTALL "SDL" )
   source_group( "Platform Header Files" FILES ${PLATFORM_HEADER_FILES} )
 
   set( PLATFORM_SOURCE_FILES 
-    ../../gucefMT/src/gucefMT_MUTEX.c
-    ../../gucefMT/src/gucefMT_CMutex.cpp
-    ../../gucefMT/src/gucefMT_CScopeMutex.cpp
+    ../../platform/gucefMT/src/gucefMT_MUTEX.c
+    ../../platform/gucefMT/src/gucefMT_CMutex.cpp
+    ../../platform/gucefMT/src/gucefMT_CScopeMutex.cpp
     src/MemoryManager.cpp
   )
 
@@ -215,18 +215,18 @@ elseif (SDL)
 
 elseif (SYMBIAN)
   set( PLATFORM_HEADER_FILES 
-    ../../gucefMT/include/gucefMT_mutex.h
-    ../../gucefMT/include/gucefMT_CMutex.h
-    ../../gucefMT/include/gucefMT_CScopeMutex.h
+    ../../platform/gucefMT/include/gucefMT_mutex.h
+    ../../platform/gucefMT/include/gucefMT_CMutex.h
+    ../../platform/gucefMT/include/gucefMT_CScopeMutex.h
   )
 
   set( PLATFORM_HEADER_INSTALL "SYMBIAN" )
   source_group( "Platform Header Files" FILES ${PLATFORM_HEADER_FILES} )
 
   set( PLATFORM_SOURCE_FILES 
-    ../../gucefMT/src/gucefMT_MUTEX.c
-    ../../gucefMT/src/gucefMT_CMutex.cpp
-    ../../gucefMT/src/gucefMT_CScopeMutex.cpp
+    ../../platform/gucefMT/src/gucefMT_MUTEX.c
+    ../../platform/gucefMT/src/gucefMT_CMutex.cpp
+    ../../platform/gucefMT/src/gucefMT_CScopeMutex.cpp
     src/MemoryManager.cpp
   )
 
@@ -235,18 +235,18 @@ elseif (SYMBIAN)
 
 elseif (UNIX)
   set( PLATFORM_HEADER_FILES 
-    ../../gucefMT/include/gucefMT_mutex.h
-    ../../gucefMT/include/gucefMT_CMutex.h
-    ../../gucefMT/include/gucefMT_CScopeMutex.h
+    ../../platform/gucefMT/include/gucefMT_mutex.h
+    ../../platform/gucefMT/include/gucefMT_CMutex.h
+    ../../platform/gucefMT/include/gucefMT_CScopeMutex.h
   )
 
   set( PLATFORM_HEADER_INSTALL "UNIX" )
   source_group( "Platform Header Files" FILES ${PLATFORM_HEADER_FILES} )
 
   set( PLATFORM_SOURCE_FILES 
-    ../../gucefMT/src/gucefMT_MUTEX.c
-    ../../gucefMT/src/gucefMT_CMutex.cpp
-    ../../gucefMT/src/gucefMT_CScopeMutex.cpp
+    ../../platform/gucefMT/src/gucefMT_MUTEX.c
+    ../../platform/gucefMT/src/gucefMT_CMutex.cpp
+    ../../platform/gucefMT/src/gucefMT_CScopeMutex.cpp
     src/MemoryManager.cpp
   )
 
@@ -255,9 +255,9 @@ elseif (UNIX)
 
 elseif (WIN32)
   set( PLATFORM_HEADER_FILES 
-    ../../gucefMT/include/gucefMT_mutex.h
-    ../../gucefMT/include/gucefMT_CMutex.h
-    ../../gucefMT/include/gucefMT_CScopeMutex.h
+    ../../platform/gucefMT/include/gucefMT_mutex.h
+    ../../platform/gucefMT/include/gucefMT_CMutex.h
+    ../../platform/gucefMT/include/gucefMT_CScopeMutex.h
     include/DynMemoryManagerLoader.h
     include/gucefMLF_config.h
     include/gucefMLF_ETypes.h
@@ -271,9 +271,9 @@ elseif (WIN32)
   source_group( "Platform Header Files" FILES ${PLATFORM_HEADER_FILES} )
 
   set( PLATFORM_SOURCE_FILES 
-    ../../gucefMT/src/gucefMT_MUTEX.c
-    ../../gucefMT/src/gucefMT_CMutex.cpp
-    ../../gucefMT/src/gucefMT_CScopeMutex.cpp
+    ../../platform/gucefMT/src/gucefMT_MUTEX.c
+    ../../platform/gucefMT/src/gucefMT_CMutex.cpp
+    ../../platform/gucefMT/src/gucefMT_CScopeMutex.cpp
     src/MemoryManager.cpp
   )
 
@@ -282,9 +282,9 @@ elseif (WIN32)
 
 elseif (WIN64)
   set( PLATFORM_HEADER_FILES 
-    ../../gucefMT/include/gucefMT_mutex.h
-    ../../gucefMT/include/gucefMT_CMutex.h
-    ../../gucefMT/include/gucefMT_CScopeMutex.h
+    ../../platform/gucefMT/include/gucefMT_mutex.h
+    ../../platform/gucefMT/include/gucefMT_CMutex.h
+    ../../platform/gucefMT/include/gucefMT_CScopeMutex.h
     include/DynMemoryManagerLoader.h
     include/gucefMLF_config.h
     include/gucefMLF_ETypes.h
@@ -298,9 +298,9 @@ elseif (WIN64)
   source_group( "Platform Header Files" FILES ${PLATFORM_HEADER_FILES} )
 
   set( PLATFORM_SOURCE_FILES 
-    ../../gucefMT/src/gucefMT_MUTEX.c
-    ../../gucefMT/src/gucefMT_CMutex.cpp
-    ../../gucefMT/src/gucefMT_CScopeMutex.cpp
+    ../../platform/gucefMT/src/gucefMT_MUTEX.c
+    ../../platform/gucefMT/src/gucefMT_CMutex.cpp
+    ../../platform/gucefMT/src/gucefMT_CScopeMutex.cpp
     src/MemoryManager.cpp
   )
 
@@ -335,59 +335,59 @@ endif( WIN64 )
 include_directories( ../../common/include )
 
 if ( ANDROID )
-  include_directories( ../../gucefMT/include/ )
+  include_directories( ../../platform/gucefMT/include/ )
 endif( ANDROID )
 
 if ( EMSCRIPTEN )
-  include_directories( ../../gucefMT/include/ )
+  include_directories( ../../platform/gucefMT/include/ )
 endif( EMSCRIPTEN )
 
 if ( GLX )
-  include_directories( ../../gucefMT/include/ )
+  include_directories( ../../platform/gucefMT/include/ )
 endif( GLX )
 
 if ( GTK )
-  include_directories( ../../gucefMT/include/ )
+  include_directories( ../../platform/gucefMT/include/ )
 endif( GTK )
 
 if ( IOS )
-  include_directories( ../../gucefMT/include/ )
+  include_directories( ../../platform/gucefMT/include/ )
 endif( IOS )
 
 if ( LINUX32 )
-  include_directories( ../../gucefMT/include/ )
+  include_directories( ../../platform/gucefMT/include/ )
 endif( LINUX32 )
 
 if ( LINUX64 )
-  include_directories( ../../gucefMT/include/ )
+  include_directories( ../../platform/gucefMT/include/ )
 endif( LINUX64 )
 
 if ( NACL )
-  include_directories( ../../gucefMT/include/ )
+  include_directories( ../../platform/gucefMT/include/ )
 endif( NACL )
 
 if ( OSX )
-  include_directories( ../../gucefMT/include/ )
+  include_directories( ../../platform/gucefMT/include/ )
 endif( OSX )
 
 if ( SDL )
-  include_directories( ../../gucefMT/include/ )
+  include_directories( ../../platform/gucefMT/include/ )
 endif( SDL )
 
 if ( SYMBIAN )
-  include_directories( ../../gucefMT/include/ )
+  include_directories( ../../platform/gucefMT/include/ )
 endif( SYMBIAN )
 
 if ( UNIX )
-  include_directories( ../../gucefMT/include/ )
+  include_directories( ../../platform/gucefMT/include/ )
 endif( UNIX )
 
 if ( WIN32 )
-  include_directories( ../../gucefMT/include/ include )
+  include_directories( ../../platform/gucefMT/include/ include )
 endif( WIN32 )
 
 if ( WIN64 )
-  include_directories( ../../gucefMT/include/ include )
+  include_directories( ../../platform/gucefMT/include/ include )
 endif( WIN64 )
 
 
