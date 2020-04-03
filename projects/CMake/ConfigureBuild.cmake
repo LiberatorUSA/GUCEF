@@ -75,12 +75,12 @@ if (UNIX)
     set(GUCEF_CFLAGS "-pthread")
     set(GUCEF_ADDITIONAL_LIBS "${GUCEF_ADDITIONAL_LIBS} -lpthread")
   endif ()
-  if (GUCEF_STATIC)
-    configure_file(${GUCEF_TEMPLATES_DIR}/GUCEFStatic.pc.in ${GUCEF_BINARY_DIR}/pkgconfig/GUCEF${GUCEF_LIB_SUFFIX}.pc @ONLY)
-  else ()
-    configure_file(${GUCEF_TEMPLATES_DIR}/GUCEF.pc.in ${GUCEF_BINARY_DIR}/pkgconfig/GUCEF${GUCEF_LIB_SUFFIX}.pc @ONLY)
-  endif ()
-  install(FILES ${GUCEF_BINARY_DIR}/pkgconfig/GUCEF${GUCEF_LIB_SUFFIX}.pc DESTINATION lib/pkgconfig)
+  #if (GUCEF_STATIC)
+  #  configure_file(${GUCEF_TEMPLATES_DIR}/GUCEFStatic.pc.in ${GUCEF_BINARY_DIR}/pkgconfig/GUCEF${GUCEF_LIB_SUFFIX}.pc @ONLY)
+  #else ()
+  #  configure_file(${GUCEF_TEMPLATES_DIR}/GUCEF.pc.in ${GUCEF_BINARY_DIR}/pkgconfig/GUCEF${GUCEF_LIB_SUFFIX}.pc @ONLY)
+  #endif ()
+  #install(FILES ${GUCEF_BINARY_DIR}/pkgconfig/GUCEF${GUCEF_LIB_SUFFIX}.pc DESTINATION lib/pkgconfig)
 
   # configure additional packages
   

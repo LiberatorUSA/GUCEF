@@ -7,8 +7,7 @@ set(CPACK_PACKAGE_VENDOR "Vanvelzen LLC")
 set(CPACK_PACKAGE_NAME ${PROJECT_NAME})
 set(CPACK_PACKAGE_CONTACT "Dinand Vanvelzen <dinand@vanvelzen.us>")
 set(HOMEPAGE "https://github.com/LiberatorUSA/GUCEF")
-set(CPACK_PACKAGE_DESCRIPTION_SUMMARY
-    "Clean cpp project. This is simple cpp example project build with CMake.")
+set(CPACK_PACKAGE_DESCRIPTION_SUMMARY "")
 #set(CPACK_PACKAGE_DESCRIPTION_FILE "${PROJECT_SOURCE_DIR}/readme.md")
 #set(CPACK_RESOURCE_FILE_LICENSE "${PROJECT_SOURCE_DIR}/license.md")
 set(CPACK_PACKAGE_VERSION_MAJOR ${PROJECT_VERSION_MAJOR})
@@ -122,10 +121,10 @@ else()
 
     # Icon and app shortcut for Linux systems
     # Note: .desktop file must have same name as executable
-    install(FILES ${CMAKE_CURRENT_SOURCE_DIR}/exampleApp.desktop
-        DESTINATION share/applications/
-        PERMISSIONS OWNER_READ OWNER_WRITE GROUP_READ WORLD_READ
-        )
+#    install(FILES ${CMAKE_CURRENT_SOURCE_DIR}/exampleApp.desktop
+#        DESTINATION share/applications/
+#        PERMISSIONS OWNER_READ OWNER_WRITE GROUP_READ WORLD_READ
+#        )
 #    install(FILES ${CMAKE_CURRENT_SOURCE_DIR}/exampleApp.png
 #        DESTINATION share/icons/hicolor/256x256/apps/
 #        PERMISSIONS OWNER_READ OWNER_WRITE GROUP_READ WORLD_READ
@@ -140,7 +139,7 @@ else()
 #        PERMISSIONS OWNER_READ OWNER_WRITE GROUP_READ WORLD_READ
 #        RENAME copyright)
     # set package icon
-    set(CPACK_PACKAGE_ICON "${CMAKE_CURRENT_SOURCE_DIR}/exampleApp.png")
+#    set(CPACK_PACKAGE_ICON "${CMAKE_CURRENT_SOURCE_DIR}/exampleApp.png")
 endif()
 
 
