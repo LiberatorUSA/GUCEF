@@ -14,23 +14,23 @@ set(CPACK_PACKAGE_DESCRIPTION_SUMMARY "This is a description")
 set(CPACK_PACKAGE_VERSION_MAJOR ${PROJECT_VERSION_MAJOR})
 set(CPACK_PACKAGE_VERSION_MINOR ${PROJECT_VERSION_MINOR})
 set(CPACK_PACKAGE_VERSION_PATCH ${PROJECT_VERSION_PATCH})
+set(CPACK_EXT_ENABLE_STAGING 1)
 
 set(CPACK_PACKAGE_INSTALL_DIRECTORY "${CMAKE_PROJECT_NAME}")
 set(CPACK_PACKAGE_DIRECTORY "${GUCEF_BINARY_DIR}/packages")
-
-
-# set human names to exetuables
+set(CPACK_WARN_ON_ABSOLUTE_INSTALL_DESTINATION TRUE)
 set(CPACK_PACKAGE_EXECUTABLES "GUCEF" "GUCEF")
 set(CPACK_CREATE_DESKTOP_LINKS "GUCEF")
-set(CPACK_STRIP_FILES TRUE)
+set(CPACK_STRIP_FILES FALSE )
 
 if(WIN32 AND NOT UNIX)
     #--------------------------------------------------------------------------
     # Windows specific
-    set(CPACK_GENERATOR "STGZ;ZIP")
+    set(CPACK_GENERATOR "STGZ;ZIP;External")
     message(STATUS "Package generation - Windows")
     message(STATUS "   + STGZ                                 YES ")
     message(STATUS "   + ZIP                                  YES ")
+    message(STATUS "   + External                             YES ")
 
     # NSIS windows installer
     find_program(NSIS_PATH nsis PATH_SUFFIXES nsis)
@@ -80,11 +80,12 @@ elseif(APPLE)
 else()
     #-----------------------------------------------------------------------------
     # Linux specific
-    set(CPACK_GENERATOR "DEB;TBZ2;TXZ")
+    set(CPACK_GENERATOR "DEB;TBZ2;TXZ;External")
     message(STATUS "Package generation - UNIX")
     message(STATUS "   + DEB                                  YES ")
     message(STATUS "   + TBZ2                                 YES ")
     message(STATUS "   + TXZ                                  YES ")
+    message(STATUS "   + External                             YES ")
 
     find_program(RPMBUILD_PATH rpmbuild)
     if(RPMBUILD_PATH)
@@ -111,8 +112,18 @@ else()
         message(STATUS "   + RPM                                  NO ")
     endif()
 
-    # TODO do this better
-    set(CPACK_DEBIAN_PACKAGE_ARCHITECTURE "amd64")
+    IF(NOT CPACK_DEBIAN_PACKAGE_ARCHITECTURE)
+      FIND_PROGRAM(DPKG_CMD dpkg)
+      IF(NOT DPKG_CMD)
+        MESSAGE(STATUS "Can not find dpkg in your path, default to amd64.")
+        SET(CPACK_DEBIAN_PACKAGE_ARCHITECTURE amd64)
+      ENDIF(NOT DPKG_CMD)
+        EXECUTE_PROCESS(COMMAND "${DPKG_CMD}" --print-architecture
+            OUTPUT_VARIABLE CPACK_DEBIAN_PACKAGE_ARCHITECTURE
+            OUTPUT_STRIP_TRAILING_WHITESPACE
+        )
+    ENDIF(NOT CPACK_DEBIAN_PACKAGE_ARCHITECTURE)
+
     set(CPACK_DEBIAN_PACKAGE_CONTROL_STRICT_PERMISSION TRUE)
     set(CPACK_DEBIAN_PACKAGE_HOMEPAGE "${HOMEPAGE}")
     set(CPACK_DEBIAN_PACKAGE_MAINTAINER "Dinand Vanvelzen")
