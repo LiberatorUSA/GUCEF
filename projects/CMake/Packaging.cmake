@@ -3,11 +3,12 @@
 # CPACK
 include(InstallRequiredSystemLibraries)
 
+set(CPACK_MONOLITHIC_INSTALL 1)
 set(CPACK_PACKAGE_VENDOR "Vanvelzen LLC")
 set(CPACK_PACKAGE_NAME ${PROJECT_NAME})
 set(CPACK_PACKAGE_CONTACT "Dinand Vanvelzen <dinand@vanvelzen.us>")
 set(HOMEPAGE "https://github.com/LiberatorUSA/GUCEF")
-set(CPACK_PACKAGE_DESCRIPTION_SUMMARY "")
+set(CPACK_PACKAGE_DESCRIPTION_SUMMARY "This is a description")
 #set(CPACK_PACKAGE_DESCRIPTION_FILE "${PROJECT_SOURCE_DIR}/readme.md")
 #set(CPACK_RESOURCE_FILE_LICENSE "${PROJECT_SOURCE_DIR}/license.md")
 set(CPACK_PACKAGE_VERSION_MAJOR ${PROJECT_VERSION_MAJOR})
@@ -21,7 +22,7 @@ set(CPACK_PACKAGE_DIRECTORY "${GUCEF_BINARY_DIR}/packages")
 # set human names to exetuables
 set(CPACK_PACKAGE_EXECUTABLES "GUCEF" "GUCEF")
 set(CPACK_CREATE_DESKTOP_LINKS "GUCEF")
-#set(CPACK_STRIP_FILES TRUE)
+set(CPACK_STRIP_FILES TRUE)
 
 if(WIN32 AND NOT UNIX)
     #--------------------------------------------------------------------------
@@ -114,7 +115,11 @@ else()
     set(CPACK_DEBIAN_PACKAGE_ARCHITECTURE "amd64")
     set(CPACK_DEBIAN_PACKAGE_CONTROL_STRICT_PERMISSION TRUE)
     set(CPACK_DEBIAN_PACKAGE_HOMEPAGE "${HOMEPAGE}")
-    # set(CPACK_DEBIAN_COMPRESSION_TYPE "xz")
+    set(CPACK_DEBIAN_PACKAGE_MAINTAINER "Dinand Vanvelzen")
+    set(CPACK_DEBIAN_PACKAGE_DESCRIPTION "DEB test description")
+    set(CPACK_DEBIAN_COMPRESSION_TYPE "gzip")
+    set(CPACK_DEBIAN_PACKAGE_PRIORITY "optional")
+    set(CPACK_DEBIAN_PACKAGE_SECTION "devel")
     # set(CPACK_DEBIAN_PACKAGE_DEPENDS "libgtkmm-3.0")
 
 
