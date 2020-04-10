@@ -38,11 +38,15 @@ if ( NOT DEFINED GUCEF_SOURCE_DIR )
   message(STATUS "GUCEF_SOURCE_DIR not defined, defaulting to GUCEF_HOME_DIR: ${GUCEF_HOME_DIR}")
 endif()
 if ( NOT DEFINED GUCEF_BINARY_DIR )
-  set( GUCEF_BINARY_DIR "${GUCEF_SOURCE_DIR}/common/bin/GUCEF_[exe]_gucefMT_TestApp" )
+  set( GUCEF_BINARY_DIR "${CMAKE_BINARY_DIR}" )
 endif()
+
+set( CMAKE_INSTALL_PREFIX "${GUCEF_BINARY_DIR}/dist" CACHE PATH
+        "Install path prefix, prepended onto install directories." FORCE )
 
 message(STATUS "Source dir: ${GUCEF_SOURCE_DIR}")
 message(STATUS "Binary dir: ${GUCEF_BINARY_DIR}")
+message(STATUS "CMake Binary dir: ${CMAKE_BINARY_DIR}")
 
 if ( NOT DEFINED GUCEF_SYSTEM_NAME )
   if ( DEFINED CMAKE_SYSTEM_NAME )
@@ -143,14 +147,6 @@ include_directories("${GUCEF_SOURCE_DIR}/common/include")
 set(CMAKE_ARCHIVE_OUTPUT_DIRECTORY "${GUCEF_BINARY_DIR}/lib")
 set(CMAKE_LIBRARY_OUTPUT_DIRECTORY "${GUCEF_BINARY_DIR}/lib")
 set(CMAKE_RUNTIME_OUTPUT_DIRECTORY "${GUCEF_BINARY_DIR}/bin")
-if (WIN32 OR APPLE)
-  if (CMAKE_INSTALL_PREFIX_INITIALIZED_TO_DEFAULT)
-    # We don't want to install in default system location, install is really for the SDK, so call it that
-    set(CMAKE_INSTALL_PREFIX
-	  "${GUCEF_BINARY_DIR}/sdk" CACHE PATH "GUCEF install prefix" FORCE
-    )
-  endif (CMAKE_INSTALL_PREFIX_INITIALIZED_TO_DEFAULT)
-endif(WIN32 OR APPLE)
 
 # Set up iPhone overrides.
 if (GUCEF_BUILD_PLATFORM_IPHONE)

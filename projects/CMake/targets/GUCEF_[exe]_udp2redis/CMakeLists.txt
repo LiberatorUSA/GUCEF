@@ -68,7 +68,7 @@ endif()
 
 message(STATUS "CMAKE_SYSTEM_NAME: ${CMAKE_SYSTEM_NAME}" )
 message(STATUS "GUCEF_TARGET_PLATFORM: ${GUCEF_TARGET_PLATFORM}" )
-message(STATUS "Install path prefix: ${CMAKE_INSTALL_PREFIX}" )
+
 
 project( GUCEF_[exe]_udp2redis )
 
