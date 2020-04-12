@@ -954,8 +954,11 @@ ParseProcessingInstructions( const TProjectInfo& projectInfo                ,
                     CORE::CString platformValue = curNode->GetAttributeValue( platformNodeName ).Lowercase();
 
                     // apply 1 to n platform mappings if applicable
-                    TStringSet platforms = ResolveMultiPlatformName( platformValue, &projectInfo.platforms );
-                    MergeStringSet( platforms, ResolveMultiPlatformName( platformValue, &instructionStorage.platforms ), false );
+                    TStringSet platforms;
+                    if ( !projectInfo.platforms.empty() )
+                        platforms = ResolveMultiPlatformName( platformValue, &projectInfo.platforms );
+                    if ( !instructionStorage.platforms.empty() )
+                        MergeStringSet( platforms, ResolveMultiPlatformName( platformValue, &instructionStorage.platforms ), false );
                     TStringSet::iterator p = platforms.begin();
                     while ( p != platforms.end() )
                     {
@@ -1040,8 +1043,11 @@ ParseProcessingInstructions( const TProjectInfo& projectInfo                ,
                     CORE::CString platformValue = curNode->GetAttributeValue( platformNodeName ).Lowercase();
 
                     // apply 1 to n platform mappings if applicable
-                    TStringSet platforms = ResolveMultiPlatformName( platformValue, &projectInfo.platforms );
-                    MergeStringSet( platforms, ResolveMultiPlatformName( platformValue, &instructionStorage.platforms ), false );
+                    TStringSet platforms;
+                    if ( !projectInfo.platforms.empty() )
+                        platforms = ResolveMultiPlatformName( platformValue, &projectInfo.platforms );
+                    if ( !instructionStorage.platforms.empty() )
+                        MergeStringSet( platforms, ResolveMultiPlatformName( platformValue, &instructionStorage.platforms ), false );
                     TStringSet::iterator p = platforms.begin();
                     while ( p != platforms.end() )
                     {
@@ -2748,10 +2754,10 @@ DetermineBuildOrderForAllModules( TProjectInfo& projectInfo            ,
                         {
                             newestPrioMap[ i ] = (*p).second;
 
-                            const CORE::CString* moduleName = GetModuleName( *(*p).second, targetPlatform );
                             if ( i != (*p).first )
                             {
-                                GUCEF_LOG( CORE::LOGLEVEL_BELOW_NORMAL, "Changed build priority for module: " + *moduleName +
+                                CORE::CString moduleName = GetModuleNameAlways( *(*p).second, targetPlatform );
+                                GUCEF_LOG( CORE::LOGLEVEL_BELOW_NORMAL, "Changed build priority for module: " + moduleName +
                                             " from " + CORE::Int32ToString( (*p).first ) + " to " + CORE::Int32ToString( i ) );
                             }
                             ++i; ++p;

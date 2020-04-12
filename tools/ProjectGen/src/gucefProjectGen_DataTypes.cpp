@@ -452,14 +452,22 @@ ResolveMultiPlatformName( const CORE::CString& platformName          ,
                           const TPlatformDefinitionMap* platformDefs )
 {GUCEF_TRACE;
 
-    TStringSet resultSet;    
+    TStringSet resultSet;
+
+    // Save some effort for "All Platforms"...
+    if ( platformName == AllPlatforms )
+    {
+        resultSet.insert( platformName );
+        return resultSet;
+    }
+        
     TStringVector elements = platformName.Lowercase().ParseElements( ';', false );
     TStringVector::iterator i = elements.begin();
     while ( i != elements.end() )
     {        
         const CORE::CString& element = (*i);
         
-        if ( GUCEF_NULL != platformDefs )
+        if ( GUCEF_NULL != platformDefs && !platformDefs->empty() )
         {
             TPlatformDefinitionMap::const_iterator n = platformDefs->begin();
             while ( n != platformDefs->end() )
@@ -480,7 +488,9 @@ ResolveMultiPlatformName( const CORE::CString& platformName          ,
                 {
                     if ( (*m) == element )
                     {
-                        resultSet.insert( element );
+                        // Add the regular platform name as a result of matching the alias
+                        resultSet.insert( (*n).first );
+                        break;
                     }
                     ++m;
                 }
@@ -509,6 +519,9 @@ ResolveMultiPlatformName( const CORE::CString& platformName          ,
         }
         ++i;
     }
+
+    if ( resultSet.empty() )
+        resultSet.insert( platformName );
     return resultSet;
 }
 
@@ -1469,11 +1482,6 @@ DeserializeModuleInfo( const TProjectInfo& projectInfo           ,
             GUCEF_LOG( CORE::LOGLEVEL_NORMAL, "DeserializeModuleInfo: Successfully loaded module information from file \"" + inputFilepath + "\", now we will parse the information" );
 
             CORE::CDataNode::TDataNodeSet moduleEntryNodes = rootNode.FindNodesOfType( "ModuleInfoEntry", true );
-            if ( moduleEntryNodes.size()  > 1 )
-            {
-                int a=0;
-            }
-
             if ( moduleEntryNodes.empty() )
             {
                 GUCEF_ERROR_LOG( CORE::LOGLEVEL_NORMAL, "DeserializeModuleInfo: No ModuleInfoEntry nodes were obtained from file \"" + inputFilepath + "\"" );
@@ -1911,7 +1919,11 @@ GetConsensusModuleName( const TModuleInfoEntry& moduleInfoEntry ,
 
     if ( countMap.empty() )
     {
-        return CORE::CString();
+        // This should not happen:
+        // Given that we have no module definitions for ANY platform and yet have a higher level concept of it...
+        // We promised we would always return a module name. The only thing we have at this point is the directory path
+        // As such we will assume the dir if named after the module it houses as our last ditch guess
+        return CORE::LastSubDir( moduleInfoEntry.rootDir );
     }
 
     // Now that we have the popularity count of each name get the highest count
@@ -1970,7 +1982,7 @@ GetModuleNameAlways( const TModuleInfoEntry& moduleInfoEntry ,
 {GUCEF_TRACE;
 
     const CORE::CString* strPtr = GetModuleName( moduleInfoEntry, targetPlatform, moduleInfo );
-    if ( NULL == strPtr )
+    if ( GUCEF_NULL == strPtr )
     {
         return GetConsensusModuleName( moduleInfoEntry, moduleInfo );
     }
@@ -2464,13 +2476,13 @@ SplitProjectPerTarget( const TProjectInfo& projectInfo    ,
             if ( executable.modulesPerPlatform.find( (*p) ) != executable.modulesPerPlatform.end() )
             {            
                 TModuleInfoEntryConstPtrSet foundDependencies;
+                CORE::CString targetName = GetModuleNameAlways( executable, (*p) );
                 if ( GetModuleDependencies( projectInfo, executable, (*p), foundDependencies, true, true ) )
                 {
                     // if we made it here we found the executable and were able to satisfy all dependencies
                     // for the current platform
-            
-                    CORE::CString targetName = GetModuleNameAlways( executable, (*p) );
-                    CORE::CString projectName = projectInfo.projectName + "_[exe]_" + targetName; 
+
+                    CORE::CString projectName = projectInfo.projectName + "_exe_" + targetName; 
                     TProjectTargetInfoMap& targetPerPlatform = targets[ projectName ];
                     TProjectTargetInfo& target = targetPerPlatform[ (*p) ];
 
@@ -2483,7 +2495,10 @@ SplitProjectPerTarget( const TProjectInfo& projectInfo    ,
                         ++j;
                     }                
                 }
-                //else: We cannot satisfy the full dependency chain for the executable for the given platform
+                else
+                {
+                     GUCEF_DEBUG_LOG( CORE::LOGLEVEL_BELOW_NORMAL, "SplitProjectPerTarget: We cannot satisfy the full dependency chain for executable \"" + targetName + "\" for the given platform \"" + (*p) + "\"" );
+                }
             }
             ++i;
         }
@@ -2503,7 +2518,7 @@ SplitProjectPerTarget( const TProjectInfo& projectInfo    ,
             {
                 TModuleInfoEntryConstPtrSet taggedModules;
                 GetTaggedModules( projectInfo, (*i), taggedModules, (*p) );
-                CORE::CString projectName = projectInfo.projectName + "_[tag]_" + (*i);
+                CORE::CString projectName = projectInfo.projectName + "_tag_" + (*i);
 
                 TModuleInfoEntryConstPtrSet::iterator m = taggedModules.begin();
                 while ( m != taggedModules.end() )
