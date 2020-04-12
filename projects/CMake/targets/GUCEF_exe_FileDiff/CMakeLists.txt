@@ -209,4 +209,4 @@ include(ConfigureBuild)
 include( GUCEF_exe_FileDiff_ModuleDirs.cmake )
 
 # Provide CPack packaging target
-include(Packaging)
+include( GUCEF_exe_FileDiff_Packaging.cmake )

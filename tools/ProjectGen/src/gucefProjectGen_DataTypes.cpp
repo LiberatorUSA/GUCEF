@@ -1976,6 +1976,92 @@ GetConsensusModuleName( const TModuleInfoEntry& moduleInfoEntry ,
 /*---------------------------------------------------------------------------*/
 
 CORE::CString
+GetConsensusTargetName( const TProjectTargetInfoMap& targetPlatforms )
+{GUCEF_TRACE;
+
+    TProjectTargetInfoMap::const_iterator n = targetPlatforms.find( AllPlatforms );
+    if ( n != targetPlatforms.end() )
+    {
+        // A target was specified for all platforms which makes our job easy
+        // an all platform name always counts as the general consensus name
+        const TProjectTargetInfo& target = (*n).second;
+        if ( GUCEF_NULL != target.mainModule )
+        {
+            return GetModuleTargetName( *target.mainModule, AllPlatforms, true );
+        }
+    }
+
+    // If no name is specified for all platforms then we will have to
+    // determine the best name to use. We do this by getting the name
+    // for all platforms and counting how often each is used. The most used
+    // name is considered the general consensus name. If the same count applies
+    // to multiple we will try to use a popular platform to improve our 'guess'
+
+    typedef std::map< CORE::CString, CORE::UInt32 > TStringCountMap;
+
+    TStringCountMap countMap;
+    n = targetPlatforms.begin();
+    while ( n != targetPlatforms.end() )
+    {
+        const TProjectTargetInfo& target = (*n).second;
+        if ( GUCEF_NULL != target.mainModule )
+        {
+            CORE::CString targetName = GetModuleTargetName( *target.mainModule, AllPlatforms, true );
+            TStringCountMap::iterator m = countMap.find( targetName );
+            if ( m != countMap.end() )
+            {
+                ++((*m).second);
+            }
+            else
+            {
+                countMap[ targetName ] = 1;
+            }
+        }
+        ++n;
+    }
+
+    // Not all target origins cause a main module to be defined.
+    // As such its perfectly possible be unable to define a consensus target name because the concept does not apply
+    // to the collection of targets due to the origins of the collection
+    if ( countMap.empty() )
+        return CORE::CString();
+
+    // Now that we have the popularity count of each name get the highest count
+    CORE::UInt32 highestCount = 0;
+    TStringCountMap::iterator i = countMap.begin();
+    while ( i != countMap.end() )
+    {
+        if ( highestCount < (*i).second )
+        {
+            highestCount = (*i).second;
+        }
+        ++i;
+    }
+
+    // Make the list of most popular names
+    TStringSet topNames;
+    i = countMap.begin();
+    while ( i != countMap.end() )
+    {
+        if ( highestCount == (*i).second )
+        {
+            topNames.insert( (*i).first );
+        }
+        ++i;
+    }
+
+    // If we have multiple use a popular platform if
+    // possible, otherwise just grab one
+
+    //@TODO: popular platform check
+
+    CString consensusName = (*topNames.begin());
+    return consensusName;
+}
+
+/*---------------------------------------------------------------------------*/
+
+CORE::CString
 GetModuleNameAlways( const TModuleInfoEntry& moduleInfoEntry ,
                      const CORE::CString& targetPlatform     ,
                      const TModuleInfo** moduleInfo          )
@@ -2487,6 +2573,7 @@ SplitProjectPerTarget( const TProjectInfo& projectInfo    ,
                     TProjectTargetInfo& target = targetPerPlatform[ (*p) ];
 
                     target.projectName = projectName;
+                    target.mainModule = &executable;
                     target.modules.insert( &executable );
                     TModuleInfoEntryConstPtrSet::iterator j = foundDependencies.begin();
                     while ( j != foundDependencies.end() )
@@ -2538,6 +2625,11 @@ SplitProjectPerTarget( const TProjectInfo& projectInfo    ,
 
                             target.projectName = projectName;
                             target.modules.insert( &taggedModule );
+
+                            // Since many modules can have the same tag there really is no such thing as a 'main' tagged module.
+                            // It may be that there is only 1 in a repo but that is a coincidence and not relevant
+                            target.mainModule = GUCEF_NULL;
+
                             TModuleInfoEntryConstPtrSet::iterator j = foundDependencies.begin();
                             while ( j != foundDependencies.end() )
                             {
@@ -2559,6 +2651,8 @@ SplitProjectPerTarget( const TProjectInfo& projectInfo    ,
         TProjectTargetInfoMapMap::iterator t = targets.begin();
         while ( t != targets.end() )
         {
+            // First check to see if this module has a 'AllPlatforms' definition
+            // Without one we cannot collapse since there is no unifying target to collapse to
             TProjectTargetInfoMap& targetByPlatform = (*t).second;
             TProjectTargetInfoMap::iterator a = targetByPlatform.find( AllPlatforms );
             if ( a != targetByPlatform.end() )
@@ -2603,6 +2697,7 @@ SplitProjectPerTarget( const TProjectInfo& projectInfo    ,
     TProjectTargetInfoMap& fullProjectTargets = targets[ projectInfo.projectName ];
     TProjectTargetInfo& fullProjectTarget = fullProjectTargets[ AllPlatforms ];
     fullProjectTarget.projectName = projectInfo.projectName;
+    fullProjectTarget.mainModule = GUCEF_NULL;
     TModuleInfoEntryVector::const_iterator w = projectInfo.modules.begin();
     while ( w != projectInfo.modules.end() )
     {

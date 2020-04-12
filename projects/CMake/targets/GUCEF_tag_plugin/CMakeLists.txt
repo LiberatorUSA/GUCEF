@@ -209,4 +209,4 @@ include(ConfigureBuild)
 include( GUCEF_tag_plugin_ModuleDirs.cmake )
 
 # Provide CPack packaging target
-include(Packaging)
+include( GUCEF_tag_plugin_Packaging.cmake )

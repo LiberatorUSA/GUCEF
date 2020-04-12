@@ -269,6 +269,7 @@ typedef struct SProjectInfo TProjectInfo;
 struct SProjectTargetInfo
 {
     CORE::CString projectName;                               // Name of the overall project
+    const TModuleInfoEntry* mainModule;                      // Reference to the main module for the project if applicable
     TModuleInfoEntryConstPtrSet modules;                     // All generated module information
 };
 typedef struct SProjectTargetInfo TProjectTargetInfo;
@@ -339,6 +340,20 @@ GUCEF_PROJECTGEN_PUBLIC_CPP
 CORE::CString
 GetConsensusModuleName( const TModuleInfoEntry& moduleInfoEntry ,
                         const TModuleInfo** moduleInfo = NULL   );
+
+/*-------------------------------------------------------------------------*/
+
+// Across multiple platforms targets can have multiple names
+// This allows for coming up with a consensus name across the various platforms
+// for a given target.
+// Note that this considers module linker target names and module names
+//
+// Not all target origins cause a main module to be defined.
+// As such its perfectly possible be unable to define a consensus target name because the concept does not apply
+// to the collection of targets due to the origins of the collection
+GUCEF_PROJECTGEN_PUBLIC_CPP
+CORE::CString
+GetConsensusTargetName( const TProjectTargetInfoMap& targetPlatforms );
 
 /*-------------------------------------------------------------------------*/
 

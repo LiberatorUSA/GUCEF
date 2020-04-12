@@ -209,4 +209,4 @@ include(ConfigureBuild)
 include( $#$PROJECTNAME$#$_ModuleDirs.cmake )
 
 # Provide CPack packaging target
-include(Packaging)
+include( $#$PROJECTNAME$#$_Packaging.cmake )

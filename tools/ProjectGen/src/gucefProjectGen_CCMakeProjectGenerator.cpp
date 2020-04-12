@@ -1432,6 +1432,7 @@ WriteCMakeOptionsListToDisk( const TProjectInfo& projectInfo       ,
 
 void
 WriteCMakeTargetsToDisk( const TProjectInfo& projectInfo              ,
+                         const CORE::CString& projectName             ,
                          const CORE::CString& targetName              ,
                          const TProjectTargetInfoMap& targetPlatforms ,
                          const CORE::CString& outputDir               ,
@@ -1440,7 +1441,7 @@ WriteCMakeTargetsToDisk( const TProjectInfo& projectInfo              ,
 {GUCEF_TRACE;
 
     CORE::CString fileContent = GetCMakeListsFileHeader( addCompileDate );
-    CORE::CString targetOutputDir = CORE::CombinePath( targetsOutputDir, targetName );
+    CORE::CString targetOutputDir = CORE::CombinePath( targetsOutputDir, projectName );
 
     bool firstPlatform = true;
     CORE::CString allPlatformsSection;
@@ -1449,7 +1450,7 @@ WriteCMakeTargetsToDisk( const TProjectInfo& projectInfo              ,
     {
         const CORE::CString& targetPlatform = (*p).first;
         const TProjectTargetInfo& targetProjectInfo = (*p).second;
-        CORE::CString platformSection;
+        CORE::CString platformSection; 
 
         TModuleInfoEntryConstPtrSet::const_iterator i = targetProjectInfo.modules.begin();
         while ( i != targetProjectInfo.modules.end() )
@@ -1458,10 +1459,10 @@ WriteCMakeTargetsToDisk( const TProjectInfo& projectInfo              ,
 
             TModuleType moduleType = GetModuleType( moduleInfoEntry, targetPlatform );
             if ( ( MODULETYPE_HEADER_INCLUDE_LOCATION != moduleType )   &&
-                    ( MODULETYPE_HEADER_INTEGRATE_LOCATION != moduleType ) &&
-                    ( MODULETYPE_CODE_INTEGRATE_LOCATION != moduleType )   &&
-                    ( MODULETYPE_BINARY_PACKAGE != moduleType )            &&
-                    ( MODULETYPE_UNDEFINED != moduleType )                  )
+                 ( MODULETYPE_HEADER_INTEGRATE_LOCATION != moduleType ) &&
+                 ( MODULETYPE_CODE_INTEGRATE_LOCATION != moduleType )   &&
+                 ( MODULETYPE_BINARY_PACKAGE != moduleType )            &&
+                 ( MODULETYPE_UNDEFINED != moduleType )                  )
             {
                 CORE::CString pathToModuleDir = CORE::GetRelativePathToOtherPathRoot( targetOutputDir, moduleInfoEntry.rootDir );
                     
@@ -1526,7 +1527,7 @@ WriteCMakeTargetsToDisk( const TProjectInfo& projectInfo              ,
         
     if ( CORE::CreateDirs( targetOutputDir ) )
     {        
-        CORE::CString qualifiedName = targetName + "_ModuleDirs.cmake";
+        CORE::CString qualifiedName = projectName + "_ModuleDirs.cmake";
         CORE::CString pathToCMakeModuleDirsFile = CORE::CombinePath( targetOutputDir, qualifiedName );
         if ( CORE::WriteStringAsTextFile( pathToCMakeModuleDirsFile, fileContent ) )
         {
@@ -1547,28 +1548,59 @@ WriteCMakeTargetsToDisk( const TProjectInfo& projectInfo              ,
         TStringMap::iterator i = cmakeAdditionTemplates.find( "cmakelists" );
         if ( i != cmakeAdditionTemplates.end() )
         {
-            GUCEF_LOG( CORE::LOGLEVEL_NORMAL, "Processing CMakeLists.cmt template for target \"" + targetName + "\"" );
+            GUCEF_LOG( CORE::LOGLEVEL_NORMAL, "Processing CMakeLists.cmt template for target \"" + projectName + "\"" );
 
             // Pull a copy based on the template
             CORE::CString projectfileContent = (*i).second;
 
             // resolve template variables
-            projectfileContent = projectfileContent.ReplaceSubstr( "$#$PROJECTNAME$#$", targetName );
+            projectfileContent = projectfileContent.ReplaceSubstr( "$#$PROJECTNAME$#$", projectName );
+            projectfileContent = projectfileContent.ReplaceSubstr( "$#$TARGETNAME$#$", targetName );
             // ... Add additional variables here to resolve
 
             CORE::CString pathToCMakeListsFile = CORE::CombinePath( targetOutputDir, "CMakeLists.txt" );
             if ( CORE::WriteStringAsTextFile( pathToCMakeListsFile, projectfileContent ) )
             {
-                GUCEF_LOG( CORE::LOGLEVEL_NORMAL, "Created CMakeLists.txt file for target " + targetName + " in output dir: " + targetOutputDir );
+                GUCEF_LOG( CORE::LOGLEVEL_NORMAL, "Created CMakeLists.txt file for project " + projectName + " in output dir: " + targetOutputDir );
             }
             else
             {
-                GUCEF_ERROR_LOG( CORE::LOGLEVEL_IMPORTANT, "Failed to write CMakeLists.txt file for target " + targetName + " in output dir: " + targetOutputDir );
+                GUCEF_ERROR_LOG( CORE::LOGLEVEL_IMPORTANT, "Failed to write CMakeLists.txt file for project " + projectName + " in output dir: " + targetOutputDir );
             }
         }
         else
         {
-            GUCEF_ERROR_LOG( CORE::LOGLEVEL_IMPORTANT, "Failed to obtain template for a CMakeLists.txt for project target \"" + targetName + "\". This file cannot be auto-generated in its entirety" );
+            GUCEF_ERROR_LOG( CORE::LOGLEVEL_IMPORTANT, "Failed to obtain template for a CMakeLists.txt for project target \"" + projectName + "\". This file cannot be auto-generated in its entirety" );
+        }
+
+        i = cmakeAdditionTemplates.find( "packaging" );
+        if ( i != cmakeAdditionTemplates.end() )
+        {
+            GUCEF_LOG( CORE::LOGLEVEL_NORMAL, "Processing Packaging.cmt template for target \"" + projectName + "\"" );
+
+            // Pull a copy based on the template
+            CORE::CString packagingfileContent = (*i).second;
+
+            // resolve template variables
+            packagingfileContent = packagingfileContent.ReplaceSubstr( "$#$PROJECTNAME$#$", projectName );
+            packagingfileContent = packagingfileContent.ReplaceSubstr( "$#$TARGETNAME$#$", targetName );
+            // ... Add additional variables here to resolve
+
+            CORE::CString qualifiedName = projectName + "_Packaging.cmake";
+            CORE::CString pathToCMakeListsFile = CORE::CombinePath( targetOutputDir, qualifiedName );
+            if ( CORE::WriteStringAsTextFile( pathToCMakeListsFile, packagingfileContent ) )
+            {
+                GUCEF_LOG( CORE::LOGLEVEL_NORMAL, "Created \"" + qualifiedName + "\" file for project " + projectName + " in output dir: " + targetOutputDir );
+            }
+            else
+            {
+                GUCEF_ERROR_LOG( CORE::LOGLEVEL_IMPORTANT, "Failed to write \"" + qualifiedName + "\" file for project " + projectName + " in output dir: " + targetOutputDir );
+            }
+        }
+        else
+        {
+            // Using the auto generated packing file is an optional feature, inform only...
+            GUCEF_LOG( CORE::LOGLEVEL_NORMAL, "There is no template for a \"" + qualifiedName + "\" for project target \"" + projectName + "\". This file cannot be auto-generated" );
         }
     }
 }
@@ -1589,8 +1621,13 @@ WriteCMakeTargetsToDisk( const TProjectInfo& projectInfo         ,
         TProjectTargetInfoMapMap::const_iterator t = targets.begin();
         while ( t != targets.end() )
         {
+            CORE::CString targetName = GetConsensusTargetName( (*t).second );
+            if ( targetName.IsNULLOrEmpty() )
+                targetName = (*t).first;
+            
             WriteCMakeTargetsToDisk( projectInfo      ,
                                      (*t).first       ,
+                                     targetName       ,
                                      (*t).second      ,   
                                      outputDir        ,
                                      targetsOutputDir ,
@@ -1604,6 +1641,7 @@ WriteCMakeTargetsToDisk( const TProjectInfo& projectInfo         ,
         if ( t != targets.end() )
         {
             WriteCMakeTargetsToDisk( projectInfo             ,
+                                     projectInfo.projectName ,
                                      projectInfo.projectName ,
                                      (*t).second             ,
                                      outputDir               ,
