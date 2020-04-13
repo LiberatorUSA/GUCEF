@@ -17,9 +17,9 @@ set( HEADER_FILES
 )
 
 set( SOURCE_FILES 
-  src/gucefCOM_TestApp_main.cpp
   src/TestCode_CHTTPClient.cpp
   src/TestCode_CHTTPServer.cpp
+  src/gucefCOM_TestApp_main.cpp
 )
 
 # Make sure the PLATFORM_HEADER_FILES variable is always defined

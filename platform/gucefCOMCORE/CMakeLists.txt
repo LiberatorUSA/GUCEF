@@ -34,10 +34,10 @@ set( HEADER_FILES
   include/gucefCOMCORE_CIDiscoveryCapability.h
   include/gucefCOMCORE_CIDiscoveryClient.h
   include/gucefCOMCORE_CIDiscoveryEntry.h
-  include/gucefCOMCORE_config.h
   include/gucefCOMCORE_CPingTaskConsumer.h
   include/gucefCOMCORE_CSerialPort.h
   include/gucefCOMCORE_ETypes.h
+  include/gucefCOMCORE_config.h
   include/gucefCOMCORE_macros.h
   include/socketerrors.h
   include/socketutils.h

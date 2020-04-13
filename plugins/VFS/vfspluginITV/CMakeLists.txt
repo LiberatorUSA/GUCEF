@@ -13,8 +13,8 @@
 
 set( HEADER_FILES 
   include/vfspluginITV.h
-  include/vfspluginITV_config.h
   include/vfspluginITV_CResArchive.h
+  include/vfspluginITV_config.h
   include/vfspluginITV_macros.h
 )
 

@@ -346,17 +346,17 @@ GeneratePremake4TemplatedAdditionSection( const TModuleInfoEntry& moduleInfoEntr
 
 CORE::CString
 GeneratePremake4FileSection( const CORE::CString& sectionContent ,
-                             const TStringVectorMap& fileMap     )
+                             const TStringSetMap& fileMap        )
 {GUCEF_TRACE;
 
     CORE::CString newSectionContent = sectionContent;
 
     newSectionContent = "files( {\n";
     bool first = true;
-    TStringVectorMap::const_iterator i = fileMap.begin();
+    TStringSetMap::const_iterator i = fileMap.begin();
     while ( i != fileMap.end() )
     {
-        TStringVector::const_iterator n = (*i).second.begin();
+        TStringSet::const_iterator n = (*i).second.begin();
         while ( n != (*i).second.end() )
         {
             CORE::CString path = (*i).first;
@@ -394,7 +394,7 @@ GeneratePremake4FileIncludeSection( const TModuleInfoEntry& moduleInfoEntry  ,
     TModuleInfoMap::const_iterator i = moduleInfoEntry.modulesPerPlatform.find( AllPlatforms );
     if ( i != moduleInfoEntry.modulesPerPlatform.end() )
     {
-        const TStringVectorMap& includeFiles = (*i).second.includeDirs;
+        const TStringSetMap& includeFiles = (*i).second.includeDirs;
         if ( !includeFiles.empty() )
         {
             sectionContent = "\n\nconfiguration( {} )\nvpaths { [\"Headers\"] = { \"**.h\", \"**.hpp\", \"**.hxx\" } }\n";
@@ -423,7 +423,7 @@ GeneratePremake4FileSrcSection( const TModuleInfoEntry& moduleInfoEntry  ,
     TModuleInfoMap::const_iterator i = moduleInfoEntry.modulesPerPlatform.find( AllPlatforms );
     if ( i != moduleInfoEntry.modulesPerPlatform.end() )
     {
-        const TStringVectorMap& srcFiles = (*i).second.sourceDirs;
+        const TStringSetMap& srcFiles = (*i).second.sourceDirs;
         if ( !srcFiles.empty() )
         {
             sectionContent = "\n\nconfiguration( {} )\nvpaths { [\"Source\"] = { \"**.c\", \"**.cpp\", \"**.cs\", \"**.asm\" } }\n";
@@ -454,18 +454,18 @@ GeneratePremake4FilePlatformFilesSection( const TModuleInfoEntry& moduleInfoEntr
     TModuleInfoMap::const_iterator m = moduleInfoEntry.modulesPerPlatform.find( platformName );
     if ( m != moduleInfoEntry.modulesPerPlatform.end() )
     {
-        const TStringVectorMap& platformHeaderFiles = (*m).second.includeDirs;
+        const TStringSetMap& platformHeaderFiles = (*m).second.includeDirs;
         if ( !platformHeaderFiles.empty() )
         {
             hasPlatformHeaderFiles = true;
             headerSection = "    vpaths { [\"Platform Headers\"] = { \"**.h\", \"**.hpp\", \"**.hxx\" } }\n    files( {\n";
 
             bool first = true;
-            TStringVectorMap::const_iterator n = platformHeaderFiles.begin();
+            TStringSetMap::const_iterator n = platformHeaderFiles.begin();
             while ( n != platformHeaderFiles.end() )
             {
-                const TStringVector& platformHeaderFilesDir = (*n).second;
-                TStringVector::const_iterator i = platformHeaderFilesDir.begin();
+                const TStringSet& platformHeaderFilesDir = (*n).second;
+                TStringSet::const_iterator i = platformHeaderFilesDir.begin();
                 while ( i != platformHeaderFilesDir.end() )
                 {
                     CORE::CString path = (*n).first;
@@ -489,18 +489,18 @@ GeneratePremake4FilePlatformFilesSection( const TModuleInfoEntry& moduleInfoEntr
 
         }
 
-        const TStringVectorMap& platformSourceFiles = (*m).second.sourceDirs;
+        const TStringSetMap& platformSourceFiles = (*m).second.sourceDirs;
         if ( !platformSourceFiles.empty() )
         {
             hasPlatformSourceFiles = true;
             sourceSection = "    vpaths { [\"Platform Source\"] = { \"**.c\", \"**.cpp\", \"**.cs\", \"**.asm\" } }\n    files( {\n";
 
             bool first = true;
-            TStringVectorMap::const_iterator n = platformSourceFiles.begin();
+            TStringSetMap::const_iterator n = platformSourceFiles.begin();
             while ( n != platformSourceFiles.end() )
             {
-                const TStringVector& platformSourceFilesDir = (*n).second;
-                TStringVector::const_iterator i = platformSourceFilesDir.begin();
+                const TStringSet& platformSourceFilesDir = (*n).second;
+                TStringSet::const_iterator i = platformSourceFilesDir.begin();
                 while ( i != platformSourceFilesDir.end() )
                 {
                     CORE::CString path = (*n).first;
@@ -589,7 +589,7 @@ GeneratePremake4ModuleIncludesSection( const TModuleInfo& moduleInfo ,
     }
 
     // Add all the regular include dirs for this module
-    TStringVectorMap::const_iterator n = moduleInfo.includeDirs.begin();
+    TStringSetMap::const_iterator n = moduleInfo.includeDirs.begin();
     while ( n != moduleInfo.includeDirs.end() )
     {
         CORE::CString includeDir = ConvertEnvVarStrings( (*n).first ).ReplaceChar( '\\', '/' );

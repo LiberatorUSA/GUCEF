@@ -57,7 +57,6 @@ set( HEADER_FILES
 )
 
 set( SOURCE_FILES 
-  src/gl3w.cpp
   src/OgreGL3PlusContext.cpp
   src/OgreGL3PlusDefaultHardwareBufferManager.cpp
   src/OgreGL3PlusDepthBuffer.cpp
@@ -83,6 +82,7 @@ set( SOURCE_FILES
   src/OgreGL3PlusTextureBuffer.cpp
   src/OgreGL3PlusTextureManager.cpp
   src/OgreGL3PlusVertexArrayObject.cpp
+  src/gl3w.cpp
   src/GLSL/OgreGLSLExtSupport.cpp
   src/GLSL/OgreGLSLMonolithicProgram.cpp
   src/GLSL/OgreGLSLMonolithicProgramManager.cpp
@@ -217,7 +217,7 @@ if ( WIN64 )
   target_link_libraries( ${MODULE_NAME} opengl32 )
 endif( WIN64 )
 
-include_directories( ../../../freetype/include ../../../freetype/include/freetype ../../../freetype/include/freetype/config ../../../freetype/include/freetype/internal ../../../freetype/include/freetype/internal/services ../../../freetype/src/winfonts ../../OgreMain/include ../../OgreMain/include/Hash ../../OgreMain/include/Threading ../../OgreMain/src ../../OgreMain/src/nedmalloc ../../OgreMain/src/stbi ../../include include include/GL include/GLSL )
+include_directories( ../../../freetype/include ../../../freetype/include/freetype ../../../freetype/include/freetype/config ../../../freetype/include/freetype/internal ../../../freetype/include/freetype/internal/services ../../../freetype/src ../../../freetype/src/winfonts ../../OgreMain/include ../../OgreMain/include/Hash ../../OgreMain/include/Threading ../../OgreMain/src ../../OgreMain/src/nedmalloc ../../OgreMain/src/stbi ../../include include include/GL include/GLSL )
 
 if ( ANDROID )
   include_directories( ../../OgreMain/include/Android )
@@ -228,11 +228,11 @@ if ( EMSCRIPTEN )
 endif( EMSCRIPTEN )
 
 if ( GLX )
-  include_directories( ../../OgreMain/src/GLX include/windowing/GLX src/windowing/GLX )
+  include_directories( ../../OgreMain/src/GLX include/windowing src src/windowing include/windowing/GLX src/windowing/GLX )
 endif( GLX )
 
 if ( GTK )
-  include_directories( ../../OgreMain/include/gtk ../../OgreMain/src/gtk include/windowing/gtk src/windowing/gtk )
+  include_directories( ../../OgreMain/include/gtk ../../OgreMain/src/gtk include/windowing src src/windowing include/windowing/gtk src/windowing/gtk )
 endif( GTK )
 
 if ( IOS )
@@ -240,15 +240,15 @@ if ( IOS )
 endif( IOS )
 
 if ( OSX )
-  include_directories( ../../OgreMain/include/OSX include/windowing/OSX src/windowing/OSX )
+  include_directories( ../../OgreMain/include/OSX include/windowing src src/windowing include/windowing/OSX src/windowing/OSX )
 endif( OSX )
 
 if ( SDL )
-  include_directories( include/windowing/SDL src/windowing/SDL )
+  include_directories( include/windowing src src/windowing include/windowing/SDL src/windowing/SDL )
 endif( SDL )
 
 if ( WIN32 )
-  include_directories( ../../OgreMain/include/WIN32 ../../OgreMain/src/WIN32 include/windowing/win32 src/windowing/win32 )
+  include_directories( ../../OgreMain/include/WIN32 ../../OgreMain/src/WIN32 include/windowing src src/windowing include/windowing/win32 src/windowing/win32 )
 endif( WIN32 )
 
 

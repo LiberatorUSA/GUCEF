@@ -48,10 +48,10 @@ set( SOURCE_FILES
   src/FormattedRenderedString.cpp
   src/FreeTypeFont.cpp
   src/FribidiVisualMapping.cpp
-  src/GeometryBuffer.cpp
-  src/GlobalEventSet.cpp
   src/GUIContext.cpp
   src/GUILayout_xmlHandler.cpp
+  src/GeometryBuffer.cpp
+  src/GlobalEventSet.cpp
   src/Image.cpp
   src/ImageCodec.cpp
   src/ImageManager.cpp
@@ -61,7 +61,6 @@ set( SOURCE_FILES
   src/LeftAlignedRenderedString.cpp
   src/LinkedEvent.cpp
   src/Logger.cpp
-  src/minibidi.cpp
   src/MinibidiVisualMapping.cpp
   src/MinizipResourceProvider.cpp
   src/MouseCursor.cpp
@@ -74,16 +73,16 @@ set( SOURCE_FILES
   src/PropertySet.cpp
   src/Quaternion.cpp
   src/Rect.cpp
+  src/RenderEffectManager.cpp
+  src/RenderQueue.cpp
+  src/RenderTarget.cpp
   src/RenderedString.cpp
   src/RenderedStringComponent.cpp
   src/RenderedStringImageComponent.cpp
   src/RenderedStringTextComponent.cpp
   src/RenderedStringWidgetComponent.cpp
-  src/RenderEffectManager.cpp
   src/RenderingSurface.cpp
   src/RenderingWindow.cpp
-  src/RenderQueue.cpp
-  src/RenderTarget.cpp
   src/RightAlignedRenderedString.cpp
   src/Scheme.cpp
   src/SchemeManager.cpp
@@ -105,6 +104,7 @@ set( SOURCE_FILES
   src/XMLHandler.cpp
   src/XMLParser.cpp
   src/XMLSerializer.cpp
+  src/minibidi.cpp
   src/falagard/ComponentBase.cpp
   src/falagard/Dimensions.cpp
   src/falagard/EventAction.cpp
@@ -127,8 +127,8 @@ set( SOURCE_FILES
   src/falagard/XMLHandler.cpp
   src/widgets/ButtonBase.cpp
   src/widgets/ClippedContainer.cpp
-  src/widgets/Combobox.cpp
   src/widgets/ComboDropList.cpp
+  src/widgets/Combobox.cpp
   src/widgets/DefaultWindow.cpp
   src/widgets/DragContainer.cpp
   src/widgets/Editbox.cpp
@@ -141,14 +141,14 @@ set( SOURCE_FILES
   src/widgets/ItemListbox.cpp
   src/widgets/LayoutCell.cpp
   src/widgets/LayoutContainer.cpp
+  src/widgets/ListHeader.cpp
+  src/widgets/ListHeaderSegment.cpp
   src/widgets/Listbox.cpp
   src/widgets/ListboxItem.cpp
   src/widgets/ListboxTextItem.cpp
-  src/widgets/ListHeader.cpp
-  src/widgets/ListHeaderSegment.cpp
-  src/widgets/Menubar.cpp
   src/widgets/MenuBase.cpp
   src/widgets/MenuItem.cpp
+  src/widgets/Menubar.cpp
   src/widgets/MultiColumnList.cpp
   src/widgets/MultiLineEditbox.cpp
   src/widgets/PopupMenu.cpp
@@ -237,7 +237,7 @@ if ( WIN64 )
   target_link_libraries( ${MODULE_NAME} Dbghelp Winmm )
 endif( WIN64 )
 
-include_directories( ../../freetype/include ../../freetype/include/freetype ../../freetype/include/freetype/config ../../freetype/include/freetype/internal ../../freetype/include/freetype/internal/services ../../freetype/src/winfonts ../../pcre include )
+include_directories( ../../freetype/include ../../freetype/include/freetype ../../freetype/include/freetype/config ../../freetype/include/freetype/internal ../../freetype/include/freetype/internal/services ../../freetype/src ../../freetype/src/winfonts ../../pcre include )
 
 
 

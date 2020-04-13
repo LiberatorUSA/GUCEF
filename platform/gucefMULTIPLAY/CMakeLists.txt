@@ -14,13 +14,13 @@
 set( HEADER_FILES 
   include/gucefMULTIPLAY.h
   include/gucefMULTIPLAY_CMultiPlayControl.h
-  include/gucefMULTIPLAY_config.h
   include/gucefMULTIPLAY_CPassiveURLServerListProvider.h
   include/gucefMULTIPLAY_CServerList.h
   include/gucefMULTIPLAY_CServerListProvider.h
   include/gucefMULTIPLAY_DLLInit.h
-  include/gucefMULTIPLAY_macros.h
   include/gucefMULTIPLAY_Types.h
+  include/gucefMULTIPLAY_config.h
+  include/gucefMULTIPLAY_macros.h
 )
 
 set( SOURCE_FILES 

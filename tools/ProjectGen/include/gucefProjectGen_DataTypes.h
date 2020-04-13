@@ -175,8 +175,8 @@ struct SModuleInfo
     TStringSet dependencyIncludeDirs;            // include directories needed for the headers of the dependencies, paths only no files
     TStringSet runtimeDependencies;              // dependencies not relative for builds but desired to be easily accessable due to runtime dependency, typically plugins
        
-    TStringVectorMap includeDirs;                // include directories of this module's own headers
-    TStringVectorMap sourceDirs;                 // source directories of this module's own source
+    TStringSetMap includeDirs;                   // include directories of this module's own headers
+    TStringSetMap sourceDirs;                    // source directories of this module's own source
 
     int buildOrder;                              // order number of this module in the build dependency chain
     int buildChain;                              // index of the build chain, different build chains can be build independently but may depend on other chains
@@ -389,6 +389,14 @@ void
 MergeStringSet( TStringSet& targetList          ,
                 const TStringSet& listToMergeIn ,
                 bool caseSensitive              );
+
+/*-------------------------------------------------------------------------*/
+                   
+GUCEF_PROJECTGEN_PUBLIC_CPP
+void
+MergeStringSetMap( TStringSetMap& targetMap          ,
+                   const TStringSetMap& mapToMergeIn ,
+                   bool caseSensitive                );
 
 /*-------------------------------------------------------------------------*/
 

@@ -18,11 +18,11 @@ set( SOURCE_FILES
   FrameWindow.cpp
   ItemEntry.cpp
   ItemListbox.cpp
-  Listbox.cpp
   ListHeader.cpp
   ListHeaderSegment.cpp
-  Menubar.cpp
+  Listbox.cpp
   MenuItem.cpp
+  Menubar.cpp
   Module.cpp
   MultiColumnList.cpp
   MultiLineEditbox.cpp

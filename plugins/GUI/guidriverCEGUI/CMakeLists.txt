@@ -14,8 +14,8 @@
 set( HEADER_FILES 
   include/guidriverCEGUI.h
   include/guidriverCEGUI_CButtonImp.h
-  include/guidriverCEGUI_CCEGuiDriver.h
   include/guidriverCEGUI_CCEGUIInputAdapter.h
+  include/guidriverCEGUI_CCEGuiDriver.h
   include/guidriverCEGUI_CCheckboxImp.h
   include/guidriverCEGUI_CComboboxImp.h
   include/guidriverCEGUI_CEditboxImp.h
@@ -23,8 +23,8 @@ set( HEADER_FILES
   include/guidriverCEGUI_CFileSaveDialogImp.h
   include/guidriverCEGUI_CFileSystemDialogImp.h
   include/guidriverCEGUI_CFormBackendImp.h
-  include/guidriverCEGUI_CGridViewImp.h
   include/guidriverCEGUI_CGUIContext.h
+  include/guidriverCEGUI_CGridViewImp.h
   include/guidriverCEGUI_CImageFrameImp.h
   include/guidriverCEGUI_CLabelImp.h
   include/guidriverCEGUI_CListBoxImp.h
@@ -32,7 +32,6 @@ set( HEADER_FILES
   include/guidriverCEGUI_CMemoboxImp.h
   include/guidriverCEGUI_CMenuBarImp.h
   include/guidriverCEGUI_CModule.h
-  include/guidriverCEGUI_config.h
   include/guidriverCEGUI_CPopupMenuImp.h
   include/guidriverCEGUI_CProgressBarImp.h
   include/guidriverCEGUI_CPushButtonImp.h
@@ -46,18 +45,19 @@ set( HEADER_FILES
   include/guidriverCEGUI_CWindowImp.h
   include/guidriverCEGUI_ETypes.h
   include/guidriverCEGUI_ImageCodecAdapter.h
+  include/guidriverCEGUI_VFSResourceProvider.h
+  include/guidriverCEGUI_XMLParserAdapter.h
+  include/guidriverCEGUI_config.h
   include/guidriverCEGUI_macros.h
   include/guidriverCEGUI_pluginAPI.h
-  include/guidriverCEGUI_VFSResourceProvider.h
   include/guidriverCEGUI_widgets.h
-  include/guidriverCEGUI_XMLParserAdapter.h
 )
 
 set( SOURCE_FILES 
   src/guidriverCEGUI.cpp
   src/guidriverCEGUI_CButtonImp.cpp
-  src/guidriverCEGUI_CCEGuiDriver.cpp
   src/guidriverCEGUI_CCEGUIInputAdapter.cpp
+  src/guidriverCEGUI_CCEGuiDriver.cpp
   src/guidriverCEGUI_CCheckboxImp.cpp
   src/guidriverCEGUI_CComboboxImp.cpp
   src/guidriverCEGUI_CEditboxImp.cpp
@@ -65,8 +65,8 @@ set( SOURCE_FILES
   src/guidriverCEGUI_CFileSaveDialogImp.cpp
   src/guidriverCEGUI_CFileSystemDialogImp.cpp
   src/guidriverCEGUI_CFormBackendImp.cpp
-  src/guidriverCEGUI_CGridViewImp.cpp
   src/guidriverCEGUI_CGUIContext.cpp
+  src/guidriverCEGUI_CGridViewImp.cpp
   src/guidriverCEGUI_CImageFrameImp.cpp
   src/guidriverCEGUI_CLabelImp.cpp
   src/guidriverCEGUI_CListboxImp.cpp
@@ -86,10 +86,10 @@ set( SOURCE_FILES
   src/guidriverCEGUI_CWidgetImp.cpp
   src/guidriverCEGUI_CWindowImp.cpp
   src/guidriverCEGUI_ImageCodecAdapter.cpp
-  src/guidriverCEGUI_pluginAPI.cpp
   src/guidriverCEGUI_VFSResourceProvider.cpp
-  src/guidriverCEGUI_widgets.cpp
   src/guidriverCEGUI_XMLParserAdapter.cpp
+  src/guidriverCEGUI_pluginAPI.cpp
+  src/guidriverCEGUI_widgets.cpp
 )
 
 # Make sure the PLATFORM_HEADER_FILES variable is always defined
@@ -107,7 +107,7 @@ add_dependencies( ${MODULE_NAME} CEGUI freetype gucefCORE gucefGUI gucefINPUT gu
 target_link_libraries( ${MODULE_NAME} CEGUI freetype gucefCORE gucefGUI gucefINPUT gucefMT gucefVFS )
 set_property( TARGET ${MODULE_NAME} APPEND_STRING PROPERTY COMPILE_DEFINITIONS "GUIDRIVERCEGUI_BUILD_MODULE" )
 
-include_directories( ../../../common/include ../../../dependencies/cegui/cegui/include ../../../dependencies/freetype/include ../../../dependencies/freetype/include/freetype ../../../dependencies/freetype/include/freetype/config ../../../dependencies/freetype/include/freetype/internal ../../../dependencies/freetype/include/freetype/internal/services ../../../dependencies/freetype/src/winfonts ../../../platform/gucefCORE/include ../../../platform/gucefGUI/include ../../../platform/gucefIMAGE/include ../../../platform/gucefINPUT/include ../../../platform/gucefMT/include ../../../platform/gucefVFS/include include )
+include_directories( ../../../common/include ../../../dependencies/cegui/cegui/include ../../../dependencies/freetype/include ../../../dependencies/freetype/include/freetype ../../../dependencies/freetype/include/freetype/config ../../../dependencies/freetype/include/freetype/internal ../../../dependencies/freetype/include/freetype/internal/services ../../../dependencies/freetype/src ../../../dependencies/freetype/src/winfonts ../../../platform/gucefCORE/include ../../../platform/gucefGUI/include ../../../platform/gucefIMAGE/include ../../../platform/gucefINPUT/include ../../../platform/gucefMT/include ../../../platform/gucefVFS/include include )
 
 if ( ANDROID )
   include_directories( ../../../platform/gucefCORE/include/android )

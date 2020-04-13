@@ -18,10 +18,10 @@ set( HEADER_FILES
 )
 
 set( SOURCE_FILES 
-  src/gucefCOMCORE_TestApp.cpp
   src/TestCode_ClientServer.cpp
   src/TestCode_PingTest.cpp
   src/TestCode_SimpleTCPClient.cpp
+  src/gucefCOMCORE_TestApp.cpp
 )
 
 # Make sure the PLATFORM_HEADER_FILES variable is always defined

@@ -36,7 +36,7 @@ add_dependencies( ${MODULE_NAME} CEGUI Ogre )
 target_link_libraries( ${MODULE_NAME} CEGUI Ogre )
 set_property( TARGET ${MODULE_NAME} APPEND_STRING PROPERTY COMPILE_DEFINITIONS "CEGUIOGRERENDERER_EXPORTS" )
 
-include_directories( ../../../../../Ogre/OgreMain/include ../../../../../Ogre/OgreMain/include/Hash ../../../../../Ogre/OgreMain/include/Threading ../../../../../Ogre/OgreMain/src ../../../../../Ogre/OgreMain/src/nedmalloc ../../../../../Ogre/OgreMain/src/stbi ../../../../../Ogre/include ../../../../../freetype/include ../../../../../freetype/include/freetype ../../../../../freetype/include/freetype/config ../../../../../freetype/include/freetype/internal ../../../../../freetype/include/freetype/internal/services ../../../../../freetype/src/winfonts ../../../include )
+include_directories( ../../../../../Ogre/OgreMain/include ../../../../../Ogre/OgreMain/include/Hash ../../../../../Ogre/OgreMain/include/Threading ../../../../../Ogre/OgreMain/src ../../../../../Ogre/OgreMain/src/nedmalloc ../../../../../Ogre/OgreMain/src/stbi ../../../../../Ogre/include ../../../../../freetype/include ../../../../../freetype/include/freetype ../../../../../freetype/include/freetype/config ../../../../../freetype/include/freetype/internal ../../../../../freetype/include/freetype/internal/services ../../../../../freetype/src ../../../../../freetype/src/winfonts ../../../include )
 
 if ( ANDROID )
   include_directories( ../../../../../Ogre/OgreMain/include/Android )

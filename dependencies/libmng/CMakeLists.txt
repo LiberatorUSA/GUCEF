@@ -14,10 +14,10 @@
 set( HEADER_FILES 
   config.h
   libmng.h
-  libmng_chunks.h
   libmng_chunk_descr.h
   libmng_chunk_io.h
   libmng_chunk_prc.h
+  libmng_chunks.h
   libmng_cms.h
   libmng_conf.h
   libmng_data.h
@@ -27,8 +27,8 @@ set( HEADER_FILES
   libmng_filter.h
   libmng_jpeg.h
   libmng_memory.h
-  libmng_objects.h
   libmng_object_prc.h
+  libmng_objects.h
   libmng_pixels.h
   libmng_read.h
   libmng_trace.h

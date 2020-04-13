@@ -13,6 +13,12 @@
 
 set( HEADER_FILES 
   t4.h
+  tif_config.h
+  tif_config.vc.h
+  tif_config.wince.h
+  tif_dir.h
+  tif_fax3.h
+  tif_predict.h
   tiff.h
   tiffconf.h
   tiffconf.vc.h
@@ -21,12 +27,6 @@ set( HEADER_FILES
   tiffio.hxx
   tiffiop.h
   tiffvers.h
-  tif_config.h
-  tif_config.vc.h
-  tif_config.wince.h
-  tif_dir.h
-  tif_fax3.h
-  tif_predict.h
   uvcode.h
 )
 

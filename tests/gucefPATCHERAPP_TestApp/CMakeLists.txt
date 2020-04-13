@@ -33,7 +33,7 @@ endif()
 add_dependencies( ${MODULE_NAME} gucefLOADER )
 target_link_libraries( ${MODULE_NAME} gucefLOADER )
 
-include_directories( ../../common/include ../../platform/gucefCORE/include ../../platform/gucefCORE/include/ ../../platform/gucefLOADER/include ../../platform/gucefMT/include ../../platform/gucefMT/include/ )
+include_directories( ../../common/include ../../platform/gucefCORE ../../platform/gucefCORE/include ../../platform/gucefCORE/include/ ../../platform/gucefLOADER/.. ../../platform/gucefLOADER/include ../../platform/gucefMT ../../platform/gucefMT/include ../../platform/gucefMT/include/ )
 
 if ( ANDROID )
   include_directories( ../../platform/gucefCORE/include/ ../../platform/gucefCORE/include/android ../../platform/gucefMT/include/ )

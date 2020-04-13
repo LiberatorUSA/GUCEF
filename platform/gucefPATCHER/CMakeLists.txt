@@ -14,7 +14,6 @@
 set( HEADER_FILES 
   include/gucefPATCHER.h
   include/gucefPATCHER_CModule.h
-  include/gucefPATCHER_config.h
   include/gucefPATCHER_CPatchConfig.h
   include/gucefPATCHER_CPatchEngine.h
   include/gucefPATCHER_CPatchListEngine.h
@@ -32,6 +31,7 @@ set( HEADER_FILES
   include/gucefPATCHER_CPatchTaskConsumer.h
   include/gucefPATCHER_CPatchTaskData.h
   include/gucefPATCHER_ETypes.h
+  include/gucefPATCHER_config.h
   include/gucefPATCHER_macros.h
 )
 

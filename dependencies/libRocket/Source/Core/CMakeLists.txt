@@ -59,7 +59,6 @@ set( HEADER_FILES
   LayoutLineBox.h
   PluginRegistry.h
   Pool.h
-  precompiled.h
   PropertyParserColour.h
   PropertyParserKeyword.h
   PropertyParserNumber.h
@@ -98,6 +97,7 @@ set( HEADER_FILES
   XMLNodeHandlerHead.h
   XMLNodeHandlerTemplate.h
   XMLParseTools.h
+  precompiled.h
 )
 
 set( SOURCE_FILES 
@@ -173,7 +173,6 @@ set( SOURCE_FILES
   Log.cpp
   Plugin.cpp
   PluginRegistry.cpp
-  precompiled.cpp
   Property.cpp
   PropertyDefinition.cpp
   PropertyDictionary.cpp
@@ -219,20 +218,21 @@ set( SOURCE_FILES
   TextureLayoutRow.cpp
   TextureLayoutTexture.cpp
   TextureResource.cpp
-  UnicodeRange.cpp
   URL.cpp
+  UnicodeRange.cpp
   Variant.cpp
   Vector2.cpp
+  WString.cpp
   WidgetSlider.cpp
   WidgetSliderScroll.cpp
-  WString.cpp
   XMLNodeHandler.cpp
   XMLNodeHandlerBody.cpp
   XMLNodeHandlerDefault.cpp
   XMLNodeHandlerHead.cpp
   XMLNodeHandlerTemplate.cpp
-  XMLParser.cpp
   XMLParseTools.cpp
+  XMLParser.cpp
+  precompiled.cpp
 )
 
 # Make sure the PLATFORM_HEADER_FILES variable is always defined
@@ -250,7 +250,7 @@ add_dependencies( ${MODULE_NAME} freetype )
 target_link_libraries( ${MODULE_NAME} freetype )
 set_property( TARGET ${MODULE_NAME} APPEND_STRING PROPERTY COMPILE_DEFINITIONS "RocketCore_EXPORTS" )
 
-include_directories( ../../../freetype/include ../../../freetype/include/freetype ../../../freetype/include/freetype/config ../../../freetype/include/freetype/internal ../../../freetype/include/freetype/internal/services ../../../freetype/src/winfonts ../../Include ../../Include/Rocket ../../Include/Rocket/Controls ../../Include/Rocket/Core ../../Include/Rocket/Core/Python ../../Include/Rocket/Debugger )
+include_directories( ../../../freetype/include ../../../freetype/include/freetype ../../../freetype/include/freetype/config ../../../freetype/include/freetype/internal ../../../freetype/include/freetype/internal/services ../../../freetype/src ../../../freetype/src/winfonts ../../Include ../../Include/Rocket ../../Include/Rocket/Controls ../../Include/Rocket/Core ../../Include/Rocket/Core/Python ../../Include/Rocket/Debugger )
 
 
 

@@ -13,21 +13,21 @@
 
 set( HEADER_FILES 
   include/gucefMT.h
-  include/gucefMT_basicMacros.h
   include/gucefMT_CActiveObject.h
   include/gucefMT_CCondition.h
   include/gucefMT_CCriticalSection.h
   include/gucefMT_CGUCEFMTModule.h
   include/gucefMT_CICloneable.h
   include/gucefMT_CMutex.h
-  include/gucefMT_config.h
   include/gucefMT_CReadWriteLock.h
   include/gucefMT_CScopeMutex.h
   include/gucefMT_CSemaphore.h
   include/gucefMT_CTMailBox.h
-  include/gucefMT_dvmtoswrap.h
   include/gucefMT_DVRWLOCK.h
   include/gucefMT_ETypes.h
+  include/gucefMT_basicMacros.h
+  include/gucefMT_config.h
+  include/gucefMT_dvmtoswrap.h
   include/gucefMT_macros.h
   include/gucefMT_mutex.h
 )
@@ -44,9 +44,9 @@ set( SOURCE_FILES
   src/gucefMT_CScopeMutex.cpp
   src/gucefMT_CSemaphore.cpp
   src/gucefMT_CTMailBox.cpp
-  src/gucefMT_dvmtoswrap.c
   src/gucefMT_DVRWLOCK.c
   src/gucefMT_MUTEX.c
+  src/gucefMT_dvmtoswrap.c
 )
 
 # Make sure the PLATFORM_HEADER_FILES variable is always defined

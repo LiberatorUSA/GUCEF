@@ -17,8 +17,8 @@ set( HEADER_FILES
   include/MyGUI_OpenGLDiagnostic.h
   include/MyGUI_OpenGLImageLoader.h
   include/MyGUI_OpenGLPlatform.h
-  include/MyGUI_OpenGLRenderManager.h
   include/MyGUI_OpenGLRTTexture.h
+  include/MyGUI_OpenGLRenderManager.h
   include/MyGUI_OpenGLTexture.h
   include/MyGUI_OpenGLVertexBuffer.h
   include/GL/glew.h
@@ -30,8 +30,8 @@ set( SOURCE_FILES
   include/GL/glew.c
   src/MyGUI_OpenGLDataManager.cpp
   src/MyGUI_OpenGLPlatform.cpp
-  src/MyGUI_OpenGLRenderManager.cpp
   src/MyGUI_OpenGLRTTexture.cpp
+  src/MyGUI_OpenGLRenderManager.cpp
   src/MyGUI_OpenGLTexture.cpp
   src/MyGUI_OpenGLVertexBuffer.cpp
 )
@@ -70,7 +70,7 @@ if ( WIN64 )
   target_link_libraries( ${MODULE_NAME} opengl32 )
 endif( WIN64 )
 
-include_directories( ../../../../freetype/include ../../../../freetype/include/freetype ../../../../freetype/include/freetype/config ../../../../freetype/include/freetype/internal ../../../../freetype/include/freetype/internal/services ../../../../freetype/src/winfonts ../../../MyGUIEngine/include ../../../Common/FileSystemInfo include include/GL )
+include_directories( ../../../../freetype/include ../../../../freetype/include/freetype ../../../../freetype/include/freetype/config ../../../../freetype/include/freetype/internal ../../../../freetype/include/freetype/internal/services ../../../../freetype/src ../../../../freetype/src/winfonts ../../../MyGUIEngine/include ../../../Common/FileSystemInfo include include/GL )
 
 
 

@@ -13,9 +13,9 @@
 
 set( HEADER_FILES 
   include/vfspluginZIP.h
-  include/vfspluginZIP_config.h
   include/vfspluginZIP_CZIPArchive.h
   include/vfspluginZIP_CZipIOAccess.h
+  include/vfspluginZIP_config.h
   include/vfspluginZIP_macros.h
 )
 

@@ -13,12 +13,12 @@
 
 set( HEADER_FILES 
   include/gucefPATCHERAPP_CMainPatcherAppLogic.h
-  include/gucefPATCHERAPP_config.h
   include/gucefPATCHERAPP_CPatcherAppConfig.h
   include/gucefPATCHERAPP_CPatcherAppGlobal.h
+  include/gucefPATCHERAPP_SimpleTypes.h
+  include/gucefPATCHERAPP_config.h
   include/gucefPATCHERAPP_macros.h
   include/gucefPATCHERAPP_main.h
-  include/gucefPATCHERAPP_SimpleTypes.h
 )
 
 set( SOURCE_FILES 

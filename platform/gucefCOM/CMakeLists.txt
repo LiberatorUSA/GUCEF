@@ -33,10 +33,10 @@ set( HEADER_FILES
   include/gucefCOM_CIHTTPServerResource.h
   include/gucefCOM_CIHTTPServerRouter.h
   include/gucefCOM_CIHTTPServerRouterController.h
-  include/gucefCOM_config.h
   include/gucefCOM_CStatsDClient.h
   include/gucefCOM_ETypes.h
   include/gucefCOM_HTTPCode.h
+  include/gucefCOM_config.h
   include/gucefCOM_macros.h
 )
 

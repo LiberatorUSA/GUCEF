@@ -51,8 +51,8 @@ if (LINUX32)
     Source/LibJXR/image/sys/ansi.h
     Source/LibJXR/image/sys/common.h
     Source/LibJXR/image/sys/perfTimer.h
-    Source/LibJXR/image/sys/strcodec.h
     Source/LibJXR/image/sys/strTransform.h
+    Source/LibJXR/image/sys/strcodec.h
     Source/LibJXR/image/sys/windowsmediaphoto.h
     Source/LibJXR/image/sys/xplatform_image.h
     Source/LibJXR/image/x86/x86.h
@@ -106,6 +106,12 @@ if (LINUX32)
     Source/LibRawLite/libraw/libraw_types.h
     Source/LibRawLite/libraw/libraw_version.h
     Source/LibTIFF4/t4.h
+    Source/LibTIFF4/tif_config.h
+    Source/LibTIFF4/tif_config.vc.h
+    Source/LibTIFF4/tif_config.wince.h
+    Source/LibTIFF4/tif_dir.h
+    Source/LibTIFF4/tif_fax3.h
+    Source/LibTIFF4/tif_predict.h
     Source/LibTIFF4/tiff.h
     Source/LibTIFF4/tiffconf.h
     Source/LibTIFF4/tiffconf.vc.h
@@ -114,12 +120,6 @@ if (LINUX32)
     Source/LibTIFF4/tiffio.hxx
     Source/LibTIFF4/tiffiop.h
     Source/LibTIFF4/tiffvers.h
-    Source/LibTIFF4/tif_config.h
-    Source/LibTIFF4/tif_config.vc.h
-    Source/LibTIFF4/tif_config.wince.h
-    Source/LibTIFF4/tif_dir.h
-    Source/LibTIFF4/tif_fax3.h
-    Source/LibTIFF4/tif_predict.h
     Source/LibTIFF4/uvcode.h
     Source/LibWebP/src/dec/alphai.h
     Source/LibWebP/src/dec/decode_vp8.h
@@ -181,14 +181,13 @@ if (LINUX32)
     Source/OpenEXR/IexMath/IexMathFloatExc.h
     Source/OpenEXR/IexMath/IexMathFpu.h
     Source/OpenEXR/IexMath/IexMathIeeeExc.h
-    Source/OpenEXR/IlmImf/b44ExpLogTable.h
-    Source/OpenEXR/IlmImf/dwaLookups.h
     Source/OpenEXR/IlmImf/ImfAcesFile.h
     Source/OpenEXR/IlmImf/ImfArray.h
     Source/OpenEXR/IlmImf/ImfAttribute.h
     Source/OpenEXR/IlmImf/ImfAutoArray.h
     Source/OpenEXR/IlmImf/ImfB44Compressor.h
     Source/OpenEXR/IlmImf/ImfBoxAttribute.h
+    Source/OpenEXR/IlmImf/ImfCRgbaFile.h
     Source/OpenEXR/IlmImf/ImfChannelList.h
     Source/OpenEXR/IlmImf/ImfChannelListAttribute.h
     Source/OpenEXR/IlmImf/ImfCheckedArithmetic.h
@@ -199,7 +198,6 @@ if (LINUX32)
     Source/OpenEXR/IlmImf/ImfCompressionAttribute.h
     Source/OpenEXR/IlmImf/ImfCompressor.h
     Source/OpenEXR/IlmImf/ImfConvert.h
-    Source/OpenEXR/IlmImf/ImfCRgbaFile.h
     Source/OpenEXR/IlmImf/ImfDeepCompositing.h
     Source/OpenEXR/IlmImf/ImfDeepFrameBuffer.h
     Source/OpenEXR/IlmImf/ImfDeepImageState.h
@@ -228,13 +226,13 @@ if (LINUX32)
     Source/OpenEXR/IlmImf/ImfGenericOutputFile.h
     Source/OpenEXR/IlmImf/ImfHeader.h
     Source/OpenEXR/IlmImf/ImfHuf.h
+    Source/OpenEXR/IlmImf/ImfIO.h
     Source/OpenEXR/IlmImf/ImfInputFile.h
     Source/OpenEXR/IlmImf/ImfInputPart.h
     Source/OpenEXR/IlmImf/ImfInputPartData.h
     Source/OpenEXR/IlmImf/ImfInputStreamMutex.h
     Source/OpenEXR/IlmImf/ImfInt64.h
     Source/OpenEXR/IlmImf/ImfIntAttribute.h
-    Source/OpenEXR/IlmImf/ImfIO.h
     Source/OpenEXR/IlmImf/ImfKeyCode.h
     Source/OpenEXR/IlmImf/ImfKeyCodeAttribute.h
     Source/OpenEXR/IlmImf/ImfLineOrder.h
@@ -278,13 +276,13 @@ if (LINUX32)
     Source/OpenEXR/IlmImf/ImfThreading.h
     Source/OpenEXR/IlmImf/ImfTileDescription.h
     Source/OpenEXR/IlmImf/ImfTileDescriptionAttribute.h
+    Source/OpenEXR/IlmImf/ImfTileOffsets.h
     Source/OpenEXR/IlmImf/ImfTiledInputFile.h
     Source/OpenEXR/IlmImf/ImfTiledInputPart.h
     Source/OpenEXR/IlmImf/ImfTiledMisc.h
     Source/OpenEXR/IlmImf/ImfTiledOutputFile.h
     Source/OpenEXR/IlmImf/ImfTiledOutputPart.h
     Source/OpenEXR/IlmImf/ImfTiledRgbaFile.h
-    Source/OpenEXR/IlmImf/ImfTileOffsets.h
     Source/OpenEXR/IlmImf/ImfTimeCode.h
     Source/OpenEXR/IlmImf/ImfTimeCodeAttribute.h
     Source/OpenEXR/IlmImf/ImfVecAttribute.h
@@ -293,6 +291,8 @@ if (LINUX32)
     Source/OpenEXR/IlmImf/ImfXdr.h
     Source/OpenEXR/IlmImf/ImfZip.h
     Source/OpenEXR/IlmImf/ImfZipCompressor.h
+    Source/OpenEXR/IlmImf/b44ExpLogTable.h
+    Source/OpenEXR/IlmImf/dwaLookups.h
     Source/OpenEXR/IlmThread/IlmThread.h
     Source/OpenEXR/IlmThread/IlmThreadExport.h
     Source/OpenEXR/IlmThread/IlmThreadForward.h
@@ -365,10 +365,11 @@ if (LINUX32)
     Source/FreeImage/Halftoning.cpp
     Source/FreeImage/J2KHelper.cpp
     Source/FreeImage/LFPQuantizer.cpp
-    Source/FreeImage/MemoryIO.cpp
     Source/FreeImage/MNGHelper.cpp
+    Source/FreeImage/MemoryIO.cpp
     Source/FreeImage/MultiPage.cpp
     Source/FreeImage/NNQuantizer.cpp
+    Source/FreeImage/PSDParser.cpp
     Source/FreeImage/PixelAccess.cpp
     Source/FreeImage/Plugin.cpp
     Source/FreeImage/PluginBMP.cpp
@@ -403,17 +404,16 @@ if (LINUX32)
     Source/FreeImage/PluginWebP.cpp
     Source/FreeImage/PluginXBM.cpp
     Source/FreeImage/PluginXPM.cpp
-    Source/FreeImage/PSDParser.cpp
     Source/FreeImage/TIFFLogLuv.cpp
+    Source/FreeImage/ToneMapping.cpp
+    Source/FreeImage/WuQuantizer.cpp
+    Source/FreeImage/ZLibInterface.cpp
     Source/FreeImage/tmoColorConvert.cpp
     Source/FreeImage/tmoDrago03.cpp
     Source/FreeImage/tmoFattal02.cpp
     Source/FreeImage/tmoReinhard05.cpp
-    Source/FreeImage/ToneMapping.cpp
-    Source/FreeImage/WuQuantizer.cpp
-    Source/FreeImage/ZLibInterface.cpp
-    Source/FreeImageToolkit/Background.cpp
     Source/FreeImageToolkit/BSplineRotate.cpp
+    Source/FreeImageToolkit/Background.cpp
     Source/FreeImageToolkit/Channels.cpp
     Source/FreeImageToolkit/ClassicRotate.cpp
     Source/FreeImageToolkit/Colors.cpp
@@ -484,26 +484,26 @@ if (LINUX32)
     Source/LibJPEG/wrppm.c
     Source/LibJPEG/wrrle.c
     Source/LibJPEG/wrtarga.c
-    Source/LibJXR/image/decode/decode.c
     Source/LibJXR/image/decode/JXRTranscode.c
+    Source/LibJXR/image/decode/decode.c
     Source/LibJXR/image/decode/postprocess.c
     Source/LibJXR/image/decode/segdec.c
-    Source/LibJXR/image/decode/strdec.c
-    Source/LibJXR/image/decode/strdec_x86.c
     Source/LibJXR/image/decode/strInvTransform.c
     Source/LibJXR/image/decode/strPredQuantDec.c
+    Source/LibJXR/image/decode/strdec.c
+    Source/LibJXR/image/decode/strdec_x86.c
     Source/LibJXR/image/encode/encode.c
     Source/LibJXR/image/encode/segenc.c
-    Source/LibJXR/image/encode/strenc.c
-    Source/LibJXR/image/encode/strenc_x86.c
     Source/LibJXR/image/encode/strFwdTransform.c
     Source/LibJXR/image/encode/strPredQuantEnc.c
+    Source/LibJXR/image/encode/strenc.c
+    Source/LibJXR/image/encode/strenc_x86.c
     Source/LibJXR/image/sys/adapthuff.c
     Source/LibJXR/image/sys/image.c
     Source/LibJXR/image/sys/perfTimerANSI.c
-    Source/LibJXR/image/sys/strcodec.c
     Source/LibJXR/image/sys/strPredQuant.c
     Source/LibJXR/image/sys/strTransform.c
+    Source/LibJXR/image/sys/strcodec.c
     Source/LibJXR/jxrgluelib/JXRGlue.c
     Source/LibJXR/jxrgluelib/JXRGlueJxr.c
     Source/LibJXR/jxrgluelib/JXRGluePFC.c
@@ -693,11 +693,11 @@ if (LINUX32)
     Source/OpenEXR/Iex/IexThrowErrnoExc.cpp
     Source/OpenEXR/IexMath/IexMathFloatExc.cpp
     Source/OpenEXR/IexMath/IexMathFpu.cpp
-    Source/OpenEXR/IlmImf/b44ExpLogTable.cpp
     Source/OpenEXR/IlmImf/ImfAcesFile.cpp
     Source/OpenEXR/IlmImf/ImfAttribute.cpp
     Source/OpenEXR/IlmImf/ImfB44Compressor.cpp
     Source/OpenEXR/IlmImf/ImfBoxAttribute.cpp
+    Source/OpenEXR/IlmImf/ImfCRgbaFile.cpp
     Source/OpenEXR/IlmImf/ImfChannelList.cpp
     Source/OpenEXR/IlmImf/ImfChannelListAttribute.cpp
     Source/OpenEXR/IlmImf/ImfChromaticities.cpp
@@ -706,7 +706,6 @@ if (LINUX32)
     Source/OpenEXR/IlmImf/ImfCompressionAttribute.cpp
     Source/OpenEXR/IlmImf/ImfCompressor.cpp
     Source/OpenEXR/IlmImf/ImfConvert.cpp
-    Source/OpenEXR/IlmImf/ImfCRgbaFile.cpp
     Source/OpenEXR/IlmImf/ImfDeepCompositing.cpp
     Source/OpenEXR/IlmImf/ImfDeepFrameBuffer.cpp
     Source/OpenEXR/IlmImf/ImfDeepImageStateAttribute.cpp
@@ -731,11 +730,11 @@ if (LINUX32)
     Source/OpenEXR/IlmImf/ImfGenericOutputFile.cpp
     Source/OpenEXR/IlmImf/ImfHeader.cpp
     Source/OpenEXR/IlmImf/ImfHuf.cpp
+    Source/OpenEXR/IlmImf/ImfIO.cpp
     Source/OpenEXR/IlmImf/ImfInputFile.cpp
     Source/OpenEXR/IlmImf/ImfInputPart.cpp
     Source/OpenEXR/IlmImf/ImfInputPartData.cpp
     Source/OpenEXR/IlmImf/ImfIntAttribute.cpp
-    Source/OpenEXR/IlmImf/ImfIO.cpp
     Source/OpenEXR/IlmImf/ImfKeyCode.cpp
     Source/OpenEXR/IlmImf/ImfKeyCodeAttribute.cpp
     Source/OpenEXR/IlmImf/ImfLineOrderAttribute.cpp
@@ -769,13 +768,13 @@ if (LINUX32)
     Source/OpenEXR/IlmImf/ImfTestFile.cpp
     Source/OpenEXR/IlmImf/ImfThreading.cpp
     Source/OpenEXR/IlmImf/ImfTileDescriptionAttribute.cpp
+    Source/OpenEXR/IlmImf/ImfTileOffsets.cpp
     Source/OpenEXR/IlmImf/ImfTiledInputFile.cpp
     Source/OpenEXR/IlmImf/ImfTiledInputPart.cpp
     Source/OpenEXR/IlmImf/ImfTiledMisc.cpp
     Source/OpenEXR/IlmImf/ImfTiledOutputFile.cpp
     Source/OpenEXR/IlmImf/ImfTiledOutputPart.cpp
     Source/OpenEXR/IlmImf/ImfTiledRgbaFile.cpp
-    Source/OpenEXR/IlmImf/ImfTileOffsets.cpp
     Source/OpenEXR/IlmImf/ImfTimeCode.cpp
     Source/OpenEXR/IlmImf/ImfTimeCodeAttribute.cpp
     Source/OpenEXR/IlmImf/ImfVecAttribute.cpp
@@ -783,6 +782,7 @@ if (LINUX32)
     Source/OpenEXR/IlmImf/ImfWav.cpp
     Source/OpenEXR/IlmImf/ImfZip.cpp
     Source/OpenEXR/IlmImf/ImfZipCompressor.cpp
+    Source/OpenEXR/IlmImf/b44ExpLogTable.cpp
     Source/OpenEXR/IlmThread/IlmThread.cpp
     Source/OpenEXR/IlmThread/IlmThreadMutex.cpp
     Source/OpenEXR/IlmThread/IlmThreadPool.cpp
@@ -837,8 +837,8 @@ elseif (LINUX64)
     Source/LibJXR/image/sys/ansi.h
     Source/LibJXR/image/sys/common.h
     Source/LibJXR/image/sys/perfTimer.h
-    Source/LibJXR/image/sys/strcodec.h
     Source/LibJXR/image/sys/strTransform.h
+    Source/LibJXR/image/sys/strcodec.h
     Source/LibJXR/image/sys/windowsmediaphoto.h
     Source/LibJXR/image/sys/xplatform_image.h
     Source/LibJXR/image/x86/x86.h
@@ -892,6 +892,12 @@ elseif (LINUX64)
     Source/LibRawLite/libraw/libraw_types.h
     Source/LibRawLite/libraw/libraw_version.h
     Source/LibTIFF4/t4.h
+    Source/LibTIFF4/tif_config.h
+    Source/LibTIFF4/tif_config.vc.h
+    Source/LibTIFF4/tif_config.wince.h
+    Source/LibTIFF4/tif_dir.h
+    Source/LibTIFF4/tif_fax3.h
+    Source/LibTIFF4/tif_predict.h
     Source/LibTIFF4/tiff.h
     Source/LibTIFF4/tiffconf.h
     Source/LibTIFF4/tiffconf.vc.h
@@ -900,12 +906,6 @@ elseif (LINUX64)
     Source/LibTIFF4/tiffio.hxx
     Source/LibTIFF4/tiffiop.h
     Source/LibTIFF4/tiffvers.h
-    Source/LibTIFF4/tif_config.h
-    Source/LibTIFF4/tif_config.vc.h
-    Source/LibTIFF4/tif_config.wince.h
-    Source/LibTIFF4/tif_dir.h
-    Source/LibTIFF4/tif_fax3.h
-    Source/LibTIFF4/tif_predict.h
     Source/LibTIFF4/uvcode.h
     Source/LibWebP/src/dec/alphai.h
     Source/LibWebP/src/dec/decode_vp8.h
@@ -967,14 +967,13 @@ elseif (LINUX64)
     Source/OpenEXR/IexMath/IexMathFloatExc.h
     Source/OpenEXR/IexMath/IexMathFpu.h
     Source/OpenEXR/IexMath/IexMathIeeeExc.h
-    Source/OpenEXR/IlmImf/b44ExpLogTable.h
-    Source/OpenEXR/IlmImf/dwaLookups.h
     Source/OpenEXR/IlmImf/ImfAcesFile.h
     Source/OpenEXR/IlmImf/ImfArray.h
     Source/OpenEXR/IlmImf/ImfAttribute.h
     Source/OpenEXR/IlmImf/ImfAutoArray.h
     Source/OpenEXR/IlmImf/ImfB44Compressor.h
     Source/OpenEXR/IlmImf/ImfBoxAttribute.h
+    Source/OpenEXR/IlmImf/ImfCRgbaFile.h
     Source/OpenEXR/IlmImf/ImfChannelList.h
     Source/OpenEXR/IlmImf/ImfChannelListAttribute.h
     Source/OpenEXR/IlmImf/ImfCheckedArithmetic.h
@@ -985,7 +984,6 @@ elseif (LINUX64)
     Source/OpenEXR/IlmImf/ImfCompressionAttribute.h
     Source/OpenEXR/IlmImf/ImfCompressor.h
     Source/OpenEXR/IlmImf/ImfConvert.h
-    Source/OpenEXR/IlmImf/ImfCRgbaFile.h
     Source/OpenEXR/IlmImf/ImfDeepCompositing.h
     Source/OpenEXR/IlmImf/ImfDeepFrameBuffer.h
     Source/OpenEXR/IlmImf/ImfDeepImageState.h
@@ -1014,13 +1012,13 @@ elseif (LINUX64)
     Source/OpenEXR/IlmImf/ImfGenericOutputFile.h
     Source/OpenEXR/IlmImf/ImfHeader.h
     Source/OpenEXR/IlmImf/ImfHuf.h
+    Source/OpenEXR/IlmImf/ImfIO.h
     Source/OpenEXR/IlmImf/ImfInputFile.h
     Source/OpenEXR/IlmImf/ImfInputPart.h
     Source/OpenEXR/IlmImf/ImfInputPartData.h
     Source/OpenEXR/IlmImf/ImfInputStreamMutex.h
     Source/OpenEXR/IlmImf/ImfInt64.h
     Source/OpenEXR/IlmImf/ImfIntAttribute.h
-    Source/OpenEXR/IlmImf/ImfIO.h
     Source/OpenEXR/IlmImf/ImfKeyCode.h
     Source/OpenEXR/IlmImf/ImfKeyCodeAttribute.h
     Source/OpenEXR/IlmImf/ImfLineOrder.h
@@ -1064,13 +1062,13 @@ elseif (LINUX64)
     Source/OpenEXR/IlmImf/ImfThreading.h
     Source/OpenEXR/IlmImf/ImfTileDescription.h
     Source/OpenEXR/IlmImf/ImfTileDescriptionAttribute.h
+    Source/OpenEXR/IlmImf/ImfTileOffsets.h
     Source/OpenEXR/IlmImf/ImfTiledInputFile.h
     Source/OpenEXR/IlmImf/ImfTiledInputPart.h
     Source/OpenEXR/IlmImf/ImfTiledMisc.h
     Source/OpenEXR/IlmImf/ImfTiledOutputFile.h
     Source/OpenEXR/IlmImf/ImfTiledOutputPart.h
     Source/OpenEXR/IlmImf/ImfTiledRgbaFile.h
-    Source/OpenEXR/IlmImf/ImfTileOffsets.h
     Source/OpenEXR/IlmImf/ImfTimeCode.h
     Source/OpenEXR/IlmImf/ImfTimeCodeAttribute.h
     Source/OpenEXR/IlmImf/ImfVecAttribute.h
@@ -1079,6 +1077,8 @@ elseif (LINUX64)
     Source/OpenEXR/IlmImf/ImfXdr.h
     Source/OpenEXR/IlmImf/ImfZip.h
     Source/OpenEXR/IlmImf/ImfZipCompressor.h
+    Source/OpenEXR/IlmImf/b44ExpLogTable.h
+    Source/OpenEXR/IlmImf/dwaLookups.h
     Source/OpenEXR/IlmThread/IlmThread.h
     Source/OpenEXR/IlmThread/IlmThreadExport.h
     Source/OpenEXR/IlmThread/IlmThreadForward.h
@@ -1151,10 +1151,11 @@ elseif (LINUX64)
     Source/FreeImage/Halftoning.cpp
     Source/FreeImage/J2KHelper.cpp
     Source/FreeImage/LFPQuantizer.cpp
-    Source/FreeImage/MemoryIO.cpp
     Source/FreeImage/MNGHelper.cpp
+    Source/FreeImage/MemoryIO.cpp
     Source/FreeImage/MultiPage.cpp
     Source/FreeImage/NNQuantizer.cpp
+    Source/FreeImage/PSDParser.cpp
     Source/FreeImage/PixelAccess.cpp
     Source/FreeImage/Plugin.cpp
     Source/FreeImage/PluginBMP.cpp
@@ -1189,17 +1190,16 @@ elseif (LINUX64)
     Source/FreeImage/PluginWebP.cpp
     Source/FreeImage/PluginXBM.cpp
     Source/FreeImage/PluginXPM.cpp
-    Source/FreeImage/PSDParser.cpp
     Source/FreeImage/TIFFLogLuv.cpp
+    Source/FreeImage/ToneMapping.cpp
+    Source/FreeImage/WuQuantizer.cpp
+    Source/FreeImage/ZLibInterface.cpp
     Source/FreeImage/tmoColorConvert.cpp
     Source/FreeImage/tmoDrago03.cpp
     Source/FreeImage/tmoFattal02.cpp
     Source/FreeImage/tmoReinhard05.cpp
-    Source/FreeImage/ToneMapping.cpp
-    Source/FreeImage/WuQuantizer.cpp
-    Source/FreeImage/ZLibInterface.cpp
-    Source/FreeImageToolkit/Background.cpp
     Source/FreeImageToolkit/BSplineRotate.cpp
+    Source/FreeImageToolkit/Background.cpp
     Source/FreeImageToolkit/Channels.cpp
     Source/FreeImageToolkit/ClassicRotate.cpp
     Source/FreeImageToolkit/Colors.cpp
@@ -1270,26 +1270,26 @@ elseif (LINUX64)
     Source/LibJPEG/wrppm.c
     Source/LibJPEG/wrrle.c
     Source/LibJPEG/wrtarga.c
-    Source/LibJXR/image/decode/decode.c
     Source/LibJXR/image/decode/JXRTranscode.c
+    Source/LibJXR/image/decode/decode.c
     Source/LibJXR/image/decode/postprocess.c
     Source/LibJXR/image/decode/segdec.c
-    Source/LibJXR/image/decode/strdec.c
-    Source/LibJXR/image/decode/strdec_x86.c
     Source/LibJXR/image/decode/strInvTransform.c
     Source/LibJXR/image/decode/strPredQuantDec.c
+    Source/LibJXR/image/decode/strdec.c
+    Source/LibJXR/image/decode/strdec_x86.c
     Source/LibJXR/image/encode/encode.c
     Source/LibJXR/image/encode/segenc.c
-    Source/LibJXR/image/encode/strenc.c
-    Source/LibJXR/image/encode/strenc_x86.c
     Source/LibJXR/image/encode/strFwdTransform.c
     Source/LibJXR/image/encode/strPredQuantEnc.c
+    Source/LibJXR/image/encode/strenc.c
+    Source/LibJXR/image/encode/strenc_x86.c
     Source/LibJXR/image/sys/adapthuff.c
     Source/LibJXR/image/sys/image.c
     Source/LibJXR/image/sys/perfTimerANSI.c
-    Source/LibJXR/image/sys/strcodec.c
     Source/LibJXR/image/sys/strPredQuant.c
     Source/LibJXR/image/sys/strTransform.c
+    Source/LibJXR/image/sys/strcodec.c
     Source/LibJXR/jxrgluelib/JXRGlue.c
     Source/LibJXR/jxrgluelib/JXRGlueJxr.c
     Source/LibJXR/jxrgluelib/JXRGluePFC.c
@@ -1479,11 +1479,11 @@ elseif (LINUX64)
     Source/OpenEXR/Iex/IexThrowErrnoExc.cpp
     Source/OpenEXR/IexMath/IexMathFloatExc.cpp
     Source/OpenEXR/IexMath/IexMathFpu.cpp
-    Source/OpenEXR/IlmImf/b44ExpLogTable.cpp
     Source/OpenEXR/IlmImf/ImfAcesFile.cpp
     Source/OpenEXR/IlmImf/ImfAttribute.cpp
     Source/OpenEXR/IlmImf/ImfB44Compressor.cpp
     Source/OpenEXR/IlmImf/ImfBoxAttribute.cpp
+    Source/OpenEXR/IlmImf/ImfCRgbaFile.cpp
     Source/OpenEXR/IlmImf/ImfChannelList.cpp
     Source/OpenEXR/IlmImf/ImfChannelListAttribute.cpp
     Source/OpenEXR/IlmImf/ImfChromaticities.cpp
@@ -1492,7 +1492,6 @@ elseif (LINUX64)
     Source/OpenEXR/IlmImf/ImfCompressionAttribute.cpp
     Source/OpenEXR/IlmImf/ImfCompressor.cpp
     Source/OpenEXR/IlmImf/ImfConvert.cpp
-    Source/OpenEXR/IlmImf/ImfCRgbaFile.cpp
     Source/OpenEXR/IlmImf/ImfDeepCompositing.cpp
     Source/OpenEXR/IlmImf/ImfDeepFrameBuffer.cpp
     Source/OpenEXR/IlmImf/ImfDeepImageStateAttribute.cpp
@@ -1517,11 +1516,11 @@ elseif (LINUX64)
     Source/OpenEXR/IlmImf/ImfGenericOutputFile.cpp
     Source/OpenEXR/IlmImf/ImfHeader.cpp
     Source/OpenEXR/IlmImf/ImfHuf.cpp
+    Source/OpenEXR/IlmImf/ImfIO.cpp
     Source/OpenEXR/IlmImf/ImfInputFile.cpp
     Source/OpenEXR/IlmImf/ImfInputPart.cpp
     Source/OpenEXR/IlmImf/ImfInputPartData.cpp
     Source/OpenEXR/IlmImf/ImfIntAttribute.cpp
-    Source/OpenEXR/IlmImf/ImfIO.cpp
     Source/OpenEXR/IlmImf/ImfKeyCode.cpp
     Source/OpenEXR/IlmImf/ImfKeyCodeAttribute.cpp
     Source/OpenEXR/IlmImf/ImfLineOrderAttribute.cpp
@@ -1555,13 +1554,13 @@ elseif (LINUX64)
     Source/OpenEXR/IlmImf/ImfTestFile.cpp
     Source/OpenEXR/IlmImf/ImfThreading.cpp
     Source/OpenEXR/IlmImf/ImfTileDescriptionAttribute.cpp
+    Source/OpenEXR/IlmImf/ImfTileOffsets.cpp
     Source/OpenEXR/IlmImf/ImfTiledInputFile.cpp
     Source/OpenEXR/IlmImf/ImfTiledInputPart.cpp
     Source/OpenEXR/IlmImf/ImfTiledMisc.cpp
     Source/OpenEXR/IlmImf/ImfTiledOutputFile.cpp
     Source/OpenEXR/IlmImf/ImfTiledOutputPart.cpp
     Source/OpenEXR/IlmImf/ImfTiledRgbaFile.cpp
-    Source/OpenEXR/IlmImf/ImfTileOffsets.cpp
     Source/OpenEXR/IlmImf/ImfTimeCode.cpp
     Source/OpenEXR/IlmImf/ImfTimeCodeAttribute.cpp
     Source/OpenEXR/IlmImf/ImfVecAttribute.cpp
@@ -1569,6 +1568,7 @@ elseif (LINUX64)
     Source/OpenEXR/IlmImf/ImfWav.cpp
     Source/OpenEXR/IlmImf/ImfZip.cpp
     Source/OpenEXR/IlmImf/ImfZipCompressor.cpp
+    Source/OpenEXR/IlmImf/b44ExpLogTable.cpp
     Source/OpenEXR/IlmThread/IlmThread.cpp
     Source/OpenEXR/IlmThread/IlmThreadMutex.cpp
     Source/OpenEXR/IlmThread/IlmThreadPool.cpp
@@ -1631,8 +1631,8 @@ elseif (WIN32)
     Source/LibJXR/image/sys/ansi.h
     Source/LibJXR/image/sys/common.h
     Source/LibJXR/image/sys/perfTimer.h
-    Source/LibJXR/image/sys/strcodec.h
     Source/LibJXR/image/sys/strTransform.h
+    Source/LibJXR/image/sys/strcodec.h
     Source/LibJXR/image/sys/windowsmediaphoto.h
     Source/LibJXR/image/sys/xplatform_image.h
     Source/LibJXR/image/x86/x86.h
@@ -1686,6 +1686,12 @@ elseif (WIN32)
     Source/LibRawLite/libraw/libraw_types.h
     Source/LibRawLite/libraw/libraw_version.h
     Source/LibTIFF4/t4.h
+    Source/LibTIFF4/tif_config.h
+    Source/LibTIFF4/tif_config.vc.h
+    Source/LibTIFF4/tif_config.wince.h
+    Source/LibTIFF4/tif_dir.h
+    Source/LibTIFF4/tif_fax3.h
+    Source/LibTIFF4/tif_predict.h
     Source/LibTIFF4/tiff.h
     Source/LibTIFF4/tiffconf.h
     Source/LibTIFF4/tiffconf.vc.h
@@ -1694,12 +1700,6 @@ elseif (WIN32)
     Source/LibTIFF4/tiffio.hxx
     Source/LibTIFF4/tiffiop.h
     Source/LibTIFF4/tiffvers.h
-    Source/LibTIFF4/tif_config.h
-    Source/LibTIFF4/tif_config.vc.h
-    Source/LibTIFF4/tif_config.wince.h
-    Source/LibTIFF4/tif_dir.h
-    Source/LibTIFF4/tif_fax3.h
-    Source/LibTIFF4/tif_predict.h
     Source/LibTIFF4/uvcode.h
     Source/LibWebP/src/dec/alphai.h
     Source/LibWebP/src/dec/decode_vp8.h
@@ -1761,14 +1761,13 @@ elseif (WIN32)
     Source/OpenEXR/IexMath/IexMathFloatExc.h
     Source/OpenEXR/IexMath/IexMathFpu.h
     Source/OpenEXR/IexMath/IexMathIeeeExc.h
-    Source/OpenEXR/IlmImf/b44ExpLogTable.h
-    Source/OpenEXR/IlmImf/dwaLookups.h
     Source/OpenEXR/IlmImf/ImfAcesFile.h
     Source/OpenEXR/IlmImf/ImfArray.h
     Source/OpenEXR/IlmImf/ImfAttribute.h
     Source/OpenEXR/IlmImf/ImfAutoArray.h
     Source/OpenEXR/IlmImf/ImfB44Compressor.h
     Source/OpenEXR/IlmImf/ImfBoxAttribute.h
+    Source/OpenEXR/IlmImf/ImfCRgbaFile.h
     Source/OpenEXR/IlmImf/ImfChannelList.h
     Source/OpenEXR/IlmImf/ImfChannelListAttribute.h
     Source/OpenEXR/IlmImf/ImfCheckedArithmetic.h
@@ -1779,7 +1778,6 @@ elseif (WIN32)
     Source/OpenEXR/IlmImf/ImfCompressionAttribute.h
     Source/OpenEXR/IlmImf/ImfCompressor.h
     Source/OpenEXR/IlmImf/ImfConvert.h
-    Source/OpenEXR/IlmImf/ImfCRgbaFile.h
     Source/OpenEXR/IlmImf/ImfDeepCompositing.h
     Source/OpenEXR/IlmImf/ImfDeepFrameBuffer.h
     Source/OpenEXR/IlmImf/ImfDeepImageState.h
@@ -1808,13 +1806,13 @@ elseif (WIN32)
     Source/OpenEXR/IlmImf/ImfGenericOutputFile.h
     Source/OpenEXR/IlmImf/ImfHeader.h
     Source/OpenEXR/IlmImf/ImfHuf.h
+    Source/OpenEXR/IlmImf/ImfIO.h
     Source/OpenEXR/IlmImf/ImfInputFile.h
     Source/OpenEXR/IlmImf/ImfInputPart.h
     Source/OpenEXR/IlmImf/ImfInputPartData.h
     Source/OpenEXR/IlmImf/ImfInputStreamMutex.h
     Source/OpenEXR/IlmImf/ImfInt64.h
     Source/OpenEXR/IlmImf/ImfIntAttribute.h
-    Source/OpenEXR/IlmImf/ImfIO.h
     Source/OpenEXR/IlmImf/ImfKeyCode.h
     Source/OpenEXR/IlmImf/ImfKeyCodeAttribute.h
     Source/OpenEXR/IlmImf/ImfLineOrder.h
@@ -1858,13 +1856,13 @@ elseif (WIN32)
     Source/OpenEXR/IlmImf/ImfThreading.h
     Source/OpenEXR/IlmImf/ImfTileDescription.h
     Source/OpenEXR/IlmImf/ImfTileDescriptionAttribute.h
+    Source/OpenEXR/IlmImf/ImfTileOffsets.h
     Source/OpenEXR/IlmImf/ImfTiledInputFile.h
     Source/OpenEXR/IlmImf/ImfTiledInputPart.h
     Source/OpenEXR/IlmImf/ImfTiledMisc.h
     Source/OpenEXR/IlmImf/ImfTiledOutputFile.h
     Source/OpenEXR/IlmImf/ImfTiledOutputPart.h
     Source/OpenEXR/IlmImf/ImfTiledRgbaFile.h
-    Source/OpenEXR/IlmImf/ImfTileOffsets.h
     Source/OpenEXR/IlmImf/ImfTimeCode.h
     Source/OpenEXR/IlmImf/ImfTimeCodeAttribute.h
     Source/OpenEXR/IlmImf/ImfVecAttribute.h
@@ -1873,6 +1871,8 @@ elseif (WIN32)
     Source/OpenEXR/IlmImf/ImfXdr.h
     Source/OpenEXR/IlmImf/ImfZip.h
     Source/OpenEXR/IlmImf/ImfZipCompressor.h
+    Source/OpenEXR/IlmImf/b44ExpLogTable.h
+    Source/OpenEXR/IlmImf/dwaLookups.h
     Source/OpenEXR/IlmThread/IlmThread.h
     Source/OpenEXR/IlmThread/IlmThreadExport.h
     Source/OpenEXR/IlmThread/IlmThreadForward.h
@@ -1945,10 +1945,11 @@ elseif (WIN32)
     Source/FreeImage/Halftoning.cpp
     Source/FreeImage/J2KHelper.cpp
     Source/FreeImage/LFPQuantizer.cpp
-    Source/FreeImage/MemoryIO.cpp
     Source/FreeImage/MNGHelper.cpp
+    Source/FreeImage/MemoryIO.cpp
     Source/FreeImage/MultiPage.cpp
     Source/FreeImage/NNQuantizer.cpp
+    Source/FreeImage/PSDParser.cpp
     Source/FreeImage/PixelAccess.cpp
     Source/FreeImage/Plugin.cpp
     Source/FreeImage/PluginBMP.cpp
@@ -1983,17 +1984,16 @@ elseif (WIN32)
     Source/FreeImage/PluginWebP.cpp
     Source/FreeImage/PluginXBM.cpp
     Source/FreeImage/PluginXPM.cpp
-    Source/FreeImage/PSDParser.cpp
     Source/FreeImage/TIFFLogLuv.cpp
+    Source/FreeImage/ToneMapping.cpp
+    Source/FreeImage/WuQuantizer.cpp
+    Source/FreeImage/ZLibInterface.cpp
     Source/FreeImage/tmoColorConvert.cpp
     Source/FreeImage/tmoDrago03.cpp
     Source/FreeImage/tmoFattal02.cpp
     Source/FreeImage/tmoReinhard05.cpp
-    Source/FreeImage/ToneMapping.cpp
-    Source/FreeImage/WuQuantizer.cpp
-    Source/FreeImage/ZLibInterface.cpp
-    Source/FreeImageToolkit/Background.cpp
     Source/FreeImageToolkit/BSplineRotate.cpp
+    Source/FreeImageToolkit/Background.cpp
     Source/FreeImageToolkit/Channels.cpp
     Source/FreeImageToolkit/ClassicRotate.cpp
     Source/FreeImageToolkit/Colors.cpp
@@ -2064,26 +2064,26 @@ elseif (WIN32)
     Source/LibJPEG/wrppm.c
     Source/LibJPEG/wrrle.c
     Source/LibJPEG/wrtarga.c
-    Source/LibJXR/image/decode/decode.c
     Source/LibJXR/image/decode/JXRTranscode.c
+    Source/LibJXR/image/decode/decode.c
     Source/LibJXR/image/decode/postprocess.c
     Source/LibJXR/image/decode/segdec.c
-    Source/LibJXR/image/decode/strdec.c
-    Source/LibJXR/image/decode/strdec_x86.c
     Source/LibJXR/image/decode/strInvTransform.c
     Source/LibJXR/image/decode/strPredQuantDec.c
+    Source/LibJXR/image/decode/strdec.c
+    Source/LibJXR/image/decode/strdec_x86.c
     Source/LibJXR/image/encode/encode.c
     Source/LibJXR/image/encode/segenc.c
-    Source/LibJXR/image/encode/strenc.c
-    Source/LibJXR/image/encode/strenc_x86.c
     Source/LibJXR/image/encode/strFwdTransform.c
     Source/LibJXR/image/encode/strPredQuantEnc.c
+    Source/LibJXR/image/encode/strenc.c
+    Source/LibJXR/image/encode/strenc_x86.c
     Source/LibJXR/image/sys/adapthuff.c
     Source/LibJXR/image/sys/image.c
     Source/LibJXR/image/sys/perfTimerANSI.c
-    Source/LibJXR/image/sys/strcodec.c
     Source/LibJXR/image/sys/strPredQuant.c
     Source/LibJXR/image/sys/strTransform.c
+    Source/LibJXR/image/sys/strcodec.c
     Source/LibJXR/jxrgluelib/JXRGlue.c
     Source/LibJXR/jxrgluelib/JXRGlueJxr.c
     Source/LibJXR/jxrgluelib/JXRGluePFC.c
@@ -2273,11 +2273,11 @@ elseif (WIN32)
     Source/OpenEXR/Iex/IexThrowErrnoExc.cpp
     Source/OpenEXR/IexMath/IexMathFloatExc.cpp
     Source/OpenEXR/IexMath/IexMathFpu.cpp
-    Source/OpenEXR/IlmImf/b44ExpLogTable.cpp
     Source/OpenEXR/IlmImf/ImfAcesFile.cpp
     Source/OpenEXR/IlmImf/ImfAttribute.cpp
     Source/OpenEXR/IlmImf/ImfB44Compressor.cpp
     Source/OpenEXR/IlmImf/ImfBoxAttribute.cpp
+    Source/OpenEXR/IlmImf/ImfCRgbaFile.cpp
     Source/OpenEXR/IlmImf/ImfChannelList.cpp
     Source/OpenEXR/IlmImf/ImfChannelListAttribute.cpp
     Source/OpenEXR/IlmImf/ImfChromaticities.cpp
@@ -2286,7 +2286,6 @@ elseif (WIN32)
     Source/OpenEXR/IlmImf/ImfCompressionAttribute.cpp
     Source/OpenEXR/IlmImf/ImfCompressor.cpp
     Source/OpenEXR/IlmImf/ImfConvert.cpp
-    Source/OpenEXR/IlmImf/ImfCRgbaFile.cpp
     Source/OpenEXR/IlmImf/ImfDeepCompositing.cpp
     Source/OpenEXR/IlmImf/ImfDeepFrameBuffer.cpp
     Source/OpenEXR/IlmImf/ImfDeepImageStateAttribute.cpp
@@ -2311,11 +2310,11 @@ elseif (WIN32)
     Source/OpenEXR/IlmImf/ImfGenericOutputFile.cpp
     Source/OpenEXR/IlmImf/ImfHeader.cpp
     Source/OpenEXR/IlmImf/ImfHuf.cpp
+    Source/OpenEXR/IlmImf/ImfIO.cpp
     Source/OpenEXR/IlmImf/ImfInputFile.cpp
     Source/OpenEXR/IlmImf/ImfInputPart.cpp
     Source/OpenEXR/IlmImf/ImfInputPartData.cpp
     Source/OpenEXR/IlmImf/ImfIntAttribute.cpp
-    Source/OpenEXR/IlmImf/ImfIO.cpp
     Source/OpenEXR/IlmImf/ImfKeyCode.cpp
     Source/OpenEXR/IlmImf/ImfKeyCodeAttribute.cpp
     Source/OpenEXR/IlmImf/ImfLineOrderAttribute.cpp
@@ -2349,13 +2348,13 @@ elseif (WIN32)
     Source/OpenEXR/IlmImf/ImfTestFile.cpp
     Source/OpenEXR/IlmImf/ImfThreading.cpp
     Source/OpenEXR/IlmImf/ImfTileDescriptionAttribute.cpp
+    Source/OpenEXR/IlmImf/ImfTileOffsets.cpp
     Source/OpenEXR/IlmImf/ImfTiledInputFile.cpp
     Source/OpenEXR/IlmImf/ImfTiledInputPart.cpp
     Source/OpenEXR/IlmImf/ImfTiledMisc.cpp
     Source/OpenEXR/IlmImf/ImfTiledOutputFile.cpp
     Source/OpenEXR/IlmImf/ImfTiledOutputPart.cpp
     Source/OpenEXR/IlmImf/ImfTiledRgbaFile.cpp
-    Source/OpenEXR/IlmImf/ImfTileOffsets.cpp
     Source/OpenEXR/IlmImf/ImfTimeCode.cpp
     Source/OpenEXR/IlmImf/ImfTimeCodeAttribute.cpp
     Source/OpenEXR/IlmImf/ImfVecAttribute.cpp
@@ -2363,6 +2362,7 @@ elseif (WIN32)
     Source/OpenEXR/IlmImf/ImfWav.cpp
     Source/OpenEXR/IlmImf/ImfZip.cpp
     Source/OpenEXR/IlmImf/ImfZipCompressor.cpp
+    Source/OpenEXR/IlmImf/b44ExpLogTable.cpp
     Source/OpenEXR/IlmThread/IlmThread.cpp
     Source/OpenEXR/IlmThread/IlmThreadMutex.cpp
     Source/OpenEXR/IlmThread/IlmThreadPool.cpp
@@ -2417,8 +2417,8 @@ elseif (WIN64)
     Source/LibJXR/image/sys/ansi.h
     Source/LibJXR/image/sys/common.h
     Source/LibJXR/image/sys/perfTimer.h
-    Source/LibJXR/image/sys/strcodec.h
     Source/LibJXR/image/sys/strTransform.h
+    Source/LibJXR/image/sys/strcodec.h
     Source/LibJXR/image/sys/windowsmediaphoto.h
     Source/LibJXR/image/sys/xplatform_image.h
     Source/LibJXR/image/x86/x86.h
@@ -2472,6 +2472,12 @@ elseif (WIN64)
     Source/LibRawLite/libraw/libraw_types.h
     Source/LibRawLite/libraw/libraw_version.h
     Source/LibTIFF4/t4.h
+    Source/LibTIFF4/tif_config.h
+    Source/LibTIFF4/tif_config.vc.h
+    Source/LibTIFF4/tif_config.wince.h
+    Source/LibTIFF4/tif_dir.h
+    Source/LibTIFF4/tif_fax3.h
+    Source/LibTIFF4/tif_predict.h
     Source/LibTIFF4/tiff.h
     Source/LibTIFF4/tiffconf.h
     Source/LibTIFF4/tiffconf.vc.h
@@ -2480,12 +2486,6 @@ elseif (WIN64)
     Source/LibTIFF4/tiffio.hxx
     Source/LibTIFF4/tiffiop.h
     Source/LibTIFF4/tiffvers.h
-    Source/LibTIFF4/tif_config.h
-    Source/LibTIFF4/tif_config.vc.h
-    Source/LibTIFF4/tif_config.wince.h
-    Source/LibTIFF4/tif_dir.h
-    Source/LibTIFF4/tif_fax3.h
-    Source/LibTIFF4/tif_predict.h
     Source/LibTIFF4/uvcode.h
     Source/LibWebP/src/dec/alphai.h
     Source/LibWebP/src/dec/decode_vp8.h
@@ -2547,14 +2547,13 @@ elseif (WIN64)
     Source/OpenEXR/IexMath/IexMathFloatExc.h
     Source/OpenEXR/IexMath/IexMathFpu.h
     Source/OpenEXR/IexMath/IexMathIeeeExc.h
-    Source/OpenEXR/IlmImf/b44ExpLogTable.h
-    Source/OpenEXR/IlmImf/dwaLookups.h
     Source/OpenEXR/IlmImf/ImfAcesFile.h
     Source/OpenEXR/IlmImf/ImfArray.h
     Source/OpenEXR/IlmImf/ImfAttribute.h
     Source/OpenEXR/IlmImf/ImfAutoArray.h
     Source/OpenEXR/IlmImf/ImfB44Compressor.h
     Source/OpenEXR/IlmImf/ImfBoxAttribute.h
+    Source/OpenEXR/IlmImf/ImfCRgbaFile.h
     Source/OpenEXR/IlmImf/ImfChannelList.h
     Source/OpenEXR/IlmImf/ImfChannelListAttribute.h
     Source/OpenEXR/IlmImf/ImfCheckedArithmetic.h
@@ -2565,7 +2564,6 @@ elseif (WIN64)
     Source/OpenEXR/IlmImf/ImfCompressionAttribute.h
     Source/OpenEXR/IlmImf/ImfCompressor.h
     Source/OpenEXR/IlmImf/ImfConvert.h
-    Source/OpenEXR/IlmImf/ImfCRgbaFile.h
     Source/OpenEXR/IlmImf/ImfDeepCompositing.h
     Source/OpenEXR/IlmImf/ImfDeepFrameBuffer.h
     Source/OpenEXR/IlmImf/ImfDeepImageState.h
@@ -2594,13 +2592,13 @@ elseif (WIN64)
     Source/OpenEXR/IlmImf/ImfGenericOutputFile.h
     Source/OpenEXR/IlmImf/ImfHeader.h
     Source/OpenEXR/IlmImf/ImfHuf.h
+    Source/OpenEXR/IlmImf/ImfIO.h
     Source/OpenEXR/IlmImf/ImfInputFile.h
     Source/OpenEXR/IlmImf/ImfInputPart.h
     Source/OpenEXR/IlmImf/ImfInputPartData.h
     Source/OpenEXR/IlmImf/ImfInputStreamMutex.h
     Source/OpenEXR/IlmImf/ImfInt64.h
     Source/OpenEXR/IlmImf/ImfIntAttribute.h
-    Source/OpenEXR/IlmImf/ImfIO.h
     Source/OpenEXR/IlmImf/ImfKeyCode.h
     Source/OpenEXR/IlmImf/ImfKeyCodeAttribute.h
     Source/OpenEXR/IlmImf/ImfLineOrder.h
@@ -2644,13 +2642,13 @@ elseif (WIN64)
     Source/OpenEXR/IlmImf/ImfThreading.h
     Source/OpenEXR/IlmImf/ImfTileDescription.h
     Source/OpenEXR/IlmImf/ImfTileDescriptionAttribute.h
+    Source/OpenEXR/IlmImf/ImfTileOffsets.h
     Source/OpenEXR/IlmImf/ImfTiledInputFile.h
     Source/OpenEXR/IlmImf/ImfTiledInputPart.h
     Source/OpenEXR/IlmImf/ImfTiledMisc.h
     Source/OpenEXR/IlmImf/ImfTiledOutputFile.h
     Source/OpenEXR/IlmImf/ImfTiledOutputPart.h
     Source/OpenEXR/IlmImf/ImfTiledRgbaFile.h
-    Source/OpenEXR/IlmImf/ImfTileOffsets.h
     Source/OpenEXR/IlmImf/ImfTimeCode.h
     Source/OpenEXR/IlmImf/ImfTimeCodeAttribute.h
     Source/OpenEXR/IlmImf/ImfVecAttribute.h
@@ -2659,6 +2657,8 @@ elseif (WIN64)
     Source/OpenEXR/IlmImf/ImfXdr.h
     Source/OpenEXR/IlmImf/ImfZip.h
     Source/OpenEXR/IlmImf/ImfZipCompressor.h
+    Source/OpenEXR/IlmImf/b44ExpLogTable.h
+    Source/OpenEXR/IlmImf/dwaLookups.h
     Source/OpenEXR/IlmThread/IlmThread.h
     Source/OpenEXR/IlmThread/IlmThreadExport.h
     Source/OpenEXR/IlmThread/IlmThreadForward.h
@@ -2731,10 +2731,11 @@ elseif (WIN64)
     Source/FreeImage/Halftoning.cpp
     Source/FreeImage/J2KHelper.cpp
     Source/FreeImage/LFPQuantizer.cpp
-    Source/FreeImage/MemoryIO.cpp
     Source/FreeImage/MNGHelper.cpp
+    Source/FreeImage/MemoryIO.cpp
     Source/FreeImage/MultiPage.cpp
     Source/FreeImage/NNQuantizer.cpp
+    Source/FreeImage/PSDParser.cpp
     Source/FreeImage/PixelAccess.cpp
     Source/FreeImage/Plugin.cpp
     Source/FreeImage/PluginBMP.cpp
@@ -2769,17 +2770,16 @@ elseif (WIN64)
     Source/FreeImage/PluginWebP.cpp
     Source/FreeImage/PluginXBM.cpp
     Source/FreeImage/PluginXPM.cpp
-    Source/FreeImage/PSDParser.cpp
     Source/FreeImage/TIFFLogLuv.cpp
+    Source/FreeImage/ToneMapping.cpp
+    Source/FreeImage/WuQuantizer.cpp
+    Source/FreeImage/ZLibInterface.cpp
     Source/FreeImage/tmoColorConvert.cpp
     Source/FreeImage/tmoDrago03.cpp
     Source/FreeImage/tmoFattal02.cpp
     Source/FreeImage/tmoReinhard05.cpp
-    Source/FreeImage/ToneMapping.cpp
-    Source/FreeImage/WuQuantizer.cpp
-    Source/FreeImage/ZLibInterface.cpp
-    Source/FreeImageToolkit/Background.cpp
     Source/FreeImageToolkit/BSplineRotate.cpp
+    Source/FreeImageToolkit/Background.cpp
     Source/FreeImageToolkit/Channels.cpp
     Source/FreeImageToolkit/ClassicRotate.cpp
     Source/FreeImageToolkit/Colors.cpp
@@ -2850,26 +2850,26 @@ elseif (WIN64)
     Source/LibJPEG/wrppm.c
     Source/LibJPEG/wrrle.c
     Source/LibJPEG/wrtarga.c
-    Source/LibJXR/image/decode/decode.c
     Source/LibJXR/image/decode/JXRTranscode.c
+    Source/LibJXR/image/decode/decode.c
     Source/LibJXR/image/decode/postprocess.c
     Source/LibJXR/image/decode/segdec.c
-    Source/LibJXR/image/decode/strdec.c
-    Source/LibJXR/image/decode/strdec_x86.c
     Source/LibJXR/image/decode/strInvTransform.c
     Source/LibJXR/image/decode/strPredQuantDec.c
+    Source/LibJXR/image/decode/strdec.c
+    Source/LibJXR/image/decode/strdec_x86.c
     Source/LibJXR/image/encode/encode.c
     Source/LibJXR/image/encode/segenc.c
-    Source/LibJXR/image/encode/strenc.c
-    Source/LibJXR/image/encode/strenc_x86.c
     Source/LibJXR/image/encode/strFwdTransform.c
     Source/LibJXR/image/encode/strPredQuantEnc.c
+    Source/LibJXR/image/encode/strenc.c
+    Source/LibJXR/image/encode/strenc_x86.c
     Source/LibJXR/image/sys/adapthuff.c
     Source/LibJXR/image/sys/image.c
     Source/LibJXR/image/sys/perfTimerANSI.c
-    Source/LibJXR/image/sys/strcodec.c
     Source/LibJXR/image/sys/strPredQuant.c
     Source/LibJXR/image/sys/strTransform.c
+    Source/LibJXR/image/sys/strcodec.c
     Source/LibJXR/jxrgluelib/JXRGlue.c
     Source/LibJXR/jxrgluelib/JXRGlueJxr.c
     Source/LibJXR/jxrgluelib/JXRGluePFC.c
@@ -3059,11 +3059,11 @@ elseif (WIN64)
     Source/OpenEXR/Iex/IexThrowErrnoExc.cpp
     Source/OpenEXR/IexMath/IexMathFloatExc.cpp
     Source/OpenEXR/IexMath/IexMathFpu.cpp
-    Source/OpenEXR/IlmImf/b44ExpLogTable.cpp
     Source/OpenEXR/IlmImf/ImfAcesFile.cpp
     Source/OpenEXR/IlmImf/ImfAttribute.cpp
     Source/OpenEXR/IlmImf/ImfB44Compressor.cpp
     Source/OpenEXR/IlmImf/ImfBoxAttribute.cpp
+    Source/OpenEXR/IlmImf/ImfCRgbaFile.cpp
     Source/OpenEXR/IlmImf/ImfChannelList.cpp
     Source/OpenEXR/IlmImf/ImfChannelListAttribute.cpp
     Source/OpenEXR/IlmImf/ImfChromaticities.cpp
@@ -3072,7 +3072,6 @@ elseif (WIN64)
     Source/OpenEXR/IlmImf/ImfCompressionAttribute.cpp
     Source/OpenEXR/IlmImf/ImfCompressor.cpp
     Source/OpenEXR/IlmImf/ImfConvert.cpp
-    Source/OpenEXR/IlmImf/ImfCRgbaFile.cpp
     Source/OpenEXR/IlmImf/ImfDeepCompositing.cpp
     Source/OpenEXR/IlmImf/ImfDeepFrameBuffer.cpp
     Source/OpenEXR/IlmImf/ImfDeepImageStateAttribute.cpp
@@ -3097,11 +3096,11 @@ elseif (WIN64)
     Source/OpenEXR/IlmImf/ImfGenericOutputFile.cpp
     Source/OpenEXR/IlmImf/ImfHeader.cpp
     Source/OpenEXR/IlmImf/ImfHuf.cpp
+    Source/OpenEXR/IlmImf/ImfIO.cpp
     Source/OpenEXR/IlmImf/ImfInputFile.cpp
     Source/OpenEXR/IlmImf/ImfInputPart.cpp
     Source/OpenEXR/IlmImf/ImfInputPartData.cpp
     Source/OpenEXR/IlmImf/ImfIntAttribute.cpp
-    Source/OpenEXR/IlmImf/ImfIO.cpp
     Source/OpenEXR/IlmImf/ImfKeyCode.cpp
     Source/OpenEXR/IlmImf/ImfKeyCodeAttribute.cpp
     Source/OpenEXR/IlmImf/ImfLineOrderAttribute.cpp
@@ -3135,13 +3134,13 @@ elseif (WIN64)
     Source/OpenEXR/IlmImf/ImfTestFile.cpp
     Source/OpenEXR/IlmImf/ImfThreading.cpp
     Source/OpenEXR/IlmImf/ImfTileDescriptionAttribute.cpp
+    Source/OpenEXR/IlmImf/ImfTileOffsets.cpp
     Source/OpenEXR/IlmImf/ImfTiledInputFile.cpp
     Source/OpenEXR/IlmImf/ImfTiledInputPart.cpp
     Source/OpenEXR/IlmImf/ImfTiledMisc.cpp
     Source/OpenEXR/IlmImf/ImfTiledOutputFile.cpp
     Source/OpenEXR/IlmImf/ImfTiledOutputPart.cpp
     Source/OpenEXR/IlmImf/ImfTiledRgbaFile.cpp
-    Source/OpenEXR/IlmImf/ImfTileOffsets.cpp
     Source/OpenEXR/IlmImf/ImfTimeCode.cpp
     Source/OpenEXR/IlmImf/ImfTimeCodeAttribute.cpp
     Source/OpenEXR/IlmImf/ImfVecAttribute.cpp
@@ -3149,6 +3148,7 @@ elseif (WIN64)
     Source/OpenEXR/IlmImf/ImfWav.cpp
     Source/OpenEXR/IlmImf/ImfZip.cpp
     Source/OpenEXR/IlmImf/ImfZipCompressor.cpp
+    Source/OpenEXR/IlmImf/b44ExpLogTable.cpp
     Source/OpenEXR/IlmThread/IlmThread.cpp
     Source/OpenEXR/IlmThread/IlmThreadMutex.cpp
     Source/OpenEXR/IlmThread/IlmThreadPool.cpp

@@ -14,7 +14,6 @@
 set( HEADER_FILES 
   include/gucefMATH.h
   include/gucefMATH_CModule.h
-  include/gucefMATH_config.h
   include/gucefMATH_CTDirectionVector2D.h
   include/gucefMATH_CTDirectionVector3D.h
   include/gucefMATH_CTMatrix3D.h
@@ -26,6 +25,7 @@ set( HEADER_FILES
   include/gucefMATH_CTVector2D.h
   include/gucefMATH_CTVector3D.h
   include/gucefMATH_ETypes.h
+  include/gucefMATH_config.h
   include/gucefMATH_macros.h
   include/gucefMATH_points.h
   include/gucefMATH_vectors.h

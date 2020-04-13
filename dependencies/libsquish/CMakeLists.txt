@@ -60,9 +60,7 @@ add_library( ${MODULE_NAME} STATIC ${ALL_FILES} )
 
 
 
-if (LINUX32)
-GUCEF_config_lib( ${MODULE_NAME} )
-elseif (LINUX64)
+if (OSX)
 GUCEF_config_lib( ${MODULE_NAME} )
 elseif (WIN32)
 GUCEF_config_lib( ${MODULE_NAME} )

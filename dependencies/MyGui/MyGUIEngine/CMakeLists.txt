@@ -37,11 +37,11 @@ set( HEADER_FILES
   include/MyGUI_ControllerPosition.h
   include/MyGUI_CoordConverter.h
   include/MyGUI_CustomAllocator.h
+  include/MyGUI_DDContainer.h
+  include/MyGUI_DDItemInfo.h
   include/MyGUI_DataFileStream.h
   include/MyGUI_DataManager.h
   include/MyGUI_DataStream.h
-  include/MyGUI_DDContainer.h
-  include/MyGUI_DDItemInfo.h
   include/MyGUI_Delegate.h
   include/MyGUI_DelegateImplement.h
   include/MyGUI_DeprecatedTypes.h
@@ -73,9 +73,6 @@ set( HEADER_FILES
   include/MyGUI_ILayerNode.h
   include/MyGUI_ILogFilter.h
   include/MyGUI_ILogListener.h
-  include/MyGUI_ImageBox.h
-  include/MyGUI_ImageInfo.h
-  include/MyGUI_InputManager.h
   include/MyGUI_IObject.h
   include/MyGUI_IPointer.h
   include/MyGUI_IRenderTarget.h
@@ -85,10 +82,13 @@ set( HEADER_FILES
   include/MyGUI_ISubWidget.h
   include/MyGUI_ISubWidgetRect.h
   include/MyGUI_ISubWidgetText.h
-  include/MyGUI_ItemBox.h
   include/MyGUI_ITexture.h
   include/MyGUI_IUnlinkWidget.h
   include/MyGUI_IVertexBuffer.h
+  include/MyGUI_ImageBox.h
+  include/MyGUI_ImageInfo.h
+  include/MyGUI_InputManager.h
+  include/MyGUI_ItemBox.h
   include/MyGUI_KeyCode.h
   include/MyGUI_LanguageManager.h
   include/MyGUI_LayerItem.h
@@ -122,6 +122,7 @@ set( HEADER_FILES
   include/MyGUI_Precompiled.h
   include/MyGUI_Prerequest.h
   include/MyGUI_ProgressBar.h
+  include/MyGUI_RTTI.h
   include/MyGUI_RenderFormat.h
   include/MyGUI_RenderItem.h
   include/MyGUI_RenderManager.h
@@ -137,7 +138,6 @@ set( HEADER_FILES
   include/MyGUI_ResourceSkin.h
   include/MyGUI_ResourceTrueTypeFont.h
   include/MyGUI_RotatingSkin.h
-  include/MyGUI_RTTI.h
   include/MyGUI_ScrollBar.h
   include/MyGUI_ScrollView.h
   include/MyGUI_ScrollViewBase.h
@@ -152,21 +152,21 @@ set( HEADER_FILES
   include/MyGUI_SubWidgetBinding.h
   include/MyGUI_SubWidgetInfo.h
   include/MyGUI_SubWidgetManager.h
-  include/MyGUI_TabControl.h
-  include/MyGUI_TabItem.h
   include/MyGUI_TCoord.h
-  include/MyGUI_TextBox.h
-  include/MyGUI_TextChangeHistory.h
-  include/MyGUI_TextIterator.h
-  include/MyGUI_TextureUtility.h
-  include/MyGUI_TextView.h
-  include/MyGUI_TextViewData.h
-  include/MyGUI_TileRect.h
-  include/MyGUI_Timer.h
-  include/MyGUI_ToolTipManager.h
   include/MyGUI_TPoint.h
   include/MyGUI_TRect.h
   include/MyGUI_TSize.h
+  include/MyGUI_TabControl.h
+  include/MyGUI_TabItem.h
+  include/MyGUI_TextBox.h
+  include/MyGUI_TextChangeHistory.h
+  include/MyGUI_TextIterator.h
+  include/MyGUI_TextView.h
+  include/MyGUI_TextViewData.h
+  include/MyGUI_TextureUtility.h
+  include/MyGUI_TileRect.h
+  include/MyGUI_Timer.h
+  include/MyGUI_ToolTipManager.h
   include/MyGUI_Types.h
   include/MyGUI_UString.h
   include/MyGUI_Version.h
@@ -200,10 +200,10 @@ set( SOURCE_FILES
   src/MyGUI_ControllerFadeAlpha.cpp
   src/MyGUI_ControllerManager.cpp
   src/MyGUI_ControllerPosition.cpp
+  src/MyGUI_DDContainer.cpp
   src/MyGUI_DataFileStream.cpp
   src/MyGUI_DataManager.cpp
   src/MyGUI_DataStream.cpp
-  src/MyGUI_DDContainer.cpp
   src/MyGUI_DynLib.cpp
   src/MyGUI_DynLibManager.cpp
   src/MyGUI_EditBox.cpp
@@ -266,8 +266,8 @@ set( SOURCE_FILES
   src/MyGUI_TabItem.cpp
   src/MyGUI_TextBox.cpp
   src/MyGUI_TextIterator.cpp
-  src/MyGUI_TextureUtility.cpp
   src/MyGUI_TextView.cpp
+  src/MyGUI_TextureUtility.cpp
   src/MyGUI_TileRect.cpp
   src/MyGUI_Timer.cpp
   src/MyGUI_ToolTipManager.cpp
@@ -295,7 +295,7 @@ add_dependencies( ${MODULE_NAME} freetype )
 target_link_libraries( ${MODULE_NAME} freetype )
 set_property( TARGET ${MODULE_NAME} APPEND_STRING PROPERTY COMPILE_DEFINITIONS "MYGUI_BUILD;MYGUI_BUILD_DLL;MYGUI_USE_FREETYPE" )
 
-include_directories( ../../freetype/include ../../freetype/include/freetype ../../freetype/include/freetype/config ../../freetype/include/freetype/internal ../../freetype/include/freetype/internal/services ../../freetype/src/winfonts include )
+include_directories( ../../freetype/include ../../freetype/include/freetype ../../freetype/include/freetype/config ../../freetype/include/freetype/internal ../../freetype/include/freetype/internal/services ../../freetype/src ../../freetype/src/winfonts include )
 
 
 

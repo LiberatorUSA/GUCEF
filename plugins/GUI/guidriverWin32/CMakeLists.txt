@@ -16,9 +16,9 @@
 if (WIN32)
   set( PLATFORM_HEADER_FILES 
     include/guidriverWin32.h
-    include/guidriverWin32_config.h
     include/guidriverWin32_CWin32WindowContext.h
     include/guidriverWin32_CWin32WindowManagerImp.h
+    include/guidriverWin32_config.h
     include/guidriverWin32_macros.h
     include/guidriverWin32_pluginAPI.h
   )
@@ -38,9 +38,9 @@ if (WIN32)
 elseif (WIN64)
   set( PLATFORM_HEADER_FILES 
     include/guidriverWin32.h
-    include/guidriverWin32_config.h
     include/guidriverWin32_CWin32WindowContext.h
     include/guidriverWin32_CWin32WindowManagerImp.h
+    include/guidriverWin32_config.h
     include/guidriverWin32_macros.h
     include/guidriverWin32_pluginAPI.h
   )

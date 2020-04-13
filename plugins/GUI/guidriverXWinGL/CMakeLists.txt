@@ -16,9 +16,9 @@
 if (LINUX32)
   set( PLATFORM_HEADER_FILES 
     include/guidriverXWinGL.h
-    include/guidriverXWinGL_config.h
     include/guidriverXWinGL_CXWinGLWindowContext.h
     include/guidriverXWinGL_CXWinGLWindowManagerImp.h
+    include/guidriverXWinGL_config.h
     include/guidriverXWinGL_macros.h
     include/guidriverXWinGL_pluginAPI.h
   )
@@ -38,9 +38,9 @@ if (LINUX32)
 elseif (LINUX64)
   set( PLATFORM_HEADER_FILES 
     include/guidriverXWinGL.h
-    include/guidriverXWinGL_config.h
     include/guidriverXWinGL_CXWinGLWindowContext.h
     include/guidriverXWinGL_CXWinGLWindowManagerImp.h
+    include/guidriverXWinGL_config.h
     include/guidriverXWinGL_macros.h
     include/guidriverXWinGL_pluginAPI.h
   )

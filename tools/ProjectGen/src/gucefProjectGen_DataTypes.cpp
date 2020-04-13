@@ -240,6 +240,38 @@ StringVectorToStringSet( const TStringVector& stringVector )
 
 /*---------------------------------------------------------------------------*/
 
+void
+MergeStringVectorMap( TStringVectorMap& targetMap          ,
+                      const TStringVectorMap& mapToMergeIn ,
+                      bool caseSensitive                   )
+{GUCEF_TRACE;
+
+    TStringVectorMap::const_iterator i = mapToMergeIn.begin();
+    while ( i != mapToMergeIn.end() )
+    {
+        MergeStringVector( targetMap[ (*i).first ], (*i).second, caseSensitive );
+        ++i;
+    }
+}
+
+/*---------------------------------------------------------------------------*/
+
+void
+MergeStringSetMap( TStringSetMap& targetMap          ,
+                   const TStringSetMap& mapToMergeIn ,
+                   bool caseSensitive                )
+{GUCEF_TRACE;
+
+    TStringSetMap::const_iterator i = mapToMergeIn.begin();
+    while ( i != mapToMergeIn.end() )
+    {
+        MergeStringSet( targetMap[ (*i).first ], (*i).second, caseSensitive );
+        ++i;
+    }
+}
+
+/*---------------------------------------------------------------------------*/
+
 CORE::CString
 ModuleTypeToString( const TModuleType moduleType )
 {GUCEF_TRACE;
@@ -362,14 +394,14 @@ GetXmlDStoreCodec( void )
 /*---------------------------------------------------------------------------*/
 
 bool
-ContainsFileWithFileExtension( const TStringVectorMap& files ,
+ContainsFileWithFileExtension( const TStringSetMap& files    ,
                                const CORE::CString& fileExt  )
 {GUCEF_TRACE;
 
-    TStringVectorMap::const_iterator i = files.begin();
+    TStringSetMap::const_iterator i = files.begin();
     while ( i != files.end() )
     {
-        TStringVector::const_iterator n = (*i).second.begin();
+        TStringSet::const_iterator n = (*i).second.begin();
         while ( n != (*i).second.end() )
         {
             if ( fileExt.Equals( CORE::ExtractFileExtention( (*n) ), false ) )
@@ -593,7 +625,7 @@ SerializeModuleInfo( const TModuleInfoEntry& moduleEntry ,
         headersInfoNode.SetName( "Files" );
         headersInfoNode.SetAttribute( "Type", "Headers" );
         headersInfoNode.SetAttribute( "DirCount", CORE::UInt32ToString( moduleInfo.includeDirs.size() ) );
-        TStringVectorMap::const_iterator n = moduleInfo.includeDirs.begin();
+        TStringSetMap::const_iterator n = moduleInfo.includeDirs.begin();
         while ( n != moduleInfo.includeDirs.end() )
         {
             CORE::CDataNode pathNode;
@@ -603,10 +635,10 @@ SerializeModuleInfo( const TModuleInfoEntry& moduleEntry ,
             CORE::CDataNode fileNode;
             fileNode.SetName( "File" );
 
-            const TStringVector& fileVector = (*n).second;
-            pathNode.SetAttribute( "FileCount", CORE::UInt32ToString( fileVector.size() ) );
-            TStringVector::const_iterator m = fileVector.begin();
-            while ( m != fileVector.end() )
+            const TStringSet& fileSet = (*n).second;
+            pathNode.SetAttribute( "FileCount", CORE::UInt32ToString( fileSet.size() ) );
+            TStringSet::const_iterator m = fileSet.begin();
+            while ( m != fileSet.end() )
             {
                 fileNode.SetAttribute( "Name", (*m) );
                 pathNode.AddChild( fileNode );
@@ -615,7 +647,7 @@ SerializeModuleInfo( const TModuleInfoEntry& moduleEntry ,
 
             // Don't add dirs that have no files in them
             // These should not be present in our data in the first place. But just in case,...
-            if ( fileVector.size() > 0 )
+            if ( fileSet.size() > 0 )
             {
                 headersInfoNode.AddChild( pathNode );
             }
@@ -633,7 +665,7 @@ SerializeModuleInfo( const TModuleInfoEntry& moduleEntry ,
         sourceInfoNode.SetName( "Files" );
         sourceInfoNode.SetAttribute( "Type", "Source" );
         sourceInfoNode.SetAttribute( "DirCount", CORE::UInt32ToString( moduleInfo.sourceDirs.size() ) );
-        TStringVectorMap::const_iterator n = moduleInfo.sourceDirs.begin();
+        TStringSetMap::const_iterator n = moduleInfo.sourceDirs.begin();
         while ( n != moduleInfo.sourceDirs.end() )
         {
             CORE::CDataNode pathNode;
@@ -643,10 +675,10 @@ SerializeModuleInfo( const TModuleInfoEntry& moduleEntry ,
             CORE::CDataNode fileNode;
             fileNode.SetName( "File" );
 
-            const TStringVector& fileVector = (*n).second;
-            pathNode.SetAttribute( "FileCount", CORE::UInt32ToString( fileVector.size() ) );
-            TStringVector::const_iterator m = fileVector.begin();
-            while ( m != fileVector.end() )
+            const TStringSet& fileSet = (*n).second;
+            pathNode.SetAttribute( "FileCount", CORE::UInt32ToString( fileSet.size() ) );
+            TStringSet::const_iterator m = fileSet.begin();
+            while ( m != fileSet.end() )
             {
                 fileNode.SetAttribute( "Name", (*m) );
                 pathNode.AddChild( fileNode );
@@ -655,7 +687,7 @@ SerializeModuleInfo( const TModuleInfoEntry& moduleEntry ,
 
             // Don't add dirs that have no files in them
             // These should not be present in our data in the first place. But just in case,...
-            if ( fileVector.size() > 0 )
+            if ( fileSet.size() > 0 )
             {
                 sourceInfoNode.AddChild( pathNode );
             }
@@ -695,7 +727,7 @@ SerializeModuleInfo( const TModuleInfoEntry& moduleEntry ,
        CORE::CDataNode includesInfoNode( "Includes" );
         includesInfoNode.SetAttribute( "Count", CORE::UInt32ToString( moduleInfo.includeDirs.size() ) );
         includesInfoNode.SetAttribute( "Source", "Self" );
-        TStringVectorMap::const_iterator n = moduleInfo.includeDirs.begin();
+        TStringSetMap::const_iterator n = moduleInfo.includeDirs.begin();
         while ( n != moduleInfo.includeDirs.end() )
         {
             CORE::CString includeDir = (*n).first.ReplaceChar( '\\', '/' );
@@ -1123,13 +1155,13 @@ DeserializeModuleInfo( TModuleInfo& moduleInfo           ,
                 if ( filesType == "Headers" )
                 {
                     // We have a list of header files
-                    moduleInfo.includeDirs[ path ].push_back( filename );
+                    moduleInfo.includeDirs[ path ].insert( filename );
                 }
                 else
                 if ( filesType == "Source" )
                 {
                     // We have a list of source files
-                    moduleInfo.sourceDirs[ path ].push_back( filename );
+                    moduleInfo.sourceDirs[ path ].insert( filename );
                 }
                 ++m;
             }
@@ -1329,10 +1361,10 @@ CleanupIncludeDirs( TModuleInfoEntry& moduleInfoEntry )
         // If the include dir does not have include files as part of this module then 
         // the dir should have been a dependency include dir
         TStringSet dirs;
-        TStringVectorMap::iterator n = moduleInfo.includeDirs.begin();
+        TStringSetMap::iterator n = moduleInfo.includeDirs.begin();
         while ( n != moduleInfo.includeDirs.end() )
         {
-            TStringVector& filesInDirList = (*n).second;
+            TStringSet& filesInDirList = (*n).second;
             if ( filesInDirList.empty() )
             {
                 dirs.insert( (*n).first );
@@ -1671,12 +1703,12 @@ MergeModuleInfo( TModuleInfo& targetModuleInfo          ,
     MergeStringSet( targetModuleInfo.dependencyIncludeDirs    ,
                     moduleInfoToMergeIn.dependencyIncludeDirs ,
                     true                                      );
-    MergeStringVectorMap( targetModuleInfo.includeDirs    ,
-                          moduleInfoToMergeIn.includeDirs ,
-                          true                            );
-    MergeStringVectorMap( targetModuleInfo.sourceDirs    ,
-                          moduleInfoToMergeIn.sourceDirs ,
-                          true                           );
+    MergeStringSetMap( targetModuleInfo.includeDirs    ,
+                       moduleInfoToMergeIn.includeDirs ,
+                       true                            );
+    MergeStringSetMap( targetModuleInfo.sourceDirs    ,
+                       moduleInfoToMergeIn.sourceDirs ,
+                       true                           );
 }
 
 /*-------------------------------------------------------------------------*/
@@ -2500,22 +2532,6 @@ HasIndependentModuleType( const TModuleInfoMap& moduleDefs )
         ++i;
     }
     return false;
-}
-
-/*---------------------------------------------------------------------------*/
-
-void
-MergeStringVectorMap( TStringVectorMap& targetMap          ,
-                      const TStringVectorMap& mapToMergeIn ,
-                      bool caseSensitive                   )
-{GUCEF_TRACE;
-
-    TStringVectorMap::const_iterator i = mapToMergeIn.begin();
-    while ( i != mapToMergeIn.end() )
-    {
-        MergeStringVector( targetMap[ (*i).first ], (*i).second, caseSensitive );
-        ++i;
-    }
 }
 
 /*---------------------------------------------------------------------------*/

@@ -61,7 +61,7 @@ set( MODULE_NAME "libparsifal" )
 add_library( ${MODULE_NAME} ${ALL_FILES} )
 set_property( TARGET ${MODULE_NAME} APPEND_STRING PROPERTY COMPILE_DEFINITIONS "PARSIFAL_BUILD_MODULE;PARSIFAL_CUSTOM_GUCEF_BUILD" )
 
-include_directories( include/libparsifal )
+include_directories( include include/libparsifal )
 
 
 
@@ -70,9 +70,7 @@ include_directories( include/libparsifal )
 
 
 
-if (LINUX32)
-GUCEF_config_lib( ${MODULE_NAME} )
-elseif (LINUX64)
+if (OSX)
 GUCEF_config_lib( ${MODULE_NAME} )
 elseif (WIN32)
 GUCEF_config_lib( ${MODULE_NAME} )

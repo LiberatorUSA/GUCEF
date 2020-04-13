@@ -15,7 +15,6 @@ set( HEADER_FILES
   include/gucefSMDRN.h
   include/gucefSMDRN_CISectorObject.h
   include/gucefSMDRN_CModule.h
-  include/gucefSMDRN_config.h
   include/gucefSMDRN_CSector.h
   include/gucefSMDRN_CSectorGrid.h
   include/gucefSMDRN_CSectorPosition.h
@@ -27,6 +26,7 @@ set( HEADER_FILES
   include/gucefSMDRN_CZoneGrid.h
   include/gucefSMDRN_DLLInit.h
   include/gucefSMDRN_ETypes.h
+  include/gucefSMDRN_config.h
   include/gucefSMDRN_macros.h
 )
 

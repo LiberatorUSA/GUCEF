@@ -85,7 +85,7 @@ add_library( ${MODULE_NAME} ${ALL_FILES} )
 add_dependencies( ${MODULE_NAME} RocketCore freetype )
 target_link_libraries( ${MODULE_NAME} RocketCore freetype )
 
-include_directories( ../../../freetype/include ../../../freetype/include/freetype ../../../freetype/include/freetype/config ../../../freetype/include/freetype/internal ../../../freetype/include/freetype/internal/services ../../../freetype/src/winfonts ../../Include ../../Include/Rocket ../../Include/Rocket/Controls ../../Include/Rocket/Core ../../Include/Rocket/Core/Python ../../Include/Rocket/Debugger ../Core )
+include_directories( ../../../freetype/include ../../../freetype/include/freetype ../../../freetype/include/freetype/config ../../../freetype/include/freetype/internal ../../../freetype/include/freetype/internal/services ../../../freetype/src ../../../freetype/src/winfonts ../../Include ../../Include/Rocket ../../Include/Rocket/Controls ../../Include/Rocket/Core ../../Include/Rocket/Core/Python ../../Include/Rocket/Debugger ../Core )
 
 
 

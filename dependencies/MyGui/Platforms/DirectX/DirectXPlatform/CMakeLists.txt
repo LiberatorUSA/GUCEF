@@ -19,8 +19,8 @@ if (WIN32)
     include/MyGUI_DirectXDataManager.h
     include/MyGUI_DirectXDiagnostic.h
     include/MyGUI_DirectXPlatform.h
-    include/MyGUI_DirectXRenderManager.h
     include/MyGUI_DirectXRTTexture.h
+    include/MyGUI_DirectXRenderManager.h
     include/MyGUI_DirectXTexture.h
     include/MyGUI_DirectXVertexBuffer.h
   )
@@ -30,8 +30,8 @@ if (WIN32)
 
   set( PLATFORM_SOURCE_FILES 
     src/MyGUI_DirectXDataManager.cpp
-    src/MyGUI_DirectXRenderManager.cpp
     src/MyGUI_DirectXRTTexture.cpp
+    src/MyGUI_DirectXRenderManager.cpp
     src/MyGUI_DirectXTexture.cpp
     src/MyGUI_DirectXVertexBuffer.cpp
   )
@@ -45,8 +45,8 @@ elseif (WIN64)
     include/MyGUI_DirectXDataManager.h
     include/MyGUI_DirectXDiagnostic.h
     include/MyGUI_DirectXPlatform.h
-    include/MyGUI_DirectXRenderManager.h
     include/MyGUI_DirectXRTTexture.h
+    include/MyGUI_DirectXRenderManager.h
     include/MyGUI_DirectXTexture.h
     include/MyGUI_DirectXVertexBuffer.h
   )
@@ -56,8 +56,8 @@ elseif (WIN64)
 
   set( PLATFORM_SOURCE_FILES 
     src/MyGUI_DirectXDataManager.cpp
-    src/MyGUI_DirectXRenderManager.cpp
     src/MyGUI_DirectXRTTexture.cpp
+    src/MyGUI_DirectXRenderManager.cpp
     src/MyGUI_DirectXTexture.cpp
     src/MyGUI_DirectXVertexBuffer.cpp
   )
@@ -100,7 +100,7 @@ if ( WIN64 )
   target_link_libraries( ${MODULE_NAME} MyGUI.Engine d3d9 d3dx9 )
 endif( WIN64 )
 
-include_directories( ../../../../freetype/include ../../../../freetype/include/freetype ../../../../freetype/include/freetype/config ../../../../freetype/include/freetype/internal ../../../../freetype/include/freetype/internal/services ../../../../freetype/src/winfonts ../../../MyGUIEngine/include )
+include_directories( ../../../../freetype/include ../../../../freetype/include/freetype ../../../../freetype/include/freetype/config ../../../../freetype/include/freetype/internal ../../../../freetype/include/freetype/internal/services ../../../../freetype/src ../../../../freetype/src/winfonts ../../../MyGUIEngine/include )
 
 if ( WIN32 )
   include_directories( $ENV{DXSDK_DIR}/Include ../../../../external ../../../Common/FileSystemInfo include )

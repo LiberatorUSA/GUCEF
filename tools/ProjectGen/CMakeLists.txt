@@ -20,7 +20,6 @@ set( HEADER_FILES
   include/gucefProjectGen_CIProjectGenerator.h
   include/gucefProjectGen_CIProjectInfoGatherer.h
   include/gucefProjectGen_CIProjectPreprocessor.h
-  include/gucefProjectGen_config.h
   include/gucefProjectGen_CPremake4ProjectGenerator.h
   include/gucefProjectGen_CPremake5ProjectGenerator.h
   include/gucefProjectGen_CProjectGenGlobal.h
@@ -28,6 +27,7 @@ set( HEADER_FILES
   include/gucefProjectGen_CXmlProjectGenerator.h
   include/gucefProjectGen_DataTypes.h
   include/gucefProjectGen_ETypes.h
+  include/gucefProjectGen_config.h
   include/gucefProjectGen_macros.h
 )
 

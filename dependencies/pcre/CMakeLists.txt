@@ -14,11 +14,11 @@
 set( HEADER_FILES 
   config.h
   pcre.h
+  pcre_internal.h
+  pcre_scanner.h
   pcrecpp.h
   pcrecpp_internal.h
   pcreposix.h
-  pcre_internal.h
-  pcre_scanner.h
   ucp.h
 )
 

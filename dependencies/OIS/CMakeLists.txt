@@ -163,8 +163,8 @@ elseif (OSX)
     includes/OISMultiTouch.h
     includes/OISObject.h
     includes/OISPrereqs.h
-    includes/mac/MacHelpers.h
     includes/mac/MacHIDManager.h
+    includes/mac/MacHelpers.h
     includes/mac/MacInputManager.h
     includes/mac/MacJoyStick.h
     includes/mac/MacKeyboard.h
@@ -188,8 +188,8 @@ elseif (OSX)
     src/OISObject.cpp
     src/extras/LIRC/OISLIRC.cpp
     src/extras/LIRC/OISLIRCFactoryCreator.cpp
-    src/mac/MacHelpers.cpp
     src/mac/MacHIDManager.cpp
+    src/mac/MacHelpers.cpp
     src/mac/MacInputManager.cpp
     src/mac/MacJoyStick.cpp
     src/mac/MacKeyboard.cpp
@@ -256,11 +256,11 @@ elseif (WIN32)
     src/extras/LIRC/OISLIRC.h
     src/extras/LIRC/OISLIRCFactoryCreator.h
     src/extras/LIRC/OISLIRCRingBuffer.h
-    src/win32/extras/WiiMote/hiddevice.h
     src/win32/extras/WiiMote/OISWiiMote.h
     src/win32/extras/WiiMote/OISWiiMoteFactoryCreator.h
     src/win32/extras/WiiMote/OISWiiMoteForceFeedback.h
     src/win32/extras/WiiMote/OISWiiMoteRingBuffer.h
+    src/win32/extras/WiiMote/hiddevice.h
     src/win32/extras/WiiMote/wiimote.h
   )
 
@@ -282,12 +282,12 @@ elseif (WIN32)
     src/win32/Win32JoyStick.cpp
     src/win32/Win32KeyBoard.cpp
     src/win32/Win32Mouse.cpp
-    src/win32/extras/WiiMote/hiddevice.cpp
-    src/win32/extras/WiiMote/main.cpp
     src/win32/extras/WiiMote/OISWiiMote.cpp
     src/win32/extras/WiiMote/OISWiiMoteFactoryCreator.cpp
     src/win32/extras/WiiMote/OISWiiMoteForceFeedback.cpp
     src/win32/extras/WiiMote/OISWiiMoteRingBuffer.cpp
+    src/win32/extras/WiiMote/hiddevice.cpp
+    src/win32/extras/WiiMote/main.cpp
     src/win32/extras/WiiMote/wiimote.cpp
   )
 

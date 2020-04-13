@@ -13,6 +13,13 @@
 
 set( HEADER_FILES 
   dummy.h
+  zzip/__debug.h
+  zzip/__dirent.h
+  zzip/__fnmatch.h
+  zzip/__hints.h
+  zzip/__mmap.h
+  zzip/_config.h
+  zzip/_msvc.h
   zzip/autoconf.h
   zzip/conf.h
   zzip/fetch.h
@@ -28,13 +35,6 @@ set( HEADER_FILES
   zzip/zzip.h
   zzip/zzip_stdint.h
   zzip/zzip_types.h
-  zzip/_config.h
-  zzip/_msvc.h
-  zzip/__debug.h
-  zzip/__dirent.h
-  zzip/__fnmatch.h
-  zzip/__hints.h
-  zzip/__mmap.h
 )
 
 set( SOURCE_FILES 

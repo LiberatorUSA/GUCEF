@@ -21,8 +21,8 @@ if (LINUX32)
     include/MyGUI_OgreDataStream.h
     include/MyGUI_OgreDiagnostic.h
     include/MyGUI_OgrePlatform.h
-    include/MyGUI_OgreRenderManager.h
     include/MyGUI_OgreRTTexture.h
+    include/MyGUI_OgreRenderManager.h
     include/MyGUI_OgreTexture.h
     include/MyGUI_OgreVertexBuffer.h
   )
@@ -33,8 +33,8 @@ if (LINUX32)
   set( PLATFORM_SOURCE_FILES 
     src/MyGUI_OgreDataManager.cpp
     src/MyGUI_OgreDataStream.cpp
-    src/MyGUI_OgreRenderManager.cpp
     src/MyGUI_OgreRTTexture.cpp
+    src/MyGUI_OgreRenderManager.cpp
     src/MyGUI_OgreTexture.cpp
     src/MyGUI_OgreVertexBuffer.cpp
   )
@@ -50,8 +50,8 @@ elseif (LINUX64)
     include/MyGUI_OgreDataStream.h
     include/MyGUI_OgreDiagnostic.h
     include/MyGUI_OgrePlatform.h
-    include/MyGUI_OgreRenderManager.h
     include/MyGUI_OgreRTTexture.h
+    include/MyGUI_OgreRenderManager.h
     include/MyGUI_OgreTexture.h
     include/MyGUI_OgreVertexBuffer.h
   )
@@ -62,8 +62,8 @@ elseif (LINUX64)
   set( PLATFORM_SOURCE_FILES 
     src/MyGUI_OgreDataManager.cpp
     src/MyGUI_OgreDataStream.cpp
-    src/MyGUI_OgreRenderManager.cpp
     src/MyGUI_OgreRTTexture.cpp
+    src/MyGUI_OgreRenderManager.cpp
     src/MyGUI_OgreTexture.cpp
     src/MyGUI_OgreVertexBuffer.cpp
   )
@@ -79,8 +79,8 @@ elseif (WIN32)
     include/MyGUI_OgreDataStream.h
     include/MyGUI_OgreDiagnostic.h
     include/MyGUI_OgrePlatform.h
-    include/MyGUI_OgreRenderManager.h
     include/MyGUI_OgreRTTexture.h
+    include/MyGUI_OgreRenderManager.h
     include/MyGUI_OgreTexture.h
     include/MyGUI_OgreVertexBuffer.h
   )
@@ -91,8 +91,8 @@ elseif (WIN32)
   set( PLATFORM_SOURCE_FILES 
     src/MyGUI_OgreDataManager.cpp
     src/MyGUI_OgreDataStream.cpp
-    src/MyGUI_OgreRenderManager.cpp
     src/MyGUI_OgreRTTexture.cpp
+    src/MyGUI_OgreRenderManager.cpp
     src/MyGUI_OgreTexture.cpp
     src/MyGUI_OgreVertexBuffer.cpp
   )
@@ -136,7 +136,7 @@ if ( WIN32 )
   target_link_libraries( ${MODULE_NAME} MyGUI.Engine Ogre )
 endif( WIN32 )
 
-include_directories( ../../../../Ogre/OgreMain/include ../../../../Ogre/OgreMain/include/Hash ../../../../Ogre/OgreMain/include/Threading ../../../../Ogre/OgreMain/src ../../../../Ogre/OgreMain/src/nedmalloc ../../../../Ogre/OgreMain/src/stbi ../../../../Ogre/include ../../../../freetype/include ../../../../freetype/include/freetype ../../../../freetype/include/freetype/config ../../../../freetype/include/freetype/internal ../../../../freetype/include/freetype/internal/services ../../../../freetype/src/winfonts ../../../MyGUIEngine/include )
+include_directories( ../../../../Ogre/OgreMain/include ../../../../Ogre/OgreMain/include/Hash ../../../../Ogre/OgreMain/include/Threading ../../../../Ogre/OgreMain/src ../../../../Ogre/OgreMain/src/nedmalloc ../../../../Ogre/OgreMain/src/stbi ../../../../Ogre/include ../../../../freetype/include ../../../../freetype/include/freetype ../../../../freetype/include/freetype/config ../../../../freetype/include/freetype/internal ../../../../freetype/include/freetype/internal/services ../../../../freetype/src ../../../../freetype/src/winfonts ../../../MyGUIEngine/include )
 
 if ( LINUX32 )
   include_directories( ../../../Common/FileSystemInfo include )

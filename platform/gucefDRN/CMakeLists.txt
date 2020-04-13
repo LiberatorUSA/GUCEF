@@ -23,9 +23,9 @@ set( HEADER_FILES
   include/gucefDRN_CGUCEFDRNModule.h
   include/gucefDRN_CIDRNPeerLinkCrypter.h
   include/gucefDRN_CIDRNPeerValidator.h
-  include/gucefDRN_config.h
   include/gucefDRN_DRNProtocol.h
   include/gucefDRN_ETypes.h
+  include/gucefDRN_config.h
   include/gucefDRN_macros.h
 )
 

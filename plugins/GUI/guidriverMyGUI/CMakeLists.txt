@@ -12,6 +12,7 @@
 # Configuration for module: guidriverMyGUI
 
 set( HEADER_FILES 
+  include/MyGUI_LastHeader.h
   include/guceMyGUI.h
   include/guceMyGUI_CButtonImp.h
   include/guceMyGUI_CCheckboxImp.h
@@ -22,17 +23,16 @@ set( HEADER_FILES
   include/guceMyGUI_CFileSaveDialogImp.h
   include/guceMyGUI_CFileSystemDialogImp.h
   include/guceMyGUI_CFormBackendImp.h
-  include/guceMyGUI_CGridViewImp.h
   include/guceMyGUI_CGUIContext.h
-  include/guceMyGUI_CImageFrameImp.h
+  include/guceMyGUI_CGridViewImp.h
   include/guceMyGUI_CIOAccessToMyGuiDataStreamAdapter.h
+  include/guceMyGUI_CImageFrameImp.h
   include/guceMyGUI_CLabelImp.h
   include/guceMyGUI_CListBoxImp.h
   include/guceMyGUI_CMemoboxImp.h
   include/guceMyGUI_CMenuBarImp.h
   include/guceMyGUI_CModule.h
   include/guceMyGUI_CMyGUIInputAdapter.h
-  include/guceMyGUI_config.h
   include/guceMyGUI_CPopupMenuImp.h
   include/guceMyGUI_CProgressBarImp.h
   include/guceMyGUI_CPushButtonImp.h
@@ -46,12 +46,12 @@ set( HEADER_FILES
   include/guceMyGUI_CWidgetImp.h
   include/guceMyGUI_CWindowImp.h
   include/guceMyGUI_ETypes.h
+  include/guceMyGUI_config.h
   include/guceMyGUI_macros.h
   include/guceMyGUI_pluginAPI.h
   include/guidriverMyGUI_CLogAdapter.h
   include/guidriverMyGUI_CMyGuiDriver.h
   include/guidriverMyGUI_widgets.h
-  include/MyGUI_LastHeader.h
 )
 
 set( SOURCE_FILES 
@@ -66,8 +66,8 @@ set( SOURCE_FILES
   src/guceMyGUI_CFileSaveDialogImp.cpp
   src/guceMyGUI_CFileSystemDialogImp.cpp
   src/guceMyGUI_CFormBackendImp.cpp
-  src/guceMyGUI_CGridViewImp.cpp
   src/guceMyGUI_CGUIContext.cpp
+  src/guceMyGUI_CGridViewImp.cpp
   src/guceMyGUI_CImageFrameImp.cpp
   src/guceMyGUI_CLabelImp.cpp
   src/guceMyGUI_CListboxImp.cpp
@@ -108,7 +108,7 @@ add_dependencies( ${MODULE_NAME} MyGUI.Engine freetype gucefCORE gucefGUI gucefI
 target_link_libraries( ${MODULE_NAME} MyGUI.Engine freetype gucefCORE gucefGUI gucefINPUT gucefMT gucefVFS )
 set_property( TARGET ${MODULE_NAME} APPEND_STRING PROPERTY COMPILE_DEFINITIONS "GUIDRIVERMYGUI_BUILD_MODULE" )
 
-include_directories( ../../../common/include ../../../dependencies/MyGui/MyGUIEngine/include ../../../dependencies/freetype/include ../../../dependencies/freetype/include/freetype ../../../dependencies/freetype/include/freetype/config ../../../dependencies/freetype/include/freetype/internal ../../../dependencies/freetype/include/freetype/internal/services ../../../dependencies/freetype/src/winfonts ../../../platform/gucefCORE/include ../../../platform/gucefGUI/include ../../../platform/gucefIMAGE/include ../../../platform/gucefINPUT/include ../../../platform/gucefMT/include ../../../platform/gucefVFS/include include )
+include_directories( ../../../common/include ../../../dependencies/MyGui/MyGUIEngine/include ../../../dependencies/freetype/include ../../../dependencies/freetype/include/freetype ../../../dependencies/freetype/include/freetype/config ../../../dependencies/freetype/include/freetype/internal ../../../dependencies/freetype/include/freetype/internal/services ../../../dependencies/freetype/src ../../../dependencies/freetype/src/winfonts ../../../platform/gucefCORE/include ../../../platform/gucefGUI/include ../../../platform/gucefIMAGE/include ../../../platform/gucefINPUT/include ../../../platform/gucefMT/include ../../../platform/gucefVFS/include include )
 
 if ( ANDROID )
   include_directories( ../../../platform/gucefCORE/include/android )

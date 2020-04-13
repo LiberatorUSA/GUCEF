@@ -353,14 +353,14 @@ GenerateCMakeTemplatedAdditionSection( const TModuleInfoEntry& moduleInfoEntry )
 
 CORE::CString
 GenerateCMakeListsFileSection( const CORE::CString& sectionContent ,
-                               const TStringVectorMap& fileMap     )
+                               const TStringSetMap& fileMap        )
 {GUCEF_TRACE;
 
     CORE::CString newSectionContent = sectionContent;
-    TStringVectorMap::const_iterator i = fileMap.begin();
+    TStringSetMap::const_iterator i = fileMap.begin();
     while ( i != fileMap.end() )
     {
-        TStringVector::const_iterator n = (*i).second.begin();
+        TStringSet::const_iterator n = (*i).second.begin();
         while ( n != (*i).second.end() )
         {
             CORE::CString path = (*i).first;
@@ -392,7 +392,7 @@ GenerateCMakeListsFileIncludeSection( const TModuleInfoEntry& moduleInfoEntry  ,
     TModuleInfoMap::const_iterator i = moduleInfoEntry.modulesPerPlatform.find( AllPlatforms );
     if ( i != moduleInfoEntry.modulesPerPlatform.end() )
     {
-        const TStringVectorMap& includeFiles = (*i).second.includeDirs;
+        const TStringSetMap& includeFiles = (*i).second.includeDirs;
         if ( !includeFiles.empty() )
         {
             sectionContent = "set( HEADER_FILES \n";
@@ -418,7 +418,7 @@ GenerateCMakeListsFileSrcSection( const TModuleInfoEntry& moduleInfoEntry  ,
     TModuleInfoMap::const_iterator i = moduleInfoEntry.modulesPerPlatform.find( AllPlatforms );
     if ( i != moduleInfoEntry.modulesPerPlatform.end() )
     {
-        const TStringVectorMap& srcFiles = (*i).second.sourceDirs;
+        const TStringSetMap& srcFiles = (*i).second.sourceDirs;
         if ( !srcFiles.empty() )
         {
             sectionContent = "set( SOURCE_FILES \n";
@@ -447,17 +447,17 @@ GenerateCMakeListsFilePlatformFilesSection( const TModuleInfoEntry& moduleInfoEn
     TModuleInfoMap::const_iterator m = moduleInfoEntry.modulesPerPlatform.find( platformName );
     if ( m != moduleInfoEntry.modulesPerPlatform.end() )
     {
-        const TStringVectorMap& platformHeaderFiles = (*m).second.includeDirs;
+        const TStringSetMap& platformHeaderFiles = (*m).second.includeDirs;
         if ( !platformHeaderFiles.empty() )
         {
             hasPlatformHeaderFiles = true;
             headerSection = "  set( PLATFORM_HEADER_FILES \n";
 
-            TStringVectorMap::const_iterator n = platformHeaderFiles.begin();
+            TStringSetMap::const_iterator n = platformHeaderFiles.begin();
             while ( n != platformHeaderFiles.end() )
             {
-                const TStringVector& platformHeaderFilesDir = (*n).second;
-                TStringVector::const_iterator i = platformHeaderFilesDir.begin();
+                const TStringSet& platformHeaderFilesDir = (*n).second;
+                TStringSet::const_iterator i = platformHeaderFilesDir.begin();
                 while ( i != platformHeaderFilesDir.end() )
                 {
                     CORE::CString path = CORE::CombinePath( (*n).first, (*i) );
@@ -488,17 +488,17 @@ GenerateCMakeListsFilePlatformFilesSection( const TModuleInfoEntry& moduleInfoEn
             headerSection += "  source_group( \"Platform Header Files\" FILES ${PLATFORM_HEADER_FILES} )\n\n";
         }
 
-        const TStringVectorMap& platformSourceFiles = (*m).second.sourceDirs;
+        const TStringSetMap& platformSourceFiles = (*m).second.sourceDirs;
         if ( !platformSourceFiles.empty() )
         {
             hasPlatformSourceFiles = true;
             sourceSection = "  set( PLATFORM_SOURCE_FILES \n";
 
-            TStringVectorMap::const_iterator n = platformSourceFiles.begin();
+            TStringSetMap::const_iterator n = platformSourceFiles.begin();
             while ( n != platformSourceFiles.end() )
             {
-                const TStringVector& platformSourceFilesDir = (*n).second;
-                TStringVector::const_iterator i = platformSourceFilesDir.begin();
+                const TStringSet& platformSourceFilesDir = (*n).second;
+                TStringSet::const_iterator i = platformSourceFilesDir.begin();
                 while ( i != platformSourceFilesDir.end() )
                 {
                     CORE::CString path = CORE::CombinePath( (*n).first, (*i) );
@@ -590,11 +590,6 @@ CORE::CString
 GenerateCMakeModuleIncludesSection( const TModuleInfo& moduleInfo ,
                                     const CORE::CString& rootDir  )
 {GUCEF_TRACE;
-
-    if ( moduleInfo.name == "CEGUI.RendererModule.Direct3D9" )
-    {
-        int b=0;
-    }
     
     // Add include dirs for each dependency we know about
     CORE::CString allRelDependencyPaths;
@@ -610,7 +605,7 @@ GenerateCMakeModuleIncludesSection( const TModuleInfo& moduleInfo ,
     }
 
     // Add all the regular include dirs for this module
-    TStringVectorMap::const_iterator n = moduleInfo.includeDirs.begin();
+    TStringSetMap::const_iterator n = moduleInfo.includeDirs.begin();
     while ( n != moduleInfo.includeDirs.end() )
     {        
         CORE::CString includeDir = ConvertEnvVarStrings( (*n).first ).ReplaceChar( '\\', '/' ); 

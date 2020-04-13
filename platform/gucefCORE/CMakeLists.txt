@@ -12,21 +12,20 @@
 # Configuration for module: gucefCORE
 
 set( HEADER_FILES 
-  include/callstack.h
   include/CBlockStack.h
+  include/CCPPWrapFileAccess.h
   include/CCodecChain.h
   include/CCodecRegistry.h
   include/CCodecStoreRegistry.h
   include/CConfigStore.h
-  include/CCPPWrapFileAccess.h
   include/CCyclicDynamicBuffer.h
-  include/CDataNode.h
-  include/CDataQueue.h
   include/CDStoreCodec.h
   include/CDStoreCodecPlugin.h
   include/CDStoreCodecPluginManager.h
   include/CDStoreCodecRegistry.h
   include/CDVString.h
+  include/CDataNode.h
+  include/CDataQueue.h
   include/CDynamicBuffer.h
   include/CDynamicBufferAccess.h
   include/CEvent.h
@@ -35,10 +34,10 @@ set( HEADER_FILES
   include/CExclusiveActiveObj.h
   include/CFileAccess.h
   include/CFileURLHandler.h
-  include/CGenericPlugin.h
-  include/CGenericPluginManager.h
   include/CGUCEFApplication.h
   include/CGUCEFCOREModule.h
+  include/CGenericPlugin.h
+  include/CGenericPluginManager.h
   include/CICloneable.h
   include/CICodec.h
   include/CICodecPlugin.h
@@ -54,10 +53,9 @@ set( HEADER_FILES
   include/CIURLEvents.h
   include/CLLNode.h
   include/CLogManager.h
-  include/cloneables.h
+  include/CMFileAccess.h
   include/CMachineState.h
   include/CMemoryBlockPool.h
-  include/CMFileAccess.h
   include/CMsgException.h
   include/CNode.h
   include/CNotificationIDRegistry.h
@@ -67,15 +65,14 @@ set( HEADER_FILES
   include/CNotifyingMapEvents.h
   include/CObserver.h
   include/CObservingNotifier.h
-  include/CodecPluginLink.h
-  include/ConfigStoreCodec.h
   include/CPFileAccess.h
   include/CPFileChunkAccess.h
+  include/CPPWrapFileAccess.h
   include/CPluginControl.h
   include/CPluginManager.h
-  include/CPPWrapFileAccess.h
   include/CPumpedObserver.h
   include/CROIOAccess.h
+  include/CSTDOStreamAdapter.h
   include/CStack.h
   include/CStateHandler.h
   include/CStateMachine.h
@@ -84,7 +81,6 @@ set( HEADER_FILES
   include/CStdCodecPluginItem.h
   include/CStdCodecPluginManager.h
   include/CStdLogger.h
-  include/CSTDOStreamAdapter.h
   include/CStreamerEvents.h
   include/CSysConsole.h
   include/CSysConsoleClient.h
@@ -100,16 +96,13 @@ set( HEADER_FILES
   include/CTFactoryBase.h
   include/CTFactoryBaseWithParam.h
   include/CTFactoryWithParam.h
-  include/CTimer.h
   include/CTLinkedCloneableObj.h
   include/CTNotifyingMap.h
   include/CTNumericID.h
   include/CTNumericIDGenerator.h
+  include/CTONRegistry.h
   include/CTObservingNotifierComponent.h
   include/CTObservingNotifierExpansion.h
-  include/CTONRegistry.h
-  include/CTracer.h
-  include/CTransactionEventControl.h
   include/CTRegistry.h
   include/CTSGNotifier.h
   include/CTSGObserver.h
@@ -119,21 +112,33 @@ set( HEADER_FILES
   include/CTStreamer.h
   include/CTStringStreamable.h
   include/CTThreadSafeExpansion.h
+  include/CTimer.h
+  include/CTracer.h
+  include/CTransactionEventControl.h
   include/CURL.h
   include/CURLDataRetriever.h
   include/CURLHandler.h
   include/CURLHandlerRegistry.h
   include/CValueList.h
+  include/CodecPluginLink.h
+  include/ConfigStoreCodec.h
   include/DStoreCodecPluginStructs.h
   include/DVCPPOSWRAP.h
-  include/dvcppstringutils.h
-  include/dvfileutils.h
-  include/dvmd5utils.h
   include/DVOSWRAP.h
-  include/dvstrutils.h
   include/EEnum.h
   include/EStructs.h
   include/ExceptionMacros.h
+  include/MFILE.h
+  include/MemoryPool.h
+  include/MemorySegment.h
+  include/NumericIDs.h
+  include/PAFILE.h
+  include/callstack.h
+  include/cloneables.h
+  include/dvcppstringutils.h
+  include/dvfileutils.h
+  include/dvmd5utils.h
+  include/dvstrutils.h
   include/gucefCORE.h
   include/gucefCORE_CAbstractFactoryBase.h
   include/gucefCORE_CBusyWaitPulseGeneratorDriver.h
@@ -143,22 +148,20 @@ set( HEADER_FILES
   include/gucefCORE_CIConsoleLogger.h
   include/gucefCORE_CIEventHandlerFunctorBase.h
   include/gucefCORE_CIMetricsSystemClient.h
-  include/gucefCORE_CIniDataStoreCodec.h
-  include/gucefCORE_CIniParser.h
-  include/gucefCORE_cinterface.h
   include/gucefCORE_CIObserver.h
   include/gucefCORE_CIPluginLoadLogic.h
   include/gucefCORE_CIPluginMetaData.h
   include/gucefCORE_CIPulseGeneratorDriver.h
   include/gucefCORE_CITaskConsumer.h
+  include/gucefCORE_CIniDataStoreCodec.h
+  include/gucefCORE_CIniParser.h
   include/gucefCORE_CLinkedTransferBuffer.h
   include/gucefCORE_CLoaderDelegatedPluginLoadLogic.h
   include/gucefCORE_CLoggingTask.h
   include/gucefCORE_CMetricsClientManager.h
   include/gucefCORE_CMultiLogger.h
-  include/gucefCORE_CObserverSwitch.h
-  include/gucefCORE_config.h
   include/gucefCORE_COSWindow.h
+  include/gucefCORE_CObserverSwitch.h
   include/gucefCORE_CPlatformNativeConsoleLogger.h
   include/gucefCORE_CPlatformNativeConsoleWindow.h
   include/gucefCORE_CPluginGroup.h
@@ -169,48 +172,44 @@ set( HEADER_FILES
   include/gucefCORE_CSimplisticPluginLoadLogic.h
   include/gucefCORE_CSingleTaskDelegator.h
   include/gucefCORE_CSubFileAccess.h
+  include/gucefCORE_CTEventHandlerFunctor.h
   include/gucefCORE_CTaskDelegator.h
   include/gucefCORE_CTaskManager.h
-  include/gucefCORE_CTEventHandlerFunctor.h
   include/gucefCORE_CVersion.h
   include/gucefCORE_CVersionRange.h
   include/gucefCORE_ETypes.h
   include/gucefCORE_GenericPluginAPI.h
   include/gucefCORE_Logging.h
   include/gucefCORE_LoggingMacros.h
-  include/gucefCORE_macros.h
   include/gucefCORE_MetricsMacros.h
+  include/gucefCORE_cinterface.h
+  include/gucefCORE_config.h
+  include/gucefCORE_macros.h
   include/gucef_essentials.h
   include/gucef_new_off.h
   include/gucef_new_on.h
   include/ioaccess.h
   include/macros.h
   include/md5.h
-  include/MemoryPool.h
-  include/MemorySegment.h
-  include/MFILE.h
-  include/NumericIDs.h
-  include/PAFILE.h
   include/streamables.h
   include/streamers.h
   include/tsprinting.h
 )
 
 set( SOURCE_FILES 
-  src/callstack.c
   src/CBlockStack.cpp
+  src/CCPPWrapFileAccess.cpp
   src/CCodecChain.cpp
   src/CCodecRegistry.cpp
   src/CConfigStore.cpp
-  src/CCPPWrapFileAccess.cpp
   src/CCyclicDynamicBuffer.cpp
-  src/CDataNode.cpp
-  src/CDataQueue.cpp
   src/CDStoreCodec.cpp
   src/CDStoreCodecPlugin.cpp
   src/CDStoreCodecPluginManager.cpp
   src/CDStoreCodecRegistry.cpp
   src/CDVString.cpp
+  src/CDataNode.cpp
+  src/CDataQueue.cpp
   src/CDynamicBuffer.cpp
   src/CDynamicBufferAccess.cpp
   src/CEvent.cpp
@@ -219,10 +218,10 @@ set( SOURCE_FILES
   src/CExclusiveActiveObj.cpp
   src/CFileAccess.cpp
   src/CFileURLHandler.cpp
-  src/CGenericPlugin.cpp
-  src/CGenericPluginManager.cpp
   src/CGUCEFApplication.cpp
   src/CGUCEFCOREModule.cpp
+  src/CGenericPlugin.cpp
+  src/CGenericPluginManager.cpp
   src/CICloneable.cpp
   src/CICodec.cpp
   src/CICodecPlugin.cpp
@@ -237,10 +236,9 @@ set( SOURCE_FILES
   src/CIURLEvents.cpp
   src/CLLNode.cpp
   src/CLogManager.cpp
-  src/cloneables.cpp
+  src/CMFileAccess.cpp
   src/CMachineState.cpp
   src/CMemoryBlockPool.cpp
-  src/CMFileAccess.cpp
   src/CMsgException.cpp
   src/CNode.cpp
   src/CNotificationIDRegistry.cpp
@@ -256,6 +254,7 @@ set( SOURCE_FILES
   src/CPluginManager.cpp
   src/CPumpedObserver.cpp
   src/CROIOAccess.cpp
+  src/CSTDOStreamAdapter.cpp
   src/CStack.cpp
   src/CStateHandler.cpp
   src/CStateMachine.cpp
@@ -264,7 +263,6 @@ set( SOURCE_FILES
   src/CStdCodecPluginItem.cpp
   src/CStdCodecPluginManager.cpp
   src/CStdLogger.cpp
-  src/CSTDOStreamAdapter.cpp
   src/CStreamerEvents.cpp
   src/CSysConsole.cpp
   src/CSysConsoleClient.cpp
@@ -279,33 +277,40 @@ set( SOURCE_FILES
   src/CTFactoryBase.cpp
   src/CTFactoryBaseWithParam.cpp
   src/CTFactoryWithParam.cpp
-  src/CTimer.cpp
   src/CTLinkedCloneableObj.cpp
   src/CTNotifyingMap.cpp
   src/CTNumericID.cpp
   src/CTNumericIDGenerator.cpp
+  src/CTONRegistry.cpp
   src/CTObservingNotifierComponent.cpp
   src/CTObservingNotifierExpansion.cpp
-  src/CTONRegistry.cpp
-  src/CTracer.cpp
-  src/CTransactionEventControl.cpp
   src/CTRegistry.cpp
   src/CTSGNotifier.cpp
   src/CTSGObserver.cpp
   src/CTSharedPtr.cpp
   src/CTSingleton.cpp
+  src/CTimer.cpp
+  src/CTracer.cpp
+  src/CTransactionEventControl.cpp
   src/CURL.cpp
   src/CURLDataRetriever.cpp
   src/CURLHandler.cpp
   src/CURLHandlerRegistry.cpp
   src/CValueList.cpp
   src/DVCPPOSWRAP.cpp
+  src/DVOSWRAP.cpp
+  src/ExceptionMacros.cpp
+  src/IOACCESS.c
+  src/MFILE.c
+  src/MemoryPool.cpp
+  src/MemorySegment.cpp
+  src/PAFILE.c
+  src/callstack.c
+  src/cloneables.cpp
   src/dvcppstringutils.cpp
   src/dvfileutils.c
   src/dvmd5utils.c
-  src/DVOSWRAP.cpp
   src/dvstrutils.c
-  src/ExceptionMacros.cpp
   src/gucefCORE.cpp
   src/gucefCORE_CAbstractFactoryBase.cpp
   src/gucefCORE_CBusyWaitPulseGeneratorDriver.cpp
@@ -314,21 +319,20 @@ set( SOURCE_FILES
   src/gucefCORE_CIConsoleLogger.cpp
   src/gucefCORE_CIEventHandlerFunctorBase.cpp
   src/gucefCORE_CIMetricsSystemClient.cpp
-  src/gucefCORE_CIniDataStoreCodec.cpp
-  src/gucefCORE_CIniParser.cpp
-  src/gucefCORE_cinterface.cpp
   src/gucefCORE_CIObserver.cpp
   src/gucefCORE_CIPluginLoadLogic.cpp
   src/gucefCORE_CIPluginMetaData.cpp
   src/gucefCORE_CIPulseGeneratorDriver.cpp
   src/gucefCORE_CITaskConsumer.cpp
+  src/gucefCORE_CIniDataStoreCodec.cpp
+  src/gucefCORE_CIniParser.cpp
   src/gucefCORE_CLinkedTransferBuffer.cpp
   src/gucefCORE_CLoaderDelegatedPluginLoadLogic.cpp
   src/gucefCORE_CLoggingTask.cpp
   src/gucefCORE_CMetricsClientManager.cpp
   src/gucefCORE_CMultiLogger.cpp
-  src/gucefCORE_CObserverSwitch.cpp
   src/gucefCORE_COSWindow.cpp
+  src/gucefCORE_CObserverSwitch.cpp
   src/gucefCORE_CPlatformNativeConsoleLogger.cpp
   src/gucefCORE_CPlatformNativeConsoleWindow.cpp
   src/gucefCORE_CPluginGroup.cpp
@@ -339,17 +343,13 @@ set( SOURCE_FILES
   src/gucefCORE_CSimplisticPluginLoadLogic.cpp
   src/gucefCORE_CSingleTaskDelegator.cpp
   src/gucefCORE_CSubFileAccess.cpp
+  src/gucefCORE_CTEventHandlerFunctor.cpp
   src/gucefCORE_CTaskDelegator.cpp
   src/gucefCORE_CTaskManager.cpp
-  src/gucefCORE_CTEventHandlerFunctor.cpp
   src/gucefCORE_CVersion.cpp
   src/gucefCORE_CVersionRange.cpp
-  src/IOACCESS.c
+  src/gucefCORE_cinterface.cpp
   src/md5.c
-  src/MemoryPool.cpp
-  src/MemorySegment.cpp
-  src/MFILE.c
-  src/PAFILE.c
   src/streamables.cpp
   src/streamers.cpp
   src/tsprinting.c

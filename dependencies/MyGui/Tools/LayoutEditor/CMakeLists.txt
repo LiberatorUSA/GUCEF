@@ -67,7 +67,6 @@ if (LINUX32)
     PropertyFieldSkin.h
     PropertyFieldType.h
     RecentFilesManager.h
-    resource.h
     SelectorControl.h
     SeparatorPartControl.h
     SettingsGeneralControl.h
@@ -91,9 +90,10 @@ if (LINUX32)
     WidgetCreatorManager.h
     WidgetSelectorManager.h
     WidgetStyle.h
-    WidgetsWindow.h
     WidgetTypes.h
+    WidgetsWindow.h
     WorkspaceControl.h
+    resource.h
     ../../Common/Base/InputFocusInfo.h
     ../../Common/Base/Main.h
     ../../Common/Base/StatisticInfo.h
@@ -172,8 +172,8 @@ if (LINUX32)
     UndoManager.cpp
     WidgetCreatorManager.cpp
     WidgetSelectorManager.cpp
-    WidgetsWindow.cpp
     WidgetTypes.cpp
+    WidgetsWindow.cpp
     WorkspaceControl.cpp
     ../../Common/Base/OpenGL/BaseManager.cpp
     ../../Common/Input/OIS/InputManager.cpp
@@ -240,7 +240,6 @@ elseif (LINUX64)
     PropertyFieldSkin.h
     PropertyFieldType.h
     RecentFilesManager.h
-    resource.h
     SelectorControl.h
     SeparatorPartControl.h
     SettingsGeneralControl.h
@@ -264,9 +263,10 @@ elseif (LINUX64)
     WidgetCreatorManager.h
     WidgetSelectorManager.h
     WidgetStyle.h
-    WidgetsWindow.h
     WidgetTypes.h
+    WidgetsWindow.h
     WorkspaceControl.h
+    resource.h
     ../../Common/Base/InputFocusInfo.h
     ../../Common/Base/Main.h
     ../../Common/Base/StatisticInfo.h
@@ -345,8 +345,8 @@ elseif (LINUX64)
     UndoManager.cpp
     WidgetCreatorManager.cpp
     WidgetSelectorManager.cpp
-    WidgetsWindow.cpp
     WidgetTypes.cpp
+    WidgetsWindow.cpp
     WorkspaceControl.cpp
     ../../Common/Base/OpenGL/BaseManager.cpp
     ../../Common/Input/OIS/InputManager.cpp
@@ -413,7 +413,6 @@ elseif (WIN32)
     PropertyFieldSkin.h
     PropertyFieldType.h
     RecentFilesManager.h
-    resource.h
     SelectorControl.h
     SeparatorPartControl.h
     SettingsGeneralControl.h
@@ -437,9 +436,10 @@ elseif (WIN32)
     WidgetCreatorManager.h
     WidgetSelectorManager.h
     WidgetStyle.h
-    WidgetsWindow.h
     WidgetTypes.h
+    WidgetsWindow.h
     WorkspaceControl.h
+    resource.h
     ../../Common/Base/InputFocusInfo.h
     ../../Common/Base/Main.h
     ../../Common/Base/StatisticInfo.h
@@ -518,8 +518,8 @@ elseif (WIN32)
     UndoManager.cpp
     WidgetCreatorManager.cpp
     WidgetSelectorManager.cpp
-    WidgetsWindow.cpp
     WidgetTypes.cpp
+    WidgetsWindow.cpp
     WorkspaceControl.cpp
     ../../Common/Base/OpenGL/BaseManager.cpp
     ../../Common/Input/Win32API/InputManager.cpp
@@ -586,7 +586,6 @@ elseif (WIN64)
     PropertyFieldSkin.h
     PropertyFieldType.h
     RecentFilesManager.h
-    resource.h
     SelectorControl.h
     SeparatorPartControl.h
     SettingsGeneralControl.h
@@ -610,9 +609,10 @@ elseif (WIN64)
     WidgetCreatorManager.h
     WidgetSelectorManager.h
     WidgetStyle.h
-    WidgetsWindow.h
     WidgetTypes.h
+    WidgetsWindow.h
     WorkspaceControl.h
+    resource.h
     ../../Common/Base/InputFocusInfo.h
     ../../Common/Base/Main.h
     ../../Common/Base/StatisticInfo.h
@@ -691,8 +691,8 @@ elseif (WIN64)
     UndoManager.cpp
     WidgetCreatorManager.cpp
     WidgetSelectorManager.cpp
-    WidgetsWindow.cpp
     WidgetTypes.cpp
+    WidgetsWindow.cpp
     WorkspaceControl.cpp
     ../../Common/Base/OpenGL/BaseManager.cpp
     ../../Common/Input/Win32API/InputManager.cpp
@@ -754,7 +754,7 @@ if ( WIN64 )
   set_property( TARGET ${MODULE_NAME} APPEND_STRING PROPERTY COMPILE_DEFINITIONS "MYGUI_USE_FREETYPE" )
 endif( WIN64 )
 
-include_directories( ../../../freetype/include ../../../freetype/include/freetype ../../../freetype/include/freetype/config ../../../freetype/include/freetype/internal ../../../freetype/include/freetype/internal/services ../../../freetype/src/winfonts ../../Common ../../Common/FileSystemInfo ../../Common/Input ../../MyGUIEngine/include ../../Platforms/OpenGL/OpenGLPlatform/include ../../Platforms/OpenGL/OpenGLPlatform/include/GL )
+include_directories( ../../../freetype/include ../../../freetype/include/freetype ../../../freetype/include/freetype/config ../../../freetype/include/freetype/internal ../../../freetype/include/freetype/internal/services ../../../freetype/src ../../../freetype/src/winfonts ../../Common ../../Common/FileSystemInfo ../../Common/Input ../../MyGUIEngine/include ../../Platforms/OpenGL/OpenGLPlatform/include ../../Platforms/OpenGL/OpenGLPlatform/include/GL )
 
 if ( LINUX32 )
   include_directories( ../LayoutEditor ../../Common/Base ../../Common/Base/OpenGL ../../Common/Input/OIS ../../Common/Tools )

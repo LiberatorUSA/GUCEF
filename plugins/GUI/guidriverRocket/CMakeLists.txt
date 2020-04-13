@@ -22,15 +22,14 @@ set( HEADER_FILES
   include/guidriverRocket_CFileSaveDialogImp.h
   include/guidriverRocket_CFileSystemDialogImp.h
   include/guidriverRocket_CFormBackendImp.h
-  include/guidriverRocket_CGridViewImp.h
   include/guidriverRocket_CGUIContext.h
+  include/guidriverRocket_CGridViewImp.h
   include/guidriverRocket_CImageFrameImp.h
   include/guidriverRocket_CInputAdapter.h
   include/guidriverRocket_CLabelImp.h
   include/guidriverRocket_CListBoxImp.h
   include/guidriverRocket_CMemoboxImp.h
   include/guidriverRocket_CMenuBarImp.h
-  include/guidriverRocket_config.h
   include/guidriverRocket_CPopupMenuImp.h
   include/guidriverRocket_CProgressBarImp.h
   include/guidriverRocket_CPushButtonImp.h
@@ -46,6 +45,7 @@ set( HEADER_FILES
   include/guidriverRocket_CWidgetImp.h
   include/guidriverRocket_CWindowImp.h
   include/guidriverRocket_ETypes.h
+  include/guidriverRocket_config.h
   include/guidriverRocket_macros.h
   include/guidriverRocket_pluginAPI.h
 )
@@ -61,11 +61,11 @@ set( SOURCE_FILES
   src/guidriverRocket_CFileSaveDialogImp.cpp
   src/guidriverRocket_CFileSystemDialogImp.cpp
   src/guidriverRocket_CFormBackendImp.cpp
-  src/guidriverRocket_CGridViewImp.cpp
   src/guidriverRocket_CGUIContext.cpp
+  src/guidriverRocket_CGridViewImp.cpp
+  src/guidriverRocket_CIOAccessToRocketStreamAdapter.cpp
   src/guidriverRocket_CImageFrameImp.cpp
   src/guidriverRocket_CInputAdapter.cpp
-  src/guidriverRocket_CIOAccessToRocketStreamAdapter.cpp
   src/guidriverRocket_CLabelImp.cpp
   src/guidriverRocket_CListboxImp.cpp
   src/guidriverRocket_CMemoboxImp.cpp
@@ -103,7 +103,7 @@ add_dependencies( ${MODULE_NAME} RocketControls RocketCore gucefCORE gucefGUI gu
 target_link_libraries( ${MODULE_NAME} RocketControls RocketCore gucefCORE gucefGUI gucefINPUT gucefMT gucefVFS )
 set_property( TARGET ${MODULE_NAME} APPEND_STRING PROPERTY COMPILE_DEFINITIONS "GUCEF_GUIDRIVERROCKET_BUILD_MODULE" )
 
-include_directories( ../../../common/include ../../../dependencies/freetype/include ../../../dependencies/freetype/include/freetype ../../../dependencies/freetype/include/freetype/config ../../../dependencies/freetype/include/freetype/internal ../../../dependencies/freetype/include/freetype/internal/services ../../../dependencies/freetype/src/winfonts ../../../dependencies/libRocket/Include ../../../dependencies/libRocket/Include/Rocket ../../../dependencies/libRocket/Include/Rocket/Controls ../../../dependencies/libRocket/Include/Rocket/Core ../../../dependencies/libRocket/Include/Rocket/Core/Python ../../../dependencies/libRocket/Include/Rocket/Debugger ../../../dependencies/libRocket/Source/Controls ../../../dependencies/libRocket/Source/Core ../../../platform/gucefCORE/include ../../../platform/gucefGUI/include ../../../platform/gucefIMAGE/include ../../../platform/gucefINPUT/include ../../../platform/gucefMT/include ../../../platform/gucefVFS/include include )
+include_directories( ../../../common/include ../../../dependencies/freetype/include ../../../dependencies/freetype/include/freetype ../../../dependencies/freetype/include/freetype/config ../../../dependencies/freetype/include/freetype/internal ../../../dependencies/freetype/include/freetype/internal/services ../../../dependencies/freetype/src ../../../dependencies/freetype/src/winfonts ../../../dependencies/libRocket/Include ../../../dependencies/libRocket/Include/Rocket ../../../dependencies/libRocket/Include/Rocket/Controls ../../../dependencies/libRocket/Include/Rocket/Core ../../../dependencies/libRocket/Include/Rocket/Core/Python ../../../dependencies/libRocket/Include/Rocket/Debugger ../../../dependencies/libRocket/Source/Controls ../../../dependencies/libRocket/Source/Core ../../../platform/gucefCORE/include ../../../platform/gucefGUI/include ../../../platform/gucefIMAGE/include ../../../platform/gucefINPUT/include ../../../platform/gucefMT/include ../../../platform/gucefVFS/include include )
 
 if ( ANDROID )
   include_directories( ../../../platform/gucefCORE/include/android )

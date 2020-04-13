@@ -16,10 +16,10 @@
 if (WIN32)
   set( PLATFORM_HEADER_FILES 
     include/CGUCEFAppWin32MFCDriver.h
-    include/ChildView.h
     include/CMFCCommandLineInfo.h
-    include/MainFrm.h
+    include/ChildView.h
     include/MFCPatcherGUI.h
+    include/MainFrm.h
     include/stdafx.h
     projects/MVC8/res/Resource.h
     projects/MVC9/res/Resource.h
@@ -30,10 +30,10 @@ if (WIN32)
 
   set( PLATFORM_SOURCE_FILES 
     src/CGUCEFAppWin32MFCDriver.cpp
-    src/ChildView.cpp
     src/CMFCCommandLineInfo.cpp
-    src/MainFrm.cpp
+    src/ChildView.cpp
     src/MFCPatcherGUI.cpp
+    src/MainFrm.cpp
     src/stdafx.cpp
   )
 
@@ -43,10 +43,10 @@ if (WIN32)
 elseif (WIN64)
   set( PLATFORM_HEADER_FILES 
     include/CGUCEFAppWin32MFCDriver.h
-    include/ChildView.h
     include/CMFCCommandLineInfo.h
-    include/MainFrm.h
+    include/ChildView.h
     include/MFCPatcherGUI.h
+    include/MainFrm.h
     include/stdafx.h
     projects/MVC8/res/Resource.h
     projects/MVC9/res/Resource.h
@@ -57,10 +57,10 @@ elseif (WIN64)
 
   set( PLATFORM_SOURCE_FILES 
     src/CGUCEFAppWin32MFCDriver.cpp
-    src/ChildView.cpp
     src/CMFCCommandLineInfo.cpp
-    src/MainFrm.cpp
+    src/ChildView.cpp
     src/MFCPatcherGUI.cpp
+    src/MainFrm.cpp
     src/stdafx.cpp
   )
 

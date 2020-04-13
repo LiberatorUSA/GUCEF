@@ -648,7 +648,7 @@ GetExcludeList( const CORE::CString& dir )
 void
 ExcludeOrIncludeEntriesAsSpecifiedForDir( const TDirProcessingInstructions& allInstructions ,
                                           const CORE::CString& platform                     ,
-                                          TStringVector& allEntries                         )
+                                          TStringSet& allEntries                            )
 {GUCEF_TRACE;
         
     // see if we have info for this platform
@@ -677,7 +677,7 @@ ExcludeOrIncludeEntriesAsSpecifiedForDir( const TDirProcessingInstructions& allI
         TStringVector::const_iterator n = includeList.begin();
         while ( n != includeList.end() )
         {
-            allEntries.push_back( (*n) );
+            allEntries.insert( (*n) );
             GUCEF_LOG( CORE::LOGLEVEL_NORMAL, "Included the directory \"" + (*n) + "\" based on the include list for this dir" );
             ++n;
         }
@@ -689,7 +689,7 @@ ExcludeOrIncludeEntriesAsSpecifiedForDir( const TDirProcessingInstructions& allI
 void
 ExcludeEntriesAsSpecifiedForFile( const TDirProcessingInstructions& allInstructions ,
                                   const CORE::CString& platform                     ,
-                                  TStringVector& allEntries                         )
+                                  TStringSet& allEntries                            )
 {GUCEF_TRACE;
 
     // see if we have info for this platform
@@ -716,7 +716,7 @@ void
 IncludeEntriesAsSpecifiedForFile( const TDirProcessingInstructions& allInstructions ,
                                   const CORE::CString& platform                     ,
                                   const CORE::CString& currentPath                  ,
-                                  TStringVectorMap& allEntries                      ,
+                                  TStringSetMap& allEntries                         ,
                                   const TStringVector& fileTypes                    )
 {GUCEF_TRACE;
     
@@ -740,7 +740,7 @@ IncludeEntriesAsSpecifiedForFile( const TDirProcessingInstructions& allInstructi
                 path = CORE::RelativePath( path );
                 path = path.ReplaceChar( '\\', '/' );
             
-                allEntries[ path ].push_back( filename );
+                allEntries[ path ].insert( filename );
                 GUCEF_LOG( CORE::LOGLEVEL_NORMAL, "Included the file \"" + filename + "\" based on the include list for this dir using path " + path );
             }
             ++n;
@@ -755,7 +755,7 @@ ExcludeOrIncludeDirEntriesAsSpecifiedForDir( const CORE::CString& dir           
                                              const TDirProcessingInstructions& allInstructions ,
                                              const CORE::CString& platform                     ,
                                              bool applyPlatformChangesOnly                     ,
-                                             TStringVector& allEntries                         )
+                                             TStringSet& allEntries                            )
 {GUCEF_TRACE;
 
     if ( !applyPlatformChangesOnly )
@@ -780,7 +780,7 @@ void
 ExcludeFileEntriesAsSpecifiedForDir( const TDirProcessingInstructions& allInstructions ,
                                      const CORE::CString& platform                     ,
                                      bool applyPlatformChangesOnly                     ,
-                                     TStringVector& allEntries                         )
+                                     TStringSet& allEntries                            )
 {GUCEF_TRACE;
 
     if ( !applyPlatformChangesOnly )
@@ -805,7 +805,7 @@ IncludeFileEntriesAsSpecifiedForDir( const TDirProcessingInstructions& allInstru
                                      const CORE::CString& platform                     ,
                                      const CORE::CString& currentPath                  ,
                                      bool applyPlatformChangesOnly                     ,
-                                     TStringVectorMap& allEntries                      ,
+                                     TStringSetMap& allEntries                         ,
                                      const TStringVector& fileTypes                    )
 {GUCEF_TRACE;
 
@@ -1273,7 +1273,7 @@ ExcludeOrIncludeDirEntriesAsSpecifiedForDir( TProjectInfo& projectInfo     ,
                                              const CORE::CString& dir      ,
                                              const CORE::CString& platform ,
                                              bool applyPlatformChangesOnly ,
-                                             TStringVector& allEntries     )
+                                             TStringSet& allEntries     )
 {GUCEF_TRACE;
 
     // Fetch processing instructions from directory
@@ -1304,7 +1304,7 @@ ExcludeFileEntriesAsSpecifiedForDir( TProjectInfo& projectInfo     ,
                                      const CORE::CString& dir      ,
                                      const CORE::CString& platform ,
                                      bool applyPlatformChangesOnly ,
-                                     TStringVector& allEntries     )
+                                     TStringSet& allEntries     )
 {GUCEF_TRACE;
 
     // Fetch processing instructions from directory
@@ -1325,7 +1325,7 @@ IncludeFileEntriesAsSpecifiedForDir( TProjectInfo& projectInfo        ,
                                      const CORE::CString& platform    ,
                                      const CORE::CString& currentPath ,
                                      bool applyPlatformChangesOnly    ,
-                                     TStringVectorMap& allEntries     ,
+                                     TStringSetMap& allEntries        ,
                                      const TStringVector& fileTypes   )
 {GUCEF_TRACE;
 
@@ -1349,7 +1349,7 @@ IncludeFileEntriesAsSpecifiedForDir( TProjectInfo& projectInfo        ,
 void
 ExcludeOrIncludeDirEntriesAsSpecifiedForDir( TProjectInfo& projectInfo ,
                                              const CORE::CString& dir  ,
-                                             TStringVector& allEntries )
+                                             TStringSet& allEntries    )
 {GUCEF_TRACE;
 
     ExcludeOrIncludeDirEntriesAsSpecifiedForDir( projectInfo,
@@ -1364,7 +1364,7 @@ ExcludeOrIncludeDirEntriesAsSpecifiedForDir( TProjectInfo& projectInfo ,
 void
 ExcludeFileEntriesAsSpecifiedForDir( TProjectInfo& projectInfo ,
                                      const CORE::CString& dir  ,
-                                     TStringVector& allEntries )
+                                     TStringSet& allEntries    )
 {GUCEF_TRACE;
 
     ExcludeFileEntriesAsSpecifiedForDir( projectInfo     ,
@@ -1379,7 +1379,7 @@ ExcludeFileEntriesAsSpecifiedForDir( TProjectInfo& projectInfo ,
 void
 IncludeFileEntriesAsSpecifiedForDir( TProjectInfo& projectInfo        ,
                                      const CORE::CString& dir         ,
-                                     TStringVectorMap& allEntries     ,
+                                     TStringSetMap& allEntries        ,
                                      const TStringVector& fileTypes   ,
                                      const CORE::CString& currentPath )
 {GUCEF_TRACE;
@@ -1399,7 +1399,7 @@ void
 PopulateFileListFromDir( const TProjectInfo& projectInfo ,
                          const CORE::CString& path       ,
                          const TStringVector& fileTypes  ,
-                         TStringVector& fileList         ,
+                         TStringSet& fileList            ,
                          const CORE::CString& platform   )
 {GUCEF_TRACE;
 
@@ -1427,7 +1427,7 @@ PopulateFileListFromDir( const TProjectInfo& projectInfo ,
 
                 if ( IsStringInList( fileTypes, false, fileExt ) )
                 {
-                    fileList.push_back( filename );
+                    fileList.insert( filename );
                 }
             }
         }
@@ -1441,7 +1441,7 @@ PopulateFileListFromDir( const TProjectInfo& projectInfo ,
 void
 PopulateDirListFromDir( const TProjectInfo& projectInfo ,
                         const CORE::CString& path       ,
-                        TStringVector& dirList          ,
+                        TStringSet& dirList             ,
                         const CORE::CString& platform   ,
                         bool excludeGenericDirs         )
 {GUCEF_TRACE;
@@ -1464,7 +1464,7 @@ PopulateDirListFromDir( const TProjectInfo& projectInfo ,
                     if ( ( dirName != "." ) && ( dirName != ".." )               && 
                          ( platformsDirs.find( dirName ) == platformsDirs.end() ) )
                     {
-                        dirList.push_back( dirName );
+                        dirList.insert( dirName );
                     }
                 }
             }
@@ -1496,7 +1496,7 @@ PopulateDirListFromDir( const TProjectInfo& projectInfo ,
                         if ( ( dirName != "." ) && ( dirName != ".." )                               && 
                              ( dirsForPlatform.find( dirName.Lowercase() ) != dirsForPlatform.end() ) )
                         {
-                            dirList.push_back( dirName );
+                            dirList.insert( dirName );
                         }
                     }
                 }
@@ -1516,7 +1516,7 @@ GetListOfAllModuleDirs( TModuleInfo& moduleInfo      ,
                         const CORE::CString& rootDir )
 {GUCEF_TRACE;
 
-    TStringVectorMap::iterator i = moduleInfo.includeDirs.begin();
+    TStringSetMap::iterator i = moduleInfo.includeDirs.begin();
     while ( i != moduleInfo.includeDirs.end() )
     {
         if ( relativePaths )
@@ -1881,7 +1881,7 @@ GenerateModuleDependencyIncludes( TModuleInfoEntry& moduleInfoEntry             
 
         // Now construct the relative path to each of the dependency module's include dirs
         // These dir will all become include dirs for this module
-        const TStringVectorMap& headerFiles = dependencyModule.includeDirs;
+        const TStringSetMap& headerFiles = dependencyModule.includeDirs;
         if ( !headerFiles.empty() )
         {
             // Since this platform specific entry has header files we will need to generate
@@ -1896,7 +1896,7 @@ GenerateModuleDependencyIncludes( TModuleInfoEntry& moduleInfoEntry             
                                                                                dependencyModuleEntry->rootDir );
             relativePath = relativePath.ReplaceChar( '\\', '/' );                
             
-            TStringVectorMap::const_iterator n = headerFiles.begin();
+            TStringSetMap::const_iterator n = headerFiles.begin();
             while ( n != headerFiles.end() )
             {
                 // If the path is a relative path we refine it to be from this module's location
@@ -2068,7 +2068,7 @@ GenerateDependencyIncludes( TProjectInfo& projectInfo )
 
 void
 FindSubDirsWithFileTypes( TProjectInfo& projectInfo          ,
-                          TStringVectorMap& fileMap          ,
+                          TStringSetMap& fileMap             ,
                           const TStringVector& fileTypes     ,
                           const CORE::CString& platform      ,
                           bool applyOnlyPlatformInstructions ,
@@ -2076,7 +2076,7 @@ FindSubDirsWithFileTypes( TProjectInfo& projectInfo          ,
                           const CORE::CString& curRootDirSeg )
 {GUCEF_TRACE;
 
-    TStringVector fileList;
+    TStringSet fileList;
     PopulateFileListFromDir( projectInfo, curRootDir, fileTypes, fileList, platform );
 
     // Now we add/substract files based on generator instructions
@@ -2096,10 +2096,10 @@ FindSubDirsWithFileTypes( TProjectInfo& projectInfo          ,
     if ( fileList.size() > 0 )
     {
         // found files in the current root
-        TStringVectorMap::iterator i = fileMap.find( curRootDirSeg );
+        TStringSetMap::iterator i = fileMap.find( curRootDirSeg );
         if ( i == fileMap.end() )
         {
-            if ( !fileMap.insert( std::pair< CORE::CString, TStringVector >( curRootDirSeg, fileList ) ).second )
+            if ( !fileMap.insert( std::pair< CORE::CString, TStringSet >( curRootDirSeg, fileList ) ).second )
             {
                 GUCEF_ERROR_LOG( CORE::LOGLEVEL_NORMAL, "Failed to add files to the file map for subdir \"" + curRootDirSeg + "\"" );
             }
@@ -2110,12 +2110,12 @@ FindSubDirsWithFileTypes( TProjectInfo& projectInfo          ,
             GUCEF_LOG( CORE::LOGLEVEL_BELOW_NORMAL, "Subdir \"" + curRootDirSeg + "\" already has files defined that "
                      "should be used for the module, this list of files will be merged with files we automatically locate in the same dir" );
                      
-            MergeStringVector( (*i).second, fileList, true );
+            MergeStringSet( (*i).second, fileList, true );
         }
     }
     
     // Get a list of sub-dirs
-    TStringVector dirList;
+    TStringSet dirList;
     PopulateDirListFromDir( projectInfo, curRootDir, dirList, platform, false );
 
     // Now we add/substract dirs based on generator instructions
@@ -2125,7 +2125,7 @@ FindSubDirsWithFileTypes( TProjectInfo& projectInfo          ,
                                                  applyOnlyPlatformInstructions ,
                                                  dirList                       );
 
-    TStringVector::iterator i = dirList.begin();
+    TStringSet::iterator i = dirList.begin();
     while ( i != dirList.end() )
     {
         CORE::CString subDir = curRootDir;
@@ -2153,12 +2153,89 @@ FindSubDirsWithFileTypes( TProjectInfo& projectInfo          ,
 /*---------------------------------------------------------------------------*/
 
 void
+FillHeaderSubDirIncludes( TProjectInfo& projectInfo         ,
+                          TModuleInfoEntry& moduleInfoEntry ,
+                          const CORE::CString& platform     ,
+                          TStringSetMap& exclusions         )
+{GUCEF_TRACE;
+
+    TModuleInfoMap::iterator n = moduleInfoEntry.modulesPerPlatform.find( platform );
+    if ( n != moduleInfoEntry.modulesPerPlatform.end() )
+    {
+        if ( (*n).second.considerSubDirs )
+        {
+            TStringSetMap newDirs;
+            TModuleInfo& moduleInfo = (*n).second;
+            TStringSetMap::iterator& d = moduleInfo.includeDirs.begin();
+            while ( d != moduleInfo.includeDirs.end() )
+            {
+                const CORE::CString fullDir = (*d).first;
+                TStringVector elements = fullDir.ParseElements( '/', false );
+                if ( elements.size() > 1 )
+                {
+                    CORE::CString segments;
+                    TStringVector::iterator s = elements.begin();
+                    while ( s != elements.end() )
+                    {
+                        if ( segments.IsNULLOrEmpty() )
+                            segments = (*s);
+                        else
+                            segments += '/' + (*s);
+
+                        if ( exclusions.find( segments ) == exclusions.end() )
+                            newDirs[ segments ];
+                        ++s;
+                    }
+                }
+                ++d;
+            }
+            if ( !newDirs.empty() )
+                MergeStringSetMap( moduleInfo.includeDirs, newDirs, true );
+        }
+    }
+}
+
+/*---------------------------------------------------------------------------*/
+
+void
+FillHeaderSubDirIncludes( TProjectInfo& projectInfo         ,
+                          TModuleInfoEntry& moduleInfoEntry )
+{GUCEF_TRACE;
+
+    TModuleInfoMap::iterator n = moduleInfoEntry.modulesPerPlatform.find( AllPlatforms );
+    if ( n != moduleInfoEntry.modulesPerPlatform.end() )
+    {
+        TStringSetMap dummy;
+        FillHeaderSubDirIncludes( projectInfo     , 
+                                  moduleInfoEntry , 
+                                  AllPlatforms    , 
+                                  dummy           );
+        
+        TModuleInfo& allPlatformsModuleInfo = (*n).second;
+        TModuleInfoMap::iterator m = moduleInfoEntry.modulesPerPlatform.begin();
+        while ( m != moduleInfoEntry.modulesPerPlatform.end() )
+        {
+            if ( !(*m).first.IsNULLOrEmpty() && (*m).first != AllPlatforms )
+            {
+                FillHeaderSubDirIncludes( projectInfo                        , 
+                                          moduleInfoEntry                    , 
+                                          (*m).first                         , 
+                                          allPlatformsModuleInfo.includeDirs );
+            }
+            ++m;
+        }
+    }
+}
+
+/*---------------------------------------------------------------------------*/
+
+void
 FindSubDirsWithHeaders( TProjectInfo& projectInfo         ,
                         TModuleInfoEntry& moduleInfoEntry ,
                         const CORE::CString& platform     )
 {GUCEF_TRACE;
 
-    TStringVectorMap fileMap;
+    TStringSetMap fileMap;
     FindSubDirsWithFileTypes( projectInfo               , 
                               fileMap                   , 
                               GetHeaderFileExtensions() ,
@@ -2174,7 +2251,7 @@ FindSubDirsWithHeaders( TProjectInfo& projectInfo         ,
         {
             if ( (*i).second.considerSubDirs )
             {
-                MergeStringVectorMap( (*i).second.includeDirs, fileMap, true );
+                MergeStringSetMap( (*i).second.includeDirs, fileMap, true );
             }
             else
             {
@@ -2198,7 +2275,7 @@ FindSubDirsWithHeaders( TProjectInfo& projectInfo         ,
                     if ( (*i).second.considerSubDirs )
                     {
                         TModuleInfo& moduleInfo = (*i).second;
-                        MergeStringVectorMap( moduleInfo.includeDirs, fileMap, true );
+                        MergeStringSetMap( moduleInfo.includeDirs, fileMap, true );
                     }
                     else
                     {
@@ -2244,6 +2321,12 @@ FindSubDirsWithHeaders( TProjectInfo& projectInfo         ,
 
         ++i;
     }
+
+    // Various projects include part of the relative paths inside a include statement as a means of segregating 
+    // fairly generic file names from crashes, using dir names instead of more unique file names
+    // Such projects are sensitive to the inclusion of header parent dirs as include dirs in order for the include paths 
+    // to be correct. To cover this case we add relative parent dirs of dirs with headers
+    FillHeaderSubDirIncludes( projectInfo, moduleInfoEntry );
 }
 
 /*---------------------------------------------------------------------------*/
@@ -2254,7 +2337,7 @@ FindSubDirsWithSource( TProjectInfo& projectInfo         ,
                        const CORE::CString& platform     )
 {GUCEF_TRACE;
 
-    TStringVectorMap fileMap;
+    TStringSetMap fileMap;
     FindSubDirsWithFileTypes( projectInfo               , 
                               fileMap                   , 
                               GetSourceFileExtensions() ,
@@ -2270,7 +2353,7 @@ FindSubDirsWithSource( TProjectInfo& projectInfo         ,
         {  
             if ( (*i).second.considerSubDirs )
             {
-                MergeStringVectorMap( (*i).second.sourceDirs, fileMap, true );
+                MergeStringSetMap( (*i).second.sourceDirs, fileMap, true );
             }
             else
             {
@@ -2294,7 +2377,7 @@ FindSubDirsWithSource( TProjectInfo& projectInfo         ,
                     if ( (*i).second.considerSubDirs )
                     {
                         TModuleInfo& moduleInfo = (*i).second;
-                        MergeStringVectorMap( moduleInfo.sourceDirs, fileMap, true );
+                        MergeStringSetMap( moduleInfo.sourceDirs, fileMap, true );
                     }
                     else
                     {
@@ -2519,7 +2602,7 @@ LocateAndProcessProjectDirsRecusively( TProjectInfo& projectInfo        ,
     }
 
     // Get all subdir's
-    TStringVector dirList;
+    TStringSet dirList;
     PopulateDirListFromDir( projectInfo, topLevelDir, dirList, AllPlatforms, false );
 
     // Add/subtract dirs from the list based on generator instructions
@@ -2528,7 +2611,7 @@ LocateAndProcessProjectDirsRecusively( TProjectInfo& projectInfo        ,
     ExcludeOrIncludeDirEntriesAsSpecifiedForDir( projectInfo, topLevelDir, dirList );
 
     // Process all sub-dirs
-    TStringVector::iterator i = dirList.begin();
+    TStringSet::iterator i = dirList.begin();
     while ( i != dirList.end() )
     {
         CORE::CString subDir = topLevelDir;
@@ -2975,7 +3058,7 @@ MergeIntegrationLocationsIntoModuleForPlatform( TProjectInfo& projectInfo       
                                                                                  codeIncludeRoot         );
         
         // merge in the headers for both header integration locations as well as code integration locations
-        TStringVectorMap::const_iterator n;
+        TStringSetMap::const_iterator n;
         
         n = moduleInfoToMergeIn.includeDirs.begin();
         while ( n != moduleInfoToMergeIn.includeDirs.end() )
@@ -2985,8 +3068,8 @@ MergeIntegrationLocationsIntoModuleForPlatform( TProjectInfo& projectInfo       
             CORE::AppendToPath( fullPathToIncludeLocation, (*n).first );
 
             // Use the merge function just in case this location is already added by other means
-            TStringVector& targetVector = moduleInfo.includeDirs[ fullPathToIncludeLocation ];
-            MergeStringVector( targetVector, (*n).second, true );
+            TStringSet& targetSet = moduleInfo.includeDirs[ fullPathToIncludeLocation ];
+            MergeStringSet( targetSet, (*n).second, true );
                               
             ++n;
         }
@@ -3001,8 +3084,8 @@ MergeIntegrationLocationsIntoModuleForPlatform( TProjectInfo& projectInfo       
                 CORE::AppendToPath( fullPathToSourceLocation, (*n).first );
 
                 // Use the merge function just in case this location is already added by other means
-                TStringVector& targetVector = moduleInfo.sourceDirs[ fullPathToSourceLocation ];
-                MergeStringVector( targetVector, (*n).second, true );
+                TStringSet& targetSet = moduleInfo.sourceDirs[ fullPathToSourceLocation ];
+                MergeStringSet( targetSet, (*n).second, true );
                               
                 ++n;
             }
@@ -3104,7 +3187,7 @@ MergeIntegrationLocationsIntoModuleForAllPlatformsPlatform( TProjectInfo& projec
         {
             TModuleInfo& moduleInfo = (*m).second;
             
-            TStringVectorMap::const_iterator n;
+            TStringSetMap::const_iterator n;
             
             if ( ( MODULETYPE_CODE_INTEGRATE_LOCATION == moduleInfoToMergeIn.moduleType )   ||
                  ( MODULETYPE_HEADER_INTEGRATE_LOCATION == moduleInfoToMergeIn.moduleType )  )
@@ -3117,8 +3200,8 @@ MergeIntegrationLocationsIntoModuleForAllPlatformsPlatform( TProjectInfo& projec
                     CORE::AppendToPath( fullPathToIncludeLocation, (*n).first );
 
                     // Use the merge function just in case this location is already added by other means
-                    TStringVector& targetVector = moduleInfo.includeDirs[ fullPathToIncludeLocation ];
-                    MergeStringVector( targetVector, (*n).second, true );
+                    TStringSet& targetVector = moduleInfo.includeDirs[ fullPathToIncludeLocation ];
+                    MergeStringSet( targetVector, (*n).second, true );
                               
                     ++n;
                 }
@@ -3134,8 +3217,8 @@ MergeIntegrationLocationsIntoModuleForAllPlatformsPlatform( TProjectInfo& projec
                     CORE::AppendToPath( fullPathToSourceLocation, (*n).first );
 
                     // Use the merge function just in case this location is already added by other means
-                    TStringVector& targetVector = moduleInfo.sourceDirs[ fullPathToSourceLocation ];
-                    MergeStringVector( targetVector, (*n).second, true );
+                    TStringSet& targetVector = moduleInfo.sourceDirs[ fullPathToSourceLocation ];
+                    MergeStringSet( targetVector, (*n).second, true );
                               
                     ++n;
                 }
@@ -3153,7 +3236,7 @@ MergeIntegrationLocationsIntoModuleForAllPlatformsPlatform( TProjectInfo& projec
                 // Check if this particular platform needs the dependency
                 if ( IsStringInList( moduleInfo.dependencies, false, moduleInfoToMergeIn.name ) )
                 {
-                    TStringVectorMap::const_iterator n;
+                    TStringSetMap::const_iterator n;
                     
                     if ( ( MODULETYPE_CODE_INTEGRATE_LOCATION == moduleInfoToMergeIn.moduleType )   ||
                          ( MODULETYPE_HEADER_INTEGRATE_LOCATION == moduleInfoToMergeIn.moduleType )  )
@@ -3166,8 +3249,8 @@ MergeIntegrationLocationsIntoModuleForAllPlatformsPlatform( TProjectInfo& projec
                             CORE::AppendToPath( fullPathToIncludeLocation, (*n).first );
 
                             // Use the merge function just in case this location is already added by other means
-                            TStringVector& targetVector = moduleInfo.includeDirs[ fullPathToIncludeLocation ];
-                            MergeStringVector( targetVector, (*n).second, true );
+                            TStringSet& targetSet = moduleInfo.includeDirs[ fullPathToIncludeLocation ];
+                            MergeStringSet( targetSet, (*n).second, true );
                               
                             ++n;
                         }
@@ -3183,8 +3266,8 @@ MergeIntegrationLocationsIntoModuleForAllPlatformsPlatform( TProjectInfo& projec
                             CORE::AppendToPath( fullPathToSourceLocation, (*n).first );
 
                             // Use the merge function just in case this location is already added by other means
-                            TStringVector& targetVector = moduleInfo.sourceDirs[ fullPathToSourceLocation ];
-                            MergeStringVector( targetVector, (*n).second, true );
+                            TStringSet& targetSet = moduleInfo.sourceDirs[ fullPathToSourceLocation ];
+                            MergeStringSet( targetSet, (*n).second, true );
                               
                             ++n;
                         }

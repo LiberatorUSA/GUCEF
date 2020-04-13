@@ -124,13 +124,13 @@ GenerateContentForAndroidMakefile( const TModuleInfoEntryPairVector& mergeLinks 
     // Generate the source files section
     CORE::CString srcFilesSection = "LOCAL_SRC_FILES := \\\n";
     bool firstLoop = true;
-    TStringVectorMap::const_iterator i = moduleInfo.sourceDirs.begin();
+    TStringSetMap::const_iterator i = moduleInfo.sourceDirs.begin();
     while ( i != moduleInfo.sourceDirs.end() )
     {
         const CORE::CString& srcDir = (*i).first;
-        const TStringVector& srcFiles = (*i).second;
+        const TStringSet& srcFiles = (*i).second;
 
-        TStringVector::const_iterator n = srcFiles.begin();
+        TStringSet::const_iterator n = srcFiles.begin();
         while ( n != srcFiles.end() )
         {
             if ( !firstLoop )

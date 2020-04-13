@@ -12,35 +12,35 @@
 # Configuration for module: gucefLOADER
 
 set( HEADER_FILES 
-  ../gucefCORE/include/DVOSWRAP.h
-  ../gucefCORE/include/DVCPPOSWRAP.h
-  ../gucefCORE/include/dvstrutils.h
   ../gucefCORE/include/CDVString.h
-  ../gucefCORE/include/dvfileutils.h
+  ../gucefCORE/include/DVCPPOSWRAP.h
+  ../gucefCORE/include/DVOSWRAP.h
   ../gucefCORE/include/dvcppstringutils.h
-  ../gucefCORE/include/md5.h
+  ../gucefCORE/include/dvfileutils.h
   ../gucefCORE/include/dvmd5utils.h
-  ../gucefMT/include/gucefMT_mutex.h
+  ../gucefCORE/include/dvstrutils.h
+  ../gucefCORE/include/md5.h
   ../gucefMT/include/gucefMT_CMutex.h
   ../gucefMT/include/gucefMT_CScopeMutex.h
+  ../gucefMT/include/gucefMT_mutex.h
   include/gucefLOADER.h
-  include/gucefLOADER_config.h
   include/gucefLOADER_ETypes.h
+  include/gucefLOADER_config.h
   include/gucefLOADER_macros.h
 )
 
 set( SOURCE_FILES 
-  ../gucefCORE/src/DVOSWRAP.cpp
-  ../gucefCORE/src/DVCPPOSWRAP.cpp
-  ../gucefCORE/src/dvstrutils.c
   ../gucefCORE/src/CDVString.cpp
-  ../gucefCORE/src/dvfileutils.c
+  ../gucefCORE/src/DVCPPOSWRAP.cpp
+  ../gucefCORE/src/DVOSWRAP.cpp
   ../gucefCORE/src/dvcppstringutils.cpp
-  ../gucefCORE/src/md5.c
+  ../gucefCORE/src/dvfileutils.c
   ../gucefCORE/src/dvmd5utils.c
-  ../gucefMT/src/gucefMT_mutex.c
+  ../gucefCORE/src/dvstrutils.c
+  ../gucefCORE/src/md5.c
   ../gucefMT/src/gucefMT_CMutex.cpp
   ../gucefMT/src/gucefMT_CScopeMutex.cpp
+  ../gucefMT/src/gucefMT_mutex.c
   src/gucefLOADER.cpp
 )
 
@@ -48,34 +48,34 @@ set( SOURCE_FILES
 
 if (ANDROID)
   set( PLATFORM_HEADER_FILES 
-    ../gucefCORE/include/DVOSWRAP.h
-    ../gucefCORE/include/DVCPPOSWRAP.h
-    ../gucefCORE/include/dvstrutils.h
     ../gucefCORE/include/CDVString.h
-    ../gucefCORE/include/dvfileutils.h
+    ../gucefCORE/include/DVCPPOSWRAP.h
+    ../gucefCORE/include/DVOSWRAP.h
     ../gucefCORE/include/dvcppstringutils.h
-    ../gucefCORE/include/md5.h
+    ../gucefCORE/include/dvfileutils.h
     ../gucefCORE/include/dvmd5utils.h
-    ../gucefMT/include/gucefMT_mutex.h
+    ../gucefCORE/include/dvstrutils.h
+    ../gucefCORE/include/md5.h
     ../gucefMT/include/gucefMT_CMutex.h
     ../gucefMT/include/gucefMT_CScopeMutex.h
+    ../gucefMT/include/gucefMT_mutex.h
   )
 
   set( PLATFORM_HEADER_INSTALL "ANDROID" )
   source_group( "Platform Header Files" FILES ${PLATFORM_HEADER_FILES} )
 
   set( PLATFORM_SOURCE_FILES 
-    ../gucefCORE/src/DVOSWRAP.cpp
-    ../gucefCORE/src/DVCPPOSWRAP.cpp
-    ../gucefCORE/src/dvstrutils.c
     ../gucefCORE/src/CDVString.cpp
-    ../gucefCORE/src/dvfileutils.c
+    ../gucefCORE/src/DVCPPOSWRAP.cpp
+    ../gucefCORE/src/DVOSWRAP.cpp
     ../gucefCORE/src/dvcppstringutils.cpp
-    ../gucefCORE/src/md5.c
+    ../gucefCORE/src/dvfileutils.c
     ../gucefCORE/src/dvmd5utils.c
-    ../gucefMT/src/gucefMT_mutex.c
+    ../gucefCORE/src/dvstrutils.c
+    ../gucefCORE/src/md5.c
     ../gucefMT/src/gucefMT_CMutex.cpp
     ../gucefMT/src/gucefMT_CScopeMutex.cpp
+    ../gucefMT/src/gucefMT_mutex.c
   )
 
   set( PLATFORM_SOURCE_INSTALL "ANDROID" )
@@ -83,34 +83,34 @@ if (ANDROID)
 
 elseif (EMSCRIPTEN)
   set( PLATFORM_HEADER_FILES 
-    ../gucefCORE/include/DVOSWRAP.h
-    ../gucefCORE/include/DVCPPOSWRAP.h
-    ../gucefCORE/include/dvstrutils.h
     ../gucefCORE/include/CDVString.h
-    ../gucefCORE/include/dvfileutils.h
+    ../gucefCORE/include/DVCPPOSWRAP.h
+    ../gucefCORE/include/DVOSWRAP.h
     ../gucefCORE/include/dvcppstringutils.h
-    ../gucefCORE/include/md5.h
+    ../gucefCORE/include/dvfileutils.h
     ../gucefCORE/include/dvmd5utils.h
-    ../gucefMT/include/gucefMT_mutex.h
+    ../gucefCORE/include/dvstrutils.h
+    ../gucefCORE/include/md5.h
     ../gucefMT/include/gucefMT_CMutex.h
     ../gucefMT/include/gucefMT_CScopeMutex.h
+    ../gucefMT/include/gucefMT_mutex.h
   )
 
   set( PLATFORM_HEADER_INSTALL "EMSCRIPTEN" )
   source_group( "Platform Header Files" FILES ${PLATFORM_HEADER_FILES} )
 
   set( PLATFORM_SOURCE_FILES 
-    ../gucefCORE/src/DVOSWRAP.cpp
-    ../gucefCORE/src/DVCPPOSWRAP.cpp
-    ../gucefCORE/src/dvstrutils.c
     ../gucefCORE/src/CDVString.cpp
-    ../gucefCORE/src/dvfileutils.c
+    ../gucefCORE/src/DVCPPOSWRAP.cpp
+    ../gucefCORE/src/DVOSWRAP.cpp
     ../gucefCORE/src/dvcppstringutils.cpp
-    ../gucefCORE/src/md5.c
+    ../gucefCORE/src/dvfileutils.c
     ../gucefCORE/src/dvmd5utils.c
-    ../gucefMT/src/gucefMT_mutex.c
+    ../gucefCORE/src/dvstrutils.c
+    ../gucefCORE/src/md5.c
     ../gucefMT/src/gucefMT_CMutex.cpp
     ../gucefMT/src/gucefMT_CScopeMutex.cpp
+    ../gucefMT/src/gucefMT_mutex.c
   )
 
   set( PLATFORM_SOURCE_INSTALL "EMSCRIPTEN" )
@@ -118,34 +118,34 @@ elseif (EMSCRIPTEN)
 
 elseif (GLX)
   set( PLATFORM_HEADER_FILES 
-    ../gucefCORE/include/DVOSWRAP.h
-    ../gucefCORE/include/DVCPPOSWRAP.h
-    ../gucefCORE/include/dvstrutils.h
     ../gucefCORE/include/CDVString.h
-    ../gucefCORE/include/dvfileutils.h
+    ../gucefCORE/include/DVCPPOSWRAP.h
+    ../gucefCORE/include/DVOSWRAP.h
     ../gucefCORE/include/dvcppstringutils.h
-    ../gucefCORE/include/md5.h
+    ../gucefCORE/include/dvfileutils.h
     ../gucefCORE/include/dvmd5utils.h
-    ../gucefMT/include/gucefMT_mutex.h
+    ../gucefCORE/include/dvstrutils.h
+    ../gucefCORE/include/md5.h
     ../gucefMT/include/gucefMT_CMutex.h
     ../gucefMT/include/gucefMT_CScopeMutex.h
+    ../gucefMT/include/gucefMT_mutex.h
   )
 
   set( PLATFORM_HEADER_INSTALL "GLX" )
   source_group( "Platform Header Files" FILES ${PLATFORM_HEADER_FILES} )
 
   set( PLATFORM_SOURCE_FILES 
-    ../gucefCORE/src/DVOSWRAP.cpp
-    ../gucefCORE/src/DVCPPOSWRAP.cpp
-    ../gucefCORE/src/dvstrutils.c
     ../gucefCORE/src/CDVString.cpp
-    ../gucefCORE/src/dvfileutils.c
+    ../gucefCORE/src/DVCPPOSWRAP.cpp
+    ../gucefCORE/src/DVOSWRAP.cpp
     ../gucefCORE/src/dvcppstringutils.cpp
-    ../gucefCORE/src/md5.c
+    ../gucefCORE/src/dvfileutils.c
     ../gucefCORE/src/dvmd5utils.c
-    ../gucefMT/src/gucefMT_mutex.c
+    ../gucefCORE/src/dvstrutils.c
+    ../gucefCORE/src/md5.c
     ../gucefMT/src/gucefMT_CMutex.cpp
     ../gucefMT/src/gucefMT_CScopeMutex.cpp
+    ../gucefMT/src/gucefMT_mutex.c
   )
 
   set( PLATFORM_SOURCE_INSTALL "GLX" )
@@ -153,34 +153,34 @@ elseif (GLX)
 
 elseif (GTK)
   set( PLATFORM_HEADER_FILES 
-    ../gucefCORE/include/DVOSWRAP.h
-    ../gucefCORE/include/DVCPPOSWRAP.h
-    ../gucefCORE/include/dvstrutils.h
     ../gucefCORE/include/CDVString.h
-    ../gucefCORE/include/dvfileutils.h
+    ../gucefCORE/include/DVCPPOSWRAP.h
+    ../gucefCORE/include/DVOSWRAP.h
     ../gucefCORE/include/dvcppstringutils.h
-    ../gucefCORE/include/md5.h
+    ../gucefCORE/include/dvfileutils.h
     ../gucefCORE/include/dvmd5utils.h
-    ../gucefMT/include/gucefMT_mutex.h
+    ../gucefCORE/include/dvstrutils.h
+    ../gucefCORE/include/md5.h
     ../gucefMT/include/gucefMT_CMutex.h
     ../gucefMT/include/gucefMT_CScopeMutex.h
+    ../gucefMT/include/gucefMT_mutex.h
   )
 
   set( PLATFORM_HEADER_INSTALL "GTK" )
   source_group( "Platform Header Files" FILES ${PLATFORM_HEADER_FILES} )
 
   set( PLATFORM_SOURCE_FILES 
-    ../gucefCORE/src/DVOSWRAP.cpp
-    ../gucefCORE/src/DVCPPOSWRAP.cpp
-    ../gucefCORE/src/dvstrutils.c
     ../gucefCORE/src/CDVString.cpp
-    ../gucefCORE/src/dvfileutils.c
+    ../gucefCORE/src/DVCPPOSWRAP.cpp
+    ../gucefCORE/src/DVOSWRAP.cpp
     ../gucefCORE/src/dvcppstringutils.cpp
-    ../gucefCORE/src/md5.c
+    ../gucefCORE/src/dvfileutils.c
     ../gucefCORE/src/dvmd5utils.c
-    ../gucefMT/src/gucefMT_mutex.c
+    ../gucefCORE/src/dvstrutils.c
+    ../gucefCORE/src/md5.c
     ../gucefMT/src/gucefMT_CMutex.cpp
     ../gucefMT/src/gucefMT_CScopeMutex.cpp
+    ../gucefMT/src/gucefMT_mutex.c
   )
 
   set( PLATFORM_SOURCE_INSTALL "GTK" )
@@ -188,34 +188,34 @@ elseif (GTK)
 
 elseif (IOS)
   set( PLATFORM_HEADER_FILES 
-    ../gucefCORE/include/DVOSWRAP.h
-    ../gucefCORE/include/DVCPPOSWRAP.h
-    ../gucefCORE/include/dvstrutils.h
     ../gucefCORE/include/CDVString.h
-    ../gucefCORE/include/dvfileutils.h
+    ../gucefCORE/include/DVCPPOSWRAP.h
+    ../gucefCORE/include/DVOSWRAP.h
     ../gucefCORE/include/dvcppstringutils.h
-    ../gucefCORE/include/md5.h
+    ../gucefCORE/include/dvfileutils.h
     ../gucefCORE/include/dvmd5utils.h
-    ../gucefMT/include/gucefMT_mutex.h
+    ../gucefCORE/include/dvstrutils.h
+    ../gucefCORE/include/md5.h
     ../gucefMT/include/gucefMT_CMutex.h
     ../gucefMT/include/gucefMT_CScopeMutex.h
+    ../gucefMT/include/gucefMT_mutex.h
   )
 
   set( PLATFORM_HEADER_INSTALL "IOS" )
   source_group( "Platform Header Files" FILES ${PLATFORM_HEADER_FILES} )
 
   set( PLATFORM_SOURCE_FILES 
-    ../gucefCORE/src/DVOSWRAP.cpp
-    ../gucefCORE/src/DVCPPOSWRAP.cpp
-    ../gucefCORE/src/dvstrutils.c
     ../gucefCORE/src/CDVString.cpp
-    ../gucefCORE/src/dvfileutils.c
+    ../gucefCORE/src/DVCPPOSWRAP.cpp
+    ../gucefCORE/src/DVOSWRAP.cpp
     ../gucefCORE/src/dvcppstringutils.cpp
-    ../gucefCORE/src/md5.c
+    ../gucefCORE/src/dvfileutils.c
     ../gucefCORE/src/dvmd5utils.c
-    ../gucefMT/src/gucefMT_mutex.c
+    ../gucefCORE/src/dvstrutils.c
+    ../gucefCORE/src/md5.c
     ../gucefMT/src/gucefMT_CMutex.cpp
     ../gucefMT/src/gucefMT_CScopeMutex.cpp
+    ../gucefMT/src/gucefMT_mutex.c
   )
 
   set( PLATFORM_SOURCE_INSTALL "IOS" )
@@ -223,34 +223,34 @@ elseif (IOS)
 
 elseif (LINUX32)
   set( PLATFORM_HEADER_FILES 
-    ../gucefCORE/include/DVOSWRAP.h
-    ../gucefCORE/include/DVCPPOSWRAP.h
-    ../gucefCORE/include/dvstrutils.h
     ../gucefCORE/include/CDVString.h
-    ../gucefCORE/include/dvfileutils.h
+    ../gucefCORE/include/DVCPPOSWRAP.h
+    ../gucefCORE/include/DVOSWRAP.h
     ../gucefCORE/include/dvcppstringutils.h
-    ../gucefCORE/include/md5.h
+    ../gucefCORE/include/dvfileutils.h
     ../gucefCORE/include/dvmd5utils.h
-    ../gucefMT/include/gucefMT_mutex.h
+    ../gucefCORE/include/dvstrutils.h
+    ../gucefCORE/include/md5.h
     ../gucefMT/include/gucefMT_CMutex.h
     ../gucefMT/include/gucefMT_CScopeMutex.h
+    ../gucefMT/include/gucefMT_mutex.h
   )
 
   set( PLATFORM_HEADER_INSTALL "LINUX32" )
   source_group( "Platform Header Files" FILES ${PLATFORM_HEADER_FILES} )
 
   set( PLATFORM_SOURCE_FILES 
-    ../gucefCORE/src/DVOSWRAP.cpp
-    ../gucefCORE/src/DVCPPOSWRAP.cpp
-    ../gucefCORE/src/dvstrutils.c
     ../gucefCORE/src/CDVString.cpp
-    ../gucefCORE/src/dvfileutils.c
+    ../gucefCORE/src/DVCPPOSWRAP.cpp
+    ../gucefCORE/src/DVOSWRAP.cpp
     ../gucefCORE/src/dvcppstringutils.cpp
-    ../gucefCORE/src/md5.c
+    ../gucefCORE/src/dvfileutils.c
     ../gucefCORE/src/dvmd5utils.c
-    ../gucefMT/src/gucefMT_mutex.c
+    ../gucefCORE/src/dvstrutils.c
+    ../gucefCORE/src/md5.c
     ../gucefMT/src/gucefMT_CMutex.cpp
     ../gucefMT/src/gucefMT_CScopeMutex.cpp
+    ../gucefMT/src/gucefMT_mutex.c
   )
 
   set( PLATFORM_SOURCE_INSTALL "LINUX32" )
@@ -258,34 +258,34 @@ elseif (LINUX32)
 
 elseif (LINUX64)
   set( PLATFORM_HEADER_FILES 
-    ../gucefCORE/include/DVOSWRAP.h
-    ../gucefCORE/include/DVCPPOSWRAP.h
-    ../gucefCORE/include/dvstrutils.h
     ../gucefCORE/include/CDVString.h
-    ../gucefCORE/include/dvfileutils.h
+    ../gucefCORE/include/DVCPPOSWRAP.h
+    ../gucefCORE/include/DVOSWRAP.h
     ../gucefCORE/include/dvcppstringutils.h
-    ../gucefCORE/include/md5.h
+    ../gucefCORE/include/dvfileutils.h
     ../gucefCORE/include/dvmd5utils.h
-    ../gucefMT/include/gucefMT_mutex.h
+    ../gucefCORE/include/dvstrutils.h
+    ../gucefCORE/include/md5.h
     ../gucefMT/include/gucefMT_CMutex.h
     ../gucefMT/include/gucefMT_CScopeMutex.h
+    ../gucefMT/include/gucefMT_mutex.h
   )
 
   set( PLATFORM_HEADER_INSTALL "LINUX64" )
   source_group( "Platform Header Files" FILES ${PLATFORM_HEADER_FILES} )
 
   set( PLATFORM_SOURCE_FILES 
-    ../gucefCORE/src/DVOSWRAP.cpp
-    ../gucefCORE/src/DVCPPOSWRAP.cpp
-    ../gucefCORE/src/dvstrutils.c
     ../gucefCORE/src/CDVString.cpp
-    ../gucefCORE/src/dvfileutils.c
+    ../gucefCORE/src/DVCPPOSWRAP.cpp
+    ../gucefCORE/src/DVOSWRAP.cpp
     ../gucefCORE/src/dvcppstringutils.cpp
-    ../gucefCORE/src/md5.c
+    ../gucefCORE/src/dvfileutils.c
     ../gucefCORE/src/dvmd5utils.c
-    ../gucefMT/src/gucefMT_mutex.c
+    ../gucefCORE/src/dvstrutils.c
+    ../gucefCORE/src/md5.c
     ../gucefMT/src/gucefMT_CMutex.cpp
     ../gucefMT/src/gucefMT_CScopeMutex.cpp
+    ../gucefMT/src/gucefMT_mutex.c
   )
 
   set( PLATFORM_SOURCE_INSTALL "LINUX64" )
@@ -293,34 +293,34 @@ elseif (LINUX64)
 
 elseif (NACL)
   set( PLATFORM_HEADER_FILES 
-    ../gucefCORE/include/DVOSWRAP.h
-    ../gucefCORE/include/DVCPPOSWRAP.h
-    ../gucefCORE/include/dvstrutils.h
     ../gucefCORE/include/CDVString.h
-    ../gucefCORE/include/dvfileutils.h
+    ../gucefCORE/include/DVCPPOSWRAP.h
+    ../gucefCORE/include/DVOSWRAP.h
     ../gucefCORE/include/dvcppstringutils.h
-    ../gucefCORE/include/md5.h
+    ../gucefCORE/include/dvfileutils.h
     ../gucefCORE/include/dvmd5utils.h
-    ../gucefMT/include/gucefMT_mutex.h
+    ../gucefCORE/include/dvstrutils.h
+    ../gucefCORE/include/md5.h
     ../gucefMT/include/gucefMT_CMutex.h
     ../gucefMT/include/gucefMT_CScopeMutex.h
+    ../gucefMT/include/gucefMT_mutex.h
   )
 
   set( PLATFORM_HEADER_INSTALL "NACL" )
   source_group( "Platform Header Files" FILES ${PLATFORM_HEADER_FILES} )
 
   set( PLATFORM_SOURCE_FILES 
-    ../gucefCORE/src/DVOSWRAP.cpp
-    ../gucefCORE/src/DVCPPOSWRAP.cpp
-    ../gucefCORE/src/dvstrutils.c
     ../gucefCORE/src/CDVString.cpp
-    ../gucefCORE/src/dvfileutils.c
+    ../gucefCORE/src/DVCPPOSWRAP.cpp
+    ../gucefCORE/src/DVOSWRAP.cpp
     ../gucefCORE/src/dvcppstringutils.cpp
-    ../gucefCORE/src/md5.c
+    ../gucefCORE/src/dvfileutils.c
     ../gucefCORE/src/dvmd5utils.c
-    ../gucefMT/src/gucefMT_mutex.c
+    ../gucefCORE/src/dvstrutils.c
+    ../gucefCORE/src/md5.c
     ../gucefMT/src/gucefMT_CMutex.cpp
     ../gucefMT/src/gucefMT_CScopeMutex.cpp
+    ../gucefMT/src/gucefMT_mutex.c
   )
 
   set( PLATFORM_SOURCE_INSTALL "NACL" )
@@ -328,34 +328,34 @@ elseif (NACL)
 
 elseif (OSX)
   set( PLATFORM_HEADER_FILES 
-    ../gucefCORE/include/DVOSWRAP.h
-    ../gucefCORE/include/DVCPPOSWRAP.h
-    ../gucefCORE/include/dvstrutils.h
     ../gucefCORE/include/CDVString.h
-    ../gucefCORE/include/dvfileutils.h
+    ../gucefCORE/include/DVCPPOSWRAP.h
+    ../gucefCORE/include/DVOSWRAP.h
     ../gucefCORE/include/dvcppstringutils.h
-    ../gucefCORE/include/md5.h
+    ../gucefCORE/include/dvfileutils.h
     ../gucefCORE/include/dvmd5utils.h
-    ../gucefMT/include/gucefMT_mutex.h
+    ../gucefCORE/include/dvstrutils.h
+    ../gucefCORE/include/md5.h
     ../gucefMT/include/gucefMT_CMutex.h
     ../gucefMT/include/gucefMT_CScopeMutex.h
+    ../gucefMT/include/gucefMT_mutex.h
   )
 
   set( PLATFORM_HEADER_INSTALL "OSX" )
   source_group( "Platform Header Files" FILES ${PLATFORM_HEADER_FILES} )
 
   set( PLATFORM_SOURCE_FILES 
-    ../gucefCORE/src/DVOSWRAP.cpp
-    ../gucefCORE/src/DVCPPOSWRAP.cpp
-    ../gucefCORE/src/dvstrutils.c
     ../gucefCORE/src/CDVString.cpp
-    ../gucefCORE/src/dvfileutils.c
+    ../gucefCORE/src/DVCPPOSWRAP.cpp
+    ../gucefCORE/src/DVOSWRAP.cpp
     ../gucefCORE/src/dvcppstringutils.cpp
-    ../gucefCORE/src/md5.c
+    ../gucefCORE/src/dvfileutils.c
     ../gucefCORE/src/dvmd5utils.c
-    ../gucefMT/src/gucefMT_mutex.c
+    ../gucefCORE/src/dvstrutils.c
+    ../gucefCORE/src/md5.c
     ../gucefMT/src/gucefMT_CMutex.cpp
     ../gucefMT/src/gucefMT_CScopeMutex.cpp
+    ../gucefMT/src/gucefMT_mutex.c
   )
 
   set( PLATFORM_SOURCE_INSTALL "OSX" )
@@ -363,34 +363,34 @@ elseif (OSX)
 
 elseif (SDL)
   set( PLATFORM_HEADER_FILES 
-    ../gucefCORE/include/DVOSWRAP.h
-    ../gucefCORE/include/DVCPPOSWRAP.h
-    ../gucefCORE/include/dvstrutils.h
     ../gucefCORE/include/CDVString.h
-    ../gucefCORE/include/dvfileutils.h
+    ../gucefCORE/include/DVCPPOSWRAP.h
+    ../gucefCORE/include/DVOSWRAP.h
     ../gucefCORE/include/dvcppstringutils.h
-    ../gucefCORE/include/md5.h
+    ../gucefCORE/include/dvfileutils.h
     ../gucefCORE/include/dvmd5utils.h
-    ../gucefMT/include/gucefMT_mutex.h
+    ../gucefCORE/include/dvstrutils.h
+    ../gucefCORE/include/md5.h
     ../gucefMT/include/gucefMT_CMutex.h
     ../gucefMT/include/gucefMT_CScopeMutex.h
+    ../gucefMT/include/gucefMT_mutex.h
   )
 
   set( PLATFORM_HEADER_INSTALL "SDL" )
   source_group( "Platform Header Files" FILES ${PLATFORM_HEADER_FILES} )
 
   set( PLATFORM_SOURCE_FILES 
-    ../gucefCORE/src/DVOSWRAP.cpp
-    ../gucefCORE/src/DVCPPOSWRAP.cpp
-    ../gucefCORE/src/dvstrutils.c
     ../gucefCORE/src/CDVString.cpp
-    ../gucefCORE/src/dvfileutils.c
+    ../gucefCORE/src/DVCPPOSWRAP.cpp
+    ../gucefCORE/src/DVOSWRAP.cpp
     ../gucefCORE/src/dvcppstringutils.cpp
-    ../gucefCORE/src/md5.c
+    ../gucefCORE/src/dvfileutils.c
     ../gucefCORE/src/dvmd5utils.c
-    ../gucefMT/src/gucefMT_mutex.c
+    ../gucefCORE/src/dvstrutils.c
+    ../gucefCORE/src/md5.c
     ../gucefMT/src/gucefMT_CMutex.cpp
     ../gucefMT/src/gucefMT_CScopeMutex.cpp
+    ../gucefMT/src/gucefMT_mutex.c
   )
 
   set( PLATFORM_SOURCE_INSTALL "SDL" )
@@ -398,34 +398,34 @@ elseif (SDL)
 
 elseif (SYMBIAN)
   set( PLATFORM_HEADER_FILES 
-    ../gucefCORE/include/DVOSWRAP.h
-    ../gucefCORE/include/DVCPPOSWRAP.h
-    ../gucefCORE/include/dvstrutils.h
     ../gucefCORE/include/CDVString.h
-    ../gucefCORE/include/dvfileutils.h
+    ../gucefCORE/include/DVCPPOSWRAP.h
+    ../gucefCORE/include/DVOSWRAP.h
     ../gucefCORE/include/dvcppstringutils.h
-    ../gucefCORE/include/md5.h
+    ../gucefCORE/include/dvfileutils.h
     ../gucefCORE/include/dvmd5utils.h
-    ../gucefMT/include/gucefMT_mutex.h
+    ../gucefCORE/include/dvstrutils.h
+    ../gucefCORE/include/md5.h
     ../gucefMT/include/gucefMT_CMutex.h
     ../gucefMT/include/gucefMT_CScopeMutex.h
+    ../gucefMT/include/gucefMT_mutex.h
   )
 
   set( PLATFORM_HEADER_INSTALL "SYMBIAN" )
   source_group( "Platform Header Files" FILES ${PLATFORM_HEADER_FILES} )
 
   set( PLATFORM_SOURCE_FILES 
-    ../gucefCORE/src/DVOSWRAP.cpp
-    ../gucefCORE/src/DVCPPOSWRAP.cpp
-    ../gucefCORE/src/dvstrutils.c
     ../gucefCORE/src/CDVString.cpp
-    ../gucefCORE/src/dvfileutils.c
+    ../gucefCORE/src/DVCPPOSWRAP.cpp
+    ../gucefCORE/src/DVOSWRAP.cpp
     ../gucefCORE/src/dvcppstringutils.cpp
-    ../gucefCORE/src/md5.c
+    ../gucefCORE/src/dvfileutils.c
     ../gucefCORE/src/dvmd5utils.c
-    ../gucefMT/src/gucefMT_mutex.c
+    ../gucefCORE/src/dvstrutils.c
+    ../gucefCORE/src/md5.c
     ../gucefMT/src/gucefMT_CMutex.cpp
     ../gucefMT/src/gucefMT_CScopeMutex.cpp
+    ../gucefMT/src/gucefMT_mutex.c
   )
 
   set( PLATFORM_SOURCE_INSTALL "SYMBIAN" )
@@ -433,34 +433,34 @@ elseif (SYMBIAN)
 
 elseif (UNIX)
   set( PLATFORM_HEADER_FILES 
-    ../gucefCORE/include/DVOSWRAP.h
-    ../gucefCORE/include/DVCPPOSWRAP.h
-    ../gucefCORE/include/dvstrutils.h
     ../gucefCORE/include/CDVString.h
-    ../gucefCORE/include/dvfileutils.h
+    ../gucefCORE/include/DVCPPOSWRAP.h
+    ../gucefCORE/include/DVOSWRAP.h
     ../gucefCORE/include/dvcppstringutils.h
-    ../gucefCORE/include/md5.h
+    ../gucefCORE/include/dvfileutils.h
     ../gucefCORE/include/dvmd5utils.h
-    ../gucefMT/include/gucefMT_mutex.h
+    ../gucefCORE/include/dvstrutils.h
+    ../gucefCORE/include/md5.h
     ../gucefMT/include/gucefMT_CMutex.h
     ../gucefMT/include/gucefMT_CScopeMutex.h
+    ../gucefMT/include/gucefMT_mutex.h
   )
 
   set( PLATFORM_HEADER_INSTALL "UNIX" )
   source_group( "Platform Header Files" FILES ${PLATFORM_HEADER_FILES} )
 
   set( PLATFORM_SOURCE_FILES 
-    ../gucefCORE/src/DVOSWRAP.cpp
-    ../gucefCORE/src/DVCPPOSWRAP.cpp
-    ../gucefCORE/src/dvstrutils.c
     ../gucefCORE/src/CDVString.cpp
-    ../gucefCORE/src/dvfileutils.c
+    ../gucefCORE/src/DVCPPOSWRAP.cpp
+    ../gucefCORE/src/DVOSWRAP.cpp
     ../gucefCORE/src/dvcppstringutils.cpp
-    ../gucefCORE/src/md5.c
+    ../gucefCORE/src/dvfileutils.c
     ../gucefCORE/src/dvmd5utils.c
-    ../gucefMT/src/gucefMT_mutex.c
+    ../gucefCORE/src/dvstrutils.c
+    ../gucefCORE/src/md5.c
     ../gucefMT/src/gucefMT_CMutex.cpp
     ../gucefMT/src/gucefMT_CScopeMutex.cpp
+    ../gucefMT/src/gucefMT_mutex.c
   )
 
   set( PLATFORM_SOURCE_INSTALL "UNIX" )
@@ -468,34 +468,34 @@ elseif (UNIX)
 
 elseif (WIN32)
   set( PLATFORM_HEADER_FILES 
-    ../gucefCORE/include/DVOSWRAP.h
-    ../gucefCORE/include/DVCPPOSWRAP.h
-    ../gucefCORE/include/dvstrutils.h
     ../gucefCORE/include/CDVString.h
-    ../gucefCORE/include/dvfileutils.h
+    ../gucefCORE/include/DVCPPOSWRAP.h
+    ../gucefCORE/include/DVOSWRAP.h
     ../gucefCORE/include/dvcppstringutils.h
-    ../gucefCORE/include/md5.h
+    ../gucefCORE/include/dvfileutils.h
     ../gucefCORE/include/dvmd5utils.h
-    ../gucefMT/include/gucefMT_mutex.h
+    ../gucefCORE/include/dvstrutils.h
+    ../gucefCORE/include/md5.h
     ../gucefMT/include/gucefMT_CMutex.h
     ../gucefMT/include/gucefMT_CScopeMutex.h
+    ../gucefMT/include/gucefMT_mutex.h
   )
 
   set( PLATFORM_HEADER_INSTALL "WIN32" )
   source_group( "Platform Header Files" FILES ${PLATFORM_HEADER_FILES} )
 
   set( PLATFORM_SOURCE_FILES 
-    ../gucefCORE/src/DVOSWRAP.cpp
-    ../gucefCORE/src/DVCPPOSWRAP.cpp
-    ../gucefCORE/src/dvstrutils.c
     ../gucefCORE/src/CDVString.cpp
-    ../gucefCORE/src/dvfileutils.c
+    ../gucefCORE/src/DVCPPOSWRAP.cpp
+    ../gucefCORE/src/DVOSWRAP.cpp
     ../gucefCORE/src/dvcppstringutils.cpp
-    ../gucefCORE/src/md5.c
+    ../gucefCORE/src/dvfileutils.c
     ../gucefCORE/src/dvmd5utils.c
-    ../gucefMT/src/gucefMT_mutex.c
+    ../gucefCORE/src/dvstrutils.c
+    ../gucefCORE/src/md5.c
     ../gucefMT/src/gucefMT_CMutex.cpp
     ../gucefMT/src/gucefMT_CScopeMutex.cpp
+    ../gucefMT/src/gucefMT_mutex.c
   )
 
   set( PLATFORM_SOURCE_INSTALL "WIN32" )
@@ -503,34 +503,34 @@ elseif (WIN32)
 
 elseif (WIN64)
   set( PLATFORM_HEADER_FILES 
-    ../gucefCORE/include/DVOSWRAP.h
-    ../gucefCORE/include/DVCPPOSWRAP.h
-    ../gucefCORE/include/dvstrutils.h
     ../gucefCORE/include/CDVString.h
-    ../gucefCORE/include/dvfileutils.h
+    ../gucefCORE/include/DVCPPOSWRAP.h
+    ../gucefCORE/include/DVOSWRAP.h
     ../gucefCORE/include/dvcppstringutils.h
-    ../gucefCORE/include/md5.h
+    ../gucefCORE/include/dvfileutils.h
     ../gucefCORE/include/dvmd5utils.h
-    ../gucefMT/include/gucefMT_mutex.h
+    ../gucefCORE/include/dvstrutils.h
+    ../gucefCORE/include/md5.h
     ../gucefMT/include/gucefMT_CMutex.h
     ../gucefMT/include/gucefMT_CScopeMutex.h
+    ../gucefMT/include/gucefMT_mutex.h
   )
 
   set( PLATFORM_HEADER_INSTALL "WIN64" )
   source_group( "Platform Header Files" FILES ${PLATFORM_HEADER_FILES} )
 
   set( PLATFORM_SOURCE_FILES 
-    ../gucefCORE/src/DVOSWRAP.cpp
-    ../gucefCORE/src/DVCPPOSWRAP.cpp
-    ../gucefCORE/src/dvstrutils.c
     ../gucefCORE/src/CDVString.cpp
-    ../gucefCORE/src/dvfileutils.c
+    ../gucefCORE/src/DVCPPOSWRAP.cpp
+    ../gucefCORE/src/DVOSWRAP.cpp
     ../gucefCORE/src/dvcppstringutils.cpp
-    ../gucefCORE/src/md5.c
+    ../gucefCORE/src/dvfileutils.c
     ../gucefCORE/src/dvmd5utils.c
-    ../gucefMT/src/gucefMT_mutex.c
+    ../gucefCORE/src/dvstrutils.c
+    ../gucefCORE/src/md5.c
     ../gucefMT/src/gucefMT_CMutex.cpp
     ../gucefMT/src/gucefMT_CScopeMutex.cpp
+    ../gucefMT/src/gucefMT_mutex.c
   )
 
   set( PLATFORM_SOURCE_INSTALL "WIN64" )
@@ -558,7 +558,7 @@ if ( LINUX64 )
   target_link_libraries( ${MODULE_NAME} dl rt )
 endif( LINUX64 )
 
-include_directories( ../../common/include ../gucefCORE/include ../gucefMT/include ../gucefCORE/include/ ../gucefMT/include/ include )
+include_directories( .. ../../common/include ../gucefCORE ../gucefCORE/include ../gucefMT ../gucefMT/include ../gucefCORE/include/ ../gucefMT/include/ include )
 
 if ( ANDROID )
   include_directories( ../gucefCORE/include/android ../gucefCORE/include/ ../gucefMT/include/ )

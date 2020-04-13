@@ -71,14 +71,13 @@ set( HEADER_FILES
   IlmBase/Imath/ImathVec.h
   IlmBase/Imath/ImathVecAlgo.h
   IlmBase/config.windows/IlmBaseConfig.h
-  OpenEXR/IlmImf/b44ExpLogTable.h
-  OpenEXR/IlmImf/dwaLookups.h
   OpenEXR/IlmImf/ImfAcesFile.h
   OpenEXR/IlmImf/ImfArray.h
   OpenEXR/IlmImf/ImfAttribute.h
   OpenEXR/IlmImf/ImfAutoArray.h
   OpenEXR/IlmImf/ImfB44Compressor.h
   OpenEXR/IlmImf/ImfBoxAttribute.h
+  OpenEXR/IlmImf/ImfCRgbaFile.h
   OpenEXR/IlmImf/ImfChannelList.h
   OpenEXR/IlmImf/ImfChannelListAttribute.h
   OpenEXR/IlmImf/ImfCheckedArithmetic.h
@@ -89,7 +88,6 @@ set( HEADER_FILES
   OpenEXR/IlmImf/ImfCompressionAttribute.h
   OpenEXR/IlmImf/ImfCompressor.h
   OpenEXR/IlmImf/ImfConvert.h
-  OpenEXR/IlmImf/ImfCRgbaFile.h
   OpenEXR/IlmImf/ImfDeepCompositing.h
   OpenEXR/IlmImf/ImfDeepFrameBuffer.h
   OpenEXR/IlmImf/ImfDeepImageState.h
@@ -118,13 +116,13 @@ set( HEADER_FILES
   OpenEXR/IlmImf/ImfGenericOutputFile.h
   OpenEXR/IlmImf/ImfHeader.h
   OpenEXR/IlmImf/ImfHuf.h
+  OpenEXR/IlmImf/ImfIO.h
   OpenEXR/IlmImf/ImfInputFile.h
   OpenEXR/IlmImf/ImfInputPart.h
   OpenEXR/IlmImf/ImfInputPartData.h
   OpenEXR/IlmImf/ImfInputStreamMutex.h
   OpenEXR/IlmImf/ImfInt64.h
   OpenEXR/IlmImf/ImfIntAttribute.h
-  OpenEXR/IlmImf/ImfIO.h
   OpenEXR/IlmImf/ImfKeyCode.h
   OpenEXR/IlmImf/ImfKeyCodeAttribute.h
   OpenEXR/IlmImf/ImfLineOrder.h
@@ -168,13 +166,13 @@ set( HEADER_FILES
   OpenEXR/IlmImf/ImfThreading.h
   OpenEXR/IlmImf/ImfTileDescription.h
   OpenEXR/IlmImf/ImfTileDescriptionAttribute.h
+  OpenEXR/IlmImf/ImfTileOffsets.h
   OpenEXR/IlmImf/ImfTiledInputFile.h
   OpenEXR/IlmImf/ImfTiledInputPart.h
   OpenEXR/IlmImf/ImfTiledMisc.h
   OpenEXR/IlmImf/ImfTiledOutputFile.h
   OpenEXR/IlmImf/ImfTiledOutputPart.h
   OpenEXR/IlmImf/ImfTiledRgbaFile.h
-  OpenEXR/IlmImf/ImfTileOffsets.h
   OpenEXR/IlmImf/ImfTimeCode.h
   OpenEXR/IlmImf/ImfTimeCodeAttribute.h
   OpenEXR/IlmImf/ImfVecAttribute.h
@@ -183,6 +181,8 @@ set( HEADER_FILES
   OpenEXR/IlmImf/ImfXdr.h
   OpenEXR/IlmImf/ImfZip.h
   OpenEXR/IlmImf/ImfZipCompressor.h
+  OpenEXR/IlmImf/b44ExpLogTable.h
+  OpenEXR/IlmImf/dwaLookups.h
   OpenEXR/IlmImfUtil/ImfDeepImage.h
   OpenEXR/IlmImfUtil/ImfDeepImageChannel.h
   OpenEXR/IlmImfUtil/ImfDeepImageIO.h
@@ -229,6 +229,7 @@ set( SOURCE_FILES
   OpenEXR/IlmImf/ImfAttribute.cpp
   OpenEXR/IlmImf/ImfB44Compressor.cpp
   OpenEXR/IlmImf/ImfBoxAttribute.cpp
+  OpenEXR/IlmImf/ImfCRgbaFile.cpp
   OpenEXR/IlmImf/ImfChannelList.cpp
   OpenEXR/IlmImf/ImfChannelListAttribute.cpp
   OpenEXR/IlmImf/ImfChromaticities.cpp
@@ -237,7 +238,6 @@ set( SOURCE_FILES
   OpenEXR/IlmImf/ImfCompressionAttribute.cpp
   OpenEXR/IlmImf/ImfCompressor.cpp
   OpenEXR/IlmImf/ImfConvert.cpp
-  OpenEXR/IlmImf/ImfCRgbaFile.cpp
   OpenEXR/IlmImf/ImfDeepCompositing.cpp
   OpenEXR/IlmImf/ImfDeepFrameBuffer.cpp
   OpenEXR/IlmImf/ImfDeepImageStateAttribute.cpp
@@ -262,11 +262,11 @@ set( SOURCE_FILES
   OpenEXR/IlmImf/ImfGenericOutputFile.cpp
   OpenEXR/IlmImf/ImfHeader.cpp
   OpenEXR/IlmImf/ImfHuf.cpp
+  OpenEXR/IlmImf/ImfIO.cpp
   OpenEXR/IlmImf/ImfInputFile.cpp
   OpenEXR/IlmImf/ImfInputPart.cpp
   OpenEXR/IlmImf/ImfInputPartData.cpp
   OpenEXR/IlmImf/ImfIntAttribute.cpp
-  OpenEXR/IlmImf/ImfIO.cpp
   OpenEXR/IlmImf/ImfKeyCode.cpp
   OpenEXR/IlmImf/ImfKeyCodeAttribute.cpp
   OpenEXR/IlmImf/ImfLineOrderAttribute.cpp
@@ -300,13 +300,13 @@ set( SOURCE_FILES
   OpenEXR/IlmImf/ImfTestFile.cpp
   OpenEXR/IlmImf/ImfThreading.cpp
   OpenEXR/IlmImf/ImfTileDescriptionAttribute.cpp
+  OpenEXR/IlmImf/ImfTileOffsets.cpp
   OpenEXR/IlmImf/ImfTiledInputFile.cpp
   OpenEXR/IlmImf/ImfTiledInputPart.cpp
   OpenEXR/IlmImf/ImfTiledMisc.cpp
   OpenEXR/IlmImf/ImfTiledOutputFile.cpp
   OpenEXR/IlmImf/ImfTiledOutputPart.cpp
   OpenEXR/IlmImf/ImfTiledRgbaFile.cpp
-  OpenEXR/IlmImf/ImfTileOffsets.cpp
   OpenEXR/IlmImf/ImfTimeCode.cpp
   OpenEXR/IlmImf/ImfTimeCodeAttribute.cpp
   OpenEXR/IlmImf/ImfVecAttribute.cpp
@@ -352,7 +352,7 @@ if ( WIN64 )
   set_property( TARGET ${MODULE_NAME} APPEND_STRING PROPERTY COMPILE_DEFINITIONS "HALF_EXPORTS;IEX_EXPORTS;ILMIMF_EXPORTS;ILMTHREAD_EXPORTS;IMATH_EXPORTS;OPENEXR_DLL" )
 endif( WIN64 )
 
-include_directories( IlmBase/Half IlmBase/Iex IlmBase/IexMath IlmBase/IlmThread IlmBase/Imath IlmBase/config.windows OpenEXR/IlmImf OpenEXR/IlmImfUtil OpenEXR/config.windows )
+include_directories( IlmBase OpenEXR IlmBase/Half IlmBase/Iex IlmBase/IexMath IlmBase/IlmThread IlmBase/Imath IlmBase/config.windows OpenEXR/IlmImf OpenEXR/IlmImfUtil OpenEXR/config.windows )
 
 if ( LINUX32 )
   include_directories( ../zlib )

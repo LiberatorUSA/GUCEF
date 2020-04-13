@@ -13,8 +13,8 @@
 
 set( HEADER_FILES 
   include/vfspluginVP.h
-  include/vfspluginVP_config.h
   include/vfspluginVP_CVPArchive.h
+  include/vfspluginVP_config.h
   include/vfspluginVP_macros.h
 )
 

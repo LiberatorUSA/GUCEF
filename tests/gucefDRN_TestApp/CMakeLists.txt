@@ -16,8 +16,8 @@ set( HEADER_FILES
 )
 
 set( SOURCE_FILES 
-  src/gucefDRN_TestApp.cpp
   src/TestCode_PeerToPeer.cpp
+  src/gucefDRN_TestApp.cpp
 )
 
 # Make sure the PLATFORM_HEADER_FILES variable is always defined

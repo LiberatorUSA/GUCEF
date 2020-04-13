@@ -20,12 +20,12 @@ set( HEADER_FILES
 )
 
 set( SOURCE_FILES 
-  src/gucefCORE_TestApp_main.cpp
   src/TestCyclicDynamicBuffer.cpp
   src/TestIniParser.cpp
   src/TestNotifierObserver.cpp
   src/TestSharedPtr.cpp
   src/TestString.cpp
+  src/gucefCORE_TestApp_main.cpp
 )
 
 # Make sure the PLATFORM_HEADER_FILES variable is always defined

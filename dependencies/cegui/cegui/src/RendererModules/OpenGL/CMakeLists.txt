@@ -12,13 +12,13 @@
 # Configuration for module: CEGUI.RendererModule.OpenGL
 
 set( SOURCE_FILES 
-  GeometryBufferBase.cpp
   GL3FBOTextureTarget.cpp
   GL3GeometryBuffer.cpp
   GL3Renderer.cpp
   GLFBOTextureTarget.cpp
   GLGeometryBuffer.cpp
   GLRenderer.cpp
+  GeometryBufferBase.cpp
   RendererBase.cpp
   Shader.cpp
   ShaderManager.cpp

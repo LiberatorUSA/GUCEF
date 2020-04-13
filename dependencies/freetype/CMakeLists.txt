@@ -100,18 +100,18 @@ set( HEADER_FILES
 set( SOURCE_FILES 
   src/autofit/autofit.c
   src/base/ftbase.c
-  src/base/ftsystem.c
-  src/base/ftglyph.c
   src/base/ftbitmap.c
+  src/base/ftglyph.c
   src/base/ftinit.c
+  src/base/ftsystem.c
   src/bdf/bdf.c
   src/cache/ftcache.c
   src/cff/cff.c
-  src/cid/cidriver.c
-  src/cid/cidobjs.c
   src/cid/cidgload.c
   src/cid/cidload.c
+  src/cid/cidobjs.c
   src/cid/cidparse.c
+  src/cid/cidriver.c
   src/gxvalid/gxvalid.c
   src/gzip/ftgzip.c
   src/lzw/ftlzw.c
@@ -123,8 +123,8 @@ set( SOURCE_FILES
   src/psnames/psnames.c
   src/raster/raster.c
   src/sfnt/sfnt.c
-  src/smooth/ftsmooth.c
   src/smooth/ftgrays.c
+  src/smooth/ftsmooth.c
   src/truetype/truetype.c
   src/type1/type1.c
   src/type42/type42.c
@@ -137,18 +137,18 @@ if (ANDROID)
   set( PLATFORM_SOURCE_FILES 
     src/autofit/autofit.c
     src/base/ftbase.c
-    src/base/ftsystem.c
-    src/base/ftglyph.c
     src/base/ftbitmap.c
+    src/base/ftglyph.c
     src/base/ftinit.c
+    src/base/ftsystem.c
     src/bdf/bdf.c
     src/cache/ftcache.c
     src/cff/cff.c
-    src/cid/cidriver.c
-    src/cid/cidobjs.c
     src/cid/cidgload.c
     src/cid/cidload.c
+    src/cid/cidobjs.c
     src/cid/cidparse.c
+    src/cid/cidriver.c
     src/gxvalid/gxvalid.c
     src/gzip/ftgzip.c
     src/lzw/ftlzw.c
@@ -160,8 +160,8 @@ if (ANDROID)
     src/psnames/psnames.c
     src/raster/raster.c
     src/sfnt/sfnt.c
-    src/smooth/ftsmooth.c
     src/smooth/ftgrays.c
+    src/smooth/ftsmooth.c
     src/truetype/truetype.c
     src/type1/type1.c
     src/type42/type42.c
@@ -174,18 +174,18 @@ elseif (EMSCRIPTEN)
   set( PLATFORM_SOURCE_FILES 
     src/autofit/autofit.c
     src/base/ftbase.c
-    src/base/ftsystem.c
-    src/base/ftglyph.c
     src/base/ftbitmap.c
+    src/base/ftglyph.c
     src/base/ftinit.c
+    src/base/ftsystem.c
     src/bdf/bdf.c
     src/cache/ftcache.c
     src/cff/cff.c
-    src/cid/cidriver.c
-    src/cid/cidobjs.c
     src/cid/cidgload.c
     src/cid/cidload.c
+    src/cid/cidobjs.c
     src/cid/cidparse.c
+    src/cid/cidriver.c
     src/gxvalid/gxvalid.c
     src/gzip/ftgzip.c
     src/lzw/ftlzw.c
@@ -197,8 +197,8 @@ elseif (EMSCRIPTEN)
     src/psnames/psnames.c
     src/raster/raster.c
     src/sfnt/sfnt.c
-    src/smooth/ftsmooth.c
     src/smooth/ftgrays.c
+    src/smooth/ftsmooth.c
     src/truetype/truetype.c
     src/type1/type1.c
     src/type42/type42.c
@@ -211,18 +211,18 @@ elseif (GLX)
   set( PLATFORM_SOURCE_FILES 
     src/autofit/autofit.c
     src/base/ftbase.c
-    src/base/ftsystem.c
-    src/base/ftglyph.c
     src/base/ftbitmap.c
+    src/base/ftglyph.c
     src/base/ftinit.c
+    src/base/ftsystem.c
     src/bdf/bdf.c
     src/cache/ftcache.c
     src/cff/cff.c
-    src/cid/cidriver.c
-    src/cid/cidobjs.c
     src/cid/cidgload.c
     src/cid/cidload.c
+    src/cid/cidobjs.c
     src/cid/cidparse.c
+    src/cid/cidriver.c
     src/gxvalid/gxvalid.c
     src/gzip/ftgzip.c
     src/lzw/ftlzw.c
@@ -234,8 +234,8 @@ elseif (GLX)
     src/psnames/psnames.c
     src/raster/raster.c
     src/sfnt/sfnt.c
-    src/smooth/ftsmooth.c
     src/smooth/ftgrays.c
+    src/smooth/ftsmooth.c
     src/truetype/truetype.c
     src/type1/type1.c
     src/type42/type42.c
@@ -248,18 +248,18 @@ elseif (GTK)
   set( PLATFORM_SOURCE_FILES 
     src/autofit/autofit.c
     src/base/ftbase.c
-    src/base/ftsystem.c
-    src/base/ftglyph.c
     src/base/ftbitmap.c
+    src/base/ftglyph.c
     src/base/ftinit.c
+    src/base/ftsystem.c
     src/bdf/bdf.c
     src/cache/ftcache.c
     src/cff/cff.c
-    src/cid/cidriver.c
-    src/cid/cidobjs.c
     src/cid/cidgload.c
     src/cid/cidload.c
+    src/cid/cidobjs.c
     src/cid/cidparse.c
+    src/cid/cidriver.c
     src/gxvalid/gxvalid.c
     src/gzip/ftgzip.c
     src/lzw/ftlzw.c
@@ -271,8 +271,8 @@ elseif (GTK)
     src/psnames/psnames.c
     src/raster/raster.c
     src/sfnt/sfnt.c
-    src/smooth/ftsmooth.c
     src/smooth/ftgrays.c
+    src/smooth/ftsmooth.c
     src/truetype/truetype.c
     src/type1/type1.c
     src/type42/type42.c
@@ -285,18 +285,18 @@ elseif (IOS)
   set( PLATFORM_SOURCE_FILES 
     src/autofit/autofit.c
     src/base/ftbase.c
-    src/base/ftsystem.c
-    src/base/ftglyph.c
     src/base/ftbitmap.c
+    src/base/ftglyph.c
     src/base/ftinit.c
+    src/base/ftsystem.c
     src/bdf/bdf.c
     src/cache/ftcache.c
     src/cff/cff.c
-    src/cid/cidriver.c
-    src/cid/cidobjs.c
     src/cid/cidgload.c
     src/cid/cidload.c
+    src/cid/cidobjs.c
     src/cid/cidparse.c
+    src/cid/cidriver.c
     src/gxvalid/gxvalid.c
     src/gzip/ftgzip.c
     src/lzw/ftlzw.c
@@ -308,8 +308,8 @@ elseif (IOS)
     src/psnames/psnames.c
     src/raster/raster.c
     src/sfnt/sfnt.c
-    src/smooth/ftsmooth.c
     src/smooth/ftgrays.c
+    src/smooth/ftsmooth.c
     src/truetype/truetype.c
     src/type1/type1.c
     src/type42/type42.c
@@ -322,18 +322,18 @@ elseif (LINUX32)
   set( PLATFORM_SOURCE_FILES 
     src/autofit/autofit.c
     src/base/ftbase.c
-    src/base/ftsystem.c
-    src/base/ftglyph.c
     src/base/ftbitmap.c
+    src/base/ftglyph.c
     src/base/ftinit.c
+    src/base/ftsystem.c
     src/bdf/bdf.c
     src/cache/ftcache.c
     src/cff/cff.c
-    src/cid/cidriver.c
-    src/cid/cidobjs.c
     src/cid/cidgload.c
     src/cid/cidload.c
+    src/cid/cidobjs.c
     src/cid/cidparse.c
+    src/cid/cidriver.c
     src/gxvalid/gxvalid.c
     src/gzip/ftgzip.c
     src/lzw/ftlzw.c
@@ -345,8 +345,8 @@ elseif (LINUX32)
     src/psnames/psnames.c
     src/raster/raster.c
     src/sfnt/sfnt.c
-    src/smooth/ftsmooth.c
     src/smooth/ftgrays.c
+    src/smooth/ftsmooth.c
     src/truetype/truetype.c
     src/type1/type1.c
     src/type42/type42.c
@@ -359,18 +359,18 @@ elseif (LINUX64)
   set( PLATFORM_SOURCE_FILES 
     src/autofit/autofit.c
     src/base/ftbase.c
-    src/base/ftsystem.c
-    src/base/ftglyph.c
     src/base/ftbitmap.c
+    src/base/ftglyph.c
     src/base/ftinit.c
+    src/base/ftsystem.c
     src/bdf/bdf.c
     src/cache/ftcache.c
     src/cff/cff.c
-    src/cid/cidriver.c
-    src/cid/cidobjs.c
     src/cid/cidgload.c
     src/cid/cidload.c
+    src/cid/cidobjs.c
     src/cid/cidparse.c
+    src/cid/cidriver.c
     src/gxvalid/gxvalid.c
     src/gzip/ftgzip.c
     src/lzw/ftlzw.c
@@ -382,8 +382,8 @@ elseif (LINUX64)
     src/psnames/psnames.c
     src/raster/raster.c
     src/sfnt/sfnt.c
-    src/smooth/ftsmooth.c
     src/smooth/ftgrays.c
+    src/smooth/ftsmooth.c
     src/truetype/truetype.c
     src/type1/type1.c
     src/type42/type42.c
@@ -396,18 +396,18 @@ elseif (NACL)
   set( PLATFORM_SOURCE_FILES 
     src/autofit/autofit.c
     src/base/ftbase.c
-    src/base/ftsystem.c
-    src/base/ftglyph.c
     src/base/ftbitmap.c
+    src/base/ftglyph.c
     src/base/ftinit.c
+    src/base/ftsystem.c
     src/bdf/bdf.c
     src/cache/ftcache.c
     src/cff/cff.c
-    src/cid/cidriver.c
-    src/cid/cidobjs.c
     src/cid/cidgload.c
     src/cid/cidload.c
+    src/cid/cidobjs.c
     src/cid/cidparse.c
+    src/cid/cidriver.c
     src/gxvalid/gxvalid.c
     src/gzip/ftgzip.c
     src/lzw/ftlzw.c
@@ -419,8 +419,8 @@ elseif (NACL)
     src/psnames/psnames.c
     src/raster/raster.c
     src/sfnt/sfnt.c
-    src/smooth/ftsmooth.c
     src/smooth/ftgrays.c
+    src/smooth/ftsmooth.c
     src/truetype/truetype.c
     src/type1/type1.c
     src/type42/type42.c
@@ -433,18 +433,18 @@ elseif (OSX)
   set( PLATFORM_SOURCE_FILES 
     src/autofit/autofit.c
     src/base/ftbase.c
-    src/base/ftsystem.c
-    src/base/ftglyph.c
     src/base/ftbitmap.c
+    src/base/ftglyph.c
     src/base/ftinit.c
+    src/base/ftsystem.c
     src/bdf/bdf.c
     src/cache/ftcache.c
     src/cff/cff.c
-    src/cid/cidriver.c
-    src/cid/cidobjs.c
     src/cid/cidgload.c
     src/cid/cidload.c
+    src/cid/cidobjs.c
     src/cid/cidparse.c
+    src/cid/cidriver.c
     src/gxvalid/gxvalid.c
     src/gzip/ftgzip.c
     src/lzw/ftlzw.c
@@ -456,8 +456,8 @@ elseif (OSX)
     src/psnames/psnames.c
     src/raster/raster.c
     src/sfnt/sfnt.c
-    src/smooth/ftsmooth.c
     src/smooth/ftgrays.c
+    src/smooth/ftsmooth.c
     src/truetype/truetype.c
     src/type1/type1.c
     src/type42/type42.c
@@ -470,18 +470,18 @@ elseif (SDL)
   set( PLATFORM_SOURCE_FILES 
     src/autofit/autofit.c
     src/base/ftbase.c
-    src/base/ftsystem.c
-    src/base/ftglyph.c
     src/base/ftbitmap.c
+    src/base/ftglyph.c
     src/base/ftinit.c
+    src/base/ftsystem.c
     src/bdf/bdf.c
     src/cache/ftcache.c
     src/cff/cff.c
-    src/cid/cidriver.c
-    src/cid/cidobjs.c
     src/cid/cidgload.c
     src/cid/cidload.c
+    src/cid/cidobjs.c
     src/cid/cidparse.c
+    src/cid/cidriver.c
     src/gxvalid/gxvalid.c
     src/gzip/ftgzip.c
     src/lzw/ftlzw.c
@@ -493,8 +493,8 @@ elseif (SDL)
     src/psnames/psnames.c
     src/raster/raster.c
     src/sfnt/sfnt.c
-    src/smooth/ftsmooth.c
     src/smooth/ftgrays.c
+    src/smooth/ftsmooth.c
     src/truetype/truetype.c
     src/type1/type1.c
     src/type42/type42.c
@@ -507,18 +507,18 @@ elseif (SYMBIAN)
   set( PLATFORM_SOURCE_FILES 
     src/autofit/autofit.c
     src/base/ftbase.c
-    src/base/ftsystem.c
-    src/base/ftglyph.c
     src/base/ftbitmap.c
+    src/base/ftglyph.c
     src/base/ftinit.c
+    src/base/ftsystem.c
     src/bdf/bdf.c
     src/cache/ftcache.c
     src/cff/cff.c
-    src/cid/cidriver.c
-    src/cid/cidobjs.c
     src/cid/cidgload.c
     src/cid/cidload.c
+    src/cid/cidobjs.c
     src/cid/cidparse.c
+    src/cid/cidriver.c
     src/gxvalid/gxvalid.c
     src/gzip/ftgzip.c
     src/lzw/ftlzw.c
@@ -530,8 +530,8 @@ elseif (SYMBIAN)
     src/psnames/psnames.c
     src/raster/raster.c
     src/sfnt/sfnt.c
-    src/smooth/ftsmooth.c
     src/smooth/ftgrays.c
+    src/smooth/ftsmooth.c
     src/truetype/truetype.c
     src/type1/type1.c
     src/type42/type42.c
@@ -544,18 +544,18 @@ elseif (UNIX)
   set( PLATFORM_SOURCE_FILES 
     src/autofit/autofit.c
     src/base/ftbase.c
-    src/base/ftsystem.c
-    src/base/ftglyph.c
     src/base/ftbitmap.c
+    src/base/ftglyph.c
     src/base/ftinit.c
+    src/base/ftsystem.c
     src/bdf/bdf.c
     src/cache/ftcache.c
     src/cff/cff.c
-    src/cid/cidriver.c
-    src/cid/cidobjs.c
     src/cid/cidgload.c
     src/cid/cidload.c
+    src/cid/cidobjs.c
     src/cid/cidparse.c
+    src/cid/cidriver.c
     src/gxvalid/gxvalid.c
     src/gzip/ftgzip.c
     src/lzw/ftlzw.c
@@ -567,8 +567,8 @@ elseif (UNIX)
     src/psnames/psnames.c
     src/raster/raster.c
     src/sfnt/sfnt.c
-    src/smooth/ftsmooth.c
     src/smooth/ftgrays.c
+    src/smooth/ftsmooth.c
     src/truetype/truetype.c
     src/type1/type1.c
     src/type42/type42.c
@@ -581,18 +581,18 @@ elseif (WIN32)
   set( PLATFORM_SOURCE_FILES 
     src/autofit/autofit.c
     src/base/ftbase.c
-    src/base/ftsystem.c
-    src/base/ftglyph.c
     src/base/ftbitmap.c
+    src/base/ftglyph.c
     src/base/ftinit.c
+    src/base/ftsystem.c
     src/bdf/bdf.c
     src/cache/ftcache.c
     src/cff/cff.c
-    src/cid/cidriver.c
-    src/cid/cidobjs.c
     src/cid/cidgload.c
     src/cid/cidload.c
+    src/cid/cidobjs.c
     src/cid/cidparse.c
+    src/cid/cidriver.c
     src/gxvalid/gxvalid.c
     src/gzip/ftgzip.c
     src/lzw/ftlzw.c
@@ -604,8 +604,8 @@ elseif (WIN32)
     src/psnames/psnames.c
     src/raster/raster.c
     src/sfnt/sfnt.c
-    src/smooth/ftsmooth.c
     src/smooth/ftgrays.c
+    src/smooth/ftsmooth.c
     src/truetype/truetype.c
     src/type1/type1.c
     src/type42/type42.c
@@ -618,18 +618,18 @@ elseif (WIN64)
   set( PLATFORM_SOURCE_FILES 
     src/autofit/autofit.c
     src/base/ftbase.c
-    src/base/ftsystem.c
-    src/base/ftglyph.c
     src/base/ftbitmap.c
+    src/base/ftglyph.c
     src/base/ftinit.c
+    src/base/ftsystem.c
     src/bdf/bdf.c
     src/cache/ftcache.c
     src/cff/cff.c
-    src/cid/cidriver.c
-    src/cid/cidobjs.c
     src/cid/cidgload.c
     src/cid/cidload.c
+    src/cid/cidobjs.c
     src/cid/cidparse.c
+    src/cid/cidriver.c
     src/gxvalid/gxvalid.c
     src/gzip/ftgzip.c
     src/lzw/ftlzw.c
@@ -641,8 +641,8 @@ elseif (WIN64)
     src/psnames/psnames.c
     src/raster/raster.c
     src/sfnt/sfnt.c
-    src/smooth/ftsmooth.c
     src/smooth/ftgrays.c
+    src/smooth/ftsmooth.c
     src/truetype/truetype.c
     src/type1/type1.c
     src/type42/type42.c
@@ -687,7 +687,7 @@ if ( WIN64 )
   target_link_libraries( ${MODULE_NAME} zlib )
 endif( WIN64 )
 
-include_directories( include include/freetype include/freetype/config include/freetype/internal include/freetype/internal/services src/winfonts )
+include_directories( src include include/freetype include/freetype/config include/freetype/internal include/freetype/internal/services src/winfonts )
 
 if ( LINUX32 )
   include_directories( ../zlib )

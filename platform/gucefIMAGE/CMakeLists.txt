@@ -17,17 +17,17 @@ set( HEADER_FILES
   include/gucefIMAGEDLLInit.h
   include/gucefIMAGE_CGUIImageCodec.h
   include/gucefIMAGE_CIImageCodec.h
+  include/gucefIMAGE_CIMGCodec.h
   include/gucefIMAGE_CImage.h
   include/gucefIMAGE_CImageCodecPlugin.h
   include/gucefIMAGE_CImageCodecPluginManager.h
   include/gucefIMAGE_CImageCodecRegistry.h
   include/gucefIMAGE_CImageGlobal.h
-  include/gucefIMAGE_CIMGCodec.h
-  include/gucefIMAGE_config.h
   include/gucefIMAGE_CPixel.h
   include/gucefIMAGE_CPixelMap.h
   include/gucefIMAGE_CPluginImageCodecItem.h
   include/gucefIMAGE_ETypes.h
+  include/gucefIMAGE_config.h
   include/gucefIMAGE_imagedata.h
   include/gucefIMAGE_macros.h
 )
@@ -38,12 +38,12 @@ set( SOURCE_FILES
   src/gucefIMAGE_CCPluginImageCodecItem.cpp
   src/gucefIMAGE_CGUIImageCodec.cpp
   src/gucefIMAGE_CIImageCodec.cpp
+  src/gucefIMAGE_CIMGCodec.cpp
   src/gucefIMAGE_CImage.cpp
   src/gucefIMAGE_CImageCodecPlugin.cpp
   src/gucefIMAGE_CImageCodecPluginManager.cpp
   src/gucefIMAGE_CImageCodecRegistry.cpp
   src/gucefIMAGE_CImageGlobal.cpp
-  src/gucefIMAGE_CIMGCodec.cpp
   src/gucefIMAGE_CPixel.cpp
   src/gucefIMAGE_CPixelMap.cpp
 )

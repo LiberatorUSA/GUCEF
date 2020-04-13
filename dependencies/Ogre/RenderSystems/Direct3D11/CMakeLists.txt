@@ -21,6 +21,8 @@ if (WIN32)
     include/OgreD3D11Driver.h
     include/OgreD3D11DriverList.h
     include/OgreD3D11GpuProgramManager.h
+    include/OgreD3D11HLSLProgram.h
+    include/OgreD3D11HLSLProgramFactory.h
     include/OgreD3D11HardwareBuffer.h
     include/OgreD3D11HardwareBufferManager.h
     include/OgreD3D11HardwareIndexBuffer.h
@@ -28,8 +30,6 @@ if (WIN32)
     include/OgreD3D11HardwarePixelBuffer.h
     include/OgreD3D11HardwareUniformBuffer.h
     include/OgreD3D11HardwareVertexBuffer.h
-    include/OgreD3D11HLSLProgram.h
-    include/OgreD3D11HLSLProgramFactory.h
     include/OgreD3D11Mappings.h
     include/OgreD3D11MultiRenderTarget.h
     include/OgreD3D11Plugin.h
@@ -61,6 +61,8 @@ if (WIN32)
     src/OgreD3D11DriverList.cpp
     src/OgreD3D11EngineDll.cpp
     src/OgreD3D11GpuProgramManager.cpp
+    src/OgreD3D11HLSLProgram.cpp
+    src/OgreD3D11HLSLProgramFactory.cpp
     src/OgreD3D11HardwareBuffer.cpp
     src/OgreD3D11HardwareBufferManager.cpp
     src/OgreD3D11HardwareIndexBuffer.cpp
@@ -68,8 +70,6 @@ if (WIN32)
     src/OgreD3D11HardwarePixelBuffer.cpp
     src/OgreD3D11HardwareUniformBuffer.cpp
     src/OgreD3D11HardwareVertexBuffer.cpp
-    src/OgreD3D11HLSLProgram.cpp
-    src/OgreD3D11HLSLProgramFactory.cpp
     src/OgreD3D11Mappings.cpp
     src/OgreD3D11MultiRenderTarget.cpp
     src/OgreD3D11Plugin.cpp
@@ -99,6 +99,8 @@ elseif (WIN64)
     include/OgreD3D11Driver.h
     include/OgreD3D11DriverList.h
     include/OgreD3D11GpuProgramManager.h
+    include/OgreD3D11HLSLProgram.h
+    include/OgreD3D11HLSLProgramFactory.h
     include/OgreD3D11HardwareBuffer.h
     include/OgreD3D11HardwareBufferManager.h
     include/OgreD3D11HardwareIndexBuffer.h
@@ -106,8 +108,6 @@ elseif (WIN64)
     include/OgreD3D11HardwarePixelBuffer.h
     include/OgreD3D11HardwareUniformBuffer.h
     include/OgreD3D11HardwareVertexBuffer.h
-    include/OgreD3D11HLSLProgram.h
-    include/OgreD3D11HLSLProgramFactory.h
     include/OgreD3D11Mappings.h
     include/OgreD3D11MultiRenderTarget.h
     include/OgreD3D11Plugin.h
@@ -139,6 +139,8 @@ elseif (WIN64)
     src/OgreD3D11DriverList.cpp
     src/OgreD3D11EngineDll.cpp
     src/OgreD3D11GpuProgramManager.cpp
+    src/OgreD3D11HLSLProgram.cpp
+    src/OgreD3D11HLSLProgramFactory.cpp
     src/OgreD3D11HardwareBuffer.cpp
     src/OgreD3D11HardwareBufferManager.cpp
     src/OgreD3D11HardwareIndexBuffer.cpp
@@ -146,8 +148,6 @@ elseif (WIN64)
     src/OgreD3D11HardwarePixelBuffer.cpp
     src/OgreD3D11HardwareUniformBuffer.cpp
     src/OgreD3D11HardwareVertexBuffer.cpp
-    src/OgreD3D11HLSLProgram.cpp
-    src/OgreD3D11HLSLProgramFactory.cpp
     src/OgreD3D11Mappings.cpp
     src/OgreD3D11MultiRenderTarget.cpp
     src/OgreD3D11Plugin.cpp
@@ -206,7 +206,7 @@ if ( WIN64 )
   set_property( TARGET ${MODULE_NAME} APPEND_STRING PROPERTY COMPILE_DEFINITIONS "OGRED3DENGINEDLL_EXPORTS ;_USRDLL " )
 endif( WIN64 )
 
-include_directories( ../../../freetype/include ../../../freetype/include/freetype ../../../freetype/include/freetype/config ../../../freetype/include/freetype/internal ../../../freetype/include/freetype/internal/services ../../../freetype/src/winfonts ../../OgreMain/include ../../OgreMain/include/Hash ../../OgreMain/include/Threading ../../OgreMain/src ../../OgreMain/src/nedmalloc ../../OgreMain/src/stbi ../../include )
+include_directories( ../../../freetype/include ../../../freetype/include/freetype ../../../freetype/include/freetype/config ../../../freetype/include/freetype/internal ../../../freetype/include/freetype/internal/services ../../../freetype/src ../../../freetype/src/winfonts ../../OgreMain/include ../../OgreMain/include/Hash ../../OgreMain/include/Threading ../../OgreMain/src ../../OgreMain/src/nedmalloc ../../OgreMain/src/stbi ../../include )
 
 if ( WIN32 )
   include_directories( $ENV{DXSDK_DIR}/Include ../../../external ../../OgreMain/include/WIN32 ../../OgreMain/src/WIN32 include )

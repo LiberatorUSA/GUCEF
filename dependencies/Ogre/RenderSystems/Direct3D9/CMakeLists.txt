@@ -22,13 +22,13 @@ if (WIN32)
     include/OgreD3D9DriverList.h
     include/OgreD3D9GpuProgram.h
     include/OgreD3D9GpuProgramManager.h
+    include/OgreD3D9HLSLProgram.h
+    include/OgreD3D9HLSLProgramFactory.h
     include/OgreD3D9HardwareBufferManager.h
     include/OgreD3D9HardwareIndexBuffer.h
     include/OgreD3D9HardwareOcclusionQuery.h
     include/OgreD3D9HardwarePixelBuffer.h
     include/OgreD3D9HardwareVertexBuffer.h
-    include/OgreD3D9HLSLProgram.h
-    include/OgreD3D9HLSLProgramFactory.h
     include/OgreD3D9Mappings.h
     include/OgreD3D9MultiRenderTarget.h
     include/OgreD3D9Plugin.h
@@ -60,13 +60,13 @@ if (WIN32)
     src/OgreD3D9EngineDll.cpp
     src/OgreD3D9GpuProgram.cpp
     src/OgreD3D9GpuProgramManager.cpp
+    src/OgreD3D9HLSLProgram.cpp
+    src/OgreD3D9HLSLProgramFactory.cpp
     src/OgreD3D9HardwareBufferManager.cpp
     src/OgreD3D9HardwareIndexBuffer.cpp
     src/OgreD3D9HardwareOcclusionQuery.cpp
     src/OgreD3D9HardwarePixelBuffer.cpp
     src/OgreD3D9HardwareVertexBuffer.cpp
-    src/OgreD3D9HLSLProgram.cpp
-    src/OgreD3D9HLSLProgramFactory.cpp
     src/OgreD3D9Mappings.cpp
     src/OgreD3D9MultiRenderTarget.cpp
     src/OgreD3D9Plugin.cpp
@@ -97,13 +97,13 @@ elseif (WIN64)
     include/OgreD3D9DriverList.h
     include/OgreD3D9GpuProgram.h
     include/OgreD3D9GpuProgramManager.h
+    include/OgreD3D9HLSLProgram.h
+    include/OgreD3D9HLSLProgramFactory.h
     include/OgreD3D9HardwareBufferManager.h
     include/OgreD3D9HardwareIndexBuffer.h
     include/OgreD3D9HardwareOcclusionQuery.h
     include/OgreD3D9HardwarePixelBuffer.h
     include/OgreD3D9HardwareVertexBuffer.h
-    include/OgreD3D9HLSLProgram.h
-    include/OgreD3D9HLSLProgramFactory.h
     include/OgreD3D9Mappings.h
     include/OgreD3D9MultiRenderTarget.h
     include/OgreD3D9Plugin.h
@@ -135,13 +135,13 @@ elseif (WIN64)
     src/OgreD3D9EngineDll.cpp
     src/OgreD3D9GpuProgram.cpp
     src/OgreD3D9GpuProgramManager.cpp
+    src/OgreD3D9HLSLProgram.cpp
+    src/OgreD3D9HLSLProgramFactory.cpp
     src/OgreD3D9HardwareBufferManager.cpp
     src/OgreD3D9HardwareIndexBuffer.cpp
     src/OgreD3D9HardwareOcclusionQuery.cpp
     src/OgreD3D9HardwarePixelBuffer.cpp
     src/OgreD3D9HardwareVertexBuffer.cpp
-    src/OgreD3D9HLSLProgram.cpp
-    src/OgreD3D9HLSLProgramFactory.cpp
     src/OgreD3D9Mappings.cpp
     src/OgreD3D9MultiRenderTarget.cpp
     src/OgreD3D9Plugin.cpp
@@ -200,7 +200,7 @@ if ( WIN64 )
   set_property( TARGET ${MODULE_NAME} APPEND_STRING PROPERTY COMPILE_DEFINITIONS "OGRED3DENGINEDLL_EXPORTS ;_USRDLL " )
 endif( WIN64 )
 
-include_directories( ../../../freetype/include ../../../freetype/include/freetype ../../../freetype/include/freetype/config ../../../freetype/include/freetype/internal ../../../freetype/include/freetype/internal/services ../../../freetype/src/winfonts ../../OgreMain/include ../../OgreMain/include/Hash ../../OgreMain/include/Threading ../../OgreMain/src ../../OgreMain/src/nedmalloc ../../OgreMain/src/stbi ../../include )
+include_directories( ../../../freetype/include ../../../freetype/include/freetype ../../../freetype/include/freetype/config ../../../freetype/include/freetype/internal ../../../freetype/include/freetype/internal/services ../../../freetype/src ../../../freetype/src/winfonts ../../OgreMain/include ../../OgreMain/include/Hash ../../OgreMain/include/Threading ../../OgreMain/src ../../OgreMain/src/nedmalloc ../../OgreMain/src/stbi ../../include )
 
 if ( WIN32 )
   include_directories( $ENV{DXSDK_DIR}/Include ../../../external ../../OgreMain/include/WIN32 ../../OgreMain/src/WIN32 include )
