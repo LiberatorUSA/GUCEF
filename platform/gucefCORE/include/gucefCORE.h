@@ -366,6 +366,11 @@
 #define GUCEF_CORE_CCOREGLOBAL_H
 #endif /* GUCEF_CORE_CCOREGLOBAL_H ? */
 
+#ifndef GUCEF_CORE_CPLATFORMNATIVECONSOLEWINDOW_H
+#include "gucefCORE_CPlatformNativeConsoleWindow.h"
+#define GUCEF_CORE_CPLATFORMNATIVECONSOLEWINDOW_H
+#endif /* GUCEF_CORE_CPLATFORMNATIVECONSOLEWINDOW_H ? */
+
 /*---------------------------------------------------------------------------/
 
         C++ MS Windows includes

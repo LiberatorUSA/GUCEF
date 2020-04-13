@@ -78,20 +78,16 @@ PerformVFSFileLoadUnloadTest( void )
     try
     {
         // See if we can manage to get access to the VFS
-        VFS::CVFS* vfs = VFS::CVFS::Instance();
-        if ( vfs == NULL )
-        {
-            ERRORHERE;
-        }
+        VFS::CVFS& vfs = GUCEF::VFS::CVfsGlobal::Instance()->GetVfs();
         
         // We can use the module directory since it should hold the at least 1 file
         // which is the test app itself
-        vfs->AddRoot( "$MODULEDIR$", "Test", true );
+        vfs.AddRoot( "$MODULEDIR$", "Test", true );
 
         // We will use the root directory itself and ask for a list with no recursive
         // dir iteration and no filter.
         VFS::CVFS::TStringSet fileList;
-        vfs->GetList( fileList, "", false, "" );
+        vfs.GetList( fileList, "", false, "" );
 
         if ( fileList.size() == 0 )
         {
@@ -107,9 +103,9 @@ PerformVFSFileLoadUnloadTest( void )
         {
             // Try to load the file
             VFS::UInt32 errorCode = 0;
-            VFS::CVFS::CVFSHandlePtr filePtr = vfs->GetFile( (*n)  ,
-                                                             "rb"  ,
-                                                             false );
+            VFS::CVFS::CVFSHandlePtr filePtr = vfs.GetFile( (*n)  ,
+                                                            "rb"  ,
+                                                            false );
             // check if the file was loaded
             if ( filePtr == NULL )
             {
@@ -139,11 +135,11 @@ PerformVFSFileLoadUnloadTest( void )
             newFilename = "DummyVFSTestFile" + CORE::UInt32ToString( i ) + ".tmp";
             ++i;
         }    
-        while ( vfs->FileExists( newFilename ) );
+        while ( vfs.FileExists( newFilename ) );
         
-        VFS::CVFS::CVFSHandlePtr filePtr = vfs->GetFile( newFilename ,
-                                                         "wb"        ,
-                                                         true        );
+        VFS::CVFS::CVFSHandlePtr filePtr = vfs.GetFile( newFilename ,
+                                                        "wb"        ,
+                                                        true        );
     
         if ( NULL == filePtr )
         {
@@ -179,9 +175,9 @@ PerformVFSFileLoadUnloadTest( void )
         filePtr = NULL;
         
         // Try to load the file we created
-        filePtr = vfs->GetFile( newFilename ,
-                                "rb"        ,
-                                false       );
+        filePtr = vfs.GetFile( newFilename ,
+                               "rb"        ,
+                               false       );
 
         if ( NULL == filePtr )
         {

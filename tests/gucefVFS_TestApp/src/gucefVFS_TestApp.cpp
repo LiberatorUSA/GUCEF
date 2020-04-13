@@ -42,55 +42,191 @@
 
 /*-------------------------------------------------------------------------//
 //                                                                         //
+//      NAMESPACE                                                          //
+//                                                                         //
+//-------------------------------------------------------------------------*/
+
+using namespace GUCEF;
+
+/*-------------------------------------------------------------------------//
+//                                                                         //
 //      UTILITIES                                                          //
 //                                                                         //
 //-------------------------------------------------------------------------*/
-          
+
+bool
+LoadConfig( const CORE::CString& configPath            ,
+            CORE::CValueList& keyValueList             ,
+            CORE::CDataNode* loadedConfig = GUCEF_NULL )
+{GUCEF_TRACE;
+
+    #ifdef GUCEF_DEBUG_MODE
+    const CORE::CString configFile = "gucefVFS_TestApp_d.ini";
+    #else
+    const CORE::CString configFile = "gucefVFS_TestApp.ini";
+    #endif
+
+    CORE::CString configFilePath;
+    bool foundViaParam = false;
+    if ( !configPath.IsNULLOrEmpty() )
+    {
+        GUCEF_LOG( CORE::LOGLEVEL_BELOW_NORMAL, "Checking for config file @ " + configPath );
+        foundViaParam = CORE::FileExists( configPath );
+        configFilePath = configPath;
+    }
+
+    if ( !foundViaParam )
+    {
+        configFilePath = CORE::CombinePath( "$CURWORKDIR$", configFile );
+        configFilePath = CORE::RelativePath( configFilePath );
+
+        GUCEF_LOG( CORE::LOGLEVEL_BELOW_NORMAL, "Checking for config file @ " + configFilePath );
+        if ( !CORE::FileExists( configFilePath ) )
+        {
+            configFilePath = CORE::CombinePath( "$MODULEDIR$", configFile );
+            configFilePath = CORE::RelativePath( configFilePath );
+
+            GUCEF_LOG( CORE::LOGLEVEL_BELOW_NORMAL, "Checking for config file @ " + configFilePath );
+            if ( !FileExists( configFilePath ) )
+            {
+                GUCEF_WARNING_LOG( CORE::LOGLEVEL_NORMAL, "Unable to locate any config file, will rely on params" );
+                return false;
+            }
+        }
+    }
+    GUCEF_LOG( CORE::LOGLEVEL_NORMAL, "Located config file @ " + configFilePath );
+
+    keyValueList.SetConfigNamespace( "Main/AppArgs" );
+    keyValueList.SetUseGlobalConfig( true );
+    keyValueList.SetAllowDuplicates( false );
+    keyValueList.SetAllowMultipleValues( true );
+
+    CORE::CConfigStore& configStore = CORE::CCoreGlobal::Instance()->GetConfigStore();
+    configStore.SetConfigFile( configFilePath );
+    return configStore.LoadConfig( loadedConfig );
+}
+
+/*-------------------------------------------------------------------------*/
+
+void
+ParseParams( const int argc                 ,
+             char* argv[]                   ,
+             CORE::CValueList& keyValueList )
+{GUCEF_TRACE;
+
+    GUCEF::CORE::CString argString;
+    if ( argc > 0 )
+    {
+        argString = *argv;
+
+        // Combine the argument strings back into a single string because we don't want to use
+        // a space as the seperator
+        for ( int i=1; i<argc; ++i )
+        {
+            argString += ' ' + CORE::CString( argv[ i ] );
+        }
+
+        // Parse the param list based on the ' symbol
+        GUCEF_LOG( CORE::LOGLEVEL_NORMAL, "Application parameters: " + argString );
+        keyValueList.SetMultiple( argString, '*' );
+    }
+}
+
+/*-------------------------------------------------------------------------*/
+
 /*
  *      Application entry point
  */
-int __stdcall
-WinMain( HINSTANCE hinstance     ,
-         HINSTANCE hprevinstance ,
-         LPSTR lpcmdline         ,
-         int ncmdshow            )
+GUCEF_OSMAIN_BEGIN
 {GUCEF_TRACE;
-               
+
     #ifdef GUCEF_VFS_DEBUG_MODE
-    //GUCEF::CORE::GUCEF_LogStackToStdOut();
-    //GUCEF::CORE::GUCEF_SetStackLogging( 1 );
+    //CORE::GUCEF_LogStackToStdOut();
+    //CORE::GUCEF_SetStackLogging( 1 );
     #endif /* GUCEF_VFS_DEBUG_MODE ? */
 
-    try 
-    {                               
-        GUCEF::CORE::CString logFilename = GUCEF::CORE::RelativePath( "$CURWORKDIR$" );
-        GUCEF::CORE::AppendToPath( logFilename, "gucefVFS_TestApp_Log.txt" );
-        GUCEF::CORE::CFileAccess logFileAccess( logFilename, "w" );
-        
-        GUCEF::CORE::CStdLogger logger( logFileAccess );
-        GUCEF::CORE::CLogManager::Instance()->AddLogger( &logger );
-        
-        #ifdef GUCEF_MSWIN_BUILD
-        GUCEF::CORE::CMSWinConsoleLogger consoleOut;
-        GUCEF::CORE::CLogManager::Instance()->AddLogger( &consoleOut );
-        #endif /* GUCEF_MSWIN_BUILD ? */
-        
+    try
+    {
+        // Initialize systems
+        GUCEF::CORE::CCoreGlobal::Instance();
+        GUCEF::VFS::CVfsGlobal::Instance();
+
+        // Check for config param first
+        CORE::CValueList keyValueList;
+        ParseParams( argc, argv, keyValueList );
+        CORE::CString configPathParam = keyValueList.GetValueAlways( "ConfigPath" );
+        keyValueList.Clear();
+
+        // Load settings from a config file (if any) and then override with params (if any)
+        CORE::CDataNode* globalConfig = new CORE::CDataNode();
+        if ( !LoadConfig( configPathParam, keyValueList, globalConfig ) )
+        {
+            CORE::ShowErrorMessage( "Initialization error"                ,
+                                    "Failures occured loading the config" );
+
+            GUCEF_ERROR_LOG( CORE::LOGLEVEL_NORMAL, "gucefVFS_TestApp: Failed to load config" );
+            return -1;
+        }
+        ParseParams( argc, argv, keyValueList );
+
+        CORE::Int32 minLogLevel = CORE::LOGLEVEL_BELOW_NORMAL;
+        CORE::CString valueStr = keyValueList.GetValueAlways( "MinimalLogLevel" );
+        if ( !valueStr.IsNULLOrEmpty() )
+        {
+            minLogLevel = CORE::StringToInt32( valueStr );
+            CORE::CCoreGlobal::Instance()->GetLogManager().SetMinLogLevel( minLogLevel );
+        }
+
+        CORE::CString outputDir = CORE::RelativePath( keyValueList.GetValueAlways( "outputDir" ) );
+        if ( outputDir.IsNULLOrEmpty() )
+        {
+            outputDir = CORE::RelativePath( "$CURWORKDIR$" );
+        }
+        CORE::CreateDirs( outputDir );
+
+        // setup file logger
+        CORE::CString logFilename = CORE::CombinePath( outputDir, "gucefVFS_TestApp_Log.txt" );
+        keyValueList.Set( "logfile", logFilename );
+        CORE::CFileAccess logFileAccess( logFilename, "w" );
+        CORE::CStdLogger logger( logFileAccess );
+        CORE::CCoreGlobal::Instance()->GetLogManager().AddLogger( &logger );
+
+        // setup console logger
+        CORE::CPlatformNativeConsoleLogger consoleOut;
+        CORE::CCoreGlobal::Instance()->GetLogManager().AddLogger( consoleOut.GetLogger() );
+
+        // flush startup log entries
+        CORE::CCoreGlobal::Instance()->GetLogManager().FlushBootstrapLogEntriesToLogs();
+
+        // Create console window for easy test interaction
+        CORE::CPlatformNativeConsoleWindow consoleWindow;
+        consoleWindow.CreateConsole();
+
+        // Now actually run the tests...
         PerformVFSFileLoadUnloadTest();
-        
-        return 1;                                                                            
+
+        CORE::CCoreGlobal::Instance()->GetLogManager().ClearLoggers();
+        return 1;
     }
     catch ( ... )
     {
         #ifdef GUCEF_VFS_DEBUG_MODE
-        GUCEF_PrintCallstack();
-        GUCEF_DumpCallstack( "gucefVFS_TestApp_callstack.txt" );
+        CORE::GUCEF_PrintCallstack();
+        CORE::GUCEF_DumpCallstack( "gucefVFS_TestApp_callstack.txt" );
         #endif /* GUCEF_VFS_DEBUG_MODE ? */
-        
-        GUCEF::CORE::ShowErrorMessage( "Unknown exception"                                                                 ,
-                                       "Unhandled exception during program execution, the application will now terminate"  );                                                         
+
+        try
+        {
+            CORE::CCoreGlobal::Instance()->GetLogManager().ClearLoggers();
+        }
+        catch ( ... ) {}
+
+        CORE::ShowErrorMessage( "Unknown exception"                                                                 ,
+                                "Unhandled exception during program execution, the application will now terminate"  );
     }
-    return 1;                                                                                                                              
+    return 1;
 }
+GUCEF_OSMAIN_END
 
 /*-------------------------------------------------------------------------//
 //                                                                         //

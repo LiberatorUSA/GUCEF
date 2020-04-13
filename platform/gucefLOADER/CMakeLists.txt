@@ -558,6 +558,14 @@ if ( LINUX64 )
   target_link_libraries( ${MODULE_NAME} dl rt )
 endif( LINUX64 )
 
+if ( WIN32 )
+  target_link_libraries( ${MODULE_NAME} Ws2_32.lib )
+endif( WIN32 )
+
+if ( WIN64 )
+  target_link_libraries( ${MODULE_NAME} Ws2_32.lib )
+endif( WIN64 )
+
 include_directories( .. ../../common/include ../gucefCORE ../gucefCORE/include ../gucefMT ../gucefMT/include ../gucefCORE/include/ ../gucefMT/include/ include )
 
 if ( ANDROID )

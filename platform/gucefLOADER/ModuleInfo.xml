@@ -12,6 +12,11 @@
             <Define String="GUCEF_LOADER_BUILD_MODULE" />
         </Preprocessor>
     </Module>
+    <Module Platform="mswin">
+        <Linker>
+            <Dependency Name="Ws2_32.lib" />
+        </Linker>
+    </Module>  	
     <Module Platform="Linux">
         <Linker>
             <Dependency Name="dl" />
