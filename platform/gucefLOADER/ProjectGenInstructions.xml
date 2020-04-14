@@ -6,6 +6,8 @@
         <ITEM NAME="../gucefMT/include/gucefMT_CMutex.h" TYPE="FILE" />
         <ITEM NAME="../gucefMT/src/gucefMT_CScopeMutex.cpp" TYPE="FILE" />
         <ITEM NAME="../gucefMT/include/gucefMT_CScopeMutex.h" TYPE="FILE" />
+        <ITEM NAME="../gucefMT/src/gucefMT_dvmtoswrap.c" TYPE="FILE" />
+        <ITEM NAME="../gucefMT/include/gucefMT_dvmtoswrap.h" TYPE="FILE" />
         <ITEM NAME="../gucefCORE/src/DVOSWRAP.cpp" TYPE="FILE" />
         <ITEM NAME="../gucefCORE/include/DVOSWRAP.h" TYPE="FILE" />
         <ITEM NAME="../gucefCORE/src/DVCPPOSWRAP.cpp" TYPE="FILE" />

@@ -22,6 +22,7 @@ set( HEADER_FILES
   ../gucefCORE/include/md5.h
   ../gucefMT/include/gucefMT_CMutex.h
   ../gucefMT/include/gucefMT_CScopeMutex.h
+  ../gucefMT/include/gucefMT_dvmtoswrap.h
   ../gucefMT/include/gucefMT_mutex.h
   include/gucefLOADER.h
   include/gucefLOADER_ETypes.h
@@ -40,6 +41,7 @@ set( SOURCE_FILES
   ../gucefCORE/src/md5.c
   ../gucefMT/src/gucefMT_CMutex.cpp
   ../gucefMT/src/gucefMT_CScopeMutex.cpp
+  ../gucefMT/src/gucefMT_dvmtoswrap.c
   ../gucefMT/src/gucefMT_mutex.c
   src/gucefLOADER.cpp
 )
@@ -58,6 +60,7 @@ if (ANDROID)
     ../gucefCORE/include/md5.h
     ../gucefMT/include/gucefMT_CMutex.h
     ../gucefMT/include/gucefMT_CScopeMutex.h
+    ../gucefMT/include/gucefMT_dvmtoswrap.h
     ../gucefMT/include/gucefMT_mutex.h
   )
 
@@ -75,6 +78,7 @@ if (ANDROID)
     ../gucefCORE/src/md5.c
     ../gucefMT/src/gucefMT_CMutex.cpp
     ../gucefMT/src/gucefMT_CScopeMutex.cpp
+    ../gucefMT/src/gucefMT_dvmtoswrap.c
     ../gucefMT/src/gucefMT_mutex.c
   )
 
@@ -93,6 +97,7 @@ elseif (EMSCRIPTEN)
     ../gucefCORE/include/md5.h
     ../gucefMT/include/gucefMT_CMutex.h
     ../gucefMT/include/gucefMT_CScopeMutex.h
+    ../gucefMT/include/gucefMT_dvmtoswrap.h
     ../gucefMT/include/gucefMT_mutex.h
   )
 
@@ -110,6 +115,7 @@ elseif (EMSCRIPTEN)
     ../gucefCORE/src/md5.c
     ../gucefMT/src/gucefMT_CMutex.cpp
     ../gucefMT/src/gucefMT_CScopeMutex.cpp
+    ../gucefMT/src/gucefMT_dvmtoswrap.c
     ../gucefMT/src/gucefMT_mutex.c
   )
 
@@ -128,6 +134,7 @@ elseif (GLX)
     ../gucefCORE/include/md5.h
     ../gucefMT/include/gucefMT_CMutex.h
     ../gucefMT/include/gucefMT_CScopeMutex.h
+    ../gucefMT/include/gucefMT_dvmtoswrap.h
     ../gucefMT/include/gucefMT_mutex.h
   )
 
@@ -145,6 +152,7 @@ elseif (GLX)
     ../gucefCORE/src/md5.c
     ../gucefMT/src/gucefMT_CMutex.cpp
     ../gucefMT/src/gucefMT_CScopeMutex.cpp
+    ../gucefMT/src/gucefMT_dvmtoswrap.c
     ../gucefMT/src/gucefMT_mutex.c
   )
 
@@ -163,6 +171,7 @@ elseif (GTK)
     ../gucefCORE/include/md5.h
     ../gucefMT/include/gucefMT_CMutex.h
     ../gucefMT/include/gucefMT_CScopeMutex.h
+    ../gucefMT/include/gucefMT_dvmtoswrap.h
     ../gucefMT/include/gucefMT_mutex.h
   )
 
@@ -180,6 +189,7 @@ elseif (GTK)
     ../gucefCORE/src/md5.c
     ../gucefMT/src/gucefMT_CMutex.cpp
     ../gucefMT/src/gucefMT_CScopeMutex.cpp
+    ../gucefMT/src/gucefMT_dvmtoswrap.c
     ../gucefMT/src/gucefMT_mutex.c
   )
 
@@ -198,6 +208,7 @@ elseif (IOS)
     ../gucefCORE/include/md5.h
     ../gucefMT/include/gucefMT_CMutex.h
     ../gucefMT/include/gucefMT_CScopeMutex.h
+    ../gucefMT/include/gucefMT_dvmtoswrap.h
     ../gucefMT/include/gucefMT_mutex.h
   )
 
@@ -215,6 +226,7 @@ elseif (IOS)
     ../gucefCORE/src/md5.c
     ../gucefMT/src/gucefMT_CMutex.cpp
     ../gucefMT/src/gucefMT_CScopeMutex.cpp
+    ../gucefMT/src/gucefMT_dvmtoswrap.c
     ../gucefMT/src/gucefMT_mutex.c
   )
 
@@ -233,6 +245,7 @@ elseif (LINUX32)
     ../gucefCORE/include/md5.h
     ../gucefMT/include/gucefMT_CMutex.h
     ../gucefMT/include/gucefMT_CScopeMutex.h
+    ../gucefMT/include/gucefMT_dvmtoswrap.h
     ../gucefMT/include/gucefMT_mutex.h
   )
 
@@ -250,6 +263,7 @@ elseif (LINUX32)
     ../gucefCORE/src/md5.c
     ../gucefMT/src/gucefMT_CMutex.cpp
     ../gucefMT/src/gucefMT_CScopeMutex.cpp
+    ../gucefMT/src/gucefMT_dvmtoswrap.c
     ../gucefMT/src/gucefMT_mutex.c
   )
 
@@ -268,6 +282,7 @@ elseif (LINUX64)
     ../gucefCORE/include/md5.h
     ../gucefMT/include/gucefMT_CMutex.h
     ../gucefMT/include/gucefMT_CScopeMutex.h
+    ../gucefMT/include/gucefMT_dvmtoswrap.h
     ../gucefMT/include/gucefMT_mutex.h
   )
 
@@ -285,6 +300,7 @@ elseif (LINUX64)
     ../gucefCORE/src/md5.c
     ../gucefMT/src/gucefMT_CMutex.cpp
     ../gucefMT/src/gucefMT_CScopeMutex.cpp
+    ../gucefMT/src/gucefMT_dvmtoswrap.c
     ../gucefMT/src/gucefMT_mutex.c
   )
 
@@ -303,6 +319,7 @@ elseif (NACL)
     ../gucefCORE/include/md5.h
     ../gucefMT/include/gucefMT_CMutex.h
     ../gucefMT/include/gucefMT_CScopeMutex.h
+    ../gucefMT/include/gucefMT_dvmtoswrap.h
     ../gucefMT/include/gucefMT_mutex.h
   )
 
@@ -320,6 +337,7 @@ elseif (NACL)
     ../gucefCORE/src/md5.c
     ../gucefMT/src/gucefMT_CMutex.cpp
     ../gucefMT/src/gucefMT_CScopeMutex.cpp
+    ../gucefMT/src/gucefMT_dvmtoswrap.c
     ../gucefMT/src/gucefMT_mutex.c
   )
 
@@ -338,6 +356,7 @@ elseif (OSX)
     ../gucefCORE/include/md5.h
     ../gucefMT/include/gucefMT_CMutex.h
     ../gucefMT/include/gucefMT_CScopeMutex.h
+    ../gucefMT/include/gucefMT_dvmtoswrap.h
     ../gucefMT/include/gucefMT_mutex.h
   )
 
@@ -355,6 +374,7 @@ elseif (OSX)
     ../gucefCORE/src/md5.c
     ../gucefMT/src/gucefMT_CMutex.cpp
     ../gucefMT/src/gucefMT_CScopeMutex.cpp
+    ../gucefMT/src/gucefMT_dvmtoswrap.c
     ../gucefMT/src/gucefMT_mutex.c
   )
 
@@ -373,6 +393,7 @@ elseif (SDL)
     ../gucefCORE/include/md5.h
     ../gucefMT/include/gucefMT_CMutex.h
     ../gucefMT/include/gucefMT_CScopeMutex.h
+    ../gucefMT/include/gucefMT_dvmtoswrap.h
     ../gucefMT/include/gucefMT_mutex.h
   )
 
@@ -390,6 +411,7 @@ elseif (SDL)
     ../gucefCORE/src/md5.c
     ../gucefMT/src/gucefMT_CMutex.cpp
     ../gucefMT/src/gucefMT_CScopeMutex.cpp
+    ../gucefMT/src/gucefMT_dvmtoswrap.c
     ../gucefMT/src/gucefMT_mutex.c
   )
 
@@ -408,6 +430,7 @@ elseif (SYMBIAN)
     ../gucefCORE/include/md5.h
     ../gucefMT/include/gucefMT_CMutex.h
     ../gucefMT/include/gucefMT_CScopeMutex.h
+    ../gucefMT/include/gucefMT_dvmtoswrap.h
     ../gucefMT/include/gucefMT_mutex.h
   )
 
@@ -425,6 +448,7 @@ elseif (SYMBIAN)
     ../gucefCORE/src/md5.c
     ../gucefMT/src/gucefMT_CMutex.cpp
     ../gucefMT/src/gucefMT_CScopeMutex.cpp
+    ../gucefMT/src/gucefMT_dvmtoswrap.c
     ../gucefMT/src/gucefMT_mutex.c
   )
 
@@ -443,6 +467,7 @@ elseif (UNIX)
     ../gucefCORE/include/md5.h
     ../gucefMT/include/gucefMT_CMutex.h
     ../gucefMT/include/gucefMT_CScopeMutex.h
+    ../gucefMT/include/gucefMT_dvmtoswrap.h
     ../gucefMT/include/gucefMT_mutex.h
   )
 
@@ -460,6 +485,7 @@ elseif (UNIX)
     ../gucefCORE/src/md5.c
     ../gucefMT/src/gucefMT_CMutex.cpp
     ../gucefMT/src/gucefMT_CScopeMutex.cpp
+    ../gucefMT/src/gucefMT_dvmtoswrap.c
     ../gucefMT/src/gucefMT_mutex.c
   )
 
@@ -478,6 +504,7 @@ elseif (WIN32)
     ../gucefCORE/include/md5.h
     ../gucefMT/include/gucefMT_CMutex.h
     ../gucefMT/include/gucefMT_CScopeMutex.h
+    ../gucefMT/include/gucefMT_dvmtoswrap.h
     ../gucefMT/include/gucefMT_mutex.h
   )
 
@@ -495,6 +522,7 @@ elseif (WIN32)
     ../gucefCORE/src/md5.c
     ../gucefMT/src/gucefMT_CMutex.cpp
     ../gucefMT/src/gucefMT_CScopeMutex.cpp
+    ../gucefMT/src/gucefMT_dvmtoswrap.c
     ../gucefMT/src/gucefMT_mutex.c
   )
 
@@ -513,6 +541,7 @@ elseif (WIN64)
     ../gucefCORE/include/md5.h
     ../gucefMT/include/gucefMT_CMutex.h
     ../gucefMT/include/gucefMT_CScopeMutex.h
+    ../gucefMT/include/gucefMT_dvmtoswrap.h
     ../gucefMT/include/gucefMT_mutex.h
   )
 
@@ -530,6 +559,7 @@ elseif (WIN64)
     ../gucefCORE/src/md5.c
     ../gucefMT/src/gucefMT_CMutex.cpp
     ../gucefMT/src/gucefMT_CScopeMutex.cpp
+    ../gucefMT/src/gucefMT_dvmtoswrap.c
     ../gucefMT/src/gucefMT_mutex.c
   )
 
