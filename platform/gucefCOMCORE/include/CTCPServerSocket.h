@@ -113,9 +113,11 @@ class GUCEF_COMCORE_EXPORT_CPP CTCPServerSocket : public CSocket
     
     
     CTCPServerSocket( CORE::CPulseGenerator& pulseGenerator ,
-                      bool blocking                         );    
+                      bool blocking                         ,
+                      UInt32 maxConnections = 100UL         );    
     
-    CTCPServerSocket( bool blocking );
+    CTCPServerSocket( bool blocking                 ,
+                      UInt32 maxConnections = 100UL );
 
     /*
      *  Obtain pointer to connection data by means of connection index
@@ -150,6 +152,8 @@ class GUCEF_COMCORE_EXPORT_CPP CTCPServerSocket : public CSocket
      *      Returns whether the socket is blocking or non-blocking
      */
     bool IsBlocking( void ) const;
+    
+    void SetMaxConnections( UInt32 maxConnections, bool dropConnections );
     
     UInt32 GetMaxConnections( void ) const;
 

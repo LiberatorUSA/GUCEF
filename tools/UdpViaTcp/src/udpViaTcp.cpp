@@ -747,8 +747,11 @@ UdpViaTcp::OnTCPServerSocketMaxConnectionsChanged( CORE::CNotifier* notifier    
     const COMCORE::CTCPServerSocket::TServerSocketMaxConnectionsChangedEventData* eData = static_cast< COMCORE::CTCPServerSocket::TServerSocketMaxConnectionsChangedEventData* >( eventData );
     CORE::Int32 maxConnections = eData->GetData();
     
-    m_tcpServerReceivePacketBuffers.resize( (size_t) maxConnections );
-
+    // Only resize if we are enlarging. Shrinking causes too many headaches
+    if ( m_tcpServerReceivePacketBuffers.size() < maxConnections )
+    {
+        m_tcpServerReceivePacketBuffers.resize( (size_t) maxConnections );
+    }
     GUCEF_LOG( CORE::LOGLEVEL_IMPORTANT, "UdpViaTcp: Max TCP Client connections set to " + CORE::Int32ToString( maxConnections ) );
 }
 
