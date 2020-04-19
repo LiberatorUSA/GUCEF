@@ -1,0 +1,17 @@
+<PROJECTGENERATOR>
+    <EXCLUDES PLATFORM="All">
+		<ITEM NAME="*" TYPE="DIR" />
+	</EXCLUDES>
+    <INCLUDES PLATFORM="All">
+		<ITEM NAME="factory" TYPE="DIR" />
+	</INCLUDES>
+    <INCLUDES PLATFORM="mswin">
+		<ITEM NAME="bcrypt" TYPE="DIR" />
+	</INCLUDES>
+    <INCLUDES PLATFORM="osx">
+		<ITEM NAME="commoncrypto" TYPE="DIR" />
+	</INCLUDES>
+    <INCLUDES PLATFORM="linux">
+		<ITEM NAME="openssl" TYPE="DIR" />
+	</INCLUDES>
+</PROJECTGENERATOR>
