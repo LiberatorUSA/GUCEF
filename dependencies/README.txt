@@ -27,8 +27,11 @@ hiredis is version 0.14.0 from https://github.com/redis/hiredis
 OIS is at version 1.3 and can be obtained from http://sourceforge.net/projects/wgois
 json-parser is at version 1.1.0 and can be obtained from https://github.com/udp/json-parser
 zookeeper-client-c is from Zookeeper version 3.5.6 source tar dated 2019-10-16 00:35
+curl is release version 7.69.1 from GitHub
+
 
 Possibly outdated:
 android-ndk-**: Recommended to use latest (r8)
 
 Note for MS Windows builds: that to build the DirectInput dependent code you must have the DirectX SDK installed on your system.
+Such external binary dependencies are managed via the ModuleInfo.xml under /dependencies/external
