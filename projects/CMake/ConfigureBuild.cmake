@@ -95,5 +95,7 @@ if (MSVC)
   # Enable intrinsics on MSVC in debug mode
   # Not actually necessary in release mode since /O2 implies /Oi but can't easily add this per build type?
   add_definitions(/Oi)
+  
+  add_compile_options(-bigobj)
 endif (MSVC)
 
