@@ -67,7 +67,14 @@ namespace VFS {
 //-------------------------------------------------------------------------*/
 
 /**
- *      Threadsafe Virtual File System
+ *  Virtual File System (VFS)
+ *
+ *  A VFS allows you to present a "file system" to the rest of the application which is a simplified abstracted view of reality
+ *  If you use say compressed files or disk images etc etc you dont want the complexity of dealing with those formats to be exposed
+ *  to the rest of your application. The VFS hides this complexity through IArchive's that can be mounted and for which different
+ *  plugins can add support for various formats.
+ *  The VFS can also be used to make your application use cloud storage without all its specific complexity as if it is a local filesystem
+ *  As such using the VFS would be recommended for any application that uses a fair amount of "files"
  */
 class GUCEF_VFS_PUBLIC_CPP CVFS : public CORE::CIConfigurable
 {
@@ -79,6 +86,10 @@ class GUCEF_VFS_PUBLIC_CPP CVFS : public CORE::CIConfigurable
     typedef CIArchive::TStringList                        TStringList;
     typedef CIArchive::TStringSet                         TStringSet;
     
+    /**
+     *  Adds a filesystem root to the VFS 
+
+     */
     void AddRoot( const CString& rootdir                     ,
                   const CString& archiveName                 ,
                   const bool writeable = false               ,
@@ -99,6 +110,12 @@ class GUCEF_VFS_PUBLIC_CPP CVFS : public CORE::CIConfigurable
                        const CString& archiveType  ,
                        const CString& mountPoint   ,
                        const bool writeableRequest );
+
+    bool MountArchive( const CString& archiveName    ,
+                       CVFSHandlePtr archiveResource ,
+                       const CString& archiveType    ,
+                       const CString& mountPoint     ,
+                       const bool writeableRequest   );
 
     bool UnmountArchiveByName( const CString& archiveName );
                   

@@ -264,6 +264,53 @@ CVFS::MountArchive( const CString& archiveName  ,
 
 /*-------------------------------------------------------------------------*/
 
+bool 
+CVFS::MountArchive( const CString& archiveName    ,
+                    CVFSHandlePtr archiveResource ,
+                    const CString& archiveType    ,
+                    const CString& mountPoint     ,
+                    const bool writeableRequest   )
+{GUCEF_TRACE;
+
+    if ( archiveResource.IsNULL() )
+        return false;
+    
+    // create an archive for the type
+    m_datalock.Lock();
+    CIArchive* archive = m_abstractArchiveFactory.Create( archiveType );
+    if ( GUCEF_NULL != archive )
+    {
+        // Try to load from the resource
+        if ( archive->LoadArchive( archiveName      ,
+                                   archiveResource  ,
+                                   writeableRequest ) )
+        {
+            // Successfully loaded/linked the archive
+            // We will add it to our mount list
+            TMountEntry archiveEntry;
+            archiveEntry.path = archiveResource->GetFilename();
+            archiveEntry.abspath = archiveResource->GetFilePath();
+            archiveEntry.writeable = writeableRequest;
+            archiveEntry.archive = archive;
+            archiveEntry.mountPath = mountPoint;
+
+            m_mountList.push_back( archiveEntry );
+
+            m_datalock.Unlock();
+            return true;
+        }
+        else
+        {
+            delete archive;
+        }
+    }
+
+    m_datalock.Unlock();
+    return false;
+}
+
+/*-------------------------------------------------------------------------*/
+
 bool
 CVFS::IsMountedArchive( const CString& location ) const
 {GUCEF_TRACE;

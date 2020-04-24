@@ -85,6 +85,10 @@ class GUCEF_VFS_PUBLIC_CPP CFileSystemArchive : public CIArchive
                               const CString& archivePath ,
                               const bool writableRequest );
 
+    virtual bool LoadArchive( const VFS::CString& archiveName ,
+                              CVFSHandlePtr vfsResource       ,
+                              const bool writeableRequest     );
+    
     virtual bool UnloadArchive( void );
     
     virtual void DestroyObject( CVFSHandle* sharedPointer );

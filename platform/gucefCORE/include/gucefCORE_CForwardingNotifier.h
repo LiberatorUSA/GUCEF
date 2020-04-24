@@ -56,11 +56,12 @@ class GUCEF_CORE_PUBLIC_CPP CForwardingNotifier : public CObservingNotifier
 {
     public:
 
-    typedef enum TEventOriginFilter
+    enum EEventOriginFilter
     {
         EVENTORIGINFILTER_UNMODIFIED , /**< do not change the event emission origin */
         EVENTORIGINFILTER_TRANSFER     /**< turns the re-sender into the emitter of the event */
     };
+    typedef enum EEventOriginFilter TEventOriginFilter;
 
     CForwardingNotifier( void );
 

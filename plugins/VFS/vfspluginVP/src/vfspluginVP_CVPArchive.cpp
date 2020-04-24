@@ -468,6 +468,17 @@ CVPArchive::LoadArchive( const VFS::CString& archiveName ,
 
 /*-------------------------------------------------------------------------*/
 
+bool 
+CVPArchive::LoadArchive( const VFS::CString& archiveName ,
+                         CVFSHandlePtr vfsResource       ,
+                         const bool writeableRequest     )
+{GUCEF_TRACE;
+
+    return false;
+}
+
+/*-------------------------------------------------------------------------*/
+
 bool
 CVPArchive::UnloadArchive( void )
 {GUCEF_TRACE;

@@ -107,6 +107,18 @@ CFileSystemArchive::LoadArchive( const CString& archiveName ,
 
 /*-------------------------------------------------------------------------*/
 
+bool 
+CFileSystemArchive::LoadArchive( const VFS::CString& archiveName ,
+                                 CVFSHandlePtr vfsResource       ,
+                                 const bool writeableRequest     )
+{GUCEF_TRACE;
+
+    GUCEF_WARNING_LOG( CORE::LOGLEVEL_NORMAL, "FileSystemArchive: Attempting to load a \"FileSystem\" archive from a file. That does not make sense. Bad config?" );
+    return false;
+}
+
+/*-------------------------------------------------------------------------*/
+
 bool
 CFileSystemArchive::UnloadArchive( void )
 {GUCEF_TRACE;

@@ -437,6 +437,17 @@ CResArchive::LoadArchive( const VFS::CString& archiveName ,
 
 /*-------------------------------------------------------------------------*/
 
+bool 
+CResArchive::LoadArchive( const VFS::CString& archiveName ,
+                          CVFSHandlePtr vfsResource       ,
+                          const bool writeableRequest     )
+{GUCEF_TRACE;
+
+    return false;
+}
+
+/*-------------------------------------------------------------------------*/
+
 bool
 CResArchive::UnloadArchive( void )
 {GUCEF_TRACE;

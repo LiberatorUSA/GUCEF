@@ -95,7 +95,11 @@ class GUCEF_VFSPLUGIN_DVP_PRIVATE_CPP CDVPArchive : public VFS::CIArchive
     virtual bool LoadArchive( const VFS::CString& archiveName ,
                               const VFS::CString& archivePath ,
                               const bool writableRequest );
-                              
+
+    virtual bool LoadArchive( const VFS::CString& archiveName ,
+                              CVFSHandlePtr vfsResource       ,
+                              const bool writeableRequest     );
+
     virtual bool UnloadArchive( void );    
 
     virtual void DestroyObject( VFS::CVFSHandle* objectToBeDestroyed );

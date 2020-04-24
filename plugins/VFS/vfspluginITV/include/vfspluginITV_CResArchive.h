@@ -91,6 +91,10 @@ class CResArchive : public VFS::CIArchive
                               const VFS::CString& archivePath ,
                               const bool writableRequest );
 
+    virtual bool LoadArchive( const VFS::CString& archiveName ,
+                              CVFSHandlePtr vfsResource       ,
+                              const bool writeableRequest     );
+    
     virtual bool UnloadArchive( void );
 
     virtual void DestroyObject( VFS::CVFSHandle* objectToBeDestroyed );
