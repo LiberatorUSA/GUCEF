@@ -60,7 +60,7 @@ namespace AWSS3 {
 //                                                                         //
 //-------------------------------------------------------------------------*/
 
-typedef CORE::CTFactory< VFS::CIArchive, CS3BucketArchive > TResArchiveFactory;
+typedef CORE::CTFactory< VFS::CIArchive, CS3BucketArchive > TAwsS3ArchiveFactory;
 
 /*-------------------------------------------------------------------------//
 //                                                                         //
@@ -68,7 +68,7 @@ typedef CORE::CTFactory< VFS::CIArchive, CS3BucketArchive > TResArchiveFactory;
 //                                                                         //
 //-------------------------------------------------------------------------*/
 
-static TResArchiveFactory awsS3ArchiveFactory;
+static TAwsS3ArchiveFactory awsS3ArchiveFactory;
 
 /*-------------------------------------------------------------------------//
 //                                                                         //

@@ -173,8 +173,19 @@ CS3BucketArchive::IsWriteable( void ) const
 
 bool
 CS3BucketArchive::LoadArchive( const VFS::CString& archiveName ,
-                          const VFS::CString& archivePath ,
-                          const bool writableRequest      )
+                               CVFSHandlePtr vfsResource       ,
+                               const bool writeableRequest     )
+{GUCEF_TRACE;
+
+    return false;
+}
+
+/*-------------------------------------------------------------------------*/
+
+bool 
+CS3BucketArchive::LoadArchive( const VFS::CString& archiveName ,
+                               CVFSHandlePtr vfsResource       ,
+                               const bool writeableRequest     )
 {GUCEF_TRACE;
 
     return false;
