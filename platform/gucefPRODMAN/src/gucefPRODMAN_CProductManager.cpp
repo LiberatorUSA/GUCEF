@@ -230,6 +230,16 @@ CProductManager::LoadConfig( const GUCEF::CORE::CDataNode& node )
 
 /*-------------------------------------------------------------------------*/
 
+const CORE::CString& 
+CProductManager::GetClassTypeName( void ) const
+{GUCEF_TRACE;
+
+    static CORE::CString classTypeName = "GUCEF::PRODMAN::CProductManager";
+    return classTypeName; 
+}
+
+/*-------------------------------------------------------------------------*/
+
 void
 CProductManager::RefreshProductInfoList( void )
 {

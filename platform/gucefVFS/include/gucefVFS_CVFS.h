@@ -193,6 +193,8 @@ class GUCEF_VFS_PUBLIC_CPP CVFS : public CORE::CIConfigurable
      */                                    
     virtual bool LoadConfig( const CORE::CDataNode& treeroot );                                             
 
+    virtual const CString& GetClassTypeName( void ) const;
+    
     static bool FilterValidation( const CString& filename , 
                                   const CString& filter   );
 

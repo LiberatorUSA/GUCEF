@@ -1061,6 +1061,16 @@ CPluginControl::LoadConfig( const CDataNode& treeroot )
     return !errorOccured;
 }
 
+/*-------------------------------------------------------------------------*/
+
+const CORE::CString& 
+CPluginControl::GetClassTypeName( void ) const
+{GUCEF_TRACE;
+
+    static CORE::CString classTypeName = "GUCEF::CORE::CPluginControl";
+    return classTypeName; 
+}
+
 /*-------------------------------------------------------------------------//
 //                                                                         //
 //      NAMESPACE                                                          //

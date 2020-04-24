@@ -175,6 +175,12 @@ class CGucefGuiTestAppSettings : public CORE::CIConfigurable
         g_instance = NULL;
     }
 
+    virtual const CORE::CString& GetClassTypeName( void ) const
+    {
+        static CORE::CString classTypeName = "CGucefGuiTestAppSettings";
+        return classTypeName; 
+    }
+
     /*-------------------------------------------------------------*/
 
     virtual bool SaveConfig( CORE::CDataNode& tree ) const

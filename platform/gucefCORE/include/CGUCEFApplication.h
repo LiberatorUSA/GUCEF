@@ -94,9 +94,9 @@ namespace CORE {
  *              Signals that the application is shutting down at the
  *              GUCEF level. All higher level code should shutdown as well
  */
-class GUCEF_CORE_PUBLIC_CPP CGUCEFApplication : public CNotifier             ,
-                                                public CIConfigurable        ,
-                                                public CISysConsoleCmdHandler
+class GUCEF_CORE_PUBLIC_CPP CGUCEFApplication : public CNotifier                      ,
+                                                public virtual CIConfigurable         ,
+                                                public virtual CISysConsoleCmdHandler
 {
     public:
 
@@ -157,6 +157,8 @@ class GUCEF_CORE_PUBLIC_CPP CGUCEFApplication : public CNotifier             ,
      *      @return whether building the tree from the given file was successful
      */
     virtual bool LoadConfig( const CDataNode& treeroot );
+
+    virtual const CString& GetClassTypeName( void ) const;
 
     CPulseGenerator& GetPulseGenerator( void );
 

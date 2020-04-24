@@ -169,6 +169,8 @@ class GUCEF_CORE_PUBLIC_CPP CPluginMetaData : public CIPluginMetaData ,
      */
     virtual void Clear( void );
 
+    virtual const CString& GetClassTypeName( void ) const;
+
     private:
 
     CString m_description;

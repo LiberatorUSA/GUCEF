@@ -255,6 +255,16 @@ CStatsDClient::LoadConfig( const CORE::CDataNode& treeroot )
 
 /*-------------------------------------------------------------------------*/
 
+const CORE::CString& 
+CStatsDClient::GetClassTypeName( void ) const
+{GUCEF_TRACE;
+
+    static CORE::CString classTypeName = "GUCEF::COM::CStatsDClient";
+    return classTypeName; 
+}
+
+/*-------------------------------------------------------------------------*/
+
 bool
 CStatsDClient::Open( void )
 {GUCEF_TRACE;

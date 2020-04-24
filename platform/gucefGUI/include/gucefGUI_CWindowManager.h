@@ -74,6 +74,8 @@ class GUCEF_GUI_PUBLIC_CPP CWindowManager : public CORE::CObservingNotifier ,
 
     virtual bool LoadConfig( const CORE::CDataNode& config );
 
+    virtual const CString& GetClassTypeName( void ) const;
+
     private:
     friend class CGuiGlobal;
 

@@ -109,6 +109,8 @@ class GUCEF_CORE_PUBLIC_CPP CMetricsClientManager : public CIMetricsSystemClient
 
     virtual bool LoadConfig( const CDataNode& treeroot );
 
+    virtual const CString& GetClassTypeName( void ) const;
+
     private:
     friend class CCoreGlobal;
 

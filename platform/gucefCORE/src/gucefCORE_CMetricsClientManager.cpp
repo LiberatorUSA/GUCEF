@@ -156,6 +156,16 @@ CMetricsClientManager::LoadConfig( const CORE::CDataNode& treeroot )
 
 /*-------------------------------------------------------------------------*/
 
+const CORE::CString& 
+CMetricsClientManager::GetClassTypeName( void ) const
+{GUCEF_TRACE;
+
+    static CORE::CString classTypeName = "GUCEF::CORE::CMetricsClientManager";
+    return classTypeName; 
+}
+
+/*-------------------------------------------------------------------------*/
+
 void
 CMetricsClientManager::Increment( const CString& key, const Float32 frequency ) const
 {GUCEF_TRACE;

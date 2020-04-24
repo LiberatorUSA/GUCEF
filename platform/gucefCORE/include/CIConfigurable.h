@@ -36,6 +36,11 @@
 #define GUCEF_CORE_ETYPES_H
 #endif /* GUCEF_CORE_ETYPES_H ? */
 
+#ifndef GUCEF_CORE_CITYPENAMED_H
+#include "CITypeNamed.h"
+#define GUCEF_CORE_CITYPENAMED_H
+#endif /* GUCEF_CORE_CITYPENAMED_H ? */
+
 /*-------------------------------------------------------------------------//
 //                                                                         //
 //      NAMESPACE                                                          //
@@ -61,7 +66,7 @@ class CDataNode;
  *      Optionally the global CConfigStore can be used to load/unload the config of
  *      all configurable classes that have the 'use global config' switch set.
  */
-class GUCEF_CORE_PUBLIC_CPP CIConfigurable
+class GUCEF_CORE_PUBLIC_CPP CIConfigurable : public virtual CITypeNamed
 {
     public:
 

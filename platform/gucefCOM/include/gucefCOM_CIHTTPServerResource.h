@@ -69,7 +69,7 @@ class GUCEF_COM_EXPORT_CPP CIHTTPServerResource
     /**
      *  Result of a CreateResource operation.
      */
-    typedef enum TCreateState
+    enum ECreateState
     {
         CREATESTATE_CREATED                   , /**< The resource has been created and persisted as desired by the backend */
         CREATESTATE_CONFLICTING               , /**< Unable to create due to a conflicted data state (think of conflicting unique ids inside the data etc with those in a collection) */
@@ -77,16 +77,18 @@ class GUCEF_COM_EXPORT_CPP CIHTTPServerResource
         CREATESTATE_UNSUPPORTEDREPRESENTATION , /**< Resource representation is not supported for deserialization. */
         CREATESTATE_FAILED                      /**< Failed to create the resource */
     };
+    typedef enum ECreateState TCreateState; 
 
     /**
      *  Result of a Deserialize operation.
      */
-    typedef enum TDeserializeState
+    enum EDeserializeState
     {
         DESERIALIZESTATE_SUCCEEDED      , /**< deserialization succeeded without any problems */
         DESERIALIZESTATE_CORRUPTEDINPUT , /**< Unable to deserialize because the input data is corrupt */
         DESERIALIZESTATE_UNABLETOUPDATE   /**< Unable to deserialize because after reading the input data successfully updating the resource failed. */
     };
+    typedef enum EDeserializeState TDeserializeState;
     
     public:
     

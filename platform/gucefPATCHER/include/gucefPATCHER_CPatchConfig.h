@@ -118,6 +118,8 @@ class GUCEF_PATCHER_EXPORT_CPP CPatchConfig : public CORE::CIConfigurable
     void SetStopOnFileReplacementFailure( const bool stopOnFailure );
     
     bool GetStopOnFileReplacementFailure( void ) const;
+
+    virtual const CString& GetClassTypeName( void ) const;
     
     private:
     

@@ -240,7 +240,7 @@ CConfigStore::LoadConfig( CDataNode* loadedConfig )
                             if ( !(*i)->LoadConfig( *loadedConfig ) )
                             {
                                 errorOccured = true;
-                                GUCEF_ERROR_LOG( LOGLEVEL_IMPORTANT, "CConfigStore: Loading of config failed for a configureable" );
+                                GUCEF_ERROR_LOG( LOGLEVEL_IMPORTANT, "CConfigStore: Loading of config failed for a configureable with type name \"" + (*i)->GetClassTypeName() + "\"" );
                             }
                             ++i;
                         }

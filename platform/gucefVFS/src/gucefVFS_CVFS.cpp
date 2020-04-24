@@ -735,6 +735,16 @@ CVFS::LoadConfig( const CORE::CDataNode& tree )
 
 /*-------------------------------------------------------------------------*/
 
+const CORE::CString& 
+CVFS::GetClassTypeName( void ) const
+{GUCEF_TRACE;
+
+    static CORE::CString classTypeName = "GUCEF::VFS::CVFS";
+    return classTypeName; 
+}
+
+/*-------------------------------------------------------------------------*/
+
 bool
 CVFS::FilterValidation( const CORE::CString& filename ,
                         const CORE::CString& filter   )

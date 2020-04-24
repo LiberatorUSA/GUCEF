@@ -64,8 +64,7 @@ namespace COMCORE {
 /**
  *  Interface class which serves as the base class for all discovery clients
  */
-class GUCEF_COMCORE_EXPORT_CPP CIDiscoveryClient : public virtual CORE::CITypeNamed    ,
-                                                   public virtual CORE::CIConfigurable ,
+class GUCEF_COMCORE_EXPORT_CPP CIDiscoveryClient : public virtual CORE::CIConfigurable ,
                                                    public virtual CIDiscovery
 {
     public:

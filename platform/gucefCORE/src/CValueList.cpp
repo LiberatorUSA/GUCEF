@@ -225,6 +225,16 @@ CValueList::LoadConfig( const CDataNode& treeroot )
 
 /*-------------------------------------------------------------------------*/
 
+const CORE::CString& 
+CValueList::GetClassTypeName( void ) const
+{GUCEF_TRACE;
+
+    static CORE::CString classTypeName = "GUCEF::CORE::CValueList";
+    return classTypeName; 
+}
+
+/*-------------------------------------------------------------------------*/
+
 void
 CValueList::SetMultiple( const CString& keyandvalue ,
                          const char seperator       )

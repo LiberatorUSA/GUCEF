@@ -110,6 +110,8 @@ class GUCEF_PRODMAN_PUBLIC_CPP CProductManager : public CORE::CObservingNotifier
 
     CDownloadsManager& GetDownloadsManager( void );
 
+    virtual const CString& GetClassTypeName( void ) const;
+
     private:
     friend class CProdManGlobal;
 

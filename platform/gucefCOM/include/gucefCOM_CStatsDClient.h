@@ -112,6 +112,8 @@ class GUCEF_COM_EXPORT_CPP CStatsDClient : public CORE::CIMetricsSystemClient
 
     const CString& GetStatNamePrefix( void ) const;
 
+    virtual const CString& GetClassTypeName( void ) const;
+
     private:
 
     CStatsDClient( const CStatsDClient& src );             /** not implemented */

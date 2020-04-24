@@ -408,6 +408,16 @@ CGUCEFApplication::LoadConfig( const CDataNode& tree )
 
 /*-------------------------------------------------------------------------*/
 
+const CORE::CString& 
+CGUCEFApplication::GetClassTypeName( void ) const
+{GUCEF_TRACE;
+
+    static CORE::CString classTypeName = "GUCEF::CORE::CGUCEFApplication";
+    return classTypeName; 
+}
+
+/*-------------------------------------------------------------------------*/
+
 bool
 CGUCEFApplication::OnSysConsoleCommand( const CString& path                ,
                                         const CString& command             ,

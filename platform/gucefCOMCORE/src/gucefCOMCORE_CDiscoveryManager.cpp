@@ -202,6 +202,16 @@ CDiscoveryManager::LoadConfig( const CORE::CDataNode& treeroot )
     return totalSuccess;
 }
 
+/*-------------------------------------------------------------------------*/
+
+const CORE::CString& 
+CDiscoveryManager::GetClassTypeName( void ) const
+{GUCEF_TRACE;
+
+    static CORE::CString classTypeName = "GUCEF::CORE::CDiscoveryManager";
+    return classTypeName; 
+}
+
 /*-------------------------------------------------------------------------//
 //                                                                         //
 //      NAMESPACE                                                          //
