@@ -1030,27 +1030,43 @@ CPluginControl::LoadConfig( const CDataNode& treeroot )
             // Check for per-plugin override of load settings, overriding group default
             bool loadImmediately = loadPlugins;
             loadImBoolStr = (*n )->GetAttributeValueOrChildValueByName( "LoadImmediately" );
-            if ( !loadImBoolStr.IsNULLOrEmpty() ) loadImmediately = StringToBool( loadImBoolStr );
+            if ( !loadImBoolStr.IsNULLOrEmpty() ) 
+                loadImmediately = StringToBool( loadImBoolStr );
 
             // Since we have to report whether loading the config settings went ok
             // Check to see if allow the loading of this plugin to fail and still report success
             bool loadFailAllowed = false;
             CString loadFailAllowedSetting = (*n )->GetAttributeValueOrChildValueByName( "LoadFailAllowed" );
-            if ( !loadFailAllowedSetting.IsNULLOrEmpty() ) loadFailAllowed = StringToBool( loadFailAllowedSetting );
+            if ( !loadFailAllowedSetting.IsNULLOrEmpty() ) 
+                loadFailAllowed = StringToBool( loadFailAllowedSetting );
 
             CPluginMetaData metaData;
             if ( metaData.LoadConfig( *(*n ) ) )
             {                
                 if ( !AddPluginMetaData( metaData, groupName, loadImmediately ) )
                 {
-                    GUCEF_ERROR_LOG( LOGLEVEL_NORMAL, "PluginControl: Failed to add plugin meta data" );
-                    if ( !loadFailAllowed ) errorOccured = true;
+                    if ( !loadFailAllowed )
+                    {
+                        errorOccured = true;
+                        GUCEF_ERROR_LOG( LOGLEVEL_NORMAL, "PluginControl: Failed to add plugin meta data" );
+                    }
+                    else
+                    {
+                        GUCEF_LOG( LOGLEVEL_NORMAL, "PluginControl: Failed to add plugin meta data. LoadFailAllowed=True" );
+                    }
                 }
             }
             else
             {
-                GUCEF_ERROR_LOG( LOGLEVEL_NORMAL, "PluginControl: LoadConfig failed for the given plugin meta data" );
-                if ( !loadFailAllowed ) errorOccured = true;
+                if ( !loadFailAllowed ) 
+                {
+                    errorOccured = true;
+                    GUCEF_ERROR_LOG( LOGLEVEL_NORMAL, "PluginControl: LoadConfig failed for the given plugin meta data" );
+                }
+                else
+                {
+                    GUCEF_LOG( LOGLEVEL_NORMAL, "PluginControl: LoadConfig failed for the given plugin meta data. LoadFailAllowed=True" );
+                }
             }
             ++n;
         }
