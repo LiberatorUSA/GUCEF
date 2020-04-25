@@ -95,6 +95,8 @@ class GUCEF_CORE_PUBLIC_CPP CMultiLogger : public CILogger
 
     void SetMinLogLevel( const Int32 logLevel );
 
+    Int32 GetMinLogLevel( void ) const;
+
     void AddLogger( CILogger* loggerImp );
 
     void RemoveLogger( CILogger* loggerImp );

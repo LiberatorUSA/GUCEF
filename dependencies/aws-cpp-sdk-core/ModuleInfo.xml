@@ -19,9 +19,10 @@
 			<Dependency Name="curl" />			
         </Linker>		
     </Module>
-    <Module Name="aws-cpp-sdk-core" Type="SharedLibrary" Platform="mswin">
+    <Module Platform="mswin">
         <Preprocessor>
             <Define String="PLATFORM_WINDOWS" />
+			<Define String="ENABLE_BCRYPT_ENCRYPTION" />
         </Preprocessor>	
         <Linker>
             <Dependency Name="Winhttp.lib" />
@@ -31,5 +32,20 @@
 			<Dependency Name="msxml6.lib" />
 			<Dependency Name="WindowsApp.lib" />
         </Linker>
+    </Module>
+    <Module Platform="linux">
+        <Preprocessor>
+			<Define String="ENABLE_OPENSSL_ENCRYPTION" />
+        </Preprocessor>
+    </Module>
+    <Module Platform="android">
+        <Preprocessor>
+			<Define String="ENABLE_OPENSSL_ENCRYPTION" />
+        </Preprocessor>
+    </Module>
+    <Module Platform="osx">
+        <Preprocessor>
+			<Define String="ENABLE_COMMONCRYPTO_ENCRYPTION" />
+        </Preprocessor>
     </Module>
 </ModuleInfoEntry>

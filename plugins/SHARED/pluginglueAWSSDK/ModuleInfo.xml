@@ -1,23 +1,17 @@
 <ModuleInfoEntry>
-    <Module Name="vfspluginAWSS3" Type="SharedLibrary" Platform="All" Tags="plugin">
+    <Module Name="pluginglueAWSSDK" Type="SharedLibrary" Platform="All" >
         <Dependencies>
             <Dependency Name="gucefMT" />
             <Dependency Name="gucefCORE" />
-            <Dependency Name="gucefVFS" />
 			<Dependency Name="aws-cpp-sdk-core" />
-			<Dependency Name="aws-cpp-sdk-s3" />
-			<Dependency Name="pluginglueAWSSDK" />
         </Dependencies>
         <Linker>
             <Dependency Name="gucefMT" />
             <Dependency Name="gucefCORE" />
-            <Dependency Name="gucefVFS" />
 			<Dependency Name="aws-cpp-sdk-core" />
-			<Dependency Name="aws-cpp-sdk-s3" />
-			<Dependency Name="pluginglueAWSSDK" />
         </Linker>
         <Preprocessor>
-            <Define String="GUCEF_VFSPLUGIN_AWSS3_BUILD_MODULE" />
+            <Define String="GUCEF_PLUGINGLUE_AWSSDK_BUILD_MODULE" />
         </Preprocessor>
     </Module>
 </ModuleInfoEntry>

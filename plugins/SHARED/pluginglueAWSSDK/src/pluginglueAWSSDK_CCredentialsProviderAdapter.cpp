@@ -1,5 +1,5 @@
 /*
- *  vfspluginAWSS3: Generic GUCEF VFS plugin for dealing with S3 storage in AWS
+ *  pluginglueAWSSDK: Library to support multiple AWS SDK based plugins that share overlap
  *
  *  Copyright (C) 1998 - 2020.  Dinand Vanvelzen
  *
@@ -22,15 +22,14 @@
 //                                                                         //
 //-------------------------------------------------------------------------*/
 
-#ifndef GUCEF_VFSPLUGIN_AWSS3_CAWSS3GLOBAL_H
-#include "vfspluginAWSS3_CAwsS3Global.h"
-#define GUCEF_VFSPLUGIN_AWSS3_CAWSS3GLOBAL_H
-#endif /* GUCEF_VFSPLUGIN_AWSS3_CAWSS3GLOBAL_H ? */
+#include <memory>
 
-#include "vfspluginAWSS3.h"
+#ifndef GUCEF_CORE_GUCEF_ESSENTIALS_H
+#include "gucef_essentials.h"
+#define GUCEF_CORE_GUCEF_ESSENTIALS_H
+#endif /* GUCEF_CORE_GUCEF_ESSENTIALS_H ? */
 
-
-#include <aws/s3/model/Bucket.h>
+#include "pluginglueAWSSDK_CCredentialsProviderAdapter.h"
 
 /*-------------------------------------------------------------------------//
 //                                                                         //
@@ -39,8 +38,8 @@
 //-------------------------------------------------------------------------*/
 
 namespace GUCEF {
-namespace VFSPLUGIN {
-namespace AWSS3 {
+namespace PLUGINGLUE {
+namespace AWSSDK {
 
 /*-------------------------------------------------------------------------//
 //                                                                         //
@@ -48,57 +47,19 @@ namespace AWSS3 {
 //                                                                         //
 //-------------------------------------------------------------------------*/
 
-CORE::Int32 GUCEF_PLUGIN_CALLSPEC_PREFIX
-GUCEFPlugin_Load( CORE::UInt32 argc, const char** argv ) GUCEF_PLUGIN_CALLSPEC_SUFFIX
+CCredentialsProviderAdapter::CCredentialsProviderAdapter( void )
 {GUCEF_TRACE;
 
-    GUCEF_LOG( CORE::LOGLEVEL_NORMAL, "Load called on VFS plugin AWSS3" );
-    
-    VFSPLUGIN::AWSS3::CAwsS3Global::Instance();
-    
-    GUCEF_LOG( CORE::LOGLEVEL_NORMAL, "Load finished for VFS plugin AWSS3" );
-    return 1;
+    AddProvider( std::make_shared< Aws::Auth::EnvironmentAWSCredentialsProvider >() );
+    AddProvider( std::make_shared< Aws::Auth::ProfileConfigFileAWSCredentialsProvider >() ); 
+    //AddProvider( std::make_shared< Aws::Auth::InstanceProfileCredentialsProvider >() );
 }
 
-/*--------------------------------------------------------------------------*/
+/*-------------------------------------------------------------------------*/
 
-void GUCEF_PLUGIN_CALLSPEC_PREFIX
-GUCEFPlugin_Unload( void ) GUCEF_PLUGIN_CALLSPEC_SUFFIX
+CCredentialsProviderAdapter::~CCredentialsProviderAdapter()
 {GUCEF_TRACE;
 
-    GUCEF_LOG( CORE::LOGLEVEL_NORMAL, "Unload called on VFS plugin AWSS3" );
-
-    VFSPLUGIN::AWSS3::CAwsS3Global::Deinstance();
-}
-
-/*--------------------------------------------------------------------------*/
-
-void GUCEF_PLUGIN_CALLSPEC_PREFIX
-GUCEFPlugin_GetVersion( CORE::TVersion* versionInfo ) GUCEF_PLUGIN_CALLSPEC_SUFFIX
-{GUCEF_TRACE;
-
-    versionInfo->major = 0;
-    versionInfo->minor = 0;
-    versionInfo->patch = 0;
-    versionInfo->release = 0;
-}
-
-/*--------------------------------------------------------------------------*/
-
-const char* GUCEF_PLUGIN_CALLSPEC_PREFIX
-GUCEFPlugin_GetCopyright( void ) GUCEF_PLUGIN_CALLSPEC_SUFFIX
-{GUCEF_TRACE;
-
-    return "Copyright (C) Dinand Vanvelzen, Apache License v2";
-}
-
-/*--------------------------------------------------------------------------*/
-
-const char* GUCEF_PLUGIN_CALLSPEC_PREFIX
-GUCEFPlugin_GetDescription( void ) GUCEF_PLUGIN_CALLSPEC_SUFFIX
-{GUCEF_TRACE;
-
-    return "Generic GUCEF plugin for VFS \"S3 Bucket\" archives from cloud provider AWS";
 }
 
 /*-------------------------------------------------------------------------//
@@ -107,8 +68,9 @@ GUCEFPlugin_GetDescription( void ) GUCEF_PLUGIN_CALLSPEC_SUFFIX
 //                                                                         //
 //-------------------------------------------------------------------------*/
 
-}; /* namespace AWSS3 */
-}; /* namespace VFSPLUGIN */
+}; /* namespace AWSSDK */
+}; /* namespace PLUGINGLUE */
 }; /* namespace GUCEF */
 
-/*--------------------------------------------------------------------------*/
+/*-------------------------------------------------------------------------*/
+

@@ -1,5 +1,5 @@
 /*
- *  vfspluginAWSS3: Generic GUCEF VFS plugin for dealing with S3 storage in AWS
+ *  pluginglueAWSSDK: Library to support multiple AWS SDK based plugins that share overlap
  *
  *  Copyright (C) 1998 - 2020.  Dinand Vanvelzen
  *
@@ -16,21 +16,26 @@
  *  limitations under the License.
  */
 
+#ifndef GUCEF_PLUGINGLUE_AWSSDK_CAWSSDKGLOBAL_H
+#define GUCEF_PLUGINGLUE_AWSSDK_CAWSSDKGLOBAL_H
+
 /*-------------------------------------------------------------------------//
 //                                                                         //
 //      INCLUDES                                                           //
 //                                                                         //
 //-------------------------------------------------------------------------*/
 
-#ifndef GUCEF_VFSPLUGIN_AWSS3_CAWSS3GLOBAL_H
-#include "vfspluginAWSS3_CAwsS3Global.h"
-#define GUCEF_VFSPLUGIN_AWSS3_CAWSS3GLOBAL_H
-#endif /* GUCEF_VFSPLUGIN_AWSS3_CAWSS3GLOBAL_H ? */
+#include <aws/core/Aws.h>
 
-#include "vfspluginAWSS3.h"
+#ifndef GUCEF_MT_CMUTEX_H
+#include "gucefMT_CMutex.h"
+#define GUCEF_MT_CMUTEX_H
+#endif /* GUCEF_MT_CMUTEX_H ? */
 
-
-#include <aws/s3/model/Bucket.h>
+#ifndef GUCEF_PLUGINGLUE_AWSSDK_MACROS_H
+#include "pluginglueAWSSDK_macros.h"
+#define GUCEF_PLUGINGLUE_AWSSDK_MACROS_H
+#endif /* GUCEF_PLUGINGLUE_AWSSDK_MACROS_H ? */
 
 /*-------------------------------------------------------------------------//
 //                                                                         //
@@ -39,67 +44,50 @@
 //-------------------------------------------------------------------------*/
 
 namespace GUCEF {
-namespace VFSPLUGIN {
-namespace AWSS3 {
+namespace PLUGINGLUE {
+namespace AWSSDK {
 
 /*-------------------------------------------------------------------------//
 //                                                                         //
-//      UTILITIES                                                          //
+//      CLASSES                                                            //
 //                                                                         //
 //-------------------------------------------------------------------------*/
 
-CORE::Int32 GUCEF_PLUGIN_CALLSPEC_PREFIX
-GUCEFPlugin_Load( CORE::UInt32 argc, const char** argv ) GUCEF_PLUGIN_CALLSPEC_SUFFIX
-{GUCEF_TRACE;
+class GUCEF_PLUGINGLUE_AWSSDK_EXPORT_CPP CAwsSdkGlobal
+{
+    public:
 
-    GUCEF_LOG( CORE::LOGLEVEL_NORMAL, "Load called on VFS plugin AWSS3" );
+    typedef std::shared_ptr< Aws::Auth::AWSCredentialsProvider > AWSCredentialsProviderPtr;
+
+    static CAwsSdkGlobal* Instance( void );
+
+    Aws::SDKOptions& GetAwsSdkOptions( void );
+
+    AWSCredentialsProviderPtr GetAwsCredentialsProvider( void );
+
+    const Aws::Client::ClientConfiguration& GetAwsClientConfig( void );
+
+    private:
+    friend class CModule;
+
+    static void Deinstance( void );
+
+    private:
+
+    CAwsSdkGlobal( void );
+
+    ~CAwsSdkGlobal();
+
+    void Initialize( void );
+
+    private:
+
+    Aws::SDKOptions m_awsSdkOptions;
+    AWSCredentialsProviderPtr m_credsProvider;
     
-    VFSPLUGIN::AWSS3::CAwsS3Global::Instance();
-    
-    GUCEF_LOG( CORE::LOGLEVEL_NORMAL, "Load finished for VFS plugin AWSS3" );
-    return 1;
-}
-
-/*--------------------------------------------------------------------------*/
-
-void GUCEF_PLUGIN_CALLSPEC_PREFIX
-GUCEFPlugin_Unload( void ) GUCEF_PLUGIN_CALLSPEC_SUFFIX
-{GUCEF_TRACE;
-
-    GUCEF_LOG( CORE::LOGLEVEL_NORMAL, "Unload called on VFS plugin AWSS3" );
-
-    VFSPLUGIN::AWSS3::CAwsS3Global::Deinstance();
-}
-
-/*--------------------------------------------------------------------------*/
-
-void GUCEF_PLUGIN_CALLSPEC_PREFIX
-GUCEFPlugin_GetVersion( CORE::TVersion* versionInfo ) GUCEF_PLUGIN_CALLSPEC_SUFFIX
-{GUCEF_TRACE;
-
-    versionInfo->major = 0;
-    versionInfo->minor = 0;
-    versionInfo->patch = 0;
-    versionInfo->release = 0;
-}
-
-/*--------------------------------------------------------------------------*/
-
-const char* GUCEF_PLUGIN_CALLSPEC_PREFIX
-GUCEFPlugin_GetCopyright( void ) GUCEF_PLUGIN_CALLSPEC_SUFFIX
-{GUCEF_TRACE;
-
-    return "Copyright (C) Dinand Vanvelzen, Apache License v2";
-}
-
-/*--------------------------------------------------------------------------*/
-
-const char* GUCEF_PLUGIN_CALLSPEC_PREFIX
-GUCEFPlugin_GetDescription( void ) GUCEF_PLUGIN_CALLSPEC_SUFFIX
-{GUCEF_TRACE;
-
-    return "Generic GUCEF plugin for VFS \"S3 Bucket\" archives from cloud provider AWS";
-}
+    static MT::CMutex g_dataLock;
+    static CAwsSdkGlobal* g_instance;
+};
 
 /*-------------------------------------------------------------------------//
 //                                                                         //
@@ -107,8 +95,21 @@ GUCEFPlugin_GetDescription( void ) GUCEF_PLUGIN_CALLSPEC_SUFFIX
 //                                                                         //
 //-------------------------------------------------------------------------*/
 
-}; /* namespace AWSS3 */
-}; /* namespace VFSPLUGIN */
+}; /* namespace AWSSDK */
+}; /* namespace PLUGINGLUE */
 }; /* namespace GUCEF */
 
-/*--------------------------------------------------------------------------*/
+/*-------------------------------------------------------------------------*/
+
+#endif /* GUCEF_PLUGINGLUE_AWSSDK_CAWSSDKGLOBAL_H ? */
+
+/*-------------------------------------------------------------------------//
+//                                                                         //
+//      Info & Changes                                                     //
+//                                                                         //
+//-------------------------------------------------------------------------//
+
+- 04-05-2005 :
+        - Dinand: Initial version.
+
+---------------------------------------------------------------------------*/

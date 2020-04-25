@@ -16,21 +16,42 @@
  *  limitations under the License.
  */
 
+#ifndef GUCEF_VFSPLUGIN_AWSS3_CAWSS3GLOBAL_H
+#define GUCEF_VFSPLUGIN_AWSS3_CAWSS3GLOBAL_H
+
 /*-------------------------------------------------------------------------//
 //                                                                         //
 //      INCLUDES                                                           //
 //                                                                         //
 //-------------------------------------------------------------------------*/
 
-#ifndef GUCEF_VFSPLUGIN_AWSS3_CAWSS3GLOBAL_H
-#include "vfspluginAWSS3_CAwsS3Global.h"
-#define GUCEF_VFSPLUGIN_AWSS3_CAWSS3GLOBAL_H
-#endif /* GUCEF_VFSPLUGIN_AWSS3_CAWSS3GLOBAL_H ? */
+#ifndef GUCEF_MT_CMUTEX_H
+#include "gucefMT_CMutex.h"
+#define GUCEF_MT_CMUTEX_H
+#endif /* GUCEF_MT_CMUTEX_H ? */
 
-#include "vfspluginAWSS3.h"
+#ifndef GUCEF_CORE_CTFACTORY_H
+#include "CTFactory.h"
+#define GUCEF_CORE_CTFACTORY_H
+#endif /* GUCEF_CORE_CTFACTORY_H ? */
 
+#ifndef GUCEF_VFS_CVFS_H
+#include "gucefVFS_CVFS.h"
+#define GUCEF_VFS_CVFS_H
+#endif /* GUCEF_VFS_CVFS_H ? */
 
-#include <aws/s3/model/Bucket.h>
+#ifndef GUCEF_VFSPLUGIN_AWSS3_CS3BUCKETARCHIVE_H
+#include "vfspluginAWSS3_CS3BucketArchive.h"
+#define GUCEF_VFSPLUGIN_AWSS3_CS3BUCKETARCHIVE_H
+#endif /* GUCEF_VFSPLUGIN_AWSS3_CS3BUCKETARCHIVE_H ? */
+
+#ifndef GUCEF_VFSPLUGIN_AWSS3_MACROS_H
+#include "vfspluginAWSS3_macros.h"
+#define GUCEF_VFSPLUGIN_AWSS3_MACROS_H
+#endif /* GUCEF_VFSPLUGIN_AWSS3_MACROS_H ? */
+
+#include <aws/core/Aws.h>
+#include <aws/s3/S3Client.h>
 
 /*-------------------------------------------------------------------------//
 //                                                                         //
@@ -44,62 +65,38 @@ namespace AWSS3 {
 
 /*-------------------------------------------------------------------------//
 //                                                                         //
-//      UTILITIES                                                          //
+//      CLASSES                                                            //
 //                                                                         //
 //-------------------------------------------------------------------------*/
 
-CORE::Int32 GUCEF_PLUGIN_CALLSPEC_PREFIX
-GUCEFPlugin_Load( CORE::UInt32 argc, const char** argv ) GUCEF_PLUGIN_CALLSPEC_SUFFIX
-{GUCEF_TRACE;
+class GUCEF_HIDDEN CAwsS3Global
+{
+    public:
 
-    GUCEF_LOG( CORE::LOGLEVEL_NORMAL, "Load called on VFS plugin AWSS3" );
+    typedef CORE::CTFactory< VFS::CIArchive, CS3BucketArchive > TAwsS3ArchiveFactory;
+
+    static CAwsS3Global* Instance( void );
+
+    Aws::S3::S3Client& GetS3Client( void );
+
+    static void Deinstance( void );
+
+    private:
+
+    CAwsS3Global( void );
+
+    ~CAwsS3Global();
+
+    void Initialize( void );
+
+    private:
+
+    Aws::S3::S3Client* m_s3Client;
+    TAwsS3ArchiveFactory m_awsS3ArchiveFactory;
     
-    VFSPLUGIN::AWSS3::CAwsS3Global::Instance();
-    
-    GUCEF_LOG( CORE::LOGLEVEL_NORMAL, "Load finished for VFS plugin AWSS3" );
-    return 1;
-}
-
-/*--------------------------------------------------------------------------*/
-
-void GUCEF_PLUGIN_CALLSPEC_PREFIX
-GUCEFPlugin_Unload( void ) GUCEF_PLUGIN_CALLSPEC_SUFFIX
-{GUCEF_TRACE;
-
-    GUCEF_LOG( CORE::LOGLEVEL_NORMAL, "Unload called on VFS plugin AWSS3" );
-
-    VFSPLUGIN::AWSS3::CAwsS3Global::Deinstance();
-}
-
-/*--------------------------------------------------------------------------*/
-
-void GUCEF_PLUGIN_CALLSPEC_PREFIX
-GUCEFPlugin_GetVersion( CORE::TVersion* versionInfo ) GUCEF_PLUGIN_CALLSPEC_SUFFIX
-{GUCEF_TRACE;
-
-    versionInfo->major = 0;
-    versionInfo->minor = 0;
-    versionInfo->patch = 0;
-    versionInfo->release = 0;
-}
-
-/*--------------------------------------------------------------------------*/
-
-const char* GUCEF_PLUGIN_CALLSPEC_PREFIX
-GUCEFPlugin_GetCopyright( void ) GUCEF_PLUGIN_CALLSPEC_SUFFIX
-{GUCEF_TRACE;
-
-    return "Copyright (C) Dinand Vanvelzen, Apache License v2";
-}
-
-/*--------------------------------------------------------------------------*/
-
-const char* GUCEF_PLUGIN_CALLSPEC_PREFIX
-GUCEFPlugin_GetDescription( void ) GUCEF_PLUGIN_CALLSPEC_SUFFIX
-{GUCEF_TRACE;
-
-    return "Generic GUCEF plugin for VFS \"S3 Bucket\" archives from cloud provider AWS";
-}
+    static MT::CMutex g_dataLock;
+    static CAwsS3Global* g_instance;
+};
 
 /*-------------------------------------------------------------------------//
 //                                                                         //
@@ -111,4 +108,17 @@ GUCEFPlugin_GetDescription( void ) GUCEF_PLUGIN_CALLSPEC_SUFFIX
 }; /* namespace VFSPLUGIN */
 }; /* namespace GUCEF */
 
-/*--------------------------------------------------------------------------*/
+/*-------------------------------------------------------------------------*/
+
+#endif /* GUCEF_VFSPLUGIN_AWSS3_CAWSS3GLOBAL_H ? */
+
+/*-------------------------------------------------------------------------//
+//                                                                         //
+//      Info & Changes                                                     //
+//                                                                         //
+//-------------------------------------------------------------------------//
+
+- 04-05-2005 :
+        - Dinand: Initial version.
+
+---------------------------------------------------------------------------*/

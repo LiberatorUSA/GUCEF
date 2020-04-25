@@ -257,6 +257,15 @@ CLogManager::SetMinLogLevel( const Int32 logLevel )
 
 /*-------------------------------------------------------------------------*/
 
+Int32 
+CLogManager::GetMinLogLevel( void ) const
+{GUCEF_TRACE;
+
+    return m_loggers->GetMinLogLevel();
+}
+
+/*-------------------------------------------------------------------------*/
+
 void
 CLogManager::Log( const TLogMsgType logMsgType ,
                   const Int32 logLevel         ,

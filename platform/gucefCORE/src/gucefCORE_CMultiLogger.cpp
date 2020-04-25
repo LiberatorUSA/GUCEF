@@ -183,6 +183,15 @@ CMultiLogger::SetMinLogLevel( const Int32 logLevel )
 
 /*-------------------------------------------------------------------------*/
 
+Int32 
+CMultiLogger::GetMinLogLevel( void ) const
+{GUCEF_TRACE;
+
+    return m_minLogLevel;
+}
+
+/*-------------------------------------------------------------------------*/
+
 void
 CMultiLogger::Log( const TLogMsgType logMsgType ,
                    const Int32 logLevel         ,

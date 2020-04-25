@@ -113,6 +113,7 @@ add_subdirectory( ${CMAKE_CURRENT_SOURCE_DIR}/../../../../plugins/INPUT/inputdri
 add_subdirectory( ${CMAKE_CURRENT_SOURCE_DIR}/../../../../plugins/INPUT/inputdriverNANDROID ${CMAKE_BINARY_DIR}/inputdriverNANDROID )
 add_subdirectory( ${CMAKE_CURRENT_SOURCE_DIR}/../../../../plugins/INPUT/inputdriverOIS ${CMAKE_BINARY_DIR}/inputdriverOIS )
 add_subdirectory( ${CMAKE_CURRENT_SOURCE_DIR}/../../../../plugins/INPUT/inputdriverXWINMSG ${CMAKE_BINARY_DIR}/inputdriverXWINMSG )
+add_subdirectory( ${CMAKE_CURRENT_SOURCE_DIR}/../../../../plugins/SHARED/pluginglueAWSSDK ${CMAKE_BINARY_DIR}/pluginglueAWSSDK )
 add_subdirectory( ${CMAKE_CURRENT_SOURCE_DIR}/../../../../plugins/VFS/vfspluginAWSS3 ${CMAKE_BINARY_DIR}/vfspluginAWSS3 )
 add_subdirectory( ${CMAKE_CURRENT_SOURCE_DIR}/../../../../plugins/VFS/vfspluginDVP ${CMAKE_BINARY_DIR}/vfspluginDVP )
 add_subdirectory( ${CMAKE_CURRENT_SOURCE_DIR}/../../../../plugins/VFS/vfspluginITV ${CMAKE_BINARY_DIR}/vfspluginITV )

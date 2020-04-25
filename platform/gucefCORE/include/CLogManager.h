@@ -104,6 +104,8 @@ class GUCEF_CORE_PUBLIC_CPP CLogManager
 
     void SetMinLogLevel( const Int32 logLevel );
 
+    Int32 GetMinLogLevel( void ) const;
+
     void FlushLogs( void );
 
     void SetUseLoggingThread( bool useLogThread );

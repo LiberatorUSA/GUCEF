@@ -340,14 +340,30 @@ add_dependencies( ${MODULE_NAME} aws-c-common aws-c-event-stream aws-checksums c
 target_link_libraries( ${MODULE_NAME} aws-c-common aws-c-event-stream aws-checksums curl )
 set_property( TARGET ${MODULE_NAME} APPEND_STRING PROPERTY COMPILE_DEFINITIONS "AWS_CORE_EXPORTS=1;USE_IMPORT_EXPORT=1" )
 
+if ( ANDROID )
+  set_property( TARGET ${MODULE_NAME} APPEND_STRING PROPERTY COMPILE_DEFINITIONS "ENABLE_OPENSSL_ENCRYPTION" )
+endif( ANDROID )
+
+if ( LINUX32 )
+  set_property( TARGET ${MODULE_NAME} APPEND_STRING PROPERTY COMPILE_DEFINITIONS "ENABLE_OPENSSL_ENCRYPTION" )
+endif( LINUX32 )
+
+if ( LINUX64 )
+  set_property( TARGET ${MODULE_NAME} APPEND_STRING PROPERTY COMPILE_DEFINITIONS "ENABLE_OPENSSL_ENCRYPTION" )
+endif( LINUX64 )
+
+if ( OSX )
+  set_property( TARGET ${MODULE_NAME} APPEND_STRING PROPERTY COMPILE_DEFINITIONS "ENABLE_COMMONCRYPTO_ENCRYPTION" )
+endif( OSX )
+
 if ( WIN32 )
   target_link_libraries( ${MODULE_NAME} Userenv.lib Version.lib WindowsApp.lib Winhttp.lib Wininet.lib msxml6.lib )
-  set_property( TARGET ${MODULE_NAME} APPEND_STRING PROPERTY COMPILE_DEFINITIONS "PLATFORM_WINDOWS" )
+  set_property( TARGET ${MODULE_NAME} APPEND_STRING PROPERTY COMPILE_DEFINITIONS "ENABLE_BCRYPT_ENCRYPTION;PLATFORM_WINDOWS" )
 endif( WIN32 )
 
 if ( WIN64 )
   target_link_libraries( ${MODULE_NAME} Userenv.lib Version.lib WindowsApp.lib Winhttp.lib Wininet.lib msxml6.lib )
-  set_property( TARGET ${MODULE_NAME} APPEND_STRING PROPERTY COMPILE_DEFINITIONS "PLATFORM_WINDOWS" )
+  set_property( TARGET ${MODULE_NAME} APPEND_STRING PROPERTY COMPILE_DEFINITIONS "ENABLE_BCRYPT_ENCRYPTION;PLATFORM_WINDOWS" )
 endif( WIN64 )
 
 include_directories( ../aws-c-common/include ../aws-c-event-stream/include ../aws-checksums/include ../aws-checksums/include/aws ../aws-checksums/include/aws/checksums ../aws-checksums/include/aws/checksums/private ../curl/include ../curl/include/curl ../curl/lib ../curl/lib/vauth ../curl/lib/vquic ../curl/lib/vssh ../curl/lib/vtls include include/aws include/aws/core/external include/aws/core include/aws/core/auth include/aws/core/client include/aws/core/config include/aws/core/external/cjson include/aws/core/external/tinyxml2 include/aws/core/http include/aws/core/http/curl include/aws/core/http/standard include/aws/core/internal include/aws/core/monitoring include/aws/core/net include/aws/core/platform include/aws/core/platform/refs include/aws/core/utils include/aws/core/utils/base64 include/aws/core/utils/crypto include/aws/core/utils/crypto/bcrypt include/aws/core/utils/crypto/commoncrypto include/aws/core/utils/crypto/openssl include/aws/core/utils/event include/aws/core/utils/json include/aws/core/utils/logging include/aws/core/utils/memory include/aws/core/utils/memory/stl include/aws/core/utils/ratelimiter include/aws/core/utils/stream include/aws/core/utils/threading include/aws/core/utils/xml )
