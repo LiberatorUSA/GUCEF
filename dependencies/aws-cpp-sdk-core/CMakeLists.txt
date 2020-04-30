@@ -261,6 +261,44 @@ if (ANDROID)
   set( PLATFORM_SOURCE_INSTALL "ANDROID" )
   source_group( "Platform Source Files" FILES ${PLATFORM_SOURCE_FILES} )
 
+elseif (LINUX32)
+  set( PLATFORM_SOURCE_FILES 
+    source/net/linux-shared/Net.cpp
+    source/net/linux-shared/SimpleUDP.cpp
+    source/platform/linux-shared/Environment.cpp
+    source/platform/linux-shared/FileSystem.cpp
+    source/platform/linux-shared/OSVersionInfo.cpp
+    source/platform/linux-shared/Security.cpp
+    source/platform/linux-shared/Time.cpp
+    source/utils/crypto/openssl/CryptoImpl.cpp
+  )
+
+  set( PLATFORM_SOURCE_INSTALL "LINUX32" )
+  source_group( "Platform Source Files" FILES ${PLATFORM_SOURCE_FILES} )
+
+elseif (LINUX64)
+  set( PLATFORM_SOURCE_FILES 
+    source/net/linux-shared/Net.cpp
+    source/net/linux-shared/SimpleUDP.cpp
+    source/platform/linux-shared/Environment.cpp
+    source/platform/linux-shared/FileSystem.cpp
+    source/platform/linux-shared/OSVersionInfo.cpp
+    source/platform/linux-shared/Security.cpp
+    source/platform/linux-shared/Time.cpp
+    source/utils/crypto/openssl/CryptoImpl.cpp
+  )
+
+  set( PLATFORM_SOURCE_INSTALL "LINUX64" )
+  source_group( "Platform Source Files" FILES ${PLATFORM_SOURCE_FILES} )
+
+elseif (OSX)
+  set( PLATFORM_SOURCE_FILES 
+    source/utils/crypto/commoncrypto/CryptoImpl.cpp
+  )
+
+  set( PLATFORM_SOURCE_INSTALL "OSX" )
+  source_group( "Platform Source Files" FILES ${PLATFORM_SOURCE_FILES} )
+
 elseif (WIN32)
   set( PLATFORM_HEADER_FILES 
     include/aws/core/http/windows/IXmlHttpRequest2HttpClient.h
@@ -290,6 +328,7 @@ elseif (WIN32)
     source/platform/windows/OSVersionInfo.cpp
     source/platform/windows/Security.cpp
     source/platform/windows/Time.cpp
+    source/utils/crypto/bcrypt/CryptoImpl.cpp
   )
 
   set( PLATFORM_SOURCE_INSTALL "WIN32" )
@@ -324,6 +363,7 @@ elseif (WIN64)
     source/platform/windows/OSVersionInfo.cpp
     source/platform/windows/Security.cpp
     source/platform/windows/Time.cpp
+    source/utils/crypto/bcrypt/CryptoImpl.cpp
   )
 
   set( PLATFORM_SOURCE_INSTALL "WIN64" )

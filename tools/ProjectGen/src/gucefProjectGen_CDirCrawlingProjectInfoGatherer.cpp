@@ -98,6 +98,21 @@ static const CORE::CString AllPlatforms = "all";
 //                                                                         //
 //-------------------------------------------------------------------------*/
 
+//  Forward declarations:
+
+const TDirProcessingInstructions*
+GetProcessingInstructions( const TProjectInfo& projectInfo ,
+                           const CORE::CString& dir        );
+
+
+bool
+IsStringInList( const TStringVector& list       ,
+                bool caseSensitive              ,
+                const CORE::CString& testString ,
+                bool wildcardMatching = false   );
+
+/*---------------------------------------------------------------------------*/
+
 static const TStringSetMap&
 GetSupportedPlatformDirMap( const TProjectInfo& projectInfo )
 {GUCEF_TRACE;
@@ -201,9 +216,46 @@ GetSupportedPlatformDirs( const TProjectInfo& projectInfo )
 /*---------------------------------------------------------------------------*/
 
 bool
-IsDirAPlatformDir( const TProjectInfo& projectInfo , 
-                   const CORE::CString& path       )
+IsDirAPlatformDir( const TProjectInfo& projectInfo  , 
+                   const CORE::CString& path        ,
+                   bool checkProcessingInstructions )
 {GUCEF_TRACE;
+
+    if ( checkProcessingInstructions )
+    {
+        // First check the processing instructions
+
+        CORE::CString instructionPath = path;
+        UInt32 lastPathLenght = 0;
+        CORE::CString prevLastSubDir, lastSubDir;
+        do
+        {
+            lastPathLenght = instructionPath.Length();
+            lastSubDir = CORE::LastSubDir( instructionPath );
+
+            const TDirProcessingInstructions* instructionStorage = GetProcessingInstructions( projectInfo, instructionPath );
+            if ( GUCEF_NULL != instructionStorage )
+            {
+                TStringVectorMap::const_iterator i = instructionStorage->dirIncludeList.begin();
+                while ( i != instructionStorage->dirIncludeList.end() )
+                {
+                    const CORE::CString& platform = (*i).first;
+                    if ( !platform.IsNULLOrEmpty() && platform != AllPlatforms )
+                    {
+                        if ( IsStringInList( (*i).second, true, lastSubDir ) )
+                            return true;
+                        if ( !prevLastSubDir.IsNULLOrEmpty() && IsStringInList( (*i).second, true, prevLastSubDir ) )
+                            return true;
+                    }
+                    ++i;
+                }
+            }
+
+            prevLastSubDir = lastSubDir;
+            instructionPath = CORE::StripLastSubDir( instructionPath );   
+        }
+        while ( lastPathLenght != instructionPath.Length() );
+    }
 
     // A directory is a platform dir not only if the last subdir matches a platform dir name
     // but also if a parent dir is a platform dir, since platform dirs can also have dir hierachies of course
@@ -227,18 +279,50 @@ IsDirAPlatformDir( const TProjectInfo& projectInfo ,
 /*---------------------------------------------------------------------------*/
 
 bool
-IsDirAPlatformDirForPlatform( const TProjectInfo& projectInfo ,
-                              const CORE::CString& path       ,
-                              const CORE::CString& platform   )
+IsDirAPlatformDirForPlatform( const TProjectInfo& projectInfo  ,
+                              const CORE::CString& path        ,
+                              const CORE::CString& platform    ,
+                              bool checkProcessingInstructions )
 {GUCEF_TRACE;
 
+    if ( checkProcessingInstructions )
+    {   
+        // First check the processing instructions
+        // We need to check all segments of the path because the processing instructions could have been defined at a higher level dir
+        CORE::CString instructionPath = path;
+        UInt32 lastPathLenght = 0;
+        CORE::CString prevLastSubDir, lastSubDir;
+        do
+        {
+            lastPathLenght = instructionPath.Length();
+            lastSubDir = CORE::LastSubDir( instructionPath );
+
+            const TDirProcessingInstructions* instructionStorage = GetProcessingInstructions( projectInfo, instructionPath );
+            if ( GUCEF_NULL != instructionStorage )
+            {
+                TStringVectorMap::const_iterator i = instructionStorage->dirIncludeList.find( platform );
+                if ( i != instructionStorage->dirIncludeList.end() )
+                {
+                    if ( IsStringInList( (*i).second, true, lastSubDir ) )
+                        return true;
+                    if ( !prevLastSubDir.IsNULLOrEmpty() && IsStringInList( (*i).second, true, prevLastSubDir ) )
+                        return true;
+                }
+            }
+
+            prevLastSubDir = lastSubDir;
+            instructionPath = CORE::StripLastSubDir( instructionPath );   
+        }
+        while ( lastPathLenght != instructionPath.Length() );
+    }
+
+    // Next check the actual path name against reserved directory names for certain platforms
     const TStringSetMap& platformDirMap = GetSupportedPlatformDirMap( projectInfo );
     TStringSetMap::const_iterator i = platformDirMap.find( platform );
     if ( i != platformDirMap.end() )
     {
         // A directory is a platform dir not only if the last subdir matches a platform dir name
         // but also if a parent dir is a platform dir, since platform dirs can also have dir hierachies of course
-        
         TStringVector searchPathSegs = path.Lowercase().ReplaceChar( '\\', '/' ).ParseElements( '/', false );
         const TStringSet& dirsForPlatform = (*i).second;
         
@@ -326,7 +410,7 @@ static bool
 IsStringInList( const TStringVector& list       ,
                 bool caseSensitive              ,
                 const CORE::CString& testString ,
-                bool wildcardMatching = false   )
+                bool wildcardMatching           )
 {GUCEF_TRACE;
 
     TStringVector::const_iterator i = list.begin();
@@ -1146,7 +1230,8 @@ AreProcessingInstructionsOnDisk( const CORE::CString& dir )
 
 TDirProcessingInstructions*
 GetProcessingInstructions( TProjectInfo& projectInfo ,
-                           const CORE::CString& dir  )
+                           const CORE::CString& dir  ,
+                           bool loadFromDisk         )
 {GUCEF_TRACE;
 
     // See if we have already stored instructions for this directory
@@ -1156,7 +1241,7 @@ GetProcessingInstructions( TProjectInfo& projectInfo ,
         return &( (*i).second );
     }
 
-    if ( AreProcessingInstructionsOnDisk( dir ) )
+    if ( loadFromDisk && AreProcessingInstructionsOnDisk( dir ) )
     {
         GUCEF_LOG( CORE::LOGLEVEL_NORMAL, "Located processing instructions for directory \"" + dir + "\"" );
 
@@ -1207,13 +1292,28 @@ GetProcessingInstructions( TProjectInfo& projectInfo ,
 
 /*---------------------------------------------------------------------------*/
 
+const TDirProcessingInstructions*
+GetProcessingInstructions( const TProjectInfo& projectInfo ,
+                           const CORE::CString& dir        )
+{GUCEF_TRACE;
+
+    TDirProcessingInstructionsMap::const_iterator i = projectInfo.dirProcessingInstructions.find( dir );
+    if ( i != projectInfo.dirProcessingInstructions.end() )
+    {
+        return &( (*i).second );
+    }
+    return GUCEF_NULL;
+}
+
+/*---------------------------------------------------------------------------*/
+
 void
 LoadAllProcessingInstructions( TProjectInfo& projectInfo    ,
                                const CORE::CString& rootDir )
 {GUCEF_TRACE;
 
     // Load instructions for the root dir itself
-    TDirProcessingInstructions* dirInstructions = GetProcessingInstructions( projectInfo, rootDir );
+    TDirProcessingInstructions* dirInstructions = GetProcessingInstructions( projectInfo, rootDir, true );
 
     // Recurse through sub-dirs to find more instructions
     CORE::SDI_Data* sdiData = CORE::DI_First_Dir_Entry( rootDir.C_String() );
@@ -1277,7 +1377,7 @@ ExcludeOrIncludeDirEntriesAsSpecifiedForDir( TProjectInfo& projectInfo     ,
 {GUCEF_TRACE;
 
     // Fetch processing instructions from directory
-    TDirProcessingInstructions* instructionStorage = GetProcessingInstructions( projectInfo, dir );
+    TDirProcessingInstructions* instructionStorage = GetProcessingInstructions( projectInfo, dir, true );
 
     // Perform processing of global dir excludes
     TStringVector::iterator n = projectInfo.globalDirExcludeList.begin();
@@ -1308,7 +1408,7 @@ ExcludeFileEntriesAsSpecifiedForDir( TProjectInfo& projectInfo     ,
 {GUCEF_TRACE;
 
     // Fetch processing instructions from directory
-    TDirProcessingInstructions* instructionStorage = GetProcessingInstructions( projectInfo, dir );
+    TDirProcessingInstructions* instructionStorage = GetProcessingInstructions( projectInfo, dir, true );
 
     if ( NULL != instructionStorage )
     {
@@ -1330,7 +1430,7 @@ IncludeFileEntriesAsSpecifiedForDir( TProjectInfo& projectInfo        ,
 {GUCEF_TRACE;
 
     // Fetch processing instructions from directory
-    TDirProcessingInstructions* instructionStorage = GetProcessingInstructions( projectInfo, dir );
+    TDirProcessingInstructions* instructionStorage = GetProcessingInstructions( projectInfo, dir, true );
 
     if ( NULL != instructionStorage )
     {
@@ -1406,13 +1506,15 @@ PopulateFileListFromDir( const TProjectInfo& projectInfo ,
     if ( platform.IsNULLOrEmpty() || platform == AllPlatforms )
     {
         // current dir cannot be a platform dir
-        if ( IsDirAPlatformDir( projectInfo, path ) ) return;
+        if ( IsDirAPlatformDir( projectInfo, path, true ) ) 
+            return;
     }
     else    
     {
         // current dir must be a dir which is considered to be a platform dir
         // for the platform specified
-        if ( !IsDirAPlatformDirForPlatform( projectInfo, path, platform ) ) return;
+        if ( !IsDirAPlatformDirForPlatform( projectInfo, path, platform, true ) ) 
+            return;
     }
     
     CORE::SDI_Data* sdiData = CORE::DI_First_Dir_Entry( path.C_String() );
