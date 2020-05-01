@@ -176,4 +176,10 @@ class ProcessMetrics : public CORE::CObservingNotifier
     bool m_enableRestApi;
     TProcessIdMap m_exeProcIdMap;
     TStringSet m_exeProcsToWatch;
+
+    bool m_gatherProcPageFaultCountInBytes;
+    bool m_gatherProcPageFileUsageInBytes;
+    bool m_gatherProcPeakPageFileUsageInBytes;
+    bool m_gatherProcPeakWorkingSetSizeInBytes;
+    bool m_gatherProcWorkingSetSizeInBytes;
 };

@@ -142,6 +142,11 @@ ProcessMetrics::ProcessMetrics( void )
     , m_enableRestApi( true )
     , m_exeProcIdMap()
     , m_exeProcsToWatch()
+    , m_gatherProcPageFaultCountInBytes( true )
+    , m_gatherProcPageFileUsageInBytes( true )
+    , m_gatherProcPeakPageFileUsageInBytes( true )
+    , m_gatherProcPeakWorkingSetSizeInBytes( true )
+    , m_gatherProcWorkingSetSizeInBytes( true )
 {GUCEF_TRACE;
 
     RegisterEventHandlers();    
@@ -238,11 +243,17 @@ ProcessMetrics::OnMetricsTimerCycle( CORE::CNotifier* notifier    ,
             if ( OSWRAP_TRUE == CORE::GetProcessMemmoryUsage( (*m).second, &memUseInfo ) )
             {
                 CORE::CString metricPrefix = "ProcessMetrics." + (*m).first;
-                GUCEF_METRIC_GAUGE( metricPrefix + ".MemUse.PageFaultCount", memUseInfo.pageFaultCountInBytes, 1.0f );
-                GUCEF_METRIC_GAUGE( metricPrefix + ".MemUse.PageFileUsage", memUseInfo.pageFileUsageInBytes, 1.0f );
-                GUCEF_METRIC_GAUGE( metricPrefix + ".MemUse.PeakPageFileUsage", memUseInfo.peakPageFileUsageInBytes, 1.0f );
-                GUCEF_METRIC_GAUGE( metricPrefix + ".MemUse.PeakWorkingSetSize", memUseInfo.peakWorkingSetSizeInBytes, 1.0f );
-                GUCEF_METRIC_GAUGE( metricPrefix + ".MemUse.WorkingSetSize", memUseInfo.workingSetSizeInBytes, 1.0f );
+
+                if ( m_gatherProcPageFaultCountInBytes )
+                    GUCEF_METRIC_GAUGE( metricPrefix + ".MemUse.PageFaultCountInBytes", memUseInfo.pageFaultCountInBytes, 1.0f );
+                if ( m_gatherProcPageFileUsageInBytes )
+                    GUCEF_METRIC_GAUGE( metricPrefix + ".MemUse.PageFileUsageInBytes", memUseInfo.pageFileUsageInBytes, 1.0f );
+                if ( m_gatherProcPeakPageFileUsageInBytes )
+                    GUCEF_METRIC_GAUGE( metricPrefix + ".MemUse.PeakPageFileUsageInBytes", memUseInfo.peakPageFileUsageInBytes, 1.0f );
+                if ( m_gatherProcPeakWorkingSetSizeInBytes )
+                    GUCEF_METRIC_GAUGE( metricPrefix + ".MemUse.PeakWorkingSetSizeInBytes", memUseInfo.peakWorkingSetSizeInBytes, 1.0f );
+                if ( m_gatherProcWorkingSetSizeInBytes )
+                    GUCEF_METRIC_GAUGE( metricPrefix + ".MemUse.WorkingSetSizeInBytes", memUseInfo.workingSetSizeInBytes, 1.0f );
             }
             else
             {
@@ -304,6 +315,12 @@ ProcessMetrics::LoadConfig( const CORE::CValueList& appConfig   ,
     m_gatherCpuStats = CORE::StringToBool( appConfig.GetValueAlways( "GatherProcCPUStats", "true" ) );
     m_enableRestApi = CORE::StringToBool( appConfig.GetValueAlways( "EnableRestApi", "true" ) );
     m_metricsTimer.SetInterval( CORE::StringToUInt32( appConfig.GetValueAlways( "MetricsGatheringIntervalInMs", "1000" ) ) );
+    
+    m_gatherProcPageFaultCountInBytes = CORE::StringToBool( appConfig.GetValueAlways( "GatherProcPageFaultCountInBytes", "true" ) );
+    m_gatherProcPageFileUsageInBytes = CORE::StringToBool( appConfig.GetValueAlways( "GatherProcPageFileUsageInBytes", "true" ) );
+    m_gatherProcPeakPageFileUsageInBytes = CORE::StringToBool( appConfig.GetValueAlways( "GatherProcPeakPageFileUsageInBytes", "true" ) );
+    m_gatherProcPeakWorkingSetSizeInBytes = CORE::StringToBool( appConfig.GetValueAlways( "GatherProcPeakWorkingSetSizeInBytes", "true" ) );
+    m_gatherProcWorkingSetSizeInBytes = CORE::StringToBool( appConfig.GetValueAlways( "GatherProcWorkingSetSizeInBytes", "true" ) );
 
     TStringVector exeProcsToWatch = appConfig.GetValueAlways( "ExeProcsToWatch" ).ParseElements( ';', false );
     TStringVector::iterator i = exeProcsToWatch.begin();

@@ -769,20 +769,24 @@ GetProcessMemmoryUsage( TProcessId* pid                     ,
     
     #if ( GUCEF_PLATFORM == GUCEF_PLATFORM_MSWIN )
 
-    HANDLE hProcess = OpenProcess(  PROCESS_QUERY_INFORMATION |
-                                    PROCESS_VM_READ,
-                                    FALSE, pid->pid );
+    HANDLE hProcess = ::OpenProcess(  PROCESS_QUERY_INFORMATION | PROCESS_VM_READ,
+                                      FALSE, 
+                                      pid->pid );
     if ( GUCEF_NULL == hProcess )
         return OSWRAP_FALSE;
 
     PROCESS_MEMORY_COUNTERS pmc;
     if ( ::GetProcessMemoryInfo( hProcess, &pmc, sizeof(pmc) ) )
     {
-        memUseInfo->workingSetSizeInBytes  = (TProcessMemoryUsageInfo::TProcMemStatInt) pmc.WorkingSetSize;
-        memUseInfo->peakWorkingSetSizeInBytes  = (TProcessMemoryUsageInfo::TProcMemStatInt) pmc.PeakWorkingSetSize;
         memUseInfo->pageFaultCountInBytes = (TProcessMemoryUsageInfo::TProcMemStatInt) pmc.PageFaultCount;
         memUseInfo->pageFileUsageInBytes = (TProcessMemoryUsageInfo::TProcMemStatInt) pmc.PagefileUsage;
         memUseInfo->peakPageFileUsageInBytes = (TProcessMemoryUsageInfo::TProcMemStatInt) pmc.PeakPagefileUsage;
+        memUseInfo->peakWorkingSetSizeInBytes  = (TProcessMemoryUsageInfo::TProcMemStatInt) pmc.PeakWorkingSetSize;
+        //memUseInfo->quotaNonPagedPoolUsageInBytes  = (TProcessMemoryUsageInfo::TProcMemStatInt) pmc.QuotaNonPagedPoolUsage;
+        //memUseInfo->quotaPagedPoolUsageInBytes  = (TProcessMemoryUsageInfo::TProcMemStatInt) pmc.QuotaPagedPoolUsage;
+        //memUseInfo->quotaPeakNonPagedPoolUsageInBytes  = (TProcessMemoryUsageInfo::TProcMemStatInt) pmc.QuotaPeakNonPagedPoolUsage;
+        //memUseInfo->quotaPeakPagedPoolUsageInBytes  = (TProcessMemoryUsageInfo::TProcMemStatInt) pmc.QuotaPeakPagedPoolUsage;
+        memUseInfo->workingSetSizeInBytes  = (TProcessMemoryUsageInfo::TProcMemStatInt) pmc.WorkingSetSize;
 
         CloseHandle( hProcess );
         return OSWRAP_TRUE;
