@@ -152,6 +152,8 @@ class ProcessMetrics : public CORE::CObservingNotifier
 
     void RegisterEventHandlers( void );
 
+    void RefreshPIDs( void );
+
     void
     OnMetricsTimerCycle( CORE::CNotifier* notifier    ,
                          const CORE::CEvent& eventId  ,
@@ -160,10 +162,18 @@ class ProcessMetrics : public CORE::CObservingNotifier
     private:
 
     typedef CORE::CTEventHandlerFunctor< ProcessMetrics > TEventCallback;
-    
+    typedef std::map< CORE::CString, CORE::TProcessId* > TProcessIdMap;
+    typedef std::set< CORE::CString > TStringSet;
+    typedef std::vector< CORE::CString > TStringVector;
+
     COM::CHTTPServer m_httpServer;
     COM::CDefaultHTTPServerRouter m_httpRouter;
     CORE::CValueList m_appConfig;
     CORE::CDataNode m_globalConfig;    
     CORE::CTimer m_metricsTimer;
+    bool m_gatherMemStats;
+    bool m_gatherCpuStats;
+    bool m_enableRestApi;
+    TProcessIdMap m_exeProcIdMap;
+    TStringSet m_exeProcsToWatch;
 };

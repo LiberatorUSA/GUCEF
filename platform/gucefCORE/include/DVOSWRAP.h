@@ -249,12 +249,19 @@ GetLogicalCPUCount( void );
 
 /*--------------------------------------------------------------------------*/
 
+/**
+ *  Obtains a list of Process IDs for all the processes running on the system as visible to the
+ *  account under which the software is executing
+ */
 GUCEF_CORE_PUBLIC_C UInt32
 GetProcessList( TProcessId** processList , 
                 UInt32* processCount     );
 
 /*--------------------------------------------------------------------------*/
 
+/**
+ *  To be used with GetProcessList() to iterate the resulting processList
+ */
 GUCEF_CORE_PUBLIC_C TProcessId*
 GetProcessIdAtIndex( TProcessId* processList ,
                      UInt32 index            );
@@ -263,6 +270,20 @@ GetProcessIdAtIndex( TProcessId* processList ,
 
 GUCEF_CORE_PUBLIC_C void
 FreeProcessList( TProcessId* processList );
+
+/*--------------------------------------------------------------------------*/
+
+/**
+ *  Copies a PID structure.
+ *  This allocated memory that needs to be freed with FreeProcessId()
+ */
+GUCEF_CORE_PUBLIC_C TProcessId*
+CopyProcessId( TProcessId* pid );
+
+/*--------------------------------------------------------------------------*/
+
+GUCEF_CORE_PUBLIC_C void
+FreeProcessId( TProcessId* processList );
 
 /*--------------------------------------------------------------------------*/
 

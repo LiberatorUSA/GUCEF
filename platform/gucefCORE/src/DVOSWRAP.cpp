@@ -731,6 +731,29 @@ GetProcessIdAtIndex( TProcessId* processList ,
 
 /*--------------------------------------------------------------------------*/
 
+TProcessId*
+CopyProcessId( TProcessId* pid )
+{
+    if ( GUCEF_NULL != pid )
+    {
+        TProcessId* pidCopy = (TProcessId*) malloc( sizeof(TProcessId) );
+        memcpy( pidCopy, pid, sizeof(TProcessId) );
+        return pidCopy;
+    }
+    return GUCEF_NULL;
+}
+
+/*--------------------------------------------------------------------------*/
+
+GUCEF_CORE_PUBLIC_C void
+FreeProcessId( TProcessId* pid )
+{
+    if ( GUCEF_NULL != pid )
+        free( pid );
+}
+
+/*--------------------------------------------------------------------------*/
+
 UInt32
 GetProcessMemmoryUsage( TProcessId* pid                     , 
                         TProcessMemoryUsageInfo* memUseInfo )

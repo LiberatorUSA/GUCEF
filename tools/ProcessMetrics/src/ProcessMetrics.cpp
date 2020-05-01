@@ -137,6 +137,11 @@ ProcessMetrics::ProcessMetrics( void )
     , m_appConfig()
     , m_globalConfig()
     , m_metricsTimer()
+    , m_gatherMemStats( true )
+    , m_gatherCpuStats( true )
+    , m_enableRestApi( true )
+    , m_exeProcIdMap()
+    , m_exeProcsToWatch()
 {GUCEF_TRACE;
 
     RegisterEventHandlers();    
@@ -165,11 +170,14 @@ ProcessMetrics::RegisterEventHandlers( void )
 /*-------------------------------------------------------------------------*/
 
 void
-ProcessMetrics::OnMetricsTimerCycle( CORE::CNotifier* notifier    ,
-                                     const CORE::CEvent& eventId  ,
-                                     CORE::CICloneable* eventData )
+ProcessMetrics::RefreshPIDs( void )
 {GUCEF_TRACE;
 
+    if ( m_exeProcsToWatch.size() == m_exeProcIdMap.size() )
+        return;
+    
+    GUCEF_LOG( CORE::LOGLEVEL_NORMAL, "ProcessMetrics: Refresing PID administration" );
+    
     CORE::UInt32 procIdCount = 0;
     CORE::TProcessId* procIds = GUCEF_NULL;
     CORE::UInt32 retVal = CORE::GetProcessList( &procIds, &procIdCount );
@@ -186,23 +194,23 @@ ProcessMetrics::OnMetricsTimerCycle( CORE::CNotifier* notifier    ,
                 CORE::Int32 dotIndex = exeName.HasChar( '.', false );
                 if ( dotIndex >= 0 )
                     exeName = exeName.SubstrToIndex( (CORE::UInt32) dotIndex, true ); 
-
-                if ( exeName == "ProcessMetrics" )
-                {
-                    int g=0;
-                }
                 
-                //exeName.WildcardEquals(
-                
-                CORE::TProcessMemoryUsageInfo memUseInfo;
-                if ( OSWRAP_TRUE == CORE::GetProcessMemmoryUsage( pid, &memUseInfo ) )
+                TStringSet::iterator n = m_exeProcsToWatch.find( exeName );
+                if ( n != m_exeProcsToWatch.end() )
                 {
-                    CORE::CString metricPrefix = "ProcessMetrics." + exeName;
-                    GUCEF_METRIC_GAUGE( metricPrefix + ".MemUse.PageFaultCount", memUseInfo.pageFaultCountInBytes, 1.0f );
-                    GUCEF_METRIC_GAUGE( metricPrefix + ".MemUse.PageFileUsage", memUseInfo.pageFileUsageInBytes, 1.0f );
-                    GUCEF_METRIC_GAUGE( metricPrefix + ".MemUse.PeakPageFileUsage", memUseInfo.peakPageFileUsageInBytes, 1.0f );
-                    GUCEF_METRIC_GAUGE( metricPrefix + ".MemUse.PeakWorkingSetSize", memUseInfo.peakWorkingSetSizeInBytes, 1.0f );
-                    GUCEF_METRIC_GAUGE( metricPrefix + ".MemUse.WorkingSetSize", memUseInfo.workingSetSizeInBytes, 1.0f );
+                    TProcessIdMap::iterator m = m_exeProcIdMap.find( exeName );
+                    if ( m != m_exeProcIdMap.end() )
+                    {
+                        CORE::TProcessId* prevPid = (*m).second;
+                        (*m).second = CORE::CopyProcessId( pid ); 
+                        CORE::FreeProcessId( prevPid );
+                        GUCEF_LOG( CORE::LOGLEVEL_NORMAL, "ProcessMetrics: Refreshed pre-existing PID for \"" + exeName + "\"" );
+                    }
+                    else
+                    {
+                        m_exeProcIdMap[ exeName ] = CORE::CopyProcessId( pid );
+                        GUCEF_LOG( CORE::LOGLEVEL_NORMAL, "ProcessMetrics: Found PID for \"" + exeName + "\"" );
+                    }
                 }
             }
         }        
@@ -212,21 +220,77 @@ ProcessMetrics::OnMetricsTimerCycle( CORE::CNotifier* notifier    ,
 
 /*-------------------------------------------------------------------------*/
 
+void
+ProcessMetrics::OnMetricsTimerCycle( CORE::CNotifier* notifier    ,
+                                     const CORE::CEvent& eventId  ,
+                                     CORE::CICloneable* eventData )
+{GUCEF_TRACE;
+
+    RefreshPIDs();
+            
+    if ( m_gatherMemStats )
+    {
+        TStringSet failedProcs;
+        TProcessIdMap::iterator m = m_exeProcIdMap.begin();
+        while ( m != m_exeProcIdMap.end() )
+        {
+            CORE::TProcessMemoryUsageInfo memUseInfo;
+            if ( OSWRAP_TRUE == CORE::GetProcessMemmoryUsage( (*m).second, &memUseInfo ) )
+            {
+                CORE::CString metricPrefix = "ProcessMetrics." + (*m).first;
+                GUCEF_METRIC_GAUGE( metricPrefix + ".MemUse.PageFaultCount", memUseInfo.pageFaultCountInBytes, 1.0f );
+                GUCEF_METRIC_GAUGE( metricPrefix + ".MemUse.PageFileUsage", memUseInfo.pageFileUsageInBytes, 1.0f );
+                GUCEF_METRIC_GAUGE( metricPrefix + ".MemUse.PeakPageFileUsage", memUseInfo.peakPageFileUsageInBytes, 1.0f );
+                GUCEF_METRIC_GAUGE( metricPrefix + ".MemUse.PeakWorkingSetSize", memUseInfo.peakWorkingSetSizeInBytes, 1.0f );
+                GUCEF_METRIC_GAUGE( metricPrefix + ".MemUse.WorkingSetSize", memUseInfo.workingSetSizeInBytes, 1.0f );
+            }
+            else
+            {
+                failedProcs.insert( (*m).first );
+                GUCEF_WARNING_LOG( CORE::LOGLEVEL_NORMAL, "ProcessMetrics: Failed to obtain memory stats for \"" + (*m).first + "\"" );
+            }
+            ++m;
+        }
+
+        TStringSet::iterator i = failedProcs.begin();
+        while ( i != failedProcs.end() )
+        {
+            m = m_exeProcIdMap.find( (*i) );
+            CORE::TProcessId* pid = (*m).second; 
+            CORE::FreeProcessId( pid );
+            m_exeProcIdMap.erase( m );
+
+            GUCEF_DEBUG_LOG( CORE::LOGLEVEL_NORMAL, "ProcessMetrics: Erased PID for \"" + (*i) + "\"" );
+            ++i;
+        }
+    }
+}
+
+/*-------------------------------------------------------------------------*/
+
 bool
 ProcessMetrics::Start( void )
 {GUCEF_TRACE;
 
-    m_metricsTimer.SetInterval( 1000 );
     m_metricsTimer.SetEnabled( true );
 
-    if ( m_httpServer.Listen() )
+    if ( m_enableRestApi )
     {
-        GUCEF_LOG( CORE::LOGLEVEL_IMPORTANT, "ProcessMetrics: Opened REST API on port " + CORE::UInt16ToString( m_httpServer.GetPort() ) );
+        if ( m_httpServer.Listen() )
+        {
+            GUCEF_LOG( CORE::LOGLEVEL_IMPORTANT, "ProcessMetrics: Opened REST API on port " + CORE::UInt16ToString( m_httpServer.GetPort() ) );
+            GUCEF_LOG( CORE::LOGLEVEL_IMPORTANT, "ProcessMetrics: Startup completed successfully" );
+            return true;
+        }
+
+        GUCEF_ERROR_LOG( CORE::LOGLEVEL_IMPORTANT, "ProcessMetrics: Failed to open REST API on port " + CORE::UInt16ToString( m_httpServer.GetPort() ) );
+        return false;
+    }
+    else
+    {
+        GUCEF_LOG( CORE::LOGLEVEL_IMPORTANT, "ProcessMetrics: Startup completed successfully" );
         return true;
     }
-
-    GUCEF_ERROR_LOG( CORE::LOGLEVEL_IMPORTANT, "ProcessMetrics: Failed to open REST API on port " + CORE::UInt16ToString( m_httpServer.GetPort() ) );
-    return false;
 }
 
 /*-------------------------------------------------------------------------*/
@@ -236,14 +300,30 @@ ProcessMetrics::LoadConfig( const CORE::CValueList& appConfig   ,
                             const CORE::CDataNode& globalConfig )
 {GUCEF_TRACE;
         
-    m_httpServer.SetPort( CORE::StringToUInt16( CORE::ResolveVars( appConfig.GetValueAlways( "RestApiPort", "10000" ) ) ) );
+    m_gatherMemStats = CORE::StringToBool( appConfig.GetValueAlways( "GatherProcMemStats", "true" ) );
+    m_gatherCpuStats = CORE::StringToBool( appConfig.GetValueAlways( "GatherProcCPUStats", "true" ) );
+    m_enableRestApi = CORE::StringToBool( appConfig.GetValueAlways( "EnableRestApi", "true" ) );
+    m_metricsTimer.SetInterval( CORE::StringToUInt32( appConfig.GetValueAlways( "MetricsGatheringIntervalInMs", "1000" ) ) );
 
-    m_httpRouter.SetResourceMapping( "/info", RestApiProcessMetricsInfoResource::THTTPServerResourcePtr( new RestApiProcessMetricsInfoResource( this ) )  );
-    m_httpRouter.SetResourceMapping( "/config/appargs", RestApiProcessMetricsInfoResource::THTTPServerResourcePtr( new RestApiProcessMetricsConfigResource( this, true ) )  );
-    m_httpRouter.SetResourceMapping( "/config", RestApiProcessMetricsInfoResource::THTTPServerResourcePtr( new RestApiProcessMetricsConfigResource( this, false ) )  );
-    m_httpRouter.SetResourceMapping(  appConfig.GetValueAlways( "RestBasicHealthUri", "/health/basic" ), RestApiProcessMetricsInfoResource::THTTPServerResourcePtr( new COM::CDummyHTTPServerResource() )  );
+    TStringVector exeProcsToWatch = appConfig.GetValueAlways( "ExeProcsToWatch" ).ParseElements( ';', false );
+    TStringVector::iterator i = exeProcsToWatch.begin();
+    while ( i != exeProcsToWatch.end() )
+    {
+        m_exeProcsToWatch.insert( (*i) );
+        ++i;
+    }
+
+    if ( m_enableRestApi )
+    {
+        m_httpServer.SetPort( CORE::StringToUInt16( CORE::ResolveVars( appConfig.GetValueAlways( "RestApiPort", "10000" ) ) ) );
+
+        m_httpRouter.SetResourceMapping( "/info", RestApiProcessMetricsInfoResource::THTTPServerResourcePtr( new RestApiProcessMetricsInfoResource( this ) )  );
+        m_httpRouter.SetResourceMapping( "/config/appargs", RestApiProcessMetricsInfoResource::THTTPServerResourcePtr( new RestApiProcessMetricsConfigResource( this, true ) )  );
+        m_httpRouter.SetResourceMapping( "/config", RestApiProcessMetricsInfoResource::THTTPServerResourcePtr( new RestApiProcessMetricsConfigResource( this, false ) )  );
+        m_httpRouter.SetResourceMapping(  appConfig.GetValueAlways( "RestBasicHealthUri", "/health/basic" ), RestApiProcessMetricsInfoResource::THTTPServerResourcePtr( new COM::CDummyHTTPServerResource() )  );
     
-    m_httpServer.GetRouterController()->AddRouterMapping( &m_httpRouter, "", "" );
+        m_httpServer.GetRouterController()->AddRouterMapping( &m_httpRouter, "", "" );
+    }
 
     m_appConfig = appConfig;
     m_globalConfig.Copy( globalConfig );
