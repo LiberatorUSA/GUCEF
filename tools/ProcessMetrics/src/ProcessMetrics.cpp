@@ -254,15 +254,15 @@ ProcessMetrics::OnMetricsTimerCycle( CORE::CNotifier* notifier    ,
                 CORE::CString metricPrefix = "ProcessMetrics." + (*m).first;
 
                 if ( m_gatherProcPageFaultCountInBytes )
-                    GUCEF_METRIC_GAUGE( metricPrefix + ".MemUse.PageFaultCountInBytes", memUseInfo.pageFaultCountInBytes, 1.0f );
+                    GUCEF_METRIC_TIMING( metricPrefix + ".MemUse.PageFaultCountInBytes", memUseInfo.pageFaultCountInBytes, 1.0f );
                 if ( m_gatherProcPageFileUsageInBytes )
-                    GUCEF_METRIC_GAUGE( metricPrefix + ".MemUse.PageFileUsageInBytes", memUseInfo.pageFileUsageInBytes, 1.0f );
+                    GUCEF_METRIC_TIMING( metricPrefix + ".MemUse.PageFileUsageInBytes", memUseInfo.pageFileUsageInBytes, 1.0f );
                 if ( m_gatherProcPeakPageFileUsageInBytes )
-                    GUCEF_METRIC_GAUGE( metricPrefix + ".MemUse.PeakPageFileUsageInBytes", memUseInfo.peakPageFileUsageInBytes, 1.0f );
+                    GUCEF_METRIC_TIMING( metricPrefix + ".MemUse.PeakPageFileUsageInBytes", memUseInfo.peakPageFileUsageInBytes, 1.0f );
                 if ( m_gatherProcPeakWorkingSetSizeInBytes )
-                    GUCEF_METRIC_GAUGE( metricPrefix + ".MemUse.PeakWorkingSetSizeInBytes", memUseInfo.peakWorkingSetSizeInBytes, 1.0f );
+                    GUCEF_METRIC_TIMING( metricPrefix + ".MemUse.PeakWorkingSetSizeInBytes", memUseInfo.peakWorkingSetSizeInBytes, 1.0f );
                 if ( m_gatherProcWorkingSetSizeInBytes )
-                    GUCEF_METRIC_GAUGE( metricPrefix + ".MemUse.WorkingSetSizeInBytes", memUseInfo.workingSetSizeInBytes, 1.0f );
+                    GUCEF_METRIC_TIMING( metricPrefix + ".MemUse.WorkingSetSizeInBytes", memUseInfo.workingSetSizeInBytes, 1.0f );
             }
             else
             {
@@ -291,21 +291,21 @@ ProcessMetrics::OnMetricsTimerCycle( CORE::CNotifier* notifier    ,
         if ( OSWRAP_TRUE == CORE::GetGlobalMemoryUsage( &globMemInfo ) )
         {
             if ( m_gatherGlobalAvailablePageFileSizeInBytes )
-                GUCEF_METRIC_GAUGE( "ProcessMetrics.MemUse.AvailablePageFileSizeInBytes", globMemInfo.availablePageFileSizeInBytes, 1.0f );
+                GUCEF_METRIC_TIMING( "ProcessMetrics.MemUse.AvailablePageFileSizeInBytes", globMemInfo.availablePageFileSizeInBytes, 1.0f );
             if ( m_gatherGlobalPageFileUsageInBytes )
-                GUCEF_METRIC_GAUGE( "ProcessMetrics.MemUse.AvailablePhysicalMemoryInBytes", globMemInfo.availablePhysicalMemoryInBytes, 1.0f );
+                GUCEF_METRIC_TIMING( "ProcessMetrics.MemUse.AvailablePhysicalMemoryInBytes", globMemInfo.availablePhysicalMemoryInBytes, 1.0f );
             if ( m_gatherGlobalAvailableVirtualMemoryInBytes )
-                GUCEF_METRIC_GAUGE( "ProcessMetrics.MemUse.AvailableVirtualMemoryInBytes", globMemInfo.availableVirtualMemoryInBytes, 1.0f );
+                GUCEF_METRIC_TIMING( "ProcessMetrics.MemUse.AvailableVirtualMemoryInBytes", globMemInfo.availableVirtualMemoryInBytes, 1.0f );
             if ( m_gatherGlobalAvailExtendedVirtualMemoryInBytes )
-                GUCEF_METRIC_GAUGE( "ProcessMetrics.MemUse.AvailExtendedVirtualMemoryInBytes", globMemInfo.availExtendedVirtualMemoryInBytes, 1.0f );
+                GUCEF_METRIC_TIMING( "ProcessMetrics.MemUse.AvailExtendedVirtualMemoryInBytes", globMemInfo.availExtendedVirtualMemoryInBytes, 1.0f );
             if ( m_gatherGlobalMemoryLoadPercentage )
-                GUCEF_METRIC_GAUGE( "ProcessMetrics.MemUse.MemoryLoadPercentage", (CORE::UInt64) globMemInfo.memoryLoadPercentage, 1.0f );
+                GUCEF_METRIC_TIMING( "ProcessMetrics.MemUse.MemoryLoadPercentage", (CORE::UInt64) globMemInfo.memoryLoadPercentage, 1.0f );
             if ( m_gatherGlobalTotalPageFileSizeInBytes )
-                GUCEF_METRIC_GAUGE( "ProcessMetrics.MemUse.TotalPageFileSizeInBytes", globMemInfo.totalPageFileSizeInBytes, 1.0f );
+                GUCEF_METRIC_TIMING( "ProcessMetrics.MemUse.TotalPageFileSizeInBytes", globMemInfo.totalPageFileSizeInBytes, 1.0f );
             if ( m_gatherGlobalTotalPhysicalMemoryInBytes )
                 GUCEF_METRIC_GAUGE( "ProcessMetrics.MemUse.TotalPhysicalMemoryInBytes", globMemInfo.totalPhysicalMemoryInBytes, 1.0f );
             if ( m_gatherGlobalTotalVirtualMemoryInBytes )
-                GUCEF_METRIC_GAUGE( "ProcessMetrics.MemUse.TotalVirtualMemoryInBytes", globMemInfo.totalVirtualMemoryInBytes, 1.0f );
+                GUCEF_METRIC_TIMING( "ProcessMetrics.MemUse.TotalVirtualMemoryInBytes", globMemInfo.totalVirtualMemoryInBytes, 1.0f );
         }
         else
         {

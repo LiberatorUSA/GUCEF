@@ -74,7 +74,7 @@
 /*-------------------------------------------------------------------------*/
 
 #undef GUCEF_METRIC_TIMING
-#define GUCEF_METRIC_TIMING( logLevel, ms, logMessage ) ::GUCEF::CORE::CCoreGlobal::Instance()->GetMetricsClientManager().Timing( key, ms, frequency );
+#define GUCEF_METRIC_TIMING( key, ms, frequency ) ::GUCEF::CORE::CCoreGlobal::Instance()->GetMetricsClientManager().Timing( key, ms, frequency );
 
 /*-------------------------------------------------------------------------*/
 
