@@ -107,9 +107,9 @@ typedef struct SProcessId TProcessId;
 struct SProcessMemoryUsageInfo
 {
     #ifdef GUCEF_32BIT
-    typedef Int32 TProcMemStatInt;
+    typedef UInt32 TProcMemStatInt;
     #else
-    typedef Int64 TProcMemStatInt;
+    typedef UInt64 TProcMemStatInt;
     #endif
 
     TProcMemStatInt workingSetSizeInBytes;
@@ -119,6 +119,27 @@ struct SProcessMemoryUsageInfo
     TProcMemStatInt peakPageFileUsageInBytes;
 };
 typedef struct SProcessMemoryUsageInfo TProcessMemoryUsageInfo;
+
+/*-------------------------------------------------------------------------*/
+
+/**
+ *  Structure holding various bits of memory usage related information
+ *  If for the current O/S a field cannot be determined it will be set to -1
+ */
+struct SGlobalMemoryUsageInfo
+{
+    typedef UInt64 TMemStatInt;
+
+    UInt8 memoryLoadPercentage;
+    TMemStatInt totalPhysicalMemoryInBytes;
+    TMemStatInt availablePhysicalMemoryInBytes;
+    TMemStatInt totalPageFileSizeInBytes;
+    TMemStatInt availablePageFileSizeInBytes;
+    TMemStatInt totalVirtualMemoryInBytes;
+    TMemStatInt availableVirtualMemoryInBytes;
+    TMemStatInt availExtendedVirtualMemoryInBytes;
+};
+typedef struct SGlobalMemoryUsageInfo TGlobalMemoryUsageInfo;
 
 /*-------------------------------------------------------------------------//
 //                                                                         //
@@ -298,6 +319,12 @@ GetExeNameForProcessId( TProcessId* pid        ,
                         char* outNameBuffer    , 
                         UInt32 nameBufferSize  ,
                         UInt32* usedBufferSize );
+
+
+/*--------------------------------------------------------------------------*/
+
+GUCEF_CORE_PUBLIC_C UInt32
+GetGlobalMemoryUsage( TGlobalMemoryUsageInfo* memUseInfo );
 
 /*--------------------------------------------------------------------------*/
 

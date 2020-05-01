@@ -147,6 +147,15 @@ ProcessMetrics::ProcessMetrics( void )
     , m_gatherProcPeakPageFileUsageInBytes( true )
     , m_gatherProcPeakWorkingSetSizeInBytes( true )
     , m_gatherProcWorkingSetSizeInBytes( true )
+    , m_gatherGlobMemStats( true )
+    , m_gatherGlobalAvailablePageFileSizeInBytes( true )
+    , m_gatherGlobalPageFileUsageInBytes( true )
+    , m_gatherGlobalAvailableVirtualMemoryInBytes( true )
+    , m_gatherGlobalAvailExtendedVirtualMemoryInBytes( true )
+    , m_gatherGlobalMemoryLoadPercentage( true )
+    , m_gatherGlobalTotalPageFileSizeInBytes( true )
+    , m_gatherGlobalTotalPhysicalMemoryInBytes( false )
+    , m_gatherGlobalTotalVirtualMemoryInBytes( true )
 {GUCEF_TRACE;
 
     RegisterEventHandlers();    
@@ -275,6 +284,34 @@ ProcessMetrics::OnMetricsTimerCycle( CORE::CNotifier* notifier    ,
             ++i;
         }
     }
+
+    if ( m_gatherGlobMemStats )
+    {
+        CORE::TGlobalMemoryUsageInfo globMemInfo;
+        if ( OSWRAP_TRUE == CORE::GetGlobalMemoryUsage( &globMemInfo ) )
+        {
+            if ( m_gatherGlobalAvailablePageFileSizeInBytes )
+                GUCEF_METRIC_GAUGE( "ProcessMetrics.MemUse.AvailablePageFileSizeInBytes", globMemInfo.availablePageFileSizeInBytes, 1.0f );
+            if ( m_gatherGlobalPageFileUsageInBytes )
+                GUCEF_METRIC_GAUGE( "ProcessMetrics.MemUse.AvailablePhysicalMemoryInBytes", globMemInfo.availablePhysicalMemoryInBytes, 1.0f );
+            if ( m_gatherGlobalAvailableVirtualMemoryInBytes )
+                GUCEF_METRIC_GAUGE( "ProcessMetrics.MemUse.AvailableVirtualMemoryInBytes", globMemInfo.availableVirtualMemoryInBytes, 1.0f );
+            if ( m_gatherGlobalAvailExtendedVirtualMemoryInBytes )
+                GUCEF_METRIC_GAUGE( "ProcessMetrics.MemUse.AvailExtendedVirtualMemoryInBytes", globMemInfo.availExtendedVirtualMemoryInBytes, 1.0f );
+            if ( m_gatherGlobalMemoryLoadPercentage )
+                GUCEF_METRIC_GAUGE( "ProcessMetrics.MemUse.MemoryLoadPercentage", (CORE::UInt64) globMemInfo.memoryLoadPercentage, 1.0f );
+            if ( m_gatherGlobalTotalPageFileSizeInBytes )
+                GUCEF_METRIC_GAUGE( "ProcessMetrics.MemUse.TotalPageFileSizeInBytes", globMemInfo.totalPageFileSizeInBytes, 1.0f );
+            if ( m_gatherGlobalTotalPhysicalMemoryInBytes )
+                GUCEF_METRIC_GAUGE( "ProcessMetrics.MemUse.TotalPhysicalMemoryInBytes", globMemInfo.totalPhysicalMemoryInBytes, 1.0f );
+            if ( m_gatherGlobalTotalVirtualMemoryInBytes )
+                GUCEF_METRIC_GAUGE( "ProcessMetrics.MemUse.TotalVirtualMemoryInBytes", globMemInfo.totalVirtualMemoryInBytes, 1.0f );
+        }
+        else
+        {
+            GUCEF_WARNING_LOG( CORE::LOGLEVEL_NORMAL, "ProcessMetrics: Failed to obtain global memory stats" );
+        }
+    }
 }
 
 /*-------------------------------------------------------------------------*/
@@ -311,16 +348,27 @@ ProcessMetrics::LoadConfig( const CORE::CValueList& appConfig   ,
                             const CORE::CDataNode& globalConfig )
 {GUCEF_TRACE;
         
-    m_gatherMemStats = CORE::StringToBool( appConfig.GetValueAlways( "GatherProcMemStats", "true" ) );
+    
     m_gatherCpuStats = CORE::StringToBool( appConfig.GetValueAlways( "GatherProcCPUStats", "true" ) );
     m_enableRestApi = CORE::StringToBool( appConfig.GetValueAlways( "EnableRestApi", "true" ) );
     m_metricsTimer.SetInterval( CORE::StringToUInt32( appConfig.GetValueAlways( "MetricsGatheringIntervalInMs", "1000" ) ) );
     
+    m_gatherMemStats = CORE::StringToBool( appConfig.GetValueAlways( "GatherProcMemStats", "true" ) );
     m_gatherProcPageFaultCountInBytes = CORE::StringToBool( appConfig.GetValueAlways( "GatherProcPageFaultCountInBytes", "true" ) );
     m_gatherProcPageFileUsageInBytes = CORE::StringToBool( appConfig.GetValueAlways( "GatherProcPageFileUsageInBytes", "true" ) );
     m_gatherProcPeakPageFileUsageInBytes = CORE::StringToBool( appConfig.GetValueAlways( "GatherProcPeakPageFileUsageInBytes", "true" ) );
     m_gatherProcPeakWorkingSetSizeInBytes = CORE::StringToBool( appConfig.GetValueAlways( "GatherProcPeakWorkingSetSizeInBytes", "true" ) );
     m_gatherProcWorkingSetSizeInBytes = CORE::StringToBool( appConfig.GetValueAlways( "GatherProcWorkingSetSizeInBytes", "true" ) );
+
+    m_gatherGlobMemStats = CORE::StringToBool( appConfig.GetValueAlways( "GatherGlobalMemStats", "true" ) );
+    m_gatherGlobalAvailablePageFileSizeInBytes = CORE::StringToBool( appConfig.GetValueAlways( "GatherGlobalAvailablePageFileSizeInBytes", "true" ) );
+    m_gatherGlobalPageFileUsageInBytes = CORE::StringToBool( appConfig.GetValueAlways( "GatherGlobalPageFileUsageInBytes", "true" ) );
+    m_gatherGlobalAvailableVirtualMemoryInBytes = CORE::StringToBool( appConfig.GetValueAlways( "GatherGlobalAvailableVirtualMemoryInBytes", "true" ) );
+    m_gatherGlobalAvailExtendedVirtualMemoryInBytes = CORE::StringToBool( appConfig.GetValueAlways( "GatherGlobalAvailExtendedVirtualMemoryInBytes", "true" ) );
+    m_gatherGlobalMemoryLoadPercentage = CORE::StringToBool( appConfig.GetValueAlways( "GatherGlobalMemoryLoadPercentage", "true" ) );
+    m_gatherGlobalTotalPageFileSizeInBytes = CORE::StringToBool( appConfig.GetValueAlways( "GatherGlobalTotalPageFileSizeInBytes", "true" ) );
+    m_gatherGlobalTotalPhysicalMemoryInBytes = CORE::StringToBool( appConfig.GetValueAlways( "GatherGlobalTotalPhysicalMemoryInBytes", "false" ) );
+    m_gatherGlobalTotalVirtualMemoryInBytes = CORE::StringToBool( appConfig.GetValueAlways( "GatherGlobalTotalVirtualMemoryInBytes", "true" ) );
 
     TStringVector exeProcsToWatch = appConfig.GetValueAlways( "ExeProcsToWatch" ).ParseElements( ';', false );
     TStringVector::iterator i = exeProcsToWatch.begin();

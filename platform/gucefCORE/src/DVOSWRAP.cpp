@@ -761,11 +761,7 @@ GetProcessMemmoryUsage( TProcessId* pid                     ,
     if ( GUCEF_NULL == pid || GUCEF_NULL == memUseInfo )
         return OSWRAP_FALSE;
 
-    memUseInfo->workingSetSizeInBytes = -1;
-    memUseInfo->peakWorkingSetSizeInBytes = -1;
-    memUseInfo->pageFaultCountInBytes = -1;
-    memUseInfo->pageFileUsageInBytes = -1;
-    memUseInfo->peakPageFileUsageInBytes = -1;
+    memset( memUseInfo, 0, sizeof(TProcessMemoryUsageInfo) );
     
     #if ( GUCEF_PLATFORM == GUCEF_PLATFORM_MSWIN )
 
@@ -795,6 +791,50 @@ GetProcessMemmoryUsage( TProcessId* pid                     ,
     CloseHandle( hProcess );
     return OSWRAP_FALSE;
 
+    #elif ( ( GUCEF_PLATFORM == GUCEF_PLATFORM_LINUX ) || ( GUCEF_PLATFORM == GUCEF_PLATFORM_ANDROID ) )
+
+    // @todo
+    return OSWRAP_FALSE;
+    
+    #else
+
+    return OSWRAP_FALSE;
+
+    #endif
+}
+
+/*--------------------------------------------------------------------------*/
+
+UInt32
+GetGlobalMemoryUsage( TGlobalMemoryUsageInfo* memUseInfo )
+{
+    if ( GUCEF_NULL == memUseInfo )
+        return OSWRAP_FALSE; 
+    
+    memset( memUseInfo, 0, sizeof(TGlobalMemoryUsageInfo) );
+    
+    #if ( GUCEF_PLATFORM == GUCEF_PLATFORM_MSWIN )
+
+    ::MEMORYSTATUSEX statex;
+    statex.dwLength = sizeof(statex);
+    if ( 0 != ::GlobalMemoryStatusEx( &statex ) )
+    {
+        memUseInfo->memoryLoadPercentage = (UInt8) statex.dwMemoryLoad;
+        memUseInfo->totalPhysicalMemoryInBytes = (TGlobalMemoryUsageInfo::TMemStatInt) statex.ullTotalPhys;
+        memUseInfo->availablePhysicalMemoryInBytes = (TGlobalMemoryUsageInfo::TMemStatInt) statex.ullAvailPhys;
+        memUseInfo->totalPageFileSizeInBytes = (TGlobalMemoryUsageInfo::TMemStatInt) statex.ullTotalPageFile;
+        memUseInfo->availablePageFileSizeInBytes = (TGlobalMemoryUsageInfo::TMemStatInt) statex.ullAvailPageFile;
+        memUseInfo->totalVirtualMemoryInBytes = (TGlobalMemoryUsageInfo::TMemStatInt) statex.ullTotalVirtual;
+        memUseInfo->availableVirtualMemoryInBytes = (TGlobalMemoryUsageInfo::TMemStatInt) statex.ullAvailVirtual;
+        memUseInfo->availExtendedVirtualMemoryInBytes = (TGlobalMemoryUsageInfo::TMemStatInt) statex.ullAvailExtendedVirtual;
+
+        return OSWRAP_TRUE;
+    }
+    else
+    {
+        return OSWRAP_FALSE;
+    }
+    
     #elif ( ( GUCEF_PLATFORM == GUCEF_PLATFORM_LINUX ) || ( GUCEF_PLATFORM == GUCEF_PLATFORM_ANDROID ) )
 
     // @todo

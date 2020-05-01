@@ -182,4 +182,14 @@ class ProcessMetrics : public CORE::CObservingNotifier
     bool m_gatherProcPeakPageFileUsageInBytes;
     bool m_gatherProcPeakWorkingSetSizeInBytes;
     bool m_gatherProcWorkingSetSizeInBytes;
+
+    bool m_gatherGlobMemStats;
+    bool m_gatherGlobalAvailablePageFileSizeInBytes;
+    bool m_gatherGlobalPageFileUsageInBytes;
+    bool m_gatherGlobalAvailableVirtualMemoryInBytes;
+    bool m_gatherGlobalAvailExtendedVirtualMemoryInBytes;
+    bool m_gatherGlobalMemoryLoadPercentage;
+    bool m_gatherGlobalTotalPageFileSizeInBytes;
+    bool m_gatherGlobalTotalPhysicalMemoryInBytes;
+    bool m_gatherGlobalTotalVirtualMemoryInBytes;
 };

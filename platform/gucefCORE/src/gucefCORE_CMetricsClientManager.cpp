@@ -209,7 +209,35 @@ CMetricsClientManager::Count( const CString& key, const Int32 delta, const Float
 /*-------------------------------------------------------------------------*/
 
 void
+CMetricsClientManager::Count( const CString& key, const Int64 delta, const Float32 frequency ) const
+{GUCEF_TRACE;
+
+    TMetricsSystemClientPtrSet::const_iterator i = m_clients.begin();
+    while ( i != m_clients.end() )
+    {
+        (*i)->Count( key, delta, frequency );        
+        ++i;
+    }
+}
+
+/*-------------------------------------------------------------------------*/
+
+void
 CMetricsClientManager::Gauge( const CString& key, const UInt32 value, const Float32 frequency ) const
+{GUCEF_TRACE;
+
+    TMetricsSystemClientPtrSet::const_iterator i = m_clients.begin();
+    while ( i != m_clients.end() )
+    {
+        (*i)->Gauge( key, value, frequency );
+        ++i;
+    }
+}
+
+/*-------------------------------------------------------------------------*/
+
+void
+CMetricsClientManager::Gauge( const CString& key, const UInt64 value, const Float32 frequency ) const
 {GUCEF_TRACE;
 
     TMetricsSystemClientPtrSet::const_iterator i = m_clients.begin();
@@ -224,6 +252,20 @@ CMetricsClientManager::Gauge( const CString& key, const UInt32 value, const Floa
 
 void 
 CMetricsClientManager::Timing( const CString& key, const UInt32 ms, const Float32 frequency ) const
+{GUCEF_TRACE;
+
+    TMetricsSystemClientPtrSet::const_iterator i = m_clients.begin();
+    while ( i != m_clients.end() )
+    {
+        (*i)->Timing( key, ms, frequency );        
+        ++i;
+    }
+}
+
+/*-------------------------------------------------------------------------*/
+
+void 
+CMetricsClientManager::Timing( const CString& key, const UInt64 ms, const Float32 frequency ) const
 {GUCEF_TRACE;
 
     TMetricsSystemClientPtrSet::const_iterator i = m_clients.begin();

@@ -24,6 +24,7 @@
 //                                                                         //
 //-------------------------------------------------------------------------*/
 
+#include <inttypes.h>
 #include <cmath>
 
 #ifndef GUCEF_CORE_DVCPPSTRINGUTILS_H
@@ -118,11 +119,31 @@ CStatsDClient::Count( const CString& key, const Int32 delta, const Float32 frequ
 /*-------------------------------------------------------------------------*/
 
 void
+CStatsDClient::Count( const CString& key, const Int64 delta, const Float32 frequency ) const
+{GUCEF_TRACE;
+
+    static const CString statTypeName = "c";
+    Transmit( key, delta, statTypeName, frequency );
+}
+
+/*-------------------------------------------------------------------------*/
+
+void
 CStatsDClient::Gauge( const CString& key, const UInt32 value, const Float32 frequency ) const
 {GUCEF_TRACE;
     
     static const CString statTypeName = "g";
-    Transmit( key, value, statTypeName, frequency );
+    Transmit( key, (Int64) value, statTypeName, frequency );
+}
+
+/*-------------------------------------------------------------------------*/
+
+void
+CStatsDClient::Gauge( const CString& key, const UInt64 value, const Float32 frequency ) const
+{GUCEF_TRACE;
+    
+    static const CString statTypeName = "g";
+    Transmit( key, (Int64) value, statTypeName, frequency );
 }
 
 /*-------------------------------------------------------------------------*/
@@ -132,14 +153,24 @@ CStatsDClient::Timing( const CString& key, const UInt32 ms, const Float32 freque
 {GUCEF_TRACE;
     
     static const CString statTypeName = "ms";
-    Transmit( key, ms, statTypeName, frequency );
+    Transmit( key, (Int64) ms, statTypeName, frequency );
+}
+
+/*-------------------------------------------------------------------------*/
+
+void
+CStatsDClient::Timing( const CString& key, const UInt64 ms, const Float32 frequency ) const
+{GUCEF_TRACE;
+    
+    static const CString statTypeName = "ms";
+    Transmit( key, (Int64) ms, statTypeName, frequency );
 }
 
 /*-------------------------------------------------------------------------*/
 
 void 
 CStatsDClient::Transmit( const CString& key      , 
-                         const Int32 value       , 
+                         const Int64 value       , 
                          const CString& type     , 
                          const Float32 frequency ) const
 {GUCEF_TRACE;
@@ -175,12 +206,12 @@ CStatsDClient::Transmit( const CString& key      ,
     if ( isFrequencyOne( frequency ) ) 
     {
         // Sampling rate is 1.0f, no need to specify it
-        msgSize = std::snprintf( buffer, sizeof(buffer), "%s%s:%d|%s", m_statNamePrefix.C_String(), key.C_String(), value, type.C_String() );
+        msgSize = std::snprintf( buffer, sizeof(buffer), "%s%s:%" PRIu64 "|%s", m_statNamePrefix.C_String(), key.C_String(), value, type.C_String() );
     } 
     else 
     {
         // Sampling rate is different from 1.0f, hence specify it
-        msgSize = std::snprintf( buffer, sizeof(buffer), "%s%s:%d|%s|@%.2f", m_statNamePrefix.C_String(), key.C_String(), value, type.C_String(), frequency );
+        msgSize = std::snprintf( buffer, sizeof(buffer), "%s%s:%" PRIu64 "|%s|@%.2f", m_statNamePrefix.C_String(), key.C_String(), value, type.C_String(), frequency );
     }
 
     // Send the message via the UDP sender
