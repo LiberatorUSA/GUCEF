@@ -79,6 +79,12 @@ SetEnvOverrides( const CString& allKeysAndValues );
 GUCEF_CORE_PUBLIC_CPP CString
 GetEnv( const CString& key );
 
+/*--------------------------------------------------------------------------*/
+
+GUCEF_CORE_PUBLIC_CPP bool 
+GetExeNameForProcessId( TProcessId* pid  , 
+                        CString& exeName );
+
 /*-------------------------------------------------------------------------//
 //                                                                         //
 //      NAMESPACE                                                          //

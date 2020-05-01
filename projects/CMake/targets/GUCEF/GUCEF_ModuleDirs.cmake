@@ -149,6 +149,7 @@ add_subdirectory( ${CMAKE_CURRENT_SOURCE_DIR}/../../../../tools/HDFiller ${CMAKE
 add_subdirectory( ${CMAKE_CURRENT_SOURCE_DIR}/../../../../tools/MemoryLeakFinder ${CMAKE_BINARY_DIR}/MemoryLeakFinder )
 add_subdirectory( ${CMAKE_CURRENT_SOURCE_DIR}/../../../../tools/PatchSetGenerator ${CMAKE_BINARY_DIR}/PatchSetGenerator )
 add_subdirectory( ${CMAKE_CURRENT_SOURCE_DIR}/../../../../tools/PatcherGUI/MFCPatcherGUI ${CMAKE_BINARY_DIR}/MFCPatcherGUI )
+add_subdirectory( ${CMAKE_CURRENT_SOURCE_DIR}/../../../../tools/ProcessMetrics ${CMAKE_BINARY_DIR}/ProcessMetrics )
 add_subdirectory( ${CMAKE_CURRENT_SOURCE_DIR}/../../../../tools/ProjectGen ${CMAKE_BINARY_DIR}/ProjectGen )
 add_subdirectory( ${CMAKE_CURRENT_SOURCE_DIR}/../../../../tools/ProjectGen/plugins/ProjectGenDependsFilter ${CMAKE_BINARY_DIR}/ProjectGenDependsFilter )
 add_subdirectory( ${CMAKE_CURRENT_SOURCE_DIR}/../../../../tools/ProjectGen/plugins/ProjectGenVSImporter ${CMAKE_BINARY_DIR}/ProjectGenVSImporter )
