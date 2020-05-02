@@ -94,7 +94,7 @@ class GUCEF_CORE_PUBLIC_CPP CConfigStore
 
     void Register( CIConfigurable* configobj );
 
-    void Unregister( CIConfigurable* configobj );
+    bool Unregister( CIConfigurable* configobj );
 
     private:
     friend class CCoreGlobal;
@@ -115,8 +115,10 @@ class GUCEF_CORE_PUBLIC_CPP CConfigStore
 
     CString _codectype;
     CString _configfile;
-    TConfigurableSet _configobjs;
-    MT::CMutex _datalock;
+    TConfigurableSet m_configureables;
+    TConfigurableSet m_newConfigureables;
+    bool m_isBusyLoadingConfig;
+    MT::CMutex m_datalock;
 };
 
 /*-------------------------------------------------------------------------//

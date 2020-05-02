@@ -35,6 +35,11 @@
 #define GUCEF_CORE_CTFACTORY_H
 #endif /* GUCEF_CORE_CTFACTORY_H ? */
 
+#ifndef GUCEF_CORE_CTIMER_H
+#include "CTimer.h"
+#define GUCEF_CORE_CTIMER_H
+#endif /* GUCEF_CORE_CTIMER_H ? */
+
 #ifndef GUCEF_VFS_CVFS_H
 #include "gucefVFS_CVFS.h"
 #define GUCEF_VFS_CVFS_H
@@ -69,7 +74,7 @@ namespace AWSS3 {
 //                                                                         //
 //-------------------------------------------------------------------------*/
 
-class GUCEF_HIDDEN CAwsS3Global
+class GUCEF_HIDDEN CAwsS3Global : public CORE::CObservingNotifier
 {
     public:
 
@@ -89,10 +94,20 @@ class GUCEF_HIDDEN CAwsS3Global
 
     void Initialize( void );
 
+    void RegisterEventHandlers( void );
+
+    void
+    OnBucketInventoryRefreshTimerCycle( CORE::CNotifier* notifier    ,
+                                        const CORE::CEvent& eventId  ,
+                                        CORE::CICloneable* eventData );
+
     private:
+
+    typedef CORE::CTEventHandlerFunctor< CAwsS3Global > TEventCallback;
 
     Aws::S3::S3Client* m_s3Client;
     TAwsS3ArchiveFactory m_awsS3ArchiveFactory;
+    CORE::CTimer m_bucketInventoryRefreshTimer;
     
     static MT::CMutex g_dataLock;
     static CAwsS3Global* g_instance;

@@ -27,15 +27,15 @@
 #define GUCEF_CORE_GUCEF_ESSENTIALS_H
 #endif /* GUCEF_CORE_GUCEF_ESSENTIALS_H ? */
 
+#ifndef GUCEF_CORE_CDATANODE_H
+#include "CDataNode.h"
+#define GUCEF_CORE_CDATANODE_H
+#endif /* GUCEF_CORE_CDATANODE_H ? */
+
 #ifndef GUCEF_PLUGINGLUE_AWSSDK_CLOGGINGADAPTER_H
 #include "pluginglueAWSSDK_CLoggingAdapter.h"
 #define GUCEF_PLUGINGLUE_AWSSDK_CLOGGINGADAPTER_H
 #endif /* GUCEF_PLUGINGLUE_AWSSDK_CLOGGINGADAPTER_H ? */
-
-#ifndef GUCEF_PLUGINGLUE_AWSSDK_CCREDENTIALSPROVIDERADAPTER_H
-#include "pluginglueAWSSDK_CCredentialsProviderAdapter.h"
-#define GUCEF_PLUGINGLUE_AWSSDK_CCREDENTIALSPROVIDERADAPTER_H
-#endif /* GUCEF_PLUGINGLUE_AWSSDK_CCREDENTIALSPROVIDERADAPTER_H ? */ 
 
 #include "pluginglueAWSSDK_CAwsSdkGlobal.h"
 
@@ -124,7 +124,39 @@ CAwsSdkGlobal::Initialize( void )
 
 /*-------------------------------------------------------------------------*/
 
+const CORE::CString& 
+CAwsSdkGlobal::GetClassTypeName( void ) const
+{GUCEF_TRACE;
+
+    static const CORE::CString classTypeName = "GUCEF::PLUGINGLUE::AWSSDK::CAwsSdkGlobal";
+    return classTypeName;
+}
+
+/*-------------------------------------------------------------------------*/
+
+bool 
+CAwsSdkGlobal::SaveConfig( CORE::CDataNode& tree ) const
+{GUCEF_TRACE;
+
+    return false;
+}
+
+/*-------------------------------------------------------------------------*/
+
+bool 
+CAwsSdkGlobal::LoadConfig( const CORE::CDataNode& treeroot )
+{GUCEF_TRACE;
+
+    if ( m_credsProvider )
+        m_credsProvider->LoadConfig( treeroot );
+
+    return true;
+}
+
+/*-------------------------------------------------------------------------*/
+
 CAwsSdkGlobal::CAwsSdkGlobal( void )
+    : CORE::CIConfigurable( true )
 {GUCEF_TRACE;
 
 }
@@ -160,8 +192,8 @@ CAwsSdkGlobal::GetAwsSdkOptions( void )
 
 /*-------------------------------------------------------------------------*/
 
-CAwsSdkGlobal::AWSCredentialsProviderPtr  
-CAwsSdkGlobal::GetAwsCredentialsProvider( void )
+CAwsSdkGlobal::CredentialsProviderPtr  
+CAwsSdkGlobal::GetCredentialsProvider( void )
 {GUCEF_TRACE;
 
     return m_credsProvider;   

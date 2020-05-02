@@ -247,10 +247,14 @@ GUCEF_OSMAIN_BEGIN
         consoleWindow.CreateConsole();
 
         // Now actually run the tests...
-        PerformVFSFileLoadUnloadTest();
+        //PerformVFSFileLoadUnloadTest();
+
+        auto& app = CORE::CCoreGlobal::Instance()->GetApplication();
+        app.GetPulseGenerator().RequestPulseInterval( 10 );
+        int appReturnValue = app.main( argc, argv, true );
 
         CORE::CCoreGlobal::Instance()->GetLogManager().ClearLoggers();
-        return 1;
+        return appReturnValue;
     }
     catch ( ... )
     {

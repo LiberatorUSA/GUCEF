@@ -29,6 +29,11 @@
 #include <aws/core/auth/AWSCredentialsProvider.h>
 #include <aws/core/auth/AWSCredentialsProviderChain.h>
 
+#ifndef GUCEF_CORE_CICONFIGURABLE_H
+#include "CIConfigurable.h"
+#define GUCEF_CORE_CICONFIGURABLE_H
+#endif /* GUCEF_CORE_CICONFIGURABLE_H ? */
+
 #ifndef GUCEF_PLUGINGLUE_AWSSDK_MACROS_H
 #include "pluginglueAWSSDK_macros.h"
 #define GUCEF_PLUGINGLUE_AWSSDK_MACROS_H
@@ -50,14 +55,32 @@ namespace AWSSDK {
 //                                                                         //
 //-------------------------------------------------------------------------*/
 
-class GUCEF_PLUGINGLUE_AWSSDK_EXPORT_CPP CCredentialsProviderAdapter : public Aws::Auth::AWSCredentialsProviderChain
+//                       
+class GUCEF_PLUGINGLUE_AWSSDK_EXPORT_CPP CCredentialsProviderAdapter : public Aws::Auth::AWSCredentialsProviderChain ,
+                                                                       public CORE::CIConfigurable
 {
     public:
 
+    typedef std::vector< CORE::CString > TStringVector;
+    
     CCredentialsProviderAdapter( void );
 
     virtual ~CCredentialsProviderAdapter();
 
+    virtual bool SaveConfig( CORE::CDataNode& tree ) const;
+
+    virtual bool LoadConfig( const CORE::CDataNode& treeroot );
+
+    virtual const CORE::CString& GetClassTypeName( void ) const;
+
+    bool EnableCredentialsProviders( const TStringVector& providersToUse );
+
+    private:
+
+    CORE::CString m_awsAccessKeyId;
+    CORE::CString m_awsSecretAccessKey;
+    CORE::CString m_awsSessionToken;
+    TStringVector m_providersToUse;
 };
 
 /*-------------------------------------------------------------------------//

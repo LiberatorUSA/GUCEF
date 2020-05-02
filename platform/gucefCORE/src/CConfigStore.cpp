@@ -23,6 +23,11 @@
 //                                                                         //
 //-------------------------------------------------------------------------*/
 
+#ifndef GUCEF_MT_CSCOPEMUTEX_H
+#include "gucefMT_CScopeMutex.h"
+#define GUCEF_MT_CSCOPEMUTEX_H
+#endif /* GUCEF_MT_CSCOPEMUTEX_H ? */ 
+
 #ifndef GUCEF_CORE_CCOREGLOBAL_H
 #include "gucefCORE_CCoreGlobal.h"
 #define GUCEF_CORE_CCOREGLOBAL_H
@@ -76,8 +81,12 @@ namespace CORE {
 //-------------------------------------------------------------------------*/
 
 CConfigStore::CConfigStore( void )
-        : _codectype()  ,
-          _configfile()
+    : _codectype()
+    , _configfile()
+    , m_configureables()
+    , m_newConfigureables()
+    , m_isBusyLoadingConfig( false )
+    , m_datalock()
 {GUCEF_TRACE;
 
 }
@@ -94,9 +103,9 @@ CConfigStore::~CConfigStore()
 void
 CConfigStore::SetConfigFile( const CString& filepath )
 {GUCEF_TRACE;
-        _datalock.Lock();
-        _configfile = RelativePath( filepath );
-        _datalock.Unlock();
+
+    MT::CScopeMutex scopeLock( m_datalock );
+    _configfile = RelativePath( filepath );
 }
 
 /*-------------------------------------------------------------------------*/
@@ -105,10 +114,8 @@ CString
 CConfigStore::GetConfigFile( void ) const
 {GUCEF_TRACE;
 
-    _datalock.Lock();
-    CString file( _configfile );
-    _datalock.Unlock();
-    return file;
+    MT::CScopeMutex scopeLock( m_datalock );
+    return _configfile;
 }
 
 /*-------------------------------------------------------------------------*/
@@ -117,20 +124,27 @@ void
 CConfigStore::Register( CIConfigurable* configobj )
 {GUCEF_TRACE;
 
-    _datalock.Lock();
-    _configobjs.insert( configobj );
-    _datalock.Unlock();
+    MT::CScopeMutex scopeLock( m_datalock );
+
+    if ( !m_isBusyLoadingConfig )
+        m_configureables.insert( configobj );
+    else
+        m_newConfigureables.insert( configobj );
 }
 
 /*-------------------------------------------------------------------------*/
 
-void
+bool
 CConfigStore::Unregister( CIConfigurable* configobj )
 {GUCEF_TRACE;
 
-    _datalock.Lock();
-    _configobjs.erase( configobj );
-    _datalock.Unlock();
+    MT::CScopeMutex scopeLock( m_datalock );
+    
+    if ( m_isBusyLoadingConfig )
+        return false;
+
+    m_configureables.erase( configobj );
+    return true;
 }
 
 /*-------------------------------------------------------------------------*/
@@ -139,7 +153,8 @@ bool
 CConfigStore::SaveConfig( const CString& name ,
                           bool preserve       )
 {GUCEF_TRACE;
-        _datalock.Lock();
+        
+        MT::CScopeMutex scopeLock( m_datalock );
 
         /*
          *      If the preserve flag is set then the old data tree
@@ -162,17 +177,15 @@ CConfigStore::SaveConfig( const CString& name ,
                 }
                 catch ( CDStoreCodecRegistry::EUnregisteredName& )
                 {
-                        _datalock.Unlock();
                         return false;
                 }
         }
 
-        TConfigurableSet::iterator i = _configobjs.begin();
-        while ( i != _configobjs.end() )
+        TConfigurableSet::iterator i = m_configureables.begin();
+        while ( i != m_configureables.end() )
         {
             if ( !(*i)->SaveConfig( rootnode ) )
             {
-                _datalock.Unlock();
                 return false;
             }
             ++i;
@@ -190,11 +203,9 @@ CConfigStore::SaveConfig( const CString& name ,
         }
         catch ( CDStoreCodecRegistry::EUnregisteredName& )
         {
-                _datalock.Unlock();
                 return false;
         }
 
-        _datalock.Unlock();
         return false;
 }
 
@@ -204,15 +215,15 @@ bool
 CConfigStore::LoadConfig( CDataNode* loadedConfig )
 {GUCEF_TRACE;
 
-        GUCEF_SYSTEM_LOG( LOGLEVEL_NORMAL, "CConfigStore: Loading all config" );
+    GUCEF_SYSTEM_LOG( LOGLEVEL_NORMAL, "CConfigStore: Loading all config" );
 
-        if ( !FileExists( _configfile ) )
-        {
-            GUCEF_ERROR_LOG( LOGLEVEL_IMPORTANT, "CConfigStore: Failed to load config because the config file does not exist: " + _configfile );
-            return false;
-        }
+    if ( !FileExists( _configfile ) )
+    {
+        GUCEF_ERROR_LOG( LOGLEVEL_IMPORTANT, "CConfigStore: Failed to load config because the config file does not exist: " + _configfile );
+        return false;
+    }
 
-        _datalock.Lock();
+    MT::CScopeMutex scopeLock( m_datalock );
 
         if ( _codectype.Length() == 0 )
         {
@@ -233,9 +244,11 @@ CConfigStore::LoadConfig( CDataNode* loadedConfig )
                 {
                         GUCEF_SYSTEM_LOG( LOGLEVEL_BELOW_NORMAL, "CConfigStore: Used codec " + _codectype + " to successfully build a config data tree from file " + _configfile );
 
+                        m_isBusyLoadingConfig = true;
+                        
                         bool errorOccured = false;
-                        TConfigurableSet::iterator i = _configobjs.begin();
-                        while ( i != _configobjs.end() )
+                        TConfigurableSet::iterator i = m_configureables.begin();
+                        while ( i != m_configureables.end() )
                         {
                             if ( !(*i)->LoadConfig( *loadedConfig ) )
                             {
@@ -244,8 +257,28 @@ CConfigStore::LoadConfig( CDataNode* loadedConfig )
                             }
                             ++i;
                         }
-                        _datalock.Unlock();
 
+                        // Loading of config can cause more configurables to register
+                        // We handle those after dealing with the initial set
+                        while ( !m_newConfigureables.empty() )
+                        {
+                            TConfigurableSet setCopy( m_newConfigureables );
+                            i = setCopy.begin();
+                            while ( i != setCopy.end() )
+                            {
+                                if ( !(*i)->LoadConfig( *loadedConfig ) )
+                                {
+                                    errorOccured = true;
+                                    GUCEF_ERROR_LOG( LOGLEVEL_IMPORTANT, "CConfigStore: Loading of config failed for a late-addition configureable with type name \"" + (*i)->GetClassTypeName() + "\"" );
+                                }
+                                m_configureables.insert( (*i) );
+                                m_newConfigureables.erase( (*i) );
+                                ++i;
+                            }
+                        }
+
+                        m_isBusyLoadingConfig = false;
+                        
                         GUCEF_SYSTEM_LOG( LOGLEVEL_BELOW_NORMAL, "CConfigStore: Successfully loaded all config using codec " + _codectype + " to successfully build a config data tree from file " + _configfile );
                         return !errorOccured;
                 }
@@ -263,7 +296,6 @@ CConfigStore::LoadConfig( CDataNode* loadedConfig )
         {
             GUCEF_ERROR_LOG( LOGLEVEL_IMPORTANT, "CConfigStore: Failed to retrieve codec " + _codectype + " for the config information" );
         }
-        _datalock.Unlock();
         return false;
 }
 
@@ -272,7 +304,9 @@ CConfigStore::LoadConfig( CDataNode* loadedConfig )
 void
 CConfigStore::SetCodec( const CString& codectype )
 {GUCEF_TRACE;
-        _codectype = codectype;
+
+    MT::CScopeMutex scopeLock( m_datalock );
+    _codectype = codectype;
 }
 
 /*-------------------------------------------------------------------------*/
@@ -280,7 +314,9 @@ CConfigStore::SetCodec( const CString& codectype )
 CString
 CConfigStore::GetCodec( void ) const
 {GUCEF_TRACE;
-        return _codectype;
+
+    MT::CScopeMutex scopeLock( m_datalock );
+    return _codectype;
 }
 
 /*-------------------------------------------------------------------------//
