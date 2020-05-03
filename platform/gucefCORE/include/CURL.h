@@ -72,11 +72,13 @@ class CPulseGenerator;
  *  class that allows you to retrieve data using URL's
  */
 class GUCEF_CORE_PUBLIC_CPP CURL : public CForwardingNotifier ,
-                                  public CIURLEvents
+                                   public virtual CIURLEvents
 {
         public:
 
         CURL( void );
+
+        CURL( const CURL& src );
 
         CURL( CPulseGenerator& pulseGenerator );
 

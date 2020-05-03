@@ -81,7 +81,7 @@ CORE::Int32 GUCEF_PLUGIN_CALLSPEC_PREFIX
 GUCEFPlugin_Load( CORE::UInt32 argc, const char** argv ) GUCEF_PLUGIN_CALLSPEC_SUFFIX
 {GUCEF_TRACE;
 
-    VFS::CVfsGlobal::Instance()->GetVfs().RegisterArchiveFactory( "vp", vpArchiveFactory );
+    VFS::CVfsGlobal::Instance()->GetVfs().RegisterArchiveFactory( CVPArchive::VPArchiveTypeName, vpArchiveFactory );
     return 1;
 }
 
@@ -91,7 +91,7 @@ void GUCEF_PLUGIN_CALLSPEC_PREFIX
 GUCEFPlugin_Unload( void ) GUCEF_PLUGIN_CALLSPEC_SUFFIX
 {GUCEF_TRACE;
 
-    VFS::CVfsGlobal::Instance()->GetVfs().UnregisterArchiveFactory( "vp" );
+    VFS::CVfsGlobal::Instance()->GetVfs().UnregisterArchiveFactory( CVPArchive::VPArchiveTypeName );
 }
 
 /*--------------------------------------------------------------------------*/

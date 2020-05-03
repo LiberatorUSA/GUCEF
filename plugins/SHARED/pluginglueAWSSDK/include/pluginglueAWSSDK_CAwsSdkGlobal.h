@@ -37,6 +37,11 @@
 #define GUCEF_CORE_CICONFIGURABLE_H
 #endif /* GUCEF_CORE_CICONFIGURABLE_H ? */
 
+#ifndef GUCEF_CORE_COBSERVINGNOTIFIER_H
+#include "CObservingNotifier.h"
+#define GUCEF_CORE_COBSERVINGNOTIFIER_H
+#endif /* GUCEF_CORE_COBSERVINGNOTIFIER_H ? */
+
 #ifndef GUCEF_PLUGINGLUE_AWSSDK_MACROS_H
 #include "pluginglueAWSSDK_macros.h"
 #define GUCEF_PLUGINGLUE_AWSSDK_MACROS_H
@@ -63,11 +68,16 @@ namespace AWSSDK {
 //                                                                         //
 //-------------------------------------------------------------------------*/
 
-class GUCEF_PLUGINGLUE_AWSSDK_EXPORT_CPP CAwsSdkGlobal : public CORE::CIConfigurable
+class GUCEF_PLUGINGLUE_AWSSDK_EXPORT_CPP CAwsSdkGlobal : public CORE::CObservingNotifier ,
+                                                         public virtual CORE::CIConfigurable
 {
     public:
 
     typedef std::shared_ptr< CCredentialsProviderAdapter > CredentialsProviderPtr;
+
+    static const CORE::CEvent AwsSdkInitializedEvent;
+
+    static void RegisterEvents( void );
 
     static CAwsSdkGlobal* Instance( void );
 
@@ -92,9 +102,12 @@ class GUCEF_PLUGINGLUE_AWSSDK_EXPORT_CPP CAwsSdkGlobal : public CORE::CIConfigur
 
     CAwsSdkGlobal( void );
 
-    ~CAwsSdkGlobal();
+    CAwsSdkGlobal( const CAwsSdkGlobal& src );
 
-    void Initialize( void );
+    virtual ~CAwsSdkGlobal();
+
+    void InitializeBeforeConfig( void );
+    void InitializeAfterConfig( void );
 
     private:
 

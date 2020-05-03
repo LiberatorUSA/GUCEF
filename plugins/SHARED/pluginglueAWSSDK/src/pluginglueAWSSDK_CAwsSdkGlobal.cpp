@@ -57,6 +57,7 @@ namespace AWSSDK {
 
 MT::CMutex CAwsSdkGlobal::g_dataLock;
 CAwsSdkGlobal* CAwsSdkGlobal::g_instance = GUCEF_NULL;
+const CORE::CEvent CAwsSdkGlobal::AwsSdkInitializedEvent = "GUCEF::PLUGINGLUE::AWSSDK::AwsSdkInitializedEvent";
 
 /*-------------------------------------------------------------------------//
 //                                                                         //
@@ -74,7 +75,6 @@ CAwsSdkGlobal::Instance()
         if ( GUCEF_NULL == g_instance )
         {
             g_instance = new CAwsSdkGlobal();
-            g_instance->Initialize();
         }
         g_dataLock.Unlock();
     }
@@ -96,7 +96,7 @@ CAwsSdkGlobal::Deinstance( void )
 /*-------------------------------------------------------------------------*/
 
 void
-CAwsSdkGlobal::Initialize( void )
+CAwsSdkGlobal::InitializeBeforeConfig( void )
 {GUCEF_TRACE;
 
     try
@@ -106,19 +106,19 @@ CAwsSdkGlobal::Initialize( void )
         // @TODO: Hook up to GUCEF Metrics
         //m_awsSdkOptions.monitoringOptions.customizedMonitoringFactory_create_fn
 
-        m_credsProvider = std::make_shared< CCredentialsProviderAdapter >();
-    
         Aws::InitAPI( m_awsSdkOptions );
 
-        GUCEF_LOG( CORE::LOGLEVEL_IMPORTANT, "AwsSdkGlobal systems initialized" );
+        m_credsProvider = std::make_shared< CCredentialsProviderAdapter >();
+        
+        GUCEF_LOG( CORE::LOGLEVEL_IMPORTANT, "AwsSdkGlobal:InitializeBeforeConfig: successfully completed" );
     }
     catch ( const std::exception& e )
     {
-        GUCEF_EXCEPTION_LOG( CORE::LOGLEVEL_CRITICAL, CORE::CString( "AwsSdkGlobal systems experienced an exception during initialization: " ) + e.what() );
+        GUCEF_EXCEPTION_LOG( CORE::LOGLEVEL_CRITICAL, CORE::CString( "AwsSdkGlobal:InitializeBeforeConfig: experienced an exception: " ) + e.what() );
     }
     catch ( ... )
     {
-        GUCEF_EXCEPTION_LOG( CORE::LOGLEVEL_CRITICAL, "AwsSdkGlobal systems experienced an unknown exception during initialization, your application may be unstable" );
+        GUCEF_EXCEPTION_LOG( CORE::LOGLEVEL_CRITICAL, "AwsSdkGlobal:InitializeBeforeConfig: experienced an unknown exception, your application may be unstable" );
     }
 }
 
@@ -147,18 +147,56 @@ bool
 CAwsSdkGlobal::LoadConfig( const CORE::CDataNode& treeroot )
 {GUCEF_TRACE;
 
+    InitializeBeforeConfig();
+    
     if ( m_credsProvider )
         m_credsProvider->LoadConfig( treeroot );
 
+    InitializeAfterConfig();
     return true;
 }
 
 /*-------------------------------------------------------------------------*/
 
-CAwsSdkGlobal::CAwsSdkGlobal( void )
-    : CORE::CIConfigurable( true )
+void
+CAwsSdkGlobal::InitializeAfterConfig( void )
 {GUCEF_TRACE;
 
+    try
+    {
+
+        GUCEF_LOG( CORE::LOGLEVEL_IMPORTANT, "AwsSdkGlobal systems initialized" );
+        NotifyObservers( AwsSdkInitializedEvent );
+    }
+    catch ( const std::exception& e )
+    {
+        GUCEF_EXCEPTION_LOG( CORE::LOGLEVEL_CRITICAL, CORE::CString( "AwsSdkGlobal systems experienced an exception during initialization: " ) + e.what() );
+    }
+    catch ( ... )
+    {
+        GUCEF_EXCEPTION_LOG( CORE::LOGLEVEL_CRITICAL, "AwsSdkGlobal systems experienced an unknown exception during initialization, your application may be unstable" );
+    }
+}
+
+/*-------------------------------------------------------------------------*/
+
+CAwsSdkGlobal::CAwsSdkGlobal( void )
+    : CORE::CObservingNotifier()
+    , CORE::CIConfigurable( true )
+{GUCEF_TRACE;
+
+    RegisterEvents();
+}
+
+/*-------------------------------------------------------------------------*/
+
+// Implementation only exists to make compiler happy:
+CAwsSdkGlobal::CAwsSdkGlobal( const CAwsSdkGlobal& src )
+    : CORE::CObservingNotifier()
+    , CORE::CIConfigurable( true )
+{GUCEF_TRACE;
+
+    RegisterEvents();
 }
 
 /*-------------------------------------------------------------------------*/
@@ -179,6 +217,15 @@ CAwsSdkGlobal::~CAwsSdkGlobal()
     {
         GUCEF_EXCEPTION_LOG( CORE::LOGLEVEL_CRITICAL, "AwsSdkGlobal systems experienced an unknown exception during shutdown" );
     }
+}
+
+/*-------------------------------------------------------------------------*/
+
+void 
+CAwsSdkGlobal::RegisterEvents( void )
+{GUCEF_TRACE;
+
+    AwsSdkInitializedEvent.Initialize();
 }
 
 /*-------------------------------------------------------------------------*/

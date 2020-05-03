@@ -68,11 +68,6 @@
 #define GUCEF_CORE_DVMD5UTILS_H
 #endif /* GUCEF_CORE_DVMD5UTILS_H ? */
 
-#ifndef GUCEF_VFS_CFILESYSTEMARCHIVE_H
-#include "gucefVFS_CFileSystemArchive.h"
-#define GUCEF_VFS_CFILESYSTEMARCHIVE_H
-#endif /* GUCEF_VFS_CFILESYSTEMARCHIVE_H ? */
-
 #include "gucefVFS_CVFS.h"           /* definition of the file implemented here */
 
 #ifdef ACTIVATE_MEMORY_MANAGER
@@ -98,6 +93,7 @@ namespace VFS {
 //-------------------------------------------------------------------------*/
 
 MT::CMutex CVFS::m_datalock;
+const CORE::CString CVFS::FileSystemArchiveTypeName = "FileSystem";
 
 /*-------------------------------------------------------------------------//
 //                                                                         //
@@ -106,11 +102,14 @@ MT::CMutex CVFS::m_datalock;
 //-------------------------------------------------------------------------*/
 
 CVFS::CVFS( void )
-    : CIConfigurable( true ) ,
-      _maxmemloadsize( 1024 ) ,
-      m_mountList()
+    : CIConfigurable( true )
+    , m_mountList()
+    , _maxmemloadsize( 1024 ) 
+    , m_abstractArchiveFactory()
+    , m_fileSystemArchiveFactory()
 {GUCEF_TRACE;
 
+    RegisterArchiveFactory( FileSystemArchiveTypeName, m_fileSystemArchiveFactory );
 }
 
 /*-------------------------------------------------------------------------*/
@@ -118,6 +117,7 @@ CVFS::CVFS( void )
 CVFS::~CVFS()
 {GUCEF_TRACE;
 
+    UnregisterArchiveFactory( FileSystemArchiveTypeName );
 }
 
 /*-------------------------------------------------------------------------*/
@@ -522,11 +522,12 @@ CVFS::UnmountArchiveByName( const CString& archiveName )
 /*-------------------------------------------------------------------------*/
 
 void
-CVFS::AddRoot( const CORE::CString& rootpath              ,
-               const CString& archiveName                 ,
-               const bool writeable                       ,
-               const bool autoMountArchives /* = false */ ,
-               const CString& mountPoint /* = "" */       )
+CVFS::AddRoot( const CORE::CString& rootpath                                ,
+               const CString& archiveName                                   ,
+               const bool writeable                                         ,
+               const bool autoMountArchives /* = false */                   ,
+               const CString& mountPoint /* = "" */                         ,
+               const CString& archiveType /* = FileSystemArchiveTypeName */ )
 {GUCEF_TRACE;
 
     if ( rootpath.Length() > 0 )
@@ -539,12 +540,31 @@ CVFS::AddRoot( const CORE::CString& rootpath              ,
 
         if ( mountEntry.abspath.Length() == 0 )
         {
-                mountEntry.abspath = rootpath;
+            mountEntry.abspath = rootpath;
         }
 
-        mountEntry.archive = new CFileSystemArchive( archiveName        ,
-                                                     mountEntry.abspath ,
-                                                     writeable          );
+        {
+            m_datalock.Lock();
+            mountEntry.archive = m_abstractArchiveFactory.Create( archiveType );
+            if ( GUCEF_NULL == mountEntry.archive )
+            {   
+                GUCEF_ERROR_LOG( CORE::LOGLEVEL_NORMAL, "Failed to add VFS root as a mount with name \"" + archiveName + 
+                    "\" and type \"" + archiveType + "\" because the archive type could not be constructed" );
+                m_datalock.Unlock();
+                return;
+            }
+            if ( !mountEntry.archive->LoadArchive( archiveName        ,
+                                                   mountEntry.abspath ,
+                                                   writeable          ) )
+            {   
+                m_abstractArchiveFactory.Destroy( mountEntry.archive );
+                GUCEF_ERROR_LOG( CORE::LOGLEVEL_NORMAL, "Failed to add VFS root as a mount with name \"" + archiveName + 
+                    "\" and type \"" + archiveType + "\" because the archive load failed" );
+                m_datalock.Unlock();
+                return;
+            }
+            m_datalock.Unlock();
+        }
 
         if ( autoMountArchives )
         {
@@ -710,10 +730,9 @@ CVFS::LoadConfig( const CORE::CDataNode& tree )
             {
                 CString archiveName = rootNode->GetAttributeValueOrChildValueByName( "ArchiveName" );
                 if ( archiveName.IsNULLOrEmpty() )
-                {
                     archiveName = path;
-                }
 
+                CString archiveType = rootNode->GetAttributeValueOrChildValueByName( "ArchiveType" );
                 CString mountPath = rootNode->GetAttributeValueOrChildValueByName( "MountPath" );
                 bool mountArchives = CORE::StringToBool( rootNode->GetAttributeValueOrChildValueByName( "MountArchives" ) );
                 bool writeable = CORE::StringToBool( rootNode->GetAttributeValueOrChildValueByName( "Writeable" ) );
@@ -721,7 +740,8 @@ CVFS::LoadConfig( const CORE::CDataNode& tree )
                          archiveName   ,
                          writeable     ,
                          mountArchives ,
-                         mountPath     );
+                         mountPath     ,
+                         archiveType   );
             }
             ++i;
         }

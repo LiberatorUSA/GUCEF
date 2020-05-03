@@ -303,10 +303,10 @@ CTimer::OnPulse( CNotifier* notifier                 ,
         {
             m_lastTimerCycle = newTickCount;
 
-            TTimerUpdateData updateData;
+            TimerUpdateEventData cuData;
+            TTimerUpdateData& updateData = cuData.GetData();
             updateData.tickCount = m_tickCount;
             updateData.updateDeltaInMilliSecs = deltaMilliSecs;
-            TimerUpdateEventData cuData( updateData );
             NotifyObservers( TimerUpdateEvent, &cuData );
         }
     }
@@ -364,6 +364,25 @@ CTimer::Reset( void )
     m_lastTimerCycle = MT::PrecisionTickCount();
     m_tickCount = 0;
 }
+
+/*-------------------------------------------------------------------------*/
+
+ void 
+ CTimer::TriggerNow( void )
+ {GUCEF_TRACE;
+ 
+    UInt64 newTickCount = MT::PrecisionTickCount();
+    UInt64 deltaTicks = ( newTickCount - m_lastTimerCycle );
+	Float64 deltaMilliSecs = deltaTicks / m_timerFreq;
+
+    TimerUpdateEventData cuData;
+    TTimerUpdateData& updateData = cuData.GetData();
+    updateData.tickCount = m_tickCount;
+    updateData.updateDeltaInMilliSecs = deltaMilliSecs;
+    NotifyObservers( TimerUpdateEvent, &cuData );
+ 
+    Reset();
+ }
 
 /*-------------------------------------------------------------------------*/
 

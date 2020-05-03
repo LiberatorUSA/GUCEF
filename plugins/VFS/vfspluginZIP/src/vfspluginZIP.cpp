@@ -81,7 +81,7 @@ CORE::Int32 GUCEF_PLUGIN_CALLSPEC_PREFIX
 GUCEFPlugin_Load( CORE::UInt32 argc, const char** argv ) GUCEF_PLUGIN_CALLSPEC_SUFFIX
 {GUCEF_TRACE;
 
-    VFS::CVfsGlobal::Instance()->GetVfs().RegisterArchiveFactory( "zip", zipArchiveFactory );
+    VFS::CVfsGlobal::Instance()->GetVfs().RegisterArchiveFactory( CZIPArchive::ZipArchiveTypeName, zipArchiveFactory );
     VFS::CVfsGlobal::Instance()->GetVfs().RegisterArchiveFactory( "pk3", zipArchiveFactory );
     VFS::CVfsGlobal::Instance()->GetVfs().RegisterArchiveFactory( "jar", zipArchiveFactory );
 
@@ -94,7 +94,7 @@ void GUCEF_PLUGIN_CALLSPEC_PREFIX
 GUCEFPlugin_Unload( void ) GUCEF_PLUGIN_CALLSPEC_SUFFIX
 {GUCEF_TRACE;
 
-    VFS::CVfsGlobal::Instance()->GetVfs().UnregisterArchiveFactory( "zip" );
+    VFS::CVfsGlobal::Instance()->GetVfs().UnregisterArchiveFactory( CZIPArchive::ZipArchiveTypeName );
     VFS::CVfsGlobal::Instance()->GetVfs().UnregisterArchiveFactory( "pk3" );
     VFS::CVfsGlobal::Instance()->GetVfs().UnregisterArchiveFactory( "jar" );
 }

@@ -62,6 +62,8 @@ namespace DVP {
 class GUCEF_VFSPLUGIN_DVP_PRIVATE_CPP CDVPArchive : public VFS::CIArchive
 {
     public:
+
+    static const VFS::CString DVPArchiveTypeName;
     
     CDVPArchive( void );
     
@@ -100,7 +102,9 @@ class GUCEF_VFSPLUGIN_DVP_PRIVATE_CPP CDVPArchive : public VFS::CIArchive
                               CVFSHandlePtr vfsResource       ,
                               const bool writeableRequest     );
 
-    virtual bool UnloadArchive( void );    
+    virtual bool UnloadArchive( void );
+    
+    virtual const VFS::CString& GetType( void ) const;
 
     virtual void DestroyObject( VFS::CVFSHandle* objectToBeDestroyed );
 

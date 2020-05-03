@@ -96,6 +96,8 @@ class GUCEF_HIDDEN CS3BucketArchive : public VFS::CIArchive
 
     virtual bool UnloadArchive( void );
 
+    virtual const VFS::CString& GetType( void ) const;
+
     virtual void DestroyObject( VFS::CVFSHandle* objectToBeDestroyed );
 
     private:

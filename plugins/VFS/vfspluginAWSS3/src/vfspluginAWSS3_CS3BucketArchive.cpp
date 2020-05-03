@@ -57,6 +57,11 @@
 #define GUCEF_CORE_DVCPPSTRINGUTILS_H
 #endif /* GUCEF_CORE_DVCPPSTRINGUTILS_H ? */
 
+#ifndef GUCEF_VFSPLUGIN_AWSS3_CAWSS3GLOBAL_H
+#include "vfspluginAWSS3_CAwsS3Global.h"
+#define GUCEF_VFSPLUGIN_AWSS3_CAWSS3GLOBAL_H
+#endif /* GUCEF_VFSPLUGIN_AWSS3_CAWSS3GLOBAL_H ? */
+
 #include "vfspluginAWSS3_CS3BucketArchive.h"
 
 /*-------------------------------------------------------------------------//
@@ -198,6 +203,15 @@ CS3BucketArchive::UnloadArchive( void )
 {GUCEF_TRACE;
 
     return true;
+}
+
+/*-------------------------------------------------------------------------*/
+
+const VFS::CString& 
+CS3BucketArchive::GetType( void ) const
+{GUCEF_TRACE;
+
+    return CAwsS3Global::AwsS3ArchiveType;
 }
 
 /*-------------------------------------------------------------------------*/

@@ -139,6 +139,12 @@ class GUCEF_CORE_PUBLIC_CPP CTimer : public CObservingNotifier
 
 	void Reset( void );
 
+    /**
+     *  Allows you to bypass the wait on the timer time-out and 
+     *  trigger the timer event right away
+     */
+    void TriggerNow( void );
+
 	const CString& GetClassTypeName( void ) const;
 
 	/**

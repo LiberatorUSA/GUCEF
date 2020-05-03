@@ -82,7 +82,7 @@ GUCEFPlugin_Load( CORE::UInt32 argc, const char** argv ) GUCEF_PLUGIN_CALLSPEC_S
 {GUCEF_TRACE;
 
     GUCEF_LOG( CORE::LOGLEVEL_NORMAL, "Load called on VFS plugin ITV" );
-    VFS::CVfsGlobal::Instance()->GetVfs().RegisterArchiveFactory( "res", resArchiveFactory );
+    VFS::CVfsGlobal::Instance()->GetVfs().RegisterArchiveFactory( CResArchive::ResArchiveTypeName, resArchiveFactory );
     VFS::CVfsGlobal::Instance()->GetVfs().RegisterArchiveFactory( "idx", resArchiveFactory );
 
     return 1;
@@ -95,7 +95,7 @@ GUCEFPlugin_Unload( void ) GUCEF_PLUGIN_CALLSPEC_SUFFIX
 {GUCEF_TRACE;
 
     GUCEF_LOG( CORE::LOGLEVEL_NORMAL, "Unload called on VFS plugin ITV" );
-    VFS::CVfsGlobal::Instance()->GetVfs().UnregisterArchiveFactory( "res" );
+    VFS::CVfsGlobal::Instance()->GetVfs().UnregisterArchiveFactory( CResArchive::ResArchiveTypeName );
     VFS::CVfsGlobal::Instance()->GetVfs().UnregisterArchiveFactory( "idx" );
 }
 

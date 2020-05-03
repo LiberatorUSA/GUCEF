@@ -58,6 +58,8 @@ class CResArchive : public VFS::CIArchive
 {
     public:
 
+    static const VFS::CString ResArchiveTypeName;
+    
     CResArchive( void );
 
     virtual ~CResArchive();
@@ -96,6 +98,8 @@ class CResArchive : public VFS::CIArchive
                               const bool writeableRequest     );
     
     virtual bool UnloadArchive( void );
+
+    virtual const VFS::CString& GetType( void ) const;
 
     virtual void DestroyObject( VFS::CVFSHandle* objectToBeDestroyed );
 

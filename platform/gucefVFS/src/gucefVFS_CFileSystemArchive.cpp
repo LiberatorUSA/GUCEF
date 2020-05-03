@@ -72,6 +72,17 @@ namespace VFS {
 //                                                                         //
 //-------------------------------------------------------------------------*/
 
+CFileSystemArchive::CFileSystemArchive( void )
+    : m_diskCacheList()            
+    , m_rootDir()         
+    , m_archiveName() 
+    , m_writable( false )
+{GUCEF_TRACE;
+
+}
+
+/*-------------------------------------------------------------------------*/
+
 CFileSystemArchive::CFileSystemArchive( const CString& archiveName ,
                                         const CString& rootDir     ,
                                         bool writeable             )
@@ -356,6 +367,15 @@ CFileSystemArchive::IsWriteable( void ) const
 {GUCEF_TRACE;
 
     return m_writable;
+}
+
+/*-------------------------------------------------------------------------*/
+
+const CString& 
+CFileSystemArchive::GetType( void ) const
+{GUCEF_TRACE;
+
+    return CVFS::FileSystemArchiveTypeName;
 }
 
 /*-------------------------------------------------------------------------*/

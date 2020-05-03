@@ -95,7 +95,7 @@ class CNotifierImplementor;
  *  in invalid memory access. If the notifier has been destroyed you should exit the code
  *  that called the member function without accessing any data members.
  */
-class GUCEF_CORE_PUBLIC_CPP CNotifier : public CITypeNamed
+class GUCEF_CORE_PUBLIC_CPP CNotifier : public virtual CITypeNamed
 {
     public:
 

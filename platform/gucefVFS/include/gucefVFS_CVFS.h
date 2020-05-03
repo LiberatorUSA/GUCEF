@@ -46,6 +46,11 @@
 #define GUCEF_VFS_CIARCHIVE_H
 #endif /* GUCEF_VFS_CIARCHIVE_H ? */
 
+#ifndef GUCEF_VFS_CFILESYSTEMARCHIVE_H
+#include "gucefVFS_CFileSystemArchive.h"
+#define GUCEF_VFS_CFILESYSTEMARCHIVE_H
+#endif /* GUCEF_VFS_CFILESYSTEMARCHIVE_H ? */
+
 #ifndef GUCEF_VFS_CIARCHIVE_H
 #include "gucefVFS_CVFSURLHandler.h"
 #define GUCEF_VFS_CIARCHIVE_H
@@ -86,15 +91,17 @@ class GUCEF_VFS_PUBLIC_CPP CVFS : public CORE::CIConfigurable
     typedef CIArchive::TStringList                        TStringList;
     typedef CIArchive::TStringSet                         TStringSet;
     
+    static const CORE::CString FileSystemArchiveTypeName;
+
     /**
      *  Adds a filesystem root to the VFS 
-
      */
-    void AddRoot( const CString& rootdir                     ,
-                  const CString& archiveName                 ,
-                  const bool writeable = false               ,
-                  const bool autoMountArchives = false       ,
-                  const CString& mountPoint = CString::Empty );
+    void AddRoot( const CString& rootdir                                 ,
+                  const CString& archiveName                             ,
+                  const bool writeable = false                           ,
+                  const bool autoMountArchives = false                   ,
+                  const CString& mountPoint = CString::Empty             ,
+                  const CString& archiveType = FileSystemArchiveTypeName );
 
     bool MountArchive( const CString& archiveName  ,
                        const CString& archivePath  ,
@@ -240,6 +247,7 @@ class GUCEF_VFS_PUBLIC_CPP CVFS : public CORE::CIConfigurable
     TMountVector m_mountList;
     UInt32 _maxmemloadsize;
     TAbstractArchiveFactory m_abstractArchiveFactory;
+    TFileSystemArchiveFactory m_fileSystemArchiveFactory;
 };
 
 /*-------------------------------------------------------------------------//

@@ -27,6 +27,11 @@
 #define GUCEF_CORE_GUCEF_ESSENTIALS_H
 #endif /* GUCEF_CORE_GUCEF_ESSENTIALS_H ? */
 
+#ifndef GUCEF_VFS_CVFS_H
+#include "gucefVFS_CVFS.h"
+#define GUCEF_VFS_CVFS_H
+#endif /* GUCEF_VFS_CVFS_H ? */
+
 #ifndef GUCEF_VFS_CVFSGLOBAL_H
 #include "gucefVFS_CVfsGlobal.h"
 #define GUCEF_VFS_CVFSGLOBAL_H
@@ -57,6 +62,7 @@ namespace AWSS3 {
 
 MT::CMutex CAwsS3Global::g_dataLock;
 CAwsS3Global* CAwsS3Global::g_instance = GUCEF_NULL;
+const CORE::CString CAwsS3Global::AwsS3ArchiveType = "AWS::S3";
 
 /*-------------------------------------------------------------------------//
 //                                                                         //
@@ -102,16 +108,9 @@ CAwsS3Global::Initialize( void )
     try
     {
         // Initialize the AWS SDK and its platform tie-ins
-        PLUGINGLUE::AWSSDK::CAwsSdkGlobal* sdk = PLUGINGLUE::AWSSDK::CAwsSdkGlobal::Instance();
+        PLUGINGLUE::AWSSDK::CAwsSdkGlobal::Instance();
 
-        m_s3Client = new Aws::S3::S3Client( sdk->GetCredentialsProvider(), sdk->GetAwsClientConfig() );
-        
-        // Setup for all S3 buckets available based on our credentials.
-        m_bucketInventoryRefreshTimer.SetInterval( 1000 );
-        m_bucketInventoryRefreshTimer.SetEnabled( true );
-        
-        VFS::CVfsGlobal::Instance()->GetVfs().RegisterArchiveFactory( "aws::s3", m_awsS3ArchiveFactory );
-
+        VFS::CVfsGlobal::Instance()->GetVfs().RegisterArchiveFactory( AwsS3ArchiveType, m_awsS3ArchiveFactory );
 
         GUCEF_LOG( CORE::LOGLEVEL_IMPORTANT, "AwsS3Global systems initialized" );
     }
@@ -144,7 +143,7 @@ CAwsS3Global::~CAwsS3Global()
     {       
         m_bucketInventoryRefreshTimer.SetEnabled( false );
 
-        VFS::CVfsGlobal::Instance()->GetVfs().UnregisterArchiveFactory( "aws::s3" );
+        VFS::CVfsGlobal::Instance()->GetVfs().UnregisterArchiveFactory( AwsS3ArchiveType );
 
         delete m_s3Client;
         m_s3Client = GUCEF_NULL;
@@ -181,6 +180,39 @@ CAwsS3Global::RegisterEventHandlers( void )
                  CORE::CTimer::TimerUpdateEvent ,
                  callback                       );
 
+    TEventCallback callback2( this, &CAwsS3Global::OnAwsSdkInitialized );
+    SubscribeTo( PLUGINGLUE::AWSSDK::CAwsSdkGlobal::Instance()             ,
+                 PLUGINGLUE::AWSSDK::CAwsSdkGlobal::AwsSdkInitializedEvent ,
+                 callback2                                                 );
+}
+
+/*-------------------------------------------------------------------------*/
+
+void
+CAwsS3Global::OnAwsSdkInitialized( CORE::CNotifier* notifier    ,
+                                   const CORE::CEvent& eventId  ,
+                                   CORE::CICloneable* eventData )
+{GUCEF_TRACE;
+
+    try
+    {
+        // Now that the SDK is initialized properly we can init the S3 client which depends on it
+        PLUGINGLUE::AWSSDK::CAwsSdkGlobal* sdk = PLUGINGLUE::AWSSDK::CAwsSdkGlobal::Instance();
+        m_s3Client = new Aws::S3::S3Client( sdk->GetCredentialsProvider(), sdk->GetAwsClientConfig() );
+    
+        // Trigger auto discovery and auto mounting of S3 buckets
+        m_bucketInventoryRefreshTimer.SetInterval( 600000 );
+        m_bucketInventoryRefreshTimer.TriggerNow();
+        m_bucketInventoryRefreshTimer.SetEnabled( true );
+    }
+    catch ( const std::exception& e )
+    {
+        GUCEF_EXCEPTION_LOG( CORE::LOGLEVEL_CRITICAL, CORE::CString( "AwsS3Global:OnAwsSdkInitialized: experienced an exception: " ) + e.what() );
+    }
+    catch ( ... )
+    {
+        GUCEF_EXCEPTION_LOG( CORE::LOGLEVEL_CRITICAL, "AwsS3Global:OnAwsSdkInitialized: experienced an unknown exception, your application may be unstable" );
+    }
 }
 
 /*-------------------------------------------------------------------------*/
@@ -201,12 +233,21 @@ CAwsS3Global::OnBucketInventoryRefreshTimerCycle( CORE::CNotifier* notifier    ,
                 outcome.GetResult().GetBuckets();
 
             CORE::CString bucketList;
+            VFS::CVFS& vfs = VFS::CVfsGlobal::Instance()->GetVfs();
             for ( auto const &bucket : bucket_list )
             {
+                CORE::CString bucketPath = "/aws/s3/" + bucket.GetName();
+                if ( vfs.MountArchive( bucket.GetName(), bucketPath, AwsS3ArchiveType, bucketPath, true ) )
+                {
+                    GUCEF_LOG( CORE::LOGLEVEL_NORMAL, "AwsS3Global: Auto mounted S3 bucket on VFS at path: \"" + bucketPath + "\"" );
+                }
+                else
+                {
+                    GUCEF_WARNING_LOG( CORE::LOGLEVEL_NORMAL, "AwsS3Global: Failed to auto-mount S3 bucket on VFS at path: \"" + bucketPath + "\"" );    
+                }
                 bucketList +=  bucket.GetName() + ", ";
-                
             }
-            GUCEF_DEBUG_LOG( CORE::LOGLEVEL_NORMAL, "AwsS3Global: Available Amazon S3 buckets: " + bucketList );
+            GUCEF_DEBUG_LOG( CORE::LOGLEVEL_NORMAL, "AwsS3Global: All available Amazon S3 buckets with the current credentials: " + bucketList );
         }
         else
         {

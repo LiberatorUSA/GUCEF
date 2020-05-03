@@ -88,6 +88,14 @@ typedef struct SVPFileIndexEntry TVPFileIndexEntry;
 
 /*-------------------------------------------------------------------------//
 //                                                                         //
+//      GLOBAL VARS                                                        //
+//                                                                         //
+//-------------------------------------------------------------------------*/
+
+const VFS::CString CVPArchive::VPArchiveTypeName = "vp";
+
+/*-------------------------------------------------------------------------//
+//                                                                         //
 //      UTILITIES                                                          //
 //                                                                         //
 //-------------------------------------------------------------------------*/
@@ -487,6 +495,15 @@ CVPArchive::UnloadArchive( void )
     m_archiveName = NULL;
     m_archivePath = NULL;
     return true;
+}
+
+/*-------------------------------------------------------------------------*/
+
+const VFS::CString& 
+CVPArchive::GetType( void ) const
+{GUCEF_TRACE;
+
+    return VPArchiveTypeName;
 }
 
 /*-------------------------------------------------------------------------*/

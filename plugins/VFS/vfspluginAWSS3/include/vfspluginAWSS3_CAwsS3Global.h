@@ -79,6 +79,7 @@ class GUCEF_HIDDEN CAwsS3Global : public CORE::CObservingNotifier
     public:
 
     typedef CORE::CTFactory< VFS::CIArchive, CS3BucketArchive > TAwsS3ArchiveFactory;
+    static const CORE::CString AwsS3ArchiveType;
 
     static CAwsS3Global* Instance( void );
 
@@ -95,6 +96,11 @@ class GUCEF_HIDDEN CAwsS3Global : public CORE::CObservingNotifier
     void Initialize( void );
 
     void RegisterEventHandlers( void );
+
+    void
+    OnAwsSdkInitialized( CORE::CNotifier* notifier    ,
+                         const CORE::CEvent& eventId  ,
+                         CORE::CICloneable* eventData );
 
     void
     OnBucketInventoryRefreshTimerCycle( CORE::CNotifier* notifier    ,

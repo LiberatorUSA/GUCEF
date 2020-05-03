@@ -26,6 +26,11 @@
 //                                                                         //
 //-------------------------------------------------------------------------*/
 
+#ifndef GUCEF_CORE_CTFACTORY_H
+#include "CTFactory.h"
+#define GUCEF_CORE_CTFACTORY_H
+#endif /* GUCEF_CORE_CTFACTORY_H ? */
+
 #ifndef GUCEF_VFS_CIARCHIVE_H
 #include "gucefVFS_CIArchive.h"
 #define GUCEF_VFS_CIARCHIVE_H
@@ -49,6 +54,8 @@ namespace VFS {
 class GUCEF_VFS_PUBLIC_CPP CFileSystemArchive : public CIArchive
 {
     public:
+    
+    CFileSystemArchive( void );
     
     CFileSystemArchive( const CString& archiveName ,
                         const CString& rootDir     ,
@@ -92,6 +99,8 @@ class GUCEF_VFS_PUBLIC_CPP CFileSystemArchive : public CIArchive
     virtual bool UnloadArchive( void );
     
     virtual void DestroyObject( CVFSHandle* sharedPointer );
+
+    virtual const CString& GetType( void ) const;
     
     const CString& GetRootDir( void ) const;
     
@@ -119,6 +128,10 @@ class GUCEF_VFS_PUBLIC_CPP CFileSystemArchive : public CIArchive
     CString m_archiveName;
     bool m_writable;
 };
+
+/*-------------------------------------------------------------------------*/
+
+typedef CORE::CTFactory< VFS::CIArchive, CFileSystemArchive > TFileSystemArchiveFactory;
 
 /*-------------------------------------------------------------------------//
 //                                                                         //
