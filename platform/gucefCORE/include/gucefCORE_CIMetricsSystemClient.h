@@ -89,6 +89,8 @@ class GUCEF_CORE_PUBLIC_CPP CIMetricsSystemClient : public CIConfigurable
      */
     virtual void Count( const CString& key, const Int32 delta, const Float32 frequency = 1.0f ) const = 0;
     virtual void Count( const CString& key, const Int64 delta, const Float32 frequency = 1.0f ) const = 0;
+    virtual void Count( const CString& key, const UInt32 delta, const Float32 frequency = 1.0f ) const = 0;
+    virtual void Count( const CString& key, const UInt64 delta, const Float32 frequency = 1.0f ) const = 0;
 
     /**
      *  Records a gauge for the key, with a given value, at a given frequency rate

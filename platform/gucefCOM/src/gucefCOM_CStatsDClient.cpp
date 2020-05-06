@@ -129,6 +129,26 @@ CStatsDClient::Count( const CString& key, const Int64 delta, const Float32 frequ
 /*-------------------------------------------------------------------------*/
 
 void
+CStatsDClient::Count( const CString& key, const UInt32 delta, const Float32 frequency ) const
+{GUCEF_TRACE;
+
+    static const CString statTypeName = "c";
+    Transmit( key, (Int32)delta, statTypeName, frequency );
+}
+
+/*-------------------------------------------------------------------------*/
+
+void
+CStatsDClient::Count( const CString& key, const UInt64 delta, const Float32 frequency ) const
+{GUCEF_TRACE;
+
+    static const CString statTypeName = "c";
+    Transmit( key, (Int64)delta, statTypeName, frequency );
+}
+
+/*-------------------------------------------------------------------------*/
+
+void
 CStatsDClient::Gauge( const CString& key, const UInt32 value, const Float32 frequency ) const
 {GUCEF_TRACE;
     
@@ -168,6 +188,7 @@ CStatsDClient::Timing( const CString& key, const UInt64 ms, const Float32 freque
 
 /*-------------------------------------------------------------------------*/
 
+// @TODO: Improve this to better handle different value types
 void 
 CStatsDClient::Transmit( const CString& key      , 
                          const Int64 value       , 
