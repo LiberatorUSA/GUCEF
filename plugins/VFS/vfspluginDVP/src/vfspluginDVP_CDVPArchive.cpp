@@ -373,7 +373,8 @@ CDVPArchive::IsWriteable( void ) const
 bool
 CDVPArchive::LoadArchive( const VFS::CString& archiveName ,
                           const VFS::CString& archivePath ,
-                          const bool writableRequest      )
+                          const bool writableRequest      ,
+                          const bool autoMountSubArchives )
 {GUCEF_TRACE;
     
     // We do not support writable DVP archives

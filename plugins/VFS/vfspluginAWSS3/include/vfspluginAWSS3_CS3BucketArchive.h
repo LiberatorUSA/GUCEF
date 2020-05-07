@@ -27,6 +27,14 @@
 
 #include <map>
 
+#undef GetObject
+#include <aws/core/Aws.h>
+#include <aws/s3/model/Object.h>
+#include <aws/s3/model/GetObjectResult.h>
+#include <aws/s3/model/GetObjectRequest.h>
+#include <aws/s3/model/ListObjectsRequest.h>
+#include <aws/s3/S3Client.h>
+
 #ifndef GUCEF_VFS_CVFS_H
 #include "gucefVFS_CVFS.h"
 #define GUCEF_VFS_CVFS_H
@@ -88,7 +96,8 @@ class GUCEF_HIDDEN CS3BucketArchive : public VFS::CIArchive
 
     virtual bool LoadArchive( const VFS::CString& archiveName ,
                               const VFS::CString& archivePath ,
-                              const bool writableRequest      );
+                              const bool writableRequest      ,
+                              const bool autoMountSubArchives );
 
     virtual bool LoadArchive( const VFS::CString& archiveName ,
                               CVFSHandlePtr vfsResource       ,
@@ -107,6 +116,12 @@ class GUCEF_HIDDEN CS3BucketArchive : public VFS::CIArchive
 
     private:
 
+    typedef std::map< CORE::CString, Aws::S3::Model::Object > TObjectMap;
+    
+    TObjectMap m_objects;
+    VFS::CString m_archiveName;
+    bool m_autoMountBuckets;
+    bool m_writeableRequest;
 };
 
 /*-------------------------------------------------------------------------//

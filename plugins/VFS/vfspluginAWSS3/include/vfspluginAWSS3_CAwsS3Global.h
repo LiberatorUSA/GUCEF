@@ -25,6 +25,14 @@
 //                                                                         //
 //-------------------------------------------------------------------------*/
 
+#undef GetObject
+#include <aws/core/Aws.h>
+#include <aws/s3/model/Object.h>
+#include <aws/s3/model/GetObjectResult.h>
+#include <aws/s3/model/GetObjectRequest.h>
+#include <aws/s3/model/ListObjectsRequest.h>
+#include <aws/s3/S3Client.h>
+
 #ifndef GUCEF_MT_CMUTEX_H
 #include "gucefMT_CMutex.h"
 #define GUCEF_MT_CMUTEX_H
@@ -50,13 +58,15 @@
 #define GUCEF_VFSPLUGIN_AWSS3_CS3BUCKETARCHIVE_H
 #endif /* GUCEF_VFSPLUGIN_AWSS3_CS3BUCKETARCHIVE_H ? */
 
+#ifndef GUCEF_VFSPLUGIN_AWSS3_CS3ARCHIVE_H
+#include "vfspluginAWSS3_CS3Archive.h"
+#define GUCEF_VFSPLUGIN_AWSS3_CS3ARCHIVE_H
+#endif /* GUCEF_VFSPLUGIN_AWSS3_CS3ARCHIVE_H ? */
+
 #ifndef GUCEF_VFSPLUGIN_AWSS3_MACROS_H
 #include "vfspluginAWSS3_macros.h"
 #define GUCEF_VFSPLUGIN_AWSS3_MACROS_H
 #endif /* GUCEF_VFSPLUGIN_AWSS3_MACROS_H ? */
-
-#include <aws/core/Aws.h>
-#include <aws/s3/S3Client.h>
 
 /*-------------------------------------------------------------------------//
 //                                                                         //
@@ -78,12 +88,21 @@ class GUCEF_HIDDEN CAwsS3Global : public CORE::CObservingNotifier
 {
     public:
 
-    typedef CORE::CTFactory< VFS::CIArchive, CS3BucketArchive > TAwsS3ArchiveFactory;
+    typedef CORE::CTFactory< VFS::CIArchive, CS3Archive >       TAwsS3ArchiveFactory;
+    typedef CORE::CTFactory< VFS::CIArchive, CS3BucketArchive > TAwsS3BucketArchiveFactory;
+
     static const CORE::CString AwsS3ArchiveType;
+    static const CORE::CString AwsS3BucketArchiveType;
+
+    static const CORE::CEvent AwsS3InitializedEvent;
+
+    static void RegisterEvents( void );
 
     static CAwsS3Global* Instance( void );
 
-    Aws::S3::S3Client& GetS3Client( void );
+    Aws::S3::S3Client* GetS3Client( void );
+
+    bool IsS3AccessInitialized( void ) const;
 
     static void Deinstance( void );
 
@@ -113,7 +132,9 @@ class GUCEF_HIDDEN CAwsS3Global : public CORE::CObservingNotifier
 
     Aws::S3::S3Client* m_s3Client;
     TAwsS3ArchiveFactory m_awsS3ArchiveFactory;
+    TAwsS3BucketArchiveFactory m_awsS3BucketArchiveFactory;
     CORE::CTimer m_bucketInventoryRefreshTimer;
+    bool m_isS3AccessInitialized;
     
     static MT::CMutex g_dataLock;
     static CAwsS3Global* g_instance;

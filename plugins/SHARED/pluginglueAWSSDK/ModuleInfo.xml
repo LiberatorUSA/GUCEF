@@ -14,4 +14,10 @@
             <Define String="GUCEF_PLUGINGLUE_AWSSDK_BUILD_MODULE" />
         </Preprocessor>
     </Module>
+    <Module Platform="mswin">
+        <Preprocessor>
+            <Define String="PLATFORM_WINDOWS" />
+			<Define String="USE_IMPORT_EXPORT" />
+        </Preprocessor>
+    </Module>
 </ModuleInfoEntry>

@@ -14,6 +14,7 @@
 set( HEADER_FILES 
   include/vfspluginAWSS3.h
   include/vfspluginAWSS3_CAwsS3Global.h
+  include/vfspluginAWSS3_CS3Archive.h
   include/vfspluginAWSS3_CS3BucketArchive.h
   include/vfspluginAWSS3_config.h
   include/vfspluginAWSS3_macros.h
@@ -22,6 +23,7 @@ set( HEADER_FILES
 set( SOURCE_FILES 
   src/vfspluginAWSS3.cpp
   src/vfspluginAWSS3_CAwsS3Global.cpp
+  src/vfspluginAWSS3_CS3Archive.cpp
   src/vfspluginAWSS3_CS3BucketArchive.cpp
 )
 
@@ -39,6 +41,14 @@ add_library( ${MODULE_NAME} ${ALL_FILES} )
 add_dependencies( ${MODULE_NAME} aws-cpp-sdk-core aws-cpp-sdk-s3 gucefCORE gucefMT gucefVFS pluginglueAWSSDK )
 target_link_libraries( ${MODULE_NAME} aws-cpp-sdk-core aws-cpp-sdk-s3 gucefCORE gucefMT gucefVFS pluginglueAWSSDK )
 set_property( TARGET ${MODULE_NAME} APPEND_STRING PROPERTY COMPILE_DEFINITIONS "GUCEF_VFSPLUGIN_AWSS3_BUILD_MODULE" )
+
+if ( WIN32 )
+  set_property( TARGET ${MODULE_NAME} APPEND_STRING PROPERTY COMPILE_DEFINITIONS "PLATFORM_WINDOWS;USE_IMPORT_EXPORT" )
+endif( WIN32 )
+
+if ( WIN64 )
+  set_property( TARGET ${MODULE_NAME} APPEND_STRING PROPERTY COMPILE_DEFINITIONS "PLATFORM_WINDOWS;USE_IMPORT_EXPORT" )
+endif( WIN64 )
 
 include_directories( ../../../common/include ../../../dependencies/aws-c-common/include ../../../dependencies/aws-c-event-stream/include ../../../dependencies/aws-checksums/include ../../../dependencies/aws-checksums/include/aws ../../../dependencies/aws-checksums/include/aws/checksums ../../../dependencies/aws-checksums/include/aws/checksums/private ../../../dependencies/aws-cpp-sdk-core/include ../../../dependencies/aws-cpp-sdk-core/include/aws ../../../dependencies/aws-cpp-sdk-core/include/aws/core ../../../dependencies/aws-cpp-sdk-core/include/aws/core/auth ../../../dependencies/aws-cpp-sdk-core/include/aws/core/client ../../../dependencies/aws-cpp-sdk-core/include/aws/core/config ../../../dependencies/aws-cpp-sdk-core/include/aws/core/external ../../../dependencies/aws-cpp-sdk-core/include/aws/core/external/cjson ../../../dependencies/aws-cpp-sdk-core/include/aws/core/external/tinyxml2 ../../../dependencies/aws-cpp-sdk-core/include/aws/core/http ../../../dependencies/aws-cpp-sdk-core/include/aws/core/http/curl ../../../dependencies/aws-cpp-sdk-core/include/aws/core/http/standard ../../../dependencies/aws-cpp-sdk-core/include/aws/core/internal ../../../dependencies/aws-cpp-sdk-core/include/aws/core/monitoring ../../../dependencies/aws-cpp-sdk-core/include/aws/core/net ../../../dependencies/aws-cpp-sdk-core/include/aws/core/platform ../../../dependencies/aws-cpp-sdk-core/include/aws/core/platform/refs ../../../dependencies/aws-cpp-sdk-core/include/aws/core/utils ../../../dependencies/aws-cpp-sdk-core/include/aws/core/utils/base64 ../../../dependencies/aws-cpp-sdk-core/include/aws/core/utils/crypto ../../../dependencies/aws-cpp-sdk-core/include/aws/core/utils/crypto/bcrypt ../../../dependencies/aws-cpp-sdk-core/include/aws/core/utils/crypto/commoncrypto ../../../dependencies/aws-cpp-sdk-core/include/aws/core/utils/crypto/openssl ../../../dependencies/aws-cpp-sdk-core/include/aws/core/utils/event ../../../dependencies/aws-cpp-sdk-core/include/aws/core/utils/json ../../../dependencies/aws-cpp-sdk-core/include/aws/core/utils/logging ../../../dependencies/aws-cpp-sdk-core/include/aws/core/utils/memory ../../../dependencies/aws-cpp-sdk-core/include/aws/core/utils/memory/stl ../../../dependencies/aws-cpp-sdk-core/include/aws/core/utils/ratelimiter ../../../dependencies/aws-cpp-sdk-core/include/aws/core/utils/stream ../../../dependencies/aws-cpp-sdk-core/include/aws/core/utils/threading ../../../dependencies/aws-cpp-sdk-core/include/aws/core/utils/xml ../../../dependencies/aws-cpp-sdk-s3/include ../../../dependencies/aws-cpp-sdk-s3/include/aws ../../../dependencies/aws-cpp-sdk-s3/include/aws/s3 ../../../dependencies/aws-cpp-sdk-s3/include/aws/s3/model ../../../dependencies/curl/include ../../../dependencies/curl/include/curl ../../../dependencies/curl/lib ../../../dependencies/curl/lib/vauth ../../../dependencies/curl/lib/vquic ../../../dependencies/curl/lib/vssh ../../../dependencies/curl/lib/vtls ../../../platform/gucefCORE/include ../../../platform/gucefMT/include ../../../platform/gucefVFS/include ../../SHARED/pluginglueAWSSDK/include include )
 

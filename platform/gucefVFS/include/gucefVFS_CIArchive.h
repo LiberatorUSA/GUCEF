@@ -95,9 +95,10 @@ class GUCEF_VFS_PUBLIC_CPP CIArchive : public CORE::CTDynamicDestructorBase< CVF
     
     virtual bool IsWriteable( void ) const = 0;
     
-    virtual bool LoadArchive( const CString& archiveName ,
-                              const CString& archivePath ,
-                              const bool writableRequest ) = 0;
+    virtual bool LoadArchive( const CString& archiveName      ,
+                              const CString& archivePath      ,
+                              const bool writableRequest      ,
+                              const bool autoMountSubArchives ) = 0;
 
     virtual bool LoadArchive( const CString& archiveName  ,
                               CVFSHandlePtr vfsResource   ,

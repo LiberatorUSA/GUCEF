@@ -57,12 +57,22 @@
 #define GUCEF_CORE_DVCPPSTRINGUTILS_H
 #endif /* GUCEF_CORE_DVCPPSTRINGUTILS_H ? */
 
+#ifndef GUCEF_VFS_CVFS_H
+#include "gucefVFS_CVFS.h"
+#define GUCEF_VFS_CVFS_H
+#endif /* GUCEF_VFS_CVFS_H ? */
+
+#ifndef GUCEF_VFS_CVFSGLOBAL_H
+#include "gucefVFS_CVfsGlobal.h"
+#define GUCEF_VFS_CVFSGLOBAL_H
+#endif /* GUCEF_VFS_CVFSGLOBAL_H ? */
+
 #ifndef GUCEF_VFSPLUGIN_AWSS3_CAWSS3GLOBAL_H
 #include "vfspluginAWSS3_CAwsS3Global.h"
 #define GUCEF_VFSPLUGIN_AWSS3_CAWSS3GLOBAL_H
 #endif /* GUCEF_VFSPLUGIN_AWSS3_CAWSS3GLOBAL_H ? */
 
-#include "vfspluginAWSS3_CS3BucketArchive.h"
+#include "vfspluginAWSS3_CS3Archive.h"
 
 /*-------------------------------------------------------------------------//
 //                                                                         //
@@ -80,19 +90,21 @@ namespace AWSS3 {
 //                                                                         //
 //-------------------------------------------------------------------------*/
 
-CS3BucketArchive::CS3BucketArchive( void )
-    : CIArchive() 
-    , m_objects()
+CS3Archive::CS3Archive( void )
+    : CORE::CObservingNotifier()
+    , CIArchive()
+    , m_bucketList()
     , m_archiveName()
     , m_autoMountBuckets( false )
     , m_writeableRequest( false )
 {GUCEF_TRACE;
 
+    RegisterEventHandlers();
 }
 
 /*-------------------------------------------------------------------------*/
 
-CS3BucketArchive::~CS3BucketArchive()
+CS3Archive::~CS3Archive()
 {GUCEF_TRACE;
 
     UnloadArchive();
@@ -100,11 +112,23 @@ CS3BucketArchive::~CS3BucketArchive()
 
 /*-------------------------------------------------------------------------*/
 
+void
+CS3Archive::RegisterEventHandlers( void )
+{GUCEF_TRACE;
+
+    TEventCallback callback( this, &CS3Archive::OnAwsS3Initialized );
+    SubscribeTo( VFSPLUGIN::AWSS3::CAwsS3Global::Instance()            ,
+                 VFSPLUGIN::AWSS3::CAwsS3Global::AwsS3InitializedEvent ,
+                 callback                                              );
+}
+
+/*-------------------------------------------------------------------------*/
+
 VFS::CIArchive::CVFSHandlePtr
-CS3BucketArchive::GetFile( const VFS::CString& file      ,
-                           const char* mode              ,
-                           const VFS::UInt32 memLoadSize ,
-                           const bool overwrite          )
+CS3Archive::GetFile( const VFS::CString& file      ,
+                     const char* mode              ,
+                     const VFS::UInt32 memLoadSize ,
+                     const bool overwrite          )
 {GUCEF_TRACE;
 
     return VFS::CVFS::CVFSHandlePtr();
@@ -113,13 +137,13 @@ CS3BucketArchive::GetFile( const VFS::CString& file      ,
 /*-------------------------------------------------------------------------*/
 
 void
-CS3BucketArchive::GetList( TStringSet& outputList       ,
-                           const VFS::CString& location ,
-                           bool recursive               ,
-                           bool includePathInFilename   ,
-                           const VFS::CString& filter   ,
-                           bool addFiles                ,
-                           bool addDirs                 ) const
+CS3Archive::GetList( TStringSet& outputList       ,
+                     const VFS::CString& location ,
+                     bool recursive               ,
+                     bool includePathInFilename   ,
+                     const VFS::CString& filter   ,
+                     bool addFiles                ,
+                     bool addDirs                 ) const
 {GUCEF_TRACE;
 
 
@@ -128,7 +152,7 @@ CS3BucketArchive::GetList( TStringSet& outputList       ,
 /*-------------------------------------------------------------------------*/
 
 bool
-CS3BucketArchive::FileExists( const VFS::CString& filePath ) const
+CS3Archive::FileExists( const VFS::CString& filePath ) const
 {GUCEF_TRACE;
 
     return false;
@@ -137,7 +161,7 @@ CS3BucketArchive::FileExists( const VFS::CString& filePath ) const
 /*-------------------------------------------------------------------------*/
 
 VFS::UInt32
-CS3BucketArchive::GetFileSize( const VFS::CString& filePath ) const
+CS3Archive::GetFileSize( const VFS::CString& filePath ) const
 {GUCEF_TRACE;
 
     return 0;
@@ -146,7 +170,7 @@ CS3BucketArchive::GetFileSize( const VFS::CString& filePath ) const
 /*-------------------------------------------------------------------------*/
 
 time_t
-CS3BucketArchive::GetFileModificationTime( const VFS::CString& filePath ) const
+CS3Archive::GetFileModificationTime( const VFS::CString& filePath ) const
 {
     return 0;
 }
@@ -154,7 +178,7 @@ CS3BucketArchive::GetFileModificationTime( const VFS::CString& filePath ) const
 /*-------------------------------------------------------------------------*/
 
 VFS::CString
-CS3BucketArchive::GetFileHash( const VFS::CString& file ) const
+CS3Archive::GetFileHash( const VFS::CString& file ) const
 {GUCEF_TRACE;
 
     return VFS::CString();
@@ -163,7 +187,7 @@ CS3BucketArchive::GetFileHash( const VFS::CString& file ) const
 /*-------------------------------------------------------------------------*/
 
 const VFS::CString&
-CS3BucketArchive::GetArchiveName( void ) const
+CS3Archive::GetArchiveName( void ) const
 {GUCEF_TRACE;
 
     return m_archiveName;
@@ -172,7 +196,7 @@ CS3BucketArchive::GetArchiveName( void ) const
 /*-------------------------------------------------------------------------*/
 
 bool
-CS3BucketArchive::IsWriteable( void ) const
+CS3Archive::IsWriteable( void ) const
 {GUCEF_TRACE;
 
     return m_writeableRequest;
@@ -181,79 +205,105 @@ CS3BucketArchive::IsWriteable( void ) const
 /*-------------------------------------------------------------------------*/
 
 bool
-CS3BucketArchive::LoadArchive( const VFS::CString& archiveName ,
-                               const VFS::CString& archivePath ,
-                               const bool writeableRequest     ,
-                               const bool autoMountSubArchives )
+CS3Archive::LoadBucketList( const bool autoMountBuckets , 
+                            const bool writeableRequest )
 {GUCEF_TRACE;
 
+    // Setup for all S3 buckets available based on our credentials.
     try
     {
-        m_archiveName = archiveName;
-        m_autoMountBuckets = autoMountSubArchives;
-        m_writeableRequest = writeableRequest; 
-        
         Aws::S3::S3Client* s3Client = CAwsS3Global::Instance()->GetS3Client();
-        if ( GUCEF_NULL == s3Client )
-            return false;
-
-        Aws::S3::Model::ListObjectsRequest objectsRequest;
-        objectsRequest.WithBucket( m_archiveName );
-
-        auto listObjectsOutcome = s3Client->ListObjects( objectsRequest );
-        if ( listObjectsOutcome.IsSuccess() )
+        auto outcome = s3Client->ListBuckets();
+        if ( outcome.IsSuccess() )
         {
-            // Get up to 1000 objects
+            m_bucketList = outcome.GetResult().GetBuckets();
 
-            #ifdef GUCEF_DEBUG_MODE
-            CORE::CString objectKeys;
-            #endif
-
-            Aws::Vector< Aws::S3::Model::Object > objectList = listObjectsOutcome.GetResult().GetContents();
-            for (auto const& s3Object : objectList )
+            if ( autoMountBuckets )
             {
-                auto const& key = s3Object.GetKey();
-
-                #ifdef GUCEF_DEBUG_MODE
-                objectKeys += key + ", ";
-                #endif
-                
-                m_objects[ key ] = s3Object;
+                CORE::CString bucketList;
+                VFS::CVFS& vfs = VFS::CVfsGlobal::Instance()->GetVfs();
+                for ( auto const &bucket : m_bucketList )
+                {
+                    CORE::CString bucketPath = "/aws/s3/" + bucket.GetName();
+                    if ( vfs.MountArchive( bucket.GetName(), bucketPath, CAwsS3Global::AwsS3BucketArchiveType, bucketPath, writeableRequest, autoMountBuckets, bucketPath ) )
+                    {
+                        GUCEF_LOG( CORE::LOGLEVEL_NORMAL, "AwsS3Global: Auto mounted S3 bucket on VFS at path: \"" + bucketPath + "\"" );
+                    }
+                    else
+                    {
+                        GUCEF_WARNING_LOG( CORE::LOGLEVEL_NORMAL, "AwsS3Global: Failed to auto-mount S3 bucket on VFS at path: \"" + bucketPath + "\"" );    
+                    }
+                    bucketList +=  bucket.GetName() + ", ";
+                }
+                GUCEF_DEBUG_LOG( CORE::LOGLEVEL_NORMAL, "AwsS3Global: All available Amazon S3 buckets with the current credentials: " + bucketList );
             }
-            GUCEF_DEBUG_LOG( CORE::LOGLEVEL_BELOW_NORMAL, "S3BucketArchive: Bucket \"" + m_archiveName + "\"has the following objects: " + objectKeys );
+            return true;
         }
         else
         {
-            GUCEF_ERROR_LOG( CORE::LOGLEVEL_NORMAL, "S3BucketArchive: ListObjects error: " + 
-                listObjectsOutcome.GetError().GetExceptionName() + " - " + listObjectsOutcome.GetError().GetMessage() );
+            GUCEF_ERROR_LOG( CORE::LOGLEVEL_NORMAL, "AwsS3Global: ListBuckets error: " + 
+                outcome.GetError().GetExceptionName() + " - " + outcome.GetError().GetMessage() );
         }
     }
     catch ( const std::exception& e )
     {
-        GUCEF_EXCEPTION_LOG( CORE::LOGLEVEL_IMPORTANT, CORE::CString( "S3BucketArchive: Exception trying to S3 load bucket object index: " ) + e.what() );
+        GUCEF_EXCEPTION_LOG( CORE::LOGLEVEL_IMPORTANT, CORE::CString( "AwsS3Global: Exception trying to update S3 bucket inventory: " ) + e.what() );
     }
     catch ( ... )
     {
-        GUCEF_EXCEPTION_LOG( CORE::LOGLEVEL_CRITICAL, "S3BucketArchive: Unknown exception trying to S3 load bucket object index" );
+        GUCEF_EXCEPTION_LOG( CORE::LOGLEVEL_CRITICAL, "AwsS3Global: Unknown exception trying to update S3 bucket inventory" );
     }
+
     return false;
 }
 
 /*-------------------------------------------------------------------------*/
 
+void
+CS3Archive::OnAwsS3Initialized( CORE::CNotifier* notifier    ,
+                                const CORE::CEvent& eventId  ,
+                                CORE::CICloneable* eventData )
+{GUCEF_TRACE;
+    
+    LoadBucketList( m_autoMountBuckets, m_writeableRequest );
+}
+
+/*-------------------------------------------------------------------------*/
+
 bool
-CS3BucketArchive::LoadArchive( const VFS::CString& archiveName ,
-                               CVFSHandlePtr vfsResource       ,
-                               const bool writeableRequest     )
+CS3Archive::LoadArchive( const VFS::CString& archiveName ,
+                         const VFS::CString& archivePath ,
+                         const bool writeableRequest     ,
+                         const bool autoMountSubArchives )
 {GUCEF_TRACE;
 
+    m_archiveName = archiveName;
+    m_autoMountBuckets = autoMountSubArchives;
+    m_writeableRequest = writeableRequest;
+    
+    if ( CAwsS3Global::Instance()->IsS3AccessInitialized() )
+        return LoadBucketList( autoMountSubArchives, writeableRequest );
+    
+    // We will wait for the initialization event, assuming deferred success
+    return true;
+}
+
+/*-------------------------------------------------------------------------*/
+
+bool
+CS3Archive::LoadArchive( const VFS::CString& archiveName ,
+                         CVFSHandlePtr vfsResource       ,
+                         const bool writeableRequest     )
+{GUCEF_TRACE;
+
+    GUCEF_WARNING_LOG( CORE::LOGLEVEL_NORMAL, "S3Archive: Attempting to load a \"AWS::S3\" archive from a resource. That does not make sense. Bad config?" );
     return false;
 }
 
 /*-------------------------------------------------------------------------*/
 
 bool
-CS3BucketArchive::UnloadArchive( void )
+CS3Archive::UnloadArchive( void )
 {GUCEF_TRACE;
 
     return true;
@@ -262,7 +312,7 @@ CS3BucketArchive::UnloadArchive( void )
 /*-------------------------------------------------------------------------*/
 
 const VFS::CString& 
-CS3BucketArchive::GetType( void ) const
+CS3Archive::GetType( void ) const
 {GUCEF_TRACE;
 
     return CAwsS3Global::AwsS3ArchiveType;
@@ -271,7 +321,7 @@ CS3BucketArchive::GetType( void ) const
 /*-------------------------------------------------------------------------*/
 
 void
-CS3BucketArchive::DestroyObject( VFS::CVFSHandle* objectToBeDestroyed )
+CS3Archive::DestroyObject( VFS::CVFSHandle* objectToBeDestroyed )
 {GUCEF_TRACE;
 
     delete objectToBeDestroyed;

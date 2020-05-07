@@ -1,24 +1,23 @@
 /*
- *  vfspluginDVP: Generic GUCEF VFS plugin for "Dinand Vanvelzen Pack" archives
- *  Copyright (C) 2002 - 2008.  Dinand Vanvelzen
+ *  vfspluginAWSS3: Generic GUCEF VFS plugin for dealing with S3 storage in AWS
  *
- *  This library is free software; you can redistribute it and/or
- *  modify it under the terms of the GNU Lesser General Public
- *  License as published by the Free Software Foundation; either
- *  version 2.1 of the License, or (at your option) any later version.
+ *  Copyright (C) 1998 - 2020.  Dinand Vanvelzen
  *
- *  This library is distributed in the hope that it will be useful,
- *  but WITHOUT ANY WARRANTY; without even the implied warranty of
- *  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
- *  Lesser General Public License for more details.
+ *  Licensed under the Apache License, Version 2.0 (the "License");
+ *  you may not use this file except in compliance with the License.
+ *  You may obtain a copy of the License at
  *
- *  You should have received a copy of the GNU Lesser General Public
- *  License along with this library; if not, write to the Free Software
- *  Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA 
+ *    http://www.apache.org/licenses/LICENSE-2.0
+ *
+ *  Unless required by applicable law or agreed to in writing, software
+ *  distributed under the License is distributed on an "AS IS" BASIS,
+ *  WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ *  See the License for the specific language governing permissions and
+ *  limitations under the License.
  */
 
-#ifndef GUCEF_VFSPLUGIN_DVP_CDVPARCHIVE_H
-#define GUCEF_VFSPLUGIN_DVP_CDVPARCHIVE_H
+#ifndef VFSPLUGIN_AWSS3_CS3Archive_H
+#define VFSPLUGIN_AWSS3_CS3Archive_H
 
 /*-------------------------------------------------------------------------//
 //                                                                         //
@@ -28,20 +27,28 @@
 
 #include <map>
 
+#undef GetObject
+#include <aws/core/Aws.h>
+#include <aws/s3/model/Object.h>
+#include <aws/s3/model/GetObjectResult.h>
+#include <aws/s3/model/GetObjectRequest.h>
+#include <aws/s3/model/ListObjectsRequest.h>
+#include <aws/s3/S3Client.h>
+
+#ifndef GUCEF_CORE_COBSERVINGNOTIFIER_H
+#include "CObservingNotifier.h"
+#define GUCEF_CORE_COBSERVINGNOTIFIER_H
+#endif /* GUCEF_CORE_COBSERVINGNOTIFIER_H ? */
+
 #ifndef GUCEF_VFS_CVFS_H
 #include "gucefVFS_CVFS.h"
 #define GUCEF_VFS_CVFS_H
 #endif /* GUCEF_VFS_CVFS_H ? */
 
-#ifndef DVPACKSYS_H     
-#include "DVPACKSYS.h"  /* package handling code */
-#define DVPACKSYS_H
-#endif /* DVPACKSYS_H ? */
-
-#ifndef GUCEF_VFSPLUGIN_DVP_MACROS_H
-#include "vfspluginDVP_macros.h"
-#define GUCEF_VFSPLUGIN_DVP_MACROS_H
-#endif /* GUCEF_VFSPLUGIN_DVP_MACROS_H ? */
+#ifndef GUCEF_VFSPLUGIN_AWSS3_MACROS_H
+#include "vfspluginAWSS3_macros.h"
+#define GUCEF_VFSPLUGIN_AWSS3_MACROS_H
+#endif /* GUCEF_VFSPLUGIN_AWSS3_MACROS_H ? */
 
 /*-------------------------------------------------------------------------//
 //                                                                         //
@@ -51,7 +58,7 @@
 
 namespace GUCEF {
 namespace VFSPLUGIN {
-namespace DVP {
+namespace AWSS3 {
 
 /*-------------------------------------------------------------------------//
 //                                                                         //
@@ -59,41 +66,40 @@ namespace DVP {
 //                                                                         //
 //-------------------------------------------------------------------------*/
 
-class GUCEF_VFSPLUGIN_DVP_PRIVATE_CPP CDVPArchive : public VFS::CIArchive
+class GUCEF_HIDDEN CS3Archive  : public CORE::CObservingNotifier ,
+                                 public VFS::CIArchive
 {
     public:
 
-    static const VFS::CString DVPArchiveTypeName;
-    
-    CDVPArchive( void );
-    
-    virtual ~CDVPArchive();
-    
+    CS3Archive( void );
+
+    virtual ~CS3Archive();
+
     virtual CVFSHandlePtr GetFile( const VFS::CString& file          ,
                                    const char* mode = "rb"           ,
                                    const VFS::UInt32 memLoadSize = 0 ,
                                    const bool overwrite = false      );
-                                  
+
     virtual void GetList( TStringSet& outputList             ,
-                          const VFS::CString& location       , 
+                          const VFS::CString& location       ,
                           bool recursive = false             ,
                           bool includePathInFilename = false ,
                           const VFS::CString& filter = ""    ,
                           bool addFiles = true               ,
                           bool addDirs  = false              ) const;
-    
+
     virtual bool FileExists( const VFS::CString& filePath ) const;
-    
+
     virtual VFS::UInt32 GetFileSize( const VFS::CString& filePath ) const;
-    
+
     virtual VFS::CString GetFileHash( const VFS::CString& file ) const;
-    
+
     virtual time_t GetFileModificationTime( const VFS::CString& filePath ) const;
-    
+
     virtual const VFS::CString& GetArchiveName( void ) const;
-    
+
     virtual bool IsWriteable( void ) const;
-    
+
     virtual bool LoadArchive( const VFS::CString& archiveName ,
                               const VFS::CString& archivePath ,
                               const bool writableRequest      ,
@@ -104,29 +110,35 @@ class GUCEF_VFSPLUGIN_DVP_PRIVATE_CPP CDVPArchive : public VFS::CIArchive
                               const bool writeableRequest     );
 
     virtual bool UnloadArchive( void );
-    
+
     virtual const VFS::CString& GetType( void ) const;
 
     virtual void DestroyObject( VFS::CVFSHandle* objectToBeDestroyed );
 
     private:
-    
-    CDVPArchive( const CDVPArchive& src );
-    CDVPArchive& operator=( const CDVPArchive& src );
-    
-    VFS::Int32 FindDirEntry( const VFS::CString& path ) const;
-    
-    VFS::Int32 FindFileEntry( const VFS::CString& filePath ) const;
 
-    CORE::CIOAccess* LoadFile( const VFS::CString& file      ,
-                               const VFS::UInt32 memLoadSize ) const;
+    typedef CORE::CTEventHandlerFunctor< CS3Archive >   TEventCallback;
+    typedef Aws::Vector< Aws::S3::Model::Bucket >       TBucketList;
+
+    CS3Archive( const CS3Archive& src );
+    CS3Archive& operator=( const CS3Archive& src );
+
+    void
+    OnAwsS3Initialized( CORE::CNotifier* notifier    ,
+                        const CORE::CEvent& eventId  ,
+                        CORE::CICloneable* eventData );
+
+    void RegisterEventHandlers( void );
+
+    bool LoadBucketList( const bool autoMountBuckets ,
+                         const bool writeableRequest );
     
     private:
-    
-    DVPACKSYS::TDVP_File_Header m_header;
-    DVPACKSYS::TDVP_Index_Entry* m_entries;
+
+    TBucketList m_bucketList;
     VFS::CString m_archiveName;
-    VFS::CString m_archivePath;
+    bool m_autoMountBuckets;
+    bool m_writeableRequest;
 };
 
 /*-------------------------------------------------------------------------//
@@ -135,13 +147,13 @@ class GUCEF_VFSPLUGIN_DVP_PRIVATE_CPP CDVPArchive : public VFS::CIArchive
 //                                                                         //
 //-------------------------------------------------------------------------*/
 
-}; /* namespace VP */
+}; /* namespace AWSS3 */
 }; /* namespace VFSPLUGIN */
 }; /* namespace GUCEF */
 
 /*-------------------------------------------------------------------------*/
 
-#endif /* GUCEF_VFSPLUGIN_DVP_CDVPARCHIVE_H ? */
+#endif /* VFSPLUGIN_AWSS3_CS3Archive_H ? */
 
 /*-------------------------------------------------------------------------//
 //                                                                         //
@@ -152,4 +164,4 @@ class GUCEF_VFSPLUGIN_DVP_PRIVATE_CPP CDVPArchive : public VFS::CIArchive
 - 04-05-2005 :
         - Dinand: Initial version.
 
----------------------------------------------------------------------------*/
+-----------------------------------------------------------------------------*/

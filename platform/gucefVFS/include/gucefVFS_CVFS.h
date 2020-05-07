@@ -112,11 +112,13 @@ class GUCEF_VFS_PUBLIC_CPP CVFS : public CORE::CIConfigurable
                        const CString& mountPoint   ,
                        const bool writeableRequest );
     
-    bool MountArchive( const CString& archiveName  ,
-                       const CString& archivePath  ,
-                       const CString& archiveType  ,
-                       const CString& mountPoint   ,
-                       const bool writeableRequest );
+    bool MountArchive( const CString& archiveName                               ,
+                       const CString& archivePath                               ,
+                       const CString& archiveType                               ,
+                       const CString& mountPoint                                ,
+                       const bool writeableRequest                              ,
+                       const bool autoMountSubArchives                          ,
+                       const CString& actualNonVfsPathOverride = CString::Empty );
 
     bool MountArchive( const CString& archiveName    ,
                        CVFSHandlePtr archiveResource ,
@@ -130,6 +132,8 @@ class GUCEF_VFS_PUBLIC_CPP CVFS : public CORE::CIConfigurable
                                  TArchiveFactory& archiveFactory );
     
     void UnregisterArchiveFactory( const CString& archiveType );
+
+    void GetListOfSupportedArchiveTypes( TAbstractArchiveFactory::TKeySet& outList ) const;
     
     CVFSHandlePtr GetFile( const CORE::CString& file    ,
                            const char* mode = "rb"      ,

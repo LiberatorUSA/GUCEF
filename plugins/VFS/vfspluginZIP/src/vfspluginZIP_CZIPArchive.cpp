@@ -320,7 +320,8 @@ CZIPArchive::CheckZzipError( int zzipError                 ,
 bool
 CZIPArchive::LoadArchive( const VFS::CString& archiveName ,
                           const VFS::CString& archivePath ,
-                          const bool writableRequest      )
+                          const bool writableRequest      ,
+                          const bool autoMountSubArchives )
 {GUCEF_TRACE;
 
     // We do not support writable ZIP archives
