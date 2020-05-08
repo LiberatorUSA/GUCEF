@@ -15,7 +15,7 @@ echo "*** Invoking CMakeCommon ***"
 . $RUNCMAKE_SCRIPTSTARTDIR/CMakeCommon.sh
 
 # Set target specific folders
-MAINCMAKE=$SRCROOTDIR/projects/CMake/targets/GUCEF_[exe]_udp2redis
+MAINCMAKE=$SRCROOTDIR/projects/CMake/targets/GUCEF_exe_udp2redis
 CBNIX_OUTPUTDIR="$OUTPUTDIR/CBNIX_udp2redis"
 
 echo "*** Invoking CMake ***"

@@ -15,7 +15,7 @@ echo "*** Invoking CMakeCommon ***"
 . $RUNCMAKE_SCRIPTSTARTDIR/CMakeCommon.sh
 
 # Set target specific folders
-MAINCMAKE=$SRCROOTDIR/projects/CMake/targets/GUCEF_[exe]_udp2kafka
+MAINCMAKE=$SRCROOTDIR/projects/CMake/targets/GUCEF_exe_udp2kafka
 CBNIX_OUTPUTDIR="$OUTPUTDIR/CBNIX_udp2kafka"
 
 echo "*** Invoking CMake ***"

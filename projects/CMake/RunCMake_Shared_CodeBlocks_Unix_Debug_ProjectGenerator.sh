@@ -15,7 +15,7 @@ echo "*** Invoking CMakeCommon ***"
 . $RUNCMAKE_SCRIPTSTARTDIR/CMakeCommon.sh
 
 # Set target specific folders
-MAINCMAKE=$SRCROOTDIR/projects/CMake/targets/GUCEF_[exe]_ProjectGenerator
+MAINCMAKE=$SRCROOTDIR/projects/CMake/targets/GUCEF_exe_ProjectGenerator
 CBNIX_OUTPUTDIR="$OUTPUTDIR/CBNIXDBG_ProjectGenerator"
 
 echo "*** Invoking CMake ***"
