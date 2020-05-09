@@ -236,7 +236,7 @@ CNotifierImplementor::UnsubscribeAllFromNotifier( void )
         TObserverList::iterator i = m_observers.begin();
         while ( i != m_observers.end() )
         {
-            (*i).first->UnlinkFrom( m_ownerNotifier, true );
+            (*i).first->UnlinkFrom( m_ownerNotifier );
             ++i;
         }
 
@@ -251,6 +251,7 @@ CNotifierImplementor::UnsubscribeAllFromNotifier( void )
         cmdMailElement.observer = NULL;        // <- not used in this context
         cmdMailElement.callback = NULL;        // <- not used in this context
         cmdMailElement.notify = true;          // <- not used in this context
+        cmdMailElement.observerIsDestroyed = true;
         m_cmdMailStack.push_back( cmdMailElement );
     }
 
@@ -267,37 +268,8 @@ CNotifierImplementor::Subscribe( CObserver* observer )
 
     if ( !m_isBusy )
     {
-        m_isBusy = true;
-
-        /*
-         *  Add the observer to our list of observers as needed.
-         *  This will automatically subscribe the observer to
-         *  all notification events.
-         *
-         *  Note that the boolean value indicates whether the observer is
-         *  subscribed to all events
-         */
-        TObserverList::iterator i = m_observers.find( observer );
-        m_observers[ observer ] = true;
-
-        if ( i == m_observers.end() )
+        if ( !LinkObserver( observer, true ) )
         {
-            /*
-             *  Establish our bi-directional communication path
-             */
-            observer->LinkTo( m_ownerNotifier );
-
-            GUCEF_DEBUG_LOG( LOGLEVEL_EVERYTHING, "CNotifierImplementor(" + CORE::PointerToString( this ) + "): Class " + m_ownerNotifier->GetClassTypeName() + ": Dispatching event \"" + CNotifier::SubscribeEvent.GetName() + "\" to " + observer->GetClassTypeName() + "(" + CORE::PointerToString( observer ) + ")" );
-
-            /*
-             *  Send the standard subscription event
-             */
-            observer->OnNotify( m_ownerNotifier            ,
-                                CNotifier::SubscribeEvent  ,
-                                NULL                       );
-
-            m_isBusy = false;
-
             if ( m_scheduledForDestruction )
             {
                 UnlockData();
@@ -308,7 +280,6 @@ CNotifierImplementor::Subscribe( CObserver* observer )
 
             ProcessMailbox();
         }
-        m_isBusy = false;
     }
     else
     {
@@ -318,7 +289,10 @@ CNotifierImplementor::Subscribe( CObserver* observer )
         cmdMailElement.observer = observer;
         cmdMailElement.callback = NULL;
         cmdMailElement.notify = true;
+        cmdMailElement.observerIsDestroyed = false;
         m_cmdMailStack.push_back( cmdMailElement );
+
+        LinkObserver( observer, true );
     }
     UnlockData();
 }
@@ -336,7 +310,6 @@ CNotifierImplementor::Subscribe( CObserver* observer                            
     if ( !m_isBusy )
     {
         m_isBusy = true;
-        bool notifyAboutSubscription = false;
 
         /*
          *  We filter subscription requests for standard events because there is
@@ -357,7 +330,7 @@ CNotifierImplementor::Subscribe( CObserver* observer                            
                 if ( i != eventObservers.end() )
                 {
                     // The observer is already subscribed to this event
-                    // All we have to do is make sure the callback is up-todate
+                    // All we have to do is make sure the callback is up-to-date
                     delete (*i).second;
                     (*i).second = NULL;
                     if ( NULL != callback )
@@ -401,57 +374,17 @@ CNotifierImplementor::Subscribe( CObserver* observer                            
                     eventObservers[ observer ] = NULL;
                 }
             }
-
-            // Establish our bi-directional communication path for the given event
-            observer->LinkTo( m_ownerNotifier );
-
-            GUCEF_DEBUG_LOG( LOGLEVEL_EVERYTHING, "CNotifierImplementor(" + CORE::PointerToString( this ) + "): Class " + m_ownerNotifier->GetClassTypeName() + ": Dispatching event \"" + CNotifier::SubscribeEvent.GetName() + "\" to " + observer->GetClassTypeName() + "(" + CORE::PointerToString( observer ) + ")" );
-
-            // Send the standard subscription event
-            observer->OnNotify( m_ownerNotifier            ,
-                                CNotifier::SubscribeEvent  ,
-                                NULL                       );
-        }
-        else
-        {
-            notifyAboutSubscription = true;
-        }
-
-        /*
-         *  Add the observer to our list of observers as needed.
-         *  This will automatically subscribe the observer to the
-         *  four standard notification events.
-         */
-        TObserverList::iterator i = m_observers.find( observer );
-        if ( i == m_observers.end() )
-        {
-            // Because the observer is not yet in the list we can add it as an observer
-            // that only listens to specific events
-            m_observers[ observer ] = false;
-
-            // Establish our bi-directional communication path for standard events
-            observer->LinkTo( m_ownerNotifier );
-
-            if ( notifyAboutSubscription )
-            {
-                GUCEF_DEBUG_LOG( LOGLEVEL_EVERYTHING, "CNotifierImplementor(" + CORE::PointerToString( this ) + "): Class " + m_ownerNotifier->GetClassTypeName() + ": Dispatching event \"" + CNotifier::SubscribeEvent.GetName() + "\" to " + observer->GetClassTypeName() + "(" + CORE::PointerToString( observer ) + ")" );
-
-                /*
-                 *  Send the standard subscription event
-                 */
-                observer->OnNotify( m_ownerNotifier            ,
-                                    CNotifier::SubscribeEvent  ,
-                                    NULL                       );
-            }
         }
 
         m_isBusy = false;
+        
+        LinkObserver( observer, false );
 
         if ( m_scheduledForDestruction )
         {
             UnlockData();
             m_ownerNotifier->m_imp = NULL;
-            delete m_ownerNotifier;
+            delete m_ownerNotifier; // <- This will delete this object as well thus self-destructing
             return;
         }
 
@@ -464,6 +397,7 @@ CNotifierImplementor::Subscribe( CObserver* observer                            
         cmdMailElement.eventID = eventid;
         cmdMailElement.observer = observer;
         cmdMailElement.notify = true;
+        cmdMailElement.observerIsDestroyed = false;
         if ( callback != NULL )
         {
             cmdMailElement.callback = static_cast< CIEventHandlerFunctorBase* >( callback->Clone() );
@@ -473,9 +407,76 @@ CNotifierImplementor::Subscribe( CObserver* observer                            
             cmdMailElement.callback = NULL;
         }
         m_cmdMailStack.push_back( cmdMailElement );
+
+        LinkObserver( observer, false );
     }
 
     UnlockData();
+}
+
+/*-------------------------------------------------------------------------*/
+
+bool 
+CNotifierImplementor::LinkObserver( CObserver* observer          ,
+                                    bool subscribeToAllEvents    )
+{GUCEF_TRACE;
+
+    bool isNewLink = false;
+
+    if ( !m_isBusy )
+    {
+        /*
+         *  Add the observer to our list of observers as needed.
+         *  This will automatically subscribe the observer to the
+         *  four standard notification events.
+         */
+        TObserverList::iterator i = m_observers.find( observer );
+        if ( i == m_observers.end() )
+        {
+            m_observers[ observer ] = subscribeToAllEvents;
+
+            // Establish our communication path from observer -> notifier
+            observer->LinkTo( m_ownerNotifier );
+
+            GUCEF_DEBUG_LOG( LOGLEVEL_EVERYTHING, "CNotifierImplementor(" + CORE::PointerToString( this ) + "): Class " + m_ownerNotifier->GetClassTypeName() + 
+                ": Dispatching event \"" + CNotifier::SubscribeEvent.GetName() + "\" to " + observer->GetClassTypeName() + "(" + CORE::PointerToString( observer ) + ")" );
+
+            // Send the standard subscription event to notify of first link
+            observer->OnNotify( m_ownerNotifier            ,
+                                CNotifier::SubscribeEvent  ,
+                                GUCEF_NULL                 );
+            
+            // New link, so return True
+            return true;
+        }
+        else
+        {
+            // Already linked, but check if we need to switch to an "all events" subscription
+            if ( subscribeToAllEvents )
+            {
+                (*i).second = subscribeToAllEvents;
+            }
+            
+            // Existing link, so return False
+            return false;
+        }
+    }
+    else
+    {
+        // Updating administration on the Notifier side will be deferred via mailboxes
+        // The same is true for notification of the subscription
+        TObserverList::iterator i = m_observers.find( observer );
+        if ( i == m_observers.end() )
+        {
+            // Establish our communication path from observer -> notifier
+            // We do that even when the notifier is already busy because we dont want to miss out on observer destruction notification
+            observer->LinkTo( m_ownerNotifier );
+
+            // New link, so return True
+            return true;
+        }
+        return false;
+    }
 }
 
 /*-------------------------------------------------------------------------*/
@@ -486,15 +487,17 @@ CNotifierImplementor::Unsubscribe( CObserver* observer )
 
     LockData();
     UnsubscribeFromAllEvents( observer ,
-                              true     );
+                              true     ,
+                              false    );
     UnlockData();
 }
 
 /*-------------------------------------------------------------------------*/
 
 void
-CNotifierImplementor::UnsubscribeFromAllEvents( CObserver* observer       ,
-                                                const bool notifyObserver )
+CNotifierImplementor::UnsubscribeFromAllEvents( CObserver* observer            ,
+                                                const bool notifyObserver      ,
+                                                const bool observerDestruction )
 {GUCEF_TRACE;
 
     if ( !m_isBusy )
@@ -530,13 +533,13 @@ CNotifierImplementor::UnsubscribeFromAllEvents( CObserver* observer       ,
             ++n;
         }
 
-        if ( notifyObserver )
+        if ( notifyObserver && !observerDestruction )
         {
             /*
              *  Now remove the observer's reference to the notifier
              *  for all events
              */
-            observer->UnlinkFrom( m_ownerNotifier, true );
+            observer->UnlinkFrom( m_ownerNotifier );
 
             GUCEF_DEBUG_LOG( LOGLEVEL_EVERYTHING, "CNotifierImplementor(" + CORE::PointerToString( this ) + "): Class " + m_ownerNotifier->GetClassTypeName() + ": Dispatching event \"" + CNotifier::UnsubscribeEvent.GetName() + "\" to " + observer->GetClassTypeName() + "(" + CORE::PointerToString( observer ) + ")" );
 
@@ -561,13 +564,46 @@ CNotifierImplementor::UnsubscribeFromAllEvents( CObserver* observer       ,
     }
     else
     {
-        TCmdMailElement cmdMailElement;
-        cmdMailElement.cmdType = REQUEST_UNSUBSCRIBE;
-        cmdMailElement.eventID = CEvent();    // <- not used in this context
-        cmdMailElement.observer = observer;
-        cmdMailElement.callback = NULL;
-        cmdMailElement.notify = notifyObserver;
-        m_cmdMailStack.push_back( cmdMailElement );
+        // Check if the observer is being destroyed in which case there is no point adding mail we will ignore anyway
+        if ( !observerDestruction )
+        {
+            TCmdMailElement cmdMailElement;
+            cmdMailElement.cmdType = REQUEST_UNSUBSCRIBE;
+            cmdMailElement.eventID = CEvent();    // <- not used in this context
+            cmdMailElement.observer = observer;
+            cmdMailElement.callback = NULL;
+            cmdMailElement.notify = notifyObserver;
+            cmdMailElement.observerIsDestroyed = observerDestruction;
+            m_cmdMailStack.push_back( cmdMailElement );
+        }
+    }
+
+    if ( observerDestruction )
+    {        
+        // For a destroyed observer we also need to remove all remaining references in the mailboxes
+
+        TEventMailVector::iterator e = m_eventMailStack.begin();
+        while ( e != m_eventMailStack.end() )
+        {
+            TEventMailElement& mail = (*e);
+            if ( observer == mail.specificObserver )
+            {
+                mail.specificObserver = GUCEF_NULL;
+                mail.specificObserverIsDestroyed = true;
+            }
+            ++e;
+        }
+        TCmdMailVector::iterator c = m_cmdMailStack.begin();
+        while ( c != m_cmdMailStack.end() )
+        {
+            TCmdMailElement& mail = (*c);
+            if ( observer == mail.observer )
+            {
+                mail.observer = GUCEF_NULL;
+                mail.observerIsDestroyed = true;
+            }
+            ++c;
+        }
     }
 }
 
@@ -606,21 +642,6 @@ CNotifierImplementor::Unsubscribe( CObserver* observer   ,
                 }
                 ++i;
             }
-
-            /*
-             *  Now remove the observer's reference to the notifier
-             *  for 1 event, effectively reducing the observer's
-             *  reference count for this notifier.
-             */
-            observer->UnlinkFrom( m_ownerNotifier );
-
-            GUCEF_DEBUG_LOG( LOGLEVEL_EVERYTHING, "CNotifierImplementor(" + CORE::PointerToString( this ) + "): Class " + m_ownerNotifier->GetClassTypeName() + ": Dispatching event \"" + CNotifier::UnsubscribeEvent.GetName() + "\" to " + observer->GetClassTypeName() + "(" + CORE::PointerToString( observer ) + ")" );
-
-            /*
-             *  Send the standard un-subscribe event
-             */
-            observer->OnNotify( m_ownerNotifier             ,
-                                CNotifier::UnsubscribeEvent );
         }
 
         m_isBusy = false;
@@ -643,9 +664,49 @@ CNotifierImplementor::Unsubscribe( CObserver* observer   ,
         cmdMailElement.observer = observer;
         cmdMailElement.callback = NULL;    // <- not used in this context
         cmdMailElement.notify = true;
+        cmdMailElement.observerIsDestroyed = false;
         m_cmdMailStack.push_back( cmdMailElement );
     }
     UnlockData();
+}
+
+/*-------------------------------------------------------------------------*/
+
+UInt32
+CNotifierImplementor::GetSubscriptionCountForObserver( CObserver* observer ) const
+{GUCEF_TRACE;
+
+    if ( GUCEF_NULL == observer )
+        return 0;
+
+    UInt32 subscriptionCount( 0 );
+    LockData();
+
+    TObserverList::const_iterator i = m_observers.find( observer );
+    if ( i != m_observers.end() )
+        subscriptionCount += 4; // Add the 4 hardcoded basic events that every link has a mandatory subscription on
+
+    // Go through all subscriptions
+    // Note that storage is optimized for notifcations, not this use-case
+    TNotificationList::const_iterator n = m_eventobservers.begin();
+    while ( n != m_eventobservers.end() )
+    {
+        const TEventNotificationMap& subsForEvent = (*n).second;
+        TEventNotificationMap::const_iterator m = subsForEvent.begin();
+        while ( m != subsForEvent.end() )
+        {
+            if ( (*m).first == observer )
+                ++subscriptionCount;
+            ++m;
+        }
+        ++n;
+    }
+
+    // We will ignore possible extra subscriptions that might be lurking in mailboxes
+    // This is a snapshot in time anyway
+
+    UnlockData();
+    return subscriptionCount;
 }
 
 /*-------------------------------------------------------------------------*/
@@ -875,7 +936,8 @@ CNotifierImplementor::NotifyObservers( CNotifier& sender      ,
         // We will store the request until we are done
         TEventMailElement mail;
         mail.eventID = eventid;
-        mail.specificObserver = NULL; // <- not used in this context
+        mail.specificObserver = GUCEF_NULL; // <- not used in this context  
+        mail.specificObserverIsDestroyed = false;
         mail.sender = &sender;
         if ( eventData != NULL )
         {
@@ -905,6 +967,12 @@ CNotifierImplementor::ProcessCmdMailbox( void )
         TCmdMailElement cmdMailElement( m_cmdMailStack[ m_cmdMailStack.size()-1 ] );
         m_cmdMailStack.pop_back();
 
+        if ( cmdMailElement.observerIsDestroyed )
+        {
+            // Ignore this mail, the observer is was destroyed after sending it
+            continue;
+        }
+
         switch ( cmdMailElement.cmdType )
         {
             case REQUEST_SUBSCRIBE :
@@ -930,8 +998,9 @@ CNotifierImplementor::ProcessCmdMailbox( void )
                 }
                 else
                 {
-                    UnsubscribeFromAllEvents( cmdMailElement.observer ,
-                                              cmdMailElement.notify   );
+                    UnsubscribeFromAllEvents( cmdMailElement.observer            ,
+                                              cmdMailElement.notify              ,
+                                              cmdMailElement.observerIsDestroyed );
                 }
                 break;
             }
@@ -961,16 +1030,19 @@ CNotifierImplementor::ProcessEventMailbox( void )
         TEventMailElement entry( m_eventMailStack[ m_eventMailStack.size()-1 ] );
         m_eventMailStack.pop_back();
 
-        // Dispatch the message in our mailbox
-        // If the mailbox has any more items remaining we will end up back here
-        // for the next mail item
-        if ( NULL == entry.specificObserver )
+        if ( !entry.specificObserverIsDestroyed )
         {
-            NotifyObservers( *entry.sender, entry.eventID, entry.eventData );
-        }
-        else
-        {
-            NotifySpecificObserver( *entry.sender, *entry.specificObserver, entry.eventID, entry.eventData );
+            // Dispatch the message in our mailbox
+            // If the mailbox has any more items remaining we will end up back here
+            // for the next mail item
+            if ( GUCEF_NULL == entry.specificObserver )
+            {
+                NotifyObservers( *entry.sender, entry.eventID, entry.eventData );
+            }
+            else
+            {
+                NotifySpecificObserver( *entry.sender, *entry.specificObserver, entry.eventID, entry.eventData );
+            }
         }
         delete entry.eventData;
     }
@@ -1135,6 +1207,7 @@ CNotifierImplementor::NotifySpecificObserver( CNotifier& sender           ,
         TEventMailElement mail;
         mail.eventID = eventid;
         mail.specificObserver = &specificObserver;
+        mail.specificObserverIsDestroyed = false;
         mail.sender = &sender;
         if ( eventData != NULL )
         {
@@ -1160,7 +1233,8 @@ CNotifierImplementor::OnObserverDestroy( CObserver* observer )
     LockData();
 
     UnsubscribeFromAllEvents( observer ,
-                              false    );
+                              false    ,
+                              true     );
 
     UnlockData();
 

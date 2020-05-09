@@ -72,13 +72,16 @@ CObserver::~CObserver()
     /*
      *  Neatly un-subscribe from all notifiers
      */
-    TNotifierList::iterator i( m_notifiers.begin() );
-    while ( i != m_notifiers.end() )
+    TNotifierList listcopy( m_notifiers );
+    TNotifierList::iterator i( listcopy.begin() );
+    while ( i != listcopy.end() )
     {
-        (*i).notifier->OnObserverDestroy( this );
+        (*i)->OnObserverDestroy( this );
         ++i;
     }
     m_notifiers.clear();
+
+    UnlockData();
 }
 
 /*-------------------------------------------------------------------------*/
@@ -121,7 +124,7 @@ CObserver::UnsubscribeAllFromObserver( void )
          *  who updates our administration which is why we had to make a copy of
          *  our notifier list.
          */
-        (*i).notifier->Unsubscribe( this );
+        (*i)->Unsubscribe( this );
         ++i;
     }
 
@@ -175,74 +178,22 @@ void
 CObserver::LinkTo( CNotifier* notifier )
 {GUCEF_TRACE;
 
-    LockData();
-
-    TNotifierList::iterator i( m_notifiers.begin() );
-    while ( i != m_notifiers.end() )
+    if ( GUCEF_NULL != notifier )
     {
-        if ( (*i).notifier == notifier )
-        {
-            /*
-             *  Already subscribed to this notifier
-             */
-            (*i).refCount++;
-            UnlockData();
-            return;
-        }
-        ++i;
+        LockData();
+        m_notifiers.insert( notifier );
+        UnlockData();
     }
-
-    /*
-     *  If we get here then this is a new notifier and it should be added
-     *  to our list
-     */
-    TNotifierRef newNotifierEntry;
-    newNotifierEntry.notifier = notifier;
-    newNotifierEntry.refCount = 1;
-    m_notifiers.push_back( newNotifierEntry );
-
-    UnlockData();
 }
 
 /*-------------------------------------------------------------------------*/
 
 void
-CObserver::UnlinkFrom( CNotifier* notifier                   ,
-                       const bool forAllEvents /* = false */ )
+CObserver::UnlinkFrom( CNotifier* notifier )
 {GUCEF_TRACE;
 
     LockData();
-
-    TNotifierList::iterator i( m_notifiers.begin() );
-    while ( i != m_notifiers.end() )
-    {
-        if ( (*i).notifier == notifier )
-        {
-            if ( !forAllEvents )
-            {
-                /*
-                 *  Found the notifier in question.
-                 *  reducing refrence count
-                 */
-                (*i).refCount--;
-                if ( (*i).refCount == 0 )
-                {
-                    /*
-                     *  Remove the notifier from our list
-                     */
-                    m_notifiers.erase( i );
-                }
-                UnlockData();
-                return;
-            }
-
-            m_notifiers.erase( i );
-            UnlockData();
-            return;
-        }
-        ++i;
-    }
-
+    m_notifiers.erase( notifier );
     UnlockData();
 }
 
@@ -257,7 +208,7 @@ CObserver::GetSubscriptionCount( void )
     TNotifierList::const_iterator i( m_notifiers.begin() );
     while ( i != m_notifiers.end() )
     {
-        subscriptionCount += (*i).refCount;
+        subscriptionCount += (*i)->GetSubscriptionCountForObserver( this );
         ++i;
     }
     UnlockData();

@@ -314,6 +314,18 @@ CNotifier::ScheduleForDestruction( void )
 
 /*-------------------------------------------------------------------------*/
 
+UInt32 
+CNotifier::GetSubscriptionCountForObserver( CObserver* observer ) const
+{GUCEF_TRACE;
+
+    if ( NULL != m_imp )
+    {
+        return m_imp->GetSubscriptionCountForObserver( observer );
+    }
+}
+
+/*-------------------------------------------------------------------------*/
+
 void
 CNotifier::OnObserverDestruction( CObserver* observer )
 {GUCEF_TRACE;

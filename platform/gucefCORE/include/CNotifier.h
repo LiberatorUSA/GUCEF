@@ -177,6 +177,8 @@ class GUCEF_CORE_PUBLIC_CPP CNotifier : public virtual CITypeNamed
      */
     void ScheduleForDestruction( void );
 
+    UInt32 GetSubscriptionCountForObserver( CObserver* observer ) const;
+
     protected:
     friend class CNotifierImplementor;
 

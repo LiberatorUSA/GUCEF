@@ -262,14 +262,22 @@ class CNotifierImplementor
     bool ForceNotifyObserversOnce( const CEvent& eventid    ,
                                    CICloneable* data = NULL );
 
-    void UnsubscribeFromAllEvents( CObserver* observer       ,
-                                   const bool notifyObserver );
+    void UnsubscribeFromAllEvents( CObserver* observer            ,
+                                   const bool notifyObserver      ,
+                                   const bool observerDestruction );
 
+    UInt32 GetSubscriptionCountForObserver( CObserver* observer ) const;
+    
     void ProcessMailbox( void );
     
     void ProcessCmdMailbox( void );
     
     void ProcessEventMailbox( void );
+
+    // Adds the bi-directional link between the notifier and observer if this is a new link
+    // Returns whether the this is a new link
+    bool LinkObserver( CObserver* observer          ,
+                       bool subscribeToAllEvents    );
 
     private:
     
@@ -291,15 +299,17 @@ class CNotifierImplementor
         CEvent eventID;
         CICloneable* eventData;
         CObserver* specificObserver;
+        bool specificObserverIsDestroyed;
     };
     typedef struct SEventMailElement TEventMailElement;
     
-    typedef enum TCmdType
+    enum ECmdType
     {
         REQUEST_SUBSCRIBE       ,
         REQUEST_UNSUBSCRIBE     ,
         REQUEST_UNSUBSCRIBE_ALL
     };
+    typedef enum ECmdType TCmdType;
     
     struct SCmdMailElement
     {
@@ -308,8 +318,12 @@ class CNotifierImplementor
         CIEventHandlerFunctorBase* callback;
         CEvent eventID;
         bool notify;
+        bool observerIsDestroyed;
     };
     typedef struct SCmdMailElement TCmdMailElement;
+
+    typedef std::vector< TEventMailElement > TEventMailVector;
+    typedef std::vector< TCmdMailElement >   TCmdMailVector;
 
     private:
     
@@ -320,8 +334,8 @@ class CNotifierImplementor
     
     bool m_isBusy;
     bool m_scheduledForDestruction;
-    std::vector< TEventMailElement > m_eventMailStack;
-    std::vector< TCmdMailElement > m_cmdMailStack;
+    TEventMailVector m_eventMailStack;
+    TCmdMailVector m_cmdMailStack;
 };
 
 /*-------------------------------------------------------------------------//
