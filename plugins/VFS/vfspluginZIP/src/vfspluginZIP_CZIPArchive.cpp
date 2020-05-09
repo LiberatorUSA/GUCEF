@@ -318,19 +318,17 @@ CZIPArchive::CheckZzipError( int zzipError                 ,
 /*-------------------------------------------------------------------------*/
 
 bool
-CZIPArchive::LoadArchive( const VFS::CString& archiveName ,
-                          const VFS::CString& archivePath ,
-                          const bool writableRequest      ,
-                          const bool autoMountSubArchives )
+CZIPArchive::LoadArchive( const VFS::CArchiveSettings& settings )
 {GUCEF_TRACE;
 
     // We do not support writable ZIP archives
-    if ( writableRequest ) return false;
+    if ( settings.GetWriteableRequested() ) 
+        return false;
 
     if ( NULL == m_zipRoot )
     {
         zzip_error_t zzipError;
-        m_zipRoot = zzip_dir_open( archivePath.C_String(), &zzipError );
+        m_zipRoot = zzip_dir_open( settings.GetActualArchivePath().C_String(), &zzipError );
         CheckZzipError( zzipError, "opening archive" );
 
         if ( NULL == m_zipRoot )

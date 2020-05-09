@@ -88,10 +88,7 @@ class GUCEF_VFS_PUBLIC_CPP CFileSystemArchive : public CIArchive
     
     virtual bool IsWriteable( void ) const;
     
-    virtual bool LoadArchive( const CString& archiveName      ,
-                              const CString& archivePath      ,
-                              const bool writableRequest      ,
-                              const bool autoMountSubArchives );
+    virtual bool LoadArchive( const CArchiveSettings& settings );
 
     virtual bool LoadArchive( const VFS::CString& archiveName ,
                               CVFSHandlePtr vfsResource       ,

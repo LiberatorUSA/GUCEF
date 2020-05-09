@@ -373,16 +373,14 @@ CVPArchive::IsWriteable( void ) const
 /*-------------------------------------------------------------------------*/
 
 bool
-CVPArchive::LoadArchive( const VFS::CString& archiveName ,
-                         const VFS::CString& archivePath ,
-                         const bool writableRequest      ,
-                         const bool autoMountSubArchives )
+CVPArchive::LoadArchive( const VFS::CArchiveSettings& settings )
 {GUCEF_TRACE;
 
     // We do not support writable VP archives
-    if ( writableRequest ) return false;
+    if ( settings.GetWriteableRequested() ) 
+        return false;
 
-    FILE* fptr = fopen( archivePath.C_String(), "rb" );
+    FILE* fptr = fopen( settings.GetActualArchivePath().C_String(), "rb" );
     if ( NULL == fptr ) return false;
 
     if ( fread( &m_header, VP_HEADER_SIZE, 1, fptr ) == 1 )
@@ -460,8 +458,8 @@ CVPArchive::LoadArchive( const VFS::CString& archiveName ,
 
             fclose( fptr );
 
-            m_archiveName = archiveName;
-            m_archivePath = archivePath;
+            m_archiveName = settings.GetArchiveName();
+            m_archivePath = settings.GetArchivePath();
 
             GUCEF_DEBUG_LOG( CORE::LOGLEVEL_NORMAL, "VFSPLUGIN VP: Successfully finished reading the index" );
             return true;

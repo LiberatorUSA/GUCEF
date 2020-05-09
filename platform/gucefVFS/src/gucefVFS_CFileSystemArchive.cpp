@@ -110,17 +110,14 @@ CFileSystemArchive::~CFileSystemArchive()
 /*-------------------------------------------------------------------------*/
 
 bool
-CFileSystemArchive::LoadArchive( const CString& archiveName      ,
-                                 const CString& archivePath      ,
-                                 const bool writableRequest      ,
-                                 const bool autoMountSubArchives )
+CFileSystemArchive::LoadArchive( const CArchiveSettings& settings )
 {GUCEF_TRACE;
 
-    m_archiveName = archiveName;
-    m_rootDir = archivePath;
-    m_writable = writableRequest;
+    m_archiveName = settings.GetArchiveName();
+    m_rootDir = settings.GetActualArchivePath();
+    m_writable = settings.GetWriteableRequested();
 
-    if ( autoMountSubArchives )
+    if ( settings.GetAutoMountSubArchives() )
     {
         CVFS& vfs = CVfsGlobal::Instance()->GetVfs();
         
@@ -144,7 +141,13 @@ CFileSystemArchive::LoadArchive( const CString& archiveName      ,
                 if ( n != keySet.end() )
                 {
                     // Found a compatible type,.. create an archive for the type
-                    if ( vfs.MountArchive( (*i), (*i), (*n), (*i), writableRequest, autoMountSubArchives, (*i) ) )
+                    if ( vfs.MountArchive( (*i)                                                                                , 
+                                           (*i)                                                                                , 
+                                           (*n)                                                                                , 
+                                           (*i)                                                                                , 
+                                           settings.GetWriteableRequested()                                                    , 
+                                           settings.GetAutoMountSubArchives() && settings.GetAutoMountSubArchivesIsRecursive() , 
+                                           (*i)                                                                                ) )
                     {
                         GUCEF_SYSTEM_LOG( CORE::LOGLEVEL_NORMAL, "FileSystemArchive: Auto mounted sub archive with name " + (*i) );
                     }

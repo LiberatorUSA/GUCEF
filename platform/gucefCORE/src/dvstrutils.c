@@ -171,29 +171,44 @@ Lowercase( char *str )
 /*--------------------------------------------------------------------------*/
 
 UInt32
+String_To_Boolint_WithDefault( const char *teststr, UInt32 defaultIfNeeded )
+{
+    if ( GUCEF_NULL != teststr )
+    {
+        char tests[ 8 ];
+        UInt32 max = (UInt32) strlen( teststr )+1;
+        if ( 8 < max ) max = 8;
+        memcpy( tests, teststr, max );
+        tests[ 7 ] = '\0';
+        Lowercase( tests );
+
+        if ( ( strcmp( tests, "enable"  ) == 0 ) ||
+             ( strcmp( tests, "true"  ) == 0 )   ||
+             ( strcmp( tests, "yes"  ) == 0 )    ||
+             ( strcmp( tests, "on"  ) == 0 )     ||
+             ( strcmp( tests, "1"  ) == 0 )      )
+        {
+            return 1;
+        }
+        if ( ( strcmp( tests, "disable"  ) == 0 ) ||
+             ( strcmp( tests, "false"  ) == 0 )   ||
+             ( strcmp( tests, "no"  ) == 0 )      ||
+             ( strcmp( tests, "off"  ) == 0 )     ||
+             ( strcmp( tests, "0"  ) == 0 )       )
+        {
+            return 0;
+        }
+    }
+
+    return defaultIfNeeded;
+}
+
+/*--------------------------------------------------------------------------*/
+
+UInt32
 String_To_Boolint( const char *teststr )
 {
-        /*
-         *      String to bool conversion
-         */
-        if ( teststr )
-        {
-                char tests[ 7 ];
-                UInt32 max = (UInt32) strlen( teststr )+1;
-                if ( 7 < max ) max = 7;
-                memcpy( tests, teststr, max );
-                Lowercase( tests );
-
-                return( ( strcmp( tests, "enable"  ) == 0 ) ||
-                        ( strcmp( tests, "true"  ) == 0 )   ||
-                        ( strcmp( tests, "yes"  ) == 0 )    ||
-                        ( strcmp( tests, "on"  ) == 0 )     ||
-                        ( strcmp( tests, "1"  ) == 0 )      );
-        }
-        else
-        {
-                return 0;
-        }
+    return String_To_Boolint_WithDefault( teststr, 0 );
 }
 
 /*--------------------------------------------------------------------------*/

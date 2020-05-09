@@ -451,10 +451,10 @@ BoolToString( const bool value )
 /*-------------------------------------------------------------------------*/
 
 bool
-StringToBool( const CString& str )
+StringToBool( const CString& str, bool defaultIfNeeded )
 {GUCEF_TRACE;
 
-    UInt32 boolint = String_To_Boolint( str.C_String() );
+    UInt32 boolint = String_To_Boolint_WithDefault( str.C_String(), defaultIfNeeded ? 1 : 0 );
     return boolint > 0;
 }
 

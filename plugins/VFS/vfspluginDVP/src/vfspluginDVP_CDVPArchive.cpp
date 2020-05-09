@@ -371,18 +371,16 @@ CDVPArchive::IsWriteable( void ) const
 /*-------------------------------------------------------------------------*/
     
 bool
-CDVPArchive::LoadArchive( const VFS::CString& archiveName ,
-                          const VFS::CString& archivePath ,
-                          const bool writableRequest      ,
-                          const bool autoMountSubArchives )
+CDVPArchive::LoadArchive( const VFS::CArchiveSettings& settings )
 {GUCEF_TRACE;
     
     // We do not support writable DVP archives
-    if ( writableRequest ) return false;
+    if ( settings.GetWriteableRequested() ) 
+        return false;
     
     UnloadArchive();
 
-    FILE* fptr = DVP_Open_File( archivePath.C_String(), "rb" );
+    FILE* fptr = DVP_Open_File( settings.GetActualArchivePath().C_String(), "rb" );
     if ( NULL == fptr ) return false;
 
     _DVP_Read_Header( fptr, &m_header );
@@ -401,8 +399,8 @@ CDVPArchive::LoadArchive( const VFS::CString& archiveName ,
     }
     DVP_Close_File( fptr );
         
-    m_archiveName = archiveName;
-    m_archivePath = archivePath;
+    m_archiveName = settings.GetArchiveName();
+    m_archivePath = settings.GetActualArchivePath();
     
     return true;
 }

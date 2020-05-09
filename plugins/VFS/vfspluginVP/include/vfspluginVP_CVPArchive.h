@@ -86,10 +86,7 @@ class CVPArchive : public VFS::CIArchive
     
     virtual bool IsWriteable( void ) const;
     
-    virtual bool LoadArchive( const VFS::CString& archiveName ,
-                              const VFS::CString& archivePath ,
-                              const bool writableRequest      ,
-                              const bool autoMountSubArchives );
+    virtual bool LoadArchive( const VFS::CArchiveSettings& settings );
                               
     virtual bool LoadArchive( const VFS::CString& archiveName ,
                               CVFSHandlePtr vfsResource       ,

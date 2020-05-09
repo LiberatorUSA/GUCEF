@@ -291,6 +291,15 @@ String_To_Boolint( const char *teststr );
 /*--------------------------------------------------------------------------*/
 
 /**
+ *      String to boolint conversion
+ *      "true" or "false" OR "on" or "off" give 1 and 0 respectivly
+ */
+GUCEF_CORE_PUBLIC_C UInt32
+String_To_Boolint_WithDefault( const char *teststr, UInt32 defaultIfNeeded );
+
+/*--------------------------------------------------------------------------*/
+
+/**
  *      boolint to string conversion
  *      returns "true" or "false"
  */

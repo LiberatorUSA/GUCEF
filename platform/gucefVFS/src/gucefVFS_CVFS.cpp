@@ -34,7 +34,7 @@
 #endif /* DVFILEUTILS_H ? */
 
 #ifndef DVCPPSTRINGUTILS_H
-#include "dvcppstringutils.h"           /* Needed for AppendToPath() */
+#include "dvcppstringutils.h"     
 #define DVCPPSTRINGUTILS_H
 #endif /* DVCPPSTRINGUTILS_H ? */
 
@@ -226,21 +226,39 @@ CVFS::MountArchive( const CString& archiveName              ,
                     const CString& actualNonVfsPathOverride )
 {GUCEF_TRACE;
 
+    CArchiveSettings settings;
+    settings.SetActualArchivePath( actualNonVfsPathOverride );
+    settings.SetArchiveName( archiveName );
+    settings.SetArchivePath( archivePath );
+    settings.SetArchiveType( archiveType );
+    settings.SetAutoMountSubArchives( autoMountSubArchives );
+    settings.SetMountPath( mountPoint );
+    settings.SetWriteableRequested( writeableRequest );
+    return MountArchive( settings );
+}
+
+/*-------------------------------------------------------------------------*/
+
+bool 
+CVFS::MountArchive( const CArchiveSettings& settings )
+{GUCEF_TRACE;
+
     MT::CScopeMutex scopeLock( m_datalock );
 
     // Either determine the actual non-vfs path based on previously loaded/mounted archives or use the given explicit path if any
-    CString actualArchivePath = actualNonVfsPathOverride;
-    if ( !actualArchivePath.IsNULLOrEmpty() || GetActualFilePath( archivePath, actualArchivePath ) )
+    CString actualArchivePath = settings.GetActualArchivePath();
+    if ( !actualArchivePath.IsNULLOrEmpty() || GetActualFilePath( settings.GetArchivePath(), actualArchivePath ) )
     {
         // Found a compatible type,.. create an archive for the type
-        CIArchive* archive = m_abstractArchiveFactory.Create( archiveType );
+        CIArchive* archive = m_abstractArchiveFactory.Create( settings.GetArchiveType() );
         if ( NULL != archive )
         {
             // Try to load from the resource
-            if ( archive->LoadArchive( archiveName          ,
-                                       actualArchivePath    ,
-                                       writeableRequest     ,
-                                       autoMountSubArchives ) )
+            CArchiveSettings updatedSettings( settings );
+            if ( actualArchivePath != settings.GetActualArchivePath() )
+                updatedSettings.SetActualArchivePath( actualArchivePath );
+
+            if ( archive->LoadArchive( updatedSettings ) )
             {
                 // Successfully loaded/linked the archive
                 // We will add it to our mount list
@@ -261,9 +279,9 @@ CVFS::MountArchive( const CString& archiveName              ,
                 //}
 
                 archiveEntry.path = actualArchivePath;
-                archiveEntry.writeable = writeableRequest;
+                archiveEntry.writeable = settings.GetWriteableRequested();
                 archiveEntry.archive = archive;
-                archiveEntry.mountPath = mountPoint;
+                archiveEntry.mountPath = settings.GetMountPath();
 
                 m_mountList.push_back( archiveEntry );
                 return true;
@@ -536,42 +554,15 @@ CVFS::AddRoot( const CORE::CString& rootpath                                ,
                const CString& archiveType /* = FileSystemArchiveTypeName */ )
 {GUCEF_TRACE;
 
-    if ( rootpath.Length() > 0 )
-    {
-        TMountEntry mountEntry;
-        mountEntry.path = rootpath;
-        mountEntry.abspath = CORE::RelativePath( rootpath );
-        mountEntry.writeable = writeable;
-        mountEntry.mountPath = mountPoint;
+    CArchiveSettings settings;
+    settings.SetArchiveName( archiveName );
+    settings.SetActualArchivePath( rootpath );
+    settings.SetWriteableRequested( writeable );
+    settings.SetAutoMountSubArchives( autoMountArchives );
+    settings.SetMountPath( mountPoint );
+    settings.SetArchiveType( archiveType );
 
-        if ( mountEntry.abspath.Length() == 0 )
-        {
-            mountEntry.abspath = rootpath;
-        }
-
-        MT::CScopeMutex scopeLock( m_datalock );
-
-        mountEntry.archive = m_abstractArchiveFactory.Create( archiveType );
-        if ( GUCEF_NULL == mountEntry.archive )
-        {   
-            GUCEF_ERROR_LOG( CORE::LOGLEVEL_NORMAL, "Failed to add VFS root as a mount with name \"" + archiveName + 
-                "\" and type \"" + archiveType + "\" because the archive type could not be constructed" );
-            return;
-        }
-        if ( !mountEntry.archive->LoadArchive( archiveName        ,
-                                               mountEntry.abspath ,
-                                               writeable          ,
-                                               autoMountArchives  ) )
-        {   
-            m_abstractArchiveFactory.Destroy( mountEntry.archive );
-            GUCEF_ERROR_LOG( CORE::LOGLEVEL_NORMAL, "Failed to add VFS root as a mount with name \"" + archiveName + 
-                "\" and type \"" + archiveType + "\" because the archive load failed" );
-            return;
-        }
-
-        m_mountList.push_back( mountEntry );
-        GUCEF_SYSTEM_LOG( CORE::LOGLEVEL_NORMAL, "VFS root added as a mount with name " + archiveName );
-    }
+    MountArchive( settings );
 }
 
 /*-------------------------------------------------------------------------*/
@@ -663,31 +654,31 @@ CVFS::LoadConfig( const CORE::CDataNode& tree )
         CORE::CDataNode::TConstDataNodeSet::iterator i = rootNodeList.begin();
         while( i != rootNodeList.end() )
         {
-            const CORE::CDataNode* rootNode = (*i);
-            CString path = rootNode->GetAttributeValueOrChildValueByName( "Path" );
-            if ( !path.IsNULLOrEmpty() )
-            {
-                CString archiveName = rootNode->GetAttributeValueOrChildValueByName( "ArchiveName" );
-                if ( archiveName.IsNULLOrEmpty() )
-                    archiveName = path;
-
-                CString archiveType = rootNode->GetAttributeValueOrChildValueByName( "ArchiveType" );
-                CString mountPath = rootNode->GetAttributeValueOrChildValueByName( "MountPath" );
-                bool mountArchives = CORE::StringToBool( rootNode->GetAttributeValueOrChildValueByName( "MountArchives" ) );
-                bool writeable = CORE::StringToBool( rootNode->GetAttributeValueOrChildValueByName( "Writeable" ) );
-                AddRoot( path          ,
-                         archiveName   ,
-                         writeable     ,
-                         mountArchives ,
-                         mountPath     ,
-                         archiveType   );
-            }
+            const CORE::CDataNode* legacySettingsNode = (*i);
+            CArchiveSettings settings;
+            settings.LoadConfig( *legacySettingsNode );
+            MountArchive( settings );
             ++i;
         }
 
-        GUCEF_SYSTEM_LOG( CORE::LOGLEVEL_NORMAL, "VFS configuration successfully loaded" );
+        GUCEF_SYSTEM_LOG( CORE::LOGLEVEL_NORMAL, "VFS legacy configuration loaded" );
+    }
+    
+    n = tree.Find( "VFS" );
+    if ( n )
+    {
+        CORE::CDataNode::TConstDataNodeSet rootNodeList = n->FindChildrenOfType( "ArchiveSettings" );
+        CORE::CDataNode::TConstDataNodeSet::iterator i = rootNodeList.begin();
+        while( i != rootNodeList.end() )
+        {
+            const CORE::CDataNode* settingsNode = (*i);
+            CArchiveSettings settings;
+            settings.LoadConfig( *settingsNode );
+            MountArchive( settings );
+            ++i;
+        }
 
-        return true;
+        GUCEF_SYSTEM_LOG( CORE::LOGLEVEL_NORMAL, "VFS archive configuration loaded" );
     }
     return true;
 }

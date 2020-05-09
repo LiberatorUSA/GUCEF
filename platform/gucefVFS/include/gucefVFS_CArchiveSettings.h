@@ -17,8 +17,8 @@
  *  Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA 
  */
 
-#ifndef GUCEF_VFS_CIARCHIVE_H
-#define GUCEF_VFS_CIARCHIVE_H
+#ifndef GUCEF_VFS_CARCHIVESETTINGS_H
+#define GUCEF_VFS_CARCHIVESETTINGS_H
 
 /*-------------------------------------------------------------------------//
 //                                                                         //
@@ -29,20 +29,20 @@
 #include <map>
 #include <set>
 
-#ifndef GUCEF_CORE_CTBASICSHAREDPTR_H
-#include "CTBasicSharedPtr.h"
-#define GUCEF_CORE_CTBASICSHAREDPTR_H
-#endif /* GUCEF_CORE_CTBASICSHAREDPTR_H ? */
+#ifndef GUCEF_CORE_CICONFIGURABLE_H
+#include "CIConfigurable.h"          /* abstract base class interface for configurable objects */
+#define GUCEF_CORE_CICONFIGURABLE_H
+#endif /* GUCEF_CORE_CICONFIGURABLE_H ? */
 
-#ifndef GUCEF_VFS_CVFSHANDLE_H
-#include "gucefVFS_CVFSHandle.h"     /* handle for VFS ref counted recources */
-#define GUCEF_VFS_CVFSHANDLE_H
-#endif /* GUCEF_VFS_CVFSHANDLE_H ? */
+#ifndef GUCEF_CORE_CDVSTRING_H
+#include "CDVString.h"          
+#define GUCEF_CORE_CDVSTRING_H
+#endif /* GUCEF_CORE_CDVSTRING_H ? */
 
-#ifndef GUCEF_VFS_CARCHIVESETTINGS_H
-#include "gucefVFS_CArchiveSettings.h"
-#define GUCEF_VFS_CARCHIVESETTINGS_H
-#endif /* GUCEF_VFS_CARCHIVESETTINGS_H ? */
+#ifndef GUCEF_VFS_MACROS_H
+#include "gucefVFS_macros.h"
+#define GUCEF_VFS_MACROS_H
+#endif /* GUCEF_VFS_MACROS_H ? */
 
 /*-------------------------------------------------------------------------//
 //                                                                         //
@@ -59,56 +59,86 @@ namespace VFS {
 //                                                                         //
 //-------------------------------------------------------------------------*/
 
-class GUCEF_VFS_PUBLIC_CPP CIArchive : public CORE::CTDynamicDestructorBase< CVFSHandle >
+class GUCEF_VFS_PUBLIC_CPP CArchiveSettings : public CORE::CIConfigurable
 {
     public:
 
-    typedef CORE::CTBasicSharedPtr< CVFSHandle > CVFSHandlePtr;
-    typedef std::vector< CString >         TStringList;
-    typedef std::set< CString >            TStringSet;
+    CArchiveSettings( void );
     
-    CIArchive( void );
+    CArchiveSettings( const CArchiveSettings& src );
     
-    CIArchive( const CIArchive& src );
+    virtual ~CArchiveSettings();
     
-    virtual ~CIArchive();
+    CArchiveSettings& operator=( const CArchiveSettings& src );
     
-    CIArchive& operator=( const CIArchive& src );
-    
-    virtual CVFSHandlePtr GetFile( const CString& file          ,
-                                   const char* mode = "rb"      ,
-                                   const UInt32 memLoadSize = 0 ,
-                                   const bool overwrite = false ) = 0;
-                                  
-    virtual void GetList( TStringSet& outputList             ,
-                          const CString& location            , 
-                          bool recursive = false             ,
-                          bool includePathInFilename = false ,
-                          const CString& filter = ""         ,
-                          bool addFiles = true               ,
-                          bool addDirs  = false              ) const = 0;
-    
-    virtual bool FileExists( const CString& filePath ) const = 0;
-    
-    virtual UInt32 GetFileSize( const CString& filePath ) const = 0;
-    
-    virtual CString GetFileHash( const CString& file ) const = 0;
-    
-    virtual time_t GetFileModificationTime( const CString& filePath ) const = 0;
-    
-    virtual const CString& GetArchiveName( void ) const = 0;
-    
-    virtual bool IsWriteable( void ) const = 0;
-    
-    virtual bool LoadArchive( const CArchiveSettings& settings ) = 0;
+    /**
+     *      Attempts to store the given tree in the file
+     *      given according to the method of the codec metadata
+     *
+     *      @param tree the data tree you wish to store
+     *      @return wheter storing the tree was successfull
+     */
+    virtual bool SaveConfig( CORE::CDataNode& tree ) const;
+                                
+    /**
+     *      Attempts to load data from the given file to the 
+     *      root node given. The root data will be replaced 
+     *      and any children the node may already have will be deleted.
+     *
+     *      @param treeroot pointer to the node that is to act as root of the data tree
+     *      @return whether building the tree from the given file was successfull.
+     */                                    
+    virtual bool LoadConfig( const CORE::CDataNode& treeroot );
 
-    virtual bool LoadArchive( const CString& archiveName  ,
-                              CVFSHandlePtr vfsResource   ,
-                              const bool writeableRequest ) = 0;
-                              
-    virtual bool UnloadArchive( void ) = 0;
+    virtual const CORE::CString& GetClassTypeName( void ) const;
+
+    void SetArchiveName( const CORE::CString& name );
     
-    virtual const CString& GetType( void ) const = 0;
+    const CORE::CString& GetArchiveName( void ) const;
+
+    void SetArchiveType( const CORE::CString& type );
+    
+    const CORE::CString& GetArchiveType( void ) const;
+
+    void SetArchivePath( const CORE::CString& path );
+    
+    const CORE::CString& GetArchivePath( void ) const;
+
+    void SetActualArchivePath( const CORE::CString& path );
+    
+    const CORE::CString& GetActualArchivePath( void ) const;
+
+    void SetMountPath( const CORE::CString& path );
+    
+    const CORE::CString& GetMountPath( void ) const;
+
+    void SetAutoMountSubArchives( bool autoMount );
+    
+    bool GetAutoMountSubArchives( void ) const;
+
+    void SetAutoMountSubArchivesIsRecursive( bool recursive );
+    
+    bool GetAutoMountSubArchivesIsRecursive( void ) const;
+
+    void SetWriteableRequested( bool writeable );
+    
+    bool GetWriteableRequested( void ) const;
+
+    void SetReadableRequested( bool readable );
+    
+    bool GetReadableRequested( void ) const;
+
+    private:
+    
+    CORE::CString m_archiveName;
+    CORE::CString m_archivePath;
+    CORE::CString m_actualArchivePath;
+    CORE::CString m_archiveType;
+    CORE::CString m_mountPath;
+    bool m_autoMountSubArchives;
+    bool m_autoMountSubArchivesIsRecursive;
+    bool m_writeableRequested;
+    bool m_readableRequested;
 };
 
 /*-------------------------------------------------------------------------//
@@ -122,7 +152,7 @@ class GUCEF_VFS_PUBLIC_CPP CIArchive : public CORE::CTDynamicDestructorBase< CVF
 
 /*-------------------------------------------------------------------------*/
           
-#endif /* GUCEF_VFS_CIARCHIVE_H ? */
+#endif /* GUCEF_VFS_CARCHIVESETTINGS_H ? */
 
 /*-------------------------------------------------------------------------//
 //                                                                         //

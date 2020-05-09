@@ -271,18 +271,15 @@ CS3Archive::OnAwsS3Initialized( CORE::CNotifier* notifier    ,
 /*-------------------------------------------------------------------------*/
 
 bool
-CS3Archive::LoadArchive( const VFS::CString& archiveName ,
-                         const VFS::CString& archivePath ,
-                         const bool writeableRequest     ,
-                         const bool autoMountSubArchives )
+CS3Archive::LoadArchive( const VFS::CArchiveSettings& settings )
 {GUCEF_TRACE;
 
-    m_archiveName = archiveName;
-    m_autoMountBuckets = autoMountSubArchives;
-    m_writeableRequest = writeableRequest;
+    m_archiveName = settings.GetArchiveName();
+    m_autoMountBuckets = settings.GetAutoMountSubArchives();
+    m_writeableRequest = settings.GetWriteableRequested();
     
     if ( CAwsS3Global::Instance()->IsS3AccessInitialized() )
-        return LoadBucketList( autoMountSubArchives, writeableRequest );
+        return LoadBucketList( m_autoMountBuckets, m_writeableRequest );
     
     // We will wait for the initialization event, assuming deferred success
     return true;

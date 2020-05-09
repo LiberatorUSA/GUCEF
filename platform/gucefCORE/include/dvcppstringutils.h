@@ -149,7 +149,7 @@ BoolToString( const bool value );
 /*-------------------------------------------------------------------------*/
 
 GUCEF_CORE_PUBLIC_CPP bool
-StringToBool( const CString& str );
+StringToBool( const CString& str, bool defaultIfNeeded = false );
 
 /*-------------------------------------------------------------------------*/
 

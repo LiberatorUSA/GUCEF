@@ -46,6 +46,11 @@
 #define GUCEF_VFS_CIARCHIVE_H
 #endif /* GUCEF_VFS_CIARCHIVE_H ? */
 
+#ifndef GUCEF_VFS_CARCHIVESETTINGS_H
+#include "gucefVFS_CArchiveSettings.h"
+#define GUCEF_VFS_CARCHIVESETTINGS_H
+#endif /* GUCEF_VFS_CARCHIVESETTINGS_H ? */
+
 #ifndef GUCEF_VFS_CFILESYSTEMARCHIVE_H
 #include "gucefVFS_CFileSystemArchive.h"
 #define GUCEF_VFS_CFILESYSTEMARCHIVE_H
@@ -120,12 +125,14 @@ class GUCEF_VFS_PUBLIC_CPP CVFS : public CORE::CIConfigurable
                        const bool autoMountSubArchives                          ,
                        const CString& actualNonVfsPathOverride = CString::Empty );
 
+    bool MountArchive( const CArchiveSettings& settings );
+    
     bool MountArchive( const CString& archiveName    ,
                        CVFSHandlePtr archiveResource ,
                        const CString& archiveType    ,
                        const CString& mountPoint     ,
                        const bool writeableRequest   );
-
+    
     bool UnmountArchiveByName( const CString& archiveName );
                   
     void RegisterArchiveFactory( const CString& archiveType      ,
