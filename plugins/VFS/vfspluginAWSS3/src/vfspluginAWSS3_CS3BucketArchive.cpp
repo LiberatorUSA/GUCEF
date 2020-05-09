@@ -81,13 +81,15 @@ namespace AWSS3 {
 //-------------------------------------------------------------------------*/
 
 CS3BucketArchive::CS3BucketArchive( void )
-    : CIArchive() 
+    : CORE::CObservingNotifier()
+    , VFS::CIArchive() 
     , m_objects()
     , m_archiveName()
     , m_autoMountBuckets( false )
     , m_writeableRequest( false )
 {GUCEF_TRACE;
 
+    RegisterEventHandlers();
 }
 
 /*-------------------------------------------------------------------------*/
@@ -100,6 +102,18 @@ CS3BucketArchive::~CS3BucketArchive()
 
 /*-------------------------------------------------------------------------*/
 
+void
+CS3BucketArchive::RegisterEventHandlers( void )
+{GUCEF_TRACE;
+
+    TEventCallback callback( this, &CS3BucketArchive::OnAwsS3Initialized );
+    SubscribeTo( VFSPLUGIN::AWSS3::CAwsS3Global::Instance()            ,
+                 VFSPLUGIN::AWSS3::CAwsS3Global::AwsS3InitializedEvent ,
+                 callback                                              );
+}
+
+/*-------------------------------------------------------------------------*/
+
 VFS::CIArchive::CVFSHandlePtr
 CS3BucketArchive::GetFile( const VFS::CString& file      ,
                            const char* mode              ,
@@ -107,7 +121,38 @@ CS3BucketArchive::GetFile( const VFS::CString& file      ,
                            const bool overwrite          )
 {GUCEF_TRACE;
 
-    return VFS::CVFS::CVFSHandlePtr();
+    try
+    {
+        Aws::S3::S3Client* s3Client = CAwsS3Global::Instance()->GetS3Client();
+        if ( GUCEF_NULL == s3Client )
+            return VFS::CIArchive::CVFSHandlePtr();
+
+        Aws::S3::Model::GetObjectRequest objectRequest;
+        objectRequest.SetBucket( m_archiveName );
+        objectRequest.SetKey( file );
+
+        Aws::S3::Model::GetObjectOutcome getObjectOutcome = s3Client->GetObject( objectRequest );
+        if ( getObjectOutcome.IsSuccess() )
+        {
+            //getObjectOutcome.GetResult().GetBody()
+            GUCEF_DEBUG_LOG( CORE::LOGLEVEL_BELOW_NORMAL, "S3BucketArchive: Obtained Object \"" + file + "\" from Bucket \"" + m_archiveName + "\"" );
+            return VFS::CIArchive::CVFSHandlePtr();
+        }
+        else
+        {
+            GUCEF_ERROR_LOG( CORE::LOGLEVEL_NORMAL, "S3BucketArchive: GetObject error: " + 
+                getObjectOutcome.GetError().GetExceptionName() + " - " + getObjectOutcome.GetError().GetMessage() );
+        }
+    }
+    catch ( const std::exception& e )
+    {
+        GUCEF_EXCEPTION_LOG( CORE::LOGLEVEL_IMPORTANT, CORE::CString( "S3BucketArchive: Exception trying to S3 get bucket object: " ) + e.what() );
+    }
+    catch ( ... )
+    {
+        GUCEF_EXCEPTION_LOG( CORE::LOGLEVEL_CRITICAL, "S3BucketArchive: Unknown exception trying to S3 get bucket object" );
+    }
+    return VFS::CIArchive::CVFSHandlePtr();
 }
 
 /*-------------------------------------------------------------------------*/
@@ -131,6 +176,11 @@ bool
 CS3BucketArchive::FileExists( const VFS::CString& filePath ) const
 {GUCEF_TRACE;
 
+    auto i = m_objects.find( filePath );
+    if ( i != m_objects.end() )
+    {
+        return true;
+    }
     return false;
 }
 
@@ -140,6 +190,12 @@ VFS::UInt32
 CS3BucketArchive::GetFileSize( const VFS::CString& filePath ) const
 {GUCEF_TRACE;
 
+    auto i = m_objects.find( filePath );
+    if ( i != m_objects.end() )
+    {
+        const auto& objectRef = (*i).second;
+        return (VFS::UInt32) objectRef.GetSize();
+    }
     return 0;
 }
 
@@ -148,16 +204,28 @@ CS3BucketArchive::GetFileSize( const VFS::CString& filePath ) const
 time_t
 CS3BucketArchive::GetFileModificationTime( const VFS::CString& filePath ) const
 {
+    auto i = m_objects.find( filePath );
+    if ( i != m_objects.end() )
+    {
+        const auto& objectRef = (*i).second;
+        return std::chrono::system_clock::to_time_t( objectRef.GetLastModified().UnderlyingTimestamp() );
+    }
     return 0;
 }
 
 /*-------------------------------------------------------------------------*/
 
 VFS::CString
-CS3BucketArchive::GetFileHash( const VFS::CString& file ) const
+CS3BucketArchive::GetFileHash( const VFS::CString& filePath ) const
 {GUCEF_TRACE;
 
-    return VFS::CString();
+    auto i = m_objects.find( filePath );
+    if ( i != m_objects.end() )
+    {
+        const auto& objectRef = (*i).second;
+        return objectRef.GetETag();  // Per the SDK the ETag is actually implemented as a MD5 hash
+    }
+    return VFS::CString::Empty;
 }
 
 /*-------------------------------------------------------------------------*/
@@ -181,18 +249,11 @@ CS3BucketArchive::IsWriteable( void ) const
 /*-------------------------------------------------------------------------*/
 
 bool
-CS3BucketArchive::LoadArchive( const VFS::CString& archiveName ,
-                               const VFS::CString& archivePath ,
-                               const bool writeableRequest     ,
-                               const bool autoMountSubArchives )
+CS3BucketArchive::LoadBucketObjectIndex( void )
 {GUCEF_TRACE;
 
     try
     {
-        m_archiveName = archiveName;
-        m_autoMountBuckets = autoMountSubArchives;
-        m_writeableRequest = writeableRequest; 
-        
         Aws::S3::S3Client* s3Client = CAwsS3Global::Instance()->GetS3Client();
         if ( GUCEF_NULL == s3Client )
             return false;
@@ -221,6 +282,7 @@ CS3BucketArchive::LoadArchive( const VFS::CString& archiveName ,
                 m_objects[ key ] = s3Object;
             }
             GUCEF_DEBUG_LOG( CORE::LOGLEVEL_BELOW_NORMAL, "S3BucketArchive: Bucket \"" + m_archiveName + "\"has the following objects: " + objectKeys );
+            return true;
         }
         else
         {
@@ -241,12 +303,44 @@ CS3BucketArchive::LoadArchive( const VFS::CString& archiveName ,
 
 /*-------------------------------------------------------------------------*/
 
+void
+CS3BucketArchive::OnAwsS3Initialized( CORE::CNotifier* notifier    ,
+                                      const CORE::CEvent& eventId  ,
+                                      CORE::CICloneable* eventData )
+{GUCEF_TRACE;
+    
+    LoadBucketObjectIndex();
+}
+
+/*-------------------------------------------------------------------------*/
+
+bool
+CS3BucketArchive::LoadArchive( const VFS::CString& archiveName ,
+                               const VFS::CString& archivePath ,
+                               const bool writeableRequest     ,
+                               const bool autoMountSubArchives )
+{GUCEF_TRACE;
+
+    m_archiveName = archiveName;
+    m_autoMountBuckets = autoMountSubArchives;
+    m_writeableRequest = writeableRequest;
+
+    if ( CAwsS3Global::Instance()->IsS3AccessInitialized() )
+        return LoadBucketObjectIndex();
+    
+    // We will wait for the initialization event, assuming deferred success
+    return true;
+}
+
+/*-------------------------------------------------------------------------*/
+
 bool
 CS3BucketArchive::LoadArchive( const VFS::CString& archiveName ,
                                CVFSHandlePtr vfsResource       ,
                                const bool writeableRequest     )
 {GUCEF_TRACE;
 
+    GUCEF_WARNING_LOG( CORE::LOGLEVEL_NORMAL, "S3BucketArchive: Attempting to load a \"AWS::S3::Bucket\" archive from a resource. That does not make sense. Bad config?" );
     return false;
 }
 
@@ -256,6 +350,7 @@ bool
 CS3BucketArchive::UnloadArchive( void )
 {GUCEF_TRACE;
 
+    m_objects.clear();
     return true;
 }
 

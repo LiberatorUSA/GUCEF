@@ -33,6 +33,8 @@
 #include <aws/s3/model/GetObjectResult.h>
 #include <aws/s3/model/GetObjectRequest.h>
 #include <aws/s3/model/ListObjectsRequest.h>
+#include <aws/s3/model/GetObjectRequest.h>
+#include <aws/s3/model/GetObjectResult.h>
 #include <aws/s3/S3Client.h>
 
 #ifndef GUCEF_VFS_CVFS_H
@@ -61,7 +63,8 @@ namespace AWSS3 {
 //                                                                         //
 //-------------------------------------------------------------------------*/
 
-class GUCEF_HIDDEN CS3BucketArchive : public VFS::CIArchive
+class GUCEF_HIDDEN CS3BucketArchive : public CORE::CObservingNotifier ,
+                                      public VFS::CIArchive
 {
     public:
 
@@ -111,12 +114,22 @@ class GUCEF_HIDDEN CS3BucketArchive : public VFS::CIArchive
 
     private:
 
+    typedef std::map< CORE::CString, Aws::S3::Model::Object >   TObjectMap;
+    typedef CORE::CTEventHandlerFunctor< CS3BucketArchive >     TEventCallback;
+    
     CS3BucketArchive( const CS3BucketArchive& src );
     CS3BucketArchive& operator=( const CS3BucketArchive& src );
 
-    private:
+    void RegisterEventHandlers( void );
+    
+    void
+    OnAwsS3Initialized( CORE::CNotifier* notifier    ,
+                        const CORE::CEvent& eventId  ,
+                        CORE::CICloneable* eventData );
 
-    typedef std::map< CORE::CString, Aws::S3::Model::Object > TObjectMap;
+    bool LoadBucketObjectIndex( void );
+
+    private:
     
     TObjectMap m_objects;
     VFS::CString m_archiveName;
