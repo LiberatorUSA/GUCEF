@@ -322,6 +322,7 @@ CNotifier::GetSubscriptionCountForObserver( CObserver* observer ) const
     {
         return m_imp->GetSubscriptionCountForObserver( observer );
     }
+    return 0;
 }
 
 /*-------------------------------------------------------------------------*/
