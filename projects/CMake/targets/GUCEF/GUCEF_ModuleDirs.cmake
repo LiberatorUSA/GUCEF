@@ -65,6 +65,7 @@ add_subdirectory( ${CMAKE_CURRENT_SOURCE_DIR}/../../../../dependencies/lua ${CMA
 add_subdirectory( ${CMAKE_CURRENT_SOURCE_DIR}/../../../../dependencies/miniupnpc ${CMAKE_BINARY_DIR}/miniupnpc )
 add_subdirectory( ${CMAKE_CURRENT_SOURCE_DIR}/../../../../dependencies/openexr ${CMAKE_BINARY_DIR}/OpenEXR )
 add_subdirectory( ${CMAKE_CURRENT_SOURCE_DIR}/../../../../dependencies/pcre ${CMAKE_BINARY_DIR}/pcre )
+add_subdirectory( ${CMAKE_CURRENT_SOURCE_DIR}/../../../../dependencies/redis-plus-plus/src/sw/redis++ ${CMAKE_BINARY_DIR}/redis-plus-plus )
 add_subdirectory( ${CMAKE_CURRENT_SOURCE_DIR}/../../../../dependencies/tiff/libtiff ${CMAKE_BINARY_DIR}/libtiff )
 add_subdirectory( ${CMAKE_CURRENT_SOURCE_DIR}/../../../../dependencies/tolua ${CMAKE_BINARY_DIR}/tolua )
 add_subdirectory( ${CMAKE_CURRENT_SOURCE_DIR}/../../../../dependencies/toluapp ${CMAKE_BINARY_DIR}/toluapp )
@@ -162,3 +163,4 @@ add_subdirectory( ${CMAKE_CURRENT_SOURCE_DIR}/../../../../tools/UdpViaTcp ${CMAK
 add_subdirectory( ${CMAKE_CURRENT_SOURCE_DIR}/../../../../tools/itvExporter ${CMAKE_BINARY_DIR}/itvExporter )
 add_subdirectory( ${CMAKE_CURRENT_SOURCE_DIR}/../../../../tools/udp2kafka ${CMAKE_BINARY_DIR}/udp2kafka )
 add_subdirectory( ${CMAKE_CURRENT_SOURCE_DIR}/../../../../tools/udp2redis ${CMAKE_BINARY_DIR}/udp2redis )
+add_subdirectory( ${CMAKE_CURRENT_SOURCE_DIR}/../../../../tools/udp2rediscluster ${CMAKE_BINARY_DIR}/udp2rediscluster )

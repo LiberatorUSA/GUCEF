@@ -26,6 +26,11 @@
 #include "errors.h"
 #include "utils.h"
 
+/**
+ *  DV Edit
+ */
+#include <iterator>
+
 namespace sw {
 
 namespace redis {

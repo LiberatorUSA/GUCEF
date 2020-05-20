@@ -1,0 +1,15 @@
+<ModuleInfoEntry>
+    <Module Name="redis-plus-plus" Type="StaticLibrary" Platform="All">
+        <Preprocessor>
+            <Define String="REDIS_PLUS_PLUS_CXX_STANDARD=11" />
+			<Define String="REDIS_PLUS_PLUS_BUILD_TEST=OFF" />
+        </Preprocessor>
+        <Dependencies>
+            <Dependency Name="hiredis" />
+            <Dependency Name="dependencies.root" />
+        </Dependencies>
+        <Linker>
+            <Dependency Name="hiredis" />	
+        </Linker>		
+    </Module>
+</ModuleInfoEntry>

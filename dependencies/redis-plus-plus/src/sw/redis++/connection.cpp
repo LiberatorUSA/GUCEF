@@ -22,6 +22,13 @@
 #include "command.h"
 #include "command_args.h"
 
+/**
+ *  DV Edit:
+ */
+#ifdef _WIN32
+  #include <windows.h>
+#endif 
+
 namespace sw {
 
 namespace redis {
