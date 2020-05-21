@@ -140,8 +140,9 @@ CSocket::ConvertToIPAddress( const CORE::CString& destaddrstr ,
     if ( CORE::Check_If_IP( destaddrstr.C_String() ) )
     {
         resolvedDest.SetAddress( inet_addr( destaddrstr.C_String() ) );
-        if ( resolvedDest.GetAddress() == INADDR_NONE ) return false;
-        resolvedDest.SetPort( destport );
+        if ( resolvedDest.GetAddress() == INADDR_NONE ) 
+            return false;
+        resolvedDest.SetPortInHostByteOrder( destport );
         return true;
     }
     else
