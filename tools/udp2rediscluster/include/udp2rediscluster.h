@@ -120,9 +120,13 @@ class Udp2RedisClusterChannel : public CORE::CTaskConsumer
         CORE::CString channelStreamName;
         COMCORE::CHostAddress udpInterface;
         HostAddressVector udpMulticastToJoin;
+        bool collectMetrics;
+        bool wantsTestPackage;
     };
 
     bool LoadConfig( const ChannelSettings& channelSettings );
+
+    const ChannelSettings& GetChannelSettings( void ) const;
 
     class ChannelMetrics
     {
@@ -184,14 +188,9 @@ class Udp2RedisClusterChannel : public CORE::CTaskConsumer
     typedef std::vector< redisAsyncContext* > redisAsyncContextVector;
 
     ChannelSettings m_channelSettings;   
-    CORE::CString m_redisStreamSendCmd;
-    sw::redis::Redis* m_redisContext;
+    sw::redis::RedisCluster* m_redisContext;
     GUCEF::COMCORE::CUDPSocket* m_udpSocket;
     TDynamicBufferQueue m_redisMsgQueueOverflowQueue;
-    redisOptions m_redisOptions;
-    bool m_redisReadFlag;
-    bool m_redisWriteFlag;
-    bool m_redisTimeoutFlag;
     CORE::CTimer* m_metricsTimer;
     ChannelMetrics m_metrics;
     CORE::UInt32 m_redisErrorReplies;
@@ -261,6 +260,11 @@ class Udp2RedisCluster : public CORE::CObserver
                          const CORE::CEvent& eventId  ,
                          CORE::CICloneable* eventData );    
 
+    void
+    OnTransmitTestPacketTimerCycle( CORE::CNotifier* notifier    ,
+                                    const CORE::CEvent& eventId  ,
+                                    CORE::CICloneable* eventData );
+
     private:
 
     typedef std::map< CORE::Int32, Udp2RedisClusterChannel::ChannelSettings > ChannelSettingsMap;
@@ -278,7 +282,8 @@ class Udp2RedisCluster : public CORE::CObserver
     COM::CDefaultHTTPServerRouter m_httpRouter;
     CORE::CValueList m_appConfig;
     CORE::CDataNode m_globalConfig;
-
     CORE::CTimer m_metricsTimer;
     bool m_transmitMetrics;
+    COMCORE::CUDPSocket m_testUdpSocket;
+    CORE::CTimer m_testPacketTransmitTimer;
 };

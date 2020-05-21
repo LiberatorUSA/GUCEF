@@ -57,17 +57,11 @@ Udp2RedisClusterChannel::Udp2RedisClusterChannel()
     , m_redisContext( GUCEF_NULL )
     , m_udpSocket( GUCEF_NULL )
     , m_redisMsgQueueOverflowQueue()
-    , m_redisOptions()
-    , m_redisReadFlag( false )
-    , m_redisWriteFlag( false )
-    , m_redisTimeoutFlag( false )
     , m_metricsTimer( GUCEF_NULL )
     , m_metrics()
     , m_redisErrorReplies( 0 )
-
 {GUCEF_TRACE;
 
-    memset( &m_redisOptions, 0, sizeof(m_redisOptions) );
 }
 
 /*-------------------------------------------------------------------------*/
@@ -78,13 +72,9 @@ Udp2RedisClusterChannel::Udp2RedisClusterChannel( const Udp2RedisClusterChannel&
     , m_redisContext( src.m_redisContext )
     , m_udpSocket( GUCEF_NULL )
     , m_redisMsgQueueOverflowQueue( src.m_redisMsgQueueOverflowQueue )
-    , m_redisOptions( src.m_redisOptions )
-    , m_redisReadFlag( src.m_redisReadFlag )
-    , m_redisWriteFlag( src.m_redisWriteFlag )
-    , m_redisTimeoutFlag( src.m_redisTimeoutFlag )
     , m_metricsTimer( GUCEF_NULL )
     , m_metrics()
-    , m_redisErrorReplies( 0 )
+    , m_redisErrorReplies( src.m_redisErrorReplies )
 {GUCEF_TRACE;
 
 }
@@ -96,9 +86,6 @@ Udp2RedisClusterChannel::~Udp2RedisClusterChannel()
 
     delete m_metricsTimer;
     m_metricsTimer = GUCEF_NULL;
-
-    delete m_redisOptions.timeout;
-    m_redisOptions.timeout = GUCEF_NULL;
 
     delete m_redisContext;
     m_redisContext = GUCEF_NULL;
@@ -143,6 +130,8 @@ Udp2RedisClusterChannel::ChannelSettings::ChannelSettings( void )
     , channelStreamName()
     , udpInterface()
     , udpMulticastToJoin()
+    , collectMetrics( false )
+    , wantsTestPackage( false )
 {GUCEF_TRACE;
 
 }
@@ -154,6 +143,8 @@ Udp2RedisClusterChannel::ChannelSettings::ChannelSettings( const ChannelSettings
     , channelStreamName( src.channelStreamName )
     , udpInterface( src.udpInterface )
     , udpMulticastToJoin( src.udpMulticastToJoin )
+    , collectMetrics( src.collectMetrics )
+    , wantsTestPackage( src.wantsTestPackage )
 {GUCEF_TRACE;
 
 }
@@ -170,6 +161,8 @@ Udp2RedisClusterChannel::ChannelSettings::operator=( const ChannelSettings& src 
         channelStreamName = src.channelStreamName;
         udpInterface = src.udpInterface;
         udpMulticastToJoin = src.udpMulticastToJoin;
+        collectMetrics = src.collectMetrics;
+        wantsTestPackage = src.wantsTestPackage;
     }
     return *this;
 }
@@ -182,6 +175,15 @@ Udp2RedisClusterChannel::LoadConfig( const ChannelSettings& channelSettings )
 
     m_channelSettings = channelSettings;
     return true;
+}
+
+/*-------------------------------------------------------------------------*/
+
+const Udp2RedisClusterChannel::ChannelSettings& 
+Udp2RedisClusterChannel::GetChannelSettings( void ) const
+{GUCEF_TRACE;
+
+    return m_channelSettings;
 }
 
 /*-------------------------------------------------------------------------*/
@@ -225,8 +227,8 @@ Udp2RedisClusterChannel::ChannelMetrics::ChannelMetrics( void )
 
 void
 Udp2RedisClusterChannel::OnMetricsTimerCycle( CORE::CNotifier* notifier    ,
-                                       const CORE::CEvent& eventId  ,
-                                       CORE::CICloneable* eventData )
+                                              const CORE::CEvent& eventId  ,
+                                              CORE::CICloneable* eventData )
 {GUCEF_TRACE;
 
     m_metrics.udpBytesReceived = m_udpSocket->GetBytesReceived( true );
@@ -248,8 +250,8 @@ Udp2RedisClusterChannel::GetMetrics( void ) const
 
 void
 Udp2RedisClusterChannel::OnUDPSocketError( CORE::CNotifier* notifier    ,
-                                    const CORE::CEvent& eventID  ,
-                                    CORE::CICloneable* eventData )
+                                           const CORE::CEvent& eventID  ,
+                                           CORE::CICloneable* eventData )
 {GUCEF_TRACE;
 
     COMCORE::CUDPSocket::TSocketErrorEventData* eData = static_cast< COMCORE::CUDPSocket::TSocketErrorEventData* >( eventData );
@@ -303,19 +305,33 @@ Udp2RedisClusterChannel::RedisSend( const CORE::CDynamicBuffer& udpPacket )
 
     try
     {
-     //sw::redis::Arg h;
-    //sw::redis::CmdArgs a;
-  //  a.append(
-        m_redisContext->command( sw::redis::StringView( m_redisStreamSendCmd.C_String(), m_redisStreamSendCmd.Length() ) ,
-                                 sw::redis::StringView( (const char*) udpPacket.GetConstBufferPtr(),udpPacket.GetDataSize() ) );
+        static const CORE::CString fieldName = "UDP";
+        static const CORE::CString msgId = "*";
+
+        sw::redis::StringView cnSV( m_channelSettings.channelStreamName.C_String(), m_channelSettings.channelStreamName.Length() );
+        sw::redis::StringView idSV( msgId.C_String(), msgId.Length() );
+        sw::redis::StringView fnSV( fieldName.C_String(), fieldName.Length() );
+        sw::redis::StringView fvSV( (const char*) udpPacket.GetConstBufferPtr(), udpPacket.GetDataSize() );
+
+        std::vector< std::pair< sw::redis::StringView, sw::redis::StringView > > args;
+        args.push_back( std::pair< sw::redis::StringView, sw::redis::StringView >( fnSV, fvSV ) );
+
+        std::string clusterMsgId = m_redisContext->xadd( cnSV, idSV, args.begin(), args.end() );
 
         GUCEF_DEBUG_LOG( CORE::LOGLEVEL_NORMAL, "Udp2RedisClusterChannel(" + CORE::PointerToString( this ) + "):RedisConnect: Successfully sent UDP message of " + 
-            CORE::UInt32ToString( udpPacket.GetDataSize() ) + " bytes");
+            CORE::UInt32ToString( udpPacket.GetDataSize() ) + " bytes. MsgID=" + clusterMsgId );
         return true;
+    }
+    catch ( const sw::redis::MovedError& e )
+    {
+		++m_redisErrorReplies;
+        GUCEF_EXCEPTION_LOG( CORE::LOGLEVEL_IMPORTANT, "Udp2RedisClusterChannel(" + CORE::PointerToString( this ) + "):RedisSend: Redis++ MovedError (Redirect failed?) exception: " + e.what() );
+        return false;
     }
     catch ( const sw::redis::Error& e )
     {
-		GUCEF_EXCEPTION_LOG( CORE::LOGLEVEL_IMPORTANT, "Udp2RedisClusterChannel(" + CORE::PointerToString( this ) + "):RedisSend: Redis++ exception: " + e.what() );
+		++m_redisErrorReplies;
+        GUCEF_EXCEPTION_LOG( CORE::LOGLEVEL_IMPORTANT, "Udp2RedisClusterChannel(" + CORE::PointerToString( this ) + "):RedisSend: Redis++ exception: " + e.what() );
         return false;
     }
     catch ( const std::exception& e )
@@ -407,16 +423,15 @@ Udp2RedisClusterChannel::RedisConnect( void )
         
         // Connect to Redis server with a single connection
         delete m_redisContext;
-        m_redisContext = new sw::redis::Redis( rppConnectionOptions );
-
-        m_redisStreamSendCmd = "XADD " + m_channelSettings.channelStreamName + " * UDP %b";
+        m_redisContext = new sw::redis::RedisCluster( rppConnectionOptions );
 
         GUCEF_LOG( CORE::LOGLEVEL_NORMAL, "Udp2RedisClusterChannel(" + CORE::PointerToString( this ) + "):RedisConnect: Successfully created a Redis context" );
         return true;
     }
     catch ( const sw::redis::Error& e )
     {
-		GUCEF_EXCEPTION_LOG( CORE::LOGLEVEL_IMPORTANT, "Udp2RedisClusterChannel(" + CORE::PointerToString( this ) + "):RedisConnect: Redis++ exception: " + e.what() );
+		++m_redisErrorReplies;
+        GUCEF_EXCEPTION_LOG( CORE::LOGLEVEL_IMPORTANT, "Udp2RedisClusterChannel(" + CORE::PointerToString( this ) + "):RedisConnect: Redis++ exception: " + e.what() );
         return false;
     }
     catch ( const std::exception& e )
@@ -434,6 +449,7 @@ Udp2RedisClusterChannel::OnTaskStart( CORE::CICloneable* taskData )
 
 	m_udpSocket = new COMCORE::CUDPSocket( *GetPulseGenerator(), false );
     m_metricsTimer = new CORE::CTimer( *GetPulseGenerator(), 1000 );
+    m_metricsTimer->SetEnabled( m_channelSettings.collectMetrics );
 
     RegisterEventHandlers();
 
@@ -458,7 +474,7 @@ Udp2RedisClusterChannel::OnTaskStart( CORE::CICloneable* taskData )
 bool
 Udp2RedisClusterChannel::OnTaskCycle( CORE::CICloneable* taskData )
 {GUCEF_TRACE;
-
+    
     // We are never 'done' so return false
     return false;
 }
@@ -560,12 +576,19 @@ Udp2RedisCluster::Udp2RedisCluster( void )
     , m_globalConfig()
     , m_metricsTimer()
     , m_transmitMetrics( true )
+    , m_testUdpSocket( false )
+    , m_testPacketTransmitTimer()
 {GUCEF_TRACE;
 
     TEventCallback callback1( this, &Udp2RedisCluster::OnMetricsTimerCycle );
     SubscribeTo( &m_metricsTimer                ,
                  CORE::CTimer::TimerUpdateEvent ,
                  callback1                      );
+
+    TEventCallback callback2( this, &Udp2RedisCluster::OnTransmitTestPacketTimerCycle );
+    SubscribeTo( &m_testPacketTransmitTimer     ,
+                 CORE::CTimer::TimerUpdateEvent ,
+                 callback2                      );
 }
 
 /*-------------------------------------------------------------------------*/
@@ -652,6 +675,7 @@ Udp2RedisCluster::LoadConfig( const CORE::CValueList& appConfig   ,
     {
         Udp2RedisClusterChannel::ChannelSettings& channelSettings = m_channelSettings[ channelId ];
 
+        channelSettings.collectMetrics = m_transmitMetrics;
         channelSettings.redisAddress.SetHostname( m_redisHost );
         channelSettings.redisAddress.SetPortInHostByteOrder( m_redisPort );
 
@@ -679,6 +703,9 @@ Udp2RedisCluster::LoadConfig( const CORE::CValueList& appConfig   ,
             channelSettings.udpInterface.SetPortInHostByteOrder( udpPort );
         }
 
+        settingName = "ChannelSetting." + CORE::Int32ToString( channelId ) + ".WantsTestPackage";
+        channelSettings.wantsTestPackage = CORE::StringToBool( appConfig.GetValueAlways( settingName, "false" ) );
+
         settingName = "ChannelSetting." + CORE::Int32ToString( channelId ) + ".Multicast.Join";
         CORE::CValueList::TStringVector settingValues = appConfig.GetValueVectorAlways( settingName );
         CORE::CValueList::TStringVector::iterator n = settingValues.begin();
@@ -704,6 +731,9 @@ Udp2RedisCluster::LoadConfig( const CORE::CValueList& appConfig   ,
     m_httpRouter.SetResourceMapping(  CORE::ResolveVars( appConfig.GetValueAlways( "RestBasicHealthUri", "/health/basic" ) ), RestApiUdp2RedisInfoResource::THTTPServerResourcePtr( new COM::CDummyHTTPServerResource() )  );
 
     m_httpServer.GetRouterController()->AddRouterMapping( &m_httpRouter, "", "" );
+    
+    m_testPacketTransmitTimer.SetInterval( CORE::StringToUInt32( appConfig.GetValueAlways( "TestPacketTransmissionIntervalInMs", "1000" ) ) );
+    m_testPacketTransmitTimer.SetEnabled( CORE::StringToBool( appConfig.GetValueAlways( "TransmitTestPackets", "false" ) ) );
     return true;
 }
 
@@ -726,6 +756,30 @@ Udp2RedisCluster::OnMetricsTimerCycle( CORE::CNotifier* notifier    ,
         GUCEF_METRIC_GAUGE( metricPrefix + "redisTransmitOverflowQueueSize", metrics.redisTransmitOverflowQueueSize, 1.0f );
         GUCEF_METRIC_COUNT( metricPrefix + "udpBytesReceived", metrics.udpBytesReceived, 1.0f );
         GUCEF_METRIC_COUNT( metricPrefix + "udpMessagesReceived", metrics.udpMessagesReceived, 1.0f );
+        ++i;
+    }
+}
+
+/*-------------------------------------------------------------------------*/
+
+void
+Udp2RedisCluster::OnTransmitTestPacketTimerCycle( CORE::CNotifier* notifier    ,
+                                                  const CORE::CEvent& eventId  ,
+                                                  CORE::CICloneable* eventData )
+{GUCEF_TRACE;
+
+    if ( !m_testUdpSocket.IsActive() )
+        if ( !m_testUdpSocket.Open() )
+            return;
+    
+    Udp2RedisClusterChannelVector::iterator i = m_channels.begin();
+    while ( i != m_channels.end() )
+    {
+        const Udp2RedisClusterChannel::ChannelSettings& settings = (*i).GetChannelSettings();
+        if ( settings.wantsTestPackage )
+        {
+            m_testUdpSocket.SendPacketTo( settings.udpInterface, "TEST", 4 );
+        }
         ++i;
     }
 }
