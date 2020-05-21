@@ -172,7 +172,7 @@ class Udp2RedisClusterChannel : public CORE::CTaskConsumer
 
     void RegisterEventHandlers( void );
     
-    int RedisSend( const CORE::CDynamicBuffer& udpPacket );
+    bool RedisSend( const CORE::CDynamicBuffer& udpPacket );
 
     bool SendQueuedPackagesIfAny( void );
 

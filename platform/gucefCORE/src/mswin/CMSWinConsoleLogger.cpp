@@ -126,7 +126,7 @@ CMSWinConsoleLogger::Log( const TLogMsgType logMsgType ,
                                                        threadId   ) + "\n" );
 
             fwrite( actualLogMsg.C_String(), actualLogMsg.Length(), 1, stdout );
-            fwrite( "\n", 1, 1, stdout );
+            //fwrite( "\n", 1, 1, stdout );
         }
     }
     else
@@ -134,7 +134,7 @@ CMSWinConsoleLogger::Log( const TLogMsgType logMsgType ,
         if ( logMsgType == CORE::CLogManager::LOG_CONSOLE )
         {
             fwrite( logMessage.C_String(), logMessage.Length(), 1, m_consoleFptr );
-            fwrite( "\n", 1, 1, m_consoleFptr );
+            //fwrite( "\n", 1, 1, m_consoleFptr );
         }
     }
 }

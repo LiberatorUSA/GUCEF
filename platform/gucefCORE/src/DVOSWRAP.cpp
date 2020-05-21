@@ -68,6 +68,11 @@
 #define GUCEF_CORE_GUCEF_ESSENTIALS_H
 #endif /* GUCEF_CORE_GUCEF_ESSENTIALS_H ? */
 
+#ifndef GUCEF_CORE_DVCPPSTRINGUTILS_H
+#include "dvcppstringutils.h"  
+#define GUCEF_CORE_DVCPPSTRINGUTILS_H
+#endif /* GUCEF_CORE_DVCPPSTRINGUTILS_H ? */
+
 /*-------------------------------------------------------------------------//
 //                                                                         //
 //      NAMESPACE                                                          //
@@ -336,9 +341,14 @@ GetCurrentHWND( void )
          *      Try to get the HWND from the process environment settings
          */
         hwndstr = GUCEFGetEnv( "HWND" );
-        if ( hwndstr )
+        if ( hwndstr != GUCEF_NULL )
         {
+                
+                #ifdef GUCEF_64BIT
+                whandle = (HWND) StringToInt64( hwndstr );
+                #else
                 whandle = (HWND) Str_To_Int( hwndstr );
+                #endif
         }
         else
         {

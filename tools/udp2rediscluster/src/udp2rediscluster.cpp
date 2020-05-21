@@ -271,40 +271,58 @@ Udp2RedisClusterChannel::OnUDPSocketClosed( CORE::CNotifier* notifier   ,
 
 void
 Udp2RedisClusterChannel::OnUDPSocketOpened( CORE::CNotifier* notifier   ,
-                                     const CORE::CEvent& eventID ,
-                                     CORE::CICloneable* evenData )
+                                            const CORE::CEvent& eventID ,
+                                            CORE::CICloneable* evenData )
 {GUCEF_TRACE;
 
     GUCEF_LOG( CORE::LOGLEVEL_IMPORTANT, "Udp2RedisClusterChannel: UDP Socket has been opened" );
+
+    ChannelSettings::HostAddressVector::iterator m = m_channelSettings.udpMulticastToJoin.begin();
+    while ( m != m_channelSettings.udpMulticastToJoin.end() )
+    {
+        const COMCORE::CHostAddress& multicastAddr = (*m);
+        if ( m_udpSocket->Join( multicastAddr ) )
+        {
+            GUCEF_LOG( CORE::LOGLEVEL_NORMAL, "Udp2RedisClusterChannel:OnTaskStart: Successfully to joined multicast " + multicastAddr.AddressAndPortAsString() +
+                    " for UDP socket on " + m_channelSettings.udpInterface.AddressAndPortAsString() );
+        }
+        else
+        {
+            GUCEF_ERROR_LOG( CORE::LOGLEVEL_IMPORTANT, "Udp2RedisClusterChannel:OnTaskStart: Failed to join multicast " + multicastAddr.AddressAndPortAsString() +
+                    " for UDP socket on " + m_channelSettings.udpInterface.AddressAndPortAsString() );
+        }
+        ++m;
+    }
 }
 
 /*-------------------------------------------------------------------------*/
 
-int
+bool
 Udp2RedisClusterChannel::RedisSend( const CORE::CDynamicBuffer& udpPacket )
 {GUCEF_TRACE;
 
-    //m_redisContext->xadd(  
-    
-    int retCode =0;
-    //
-    //= redisAsyncCommand( m_redisContext,
-    //                                 &OnRedisASyncVoidReply,
-    //                                 this,
-    //                                 m_redisStreamSendCmd.C_String(),
-    //                                 udpPacket.GetConstBufferPtr(),
-    //                                 udpPacket.GetDataSize() );
-    //if ( retCode != REDIS_OK )
-    //{
-    //    GUCEF_ERROR_LOG( CORE::LOGLEVEL_IMPORTANT, "Udp2RedisClusterChannel:RedisSend: Failed executing async send command" );
-    //}
-    //#ifdef GUCEF_DEBUG_MODE
-    //else
-    //{
-    //    GUCEF_DEBUG_LOG( CORE::LOGLEVEL_EVERYTHING, "Udp2RedisClusterChannel:RedisSend: Successfully executed async send command" );
-    //}
-    //#endif
-    return retCode;
+    try
+    {
+     //sw::redis::Arg h;
+    //sw::redis::CmdArgs a;
+  //  a.append(
+        m_redisContext->command( sw::redis::StringView( m_redisStreamSendCmd.C_String(), m_redisStreamSendCmd.Length() ) ,
+                                 sw::redis::StringView( (const char*) udpPacket.GetConstBufferPtr(),udpPacket.GetDataSize() ) );
+
+        GUCEF_DEBUG_LOG( CORE::LOGLEVEL_NORMAL, "Udp2RedisClusterChannel(" + CORE::PointerToString( this ) + "):RedisConnect: Successfully sent UDP message of " + 
+            CORE::UInt32ToString( udpPacket.GetDataSize() ) + " bytes");
+        return true;
+    }
+    catch ( const sw::redis::Error& e )
+    {
+		GUCEF_EXCEPTION_LOG( CORE::LOGLEVEL_IMPORTANT, "Udp2RedisClusterChannel(" + CORE::PointerToString( this ) + "):RedisSend: Redis++ exception: " + e.what() );
+        return false;
+    }
+    catch ( const std::exception& e )
+    {
+        GUCEF_EXCEPTION_LOG( CORE::LOGLEVEL_IMPORTANT, "Udp2RedisClusterChannel(" + CORE::PointerToString( this ) + "):RedisSend: exception: " + e.what() );
+        return false;
+    }
 }
 
 /*-------------------------------------------------------------------------*/
@@ -391,6 +409,8 @@ Udp2RedisClusterChannel::RedisConnect( void )
         delete m_redisContext;
         m_redisContext = new sw::redis::Redis( rppConnectionOptions );
 
+        m_redisStreamSendCmd = "XADD " + m_channelSettings.channelStreamName + " * UDP %b";
+
         GUCEF_LOG( CORE::LOGLEVEL_NORMAL, "Udp2RedisClusterChannel(" + CORE::PointerToString( this ) + "):RedisConnect: Successfully created a Redis context" );
         return true;
     }
@@ -425,23 +445,6 @@ Udp2RedisClusterChannel::OnTaskStart( CORE::CICloneable* taskData )
     if ( m_udpSocket->Open( m_channelSettings.udpInterface ) )
     {
 		GUCEF_LOG( CORE::LOGLEVEL_NORMAL, "Udp2RedisClusterChannel:OnTaskStart: Successfully opened UDP socket on " + m_channelSettings.udpInterface.AddressAndPortAsString() );
-
-        ChannelSettings::HostAddressVector::iterator m = m_channelSettings.udpMulticastToJoin.begin();
-        while ( m != m_channelSettings.udpMulticastToJoin.end() )
-        {
-            const COMCORE::CHostAddress& multicastAddr = (*m);
-            if ( m_udpSocket->Join( multicastAddr ) )
-            {
-                GUCEF_LOG( CORE::LOGLEVEL_NORMAL, "Udp2RedisClusterChannel:OnTaskStart: Successfully to joined multicast " + multicastAddr.AddressAndPortAsString() +
-                        " for UDP socket on " + m_channelSettings.udpInterface.AddressAndPortAsString() );
-            }
-            else
-            {
-                GUCEF_ERROR_LOG( CORE::LOGLEVEL_IMPORTANT, "Udp2RedisClusterChannel:OnTaskStart: Failed to join multicast " + multicastAddr.AddressAndPortAsString() +
-                        " for UDP socket on " + m_channelSettings.udpInterface.AddressAndPortAsString() );
-            }
-            ++m;
-        }
     }
     else
     {
