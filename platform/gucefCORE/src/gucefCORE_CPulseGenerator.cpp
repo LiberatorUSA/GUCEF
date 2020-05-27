@@ -81,7 +81,7 @@ CPulseGenerator::CPulseGenerator( void )
     : CNotifier()                                      ,
       m_lastCycleTickCount( MT::PrecisionTickCount() ) ,
       m_updateDeltaInMilliSecs( 10 )                   ,
-      m_timerFreq( 1.0 )                               ,
+      m_ticksPerMs( 1000 )                             ,
       m_forcedStopOfPeriodPulses( false )              ,
       m_periodicUpdateRequestors()                     ,
       m_driver( NULL )                                 ,
@@ -91,7 +91,7 @@ CPulseGenerator::CPulseGenerator( void )
     RegisterEvents();
     
     // Cache the precision timer resolution in time slices per millisecond
-    m_timerFreq = ( MT::PrecisionTimerResolution() / 1000.0 );
+    m_ticksPerMs = ( MT::PrecisionTimerResolution() / 1000.0 );
 }
 
 /*--------------------------------------------------------------------------*/
@@ -123,22 +123,25 @@ CPulseGenerator::RequestPulse( void )
     {
         // We are not so we must trigger an update either by delegation to a  
         // driver or by doing so directly
-        if ( NULL != m_driver )
+        if ( GUCEF_NULL != m_driver )
         {
             UnlockData();
             m_driver->RequestPulse( *this );
         }
         else
         {
-            UInt64 newTickCount = GUCEFGetTickCount();
-            UInt64 deltaTicks = newTickCount - m_lastCycleTickCount;
-            CPulseData pulseData( newTickCount, deltaTicks, 0);
+            UInt64 newTickCount = MT::PrecisionTickCount();
+            Int64 deltaTicks = newTickCount - m_lastCycleTickCount;
+            Float64 updateDeltaTime = deltaTicks / m_ticksPerMs;
             m_lastCycleTickCount = newTickCount;
             UnlockData();
             
+            CPulseData pulseData( newTickCount, deltaTicks, updateDeltaTime );
             NotifyObservers( PulseEvent, &pulseData );
         }
     }
+    else
+        UnlockData();
 }
 
 /*--------------------------------------------------------------------------*/
@@ -314,12 +317,41 @@ Float64
 CPulseGenerator::GetActualPulseDeltaInMilliSecs( void ) const
 {GUCEF_TRACE;
 
-    UInt64 deltaTicks = MT::PrecisionTickCount() - m_lastCycleTickCount;
+    Int64 deltaTicks = (Int64) ( MT::PrecisionTickCount() - m_lastCycleTickCount );
     if ( deltaTicks > 0 )
     {
-        return deltaTicks / m_timerFreq;
+        return deltaTicks / m_ticksPerMs;
     }
     return 0.0;
+}
+
+/*--------------------------------------------------------------------------*/
+
+void
+CPulseGenerator::WaitTillNextPulseWindow( UInt32 forcedMinimalDeltaInMilliSecs  ,
+                                          UInt32 desiredMaximumDeltaInMilliSecs ) const
+{GUCEF_TRACE;
+   
+    Float64 deltaInMs = GetActualPulseDeltaInMilliSecs();
+    Int32 timeLeftToWaitInMs = (Int32) ( m_updateDeltaInMilliSecs - deltaInMs );
+
+    if ( timeLeftToWaitInMs <= 0 )
+        return; // Time's up already
+
+    // forcedMinimalDeltaInMilliSecs == 0 means no forced minimum
+    if ( ( forcedMinimalDeltaInMilliSecs > 0 ) && 
+         ( forcedMinimalDeltaInMilliSecs >= (UInt32) timeLeftToWaitInMs ) )
+    {
+        timeLeftToWaitInMs = forcedMinimalDeltaInMilliSecs;
+    }
+    // desiredMaximumDeltaInMilliSecs == 0 means no maximum desired
+    if ( ( desiredMaximumDeltaInMilliSecs > 0 ) &&
+            ( desiredMaximumDeltaInMilliSecs < (UInt32) timeLeftToWaitInMs ) )
+    {
+        timeLeftToWaitInMs = desiredMaximumDeltaInMilliSecs;
+    }
+
+    MT::PrecisionDelay( timeLeftToWaitInMs );
 }
 
 /*--------------------------------------------------------------------------*/
@@ -454,7 +486,7 @@ CPulseGenerator::OnDriverPulse( void )
     LockData();
     UInt64 tickCount = MT::PrecisionTickCount();
     UInt64 deltaTicks = tickCount - m_lastCycleTickCount;
-    Float64 deltaMilliSecs = deltaTicks / m_timerFreq;   
+    Float64 deltaMilliSecs = deltaTicks / m_ticksPerMs;   
     m_lastCycleTickCount = tickCount; 
     UnlockData();
     

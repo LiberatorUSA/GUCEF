@@ -100,7 +100,7 @@ CUDPSocket::CUDPSocket( CORE::CPulseGenerator& pulseGenerator ,
     , m_hostAddress()
     , m_buffer()
     , m_pulseGenerator( &pulseGenerator )
-    , m_maxUpdatesPerCycle( 0 )
+    , m_maxUpdatesPerCycle( 100 )
     , m_allowMulticastLoopback( false )
     , m_multicastTTL( 8 )
     , m_allowBroadcast( false )
@@ -137,7 +137,7 @@ CUDPSocket::CUDPSocket( bool blocking )
     , m_hostAddress()
     , m_buffer()
     , m_pulseGenerator( &CORE::CCoreGlobal::Instance()->GetPulseGenerator() )
-    , m_maxUpdatesPerCycle( 0 )
+    , m_maxUpdatesPerCycle( 100 )
     , m_allowMulticastLoopback( false )
     , m_multicastTTL( 8 )
     , m_allowBroadcast( false )
@@ -710,7 +710,7 @@ CUDPSocket::Open( const CIPAddress& localaddr )
     int allowPortReuse = 1;
     if ( 0 > dvsocket_setsockopt( _data->sockid, SOL_SOCKET, SO_REUSEPORT, (const char*) &allowPortReuse, sizeof(int), &errorCode ) )
     {
-        GUCEF_ERROR_LOG( CORE::LOGLEVEL_NORMAL, "UDPSocket(" + CORE::PointerToString( this ) + "): Failed to port reuse mode \"" + CORE::BoolToString( allowPortReuse != 0 )
+        GUCEF_ERROR_LOG( CORE::LOGLEVEL_NORMAL, "UDPSocket(" + CORE::PointerToString( this ) + "): Failed to set port reuse mode \"" + CORE::BoolToString( allowPortReuse != 0 )
             + "\" on socket. Error code: " + CORE::UInt32ToString( errorCode ) );
     }
     GUCEF_DEBUG_LOG( CORE::LOGLEVEL_BELOW_NORMAL, "UDPSocket(" + CORE::PointerToString( this ) + "): Successfully set port reuse mode \"" + CORE::BoolToString( allowPortReuse != 0 ) + "\" on socket" );

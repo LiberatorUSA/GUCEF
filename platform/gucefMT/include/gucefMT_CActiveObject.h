@@ -87,9 +87,9 @@ class GUCEF_MT_PUBLIC_CPP CActiveObject
      *  Activates the object (if it is not active already).
      *  This operation will spawn a thread.
      */
-    bool Activate( void* taskdata = NULL               ,
-                   const UInt32 cycleDelay = 10        ,
-                   const UInt32 minimalCycleDelta = 10 );
+    bool Activate( void* taskdata = NULL                   ,
+                   const UInt32 cycleDelay = 10            ,
+                   const UInt32 minimalCycleDeltaInMs = 10 );
 
     /**
      *  Deactivates the active object
@@ -151,8 +151,8 @@ class GUCEF_MT_PUBLIC_CPP CActiveObject
 
     protected:
 
-    UInt32 m_delay;
-    Float64 m_minimalCycleDelta;
+    UInt32 m_delayInMilliSecs;
+    UInt32 m_minimalCycleDeltaInMilliSecs;
 
     private:
     CActiveObject& operator=( const CActiveObject& src );

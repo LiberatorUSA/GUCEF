@@ -102,22 +102,17 @@ CBusyWaitPulseGeneratorDriver::Run( CPulseGenerator& pulseGenerator )
 {GUCEF_TRACE;
     
     m_loop = true;
-    Float64 remainingDelta;
     while ( m_loop )
     {
-        remainingDelta = m_desiredPulseDelta - pulseGenerator.GetActualPulseDeltaInMilliSecs();
-        if ( remainingDelta <= 0.0 || m_immediatePulseRequested )
+        if ( m_immediatePulseRequested )
         {
             m_immediatePulseRequested = false;
             SendDriverPulse( pulseGenerator );
+            continue;
         }
-        else
-        {
-            if ( remainingDelta > 1.0 )
-            {
-                MT::PrecisionDelay( (UInt32)remainingDelta ); 
-            }
-        }
+
+        pulseGenerator.WaitTillNextPulseWindow( 0, 100 );
+        SendDriverPulse( pulseGenerator );
     }
     
     GUCEF_LOG( CORE::LOGLEVEL_NORMAL, "BusyWaitPulseGeneratorDriver: Exited run loop" );

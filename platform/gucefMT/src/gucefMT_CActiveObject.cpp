@@ -45,13 +45,13 @@ namespace MT {
 //-------------------------------------------------------------------------*/
 
 CActiveObject::CActiveObject( void )
-        : _taskdata( NULL )                  ,
-          m_delay( 10 )                      ,
-          m_isDeactivationRequested( false ) ,
-          _suspend( false )                  ,
-          _active( false )                   ,
-          _td( NULL )                        ,
-          m_minimalCycleDelta( 10 )
+    : _taskdata( NULL )                    
+    , m_delayInMilliSecs( 10 )             
+    , m_isDeactivationRequested( false )   
+    , _suspend( false )                    
+    , _active( false )                     
+    , _td( NULL )                          
+    , m_minimalCycleDeltaInMilliSecs( 10 )
 {
 
 }
@@ -59,13 +59,13 @@ CActiveObject::CActiveObject( void )
 /*-------------------------------------------------------------------------*/
 
 CActiveObject::CActiveObject( const CActiveObject& src )
-        : _taskdata( src._taskdata )         ,
-          m_delay( src.m_delay )             ,
-          m_isDeactivationRequested( false ) ,
-          _suspend( false )                  ,
-          _active( false )                   ,
-          _td( NULL )                        ,
-          m_minimalCycleDelta( 10 )
+    : _taskdata( src._taskdata )         
+    , m_delayInMilliSecs( src.m_delayInMilliSecs )       
+    , m_isDeactivationRequested( false ) 
+    , _suspend( false )                  
+    , _active( false )                      
+    , _td( NULL )                           
+    , m_minimalCycleDeltaInMilliSecs( 10 )
 {
     if ( src.IsActive() )
     {
@@ -108,10 +108,10 @@ CActiveObject::OnActivate( void* thisobject )
     {
         tao->OnTaskStarted( taskdata );
        
-        Float64 timerRes = ( PrecisionTimerResolution() * 1.0 );
+        Float64 ticksPerMs = PrecisionTimerResolution() / 1000.0;
         UInt64 tickCount = PrecisionTickCount();
-        UInt64 newTime = tickCount;
-        Float64 timeDelta = 0;
+        UInt64 newTickCount = tickCount;
+        Float64 timeDeltaInMs = 0;
 
         bool taskfinished = false;
         while ( !taskfinished && !tao->m_isDeactivationRequested )
@@ -131,16 +131,17 @@ CActiveObject::OnActivate( void* thisobject )
                 // If we are going to do another cycle then make sure we
                 // stay within the time slice range requested.
                 // Here we calculate the time that has passed in seconds
-                newTime = PrecisionTickCount();
-                timeDelta = ( tickCount - newTime ) / timerRes;
-                if ( timeDelta < tao->m_minimalCycleDelta )
+                newTickCount = PrecisionTickCount();
+                timeDeltaInMs = ( newTickCount - tickCount ) / ticksPerMs;
+
+                if ( timeDeltaInMs < tao->m_minimalCycleDeltaInMilliSecs )
                 {
-                    PrecisionDelay( tao->m_delay );
+                    PrecisionDelay( tao->m_delayInMilliSecs );
                     tickCount = PrecisionTickCount();
                 }
                 else
                 {
-                    tickCount = newTime;
+                    tickCount = newTickCount;
                 }
             }
         }
@@ -155,15 +156,15 @@ CActiveObject::OnActivate( void* thisobject )
 /*-------------------------------------------------------------------------*/
 
 bool
-CActiveObject::Activate( void* taskdata /* = NULL */               ,
-                         const UInt32 cycleDelay /* = 0 */         ,
-                         const UInt32 minimalCycleDelta /* = 10 */ )
+CActiveObject::Activate( void* taskdata /* = NULL */                   ,
+                         const UInt32 cycleDelay /* = 10 */             ,
+                         const UInt32 minimalCycleDeltaInMs /* = 10 */ )
 {
     if ( _active ) return false;
 
     _taskdata = taskdata;
-    m_delay = cycleDelay;
-    m_minimalCycleDelta = minimalCycleDelta / 1000.0; // <- the unit used here is seconds not milliseconds
+    m_delayInMilliSecs = cycleDelay;
+    m_minimalCycleDeltaInMilliSecs = minimalCycleDeltaInMs;
     m_isDeactivationRequested = false;
     _suspend = false;
     _active = true;
@@ -287,17 +288,19 @@ CActiveObject::GetTaskData( void ) const
 CActiveObject&
 CActiveObject::operator=( const CActiveObject& src )
 {
-    Deactivate( true, true );
-
-    _taskdata = src._taskdata;
-    m_delay = src.m_delay;
-    _suspend = false;
-
-    if ( src.IsActive() )
+    if ( this != &src )  
     {
-        Activate();
-    }
+        Deactivate( true, true );
 
+        _taskdata = src._taskdata;
+        m_delayInMilliSecs = src.m_delayInMilliSecs;
+        _suspend = false;
+
+        if ( src.IsActive() )
+        {
+            Activate();
+        }
+    }
     return *this;
 }
 

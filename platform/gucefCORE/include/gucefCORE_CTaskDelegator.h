@@ -172,6 +172,7 @@ class GUCEF_CORE_PRIVATE_CPP CTaskDelegator : public MT::CActiveObject      ,
 
     CTaskConsumer* m_taskConsumer;
     bool m_consumerBusy;
+    bool m_immediatePulseRequested;
 };
 
 /*-------------------------------------------------------------------------//

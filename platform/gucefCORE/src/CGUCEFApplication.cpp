@@ -172,9 +172,15 @@ CGUCEFApplication::Main( HINSTANCE hinstance     ,
          *      Set the given values as environment vars
          */
         #pragma warning( disable: 4311 )
-        char intstr[ 10 ];
-        sprintf( intstr, "%d", (UInt32)hinstance );
+        #ifdef GUCEF_64BIT
+        char intstr[ 20 ];
+        sprintf( intstr, "%I64d", (Int64) hinstance );
         GUCEFSetEnv( "HINSTANCE", intstr );
+        #else
+        char intstr[ 10 ];
+        sprintf( intstr, "%d", (Int32) hinstance );
+        GUCEFSetEnv( "HINSTANCE", intstr );
+        #endif
 
         char apppath[ MAX_PATH ];
 

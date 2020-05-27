@@ -262,8 +262,8 @@ Udp2RedisClusterChannel::OnUDPSocketError( CORE::CNotifier* notifier    ,
 
 void
 Udp2RedisClusterChannel::OnUDPSocketClosed( CORE::CNotifier* notifier   ,
-                                     const CORE::CEvent& eventID ,
-                                     CORE::CICloneable* evenData )
+                                            const CORE::CEvent& eventID ,
+                                            CORE::CICloneable* evenData )
 {GUCEF_TRACE;
 
     GUCEF_LOG( CORE::LOGLEVEL_IMPORTANT, "Udp2RedisClusterChannel: UDP Socket has been closed" );

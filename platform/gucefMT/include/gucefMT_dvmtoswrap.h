@@ -150,7 +150,7 @@ GetProcessID( void );
  *      @param delay the number of milliseconds you wish to delay the caller thread
  */
 GUCEF_MT_PUBLIC_C void
-PrecisionDelay( UInt32 delay );
+PrecisionDelay( UInt32 delayInMs );
 
 /*--------------------------------------------------------------------------*/
 

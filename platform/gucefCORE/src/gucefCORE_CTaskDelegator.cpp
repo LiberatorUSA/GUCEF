@@ -86,6 +86,7 @@ CTaskDelegator::CTaskDelegator( void )
     , CIPulseGeneratorDriver()         
     , m_pulseGenerator()     
     , m_taskConsumer( GUCEF_NULL )
+    , m_immediatePulseRequested( false )
 {GUCEF_TRACE;
 
     RegisterEvents();
@@ -117,8 +118,11 @@ CTaskDelegator::GetPulseGenerator( void )
 void
 CTaskDelegator::RequestPulse( CPulseGenerator& pulseGenerator ) 
 {GUCEF_TRACE;
-
-    SendDriverPulse( m_pulseGenerator );
+       
+    if ( &pulseGenerator == &m_pulseGenerator )
+    {
+        m_immediatePulseRequested = true;
+    }
 }
 
 /*-------------------------------------------------------------------------*/
@@ -131,7 +135,7 @@ CTaskDelegator::RequestPeriodicPulses( CPulseGenerator& pulseGenerator    ,
 
     if ( &pulseGenerator == &m_pulseGenerator )
     {
-        m_delay = pulseDeltaInMilliSecs;
+        m_delayInMilliSecs = pulseDeltaInMilliSecs;
         Resume();
     }
 }
@@ -145,7 +149,7 @@ CTaskDelegator::RequestPulseInterval( CPulseGenerator& pulseGenerator    ,
 
     if ( &pulseGenerator == &m_pulseGenerator )
     {
-        m_delay = pulseDeltaInMilliSecs;
+        m_delayInMilliSecs = pulseDeltaInMilliSecs;
     }
 }
 
@@ -235,29 +239,17 @@ CTaskDelegator::ProcessTask( CTaskConsumer& taskConsumer ,
     {
         taskConsumer.OnTaskStarted( taskData );
 
-        Float64 timerRes = ( MT::PrecisionTimerResolution() * 1.0 );
-        UInt64 tickCount = MT::PrecisionTickCount();
-        UInt64 newTime = tickCount;
-        Float64 timeDelta = 0;
-
         // cycle the task as long as it is not "done"
         while ( !IsDeactivationRequested() && !taskConsumer.OnTaskCycle( taskData ) ) 
         {
             SendDriverPulse( m_pulseGenerator );
-
-            // If we are going to do another cycle then make sure we
-            // stay within the time slice range requested.
-            // Here we calculate the time that has passed in seconds
-            newTime = MT::PrecisionTickCount();
-            timeDelta = ( tickCount - newTime ) / timerRes;
-            if ( timeDelta < m_minimalCycleDelta )
+            if ( !m_immediatePulseRequested )
             {
-                MT::PrecisionDelay( m_delay );
-                tickCount = MT::PrecisionTickCount();
+                m_pulseGenerator.WaitTillNextPulseWindow( m_minimalCycleDeltaInMilliSecs );
             }
             else
             {
-                tickCount = newTime;
+                m_immediatePulseRequested = false;
             }
         }
 
