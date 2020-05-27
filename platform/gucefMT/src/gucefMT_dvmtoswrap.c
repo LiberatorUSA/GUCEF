@@ -351,7 +351,7 @@ PrecisionDelay( UInt32 delayInMs )
         if ( ticksLeft > (Int32) ( highPerfTimerFrequencyTicksPerMs * 50 ) )
         {
             // Lets not hog the CPU if the time we have to wait is lengthy
-            UInt32 longSleepTimeInMs = (ticksLeft/highPerfTimerFrequencyTicksPerMs) - (highPerfTimerFrequencyTicksPerMs*15);
+            UInt32 longSleepTimeInMs = (UInt32) ( (ticksLeft/highPerfTimerFrequencyTicksPerMs) - (highPerfTimerFrequencyTicksPerMs*15) );
             Sleep( longSleepTimeInMs );
         }
         else        

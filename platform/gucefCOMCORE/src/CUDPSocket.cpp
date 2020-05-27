@@ -67,7 +67,7 @@ const CORE::CEvent CUDPSocket::UDPSocketClosedEvent = "GUCEF::COMCORE::CUDPSocke
 const CORE::CEvent CUDPSocket::UDPSocketOpenedEvent = "GUCEF::COMCORE::CUDPSocket::UDPSocketOpenedEvent";
 const CORE::CEvent CUDPSocket::UDPPacketRecievedEvent = "GUCEF::COMCORE::CUDPSocket::UDPPacketRecievedEvent";
 
-#define PULSEUPDATEINTERVAL 10
+#define PULSEUPDATEINTERVAL 25
 
 /*-------------------------------------------------------------------------//
 //                                                                         //

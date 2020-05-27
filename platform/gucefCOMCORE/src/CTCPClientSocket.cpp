@@ -487,7 +487,7 @@ CTCPClientSocket::Connect( bool blocking )
                              NULL                              );
 
                     if ( m_isConnecting && _active ) 
-                        MT::PrecisionDelay( 10 );
+                        MT::PrecisionDelay( 25 );
                 }
 
                 m_pulseGenerator->RequestPeriodicPulses( this, MAX_PULSE_INTERVAL_IN_MS );

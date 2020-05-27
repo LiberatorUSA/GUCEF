@@ -88,7 +88,7 @@ class GUCEF_MT_PUBLIC_CPP CActiveObject
      *  This operation will spawn a thread.
      */
     bool Activate( void* taskdata = NULL                   ,
-                   const UInt32 cycleDelay = 10            ,
+                   const UInt32 cycleDelay = 25            ,
                    const UInt32 minimalCycleDeltaInMs = 10 );
 
     /**

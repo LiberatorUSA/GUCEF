@@ -111,7 +111,7 @@ CBusyWaitPulseGeneratorDriver::Run( CPulseGenerator& pulseGenerator )
             continue;
         }
 
-        pulseGenerator.WaitTillNextPulseWindow( 0, 100 );
+        pulseGenerator.WaitTillNextPulseWindow( 25, 100 );
         SendDriverPulse( pulseGenerator );
     }
     

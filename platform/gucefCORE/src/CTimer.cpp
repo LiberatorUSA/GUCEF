@@ -78,7 +78,7 @@ const CEvent CTimer::TimerIntervalChangedEvent = "GUCEF::CORE::CTimer::TimerInte
 //                                                                         //
 //-------------------------------------------------------------------------*/
 
-CTimer::CTimer( const UInt32 updateDeltaInMilliSecs /* = 10 */ )
+CTimer::CTimer( const UInt32 updateDeltaInMilliSecs /* = 25 */ )
     : m_lastTimerCycle( 0 )                                    ,
       m_enabled( false )                                       ,
       m_updateDeltaInMilliSecs( updateDeltaInMilliSecs )       ,
@@ -109,7 +109,7 @@ CTimer::CTimer( const UInt32 updateDeltaInMilliSecs /* = 10 */ )
 /*-------------------------------------------------------------------------*/
 
 CTimer::CTimer( CPulseGenerator& pulseGenerator                ,
-                const UInt32 updateDeltaInMilliSecs /* = 10 */ )
+                const UInt32 updateDeltaInMilliSecs /* = 25 */ )
     : m_lastTimerCycle( 0 )                                    ,
       m_enabled( false )                                       ,
       m_updateDeltaInMilliSecs( updateDeltaInMilliSecs )       ,

@@ -114,7 +114,7 @@ class GUCEF_CORE_PUBLIC_CPP CPulseGenerator : public CNotifier
      *  If there is a minimum time you at minimum want to wait regardless of the minimum need of pulse clients
      *  you can specify non-zero for "forcedMinimalDeltaInMilliSecs" 
      */
-    void WaitTillNextPulseWindow( UInt32 forcedMinimalDeltaInMilliSecs = 0     ,
+    void WaitTillNextPulseWindow( UInt32 forcedMinimalDeltaInMilliSecs = 25    ,
                                   UInt32 desiredMaximumDeltaInMilliSecs = 1000 ) const;
 
     virtual const CString& GetClassTypeName( void ) const;

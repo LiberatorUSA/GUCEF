@@ -46,7 +46,7 @@ namespace MT {
 
 CActiveObject::CActiveObject( void )
     : _taskdata( NULL )                    
-    , m_delayInMilliSecs( 10 )             
+    , m_delayInMilliSecs( 25 )             
     , m_isDeactivationRequested( false )   
     , _suspend( false )                    
     , _active( false )                     
@@ -157,7 +157,7 @@ CActiveObject::OnActivate( void* thisobject )
 
 bool
 CActiveObject::Activate( void* taskdata /* = NULL */                   ,
-                         const UInt32 cycleDelay /* = 10 */             ,
+                         const UInt32 cycleDelay /* = 25 */            ,
                          const UInt32 minimalCycleDeltaInMs /* = 10 */ )
 {
     if ( _active ) return false;

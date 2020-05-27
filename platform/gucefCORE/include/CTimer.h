@@ -99,9 +99,9 @@ class GUCEF_CORE_PUBLIC_CPP CTimer : public CObservingNotifier
     public:
 
     CTimer( CPulseGenerator& pulseGenerator          ,
-            const UInt32 updateDeltaInMilliSecs = 10 );
+            const UInt32 updateDeltaInMilliSecs = 25 );
 
-    CTimer( const UInt32 updateDeltaInMilliSecs = 10 );
+    CTimer( const UInt32 updateDeltaInMilliSecs = 25 );
 
     CTimer( const CTimer& src );
 

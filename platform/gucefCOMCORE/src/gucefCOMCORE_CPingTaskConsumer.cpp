@@ -570,7 +570,7 @@ CPingTaskConsumer::OnTaskCycle( CORE::CICloneable* taskData )
         // Idle a bit before we try another round of pings (yield the thread)
         if ( delegator->IsActive() )
         {
-            MT::ThreadDelay( 10 );
+            MT::PrecisionDelay( 25 );
         }
     }
     
