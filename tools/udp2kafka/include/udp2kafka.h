@@ -88,7 +88,9 @@ using namespace GUCEF;
 //                                                                         //
 //-------------------------------------------------------------------------*/
 
-class Udp2KafkaChannel : public CORE::CTaskConsumer
+class Udp2KafkaChannel : public CORE::CTaskConsumer ,
+                         private RdKafka::EventCb ,
+                         private RdKafka::DeliveryReportCb
 {
     public:
 
@@ -116,7 +118,7 @@ class Udp2KafkaChannel : public CORE::CTaskConsumer
         ChannelSettings( const ChannelSettings& src );
         ChannelSettings& operator=( const ChannelSettings& src );
 
-        RdKafka::Conf* kafkaConf;
+        CORE::CString kafkaBrokers;
         CORE::CString channelTopicName;
         COMCORE::CHostAddress udpInterface;
         HostAddressVector udpMulticastToJoin;
@@ -144,6 +146,10 @@ class Udp2KafkaChannel : public CORE::CTaskConsumer
     const ChannelMetrics& GetMetrics( void ) const;
 
     private:
+
+    virtual void event_cb( RdKafka::Event& event );
+
+    virtual void dr_cb( RdKafka::Message& message );
 
     void
     OnUDPSocketError( CORE::CNotifier* notifier   ,
@@ -183,6 +189,7 @@ class Udp2KafkaChannel : public CORE::CTaskConsumer
     private:
 
     typedef std::deque< CORE::CDynamicBuffer > TDynamicBufferQueue;
+    typedef ChannelSettings::HostAddressVector HostAddressVector;
 
     RdKafka::Conf* m_kafkaConf;
     RdKafka::Producer* m_kafkaProducer;
@@ -195,6 +202,7 @@ class Udp2KafkaChannel : public CORE::CTaskConsumer
     ChannelMetrics m_metrics;
     CORE::UInt32 m_kafkaErrorReplies;
     CORE::UInt32 m_kafkaMsgsTransmitted;
+    HostAddressVector m_kafkaBrokers;
 };
 
 /*-------------------------------------------------------------------------*/
@@ -238,9 +246,7 @@ class RestApiUdp2KafkaConfigResource : public COM::CCodecBasedHTTPServerResource
 
 /*-------------------------------------------------------------------------*/
 
-class Udp2Kafka : public CORE::CObserver ,
-                  private RdKafka::EventCb ,
-                  private RdKafka::DeliveryReportCb 
+class Udp2Kafka : public CORE::CObserver 
 {
     public:
 
@@ -259,9 +265,6 @@ class Udp2Kafka : public CORE::CObserver ,
     private:
 
     typedef CORE::CTEventHandlerFunctor< Udp2Kafka > TEventCallback;
-    
-    virtual void event_cb( RdKafka::Event& event );
-    virtual void dr_cb( RdKafka::Message& message );
 
     void
     OnMetricsTimerCycle( CORE::CNotifier* notifier    ,
@@ -277,14 +280,11 @@ class Udp2Kafka : public CORE::CObserver ,
 
     typedef std::map< CORE::Int32, Udp2KafkaChannel::ChannelSettings > ChannelSettingsMap;
     typedef std::vector< Udp2KafkaChannel > Udp2KafkaChannelVector;
-    typedef Udp2KafkaChannel::ChannelSettings::HostAddressVector HostAddressVector;
 
-    RdKafka::Conf* m_kafkaConf;
     CORE::UInt16 m_udpStartPort;
     CORE::UInt16 m_channelCount;
     CORE::Int32 m_kafkaTopicStartChannelID;
     CORE::CString m_kafkaTopicName;
-    HostAddressVector m_kafkaBrokers;
     Udp2KafkaChannelVector m_channels;
     ChannelSettingsMap m_channelSettings;
     COM::CHTTPServer m_httpServer;

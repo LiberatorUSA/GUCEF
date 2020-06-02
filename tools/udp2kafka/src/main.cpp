@@ -186,8 +186,8 @@ ParseParams( const int argc                 ,
 /*
  *      Application entry point
  */
-GUCEF_OSMAIN_BEGIN
-//GUCEF_OSSERVICEMAIN_BEGIN( "udp2kafka" )
+//GUCEF_OSMAIN_BEGIN
+GUCEF_OSSERVICEMAIN_BEGIN( "udp2kafka" )
 {GUCEF_TRACE;
 
     GUCEF_LOG( CORE::LOGLEVEL_NORMAL, "This service was compiled on: " __DATE__ " @ " __TIME__ );
@@ -222,7 +222,7 @@ GUCEF_OSMAIN_BEGIN
     }
     CORE::CreateDirs( outputDir );
 
-    CORE::CString logFilename = CORE::CombinePath( outputDir, "Udp2Kafka_log.txt" );
+    CORE::CString logFilename = CORE::CombinePath( outputDir, "udp2kafka_log.txt" );
 
     keyValueList.Set( "logfile", logFilename );
 

@@ -53,6 +53,8 @@
 
 Udp2KafkaChannel::Udp2KafkaChannel()
     : CORE::CTaskConsumer()
+    , RdKafka::EventCb()
+    , RdKafka::DeliveryReportCb()
     , m_kafkaConf( GUCEF_NULL )
     , m_kafkaProducer( GUCEF_NULL )
     , m_kafkaTopic( GUCEF_NULL )
@@ -62,6 +64,7 @@ Udp2KafkaChannel::Udp2KafkaChannel()
     , m_metricsTimer( GUCEF_NULL )
     , m_metrics()
     , m_kafkaErrorReplies( 0 )
+    , m_kafkaBrokers()
 {GUCEF_TRACE;
 
     RegisterEventHandlers();
@@ -71,6 +74,8 @@ Udp2KafkaChannel::Udp2KafkaChannel()
 
 Udp2KafkaChannel::Udp2KafkaChannel( const Udp2KafkaChannel& src )
     : CORE::CTaskConsumer()
+    , RdKafka::EventCb()
+    , RdKafka::DeliveryReportCb()
     , m_kafkaConf( GUCEF_NULL )
     , m_kafkaProducer( GUCEF_NULL )
     , m_kafkaTopic( GUCEF_NULL )
@@ -81,6 +86,7 @@ Udp2KafkaChannel::Udp2KafkaChannel( const Udp2KafkaChannel& src )
     , m_metrics()
     , m_kafkaErrorReplies( 0 )
     , m_kafkaMsgsTransmitted( 0 )
+    , m_kafkaBrokers( src.m_kafkaBrokers )
 {GUCEF_TRACE;
 
 }
@@ -127,7 +133,7 @@ Udp2KafkaChannel::RegisterEventHandlers( void )
 /*-------------------------------------------------------------------------*/
 
 Udp2KafkaChannel::ChannelSettings::ChannelSettings( void )
-    : kafkaConf( GUCEF_NULL )
+    : kafkaBrokers( "127.0.0.1:9092" )
     , channelTopicName()
     , udpInterface()
     , udpMulticastToJoin()
@@ -140,7 +146,7 @@ Udp2KafkaChannel::ChannelSettings::ChannelSettings( void )
 /*-------------------------------------------------------------------------*/
 
 Udp2KafkaChannel::ChannelSettings::ChannelSettings( const ChannelSettings& src )
-    : kafkaConf( src.kafkaConf )
+    : kafkaBrokers( src.kafkaBrokers )
     , channelTopicName( src.channelTopicName )
     , udpInterface( src.udpInterface )
     , udpMulticastToJoin( src.udpMulticastToJoin )
@@ -158,7 +164,7 @@ Udp2KafkaChannel::ChannelSettings::operator=( const ChannelSettings& src )
 
     if ( this != &src )
     {
-        kafkaConf = src.kafkaConf;
+        kafkaBrokers = src.kafkaBrokers;
         channelTopicName = src.channelTopicName;
         udpInterface = src.udpInterface;
         udpMulticastToJoin = src.udpMulticastToJoin;
@@ -317,6 +323,95 @@ Udp2KafkaChannel::OnUDPSocketOpened( CORE::CNotifier* notifier   ,
 
 /*-------------------------------------------------------------------------*/
 
+void
+Udp2KafkaChannel::event_cb( RdKafka::Event& event )
+{GUCEF_TRACE;
+
+    switch ( event.type() )
+    {
+        case RdKafka::Event::EVENT_ERROR:
+        {
+            GUCEF_ERROR_LOG( CORE::LOGLEVEL_IMPORTANT, "Kafka error: " + RdKafka::err2str( event.err() ) + " from KafkaEventCallback()" );
+            break;
+        }
+        case RdKafka::Event::EVENT_STATS:
+        {
+	        GUCEF_LOG( CORE::LOGLEVEL_NORMAL, "Kafka stats: " + event.str() );
+	        break;
+        }
+        case RdKafka::Event::EVENT_LOG:
+        {
+	        switch ( event.severity() )
+            {
+                case RdKafka::Event::EVENT_SEVERITY_ALERT:
+                case RdKafka::Event::EVENT_SEVERITY_EMERG:
+                case RdKafka::Event::EVENT_SEVERITY_CRITICAL:
+                {
+                    GUCEF_ERROR_LOG( CORE::LOGLEVEL_CRITICAL, "Kafka log: " + event.fac() + " : " + event.str() );
+                    break;
+                }
+                case RdKafka::Event::EVENT_SEVERITY_ERROR:
+                {
+                    GUCEF_ERROR_LOG( CORE::LOGLEVEL_NORMAL, "Kafka log: " + event.fac() + " : " + event.str() );
+                    break;
+                }
+                case RdKafka::Event::EVENT_SEVERITY_WARNING:
+                {
+                    GUCEF_WARNING_LOG( CORE::LOGLEVEL_NORMAL, "Kafka log: " + event.fac() + " : " + event.str() );
+                    break;
+                }
+                case RdKafka::Event::EVENT_SEVERITY_INFO:
+                {
+                    GUCEF_LOG( CORE::LOGLEVEL_NORMAL, "Kafka log: " + event.fac() + " : " + event.str() );
+                    break;
+                }
+                case RdKafka::Event::EVENT_SEVERITY_DEBUG:
+                {
+                    GUCEF_LOG( CORE::LOGLEVEL_BELOW_NORMAL, "Kafka log: " + event.fac() + " : " + event.str() );
+                    break;
+                }
+
+                case RdKafka::Event::EVENT_SEVERITY_NOTICE:
+                default:
+                {
+                    GUCEF_LOG( CORE::LOGLEVEL_IMPORTANT, "Kafka log: " + event.fac() + " : " + event.str() );
+                    break;
+                }
+            }
+	        break;
+        }
+        default:
+        {
+            GUCEF_LOG( CORE::LOGLEVEL_IMPORTANT, "Kafka event: " + CORE::Int32ToString( (CORE::Int32) event.type() ) + ", with error code " + RdKafka::err2str( event.err() ) );
+	        break;
+        }
+    }
+}
+
+/*-------------------------------------------------------------------------*/
+
+void 
+Udp2KafkaChannel::dr_cb( RdKafka::Message& message )
+{
+    if ( message.err() ) 
+    {
+        GUCEF_ERROR_LOG( CORE::LOGLEVEL_NORMAL, "Kafka delivery report: error: " + message.errstr() + 
+                                                ", on topic: " + message.topic_name() + 
+                                                ", key: " + ( message.key() ? (*message.key()) : std::string( "NULL" ) ) + 
+                                                ", payload size: " + CORE::UInt32ToString( message.len() ).STL_String() );
+    }
+    else 
+    {
+        GUCEF_DEBUG_LOG( CORE::LOGLEVEL_NORMAL, "Kafka delivery report: success: topic: " + message.topic_name() + 
+                                                ", partition: " + CORE::Int32ToString( message.partition() ).STL_String() +
+                                                ", offset: " + CORE::Int64ToString( message.offset() ).STL_String() +
+                                                ", key: " + ( message.key() ? (*message.key()) : std::string( "NULL" ) ) + 
+                                                ", payload size: " + CORE::UInt32ToString( message.len() ).STL_String() );
+    }
+}
+
+/*-------------------------------------------------------------------------*/
+
 RdKafka::ErrorCode
 Udp2KafkaChannel::KafkaProduce( const CORE::CDynamicBuffer& udpPacket )
 {GUCEF_TRACE;
@@ -422,9 +517,27 @@ Udp2KafkaChannel::OnTaskStart( CORE::CICloneable* taskData )
 	m_udpSocket = new GUCEF::COMCORE::CUDPSocket( *GetPulseGenerator(), false );
     m_metricsTimer = new CORE::CTimer( *GetPulseGenerator(), 1000 );
     m_metricsTimer->SetEnabled( m_channelSettings.collectMetrics );
-    RegisterEventHandlers();
     
+    RegisterEventHandlers();
+
+    CORE::CString::StringVector kafkaBrokerList = m_channelSettings.kafkaBrokers.ParseElements( ',', false );
+    CORE::CString::StringVector::iterator i = kafkaBrokerList.begin();
+    while ( i != kafkaBrokerList.end() )
+    {
+        m_kafkaBrokers.push_back( COMCORE::CHostAddress( (*i) ) );
+        ++i;
+    }
+    if ( m_kafkaBrokers.empty() )
+        return false;
+
     std::string errStr;
+    RdKafka::Conf* kafkaConf = RdKafka::Conf::create( RdKafka::Conf::CONF_GLOBAL );
+    kafkaConf->set( "metadata.broker.list", m_channelSettings.kafkaBrokers, errStr );
+	kafkaConf->set( "event_cb", static_cast< RdKafka::EventCb* >( this ), errStr );
+	kafkaConf->set( "dr_cb", static_cast< RdKafka::DeliveryReportCb* >( this ), errStr );
+    delete m_kafkaConf;
+    m_kafkaConf = kafkaConf;
+    
 	RdKafka::Producer* producer = RdKafka::Producer::create( m_kafkaConf, errStr );
 	if ( producer == nullptr ) 
     {
@@ -567,14 +680,10 @@ RestApiUdp2KafkaConfigResource::Serialize( CORE::CDataNode& output             ,
 
 Udp2Kafka::Udp2Kafka( void )
     : CORE::CObserver()
-    , RdKafka::EventCb()
-    , RdKafka::DeliveryReportCb()
-    , m_kafkaConf( GUCEF_NULL )
     , m_udpStartPort( 20000 )
     , m_channelCount( 1 )
     , m_kafkaTopicStartChannelID( 0 )
     , m_kafkaTopicName( "udp-ingress-ch{channelID}" )
-    , m_kafkaBrokers()
     , m_channels()
     , m_channelSettings()
     , m_httpServer()
@@ -603,95 +712,6 @@ Udp2Kafka::Udp2Kafka( void )
 Udp2Kafka::~Udp2Kafka()
 {GUCEF_TRACE;
 
-}
-
-/*-------------------------------------------------------------------------*/
-
-void
-Udp2Kafka::event_cb( RdKafka::Event& event )
-{GUCEF_TRACE;
-
-    switch ( event.type() )
-    {
-        case RdKafka::Event::EVENT_ERROR:
-        {
-            GUCEF_ERROR_LOG( CORE::LOGLEVEL_IMPORTANT, "Kafka error: " + RdKafka::err2str( event.err() ) + " from KafkaEventCallback()" );
-            break;
-        }
-        case RdKafka::Event::EVENT_STATS:
-        {
-	        GUCEF_LOG( CORE::LOGLEVEL_NORMAL, "Kafka stats: " + event.str() );
-	        break;
-        }
-        case RdKafka::Event::EVENT_LOG:
-        {
-	        switch ( event.severity() )
-            {
-                case RdKafka::Event::EVENT_SEVERITY_ALERT:
-                case RdKafka::Event::EVENT_SEVERITY_EMERG:
-                case RdKafka::Event::EVENT_SEVERITY_CRITICAL:
-                {
-                    GUCEF_ERROR_LOG( CORE::LOGLEVEL_CRITICAL, "Kafka log: " + event.fac() + " : " + event.str() );
-                    break;
-                }
-                case RdKafka::Event::EVENT_SEVERITY_ERROR:
-                {
-                    GUCEF_ERROR_LOG( CORE::LOGLEVEL_NORMAL, "Kafka log: " + event.fac() + " : " + event.str() );
-                    break;
-                }
-                case RdKafka::Event::EVENT_SEVERITY_WARNING:
-                {
-                    GUCEF_WARNING_LOG( CORE::LOGLEVEL_NORMAL, "Kafka log: " + event.fac() + " : " + event.str() );
-                    break;
-                }
-                case RdKafka::Event::EVENT_SEVERITY_INFO:
-                {
-                    GUCEF_LOG( CORE::LOGLEVEL_NORMAL, "Kafka log: " + event.fac() + " : " + event.str() );
-                    break;
-                }
-                case RdKafka::Event::EVENT_SEVERITY_DEBUG:
-                {
-                    GUCEF_LOG( CORE::LOGLEVEL_BELOW_NORMAL, "Kafka log: " + event.fac() + " : " + event.str() );
-                    break;
-                }
-
-                case RdKafka::Event::EVENT_SEVERITY_NOTICE:
-                default:
-                {
-                    GUCEF_LOG( CORE::LOGLEVEL_IMPORTANT, "Kafka log: " + event.fac() + " : " + event.str() );
-                    break;
-                }
-            }
-	        break;
-        }
-        default:
-        {
-            GUCEF_LOG( CORE::LOGLEVEL_IMPORTANT, "Kafka event: " + CORE::Int32ToString( (CORE::Int32) event.type() ) + ", with error code " + RdKafka::err2str( event.err() ) );
-	        break;
-        }
-    }
-}
-
-/*-------------------------------------------------------------------------*/
-
-void 
-Udp2Kafka::dr_cb( RdKafka::Message& message )
-{
-    if ( message.err() ) 
-    {
-        GUCEF_ERROR_LOG( CORE::LOGLEVEL_NORMAL, "Kafka delivery report: error: " + message.errstr() + 
-                                                ", on topic: " + message.topic_name() + 
-                                                ", key: " + ( message.key() ? (*message.key()) : std::string( "NULL" ) ) + 
-                                                ", payload size: " + CORE::UInt32ToString( message.len() ).STL_String() );
-    }
-    else 
-    {
-        GUCEF_DEBUG_LOG( CORE::LOGLEVEL_NORMAL, "Kafka delivery report: success: topic: " + message.topic_name() + 
-                                                ", partition: " + CORE::Int32ToString( message.partition() ).STL_String() +
-                                                ", offset: " + CORE::Int64ToString( message.offset() ).STL_String() +
-                                                ", key: " + ( message.key() ? (*message.key()) : std::string( "NULL" ) ) + 
-                                                ", payload size: " + CORE::UInt32ToString( message.len() ).STL_String() );
-    }
 }
 
 /*-------------------------------------------------------------------------*/
@@ -809,25 +829,7 @@ Udp2Kafka::LoadConfig( const CORE::CValueList& appConfig   ,
     m_channelCount = CORE::StringToUInt16( CORE::ResolveVars( appConfig.GetValueAlways( "ChannelCount", "1" ) ) );
     m_kafkaTopicStartChannelID = CORE::StringToInt32( CORE::ResolveVars(  appConfig.GetValueAlways( "KafkaTopicStartChannelID", "1" ) ) );
     m_kafkaTopicName = CORE::ResolveVars( appConfig.GetValueAlways( "KafkaTopicName", "udp-ingress-ch{channelID}" ) );
-    
-    CORE::CString kafkaBrokers = CORE::ResolveVars( appConfig.GetValueAlways( "KafkaBrokers", "127.0.0.1:6000" ) );
-    CORE::CString::StringVector kafkaBrokerList = kafkaBrokers.ParseElements( ',', false );
-    CORE::CString::StringVector::iterator i = kafkaBrokerList.begin();
-    while ( i != kafkaBrokerList.end() )
-    {
-        m_kafkaBrokers.push_back( COMCORE::CHostAddress( (*i) ) );
-        ++i;
-    }
-    if ( m_kafkaBrokers.empty() )
-        return false;
-
-    std::string errStr;
-    RdKafka::Conf* kafkaConf = RdKafka::Conf::create( RdKafka::Conf::CONF_GLOBAL );
-    kafkaConf->set( "metadata.broker.list", kafkaBrokers, errStr );
-	kafkaConf->set( "event_cb", static_cast< RdKafka::EventCb* >( this ), errStr );
-	kafkaConf->set( "dr_cb", static_cast< RdKafka::DeliveryReportCb* >( this ), errStr );
-    delete m_kafkaConf;
-    m_kafkaConf = kafkaConf;
+    CORE::CString kafkaBrokers = CORE::ResolveVars( appConfig.GetValueAlways( "KafkaBrokers", "127.0.0.1:9092" ) );
 
     CORE::UInt16 udpPort = m_udpStartPort;
     CORE::Int32 maxChannelId = m_kafkaTopicStartChannelID + m_channelCount;
@@ -835,7 +837,7 @@ Udp2Kafka::LoadConfig( const CORE::CValueList& appConfig   ,
     {
         Udp2KafkaChannel::ChannelSettings& channelSettings = m_channelSettings[ channelId ];
 
-        channelSettings.kafkaConf = m_kafkaConf;
+        channelSettings.kafkaBrokers = kafkaBrokers;
         channelSettings.collectMetrics = m_transmitMetrics;
 
         CORE::CString settingName = "ChannelSetting." + CORE::Int32ToString( channelId ) + ".KafkaTopicName";
