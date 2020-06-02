@@ -267,6 +267,21 @@ class GUCEF_HIDDEN OSSpecificDirectoryWatcher : public CObserver
         return false;
     }
 
+    bool RemoveAllWatches( void )
+    {GUCEF_TRACE;
+
+        while ( !m_dirsToWatch.empty() )
+        {
+            OverlappedIOCallbackObjMap::iterator i = m_dirsToWatch.begin();
+            OverlappedIOCallbackObj& watchObj = (*i).second;
+            ::CloseHandle( watchObj.dirHandle );
+            m_dirsToWatch.erase( i );
+
+            ++i;
+        }
+        return true;
+    }
+
     void ProcessNotifications( OverlappedIOCallbackObj& watchObj )
     {GUCEF_TRACE;
 
@@ -421,6 +436,7 @@ class GUCEF_HIDDEN OSSpecificDirectoryWatcher : public CObserver
     ~OSSpecificDirectoryWatcher()
     {GUCEF_TRACE;
 
+        RemoveAllWatches();
     }
 };
 
@@ -554,6 +570,18 @@ CDirectoryWatcher::RemoveDirToWatch( const CString& dirToWatch )
 
     if ( GUCEF_NULL != m_osSpecificImpl )
         return m_osSpecificImpl->RemoveDirToWatch( dirToWatch );
+    else
+        return false;
+}
+
+/*-------------------------------------------------------------------------*/
+
+bool 
+CDirectoryWatcher::RemoveAllWatches( void )
+{GUCEF_TRACE;
+
+    if ( GUCEF_NULL != m_osSpecificImpl )
+        return m_osSpecificImpl->RemoveAllWatches();
     else
         return false;
 }

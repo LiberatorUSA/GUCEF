@@ -137,7 +137,9 @@ FilePusher::FilePusher( void )
 FilePusher::~FilePusher()
 {GUCEF_TRACE;
 
+    m_httpClient.Close();
     m_httpServer.Close();
+    m_dirWatcher.RemoveAllWatches();
 }
 
 /*-------------------------------------------------------------------------*/
@@ -150,6 +152,11 @@ FilePusher::RegisterEventHandlers( void )
     SubscribeTo( &m_metricsTimer                ,
                  CORE::CTimer::TimerUpdateEvent ,
                  callback                       );
+    
+    TEventCallback callback2( this, &FilePusher::OnWatchedLocalDirFileCreation );
+    SubscribeTo( &m_dirWatcher                             ,
+                 CORE::CDirectoryWatcher::FileCreatedEvent ,
+                 callback2                                 );
 }
 
 /*-------------------------------------------------------------------------*/
@@ -164,6 +171,17 @@ FilePusher::OnMetricsTimerCycle( CORE::CNotifier* notifier    ,
     {
 
     }
+}
+
+/*-------------------------------------------------------------------------*/
+
+void
+FilePusher::OnWatchedLocalDirFileCreation( CORE::CNotifier* notifier    ,
+                                           const CORE::CEvent& eventId  ,
+                                           CORE::CICloneable* eventData )
+{GUCEF_TRACE;
+
+
 }
 
 /*-------------------------------------------------------------------------*/

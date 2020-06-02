@@ -149,6 +149,11 @@ class FilePusher : public CORE::CObservingNotifier
                          const CORE::CEvent& eventId  ,
                          CORE::CICloneable* eventData );
     
+    void
+    OnWatchedLocalDirFileCreation( CORE::CNotifier* notifier    ,
+                                   const CORE::CEvent& eventId  ,
+                                   CORE::CICloneable* eventData );
+    
     private:
 
     typedef CORE::CTEventHandlerFunctor< FilePusher > TEventCallback;

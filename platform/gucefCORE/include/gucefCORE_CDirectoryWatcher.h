@@ -104,6 +104,8 @@ class GUCEF_CORE_PUBLIC_CPP CDirectoryWatcher : public CObservingNotifier
 
     bool RemoveDirToWatch( const CString& dirToWatch );
 
+    bool RemoveAllWatches( void );
+
     CDirectoryWatcher( void );
 
     CDirectoryWatcher( CPulseGenerator& pulseGenerator );
