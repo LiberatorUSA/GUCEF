@@ -13,6 +13,7 @@ add_subdirectory( ${CMAKE_CURRENT_SOURCE_DIR}/../../../../dependencies/json-pars
 add_subdirectory( ${CMAKE_CURRENT_SOURCE_DIR}/../../../../dependencies/libparsifal ${CMAKE_BINARY_DIR}/libparsifal )
 add_subdirectory( ${CMAKE_CURRENT_SOURCE_DIR}/../../../../dependencies/librdkafka ${CMAKE_BINARY_DIR}/RdKafka )
 add_subdirectory( ${CMAKE_CURRENT_SOURCE_DIR}/../../../../dependencies/zlib ${CMAKE_BINARY_DIR}/zlib )
+add_subdirectory( ${CMAKE_CURRENT_SOURCE_DIR}/../../../../platform/gucefCOM ${CMAKE_BINARY_DIR}/gucefCOM )
 add_subdirectory( ${CMAKE_CURRENT_SOURCE_DIR}/../../../../platform/gucefCOMCORE ${CMAKE_BINARY_DIR}/gucefCOMCORE )
 add_subdirectory( ${CMAKE_CURRENT_SOURCE_DIR}/../../../../platform/gucefCORE ${CMAKE_BINARY_DIR}/gucefCORE )
 add_subdirectory( ${CMAKE_CURRENT_SOURCE_DIR}/../../../../platform/gucefMT ${CMAKE_BINARY_DIR}/gucefMT )

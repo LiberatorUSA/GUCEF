@@ -16,6 +16,9 @@
  *  Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA
  */
 
+ #ifndef GUCEF_APP_UDP2KAFKA
+ #define GUCEF_APP_UDP2KAFKA
+
 /*-------------------------------------------------------------------------//
 //                                                                         //
 //      INCLUDES                                                           //
@@ -43,6 +46,31 @@
 #include "CValueList.h"
 #define GUCEF_CORE_CVALUELIST_H
 #endif /* GUCEF_CORE_CVALUELIST_H ? */
+
+#ifndef GUCEF_CORE_CDATANODE_H
+#include "CDataNode.h"
+#define GUCEF_CORE_CDATANODE_H
+#endif /* GUCEF_CORE_CDATANODE_H ? */
+
+#ifndef GUCEF_CORE_CTIMER_H
+#include "CTimer.h"
+#define GUCEF_CORE_CTIMER_H
+#endif /* GUCEF_CORE_CTIMER_H ? */
+
+#ifndef GUCEF_COM_CHTTPSERVER_H
+#include "gucefCOM_CHTTPServer.h"
+#define GUCEF_COM_CHTTPSERVER_H
+#endif /* GUCEF_COM_CHTTPSERVER_H ? */
+
+#ifndef GUCEF_COM_CDEFAULTHTTPSERVERROUTER_H
+#include "gucefCOM_CDefaultHTTPServerRouter.h"
+#define GUCEF_COM_CDEFAULTHTTPSERVERROUTER_H
+#endif /* GUCEF_COM_CDEFAULTHTTPSERVERROUTER_H ? */
+
+#ifndef GUCEF_COM_CCODECBASEDHTTPSERVERRESOURCE_H
+#include "gucefCOM_CCodecBasedHTTPServerResource.h"
+#define GUCEF_COM_CCODECBASEDHTTPSERVERRESOURCE_H
+#endif /* GUCEF_COM_CCODECBASEDHTTPSERVERRESOURCE_H ? */
 
 #include "rdkafkacpp.h"
 
@@ -78,9 +106,42 @@ class Udp2KafkaChannel : public CORE::CTaskConsumer
 
     virtual CORE::CString GetType( void ) const;
 
-    bool LoadConfig( CORE::UInt16 udpPort                ,
-                     const CORE::CString& kafkaTopicName ,
-                     RdKafka::Conf* kafkaConf            );
+    class ChannelSettings
+    {
+        public:
+
+        typedef std::vector< COMCORE::CHostAddress > HostAddressVector;
+
+        ChannelSettings( void );
+        ChannelSettings( const ChannelSettings& src );
+        ChannelSettings& operator=( const ChannelSettings& src );
+
+        RdKafka::Conf* kafkaConf;
+        CORE::CString channelStreamName;
+        COMCORE::CHostAddress udpInterface;
+        HostAddressVector udpMulticastToJoin;
+        bool collectMetrics;
+        bool wantsTestPackage;
+    };
+
+    bool LoadConfig( const ChannelSettings& channelSettings );
+
+    const ChannelSettings& GetChannelSettings( void ) const;
+
+    class ChannelMetrics
+    {
+        public:
+
+        ChannelMetrics( void );
+
+        CORE::UInt32 udpBytesReceived;
+        CORE::UInt32 udpMessagesReceived;
+        CORE::UInt32 kafkaMessagesTransmitted;
+        CORE::UInt32 kafkaTransmitOverflowQueueSize;
+        CORE::UInt32 kafkaErrorReplies;
+    };
+
+    const ChannelMetrics& GetMetrics( void ) const;
 
     private:
 
@@ -103,6 +164,13 @@ class Udp2KafkaChannel : public CORE::CTaskConsumer
     OnUDPPacketRecieved( CORE::CNotifier* notifier   ,
                          const CORE::CEvent& eventID ,
                          CORE::CICloneable* evenData );
+
+    void
+    OnMetricsTimerCycle( CORE::CNotifier* notifier    ,
+                         const CORE::CEvent& eventId  ,
+                         CORE::CICloneable* eventData );
+
+    CORE::UInt32 GetKafkaErrorRepliesCounter( bool resetCounter );
     
     private:
 
@@ -117,16 +185,60 @@ class Udp2KafkaChannel : public CORE::CTaskConsumer
     CORE::UInt16 m_udpPort;
     RdKafka::Conf* m_kafkaConf;
     CORE::CString m_kafkaTopicName;
-
-    GUCEF::COMCORE::CUDPSocket* m_udpSocket;
-    TDynamicBufferQueue m_kafkaMsgQueueOverflowQueue;
     RdKafka::Producer* m_kafkaProducer;
     RdKafka::Topic* m_kafkaTopic;
+
+    ChannelSettings m_channelSettings;
+    GUCEF::COMCORE::CUDPSocket* m_udpSocket;
+    TDynamicBufferQueue m_kafkaMsgQueueOverflowQueue;
+    CORE::CTimer* m_metricsTimer;
+    ChannelMetrics m_metrics;
+    CORE::UInt32 m_kafkaErrorReplies;
 };
 
 /*-------------------------------------------------------------------------*/
 
-class Udp2Kafka : private RdKafka::EventCb ,
+class Udp2Kafka;
+
+class RestApiUdp2KafkaInfoResource : public COM::CCodecBasedHTTPServerResource
+{
+    public:
+
+    RestApiUdp2KafkaInfoResource( Udp2Kafka* app );
+
+    virtual ~RestApiUdp2KafkaInfoResource();
+
+    virtual bool Serialize( CORE::CDataNode& output             ,
+                            const CORE::CString& representation );
+
+    private:
+
+    Udp2Kafka* m_app;
+};
+
+/*-------------------------------------------------------------------------*/
+
+class RestApiUdp2KafkaConfigResource : public COM::CCodecBasedHTTPServerResource
+{
+    public:
+
+    RestApiUdp2KafkaConfigResource( Udp2Kafka* app, bool appConfig );
+
+    virtual ~RestApiUdp2KafkaConfigResource();
+
+    virtual bool Serialize( CORE::CDataNode& output             ,
+                            const CORE::CString& representation );
+
+    private:
+
+    Udp2Kafka* m_app;
+    bool m_appConfig;
+};
+
+/*-------------------------------------------------------------------------*/
+
+class Udp2Kafka : public CORE::CObserver ,
+                  private RdKafka::EventCb ,
                   private RdKafka::DeliveryReportCb 
 {
     public:
@@ -136,20 +248,54 @@ class Udp2Kafka : private RdKafka::EventCb ,
 
     bool Start( void );
 
-    bool LoadConfig( const CORE::CValueList& config );
+    bool LoadConfig( const CORE::CValueList& appConfig   ,
+                     const CORE::CDataNode& globalConfig );
+
+    const CORE::CValueList& GetAppConfig( void ) const;
+
+    const CORE::CDataNode& GetGlobalConfig( void ) const;
 
     private:
 
+    typedef CORE::CTEventHandlerFunctor< Udp2Kafka > TEventCallback;
+    
     virtual void event_cb( RdKafka::Event& event );
     virtual void dr_cb( RdKafka::Message& message );
 
+    void
+    OnMetricsTimerCycle( CORE::CNotifier* notifier    ,
+                         const CORE::CEvent& eventId  ,
+                         CORE::CICloneable* eventData ); 
+
+    void
+    OnTransmitTestPacketTimerCycle( CORE::CNotifier* notifier    ,
+                                    const CORE::CEvent& eventId  ,
+                                    CORE::CICloneable* eventData );
+
     private:
+
+    typedef std::map< CORE::Int32, Udp2KafkaChannel::ChannelSettings > ChannelSettingsMap;
+    typedef std::vector< Udp2KafkaChannel > Udp2KafkaChannelVector;
+    typedef Udp2KafkaChannel::ChannelSettings::HostAddressVector HostAddressVector;
 
     RdKafka::Conf* m_kafkaConf;
     CORE::UInt16 m_udpStartPort;
     CORE::UInt16 m_channelCount;
     CORE::Int32 m_kafkaTopicStartChannelID;
     CORE::CString m_kafkaTopicName;
-    CORE::CString m_kafkaBrokers;
-    std::vector< Udp2KafkaChannel > m_channels;
+    HostAddressVector m_kafkaBrokers;
+    Udp2KafkaChannelVector m_channels;
+    ChannelSettingsMap m_channelSettings;
+    COM::CHTTPServer m_httpServer;
+    COM::CDefaultHTTPServerRouter m_httpRouter;
+    CORE::CValueList m_appConfig;
+    CORE::CDataNode m_globalConfig;
+    CORE::CTimer m_metricsTimer;
+    bool m_transmitMetrics;
+    COMCORE::CUDPSocket m_testUdpSocket;
+    CORE::CTimer m_testPacketTransmitTimer;
 };
+
+/*-------------------------------------------------------------------------*/
+
+#endif /* GUCEF_APP_UDP2KAFKA ? */

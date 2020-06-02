@@ -216,6 +216,8 @@ class RestApiUdp2RedisInfoResource : public COM::CCodecBasedHTTPServerResource
     Udp2RedisCluster* m_app;
 };
 
+/*-------------------------------------------------------------------------*/
+
 class RestApiUdp2RedisConfigResource : public COM::CCodecBasedHTTPServerResource
 {
     public:

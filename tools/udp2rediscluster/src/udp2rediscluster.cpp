@@ -285,12 +285,12 @@ Udp2RedisClusterChannel::OnUDPSocketOpened( CORE::CNotifier* notifier   ,
         const COMCORE::CHostAddress& multicastAddr = (*m);
         if ( m_udpSocket->Join( multicastAddr ) )
         {
-            GUCEF_LOG( CORE::LOGLEVEL_NORMAL, "Udp2RedisClusterChannel:OnTaskStart: Successfully to joined multicast " + multicastAddr.AddressAndPortAsString() +
+            GUCEF_LOG( CORE::LOGLEVEL_NORMAL, "Udp2RedisClusterChannel:OnUDPSocketOpened: Successfully to joined multicast " + multicastAddr.AddressAndPortAsString() +
                     " for UDP socket on " + m_channelSettings.udpInterface.AddressAndPortAsString() );
         }
         else
         {
-            GUCEF_ERROR_LOG( CORE::LOGLEVEL_IMPORTANT, "Udp2RedisClusterChannel:OnTaskStart: Failed to join multicast " + multicastAddr.AddressAndPortAsString() +
+            GUCEF_ERROR_LOG( CORE::LOGLEVEL_IMPORTANT, "Udp2RedisClusterChannel:OnUDPSocketOpened: Failed to join multicast " + multicastAddr.AddressAndPortAsString() +
                     " for UDP socket on " + m_channelSettings.udpInterface.AddressAndPortAsString() );
         }
         ++m;
@@ -512,7 +512,7 @@ RestApiUdp2RedisInfoResource::Serialize( CORE::CDataNode& output             ,
 {GUCEF_TRACE;
 
     output.SetName( "info" );
-    output.SetAttribute( "application", "udp2redis" );
+    output.SetAttribute( "application", "udp2rediscluster" );
     output.SetAttribute( "buildDateTime", __TIMESTAMP__ );
     #ifdef GUCEF_DEBUG_MODE
     output.SetAttribute( "isReleaseBuild", "false" );
@@ -752,6 +752,7 @@ Udp2RedisCluster::OnMetricsTimerCycle( CORE::CNotifier* notifier    ,
         const Udp2RedisClusterChannel::ChannelMetrics& metrics = (*i).GetMetrics();
         CORE::CString metricPrefix = "udp2redis.ch" + CORE::Int32ToString( channelId ) + ".";
 
+        GUCEF_METRIC_COUNT( metricPrefix + "redisErrorReplies", metrics.redisErrorReplies, 1.0f );
         GUCEF_METRIC_COUNT( metricPrefix + "redisMessagesTransmitted", metrics.redisMessagesTransmitted, 1.0f );
         GUCEF_METRIC_GAUGE( metricPrefix + "redisTransmitOverflowQueueSize", metrics.redisTransmitOverflowQueueSize, 1.0f );
         GUCEF_METRIC_COUNT( metricPrefix + "udpBytesReceived", metrics.udpBytesReceived, 1.0f );
