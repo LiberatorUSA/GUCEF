@@ -402,6 +402,7 @@ Udp2KafkaChannel::dr_cb( RdKafka::Message& message )
     }
     else 
     {
+        ++m_kafkaMsgsTransmitted;
         GUCEF_DEBUG_LOG( CORE::LOGLEVEL_NORMAL, "Kafka delivery report: success: topic: " + message.topic_name() + 
                                                 ", partition: " + CORE::Int32ToString( message.partition() ).STL_String() +
                                                 ", offset: " + CORE::Int64ToString( message.offset() ).STL_String() +
@@ -427,7 +428,6 @@ Udp2KafkaChannel::KafkaProduce( const CORE::CDynamicBuffer& udpPacket )
     {
         case RdKafka::ERR_NO_ERROR:
         {
-            ++m_kafkaMsgsTransmitted;
             GUCEF_DEBUG_LOG( CORE::LOGLEVEL_NORMAL, "Udp2KafkaChannel:KafkaProduce: Successfully queued packet for transmission" );
             break;
         }
