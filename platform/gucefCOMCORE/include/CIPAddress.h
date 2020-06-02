@@ -58,6 +58,8 @@ namespace COMCORE {
 class GUCEF_COMCORE_EXPORT_CPP CIPAddress
 {
     public:
+
+    static const CIPAddress LoopbackIP;
     
     CIPAddress( void );
     

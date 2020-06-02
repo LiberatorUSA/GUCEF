@@ -214,10 +214,13 @@ CUDPSocket::SendPacketTo( const CIPAddress& dest ,
 
     struct sockaddr_in remote;
     memset( &remote, 0, sizeof( remote ) );
+    UInt32 destAddr = dest.GetAddress();
+    if ( 0 == destAddr )
+        destAddr = CIPAddress::LoopbackIP.GetAddress();   
     #if ( GUCEF_PLATFORM == GUCEF_PLATFORM_MSWIN )
-    remote.sin_addr.S_un.S_addr = dest.GetAddress();
+    remote.sin_addr.S_un.S_addr = destAddr;
     #elif ( ( GUCEF_PLATFORM == GUCEF_PLATFORM_LINUX ) || ( GUCEF_PLATFORM == GUCEF_PLATFORM_ANDROID ) )
-    remote.sin_addr.s_addr = dest.GetAddress();
+    remote.sin_addr.s_addr = destAddr;
     #endif
     remote.sin_port = dest.GetPort();
     remote.sin_family = AF_INET;
@@ -750,6 +753,15 @@ CUDPSocket::Open( const CIPAddress& localaddr )
                         sizeof(struct sockaddr_in)               ,
                         &errorCode                               ) == 0 )
     {
+        // Did we ask the O/S to assign a port?
+        if ( 0 == m_hostAddress.GetPortInHostByteOrder() )
+        {
+            struct sockaddr_in sin;
+            socklen_t len = sizeof(sin);
+            if ( 0 == getsockname( _data->sockid, (struct sockaddr*) &sin, &len ) )
+                m_hostAddress.SetPort( sin.sin_port );
+        }
+        
         GUCEF_DEBUG_LOG( CORE::LOGLEVEL_NORMAL, "UDPSocket(" + CORE::PointerToString( this ) + "): Successfully bound and opened socket at " + m_hostAddress.AddressAndPortAsString()
             + " aka " + CORE::UInt32ToString( m_hostAddress.GetAddress() ) + ":" + CORE::UInt16ToString( m_hostAddress.GetPort() ) + " in network format" );
         if ( !NotifyObservers( UDPSocketOpenedEvent ) ) return true;

@@ -117,10 +117,10 @@ Udp2RedisClusterChannel::RegisterEventHandlers( void )
     SubscribeTo( m_udpSocket                                 ,
                  COMCORE::CUDPSocket::UDPPacketRecievedEvent ,
                  callback4                                   );
-    TEventCallback callback6( this, &Udp2RedisClusterChannel::OnMetricsTimerCycle );
+    TEventCallback callback5( this, &Udp2RedisClusterChannel::OnMetricsTimerCycle );
     SubscribeTo( m_metricsTimer                 ,
                  CORE::CTimer::TimerUpdateEvent ,
-                 callback6                      );
+                 callback5                      );
 }
 
 /*-------------------------------------------------------------------------*/
@@ -196,7 +196,7 @@ Udp2RedisClusterChannel::GetRedisErrorRepliesCounter( bool resetCounter )
     {
         CORE::UInt32 redisErrorReplies = m_redisErrorReplies;
         m_redisErrorReplies = 0;
-        return m_redisErrorReplies;
+        return redisErrorReplies;
     }
     else
         return m_redisErrorReplies;

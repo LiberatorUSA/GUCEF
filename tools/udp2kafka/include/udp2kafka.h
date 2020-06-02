@@ -117,7 +117,7 @@ class Udp2KafkaChannel : public CORE::CTaskConsumer
         ChannelSettings& operator=( const ChannelSettings& src );
 
         RdKafka::Conf* kafkaConf;
-        CORE::CString channelStreamName;
+        CORE::CString channelTopicName;
         COMCORE::CHostAddress udpInterface;
         HostAddressVector udpMulticastToJoin;
         bool collectMetrics;
@@ -171,6 +171,8 @@ class Udp2KafkaChannel : public CORE::CTaskConsumer
                          CORE::CICloneable* eventData );
 
     CORE::UInt32 GetKafkaErrorRepliesCounter( bool resetCounter );
+
+    CORE::UInt32 GetKafkaMsgsTransmittedCounter( bool resetCounter );
     
     private:
 
@@ -182,9 +184,7 @@ class Udp2KafkaChannel : public CORE::CTaskConsumer
 
     typedef std::deque< CORE::CDynamicBuffer > TDynamicBufferQueue;
 
-    CORE::UInt16 m_udpPort;
     RdKafka::Conf* m_kafkaConf;
-    CORE::CString m_kafkaTopicName;
     RdKafka::Producer* m_kafkaProducer;
     RdKafka::Topic* m_kafkaTopic;
 
@@ -194,6 +194,7 @@ class Udp2KafkaChannel : public CORE::CTaskConsumer
     CORE::CTimer* m_metricsTimer;
     ChannelMetrics m_metrics;
     CORE::UInt32 m_kafkaErrorReplies;
+    CORE::UInt32 m_kafkaMsgsTransmitted;
 };
 
 /*-------------------------------------------------------------------------*/
