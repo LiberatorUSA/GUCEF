@@ -17,8 +17,8 @@
  *  Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA
  */
 
-#ifndef GUCEF_CORE_CFILEURLHANDLER_H
-#define GUCEF_CORE_CFILEURLHANDLER_H
+#ifndef GUCEF_CORE_CDIRECTORYWATCHER_H
+#define GUCEF_CORE_CDIRECTORYWATCHER_H
 
 /*-------------------------------------------------------------------------//
 //                                                                         //
@@ -26,10 +26,20 @@
 //                                                                         //
 //-------------------------------------------------------------------------*/
 
-#ifndef GUCEF_CORE_CURLHANDLER_H
-#include "CURLHandler.h"               /* base class for URL handlers */
-#define GUCEF_CORE_CURLHANDLER_H
-#endif /* GUCEF_CORE_CURLHANDLER_H ? */
+#ifndef GUCEF_CORE_MACROS_H
+#include "gucefCORE_macros.h"
+#define GUCEF_CORE_MACROS_H
+#endif /* GUCEF_CORE_MACROS_H ? */
+
+#ifndef GUCEF_CORE_COBSERVINGNOTIFIER_H
+#include "CObservingNotifier.h"
+#define GUCEF_CORE_COBSERVINGNOTIFIER_H
+#endif /* GUCEF_CORE_COBSERVINGNOTIFIER_H ? */
+
+#ifndef GUCEF_CORE_CLONEABLES_H
+#include "cloneables.h"
+#define GUCEF_CORE_CLONEABLES_H
+#endif /* GUCEF_CORE_CLONEABLES_H ? */
 
 /*-------------------------------------------------------------------------//
 //                                                                         //
@@ -46,42 +56,69 @@ namespace CORE {
 //                                                                         //
 //-------------------------------------------------------------------------*/
 
-/**
- *      Base class for URL handler implementations.
- *      Handlers for HTTP for example should inherit and implement the
- *      interface from this and lower classes.
- */
-class GUCEF_CORE_PUBLIC_CPP CFileURLHandler : public CURLHandler
+class OSSpecificDirectoryWatcher;
+
+/*-------------------------------------------------------------------------*/
+
+class GUCEF_CORE_PUBLIC_CPP CDirectoryWatcher : public CObservingNotifier
 {
+    public:
+
+    static const CEvent StartedWatchingDirectoryEvent;
+    static const CEvent StoppedWatchingDirectoryEvent;
+
+    static const CEvent FileCreatedEvent;
+    static const CEvent FileModifiedEvent;
+    static const CEvent FileRenamedEvent;
+    static const CEvent FileDeletedEvent;
+
+    typedef TCloneableString TFileCreatedEventData;
+    typedef TCloneableString TFileModifiedEventData;
+    typedef TCloneableString TFileDeletedEventData;
+    struct SFileRenamedEventInfo
+    {
+        CString oldFilename;
+        CString newFilename;
+    };
+    typedef CTCloneableObj< struct SFileRenamedEventInfo > TFileRenamedEventData;
+
+    static void RegisterEvents( void );
+                              
+    class GUCEF_CORE_PUBLIC_CPP CDirWatchOptions
+    {
         public:
 
-        /**
-         *      Doesnt do anything special atm.
-         */
-        CFileURLHandler( void );
+        bool watchSubTree;
+        bool watchForFileCreation;
+        bool watchForFileDeletion;
+        bool watchForFileRenames;
+        bool watchForFileModifications;
 
-        /**
-         *      Doesnt do anything special atm.
-         */
-        CFileURLHandler( const CFileURLHandler& src );
+        CDirWatchOptions( void );
+        CDirWatchOptions( const CDirWatchOptions& src );
+        CDirWatchOptions& operator=( const CDirWatchOptions& src );
+    };
+    
+    bool AddDirToWatch( const CString& dirToWatch       ,
+                        const CDirWatchOptions& options );
 
-        /**
-         *      Doesnt do anything special atm.
-         */
-        virtual ~CFileURLHandler();
+    bool RemoveDirToWatch( const CString& dirToWatch );
 
-        /**
-         *      Doesnt do anything special atm.
-         */
-        CFileURLHandler& operator=( const CFileURLHandler& src );
+    CDirectoryWatcher( void );
 
-        virtual bool Activate( CURL& url );
+    CDirectoryWatcher( CPulseGenerator& pulseGenerator );
 
-        virtual void Deactivate( CURL& url );
+    virtual ~CDirectoryWatcher();
 
-        virtual bool IsActive( const CURL& url ) const;
+    private:
 
-        virtual CICloneable* Clone( void ) const;
+    CDirectoryWatcher( const CDirectoryWatcher& src );             /**< not implemented */
+    CDirectoryWatcher& operator=( const CDirectoryWatcher& src );  /**< not implemented */
+
+    private:
+    friend class OSSpecificDirectoryWatcher;
+
+    OSSpecificDirectoryWatcher* m_osSpecificImpl;
 };
 
 /*-------------------------------------------------------------------------//
@@ -95,15 +132,4 @@ class GUCEF_CORE_PUBLIC_CPP CFileURLHandler : public CURLHandler
 
 /*-------------------------------------------------------------------------*/
 
-#endif /* GUCEF_CORE_CFILEURLHANDLER_H ? */
-
-/*-------------------------------------------------------------------------//
-//                                                                         //
-//      Info & Changes                                                     //
-//                                                                         //
-//-------------------------------------------------------------------------//
-
-- 24-04-2005 :
-        - Initial implementation
-
----------------------------------------------------------------------------*/
+#endif /* GUCEF_CORE_CDIRECTORYWATCHER_H ? */

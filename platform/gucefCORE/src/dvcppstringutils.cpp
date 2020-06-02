@@ -844,6 +844,15 @@ FileExists( const CString& filename )
 {GUCEF_TRACE;
 
     return 0 != File_Exists( filename.C_String() );
+} 
+
+/*-------------------------------------------------------------------------*/
+
+bool
+DirExists( const CString& path )
+{GUCEF_TRACE;
+
+    return 0 != Dir_Exists( path.C_String() );
 }
 
 /*-------------------------------------------------------------------------*/

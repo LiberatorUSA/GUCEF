@@ -1238,6 +1238,46 @@ File_Exists( const char *filename )
 
 /*-------------------------------------------------------------------------*/
 
+UInt32
+Dir_Exists( const char *path )
+{
+    if ( GUCEF_NULL != path )
+    {
+        #if ( GUCEF_PLATFORM == GUCEF_PLATFORM_MSWIN )
+
+        WIN32_FIND_DATA FileInfo;
+        HANDLE hFind = GUCEF_NULL;
+        hFind = FindFirstFile( path, &FileInfo );
+        if ( hFind != INVALID_HANDLE_VALUE )
+        {
+            FindClose( hFind );
+
+            /* make sure we found a directory not a file */
+            return ( FileInfo.dwFileAttributes & FILE_ATTRIBUTE_DIRECTORY );
+        }
+        return 0;
+
+        #elif ( ( GUCEF_PLATFORM == GUCEF_PLATFORM_LINUX ) || ( GUCEF_PLATFORM == GUCEF_PLATFORM_ANDROID ) )
+
+        struct stat buf;
+        if ( stat( filename, &buf ) == 0 )
+            if ( buf.st_mode & S_IFDIR != 0 )
+                return 1;
+        return 0;
+
+        #else
+
+        FILE *fptr = fopen( filename, "rb" );
+        fclose( fptr );
+        return fptr > 0;
+
+        #endif
+    }
+    return 0;
+}
+
+/*-------------------------------------------------------------------------*/
+
 /**
  *      Counts the number of $UPDIR$ segments from the start
  *      of the given string

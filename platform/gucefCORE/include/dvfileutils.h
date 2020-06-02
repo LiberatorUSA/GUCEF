@@ -332,6 +332,16 @@ File_Exists( const char *filename );
 /*-------------------------------------------------------------------------*/
 
 /**
+ *      Returns a boolean value indicating whether or not the given file
+ *      exists. 1 is true and 0  is false. the fastest method possible for the
+ *      target O/S will be used.
+ */
+GUCEF_CORE_PUBLIC_C UInt32
+Dir_Exists( const char *path );
+
+/*-------------------------------------------------------------------------*/
+
+/**
  *      Writes a relative path into dest build from pathstr.
  *      The following prefix tags can be used:
  *        $CURWORKDIR$ : this will be replaced with the current working dir.

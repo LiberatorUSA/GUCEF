@@ -128,6 +128,11 @@ FileExists( const CString& filename );
 
 /*-------------------------------------------------------------------------*/
 
+GUCEF_CORE_PUBLIC_CPP bool
+DirExists( const CString& path );
+
+/*-------------------------------------------------------------------------*/
+
 GUCEF_CORE_PUBLIC_CPP UInt32
 FileSize( const CString& filename );
 

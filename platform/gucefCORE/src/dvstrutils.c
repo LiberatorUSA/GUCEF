@@ -1023,9 +1023,17 @@ Strip_Filename( char* filepath )
 Int32
 PtrToInt32( const void* ptr )
 {
-        char ptrstr[ 64 ];
-        sprintf( ptrstr, "%d", (Int64)ptr );
-        return Str_To_Int( ptrstr );
+    char ptrstr[ 64 ];
+    #ifdef GUCEF_64BIT
+      #if ( GUCEF_PLATFORM == GUCEF_PLATFORM_MSWIN )
+      sprintf( ptrstr, "%I64d", (Int64)ptr );
+      #else
+      sprintf( ptrstr, "%lld", (Int64)ptr );
+      #endif
+    #else
+    sprintf( ptrstr, "%d", (Int32)ptr );
+    #endif
+    return Str_To_Int( ptrstr );
 }
 
 /*-------------------------------------------------------------------------//
