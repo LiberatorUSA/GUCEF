@@ -64,6 +64,7 @@ Udp2KafkaChannel::Udp2KafkaChannel()
     , m_metricsTimer( GUCEF_NULL )
     , m_metrics()
     , m_kafkaErrorReplies( 0 )
+    , m_kafkaMsgsTransmitted( 0 )
     , m_kafkaBrokers()
 {GUCEF_TRACE;
 
