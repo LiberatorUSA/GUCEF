@@ -90,11 +90,20 @@ using namespace GUCEF;
 
 class Udp2KafkaChannel : public CORE::CTaskConsumer ,
                          private RdKafka::EventCb ,
-                         private RdKafka::DeliveryReportCb
+                         private RdKafka::DeliveryReportCb ,
+                         private RdKafka::ConsumeCb
 {
     public:
 
     typedef CORE::CTEventHandlerFunctor< Udp2KafkaChannel > TEventCallback;
+
+    enum EChannelMode
+    {
+        UNDEFINED      = 0 ,
+        KAFKA_PRODUCER     ,
+        KAFKA_CONSUMER
+    };
+    typedef enum EChannelMode TChannelMode;
 
     Udp2KafkaChannel();
     Udp2KafkaChannel( const Udp2KafkaChannel& src );
@@ -125,6 +134,9 @@ class Udp2KafkaChannel : public CORE::CTaskConsumer ,
         bool collectMetrics;
         CORE::CString metricsPrefix;
         bool wantsTestPackage;
+        TChannelMode mode;
+        CORE::CString consumerModeStartOffset;
+        HostAddressVector consumerModeUdpDestinations;
     };
 
     bool LoadConfig( const ChannelSettings& channelSettings );
@@ -151,6 +163,10 @@ class Udp2KafkaChannel : public CORE::CTaskConsumer ,
     virtual void event_cb( RdKafka::Event& event );
 
     virtual void dr_cb( RdKafka::Message& message );
+
+    virtual void consume_cb( RdKafka::Message& message, void* opaque );
+
+    bool UdpTransmit( RdKafka::Message& message );
 
     void
     OnUDPSocketError( CORE::CNotifier* notifier   ,
@@ -180,6 +196,8 @@ class Udp2KafkaChannel : public CORE::CTaskConsumer ,
     CORE::UInt32 GetKafkaErrorRepliesCounter( bool resetCounter );
 
     CORE::UInt32 GetKafkaMsgsTransmittedCounter( bool resetCounter );
+
+    CORE::Int64 ConvertKafkaConsumerStartOffset( const CORE::CString& startOffsetDescription ) const;
     
     private:
 
@@ -194,7 +212,9 @@ class Udp2KafkaChannel : public CORE::CTaskConsumer ,
 
     RdKafka::Conf* m_kafkaConf;
     RdKafka::Producer* m_kafkaProducer;
-    RdKafka::Topic* m_kafkaTopic;
+    RdKafka::Topic* m_kafkaProducerTopic;
+    RdKafka::Consumer* m_kafkaConsumer;
+    RdKafka::Topic* m_kafkaConsumerTopic;
 
     ChannelSettings m_channelSettings;
     GUCEF::COMCORE::CUDPSocket* m_udpSocket;
