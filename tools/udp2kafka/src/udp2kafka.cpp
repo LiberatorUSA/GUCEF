@@ -139,6 +139,7 @@ Udp2KafkaChannel::ChannelSettings::ChannelSettings( void )
     , udpInterface()
     , udpMulticastToJoin()
     , collectMetrics( false )
+    , metricsPrefix()
     , wantsTestPackage( false )
 {GUCEF_TRACE;
 
@@ -152,6 +153,7 @@ Udp2KafkaChannel::ChannelSettings::ChannelSettings( const ChannelSettings& src )
     , udpInterface( src.udpInterface )
     , udpMulticastToJoin( src.udpMulticastToJoin )
     , collectMetrics( src.collectMetrics )
+    , metricsPrefix( src.metricsPrefix )
     , wantsTestPackage( src.wantsTestPackage )
 {GUCEF_TRACE;
 
@@ -170,6 +172,7 @@ Udp2KafkaChannel::ChannelSettings::operator=( const ChannelSettings& src )
         udpInterface = src.udpInterface;
         udpMulticastToJoin = src.udpMulticastToJoin;
         collectMetrics = src.collectMetrics;
+        metricsPrefix = src.metricsPrefix;
         wantsTestPackage = src.wantsTestPackage;
     }
     return *this;
@@ -728,13 +731,13 @@ Udp2Kafka::OnMetricsTimerCycle( CORE::CNotifier* notifier    ,
     while ( i != m_channels.end() )
     {
         const Udp2KafkaChannel::ChannelMetrics& metrics = (*i).GetMetrics();
-        CORE::CString metricPrefix = "udp2kafka.ch" + CORE::Int32ToString( channelId ) + ".";
+        const Udp2KafkaChannel::ChannelSettings& settings = (*i).GetChannelSettings();
 
-        GUCEF_METRIC_COUNT( metricPrefix + "kafkaErrorReplies", metrics.kafkaErrorReplies, 1.0f );
-        GUCEF_METRIC_COUNT( metricPrefix + "kafkaMessagesTransmitted", metrics.kafkaMessagesTransmitted, 1.0f );
-        GUCEF_METRIC_GAUGE( metricPrefix + "kafkaTransmitOverflowQueueSize", metrics.kafkaTransmitOverflowQueueSize, 1.0f );
-        GUCEF_METRIC_COUNT( metricPrefix + "udpBytesReceived", metrics.udpBytesReceived, 1.0f );
-        GUCEF_METRIC_COUNT( metricPrefix + "udpMessagesReceived", metrics.udpMessagesReceived, 1.0f );
+        GUCEF_METRIC_COUNT( settings.metricsPrefix + "kafkaErrorReplies", metrics.kafkaErrorReplies, 1.0f );
+        GUCEF_METRIC_COUNT( settings.metricsPrefix + "kafkaMessagesTransmitted", metrics.kafkaMessagesTransmitted, 1.0f );
+        GUCEF_METRIC_GAUGE( settings.metricsPrefix + "kafkaTransmitOverflowQueueSize", metrics.kafkaTransmitOverflowQueueSize, 1.0f );
+        GUCEF_METRIC_COUNT( settings.metricsPrefix + "udpBytesReceived", metrics.udpBytesReceived, 1.0f );
+        GUCEF_METRIC_COUNT( settings.metricsPrefix + "udpMessagesReceived", metrics.udpMessagesReceived, 1.0f );
         ++i;
     }
 }
@@ -867,6 +870,11 @@ Udp2Kafka::LoadConfig( const CORE::CValueList& appConfig   ,
 
         settingName = "ChannelSetting." + CORE::Int32ToString( channelId ) + ".WantsTestPackage";
         channelSettings.wantsTestPackage = CORE::StringToBool( appConfig.GetValueAlways( settingName, "false" ) );
+
+        settingName = "ChannelSetting." + CORE::Int32ToString( channelId ) + ".MetricsPrefix";
+        channelSettings.metricsPrefix = appConfig.GetValueAlways( settingName, "udp2kafka.ch{channelID}." );
+        channelSettings.metricsPrefix = CORE::ResolveVars( channelSettings.metricsPrefix.ReplaceSubstr( "{channelID}", CORE::Int32ToString( channelId ) ) );
+        channelSettings.metricsPrefix = CORE::ResolveVars( channelSettings.metricsPrefix.ReplaceSubstr( "{topicName}", channelSettings.channelTopicName ) );
 
         settingName = "ChannelSetting." + CORE::Int32ToString( channelId ) + ".Multicast.Join";
         CORE::CValueList::TStringVector settingValues = appConfig.GetValueVectorAlways( settingName );

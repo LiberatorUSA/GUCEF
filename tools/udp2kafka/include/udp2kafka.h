@@ -123,6 +123,7 @@ class Udp2KafkaChannel : public CORE::CTaskConsumer ,
         COMCORE::CHostAddress udpInterface;
         HostAddressVector udpMulticastToJoin;
         bool collectMetrics;
+        CORE::CString metricsPrefix;
         bool wantsTestPackage;
     };
 
