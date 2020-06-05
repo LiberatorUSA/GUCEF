@@ -101,7 +101,8 @@ class Udp2KafkaChannel : public CORE::CTaskConsumer ,
     {
         UNDEFINED      = 0 ,
         KAFKA_PRODUCER     ,
-        KAFKA_CONSUMER
+        KAFKA_CONSUMER     ,
+        KAFKA_PRODUCER_AND_CONSUMER
     };
     typedef enum EChannelMode TChannelMode;
 
@@ -153,6 +154,11 @@ class Udp2KafkaChannel : public CORE::CTaskConsumer ,
         CORE::UInt32 udpMessagesReceived;
         CORE::UInt32 kafkaMessagesTransmitted;
         CORE::UInt32 kafkaTransmitOverflowQueueSize;
+
+        CORE::UInt32 udpBytesTransmitted;
+        CORE::UInt32 udpMessagesTransmitted;
+        CORE::UInt32 kafkaMessagesReceived;
+
         CORE::UInt32 kafkaErrorReplies;
     };
 
@@ -197,6 +203,8 @@ class Udp2KafkaChannel : public CORE::CTaskConsumer ,
 
     CORE::UInt32 GetKafkaMsgsTransmittedCounter( bool resetCounter );
 
+    CORE::UInt32 GetKafkaMsgsReceivedCounter( bool resetCounter );
+
     CORE::Int64 ConvertKafkaConsumerStartOffset( const CORE::CString& startOffsetDescription ) const;
     
     private:
@@ -223,6 +231,7 @@ class Udp2KafkaChannel : public CORE::CTaskConsumer ,
     ChannelMetrics m_metrics;
     CORE::UInt32 m_kafkaErrorReplies;
     CORE::UInt32 m_kafkaMsgsTransmitted;
+    CORE::UInt32 m_kafkaMessagesReceived;
     HostAddressVector m_kafkaBrokers;
 };
 

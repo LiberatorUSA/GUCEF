@@ -67,6 +67,7 @@ Udp2KafkaChannel::Udp2KafkaChannel()
     , m_metrics()
     , m_kafkaErrorReplies( 0 )
     , m_kafkaMsgsTransmitted( 0 )
+    , m_kafkaMessagesReceived( 0 )
     , m_kafkaBrokers()
 {GUCEF_TRACE;
 
@@ -91,6 +92,7 @@ Udp2KafkaChannel::Udp2KafkaChannel( const Udp2KafkaChannel& src )
     , m_metrics()
     , m_kafkaErrorReplies( 0 )
     , m_kafkaMsgsTransmitted( 0 )
+    , m_kafkaMessagesReceived( 0 )
     , m_kafkaBrokers( src.m_kafkaBrokers )
 {GUCEF_TRACE;
 
@@ -241,6 +243,22 @@ Udp2KafkaChannel::GetKafkaMsgsTransmittedCounter( bool resetCounter )
 
 /*-------------------------------------------------------------------------*/
 
+CORE::UInt32
+Udp2KafkaChannel::GetKafkaMsgsReceivedCounter( bool resetCounter )
+{GUCEF_TRACE;
+
+    if ( resetCounter )
+    {
+        CORE::UInt32 kafkaMsgsReceived = m_kafkaMessagesReceived;
+        m_kafkaMsgsTransmitted = 0;
+        return kafkaMsgsReceived;
+    }
+    else
+        return m_kafkaMessagesReceived;
+}
+
+/*-------------------------------------------------------------------------*/
+
 CORE::CString
 Udp2KafkaChannel::GetType( void ) const
 {GUCEF_TRACE;
@@ -255,6 +273,9 @@ Udp2KafkaChannel::ChannelMetrics::ChannelMetrics( void )
     , udpMessagesReceived( 0 )
     , kafkaMessagesTransmitted( 0 )
     , kafkaTransmitOverflowQueueSize( 0 )
+    , udpBytesTransmitted( 0 )
+    , udpMessagesTransmitted( 0 )
+    , kafkaMessagesReceived( 0 )
     , kafkaErrorReplies( 0 )
 {GUCEF_TRACE;
 
@@ -268,11 +289,20 @@ Udp2KafkaChannel::OnMetricsTimerCycle( CORE::CNotifier* notifier    ,
                                        CORE::CICloneable* eventData )
 {GUCEF_TRACE;
 
-    m_metrics.udpBytesReceived = m_udpSocket->GetBytesReceived( true );
-    m_metrics.udpMessagesReceived = m_udpSocket->GetNrOfDataReceivedEvents( true );
-    m_metrics.kafkaTransmitOverflowQueueSize = (CORE::UInt32) m_kafkaMsgQueueOverflowQueue.size();
     m_metrics.kafkaErrorReplies = GetKafkaErrorRepliesCounter( true );
-    m_metrics.kafkaMessagesTransmitted = GetKafkaMsgsTransmittedCounter( true );
+    if ( EChannelMode::KAFKA_PRODUCER == m_channelSettings.mode || EChannelMode::KAFKA_PRODUCER_AND_CONSUMER == m_channelSettings.mode )
+    {
+        m_metrics.udpBytesReceived = m_udpSocket->GetBytesReceived( true );
+        m_metrics.udpMessagesReceived = m_udpSocket->GetNrOfDataReceivedEvents( true );
+        m_metrics.kafkaTransmitOverflowQueueSize = (CORE::UInt32) m_kafkaMsgQueueOverflowQueue.size();   
+        m_metrics.kafkaMessagesTransmitted = GetKafkaMsgsTransmittedCounter( true );
+    }
+    if ( EChannelMode::KAFKA_CONSUMER == m_channelSettings.mode || EChannelMode::KAFKA_PRODUCER_AND_CONSUMER == m_channelSettings.mode )
+    {
+        m_metrics.udpBytesTransmitted = m_udpSocket->GetBytesTransmitted( true );
+        m_metrics.udpMessagesTransmitted = m_udpSocket->GetNrOfDataSentEvents( true );
+        m_metrics.kafkaMessagesReceived = GetKafkaMsgsReceivedCounter( true );
+    }
 }
 
 /*-------------------------------------------------------------------------*/
@@ -385,6 +415,7 @@ Udp2KafkaChannel::consume_cb( RdKafka::Message& message, void* opaque )
             }
             #endif
             
+            ++m_kafkaMessagesReceived;
             UdpTransmit( message );
             break;
         }
@@ -547,7 +578,7 @@ Udp2KafkaChannel::OnUDPPacketRecieved( CORE::CNotifier* notifier   ,
                                        CORE::CICloneable* evenData )
 {GUCEF_TRACE;
 
-    if ( m_channelSettings.mode != TChannelMode::KAFKA_PRODUCER )
+    if ( EChannelMode::KAFKA_PRODUCER == m_channelSettings.mode || EChannelMode::KAFKA_PRODUCER_AND_CONSUMER == m_channelSettings.mode )
     {
         // If we are not a producer we ignore incoming UDP data
         return;
@@ -612,6 +643,10 @@ Udp2KafkaChannel::ConvertKafkaConsumerStartOffset( const CORE::CString& startOff
 {GUCEF_TRACE;
 
     CORE::CString testString = startOffsetDescription.Lowercase();
+    if ( testString.IsNULLOrEmpty() )
+    {
+        return RdKafka::Topic::OFFSET_STORED; 
+    }
     if ( "beginning" == testString )
     {
         return RdKafka::Topic::OFFSET_BEGINNING;
@@ -658,7 +693,7 @@ Udp2KafkaChannel::OnTaskStart( CORE::CICloneable* taskData )
     delete m_kafkaConf;
     m_kafkaConf = kafkaConf;
     
-	if ( TChannelMode::KAFKA_PRODUCER == m_channelSettings.mode )
+	if ( TChannelMode::KAFKA_PRODUCER == m_channelSettings.mode || TChannelMode::KAFKA_PRODUCER_AND_CONSUMER == m_channelSettings.mode )
     {
         RdKafka::Producer* producer = RdKafka::Producer::create( m_kafkaConf, errStr );
 	    if ( producer == nullptr ) 
@@ -684,7 +719,7 @@ Udp2KafkaChannel::OnTaskStart( CORE::CICloneable* taskData )
         GUCEF_LOG( CORE::LOGLEVEL_NORMAL, "Udp2KafkaChannel:OnTaskStart: Successfully created Kafka Producer Topic handle for topic: " + m_channelSettings.channelTopicName );
     }
 
-    if ( TChannelMode::KAFKA_CONSUMER == m_channelSettings.mode )
+    if ( TChannelMode::KAFKA_CONSUMER == m_channelSettings.mode || TChannelMode::KAFKA_PRODUCER_AND_CONSUMER == m_channelSettings.mode )
     {
         RdKafka::Consumer* consumer = RdKafka::Consumer::create( m_kafkaConf, errStr );
 	    if ( consumer == nullptr ) 
@@ -710,8 +745,8 @@ Udp2KafkaChannel::OnTaskStart( CORE::CICloneable* taskData )
         if ( RdKafka::ERR_NO_ERROR != response ) 
         {
 		    errStr = RdKafka::err2str( response );
-            GUCEF_ERROR_LOG( CORE::LOGLEVEL_IMPORTANT, "Udp2KafkaChannel:OnTaskStart: Failed to start Kafka Consumer for topic " + 
-                m_channelSettings.channelTopicName + " at offset \"" + m_channelSettings.consumerModeStartOffset + "\", error message: " + errStr );
+            GUCEF_ERROR_LOG( CORE::LOGLEVEL_IMPORTANT, "Udp2KafkaChannel:OnTaskStart: Failed to start Kafka Consumer for topic \"" + 
+                m_channelSettings.channelTopicName + "\" at offset " + m_channelSettings.consumerModeStartOffset + ", error message: " + errStr );
             ++m_kafkaErrorReplies;
             return false;
         }
@@ -973,10 +1008,20 @@ Udp2Kafka::OnMetricsTimerCycle( CORE::CNotifier* notifier    ,
         const Udp2KafkaChannel::ChannelSettings& settings = (*i).GetChannelSettings();
 
         GUCEF_METRIC_COUNT( settings.metricsPrefix + "kafkaErrorReplies", metrics.kafkaErrorReplies, 1.0f );
-        GUCEF_METRIC_COUNT( settings.metricsPrefix + "kafkaMessagesTransmitted", metrics.kafkaMessagesTransmitted, 1.0f );
-        GUCEF_METRIC_GAUGE( settings.metricsPrefix + "kafkaTransmitOverflowQueueSize", metrics.kafkaTransmitOverflowQueueSize, 1.0f );
-        GUCEF_METRIC_COUNT( settings.metricsPrefix + "udpBytesReceived", metrics.udpBytesReceived, 1.0f );
-        GUCEF_METRIC_COUNT( settings.metricsPrefix + "udpMessagesReceived", metrics.udpMessagesReceived, 1.0f );
+
+        if ( Udp2KafkaChannel::EChannelMode::KAFKA_PRODUCER == settings.mode || Udp2KafkaChannel::EChannelMode::KAFKA_PRODUCER_AND_CONSUMER == settings.mode )
+        {
+            GUCEF_METRIC_COUNT( settings.metricsPrefix + "kafkaMessagesTransmitted", metrics.kafkaMessagesTransmitted, 1.0f );
+            GUCEF_METRIC_GAUGE( settings.metricsPrefix + "kafkaTransmitOverflowQueueSize", metrics.kafkaTransmitOverflowQueueSize, 1.0f );
+            GUCEF_METRIC_COUNT( settings.metricsPrefix + "udpBytesReceived", metrics.udpBytesReceived, 1.0f );
+            GUCEF_METRIC_COUNT( settings.metricsPrefix + "udpMessagesReceived", metrics.udpMessagesReceived, 1.0f );
+        }
+        if ( Udp2KafkaChannel::EChannelMode::KAFKA_CONSUMER == settings.mode || Udp2KafkaChannel::EChannelMode::KAFKA_PRODUCER_AND_CONSUMER == settings.mode )
+        {
+            GUCEF_METRIC_COUNT( settings.metricsPrefix + "kafkaMessagesReceived", metrics.kafkaMessagesTransmitted, 1.0f );
+            GUCEF_METRIC_COUNT( settings.metricsPrefix + "udpBytesTransmitted", metrics.udpBytesReceived, 1.0f );
+            GUCEF_METRIC_COUNT( settings.metricsPrefix + "udpMessagesTransmitted", metrics.udpMessagesReceived, 1.0f );
+        }
         ++i;
     }
 }
@@ -1173,9 +1218,17 @@ Udp2Kafka::LoadConfig( const CORE::CValueList& appConfig   ,
             channelSettings.mode = Udp2KafkaChannel::EChannelMode::KAFKA_CONSUMER;
         }
         else
+        if ( settingValue == "both" || settingValue == "producer_and_consumer" )
+        {
+            channelSettings.mode = Udp2KafkaChannel::EChannelMode::KAFKA_PRODUCER_AND_CONSUMER;
+        }
+        else
         {
             channelSettings.mode = Udp2KafkaChannel::EChannelMode::KAFKA_PRODUCER;
         }
+
+        settingName = settingPrefix + ".ConsumerMode.StartOffset";
+        channelSettings.consumerModeStartOffset = CORE::ResolveVars( appConfig.GetValueAlways( settingName, "stored" ) ).Lowercase();
 
         channelSettings.consumerModeUdpDestinations = consumerModeUdpDestinations;
         settingName = settingPrefix + ".ConsumerMode.UdpDestinations";

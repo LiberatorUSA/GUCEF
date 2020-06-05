@@ -107,6 +107,7 @@ CUDPSocket::CUDPSocket( CORE::CPulseGenerator& pulseGenerator ,
     , m_bytesReceived( 0 )
     , m_bytesTransmitted( 0 )
     , m_nrOfDataReceivedEvents( 0 )
+    , m_nrOfDataSentEvents( 0 )
 {GUCEF_TRACE;
 
     RegisterEvents();
@@ -144,6 +145,7 @@ CUDPSocket::CUDPSocket( bool blocking )
     , m_bytesReceived( 0 )
     , m_bytesTransmitted( 0 )
     , m_nrOfDataReceivedEvents( 0 )
+    , m_nrOfDataSentEvents( 0 )
 {GUCEF_TRACE;
 
     RegisterEvents();
@@ -237,6 +239,8 @@ CUDPSocket::SendPacketTo( const CIPAddress& dest ,
     if ( returnValue >= 0 )
     {
         m_bytesTransmitted += returnValue;
+        ++m_nrOfDataSentEvents;
+
         GUCEF_DEBUG_LOG( CORE::LOGLEVEL_BELOW_NORMAL, "UDPSocket(" + CORE::PointerToString( this ) + "):SendPacketTo: Sent " + CORE::UInt16ToString( datasize ) +
             " bytes to " + dest.AddressAndPortAsString() + " from " + m_hostAddress.AddressAndPortAsString() );
     }
@@ -505,6 +509,22 @@ CUDPSocket::GetNrOfDataReceivedEvents( bool resetCounter )
     }
     else
         return m_nrOfDataReceivedEvents;
+}
+
+/*-------------------------------------------------------------------------*/
+
+UInt32 
+CUDPSocket::GetNrOfDataSentEvents( bool resetCounter )
+{GUCEF_TRACE;
+
+    if ( resetCounter )
+    {
+        UInt32 nrOfDataSentEvents = m_nrOfDataSentEvents;
+        m_nrOfDataSentEvents = 0;
+        return nrOfDataSentEvents;
+    }
+    else
+        return m_nrOfDataSentEvents;
 }
 
 /*-------------------------------------------------------------------------*/

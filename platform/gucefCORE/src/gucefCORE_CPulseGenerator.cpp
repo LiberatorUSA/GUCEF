@@ -346,7 +346,7 @@ CPulseGenerator::WaitTillNextPulseWindow( UInt32 forcedMinimalDeltaInMilliSecs  
     }
     // desiredMaximumDeltaInMilliSecs == 0 means no maximum desired
     if ( ( desiredMaximumDeltaInMilliSecs > 0 ) &&
-            ( desiredMaximumDeltaInMilliSecs < (UInt32) timeLeftToWaitInMs ) )
+         ( desiredMaximumDeltaInMilliSecs < (UInt32) timeLeftToWaitInMs ) )
     {
         timeLeftToWaitInMs = desiredMaximumDeltaInMilliSecs;
     }
