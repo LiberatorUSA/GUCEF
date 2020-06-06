@@ -91,7 +91,8 @@ using namespace GUCEF;
 class Udp2KafkaChannel : public CORE::CTaskConsumer ,
                          private RdKafka::EventCb ,
                          private RdKafka::DeliveryReportCb ,
-                         private RdKafka::ConsumeCb
+                         private RdKafka::ConsumeCb ,
+                         private RdKafka::RebalanceCb
 {
     public:
 
@@ -137,6 +138,7 @@ class Udp2KafkaChannel : public CORE::CTaskConsumer ,
         bool wantsTestPackage;
         TChannelMode mode;
         CORE::CString consumerModeStartOffset;
+        CORE::CString consumerModeGroupId;
         HostAddressVector consumerModeUdpDestinations;
     };
 
@@ -153,6 +155,7 @@ class Udp2KafkaChannel : public CORE::CTaskConsumer ,
         CORE::UInt32 udpBytesReceived;
         CORE::UInt32 udpMessagesReceived;
         CORE::UInt32 kafkaMessagesTransmitted;
+        CORE::UInt32 kafkaTransmitQueueSize;
         CORE::UInt32 kafkaTransmitOverflowQueueSize;
 
         CORE::UInt32 udpBytesTransmitted;
@@ -172,12 +175,21 @@ class Udp2KafkaChannel : public CORE::CTaskConsumer ,
 
     virtual void consume_cb( RdKafka::Message& message, void* opaque );
 
+    virtual void rebalance_cb( RdKafka::KafkaConsumer* consumer                  ,
+                               RdKafka::ErrorCode err                            ,
+                               std::vector<RdKafka::TopicPartition*>& partitions );
+
     bool UdpTransmit( RdKafka::Message& message );
 
     void
     OnUDPSocketError( CORE::CNotifier* notifier   ,
                       const CORE::CEvent& eventID ,
                       CORE::CICloneable* evenData );
+
+    void
+    OnUDPSocketClosing( CORE::CNotifier* notifier   ,
+                        const CORE::CEvent& eventID ,
+                        CORE::CICloneable* evenData );
 
     void
     OnUDPSocketClosed( CORE::CNotifier* notifier   ,
@@ -205,9 +217,9 @@ class Udp2KafkaChannel : public CORE::CTaskConsumer ,
 
     CORE::UInt32 GetKafkaMsgsReceivedCounter( bool resetCounter );
 
-    CORE::Int64 ConvertKafkaConsumerStartOffset( const CORE::CString& startOffsetDescription ) const;
+    static CORE::Int64 ConvertKafkaConsumerStartOffset( const CORE::CString& startOffsetDescription );
     
-    private:
+    static const std::string& MsgStatusToString( RdKafka::Message::Status status );
 
     void RegisterEventHandlers( void );
     
@@ -221,8 +233,7 @@ class Udp2KafkaChannel : public CORE::CTaskConsumer ,
     RdKafka::Conf* m_kafkaConf;
     RdKafka::Producer* m_kafkaProducer;
     RdKafka::Topic* m_kafkaProducerTopic;
-    RdKafka::Consumer* m_kafkaConsumer;
-    RdKafka::Topic* m_kafkaConsumerTopic;
+    RdKafka::KafkaConsumer* m_kafkaConsumer;
 
     ChannelSettings m_channelSettings;
     GUCEF::COMCORE::CUDPSocket* m_udpSocket;

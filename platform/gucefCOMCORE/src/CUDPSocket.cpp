@@ -63,6 +63,7 @@ namespace COMCORE {
 //-------------------------------------------------------------------------*/
 
 const CORE::CEvent CUDPSocket::UDPSocketErrorEvent = "GUCEF::COMCORE::CUDPSocket::UDPSocketErrorEvent";
+const CORE::CEvent CUDPSocket::UDPSocketClosingEvent = "GUCEF::COMCORE::CUDPSocket::UDPSocketClosingEvent";
 const CORE::CEvent CUDPSocket::UDPSocketClosedEvent = "GUCEF::COMCORE::CUDPSocket::UDPSocketClosedEvent";
 const CORE::CEvent CUDPSocket::UDPSocketOpenedEvent = "GUCEF::COMCORE::CUDPSocket::UDPSocketOpenedEvent";
 const CORE::CEvent CUDPSocket::UDPPacketRecievedEvent = "GUCEF::COMCORE::CUDPSocket::UDPPacketRecievedEvent";
@@ -184,6 +185,7 @@ CUDPSocket::RegisterEvents( void )
 {GUCEF_TRACE;
 
     UDPSocketErrorEvent.Initialize();
+    UDPSocketClosingEvent.Initialize();
     UDPSocketClosedEvent.Initialize();
     UDPSocketOpenedEvent.Initialize();
     UDPPacketRecievedEvent.Initialize();
@@ -999,6 +1001,8 @@ CUDPSocket::Close( bool shutdownOnly )
 
     if ( IsActive() )
     {
+        NotifyObservers( UDPSocketClosingEvent );
+        
         if ( !shutdownOnly )
         {
             // A socket close will trigger a shutdown sequence if one hasnt occured yet and will also free up the related

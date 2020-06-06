@@ -77,6 +77,7 @@ class GUCEF_COMCORE_EXPORT_CPP CUDPSocket : public CSocket
     public:
 
     static const CORE::CEvent UDPSocketErrorEvent;
+    static const CORE::CEvent UDPSocketClosingEvent;
     static const CORE::CEvent UDPSocketClosedEvent;
     static const CORE::CEvent UDPSocketOpenedEvent;
     static const CORE::CEvent UDPPacketRecievedEvent;

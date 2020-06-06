@@ -212,6 +212,11 @@ CGUCEFApplication::Main( HINSTANCE hinstance     ,
         {
             data.argv[ i ] = const_cast< char* >( argList[ i ].C_String() );
         }
+
+        char intstr[ 10 ];
+        sprintf( intstr, "%d", data.argc );
+        GUCEFSetEnv( "argc", intstr );
+        //GUCEFSetEnv( "argv", (char*)data.argv );
     }
     else
     {
@@ -281,7 +286,7 @@ CGUCEFApplication::main( int argc    ,
         char intstr[ 10 ];
         sprintf( intstr, "%d", argc );
         GUCEFSetEnv( "argc", intstr );
-        GUCEFSetEnv( "argv", (char*)argv );
+        //GUCEFSetEnv( "argv", (char*)argv );
     }
 
     _initialized = false;
@@ -448,32 +453,6 @@ CGUCEFApplication::OnSysConsoleCommand( const CString& path                ,
     }
     UnlockData();
     return false;
-}
-
-/*-------------------------------------------------------------------------*/
-  /*
-void
-CGUCEFApplication::OnUpdate( const UInt64 tickcount               ,
-                             const Float64 updateDeltaInMilliSecs )
-{GUCEF_TRACE;
-
-        #ifdef GUCEF_MSWIN_BUILD
-    	MSG  msg;
-        while( ::PeekMessage( &msg, NULL, 0U, 0U, PM_REMOVE ) )
-        {
-                ::TranslateMessage( &msg );
-                ::DispatchMessage( &msg );
-        }
-        #endif /* GUCEF_MSWIN_BUILD ? *//*
-
-        if ( updateDeltaInMilliSecs <= m_minimalCycleDeltaInMilliSecs )
-        {
-                /*
-                 *      Not much action ATM, so we should
-                 *      avoid hogging the system resources
-                 *
-                MT::PrecisionDelay( m_cycleDelayInMilliSecs );
-        }
 }
 
 /*-------------------------------------------------------------------------*/
