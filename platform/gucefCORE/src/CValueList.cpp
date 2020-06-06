@@ -611,6 +611,28 @@ CValueList::HasKey( const CString& key ) const
 }
 
 /*-------------------------------------------------------------------------*/
+
+CValueList::TStringVector 
+CValueList::GetKeysWithWildcardKeyMatch( const CString& searchStr , 
+                                         char wildCardChar        ,
+                                         bool caseSensitive       ) const
+{GUCEF_TRACE;
+
+    TStringVector keys;
+    TValueMap::const_iterator i = m_list.begin();
+    while ( i != m_list.end() )
+    {
+        const CString& key = (*i).first;
+        if ( key.WildcardEquals( searchStr, wildCardChar, caseSensitive ) )
+        {
+            keys.push_back( key );
+        }
+        ++i;
+    }
+    return keys;
+}
+
+/*-------------------------------------------------------------------------*/
         
 void 
 CValueList::Delete( const CString& key )

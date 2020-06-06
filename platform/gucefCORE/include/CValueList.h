@@ -170,6 +170,14 @@ class GUCEF_CORE_PUBLIC_CPP CValueList : public CIConfigurable
     TStringVector GetValueVectorAlways( const CString& key ) const;
 
     /**
+     *  Returns all keys matching the key wildcard search 
+     *  Will not throw an exception
+     */
+    TStringVector GetKeysWithWildcardKeyMatch( const CString& searchStr  , 
+                                               char wildCardChar = '*'   ,
+                                               bool caseSensitive = true ) const;
+
+    /**
      *  Returns the value vector associated with the
      *  given key.
      *

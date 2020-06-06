@@ -124,6 +124,7 @@ class Udp2KafkaChannel : public CORE::CTaskConsumer ,
         public:
 
         typedef std::vector< COMCORE::CHostAddress > HostAddressVector;
+        typedef std::map< CORE::CString, CORE::CString > StringMap;
 
         ChannelSettings( void );
         ChannelSettings( const ChannelSettings& src );
@@ -140,6 +141,8 @@ class Udp2KafkaChannel : public CORE::CTaskConsumer ,
         CORE::CString consumerModeStartOffset;
         CORE::CString consumerModeGroupId;
         HostAddressVector consumerModeUdpDestinations;
+        StringMap kafkaGlobalConfigSettings;
+        StringMap kafkaTopicConfigSettings;
     };
 
     bool LoadConfig( const ChannelSettings& channelSettings );
@@ -231,6 +234,7 @@ class Udp2KafkaChannel : public CORE::CTaskConsumer ,
     typedef ChannelSettings::HostAddressVector HostAddressVector;
 
     RdKafka::Conf* m_kafkaConf;
+    RdKafka::Conf* m_kafkaTopicConf;
     RdKafka::Producer* m_kafkaProducer;
     RdKafka::Topic* m_kafkaProducerTopic;
     RdKafka::KafkaConsumer* m_kafkaConsumer;
