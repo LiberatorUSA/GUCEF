@@ -253,6 +253,7 @@ GUCEF_OSMAIN_BEGIN
 
     auto& app = CORE::CCoreGlobal::Instance()->GetApplication();
     app.GetPulseGenerator().RequestPulseInterval( 25 );
+    app.GetPulseGenerator().RequestPulsesPerImmediatePulseRequest( 250 );
     return app.main( argc, argv, true );
 }
 GUCEF_OSMAIN_END

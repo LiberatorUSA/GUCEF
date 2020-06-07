@@ -609,7 +609,7 @@ CTCPClientSocket::CheckRecieveBuffer( void )
                 if ( m_maxreadbytes <= m_readbuffer.GetDataSize() )
                 {
                     // This is a busy socket, don't yield to the scheduler
-                    m_pulseGenerator->RequestPulse();
+                    m_pulseGenerator->RequestImmediatePulse();
                     break;
                 }
             }

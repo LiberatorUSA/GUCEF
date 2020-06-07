@@ -109,18 +109,23 @@ Udp2RedisClusterChannel::RegisterEventHandlers( void )
     SubscribeTo( m_udpSocket                               ,
                  COMCORE::CUDPSocket::UDPSocketClosedEvent ,
                  callback2                                 );
-    TEventCallback callback3( this, &Udp2RedisClusterChannel::OnUDPSocketOpened );
+    TEventCallback callback3( this, &Udp2RedisClusterChannel::OnUDPSocketClosing );
+    SubscribeTo( m_udpSocket                                ,
+                 COMCORE::CUDPSocket::UDPSocketClosingEvent ,
+                 callback3                                  );
+    TEventCallback callback4( this, &Udp2RedisClusterChannel::OnUDPSocketOpened );
     SubscribeTo( m_udpSocket                               ,
                  COMCORE::CUDPSocket::UDPSocketOpenedEvent ,
-                 callback3                                 );
-    TEventCallback callback4( this, &Udp2RedisClusterChannel::OnUDPPacketRecieved );
+                 callback4                                 );
+    TEventCallback callback5( this, &Udp2RedisClusterChannel::OnUDPPacketRecieved );
     SubscribeTo( m_udpSocket                                 ,
                  COMCORE::CUDPSocket::UDPPacketRecievedEvent ,
-                 callback4                                   );
-    TEventCallback callback5( this, &Udp2RedisClusterChannel::OnMetricsTimerCycle );
+                 callback5                                   );
+    
+    TEventCallback callback6( this, &Udp2RedisClusterChannel::OnMetricsTimerCycle );
     SubscribeTo( m_metricsTimer                 ,
                  CORE::CTimer::TimerUpdateEvent ,
-                 callback5                      );
+                 callback6                      );
 }
 
 /*-------------------------------------------------------------------------*/
@@ -267,6 +272,35 @@ Udp2RedisClusterChannel::OnUDPSocketClosed( CORE::CNotifier* notifier   ,
 {GUCEF_TRACE;
 
     GUCEF_LOG( CORE::LOGLEVEL_IMPORTANT, "Udp2RedisClusterChannel: UDP Socket has been closed" );
+}
+
+/*-------------------------------------------------------------------------*/
+
+void
+Udp2RedisClusterChannel::OnUDPSocketClosing( CORE::CNotifier* notifier    ,
+                                             const CORE::CEvent& eventID  ,
+                                             CORE::CICloneable* eventData )
+{GUCEF_TRACE;
+
+    GUCEF_LOG( CORE::LOGLEVEL_IMPORTANT, "Udp2RedisClusterChannel: UDP Socket is going to close" );
+
+    // Gracefully leave the multicast groups we joined
+    ChannelSettings::HostAddressVector::iterator m = m_channelSettings.udpMulticastToJoin.begin();
+    while ( m != m_channelSettings.udpMulticastToJoin.end() )
+    {
+        const COMCORE::CHostAddress& multicastAddr = (*m);
+        if ( m_udpSocket->Leave( multicastAddr ) )
+        {
+            GUCEF_LOG( CORE::LOGLEVEL_NORMAL, "Udp2RedisClusterChannel:OnUDPSocketClosing: Successfully to left multicast " + multicastAddr.AddressAndPortAsString() +
+                    " for UDP socket on " + m_channelSettings.udpInterface.AddressAndPortAsString() );
+        }
+        else
+        {
+            GUCEF_ERROR_LOG( CORE::LOGLEVEL_IMPORTANT, "Udp2RedisClusterChannel:OnUDPSocketClosing: Failed to leave multicast " + multicastAddr.AddressAndPortAsString() +
+                    " for UDP socket on " + m_channelSettings.udpInterface.AddressAndPortAsString() );
+        }
+        ++m;
+    }
 }
 
 /*-------------------------------------------------------------------------*/
@@ -485,6 +519,12 @@ void
 Udp2RedisClusterChannel::OnTaskEnd( CORE::CICloneable* taskData )
 {GUCEF_TRACE;
 
+    m_udpSocket->Close();
+    
+    delete m_udpSocket;
+    m_udpSocket = GUCEF_NULL;
+    delete m_metricsTimer;
+    m_metricsTimer = GUCEF_NULL;
 }
 
 /*-------------------------------------------------------------------------*/

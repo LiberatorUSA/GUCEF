@@ -156,6 +156,11 @@ class Udp2RedisClusterChannel : public CORE::CTaskConsumer
                        CORE::CICloneable* evenData );
 
     void
+    OnUDPSocketClosing( CORE::CNotifier* notifier   ,
+                        const CORE::CEvent& eventID ,
+                        CORE::CICloneable* evenData );
+
+    void
     OnUDPSocketOpened( CORE::CNotifier* notifier   ,
                        const CORE::CEvent& eventID ,
                        CORE::CICloneable* evenData );

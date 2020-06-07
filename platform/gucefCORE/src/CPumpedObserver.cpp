@@ -158,6 +158,8 @@ CPumpedObserver::CPumpedObserver( void )
     SubscribeTo( m_pulsGenerator                   ,
                  CPulseGenerator::DestructionEvent ,
                  callback2                         );
+
+    m_pulsGenerator->RequestPeriodicPulses( this );
 }
 
 /*-------------------------------------------------------------------------*/
@@ -176,6 +178,8 @@ CPumpedObserver::CPumpedObserver( CPulseGenerator& pulsGenerator )
     SubscribeTo( m_pulsGenerator                   ,
                  CPulseGenerator::DestructionEvent ,
                  callback2                         );
+    
+    m_pulsGenerator->RequestPeriodicPulses( this );
 }
 
 /*-------------------------------------------------------------------------*/
@@ -201,6 +205,8 @@ CPumpedObserver::CPumpedObserver( const CPumpedObserver& src )
     SubscribeTo( m_pulsGenerator                   ,
                  CPulseGenerator::DestructionEvent ,
                  callback2                         );
+    
+    m_pulsGenerator->RequestPeriodicPulses( this );
 }
 
 /*-------------------------------------------------------------------------*/
@@ -208,6 +214,7 @@ CPumpedObserver::CPumpedObserver( const CPumpedObserver& src )
 CPumpedObserver::~CPumpedObserver()
 {GUCEF_TRACE;
 
+    m_pulsGenerator->RequestStopOfPeriodicUpdates( this );
 }
 
 /*-------------------------------------------------------------------------*/
@@ -255,7 +262,7 @@ CPumpedObserver::OnPulseGeneratorDestruction( CNotifier* notifier               
 
     if ( notifier == m_pulsGenerator )
     {
-        m_pulsGenerator = NULL;
+        m_pulsGenerator = GUCEF_NULL;
     }
 }
 
@@ -277,11 +284,6 @@ CPumpedObserver::OnNotify( CNotifier* notifier                 ,
 
     m_mailbox.AddMail( eventid   ,
                        &maildata );
-
-    if ( NULL != m_pulsGenerator )
-    {
-        m_pulsGenerator->RequestPulse();
-    }
 }
 
 /*-------------------------------------------------------------------------*/

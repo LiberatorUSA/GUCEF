@@ -253,6 +253,7 @@ GUCEF_OSSERVICEMAIN_BEGIN( "udp2kafka" )
 
     auto& app = CORE::CCoreGlobal::Instance()->GetApplication();
     app.GetPulseGenerator().RequestPulseInterval( 25 );
+    app.GetPulseGenerator().RequestPulsesPerImmediatePulseRequest( 100 );
     return app.main( argc, argv, true );
 }
 GUCEF_OSMAIN_END

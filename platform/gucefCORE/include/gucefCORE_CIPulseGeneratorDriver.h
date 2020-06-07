@@ -58,7 +58,10 @@ class GUCEF_CORE_PUBLIC_CPP CIPulseGeneratorDriver
 
     CIPulseGeneratorDriver& operator=( const CIPulseGeneratorDriver& src );
 
-    virtual void RequestPulse( CPulseGenerator& pulseGenerator ) = 0;
+    virtual void RequestImmediatePulse( CPulseGenerator& pulseGenerator ) = 0;
+
+    virtual void RequestPulsesPerImmediatePulseRequest( CPulseGenerator& pulseGenerator                     ,
+                                                        const Int32 requestedPulsesPerImmediatePulseRequest ) = 0;
 
     virtual void RequestPeriodicPulses( CPulseGenerator& pulseGenerator    ,
                                         const UInt32 pulseDeltaInMilliSecs ) = 0;

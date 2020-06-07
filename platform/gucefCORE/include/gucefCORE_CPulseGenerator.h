@@ -78,7 +78,9 @@ class GUCEF_CORE_PUBLIC_CPP CPulseGenerator : public CNotifier
 
     virtual ~CPulseGenerator();
 
-    void RequestPulse( void );
+    void RequestImmediatePulse( void );
+
+    void RequestPulsesPerImmediatePulseRequest( const Int32 requestedPulsesPerImmediatePulseRequest );
 
     void RequestPeriodicPulses( void* requestor );
 

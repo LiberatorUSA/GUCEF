@@ -938,17 +938,23 @@ Udp2KafkaChannel::OnTaskCycle( CORE::CICloneable* taskData )
     // You are required to periodically call poll() on a producer to trigger queued callbacks if any
     if ( GUCEF_NULL != m_kafkaProducer )
     { 
-        #ifdef GUCEF_DEBUG_MODE
-        CORE::Int32 opsServed = (CORE::Int32)
-        #endif
+        int i=0;
+        for ( ; i<50; ++i )
+        {
+            CORE::Int32 opsServed = (CORE::Int32) m_kafkaProducer->poll( 0 );
+            if ( 0 == opsServed )
+            {
+                break;
+            }
 
-        m_kafkaProducer->poll( 0 );
-
-        #ifdef GUCEF_DEBUG_MODE
-        if ( opsServed > 0 )
             GUCEF_DEBUG_LOG( CORE::LOGLEVEL_BELOW_NORMAL, "Udp2KafkaChannel:OnTaskCycle: poll() on the kafkaProducer served " + 
                     CORE::Int32ToString( opsServed ) + " events");
-        #endif
+        }
+        if ( i == 50 )
+        {
+            // We have more work to do. Make sure we dont go to sleep
+            GetPulseGenerator()->RequestImmediatePulse();
+        }
     }
 
     if ( GUCEF_NULL != m_kafkaConsumer )
@@ -970,7 +976,7 @@ Udp2KafkaChannel::OnTaskCycle( CORE::CICloneable* taskData )
         if ( i == 50 )
         {
             // We have more work to do. Make sure we dont go to sleep
-            GetPulseGenerator()->RequestPulse();
+            GetPulseGenerator()->RequestImmediatePulse();
         } 
     }
 

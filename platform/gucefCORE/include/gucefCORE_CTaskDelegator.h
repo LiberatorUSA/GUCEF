@@ -158,7 +158,10 @@ class GUCEF_CORE_PRIVATE_CPP CTaskDelegator : public MT::CActiveObject      ,
     CTaskDelegator( const CTaskDelegator& src );
     CTaskDelegator& operator=( const CTaskDelegator& src );
 
-    virtual void RequestPulse( CPulseGenerator& pulseGenerator );
+    virtual void RequestImmediatePulse( CPulseGenerator& pulseGenerator );
+
+    virtual void RequestPulsesPerImmediatePulseRequest( CPulseGenerator& pulseGenerator                     ,
+                                                        const Int32 requestedPulsesPerImmediatePulseRequest );
 
     virtual void RequestPeriodicPulses( CPulseGenerator& pulseGenerator    ,
                                         const UInt32 pulseDeltaInMilliSecs );
@@ -172,7 +175,8 @@ class GUCEF_CORE_PRIVATE_CPP CTaskDelegator : public MT::CActiveObject      ,
 
     CTaskConsumer* m_taskConsumer;
     bool m_consumerBusy;
-    bool m_immediatePulseRequested;
+    Int32 m_immediatePulseTickets;
+    Int32 m_immediatePulseTicketMax;
 };
 
 /*-------------------------------------------------------------------------//

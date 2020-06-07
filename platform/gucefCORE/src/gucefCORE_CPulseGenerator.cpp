@@ -114,34 +114,38 @@ CPulseGenerator::GetClassTypeName( void ) const
 /*--------------------------------------------------------------------------*/
 
 void
-CPulseGenerator::RequestPulse( void )
+CPulseGenerator::RequestImmediatePulse( void )
+{GUCEF_TRACE;
+
+    if ( GUCEF_NULL != m_driver )
+    {
+        m_driver->RequestImmediatePulse( *this );
+        return;
+    }
+
+    LockData();
+    UInt64 newTickCount = MT::PrecisionTickCount();
+    Int64 deltaTicks = newTickCount - m_lastCycleTickCount;
+    Float64 updateDeltaTime = deltaTicks / m_ticksPerMs;
+    m_lastCycleTickCount = newTickCount;
+    UnlockData();
+            
+    CPulseData pulseData( newTickCount, deltaTicks, updateDeltaTime );
+    NotifyObservers( PulseEvent, &pulseData );
+}
+
+/*--------------------------------------------------------------------------*/
+
+void 
+CPulseGenerator::RequestPulsesPerImmediatePulseRequest( const Int32 requestedPulsesPerImmediatePulseRequest )
 {GUCEF_TRACE;
 
     LockData();
-    // Are we already doing period updates ?
-    if ( m_periodicUpdateRequestors.size() == 0 )
+    if ( GUCEF_NULL != m_driver )
     {
-        // We are not so we must trigger an update either by delegation to a  
-        // driver or by doing so directly
-        if ( GUCEF_NULL != m_driver )
-        {
-            UnlockData();
-            m_driver->RequestPulse( *this );
-        }
-        else
-        {
-            UInt64 newTickCount = MT::PrecisionTickCount();
-            Int64 deltaTicks = newTickCount - m_lastCycleTickCount;
-            Float64 updateDeltaTime = deltaTicks / m_ticksPerMs;
-            m_lastCycleTickCount = newTickCount;
-            UnlockData();
-            
-            CPulseData pulseData( newTickCount, deltaTicks, updateDeltaTime );
-            NotifyObservers( PulseEvent, &pulseData );
-        }
+        m_driver->RequestPulsesPerImmediatePulseRequest( *this, requestedPulsesPerImmediatePulseRequest );
     }
-    else
-        UnlockData();
+    UnlockData();
 }
 
 /*--------------------------------------------------------------------------*/
@@ -381,7 +385,7 @@ CPulseGenerator::SetPulseGeneratorDriver( CIPulseGeneratorDriver* driver )
     {
         UnlockData();        
         if ( GUCEF_NULL != m_driver )
-            m_driver->RequestPulse( *this );
+            m_driver->RequestImmediatePulse( *this );
     }
 }
 

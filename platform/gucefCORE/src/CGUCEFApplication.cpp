@@ -361,7 +361,7 @@ void
 CGUCEFApplication::Update( void )
 {GUCEF_TRACE;
 
-    m_pulseGenerator.RequestPulse();
+    m_pulseGenerator.RequestImmediatePulse();
 }
 
 /*-------------------------------------------------------------------------*/

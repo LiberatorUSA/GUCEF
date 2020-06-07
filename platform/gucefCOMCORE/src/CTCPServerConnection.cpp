@@ -429,7 +429,7 @@ CTCPServerConnection::CheckRecieveBuffer( void )
             if ( m_maxreadbytes <= totalrecieved )
             {
                 // This is a busy socket, don't yield to the scheduler
-                m_parentsock->m_pulseGenerator->RequestPulse();
+                m_parentsock->m_pulseGenerator->RequestImmediatePulse();
                 break;
             }
         }

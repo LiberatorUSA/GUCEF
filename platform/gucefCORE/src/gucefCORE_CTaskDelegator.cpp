@@ -86,7 +86,8 @@ CTaskDelegator::CTaskDelegator( void )
     , CIPulseGeneratorDriver()         
     , m_pulseGenerator()     
     , m_taskConsumer( GUCEF_NULL )
-    , m_immediatePulseRequested( false )
+    , m_immediatePulseTickets( 0 )
+    , m_immediatePulseTicketMax( 1 )
 {GUCEF_TRACE;
 
     RegisterEvents();
@@ -116,12 +117,28 @@ CTaskDelegator::GetPulseGenerator( void )
 /*-------------------------------------------------------------------------*/
 
 void
-CTaskDelegator::RequestPulse( CPulseGenerator& pulseGenerator ) 
+CTaskDelegator::RequestImmediatePulse( CPulseGenerator& pulseGenerator ) 
 {GUCEF_TRACE;
        
     if ( &pulseGenerator == &m_pulseGenerator )
     {
-        m_immediatePulseRequested = true;
+        m_immediatePulseTickets = m_immediatePulseTicketMax;
+    }
+}
+
+/*-------------------------------------------------------------------------*/
+
+void 
+CTaskDelegator::RequestPulsesPerImmediatePulseRequest( CPulseGenerator& pulseGenerator                     ,
+                                                       const Int32 requestedPulsesPerImmediatePulseRequest )
+{GUCEF_TRACE;
+
+    if ( &pulseGenerator == &m_pulseGenerator )
+    {
+        if ( requestedPulsesPerImmediatePulseRequest > 1 )
+            m_immediatePulseTicketMax = requestedPulsesPerImmediatePulseRequest;
+        else
+            m_immediatePulseTicketMax = 1;
     }
 }
 
@@ -243,13 +260,13 @@ CTaskDelegator::ProcessTask( CTaskConsumer& taskConsumer ,
         while ( !IsDeactivationRequested() && !taskConsumer.OnTaskCycle( taskData ) ) 
         {
             SendDriverPulse( m_pulseGenerator );
-            if ( !m_immediatePulseRequested )
+            if ( m_immediatePulseTickets > 0 )
             {
-                m_pulseGenerator.WaitTillNextPulseWindow( m_minimalCycleDeltaInMilliSecs );
+                --m_immediatePulseTickets;
             }
             else
             {
-                m_immediatePulseRequested = false;
+                m_pulseGenerator.WaitTillNextPulseWindow( m_minimalCycleDeltaInMilliSecs );
             }
         }
 
