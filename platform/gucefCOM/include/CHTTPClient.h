@@ -120,14 +120,42 @@ class GUCEF_COM_EXPORT_CPP CHTTPClient : public CORE::CObservingNotifier
     
     virtual ~CHTTPClient();
     
-    bool Post( const CORE::CString& host                ,
-               UInt16 port                              ,
-               const CORE::CString& path                , 
-               const CORE::CValueList* valuelist = NULL );
+    /**
+     *  Starts a POST operation.
+     *  @param valuelistAsContent Key-Value storage to use for generating the payload
+     */
+    bool Post( const CORE::CString& host                               ,
+               UInt16 port                                             ,
+               const CORE::CString& path                               , 
+               const CORE::CValueList* valuelistAsContent = GUCEF_NULL ,
+               const CORE::CString& contentType = "text/plain"         );
                
-    bool Post( const CORE::CString& urlstring           ,
-               const CORE::CValueList* valuelist = NULL );                   
-               
+    /**
+     *  Starts a POST operation.
+     *  @param valuelistAsContent Key-Value storage to use for generating the payload
+     */
+    bool Post( const CORE::CString& urlstring                          ,
+               const CORE::CValueList* valuelistAsContent = GUCEF_NULL ,
+               const CORE::CString& contentType = "text/plain"         );                   
+      
+    /**
+     *  Starts a POST operation.
+     *  @param valuelistAsContent Key-Value storage to use for generating the payload
+     */
+    bool Post( const CORE::CString& urlstring      ,
+               const CORE::CString& contentType    ,
+               const CORE::CDynamicBuffer& payload ); 
+
+    /**
+     *  Starts a POST operation.
+     *  @param payload Key-Value storage to use for generating the payload
+     */
+    bool Post( const CORE::CString& host           ,
+               UInt16 port                         ,
+               const CORE::CString& path           ,
+               const CORE::CString& contentType    ,
+               const CORE::CDynamicBuffer& payload );
+
     bool Get( const CORE::CString& host                ,
               UInt16 port                              ,
               const CORE::CString& path                ,

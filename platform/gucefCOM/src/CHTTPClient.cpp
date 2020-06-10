@@ -156,79 +156,103 @@ CHTTPClient::Close( void )
 /*-------------------------------------------------------------------------*/
 
 bool
-CHTTPClient::Post( const CORE::CString& host                      ,
-                   UInt16 port                                    ,
-                   const CORE::CString& path                      ,
-                   const CORE::CValueList* valuelist /* = NULL */ )
+CHTTPClient::Post( const CORE::CString& host                                     ,
+                   UInt16 port                                                   ,
+                   const CORE::CString& path                                     ,
+                   const CORE::CValueList* valuelistAsContent /* = GUCEF_NULL */ ,
+                   const CORE::CString& contentType                              )
 {GUCEF_TRACE;
 
-        m_socket.Close();
+    UInt32 contentsize( 0 );
+    CORE::CDynamicBuffer payload;
+    if ( GUCEF_NULL != valuelistAsContent )
+    {
+        CORE::CString kvContent = valuelistAsContent->GetAllPairs( "&" );
+        payload.Append( kvContent.C_String(), kvContent.Length() );
+    }
+    return Post( host, port, path, contentType, payload );
+}
 
-        // reset our counters because we are beginning a new transfer
-        m_recieved = 0;
-        m_filesize = 0;
+/*-------------------------------------------------------------------------*/
 
-        UInt32 contentsize( 0 );
-        if ( valuelist )
-        {
-                for ( UInt32 i=0; i<valuelist->GetCount(); ++i )
-                {
-                        contentsize += valuelist->GetPair( i ).Length()+1;
-                }
-        }
+bool 
+CHTTPClient::Post( const CORE::CString& urlstring      ,
+                   const CORE::CString& contentType    ,
+                   const CORE::CDynamicBuffer& payload )
+{GUCEF_TRACE;
 
-        UInt32 mainmsglength = 97 + host.Length() + path.Length();
-        char* sendbuffer = new char[ mainmsglength + contentsize ];
-        sprintf( sendbuffer, "POST %s HTTP/1.1\r\nAccept: */*\r\nUser-Agent: gucefCOM-HTTP/1.0\r\n\r\nHost: %s\r\nContent-Length: %d\r\n\r\n", path.ReplaceChar( '\\', '/' ).C_String(), host.C_String(), contentsize );
+    CORE::CString host;
+    UInt16 port = 0;
+    CORE::CString path;
 
-        UInt32 offset( mainmsglength );
-        if ( valuelist )
-        {
-                CORE::CString valueitem;
-                for ( UInt32 i=0; i<valuelist->GetCount(); ++i )
-                {
-                        valueitem = valuelist->GetPair( i );
-                        memcpy( sendbuffer+offset, valueitem.C_String(), valueitem.Length() );
-                        offset += valueitem.Length();
-                        if ( i+1 < valuelist->GetCount() )
-                        {
-                                sendbuffer[ offset ] = '&';
-                                ++offset;
-                        }
-                }
-        }
+    if ( ParseURL( urlstring ,
+                   host      ,
+                   port      ,
+                   path      ) )
+    {
+        return Post( host        ,
+                     port        ,
+                     path        ,
+                     contentType ,
+                     payload     );
+    }
+    return false;
+}
 
-        if ( m_socket.ConnectTo( host ,
-                                 port ) )
-        {
-            m_sendBuffer.Append( sendbuffer, mainmsglength + contentsize );
-            delete []sendbuffer;
-            return true;
-        }
-        return false;
+/*-------------------------------------------------------------------------*/
+
+bool 
+CHTTPClient::Post( const CORE::CString& host           ,
+                   UInt16 port                         ,
+                   const CORE::CString& path           ,
+                   const CORE::CString& contentType    ,
+                   const CORE::CDynamicBuffer& payload )
+{GUCEF_TRACE;
+
+    m_socket.Close();
+
+    // reset our counters because we are beginning a new transfer
+    m_recieved = 0;
+    m_filesize = 0;
+        
+    // Write the HTTP headers
+    CORE::CDynamicBuffer httpHeaderBuffer( 99 + host.Length() + path.Length() + contentType.Length() );
+    sprintf( httpHeaderBuffer.AsTypePtr< char >(), "POST %s HTTP/1.1\r\nAccept: */*\r\nUser-Agent: gucefCOM-HTTP/1.0\r\nHost: %s\r\nContent-Type: %s\r\nContent-Length: %d\r\n\r\n", path.ReplaceChar( '\\', '/' ).C_String(), host.C_String(), contentType.C_String(), payload.GetDataSize() );
+
+    if ( m_socket.ConnectTo( host ,
+                             port ) )
+    {
+        m_sendBuffer.Append( httpHeaderBuffer );
+        m_sendBuffer.Append( payload );
+        return true;
+    }
+    return false;
 }
 
 /*-------------------------------------------------------------------------*/
 
 bool
-CHTTPClient::Post( const CORE::CString& urlstring                 ,
-                   const CORE::CValueList* valuelist /* = NULL */ )
+CHTTPClient::Post( const CORE::CString& urlstring                                ,
+                   const CORE::CValueList* valuelistAsContent /* = GUCEF_NULL */ ,
+                   const CORE::CString& contentType                              )
 {GUCEF_TRACE;
-        CORE::CString host;
-        UInt16 port;
-        CORE::CString path;
 
-        if ( ParseURL( urlstring ,
-                       host      ,
-                       port      ,
-                       path      ) )
-        {
-                return Post( host       ,
-                             port       ,
-                             path       ,
-                             valuelist  );
-        }
-        return false;
+    CORE::CString host;
+    UInt16 port = 0;
+    CORE::CString path;
+
+    if ( ParseURL( urlstring ,
+                   host      ,
+                   port      ,
+                   path      ) )
+    {
+        return Post( host               ,
+                     port               ,
+                     path               ,
+                     valuelistAsContent ,
+                     contentType        );
+    }
+    return false;
 }
 
 /*-------------------------------------------------------------------------*/

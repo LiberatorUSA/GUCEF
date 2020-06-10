@@ -886,7 +886,7 @@ CPluginControl::AddAllPluginsFromDir( const CString& pluginDir ,
 
     bool success = true;
     struct SDI_Data* did = DI_First_Dir_Entry( pluginDir.C_String() );
-    if ( did )
+    if ( GUCEF_NULL != did )
     {
         do
         {

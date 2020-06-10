@@ -128,6 +128,8 @@ class FilePusher : public CORE::CObservingNotifier
 {
     public:
 
+    static const CORE::UInt32 DefaultNewFileRestPeriodInSecs;
+
     FilePusher( void );
     virtual ~FilePusher();
 
@@ -153,10 +155,42 @@ class FilePusher : public CORE::CObservingNotifier
     OnWatchedLocalDirFileCreation( CORE::CNotifier* notifier    ,
                                    const CORE::CEvent& eventId  ,
                                    CORE::CICloneable* eventData );
+
+    void
+    OnNewFileRestPeriodTimerCycle( CORE::CNotifier* notifier    ,
+                                   const CORE::CEvent& eventId  ,
+                                   CORE::CICloneable* eventData );
+
+    void
+    OnFilePushTimerCycle( CORE::CNotifier* notifier    ,
+                          const CORE::CEvent& eventId  ,
+                          CORE::CICloneable* eventData );
+    
+    void
+    QueueNewFileForPushingAfterUnmodifiedRestPeriod( const CORE::CString& newFilePath );
+
+    void
+    TriggerRolledOverFileCheck( const CORE::CString& dirWithFiles   ,
+                                const CORE::CString& patternToMatch );
+
+    void
+    QueueFileForPushing( const CORE::CString& filePath );
     
     private:
 
+    enum EPushStyle
+    {
+        PUSHSTYLE_UNKNOWN                               = 0,
+        PUSHSTYLE_ROLLED_OVER_FILES                        ,
+        PUSHSTYLE_MATCHING_NEW_FILES_WITH_REST_PERIOD
+    };
+    typedef enum EPushStyle TPushStyle;
     typedef CORE::CTEventHandlerFunctor< FilePusher > TEventCallback;
+    typedef std::map< CORE::CString, TPushStyle > TStringPushStyleMap;
+    typedef std::map< CORE::CString, time_t > TStringTimeMap;
+    typedef std::set< CORE::CString > TStringSet;
+    typedef std::map< CORE::CString, CORE::UInt64 > TStringUInt64Map;
+    typedef std::map< CORE::UInt32, CORE::CString > TUInt32StringMap;
     
     CORE::CDirectoryWatcher m_dirWatcher;
     COM::CHTTPClient m_httpClient;
@@ -166,6 +200,16 @@ class FilePusher : public CORE::CObservingNotifier
     CORE::CDataNode m_globalConfig;
     CORE::CTimer m_metricsTimer;
     bool m_transmitMetrics;
+    TStringPushStyleMap m_fileMatchPatterns;
+    CORE::CTimer m_newFileRestPeriodTimer;
+    TStringTimeMap m_newFileRestQueue;
+    CORE::UInt32 m_restingTimeForNewFilesInSecs;
+    TStringUInt64Map m_pushQueue;
+    CORE::CTimer m_pushTimer;
+    TStringSet m_dirsToWatch;
+    bool m_deleteFilesAfterSuccessfullPush;
+    CORE::CString m_filePushDestinationUri;
+    CORE::CDynamicBuffer m_currentFilePushBuffer;
 };
 
 /*-------------------------------------------------------------------------*/

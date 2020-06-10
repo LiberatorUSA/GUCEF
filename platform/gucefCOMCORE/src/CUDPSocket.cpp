@@ -756,8 +756,8 @@ CUDPSocket::Open( const CIPAddress& localaddr )
     }
     GUCEF_DEBUG_LOG( CORE::LOGLEVEL_BELOW_NORMAL, "UDPSocket(" + CORE::PointerToString( this ) + "): Successfully set multicast TTL to \"" + CORE::Int32ToString( m_multicastTTL ) + "\" on socket" );
 
-    // This option is needed on the socket in order to be able to receive broadcast messages
-    // If not set the socket will not receive broadcast messages in the local network.
+    // This option is needed on the socket in order to be able to transmit broadcast messages
+    // If not set the socket will not be able to transmit broadcast messages in the local network subnet.
     Int32 broadcastOption = m_allowBroadcast ? 1 : 0;
     if ( 0 > dvsocket_setsockopt( _data->sockid, SOL_SOCKET, SO_BROADCAST, (const char*) &broadcastOption, sizeof(broadcastOption), &errorCode ) )
     {

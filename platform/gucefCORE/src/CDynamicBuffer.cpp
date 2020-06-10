@@ -624,6 +624,16 @@ CDynamicBuffer::Append( const void* data                            ,
 
 /*-------------------------------------------------------------------------*/
 
+void
+CDynamicBuffer::Append( const CDynamicBuffer& data     ,
+                        const bool appendToLogicalData )
+{GUCEF_TRACE;
+
+    Append( data._buffer, data.m_dataSize, appendToLogicalData );
+}
+
+/*-------------------------------------------------------------------------*/
+
 Int32
 CDynamicBuffer::Find( const void* data        ,
                       const UInt32 size       ,

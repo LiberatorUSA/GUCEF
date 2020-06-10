@@ -252,6 +252,13 @@ class GUCEF_CORE_PUBLIC_CPP CDynamicBuffer
                      const bool appendToLogicalData = true );
 
         /**
+         *  Appends the given data to the back of the data bytes in the buffer
+         *  Note that if the buffer is linked this operation will result in the creation of a private copy
+         */
+        void Append( const CDynamicBuffer& data            ,
+                     const bool appendToLogicalData = true );
+
+        /**
          *  Attempts to find a matching block of bytes if any from the given offset and returns the offset
          *  at which the block was found. If no matching block is found -1 is returned.
          */

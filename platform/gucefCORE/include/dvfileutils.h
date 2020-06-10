@@ -360,7 +360,7 @@ Relative_Path( const char *pathstr ,
 /*-------------------------------------------------------------------------*/
 
 /**
- *  Returns the modification time of the inicated resource
+ *  Returns the modification time of the indicated resource
  */
 GUCEF_CORE_PUBLIC_C time_t
 Get_Modification_Time( const char* path );
