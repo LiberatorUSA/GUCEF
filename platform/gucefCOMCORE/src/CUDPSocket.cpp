@@ -117,7 +117,7 @@ CUDPSocket::CUDPSocket( CORE::CPulseGenerator& pulseGenerator ,
     memset( _data, 0, sizeof( TUDPSockData ) );
 
     // Set a default buffer size large enough to handle Jumbo frames
-    m_buffer.SetBufferSize( 9000 );
+    m_buffer.SetBufferSize( 9216 );
 
     TEventCallback callback( this, &CUDPSocket::OnPulse );
     SubscribeTo( m_pulseGenerator                  ,
@@ -155,7 +155,7 @@ CUDPSocket::CUDPSocket( bool blocking )
     memset( _data, 0, sizeof( TUDPSockData ) );
 
     // Set a default buffer size large enough to handle Jumbo frames
-    m_buffer.SetBufferSize( 9000 );
+    m_buffer.SetBufferSize( 9216 );
 
     TEventCallback callback( this, &CUDPSocket::OnPulse );
     SubscribeTo( m_pulseGenerator                  ,

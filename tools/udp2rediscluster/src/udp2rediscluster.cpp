@@ -485,6 +485,11 @@ Udp2RedisClusterChannel::OnTaskStart( CORE::CICloneable* taskData )
     m_metricsTimer = new CORE::CTimer( *GetPulseGenerator(), 1000 );
     m_metricsTimer->SetEnabled( m_channelSettings.collectMetrics );
 
+    // Set the minimum number of cycles we will go full speed if a single cycle was not enough to handle
+    // all the processing. This will cause a bypass of CPU yielding if/when the situation arises.
+    // In such a case the thread will run at max speed for a least the below set nr of cycles.
+    GetPulseGenerator()->RequestPulsesPerImmediatePulseRequest( 250 );
+
     RegisterEventHandlers();
 
     // Setup connection to Redis and open the UDP port.

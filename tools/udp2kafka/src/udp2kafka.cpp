@@ -803,7 +803,12 @@ Udp2KafkaChannel::OnTaskStart( CORE::CICloneable* taskData )
 	m_udpSocket = new GUCEF::COMCORE::CUDPSocket( *GetPulseGenerator(), false );
     m_metricsTimer = new CORE::CTimer( *GetPulseGenerator(), 1000 );
     m_metricsTimer->SetEnabled( m_channelSettings.collectMetrics );
-    
+
+    // Set the minimum number of cycles we will go full speed if a single cycle was not enough to handle
+    // all the processing. This will cause a bypass of CPU yielding if/when the situation arises.
+    // In such a case the thread will run at max speed for a least the below set nr of cycles.
+    GetPulseGenerator()->RequestPulsesPerImmediatePulseRequest( 100 );
+
     RegisterEventHandlers();
             
     CORE::CString::StringVector kafkaBrokerList = m_channelSettings.kafkaBrokers.ParseElements( ',', false );
