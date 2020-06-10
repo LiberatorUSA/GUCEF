@@ -78,7 +78,7 @@ namespace COM {
 //-------------------------------------------------------------------------*/
 
 /**
- *      HTTP protocol client
+ *      Simplistic HTTP protocol client for basic tasks
  */
 class GUCEF_COM_EXPORT_CPP CHTTPClient : public CORE::CObservingNotifier
 {
@@ -92,7 +92,7 @@ class GUCEF_COM_EXPORT_CPP CHTTPClient : public CORE::CObservingNotifier
     static const CORE::CEvent HTTPRedirectEvent;
     static const CORE::CEvent HTTPContentEvent;                
     static const CORE::CEvent HTTPDataRecievedEvent;
-    static const CORE::CEvent HTTPDataSendEvent;        
+    static const CORE::CEvent HTTPDataSentEvent;        
     static const CORE::CEvent HTTPTransferFinishedEvent;
 
 	static void RegisterEvents( void );
@@ -140,7 +140,7 @@ class GUCEF_COM_EXPORT_CPP CHTTPClient : public CORE::CObservingNotifier
       
     /**
      *  Starts a POST operation.
-     *  @param valuelistAsContent Key-Value storage to use for generating the payload
+     *  @param payload binary storage representing the content
      */
     bool Post( const CORE::CString& urlstring      ,
                const CORE::CString& contentType    ,
@@ -148,7 +148,7 @@ class GUCEF_COM_EXPORT_CPP CHTTPClient : public CORE::CObservingNotifier
 
     /**
      *  Starts a POST operation.
-     *  @param payload Key-Value storage to use for generating the payload
+     *  @param payload binary storage representing the content
      */
     bool Post( const CORE::CString& host           ,
                UInt16 port                         ,
@@ -169,8 +169,10 @@ class GUCEF_COM_EXPORT_CPP CHTTPClient : public CORE::CObservingNotifier
     void Close( void );                  
               
     bool IsConnected( void ) const;
-    
-    UInt32 GetBytesRecieved( void ) const;
+
+    UInt32 GetBytesReceived( bool resetCounter );
+
+    UInt32 GetBytesTransmitted( bool resetCounter );
 
     bool SetHTTPProxy( const CORE::CString& proxyHost ,
                        const UInt16 port = 80         );
@@ -209,7 +211,7 @@ class GUCEF_COM_EXPORT_CPP CHTTPClient : public CORE::CObservingNotifier
 
     void OnDisconnect( COMCORE::CTCPClientSocket& socket );
     
-    void OnWrite( COMCORE::CTCPClientSocket &socket                   ,
+    void OnWrite( COMCORE::CTCPClientSocket& socket                   ,
                   COMCORE::CTCPClientSocket::TDataSentEventData& data );
 
     private:

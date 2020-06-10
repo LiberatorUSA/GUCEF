@@ -190,6 +190,44 @@ FilePusher::RegisterEventHandlers( void )
     SubscribeTo( &m_pushTimer                   ,
                  CORE::CTimer::TimerUpdateEvent ,
                  callback4                      );
+
+    
+    TEventCallback callback5( this, &FilePusher::OnHttpClientConnected );
+    SubscribeTo( &m_httpClient                    ,
+                 COM::CHTTPClient::ConnectedEvent ,
+                 callback5                        );
+    TEventCallback callback6( this, &FilePusher::OnHttpClientDisconnected );
+    SubscribeTo( &m_httpClient                       ,
+                 COM::CHTTPClient::DisconnectedEvent ,
+                 callback6                           );
+    TEventCallback callback7( this, &FilePusher::OnHttpClientConnectionError );
+    SubscribeTo( &m_httpClient                          ,
+                 COM::CHTTPClient::ConnectionErrorEvent ,
+                 callback7                              );
+    TEventCallback callback8( this, &FilePusher::OnHttpClientHttpError );
+    SubscribeTo( &m_httpClient                    ,
+                 COM::CHTTPClient::HTTPErrorEvent ,
+                 callback8                        );
+    TEventCallback callback9( this, &FilePusher::OnHttpClientHttpRedirect );
+    SubscribeTo( &m_httpClient                       ,
+                 COM::CHTTPClient::HTTPRedirectEvent ,
+                 callback9                           );
+    TEventCallback callback10( this, &FilePusher::OnHttpClientHttpContent );
+    SubscribeTo( &m_httpClient                      ,
+                 COM::CHTTPClient::HTTPContentEvent ,
+                 callback10                         );
+    TEventCallback callback11( this, &FilePusher::OnHttpClientHttpDataRecieved );
+    SubscribeTo( &m_httpClient                           ,
+                 COM::CHTTPClient::HTTPDataRecievedEvent ,
+                 callback11                              );
+    TEventCallback callback12( this, &FilePusher::OnHttpClientHttpDataSent );
+    SubscribeTo( &m_httpClient                       ,
+                 COM::CHTTPClient::HTTPDataSentEvent ,
+                 callback12                          );
+    TEventCallback callback13( this, &FilePusher::OnHttpClientHttpTransferFinished );
+    SubscribeTo( &m_httpClient                               ,
+                 COM::CHTTPClient::HTTPTransferFinishedEvent ,
+                 callback13                                  );
 }
 
 /*-------------------------------------------------------------------------*/
@@ -202,8 +240,106 @@ FilePusher::OnMetricsTimerCycle( CORE::CNotifier* notifier    ,
 
     if ( m_transmitMetrics )
     {
-
+        GUCEF_METRIC_COUNT( "FilePusher.HttpClientBytesReceived", m_httpClient.GetBytesReceived( true ), 1.0f );
+        GUCEF_METRIC_COUNT( "FilePusher.HttpClientBytesTransmitted", m_httpClient.GetBytesTransmitted( true ), 1.0f );
+        GUCEF_METRIC_GAUGE( "FilePusher.FilesQueuedToPush", (CORE::UInt32) m_pushQueue.size(), 1.0f );
+        GUCEF_METRIC_GAUGE( "FilePusher.NewFileRestQueueSize", (CORE::UInt32) m_newFileRestQueue.size(), 1.0f );
     }
+}
+
+/*-------------------------------------------------------------------------*/
+
+void
+FilePusher::OnHttpClientConnected( CORE::CNotifier* notifier    ,
+                                   const CORE::CEvent& eventId  ,
+                                   CORE::CICloneable* eventData )
+{GUCEF_TRACE;
+
+    GUCEF_LOG( CORE::LOGLEVEL_NORMAL, "FilePusher: HTTP Client has connected to the server" );
+}
+
+/*-------------------------------------------------------------------------*/
+
+void
+FilePusher::OnHttpClientDisconnected( CORE::CNotifier* notifier    ,
+                                      const CORE::CEvent& eventId  ,
+                                      CORE::CICloneable* eventData )
+{GUCEF_TRACE;
+
+    GUCEF_LOG( CORE::LOGLEVEL_NORMAL, "FilePusher: HTTP Client has disconnected from the server" );
+}
+
+/*-------------------------------------------------------------------------*/
+
+void
+FilePusher::OnHttpClientConnectionError( CORE::CNotifier* notifier    ,
+                                         const CORE::CEvent& eventId  ,
+                                         CORE::CICloneable* eventData )
+{GUCEF_TRACE;
+
+    GUCEF_WARNING_LOG( CORE::LOGLEVEL_NORMAL, "FilePusher: HTTP Client has experienced a connection error" );
+}
+
+/*-------------------------------------------------------------------------*/
+
+void
+FilePusher::OnHttpClientHttpError( CORE::CNotifier* notifier    ,
+                                   const CORE::CEvent& eventId  ,
+                                   CORE::CICloneable* eventData )
+{GUCEF_TRACE;
+
+    GUCEF_WARNING_LOG( CORE::LOGLEVEL_NORMAL, "FilePusher: HTTP Client has experienced a HTTP error" );
+}
+
+/*-------------------------------------------------------------------------*/
+
+void
+FilePusher::OnHttpClientHttpRedirect( CORE::CNotifier* notifier    ,
+                                      const CORE::CEvent& eventId  ,
+                                      CORE::CICloneable* eventData )
+{GUCEF_TRACE;
+
+    GUCEF_LOG( CORE::LOGLEVEL_NORMAL, "FilePusher: HTTP Client connection is being redirected" );
+}
+
+/*-------------------------------------------------------------------------*/
+
+void
+FilePusher::OnHttpClientHttpContent( CORE::CNotifier* notifier    ,
+                                     const CORE::CEvent& eventId  ,
+                                     CORE::CICloneable* eventData )
+{GUCEF_TRACE;
+
+}
+
+/*-------------------------------------------------------------------------*/
+
+void
+FilePusher::OnHttpClientHttpDataSent( CORE::CNotifier* notifier    ,
+                                      const CORE::CEvent& eventId  ,
+                                      CORE::CICloneable* eventData )
+{GUCEF_TRACE;
+
+}
+
+/*-------------------------------------------------------------------------*/
+
+void
+FilePusher::OnHttpClientHttpDataRecieved( CORE::CNotifier* notifier    ,
+                                          const CORE::CEvent& eventId  ,
+                                          CORE::CICloneable* eventData )
+{GUCEF_TRACE;
+
+}
+
+/*-------------------------------------------------------------------------*/
+
+void
+FilePusher::OnHttpClientHttpTransferFinished( CORE::CNotifier* notifier    ,
+                                              const CORE::CEvent& eventId  ,
+                                              CORE::CICloneable* eventData )
+{GUCEF_TRACE;
+
 }
 
 /*-------------------------------------------------------------------------*/
@@ -427,7 +563,23 @@ FilePusher::Start( void )
 
     m_pushTimer.SetInterval( 1000 );
     m_pushTimer.SetEnabled( true );
-    
+
+    CORE::CDirectoryWatcher::CDirWatchOptions watchOptions;
+    watchOptions.watchForFileCreation = true;
+    watchOptions.watchForFileDeletion = false;
+    watchOptions.watchForFileModifications = false;
+    watchOptions.watchForFileRenames = false;
+    TStringSet::iterator i = m_dirsToWatch.begin();
+    while ( i != m_dirsToWatch.end() )
+    {
+        if ( !m_dirWatcher.AddDirToWatch( (*i), watchOptions ) )
+        {
+            GUCEF_ERROR_LOG( CORE::LOGLEVEL_IMPORTANT, "FilePusher: Failed to add watch for directory " + (*i) );
+            return false;
+        }
+        ++i;
+     }
+
     if ( m_httpServer.Listen() )
     {
         GUCEF_LOG( CORE::LOGLEVEL_IMPORTANT, "FilePusher: Opened REST API on port " + CORE::UInt16ToString( m_httpServer.GetPort() ) );

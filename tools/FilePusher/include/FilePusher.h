@@ -165,6 +165,51 @@ class FilePusher : public CORE::CObservingNotifier
     OnFilePushTimerCycle( CORE::CNotifier* notifier    ,
                           const CORE::CEvent& eventId  ,
                           CORE::CICloneable* eventData );
+
+    void
+    OnHttpClientConnected( CORE::CNotifier* notifier    ,
+                           const CORE::CEvent& eventId  ,
+                           CORE::CICloneable* eventData );
+
+    void
+    OnHttpClientDisconnected( CORE::CNotifier* notifier    ,
+                              const CORE::CEvent& eventId  ,
+                              CORE::CICloneable* eventData );
+                           
+    void
+    OnHttpClientConnectionError( CORE::CNotifier* notifier    ,
+                                 const CORE::CEvent& eventId  ,
+                                 CORE::CICloneable* eventData );
+
+    void
+    OnHttpClientHttpError( CORE::CNotifier* notifier    ,
+                           const CORE::CEvent& eventId  ,
+                           CORE::CICloneable* eventData );
+
+    void
+    OnHttpClientHttpRedirect( CORE::CNotifier* notifier    ,
+                              const CORE::CEvent& eventId  ,
+                              CORE::CICloneable* eventData );
+
+    void
+    OnHttpClientHttpContent( CORE::CNotifier* notifier    ,
+                             const CORE::CEvent& eventId  ,
+                             CORE::CICloneable* eventData );
+
+    void
+    OnHttpClientHttpDataSent( CORE::CNotifier* notifier    ,
+                              const CORE::CEvent& eventId  ,
+                              CORE::CICloneable* eventData );
+
+    void
+    OnHttpClientHttpDataRecieved( CORE::CNotifier* notifier    ,
+                                  const CORE::CEvent& eventId  ,
+                                  CORE::CICloneable* eventData );
+
+    void
+    OnHttpClientHttpTransferFinished( CORE::CNotifier* notifier    ,
+                                      const CORE::CEvent& eventId  ,
+                                      CORE::CICloneable* eventData );
     
     void
     QueueNewFileForPushingAfterUnmodifiedRestPeriod( const CORE::CString& newFilePath );

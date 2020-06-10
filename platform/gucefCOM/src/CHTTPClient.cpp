@@ -93,7 +93,7 @@ const CORE::CEvent CHTTPClient::HTTPErrorEvent = "GUCEF::COM::CHTTPClient::HTTPE
 const CORE::CEvent CHTTPClient::HTTPRedirectEvent = "GUCEF::COM::CHTTPClient::HTTPRedirectEvent";
 const CORE::CEvent CHTTPClient::HTTPContentEvent = "GUCEF::COM::CHTTPClient::HTTPContentEvent";
 const CORE::CEvent CHTTPClient::HTTPDataRecievedEvent = "GUCEF::COM::CHTTPClient::HTTPDataRecievedEvent";
-const CORE::CEvent CHTTPClient::HTTPDataSendEvent = "GUCEF::COM::CHTTPClient::HTTPDataSendEvent";
+const CORE::CEvent CHTTPClient::HTTPDataSentEvent = "GUCEF::COM::CHTTPClient::HTTPDataSentEvent";
 const CORE::CEvent CHTTPClient::HTTPTransferFinishedEvent = "GUCEF::COM::CHTTPClient::HTTPTransferFinishedEvent";
 
 /*-------------------------------------------------------------------------//
@@ -168,7 +168,7 @@ CHTTPClient::Post( const CORE::CString& host                                    
     if ( GUCEF_NULL != valuelistAsContent )
     {
         CORE::CString kvContent = valuelistAsContent->GetAllPairs( "&" );
-        payload.Append( kvContent.C_String(), kvContent.Length() );
+        payload.LinkTo( kvContent.C_String(), kvContent.Length() );
     }
     return Post( host, port, path, contentType, payload );
 }
@@ -467,10 +467,19 @@ CHTTPClient::ParseURL( const CORE::CString& urlstring ,
 /*-------------------------------------------------------------------------*/
 
 UInt32
-CHTTPClient::GetBytesRecieved( void ) const
+CHTTPClient::GetBytesReceived( bool resetCounter )
 {GUCEF_TRACE;
 
-    return m_recieved;
+    return m_socket.GetBytesReceived( resetCounter );
+}
+
+/*-------------------------------------------------------------------------*/
+
+UInt32 
+CHTTPClient::GetBytesTransmitted( bool resetCounter )
+{GUCEF_TRACE;
+
+    return m_socket.GetBytesTransmitted( resetCounter );
 }
 
 /*-------------------------------------------------------------------------*/
@@ -812,8 +821,10 @@ CHTTPClient::OnWrite( COMCORE::CTCPClientSocket &socket                   ,
                       COMCORE::CTCPClientSocket::TDataSentEventData& data )
 {GUCEF_TRACE;
 
+    
+    
     // Notify observers about the data dispatch
-    NotifyObservers( HTTPDataSendEvent, &data );
+    NotifyObservers( HTTPDataSentEvent, &data );
 }
 
 /*-------------------------------------------------------------------------*/
@@ -865,7 +876,7 @@ CHTTPClient::RegisterEvents( void )
     HTTPRedirectEvent.Initialize();
     HTTPContentEvent.Initialize();
     HTTPDataRecievedEvent.Initialize();
-    HTTPDataSendEvent.Initialize();
+    HTTPDataSentEvent.Initialize();
     HTTPTransferFinishedEvent.Initialize();
 }
 
@@ -920,7 +931,9 @@ CHTTPClient::OnNotify( CORE::CNotifier* notifier                 ,
         if ( eventid == COMCORE::CTCPClientSocket::DataSentEvent )
         {
             GUCEF_DEBUG_LOG( CORE::LOGLEVEL_NORMAL, "CHTTPClient(" + CORE::PointerToString( this ) + "): TCP Socket send data to the server" );
-            NotifyObservers( HTTPDataSendEvent, eventdata );
+            COMCORE::CTCPClientSocket::TDataSentEventData* eData = static_cast< COMCORE::CTCPClientSocket::TDataSentEventData* >( eventdata );
+            if ( GUCEF_NULL != eData )
+                OnWrite( m_socket, *eData );
         }
     }
 }
