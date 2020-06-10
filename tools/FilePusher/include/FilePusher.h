@@ -254,6 +254,7 @@ class FilePusher : public CORE::CObservingNotifier
     TStringSet m_dirsToWatch;
     bool m_deleteFilesAfterSuccessfullPush;
     CORE::CString m_filePushDestinationUri;
+    CORE::CString m_currentFileBeingPushed;
     CORE::CDynamicBuffer m_currentFilePushBuffer;
 };
 

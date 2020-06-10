@@ -103,14 +103,18 @@ const CORE::CEvent CHTTPClient::HTTPTransferFinishedEvent = "GUCEF::COM::CHTTPCl
 //-------------------------------------------------------------------------*/
 
 CHTTPClient::CHTTPClient( void )
-        : CObservingNotifier()   ,
-          m_socket( false )      ,
-          m_downloading( false ) ,
-          m_recieved( 0 )        ,
-          m_filesize( 0 )        ,
-          m_proxyHost()          ,
-          m_proxyPort( 80 )      ,
-          m_sendBuffer( true )
+    : CObservingNotifier()   
+    , m_socket( false )      
+    , m_downloading( false ) 
+    , m_recieved( 0 )        
+    , m_filesize( 0 )        
+    , m_proxyHost()          
+    , m_proxyPort( 80 )      
+    , m_sendBuffer( true )
+    , m_bytesSent( 0 )
+    , m_bytesInHeaders( 0 )
+    , m_bytesInBody( 0 )
+    , m_currentOp( HTTP_VERB_UNKNOWN )
 {GUCEF_TRACE;
 
     SubscribeTo( &m_socket );
@@ -119,15 +123,19 @@ CHTTPClient::CHTTPClient( void )
 /*-------------------------------------------------------------------------*/
 
 CHTTPClient::CHTTPClient( CORE::CPulseGenerator& pulseGenerator )
-        : CObservingNotifier()       ,
-          m_socket( pulseGenerator ,
-                    false          ) ,
-          m_downloading( false )     ,
-          m_recieved( 0 )            ,
-          m_filesize( 0 )            ,
-          m_proxyHost()              ,
-          m_proxyPort( 80 )          ,
-          m_sendBuffer( true )
+    : CObservingNotifier()       
+    , m_socket( pulseGenerator ,
+                false          ) 
+    , m_downloading( false )     
+    , m_recieved( 0 )            
+    , m_filesize( 0 )            
+    , m_proxyHost()              
+    , m_proxyPort( 80 )          
+    , m_sendBuffer( true )
+    , m_bytesSent( 0 )
+    , m_bytesInHeaders( 0 )
+    , m_bytesInBody( 0 )
+    , m_currentOp( HTTP_VERB_UNKNOWN )
 {GUCEF_TRACE;
 
     SubscribeTo( &m_socket );
@@ -151,6 +159,10 @@ CHTTPClient::Close( void )
     m_filesize = 0;
     m_recieved = 0;
     m_sendBuffer.Clear();
+    m_bytesSent = 0;
+    m_bytesInHeaders = 0;
+    m_bytesInBody = 0;
+    m_currentOp = HTTP_VERB_UNKNOWN;
 }
 
 /*-------------------------------------------------------------------------*/
@@ -214,6 +226,10 @@ CHTTPClient::Post( const CORE::CString& host           ,
     // reset our counters because we are beginning a new transfer
     m_recieved = 0;
     m_filesize = 0;
+    m_bytesSent = 0;
+    m_bytesInHeaders = 0;
+    m_bytesInBody = 0;
+    m_currentOp = HTTP_VERB_POST;
         
     // Write the HTTP headers
     CORE::CDynamicBuffer httpHeaderBuffer( 99 + host.Length() + path.Length() + contentType.Length() );
@@ -222,6 +238,9 @@ CHTTPClient::Post( const CORE::CString& host           ,
     if ( m_socket.ConnectTo( host ,
                              port ) )
     {
+        m_bytesInHeaders = httpHeaderBuffer.GetDataSize();
+        m_bytesInBody = payload.GetDataSize();
+
         m_sendBuffer.Append( httpHeaderBuffer );
         m_sendBuffer.Append( payload );
         return true;
@@ -272,6 +291,10 @@ CHTTPClient::Get( const CORE::CString& host                      ,
     // reset our counters because we are beginning a new transfer
     m_recieved = 0;
     m_filesize = 0;
+    m_bytesSent = 0;
+    m_bytesInHeaders = 0;
+    m_bytesInBody = 0;
+    m_currentOp = HTTP_VERB_GET;
 
     UInt32 contentsize( 0 );
     CORE::CString valuepath( path );
@@ -817,14 +840,25 @@ CHTTPClient::OnDisconnect( COMCORE::CTCPClientSocket &socket )
 /*-------------------------------------------------------------------------*/
 
 void
-CHTTPClient::OnWrite( COMCORE::CTCPClientSocket &socket                   ,
+CHTTPClient::OnWrite( COMCORE::CTCPClientSocket& socket                   ,
                       COMCORE::CTCPClientSocket::TDataSentEventData& data )
 {GUCEF_TRACE;
 
-    
+    m_bytesSent += data.GetData().GetDataSize();
     
     // Notify observers about the data dispatch
     NotifyObservers( HTTPDataSentEvent, &data );
+
+    if ( HTTP_VERB_POST == m_currentOp ||
+         HTTP_VERB_PUT == m_currentOp  ||
+         HTTP_VERB_PATCH == m_currentOp )
+    {
+        Int32 bodyBytesTransferred = (Int32)m_bytesSent - m_bytesInHeaders;
+        if ( bodyBytesTransferred >= m_bytesInBody )
+        {
+            NotifyObservers( HTTPTransferFinishedEvent );   
+        }
+    }
 }
 
 /*-------------------------------------------------------------------------*/

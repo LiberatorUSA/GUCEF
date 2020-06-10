@@ -150,6 +150,7 @@ FilePusher::FilePusher( void )
     , m_deleteFilesAfterSuccessfullPush( true )
     , m_filePushDestinationUri()
     , m_currentFilePushBuffer()
+    , m_currentFileBeingPushed()
 {GUCEF_TRACE;
 
     RegisterEventHandlers();    
@@ -278,6 +279,7 @@ FilePusher::OnHttpClientConnectionError( CORE::CNotifier* notifier    ,
 {GUCEF_TRACE;
 
     GUCEF_WARNING_LOG( CORE::LOGLEVEL_NORMAL, "FilePusher: HTTP Client has experienced a connection error" );
+    m_currentFileBeingPushed.Clear();
 }
 
 /*-------------------------------------------------------------------------*/
@@ -288,7 +290,11 @@ FilePusher::OnHttpClientHttpError( CORE::CNotifier* notifier    ,
                                    CORE::CICloneable* eventData )
 {GUCEF_TRACE;
 
-    GUCEF_WARNING_LOG( CORE::LOGLEVEL_NORMAL, "FilePusher: HTTP Client has experienced a HTTP error" );
+    COM::CHTTPClient::THTTPErrorEventData* httpErrorEventData = static_cast< COM::CHTTPClient::THTTPErrorEventData* >( eventData );
+    CORE::UInt32 httpErrorCode = (CORE::UInt32) httpErrorEventData->GetData();
+
+    GUCEF_WARNING_LOG( CORE::LOGLEVEL_NORMAL, "FilePusher: HTTP Client has experienced a HTTP error: " + CORE::UInt32ToString( httpErrorCode ) );
+    m_currentFileBeingPushed.Clear();
 }
 
 /*-------------------------------------------------------------------------*/
@@ -340,6 +346,23 @@ FilePusher::OnHttpClientHttpTransferFinished( CORE::CNotifier* notifier    ,
                                               CORE::CICloneable* eventData )
 {GUCEF_TRACE;
 
+    GUCEF_LOG( CORE::LOGLEVEL_NORMAL, "FilePusher: HTTP Transfer finished" );
+
+    TStringUInt64Map::iterator i = m_pushQueue.find( m_currentFileBeingPushed );
+    if ( i != m_pushQueue.end() )
+    {
+        m_pushQueue.erase( i );
+
+        GUCEF_LOG( CORE::LOGLEVEL_NORMAL, "FilePusher: Successfully pushed file \"" + m_currentFileBeingPushed + "\"" ); 
+        if ( m_deleteFilesAfterSuccessfullPush )
+        {
+            if ( CORE::DeleteFile( m_currentFileBeingPushed ) )
+            {
+                GUCEF_LOG( CORE::LOGLEVEL_NORMAL, "FilePusher: Successfully deleted pushed file \"" + m_currentFileBeingPushed + "\"" );
+            }
+        }
+        m_currentFileBeingPushed.Clear();
+    }
 }
 
 /*-------------------------------------------------------------------------*/
@@ -353,6 +376,9 @@ FilePusher::OnFilePushTimerCycle( CORE::CNotifier* notifier    ,
     // We only do a max of 1 file per cycle since this is a single-threaded app on purpose
     // As such we need to allow for time for other actions
 
+    if ( !m_currentFileBeingPushed.IsNULLOrEmpty() )
+        return;
+
     TStringUInt64Map::iterator i = m_pushQueue.begin();
     while ( i != m_pushQueue.end() )
     {
@@ -364,6 +390,7 @@ FilePusher::OnFilePushTimerCycle( CORE::CNotifier* notifier    ,
             ++i;
             continue;
         }
+        m_currentFileBeingPushed = filePath;
 
         CORE::CString fileExt = CORE::ExtractFileExtention( filePath ).Lowercase();
         CORE::CString contentType = "application/octet-stream";
@@ -371,7 +398,7 @@ FilePusher::OnFilePushTimerCycle( CORE::CNotifier* notifier    ,
         {
             contentType = "text/plain";
         }
-        
+
         // Begin the push
         CORE::CString filename = CORE::ExtractFilename( filePath );
         CORE::CString pushUrlForFile = m_filePushDestinationUri.ReplaceSubstr( "{filename}", filename );

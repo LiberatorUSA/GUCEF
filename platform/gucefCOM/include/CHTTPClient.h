@@ -230,9 +230,13 @@ class GUCEF_COM_EXPORT_CPP CHTTPClient : public CORE::CObservingNotifier
     COMCORE::CTCPClientSocket m_socket;
     bool m_downloading;
     UInt32 m_recieved;
+    UInt32 m_bytesSent;
+    UInt32 m_bytesInHeaders;
+    UInt32 m_bytesInBody;
     UInt32 m_filesize;
     CORE::CString m_proxyHost;
     UInt16 m_proxyPort;
+    THttpVerb m_currentOp;
 };
 
 /*-------------------------------------------------------------------------//

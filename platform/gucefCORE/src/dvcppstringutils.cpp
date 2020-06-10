@@ -78,6 +78,8 @@
 #define GUCEF_CORE_GUCEF_ESSENTIALS_H
 #endif /* GUCEF_CORE_GUCEF_ESSENTIALS_H ? */
 
+#undef DeleteFile
+
 /*-------------------------------------------------------------------------//
 //                                                                         //
 //      NAMESPACE                                                          //
@@ -1033,6 +1035,16 @@ CreateDirs( const CString& path )
 
     CString actualPath = RelativePath( path );
     return 0 != Create_Directory( actualPath.C_String() );
+}
+
+/*-------------------------------------------------------------------------*/
+
+bool
+DeleteFile( const CString& path )
+{GUCEF_TRACE;
+
+    CString actualPath = RelativePath( path );
+    return 0 != Delete_File( actualPath.C_String() );
 }
 
 /*-------------------------------------------------------------------------*/
