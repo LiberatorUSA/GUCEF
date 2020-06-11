@@ -85,6 +85,11 @@ GUCEF_CORE_PUBLIC_CPP bool
 GetExeNameForProcessId( TProcessId* pid  , 
                         CString& exeName );
 
+/*--------------------------------------------------------------------------*/
+
+GUCEF_CORE_PUBLIC_CPP CString
+GetHostname( void );
+
 /*-------------------------------------------------------------------------//
 //                                                                         //
 //      NAMESPACE                                                          //

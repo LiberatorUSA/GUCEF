@@ -107,6 +107,9 @@ class Udp2KafkaChannel : public CORE::CTaskConsumer ,
     };
     typedef enum EChannelMode TChannelMode;
 
+    static const std::string KafkaMsgHeader_UdpOrigin;
+    static const std::string KafkaMsgHeader_ProducerHostname;
+
     Udp2KafkaChannel();
     Udp2KafkaChannel( const Udp2KafkaChannel& src );
     virtual ~Udp2KafkaChannel();
@@ -143,6 +146,10 @@ class Udp2KafkaChannel : public CORE::CTaskConsumer ,
         HostAddressVector consumerModeUdpDestinations;
         StringMap kafkaGlobalConfigSettings;
         StringMap kafkaTopicConfigSettings;
+        std::string kafkaMsgHeaderUsedForFiltering;
+        std::string kafkaMsgValueUsedForFiltering;
+        bool addUdpOriginKafkaMsgHeader;
+        bool addProducerHostnameKafkaMsgHeader;
     };
 
     bool LoadConfig( const ChannelSettings& channelSettings );
@@ -226,11 +233,12 @@ class Udp2KafkaChannel : public CORE::CTaskConsumer ,
 
     void RegisterEventHandlers( void );
     
-    RdKafka::ErrorCode KafkaProduce( const CORE::CDynamicBuffer& udpPacket );
+    RdKafka::ErrorCode KafkaProduce( const COMCORE::CIPAddress& sourceAddress ,
+                                     const CORE::CDynamicBuffer& udpPacket    );
 
     private:
 
-    typedef std::deque< CORE::CDynamicBuffer > TDynamicBufferQueue;
+    typedef std::deque< COMCORE::CUDPSocket::TUDPPacketRecievedEventData > TUDPPacketQueue;
     typedef ChannelSettings::HostAddressVector HostAddressVector;
 
     RdKafka::Conf* m_kafkaConf;
@@ -241,13 +249,14 @@ class Udp2KafkaChannel : public CORE::CTaskConsumer ,
 
     ChannelSettings m_channelSettings;
     GUCEF::COMCORE::CUDPSocket* m_udpSocket;
-    TDynamicBufferQueue m_kafkaMsgQueueOverflowQueue;
+    TUDPPacketQueue m_kafkaMsgQueueOverflowQueue;
     CORE::CTimer* m_metricsTimer;
     ChannelMetrics m_metrics;
     CORE::UInt32 m_kafkaErrorReplies;
     CORE::UInt32 m_kafkaMsgsTransmitted;
     CORE::UInt32 m_kafkaMessagesReceived;
     HostAddressVector m_kafkaBrokers;
+    std::string m_producerHostname;
 };
 
 /*-------------------------------------------------------------------------*/

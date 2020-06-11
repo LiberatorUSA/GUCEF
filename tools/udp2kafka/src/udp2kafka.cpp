@@ -47,7 +47,16 @@
 
 /*-------------------------------------------------------------------------//
 //                                                                         //
-//      UTILITIES                                                          //
+//      GLOBAL VARS                                                        //
+//                                                                         //
+//-------------------------------------------------------------------------*/
+
+const std::string Udp2KafkaChannel::KafkaMsgHeader_UdpOrigin = "UdpOrigin";
+const std::string Udp2KafkaChannel::KafkaMsgHeader_ProducerHostname = "ProducerHostname";
+
+/*-------------------------------------------------------------------------//
+//                                                                         //
+//      IMPLEMENTATION                                                     //
 //                                                                         //
 //-------------------------------------------------------------------------*/
 
@@ -71,6 +80,7 @@ Udp2KafkaChannel::Udp2KafkaChannel()
     , m_kafkaMsgsTransmitted( 0 )
     , m_kafkaMessagesReceived( 0 )
     , m_kafkaBrokers()
+    , m_producerHostname( CORE::GetHostname() )
 {GUCEF_TRACE;
 
     RegisterEventHandlers();
@@ -98,6 +108,7 @@ Udp2KafkaChannel::Udp2KafkaChannel( const Udp2KafkaChannel& src )
     , m_kafkaMsgsTransmitted( 0 )
     , m_kafkaMessagesReceived( 0 )
     , m_kafkaBrokers( src.m_kafkaBrokers )
+    , m_producerHostname( CORE::GetHostname() )
 {GUCEF_TRACE;
 
 }
@@ -164,6 +175,10 @@ Udp2KafkaChannel::ChannelSettings::ChannelSettings( void )
     , consumerModeUdpDestinations()
     , kafkaGlobalConfigSettings()
     , kafkaTopicConfigSettings()
+    , kafkaMsgHeaderUsedForFiltering( KafkaMsgHeader_ProducerHostname )
+    , kafkaMsgValueUsedForFiltering( CORE::GetHostname() )
+    , addUdpOriginKafkaMsgHeader( true )
+    , addProducerHostnameKafkaMsgHeader( true )
 {GUCEF_TRACE;
 
 }
@@ -184,6 +199,10 @@ Udp2KafkaChannel::ChannelSettings::ChannelSettings( const ChannelSettings& src )
     , consumerModeUdpDestinations( src.consumerModeUdpDestinations )
     , kafkaGlobalConfigSettings( src.kafkaGlobalConfigSettings )
     , kafkaTopicConfigSettings( src.kafkaTopicConfigSettings )
+    , kafkaMsgHeaderUsedForFiltering( src.kafkaMsgHeaderUsedForFiltering )
+    , kafkaMsgValueUsedForFiltering( src.kafkaMsgValueUsedForFiltering )
+    , addUdpOriginKafkaMsgHeader( src.addUdpOriginKafkaMsgHeader )
+    , addProducerHostnameKafkaMsgHeader( src.addProducerHostnameKafkaMsgHeader )
 {GUCEF_TRACE;
 
 }
@@ -209,6 +228,10 @@ Udp2KafkaChannel::ChannelSettings::operator=( const ChannelSettings& src )
         consumerModeUdpDestinations = src.consumerModeUdpDestinations;
         kafkaGlobalConfigSettings = src.kafkaGlobalConfigSettings;
         kafkaTopicConfigSettings = src.kafkaTopicConfigSettings;
+        kafkaMsgHeaderUsedForFiltering = src.kafkaMsgHeaderUsedForFiltering;
+        kafkaMsgValueUsedForFiltering = src.kafkaMsgValueUsedForFiltering;
+        addUdpOriginKafkaMsgHeader = src.addUdpOriginKafkaMsgHeader;
+        addProducerHostnameKafkaMsgHeader = src.addProducerHostnameKafkaMsgHeader;
     }
     return *this;
 }
@@ -499,7 +522,27 @@ Udp2KafkaChannel::consume_cb( RdKafka::Message& message, void* opaque )
             #endif
             
             ++m_kafkaMessagesReceived;
-            UdpTransmit( message );
+
+            bool isFiltered = false;
+            const RdKafka::Headers* headers = message.headers();
+            if ( GUCEF_NULL != headers && !m_channelSettings.kafkaMsgHeaderUsedForFiltering.empty() ) 
+            {
+                std::vector<RdKafka::Headers::Header> hdrs = headers->get( m_channelSettings.kafkaMsgHeaderUsedForFiltering );
+                for ( size_t i=0; i<hdrs.size(); ++i ) 
+                {
+                    const char* hdrValue = hdrs[ i ].value_string();
+                    if ( GUCEF_NULL != hdrValue && m_channelSettings.kafkaMsgValueUsedForFiltering == hdrValue )
+                    {
+                        isFiltered = true;
+                        GUCEF_DEBUG_LOG( CORE::LOGLEVEL_BELOW_NORMAL, "Udp2KafkaChannel:consume_cb: Filtered message on topic \"" +          
+                                m_channelSettings.channelTopicName + " with offset " + CORE::Int64ToString( message.offset() ) );    
+                        break;
+                    }
+                }
+            }
+
+            if ( !isFiltered )
+                UdpTransmit( message );
             break;
         }
         case RdKafka::ERR__PARTITION_EOF:
@@ -667,16 +710,39 @@ Udp2KafkaChannel::dr_cb( RdKafka::Message& message )
 /*-------------------------------------------------------------------------*/
 
 RdKafka::ErrorCode
-Udp2KafkaChannel::KafkaProduce( const CORE::CDynamicBuffer& udpPacket )
+Udp2KafkaChannel::KafkaProduce( const COMCORE::CIPAddress& sourceAddress ,
+                                const CORE::CDynamicBuffer& udpPacket    )
 {GUCEF_TRACE;
 
-    RdKafka::ErrorCode retCode = m_kafkaProducer->produce( m_kafkaProducerTopic, 
-                                                           RdKafka::Topic::PARTITION_UA,
-                                                           RdKafka::Producer::RK_MSG_COPY,                       // <- Copy payload, tradeoff against blocking on kafka produce
-                                                           const_cast< void* >( udpPacket.GetConstBufferPtr() ), // <- MSG_COPY flag will cause buffer to be copied, const cast to avoid copying again
-                                                           udpPacket.GetDataSize(), 
-                                                           NULL, NULL );
+    RdKafka::Headers* headers = 0;
+    if ( m_channelSettings.addProducerHostnameKafkaMsgHeader ||
+         m_channelSettings.addUdpOriginKafkaMsgHeader         )
+    {
+        headers = RdKafka::Headers::create();
 
+        if ( m_channelSettings.addUdpOriginKafkaMsgHeader )
+            headers->add( KafkaMsgHeader_UdpOrigin, sourceAddress.AddressAndPortAsString() );
+
+        if ( m_channelSettings.addProducerHostnameKafkaMsgHeader )
+            headers->add( KafkaMsgHeader_ProducerHostname, m_producerHostname );
+    }
+
+    RdKafka::ErrorCode retCode = 
+        m_kafkaProducer->dvcustom_produce( m_kafkaProducerTopic, 
+                                           RdKafka::Topic::PARTITION_UA,
+                                           RdKafka::Producer::RK_MSG_COPY,                       // <- Copy payload, tradeoff against blocking on kafka produce
+                                           const_cast< void* >( udpPacket.GetConstBufferPtr() ), // <- MSG_COPY flag will cause buffer to be copied, const cast to avoid copying again
+                                           (size_t)udpPacket.GetDataSize(), 
+                                           NULL, 0,
+                                           headers,
+                                           NULL );
+    
+    if ( retCode != RdKafka::ERR_NO_ERROR )
+    {
+        // Headers are auto-deleted on success but not on failure!
+        delete headers;
+    }
+    
     switch ( retCode )
     {
         case RdKafka::ERR_NO_ERROR:
@@ -720,17 +786,17 @@ Udp2KafkaChannel::OnUDPPacketRecieved( CORE::CNotifier* notifier   ,
     {
         const COMCORE::CUDPSocket::TUDPPacketRecievedEventData& data = udpPacketData->GetData();
         const CORE::CDynamicBuffer& udpPacketBuffer = data.dataBuffer.GetData();
+        const COMCORE::CIPAddress& sourceAddress = data.sourceAddress;
 
-        GUCEF_DEBUG_LOG( CORE::LOGLEVEL_NORMAL, "Udp2KafkaChannel: UDP Socket received a packet from " + data.sourceAddress.AddressAndPortAsString() );
+        GUCEF_DEBUG_LOG( CORE::LOGLEVEL_NORMAL, "Udp2KafkaChannel: UDP Socket received a packet from " + sourceAddress.AddressAndPortAsString() );
         
         if ( GUCEF_NULL != m_kafkaProducer )
         {
             RdKafka::ErrorCode retCode = RdKafka::ERR_NO_ERROR;
-
             while ( !m_kafkaMsgQueueOverflowQueue.empty() && ( retCode == RdKafka::ERR_NO_ERROR ) )
             {
-                const CORE::CDynamicBuffer& queuedUdpPacket = m_kafkaMsgQueueOverflowQueue.front();
-                retCode = KafkaProduce( queuedUdpPacket );
+                const COMCORE::CUDPSocket::TUDPPacketRecievedEventData& queuedUdpPacketEntry = m_kafkaMsgQueueOverflowQueue.front();
+                retCode = KafkaProduce( queuedUdpPacketEntry.sourceAddress, queuedUdpPacketEntry.dataBuffer.GetData() );
                 if ( retCode == RdKafka::ERR_NO_ERROR )
                 {
                     m_kafkaMsgQueueOverflowQueue.pop_front();
@@ -741,12 +807,12 @@ Udp2KafkaChannel::OnUDPPacketRecieved( CORE::CNotifier* notifier   ,
 
             if ( retCode == RdKafka::ERR_NO_ERROR )
             {
-                retCode = retCode = KafkaProduce( udpPacketBuffer );
+                retCode = retCode = KafkaProduce( sourceAddress, udpPacketBuffer );
                 switch ( retCode )
                 {
                     case RdKafka::ERR__QUEUE_FULL: 
                     {
-                        m_kafkaMsgQueueOverflowQueue.push_back( udpPacketBuffer );
+                        m_kafkaMsgQueueOverflowQueue.push_back( data );
                         break;
                     }
                     case RdKafka::ERR_NO_ERROR: 
@@ -757,7 +823,7 @@ Udp2KafkaChannel::OnUDPPacketRecieved( CORE::CNotifier* notifier   ,
             }
             else
             {
-                m_kafkaMsgQueueOverflowQueue.push_back( udpPacketBuffer );
+                m_kafkaMsgQueueOverflowQueue.push_back( data );
             }
         }
     }
@@ -923,6 +989,7 @@ Udp2KafkaChannel::OnTaskStart( CORE::CICloneable* taskData )
 
     m_udpSocket->SetMaxUpdatesPerCycle( 50 );
     m_udpSocket->SetAutoReOpenOnError( true );
+    m_udpSocket->SetAllowBroadcast( true );
     if ( m_udpSocket->Open( m_channelSettings.udpInterface ) )
     {
 		GUCEF_LOG( CORE::LOGLEVEL_NORMAL, "Udp2KafkaChannel:OnTaskStart: Successfully opened UDP socket on " + m_channelSettings.udpInterface.AddressAndPortAsString() );
@@ -1006,8 +1073,8 @@ Udp2KafkaChannel::OnTaskEnd( CORE::CICloneable* taskData )
         RdKafka::ErrorCode retCode = RdKafka::ERR_NO_ERROR;
         while ( !m_kafkaMsgQueueOverflowQueue.empty() && ( retCode == RdKafka::ERR_NO_ERROR ) )
         {
-            const CORE::CDynamicBuffer& queuedUdpPacket = m_kafkaMsgQueueOverflowQueue.front();
-            retCode = KafkaProduce( queuedUdpPacket );
+            COMCORE::CUDPSocket::TUDPPacketRecievedEventData& queuedUdpPacketEntry = m_kafkaMsgQueueOverflowQueue.front();
+            retCode = KafkaProduce( queuedUdpPacketEntry.sourceAddress, queuedUdpPacketEntry.dataBuffer.GetData() );
             if ( retCode == RdKafka::ERR_NO_ERROR )
             {
                 m_kafkaMsgQueueOverflowQueue.pop_front();
