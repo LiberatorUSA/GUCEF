@@ -2793,6 +2793,19 @@ class RD_EXPORT Producer : public virtual Handle {
                              const void *key, size_t key_len,
                              void *msg_opaque) = 0;
 
+
+  /**
+   * @brief DV Edit: Variant of produce(): Add missing variant that accepts headers
+   */
+  virtual ErrorCode dvcustom_produce (RdKafka::Topic *topic,
+                             int32_t partition,
+                             int msgflags,
+                             void *payload, size_t len,
+                             const void *key,
+                             size_t key_len,
+                             RdKafka::Headers *headers,
+                             void *msg_opaque) = 0;
+
   /**
    * @brief produce() variant that takes topic as a string (no need for
    *        creating a Topic object), and also allows providing the

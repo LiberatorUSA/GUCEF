@@ -225,24 +225,12 @@ static rd_kafka_msg_t *rd_kafka_msg_new0 (rd_kafka_itopic_t *rkt,
         return rkm;
 }
 
-
-/**
- * @brief Produce: creates a new message, runs the partitioner and enqueues
- *        into on the selected partition.
- *
- * @returns 0 on success or -1 on error.
- *
- * If the function returns -1 and RD_KAFKA_MSG_F_FREE was specified, then
- * the memory associated with the payload is still the caller's
- * responsibility.
- *
- * @locks none
- */
-int rd_kafka_msg_new (rd_kafka_itopic_t *rkt, int32_t force_partition,
+int dvcustom_rd_kafka_msg_new (rd_kafka_itopic_t *rkt, int32_t force_partition,
 		      int msgflags,
 		      char *payload, size_t len,
 		      const void *key, size_t keylen,
-		      void *msg_opaque) {
+		      rd_kafka_headers_t *app_hdrs,
+              void *msg_opaque) {
 	rd_kafka_msg_t *rkm;
 	rd_kafka_resp_err_t err;
 	int errnox;
@@ -255,7 +243,7 @@ int rd_kafka_msg_new (rd_kafka_itopic_t *rkt, int32_t force_partition,
         /* Create message */
         rkm = rd_kafka_msg_new0(rkt, force_partition, msgflags,
                                 payload, len, key, keylen, msg_opaque,
-                                &err, &errnox, NULL, 0, rd_clock());
+                                &err, &errnox, app_hdrs, 0, rd_clock());
         if (unlikely(!rkm)) {
                 /* errno is already set by msg_new() */
 		rd_kafka_set_last_error(err, errnox);
@@ -293,6 +281,27 @@ int rd_kafka_msg_new (rd_kafka_itopic_t *rkt, int32_t force_partition,
 		rd_kafka_set_last_error(err, EINVAL); /* NOTREACHED */
 
 	return -1;
+}
+
+/**
+ * @brief Produce: creates a new message, runs the partitioner and enqueues
+ *        into on the selected partition.
+ *
+ * @returns 0 on success or -1 on error.
+ *
+ * If the function returns -1 and RD_KAFKA_MSG_F_FREE was specified, then
+ * the memory associated with the payload is still the caller's
+ * responsibility.
+ *
+ * @locks none
+ */
+int rd_kafka_msg_new (rd_kafka_itopic_t *rkt, int32_t force_partition,
+		      int msgflags,
+		      char *payload, size_t len,
+		      const void *key, size_t keylen,
+		      void *msg_opaque) {
+
+    return dvcustom_rd_kafka_msg_new( rkt, force_partition, msgflags, payload, len, key, keylen, NULL, msg_opaque );
 }
 
 
@@ -466,6 +475,17 @@ int rd_kafka_produce (rd_kafka_topic_t *rkt, int32_t partition,
         return rd_kafka_msg_new(rd_kafka_topic_a2i(rkt), partition,
                                 msgflags, payload, len,
                                 key, keylen, msg_opaque);
+}
+
+int dvcustom_rd_kafka_produce (rd_kafka_topic_t *rkt, int32_t partition,
+                      int msgflags,
+                      void *payload, size_t len,
+                      const void *key, size_t keylen,
+                      rd_kafka_headers_t *app_hdrs,
+                      void *msg_opaque) {
+        return dvcustom_rd_kafka_msg_new(rd_kafka_topic_a2i(rkt), partition,
+                                msgflags, payload, len,
+                                key, keylen, app_hdrs, msg_opaque);
 }
 
 
