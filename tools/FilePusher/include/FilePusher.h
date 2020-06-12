@@ -220,6 +220,12 @@ class FilePusher : public CORE::CObservingNotifier
 
     void
     QueueFileForPushing( const CORE::CString& filePath );
+
+    bool 
+    PushFileUsingHttp( const CORE::CString& pathToFileToPus, CORE::UInt32 offsetInFileh );
+
+    bool
+    PushFileUsingVfs( const CORE::CString& pathToFileToPush, CORE::UInt32 offsetInFile );
     
     private:
 

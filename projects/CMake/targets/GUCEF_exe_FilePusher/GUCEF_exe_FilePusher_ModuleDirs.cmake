@@ -8,6 +8,12 @@
 # free to make use of it in any way you like.
 #-------------------------------------------------------------------
 #
+add_subdirectory( ${CMAKE_CURRENT_SOURCE_DIR}/../../../../dependencies/aws-c-common ${CMAKE_BINARY_DIR}/aws-c-common )
+add_subdirectory( ${CMAKE_CURRENT_SOURCE_DIR}/../../../../dependencies/aws-c-event-stream ${CMAKE_BINARY_DIR}/aws-c-event-stream )
+add_subdirectory( ${CMAKE_CURRENT_SOURCE_DIR}/../../../../dependencies/aws-checksums ${CMAKE_BINARY_DIR}/aws-checksums )
+add_subdirectory( ${CMAKE_CURRENT_SOURCE_DIR}/../../../../dependencies/aws-cpp-sdk-core ${CMAKE_BINARY_DIR}/aws-cpp-sdk-core )
+add_subdirectory( ${CMAKE_CURRENT_SOURCE_DIR}/../../../../dependencies/aws-cpp-sdk-s3 ${CMAKE_BINARY_DIR}/aws-cpp-sdk-s3 )
+add_subdirectory( ${CMAKE_CURRENT_SOURCE_DIR}/../../../../dependencies/curl ${CMAKE_BINARY_DIR}/curl )
 add_subdirectory( ${CMAKE_CURRENT_SOURCE_DIR}/../../../../dependencies/json-builder ${CMAKE_BINARY_DIR}/jsonbuilder )
 add_subdirectory( ${CMAKE_CURRENT_SOURCE_DIR}/../../../../dependencies/json-parser ${CMAKE_BINARY_DIR}/jsonparser )
 add_subdirectory( ${CMAKE_CURRENT_SOURCE_DIR}/../../../../dependencies/libparsifal ${CMAKE_BINARY_DIR}/libparsifal )
@@ -15,6 +21,9 @@ add_subdirectory( ${CMAKE_CURRENT_SOURCE_DIR}/../../../../platform/gucefCOM ${CM
 add_subdirectory( ${CMAKE_CURRENT_SOURCE_DIR}/../../../../platform/gucefCOMCORE ${CMAKE_BINARY_DIR}/gucefCOMCORE )
 add_subdirectory( ${CMAKE_CURRENT_SOURCE_DIR}/../../../../platform/gucefCORE ${CMAKE_BINARY_DIR}/gucefCORE )
 add_subdirectory( ${CMAKE_CURRENT_SOURCE_DIR}/../../../../platform/gucefMT ${CMAKE_BINARY_DIR}/gucefMT )
+add_subdirectory( ${CMAKE_CURRENT_SOURCE_DIR}/../../../../platform/gucefVFS ${CMAKE_BINARY_DIR}/gucefVFS )
 add_subdirectory( ${CMAKE_CURRENT_SOURCE_DIR}/../../../../plugins/CORE/dstorepluginJSONPARSER ${CMAKE_BINARY_DIR}/dstorepluginJSONPARSER )
 add_subdirectory( ${CMAKE_CURRENT_SOURCE_DIR}/../../../../plugins/CORE/dstorepluginPARSIFALXML ${CMAKE_BINARY_DIR}/dstorepluginPARSIFALXML )
+add_subdirectory( ${CMAKE_CURRENT_SOURCE_DIR}/../../../../plugins/SHARED/pluginglueAWSSDK ${CMAKE_BINARY_DIR}/pluginglueAWSSDK )
+add_subdirectory( ${CMAKE_CURRENT_SOURCE_DIR}/../../../../plugins/VFS/vfspluginAWSS3 ${CMAKE_BINARY_DIR}/vfspluginAWSS3 )
 add_subdirectory( ${CMAKE_CURRENT_SOURCE_DIR}/../../../../tools/FilePusher ${CMAKE_BINARY_DIR}/FilePusher )

@@ -88,6 +88,11 @@
 #define GUCEF_COM_CCOMGLOBAL_H
 #endif /* GUCEF_COM_CCOMGLOBAL_H ? */
 
+#ifndef GUCEF_VFS_CVFSGLOBAL_H
+#include "gucefVFS_CVfsGlobal.h"
+#define GUCEF_VFS_CVFSGLOBAL_H
+#endif /* GUCEF_VFS_CVFSGLOBAL_H ? */
+
 #include "FilePusher.h"
 
 /*-------------------------------------------------------------------------//
@@ -196,6 +201,7 @@ GUCEF_OSMAIN_BEGIN
     CORE::CCoreGlobal::Instance();
     COMCORE::CComCoreGlobal::Instance();
     COM::CComGlobal::Instance();
+    VFS::CVfsGlobal::Instance();
 
     // Check for config param first
     CORE::CValueList keyValueList;

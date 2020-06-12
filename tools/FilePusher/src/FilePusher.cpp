@@ -367,6 +367,49 @@ FilePusher::OnHttpClientHttpTransferFinished( CORE::CNotifier* notifier    ,
 
 /*-------------------------------------------------------------------------*/
 
+bool
+FilePusher::PushFileUsingHttp( const CORE::CString& pathToFileToPush, CORE::UInt32 offsetInFile )
+{GUCEF_TRACE;
+
+    // Load the file content from disk
+    if ( !m_currentFilePushBuffer.LoadContentFromFile( pathToFileToPush, offsetInFile ) )
+    {
+        GUCEF_WARNING_LOG( CORE::LOGLEVEL_NORMAL, "FilePusher:PushFileUsingHttp: Unable to load bytes from file \"" + pathToFileToPush + "\". Is it still in use? Skipping the file for now" );
+        return false;
+    }
+    m_currentFileBeingPushed = pathToFileToPush;
+
+    CORE::CString fileExt = CORE::ExtractFileExtention( pathToFileToPush ).Lowercase();
+    CORE::CString contentType = "application/octet-stream";
+    if ( fileExt == "txt" || fileExt == "log" )
+    {
+        contentType = "text/plain";
+    }
+
+    // Begin the push
+    CORE::CString filename = CORE::ExtractFilename( pathToFileToPush );
+    CORE::CString pushUrlForFile = m_filePushDestinationUri.ReplaceSubstr( "{filename}", filename );
+    if ( m_httpClient.Post( pushUrlForFile, contentType, m_currentFilePushBuffer ) )
+    {
+        GUCEF_LOG( CORE::LOGLEVEL_NORMAL, "FilePusher: Commenced HTTP POST for content from file \"" + pathToFileToPush + "\"" );
+        return true;    
+    }
+
+    GUCEF_WARNING_LOG( CORE::LOGLEVEL_NORMAL, "FilePusher: Failed to HTTP POST bytes from file \"" + pathToFileToPush + "\". Skipping the file for now" );
+    return false;
+}
+
+/*-------------------------------------------------------------------------*/
+
+bool
+FilePusher::PushFileUsingVfs( const CORE::CString& pathToFileToPush, CORE::UInt32 offsetInFile )
+{GUCEF_TRACE;
+
+    return false;
+}
+
+/*-------------------------------------------------------------------------*/
+
 void
 FilePusher::OnFilePushTimerCycle( CORE::CNotifier* notifier    ,
                                   const CORE::CEvent& eventId  ,
@@ -382,33 +425,19 @@ FilePusher::OnFilePushTimerCycle( CORE::CNotifier* notifier    ,
     TStringUInt64Map::iterator i = m_pushQueue.begin();
     while ( i != m_pushQueue.end() )
     {
-        // Load the file content from disk
         const CORE::CString& filePath = (*i).first;
-        if ( !m_currentFilePushBuffer.LoadContentFromFile( filePath, (CORE::UInt32) (*i).second ) )
-        {
-            GUCEF_WARNING_LOG( CORE::LOGLEVEL_NORMAL, "FilePusher: Unable to load bytes from file \"" + filePath + "\". Is it still in use? Skipping the file for now" );
-            ++i;
-            continue;
-        }
-        m_currentFileBeingPushed = filePath;
+        CORE::UInt32 offsetInFile = (CORE::UInt32) (*i).second;
 
-        CORE::CString fileExt = CORE::ExtractFileExtention( filePath ).Lowercase();
-        CORE::CString contentType = "application/octet-stream";
-        if ( fileExt == "txt" || fileExt == "log" )
+        if ( 0 != m_filePushDestinationUri.HasSubstr( "http://", true ) )
         {
-            contentType = "text/plain";
+            if ( PushFileUsingHttp( filePath, offsetInFile ) )
+                return;
         }
-
-        // Begin the push
-        CORE::CString filename = CORE::ExtractFilename( filePath );
-        CORE::CString pushUrlForFile = m_filePushDestinationUri.ReplaceSubstr( "{filename}", filename );
-        if ( m_httpClient.Post( pushUrlForFile, contentType, m_currentFilePushBuffer ) )
+        if ( 0 != m_filePushDestinationUri.HasSubstr( "vfs://", true ) )
         {
-            GUCEF_LOG( CORE::LOGLEVEL_NORMAL, "FilePusher: Commenced HTTP POST for content from file \"" + filePath + "\"" );
-            return;    
+            if ( PushFileUsingVfs( filePath, offsetInFile ) )
+                return;
         }
-
-        GUCEF_WARNING_LOG( CORE::LOGLEVEL_NORMAL, "FilePusher: Failed to HTTP POST bytes from file \"" + filePath + "\". Skipping the file for now" );
         ++i;
     }
 }
@@ -637,7 +666,7 @@ FilePusher::LoadConfig( const CORE::CValueList& appConfig   ,
         return false;    
     }
     CORE::CString protocolSanityCheckUri = m_filePushDestinationUri.Lowercase();
-    if ( 0 != protocolSanityCheckUri.HasSubstr( "http://", true ) )
+    if ( 0 != protocolSanityCheckUri.HasSubstr( "http://", true ) && 0 != protocolSanityCheckUri.HasSubstr( "vfs://", true ) )
     {
         GUCEF_ERROR_LOG( CORE::LOGLEVEL_IMPORTANT, "FilePusher: The specified push Uri \"" + m_filePushDestinationUri + "\" does not specify a valid supported protocol" );
         return false; 
