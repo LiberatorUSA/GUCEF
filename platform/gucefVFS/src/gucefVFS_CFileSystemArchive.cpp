@@ -214,6 +214,18 @@ CFileSystemArchive::GetFile( const CString& file      ,
 
 /*-------------------------------------------------------------------------*/
 
+bool 
+CFileSystemArchive::StoreAsFile( const CORE::CString& filepath    ,
+                                 const CORE::CDynamicBuffer& data ,
+                                 const CORE::UInt64 offset        ,
+                                 const bool overwrite             )
+{GUCEF_TRACE;
+
+    return data.WriteContentToFile( filepath, offset, overwrite );    
+}
+
+/*-------------------------------------------------------------------------*/
+
 void
 CFileSystemArchive::GetListFromRoot( const CORE::CString& root  ,
                                      bool recursive             ,

@@ -141,6 +141,20 @@ CDVPArchive::GetFile( const VFS::CString& file      ,
     return CVFSHandlePtr();
 }
 
+
+/*-------------------------------------------------------------------------*/
+
+bool 
+CDVPArchive::StoreAsFile( const CORE::CString& filepath    ,
+                          const CORE::CDynamicBuffer& data ,
+                          const CORE::UInt64 offset        ,
+                          const bool overwrite             )
+{GUCEF_TRACE;
+
+    // Not implemented / supported at this time
+    return false;
+}
+
 /*-------------------------------------------------------------------------*/
 
 void

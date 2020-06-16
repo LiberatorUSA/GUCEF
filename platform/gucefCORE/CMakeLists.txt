@@ -28,6 +28,7 @@ set( HEADER_FILES
   include/CDataQueue.h
   include/CDynamicBuffer.h
   include/CDynamicBufferAccess.h
+  include/CDynamicBufferIOStream.h
   include/CEvent.h
   include/CException.h
   include/CExclusiveActivationManager.h
@@ -213,6 +214,7 @@ set( SOURCE_FILES
   src/CDataQueue.cpp
   src/CDynamicBuffer.cpp
   src/CDynamicBufferAccess.cpp
+  src/CDynamicBufferIOStream.cpp
   src/CEvent.cpp
   src/CException.cpp
   src/CExclusiveActivationManager.cpp

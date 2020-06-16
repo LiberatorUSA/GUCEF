@@ -171,6 +171,19 @@ CZIPArchive::GetFile( const VFS::CString& file      ,
 
 /*-------------------------------------------------------------------------*/
 
+bool 
+CZIPArchive::StoreAsFile( const CORE::CString& filepath    ,
+                          const CORE::CDynamicBuffer& data ,
+                          const CORE::UInt64 offset        ,
+                          const bool overwrite             )
+{GUCEF_TRACE;
+
+    // Not implemented / supported at this time
+    return false;
+}
+
+/*-------------------------------------------------------------------------*/
+
 void
 CZIPArchive::GetList( TStringSet& outputList       ,
                       const VFS::CString& location ,

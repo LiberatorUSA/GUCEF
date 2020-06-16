@@ -280,6 +280,15 @@ class GUCEF_CORE_PUBLIC_CPP CDynamicBuffer
                                   const Int32 bytesToRead = -1  );
 
         /**
+         *  Tries to write the dynamic buffer content to the file at the file path given
+         */
+        bool WriteContentToFile( const CORE::CString& filepath ,
+                                 const CORE::UInt64 offset = 0 ,
+                                 const bool overwrite = false  ) const;
+
+        bool AppendContentToFile( const CORE::CString& filepath ) const;
+
+        /**
          *  Provides mutable access to the buffer as a block of memory
          *  Note that if the buffer is linked this operation will result in the creation of a private copy
          */

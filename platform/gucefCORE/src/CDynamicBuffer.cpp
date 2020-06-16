@@ -449,6 +449,43 @@ CDynamicBuffer::LoadContentFromFile( const CString& filePath   ,
 
 /*-------------------------------------------------------------------------*/
 
+bool 
+CDynamicBuffer::WriteContentToFile( const CORE::CString& filepath ,
+                                    const CORE::UInt64 offset     ,
+                                    const bool overwrite          ) const
+{GUCEF_TRACE;
+    
+    const char* mode = overwrite ? "w" : "r+";
+
+    FILE* fptr = fopen( filepath.C_String(), mode );
+    if ( NULL != fptr )
+    {
+        fseek( fptr, (long) offset, SEEK_SET );
+        bool success = 1 == fwrite( _buffer, m_dataSize, 1, fptr );
+        fclose( fptr );
+        return success;
+    }
+    return false;
+}
+
+/*-------------------------------------------------------------------------*/
+
+bool 
+CDynamicBuffer::AppendContentToFile( const CORE::CString& filepath ) const
+{GUCEF_TRACE;
+    
+    FILE* fptr = fopen( filepath.C_String(), "a" );
+    if ( NULL != fptr )
+    {
+        bool success = 1 == fwrite( _buffer, m_dataSize, 1, fptr );
+        fclose( fptr );
+        return success;
+    }
+    return false;
+}
+
+/*-------------------------------------------------------------------------*/
+
 UInt32
 CDynamicBuffer::CopyFrom( UInt32 destinationOffset   ,
                           UInt32 size                ,

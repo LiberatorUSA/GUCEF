@@ -854,7 +854,7 @@ CHTTPClient::OnWrite( COMCORE::CTCPClientSocket& socket                   ,
          HTTP_VERB_PATCH == m_currentOp )
     {
         Int32 bodyBytesTransferred = (Int32)m_bytesSent - m_bytesInHeaders;
-        if ( bodyBytesTransferred >= m_bytesInBody )
+        if ( bodyBytesTransferred > 0 && (UInt32)bodyBytesTransferred >= m_bytesInBody )
         {
             NotifyObservers( HTTPTransferFinishedEvent );   
         }

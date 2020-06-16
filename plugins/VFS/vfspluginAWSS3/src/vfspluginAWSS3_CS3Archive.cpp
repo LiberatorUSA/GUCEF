@@ -136,6 +136,20 @@ CS3Archive::GetFile( const VFS::CString& file      ,
 
 /*-------------------------------------------------------------------------*/
 
+bool 
+CS3Archive::StoreAsFile( const CORE::CString& filepath    ,
+                         const CORE::CDynamicBuffer& data ,
+                         const CORE::UInt64 offset        ,
+                         const bool overwrite             )
+{GUCEF_TRACE;
+
+    // Files are stored in buckets in S3 not in S3 in general
+    // you have to mount a bucket and perform the store action there
+    return false;
+}
+
+/*-------------------------------------------------------------------------*/
+
 void
 CS3Archive::GetList( TStringSet& outputList       ,
                      const VFS::CString& location ,

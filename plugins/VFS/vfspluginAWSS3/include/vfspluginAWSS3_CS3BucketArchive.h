@@ -35,6 +35,8 @@
 #include <aws/s3/model/ListObjectsRequest.h>
 #include <aws/s3/model/GetObjectRequest.h>
 #include <aws/s3/model/GetObjectResult.h>
+#include <aws/s3/model/PutObjectRequest.h>
+#include <aws/s3/model/PutObjectResult.h>
 #include <aws/s3/S3Client.h>
 
 #ifndef GUCEF_VFS_CVFS_H
@@ -76,6 +78,11 @@ class GUCEF_HIDDEN CS3BucketArchive : public CORE::CObservingNotifier ,
                                    const char* mode = "rb"           ,
                                    const VFS::UInt32 memLoadSize = 0 ,
                                    const bool overwrite = false      );
+
+    virtual bool StoreAsFile( const CORE::CString& filepath    ,
+                              const CORE::CDynamicBuffer& data ,
+                              const CORE::UInt64 offset        ,
+                              const bool overwrite             );
 
     virtual void GetList( TStringSet& outputList             ,
                           const VFS::CString& location       ,

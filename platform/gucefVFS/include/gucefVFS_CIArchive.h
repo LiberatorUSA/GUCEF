@@ -79,7 +79,12 @@ class GUCEF_VFS_PUBLIC_CPP CIArchive : public CORE::CTDynamicDestructorBase< CVF
                                    const char* mode = "rb"      ,
                                    const UInt32 memLoadSize = 0 ,
                                    const bool overwrite = false ) = 0;
-                                  
+
+    virtual bool StoreAsFile( const CORE::CString& filepath    ,
+                              const CORE::CDynamicBuffer& data ,
+                              const CORE::UInt64 offset        ,
+                              const bool overwrite             ) = 0;
+
     virtual void GetList( TStringSet& outputList             ,
                           const CString& location            , 
                           bool recursive = false             ,

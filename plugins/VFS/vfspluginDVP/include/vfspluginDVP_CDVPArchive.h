@@ -73,7 +73,12 @@ class GUCEF_VFSPLUGIN_DVP_PRIVATE_CPP CDVPArchive : public VFS::CIArchive
                                    const char* mode = "rb"           ,
                                    const VFS::UInt32 memLoadSize = 0 ,
                                    const bool overwrite = false      );
-                                  
+
+    virtual bool StoreAsFile( const CORE::CString& filepath    ,
+                              const CORE::CDynamicBuffer& data ,
+                              const CORE::UInt64 offset        ,
+                              const bool overwrite             );
+                   
     virtual void GetList( TStringSet& outputList             ,
                           const VFS::CString& location       , 
                           bool recursive = false             ,

@@ -146,6 +146,11 @@ class GUCEF_VFS_PUBLIC_CPP CVFS : public CORE::CIConfigurable
                            const char* mode = "rb"      ,
                            const bool overwrite = false );
                                   
+    bool StoreAsFile( const CORE::CString& file        ,
+                      const CORE::CDynamicBuffer& data ,
+                      const CORE::UInt64 offset = 0    ,
+                      const bool overwrite = false     );
+
     void GetList( TStringSet& outputList             ,
                   const CORE::CString& location      , 
                   bool recursive = false             ,
@@ -252,6 +257,7 @@ class GUCEF_VFS_PUBLIC_CPP CVFS : public CORE::CIConfigurable
     CVFS& operator=( const CVFS& src );     /**< not implemented, must be unique */
 
     void GetEligableMounts( const CString& location                ,
+                            bool mustBeWritable                    ,
                             TConstMountLinkVector& mountLinkVector ) const;
     private:    
     

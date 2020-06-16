@@ -37,6 +37,11 @@
 #define GUCEF_CORE_CDYNAMICBUFFERACCESS_H
 #endif /* GUCEF_CORE_CDYNAMICBUFFERACCESS_H ? */
 
+#ifndef GUCEF_CORE_CIOACCESSTOIOSTREAM_H
+#include "gucefCORE_CIOAccessToIOStream.h"
+#define GUCEF_CORE_CIOACCESSTOIOSTREAM_H
+#endif /* GUCEF_CORE_CIOACCESSTOIOSTREAM_H ? */
+
 #ifndef GUCEF_CORE_CSUBFILEACCESS_H
 #include "gucefCORE_CSubFileAccess.h"
 #define GUCEF_CORE_CSUBFILEACCESS_H
@@ -153,6 +158,55 @@ CS3BucketArchive::GetFile( const VFS::CString& file      ,
         GUCEF_EXCEPTION_LOG( CORE::LOGLEVEL_CRITICAL, "S3BucketArchive: Unknown exception trying to S3 get bucket object" );
     }
     return VFS::CIArchive::CVFSHandlePtr();
+}
+
+/*-------------------------------------------------------------------------*/
+
+bool 
+CS3BucketArchive::StoreAsFile( const CORE::CString& filepath    ,
+                               const CORE::CDynamicBuffer& data ,
+                               const CORE::UInt64 offset        ,
+                               const bool overwrite             )
+{GUCEF_TRACE;
+
+    if ( 0 != offset || !overwrite )
+        return false; // not supported or emulated right now
+    
+    try
+    {
+        Aws::S3::S3Client* s3Client = CAwsS3Global::Instance()->GetS3Client();
+        if ( GUCEF_NULL == s3Client )
+            return VFS::CIArchive::CVFSHandlePtr();
+
+        Aws::S3::Model::PutObjectRequest objectRequest;
+        objectRequest.SetBucket( m_archiveName );
+        objectRequest.SetKey( filepath );
+
+        CORE::CDynamicBufferAccess bufferAccess( data );
+        std::shared_ptr< CORE::CIOAccessToIOStream > dataAccess( new CORE::CIOAccessToIOStream( bufferAccess ) );
+        objectRequest.SetBody( dataAccess );
+        
+        Aws::S3::Model::PutObjectOutcome putObjectOutcome = s3Client->PutObject( objectRequest );
+        if ( putObjectOutcome.IsSuccess() )
+        {
+            GUCEF_DEBUG_LOG( CORE::LOGLEVEL_BELOW_NORMAL, "S3BucketArchive: Wrote data for file \"" + filepath + "\" to Bucket \"" + m_archiveName + "\"" );
+            return true;
+        }
+        else
+        {
+            GUCEF_ERROR_LOG( CORE::LOGLEVEL_NORMAL, "S3BucketArchive: PutObject error: " + 
+                putObjectOutcome.GetError().GetExceptionName() + " - " + putObjectOutcome.GetError().GetMessage() );
+        }
+    }
+    catch ( const std::exception& e )
+    {
+        GUCEF_EXCEPTION_LOG( CORE::LOGLEVEL_IMPORTANT, CORE::CString( "S3BucketArchive: Exception trying Put() to S3 bucket object: " ) + e.what() );
+    }
+    catch ( ... )
+    {
+        GUCEF_EXCEPTION_LOG( CORE::LOGLEVEL_CRITICAL, "S3BucketArchive: Unknown exception trying Put() to S3 bucket object" );
+    }
+    return false;
 }
 
 /*-------------------------------------------------------------------------*/

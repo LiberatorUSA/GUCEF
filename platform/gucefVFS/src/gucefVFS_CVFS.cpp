@@ -127,6 +127,53 @@ CVFS::~CVFS()
 
 /*-------------------------------------------------------------------------*/
 
+bool 
+CVFS::StoreAsFile( const CORE::CString& filepath    ,
+                   const CORE::CDynamicBuffer& data ,
+                   const CORE::UInt64 offset        ,
+                   const bool overwrite             )
+{GUCEF_TRACE;
+
+    MT::CScopeMutex scopeLock( m_datalock );
+    
+    // Get a list of all eligable mounts
+    TConstMountLinkVector mountLinks;
+    GetEligableMounts( filepath, true, mountLinks );
+
+    // Try to store using the available archives
+    TConstMountLinkVector::iterator i = mountLinks.begin();
+    while ( i != mountLinks.end() )
+    {
+        TConstMountLink& mountLink = (*i);
+
+        if ( mountLink.mountEntry->archive->StoreAsFile( filepath  ,
+                                                         data      ,
+                                                         offset    ,
+                                                         overwrite ) )
+        {
+            GUCEF_DEBUG_LOG( CORE::LOGLEVEL_NORMAL, "Vfs: Stored " + CORE::UInt32ToString( data.GetDataSize() )  +
+                    " bytes as file content at offset " + CORE::UInt64ToString( offset ) + " using archive mounted at: " + mountLink.remainder );
+            return true;
+        }
+        else
+        {
+            GUCEF_DEBUG_LOG( CORE::LOGLEVEL_NORMAL, "Vfs: Stored " + CORE::UInt32ToString( data.GetDataSize() )  +
+                    " bytes as file content at offset " + CORE::UInt64ToString( offset ) + " using archive mounted at: " + mountLink.remainder );
+        }
+
+        ++i;
+    }
+
+    if ( mountLinks.empty() )
+    {
+        GUCEF_DEBUG_LOG( CORE::LOGLEVEL_NORMAL, "Vfs: Unable to store " + CORE::UInt32ToString( data.GetDataSize() )  +
+                " bytes as file content at offset " + CORE::UInt64ToString( offset ) + ". No eligible archives mounted" );
+    }
+    return false;
+}
+
+/*-------------------------------------------------------------------------*/
+
 CVFS::CVFSHandlePtr
 CVFS::GetFile( const CORE::CString& file          ,
                const char* mode /* = "rb" */      ,
@@ -140,7 +187,7 @@ CVFS::GetFile( const CORE::CString& file          ,
     
     // Get a list of all eligable mounts
     TConstMountLinkVector mountLinks;
-    GetEligableMounts( filepath, mountLinks );
+    GetEligableMounts( filepath, overwrite, mountLinks );
 
     // Find the file in the available archives
     TConstMountLinkVector::iterator i = mountLinks.begin();
@@ -446,7 +493,7 @@ CVFS::GetActualFilePath( const CString& file ,
 
     // Get a list of all eligable mounts
     TConstMountLinkVector mountLinks;
-    GetEligableMounts( file, mountLinks );
+    GetEligableMounts( file, false, mountLinks );
 
     // Find the file in the available archives
     TConstMountLinkVector::iterator i = mountLinks.begin();
@@ -721,6 +768,7 @@ CVFS::FilterValidation( const CORE::CString& filename ,
 
 void
 CVFS::GetEligableMounts( const CString& location                ,
+                         bool mustBeWritable                    ,
                          TConstMountLinkVector& mountLinkVector ) const
 {GUCEF_TRACE;
 
@@ -728,35 +776,40 @@ CVFS::GetEligableMounts( const CString& location                ,
     while ( i != m_mountList.end() )
     {
         const TMountEntry& mountEntry = (*i);
-        if ( mountEntry.mountPath.Length() > 0 )
+
+        // Exclude non-writeable archives right away for 'mustBeWritable' scenarios
+        if ( !mustBeWritable || mustBeWritable == mountEntry.writeable )
         {
-            // Check to see if the mount path is the starting sub string of the location
-            if ( location.HasSubstr( mountEntry.mountPath, true ) == 0 )
+            if ( mountEntry.mountPath.Length() > 0 )
+            {
+                // Check to see if the mount path is the starting sub string of the location
+                if ( location.HasSubstr( mountEntry.mountPath, true ) == 0 )
+                {
+                    TConstMountLink mountLink;
+                    mountLink.remainder = location.CutChars( mountEntry.mountPath.Length(), true );
+
+                    // make sure the remainder does not have a path seperator prefix
+                    if ( mountLink.remainder.Length() > 0 )
+                    {
+                        if ( ( mountLink.remainder[ 0 ] == '/' ) ||
+                             ( mountLink.remainder[ 0 ] == '\\' ) )
+                        {
+                            // remove the dir seperator prefix
+                            mountLink.remainder = mountLink.remainder.CutChars( 1, true );
+                        }
+                    }
+
+                    mountLink.mountEntry = &mountEntry;
+                    mountLinkVector.push_back( mountLink );
+                }
+            }
+            else
             {
                 TConstMountLink mountLink;
-                mountLink.remainder = location.CutChars( mountEntry.mountPath.Length(), true );
-
-                // make sure the remainder does not have a path seperator prefix
-                if ( mountLink.remainder.Length() > 0 )
-                {
-                    if ( ( mountLink.remainder[ 0 ] == '/' ) ||
-                         ( mountLink.remainder[ 0 ] == '\\' ) )
-                    {
-                        // remove the dir seperator prefix
-                        mountLink.remainder = mountLink.remainder.CutChars( 1, true );
-                    }
-                }
-
+                mountLink.remainder = location;
                 mountLink.mountEntry = &mountEntry;
                 mountLinkVector.push_back( mountLink );
             }
-        }
-        else
-        {
-            TConstMountLink mountLink;
-            mountLink.remainder = location;
-            mountLink.mountEntry = &mountEntry;
-            mountLinkVector.push_back( mountLink );
         }
         ++i;
     }
@@ -781,7 +834,7 @@ CVFS::GetList( TStringSet& outputList                   ,
     
     // Get a list of all eligable mounts
     TConstMountLinkVector mountLinks;
-    GetEligableMounts( path, mountLinks );
+    GetEligableMounts( path, false, mountLinks );
 
     // Get a list from each mount
     TConstMountLinkVector::iterator i = mountLinks.begin();
@@ -865,7 +918,7 @@ CVFS::GetFileModificationTime( const CString& filename ) const
 
     // Get a list of all eligable mounts
     TConstMountLinkVector mountLinks;
-    GetEligableMounts( path, mountLinks );
+    GetEligableMounts( path, false, mountLinks );
 
     // Search for a file and then get the hash
     TConstMountLinkVector::iterator i = mountLinks.begin();
@@ -896,7 +949,7 @@ CVFS::GetFileHash( const CORE::CString& file ) const
 
     // Get a list of all eligable mounts
     TConstMountLinkVector mountLinks;
-    GetEligableMounts( path, mountLinks );
+    GetEligableMounts( path, false, mountLinks );
 
     // Search for a file and then get the hash
     CString hash;
@@ -928,7 +981,7 @@ CVFS::GetFileSize( const CORE::CString& file ) const
     
     // Get a list of all eligable mounts
     TConstMountLinkVector mountLinks;
-    GetEligableMounts( path, mountLinks );
+    GetEligableMounts( path, false, mountLinks );
 
     // Search for a file and then get its size
     CString hash;
