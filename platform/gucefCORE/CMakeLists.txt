@@ -28,7 +28,6 @@ set( HEADER_FILES
   include/CDataQueue.h
   include/CDynamicBuffer.h
   include/CDynamicBufferAccess.h
-  include/CDynamicBufferIOStream.h
   include/CEvent.h
   include/CException.h
   include/CExclusiveActivationManager.h
@@ -150,6 +149,7 @@ set( HEADER_FILES
   include/gucefCORE_CIConsoleLogger.h
   include/gucefCORE_CIEventHandlerFunctorBase.h
   include/gucefCORE_CIMetricsSystemClient.h
+  include/gucefCORE_CIOAccessToIOStream.h
   include/gucefCORE_CIObserver.h
   include/gucefCORE_CIPluginLoadLogic.h
   include/gucefCORE_CIPluginMetaData.h
@@ -214,7 +214,6 @@ set( SOURCE_FILES
   src/CDataQueue.cpp
   src/CDynamicBuffer.cpp
   src/CDynamicBufferAccess.cpp
-  src/CDynamicBufferIOStream.cpp
   src/CEvent.cpp
   src/CException.cpp
   src/CExclusiveActivationManager.cpp
@@ -323,6 +322,7 @@ set( SOURCE_FILES
   src/gucefCORE_CIConsoleLogger.cpp
   src/gucefCORE_CIEventHandlerFunctorBase.cpp
   src/gucefCORE_CIMetricsSystemClient.cpp
+  src/gucefCORE_CIOAccessToIOStream.cpp
   src/gucefCORE_CIObserver.cpp
   src/gucefCORE_CIPluginLoadLogic.cpp
   src/gucefCORE_CIPluginMetaData.cpp
