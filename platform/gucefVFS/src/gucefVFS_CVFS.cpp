@@ -146,10 +146,10 @@ CVFS::StoreAsFile( const CORE::CString& filepath    ,
     {
         TConstMountLink& mountLink = (*i);
 
-        if ( mountLink.mountEntry->archive->StoreAsFile( filepath  ,
-                                                         data      ,
-                                                         offset    ,
-                                                         overwrite ) )
+        if ( mountLink.mountEntry->archive->StoreAsFile( mountLink.remainder  ,
+                                                         data                 ,
+                                                         offset               ,
+                                                         overwrite            ) )
         {
             GUCEF_DEBUG_LOG( CORE::LOGLEVEL_NORMAL, "Vfs: Stored " + CORE::UInt32ToString( data.GetDataSize() )  +
                     " bytes as file content at offset " + CORE::UInt64ToString( offset ) + " using archive mounted at: " + mountLink.remainder );

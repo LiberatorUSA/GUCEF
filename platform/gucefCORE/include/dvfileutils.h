@@ -367,6 +367,14 @@ Get_Modification_Time( const char* path );
 
 /*-------------------------------------------------------------------------*/
 
+/**
+ *  Returns the creation time of the indicated resource
+ */
+GUCEF_CORE_PUBLIC_C time_t
+Get_Creation_Time( const char* path );
+
+/*-------------------------------------------------------------------------*/
+
 /*
  *	End of C++ name mangling protection
  */

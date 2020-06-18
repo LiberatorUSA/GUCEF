@@ -51,6 +51,14 @@ namespace VFS {
 
 /*-------------------------------------------------------------------------//
 //                                                                         //
+//      GLOBAL VARS                                                        //
+//                                                                         //
+//-------------------------------------------------------------------------*/
+
+const CORE::CString CArchiveSettings::ArchiveSpecificSettingsPrefix = "ArchiveSpecificSetting.";
+
+/*-------------------------------------------------------------------------//
+//                                                                         //
 //      CLASSES                                                            //
 //                                                                         //
 //-------------------------------------------------------------------------*/
@@ -66,8 +74,12 @@ CArchiveSettings::CArchiveSettings( void )
     , m_autoMountSubArchivesIsRecursive( false )
     , m_writeableRequested( false )
     , m_readableRequested( true )
+    , m_archiveSpecificSettings()
 {GUCEF_TRACE;
 
+    m_archiveSpecificSettings.SetAllowDuplicates( true );
+    m_archiveSpecificSettings.SetAllowMultipleValues( true );
+    m_archiveSpecificSettings.SetConfigKeyNamespace( ArchiveSpecificSettingsPrefix );
 }
 
 /*-------------------------------------------------------------------------*/
@@ -83,8 +95,12 @@ CArchiveSettings::CArchiveSettings( const CArchiveSettings& src )
     , m_autoMountSubArchivesIsRecursive( src.m_autoMountSubArchivesIsRecursive )
     , m_writeableRequested( src.m_writeableRequested )
     , m_readableRequested( src.m_readableRequested )
+    , m_archiveSpecificSettings( src.m_archiveSpecificSettings )
 {GUCEF_TRACE;
 
+    m_archiveSpecificSettings.SetAllowDuplicates( true );
+    m_archiveSpecificSettings.SetAllowMultipleValues( true );
+    m_archiveSpecificSettings.SetConfigKeyNamespace( ArchiveSpecificSettingsPrefix );
 }
 
 /*-------------------------------------------------------------------------*/
@@ -111,6 +127,7 @@ CArchiveSettings::operator=( const CArchiveSettings& src )
         m_autoMountSubArchivesIsRecursive = src.m_autoMountSubArchivesIsRecursive;
         m_writeableRequested = src.m_writeableRequested;
         m_readableRequested = src.m_readableRequested;
+        m_archiveSpecificSettings = src.m_archiveSpecificSettings;
     }
     return *this;
 }
@@ -131,6 +148,7 @@ CArchiveSettings::SaveConfig( CORE::CDataNode& tree ) const
     settingsNode.SetAttribute( "MountArchivesIsRecursive", CORE::BoolToString( m_autoMountSubArchivesIsRecursive ), GUCEF_DATATYPE_BOOLEAN_STRING );
     settingsNode.SetAttribute( "Writeable", CORE::BoolToString( m_writeableRequested ), GUCEF_DATATYPE_BOOLEAN_STRING );
     settingsNode.SetAttribute( "Readable", CORE::BoolToString( m_readableRequested ), GUCEF_DATATYPE_BOOLEAN_STRING );
+    m_archiveSpecificSettings.SaveConfig( settingsNode );
     tree.AddChild( settingsNode );
     return true;
 }
@@ -164,6 +182,8 @@ CArchiveSettings::LoadConfig( const CORE::CDataNode& treeroot )
         m_autoMountSubArchivesIsRecursive = CORE::StringToBool( settingsNode->GetAttributeValueOrChildValueByName( "MountArchivesIsRecursive" ), false );
         m_writeableRequested = CORE::StringToBool( settingsNode->GetAttributeValueOrChildValueByName( "Writeable" ), false );
         m_readableRequested = CORE::StringToBool( settingsNode->GetAttributeValueOrChildValueByName( "Readable" ), true );
+
+        m_archiveSpecificSettings.LoadConfig( *settingsNode );
 
         GUCEF_SYSTEM_LOG( CORE::LOGLEVEL_NORMAL, "ArchiveSettings: Configuration successfully loaded for archive \"" + m_archiveName + "\"" );
         return true;
@@ -342,6 +362,15 @@ CArchiveSettings::GetClassTypeName( void ) const
 
     static const CORE::CString classTypeName = "GUCEF::VFS::CArchiveSettings";
     return classTypeName;
+}
+
+/*-------------------------------------------------------------------------*/
+
+const CORE::CValueList& 
+CArchiveSettings::GetArchiveSpecificSettings( void ) const
+{GUCEF_TRACE;
+    
+    return m_archiveSpecificSettings;
 }
 
 /*-------------------------------------------------------------------------//

@@ -54,7 +54,103 @@ namespace CORE {
 //                                                                         //
 //-------------------------------------------------------------------------*/
 
-class CDynamicBuffer;
+template< typename char_type, typename traits_type = std::char_traits< char_type > >
+class TIOAccessToStreambuff : public std::basic_streambuf< char_type, traits_type >
+{
+    private:
+
+    CIOAccess* m_access;
+    
+    public:
+ 
+    using Base = std::basic_streambuf< char_type, traits_type >;
+    using int_type = typename Base::int_type;
+    using pos_type = typename traits_type::pos_type;
+    using off_type = typename traits_type::off_type;
+    using streamsize = typename std::streamsize;
+
+    TIOAccessToStreambuff( CIOAccess& access )
+        : Base()
+        , m_access( &access )
+    {
+    }
+
+    virtual ~TIOAccessToStreambuff()
+    {
+        m_access = GUCEF_NULL;
+    }
+
+    virtual int_type overflow( int_type c ) override
+    {
+        if ( GUCEF_NULL != m_access )
+        {
+            if ( 1 == m_access->Write( &c, sizeof(int_type), 1 ) )
+                return traits_type::not_eof( c );    
+        }
+        return traits_type::eof();
+    }
+
+    virtual int_type underflow() override
+    {
+        if ( GUCEF_NULL != m_access )
+        {
+            char_type c;
+            if ( 1 == m_access->Read( &c, sizeof(c), 1 ) )
+                return traits_type::to_int_type( c );    
+        }
+        return traits_type::eof();
+    }
+
+    virtual int sync() override
+    {
+        if ( GUCEF_NULL != m_access )
+        {
+            m_access->Flush(); 
+        }
+        return 0;
+    }
+
+    virtual pos_type seekoff( off_type offset, std::ios_base::seekdir origin, std::ios_base::openmode mode = std::ios_base::in | std::ios_base::out ) override
+    {
+        // change position by offset, according to way and mode
+        if ( GUCEF_NULL != m_access )
+        {
+            Int32 fOrigin = -1;
+            switch ( origin )
+            {
+                case std::ios_base::beg: fOrigin = SEEK_SET; break;
+                case std::ios_base::cur: fOrigin = SEEK_CUR; break;
+                case std::ios_base::end: fOrigin = SEEK_END; break;
+                default: return pos_type(off_type(-1));
+            }
+
+            if ( 0 == m_access->Seek( (Int32) offset, fOrigin ) )
+                return (pos_type) m_access->Tell(); 
+        }
+        return pos_type(off_type(-1));
+    }
+
+    virtual pos_type seekpos( pos_type pos, std::ios_base::openmode mode = std::ios_base::in | std::ios_base::out ) override
+    {
+        // change to specified position, according to mode
+        if ( GUCEF_NULL != m_access )
+        {
+            if ( 0 == m_access->Setpos( (UInt32) pos ) )
+                return (pos_type) m_access->Tell(); 
+        }
+        return pos_type(off_type(-1));
+    }
+
+    virtual streamsize xsgetn( char_type* outBuffer, streamsize charsToRead ) 
+    {
+        if ( GUCEF_NULL != m_access )
+        {
+            UInt32 elementsRead = m_access->Read( outBuffer, sizeof(char_type), (UInt32)charsToRead );
+            return (streamsize) elementsRead;    
+        }
+        return traits_type::eof();
+    }
+};
 
 /*-------------------------------------------------------------------------*/
 
@@ -65,65 +161,11 @@ class GUCEF_CORE_PUBLIC_CPP CIOAccessToIOStream : public std::iostream
 {
     public:
 
-    typedef std::basic_ostream< char, std::char_traits< char > >                base_ostream;
-    typedef std::basic_istream< char, std::char_traits< char > >                base_istream;
-    typedef std::basic_iostream< char, std::char_traits< char > >::char_type    base_char_type;
-    typedef std::char_traits< char >::pos_type                                  base_pos_type;
-    typedef std::basic_iostream< char, std::char_traits< char > >::off_type     base_off_type;
+    typedef TIOAccessToStreambuff< char > ByteStreambuffFromIOAccess;
     
     CIOAccessToIOStream( CIOAccess& access );
 
     virtual ~CIOAccessToIOStream();
-
-    virtual base_ostream& put( base_char_type c );
-
-    virtual base_ostream& flush();
-
-    virtual base_ostream& seekp( base_pos_type pos );
-
-    virtual base_ostream& seekp( base_off_type off, std::ios_base::seekdir way );
-
-    virtual base_pos_type tellp();
-
-    virtual base_ostream& write( const base_char_type* s, std::streamsize n );
-
-    virtual std::streamsize gcount() const;
-
-    virtual int get();
-
-    virtual base_istream& get( char& c );
-
-    virtual base_istream& get( char* s, std::streamsize n );
-
-    virtual base_istream& get( char* s, std::streamsize n, char delim );
-
-    virtual base_istream& get( std::streambuf& sb );
-
-    virtual base_istream& get( std::streambuf& sb, char delim );
-
-    virtual base_istream& getline( char* s, std::streamsize n );
-
-    virtual base_istream& getline( char* s, std::streamsize n, char delim );
-
-    virtual base_istream& ignore( std::streamsize n = 1, int delim = EOF );
-
-    virtual int peek();
-
-    virtual base_istream& putback( char c );
-
-    virtual base_istream& read( char* s, std::streamsize n );
-
-    virtual std::streamsize readsome( char* s, std::streamsize n );
-
-	virtual base_istream& seekg( std::ios_base::streampos pos );
-
-    virtual base_istream& seekg( std::ios_base::streamoff off, std::ios_base::seekdir way );
-
-    virtual int sync();
-
-    virtual std::ios_base::streampos tellg();
-
-    virtual base_istream& unget();
 
     private:
 
@@ -134,7 +176,7 @@ class GUCEF_CORE_PUBLIC_CPP CIOAccessToIOStream : public std::iostream
     private:
 
     CIOAccess* m_access;
-    std::streamsize m_gCount;
+    ByteStreambuffFromIOAccess m_stlAdapter;
 };
 
 /*-------------------------------------------------------------------------//

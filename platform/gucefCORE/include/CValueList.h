@@ -248,6 +248,15 @@ class GUCEF_CORE_PUBLIC_CPP CValueList : public CIConfigurable
     void SetConfigNamespace( const CString& configNamespace );
 
     const CString& GetConfigNamespace( void ) const;
+
+    /**
+     *  When loading from config data this will limit the scope
+     *  of the information loaded to just the keys that are 
+     *  namespaced with by having the exact 'configKeyNamespace' prefix
+     */
+    void SetConfigKeyNamespace( const CString& configKeyNamespace );
+
+    const CString& GetConfigKeyNamespace( void ) const;
     
     TValueMap::const_iterator GetDataBeginIterator( void ) const;
     
@@ -264,6 +273,7 @@ class GUCEF_CORE_PUBLIC_CPP CValueList : public CIConfigurable
     bool m_allowDuplicates;
     bool m_allowMultipleValues;
     CString m_configNamespace;
+    CString m_configKeyNamespace;
 };
 
 /*-------------------------------------------------------------------------//

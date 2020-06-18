@@ -1235,7 +1235,8 @@ CDataNode::AddChild( const CDataNode& newnode )
 
 CDataNode*
 CDataNode::AddChild( const CString& nodeName, int nodeType )
-{
+{GUCEF_TRACE;
+
     CDataNode newNode( nodeName, nodeType );
     return AddChild( newNode );
 }
@@ -1244,7 +1245,8 @@ CDataNode::AddChild( const CString& nodeName, int nodeType )
 
 CString
 CDataNode::GetChildValueByName( const CString& name ) const
-{
+{GUCEF_TRACE;
+
     CDataNode* childNode = FindChild( name );
     if ( NULL != childNode )
     {
@@ -1256,12 +1258,17 @@ CDataNode::GetChildValueByName( const CString& name ) const
 /*-------------------------------------------------------------------------*/
 
 CString
-CDataNode::GetAttributeValueOrChildValueByName( const CString& name ) const
-{
+CDataNode::GetAttributeValueOrChildValueByName( const CString& name, const CString& defaultValue ) const
+{GUCEF_TRACE;
+
     CString value = GetAttributeValue( name );
-    if ( 0 == value.Length() )
+    if ( value.IsNULLOrEmpty() )
     {
         value = GetChildValueByName( name );
+        if ( value.IsNULLOrEmpty() )
+        {
+            return defaultValue;
+        }
     }
     return value;
 }
@@ -1270,7 +1277,8 @@ CDataNode::GetAttributeValueOrChildValueByName( const CString& name ) const
 
 CDataNode::TStringVector
 CDataNode::GetChildrenValuesByName( const CString& name ) const
-{
+{GUCEF_TRACE;
+
     TStringVector results;
     
     TConstDataNodeSet childNodes = FindChildrenOfType( name, false );
@@ -1292,11 +1300,10 @@ CDataNode::GetChildrenValuesByName( const CString& name ) const
 
 void 
 CDataNode::Delete( void )
-{
-        GUCEF_BEGIN;
-        Detach();
-        delete this;             
-        GUCEF_END;
+{GUCEF_TRACE;
+
+    Detach();
+    delete this;             
 }
 
 /*-------------------------------------------------------------------------*/
@@ -1360,44 +1367,40 @@ CDataNode::GetLastChild( void ) const
         
 CDataNode* 
 CDataNode::GetNext( void ) const
-{
-        GUCEF_BEGIN;
-        GUCEF_END;
-        return _pnext;
+{GUCEF_TRACE;
+
+    return _pnext;
 }
 
 /*-------------------------------------------------------------------------*/
         
 CDataNode* 
 CDataNode::GetPrevious( void ) const
-{
-        GUCEF_BEGIN;
-        GUCEF_END;
-        return _pprev;
+{GUCEF_TRACE;
+
+    return _pprev;
 }
 
 /*-------------------------------------------------------------------------*/
 
 CDataNode::iterator 
 CDataNode::Begin( void )
-{
-        GUCEF_BEGIN;        
-        iterator i( this );
-        GUCEF_END;
-        return i;
+{GUCEF_TRACE;
+
+    iterator i( this );
+    return i;
 }
 
 /*-------------------------------------------------------------------------*/
 
 CDataNode::iterator 
 CDataNode::End( void )
-{
-        GUCEF_BEGIN;
-        iterator i( this );
-        i._pos = NULL;
-        i._atend = true;
-        GUCEF_END;        
-        return i;
+{GUCEF_TRACE;
+
+    iterator i( this );
+    i._pos = NULL;
+    i._atend = true;      
+    return i;
 }
 
 /*-------------------------------------------------------------------------*/

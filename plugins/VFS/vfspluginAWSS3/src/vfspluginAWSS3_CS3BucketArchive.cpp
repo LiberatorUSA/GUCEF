@@ -169,7 +169,7 @@ CS3BucketArchive::StoreAsFile( const CORE::CString& filepath    ,
                                const bool overwrite             )
 {GUCEF_TRACE;
 
-    if ( 0 != offset || !overwrite )
+    if ( 0 != offset )
         return false; // not supported or emulated right now
     
     try
@@ -183,8 +183,9 @@ CS3BucketArchive::StoreAsFile( const CORE::CString& filepath    ,
         objectRequest.SetKey( filepath );
 
         CORE::CDynamicBufferAccess bufferAccess( data );
-        std::shared_ptr< CORE::CIOAccessToIOStream > dataAccess( new CORE::CIOAccessToIOStream( bufferAccess ) );
-        objectRequest.SetBody( dataAccess );
+        std::shared_ptr< CORE::CIOAccessToIOStream > dataAccess( std::make_shared< CORE::CIOAccessToIOStream >( bufferAccess ) );
+        std::shared_ptr< Aws::IOStream > baseDataAccess = std::static_pointer_cast< Aws::IOStream >( dataAccess );
+        objectRequest.SetBody( baseDataAccess );
         
         Aws::S3::Model::PutObjectOutcome putObjectOutcome = s3Client->PutObject( objectRequest );
         if ( putObjectOutcome.IsSuccess() )

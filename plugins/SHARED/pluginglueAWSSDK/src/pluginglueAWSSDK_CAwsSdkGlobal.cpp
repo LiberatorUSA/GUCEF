@@ -22,6 +22,8 @@
 //                                                                         //
 //-------------------------------------------------------------------------*/
 
+#include <aws/core/utils/logging/AWSLogging.h>
+
 #ifndef GUCEF_CORE_GUCEF_ESSENTIALS_H
 #include "gucef_essentials.h"
 #define GUCEF_CORE_GUCEF_ESSENTIALS_H
@@ -31,6 +33,11 @@
 #include "CDataNode.h"
 #define GUCEF_CORE_CDATANODE_H
 #endif /* GUCEF_CORE_CDATANODE_H ? */
+
+#ifndef GUCEF_CORE_DVCPPSTRINGUTILS_H
+#include "dvcppstringutils.h"
+#define GUCEF_CORE_DVCPPSTRINGUTILS_H
+#endif /* GUCEF_CORE_DVCPPSTRINGUTILS_H ? */
 
 #ifndef GUCEF_PLUGINGLUE_AWSSDK_CLOGGINGADAPTER_H
 #include "pluginglueAWSSDK_CLoggingAdapter.h"
@@ -102,6 +109,7 @@ CAwsSdkGlobal::InitializeBeforeConfig( void )
     try
     {
         m_awsSdkOptions.loggingOptions.logger_create_fn = [ ] { return std::make_shared< CLoggingAdapter >(); };
+        Aws::Utils::Logging::InitializeAWSLogging( std::make_shared< CLoggingAdapter >() ); 
     
         // @TODO: Hook up to GUCEF Metrics
         //m_awsSdkOptions.monitoringOptions.customizedMonitoringFactory_create_fn
@@ -148,9 +156,17 @@ CAwsSdkGlobal::LoadConfig( const CORE::CDataNode& treeroot )
 {GUCEF_TRACE;
 
     InitializeBeforeConfig();
-    
-    if ( m_credsProvider )
-        m_credsProvider->LoadConfig( treeroot );
+
+    const CORE::CDataNode* settingsNode = treeroot.Find( "AWSSDK" );
+    if ( GUCEF_NULL != settingsNode )
+    {
+        m_defaultClientConfig.region = settingsNode->GetAttributeValueOrChildValueByName( "DefaultRegion", "us-east-1" );
+        m_awsSdkOptions.loggingOptions.logLevel = (Aws::Utils::Logging::LogLevel) CORE::StringToInt32( settingsNode->GetAttributeValueOrChildValueByName( "LogLevel", "0" ) );
+
+        if ( m_credsProvider )
+            m_credsProvider->LoadConfig( *settingsNode );
+
+    }
 
     InitializeAfterConfig();
     return true;
@@ -183,6 +199,9 @@ CAwsSdkGlobal::InitializeAfterConfig( void )
 CAwsSdkGlobal::CAwsSdkGlobal( void )
     : CORE::CObservingNotifier()
     , CORE::CIConfigurable( true )
+    , m_awsSdkOptions()
+    , m_credsProvider()
+    , m_defaultClientConfig()
 {GUCEF_TRACE;
 
     RegisterEvents();
@@ -194,6 +213,9 @@ CAwsSdkGlobal::CAwsSdkGlobal( void )
 CAwsSdkGlobal::CAwsSdkGlobal( const CAwsSdkGlobal& src )
     : CORE::CObservingNotifier()
     , CORE::CIConfigurable( true )
+    , m_awsSdkOptions( src.m_awsSdkOptions )
+    , m_credsProvider( src.m_credsProvider )
+    , m_defaultClientConfig( src.m_defaultClientConfig )
 {GUCEF_TRACE;
 
     RegisterEvents();
@@ -249,11 +271,10 @@ CAwsSdkGlobal::GetCredentialsProvider( void )
 /*-------------------------------------------------------------------------*/
 
 const Aws::Client::ClientConfiguration& 
-CAwsSdkGlobal::GetAwsClientConfig( void )
+CAwsSdkGlobal::GetDefaultAwsClientConfig( void )
 {GUCEF_TRACE;
-
-    static  Aws::Client::ClientConfiguration a;
-    return a;
+ 
+    return m_defaultClientConfig;
 }
 
 /*-------------------------------------------------------------------------//

@@ -58,22 +58,24 @@ GUCEF_IMPLEMENT_MSGEXCEPTION( CValueList, EIndexOutOfRange );
 /*-------------------------------------------------------------------------*/
 
 CValueList::CValueList( void )
-    : CIConfigurable( false )       ,
-      m_list()                      ,
-      m_allowDuplicates( false )    ,
-      m_allowMultipleValues( true ) ,
-      m_configNamespace()
+    : CIConfigurable( false )       
+    , m_list()                      
+    , m_allowDuplicates( false )    
+    , m_allowMultipleValues( true ) 
+    , m_configNamespace()           
+    , m_configKeyNamespace()
 {GUCEF_TRACE;
 }
 
 /*-------------------------------------------------------------------------*/
 
 CValueList::CValueList( const CValueList& src )
-    : CIConfigurable( false )                            ,
-      m_list( src.m_list )                               ,
-      m_allowDuplicates( src.m_allowDuplicates )         ,
-      m_allowMultipleValues( src.m_allowMultipleValues ) ,
-      m_configNamespace()
+    : CIConfigurable( false )                            
+    , m_list( src.m_list )                               
+    , m_allowDuplicates( src.m_allowDuplicates )         
+    , m_allowMultipleValues( src.m_allowMultipleValues ) 
+    , m_configNamespace( src.m_configNamespace )                               
+    , m_configKeyNamespace( src.m_configKeyNamespace )
 {GUCEF_TRACE;
                
 }
@@ -97,6 +99,7 @@ CValueList::operator=( const CValueList& src )
         m_allowDuplicates = src.m_allowDuplicates;
         m_allowMultipleValues = src.m_allowMultipleValues;
         m_configNamespace = src.m_configNamespace;
+        m_configKeyNamespace = src.m_configKeyNamespace;
      }
      return *this;
 }
@@ -152,6 +155,24 @@ CValueList::GetConfigNamespace( void ) const
 
 /*-------------------------------------------------------------------------*/
 
+void
+CValueList::SetConfigKeyNamespace( const CString& configKeyNamespace )
+{GUCEF_TRACE;
+
+    m_configKeyNamespace = configKeyNamespace;
+}
+
+/*-------------------------------------------------------------------------*/
+
+const CString& 
+CValueList::GetConfigKeyNamespace( void ) const
+{GUCEF_TRACE;
+    
+    return m_configKeyNamespace;
+}
+
+/*-------------------------------------------------------------------------*/
+
 bool
 CValueList::SaveConfig( CDataNode& tree ) const
 {GUCEF_TRACE;
@@ -168,7 +189,7 @@ CValueList::SaveConfig( CDataNode& tree ) const
                 TStringVector::const_iterator n = values.begin();
                 while ( n != values.end() )
                 {
-                    CDataNode* child = nodeNamespaceRoot->AddChild( (*i).first );
+                    CDataNode* child = nodeNamespaceRoot->AddChild( m_configKeyNamespace + (*i).first );
                     child->SetValue( (*n) );
                     ++n;
                 }
@@ -182,7 +203,7 @@ CValueList::SaveConfig( CDataNode& tree ) const
             {
                 const TStringVector& values = (*i).second;
                 if ( !values.empty() )
-                    nodeNamespaceRoot->SetAttribute( (*i).first, values.front() );
+                    nodeNamespaceRoot->SetAttribute( m_configKeyNamespace + (*i).first, values.front() );
                 ++i;
             }
         }
@@ -204,7 +225,18 @@ CValueList::LoadConfig( const CDataNode& treeroot )
         CDataNode::TAttributeMap::const_iterator i = nodeNamespaceRoot->AttributeBegin();
         while ( i != nodeNamespaceRoot->AttributeEnd() )
         {
-            Set( (*i).first, (*i).second.value );
+            if ( m_configKeyNamespace.IsNULLOrEmpty() )
+            {
+                Set( (*i).first, (*i).second.value );
+            }
+            else
+            {
+                if ( 0 == (*i).first.HasSubstr( m_configKeyNamespace ) )
+                {
+                    CString keyname = (*i).first.CutChars( m_configKeyNamespace.Length(), true, 0 );
+                    Set( keyname, (*i).second.value );
+                }
+            }
             ++i;
         }
 
@@ -215,7 +247,18 @@ CValueList::LoadConfig( const CDataNode& treeroot )
             const CString& value = (*n)->GetValue();
             if ( !value.IsNULLOrEmpty() )
             {
-                Set( (*n)->GetName(), value );
+                if ( m_configKeyNamespace.IsNULLOrEmpty() )
+                {
+                    Set( (*n)->GetName(), value );
+                }
+                else
+                {
+                    if ( 0 == (*n)->GetName().HasSubstr( m_configKeyNamespace ) )
+                    {
+                        CString keyname = (*n)->GetName().CutChars( m_configKeyNamespace.Length(), true, 0 );
+                        Set( keyname, value );
+                    }
+                }
             }
             ++n;
         }

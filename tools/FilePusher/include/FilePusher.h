@@ -226,6 +226,9 @@ class FilePusher : public CORE::CObservingNotifier
 
     bool
     PushFileUsingVfs( const CORE::CString& pathToFileToPush, CORE::UInt32 offsetInFile );
+
+    void
+    OnFilePushFinished( void );
     
     private:
 

@@ -39,6 +39,11 @@
 #define GUCEF_CORE_CDVSTRING_H
 #endif /* GUCEF_CORE_CDVSTRING_H ? */
 
+#ifndef GUCEF_CORE_CVALUELIST_H
+#include "CValueList.h"
+#define GUCEF_CORE_CVALUELIST_H
+#endif /* GUCEF_CORE_CVALUELIST_H ? */
+
 #ifndef GUCEF_VFS_MACROS_H
 #include "gucefVFS_macros.h"
 #define GUCEF_VFS_MACROS_H
@@ -62,6 +67,8 @@ namespace VFS {
 class GUCEF_VFS_PUBLIC_CPP CArchiveSettings : public CORE::CIConfigurable
 {
     public:
+
+    static const CORE::CString ArchiveSpecificSettingsPrefix;
 
     CArchiveSettings( void );
     
@@ -127,6 +134,8 @@ class GUCEF_VFS_PUBLIC_CPP CArchiveSettings : public CORE::CIConfigurable
     void SetReadableRequested( bool readable );
     
     bool GetReadableRequested( void ) const;
+    
+    const CORE::CValueList& GetArchiveSpecificSettings( void ) const;
 
     private:
     
@@ -139,6 +148,7 @@ class GUCEF_VFS_PUBLIC_CPP CArchiveSettings : public CORE::CIConfigurable
     bool m_autoMountSubArchivesIsRecursive;
     bool m_writeableRequested;
     bool m_readableRequested;
+    CORE::CValueList m_archiveSpecificSettings;
 };
 
 /*-------------------------------------------------------------------------//

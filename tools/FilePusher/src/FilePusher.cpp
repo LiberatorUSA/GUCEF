@@ -45,6 +45,16 @@
 #define GUCEF_CORE_DVFILEUTILS_H
 #endif /* GUCEF_CORE_DVFILEUTILS_H ? */
 
+#ifndef GUCEF_VFS_CVFSGLOBAL_H
+#include "gucefVFS_CVfsGlobal.h"
+#define GUCEF_VFS_CVFSGLOBAL_H
+#endif /* GUCEF_VFS_CVFSGLOBAL_H ? */
+
+#ifndef GUCEF_VFS_CVFS_H
+#include "gucefVFS_CVFS.h"
+#define GUCEF_VFS_CVFS_H
+#endif /* GUCEF_VFS_CVFS_H ? */
+
 /*-------------------------------------------------------------------------//
 //                                                                         //
 //      GLOBAL VARS                                                        //
@@ -347,6 +357,14 @@ FilePusher::OnHttpClientHttpTransferFinished( CORE::CNotifier* notifier    ,
 {GUCEF_TRACE;
 
     GUCEF_LOG( CORE::LOGLEVEL_NORMAL, "FilePusher: HTTP Transfer finished" );
+    OnFilePushFinished();
+}
+
+/*-------------------------------------------------------------------------*/
+
+void
+FilePusher::OnFilePushFinished( void )
+{GUCEF_TRACE;
 
     TStringUInt64Map::iterator i = m_pushQueue.find( m_currentFileBeingPushed );
     if ( i != m_pushQueue.end() )
@@ -362,6 +380,7 @@ FilePusher::OnHttpClientHttpTransferFinished( CORE::CNotifier* notifier    ,
             }
         }
         m_currentFileBeingPushed.Clear();
+        m_currentFilePushBuffer.Clear();
     }
 }
 
@@ -405,6 +424,30 @@ bool
 FilePusher::PushFileUsingVfs( const CORE::CString& pathToFileToPush, CORE::UInt32 offsetInFile )
 {GUCEF_TRACE;
 
+    // Load the file content from disk
+    if ( !m_currentFilePushBuffer.LoadContentFromFile( pathToFileToPush, offsetInFile ) )
+    {
+        GUCEF_WARNING_LOG( CORE::LOGLEVEL_NORMAL, "FilePusher:PushFileUsingVfs: Unable to load bytes from file \"" + pathToFileToPush + "\". Is it still in use? Skipping the file for now" );
+        return false;
+    }
+    m_currentFileBeingPushed = pathToFileToPush;
+
+    // Begin the push
+    CORE::CString filename = CORE::ExtractFilename( pathToFileToPush );
+    CORE::CString pushUrlForFile = m_filePushDestinationUri.ReplaceSubstr( "{filename}", filename );
+    pushUrlForFile = pushUrlForFile.CutChars( 6, true, 0 ); // Cut vfs://
+
+    // Store the file as a singular sync blocking call
+    if ( VFS::CVfsGlobal::Instance()->GetVfs().StoreAsFile( pushUrlForFile, m_currentFilePushBuffer, 0, true ) )
+    {
+        GUCEF_LOG( CORE::LOGLEVEL_NORMAL, "FilePusher: Pushed content from file \"" + pathToFileToPush + "\" to VFS path \"" + pushUrlForFile + "\"" );
+        OnFilePushFinished();
+        return true;    
+    }
+
+    GUCEF_WARNING_LOG( CORE::LOGLEVEL_NORMAL, "FilePusher: Failed to pushed content from file \"" + pathToFileToPush + "\" to VFS path \"" + pushUrlForFile + "\". Skipping the file for now" );
+    m_currentFilePushBuffer.Clear();
+    m_currentFileBeingPushed.Clear();
     return false;
 }
 
@@ -428,12 +471,12 @@ FilePusher::OnFilePushTimerCycle( CORE::CNotifier* notifier    ,
         const CORE::CString& filePath = (*i).first;
         CORE::UInt32 offsetInFile = (CORE::UInt32) (*i).second;
 
-        if ( 0 != m_filePushDestinationUri.HasSubstr( "http://", true ) )
+        if ( 0 == m_filePushDestinationUri.HasSubstr( "http://", true ) )
         {
             if ( PushFileUsingHttp( filePath, offsetInFile ) )
                 return;
         }
-        if ( 0 != m_filePushDestinationUri.HasSubstr( "vfs://", true ) )
+        if ( 0 == m_filePushDestinationUri.HasSubstr( "vfs://", true ) )
         {
             if ( PushFileUsingVfs( filePath, offsetInFile ) )
                 return;
@@ -473,7 +516,10 @@ FilePusher::OnNewFileRestPeriodTimerCycle( CORE::CNotifier* notifier    ,
         time_t& lastModified = (*i).second;
 
         lastModified = CORE::Get_Modification_Time( newFilePath.C_String() );
-        if ( nowTime - lastModified > m_restingTimeForNewFilesInSecs )
+        time_t creationTime = CORE::Get_Creation_Time( newFilePath.C_String() );
+        time_t lastChange = lastModified > creationTime ? lastModified : creationTime;
+
+        if ( nowTime - lastChange > m_restingTimeForNewFilesInSecs )
         {
             // This file has not been modified for at least the required resting period.
             // As such tis file can now be considered a candidate for pushing.
@@ -502,7 +548,9 @@ FilePusher::QueueNewFileForPushingAfterUnmodifiedRestPeriod( const CORE::CString
     // Add the file to the list of files to be checked periodically to see if there is no more changes
     // being made to the file aka a resting period.
     time_t lastModified = CORE::Get_Modification_Time( newFilePath.C_String() );
-    m_newFileRestQueue[ newFilePath ] = lastModified;
+    time_t creationTime = CORE::Get_Creation_Time( newFilePath.C_String() );
+    time_t lastChange = lastModified > creationTime ? lastModified : creationTime;
+    m_newFileRestQueue[ newFilePath ] = lastChange;
 }
 
 /*-------------------------------------------------------------------------*/

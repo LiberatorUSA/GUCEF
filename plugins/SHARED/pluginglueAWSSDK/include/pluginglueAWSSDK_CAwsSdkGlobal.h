@@ -85,7 +85,7 @@ class GUCEF_PLUGINGLUE_AWSSDK_EXPORT_CPP CAwsSdkGlobal : public CORE::CObserving
 
     CredentialsProviderPtr GetCredentialsProvider( void );
 
-    const Aws::Client::ClientConfiguration& GetAwsClientConfig( void );
+    const Aws::Client::ClientConfiguration& GetDefaultAwsClientConfig( void );
     
     virtual bool SaveConfig( CORE::CDataNode& tree ) const;
 
@@ -113,6 +113,7 @@ class GUCEF_PLUGINGLUE_AWSSDK_EXPORT_CPP CAwsSdkGlobal : public CORE::CObserving
 
     Aws::SDKOptions m_awsSdkOptions;
     CredentialsProviderPtr m_credsProvider;
+    Aws::Client::ClientConfiguration m_defaultClientConfig;
     
     static MT::CMutex g_dataLock;
     static CAwsSdkGlobal* g_instance;
