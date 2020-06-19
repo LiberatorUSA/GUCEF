@@ -264,7 +264,7 @@ FilePusher::OnMetricsTimerCycle( CORE::CNotifier* notifier    ,
         }
         GUCEF_METRIC_GAUGE( "FilePusher.FilesQueuedToPush", (CORE::UInt32) m_pushQueue.size(), 1.0f );
         GUCEF_METRIC_GAUGE( "FilePusher.NewFileRestQueueSize", (CORE::UInt32) m_newFileRestQueue.size(), 1.0f );
-        GUCEF_METRIC_GAUGE( "FilePusher.LastPushDurationInSecs", (CORE::UInt32) m_newFileRestQueue.size(), 1.0f );
+        GUCEF_METRIC_GAUGE( "FilePusher.LastPushDurationInSecs", m_lastPushDurationInSecs, 1.0f );
     }
 }
 
