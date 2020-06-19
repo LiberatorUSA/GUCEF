@@ -62,18 +62,9 @@ namespace CORE {
 //-------------------------------------------------------------------------*/
 
 CPlatformNativeConsoleLogger::CPlatformNativeConsoleLogger( void )
-    : m_nativeConsoleLogger( NULL )
+    : m_nativeConsoleLogger( GUCEF_NULL )
 {GUCEF_TRACE;
 
-    #if GUCEF_PLATFORM == GUCEF_PLATFORM_MSWIN
-
-    m_nativeConsoleLogger = new CMSWinConsoleLogger();
-
-    #elif GUCEF_PLATFORM == GUCEF_PLATFORM_LINUX
-
-    m_nativeConsoleLogger = new CXTermConsoleLogger();
-
-    #endif
 }
 
 /*-------------------------------------------------------------------------*/
@@ -91,6 +82,18 @@ CIConsoleLogger*
 CPlatformNativeConsoleLogger::GetLogger( void )
 {GUCEF_TRACE;
 
+    if ( GUCEF_NULL == m_nativeConsoleLogger )
+    {
+        #if GUCEF_PLATFORM == GUCEF_PLATFORM_MSWIN
+
+        m_nativeConsoleLogger = new CMSWinConsoleLogger();
+
+        #elif GUCEF_PLATFORM == GUCEF_PLATFORM_LINUX
+
+        m_nativeConsoleLogger = new CXTermConsoleLogger();
+
+        #endif
+    }
     return m_nativeConsoleLogger;
 }
 

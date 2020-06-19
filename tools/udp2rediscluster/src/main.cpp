@@ -186,8 +186,8 @@ ParseParams( const int argc                 ,
 /*
  *      Application entry point
  */
-GUCEF_OSMAIN_BEGIN
-//GUCEF_OSSERVICEMAIN_BEGIN( "udp2rediscluster" )
+//GUCEF_OSMAIN_BEGIN
+GUCEF_OSSERVICEMAIN_BEGIN( "udp2rediscluster" )
 {GUCEF_TRACE;
 
     GUCEF_LOG( CORE::LOGLEVEL_NORMAL, "This tool was compiled on: " __DATE__ " @ " __TIME__ );
@@ -231,7 +231,8 @@ GUCEF_OSMAIN_BEGIN
     CORE::CCoreGlobal::Instance()->GetLogManager().AddLogger( &logger );
 
     CORE::CPlatformNativeConsoleLogger console;
-    CORE::CCoreGlobal::Instance()->GetLogManager().AddLogger( console.GetLogger() );
+    if ( GUCEF_APP_TYPE == GUCEF_APP_TYPE_CONSOLE )
+        CORE::CCoreGlobal::Instance()->GetLogManager().AddLogger( console.GetLogger() );
 
     CORE::CCoreGlobal::Instance()->GetLogManager().FlushBootstrapLogEntriesToLogs();
     GUCEF_LOG( CORE::LOGLEVEL_NORMAL, "Flushed to log @ " + logFilename );

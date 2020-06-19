@@ -238,7 +238,8 @@ GUCEF_OSSERVICEMAIN_BEGIN( "FilePusher" )
     CORE::CCoreGlobal::Instance()->GetLogManager().AddLogger( &logger );
 
     CORE::CPlatformNativeConsoleLogger console;
-    CORE::CCoreGlobal::Instance()->GetLogManager().AddLogger( console.GetLogger() );
+    if ( GUCEF_APP_TYPE == GUCEF_APP_TYPE_CONSOLE )
+        CORE::CCoreGlobal::Instance()->GetLogManager().AddLogger( console.GetLogger() );
 
     CORE::CCoreGlobal::Instance()->GetLogManager().FlushBootstrapLogEntriesToLogs();
     GUCEF_LOG( CORE::LOGLEVEL_NORMAL, "Flushed to log @ " + logFilename );

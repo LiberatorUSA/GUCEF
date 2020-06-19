@@ -37,6 +37,31 @@
 //                                                                         //
 //-------------------------------------------------------------------------*/ 
 
+#define GUCEF_APP_TYPE_UNKNOWN                  0
+#define GUCEF_APP_TYPE_BACKGROUND_PROCESSS      1
+#define GUCEF_APP_TYPE_CONSOLE                  2
+#define GUCEF_APP_TYPE_GUI                      3
+
+/*-------------------------------------------------------------------------*/
+
+/*
+ *  You can override the App type in your project settings
+ */
+#undef GUCEF_AUTO_APP_TYPE_BACKGROUND_PROCESSS
+#undef GUCEF_AUTO_APP_TYPE_CONSOLE
+#undef GUCEF_AUTO_APP_TYPE_GUI
+#ifdef GUCEF_AUTO_APP_TYPE_OVERRIDE
+  #define GUCEF_AUTO_APP_TYPE_BACKGROUND_PROCESSS      GUCEF_AUTO_APP_TYPE_OVERRIDE
+  #define GUCEF_AUTO_APP_TYPE_CONSOLE                  GUCEF_AUTO_APP_TYPE_OVERRIDE
+  #define GUCEF_AUTO_APP_TYPE_GUI                      GUCEF_AUTO_APP_TYPE_OVERRIDE
+#else
+  #define GUCEF_AUTO_APP_TYPE_BACKGROUND_PROCESSS      GUCEF_APP_TYPE_BACKGROUND_PROCESSS
+  #define GUCEF_AUTO_APP_TYPE_CONSOLE                  GUCEF_APP_TYPE_CONSOLE
+  #define GUCEF_AUTO_APP_TYPE_GUI                      GUCEF_APP_TYPE_GUI
+#endif
+
+/*-------------------------------------------------------------------------*/
+
 /*
  *  Here we will define the GUCEF_OSMAIN macro which defines a entry point
  *  and makes the following variables available and application parameters:
@@ -53,28 +78,32 @@
     #undef min
     #undef max
 
-    #define GUCEF_OSMAIN_BEGIN                \
-                                              \
-    int __stdcall                             \
-    WinMain( HINSTANCE hinstance     ,        \
-             HINSTANCE hprevinstance ,        \
-             LPSTR lpcmdline         ,        \
-             int ncmdshow            )        \
-    {                                         \
-                                              \
-        int argc = 0;                         \
-        char** argv = &lpcmdline;             \
-        if ( lpcmdline != NULL )              \
-        {                                     \
-            if ( *lpcmdline != '\0' )         \
-            {                                 \
-                argc = 1;                     \
-            }                                 \
+    #define GUCEF_OSMAIN_BEGIN                                                                         \
+                                                                                                       \
+    static const unsigned char GUCEF_APP_TYPE = GUCEF_AUTO_APP_TYPE_CONSOLE;                           \
+                                                                                                       \
+    int __stdcall                                                                                      \
+    WinMain( HINSTANCE hinstance     ,                                                                 \
+             HINSTANCE hprevinstance ,                                                                 \
+             LPSTR lpcmdline         ,                                                                 \
+             int ncmdshow            )                                                                 \
+    {                                                                                                  \
+                                                                                                       \
+        int argc = 0;                                                                                  \
+        char** argv = &lpcmdline;                                                                      \
+        if ( lpcmdline != NULL )                                                                       \
+        {                                                                                              \
+            if ( *lpcmdline != '\0' )                                                                  \
+            {                                                                                          \
+                argc = 1;                                                                              \
+            }                                                                                          \
         }
                                               
     #define GUCEF_OSMAIN_END }
 
     #define GUCEF_OSSERVICEMAIN_BEGIN( serviceName )                                                   \
+                                                                                                       \
+    static const unsigned char GUCEF_APP_TYPE = GUCEF_AUTO_APP_TYPE_BACKGROUND_PROCESSS;               \
                                                                                                        \
     ::SERVICE_STATUS_HANDLE g_win32ServiceStatusHandle = NULL;                                         \
     ::HANDLE g_win32StopEvent = NULL;                                                                  \
@@ -199,10 +228,11 @@
 
 #else
 
-    #define GUCEF_OSMAIN_BEGIN                \
-                                              \
-    int                                       \
-    main( int argc, char* argv[] )            \
+    #define GUCEF_OSMAIN_BEGIN                                                                         \
+                                                                                                       \
+    static const unsigned char GUCEF_APP_TYPE = GUCEF_AUTO_APP_TYPE_CONSOLE;                           \
+    int                                                                                                \
+    main( int argc, char* argv[] )                                                                     \
     {
     
     #define GUCEF_OSMAIN_END }
