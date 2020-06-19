@@ -87,6 +87,7 @@ set( HEADER_FILES
   include/CTAbstractFactory.h
   include/CTAbstractFactoryWithParam.h
   include/CTBasicSharedPtr.h
+  include/CTCloneableExpansion.h
   include/CTCloneableObj.h
   include/CTCodecPluginItem.h
   include/CTDynamicArray.h

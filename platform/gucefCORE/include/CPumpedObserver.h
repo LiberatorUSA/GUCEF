@@ -85,7 +85,8 @@ class GUCEF_CORE_PUBLIC_CPP CPumpedObserver : public CObserver
      *
      *  Note that in contrast to OnNotify, which is performed in
      *  the calling thread, this call is always made in the main
-     *  application thread. As such it is well suited for linking
+     *  application thread or whatever thread provided the pulse generator. 
+     *  As such it is well suited for linking
      *  non-tread safe code via an observer to a notifier that
      *  operates from within another thread.
      *

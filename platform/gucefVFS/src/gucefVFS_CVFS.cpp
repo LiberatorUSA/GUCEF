@@ -38,6 +38,16 @@
 #define DVCPPSTRINGUTILS_H
 #endif /* DVCPPSTRINGUTILS_H ? */
 
+#ifndef GUCEF_CORE_CCOREGLOBAL_H
+#include "gucefCORE_CCoreGlobal.h"
+#define GUCEF_CORE_CCOREGLOBAL_H
+#endif /* GUCEF_CORE_CCOREGLOBAL_H ? */
+
+#ifndef GUCEF_CORE_CTASKMANAGER_H
+#include "gucefCORE_CTaskManager.h"
+#define GUCEF_CORE_CTASKMANAGER_H
+#endif /* GUCEF_CORE_CTASKMANAGER_H ? */
+
 #ifndef GUCEF_CORE_CDYNAMICBUFFER_H
 #include "CDynamicBuffer.h"
 #define GUCEF_CORE_CDYNAMICBUFFER_H
@@ -73,6 +83,11 @@
 #define GUCEF_CORE_DVMD5UTILS_H
 #endif /* GUCEF_CORE_DVMD5UTILS_H ? */
 
+#ifndef GUCEF_VFS_CASYNCVFSOPERATION_H
+#include "gucefVFS_CAsyncVfsOperation.h"
+#define GUCEF_VFS_CASYNCVFSOPERATION_H
+#endif /* GUCEF_VFS_CASYNCVFSOPERATION_H ? */
+
 #include "gucefVFS_CVFS.h"           /* definition of the file implemented here */
 
 #ifdef ACTIVATE_MEMORY_MANAGER
@@ -97,23 +112,35 @@ namespace VFS {
 //                                                                         //
 //-------------------------------------------------------------------------*/
 
-MT::CMutex CVFS::m_datalock;
+const CORE::CEvent CVFS::AsyncVfsOperationCompletedEvent = "GUCEF::VFS::CVFS::AsyncVfsOperationCompletedEvent";
 const CORE::CString CVFS::FileSystemArchiveTypeName = "FileSystem";
 
 /*-------------------------------------------------------------------------//
 //                                                                         //
-//      UTILITIES                                                          //
+//      IMPLEMENTATION                                                     //
 //                                                                         //
 //-------------------------------------------------------------------------*/
 
+void 
+CVFS::RegisterEvents( void )
+{GUCEF_TRACE;
+
+    AsyncVfsOperationCompletedEvent.Initialize();
+}
+
+/*-------------------------------------------------------------------------*/
+
 CVFS::CVFS( void )
-    : CIConfigurable( true )
+    : CORE::CTSGNotifier()
+    , CORE::CIConfigurable( true )
     , m_mountList()
     , _maxmemloadsize( 1024 ) 
     , m_abstractArchiveFactory()
     , m_fileSystemArchiveFactory()
+    , m_datalock()
 {GUCEF_TRACE;
 
+    RegisterEvents();
     RegisterArchiveFactory( FileSystemArchiveTypeName, m_fileSystemArchiveFactory );
 }
 
@@ -123,6 +150,59 @@ CVFS::~CVFS()
 {GUCEF_TRACE;
 
     UnregisterArchiveFactory( FileSystemArchiveTypeName );
+}
+
+/*-------------------------------------------------------------------------*/
+
+bool 
+CVFS::StoreAsFileAsync( const CORE::CString& filepath    ,
+                        const CORE::CDynamicBuffer& data ,
+                        const CORE::UInt64 offset        ,
+                        const bool overwrite             ,
+                        CORE::CICloneable* requestorData )
+{GUCEF_TRACE;
+
+    CCloneableStoreAsFileTaskData operationData;
+    operationData.operationType = ASYNCVFSOPERATIONTYPE_STOREDATAASFILE;
+    operationData.filepath = filepath;
+    operationData.data.LinkTo( &data );
+    operationData.offset = offset;
+    operationData.overwrite = overwrite;
+    operationData.SetRequestorData( requestorData );
+
+    CORE::CCoreGlobal::Instance()->GetTaskManager().QueueTask( CAsyncVfsOperation::TaskType, &operationData, GUCEF_NULL, &AsObserver() );
+    return true;
+}
+
+/*-------------------------------------------------------------------------*/
+
+bool 
+CVFS::MountArchiveAsync( const CArchiveSettings& settings ,
+                         CORE::CICloneable* requestorData )
+{GUCEF_TRACE;
+
+    CCloneableMountArchiveTaskData operationData;
+    operationData.operationType = ASYNCVFSOPERATIONTYPE_MOUNTARCHIVE;
+    operationData.settings = settings;
+    operationData.SetRequestorData( requestorData );
+
+    CORE::CCoreGlobal::Instance()->GetTaskManager().QueueTask( CAsyncVfsOperation::TaskType, &operationData, GUCEF_NULL, &AsObserver() );
+    return true;
+}
+
+/*-------------------------------------------------------------------------*/
+
+void 
+CVFS::OnPumpedNotify( CORE::CNotifier* notifier    ,
+                      const CORE::CEvent& eventid  ,
+                      CORE::CICloneable* eventdata )
+{GUCEF_TRACE;
+
+    if ( CAsyncVfsOperation::AsyncVfsOperationCompletedEvent == eventid )
+    {
+        GUCEF_DEBUG_LOG( CORE::LOGLEVEL_BELOW_NORMAL, "CVFS:OnPumpedNotify: Async operation completed, passing on event notification" );
+        NotifyObservers( AsyncVfsOperationCompletedEvent, eventdata );
+    }
 }
 
 /*-------------------------------------------------------------------------*/
@@ -1026,6 +1106,26 @@ CVFS::UnregisterArchiveFactory( const CString& archiveType )
     m_abstractArchiveFactory.UnregisterConcreteFactory( archiveType );
 
     GUCEF_SYSTEM_LOG( CORE::LOGLEVEL_NORMAL, "Unregistered VFS archive factory for type \"" + archiveType + "\"" );
+}
+
+/*-------------------------------------------------------------------------*/
+
+void
+CVFS::LockData( void ) const
+{GUCEF_TRACE;
+
+    m_datalock.Lock();
+    CTSGNotifier::LockData();
+}
+
+/*-------------------------------------------------------------------------*/
+
+void
+CVFS::UnlockData( void ) const
+{GUCEF_TRACE;
+
+    CTSGNotifier::UnlockData();
+    m_datalock.Unlock();
 }
 
 /*-------------------------------------------------------------------------//

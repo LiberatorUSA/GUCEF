@@ -65,20 +65,20 @@ class CTFactory : public CTFactoryBase< BaseClassType >
      *
      *  @return pointer to the base class of the constructed factory product
      */
-    virtual BaseClassType* Create( void );
+    virtual BaseClassType* Create( void ) GUCEF_VIRTUAL_OVERRIDE;
     
     /**
      *  Destroys the concrete factory product
      *
      *  @param factoryProduct pointer to the base class of the constructed factory product
      */
-    virtual void Destroy( BaseClassType* factoryProduct );
+    virtual void Destroy( BaseClassType* factoryProduct ) GUCEF_VIRTUAL_OVERRIDE;
 
     /**
      *  Allows creation of factories without knowing the decending concrete
      *  classes.
      */
-    virtual CICloneable* Clone( void ) const;
+    virtual CICloneable* Clone( void ) const GUCEF_VIRTUAL_OVERRIDE;
 };
 
 /*-------------------------------------------------------------------------//

@@ -161,6 +161,7 @@ FilePusher::FilePusher( void )
     , m_filePushDestinationUri()
     , m_currentFilePushBuffer()
     , m_currentFileBeingPushed()
+    , m_lastPushDurationInSecs( 0 )
 {GUCEF_TRACE;
 
     RegisterEventHandlers();    
@@ -239,6 +240,11 @@ FilePusher::RegisterEventHandlers( void )
     SubscribeTo( &m_httpClient                               ,
                  COM::CHTTPClient::HTTPTransferFinishedEvent ,
                  callback13                                  );
+
+    TEventCallback callback14( this, &FilePusher::OnAsyncVfsOperationCompleted );
+    SubscribeTo( &VFS::CVfsGlobal::Instance()->GetVfs()     ,
+                 VFS::CVFS::AsyncVfsOperationCompletedEvent ,
+                 callback14                                 );
 }
 
 /*-------------------------------------------------------------------------*/
@@ -251,10 +257,14 @@ FilePusher::OnMetricsTimerCycle( CORE::CNotifier* notifier    ,
 
     if ( m_transmitMetrics )
     {
-        GUCEF_METRIC_COUNT( "FilePusher.HttpClientBytesReceived", m_httpClient.GetBytesReceived( true ), 1.0f );
-        GUCEF_METRIC_COUNT( "FilePusher.HttpClientBytesTransmitted", m_httpClient.GetBytesTransmitted( true ), 1.0f );
+        if ( 0 == m_filePushDestinationUri.HasSubstr( "http://", true ) )
+        {
+            GUCEF_METRIC_COUNT( "FilePusher.HttpClientBytesReceived", m_httpClient.GetBytesReceived( true ), 1.0f );
+            GUCEF_METRIC_COUNT( "FilePusher.HttpClientBytesTransmitted", m_httpClient.GetBytesTransmitted( true ), 1.0f );
+        }
         GUCEF_METRIC_GAUGE( "FilePusher.FilesQueuedToPush", (CORE::UInt32) m_pushQueue.size(), 1.0f );
         GUCEF_METRIC_GAUGE( "FilePusher.NewFileRestQueueSize", (CORE::UInt32) m_newFileRestQueue.size(), 1.0f );
+        GUCEF_METRIC_GAUGE( "FilePusher.LastPushDurationInSecs", (CORE::UInt32) m_newFileRestQueue.size(), 1.0f );
     }
 }
 
@@ -363,6 +373,36 @@ FilePusher::OnHttpClientHttpTransferFinished( CORE::CNotifier* notifier    ,
 /*-------------------------------------------------------------------------*/
 
 void
+FilePusher::OnAsyncVfsOperationCompleted( CORE::CNotifier* notifier    ,
+                                          const CORE::CEvent& eventId  ,
+                                          CORE::CICloneable* eventData )
+{GUCEF_TRACE;
+
+    VFS::CCloneableAsyncVfsTaskResultData* asyncOpResult = static_cast< VFS::CCloneableAsyncVfsTaskResultData* >( eventData );
+    if ( GUCEF_NULL != asyncOpResult )
+    {
+        m_lastPushDurationInSecs = asyncOpResult->durationInSecs;
+        if (  asyncOpResult->successState )
+        {
+            GUCEF_LOG( CORE::LOGLEVEL_NORMAL, "FilePusher: VFS Async operation finished successfully in " + 
+                    CORE::UInt32ToString( m_lastPushDurationInSecs ) + " secs" );
+            OnFilePushFinished();
+        }
+        else
+        {
+            GUCEF_ERROR_LOG( CORE::LOGLEVEL_NORMAL, "FilePusher: VFS Async operation failed in " + 
+                        CORE::UInt32ToString( m_lastPushDurationInSecs ) + " secs" );
+        }
+    }
+    else
+    {
+        GUCEF_ERROR_LOG( CORE::LOGLEVEL_NORMAL, "FilePusher: VFS Async operation failed" );
+    }
+}
+
+/*-------------------------------------------------------------------------*/
+
+void
 FilePusher::OnFilePushFinished( void )
 {GUCEF_TRACE;
 
@@ -438,10 +478,9 @@ FilePusher::PushFileUsingVfs( const CORE::CString& pathToFileToPush, CORE::UInt3
     pushUrlForFile = pushUrlForFile.CutChars( 6, true, 0 ); // Cut vfs://
 
     // Store the file as a singular sync blocking call
-    if ( VFS::CVfsGlobal::Instance()->GetVfs().StoreAsFile( pushUrlForFile, m_currentFilePushBuffer, 0, true ) )
+    if ( VFS::CVfsGlobal::Instance()->GetVfs().StoreAsFileAsync( pushUrlForFile, m_currentFilePushBuffer, 0, true ) )
     {
-        GUCEF_LOG( CORE::LOGLEVEL_NORMAL, "FilePusher: Pushed content from file \"" + pathToFileToPush + "\" to VFS path \"" + pushUrlForFile + "\"" );
-        OnFilePushFinished();
+        GUCEF_LOG( CORE::LOGLEVEL_NORMAL, "FilePusher: Commenced async push of content from file \"" + pathToFileToPush + "\" to VFS path \"" + pushUrlForFile + "\"" );
         return true;    
     }
 

@@ -33,6 +33,11 @@
 #define GUCEF_CORE_DVOSWRAP_H
 #endif /* GUCEF_CORE_DVOSWRAP_H ? */
 
+#ifndef GUCEF_MT_CSCOPEMUTEX_H
+#include "gucefMT_CScopeMutex.h"
+#define GUCEF_MT_CSCOPEMUTEX_H
+#endif /* GUCEF_MT_CSCOPEMUTEX_H ? */ 
+
 #ifndef GUCEF_CORE_DVCPPSTRINGUTILS_H
 #include "dvcppstringutils.h"
 #define GUCEF_CORE_DVCPPSTRINGUTILS_H
@@ -322,6 +327,7 @@ CTaskManager::RemoveConsumerFromQueue( CTaskConsumer* consumer )
     m_taskQueue.UnlockData();
     g_mutex.Unlock();
 }
+
 /*-------------------------------------------------------------------------*/
 
 void
@@ -429,27 +435,42 @@ CTaskManager::UnlockData( void ) const
 /*-------------------------------------------------------------------------*/
 
 void
-CTaskManager::QueueTask( const CString& taskType ,
-                         CICloneable* taskData   ,
-                         CTaskConsumer** task    )
+CTaskManager::QueueTask( const CString& taskType         ,
+                         CICloneable* taskData           ,
+                         CTaskConsumer** outTaskConsumer ,
+                         CObserver* taskObserver         )
 {GUCEF_TRACE;
 
-    // Create a consumer for the given task type
-    g_mutex.Lock();
-    CTaskConsumer* taskConsumer = m_consumerFactory.Create( taskType );
-    if ( NULL != taskConsumer )
     {
-        if ( task != NULL )
+        MT::CScopeMutex scopeLock( g_mutex );
+    
+        // Create a consumer for the given task type
+        CTaskConsumer* taskConsumer = m_consumerFactory.Create( taskType );
+        if ( GUCEF_NULL != taskConsumer )
         {
-            *task = taskConsumer;
-        }
-        taskConsumer->SetIsOwnedByTaskManager( true );
-        CTaskQueueItem* queueItem = new CTaskQueueItem( taskConsumer ,
-                                                        taskData     );
+            if ( GUCEF_NULL != outTaskConsumer )
+            {
+                *outTaskConsumer = taskConsumer;
+            }
+            taskConsumer->SetIsOwnedByTaskManager( true );
 
-        m_taskQueue.AddMail( taskType, queueItem );
+            if ( GUCEF_NULL != taskObserver )
+            {
+                taskConsumer->Subscribe( taskObserver );
+            }
+
+            CTaskQueueItem* queueItem = new CTaskQueueItem( taskConsumer ,
+                                                            taskData     );
+
+            m_taskQueue.AddMail( taskType, queueItem );
+
+            // We dont want to queue a task that will never be picked up by anyone
+            if ( 0 == GetNrOfThreads() )
+            {
+                EnforceDesiredNrOfThreads( 1, true );    
+            }
+        }
     }
-    g_mutex.Unlock();
     NotifyObservers( TaskQueuedEvent );
 }
 
@@ -809,9 +830,9 @@ void
 CTaskManager::RegisterTaskDelegator( CTaskDelegator& delegator )
 {GUCEF_TRACE;
 
-    g_mutex.Lock();
+    MT::CScopeMutex scopeLock( g_mutex );
     m_taskDelegators.insert( &delegator );
-    g_mutex.Unlock();
+    ++m_activeNrOfThreads;
 }
 
 /*-------------------------------------------------------------------------*/
@@ -820,9 +841,9 @@ void
 CTaskManager::UnregisterTaskDelegator( CTaskDelegator& delegator )
 {GUCEF_TRACE;
 
-    g_mutex.Lock();
+    MT::CScopeMutex scopeLock( g_mutex );
     m_taskDelegators.erase( &delegator );
-    g_mutex.Unlock();
+    -- m_activeNrOfThreads;
 }
 
 /*-------------------------------------------------------------------------//

@@ -192,8 +192,8 @@ ParseParams( const int argc                 ,
 /*
  *      Application entry point
  */
-GUCEF_OSMAIN_BEGIN
-//GUCEF_OSSERVICEMAIN_BEGIN( "FilePusher" )
+//GUCEF_OSMAIN_BEGIN
+GUCEF_OSSERVICEMAIN_BEGIN( "FilePusher" )
 {GUCEF_TRACE;
 
     GUCEF_LOG( CORE::LOGLEVEL_NORMAL, "This tool was compiled on: " __DATE__ " @ " __TIME__ );

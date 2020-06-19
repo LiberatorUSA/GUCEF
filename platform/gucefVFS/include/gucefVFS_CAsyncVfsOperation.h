@@ -14,11 +14,11 @@
  *
  *  You should have received a copy of the GNU Lesser General Public
  *  License along with this library; if not, write to the Free Software
- *  Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA 
+ *  Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA 
  */
 
-#ifndef GUCEF_VFS_CVFSGLOBAL_H
-#define GUCEF_VFS_CVFSGLOBAL_H
+#ifndef GUCEF_VFS_CASYNCVFSOPERATION_H
+#define GUCEF_VFS_CASYNCVFSOPERATION_H
 
 /*-------------------------------------------------------------------------//
 //                                                                         //
@@ -26,15 +26,37 @@
 //                                                                         //
 //-------------------------------------------------------------------------*/
 
-#ifndef GUCEF_MT_CMUTEX_H
-#include "gucefMT_CMutex.h"
-#define GUCEF_MT_CMUTEX_H
-#endif /* GUCEF_MT_CMUTEX_H ? */
+#include <deque>
 
-#ifndef GUCEF_VFS_MACROS_H
-#include "gucefVFS_macros.h"
-#define GUCEF_VFS_MACROS_H
-#endif /* GUCEF_VFS_MACROS_H ? */
+#ifndef GUCEF_CORE_CITASKCONSUMER_H
+#include "gucefCORE_CITaskConsumer.h"
+#define GUCEF_CORE_CITASKCONSUMER_H
+#endif /* GUCEF_CORE_CITASKCONSUMER_H ? */
+
+#ifndef GUCEF_CORE_CICONFIGURABLE_H
+#include "CIConfigurable.h"
+#define GUCEF_CORE_CICONFIGURABLE_H
+#endif /* GUCEF_CORE_CICONFIGURABLE_H ? */
+
+#ifndef GUCEF_CORE_CTCLONEABLEEXPANSION_H
+#include "CTCloneableExpansion.h"
+#define GUCEF_CORE_CTCLONEABLEEXPANSION_H
+#endif /* GUCEF_CORE_CTCLONEABLEEXPANSION_H ? */
+
+#ifndef GUCEF_VFS_CVFS_H
+#include "gucefVFS_CVFS.h" 
+#define GUCEF_VFS_CVFS_H
+#endif /* GUCEF_VFS_CVFS_H ? */
+
+#ifndef GUCEF_VFS_ASYNCVFSTASKDATA_H
+#include "gucefVFS_AsyncVfsTaskData.h"
+#define GUCEF_VFS_ASYNCVFSTASKDATA_H
+#endif /* GUCEF_VFS_ASYNCVFSTASKDATA_H ? */
+
+#ifndef GUCEF_VFS_CARCHIVESETTINGS_H
+#include "gucefVFS_CArchiveSettings.h"
+#define GUCEF_VFS_CARCHIVESETTINGS_H
+#endif /* GUCEF_VFS_CARCHIVESETTINGS_H ? */
 
 /*-------------------------------------------------------------------------//
 //                                                                         //
@@ -51,41 +73,34 @@ namespace VFS {
 //                                                                         //
 //-------------------------------------------------------------------------*/
 
-class CVFS;
-
-/*-------------------------------------------------------------------------*/
-
-/**
- *  Singular singleton providing access to all global Vfs systems
- */
-class GUCEF_VFS_PUBLIC_CPP CVfsGlobal
+class GUCEF_HIDDEN CAsyncVfsOperation : public CORE::CTaskConsumer
 {
     public:
 
-    static CVfsGlobal* Instance( void );
+    static const CORE::CEvent AsyncVfsOperationCompletedEvent;
+    static const CORE::CString TaskType;
+    
+    static void RegisterEvents( void );
 
-    CVFS& GetVfs( void );
+    CAsyncVfsOperation();
+    CAsyncVfsOperation( const CAsyncVfsOperation& src );
+    virtual ~CAsyncVfsOperation();
+
+    virtual bool OnTaskStart( CORE::CICloneable* taskData ) GUCEF_VIRTUAL_OVERRIDE;
+    
+    virtual bool OnTaskCycle( CORE::CICloneable* taskData ) GUCEF_VIRTUAL_OVERRIDE;
+    
+    virtual void OnTaskEnd( CORE::CICloneable* taskData ) GUCEF_VIRTUAL_OVERRIDE;
+
+    virtual CORE::CString GetType( void ) const GUCEF_VIRTUAL_OVERRIDE;
 
     private:
-    friend class CModule;
 
-    static void Deinstance( void );
-
-    private:
-
-    CVfsGlobal( void );
-
-    ~CVfsGlobal();
-
-    void Initialize( void );
-
-    private:
-
-    CVFS* m_vfs;
-
-    static MT::CMutex g_datalock;
-    static CVfsGlobal* g_instance;
 };
+
+/*-------------------------------------------------------------------------*/
+
+typedef CORE::CTFactory< CORE::CTaskConsumer, CAsyncVfsOperation > TAsyncVfsOperationTaskFactory;
 
 /*-------------------------------------------------------------------------//
 //                                                                         //
@@ -97,16 +112,5 @@ class GUCEF_VFS_PUBLIC_CPP CVfsGlobal
 }; /* namespace GUCEF */
 
 /*-------------------------------------------------------------------------*/
-
-#endif /* GUCEF_VFS_CVFSGLOBAL_H ? */
-
-/*-------------------------------------------------------------------------//
-//                                                                         //
-//      Info & Changes                                                     //
-//                                                                         //
-//-------------------------------------------------------------------------//
-
-- 16-02-2007 :
-        - Dinand: Added this class
-
----------------------------------------------------------------------------*/
+          
+#endif /* GUCEF_VFS_CASYNCVFSOPERATION_H ? */

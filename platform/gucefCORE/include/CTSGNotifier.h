@@ -105,15 +105,15 @@ class GUCEF_CORE_PUBLIC_CPP CTSGNotifier : public CNotifier
     void UnsubscribeFrom( CNotifier* threadedNotifier ,
                           const CEvent& eventid       );
 
-    virtual const CString& GetClassTypeName( void ) const;
+    virtual const CString& GetClassTypeName( void ) const GUCEF_VIRTUAL_OVERRIDE;
 
     CObserver& AsObserver( void );
 
     protected:
 
-    virtual void LockData( void ) const;
+    virtual void LockData( void ) const GUCEF_VIRTUAL_OVERRIDE;
 
-    virtual void UnlockData( void ) const;
+    virtual void UnlockData( void ) const GUCEF_VIRTUAL_OVERRIDE;
 
     protected:
     friend class CTSGObserver;

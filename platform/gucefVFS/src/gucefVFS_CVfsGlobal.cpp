@@ -23,10 +23,20 @@
 //                                                                         //
 //-------------------------------------------------------------------------*/
 
+#ifndef GUCEF_MT_CSCOPEMUTEX_H
+#include "gucefMT_CScopeMutex.h"
+#define GUCEF_MT_CSCOPEMUTEX_H
+#endif /* GUCEF_MT_CSCOPEMUTEX_H ? */
+
 #ifndef GUCEF_CORE_CCOREGLOBAL_H
 #include "gucefCORE_CCoreGlobal.h"
 #define GUCEF_CORE_CCOREGLOBAL_H
 #endif /* GUCEF_CORE_CCOREGLOBAL_H ? */
+
+#ifndef GUCEF_CORE_CTASKMANAGER_H
+#include "gucefCORE_CTaskManager.h"
+#define GUCEF_CORE_CTASKMANAGER_H
+#endif /* GUCEF_CORE_CTASKMANAGER_H ? */
 
 #ifndef GUCEF_CORE_CCODECREGISTRY_H
 #include "CCodecRegistry.h"
@@ -42,6 +52,11 @@
 #include "gucefVFS_CVFSURLHandler.h"     /* URL handler for URL's with protocol "vfs" */
 #define GUCEF_VFS_CVFSURLHANDLER_H
 #endif /* GUCEF_VFS_CVFSURLHANDLER_H ? */
+
+#ifndef GUCEF_VFS_CASYNCVFSOPERATION_H
+#include "gucefVFS_CAsyncVfsOperation.h"
+#define GUCEF_VFS_CASYNCVFSOPERATION_H
+#endif /* GUCEF_VFS_CASYNCVFSOPERATION_H ? */
 
 #include "gucefVFS_CVfsGlobal.h"
 
@@ -61,6 +76,8 @@ namespace VFS {
 //-------------------------------------------------------------------------*/
 
 CVfsGlobal* CVfsGlobal::g_instance = NULL;
+MT::CMutex CVfsGlobal::g_datalock;
+TAsyncVfsOperationTaskFactory g_asyncVfsOperationTaskFactory;
 
 /*-------------------------------------------------------------------------//
 //                                                                         //
@@ -72,10 +89,14 @@ CVfsGlobal*
 CVfsGlobal::Instance()
 {GUCEF_TRACE;
 
-    if ( NULL == g_instance )
+    if ( GUCEF_NULL == g_instance )
     {
-        g_instance = new CVfsGlobal();
-        g_instance->Initialize();
+        MT::CScopeMutex scopeLock( g_datalock );
+        if ( GUCEF_NULL == g_instance )
+        {
+            g_instance = new CVfsGlobal();
+            g_instance->Initialize();
+        }
     }
     return g_instance;
 }
@@ -101,18 +122,24 @@ CVfsGlobal::Initialize( void )
 
     GUCEF_SYSTEM_LOG( CORE::LOGLEVEL_NORMAL, "Initializing gucefVFS Global systems" );
 
+    // Init events
+    CVFS::RegisterEvents();
+    CAsyncVfsOperation::RegisterEvents();
+    
     try
     {
         CORE::CCoreGlobal::Instance()->GetCodecRegistry().Register( "VFSPackCodec", new CORE::CCodecRegistry::TCodecFamilyRegistry() );
     }
     catch ( CORE::CCodecRegistry::EAlreadyRegistered& )
     {
-    }
-    
+    } 
+
     /*
      *      Instantiate all singletons
      */
     m_vfs = new CVFS();
+
+    CORE::CCoreGlobal::Instance()->GetTaskManager().RegisterTaskConsumerFactory( CAsyncVfsOperation::TaskType, &g_asyncVfsOperationTaskFactory );
     
     /*
      *      register all codecs/handlers/notifiers

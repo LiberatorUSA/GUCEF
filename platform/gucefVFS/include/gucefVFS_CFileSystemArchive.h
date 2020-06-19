@@ -66,12 +66,12 @@ class GUCEF_VFS_PUBLIC_CPP CFileSystemArchive : public CIArchive
     virtual CVFSHandlePtr GetFile( const CString& file          ,
                                    const char* mode = "rb"      ,
                                    const UInt32 memLoadSize = 0 ,
-                                   const bool overwrite = false );
+                                   const bool overwrite = false ) GUCEF_VIRTUAL_OVERRIDE;
 
     virtual bool StoreAsFile( const CORE::CString& filepath    ,
                               const CORE::CDynamicBuffer& data ,
                               const CORE::UInt64 offset        ,
-                              const bool overwrite             );
+                              const bool overwrite             ) GUCEF_VIRTUAL_OVERRIDE;
 
     virtual void GetList( TStringSet& outputList             ,
                           const CString& location            , 
@@ -79,31 +79,31 @@ class GUCEF_VFS_PUBLIC_CPP CFileSystemArchive : public CIArchive
                           bool includePathInFilename = false ,
                           const CString& filter = ""         ,
                           bool addFiles = true               ,
-                          bool addDirs  = false              ) const;
+                          bool addDirs  = false              ) const GUCEF_VIRTUAL_OVERRIDE;
     
-    virtual bool FileExists( const CString& filePath ) const;
+    virtual bool FileExists( const CString& filePath ) const GUCEF_VIRTUAL_OVERRIDE;
     
-    virtual UInt32 GetFileSize( const CString& filePath ) const;
+    virtual UInt32 GetFileSize( const CString& filePath ) const GUCEF_VIRTUAL_OVERRIDE;
     
-    virtual CString GetFileHash( const CString& file ) const;
+    virtual CString GetFileHash( const CString& file ) const GUCEF_VIRTUAL_OVERRIDE;
     
-    virtual time_t GetFileModificationTime( const CString& filePath ) const;
+    virtual time_t GetFileModificationTime( const CString& filePath ) const GUCEF_VIRTUAL_OVERRIDE;
     
-    virtual const CString& GetArchiveName( void ) const;
+    virtual const CString& GetArchiveName( void ) const GUCEF_VIRTUAL_OVERRIDE;
     
-    virtual bool IsWriteable( void ) const;
+    virtual bool IsWriteable( void ) const GUCEF_VIRTUAL_OVERRIDE;
     
-    virtual bool LoadArchive( const CArchiveSettings& settings );
+    virtual bool LoadArchive( const CArchiveSettings& settings ) GUCEF_VIRTUAL_OVERRIDE;
 
     virtual bool LoadArchive( const VFS::CString& archiveName ,
                               CVFSHandlePtr vfsResource       ,
-                              const bool writeableRequest     );
+                              const bool writeableRequest     ) GUCEF_VIRTUAL_OVERRIDE;
     
-    virtual bool UnloadArchive( void );
+    virtual bool UnloadArchive( void ) GUCEF_VIRTUAL_OVERRIDE;
     
-    virtual void DestroyObject( CVFSHandle* sharedPointer );
+    virtual void DestroyObject( CVFSHandle* sharedPointer ) GUCEF_VIRTUAL_OVERRIDE;
 
-    virtual const CString& GetType( void ) const;
+    virtual const CString& GetType( void ) const GUCEF_VIRTUAL_OVERRIDE;
     
     const CString& GetRootDir( void ) const;
     

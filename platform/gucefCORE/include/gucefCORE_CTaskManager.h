@@ -107,18 +107,19 @@ class GUCEF_CORE_PUBLIC_CPP CTaskManager : public CObservingNotifier
      *  Queues a task for execution as soon as a thread is available
      *  to execute it.
      */
-    void QueueTask( const CString& taskType      ,
-                    CICloneable* taskData = NULL ,
-                    CTaskConsumer** task = NULL  );
+    void QueueTask( const CString& taskType                      ,
+                    CICloneable* taskData = GUCEF_NULL           ,
+                    CTaskConsumer** outTaskConsumer = GUCEF_NULL ,
+                    CObserver* taskObserver = GUCEF_NULL         );
 
     /**
      *  Immediatly starts executing a task using the task
      *  information provided. Based on the provided information
      *  a task consumer will be constructed to actually carry out the task
      */
-    bool StartTask( const CString& taskType      ,
-                    CICloneable* taskData = NULL ,
-                    CTaskConsumer** task = NULL  );
+    bool StartTask( const CString& taskType                      ,
+                    CICloneable* taskData = GUCEF_NULL           ,
+                    CTaskConsumer** outTaskConsumer = GUCEF_NULL );
 
     /**
      *  Immediatly starts executing a task using the task
@@ -242,7 +243,7 @@ class GUCEF_CORE_PUBLIC_CPP CTaskManager : public CObservingNotifier
 
     TAbstractTaskConsumerFactory m_consumerFactory;
     UInt32 m_desiredNrOfThreads;
-    UInt32 m_activeNrOfThreads;
+    Int32 m_activeNrOfThreads;
     TTaskMailbox m_taskQueue;
     TTaskIdGenerator m_taskIdGenerator;
     TTaskConsumerMap m_taskConsumerMap;

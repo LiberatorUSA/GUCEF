@@ -212,6 +212,11 @@ class FilePusher : public CORE::CObservingNotifier
                                       CORE::CICloneable* eventData );
     
     void
+    OnAsyncVfsOperationCompleted( CORE::CNotifier* notifier    ,
+                                  const CORE::CEvent& eventId  ,
+                                  CORE::CICloneable* eventData );
+
+    void
     QueueNewFileForPushingAfterUnmodifiedRestPeriod( const CORE::CString& newFilePath );
 
     void
@@ -265,6 +270,7 @@ class FilePusher : public CORE::CObservingNotifier
     CORE::CString m_filePushDestinationUri;
     CORE::CString m_currentFileBeingPushed;
     CORE::CDynamicBuffer m_currentFilePushBuffer;
+    CORE::UInt32 m_lastPushDurationInSecs;
 };
 
 /*-------------------------------------------------------------------------*/
