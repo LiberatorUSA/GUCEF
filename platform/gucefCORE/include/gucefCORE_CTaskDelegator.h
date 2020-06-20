@@ -105,6 +105,7 @@ class GUCEF_CORE_PRIVATE_CPP CTaskDelegator : public MT::CActiveObject      ,
 
     protected:
     friend class CTaskManager;
+    friend class CTaskConsumer;
 
     CTaskDelegator( void );
 
@@ -114,19 +115,19 @@ class GUCEF_CORE_PRIVATE_CPP CTaskDelegator : public MT::CActiveObject      ,
      *  Startup routine for the task. You should return true if startup succeeded and the task can commence
      *  cycling.
      */
-    virtual bool OnTaskStart( void* taskdata );
+    virtual bool OnThreadStart( void* taskdata ) GUCEF_VIRTUAL_OVERRIDE;
     
     /**
      *  Called after a successfull call to OnTaskStart
      */
-    virtual void OnTaskStarted( void* taskdata );
+    virtual void OnThreadStarted( void* taskdata ) GUCEF_VIRTUAL_OVERRIDE;
 
     /**
      *  Perorm all your main task work in this function.
      *  It will be called repeatedly until true is returned indicating that the task has been completed.
      *  Thus for ongoing tasks you can write this function to take care of a single interation of the task.
      */
-    virtual bool OnTaskCycle( void* taskdata );
+    virtual bool OnThreadCycle( void* taskdata ) GUCEF_VIRTUAL_OVERRIDE;
 
     /**
      *  This is where all the cleanup should be done for task data
@@ -134,14 +135,14 @@ class GUCEF_CORE_PRIVATE_CPP CTaskDelegator : public MT::CActiveObject      ,
      *  but in the case of a forcefull termination of the spawned thread this member function will be called
      *  from the thread that triggered the forcefull termination.
      */
-    virtual void OnTaskEnd( void* taskdata );
+    virtual void OnThreadEnd( void* taskdata ) GUCEF_VIRTUAL_OVERRIDE;
 
-    virtual void OnTaskPausedForcibly( void* taskdata );
+    virtual void OnThreadPausedForcibly( void* taskdata ) GUCEF_VIRTUAL_OVERRIDE;
     
-    virtual void OnTaskResumed( void* taskdata );
+    virtual void OnThreadResumed( void* taskdata ) GUCEF_VIRTUAL_OVERRIDE;
     
-    virtual void OnTaskEnded( void* taskdata ,
-                              bool forced    );
+    virtual void OnThreadEnded( void* taskdata ,
+                                bool forced    ) GUCEF_VIRTUAL_OVERRIDE;
 
     virtual bool ProcessTask( CTaskConsumer& taskConsumer ,
                               CICloneable* taskData       );
@@ -151,6 +152,10 @@ class GUCEF_CORE_PRIVATE_CPP CTaskDelegator : public MT::CActiveObject      ,
     
     protected:
 
+    virtual bool Lock( void ) const GUCEF_VIRTUAL_OVERRIDE;
+
+    virtual bool Unlock( void ) const GUCEF_VIRTUAL_OVERRIDE;
+
     CPulseGenerator m_pulseGenerator;
     
     private:
@@ -158,18 +163,18 @@ class GUCEF_CORE_PRIVATE_CPP CTaskDelegator : public MT::CActiveObject      ,
     CTaskDelegator( const CTaskDelegator& src );
     CTaskDelegator& operator=( const CTaskDelegator& src );
 
-    virtual void RequestImmediatePulse( CPulseGenerator& pulseGenerator );
+    virtual void RequestImmediatePulse( CPulseGenerator& pulseGenerator ) GUCEF_VIRTUAL_OVERRIDE;
 
     virtual void RequestPulsesPerImmediatePulseRequest( CPulseGenerator& pulseGenerator                     ,
-                                                        const Int32 requestedPulsesPerImmediatePulseRequest );
+                                                        const Int32 requestedPulsesPerImmediatePulseRequest ) GUCEF_VIRTUAL_OVERRIDE;
 
     virtual void RequestPeriodicPulses( CPulseGenerator& pulseGenerator    ,
-                                        const UInt32 pulseDeltaInMilliSecs );
+                                        const UInt32 pulseDeltaInMilliSecs ) GUCEF_VIRTUAL_OVERRIDE;
 
     virtual void RequestPulseInterval( CPulseGenerator& pulseGenerator    ,
-                                       const UInt32 pulseDeltaInMilliSecs );
+                                       const UInt32 pulseDeltaInMilliSecs ) GUCEF_VIRTUAL_OVERRIDE;
 
-    virtual void RequestStopOfPeriodicUpdates( CPulseGenerator& pulseGenerator );
+    virtual void RequestStopOfPeriodicUpdates( CPulseGenerator& pulseGenerator ) GUCEF_VIRTUAL_OVERRIDE;
 
     private:
 

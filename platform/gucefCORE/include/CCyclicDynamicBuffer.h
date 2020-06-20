@@ -28,6 +28,11 @@
 
 #include <list>
 
+#ifndef GUCEF_MT_CILOCKABLE_H
+#include "gucefMT_CILockable.h"
+#define GUCEF_MT_CILOCKABLE_H
+#endif /* GUCEF_MT_CILOCKABLE_H ? */
+
 #ifndef GUCEF_CORE_CDYNAMICBUFFER_H
 #include "CDynamicBuffer.h"
 #define GUCEF_CORE_CDYNAMICBUFFER_H
@@ -59,7 +64,7 @@ namespace CORE {
  *  Unused buffer space will be reused, if no unused space exists for storage
  *  of data the buffer will be automatically enlarged.
  */
-class GUCEF_CORE_PUBLIC_CPP CCyclicDynamicBuffer
+class GUCEF_CORE_PUBLIC_CPP CCyclicDynamicBuffer : public virtual MT::CILockable
 {
     public:
 
@@ -141,9 +146,9 @@ class GUCEF_CORE_PUBLIC_CPP CCyclicDynamicBuffer
 
     protected:
 
-    virtual void LockData( void ) const;
+    virtual bool Lock( void ) const GUCEF_VIRTUAL_OVERRIDE;
 
-    virtual void UnlockData( void ) const;
+    virtual bool Unlock( void ) const GUCEF_VIRTUAL_OVERRIDE;
 
     private:
 

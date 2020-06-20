@@ -88,15 +88,15 @@ CCyclicDynamicBuffer::operator=( const CCyclicDynamicBuffer& src )
     {
         Clear();
         
-        src.LockData();
-        LockData();
+        src.Lock();
+        Lock();
         
         m_buffer = src.m_buffer;
         m_usedBlocks = src.m_usedBlocks;
         m_freeBlocks = src.m_freeBlocks;
         
-        UnlockData();
-        src.UnlockData();
+        Unlock();
+        src.Unlock();
     }
     return *this;
 }
@@ -109,7 +109,7 @@ CCyclicDynamicBuffer::ReadBlockTo( CDynamicBuffer& buffer )
     
     UInt32 bytesRead = 0;
     
-    LockData();
+    Lock();
     
     // We will simply pop a FIFO element
     TBlockList::iterator i = m_usedBlocks.begin();
@@ -136,7 +136,7 @@ CCyclicDynamicBuffer::ReadBlockTo( CDynamicBuffer& buffer )
     
     TidyFreeBlocks();
     
-    UnlockData();
+    Unlock();
     
     return bytesRead;
 }
@@ -207,7 +207,7 @@ CCyclicDynamicBuffer::PeekBlock( CDynamicBuffer& buffer )
     
     UInt32 bytesRead = 0;
     
-    LockData();
+    Lock();
     
     // We will simply pop a FIFO element
     TBlockList::iterator i = m_usedBlocks.begin();
@@ -227,7 +227,7 @@ CCyclicDynamicBuffer::PeekBlock( CDynamicBuffer& buffer )
         buffer.SetDataSize( bytesRead );
     }
 
-    UnlockData();
+    Unlock();
     
     return bytesRead;
 }
@@ -240,7 +240,7 @@ CCyclicDynamicBuffer::Peek( void* destBuffer             ,
                             const UInt32 elementsToRead  )
 {GUCEF_TRACE;
 
-    LockData();
+    Lock();
 
     UInt8* destPtr = (UInt8*) destBuffer;    
     TBlockList peekBlocks;
@@ -272,7 +272,7 @@ CCyclicDynamicBuffer::Peek( void* destBuffer             ,
         ++m;
     } 
 
-    UnlockData();
+    Unlock();
     return totalBytesRead;
 }
 
@@ -307,7 +307,7 @@ CCyclicDynamicBuffer::PeekElement( void* destBuffer         ,
                                    const UInt32 elementSize )
 {GUCEF_TRACE;
 
-    LockData();
+    Lock();
     
     UInt32 totalBytesRead = 0, totalBytes = elementSize;    
     TBlockList elementBlocks;
@@ -352,11 +352,11 @@ CCyclicDynamicBuffer::PeekElement( void* destBuffer         ,
         // We can now copy these blocks to the output buffer
         CopyBlocksToBuffer( elementBlocks, destBuffer );
 
-        UnlockData();
+        Unlock();
         return elementSize;
     }
 
-    UnlockData();
+    Unlock();
     return 0;
 }
 
@@ -453,7 +453,7 @@ CCyclicDynamicBuffer::Read( void* destBuffer             ,
                             const UInt32 elementsToRead  )
 {GUCEF_TRACE;
 
-    LockData();
+    Lock();
 
     UInt8* destPtr = (UInt8*) destBuffer;
     UInt32 totalBytesRead = 0; UInt32 bytesRead = 0;
@@ -476,7 +476,7 @@ CCyclicDynamicBuffer::Read( void* destBuffer             ,
     // Optimize the free blocks
     TidyFreeBlocks();
 
-    UnlockData();
+    Unlock();
     return totalBytesRead;
 }
 
@@ -538,7 +538,7 @@ CCyclicDynamicBuffer::WriteImp( const void* srcBuffer        ,
     // Initial sanity check
     if ( bytesPerElement == 0 || elementsToWrite == 0 ) return 0;
     
-    LockData();
+    Lock();
     
     UInt32 totalBytesWritten = 0;
     UInt32 totalBytes = bytesPerElement * elementsToWrite;
@@ -577,7 +577,7 @@ CCyclicDynamicBuffer::WriteImp( const void* srcBuffer        ,
                 // something went wrong,.. intentionally do not update administration
                 // as if the write to buffer never happened
                 
-                UnlockData();                
+                Unlock();                
                 return totalBytesWritten;
             }
             
@@ -651,7 +651,7 @@ CCyclicDynamicBuffer::WriteImp( const void* srcBuffer        ,
     
     TidyFreeBlocks();
     
-    UnlockData(); 
+    Unlock(); 
     
     return totalBytesWritten;
 }
@@ -662,9 +662,9 @@ UInt32
 CCyclicDynamicBuffer::GetNrOfUsedBlocks( void ) const
 {GUCEF_TRACE;
 
-    LockData();    
+    Lock();    
     UInt32 nrOfUsedBlocks = (UInt32) m_usedBlocks.size();    
-    UnlockData();
+    Unlock();
     return nrOfUsedBlocks;
 }
 
@@ -674,9 +674,9 @@ UInt32
 CCyclicDynamicBuffer::GetNrOfFreeBlocks( void ) const
 {GUCEF_TRACE;
 
-    LockData();    
+    Lock();    
     UInt32 nrOfFreeBlocks = (UInt32) m_freeBlocks.size();    
-    UnlockData();
+    Unlock();
     return nrOfFreeBlocks;
 }
 
@@ -744,7 +744,7 @@ void
 CCyclicDynamicBuffer::Clear( const bool logicalClearOnly /* = false */ )
 {GUCEF_TRACE;
 
-    LockData();
+    Lock();
     
     GUCEF_DEBUG_LOG( CORE::LOGLEVEL_NORMAL, "CCyclicDynamicBuffer: Clearing the buffer" );
     
@@ -752,7 +752,7 @@ CCyclicDynamicBuffer::Clear( const bool logicalClearOnly /* = false */ )
     m_freeBlocks.clear();
     m_buffer.Clear( logicalClearOnly );
     
-    UnlockData();
+    Unlock();
 }
 
 /*-------------------------------------------------------------------------*/
@@ -770,7 +770,7 @@ UInt32
 CCyclicDynamicBuffer::GetBufferedDataSizeInBytes( void ) const
 {GUCEF_TRACE;
 
-    LockData();
+    Lock();
     
     UInt32 totalBytes = 0;
     for ( TBlockList::const_iterator i = m_usedBlocks.begin(); i != m_usedBlocks.end(); ++i )
@@ -778,7 +778,7 @@ CCyclicDynamicBuffer::GetBufferedDataSizeInBytes( void ) const
         totalBytes += (*i).blockSize;
     }    
     
-    UnlockData();
+    Unlock();
     
     return totalBytes;
 }
@@ -789,11 +789,11 @@ UInt32
 CCyclicDynamicBuffer::GetTotalBufferSizeInBytes( void ) const
 {GUCEF_TRACE;
 
-    LockData();
+    Lock();
     
     UInt32 totalBufferSize = m_buffer.GetBufferSize();
     
-    UnlockData();
+    Unlock();
     
     return totalBufferSize;
 }
@@ -804,31 +804,33 @@ Float32
 CCyclicDynamicBuffer::GetBufferUsagePercentage( void ) const
 {GUCEF_TRACE;
     
-    LockData();
+    Lock();
     
     Float32 usagePerc = GetBufferedDataSizeInBytes() / ( 1.0f * m_buffer.GetBufferSize() );
     
-    UnlockData();
+    Unlock();
     
     return usagePerc;
 }
 
 /*-------------------------------------------------------------------------*/
     
-void
-CCyclicDynamicBuffer::LockData( void ) const
+bool
+CCyclicDynamicBuffer::Lock( void ) const
 {GUCEF_TRACE;
 
     // non-operation, implement in descending class for threadsafety if desired
+    return false;
 }
 
 /*-------------------------------------------------------------------------*/
     
-void
-CCyclicDynamicBuffer::UnlockData( void ) const
+bool
+CCyclicDynamicBuffer::Unlock( void ) const
 {GUCEF_TRACE;
 
     // non-operation, implement in descending class for threadsafety if desired
+    return false;
 }
 
 /*-------------------------------------------------------------------------//

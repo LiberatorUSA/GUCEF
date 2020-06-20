@@ -25,6 +25,11 @@
 
 #include <limits.h>
 
+#ifndef GUCEF_MT_COBJECTSCOPELOCK_H
+#include "gucefMT_CObjectScopeLock.h"
+#define GUCEF_MT_COBJECTSCOPELOCK_H
+#endif /* GUCEF_MT_COBJECTSCOPELOCK_H ? */
+
 #ifndef GUCEF_CORE_LOGGING_H
 #include "gucefCORE_Logging.h"
 #define GUCEF_CORE_LOGGING_H
@@ -92,7 +97,7 @@ CNotificationIDRegistry::Register( const CString& keyvalue                      
                                    const bool okIfAlreadyRegisterd /* = false */ )
 {GUCEF_TRACE;
 
-    m_dataLock.Lock();
+    MT::CObjectScopeLock lock( this );
 
     if ( keyvalue.Length() > 0 )
     {
@@ -103,7 +108,6 @@ CNotificationIDRegistry::Register( const CString& keyvalue                      
             {
                 m_list[ keyvalue ] = m_lastid;
                 ++m_lastid;
-                m_dataLock.Unlock();
 
                 GUCEF_SYSTEM_LOG( LOGLEVEL_NORMAL, "Event registered with ID " + UInt32ToString( m_lastid-1 ) + " and name \"" + keyvalue + "\"" );
 
@@ -132,7 +136,6 @@ CNotificationIDRegistry::Register( const CString& keyvalue                      
                 if ( !found )
                 {
                     m_list[ keyvalue ] = n;
-                    m_dataLock.Unlock();
                     return CEvent( n, keyvalue );
                 }
             }
@@ -140,19 +143,14 @@ CNotificationIDRegistry::Register( const CString& keyvalue                      
 
         if ( !okIfAlreadyRegisterd )
         {
-            m_dataLock.Unlock();
             GUCEF_EMSGTHROW( EKeyAlreadyRegistered, "CNotificationIDRegistry: Key is already registerd" );
         }
-        m_dataLock.Unlock();
         return CEvent( (*i).second, keyvalue );
     }
     else
     {
-        m_dataLock.Unlock();
         GUCEF_EMSGTHROW( EEmptyKeyString, "CNotificationIDRegistry: Empty key string" );
     }
-
-    m_dataLock.Unlock();
 }
 
 /*-------------------------------------------------------------------------*/
@@ -162,7 +160,7 @@ CNotificationIDRegistry::Unregister( const CString& keyvalue                    
                                      const bool okIfUnknownKeyGiven /* = false */ )
 {GUCEF_TRACE;
 
-    m_dataLock.Lock();
+    MT::CObjectScopeLock lock( this );
 
     if ( keyvalue.Length() > 0 )
     {
@@ -173,17 +171,13 @@ CNotificationIDRegistry::Unregister( const CString& keyvalue                    
         }
         else
         {
-            m_dataLock.Unlock();
             GUCEF_EMSGTHROW( EUnknownKey, "CNotificationIDRegistry::Unregister(): unknown notification key string identifier" );
         }
     }
     else
     {
-        m_dataLock.Unlock();
         GUCEF_EMSGTHROW( EUnknownKey, "CNotificationIDRegistry::Unregister(): invalid notification key string identifier" );
     }
-
-    m_dataLock.Unlock();
 }
 
 /*-------------------------------------------------------------------------*/
@@ -193,23 +187,19 @@ CNotificationIDRegistry::Lookup( const CString& keyvalue     ,
                                  const bool registerUnknown  )
 {GUCEF_TRACE;
 
-    m_dataLock.Lock();
+    MT::CObjectScopeLock lock( this );
 
     TRegistryList::iterator i = m_list.find( keyvalue );
     if ( i != m_list.end() )
     {
-        m_dataLock.Unlock();
         return CEvent( (*i).second, keyvalue );
     }
 
     if ( registerUnknown )
     {
         Register( keyvalue );
-        m_dataLock.Unlock();
         return Lookup( keyvalue );
     }
-
-    m_dataLock.Unlock();
 
     GUCEF_EMSGTHROW( EInvalidKey, "CNotificationIDRegistry::Lookup(): invalid notification key identifier" );
 }
@@ -220,7 +210,7 @@ CString
 CNotificationIDRegistry::Lookup( const CEvent& eventID ) const
 {GUCEF_TRACE;
 
-    m_dataLock.Lock();
+    MT::CObjectScopeLock lock( this );
 
     UInt32 id( eventID.GetID() );
 
@@ -231,14 +221,11 @@ CNotificationIDRegistry::Lookup( const CEvent& eventID ) const
         {
             if ( (*i).second == id )
             {
-                m_dataLock.Unlock();
                 return (*i).first;
             }
             ++i;
         }
     }
-
-    m_dataLock.Unlock();
 
     GUCEF_EMSGTHROW( EInvalidEventID, "CNotificationIDRegistry::Lookup(): invalid eventID" );
 }
@@ -249,14 +236,30 @@ bool
 CNotificationIDRegistry::IsRegistered( const CString& keyvalue ) const
 {GUCEF_TRACE;
 
-    m_dataLock.Lock();
+    MT::CObjectScopeLock lock( this );
 
     TRegistryList::const_iterator i = m_list.find( keyvalue );
     bool found = i != m_list.end();
 
-    m_dataLock.Unlock();
-
     return found;
+}
+
+/*-------------------------------------------------------------------------*/
+
+bool
+CNotificationIDRegistry::Lock( void ) const
+{GUCEF_TRACE;
+
+    return m_dataLock.Lock();
+}
+
+/*-------------------------------------------------------------------------*/
+
+bool
+CNotificationIDRegistry::Unlock( void ) const
+{GUCEF_TRACE;
+
+    return m_dataLock.Unlock();
 }
 
 /*-------------------------------------------------------------------------//

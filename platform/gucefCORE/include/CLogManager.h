@@ -34,6 +34,11 @@
 #define GUCEF_MT_CMUTEX_H
 #endif /* GUCEF_MT_CMUTEX_H ? */
 
+#ifndef GUCEF_MT_CILOCKABLE_H
+#include "gucefMT_CILockable.h"
+#define GUCEF_MT_CILOCKABLE_H
+#endif /* GUCEF_MT_CILOCKABLE_H ? */
+
 #ifndef GUCEF_CORE_CDVSTRING_H
 #include "CDVString.h"
 #define GUCEF_CORE_CDVSTRING_H
@@ -66,7 +71,7 @@ class CString;
 
 /*-------------------------------------------------------------------------*/
 
-class GUCEF_CORE_PUBLIC_CPP CLogManager
+class GUCEF_CORE_PUBLIC_CPP CLogManager : public MT::CILockable
 {
     public:
 
@@ -133,6 +138,12 @@ class GUCEF_CORE_PUBLIC_CPP CLogManager
     void RedirectToBootstrapLogQueue( bool redirect );
 
     static const CString& GetLogMsgTypeString( const TLogMsgType logMsgType );
+
+    protected:
+    
+    virtual bool Lock( void ) const GUCEF_VIRTUAL_OVERRIDE;
+    
+    virtual bool Unlock( void ) const GUCEF_VIRTUAL_OVERRIDE;
 
     private:
     friend class CCoreGlobal;

@@ -299,20 +299,20 @@ CPumpedObserver::OnPumpedNotify( CNotifier* notifier                 ,
 
 /*-------------------------------------------------------------------------*/
 
-void
-CPumpedObserver::LockData( void ) const
+bool
+CPumpedObserver::Lock( void ) const
 {GUCEF_TRACE;
 
-    m_mutex.Lock();
+    return m_mutex.Lock();
 }
 
 /*-------------------------------------------------------------------------*/
 
-void
-CPumpedObserver::UnlockData( void ) const
+bool
+CPumpedObserver::Unlock( void ) const
 {GUCEF_TRACE;
 
-    m_mutex.Unlock();
+    return m_mutex.Unlock();
 }
 
 /*-------------------------------------------------------------------------*/

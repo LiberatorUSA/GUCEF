@@ -61,20 +61,20 @@ CNotifierObservingComponent::OnNotify( CNotifier* notifier                 ,
 
 /*-------------------------------------------------------------------------*/
 
-void 
-CNotifierObservingComponent::LockData( void )
+bool 
+CNotifierObservingComponent::Lock( void ) const
 {GUCEF_TRACE;
 
-    m_owner->LockData();
+    return m_owner->Lock();
 }
 
 /*-------------------------------------------------------------------------*/
     
-void 
-CNotifierObservingComponent::UnlockData( void )
+bool 
+CNotifierObservingComponent::Unlock( void ) const
 {GUCEF_TRACE;
 
-    m_owner->UnlockData();
+    return m_owner->Unlock();
 }
 
 /*-------------------------------------------------------------------------*/

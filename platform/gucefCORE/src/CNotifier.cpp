@@ -336,20 +336,22 @@ CNotifier::OnObserverDestruction( CObserver* observer )
 
 /*-------------------------------------------------------------------------*/
 
-void
-CNotifier::LockData( void ) const
+bool
+CNotifier::Lock( void ) const
 {GUCEF_TRACE;
 
     /* can be implemented in a descending class to add thread-safety */
+    return false;
 }
 
 /*-------------------------------------------------------------------------*/
 
-void
-CNotifier::UnlockData( void ) const
+bool
+CNotifier::Unlock( void ) const
 {GUCEF_TRACE;
 
     /* can be implemented in a descending class to add thread-safety */
+    return false;
 }
 
 /*-------------------------------------------------------------------------//

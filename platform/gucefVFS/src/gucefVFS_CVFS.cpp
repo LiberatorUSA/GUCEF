@@ -28,6 +28,11 @@
 #define GUCEF_MT_CSCOPEMUTEX_H
 #endif /* GUCEF_MT_CSCOPEMUTEX_H ? */ 
 
+#ifndef GUCEF_MT_COBJECTSCOPELOCK_H
+#include "gucefMT_CObjectScopeLock.h"
+#define GUCEF_MT_COBJECTSCOPELOCK_H
+#endif /* GUCEF_MT_COBJECTSCOPELOCK_H ? */
+
 #ifndef DVFILEUTILS_H
 #include "dvfileutils.h"                /* Needed for dir itteration */
 #define DVFILEUTILS_H
@@ -137,7 +142,6 @@ CVFS::CVFS( void )
     , _maxmemloadsize( 1024 ) 
     , m_abstractArchiveFactory()
     , m_fileSystemArchiveFactory()
-    , m_datalock()
 {GUCEF_TRACE;
 
     RegisterEvents();
@@ -214,7 +218,7 @@ CVFS::StoreAsFile( const CORE::CString& filepath    ,
                    const bool overwrite             )
 {GUCEF_TRACE;
 
-    MT::CScopeMutex scopeLock( m_datalock );
+    MT::CObjectScopeLock lock( this );
     
     // Get a list of all eligable mounts
     TConstMountLinkVector mountLinks;
@@ -263,7 +267,7 @@ CVFS::GetFile( const CORE::CString& file          ,
     CString filepath( file.ReplaceChar( GUCEF_DIRSEPCHAROPPOSITE, GUCEF_DIRSEPCHAR ) );
     bool fileMustExist = *mode == 'r';
 
-    MT::CScopeMutex scopeLock( m_datalock );
+    MT::CObjectScopeLock lock( this );
     
     // Get a list of all eligable mounts
     TConstMountLinkVector mountLinks;
@@ -370,7 +374,7 @@ bool
 CVFS::MountArchive( const CArchiveSettings& settings )
 {GUCEF_TRACE;
 
-    MT::CScopeMutex scopeLock( m_datalock );
+    MT::CObjectScopeLock lock( this );
 
     // Either determine the actual non-vfs path based on previously loaded/mounted archives or use the given explicit path if any
     CString actualArchivePath = settings.GetActualArchivePath();
@@ -436,7 +440,7 @@ CVFS::MountArchive( const CString& archiveName    ,
     if ( archiveResource.IsNULL() )
         return false;
     
-    MT::CScopeMutex scopeLock( m_datalock );
+    MT::CObjectScopeLock lock( this );
     
     // create an archive for the type
     CIArchive* archive = m_abstractArchiveFactory.Create( archiveType );
@@ -474,7 +478,7 @@ bool
 CVFS::IsMountedArchive( const CString& location ) const
 {GUCEF_TRACE;
 
-    MT::CScopeMutex scopeLock( m_datalock );
+    MT::CObjectScopeLock lock( this );
 
     TMountVector::const_iterator i = m_mountList.begin();
     while ( i != m_mountList.end() )
@@ -499,7 +503,7 @@ CVFS::GetMountedArchiveList( const CString& location ,
                              TStringSet& outputList  ) const
 {GUCEF_TRACE;
 
-    MT::CScopeMutex scopeLock( m_datalock );
+    MT::CObjectScopeLock lock( this );
 
     TMountVector::const_iterator i = m_mountList.begin();
     while ( i != m_mountList.end() )
@@ -569,7 +573,7 @@ CVFS::GetActualFilePath( const CString& file ,
                          CString& path       ) const
 {GUCEF_TRACE;
 
-    MT::CScopeMutex scopeLock( m_datalock );
+    MT::CObjectScopeLock lock( this );
 
     // Get a list of all eligable mounts
     TConstMountLinkVector mountLinks;
@@ -602,7 +606,7 @@ CVFS::GetVfsPathForAbsolutePath( const CString& absolutePath ,
     // Make sure there are no more variables in the given absolute path
     CString realAbsPath = CORE::RelativePath( absolutePath );
 
-    MT::CScopeMutex scopeLock( m_datalock );
+    MT::CObjectScopeLock lock( this );
 
     // Try to match a mount entry
     TMountVector::const_iterator i = m_mountList.begin();
@@ -649,7 +653,7 @@ bool
 CVFS::UnmountArchiveByName( const CString& archiveName )
 {GUCEF_TRACE;
 
-    MT::CScopeMutex scopeLock( m_datalock );
+    MT::CObjectScopeLock lock( this );
 
     TMountVector::iterator i = m_mountList.begin();
     while ( i != m_mountList.end() )
@@ -698,7 +702,7 @@ void
 CVFS::GetListOfSupportedArchiveTypes( TAbstractArchiveFactory::TKeySet& outList ) const
 {GUCEF_TRACE;
 
-    MT::CScopeMutex scopeLock( m_datalock );
+    MT::CObjectScopeLock lock( this );
     m_abstractArchiveFactory.ObtainKeySet( outList );
 }
 
@@ -708,7 +712,7 @@ void
 CVFS::SetMemloadSize( UInt32 bytesize )
 {GUCEF_TRACE;
 
-    MT::CScopeMutex scopeLock( m_datalock );
+    MT::CObjectScopeLock lock( this );
 
     _maxmemloadsize = bytesize;
     GUCEF_SYSTEM_LOG( CORE::LOGLEVEL_NORMAL, "VFS maximum memory load size set to " + CORE::UInt32ToString( bytesize ) + " Bytes" );
@@ -729,7 +733,7 @@ bool
 CVFS::SaveConfig( CORE::CDataNode& tree ) const
 {GUCEF_TRACE;
 
-    MT::CScopeMutex scopeLock( m_datalock );
+    MT::CObjectScopeLock lock( this );
     
     CORE::CDataNode* n = tree.Structure( "GUCEF%VFS%CVFS" ,
                                          '%'              );
@@ -910,7 +914,7 @@ CVFS::GetList( TStringSet& outputList                   ,
     // Switch dir separator chars if needed
     CString path( location.ReplaceChar( GUCEF_DIRSEPCHAROPPOSITE, GUCEF_DIRSEPCHAR ) );
 
-    MT::CScopeMutex scopeLock( m_datalock );
+    MT::CObjectScopeLock lock( this );
     
     // Get a list of all eligable mounts
     TConstMountLinkVector mountLinks;
@@ -994,7 +998,7 @@ CVFS::GetFileModificationTime( const CString& filename ) const
     // Switch dir separator chars if needed
     CString path( filename.ReplaceChar( GUCEF_DIRSEPCHAROPPOSITE, GUCEF_DIRSEPCHAR ) );
 
-    MT::CScopeMutex scopeLock( m_datalock );
+    MT::CObjectScopeLock lock( this );
 
     // Get a list of all eligable mounts
     TConstMountLinkVector mountLinks;
@@ -1025,7 +1029,7 @@ CVFS::GetFileHash( const CORE::CString& file ) const
     // Switch dir separator chars if needed
     CString path( file.ReplaceChar( GUCEF_DIRSEPCHAROPPOSITE, GUCEF_DIRSEPCHAR ) );
 
-    MT::CScopeMutex scopeLock( m_datalock );
+    MT::CObjectScopeLock lock( this );
 
     // Get a list of all eligable mounts
     TConstMountLinkVector mountLinks;
@@ -1057,7 +1061,7 @@ CVFS::GetFileSize( const CORE::CString& file ) const
     // Switch dir separator chars if needed
     CString path( file.ReplaceChar( GUCEF_DIRSEPCHAROPPOSITE, GUCEF_DIRSEPCHAR ) );
 
-    MT::CScopeMutex scopeLock( m_datalock );
+    MT::CObjectScopeLock lock( this );
     
     // Get a list of all eligable mounts
     TConstMountLinkVector mountLinks;
@@ -1087,7 +1091,7 @@ CVFS::RegisterArchiveFactory( const CString& archiveType      ,
                               TArchiveFactory& archiveFactory )
 {GUCEF_TRACE;
 
-    MT::CScopeMutex scopeLock( m_datalock );
+    MT::CObjectScopeLock lock( this );
 
     m_abstractArchiveFactory.RegisterConcreteFactory( archiveType     ,
                                                       &archiveFactory );
@@ -1101,31 +1105,11 @@ void
 CVFS::UnregisterArchiveFactory( const CString& archiveType )
 {GUCEF_TRACE;
 
-    MT::CScopeMutex scopeLock( m_datalock );
+    MT::CObjectScopeLock lock( this );
 
     m_abstractArchiveFactory.UnregisterConcreteFactory( archiveType );
 
     GUCEF_SYSTEM_LOG( CORE::LOGLEVEL_NORMAL, "Unregistered VFS archive factory for type \"" + archiveType + "\"" );
-}
-
-/*-------------------------------------------------------------------------*/
-
-void
-CVFS::LockData( void ) const
-{GUCEF_TRACE;
-
-    m_datalock.Lock();
-    CTSGNotifier::LockData();
-}
-
-/*-------------------------------------------------------------------------*/
-
-void
-CVFS::UnlockData( void ) const
-{GUCEF_TRACE;
-
-    CTSGNotifier::UnlockData();
-    m_datalock.Unlock();
 }
 
 /*-------------------------------------------------------------------------//

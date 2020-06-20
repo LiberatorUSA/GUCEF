@@ -35,6 +35,16 @@
 #define GUCEF_MT_GUCEFMT_MACROS_H
 #endif /* GUCEF_MT_GUCEFMT_MACROS_H ? */
 
+#ifndef GUCEF_MT_CMUTEX_H
+#include "gucefMT_CMutex.h"
+#define GUCEF_MT_CMUTEX_H
+#endif /* GUCEF_MT_CMUTEX_H ? */
+
+#ifndef GUCEF_MT_CILOCKABLE_H
+#include "gucefMT_CILockable.h"
+#define GUCEF_MT_CILOCKABLE_H
+#endif /* GUCEF_MT_CILOCKABLE_H ? */
+
 /*-------------------------------------------------------------------------//
 //                                                                         //
 //      NAMESPACE                                                          //
@@ -58,7 +68,7 @@ struct SThreadData;
 //                                                                         //
 //-------------------------------------------------------------------------*/
 
-class GUCEF_MT_PUBLIC_CPP CActiveObject
+class GUCEF_MT_PUBLIC_CPP CActiveObject : public virtual MT::CILockable
 {
     public:
 
@@ -87,7 +97,7 @@ class GUCEF_MT_PUBLIC_CPP CActiveObject
      *  Activates the object (if it is not active already).
      *  This operation will spawn a thread.
      */
-    bool Activate( void* taskdata = NULL                   ,
+    bool Activate( void* threadData = GUCEF_NULL           ,
                    const UInt32 cycleDelay = 25            ,
                    const UInt32 minimalCycleDeltaInMs = 10 );
 
@@ -114,23 +124,27 @@ class GUCEF_MT_PUBLIC_CPP CActiveObject
 
     protected:
 
+    virtual bool Lock( void ) const GUCEF_VIRTUAL_OVERRIDE;
+
+    virtual bool Unlock( void ) const GUCEF_VIRTUAL_OVERRIDE;
+
     /**
      *  Startup routine for the task. You should return true if startup succeeded and the task can commence
      *  cycling.
      */
-    virtual bool OnTaskStart( void* taskdata ) = 0;
+    virtual bool OnThreadStart( void* taskdata ) = 0;
     
     /**
-     *  Called after a successfull call to OnTaskStart
+     *  Called after a successfull call to OnThreadStart
      */
-    virtual void OnTaskStarted( void* taskdata );
+    virtual void OnThreadStarted( void* taskdata );
 
     /**
      *  Perorm all your main task work in this function.
      *  It will be called repeatedly until true is returned indicating that the task has been completed.
      *  Thus for ongoing tasks you can write this function to take care of a single interation of the task.
      */
-    virtual bool OnTaskCycle( void* taskdata ) = 0;
+    virtual bool OnThreadCycle( void* taskdata ) = 0;
 
     /**
      *  This is where all the cleanup should be done for task data
@@ -138,16 +152,16 @@ class GUCEF_MT_PUBLIC_CPP CActiveObject
      *  but in the case of a forcefull termination of the spawned thread this member function will be called
      *  from the thread that triggered the forcefull termination.
      */
-    virtual void OnTaskEnd( void* taskdata ) = 0;
+    virtual void OnThreadEnd( void* taskdata ) = 0;
 
-    virtual void OnTaskPausedForcibly( void* taskdata );
+    virtual void OnThreadPausedForcibly( void* taskdata );
     
-    virtual void OnTaskResumed( void* taskdata );
+    virtual void OnThreadResumed( void* taskdata );
     
-    virtual void OnTaskEnded( void* taskdata ,
-                              bool forced    );
+    virtual void OnThreadEnded( void* taskdata ,
+                                bool forced    );
 
-    void* GetTaskData( void ) const;
+    void* GetThreadData( void ) const;
 
     protected:
 
@@ -159,10 +173,11 @@ class GUCEF_MT_PUBLIC_CPP CActiveObject
     static UInt32 GUCEF_CALLSPEC_STD_PREFIX OnActivate( void* thisobject ) GUCEF_CALLSPEC_STD_SUFFIX;
 
     struct SThreadData* _td;
-    void* _taskdata;
+    void* m_threadData;
     bool m_isDeactivationRequested;
     bool _suspend;
     bool _active;
+    CMutex m_datalock;
 };
 
 /*-------------------------------------------------------------------------//

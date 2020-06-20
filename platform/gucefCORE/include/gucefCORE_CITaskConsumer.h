@@ -95,7 +95,7 @@ class GUCEF_CORE_PUBLIC_CPP CTaskConsumer : public CObservingNotifier
 
     UInt32 GetTaskId( void ) const;
 
-    virtual const CString& GetClassTypeName( void ) const;
+    virtual const CString& GetClassTypeName( void ) const GUCEF_VIRTUAL_OVERRIDE;
 
     bool IsOwnedByTaskManager( void ) const;
 
@@ -137,6 +137,12 @@ class GUCEF_CORE_PUBLIC_CPP CTaskConsumer : public CObservingNotifier
 
     virtual void OnTaskEnded( CICloneable* taskdata ,
                               bool forced           );
+    
+    protected:
+
+    virtual bool Lock( void ) const GUCEF_VIRTUAL_OVERRIDE;
+
+    virtual bool Unlock( void ) const GUCEF_VIRTUAL_OVERRIDE;
 
     private:
     friend class CTaskManager;

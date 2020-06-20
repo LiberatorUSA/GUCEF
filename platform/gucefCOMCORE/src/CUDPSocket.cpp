@@ -297,7 +297,7 @@ CUDPSocket::Update( bool performRead )
         FD_ZERO( &readfds );
         FD_ZERO( &exceptfds );
 
-        LockData();
+        Lock();
 
         FD_SET( _data->sockid, &readfds );
         FD_SET( _data->sockid, &exceptfds );
@@ -323,7 +323,7 @@ CUDPSocket::Update( bool performRead )
                 TSocketErrorEventData eData( lastError );
                 if ( !NotifyObservers( UDPSocketErrorEvent, &eData ) ) return false;
 
-                UnlockData();
+                Unlock();
 
                 if ( m_autoReopenOnError )
                     Open();
@@ -338,13 +338,13 @@ CUDPSocket::Update( bool performRead )
                 {
                     CIPAddress sender;
                     bool receiveSuccess = 0 < Recieve( sender, NULL, 0);
-                    UnlockData();
+                    Unlock();
                     return receiveSuccess;
                 }
                 return true;
             }
 
-            UnlockData();
+            Unlock();
         }
         else
         {
@@ -354,7 +354,7 @@ CUDPSocket::Update( bool performRead )
             TSocketErrorEventData eData( errorCode );
             NotifyObservers( UDPSocketErrorEvent, &eData );
 
-            UnlockData();
+            Unlock();
 
             if ( m_autoReopenOnError )
                 Open();

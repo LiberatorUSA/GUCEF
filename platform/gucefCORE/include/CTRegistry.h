@@ -77,7 +77,7 @@ namespace CORE {
  *  where object access is concerned
  */
 template < class T >
-class CTRegistry
+class CTRegistry : public virtual MT::CILockable
 {
     public:
     typedef CTSharedPtr< T > TRegisteredObjPtr;
@@ -118,9 +118,9 @@ class CTRegistry
 
     protected:
 
-    virtual void LockData( void );
+    virtual bool Lock( void ) const GUCEF_VIRTUAL_OVERRIDE;
 
-    virtual void UnlockData( void );
+    virtual bool Unlock( void ) const GUCEF_VIRTUAL_OVERRIDE;
 
     private:
 
@@ -349,19 +349,21 @@ CTRegistry< T >::GetList( TStringList& destList ) const
 /*-------------------------------------------------------------------------*/
 
 template< class T >
-void
-CTRegistry< T >::LockData( void )
+bool
+CTRegistry< T >::Lock( void ) const
 {GUCEF_TRACE;
         /* implemented to avoid manditory implementation by decending classes */
+    return false;
 }
 
 /*-------------------------------------------------------------------------*/
 
 template< class T >
-void
-CTRegistry< T >::UnlockData( void )
+bool
+CTRegistry< T >::Unlock( void ) const
 {GUCEF_TRACE;
         /* implemented to avoid manditory implementation by decending classes */
+    return false;
 }
 
 /*-------------------------------------------------------------------------//

@@ -258,10 +258,6 @@ class GUCEF_VFS_PUBLIC_CPP CVFS : public CORE::CTSGNotifier   ,
     
     protected:
 
-    virtual void LockData( void ) const GUCEF_VIRTUAL_OVERRIDE;
-
-    virtual void UnlockData( void ) const GUCEF_VIRTUAL_OVERRIDE;
-
     virtual void OnPumpedNotify( CORE::CNotifier* notifier                 ,
                                  const CORE::CEvent& eventid               ,
                                  CORE::CICloneable* eventdata = GUCEF_NULL ) GUCEF_VIRTUAL_OVERRIDE;
@@ -308,7 +304,6 @@ class GUCEF_VFS_PUBLIC_CPP CVFS : public CORE::CTSGNotifier   ,
     UInt32 _maxmemloadsize;
     TAbstractArchiveFactory m_abstractArchiveFactory;
     TFileSystemArchiveFactory m_fileSystemArchiveFactory;
-    MT::CMutex m_datalock;
 };
 
 /*-------------------------------------------------------------------------//

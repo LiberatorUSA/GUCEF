@@ -123,12 +123,12 @@ CPulseGenerator::RequestImmediatePulse( void )
         return;
     }
 
-    LockData();
+    Lock();
     UInt64 newTickCount = MT::PrecisionTickCount();
     Int64 deltaTicks = newTickCount - m_lastCycleTickCount;
     Float64 updateDeltaTime = deltaTicks / m_ticksPerMs;
     m_lastCycleTickCount = newTickCount;
-    UnlockData();
+    Unlock();
             
     CPulseData pulseData( newTickCount, deltaTicks, updateDeltaTime );
     NotifyObservers( PulseEvent, &pulseData );
@@ -140,12 +140,12 @@ void
 CPulseGenerator::RequestPulsesPerImmediatePulseRequest( const Int32 requestedPulsesPerImmediatePulseRequest )
 {GUCEF_TRACE;
 
-    LockData();
+    Lock();
     if ( GUCEF_NULL != m_driver )
     {
         m_driver->RequestPulsesPerImmediatePulseRequest( *this, requestedPulsesPerImmediatePulseRequest );
     }
-    UnlockData();
+    Unlock();
 }
 
 /*--------------------------------------------------------------------------*/
@@ -154,15 +154,15 @@ void
 CPulseGenerator::RequestPeriodicPulses( void* requestor )
 {GUCEF_TRACE;
 
-    LockData();
+    Lock();
     m_periodicUpdateRequestors[ requestor ] = m_updateDeltaInMilliSecs;
     if ( m_driver != NULL && m_periodicUpdateRequestors.size() == 1 )
     {
-        UnlockData();
+        Unlock();
         m_driver->RequestPeriodicPulses( *this, m_updateDeltaInMilliSecs );
         return;
     }
-    UnlockData();    
+    Unlock();    
 }
 
 /*--------------------------------------------------------------------------*/
@@ -228,7 +228,7 @@ CPulseGenerator::RequestPeriodicPulses( void* requestor                    ,
                                         const UInt32 pulseDeltaInMilliSecs )
 {GUCEF_TRACE;
 
-    LockData();
+    Lock();
     if ( NULL != requestor )
     {
         m_periodicUpdateRequestors[ requestor ] = pulseDeltaInMilliSecs;
@@ -238,11 +238,11 @@ CPulseGenerator::RequestPeriodicPulses( void* requestor                    ,
     
     if ( NULL != m_driver )
     {
-        UnlockData();
+        Unlock();
         m_driver->RequestPeriodicPulses( *this, m_updateDeltaInMilliSecs );
         return;
     }
-    UnlockData(); 
+    Unlock(); 
 }
 
 /*--------------------------------------------------------------------------*/
@@ -251,7 +251,7 @@ void
 CPulseGenerator::RequestStopOfPeriodicUpdates( void* requestor )
 {GUCEF_TRACE;
     
-    LockData();
+    Lock();
     if ( NULL != requestor )
     {
         m_periodicUpdateRequestors.erase( requestor );
@@ -274,7 +274,7 @@ CPulseGenerator::RequestStopOfPeriodicUpdates( void* requestor )
             m_driver->RequestStopOfPeriodicUpdates( *this );
         }
     }    
-    UnlockData();
+    Unlock();
 }
 
 /*--------------------------------------------------------------------------*/
@@ -283,18 +283,18 @@ void
 CPulseGenerator::RequestPulseInterval( const UInt32 minimalPulseDeltaInMilliSecs )
 {GUCEF_TRACE;
 
-    LockData();
+    Lock();
     if ( minimalPulseDeltaInMilliSecs < m_updateDeltaInMilliSecs )
     {
         if ( NULL != m_driver )
         {
             m_updateDeltaInMilliSecs = minimalPulseDeltaInMilliSecs;
-            UnlockData();
+            Unlock();
             m_driver->RequestPulseInterval( *this, m_updateDeltaInMilliSecs );
             return;
         }
     }
-    UnlockData();
+    Unlock();
 }
 
 /*--------------------------------------------------------------------------*/
@@ -373,17 +373,17 @@ void
 CPulseGenerator::SetPulseGeneratorDriver( CIPulseGeneratorDriver* driver )
 {GUCEF_TRACE;
 
-    LockData();
+    Lock();
     m_driver = driver;
     if ( IsPulsingPeriodicly() )
     {
-        UnlockData();
+        Unlock();
         if ( GUCEF_NULL != m_driver )
             m_driver->RequestPulseInterval( *this, m_updateDeltaInMilliSecs );
     }
     else
     {
-        UnlockData();        
+        Unlock();        
         if ( GUCEF_NULL != m_driver )
             m_driver->RequestImmediatePulse( *this );
     }
@@ -413,15 +413,15 @@ void
 CPulseGenerator::ForceStopOfPeriodicPulses( void )
 {GUCEF_TRACE;
     
-    LockData();
+    Lock();
     m_forcedStopOfPeriodPulses = true;
     if ( NULL != m_driver )
     {
-        UnlockData();
+        Unlock();
         m_driver->RequestStopOfPeriodicUpdates( *this );
         return;
     }
-    UnlockData();
+    Unlock();
 }
 
 /*--------------------------------------------------------------------------*/
@@ -430,18 +430,18 @@ void
 CPulseGenerator::AllowPeriodicPulses( void )
 {GUCEF_TRACE;
 
-    LockData();
+    Lock();
     if ( m_forcedStopOfPeriodPulses )
     {
         m_forcedStopOfPeriodPulses = false;        
         if ( NULL != m_driver && m_periodicUpdateRequestors.size() > 0 )
         {
-            UnlockData();
+            Unlock();
             m_driver->RequestPeriodicPulses( *this, m_updateDeltaInMilliSecs );
             return;
         }
     }
-    UnlockData();
+    Unlock();
 }
 
 /*--------------------------------------------------------------------------*/
@@ -450,35 +450,35 @@ void
 CPulseGenerator::RequestPeriodicPulses( void )
 {GUCEF_TRACE;
 
-    LockData();
+    Lock();
     if ( !m_forcedStopOfPeriodPulses )
     {
         if ( NULL != m_driver )
         {
-            UnlockData();
+            Unlock();
             m_driver->RequestPeriodicPulses( *this, m_updateDeltaInMilliSecs );
             return;
         }
     }    
-    UnlockData();
+    Unlock();
 }
 
 /*--------------------------------------------------------------------------*/
 
-void
-CPulseGenerator::LockData( void ) const
+bool
+CPulseGenerator::Lock( void ) const
 {GUCEF_TRACE;
 
-    m_mutex.Lock();
+    return m_mutex.Lock();
 }
 
 /*--------------------------------------------------------------------------*/
     
-void
-CPulseGenerator::UnlockData( void ) const
+bool
+CPulseGenerator::Unlock( void ) const
 {GUCEF_TRACE;
 
-    m_mutex.Unlock();
+    return m_mutex.Unlock();
 }
 
 /*--------------------------------------------------------------------------*/
@@ -487,12 +487,12 @@ void
 CPulseGenerator::OnDriverPulse( void )
 {GUCEF_TRACE;
 
-    LockData();
+    Lock();
     UInt64 tickCount = MT::PrecisionTickCount();
     UInt64 deltaTicks = tickCount - m_lastCycleTickCount;
     Float64 deltaMilliSecs = deltaTicks / m_ticksPerMs;   
     m_lastCycleTickCount = tickCount; 
-    UnlockData();
+    Unlock();
     
     CPulseData pulseData( tickCount, deltaTicks, deltaMilliSecs );
     NotifyObservers( PulseEvent, &pulseData );

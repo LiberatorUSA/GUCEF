@@ -57,7 +57,7 @@ namespace CORE {
  */
 template < class BaseClass >
 class CTObservingNotifierExpansion : public BaseClass  ,
-                                     public CIObserver
+                                     public virtual CIObserver
 {
     public:
     
@@ -89,7 +89,7 @@ class CTObservingNotifierExpansion : public BaseClass  ,
      */
     const CObserver& AsObserver( void ) const;
     
-    virtual const CString& GetClassTypeName( void ) const;
+    virtual const CString& GetClassTypeName( void ) const GUCEF_VIRTUAL_OVERRIDE;
     
     protected:
     
@@ -106,9 +106,9 @@ class CTObservingNotifierExpansion : public BaseClass  ,
      *  @param eventid the unique event id for an event
      *  @param eventdata optional notifier defined userdata
      */
-    virtual void OnNotify( CNotifier* notifier           ,
-                           const CEvent& eventid         ,
-                           CICloneable* eventdata = NULL );
+    virtual void OnNotify( CNotifier* notifier                 ,
+                           const CEvent& eventid               ,
+                           CICloneable* eventdata = GUCEF_NULL ) GUCEF_VIRTUAL_OVERRIDE;
 
     /**
      *  Dispatches the standard CNotifier::ModifyEvent
@@ -133,8 +133,8 @@ class CTObservingNotifierExpansion : public BaseClass  ,
      *
      *  @return Alive state of the notifier, if false then the notifier died itself as a result of the notification.
      */
-    bool NotifyObservers( const CEvent& eventid         ,
-                          CICloneable* eventData = NULL );
+    bool NotifyObservers( const CEvent& eventid               ,
+                          CICloneable* eventData = GUCEF_NULL );
 
     /**
      *  The same as NotifyObservers( CEvent, CICloneable )
@@ -146,10 +146,16 @@ class CTObservingNotifierExpansion : public BaseClass  ,
      *
      *  @return Alive state of the notifier, if false then the notifier died itself as a result of the notification.
      */
-    bool NotifyObservers( CNotifier& sender             ,
-                          const CEvent& eventid         ,
-                          CICloneable* eventData = NULL );
+    bool NotifyObservers( CNotifier& sender                   ,
+                          const CEvent& eventid               ,
+                          CICloneable* eventData = GUCEF_NULL );
                               
+    protected:
+
+    virtual bool Lock( void ) const GUCEF_VIRTUAL_OVERRIDE;
+
+    virtual bool Unlock( void ) const GUCEF_VIRTUAL_OVERRIDE;
+
     private:
     
     typedef CTObservingNotifierComponent< TONExpansion > TObservingNotifierComponent;
@@ -305,6 +311,28 @@ CTObservingNotifierExpansion< BaseClass >::OnNotify( CNotifier* /* notifier */  
 {GUCEF_TRACE;
 
     /* implemented to avoid mandatory implementation by descending classes */
+}
+
+/*-------------------------------------------------------------------------*/
+
+template< class BaseClass >
+bool
+CTObservingNotifierExpansion< BaseClass >::Lock( void ) const
+{GUCEF_TRACE;
+
+    /* implemented to avoid mandatory implementation by descending classes */
+    return false;
+}
+
+/*-------------------------------------------------------------------------*/
+
+template< class BaseClass >
+bool
+CTObservingNotifierExpansion< BaseClass >::Unlock( void ) const
+{GUCEF_TRACE;
+
+    /* implemented to avoid mandatory implementation by descending classes */
+    return false;
 }
 
 /*-------------------------------------------------------------------------//

@@ -16,8 +16,8 @@
  *  limitations under the License.
  */
 
-#ifndef GUCEF_MT_CSCOPEMUTEX_H
-#define GUCEF_MT_CSCOPEMUTEX_H
+#ifndef GUCEF_MT_COBJECTSCOPELOCK_H
+#define GUCEF_MT_COBJECTSCOPELOCK_H
 
 /*-------------------------------------------------------------------------//
 //                                                                         //
@@ -30,10 +30,10 @@
 #define GUCEF_MT_GUCEFMT_MACROS_H
 #endif /* GUCEF_MT_GUCEFMT_MACROS_H ? */
 
-#ifndef GUCEF_MT_CMUTEX_H
-#include "gucefMT_CMutex.h"
-#define GUCEF_MT_CMUTEX_H
-#endif /* GUCEF_MT_CMUTEX_H ? */
+#ifndef GUCEF_MT_CILOCKABLE_H
+#include "gucefMT_CILockable.h"
+#define GUCEF_MT_CILOCKABLE_H
+#endif /* GUCEF_MT_CILOCKABLE_H ? */
 
 /*-------------------------------------------------------------------------//
 //                                                                         //
@@ -50,41 +50,35 @@ namespace MT {
 //                                                                         //
 //-------------------------------------------------------------------------*/
 
-class CMutex;
-
-/*--------------------------------------------------------------------------*/
-
 /**
- *      Mutex class implementation that currently supports mswindows and linux
- *      Simply create an object of this class to lock the scope with a mutex.
- *      Perfect if you don't want to make Unlock() calls all over the place.
+ *  Leverages the CILockable interface to Lock() and Unlock() the scope of an
+ *  entire object while still having the same stack unroll etc advantages of
+ *  the CScopeMutex class
+ *  Typical usage would be to pass in the 'this' pointer to lock the member function
+ *  scope for a object who's class is derived from CILockable
  */
-class GUCEF_MT_PUBLIC_CPP CScopeMutex
+class GUCEF_MT_PUBLIC_CPP CObjectScopeLock
 {
     public:
 
-    /**
-     *      locks the mutex
-     */
-    CScopeMutex( const CMutex& mutex );
+    CObjectScopeLock( const CILockable* lockableObject );
 
-    /**
-     *  Unlocks the mutex.
-     */
-    ~CScopeMutex();
+    CObjectScopeLock( const CILockable& lockableObject );
+
+    ~CObjectScopeLock();
 
     /**
      *  Returns whether the current lock state based on the Lock() and Unlock()
-     *  operations on the mutex provided.
+     *  operations on the lockable object
      */
     bool IsLocked( void ) const;
 
     private:
-    const CMutex* m_mutex;
+    const CILockable* m_lockableObject;
     bool m_isLocked;
 
-    CScopeMutex( const CScopeMutex& src );      /* Copying doesnt make sense */
-    CScopeMutex& operator=( const CScopeMutex& src );   /* Copying doesnt make sense */
+    CObjectScopeLock( const CObjectScopeLock& src );              /* Copying doesnt make sense */
+    CObjectScopeLock& operator=( const CObjectScopeLock& src );   /* Copying doesnt make sense */
 };
 
 /*-------------------------------------------------------------------------//
@@ -98,7 +92,7 @@ class GUCEF_MT_PUBLIC_CPP CScopeMutex
 
 /*--------------------------------------------------------------------------*/
 
-#endif /* GUCEF_MT_CSCOPEMUTEX_H ? */
+#endif /* GUCEF_MT_COBJECTSCOPELOCK_H ? */
 
 /*-------------------------------------------------------------------------//
 //                                                                         //
@@ -109,4 +103,4 @@ class GUCEF_MT_PUBLIC_CPP CScopeMutex
 - 21-08-2005 :
        - Designed and implemented this class.
 
------------------------------------------------------------------------------*/
+---------------------------------------------------------------------------*/

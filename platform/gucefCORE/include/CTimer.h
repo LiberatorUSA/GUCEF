@@ -145,7 +145,7 @@ class GUCEF_CORE_PUBLIC_CPP CTimer : public CObservingNotifier
      */
     void TriggerNow( void );
 
-	const CString& GetClassTypeName( void ) const;
+	const CString& GetClassTypeName( void ) const GUCEF_VIRTUAL_OVERRIDE;
 
 	/**
 	 *  Returns the approximated maximum timer resolution in milliseconds
@@ -156,6 +156,12 @@ class GUCEF_CORE_PUBLIC_CPP CTimer : public CObservingNotifier
 	 *  @return approximated maximum timer resolution in milliseconds
 	 */
 	static Float64 GetApproxMaxTimerResolutionInMilliSecs( void );
+
+    protected:
+
+    virtual bool Lock( void ) const GUCEF_VIRTUAL_OVERRIDE;
+
+    virtual bool Unlock( void ) const GUCEF_VIRTUAL_OVERRIDE;
 
     private:
     typedef CTEventHandlerFunctor< CTimer > TEventCallback;

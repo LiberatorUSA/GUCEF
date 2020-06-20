@@ -23,6 +23,11 @@
 //                                                                         //
 //-------------------------------------------------------------------------*/
 
+#ifndef GUCEF_MT_COBJECTSCOPELOCK_H
+#include "gucefMT_CObjectScopeLock.h"
+#define GUCEF_MT_COBJECTSCOPELOCK_H
+#endif /* GUCEF_MT_COBJECTSCOPELOCK_H ? */
+
 #ifndef GUCEF_CORE_DVCPPSTRINGUTILS_H
 #include "dvcppstringutils.h"           /* C++ string utils */
 #define GUCEF_CORE_DVCPPSTRINGUTILS_H
@@ -108,19 +113,18 @@ CDStoreCodecPluginManager::TDStoreCodecPluginPtr
 CDStoreCodecPluginManager::GetCodec( const CString& codectype ) const
 {GUCEF_TRACE;
 
-    _datalock.Lock();
+    MT::CObjectScopeLock lock( this );
+
     TDStoreCodecPluginSet::const_iterator i = _codecs.begin();
     while ( i != _codecs.end() )
     {
         if ( (*i)->GetTypeName() == codectype )
         {
-            _datalock.Unlock();
             return (*i);
         }
         ++i;
     }
-    _datalock.Unlock();
-    return NULL;
+    return GUCEF_NULL;
 }
 
 /*-------------------------------------------------------------------------*/

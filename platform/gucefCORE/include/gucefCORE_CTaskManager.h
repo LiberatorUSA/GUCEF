@@ -151,7 +151,7 @@ class GUCEF_CORE_PUBLIC_CPP CTaskManager : public CObservingNotifier
 
     void UnregisterTaskConsumerFactory( const CString& taskType );
 
-    virtual const CString& GetClassTypeName( void ) const;
+    virtual const CString& GetClassTypeName( void ) const  GUCEF_VIRTUAL_OVERRIDE;
 
     bool GetTaskIdForThreadId( const UInt32 threadId ,
                                UInt32& taskId        ) const;
@@ -161,13 +161,13 @@ class GUCEF_CORE_PUBLIC_CPP CTaskManager : public CObservingNotifier
 
     protected:
 
-    virtual void LockData( void ) const;
+    virtual bool Lock( void ) const GUCEF_VIRTUAL_OVERRIDE;
 
-    virtual void UnlockData( void ) const;
+    virtual bool Unlock( void ) const GUCEF_VIRTUAL_OVERRIDE;
 
     virtual void OnNotify( CNotifier* notifier           ,
                            const CEvent& eventid         ,
-                           CICloneable* eventdata = NULL );
+                           CICloneable* eventdata = NULL ) GUCEF_VIRTUAL_OVERRIDE;
 
     private:
     friend class CTaskDelegator;
@@ -215,7 +215,7 @@ class GUCEF_CORE_PUBLIC_CPP CTaskManager : public CObservingNotifier
 
         CICloneable* GetTaskData( void );
 
-        virtual CICloneable* Clone( void ) const;
+        virtual CICloneable* Clone( void ) const GUCEF_VIRTUAL_OVERRIDE;
 
         private:
         CICloneable* m_taskData;

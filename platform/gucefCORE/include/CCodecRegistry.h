@@ -26,6 +26,11 @@
 //                                                                         //
 //-------------------------------------------------------------------------*/
 
+#ifndef GUCEF_MT_CMUTEX_H
+#include "gucefMT_CMutex.h"
+#define GUCEF_MT_CMUTEX_H
+#endif /* GUCEF_MT_CMUTEX_H ? */
+
 #ifndef GUCEF_CORE_CTONREGISTRY_H
 #include "CTONRegistry.h"
 #define GUCEF_CORE_CTONREGISTRY_H
@@ -64,6 +69,11 @@ class GUCEF_CORE_PUBLIC_CPP CCodecRegistry : public CTONRegistry< CTONRegistry< 
     typedef CTONRegistry< CICodec >::TStringList TStringList;
     typedef CTONRegistry< CICodec >::TRegisteredObjPtr TICodecPtr;
 
+    protected:
+
+    virtual bool Lock( void ) const GUCEF_VIRTUAL_OVERRIDE;
+
+    virtual bool Unlock( void ) const GUCEF_VIRTUAL_OVERRIDE;
 
     private:
     friend class CCoreGlobal;
@@ -76,6 +86,9 @@ class GUCEF_CORE_PUBLIC_CPP CCodecRegistry : public CTONRegistry< CTONRegistry< 
     
     CCodecRegistry( const CCodecRegistry& src );              /**< not implemented, don't use */
     CCodecRegistry& operator=( const CCodecRegistry& src );   /**< not implemented, don't use */
+
+    private:
+    MT::CMutex m_dataLock;
 };
 
 /*-------------------------------------------------------------------------//

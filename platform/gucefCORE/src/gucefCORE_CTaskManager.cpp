@@ -307,7 +307,7 @@ CTaskManager::RemoveConsumerFromQueue( CTaskConsumer* consumer )
 {GUCEF_TRACE;
 
     g_mutex.Lock();
-    m_taskQueue.LockData();
+    m_taskQueue.DoLock();
 
     TTaskMailbox::iterator i = m_taskQueue.begin();
     while ( i != m_taskQueue.end() )
@@ -324,7 +324,7 @@ CTaskManager::RemoveConsumerFromQueue( CTaskConsumer* consumer )
         ++i;
     }
 
-    m_taskQueue.UnlockData();
+    m_taskQueue.DoUnlock();
     g_mutex.Unlock();
 }
 
@@ -340,7 +340,7 @@ CTaskManager::EnforceDesiredNrOfThreads( UInt32 desiredNrOfThreads ,
     m_desiredNrOfThreads = desiredNrOfThreads;
 
     // Check if we need to do anything
-    if ( desiredNrOfThreads > m_activeNrOfThreads )
+    if ( (Int32)desiredNrOfThreads > m_activeNrOfThreads )
     {
         GUCEF_SYSTEM_LOG( LOGLEVEL_NORMAL, "TaskManager: Increasing the number of threads used for processing tasks to " + UInt32ToString( m_desiredNrOfThreads ) + " from " + UInt32ToString( m_activeNrOfThreads ) );
 
@@ -353,7 +353,7 @@ CTaskManager::EnforceDesiredNrOfThreads( UInt32 desiredNrOfThreads ,
         }
     }
     else
-    if ( desiredNrOfThreads < m_activeNrOfThreads )
+    if ( (Int32)desiredNrOfThreads < m_activeNrOfThreads )
     {
         UInt32 deactivateCount = m_activeNrOfThreads - desiredNrOfThreads;
 
@@ -416,20 +416,20 @@ CTaskManager::EnforceDesiredNrOfThreads( UInt32 desiredNrOfThreads ,
 
 /*-------------------------------------------------------------------------*/
 
-void
-CTaskManager::LockData( void ) const
+bool
+CTaskManager::Lock( void ) const
 {GUCEF_TRACE;
 
-    g_mutex.Lock();
+    return g_mutex.Lock();
 }
 
 /*-------------------------------------------------------------------------*/
 
-void
-CTaskManager::UnlockData( void ) const
+bool
+CTaskManager::Unlock( void ) const
 {GUCEF_TRACE;
 
-    g_mutex.Unlock();
+    return g_mutex.Unlock();
 }
 
 /*-------------------------------------------------------------------------*/

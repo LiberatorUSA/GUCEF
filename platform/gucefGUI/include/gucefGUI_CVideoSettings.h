@@ -105,9 +105,11 @@ class GUCEF_GUI_PUBLIC_CPP CVideoSettings : public CORE::CIConfigurable
     
     UInt32 GetFrequency( void ) const;
 
-    virtual bool SaveConfig( GUCEF::CORE::CDataNode& tree ) const;
+    virtual bool SaveConfig( GUCEF::CORE::CDataNode& tree ) const GUCEF_VIRTUAL_OVERRIDE;
                                                                    
-    virtual bool LoadConfig( const GUCEF::CORE::CDataNode& treeroot );
+    virtual bool LoadConfig( const GUCEF::CORE::CDataNode& treeroot ) GUCEF_VIRTUAL_OVERRIDE;
+
+    virtual const CORE::CString& GetClassTypeName( void ) const GUCEF_VIRTUAL_OVERRIDE;
     
     static bool RetrieveSettingsFromOS( CVideoSettings& settings );
         

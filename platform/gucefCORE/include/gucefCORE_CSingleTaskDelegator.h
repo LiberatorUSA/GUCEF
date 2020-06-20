@@ -71,7 +71,7 @@ class GUCEF_CORE_PRIVATE_CPP CSingleTaskDelegator : public CTaskDelegator
      *  Overloads the cycle of the regular task delegator to only
      *  execute the already known task within a thread and then exit.
      */
-    virtual bool OnTaskCycle( void* taskdata );
+    virtual bool OnThreadCycle( void* taskdata ) GUCEF_VIRTUAL_OVERRIDE;
 
     private:
 

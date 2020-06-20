@@ -253,9 +253,9 @@ class CNotifierImplementor
     
     void OnDeathOfOwnerNotifier( void );    
 
-    void LockData( void ) const;
+    bool Lock( void ) const;
     
-    void UnlockData( void ) const;
+    bool Unlock( void ) const;
     
     void ScheduleForDestruction( void );
    

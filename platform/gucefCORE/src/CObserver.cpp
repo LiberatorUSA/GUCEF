@@ -67,7 +67,7 @@ CObserver::CObserver( const CObserver& src )
 CObserver::~CObserver()
 {GUCEF_TRACE;
 
-    LockData();
+    Lock();
 
     /*
      *  Neatly un-subscribe from all notifiers
@@ -81,7 +81,7 @@ CObserver::~CObserver()
     }
     m_notifiers.clear();
 
-    UnlockData();
+    Unlock();
 }
 
 /*-------------------------------------------------------------------------*/
@@ -110,7 +110,7 @@ void
 CObserver::UnsubscribeAllFromObserver( void )
 {GUCEF_TRACE;
 
-    LockData();
+    Lock();
 
     /*
      *  Neatly un-subscribe from all notifiers
@@ -128,7 +128,7 @@ CObserver::UnsubscribeAllFromObserver( void )
         ++i;
     }
 
-    UnlockData();
+    Unlock();
 }
 
 /*-------------------------------------------------------------------------*/
@@ -180,9 +180,9 @@ CObserver::LinkTo( CNotifier* notifier )
 
     if ( GUCEF_NULL != notifier )
     {
-        LockData();
+        Lock();
         m_notifiers.insert( notifier );
-        UnlockData();
+        Unlock();
     }
 }
 
@@ -192,9 +192,9 @@ void
 CObserver::UnlinkFrom( CNotifier* notifier )
 {GUCEF_TRACE;
 
-    LockData();
+    Lock();
     m_notifiers.erase( notifier );
-    UnlockData();
+    Unlock();
 }
 
 /*-------------------------------------------------------------------------*/
@@ -204,14 +204,14 @@ CObserver::GetSubscriptionCount( void )
 {GUCEF_TRACE;
 
     UInt32 subscriptionCount( 0 );
-    LockData();
+    Lock();
     TNotifierList::const_iterator i( m_notifiers.begin() );
     while ( i != m_notifiers.end() )
     {
         subscriptionCount += (*i)->GetSubscriptionCountForObserver( this );
         ++i;
     }
-    UnlockData();
+    Unlock();
     return subscriptionCount;
 }
 
@@ -236,20 +236,22 @@ CObserver::UnsubscribeFrom( CNotifier& notifier )
 
 /*-------------------------------------------------------------------------*/
 
-void
-CObserver::LockData( void ) const
+bool
+CObserver::Lock( void ) const
 {GUCEF_TRACE;
 
     // dummy to avoid mandatory implementation by descending classes
+    return false;
 }
 
 /*-------------------------------------------------------------------------*/
 
-void
-CObserver::UnlockData( void ) const
+bool
+CObserver::Unlock( void ) const
 {GUCEF_TRACE;
 
     // dummy to avoid mandatory implementation by descending classes
+    return false;
 }
 
 /*-------------------------------------------------------------------------*/

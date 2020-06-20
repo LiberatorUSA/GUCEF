@@ -26,6 +26,16 @@
 //                                                                         //
 //-------------------------------------------------------------------------*/
 
+#ifndef GUCEF_MT_CMUTEX_H
+#include "gucefMT_CMutex.h"    /* MT library mutex implementation */
+#define GUCEF_MT_CMUTEX_H
+#endif /* GUCEF_MT_CMUTEX_H ? */
+
+#ifndef GUCEF_MT_CILOCKABLE_H
+#include "gucefMT_CILockable.h"
+#define GUCEF_MT_CILOCKABLE_H
+#endif /* GUCEF_MT_CILOCKABLE_H ? */
+
 #ifndef GUCEF_CORE_CIPLUGIN_H
 #include "CIPlugin.h"
 #define GUCEF_CORE_CIPLUGIN_H
@@ -56,7 +66,7 @@ class CPluginControl;
 /**
  *      Generic base class for plugin managers
  */
-class GUCEF_CORE_PUBLIC_CPP CPluginManager
+class GUCEF_CORE_PUBLIC_CPP CPluginManager : public MT::CILockable
 {
     public:
 
@@ -68,6 +78,10 @@ class GUCEF_CORE_PUBLIC_CPP CPluginManager
 
     protected:
     friend class CPluginControl;
+    
+    virtual bool Lock( void ) const GUCEF_VIRTUAL_OVERRIDE;
+    
+    virtual bool Unlock( void ) const GUCEF_VIRTUAL_OVERRIDE;
 
     virtual TPluginPtr RegisterPlugin( void* modulePtr                   ,
                                        TPluginMetaDataPtr pluginMetaData ) = 0;
@@ -78,6 +92,10 @@ class GUCEF_CORE_PUBLIC_CPP CPluginManager
 
     CPluginManager( const CPluginManager& src );             /**< not implemented */
     CPluginManager& operator=( const CPluginManager& src );  /**< not implemented */
+
+    private:
+
+    MT::CMutex m_dataLock;
 };
 
 /*-------------------------------------------------------------------------//

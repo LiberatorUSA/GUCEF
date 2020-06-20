@@ -42,29 +42,32 @@ namespace MT {
 
 /*-------------------------------------------------------------------------//
 //                                                                         //
-//      UTILITIES                                                          //
+//      IMPLEMENTATION                                                     //
 //                                                                         //
 //-------------------------------------------------------------------------*/
 
-/**
- *      Default constructor, allocates storage for a mutex.
- */
 CScopeMutex::CScopeMutex( const CMutex& mutex )
-        : m_mutex( &mutex )
+    : m_mutex( &mutex )
+    , m_isLocked( false )
 {
-        assert( m_mutex );
+    assert( m_mutex );
         
-        m_mutex->Lock();
+    m_isLocked = m_mutex->Lock();
 }
 
 /*--------------------------------------------------------------------------*/
 
-/**
- *      Destructor, de-allocates storage for a mutex.
- */
 CScopeMutex::~CScopeMutex()
 {
-        m_mutex->Unlock();
+    m_isLocked = !m_mutex->Unlock();
+}
+
+/*--------------------------------------------------------------------------*/
+
+bool 
+CScopeMutex::IsLocked( void ) const
+{
+    return m_isLocked;
 }
 
 /*-------------------------------------------------------------------------//

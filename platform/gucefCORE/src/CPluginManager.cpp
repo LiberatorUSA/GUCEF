@@ -55,7 +55,9 @@ namespace CORE {
 //                                                                         //
 //-------------------------------------------------------------------------*/
 
-CPluginManager::CPluginManager( void )
+CPluginManager::CPluginManager( void )  
+    : MT::CILockable()
+    , m_dataLock()
 {GUCEF_TRACE;
     
     CCoreGlobal::Instance()->GetPluginControl().Register( this );       
@@ -64,6 +66,8 @@ CPluginManager::CPluginManager( void )
 /*-------------------------------------------------------------------------*/
 
 CPluginManager::CPluginManager( const CPluginManager& src )
+    : MT::CILockable()
+    , m_dataLock()
 {GUCEF_TRACE;
 
     CCoreGlobal::Instance()->GetPluginControl().Register( this );
@@ -75,6 +79,24 @@ CPluginManager::~CPluginManager()
 {GUCEF_TRACE;
     
     CCoreGlobal::Instance()->GetPluginControl().Unregister( this );
+}
+
+/*-------------------------------------------------------------------------*/
+
+bool
+CPluginManager::Lock( void ) const
+{GUCEF_TRACE;
+
+    return m_dataLock.Lock();
+}
+
+/*-------------------------------------------------------------------------*/
+
+bool
+CPluginManager::Unlock( void ) const
+{GUCEF_TRACE;
+
+    return m_dataLock.Unlock();
 }
        
 /*-------------------------------------------------------------------------//

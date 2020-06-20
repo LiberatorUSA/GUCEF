@@ -165,6 +165,16 @@ CWindowManagerBackend::LoadConfig( const CORE::CDataNode& config )
 
     return true;
 }
+
+/*-------------------------------------------------------------------------*/
+
+const CORE::CString& 
+CWindowManagerBackend::GetClassTypeName( void ) const
+{GUCEF_TRACE;
+
+    static const CORE::CString classTypeName = "GUCEF::GUI::CWindowManagerBackend";
+    return classTypeName;
+}
        
 /*-------------------------------------------------------------------------//
 //                                                                         //

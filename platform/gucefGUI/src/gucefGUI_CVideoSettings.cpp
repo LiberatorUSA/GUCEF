@@ -320,6 +320,16 @@ CVideoSettings::RetrieveSettingsFromOS( CVideoSettings& settings )
     #endif
 }
 
+/*-------------------------------------------------------------------------*/
+
+const CORE::CString& 
+CVideoSettings::GetClassTypeName( void ) const
+{GUCEF_TRACE;
+
+    static const CORE::CString classTypeName = "GUCEF::GUI::CVideoSettings";
+    return classTypeName;
+}
+
 /*-------------------------------------------------------------------------//
 //                                                                         //
 //      NAMESPACE                                                          //

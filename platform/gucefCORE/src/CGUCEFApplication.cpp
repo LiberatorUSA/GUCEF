@@ -25,10 +25,15 @@
 
 #include <assert.h>
 
-#ifndef GUCEF_CORE_DVOSWRAP_H
-#include "DVOSWRAP.h"
-#define GUCEF_CORE_DVOSWRAP_H
-#endif /* GUCEF_CORE_DVOSWRAP_H ? */
+#ifndef GUCEF_MT_COBJECTSCOPELOCK_H
+#include "gucefMT_CObjectScopeLock.h"
+#define GUCEF_MT_COBJECTSCOPELOCK_H
+#endif /* GUCEF_MT_COBJECTSCOPELOCK_H ? */
+
+#ifndef GUCEF_CORE_DVCPPOSWRAP_H
+#include "DVCPPOSWRAP.h"
+#define GUCEF_CORE_DVCPPOSWRAP_H
+#endif /* GUCEF_CORE_DVCPPOSWRAP_H ? */
 
 #ifndef GUCEF_CORE_CLOGMANAGER_H
 #include "CLogManager.h"
@@ -171,16 +176,7 @@ CGUCEFApplication::Main( HINSTANCE hinstance     ,
         /*
          *      Set the given values as environment vars
          */
-        #pragma warning( disable: 4311 )
-        #ifdef GUCEF_64BIT
-        char intstr[ 20 ];
-        sprintf( intstr, "%I64d", (Int64) hinstance );
-        GUCEFSetEnv( "HINSTANCE", intstr );
-        #else
-        char intstr[ 10 ];
-        sprintf( intstr, "%d", (Int32) hinstance );
-        GUCEFSetEnv( "HINSTANCE", intstr );
-        #endif
+        SetEnv( "HINSTANCE", PointerToString( hinstance ) );
 
         char apppath[ MAX_PATH ];
 
@@ -205,6 +201,7 @@ CGUCEFApplication::Main( HINSTANCE hinstance     ,
     }
 
     data.argc = (int)argList.size();
+    SetEnv( "argc", Int32ToString( data.argc ) );
     if ( data.argc > 0 )
     {
         data.argv = new char*[ data.argc ];
@@ -212,11 +209,7 @@ CGUCEFApplication::Main( HINSTANCE hinstance     ,
         {
             data.argv[ i ] = const_cast< char* >( argList[ i ].C_String() );
         }
-
-        char intstr[ 10 ];
-        sprintf( intstr, "%d", data.argc );
-        GUCEFSetEnv( "argc", intstr );
-        //GUCEFSetEnv( "argv", (char*)data.argv );
+        SetEnv( "argv", lpcmdline );
     }
     else
     {
@@ -281,12 +274,17 @@ CGUCEFApplication::main( int argc    ,
     /*
      *      Set the given values as environment vars
      */
+    SetEnv( "argc", Int32ToString( argc ) );
     if ( argc > 0 )
     {
-        char intstr[ 10 ];
-        sprintf( intstr, "%d", argc );
-        GUCEFSetEnv( "argc", intstr );
-        //GUCEFSetEnv( "argv", (char*)argv );
+        CString argvStr;
+        for ( int i=0; i<argc; ++i )
+        {
+            argvStr += argv[ i ];
+            if ( i+1<argc )
+                argvStr += ' ';
+        }
+        SetEnv( "argv", argvStr );
     }
 
     _initialized = false;
@@ -370,7 +368,7 @@ void
 CGUCEFApplication::Stop( void )
 {GUCEF_TRACE;
 
-    LockData();
+    MT::CObjectScopeLock( this );
 
     if ( !m_shutdownRequested )
     {
@@ -378,8 +376,6 @@ CGUCEFApplication::Stop( void )
         m_pulseGenerator.ForceStopOfPeriodicPulses();
         if ( !NotifyObservers( AppShutdownEvent ) ) return;
     }
-
-    UnlockData();
 }
 
 /*-------------------------------------------------------------------------*/
@@ -387,7 +383,9 @@ CGUCEFApplication::Stop( void )
 CString
 CGUCEFApplication::GetApplicationDir( void ) const
 {GUCEF_TRACE;
-        return _appdir;
+
+    MT::CObjectScopeLock( this );
+    return _appdir;
 }
 
 /*-------------------------------------------------------------------------*/
@@ -396,14 +394,12 @@ bool
 CGUCEFApplication::SaveConfig( CDataNode& tree )  const
 {GUCEF_TRACE;
 
-    LockData();
+    MT::CObjectScopeLock( this );
 
     CDataNode* n = tree.Structure( "GUCEF%CORE%CGUCEFApplication" ,
                                    '%'                            );
     n->SetAttribute( "appdir" ,
                      _appdir  );
-
-    UnlockData();
     return true;
 }
 
@@ -412,6 +408,8 @@ CGUCEFApplication::SaveConfig( CDataNode& tree )  const
 bool
 CGUCEFApplication::LoadConfig( const CDataNode& tree )
 {GUCEF_TRACE;
+
+    MT::CObjectScopeLock( this );
 
     GUCEF_SYSTEM_LOG( LOGLEVEL_BELOW_NORMAL, "CGUCEFApplication: Loading config" );
     return true;
@@ -436,41 +434,38 @@ CGUCEFApplication::OnSysConsoleCommand( const CString& path                ,
                                         std::vector< CString >& resultdata )
 {GUCEF_TRACE;
 
-    LockData();
+    MT::CObjectScopeLock( this );
 
     if ( command == "Stop" )
     {
-            Stop();
-            UnlockData();
-            return true;
+        Stop();
+        return true;
     }
     else
     if ( command == "GetApplicationDir" )
     {
-            resultdata.push_back( GetApplicationDir() );
-            UnlockData();
-            return true;
+        resultdata.push_back( GetApplicationDir() );
+        return true;
     }
-    UnlockData();
     return false;
 }
 
 /*-------------------------------------------------------------------------*/
 
-void
-CGUCEFApplication::LockData( void ) const
+bool
+CGUCEFApplication::Lock( void ) const
 {GUCEF_TRACE;
 
-    m_mutex.Lock();
+    return m_mutex.Lock();
 }
 
 /*-------------------------------------------------------------------------*/
 
-void
-CGUCEFApplication::UnlockData( void ) const
+bool
+CGUCEFApplication::Unlock( void ) const
 {GUCEF_TRACE;
 
-    m_mutex.Unlock();
+    return m_mutex.Unlock();
 }
 
 /*-------------------------------------------------------------------------//

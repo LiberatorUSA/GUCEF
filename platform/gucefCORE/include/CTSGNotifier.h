@@ -26,8 +26,20 @@
 //                                                                         //
 //-------------------------------------------------------------------------*/
 
+#ifndef GUCEF_MT_CMUTEX_H
+#include "gucefMT_CMutex.h"
+#define GUCEF_MT_CMUTEX_H
+#endif /* GUCEF_MT_CMUTEX_H ? */
+
+#ifndef GUCEF_CORE_CTSGOBSERVER_H
 #include "CTSGObserver.h"       /* observer implementation used internally by the CTSGNotifier */
+#define GUCEF_CORE_CTSGOBSERVER_H
+#endif /* GUCEF_CORE_CTSGOBSERVER_H ? */
+
+#ifndef GUCEF_CORE_CNOTIFIER_H
 #include "CNotifier.h"          /* notification base class */
+#define GUCEF_CORE_CNOTIFIER_H
+#endif /* GUCEF_CORE_CNOTIFIER_H ? */
 
 /*-------------------------------------------------------------------------//
 //                                                                         //
@@ -111,9 +123,9 @@ class GUCEF_CORE_PUBLIC_CPP CTSGNotifier : public CNotifier
 
     protected:
 
-    virtual void LockData( void ) const GUCEF_VIRTUAL_OVERRIDE;
+    virtual bool Lock( void ) const GUCEF_VIRTUAL_OVERRIDE;
 
-    virtual void UnlockData( void ) const GUCEF_VIRTUAL_OVERRIDE;
+    virtual bool Unlock( void ) const GUCEF_VIRTUAL_OVERRIDE;
 
     protected:
     friend class CTSGObserver;
@@ -144,13 +156,14 @@ class GUCEF_CORE_PUBLIC_CPP CTSGNotifier : public CNotifier
      *  @param eventid the unique event id for an event
      *  @param eventdata optional notifier defined user data
      */
-    virtual void OnPumpedNotify( CNotifier* notifier           ,
-                                 const CEvent& eventid         ,
-                                 CICloneable* eventdata = NULL );
+    virtual void OnPumpedNotify( CNotifier* notifier                 ,
+                                 const CEvent& eventid               ,
+                                 CICloneable* eventdata = GUCEF_NULL );
 
     private:
 
     CTSGObserver m_tsgObserver;
+    MT::CMutex m_dataLock;
 };
 
 /*-------------------------------------------------------------------------//

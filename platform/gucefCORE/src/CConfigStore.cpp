@@ -319,6 +319,24 @@ CConfigStore::GetCodec( void ) const
     return _codectype;
 }
 
+/*-------------------------------------------------------------------------*/
+
+bool
+CConfigStore::Lock( void ) const
+{GUCEF_TRACE;
+
+    return m_datalock.Lock();
+}
+
+/*-------------------------------------------------------------------------*/
+
+bool
+CConfigStore::Unlock( void ) const
+{GUCEF_TRACE;
+
+    return m_datalock.Unlock();
+}
+
 /*-------------------------------------------------------------------------//
 //                                                                         //
 //      NAMESPACE                                                          //

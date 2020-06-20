@@ -30,6 +30,11 @@
 #define GUCEF_MT_DVMTOSWRAP_H
 #endif /* GUCEF_MT_DVMTOSWRAP_H ? */
 
+#ifndef GUCEF_MT_COBJECTSCOPELOCK_H
+#include "gucefMT_CObjectScopeLock.h"
+#define GUCEF_MT_COBJECTSCOPELOCK_H
+#endif /* GUCEF_MT_COBJECTSCOPELOCK_H ? */
+
 #ifndef GUCEF_CORE_CILOGGER_H
 #include "CILogger.h"
 #define GUCEF_CORE_CILOGGER_H
@@ -137,7 +142,7 @@ void
 CLogManager::RedirectToBootstrapLogQueue( bool redirect )
 {GUCEF_TRACE;
     
-    m_dataLock.Lock();
+    MT::CObjectScopeLock lock( this );
 
     m_redirectToLogQueue = redirect;
     if ( redirect )
@@ -149,8 +154,6 @@ CLogManager::RedirectToBootstrapLogQueue( bool redirect )
         Log( LOG_SYSTEM, LOGLEVEL_NORMAL, "LogManager: Turning off redirect of all log statements to the bootstrap log queue" );
         FlushBootstrapLogEntriesToLogs();
     }
-
-    m_dataLock.Unlock();
 }
 
 /*-------------------------------------------------------------------------*/
@@ -161,7 +164,7 @@ CLogManager::FlushBootstrapLogEntriesToLogs( void )
 
     Log( LOG_SYSTEM, LOGLEVEL_NORMAL, "LogManager: Flushing all bootstrap log entries to the currently registered loggers" );
 
-    m_dataLock.Lock();
+    MT::CObjectScopeLock lock( this );
 
     if ( m_loggers->GetLoggerCount() > 0 )
     {
@@ -184,8 +187,6 @@ CLogManager::FlushBootstrapLogEntriesToLogs( void )
     {
         Log( LOG_ERROR, LOGLEVEL_NORMAL, "LogManager: Unable to flush bootstrap log entries since no loggers are currently registered" );
     }
-
-    m_dataLock.Unlock();
 }
 
 /*-------------------------------------------------------------------------*/
@@ -194,13 +195,12 @@ void
 CLogManager::AddLogger( CILogger* loggerImp )
 {GUCEF_TRACE;
 
-    m_dataLock.Lock();
+    MT::CObjectScopeLock lock( this );
     if ( m_useLogThread )
         m_loggingTask->PauseTask();    
     m_loggers->AddLogger( loggerImp );
     if ( m_useLogThread )
         m_loggingTask->ResumeTask();
-    m_dataLock.Unlock();
 }
 
 /*-------------------------------------------------------------------------*/
@@ -209,13 +209,12 @@ void
 CLogManager::RemoveLogger( CILogger* loggerImp )
 {GUCEF_TRACE;
 
-    m_dataLock.Lock();
+    MT::CObjectScopeLock lock( this );
     if ( m_useLogThread )
         m_loggingTask->PauseTask();
     m_loggers->RemoveLogger( loggerImp );
     if ( m_useLogThread )
         m_loggingTask->ResumeTask();
-    m_dataLock.Unlock();
 }
 
 /*-------------------------------------------------------------------------*/
@@ -224,13 +223,12 @@ void
 CLogManager::ClearLoggers( void )
 {GUCEF_TRACE;
 
-    m_dataLock.Lock();
+    MT::CObjectScopeLock lock( this );
     if ( m_useLogThread )
         m_loggingTask->PauseTask();
     m_loggers->ClearLoggers();
     if ( m_useLogThread )
         m_loggingTask->ResumeTask();
-    m_dataLock.Unlock();
 }
 
 /*-------------------------------------------------------------------------*/
@@ -240,9 +238,8 @@ CLogManager::ClearLoggers( void )
                                 const Int32 logLevel         ) const
 {GUCEF_TRACE;
 
-    m_dataLock.Lock();
+    MT::CObjectScopeLock lock( this );
     bool retValue = m_loggers->IsLoggingEnabled( logMsgType, logLevel );
-    m_dataLock.Unlock();
     return retValue;
 }
 
@@ -252,6 +249,7 @@ void
 CLogManager::SetMinLogLevel( const Int32 logLevel )
 {GUCEF_TRACE;
 
+    MT::CObjectScopeLock lock( this );
     m_loggers->SetMinLogLevel( logLevel );
 }
 
@@ -261,6 +259,7 @@ Int32
 CLogManager::GetMinLogLevel( void ) const
 {GUCEF_TRACE;
 
+    MT::CObjectScopeLock lock( this );
     return m_loggers->GetMinLogLevel();
 }
 
@@ -284,7 +283,7 @@ CLogManager::Log( const TLogMsgType logMsgType ,
                   const UInt32 threadId        )
 {GUCEF_TRACE;
 
-    m_dataLock.Lock();
+    MT::CObjectScopeLock lock( this );
 
     // The loglevel must be such so that the message given falls under the global logging
     // cut off.
@@ -295,7 +294,6 @@ CLogManager::Log( const TLogMsgType logMsgType ,
     // activity itself.
     if ( !m_busyLogging )
     {
-     
         if ( m_loggers->GetLoggerCount() > 0  && !m_redirectToLogQueue )
         {
             m_busyLogging = true;
@@ -327,8 +325,6 @@ CLogManager::Log( const TLogMsgType logMsgType ,
             m_bootstrapLog.push_back( entry );
         }
     }
-
-    m_dataLock.Unlock();
 }
 
 /*-------------------------------------------------------------------------*/
@@ -413,7 +409,7 @@ void
 CLogManager::FlushLogs( void )
 {GUCEF_TRACE;
 
-    m_dataLock.Lock();
+    MT::CObjectScopeLock lock( this );
     if ( m_useLogThread )
     {
         m_loggingTask->FlushLog();
@@ -422,7 +418,6 @@ CLogManager::FlushLogs( void )
     {
         m_loggers->FlushLog();
     }
-    m_dataLock.Unlock();
 }
 
 /*-------------------------------------------------------------------------*/
@@ -431,7 +426,7 @@ void
 CLogManager::SetUseLoggingThread( bool useLogThread )
 {GUCEF_TRACE;
 
-    m_dataLock.Lock();
+    MT::CObjectScopeLock lock( this );
     if ( useLogThread != m_useLogThread )
     {
         if ( useLogThread )
@@ -451,7 +446,6 @@ CLogManager::SetUseLoggingThread( bool useLogThread )
             }
         }
     }
-    m_dataLock.Unlock();
 }
 
 /*-------------------------------------------------------------------------*/
@@ -461,6 +455,24 @@ CLogManager::GetUseLoggingThread( void ) const
 {GUCEF_TRACE;
 
     return m_useLogThread;
+}
+
+/*-------------------------------------------------------------------------*/
+
+bool
+CLogManager::Lock( void ) const
+{GUCEF_TRACE;
+
+    return m_dataLock.Lock();
+}
+
+/*-------------------------------------------------------------------------*/
+
+bool
+CLogManager::Unlock( void ) const
+{GUCEF_TRACE;
+
+    return m_dataLock.Unlock();
 }
 
 /*-------------------------------------------------------------------------*/

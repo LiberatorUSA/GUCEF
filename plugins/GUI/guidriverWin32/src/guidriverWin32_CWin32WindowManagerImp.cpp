@@ -134,6 +134,16 @@ CWin32WindowManagerImp::ApplyVideoSettings( GUI::TWindowContextPtr& windowContex
     return false;
 }
 
+/*-------------------------------------------------------------------------*/
+
+const CORE::CString& 
+CWin32WindowManagerImp::GetClassTypeName( void ) const
+{GUCEF_TRACE;
+
+    static const CORE::CString classTypeName = "GUCEF::GUIDRIVERWIN32::CWin32WindowManagerImp";
+    return classTypeName;
+}
+
 /*-------------------------------------------------------------------------//
 //                                                                         //
 //      NAMESPACE                                                          //

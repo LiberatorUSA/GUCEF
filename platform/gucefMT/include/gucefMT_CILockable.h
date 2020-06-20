@@ -16,8 +16,8 @@
  *  limitations under the License.
  */
 
-#ifndef GUCEF_MT_CSCOPEMUTEX_H
-#define GUCEF_MT_CSCOPEMUTEX_H
+#ifndef GUCEF_MT_CILOCKABLE_H
+#define GUCEF_MT_CILOCKABLE_H
 
 /*-------------------------------------------------------------------------//
 //                                                                         //
@@ -25,15 +25,15 @@
 //                                                                         //
 //-------------------------------------------------------------------------*/
 
-#ifndef GUCEF_MT_GUCEFMT_MACROS_H
-#include "gucefMT_macros.h"     /* often used gucef macros */
-#define GUCEF_MT_GUCEFMT_MACROS_H
-#endif /* GUCEF_MT_GUCEFMT_MACROS_H ? */
+#ifndef GUCEF_MT_ETYPES_H
+#include "gucefMT_ETypes.h"             /* simple types */
+#define GUCEF_MT_ETYPES_H
+#endif /* GUCEF_MT_ETYPES_H ? */
 
-#ifndef GUCEF_MT_CMUTEX_H
-#include "gucefMT_CMutex.h"
-#define GUCEF_MT_CMUTEX_H
-#endif /* GUCEF_MT_CMUTEX_H ? */
+#ifndef GUCEF_MT_MACROS_H
+#include "gucefMT_macros.h"             /* often used gucef macros */
+#define GUCEF_MT_MACROS_H
+#endif /* GUCEF_MT_MACROS_H ? */
 
 /*-------------------------------------------------------------------------//
 //                                                                         //
@@ -50,41 +50,37 @@ namespace MT {
 //                                                                         //
 //-------------------------------------------------------------------------*/
 
-class CMutex;
-
-/*--------------------------------------------------------------------------*/
-
 /**
- *      Mutex class implementation that currently supports mswindows and linux
- *      Simply create an object of this class to lock the scope with a mutex.
- *      Perfect if you don't want to make Unlock() calls all over the place.
+ *  Interface class that adds a locking interface to derived classes.
  */
-class GUCEF_MT_PUBLIC_CPP CScopeMutex
+class GUCEF_MT_PUBLIC_CPP CILockable
 {
     public:
 
-    /**
-     *      locks the mutex
-     */
-    CScopeMutex( const CMutex& mutex );
+    CILockable( void );
+
+    CILockable( const CILockable& src );
+
+    virtual ~CILockable();
+
+    CILockable& operator=( const CILockable& src );
+
+    protected:
+    friend class CObjectScopeLock;
 
     /**
-     *  Unlocks the mutex.
+     *  Should be implemented by the derived classes such that all interactions with the class
+     *  member functions and variables are protected against multiple threads accessing them
+     *  Typical implementation would be to have this call Lock() on a mutex member in a derived class
      */
-    ~CScopeMutex();
+    virtual bool Lock( void ) const = 0;
 
     /**
-     *  Returns whether the current lock state based on the Lock() and Unlock()
-     *  operations on the mutex provided.
+     *  Counterpart to the Lock() member function. This releases the lock obtained using Lock() 
+     *  Typical implementation would be to have this call Unlock() on a mutex member in a derived class
      */
-    bool IsLocked( void ) const;
+    virtual bool Unlock( void ) const = 0;
 
-    private:
-    const CMutex* m_mutex;
-    bool m_isLocked;
-
-    CScopeMutex( const CScopeMutex& src );      /* Copying doesnt make sense */
-    CScopeMutex& operator=( const CScopeMutex& src );   /* Copying doesnt make sense */
 };
 
 /*-------------------------------------------------------------------------//
@@ -96,17 +92,6 @@ class GUCEF_MT_PUBLIC_CPP CScopeMutex
 }; /* namespace MT */
 }; /* namespace GUCEF */
 
-/*--------------------------------------------------------------------------*/
+/*-------------------------------------------------------------------------*/
 
-#endif /* GUCEF_MT_CSCOPEMUTEX_H ? */
-
-/*-------------------------------------------------------------------------//
-//                                                                         //
-//      Info & Changes                                                     //
-//                                                                         //
-//-------------------------------------------------------------------------//
-
-- 21-08-2005 :
-       - Designed and implemented this class.
-
------------------------------------------------------------------------------*/
+#endif /* GUCEF_MT_CILOCKABLE_H  ? */

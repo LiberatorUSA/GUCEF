@@ -28,6 +28,11 @@
 
 #include <set>
 
+#ifndef GUCEF_MT_CILOCKABLE_H
+#include "gucefMT_CILockable.h"
+#define GUCEF_MT_CILOCKABLE_H
+#endif /* GUCEF_MT_CILOCKABLE_H ? */
+
 #ifndef GUCEF_CORE_MACROS_H
 #include "gucefCORE_macros.h"
 #define GUCEF_CORE_MACROS_H
@@ -96,6 +101,7 @@ namespace CORE {
  */
 class GUCEF_CORE_PUBLIC_CPP CGUCEFApplication : public CNotifier                      ,
                                                 public virtual CIConfigurable         ,
+                                                public virtual MT::CILockable         ,
                                                 public virtual CISysConsoleCmdHandler
 {
     public:
@@ -146,7 +152,7 @@ class GUCEF_CORE_PUBLIC_CPP CGUCEFApplication : public CNotifier                
      *      @param tree the data tree you wish to store
      *      @return whether storing the tree was successful
      */
-    virtual bool SaveConfig( CDataNode& tree ) const;
+    virtual bool SaveConfig( CDataNode& tree ) const GUCEF_VIRTUAL_OVERRIDE;
 
     /**
      *      Attempts to load data from the given file to the
@@ -156,9 +162,9 @@ class GUCEF_CORE_PUBLIC_CPP CGUCEFApplication : public CNotifier                
      *      @param treeroot pointer to the node that is to act as root of the data tree
      *      @return whether building the tree from the given file was successful
      */
-    virtual bool LoadConfig( const CDataNode& treeroot );
+    virtual bool LoadConfig( const CDataNode& treeroot ) GUCEF_VIRTUAL_OVERRIDE;
 
-    virtual const CString& GetClassTypeName( void ) const;
+    virtual const CString& GetClassTypeName( void ) const GUCEF_VIRTUAL_OVERRIDE;
 
     CPulseGenerator& GetPulseGenerator( void );
 
@@ -167,11 +173,11 @@ class GUCEF_CORE_PUBLIC_CPP CGUCEFApplication : public CNotifier                
     virtual bool OnSysConsoleCommand( const CString& path                ,
                                       const CString& command             ,
                                       const std::vector< CString >& args ,
-                                      std::vector< CString >& resultdata );
+                                      std::vector< CString >& resultdata ) GUCEF_VIRTUAL_OVERRIDE;
 
-    virtual void LockData( void ) const;
+    virtual bool Lock( void ) const GUCEF_VIRTUAL_OVERRIDE;
 
-    virtual void UnlockData( void ) const;
+    virtual bool Unlock( void ) const GUCEF_VIRTUAL_OVERRIDE;
 
     private:
     friend class CCoreGlobal;

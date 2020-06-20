@@ -26,10 +26,35 @@
 //                                                                         //
 //-------------------------------------------------------------------------*/ 
 
+#ifndef GUCEF_MT_CILOCKABLE_H
+#include "gucefMT_CILockable.h"
+#define GUCEF_MT_CILOCKABLE_H
+#endif /* GUCEF_MT_CILOCKABLE_H ? */
+
+#ifndef GUCEF_MT_CMUTEX_H
+#include "gucefMT_CMutex.h"
+#define GUCEF_MT_CMUTEX_H
+#endif /* GUCEF_MT_CMUTEX_H ? */
+
+#ifndef GUCEF_MT_CSCOPEMUTEX_H
+#include "gucefMT_CScopeMutex.h"
+#define GUCEF_MT_CSCOPEMUTEX_H
+#endif /* GUCEF_MT_CSCOPEMUTEX_H ? */
+
+#ifndef GUCEF_MT_COBJECTSCOPELOCK_H
+#include "gucefMT_CObjectScopeLock.h"
+#define GUCEF_MT_COBJECTSCOPELOCK_H
+#endif /* GUCEF_MT_COBJECTSCOPELOCK_H ? */
+
 #ifndef GUCEF_CORE_MACROS_H
 #include "gucefCORE_macros.h"       /* module macro's */
 #define GUCEF_CORE_MACROS_H
 #endif /* GUCEF_CORE_MACROS_H ? */
+
+#ifndef GUCEF_CORE_LOGGING_H
+#include "gucefCORE_Logging.h"
+#define GUCEF_CORE_LOGGING_H
+#endif /* GUCEF_CORE_LOGGING_H ? */
 
 /*-------------------------------------------------------------------------//
 //                                                                         //
@@ -47,7 +72,8 @@ namespace CORE {
 //-------------------------------------------------------------------------*/
 
 template < class BaseClass >
-class CTSingleton : public BaseClass
+class CTSingleton : public BaseClass ,
+                    public virtual MT::CILockable
 {
     public:
     
@@ -57,9 +83,9 @@ class CTSingleton : public BaseClass
     
     protected:
     
-    virtual void LockData( void ) const;
+    virtual bool Lock( void ) const GUCEF_VIRTUAL_OVERRIDE;
     
-    virtual void UnlockData( void ) const;
+    virtual bool Unlock( void ) const GUCEF_VIRTUAL_OVERRIDE;
     
     private:
     
@@ -70,7 +96,8 @@ class CTSingleton : public BaseClass
     
     private:
     
-    static BaseClass* m_instance;
+    static BaseClass* g_instance;
+    static MT::CMutex g_dataLock;
 };
 
 /*-------------------------------------------------------------------------//
@@ -82,7 +109,8 @@ class CTSingleton : public BaseClass
 template< class BaseClass >
 CTSingleton< BaseClass >::CTSingleton( void )
     : BaseClass()
-{
+    , MT::CILockable()
+{GUCEF_TRACE;
     
 }
 
@@ -90,7 +118,7 @@ CTSingleton< BaseClass >::CTSingleton( void )
 
 template< class BaseClass >
 CTSingleton< BaseClass >::~CTSingleton()
-{
+{GUCEF_TRACE;
 
 }
 
@@ -99,16 +127,16 @@ CTSingleton< BaseClass >::~CTSingleton()
 template< class BaseClass >
 BaseClass*
 CTSingleton< BaseClass >::Instance( void )
-{
-    LockData();
-    
-    if ( m_instance == NULL )
+{GUCEF_TRACE;
+
+    if ( GUCEF_NULL == m_instance )
     {
-        m_instance = new CTSingleton< BaseClass >();
+        MT::ScopeMutex lock( g_dataLock );
+        if ( GUCEF_NULL == m_instance )
+        {
+            m_instance = new CTSingleton< BaseClass >();
+        }
     }
-    
-    UnlockData();
-    
     return m_instance;
 }
 
@@ -117,31 +145,32 @@ CTSingleton< BaseClass >::Instance( void )
 template< class BaseClass >
 void
 CTSingleton< BaseClass >::Deinstance( void )
-{
-    LockData();
+{GUCEF_TRACE;
+
+    MT::ScopeMutex lock( g_dataLock );
     
     delete m_instance;
     m_instance = NULL;
-    
-    UnlockData();
 }
 
 /*-------------------------------------------------------------------------*/
 
 template< class BaseClass >
-void
-CTSingleton< BaseClass >::LockData( void ) const
-{
-    /* dummy to avoid mandatory implementation by descending classes */
+bool
+CTSingleton< BaseClass >::Lock( void ) const
+{GUCEF_TRACE;
+
+    return g_dataLock.Lock();
 }
 
 /*-------------------------------------------------------------------------*/
 
 template< class BaseClass >
-void
-CTSingleton< BaseClass >::UnlockData( void ) const
-{
-    /* dummy to avoid mandatory implementation by descending classes */
+bool
+CTSingleton< BaseClass >::Unlock( void ) const
+{GUCEF_TRACE;
+
+    return g_dataLock.Unlock();
 }
 
 /*-------------------------------------------------------------------------//

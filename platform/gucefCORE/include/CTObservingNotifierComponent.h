@@ -129,6 +129,10 @@ class CTObservingNotifierComponent : public CObservingNotifier
                             CICloneable* eventData = NULL );
     
     protected:
+
+    virtual bool Lock( void ) const GUCEF_VIRTUAL_OVERRIDE;
+
+    virtual bool Unlock( void ) const GUCEF_VIRTUAL_OVERRIDE;
     
     /**
      *  Event callback member function.
@@ -140,9 +144,9 @@ class CTObservingNotifierComponent : public CObservingNotifier
      *  @param eventid the unique event id for an event
      *  @param eventdata optional notifier defined userdata
      */
-    virtual void OnNotify( CNotifier* notifier           ,
-                           const CEvent& eventid         ,
-                           CICloneable* eventdata = NULL );
+    virtual void OnNotify( CNotifier* notifier                 ,
+                           const CEvent& eventid               ,
+                           CICloneable* eventdata = GUCEF_NULL ) GUCEF_VIRTUAL_OVERRIDE;
     
     private:
     
@@ -266,6 +270,28 @@ CTObservingNotifierComponent< TOwnerClass >::OnNotify( CNotifier* notifier      
     m_componentOwner->OnNotify( notifier  ,
                                 eventid   ,
                                 eventdata );
+}
+
+/*-------------------------------------------------------------------------*/
+
+template< class BaseClass >
+bool
+CTObservingNotifierComponent< BaseClass >::Lock( void ) const
+{GUCEF_TRACE;
+
+    assert( GUCEF_NULL != m_componentOwner );
+    return m_componentOwner->Lock();
+}
+
+/*-------------------------------------------------------------------------*/
+
+template< class BaseClass >
+bool
+CTObservingNotifierComponent< BaseClass >::Unlock( void ) const
+{GUCEF_TRACE;
+
+    assert( GUCEF_NULL != m_componentOwner );
+    return m_componentOwner->Unlock();
 }
 
 /*-------------------------------------------------------------------------//

@@ -28,6 +28,11 @@
 
 #include <assert.h>
 
+#ifndef GUCEF_MT_CILOCKABLE_H
+#include "gucefMT_CILockable.h"
+#define GUCEF_MT_CILOCKABLE_H
+#endif /* GUCEF_MT_CILOCKABLE_H ? */
+
 #ifndef GUCEF_CORE_CTDYNAMICDESTRUCTORBASE_H
 #include "CTDynamicDestructorBase.h"
 #define GUCEF_CORE_CTDYNAMICDESTRUCTORBASE_H
@@ -82,7 +87,7 @@ namespace CORE {
  *  never be used across thread-boundries.
  */
 template< typename T >
-class CTBasicSharedPtr
+class CTBasicSharedPtr : public virtual MT::CILockable
 {
     public:
 
@@ -123,7 +128,7 @@ class CTBasicSharedPtr
     {
         Unlink();
 
-        LockData();
+        Lock();
 
         // The static cast below is performed as a compile time validation
         // of the type passed.
@@ -136,10 +141,10 @@ class CTBasicSharedPtr
 
             ++(*m_refCounter);
 
-            UnlockData();
+            Unlock();
             return true;
         }
-        UnlockData();
+        Unlock();
         return false;
     }
 
@@ -268,7 +273,7 @@ class CTBasicSharedPtr
      *
      *  This function should be implemented to be logically const
      */
-    virtual void LockData( void ) const;
+    virtual bool Lock( void ) const GUCEF_VIRTUAL_OVERRIDE;
 
     /**
      *  no-op in the default implementation.
@@ -277,7 +282,7 @@ class CTBasicSharedPtr
      *
      *  This function should be implemented to be logically const
      */
-    virtual void UnlockData( void ) const;
+    virtual bool Unlock( void ) const GUCEF_VIRTUAL_OVERRIDE;
 
     private:
 
@@ -328,14 +333,14 @@ CTBasicSharedPtr< T >::CTBasicSharedPtr( const CTBasicSharedPtr< T >& src )
           m_objectDestructor( src.m_objectDestructor )
 {GUCEF_TRACE;
 
-    src.LockData();
+    src.Lock();
 
     if ( m_refCounter )
     {
         ++(*m_refCounter);
     }
 
-    src.UnlockData();
+    src.Unlock();
 }
 
 /*-------------------------------------------------------------------------*/
@@ -365,13 +370,13 @@ CTBasicSharedPtr< T >::Initialize( T* ptr                        ,
     // mode without asserts we will still allow the scenario by unlinking first
     Unlink();
 
-    LockData();
+    Lock();
 
     m_ptr = ptr;
     m_refCounter = new UInt32( 1UL );
     m_objectDestructor = objectDestructor;
 
-    UnlockData();
+    Unlock();
 }
 
 /*-------------------------------------------------------------------------*/
@@ -441,7 +446,7 @@ CTBasicSharedPtr< T >::operator=( const CTBasicSharedPtr< T >& src )
     {
         Unlink();
 
-        LockData();
+        Lock();
 
         m_ptr = src.m_ptr;
         m_refCounter = src.m_refCounter;
@@ -452,7 +457,7 @@ CTBasicSharedPtr< T >::operator=( const CTBasicSharedPtr< T >& src )
             ++(*m_refCounter);
         }
 
-        UnlockData();
+        Unlock();
     }
     return *this;
 }
@@ -727,7 +732,7 @@ void
 CTBasicSharedPtr< T >::Unlink( void )
 {GUCEF_TRACE;
 
-    LockData();
+    Lock();
 
     if ( NULL != m_ptr )
     {
@@ -755,7 +760,7 @@ CTBasicSharedPtr< T >::Unlink( void )
     m_refCounter = GUCEF_NULL;
     m_ptr = GUCEF_NULL;
 
-    UnlockData();
+    Unlock();
 }
 
 /*-------------------------------------------------------------------------*/
@@ -764,36 +769,38 @@ template< typename T >
 void
 CTBasicSharedPtr< T >::SetToNULL( void )
 {
-    LockData();
+    Lock();
 
     m_objectDestructor = GUCEF_NULL;
     delete m_refCounter;
     m_refCounter = GUCEF_NULL;
     m_ptr = GUCEF_NULL;
 
-    UnlockData();
+    Unlock();
 }
 
 /*-------------------------------------------------------------------------*/
 
 template< typename T >
-void
-CTBasicSharedPtr< T >::LockData( void ) const
+bool
+CTBasicSharedPtr< T >::Lock( void ) const
 {
     // no-op in the default implementation.
     // derived classes wishing to make the shared pointer thread safe
     // should add a synchronization mechanic in a derived implementation
+    return false;
 }
 
 /*-------------------------------------------------------------------------*/
 
 template< typename T >
-void
-CTBasicSharedPtr< T >::UnlockData( void ) const
+bool
+CTBasicSharedPtr< T >::Unlock( void ) const
 {
     // no-op in the default implementation.
     // derived classes wishing to make the shared pointer thread safe
     // should add a synchronization mechanic in a derived implementation
+    return false;
 }
 
 /*-------------------------------------------------------------------------//

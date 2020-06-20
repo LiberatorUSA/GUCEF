@@ -69,7 +69,7 @@ CSingleTaskDelegator::~CSingleTaskDelegator()
 /*-------------------------------------------------------------------------*/
 
 bool
-CSingleTaskDelegator::OnTaskCycle( void* taskdata )
+CSingleTaskDelegator::OnThreadCycle( void* taskdata )
 {GUCEF_TRACE;
 
     if ( m_taskConsumer )

@@ -53,8 +53,8 @@ namespace CORE {
 
 /**
  *  Simple utility template for implementing threadsafety on classes
- *  that have the canonical class interface combined with the LockData()
- *  UnlockData() mechanism.
+ *  that have the canonical class interface combined with the Lock()
+ *  Unlock() mechanism.
  */
 template < class Base >
 class CTTreadSafeExpansion : public Base
@@ -71,9 +71,9 @@ class CTTreadSafeExpansion : public Base
     
     protected:
     
-    virtual void LockData( void ) const;
+    virtual bool Lock( void ) const;
     
-    virtual void UnlockData( void ) const;
+    virtual bool Unlock( void ) const;
     
     private:
     
@@ -130,7 +130,7 @@ CTTreadSafeExpansion< Base >::operator=( const CTTreadSafeExpansion& src )
 
 template < class Base >
 void
-CTTreadSafeExpansion< Base >::LockData( void ) const
+CTTreadSafeExpansion< Base >::Lock( void ) const
 {TRACE;
 
     m_dataLock.Lock();
@@ -140,7 +140,7 @@ CTTreadSafeExpansion< Base >::LockData( void ) const
     
 template < class Base >
 void
-CTTreadSafeExpansion< Base >::UnlockData( void ) const
+CTTreadSafeExpansion< Base >::Unlock( void ) const
 {TRACE;
 
     m_dataLock.Unlock();

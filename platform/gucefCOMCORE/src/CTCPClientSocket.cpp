@@ -242,9 +242,9 @@ void
 CTCPClientSocket::SetMaxRead( UInt32 mr )
 {GUCEF_TRACE;
 
-    LockData();
+    Lock();
     m_maxreadbytes = mr;
-    UnlockData();
+    Unlock();
 }
 
 /*-------------------------------------------------------------------------*/
@@ -261,10 +261,10 @@ bool
 CTCPClientSocket::Reconnect( bool blocking )
 {GUCEF_TRACE;
 
-    LockData();
+    Lock();
     bool retval = ConnectTo( m_hostAddress ,
                              blocking      );
-    UnlockData();
+    Unlock();
     return retval;
 }
 
@@ -285,7 +285,7 @@ CTCPClientSocket::ConnectTo( const CORE::CString& remoteaddr ,
 
     CloseImp();
 
-    LockData();
+    Lock();
     m_hostAddress = remoteAddress;
     bool success = Connect( blocking );
     return success;
@@ -300,7 +300,7 @@ CTCPClientSocket::ConnectTo( const CIPAddress& address ,
 
     CloseImp();
 
-    LockData();
+    Lock();
     m_hostAddress = address;
     bool success = Connect( blocking );
     return success;
@@ -315,7 +315,7 @@ CTCPClientSocket::ConnectTo( const CHostAddress& address ,
 
     CloseImp();
 
-    LockData();
+    Lock();
     m_hostAddress = address;
     bool success = Connect( blocking );
     return success;
@@ -345,7 +345,7 @@ CTCPClientSocket::Connect( bool blocking )
         // Notify our users of the error
         GUCEF_SYSTEM_LOG( CORE::LOGLEVEL_NORMAL, "CTCPClientSocket(" + CORE::PointerToString( this ) + "): Socket error occured: " + CORE::Int32ToString( errorCode ) );
 
-        UnlockData();
+        Unlock();
 
         TSocketErrorEventData eData( errorCode );
         if ( !NotifyObservers( SocketErrorEvent, &eData ) ) return false;
@@ -354,7 +354,7 @@ CTCPClientSocket::Connect( bool blocking )
 
     if ( _data->sockid == INVALID_SOCKET )
     {
-        UnlockData();
+        Unlock();
         return false;
     }
 
@@ -363,7 +363,7 @@ CTCPClientSocket::Connect( bool blocking )
                            _blocking     ) )
     {
         _active = false;
-        UnlockData();
+        Unlock();
         return false;
     }
 
@@ -393,7 +393,7 @@ CTCPClientSocket::Connect( bool blocking )
 
         GUCEF_ERROR_LOG( CORE::LOGLEVEL_NORMAL, "CTCPClientSocket(" + CORE::PointerToString( this ) + "): Failed to set no delay mode \"" + CORE::BoolToString( m_coaleseDataSends ) 
             + "\" on socket. Error code: " + CORE::UInt32ToString( errorCode ) );
-        UnlockData();
+        Unlock();
         return false;
     }
     GUCEF_DEBUG_LOG( CORE::LOGLEVEL_BELOW_NORMAL, "CTCPClientSocket(" + CORE::PointerToString( this ) + "): Successfully set no delay mode \"" + CORE::BoolToString( m_coaleseDataSends ) + "\" on socket" );
@@ -452,7 +452,7 @@ CTCPClientSocket::Connect( bool blocking )
             // After a socket error you must always close the connection.
             _active = false;
             m_lastConnFailed = true;
-            UnlockData();
+            Unlock();
 
             // Check for an error
             if ( errorCode != 0 )
@@ -472,7 +472,7 @@ CTCPClientSocket::Connect( bool blocking )
 
             m_isConnecting = true;
 
-            UnlockData();
+            Unlock();
 
             NotifyObservers( ConnectingEvent );
 
@@ -541,7 +541,7 @@ CTCPClientSocket::CheckRecieveBuffer( void )
     {
         GUCEF_DEBUG_LOG( CORE::LOGLEVEL_NORMAL, "CTCPClientSocket(" + CORE::PointerToString( this ) + "): Checking the recieve buffer for incoming data" );
 
-        LockData();
+        Lock();
 
         /*
          *      Since this is a non-blocking socket we need to poll for received data
@@ -579,7 +579,7 @@ CTCPClientSocket::CheckRecieveBuffer( void )
                 // After a socket error you must always close the connection.
                 CloseImp();
 
-                UnlockData();
+                Unlock();
                 return;
             }
             else
@@ -594,7 +594,7 @@ CTCPClientSocket::CheckRecieveBuffer( void )
                 // The connection has been closed on us
                 CloseImp();
 
-                UnlockData();
+                Unlock();
                 return;
             }
 
@@ -626,7 +626,7 @@ CTCPClientSocket::CheckRecieveBuffer( void )
             if ( !NotifyObservers( DataRecievedEvent, &cData ) ) return;
         }
 
-        UnlockData();
+        Unlock();
     }
 }
 
@@ -655,7 +655,7 @@ CTCPClientSocket::OnPulse( CORE::CNotifier* notifier                 ,
         FD_ZERO( &readfds );
         FD_ZERO( &exceptfds );
 
-        LockData();
+        Lock();
 
         FD_SET( _data->sockid, &writefds );
         FD_SET( _data->sockid, &readfds );
@@ -683,7 +683,7 @@ CTCPClientSocket::OnPulse( CORE::CNotifier* notifier                 ,
 
                 m_lastConnFailed = true;
                 GUCEF_ERROR_LOG( CORE::LOGLEVEL_NORMAL, "CTCPClientSocket(" + CORE::PointerToString( this ) + "): An exception flag was set on the socket file descriptor. Typically this signals out-of-band data" );
-                UnlockData();
+                Unlock();
 
                 TSocketErrorEventData eData( errorCode );
                 if ( !NotifyObservers( SocketErrorEvent, &eData ) ) return;
@@ -715,7 +715,7 @@ CTCPClientSocket::OnPulse( CORE::CNotifier* notifier                 ,
         {
             m_lastConnFailed = true;
             GUCEF_SYSTEM_LOG( CORE::LOGLEVEL_NORMAL, "CTCPClientSocket(" + CORE::PointerToString( this ) + "): Socket error occured (select call failed): " + CORE::Int32ToString( errorCode ) );
-            UnlockData();
+            Unlock();
            
            /* select call failed */
             TSocketErrorEventData eData( errorCode );
@@ -766,13 +766,13 @@ CTCPClientSocket::OnPulse( CORE::CNotifier* notifier                 ,
 
                             GUCEF_DEBUG_LOG( CORE::LOGLEVEL_BELOW_NORMAL, "CTCPClientSocket(" + CORE::PointerToString( this ) + "): Unable to delayed send queued data at this time" );
 
-                            UnlockData();
+                            Unlock();
                             return;
                         }
                         else
                         {
                             m_lastConnFailed = true;
-                            UnlockData();
+                            Unlock();
 
                             GUCEF_SYSTEM_LOG( CORE::LOGLEVEL_NORMAL, "CTCPClientSocket(" + CORE::PointerToString( this ) + "): Socket error occured: " + CORE::Int32ToString( error ) );
 
@@ -787,7 +787,7 @@ CTCPClientSocket::OnPulse( CORE::CNotifier* notifier                 ,
             }
         }
 
-        UnlockData();
+        Unlock();
     }
 }
 
@@ -812,7 +812,7 @@ CTCPClientSocket::CloseImp( void )
     /*
      *      close the socket connection
      */
-    LockData();
+    Lock();
     if ( IsActive() )
     {
         GUCEF_DEBUG_LOG( CORE::LOGLEVEL_NORMAL, "CTCPClientSocket(" + CORE::PointerToString( this ) + "): Closing active socket" );
@@ -838,12 +838,12 @@ CTCPClientSocket::CloseImp( void )
         if ( !m_lastConnFailed || ( !m_autoReconnectOnError && m_lastConnFailed ) )
             m_pulseGenerator->RequestStopOfPeriodicUpdates( this );
 
-        UnlockData();
+        Unlock();
 
         if ( !NotifyObservers( DisconnectedEvent ) ) return;
     }
     else 
-        UnlockData();
+        Unlock();
 }
 
 /*-------------------------------------------------------------------------*/
@@ -864,9 +864,9 @@ UInt32
 CTCPClientSocket::GetBufferedDataToSendInBytes( void ) const
 {GUCEF_TRACE;
 
-    LockData();
+    Lock();
     UInt32 bBytes = m_sendBuffer.GetBufferedDataSizeInBytes();
-    UnlockData();
+    Unlock();
     return bBytes;
 }
 
@@ -914,7 +914,7 @@ CTCPClientSocket::Send( const void* data ,
     {
         GUCEF_DEBUG_LOG( CORE::LOGLEVEL_NORMAL, "CTCPClientSocket(" + CORE::PointerToString( this ) + "): Sending data of length " + CORE::UInt32ToString( length ) + " with timeout " + CORE::UInt32ToString( timeout ) );
 
-        LockData();
+        Lock();
 
         // notify observers that we are sending data
         CORE::CDynamicBuffer linkedBuffer;
@@ -928,7 +928,7 @@ CTCPClientSocket::Send( const void* data ,
         {
             GUCEF_DEBUG_LOG( CORE::LOGLEVEL_NORMAL, "CTCPClientSocket(" + CORE::PointerToString( this ) + "): Delaying sending of data because there is still data queued to be send from the previous send" );
             m_sendBuffer.Write( data, 1, length );
-            UnlockData();
+            Unlock();
             return true;
         }
 
@@ -965,7 +965,7 @@ CTCPClientSocket::Send( const void* data ,
                 else
                 {
                     m_lastConnFailed = true;
-                    UnlockData();
+                    Unlock();
 
                     GUCEF_SYSTEM_LOG( CORE::LOGLEVEL_NORMAL, "CTCPClientSocket(" + CORE::PointerToString( this ) + "): Socket error occured: " + CORE::Int32ToString( error ) );
 
@@ -976,7 +976,7 @@ CTCPClientSocket::Send( const void* data ,
             }
         }
 
-        UnlockData();
+        Unlock();
         return true;
     }
 
@@ -985,20 +985,20 @@ CTCPClientSocket::Send( const void* data ,
 
 /*-------------------------------------------------------------------------*/
 
-void
-CTCPClientSocket::LockData( void ) const
+bool
+CTCPClientSocket::Lock( void ) const
 {GUCEF_TRACE;
 
-    datalock.Lock();
+    return datalock.Lock();
 }
 
 /*-------------------------------------------------------------------------*/
 
-void
-CTCPClientSocket::UnlockData( void ) const
+bool
+CTCPClientSocket::Unlock( void ) const
 {GUCEF_TRACE;
 
-    datalock.Unlock();
+    return datalock.Unlock();
 }
 
 /*-------------------------------------------------------------------------*/

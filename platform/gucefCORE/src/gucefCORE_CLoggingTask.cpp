@@ -90,9 +90,9 @@ void
 CLoggingTask::SetLoggerBackend( CILogger& loggerBackend )
 {GUCEF_TRACE;
 
-    LockData();
+    Lock();
     m_loggerBackend = &loggerBackend;
-    UnlockData();
+    Unlock();
 }
 
 /*-------------------------------------------------------------------------*/
@@ -313,20 +313,20 @@ CLoggingTask::OnTaskCycle( CICloneable* taskdata )
 
 /*-------------------------------------------------------------------------*/
 
-void
-CLoggingTask::LockData( void )
+bool
+CLoggingTask::Lock( void ) const
 {GUCEF_TRACE;
 
-    m_mailbox.LockData();
+    return m_mailbox.DoLock();
 }
 
 /*-------------------------------------------------------------------------*/
 
-void
-CLoggingTask::UnlockData( void )
+bool
+CLoggingTask::Unlock( void ) const
 {GUCEF_TRACE;
 
-    m_mailbox.UnlockData();
+    return m_mailbox.DoUnlock();
 }
 
 /*-------------------------------------------------------------------------*/

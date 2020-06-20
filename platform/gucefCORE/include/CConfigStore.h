@@ -33,6 +33,11 @@
 #define GUCEF_MT_CMUTEX_H
 #endif /* GUCEF_MT_CMUTEX_H ? */
 
+#ifndef GUCEF_MT_CILOCKABLE_H
+#include "gucefMT_CILockable.h"
+#define GUCEF_MT_CILOCKABLE_H
+#endif /* GUCEF_MT_CILOCKABLE_H ? */
+
 #ifndef GUCEF_CORE_CDVSTRING_H
 #include "CDVString.h"                /* framework string implementation */
 #define GUCEF_CORE_CDVSTRING_H
@@ -71,7 +76,7 @@ class CDataNode;
  *      Allows you load and save the config of all configureable items that
  *      have global config usage enabled.
  */
-class GUCEF_CORE_PUBLIC_CPP CConfigStore
+class GUCEF_CORE_PUBLIC_CPP CConfigStore : public virtual MT::CILockable
 {
     public:
 
@@ -87,6 +92,12 @@ class GUCEF_CORE_PUBLIC_CPP CConfigStore
     void SetCodec( const CString& codectype );
 
     CString GetCodec( void ) const;
+
+    protected:
+    
+    virtual bool Lock( void ) const GUCEF_VIRTUAL_OVERRIDE;
+    
+    virtual bool Unlock( void ) const GUCEF_VIRTUAL_OVERRIDE;
 
     private:
 

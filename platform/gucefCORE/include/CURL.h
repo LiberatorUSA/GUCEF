@@ -74,63 +74,63 @@ class CPulseGenerator;
 class GUCEF_CORE_PUBLIC_CPP CURL : public CForwardingNotifier ,
                                    public virtual CIURLEvents
 {
-        public:
+    public:
 
-        CURL( void );
+    CURL( void );
 
-        CURL( const CURL& src );
+    CURL( const CURL& src );
 
-        CURL( CPulseGenerator& pulseGenerator );
+    CURL( CPulseGenerator& pulseGenerator );
 
-        CURL( const CString& url );
+    CURL( const CString& url );
 
-        CURL( const CString& url              ,
-              CPulseGenerator& pulseGenerator );
+    CURL( const CString& url              ,
+          CPulseGenerator& pulseGenerator );
 
-        virtual ~CURL();
+    virtual ~CURL();
 
-        CURL& operator=( const CURL& src );
+    CURL& operator=( const CURL& src );
 
-        bool operator==( const CURL& other ) const;
+    bool operator==( const CURL& other ) const;
 
-        bool operator!=( const CURL& other ) const;
+    bool operator!=( const CURL& other ) const;
 
-        bool SetURL( const CString& newurl );
+    bool SetURL( const CString& newurl );
 
-        const CString& GetURL( void ) const;
+    const CString& GetURL( void ) const;
 
-        bool Activate( void );
+    bool Activate( void );
 
-        void Deactivate( void );
+    void Deactivate( void );
 
-        /**
-         *      Is a URL resource retrieval action in progress
-         */
-        bool IsActive( void ) const;
+    /**
+        *      Is a URL resource retrieval action in progress
+        */
+    bool IsActive( void ) const;
 
-        void Refresh( void );
+    void Refresh( void );
 
-        CPulseGenerator& GetPulseGenerator( void );
+    CPulseGenerator& GetPulseGenerator( void );
 
-        virtual const CString& GetClassTypeName( void ) const;
+    virtual const CString& GetClassTypeName( void ) const GUCEF_VIRTUAL_OVERRIDE;
 
-        protected:
+    protected:
 
-        virtual void OnNotify( CNotifier* notifier           ,
-                               const CEvent& eventid         ,
-                               CICloneable* eventdata = NULL );
+    virtual void OnNotify( CNotifier* notifier                 ,
+                           const CEvent& eventid               ,
+                           CICloneable* eventdata = GUCEF_NULL ) GUCEF_VIRTUAL_OVERRIDE;
 
-        private:
+    private:
 
-        CURLHandler* GetHandlerForURL( const CString& url ) const;
+    CURLHandler* GetHandlerForURL( const CString& url ) const;
 
-        void Initialize( void );
+    void Initialize( void );
 
-        private:
+    private:
 
-        CString m_url;             /**< the URL string */
-        CURLHandler* m_handler;    /**< URL handler for the specified URL protocol */
-        CPulseGenerator* m_pulseGenerator; /** pulse generator to be used by handlers */
+    CString m_url;             /**< the URL string */
+    CURLHandler* m_handler;    /**< URL handler for the specified URL protocol */
+    CPulseGenerator* m_pulseGenerator; /** pulse generator to be used by handlers */
 };
 
 /*-------------------------------------------------------------------------//

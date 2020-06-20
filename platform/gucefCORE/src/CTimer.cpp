@@ -403,6 +403,24 @@ CTimer::GetClassTypeName( void ) const
     return typeName;
 }
 
+/*-------------------------------------------------------------------------*/
+                         
+bool
+CTimer::Lock( void ) const
+{GUCEF_TRACE;
+    
+    return false;
+}
+
+/*-------------------------------------------------------------------------*/
+                         
+bool
+CTimer::Unlock( void ) const
+{GUCEF_TRACE;
+    
+    return false;
+}
+
 /*-------------------------------------------------------------------------//
 //                                                                         //
 //      NAMESPACE                                                          //

@@ -170,20 +170,20 @@ CTCPServerConnection::GetRemoteTCPPort( void ) const
 
 /*-------------------------------------------------------------------------*/
 
-void
-CTCPServerConnection::LockData( void ) const
+bool
+CTCPServerConnection::Lock( void ) const
 {GUCEF_TRACE;
 
-    _datalock.Lock();
+    return _datalock.Lock();
 }
 
 /*-------------------------------------------------------------------------*/
 
-void
-CTCPServerConnection::UnlockData( void ) const
+bool
+CTCPServerConnection::Unlock( void ) const
 {GUCEF_TRACE;
 
-    _datalock.Unlock();
+    return _datalock.Unlock();
 }
 
 /*-------------------------------------------------------------------------*/
@@ -205,7 +205,7 @@ CTCPServerConnection::CloseImp( bool byUser            ,
 {GUCEF_TRACE;
 
     if ( lock )
-        LockData();
+        Lock();
 
     if ( _active )
     {
@@ -232,7 +232,7 @@ CTCPServerConnection::CloseImp( bool byUser            ,
     }
 
     if ( lock )
-        UnlockData();
+        Unlock();
 
     if ( notify )
         NotifyObservers( DisconnectedEvent );
@@ -249,7 +249,7 @@ CTCPServerConnection::Send( const void* dataSource ,
     {
         GUCEF_DEBUG_LOG( CORE::LOGLEVEL_NORMAL, "CTCPServerConnection(" + CORE::PointerToString( this ) + "): Sending data of length " + CORE::UInt32ToString( length ) );
 
-        LockData();
+        Lock();
 
         // notify observers that we are sending data
         CORE::CDynamicBuffer linkedBuffer;
@@ -263,7 +263,7 @@ CTCPServerConnection::Send( const void* dataSource ,
         {
             GUCEF_DEBUG_LOG( CORE::LOGLEVEL_NORMAL, "CTCPServerConnection(" + CORE::PointerToString( this ) + "): Delaying sending of data because there is still data queued to be send from the previous send" );
             m_sendBuffer.Write( dataSource, 1, length );
-            UnlockData();
+            Unlock();
             return true;
         }
 
@@ -299,7 +299,7 @@ CTCPServerConnection::Send( const void* dataSource ,
                 }
                 else
                 {
-                    UnlockData();
+                    Unlock();
 
                     GUCEF_DEBUG_LOG( CORE::LOGLEVEL_NORMAL, "CTCPServerConnection(" + CORE::PointerToString( this ) + "): Socket error occured: " + CORE::Int32ToString( error ) );
 
@@ -310,7 +310,7 @@ CTCPServerConnection::Send( const void* dataSource ,
             }
         }
 
-        UnlockData();
+        Unlock();
         return true;
     }
 
@@ -329,9 +329,9 @@ CTCPServerConnection::SetMaxRead( UInt32 mr )
      *      affected. Thus the setting will take effect on the next read
      *      cycle.
      */
-    LockData();
+    Lock();
     m_maxreadbytes = mr;
-    UnlockData();
+    Unlock();
 }
 
 /*-------------------------------------------------------------------------*/
@@ -522,7 +522,7 @@ CTCPServerConnection::Update( UInt32 maxUpdatesPerCycle )
         FD_ZERO( &readfds );
         FD_ZERO( &exceptfds );
 
-        LockData();
+        Lock();
 
         FD_SET( _data->sockid, &readfds );
         FD_SET( _data->sockid, &exceptfds );
@@ -546,7 +546,7 @@ CTCPServerConnection::Update( UInt32 maxUpdatesPerCycle )
 
                 CloseImp( true, false, true, false );
                 
-                UnlockData();
+                Unlock();
                 return;
             }
             else
@@ -608,12 +608,12 @@ CTCPServerConnection::Update( UInt32 maxUpdatesPerCycle )
 
                             GUCEF_DEBUG_LOG( CORE::LOGLEVEL_BELOW_NORMAL, "CTCPServerConnection(" + CORE::PointerToString( this ) + "): Unable to delayed send queued data at this time" );
 
-                            UnlockData();
+                            Unlock();
                             return;
                         }
                         else
                         {
-                            UnlockData();
+                            Unlock();
 
                             GUCEF_DEBUG_LOG( CORE::LOGLEVEL_NORMAL, "CTCPServerConnection(" + CORE::PointerToString( this ) + "): Socket error occured: " + CORE::Int32ToString( error ) );
 
@@ -626,7 +626,7 @@ CTCPServerConnection::Update( UInt32 maxUpdatesPerCycle )
             }
         }
 
-        UnlockData();
+        Unlock();
     }
 }
 

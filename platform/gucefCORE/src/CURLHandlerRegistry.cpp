@@ -61,22 +61,20 @@ CURLHandlerRegistry::~CURLHandlerRegistry()
 
 /*-------------------------------------------------------------------------*/
 
-void
-CURLHandlerRegistry::LockData( void ) const
-{
-        GUCEF_BEGIN;
-        m_datalock.Lock();
-        GUCEF_END;
+bool
+CURLHandlerRegistry::Lock( void ) const
+{GUCEF_TRACE;
+
+    return m_datalock.Lock();
 }
 
 /*-------------------------------------------------------------------------*/
 
-void
-CURLHandlerRegistry::UnlockData( void ) const
-{
-        GUCEF_BEGIN;
-        m_datalock.Unlock();
-        GUCEF_END;
+bool
+CURLHandlerRegistry::Unlock( void ) const
+{GUCEF_TRACE;
+
+    return m_datalock.Unlock();
 }
 
 /*-------------------------------------------------------------------------//

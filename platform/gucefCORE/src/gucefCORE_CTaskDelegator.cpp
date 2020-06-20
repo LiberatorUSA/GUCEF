@@ -185,7 +185,7 @@ CTaskDelegator::RequestStopOfPeriodicUpdates( CPulseGenerator& pulseGenerator )
 /*-------------------------------------------------------------------------*/
 
 bool
-CTaskDelegator::OnTaskStart( void* taskdata )
+CTaskDelegator::OnThreadStart( void* taskdata )
 {GUCEF_TRACE;
 
     NotifyObservers( ThreadStartedEvent );
@@ -195,7 +195,7 @@ CTaskDelegator::OnTaskStart( void* taskdata )
 /*-------------------------------------------------------------------------*/
 
 void
-CTaskDelegator::OnTaskStarted( void* taskdata )
+CTaskDelegator::OnThreadStarted( void* taskdata )
 {GUCEF_TRACE;
 
 }
@@ -216,7 +216,7 @@ CTaskDelegator::TaskCleanup( CTaskConsumer* taskConsumer ,
 /*-------------------------------------------------------------------------*/
 
 bool
-CTaskDelegator::OnTaskCycle( void* taskdata )
+CTaskDelegator::OnThreadCycle( void* taskdata )
 {GUCEF_TRACE;
 
     CICloneable* taskData = GUCEF_NULL;
@@ -285,7 +285,7 @@ CTaskDelegator::ProcessTask( CTaskConsumer& taskConsumer ,
 /*-------------------------------------------------------------------------*/
 
 void
-CTaskDelegator::OnTaskEnd( void* taskdata )
+CTaskDelegator::OnThreadEnd( void* taskdata )
 {GUCEF_TRACE;
 
     // if we get here and the m_consumerBusy flag is set then the task was killed
@@ -303,7 +303,7 @@ CTaskDelegator::OnTaskEnd( void* taskdata )
 /*-------------------------------------------------------------------------*/
 
 void
-CTaskDelegator::OnTaskPausedForcibly( void* taskdata )
+CTaskDelegator::OnThreadPausedForcibly( void* taskdata )
 {GUCEF_TRACE;
 
     if ( m_consumerBusy )
@@ -318,7 +318,7 @@ CTaskDelegator::OnTaskPausedForcibly( void* taskdata )
 /*-------------------------------------------------------------------------*/
 
 void
-CTaskDelegator::OnTaskResumed( void* taskdata )
+CTaskDelegator::OnThreadResumed( void* taskdata )
 {GUCEF_TRACE;
 
     if ( m_consumerBusy )
@@ -333,8 +333,8 @@ CTaskDelegator::OnTaskResumed( void* taskdata )
 /*-------------------------------------------------------------------------*/
 
 void
-CTaskDelegator::OnTaskEnded( void* taskdata ,
-                             bool forced    )
+CTaskDelegator::OnThreadEnded( void* taskdata ,
+                               bool forced    )
 {GUCEF_TRACE;
 
     // if we get here and the m_consumerBusy flag is set then the task was killed
@@ -356,6 +356,24 @@ CTaskDelegator::GetTaskConsumer( void )
 {GUCEF_TRACE;
 
     return m_taskConsumer;
+}
+
+/*-------------------------------------------------------------------------*/
+
+bool
+CTaskDelegator::Lock( void ) const
+{GUCEF_TRACE;
+
+    return MT::CActiveObject::Lock();
+}
+
+/*-------------------------------------------------------------------------*/
+
+bool
+CTaskDelegator::Unlock( void ) const
+{GUCEF_TRACE;
+
+    return MT::CActiveObject::Unlock();
 }
 
 /*-------------------------------------------------------------------------//

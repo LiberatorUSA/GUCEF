@@ -94,9 +94,9 @@ class GUCEF_CORE_PUBLIC_CPP CPumpedObserver : public CObserver
      *  @param eventid the unique event id for an event
      *  @param eventdata optional notifier defined userdata
      */
-    virtual void OnPumpedNotify( CNotifier* notifier           ,
-                                 const CEvent& eventid         ,
-                                 CICloneable* eventdata = NULL );
+    virtual void OnPumpedNotify( CNotifier* notifier                 ,
+                                 const CEvent& eventid               ,
+                                 CICloneable* eventdata = GUCEF_NULL );
 
     protected:
 
@@ -115,9 +115,9 @@ class GUCEF_CORE_PUBLIC_CPP CPumpedObserver : public CObserver
                            const CEvent& eventid         ,
                            CICloneable* eventdata = NULL );
 
-    virtual void LockData( void ) const;
+    virtual bool Lock( void ) const GUCEF_VIRTUAL_OVERRIDE;
 
-    virtual void UnlockData( void ) const;
+    virtual bool Unlock( void ) const GUCEF_VIRTUAL_OVERRIDE;
 
     private:
     typedef CTEventHandlerFunctor< CPumpedObserver > TEventCallback;

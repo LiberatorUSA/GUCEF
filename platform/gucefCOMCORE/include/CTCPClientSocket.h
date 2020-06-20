@@ -111,7 +111,7 @@ class GUCEF_COMCORE_EXPORT_CPP CTCPClientSocket : public CTCPConnection
     void Close( void );  /* close the socket connection */
     
     virtual bool Send( const void* dataSource , 
-                       const UInt32 dataSize  );    
+                       const UInt32 dataSize  ) GUCEF_VIRTUAL_OVERRIDE;    
 
     /**
      *      Attempt to send the data and returns immediately.
@@ -149,33 +149,33 @@ class GUCEF_COMCORE_EXPORT_CPP CTCPClientSocket : public CTCPConnection
 
     UInt32 GetBufferedDataToSendInBytes( void ) const;
 
-    virtual UInt32 GetBytesReceived( bool resetCounter );
+    virtual UInt32 GetBytesReceived( bool resetCounter ) GUCEF_VIRTUAL_OVERRIDE;
 
-    virtual UInt32 GetBytesTransmitted( bool resetCounter );
+    virtual UInt32 GetBytesTransmitted( bool resetCounter ) GUCEF_VIRTUAL_OVERRIDE;
 
     /** 
      *
      */
-    virtual bool IsActive( void ) const; 
+    virtual bool IsActive( void ) const GUCEF_VIRTUAL_OVERRIDE; 
 
     /**
      *      
      */       
     bool IsBlocking( void ) const;
 
-    virtual const CORE::CString& GetRemoteHostName( void ) const;
+    virtual const CORE::CString& GetRemoteHostName( void ) const GUCEF_VIRTUAL_OVERRIDE;
     
-    virtual UInt16 GetRemoteTCPPort( void ) const;
+    virtual UInt16 GetRemoteTCPPort( void ) const GUCEF_VIRTUAL_OVERRIDE;
     
-    virtual CIPAddress GetRemoteIP( void ) const;
+    virtual CIPAddress GetRemoteIP( void ) const GUCEF_VIRTUAL_OVERRIDE;
 
     /**
      *  Allows you to set whether to use data coalescing on sends.
      *  This is commonly refered to as the Nagle algorithm
      */
-    virtual bool SetUseTcpSendCoalescing( bool coaleseData );
+    virtual bool SetUseTcpSendCoalescing( bool coaleseData ) GUCEF_VIRTUAL_OVERRIDE;
 
-    virtual bool GetUseTcpSendCoalescing( void ) const;
+    virtual bool GetUseTcpSendCoalescing( void ) const GUCEF_VIRTUAL_OVERRIDE;
 
     bool SetUseTcpKeepAlive( bool keepAlive );
 
@@ -202,7 +202,7 @@ class GUCEF_COMCORE_EXPORT_CPP CTCPClientSocket : public CTCPConnection
 
     UInt32 GetMaxUpdatesPerCycle( void ) const;
 
-    virtual const CORE::CString& GetClassTypeName( void ) const;
+    virtual const CORE::CString& GetClassTypeName( void ) const GUCEF_VIRTUAL_OVERRIDE;
 
     public:
     
@@ -210,9 +210,9 @@ class GUCEF_COMCORE_EXPORT_CPP CTCPClientSocket : public CTCPConnection
     
     protected:
 
-    virtual void LockData( void ) const;
+    virtual bool Lock( void ) const GUCEF_VIRTUAL_OVERRIDE;
     
-    virtual void UnlockData( void ) const;
+    virtual bool Unlock( void ) const GUCEF_VIRTUAL_OVERRIDE;
 
     private:    
     typedef CORE::CTEventHandlerFunctor< CTCPClientSocket > TEventCallback;

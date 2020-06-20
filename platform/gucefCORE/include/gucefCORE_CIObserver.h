@@ -26,6 +26,11 @@
 //                                                                         //
 //-------------------------------------------------------------------------*/
 
+#ifndef GUCEF_MT_CILOCKABLE_H
+#include "gucefMT_CILockable.h"
+#define GUCEF_MT_CILOCKABLE_H
+#endif /* GUCEF_MT_CILOCKABLE_H ? */
+
 #ifndef GUCEF_CORE_CICLONEABLE_H
 #include "CICloneable.h"
 #define GUCEF_CORE_CICLONEABLE_H
@@ -66,7 +71,8 @@ class CEvent;
  *  Interface for observers.
  *  Observer based classes should implement OnNotify()
  */
-class GUCEF_CORE_PUBLIC_CPP CIObserver : public CITypeNamed
+class GUCEF_CORE_PUBLIC_CPP CIObserver : public MT::CILockable ,
+                                         public CITypeNamed
 {
     public:
 

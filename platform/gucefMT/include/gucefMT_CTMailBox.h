@@ -26,10 +26,26 @@
 //-------------------------------------------------------------------------*/
 
 #include <vector>
-#include "gucefMT_ETypes.h"
+
+#ifndef GUCEF_MT_CMUTEX_H
 #include "gucefMT_CMutex.h"
+#define GUCEF_MT_CMUTEX_H
+#endif /* GUCEF_MT_CMUTEX_H ? */ 
+
+#ifndef GUCEF_MT_CICLONEABLE_H
 #include "gucefMT_CICloneable.h"
-#include "gucefMT_macros.h"
+#define GUCEF_MT_CICLONEABLE_H
+#endif /* GUCEF_MT_CICLONEABLE_H ? */ 
+
+#ifndef GUCEF_MT_CILOCKABLE_H
+#include "gucefMT_CILockable.h"
+#define GUCEF_MT_CILOCKABLE_H
+#endif /* GUCEF_MT_CILOCKABLE_H ? */
+
+#ifndef GUCEF_MT_COBJECTSCOPELOCK_H
+#include "gucefMT_CObjectScopeLock.h"
+#define GUCEF_MT_COBJECTSCOPELOCK_H
+#endif /* GUCEF_MT_COBJECTSCOPELOCK_H ? */
 
 /*-------------------------------------------------------------------------//
 //                                                                         //
@@ -51,7 +67,7 @@ namespace MT {
  *  multiple threads
  */
 template < typename T >
-class CTMailBox
+class CTMailBox : public virtual MT::CILockable
 {
     public:
     
@@ -117,9 +133,9 @@ class CTMailBox
 
     bool HasMail( void ) const;
     
-    void LockData() const;
+    bool DoLock( void ) const;
     
-    void UnlockData() const;
+    bool DoUnlock( void ) const;
     
     typename TMailList::iterator begin( void );
     
@@ -130,6 +146,12 @@ class CTMailBox
     typename TMailList::const_iterator begin( void ) const;
     
     typename TMailList::const_iterator end( void ) const;
+
+    protected:
+
+    virtual bool Lock( void ) const GUCEF_VIRTUAL_OVERRIDE;
+
+    virtual bool Unlock( void ) const GUCEF_VIRTUAL_OVERRIDE;
 
     private:
 
@@ -151,6 +173,9 @@ class CTMailBox
 
 template< typename T >
 CTMailBox< T >::CTMailBox( void )
+    : MT::CILockable()
+    , m_mailStack()
+    , m_datalock()
 {
 }
 
@@ -159,7 +184,8 @@ CTMailBox< T >::CTMailBox( void )
 template< typename T >
 CTMailBox< T >::~CTMailBox()
 {
-    m_datalock.Lock();
+    CObjectScopeLock lock( this );
+
     TMailElement* entry;
     typename TMailList::iterator i( m_mailStack.begin() );
     while ( i != m_mailStack.end() )
@@ -169,7 +195,6 @@ CTMailBox< T >::~CTMailBox()
         m_mailStack.erase( i );
         i = m_mailStack.begin();
     }
-    m_datalock.Unlock();
 }
 
 /*--------------------------------------------------------------------------*/
@@ -179,7 +204,8 @@ void
 CTMailBox< T >::AddMail( const T& eventid                     ,
                          const CICloneable* data /* = NULL */ )
 {
-    m_datalock.Lock();
+    CObjectScopeLock lock( this );
+
     TMailElement entry;
     entry.eventid = eventid;
     if ( data )
@@ -191,7 +217,6 @@ CTMailBox< T >::AddMail( const T& eventid                     ,
         entry.data = NULL;
     }
     m_mailStack.insert( m_mailStack.begin(), entry );
-    m_datalock.Unlock();
 }
 
 /*--------------------------------------------------------------------------*/
@@ -201,7 +226,8 @@ bool
 CTMailBox< T >::GetMail( T& eventid         ,
                          CICloneable** data )
 {
-    m_datalock.Lock();
+    CObjectScopeLock lock( this );
+
     if ( !m_mailStack.empty() )
     {
         TMailElement& entry = m_mailStack[ m_mailStack.size()-1 ];
@@ -209,11 +235,9 @@ CTMailBox< T >::GetMail( T& eventid         ,
         *data = entry.data;
 
         m_mailStack.pop_back();
-        m_datalock.Unlock();
         return true;
     }
-    *data = NULL;
-    m_datalock.Unlock();
+    *data = GUCEF_NULL;
     return false;
 }
 
@@ -224,7 +248,7 @@ bool
 CTMailBox< T >::GetMailList( TMailList& mailList ,
                              Int32 maxMailItems  )
 {
-    m_datalock.Lock();
+    CObjectScopeLock lock( this );
     
     Int32 mailItemsRead = 0;
     while ( mailItemsRead < maxMailItems && maxMailItems > -1 )
@@ -238,7 +262,6 @@ CTMailBox< T >::GetMailList( TMailList& mailList ,
         }
     }
     
-    m_datalock.Unlock();
     return mailItemsRead > 0;
 }
 
@@ -248,7 +271,8 @@ template< typename T >
 void
 CTMailBox< T >::Clear( void )
 {
-    m_datalock.Lock();
+    CObjectScopeLock lock( this );
+
     typename TMailList::iterator i( m_mailStack.begin() );
     while ( i != m_mailStack.end() )
     {
@@ -256,7 +280,6 @@ CTMailBox< T >::Clear( void )
         ++i;
     }
     m_mailStack.clear();
-    m_datalock.Unlock();
 }
 
 /*--------------------------------------------------------------------------*/
@@ -265,7 +288,8 @@ template< typename T >
 void
 CTMailBox< T >::ClearAllExcept( const T& eventid )
 {
-    m_datalock.Lock();
+    CObjectScopeLock lock( this );
+
     TMailElement* entry;
     typename TMailList::iterator i( m_mailStack.begin() );
     while ( i != m_mailStack.end() )
@@ -280,7 +304,6 @@ CTMailBox< T >::ClearAllExcept( const T& eventid )
         }
         ++i;
     }
-    m_datalock.Unlock();
 }
 
 /*--------------------------------------------------------------------------*/
@@ -289,7 +312,8 @@ template< typename T >
 void
 CTMailBox< T >::Delete( const T& eventid )
 {
-    m_datalock.Lock();
+    CObjectScopeLock lock( this );
+
     TMailElement* entry;
     typename TMailList::iterator i( m_mailStack.begin() );
     while ( i != m_mailStack.end() )
@@ -304,7 +328,6 @@ CTMailBox< T >::Delete( const T& eventid )
         }
         ++i;
     }
-    m_datalock.Unlock();
 }
 
 /*--------------------------------------------------------------------------*/
@@ -319,19 +342,37 @@ CTMailBox< T >::HasMail( void ) const
 /*--------------------------------------------------------------------------*/
 
 template< typename T >
-void
-CTMailBox< T >::LockData( void ) const
+bool
+CTMailBox< T >::Lock( void ) const
 {
-    m_datalock.Lock();
+    return m_datalock.Lock();
 }    
 
 /*--------------------------------------------------------------------------*/
 
 template< typename T >
-void
-CTMailBox< T >::UnlockData( void ) const
+bool
+CTMailBox< T >::Unlock( void ) const
 {
-    m_datalock.Unlock();
+    return m_datalock.Unlock();
+}
+
+/*--------------------------------------------------------------------------*/
+
+template< typename T >
+bool
+CTMailBox< T >::DoLock( void ) const
+{
+    return Lock();
+}    
+
+/*--------------------------------------------------------------------------*/
+
+template< typename T >
+bool
+CTMailBox< T >::DoUnlock( void ) const
+{
+    return Unlock();
 }
 
 /*--------------------------------------------------------------------------*/
