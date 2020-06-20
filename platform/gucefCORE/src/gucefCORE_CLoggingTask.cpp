@@ -262,6 +262,15 @@ CLoggingTask::IsReadyToProcessCycle( void ) const
 
 /*-------------------------------------------------------------------------*/
 
+void 
+CLoggingTask::OnTaskEnding( CORE::CICloneable* taskdata ,
+                            bool willBeForced           )
+{GUCEF_TRACE;
+    
+}
+
+/*-------------------------------------------------------------------------*/
+
 bool
 CLoggingTask::OnTaskCycle( CICloneable* taskdata )
 {GUCEF_TRACE;

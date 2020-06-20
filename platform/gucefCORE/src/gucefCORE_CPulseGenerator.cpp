@@ -28,6 +28,11 @@
 #define GUCEF_MT_DVMTOSWRAP_H
 #endif /* GUCEF_MT_DVMTOSWRAP_H ? */
 
+#ifndef GUCEF_MT_COBJECTSCOPELOCK_H
+#include "gucefMT_CObjectScopeLock.h"
+#define GUCEF_MT_COBJECTSCOPELOCK_H
+#endif /* GUCEF_MT_COBJECTSCOPELOCK_H ? */
+
 #ifndef GUCEF_CORE_CTRACER_H
 #include "CTracer.h"
 #define GUCEF_CORE_CTRACER_H
@@ -114,13 +119,26 @@ CPulseGenerator::GetClassTypeName( void ) const
 /*--------------------------------------------------------------------------*/
 
 void
+CPulseGenerator::ForceDirectPulse( void )
+{GUCEF_TRACE;
+    
+    OnDriverPulse();
+}
+
+/*--------------------------------------------------------------------------*/
+
+void
 CPulseGenerator::RequestImmediatePulse( void )
 {GUCEF_TRACE;
 
     if ( GUCEF_NULL != m_driver )
     {
-        m_driver->RequestImmediatePulse( *this );
-        return;
+        MT::CObjectScopeLock lock( this );
+        if ( GUCEF_NULL != m_driver )
+        {
+            m_driver->RequestImmediatePulse( *this );
+            return;
+        }
     }
 
     Lock();
@@ -140,12 +158,11 @@ void
 CPulseGenerator::RequestPulsesPerImmediatePulseRequest( const Int32 requestedPulsesPerImmediatePulseRequest )
 {GUCEF_TRACE;
 
-    Lock();
+    MT::CObjectScopeLock lock( this );
     if ( GUCEF_NULL != m_driver )
     {
         m_driver->RequestPulsesPerImmediatePulseRequest( *this, requestedPulsesPerImmediatePulseRequest );
     }
-    Unlock();
 }
 
 /*--------------------------------------------------------------------------*/
@@ -154,15 +171,13 @@ void
 CPulseGenerator::RequestPeriodicPulses( void* requestor )
 {GUCEF_TRACE;
 
-    Lock();
+    MT::CObjectScopeLock lock( this );
     m_periodicUpdateRequestors[ requestor ] = m_updateDeltaInMilliSecs;
     if ( m_driver != NULL && m_periodicUpdateRequestors.size() == 1 )
     {
-        Unlock();
         m_driver->RequestPeriodicPulses( *this, m_updateDeltaInMilliSecs );
         return;
-    }
-    Unlock();    
+    }   
 }
 
 /*--------------------------------------------------------------------------*/
@@ -192,6 +207,7 @@ UInt32
 CPulseGenerator::DetermineRequiredPulseInterval( void ) const
 {GUCEF_TRACE;
     
+    MT::CObjectScopeLock lock( this );
     if ( 0 == m_periodicUpdateRequestors.size() )
     {
         return m_updateDeltaInMilliSecs;
@@ -228,21 +244,19 @@ CPulseGenerator::RequestPeriodicPulses( void* requestor                    ,
                                         const UInt32 pulseDeltaInMilliSecs )
 {GUCEF_TRACE;
 
-    Lock();
-    if ( NULL != requestor )
+    MT::CObjectScopeLock lock( this );
+    if ( GUCEF_NULL != requestor )
     {
         m_periodicUpdateRequestors[ requestor ] = pulseDeltaInMilliSecs;
     }
     
     m_updateDeltaInMilliSecs = DetermineRequiredPulseInterval();
     
-    if ( NULL != m_driver )
+    if ( GUCEF_NULL != m_driver )
     {
-        Unlock();
         m_driver->RequestPeriodicPulses( *this, m_updateDeltaInMilliSecs );
         return;
     }
-    Unlock(); 
 }
 
 /*--------------------------------------------------------------------------*/
@@ -251,8 +265,8 @@ void
 CPulseGenerator::RequestStopOfPeriodicUpdates( void* requestor )
 {GUCEF_TRACE;
     
-    Lock();
-    if ( NULL != requestor )
+    MT::CObjectScopeLock lock( this );
+    if ( GUCEF_NULL != requestor )
     {
         m_periodicUpdateRequestors.erase( requestor );
     }
@@ -261,7 +275,7 @@ CPulseGenerator::RequestStopOfPeriodicUpdates( void* requestor )
     m_updateDeltaInMilliSecs = DetermineRequiredPulseInterval();
     
     // Check if we have a driver we can pass the request on to
-    if ( NULL != m_driver )
+    if ( GUCEF_NULL != m_driver )
     {
         // Depending on whether we have more clients wanting updates
         // we should either update the frequency or switch to manually requested pulses
@@ -274,7 +288,6 @@ CPulseGenerator::RequestStopOfPeriodicUpdates( void* requestor )
             m_driver->RequestStopOfPeriodicUpdates( *this );
         }
     }    
-    Unlock();
 }
 
 /*--------------------------------------------------------------------------*/
@@ -283,18 +296,16 @@ void
 CPulseGenerator::RequestPulseInterval( const UInt32 minimalPulseDeltaInMilliSecs )
 {GUCEF_TRACE;
 
-    Lock();
+    MT::CObjectScopeLock lock( this );
     if ( minimalPulseDeltaInMilliSecs < m_updateDeltaInMilliSecs )
     {
         if ( NULL != m_driver )
         {
             m_updateDeltaInMilliSecs = minimalPulseDeltaInMilliSecs;
-            Unlock();
             m_driver->RequestPulseInterval( *this, m_updateDeltaInMilliSecs );
             return;
         }
     }
-    Unlock();
 }
 
 /*--------------------------------------------------------------------------*/
@@ -303,6 +314,7 @@ bool
 CPulseGenerator::IsPulsingPeriodicly( void ) const
 {GUCEF_TRACE;
 
+    MT::CObjectScopeLock lock( this );
     return m_periodicUpdateRequestors.size() > 0 && !m_forcedStopOfPeriodPulses;
 }
 
@@ -321,6 +333,7 @@ Float64
 CPulseGenerator::GetActualPulseDeltaInMilliSecs( void ) const
 {GUCEF_TRACE;
 
+    MT::CObjectScopeLock lock( this );
     Int64 deltaTicks = (Int64) ( MT::PrecisionTickCount() - m_lastCycleTickCount );
     if ( deltaTicks > 0 )
     {
@@ -336,6 +349,7 @@ CPulseGenerator::WaitTillNextPulseWindow( UInt32 forcedMinimalDeltaInMilliSecs  
                                           UInt32 desiredMaximumDeltaInMilliSecs ) const
 {GUCEF_TRACE;
    
+    MT::CObjectScopeLock lock( this );
     Float64 deltaInMs = GetActualPulseDeltaInMilliSecs();
     Int32 timeLeftToWaitInMs = (Int32) ( m_updateDeltaInMilliSecs - deltaInMs );
 
@@ -373,17 +387,15 @@ void
 CPulseGenerator::SetPulseGeneratorDriver( CIPulseGeneratorDriver* driver )
 {GUCEF_TRACE;
 
-    Lock();
+    MT::CObjectScopeLock lock( this );
     m_driver = driver;
     if ( IsPulsingPeriodicly() )
     {
-        Unlock();
         if ( GUCEF_NULL != m_driver )
             m_driver->RequestPulseInterval( *this, m_updateDeltaInMilliSecs );
     }
     else
-    {
-        Unlock();        
+    {     
         if ( GUCEF_NULL != m_driver )
             m_driver->RequestImmediatePulse( *this );
     }
@@ -413,15 +425,13 @@ void
 CPulseGenerator::ForceStopOfPeriodicPulses( void )
 {GUCEF_TRACE;
     
-    Lock();
+    MT::CObjectScopeLock lock( this );
     m_forcedStopOfPeriodPulses = true;
-    if ( NULL != m_driver )
+    if ( GUCEF_NULL != m_driver )
     {
-        Unlock();
         m_driver->RequestStopOfPeriodicUpdates( *this );
         return;
     }
-    Unlock();
 }
 
 /*--------------------------------------------------------------------------*/
@@ -430,18 +440,16 @@ void
 CPulseGenerator::AllowPeriodicPulses( void )
 {GUCEF_TRACE;
 
-    Lock();
+    MT::CObjectScopeLock lock( this );
     if ( m_forcedStopOfPeriodPulses )
     {
         m_forcedStopOfPeriodPulses = false;        
         if ( NULL != m_driver && m_periodicUpdateRequestors.size() > 0 )
         {
-            Unlock();
             m_driver->RequestPeriodicPulses( *this, m_updateDeltaInMilliSecs );
             return;
         }
     }
-    Unlock();
 }
 
 /*--------------------------------------------------------------------------*/
@@ -450,17 +458,15 @@ void
 CPulseGenerator::RequestPeriodicPulses( void )
 {GUCEF_TRACE;
 
-    Lock();
+    MT::CObjectScopeLock lock( this );
     if ( !m_forcedStopOfPeriodPulses )
     {
         if ( NULL != m_driver )
         {
-            Unlock();
             m_driver->RequestPeriodicPulses( *this, m_updateDeltaInMilliSecs );
             return;
         }
     }    
-    Unlock();
 }
 
 /*--------------------------------------------------------------------------*/

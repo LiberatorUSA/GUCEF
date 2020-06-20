@@ -109,6 +109,8 @@ class GUCEF_CORE_PUBLIC_CPP CPulseGenerator : public CNotifier
 
     void ForceStopOfPeriodicPulses( void );
 
+    void ForceDirectPulse( void );
+
     void AllowPeriodicPulses( void );
 
     /**

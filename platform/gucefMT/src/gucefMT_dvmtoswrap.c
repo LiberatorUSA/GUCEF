@@ -218,16 +218,26 @@ ThreadKill( struct SThreadData* td )
 
 UInt32
 ThreadWait( struct SThreadData* td ,
-            Int32 timeout          )
+            Int32 timeoutInMs      )
 {
     #if ( GUCEF_PLATFORM == GUCEF_PLATFORM_MSWIN )
-    if ( timeout >= 0 )
+    if ( NULL != td && NULL != td->threadhandle )
     {
-        return ( WAIT_OBJECT_0 == WaitForSingleObject( td->threadhandle ,
-                                                       timeout          ) );
+        if ( timeoutInMs >= 0 )
+        {
+            if ( WAIT_OBJECT_0 == WaitForSingleObject( td->threadhandle ,
+                                                       timeoutInMs      ) )
+                return 1;
+            else
+                return 0;
+        }
+        if ( WAIT_OBJECT_0 == WaitForSingleObject( td->threadhandle ,
+                                                   INFINITE         ) )
+            return 1;
+        else
+            return 0;
     }
-    return ( WAIT_OBJECT_0 == WaitForSingleObject( td->threadhandle ,
-                                                   INFINITE         ) );
+    return 0;
     #elif ( ( GUCEF_PLATFORM == GUCEF_PLATFORM_LINUX ) || ( GUCEF_PLATFORM == GUCEF_PLATFORM_ANDROID ) )
 
     #else

@@ -215,6 +215,15 @@ CTaskConsumer::OnTaskEnded( CICloneable* taskdata ,
 
 /*-------------------------------------------------------------------------*/
 
+void 
+CTaskConsumer::OnTaskEnding( CICloneable* taskdata ,
+                             bool willBeForced     )
+{GUCEF_TRACE;
+
+}
+
+/*-------------------------------------------------------------------------*/
+
 bool
 CTaskConsumer::Lock( void ) const
 {GUCEF_TRACE;

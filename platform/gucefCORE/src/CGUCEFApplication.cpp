@@ -55,6 +55,11 @@
 #define GUCEF_CORE_CPLUGINCONTROL_H
 #endif /* GUCEF_CORE_CPLUGINCONTROL_H ? */
 
+#ifndef GUCEF_CORE_CTASKMANAGER_H
+#include "gucefCORE_CTaskManager.h"
+#define GUCEF_CORE_CTASKMANAGER_H
+#endif /* GUCEF_CORE_CTASKMANAGER_H ? */
+
 #ifndef GUCEF_CORE_CDATANODE_H
 #include "CDataNode.h"          /* node for data storage */
 #define GUCEF_CORE_CDATANODE_H
@@ -365,16 +370,18 @@ CGUCEFApplication::Update( void )
 /*-------------------------------------------------------------------------*/
 
 void
-CGUCEFApplication::Stop( void )
+CGUCEFApplication::Stop( bool wait )
 {GUCEF_TRACE;
 
-    MT::CObjectScopeLock( this );
+    MT::CObjectScopeLock lock( this );
 
     if ( !m_shutdownRequested )
     {
         m_shutdownRequested = true;
-        m_pulseGenerator.ForceStopOfPeriodicPulses();
         if ( !NotifyObservers( AppShutdownEvent ) ) return;
+       
+        m_pulseGenerator.ForceStopOfPeriodicPulses();
+        m_pulseGenerator.ForceDirectPulse();
     }
 }
 
@@ -384,7 +391,7 @@ CString
 CGUCEFApplication::GetApplicationDir( void ) const
 {GUCEF_TRACE;
 
-    MT::CObjectScopeLock( this );
+    MT::CObjectScopeLock lock( this );
     return _appdir;
 }
 
@@ -394,7 +401,7 @@ bool
 CGUCEFApplication::SaveConfig( CDataNode& tree )  const
 {GUCEF_TRACE;
 
-    MT::CObjectScopeLock( this );
+    MT::CObjectScopeLock lock( this );
 
     CDataNode* n = tree.Structure( "GUCEF%CORE%CGUCEFApplication" ,
                                    '%'                            );
@@ -409,7 +416,7 @@ bool
 CGUCEFApplication::LoadConfig( const CDataNode& tree )
 {GUCEF_TRACE;
 
-    MT::CObjectScopeLock( this );
+    MT::CObjectScopeLock lock( this );
 
     GUCEF_SYSTEM_LOG( LOGLEVEL_BELOW_NORMAL, "CGUCEFApplication: Loading config" );
     return true;
@@ -434,7 +441,7 @@ CGUCEFApplication::OnSysConsoleCommand( const CString& path                ,
                                         std::vector< CString >& resultdata )
 {GUCEF_TRACE;
 
-    MT::CObjectScopeLock( this );
+    MT::CObjectScopeLock lock( this );
 
     if ( command == "Stop" )
     {

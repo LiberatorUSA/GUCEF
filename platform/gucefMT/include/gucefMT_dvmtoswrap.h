@@ -118,7 +118,7 @@ ThreadKill( struct SThreadData* td );
 
 GUCEF_MT_PUBLIC_C UInt32
 ThreadWait( struct SThreadData* td ,
-            Int32 timeout          );
+            Int32 timeoutInMs      );
 
 /*--------------------------------------------------------------------------*/
 

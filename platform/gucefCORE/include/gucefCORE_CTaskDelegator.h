@@ -123,7 +123,7 @@ class GUCEF_CORE_PRIVATE_CPP CTaskDelegator : public MT::CActiveObject      ,
     virtual void OnThreadStarted( void* taskdata ) GUCEF_VIRTUAL_OVERRIDE;
 
     /**
-     *  Perorm all your main task work in this function.
+     *  Perform all your main task work in this function.
      *  It will be called repeatedly until true is returned indicating that the task has been completed.
      *  Thus for ongoing tasks you can write this function to take care of a single interation of the task.
      */
@@ -136,6 +136,15 @@ class GUCEF_CORE_PRIVATE_CPP CTaskDelegator : public MT::CActiveObject      ,
      *  from the thread that triggered the forcefull termination.
      */
     virtual void OnThreadEnd( void* taskdata ) GUCEF_VIRTUAL_OVERRIDE;
+
+    /**
+     *  Last chance notification to decended classes of impending end of the tread
+     *  If the 'willBeForced' flag is true the thread will be killed next 
+     *  Since this would be used in cases where the thread is misbehaving one should
+     *  keep that in mind in the implementation of this callback
+     */
+    virtual void OnThreadEnding( void* taskdata    ,
+                                 bool willBeForced ) GUCEF_VIRTUAL_OVERRIDE;
 
     virtual void OnThreadPausedForcibly( void* taskdata ) GUCEF_VIRTUAL_OVERRIDE;
     
@@ -176,9 +185,16 @@ class GUCEF_CORE_PRIVATE_CPP CTaskDelegator : public MT::CActiveObject      ,
 
     virtual void RequestStopOfPeriodicUpdates( CPulseGenerator& pulseGenerator ) GUCEF_VIRTUAL_OVERRIDE;
 
-    private:
+    protected:
+
+    CTaskDelegator( CTaskConsumer* taskConsumer ,
+                    CICloneable* taskData       );
 
     CTaskConsumer* m_taskConsumer;
+    CICloneable* m_taskData;
+
+    private:
+
     bool m_consumerBusy;
     Int32 m_immediatePulseTickets;
     Int32 m_immediatePulseTicketMax;

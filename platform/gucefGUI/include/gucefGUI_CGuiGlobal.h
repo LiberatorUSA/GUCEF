@@ -26,6 +26,11 @@
 //                                                                         //
 //-------------------------------------------------------------------------*/
 
+#ifndef GUCEF_MT_CMUTEX_H
+#include "gucefMT_CMutex.h"
+#define GUCEF_MT_CMUTEX_H
+#endif /* GUCEF_MT_CMUTEX_H ? */
+
 #ifndef GUCEF_GUI_MACROS_H
 #include "gucefGUI_macros.h"
 #define GUCEF_GUI_MACROS_H
@@ -83,6 +88,7 @@ class GUCEF_GUI_PUBLIC_CPP CGuiGlobal
     CGUIManager* m_guiManager;
 
     static CGuiGlobal* g_instance;
+    static MT::CMutex g_datalock;
 };
 
 /*-------------------------------------------------------------------------//

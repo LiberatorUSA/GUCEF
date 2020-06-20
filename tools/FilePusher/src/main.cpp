@@ -189,6 +189,15 @@ ParseParams( const int argc                 ,
 
 /*-------------------------------------------------------------------------*/
 
+void
+GucefAppSignalHandler( int signal )
+{GUCEF_TRACE;
+    
+    ::GUCEF::CORE::CCoreGlobal::Instance()->GetApplication().Stop();
+}
+
+/*-------------------------------------------------------------------------*/
+
 /*
  *      Application entry point
  */
@@ -244,6 +253,8 @@ GUCEF_OSSERVICEMAIN_BEGIN( "FilePusher" )
     CORE::CCoreGlobal::Instance()->GetLogManager().FlushBootstrapLogEntriesToLogs();
     GUCEF_LOG( CORE::LOGLEVEL_NORMAL, "Flushed to log @ " + logFilename );
 
+    GUCEF_OSMAIN_SIGNAL_HANDLER( GucefAppSignalHandler );
+    
     FilePusher filePusher;
     if ( !filePusher.LoadConfig( keyValueList, *globalConfig ) )
     {

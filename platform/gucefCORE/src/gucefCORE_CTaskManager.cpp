@@ -181,14 +181,15 @@ CTaskManager::CTaskQueueItem::Clone( void ) const
 /*-------------------------------------------------------------------------*/
 
 CTaskManager::CTaskManager( void )
-    : CObservingNotifier()      ,
-      m_consumerFactory()       ,
-      m_desiredNrOfThreads( 0 ) ,
-      m_activeNrOfThreads( 0 )  ,
-      m_taskQueue()             ,
-      m_taskIdGenerator()       ,
-      m_taskConsumerMap()       ,
-      m_taskDelegators()
+    : CTSGNotifier()      
+    , m_consumerFactory()       
+    , m_desiredNrOfThreads( 0 ) 
+    , m_activeNrOfThreads( 0 )  
+    , m_taskQueue()             
+    , m_taskIdGenerator()       
+    , m_taskConsumerMap()       
+    , m_taskDelegators()
+    , m_acceptNewWork( true )
 {GUCEF_TRACE;
 
     RegisterEvents();
@@ -201,7 +202,7 @@ CTaskManager::CTaskManager( void )
 CTaskManager::~CTaskManager( void )
 {GUCEF_TRACE;
 
-    g_mutex.Lock();
+    MT::CObjectScopeLock lock( this );
 
     // Cleanup tasks
     TTaskDelegatorSet::iterator i = m_taskDelegators.begin();
@@ -212,8 +213,6 @@ CTaskManager::~CTaskManager( void )
         ++i;
     }
     m_taskDelegators.clear();
-
-    g_mutex.Unlock();
 }
 
 /*-------------------------------------------------------------------------*/
@@ -229,19 +228,17 @@ CTaskManager::GetClassTypeName( void ) const
 /*-------------------------------------------------------------------------*/
 
 void
-CTaskManager::OnNotify( CNotifier* notifier    ,
-                        const CEvent& eventid  ,
-                        CICloneable* eventdata )
+CTaskManager::OnPumpedNotify( CNotifier* notifier    ,
+                              const CEvent& eventid  ,
+                              CICloneable* eventdata )
 {GUCEF_TRACE;
 
     if ( CGUCEFApplication::AppShutdownEvent == eventid )
     {
-        g_mutex.Lock();
+        MT::CObjectScopeLock lock( this );
 
         // Make sure we shut down all tasks
         EnforceDesiredNrOfThreads( 0, true );
-
-        g_mutex.Unlock();
     }
     else
     if ( CTaskDelegator::ThreadKilledEvent == eventid )
@@ -306,7 +303,7 @@ void
 CTaskManager::RemoveConsumerFromQueue( CTaskConsumer* consumer )
 {GUCEF_TRACE;
 
-    g_mutex.Lock();
+    Lock();
     m_taskQueue.DoLock();
 
     TTaskMailbox::iterator i = m_taskQueue.begin();
@@ -325,7 +322,7 @@ CTaskManager::RemoveConsumerFromQueue( CTaskConsumer* consumer )
     }
 
     m_taskQueue.DoUnlock();
-    g_mutex.Unlock();
+    Unlock();
 }
 
 /*-------------------------------------------------------------------------*/
@@ -417,24 +414,6 @@ CTaskManager::EnforceDesiredNrOfThreads( UInt32 desiredNrOfThreads ,
 /*-------------------------------------------------------------------------*/
 
 bool
-CTaskManager::Lock( void ) const
-{GUCEF_TRACE;
-
-    return g_mutex.Lock();
-}
-
-/*-------------------------------------------------------------------------*/
-
-bool
-CTaskManager::Unlock( void ) const
-{GUCEF_TRACE;
-
-    return g_mutex.Unlock();
-}
-
-/*-------------------------------------------------------------------------*/
-
-void
 CTaskManager::QueueTask( const CString& taskType         ,
                          CICloneable* taskData           ,
                          CTaskConsumer** outTaskConsumer ,
@@ -442,7 +421,10 @@ CTaskManager::QueueTask( const CString& taskType         ,
 {GUCEF_TRACE;
 
     {
-        MT::CScopeMutex scopeLock( g_mutex );
+        MT::CObjectScopeLock lock( this );
+
+        if ( !m_acceptNewWork )
+            return false;
     
         // Create a consumer for the given task type
         CTaskConsumer* taskConsumer = m_consumerFactory.Create( taskType );
@@ -472,6 +454,7 @@ CTaskManager::QueueTask( const CString& taskType         ,
         }
     }
     NotifyObservers( TaskQueuedEvent );
+    return true;
 }
 
 /*-------------------------------------------------------------------------*/
@@ -489,9 +472,8 @@ void
 CTaskManager::SetNrOfThreads( const UInt32 nrOfThreads )
 {GUCEF_TRACE;
 
-    g_mutex.Lock();
+    MT::CObjectScopeLock lock( this );
     EnforceDesiredNrOfThreads( nrOfThreads, true );
-    g_mutex.Unlock();
 }
 
 /*-------------------------------------------------------------------------*/
@@ -510,10 +492,9 @@ CTaskManager::RegisterTaskConsumerFactory( const CString& taskType       ,
                                            TTaskConsumerFactory* factory )
 {GUCEF_TRACE;
 
-    g_mutex.Lock();
+    MT::CObjectScopeLock lock( this );
     m_consumerFactory.RegisterConcreteFactory( taskType, factory );
     GUCEF_SYSTEM_LOG( LOGLEVEL_NORMAL, "TaskManager: new consumer factory registerd of type " + taskType );
-    g_mutex.Unlock();
 }
 
 /*-------------------------------------------------------------------------*/
@@ -522,10 +503,9 @@ void
 CTaskManager::UnregisterTaskConsumerFactory( const CString& taskType )
 {GUCEF_TRACE;
 
-    g_mutex.Lock();
+    MT::CObjectScopeLock lock( this );
     m_consumerFactory.UnregisterConcreteFactory( taskType );
     GUCEF_SYSTEM_LOG( LOGLEVEL_NORMAL, "TaskManager: consumer factory unregisterd of type " + taskType );
-    g_mutex.Unlock();
 }
 
 /*-------------------------------------------------------------------------*/
@@ -535,7 +515,7 @@ CTaskManager::GetQueuedTask( CTaskConsumer** taskConsumer ,
                              CICloneable** taskData       )
 {GUCEF_TRACE;
 
-    g_mutex.Lock();
+    MT::CObjectScopeLock lock( this );
 
     EnforceDesiredNrOfThreads( m_desiredNrOfThreads, true );
 
@@ -548,10 +528,8 @@ CTaskManager::GetQueuedTask( CTaskConsumer** taskConsumer ,
         *taskConsumer = queueItem->GetTaskConsumer();
         *taskData = queueItem->GetTaskData();
 
-        g_mutex.Unlock();
         return true;
     }
-    g_mutex.Unlock();
     return false;
 }
 
@@ -562,7 +540,10 @@ CTaskManager::StartTask( CTaskConsumer& taskConsumer ,
                          CICloneable* taskData       )
 {GUCEF_TRACE;
 
-    g_mutex.Lock();
+    MT::CObjectScopeLock lock( this );
+
+    if ( !m_acceptNewWork )
+        return false;
 
     // Just spawn a task delegator, it will auto register as an active task
     taskConsumer.SetIsOwnedByTaskManager( false );
@@ -572,7 +553,6 @@ CTaskManager::StartTask( CTaskConsumer& taskConsumer ,
 
     delegator->Activate();
 
-    g_mutex.Unlock();
     return true;
 }
 
@@ -584,7 +564,10 @@ CTaskManager::StartTask( const CString& taskType ,
                          CTaskConsumer** task    )
 {GUCEF_TRACE;
 
-    g_mutex.Lock();
+    MT::CObjectScopeLock lock( this );
+
+    if ( !m_acceptNewWork )
+        return false;
 
     // Create a consumer for the given task type
     CTaskConsumer* taskConsumer = m_consumerFactory.Create( taskType );
@@ -602,12 +585,9 @@ CTaskManager::StartTask( const CString& taskType ,
                                             UInt32ToString( taskConsumer->GetTaskId() ) + " using thread with ID " + UInt32ToString( delegator->GetThreadID() ) );
 
         delegator->Activate();
-
-        g_mutex.Unlock();
         return true;
     }
 
-    g_mutex.Unlock();
     return false;
 }
 
@@ -618,14 +598,13 @@ CTaskManager::TaskCleanup( CTaskConsumer* taskConsumer ,
                            CICloneable* taskData       )
 {GUCEF_TRACE;
 
-    g_mutex.Lock();
+    MT::CObjectScopeLock lock( this );
     if ( taskConsumer->IsOwnedByTaskManager() )
     {
         m_consumerFactory.Destroy( taskConsumer );
     }
     delete taskData;
     EnforceDesiredNrOfThreads( m_desiredNrOfThreads, true );
-    g_mutex.Unlock();
 }
 
 /*-------------------------------------------------------------------------*/
@@ -635,7 +614,7 @@ CTaskManager::PauseTask( const UInt32 taskID ,
                          const bool force    )
 {GUCEF_TRACE;
 
-    g_mutex.Lock();
+    Lock();
     TTaskConsumerMap::iterator i = m_taskConsumerMap.find( taskID );
     if ( i != m_taskConsumerMap.end() )
     {
@@ -646,7 +625,7 @@ CTaskManager::PauseTask( const UInt32 taskID ,
             if ( NULL != delegator )
             {
                 delegator->Pause( force );
-                g_mutex.Unlock();
+                Unlock();
 
                 GUCEF_SYSTEM_LOG( LOGLEVEL_NORMAL, "TaskManager: Paused task with ID " + UInt32ToString( taskID ) );                
                 NotifyObservers( TaskPausedEvent );
@@ -655,12 +634,12 @@ CTaskManager::PauseTask( const UInt32 taskID ,
             else
             {
                 // If a consumer does not have a delegator then it hasnt started yet
-                g_mutex.Unlock();
+                Unlock();
                 return true;
             }
         }
     }
-    g_mutex.Unlock();
+    Unlock();
     return false;
 }
 
@@ -670,7 +649,11 @@ bool
 CTaskManager::ResumeTask( const UInt32 taskID )
 {GUCEF_TRACE;
 
-    g_mutex.Lock();
+    MT::CObjectScopeLock lock( this );
+
+    if ( !m_acceptNewWork )
+        return false;
+
     TTaskConsumerMap::iterator i = m_taskConsumerMap.find( taskID );
     if ( i != m_taskConsumerMap.end() )
     {
@@ -681,7 +664,6 @@ CTaskManager::ResumeTask( const UInt32 taskID )
             if ( NULL != delegator )
             {
                 delegator->Resume();
-                g_mutex.Unlock();
 
                 GUCEF_SYSTEM_LOG( LOGLEVEL_NORMAL, "TaskManager: Resumed task with ID " + UInt32ToString( taskID ) );
                 NotifyObservers( TaskResumedEvent );
@@ -689,7 +671,6 @@ CTaskManager::ResumeTask( const UInt32 taskID )
             }
         }
     }
-    g_mutex.Unlock();
     return false;
 }
 
@@ -700,7 +681,8 @@ CTaskManager::RequestTaskToStop( const UInt32 taskID   ,
                                  bool callerShouldWait )
 {GUCEF_TRACE;
 
-    g_mutex.Lock();
+    MT::CObjectScopeLock lock( this );
+
     TTaskConsumerMap::iterator i = m_taskConsumerMap.find( taskID );
     if ( i != m_taskConsumerMap.end() )
     {
@@ -711,7 +693,6 @@ CTaskManager::RequestTaskToStop( const UInt32 taskID   ,
             if ( NULL != delegator )
             {
                 delegator->Deactivate( false, callerShouldWait );
-                g_mutex.Unlock();
 
                 GUCEF_SYSTEM_LOG( LOGLEVEL_NORMAL, "TaskManager: Requested task with ID " + UInt32ToString( taskID ) + " to stop" );
                 return true;
@@ -719,24 +700,25 @@ CTaskManager::RequestTaskToStop( const UInt32 taskID   ,
             else
             {
                 // If a consumer does not have a delegator then it hasnt started yet
-                g_mutex.Unlock();
                 return true;
             }
         }
     }
-    g_mutex.Unlock();
     return false;
 }
 
 /*-------------------------------------------------------------------------*/
 
 void
-CTaskManager::RequestAllTasksToStop( bool waitOnStop )
+CTaskManager::RequestAllTasksToStop( bool waitOnStop, bool acceptNewWork )
 {GUCEF_TRACE;
 
     GUCEF_SYSTEM_LOG( LOGLEVEL_NORMAL, "TaskManager: Requesting all tasks to stop" );
     
-    g_mutex.Lock();
+    MT::CObjectScopeLock lock( this );
+
+    m_acceptNewWork = acceptNewWork;
+
     TTaskConsumerMap::iterator i = m_taskConsumerMap.begin();
     while ( i != m_taskConsumerMap.end() )
     {
@@ -748,14 +730,26 @@ CTaskManager::RequestAllTasksToStop( bool waitOnStop )
             {
                 UInt32 taskId = taskConsumer->GetTaskId();
                 delegator->Deactivate( false, waitOnStop );                                
-                g_mutex.Unlock();
 
                 GUCEF_SYSTEM_LOG( LOGLEVEL_NORMAL, "TaskManager: Requested task with ID " + UInt32ToString( taskId ) + " to stop" );
             }
         }
         ++i;
     }
-    g_mutex.Unlock();
+}
+
+/*-------------------------------------------------------------------------*/
+
+void
+CTaskManager::RequestAllThreadsToStop( bool waitOnStop, bool acceptNewWork )
+{GUCEF_TRACE;
+
+    GUCEF_SYSTEM_LOG( LOGLEVEL_NORMAL, "TaskManager: Requesting all tasks to stop" );
+    
+    MT::CObjectScopeLock lock( this );
+    m_acceptNewWork = acceptNewWork;
+    EnforceDesiredNrOfThreads( 0, true );
+    
 }
 
 /*-------------------------------------------------------------------------*/
@@ -764,7 +758,7 @@ bool
 CTaskManager::KillTask( const UInt32 taskID )
 {GUCEF_TRACE;
 
-    g_mutex.Lock();
+    MT::CObjectScopeLock lock( this );
     TTaskConsumerMap::iterator i = m_taskConsumerMap.find( taskID );
     if ( i != m_taskConsumerMap.end() )
     {
@@ -775,7 +769,6 @@ CTaskManager::KillTask( const UInt32 taskID )
             if ( NULL != delegator )
             {
                 delegator->Deactivate( true, true );
-                g_mutex.Unlock();
 
                 GUCEF_SYSTEM_LOG( LOGLEVEL_NORMAL, "TaskManager: Killed task with ID " + UInt32ToString( taskID ) );
                 return true;
@@ -783,12 +776,10 @@ CTaskManager::KillTask( const UInt32 taskID )
             else
             {
                 // If a consumer does not have a delegator then it hasnt started yet
-                g_mutex.Unlock();
                 return true;
             }
         }
     }
-    g_mutex.Unlock();
     return false;
 }
 
@@ -799,14 +790,14 @@ CTaskManager::RegisterTaskConsumer( CTaskConsumer& consumer        ,
                                     CTaskConsumer::TTaskId& taskId )
 {GUCEF_TRACE;
 
-    g_mutex.Lock();
-
-    //@TODO: gcc does not allow direct assignment, check this
-    TTaskIdGenerator::TNumericID tmp = m_taskIdGenerator.GenerateID( false );
-    taskId = tmp;
-    m_taskConsumerMap[ taskId ] = &consumer;
+    {
+        MT::CObjectScopeLock lock( this );
+        //@TODO: gcc does not allow direct assignment, check this
+        TTaskIdGenerator::TNumericID tmp = m_taskIdGenerator.GenerateID( false );
+        taskId = tmp;
+        m_taskConsumerMap[ taskId ] = &consumer;
+    }
     SubscribeTo( &consumer );
-    g_mutex.Unlock();
 }
 
 /*-------------------------------------------------------------------------*/
@@ -816,12 +807,13 @@ CTaskManager::UnregisterTaskConsumer( CTaskConsumer& consumer        ,
                                       CTaskConsumer::TTaskId& taskId )
 {GUCEF_TRACE;
 
-    g_mutex.Lock();
-    m_taskConsumerMap.erase( consumer.GetTaskId() );
-    m_taskIdGenerator.ReleaseID( &taskId );
-    RemoveConsumerFromQueue( &consumer );
+    {
+        MT::CObjectScopeLock lock( this );
+        m_taskConsumerMap.erase( consumer.GetTaskId() );
+        m_taskIdGenerator.ReleaseID( &taskId );
+        RemoveConsumerFromQueue( &consumer );
+    }
     UnsubscribeFrom( &consumer );
-    g_mutex.Unlock();
 }
 
 /*-------------------------------------------------------------------------*/
@@ -830,7 +822,7 @@ void
 CTaskManager::RegisterTaskDelegator( CTaskDelegator& delegator )
 {GUCEF_TRACE;
 
-    MT::CScopeMutex scopeLock( g_mutex );
+    MT::CObjectScopeLock lock( this );
     m_taskDelegators.insert( &delegator );
     ++m_activeNrOfThreads;
 }
@@ -841,7 +833,7 @@ void
 CTaskManager::UnregisterTaskDelegator( CTaskDelegator& delegator )
 {GUCEF_TRACE;
 
-    MT::CScopeMutex scopeLock( g_mutex );
+    MT::CObjectScopeLock lock( this );
     m_taskDelegators.erase( &delegator );
     -- m_activeNrOfThreads;
 }

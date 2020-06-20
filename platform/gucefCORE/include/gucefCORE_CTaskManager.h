@@ -33,10 +33,10 @@
 #define GUCEF_MT_CTMAILBOX_H
 #endif /* GUCEF_MT_CTMAILBOX_H ? */
 
-#ifndef GUCEF_CORE_COBSERVINGNOTIFIER_H
-#include "CObservingNotifier.h"
-#define GUCEF_CORE_COBSERVINGNOTIFIER_H
-#endif /* GUCEF_CORE_COBSERVINGNOTIFIER_H ? */
+#ifndef GUCEF_CORE_CTSGNOTIFIER_H
+#include "CTSGNotifier.h"
+#define GUCEF_CORE_CTSGNOTIFIER_H
+#endif /* GUCEF_CORE_CTSGNOTIFIER_H ? */
 
 #ifndef GUCEF_CORE_CTABSTRACTFACTORY_H
 #include "CTAbstractFactory.h"
@@ -77,7 +77,7 @@ class CTaskDelegator;
  *  and as such should be tracked globally within your process which is what the task
  *  manager does
  */
-class GUCEF_CORE_PUBLIC_CPP CTaskManager : public CObservingNotifier
+class GUCEF_CORE_PUBLIC_CPP CTaskManager : public CTSGNotifier
 {
     public:
 
@@ -107,7 +107,7 @@ class GUCEF_CORE_PUBLIC_CPP CTaskManager : public CObservingNotifier
      *  Queues a task for execution as soon as a thread is available
      *  to execute it.
      */
-    void QueueTask( const CString& taskType                      ,
+    bool QueueTask( const CString& taskType                      ,
                     CICloneable* taskData = GUCEF_NULL           ,
                     CTaskConsumer** outTaskConsumer = GUCEF_NULL ,
                     CObserver* taskObserver = GUCEF_NULL         );
@@ -144,7 +144,9 @@ class GUCEF_CORE_PUBLIC_CPP CTaskManager : public CObservingNotifier
 
     UInt32 GetNrOfThreads( void ) const;
 
-    void RequestAllTasksToStop( bool waitOnStop );
+    void RequestAllTasksToStop( bool waitOnStop, bool acceptNewWork );
+
+    void RequestAllThreadsToStop( bool waitOnStop, bool acceptNewWork );
 
     void RegisterTaskConsumerFactory( const CString& taskType       ,
                                       TTaskConsumerFactory* factory );
@@ -161,13 +163,9 @@ class GUCEF_CORE_PUBLIC_CPP CTaskManager : public CObservingNotifier
 
     protected:
 
-    virtual bool Lock( void ) const GUCEF_VIRTUAL_OVERRIDE;
-
-    virtual bool Unlock( void ) const GUCEF_VIRTUAL_OVERRIDE;
-
-    virtual void OnNotify( CNotifier* notifier           ,
-                           const CEvent& eventid         ,
-                           CICloneable* eventdata = NULL ) GUCEF_VIRTUAL_OVERRIDE;
+    virtual void OnPumpedNotify( CNotifier* notifier           ,
+                                 const CEvent& eventid         ,
+                                 CICloneable* eventdata = NULL ) GUCEF_VIRTUAL_OVERRIDE;
 
     private:
     friend class CTaskDelegator;
@@ -248,7 +246,7 @@ class GUCEF_CORE_PUBLIC_CPP CTaskManager : public CObservingNotifier
     TTaskIdGenerator m_taskIdGenerator;
     TTaskConsumerMap m_taskConsumerMap;
     TTaskDelegatorSet m_taskDelegators;
-    MT::CMutex g_mutex;
+    bool m_acceptNewWork;
 };
 
 /*-------------------------------------------------------------------------//

@@ -130,6 +130,15 @@ class GUCEF_CORE_PUBLIC_CPP CTaskConsumer : public CObservingNotifier
      */
     virtual void OnTaskEnd( CICloneable* taskdata ) = 0;
 
+    /**
+     *  Last chance notification to decended classes of impending end of the task
+     *  If the 'willBeForced' flag is true the thread hosting the task will be killed next 
+     *  Since this would be used in cases where the thread and thus this task is misbehaving 
+     *  one should keep that in mind in the implementation of this callback
+     */
+    virtual void OnTaskEnding( CICloneable* taskdata ,
+                               bool willBeForced     );
+
     virtual void OnTaskPaused( CICloneable* taskdata ,
                                bool forced           );
 

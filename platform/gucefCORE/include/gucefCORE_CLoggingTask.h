@@ -140,6 +140,9 @@ class GUCEF_CORE_PUBLIC_CPP CLoggingTask : public CTaskConsumer ,
 
     virtual bool OnTaskCycle( CICloneable* taskdata ) GUCEF_VIRTUAL_OVERRIDE;
 
+    virtual void OnTaskEnding( CORE::CICloneable* taskdata ,
+                               bool willBeForced           ) GUCEF_VIRTUAL_OVERRIDE;
+
     virtual void OnTaskEnd( CICloneable* taskdata ) GUCEF_VIRTUAL_OVERRIDE;
     
     virtual bool Lock( void ) const GUCEF_VIRTUAL_OVERRIDE;

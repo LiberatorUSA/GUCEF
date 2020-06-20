@@ -520,6 +520,16 @@ Udp2RedisClusterChannel::OnTaskCycle( CORE::CICloneable* taskData )
 
 /*-------------------------------------------------------------------------*/
 
+void 
+Udp2RedisClusterChannel::OnTaskEnding( CORE::CICloneable* taskdata ,
+                                       bool willBeForced           )
+{GUCEF_TRACE;
+    
+
+}
+
+/*-------------------------------------------------------------------------*/
+
 void
 Udp2RedisClusterChannel::OnTaskEnd( CORE::CICloneable* taskData )
 {GUCEF_TRACE;

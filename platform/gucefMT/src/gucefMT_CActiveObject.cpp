@@ -214,6 +214,15 @@ CActiveObject::OnThreadEnded( void* taskdata ,
 /*-------------------------------------------------------------------------*/
     
 void
+CActiveObject::OnThreadEnding( void* taskdata    ,
+                               bool willBeForced )
+{
+    // Dummy to avoid mandatory implementation in decending classes
+}
+
+/*-------------------------------------------------------------------------*/
+    
+void
 CActiveObject::OnThreadStarted( void* taskdata )
 {
     // Dummy to avoid mandatory implementation in decending classes
@@ -224,28 +233,52 @@ CActiveObject::OnThreadStarted( void* taskdata )
 void
 CActiveObject::Deactivate( bool force, bool callerShouldWait )
 {
-    CObjectScopeLock lock( this );
-
-    if ( _active )
+    if ( force )
     {
-        if ( force )
+        Lock();
+        if ( _active )
         {
-            /*
-             *      Kill the thread
-             */
-            ThreadKill( _td );
+            // Lets give the thread 5 seconds to shut down
+            // If it refuses we kill it
+            m_isDeactivationRequested = true;
+            OnThreadEnding( m_threadData, false );
+            Unlock();
 
+            ThreadWait( _td, 5000 );
+
+            Lock();
+            if ( _active )
+            {
+                ThreadSuspend( _td );
+                OnThreadEnding( m_threadData, true );
+            
+                /*
+                 *      Kill the thread :(
+                 */
+                ThreadKill( _td );
+            }
             OnThreadEnd( m_threadData );
             OnThreadEnded( m_threadData, true );
+            Unlock();
         }
         else
         {
-            m_isDeactivationRequested = true;
-
-            if ( callerShouldWait )
+            Unlock();
+        }
+    }
+    else
+    {
+        {
+            CObjectScopeLock lock( this );
+            if ( _active )
             {
-                ThreadWait( _td, 150000 );
+                m_isDeactivationRequested = true;
+                OnThreadEnding( m_threadData, false );
             }
+        }
+        if ( callerShouldWait )
+        {
+            ThreadWait( _td, 15000 );
         }
     }
 }

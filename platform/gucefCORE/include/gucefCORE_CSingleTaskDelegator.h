@@ -78,11 +78,6 @@ class GUCEF_CORE_PRIVATE_CPP CSingleTaskDelegator : public CTaskDelegator
     CSingleTaskDelegator( void );                                       /**< not implemented, makes no sense */
     CSingleTaskDelegator( const CSingleTaskDelegator& src );            /**< not implemented, makes no sense */
     CSingleTaskDelegator& operator=( const CSingleTaskDelegator& src ); /**< not implemented, makes no sense */
-
-    private:
-
-    CICloneable* m_taskData;
-    CTaskConsumer* m_taskConsumer;
 };
 
 /*-------------------------------------------------------------------------//

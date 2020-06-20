@@ -86,6 +86,28 @@ CTaskDelegator::CTaskDelegator( void )
     , CIPulseGeneratorDriver()         
     , m_pulseGenerator()     
     , m_taskConsumer( GUCEF_NULL )
+    , m_taskData( GUCEF_NULL )
+    , m_immediatePulseTickets( 0 )
+    , m_immediatePulseTicketMax( 1 )
+{GUCEF_TRACE;
+
+    RegisterEvents();
+
+    m_pulseGenerator.SetPulseGeneratorDriver( this );
+
+    CCoreGlobal::Instance()->GetTaskManager().RegisterTaskDelegator( *this );
+}
+
+/*-------------------------------------------------------------------------*/
+
+CTaskDelegator::CTaskDelegator( CTaskConsumer* taskConsumer ,
+                                CICloneable* taskData       )
+    : MT::CActiveObject()    
+    , CNotifier()   
+    , CIPulseGeneratorDriver()         
+    , m_pulseGenerator()     
+    , m_taskConsumer( taskConsumer )
+    , m_taskData( taskData )
     , m_immediatePulseTickets( 0 )
     , m_immediatePulseTicketMax( 1 )
 {GUCEF_TRACE;
@@ -219,20 +241,20 @@ bool
 CTaskDelegator::OnThreadCycle( void* taskdata )
 {GUCEF_TRACE;
 
-    CICloneable* taskData = GUCEF_NULL;
-
     if ( CCoreGlobal::Instance()->GetTaskManager().GetQueuedTask( &m_taskConsumer ,
-                                                                  &taskData       ) )
+                                                                  &m_taskData     ) )
     {
         ProcessTask( *m_taskConsumer ,
-                     taskData        );
+                     m_taskData      );
 
         TaskCleanup( m_taskConsumer ,
-                     taskData       );
+                     m_taskData     );
+
         m_taskConsumer = GUCEF_NULL;
+        m_taskData = GUCEF_NULL;
     }
 
-    // Return false, this is an infinate task processing thread
+    // Return false, this is an infinate task worker thread
     return false;
 }
 
@@ -247,6 +269,7 @@ CTaskDelegator::ProcessTask( CTaskConsumer& taskConsumer ,
 
     // first establish the bi-directional link
     // this delegator is going to be the one to execute this task
+    // This means the task is now assigned to the thread which is represented by this delegator
     taskConsumer.SetTaskDelegator( this );
 
     // Now we go through the execution sequence within a cycle as if this
@@ -257,8 +280,15 @@ CTaskDelegator::ProcessTask( CTaskConsumer& taskConsumer ,
         taskConsumer.OnTaskStarted( taskData );
 
         // cycle the task as long as it is not "done"
-        while ( !IsDeactivationRequested() && !taskConsumer.OnTaskCycle( taskData ) ) 
+        while ( !IsDeactivationRequested() ) 
         {
+            // Perform a cycle directly and ask the task if we are done
+            if ( taskConsumer.OnTaskCycle( taskData ) )
+            {
+                // Task says we are done
+                break;
+            }
+            
             SendDriverPulse( m_pulseGenerator );
             if ( m_immediatePulseTickets > 0 )
             {
@@ -326,6 +356,23 @@ CTaskDelegator::OnThreadResumed( void* taskdata )
         if ( NULL != m_taskConsumer )
         {
             m_taskConsumer->OnTaskResumed( static_cast< CICloneable* >( taskdata ) );
+        }
+    }
+}
+
+/*-------------------------------------------------------------------------*/
+
+void
+CTaskDelegator::OnThreadEnding( void* taskdata    ,
+                                bool willBeForced )
+{GUCEF_TRACE;
+
+    // This is invoked from a different thread than the thread represented by the TaskDelegator
+    if ( m_consumerBusy )
+    {
+        if ( GUCEF_NULL != m_taskConsumer )
+        {
+            m_taskConsumer->OnTaskEnding( static_cast< CICloneable* >( taskdata ), willBeForced );
         }
     }
 }

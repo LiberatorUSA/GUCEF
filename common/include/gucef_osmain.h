@@ -25,6 +25,8 @@
 //      INCLUDES                                                           //
 //                                                                         //
 //-------------------------------------------------------------------------*/
+
+#include <signal.h>
  
 #ifndef GUCEF_PLATFORM_H
 #include "gucef_platform.h"
@@ -82,12 +84,43 @@
                                                                                                        \
     static const unsigned char GUCEF_APP_TYPE = GUCEF_AUTO_APP_TYPE_CONSOLE;                           \
                                                                                                        \
-    int __stdcall                                                                                      \
+    typedef void ( __cdecl *gucef_installed_signal_handler_ptr)( int );                                \
+    static gucef_installed_signal_handler_ptr gucef_installed_signal_handler = NULL;                   \
+                                                                                                       \
+    void                                                                                               \
+    gucef_signal_handler( int signal )                                                                 \
+    {                                                                                                  \
+        if ( NULL != gucef_installed_signal_handler )                                                  \
+        {                                                                                              \
+            (*gucef_installed_signal_handler)( signal );                                               \
+        }                                                                                              \
+    }                                                                                                  \
+                                                                                                       \
+    BOOL WINAPI Win32ConsoleHandlerRoutine( DWORD dwCtrlType )                                         \
+    {                                                                                                  \
+        if ( CTRL_C_EVENT == dwCtrlType  )                                                             \
+        {                                                                                              \
+            gucef_signal_handler( SIGINT );                                                            \
+            return TRUE;                                                                               \
+        }                                                                                              \
+        else                                                                                           \
+        if ( CTRL_BREAK_EVENT == dwCtrlType    ||                                                      \
+             CTRL_CLOSE_EVENT == dwCtrlType    ||                                                      \
+             CTRL_SHUTDOWN_EVENT == dwCtrlType )                                                       \
+        {                                                                                              \
+            gucef_signal_handler( SIGTERM );                                                           \
+            return TRUE;                                                                               \
+        }                                                                                              \
+        return FALSE;                                                                                  \
+    }                                                                                                  \
+                                                                                                       \
+    int WINAPI                                                                                         \
     WinMain( HINSTANCE hinstance     ,                                                                 \
              HINSTANCE hprevinstance ,                                                                 \
              LPSTR lpcmdline         ,                                                                 \
              int ncmdshow            )                                                                 \
     {                                                                                                  \
+                                                                                                       \
                                                                                                        \
         int argc = 0;                                                                                  \
         char** argv = &lpcmdline;                                                                      \
@@ -98,12 +131,42 @@
                 argc = 1;                                                                              \
             }                                                                                          \
         }
-                                              
+
     #define GUCEF_OSMAIN_END }
 
     #define GUCEF_OSSERVICEMAIN_BEGIN( serviceName )                                                   \
                                                                                                        \
     static const unsigned char GUCEF_APP_TYPE = GUCEF_AUTO_APP_TYPE_BACKGROUND_PROCESSS;               \
+                                                                                                       \
+    typedef void ( __cdecl *gucef_installed_signal_handler_ptr)( int );                                \
+    static gucef_installed_signal_handler_ptr gucef_installed_signal_handler = NULL;                   \
+                                                                                                       \
+    void                                                                                               \
+    gucef_signal_handler( int signal )                                                                 \
+    {                                                                                                  \
+        if ( NULL != gucef_installed_signal_handler )                                                  \
+        {                                                                                              \
+            (*gucef_installed_signal_handler)( signal );                                               \
+        }                                                                                              \
+    }                                                                                                  \
+                                                                                                       \
+    BOOL WINAPI Win32ConsoleHandlerRoutine( DWORD dwCtrlType )                                         \
+    {                                                                                                  \
+        if ( CTRL_C_EVENT == dwCtrlType  )                                                             \
+        {                                                                                              \
+            gucef_signal_handler( SIGINT );                                                            \
+            return TRUE;                                                                               \
+        }                                                                                              \
+        else                                                                                           \
+        if ( CTRL_BREAK_EVENT == dwCtrlType    ||                                                      \
+             CTRL_CLOSE_EVENT == dwCtrlType    ||                                                      \
+             CTRL_SHUTDOWN_EVENT == dwCtrlType )                                                       \
+        {                                                                                              \
+            gucef_signal_handler( SIGTERM );                                                           \
+            return TRUE;                                                                               \
+        }                                                                                              \
+        return FALSE;                                                                                  \
+    }                                                                                                  \
                                                                                                        \
     ::SERVICE_STATUS_HANDLE g_win32ServiceStatusHandle = NULL;                                         \
     ::HANDLE g_win32StopEvent = NULL;                                                                  \
@@ -226,11 +289,21 @@
     
     #define GUCEF_OSSERVICEMAIN_END }
 
+    #define GUCEF_OSMAIN_SIGNAL_HANDLER( signalHandlerFunc )                                           \
+    {                                                                                                  \
+        if ( GUCEF_APP_TYPE_CONSOLE == GUCEF_APP_TYPE )                                                \
+            ::SetConsoleCtrlHandler( &Win32ConsoleHandlerRoutine, TRUE );                              \
+        gucef_installed_signal_handler = &signalHandlerFunc;                                           \
+        signal( SIGINT, &signalHandlerFunc );                                                          \
+        signal( SIGTERM, &signalHandlerFunc );                                                         \
+    }
+
 #else
 
     #define GUCEF_OSMAIN_BEGIN                                                                         \
                                                                                                        \
     static const unsigned char GUCEF_APP_TYPE = GUCEF_AUTO_APP_TYPE_CONSOLE;                           \
+                                                                                                       \
     int                                                                                                \
     main( int argc, char* argv[] )                                                                     \
     {
@@ -239,6 +312,13 @@
 
     #define GUCEF_OSSERVICEMAIN_BEGIN( serviceName )    GUCEF_OSMAIN_BEGIN
     #define GUCEF_OSSERVICEMAIN_END                     GUCEF_OSMAIN_END
+
+    #define GUCEF_OSMAIN_SIGNAL_HANDLER( signalHandlerFunc )                                           \
+    {                                                                                                  \
+        gucef_installed_signal_handler = &signalHandlerFunc;                                           \
+        signal( SIGINT, &signalHandlerFunc );                                                          \
+        signal( SIGTERM, &signalHandlerFunc );                                                         \
+    }
 
 #endif
 

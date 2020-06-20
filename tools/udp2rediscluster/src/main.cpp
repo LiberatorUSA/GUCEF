@@ -183,6 +183,15 @@ ParseParams( const int argc                 ,
 
 /*-------------------------------------------------------------------------*/
 
+void
+GucefAppSignalHandler( int signal )
+{GUCEF_TRACE;
+    
+    ::GUCEF::CORE::CCoreGlobal::Instance()->GetApplication().Stop();
+}
+
+/*-------------------------------------------------------------------------*/
+
 /*
  *      Application entry point
  */
@@ -233,9 +242,11 @@ GUCEF_OSSERVICEMAIN_BEGIN( "udp2rediscluster" )
     CORE::CPlatformNativeConsoleLogger console;
     if ( GUCEF_APP_TYPE == GUCEF_APP_TYPE_CONSOLE )
         CORE::CCoreGlobal::Instance()->GetLogManager().AddLogger( console.GetLogger() );
-
+           
     CORE::CCoreGlobal::Instance()->GetLogManager().FlushBootstrapLogEntriesToLogs();
     GUCEF_LOG( CORE::LOGLEVEL_NORMAL, "Flushed to log @ " + logFilename );
+
+    GUCEF_OSMAIN_SIGNAL_HANDLER( GucefAppSignalHandler );
 
     Udp2RedisCluster Udp2RedisCluster;
     if ( !Udp2RedisCluster.LoadConfig( keyValueList, *globalConfig ) )

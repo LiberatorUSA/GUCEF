@@ -179,6 +179,7 @@ CLogManager::FlushBootstrapLogEntriesToLogs( void )
 
             ++i;
         }
+        FlushLogs();
         m_bootstrapLog.clear();
 
         Log( LOG_SYSTEM, LOGLEVEL_NORMAL, "LogManager: Finished flushing all bootstrap log entries to the currently registered loggers" );

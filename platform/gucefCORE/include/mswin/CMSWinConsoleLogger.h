@@ -87,8 +87,9 @@ class GUCEF_CORE_PUBLIC_CPP CMSWinConsoleLogger : public CIConsoleLogger
     private:
 
     Int32 m_minimalLogLevel;
-    FILE* m_consoleFptr;
     bool m_formatForUiPurpose;
+    HANDLE m_consoleHandle;
+    bool m_ownedConsole;
 };
 
 /*-------------------------------------------------------------------------//

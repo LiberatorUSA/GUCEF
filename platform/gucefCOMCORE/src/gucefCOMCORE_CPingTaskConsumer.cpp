@@ -598,6 +598,15 @@ CPingTaskConsumer::OnTaskCycle( CORE::CICloneable* taskData )
 
 #endif
 
+/*-------------------------------------------------------------------------*/
+
+void 
+CPingTaskConsumer::OnTaskEnding( CORE::CICloneable* taskdata ,
+                                 bool willBeForced           )
+{GUCEF_TRACE;
+    
+}
+
 /*-------------------------------------------------------------------------//
 //                                                                         //
 //      NAMESPACE                                                          //

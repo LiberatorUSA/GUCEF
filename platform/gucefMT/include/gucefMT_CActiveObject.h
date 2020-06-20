@@ -157,7 +157,16 @@ class GUCEF_MT_PUBLIC_CPP CActiveObject : public virtual MT::CILockable
     virtual void OnThreadPausedForcibly( void* taskdata );
     
     virtual void OnThreadResumed( void* taskdata );
-    
+
+    /**
+     *  Last chance notification to decended classes of impending end of the tread
+     *  If the 'willBeForced' flag is true the thread will be killed next 
+     *  Since this would be used in cases where the thread is misbehaving one should
+     *  keep that in mind in the implementation of this callback
+     */
+    virtual void OnThreadEnding( void* taskdata    ,
+                                 bool willBeForced );
+
     virtual void OnThreadEnded( void* taskdata ,
                                 bool forced    );
 

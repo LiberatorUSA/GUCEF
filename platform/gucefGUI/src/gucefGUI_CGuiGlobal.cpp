@@ -23,6 +23,11 @@
 //                                                                         //
 //-------------------------------------------------------------------------*/
 
+#ifndef GUCEF_MT_CSCOPEMUTEX_H
+#include "gucefMT_CScopeMutex.h"
+#define GUCEF_MT_CSCOPEMUTEX_H
+#endif /* GUCEF_MT_CSCOPEMUTEX_H ? */
+
 #ifndef GUCEF_CORE_LOGGING_H
 #include "gucefCORE_Logging.h"
 #define GUCEF_CORE_LOGGING_H
@@ -60,11 +65,12 @@ namespace GUI {
 //                                                                         //
 //-------------------------------------------------------------------------*/
 
-CGuiGlobal* CGuiGlobal::g_instance = NULL;
+MT::CMutex CGuiGlobal::g_datalock;
+CGuiGlobal* CGuiGlobal::g_instance = GUCEF_NULL;
 
 /*-------------------------------------------------------------------------//
 //                                                                         //
-//      UTILITIES                                                          //
+//      IMPLEMENTATION                                                     //
 //                                                                         //
 //-------------------------------------------------------------------------*/
 
@@ -72,10 +78,15 @@ CGuiGlobal*
 CGuiGlobal::Instance()
 {GUCEF_TRACE;
 
-    if ( NULL == g_instance )
+    if ( GUCEF_NULL == g_instance )
     {
-        g_instance = new CGuiGlobal();
-        g_instance->Initialize();
+        MT::CScopeMutex lock( g_datalock );
+        
+        if ( GUCEF_NULL == g_instance )
+        {
+            g_instance = new CGuiGlobal();
+            g_instance->Initialize();
+        }
     }
     return g_instance;
 }
@@ -85,6 +96,8 @@ CGuiGlobal::Instance()
 void
 CGuiGlobal::Deinstance( void )
 {GUCEF_TRACE;
+
+    MT::CScopeMutex lock( g_datalock );
 
     delete g_instance;
     g_instance = NULL;

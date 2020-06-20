@@ -98,13 +98,16 @@ class Udp2RedisClusterChannel : public CORE::CTaskConsumer
     Udp2RedisClusterChannel( const Udp2RedisClusterChannel& src );
     virtual ~Udp2RedisClusterChannel();
 
-    virtual bool OnTaskStart( CORE::CICloneable* taskData );
+    virtual bool OnTaskStart( CORE::CICloneable* taskData ) GUCEF_VIRTUAL_OVERRIDE;
     
-    virtual bool OnTaskCycle( CORE::CICloneable* taskData );
-    
-    virtual void OnTaskEnd( CORE::CICloneable* taskData );
+    virtual bool OnTaskCycle( CORE::CICloneable* taskData ) GUCEF_VIRTUAL_OVERRIDE;
 
-    virtual CORE::CString GetType( void ) const;
+    virtual void OnTaskEnding( CORE::CICloneable* taskdata ,
+                               bool willBeForced           ) GUCEF_VIRTUAL_OVERRIDE;
+    
+    virtual void OnTaskEnd( CORE::CICloneable* taskData ) GUCEF_VIRTUAL_OVERRIDE;
+
+    virtual CORE::CString GetType( void ) const GUCEF_VIRTUAL_OVERRIDE;
 
     class ChannelSettings
     {
