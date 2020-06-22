@@ -219,6 +219,12 @@ class FilePusher : public CORE::CObservingNotifier
     void
     QueueNewFileForPushingAfterUnmodifiedRestPeriod( const CORE::CString& newFilePath );
 
+    bool
+    QueueAllPreExistingFilesForDir( const CORE::CString& dir );
+
+    bool
+    DoesFilenameMatchPushAllFilesPattern( const CORE::CString& filename ) const;
+
     void
     TriggerRolledOverFileCheck( const CORE::CString& dirWithFiles   ,
                                 const CORE::CString& patternToMatch );
@@ -241,7 +247,8 @@ class FilePusher : public CORE::CObservingNotifier
     {
         PUSHSTYLE_UNKNOWN                               = 0,
         PUSHSTYLE_ROLLED_OVER_FILES                        ,
-        PUSHSTYLE_MATCHING_NEW_FILES_WITH_REST_PERIOD
+        PUSHSTYLE_MATCHING_NEW_FILES_WITH_REST_PERIOD      ,
+        PUSHSTYLE_MATCHING_ALL_FILES_WITH_REST_PERIOD
     };
     typedef enum EPushStyle TPushStyle;
     typedef CORE::CTEventHandlerFunctor< FilePusher > TEventCallback;

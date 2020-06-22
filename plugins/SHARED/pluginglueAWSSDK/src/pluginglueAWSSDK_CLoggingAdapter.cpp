@@ -209,11 +209,11 @@ CLoggingAdapter::LogStream( Aws::Utils::Logging::LogLevel logLevel  ,
     if ( guLogMsgType == CORE::CLogManager::TLogMsgType::LOG_DEBUG )
     {
         // Allow for a chance to compile out some of the work involved
-        GUCEF_DEBUG_LOG( guLogLvl, messageStream.str() );
+        GUCEF_DEBUG_LOG( guLogLvl, "AWS-SDK: " + messageStream.str() );
     }
     else
     {
-        CORE::CCoreGlobal::Instance()->GetLogManager().Log( guLogMsgType, guLogLvl, messageStream.str() );
+        CORE::CCoreGlobal::Instance()->GetLogManager().Log( guLogMsgType, guLogLvl, "AWS-SDK: " + messageStream.str() );
     }
 }
 

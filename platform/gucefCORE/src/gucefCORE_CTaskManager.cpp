@@ -628,7 +628,7 @@ CTaskManager::PauseTask( const UInt32 taskID ,
                 Unlock();
 
                 GUCEF_SYSTEM_LOG( LOGLEVEL_NORMAL, "TaskManager: Paused task with ID " + UInt32ToString( taskID ) );                
-                NotifyObservers( TaskPausedEvent );
+                NotifyObserversFromThread( TaskPausedEvent );
                 return true;
             }
             else
@@ -666,7 +666,7 @@ CTaskManager::ResumeTask( const UInt32 taskID )
                 delegator->Resume();
 
                 GUCEF_SYSTEM_LOG( LOGLEVEL_NORMAL, "TaskManager: Resumed task with ID " + UInt32ToString( taskID ) );
-                NotifyObservers( TaskResumedEvent );
+                NotifyObserversFromThread( TaskResumedEvent );
                 return true;
             }
         }

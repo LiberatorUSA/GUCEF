@@ -535,6 +535,7 @@ FilePusher::QueueFileForPushing( const CORE::CString& filePath )
     if ( m_pushQueue.find( filePath ) != m_pushQueue.end() )
         return;
 
+    GUCEF_LOG( CORE::LOGLEVEL_NORMAL, "FilePusher: Queueing file \"" + filePath + "\" for pushing" );
     m_pushQueue[ filePath ] = 0;
 }
 
@@ -675,6 +676,7 @@ FilePusher::OnWatchedLocalDirFileCreation( CORE::CNotifier* notifier    ,
             TriggerRolledOverFileCheck( dirWithFiles, patternMatched );
             return;
         }
+        case EPushStyle::PUSHSTYLE_MATCHING_ALL_FILES_WITH_REST_PERIOD:
         case EPushStyle::PUSHSTYLE_MATCHING_NEW_FILES_WITH_REST_PERIOD:
         {
             QueueNewFileForPushingAfterUnmodifiedRestPeriod( newFilePath );
@@ -686,6 +688,63 @@ FilePusher::OnWatchedLocalDirFileCreation( CORE::CNotifier* notifier    ,
             return;
         }
     };
+}
+
+/*-------------------------------------------------------------------------*/
+
+bool
+FilePusher::DoesFilenameMatchPushAllFilesPattern( const CORE::CString& filename ) const
+{GUCEF_TRACE;
+
+    TStringPushStyleMap::const_iterator i = m_fileMatchPatterns.begin();
+    while ( i != m_fileMatchPatterns.end() )
+    {
+        // Is the pattern one that is configured for a 'all files' push method?
+        if ( PUSHSTYLE_MATCHING_ALL_FILES_WITH_REST_PERIOD == (*i).second )
+        {
+            // Does the file match a configured pattern?
+            if ( filename.WildcardEquals( (*i).first, '*', false ) )
+            {
+                return true;
+            }
+        }
+        ++i;
+    }
+    return false;
+}
+
+/*-------------------------------------------------------------------------*/
+
+bool
+FilePusher::QueueAllPreExistingFilesForDir( const CORE::CString& dir )
+{GUCEF_TRACE;
+
+    struct CORE::SDI_Data* did = CORE::DI_First_Dir_Entry( dir.C_String() );
+    if ( GUCEF_NULL != did )
+    {
+        do
+        {
+            if ( 0 != CORE::DI_Is_It_A_File( did ) )
+            {
+                CORE::CString filename = CORE::DI_Name( did );
+                if ( filename != '.' && filename != ".." )
+                {
+                    if ( DoesFilenameMatchPushAllFilesPattern( filename ) )
+                    {
+                        // In this mode treat the pre-existing file as a new file to push
+                        CORE::CString preexistingFilePath = CORE::CombinePath( dir, filename );
+                        GUCEF_LOG( CORE::LOGLEVEL_NORMAL, "FilePusher: Matched file \"" + preexistingFilePath + "\" to 'push all files' pattern" );
+                        QueueNewFileForPushingAfterUnmodifiedRestPeriod( preexistingFilePath );
+                    }
+                }
+            }
+        }
+        while ( CORE::DI_Next_Dir_Entry( did ) );
+
+        CORE::DI_Cleanup( did );
+        return true;
+    }
+    return false;
 }
 
 /*-------------------------------------------------------------------------*/
@@ -715,6 +774,7 @@ FilePusher::Start( void )
     TStringSet::iterator i = m_dirsToWatch.begin();
     while ( i != m_dirsToWatch.end() )
     {
+        QueueAllPreExistingFilesForDir( (*i) );
         if ( !m_dirWatcher.AddDirToWatch( (*i), watchOptions ) )
         {
             GUCEF_ERROR_LOG( CORE::LOGLEVEL_IMPORTANT, "FilePusher: Failed to add watch for directory " + (*i) );
@@ -779,6 +839,14 @@ FilePusher::LoadConfig( const CORE::CValueList& appConfig   ,
     {
         CORE::CString settingValue = CORE::ResolveVars( (*n) );
         m_fileMatchPatterns[ settingValue ] = PUSHSTYLE_MATCHING_NEW_FILES_WITH_REST_PERIOD;
+        ++n;
+    }
+    settingValues = appConfig.GetValueVectorAlways( "FilePatternForAllFilesWithRestPeriod" );
+    n = settingValues.begin();
+    while ( n != settingValues.end() )
+    {
+        CORE::CString settingValue = CORE::ResolveVars( (*n) );
+        m_fileMatchPatterns[ settingValue ] = PUSHSTYLE_MATCHING_ALL_FILES_WITH_REST_PERIOD;
         ++n;
     }
     settingValues = appConfig.GetValueVectorAlways( "FilePatternForRolledOverFiles" );

@@ -92,6 +92,10 @@ CTSGNotifier&
 CTSGNotifier::operator=( const CTSGNotifier& src )
 {GUCEF_TRACE;
 
+    if ( this != &src )
+    {
+        CNotifier::operator=( src );
+    }
     return *this;
 }
 
@@ -143,6 +147,7 @@ CTSGNotifier::SubscribeTo( CNotifier* threadedNotifier         ,
                            CIEventHandlerFunctorBase& callback )
 {GUCEF_TRACE;
 
+    assert( GUCEF_NULL != &callback );
     threadedNotifier->Subscribe( &m_tsgObserver ,
                                  eventid        ,
                                  &callback      );
