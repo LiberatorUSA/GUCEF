@@ -276,8 +276,6 @@ class GUCEF_HIDDEN OSSpecificDirectoryWatcher : public CObserver
             OverlappedIOCallbackObj& watchObj = (*i).second;
             ::CloseHandle( watchObj.dirHandle );
             m_dirsToWatch.erase( i );
-
-            ++i;
         }
         return true;
     }
