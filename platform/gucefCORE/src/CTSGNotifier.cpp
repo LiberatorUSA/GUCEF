@@ -138,6 +138,19 @@ CTSGNotifier::UnsubscribeFrom( CNotifier* threadedNotifier ,
 /*-------------------------------------------------------------------------*/
 
 void
+CTSGNotifier::SubscribeTo( CNotifier* threadedNotifier         ,
+                           const CEvent& eventid               ,
+                           CIEventHandlerFunctorBase& callback )
+{GUCEF_TRACE;
+
+    threadedNotifier->Subscribe( &m_tsgObserver ,
+                                 eventid        ,
+                                 &callback      );
+}
+
+/*-------------------------------------------------------------------------*/
+
+void
 CTSGNotifier::OnPumpedNotify( CNotifier* notifier                 ,
                               const CEvent& eventid               ,
                               CICloneable* eventdata /* = NULL */ )

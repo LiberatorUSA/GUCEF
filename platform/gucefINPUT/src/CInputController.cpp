@@ -93,7 +93,7 @@ GUCEF_IMPLEMENT_MSGEXCEPTION( CInputController, EInvalidIndex );
 /*-------------------------------------------------------------------------*/
 
 CInputController::CInputController( void )
-        : CORE::CObservingNotifier() ,
+        : CORE::CTSGNotifier()       ,
           m_idGenerator()            ,
           m_keyboardMap()            ,
           m_mouseMap()               ,
@@ -242,9 +242,9 @@ CInputController::OnPulse( CORE::CNotifier* notifier                 ,
 /*-------------------------------------------------------------------------*/
 
 void
-CInputController::OnNotify( CORE::CNotifier* notifier                 ,
-                            const CORE::CEvent& eventid               ,
-                            CORE::CICloneable* eventdata /* = NULL */ )
+CInputController::OnPumpedNotify( CORE::CNotifier* notifier                 ,
+                                  const CORE::CEvent& eventid               ,
+                                  CORE::CICloneable* eventdata /* = NULL */ )
 {GUCEF_TRACE;
 
     if ( eventid == CORE::CGUCEFApplication::AppInitEvent )

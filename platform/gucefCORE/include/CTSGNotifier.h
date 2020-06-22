@@ -117,6 +117,15 @@ class GUCEF_CORE_PUBLIC_CPP CTSGNotifier : public CNotifier
     void UnsubscribeFrom( CNotifier* threadedNotifier ,
                           const CEvent& eventid       );
 
+    /**
+     *  Subscribes the observer component to the four standard
+     *  notifier events if it is not yet subscribed plus
+     *  subscribes to the given custom event.
+     */
+    void SubscribeTo( CNotifier* threadedNotifier         ,
+                      const CEvent& eventid               ,
+                      CIEventHandlerFunctorBase& callback );
+
     virtual const CString& GetClassTypeName( void ) const GUCEF_VIRTUAL_OVERRIDE;
 
     CObserver& AsObserver( void );

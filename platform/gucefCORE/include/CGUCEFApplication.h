@@ -141,7 +141,7 @@ class GUCEF_CORE_PUBLIC_CPP CGUCEFApplication : public CNotifier                
 
     void Update( void );
 
-    void Stop( bool wait = true );
+    void Stop( bool wait = false );
 
     CString GetApplicationDir( void ) const;
 
