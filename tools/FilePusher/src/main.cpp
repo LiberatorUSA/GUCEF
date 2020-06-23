@@ -223,14 +223,6 @@ GUCEF_OSSERVICEMAIN_BEGIN( "FilePusher" )
     LoadConfig( configPathParam, keyValueList, globalConfig );
     ParseParams( argc, argv, keyValueList );
 
-    CORE::Int32 minLogLevel = CORE::LOGLEVEL_BELOW_NORMAL;
-    CORE::CString valueStr = keyValueList.GetValueAlways( "MinimalLogLevel" );
-    if ( !valueStr.IsNULLOrEmpty() )
-    {
-        minLogLevel = CORE::StringToInt32( valueStr );
-        CORE::CCoreGlobal::Instance()->GetLogManager().SetMinLogLevel( minLogLevel );
-    }
-
     CORE::CString outputDir = CORE::RelativePath( keyValueList.GetValueAlways( "outputDir" ) );
     if ( outputDir.IsNULLOrEmpty() )
     {
@@ -249,6 +241,14 @@ GUCEF_OSSERVICEMAIN_BEGIN( "FilePusher" )
     CORE::CPlatformNativeConsoleLogger console;
     if ( GUCEF_APP_TYPE == GUCEF_APP_TYPE_CONSOLE )
         CORE::CCoreGlobal::Instance()->GetLogManager().AddLogger( console.GetLogger() );
+
+    CORE::Int32 minLogLevel = CORE::LOGLEVEL_BELOW_NORMAL;
+    CORE::CString valueStr = keyValueList.GetValueAlways( "MinimalLogLevel" );
+    if ( !valueStr.IsNULLOrEmpty() )
+    {
+        minLogLevel = CORE::StringToInt32( valueStr );
+        CORE::CCoreGlobal::Instance()->GetLogManager().SetMinLogLevel( minLogLevel );
+    }
 
     CORE::CCoreGlobal::Instance()->GetLogManager().FlushBootstrapLogEntriesToLogs();
     GUCEF_LOG( CORE::LOGLEVEL_NORMAL, "Flushed to log @ " + logFilename );

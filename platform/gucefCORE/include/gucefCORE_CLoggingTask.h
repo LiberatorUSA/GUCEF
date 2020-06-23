@@ -102,6 +102,10 @@ class GUCEF_CORE_PUBLIC_CPP CLoggingTask : public CTaskConsumer ,
                                        const UInt32 threadId        ) GUCEF_VIRTUAL_OVERRIDE;
 
     virtual void FlushLog( void ) GUCEF_VIRTUAL_OVERRIDE;
+
+    virtual void SetMinimalLogLevel( const Int32 logLevel ) GUCEF_VIRTUAL_OVERRIDE;
+
+    virtual Int32 GetMinimalLogLevel( void ) const GUCEF_VIRTUAL_OVERRIDE;
     
     /**
      *  Utility function for convenience, launches the task using 
@@ -197,7 +201,8 @@ class GUCEF_CORE_PUBLIC_CPP CLoggingTask : public CTaskConsumer ,
     
     CILogger* m_loggerBackend;
     TLoggingMailBox m_mailbox;
-    TMailList m_mailList;    
+    TMailList m_mailList;
+    Int32 m_minLogLevel;
 };
 
 /*-------------------------------------------------------------------------//

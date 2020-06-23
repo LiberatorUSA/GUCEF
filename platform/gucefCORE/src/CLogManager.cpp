@@ -251,7 +251,7 @@ CLogManager::SetMinLogLevel( const Int32 logLevel )
 {GUCEF_TRACE;
 
     MT::CObjectScopeLock lock( this );
-    m_loggers->SetMinLogLevel( logLevel );
+    m_loggers->SetMinimalLogLevel( logLevel );
 }
 
 /*-------------------------------------------------------------------------*/
@@ -261,7 +261,7 @@ CLogManager::GetMinLogLevel( void ) const
 {GUCEF_TRACE;
 
     MT::CObjectScopeLock lock( this );
-    return m_loggers->GetMinLogLevel();
+    return m_loggers->GetMinimalLogLevel();
 }
 
 /*-------------------------------------------------------------------------*/

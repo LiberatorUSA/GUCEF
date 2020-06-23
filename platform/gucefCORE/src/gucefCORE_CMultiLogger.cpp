@@ -175,16 +175,26 @@ CMultiLogger::ClearLoggers( void )
 /*-------------------------------------------------------------------------*/
 
 void
-CMultiLogger::SetMinLogLevel( const Int32 logLevel )
+CMultiLogger::SetMinimalLogLevel( const Int32 logLevel )
 {GUCEF_TRACE;
 
     m_minLogLevel = logLevel;
+    TLoggerList::const_iterator i = m_loggers.begin();
+    while ( i != m_loggers.end() )
+    {
+        CILogger* logger = (*i);
+        if ( GUCEF_NULL != logger )
+        {
+            logger->SetMinimalLogLevel( logLevel );
+        }
+        ++i;
+    }
 }
 
 /*-------------------------------------------------------------------------*/
 
 Int32 
-CMultiLogger::GetMinLogLevel( void ) const
+CMultiLogger::GetMinimalLogLevel( void ) const
 {GUCEF_TRACE;
 
     return m_minLogLevel;

@@ -71,7 +71,8 @@ CLoggingTask::CLoggingTask( CILogger& loggerBackend )
       CILogger()                        ,
       m_loggerBackend( &loggerBackend ) ,
       m_mailbox()                       ,
-      m_mailList()
+      m_mailList()                      ,
+      m_minLogLevel( 0 )
 {GUCEF_TRACE;
 
     m_mailList.reserve( MAXMAILITEMSPERCYCLE );
@@ -104,14 +105,17 @@ CLoggingTask::Log( const TLogMsgType logMsgType ,
                    const UInt32 threadId        )
 {GUCEF_TRACE;
 
-    CLoggingMail logMsg;
-    logMsg.logLevel = logLevel;
-    logMsg.logMessage = logMessage;
-    logMsg.logMsgType = logMsgType;
-    logMsg.threadId = threadId;
-    logMsg.withoutFormatting = false;
+    if ( logLevel >= m_minLogLevel )
+    {
+        CLoggingMail logMsg;
+        logMsg.logLevel = logLevel;
+        logMsg.logMessage = logMessage;
+        logMsg.logMsgType = logMsgType;
+        logMsg.threadId = threadId;
+        logMsg.withoutFormatting = false;
 
-    m_mailbox.AddMail( MAILTYPE_NEWLOGMSG, &logMsg );
+        m_mailbox.AddMail( MAILTYPE_NEWLOGMSG, &logMsg );
+    }
 }
 
 /*-------------------------------------------------------------------------*/
@@ -123,14 +127,17 @@ CLoggingTask::LogWithoutFormatting( const TLogMsgType logMsgType ,
                                     const UInt32 threadId        )
 {GUCEF_TRACE;
 
-    CLoggingMail logMsg;
-    logMsg.logLevel = logLevel;
-    logMsg.logMessage = logMessage;
-    logMsg.logMsgType = logMsgType;
-    logMsg.threadId = threadId;
-    logMsg.withoutFormatting = true;
+    if ( logLevel >= m_minLogLevel )
+    {
+        CLoggingMail logMsg;
+        logMsg.logLevel = logLevel;
+        logMsg.logMessage = logMessage;
+        logMsg.logMsgType = logMsgType;
+        logMsg.threadId = threadId;
+        logMsg.withoutFormatting = true;
 
-    m_mailbox.AddMail( MAILTYPE_NEWLOGMSG, &logMsg );
+        m_mailbox.AddMail( MAILTYPE_NEWLOGMSG, &logMsg );
+    }
 }
 
 /*-------------------------------------------------------------------------*/
@@ -176,6 +183,24 @@ CLoggingTask::FlushLog( void )
 {GUCEF_TRACE;
 
     m_mailbox.AddMail( MAILTYPE_FLUSHLOG, NULL );
+}
+
+/*-------------------------------------------------------------------------*/
+
+void
+CLoggingTask::SetMinimalLogLevel( const Int32 logLevel )
+{GUCEF_TRACE;
+
+    m_minLogLevel = logLevel;
+}
+
+/*-------------------------------------------------------------------------*/
+
+Int32 
+CLoggingTask::GetMinimalLogLevel( void ) const
+{GUCEF_TRACE;
+
+    return m_minLogLevel;
 }
 
 /*-------------------------------------------------------------------------*/
