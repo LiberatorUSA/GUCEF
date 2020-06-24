@@ -14,6 +14,7 @@
 set( HEADER_FILES 
   include/pluginglueAWSSDK.h
   include/pluginglueAWSSDK_CAwsSdkGlobal.h
+  include/pluginglueAWSSDK_CClientConfiguration.h
   include/pluginglueAWSSDK_CCredentialsProviderAdapter.h
   include/pluginglueAWSSDK_CLoggingAdapter.h
   include/pluginglueAWSSDK_config.h
@@ -23,6 +24,7 @@ set( HEADER_FILES
 set( SOURCE_FILES 
   src/pluginglueAWSSDK.cpp
   src/pluginglueAWSSDK_CAwsSdkGlobal.cpp
+  src/pluginglueAWSSDK_CClientConfiguration.cpp
   src/pluginglueAWSSDK_CCredentialsProviderAdapter.cpp
   src/pluginglueAWSSDK_CLoggingAdapter.cpp
 )

@@ -160,7 +160,7 @@ CAwsSdkGlobal::LoadConfig( const CORE::CDataNode& treeroot )
     const CORE::CDataNode* settingsNode = treeroot.Find( "AWSSDK" );
     if ( GUCEF_NULL != settingsNode )
     {
-        m_defaultClientConfig.region = settingsNode->GetAttributeValueOrChildValueByName( "DefaultRegion", "us-east-1" );
+        m_defaultClientConfig.LoadConfig( *settingsNode );
         m_awsSdkOptions.loggingOptions.logLevel = (Aws::Utils::Logging::LogLevel) CORE::StringToInt32( settingsNode->GetAttributeValueOrChildValueByName( "LogLevel", "0" ) );
 
         if ( m_credsProvider )
@@ -201,7 +201,7 @@ CAwsSdkGlobal::CAwsSdkGlobal( void )
     , CORE::CIConfigurable( true )
     , m_awsSdkOptions()
     , m_credsProvider()
-    , m_defaultClientConfig()
+    , m_defaultClientConfig( "DefaultClientConfig." )
 {GUCEF_TRACE;
 
     RegisterEvents();

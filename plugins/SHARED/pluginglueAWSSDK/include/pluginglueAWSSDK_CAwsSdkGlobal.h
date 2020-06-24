@@ -52,6 +52,11 @@
 #define GUCEF_PLUGINGLUE_AWSSDK_CCREDENTIALSPROVIDERADAPTER_H
 #endif /* GUCEF_PLUGINGLUE_AWSSDK_CCREDENTIALSPROVIDERADAPTER_H ? */ 
 
+#ifndef GUCEF_PLUGINGLUE_AWSSDK_CCLIENTCONFIGURATION_H
+#include "pluginglueAWSSDK_CClientConfiguration.h"
+#define GUCEF_PLUGINGLUE_AWSSDK_CCLIENTCONFIGURATION_H
+#endif /* GUCEF_PLUGINGLUE_AWSSDK_CCLIENTCONFIGURATION_H ? */ 
+
 /*-------------------------------------------------------------------------//
 //                                                                         //
 //      NAMESPACE                                                          //
@@ -113,7 +118,7 @@ class GUCEF_PLUGINGLUE_AWSSDK_EXPORT_CPP CAwsSdkGlobal : public CORE::CObserving
 
     Aws::SDKOptions m_awsSdkOptions;
     CredentialsProviderPtr m_credsProvider;
-    Aws::Client::ClientConfiguration m_defaultClientConfig;
+    CClientConfiguration m_defaultClientConfig;
     
     static MT::CMutex g_dataLock;
     static CAwsSdkGlobal* g_instance;
