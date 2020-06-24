@@ -555,10 +555,7 @@ FilePusher::OnNewFileRestPeriodTimerCycle( CORE::CNotifier* notifier    ,
         const CORE::CString& newFilePath = (*i).first;
         time_t& lastModified = (*i).second;
 
-        lastModified = CORE::Get_Modification_Time( newFilePath.C_String() );
-        time_t creationTime = CORE::Get_Creation_Time( newFilePath.C_String() );
-        time_t lastChange = lastModified > creationTime ? lastModified : creationTime;
-
+        time_t lastChange = GetLatestTimestampForFile( newFilePath );
         if ( nowTime - lastChange > m_restingTimeForNewFilesInSecs )
         {
             // This file has not been modified for at least the required resting period.
@@ -581,16 +578,25 @@ FilePusher::OnNewFileRestPeriodTimerCycle( CORE::CNotifier* notifier    ,
 
 /*-------------------------------------------------------------------------*/
 
+time_t
+FilePusher::GetLatestTimestampForFile( const CORE::CString& filePath )
+{GUCEF_TRACE;
+
+    time_t lastModified = CORE::Get_Modification_Time( filePath.C_String() );
+    time_t creationTime = CORE::Get_Creation_Time( filePath.C_String() );
+    time_t lastChange = lastModified > creationTime ? lastModified : creationTime;
+    return lastChange;
+}
+
+/*-------------------------------------------------------------------------*/
+
 void
 FilePusher::QueueNewFileForPushingAfterUnmodifiedRestPeriod( const CORE::CString& newFilePath )
 {GUCEF_TRACE;
 
     // Add the file to the list of files to be checked periodically to see if there is no more changes
     // being made to the file aka a resting period.
-    time_t lastModified = CORE::Get_Modification_Time( newFilePath.C_String() );
-    time_t creationTime = CORE::Get_Creation_Time( newFilePath.C_String() );
-    time_t lastChange = lastModified > creationTime ? lastModified : creationTime;
-    m_newFileRestQueue[ newFilePath ] = lastChange;
+    m_newFileRestQueue[ newFilePath ] = GetLatestTimestampForFile( newFilePath );
 }
 
 /*-------------------------------------------------------------------------*/
@@ -600,8 +606,20 @@ FilePusher::TriggerRolledOverFileCheck( const CORE::CString& dirWithFiles   ,
                                         const CORE::CString& patternToMatch )
 {GUCEF_TRACE;
 
+    CORE::CString::StringVector singleEntryList;
+    singleEntryList.push_back( patternToMatch );
+    TriggerRolledOverFileCheck( dirWithFiles, singleEntryList );
+}
+
+/*-------------------------------------------------------------------------*/
+
+void
+FilePusher::TriggerRolledOverFileCheck( const CORE::CString& dirWithFiles                  ,
+                                        const CORE::CString::StringVector& patternsToMatch )
+{GUCEF_TRACE;
+
     // Check to see if we have multiple, thus rolled over, files in the target dir matching the pattern
-    TUInt32StringMap matchedFiles;
+    TUInt64StringVectorMap matchedFiles;
     struct CORE::SDI_Data* did = CORE::DI_First_Dir_Entry( dirWithFiles.C_String() );
     if ( GUCEF_NULL != did )
     {
@@ -610,9 +628,16 @@ FilePusher::TriggerRolledOverFileCheck( const CORE::CString& dirWithFiles   ,
             if ( CORE::DI_Is_It_A_File( did ) == 1 )
             {
                 CORE::CString filename = DI_Name( did );
-                if ( patternToMatch.WildcardEquals( filename, '*', false ) )
+                CORE::CString::StringVector::const_iterator n = patternsToMatch.begin();
+                while ( n != patternsToMatch.end() )
                 {
-                    matchedFiles[ CORE::DI_Timestamp( did ) ] = CORE::CombinePath( dirWithFiles, filename );    
+                    if ( filename.WildcardEquals( (*n), '*', false ) )
+                    {
+                        CORE::CString fullPath = CORE::CombinePath( dirWithFiles, filename );
+                        time_t fileTimestamp = GetLatestTimestampForFile( fullPath );
+                        matchedFiles[ fileTimestamp ].push_back( fullPath );    
+                    }
+                    ++n;
                 }
             }
         }
@@ -625,12 +650,20 @@ FilePusher::TriggerRolledOverFileCheck( const CORE::CString& dirWithFiles   ,
             // The map will list the matches in ascending order
             // With rolled over files you want to grab all files except for the 'newest' file 
             // which is the currently active file
+            //
+            // Note that if the newest filestamp has multiple instances we will leave all of those because we cannot
+            // determine based on the timestamps which file to actually use
             size_t index = 0; 
             size_t max = matchedFiles.size() - 1;
-            TUInt32StringMap::iterator i = matchedFiles.begin();
+            TUInt64StringVectorMap::iterator i = matchedFiles.begin();
             while ( index < max )
             {
-                QueueFileForPushing( (*i).second );
+                CORE::CString::StringVector::iterator n =  (*i).second.begin();
+                while ( n != (*i).second.end() )
+                {
+                    QueueFileForPushing( (*n) );
+                    ++n;
+                }
                 ++index; ++i;
             }
         }
@@ -749,10 +782,28 @@ FilePusher::QueueAllPreExistingFilesForDir( const CORE::CString& dir )
 
 /*-------------------------------------------------------------------------*/
 
+CORE::CString::StringVector
+FilePusher::GetFilePatternsForPushType( TPushStyle pushStyle ) const
+{GUCEF_TRACE;
+
+    CORE::CString::StringVector subset;
+    TStringPushStyleMap::const_iterator i = m_fileMatchPatterns.begin();
+    while ( i != m_fileMatchPatterns.end() )
+    {
+        if ( pushStyle == (*i).second )
+        {
+            subset.push_back( (*i).first );
+        }
+        ++i;
+    }
+    return subset;
+}
+
+/*-------------------------------------------------------------------------*/
+
 bool
 FilePusher::Start( void )
 {GUCEF_TRACE;
-
 
     if ( m_transmitMetrics )
     {
@@ -766,6 +817,9 @@ FilePusher::Start( void )
     m_pushTimer.SetInterval( 1000 );
     m_pushTimer.SetEnabled( true );
 
+    CORE::CString::StringVector rolloverPatterns = GetFilePatternsForPushType( PUSHSTYLE_ROLLED_OVER_FILES );
+    CORE::CString::StringVector allFilesPatterns = GetFilePatternsForPushType( PUSHSTYLE_MATCHING_ALL_FILES_WITH_REST_PERIOD );
+
     CORE::CDirectoryWatcher::CDirWatchOptions watchOptions;
     watchOptions.watchForFileCreation = true;
     watchOptions.watchForFileDeletion = false;
@@ -774,7 +828,19 @@ FilePusher::Start( void )
     TStringSet::iterator i = m_dirsToWatch.begin();
     while ( i != m_dirsToWatch.end() )
     {
-        QueueAllPreExistingFilesForDir( (*i) );
+        if ( !allFilesPatterns.empty() )
+        {
+            GUCEF_LOG( CORE::LOGLEVEL_NORMAL, "FilePusher: Checking for pre-existing files to push matching all-files patterns in dir \"" + (*i) + "\"" );
+            QueueAllPreExistingFilesForDir( (*i) );
+        }
+
+        if ( !rolloverPatterns.empty() )
+        {
+            GUCEF_LOG( CORE::LOGLEVEL_NORMAL, "FilePusher: Checking for pre-existing files to push matching rolled-over-files patterns in dir \"" + (*i) + "\"" );
+            TriggerRolledOverFileCheck( (*i), rolloverPatterns );
+        }
+
+        GUCEF_LOG( CORE::LOGLEVEL_NORMAL, "FilePusher: Adding watch to directory \"" + (*i) + "\"" );
         if ( !m_dirWatcher.AddDirToWatch( (*i), watchOptions ) )
         {
             GUCEF_ERROR_LOG( CORE::LOGLEVEL_IMPORTANT, "FilePusher: Failed to add watch for directory " + (*i) );

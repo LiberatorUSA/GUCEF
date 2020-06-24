@@ -144,6 +144,22 @@ class FilePusher : public CORE::CObservingNotifier
 
     private:
 
+    enum EPushStyle
+    {
+        PUSHSTYLE_UNKNOWN                               = 0,
+        PUSHSTYLE_ROLLED_OVER_FILES                        ,
+        PUSHSTYLE_MATCHING_NEW_FILES_WITH_REST_PERIOD      ,
+        PUSHSTYLE_MATCHING_ALL_FILES_WITH_REST_PERIOD
+    };
+    typedef enum EPushStyle TPushStyle;
+    typedef CORE::CTEventHandlerFunctor< FilePusher > TEventCallback;
+    typedef std::map< CORE::CString, TPushStyle > TStringPushStyleMap;
+    typedef std::map< CORE::CString, time_t > TStringTimeMap;
+    typedef std::set< CORE::CString > TStringSet;
+    typedef std::map< CORE::CString, CORE::UInt64 > TStringUInt64Map;
+    typedef std::map< CORE::UInt32, CORE::CString > TUInt32StringMap;
+    typedef std::map< CORE::UInt64, CORE::CString::StringVector > TUInt64StringVectorMap;
+
     void RegisterEventHandlers( void );
 
     void
@@ -230,6 +246,10 @@ class FilePusher : public CORE::CObservingNotifier
                                 const CORE::CString& patternToMatch );
 
     void
+    TriggerRolledOverFileCheck( const CORE::CString& dirWithFiles                  ,
+                                const CORE::CString::StringVector& patternsToMatch );
+    
+    void
     QueueFileForPushing( const CORE::CString& filePath );
 
     bool 
@@ -240,23 +260,13 @@ class FilePusher : public CORE::CObservingNotifier
 
     void
     OnFilePushFinished( void );
+
+    static time_t GetLatestTimestampForFile( const CORE::CString& filePath );
+
+    CORE::CString::StringVector
+    GetFilePatternsForPushType( TPushStyle pushStyle ) const;
     
     private:
-
-    enum EPushStyle
-    {
-        PUSHSTYLE_UNKNOWN                               = 0,
-        PUSHSTYLE_ROLLED_OVER_FILES                        ,
-        PUSHSTYLE_MATCHING_NEW_FILES_WITH_REST_PERIOD      ,
-        PUSHSTYLE_MATCHING_ALL_FILES_WITH_REST_PERIOD
-    };
-    typedef enum EPushStyle TPushStyle;
-    typedef CORE::CTEventHandlerFunctor< FilePusher > TEventCallback;
-    typedef std::map< CORE::CString, TPushStyle > TStringPushStyleMap;
-    typedef std::map< CORE::CString, time_t > TStringTimeMap;
-    typedef std::set< CORE::CString > TStringSet;
-    typedef std::map< CORE::CString, CORE::UInt64 > TStringUInt64Map;
-    typedef std::map< CORE::UInt32, CORE::CString > TUInt32StringMap;
     
     CORE::CDirectoryWatcher m_dirWatcher;
     COM::CHTTPClient m_httpClient;

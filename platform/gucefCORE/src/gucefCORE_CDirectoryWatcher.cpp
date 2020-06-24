@@ -161,6 +161,11 @@ class GUCEF_HIDDEN OSSpecificDirectoryWatcher : public CObserver
                                                 &watchObj.overlappedIO,                            // overlapped buffer
                                                 NULL );                                            // completion routine, we use a waitable event instead
     
+        if ( success != TRUE )
+        {
+            DWORD error = GetLastError();
+            GUCEF_ERROR_LOG( LOGLEVEL_NORMAL, "OSSpecificDirectoryWatcher:RequestDirChangeNotifications: Failed to set change notification watch for dir \"" + watchObj.dirPath + "\". ErrorCode=" + CORE::UInt32ToString( error ) );
+        }
         return success == TRUE; 
     }
 
@@ -211,8 +216,11 @@ class GUCEF_HIDDEN OSSpecificDirectoryWatcher : public CObserver
     {GUCEF_TRACE;
 
         if ( !DirExists( dirToWatch ) )
+        {
+            GUCEF_ERROR_LOG( LOGLEVEL_NORMAL, "OSSpecificDirectoryWatcher:AddDirToWatch: Unable to watch dir because it cannot be accessed or doesnt exist. Dir: " + dirToWatch );
             return false;
-        
+        }
+
         std::wstring dirToWatchW;
         if ( !Utf8toUtf16( dirToWatch, dirToWatchW ) )
             return false;
@@ -227,6 +235,7 @@ class GUCEF_HIDDEN OSSpecificDirectoryWatcher : public CObserver
         if ( INVALID_HANDLE_VALUE == dirHandle )
         {
             DWORD error = GetLastError();
+            GUCEF_ERROR_LOG( LOGLEVEL_NORMAL, "OSSpecificDirectoryWatcher:AddDirToWatch: Failed to obtain watch handle for dir \"" + dirToWatch + "\". ErrorCode=" + CORE::UInt32ToString( error ) );
             return false;
         }
 
@@ -240,6 +249,7 @@ class GUCEF_HIDDEN OSSpecificDirectoryWatcher : public CObserver
 
         if ( RequestDirChangeNotifications( watchObj ) )
         {
+            GUCEF_SYSTEM_LOG( LOGLEVEL_NORMAL, "OSSpecificDirectoryWatcher:AddDirToWatch: Started watching dir: " + dirToWatch );
             m_osPollingTimer.SetEnabled( true );
             return true;
         }
@@ -261,6 +271,11 @@ class GUCEF_HIDDEN OSSpecificDirectoryWatcher : public CObserver
         {
             OverlappedIOCallbackObj& watchObj = (*i).second;
             ::CloseHandle( watchObj.dirHandle );
+
+            std::string dir;
+            Utf16toUtf8( (*i).first, dir );
+            GUCEF_SYSTEM_LOG( LOGLEVEL_NORMAL, "OSSpecificDirectoryWatcher:RemoveDirToWatch: Stopped watching dir: " + dir );
+
             m_dirsToWatch.erase( i );
             return true;
         }
@@ -275,6 +290,11 @@ class GUCEF_HIDDEN OSSpecificDirectoryWatcher : public CObserver
             OverlappedIOCallbackObjMap::iterator i = m_dirsToWatch.begin();
             OverlappedIOCallbackObj& watchObj = (*i).second;
             ::CloseHandle( watchObj.dirHandle );
+
+            std::string dir;
+            Utf16toUtf8( (*i).first, dir );
+            GUCEF_SYSTEM_LOG( LOGLEVEL_NORMAL, "OSSpecificDirectoryWatcher:RemoveAllWatches: Stopped watching dir: " + dir );
+
             m_dirsToWatch.erase( i );
         }
         return true;
@@ -319,6 +339,7 @@ class GUCEF_HIDDEN OSSpecificDirectoryWatcher : public CObserver
                 {        
                     case FILE_ACTION_ADDED :
                     {
+                        GUCEF_SYSTEM_LOG( LOGLEVEL_BELOW_NORMAL, "OSSpecificDirectoryWatcher: OS Signaled FILE_ACTION_ADDED for file: " + utf8Filename );
                         if ( watchObj.watchOptions.watchForFileCreation )
                         {
                             CDirectoryWatcher::TFileCreatedEventData eData( utf8Filename );
@@ -328,6 +349,7 @@ class GUCEF_HIDDEN OSSpecificDirectoryWatcher : public CObserver
                     }
                     case FILE_ACTION_REMOVED :
                     {
+                        GUCEF_SYSTEM_LOG( LOGLEVEL_BELOW_NORMAL, "OSSpecificDirectoryWatcher: OS Signaled FILE_ACTION_REMOVED for file: " + utf8Filename );
                         if ( watchObj.watchOptions.watchForFileDeletion )
                         {
                             CDirectoryWatcher::TFileDeletedEventData eData( utf8Filename );
@@ -337,6 +359,7 @@ class GUCEF_HIDDEN OSSpecificDirectoryWatcher : public CObserver
                     }
                     case FILE_ACTION_MODIFIED :
                     {
+                        GUCEF_SYSTEM_LOG( LOGLEVEL_BELOW_NORMAL, "OSSpecificDirectoryWatcher: OS Signaled FILE_ACTION_MODIFIED for file: " + utf8Filename );
                         if ( watchObj.watchOptions.watchForFileModifications )
                         {
                             CDirectoryWatcher::TFileModifiedEventData eData( utf8Filename );
@@ -346,6 +369,7 @@ class GUCEF_HIDDEN OSSpecificDirectoryWatcher : public CObserver
                     }
                     case FILE_ACTION_RENAMED_OLD_NAME :
                     {
+                        GUCEF_SYSTEM_LOG( LOGLEVEL_BELOW_NORMAL, "OSSpecificDirectoryWatcher: OS Signaled FILE_ACTION_RENAMED_OLD_NAME for file: " + utf8Filename );
                         if ( watchObj.watchOptions.watchForFileRenames )
                         {
                             utf8OldFilenameBeforeRename = utf8Filename;
@@ -354,6 +378,7 @@ class GUCEF_HIDDEN OSSpecificDirectoryWatcher : public CObserver
                     }
                     case FILE_ACTION_RENAMED_NEW_NAME :
                     {
+                        GUCEF_SYSTEM_LOG( LOGLEVEL_BELOW_NORMAL, "OSSpecificDirectoryWatcher: OS Signaled FILE_ACTION_RENAMED_NEW_NAME for file: " + utf8Filename );
                         if ( watchObj.watchOptions.watchForFileRenames )
                         {
                             struct CDirectoryWatcher::SFileRenamedEventInfo info = { utf8OldFilenameBeforeRename, utf8Filename };
@@ -393,6 +418,8 @@ class GUCEF_HIDDEN OSSpecificDirectoryWatcher : public CObserver
             DWORD waitResult = ::WaitForSingleObject( watchObj.overlappedIO.hEvent, 0 );
             if ( WAIT_OBJECT_0 == waitResult )
             {
+                GUCEF_SYSTEM_LOG( LOGLEVEL_BELOW_NORMAL, "OSSpecificDirectoryWatcher: OS Signaled an overlapped IO event" );
+                
                 DWORD numberOfBytesTransferred = 0;
                 if ( TRUE == ::GetOverlappedResult( watchObj.dirHandle, &watchObj.overlappedIO, &numberOfBytesTransferred, TRUE ) )
                 {
@@ -405,6 +432,9 @@ class GUCEF_HIDDEN OSSpecificDirectoryWatcher : public CObserver
                     }
                     else
                     {
+                        GUCEF_WARNING_LOG( LOGLEVEL_IMPORTANT, "OSSpecificDirectoryWatcher: The event buffer was not large enough (" + 
+                                CORE::UInt32ToString( watchObj.notifyBuffer.GetBufferSize() ) + " bytes) to hold all the OS notifications. Event notifications have been lost! Auto-enlarging the buffer x2" );
+                        
                         watchObj.notifyBuffer.SetBufferSize( watchObj.notifyBuffer.GetBufferSize() * 2 );
                         RequestDirChangeNotifications( watchObj );
                     }
