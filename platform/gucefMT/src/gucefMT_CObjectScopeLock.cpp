@@ -65,7 +65,10 @@ CObjectScopeLock::CObjectScopeLock( const CILockable& lockableObject )
 
 CObjectScopeLock::~CObjectScopeLock()
 {
-    m_isLocked = !m_lockableObject->Unlock();
+    if ( m_isLocked )
+    {
+        m_isLocked = !m_lockableObject->Unlock();
+    }
 }
 
 /*--------------------------------------------------------------------------*/
@@ -74,6 +77,19 @@ bool
 CObjectScopeLock::IsLocked( void ) const
 {
     return m_isLocked;
+}
+
+/*--------------------------------------------------------------------------*/
+
+bool 
+CObjectScopeLock::EarlyUnlock( void )
+{
+    if ( m_isLocked )
+    {
+        m_isLocked = !m_lockableObject->Unlock();
+        return !m_isLocked;
+    }
+    return false;
 }
 
 /*-------------------------------------------------------------------------//

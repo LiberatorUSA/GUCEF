@@ -232,19 +232,18 @@ CCoreGlobal::Initialize( void )
 
     /*
      *  Instantiate all the singletons
+     *
      *  We start with the log manager so that it is possible to log everything from that point on
      *  if a logger is registered at an early stage
-     *  Next the Config Store because everything that used the global config will need it including perhaps
-     *  other singletons
      */
-    m_logManager = new CLogManager();
-    m_configStore = new CConfigStore();                 
+    m_logManager = new CLogManager();                 
     m_notificationIdRegistry = new CNotificationIDRegistry();
-    m_metricsClientManager = new CMetricsClientManager();
+    m_pulseGenerator = new CPulseGenerator();
 
     /*
      *  Make sure all events are registered from the start
      */
+    CConfigStore::RegisterEvents();
     CNotifier::RegisterEvents();
     CPulseGenerator::RegisterEvents();
     CStreamerEvents::RegisterEvents();
@@ -267,6 +266,14 @@ CCoreGlobal::Initialize( void )
     CWndMsgHookNotifier::RegisterEvents();
     
     #endif /* GUCEF_PLATFORM == ? */
+
+    /*
+     *  Next the Config Store because everything that used the global config will need it including perhaps
+     *  other singletons
+     */
+    m_configStore = new CConfigStore();
+    m_metricsClientManager = new CMetricsClientManager();
+
     /*
      *  Instantiate the rest of the singletons
      */
@@ -389,7 +396,7 @@ CPulseGenerator&
 CCoreGlobal::GetPulseGenerator( void )
 {GUCEF_TRACE;
 
-    return m_application->GetPulseGenerator();
+    return *m_pulseGenerator;
 }
 
 /*-------------------------------------------------------------------------*/

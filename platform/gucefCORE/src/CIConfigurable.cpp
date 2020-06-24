@@ -136,6 +136,15 @@ CIConfigurable::GetUseGlobalConfig( void ) const
         return _useglobal;
 }
 
+/*-------------------------------------------------------------------------*/
+
+bool
+CIConfigurable::IsGlobalConfigLoadInProgress( void )
+{GUCEF_TRACE;
+
+    return CORE::CCoreGlobal::Instance()->GetConfigStore().IsGlobalConfigLoadInProgress();
+}
+
 /*-------------------------------------------------------------------------//
 //                                                                         //
 //      NAMESPACE                                                          //

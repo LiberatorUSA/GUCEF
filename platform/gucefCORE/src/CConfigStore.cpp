@@ -28,6 +28,11 @@
 #define GUCEF_MT_CSCOPEMUTEX_H
 #endif /* GUCEF_MT_CSCOPEMUTEX_H ? */ 
 
+#ifndef GUCEF_MT_COBJECTSCOPELOCK_H
+#include "gucefMT_CObjectScopeLock.h"
+#define GUCEF_MT_COBJECTSCOPELOCK_H
+#endif /* GUCEF_MT_COBJECTSCOPELOCK_H ? */
+
 #ifndef GUCEF_CORE_CCOREGLOBAL_H
 #include "gucefCORE_CCoreGlobal.h"
 #define GUCEF_CORE_CCOREGLOBAL_H
@@ -76,17 +81,38 @@ namespace CORE {
 
 /*-------------------------------------------------------------------------//
 //                                                                         //
-//      UTILITIES                                                          //
+//      GLOBAL VARS                                                        //
 //                                                                         //
 //-------------------------------------------------------------------------*/
 
+const CEvent CConfigStore::GlobalConfigLoadStartingEvent = "GUCEF::CORE::CConfigStore::GlobalConfigLoadStartingEvent";
+const CEvent CConfigStore::GlobalConfigLoadCompletedEvent = "GUCEF::CORE::CConfigStore::GlobalConfigLoadCompletedEvent";
+const CEvent CConfigStore::GlobalConfigLoadFailedEvent = "GUCEF::CORE::CConfigStore::GlobalConfigLoadFailedEvent";
+
+/*-------------------------------------------------------------------------//
+//                                                                         //
+//      IMPLEMENTATION                                                     //
+//                                                                         //
+//-------------------------------------------------------------------------*/
+
+void
+CConfigStore::RegisterEvents( void )
+{GUCEF_TRACE;
+
+    GlobalConfigLoadStartingEvent.Initialize();
+    GlobalConfigLoadCompletedEvent.Initialize();
+    GlobalConfigLoadFailedEvent.Initialize();
+}
+
+/*-------------------------------------------------------------------------*/
+
 CConfigStore::CConfigStore( void )
-    : _codectype()
+    : CTSGNotifier()
+    , _codectype()
     , _configfile()
     , m_configureables()
     , m_newConfigureables()
     , m_isBusyLoadingConfig( false )
-    , m_datalock()
 {GUCEF_TRACE;
 
 }
@@ -104,7 +130,7 @@ void
 CConfigStore::SetConfigFile( const CString& filepath )
 {GUCEF_TRACE;
 
-    MT::CScopeMutex scopeLock( m_datalock );
+    MT::CObjectScopeLock lock( this );
     _configfile = RelativePath( filepath );
 }
 
@@ -114,7 +140,7 @@ CString
 CConfigStore::GetConfigFile( void ) const
 {GUCEF_TRACE;
 
-    MT::CScopeMutex scopeLock( m_datalock );
+    MT::CObjectScopeLock lock( this );
     return _configfile;
 }
 
@@ -124,7 +150,7 @@ void
 CConfigStore::Register( CIConfigurable* configobj )
 {GUCEF_TRACE;
 
-    MT::CScopeMutex scopeLock( m_datalock );
+    MT::CObjectScopeLock lock( this );
 
     if ( !m_isBusyLoadingConfig )
         m_configureables.insert( configobj );
@@ -138,7 +164,7 @@ bool
 CConfigStore::Unregister( CIConfigurable* configobj )
 {GUCEF_TRACE;
 
-    MT::CScopeMutex scopeLock( m_datalock );
+    MT::CObjectScopeLock lock( this );
     
     if ( m_isBusyLoadingConfig )
         return false;
@@ -154,7 +180,7 @@ CConfigStore::SaveConfig( const CString& name ,
                           bool preserve       )
 {GUCEF_TRACE;
         
-        MT::CScopeMutex scopeLock( m_datalock );
+        MT::CObjectScopeLock lock( this );
 
         /*
          *      If the preserve flag is set then the old data tree
@@ -223,7 +249,9 @@ CConfigStore::LoadConfig( CDataNode* loadedConfig )
         return false;
     }
 
-    MT::CScopeMutex scopeLock( m_datalock );
+    if ( !NotifyObservers( GlobalConfigLoadStartingEvent ) ) return false;
+
+    MT::CObjectScopeLock lock( this );
 
         if ( _codectype.Length() == 0 )
         {
@@ -279,8 +307,17 @@ CConfigStore::LoadConfig( CDataNode* loadedConfig )
 
                         m_isBusyLoadingConfig = false;
                         
-                        GUCEF_SYSTEM_LOG( LOGLEVEL_BELOW_NORMAL, "CConfigStore: Successfully loaded all config using codec " + _codectype + " to successfully build a config data tree from file " + _configfile );
-                        return !errorOccured;
+                        if ( !errorOccured )
+                        {
+                            GUCEF_SYSTEM_LOG( LOGLEVEL_BELOW_NORMAL, "CConfigStore: Successfully loaded all config. Used codec \"" + _codectype + "\" to successfully build a config data tree from file " + _configfile );
+                            lock.EarlyUnlock();
+                            if ( !NotifyObservers( GlobalConfigLoadCompletedEvent ) ) return true;
+                            return true;
+                        }
+                        else
+                        {
+                            GUCEF_SYSTEM_LOG( LOGLEVEL_BELOW_NORMAL, "CConfigStore: Failed loading all config using codec \"" + _codectype + "\" and config file " + _configfile );
+                        }
                 }
                 else
                 {
@@ -296,7 +333,19 @@ CConfigStore::LoadConfig( CDataNode* loadedConfig )
         {
             GUCEF_ERROR_LOG( LOGLEVEL_IMPORTANT, "CConfigStore: Failed to retrieve codec " + _codectype + " for the config information" );
         }
-        return false;
+
+    lock.EarlyUnlock();
+    if ( !NotifyObservers( GlobalConfigLoadFailedEvent ) ) return false;
+    return false;
+}
+
+/*-------------------------------------------------------------------------*/
+
+bool 
+CConfigStore::IsGlobalConfigLoadInProgress( void ) const
+{GUCEF_TRACE;
+
+    return m_isBusyLoadingConfig;
 }
 
 /*-------------------------------------------------------------------------*/
@@ -305,7 +354,7 @@ void
 CConfigStore::SetCodec( const CString& codectype )
 {GUCEF_TRACE;
 
-    MT::CScopeMutex scopeLock( m_datalock );
+    MT::CObjectScopeLock lock( this );
     _codectype = codectype;
 }
 
@@ -315,26 +364,8 @@ CString
 CConfigStore::GetCodec( void ) const
 {GUCEF_TRACE;
 
-    MT::CScopeMutex scopeLock( m_datalock );
+    MT::CObjectScopeLock lock( this );
     return _codectype;
-}
-
-/*-------------------------------------------------------------------------*/
-
-bool
-CConfigStore::Lock( void ) const
-{GUCEF_TRACE;
-
-    return m_datalock.Lock();
-}
-
-/*-------------------------------------------------------------------------*/
-
-bool
-CConfigStore::Unlock( void ) const
-{GUCEF_TRACE;
-
-    return m_datalock.Unlock();
 }
 
 /*-------------------------------------------------------------------------//

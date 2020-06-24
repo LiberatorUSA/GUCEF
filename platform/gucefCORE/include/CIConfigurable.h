@@ -103,6 +103,8 @@ class GUCEF_CORE_PUBLIC_CPP CIConfigurable : public virtual CITypeNamed
 
     bool GetUseGlobalConfig( void ) const;
 
+    static bool IsGlobalConfigLoadInProgress( void );
+
     private:
     friend class CConfigStore;
 

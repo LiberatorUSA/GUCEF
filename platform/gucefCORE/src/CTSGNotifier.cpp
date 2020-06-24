@@ -225,6 +225,15 @@ CTSGNotifier::AsObserver( void )
     return m_tsgObserver;
 }
 
+/*-------------------------------------------------------------------------*/
+
+CPulseGenerator* 
+CTSGNotifier::GetPulseGenerator( void ) const
+{GUCEF_TRACE;
+
+    return m_tsgObserver.GetPulseGenerator();
+}
+
 /*-------------------------------------------------------------------------//
 //                                                                         //
 //      NAMESPACE                                                          //

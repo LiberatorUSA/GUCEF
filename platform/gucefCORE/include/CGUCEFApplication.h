@@ -99,9 +99,8 @@ namespace CORE {
  *              Signals that the application is shutting down at the
  *              GUCEF level. All higher level code should shutdown as well
  */
-class GUCEF_CORE_PUBLIC_CPP CGUCEFApplication : public CNotifier                      ,
+class GUCEF_CORE_PUBLIC_CPP CGUCEFApplication : public CTSGNotifier                   ,
                                                 public virtual CIConfigurable         ,
-                                                public virtual MT::CILockable         ,
                                                 public virtual CISysConsoleCmdHandler
 {
     public:
@@ -166,18 +165,12 @@ class GUCEF_CORE_PUBLIC_CPP CGUCEFApplication : public CNotifier                
 
     virtual const CString& GetClassTypeName( void ) const GUCEF_VIRTUAL_OVERRIDE;
 
-    CPulseGenerator& GetPulseGenerator( void );
-
     protected:
 
     virtual bool OnSysConsoleCommand( const CString& path                ,
                                       const CString& command             ,
                                       const std::vector< CString >& args ,
                                       std::vector< CString >& resultdata ) GUCEF_VIRTUAL_OVERRIDE;
-
-    virtual bool Lock( void ) const GUCEF_VIRTUAL_OVERRIDE;
-
-    virtual bool Unlock( void ) const GUCEF_VIRTUAL_OVERRIDE;
 
     private:
     friend class CCoreGlobal;
@@ -192,14 +185,14 @@ class GUCEF_CORE_PUBLIC_CPP CGUCEFApplication : public CNotifier                
     
     CGUCEFApplication& operator=( const CGUCEFApplication& src ); /**< not implemented */
 
+    int MainLoop( void );
+
     private:
 
     bool _initialized;
     bool m_shutdownRequested;
     CString _appdir;
-    CPulseGenerator m_pulseGenerator;
     CBusyWaitPulseGeneratorDriver m_busyWaitPulseDriver;
-    mutable MT::CMutex m_mutex;
 };
 
 

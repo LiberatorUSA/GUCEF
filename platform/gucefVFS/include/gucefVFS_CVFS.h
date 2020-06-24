@@ -139,6 +139,12 @@ class GUCEF_VFS_PUBLIC_CPP CVFS : public CORE::CTSGNotifier   ,
 
     bool MountArchive( const CArchiveSettings& settings );
 
+    /**
+     *  Same as MountArchive() except delays the archive mounting until after a global config 
+     *  loading event notification is received
+     */
+    bool DelayMountArchive( const CArchiveSettings& settings );
+
     bool MountArchiveAsync( const CArchiveSettings& settings              ,
                             CORE::CICloneable* requestorData = GUCEF_NULL );
     
@@ -291,6 +297,9 @@ class GUCEF_VFS_PUBLIC_CPP CVFS : public CORE::CTSGNotifier   ,
     typedef std::vector< TMountEntry >                   TMountVector;
     typedef std::vector< TConstMountLink >               TConstMountLinkVector;
     typedef CORE::CTSharedPtr< CORE::CDynamicBuffer >    TDynamicBufferPtr;
+    typedef std::vector< CArchiveSettings >              TArchiveSettingsVector;
+
+    typedef CORE::CTEventHandlerFunctor< CVFS >          TEventCallback;
     
     CVFS( const CVFS& src );                /**< not implemented, must be unique */
     CVFS& operator=( const CVFS& src );     /**< not implemented, must be unique */
@@ -298,12 +307,22 @@ class GUCEF_VFS_PUBLIC_CPP CVFS : public CORE::CTSGNotifier   ,
     void GetEligableMounts( const CString& location                ,
                             bool mustBeWritable                    ,
                             TConstMountLinkVector& mountLinkVector ) const;
+    
+    void RegisterEventHandlers( void );
+
+    void OnGlobalConfigLoadFinished( CORE::CNotifier* notifier                 ,
+                                     const CORE::CEvent& eventid               ,
+                                     CORE::CICloneable* eventdata = GUCEF_NULL );
+
+    void MountAllDelayMountedArchives( void );
+    
     private:    
     
     TMountVector m_mountList;
     UInt32 _maxmemloadsize;
     TAbstractArchiveFactory m_abstractArchiveFactory;
     TFileSystemArchiveFactory m_fileSystemArchiveFactory;
+    TArchiveSettingsVector m_delayMountedArchiveSettings;
 };
 
 /*-------------------------------------------------------------------------//

@@ -78,6 +78,11 @@
 #define CDATANODE_H
 #endif /* CDATANODE_H ? */
 
+#ifndef GUCEF_CORE_CONFIGSTORE_H
+#include "CConfigStore.h"
+#define GUCEF_CORE_CONFIGSTORE_H
+#endif /* GUCEF_CORE_CONFIGSTORE_H ? */
+
 #ifndef DVCPPSTRINGUTILS_H
 #include "dvcppstringutils.h"           /* C++ string utils */
 #define DVCPPSTRINGUTILS_H
@@ -142,9 +147,11 @@ CVFS::CVFS( void )
     , _maxmemloadsize( 1024 ) 
     , m_abstractArchiveFactory()
     , m_fileSystemArchiveFactory()
+    , m_delayMountedArchiveSettings()
 {GUCEF_TRACE;
 
     RegisterEvents();
+    RegisterEventHandlers();
     RegisterArchiveFactory( FileSystemArchiveTypeName, m_fileSystemArchiveFactory );
 }
 
@@ -154,6 +161,23 @@ CVFS::~CVFS()
 {GUCEF_TRACE;
 
     UnregisterArchiveFactory( FileSystemArchiveTypeName );
+}
+
+/*-------------------------------------------------------------------------*/
+
+void
+CVFS::RegisterEventHandlers( void )
+{GUCEF_TRACE;
+
+    // Success or fail we use the config load finish event messages to trigger delayed mounting
+    TEventCallback callback( this, &CVFS::OnGlobalConfigLoadFinished );
+    SubscribeTo( &CORE::CCoreGlobal::Instance()->GetConfigStore()   ,
+                 CORE::CConfigStore::GlobalConfigLoadCompletedEvent ,
+                 callback                                           );
+    TEventCallback callback2( this, &CVFS::OnGlobalConfigLoadFinished );
+    SubscribeTo( &CORE::CCoreGlobal::Instance()->GetConfigStore() ,
+                 CORE::CConfigStore::GlobalConfigLoadFailedEvent  ,
+                 callback2                                        );
 }
 
 /*-------------------------------------------------------------------------*/
@@ -207,6 +231,39 @@ CVFS::OnPumpedNotify( CORE::CNotifier* notifier    ,
         GUCEF_DEBUG_LOG( CORE::LOGLEVEL_BELOW_NORMAL, "CVFS:OnPumpedNotify: Async operation completed, passing on event notification" );
         NotifyObservers( AsyncVfsOperationCompletedEvent, eventdata );
     }
+}
+
+/*-------------------------------------------------------------------------*/
+
+void 
+CVFS::MountAllDelayMountedArchives( void )
+{GUCEF_TRACE;
+
+    while ( !m_delayMountedArchiveSettings.empty() )
+    {
+        TArchiveSettingsVector::iterator i = m_delayMountedArchiveSettings.begin();
+        GUCEF_SYSTEM_LOG( CORE::LOGLEVEL_BELOW_NORMAL, "CVFS:MountAllDelayMountedArchives: Commencing delayed mounting of archive with name: " + (*i).GetArchiveName() );
+        if ( MountArchive( (*i) ) )
+        {
+            GUCEF_SYSTEM_LOG( CORE::LOGLEVEL_BELOW_NORMAL, "CVFS:MountAllDelayMountedArchives: Succeeded in delayed mounting of archive with name: " + (*i).GetArchiveName() );
+        }
+        else
+        {
+            GUCEF_SYSTEM_LOG( CORE::LOGLEVEL_BELOW_NORMAL, "CVFS:MountAllDelayMountedArchives: Failed delayed mounting of archive with name: " + (*i).GetArchiveName() );
+        }
+        m_delayMountedArchiveSettings.erase( i );
+    }
+}
+
+/*-------------------------------------------------------------------------*/
+
+void 
+CVFS::OnGlobalConfigLoadFinished( CORE::CNotifier* notifier    ,
+                                  const CORE::CEvent& eventid  ,
+                                  CORE::CICloneable* eventdata )
+{GUCEF_TRACE;
+
+    MountAllDelayMountedArchives();
 }
 
 /*-------------------------------------------------------------------------*/
@@ -366,6 +423,17 @@ CVFS::MountArchive( const CString& archiveName              ,
     settings.SetMountPath( mountPoint );
     settings.SetWriteableRequested( writeableRequest );
     return MountArchive( settings );
+}
+
+/*-------------------------------------------------------------------------*/
+
+bool 
+CVFS::DelayMountArchive( const CArchiveSettings& settings )
+{GUCEF_TRACE;
+
+    MT::CObjectScopeLock lock( this );
+    m_delayMountedArchiveSettings.push_back( settings );
+    return true;
 }
 
 /*-------------------------------------------------------------------------*/
@@ -769,6 +837,7 @@ bool
 CVFS::LoadConfig( const CORE::CDataNode& tree )
 {GUCEF_TRACE;
 
+    bool globalConfigLoadInProgress = IsGlobalConfigLoadInProgress();
     const CORE::CDataNode* n = tree.Search( "GUCEF%VFS%CVFS" ,
                                             '%'              ,
                                             false            );
@@ -788,7 +857,10 @@ CVFS::LoadConfig( const CORE::CDataNode& tree )
             const CORE::CDataNode* legacySettingsNode = (*i);
             CArchiveSettings settings;
             settings.LoadConfig( *legacySettingsNode );
-            MountArchive( settings );
+            if ( !globalConfigLoadInProgress )
+                MountArchive( settings );
+            else
+                DelayMountArchive( settings );
             ++i;
         }
 
@@ -805,7 +877,10 @@ CVFS::LoadConfig( const CORE::CDataNode& tree )
             const CORE::CDataNode* settingsNode = (*i);
             CArchiveSettings settings;
             settings.LoadConfig( *settingsNode );
-            MountArchive( settings );
+            if ( !globalConfigLoadInProgress )
+                MountArchive( settings );
+            else
+                DelayMountArchive( settings );
             ++i;
         }
 
@@ -885,6 +960,9 @@ CVFS::GetEligableMounts( const CString& location                ,
 
                     mountLink.mountEntry = &mountEntry;
                     mountLinkVector.push_back( mountLink );
+
+                    GUCEF_DEBUG_LOG( CORE::LOGLEVEL_NORMAL, "VFS: Found eligable mount link using archive of type \"" + 
+                        mountEntry.archive->GetType() + "\" with remainder \"" + location + "\". mustBeWritable=" + CORE::BoolToString( mustBeWritable ) );
                 }
             }
             else
@@ -893,10 +971,15 @@ CVFS::GetEligableMounts( const CString& location                ,
                 mountLink.remainder = location;
                 mountLink.mountEntry = &mountEntry;
                 mountLinkVector.push_back( mountLink );
+
+                GUCEF_DEBUG_LOG( CORE::LOGLEVEL_NORMAL, "VFS: Found eligable mount link using archive of type \"" + 
+                    mountEntry.archive->GetType() + "\" with remainder \"" + location + "\". mustBeWritable=" + CORE::BoolToString( mustBeWritable ) );
             }
         }
         ++i;
     }
+
+    GUCEF_DEBUG_LOG( CORE::LOGLEVEL_NORMAL, "VFS: Found a total of " + CORE::UInt32ToString( mountLinkVector.size() ) + " eligable mounts for location \"" + location + "\"" );
 }
 
 /*-------------------------------------------------------------------------*/

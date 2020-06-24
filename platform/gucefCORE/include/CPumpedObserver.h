@@ -76,6 +76,8 @@ class GUCEF_CORE_PUBLIC_CPP CPumpedObserver : public CObserver
 
     virtual const CString& GetClassTypeName( void ) const;
 
+    CPulseGenerator* GetPulseGenerator( void ) const;
+
     protected:
 
     /**

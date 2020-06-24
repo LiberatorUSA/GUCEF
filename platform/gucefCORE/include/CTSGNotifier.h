@@ -130,6 +130,8 @@ class GUCEF_CORE_PUBLIC_CPP CTSGNotifier : public CNotifier
 
     CObserver& AsObserver( void );
 
+    CPulseGenerator* GetPulseGenerator( void ) const;
+
     protected:
 
     virtual bool Lock( void ) const GUCEF_VIRTUAL_OVERRIDE;

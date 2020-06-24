@@ -51,6 +51,7 @@ namespace CORE {
 //                                                                         //
 //-------------------------------------------------------------------------*/
 
+class CPulseGenerator;
 class CTaskManager;
 class CURLHandlerRegistry;
 class CDStoreCodecRegistry;
@@ -130,6 +131,7 @@ class GUCEF_CORE_PUBLIC_CPP CCoreGlobal
 
     private:
 
+    CPulseGenerator* m_pulseGenerator;
     CTaskManager* m_taskManager;
     CURLHandlerRegistry* m_urlHandlerRegistry;
     CDStoreCodecRegistry* m_dstoreCodecRegistry;

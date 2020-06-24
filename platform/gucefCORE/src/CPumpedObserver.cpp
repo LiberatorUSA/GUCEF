@@ -214,7 +214,8 @@ CPumpedObserver::CPumpedObserver( const CPumpedObserver& src )
 CPumpedObserver::~CPumpedObserver()
 {GUCEF_TRACE;
 
-    m_pulsGenerator->RequestStopOfPeriodicUpdates( this );
+    if ( GUCEF_NULL != m_pulsGenerator )
+        m_pulsGenerator->RequestStopOfPeriodicUpdates( this );
 }
 
 /*-------------------------------------------------------------------------*/
@@ -224,6 +225,15 @@ CPumpedObserver::operator=( const CPumpedObserver& src )
 {GUCEF_TRACE;
 
     return *this;
+}
+
+/*-------------------------------------------------------------------------*/
+
+CPulseGenerator* 
+CPumpedObserver::GetPulseGenerator( void ) const
+{GUCEF_TRACE;
+
+    return m_pulsGenerator;
 }
 
 /*-------------------------------------------------------------------------*/
