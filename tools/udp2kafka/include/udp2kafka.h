@@ -228,6 +228,8 @@ class Udp2KafkaChannel : public CORE::CTaskConsumer ,
     CORE::UInt32 GetKafkaMsgsReceivedCounter( bool resetCounter );
 
     static CORE::Int64 ConvertKafkaConsumerStartOffset( const CORE::CString& startOffsetDescription );
+
+    static CORE::CString ConvertKafkaConsumerStartOffset( CORE::Int64 offset );
     
     static const std::string& MsgStatusToString( RdKafka::Message::Status status );
 

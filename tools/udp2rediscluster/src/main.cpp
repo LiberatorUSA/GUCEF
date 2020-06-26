@@ -263,9 +263,11 @@ GUCEF_OSSERVICEMAIN_BEGIN( "udp2rediscluster" )
         return -2;
     }
 
+    auto& pulseGenerator = CORE::CCoreGlobal::Instance()->GetPulseGenerator();
+    pulseGenerator.RequestPulseInterval( 25 );
+    pulseGenerator.RequestPulsesPerImmediatePulseRequest( 25 );
+    
     auto& app = CORE::CCoreGlobal::Instance()->GetApplication();
-    app.GetPulseGenerator().RequestPulseInterval( 25 );
-    app.GetPulseGenerator().RequestPulsesPerImmediatePulseRequest( 25 );
     return app.main( argc, argv, true );
 }
 GUCEF_OSMAIN_END

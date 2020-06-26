@@ -473,25 +473,29 @@ Udp2KafkaChannel::rebalance_cb( RdKafka::KafkaConsumer* consumer                
                                 std::vector<RdKafka::TopicPartition*>& partitions )
 {GUCEF_TRACE;
 
-    CORE::CString partitionInfo = "Udp2KafkaChannel:rebalance_cb: ";
-    for ( unsigned int i=0; i<partitions.size(); ++i )
-    {
-        partitionInfo += "Topic \"" + partitions[ i ]->topic() + "\" is at partition \"" + CORE::Int32ToString( partitions[ i ]->partition() ).STL_String() + "\". ";
-    }
-    GUCEF_LOG( CORE::LOGLEVEL_NORMAL, partitionInfo );
-
+    std::string actionStr = "<UNKNOWN>";
     if ( err == RdKafka::ERR__ASSIGN_PARTITIONS ) 
     {
         //for ( unsigned int i=0; i<partitions.size(); ++i )
         //{
         //    partitions[ i ]->set_offset(  );
         //}
-        m_kafkaConsumer->assign( partitions );
+        consumer->assign( partitions );
+        actionStr = "ASSIGN_PARTITIONS";
     } 
-    else 
+    else
+    if ( err == RdKafka::ERR__REVOKE_PARTITIONS ) 
     {
         consumer->unassign();
+        actionStr = "REVOKE_PARTITIONS";
     }
+
+    CORE::CString partitionInfo = "Udp2KafkaChannel:rebalance_cb: Member ID \"" + consumer->memberid() + "\": Action " + actionStr + " : ";
+    for ( unsigned int i=0; i<partitions.size(); ++i )
+    {
+        partitionInfo += "Topic \"" + partitions[ i ]->topic() + "\" is at partition \"" + CORE::Int32ToString( partitions[ i ]->partition() ).STL_String() + "\" at offset \"" + ConvertKafkaConsumerStartOffset( partitions[ i ]->offset() ).STL_String() + "\". ";
+    }
+    GUCEF_LOG( CORE::LOGLEVEL_NORMAL, partitionInfo );
 }
 
 /*-------------------------------------------------------------------------*/
@@ -858,6 +862,24 @@ Udp2KafkaChannel::ConvertKafkaConsumerStartOffset( const CORE::CString& startOff
     }
 
     return CORE::StringToInt64( testString );
+}
+
+/*-------------------------------------------------------------------------*/
+
+CORE::CString
+Udp2KafkaChannel::ConvertKafkaConsumerStartOffset( CORE::Int64 offset )
+{GUCEF_TRACE;
+
+    if ( RdKafka::Topic::OFFSET_STORED == offset )
+        return "stored";
+    if ( RdKafka::Topic::OFFSET_BEGINNING == offset )
+        return "beginning";
+    if ( RdKafka::Topic::OFFSET_END == offset )
+        return "end";
+    if ( RdKafka::Topic::OFFSET_INVALID == offset )
+        return "invalid";
+
+    return CORE::Int64ToString( offset );    
 }
 
 /*-------------------------------------------------------------------------*/
