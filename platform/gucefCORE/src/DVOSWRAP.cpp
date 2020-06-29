@@ -713,6 +713,8 @@ GetProcessList( struct SProcessId** processList ,
         (*processList)[ i ].pid = win32ProcessList[ i ];   
     }
 
+    free( win32ProcessList );
+
     return OSWRAP_TRUE;
 
     #elif ( ( GUCEF_PLATFORM == GUCEF_PLATFORM_LINUX ) || ( GUCEF_PLATFORM == GUCEF_PLATFORM_ANDROID ) )
