@@ -141,6 +141,19 @@ struct SGlobalMemoryUsageInfo
 };
 typedef struct SGlobalMemoryUsageInfo TGlobalMemoryUsageInfo;
 
+/*-------------------------------------------------------------------------*/
+
+/**
+ *  Structure holding various bits of cpu usage related information
+ *  If for the current O/S a field cannot be determined it will be set to -1
+ */
+struct SProcessCpuUsageInfo
+{
+    UInt64 uptimeInMs;
+    UInt8 overallCpuConsumptionPercentage;
+};
+typedef struct SProcessCpuUsageInfo TProcessCpuUsageInfo;
+
 /*-------------------------------------------------------------------------//
 //                                                                         //
 //      UTILITIES                                                          //
@@ -325,6 +338,12 @@ GetExeNameForProcessId( TProcessId* pid        ,
 
 GUCEF_CORE_PUBLIC_C UInt32
 GetGlobalMemoryUsage( TGlobalMemoryUsageInfo* memUseInfo );
+
+/*--------------------------------------------------------------------------*/
+
+GUCEF_CORE_PUBLIC_C UInt32
+GetProcessCpuUsage( TProcessId* pid                  , 
+                    TProcessCpuUsageInfo* cpuUseInfo );
 
 /*--------------------------------------------------------------------------*/
 

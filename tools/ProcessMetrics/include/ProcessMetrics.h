@@ -192,4 +192,6 @@ class ProcessMetrics : public CORE::CObservingNotifier
     bool m_gatherGlobalTotalPageFileSizeInBytes;
     bool m_gatherGlobalTotalPhysicalMemoryInBytes;
     bool m_gatherGlobalTotalVirtualMemoryInBytes;
+
+    bool m_gatherProcCpuUptime;
 };

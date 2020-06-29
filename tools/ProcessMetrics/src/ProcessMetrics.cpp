@@ -156,6 +156,7 @@ ProcessMetrics::ProcessMetrics( void )
     , m_gatherGlobalTotalPageFileSizeInBytes( true )
     , m_gatherGlobalTotalPhysicalMemoryInBytes( false )
     , m_gatherGlobalTotalVirtualMemoryInBytes( true )
+    , m_gatherProcCpuUptime( true )
 {GUCEF_TRACE;
 
     RegisterEventHandlers();    
@@ -285,6 +286,41 @@ ProcessMetrics::OnMetricsTimerCycle( CORE::CNotifier* notifier    ,
         }
     }
 
+    if ( m_gatherCpuStats )
+    {
+        TStringSet failedProcs;
+        TProcessIdMap::iterator m = m_exeProcIdMap.begin();
+        while ( m != m_exeProcIdMap.end() )
+        {
+            CORE::TProcessCpuUsageInfo cpuUseInfo;
+            if ( OSWRAP_TRUE == CORE::GetProcessCpuUsage( (*m).second, &cpuUseInfo ) )
+            {
+                CORE::CString metricPrefix = "ProcessMetrics." + (*m).first;
+
+                if ( m_gatherProcCpuUptime )
+                    GUCEF_METRIC_GAUGE( metricPrefix + ".CpuUse.UptimeInMs", cpuUseInfo.uptimeInMs, 1.0f );
+            }
+            else
+            {
+                failedProcs.insert( (*m).first );
+                GUCEF_WARNING_LOG( CORE::LOGLEVEL_NORMAL, "ProcessMetrics: Failed to obtain cpu stats for \"" + (*m).first + "\"" );
+            }
+            ++m;
+        }
+
+        TStringSet::iterator i = failedProcs.begin();
+        while ( i != failedProcs.end() )
+        {
+            m = m_exeProcIdMap.find( (*i) );
+            CORE::TProcessId* pid = (*m).second; 
+            CORE::FreeProcessId( pid );
+            m_exeProcIdMap.erase( m );
+
+            GUCEF_DEBUG_LOG( CORE::LOGLEVEL_NORMAL, "ProcessMetrics: Erased PID for \"" + (*i) + "\"" );
+            ++i;
+        }
+    }
+
     if ( m_gatherGlobMemStats )
     {
         CORE::TGlobalMemoryUsageInfo globMemInfo;
@@ -370,6 +406,8 @@ ProcessMetrics::LoadConfig( const CORE::CValueList& appConfig   ,
     m_gatherGlobalTotalPhysicalMemoryInBytes = CORE::StringToBool( appConfig.GetValueAlways( "GatherGlobalTotalPhysicalMemoryInBytes", "false" ) );
     m_gatherGlobalTotalVirtualMemoryInBytes = CORE::StringToBool( appConfig.GetValueAlways( "GatherGlobalTotalVirtualMemoryInBytes", "true" ) );
 
+    m_gatherProcCpuUptime = CORE::StringToBool( appConfig.GetValueAlways( "GatherProcCPUUptime", "true" ) );
+    
     TStringVector exeProcsToWatch = appConfig.GetValueAlways( "ExeProcsToWatch" ).ParseElements( ';', false );
     TStringVector::iterator i = exeProcsToWatch.begin();
     while ( i != exeProcsToWatch.end() )

@@ -96,6 +96,8 @@ struct SProcessId
     DWORD pid;
     #elif ( ( GUCEF_PLATFORM == GUCEF_PLATFORM_LINUX ) || ( GUCEF_PLATFORM == GUCEF_PLATFORM_ANDROID ) )
     pid_t pid;
+    #else
+    int foobar_NotSupported;
     #endif
 };
 
@@ -107,7 +109,8 @@ struct SProcessId
 
 void*
 LoadModuleDynamicly( const char* filename )
-{
+{GUCEF_TRACE;
+
     char* fName = (char*) filename;
     const char* fileExt = Extract_File_Ext( filename );
     void* modulePtr = NULL;
@@ -190,7 +193,8 @@ LoadModuleDynamicly( const char* filename )
 
 GUCEF_CORE_PUBLIC_C void*
 GetModulePointer( const char* moduleName )
-{
+{GUCEF_TRACE;
+
     // If no module name is passed we get the pointer to the main process module
 
     #if ( ( GUCEF_PLATFORM == GUCEF_PLATFORM_LINUX ) || ( GUCEF_PLATFORM == GUCEF_PLATFORM_ANDROID ) )
@@ -214,7 +218,8 @@ GetModulePointer( const char* moduleName )
 
 void
 UnloadModuleDynamicly( void *sohandle )
-{
+{GUCEF_TRACE;
+
     if ( NULL == sohandle ) return;
 
     #if ( ( GUCEF_PLATFORM == GUCEF_PLATFORM_LINUX ) || ( GUCEF_PLATFORM == GUCEF_PLATFORM_ANDROID ) )
@@ -236,7 +241,8 @@ TAnyPointer
 GetFunctionAddress( void *sohandle           ,
                     const char* functionname ,
                     UInt32 parambytes        )
-{
+{GUCEF_TRACE;
+
     /*
      *      Calling Convention      Internal*       MSVC DLL (w/ DEF)       MSVC DLL (dllexport)  	DMC DLL         MinGW DLL       BCC DLL
      *      __stdcall               _Function@n  	Function                _Function@n             _Function@n     Function@n      Function
@@ -564,7 +570,8 @@ GUCEFGetEnv( const char* key )
 
 UInt32
 GUCEFGetTickCount( void )
-{
+{GUCEF_TRACE;
+
     #if ( GUCEF_PLATFORM == GUCEF_PLATFORM_MSWIN )
 
     return GetTickCount();
@@ -590,7 +597,8 @@ GUCEFGetTickCount( void )
 void
 ShowErrorMessage( const char* message     ,
                   const char* description )
-{
+{GUCEF_TRACE;
+
     #ifdef GUCEF_MSWIN_BUILD
     MessageBox( GetCurrentHWND()                    ,
                 description                         ,
@@ -605,7 +613,8 @@ ShowErrorMessage( const char* message     ,
 
 UInt32
 GetCPUCountPerPackage( void )
-{
+{GUCEF_TRACE;
+
     /* Number of Logical Cores per Physical Processor */
     UInt32 coreCount = 1;
 
@@ -638,7 +647,8 @@ GetCPUCountPerPackage( void )
 
 UInt32
 GetPhysicalCPUCount( void )
-{
+{GUCEF_TRACE;
+
     return GetLogicalCPUCount() / GetCPUCountPerPackage();
 }
 
@@ -646,10 +656,11 @@ GetPhysicalCPUCount( void )
 
 UInt32
 GetLogicalCPUCount( void )
-{
+{GUCEF_TRACE;
+
     #ifdef GUCEF_MSWIN_BUILD
     SYSTEM_INFO systemInfo;
-    GetSystemInfo( &systemInfo );
+    ::GetSystemInfo( &systemInfo );
     return systemInfo.dwNumberOfProcessors;
     #else
     return 1;
@@ -661,7 +672,8 @@ GetLogicalCPUCount( void )
 UInt32
 GetProcessList( struct SProcessId** processList , 
                 UInt32* processCount            )
-{
+{GUCEF_TRACE;
+
     if ( GUCEF_NULL == processCount )
         return OSWRAP_FALSE;
     
@@ -723,7 +735,8 @@ GetProcessList( struct SProcessId** processList ,
 
 void
 FreeProcessList( TProcessId* processList )
-{
+{GUCEF_TRACE;
+
     if ( GUCEF_NULL != processList )
         free( processList );
 }
@@ -733,7 +746,8 @@ FreeProcessList( TProcessId* processList )
 TProcessId*
 GetProcessIdAtIndex( TProcessId* processList ,
                      UInt32 index            )
-{
+{GUCEF_TRACE;
+
     if ( GUCEF_NULL != processList )
         return &processList[ index ];
     return GUCEF_NULL;
@@ -743,7 +757,8 @@ GetProcessIdAtIndex( TProcessId* processList ,
 
 TProcessId*
 CopyProcessId( TProcessId* pid )
-{
+{GUCEF_TRACE;
+
     if ( GUCEF_NULL != pid )
     {
         TProcessId* pidCopy = (TProcessId*) malloc( sizeof(TProcessId) );
@@ -757,7 +772,8 @@ CopyProcessId( TProcessId* pid )
 
 GUCEF_CORE_PUBLIC_C void
 FreeProcessId( TProcessId* pid )
-{
+{GUCEF_TRACE;
+
     if ( GUCEF_NULL != pid )
         free( pid );
 }
@@ -767,7 +783,8 @@ FreeProcessId( TProcessId* pid )
 UInt32
 GetProcessMemmoryUsage( TProcessId* pid                     , 
                         TProcessMemoryUsageInfo* memUseInfo )
-{
+{GUCEF_TRACE;
+
     if ( GUCEF_NULL == pid || GUCEF_NULL == memUseInfo )
         return OSWRAP_FALSE;
 
@@ -794,11 +811,11 @@ GetProcessMemmoryUsage( TProcessId* pid                     ,
         //memUseInfo->quotaPeakPagedPoolUsageInBytes  = (TProcessMemoryUsageInfo::TProcMemStatInt) pmc.QuotaPeakPagedPoolUsage;
         memUseInfo->workingSetSizeInBytes  = (TProcessMemoryUsageInfo::TProcMemStatInt) pmc.WorkingSetSize;
 
-        CloseHandle( hProcess );
+        ::CloseHandle( hProcess );
         return OSWRAP_TRUE;
     }
 
-    CloseHandle( hProcess );
+    ::CloseHandle( hProcess );
     return OSWRAP_FALSE;
 
     #elif ( ( GUCEF_PLATFORM == GUCEF_PLATFORM_LINUX ) || ( GUCEF_PLATFORM == GUCEF_PLATFORM_ANDROID ) )
@@ -817,7 +834,8 @@ GetProcessMemmoryUsage( TProcessId* pid                     ,
 
 UInt32
 GetGlobalMemoryUsage( TGlobalMemoryUsageInfo* memUseInfo )
-{
+{GUCEF_TRACE;
+
     if ( GUCEF_NULL == memUseInfo )
         return OSWRAP_FALSE; 
     
@@ -864,7 +882,8 @@ GetExeNameForProcessId( TProcessId* pid        ,
                         char* outNameBuffer    , 
                         UInt32 nameBufferSize  ,
                         UInt32* usedBufferSize )
-{
+{GUCEF_TRACE;
+
     if ( GUCEF_NULL == pid || GUCEF_NULL == outNameBuffer || GUCEF_NULL == usedBufferSize )
         return OSWRAP_FALSE;
 
@@ -913,6 +932,94 @@ GetExeNameForProcessId( TProcessId* pid        ,
 
         ::CloseHandle( handle );
     }
+    return OSWRAP_FALSE;
+
+    #elif ( ( GUCEF_PLATFORM == GUCEF_PLATFORM_LINUX ) || ( GUCEF_PLATFORM == GUCEF_PLATFORM_ANDROID ) )
+
+    // @todo
+    return OSWRAP_FALSE;
+    
+    #else
+
+    return OSWRAP_FALSE;
+
+    #endif
+}
+
+/*--------------------------------------------------------------------------*/
+
+#if ( GUCEF_PLATFORM == GUCEF_PLATFORM_MSWIN )
+
+Int64
+GetFiletimeDelta( LPFILETIME a, LPFILETIME b )
+{GUCEF_TRACE;
+
+    ULARGE_INTEGER converterStructA;
+    converterStructA.HighPart = a->dwHighDateTime;
+    converterStructA.LowPart = a->dwLowDateTime;
+
+    ULARGE_INTEGER converterStructB;
+    converterStructB.HighPart = b->dwHighDateTime;
+    converterStructB.LowPart = b->dwLowDateTime;
+
+    return converterStructA.QuadPart - converterStructB.QuadPart; 
+}
+
+/*--------------------------------------------------------------------------*/
+
+Int64
+GetDurationSinceFiletimeInMs( LPFILETIME since )
+{GUCEF_TRACE;
+
+    if ( NULL == since )
+        return 0;
+
+    FILETIME systemNowTime;
+    ::GetSystemTimeAsFileTime( &systemNowTime );
+        
+    Int64 timeDeltaInHundredNanoSecs = GetFiletimeDelta( &systemNowTime, since );
+
+    // 100 nanoseconds is 0.0001 ms
+    // so we need to divide by 10000
+    return (Int64) ( timeDeltaInHundredNanoSecs / 10000 );
+}
+
+#endif
+
+/*--------------------------------------------------------------------------*/
+
+UInt32
+GetProcessCpuUsage( TProcessId* pid                  , 
+                    TProcessCpuUsageInfo* cpuUseInfo )
+{GUCEF_TRACE;
+
+    if ( GUCEF_NULL == pid || GUCEF_NULL == cpuUseInfo )
+        return OSWRAP_FALSE;
+
+    memset( cpuUseInfo, 0, sizeof(TProcessCpuUsageInfo) );
+
+    #if ( GUCEF_PLATFORM == GUCEF_PLATFORM_MSWIN )
+
+    HANDLE hProcess = ::OpenProcess(  PROCESS_QUERY_INFORMATION,
+                                      FALSE, 
+                                      pid->pid );
+    if ( GUCEF_NULL == hProcess )
+        return OSWRAP_FALSE;
+
+    FILETIME creationTime;
+    FILETIME exitTime;
+    FILETIME kernelTime;
+    FILETIME userTime;
+    if ( ::GetProcessTimes( hProcess, &creationTime, &exitTime, &kernelTime, &userTime ) == TRUE )
+    {
+        cpuUseInfo->uptimeInMs = (UInt64) GetDurationSinceFiletimeInMs( &creationTime );
+        cpuUseInfo->overallCpuConsumptionPercentage = 0; // <- todo
+        
+        ::CloseHandle( hProcess );
+        return OSWRAP_TRUE;
+    }
+
+    ::CloseHandle( hProcess );
     return OSWRAP_FALSE;
 
     #elif ( ( GUCEF_PLATFORM == GUCEF_PLATFORM_LINUX ) || ( GUCEF_PLATFORM == GUCEF_PLATFORM_ANDROID ) )
