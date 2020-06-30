@@ -92,7 +92,8 @@ class Udp2KafkaChannel : public CORE::CTaskConsumer ,
                          private RdKafka::EventCb ,
                          private RdKafka::DeliveryReportCb ,
                          private RdKafka::ConsumeCb ,
-                         private RdKafka::RebalanceCb
+                         private RdKafka::RebalanceCb ,
+                         private RdKafka::OffsetCommitCb
 {
     public:
 
@@ -144,8 +145,10 @@ class Udp2KafkaChannel : public CORE::CTaskConsumer ,
         CORE::CString consumerModeStartOffset;
         CORE::CString consumerModeGroupId;
         HostAddressVector consumerModeUdpDestinations;
-        StringMap kafkaGlobalConfigSettings;
-        StringMap kafkaTopicConfigSettings;
+        StringMap kafkaProducerGlobalConfigSettings;
+        StringMap kafkaConsumerGlobalConfigSettings;
+        StringMap kafkaProducerTopicConfigSettings;
+        StringMap kafkaConsumerTopicConfigSettings;
         std::string kafkaMsgHeaderUsedForFiltering;
         std::string kafkaMsgValueUsedForFiltering;
         bool addUdpOriginKafkaMsgHeader;
@@ -189,6 +192,24 @@ class Udp2KafkaChannel : public CORE::CTaskConsumer ,
                                RdKafka::ErrorCode err                            ,
                                std::vector<RdKafka::TopicPartition*>& partitions );
 
+  /**
+   * @brief Set offset commit callback for use with consumer groups
+   *
+   * The results of automatic or manual offset commits will be scheduled
+   * for this callback and is served by RdKafka::KafkaConsumer::consume().
+   *
+   * If no partitions had valid offsets to commit this callback will be called
+   * with \p err == ERR__NO_OFFSET which is not to be considered an error.
+   *
+   * The \p offsets list contains per-partition information:
+   *   - \c topic      The topic committed
+   *   - \c partition  The partition committed
+   *   - \c offset:    Committed offset (attempted)
+   *   - \c err:       Commit error
+   */
+    virtual void offset_commit_cb( RdKafka::ErrorCode err                         ,
+                                   std::vector<RdKafka::TopicPartition*>& offsets );
+
     bool UdpTransmit( RdKafka::Message& message );
 
     void
@@ -227,7 +248,13 @@ class Udp2KafkaChannel : public CORE::CTaskConsumer ,
 
     CORE::UInt32 GetKafkaMsgsReceivedCounter( bool resetCounter );
 
-    static CORE::Int64 ConvertKafkaConsumerStartOffset( const CORE::CString& startOffsetDescription );
+    CORE::Int64 ConvertKafkaConsumerStartOffset( const CORE::CString& startOffsetDescription ,
+                                                 CORE::Int32 partitionId                     ,
+                                                 CORE::Int32 timeoutInMs                     );
+
+    CORE::Int64 ConvertKafkaConsumerStartOffset( CORE::Int64 startOffsetDescription ,
+                                                 CORE::Int32 partitionId            ,
+                                                 CORE::Int32 timeoutInMs            );
 
     static CORE::CString ConvertKafkaConsumerStartOffset( CORE::Int64 offset );
     
@@ -243,8 +270,10 @@ class Udp2KafkaChannel : public CORE::CTaskConsumer ,
     typedef std::deque< COMCORE::CUDPSocket::TUDPPacketRecievedEventData > TUDPPacketQueue;
     typedef ChannelSettings::HostAddressVector HostAddressVector;
 
-    RdKafka::Conf* m_kafkaConf;
-    RdKafka::Conf* m_kafkaTopicConf;
+    RdKafka::Conf* m_kafkaProducerConf;
+    RdKafka::Conf* m_kafkaConsumerConf;
+    RdKafka::Conf* m_kafkaProducerTopicConf;
+    RdKafka::Conf* m_kafkaConsumerTopicConf;
     RdKafka::Producer* m_kafkaProducer;
     RdKafka::Topic* m_kafkaProducerTopic;
     RdKafka::KafkaConsumer* m_kafkaConsumer;
@@ -259,6 +288,7 @@ class Udp2KafkaChannel : public CORE::CTaskConsumer ,
     CORE::UInt32 m_kafkaMessagesReceived;
     HostAddressVector m_kafkaBrokers;
     std::string m_producerHostname;
+    bool m_firstPartitionAssignment;
 };
 
 /*-------------------------------------------------------------------------*/

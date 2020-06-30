@@ -66,8 +66,10 @@ Udp2KafkaChannel::Udp2KafkaChannel()
     , RdKafka::DeliveryReportCb()
     , RdKafka::ConsumeCb()
     , RdKafka::RebalanceCb()
-    , m_kafkaConf( GUCEF_NULL )
-    , m_kafkaTopicConf( GUCEF_NULL )
+    , m_kafkaProducerConf( GUCEF_NULL )
+    , m_kafkaConsumerConf( GUCEF_NULL )
+    , m_kafkaProducerTopicConf( GUCEF_NULL )
+    , m_kafkaConsumerTopicConf( GUCEF_NULL )
     , m_kafkaProducer( GUCEF_NULL )
     , m_kafkaProducerTopic( GUCEF_NULL )
     , m_kafkaConsumer( GUCEF_NULL )
@@ -81,6 +83,7 @@ Udp2KafkaChannel::Udp2KafkaChannel()
     , m_kafkaMessagesReceived( 0 )
     , m_kafkaBrokers()
     , m_producerHostname( CORE::GetHostname() )
+    , m_firstPartitionAssignment( true )
 {GUCEF_TRACE;
 
     RegisterEventHandlers();
@@ -94,8 +97,10 @@ Udp2KafkaChannel::Udp2KafkaChannel( const Udp2KafkaChannel& src )
     , RdKafka::DeliveryReportCb()
     , RdKafka::ConsumeCb()
     , RdKafka::RebalanceCb()
-    , m_kafkaConf( GUCEF_NULL )
-    , m_kafkaTopicConf( GUCEF_NULL )
+    , m_kafkaProducerConf( GUCEF_NULL )
+    , m_kafkaConsumerConf( GUCEF_NULL )
+    , m_kafkaProducerTopicConf( GUCEF_NULL )
+    , m_kafkaConsumerTopicConf( GUCEF_NULL )
     , m_kafkaProducer( GUCEF_NULL )
     , m_kafkaProducerTopic( GUCEF_NULL )
     , m_kafkaConsumer( GUCEF_NULL )
@@ -109,6 +114,7 @@ Udp2KafkaChannel::Udp2KafkaChannel( const Udp2KafkaChannel& src )
     , m_kafkaMessagesReceived( 0 )
     , m_kafkaBrokers( src.m_kafkaBrokers )
     , m_producerHostname( CORE::GetHostname() )
+    , m_firstPartitionAssignment( true )
 {GUCEF_TRACE;
 
 }
@@ -173,8 +179,10 @@ Udp2KafkaChannel::ChannelSettings::ChannelSettings( void )
     , consumerModeStartOffset( "stored" )
     , consumerModeGroupId( "0" )
     , consumerModeUdpDestinations()
-    , kafkaGlobalConfigSettings()
-    , kafkaTopicConfigSettings()
+    , kafkaProducerGlobalConfigSettings()
+    , kafkaConsumerGlobalConfigSettings()
+    , kafkaProducerTopicConfigSettings()
+    , kafkaConsumerTopicConfigSettings()
     , kafkaMsgHeaderUsedForFiltering( KafkaMsgHeader_ProducerHostname )
     , kafkaMsgValueUsedForFiltering( CORE::GetHostname() )
     , addUdpOriginKafkaMsgHeader( true )
@@ -197,8 +205,10 @@ Udp2KafkaChannel::ChannelSettings::ChannelSettings( const ChannelSettings& src )
     , consumerModeStartOffset( src.consumerModeStartOffset )
     , consumerModeGroupId( src.consumerModeGroupId )
     , consumerModeUdpDestinations( src.consumerModeUdpDestinations )
-    , kafkaGlobalConfigSettings( src.kafkaGlobalConfigSettings )
-    , kafkaTopicConfigSettings( src.kafkaTopicConfigSettings )
+    , kafkaProducerGlobalConfigSettings( src.kafkaProducerGlobalConfigSettings )
+    , kafkaConsumerGlobalConfigSettings( src.kafkaConsumerGlobalConfigSettings )
+    , kafkaProducerTopicConfigSettings( src.kafkaProducerTopicConfigSettings )
+    , kafkaConsumerTopicConfigSettings( src.kafkaConsumerTopicConfigSettings )
     , kafkaMsgHeaderUsedForFiltering( src.kafkaMsgHeaderUsedForFiltering )
     , kafkaMsgValueUsedForFiltering( src.kafkaMsgValueUsedForFiltering )
     , addUdpOriginKafkaMsgHeader( src.addUdpOriginKafkaMsgHeader )
@@ -226,8 +236,10 @@ Udp2KafkaChannel::ChannelSettings::operator=( const ChannelSettings& src )
         consumerModeStartOffset = src.consumerModeStartOffset;
         consumerModeGroupId = src.consumerModeGroupId;
         consumerModeUdpDestinations = src.consumerModeUdpDestinations;
-        kafkaGlobalConfigSettings = src.kafkaGlobalConfigSettings;
-        kafkaTopicConfigSettings = src.kafkaTopicConfigSettings;
+        kafkaProducerGlobalConfigSettings = src.kafkaProducerGlobalConfigSettings;
+        kafkaProducerTopicConfigSettings = src.kafkaProducerTopicConfigSettings;
+        kafkaConsumerGlobalConfigSettings = src.kafkaConsumerGlobalConfigSettings;
+        kafkaConsumerTopicConfigSettings = src.kafkaConsumerTopicConfigSettings;
         kafkaMsgHeaderUsedForFiltering = src.kafkaMsgHeaderUsedForFiltering;
         kafkaMsgValueUsedForFiltering = src.kafkaMsgValueUsedForFiltering;
         addUdpOriginKafkaMsgHeader = src.addUdpOriginKafkaMsgHeader;
@@ -468,6 +480,37 @@ Udp2KafkaChannel::UdpTransmit( RdKafka::Message& message )
 /*-------------------------------------------------------------------------*/
 
 void 
+Udp2KafkaChannel::offset_commit_cb( RdKafka::ErrorCode err                         ,
+                                    std::vector<RdKafka::TopicPartition*>& offsets )
+{GUCEF_TRACE;
+
+    if ( RdKafka::ERR_NO_ERROR != err && RdKafka::ERR__NO_OFFSET != err )
+    {
+        std::string errStr = RdKafka::err2str( err );
+        CORE::CString commitInfo = "Udp2KafkaChannel:offset_commit_cb: Member ID \"" + m_kafkaConsumer->memberid() + "\": Code: " + errStr + " : ";
+        for ( unsigned int i=0; i<offsets.size(); ++i )
+        {
+            commitInfo += "Topic \"" + offsets[ i ]->topic() + "\" is at partition \"" + CORE::Int32ToString( offsets[ i ]->partition() ).STL_String() + "\" at offset \"" + ConvertKafkaConsumerStartOffset( offsets[ i ]->offset() ).STL_String() + "\". ";
+        }
+        GUCEF_ERROR_LOG( CORE::LOGLEVEL_NORMAL, commitInfo );
+    }
+    #ifdef GUCEF_DEBUG_MODE
+    else
+    {
+        std::string errStr = RdKafka::err2str( err );
+        CORE::CString commitInfo = "Udp2KafkaChannel:offset_commit_cb: Member ID \"" + m_kafkaConsumer->memberid() + "\": Code: " + errStr + " : ";
+        for ( unsigned int i=0; i<offsets.size(); ++i )
+        {
+            commitInfo += "Topic \"" + offsets[ i ]->topic() + "\" is at partition \"" + CORE::Int32ToString( offsets[ i ]->partition() ).STL_String() + "\" at offset \"" + ConvertKafkaConsumerStartOffset( offsets[ i ]->offset() ).STL_String() + "\". ";
+        }
+        GUCEF_DEBUG_LOG( CORE::LOGLEVEL_NORMAL, commitInfo );
+    }
+    #endif
+}
+
+/*-------------------------------------------------------------------------*/
+
+void 
 Udp2KafkaChannel::rebalance_cb( RdKafka::KafkaConsumer* consumer                  ,
                                 RdKafka::ErrorCode err                            ,
                                 std::vector<RdKafka::TopicPartition*>& partitions )
@@ -476,11 +519,32 @@ Udp2KafkaChannel::rebalance_cb( RdKafka::KafkaConsumer* consumer                
     std::string actionStr = "<UNKNOWN>";
     if ( err == RdKafka::ERR__ASSIGN_PARTITIONS ) 
     {
-        //for ( unsigned int i=0; i<partitions.size(); ++i )
+        if ( m_firstPartitionAssignment )
+        {
+            RdKafka::ErrorCode assignSuccess = consumer->assign( partitions );
+            for ( unsigned int i=0; i<partitions.size(); ++i )
+            {
+                CORE::Int64 startOffset = ConvertKafkaConsumerStartOffset( m_channelSettings.consumerModeStartOffset, partitions[ i ]->partition(), 10000 );    
+                partitions[ i ]->set_offset( startOffset );
+            }
+            //consumer->offsetsForTimes()
+            m_firstPartitionAssignment = false;
+        }
+        RdKafka::ErrorCode assignSuccess = consumer->assign( partitions );
+        if ( RdKafka::ERR_NO_ERROR != assignSuccess )
+            GUCEF_ERROR_LOG( CORE::LOGLEVEL_IMPORTANT, "Udp2KafkaChannel:rebalance_cb: Failed to assign new partitions" );
+
+        //if ( m_firstPartitionAssignment )
         //{
-        //    partitions[ i ]->set_offset(  );
+        //    for ( unsigned int i=0; i<partitions.size(); ++i )
+        //    {
+        //        partitions[ i ]->set_offset( RdKafka::Topic::OFFSET_BEGINNING );
+        //        err = consumer->seek( *partitions[i], 10000 );
+        //    }
+        //    m_firstPartitionAssignment = false;    
         //}
-        consumer->assign( partitions );
+        RdKafka::ErrorCode ec = consumer->offsets_store( partitions );
+        RdKafka::ErrorCode ec2 = consumer->commitSync( this );
         actionStr = "ASSIGN_PARTITIONS";
     } 
     else
@@ -563,6 +627,11 @@ Udp2KafkaChannel::consume_cb( RdKafka::Message& message, void* opaque )
         case RdKafka::ERR__UNKNOWN_TOPIC:
         {
             GUCEF_ERROR_LOG( CORE::LOGLEVEL_IMPORTANT, "Kafka consume error: UNKNOWN_TOPIC: " + message.errstr() );
+            break;
+        }
+        case RdKafka::ERR__MAX_POLL_EXCEEDED:
+        {
+            GUCEF_ERROR_LOG( CORE::LOGLEVEL_IMPORTANT, "Kafka consume error: MAX_POLL_EXCEEDED: " + message.errstr() );
             break;
         }
         default:
@@ -840,28 +909,120 @@ Udp2KafkaChannel::OnUDPPacketRecieved( CORE::CNotifier* notifier   ,
 /*-------------------------------------------------------------------------*/
 
 CORE::Int64
-Udp2KafkaChannel::ConvertKafkaConsumerStartOffset( const CORE::CString& startOffsetDescription )
+Udp2KafkaChannel::ConvertKafkaConsumerStartOffset( const CORE::CString& startOffsetDescription ,
+                                                   CORE::Int32 partitionId                     ,
+                                                   CORE::Int32 timeoutInMs                     )
 {GUCEF_TRACE;
 
     CORE::CString testString = startOffsetDescription.Lowercase();
     if ( testString.IsNULLOrEmpty() )
     {
-        return RdKafka::Topic::OFFSET_STORED; 
+        testString = "stored"; 
     }
+
     if ( "beginning" == testString )
     {
-        return RdKafka::Topic::OFFSET_BEGINNING;
+        return ConvertKafkaConsumerStartOffset( RdKafka::Topic::OFFSET_BEGINNING, partitionId, timeoutInMs );
     }
     if ( "end" == testString )
     {
-        return RdKafka::Topic::OFFSET_END;
+        return ConvertKafkaConsumerStartOffset( RdKafka::Topic::OFFSET_END, partitionId, timeoutInMs );
     }
     if ( "stored" == testString )
     {
+        return ConvertKafkaConsumerStartOffset( RdKafka::Topic::OFFSET_STORED, partitionId, timeoutInMs );
+    }
+
+    return ConvertKafkaConsumerStartOffset( CORE::StringToInt64( testString ), partitionId, timeoutInMs );
+}
+
+/*-------------------------------------------------------------------------*/
+
+CORE::Int64
+Udp2KafkaChannel::ConvertKafkaConsumerStartOffset( CORE::Int64 startOffsetDescription ,
+                                                   CORE::Int32 partitionId            ,
+                                                   CORE::Int32 timeoutInMs            )
+{GUCEF_TRACE;
+
+    if ( RdKafka::Topic::OFFSET_BEGINNING == startOffsetDescription )
+    {
+        int64_t high = 0; int64_t low = 0;
+        RdKafka::ErrorCode err = m_kafkaConsumer->query_watermark_offsets( m_channelSettings.channelTopicName, partitionId, &low, &high, timeoutInMs );
+        if ( RdKafka::ERR_NO_ERROR == err )
+        {
+            GUCEF_LOG( CORE::LOGLEVEL_IMPORTANT, "Udp2KafkaChannel: Converted offset description \"BEGINNING\" into offset " + CORE::Int64ToString( low ) + " for partition " + CORE::Int32ToString( partitionId ) );
+            return low;
+        }
+
+        std::string errStr = RdKafka::err2str( err );
+        GUCEF_ERROR_LOG( CORE::LOGLEVEL_IMPORTANT, "Udp2KafkaChannel: Failed to convert offset description \"BEGINNING\" into offset for partition " + 
+                CORE::Int32ToString( partitionId ) + ". ErrorCode : " + errStr );
+        return RdKafka::Topic::OFFSET_INVALID;
+    }
+    if ( RdKafka::Topic::OFFSET_END == startOffsetDescription )
+    {
+        int64_t high = 0; int64_t low = 0;
+        RdKafka::ErrorCode err = m_kafkaConsumer->query_watermark_offsets( m_channelSettings.channelTopicName, partitionId, &low, &high, timeoutInMs );
+        if ( RdKafka::ERR_NO_ERROR == err )
+        {
+            GUCEF_LOG( CORE::LOGLEVEL_IMPORTANT, "Udp2KafkaChannel: Converted offset description \"END\" into offset " + CORE::Int64ToString( low ) + " for partition " + CORE::Int32ToString( partitionId ) );
+            return high;
+        }
+
+        std::string errStr = RdKafka::err2str( err );
+        GUCEF_ERROR_LOG( CORE::LOGLEVEL_IMPORTANT, "Udp2KafkaChannel: Failed to convert offset description \"END\" into offset for partition " + 
+                CORE::Int32ToString( partitionId ) + ". ErrorCode : " + errStr );
+        return RdKafka::Topic::OFFSET_INVALID;
+    }
+    if ( RdKafka::Topic::OFFSET_STORED == startOffsetDescription )
+    {
+        std::vector<RdKafka::TopicPartition*> partitions;
+        RdKafka::ErrorCode err = m_kafkaConsumer->assignment( partitions );
+        if ( RdKafka::ERR_NO_ERROR != err )
+        {
+            std::string errStr = RdKafka::err2str( err );
+            GUCEF_ERROR_LOG( CORE::LOGLEVEL_IMPORTANT, "Udp2KafkaChannel: Failed to convert offset description \"STORED\" into offset for partition " + 
+                    CORE::Int32ToString( partitionId ) + ". Cannot obtain partition assignment. ErrorCode : " + errStr );
+            return RdKafka::Topic::OFFSET_INVALID;
+        }
+        
+        err = m_kafkaConsumer->committed( partitions, timeoutInMs );
+        if ( RdKafka::ERR_NO_ERROR != err )
+        {
+            std::string errStr = RdKafka::err2str( err );
+            GUCEF_ERROR_LOG( CORE::LOGLEVEL_IMPORTANT, "Udp2KafkaChannel: Failed to convert offset description \"STORED\" into offset for partition " + 
+                    CORE::Int32ToString( partitionId ) + ". Cannot obtain commited offsets . ErrorCode : " + errStr );
+            return RdKafka::Topic::OFFSET_INVALID;
+        }
+
+        err = m_kafkaConsumer->position( partitions );
+        if ( RdKafka::ERR_NO_ERROR != err )
+        {
+            std::string errStr = RdKafka::err2str( err );
+            GUCEF_ERROR_LOG( CORE::LOGLEVEL_IMPORTANT, "Udp2KafkaChannel: Failed to convert offset description \"STORED\" into offset for partition " + 
+                    CORE::Int32ToString( partitionId ) + ". Cannot obtain commited offsets . ErrorCode : " + errStr );
+            return RdKafka::Topic::OFFSET_INVALID;
+        }
+
+        std::vector<RdKafka::TopicPartition*>::iterator i = partitions.begin(); 
+        while ( i != partitions.end() )
+        {
+            if ( (*i)->partition() == partitionId )
+            {
+                CORE::Int64 storedOffset = (*i)->offset();
+                GUCEF_LOG( CORE::LOGLEVEL_IMPORTANT, "Udp2KafkaChannel: Converted offset description \"STORED\" into offset " + 
+                        CORE::Int64ToString( storedOffset ) + " for partition " + CORE::Int32ToString( partitionId ) );
+                return storedOffset;
+            }      
+            ++i;
+        }
+        
+
         return RdKafka::Topic::OFFSET_STORED;
     }
 
-    return CORE::StringToInt64( testString );
+    // Assume its already a numeric offset
+    return startOffsetDescription;
 }
 
 /*-------------------------------------------------------------------------*/
@@ -909,47 +1070,47 @@ Udp2KafkaChannel::OnTaskStart( CORE::CICloneable* taskData )
     if ( m_kafkaBrokers.empty() )
         return false;
 
-    std::string errStr;
-    RdKafka::Conf* kafkaConf = RdKafka::Conf::create( RdKafka::Conf::CONF_GLOBAL );
-    kafkaConf->set( "metadata.broker.list", m_channelSettings.kafkaBrokers, errStr );
-	kafkaConf->set( "event_cb", static_cast< RdKafka::EventCb* >( this ), errStr );
-	kafkaConf->set( "dr_cb", static_cast< RdKafka::DeliveryReportCb* >( this ), errStr );
-    kafkaConf->set( "rebalance_cb", static_cast< RdKafka::RebalanceCb* >( this ), errStr );
-    ChannelSettings::StringMap::iterator m = m_channelSettings.kafkaGlobalConfigSettings.begin();
-    while ( m != m_channelSettings.kafkaGlobalConfigSettings.end() )
-    {
-        if ( RdKafka::Conf::CONF_OK != kafkaConf->set( (*m).first, (*m).second, errStr ) )
-        {
-		    GUCEF_ERROR_LOG( CORE::LOGLEVEL_IMPORTANT, "Udp2KafkaChannel:OnTaskStart: Failed to set Kafka global config entry \"" + 
-                    (*m).first + "\"=\"" + (*m).second + "\", error message: " + errStr );
-            ++m_kafkaErrorReplies;
-            return false;
-        }
-        ++m;
-    }
-    delete m_kafkaConf;
-    m_kafkaConf = kafkaConf;
-
-    RdKafka::Conf* kafkaTopicConfig = RdKafka::Conf::create( RdKafka::Conf::CONF_TOPIC );
-    m = m_channelSettings.kafkaTopicConfigSettings.begin();
-    while ( m != m_channelSettings.kafkaTopicConfigSettings.end() )
-    {
-        if ( RdKafka::Conf::CONF_OK != kafkaTopicConfig->set( (*m).first, (*m).second, errStr ) )
-        {
-		    GUCEF_ERROR_LOG( CORE::LOGLEVEL_IMPORTANT, "Udp2KafkaChannel:OnTaskStart: Failed to set Kafka topic config entry \"" + 
-                    (*m).first + "\"=\"" + (*m).second + "\", error message: " + errStr );
-            ++m_kafkaErrorReplies;
-            return false;
-        }
-        ++m;
-    
-    }
-    delete m_kafkaTopicConf;
-    m_kafkaTopicConf = kafkaTopicConfig;
-
 	if ( TChannelMode::KAFKA_PRODUCER == m_channelSettings.mode || TChannelMode::KAFKA_PRODUCER_AND_CONSUMER == m_channelSettings.mode )
     {
-        RdKafka::Producer* producer = RdKafka::Producer::create( m_kafkaConf, errStr );
+        std::string errStr;
+        RdKafka::Conf* kafkaConf = RdKafka::Conf::create( RdKafka::Conf::CONF_GLOBAL );
+        kafkaConf->set( "metadata.broker.list", m_channelSettings.kafkaBrokers, errStr );
+	    kafkaConf->set( "event_cb", static_cast< RdKafka::EventCb* >( this ), errStr );
+	    kafkaConf->set( "dr_cb", static_cast< RdKafka::DeliveryReportCb* >( this ), errStr );
+        kafkaConf->set( "rebalance_cb", static_cast< RdKafka::RebalanceCb* >( this ), errStr );
+        ChannelSettings::StringMap::iterator m = m_channelSettings.kafkaProducerGlobalConfigSettings.begin();
+        while ( m != m_channelSettings.kafkaProducerGlobalConfigSettings.end() )
+        {
+            if ( RdKafka::Conf::CONF_OK != kafkaConf->set( (*m).first, (*m).second, errStr ) )
+            {
+		        GUCEF_ERROR_LOG( CORE::LOGLEVEL_IMPORTANT, "Udp2KafkaChannel:OnTaskStart: Failed to set Kafka Producer global config entry \"" + 
+                        (*m).first + "\"=\"" + (*m).second + "\", error message: " + errStr );
+                ++m_kafkaErrorReplies;
+                return false;
+            }
+            ++m;
+        }
+        delete m_kafkaProducerConf;
+        m_kafkaProducerConf = kafkaConf;
+        
+        RdKafka::Conf* kafkaProducerTopicConfig = RdKafka::Conf::create( RdKafka::Conf::CONF_TOPIC );
+        m = m_channelSettings.kafkaProducerTopicConfigSettings.begin();
+        while ( m != m_channelSettings.kafkaProducerTopicConfigSettings.end() )
+        {
+            if ( RdKafka::Conf::CONF_OK != kafkaProducerTopicConfig->set( (*m).first, (*m).second, errStr ) )
+            {
+		        GUCEF_ERROR_LOG( CORE::LOGLEVEL_IMPORTANT, "Udp2KafkaChannel:OnTaskStart: Failed to set Kafka Producer topic config entry \"" + 
+                        (*m).first + "\"=\"" + (*m).second + "\", error message: " + errStr );
+                ++m_kafkaErrorReplies;
+                return false;
+            }
+            ++m;
+    
+        }
+        delete m_kafkaProducerTopicConf;
+        m_kafkaProducerTopicConf = kafkaProducerTopicConfig;
+        
+        RdKafka::Producer* producer = RdKafka::Producer::create( m_kafkaProducerTopicConf, errStr );
 	    if ( producer == nullptr ) 
         {
 		    GUCEF_ERROR_LOG( CORE::LOGLEVEL_IMPORTANT, "Udp2KafkaChannel:OnTaskStart: Failed to create Kafka producerfor topic \"" + 
@@ -961,7 +1122,7 @@ Udp2KafkaChannel::OnTaskStart( CORE::CICloneable* taskData )
         GUCEF_LOG( CORE::LOGLEVEL_NORMAL, "Udp2KafkaChannel:OnTaskStart: Successfully created Kafka producer for topic \"" + 
             m_channelSettings.channelTopicName + "\"" );
         
-        RdKafka::Topic* topic = RdKafka::Topic::create( m_kafkaProducer, m_channelSettings.channelTopicName, kafkaTopicConfig, errStr );
+        RdKafka::Topic* topic = RdKafka::Topic::create( m_kafkaProducer, m_channelSettings.channelTopicName, m_kafkaProducerTopicConf, errStr );
 	    if ( topic == nullptr ) 
         {
 		    GUCEF_ERROR_LOG( CORE::LOGLEVEL_IMPORTANT, "Udp2KafkaChannel:OnTaskStart: Failed to obtain Kafka Producer Topic handle for topic \"" + 
@@ -975,18 +1136,95 @@ Udp2KafkaChannel::OnTaskStart( CORE::CICloneable* taskData )
 
     if ( TChannelMode::KAFKA_CONSUMER == m_channelSettings.mode || TChannelMode::KAFKA_PRODUCER_AND_CONSUMER == m_channelSettings.mode )
     {
+        std::string errStr;
+        RdKafka::Conf* kafkaConf = RdKafka::Conf::create( RdKafka::Conf::CONF_GLOBAL );
+        kafkaConf->set( "metadata.broker.list", m_channelSettings.kafkaBrokers, errStr );
+	    kafkaConf->set( "event_cb", static_cast< RdKafka::EventCb* >( this ), errStr );
+	    kafkaConf->set( "dr_cb", static_cast< RdKafka::DeliveryReportCb* >( this ), errStr );
+        kafkaConf->set( "rebalance_cb", static_cast< RdKafka::RebalanceCb* >( this ), errStr );
+        ChannelSettings::StringMap::iterator m = m_channelSettings.kafkaProducerGlobalConfigSettings.begin();
+        while ( m != m_channelSettings.kafkaProducerGlobalConfigSettings.end() )
+        {
+            if ( RdKafka::Conf::CONF_OK != kafkaConf->set( (*m).first, (*m).second, errStr ) )
+            {
+		        GUCEF_ERROR_LOG( CORE::LOGLEVEL_IMPORTANT, "Udp2KafkaChannel:OnTaskStart: Failed to set Kafka Producer global config entry \"" + 
+                        (*m).first + "\"=\"" + (*m).second + "\", error message: " + errStr );
+                ++m_kafkaErrorReplies;
+                return false;
+            }
+            ++m;
+        }
+        delete m_kafkaConsumerConf;
+        m_kafkaConsumerConf = kafkaConf;
+       
         #ifdef GUCEF_DEBUG_MODE
-        m_kafkaConf->set( "enable.partition.eof", "true", errStr );
+        m_kafkaConsumerConf->set( "enable.partition.eof", "true", errStr );
         #endif
+
+        RdKafka::Conf* kafkaConsumerTopicConfig = RdKafka::Conf::create( RdKafka::Conf::CONF_TOPIC );
+        m = m_channelSettings.kafkaConsumerTopicConfigSettings.begin();
+        while ( m != m_channelSettings.kafkaConsumerTopicConfigSettings.end() )
+        {
+            if ( RdKafka::Conf::CONF_OK != kafkaConsumerTopicConfig->set( (*m).first, (*m).second, errStr ) )
+            {
+		        GUCEF_ERROR_LOG( CORE::LOGLEVEL_IMPORTANT, "Udp2KafkaChannel:OnTaskStart: Failed to set Kafka Producer topic config entry \"" + 
+                        (*m).first + "\"=\"" + (*m).second + "\", error message: " + errStr );
+                ++m_kafkaErrorReplies;
+                return false;
+            }
+            ++m;
+    
+        }
+        delete m_kafkaConsumerTopicConf;
+        m_kafkaConsumerTopicConf = kafkaConsumerTopicConfig;
         
-        if ( RdKafka::Conf::CONF_OK != m_kafkaConf->set( "group.id", m_channelSettings.consumerModeGroupId, errStr ) )
+        CORE::CString testString = m_channelSettings.consumerModeStartOffset.Lowercase();
+        if ( "beginning" == testString )
+        {
+            if ( RdKafka::Conf::CONF_OK != m_kafkaConsumerTopicConf->set( "auto.offset.reset", "earliest", errStr ) )
+            {
+		        GUCEF_ERROR_LOG( CORE::LOGLEVEL_IMPORTANT, "Udp2KafkaChannel:OnTaskStart: Failed to set Kafka consumer topic config's auto.offset.reset, error message: " + errStr );
+                ++m_kafkaErrorReplies;
+                return false;
+            }
+        }
+        if ( "end" == testString )
+        {
+            if ( RdKafka::Conf::CONF_OK != m_kafkaConsumerTopicConf->set( "auto.offset.reset", "latest", errStr ) )
+            {
+		        GUCEF_ERROR_LOG( CORE::LOGLEVEL_IMPORTANT, "Udp2KafkaChannel:OnTaskStart: Failed to set Kafka consumer topic config's auto.offset.reset, error message: " + errStr );
+                ++m_kafkaErrorReplies;
+                return false;
+            }
+        }
+
+        if ( RdKafka::Conf::CONF_OK != m_kafkaConsumerConf->set( "enable.auto.commit", "false", errStr ) )
+        {
+		    GUCEF_ERROR_LOG( CORE::LOGLEVEL_IMPORTANT, "Udp2KafkaChannel:OnTaskStart: Failed to set Kafka consumer global config's enable.auto.commit, error message: " + errStr );
+            ++m_kafkaErrorReplies;
+            return false;
+        }
+        if ( RdKafka::Conf::CONF_OK != m_kafkaConsumerConf->set( "enable.auto.offset.store", "false", errStr ) )
+        {
+		    GUCEF_ERROR_LOG( CORE::LOGLEVEL_IMPORTANT, "Udp2KafkaChannel:OnTaskStart: Failed to set Kafka consumer global config's enable.auto.offset.store, error message: " + errStr );
+            ++m_kafkaErrorReplies;
+            return false;
+        }
+
+        if ( RdKafka::Conf::CONF_OK != m_kafkaConsumerConf->set( "default_topic_conf", m_kafkaConsumerTopicConf, errStr ) )
+        {
+		    GUCEF_ERROR_LOG( CORE::LOGLEVEL_IMPORTANT, "Udp2KafkaChannel:OnTaskStart: Failed to set Kafka consumer default topic config, error message: " + errStr );
+            ++m_kafkaErrorReplies;
+            return false;
+        }
+        if ( RdKafka::Conf::CONF_OK != m_kafkaConsumerConf->set( "group.id", m_channelSettings.consumerModeGroupId, errStr ) )
         {
 		    GUCEF_ERROR_LOG( CORE::LOGLEVEL_IMPORTANT, "Udp2KafkaChannel:OnTaskStart: Failed to set Kafka consumer group id to \"" + 
                 m_channelSettings.consumerModeGroupId + "\", error message: " + errStr );
             ++m_kafkaErrorReplies;
             return false;
         }
-        RdKafka::KafkaConsumer* consumer = RdKafka::KafkaConsumer::create( m_kafkaConf, errStr );
+        RdKafka::KafkaConsumer* consumer = RdKafka::KafkaConsumer::create( m_kafkaConsumerConf, errStr );
 	    if ( consumer == nullptr ) 
         {
 		    GUCEF_ERROR_LOG( CORE::LOGLEVEL_IMPORTANT, "Udp2KafkaChannel:OnTaskStart: Failed to create Kafka consumer, error message: " + errStr );
@@ -1074,6 +1312,16 @@ Udp2KafkaChannel::OnTaskCycle( CORE::CICloneable* taskData )
         } 
     }
 
+    //if ( m_kafkaErrorReplies > 0 )
+    //{
+    //    HostAddressVector::iterator h = m_kafkaBrokers.begin();
+    //    while ( h != m_kafkaBrokers.end() )
+    //    {
+    //        (*h).Refresh();
+    //        ++h;
+    //    }    
+    //}
+
     // We are never 'done' so return false
     return false;
 }
@@ -1139,10 +1387,14 @@ Udp2KafkaChannel::OnTaskEnd( CORE::CICloneable* taskData )
         m_kafkaConsumer = GUCEF_NULL;
     }
 
-    delete m_kafkaTopicConf;
-    m_kafkaTopicConf =  GUCEF_NULL;
-    delete m_kafkaConf;
-    m_kafkaConf =  GUCEF_NULL;
+    delete m_kafkaProducerTopicConf;
+    m_kafkaProducerTopicConf =  GUCEF_NULL;
+    delete m_kafkaConsumerTopicConf;
+    m_kafkaConsumerTopicConf =  GUCEF_NULL;
+    delete m_kafkaProducerConf;
+    m_kafkaProducerConf =  GUCEF_NULL;
+    delete m_kafkaConsumerConf;
+    m_kafkaConsumerConf =  GUCEF_NULL;
 
     delete m_metricsTimer;
     m_metricsTimer = GUCEF_NULL;
@@ -1499,7 +1751,7 @@ Udp2Kafka::LoadConfig( const CORE::CValueList& appConfig   ,
         channelSettings.consumerModeStartOffset = CORE::ResolveVars( appConfig.GetValueAlways( settingName, "stored" ) ).Lowercase();
 
         settingName = settingPrefix + ".ConsumerMode.GroupID";
-        channelSettings.consumerModeStartOffset = CORE::ResolveVars( appConfig.GetValueAlways( settingName, "0" ) );
+        channelSettings.consumerModeGroupId = CORE::ResolveVars( appConfig.GetValueAlways( settingName, "0" ) );
 
         channelSettings.consumerModeUdpDestinations = consumerModeUdpDestinations;
         settingName = settingPrefix + ".ConsumerMode.UdpDestinations";
@@ -1519,7 +1771,7 @@ Udp2Kafka::LoadConfig( const CORE::CValueList& appConfig   ,
             ++n;
         }
 
-        settingName = settingPrefix + ".KafkaGlobalConfig.";
+        settingName = settingPrefix + ".KafkaProducerGlobalConfig.";
         CORE::CValueList::TStringVector kafkaGlobalConfigKeys = appConfig.GetKeysWithWildcardKeyMatch( settingName + '*' );
         n = kafkaGlobalConfigKeys.begin();
         while ( n != kafkaGlobalConfigKeys.end() )
@@ -1528,11 +1780,25 @@ Udp2Kafka::LoadConfig( const CORE::CValueList& appConfig   ,
             CORE::CString kafkaGlobalConfigSettingValue = appConfig.GetValueAlways( (*n) );
             if ( !kafkaGlobalConfigSettingKey.IsNULLOrEmpty() && !kafkaGlobalConfigSettingValue.IsNULLOrEmpty() )
             {
-                channelSettings.kafkaGlobalConfigSettings[ kafkaGlobalConfigSettingKey ] = kafkaGlobalConfigSettingValue;
+                channelSettings.kafkaProducerGlobalConfigSettings[ kafkaGlobalConfigSettingKey ] = kafkaGlobalConfigSettingValue;
             }
             ++n;
         }
-        settingName = settingPrefix + ".KafkaTopicConfig.";
+        settingName = settingPrefix + ".KafkaConsumerGlobalConfig.";
+        kafkaGlobalConfigKeys = appConfig.GetKeysWithWildcardKeyMatch( settingName + '*' );
+        n = kafkaGlobalConfigKeys.begin();
+        while ( n != kafkaGlobalConfigKeys.end() )
+        {
+            CORE::CString kafkaGlobalConfigSettingKey = (*n).CutChars( settingName.Length(), true, 0 );
+            CORE::CString kafkaGlobalConfigSettingValue = appConfig.GetValueAlways( (*n) );
+            if ( !kafkaGlobalConfigSettingKey.IsNULLOrEmpty() && !kafkaGlobalConfigSettingValue.IsNULLOrEmpty() )
+            {
+                channelSettings.kafkaConsumerGlobalConfigSettings[ kafkaGlobalConfigSettingKey ] = kafkaGlobalConfigSettingValue;
+            }
+            ++n;
+        }
+
+        settingName = settingPrefix + ".KafkaProducerTopicConfig.";
         CORE::CValueList::TStringVector kafkaTopicConfigKeys = appConfig.GetKeysWithWildcardKeyMatch( settingName + '*' );
         n = kafkaTopicConfigKeys.begin();
         while ( n != kafkaTopicConfigKeys.end() )
@@ -1541,7 +1807,20 @@ Udp2Kafka::LoadConfig( const CORE::CValueList& appConfig   ,
             CORE::CString kafkaTopicConfigSettingValue = appConfig.GetValueAlways( (*n) );
             if ( !kafkaTopicConfigSettingKey.IsNULLOrEmpty() && !kafkaTopicConfigSettingValue.IsNULLOrEmpty() )
             {
-                channelSettings.kafkaTopicConfigSettings[ kafkaTopicConfigSettingKey ] = kafkaTopicConfigSettingValue;
+                channelSettings.kafkaProducerTopicConfigSettings[ kafkaTopicConfigSettingKey ] = kafkaTopicConfigSettingValue;
+            }
+            ++n;
+        }
+        settingName = settingPrefix + ".KafkaConsumerTopicConfig.";
+        kafkaTopicConfigKeys = appConfig.GetKeysWithWildcardKeyMatch( settingName + '*' );
+        n = kafkaTopicConfigKeys.begin();
+        while ( n != kafkaTopicConfigKeys.end() )
+        {
+            CORE::CString kafkaTopicConfigSettingKey = (*n).CutChars( settingName.Length(), true, 0 );
+            CORE::CString kafkaTopicConfigSettingValue = appConfig.GetValueAlways( (*n) );
+            if ( !kafkaTopicConfigSettingKey.IsNULLOrEmpty() && !kafkaTopicConfigSettingValue.IsNULLOrEmpty() )
+            {
+                channelSettings.kafkaConsumerTopicConfigSettings[ kafkaTopicConfigSettingKey ] = kafkaTopicConfigSettingValue;
             }
             ++n;
         }
