@@ -383,6 +383,15 @@ CPulseGenerator::GetTickCountAtLastPulse( void ) const
 
 /*--------------------------------------------------------------------------*/
 
+UInt64
+CPulseGenerator::GetTickCount( void )
+{GUCEF_TRACE;
+    
+    return MT::PrecisionTickCount();
+}
+
+/*--------------------------------------------------------------------------*/
+
 void
 CPulseGenerator::SetPulseGeneratorDriver( CIPulseGeneratorDriver* driver )
 {GUCEF_TRACE;
@@ -485,6 +494,17 @@ CPulseGenerator::Unlock( void ) const
 {GUCEF_TRACE;
 
     return m_mutex.Unlock();
+}
+
+/*--------------------------------------------------------------------------*/
+
+Float64
+CPulseGenerator::GetTimeSinceTickCountInMilliSecs( UInt64 sinceTickCount ) const
+{
+    UInt64 tickCount = MT::PrecisionTickCount();
+    UInt64 deltaTicks = tickCount - sinceTickCount;
+    Float64 deltaMilliSecs = deltaTicks / m_ticksPerMs;
+    return deltaMilliSecs;   
 }
 
 /*--------------------------------------------------------------------------*/

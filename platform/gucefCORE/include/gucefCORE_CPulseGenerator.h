@@ -101,6 +101,10 @@ class GUCEF_CORE_PUBLIC_CPP CPulseGenerator : public CNotifier
 
     UInt64 GetTickCountAtLastPulse( void ) const;
 
+    static UInt64 GetTickCount( void );
+
+    Float64 GetTimeSinceTickCountInMilliSecs( UInt64 sinceTickCount ) const;
+
     void SetPulseGeneratorDriver( CIPulseGeneratorDriver* driver );
 
     CIPulseGeneratorDriver* GetPulseGeneratorDriver( void ) const;

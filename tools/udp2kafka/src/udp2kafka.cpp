@@ -81,9 +81,12 @@ Udp2KafkaChannel::Udp2KafkaChannel()
     , m_kafkaErrorReplies( 0 )
     , m_kafkaMsgsTransmitted( 0 )
     , m_kafkaMessagesReceived( 0 )
+    , m_kafkaMessagesFiltered( 0 )
     , m_kafkaBrokers()
     , m_producerHostname( CORE::GetHostname() )
     , m_firstPartitionAssignment( true )
+    , m_consumerOffsets()
+    , m_tickCountAtLastOffsetCommit( 0 )
 {GUCEF_TRACE;
 
     RegisterEventHandlers();
@@ -112,9 +115,12 @@ Udp2KafkaChannel::Udp2KafkaChannel( const Udp2KafkaChannel& src )
     , m_kafkaErrorReplies( 0 )
     , m_kafkaMsgsTransmitted( 0 )
     , m_kafkaMessagesReceived( 0 )
+    , m_kafkaMessagesFiltered( 0 )
     , m_kafkaBrokers( src.m_kafkaBrokers )
     , m_producerHostname( CORE::GetHostname() )
     , m_firstPartitionAssignment( true )
+    , m_consumerOffsets()
+    , m_tickCountAtLastOffsetCommit( 0 )
 {GUCEF_TRACE;
 
 }
@@ -317,6 +323,22 @@ Udp2KafkaChannel::GetKafkaMsgsReceivedCounter( bool resetCounter )
 
 /*-------------------------------------------------------------------------*/
 
+CORE::UInt32
+Udp2KafkaChannel::GetKafkaMsgsFilteredCounter( bool resetCounter )
+{GUCEF_TRACE;
+
+    if ( resetCounter )
+    {
+        CORE::UInt32 kafkaMsgsFiltered = m_kafkaMessagesFiltered;
+        m_kafkaMessagesFiltered = 0;
+        return kafkaMsgsFiltered;
+    }
+    else
+        return m_kafkaMessagesFiltered;
+}
+
+/*-------------------------------------------------------------------------*/
+
 CORE::CString
 Udp2KafkaChannel::GetType( void ) const
 {GUCEF_TRACE;
@@ -335,6 +357,7 @@ Udp2KafkaChannel::ChannelMetrics::ChannelMetrics( void )
     , udpBytesTransmitted( 0 )
     , udpMessagesTransmitted( 0 )
     , kafkaMessagesReceived( 0 )
+    , kafkaMessagesFiltered( 0 )
     , kafkaErrorReplies( 0 )
 {GUCEF_TRACE;
 
@@ -362,6 +385,7 @@ Udp2KafkaChannel::OnMetricsTimerCycle( CORE::CNotifier* notifier    ,
         m_metrics.udpBytesTransmitted = m_udpSocket->GetBytesTransmitted( true );
         m_metrics.udpMessagesTransmitted = m_udpSocket->GetNrOfDataSentEvents( true );
         m_metrics.kafkaMessagesReceived = GetKafkaMsgsReceivedCounter( true );
+        m_metrics.kafkaMessagesFiltered = GetKafkaMsgsFilteredCounter( true );
     }
 }
 
@@ -467,14 +491,24 @@ Udp2KafkaChannel::UdpTransmit( RdKafka::Message& message )
         return false;
     }
 
-    bool totalSuccess = true;
+    CORE::UInt32 successCount = 0;
     HostAddressVector::iterator i = m_channelSettings.consumerModeUdpDestinations.begin();
     while ( i != m_channelSettings.consumerModeUdpDestinations.end() )
     {
-        totalSuccess = ( 0 < m_udpSocket->SendPacketTo( (*i), message.payload(), (CORE::UInt16) message.len() ) ) && totalSuccess;
+        if ( 0 < m_udpSocket->SendPacketTo( (*i), message.payload(), (CORE::UInt16) message.len() ) )
+            ++successCount;
         ++i;
     }
-    return totalSuccess;
+
+    // We will consider a partial transmission success 'good enough' wrt consumer offset commits
+    // We only update our own offset record here and dont actually commit yet since we do not want to
+    // commit the offset on a per message basis, that would be too much of a performance penalty
+    if ( successCount > 0 )
+    {
+        m_consumerOffsets[ message.partition() ] = message.offset();
+    }
+
+    return successCount == m_channelSettings.consumerModeUdpDestinations.size();
 }
 
 /*-------------------------------------------------------------------------*/
@@ -519,30 +553,23 @@ Udp2KafkaChannel::rebalance_cb( RdKafka::KafkaConsumer* consumer                
     std::string actionStr = "<UNKNOWN>";
     if ( err == RdKafka::ERR__ASSIGN_PARTITIONS ) 
     {
-        if ( m_firstPartitionAssignment )
+        RdKafka::ErrorCode assignSuccess = consumer->assign( partitions );
+        for ( unsigned int i=0; i<partitions.size(); ++i )
         {
-            RdKafka::ErrorCode assignSuccess = consumer->assign( partitions );
-            for ( unsigned int i=0; i<partitions.size(); ++i )
+            if ( m_firstPartitionAssignment || RdKafka::Topic::OFFSET_INVALID == partitions[ i ]->offset() )
             {
                 CORE::Int64 startOffset = ConvertKafkaConsumerStartOffset( m_channelSettings.consumerModeStartOffset, partitions[ i ]->partition(), 10000 );    
                 partitions[ i ]->set_offset( startOffset );
+                m_consumerOffsets[ partitions[ i ]->partition() ] = startOffset;
             }
-            //consumer->offsetsForTimes()
-            m_firstPartitionAssignment = false;
         }
-        RdKafka::ErrorCode assignSuccess = consumer->assign( partitions );
+        if (  m_firstPartitionAssignment )
+            m_firstPartitionAssignment = false;
+
+        assignSuccess = consumer->assign( partitions );
         if ( RdKafka::ERR_NO_ERROR != assignSuccess )
             GUCEF_ERROR_LOG( CORE::LOGLEVEL_IMPORTANT, "Udp2KafkaChannel:rebalance_cb: Failed to assign new partitions" );
 
-        //if ( m_firstPartitionAssignment )
-        //{
-        //    for ( unsigned int i=0; i<partitions.size(); ++i )
-        //    {
-        //        partitions[ i ]->set_offset( RdKafka::Topic::OFFSET_BEGINNING );
-        //        err = consumer->seek( *partitions[i], 10000 );
-        //    }
-        //    m_firstPartitionAssignment = false;    
-        //}
         RdKafka::ErrorCode ec = consumer->offsets_store( partitions );
         RdKafka::ErrorCode ec2 = consumer->commitSync( this );
         actionStr = "ASSIGN_PARTITIONS";
@@ -551,13 +578,27 @@ Udp2KafkaChannel::rebalance_cb( RdKafka::KafkaConsumer* consumer                
     if ( err == RdKafka::ERR__REVOKE_PARTITIONS ) 
     {
         consumer->unassign();
+        for ( unsigned int i=0; i<partitions.size(); ++i )
+        {
+            m_consumerOffsets.erase( partitions[ i ]->partition() );
+        }
         actionStr = "REVOKE_PARTITIONS";
     }
 
     CORE::CString partitionInfo = "Udp2KafkaChannel:rebalance_cb: Member ID \"" + consumer->memberid() + "\": Action " + actionStr + " : ";
     for ( unsigned int i=0; i<partitions.size(); ++i )
     {
-        partitionInfo += "Topic \"" + partitions[ i ]->topic() + "\" is at partition \"" + CORE::Int32ToString( partitions[ i ]->partition() ).STL_String() + "\" at offset \"" + ConvertKafkaConsumerStartOffset( partitions[ i ]->offset() ).STL_String() + "\". ";
+        partitionInfo += "Topic \"" + partitions[ i ]->topic() + "\" is at partition \"" + CORE::Int32ToString( partitions[ i ]->partition() ).STL_String() + 
+                "\" at offset \"" + ConvertKafkaConsumerStartOffset( partitions[ i ]->offset() ).STL_String() + "\". ";
+
+        int64_t high = 0; int64_t low = 0;
+        RdKafka::ErrorCode err = m_kafkaConsumer->get_watermark_offsets( m_channelSettings.channelTopicName, partitions[ i ]->partition(), &low, &high );
+        if ( RdKafka::ERR_NO_ERROR == err )
+        {
+            GUCEF_LOG( CORE::LOGLEVEL_NORMAL, "Udp2KafkaChannel: Offsets for topic \"" + m_channelSettings.channelTopicName + 
+                    "\" and partition " + CORE::Int32ToString( partitions[ i ]->partition() ) + ": Low=" + ConvertKafkaConsumerStartOffset( low ) + 
+                    ", High=" + ConvertKafkaConsumerStartOffset( high ) );
+        }
     }
     GUCEF_LOG( CORE::LOGLEVEL_NORMAL, partitionInfo );
 }
@@ -602,6 +643,12 @@ Udp2KafkaChannel::consume_cb( RdKafka::Message& message, void* opaque )
                     if ( GUCEF_NULL != hdrValue && m_channelSettings.kafkaMsgValueUsedForFiltering == hdrValue )
                     {
                         isFiltered = true;
+                        ++m_kafkaMessagesFiltered;
+
+                        // A filtered message also counts as successfully handled
+                        // As such we need to update the offset so that its taken into account for a later commit of said offsets
+                        m_consumerOffsets[ message.partition() ] = message.offset();
+
                         GUCEF_DEBUG_LOG( CORE::LOGLEVEL_BELOW_NORMAL, "Udp2KafkaChannel:consume_cb: Filtered message on topic \"" +          
                                 m_channelSettings.channelTopicName + " with offset " + CORE::Int64ToString( message.offset() ) );    
                         break;
@@ -995,15 +1042,6 @@ Udp2KafkaChannel::ConvertKafkaConsumerStartOffset( CORE::Int64 startOffsetDescri
             return RdKafka::Topic::OFFSET_INVALID;
         }
 
-        err = m_kafkaConsumer->position( partitions );
-        if ( RdKafka::ERR_NO_ERROR != err )
-        {
-            std::string errStr = RdKafka::err2str( err );
-            GUCEF_ERROR_LOG( CORE::LOGLEVEL_IMPORTANT, "Udp2KafkaChannel: Failed to convert offset description \"STORED\" into offset for partition " + 
-                    CORE::Int32ToString( partitionId ) + ". Cannot obtain commited offsets . ErrorCode : " + errStr );
-            return RdKafka::Topic::OFFSET_INVALID;
-        }
-
         std::vector<RdKafka::TopicPartition*>::iterator i = partitions.begin(); 
         while ( i != partitions.end() )
         {
@@ -1110,10 +1148,10 @@ Udp2KafkaChannel::OnTaskStart( CORE::CICloneable* taskData )
         delete m_kafkaProducerTopicConf;
         m_kafkaProducerTopicConf = kafkaProducerTopicConfig;
         
-        RdKafka::Producer* producer = RdKafka::Producer::create( m_kafkaProducerTopicConf, errStr );
+        RdKafka::Producer* producer = RdKafka::Producer::create( m_kafkaProducerConf, errStr );
 	    if ( producer == nullptr ) 
         {
-		    GUCEF_ERROR_LOG( CORE::LOGLEVEL_IMPORTANT, "Udp2KafkaChannel:OnTaskStart: Failed to create Kafka producerfor topic \"" + 
+		    GUCEF_ERROR_LOG( CORE::LOGLEVEL_IMPORTANT, "Udp2KafkaChannel:OnTaskStart: Failed to create Kafka producer for topic \"" + 
                 m_channelSettings.channelTopicName + "\", error message: " + errStr );
             ++m_kafkaErrorReplies;
             return false;
@@ -1188,7 +1226,7 @@ Udp2KafkaChannel::OnTaskStart( CORE::CICloneable* taskData )
                 return false;
             }
         }
-        if ( "end" == testString )
+        if ( "end" == testString || "stored" == testString )
         {
             if ( RdKafka::Conf::CONF_OK != m_kafkaConsumerTopicConf->set( "auto.offset.reset", "latest", errStr ) )
             {
@@ -1198,6 +1236,9 @@ Udp2KafkaChannel::OnTaskStart( CORE::CICloneable* taskData )
             }
         }
 
+        // We dont want the offsets managed by the RdKafka library because that can cause data gaps
+        // We want to wait till we successfully transmitted the message on UDP before we commit to stating we processed it.
+        // ie garanteed handling. While UDP itself is not reliable, that doesnt mean we should add to the problem here.
         if ( RdKafka::Conf::CONF_OK != m_kafkaConsumerConf->set( "enable.auto.commit", "false", errStr ) )
         {
 		    GUCEF_ERROR_LOG( CORE::LOGLEVEL_IMPORTANT, "Udp2KafkaChannel:OnTaskStart: Failed to set Kafka consumer global config's enable.auto.commit, error message: " + errStr );
@@ -1262,11 +1303,71 @@ Udp2KafkaChannel::OnTaskStart( CORE::CICloneable* taskData )
 }
 
 /*-------------------------------------------------------------------------*/
+
+bool
+Udp2KafkaChannel::CommitConsumerOffsets( void )
+{GUCEF_TRACE;
+
+    if ( GUCEF_NULL == m_kafkaConsumer )
+        return false;
+
+    // Now commit the latest offsets
+    std::vector<RdKafka::TopicPartition*> partitions;
+    RdKafka::ErrorCode err = m_kafkaConsumer->assignment( partitions );
+    if ( RdKafka::ERR_NO_ERROR == err )
+    {
+        // Match the current Topic objects with our simplistic bookkeeping and sync them
+        std::vector<RdKafka::TopicPartition*>::iterator p = partitions.begin();
+        while ( p != partitions.end() )
+        {
+            CORE::Int32 partitionId = (*p)->partition();
+            TInt32ToInt64Map::iterator o = m_consumerOffsets.find( partitionId );
+            if ( o != m_consumerOffsets.end() )
+            {
+                (*p)->set_offset( (*o).second );
+            }
+            ++p;
+        }
+
+        // Now we actually tell the client library locally about the new offsets
+        err = m_kafkaConsumer->offsets_store( partitions );
+        if ( RdKafka::ERR_NO_ERROR == err )
+        {
+            // Now we request to send the local offset bookkeeping to Kafka
+            err = m_kafkaConsumer->commitAsync( partitions );
+            if ( RdKafka::ERR_NO_ERROR == err )
+            {
+                GUCEF_DEBUG_LOG( CORE::LOGLEVEL_NORMAL, "Udp2KafkaChannel: Successfully triggered async commit of current offsets" );
+                return true;
+            }
+            else
+            {
+                std::string errStr = RdKafka::err2str( err );
+                GUCEF_ERROR_LOG( CORE::LOGLEVEL_IMPORTANT, "Udp2KafkaChannel: Cannot commit consumer offsets: Failed to trigger async commit of current offets. ErrorCode : " + errStr );
+                return false;
+            }
+        }
+        else
+        {
+            std::string errStr = RdKafka::err2str( err );
+            GUCEF_ERROR_LOG( CORE::LOGLEVEL_IMPORTANT, "Udp2KafkaChannel: Cannot commit consumer offsets: Failed to store current offets on local topic objects. ErrorCode : " + errStr );
+            return false;
+        }
+    }
+    else
+    {
+        std::string errStr = RdKafka::err2str( err );
+        GUCEF_ERROR_LOG( CORE::LOGLEVEL_IMPORTANT, "Udp2KafkaChannel: Cannot commit consumer offsets: Failed to obtain current partition assignment. ErrorCode : " + errStr );
+        return false;
+    }
+}
+
+/*-------------------------------------------------------------------------*/
     
 bool
 Udp2KafkaChannel::OnTaskCycle( CORE::CICloneable* taskData )
 {GUCEF_TRACE;
-
+                      
     // You are required to periodically call poll() on a producer to trigger queued callbacks if any
     if ( GUCEF_NULL != m_kafkaProducer )
     { 
@@ -1310,6 +1411,16 @@ Udp2KafkaChannel::OnTaskCycle( CORE::CICloneable* taskData )
             // We have more work to do. Make sure we dont go to sleep
             GetPulseGenerator()->RequestImmediatePulse();
         } 
+
+        // Periodically commit our offsets
+        // This can slow things down so we dont want to do this too often
+        if ( 5000 < GetPulseGenerator()->GetTimeSinceTickCountInMilliSecs( m_tickCountAtLastOffsetCommit ) )
+        {
+            if ( CommitConsumerOffsets() )
+            {
+                m_tickCountAtLastOffsetCommit = GetPulseGenerator()->GetTickCount();   
+            }
+        }
     }
 
     //if ( m_kafkaErrorReplies > 0 )
@@ -1376,6 +1487,10 @@ Udp2KafkaChannel::OnTaskEnd( CORE::CICloneable* taskData )
         m_kafkaProducer = GUCEF_NULL;
         delete m_kafkaProducerTopic;
         m_kafkaProducerTopic = GUCEF_NULL;
+        delete m_kafkaProducerTopicConf;
+        m_kafkaProducerTopicConf =  GUCEF_NULL;
+        delete m_kafkaProducerConf;
+        m_kafkaProducerConf =  GUCEF_NULL;
     }
 
     if ( TChannelMode::KAFKA_CONSUMER == m_channelSettings.mode || TChannelMode::KAFKA_PRODUCER_AND_CONSUMER == m_channelSettings.mode )
@@ -1385,16 +1500,11 @@ Udp2KafkaChannel::OnTaskEnd( CORE::CICloneable* taskData )
 
         delete m_kafkaConsumer;
         m_kafkaConsumer = GUCEF_NULL;
+        delete m_kafkaConsumerTopicConf;
+        m_kafkaConsumerTopicConf =  GUCEF_NULL;
+        delete m_kafkaConsumerConf;
+        m_kafkaConsumerConf =  GUCEF_NULL;
     }
-
-    delete m_kafkaProducerTopicConf;
-    m_kafkaProducerTopicConf =  GUCEF_NULL;
-    delete m_kafkaConsumerTopicConf;
-    m_kafkaConsumerTopicConf =  GUCEF_NULL;
-    delete m_kafkaProducerConf;
-    m_kafkaProducerConf =  GUCEF_NULL;
-    delete m_kafkaConsumerConf;
-    m_kafkaConsumerConf =  GUCEF_NULL;
 
     delete m_metricsTimer;
     m_metricsTimer = GUCEF_NULL;
@@ -1538,7 +1648,8 @@ Udp2Kafka::OnMetricsTimerCycle( CORE::CNotifier* notifier    ,
         }
         if ( Udp2KafkaChannel::EChannelMode::KAFKA_CONSUMER == settings.mode || Udp2KafkaChannel::EChannelMode::KAFKA_PRODUCER_AND_CONSUMER == settings.mode )
         {
-            GUCEF_METRIC_COUNT( settings.metricsPrefix + "kafkaMessagesReceived", metrics.kafkaMessagesTransmitted, 1.0f );
+            GUCEF_METRIC_COUNT( settings.metricsPrefix + "kafkaMessagesReceived", metrics.kafkaMessagesReceived, 1.0f );
+            GUCEF_METRIC_COUNT( settings.metricsPrefix + "kafkaMessagesFiltered", metrics.kafkaMessagesFiltered, 1.0f );
             GUCEF_METRIC_COUNT( settings.metricsPrefix + "udpBytesTransmitted", metrics.udpBytesReceived, 1.0f );
             GUCEF_METRIC_COUNT( settings.metricsPrefix + "udpMessagesTransmitted", metrics.udpMessagesReceived, 1.0f );
         }

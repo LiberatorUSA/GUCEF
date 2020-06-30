@@ -232,7 +232,7 @@ CHTTPClient::Post( const CORE::CString& host           ,
     m_currentOp = HTTP_VERB_POST;
         
     // Write the HTTP headers
-    CORE::CDynamicBuffer httpHeaderBuffer( 99 + host.Length() + path.Length() + contentType.Length() );
+    CORE::CDynamicBuffer httpHeaderBuffer( 99 + host.Length() + path.Length() + contentType.Length(), true );
     sprintf( httpHeaderBuffer.AsTypePtr< char >(), "POST %s HTTP/1.1\r\nAccept: */*\r\nUser-Agent: gucefCOM-HTTP/1.0\r\nHost: %s\r\nContent-Type: %s\r\nContent-Length: %d\r\n\r\n", path.ReplaceChar( '\\', '/' ).C_String(), host.C_String(), contentType.C_String(), payload.GetDataSize() );
 
     if ( m_socket.ConnectTo( host ,

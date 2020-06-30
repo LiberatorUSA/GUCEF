@@ -174,6 +174,7 @@ class Udp2KafkaChannel : public CORE::CTaskConsumer ,
         CORE::UInt32 udpBytesTransmitted;
         CORE::UInt32 udpMessagesTransmitted;
         CORE::UInt32 kafkaMessagesReceived;
+        CORE::UInt32 kafkaMessagesFiltered;
 
         CORE::UInt32 kafkaErrorReplies;
     };
@@ -248,6 +249,8 @@ class Udp2KafkaChannel : public CORE::CTaskConsumer ,
 
     CORE::UInt32 GetKafkaMsgsReceivedCounter( bool resetCounter );
 
+    CORE::UInt32 GetKafkaMsgsFilteredCounter( bool resetCounter );
+
     CORE::Int64 ConvertKafkaConsumerStartOffset( const CORE::CString& startOffsetDescription ,
                                                  CORE::Int32 partitionId                     ,
                                                  CORE::Int32 timeoutInMs                     );
@@ -265,10 +268,13 @@ class Udp2KafkaChannel : public CORE::CTaskConsumer ,
     RdKafka::ErrorCode KafkaProduce( const COMCORE::CIPAddress& sourceAddress ,
                                      const CORE::CDynamicBuffer& udpPacket    );
 
+    bool CommitConsumerOffsets( void );
+    
     private:
 
     typedef std::deque< COMCORE::CUDPSocket::TUDPPacketRecievedEventData > TUDPPacketQueue;
     typedef ChannelSettings::HostAddressVector HostAddressVector;
+    typedef std::map< CORE::Int32, CORE::Int64 > TInt32ToInt64Map;
 
     RdKafka::Conf* m_kafkaProducerConf;
     RdKafka::Conf* m_kafkaConsumerConf;
@@ -286,9 +292,12 @@ class Udp2KafkaChannel : public CORE::CTaskConsumer ,
     CORE::UInt32 m_kafkaErrorReplies;
     CORE::UInt32 m_kafkaMsgsTransmitted;
     CORE::UInt32 m_kafkaMessagesReceived;
+    CORE::UInt32 m_kafkaMessagesFiltered;
     HostAddressVector m_kafkaBrokers;
     std::string m_producerHostname;
     bool m_firstPartitionAssignment;
+    TInt32ToInt64Map m_consumerOffsets;
+    CORE::UInt64 m_tickCountAtLastOffsetCommit;
 };
 
 /*-------------------------------------------------------------------------*/
