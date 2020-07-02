@@ -314,7 +314,7 @@ Udp2KafkaChannel::GetKafkaMsgsReceivedCounter( bool resetCounter )
     if ( resetCounter )
     {
         CORE::UInt32 kafkaMsgsReceived = m_kafkaMessagesReceived;
-        m_kafkaMsgsTransmitted = 0;
+        m_kafkaMessagesReceived = 0;
         return kafkaMsgsReceived;
     }
     else
