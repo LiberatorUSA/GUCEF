@@ -190,11 +190,12 @@ Udp2KafkaChannel::ChannelSettings::ChannelSettings( void )
     , kafkaProducerTopicConfigSettings()
     , kafkaConsumerTopicConfigSettings()
     , kafkaMsgHeaderUsedForFiltering( KafkaMsgHeader_ProducerHostname )
-    , kafkaMsgValueUsedForFiltering( CORE::GetHostname() )
+    , kafkaMsgValuesUsedForFiltering()
     , addUdpOriginKafkaMsgHeader( true )
     , addProducerHostnameKafkaMsgHeader( true )
 {GUCEF_TRACE;
 
+     kafkaMsgValuesUsedForFiltering.push_back( CORE::GetHostname() );
 }
 
 /*-------------------------------------------------------------------------*/
@@ -216,7 +217,7 @@ Udp2KafkaChannel::ChannelSettings::ChannelSettings( const ChannelSettings& src )
     , kafkaProducerTopicConfigSettings( src.kafkaProducerTopicConfigSettings )
     , kafkaConsumerTopicConfigSettings( src.kafkaConsumerTopicConfigSettings )
     , kafkaMsgHeaderUsedForFiltering( src.kafkaMsgHeaderUsedForFiltering )
-    , kafkaMsgValueUsedForFiltering( src.kafkaMsgValueUsedForFiltering )
+    , kafkaMsgValuesUsedForFiltering( src.kafkaMsgValuesUsedForFiltering )
     , addUdpOriginKafkaMsgHeader( src.addUdpOriginKafkaMsgHeader )
     , addProducerHostnameKafkaMsgHeader( src.addProducerHostnameKafkaMsgHeader )
 {GUCEF_TRACE;
@@ -247,7 +248,7 @@ Udp2KafkaChannel::ChannelSettings::operator=( const ChannelSettings& src )
         kafkaConsumerGlobalConfigSettings = src.kafkaConsumerGlobalConfigSettings;
         kafkaConsumerTopicConfigSettings = src.kafkaConsumerTopicConfigSettings;
         kafkaMsgHeaderUsedForFiltering = src.kafkaMsgHeaderUsedForFiltering;
-        kafkaMsgValueUsedForFiltering = src.kafkaMsgValueUsedForFiltering;
+        kafkaMsgValuesUsedForFiltering = src.kafkaMsgValuesUsedForFiltering;
         addUdpOriginKafkaMsgHeader = src.addUdpOriginKafkaMsgHeader;
         addProducerHostnameKafkaMsgHeader = src.addProducerHostnameKafkaMsgHeader;
     }
@@ -613,6 +614,7 @@ Udp2KafkaChannel::consume_cb( RdKafka::Message& message, void* opaque )
     {
         case RdKafka::ERR__TIMED_OUT:
         {
+            GUCEF_WARNING_LOG( CORE::LOGLEVEL_IMPORTANT, "Kafka consume error: TIMED_OUT: " + message.errstr() );
             break;
         }
         case RdKafka::ERR_NO_ERROR:
@@ -640,19 +642,29 @@ Udp2KafkaChannel::consume_cb( RdKafka::Message& message, void* opaque )
                 for ( size_t i=0; i<hdrs.size(); ++i ) 
                 {
                     const char* hdrValue = hdrs[ i ].value_string();
-                    if ( GUCEF_NULL != hdrValue && m_channelSettings.kafkaMsgValueUsedForFiltering == hdrValue )
+                    if ( GUCEF_NULL != hdrValue )
                     {
-                        isFiltered = true;
-                        ++m_kafkaMessagesFiltered;
+                        CORE::CString::StringVector::iterator v = m_channelSettings.kafkaMsgValuesUsedForFiltering.begin();
+                        while ( v != m_channelSettings.kafkaMsgValuesUsedForFiltering.end() )
+                        {
+                            if ( (*v) == hdrValue )
+                            {
+                                isFiltered = true;
+                                ++m_kafkaMessagesFiltered;
 
-                        // A filtered message also counts as successfully handled
-                        // As such we need to update the offset so that its taken into account for a later commit of said offsets
-                        m_consumerOffsets[ message.partition() ] = message.offset();
+                                // A filtered message also counts as successfully handled
+                                // As such we need to update the offset so that its taken into account for a later commit of said offsets
+                                m_consumerOffsets[ message.partition() ] = message.offset();
 
-                        GUCEF_DEBUG_LOG( CORE::LOGLEVEL_BELOW_NORMAL, "Udp2KafkaChannel:consume_cb: Filtered message on topic \"" +          
-                                m_channelSettings.channelTopicName + " with offset " + CORE::Int64ToString( message.offset() ) );    
-                        break;
+                                GUCEF_DEBUG_LOG( CORE::LOGLEVEL_BELOW_NORMAL, "Udp2KafkaChannel:consume_cb: Filtered message on topic \"" +          
+                                        m_channelSettings.channelTopicName + " with offset " + CORE::Int64ToString( message.offset() ) );    
+                                break;
+                            }
+                            ++v;
+                        }
                     }
+                    if ( isFiltered )
+                        break;
                 }
             }
 
@@ -678,7 +690,7 @@ Udp2KafkaChannel::consume_cb( RdKafka::Message& message, void* opaque )
         }
         case RdKafka::ERR__MAX_POLL_EXCEEDED:
         {
-            GUCEF_ERROR_LOG( CORE::LOGLEVEL_IMPORTANT, "Kafka consume error: MAX_POLL_EXCEEDED: " + message.errstr() );
+            GUCEF_WARNING_LOG( CORE::LOGLEVEL_IMPORTANT, "Kafka consume error: MAX_POLL_EXCEEDED: " + message.errstr() );
             break;
         }
         default:
@@ -1935,6 +1947,9 @@ Udp2Kafka::LoadConfig( const CORE::CValueList& appConfig   ,
             }
             ++n;
         }
+
+        settingName = settingPrefix + ".KafkaMsgHeaderFilterValues";
+        channelSettings.kafkaMsgValuesUsedForFiltering = appConfig.GetValueVectorAlways( settingName, ',', channelSettings.kafkaMsgValuesUsedForFiltering );
 
         ++udpPort;
     }

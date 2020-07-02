@@ -150,7 +150,7 @@ class Udp2KafkaChannel : public CORE::CTaskConsumer ,
         StringMap kafkaProducerTopicConfigSettings;
         StringMap kafkaConsumerTopicConfigSettings;
         std::string kafkaMsgHeaderUsedForFiltering;
-        std::string kafkaMsgValueUsedForFiltering;
+        CORE::CString::StringVector kafkaMsgValuesUsedForFiltering;
         bool addUdpOriginKafkaMsgHeader;
         bool addProducerHostnameKafkaMsgHeader;
     };

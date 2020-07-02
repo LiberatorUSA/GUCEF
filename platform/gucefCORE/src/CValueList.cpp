@@ -412,6 +412,51 @@ CValueList::GetValueVectorAlways( const CString& key ) const
     return results;    
 }
 
+/*-------------------------------------------------------------------------*/
+
+CValueList::TStringVector 
+CValueList::GetValueVectorAlways( const CString& key           , 
+                                  char valueSepChar            , 
+                                  const TStringVector& default ) const
+{GUCEF_TRACE;
+
+    const TStringVector* firstPass = GUCEF_NULL;
+    TStringVector results;
+    TValueMap::const_iterator i = m_list.find( key );
+    if ( i != m_list.end() )
+    {
+        firstPass = &(*i).second;
+        TStringVector::const_iterator n = firstPass->begin();
+        while ( n != firstPass->end() )
+        {
+            TStringVector subSetResults = (*n).ParseElements( valueSepChar,  false ); 
+            TStringVector::iterator m = subSetResults.begin();
+            while ( m != subSetResults.end() )
+            {
+                results.push_back( (*m) );
+                ++m;
+            }
+            ++n;
+        }
+    }
+
+    if ( results.empty() )
+    {   
+        results = default;
+    }
+    return results;    
+}
+
+/*-------------------------------------------------------------------------*/
+
+CValueList::TStringVector 
+CValueList::GetValueVectorAlways( const CString& key, char valueSepChar ) const
+{GUCEF_TRACE;
+
+    TStringVector emptyDefault;
+    return GetValueVectorAlways( key, valueSepChar, emptyDefault );
+}
+
 /*-------------------------------------------------------------------------*/                
         
 CString

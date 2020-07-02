@@ -170,6 +170,16 @@ class GUCEF_CORE_PUBLIC_CPP CValueList : public CIConfigurable
     TStringVector GetValueVectorAlways( const CString& key ) const;
 
     /**
+     *  Returns the value vector associated with the
+     *  given key if any. Otherwise returns an empty list and will not throw an exception
+     *  Aside from returning the multiple entries for the same key (if permitted) it will also
+     *  perform sub string parsing for values per value entry
+     */
+    TStringVector GetValueVectorAlways( const CString& key, char valueSepChar ) const;
+
+    TStringVector GetValueVectorAlways( const CString& key, char valueSepChar, const TStringVector& default ) const;
+
+    /**
      *  Returns all keys matching the key wildcard search 
      *  Will not throw an exception
      */
