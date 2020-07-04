@@ -114,7 +114,7 @@ class GUCEF_CORE_PUBLIC_CPP CNotifier : public MT::CILockable ,
 
     public:
 
-    CNotifier( void );
+    CNotifier( bool registerStdEvents = true );
 
     CNotifier( const CNotifier& src );
 

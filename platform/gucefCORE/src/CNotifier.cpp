@@ -63,12 +63,13 @@ const CEvent CNotifier::DestructionEvent = "GUCEF::CORE::CNotifier::DestructionE
 //                                                                         //
 //-------------------------------------------------------------------------*/
 
-CNotifier::CNotifier( void )
+CNotifier::CNotifier( bool registerStdEvents )
     : CITypeNamed() ,
       m_imp( NULL )
 {GUCEF_TRACE;
 
-    RegisterEvents();
+    if ( registerStdEvents )
+        RegisterEvents();
 
     m_imp = CNotifierImplementor::Create( this );
     assert( m_imp != NULL );
@@ -80,8 +81,6 @@ CNotifier::CNotifier( const CNotifier& src )
     : CITypeNamed() ,
       m_imp( NULL )
 {GUCEF_TRACE;
-
-    RegisterEvents();
 
     m_imp = CNotifierImplementor::Create( this, src );
     assert( m_imp != NULL );

@@ -16,19 +16,24 @@
  *  License along with this library; if not, write to the Free Software
  *  Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA 
  */
- 
+
 /*-------------------------------------------------------------------------//
 //                                                                         //
 //      INCLUDES                                                           //
 //                                                                         //
 //-------------------------------------------------------------------------*/
 
-#ifndef GUCEF_CORE_CTRACER_H
-#include "CTracer.h"
-#define GUCEF_CORE_CTRACER_H
-#endif /* GUCEF_CORE_CTRACER_H ? */
+#ifndef GUCEF_CORE_DVCPPSTRINGUTILS_H
+#include "dvcppstringutils.h"
+#define GUCEF_CORE_DVCPPSTRINGUTILS_H
+#endif /* GUCEF_CORE_DVCPPSTRINGUTILS_H ? */
 
-#include "gucefCORE_CAbstractFactoryBase.h"
+#include "gucefCORE_CBasicBracketLoggingFormatter.h"
+
+#ifndef GUCEF_CORE_ESSENTIALS_H
+#include "gucef_essentials.h"
+#define GUCEF_CORE_ESSENTIALS_H
+#endif /* GUCEF_CORE_ESSENTIALS_H ? */
 
 /*-------------------------------------------------------------------------//
 //                                                                         //
@@ -36,48 +41,58 @@
 //                                                                         //
 //-------------------------------------------------------------------------*/
 
-namespace GUCEF { 
+namespace GUCEF {
 namespace CORE {
-
-/*-------------------------------------------------------------------------//
-//                                                                         //
-//      GLOBAL VARS                                                        //
-//                                                                         //
-//-------------------------------------------------------------------------*/
-
-const CEvent CAbstractFactoryBase::ConcreteFactoryRegisteredEvent = "GUCEF::CORE::CAbstractFactoryBase::ConcreteFactoryRegisteredEvent";
-const CEvent CAbstractFactoryBase::ConcreteFactoryUnregisteredEvent = "GUCEF::CORE::CAbstractFactoryBase::ConcreteFactoryUnregisteredEvent";
 
 /*-------------------------------------------------------------------------//
 //                                                                         //
 //      UTILITIES                                                          //
 //                                                                         //
 //-------------------------------------------------------------------------*/
+
+CBasicBracketLoggingFormatter::CBasicBracketLoggingFormatter( void )
+    : CILoggingFormatter()
+{GUCEF_TRACE;
+
+}
+
+/*-------------------------------------------------------------------------*/
+
+CBasicBracketLoggingFormatter::~CBasicBracketLoggingFormatter()
+{GUCEF_TRACE;
+
+}
+
+/*-------------------------------------------------------------------------*/
+
+CBasicBracketLoggingFormatter::CBasicBracketLoggingFormatter( const CBasicBracketLoggingFormatter& src )
+    : CILoggingFormatter( src )
+{GUCEF_TRACE;
+
+}
+
+/*-------------------------------------------------------------------------*/
+
+CBasicBracketLoggingFormatter&
+CBasicBracketLoggingFormatter::operator=( const CBasicBracketLoggingFormatter& src )
+{GUCEF_TRACE;
     
-void
-CAbstractFactoryBase::RegisterEvents( void )
-{GUCEF_TRACE;
-
-    ConcreteFactoryRegisteredEvent.Initialize();
-    ConcreteFactoryUnregisteredEvent.Initialize();
+    return *this;
 }
 
 /*-------------------------------------------------------------------------*/
 
-CAbstractFactoryBase::CAbstractFactoryBase( bool useEventing )
-    : CNotifier( useEventing )
-    , m_useEventing( useEventing )
+CString
+CBasicBracketLoggingFormatter::FormatLogMessage( const TLogMsgType logMsgType ,
+                                                 const Int32 logLevel         ,
+                                                 const CString& logMessage    ,
+                                                 const UInt32 threadId        )
 {GUCEF_TRACE;
 
-    if ( useEventing )
-        RegisterEvents();
-}
-
-/*-------------------------------------------------------------------------*/
-
-CAbstractFactoryBase::~CAbstractFactoryBase()
-{GUCEF_TRACE;
-
+    return   "[THREAD=" + UInt32ToString( threadId ) +
+           "] [TYPE=" + CLogManager::GetLogMsgTypeString( logMsgType ) +
+           "] [LVL=" + LogLevelToString( logLevel ) +
+           "] [MSG=" + logMessage + "]";
 }
 
 /*-------------------------------------------------------------------------//

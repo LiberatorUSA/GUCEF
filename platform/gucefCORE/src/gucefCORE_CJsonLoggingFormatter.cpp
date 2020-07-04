@@ -16,19 +16,27 @@
  *  License along with this library; if not, write to the Free Software
  *  Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA 
  */
- 
+
 /*-------------------------------------------------------------------------//
 //                                                                         //
 //      INCLUDES                                                           //
 //                                                                         //
 //-------------------------------------------------------------------------*/
 
-#ifndef GUCEF_CORE_CTRACER_H
-#include "CTracer.h"
-#define GUCEF_CORE_CTRACER_H
-#endif /* GUCEF_CORE_CTRACER_H ? */
+#include <sstream>
+#include <iomanip>
 
-#include "gucefCORE_CAbstractFactoryBase.h"
+#ifndef GUCEF_CORE_DVCPPSTRINGUTILS_H
+#include "dvcppstringutils.h"
+#define GUCEF_CORE_DVCPPSTRINGUTILS_H
+#endif /* GUCEF_CORE_DVCPPSTRINGUTILS_H ? */
+
+#include "gucefCORE_CJsonLoggingFormatter.h"
+
+#ifndef GUCEF_CORE_ESSENTIALS_H
+#include "gucef_essentials.h"
+#define GUCEF_CORE_ESSENTIALS_H
+#endif /* GUCEF_CORE_ESSENTIALS_H ? */
 
 /*-------------------------------------------------------------------------//
 //                                                                         //
@@ -36,48 +44,93 @@
 //                                                                         //
 //-------------------------------------------------------------------------*/
 
-namespace GUCEF { 
+namespace GUCEF {
 namespace CORE {
-
-/*-------------------------------------------------------------------------//
-//                                                                         //
-//      GLOBAL VARS                                                        //
-//                                                                         //
-//-------------------------------------------------------------------------*/
-
-const CEvent CAbstractFactoryBase::ConcreteFactoryRegisteredEvent = "GUCEF::CORE::CAbstractFactoryBase::ConcreteFactoryRegisteredEvent";
-const CEvent CAbstractFactoryBase::ConcreteFactoryUnregisteredEvent = "GUCEF::CORE::CAbstractFactoryBase::ConcreteFactoryUnregisteredEvent";
 
 /*-------------------------------------------------------------------------//
 //                                                                         //
 //      UTILITIES                                                          //
 //                                                                         //
 //-------------------------------------------------------------------------*/
+
+CJsonLoggingFormatter::CJsonLoggingFormatter( void )
+    : CILoggingFormatter()
+{GUCEF_TRACE;
+
+}
+
+/*-------------------------------------------------------------------------*/
+
+CJsonLoggingFormatter::~CJsonLoggingFormatter()
+{GUCEF_TRACE;
+
+}
+
+/*-------------------------------------------------------------------------*/
+
+CJsonLoggingFormatter::CJsonLoggingFormatter( const CJsonLoggingFormatter& src )
+    : CILoggingFormatter( src )
+{GUCEF_TRACE;
+
+}
+
+/*-------------------------------------------------------------------------*/
+
+CJsonLoggingFormatter&
+CJsonLoggingFormatter::operator=( const CJsonLoggingFormatter& src )
+{GUCEF_TRACE;
     
-void
-CAbstractFactoryBase::RegisterEvents( void )
-{GUCEF_TRACE;
-
-    ConcreteFactoryRegisteredEvent.Initialize();
-    ConcreteFactoryUnregisteredEvent.Initialize();
+    return *this;
 }
 
 /*-------------------------------------------------------------------------*/
 
-CAbstractFactoryBase::CAbstractFactoryBase( bool useEventing )
-    : CNotifier( useEventing )
-    , m_useEventing( useEventing )
-{GUCEF_TRACE;
-
-    if ( useEventing )
-        RegisterEvents();
+CString 
+CJsonLoggingFormatter::EscapeJson( const CString& s ) 
+{
+    std::ostringstream o;
+    for ( UInt32 i=0; i<s.Length(); ++i ) 
+    {
+        char c = s[ i ];
+        switch ( c ) 
+        {
+            case '"': o << "\\\""; break;
+            case '\\': o << "\\\\"; break;
+            case '\b': o << "\\b"; break;
+            case '\f': o << "\\f"; break;
+            case '\n': o << "\\n"; break;
+            case '\r': o << "\\r"; break;
+            case '\t': o << "\\t"; break;
+            default:
+            {
+                if ('\x00' <= c && c <= '\x1f') 
+                {
+                    o << "\\u"
+                    << std::hex << std::setw(4) << std::setfill('0') << (int) c;
+                } 
+                else 
+                {
+                    o << c;
+                }
+            }
+        }
+    }
+    return o.str();
 }
 
 /*-------------------------------------------------------------------------*/
 
-CAbstractFactoryBase::~CAbstractFactoryBase()
+CString
+CJsonLoggingFormatter::FormatLogMessage( const TLogMsgType logMsgType ,
+                                         const Int32 logLevel         ,
+                                         const CString& logMessage    ,
+                                         const UInt32 threadId        )
 {GUCEF_TRACE;
 
+    return   "{\"thread\"=" + UInt32ToString( threadId ) +
+           ", \"type\"=\"" + CLogManager::GetLogMsgTypeString( logMsgType ) + "\""
+           ", \"lvl\"=\"" + LogLevelToString( logLevel ) + "\""
+           ", \"msg\"=\"" + EscapeJson( logMessage ) + "\"";
 }
 
 /*-------------------------------------------------------------------------//

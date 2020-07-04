@@ -82,11 +82,6 @@ class GUCEF_CORE_PUBLIC_CPP CILogger
 
     virtual Int32 GetMinimalLogLevel( void ) const = 0;
 
-    static CString FormatStdLogMessage( const TLogMsgType logMsgType ,
-                                        const Int32 logLevel         ,
-                                        const CString& logMessage    ,
-                                        const UInt32 threadId        );
-
     CILogger( void );                             /**< interface class: no-op */
     virtual ~CILogger();                          /**< interface class: no-op */
     CILogger( const CILogger& src );              /**< interface class: no-op */

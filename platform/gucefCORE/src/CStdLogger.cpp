@@ -35,6 +35,16 @@
 #define GUCEF_CORE_CIOACCESS_H
 #endif /* GUCEF_CORE_CIOACCESS_H ? */
 
+#ifndef GUCEF_CORE_CILOGGINGFORMATTER_H
+#include "gucefCORE_CILoggingFormatter.h"
+#define GUCEF_CORE_CILOGGINGFORMATTER_H
+#endif /* GUCEF_CORE_CILOGGINGFORMATTER_H ? */
+
+#ifndef GUCEF_CORE_CCOREGLOBAL_H
+#include "gucefCORE_CCoreGlobal.h"
+#define GUCEF_CORE_CCOREGLOBAL_H
+#endif /* GUCEF_CORE_CCOREGLOBAL_H ? */
+
 #include "CStdLogger.h"
 
 #ifndef GUCEF_CORE_ESSENTIALS_H
@@ -58,9 +68,10 @@ namespace CORE {
 //-------------------------------------------------------------------------*/
 
 CStdLogger::CStdLogger( void )
-    : CILogger()                                 ,
-      m_output( NULL )                           ,
-      m_minimalLogLevel( LOGLEVEL_BELOW_NORMAL )
+    : CILogger()                                 
+    , m_output( NULL )                           
+    , m_minimalLogLevel( LOGLEVEL_BELOW_NORMAL ) 
+    , m_logFormatter( CCoreGlobal::Instance()->GetLogManager().CreateDefaultLoggingFormatter() )
 {GUCEF_TRACE;
 
 }
@@ -68,9 +79,10 @@ CStdLogger::CStdLogger( void )
 /*-------------------------------------------------------------------------*/
 
 CStdLogger::CStdLogger( CIOAccess& output )
-    : CILogger()                                 ,
-      m_output( &output )                        ,
-      m_minimalLogLevel( LOGLEVEL_BELOW_NORMAL )
+    : CILogger()                                 
+    , m_output( &output )                        
+    , m_minimalLogLevel( LOGLEVEL_BELOW_NORMAL )
+    , m_logFormatter( CCoreGlobal::Instance()->GetLogManager().CreateDefaultLoggingFormatter() )
 {GUCEF_TRACE;
 
     assert( &output != NULL );
@@ -84,6 +96,9 @@ CStdLogger::~CStdLogger()
 
     CCoreGlobal::Instance()->GetLogManager().RemoveLogger( this );
     FlushLog();
+
+    delete m_logFormatter;
+    m_logFormatter = GUCEF_NULL;
 }
 
 /*-------------------------------------------------------------------------*/
@@ -110,10 +125,10 @@ CStdLogger::Log( const TLogMsgType logMsgType ,
     {
         if ( logLevel >= m_minimalLogLevel )
         {
-            CString actualLogMsg( FormatStdLogMessage( logMsgType ,
-                                                       logLevel   ,
-                                                       logMessage ,
-                                                       threadId   ) + "\n" );
+            CString actualLogMsg( m_logFormatter->FormatLogMessage( logMsgType ,
+                                                                    logLevel   ,
+                                                                    logMessage ,
+                                                                    threadId   ) + "\n" );
 
             m_output->Write( actualLogMsg.C_String() ,
                              actualLogMsg.Length()   ,

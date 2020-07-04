@@ -55,6 +55,16 @@
 #define GUCEF_CORE_DVCPPSTRINGUTILS_H
 #endif /* GUCEF_CORE_DVCPPSTRINGUTILS_H ? */
 
+#ifndef GUCEF_CORE_CJSONLOGGINGFORMATTER_H
+#include "gucefCORE_CJsonLoggingFormatter.h"
+#define GUCEF_CORE_CJSONLOGGINGFORMATTER_H
+#endif /* GUCEF_CORE_CJSONLOGGINGFORMATTER_H ? */
+
+#ifndef GUCEF_CORE_CBASICBRACKETLOGGINGFORMATTER_H
+#include "gucefCORE_CBasicBracketLoggingFormatter.h"
+#define GUCEF_CORE_CBASICBRACKETLOGGINGFORMATTER_H
+#endif /* GUCEF_CORE_CBASICBRACKETLOGGINGFORMATTER_H ? */
+
 #include "CLogManager.h"
 
 #ifndef GUCEF_CORE_ESSENTIALS_H
@@ -82,6 +92,15 @@ namespace CORE {
 
 /*-------------------------------------------------------------------------//
 //                                                                         //
+//      TYPES                                                              //
+//                                                                         //
+//-------------------------------------------------------------------------*/
+
+typedef CTFactory< CILoggingFormatter, CJsonLoggingFormatter > JsonLoggingFormatterFactory;
+typedef CTFactory< CILoggingFormatter, CBasicBracketLoggingFormatter > BasicBracketLoggingFormatterFactory;
+
+/*-------------------------------------------------------------------------//
+//                                                                         //
 //      GLOBAL VARS                                                        //
 //                                                                         //
 //-------------------------------------------------------------------------*/
@@ -101,6 +120,9 @@ const Int32 LOGLEVEL_EVERYTHING = 0;
 static CAndroidSystemLogger androidSystemLogger;
 #endif /* GUCEF_PLATFORM == GUCEF_PLATFORM_ANDROID ? */
 
+static JsonLoggingFormatterFactory jsonLoggingFormatterFactory;
+static BasicBracketLoggingFormatterFactory basicBracketLoggingFormatterFactory;
+
 /*-------------------------------------------------------------------------//
 //                                                                         //
 //      UTILITIES                                                          //
@@ -114,8 +136,14 @@ CLogManager::CLogManager( void )
     , m_bootstrapLog() 
     , m_busyLogging( false ) 
     , m_redirectToLogQueue( false )
+    , m_logFormatterFactory( false, false )
+    , m_defaultLogFormatter()
     , m_dataLock()
 {GUCEF_TRACE;
+
+    m_defaultLogFormatter = "basicbracket";
+    m_logFormatterFactory.RegisterConcreteFactory( m_defaultLogFormatter, &basicBracketLoggingFormatterFactory );
+    m_logFormatterFactory.RegisterConcreteFactory( "json", &jsonLoggingFormatterFactory );
 
     #if ( GUCEF_PLATFORM == GUCEF_PLATFORM_ANDROID )
     AddLogger( &androidSystemLogger);
@@ -128,6 +156,7 @@ CLogManager::~CLogManager()
 {GUCEF_TRACE;
 
     ClearLoggers();
+    ClearLoggingFormatters();
 
     delete m_loggingTask;
     m_loggingTask = GUCEF_NULL;
@@ -234,9 +263,91 @@ CLogManager::ClearLoggers( void )
 
 /*-------------------------------------------------------------------------*/
 
- bool
- CLogManager::IsLoggingEnabled( const TLogMsgType logMsgType ,
-                                const Int32 logLevel         ) const
+bool 
+CLogManager::AddLoggingFormatterFactory( const CString& name                    ,
+                                         TLoggingFormatterFactory* formatterFac ,
+                                         bool overrideDefault                   )
+{GUCEF_TRACE;
+
+    if ( name.IsNULLOrEmpty() )
+        return false;
+
+    MT::CObjectScopeLock lock( this );
+    m_logFormatterFactory.RegisterConcreteFactory( name, formatterFac );
+
+    if ( m_defaultLogFormatter.IsNULLOrEmpty() || overrideDefault )
+        m_defaultLogFormatter = name;
+    return true;
+}
+
+/*-------------------------------------------------------------------------*/
+
+bool 
+CLogManager::RemoveLoggingFormatterFactory( const CString& name )
+{GUCEF_TRACE;
+
+    MT::CObjectScopeLock lock( this );
+    if ( m_logFormatterFactory.IsConstructible( name ) )
+    {
+        m_logFormatterFactory.UnregisterConcreteFactory( name );
+        return true;
+    }
+    return false;
+}
+
+/*-------------------------------------------------------------------------*/
+
+void 
+CLogManager::ClearLoggingFormatters( void )
+{GUCEF_TRACE;
+
+    MT::CObjectScopeLock lock( this );
+    m_logFormatterFactory.UnregisterAllConcreteFactories();
+}
+
+/*-------------------------------------------------------------------------*/
+
+CILoggingFormatter* 
+CLogManager::CreateLoggingFormatter( const CString& name )
+{GUCEF_TRACE;
+
+    MT::CObjectScopeLock lock( this );
+    return m_logFormatterFactory.Create( name );
+}
+
+/*-------------------------------------------------------------------------*/
+
+CILoggingFormatter*
+CLogManager::CreateDefaultLoggingFormatter( void )
+{GUCEF_TRACE;
+
+    MT::CObjectScopeLock lock( this );
+    return m_logFormatterFactory.Create( m_defaultLogFormatter ); 
+}
+
+/*-------------------------------------------------------------------------*/
+
+bool 
+CLogManager::SetDefaultLoggingFormatter( const CString& name )
+{GUCEF_TRACE;
+
+    if ( name.IsNULLOrEmpty() )
+        return false;
+
+    MT::CObjectScopeLock lock( this );
+    if ( m_logFormatterFactory.IsConstructible( name ) )
+    {
+        m_defaultLogFormatter = name;
+        return true;
+    }
+    return false;
+}
+
+/*-------------------------------------------------------------------------*/
+
+bool
+CLogManager::IsLoggingEnabled( const TLogMsgType logMsgType ,
+                               const Int32 logLevel         ) const
 {GUCEF_TRACE;
 
     MT::CObjectScopeLock lock( this );

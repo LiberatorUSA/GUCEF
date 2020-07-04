@@ -35,6 +35,16 @@
 #define GUCEF_CORE_CIOACCESS_H
 #endif /* GUCEF_CORE_CIOACCESS_H ? */
 
+#ifndef GUCEF_CORE_CILOGGINGFORMATTER_H
+#include "gucefCORE_CILoggingFormatter.h"
+#define GUCEF_CORE_CILOGGINGFORMATTER_H
+#endif /* GUCEF_CORE_CILOGGINGFORMATTER_H ? */
+
+#ifndef GUCEF_CORE_CCOREGLOBAL_H
+#include "gucefCORE_CCoreGlobal.h"
+#define GUCEF_CORE_CCOREGLOBAL_H
+#endif /* GUCEF_CORE_CCOREGLOBAL_H ? */
+
 #ifndef GUCEF_CORE_ESSENTIALS_H
 #include "gucef_essentials.h"
 #define GUCEF_CORE_ESSENTIALS_H
@@ -70,6 +80,7 @@ CMSWinConsoleLogger::CMSWinConsoleLogger( void )
     , m_formatForUiPurpose( false )              
     , m_consoleHandle( NULL )
     , m_ownedConsole( false )
+    , m_logFormatter( CCoreGlobal::Instance()->GetLogManager().CreateDefaultLoggingFormatter() )
 {GUCEF_TRACE;
 
     HWND consoleWindow = ::GetConsoleWindow();
@@ -97,6 +108,9 @@ CMSWinConsoleLogger::~CMSWinConsoleLogger()
 
     if ( m_ownedConsole )
         ::FreeConsole();
+
+    delete m_logFormatter;
+    m_logFormatter = GUCEF_NULL;
 }
 
 /*-------------------------------------------------------------------------*/
@@ -130,10 +144,10 @@ CMSWinConsoleLogger::Log( const TLogMsgType logMsgType ,
     {
         if ( logLevel >= m_minimalLogLevel )
         {
-            CString actualLogMsg( FormatStdLogMessage( logMsgType ,
-                                                       logLevel   ,
-                                                       logMessage ,
-                                                       threadId   ) + "\n" );
+            CString actualLogMsg( m_logFormatter->FormatLogMessage( logMsgType ,
+                                                                    logLevel   ,
+                                                                    logMessage ,
+                                                                    threadId   ) + "\n" );
 
             DWORD charsWritten = 0;
             ::WriteConsoleA( m_consoleHandle, actualLogMsg.C_String(), (DWORD)actualLogMsg.Length(), &charsWritten, NULL );

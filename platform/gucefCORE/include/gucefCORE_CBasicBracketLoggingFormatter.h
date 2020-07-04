@@ -17,8 +17,8 @@
  *  Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA
  */
 
-#ifndef GUCEF_CORE_CMSWINCONSOLELOGGER_H
-#define GUCEF_CORE_CMSWINCONSOLELOGGER_H
+#ifndef GUCEF_CORE_CBASICBRACKETLOGGINGFORMATTER_H
+#define GUCEF_CORE_CBASICBRACKETLOGGINGFORMATTER_H
 
 /*-------------------------------------------------------------------------//
 //                                                                         //
@@ -26,12 +26,11 @@
 //                                                                         //
 //-------------------------------------------------------------------------*/
 
-#ifndef GUCEF_CORE_CICONSOLELOGGER_H
-#include "gucefCORE_CIConsoleLogger.h"
-#define GUCEF_CORE_CICONSOLELOGGER_H
-#endif /* GUCEF_CORE_CICONSOLELOGGER_H ? */
+#ifndef GUCEF_CORE_CILOGGINGFORMATTER_H
+#include "gucefCORE_CILoggingFormatter.h"
+#define GUCEF_CORE_CILOGGINGFORMATTER_H
+#endif /* GUCEF_CORE_CILOGGINGFORMATTER_H ? */
 
-#ifdef GUCEF_MSWIN_BUILD
 /*-------------------------------------------------------------------------//
 //                                                                         //
 //      NAMESPACE                                                          //
@@ -48,49 +47,23 @@ namespace CORE {
 //-------------------------------------------------------------------------*/
 
 /**
- *  GUCEF logger implementation for MS Windows that displays log output
- *  in a console window.
+ *  Basic log formatter implementation which envelops the various fields with square brackets and their name
+ *      [<FieldName>=<FieldContent>]
+ *  This is the historical default formatter
  */
-class GUCEF_CORE_PUBLIC_CPP CMSWinConsoleLogger : public CIConsoleLogger
+class GUCEF_CORE_PUBLIC_CPP CBasicBracketLoggingFormatter : public CILoggingFormatter
 {
     public:
 
-    CMSWinConsoleLogger( void );
+    virtual CString FormatLogMessage( const TLogMsgType logMsgType ,
+                                      const Int32 logLevel         ,
+                                      const CString& logMessage    ,
+                                      const UInt32 threadId        ) GUCEF_VIRTUAL_OVERRIDE;
 
-    virtual ~CMSWinConsoleLogger();
-
-    virtual void Log( const TLogMsgType logMsgType ,
-                      const Int32 logLevel         ,
-                      const CString& logMessage    ,
-                      const UInt32 threadId        ) GUCEF_VIRTUAL_OVERRIDE;
-
-    virtual void LogWithoutFormatting( const TLogMsgType logMsgType ,
-                                       const Int32 logLevel         ,
-                                       const CString& logMessage    ,
-                                       const UInt32 threadId        ) GUCEF_VIRTUAL_OVERRIDE;
-
-    virtual void FlushLog( void ) GUCEF_VIRTUAL_OVERRIDE;
-
-    virtual void SetMinimalLogLevel( const Int32 logLevel ) GUCEF_VIRTUAL_OVERRIDE;
-
-    virtual Int32 GetMinimalLogLevel( void ) const GUCEF_VIRTUAL_OVERRIDE;
-
-    virtual void SetFormatAsConsoleUI( bool formatForUiPurpose );
-    
-    virtual bool GetFormatAsConsoleUI( void ) const;
-
-    private:
-
-    CMSWinConsoleLogger& operator=( const CMSWinConsoleLogger& src );
-    CMSWinConsoleLogger( const CMSWinConsoleLogger& src );
-
-    private:
-
-    Int32 m_minimalLogLevel;
-    bool m_formatForUiPurpose;
-    HANDLE m_consoleHandle;
-    bool m_ownedConsole;
-    CILoggingFormatter* m_logFormatter;
+    CBasicBracketLoggingFormatter( void );            
+    virtual ~CBasicBracketLoggingFormatter();    
+    CBasicBracketLoggingFormatter( const CBasicBracketLoggingFormatter& src ); 
+    CBasicBracketLoggingFormatter& operator=( const CBasicBracketLoggingFormatter& src );
 };
 
 /*-------------------------------------------------------------------------//
@@ -103,17 +76,6 @@ class GUCEF_CORE_PUBLIC_CPP CMSWinConsoleLogger : public CIConsoleLogger
 }; /* namespace GUCEF */
 
 /*-------------------------------------------------------------------------*/
-#endif /* GUCEF_MSWIN_BUILD ? */
 
-#endif /* GUCEF_CORE_CMSWINCONSOLELOGGER_H ? */
+#endif /* GUCEF_CORE_CBASICBRACKETLOGGINGFORMATTER_H ? */
 
-/*-------------------------------------------------------------------------//
-//                                                                         //
-//      Info & Changes                                                     //
-//                                                                         //
-//-------------------------------------------------------------------------//
-
-- 19-05-2007 :
-        - Dinand: Added this class
-
----------------------------------------------------------------------------*/

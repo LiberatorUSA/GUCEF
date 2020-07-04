@@ -142,6 +142,7 @@ set( HEADER_FILES
   include/dvstrutils.h
   include/gucefCORE.h
   include/gucefCORE_CAbstractFactoryBase.h
+  include/gucefCORE_CBasicBracketLoggingFormatter.h
   include/gucefCORE_CBusyWaitPulseGeneratorDriver.h
   include/gucefCORE_CCoreGlobal.h
   include/gucefCORE_CDirectoryWatcher.h
@@ -149,6 +150,7 @@ set( HEADER_FILES
   include/gucefCORE_CForwardingNotifier.h
   include/gucefCORE_CIConsoleLogger.h
   include/gucefCORE_CIEventHandlerFunctorBase.h
+  include/gucefCORE_CILoggingFormatter.h
   include/gucefCORE_CIMetricsSystemClient.h
   include/gucefCORE_CIOAccessToIOStream.h
   include/gucefCORE_CIObserver.h
@@ -158,6 +160,7 @@ set( HEADER_FILES
   include/gucefCORE_CITaskConsumer.h
   include/gucefCORE_CIniDataStoreCodec.h
   include/gucefCORE_CIniParser.h
+  include/gucefCORE_CJsonLoggingFormatter.h
   include/gucefCORE_CLinkedTransferBuffer.h
   include/gucefCORE_CLoaderDelegatedPluginLoadLogic.h
   include/gucefCORE_CLoggingTask.h
@@ -316,12 +319,14 @@ set( SOURCE_FILES
   src/dvstrutils.c
   src/gucefCORE.cpp
   src/gucefCORE_CAbstractFactoryBase.cpp
+  src/gucefCORE_CBasicBracketLoggingFormatter.cpp
   src/gucefCORE_CBusyWaitPulseGeneratorDriver.cpp
   src/gucefCORE_CCoreGlobal.cpp
   src/gucefCORE_CDirectoryWatcher.cpp
   src/gucefCORE_CForwardingNotifier.cpp
   src/gucefCORE_CIConsoleLogger.cpp
   src/gucefCORE_CIEventHandlerFunctorBase.cpp
+  src/gucefCORE_CILoggingFormatter.cpp
   src/gucefCORE_CIMetricsSystemClient.cpp
   src/gucefCORE_CIOAccessToIOStream.cpp
   src/gucefCORE_CIObserver.cpp
@@ -331,6 +336,7 @@ set( SOURCE_FILES
   src/gucefCORE_CITaskConsumer.cpp
   src/gucefCORE_CIniDataStoreCodec.cpp
   src/gucefCORE_CIniParser.cpp
+  src/gucefCORE_CJsonLoggingFormatter.cpp
   src/gucefCORE_CLinkedTransferBuffer.cpp
   src/gucefCORE_CLoaderDelegatedPluginLoadLogic.cpp
   src/gucefCORE_CLoggingTask.cpp

@@ -91,6 +91,7 @@ class GUCEF_CORE_PUBLIC_CPP CStdLogger : public CILogger
 
     CIOAccess* m_output;
     Int32 m_minimalLogLevel;
+    CILoggingFormatter* m_logFormatter;
 };
 
 /*-------------------------------------------------------------------------//

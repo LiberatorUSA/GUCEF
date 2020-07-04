@@ -44,6 +44,11 @@
 #define GUCEF_CORE_CDVSTRING_H
 #endif /* GUCEF_CORE_CDVSTRING_H ? */
 
+#ifndef GUCEF_CORE_CTABSTRACTFACTORY_H
+#include "CTAbstractFactory.h"
+#define GUCEF_CORE_CTABSTRACTFACTORY_H
+#endif /* GUCEF_CORE_CTABSTRACTFACTORY_H ? */
+
 #ifndef GUCEF_CORE_MACROS_H
 #include "gucefCORE_macros.h"           /* often used gucef macros */
 #define GUCEF_CORE_MACROS_H
@@ -65,6 +70,7 @@ namespace CORE {
 //-------------------------------------------------------------------------*/
 
 class CILogger;
+class CILoggingFormatter;
 class CMultiLogger;
 class CLoggingTask;
 class CString;
@@ -94,11 +100,28 @@ class GUCEF_CORE_PUBLIC_CPP CLogManager : public MT::CILockable
     };
     typedef enum ELogMsgType TLogMsgType;
 
+    typedef CTAbstractFactory< CString, CILoggingFormatter > TAbstractLoggingFormatterFactory;
+    typedef TAbstractLoggingFormatterFactory::TConcreteFactory TLoggingFormatterFactory;
+
     void AddLogger( CILogger* loggerImp );
 
     void RemoveLogger( CILogger* loggerImp );
 
     void ClearLoggers( void );
+
+    bool AddLoggingFormatterFactory( const CString& name                        ,
+                                     TLoggingFormatterFactory* formatterFactory ,
+                                     bool overrideDefault = true                );
+
+    bool RemoveLoggingFormatterFactory( const CString& name );
+
+    CILoggingFormatter* CreateLoggingFormatter( const CString& name );
+
+    CILoggingFormatter* CreateDefaultLoggingFormatter( void );
+
+    bool SetDefaultLoggingFormatter( const CString& name );
+
+    void ClearLoggingFormatters( void );
 
     bool IsLoggingEnabled( const TLogMsgType logMsgType ,
                            const Int32 logLevel         ) const;
@@ -180,6 +203,8 @@ class GUCEF_CORE_PUBLIC_CPP CLogManager : public MT::CILockable
     TBootstrapLogVector m_bootstrapLog;
     bool m_busyLogging;
     bool m_redirectToLogQueue;
+    TAbstractLoggingFormatterFactory m_logFormatterFactory;
+    CString m_defaultLogFormatter;
     MT::CMutex m_dataLock;
 };
 
