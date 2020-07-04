@@ -42,6 +42,7 @@
   /* Do not use WIN32_LEAN_AND_MEAN because it will remove timeBeginPeriod() etc. */
   #undef  WIN32_LEAN_AND_MEAN
   #include <windows.h>                /* Windows API */
+  #include <psapi.h>
   #undef min
   #undef max
   #define MAX_DIR_LENGTH MAX_PATH
@@ -67,6 +68,11 @@
 #define GUCEF_CORE_GUCEF_ESSENTIALS_H
 #endif /* GUCEF_CORE_GUCEF_ESSENTIALS_H ? */
 
+#ifndef GUCEF_CORE_DVCPPSTRINGUTILS_H
+#include "dvcppstringutils.h"  
+#define GUCEF_CORE_DVCPPSTRINGUTILS_H
+#endif /* GUCEF_CORE_DVCPPSTRINGUTILS_H ? */
+
 /*-------------------------------------------------------------------------//
 //                                                                         //
 //      NAMESPACE                                                          //
@@ -80,13 +86,31 @@ namespace CORE {
 
 /*-------------------------------------------------------------------------//
 //                                                                         //
+//      TYPES                                                              //
+//                                                                         //
+//-------------------------------------------------------------------------*/
+
+struct SProcessId
+{
+    #if ( GUCEF_PLATFORM == GUCEF_PLATFORM_MSWIN )
+    DWORD pid;
+    #elif ( ( GUCEF_PLATFORM == GUCEF_PLATFORM_LINUX ) || ( GUCEF_PLATFORM == GUCEF_PLATFORM_ANDROID ) )
+    pid_t pid;
+    #else
+    int foobar_NotSupported;
+    #endif
+};
+
+/*-------------------------------------------------------------------------//
+//                                                                         //
 //      IMPLEMENTATION                                                     //
 //                                                                         //
 //-------------------------------------------------------------------------*/
 
 void*
 LoadModuleDynamicly( const char* filename )
-{
+{GUCEF_TRACE;
+
     char* fName = (char*) filename;
     const char* fileExt = Extract_File_Ext( filename );
     void* modulePtr = NULL;
@@ -169,7 +193,8 @@ LoadModuleDynamicly( const char* filename )
 
 GUCEF_CORE_PUBLIC_C void*
 GetModulePointer( const char* moduleName )
-{
+{GUCEF_TRACE;
+
     // If no module name is passed we get the pointer to the main process module
 
     #if ( ( GUCEF_PLATFORM == GUCEF_PLATFORM_LINUX ) || ( GUCEF_PLATFORM == GUCEF_PLATFORM_ANDROID ) )
@@ -193,7 +218,8 @@ GetModulePointer( const char* moduleName )
 
 void
 UnloadModuleDynamicly( void *sohandle )
-{
+{GUCEF_TRACE;
+
     if ( NULL == sohandle ) return;
 
     #if ( ( GUCEF_PLATFORM == GUCEF_PLATFORM_LINUX ) || ( GUCEF_PLATFORM == GUCEF_PLATFORM_ANDROID ) )
@@ -215,7 +241,8 @@ TAnyPointer
 GetFunctionAddress( void *sohandle           ,
                     const char* functionname ,
                     UInt32 parambytes        )
-{
+{GUCEF_TRACE;
+
     /*
      *      Calling Convention      Internal*       MSVC DLL (w/ DEF)       MSVC DLL (dllexport)  	DMC DLL         MinGW DLL       BCC DLL
      *      __stdcall               _Function@n  	Function                _Function@n             _Function@n     Function@n      Function
@@ -320,9 +347,14 @@ GetCurrentHWND( void )
          *      Try to get the HWND from the process environment settings
          */
         hwndstr = GUCEFGetEnv( "HWND" );
-        if ( hwndstr )
+        if ( hwndstr != GUCEF_NULL )
         {
+                
+                #ifdef GUCEF_64BIT
+                whandle = (HWND) StringToInt64( hwndstr );
+                #else
                 whandle = (HWND) Str_To_Int( hwndstr );
+                #endif
         }
         else
         {
@@ -538,7 +570,8 @@ GUCEFGetEnv( const char* key )
 
 UInt32
 GUCEFGetTickCount( void )
-{
+{GUCEF_TRACE;
+
     #if ( GUCEF_PLATFORM == GUCEF_PLATFORM_MSWIN )
 
     return GetTickCount();
@@ -564,7 +597,8 @@ GUCEFGetTickCount( void )
 void
 ShowErrorMessage( const char* message     ,
                   const char* description )
-{
+{GUCEF_TRACE;
+
     #ifdef GUCEF_MSWIN_BUILD
     MessageBox( GetCurrentHWND()                    ,
                 description                         ,
@@ -579,7 +613,8 @@ ShowErrorMessage( const char* message     ,
 
 UInt32
 GetCPUCountPerPackage( void )
-{
+{GUCEF_TRACE;
+
     /* Number of Logical Cores per Physical Processor */
     UInt32 coreCount = 1;
 
@@ -612,7 +647,8 @@ GetCPUCountPerPackage( void )
 
 UInt32
 GetPhysicalCPUCount( void )
-{
+{GUCEF_TRACE;
+
     return GetLogicalCPUCount() / GetCPUCountPerPackage();
 }
 
@@ -620,13 +656,383 @@ GetPhysicalCPUCount( void )
 
 UInt32
 GetLogicalCPUCount( void )
-{
+{GUCEF_TRACE;
+
     #ifdef GUCEF_MSWIN_BUILD
     SYSTEM_INFO systemInfo;
-    GetSystemInfo( &systemInfo );
+    ::GetSystemInfo( &systemInfo );
     return systemInfo.dwNumberOfProcessors;
     #else
     return 1;
+    #endif
+}
+
+/*--------------------------------------------------------------------------*/
+
+UInt32
+GetProcessList( struct SProcessId** processList , 
+                UInt32* processCount            )
+{GUCEF_TRACE;
+
+    if ( GUCEF_NULL == processCount )
+        return OSWRAP_FALSE;
+    
+    #if ( GUCEF_PLATFORM == GUCEF_PLATFORM_MSWIN )
+
+    DWORD reservedListSizeInBytes = 1024 * sizeof(DWORD); 
+    DWORD usedListSizeInBytes = 0;
+    DWORD* win32ProcessList = GUCEF_NULL;
+    do
+    {
+        win32ProcessList = (DWORD*) realloc( win32ProcessList, reservedListSizeInBytes );
+        if ( GUCEF_NULL == win32ProcessList )
+            return OSWRAP_FALSE;
+
+        if ( 0 == ::EnumProcesses( win32ProcessList, reservedListSizeInBytes, &usedListSizeInBytes ) )
+        {
+            return OSWRAP_FALSE;
+        }
+
+        if ( reservedListSizeInBytes != usedListSizeInBytes )
+        {
+            break;
+        }
+        else
+        {
+            // Guestimate: just double the storage
+            reservedListSizeInBytes *= 2;
+        }
+    }
+    while ( true );
+
+    *processCount = usedListSizeInBytes / sizeof(DWORD);
+    *processList = (struct SProcessId*) realloc( *processList, (*processCount) * sizeof(struct SProcessId) );
+    
+    for ( UInt32 i=0; i<(*processCount); ++i )
+    {
+        (*processList)[ i ].pid = win32ProcessList[ i ];   
+    }
+
+    free( win32ProcessList );
+
+    return OSWRAP_TRUE;
+
+    #elif ( ( GUCEF_PLATFORM == GUCEF_PLATFORM_LINUX ) || ( GUCEF_PLATFORM == GUCEF_PLATFORM_ANDROID ) )
+
+    // @todo
+    *processList = GUCEF_NULL;
+    *processCount = 0;
+    return OSWRAP_FALSE;
+    
+    #else
+
+    *processList = GUCEF_NULL;
+    *processCount = 0;
+    return OSWRAP_FALSE;
+
+    #endif
+}
+
+/*--------------------------------------------------------------------------*/
+
+void
+FreeProcessList( TProcessId* processList )
+{GUCEF_TRACE;
+
+    if ( GUCEF_NULL != processList )
+        free( processList );
+}
+
+/*--------------------------------------------------------------------------*/
+
+TProcessId*
+GetProcessIdAtIndex( TProcessId* processList ,
+                     UInt32 index            )
+{GUCEF_TRACE;
+
+    if ( GUCEF_NULL != processList )
+        return &processList[ index ];
+    return GUCEF_NULL;
+}
+
+/*--------------------------------------------------------------------------*/
+
+TProcessId*
+CopyProcessId( TProcessId* pid )
+{GUCEF_TRACE;
+
+    if ( GUCEF_NULL != pid )
+    {
+        TProcessId* pidCopy = (TProcessId*) malloc( sizeof(TProcessId) );
+        memcpy( pidCopy, pid, sizeof(TProcessId) );
+        return pidCopy;
+    }
+    return GUCEF_NULL;
+}
+
+/*--------------------------------------------------------------------------*/
+
+GUCEF_CORE_PUBLIC_C void
+FreeProcessId( TProcessId* pid )
+{GUCEF_TRACE;
+
+    if ( GUCEF_NULL != pid )
+        free( pid );
+}
+
+/*--------------------------------------------------------------------------*/
+
+UInt32
+GetProcessMemmoryUsage( TProcessId* pid                     , 
+                        TProcessMemoryUsageInfo* memUseInfo )
+{GUCEF_TRACE;
+
+    if ( GUCEF_NULL == pid || GUCEF_NULL == memUseInfo )
+        return OSWRAP_FALSE;
+
+    memset( memUseInfo, 0, sizeof(TProcessMemoryUsageInfo) );
+    
+    #if ( GUCEF_PLATFORM == GUCEF_PLATFORM_MSWIN )
+
+    HANDLE hProcess = ::OpenProcess(  PROCESS_QUERY_INFORMATION | PROCESS_VM_READ,
+                                      FALSE, 
+                                      pid->pid );
+    if ( GUCEF_NULL == hProcess )
+        return OSWRAP_FALSE;
+
+    PROCESS_MEMORY_COUNTERS pmc;
+    if ( ::GetProcessMemoryInfo( hProcess, &pmc, sizeof(pmc) ) )
+    {
+        memUseInfo->pageFaultCountInBytes = (TProcessMemoryUsageInfo::TProcMemStatInt) pmc.PageFaultCount;
+        memUseInfo->pageFileUsageInBytes = (TProcessMemoryUsageInfo::TProcMemStatInt) pmc.PagefileUsage;
+        memUseInfo->peakPageFileUsageInBytes = (TProcessMemoryUsageInfo::TProcMemStatInt) pmc.PeakPagefileUsage;
+        memUseInfo->peakWorkingSetSizeInBytes  = (TProcessMemoryUsageInfo::TProcMemStatInt) pmc.PeakWorkingSetSize;
+        //memUseInfo->quotaNonPagedPoolUsageInBytes  = (TProcessMemoryUsageInfo::TProcMemStatInt) pmc.QuotaNonPagedPoolUsage;
+        //memUseInfo->quotaPagedPoolUsageInBytes  = (TProcessMemoryUsageInfo::TProcMemStatInt) pmc.QuotaPagedPoolUsage;
+        //memUseInfo->quotaPeakNonPagedPoolUsageInBytes  = (TProcessMemoryUsageInfo::TProcMemStatInt) pmc.QuotaPeakNonPagedPoolUsage;
+        //memUseInfo->quotaPeakPagedPoolUsageInBytes  = (TProcessMemoryUsageInfo::TProcMemStatInt) pmc.QuotaPeakPagedPoolUsage;
+        memUseInfo->workingSetSizeInBytes  = (TProcessMemoryUsageInfo::TProcMemStatInt) pmc.WorkingSetSize;
+
+        ::CloseHandle( hProcess );
+        return OSWRAP_TRUE;
+    }
+
+    ::CloseHandle( hProcess );
+    return OSWRAP_FALSE;
+
+    #elif ( ( GUCEF_PLATFORM == GUCEF_PLATFORM_LINUX ) || ( GUCEF_PLATFORM == GUCEF_PLATFORM_ANDROID ) )
+
+    // @todo
+    return OSWRAP_FALSE;
+    
+    #else
+
+    return OSWRAP_FALSE;
+
+    #endif
+}
+
+/*--------------------------------------------------------------------------*/
+
+UInt32
+GetGlobalMemoryUsage( TGlobalMemoryUsageInfo* memUseInfo )
+{GUCEF_TRACE;
+
+    if ( GUCEF_NULL == memUseInfo )
+        return OSWRAP_FALSE; 
+    
+    memset( memUseInfo, 0, sizeof(TGlobalMemoryUsageInfo) );
+    
+    #if ( GUCEF_PLATFORM == GUCEF_PLATFORM_MSWIN )
+
+    ::MEMORYSTATUSEX statex;
+    statex.dwLength = sizeof(statex);
+    if ( 0 != ::GlobalMemoryStatusEx( &statex ) )
+    {
+        memUseInfo->memoryLoadPercentage = (UInt8) statex.dwMemoryLoad;
+        memUseInfo->totalPhysicalMemoryInBytes = (TGlobalMemoryUsageInfo::TMemStatInt) statex.ullTotalPhys;
+        memUseInfo->availablePhysicalMemoryInBytes = (TGlobalMemoryUsageInfo::TMemStatInt) statex.ullAvailPhys;
+        memUseInfo->totalPageFileSizeInBytes = (TGlobalMemoryUsageInfo::TMemStatInt) statex.ullTotalPageFile;
+        memUseInfo->availablePageFileSizeInBytes = (TGlobalMemoryUsageInfo::TMemStatInt) statex.ullAvailPageFile;
+        memUseInfo->totalVirtualMemoryInBytes = (TGlobalMemoryUsageInfo::TMemStatInt) statex.ullTotalVirtual;
+        memUseInfo->availableVirtualMemoryInBytes = (TGlobalMemoryUsageInfo::TMemStatInt) statex.ullAvailVirtual;
+        memUseInfo->availExtendedVirtualMemoryInBytes = (TGlobalMemoryUsageInfo::TMemStatInt) statex.ullAvailExtendedVirtual;
+
+        return OSWRAP_TRUE;
+    }
+    else
+    {
+        return OSWRAP_FALSE;
+    }
+    
+    #elif ( ( GUCEF_PLATFORM == GUCEF_PLATFORM_LINUX ) || ( GUCEF_PLATFORM == GUCEF_PLATFORM_ANDROID ) )
+
+    // @todo
+    return OSWRAP_FALSE;
+    
+    #else
+
+    return OSWRAP_FALSE;
+
+    #endif
+}
+
+/*--------------------------------------------------------------------------*/
+
+UInt32 
+GetExeNameForProcessId( TProcessId* pid        , 
+                        char* outNameBuffer    , 
+                        UInt32 nameBufferSize  ,
+                        UInt32* usedBufferSize )
+{GUCEF_TRACE;
+
+    if ( GUCEF_NULL == pid || GUCEF_NULL == outNameBuffer || GUCEF_NULL == usedBufferSize )
+        return OSWRAP_FALSE;
+
+    #if ( GUCEF_PLATFORM == GUCEF_PLATFORM_MSWIN )
+    
+    HANDLE handle = ::OpenProcess( PROCESS_QUERY_LIMITED_INFORMATION,
+                                   FALSE,
+                                   pid->pid /* This is the PID, you can find one from windows task manager */
+                                 );
+    if ( GUCEF_NULL != handle )
+    {
+        #if 1
+
+        DWORD buffSize = (DWORD) nameBufferSize;
+        if ( ::QueryFullProcessImageNameA( handle, 0, outNameBuffer, &buffSize ) )
+        {
+            *usedBufferSize = (UInt32) buffSize;
+            ::CloseHandle( handle );
+            return OSWRAP_TRUE;
+        }
+        else
+        {
+            *outNameBuffer = '\0';
+            *usedBufferSize = 0;
+        }
+
+        #else
+
+        // Needs PROCESS_QUERY_INFORMATION | PROCESS_VM_READ,
+        
+        HMODULE hMod = 0;
+        DWORD cbNeeded = 0;
+        if ( EnumProcessModules( handle, &hMod, sizeof(hMod), &cbNeeded ) )
+        {
+            *usedBufferSize = (UInt32) GetModuleBaseNameA( handle, hMod, outNameBuffer, nameBufferSize );
+            ::CloseHandle( handle );
+            return OSWRAP_TRUE;
+        }
+        else
+        {
+            *outNameBuffer = '\0';
+            *usedBufferSize = 0;
+        }
+
+        #endif
+
+        ::CloseHandle( handle );
+    }
+    return OSWRAP_FALSE;
+
+    #elif ( ( GUCEF_PLATFORM == GUCEF_PLATFORM_LINUX ) || ( GUCEF_PLATFORM == GUCEF_PLATFORM_ANDROID ) )
+
+    // @todo
+    return OSWRAP_FALSE;
+    
+    #else
+
+    return OSWRAP_FALSE;
+
+    #endif
+}
+
+/*--------------------------------------------------------------------------*/
+
+#if ( GUCEF_PLATFORM == GUCEF_PLATFORM_MSWIN )
+
+Int64
+GetFiletimeDelta( LPFILETIME a, LPFILETIME b )
+{GUCEF_TRACE;
+
+    ULARGE_INTEGER converterStructA;
+    converterStructA.HighPart = a->dwHighDateTime;
+    converterStructA.LowPart = a->dwLowDateTime;
+
+    ULARGE_INTEGER converterStructB;
+    converterStructB.HighPart = b->dwHighDateTime;
+    converterStructB.LowPart = b->dwLowDateTime;
+
+    return converterStructA.QuadPart - converterStructB.QuadPart; 
+}
+
+/*--------------------------------------------------------------------------*/
+
+Int64
+GetDurationSinceFiletimeInMs( LPFILETIME since )
+{GUCEF_TRACE;
+
+    if ( NULL == since )
+        return 0;
+
+    FILETIME systemNowTime;
+    ::GetSystemTimeAsFileTime( &systemNowTime );
+        
+    Int64 timeDeltaInHundredNanoSecs = GetFiletimeDelta( &systemNowTime, since );
+
+    // 100 nanoseconds is 0.0001 ms
+    // so we need to divide by 10000
+    return (Int64) ( timeDeltaInHundredNanoSecs / 10000 );
+}
+
+#endif
+
+/*--------------------------------------------------------------------------*/
+
+UInt32
+GetProcessCpuUsage( TProcessId* pid                  , 
+                    TProcessCpuUsageInfo* cpuUseInfo )
+{GUCEF_TRACE;
+
+    if ( GUCEF_NULL == pid || GUCEF_NULL == cpuUseInfo )
+        return OSWRAP_FALSE;
+
+    memset( cpuUseInfo, 0, sizeof(TProcessCpuUsageInfo) );
+
+    #if ( GUCEF_PLATFORM == GUCEF_PLATFORM_MSWIN )
+
+    HANDLE hProcess = ::OpenProcess(  PROCESS_QUERY_INFORMATION,
+                                      FALSE, 
+                                      pid->pid );
+    if ( GUCEF_NULL == hProcess )
+        return OSWRAP_FALSE;
+
+    FILETIME creationTime;
+    FILETIME exitTime;
+    FILETIME kernelTime;
+    FILETIME userTime;
+    if ( ::GetProcessTimes( hProcess, &creationTime, &exitTime, &kernelTime, &userTime ) == TRUE )
+    {
+        cpuUseInfo->uptimeInMs = (UInt64) GetDurationSinceFiletimeInMs( &creationTime );
+        cpuUseInfo->overallCpuConsumptionPercentage = 0; // <- todo
+        
+        ::CloseHandle( hProcess );
+        return OSWRAP_TRUE;
+    }
+
+    ::CloseHandle( hProcess );
+    return OSWRAP_FALSE;
+
+    #elif ( ( GUCEF_PLATFORM == GUCEF_PLATFORM_LINUX ) || ( GUCEF_PLATFORM == GUCEF_PLATFORM_ANDROID ) )
+
+    // @todo
+    return OSWRAP_FALSE;
+    
+    #else
+
+    return OSWRAP_FALSE;
+
     #endif
 }
 

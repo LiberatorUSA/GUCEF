@@ -3594,6 +3594,16 @@ int rd_kafka_produce(rd_kafka_topic_t *rkt, int32_t partition,
 		      const void *key, size_t keylen,
 		      void *msg_opaque);
 
+/**
+ * @brief DV Edit: Variant of produce(): Add missing variant that accepts headers
+ */
+RD_EXPORT
+int dvcustom_rd_kafka_produce(rd_kafka_topic_t *rkt, int32_t partition,
+		                  int msgflags,
+		                  void *payload, size_t len,
+		                  const void *key, size_t keylen,
+		                  rd_kafka_headers_t *app_hdrs,
+                          void *msg_opaque);
 
 /**
  * @brief Produce and send a single message to broker.

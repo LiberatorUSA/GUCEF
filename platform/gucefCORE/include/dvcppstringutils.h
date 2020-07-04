@@ -36,6 +36,8 @@
 #define GUCEF_CORE_CDVSTRING_H
 #endif /* GUCEF_CORE_CDVSTRING_H ? */
 
+#undef DeleteFile
+
 /*-------------------------------------------------------------------------//
 //                                                                         //
 //      NAMESPACE                                                          //
@@ -128,6 +130,16 @@ FileExists( const CString& filename );
 
 /*-------------------------------------------------------------------------*/
 
+GUCEF_CORE_PUBLIC_CPP bool
+DeleteFile( const CString& filename );
+
+/*-------------------------------------------------------------------------*/
+
+GUCEF_CORE_PUBLIC_CPP bool
+DirExists( const CString& path );
+
+/*-------------------------------------------------------------------------*/
+
 GUCEF_CORE_PUBLIC_CPP UInt32
 FileSize( const CString& filename );
 
@@ -149,7 +161,7 @@ BoolToString( const bool value );
 /*-------------------------------------------------------------------------*/
 
 GUCEF_CORE_PUBLIC_CPP bool
-StringToBool( const CString& str );
+StringToBool( const CString& str, bool defaultIfNeeded = false );
 
 /*-------------------------------------------------------------------------*/
 

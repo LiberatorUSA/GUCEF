@@ -100,15 +100,15 @@ CForwardingNotifier::SetForwardingActiveStateForAllEvents( CNotifier& notifier ,
                                                            const bool enabled  )
 {GUCEF_TRACE;
 
-    LockData();
+    Lock();
     TNotifierMap::iterator i = m_forwardAllForNotifierList.begin();
     if ( i != m_forwardAllForNotifierList.end() )
     {
         (*i).second.enabled = enabled;
-        UnlockData();
+        Unlock();
         return true;
     }
-    UnlockData();
+    Unlock();
     return false;
 }
 
@@ -120,7 +120,7 @@ CForwardingNotifier::SetForwardingActiveStateForEvent( const CEvent& eventid ,
                                                        const bool enabled    )
 {GUCEF_TRACE;
     
-    LockData();
+    Lock();
     
     if ( NULL == notifier )
     {
@@ -128,10 +128,10 @@ CForwardingNotifier::SetForwardingActiveStateForEvent( const CEvent& eventid ,
         if ( i != m_forwardAllList.end() )
         {
             (*i).second.enabled = enabled;
-            UnlockData();
+            Unlock();
             return true;             
         }
-        UnlockData();
+        Unlock();
         return false;         
     }
     
@@ -143,11 +143,11 @@ CForwardingNotifier::SetForwardingActiveStateForEvent( const CEvent& eventid ,
         if ( n != notifierMap.end() )
         {
             (*n).second.enabled = enabled;
-            UnlockData();
+            Unlock();
             return true;            
         }
     }
-    UnlockData();
+    Unlock();
     return false;    
 }
 
@@ -161,11 +161,11 @@ CForwardingNotifier::AddForwardingForAllEvents( CNotifier& notifier             
 
     assert( NULL != &notifier );
     
-    LockData();
+    Lock();
     TForwardState& state = m_forwardAllForNotifierList[ &notifier ];
     state.enabled = enabled;
     state.filter = originFilter;
-    UnlockData();
+    Unlock();
 }
 
 /*-------------------------------------------------------------------------*/
@@ -177,7 +177,7 @@ CForwardingNotifier::AddForwardingForEvent( const CEvent& eventid               
                                             const bool enabled                    )
 {GUCEF_TRACE;
     
-    LockData();
+    Lock();
     
     if ( NULL == notifier )
     {
@@ -192,7 +192,7 @@ CForwardingNotifier::AddForwardingForEvent( const CEvent& eventid               
         state.enabled = enabled;
     }
     
-    UnlockData();    
+    Unlock();    
     return true;
 }
 
@@ -204,9 +204,9 @@ CForwardingNotifier::RemoveForwardingForAllEvents( CNotifier& notifier )
 
     assert( NULL != &notifier );
     
-    LockData();
+    Lock();
     m_forwardAllForNotifierList.erase( &notifier );
-    UnlockData();
+    Unlock();
 }
 
 /*-------------------------------------------------------------------------*/
@@ -216,7 +216,7 @@ CForwardingNotifier::RemoveForwardingForEvent( const CEvent& eventid            
                                                CNotifier* notifier /* = NULL */ )
 {GUCEF_TRACE;
 
-    LockData();
+    Lock();
     TEventNotifierMap::iterator i( m_eventNotifierMap.find( eventid ) );
     if ( i != m_eventNotifierMap.end() )
     {
@@ -224,7 +224,7 @@ CForwardingNotifier::RemoveForwardingForEvent( const CEvent& eventid            
         notifierList.erase( notifier );
     }
     m_forwardAllList.erase( eventid );
-    UnlockData();
+    Unlock();
 }
 
 /*-------------------------------------------------------------------------*/
@@ -235,7 +235,7 @@ CForwardingNotifier::RemoveAllForwardingForNotifier( CNotifier& notifier )
 
     assert( &notifier );
     
-    LockData();
+    Lock();
     
     m_forwardAllForNotifierList.erase( &notifier );
     
@@ -250,7 +250,7 @@ CForwardingNotifier::RemoveAllForwardingForNotifier( CNotifier& notifier )
         }
     }
     
-    UnlockData();
+    Unlock();
 }
 
 /*-------------------------------------------------------------------------*/
@@ -272,7 +272,7 @@ CForwardingNotifier::OnNotify( CNotifier* notifier                 ,
     }
     else
     {
-        LockData();
+        Lock();
                 
         // Check for if this is a notifier for which we forward all events
         TNotifierMap::iterator i = m_forwardAllForNotifierList.find( notifier );
@@ -363,7 +363,7 @@ CForwardingNotifier::OnNotify( CNotifier* notifier                 ,
             }
         }
         
-        UnlockData();   
+        Unlock();   
     }
 }
 

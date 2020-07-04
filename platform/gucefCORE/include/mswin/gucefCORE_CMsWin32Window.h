@@ -66,15 +66,15 @@ class GUCEF_CORE_PUBLIC_CPP CMsWin32Window : public COSWindow
     
     void Close( void );
     
-    virtual void SetText( const CString& text );
+    virtual void SetText( const CString& text ) GUCEF_VIRTUAL_OVERRIDE;
     
-    virtual CString GetText( void ) const;
+    virtual CString GetText( void ) const GUCEF_VIRTUAL_OVERRIDE;
     
     HWND GetHwnd( void ) const;
     
     HWND GetParentHwnd( void ) const;
     
-    virtual const CString& GetClassTypeName( void ) const;
+    virtual const CString& GetClassTypeName( void ) const GUCEF_VIRTUAL_OVERRIDE;
 
     virtual bool WindowCreate( const CString& windowClassName ,
                                const CString& windowTitle     ,
@@ -88,11 +88,11 @@ class GUCEF_CORE_PUBLIC_CPP CMsWin32Window : public COSWindow
                                const Int32 xPosition          ,
                                const Int32 yPosition          ,
                                const UInt32 width             ,
-                               const UInt32 height            );
+                               const UInt32 height            ) GUCEF_VIRTUAL_OVERRIDE;
 
-    virtual void WindowDestroy( void );
+    virtual void WindowDestroy( void ) GUCEF_VIRTUAL_OVERRIDE;
 
-    virtual CString GetProperty( const CString& propertyName ) const;
+    virtual CString GetProperty( const CString& propertyName ) const GUCEF_VIRTUAL_OVERRIDE;
 
     static bool RegisterWindowClass( const CString& windowClassName );
 
@@ -148,6 +148,10 @@ class GUCEF_CORE_PUBLIC_CPP CMsWin32Window : public COSWindow
                                                      bool repaint = true );
 
     protected:
+
+    virtual bool Lock( void ) const GUCEF_VIRTUAL_OVERRIDE;
+
+    virtual bool Unlock( void ) const GUCEF_VIRTUAL_OVERRIDE;
     
     virtual LRESULT WindowProc( const HWND hWnd     ,
                                 const UINT nMsg     ,
@@ -162,7 +166,7 @@ class GUCEF_CORE_PUBLIC_CPP CMsWin32Window : public COSWindow
     
     virtual void OnNotify( CNotifier* notifier           ,
                            const CEvent& eventid         ,
-                           CICloneable* eventdata = NULL ); 
+                           CICloneable* eventdata = NULL ) GUCEF_VIRTUAL_OVERRIDE; 
 
     static LRESULT WndProc( HWND hwnd     , 
                             UINT msg      ,

@@ -25,10 +25,15 @@
 
 #include <assert.h>
 
-#ifndef GUCEF_CORE_DVOSWRAP_H
-#include "DVOSWRAP.h"
-#define GUCEF_CORE_DVOSWRAP_H
-#endif /* GUCEF_CORE_DVOSWRAP_H ? */
+#ifndef GUCEF_MT_COBJECTSCOPELOCK_H
+#include "gucefMT_CObjectScopeLock.h"
+#define GUCEF_MT_COBJECTSCOPELOCK_H
+#endif /* GUCEF_MT_COBJECTSCOPELOCK_H ? */
+
+#ifndef GUCEF_CORE_DVCPPOSWRAP_H
+#include "DVCPPOSWRAP.h"
+#define GUCEF_CORE_DVCPPOSWRAP_H
+#endif /* GUCEF_CORE_DVCPPOSWRAP_H ? */
 
 #ifndef GUCEF_CORE_CLOGMANAGER_H
 #include "CLogManager.h"
@@ -49,6 +54,11 @@
 #include "CPluginControl.h"     /* centralized plugin control */
 #define GUCEF_CORE_CPLUGINCONTROL_H
 #endif /* GUCEF_CORE_CPLUGINCONTROL_H ? */
+
+#ifndef GUCEF_CORE_CTASKMANAGER_H
+#include "gucefCORE_CTaskManager.h"
+#define GUCEF_CORE_CTASKMANAGER_H
+#endif /* GUCEF_CORE_CTASKMANAGER_H ? */
 
 #ifndef GUCEF_CORE_CDATANODE_H
 #include "CDataNode.h"          /* node for data storage */
@@ -98,11 +108,11 @@ const CEvent CGUCEFApplication::FirstCycleEvent = "GUCEF::CORE::CGUCEFApplicatio
 //-------------------------------------------------------------------------*/
 
 CGUCEFApplication::CGUCEFApplication( void )
-    : CIConfigurable( true )                                 ,
-      _initialized( false )                                  ,
-      m_shutdownRequested( false )                           ,
-      m_pulseGenerator()                                     ,
-      m_busyWaitPulseDriver()
+    : CIConfigurable( true )
+    , CTSGNotifier()
+    , _initialized( false )                                  
+    , m_shutdownRequested( false )                                                            
+    , m_busyWaitPulseDriver()
 {GUCEF_TRACE;
 
     RegisterEvents();
@@ -129,10 +139,6 @@ CGUCEFApplication::CGUCEFApplication( void )
     sysconsole->RegisterAlias( "exit"                           ,
                                "GUCEF\\CORE\\CGUCEFApplication" ,
                                "Stop"                           );
-
-    // Set the busy wait pulse driver as the default driver for the
-    // pulse generator
-    m_pulseGenerator.SetPulseGeneratorDriver( &m_busyWaitPulseDriver );
 }
 
 /*-------------------------------------------------------------------------*/
@@ -144,11 +150,46 @@ CGUCEFApplication::~CGUCEFApplication()
 
 /*-------------------------------------------------------------------------*/
 
-CPulseGenerator&
-CGUCEFApplication::GetPulseGenerator( void )
+int
+CGUCEFApplication::MainLoop( void )
 {GUCEF_TRACE;
 
-    return m_pulseGenerator;
+    Lock();
+    CPulseGenerator* pulseGenerator = GetPulseGenerator();
+    if ( GUCEF_NULL != pulseGenerator )
+    {
+        CIPulseGeneratorDriver* pulseDriver = pulseGenerator->GetPulseGeneratorDriver();
+        if ( GUCEF_NULL == pulseDriver )
+        {
+            // Set the busy wait pulse driver as the default driver for the
+            // pulse generator
+            pulseGenerator->SetPulseGeneratorDriver( &m_busyWaitPulseDriver );
+        }
+        pulseGenerator->AllowPeriodicPulses();
+        pulseGenerator->RequestPeriodicPulses( this );
+
+        // Unless the pulse drive is overridden we will now start the loop
+        if ( pulseGenerator->GetPulseGeneratorDriver() == &m_busyWaitPulseDriver )
+        {
+            Unlock();
+                    
+            // Notify that the first app cycle is starting
+            if ( !NotifyObservers( FirstCycleEvent ) ) return 0; 
+            
+            // Now keep looping until we are externally triggered to break out of the loop
+            m_busyWaitPulseDriver.Run( *pulseGenerator );
+            return 0;
+        }
+        else
+        {
+            Unlock();
+        }
+    }
+    else
+    {
+        Unlock();
+    }
+    return -1;
 }
 
 /*-------------------------------------------------------------------------*/
@@ -161,8 +202,6 @@ CGUCEFApplication::Main( HINSTANCE hinstance     ,
                          bool run                )
 {GUCEF_TRACE;
 
-    m_mutex.Lock();
-
     /*
      *      Set the application dir
      *      This is pure MSWIN code and is not portable !!!
@@ -171,10 +210,7 @@ CGUCEFApplication::Main( HINSTANCE hinstance     ,
         /*
          *      Set the given values as environment vars
          */
-        #pragma warning( disable: 4311 )
-        char intstr[ 10 ];
-        sprintf( intstr, "%d", (UInt32)hinstance );
-        GUCEFSetEnv( "HINSTANCE", intstr );
+        SetEnv( "HINSTANCE", PointerToString( hinstance ) );
 
         char apppath[ MAX_PATH ];
 
@@ -199,6 +235,7 @@ CGUCEFApplication::Main( HINSTANCE hinstance     ,
     }
 
     data.argc = (int)argList.size();
+    SetEnv( "argc", Int32ToString( data.argc ) );
     if ( data.argc > 0 )
     {
         data.argv = new char*[ data.argc ];
@@ -206,6 +243,7 @@ CGUCEFApplication::Main( HINSTANCE hinstance     ,
         {
             data.argv[ i ] = const_cast< char* >( argList[ i ].C_String() );
         }
+        SetEnv( "argv", lpcmdline );
     }
     else
     {
@@ -221,36 +259,16 @@ CGUCEFApplication::Main( HINSTANCE hinstance     ,
     if ( !NotifyObservers( AppInitEvent, &cloneableData ) ) return 0;
 
     // Check if we need to abort because a shutdown was requested
+    int appReturnCode = 0;
     if ( !m_shutdownRequested )
     {
         _initialized = true;
-
         if ( run )
-        {
-            m_pulseGenerator.AllowPeriodicPulses();
-            m_mutex.Unlock();
-
-            m_pulseGenerator.RequestPeriodicPulses( this );
-
-            // Unless the pulse drive is overridden we will now start the loop
-            if ( m_pulseGenerator.GetPulseGeneratorDriver() == &m_busyWaitPulseDriver )
-            {
-                if ( !NotifyObservers( FirstCycleEvent ) ) return 0;                
-                m_busyWaitPulseDriver.Run( m_pulseGenerator );
-            }
-        }
-        else
-        {
-            m_mutex.Unlock();
-        }
-    }
-    else
-    {
-        m_mutex.Unlock();
+            appReturnCode = MainLoop();
     }
 
     delete []data.argv;
-    return 0;
+    return appReturnCode;
 }
 #endif
 
@@ -263,19 +281,19 @@ CGUCEFApplication::main( int argc    ,
 {GUCEF_TRACE;
 
     /*
-     *      ensure that we have an instance of this class
-     */
-    m_mutex.Lock();
-
-    /*
      *      Set the given values as environment vars
      */
+    SetEnv( "argc", Int32ToString( argc ) );
     if ( argc > 0 )
     {
-        char intstr[ 10 ];
-        sprintf( intstr, "%d", argc );
-        GUCEFSetEnv( "argc", intstr );
-        GUCEFSetEnv( "argv", (char*)argv );
+        CString argvStr;
+        for ( int i=0; i<argc; ++i )
+        {
+            argvStr += argv[ i ];
+            if ( i+1<argc )
+                argvStr += ' ';
+        }
+        SetEnv( "argv", argvStr );
     }
 
     _initialized = false;
@@ -303,34 +321,14 @@ CGUCEFApplication::main( int argc    ,
     }
 
     // Check if we need to abort because a shutdown was requested
+    int appReturnCode = 0;
     if ( !m_shutdownRequested )
     {
         _initialized = true;
-
         if ( run )
-        {
-            m_pulseGenerator.AllowPeriodicPulses();
-            m_mutex.Unlock();
-
-            m_pulseGenerator.RequestPeriodicPulses( this );
-
-            // Unless the pulse drive is overridden we will now start the loop
-            if ( m_pulseGenerator.GetPulseGeneratorDriver() == &m_busyWaitPulseDriver )
-            {
-                if ( !NotifyObservers( FirstCycleEvent ) ) return 0;
-                m_busyWaitPulseDriver.Run( m_pulseGenerator );
-            }
-        }
-        else
-        {
-            m_mutex.Unlock();
-        }
+            appReturnCode = MainLoop();
     }
-    else
-    {
-        m_mutex.Unlock();
-    }
-    return 0;
+    return appReturnCode;
 }
 
 /*-------------------------------------------------------------------------*/
@@ -350,25 +348,32 @@ void
 CGUCEFApplication::Update( void )
 {GUCEF_TRACE;
 
-    m_pulseGenerator.RequestPulse();
+    MT::CObjectScopeLock lock( this );
+    CPulseGenerator* pulseGenerator = GetPulseGenerator();
+    if ( GUCEF_NULL != pulseGenerator )
+        pulseGenerator->RequestImmediatePulse();
 }
 
 /*-------------------------------------------------------------------------*/
 
 void
-CGUCEFApplication::Stop( void )
+CGUCEFApplication::Stop( bool wait )
 {GUCEF_TRACE;
 
-    LockData();
+    MT::CObjectScopeLock lock( this );
 
     if ( !m_shutdownRequested )
     {
         m_shutdownRequested = true;
-        m_pulseGenerator.ForceStopOfPeriodicPulses();
         if ( !NotifyObservers( AppShutdownEvent ) ) return;
+       
+        CPulseGenerator* pulseGenerator = GetPulseGenerator();
+        if ( GUCEF_NULL != pulseGenerator )
+        {
+            pulseGenerator->ForceStopOfPeriodicPulses();
+            pulseGenerator->ForceDirectPulse();
+        }
     }
-
-    UnlockData();
 }
 
 /*-------------------------------------------------------------------------*/
@@ -376,7 +381,9 @@ CGUCEFApplication::Stop( void )
 CString
 CGUCEFApplication::GetApplicationDir( void ) const
 {GUCEF_TRACE;
-        return _appdir;
+
+    MT::CObjectScopeLock lock( this );
+    return _appdir;
 }
 
 /*-------------------------------------------------------------------------*/
@@ -385,14 +392,12 @@ bool
 CGUCEFApplication::SaveConfig( CDataNode& tree )  const
 {GUCEF_TRACE;
 
-    LockData();
+    MT::CObjectScopeLock lock( this );
 
     CDataNode* n = tree.Structure( "GUCEF%CORE%CGUCEFApplication" ,
                                    '%'                            );
     n->SetAttribute( "appdir" ,
                      _appdir  );
-
-    UnlockData();
     return true;
 }
 
@@ -402,8 +407,20 @@ bool
 CGUCEFApplication::LoadConfig( const CDataNode& tree )
 {GUCEF_TRACE;
 
+    MT::CObjectScopeLock lock( this );
+
     GUCEF_SYSTEM_LOG( LOGLEVEL_BELOW_NORMAL, "CGUCEFApplication: Loading config" );
     return true;
+}
+
+/*-------------------------------------------------------------------------*/
+
+const CORE::CString& 
+CGUCEFApplication::GetClassTypeName( void ) const
+{GUCEF_TRACE;
+
+    static CORE::CString classTypeName = "GUCEF::CORE::CGUCEFApplication";
+    return classTypeName; 
 }
 
 /*-------------------------------------------------------------------------*/
@@ -415,67 +432,20 @@ CGUCEFApplication::OnSysConsoleCommand( const CString& path                ,
                                         std::vector< CString >& resultdata )
 {GUCEF_TRACE;
 
-    LockData();
+    MT::CObjectScopeLock lock( this );
 
     if ( command == "Stop" )
     {
-            Stop();
-            UnlockData();
-            return true;
+        Stop();
+        return true;
     }
     else
     if ( command == "GetApplicationDir" )
     {
-            resultdata.push_back( GetApplicationDir() );
-            UnlockData();
-            return true;
+        resultdata.push_back( GetApplicationDir() );
+        return true;
     }
-    UnlockData();
     return false;
-}
-
-/*-------------------------------------------------------------------------*/
-  /*
-void
-CGUCEFApplication::OnUpdate( const UInt64 tickcount               ,
-                             const Float64 updateDeltaInMilliSecs )
-{GUCEF_TRACE;
-
-        #ifdef GUCEF_MSWIN_BUILD
-    	MSG  msg;
-        while( ::PeekMessage( &msg, NULL, 0U, 0U, PM_REMOVE ) )
-        {
-                ::TranslateMessage( &msg );
-                ::DispatchMessage( &msg );
-        }
-        #endif /* GUCEF_MSWIN_BUILD ? *//*
-
-        if ( updateDeltaInMilliSecs <= m_minimalCycleDeltaInMilliSecs )
-        {
-                /*
-                 *      Not much action ATM, so we should
-                 *      avoid hogging the system resources
-                 *
-                MT::PrecisionDelay( m_cycleDelayInMilliSecs );
-        }
-}
-
-/*-------------------------------------------------------------------------*/
-
-void
-CGUCEFApplication::LockData( void ) const
-{GUCEF_TRACE;
-
-    m_mutex.Lock();
-}
-
-/*-------------------------------------------------------------------------*/
-
-void
-CGUCEFApplication::UnlockData( void ) const
-{GUCEF_TRACE;
-
-    m_mutex.Unlock();
 }
 
 /*-------------------------------------------------------------------------//

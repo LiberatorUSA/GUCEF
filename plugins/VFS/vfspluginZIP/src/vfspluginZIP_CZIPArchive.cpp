@@ -79,6 +79,14 @@ namespace ZIP {
 
 /*-------------------------------------------------------------------------//
 //                                                                         //
+//      GLOBAL VARS                                                        //
+//                                                                         //
+//-------------------------------------------------------------------------*/
+
+const VFS::CString CZIPArchive::ZipArchiveTypeName = "zip";
+
+/*-------------------------------------------------------------------------//
+//                                                                         //
 //      UTILITIES                                                          //
 //                                                                         //
 //-------------------------------------------------------------------------*/
@@ -159,6 +167,19 @@ CZIPArchive::GetFile( const VFS::CString& file      ,
         return VFS::CVFS::CVFSHandlePtr( new VFS::CVFSHandle( fileAccess, file, filePath ), this );
     }
     return VFS::CVFS::CVFSHandlePtr();
+}
+
+/*-------------------------------------------------------------------------*/
+
+bool 
+CZIPArchive::StoreAsFile( const CORE::CString& filepath    ,
+                          const CORE::CDynamicBuffer& data ,
+                          const CORE::UInt64 offset        ,
+                          const bool overwrite             )
+{GUCEF_TRACE;
+
+    // Not implemented / supported at this time
+    return false;
 }
 
 /*-------------------------------------------------------------------------*/
@@ -310,18 +331,17 @@ CZIPArchive::CheckZzipError( int zzipError                 ,
 /*-------------------------------------------------------------------------*/
 
 bool
-CZIPArchive::LoadArchive( const VFS::CString& archiveName ,
-                          const VFS::CString& archivePath ,
-                          const bool writableRequest      )
+CZIPArchive::LoadArchive( const VFS::CArchiveSettings& settings )
 {GUCEF_TRACE;
 
     // We do not support writable ZIP archives
-    if ( writableRequest ) return false;
+    if ( settings.GetWriteableRequested() ) 
+        return false;
 
     if ( NULL == m_zipRoot )
     {
         zzip_error_t zzipError;
-        m_zipRoot = zzip_dir_open( archivePath.C_String(), &zzipError );
+        m_zipRoot = zzip_dir_open( settings.GetActualArchivePath().C_String(), &zzipError );
         CheckZzipError( zzipError, "opening archive" );
 
         if ( NULL == m_zipRoot )
@@ -362,6 +382,17 @@ CZIPArchive::LoadArchive( const VFS::CString& archiveName ,
 
 /*-------------------------------------------------------------------------*/
 
+bool 
+CZIPArchive::LoadArchive( const VFS::CString& archiveName ,
+                          CVFSHandlePtr vfsResource       ,
+                          const bool writeableRequest     )
+{GUCEF_TRACE;
+
+    return false;
+}
+
+/*-------------------------------------------------------------------------*/
+
 bool
 CZIPArchive::UnloadArchive( void )
 {GUCEF_TRACE;
@@ -374,6 +405,15 @@ CZIPArchive::UnloadArchive( void )
         m_fileList.clear();
     }
     return true;
+}
+
+/*-------------------------------------------------------------------------*/
+
+const VFS::CString& 
+CZIPArchive::GetType( void ) const
+{GUCEF_TRACE;
+
+    return ZipArchiveTypeName;
 }
 
 /*-------------------------------------------------------------------------*/

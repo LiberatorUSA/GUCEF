@@ -147,6 +147,16 @@ CWindowManager::LoadConfig( const CORE::CDataNode& config )
     return overallSuccess;
 }
 
+/*-------------------------------------------------------------------------*/
+
+const CORE::CString& 
+CWindowManager::GetClassTypeName( void ) const
+{GUCEF_TRACE;
+
+    static CORE::CString classTypeName = "GUCEF::GUI::CWindowManager";
+    return classTypeName; 
+}
+
 /*-------------------------------------------------------------------------//
 //                                                                         //
 //      NAMESPACE                                                          //

@@ -26,15 +26,25 @@
 //                                                                         //
 //-------------------------------------------------------------------------*/
 
-#ifndef GUCEF_MT_GUCEFMT_H
-#include "gucefMT.h"                 /* gucefMT library API */
-#define GUCEF_MT_GUCEFMT_H
-#endif /* GUCEF_MT_GUCEFMT_H ? */
+#ifndef GUCEF_MT_CMUTEX_H
+#include "gucefMT_CMutex.h"
+#define GUCEF_MT_CMUTEX_H
+#endif /* GUCEF_MT_CMUTEX_H ? */
 
 #ifndef GUCEF_CORE_CICONFIGURABLE_H
 #include "CIConfigurable.h"          /* abstract base class interface for configurable objects */
 #define GUCEF_CORE_CICONFIGURABLE_H
 #endif /* GUCEF_CORE_CICONFIGURABLE_H ? */
+
+#ifndef GUCEF_CORE_COBSERVINGNOTIFIER_H
+#include "CObservingNotifier.h"
+#define GUCEF_CORE_COBSERVINGNOTIFIER_H
+#endif /* GUCEF_CORE_COBSERVINGNOTIFIER_H ? */
+
+#ifndef GUCEF_CORE_CTSGNOTIFIER_H
+#include "CTSGNotifier.h"
+#define GUCEF_CORE_CTSGNOTIFIER_H
+#endif /* GUCEF_CORE_CTSGNOTIFIER_H ? */
 
 #ifndef GUCEF_CORE_CTABSTRACTFACTORY_H
 #include "CTAbstractFactory.h"
@@ -46,10 +56,20 @@
 #define GUCEF_VFS_CIARCHIVE_H
 #endif /* GUCEF_VFS_CIARCHIVE_H ? */
 
-#ifndef GUCEF_VFS_CIARCHIVE_H
-#include "gucefVFS_CVFSURLHandler.h"
-#define GUCEF_VFS_CIARCHIVE_H
-#endif /* GUCEF_VFS_CIARCHIVE_H ? */
+#ifndef GUCEF_VFS_CARCHIVESETTINGS_H
+#include "gucefVFS_CArchiveSettings.h"
+#define GUCEF_VFS_CARCHIVESETTINGS_H
+#endif /* GUCEF_VFS_CARCHIVESETTINGS_H ? */
+
+#ifndef GUCEF_VFS_CFILESYSTEMARCHIVE_H
+#include "gucefVFS_CFileSystemArchive.h"
+#define GUCEF_VFS_CFILESYSTEMARCHIVE_H
+#endif /* GUCEF_VFS_CFILESYSTEMARCHIVE_H ? */
+
+#ifndef GUCEF_VFS_ASYNCVFSTASKDATA_H
+#include "gucefVFS_AsyncVfsTaskData.h"
+#define GUCEF_VFS_ASYNCVFSTASKDATA_H
+#endif /* GUCEF_VFS_ASYNCVFSTASKDATA_H ? */
 
 /*-------------------------------------------------------------------------//
 //                                                                         //
@@ -67,9 +87,17 @@ namespace VFS {
 //-------------------------------------------------------------------------*/
 
 /**
- *      Threadsafe Virtual File System
+ *  Virtual File System (VFS)
+ *
+ *  A VFS allows you to present a "file system" to the rest of the application which is a simplified abstracted view of reality
+ *  If you use say compressed files or disk images etc etc you dont want the complexity of dealing with those formats to be exposed
+ *  to the rest of your application. The VFS hides this complexity through IArchive's that can be mounted and for which different
+ *  plugins can add support for various formats.
+ *  The VFS can also be used to make your application use cloud storage without all its specific complexity as if it is a local filesystem
+ *  As such using the VFS would be recommended for any application that uses a fair amount of "files"
  */
-class GUCEF_VFS_PUBLIC_CPP CVFS : public CORE::CIConfigurable
+class GUCEF_VFS_PUBLIC_CPP CVFS : public CORE::CTSGNotifier   ,
+                                  public CORE::CIConfigurable
 {
     public:
     
@@ -79,11 +107,18 @@ class GUCEF_VFS_PUBLIC_CPP CVFS : public CORE::CIConfigurable
     typedef CIArchive::TStringList                        TStringList;
     typedef CIArchive::TStringSet                         TStringSet;
     
-    void AddRoot( const CString& rootdir                     ,
-                  const CString& archiveName                 ,
-                  const bool writeable = false               ,
-                  const bool autoMountArchives = false       ,
-                  const CString& mountPoint = CString::Empty );
+    static const CORE::CString FileSystemArchiveTypeName;
+    static const CORE::CEvent AsyncVfsOperationCompletedEvent;
+
+    /**
+     *  Adds a filesystem root to the VFS 
+     */
+    void AddRoot( const CString& rootdir                                 ,
+                  const CString& archiveName                             ,
+                  const bool writeable = false                           ,
+                  const bool autoMountArchives = false                   ,
+                  const CString& mountPoint = CString::Empty             ,
+                  const CString& archiveType = FileSystemArchiveTypeName );
 
     bool MountArchive( const CString& archiveName  ,
                        const CString& archivePath  ,
@@ -94,23 +129,67 @@ class GUCEF_VFS_PUBLIC_CPP CVFS : public CORE::CIConfigurable
                        const CString& mountPoint   ,
                        const bool writeableRequest );
     
-    bool MountArchive( const CString& archiveName  ,
-                       const CString& archivePath  ,
-                       const CString& archiveType  ,
-                       const CString& mountPoint   ,
-                       const bool writeableRequest );
+    bool MountArchive( const CString& archiveName                               ,
+                       const CString& archivePath                               ,
+                       const CString& archiveType                               ,
+                       const CString& mountPoint                                ,
+                       const bool writeableRequest                              ,
+                       const bool autoMountSubArchives                          ,
+                       const CString& actualNonVfsPathOverride = CString::Empty );
 
+    bool MountArchive( const CArchiveSettings& settings );
+
+    /**
+     *  Same as MountArchive() except delays the archive mounting until after a global config 
+     *  loading event notification is received
+     */
+    bool DelayMountArchive( const CArchiveSettings& settings );
+
+    bool MountArchiveAsync( const CArchiveSettings& settings              ,
+                            CORE::CICloneable* requestorData = GUCEF_NULL );
+    
+    bool MountArchive( const CString& archiveName    ,
+                       CVFSHandlePtr archiveResource ,
+                       const CString& archiveType    ,
+                       const CString& mountPoint     ,
+                       const bool writeableRequest   );
+    
     bool UnmountArchiveByName( const CString& archiveName );
                   
     void RegisterArchiveFactory( const CString& archiveType      ,
                                  TArchiveFactory& archiveFactory );
     
     void UnregisterArchiveFactory( const CString& archiveType );
+
+    void GetListOfSupportedArchiveTypes( TAbstractArchiveFactory::TKeySet& outList ) const;
     
     CVFSHandlePtr GetFile( const CORE::CString& file    ,
                            const char* mode = "rb"      ,
                            const bool overwrite = false );
                                   
+    /**
+     *  Attempts to store the provided data as file content
+     *  This is a syncronous blocking call and it returns when the operation is 
+     *  completed or failed.
+     */
+    bool StoreAsFile( const CORE::CString& filepath    ,
+                      const CORE::CDynamicBuffer& data ,
+                      const CORE::UInt64 offset = 0    ,
+                      const bool overwrite = false     );
+
+    /**
+     *  Attempts to store the provided data as file content
+     *  This is a asyncronous non-blocking call and it returns right after 
+     *  attempting to queue the storage task.
+     *  Due to this being an async operation you must subscribe to the appropriote events
+     *  in order to know if the operation eventually failed or succeeded.
+     */
+    bool StoreAsFileAsync( const CORE::CString& filepath                 ,
+                           const CORE::CDynamicBuffer& data              ,
+                           const CORE::UInt64 offset = 0                 ,
+                           const bool overwrite = false                  ,
+                           CORE::CICloneable* requestorData = GUCEF_NULL );
+
     void GetList( TStringSet& outputList             ,
                   const CORE::CString& location      , 
                   bool recursive = false             ,
@@ -164,7 +243,7 @@ class GUCEF_VFS_PUBLIC_CPP CVFS : public CORE::CIConfigurable
      *      @param tree the data tree you wish to store
      *      @return wheter storing the tree was successfull
      */
-    virtual bool SaveConfig( CORE::CDataNode& tree ) const;
+    virtual bool SaveConfig( CORE::CDataNode& tree ) const GUCEF_VIRTUAL_OVERRIDE;
                                 
     /**
      *      Attempts to load data from the given file to the 
@@ -174,10 +253,20 @@ class GUCEF_VFS_PUBLIC_CPP CVFS : public CORE::CIConfigurable
      *      @param treeroot pointer to the node that is to act as root of the data tree
      *      @return whether building the tree from the given file was successfull.
      */                                    
-    virtual bool LoadConfig( const CORE::CDataNode& treeroot );                                             
+    virtual bool LoadConfig( const CORE::CDataNode& treeroot ) GUCEF_VIRTUAL_OVERRIDE;                                             
 
+    virtual const CString& GetClassTypeName( void ) const GUCEF_VIRTUAL_OVERRIDE;
+    
     static bool FilterValidation( const CString& filename , 
                                   const CString& filter   );
+
+    static void RegisterEvents( void );
+    
+    protected:
+
+    virtual void OnPumpedNotify( CORE::CNotifier* notifier                 ,
+                                 const CORE::CEvent& eventid               ,
+                                 CORE::CICloneable* eventdata = GUCEF_NULL ) GUCEF_VIRTUAL_OVERRIDE;
 
     private:
     friend class CVfsGlobal;
@@ -208,19 +297,32 @@ class GUCEF_VFS_PUBLIC_CPP CVFS : public CORE::CIConfigurable
     typedef std::vector< TMountEntry >                   TMountVector;
     typedef std::vector< TConstMountLink >               TConstMountLinkVector;
     typedef CORE::CTSharedPtr< CORE::CDynamicBuffer >    TDynamicBufferPtr;
-    
-    static MT::CMutex m_datalock;
+    typedef std::vector< CArchiveSettings >              TArchiveSettingsVector;
+
+    typedef CORE::CTEventHandlerFunctor< CVFS >          TEventCallback;
     
     CVFS( const CVFS& src );                /**< not implemented, must be unique */
     CVFS& operator=( const CVFS& src );     /**< not implemented, must be unique */
 
     void GetEligableMounts( const CString& location                ,
+                            bool mustBeWritable                    ,
                             TConstMountLinkVector& mountLinkVector ) const;
+    
+    void RegisterEventHandlers( void );
+
+    void OnGlobalConfigLoadFinished( CORE::CNotifier* notifier                 ,
+                                     const CORE::CEvent& eventid               ,
+                                     CORE::CICloneable* eventdata = GUCEF_NULL );
+
+    void MountAllDelayMountedArchives( void );
+    
     private:    
     
     TMountVector m_mountList;
     UInt32 _maxmemloadsize;
     TAbstractArchiveFactory m_abstractArchiveFactory;
+    TFileSystemArchiveFactory m_fileSystemArchiveFactory;
+    TArchiveSettingsVector m_delayMountedArchiveSettings;
 };
 
 /*-------------------------------------------------------------------------//

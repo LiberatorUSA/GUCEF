@@ -70,7 +70,8 @@ typedef struct SThreadData TThreadData;
  *      Initialized in PrecisionTimerInit()
  */
 #if ( GUCEF_PLATFORM == GUCEF_PLATFORM_MSWIN )
-static LARGE_INTEGER m_high_perf_timer_freq = { 0 };
+static LARGE_INTEGER highPerfTimerFrequency = { 0 };
+static double highPerfTimerFrequencyTicksPerMs = 0;
 #endif
 
 /*-------------------------------------------------------------------------//
@@ -217,16 +218,26 @@ ThreadKill( struct SThreadData* td )
 
 UInt32
 ThreadWait( struct SThreadData* td ,
-            Int32 timeout          )
+            Int32 timeoutInMs      )
 {
     #if ( GUCEF_PLATFORM == GUCEF_PLATFORM_MSWIN )
-    if ( timeout >= 0 )
+    if ( NULL != td && NULL != td->threadhandle )
     {
-        return ( WAIT_OBJECT_0 == WaitForSingleObject( td->threadhandle ,
-                                                       timeout          ) );
+        if ( timeoutInMs >= 0 )
+        {
+            if ( WAIT_OBJECT_0 == WaitForSingleObject( td->threadhandle ,
+                                                       timeoutInMs      ) )
+                return 1;
+            else
+                return 0;
+        }
+        if ( WAIT_OBJECT_0 == WaitForSingleObject( td->threadhandle ,
+                                                   INFINITE         ) )
+            return 1;
+        else
+            return 0;
     }
-    return ( WAIT_OBJECT_0 == WaitForSingleObject( td->threadhandle ,
-                                                   INFINITE         ) );
+    return 0;
     #elif ( ( GUCEF_PLATFORM == GUCEF_PLATFORM_LINUX ) || ( GUCEF_PLATFORM == GUCEF_PLATFORM_ANDROID ) )
 
     #else
@@ -306,82 +317,82 @@ PrecisionTimerResolution( void )
 /*--------------------------------------------------------------------------*/
 
 void
-PrecisionDelay( UInt32 delay )
+PrecisionDelay( UInt32 delayInMs )
 {
     #if ( GUCEF_PLATFORM == GUCEF_PLATFORM_MSWIN )
 
     /*
-     *      Original code obtained from http://www.geisswerks.com/ryan/FAQS/timing.html
-     */
-
-    /*
-     *      note: Possible problem in some cases:
-     *              http://support.microsoft.com/default.aspx?scid=KB;EN-US;Q274323&
-     *              Performance counter value may unexpectedly leap forward
-     */
-
-    /*
      *      note: BE SURE YOU CALL timeBeginPeriod(1) at program startup!!!
      *      note: BE SURE YOU CALL timeEndPeriod(1) at program exit!!!
-     *      note: that this code will require linking to winmm.lib !!!
+     *      note: that this code will require linking to winmm.lib
      */
 
-    Int32 ticks_passed;
-    Int32 ticks_left;
-    Int32 i;
+    LARGE_INTEGER startTime;
+    LARGE_INTEGER currentTime;
+    LONGLONG ticksPassed;
+    LONGLONG ticksToWait;
+    LONGLONG ticksLeft;
+    BOOL qpcSuccess;
+    int done = 0;
 
-    static LARGE_INTEGER m_prev_end_of_frame = { 0 };
-
-    LARGE_INTEGER t;
-    QueryPerformanceCounter(&t);
-
-    if (m_prev_end_of_frame.QuadPart != 0)
+    qpcSuccess = QueryPerformanceCounter( &startTime );
+    if ( FALSE == qpcSuccess )
     {
-        Int32 ticks_to_wait = (Int32)m_high_perf_timer_freq.QuadPart / delay;
-        Int32 done = 0;
-        do
-        {
-            QueryPerformanceCounter(&t);
-
-            ticks_passed = (Int32)( (__int64)t.QuadPart - (__int64)m_prev_end_of_frame.QuadPart );
-            ticks_left = ticks_to_wait - ticks_passed;
-
-            if ( t.QuadPart < m_prev_end_of_frame.QuadPart )    /* time wrap */
-            {
-                done = 1;
-            }
-            if (ticks_passed >= ticks_to_wait)
-            {
-                done = 1;
-            }
-
-            if ( !done )
-            {
-                /*
-                 *      if > 0.002s left, do Sleep(1), which will actually sleep some
-                 *      steady amount, probably 1-2 ms,
-                 *      and do so in a nice way (cpu meter drops; laptop battery spared).
-                 *      otherwise, do a few Sleep(0)'s, which just give up the time slice,
-                 *      but don't really save cpu or battery, but do pass a tiny
-                 *     amount of time.
-                 */
-                if ( ticks_left > (Int32)m_high_perf_timer_freq.QuadPart*2/1000)
-                {
-                    Sleep(1);
-                }
-                else
-                {
-                    for ( i=0; i<10; ++i )
-                    {
-                            Sleep(0);  /* causes thread to give up its time slice */
-                    }
-                }
-            }
-        }
-        while (!done);
+        /*
+         *  Fall back to regular sleep
+         */
+         Sleep( delayInMs );
+         return;
     }
+             
+    ticksToWait = (LONGLONG) ( highPerfTimerFrequencyTicksPerMs * delayInMs );
 
-    m_prev_end_of_frame = t;
+    while ( 1 )
+    {
+        QueryPerformanceCounter( &currentTime );
+        ticksPassed = (LONGLONG) ( currentTime.QuadPart - startTime.QuadPart );
+        if ( ticksPassed < 0 )
+            return;
+        
+        ticksLeft = (LONGLONG) ( ticksToWait - ticksPassed );
+        if ( ticksLeft <= 0 )
+            return;
+
+        if ( ticksLeft > (Int32) ( highPerfTimerFrequencyTicksPerMs * 50 ) )
+        {
+            // Lets not hog the CPU if the time we have to wait is lengthy
+            UInt32 longSleepTimeInMs = (UInt32) ( ( ticksLeft - (highPerfTimerFrequencyTicksPerMs*15) ) / highPerfTimerFrequencyTicksPerMs );
+            Sleep( longSleepTimeInMs );
+        }
+        else        
+        if ( ticksLeft > (Int32) ( highPerfTimerFrequencyTicksPerMs * 20 ) )
+        {
+            Sleep( 10 );
+        }
+        else
+
+        /*
+         *      if > 2ms left, do Sleep(1), which will actually sleep some
+         *      steady amount, probably 1-2 ms,
+         *      and do so in a nice way (cpu meter drops; laptop battery spared).
+         *      otherwise, do a few Sleep(0)'s, which just give up the time slice,
+         *      but don't really save cpu or battery, but do pass a tiny
+         *     amount of time.
+         */
+        if ( ticksLeft > (Int32) ( highPerfTimerFrequencyTicksPerMs * 2 ) )
+        {
+            Sleep( 1 );
+        }
+        else
+        {
+            int i;
+            for ( i=0; i<10; ++i )
+            {
+                Sleep( 0 );  /* causes thread to give up its time slice */
+            }
+            return;
+        }
+    }
 
     #elif ( ( GUCEF_PLATFORM == GUCEF_PLATFORM_LINUX ) || ( GUCEF_PLATFORM == GUCEF_PLATFORM_ANDROID ) )
 
@@ -398,7 +409,7 @@ void
 PrecisionTimerInit( void )
 {
     #if ( GUCEF_PLATFORM == GUCEF_PLATFORM_MSWIN )
-    if ( m_high_perf_timer_freq.QuadPart == 0 )
+    if ( highPerfTimerFrequency.QuadPart == 0 )
     {
         /*
          *      Change Sleep() resolution to 1-2 milliseconds
@@ -412,7 +423,8 @@ PrecisionTimerInit( void )
         /*
          *      Initialize the timer frequency structure for use
          */
-        QueryPerformanceFrequency( &m_high_perf_timer_freq );
+        QueryPerformanceFrequency( &highPerfTimerFrequency );
+        highPerfTimerFrequencyTicksPerMs = (double) ( highPerfTimerFrequency.QuadPart / 1000.0 );
     }
     #endif
 }
@@ -423,7 +435,7 @@ void
 PrecisionTimerShutdown( void )
 {
     #if ( GUCEF_PLATFORM == GUCEF_PLATFORM_MSWIN )
-    if ( m_high_perf_timer_freq.QuadPart != 0 )
+    if ( highPerfTimerFrequency.QuadPart != 0 )
     {
         /*
          *      Undo timer resolution change

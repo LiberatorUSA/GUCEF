@@ -33,10 +33,10 @@
 #define GUCEF_MT_CTMAILBOX_H
 #endif /* GUCEF_MT_CTMAILBOX_H ? */
 
-#ifndef GUCEF_CORE_COBSERVINGNOTIFIER_H
-#include "CObservingNotifier.h"
-#define GUCEF_CORE_COBSERVINGNOTIFIER_H
-#endif /* GUCEF_CORE_COBSERVINGNOTIFIER_H ? */
+#ifndef GUCEF_CORE_CTSGNOTIFIER_H
+#include "CTSGNotifier.h"
+#define GUCEF_CORE_CTSGNOTIFIER_H
+#endif /* GUCEF_CORE_CTSGNOTIFIER_H ? */
 
 #ifndef GUCEF_CORE_CTABSTRACTFACTORY_H
 #include "CTAbstractFactory.h"
@@ -77,7 +77,7 @@ class CTaskDelegator;
  *  and as such should be tracked globally within your process which is what the task
  *  manager does
  */
-class GUCEF_CORE_PUBLIC_CPP CTaskManager : public CObservingNotifier
+class GUCEF_CORE_PUBLIC_CPP CTaskManager : public CTSGNotifier
 {
     public:
 
@@ -107,18 +107,19 @@ class GUCEF_CORE_PUBLIC_CPP CTaskManager : public CObservingNotifier
      *  Queues a task for execution as soon as a thread is available
      *  to execute it.
      */
-    void QueueTask( const CString& taskType      ,
-                    CICloneable* taskData = NULL ,
-                    CTaskConsumer** task = NULL  );
+    bool QueueTask( const CString& taskType                      ,
+                    CICloneable* taskData = GUCEF_NULL           ,
+                    CTaskConsumer** outTaskConsumer = GUCEF_NULL ,
+                    CObserver* taskObserver = GUCEF_NULL         );
 
     /**
      *  Immediatly starts executing a task using the task
      *  information provided. Based on the provided information
      *  a task consumer will be constructed to actually carry out the task
      */
-    bool StartTask( const CString& taskType      ,
-                    CICloneable* taskData = NULL ,
-                    CTaskConsumer** task = NULL  );
+    bool StartTask( const CString& taskType                      ,
+                    CICloneable* taskData = GUCEF_NULL           ,
+                    CTaskConsumer** outTaskConsumer = GUCEF_NULL );
 
     /**
      *  Immediatly starts executing a task using the task
@@ -143,14 +144,16 @@ class GUCEF_CORE_PUBLIC_CPP CTaskManager : public CObservingNotifier
 
     UInt32 GetNrOfThreads( void ) const;
 
-    void RequestAllTasksToStop( bool waitOnStop );
+    void RequestAllTasksToStop( bool waitOnStop, bool acceptNewWork );
+
+    void RequestAllThreadsToStop( bool waitOnStop, bool acceptNewWork );
 
     void RegisterTaskConsumerFactory( const CString& taskType       ,
                                       TTaskConsumerFactory* factory );
 
     void UnregisterTaskConsumerFactory( const CString& taskType );
 
-    virtual const CString& GetClassTypeName( void ) const;
+    virtual const CString& GetClassTypeName( void ) const  GUCEF_VIRTUAL_OVERRIDE;
 
     bool GetTaskIdForThreadId( const UInt32 threadId ,
                                UInt32& taskId        ) const;
@@ -160,13 +163,9 @@ class GUCEF_CORE_PUBLIC_CPP CTaskManager : public CObservingNotifier
 
     protected:
 
-    virtual void LockData( void ) const;
-
-    virtual void UnlockData( void ) const;
-
-    virtual void OnNotify( CNotifier* notifier           ,
-                           const CEvent& eventid         ,
-                           CICloneable* eventdata = NULL );
+    virtual void OnPumpedNotify( CNotifier* notifier           ,
+                                 const CEvent& eventid         ,
+                                 CICloneable* eventdata = NULL ) GUCEF_VIRTUAL_OVERRIDE;
 
     private:
     friend class CTaskDelegator;
@@ -214,7 +213,7 @@ class GUCEF_CORE_PUBLIC_CPP CTaskManager : public CObservingNotifier
 
         CICloneable* GetTaskData( void );
 
-        virtual CICloneable* Clone( void ) const;
+        virtual CICloneable* Clone( void ) const GUCEF_VIRTUAL_OVERRIDE;
 
         private:
         CICloneable* m_taskData;
@@ -242,12 +241,12 @@ class GUCEF_CORE_PUBLIC_CPP CTaskManager : public CObservingNotifier
 
     TAbstractTaskConsumerFactory m_consumerFactory;
     UInt32 m_desiredNrOfThreads;
-    UInt32 m_activeNrOfThreads;
+    Int32 m_activeNrOfThreads;
     TTaskMailbox m_taskQueue;
     TTaskIdGenerator m_taskIdGenerator;
     TTaskConsumerMap m_taskConsumerMap;
     TTaskDelegatorSet m_taskDelegators;
-    MT::CMutex g_mutex;
+    bool m_acceptNewWork;
 };
 
 /*-------------------------------------------------------------------------//

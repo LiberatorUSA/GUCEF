@@ -93,6 +93,67 @@ union anyPointer
 };
 typedef union anyPointer TAnyPointer;
 
+/*-------------------------------------------------------------------------*/
+
+struct SProcessId;
+typedef struct SProcessId TProcessId;
+
+/*-------------------------------------------------------------------------*/
+
+/**
+ *  Structure holding various bits of memory usage related information
+ *  If for the current O/S a field cannot be determined it will be set to -1
+ */
+struct SProcessMemoryUsageInfo
+{
+    #ifdef GUCEF_32BIT
+    typedef UInt32 TProcMemStatInt;
+    #else
+    typedef UInt64 TProcMemStatInt;
+    #endif
+
+    TProcMemStatInt workingSetSizeInBytes;
+    TProcMemStatInt peakWorkingSetSizeInBytes;
+    TProcMemStatInt pageFaultCountInBytes;
+    TProcMemStatInt pageFileUsageInBytes;
+    TProcMemStatInt peakPageFileUsageInBytes;
+};
+typedef struct SProcessMemoryUsageInfo TProcessMemoryUsageInfo;
+
+/*-------------------------------------------------------------------------*/
+
+/**
+ *  Structure holding various bits of memory usage related information
+ *  If for the current O/S a field cannot be determined it will be set to -1
+ */
+struct SGlobalMemoryUsageInfo
+{
+    typedef UInt64 TMemStatInt;
+
+    UInt8 memoryLoadPercentage;
+    TMemStatInt totalPhysicalMemoryInBytes;
+    TMemStatInt availablePhysicalMemoryInBytes;
+    TMemStatInt totalPageFileSizeInBytes;
+    TMemStatInt availablePageFileSizeInBytes;
+    TMemStatInt totalVirtualMemoryInBytes;
+    TMemStatInt availableVirtualMemoryInBytes;
+    TMemStatInt availExtendedVirtualMemoryInBytes;
+};
+typedef struct SGlobalMemoryUsageInfo TGlobalMemoryUsageInfo;
+
+/*-------------------------------------------------------------------------*/
+
+/**
+ *  Structure holding various bits of cpu usage related information
+ *  If for the current O/S a field cannot be determined it will be set to -1
+ */
+struct SProcessCpuUsageInfo
+{
+    UInt64 uptimeInMs;
+    UInt8 overallCpuConsumptionPercentage;
+};
+typedef struct SProcessCpuUsageInfo TProcessCpuUsageInfo;
+
 /*-------------------------------------------------------------------------//
 //                                                                         //
 //      UTILITIES                                                          //
@@ -219,6 +280,70 @@ GetPhysicalCPUCount( void );
 
 GUCEF_CORE_PUBLIC_C UInt32
 GetLogicalCPUCount( void );
+
+/*--------------------------------------------------------------------------*/
+
+/**
+ *  Obtains a list of Process IDs for all the processes running on the system as visible to the
+ *  account under which the software is executing
+ */
+GUCEF_CORE_PUBLIC_C UInt32
+GetProcessList( TProcessId** processList , 
+                UInt32* processCount     );
+
+/*--------------------------------------------------------------------------*/
+
+/**
+ *  To be used with GetProcessList() to iterate the resulting processList
+ */
+GUCEF_CORE_PUBLIC_C TProcessId*
+GetProcessIdAtIndex( TProcessId* processList ,
+                     UInt32 index            );
+
+/*--------------------------------------------------------------------------*/
+
+GUCEF_CORE_PUBLIC_C void
+FreeProcessList( TProcessId* processList );
+
+/*--------------------------------------------------------------------------*/
+
+/**
+ *  Copies a PID structure.
+ *  This allocated memory that needs to be freed with FreeProcessId()
+ */
+GUCEF_CORE_PUBLIC_C TProcessId*
+CopyProcessId( TProcessId* pid );
+
+/*--------------------------------------------------------------------------*/
+
+GUCEF_CORE_PUBLIC_C void
+FreeProcessId( TProcessId* processList );
+
+/*--------------------------------------------------------------------------*/
+
+GUCEF_CORE_PUBLIC_C UInt32
+GetProcessMemmoryUsage( TProcessId* pid                     , 
+                        TProcessMemoryUsageInfo* memUseInfo );
+
+/*--------------------------------------------------------------------------*/
+
+GUCEF_CORE_PUBLIC_C UInt32 
+GetExeNameForProcessId( TProcessId* pid        , 
+                        char* outNameBuffer    , 
+                        UInt32 nameBufferSize  ,
+                        UInt32* usedBufferSize );
+
+
+/*--------------------------------------------------------------------------*/
+
+GUCEF_CORE_PUBLIC_C UInt32
+GetGlobalMemoryUsage( TGlobalMemoryUsageInfo* memUseInfo );
+
+/*--------------------------------------------------------------------------*/
+
+GUCEF_CORE_PUBLIC_C UInt32
+GetProcessCpuUsage( TProcessId* pid                  , 
+                    TProcessCpuUsageInfo* cpuUseInfo );
 
 /*--------------------------------------------------------------------------*/
 

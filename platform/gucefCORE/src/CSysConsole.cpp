@@ -745,6 +745,16 @@ CSysConsole::LoadConfig( const CDataNode& treeroot )
     return true;
 }
 
+/*-------------------------------------------------------------------------*/
+
+const CORE::CString& 
+CSysConsole::GetClassTypeName( void ) const
+{GUCEF_TRACE;
+
+    static CORE::CString classTypeName = "GUCEF::CORE::CSysConsole";
+    return classTypeName; 
+}
+
 /*-------------------------------------------------------------------------//
 //                                                                         //
 //      NAMESPACE                                                          //

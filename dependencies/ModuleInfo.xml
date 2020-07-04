@@ -1,0 +1,4 @@
+<ModuleInfoEntry>
+    <Module Name="dependencies.root" Type="HeaderIncludeLocation" Platform="All" ConsiderSubDirs="False" >	
+    </Module>
+</ModuleInfoEntry>

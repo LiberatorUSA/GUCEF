@@ -29,10 +29,10 @@
 #include <map>
 #include <set>
 
-#ifndef GUCEF_CORE_COBSERVINGNOTIFIER_H
-#include "CObservingNotifier.h"
-#define GUCEF_CORE_COBSERVINGNOTIFIER_H
-#endif /* GUCEF_CORE_COBSERVINGNOTIFIER_H ? */
+#ifndef GUCEF_CORE_CTSGNOTIFIER_H
+#include "CTSGNotifier.h"
+#define GUCEF_CORE_CTSGNOTIFIER_H
+#endif /* GUCEF_CORE_CTSGNOTIFIER_H ? */
 
 #ifndef GUCEF_CORE_CTEVENTHANDLERFUNCTOR_H
 #include "gucefCORE_CTEventHandlerFunctor.h"
@@ -99,7 +99,7 @@ class CInputDriver;
 
 /*-------------------------------------------------------------------------*/
 
-class GUCEF_INPUT_PUBLIC_CPP CInputController : public CORE::CObservingNotifier
+class GUCEF_INPUT_PUBLIC_CPP CInputController : public CORE::CTSGNotifier
 {
     public:                
 
@@ -188,7 +188,7 @@ class GUCEF_INPUT_PUBLIC_CPP CInputController : public CORE::CObservingNotifier
      */
     CInputDriverPluginManager& GetInputDriverPluginManager( void );
     
-    virtual const CString& GetClassTypeName( void ) const;
+    virtual const CString& GetClassTypeName( void ) const GUCEF_VIRTUAL_OVERRIDE;
     
     GUCEF_DEFINE_MSGEXCEPTION( GUCEF_INPUT_PUBLIC_CPP, EInvalidIndex );
     
@@ -203,9 +203,9 @@ class GUCEF_INPUT_PUBLIC_CPP CInputController : public CORE::CObservingNotifier
      *  @param eventid the unique event id for an event
      *  @param eventdata optional notifier defined userdata
      */
-    virtual void OnNotify( CORE::CNotifier* notifier           ,
-                           const CORE::CEvent& eventid         ,
-                           CORE::CICloneable* eventdata = NULL );
+    virtual void OnPumpedNotify( CORE::CNotifier* notifier           ,
+                                 const CORE::CEvent& eventid         ,
+                                 CORE::CICloneable* eventdata = NULL ) GUCEF_VIRTUAL_OVERRIDE;
         
     typedef CORE::CTEventHandlerFunctor< CInputController > TEventCallback;
     

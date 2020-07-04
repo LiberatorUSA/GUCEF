@@ -15,6 +15,7 @@
     <Module Platform="mswin">
         <Linker>
             <Dependency Name="Ws2_32.lib" />
+			<Dependency Name="winmm.lib" />
         </Linker>
     </Module>  	
     <Module Platform="Linux">

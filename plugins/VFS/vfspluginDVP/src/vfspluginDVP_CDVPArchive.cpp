@@ -72,6 +72,14 @@ typedef std::vector< VFS::CString > TStringVector;
 
 /*-------------------------------------------------------------------------//
 //                                                                         //
+//      GLOBAL VARS                                                        //
+//                                                                         //
+//-------------------------------------------------------------------------*/
+
+const VFS::CString CDVPArchive::DVPArchiveTypeName = "dvp";
+
+/*-------------------------------------------------------------------------//
+//                                                                         //
 //      UTILITIES                                                          //
 //                                                                         //
 //-------------------------------------------------------------------------*/
@@ -131,6 +139,20 @@ CDVPArchive::GetFile( const VFS::CString& file      ,
     
     GUCEF_DEBUG_LOG( CORE::LOGLEVEL_NORMAL, "CVPArchive: Unable to provide access to file: " + file );
     return CVFSHandlePtr();
+}
+
+
+/*-------------------------------------------------------------------------*/
+
+bool 
+CDVPArchive::StoreAsFile( const CORE::CString& filepath    ,
+                          const CORE::CDynamicBuffer& data ,
+                          const CORE::UInt64 offset        ,
+                          const bool overwrite             )
+{GUCEF_TRACE;
+
+    // Not implemented / supported at this time
+    return false;
 }
 
 /*-------------------------------------------------------------------------*/
@@ -363,17 +385,16 @@ CDVPArchive::IsWriteable( void ) const
 /*-------------------------------------------------------------------------*/
     
 bool
-CDVPArchive::LoadArchive( const VFS::CString& archiveName ,
-                          const VFS::CString& archivePath ,
-                          const bool writableRequest      )
+CDVPArchive::LoadArchive( const VFS::CArchiveSettings& settings )
 {GUCEF_TRACE;
     
     // We do not support writable DVP archives
-    if ( writableRequest ) return false;
+    if ( settings.GetWriteableRequested() ) 
+        return false;
     
     UnloadArchive();
 
-    FILE* fptr = DVP_Open_File( archivePath.C_String(), "rb" );
+    FILE* fptr = DVP_Open_File( settings.GetActualArchivePath().C_String(), "rb" );
     if ( NULL == fptr ) return false;
 
     _DVP_Read_Header( fptr, &m_header );
@@ -392,10 +413,21 @@ CDVPArchive::LoadArchive( const VFS::CString& archiveName ,
     }
     DVP_Close_File( fptr );
         
-    m_archiveName = archiveName;
-    m_archivePath = archivePath;
+    m_archiveName = settings.GetArchiveName();
+    m_archivePath = settings.GetActualArchivePath();
     
     return true;
+}
+
+/*-------------------------------------------------------------------------*/
+
+bool 
+CDVPArchive::LoadArchive( const VFS::CString& archiveName ,
+                          CVFSHandlePtr vfsResource       ,
+                          const bool writeableRequest     )
+{GUCEF_TRACE;
+
+    return false;
 }
 
 /*-------------------------------------------------------------------------*/
@@ -413,6 +445,15 @@ CDVPArchive::UnloadArchive( void )
     m_archiveName = NULL;
     
     return true;
+}
+
+/*-------------------------------------------------------------------------*/
+
+const VFS::CString& 
+CDVPArchive::GetType( void ) const
+{GUCEF_TRACE;
+
+    return DVPArchiveTypeName;
 }
 
 /*-------------------------------------------------------------------------*/

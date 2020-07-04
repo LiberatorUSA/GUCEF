@@ -120,6 +120,8 @@ class GUCEF_CORE_PUBLIC_CPP CSysConsole : public CIConfigurable         ,
      */
     virtual bool LoadConfig( const CDataNode& treeroot );
 
+    virtual const CString& GetClassTypeName( void ) const;
+
     public:
 
     struct SCmdChannel;

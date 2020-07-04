@@ -94,20 +94,27 @@ class GUCEF_CORE_PUBLIC_CPP CMetricsClientManager : public CIMetricsSystemClient
      *   Adjusts the specified key by a given delta, at a given frequency rate
      */
     virtual void Count( const CString& key, const Int32 delta, const Float32 frequency = 1.0f ) const;
+    virtual void Count( const CString& key, const Int64 delta, const Float32 frequency = 1.0f ) const;
+    virtual void Count( const CString& key, const UInt32 delta, const Float32 frequency = 1.0f ) const;
+    virtual void Count( const CString& key, const UInt64 delta, const Float32 frequency = 1.0f ) const;
 
     /**
      *  Records a gauge for the key, with a given value, at a given frequency rate
      */
     virtual void Gauge( const CString& key, const UInt32 value, const Float32 frequency = 1.0f ) const;
+    virtual void Gauge( const CString& key, const UInt64 value, const Float32 frequency = 1.0f ) const;
 
     /**
      *  Records a timing for a key, at a given frequency
      */
     virtual void Timing( const CString& key, const UInt32 ms, const Float32 frequency = 1.0f ) const;
+    virtual void Timing( const CString& key, const UInt64 ms, const Float32 frequency = 1.0f ) const;
 
     virtual bool SaveConfig( CDataNode& tree ) const;
 
     virtual bool LoadConfig( const CDataNode& treeroot );
+
+    virtual const CString& GetClassTypeName( void ) const;
 
     private:
     friend class CCoreGlobal;

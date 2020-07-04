@@ -55,7 +55,8 @@ namespace CORE {
 //                                                                         //
 //-------------------------------------------------------------------------*/
 
-CPluginManager::CPluginManager( void )
+CPluginManager::CPluginManager( void )  
+    : CTSGNotifier()
 {GUCEF_TRACE;
     
     CCoreGlobal::Instance()->GetPluginControl().Register( this );       
@@ -64,6 +65,7 @@ CPluginManager::CPluginManager( void )
 /*-------------------------------------------------------------------------*/
 
 CPluginManager::CPluginManager( const CPluginManager& src )
+    : CTSGNotifier()
 {GUCEF_TRACE;
 
     CCoreGlobal::Instance()->GetPluginControl().Register( this );

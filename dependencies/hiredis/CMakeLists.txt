@@ -276,6 +276,33 @@ elseif (OSX)
   set( PLATFORM_SOURCE_INSTALL "OSX" )
   source_group( "Platform Source Files" FILES ${PLATFORM_SOURCE_FILES} )
 
+elseif (POSIX)
+  set( PLATFORM_HEADER_FILES 
+    async.h
+    dict.h
+    hiredis.h
+    net.h
+    read.h
+    sds.h
+    sockcompat.h
+  )
+
+  set( PLATFORM_HEADER_INSTALL "POSIX" )
+  source_group( "Platform Header Files" FILES ${PLATFORM_HEADER_FILES} )
+
+  set( PLATFORM_SOURCE_FILES 
+    async.c
+    dict.c
+    hiredis.c
+    net.c
+    read.c
+    sds.c
+    sockcompat.c
+  )
+
+  set( PLATFORM_SOURCE_INSTALL "POSIX" )
+  source_group( "Platform Source Files" FILES ${PLATFORM_SOURCE_FILES} )
+
 elseif (SDL)
   set( PLATFORM_HEADER_FILES 
     async.h
@@ -452,6 +479,8 @@ GUCEF_config_lib( ${MODULE_NAME} )
 elseif (NACL)
 GUCEF_config_lib( ${MODULE_NAME} )
 elseif (OSX)
+GUCEF_config_lib( ${MODULE_NAME} )
+elseif (POSIX)
 GUCEF_config_lib( ${MODULE_NAME} )
 elseif (SDL)
 GUCEF_config_lib( ${MODULE_NAME} )

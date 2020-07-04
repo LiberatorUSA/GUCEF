@@ -171,29 +171,44 @@ Lowercase( char *str )
 /*--------------------------------------------------------------------------*/
 
 UInt32
+String_To_Boolint_WithDefault( const char *teststr, UInt32 defaultIfNeeded )
+{
+    if ( GUCEF_NULL != teststr )
+    {
+        char tests[ 8 ];
+        UInt32 max = (UInt32) strlen( teststr )+1;
+        if ( 8 < max ) max = 8;
+        memcpy( tests, teststr, max );
+        tests[ 7 ] = '\0';
+        Lowercase( tests );
+
+        if ( ( strcmp( tests, "enable"  ) == 0 ) ||
+             ( strcmp( tests, "true"  ) == 0 )   ||
+             ( strcmp( tests, "yes"  ) == 0 )    ||
+             ( strcmp( tests, "on"  ) == 0 )     ||
+             ( strcmp( tests, "1"  ) == 0 )      )
+        {
+            return 1;
+        }
+        if ( ( strcmp( tests, "disable"  ) == 0 ) ||
+             ( strcmp( tests, "false"  ) == 0 )   ||
+             ( strcmp( tests, "no"  ) == 0 )      ||
+             ( strcmp( tests, "off"  ) == 0 )     ||
+             ( strcmp( tests, "0"  ) == 0 )       )
+        {
+            return 0;
+        }
+    }
+
+    return defaultIfNeeded;
+}
+
+/*--------------------------------------------------------------------------*/
+
+UInt32
 String_To_Boolint( const char *teststr )
 {
-        /*
-         *      String to bool conversion
-         */
-        if ( teststr )
-        {
-                char tests[ 7 ];
-                UInt32 max = (UInt32) strlen( teststr )+1;
-                if ( 7 < max ) max = 7;
-                memcpy( tests, teststr, max );
-                Lowercase( tests );
-
-                return( ( strcmp( tests, "enable"  ) == 0 ) ||
-                        ( strcmp( tests, "true"  ) == 0 )   ||
-                        ( strcmp( tests, "yes"  ) == 0 )    ||
-                        ( strcmp( tests, "on"  ) == 0 )     ||
-                        ( strcmp( tests, "1"  ) == 0 )      );
-        }
-        else
-        {
-                return 0;
-        }
+    return String_To_Boolint_WithDefault( teststr, 0 );
 }
 
 /*--------------------------------------------------------------------------*/
@@ -1008,9 +1023,17 @@ Strip_Filename( char* filepath )
 Int32
 PtrToInt32( const void* ptr )
 {
-        char ptrstr[ 64 ];
-        sprintf( ptrstr, "%d", (Int64)ptr );
-        return Str_To_Int( ptrstr );
+    char ptrstr[ 64 ];
+    #ifdef GUCEF_64BIT
+      #if ( GUCEF_PLATFORM == GUCEF_PLATFORM_MSWIN )
+      sprintf( ptrstr, "%I64d", (Int64)ptr );
+      #else
+      sprintf( ptrstr, "%lld", (Int64)ptr );
+      #endif
+    #else
+    sprintf( ptrstr, "%d", (Int32)ptr );
+    #endif
+    return Str_To_Int( ptrstr );
 }
 
 /*-------------------------------------------------------------------------//

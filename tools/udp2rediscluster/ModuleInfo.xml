@@ -1,0 +1,25 @@
+<?xml version="1.0" encoding="ISO-8859-1" ?>
+<ModuleInfoEntry>
+	<Module Name="udp2rediscluster" Platform="All" Type="Executable" >
+		<Dependencies>
+			<Dependency Name="gucefCOM" />
+			<Dependency Name="gucefCOMCORE" />
+			<Dependency Name="gucefCORE" />
+			<Dependency Name="gucefMT" />
+			<Dependency Name="hiredis" />
+			<Dependency Name="redis-plus-plus" />
+		</Dependencies>
+		<Linker>
+			<Dependency Name="gucefCOM" />
+			<Dependency Name="gucefCOMCORE" />
+			<Dependency Name="gucefCORE" />
+			<Dependency Name="gucefMT" />
+			<Dependency Name="hiredis" />
+			<Dependency Name="redis-plus-plus" />
+		</Linker>
+		<RuntimeDependencies>
+			<RuntimeDependency Name="dstorepluginPARSIFALXML" />
+			<RuntimeDependency Name="dstorepluginJSONPARSER" />
+		</RuntimeDependencies>
+	</Module>
+</ModuleInfoEntry>

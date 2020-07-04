@@ -129,7 +129,26 @@ CFileURLHandler::Deactivate( CURL& url )
 bool
 CFileURLHandler::IsActive( const CURL& url ) const
 {GUCEF_TRACE;
-        return false;
+
+    return false;
+}
+
+/*-------------------------------------------------------------------------*/
+                         
+bool
+CFileURLHandler::Lock( void ) const
+{GUCEF_TRACE;
+    
+    return false;
+}
+
+/*-------------------------------------------------------------------------*/
+                         
+bool
+CFileURLHandler::Unlock( void ) const
+{GUCEF_TRACE;
+    
+    return false;
 }
 
 /*-------------------------------------------------------------------------//

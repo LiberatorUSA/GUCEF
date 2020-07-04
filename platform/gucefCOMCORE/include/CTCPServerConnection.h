@@ -101,9 +101,9 @@ class GUCEF_COMCORE_EXPORT_CPP CTCPServerConnection : public CTCPConnection
      *      Send data to client.
      */
     virtual bool Send( const void* dataSource , 
-                       const UInt32 dataSize  );
+                       const UInt32 dataSize  ) GUCEF_VIRTUAL_OVERRIDE;
 
-    virtual bool IsActive( void ) const;
+    virtual bool IsActive( void ) const GUCEF_VIRTUAL_OVERRIDE;
 
     /**
      *      Set's the maximum number of bytes to be read from the socket
@@ -133,11 +133,11 @@ class GUCEF_COMCORE_EXPORT_CPP CTCPServerConnection : public CTCPConnection
      */
     UInt32 GetMaxRead( void ) const;
     
-    virtual const CORE::CString& GetRemoteHostName( void ) const;
+    virtual const CORE::CString& GetRemoteHostName( void ) const GUCEF_VIRTUAL_OVERRIDE;
     
-    virtual UInt16 GetRemoteTCPPort( void ) const;
+    virtual UInt16 GetRemoteTCPPort( void ) const GUCEF_VIRTUAL_OVERRIDE;
     
-    virtual CIPAddress GetRemoteIP( void ) const;
+    virtual CIPAddress GetRemoteIP( void ) const GUCEF_VIRTUAL_OVERRIDE;
 
     virtual CHostAddress GetRemoteHostAddress( void ) const;
 
@@ -155,13 +155,13 @@ class GUCEF_COMCORE_EXPORT_CPP CTCPServerConnection : public CTCPConnection
      *  Allows you to set whether to use data coalescing on sends.
      *  This is commonly refered to as the Nagle algorithm
      */
-    virtual bool SetUseTcpSendCoalescing( bool coaleseData );
+    virtual bool SetUseTcpSendCoalescing( bool coaleseData ) GUCEF_VIRTUAL_OVERRIDE;
 
-    virtual bool GetUseTcpSendCoalescing( void ) const;
+    virtual bool GetUseTcpSendCoalescing( void ) const GUCEF_VIRTUAL_OVERRIDE;
 
-    virtual UInt32 GetBytesReceived( bool resetCounter );
+    virtual UInt32 GetBytesReceived( bool resetCounter ) GUCEF_VIRTUAL_OVERRIDE;
 
-    virtual UInt32 GetBytesTransmitted( bool resetCounter );
+    virtual UInt32 GetBytesTransmitted( bool resetCounter ) GUCEF_VIRTUAL_OVERRIDE;
 
     void SetDisconnectIfIdle( bool disconnectIfIdle );
 
@@ -181,9 +181,9 @@ class GUCEF_COMCORE_EXPORT_CPP CTCPServerConnection : public CTCPConnection
      */
     virtual void Update( UInt32 maxUpdatesPerCycle );
     
-    virtual void LockData( void ) const;
+    virtual bool Lock( void ) const GUCEF_VIRTUAL_OVERRIDE;
     
-    virtual void UnlockData( void ) const; 
+    virtual bool Unlock( void ) const GUCEF_VIRTUAL_OVERRIDE; 
                          
     private:
     

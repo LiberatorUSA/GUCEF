@@ -213,6 +213,41 @@ CTaskConsumer::OnTaskEnded( CICloneable* taskdata ,
     NotifyObservers( TaskFinishedEvent );
 }
 
+/*-------------------------------------------------------------------------*/
+
+void 
+CTaskConsumer::OnTaskEnding( CICloneable* taskdata ,
+                             bool willBeForced     )
+{GUCEF_TRACE;
+
+}
+
+/*-------------------------------------------------------------------------*/
+
+bool
+CTaskConsumer::Lock( void ) const
+{GUCEF_TRACE;
+
+    if ( GUCEF_NULL != m_delegator )
+    {
+        return m_delegator->Lock();    
+    }
+    return false;
+}
+
+/*-------------------------------------------------------------------------*/
+
+bool
+CTaskConsumer::Unlock( void ) const
+{GUCEF_TRACE;
+
+    if ( GUCEF_NULL != m_delegator )
+    {
+        return m_delegator->Unlock();    
+    }
+    return false;
+}
+
 /*-------------------------------------------------------------------------//
 //                                                                         //
 //      NAMESPACE                                                          //

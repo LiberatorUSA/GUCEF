@@ -37,10 +37,10 @@
 #define GUCEF_CORE_DVCPPOSWRAP_H
 #endif /* GUCEF_CORE_DVCPPOSWRAP_H ? */
 
-#ifndef GUCEF_CORE_CFILEACCESS_H
-#include "CFileAccess.h"
-#define GUCEF_CORE_CFILEACCESS_H
-#endif /* GUCEF_CORE_CFILEACCESS_H ? */
+#ifndef GUCEF_CORE_CROLLINGFILEACCESS_H
+#include "gucefCORE_CRollingFileAccess.h"
+#define GUCEF_CORE_CROLLINGFILEACCESS_H
+#endif /* GUCEF_CORE_CROLLINGFILEACCESS_H ? */
 
 #ifndef GUCEF_CORE_CONFIGSTORE_H
 #include "CConfigStore.h"
@@ -82,6 +82,11 @@
 #define GUCEF_COMCORE_CCOMCOREGLOBAL_H
 #endif /* GUCEF_COMCORE_CCOMCOREGLOBAL_H ? */
 
+#ifndef GUCEF_COM_CCOMGLOBAL_H
+#include "gucefCOM_CComGlobal.h"
+#define GUCEF_COM_CCOMGLOBAL_H
+#endif /* GUCEF_COM_CCOMGLOBAL_H ? */
+
 #include "udp2kafka.h"
 
 /*-------------------------------------------------------------------------//
@@ -99,8 +104,9 @@ using namespace GUCEF;
 //-------------------------------------------------------------------------*/
 
 bool
-LoadConfig( const CORE::CString& configPath ,
-            CORE::CValueList& keyValueList  )
+LoadConfig( const CORE::CString& configPath            ,
+            CORE::CValueList& keyValueList             ,
+            CORE::CDataNode* loadedConfig = GUCEF_NULL )
 {GUCEF_TRACE;
 
     #ifdef GUCEF_DEBUG_MODE
@@ -146,7 +152,7 @@ LoadConfig( const CORE::CString& configPath ,
 
     CORE::CConfigStore& configStore = CORE::CCoreGlobal::Instance()->GetConfigStore();
     configStore.SetConfigFile( configFilePath );
-    return configStore.LoadConfig();
+    return configStore.LoadConfig( loadedConfig );
 }
 
 /*-------------------------------------------------------------------------*/
@@ -177,9 +183,19 @@ ParseParams( const int argc                 ,
 
 /*-------------------------------------------------------------------------*/
 
+void
+GucefAppSignalHandler( int signal )
+{GUCEF_TRACE;
+    
+    ::GUCEF::CORE::CCoreGlobal::Instance()->GetApplication().Stop();
+}
+
+/*-------------------------------------------------------------------------*/
+
 /*
  *      Application entry point
  */
+//GUCEF_OSMAIN_BEGIN
 GUCEF_OSSERVICEMAIN_BEGIN( "udp2kafka" )
 {GUCEF_TRACE;
 
@@ -187,6 +203,7 @@ GUCEF_OSSERVICEMAIN_BEGIN( "udp2kafka" )
 
     CORE::CCoreGlobal::Instance();
     COMCORE::CComCoreGlobal::Instance();
+    COM::CComGlobal::Instance();
 
     // Check for config param first
     CORE::CValueList keyValueList;
@@ -195,7 +212,8 @@ GUCEF_OSSERVICEMAIN_BEGIN( "udp2kafka" )
     keyValueList.Clear();
 
     // Load settings from a config file (if any) and then override with params (if any)
-    LoadConfig( configPathParam, keyValueList );
+    CORE::CDataNode* globalConfig = new CORE::CDataNode();
+    LoadConfig( configPathParam, keyValueList, globalConfig );
     ParseParams( argc, argv, keyValueList );
 
     CORE::Int32 minLogLevel = CORE::LOGLEVEL_BELOW_NORMAL;
@@ -217,22 +235,27 @@ GUCEF_OSSERVICEMAIN_BEGIN( "udp2kafka" )
 
     keyValueList.Set( "logfile", logFilename );
 
-    CORE::CFileAccess logFileAccess( logFilename, "w" );
+    CORE::CRollingFileAccess logFileAccess( logFilename, "w" );
     CORE::CStdLogger logger( logFileAccess );
     CORE::CCoreGlobal::Instance()->GetLogManager().AddLogger( &logger );
 
     CORE::CPlatformNativeConsoleLogger console;
-    CORE::CCoreGlobal::Instance()->GetLogManager().AddLogger( console.GetLogger() );
+    if ( GUCEF_APP_TYPE == GUCEF_APP_TYPE_CONSOLE )
+        CORE::CCoreGlobal::Instance()->GetLogManager().AddLogger( console.GetLogger() );
 
     CORE::CCoreGlobal::Instance()->GetLogManager().FlushBootstrapLogEntriesToLogs();
     GUCEF_LOG( CORE::LOGLEVEL_NORMAL, "Flushed to log @ " + logFilename );
 
+    GUCEF_OSMAIN_SIGNAL_HANDLER( GucefAppSignalHandler );
+
     Udp2Kafka udp2Kafka;
-    if ( !udp2Kafka.LoadConfig( keyValueList ) )
+    if ( !udp2Kafka.LoadConfig( keyValueList, *globalConfig ) )
     {
+        delete globalConfig;
         GUCEF_ERROR_LOG( CORE::LOGLEVEL_CRITICAL, "Udp2Kafka: Exiting because LoadConfig failed" );
         return -1;
     }
+    delete globalConfig;
 
     if ( !udp2Kafka.Start() )
     {
@@ -240,8 +263,11 @@ GUCEF_OSSERVICEMAIN_BEGIN( "udp2kafka" )
         return -2;
     }
 
+    auto& pulseGenerator = CORE::CCoreGlobal::Instance()->GetPulseGenerator();
+    pulseGenerator.RequestPulseInterval( 25 );
+    pulseGenerator.RequestPulsesPerImmediatePulseRequest( 25 );
+    
     auto& app = CORE::CCoreGlobal::Instance()->GetApplication();
-    app.GetPulseGenerator().RequestPulseInterval( 10 );
     return app.main( argc, argv, true );
 }
 GUCEF_OSMAIN_END

@@ -1,0 +1,12 @@
+<ModuleInfoEntry>
+    <Module Name="aws-c-common" Type="StaticLibrary" Platform="All">
+        <Preprocessor>
+			<Define String="HAVE_BUILTIN_CPU_SUPPORTS" />
+        </Preprocessor>
+        <Dependencies>
+			<Dependency Name="aws-c-common-headers" />
+        </Dependencies>
+        <Linker>
+        </Linker>		
+    </Module>
+</ModuleInfoEntry>

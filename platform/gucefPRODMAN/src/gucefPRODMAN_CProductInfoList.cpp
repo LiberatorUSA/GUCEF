@@ -136,6 +136,16 @@ CProductInfoList::LoadConfig( const GUCEF::CORE::CDataNode& node )
 }
 
 /*-------------------------------------------------------------------------*/
+
+const CORE::CString& 
+CProductInfoList::GetClassTypeName( void ) const
+{GUCEF_TRACE;
+
+    static CORE::CString classTypeName = "GUCEF::PRODMAN::CProductInfoList";
+    return classTypeName; 
+}
+
+/*-------------------------------------------------------------------------*/
     
 CProductInfoList::TProductMap&
 CProductInfoList::GetList( const TDeploymentStatus deploymentStatus )

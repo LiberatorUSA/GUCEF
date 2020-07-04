@@ -207,7 +207,7 @@ class GUCEF_CORE_PUBLIC_CPP CDataNode
      *  @param name the name of the attribute or child node
      *  @return the value located using the given name
      */
-    CString GetAttributeValueOrChildValueByName( const CString& name ) const;
+    CString GetAttributeValueOrChildValueByName( const CString& name, const CString& defaultValue = CString::Empty ) const;
 
     /**
      *  Attempts to locate a child node with the given name

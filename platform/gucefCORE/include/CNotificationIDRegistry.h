@@ -34,6 +34,11 @@
 #define GUCEF_MT_CMUTEX_H
 #endif /* GUCEF_MT_CMUTEX_H ? */
 
+#ifndef GUCEF_MT_CILOCKABLE_H
+#include "gucefMT_CILockable.h"
+#define GUCEF_MT_CILOCKABLE_H
+#endif /* GUCEF_MT_CILOCKABLE_H ? */
+
 #ifndef GUCEF_CORE_CEVENT_H
 #include "CEvent.h"
 #define GUCEF_CORE_CEVENT_H
@@ -69,7 +74,7 @@ namespace CORE {
  *  If you follow this rule you should never have to worry about naming
  *  conflicts, while keeping the ease of use that comes from integer id's
  */
-class GUCEF_CORE_PUBLIC_CPP CNotificationIDRegistry
+class GUCEF_CORE_PUBLIC_CPP CNotificationIDRegistry : public MT::CILockable
 {
     public:
 
@@ -127,6 +132,12 @@ class GUCEF_CORE_PUBLIC_CPP CNotificationIDRegistry
     GUCEF_DEFINE_MSGEXCEPTION( GUCEF_CORE_PUBLIC_CPP, EUnknownKey );
     GUCEF_DEFINE_MSGEXCEPTION( GUCEF_CORE_PUBLIC_CPP, EInvalidKey );
     GUCEF_DEFINE_MSGEXCEPTION( GUCEF_CORE_PUBLIC_CPP, EInvalidEventID );
+
+    protected:
+    
+    virtual bool Lock( void ) const GUCEF_VIRTUAL_OVERRIDE;
+    
+    virtual bool Unlock( void ) const GUCEF_VIRTUAL_OVERRIDE;
 
     private:
     friend class CCoreGlobal;

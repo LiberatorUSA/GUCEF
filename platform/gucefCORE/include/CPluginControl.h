@@ -26,11 +26,6 @@
 //                                                                         //
 //-------------------------------------------------------------------------*/
 
-#ifndef GUCEF_MT_GUCEFMT_H
-#include "gucefMT.h"                   /* MT library API */
-#define GUCEF_MT_GUCEFMT_H
-#endif /* GUCEF_MT_GUCEFMT_H ? */
-
 #ifndef GUCEF_CORE_CIPLUGINLOADLOGIC_H
 #include "gucefCORE_CIPluginLoadLogic.h"
 #define GUCEF_CORE_CIPLUGINLOADLOGIC_H
@@ -41,10 +36,10 @@
 #define GUCEF_CORE_CPLUGINGROUP_H
 #endif /* GUCEF_CORE_CPLUGINGROUP_H ? */
 
-#ifndef GUCEF_CORE_CNOTIFIER_H
-#include "CNotifier.h"
-#define GUCEF_CORE_CNOTIFIER_H
-#endif /* GUCEF_CORE_CNOTIFIER_H ? */
+#ifndef GUCEF_CORE_CTSGNOTIFIER_H
+#include "CTSGNotifier.h"
+#define GUCEF_CORE_CTSGNOTIFIER_H
+#endif /* GUCEF_CORE_CTSGNOTIFIER_H ? */
 
 #ifndef GUCEF_CORE_CPLUGINMETADATA_H
 #include "gucefCORE_CPluginMetaData.h"
@@ -81,7 +76,7 @@ class CPluginManager;
  *  we can support any plugin interface as long as a plugin manager is registered capable
  *  of handling the given plugin's interface.
  */
-class GUCEF_CORE_PUBLIC_CPP CPluginControl : public CNotifier      ,
+class GUCEF_CORE_PUBLIC_CPP CPluginControl : public CTSGNotifier    ,
                                              public CIConfigurable
 {
     public:
@@ -209,6 +204,8 @@ class GUCEF_CORE_PUBLIC_CPP CPluginControl : public CNotifier      ,
      */
     virtual bool LoadConfig( const CDataNode& treeroot );
 
+    virtual const CString& GetClassTypeName( void ) const;
+
     private:
     friend class CPluginManager;
 
@@ -244,7 +241,6 @@ class GUCEF_CORE_PUBLIC_CPP CPluginControl : public CNotifier      ,
 
     CPluginManager* GetPluginManagerForType( const CString& pluginType );
 
-    MT::CMutex m_mutex;
     TPluginLoadLogicMap m_pluginLoadLogicProviders;
     CString m_defaultPluginLoadLogicType;
     TPluginGroupMap m_pluginGroups;

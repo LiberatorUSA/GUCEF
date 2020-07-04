@@ -55,6 +55,11 @@
 #define GUCEF_VFS_CVFS_H
 #endif /* GUCEF_VFS_CVFS_H ? */
 
+#ifndef GUCEF_VFS_CVFSGLOBAL_H
+#include "gucefVFS_CVfsGlobal.h"
+#define GUCEF_VFS_CVFSGLOBAL_H
+#endif /* GUCEF_VFS_CVFSGLOBAL_H ? */
+
 #include "gucefVFS_CFileSystemArchive.h"
 
 /*-------------------------------------------------------------------------//
@@ -71,6 +76,17 @@ namespace VFS {
 //      UTILITIES                                                          //
 //                                                                         //
 //-------------------------------------------------------------------------*/
+
+CFileSystemArchive::CFileSystemArchive( void )
+    : m_diskCacheList()            
+    , m_rootDir()         
+    , m_archiveName() 
+    , m_writable( false )
+{GUCEF_TRACE;
+
+}
+
+/*-------------------------------------------------------------------------*/
 
 CFileSystemArchive::CFileSystemArchive( const CString& archiveName ,
                                         const CString& rootDir     ,
@@ -94,15 +110,66 @@ CFileSystemArchive::~CFileSystemArchive()
 /*-------------------------------------------------------------------------*/
 
 bool
-CFileSystemArchive::LoadArchive( const CString& archiveName ,
-                                 const CString& archivePath ,
-                                 const bool writableRequest )
+CFileSystemArchive::LoadArchive( const CArchiveSettings& settings )
 {GUCEF_TRACE;
 
-    m_archiveName = archiveName;
-    m_rootDir = archivePath;
-    m_writable = writableRequest;
+    m_archiveName = settings.GetArchiveName();
+    m_rootDir = settings.GetActualArchivePath();
+    m_writable = settings.GetWriteableRequested();
+
+    if ( settings.GetAutoMountSubArchives() )
+    {
+        CVFS& vfs = CVfsGlobal::Instance()->GetVfs();
+        
+        // Get a list of all constructable archive types
+        CVFS::TAbstractArchiveFactory::TKeySet keySet;
+        vfs.GetListOfSupportedArchiveTypes( keySet );
+
+        // Get a list of all files from the root onward
+        TStringSet files;
+        GetList( files, CString::Empty, true, true, CString::Empty, true, false );
+
+        // Find mountable types
+        TStringSet::iterator i = files.begin();
+        while ( i != files.end() )
+        {
+            // Mount based on archive file extention type
+            CString fileExtention = CORE::ExtractFileExtention( (*i) );
+            if ( !fileExtention.IsNULLOrEmpty() )
+            {
+                CVFS::TAbstractArchiveFactory::TKeySet::iterator n = keySet.find( fileExtention );
+                if ( n != keySet.end() )
+                {
+                    // Found a compatible type,.. create an archive for the type
+                    if ( vfs.MountArchive( (*i)                                                                                , 
+                                           (*i)                                                                                , 
+                                           (*n)                                                                                , 
+                                           (*i)                                                                                , 
+                                           settings.GetWriteableRequested()                                                    , 
+                                           settings.GetAutoMountSubArchives() && settings.GetAutoMountSubArchivesIsRecursive() , 
+                                           (*i)                                                                                ) )
+                    {
+                        GUCEF_SYSTEM_LOG( CORE::LOGLEVEL_NORMAL, "FileSystemArchive: Auto mounted sub archive with name " + (*i) );
+                    }
+                }
+            }
+            ++i;
+        }
+
+    }
     return true;
+}
+
+/*-------------------------------------------------------------------------*/
+
+bool 
+CFileSystemArchive::LoadArchive( const VFS::CString& archiveName ,
+                                 CVFSHandlePtr vfsResource       ,
+                                 const bool writeableRequest     )
+{GUCEF_TRACE;
+
+    GUCEF_WARNING_LOG( CORE::LOGLEVEL_NORMAL, "FileSystemArchive: Attempting to load a \"FileSystem\" archive from a file. That does not make sense. Bad config?" );
+    return false;
 }
 
 /*-------------------------------------------------------------------------*/
@@ -143,6 +210,18 @@ CFileSystemArchive::GetFile( const CString& file      ,
      *      of the rootdirs. or in any of the packfiles
      */
     return CVFSHandlePtr();
+}
+
+/*-------------------------------------------------------------------------*/
+
+bool 
+CFileSystemArchive::StoreAsFile( const CORE::CString& filepath    ,
+                                 const CORE::CDynamicBuffer& data ,
+                                 const CORE::UInt64 offset        ,
+                                 const bool overwrite             )
+{GUCEF_TRACE;
+
+    return data.WriteContentToFile( filepath, offset, overwrite );    
 }
 
 /*-------------------------------------------------------------------------*/
@@ -249,8 +328,7 @@ CFileSystemArchive::GetList( TStringSet& outputList     ,
     /*
      *      Make the combo path string
      */
-    CString rootdir = m_rootDir;
-    AppendToPath( rootdir, location );
+    CString rootdir = CombinePath( m_rootDir, location );
 
     /*
      *      Process the root
@@ -344,6 +422,15 @@ CFileSystemArchive::IsWriteable( void ) const
 {GUCEF_TRACE;
 
     return m_writable;
+}
+
+/*-------------------------------------------------------------------------*/
+
+const CString& 
+CFileSystemArchive::GetType( void ) const
+{GUCEF_TRACE;
+
+    return CVFS::FileSystemArchiveTypeName;
 }
 
 /*-------------------------------------------------------------------------*/

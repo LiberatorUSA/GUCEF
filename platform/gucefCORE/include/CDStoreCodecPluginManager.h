@@ -26,11 +26,6 @@
 //                                                                         //
 //-------------------------------------------------------------------------*/
 
-#ifndef GUCEF_MT_CMUTEX_H
-#include "gucefMT_CMutex.h"    /* MT library mutex implementation */
-#define GUCEF_MT_CMUTEX_H
-#endif /* GUCEF_MT_CMUTEX_H ? */
-
 #ifndef GUCEF_CORE_MACROS_H
 #include "gucefCORE_macros.h"   /* often used gucefCORE macros */
 #define GUCEF_CORE_MACROS_H
@@ -103,7 +98,6 @@ class GUCEF_CORE_PUBLIC_CPP CDStoreCodecPluginManager : public CPluginManager
     CDStoreCodecPluginManager& operator=( const CDStoreCodecPluginManager& src );
 
     TDStoreCodecPluginSet _codecs;
-    MT::CMutex _datalock;
 };
 
 /*-------------------------------------------------------------------------//

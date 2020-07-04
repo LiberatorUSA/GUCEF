@@ -120,10 +120,12 @@ set_property( TARGET ${MODULE_NAME} APPEND_STRING PROPERTY COMPILE_DEFINITIONS "
 
 if ( WIN32 )
   target_link_libraries( ${MODULE_NAME} Advapi32.lib Ws2_32.lib )
+  set_property( TARGET ${MODULE_NAME} APPEND_STRING PROPERTY COMPILE_DEFINITIONS "_WINSOCK_DEPRECATED_NO_WARNINGS" )
 endif( WIN32 )
 
 if ( WIN64 )
   target_link_libraries( ${MODULE_NAME} Advapi32.lib Ws2_32.lib )
+  set_property( TARGET ${MODULE_NAME} APPEND_STRING PROPERTY COMPILE_DEFINITIONS "_WINSOCK_DEPRECATED_NO_WARNINGS" )
 endif( WIN64 )
 
 include_directories( ../../common/include ../gucefCORE/include ../gucefMT/include include )

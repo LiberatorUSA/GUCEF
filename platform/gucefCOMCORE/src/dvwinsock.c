@@ -80,6 +80,7 @@ static WSADATA wsadata;
 #if ( GUCEF_PLATFORM == GUCEF_PLATFORM_MSWIN )
 
 #define LastSocketError WSAGetLastError()
+#define SIO_UDP_CONNRESET _WSAIOW(IOC_VENDOR, 12)
 
 #elif ( ( GUCEF_PLATFORM == GUCEF_PLATFORM_LINUX ) || ( GUCEF_PLATFORM == GUCEF_PLATFORM_ANDROID ) )
 
@@ -187,6 +188,22 @@ dvsocket_socket( int af       ,
         *error = LastSocketError;
         return sock;
     }
+
+    #if ( GUCEF_PLATFORM == GUCEF_PLATFORM_MSWIN )
+    if ( AF_INET == af && SOCK_DGRAM == type && IPPROTO_UDP == protocol )
+    {
+        /**
+         *  In MS Windows we can get an error as the result of a UDP send if the receiving side does not have the destination port reachable
+         *  This results in a ICMP(port unreachable) message after the transmission of the UDP datagram. 
+         *  This error will be stored, and next call to recvfrom() will return this error. 
+         *  This is not normal UDP behaviour since its supposed to be fire and forget connectionless. We will turn this behaviour off by default on Windows
+         */
+        BOOL bNewBehavior = FALSE;
+        DWORD dwBytesReturned = 0;
+        WSAIoctl( sock, SIO_UDP_CONNRESET, &bNewBehavior, sizeof bNewBehavior, NULL, 0, &dwBytesReturned, NULL, NULL );
+    }
+    #endif
+    
     *error = 0;
     return sock;
 }

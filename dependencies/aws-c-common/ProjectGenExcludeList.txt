@@ -1,0 +1,8 @@
+.builder
+.cbmc-batch
+.github
+cmake
+codebuild
+docker-images
+AWSCRTAndroidTestRunner
+tests

@@ -232,19 +232,18 @@ CCoreGlobal::Initialize( void )
 
     /*
      *  Instantiate all the singletons
+     *
      *  We start with the log manager so that it is possible to log everything from that point on
      *  if a logger is registered at an early stage
-     *  Next the Config Store because everything that used the global config will need it including perhaps
-     *  other singletons
      */
-    m_logManager = new CLogManager();
-    m_configStore = new CConfigStore();                 
+    m_logManager = new CLogManager();                 
     m_notificationIdRegistry = new CNotificationIDRegistry();
-    m_metricsClientManager = new CMetricsClientManager();
+    m_pulseGenerator = new CPulseGenerator();
 
     /*
      *  Make sure all events are registered from the start
      */
+    CConfigStore::RegisterEvents();
     CNotifier::RegisterEvents();
     CPulseGenerator::RegisterEvents();
     CStreamerEvents::RegisterEvents();
@@ -267,6 +266,14 @@ CCoreGlobal::Initialize( void )
     CWndMsgHookNotifier::RegisterEvents();
     
     #endif /* GUCEF_PLATFORM == ? */
+
+    /*
+     *  Next the Config Store because everything that used the global config will need it including perhaps
+     *  other singletons
+     */
+    m_configStore = new CConfigStore();
+    m_metricsClientManager = new CMetricsClientManager();
+
     /*
      *  Instantiate the rest of the singletons
      */
@@ -293,21 +300,22 @@ CCoreGlobal::Initialize( void )
 /*-------------------------------------------------------------------------*/
 
 CCoreGlobal::CCoreGlobal( void )
-    : m_taskManager( NULL )                ,
-      m_urlHandlerRegistry( NULL )         ,
-      m_dstoreCodecRegistry( NULL )        ,
-      m_exclusiveActivationManager( NULL ) ,
-      m_application( NULL )                ,
-      m_logManager( NULL )                 ,
-      m_metricsClientManager( NULL )       ,
-      m_dstoreCodecPluginManager( NULL )   ,
-      m_genericPluginManager( NULL )       ,
-      m_pluginControl( NULL )              ,
-      m_sysConsole( NULL )                 ,
-      m_notificationIdRegistry( NULL )     ,
-      m_stdCodecPluginManager( NULL )      ,
-      m_configStore( NULL )                ,
-      m_codecRegistry( NULL )
+    : m_pulseGenerator( GUCEF_NULL )
+    , m_taskManager( GUCEF_NULL )                
+    , m_urlHandlerRegistry( GUCEF_NULL )         
+    , m_dstoreCodecRegistry( GUCEF_NULL )        
+    , m_exclusiveActivationManager( GUCEF_NULL ) 
+    , m_application( GUCEF_NULL )                
+    , m_logManager( GUCEF_NULL )                 
+    , m_metricsClientManager( GUCEF_NULL )       
+    , m_dstoreCodecPluginManager( GUCEF_NULL )   
+    , m_genericPluginManager( GUCEF_NULL )       
+    , m_pluginControl( GUCEF_NULL )              
+    , m_sysConsole( GUCEF_NULL )                 
+    , m_notificationIdRegistry( GUCEF_NULL )     
+    , m_stdCodecPluginManager( GUCEF_NULL )      
+    , m_configStore( GUCEF_NULL )                
+    , m_codecRegistry( GUCEF_NULL )
 {GUCEF_TRACE;
 
 }
@@ -324,35 +332,37 @@ CCoreGlobal::~CCoreGlobal()
      *      Take care to deinstance them in the correct order !!!
      */
     delete m_taskManager;
-    m_taskManager = NULL;
+    m_taskManager = GUCEF_NULL;
     delete m_urlHandlerRegistry;
-    m_urlHandlerRegistry = NULL;
+    m_urlHandlerRegistry = GUCEF_NULL;
     delete m_dstoreCodecRegistry;
-    m_dstoreCodecRegistry = NULL;
+    m_dstoreCodecRegistry = GUCEF_NULL;
     delete m_exclusiveActivationManager;
-    m_exclusiveActivationManager = NULL;
+    m_exclusiveActivationManager = GUCEF_NULL;
     delete m_application;
-    m_application = NULL;
+    m_application = GUCEF_NULL;
     delete m_logManager;
-    m_logManager = NULL;
+    m_logManager = GUCEF_NULL;
     delete m_metricsClientManager;
-    m_metricsClientManager = NULL;
+    m_metricsClientManager = GUCEF_NULL;
     delete m_dstoreCodecPluginManager;
-    m_dstoreCodecPluginManager = NULL;
+    m_dstoreCodecPluginManager = GUCEF_NULL;
     delete m_genericPluginManager;
-    m_genericPluginManager = NULL;
+    m_genericPluginManager = GUCEF_NULL;
     delete m_pluginControl;
-    m_pluginControl = NULL;
+    m_pluginControl = GUCEF_NULL;
     delete m_sysConsole;
-    m_sysConsole = NULL;
+    m_sysConsole = GUCEF_NULL;
     delete m_notificationIdRegistry;
-    m_notificationIdRegistry = NULL;
+    m_notificationIdRegistry = GUCEF_NULL;
     delete m_stdCodecPluginManager;
-    m_stdCodecPluginManager = NULL;
+    m_stdCodecPluginManager = GUCEF_NULL;
     delete m_configStore;
-    m_configStore = NULL;
+    m_configStore = GUCEF_NULL;
     delete m_codecRegistry;
-    m_codecRegistry = NULL;
+    m_codecRegistry = GUCEF_NULL;
+    delete m_pulseGenerator;
+    m_pulseGenerator = GUCEF_NULL;
 
     /*
      *      Very important: Shutdown the memory manager last !!!!!
@@ -389,7 +399,7 @@ CPulseGenerator&
 CCoreGlobal::GetPulseGenerator( void )
 {GUCEF_TRACE;
 
-    return m_application->GetPulseGenerator();
+    return *m_pulseGenerator;
 }
 
 /*-------------------------------------------------------------------------*/

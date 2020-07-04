@@ -221,6 +221,16 @@ CPatchConfig::LoadConfig( const CORE::CDataNode& treeroot )
 
 /*-------------------------------------------------------------------------*/
 
+const CORE::CString& 
+CPatchConfig::GetClassTypeName( void ) const
+{GUCEF_TRACE;
+
+    static CORE::CString classTypeName = "GUCEF::PATCHER::CPatchConfig";
+    return classTypeName; 
+}
+
+/*-------------------------------------------------------------------------*/
+
 bool
 CPatchConfig::AddEngineStartTriggerEvent( const CORE::CEvent& triggerEvent )
 {GUCEF_TRACE;

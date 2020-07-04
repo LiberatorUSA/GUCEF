@@ -802,6 +802,24 @@ CMsWin32Window::OnNotify( CNotifier* notifier    ,
     
 }
 
+/*-------------------------------------------------------------------------*/
+                         
+bool
+CMsWin32Window::Lock( void ) const
+{GUCEF_TRACE;
+    
+    return false;
+}
+
+/*-------------------------------------------------------------------------*/
+                         
+bool
+CMsWin32Window::Unlock( void ) const
+{GUCEF_TRACE;
+    
+    return false;
+}
+
 /*-------------------------------------------------------------------------//
 //                                                                         //
 //      NAMESPACE                                                          //

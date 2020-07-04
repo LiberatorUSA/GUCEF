@@ -77,7 +77,8 @@ class CTAbstractFactory : public CAbstractFactoryBase
     typedef CTFactoryBase< BaseClassType > TConcreteFactory;
     typedef std::set< SelectionCriteriaType > TKeySet;
 
-    explicit CTAbstractFactory( const bool assumeFactoryOwnership = false );
+    explicit CTAbstractFactory( const bool assumeFactoryOwnership = false ,
+                                const bool useEventing = true             );
 
     CTAbstractFactory( const CTAbstractFactory& src );
 
@@ -104,6 +105,8 @@ class CTAbstractFactory : public CAbstractFactoryBase
 
     void UnregisterConcreteFactory( const SelectionCriteriaType& selectedType );
 
+    void UnregisterAllConcreteFactories( void );
+
     bool IsConstructible( const SelectionCriteriaType& selectedType ) const;
 
     void ObtainKeySet( TKeySet& keySet ) const;
@@ -122,8 +125,10 @@ class CTAbstractFactory : public CAbstractFactoryBase
 //-------------------------------------------------------------------------*/
 
 template< typename SelectionCriteriaType, class BaseClassType >
-CTAbstractFactory< SelectionCriteriaType, BaseClassType >::CTAbstractFactory( const bool assumeFactoryOwnership /* = false */ )
-    : m_assumeFactoryOwnership( assumeFactoryOwnership )
+CTAbstractFactory< SelectionCriteriaType, BaseClassType >::CTAbstractFactory( const bool assumeFactoryOwnership /* = false */ ,
+                                                                              const bool useEventing /* = true */             )
+    : CAbstractFactoryBase( useEventing )
+    , m_assumeFactoryOwnership( assumeFactoryOwnership )
 {
 
 }
@@ -132,6 +137,8 @@ CTAbstractFactory< SelectionCriteriaType, BaseClassType >::CTAbstractFactory( co
 
 template< typename SelectionCriteriaType, class BaseClassType >
 CTAbstractFactory< SelectionCriteriaType, BaseClassType >::CTAbstractFactory( const CTAbstractFactory< SelectionCriteriaType, BaseClassType >& /* src */ )
+    : CAbstractFactoryBase( src )
+    , m_assumeFactoryOwnership( src.m_assumeFactoryOwnership )
 {
 
 }
@@ -214,8 +221,11 @@ CTAbstractFactory< SelectionCriteriaType, BaseClassType >::RegisterConcreteFacto
 {
     m_concreteFactoryList[ selectedType ] = concreteFactory;
 
-    TKeyContainer keyContainer( selectedType );
-    NotifyObservers( ConcreteFactoryRegisteredEvent, &keyContainer );
+    if ( m_useEventing )
+    {
+        TKeyContainer keyContainer( selectedType );
+        NotifyObservers( ConcreteFactoryRegisteredEvent, &keyContainer );
+    }
 }
 
 /*-------------------------------------------------------------------------*/
@@ -233,8 +243,36 @@ CTAbstractFactory< SelectionCriteriaType, BaseClassType >::UnregisterConcreteFac
         }
         m_concreteFactoryList.erase( i );
 
-        TKeyContainer keyContainer( selectedType );
-        NotifyObservers( ConcreteFactoryUnregisteredEvent, &keyContainer );
+        if ( m_useEventing )
+        {
+            TKeyContainer keyContainer( selectedType );
+            NotifyObservers( ConcreteFactoryUnregisteredEvent, &keyContainer );
+        }
+    }
+}
+
+/*-------------------------------------------------------------------------*/
+
+template< typename SelectionCriteriaType, class BaseClassType >
+void
+CTAbstractFactory< SelectionCriteriaType, BaseClassType >::UnregisterAllConcreteFactories( void )
+{
+    while ( !m_concreteFactoryList.empty() )
+    {
+        typename TFactoryList::iterator i = m_concreteFactoryList.begin();
+        if ( m_assumeFactoryOwnership )
+        {
+            delete (*i).second;
+        }
+
+        SelectionCriteriaType selectedType = (*i).first;
+        m_concreteFactoryList.erase( i );
+
+        if ( m_useEventing )
+        {
+            TKeyContainer keyContainer( selectedType );
+            NotifyObservers( ConcreteFactoryUnregisteredEvent, &keyContainer );
+        }
     }
 }
 

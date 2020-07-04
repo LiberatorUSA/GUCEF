@@ -72,6 +72,14 @@ namespace ITV {
 
 /*-------------------------------------------------------------------------//
 //                                                                         //
+//      GLOBAL VARS                                                        //
+//                                                                         //
+//-------------------------------------------------------------------------*/
+
+const VFS::CString CResArchive::ResArchiveTypeName = "res";
+
+/*-------------------------------------------------------------------------//
+//                                                                         //
 //      UTILITIES                                                          //
 //                                                                         //
 //-------------------------------------------------------------------------*/
@@ -118,6 +126,19 @@ CResArchive::GetFile( const VFS::CString& file      ,
         return VFS::CVFS::CVFSHandlePtr( new VFS::CVFSHandle( fileAccess, file, filePath ), this );
     }
     return VFS::CVFS::CVFSHandlePtr();
+}
+
+/*-------------------------------------------------------------------------*/
+
+bool 
+CResArchive::StoreAsFile( const CORE::CString& filepath    ,
+                          const CORE::CDynamicBuffer& data ,
+                          const CORE::UInt64 offset        ,
+                          const bool overwrite             )
+{GUCEF_TRACE;
+
+    // Not implemented / supported at this time
+    return false;
 }
 
 /*-------------------------------------------------------------------------*/
@@ -398,41 +419,51 @@ CResArchive::LoadIndex( void )
 /*-------------------------------------------------------------------------*/
 
 bool
-CResArchive::LoadArchive( const VFS::CString& archiveName ,
-                          const VFS::CString& archivePath ,
-                          const bool writableRequest      )
+CResArchive::LoadArchive( const VFS::CArchiveSettings& settings )
 {GUCEF_TRACE;
 
     // We do not support writable archives
-    if ( writableRequest ) return false;
+    if ( settings.GetWriteableRequested() ) 
+        return false;
 
     // Since we always need both the index file and the resource file
     // already construct the paths for both
 
-    CORE::CString fileExt = CORE::ExtractFileExtention( archivePath ).Uppercase();
+    CORE::CString fileExt = CORE::ExtractFileExtention( settings.GetActualArchivePath() ).Uppercase();
     if ( fileExt.IsNULLOrEmpty() )
     {
-        m_idxPath = m_resPath = archivePath;
+        m_idxPath = m_resPath = settings.GetActualArchivePath();
         m_idxPath += ".IDX";
         m_resPath += ".RES";
     }
     else
     if ( fileExt.Equals( "RES", false ) )
     {
-        m_resPath = archivePath;
-        m_idxPath = archivePath.CutChars( 4, false, 0 ) + ".IDX";
+        m_resPath = settings.GetActualArchivePath();
+        m_idxPath = settings.GetActualArchivePath().CutChars( 4, false, 0 ) + ".IDX";
     }
     else
     if ( fileExt.Equals( "IDX", false ) )
     {
-        m_idxPath = archivePath;
-        m_resPath = archivePath.CutChars( 4, false, 0 ) + ".RES";
+        m_idxPath = settings.GetActualArchivePath();
+        m_resPath = settings.GetActualArchivePath().CutChars( 4, false, 0 ) + ".RES";
     }
 
-    m_archiveName = archiveName;
-    m_archivePath = archivePath;
+    m_archiveName = settings.GetArchiveName();
+    m_archivePath = settings.GetArchivePath();
 
     return LoadIndex();
+}
+
+/*-------------------------------------------------------------------------*/
+
+bool 
+CResArchive::LoadArchive( const VFS::CString& archiveName ,
+                          CVFSHandlePtr vfsResource       ,
+                          const bool writeableRequest     )
+{GUCEF_TRACE;
+
+    return false;
 }
 
 /*-------------------------------------------------------------------------*/
@@ -444,6 +475,15 @@ CResArchive::UnloadArchive( void )
     // wipe the index
     m_index.index.clear();
     return true;
+}
+
+/*-------------------------------------------------------------------------*/
+
+const VFS::CString& 
+CResArchive::GetType( void ) const
+{GUCEF_TRACE;
+
+    return ResArchiveTypeName;
 }
 
 /*-------------------------------------------------------------------------*/

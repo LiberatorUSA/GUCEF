@@ -651,7 +651,7 @@ CTCPServerSocket::SetMaxConnections( UInt32 maxConnections, bool dropConnections
 
     if ( oldMax > maxConnections )
     {
-        LockData();
+        Lock();
         if ( dropConnections )
         {
             Int32 nrToDrop = (Int32) m_activeConnections.size() - (Int32) maxConnections;
@@ -662,7 +662,7 @@ CTCPServerSocket::SetMaxConnections( UInt32 maxConnections, bool dropConnections
                 connection->Close();
             }
         }
-        UnlockData();
+        Unlock();
     }
 
     TServerSocketMaxConnectionsChangedEventData maxConEData( _data->maxcon );
@@ -772,14 +772,14 @@ bool
 CTCPServerSocket::CloseClientConnection( UInt32 connectionIndex )
 {GUCEF_TRACE;
 
-    LockData();
+    Lock();
     if ( connectionIndex < _connections.size() )
     {
         _connections[ connectionIndex ]->Close();
-        UnlockData();
+        Unlock();
         return true;
     }
-    UnlockData();
+    Unlock();
     return false;
 }
 
@@ -865,20 +865,20 @@ CTCPServerSocket::SendToAllClients( const void* dataSource ,
 
 /*-------------------------------------------------------------------------*/
 
-void 
-CTCPServerSocket::LockData( void ) const
+bool 
+CTCPServerSocket::Lock( void ) const
 {GUCEF_TRACE;
 
-    _datalock.Lock();
+    return _datalock.Lock();
 }
 
 /*-------------------------------------------------------------------------*/
 
-void 
-CTCPServerSocket::UnlockData( void ) const
+bool 
+CTCPServerSocket::Unlock( void ) const
 {GUCEF_TRACE;
 
-    _datalock.Unlock();
+    return _datalock.Unlock();
 }
 
 /*-------------------------------------------------------------------------//

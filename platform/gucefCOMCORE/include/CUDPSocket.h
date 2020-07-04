@@ -77,6 +77,7 @@ class GUCEF_COMCORE_EXPORT_CPP CUDPSocket : public CSocket
     public:
 
     static const CORE::CEvent UDPSocketErrorEvent;
+    static const CORE::CEvent UDPSocketClosingEvent;
     static const CORE::CEvent UDPSocketClosedEvent;
     static const CORE::CEvent UDPSocketOpenedEvent;
     static const CORE::CEvent UDPPacketRecievedEvent;
@@ -345,6 +346,8 @@ class GUCEF_COMCORE_EXPORT_CPP CUDPSocket : public CSocket
 
     UInt32 GetNrOfDataReceivedEvents( bool resetCounter );
 
+    UInt32 GetNrOfDataSentEvents( bool resetCounter );
+
     virtual UInt32 GetBytesReceived( bool resetCounter );
 
     virtual UInt32 GetBytesTransmitted( bool resetCounter );
@@ -413,6 +416,7 @@ class GUCEF_COMCORE_EXPORT_CPP CUDPSocket : public CSocket
     mutable UInt32 m_bytesReceived;
     mutable UInt32 m_bytesTransmitted;
     mutable UInt32 m_nrOfDataReceivedEvents;
+    mutable UInt32 m_nrOfDataSentEvents;
 };
 
 /*-------------------------------------------------------------------------//

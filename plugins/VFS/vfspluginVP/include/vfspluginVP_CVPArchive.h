@@ -55,6 +55,8 @@ class CVPArchive : public VFS::CIArchive
 {
     public:
     
+    static const VFS::CString VPArchiveTypeName;
+    
     CVPArchive( void );
     
     virtual ~CVPArchive();
@@ -63,7 +65,12 @@ class CVPArchive : public VFS::CIArchive
                                    const char* mode = "rb"           ,
                                    const VFS::UInt32 memLoadSize = 0 ,
                                    const bool overwrite = false      );
-                                  
+
+    virtual bool StoreAsFile( const CORE::CString& filepath    ,
+                              const CORE::CDynamicBuffer& data ,
+                              const CORE::UInt64 offset        ,
+                              const bool overwrite             );
+
     virtual void GetList( TStringSet& outputList             ,
                           const VFS::CString& location       , 
                           bool recursive = false             ,
@@ -84,11 +91,15 @@ class CVPArchive : public VFS::CIArchive
     
     virtual bool IsWriteable( void ) const;
     
-    virtual bool LoadArchive( const VFS::CString& archiveName ,
-                              const VFS::CString& archivePath ,
-                              const bool writableRequest );
+    virtual bool LoadArchive( const VFS::CArchiveSettings& settings );
                               
-    virtual bool UnloadArchive( void );    
+    virtual bool LoadArchive( const VFS::CString& archiveName ,
+                              CVFSHandlePtr vfsResource       ,
+                              const bool writeableRequest     );
+    
+    virtual bool UnloadArchive( void );
+    
+    virtual const VFS::CString& GetType( void ) const;
 
     virtual void DestroyObject( VFS::CVFSHandle* objectToBeDestroyed );
 

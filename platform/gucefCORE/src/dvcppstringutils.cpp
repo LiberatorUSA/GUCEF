@@ -78,6 +78,8 @@
 #define GUCEF_CORE_GUCEF_ESSENTIALS_H
 #endif /* GUCEF_CORE_GUCEF_ESSENTIALS_H ? */
 
+#undef DeleteFile
+
 /*-------------------------------------------------------------------------//
 //                                                                         //
 //      NAMESPACE                                                          //
@@ -451,10 +453,10 @@ BoolToString( const bool value )
 /*-------------------------------------------------------------------------*/
 
 bool
-StringToBool( const CString& str )
+StringToBool( const CString& str, bool defaultIfNeeded )
 {GUCEF_TRACE;
 
-    UInt32 boolint = String_To_Boolint( str.C_String() );
+    UInt32 boolint = String_To_Boolint_WithDefault( str.C_String(), defaultIfNeeded ? 1 : 0 );
     return boolint > 0;
 }
 
@@ -844,6 +846,15 @@ FileExists( const CString& filename )
 {GUCEF_TRACE;
 
     return 0 != File_Exists( filename.C_String() );
+} 
+
+/*-------------------------------------------------------------------------*/
+
+bool
+DirExists( const CString& path )
+{GUCEF_TRACE;
+
+    return 0 != Dir_Exists( path.C_String() );
 }
 
 /*-------------------------------------------------------------------------*/
@@ -1024,6 +1035,16 @@ CreateDirs( const CString& path )
 
     CString actualPath = RelativePath( path );
     return 0 != Create_Directory( actualPath.C_String() );
+}
+
+/*-------------------------------------------------------------------------*/
+
+bool
+DeleteFile( const CString& path )
+{GUCEF_TRACE;
+
+    CString actualPath = RelativePath( path );
+    return 0 != Delete_File( actualPath.C_String() );
 }
 
 /*-------------------------------------------------------------------------*/

@@ -183,6 +183,15 @@ ParseParams( const int argc                 ,
 
 /*-------------------------------------------------------------------------*/
 
+void
+GucefAppSignalHandler( int signal )
+{GUCEF_TRACE;
+    
+    ::GUCEF::CORE::CCoreGlobal::Instance()->GetApplication().Stop();
+}
+
+/*-------------------------------------------------------------------------*/
+
 /*
  *      Application entry point
  */
@@ -231,10 +240,13 @@ GUCEF_OSSERVICEMAIN_BEGIN( "UdpViaTcp" )
     CORE::CCoreGlobal::Instance()->GetLogManager().AddLogger( &logger );
 
     CORE::CPlatformNativeConsoleLogger console;
-    CORE::CCoreGlobal::Instance()->GetLogManager().AddLogger( console.GetLogger() );
+    if ( GUCEF_APP_TYPE == GUCEF_APP_TYPE_CONSOLE )
+        CORE::CCoreGlobal::Instance()->GetLogManager().AddLogger( console.GetLogger() );
 
     CORE::CCoreGlobal::Instance()->GetLogManager().FlushBootstrapLogEntriesToLogs();
     GUCEF_LOG( CORE::LOGLEVEL_NORMAL, "Flushed to log @ " + logFilename );
+
+    GUCEF_OSMAIN_SIGNAL_HANDLER( GucefAppSignalHandler );
 
     UdpViaTcp udp2ViaTcp;
     if ( !udp2ViaTcp.LoadConfig( keyValueList, *globalConfig ) )
@@ -252,7 +264,7 @@ GUCEF_OSSERVICEMAIN_BEGIN( "UdpViaTcp" )
     }
 
     auto& app = CORE::CCoreGlobal::Instance()->GetApplication();
-    app.GetPulseGenerator().RequestPulseInterval( 10 );
+    app.GetPulseGenerator()->RequestPulseInterval( 10 );
     return app.main( argc, argv, true );
 }
 GUCEF_OSMAIN_END

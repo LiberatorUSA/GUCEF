@@ -123,20 +123,28 @@ CTSGObserver::AddEventToMailbox( CNotifier* notifier                 ,
 
 /*-------------------------------------------------------------------------*/
 
-void
-CTSGObserver::DoLockData( void ) const
+bool
+CTSGObserver::Lock( void ) const
 {GUCEF_TRACE;
 
-    LockData();
+    if ( GUCEF_NULL != m_parentNotifier )
+    {
+        return m_parentNotifier->Lock();
+    }
+    return false;
 }
 
 /*-------------------------------------------------------------------------*/
     
-void
-CTSGObserver::DoUnlockData( void ) const
+bool
+CTSGObserver::Unlock( void ) const
 {GUCEF_TRACE;
 
-    UnlockData();
+    if ( GUCEF_NULL != m_parentNotifier )
+    {
+        return m_parentNotifier->Unlock();
+    }
+    return false;
 }
 
 /*-------------------------------------------------------------------------//

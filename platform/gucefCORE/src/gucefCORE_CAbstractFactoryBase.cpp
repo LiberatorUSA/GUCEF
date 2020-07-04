@@ -64,11 +64,13 @@ CAbstractFactoryBase::RegisterEvents( void )
 
 /*-------------------------------------------------------------------------*/
 
-CAbstractFactoryBase::CAbstractFactoryBase( void )
-    : CNotifier()
+CAbstractFactoryBase::CAbstractFactoryBase( bool useEventing )
+    : CNotifier( useEventing )
+    , m_useEventing( useEventing )
 {GUCEF_TRACE;
 
-    RegisterEvents();
+    if ( useEventing )
+        RegisterEvents();
 }
 
 /*-------------------------------------------------------------------------*/

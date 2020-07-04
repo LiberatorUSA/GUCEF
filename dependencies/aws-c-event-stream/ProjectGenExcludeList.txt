@@ -1,0 +1,6 @@
+.github
+bin
+clang-tidy
+cmake
+codebuild
+tests

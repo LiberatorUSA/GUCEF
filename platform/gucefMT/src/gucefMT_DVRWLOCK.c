@@ -98,7 +98,7 @@ rwl_destroy( TRWLock *rwlock )
          */
         while ( rwlock->rcount || rwlock->wcount )
         {
-        	ThreadDelay( 10 );
+        	PrecisionDelay( 25 );
         }
 
         /*
@@ -178,7 +178,7 @@ rwl_reader_start( TRWLock *rwlock )
                  */
                 while ( rwlock->wcount )
                 {
-                        ThreadDelay( 10 );
+                    PrecisionDelay( 25 );
                 }
                 rwlock->rcount++;
         }
@@ -193,7 +193,7 @@ rwl_reader_start( TRWLock *rwlock )
         	rwlock->rcount++;
                 while ( rwlock->wflag )
                 {
-                        ThreadDelay( 10 );
+                    PrecisionDelay( 25 );
                 }
         }
 
@@ -241,7 +241,7 @@ rwl_writer_start( TRWLock *rwlock )
          */
         while ( rwlock->rcount )
         {
-                ThreadDelay( 10 );
+            PrecisionDelay( 25 );
         }
 
         /*

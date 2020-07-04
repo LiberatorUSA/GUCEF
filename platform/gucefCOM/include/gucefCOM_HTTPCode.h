@@ -47,10 +47,24 @@ namespace COM {
 //                                                                         //
 //-------------------------------------------------------------------------*/
 
+enum EHttpVerb
+{
+    HTTP_VERB_UNKNOWN = 0,
+
+    HTTP_VERB_GET,
+    HTTP_VERB_PUT,
+    HTTP_VERB_POST,
+    HTTP_VERB_PATCH,
+    HTTP_VERB_DELETE
+};
+typedef enum EHttpVerb THttpVerb;
+
+/*-------------------------------------------------------------------------*/
+
 /**
  *      Enumeration type with HTTP client and server error codes.
  */
-typedef enum THTTPCODE
+enum EHTTPCODE
 {
         /* Initialization value */
         HTTPCODE_DEFAULT = 0,
@@ -104,7 +118,8 @@ typedef enum THTTPCODE
         HTTPCODE_503_SERVICE_UNAVAILABLE,
         HTTPCODE_504_GATEWAY_TIMEOUT,
         HTTPCODE_505_HTTP_VERSION_NOT_SUPPORTED
-} THTTPCODE;
+};
+typedef enum EHTTPCODE THTTPCODE;
 
 /*-------------------------------------------------------------------------//
 //                                                                         //

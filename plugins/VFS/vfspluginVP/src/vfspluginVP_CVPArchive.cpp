@@ -88,6 +88,14 @@ typedef struct SVPFileIndexEntry TVPFileIndexEntry;
 
 /*-------------------------------------------------------------------------//
 //                                                                         //
+//      GLOBAL VARS                                                        //
+//                                                                         //
+//-------------------------------------------------------------------------*/
+
+const VFS::CString CVPArchive::VPArchiveTypeName = "vp";
+
+/*-------------------------------------------------------------------------//
+//                                                                         //
 //      UTILITIES                                                          //
 //                                                                         //
 //-------------------------------------------------------------------------*/
@@ -146,6 +154,19 @@ CVPArchive::GetFile( const VFS::CString& file      ,
 
     GUCEF_DEBUG_LOG( CORE::LOGLEVEL_NORMAL, "CVPArchive: Unable to provide access to file: " + file );
     return CVFSHandlePtr();
+}
+
+/*-------------------------------------------------------------------------*/
+
+bool 
+CVPArchive::StoreAsFile( const CORE::CString& filepath    ,
+                         const CORE::CDynamicBuffer& data ,
+                         const CORE::UInt64 offset        ,
+                         const bool overwrite             )
+{GUCEF_TRACE;
+
+    // Not implemented / supported at this time
+    return false;
 }
 
 /*-------------------------------------------------------------------------*/
@@ -365,15 +386,14 @@ CVPArchive::IsWriteable( void ) const
 /*-------------------------------------------------------------------------*/
 
 bool
-CVPArchive::LoadArchive( const VFS::CString& archiveName ,
-                         const VFS::CString& archivePath ,
-                         const bool writableRequest      )
+CVPArchive::LoadArchive( const VFS::CArchiveSettings& settings )
 {GUCEF_TRACE;
 
     // We do not support writable VP archives
-    if ( writableRequest ) return false;
+    if ( settings.GetWriteableRequested() ) 
+        return false;
 
-    FILE* fptr = fopen( archivePath.C_String(), "rb" );
+    FILE* fptr = fopen( settings.GetActualArchivePath().C_String(), "rb" );
     if ( NULL == fptr ) return false;
 
     if ( fread( &m_header, VP_HEADER_SIZE, 1, fptr ) == 1 )
@@ -451,8 +471,8 @@ CVPArchive::LoadArchive( const VFS::CString& archiveName ,
 
             fclose( fptr );
 
-            m_archiveName = archiveName;
-            m_archivePath = archivePath;
+            m_archiveName = settings.GetArchiveName();
+            m_archivePath = settings.GetArchivePath();
 
             GUCEF_DEBUG_LOG( CORE::LOGLEVEL_NORMAL, "VFSPLUGIN VP: Successfully finished reading the index" );
             return true;
@@ -468,6 +488,17 @@ CVPArchive::LoadArchive( const VFS::CString& archiveName ,
 
 /*-------------------------------------------------------------------------*/
 
+bool 
+CVPArchive::LoadArchive( const VFS::CString& archiveName ,
+                         CVFSHandlePtr vfsResource       ,
+                         const bool writeableRequest     )
+{GUCEF_TRACE;
+
+    return false;
+}
+
+/*-------------------------------------------------------------------------*/
+
 bool
 CVPArchive::UnloadArchive( void )
 {GUCEF_TRACE;
@@ -476,6 +507,15 @@ CVPArchive::UnloadArchive( void )
     m_archiveName = NULL;
     m_archivePath = NULL;
     return true;
+}
+
+/*-------------------------------------------------------------------------*/
+
+const VFS::CString& 
+CVPArchive::GetType( void ) const
+{GUCEF_TRACE;
+
+    return VPArchiveTypeName;
 }
 
 /*-------------------------------------------------------------------------*/

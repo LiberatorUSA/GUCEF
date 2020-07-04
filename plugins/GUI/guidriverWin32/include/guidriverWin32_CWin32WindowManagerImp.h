@@ -67,23 +67,25 @@ class GUIDRIVERWIN32_PUBLIC_CPP CWin32WindowManagerImp : public GUI::CWindowMana
     virtual GUI::TWindowContextPtr CreateWindowContext( const GUI::CString& title ,
                                                         const GUI::UInt32 width   ,
                                                         const GUI::UInt32 height  ,
-                                                        const bool fullscreen     );
+                                                        const bool fullscreen     ) GUCEF_VIRTUAL_OVERRIDE;
 
     virtual GUI::TWindowContextPtr CreateWindowContext( const GUI::CString& title             ,
                                                         const GUI::CVideoSettings& settings   ,
-                                                        const CORE::CValueList* params = NULL );
+                                                        const CORE::CValueList* params = NULL ) GUCEF_VIRTUAL_OVERRIDE;
 
     virtual GUI::TWindowContextPtr CreateWindowContext( const GUI::CString& title      ,
                                                         const GUI::UInt32 width        ,
                                                         const GUI::UInt32 height       ,
                                                         const bool fullscreen          ,
-                                                        const CORE::CValueList& params );
+                                                        const CORE::CValueList& params ) GUCEF_VIRTUAL_OVERRIDE;
     
-    virtual void DestroyWindowContext( GUI::TWindowContextPtr& windowContext );
+    virtual void DestroyWindowContext( GUI::TWindowContextPtr& windowContext ) GUCEF_VIRTUAL_OVERRIDE;
     
     virtual bool ApplyVideoSettings( GUI::TWindowContextPtr& windowContext ,
-                                     const GUI::CVideoSettings& settings   );
+                                     const GUI::CVideoSettings& settings   ) GUCEF_VIRTUAL_OVERRIDE;
 
+    virtual const CORE::CString& GetClassTypeName( void ) const GUCEF_VIRTUAL_OVERRIDE;
+    
     private:
 
     CWin32WindowManagerImp( const CWin32WindowManagerImp& src );

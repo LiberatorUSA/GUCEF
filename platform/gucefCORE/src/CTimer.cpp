@@ -78,7 +78,7 @@ const CEvent CTimer::TimerIntervalChangedEvent = "GUCEF::CORE::CTimer::TimerInte
 //                                                                         //
 //-------------------------------------------------------------------------*/
 
-CTimer::CTimer( const UInt32 updateDeltaInMilliSecs /* = 10 */ )
+CTimer::CTimer( const UInt32 updateDeltaInMilliSecs /* = 25 */ )
     : m_lastTimerCycle( 0 )                                    ,
       m_enabled( false )                                       ,
       m_updateDeltaInMilliSecs( updateDeltaInMilliSecs )       ,
@@ -109,7 +109,7 @@ CTimer::CTimer( const UInt32 updateDeltaInMilliSecs /* = 10 */ )
 /*-------------------------------------------------------------------------*/
 
 CTimer::CTimer( CPulseGenerator& pulseGenerator                ,
-                const UInt32 updateDeltaInMilliSecs /* = 10 */ )
+                const UInt32 updateDeltaInMilliSecs /* = 25 */ )
     : m_lastTimerCycle( 0 )                                    ,
       m_enabled( false )                                       ,
       m_updateDeltaInMilliSecs( updateDeltaInMilliSecs )       ,
@@ -303,10 +303,10 @@ CTimer::OnPulse( CNotifier* notifier                 ,
         {
             m_lastTimerCycle = newTickCount;
 
-            TTimerUpdateData updateData;
+            TimerUpdateEventData cuData;
+            TTimerUpdateData& updateData = cuData.GetData();
             updateData.tickCount = m_tickCount;
             updateData.updateDeltaInMilliSecs = deltaMilliSecs;
-            TimerUpdateEventData cuData( updateData );
             NotifyObservers( TimerUpdateEvent, &cuData );
         }
     }
@@ -367,6 +367,25 @@ CTimer::Reset( void )
 
 /*-------------------------------------------------------------------------*/
 
+ void 
+ CTimer::TriggerNow( void )
+ {GUCEF_TRACE;
+ 
+    UInt64 newTickCount = MT::PrecisionTickCount();
+    UInt64 deltaTicks = ( newTickCount - m_lastTimerCycle );
+	Float64 deltaMilliSecs = deltaTicks / m_timerFreq;
+
+    TimerUpdateEventData cuData;
+    TTimerUpdateData& updateData = cuData.GetData();
+    updateData.tickCount = m_tickCount;
+    updateData.updateDeltaInMilliSecs = deltaMilliSecs;
+    NotifyObservers( TimerUpdateEvent, &cuData );
+ 
+    Reset();
+ }
+
+/*-------------------------------------------------------------------------*/
+
 Float64
 CTimer::GetApproxMaxTimerResolutionInMilliSecs( void )
 {GUCEF_TRACE;
@@ -382,6 +401,24 @@ CTimer::GetClassTypeName( void ) const
 
     static CString typeName = "GUCEF::CORE::CTimer";
     return typeName;
+}
+
+/*-------------------------------------------------------------------------*/
+                         
+bool
+CTimer::Lock( void ) const
+{GUCEF_TRACE;
+    
+    return false;
+}
+
+/*-------------------------------------------------------------------------*/
+                         
+bool
+CTimer::Unlock( void ) const
+{GUCEF_TRACE;
+    
+    return false;
 }
 
 /*-------------------------------------------------------------------------//

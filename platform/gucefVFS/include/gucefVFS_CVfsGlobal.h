@@ -26,6 +26,11 @@
 //                                                                         //
 //-------------------------------------------------------------------------*/
 
+#ifndef GUCEF_MT_CMUTEX_H
+#include "gucefMT_CMutex.h"
+#define GUCEF_MT_CMUTEX_H
+#endif /* GUCEF_MT_CMUTEX_H ? */
+
 #ifndef GUCEF_VFS_MACROS_H
 #include "gucefVFS_macros.h"
 #define GUCEF_VFS_MACROS_H
@@ -78,6 +83,7 @@ class GUCEF_VFS_PUBLIC_CPP CVfsGlobal
 
     CVFS* m_vfs;
 
+    static MT::CMutex g_datalock;
     static CVfsGlobal* g_instance;
 };
 

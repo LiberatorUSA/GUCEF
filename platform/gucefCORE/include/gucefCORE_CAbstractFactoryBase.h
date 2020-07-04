@@ -57,8 +57,10 @@ class GUCEF_CORE_PUBLIC_CPP CAbstractFactoryBase : public CNotifier
 
     protected:
 
-    CAbstractFactoryBase( void );
+    CAbstractFactoryBase( bool registerEvents = true );
     virtual ~CAbstractFactoryBase();
+
+    bool m_useEventing;
 
     private:
 

@@ -50,7 +50,7 @@ class CTSGNotifier;
 /**
  *  Internally used class that is to be used in combination with the CTSGNotifier
  *  class to add observer behavior to the CTSGNotifier. To use the mechanism create
- *  CTSGNotifier object.
+ *  CTSGNotifier object. Do not use this class directly.
  */
 class GUCEF_CORE_PUBLIC_CPP CTSGObserver : public CPumpedObserver
 {
@@ -64,9 +64,13 @@ class GUCEF_CORE_PUBLIC_CPP CTSGObserver : public CPumpedObserver
      *  @param eventid the unique event id for an event
      *  @param eventdata optional notifier defined userdata
      */
-    virtual void OnPumpedNotify( CNotifier* notifier           ,
-                                 const CEvent& eventid         ,
-                                 CICloneable* eventdata = NULL );
+    virtual void OnPumpedNotify( CNotifier* notifier                 ,
+                                 const CEvent& eventid               ,
+                                 CICloneable* eventdata = GUCEF_NULL ) GUCEF_VIRTUAL_OVERRIDE;
+
+    virtual bool Lock( void ) const GUCEF_VIRTUAL_OVERRIDE;
+
+    virtual bool Unlock( void ) const GUCEF_VIRTUAL_OVERRIDE;
 
     private:
     friend class CTSGNotifier;
@@ -80,10 +84,6 @@ class GUCEF_CORE_PUBLIC_CPP CTSGObserver : public CPumpedObserver
     void AddEventToMailbox( CNotifier* notifier           ,
                             const CEvent& eventid         ,
                             CICloneable* eventdata = NULL );
-
-    void DoLockData( void ) const;
-
-    void DoUnlockData( void ) const;
 
     private:
 

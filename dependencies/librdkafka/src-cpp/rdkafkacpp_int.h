@@ -1212,6 +1212,16 @@ class ProducerImpl : virtual public Producer, virtual public HandleImpl {
                      const void *key, size_t key_len,
                      void *msg_opaque);
 
+  /**
+   * @brief DV Edit Variant of produce(): Add missing variant that accepts headers
+   */
+  ErrorCode dvcustom_produce (RdKafka::Topic *topic, int32_t partition,
+                    int msgflags,
+                    void *payload, size_t len,
+                    const void *key, size_t key_len,
+                    RdKafka::Headers *headers,
+                    void *msg_opaque);
+
   ErrorCode produce (Topic *topic, int32_t partition,
                      const std::vector<char> *payload,
                      const std::vector<char> *key,

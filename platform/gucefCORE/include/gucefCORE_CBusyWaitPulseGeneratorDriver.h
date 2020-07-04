@@ -58,7 +58,10 @@ class GUCEF_CORE_PUBLIC_CPP CBusyWaitPulseGeneratorDriver : public CIPulseGenera
 
     CBusyWaitPulseGeneratorDriver& operator=( const CIPulseGeneratorDriver& src );
 
-    virtual void RequestPulse( CPulseGenerator& pulseGenerator );
+    virtual void RequestImmediatePulse( CPulseGenerator& pulseGenerator );
+
+    virtual void RequestPulsesPerImmediatePulseRequest( CPulseGenerator& pulseGenerator                     ,
+                                                        const Int32 requestedPulsesPerImmediatePulseRequest );
 
     virtual void RequestPeriodicPulses( CPulseGenerator& pulseGenerator    ,
                                         const UInt32 pulseDeltaInMilliSecs );
@@ -74,7 +77,8 @@ class GUCEF_CORE_PUBLIC_CPP CBusyWaitPulseGeneratorDriver : public CIPulseGenera
 
     bool m_loop;
     Float64 m_desiredPulseDelta;
-    bool m_immediatePulseRequested;
+    Int32 m_immediatePulseTickets;
+    Int32 m_immediatePulseTicketMax;
 };
 
 /*-------------------------------------------------------------------------//

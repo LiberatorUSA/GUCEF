@@ -89,7 +89,7 @@ class GUCEF_CORE_PUBLIC_CPP CLoggingTask : public CTaskConsumer ,
     virtual void Log( const TLogMsgType logMsgType ,
                       const Int32 logLevel         ,
                       const CString& logMessage    ,
-                      const UInt32 threadId        );
+                      const UInt32 threadId        ) GUCEF_VIRTUAL_OVERRIDE;
 
     /** 
      *  Adds a log message to the mailbox of the threaded logger.
@@ -99,9 +99,13 @@ class GUCEF_CORE_PUBLIC_CPP CLoggingTask : public CTaskConsumer ,
     virtual void LogWithoutFormatting( const TLogMsgType logMsgType ,
                                        const Int32 logLevel         ,
                                        const CString& logMessage    ,
-                                       const UInt32 threadId        );
+                                       const UInt32 threadId        ) GUCEF_VIRTUAL_OVERRIDE;
 
-    virtual void FlushLog( void );
+    virtual void FlushLog( void ) GUCEF_VIRTUAL_OVERRIDE;
+
+    virtual void SetMinimalLogLevel( const Int32 logLevel ) GUCEF_VIRTUAL_OVERRIDE;
+
+    virtual Int32 GetMinimalLogLevel( void ) const GUCEF_VIRTUAL_OVERRIDE;
     
     /**
      *  Utility function for convenience, launches the task using 
@@ -132,19 +136,22 @@ class GUCEF_CORE_PUBLIC_CPP CLoggingTask : public CTaskConsumer ,
     /**
      *  Returns the type of task this task consumer can handle
      */
-    virtual CString GetType( void ) const;
+    virtual CString GetType( void ) const GUCEF_VIRTUAL_OVERRIDE;
 
     protected:
 
-    virtual bool OnTaskStart( CICloneable* taskdata );
+    virtual bool OnTaskStart( CICloneable* taskdata ) GUCEF_VIRTUAL_OVERRIDE;
 
-    virtual bool OnTaskCycle( CICloneable* taskdata );
+    virtual bool OnTaskCycle( CICloneable* taskdata ) GUCEF_VIRTUAL_OVERRIDE;
 
-    virtual void OnTaskEnd( CICloneable* taskdata );
+    virtual void OnTaskEnding( CORE::CICloneable* taskdata ,
+                               bool willBeForced           ) GUCEF_VIRTUAL_OVERRIDE;
+
+    virtual void OnTaskEnd( CICloneable* taskdata ) GUCEF_VIRTUAL_OVERRIDE;
     
-    void LockData( void );
+    virtual bool Lock( void ) const GUCEF_VIRTUAL_OVERRIDE;
     
-    void UnlockData( void );
+    virtual bool Unlock( void ) const GUCEF_VIRTUAL_OVERRIDE;
 
     virtual bool OnTaskCycleLog( const TLogMsgType logMsgType ,
                                  const Int32 logLevel         ,
@@ -194,7 +201,8 @@ class GUCEF_CORE_PUBLIC_CPP CLoggingTask : public CTaskConsumer ,
     
     CILogger* m_loggerBackend;
     TLoggingMailBox m_mailbox;
-    TMailList m_mailList;    
+    TMailList m_mailList;
+    Int32 m_minLogLevel;
 };
 
 /*-------------------------------------------------------------------------//

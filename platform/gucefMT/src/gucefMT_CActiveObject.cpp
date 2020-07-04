@@ -27,6 +27,11 @@
 #define GUCEF_MT_DVMTOSWRAP_H
 #endif /* GUCEF_MT_DVMTOSWRAP_H ? */
 
+#ifndef GUCEF_MT_COBJECTSCOPELOCK_H
+#include "gucefMT_CObjectScopeLock.h"
+#define GUCEF_MT_COBJECTSCOPELOCK_H
+#endif /* GUCEF_MT_COBJECTSCOPELOCK_H ? */
+
 #include "gucefMT_CActiveObject.h"
 
 /*-------------------------------------------------------------------------//
@@ -45,13 +50,15 @@ namespace MT {
 //-------------------------------------------------------------------------*/
 
 CActiveObject::CActiveObject( void )
-        : _taskdata( NULL )                  ,
-          m_delay( 10 )                      ,
-          m_isDeactivationRequested( false ) ,
-          _suspend( false )                  ,
-          _active( false )                   ,
-          _td( NULL )                        ,
-          m_minimalCycleDelta( 10 )
+    : MT::CILockable()
+    , m_threadData( NULL )                    
+    , m_delayInMilliSecs( 25 )             
+    , m_isDeactivationRequested( false )   
+    , _suspend( false )                    
+    , _active( false )                     
+    , _td( NULL )                          
+    , m_minimalCycleDeltaInMilliSecs( 10 )
+    , m_datalock()
 {
 
 }
@@ -59,13 +66,15 @@ CActiveObject::CActiveObject( void )
 /*-------------------------------------------------------------------------*/
 
 CActiveObject::CActiveObject( const CActiveObject& src )
-        : _taskdata( src._taskdata )         ,
-          m_delay( src.m_delay )             ,
-          m_isDeactivationRequested( false ) ,
-          _suspend( false )                  ,
-          _active( false )                   ,
-          _td( NULL )                        ,
-          m_minimalCycleDelta( 10 )
+    : MT::CILockable()
+    , m_threadData( src.m_threadData )         
+    , m_delayInMilliSecs( src.m_delayInMilliSecs )       
+    , m_isDeactivationRequested( false ) 
+    , _suspend( false )                  
+    , _active( false )                      
+    , _td( NULL )                           
+    , m_minimalCycleDeltaInMilliSecs( 10 )
+    , m_datalock()
 {
     if ( src.IsActive() )
     {
@@ -102,16 +111,16 @@ UInt32
 CActiveObject::OnActivate( void* thisobject )
 {
     CActiveObject* tao = (CActiveObject*) thisobject;
-    void* taskdata = tao->GetTaskData();
+    void* taskdata = tao->GetThreadData();
 
-    if ( tao->OnTaskStart( taskdata ) )
+    if ( tao->OnThreadStart( taskdata ) )
     {
-        tao->OnTaskStarted( taskdata );
+        tao->OnThreadStarted( taskdata );
        
-        Float64 timerRes = ( PrecisionTimerResolution() * 1.0 );
+        Float64 ticksPerMs = PrecisionTimerResolution() / 1000.0;
         UInt64 tickCount = PrecisionTickCount();
-        UInt64 newTime = tickCount;
-        Float64 timeDelta = 0;
+        UInt64 newTickCount = tickCount;
+        Float64 timeDeltaInMs = 0;
 
         bool taskfinished = false;
         while ( !taskfinished && !tao->m_isDeactivationRequested )
@@ -123,7 +132,7 @@ CActiveObject::OnActivate( void* thisobject )
             }
 
             // We can do a cycle
-            taskfinished = tao->OnTaskCycle( taskdata );
+            taskfinished = tao->OnThreadCycle( taskdata );
 
             // check if we are finished
             if ( !taskfinished )
@@ -131,21 +140,22 @@ CActiveObject::OnActivate( void* thisobject )
                 // If we are going to do another cycle then make sure we
                 // stay within the time slice range requested.
                 // Here we calculate the time that has passed in seconds
-                newTime = PrecisionTickCount();
-                timeDelta = ( tickCount - newTime ) / timerRes;
-                if ( timeDelta < tao->m_minimalCycleDelta )
+                newTickCount = PrecisionTickCount();
+                timeDeltaInMs = ( newTickCount - tickCount ) / ticksPerMs;
+
+                if ( timeDeltaInMs < tao->m_minimalCycleDeltaInMilliSecs )
                 {
-                    PrecisionDelay( tao->m_delay );
+                    PrecisionDelay( tao->m_delayInMilliSecs );
                     tickCount = PrecisionTickCount();
                 }
                 else
                 {
-                    tickCount = newTime;
+                    tickCount = newTickCount;
                 }
             }
         }
 
-        tao->OnTaskEnd( taskdata );
+        tao->OnThreadEnd( taskdata );
     }
     tao->_td = NULL;
     tao->_active = false;
@@ -155,15 +165,18 @@ CActiveObject::OnActivate( void* thisobject )
 /*-------------------------------------------------------------------------*/
 
 bool
-CActiveObject::Activate( void* taskdata /* = NULL */               ,
-                         const UInt32 cycleDelay /* = 0 */         ,
-                         const UInt32 minimalCycleDelta /* = 10 */ )
+CActiveObject::Activate( void* threadData /* = NULL */                 ,
+                         const UInt32 cycleDelay /* = 25 */            ,
+                         const UInt32 minimalCycleDeltaInMs /* = 10 */ )
 {
-    if ( _active ) return false;
+    CObjectScopeLock lock( this );    
 
-    _taskdata = taskdata;
-    m_delay = cycleDelay;
-    m_minimalCycleDelta = minimalCycleDelta / 1000.0; // <- the unit used here is seconds not milliseconds
+    if ( _active ) 
+        return false;
+
+    m_threadData = threadData;
+    m_delayInMilliSecs = cycleDelay;
+    m_minimalCycleDeltaInMilliSecs = minimalCycleDeltaInMs;
     m_isDeactivationRequested = false;
     _suspend = false;
     _active = true;
@@ -176,7 +189,7 @@ CActiveObject::Activate( void* taskdata /* = NULL */               ,
 /*-------------------------------------------------------------------------*/
 
 void
-CActiveObject::OnTaskPausedForcibly( void* taskdata )
+CActiveObject::OnThreadPausedForcibly( void* taskdata )
 {
     // Dummy to avoid mandatory implementation in decending classes
 }
@@ -184,16 +197,7 @@ CActiveObject::OnTaskPausedForcibly( void* taskdata )
 /*-------------------------------------------------------------------------*/
 
 void
-CActiveObject::OnTaskResumed( void* taskdata )
-{
-    // Dummy to avoid mandatory implementation in decending classes
-}
-
-/*-------------------------------------------------------------------------*/
-    
-void
-CActiveObject::OnTaskEnded( void* taskdata ,
-                            bool forced    )
+CActiveObject::OnThreadResumed( void* taskdata )
 {
     // Dummy to avoid mandatory implementation in decending classes
 }
@@ -201,7 +205,25 @@ CActiveObject::OnTaskEnded( void* taskdata ,
 /*-------------------------------------------------------------------------*/
     
 void
-CActiveObject::OnTaskStarted( void* taskdata )
+CActiveObject::OnThreadEnded( void* taskdata ,
+                              bool forced    )
+{
+    // Dummy to avoid mandatory implementation in decending classes
+}
+
+/*-------------------------------------------------------------------------*/
+    
+void
+CActiveObject::OnThreadEnding( void* taskdata    ,
+                               bool willBeForced )
+{
+    // Dummy to avoid mandatory implementation in decending classes
+}
+
+/*-------------------------------------------------------------------------*/
+    
+void
+CActiveObject::OnThreadStarted( void* taskdata )
 {
     // Dummy to avoid mandatory implementation in decending classes
 }
@@ -211,26 +233,52 @@ CActiveObject::OnTaskStarted( void* taskdata )
 void
 CActiveObject::Deactivate( bool force, bool callerShouldWait )
 {
-    if ( _active )
+    if ( force )
     {
-        if ( force )
+        Lock();
+        if ( _active )
         {
-            /*
-             *      Kill the thread
-             */
-            ThreadKill( _td );
+            // Lets give the thread 5 seconds to shut down
+            // If it refuses we kill it
+            m_isDeactivationRequested = true;
+            OnThreadEnding( m_threadData, false );
+            Unlock();
 
-            OnTaskEnd( _taskdata );
-            OnTaskEnded( _taskdata, true );
+            ThreadWait( _td, 5000 );
+
+            Lock();
+            if ( _active )
+            {
+                ThreadSuspend( _td );
+                OnThreadEnding( m_threadData, true );
+            
+                /*
+                 *      Kill the thread :(
+                 */
+                ThreadKill( _td );
+            }
+            OnThreadEnd( m_threadData );
+            OnThreadEnded( m_threadData, true );
+            Unlock();
         }
         else
         {
-            m_isDeactivationRequested = true;
-
-            if ( callerShouldWait )
+            Unlock();
+        }
+    }
+    else
+    {
+        {
+            CObjectScopeLock lock( this );
+            if ( _active )
             {
-                ThreadWait( _td, 150000 );
+                m_isDeactivationRequested = true;
+                OnThreadEnding( m_threadData, false );
             }
+        }
+        if ( callerShouldWait )
+        {
+            ThreadWait( _td, 15000 );
         }
     }
 }
@@ -248,12 +296,14 @@ CActiveObject::IsPauseRequested( void ) const
 void
 CActiveObject::Pause( bool force )
 {
+    CObjectScopeLock lock( this );
+    
     if ( force )
     {
         // Don't wait for the thread to cycle
         ThreadSuspend( _td );
         _active = false;
-        OnTaskPausedForcibly( _taskdata );
+        OnThreadPausedForcibly( m_threadData );
     }
     else
     {
@@ -266,20 +316,22 @@ CActiveObject::Pause( bool force )
 void
 CActiveObject::Resume( void )
 {
-    if ( NULL != _td && _suspend )
+    CObjectScopeLock lock( this );
+
+    if ( GUCEF_NULL != _td && _suspend )
     {
         _active = true;
         ThreadResume( _td );
-        OnTaskResumed( _taskdata );
+        OnThreadResumed( m_threadData );
     }
 }
 
 /*-------------------------------------------------------------------------*/
 
 void*
-CActiveObject::GetTaskData( void ) const
+CActiveObject::GetThreadData( void ) const
 {
-    return _taskdata;
+    return m_threadData;
 }
 
 /*-------------------------------------------------------------------------*/
@@ -287,17 +339,21 @@ CActiveObject::GetTaskData( void ) const
 CActiveObject&
 CActiveObject::operator=( const CActiveObject& src )
 {
-    Deactivate( true, true );
-
-    _taskdata = src._taskdata;
-    m_delay = src.m_delay;
-    _suspend = false;
-
-    if ( src.IsActive() )
+    if ( this != &src )  
     {
-        Activate();
-    }
+        CObjectScopeLock lock( this );
 
+        Deactivate( true, true );
+
+        m_threadData = src.m_threadData;
+        m_delayInMilliSecs = src.m_delayInMilliSecs;
+        _suspend = false;
+
+        if ( src.IsActive() )
+        {
+            Activate();
+        }
+    }
     return *this;
 }
 
@@ -306,11 +362,29 @@ CActiveObject::operator=( const CActiveObject& src )
 UInt32
 CActiveObject::GetThreadID( void ) const
 {
-    if ( NULL != _td )
+    CObjectScopeLock lock( this );
+
+    if ( GUCEF_NULL != _td )
     {
         return ThreadID( _td );
     }
     return 0;
+}
+
+/*-------------------------------------------------------------------------*/
+
+bool
+CActiveObject::Lock( void ) const
+{
+    return m_datalock.Lock();
+}
+
+/*-------------------------------------------------------------------------*/
+
+bool
+CActiveObject::Unlock( void ) const
+{
+    return m_datalock.Unlock();
 }
 
 /*-------------------------------------------------------------------------//

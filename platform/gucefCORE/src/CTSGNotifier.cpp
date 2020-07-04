@@ -48,8 +48,9 @@ namespace CORE {
 //-------------------------------------------------------------------------*/
 
 CTSGNotifier::CTSGNotifier( void )
-    : CNotifier()                    ,
-      m_tsgObserver( CCoreGlobal::Instance()->GetPulseGenerator() )
+    : CNotifier()                    
+    , m_tsgObserver( CCoreGlobal::Instance()->GetPulseGenerator() )
+    , m_dataLock()
 {GUCEF_TRACE;
 
     m_tsgObserver.SetParent( this );
@@ -58,8 +59,9 @@ CTSGNotifier::CTSGNotifier( void )
 /*-------------------------------------------------------------------------*/
 
 CTSGNotifier::CTSGNotifier( CPulseGenerator& pulsGenerator )
-    : CNotifier()                    ,
-      m_tsgObserver( pulsGenerator )
+    : CNotifier()                    
+    , m_tsgObserver( pulsGenerator )
+    , m_dataLock()
 {GUCEF_TRACE;
 
     m_tsgObserver.SetParent( this );
@@ -68,8 +70,9 @@ CTSGNotifier::CTSGNotifier( CPulseGenerator& pulsGenerator )
 /*-------------------------------------------------------------------------*/
 
 CTSGNotifier::CTSGNotifier( const CTSGNotifier& src )
-    : CNotifier( src )                   ,
-      m_tsgObserver( src.m_tsgObserver )
+    : CNotifier( src )                   
+    , m_tsgObserver( src.m_tsgObserver )
+    , m_dataLock()
 {GUCEF_TRACE;
 
     m_tsgObserver.SetParent( this );
@@ -80,7 +83,7 @@ CTSGNotifier::CTSGNotifier( const CTSGNotifier& src )
 CTSGNotifier::~CTSGNotifier()
 {GUCEF_TRACE;
 
-    m_tsgObserver.SetParent( NULL );
+    m_tsgObserver.SetParent( GUCEF_NULL );
 }
 
 /*-------------------------------------------------------------------------*/
@@ -89,6 +92,10 @@ CTSGNotifier&
 CTSGNotifier::operator=( const CTSGNotifier& src )
 {GUCEF_TRACE;
 
+    if ( this != &src )
+    {
+        CNotifier::operator=( src );
+    }
     return *this;
 }
 
@@ -130,6 +137,20 @@ CTSGNotifier::UnsubscribeFrom( CNotifier* threadedNotifier ,
 
     threadedNotifier->Unsubscribe( &m_tsgObserver ,
                                    eventid        );
+}
+
+/*-------------------------------------------------------------------------*/
+
+void
+CTSGNotifier::SubscribeTo( CNotifier* threadedNotifier         ,
+                           const CEvent& eventid               ,
+                           CIEventHandlerFunctorBase& callback )
+{GUCEF_TRACE;
+
+    assert( GUCEF_NULL != &callback );
+    threadedNotifier->Subscribe( &m_tsgObserver ,
+                                 eventid        ,
+                                 &callback      );
 }
 
 /*-------------------------------------------------------------------------*/
@@ -179,20 +200,20 @@ CTSGNotifier::GetClassTypeName( void ) const
 
 /*-------------------------------------------------------------------------*/
 
-void
-CTSGNotifier::LockData( void ) const
+bool
+CTSGNotifier::Lock( void ) const
 {GUCEF_TRACE;
 
-    m_tsgObserver.DoLockData();
+    return m_dataLock.Lock();
 }
 
 /*-------------------------------------------------------------------------*/
 
-void
-CTSGNotifier::UnlockData( void ) const
+bool
+CTSGNotifier::Unlock( void ) const
 {GUCEF_TRACE;
 
-    m_tsgObserver.DoUnlockData();
+    return m_dataLock.Unlock();
 }
 
 /*-------------------------------------------------------------------------*/
@@ -202,6 +223,15 @@ CTSGNotifier::AsObserver( void )
 {GUCEF_TRACE;
 
     return m_tsgObserver;
+}
+
+/*-------------------------------------------------------------------------*/
+
+CPulseGenerator* 
+CTSGNotifier::GetPulseGenerator( void ) const
+{GUCEF_TRACE;
+
+    return m_tsgObserver.GetPulseGenerator();
 }
 
 /*-------------------------------------------------------------------------//

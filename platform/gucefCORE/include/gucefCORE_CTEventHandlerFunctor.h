@@ -72,7 +72,7 @@ namespace CORE {
 //-------------------------------------------------------------------------*/
 
 template < class IObserverDerived >
-class CTEventHandlerFunctor : public CIEventHandlerFunctorBase
+class CTEventHandlerFunctor : public virtual CIEventHandlerFunctorBase
 {
     public:
 
@@ -90,11 +90,15 @@ class CTEventHandlerFunctor : public CIEventHandlerFunctorBase
 
     CTEventHandlerFunctor& operator=( const CTEventHandlerFunctor& src );
 
-    virtual CICloneable* Clone( void ) const;
+    virtual CICloneable* Clone( void ) const GUCEF_VIRTUAL_OVERRIDE;
 
-    virtual const CString& GetClassTypeName( void ) const;
+    virtual const CString& GetClassTypeName( void ) const GUCEF_VIRTUAL_OVERRIDE;
 
     protected:
+
+    virtual bool Lock( void ) const GUCEF_VIRTUAL_OVERRIDE;
+
+    virtual bool Unlock( void ) const GUCEF_VIRTUAL_OVERRIDE;
 
     virtual void OnNotify( CNotifier* notifier          ,
                            const CEvent& eventID        ,
@@ -209,6 +213,26 @@ CTEventHandlerFunctor< IObserverDerived >::SetMemberFunctionPointer( TMemberFunc
 {GUCEF_TRACE;
 
     m_functor = functor;
+}
+
+/*-------------------------------------------------------------------------*/
+
+template< class IObserverDerived >
+bool
+CTEventHandlerFunctor< IObserverDerived >::Lock( void ) const
+{GUCEF_TRACE;
+
+    return false;
+}
+
+/*-------------------------------------------------------------------------*/
+
+template< class IObserverDerived >
+bool
+CTEventHandlerFunctor< IObserverDerived >::Unlock( void ) const
+{GUCEF_TRACE;
+
+    return false;
 }
 
 /*-------------------------------------------------------------------------//

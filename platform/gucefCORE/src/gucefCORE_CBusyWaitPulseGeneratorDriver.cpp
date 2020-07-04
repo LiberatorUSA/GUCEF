@@ -59,7 +59,8 @@ CBusyWaitPulseGeneratorDriver::CBusyWaitPulseGeneratorDriver( void )
     : CIPulseGeneratorDriver()  
     , m_loop( false )           
     , m_desiredPulseDelta( 10 )
-    , m_immediatePulseRequested( false )
+    , m_immediatePulseTickets( 0 )
+    , m_immediatePulseTicketMax( 1 )
 {GUCEF_TRACE;
 
 }
@@ -70,7 +71,8 @@ CBusyWaitPulseGeneratorDriver::CBusyWaitPulseGeneratorDriver( const CBusyWaitPul
     : CIPulseGeneratorDriver( src ) 
     , m_loop( false )               
     , m_desiredPulseDelta( 10 )     
-    , m_immediatePulseRequested( false )
+    , m_immediatePulseTickets( 0 )
+    , m_immediatePulseTicketMax( 1 )
 {GUCEF_TRACE;
 
 }
@@ -86,13 +88,28 @@ CBusyWaitPulseGeneratorDriver::~CBusyWaitPulseGeneratorDriver()
 /*--------------------------------------------------------------------------*/
 
 void
-CBusyWaitPulseGeneratorDriver::RequestPulse( CPulseGenerator& pulseGenerator )
+CBusyWaitPulseGeneratorDriver::RequestImmediatePulse( CPulseGenerator& pulseGenerator )
 {GUCEF_TRACE;
 
     if ( m_loop )
-        m_immediatePulseRequested = true;
+    {
+        m_immediatePulseTickets = m_immediatePulseTicketMax;
+    }
     else
         SendDriverPulse( pulseGenerator );
+}
+
+/*--------------------------------------------------------------------------*/
+
+void 
+CBusyWaitPulseGeneratorDriver::RequestPulsesPerImmediatePulseRequest( CPulseGenerator& pulseGenerator                     ,
+                                                                      const Int32 requestedPulsesPerImmediatePulseRequest )
+{GUCEF_TRACE;
+
+    if ( requestedPulsesPerImmediatePulseRequest > 1 )
+        m_immediatePulseTicketMax = requestedPulsesPerImmediatePulseRequest;
+    else
+        m_immediatePulseTicketMax = 1;
 }
 
 /*--------------------------------------------------------------------------*/
@@ -102,22 +119,17 @@ CBusyWaitPulseGeneratorDriver::Run( CPulseGenerator& pulseGenerator )
 {GUCEF_TRACE;
     
     m_loop = true;
-    Float64 remainingDelta;
     while ( m_loop )
     {
-        remainingDelta = m_desiredPulseDelta - pulseGenerator.GetActualPulseDeltaInMilliSecs();
-        if ( remainingDelta <= 0.0 || m_immediatePulseRequested )
+        if ( m_immediatePulseTickets > 0 )
         {
-            m_immediatePulseRequested = false;
+            --m_immediatePulseTickets;
             SendDriverPulse( pulseGenerator );
+            continue;
         }
-        else
-        {
-            if ( remainingDelta > 1.0 )
-            {
-                MT::PrecisionDelay( (UInt32)remainingDelta ); 
-            }
-        }
+
+        pulseGenerator.WaitTillNextPulseWindow( 25, 100 );
+        SendDriverPulse( pulseGenerator );
     }
     
     GUCEF_LOG( CORE::LOGLEVEL_NORMAL, "BusyWaitPulseGeneratorDriver: Exited run loop" );

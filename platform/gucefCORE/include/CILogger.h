@@ -78,10 +78,9 @@ class GUCEF_CORE_PUBLIC_CPP CILogger
 
     virtual void FlushLog( void ) = 0;
 
-    static CString FormatStdLogMessage( const TLogMsgType logMsgType ,
-                                        const Int32 logLevel         ,
-                                        const CString& logMessage    ,
-                                        const UInt32 threadId        );
+    virtual void SetMinimalLogLevel( const Int32 logLevel ) = 0;
+
+    virtual Int32 GetMinimalLogLevel( void ) const = 0;
 
     CILogger( void );                             /**< interface class: no-op */
     virtual ~CILogger();                          /**< interface class: no-op */

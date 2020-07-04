@@ -171,6 +171,24 @@ class GUCEF_CORE_PUBLIC_CPP CValueList : public CIConfigurable
 
     /**
      *  Returns the value vector associated with the
+     *  given key if any. Otherwise returns an empty list and will not throw an exception
+     *  Aside from returning the multiple entries for the same key (if permitted) it will also
+     *  perform sub string parsing for values per value entry
+     */
+    TStringVector GetValueVectorAlways( const CString& key, char valueSepChar ) const;
+
+    TStringVector GetValueVectorAlways( const CString& key, char valueSepChar, const TStringVector& default ) const;
+
+    /**
+     *  Returns all keys matching the key wildcard search 
+     *  Will not throw an exception
+     */
+    TStringVector GetKeysWithWildcardKeyMatch( const CString& searchStr  , 
+                                               char wildCardChar = '*'   ,
+                                               bool caseSensitive = true ) const;
+
+    /**
+     *  Returns the value vector associated with the
      *  given key.
      *
      *  @exception EUnknownKey thrown if the given key is unknown
@@ -240,10 +258,21 @@ class GUCEF_CORE_PUBLIC_CPP CValueList : public CIConfigurable
     void SetConfigNamespace( const CString& configNamespace );
 
     const CString& GetConfigNamespace( void ) const;
+
+    /**
+     *  When loading from config data this will limit the scope
+     *  of the information loaded to just the keys that are 
+     *  namespaced with by having the exact 'configKeyNamespace' prefix
+     */
+    void SetConfigKeyNamespace( const CString& configKeyNamespace );
+
+    const CString& GetConfigKeyNamespace( void ) const;
     
     TValueMap::const_iterator GetDataBeginIterator( void ) const;
     
     TValueMap::const_iterator GetDataEndIterator( void ) const;
+
+    virtual const CString& GetClassTypeName( void ) const;
     
     GUCEF_DEFINE_MSGEXCEPTION( GUCEF_CORE_PUBLIC_CPP, EUnknownKey );
     GUCEF_DEFINE_MSGEXCEPTION( GUCEF_CORE_PUBLIC_CPP, EIndexOutOfRange );
@@ -254,6 +283,7 @@ class GUCEF_CORE_PUBLIC_CPP CValueList : public CIConfigurable
     bool m_allowDuplicates;
     bool m_allowMultipleValues;
     CString m_configNamespace;
+    CString m_configKeyNamespace;
 };
 
 /*-------------------------------------------------------------------------//

@@ -58,22 +58,24 @@ GUCEF_IMPLEMENT_MSGEXCEPTION( CValueList, EIndexOutOfRange );
 /*-------------------------------------------------------------------------*/
 
 CValueList::CValueList( void )
-    : CIConfigurable( false )       ,
-      m_list()                      ,
-      m_allowDuplicates( false )    ,
-      m_allowMultipleValues( true ) ,
-      m_configNamespace()
+    : CIConfigurable( false )       
+    , m_list()                      
+    , m_allowDuplicates( false )    
+    , m_allowMultipleValues( true ) 
+    , m_configNamespace()           
+    , m_configKeyNamespace()
 {GUCEF_TRACE;
 }
 
 /*-------------------------------------------------------------------------*/
 
 CValueList::CValueList( const CValueList& src )
-    : CIConfigurable( false )                            ,
-      m_list( src.m_list )                               ,
-      m_allowDuplicates( src.m_allowDuplicates )         ,
-      m_allowMultipleValues( src.m_allowMultipleValues ) ,
-      m_configNamespace()
+    : CIConfigurable( false )                            
+    , m_list( src.m_list )                               
+    , m_allowDuplicates( src.m_allowDuplicates )         
+    , m_allowMultipleValues( src.m_allowMultipleValues ) 
+    , m_configNamespace( src.m_configNamespace )                               
+    , m_configKeyNamespace( src.m_configKeyNamespace )
 {GUCEF_TRACE;
                
 }
@@ -97,6 +99,7 @@ CValueList::operator=( const CValueList& src )
         m_allowDuplicates = src.m_allowDuplicates;
         m_allowMultipleValues = src.m_allowMultipleValues;
         m_configNamespace = src.m_configNamespace;
+        m_configKeyNamespace = src.m_configKeyNamespace;
      }
      return *this;
 }
@@ -152,6 +155,24 @@ CValueList::GetConfigNamespace( void ) const
 
 /*-------------------------------------------------------------------------*/
 
+void
+CValueList::SetConfigKeyNamespace( const CString& configKeyNamespace )
+{GUCEF_TRACE;
+
+    m_configKeyNamespace = configKeyNamespace;
+}
+
+/*-------------------------------------------------------------------------*/
+
+const CString& 
+CValueList::GetConfigKeyNamespace( void ) const
+{GUCEF_TRACE;
+    
+    return m_configKeyNamespace;
+}
+
+/*-------------------------------------------------------------------------*/
+
 bool
 CValueList::SaveConfig( CDataNode& tree ) const
 {GUCEF_TRACE;
@@ -168,7 +189,7 @@ CValueList::SaveConfig( CDataNode& tree ) const
                 TStringVector::const_iterator n = values.begin();
                 while ( n != values.end() )
                 {
-                    CDataNode* child = nodeNamespaceRoot->AddChild( (*i).first );
+                    CDataNode* child = nodeNamespaceRoot->AddChild( m_configKeyNamespace + (*i).first );
                     child->SetValue( (*n) );
                     ++n;
                 }
@@ -182,7 +203,7 @@ CValueList::SaveConfig( CDataNode& tree ) const
             {
                 const TStringVector& values = (*i).second;
                 if ( !values.empty() )
-                    nodeNamespaceRoot->SetAttribute( (*i).first, values.front() );
+                    nodeNamespaceRoot->SetAttribute( m_configKeyNamespace + (*i).first, values.front() );
                 ++i;
             }
         }
@@ -204,7 +225,18 @@ CValueList::LoadConfig( const CDataNode& treeroot )
         CDataNode::TAttributeMap::const_iterator i = nodeNamespaceRoot->AttributeBegin();
         while ( i != nodeNamespaceRoot->AttributeEnd() )
         {
-            Set( (*i).first, (*i).second.value );
+            if ( m_configKeyNamespace.IsNULLOrEmpty() )
+            {
+                Set( (*i).first, (*i).second.value );
+            }
+            else
+            {
+                if ( 0 == (*i).first.HasSubstr( m_configKeyNamespace ) )
+                {
+                    CString keyname = (*i).first.CutChars( m_configKeyNamespace.Length(), true, 0 );
+                    Set( keyname, (*i).second.value );
+                }
+            }
             ++i;
         }
 
@@ -215,12 +247,33 @@ CValueList::LoadConfig( const CDataNode& treeroot )
             const CString& value = (*n)->GetValue();
             if ( !value.IsNULLOrEmpty() )
             {
-                Set( (*n)->GetName(), value );
+                if ( m_configKeyNamespace.IsNULLOrEmpty() )
+                {
+                    Set( (*n)->GetName(), value );
+                }
+                else
+                {
+                    if ( 0 == (*n)->GetName().HasSubstr( m_configKeyNamespace ) )
+                    {
+                        CString keyname = (*n)->GetName().CutChars( m_configKeyNamespace.Length(), true, 0 );
+                        Set( keyname, value );
+                    }
+                }
             }
             ++n;
         }
     }
     return true;
+}
+
+/*-------------------------------------------------------------------------*/
+
+const CORE::CString& 
+CValueList::GetClassTypeName( void ) const
+{GUCEF_TRACE;
+
+    static CORE::CString classTypeName = "GUCEF::CORE::CValueList";
+    return classTypeName; 
 }
 
 /*-------------------------------------------------------------------------*/
@@ -357,6 +410,51 @@ CValueList::GetValueVectorAlways( const CString& key ) const
         results = (*i).second;
     }
     return results;    
+}
+
+/*-------------------------------------------------------------------------*/
+
+CValueList::TStringVector 
+CValueList::GetValueVectorAlways( const CString& key           , 
+                                  char valueSepChar            , 
+                                  const TStringVector& default ) const
+{GUCEF_TRACE;
+
+    const TStringVector* firstPass = GUCEF_NULL;
+    TStringVector results;
+    TValueMap::const_iterator i = m_list.find( key );
+    if ( i != m_list.end() )
+    {
+        firstPass = &(*i).second;
+        TStringVector::const_iterator n = firstPass->begin();
+        while ( n != firstPass->end() )
+        {
+            TStringVector subSetResults = (*n).ParseElements( valueSepChar,  false ); 
+            TStringVector::iterator m = subSetResults.begin();
+            while ( m != subSetResults.end() )
+            {
+                results.push_back( (*m) );
+                ++m;
+            }
+            ++n;
+        }
+    }
+
+    if ( results.empty() )
+    {   
+        results = default;
+    }
+    return results;    
+}
+
+/*-------------------------------------------------------------------------*/
+
+CValueList::TStringVector 
+CValueList::GetValueVectorAlways( const CString& key, char valueSepChar ) const
+{GUCEF_TRACE;
+
+    TStringVector emptyDefault;
+    return GetValueVectorAlways( key, valueSepChar, emptyDefault );
 }
 
 /*-------------------------------------------------------------------------*/                
@@ -598,6 +696,28 @@ CValueList::HasKey( const CString& key ) const
 {GUCEF_TRACE;
 
     return m_list.end() != m_list.find( key );
+}
+
+/*-------------------------------------------------------------------------*/
+
+CValueList::TStringVector 
+CValueList::GetKeysWithWildcardKeyMatch( const CString& searchStr , 
+                                         char wildCardChar        ,
+                                         bool caseSensitive       ) const
+{GUCEF_TRACE;
+
+    TStringVector keys;
+    TValueMap::const_iterator i = m_list.begin();
+    while ( i != m_list.end() )
+    {
+        const CString& key = (*i).first;
+        if ( key.WildcardEquals( searchStr, wildCardChar, caseSensitive ) )
+        {
+            keys.push_back( key );
+        }
+        ++i;
+    }
+    return keys;
 }
 
 /*-------------------------------------------------------------------------*/

@@ -147,11 +147,14 @@ class GUCEF_COMCORE_EXPORT_CPP CPingTaskConsumer : public CORE::CTaskConsumer
     
     virtual const CString& GetClassTypeName( void ) const;
     
-    virtual bool OnTaskStart( CORE::CICloneable* taskData );
-    
-    virtual bool OnTaskCycle( CORE::CICloneable* taskData );
-    
-    virtual void OnTaskEnd( CORE::CICloneable* taskData );
+    virtual bool OnTaskStart( CORE::CICloneable* taskdata ) GUCEF_VIRTUAL_OVERRIDE;
+
+    virtual bool OnTaskCycle( CORE::CICloneable* taskdata ) GUCEF_VIRTUAL_OVERRIDE;
+
+    virtual void OnTaskEnding( CORE::CICloneable* taskdata ,
+                               bool willBeForced           ) GUCEF_VIRTUAL_OVERRIDE;
+
+    virtual void OnTaskEnd( CORE::CICloneable* taskdata ) GUCEF_VIRTUAL_OVERRIDE;
     
     private:
     

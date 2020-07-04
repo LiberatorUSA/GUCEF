@@ -115,6 +115,8 @@ class GUCEF_COMCORE_EXPORT_CPP CDiscoveryManager : public virtual CORE::CIConfig
      */
     virtual bool LoadConfig( const CORE::CDataNode& treeroot );
 
+    virtual const CString& GetClassTypeName( void ) const;
+
     private:
 
     CDiscoveryManager( const CDiscoveryManager& src );            /** not implemented */

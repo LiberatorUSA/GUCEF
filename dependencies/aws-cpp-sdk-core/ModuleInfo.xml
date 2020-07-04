@@ -1,0 +1,54 @@
+<ModuleInfoEntry>
+    <Module Name="aws-cpp-sdk-core" Type="SharedLibrary" Platform="All">
+        <Preprocessor>
+            <Define String="USE_IMPORT_EXPORT=1" />
+            <Define String="AWS_CORE_EXPORTS=1" />
+        </Preprocessor>
+        <Dependencies>
+            <Dependency Name="aws-checksums" />
+			<Dependency Name="aws-c-common" />
+			<Dependency Name="aws-c-common-headers" />
+            <Dependency Name="aws-c-event-stream" />
+			<Dependency Name="aws-c-event-stream-headers" />
+			<Dependency Name="curl" />
+        </Dependencies>
+        <Linker>
+            <Dependency Name="aws-checksums" />
+			<Dependency Name="aws-c-common" />
+			<Dependency Name="aws-c-event-stream" />
+			<Dependency Name="curl" />			
+        </Linker>		
+    </Module>
+    <Module Platform="mswin">
+        <Preprocessor>
+            <Define String="PLATFORM_WINDOWS" />
+			<Define String="ENABLE_BCRYPT_ENCRYPTION" />
+		    <Define String="ENABLE_WINDOWS_CLIENT" />
+			<Define String="ENABLE_WINDOWS_IXML_HTTP_REQUEST_2_CLIENT" />
+			<Define String="BYPASS_DEFAULT_PROXY" />
+        </Preprocessor>	
+        <Linker>
+            <Dependency Name="Winhttp.lib" />
+			<Dependency Name="Wininet.lib" />
+			<Dependency Name="Userenv.lib" />
+			<Dependency Name="Version.lib" />
+			<Dependency Name="msxml6.lib" />
+			<Dependency Name="WindowsApp.lib" />
+        </Linker>
+    </Module>
+    <Module Platform="linux">
+        <Preprocessor>
+			<Define String="ENABLE_OPENSSL_ENCRYPTION" />
+        </Preprocessor>
+    </Module>
+    <Module Platform="android">
+        <Preprocessor>
+			<Define String="ENABLE_OPENSSL_ENCRYPTION" />
+        </Preprocessor>
+    </Module>
+    <Module Platform="osx">
+        <Preprocessor>
+			<Define String="ENABLE_COMMONCRYPTO_ENCRYPTION" />
+        </Preprocessor>
+    </Module>
+</ModuleInfoEntry>

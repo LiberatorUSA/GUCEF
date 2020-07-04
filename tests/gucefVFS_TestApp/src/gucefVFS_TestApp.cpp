@@ -61,9 +61,9 @@ LoadConfig( const CORE::CString& configPath            ,
 {GUCEF_TRACE;
 
     #ifdef GUCEF_DEBUG_MODE
-    const CORE::CString configFile = "gucefVFS_TestApp_d.ini";
+    const CORE::CString configFile = "bootstrap_d.ini";
     #else
-    const CORE::CString configFile = "gucefVFS_TestApp.ini";
+    const CORE::CString configFile = "bootstrap.ini";
     #endif
 
     CORE::CString configFilePath;
@@ -89,8 +89,32 @@ LoadConfig( const CORE::CString& configPath            ,
             GUCEF_LOG( CORE::LOGLEVEL_BELOW_NORMAL, "Checking for config file @ " + configFilePath );
             if ( !FileExists( configFilePath ) )
             {
-                GUCEF_WARNING_LOG( CORE::LOGLEVEL_NORMAL, "Unable to locate any config file, will rely on params" );
-                return false;
+                #if GUCEF_PLATFORM == GUCEF_PLATFORM_MSWIN
+                CORE::CString platformDir = "mswin";
+                #elif GUCEF_PLATFORM == GUCEF_PLATFORM_LINUX
+                CORE::CString platformDir = "linux";
+                #elif GUCEF_PLATFORM == GUCEF_PLATFORM_ANDROID
+                CORE::CString platformDir = "android";
+                #endif
+
+                configFilePath = CORE::CombinePath( "$MODULEDIR$", "../../../TestData/gucefVFS_TestApp/" + platformDir );
+                configFilePath = CORE::CombinePath( configFilePath, configFile );
+                configFilePath = CORE::RelativePath( configFilePath );
+                
+                GUCEF_LOG( CORE::LOGLEVEL_BELOW_NORMAL, "Checking for config file @ " + configFilePath );
+                if ( !FileExists( configFilePath ) )
+                {
+                    configFilePath = CORE::CombinePath( "$ENVVAR:GUCEF_HOME$", "common/bin/TestData/gucefVFS_TestApp/" + platformDir );
+                    configFilePath = CORE::CombinePath( configFilePath, configFile );
+                    configFilePath = CORE::RelativePath( configFilePath );
+                
+                    GUCEF_LOG( CORE::LOGLEVEL_BELOW_NORMAL, "Checking for config file @ " + configFilePath );
+                    if ( !FileExists( configFilePath ) )
+                    {   
+                        GUCEF_WARNING_LOG( CORE::LOGLEVEL_NORMAL, "Unable to locate any config file, will rely on params" );
+                        return false;
+                    }
+                }
             }
         }
     }
@@ -134,6 +158,41 @@ ParseParams( const int argc                 ,
 
 /*-------------------------------------------------------------------------*/
 
+void
+SetupLogging( const CORE::CString& outputDir ,
+              CORE::CString& logFilename     )
+{GUCEF_TRACE;
+
+    CORE::CString outDir = CORE::RelativePath( outputDir );
+    CORE::CreateDirs( outDir );
+
+    // setup file logger
+    logFilename = CORE::CombinePath( outDir, "gucefVFS_TestApp_Log.txt" );
+   
+    CORE::CFileAccess logFileAccess( logFilename, "w" );
+    CORE::CStdLogger logger( logFileAccess );
+    CORE::CCoreGlobal::Instance()->GetLogManager().AddLogger( &logger );
+
+    // setup console logger
+    static CORE::CPlatformNativeConsoleLogger consoleOut;
+    CORE::CCoreGlobal::Instance()->GetLogManager().AddLogger( consoleOut.GetLogger() );
+
+    // flush startup log entries
+    CORE::CCoreGlobal::Instance()->GetLogManager().FlushBootstrapLogEntriesToLogs();
+}
+
+/*-------------------------------------------------------------------------*/
+
+void
+SetupLogging( void )
+{GUCEF_TRACE;
+
+    CORE::CString logFilename;
+    SetupLogging( "$MODULEDIR$", logFilename );
+}
+
+/*-------------------------------------------------------------------------*/
+
 /*
  *      Application entry point
  */
@@ -161,6 +220,7 @@ GUCEF_OSMAIN_BEGIN
         CORE::CDataNode* globalConfig = new CORE::CDataNode();
         if ( !LoadConfig( configPathParam, keyValueList, globalConfig ) )
         {
+            SetupLogging();
             CORE::ShowErrorMessage( "Initialization error"                ,
                                     "Failures occured loading the config" );
 
@@ -177,36 +237,24 @@ GUCEF_OSMAIN_BEGIN
             CORE::CCoreGlobal::Instance()->GetLogManager().SetMinLogLevel( minLogLevel );
         }
 
-        CORE::CString outputDir = CORE::RelativePath( keyValueList.GetValueAlways( "outputDir" ) );
-        if ( outputDir.IsNULLOrEmpty() )
-        {
-            outputDir = CORE::RelativePath( "$CURWORKDIR$" );
-        }
-        CORE::CreateDirs( outputDir );
-
-        // setup file logger
-        CORE::CString logFilename = CORE::CombinePath( outputDir, "gucefVFS_TestApp_Log.txt" );
+        CORE::CString logFilename;
+        CORE::CString outputDir = CORE::RelativePath( keyValueList.GetValueAlways( "outputDir", "$CURWORKDIR$" ) );
+        SetupLogging( outputDir, logFilename );
         keyValueList.Set( "logfile", logFilename );
-        CORE::CFileAccess logFileAccess( logFilename, "w" );
-        CORE::CStdLogger logger( logFileAccess );
-        CORE::CCoreGlobal::Instance()->GetLogManager().AddLogger( &logger );
-
-        // setup console logger
-        CORE::CPlatformNativeConsoleLogger consoleOut;
-        CORE::CCoreGlobal::Instance()->GetLogManager().AddLogger( consoleOut.GetLogger() );
-
-        // flush startup log entries
-        CORE::CCoreGlobal::Instance()->GetLogManager().FlushBootstrapLogEntriesToLogs();
 
         // Create console window for easy test interaction
         CORE::CPlatformNativeConsoleWindow consoleWindow;
         consoleWindow.CreateConsole();
 
         // Now actually run the tests...
-        PerformVFSFileLoadUnloadTest();
+        //PerformVFSFileLoadUnloadTest();
+
+        auto& app = CORE::CCoreGlobal::Instance()->GetApplication();
+        app.GetPulseGenerator().RequestPulseInterval( 10 );
+        int appReturnValue = app.main( argc, argv, true );
 
         CORE::CCoreGlobal::Instance()->GetLogManager().ClearLoggers();
-        return 1;
+        return appReturnValue;
     }
     catch ( ... )
     {

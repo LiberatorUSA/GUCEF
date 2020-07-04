@@ -252,6 +252,13 @@ class GUCEF_CORE_PUBLIC_CPP CDynamicBuffer
                      const bool appendToLogicalData = true );
 
         /**
+         *  Appends the given data to the back of the data bytes in the buffer
+         *  Note that if the buffer is linked this operation will result in the creation of a private copy
+         */
+        void Append( const CDynamicBuffer& data            ,
+                     const bool appendToLogicalData = true );
+
+        /**
          *  Attempts to find a matching block of bytes if any from the given offset and returns the offset
          *  at which the block was found. If no matching block is found -1 is returned.
          */
@@ -271,6 +278,15 @@ class GUCEF_CORE_PUBLIC_CPP CDynamicBuffer
         bool LoadContentFromFile( const CString& filePath       ,
                                   const UInt32 offsetInFile = 0 ,
                                   const Int32 bytesToRead = -1  );
+
+        /**
+         *  Tries to write the dynamic buffer content to the file at the file path given
+         */
+        bool WriteContentToFile( const CORE::CString& filepath ,
+                                 const CORE::UInt64 offset = 0 ,
+                                 const bool overwrite = false  ) const;
+
+        bool AppendContentToFile( const CORE::CString& filepath ) const;
 
         /**
          *  Provides mutable access to the buffer as a block of memory

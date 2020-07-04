@@ -99,9 +99,9 @@ class GUCEF_CORE_PUBLIC_CPP CTimer : public CObservingNotifier
     public:
 
     CTimer( CPulseGenerator& pulseGenerator          ,
-            const UInt32 updateDeltaInMilliSecs = 10 );
+            const UInt32 updateDeltaInMilliSecs = 25 );
 
-    CTimer( const UInt32 updateDeltaInMilliSecs = 10 );
+    CTimer( const UInt32 updateDeltaInMilliSecs = 25 );
 
     CTimer( const CTimer& src );
 
@@ -139,7 +139,13 @@ class GUCEF_CORE_PUBLIC_CPP CTimer : public CObservingNotifier
 
 	void Reset( void );
 
-	const CString& GetClassTypeName( void ) const;
+    /**
+     *  Allows you to bypass the wait on the timer time-out and 
+     *  trigger the timer event right away
+     */
+    void TriggerNow( void );
+
+	const CString& GetClassTypeName( void ) const GUCEF_VIRTUAL_OVERRIDE;
 
 	/**
 	 *  Returns the approximated maximum timer resolution in milliseconds
@@ -150,6 +156,12 @@ class GUCEF_CORE_PUBLIC_CPP CTimer : public CObservingNotifier
 	 *  @return approximated maximum timer resolution in milliseconds
 	 */
 	static Float64 GetApproxMaxTimerResolutionInMilliSecs( void );
+
+    protected:
+
+    virtual bool Lock( void ) const GUCEF_VIRTUAL_OVERRIDE;
+
+    virtual bool Unlock( void ) const GUCEF_VIRTUAL_OVERRIDE;
 
     private:
     typedef CTEventHandlerFunctor< CTimer > TEventCallback;

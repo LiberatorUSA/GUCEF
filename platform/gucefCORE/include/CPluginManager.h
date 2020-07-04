@@ -26,6 +26,11 @@
 //                                                                         //
 //-------------------------------------------------------------------------*/
 
+#ifndef GUCEF_CORE_CTSGNOTIFIER_H
+#include "CTSGNotifier.h"
+#define GUCEF_CORE_CTSGNOTIFIER_H
+#endif /* GUCEF_CORE_CTSGNOTIFIER_H ? */
+
 #ifndef GUCEF_CORE_CIPLUGIN_H
 #include "CIPlugin.h"
 #define GUCEF_CORE_CIPLUGIN_H
@@ -56,7 +61,7 @@ class CPluginControl;
 /**
  *      Generic base class for plugin managers
  */
-class GUCEF_CORE_PUBLIC_CPP CPluginManager
+class GUCEF_CORE_PUBLIC_CPP CPluginManager : public CTSGNotifier
 {
     public:
 
@@ -78,6 +83,7 @@ class GUCEF_CORE_PUBLIC_CPP CPluginManager
 
     CPluginManager( const CPluginManager& src );             /**< not implemented */
     CPluginManager& operator=( const CPluginManager& src );  /**< not implemented */
+
 };
 
 /*-------------------------------------------------------------------------//

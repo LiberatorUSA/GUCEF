@@ -68,6 +68,8 @@ class GUCEF_CORE_PUBLIC_CPP CString
 {
     public:
 
+    typedef std::vector< CString > StringVector;
+
     static const CString Empty;
 
     CString( void );
@@ -277,8 +279,8 @@ class GUCEF_CORE_PUBLIC_CPP CString
 
     CString CompactRepeatingChar( const char charToCompact ) const;
 
-    std::vector< CString > ParseElements( char seperator               ,
-                                          bool addEmptyElements = true ) const;
+    StringVector ParseElements( char seperator               ,
+                                bool addEmptyElements = true ) const;
 
     bool WildcardEquals( const CString& otherStr         ,
                          const char wildCardToken = '*'  ,

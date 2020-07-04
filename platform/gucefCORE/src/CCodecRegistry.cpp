@@ -47,6 +47,7 @@ namespace CORE {
 
 CCodecRegistry::CCodecRegistry( void )
     : CTONRegistry< CTONRegistry< CICodec > >()
+    , m_dataLock()
 {GUCEF_TRACE;
 
 }
@@ -56,6 +57,24 @@ CCodecRegistry::CCodecRegistry( void )
 CCodecRegistry::~CCodecRegistry()
 {GUCEF_TRACE;
 
+}
+
+/*-------------------------------------------------------------------------*/
+
+bool
+CCodecRegistry::Lock( void ) const
+{GUCEF_TRACE;
+
+    return m_dataLock.Lock();
+}
+
+/*-------------------------------------------------------------------------*/
+
+bool
+CCodecRegistry::Unlock( void ) const
+{GUCEF_TRACE;
+
+    return m_dataLock.Unlock();
 }
 
 /*-------------------------------------------------------------------------//

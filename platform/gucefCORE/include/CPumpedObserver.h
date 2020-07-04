@@ -76,6 +76,8 @@ class GUCEF_CORE_PUBLIC_CPP CPumpedObserver : public CObserver
 
     virtual const CString& GetClassTypeName( void ) const;
 
+    CPulseGenerator* GetPulseGenerator( void ) const;
+
     protected:
 
     /**
@@ -85,7 +87,8 @@ class GUCEF_CORE_PUBLIC_CPP CPumpedObserver : public CObserver
      *
      *  Note that in contrast to OnNotify, which is performed in
      *  the calling thread, this call is always made in the main
-     *  application thread. As such it is well suited for linking
+     *  application thread or whatever thread provided the pulse generator. 
+     *  As such it is well suited for linking
      *  non-tread safe code via an observer to a notifier that
      *  operates from within another thread.
      *
@@ -93,9 +96,9 @@ class GUCEF_CORE_PUBLIC_CPP CPumpedObserver : public CObserver
      *  @param eventid the unique event id for an event
      *  @param eventdata optional notifier defined userdata
      */
-    virtual void OnPumpedNotify( CNotifier* notifier           ,
-                                 const CEvent& eventid         ,
-                                 CICloneable* eventdata = NULL );
+    virtual void OnPumpedNotify( CNotifier* notifier                 ,
+                                 const CEvent& eventid               ,
+                                 CICloneable* eventdata = GUCEF_NULL );
 
     protected:
 
@@ -114,9 +117,9 @@ class GUCEF_CORE_PUBLIC_CPP CPumpedObserver : public CObserver
                            const CEvent& eventid         ,
                            CICloneable* eventdata = NULL );
 
-    virtual void LockData( void ) const;
+    virtual bool Lock( void ) const GUCEF_VIRTUAL_OVERRIDE;
 
-    virtual void UnlockData( void ) const;
+    virtual bool Unlock( void ) const GUCEF_VIRTUAL_OVERRIDE;
 
     private:
     typedef CTEventHandlerFunctor< CPumpedObserver > TEventCallback;

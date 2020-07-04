@@ -332,6 +332,16 @@ File_Exists( const char *filename );
 /*-------------------------------------------------------------------------*/
 
 /**
+ *      Returns a boolean value indicating whether or not the given file
+ *      exists. 1 is true and 0  is false. the fastest method possible for the
+ *      target O/S will be used.
+ */
+GUCEF_CORE_PUBLIC_C UInt32
+Dir_Exists( const char *path );
+
+/*-------------------------------------------------------------------------*/
+
+/**
  *      Writes a relative path into dest build from pathstr.
  *      The following prefix tags can be used:
  *        $CURWORKDIR$ : this will be replaced with the current working dir.
@@ -350,10 +360,18 @@ Relative_Path( const char *pathstr ,
 /*-------------------------------------------------------------------------*/
 
 /**
- *  Returns the modification time of the inicated resource
+ *  Returns the modification time of the indicated resource
  */
 GUCEF_CORE_PUBLIC_C time_t
 Get_Modification_Time( const char* path );
+
+/*-------------------------------------------------------------------------*/
+
+/**
+ *  Returns the creation time of the indicated resource
+ */
+GUCEF_CORE_PUBLIC_C time_t
+Get_Creation_Time( const char* path );
 
 /*-------------------------------------------------------------------------*/
 

@@ -23,6 +23,8 @@
 //                                                                         //
 //-------------------------------------------------------------------------*/
 
+#include <assert.h>
+
 #ifndef GUCEF_CORE_CTRACER_H
 #include "CTracer.h"
 #define GUCEF_CORE_CTRACER_H
@@ -52,11 +54,10 @@ namespace CORE {
 
 CSingleTaskDelegator::CSingleTaskDelegator( CTaskConsumer* taskConsumer ,
                                             CICloneable* taskData       )
-    : CTaskDelegator()               ,
-      m_taskData( taskData )         ,
-      m_taskConsumer( taskConsumer )
+    : CTaskDelegator( taskConsumer, taskData )
 {GUCEF_TRACE;
 
+    assert( GUCEF_NULL != taskConsumer );
 }
 
 /*-------------------------------------------------------------------------*/
@@ -69,10 +70,10 @@ CSingleTaskDelegator::~CSingleTaskDelegator()
 /*-------------------------------------------------------------------------*/
 
 bool
-CSingleTaskDelegator::OnTaskCycle( void* taskdata )
+CSingleTaskDelegator::OnThreadCycle( void* taskdata )
 {GUCEF_TRACE;
 
-    if ( m_taskConsumer )
+    if ( GUCEF_NULL != m_taskConsumer )
     {
         bool result = CTaskDelegator::ProcessTask( *m_taskConsumer, m_taskData );
         TaskCleanup( m_taskConsumer, m_taskData );

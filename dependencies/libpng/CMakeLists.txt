@@ -78,9 +78,7 @@ endif( WIN64 )
 
 
 
-if (ANDROID)
-GUCEF_config_lib( ${MODULE_NAME} )
-elseif (LINUX32)
+if (LINUX32)
 GUCEF_config_lib( ${MODULE_NAME} )
 elseif (LINUX64)
 GUCEF_config_lib( ${MODULE_NAME} )

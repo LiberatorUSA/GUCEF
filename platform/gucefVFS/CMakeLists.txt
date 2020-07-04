@@ -13,6 +13,9 @@
 
 set( HEADER_FILES 
   include/gucefVFS.h
+  include/gucefVFS_AsyncVfsTaskData.h
+  include/gucefVFS_CArchiveSettings.h
+  include/gucefVFS_CAsyncVfsOperation.h
   include/gucefVFS_CFileSystemArchive.h
   include/gucefVFS_CIArchive.h
   include/gucefVFS_CModule.h
@@ -27,6 +30,9 @@ set( HEADER_FILES
 
 set( SOURCE_FILES 
   src/gucefVFS.cpp
+  src/gucefVFS_AsyncVfsTaskData.cpp
+  src/gucefVFS_CArchiveSettings.cpp
+  src/gucefVFS_CAsyncVfsOperation.cpp
   src/gucefVFS_CFileSystemArchive.cpp
   src/gucefVFS_CIArchive.cpp
   src/gucefVFS_CModule.cpp

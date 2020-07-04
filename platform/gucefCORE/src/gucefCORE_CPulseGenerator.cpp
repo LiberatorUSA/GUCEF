@@ -28,6 +28,11 @@
 #define GUCEF_MT_DVMTOSWRAP_H
 #endif /* GUCEF_MT_DVMTOSWRAP_H ? */
 
+#ifndef GUCEF_MT_COBJECTSCOPELOCK_H
+#include "gucefMT_CObjectScopeLock.h"
+#define GUCEF_MT_COBJECTSCOPELOCK_H
+#endif /* GUCEF_MT_COBJECTSCOPELOCK_H ? */
+
 #ifndef GUCEF_CORE_CTRACER_H
 #include "CTracer.h"
 #define GUCEF_CORE_CTRACER_H
@@ -81,7 +86,7 @@ CPulseGenerator::CPulseGenerator( void )
     : CNotifier()                                      ,
       m_lastCycleTickCount( MT::PrecisionTickCount() ) ,
       m_updateDeltaInMilliSecs( 10 )                   ,
-      m_timerFreq( 1.0 )                               ,
+      m_ticksPerMs( 1000 )                             ,
       m_forcedStopOfPeriodPulses( false )              ,
       m_periodicUpdateRequestors()                     ,
       m_driver( NULL )                                 ,
@@ -91,7 +96,7 @@ CPulseGenerator::CPulseGenerator( void )
     RegisterEvents();
     
     // Cache the precision timer resolution in time slices per millisecond
-    m_timerFreq = ( MT::PrecisionTimerResolution() / 1000.0 );
+    m_ticksPerMs = ( MT::PrecisionTimerResolution() / 1000.0 );
 }
 
 /*--------------------------------------------------------------------------*/
@@ -114,30 +119,49 @@ CPulseGenerator::GetClassTypeName( void ) const
 /*--------------------------------------------------------------------------*/
 
 void
-CPulseGenerator::RequestPulse( void )
+CPulseGenerator::ForceDirectPulse( void )
+{GUCEF_TRACE;
+    
+    OnDriverPulse();
+}
+
+/*--------------------------------------------------------------------------*/
+
+void
+CPulseGenerator::RequestImmediatePulse( void )
 {GUCEF_TRACE;
 
-    LockData();
-    // Are we already doing period updates ?
-    if ( m_periodicUpdateRequestors.size() == 0 )
+    if ( GUCEF_NULL != m_driver )
     {
-        // We are not so we must trigger an update either by delegation to a  
-        // driver or by doing so directly
-        if ( NULL != m_driver )
+        MT::CObjectScopeLock lock( this );
+        if ( GUCEF_NULL != m_driver )
         {
-            UnlockData();
-            m_driver->RequestPulse( *this );
+            m_driver->RequestImmediatePulse( *this );
+            return;
         }
-        else
-        {
-            UInt64 newTickCount = GUCEFGetTickCount();
-            UInt64 deltaTicks = newTickCount - m_lastCycleTickCount;
-            CPulseData pulseData( newTickCount, deltaTicks, 0);
-            m_lastCycleTickCount = newTickCount;
-            UnlockData();
+    }
+
+    Lock();
+    UInt64 newTickCount = MT::PrecisionTickCount();
+    Int64 deltaTicks = newTickCount - m_lastCycleTickCount;
+    Float64 updateDeltaTime = deltaTicks / m_ticksPerMs;
+    m_lastCycleTickCount = newTickCount;
+    Unlock();
             
-            NotifyObservers( PulseEvent, &pulseData );
-        }
+    CPulseData pulseData( newTickCount, deltaTicks, updateDeltaTime );
+    NotifyObservers( PulseEvent, &pulseData );
+}
+
+/*--------------------------------------------------------------------------*/
+
+void 
+CPulseGenerator::RequestPulsesPerImmediatePulseRequest( const Int32 requestedPulsesPerImmediatePulseRequest )
+{GUCEF_TRACE;
+
+    MT::CObjectScopeLock lock( this );
+    if ( GUCEF_NULL != m_driver )
+    {
+        m_driver->RequestPulsesPerImmediatePulseRequest( *this, requestedPulsesPerImmediatePulseRequest );
     }
 }
 
@@ -147,15 +171,13 @@ void
 CPulseGenerator::RequestPeriodicPulses( void* requestor )
 {GUCEF_TRACE;
 
-    LockData();
+    MT::CObjectScopeLock lock( this );
     m_periodicUpdateRequestors[ requestor ] = m_updateDeltaInMilliSecs;
     if ( m_driver != NULL && m_periodicUpdateRequestors.size() == 1 )
     {
-        UnlockData();
         m_driver->RequestPeriodicPulses( *this, m_updateDeltaInMilliSecs );
         return;
-    }
-    UnlockData();    
+    }   
 }
 
 /*--------------------------------------------------------------------------*/
@@ -185,6 +207,7 @@ UInt32
 CPulseGenerator::DetermineRequiredPulseInterval( void ) const
 {GUCEF_TRACE;
     
+    MT::CObjectScopeLock lock( this );
     if ( 0 == m_periodicUpdateRequestors.size() )
     {
         return m_updateDeltaInMilliSecs;
@@ -221,21 +244,19 @@ CPulseGenerator::RequestPeriodicPulses( void* requestor                    ,
                                         const UInt32 pulseDeltaInMilliSecs )
 {GUCEF_TRACE;
 
-    LockData();
-    if ( NULL != requestor )
+    MT::CObjectScopeLock lock( this );
+    if ( GUCEF_NULL != requestor )
     {
         m_periodicUpdateRequestors[ requestor ] = pulseDeltaInMilliSecs;
     }
     
     m_updateDeltaInMilliSecs = DetermineRequiredPulseInterval();
     
-    if ( NULL != m_driver )
+    if ( GUCEF_NULL != m_driver )
     {
-        UnlockData();
         m_driver->RequestPeriodicPulses( *this, m_updateDeltaInMilliSecs );
         return;
     }
-    UnlockData(); 
 }
 
 /*--------------------------------------------------------------------------*/
@@ -244,8 +265,8 @@ void
 CPulseGenerator::RequestStopOfPeriodicUpdates( void* requestor )
 {GUCEF_TRACE;
     
-    LockData();
-    if ( NULL != requestor )
+    MT::CObjectScopeLock lock( this );
+    if ( GUCEF_NULL != requestor )
     {
         m_periodicUpdateRequestors.erase( requestor );
     }
@@ -254,7 +275,7 @@ CPulseGenerator::RequestStopOfPeriodicUpdates( void* requestor )
     m_updateDeltaInMilliSecs = DetermineRequiredPulseInterval();
     
     // Check if we have a driver we can pass the request on to
-    if ( NULL != m_driver )
+    if ( GUCEF_NULL != m_driver )
     {
         // Depending on whether we have more clients wanting updates
         // we should either update the frequency or switch to manually requested pulses
@@ -267,7 +288,6 @@ CPulseGenerator::RequestStopOfPeriodicUpdates( void* requestor )
             m_driver->RequestStopOfPeriodicUpdates( *this );
         }
     }    
-    UnlockData();
 }
 
 /*--------------------------------------------------------------------------*/
@@ -276,18 +296,16 @@ void
 CPulseGenerator::RequestPulseInterval( const UInt32 minimalPulseDeltaInMilliSecs )
 {GUCEF_TRACE;
 
-    LockData();
+    MT::CObjectScopeLock lock( this );
     if ( minimalPulseDeltaInMilliSecs < m_updateDeltaInMilliSecs )
     {
         if ( NULL != m_driver )
         {
             m_updateDeltaInMilliSecs = minimalPulseDeltaInMilliSecs;
-            UnlockData();
             m_driver->RequestPulseInterval( *this, m_updateDeltaInMilliSecs );
             return;
         }
     }
-    UnlockData();
 }
 
 /*--------------------------------------------------------------------------*/
@@ -296,6 +314,7 @@ bool
 CPulseGenerator::IsPulsingPeriodicly( void ) const
 {GUCEF_TRACE;
 
+    MT::CObjectScopeLock lock( this );
     return m_periodicUpdateRequestors.size() > 0 && !m_forcedStopOfPeriodPulses;
 }
 
@@ -314,12 +333,43 @@ Float64
 CPulseGenerator::GetActualPulseDeltaInMilliSecs( void ) const
 {GUCEF_TRACE;
 
-    UInt64 deltaTicks = MT::PrecisionTickCount() - m_lastCycleTickCount;
+    MT::CObjectScopeLock lock( this );
+    Int64 deltaTicks = (Int64) ( MT::PrecisionTickCount() - m_lastCycleTickCount );
     if ( deltaTicks > 0 )
     {
-        return deltaTicks / m_timerFreq;
+        return deltaTicks / m_ticksPerMs;
     }
     return 0.0;
+}
+
+/*--------------------------------------------------------------------------*/
+
+void
+CPulseGenerator::WaitTillNextPulseWindow( UInt32 forcedMinimalDeltaInMilliSecs  ,
+                                          UInt32 desiredMaximumDeltaInMilliSecs ) const
+{GUCEF_TRACE;
+   
+    MT::CObjectScopeLock lock( this );
+    Float64 deltaInMs = GetActualPulseDeltaInMilliSecs();
+    Int32 timeLeftToWaitInMs = (Int32) ( m_updateDeltaInMilliSecs - deltaInMs );
+
+    if ( timeLeftToWaitInMs <= 0 )
+        return; // Time's up already
+
+    // forcedMinimalDeltaInMilliSecs == 0 means no forced minimum
+    if ( ( forcedMinimalDeltaInMilliSecs > 0 ) && 
+         ( forcedMinimalDeltaInMilliSecs >= (UInt32) timeLeftToWaitInMs ) )
+    {
+        timeLeftToWaitInMs = forcedMinimalDeltaInMilliSecs;
+    }
+    // desiredMaximumDeltaInMilliSecs == 0 means no maximum desired
+    if ( ( desiredMaximumDeltaInMilliSecs > 0 ) &&
+         ( desiredMaximumDeltaInMilliSecs < (UInt32) timeLeftToWaitInMs ) )
+    {
+        timeLeftToWaitInMs = desiredMaximumDeltaInMilliSecs;
+    }
+
+    MT::PrecisionDelay( timeLeftToWaitInMs );
 }
 
 /*--------------------------------------------------------------------------*/
@@ -333,23 +383,30 @@ CPulseGenerator::GetTickCountAtLastPulse( void ) const
 
 /*--------------------------------------------------------------------------*/
 
+UInt64
+CPulseGenerator::GetTickCount( void )
+{GUCEF_TRACE;
+    
+    return MT::PrecisionTickCount();
+}
+
+/*--------------------------------------------------------------------------*/
+
 void
 CPulseGenerator::SetPulseGeneratorDriver( CIPulseGeneratorDriver* driver )
 {GUCEF_TRACE;
 
-    LockData();
+    MT::CObjectScopeLock lock( this );
     m_driver = driver;
     if ( IsPulsingPeriodicly() )
     {
-        UnlockData();
         if ( GUCEF_NULL != m_driver )
             m_driver->RequestPulseInterval( *this, m_updateDeltaInMilliSecs );
     }
     else
-    {
-        UnlockData();        
+    {     
         if ( GUCEF_NULL != m_driver )
-            m_driver->RequestPulse( *this );
+            m_driver->RequestImmediatePulse( *this );
     }
 }
 
@@ -377,15 +434,13 @@ void
 CPulseGenerator::ForceStopOfPeriodicPulses( void )
 {GUCEF_TRACE;
     
-    LockData();
+    MT::CObjectScopeLock lock( this );
     m_forcedStopOfPeriodPulses = true;
-    if ( NULL != m_driver )
+    if ( GUCEF_NULL != m_driver )
     {
-        UnlockData();
         m_driver->RequestStopOfPeriodicUpdates( *this );
         return;
     }
-    UnlockData();
 }
 
 /*--------------------------------------------------------------------------*/
@@ -394,18 +449,16 @@ void
 CPulseGenerator::AllowPeriodicPulses( void )
 {GUCEF_TRACE;
 
-    LockData();
+    MT::CObjectScopeLock lock( this );
     if ( m_forcedStopOfPeriodPulses )
     {
         m_forcedStopOfPeriodPulses = false;        
         if ( NULL != m_driver && m_periodicUpdateRequestors.size() > 0 )
         {
-            UnlockData();
             m_driver->RequestPeriodicPulses( *this, m_updateDeltaInMilliSecs );
             return;
         }
     }
-    UnlockData();
 }
 
 /*--------------------------------------------------------------------------*/
@@ -414,35 +467,44 @@ void
 CPulseGenerator::RequestPeriodicPulses( void )
 {GUCEF_TRACE;
 
-    LockData();
+    MT::CObjectScopeLock lock( this );
     if ( !m_forcedStopOfPeriodPulses )
     {
         if ( NULL != m_driver )
         {
-            UnlockData();
             m_driver->RequestPeriodicPulses( *this, m_updateDeltaInMilliSecs );
             return;
         }
     }    
-    UnlockData();
 }
 
 /*--------------------------------------------------------------------------*/
 
-void
-CPulseGenerator::LockData( void ) const
+bool
+CPulseGenerator::Lock( void ) const
 {GUCEF_TRACE;
 
-    m_mutex.Lock();
+    return m_mutex.Lock();
 }
 
 /*--------------------------------------------------------------------------*/
     
-void
-CPulseGenerator::UnlockData( void ) const
+bool
+CPulseGenerator::Unlock( void ) const
 {GUCEF_TRACE;
 
-    m_mutex.Unlock();
+    return m_mutex.Unlock();
+}
+
+/*--------------------------------------------------------------------------*/
+
+Float64
+CPulseGenerator::GetTimeSinceTickCountInMilliSecs( UInt64 sinceTickCount ) const
+{
+    UInt64 tickCount = MT::PrecisionTickCount();
+    UInt64 deltaTicks = tickCount - sinceTickCount;
+    Float64 deltaMilliSecs = deltaTicks / m_ticksPerMs;
+    return deltaMilliSecs;   
 }
 
 /*--------------------------------------------------------------------------*/
@@ -451,12 +513,12 @@ void
 CPulseGenerator::OnDriverPulse( void )
 {GUCEF_TRACE;
 
-    LockData();
+    Lock();
     UInt64 tickCount = MT::PrecisionTickCount();
     UInt64 deltaTicks = tickCount - m_lastCycleTickCount;
-    Float64 deltaMilliSecs = deltaTicks / m_timerFreq;   
+    Float64 deltaMilliSecs = deltaTicks / m_ticksPerMs;   
     m_lastCycleTickCount = tickCount; 
-    UnlockData();
+    Unlock();
     
     CPulseData pulseData( tickCount, deltaTicks, deltaMilliSecs );
     NotifyObservers( PulseEvent, &pulseData );

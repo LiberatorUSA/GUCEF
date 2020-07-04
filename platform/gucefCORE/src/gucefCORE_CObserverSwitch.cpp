@@ -97,7 +97,7 @@ CObserverSwitch::AddObserverToGroup( const CString& groupName ,
 
     assert( NULL != &observer );
     
-    LockData();
+    Lock();
     
     GUCEF_DEBUG_LOG( LOGLEVEL_NORMAL, "CObserverSwitch(" + PointerToString( this ) + "): Adding observer " + observer.GetClassTypeName() + "(" + PointerToString( &observer ) + ") to group " + groupName );
     
@@ -114,7 +114,7 @@ CObserverSwitch::AddObserverToGroup( const CString& groupName ,
         }
     }
     
-    UnlockData();
+    Unlock();
 }
 
 /*-------------------------------------------------------------------------*/
@@ -126,7 +126,7 @@ CObserverSwitch::RemoveObserverFromGroup( const CString& groupName ,
 
     assert( NULL != &observer );
     
-    LockData();
+    Lock();
     
     GUCEF_DEBUG_LOG( LOGLEVEL_NORMAL, "CObserverSwitch(" + PointerToString( this ) + "): Removing observer " + observer.GetClassTypeName() + "(" + PointerToString( &observer ) + ") from group " + groupName );
     
@@ -140,7 +140,7 @@ CObserverSwitch::RemoveObserverFromGroup( const CString& groupName ,
             m_observerGroups.erase( i );
         }
     }
-    UnlockData();
+    Unlock();
 }
     
 /*-------------------------------------------------------------------------*/
@@ -149,7 +149,7 @@ void
 CObserverSwitch::SetActiveGroup( const CString& groupName )
 {GUCEF_TRACE;
 
-    LockData();
+    Lock();
     GUCEF_DEBUG_LOG( LOGLEVEL_NORMAL, "CObserverSwitch(" + PointerToString( this ) + "): Setting active group to " + groupName );
     m_activeGroupName = groupName;
     TObserverGroupMap::iterator i = m_observerGroups.find( groupName );
@@ -161,7 +161,7 @@ CObserverSwitch::SetActiveGroup( const CString& groupName )
     {
         m_activeGroup = NULL;
     }
-    UnlockData();
+    Unlock();
 }
 
 /*-------------------------------------------------------------------------*/
@@ -181,7 +181,7 @@ CObserverSwitch::OnNotify( CNotifier* notifier                 ,
                            CICloneable* eventdata /* = NULL */ )
 {GUCEF_TRACE;
 
-    LockData();
+    Lock();
 
     GUCEF_DEBUG_LOG( LOGLEVEL_EVERYTHING, "CObserverSwitch(" + PointerToString( this ) + "): Dispatching event \"" + eventid.GetName() + "\" to group: " + m_activeGroupName );
 
@@ -195,13 +195,13 @@ CObserverSwitch::OnNotify( CNotifier* notifier                 ,
                                           eventid   ,
                                           eventdata ) )
             {
-                UnlockData();
+                Unlock();
                 return;
             }
             ++i;
         }
     }
-    UnlockData();
+    Unlock();
 }
 
 /*-------------------------------------------------------------------------*/

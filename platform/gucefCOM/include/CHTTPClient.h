@@ -78,7 +78,7 @@ namespace COM {
 //-------------------------------------------------------------------------*/
 
 /**
- *      HTTP protocol client
+ *      Simplistic HTTP protocol client for basic tasks
  */
 class GUCEF_COM_EXPORT_CPP CHTTPClient : public CORE::CObservingNotifier
 {
@@ -92,7 +92,7 @@ class GUCEF_COM_EXPORT_CPP CHTTPClient : public CORE::CObservingNotifier
     static const CORE::CEvent HTTPRedirectEvent;
     static const CORE::CEvent HTTPContentEvent;                
     static const CORE::CEvent HTTPDataRecievedEvent;
-    static const CORE::CEvent HTTPDataSendEvent;        
+    static const CORE::CEvent HTTPDataSentEvent;        
     static const CORE::CEvent HTTPTransferFinishedEvent;
 
 	static void RegisterEvents( void );
@@ -120,14 +120,42 @@ class GUCEF_COM_EXPORT_CPP CHTTPClient : public CORE::CObservingNotifier
     
     virtual ~CHTTPClient();
     
-    bool Post( const CORE::CString& host                ,
-               UInt16 port                              ,
-               const CORE::CString& path                , 
-               const CORE::CValueList* valuelist = NULL );
+    /**
+     *  Starts a POST operation.
+     *  @param valuelistAsContent Key-Value storage to use for generating the payload
+     */
+    bool Post( const CORE::CString& host                               ,
+               UInt16 port                                             ,
+               const CORE::CString& path                               , 
+               const CORE::CValueList* valuelistAsContent = GUCEF_NULL ,
+               const CORE::CString& contentType = "text/plain"         );
                
-    bool Post( const CORE::CString& urlstring           ,
-               const CORE::CValueList* valuelist = NULL );                   
-               
+    /**
+     *  Starts a POST operation.
+     *  @param valuelistAsContent Key-Value storage to use for generating the payload
+     */
+    bool Post( const CORE::CString& urlstring                          ,
+               const CORE::CValueList* valuelistAsContent = GUCEF_NULL ,
+               const CORE::CString& contentType = "text/plain"         );                   
+      
+    /**
+     *  Starts a POST operation.
+     *  @param payload binary storage representing the content
+     */
+    bool Post( const CORE::CString& urlstring      ,
+               const CORE::CString& contentType    ,
+               const CORE::CDynamicBuffer& payload ); 
+
+    /**
+     *  Starts a POST operation.
+     *  @param payload binary storage representing the content
+     */
+    bool Post( const CORE::CString& host           ,
+               UInt16 port                         ,
+               const CORE::CString& path           ,
+               const CORE::CString& contentType    ,
+               const CORE::CDynamicBuffer& payload );
+
     bool Get( const CORE::CString& host                ,
               UInt16 port                              ,
               const CORE::CString& path                ,
@@ -141,8 +169,10 @@ class GUCEF_COM_EXPORT_CPP CHTTPClient : public CORE::CObservingNotifier
     void Close( void );                  
               
     bool IsConnected( void ) const;
-    
-    UInt32 GetBytesRecieved( void ) const;
+
+    UInt32 GetBytesReceived( bool resetCounter );
+
+    UInt32 GetBytesTransmitted( bool resetCounter );
 
     bool SetHTTPProxy( const CORE::CString& proxyHost ,
                        const UInt16 port = 80         );
@@ -181,7 +211,7 @@ class GUCEF_COM_EXPORT_CPP CHTTPClient : public CORE::CObservingNotifier
 
     void OnDisconnect( COMCORE::CTCPClientSocket& socket );
     
-    void OnWrite( COMCORE::CTCPClientSocket &socket                   ,
+    void OnWrite( COMCORE::CTCPClientSocket& socket                   ,
                   COMCORE::CTCPClientSocket::TDataSentEventData& data );
 
     private:
@@ -200,9 +230,13 @@ class GUCEF_COM_EXPORT_CPP CHTTPClient : public CORE::CObservingNotifier
     COMCORE::CTCPClientSocket m_socket;
     bool m_downloading;
     UInt32 m_recieved;
+    UInt32 m_bytesSent;
+    UInt32 m_bytesInHeaders;
+    UInt32 m_bytesInBody;
     UInt32 m_filesize;
     CORE::CString m_proxyHost;
     UInt16 m_proxyPort;
+    THttpVerb m_currentOp;
 };
 
 /*-------------------------------------------------------------------------//

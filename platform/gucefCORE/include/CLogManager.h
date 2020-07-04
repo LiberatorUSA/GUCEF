@@ -34,10 +34,20 @@
 #define GUCEF_MT_CMUTEX_H
 #endif /* GUCEF_MT_CMUTEX_H ? */
 
+#ifndef GUCEF_MT_CILOCKABLE_H
+#include "gucefMT_CILockable.h"
+#define GUCEF_MT_CILOCKABLE_H
+#endif /* GUCEF_MT_CILOCKABLE_H ? */
+
 #ifndef GUCEF_CORE_CDVSTRING_H
 #include "CDVString.h"
 #define GUCEF_CORE_CDVSTRING_H
 #endif /* GUCEF_CORE_CDVSTRING_H ? */
+
+#ifndef GUCEF_CORE_CTABSTRACTFACTORY_H
+#include "CTAbstractFactory.h"
+#define GUCEF_CORE_CTABSTRACTFACTORY_H
+#endif /* GUCEF_CORE_CTABSTRACTFACTORY_H ? */
 
 #ifndef GUCEF_CORE_MACROS_H
 #include "gucefCORE_macros.h"           /* often used gucef macros */
@@ -60,13 +70,14 @@ namespace CORE {
 //-------------------------------------------------------------------------*/
 
 class CILogger;
+class CILoggingFormatter;
 class CMultiLogger;
 class CLoggingTask;
 class CString;
 
 /*-------------------------------------------------------------------------*/
 
-class GUCEF_CORE_PUBLIC_CPP CLogManager
+class GUCEF_CORE_PUBLIC_CPP CLogManager : public MT::CILockable
 {
     public:
 
@@ -89,11 +100,28 @@ class GUCEF_CORE_PUBLIC_CPP CLogManager
     };
     typedef enum ELogMsgType TLogMsgType;
 
+    typedef CTAbstractFactory< CString, CILoggingFormatter > TAbstractLoggingFormatterFactory;
+    typedef TAbstractLoggingFormatterFactory::TConcreteFactory TLoggingFormatterFactory;
+
     void AddLogger( CILogger* loggerImp );
 
     void RemoveLogger( CILogger* loggerImp );
 
     void ClearLoggers( void );
+
+    bool AddLoggingFormatterFactory( const CString& name                        ,
+                                     TLoggingFormatterFactory* formatterFactory ,
+                                     bool overrideDefault = true                );
+
+    bool RemoveLoggingFormatterFactory( const CString& name );
+
+    CILoggingFormatter* CreateLoggingFormatter( const CString& name );
+
+    CILoggingFormatter* CreateDefaultLoggingFormatter( void );
+
+    bool SetDefaultLoggingFormatter( const CString& name );
+
+    void ClearLoggingFormatters( void );
 
     bool IsLoggingEnabled( const TLogMsgType logMsgType ,
                            const Int32 logLevel         ) const;
@@ -103,6 +131,8 @@ class GUCEF_CORE_PUBLIC_CPP CLogManager
               const CString& logMessage    );
 
     void SetMinLogLevel( const Int32 logLevel );
+
+    Int32 GetMinLogLevel( void ) const;
 
     void FlushLogs( void );
 
@@ -131,6 +161,12 @@ class GUCEF_CORE_PUBLIC_CPP CLogManager
     void RedirectToBootstrapLogQueue( bool redirect );
 
     static const CString& GetLogMsgTypeString( const TLogMsgType logMsgType );
+
+    protected:
+    
+    virtual bool Lock( void ) const GUCEF_VIRTUAL_OVERRIDE;
+    
+    virtual bool Unlock( void ) const GUCEF_VIRTUAL_OVERRIDE;
 
     private:
     friend class CCoreGlobal;
@@ -167,6 +203,8 @@ class GUCEF_CORE_PUBLIC_CPP CLogManager
     TBootstrapLogVector m_bootstrapLog;
     bool m_busyLogging;
     bool m_redirectToLogQueue;
+    TAbstractLoggingFormatterFactory m_logFormatterFactory;
+    CString m_defaultLogFormatter;
     MT::CMutex m_dataLock;
 };
 

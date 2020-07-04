@@ -336,6 +336,23 @@ elseif (OSX)
   set( PLATFORM_SOURCE_INSTALL "OSX" )
   source_group( "Platform Source Files" FILES ${PLATFORM_SOURCE_FILES} )
 
+elseif (POSIX)
+  set( PLATFORM_HEADER_FILES 
+    src/StateCacheManager/OgreGLNullStateCacheManagerImp.h
+    src/StateCacheManager/OgreGLNullUniformCacheImp.h
+  )
+
+  set( PLATFORM_HEADER_INSTALL "POSIX" )
+  source_group( "Platform Header Files" FILES ${PLATFORM_HEADER_FILES} )
+
+  set( PLATFORM_SOURCE_FILES 
+    src/StateCacheManager/OgreGLNullStateCacheManagerImp.cpp
+    src/StateCacheManager/OgreGLNullUniformCacheImp.cpp
+  )
+
+  set( PLATFORM_SOURCE_INSTALL "POSIX" )
+  source_group( "Platform Source Files" FILES ${PLATFORM_SOURCE_FILES} )
+
 elseif (SDL)
   set( PLATFORM_HEADER_FILES 
     src/SDL/OgreGLUtil.h
@@ -499,6 +516,10 @@ if ( OSX )
   include_directories( ../../OgreMain/include/OSX include/OSX src/OSX src/StateCacheManager )
 endif( OSX )
 
+if ( POSIX )
+  include_directories( src/StateCacheManager )
+endif( POSIX )
+
 if ( SDL )
   include_directories( src/SDL src/StateCacheManager )
 endif( SDL )
@@ -543,6 +564,8 @@ GUCEF_config_lib( ${MODULE_NAME} )
 elseif (NACL)
 GUCEF_config_lib( ${MODULE_NAME} )
 elseif (OSX)
+GUCEF_config_lib( ${MODULE_NAME} )
+elseif (POSIX)
 GUCEF_config_lib( ${MODULE_NAME} )
 elseif (SDL)
 GUCEF_config_lib( ${MODULE_NAME} )

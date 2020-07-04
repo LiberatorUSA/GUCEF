@@ -92,9 +92,9 @@ void
 CObservingNotifier::UnsubscribeAllFromObserver( void )
 {GUCEF_TRACE;
 
-    LockData();
+    Lock();
     m_observer.UnsubscribeAllFromObserver();
-    UnlockData();
+    Unlock();
 }
 
 /*-------------------------------------------------------------------------*/
@@ -103,9 +103,9 @@ UInt32
 CObservingNotifier::GetObserverSubscriptionCount( void )
 {GUCEF_TRACE;
 
-    LockData();
+    Lock();
     UInt32 retval( m_observer.GetSubscriptionCount() );
-    UnlockData();
+    Unlock();
     return retval;
 }
 
@@ -115,9 +115,9 @@ UInt32
 CObservingNotifier::GetObserverNotifierCount( void )
 {GUCEF_TRACE;
 
-    LockData();
+    Lock();
     UInt32 retval( m_observer.GetNotifierCount() );
-    UnlockData();
+    Unlock();
     return retval;
 }
 
@@ -129,9 +129,9 @@ CObservingNotifier::SubscribeTo( CNotifier* notifier )
 
     if ( NULL != notifier )
     {
-        LockData();
+        Lock();
         notifier->Subscribe( &m_observer );
-        UnlockData();
+        Unlock();
     }
 }
 
@@ -166,11 +166,11 @@ CObservingNotifier::SubscribeToImp( CNotifier* notifier                 ,
 
     if ( NULL != notifier )
     {
-        LockData();
+        Lock();
         notifier->Subscribe( &m_observer ,
                              eventid     ,
                              callback    );
-        UnlockData();
+        Unlock();
     }
 }
 
@@ -182,9 +182,9 @@ CObservingNotifier::UnsubscribeFrom( CNotifier* notifier )
 
     if ( NULL != notifier )
     {
-        LockData();
+        Lock();
         notifier->Unsubscribe( &m_observer );
-        UnlockData();
+        Unlock();
     }
 }
 
@@ -197,10 +197,10 @@ CObservingNotifier::UnsubscribeFrom( CNotifier* notifier   ,
 
     if ( NULL != notifier )
     {
-        LockData();
+        Lock();
         notifier->Unsubscribe( &m_observer ,
                                eventid     );
-        UnlockData();
+        Unlock();
     }
 }
 
@@ -241,6 +241,26 @@ CObservingNotifier::GetClassTypeName( void ) const
 
     static const CString typeName = "GUCEF::CORE::CObservingNotifier";
     return typeName;
+}
+
+/*-------------------------------------------------------------------------*/
+                         
+bool
+CObservingNotifier::Lock( void ) const
+{GUCEF_TRACE;
+    
+    // Dummy to avoid mandatory implementation by decending class
+    return false;
+}
+
+/*-------------------------------------------------------------------------*/
+                         
+bool
+CObservingNotifier::Unlock( void ) const
+{GUCEF_TRACE;
+    
+    // Dummy to avoid mandatory implementation by decending class
+    return false;
 }
 
 /*-------------------------------------------------------------------------//

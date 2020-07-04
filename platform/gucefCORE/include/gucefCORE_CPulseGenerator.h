@@ -78,7 +78,9 @@ class GUCEF_CORE_PUBLIC_CPP CPulseGenerator : public CNotifier
 
     virtual ~CPulseGenerator();
 
-    void RequestPulse( void );
+    void RequestImmediatePulse( void );
+
+    void RequestPulsesPerImmediatePulseRequest( const Int32 requestedPulsesPerImmediatePulseRequest );
 
     void RequestPeriodicPulses( void* requestor );
 
@@ -99,6 +101,10 @@ class GUCEF_CORE_PUBLIC_CPP CPulseGenerator : public CNotifier
 
     UInt64 GetTickCountAtLastPulse( void ) const;
 
+    static UInt64 GetTickCount( void );
+
+    Float64 GetTimeSinceTickCountInMilliSecs( UInt64 sinceTickCount ) const;
+
     void SetPulseGeneratorDriver( CIPulseGeneratorDriver* driver );
 
     CIPulseGeneratorDriver* GetPulseGeneratorDriver( void ) const;
@@ -107,15 +113,25 @@ class GUCEF_CORE_PUBLIC_CPP CPulseGenerator : public CNotifier
 
     void ForceStopOfPeriodicPulses( void );
 
+    void ForceDirectPulse( void );
+
     void AllowPeriodicPulses( void );
 
-    virtual const CString& GetClassTypeName( void ) const;
+    /**
+     *  Blocks the calling thread until at least the next pulse time window
+     *  If there is a minimum time you at minimum want to wait regardless of the minimum need of pulse clients
+     *  you can specify non-zero for "forcedMinimalDeltaInMilliSecs" 
+     */
+    void WaitTillNextPulseWindow( UInt32 forcedMinimalDeltaInMilliSecs = 25    ,
+                                  UInt32 desiredMaximumDeltaInMilliSecs = 1000 ) const;
+
+    virtual const CString& GetClassTypeName( void ) const GUCEF_VIRTUAL_OVERRIDE;
 
     protected:
 
-    virtual void LockData( void ) const;
+    virtual bool Lock( void ) const GUCEF_VIRTUAL_OVERRIDE;
 
-    virtual void UnlockData( void ) const;
+    virtual bool Unlock( void ) const GUCEF_VIRTUAL_OVERRIDE;
 
     private:
     friend class CIPulseGeneratorDriver;
@@ -139,7 +155,7 @@ class GUCEF_CORE_PUBLIC_CPP CPulseGenerator : public CNotifier
 
     UInt64 m_lastCycleTickCount;
     UInt32 m_updateDeltaInMilliSecs;
-    Float64 m_timerFreq;
+    Float64 m_ticksPerMs;
     bool m_forcedStopOfPeriodPulses;
     TPeriodicPulseRequestorMap m_periodicUpdateRequestors;
     CIPulseGeneratorDriver* m_driver;

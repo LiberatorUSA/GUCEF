@@ -1,0 +1,23 @@
+<ModuleInfoEntry>
+    <Module Name="pluginglueAWSSDK" Type="SharedLibrary" Platform="All" >
+        <Dependencies>
+            <Dependency Name="gucefMT" />
+            <Dependency Name="gucefCORE" />
+			<Dependency Name="aws-cpp-sdk-core" />
+        </Dependencies>
+        <Linker>
+            <Dependency Name="gucefMT" />
+            <Dependency Name="gucefCORE" />
+			<Dependency Name="aws-cpp-sdk-core" />
+        </Linker>
+        <Preprocessor>
+            <Define String="GUCEF_PLUGINGLUE_AWSSDK_BUILD_MODULE" />
+        </Preprocessor>
+    </Module>
+    <Module Platform="mswin">
+        <Preprocessor>
+            <Define String="PLATFORM_WINDOWS" />
+			<Define String="USE_IMPORT_EXPORT" />
+        </Preprocessor>
+    </Module>
+</ModuleInfoEntry>

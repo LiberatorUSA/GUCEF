@@ -18,7 +18,9 @@ set( HEADER_FILES
   include/gucefMT_CCriticalSection.h
   include/gucefMT_CGUCEFMTModule.h
   include/gucefMT_CICloneable.h
+  include/gucefMT_CILockable.h
   include/gucefMT_CMutex.h
+  include/gucefMT_CObjectScopeLock.h
   include/gucefMT_CReadWriteLock.h
   include/gucefMT_CScopeMutex.h
   include/gucefMT_CSemaphore.h
@@ -39,7 +41,9 @@ set( SOURCE_FILES
   src/gucefMT_CCriticalSection.cpp
   src/gucefMT_CGUCEFMTModule.cpp
   src/gucefMT_CICloneable.cpp
+  src/gucefMT_CILockable.cpp
   src/gucefMT_CMutex.cpp
+  src/gucefMT_CObjectScopeLock.cpp
   src/gucefMT_CReadWriteLock.cpp
   src/gucefMT_CScopeMutex.cpp
   src/gucefMT_CSemaphore.cpp

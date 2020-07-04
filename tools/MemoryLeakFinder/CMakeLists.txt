@@ -193,6 +193,26 @@ elseif (OSX)
   set( PLATFORM_SOURCE_INSTALL "OSX" )
   source_group( "Platform Source Files" FILES ${PLATFORM_SOURCE_FILES} )
 
+elseif (POSIX)
+  set( PLATFORM_HEADER_FILES 
+    ../../platform/gucefMT/include/gucefMT_CMutex.h
+    ../../platform/gucefMT/include/gucefMT_CScopeMutex.h
+    ../../platform/gucefMT/include/gucefMT_mutex.h
+  )
+
+  set( PLATFORM_HEADER_INSTALL "POSIX" )
+  source_group( "Platform Header Files" FILES ${PLATFORM_HEADER_FILES} )
+
+  set( PLATFORM_SOURCE_FILES 
+    ../../platform/gucefMT/src/gucefMT_CMutex.cpp
+    ../../platform/gucefMT/src/gucefMT_CScopeMutex.cpp
+    ../../platform/gucefMT/src/gucefMT_MUTEX.c
+    src/MemoryManager.cpp
+  )
+
+  set( PLATFORM_SOURCE_INSTALL "POSIX" )
+  source_group( "Platform Source Files" FILES ${PLATFORM_SOURCE_FILES} )
+
 elseif (SDL)
   set( PLATFORM_HEADER_FILES 
     ../../platform/gucefMT/include/gucefMT_CMutex.h
@@ -369,6 +389,10 @@ endif( NACL )
 if ( OSX )
   include_directories( ../../platform/gucefMT/include/ )
 endif( OSX )
+
+if ( POSIX )
+  include_directories( ../../platform/gucefMT/include/ )
+endif( POSIX )
 
 if ( SDL )
   include_directories( ../../platform/gucefMT/include/ )

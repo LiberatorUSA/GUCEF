@@ -63,11 +63,12 @@ namespace COMCORE {
 //-------------------------------------------------------------------------*/
 
 const CORE::CEvent CUDPSocket::UDPSocketErrorEvent = "GUCEF::COMCORE::CUDPSocket::UDPSocketErrorEvent";
+const CORE::CEvent CUDPSocket::UDPSocketClosingEvent = "GUCEF::COMCORE::CUDPSocket::UDPSocketClosingEvent";
 const CORE::CEvent CUDPSocket::UDPSocketClosedEvent = "GUCEF::COMCORE::CUDPSocket::UDPSocketClosedEvent";
 const CORE::CEvent CUDPSocket::UDPSocketOpenedEvent = "GUCEF::COMCORE::CUDPSocket::UDPSocketOpenedEvent";
 const CORE::CEvent CUDPSocket::UDPPacketRecievedEvent = "GUCEF::COMCORE::CUDPSocket::UDPPacketRecievedEvent";
 
-#define PULSEUPDATEINTERVAL 10
+#define PULSEUPDATEINTERVAL 25
 
 /*-------------------------------------------------------------------------//
 //                                                                         //
@@ -100,13 +101,14 @@ CUDPSocket::CUDPSocket( CORE::CPulseGenerator& pulseGenerator ,
     , m_hostAddress()
     , m_buffer()
     , m_pulseGenerator( &pulseGenerator )
-    , m_maxUpdatesPerCycle( 0 )
+    , m_maxUpdatesPerCycle( 100 )
     , m_allowMulticastLoopback( false )
     , m_multicastTTL( 8 )
     , m_allowBroadcast( false )
     , m_bytesReceived( 0 )
     , m_bytesTransmitted( 0 )
     , m_nrOfDataReceivedEvents( 0 )
+    , m_nrOfDataSentEvents( 0 )
 {GUCEF_TRACE;
 
     RegisterEvents();
@@ -115,7 +117,7 @@ CUDPSocket::CUDPSocket( CORE::CPulseGenerator& pulseGenerator ,
     memset( _data, 0, sizeof( TUDPSockData ) );
 
     // Set a default buffer size large enough to handle Jumbo frames
-    m_buffer.SetBufferSize( 9000 );
+    m_buffer.SetBufferSize( 9216 );
 
     TEventCallback callback( this, &CUDPSocket::OnPulse );
     SubscribeTo( m_pulseGenerator                  ,
@@ -137,13 +139,14 @@ CUDPSocket::CUDPSocket( bool blocking )
     , m_hostAddress()
     , m_buffer()
     , m_pulseGenerator( &CORE::CCoreGlobal::Instance()->GetPulseGenerator() )
-    , m_maxUpdatesPerCycle( 0 )
+    , m_maxUpdatesPerCycle( 100 )
     , m_allowMulticastLoopback( false )
     , m_multicastTTL( 8 )
     , m_allowBroadcast( false )
     , m_bytesReceived( 0 )
     , m_bytesTransmitted( 0 )
     , m_nrOfDataReceivedEvents( 0 )
+    , m_nrOfDataSentEvents( 0 )
 {GUCEF_TRACE;
 
     RegisterEvents();
@@ -152,7 +155,7 @@ CUDPSocket::CUDPSocket( bool blocking )
     memset( _data, 0, sizeof( TUDPSockData ) );
 
     // Set a default buffer size large enough to handle Jumbo frames
-    m_buffer.SetBufferSize( 9000 );
+    m_buffer.SetBufferSize( 9216 );
 
     TEventCallback callback( this, &CUDPSocket::OnPulse );
     SubscribeTo( m_pulseGenerator                  ,
@@ -182,6 +185,7 @@ CUDPSocket::RegisterEvents( void )
 {GUCEF_TRACE;
 
     UDPSocketErrorEvent.Initialize();
+    UDPSocketClosingEvent.Initialize();
     UDPSocketClosedEvent.Initialize();
     UDPSocketOpenedEvent.Initialize();
     UDPPacketRecievedEvent.Initialize();
@@ -214,10 +218,13 @@ CUDPSocket::SendPacketTo( const CIPAddress& dest ,
 
     struct sockaddr_in remote;
     memset( &remote, 0, sizeof( remote ) );
+    UInt32 destAddr = dest.GetAddress();
+    if ( 0 == destAddr )
+        destAddr = CIPAddress::LoopbackIP.GetAddress();   
     #if ( GUCEF_PLATFORM == GUCEF_PLATFORM_MSWIN )
-    remote.sin_addr.S_un.S_addr = dest.GetAddress();
+    remote.sin_addr.S_un.S_addr = destAddr;
     #elif ( ( GUCEF_PLATFORM == GUCEF_PLATFORM_LINUX ) || ( GUCEF_PLATFORM == GUCEF_PLATFORM_ANDROID ) )
-    remote.sin_addr.s_addr = dest.GetAddress();
+    remote.sin_addr.s_addr = destAddr;
     #endif
     remote.sin_port = dest.GetPort();
     remote.sin_family = AF_INET;
@@ -234,6 +241,8 @@ CUDPSocket::SendPacketTo( const CIPAddress& dest ,
     if ( returnValue >= 0 )
     {
         m_bytesTransmitted += returnValue;
+        ++m_nrOfDataSentEvents;
+
         GUCEF_DEBUG_LOG( CORE::LOGLEVEL_BELOW_NORMAL, "UDPSocket(" + CORE::PointerToString( this ) + "):SendPacketTo: Sent " + CORE::UInt16ToString( datasize ) +
             " bytes to " + dest.AddressAndPortAsString() + " from " + m_hostAddress.AddressAndPortAsString() );
     }
@@ -288,7 +297,7 @@ CUDPSocket::Update( bool performRead )
         FD_ZERO( &readfds );
         FD_ZERO( &exceptfds );
 
-        LockData();
+        Lock();
 
         FD_SET( _data->sockid, &readfds );
         FD_SET( _data->sockid, &exceptfds );
@@ -314,7 +323,7 @@ CUDPSocket::Update( bool performRead )
                 TSocketErrorEventData eData( lastError );
                 if ( !NotifyObservers( UDPSocketErrorEvent, &eData ) ) return false;
 
-                UnlockData();
+                Unlock();
 
                 if ( m_autoReopenOnError )
                     Open();
@@ -329,13 +338,13 @@ CUDPSocket::Update( bool performRead )
                 {
                     CIPAddress sender;
                     bool receiveSuccess = 0 < Recieve( sender, NULL, 0);
-                    UnlockData();
+                    Unlock();
                     return receiveSuccess;
                 }
                 return true;
             }
 
-            UnlockData();
+            Unlock();
         }
         else
         {
@@ -345,7 +354,7 @@ CUDPSocket::Update( bool performRead )
             TSocketErrorEventData eData( errorCode );
             NotifyObservers( UDPSocketErrorEvent, &eData );
 
-            UnlockData();
+            Unlock();
 
             if ( m_autoReopenOnError )
                 Open();
@@ -392,7 +401,7 @@ CUDPSocket::OnPulse( CORE::CNotifier* notifier                 ,
         if ( cycleCount >= m_maxUpdatesPerCycle )
         {
             // This is a busy socket, don't yield to the scheduler
-            m_pulseGenerator->RequestPulse();
+            m_pulseGenerator->RequestImmediatePulse();
         }
     }
     else
@@ -502,6 +511,22 @@ CUDPSocket::GetNrOfDataReceivedEvents( bool resetCounter )
     }
     else
         return m_nrOfDataReceivedEvents;
+}
+
+/*-------------------------------------------------------------------------*/
+
+UInt32 
+CUDPSocket::GetNrOfDataSentEvents( bool resetCounter )
+{GUCEF_TRACE;
+
+    if ( resetCounter )
+    {
+        UInt32 nrOfDataSentEvents = m_nrOfDataSentEvents;
+        m_nrOfDataSentEvents = 0;
+        return nrOfDataSentEvents;
+    }
+    else
+        return m_nrOfDataSentEvents;
 }
 
 /*-------------------------------------------------------------------------*/
@@ -710,7 +735,7 @@ CUDPSocket::Open( const CIPAddress& localaddr )
     int allowPortReuse = 1;
     if ( 0 > dvsocket_setsockopt( _data->sockid, SOL_SOCKET, SO_REUSEPORT, (const char*) &allowPortReuse, sizeof(int), &errorCode ) )
     {
-        GUCEF_ERROR_LOG( CORE::LOGLEVEL_NORMAL, "UDPSocket(" + CORE::PointerToString( this ) + "): Failed to port reuse mode \"" + CORE::BoolToString( allowPortReuse != 0 )
+        GUCEF_ERROR_LOG( CORE::LOGLEVEL_NORMAL, "UDPSocket(" + CORE::PointerToString( this ) + "): Failed to set port reuse mode \"" + CORE::BoolToString( allowPortReuse != 0 )
             + "\" on socket. Error code: " + CORE::UInt32ToString( errorCode ) );
     }
     GUCEF_DEBUG_LOG( CORE::LOGLEVEL_BELOW_NORMAL, "UDPSocket(" + CORE::PointerToString( this ) + "): Successfully set port reuse mode \"" + CORE::BoolToString( allowPortReuse != 0 ) + "\" on socket" );
@@ -731,8 +756,8 @@ CUDPSocket::Open( const CIPAddress& localaddr )
     }
     GUCEF_DEBUG_LOG( CORE::LOGLEVEL_BELOW_NORMAL, "UDPSocket(" + CORE::PointerToString( this ) + "): Successfully set multicast TTL to \"" + CORE::Int32ToString( m_multicastTTL ) + "\" on socket" );
 
-    // This option is needed on the socket in order to be able to receive broadcast messages
-    // If not set the socket will not receive broadcast messages in the local network.
+    // This option is needed on the socket in order to be able to transmit broadcast messages
+    // If not set the socket will not be able to transmit broadcast messages in the local network subnet.
     Int32 broadcastOption = m_allowBroadcast ? 1 : 0;
     if ( 0 > dvsocket_setsockopt( _data->sockid, SOL_SOCKET, SO_BROADCAST, (const char*) &broadcastOption, sizeof(broadcastOption), &errorCode ) )
     {
@@ -750,6 +775,15 @@ CUDPSocket::Open( const CIPAddress& localaddr )
                         sizeof(struct sockaddr_in)               ,
                         &errorCode                               ) == 0 )
     {
+        // Did we ask the O/S to assign a port?
+        if ( 0 == m_hostAddress.GetPortInHostByteOrder() )
+        {
+            struct sockaddr_in sin;
+            socklen_t len = sizeof(sin);
+            if ( 0 == getsockname( _data->sockid, (struct sockaddr*) &sin, &len ) )
+                m_hostAddress.SetPort( sin.sin_port );
+        }
+        
         GUCEF_DEBUG_LOG( CORE::LOGLEVEL_NORMAL, "UDPSocket(" + CORE::PointerToString( this ) + "): Successfully bound and opened socket at " + m_hostAddress.AddressAndPortAsString()
             + " aka " + CORE::UInt32ToString( m_hostAddress.GetAddress() ) + ":" + CORE::UInt16ToString( m_hostAddress.GetPort() ) + " in network format" );
         if ( !NotifyObservers( UDPSocketOpenedEvent ) ) return true;
@@ -967,6 +1001,8 @@ CUDPSocket::Close( bool shutdownOnly )
 
     if ( IsActive() )
     {
+        NotifyObservers( UDPSocketClosingEvent );
+        
         if ( !shutdownOnly )
         {
             // A socket close will trigger a shutdown sequence if one hasnt occured yet and will also free up the related

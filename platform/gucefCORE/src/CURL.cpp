@@ -75,6 +75,19 @@ CURL::CURL( void )
 
 /*-------------------------------------------------------------------------*/
 
+CURL::CURL( const CURL& src )
+    : CForwardingNotifier( src ) 
+    , CIURLEvents()         
+    , m_handler( NULL )     
+    , m_url( src.m_url )               
+    , m_pulseGenerator( src.m_pulseGenerator )
+{GUCEF_TRACE;
+
+    Initialize();
+}
+
+/*-------------------------------------------------------------------------*/
+
 CURL::CURL( CPulseGenerator& pulseGenerator )
     : CForwardingNotifier()               ,
       CIURLEvents()                       ,

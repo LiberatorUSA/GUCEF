@@ -86,6 +86,30 @@ CTaskDelegator::CTaskDelegator( void )
     , CIPulseGeneratorDriver()         
     , m_pulseGenerator()     
     , m_taskConsumer( GUCEF_NULL )
+    , m_taskData( GUCEF_NULL )
+    , m_immediatePulseTickets( 0 )
+    , m_immediatePulseTicketMax( 1 )
+{GUCEF_TRACE;
+
+    RegisterEvents();
+
+    m_pulseGenerator.SetPulseGeneratorDriver( this );
+
+    CCoreGlobal::Instance()->GetTaskManager().RegisterTaskDelegator( *this );
+}
+
+/*-------------------------------------------------------------------------*/
+
+CTaskDelegator::CTaskDelegator( CTaskConsumer* taskConsumer ,
+                                CICloneable* taskData       )
+    : MT::CActiveObject()    
+    , CNotifier()   
+    , CIPulseGeneratorDriver()         
+    , m_pulseGenerator()     
+    , m_taskConsumer( taskConsumer )
+    , m_taskData( taskData )
+    , m_immediatePulseTickets( 0 )
+    , m_immediatePulseTicketMax( 1 )
 {GUCEF_TRACE;
 
     RegisterEvents();
@@ -115,10 +139,29 @@ CTaskDelegator::GetPulseGenerator( void )
 /*-------------------------------------------------------------------------*/
 
 void
-CTaskDelegator::RequestPulse( CPulseGenerator& pulseGenerator ) 
+CTaskDelegator::RequestImmediatePulse( CPulseGenerator& pulseGenerator ) 
+{GUCEF_TRACE;
+       
+    if ( &pulseGenerator == &m_pulseGenerator )
+    {
+        m_immediatePulseTickets = m_immediatePulseTicketMax;
+    }
+}
+
+/*-------------------------------------------------------------------------*/
+
+void 
+CTaskDelegator::RequestPulsesPerImmediatePulseRequest( CPulseGenerator& pulseGenerator                     ,
+                                                       const Int32 requestedPulsesPerImmediatePulseRequest )
 {GUCEF_TRACE;
 
-    SendDriverPulse( m_pulseGenerator );
+    if ( &pulseGenerator == &m_pulseGenerator )
+    {
+        if ( requestedPulsesPerImmediatePulseRequest > 1 )
+            m_immediatePulseTicketMax = requestedPulsesPerImmediatePulseRequest;
+        else
+            m_immediatePulseTicketMax = 1;
+    }
 }
 
 /*-------------------------------------------------------------------------*/
@@ -131,7 +174,7 @@ CTaskDelegator::RequestPeriodicPulses( CPulseGenerator& pulseGenerator    ,
 
     if ( &pulseGenerator == &m_pulseGenerator )
     {
-        m_delay = pulseDeltaInMilliSecs;
+        m_delayInMilliSecs = pulseDeltaInMilliSecs;
         Resume();
     }
 }
@@ -145,7 +188,7 @@ CTaskDelegator::RequestPulseInterval( CPulseGenerator& pulseGenerator    ,
 
     if ( &pulseGenerator == &m_pulseGenerator )
     {
-        m_delay = pulseDeltaInMilliSecs;
+        m_delayInMilliSecs = pulseDeltaInMilliSecs;
     }
 }
 
@@ -164,7 +207,7 @@ CTaskDelegator::RequestStopOfPeriodicUpdates( CPulseGenerator& pulseGenerator )
 /*-------------------------------------------------------------------------*/
 
 bool
-CTaskDelegator::OnTaskStart( void* taskdata )
+CTaskDelegator::OnThreadStart( void* taskdata )
 {GUCEF_TRACE;
 
     NotifyObservers( ThreadStartedEvent );
@@ -174,7 +217,7 @@ CTaskDelegator::OnTaskStart( void* taskdata )
 /*-------------------------------------------------------------------------*/
 
 void
-CTaskDelegator::OnTaskStarted( void* taskdata )
+CTaskDelegator::OnThreadStarted( void* taskdata )
 {GUCEF_TRACE;
 
 }
@@ -195,23 +238,23 @@ CTaskDelegator::TaskCleanup( CTaskConsumer* taskConsumer ,
 /*-------------------------------------------------------------------------*/
 
 bool
-CTaskDelegator::OnTaskCycle( void* taskdata )
+CTaskDelegator::OnThreadCycle( void* taskdata )
 {GUCEF_TRACE;
 
-    CICloneable* taskData = GUCEF_NULL;
-
     if ( CCoreGlobal::Instance()->GetTaskManager().GetQueuedTask( &m_taskConsumer ,
-                                                                  &taskData       ) )
+                                                                  &m_taskData     ) )
     {
         ProcessTask( *m_taskConsumer ,
-                     taskData        );
+                     m_taskData      );
 
         TaskCleanup( m_taskConsumer ,
-                     taskData       );
+                     m_taskData     );
+
         m_taskConsumer = GUCEF_NULL;
+        m_taskData = GUCEF_NULL;
     }
 
-    // Return false, this is an infinate task processing thread
+    // Return false, this is an infinate task worker thread
     return false;
 }
 
@@ -226,6 +269,7 @@ CTaskDelegator::ProcessTask( CTaskConsumer& taskConsumer ,
 
     // first establish the bi-directional link
     // this delegator is going to be the one to execute this task
+    // This means the task is now assigned to the thread which is represented by this delegator
     taskConsumer.SetTaskDelegator( this );
 
     // Now we go through the execution sequence within a cycle as if this
@@ -235,29 +279,24 @@ CTaskDelegator::ProcessTask( CTaskConsumer& taskConsumer ,
     {
         taskConsumer.OnTaskStarted( taskData );
 
-        Float64 timerRes = ( MT::PrecisionTimerResolution() * 1.0 );
-        UInt64 tickCount = MT::PrecisionTickCount();
-        UInt64 newTime = tickCount;
-        Float64 timeDelta = 0;
-
         // cycle the task as long as it is not "done"
-        while ( !IsDeactivationRequested() && !taskConsumer.OnTaskCycle( taskData ) ) 
+        while ( !IsDeactivationRequested() ) 
         {
-            SendDriverPulse( m_pulseGenerator );
-
-            // If we are going to do another cycle then make sure we
-            // stay within the time slice range requested.
-            // Here we calculate the time that has passed in seconds
-            newTime = MT::PrecisionTickCount();
-            timeDelta = ( tickCount - newTime ) / timerRes;
-            if ( timeDelta < m_minimalCycleDelta )
+            // Perform a cycle directly and ask the task if we are done
+            if ( taskConsumer.OnTaskCycle( taskData ) )
             {
-                MT::PrecisionDelay( m_delay );
-                tickCount = MT::PrecisionTickCount();
+                // Task says we are done
+                break;
+            }
+            
+            SendDriverPulse( m_pulseGenerator );
+            if ( m_immediatePulseTickets > 0 )
+            {
+                --m_immediatePulseTickets;
             }
             else
             {
-                tickCount = newTime;
+                m_pulseGenerator.WaitTillNextPulseWindow( m_minimalCycleDeltaInMilliSecs );
             }
         }
 
@@ -276,7 +315,7 @@ CTaskDelegator::ProcessTask( CTaskConsumer& taskConsumer ,
 /*-------------------------------------------------------------------------*/
 
 void
-CTaskDelegator::OnTaskEnd( void* taskdata )
+CTaskDelegator::OnThreadEnd( void* taskdata )
 {GUCEF_TRACE;
 
     // if we get here and the m_consumerBusy flag is set then the task was killed
@@ -294,7 +333,7 @@ CTaskDelegator::OnTaskEnd( void* taskdata )
 /*-------------------------------------------------------------------------*/
 
 void
-CTaskDelegator::OnTaskPausedForcibly( void* taskdata )
+CTaskDelegator::OnThreadPausedForcibly( void* taskdata )
 {GUCEF_TRACE;
 
     if ( m_consumerBusy )
@@ -309,7 +348,7 @@ CTaskDelegator::OnTaskPausedForcibly( void* taskdata )
 /*-------------------------------------------------------------------------*/
 
 void
-CTaskDelegator::OnTaskResumed( void* taskdata )
+CTaskDelegator::OnThreadResumed( void* taskdata )
 {GUCEF_TRACE;
 
     if ( m_consumerBusy )
@@ -324,8 +363,25 @@ CTaskDelegator::OnTaskResumed( void* taskdata )
 /*-------------------------------------------------------------------------*/
 
 void
-CTaskDelegator::OnTaskEnded( void* taskdata ,
-                             bool forced    )
+CTaskDelegator::OnThreadEnding( void* taskdata    ,
+                                bool willBeForced )
+{GUCEF_TRACE;
+
+    // This is invoked from a different thread than the thread represented by the TaskDelegator
+    if ( m_consumerBusy )
+    {
+        if ( GUCEF_NULL != m_taskConsumer )
+        {
+            m_taskConsumer->OnTaskEnding( static_cast< CICloneable* >( taskdata ), willBeForced );
+        }
+    }
+}
+
+/*-------------------------------------------------------------------------*/
+
+void
+CTaskDelegator::OnThreadEnded( void* taskdata ,
+                               bool forced    )
 {GUCEF_TRACE;
 
     // if we get here and the m_consumerBusy flag is set then the task was killed
@@ -347,6 +403,24 @@ CTaskDelegator::GetTaskConsumer( void )
 {GUCEF_TRACE;
 
     return m_taskConsumer;
+}
+
+/*-------------------------------------------------------------------------*/
+
+bool
+CTaskDelegator::Lock( void ) const
+{GUCEF_TRACE;
+
+    return MT::CActiveObject::Lock();
+}
+
+/*-------------------------------------------------------------------------*/
+
+bool
+CTaskDelegator::Unlock( void ) const
+{GUCEF_TRACE;
+
+    return MT::CActiveObject::Unlock();
 }
 
 /*-------------------------------------------------------------------------//

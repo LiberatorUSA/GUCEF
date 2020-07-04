@@ -26,8 +26,20 @@
 //                                                                         //
 //-------------------------------------------------------------------------*/
 
+#ifndef GUCEF_MT_CMUTEX_H
+#include "gucefMT_CMutex.h"
+#define GUCEF_MT_CMUTEX_H
+#endif /* GUCEF_MT_CMUTEX_H ? */
+
+#ifndef GUCEF_CORE_CTSGOBSERVER_H
 #include "CTSGObserver.h"       /* observer implementation used internally by the CTSGNotifier */
+#define GUCEF_CORE_CTSGOBSERVER_H
+#endif /* GUCEF_CORE_CTSGOBSERVER_H ? */
+
+#ifndef GUCEF_CORE_CNOTIFIER_H
 #include "CNotifier.h"          /* notification base class */
+#define GUCEF_CORE_CNOTIFIER_H
+#endif /* GUCEF_CORE_CNOTIFIER_H ? */
 
 /*-------------------------------------------------------------------------//
 //                                                                         //
@@ -105,15 +117,26 @@ class GUCEF_CORE_PUBLIC_CPP CTSGNotifier : public CNotifier
     void UnsubscribeFrom( CNotifier* threadedNotifier ,
                           const CEvent& eventid       );
 
-    virtual const CString& GetClassTypeName( void ) const;
+    /**
+     *  Subscribes the observer component to the four standard
+     *  notifier events if it is not yet subscribed plus
+     *  subscribes to the given custom event.
+     */
+    void SubscribeTo( CNotifier* threadedNotifier         ,
+                      const CEvent& eventid               ,
+                      CIEventHandlerFunctorBase& callback );
+
+    virtual const CString& GetClassTypeName( void ) const GUCEF_VIRTUAL_OVERRIDE;
 
     CObserver& AsObserver( void );
 
+    CPulseGenerator* GetPulseGenerator( void ) const;
+
     protected:
 
-    virtual void LockData( void ) const;
+    virtual bool Lock( void ) const GUCEF_VIRTUAL_OVERRIDE;
 
-    virtual void UnlockData( void ) const;
+    virtual bool Unlock( void ) const GUCEF_VIRTUAL_OVERRIDE;
 
     protected:
     friend class CTSGObserver;
@@ -144,13 +167,14 @@ class GUCEF_CORE_PUBLIC_CPP CTSGNotifier : public CNotifier
      *  @param eventid the unique event id for an event
      *  @param eventdata optional notifier defined user data
      */
-    virtual void OnPumpedNotify( CNotifier* notifier           ,
-                                 const CEvent& eventid         ,
-                                 CICloneable* eventdata = NULL );
+    virtual void OnPumpedNotify( CNotifier* notifier                 ,
+                                 const CEvent& eventid               ,
+                                 CICloneable* eventdata = GUCEF_NULL );
 
     private:
 
     CTSGObserver m_tsgObserver;
+    MT::CMutex m_dataLock;
 };
 
 /*-------------------------------------------------------------------------//

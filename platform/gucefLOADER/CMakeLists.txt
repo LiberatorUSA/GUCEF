@@ -381,6 +381,43 @@ elseif (OSX)
   set( PLATFORM_SOURCE_INSTALL "OSX" )
   source_group( "Platform Source Files" FILES ${PLATFORM_SOURCE_FILES} )
 
+elseif (POSIX)
+  set( PLATFORM_HEADER_FILES 
+    ../gucefCORE/include/CDVString.h
+    ../gucefCORE/include/DVCPPOSWRAP.h
+    ../gucefCORE/include/DVOSWRAP.h
+    ../gucefCORE/include/dvcppstringutils.h
+    ../gucefCORE/include/dvfileutils.h
+    ../gucefCORE/include/dvmd5utils.h
+    ../gucefCORE/include/dvstrutils.h
+    ../gucefCORE/include/md5.h
+    ../gucefMT/include/gucefMT_CMutex.h
+    ../gucefMT/include/gucefMT_CScopeMutex.h
+    ../gucefMT/include/gucefMT_dvmtoswrap.h
+    ../gucefMT/include/gucefMT_mutex.h
+  )
+
+  set( PLATFORM_HEADER_INSTALL "POSIX" )
+  source_group( "Platform Header Files" FILES ${PLATFORM_HEADER_FILES} )
+
+  set( PLATFORM_SOURCE_FILES 
+    ../gucefCORE/src/CDVString.cpp
+    ../gucefCORE/src/DVCPPOSWRAP.cpp
+    ../gucefCORE/src/DVOSWRAP.cpp
+    ../gucefCORE/src/dvcppstringutils.cpp
+    ../gucefCORE/src/dvfileutils.c
+    ../gucefCORE/src/dvmd5utils.c
+    ../gucefCORE/src/dvstrutils.c
+    ../gucefCORE/src/md5.c
+    ../gucefMT/src/gucefMT_CMutex.cpp
+    ../gucefMT/src/gucefMT_CScopeMutex.cpp
+    ../gucefMT/src/gucefMT_dvmtoswrap.c
+    ../gucefMT/src/gucefMT_mutex.c
+  )
+
+  set( PLATFORM_SOURCE_INSTALL "POSIX" )
+  source_group( "Platform Source Files" FILES ${PLATFORM_SOURCE_FILES} )
+
 elseif (SDL)
   set( PLATFORM_HEADER_FILES 
     ../gucefCORE/include/CDVString.h
@@ -589,11 +626,11 @@ if ( LINUX64 )
 endif( LINUX64 )
 
 if ( WIN32 )
-  target_link_libraries( ${MODULE_NAME} Ws2_32.lib )
+  target_link_libraries( ${MODULE_NAME} Ws2_32.lib winmm.lib )
 endif( WIN32 )
 
 if ( WIN64 )
-  target_link_libraries( ${MODULE_NAME} Ws2_32.lib )
+  target_link_libraries( ${MODULE_NAME} Ws2_32.lib winmm.lib )
 endif( WIN64 )
 
 include_directories( .. ../../common/include ../gucefCORE ../gucefCORE/include ../gucefMT ../gucefMT/include ../gucefCORE/include/ ../gucefMT/include/ include )
@@ -633,6 +670,10 @@ endif( NACL )
 if ( OSX )
   include_directories( ../gucefCORE/include/ ../gucefMT/include/ )
 endif( OSX )
+
+if ( POSIX )
+  include_directories( ../gucefCORE/include/ ../gucefMT/include/ )
+endif( POSIX )
 
 if ( SDL )
   include_directories( ../gucefCORE/include/ ../gucefMT/include/ )
@@ -678,6 +719,8 @@ GUCEF_config_lib( ${MODULE_NAME} )
 elseif (NACL)
 GUCEF_config_lib( ${MODULE_NAME} )
 elseif (OSX)
+GUCEF_config_lib( ${MODULE_NAME} )
+elseif (POSIX)
 GUCEF_config_lib( ${MODULE_NAME} )
 elseif (SDL)
 GUCEF_config_lib( ${MODULE_NAME} )

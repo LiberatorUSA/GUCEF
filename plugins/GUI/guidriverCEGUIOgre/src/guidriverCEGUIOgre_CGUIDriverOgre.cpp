@@ -145,6 +145,11 @@ CGUIDriverOgre::Init( GUI::TWindowContextPtr windowContext )
                 if ( NULL == renderTarget )
                     return false;
             }
+            else
+            {
+                GUCEF_ERROR_LOG( CORE::LOGLEVEL_IMPORTANT, "CGUIDriverOgre:Init: No \"Ogre::RenderTarget\" has NOT been set on the Window context, unable to proceed" );
+                return false;
+            }
             Ogre::SceneManager* sceneManager = nullptr;
             CORE::CString sceneManagerPtrStr = windowContext->GetProperty( "Ogre::SceneManager" );
             if ( !sceneManagerPtrStr.IsNULLOrEmpty() )

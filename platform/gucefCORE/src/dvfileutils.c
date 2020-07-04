@@ -1238,6 +1238,46 @@ File_Exists( const char *filename )
 
 /*-------------------------------------------------------------------------*/
 
+UInt32
+Dir_Exists( const char *path )
+{
+    if ( GUCEF_NULL != path )
+    {
+        #if ( GUCEF_PLATFORM == GUCEF_PLATFORM_MSWIN )
+
+        WIN32_FIND_DATA FileInfo;
+        HANDLE hFind = GUCEF_NULL;
+        hFind = FindFirstFile( path, &FileInfo );
+        if ( hFind != INVALID_HANDLE_VALUE )
+        {
+            FindClose( hFind );
+
+            /* make sure we found a directory not a file */
+            return ( FileInfo.dwFileAttributes & FILE_ATTRIBUTE_DIRECTORY );
+        }
+        return 0;
+
+        #elif ( ( GUCEF_PLATFORM == GUCEF_PLATFORM_LINUX ) || ( GUCEF_PLATFORM == GUCEF_PLATFORM_ANDROID ) )
+
+        struct stat buf;
+        if ( stat( filename, &buf ) == 0 )
+            if ( buf.st_mode & S_IFDIR != 0 )
+                return 1;
+        return 0;
+
+        #else
+
+        FILE *fptr = fopen( filename, "rb" );
+        fclose( fptr );
+        return fptr > 0;
+
+        #endif
+    }
+    return 0;
+}
+
+/*-------------------------------------------------------------------------*/
+
 /**
  *      Counts the number of $UPDIR$ segments from the start
  *      of the given string
@@ -1385,10 +1425,20 @@ Is_Path_Valid( const char* path )
 time_t
 FileTimeToUnixTime( const FILETIME* ft )
 {
-	/* the reverse of http://support.microsoft.com/kb/167296/en-us */
+	/*
+     *  FILETIME uses ticks where each is 100 nanoseconds
+     *
+     *  FILETIME epoch is 00:00, January 1, 1601 (UTC)
+     *  Unix epoch is 00:00, January 1 1970 (UTC)
+     *  As such we need to correct for the epoch offset
+     *  Note that leapseconds dont matter for this step since those were introduced in 1972
+     *
+     *  To get nanoseconds to seconds divide by 1,000,000,000
+     *  Since time_t uses the seconds we need to adjust the resolution as well
+     */
+    /* the reverse of http://support.microsoft.com/kb/167296/en-us */
 	ULONGLONG ull = *(const ULONGLONG*)((void*)(ft));
-	ull -= 116444736000000000;
-	ull /= 10000000;
+	ull = ( ull / 10000000 ) - 11644473600LL;
 	assert(ull < ULONG_MAX);
 	return (time_t)(ull);
 }
@@ -1418,6 +1468,43 @@ Get_Modification_Time( const char* path )
     {
         /* get the date/time last modified */
         return buf.st_mtime;
+    }
+    return -1;
+
+    #else
+
+    /*
+     *  Unsupported platform
+     */
+    return (time_t) 0;
+
+    #endif
+}
+
+
+/*-------------------------------------------------------------------------*/
+
+time_t
+Get_Creation_Time( const char* path )
+{
+    #if ( GUCEF_PLATFORM == GUCEF_PLATFORM_MSWIN )
+
+    WIN32_FILE_ATTRIBUTE_DATA data;
+    if ( 0 != GetFileAttributesEx( path, GetFileExInfoStandard, &data ) )
+    {
+        return FileTimeToUnixTime( &data.ftCreationTime );
+    }
+    return -1;
+
+    #elif ( ( GUCEF_PLATFORM == GUCEF_PLATFORM_LINUX ) || ( GUCEF_PLATFORM == GUCEF_PLATFORM_ANDROID ) )
+
+    struct stat buf;
+
+    /* Get File Statistics for stat.c. */
+    if( stat( path, &buf ) == 0 )
+    {
+        /* get the date/time the file was created */
+        return buf.st_ctime;
     }
     return -1;
 

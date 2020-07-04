@@ -129,6 +129,8 @@ class GUCEF_PRODMAN_PUBLIC_CPP CProductInfo : public CORE::CIConfigurable
     virtual bool SaveConfig( GUCEF::CORE::CDataNode& node ) const;
                                 
     virtual bool LoadConfig( const GUCEF::CORE::CDataNode& node );
+
+    virtual const CString& GetClassTypeName( void ) const;
     
     static CString ProductTypeToString( const TProductType productType );
     

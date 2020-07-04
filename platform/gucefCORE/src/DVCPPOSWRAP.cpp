@@ -176,6 +176,23 @@ GetHostname( void )
     return CString(); 
 }
 
+/*-------------------------------------------------------------------------*/
+
+bool
+GetExeNameForProcessId( TProcessId* pid  , 
+                        CString& exeName )
+{GUCEF_TRACE;
+
+    UInt32 nameLength = 0;
+    char* nameBuffer = exeName.Reserve( 1024 );
+    if ( OSWRAP_TRUE == GetExeNameForProcessId( pid, nameBuffer, 1024, &nameLength ) )
+    {
+        exeName.SetLength( nameLength );
+        return true;
+    }
+    return false;
+}
+
 /*-------------------------------------------------------------------------//
 //                                                                         //
 //      NAMESPACE                                                          //

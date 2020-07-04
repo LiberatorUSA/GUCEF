@@ -129,7 +129,7 @@ class GUCEF_CORE_PUBLIC_CPP CObservingNotifier : public CNotifier ,
      *
      *  Note that mutations to the observer component also lock
      *  the notification component in a multi-threading scenario
-     *  assuming LockData() and UnlockData() are implemented.
+     *  assuming Lock() and Unlock() are implemented.
      *  As such this operation can be made in a threadsafe fashion.
      */
     CObserver& AsObserver( void );
@@ -139,15 +139,19 @@ class GUCEF_CORE_PUBLIC_CPP CObservingNotifier : public CNotifier ,
      *
      *  Note that retrieval actions on the observer component also lock
      *  the notification component in a multi-threading scenario
-     *  assuming LockData() and UnlockData() are implemented.
+     *  assuming Lock() and Unlock() are implemented.
      *  As such this operation can be made in a threadsafe fashion.
      */
     const CObserver& AsObserver( void ) const;
 
-    virtual const CString& GetClassTypeName( void ) const;
+    virtual const CString& GetClassTypeName( void ) const GUCEF_VIRTUAL_OVERRIDE;
 
     protected:
     friend class CNotifierObservingComponent;
+
+    virtual bool Lock( void ) const GUCEF_VIRTUAL_OVERRIDE;
+
+    virtual bool Unlock( void ) const GUCEF_VIRTUAL_OVERRIDE;
 
     /**
      *  Event callback member function.
@@ -158,9 +162,9 @@ class GUCEF_CORE_PUBLIC_CPP CObservingNotifier : public CNotifier ,
      *  @param eventid the unique event id for an event
      *  @param eventdata optional notifier defined userdata
      */
-    virtual void OnNotify( CNotifier* notifier           ,
-                           const CEvent& eventid         ,
-                           CICloneable* eventdata = NULL );
+    virtual void OnNotify( CNotifier* notifier                 ,
+                           const CEvent& eventid               ,
+                           CICloneable* eventdata = GUCEF_NULL ) GUCEF_VIRTUAL_OVERRIDE;
 
     private:
 

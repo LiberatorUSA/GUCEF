@@ -96,6 +96,8 @@ class GUCEF_PRODMAN_PUBLIC_CPP CProductInfoList : public CORE::CIConfigurable
     CProductInfo* RetrieveProductInfo( const CString& combinedProductString );
     
     const CProductInfo* RetrieveProductInfo( const CString& combinedProductString ) const;
+
+    virtual const CString& GetClassTypeName( void ) const;
     
     GUCEF_DEFINE_MSGEXCEPTION( GUCEF_PRODMAN_PUBLIC_CPP, EInvalidDeploymentType );
     

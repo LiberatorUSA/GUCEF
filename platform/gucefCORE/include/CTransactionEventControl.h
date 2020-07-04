@@ -69,11 +69,12 @@ class GUCEF_CORE_PUBLIC_CPP CTransactionEventControl : public CForwardingNotifie
 {
     public:
 
-    typedef enum TEventFilterAction
+    enum EEventFilterAction
     {
         EVENTFILTER_DELETE_EVENT ,   /**< mainly usefull if you listnen to all events of an object but want to exclude a few specific ones */
         EVENTFILTER_GROUP_EVENT      /**< this will group events of the same type as 1 event, updating to the latest occurance */
     };
+    typedef enum EEventFilterAction TEventFilterAction;
 
     public:
 

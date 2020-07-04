@@ -123,6 +123,42 @@ RdKafka::ErrorCode RdKafka::ProducerImpl::produce (RdKafka::Topic *topic,
   return RdKafka::ERR_NO_ERROR;
 }
 
+RdKafka::ErrorCode RdKafka::ProducerImpl::dvcustom_produce (RdKafka::Topic *topic,
+                                                   int32_t partition,
+                                                   int msgflags,
+                                                   void *payload, size_t len,
+                                                   const void *key,
+                                                   size_t key_len,
+                                                   RdKafka::Headers *headers,
+                                                   void *msg_opaque) {
+  
+  rd_kafka_headers_t *hdrs = NULL;
+  RdKafka::HeadersImpl *headersimpl = NULL;
+
+  if (headers) {
+    headersimpl = static_cast<RdKafka::HeadersImpl*>(headers);
+    hdrs = headersimpl->c_ptr();
+  }  
+  
+  RdKafka::TopicImpl *topicimpl = dynamic_cast<RdKafka::TopicImpl *>(topic);
+
+  int result = dvcustom_rd_kafka_produce(topicimpl->rkt_, partition, msgflags,
+                       payload, len, key, key_len,
+                       hdrs,
+                       msg_opaque );
+
+  if (!result && headersimpl) {
+    /* A successful producev() call will destroy the C headers. */
+    headersimpl->c_headers_destroyed();
+    delete headers;
+  }
+
+  if ( 0 != result )
+    return static_cast<RdKafka::ErrorCode>(rd_kafka_last_error());
+
+  return RdKafka::ERR_NO_ERROR;
+}
+
 
 RdKafka::ErrorCode
 RdKafka::ProducerImpl::produce (RdKafka::Topic *topic,

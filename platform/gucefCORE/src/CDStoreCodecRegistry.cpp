@@ -66,22 +66,20 @@ CDStoreCodecRegistry::~CDStoreCodecRegistry()
 
 /*-------------------------------------------------------------------------*/
 
-void
-CDStoreCodecRegistry::LockData( void ) const
-{
-        GUCEF_BEGIN;
-        _datalock.Lock();
-        GUCEF_END;
+bool
+CDStoreCodecRegistry::Lock( void ) const
+{GUCEF_TRACE;
+
+    return _datalock.Lock();
 }
 
 /*-------------------------------------------------------------------------*/
 
-void
-CDStoreCodecRegistry::UnlockData( void ) const
-{
-        GUCEF_BEGIN;
-        _datalock.Unlock();
-        GUCEF_END;
+bool
+CDStoreCodecRegistry::Unlock( void ) const
+{GUCEF_TRACE;
+
+    return _datalock.Unlock();
 }
 
 /*-------------------------------------------------------------------------//

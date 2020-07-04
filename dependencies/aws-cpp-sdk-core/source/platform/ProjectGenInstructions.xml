@@ -1,0 +1,14 @@
+<PROJECTGENERATOR>
+    <EXCLUDES PLATFORM="All">
+		<ITEM NAME="*" TYPE="DIR" />
+	</EXCLUDES>
+    <INCLUDES PLATFORM="mswin">
+		<ITEM NAME="windows" TYPE="DIR" />
+	</INCLUDES>
+    <INCLUDES PLATFORM="linux">
+		<ITEM NAME="linux-shared" TYPE="DIR" />
+	</INCLUDES>
+    <INCLUDES PLATFORM="android">
+		<ITEM NAME="android" TYPE="DIR" />
+	</INCLUDES>
+</PROJECTGENERATOR>

@@ -19,5 +19,49 @@
         <Preprocessor>
             <Define String="GUCEF_GUI_TESTAPP_BUILD_MODULE" />
         </Preprocessor>
+		<RuntimeDependencies>
+			<RuntimeDependency Name="vfspluginDVP" />
+			<RuntimeDependency Name="vfspluginITV" />
+			<RuntimeDependency Name="vfspluginVP" />
+			<RuntimeDependency Name="vfspluginZIP" />
+			<RuntimeDependency Name="vfspluginAWSS3" />
+			<RuntimeDependency Name="guidriverCEGUI" />
+			<RuntimeDependency Name="guidriverCEGUIOgre" />
+			<RuntimeDependency Name="guidriverCEGUIOpenGL" />
+			<RuntimeDependency Name="guidriverMyGUI" />
+			<RuntimeDependency Name="guidriverMyGUIOgre" />
+			<RuntimeDependency Name="guidriverMyGUIOpenGL" />
+			<RuntimeDependency Name="guidriverOgre" />
+			<RuntimeDependency Name="guidriverRocket" />
+			<RuntimeDependency Name="guidriverRocketOpenGL" />
+			<RuntimeDependency Name="inputdriverOIS" />
+			<RuntimeDependency Name="imgpluginITV" />
+			<RuntimeDependency Name="imgpluginFreeImage" />
+			<RuntimeDependency Name="imgpluginFLIC" />
+			<RuntimeDependency Name="imgpluginDEVIL" />
+			<RuntimeDependency Name="dstorepluginJSONPARSER" />
+			<RuntimeDependency Name="dstorepluginPARSIFALXML" />
+		</RuntimeDependencies>
+    </Module>
+    <Module Platform="mswin" >
+		<RuntimeDependencies>
+			<RuntimeDependency Name="guidriverWin32GL" />
+			<RuntimeDependency Name="guidriverWin32D3D9" />
+			<RuntimeDependency Name="guidriverWin32" />
+			<RuntimeDependency Name="inputdriverMSWINMSG" />
+			<RuntimeDependency Name="inputdriverDIRECTINPUT8" />
+		</RuntimeDependencies>
+    </Module>
+    <Module Platform="linux" >
+		<RuntimeDependencies>
+			<RuntimeDependency Name="guidriverXWinGL" />
+			<RuntimeDependency Name="inputdriverXWINMSG" />
+		</RuntimeDependencies>
+    </Module>
+    <Module Platform="android" >
+		<RuntimeDependencies>
+			<RuntimeDependency Name="guidriverAndroidGLES" />
+			<RuntimeDependency Name="inputdriverNANDROID" />
+		</RuntimeDependencies>
     </Module>
 </ModuleInfoEntry>

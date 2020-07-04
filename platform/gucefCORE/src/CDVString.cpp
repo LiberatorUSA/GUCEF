@@ -1146,14 +1146,14 @@ CString::HasChar( char searchchar  ,
 
 /*-------------------------------------------------------------------------*/
 
-std::vector< CString >
+CString::StringVector
 CString::ParseElements( char seperator        ,
                         bool addEmptyElements ) const
 {GUCEF_TRACE;
 
     if ( m_length > 0 )
     {
-        std::vector< CString > list;
+        StringVector list;
         CString entry;
         UInt32 last = 0;
         for ( UInt32 i=0; i<m_length; ++i )
@@ -1183,7 +1183,7 @@ CString::ParseElements( char seperator        ,
         }
         return list;
     }
-    return std::vector< CString >();
+    return StringVector();
 }
 
 /*-------------------------------------------------------------------------*/

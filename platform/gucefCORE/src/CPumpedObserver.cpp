@@ -158,6 +158,8 @@ CPumpedObserver::CPumpedObserver( void )
     SubscribeTo( m_pulsGenerator                   ,
                  CPulseGenerator::DestructionEvent ,
                  callback2                         );
+
+    m_pulsGenerator->RequestPeriodicPulses( this );
 }
 
 /*-------------------------------------------------------------------------*/
@@ -176,6 +178,8 @@ CPumpedObserver::CPumpedObserver( CPulseGenerator& pulsGenerator )
     SubscribeTo( m_pulsGenerator                   ,
                  CPulseGenerator::DestructionEvent ,
                  callback2                         );
+    
+    m_pulsGenerator->RequestPeriodicPulses( this );
 }
 
 /*-------------------------------------------------------------------------*/
@@ -201,6 +205,8 @@ CPumpedObserver::CPumpedObserver( const CPumpedObserver& src )
     SubscribeTo( m_pulsGenerator                   ,
                  CPulseGenerator::DestructionEvent ,
                  callback2                         );
+    
+    m_pulsGenerator->RequestPeriodicPulses( this );
 }
 
 /*-------------------------------------------------------------------------*/
@@ -208,6 +214,8 @@ CPumpedObserver::CPumpedObserver( const CPumpedObserver& src )
 CPumpedObserver::~CPumpedObserver()
 {GUCEF_TRACE;
 
+    if ( GUCEF_NULL != m_pulsGenerator )
+        m_pulsGenerator->RequestStopOfPeriodicUpdates( this );
 }
 
 /*-------------------------------------------------------------------------*/
@@ -217,6 +225,15 @@ CPumpedObserver::operator=( const CPumpedObserver& src )
 {GUCEF_TRACE;
 
     return *this;
+}
+
+/*-------------------------------------------------------------------------*/
+
+CPulseGenerator* 
+CPumpedObserver::GetPulseGenerator( void ) const
+{GUCEF_TRACE;
+
+    return m_pulsGenerator;
 }
 
 /*-------------------------------------------------------------------------*/
@@ -255,7 +272,7 @@ CPumpedObserver::OnPulseGeneratorDestruction( CNotifier* notifier               
 
     if ( notifier == m_pulsGenerator )
     {
-        m_pulsGenerator = NULL;
+        m_pulsGenerator = GUCEF_NULL;
     }
 }
 
@@ -277,11 +294,6 @@ CPumpedObserver::OnNotify( CNotifier* notifier                 ,
 
     m_mailbox.AddMail( eventid   ,
                        &maildata );
-
-    if ( NULL != m_pulsGenerator )
-    {
-        m_pulsGenerator->RequestPulse();
-    }
 }
 
 /*-------------------------------------------------------------------------*/
@@ -297,20 +309,20 @@ CPumpedObserver::OnPumpedNotify( CNotifier* notifier                 ,
 
 /*-------------------------------------------------------------------------*/
 
-void
-CPumpedObserver::LockData( void ) const
+bool
+CPumpedObserver::Lock( void ) const
 {GUCEF_TRACE;
 
-    m_mutex.Lock();
+    return m_mutex.Lock();
 }
 
 /*-------------------------------------------------------------------------*/
 
-void
-CPumpedObserver::UnlockData( void ) const
+bool
+CPumpedObserver::Unlock( void ) const
 {GUCEF_TRACE;
 
-    m_mutex.Unlock();
+    return m_mutex.Unlock();
 }
 
 /*-------------------------------------------------------------------------*/

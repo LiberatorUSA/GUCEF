@@ -26,7 +26,7 @@
 //                                                                         //
 //-------------------------------------------------------------------------*/
 
-#include <vector>
+#include <set>
 
 #include "CICloneable.h"
 
@@ -137,9 +137,9 @@ class GUCEF_CORE_PUBLIC_CPP CObserver : public CIObserver
                            const CEvent& eventid         ,
                            CICloneable* eventdata = NULL );
 
-    virtual void LockData( void ) const;
+    virtual bool Lock( void ) const GUCEF_VIRTUAL_OVERRIDE;
 
-    virtual void UnlockData( void ) const;
+    virtual bool Unlock( void ) const GUCEF_VIRTUAL_OVERRIDE;
 
     private:
 
@@ -151,21 +151,15 @@ class GUCEF_CORE_PUBLIC_CPP CObserver : public CIObserver
     /*
      *  Simply updates the observer administration, nothing more
      */
-    void UnlinkFrom( CNotifier* notifier             ,
-                     const bool forAllEvents = false );
+    void UnlinkFrom( CNotifier* notifier );
 
     void SubscribeToImp( CNotifier* notifier                 ,
                          const CEvent& eventid               ,
                          CIEventHandlerFunctorBase* callback );
 
     private:
-    struct SNotifierRef
-    {
-        CNotifier* notifier;
-        UInt32 refCount;
-    };
-    typedef struct SNotifierRef TNotifierRef;
-    typedef std::vector<TNotifierRef> TNotifierList;
+
+    typedef std::set< CNotifier* > TNotifierList;
 
     TNotifierList m_notifiers;
 };

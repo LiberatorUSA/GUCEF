@@ -31,6 +31,11 @@
 #include <vector>
 #include <map>
 
+#ifndef GUCEF_MT_CILOCKABLE_H
+#include "gucefMT_CILockable.h"
+#define GUCEF_MT_CILOCKABLE_H
+#endif /* GUCEF_MT_CILOCKABLE_H ? */
+
 #ifndef GUCEF_CORE_CIEVENTHANDLERFUNCTORBASE_H
 #include "gucefCORE_CIEventHandlerFunctorBase.h"
 #define GUCEF_CORE_CIEVENTHANDLERFUNCTORBASE_H
@@ -85,7 +90,7 @@ class CNotifierImplementor;
  *
  *  Note that CNotifier is NOT threadsafe on it's own to avoid introducing
  *  unnecessary overhead. If you want a threadsafe notifier then simply
- *  implement LockData() and UnlockData() yourself in your descending class.
+ *  implement Lock() and Unlock() yourself in your descending class.
  *
  *  Note that notification can cause a chain reaction resulting in the destruction
  *  of the object that triggered the notification. If you wish to safely handle this scenario
@@ -95,7 +100,8 @@ class CNotifierImplementor;
  *  in invalid memory access. If the notifier has been destroyed you should exit the code
  *  that called the member function without accessing any data members.
  */
-class GUCEF_CORE_PUBLIC_CPP CNotifier : public CITypeNamed
+class GUCEF_CORE_PUBLIC_CPP CNotifier : public MT::CILockable ,
+                                        public CITypeNamed
 {
     public:
 
@@ -108,7 +114,7 @@ class GUCEF_CORE_PUBLIC_CPP CNotifier : public CITypeNamed
 
     public:
 
-    CNotifier( void );
+    CNotifier( bool registerStdEvents = true );
 
     CNotifier( const CNotifier& src );
 
@@ -176,6 +182,8 @@ class GUCEF_CORE_PUBLIC_CPP CNotifier : public CITypeNamed
      *  notifier while being notified from this notifier.
      */
     void ScheduleForDestruction( void );
+
+    UInt32 GetSubscriptionCountForObserver( CObserver* observer ) const;
 
     protected:
     friend class CNotifierImplementor;
@@ -251,9 +259,9 @@ class GUCEF_CORE_PUBLIC_CPP CNotifier : public CITypeNamed
                                  const CEvent& eventid         ,
                                  CICloneable* eventData = NULL ) const;
 
-    virtual void LockData( void ) const;
+    virtual bool Lock( void ) const GUCEF_VIRTUAL_OVERRIDE;
 
-    virtual void UnlockData( void ) const;
+    virtual bool Unlock( void ) const GUCEF_VIRTUAL_OVERRIDE;
 
     /**
      *  Certain edge-cases require knowledge of the destructions of

@@ -63,12 +63,13 @@ const CEvent CNotifier::DestructionEvent = "GUCEF::CORE::CNotifier::DestructionE
 //                                                                         //
 //-------------------------------------------------------------------------*/
 
-CNotifier::CNotifier( void )
+CNotifier::CNotifier( bool registerStdEvents )
     : CITypeNamed() ,
       m_imp( NULL )
 {GUCEF_TRACE;
 
-    RegisterEvents();
+    if ( registerStdEvents )
+        RegisterEvents();
 
     m_imp = CNotifierImplementor::Create( this );
     assert( m_imp != NULL );
@@ -80,8 +81,6 @@ CNotifier::CNotifier( const CNotifier& src )
     : CITypeNamed() ,
       m_imp( NULL )
 {GUCEF_TRACE;
-
-    RegisterEvents();
 
     m_imp = CNotifierImplementor::Create( this, src );
     assert( m_imp != NULL );
@@ -314,6 +313,19 @@ CNotifier::ScheduleForDestruction( void )
 
 /*-------------------------------------------------------------------------*/
 
+UInt32 
+CNotifier::GetSubscriptionCountForObserver( CObserver* observer ) const
+{GUCEF_TRACE;
+
+    if ( NULL != m_imp )
+    {
+        return m_imp->GetSubscriptionCountForObserver( observer );
+    }
+    return 0;
+}
+
+/*-------------------------------------------------------------------------*/
+
 void
 CNotifier::OnObserverDestruction( CObserver* observer )
 {GUCEF_TRACE;
@@ -323,20 +335,22 @@ CNotifier::OnObserverDestruction( CObserver* observer )
 
 /*-------------------------------------------------------------------------*/
 
-void
-CNotifier::LockData( void ) const
+bool
+CNotifier::Lock( void ) const
 {GUCEF_TRACE;
 
     /* can be implemented in a descending class to add thread-safety */
+    return false;
 }
 
 /*-------------------------------------------------------------------------*/
 
-void
-CNotifier::UnlockData( void ) const
+bool
+CNotifier::Unlock( void ) const
 {GUCEF_TRACE;
 
     /* can be implemented in a descending class to add thread-safety */
+    return false;
 }
 
 /*-------------------------------------------------------------------------//

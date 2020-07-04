@@ -39,6 +39,11 @@
 #define GUCEF_VFS_CVFSHANDLE_H
 #endif /* GUCEF_VFS_CVFSHANDLE_H ? */
 
+#ifndef GUCEF_VFS_CARCHIVESETTINGS_H
+#include "gucefVFS_CArchiveSettings.h"
+#define GUCEF_VFS_CARCHIVESETTINGS_H
+#endif /* GUCEF_VFS_CARCHIVESETTINGS_H ? */
+
 /*-------------------------------------------------------------------------//
 //                                                                         //
 //      NAMESPACE                                                          //
@@ -74,7 +79,12 @@ class GUCEF_VFS_PUBLIC_CPP CIArchive : public CORE::CTDynamicDestructorBase< CVF
                                    const char* mode = "rb"      ,
                                    const UInt32 memLoadSize = 0 ,
                                    const bool overwrite = false ) = 0;
-                                  
+
+    virtual bool StoreAsFile( const CORE::CString& filepath    ,
+                              const CORE::CDynamicBuffer& data ,
+                              const CORE::UInt64 offset        ,
+                              const bool overwrite             ) = 0;
+
     virtual void GetList( TStringSet& outputList             ,
                           const CString& location            , 
                           bool recursive = false             ,
@@ -95,11 +105,15 @@ class GUCEF_VFS_PUBLIC_CPP CIArchive : public CORE::CTDynamicDestructorBase< CVF
     
     virtual bool IsWriteable( void ) const = 0;
     
-    virtual bool LoadArchive( const CString& archiveName ,
-                              const CString& archivePath ,
-                              const bool writableRequest ) = 0;
+    virtual bool LoadArchive( const CArchiveSettings& settings ) = 0;
+
+    virtual bool LoadArchive( const CString& archiveName  ,
+                              CVFSHandlePtr vfsResource   ,
+                              const bool writeableRequest ) = 0;
                               
-    virtual bool UnloadArchive( void ) = 0;                              
+    virtual bool UnloadArchive( void ) = 0;
+    
+    virtual const CString& GetType( void ) const = 0;
 };
 
 /*-------------------------------------------------------------------------//

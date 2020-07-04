@@ -118,7 +118,7 @@ ThreadKill( struct SThreadData* td );
 
 GUCEF_MT_PUBLIC_C UInt32
 ThreadWait( struct SThreadData* td ,
-            Int32 timeout          );
+            Int32 timeoutInMs      );
 
 /*--------------------------------------------------------------------------*/
 
@@ -150,7 +150,7 @@ GetProcessID( void );
  *      @param delay the number of milliseconds you wish to delay the caller thread
  */
 GUCEF_MT_PUBLIC_C void
-PrecisionDelay( UInt32 delay );
+PrecisionDelay( UInt32 delayInMs );
 
 /*--------------------------------------------------------------------------*/
 

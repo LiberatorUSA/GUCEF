@@ -53,35 +53,41 @@ namespace CORE {
  */
 class GUCEF_CORE_PUBLIC_CPP CFileURLHandler : public CURLHandler
 {
-        public:
+    public:
 
-        /**
-         *      Doesnt do anything special atm.
-         */
-        CFileURLHandler( void );
+    /**
+     *      Doesnt do anything special atm.
+     */
+    CFileURLHandler( void );
 
-        /**
-         *      Doesnt do anything special atm.
-         */
-        CFileURLHandler( const CFileURLHandler& src );
+    /**
+     *      Doesnt do anything special atm.
+     */
+    CFileURLHandler( const CFileURLHandler& src );
 
-        /**
-         *      Doesnt do anything special atm.
-         */
-        virtual ~CFileURLHandler();
+    /**
+     *      Doesnt do anything special atm.
+     */
+    virtual ~CFileURLHandler();
 
-        /**
-         *      Doesnt do anything special atm.
-         */
-        CFileURLHandler& operator=( const CFileURLHandler& src );
+    /**
+     *      Doesnt do anything special atm.
+     */
+    CFileURLHandler& operator=( const CFileURLHandler& src );
 
-        virtual bool Activate( CURL& url );
+    virtual bool Activate( CURL& url ) GUCEF_VIRTUAL_OVERRIDE;
 
-        virtual void Deactivate( CURL& url );
+    virtual void Deactivate( CURL& url ) GUCEF_VIRTUAL_OVERRIDE;
 
-        virtual bool IsActive( const CURL& url ) const;
+    virtual bool IsActive( const CURL& url ) const GUCEF_VIRTUAL_OVERRIDE;
 
-        virtual CICloneable* Clone( void ) const;
+    virtual CICloneable* Clone( void ) const GUCEF_VIRTUAL_OVERRIDE;
+
+    protected:
+
+    virtual bool Lock( void ) const GUCEF_VIRTUAL_OVERRIDE;
+
+    virtual bool Unlock( void ) const GUCEF_VIRTUAL_OVERRIDE;
 };
 
 /*-------------------------------------------------------------------------//

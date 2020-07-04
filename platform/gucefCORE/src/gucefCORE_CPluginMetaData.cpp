@@ -371,6 +371,16 @@ CPluginMetaData::LoadConfig( const CDataNode& treeroot )
 
 /*-------------------------------------------------------------------------*/
 
+const CORE::CString& 
+CPluginMetaData::GetClassTypeName( void ) const
+{GUCEF_TRACE;
+
+    static CORE::CString classTypeName = "GUCEF::CORE::CPluginMetaData";
+    return classTypeName; 
+}
+
+/*-------------------------------------------------------------------------*/
+
 void
 CPluginMetaData::Clear( void )
 {GUCEF_TRACE;

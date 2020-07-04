@@ -157,9 +157,9 @@ class GUCEF_COMCORE_EXPORT_CPP CTCPServerSocket : public CSocket
     
     UInt32 GetMaxConnections( void ) const;
 
-    virtual UInt32 GetBytesReceived( bool resetCounter );
+    virtual UInt32 GetBytesReceived( bool resetCounter ) GUCEF_VIRTUAL_OVERRIDE;
 
-    virtual UInt32 GetBytesTransmitted( bool resetCounter );
+    virtual UInt32 GetBytesTransmitted( bool resetCounter ) GUCEF_VIRTUAL_OVERRIDE;
     
     void GetListenAddress( CHostAddress& listenAddress ) const;          
 
@@ -198,9 +198,9 @@ class GUCEF_COMCORE_EXPORT_CPP CTCPServerSocket : public CSocket
     
     protected:
     
-    virtual void LockData( void ) const;
+    virtual bool Lock( void ) const GUCEF_VIRTUAL_OVERRIDE;
 
-    virtual void UnlockData( void ) const;      
+    virtual bool Unlock( void ) const GUCEF_VIRTUAL_OVERRIDE;      
     
     private:
     friend class CTCPServerConnection;

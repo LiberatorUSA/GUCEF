@@ -28,15 +28,10 @@
 
 #include <set>
 
-#ifndef GUCEF_MT_CMUTEX_H
-#include "gucefMT_CMutex.h"           /* gucefMT mutex class */
-#define GUCEF_MT_CMUTEX_H
-#endif /* GUCEF_MT_CMUTEX_H ? */
-
-#ifndef GUCEF_CORE_CDVSTRING_H
-#include "CDVString.h"                /* framework string implementation */
-#define GUCEF_CORE_CDVSTRING_H
-#endif /* GUCEF_CORE_CDVSTRING_H ? */
+#ifndef GUCEF_CORE_CTSGNOTIFIER_H
+#include "CTSGNotifier.h"
+#define GUCEF_CORE_CTSGNOTIFIER_H
+#endif /* GUCEF_CORE_CTSGNOTIFIER_H ? */
 
 #ifndef GUCEF_CORE_MACROS_H
 #include "gucefCORE_macros.h.h"
@@ -71,9 +66,15 @@ class CDataNode;
  *      Allows you load and save the config of all configureable items that
  *      have global config usage enabled.
  */
-class GUCEF_CORE_PUBLIC_CPP CConfigStore
+class GUCEF_CORE_PUBLIC_CPP CConfigStore : public CTSGNotifier
 {
     public:
+
+    static const CEvent GlobalConfigLoadStartingEvent;
+    static const CEvent GlobalConfigLoadCompletedEvent;
+    static const CEvent GlobalConfigLoadFailedEvent;
+
+    static void RegisterEvents( void );
 
     void SetConfigFile( const CString& filepath );
 
@@ -88,26 +89,27 @@ class GUCEF_CORE_PUBLIC_CPP CConfigStore
 
     CString GetCodec( void ) const;
 
+    bool IsGlobalConfigLoadInProgress( void ) const;
+
     private:
 
     friend class CIConfigurable;
 
     void Register( CIConfigurable* configobj );
 
-    void Unregister( CIConfigurable* configobj );
+    bool Unregister( CIConfigurable* configobj );
 
     private:
     friend class CCoreGlobal;
 
     CConfigStore( void );
 
-    ~CConfigStore();
+    virtual ~CConfigStore();
 
     private:
 
-    CConfigStore( const CConfigStore& src );
-
-    CConfigStore& operator=( const CConfigStore& src );
+    CConfigStore( const CConfigStore& src );             /**< not implemented */
+    CConfigStore& operator=( const CConfigStore& src );  /**< not implemented */
 
     private:
 
@@ -115,8 +117,9 @@ class GUCEF_CORE_PUBLIC_CPP CConfigStore
 
     CString _codectype;
     CString _configfile;
-    TConfigurableSet _configobjs;
-    MT::CMutex _datalock;
+    TConfigurableSet m_configureables;
+    TConfigurableSet m_newConfigureables;
+    bool m_isBusyLoadingConfig;
 };
 
 /*-------------------------------------------------------------------------//

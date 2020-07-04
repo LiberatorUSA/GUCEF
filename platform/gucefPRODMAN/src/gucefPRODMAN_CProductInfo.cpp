@@ -444,6 +444,16 @@ CProductInfo::LoadConfig( const GUCEF::CORE::CDataNode& node )
 
 /*-------------------------------------------------------------------------*/
 
+const CORE::CString& 
+CProductInfo::GetClassTypeName( void ) const
+{GUCEF_TRACE;
+
+    static CORE::CString classTypeName = "GUCEF::PRODMAN::CProductInfo";
+    return classTypeName; 
+}
+
+/*-------------------------------------------------------------------------*/
+
 CString
 CProductInfo::GetCombinedProductString( void ) const
 {GUCEF_TRACE;
