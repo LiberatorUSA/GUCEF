@@ -132,6 +132,7 @@ else()
     set(CPACK_DEBIAN_PACKAGE_PRIORITY "optional")
     set(CPACK_DEBIAN_PACKAGE_SECTION "devel")
     # set(CPACK_DEBIAN_PACKAGE_DEPENDS "libgtkmm-3.0")
+    set(CPACK_DEBIAN_PACKAGE_DEBUG TRUE)
 
 
 
