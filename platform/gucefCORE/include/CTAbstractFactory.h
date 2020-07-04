@@ -136,7 +136,7 @@ CTAbstractFactory< SelectionCriteriaType, BaseClassType >::CTAbstractFactory( co
 /*-------------------------------------------------------------------------*/
 
 template< typename SelectionCriteriaType, class BaseClassType >
-CTAbstractFactory< SelectionCriteriaType, BaseClassType >::CTAbstractFactory( const CTAbstractFactory< SelectionCriteriaType, BaseClassType >& /* src */ )
+CTAbstractFactory< SelectionCriteriaType, BaseClassType >::CTAbstractFactory( const CTAbstractFactory< SelectionCriteriaType, BaseClassType >& src )
     : CAbstractFactoryBase( src )
     , m_assumeFactoryOwnership( src.m_assumeFactoryOwnership )
 {

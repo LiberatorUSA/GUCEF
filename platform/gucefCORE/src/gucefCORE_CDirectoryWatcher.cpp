@@ -89,7 +89,7 @@ class GUCEF_HIDDEN OSSpecificDirectoryWatcher : public CObserver
     typedef CTEventHandlerFunctor< OSSpecificDirectoryWatcher > TEventCallback;
     typedef CDirectoryWatcher::CDirWatchOptions CDirWatchOptions;
 
-    
+
     class GUCEF_HIDDEN OverlappedIOCallbackObj
     {
         public:
@@ -101,8 +101,8 @@ class GUCEF_HIDDEN OSSpecificDirectoryWatcher : public CObserver
         std::wstring dirPathW;
         CString dirPath;
         DWORD notifyFilter;
-        CDirWatchOptions watchOptions; 
-        
+        CDirWatchOptions watchOptions;
+
         OverlappedIOCallbackObj( void )
             : watcherObj( GUCEF_NULL )
             , overlappedIO()
@@ -131,14 +131,14 @@ class GUCEF_HIDDEN OSSpecificDirectoryWatcher : public CObserver
     };
 
     typedef std::map< std::wstring, OverlappedIOCallbackObj > OverlappedIOCallbackObjMap;
-    
+
     CTimer m_osPollingTimer;
     CDirectoryWatcher* m_wrapper;
     OverlappedIOCallbackObjMap m_dirsToWatch;
 
     DWORD OptionsToNotifyFilter( const CDirWatchOptions& options ) const
     {GUCEF_TRACE;
-        
+
         DWORD notifyFilter = 0;
         if ( options.watchForFileRenames || options.watchForFileCreation || options.watchForFileDeletion )
             notifyFilter |= FILE_NOTIFY_CHANGE_FILE_NAME | FILE_NOTIFY_CHANGE_CREATION;
@@ -160,13 +160,13 @@ class GUCEF_HIDDEN OSSpecificDirectoryWatcher : public CObserver
                                                 &dwBytes,                                          // bytes returned if not using overlapped I/O. In this case its a dummy.
                                                 &watchObj.overlappedIO,                            // overlapped buffer
                                                 NULL );                                            // completion routine, we use a waitable event instead
-    
+
         if ( success != TRUE )
         {
             DWORD error = GetLastError();
             GUCEF_ERROR_LOG( LOGLEVEL_NORMAL, "OSSpecificDirectoryWatcher:RequestDirChangeNotifications: Failed to set change notification watch for dir \"" + watchObj.dirPath + "\". ErrorCode=" + CORE::UInt32ToString( error ) );
         }
-        return success == TRUE; 
+        return success == TRUE;
     }
 
     bool Utf8toUtf16( const std::string& str ,
@@ -224,7 +224,7 @@ class GUCEF_HIDDEN OSSpecificDirectoryWatcher : public CObserver
         std::wstring dirToWatchW;
         if ( !Utf8toUtf16( dirToWatch, dirToWatchW ) )
             return false;
-        
+
         HANDLE dirHandle = ::CreateFileW( dirToWatchW.c_str(),
                                           FILE_LIST_DIRECTORY,
                                           FILE_SHARE_READ | FILE_SHARE_WRITE | FILE_SHARE_DELETE,
@@ -253,7 +253,7 @@ class GUCEF_HIDDEN OSSpecificDirectoryWatcher : public CObserver
             m_osPollingTimer.SetEnabled( true );
             return true;
         }
-        
+
         m_dirsToWatch.erase( dirToWatchW );
         ::CloseHandle( dirHandle );
         return false;
@@ -336,7 +336,7 @@ class GUCEF_HIDDEN OSSpecificDirectoryWatcher : public CObserver
             if ( Utf16toUtf8( filename, utf8Filename ) )
             {
                 switch ( fni.Action )
-                {        
+                {
                     case FILE_ACTION_ADDED :
                     {
                         GUCEF_SYSTEM_LOG( LOGLEVEL_BELOW_NORMAL, "OSSpecificDirectoryWatcher: OS Signaled FILE_ACTION_ADDED for file: " + utf8Filename );
@@ -419,7 +419,7 @@ class GUCEF_HIDDEN OSSpecificDirectoryWatcher : public CObserver
             if ( WAIT_OBJECT_0 == waitResult )
             {
                 GUCEF_SYSTEM_LOG( LOGLEVEL_BELOW_NORMAL, "OSSpecificDirectoryWatcher: OS Signaled an overlapped IO event" );
-                
+
                 DWORD numberOfBytesTransferred = 0;
                 if ( TRUE == ::GetOverlappedResult( watchObj.dirHandle, &watchObj.overlappedIO, &numberOfBytesTransferred, TRUE ) )
                 {
@@ -432,9 +432,9 @@ class GUCEF_HIDDEN OSSpecificDirectoryWatcher : public CObserver
                     }
                     else
                     {
-                        GUCEF_WARNING_LOG( LOGLEVEL_IMPORTANT, "OSSpecificDirectoryWatcher: The event buffer was not large enough (" + 
+                        GUCEF_WARNING_LOG( LOGLEVEL_IMPORTANT, "OSSpecificDirectoryWatcher: The event buffer was not large enough (" +
                                 CORE::UInt32ToString( watchObj.notifyBuffer.GetBufferSize() ) + " bytes) to hold all the OS notifications. Event notifications have been lost! Auto-enlarging the buffer x2" );
-                        
+
                         watchObj.notifyBuffer.SetBufferSize( watchObj.notifyBuffer.GetBufferSize() * 2 );
                         RequestDirChangeNotifications( watchObj );
                     }
@@ -491,6 +491,22 @@ class GUCEF_HIDDEN OSSpecificDirectoryWatcher
     {GUCEF_TRACE;
         return false;
     }
+
+    bool RemoveAllWatches( void )
+    {GUCEF_TRACE;
+        return false;
+    }
+
+    OSSpecificDirectoryWatcher( CDirectoryWatcher* wrapper )
+    {GUCEF_TRACE;
+
+    }
+
+    OSSpecificDirectoryWatcher( CDirectoryWatcher* wrapper      ,
+                                CPulseGenerator& pulseGenerator )
+    {GUCEF_TRACE;
+
+    }
 };
 
 /*-------------------------------------------------------------------------*/
@@ -516,6 +532,22 @@ class GUCEF_HIDDEN OSSpecificDirectoryWatcher
     {GUCEF_TRACE;
         return false;
     }
+
+    bool RemoveAllWatches( void )
+    {GUCEF_TRACE;
+        return false;
+    }
+
+    OSSpecificDirectoryWatcher( CDirectoryWatcher* wrapper )
+    {GUCEF_TRACE;
+
+    }
+
+    OSSpecificDirectoryWatcher( CDirectoryWatcher* wrapper      ,
+                                CPulseGenerator& pulseGenerator )
+    {GUCEF_TRACE;
+
+    }
 };
 
 /*-------------------------------------------------------------------------*/
@@ -527,7 +559,7 @@ class GUCEF_HIDDEN OSSpecificDirectoryWatcher
 CDirectoryWatcher::CDirWatchOptions::CDirWatchOptions( void )
     : watchSubTree( false )
     , watchForFileCreation( true )
-    , watchForFileDeletion( true )           
+    , watchForFileDeletion( true )
     , watchForFileRenames( true )
     , watchForFileModifications( true )
 {GUCEF_TRACE;
@@ -548,7 +580,7 @@ CDirectoryWatcher::CDirWatchOptions::CDirWatchOptions( const CDirectoryWatcher::
 
 /*-------------------------------------------------------------------------*/
 
-CDirectoryWatcher::CDirWatchOptions& 
+CDirectoryWatcher::CDirWatchOptions&
 CDirectoryWatcher::CDirWatchOptions::operator=( const CDirectoryWatcher::CDirWatchOptions& src )
 {GUCEF_TRACE;
 
@@ -565,7 +597,7 @@ CDirectoryWatcher::CDirWatchOptions::operator=( const CDirectoryWatcher::CDirWat
 
 /*-------------------------------------------------------------------------*/
 
-void 
+void
 CDirectoryWatcher::RegisterEvents( void )
 {GUCEF_TRACE;
 
@@ -578,8 +610,8 @@ CDirectoryWatcher::RegisterEvents( void )
 }
 
 /*-------------------------------------------------------------------------*/
-    
-bool 
+
+bool
 CDirectoryWatcher::AddDirToWatch( const CString& dirToWatch       ,
                                   const CDirWatchOptions& options )
 {GUCEF_TRACE;
@@ -592,7 +624,7 @@ CDirectoryWatcher::AddDirToWatch( const CString& dirToWatch       ,
 
 /*-------------------------------------------------------------------------*/
 
-bool 
+bool
 CDirectoryWatcher::RemoveDirToWatch( const CString& dirToWatch )
 {GUCEF_TRACE;
 
@@ -604,7 +636,7 @@ CDirectoryWatcher::RemoveDirToWatch( const CString& dirToWatch )
 
 /*-------------------------------------------------------------------------*/
 
-bool 
+bool
 CDirectoryWatcher::RemoveAllWatches( void )
 {GUCEF_TRACE;
 

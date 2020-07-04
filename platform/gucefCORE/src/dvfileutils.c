@@ -1260,7 +1260,7 @@ Dir_Exists( const char *path )
         #elif ( ( GUCEF_PLATFORM == GUCEF_PLATFORM_LINUX ) || ( GUCEF_PLATFORM == GUCEF_PLATFORM_ANDROID ) )
 
         struct stat buf;
-        if ( stat( filename, &buf ) == 0 )
+        if ( stat( path, &buf ) == 0 )
             if ( buf.st_mode & S_IFDIR != 0 )
                 return 1;
         return 0;

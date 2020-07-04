@@ -177,13 +177,13 @@ class GUCEF_CORE_PUBLIC_CPP CValueList : public CIConfigurable
      */
     TStringVector GetValueVectorAlways( const CString& key, char valueSepChar ) const;
 
-    TStringVector GetValueVectorAlways( const CString& key, char valueSepChar, const TStringVector& default ) const;
+    TStringVector GetValueVectorAlways( const CString& key, char valueSepChar, const TStringVector& defaultValues ) const;
 
     /**
-     *  Returns all keys matching the key wildcard search 
+     *  Returns all keys matching the key wildcard search
      *  Will not throw an exception
      */
-    TStringVector GetKeysWithWildcardKeyMatch( const CString& searchStr  , 
+    TStringVector GetKeysWithWildcardKeyMatch( const CString& searchStr  ,
                                                char wildCardChar = '*'   ,
                                                bool caseSensitive = true ) const;
 
@@ -206,11 +206,11 @@ class GUCEF_CORE_PUBLIC_CPP CValueList : public CIConfigurable
     CString GetPair( const CString& key ) const;
 
     CString GetPair( const UInt32 index ) const;
-    
+
     CString GetAllPairs( const UInt32 index, const CString& seperatorStr ) const;
-    
-    CString GetAllPairs( const CString& seperatorStr                , 
-                         bool envelopElements = false               , 
+
+    CString GetAllPairs( const CString& seperatorStr                ,
+                         bool envelopElements = false               ,
                          const CString& envelopStr = CString::Empty ) const;
 
     /**
@@ -244,7 +244,7 @@ class GUCEF_CORE_PUBLIC_CPP CValueList : public CIConfigurable
     virtual bool SaveConfig( CDataNode& tree ) const;
 
     /**
-     *      Attempts to load data 
+     *      Attempts to load data
      *
      *      @param treeroot pointer to the node that is to act as root of the data tree
      *      @return whether building the tree from the given file was successfull.
@@ -261,19 +261,19 @@ class GUCEF_CORE_PUBLIC_CPP CValueList : public CIConfigurable
 
     /**
      *  When loading from config data this will limit the scope
-     *  of the information loaded to just the keys that are 
+     *  of the information loaded to just the keys that are
      *  namespaced with by having the exact 'configKeyNamespace' prefix
      */
     void SetConfigKeyNamespace( const CString& configKeyNamespace );
 
     const CString& GetConfigKeyNamespace( void ) const;
-    
+
     TValueMap::const_iterator GetDataBeginIterator( void ) const;
-    
+
     TValueMap::const_iterator GetDataEndIterator( void ) const;
 
     virtual const CString& GetClassTypeName( void ) const;
-    
+
     GUCEF_DEFINE_MSGEXCEPTION( GUCEF_CORE_PUBLIC_CPP, EUnknownKey );
     GUCEF_DEFINE_MSGEXCEPTION( GUCEF_CORE_PUBLIC_CPP, EIndexOutOfRange );
 

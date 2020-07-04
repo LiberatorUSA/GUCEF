@@ -14,14 +14,14 @@
  *
  *  You should have received a copy of the GNU Lesser General Public
  *  License along with this library; if not, write to the Free Software
- *  Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA 
+ *  Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA
  */
 
 /*-------------------------------------------------------------------------//
 //                                                                         //
 //      INCLUDES                                                           //
 //                                                                         //
-//-------------------------------------------------------------------------*/ 
+//-------------------------------------------------------------------------*/
 
 #include <assert.h>
 
@@ -35,7 +35,7 @@
 #ifndef GUCEF_CORE_GUCEF_ESSENTIALS_H
 #include "gucef_essentials.h"
 #define GUCEF_CORE_GUCEF_ESSENTIALS_H
-#endif /* GUCEF_CORE_GUCEF_ESSENTIALS_H ? */ 
+#endif /* GUCEF_CORE_GUCEF_ESSENTIALS_H ? */
 
 /*-------------------------------------------------------------------------//
 //                                                                         //
@@ -53,12 +53,16 @@ namespace CORE {
 //-------------------------------------------------------------------------*/
 
 CIOAccessToIOStream::CIOAccessToIOStream( CIOAccess& access )
-    : std::iostream( GUCEF_NULL )     
+    : std::iostream( GUCEF_NULL )
     , m_access( &access )
     , m_stlAdapter( access )
 {GUCEF_TRACE;
 
+    #if ( GUCEF_PLATFORM == GUCEF_PLATFORM_MSWIN )
     std::iostream::init( &m_stlAdapter, false );
+    #else
+    std::iostream::init( &m_stlAdapter );
+    #endif
 }
 
 /*-------------------------------------------------------------------------*/

@@ -14,7 +14,7 @@
  *
  *  You should have received a copy of the GNU Lesser General Public
  *  License along with this library; if not, write to the Free Software
- *  Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA 
+ *  Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA
  */
 
 /*-------------------------------------------------------------------------//
@@ -58,11 +58,11 @@ GUCEF_IMPLEMENT_MSGEXCEPTION( CValueList, EIndexOutOfRange );
 /*-------------------------------------------------------------------------*/
 
 CValueList::CValueList( void )
-    : CIConfigurable( false )       
-    , m_list()                      
-    , m_allowDuplicates( false )    
-    , m_allowMultipleValues( true ) 
-    , m_configNamespace()           
+    : CIConfigurable( false )
+    , m_list()
+    , m_allowDuplicates( false )
+    , m_allowMultipleValues( true )
+    , m_configNamespace()
     , m_configKeyNamespace()
 {GUCEF_TRACE;
 }
@@ -70,14 +70,14 @@ CValueList::CValueList( void )
 /*-------------------------------------------------------------------------*/
 
 CValueList::CValueList( const CValueList& src )
-    : CIConfigurable( false )                            
-    , m_list( src.m_list )                               
-    , m_allowDuplicates( src.m_allowDuplicates )         
-    , m_allowMultipleValues( src.m_allowMultipleValues ) 
-    , m_configNamespace( src.m_configNamespace )                               
+    : CIConfigurable( false )
+    , m_list( src.m_list )
+    , m_allowDuplicates( src.m_allowDuplicates )
+    , m_allowMultipleValues( src.m_allowMultipleValues )
+    , m_configNamespace( src.m_configNamespace )
     , m_configKeyNamespace( src.m_configKeyNamespace )
 {GUCEF_TRACE;
-               
+
 }
 
 /*-------------------------------------------------------------------------*/
@@ -164,10 +164,10 @@ CValueList::SetConfigKeyNamespace( const CString& configKeyNamespace )
 
 /*-------------------------------------------------------------------------*/
 
-const CString& 
+const CString&
 CValueList::GetConfigKeyNamespace( void ) const
 {GUCEF_TRACE;
-    
+
     return m_configKeyNamespace;
 }
 
@@ -179,7 +179,7 @@ CValueList::SaveConfig( CDataNode& tree ) const
 
     CDataNode* nodeNamespaceRoot = tree.Structure( m_configNamespace, '/' );
     if ( GUCEF_NULL != nodeNamespaceRoot )
-    {    
+    {
         if ( m_allowDuplicates || m_allowMultipleValues )
         {
             TValueMap::const_iterator i = m_list.begin();
@@ -197,7 +197,7 @@ CValueList::SaveConfig( CDataNode& tree ) const
             }
         }
         else
-        {        
+        {
             TValueMap::const_iterator i = m_list.begin();
             while ( i != m_list.end() )
             {
@@ -268,12 +268,12 @@ CValueList::LoadConfig( const CDataNode& treeroot )
 
 /*-------------------------------------------------------------------------*/
 
-const CORE::CString& 
+const CORE::CString&
 CValueList::GetClassTypeName( void ) const
 {GUCEF_TRACE;
 
     static CORE::CString classTypeName = "GUCEF::CORE::CValueList";
-    return classTypeName; 
+    return classTypeName;
 }
 
 /*-------------------------------------------------------------------------*/
@@ -287,11 +287,11 @@ CValueList::SetMultiple( const CString& keyandvalue ,
     while ( remnant.Length() > 0 )
     {
         CString tmp = remnant.SubstrToChar( seperator, true );
-        if ( ( tmp.Length() > 0 )          || 
+        if ( ( tmp.Length() > 0 )          ||
              ( remnant[ 0 ] == seperator )  )
         {
             remnant = remnant.CutChars( tmp.Length()+1, true );
-            
+
             CString keyValueStr = remnant.SubstrToChar( seperator, true );
             if ( keyValueStr.Length() > 0 )
             {
@@ -320,7 +320,7 @@ CValueList::SetAllowDuplicates( const bool allowDuplicates )
 }
 
 /*-------------------------------------------------------------------------*/
-    
+
 bool
 CValueList::GetAllowDuplicates( void ) const
 {GUCEF_TRACE;
@@ -338,7 +338,7 @@ CValueList::SetAllowMultipleValues( const bool allowMultipleValues )
 }
 
 /*-------------------------------------------------------------------------*/
-    
+
 bool
 CValueList::GetAllowMultipleValues( void ) const
 {GUCEF_TRACE;
@@ -348,24 +348,24 @@ CValueList::GetAllowMultipleValues( void ) const
 
 /*-------------------------------------------------------------------------*/
 
-void 
+void
 CValueList::Set( const CString& keyAndValue )
 {GUCEF_TRACE;
 
     CString key( keyAndValue.SubstrToChar( '=', true ) );
     CString value( keyAndValue.SubstrToChar( '=', false ) );
-    
+
     Set( key   ,
          value );
 }
 
 /*-------------------------------------------------------------------------*/
 
-void 
+void
 CValueList::Set( const CString& key   ,
                  const CString& value )
 {GUCEF_TRACE;
-        
+
     if ( key.Length() > 0 )
     {
         TStringVector& values = m_list[ key ];
@@ -387,19 +387,19 @@ CValueList::Set( const CString& key   ,
                 }
                 ++n;
             }
-            
+
             if ( !m_allowMultipleValues )
             {
                 values.clear();
             }
             values.push_back( value );
-        }    
+        }
     }
 }
 
 /*-------------------------------------------------------------------------*/
 
-CValueList::TStringVector 
+CValueList::TStringVector
 CValueList::GetValueVectorAlways( const CString& key ) const
 {GUCEF_TRACE;
 
@@ -409,15 +409,15 @@ CValueList::GetValueVectorAlways( const CString& key ) const
     {
         results = (*i).second;
     }
-    return results;    
+    return results;
 }
 
 /*-------------------------------------------------------------------------*/
 
-CValueList::TStringVector 
-CValueList::GetValueVectorAlways( const CString& key           , 
-                                  char valueSepChar            , 
-                                  const TStringVector& default ) const
+CValueList::TStringVector
+CValueList::GetValueVectorAlways( const CString& key                 ,
+                                  char valueSepChar                  ,
+                                  const TStringVector& defaultValues ) const
 {GUCEF_TRACE;
 
     const TStringVector* firstPass = GUCEF_NULL;
@@ -429,7 +429,7 @@ CValueList::GetValueVectorAlways( const CString& key           ,
         TStringVector::const_iterator n = firstPass->begin();
         while ( n != firstPass->end() )
         {
-            TStringVector subSetResults = (*n).ParseElements( valueSepChar,  false ); 
+            TStringVector subSetResults = (*n).ParseElements( valueSepChar,  false );
             TStringVector::iterator m = subSetResults.begin();
             while ( m != subSetResults.end() )
             {
@@ -441,15 +441,15 @@ CValueList::GetValueVectorAlways( const CString& key           ,
     }
 
     if ( results.empty() )
-    {   
-        results = default;
+    {
+        results = defaultValues;
     }
-    return results;    
+    return results;
 }
 
 /*-------------------------------------------------------------------------*/
 
-CValueList::TStringVector 
+CValueList::TStringVector
 CValueList::GetValueVectorAlways( const CString& key, char valueSepChar ) const
 {GUCEF_TRACE;
 
@@ -457,8 +457,8 @@ CValueList::GetValueVectorAlways( const CString& key, char valueSepChar ) const
     return GetValueVectorAlways( key, valueSepChar, emptyDefault );
 }
 
-/*-------------------------------------------------------------------------*/                
-        
+/*-------------------------------------------------------------------------*/
+
 CString
 CValueList::GetValueAlways( const CString& key ) const
 {GUCEF_TRACE;
@@ -467,10 +467,10 @@ CValueList::GetValueAlways( const CString& key ) const
     return GetValueAlways( key, emptyStr );
 }
 
-/*-------------------------------------------------------------------------*/                
-        
+/*-------------------------------------------------------------------------*/
+
 CString
-CValueList::GetValueAlways( const CString& key          , 
+CValueList::GetValueAlways( const CString& key          ,
                             const CString& defaultValue ) const
 {GUCEF_TRACE;
 
@@ -480,11 +480,11 @@ CValueList::GetValueAlways( const CString& key          ,
         return (*i).second[ 0 ];
     }
 
-    return defaultValue; 
+    return defaultValue;
 }
 
-/*-------------------------------------------------------------------------*/                
-        
+/*-------------------------------------------------------------------------*/
+
 const CString&
 CValueList::GetValue( const CString& key ) const
 {GUCEF_TRACE;
@@ -498,8 +498,8 @@ CValueList::GetValue( const CString& key ) const
     GUCEF_EMSGTHROW( EUnknownKey, CString( "CValueList::GetValue(): The given key \"" + key + "\" is not found" ).C_String() );
 }
 
-/*-------------------------------------------------------------------------*/                
-        
+/*-------------------------------------------------------------------------*/
+
 CString&
 CValueList::GetValue( const CString& key )
 {GUCEF_TRACE;
@@ -525,7 +525,7 @@ CValueList::GetValueVector( const CString& key )
         return (*i).second;
     }
 
-    GUCEF_EMSGTHROW( EUnknownKey, "CValueList::GetValue(): The given key is not found" );    
+    GUCEF_EMSGTHROW( EUnknownKey, "CValueList::GetValue(): The given key is not found" );
 }
 
 /*-------------------------------------------------------------------------*/
@@ -540,7 +540,7 @@ CValueList::GetValueVector( const CString& key ) const
         return (*i).second;
     }
 
-    GUCEF_EMSGTHROW( EUnknownKey, "CValueList::GetValue(): The given key is not found" );    
+    GUCEF_EMSGTHROW( EUnknownKey, "CValueList::GetValue(): The given key is not found" );
 }
 
 /*-------------------------------------------------------------------------*/
@@ -553,11 +553,11 @@ CValueList::GetValue( const UInt32 index ) const
     {
         TValueMap::const_iterator i = m_list.begin();
         for ( UInt32 n=0; n<index; ++n ) { ++i; }
-        
+
         return (*i).second[ 0 ];
     }
-    
-    GUCEF_EMSGTHROW( EIndexOutOfRange, "CValueList::GetValue( index ): The given index is invalid" );        
+
+    GUCEF_EMSGTHROW( EIndexOutOfRange, "CValueList::GetValue( index ): The given index is invalid" );
 }
 
 /*-------------------------------------------------------------------------*/
@@ -570,19 +570,19 @@ CValueList::GetValue( const UInt32 index )
     {
         TValueMap::iterator i = m_list.begin();
         for ( UInt32 n=0; n<index; ++n ) { ++i; }
-        
+
         return (*i).second[ 0 ];
     }
-    
-    GUCEF_EMSGTHROW( EIndexOutOfRange, "CValueList::GetValue( index ): The given index is invalid" );        
+
+    GUCEF_EMSGTHROW( EIndexOutOfRange, "CValueList::GetValue( index ): The given index is invalid" );
 }
 
 /*-------------------------------------------------------------------------*/
 
-CString 
+CString
 CValueList::GetPair( const UInt32 index ) const
 {GUCEF_TRACE;
-    
+
     const CString& key = GetKey( index );
     const CString& value = GetValue( index );
 
@@ -594,13 +594,13 @@ CValueList::GetPair( const UInt32 index ) const
 /*-------------------------------------------------------------------------*/
 
 CString
-CValueList::GetAllPairs( const UInt32 index          , 
+CValueList::GetAllPairs( const UInt32 index          ,
                          const CString& seperatorStr ) const
 {GUCEF_TRACE;
 
     const CString& key = GetKey( index );
     const TStringVector& values = GetValueVector( index );
-    
+
     CString resultStr;
     bool first = true;
     for ( UInt32 i=0; i<values.size(); ++i )
@@ -613,18 +613,18 @@ CValueList::GetAllPairs( const UInt32 index          ,
         {
             first = false;
         }
-     
+
         resultStr += key + '=' + values[ i ];
     }
-    
+
     return resultStr;
 }
 
 /*-------------------------------------------------------------------------*/
 
 CString
-CValueList::GetAllPairs( const CString& seperatorStr , 
-                         bool envelopElements        , 
+CValueList::GetAllPairs( const CString& seperatorStr ,
+                         bool envelopElements        ,
                          const CString& envelopStr   ) const
 {GUCEF_TRACE;
 
@@ -635,7 +635,7 @@ CValueList::GetAllPairs( const CString& seperatorStr ,
     {
         const CString& key = (*i).first;
         const TStringVector& values = (*i).second;
-        
+
         TStringVector::const_iterator n = values.begin();
         while ( n != values.end() )
         {
@@ -647,7 +647,7 @@ CValueList::GetAllPairs( const CString& seperatorStr ,
             {
                 first = false;
             }
-            
+
             if ( envelopElements )
                 resultStr += envelopStr + key + envelopStr + '=' + envelopStr + (*n) + envelopStr;
             else
@@ -661,7 +661,7 @@ CValueList::GetAllPairs( const CString& seperatorStr ,
 
 /*-------------------------------------------------------------------------*/
 
-CString 
+CString
 CValueList::GetPair( const CString& key ) const
 {GUCEF_TRACE;
 
@@ -682,16 +682,16 @@ CValueList::GetKey( const UInt32 index ) const
     {
         TValueMap::const_iterator i = m_list.begin();
         for ( UInt32 n=0; n<index; ++n ) { ++i; }
-        
+
         return (*i).first;
     }
-    
+
     GUCEF_EMSGTHROW( EIndexOutOfRange, "CValueList::GetKey( index ): The given index is invalid" );
 }
 
 /*-------------------------------------------------------------------------*/
 
-bool 
+bool
 CValueList::HasKey( const CString& key ) const
 {GUCEF_TRACE;
 
@@ -700,8 +700,8 @@ CValueList::HasKey( const CString& key ) const
 
 /*-------------------------------------------------------------------------*/
 
-CValueList::TStringVector 
-CValueList::GetKeysWithWildcardKeyMatch( const CString& searchStr , 
+CValueList::TStringVector
+CValueList::GetKeysWithWildcardKeyMatch( const CString& searchStr ,
                                          char wildCardChar        ,
                                          bool caseSensitive       ) const
 {GUCEF_TRACE;
@@ -721,17 +721,17 @@ CValueList::GetKeysWithWildcardKeyMatch( const CString& searchStr ,
 }
 
 /*-------------------------------------------------------------------------*/
-        
-void 
+
+void
 CValueList::Delete( const CString& key )
 {GUCEF_TRACE;
-    
+
     m_list.erase( key );
 }
 
 /*-------------------------------------------------------------------------*/
 
-void 
+void
 CValueList::DeleteAll( void )
 {GUCEF_TRACE;
 
@@ -740,7 +740,7 @@ CValueList::DeleteAll( void )
 
 /*-------------------------------------------------------------------------*/
 
-UInt32 
+UInt32
 CValueList::GetCount( void ) const
 {GUCEF_TRACE;
 
@@ -757,10 +757,10 @@ CValueList::GetValueVector( const UInt32 index ) const
     {
         TValueMap::const_iterator i = m_list.begin();
         for ( UInt32 n=0; n<index; ++n ) { ++i; }
-        
+
         return (*i).second;
     }
-    
+
     GUCEF_EMSGTHROW( EIndexOutOfRange, "CValueList::GetValueVector( index ): The given index is invalid" )
 }
 
@@ -774,7 +774,7 @@ CValueList::GetDataBeginIterator( void ) const
 }
 
 /*-------------------------------------------------------------------------*/
-    
+
 CValueList::TValueMap::const_iterator
 CValueList::GetDataEndIterator( void ) const
 {GUCEF_TRACE;

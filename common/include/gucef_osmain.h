@@ -14,9 +14,9 @@
  *
  *  You should have received a copy of the GNU Lesser General Public
  *  License along with this library; if not, write to the Free Software
- *  Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA 
+ *  Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA
  */
- 
+
  #ifndef GUCEF_OSMAIN_H
  #define GUCEF_OSMAIN_H
 
@@ -27,17 +27,17 @@
 //-------------------------------------------------------------------------*/
 
 #include <signal.h>
- 
+
 #ifndef GUCEF_PLATFORM_H
 #include "gucef_platform.h"
 #define GUCEF_PLATFORM_H
 #endif /* GUCEF_PLATFORM_H ? */
- 
+
 /*-------------------------------------------------------------------------//
 //                                                                         //
 //      MACROS                                                             //
 //                                                                         //
-//-------------------------------------------------------------------------*/ 
+//-------------------------------------------------------------------------*/
 
 #define GUCEF_APP_TYPE_UNKNOWN                  0
 #define GUCEF_APP_TYPE_BACKGROUND_PROCESSS      1
@@ -72,7 +72,7 @@
  *
  *  This makes the parsing of application parameters uniform
  */
- 
+
 #if GUCEF_PLATFORM == GUCEF_PLATFORM_MSWIN
 
     #include <string.h>
@@ -285,8 +285,8 @@
                                                                                                        \
     int                                                                                                \
     Win32ServiceInitializer( int argc, char** argv )                                                   \
-    {                                                                                                  
-    
+    {
+
     #define GUCEF_OSSERVICEMAIN_END }
 
     #define GUCEF_OSMAIN_SIGNAL_HANDLER( signalHandlerFunc )                                           \
@@ -303,11 +303,13 @@
     #define GUCEF_OSMAIN_BEGIN                                                                         \
                                                                                                        \
     static const unsigned char GUCEF_APP_TYPE = GUCEF_AUTO_APP_TYPE_CONSOLE;                           \
+    typedef void ( *gucef_installed_signal_handler_ptr)( int );                                        \
+    static gucef_installed_signal_handler_ptr gucef_installed_signal_handler = NULL;                   \
                                                                                                        \
     int                                                                                                \
     main( int argc, char* argv[] )                                                                     \
     {
-    
+
     #define GUCEF_OSMAIN_END }
 
     #define GUCEF_OSSERVICEMAIN_BEGIN( serviceName )    GUCEF_OSMAIN_BEGIN
@@ -322,10 +324,10 @@
 
 #endif
 
-/*-------------------------------------------------------------------------*/ 
- 
+/*-------------------------------------------------------------------------*/
+
  #endif /* GUCEF_OSMAIN_H ? */
- 
+
 /*-------------------------------------------------------------------------//
 //                                                                         //
 //      Info & Changes                                                     //

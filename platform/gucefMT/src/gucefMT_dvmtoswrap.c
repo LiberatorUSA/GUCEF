@@ -344,7 +344,7 @@ PrecisionDelay( UInt32 delayInMs )
          Sleep( delayInMs );
          return;
     }
-             
+
     ticksToWait = (LONGLONG) ( highPerfTimerFrequencyTicksPerMs * delayInMs );
 
     while ( 1 )
@@ -353,7 +353,7 @@ PrecisionDelay( UInt32 delayInMs )
         ticksPassed = (LONGLONG) ( currentTime.QuadPart - startTime.QuadPart );
         if ( ticksPassed < 0 )
             return;
-        
+
         ticksLeft = (LONGLONG) ( ticksToWait - ticksPassed );
         if ( ticksLeft <= 0 )
             return;
@@ -364,7 +364,7 @@ PrecisionDelay( UInt32 delayInMs )
             UInt32 longSleepTimeInMs = (UInt32) ( ( ticksLeft - (highPerfTimerFrequencyTicksPerMs*15) ) / highPerfTimerFrequencyTicksPerMs );
             Sleep( longSleepTimeInMs );
         }
-        else        
+        else
         if ( ticksLeft > (Int32) ( highPerfTimerFrequencyTicksPerMs * 20 ) )
         {
             Sleep( 10 );
@@ -396,7 +396,7 @@ PrecisionDelay( UInt32 delayInMs )
 
     #elif ( ( GUCEF_PLATFORM == GUCEF_PLATFORM_LINUX ) || ( GUCEF_PLATFORM == GUCEF_PLATFORM_ANDROID ) )
 
-    usleep( delay * 1000 );
+    usleep( delayInMs * 1000 );
 
     #else
     #error unsupported target platform
@@ -447,7 +447,7 @@ PrecisionTimerShutdown( void )
 
 /*--------------------------------------------------------------------------*/
 
-UInt32 
+UInt32
 GetProcessID( void )
 {
     #if ( GUCEF_PLATFORM == GUCEF_PLATFORM_MSWIN )

@@ -30,6 +30,16 @@
 #define GUCEF_CORE_DVCPPSTRINGUTILS_H
 #endif /* GUCEF_CORE_DVCPPSTRINGUTILS_H ? */
 
+#ifndef GUCEF_CORE_CILOGGINGFORMATTER_H
+#include "gucefCORE_CILoggingFormatter.h"
+#define GUCEF_CORE_CILOGGINGFORMATTER_H
+#endif /* GUCEF_CORE_CILOGGINGFORMATTER_H ? */
+
+#ifndef GUCEF_CORE_CCOREGLOBAL_H
+#include "gucefCORE_CCoreGlobal.h"
+#define GUCEF_CORE_CCOREGLOBAL_H
+#endif /* GUCEF_CORE_CCOREGLOBAL_H ? */
+
 #ifndef GUCEF_CORE_CIOACCESS_H
 #include "CIOAccess.h"
 #define GUCEF_CORE_CIOACCESS_H
@@ -45,8 +55,6 @@
 #include <stdlib.h>
 #include <unistd.h>
 #include <fcntl.h>
-
-
 
 #endif /* GUCEF_LINUX_BUILD ? */
 
@@ -79,6 +87,7 @@ CXTermConsoleLogger::CXTermConsoleLogger( bool initialize )
     , m_masterfd( -1 )
     , m_slavefd( -1 )
     , m_slaveFptr( NULL )
+    , m_logFormatter( CCoreGlobal::Instance()->GetLogManager().CreateDefaultLoggingFormatter() )
 {GUCEF_TRACE;
 
     if ( initialize )
@@ -107,6 +116,9 @@ CXTermConsoleLogger::~CXTermConsoleLogger()
         close( m_slavefd );
         m_slavefd = -1;
     }
+
+    delete m_logFormatter;
+    m_logFormatter = GUCEF_NULL;
 }
 
 /*-------------------------------------------------------------------------*/
@@ -248,10 +260,10 @@ CXTermConsoleLogger::Log( const TLogMsgType logMsgType ,
         {
             if ( logLevel >= m_minimalLogLevel )
             {
-                CString actualLogMsg( FormatStdLogMessage( logMsgType ,
-                                                           logLevel   ,
-                                                           logMessage ,
-                                                           threadId   ) + "\n" );
+                CString actualLogMsg( m_logFormatter->FormatLogMessage( logMsgType ,
+                                                                        logLevel   ,
+                                                                        logMessage ,
+                                                                        threadId   ) + "\n" );
 
                 fprintf( m_slaveFptr, actualLogMsg.C_String() );
             }

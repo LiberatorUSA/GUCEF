@@ -14,17 +14,17 @@
  *
  *  You should have received a copy of the GNU Lesser General Public
  *  License along with this library; if not, write to the Free Software
- *  Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA 
+ *  Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA
  */
 
 #ifndef GUCEF_CORE_CTSINGLETON_H
-#define GUCEF_CORE_CTSINGLETON_H 
+#define GUCEF_CORE_CTSINGLETON_H
 
 /*-------------------------------------------------------------------------//
 //                                                                         //
 //      INCLUDES                                                           //
 //                                                                         //
-//-------------------------------------------------------------------------*/ 
+//-------------------------------------------------------------------------*/
 
 #ifndef GUCEF_MT_CILOCKABLE_H
 #include "gucefMT_CILockable.h"
@@ -76,26 +76,26 @@ class CTSingleton : public BaseClass ,
                     public virtual MT::CILockable
 {
     public:
-    
+
     static BaseClass* Instance( void );
-    
+
     static void Deinstance( void );
-    
+
     protected:
-    
+
     virtual bool Lock( void ) const GUCEF_VIRTUAL_OVERRIDE;
-    
+
     virtual bool Unlock( void ) const GUCEF_VIRTUAL_OVERRIDE;
-    
+
     private:
-    
+
     CTSingleton( void );
     virtual ~CTSingleton();
     CTSingleton( const CTSingleton& src );              /**< not implemented, don't use */
-    CTSingleton& operator=( const CTSingleton& src );   /**< not implemented, don't use */ 
-    
+    CTSingleton& operator=( const CTSingleton& src );   /**< not implemented, don't use */
+
     private:
-    
+
     static BaseClass* g_instance;
     static MT::CMutex g_dataLock;
 };
@@ -111,7 +111,7 @@ CTSingleton< BaseClass >::CTSingleton( void )
     : BaseClass()
     , MT::CILockable()
 {GUCEF_TRACE;
-    
+
 }
 
 /*-------------------------------------------------------------------------*/
@@ -129,15 +129,15 @@ BaseClass*
 CTSingleton< BaseClass >::Instance( void )
 {GUCEF_TRACE;
 
-    if ( GUCEF_NULL == m_instance )
+    if ( GUCEF_NULL == g_instance )
     {
-        MT::ScopeMutex lock( g_dataLock );
-        if ( GUCEF_NULL == m_instance )
+        MT::CScopeMutex lock( g_dataLock );
+        if ( GUCEF_NULL == g_instance )
         {
-            m_instance = new CTSingleton< BaseClass >();
+            g_instance = new CTSingleton< BaseClass >();
         }
     }
-    return m_instance;
+    return g_instance;
 }
 
 /*-------------------------------------------------------------------------*/
@@ -147,10 +147,10 @@ void
 CTSingleton< BaseClass >::Deinstance( void )
 {GUCEF_TRACE;
 
-    MT::ScopeMutex lock( g_dataLock );
-    
-    delete m_instance;
-    m_instance = NULL;
+    MT::CScopeMutex lock( g_dataLock );
+
+    delete g_instance;
+    g_instance = NULL;
 }
 
 /*-------------------------------------------------------------------------*/
