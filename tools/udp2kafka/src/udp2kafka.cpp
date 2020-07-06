@@ -1663,7 +1663,7 @@ Udp2Kafka::OnMetricsTimerCycle( CORE::CNotifier* notifier    ,
             GUCEF_METRIC_COUNT( settings.metricsPrefix + "kafkaMessagesReceived", metrics.kafkaMessagesReceived, 1.0f );
             GUCEF_METRIC_COUNT( settings.metricsPrefix + "kafkaMessagesFiltered", metrics.kafkaMessagesFiltered, 1.0f );
             GUCEF_METRIC_COUNT( settings.metricsPrefix + "udpBytesTransmitted", metrics.udpBytesTransmitted, 1.0f );
-            GUCEF_METRIC_COUNT( settings.metricsPrefix + "udpMessagesTransmitted", metrics.udpMessagesReceived, 1.0f );
+            GUCEF_METRIC_COUNT( settings.metricsPrefix + "udpMessagesTransmitted", metrics.udpMessagesTransmitted, 1.0f );
         }
         ++i;
     }
