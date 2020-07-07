@@ -185,13 +185,18 @@ CPHUDPSocket::OnNotify( CORE::CNotifier* notifier                 ,
     // We only accept events from our local socket
     if ( notifier == &_sock )
     {
-        if ( eventid == COMCORE::CUDPSocket::UDPPacketRecievedEvent )
+        if ( eventid == COMCORE::CUDPSocket::UDPPacketsRecievedEvent )
         {                        
             // Obtain data and pass it along for processing
-            COMCORE::CUDPSocket::UDPPacketRecievedEventData* eventData = static_cast< COMCORE::CUDPSocket::UDPPacketRecievedEventData* >( eventdata );
+            COMCORE::CUDPSocket::UDPPacketsRecievedEventData* eventData = static_cast< COMCORE::CUDPSocket::UDPPacketsRecievedEventData* >( eventdata );
             assert( NULL != eventData );
-            OnPacketRecieved( eventData->GetData().sourceAddress ,
-                              eventData->GetData().dataBuffer    );                        
+            const COMCORE::CUDPSocket::TUdpPacketsRecievedEventData& data = eventData->GetData();
+
+            for ( UInt32 p=0; p<data.packetsReceived; ++p )
+            {
+                OnPacketRecieved( data.packets[ p ].sourceAddress ,
+                                  data.packets[ p ].dataBuffer    );
+            }
             return;
         }
         else

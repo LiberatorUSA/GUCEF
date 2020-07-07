@@ -160,10 +160,10 @@ Udp2KafkaChannel::RegisterEventHandlers( void )
     SubscribeTo( m_udpSocket                               ,
                  COMCORE::CUDPSocket::UDPSocketOpenedEvent ,
                  callback4                                 );
-    TEventCallback callback5( this, &Udp2KafkaChannel::OnUDPPacketRecieved );
-    SubscribeTo( m_udpSocket                                 ,
-                 COMCORE::CUDPSocket::UDPPacketRecievedEvent ,
-                 callback5                                   );
+    TEventCallback callback5( this, &Udp2KafkaChannel::OnUDPPacketsRecieved );
+    SubscribeTo( m_udpSocket                                  ,
+                 COMCORE::CUDPSocket::UDPPacketsRecievedEvent ,
+                 callback5                                    );
     
     TEventCallback callback6( this, &Udp2KafkaChannel::OnMetricsTimerCycle );
     SubscribeTo( m_metricsTimer                 ,
@@ -902,9 +902,9 @@ Udp2KafkaChannel::KafkaProduce( const COMCORE::CIPAddress& sourceAddress ,
 /*-------------------------------------------------------------------------*/
 
 void
-Udp2KafkaChannel::OnUDPPacketRecieved( CORE::CNotifier* notifier   ,
-                                       const CORE::CEvent& eventID ,
-                                       CORE::CICloneable* evenData )
+Udp2KafkaChannel::OnUDPPacketsRecieved( CORE::CNotifier* notifier   ,
+                                        const CORE::CEvent& eventID ,
+                                        CORE::CICloneable* evenData )
 {GUCEF_TRACE;
 
     if ( EChannelMode::KAFKA_PRODUCER != m_channelSettings.mode && EChannelMode::KAFKA_PRODUCER_AND_CONSUMER != m_channelSettings.mode )
@@ -913,49 +913,52 @@ Udp2KafkaChannel::OnUDPPacketRecieved( CORE::CNotifier* notifier   ,
         return;
     }
 
-    COMCORE::CUDPSocket::UDPPacketRecievedEventData* udpPacketData = static_cast< COMCORE::CUDPSocket::UDPPacketRecievedEventData* >( evenData );
+    COMCORE::CUDPSocket::UDPPacketsRecievedEventData* udpPacketData = static_cast< COMCORE::CUDPSocket::UDPPacketsRecievedEventData* >( evenData );
     if ( GUCEF_NULL != udpPacketData )
     {
-        const COMCORE::CUDPSocket::TUDPPacketRecievedEventData& data = udpPacketData->GetData();
-        const CORE::CDynamicBuffer& udpPacketBuffer = data.dataBuffer.GetData();
-        const COMCORE::CIPAddress& sourceAddress = data.sourceAddress;
-
-        GUCEF_DEBUG_LOG( CORE::LOGLEVEL_NORMAL, "Udp2KafkaChannel: UDP Socket received a packet from " + sourceAddress.AddressAndPortAsString() );
-        
-        if ( GUCEF_NULL != m_kafkaProducer )
+        const COMCORE::CUDPSocket::TUdpPacketsRecievedEventData& data = udpPacketData->GetData();
+        for ( CORE::UInt32 p=0; p<data.packetsReceived; ++p )
         {
-            RdKafka::ErrorCode retCode = RdKafka::ERR_NO_ERROR;
-            while ( !m_kafkaMsgQueueOverflowQueue.empty() && ( retCode == RdKafka::ERR_NO_ERROR ) )
+            const CORE::CDynamicBuffer& udpPacketBuffer = data.packets[ p ].dataBuffer.GetData();
+            const COMCORE::CIPAddress& sourceAddress = data.packets[ p ].sourceAddress;
+
+            GUCEF_DEBUG_LOG( CORE::LOGLEVEL_NORMAL, "Udp2KafkaChannel: UDP Socket received a packet from " + sourceAddress.AddressAndPortAsString() );
+        
+            if ( GUCEF_NULL != m_kafkaProducer )
             {
-                const COMCORE::CUDPSocket::TUDPPacketRecievedEventData& queuedUdpPacketEntry = m_kafkaMsgQueueOverflowQueue.front();
-                retCode = KafkaProduce( queuedUdpPacketEntry.sourceAddress, queuedUdpPacketEntry.dataBuffer.GetData() );
+                RdKafka::ErrorCode retCode = RdKafka::ERR_NO_ERROR;
+                while ( !m_kafkaMsgQueueOverflowQueue.empty() && ( retCode == RdKafka::ERR_NO_ERROR ) )
+                {
+                    const TPacketEntry& queuedUdpPacketEntry = m_kafkaMsgQueueOverflowQueue.front();
+                    retCode = KafkaProduce( queuedUdpPacketEntry.sourceAddress, queuedUdpPacketEntry.dataBuffer.GetData() );
+                    if ( retCode == RdKafka::ERR_NO_ERROR )
+                    {
+                        m_kafkaMsgQueueOverflowQueue.pop_front();
+                    }
+                    else
+                        break;            
+                }
+
                 if ( retCode == RdKafka::ERR_NO_ERROR )
                 {
-                    m_kafkaMsgQueueOverflowQueue.pop_front();
+                    retCode = retCode = KafkaProduce( sourceAddress, udpPacketBuffer );
+                    switch ( retCode )
+                    {
+                        case RdKafka::ERR__QUEUE_FULL: 
+                        {
+                            m_kafkaMsgQueueOverflowQueue.push_back( data.packets[ p ] );
+                            break;
+                        }
+                        case RdKafka::ERR_NO_ERROR: 
+                        {
+                            break;
+                        }
+                    }
                 }
                 else
-                    break;            
-            }
-
-            if ( retCode == RdKafka::ERR_NO_ERROR )
-            {
-                retCode = retCode = KafkaProduce( sourceAddress, udpPacketBuffer );
-                switch ( retCode )
                 {
-                    case RdKafka::ERR__QUEUE_FULL: 
-                    {
-                        m_kafkaMsgQueueOverflowQueue.push_back( data );
-                        break;
-                    }
-                    case RdKafka::ERR_NO_ERROR: 
-                    {
-                        break;
-                    }
+                    m_kafkaMsgQueueOverflowQueue.push_back( data.packets[ p ] );
                 }
-            }
-            else
-            {
-                m_kafkaMsgQueueOverflowQueue.push_back( data );
             }
         }
     }
@@ -1466,7 +1469,7 @@ Udp2KafkaChannel::OnTaskEnd( CORE::CICloneable* taskData )
         RdKafka::ErrorCode retCode = RdKafka::ERR_NO_ERROR;
         while ( !m_kafkaMsgQueueOverflowQueue.empty() && ( retCode == RdKafka::ERR_NO_ERROR ) )
         {
-            COMCORE::CUDPSocket::TUDPPacketRecievedEventData& queuedUdpPacketEntry = m_kafkaMsgQueueOverflowQueue.front();
+            TPacketEntry& queuedUdpPacketEntry = m_kafkaMsgQueueOverflowQueue.front();
             retCode = KafkaProduce( queuedUdpPacketEntry.sourceAddress, queuedUdpPacketEntry.dataBuffer.GetData() );
             if ( retCode == RdKafka::ERR_NO_ERROR )
             {

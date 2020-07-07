@@ -183,6 +183,9 @@ class Udp2KafkaChannel : public CORE::CTaskConsumer ,
 
     private:
 
+    typedef COMCORE::CUDPSocket::TPacketEntryVector TPacketEntryVector;
+    typedef COMCORE::CUDPSocket::TPacketEntry TPacketEntry;
+
     virtual void event_cb( RdKafka::Event& event );
 
     virtual void dr_cb( RdKafka::Message& message );
@@ -234,9 +237,9 @@ class Udp2KafkaChannel : public CORE::CTaskConsumer ,
                        CORE::CICloneable* evenData );
 
     void
-    OnUDPPacketRecieved( CORE::CNotifier* notifier   ,
-                         const CORE::CEvent& eventID ,
-                         CORE::CICloneable* evenData );
+    OnUDPPacketsRecieved( CORE::CNotifier* notifier   ,
+                          const CORE::CEvent& eventID ,
+                          CORE::CICloneable* evenData );
 
     void
     OnMetricsTimerCycle( CORE::CNotifier* notifier    ,
@@ -272,7 +275,7 @@ class Udp2KafkaChannel : public CORE::CTaskConsumer ,
     
     private:
 
-    typedef std::deque< COMCORE::CUDPSocket::TUDPPacketRecievedEventData > TUDPPacketQueue;
+    typedef std::deque< TPacketEntry > TPacketEntryQueue;
     typedef ChannelSettings::HostAddressVector HostAddressVector;
     typedef std::map< CORE::Int32, CORE::Int64 > TInt32ToInt64Map;
 
@@ -286,7 +289,7 @@ class Udp2KafkaChannel : public CORE::CTaskConsumer ,
 
     ChannelSettings m_channelSettings;
     GUCEF::COMCORE::CUDPSocket* m_udpSocket;
-    TUDPPacketQueue m_kafkaMsgQueueOverflowQueue;
+    TPacketEntryQueue m_kafkaMsgQueueOverflowQueue;
     CORE::CTimer* m_metricsTimer;
     ChannelMetrics m_metrics;
     CORE::UInt32 m_kafkaErrorReplies;

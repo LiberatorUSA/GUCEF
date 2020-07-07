@@ -248,21 +248,24 @@ CUDPMasterSocket::OnNotify( CORE::CNotifier* notifier                 ,
     // We only accept messages from our own UDP socket
     if ( notifier == &m_udpSocket )
     {
-        if ( eventid == CUDPSocket::UDPPacketRecievedEvent )
+        if ( eventid == CUDPSocket::UDPPacketsRecievedEvent )
         {
             // convert eventdata into something usable
-            CUDPSocket::UDPPacketRecievedEventData* eData = static_cast< CUDPSocket::UDPPacketRecievedEventData* >( eventdata );
-            const CUDPSocket::SUDPPacketRecievedEventData& data = eData->GetData();
+            CUDPSocket::UDPPacketsRecievedEventData* eData = static_cast< CUDPSocket::UDPPacketsRecievedEventData* >( eventdata );
+            const CUDPSocket::TUdpPacketsRecievedEventData& data = eData->GetData();
             
-            // Obtain a channel for the given peer address
-            CUDPChannel* channel = ReserveChannelForAddress( data.sourceAddress );
+            for ( UInt32 p=0; p<data.packetsReceived; ++p )
+            {
+                // Obtain a channel for the given peer address
+                CUDPChannel* channel = ReserveChannelForAddress( data.packets[ p ].sourceAddress );
             
-            // Force the channel to notify to its clients
-            // Because the data buffer link will only live inside this scope it is safe to
-            // link to the already linked buffer
-            CORE::TLinkedCloneableBuffer buffer( &data.dataBuffer.GetData() );
-            channel->DoNotifyObservers( CUDPChannel::UDPPacketReceivedEvent ,
-                                        &buffer                             );
+                // Force the channel to notify to its clients
+                // Because the data buffer link will only live inside this scope it is safe to
+                // link to the already linked buffer
+                CORE::TLinkedCloneableBuffer buffer( &data.packets[ p ].dataBuffer.GetData() );
+                channel->DoNotifyObservers( CUDPChannel::UDPPacketReceivedEvent ,
+                                            &buffer                             );
+            }
         }
         else
         if ( eventid == CUDPSocket::UDPSocketErrorEvent )

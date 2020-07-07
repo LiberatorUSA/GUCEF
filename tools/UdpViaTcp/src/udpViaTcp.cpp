@@ -177,9 +177,9 @@ UdpViaTcp::RegisterEventHandlers( void )
     SubscribeTo( &m_udpReceiveSocket                       ,
                  COMCORE::CUDPSocket::UDPSocketOpenedEvent ,
                  callback3                                 );
-    TEventCallback callback4( this, &UdpViaTcp::OnUDPReceiveSocketPacketRecieved );
+    TEventCallback callback4( this, &UdpViaTcp::OnUDPReceiveSocketPacketsRecieved );
     SubscribeTo( &m_udpReceiveSocket                         ,
-                 COMCORE::CUDPSocket::UDPPacketRecievedEvent ,
+                 COMCORE::CUDPSocket::UDPPacketsRecievedEvent ,
                  callback4                                   );
 
 
@@ -195,9 +195,9 @@ UdpViaTcp::RegisterEventHandlers( void )
     SubscribeTo( &m_udpTransmitSocket                      ,
                  COMCORE::CUDPSocket::UDPSocketOpenedEvent ,
                  callback7                                 );
-    TEventCallback callback8( this, &UdpViaTcp::OnUDPTransmitSocketPacketRecieved );
+    TEventCallback callback8( this, &UdpViaTcp::OnUDPTransmitSocketPacketsRecieved );
     SubscribeTo( &m_udpTransmitSocket                        ,
-                 COMCORE::CUDPSocket::UDPPacketRecievedEvent ,
+                 COMCORE::CUDPSocket::UDPPacketsRecievedEvent ,
                  callback8                                   );
 
 
@@ -359,37 +359,45 @@ UdpViaTcp::OnUDPReceiveSocketOpened( CORE::CNotifier* notifier   ,
 /*-------------------------------------------------------------------------*/
 
 void
-UdpViaTcp::OnUDPReceiveSocketPacketRecieved( CORE::CNotifier* notifier    ,
-                                             const CORE::CEvent& eventID  ,
-                                             CORE::CICloneable* eventData )
+UdpViaTcp::OnUDPReceiveSocketPacketsRecieved( CORE::CNotifier* notifier    ,
+                                              const CORE::CEvent& eventID  ,
+                                              CORE::CICloneable* eventData )
 {GUCEF_TRACE;
 
-    COMCORE::CUDPSocket::UDPPacketRecievedEventData* udpPacketData = static_cast< COMCORE::CUDPSocket::UDPPacketRecievedEventData* >( eventData );
+    COMCORE::CUDPSocket::UDPPacketsRecievedEventData* udpPacketData = static_cast< COMCORE::CUDPSocket::UDPPacketsRecievedEventData* >( eventData );
     if ( GUCEF_NULL != udpPacketData )
     {
-        const COMCORE::CUDPSocket::TUDPPacketRecievedEventData& data = udpPacketData->GetData();
-        const CORE::CDynamicBuffer& udpPacketBuffer = data.dataBuffer.GetData();
+        const COMCORE::CUDPSocket::TUdpPacketsRecievedEventData& data = udpPacketData->GetData();
+        for ( CORE::UInt32 i=0; i<data.packetsReceived; ++i )
+        {
+            const CORE::CDynamicBuffer& udpPacketBuffer = data.packets[ i ].dataBuffer.GetData();
 
-        GUCEF_DEBUG_LOG( CORE::LOGLEVEL_NORMAL, "UdpViaTcp: UDP Receive Socket received a packet from " + data.sourceAddress.AddressAndPortAsString() );
+            GUCEF_DEBUG_LOG( CORE::LOGLEVEL_NORMAL, "UdpViaTcp: UDP Receive Socket received a packet from " + data.packets[ i ].sourceAddress.AddressAndPortAsString() );
 
-        char packetHeader[ 7 ]; 
-        memcpy( packetHeader, "UDP", 3 );
+            char packetHeader[ 7 ]; 
+            memcpy( packetHeader, "UDP", 3 );
         
-        bool successfullSend = false;
-        bool failedToSendQueued = false;
-        if ( m_tcpClientSocket.IsActive() )
-        {            
-            while ( !m_tcpClientSendPacketBuffers.empty() )
-            {
-                CORE::CDynamicBuffer& packet = m_tcpClientSendPacketBuffers.front();
-                CORE::UInt32 packetSize = packet.GetDataSize();
-                memcpy( packetHeader+3, &packetSize, 4 );
-                if ( m_tcpClientSocket.Send( packetHeader, 7 ) )
+            bool successfullSend = false;
+            bool failedToSendQueued = false;
+            if ( m_tcpClientSocket.IsActive() )
+            {            
+                while ( !m_tcpClientSendPacketBuffers.empty() )
                 {
-                    if ( m_tcpClientSocket.Send( packet.GetConstBufferPtr(), packetSize ) )
+                    CORE::CDynamicBuffer& packet = m_tcpClientSendPacketBuffers.front();
+                    CORE::UInt32 packetSize = packet.GetDataSize();
+                    memcpy( packetHeader+3, &packetSize, 4 );
+                    if ( m_tcpClientSocket.Send( packetHeader, 7 ) )
                     {
-                        m_tcpClientSendPacketBuffers.pop();
-                        m_tcpClientAppLvlKeepAliveTimer.Reset();
+                        if ( m_tcpClientSocket.Send( packet.GetConstBufferPtr(), packetSize ) )
+                        {
+                            m_tcpClientSendPacketBuffers.pop();
+                            m_tcpClientAppLvlKeepAliveTimer.Reset();
+                        }
+                        else
+                        {
+                            failedToSendQueued = true;
+                            break;
+                        }
                     }
                     else
                     {
@@ -397,30 +405,25 @@ UdpViaTcp::OnUDPReceiveSocketPacketRecieved( CORE::CNotifier* notifier    ,
                         break;
                     }
                 }
-                else
-                {
-                    failedToSendQueued = true;
-                    break;
-                }
-            }
 
-            if ( !failedToSendQueued )
-            {
-                CORE::UInt32 packetSize = udpPacketBuffer.GetDataSize();
-                memcpy( packetHeader+3, &packetSize, 4 );
-                if ( m_tcpClientSocket.Send( packetHeader, 7 ) )
+                if ( !failedToSendQueued )
                 {
-                    if ( m_tcpClientSocket.Send( udpPacketBuffer.GetConstBufferPtr(), packetSize ) )
+                    CORE::UInt32 packetSize = udpPacketBuffer.GetDataSize();
+                    memcpy( packetHeader+3, &packetSize, 4 );
+                    if ( m_tcpClientSocket.Send( packetHeader, 7 ) )
                     {
-                        successfullSend = true;
-                        m_tcpClientAppLvlKeepAliveTimer.Reset();
+                        if ( m_tcpClientSocket.Send( udpPacketBuffer.GetConstBufferPtr(), packetSize ) )
+                        {
+                            successfullSend = true;
+                            m_tcpClientAppLvlKeepAliveTimer.Reset();
+                        }
                     }
                 }
             }
-        }
-        if ( !successfullSend )
-        {
-            m_tcpClientSendPacketBuffers.push( udpPacketBuffer );
+            if ( !successfullSend )
+            {
+                m_tcpClientSendPacketBuffers.push( udpPacketBuffer );
+            }
         }
     }
     else
@@ -466,26 +469,28 @@ UdpViaTcp::OnUDPTransmitSocketOpened( CORE::CNotifier* notifier    ,
 /*-------------------------------------------------------------------------*/
 
 void
-UdpViaTcp::OnUDPTransmitSocketPacketRecieved( CORE::CNotifier* notifier   ,
-                                              const CORE::CEvent& eventID ,
-                                              CORE::CICloneable* evenData )
+UdpViaTcp::OnUDPTransmitSocketPacketsRecieved( CORE::CNotifier* notifier   ,
+                                               const CORE::CEvent& eventID ,
+                                               CORE::CICloneable* evenData )
 {GUCEF_TRACE;
 
-    COMCORE::CUDPSocket::UDPPacketRecievedEventData* udpPacketData = static_cast< COMCORE::CUDPSocket::UDPPacketRecievedEventData* >( evenData );
+    COMCORE::CUDPSocket::UDPPacketsRecievedEventData* udpPacketData = static_cast< COMCORE::CUDPSocket::UDPPacketsRecievedEventData* >( evenData );
     if ( GUCEF_NULL != udpPacketData )
     {
-        const COMCORE::CUDPSocket::TUDPPacketRecievedEventData& data = udpPacketData->GetData();
-        const CORE::CDynamicBuffer& udpPacketBuffer = data.dataBuffer.GetData();
+        const COMCORE::CUDPSocket::TUdpPacketsRecievedEventData& data = udpPacketData->GetData();
+        for ( CORE::UInt32 i=0; i<data.packetsReceived; ++i )
+        {
+            const CORE::CDynamicBuffer& udpPacketBuffer = data.packets[ i ].dataBuffer.GetData();
 
-        GUCEF_DEBUG_LOG( CORE::LOGLEVEL_IMPORTANT, "UdpViaTcp: UDP Transmit Socket received a packet from " + data.sourceAddress.AddressAndPortAsString() );
+            GUCEF_DEBUG_LOG( CORE::LOGLEVEL_IMPORTANT, "UdpViaTcp: UDP Transmit Socket received a packet from " + data.packets[ i ].sourceAddress.AddressAndPortAsString() );
 
-        char packetHeader[ 7 ]; 
-        CORE::UInt32 packetSize = udpPacketBuffer.GetDataSize();
-        memcpy( packetHeader, "UDP", 3 );
-        memcpy( packetHeader+3, &packetSize, 4 );        
-        m_tcpServerSocket.SendToAllClients( packetHeader, 7 );
-        m_tcpServerSocket.SendToAllClients( udpPacketBuffer.GetConstBufferPtr(), packetSize );
-
+            char packetHeader[ 7 ]; 
+            CORE::UInt32 packetSize = udpPacketBuffer.GetDataSize();
+            memcpy( packetHeader, "UDP", 3 );
+            memcpy( packetHeader+3, &packetSize, 4 );        
+            m_tcpServerSocket.SendToAllClients( packetHeader, 7 );
+            m_tcpServerSocket.SendToAllClients( udpPacketBuffer.GetConstBufferPtr(), packetSize );
+        }
     }
     else
     {

@@ -371,7 +371,7 @@ dvsocket_recvfrom( SOCKET s                  ,
 
 void
 dvsocket_inet_ntoa( struct in_addr in ,
-                char* ip          )
+                    char* ip          )
 {
     char* retip;
     retip = inet_ntoa( in );
@@ -469,6 +469,64 @@ dvsocket_setsockopt( SOCKET s           ,
         return retval;
     }
     *error = 0;
+    return retval;
+}
+
+/*-------------------------------------------------------------------------*/
+
+int 
+dvsocket_getsockopt( SOCKET s     , 
+                     int level    , 
+                     int optname  ,               
+                     char* optval ,
+                     int* optlen  ,
+                     int* error   )
+{
+    int retval;
+    if ( ( retval = getsockopt( s, level, optname, optval, optlen ) ) == SOCKET_ERROR )
+    {
+        *error = LastSocketError;
+        return retval;
+    }
+    *error = 0;
+    return retval;
+}
+
+/*-------------------------------------------------------------------------*/
+
+int
+dvsocket_setsockopt_and_validate( SOCKET s           ,
+                                  int level          ,
+                                  int optname        ,
+                                  const char* optval ,
+                                  int optlen         ,
+                                  char* actualOptval ,
+                                  int* actualOptlen  ,
+                                  int* error         )
+{
+    *error = 0;
+    int retval = SOCKET_ERROR;
+    if ( ( retval = setsockopt( s, level, optname, optval, optlen ) ) != SOCKET_ERROR )
+    {
+        if ( NULL != actualOptval && NULL != actualOptlen )
+        {
+            if ( ( retval = getsockopt( s, level, optname, actualOptval, actualOptlen ) ) != SOCKET_ERROR )
+            {
+                if ( *actualOptlen != optlen )
+                    return SOCKET_ERROR;
+                if ( 0 != memcmp( actualOptval, optval, optlen ) )
+                    return SOCKET_ERROR;
+            }
+            else
+            {
+                int dummy = LastSocketError;
+            }
+        }
+    }
+    else
+    {
+        *error = LastSocketError;
+    }
     return retval;
 }
 

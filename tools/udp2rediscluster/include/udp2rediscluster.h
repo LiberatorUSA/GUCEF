@@ -169,9 +169,9 @@ class Udp2RedisClusterChannel : public CORE::CTaskConsumer
                        CORE::CICloneable* evenData );
 
     void
-    OnUDPPacketRecieved( CORE::CNotifier* notifier   ,
-                         const CORE::CEvent& eventID ,
-                         CORE::CICloneable* evenData );
+    OnUDPPacketsRecieved( CORE::CNotifier* notifier   ,
+                          const CORE::CEvent& eventID ,
+                          CORE::CICloneable* evenData );
 
     void
     OnMetricsTimerCycle( CORE::CNotifier* notifier    ,
@@ -182,9 +182,14 @@ class Udp2RedisClusterChannel : public CORE::CTaskConsumer
 
     private:
 
+    typedef COMCORE::CUDPSocket::TPacketEntryVector TPacketEntryVector;
+    typedef COMCORE::CUDPSocket::TPacketEntry TPacketEntry;
+
     void RegisterEventHandlers( void );
     
-    bool RedisSend( const CORE::CDynamicBuffer& udpPacket );
+    bool RedisSend( const TPacketEntryVector& udpPackets, CORE::UInt32 packetCount );
+
+    bool AddToOverflowQueue( const TPacketEntryVector& udpPackets, CORE::UInt32 packetCount );
 
     bool SendQueuedPackagesIfAny( void );
 
@@ -192,13 +197,13 @@ class Udp2RedisClusterChannel : public CORE::CTaskConsumer
 
     private:
 
-    typedef std::deque< CORE::CDynamicBuffer > TDynamicBufferQueue;
+    typedef std::deque< TPacketEntry > TPacketEntryQueue;
     typedef std::vector< redisAsyncContext* > redisAsyncContextVector;
 
     ChannelSettings m_channelSettings;   
     sw::redis::RedisCluster* m_redisContext;
     GUCEF::COMCORE::CUDPSocket* m_udpSocket;
-    TDynamicBufferQueue m_redisMsgQueueOverflowQueue;
+    TPacketEntryQueue m_redisMsgQueueOverflowQueue;
     CORE::CTimer* m_metricsTimer;
     ChannelMetrics m_metrics;
     CORE::UInt32 m_redisErrorReplies;

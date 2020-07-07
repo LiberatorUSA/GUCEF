@@ -47,7 +47,15 @@
 
 /*-------------------------------------------------------------------------//
 //                                                                         //
-//      UTILITIES                                                          //
+//      GLOBAL VARS                                                        //
+//                                                                         //
+//-------------------------------------------------------------------------*/
+
+#define GUCEF_QUEUE_SEND_DEFAULT_BATCH_SIZE                 25
+
+/*-------------------------------------------------------------------------//
+//                                                                         //
+//      IMPLEMENTATION                                                     //
 //                                                                         //
 //-------------------------------------------------------------------------*/
 
@@ -128,9 +136,9 @@ Udp2RedisChannel::RegisterEventHandlers( void )
     SubscribeTo( m_udpSocket                               ,
                  COMCORE::CUDPSocket::UDPSocketOpenedEvent ,
                  callback3                                 );
-    TEventCallback callback4( this, &Udp2RedisChannel::OnUDPPacketRecieved );
+    TEventCallback callback4( this, &Udp2RedisChannel::OnUDPPacketsRecieved );
     SubscribeTo( m_udpSocket                                 ,
-                 COMCORE::CUDPSocket::UDPPacketRecievedEvent ,
+                 COMCORE::CUDPSocket::UDPPacketsRecievedEvent ,
                  callback4                                   );
     TEventCallback callback5( this, &Udp2RedisChannel::OnRedisReconnectTimer );
     SubscribeTo( m_redisReconnectTimer          ,
@@ -520,26 +528,34 @@ Udp2RedisChannel::OnRedisReconnectTimer( CORE::CNotifier* notifier   ,
 /*-------------------------------------------------------------------------*/
 
 int
-Udp2RedisChannel::RedisSend( const CORE::CDynamicBuffer& udpPacket )
+Udp2RedisChannel::RedisSend( const TPacketEntryVector& udpPackets , 
+                             CORE::UInt32 packetCount             )
 {GUCEF_TRACE;
 
-    int retCode = redisAsyncCommand( m_redisContext,
+    int errCode = REDIS_OK;
+    int retCode = 0;
+    for ( CORE::UInt32 i=0; i<packetCount; ++i )
+    {
+        const CORE::CDynamicBuffer& buffer = udpPackets[ i ].dataBuffer.GetData();
+        retCode = redisAsyncCommand( m_redisContext,
                                      &OnRedisASyncVoidReply,
                                      this,
                                      m_redisStreamSendCmd.C_String(),
-                                     udpPacket.GetConstBufferPtr(),
-                                     udpPacket.GetDataSize() );
-    if ( retCode != REDIS_OK )
-    {
-        GUCEF_ERROR_LOG( CORE::LOGLEVEL_IMPORTANT, "Udp2RedisChannel:RedisSend: Failed executing async send command" );
+                                     buffer.GetConstBufferPtr(),
+                                     buffer.GetDataSize() );
+        if ( retCode != REDIS_OK )
+        {
+            GUCEF_ERROR_LOG( CORE::LOGLEVEL_IMPORTANT, "Udp2RedisChannel:RedisSend: Failed executing async send command" );
+            errCode = retCode;
+        }
+        #ifdef GUCEF_DEBUG_MODE
+        else
+        {
+            GUCEF_DEBUG_LOG( CORE::LOGLEVEL_EVERYTHING, "Udp2RedisChannel:RedisSend: Successfully executed async send command" );
+        }
+        #endif
     }
-    #ifdef GUCEF_DEBUG_MODE
-    else
-    {
-        GUCEF_DEBUG_LOG( CORE::LOGLEVEL_EVERYTHING, "Udp2RedisChannel:RedisSend: Successfully executed async send command" );
-    }
-    #endif
-    return retCode;
+    return errCode;
 }
 
 /*-------------------------------------------------------------------------*/
@@ -548,54 +564,66 @@ bool
 Udp2RedisChannel::SendQueuedPackagesIfAny( void )
 {GUCEF_TRACE;
 
-    if ( GUCEF_NULL != m_redisContext )
+    TPacketEntryVector packetBundle;
+    size_t i=0;
+    TDynamicBufferQueue::iterator b = m_redisMsgQueueOverflowQueue.begin();
+    TDynamicBufferQueue::iterator e = m_redisMsgQueueOverflowQueue.begin();
+    while ( i < GUCEF_QUEUE_SEND_DEFAULT_BATCH_SIZE && i < m_redisMsgQueueOverflowQueue.size() )
     {
-        int retCode = REDIS_OK;
-
-        while ( !m_redisMsgQueueOverflowQueue.empty() && ( retCode == REDIS_OK ) )
-        {
-            const CORE::CDynamicBuffer& queuedUdpPacket = m_redisMsgQueueOverflowQueue.front();
-            retCode = RedisSend( queuedUdpPacket );
-            if ( retCode == REDIS_OK )
-            {
-                m_redisMsgQueueOverflowQueue.pop_front();
-            }
-            else
-                break;
-        }
-
-        return retCode == REDIS_OK;
+        TPacketEntry entry;
+        entry.dataBuffer.LinkTo( &m_redisMsgQueueOverflowQueue.at( i ) );
+        packetBundle.push_back( entry );
+        ++i; ++e;    
     }
-    return false;
+
+    if ( !packetBundle.empty() )
+    {
+        if ( RedisSend( packetBundle, packetBundle.size() ) )
+        {
+            m_redisMsgQueueOverflowQueue.erase( b, e );
+            return true;
+        }
+        return false;
+    }
+    return true;
+}
+
+/*-------------------------------------------------------------------------*/
+
+bool
+Udp2RedisChannel::AddToOverflowQueue( const TPacketEntryVector& udpPackets ,
+                                      CORE::UInt32 packetCount             )
+{GUCEF_TRACE;
+
+    for ( CORE::UInt32 i=0; i<packetCount; ++i )
+    {
+        m_redisMsgQueueOverflowQueue.push_back( udpPackets[ i ].dataBuffer.GetData() );
+    }
+    return true;
 }
 
 /*-------------------------------------------------------------------------*/
 
 void
-Udp2RedisChannel::OnUDPPacketRecieved( CORE::CNotifier* notifier   ,
-                                       const CORE::CEvent& eventID ,
-                                       CORE::CICloneable* evenData )
+Udp2RedisChannel::OnUDPPacketsRecieved( CORE::CNotifier* notifier   ,
+                                        const CORE::CEvent& eventID ,
+                                        CORE::CICloneable* evenData )
 {GUCEF_TRACE;
 
-    COMCORE::CUDPSocket::UDPPacketRecievedEventData* udpPacketData = static_cast< COMCORE::CUDPSocket::UDPPacketRecievedEventData* >( evenData );
+    COMCORE::CUDPSocket::UDPPacketsRecievedEventData* udpPacketData = static_cast< COMCORE::CUDPSocket::UDPPacketsRecievedEventData* >( evenData );
     if ( GUCEF_NULL != udpPacketData )
     {
-        const COMCORE::CUDPSocket::TUDPPacketRecievedEventData& data = udpPacketData->GetData();
-        const CORE::CDynamicBuffer& udpPacketBuffer = data.dataBuffer.GetData();
+        const COMCORE::CUDPSocket::TUdpPacketsRecievedEventData& data = udpPacketData->GetData();
 
         #ifdef GUCEF_DEBUG_MODE
-        GUCEF_DEBUG_LOG( CORE::LOGLEVEL_IMPORTANT, "Udp2RedisChannel: UDP Socket received a packet from " + data.sourceAddress.AddressAndPortAsString() );
+        GUCEF_DEBUG_LOG( CORE::LOGLEVEL_IMPORTANT, "Udp2RedisChannel: UDP Socket received " + CORE::UInt32ToString( data.packetsReceived ) + " packets" );
         #endif
 
         if ( SendQueuedPackagesIfAny() )
         {
-            int retCode = RedisSend( udpPacketBuffer );
+            int retCode = RedisSend( data.packets, data.packetsReceived );
             if ( retCode == REDIS_ERR )
-                m_redisMsgQueueOverflowQueue.push_back( udpPacketBuffer );
-        }
-        else
-        {
-            m_redisMsgQueueOverflowQueue.push_back( udpPacketBuffer );
+                AddToOverflowQueue( data.packets, data.packetsReceived ); 
         }
     }
     else

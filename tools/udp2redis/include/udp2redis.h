@@ -139,6 +139,9 @@ class Udp2RedisChannel : public CORE::CTaskConsumer
     
     private:
 
+    typedef COMCORE::CUDPSocket::TPacketEntryVector TPacketEntryVector;
+    typedef COMCORE::CUDPSocket::TPacketEntry TPacketEntry;
+
     void
     OnUDPSocketError( CORE::CNotifier* notifier   ,
                       const CORE::CEvent& eventID ,
@@ -155,9 +158,9 @@ class Udp2RedisChannel : public CORE::CTaskConsumer
                        CORE::CICloneable* evenData );
 
     void
-    OnUDPPacketRecieved( CORE::CNotifier* notifier   ,
-                         const CORE::CEvent& eventID ,
-                         CORE::CICloneable* evenData );
+    OnUDPPacketsRecieved( CORE::CNotifier* notifier   ,
+                          const CORE::CEvent& eventID ,
+                          CORE::CICloneable* evenData );
 
     void
     OnRedisReconnectTimer( CORE::CNotifier* notifier   ,
@@ -175,11 +178,14 @@ class Udp2RedisChannel : public CORE::CTaskConsumer
 
     void RegisterEventHandlers( void );
     
-    int RedisSend( const CORE::CDynamicBuffer& udpPacket );
+    int RedisSend( const TPacketEntryVector& udpPackets , 
+                   CORE::UInt32 packetCount             );
 
     bool SendQueuedPackagesIfAny( void );
 
     bool RedisConnect( void );
+
+    bool AddToOverflowQueue( const TPacketEntryVector& udpPackets, CORE::UInt32 packetCount );
 
     static void 
     OnRedisASyncVoidReply( redisAsyncContext* context , 

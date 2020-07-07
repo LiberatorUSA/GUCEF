@@ -80,17 +80,26 @@ class GUCEF_COMCORE_EXPORT_CPP CUDPSocket : public CSocket
     static const CORE::CEvent UDPSocketClosingEvent;
     static const CORE::CEvent UDPSocketClosedEvent;
     static const CORE::CEvent UDPSocketOpenedEvent;
-    static const CORE::CEvent UDPPacketRecievedEvent;
+    static const CORE::CEvent UDPPacketsRecievedEvent;
 
     static void RegisterEvents( void );
 
-    struct SUDPPacketRecievedEventData
+    struct SPacketEntry
     {
         CIPAddress sourceAddress;                 /**< the source address of the data */
         CORE::TLinkedCloneableBuffer dataBuffer;  /**< the received packet data */
     };
-    typedef struct SUDPPacketRecievedEventData TUDPPacketRecievedEventData;
-    typedef CORE::CTCloneableObj< TUDPPacketRecievedEventData > UDPPacketRecievedEventData;
+    typedef struct SPacketEntry TPacketEntry;
+    typedef std::vector< TPacketEntry > TPacketEntryVector;
+
+    struct SUdpPacketsRecievedEventData
+    {
+        TPacketEntryVector packets;               /**< Collection of all packets read from the socket in the latest batch, up to 'packetsReceived' */
+        UInt32 packetsReceived;                   /**< The number of packets that have been received and can be obtained from 'packets' */
+    };
+    typedef struct SUdpPacketsRecievedEventData TUdpPacketsRecievedEventData;
+
+    typedef CORE::CTCloneableObj< TUdpPacketsRecievedEventData > UDPPacketsRecievedEventData;
     typedef CORE::TCloneableInt32  TSocketErrorEventData;
 
     public:
@@ -342,7 +351,33 @@ class GUCEF_COMCORE_EXPORT_CPP CUDPSocket : public CSocket
      *
      *  @param newBufferSize size of the buffer for received data
      */
-    void SetRecievedDataBufferSize( const UInt32 newBufferSize );
+    bool SetRecievedDataBufferSize( const UInt32 newBufferSize );
+
+    /**
+     *  Sets the number of receive buffers utilized when reciving packages
+     *  This allows for potentially more efficient batch operations
+     *  If this is set to say 100 then the number of packages once can expect to receive from
+     *  a UDPPacketsRecievedEvent is between 1 and 100.
+     *  This reduces eventing overhead allowing for batch processing. Also on some operating systems
+     *  different mechanisms could be leveraged to achieve higher throughput.
+     *
+     *  The historical equivelant setting is a value of 1.
+     *
+     *  Note that this setting together with SetRecievedDataBufferSize() determines the actual amount of memory required.
+     *  If you have 100 receive buffers and a buffer size of 9216 that means the total receive buffer size will be
+     *      100 * 9216 = 921600 bytes.
+     *
+     *  @param nrOfReceiveBuffers number of receive buffers to allocate memory for
+     */
+    bool SetNrOfReceiveBuffers( const UInt32 nrOfReceiveBuffers );
+
+    /**
+     *  Same as SetNrOfReceiveBuffers() which takes only nrOfReceiveBuffers except it also allows
+     *  you to change the buffer size per receive buffer at the same time.
+     */
+    bool SetNrOfReceiveBuffers( const UInt32 nrOfReceiveBuffers, const UInt32 newBufferSize );
+
+    UInt32 GetNrOfReceiveBuffers( void ) const;
 
     UInt32 GetNrOfDataReceivedEvents( bool resetCounter );
 
@@ -370,6 +405,10 @@ class GUCEF_COMCORE_EXPORT_CPP CUDPSocket : public CSocket
 
     bool GetAllowBroadcast( void ) const;
 
+    bool SetOsLevelSocketReceiveBufferSize( UInt32 osLevelSocketReceiveBufferSize );
+
+    UInt32 GetOsLevelSocketReceiveBufferSize( void ) const;
+
     /**
      *  sets the max number of updates to perform on the socket for a given update cycle
      *  This setting applies to running a socket in non-blocking event driven mode.
@@ -396,10 +435,15 @@ class GUCEF_COMCORE_EXPORT_CPP CUDPSocket : public CSocket
 
     bool Update( bool performRead );  /**< checks the socket for queued incoming data */
 
+    bool PerformRead( void );
+
+    bool PerformRead( UInt32 readIndex, UInt32& packetsRead );
+
     private:
 
     struct SUDPSockData;            /**< forward declaration of platform data storage structure */
     typedef struct CUDPSocket::SUDPSockData TUDPSockData;
+    typedef std::vector< CORE::CDynamicBuffer > TDynamicBufferVector;
 
     bool m_autoReopenOnError;       /**< flag for feature to auto re-open the socket when after a socket error occurred */
     bool _blocking;                 /**< is this socket blocking ? */
@@ -407,12 +451,16 @@ class GUCEF_COMCORE_EXPORT_CPP CUDPSocket : public CSocket
     struct SUDPSockData* _data;     /**< container for platform specific data */
     CHostAddress m_hostAddress;     /**< retains the destination address and provides easy host-network conversion */
     MT::CMutex _datalock;           /**< mutex for thread-safety when manipulating the socket */
-    CORE::CDynamicBuffer m_buffer;
+    CORE::CDynamicBuffer m_underlyingReceiveBuffer; /**< the actual buffer owning the memory used for receive buffers */
+    TDynamicBufferVector m_receiveBuffers;         /**< multiple receive buffers mapped into the underlying receive buffer */
+    UDPPacketsRecievedEventData m_udpPacketsReceivedEventData;
+    UInt32 m_maxRecievedDataBufferSize;
     CORE::CPulseGenerator* m_pulseGenerator;
     UInt32 m_maxUpdatesPerCycle;    /**< setting aimed at preventing a busy socket from hogging all the processing */
     bool m_allowMulticastLoopback;
     int m_multicastTTL;
     bool m_allowBroadcast;
+    UInt32 m_osLevelSocketReceiveBufferSize;
     mutable UInt32 m_bytesReceived;
     mutable UInt32 m_bytesTransmitted;
     mutable UInt32 m_nrOfDataReceivedEvents;

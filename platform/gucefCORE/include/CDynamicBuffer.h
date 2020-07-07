@@ -162,7 +162,7 @@ class GUCEF_CORE_PUBLIC_CPP CDynamicBuffer
         /**
          *      Sets the new actual buffer size.
          */
-        void SetBufferSize( const UInt32 newSize       ,
+        bool SetBufferSize( const UInt32 newSize       ,
                             bool allowreduction = true );
 
         /**

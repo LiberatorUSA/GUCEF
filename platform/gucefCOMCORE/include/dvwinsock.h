@@ -286,6 +286,28 @@ dvsocket_setsockopt( SOCKET s           ,
                      int optlen         ,
                      int* error         );
 
+/*-------------------------------------------------------------------------*/
+
+int
+dvsocket_getsockopt( SOCKET s     , 
+                     int level    , 
+                     int optname  ,               
+                     char* optval ,
+                     int* optlen  ,
+                     int* error   );
+
+/*-------------------------------------------------------------------------*/
+
+int
+dvsocket_setsockopt_and_validate( SOCKET s           ,
+                                  int level          ,
+                                  int optname        ,
+                                  const char* optval ,
+                                  int optlen         ,
+                                  char* actualOptval ,
+                                  int* actualOptlen  ,
+                                  int* error         );
+
 /*--------------------------------------------------------------------------*/
 
 #ifdef __cplusplus

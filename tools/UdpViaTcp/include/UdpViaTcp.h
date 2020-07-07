@@ -168,9 +168,9 @@ class UdpViaTcp : public CORE::CObservingNotifier
                               CORE::CICloneable* evenData );
 
     void
-    OnUDPReceiveSocketPacketRecieved( CORE::CNotifier* notifier   ,
-                                      const CORE::CEvent& eventID ,
-                                      CORE::CICloneable* evenData );
+    OnUDPReceiveSocketPacketsRecieved( CORE::CNotifier* notifier   ,
+                                       const CORE::CEvent& eventID ,
+                                       CORE::CICloneable* evenData );
 
     void
     OnUDPTransmitSocketError( CORE::CNotifier* notifier   ,
@@ -188,9 +188,9 @@ class UdpViaTcp : public CORE::CObservingNotifier
                                CORE::CICloneable* evenData );
 
     void
-    OnUDPTransmitSocketPacketRecieved( CORE::CNotifier* notifier   ,
-                                       const CORE::CEvent& eventID ,
-                                       CORE::CICloneable* evenData );
+    OnUDPTransmitSocketPacketsRecieved( CORE::CNotifier* notifier   ,
+                                        const CORE::CEvent& eventID ,
+                                        CORE::CICloneable* evenData );
 
     void
     OnTCPClientConnected( CORE::CNotifier* notifier    ,

@@ -334,7 +334,7 @@ CDynamicBuffer::operator=( const CDynamicBuffer &src )
 /**
  *      Sets the new buffer size.
  */
-void
+bool
 CDynamicBuffer::SetBufferSize( const UInt32 newSize      ,
                                const bool allowreduction )
 {GUCEF_TRACE;
@@ -343,13 +343,13 @@ CDynamicBuffer::SetBufferSize( const UInt32 newSize      ,
     
     if ( _bsize == newSize ) 
     {
-            return;
+            return true;
     }
     if ( newSize < _bsize )
     {
             if ( !allowreduction )
             {
-                    return;        
+                    return false;        
             }
             else
             {
@@ -369,6 +369,8 @@ CDynamicBuffer::SetBufferSize( const UInt32 newSize      ,
         _buffer = (Int8*) realloc( _buffer, newSize );
     }
     _bsize = newSize;
+
+    return ( GUCEF_NULL != _buffer ) || ( 0 == newSize );
 }
 
 /*-------------------------------------------------------------------------*/
@@ -420,7 +422,7 @@ CDynamicBuffer::LoadContentFromFile( const CString& filePath   ,
     SetBufferSize( readBlockSize, true );
     
     // Load the entire file into memory
-    UInt32 actuallyRead = 0;
+    size_t actuallyRead = 0;
     FILE* filePtr = fopen( filePath.C_String(), "rb" );
     if ( NULL != filePtr )
     {
@@ -799,7 +801,7 @@ CDynamicBuffer::LinkTo( const void* externalBuffer ,
     
     /*  Link to the external buffer
      *
-     *  We cast away constness but constness is preserved/gaurded by the
+     *  We cast away constness but constness is preserved/guarded by the
      *  SecureLinkBeforeMutation() mechanism so it's not as bad as it looks :)
      */
     _bsize = bufferSize;
