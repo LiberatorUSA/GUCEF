@@ -51,7 +51,11 @@
 //                                                                         //
 //-------------------------------------------------------------------------*/
 
-#define GUCEF_QUEUE_SEND_DEFAULT_BATCH_SIZE                 25
+#define GUCEF_DEFAULT_REDIS_QUEUE_SEND_BATCH_SIZE           25
+#define GUCEF_DEFAULT_UDP_RECEIVE_BUFFERS                   100
+#define GUCEF_DEFAULT_TICKET_REFILLS_ON_BUSY_CYCLE          10000
+#define GUCEF_DEFAULT_UDP_OS_LEVEL_RECEIVE_BUFFER_SIZE      (1024 * 1024 * 10)
+#define GUCEF_DEFAULT_UDP_MAX_SOCKET_CYCLES_PER_PULSE       25
 
 /*-------------------------------------------------------------------------//
 //                                                                         //
@@ -145,6 +149,10 @@ Udp2RedisClusterChannel::ChannelSettings::ChannelSettings( void )
     , udpMulticastToJoin()
     , collectMetrics( false )
     , wantsTestPackage( false )
+    , ticketRefillOnBusyCycle( GUCEF_DEFAULT_TICKET_REFILLS_ON_BUSY_CYCLE )
+    , nrOfUdpReceiveBuffersPerSocket( GUCEF_DEFAULT_UDP_RECEIVE_BUFFERS )
+    , udpSocketOsReceiveBufferSize( GUCEF_DEFAULT_UDP_OS_LEVEL_RECEIVE_BUFFER_SIZE )
+    , udpSocketUpdateCyclesPerPulse( GUCEF_DEFAULT_UDP_MAX_SOCKET_CYCLES_PER_PULSE )
 {GUCEF_TRACE;
 
 }
@@ -158,6 +166,10 @@ Udp2RedisClusterChannel::ChannelSettings::ChannelSettings( const ChannelSettings
     , udpMulticastToJoin( src.udpMulticastToJoin )
     , collectMetrics( src.collectMetrics )
     , wantsTestPackage( src.wantsTestPackage )
+    , ticketRefillOnBusyCycle( src.ticketRefillOnBusyCycle )
+    , nrOfUdpReceiveBuffersPerSocket( src.nrOfUdpReceiveBuffersPerSocket )
+    , udpSocketOsReceiveBufferSize( src.udpSocketOsReceiveBufferSize )
+    , udpSocketUpdateCyclesPerPulse( src.udpSocketUpdateCyclesPerPulse )
 {GUCEF_TRACE;
 
 }
@@ -176,6 +188,10 @@ Udp2RedisClusterChannel::ChannelSettings::operator=( const ChannelSettings& src 
         udpMulticastToJoin = src.udpMulticastToJoin;
         collectMetrics = src.collectMetrics;
         wantsTestPackage = src.wantsTestPackage;
+        ticketRefillOnBusyCycle = src.ticketRefillOnBusyCycle;
+        nrOfUdpReceiveBuffersPerSocket = src.nrOfUdpReceiveBuffersPerSocket;
+        udpSocketOsReceiveBufferSize = src.udpSocketOsReceiveBufferSize;
+        udpSocketUpdateCyclesPerPulse = src.udpSocketUpdateCyclesPerPulse;
     }
     return *this;
 }
@@ -403,7 +419,7 @@ Udp2RedisClusterChannel::SendQueuedPackagesIfAny( void )
     size_t i=0;
     TPacketEntryQueue::iterator b = m_redisMsgQueueOverflowQueue.begin();
     TPacketEntryQueue::iterator e = m_redisMsgQueueOverflowQueue.begin();
-    while ( i < GUCEF_QUEUE_SEND_DEFAULT_BATCH_SIZE && i < m_redisMsgQueueOverflowQueue.size() )
+    while ( i < GUCEF_DEFAULT_REDIS_QUEUE_SEND_BATCH_SIZE && i < m_redisMsgQueueOverflowQueue.size() )
     {
         packetBundle.push_back( m_redisMsgQueueOverflowQueue.at( i ) );
         ++i; ++e;    
@@ -515,14 +531,19 @@ Udp2RedisClusterChannel::OnTaskStart( CORE::CICloneable* taskData )
     // Set the minimum number of cycles we will go full speed if a single cycle was not enough to handle
     // all the processing. This will cause a bypass of CPU yielding if/when the situation arises.
     // In such a case the thread will run at max speed for a least the below set nr of cycles.
-    GetPulseGenerator()->RequestPulsesPerImmediatePulseRequest( 250 );
+    GetPulseGenerator()->RequestPulsesPerImmediatePulseRequest( m_channelSettings.ticketRefillOnBusyCycle );
 
     RegisterEventHandlers();
 
-    // Setup connection to Redis and open the UDP port.
+    // Setup connection to Redis 
     // Note that if there is an error here we will just keep on trying automatically
     RedisConnect();
-    m_udpSocket->SetMaxUpdatesPerCycle( 50 );
+
+    // Configure and open the UDP port.
+    // Note that if there is an error here we will just keep on trying automatically
+    m_udpSocket->SetMaxUpdatesPerCycle( m_channelSettings.udpSocketUpdateCyclesPerPulse );
+    m_udpSocket->SetOsLevelSocketReceiveBufferSize( m_channelSettings.udpSocketOsReceiveBufferSize );
+    m_udpSocket->SetNrOfReceiveBuffers( m_channelSettings.nrOfUdpReceiveBuffersPerSocket );
     m_udpSocket->SetAutoReOpenOnError( true );
     if ( m_udpSocket->Open( m_channelSettings.udpInterface ) )
     {
@@ -750,6 +771,11 @@ Udp2RedisCluster::LoadConfig( const CORE::CValueList& appConfig   ,
     m_redisStreamName = CORE::ResolveVars( appConfig.GetValueAlways( "RedisStreamName", "udp-ingress-ch{channelID}" ) );
     m_redisHost = CORE::ResolveVars( appConfig.GetValueAlways( "RedisHost", "127.0.0.1" ) );
     m_redisPort = CORE::StringToUInt16( CORE::ResolveVars( appConfig.GetValueAlways( "RedisPort", "6379" ) ) );
+    
+    CORE::UInt32 ticketRefillOnBusyCycle = CORE::StringToUInt32( CORE::ResolveVars( appConfig.GetValueAlways( "TicketRefillOnBusyCycle" ) ), GUCEF_DEFAULT_TICKET_REFILLS_ON_BUSY_CYCLE );
+    CORE::UInt32 nrOfUdpReceiveBuffersPerSocket = CORE::StringToUInt32( CORE::ResolveVars( appConfig.GetValueAlways( "NrOfUdpReceiveBuffersPerSocket" ) ), GUCEF_DEFAULT_UDP_RECEIVE_BUFFERS );
+    CORE::UInt32 udpSocketOsReceiveBufferSize = CORE::StringToUInt32( CORE::ResolveVars( appConfig.GetValueAlways( "UdpSocketOsReceiveBufferSize" ) ), GUCEF_DEFAULT_UDP_OS_LEVEL_RECEIVE_BUFFER_SIZE );
+    CORE::UInt32 udpSocketUpdateCyclesPerPulse = CORE::StringToUInt32( CORE::ResolveVars( appConfig.GetValueAlways( "MaxUdpSocketUpdateCyclesPerPulse" ) ), GUCEF_DEFAULT_UDP_MAX_SOCKET_CYCLES_PER_PULSE );
 
     CORE::UInt16 udpPort = m_udpStartPort;
     CORE::Int32 maxChannelId = m_redisStreamStartChannelID + m_channelCount;
@@ -760,6 +786,10 @@ Udp2RedisCluster::LoadConfig( const CORE::CValueList& appConfig   ,
         channelSettings.collectMetrics = m_transmitMetrics;
         channelSettings.redisAddress.SetHostname( m_redisHost );
         channelSettings.redisAddress.SetPortInHostByteOrder( m_redisPort );
+        channelSettings.ticketRefillOnBusyCycle = ticketRefillOnBusyCycle;
+        channelSettings.nrOfUdpReceiveBuffersPerSocket = nrOfUdpReceiveBuffersPerSocket;
+        channelSettings.udpSocketOsReceiveBufferSize = udpSocketOsReceiveBufferSize;
+        channelSettings.udpSocketUpdateCyclesPerPulse = udpSocketUpdateCyclesPerPulse;
 
         CORE::CString settingName = "ChannelSetting." + CORE::Int32ToString( channelId ) + ".RedisStreamName";
         CORE::CString settingValue = appConfig.GetValueAlways( settingName );

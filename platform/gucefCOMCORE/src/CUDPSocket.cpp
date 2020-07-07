@@ -239,10 +239,11 @@ CUDPSocket::SetNrOfReceiveBuffers( UInt32 nrOfReceiveBuffers ,
 
     m_maxRecievedDataBufferSize = newBufferSize;
     
-    m_receiveBuffers.resize( nrOfReceiveBuffers );
     TUdpPacketsRecievedEventData& infoStruct = m_udpPacketsReceivedEventData.GetData();
     infoStruct.packets.resize( nrOfReceiveBuffers );
     infoStruct.packetsReceived = 0;
+
+    m_receiveBuffers.resize( nrOfReceiveBuffers );
     
     #if ( GUCEF_PLATFORM == GUCEF_PLATFORM_LINUX )
     _data->msgs.msgs.resize( nrOfReceiveBuffers );

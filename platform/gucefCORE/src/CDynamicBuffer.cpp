@@ -343,34 +343,41 @@ CDynamicBuffer::SetBufferSize( const UInt32 newSize      ,
     
     if ( _bsize == newSize ) 
     {
-            return true;
+        return true;
     }
+
     if ( newSize < _bsize )
     {
-            if ( !allowreduction )
+        if ( !allowreduction )
+        {
+            return false;        
+        }
+        else
+        {
+            if ( m_dataSize > newSize )
             {
-                    return false;        
+                m_dataSize = newSize;
             }
-            else
-            {
-                    if ( m_dataSize > newSize )
-                    {
-                            m_dataSize = newSize;
-                    }
-            }
+        }
     }
     
-    if ( NULL == _buffer )
+    if ( GUCEF_NULL == _buffer )
     {
         _buffer = (Int8*) malloc( newSize );
+        _bsize = newSize;
+        return true;
     }
     else
     {
-        _buffer = (Int8*) realloc( _buffer, newSize );
+        Int8* newBuffer = (Int8*) realloc( _buffer, newSize );
+        if ( GUCEF_NULL != newBuffer )
+        {
+            _buffer = newBuffer;
+            _bsize = newSize;
+            return true;
+        }
     }
-    _bsize = newSize;
-
-    return ( GUCEF_NULL != _buffer ) || ( 0 == newSize );
+    return false;
 }
 
 /*-------------------------------------------------------------------------*/

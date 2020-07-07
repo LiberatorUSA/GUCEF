@@ -196,7 +196,7 @@ Int32ToString( const Int32 value );
 /*-------------------------------------------------------------------------*/
 
 GUCEF_CORE_PUBLIC_CPP UInt32
-StringToUInt32( const CString& str );
+StringToUInt32( const CString& str, UInt32 defaultValue = 0 );
 
 /*-------------------------------------------------------------------------*/
 

@@ -562,7 +562,7 @@ Int32ToString( const Int32 value )
 /*-------------------------------------------------------------------------*/
 
 UInt32
-StringToUInt32( const CString& str )
+StringToUInt32( const CString& str, UInt32 defaultValue )
 {GUCEF_TRACE;
 
     if ( !str.IsNULLOrEmpty() )
@@ -571,7 +571,7 @@ StringToUInt32( const CString& str )
         sscanf( str.C_String(), "%u", &value );
         return value;
     }
-    return 0;
+    return defaultValue;
 }
 
 /*-------------------------------------------------------------------------*/

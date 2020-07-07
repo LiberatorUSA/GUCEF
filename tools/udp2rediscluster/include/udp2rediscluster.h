@@ -125,6 +125,10 @@ class Udp2RedisClusterChannel : public CORE::CTaskConsumer
         HostAddressVector udpMulticastToJoin;
         bool collectMetrics;
         bool wantsTestPackage;
+        CORE::UInt32 ticketRefillOnBusyCycle;
+        CORE::UInt32 nrOfUdpReceiveBuffersPerSocket;
+        CORE::UInt32 udpSocketOsReceiveBufferSize;
+        CORE::UInt32 udpSocketUpdateCyclesPerPulse;
     };
 
     bool LoadConfig( const ChannelSettings& channelSettings );
