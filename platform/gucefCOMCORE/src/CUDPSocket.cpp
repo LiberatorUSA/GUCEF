@@ -438,6 +438,11 @@ CUDPSocket::Update( bool performRead )
                         eventData.packetsReceived += packetsRead;
                     }
                 }
+                else
+                {
+                    // Nothing more to do on this socket
+                    break;
+                }
             }
             else
             {
