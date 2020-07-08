@@ -393,7 +393,8 @@ CUDPSocket::Update( bool performRead )
         }
 
         eventData.packetsReceived = 0;
-        for ( UInt32 i=0; i<maxPackets; ++i )
+        UInt32 i=0;
+        for ( ; i<maxPackets; ++i )
         {
             FD_ZERO( &readfds );
             FD_ZERO( &exceptfds );
@@ -433,6 +434,8 @@ CUDPSocket::Update( bool performRead )
                         // In some cases we can read multiple packets in a single read operation
                         // not all operating systems support this. For those that do packetsRead can be > 1
                         i += ( packetsRead - 1 );
+
+                        eventData.packetsReceived += packetsRead;
                     }
                 }
             }
@@ -451,6 +454,8 @@ CUDPSocket::Update( bool performRead )
 
         if ( eventData.packetsReceived > 0 )
         {
+            GUCEF_DEBUG_LOG( CORE::LOGLEVEL_BELOW_NORMAL, "UDPSocket(" + CORE::PointerToString( this ) + "):Update: Received " + CORE::UInt32ToString( eventData.packetsReceived ) + " packets in one cycle" );
+            
             // Send an event notifying people that the data was recieved
             if ( !NotifyObservers( UDPPacketsRecievedEvent, &m_udpPacketsReceivedEventData ) ) return false;
 
@@ -467,9 +472,22 @@ CUDPSocket::Update( bool performRead )
             if ( m_autoReopenOnError )
                 Open();
         }
+
+        if ( i >= maxPackets )
+        {
+            // We reached out max bulk operation size per notification
+            // However there is more work to do
+            GUCEF_DEBUG_LOG( CORE::LOGLEVEL_BELOW_NORMAL, "UDPSocket(" + CORE::PointerToString( this ) + "):Update: Max operations per notification cycle reached for the current nr of read buffers" );
+            return true;
+        }
+        else
+        {
+            // no more work, thus false
+            return false;
+        }
     }
 
-    // no more work, thus false
+    // Not applicable thus no work to do
     return false;
 }
 
@@ -511,6 +529,7 @@ CUDPSocket::OnPulse( CORE::CNotifier* notifier                 ,
         {
             // This is a busy socket, don't yield to the scheduler
             m_pulseGenerator->RequestImmediatePulse();
+            GUCEF_DEBUG_LOG( CORE::LOGLEVEL_NORMAL, "UDPSocket(" + CORE::PointerToString( this ) + "):OnPulse: Max update cycles per pulse reached, will request an immediate pulse (CPU burst mode)" );
         }
     }
     else
@@ -704,7 +723,6 @@ CUDPSocket::PerformRead( UInt32 readIndex, UInt32& packetsRead )
     int sockError = 0;
     struct sockaddr_in remote;
     socklen_t structsize( sizeof( remote ) );
-    eventData.packetsReceived = 0;
 
     // Carry out the receive which copies from the OS buffer into our application memory's buffer
     int retval = dvsocket_recvfrom( _data->sockid                          ,
@@ -745,7 +763,6 @@ CUDPSocket::PerformRead( UInt32 readIndex, UInt32& packetsRead )
     sourceAddress.SetPort( remote.sin_port );
     sourceAddress.SetAddress( remote.sin_addr.s_addr );
 
-    ++eventData.packetsReceived;
     packetsRead = 1;
 
     // Update our metrics

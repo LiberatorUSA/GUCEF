@@ -84,9 +84,33 @@ using namespace GUCEF;
 
 /*-------------------------------------------------------------------------//
 //                                                                         //
-//      UTILITIES                                                          //
+//      CLASSES                                                            //
 //                                                                         //
 //-------------------------------------------------------------------------*/
+
+class ClusterChannelRedisWriter : public CORE::CTaskConsumer
+{
+    public:
+
+    typedef CORE::CTEventHandlerFunctor< ClusterChannelRedisWriter > TEventCallback;
+
+    ClusterChannelRedisWriter();
+    ClusterChannelRedisWriter( const ClusterChannelRedisWriter& src );
+    virtual ~ClusterChannelRedisWriter();
+
+    virtual bool OnTaskStart( CORE::CICloneable* taskData ) GUCEF_VIRTUAL_OVERRIDE;
+    
+    virtual bool OnTaskCycle( CORE::CICloneable* taskData ) GUCEF_VIRTUAL_OVERRIDE;
+
+    virtual void OnTaskEnding( CORE::CICloneable* taskdata ,
+                               bool willBeForced           ) GUCEF_VIRTUAL_OVERRIDE;
+    
+    virtual void OnTaskEnd( CORE::CICloneable* taskData ) GUCEF_VIRTUAL_OVERRIDE;
+
+    virtual CORE::CString GetType( void ) const GUCEF_VIRTUAL_OVERRIDE;
+};
+
+/*-------------------------------------------------------------------------*/
 
 class Udp2RedisClusterChannel : public CORE::CTaskConsumer
 {
@@ -211,6 +235,7 @@ class Udp2RedisClusterChannel : public CORE::CTaskConsumer
     CORE::CTimer* m_metricsTimer;
     ChannelMetrics m_metrics;
     CORE::UInt32 m_redisErrorReplies;
+    ClusterChannelRedisWriter m_redisWriter;
 };
 
 /*-------------------------------------------------------------------------*/

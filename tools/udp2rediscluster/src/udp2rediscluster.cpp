@@ -63,6 +63,75 @@
 //                                                                         //
 //-------------------------------------------------------------------------*/
 
+ClusterChannelRedisWriter::ClusterChannelRedisWriter()
+    : CORE::CTaskConsumer()
+{GUCEF_TRACE;
+
+}
+
+/*-------------------------------------------------------------------------*/
+
+ClusterChannelRedisWriter::ClusterChannelRedisWriter( const ClusterChannelRedisWriter& src )
+    : CORE::CTaskConsumer()
+{GUCEF_TRACE;
+
+}
+
+/*-------------------------------------------------------------------------*/
+
+ClusterChannelRedisWriter::~ClusterChannelRedisWriter()
+{GUCEF_TRACE;
+
+}
+
+/*-------------------------------------------------------------------------*/
+
+CORE::CString
+ClusterChannelRedisWriter::GetType( void ) const
+{GUCEF_TRACE;
+
+    return "ClusterChannelRedisWriter";
+}
+
+/*-------------------------------------------------------------------------*/
+
+bool
+ClusterChannelRedisWriter::OnTaskStart( CORE::CICloneable* taskData )
+{GUCEF_TRACE;
+
+    return true;
+}
+
+/*-------------------------------------------------------------------------*/
+
+bool
+ClusterChannelRedisWriter::OnTaskCycle( CORE::CICloneable* taskData )
+{GUCEF_TRACE;
+    
+    // We are never 'done' so return false
+    return false;
+}
+
+/*-------------------------------------------------------------------------*/
+
+void 
+ClusterChannelRedisWriter::OnTaskEnding( CORE::CICloneable* taskdata ,
+                                         bool willBeForced           )
+{GUCEF_TRACE;
+    
+
+}
+
+/*-------------------------------------------------------------------------*/
+
+void
+ClusterChannelRedisWriter::OnTaskEnd( CORE::CICloneable* taskData )
+{GUCEF_TRACE;
+
+}
+
+/*-------------------------------------------------------------------------*/
+
 Udp2RedisClusterChannel::Udp2RedisClusterChannel()
     : CORE::CTaskConsumer()
     , m_channelSettings()
@@ -72,6 +141,7 @@ Udp2RedisClusterChannel::Udp2RedisClusterChannel()
     , m_metricsTimer( GUCEF_NULL )
     , m_metrics()
     , m_redisErrorReplies( 0 )
+    , m_redisWriter()
 {GUCEF_TRACE;
 
 }
@@ -87,6 +157,7 @@ Udp2RedisClusterChannel::Udp2RedisClusterChannel( const Udp2RedisClusterChannel&
     , m_metricsTimer( GUCEF_NULL )
     , m_metrics()
     , m_redisErrorReplies( src.m_redisErrorReplies )
+    , m_redisWriter()
 {GUCEF_TRACE;
 
 }
@@ -387,7 +458,7 @@ Udp2RedisClusterChannel::RedisSend( const TPacketEntryVector& udpPackets ,
         std::string clusterMsgId = m_redisContext->xadd( cnSV, idSV, args.begin(), args.end() );
 
         GUCEF_DEBUG_LOG( CORE::LOGLEVEL_NORMAL, "Udp2RedisClusterChannel(" + CORE::PointerToString( this ) + "):RedisSend: Successfully sent " + 
-            CORE::UInt32ToString( udpPackets.size() ) + " UDP messages. MsgID=" + clusterMsgId );
+            CORE::UInt32ToString( packetCount ) + " UDP messages. MsgID=" + clusterMsgId );
         return true;
     }
     catch ( const sw::redis::MovedError& e )
