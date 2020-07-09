@@ -101,10 +101,20 @@ CAsyncVfsTaskData::GetRequestorData( void ) const
     return m_requestorData;
 }
 
+
+/*-------------------------------------------------------------------------*/
+
+CORE::CICloneable* 
+CAsyncVfsTaskData::Clone( void ) const
+{GUCEF_TRACE;
+    
+    return new CAsyncVfsTaskData( *this );
+}
+
 /*-------------------------------------------------------------------------*/
 
 CAsyncVfsTaskResultData::CAsyncVfsTaskResultData( void )
-    : CCloneableAsyncVfsTaskData()
+    : CAsyncVfsTaskData()
     , successState( false )
     , durationInSecs( 0 )
     , m_taskData( GUCEF_NULL )
@@ -115,7 +125,7 @@ CAsyncVfsTaskResultData::CAsyncVfsTaskResultData( void )
 /*-------------------------------------------------------------------------*/
 
 CAsyncVfsTaskResultData::CAsyncVfsTaskResultData( const CAsyncVfsTaskResultData& src )
-    : CCloneableAsyncVfsTaskData( src )
+    : CAsyncVfsTaskData( src )
     , successState( src.successState )
     , durationInSecs( src.durationInSecs )
     , m_taskData( GUCEF_NULL )
@@ -162,7 +172,7 @@ CAsyncVfsTaskResultData::GetRequestorData( void ) const
 /*-------------------------------------------------------------------------*/
 
 void 
-CAsyncVfsTaskResultData::SetTaskData( CCloneableAsyncVfsTaskData* data )
+CAsyncVfsTaskResultData::SetTaskData( CAsyncVfsTaskData* data )
 {GUCEF_TRACE;
 
     delete m_taskData;
@@ -170,13 +180,13 @@ CAsyncVfsTaskResultData::SetTaskData( CCloneableAsyncVfsTaskData* data )
 
     if ( GUCEF_NULL != data )
     {       
-        m_taskData = static_cast< CCloneableAsyncVfsTaskData* >( data->Clone() );    
+        m_taskData = static_cast< CAsyncVfsTaskData* >( data->Clone() );    
     }
 }
 
 /*-------------------------------------------------------------------------*/
 
-CCloneableAsyncVfsTaskData* 
+CAsyncVfsTaskData* 
 CAsyncVfsTaskResultData::GetTaskData( void ) const
 {GUCEF_TRACE;
     
@@ -185,8 +195,17 @@ CAsyncVfsTaskResultData::GetTaskData( void ) const
 
 /*-------------------------------------------------------------------------*/
 
+CORE::CICloneable* 
+CAsyncVfsTaskResultData::Clone( void ) const
+{GUCEF_TRACE;
+    
+    return new CAsyncVfsTaskResultData( *this );
+}
+
+/*-------------------------------------------------------------------------*/
+
 CStoreAsFileTaskData::CStoreAsFileTaskData( void )
-    : CCloneableAsyncVfsTaskData()
+    : CAsyncVfsTaskData()
     , filepath()
     , data()
     , offset()
@@ -198,7 +217,7 @@ CStoreAsFileTaskData::CStoreAsFileTaskData( void )
 /*-------------------------------------------------------------------------*/
 
 CStoreAsFileTaskData::CStoreAsFileTaskData( const CStoreAsFileTaskData& src )
-    : CCloneableAsyncVfsTaskData( src )
+    : CAsyncVfsTaskData( src )
     , filepath( src.filepath )
     , data( src.data )
     , offset( src.offset )
@@ -216,8 +235,17 @@ CStoreAsFileTaskData::~CStoreAsFileTaskData()
 
 /*-------------------------------------------------------------------------*/
 
+CORE::CICloneable* 
+CStoreAsFileTaskData::Clone( void ) const
+{GUCEF_TRACE;
+    
+    return new CStoreAsFileTaskData( *this );
+}
+
+/*-------------------------------------------------------------------------*/
+
 CMountArchiveTaskData::CMountArchiveTaskData( void )
-    : CCloneableAsyncVfsTaskData()
+    : CAsyncVfsTaskData()
     , settings()
 {GUCEF_TRACE;
 
@@ -226,7 +254,7 @@ CMountArchiveTaskData::CMountArchiveTaskData( void )
 /*-------------------------------------------------------------------------*/
 
 CMountArchiveTaskData::CMountArchiveTaskData( const CMountArchiveTaskData& src )
-    : CCloneableAsyncVfsTaskData( src )
+    : CAsyncVfsTaskData( src )
     , settings( src.settings )
 {GUCEF_TRACE;
 
@@ -237,6 +265,15 @@ CMountArchiveTaskData::CMountArchiveTaskData( const CMountArchiveTaskData& src )
 CMountArchiveTaskData::~CMountArchiveTaskData()
 {GUCEF_TRACE;
 
+}
+
+/*-------------------------------------------------------------------------*/
+
+CORE::CICloneable* 
+CMountArchiveTaskData::Clone( void ) const
+{GUCEF_TRACE;
+    
+    return new CMountArchiveTaskData( *this );
 }
 
 /*-------------------------------------------------------------------------//

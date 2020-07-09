@@ -90,6 +90,8 @@ class GUCEF_VFS_PUBLIC_CPP CAsyncVfsTaskData : public CORE::CICloneable
 
     virtual CORE::CICloneable* GetRequestorData( void ) const;
 
+    virtual CICloneable* Clone( void ) const GUCEF_VIRTUAL_OVERRIDE;
+
     CAsyncVfsTaskData( void );
     CAsyncVfsTaskData( const CAsyncVfsTaskData& src );
     virtual ~CAsyncVfsTaskData();
@@ -97,37 +99,37 @@ class GUCEF_VFS_PUBLIC_CPP CAsyncVfsTaskData : public CORE::CICloneable
     protected:
     CORE::CICloneable* m_requestorData;
 };
-typedef CORE::CTCloneableExpansion< CAsyncVfsTaskData > CCloneableAsyncVfsTaskData;
 
 /*-------------------------------------------------------------------------*/
 
-class GUCEF_VFS_PUBLIC_CPP CAsyncVfsTaskResultData : public CCloneableAsyncVfsTaskData
+class GUCEF_VFS_PUBLIC_CPP CAsyncVfsTaskResultData : public CAsyncVfsTaskData
 {
     public:
 
     bool successState;
     UInt32 durationInSecs;
 
-    virtual void SetTaskData( CCloneableAsyncVfsTaskData* data );
+    virtual void SetTaskData( CAsyncVfsTaskData* data );
 
-    virtual CCloneableAsyncVfsTaskData* GetTaskData( void ) const;
+    virtual CAsyncVfsTaskData* GetTaskData( void ) const;
 
     virtual void SetRequestorData( CORE::CICloneable* data ) GUCEF_VIRTUAL_OVERRIDE;
 
     virtual CORE::CICloneable* GetRequestorData( void ) const GUCEF_VIRTUAL_OVERRIDE;
+
+    virtual CICloneable* Clone( void ) const GUCEF_VIRTUAL_OVERRIDE;
 
     CAsyncVfsTaskResultData( void );
     CAsyncVfsTaskResultData( const CAsyncVfsTaskResultData& src );
     virtual ~CAsyncVfsTaskResultData();
 
     protected:
-    CCloneableAsyncVfsTaskData* m_taskData;
+    CAsyncVfsTaskData* m_taskData;
 };
-typedef CORE::CTCloneableExpansion< CAsyncVfsTaskResultData > CCloneableAsyncVfsTaskResultData;
 
 /*-------------------------------------------------------------------------*/
 
-class GUCEF_VFS_PUBLIC_CPP CStoreAsFileTaskData : public CCloneableAsyncVfsTaskData
+class GUCEF_VFS_PUBLIC_CPP CStoreAsFileTaskData : public CAsyncVfsTaskData
 {
     public:
 
@@ -136,24 +138,26 @@ class GUCEF_VFS_PUBLIC_CPP CStoreAsFileTaskData : public CCloneableAsyncVfsTaskD
     CORE::UInt64 offset;
     bool overwrite;
 
+    virtual CICloneable* Clone( void ) const GUCEF_VIRTUAL_OVERRIDE;
+
     CStoreAsFileTaskData( void );
     CStoreAsFileTaskData( const CStoreAsFileTaskData& src );
     virtual ~CStoreAsFileTaskData();
 };
-typedef CORE::CTCloneableExpansion< CStoreAsFileTaskData > CCloneableStoreAsFileTaskData;
 
 /*-------------------------------------------------------------------------*/
 
-class GUCEF_VFS_PUBLIC_CPP CMountArchiveTaskData : public CCloneableAsyncVfsTaskData
+class GUCEF_VFS_PUBLIC_CPP CMountArchiveTaskData : public CAsyncVfsTaskData
 {
     public:
     CArchiveSettings settings;
+
+    virtual CICloneable* Clone( void ) const GUCEF_VIRTUAL_OVERRIDE;
 
     CMountArchiveTaskData( void );
     CMountArchiveTaskData( const CMountArchiveTaskData& src );
     virtual ~CMountArchiveTaskData();
 };
-typedef CORE::CTCloneableExpansion< CMountArchiveTaskData > CCloneableMountArchiveTaskData;
 
 /*-------------------------------------------------------------------------//
 //                                                                         //

@@ -190,7 +190,7 @@ CVFS::StoreAsFileAsync( const CORE::CString& filepath    ,
                         CORE::CICloneable* requestorData )
 {GUCEF_TRACE;
 
-    CCloneableStoreAsFileTaskData operationData;
+    CStoreAsFileTaskData operationData;
     operationData.operationType = ASYNCVFSOPERATIONTYPE_STOREDATAASFILE;
     operationData.filepath = filepath;
     operationData.data.LinkTo( &data );
@@ -209,7 +209,7 @@ CVFS::MountArchiveAsync( const CArchiveSettings& settings ,
                          CORE::CICloneable* requestorData )
 {GUCEF_TRACE;
 
-    CCloneableMountArchiveTaskData operationData;
+    CMountArchiveTaskData operationData;
     operationData.operationType = ASYNCVFSOPERATIONTYPE_MOUNTARCHIVE;
     operationData.settings = settings;
     operationData.SetRequestorData( requestorData );

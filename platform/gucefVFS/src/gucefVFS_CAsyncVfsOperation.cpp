@@ -122,7 +122,7 @@ CAsyncVfsOperation::OnTaskCycle( CORE::CICloneable* taskData )
     time_t startTime = time( NULL );
     GUCEF_DEBUG_LOG( CORE::LOGLEVEL_NORMAL, "AsyncVfsOperation(" + CORE::PointerToString( this ) + "):OnTaskCycle" );
 
-    CCloneableAsyncVfsTaskData* syncCallData = static_cast< CCloneableAsyncVfsTaskData* >( taskData );
+    CAsyncVfsTaskData* syncCallData = static_cast< CAsyncVfsTaskData* >( taskData );
     if ( GUCEF_NULL == syncCallData )
     {
         GUCEF_ERROR_LOG( CORE::LOGLEVEL_NORMAL, "AsyncVfsOperation:OnTaskCycle: No task data to operate upon" );
@@ -135,10 +135,10 @@ CAsyncVfsOperation::OnTaskCycle( CORE::CICloneable* taskData )
         {
             GUCEF_DEBUG_LOG( CORE::LOGLEVEL_NORMAL, "AsyncVfsOperation(" + CORE::PointerToString( this ) + "):OnTaskCycle: Async invocation of MountArchive" );
             
-            CCloneableMountArchiveTaskData* specificSyncCallData = static_cast< CCloneableMountArchiveTaskData* >( syncCallData );
+            CMountArchiveTaskData* specificSyncCallData = static_cast< CMountArchiveTaskData* >( syncCallData );
             bool success = CVfsGlobal::Instance()->GetVfs().MountArchive( specificSyncCallData->settings );
 
-            CCloneableAsyncVfsTaskResultData syncCallResult;
+            CAsyncVfsTaskResultData syncCallResult;
             syncCallResult.successState = success;
             syncCallResult.SetTaskData( syncCallData );
             syncCallResult.durationInSecs = (UInt32) ( time( NULL ) - startTime );
@@ -152,13 +152,13 @@ CAsyncVfsOperation::OnTaskCycle( CORE::CICloneable* taskData )
         {
             GUCEF_DEBUG_LOG( CORE::LOGLEVEL_NORMAL, "AsyncVfsOperation(" + CORE::PointerToString( this ) + "):OnTaskCycle: Async invocation of StoreAsFile" );
             
-            CCloneableStoreAsFileTaskData* specificSyncCallData = static_cast< CCloneableStoreAsFileTaskData* >( syncCallData );
+            CStoreAsFileTaskData* specificSyncCallData = static_cast< CStoreAsFileTaskData* >( syncCallData );
             bool success = CVfsGlobal::Instance()->GetVfs().StoreAsFile( specificSyncCallData->filepath       , 
                                                                          specificSyncCallData->data.GetData() ,
                                                                          specificSyncCallData->offset         ,
                                                                          specificSyncCallData->overwrite      );
         
-            CCloneableAsyncVfsTaskResultData syncCallResult;
+            CAsyncVfsTaskResultData syncCallResult;
             syncCallResult.successState = success;
             syncCallResult.SetTaskData( syncCallData );
             syncCallResult.durationInSecs = (UInt32) ( time( NULL ) - startTime );
@@ -171,7 +171,7 @@ CAsyncVfsOperation::OnTaskCycle( CORE::CICloneable* taskData )
         case ASYNCVFSOPERATIONTYPE_UNKNOWN:
         default:
         {
-            CCloneableAsyncVfsTaskResultData syncCallResult;
+            CAsyncVfsTaskResultData syncCallResult;
             syncCallResult.successState = false;
             syncCallResult.SetTaskData( syncCallData );
             syncCallResult.durationInSecs = (UInt32) ( time( NULL ) - startTime );

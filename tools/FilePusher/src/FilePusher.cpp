@@ -162,6 +162,7 @@ FilePusher::FilePusher( void )
     , m_currentFilePushBuffer()
     , m_currentFileBeingPushed()
     , m_lastPushDurationInSecs( 0 )
+    , m_allFilesDirScanTimer()
 {GUCEF_TRACE;
 
     RegisterEventHandlers();    
@@ -245,6 +246,11 @@ FilePusher::RegisterEventHandlers( void )
     SubscribeTo( &VFS::CVfsGlobal::Instance()->GetVfs()     ,
                  VFS::CVFS::AsyncVfsOperationCompletedEvent ,
                  callback14                                 );
+
+    TEventCallback callback15( this, &FilePusher::OnAllFilesDirScanTimerCycle );
+    SubscribeTo( &m_allFilesDirScanTimer        ,
+                 CORE::CTimer::TimerUpdateEvent ,
+                 callback15                     );
 }
 
 /*-------------------------------------------------------------------------*/
@@ -378,7 +384,7 @@ FilePusher::OnAsyncVfsOperationCompleted( CORE::CNotifier* notifier    ,
                                           CORE::CICloneable* eventData )
 {GUCEF_TRACE;
 
-    VFS::CCloneableAsyncVfsTaskResultData* asyncOpResult = static_cast< VFS::CCloneableAsyncVfsTaskResultData* >( eventData );
+    VFS::CAsyncVfsTaskResultData* asyncOpResult = static_cast< VFS::CAsyncVfsTaskResultData* >( eventData );
     if ( GUCEF_NULL != asyncOpResult )
     {
         m_lastPushDurationInSecs = asyncOpResult->durationInSecs;
@@ -537,6 +543,34 @@ FilePusher::QueueFileForPushing( const CORE::CString& filePath )
 
     GUCEF_LOG( CORE::LOGLEVEL_NORMAL, "FilePusher: Queueing file \"" + filePath + "\" for pushing" );
     m_pushQueue[ filePath ] = 0;
+}
+
+/*-------------------------------------------------------------------------*/
+
+void
+FilePusher::OnAllFilesDirScanTimerCycle( CORE::CNotifier* notifier    ,
+                                         const CORE::CEvent& eventId  ,
+                                         CORE::CICloneable* eventData )
+{GUCEF_TRACE;
+
+    TStringPushStyleMap::const_iterator i = m_fileMatchPatterns.begin();
+    while ( i != m_fileMatchPatterns.end() )
+    {
+        // Is the pattern one that is configured for a 'all files' push method?
+        if ( PUSHSTYLE_MATCHING_ALL_FILES_WITH_REST_PERIOD == (*i).second )
+        {
+            GUCEF_LOG( CORE::LOGLEVEL_NORMAL, "FilePusher: Commencing periodic scan for 'all files' style file patterns for dir: \"" + (*i).first + "\"" );
+            if ( QueueAllPreExistingFilesForDir( (*i).first ) )
+            {
+                GUCEF_LOG( CORE::LOGLEVEL_NORMAL, "FilePusher: Finished scan for 'all files' style file patterns for dir: \"" + (*i).first + "\"" );
+            }
+            else
+            {
+                GUCEF_WARNING_LOG( CORE::LOGLEVEL_NORMAL, "FilePusher: Failed scan for 'all files' style file patterns for dir: \"" + (*i).first + "\"" );
+            }
+        }
+        ++i;
+    }
 }
 
 /*-------------------------------------------------------------------------*/
@@ -847,7 +881,13 @@ FilePusher::Start( void )
             return false;
         }
         ++i;
-     }
+    }
+
+    if ( !allFilesPatterns.empty() )
+    {
+        m_allFilesDirScanTimer.SetEnabled( true );
+        m_allFilesDirScanTimer.SetInterval( 10000 );
+    }
 
     if ( m_httpServer.Listen() )
     {

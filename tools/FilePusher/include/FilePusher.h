@@ -176,6 +176,11 @@ class FilePusher : public CORE::CObservingNotifier
     OnNewFileRestPeriodTimerCycle( CORE::CNotifier* notifier    ,
                                    const CORE::CEvent& eventId  ,
                                    CORE::CICloneable* eventData );
+    
+    void
+    OnAllFilesDirScanTimerCycle( CORE::CNotifier* notifier    ,
+                                 const CORE::CEvent& eventId  ,
+                                 CORE::CICloneable* eventData );
 
     void
     OnFilePushTimerCycle( CORE::CNotifier* notifier    ,
@@ -288,6 +293,7 @@ class FilePusher : public CORE::CObservingNotifier
     CORE::CString m_currentFileBeingPushed;
     CORE::CDynamicBuffer m_currentFilePushBuffer;
     CORE::UInt32 m_lastPushDurationInSecs;
+    CORE::CTimer m_allFilesDirScanTimer;
 };
 
 /*-------------------------------------------------------------------------*/
