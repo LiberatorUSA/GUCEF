@@ -41,6 +41,11 @@
 #define GUCEF_CORE_CTLINKEDCLONEABLEOBJ_H
 #endif /* GUCEF_CORE_CTLINKEDCLONEABLEOBJ_H ? */
 
+#ifndef GUCEF_CORE_CTCLONEABLEEXPANSION_H
+#include "CTCloneableExpansion.h"        /* templated implementation of class expansion to add a cloneable interface */
+#define GUCEF_CORE_CTCLONEABLEEXPANSION_H
+#endif /* GUCEF_CORE_CTCLONEABLEEXPANSION_H ? */
+
 #ifndef GUCEF_CORE_CDVSTRING_H
 #include "CDVString.h"
 #define GUCEF_CORE_CDVSTRING_H

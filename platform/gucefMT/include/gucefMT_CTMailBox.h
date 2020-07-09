@@ -133,6 +133,8 @@ class CTMailBox : public virtual MT::CILockable
 
     bool HasMail( void ) const;
     
+    UInt32 AmountOfMail( void ) const;
+
     bool DoLock( void ) const;
     
     bool DoUnlock( void ) const;
@@ -336,7 +338,18 @@ template< typename T >
 bool
 CTMailBox< T >::HasMail( void ) const
 {
+    CObjectScopeLock lock( this );
     return m_mailStack.size() > 0;
+}
+
+/*--------------------------------------------------------------------------*/
+
+template< typename T >
+UInt32
+CTMailBox< T >::AmountOfMail( void ) const
+{
+    CObjectScopeLock lock( this );
+    return (UInt32) m_mailStack.size();
 }
 
 /*--------------------------------------------------------------------------*/

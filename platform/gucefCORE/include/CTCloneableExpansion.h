@@ -54,7 +54,8 @@ namespace CORE {
  *  to any class.
  */
 template< class T > 
-class CTCloneableExpansion : public T
+class CTCloneableExpansion : public T ,
+                             public CICloneable
 {
     public:
 
