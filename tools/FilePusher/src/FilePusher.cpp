@@ -553,21 +553,17 @@ FilePusher::OnAllFilesDirScanTimerCycle( CORE::CNotifier* notifier    ,
                                          CORE::CICloneable* eventData )
 {GUCEF_TRACE;
 
-    TStringPushStyleMap::const_iterator i = m_fileMatchPatterns.begin();
-    while ( i != m_fileMatchPatterns.end() )
+    TStringSet::const_iterator i = m_dirsToWatch.begin();
+    while ( i != m_dirsToWatch.end() )
     {
-        // Is the pattern one that is configured for a 'all files' push method?
-        if ( PUSHSTYLE_MATCHING_ALL_FILES_WITH_REST_PERIOD == (*i).second )
+        GUCEF_LOG( CORE::LOGLEVEL_NORMAL, "FilePusher: Commencing periodic scan for 'all files' style file patterns for dir: \"" + (*i) + "\"" );
+        if ( QueueAllPreExistingFilesForDir( (*i) ) )
         {
-            GUCEF_LOG( CORE::LOGLEVEL_NORMAL, "FilePusher: Commencing periodic scan for 'all files' style file patterns for dir: \"" + (*i).first + "\"" );
-            if ( QueueAllPreExistingFilesForDir( (*i).first ) )
-            {
-                GUCEF_LOG( CORE::LOGLEVEL_NORMAL, "FilePusher: Finished scan for 'all files' style file patterns for dir: \"" + (*i).first + "\"" );
-            }
-            else
-            {
-                GUCEF_WARNING_LOG( CORE::LOGLEVEL_NORMAL, "FilePusher: Failed scan for 'all files' style file patterns for dir: \"" + (*i).first + "\"" );
-            }
+            GUCEF_LOG( CORE::LOGLEVEL_NORMAL, "FilePusher: Finished scan for 'all files' style file patterns for dir: \"" + (*i) + "\"" );
+        }
+        else
+        {
+            GUCEF_WARNING_LOG( CORE::LOGLEVEL_NORMAL, "FilePusher: Failed scan for 'all files' style file patterns for dir: \"" + (*i) + "\"" );
         }
         ++i;
     }
