@@ -240,6 +240,32 @@
   #define GUCEF_PLUGIN_CALLSPEC_STD_SUFFIX
 #endif
 
+/*
+ *      Macro that switches between a calling convention prefix and
+ *      postfix notation for the calling convention macro for the c
+ *      calling convention
+ */
+#undef GUCEF_CALLSPEC_C_PREFIX
+#undef GUCEF_CALLSPEC_C_SUFFIX
+#undef GUCEF_PLUGIN_CALLSPEC_C_PREFIX
+#undef GUCEF_PLUGIN_CALLSPEC_C_SUFFIX
+#if defined ( __BORLANDC__ ) || defined ( _MSC_VER )
+  #define GUCEF_CALLSPEC_C_PREFIX GUCEF_CALLSPEC_C
+  #define GUCEF_CALLSPEC_C_SUFFIX
+  #define GUCEF_PLUGIN_CALLSPEC_C_PREFIX GUCEF_CALLSPEC_C
+  #define GUCEF_PLUGIN_CALLSPEC_C_SUFFIX
+#elif ( GUCEF_PLATFORM == GUCEF_PLATFORM_ANDROID )
+  #define GUCEF_CALLSPEC_C_PREFIX
+  #define GUCEF_CALLSPEC_C_SUFFIX
+  #define GUCEF_PLUGIN_CALLSPEC_C_PREFIX
+  #define GUCEF_PLUGIN_CALLSPEC_C_SUFFIX
+#else
+  #define GUCEF_CALLSPEC_C_PREFIX __attribute__((GUCEF_CALLSPEC_C))
+  #define GUCEF_CALLSPEC_C_SUFFIX
+  #define GUCEF_PLUGIN_CALLSPEC_C_PREFIX __attribute__((GUCEF_CALLSPEC_C))
+  #define GUCEF_PLUGIN_CALLSPEC_C_SUFFIX
+#endif
+
 /*-------------------------------------------------------------------------*/
 
 /*
@@ -421,7 +447,7 @@
         /* Unknown compiler, fall back to cpp version check */
         #if __cplusplus > 201103L  /* This is not fullproof since not every compiler truly supports the spec */
             #define GUCEF_RVALUE_REFERENCES_SUPPORTED 1
-        #endif        
+        #endif
     #endif
 #endif
 

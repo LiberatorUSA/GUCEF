@@ -211,15 +211,15 @@ CUDPSocket::RegisterEvents( void )
 
 /*-------------------------------------------------------------------------*/
 
-bool 
-CUDPSocket::SetNrOfReceiveBuffers( UInt32 nrOfReceiveBuffers , 
+bool
+CUDPSocket::SetNrOfReceiveBuffers( UInt32 nrOfReceiveBuffers ,
                                    UInt32 newBufferSize      )
 {GUCEF_TRACE;
 
     // Having multiple receive buffers is not supported for blocking sockets at the moment
     if ( _blocking && nrOfReceiveBuffers > 1 )
-        return false; 
-    
+        return false;
+
     if ( 0 == nrOfReceiveBuffers )
     {
         nrOfReceiveBuffers = 1;
@@ -238,25 +238,34 @@ CUDPSocket::SetNrOfReceiveBuffers( UInt32 nrOfReceiveBuffers ,
         " Total required bytes for underlying buffer in bytes = " + CORE::UInt32ToString( nrOfReceiveBuffers * newBufferSize ) );
 
     m_maxRecievedDataBufferSize = newBufferSize;
-    
+
     TUdpPacketsRecievedEventData& infoStruct = m_udpPacketsReceivedEventData.GetData();
     infoStruct.packets.resize( nrOfReceiveBuffers );
     infoStruct.packetsReceived = 0;
 
     m_receiveBuffers.resize( nrOfReceiveBuffers );
-    
+
     #if ( GUCEF_PLATFORM == GUCEF_PLATFORM_LINUX )
-    _data->msgs.msgs.resize( nrOfReceiveBuffers );
-    _data->msgs.iovecs.resize( nrOfReceiveBuffers );
+    _data->msgs.resize( nrOfReceiveBuffers );
+    _data->iovecs.resize( nrOfReceiveBuffers );
     #endif
 
     for ( UInt32 i=0; i<m_receiveBuffers.size(); ++i )
     {
         CORE::CDynamicBuffer& linkedBuffer = m_receiveBuffers[ i ];
         linkedBuffer.LinkTo( m_underlyingReceiveBuffer.GetBufferPtr( i * newBufferSize ), newBufferSize );
-        infoStruct.packets[ i ].dataBuffer.LinkTo( &linkedBuffer ); 
-        
-        GUCEF_DEBUG_LOG( CORE::LOGLEVEL_NORMAL, "UDPSocket(" + CORE::PointerToString( this ) + "):SetNrOfReceiveBuffers: Linked logical receive buffer " + 
+        infoStruct.packets[ i ].dataBuffer.LinkTo( &linkedBuffer );
+
+        #if ( GUCEF_PLATFORM == GUCEF_PLATFORM_LINUX )
+        memset( &_data->iovecs[ i ], 0, sizeof( _data->iovecs[ i ] ) );
+        _data->iovecs[ i ].iov_base         = m_underlyingReceiveBuffer.GetBufferPtr( i * newBufferSize );
+        _data->iovecs[ i ].iov_len          = newBufferSize;
+        memset( &_data->msgs[ i ], 0, sizeof( _data->msgs[ i ] ) );
+        _data->msgs[ i ].msg_hdr.msg_iov    = &_data->iovecs[ i ];
+        _data->msgs[ i ].msg_hdr.msg_iovlen = 1;
+        #endif
+
+        GUCEF_DEBUG_LOG( CORE::LOGLEVEL_BELOW_NORMAL, "UDPSocket(" + CORE::PointerToString( this ) + "):SetNrOfReceiveBuffers: Linked logical receive buffer " +
                 CORE::UInt32ToString( i+1 ) + "/" + CORE::UInt32ToString( nrOfReceiveBuffers ) );
     }
 
@@ -265,7 +274,7 @@ CUDPSocket::SetNrOfReceiveBuffers( UInt32 nrOfReceiveBuffers ,
 
 /*-------------------------------------------------------------------------*/
 
-bool 
+bool
 CUDPSocket::SetNrOfReceiveBuffers( const UInt32 nrOfReceiveBuffers )
 {GUCEF_TRACE;
 
@@ -274,7 +283,7 @@ CUDPSocket::SetNrOfReceiveBuffers( const UInt32 nrOfReceiveBuffers )
 
 /*-------------------------------------------------------------------------*/
 
-UInt32 
+UInt32
 CUDPSocket::GetNrOfReceiveBuffers( void ) const
 {GUCEF_TRACE;
 
@@ -310,7 +319,7 @@ CUDPSocket::SendPacketTo( const CIPAddress& dest ,
     memset( &remote, 0, sizeof( remote ) );
     UInt32 destAddr = dest.GetAddress();
     if ( 0 == destAddr )
-        destAddr = CIPAddress::LoopbackIP.GetAddress();   
+        destAddr = CIPAddress::LoopbackIP.GetAddress();
     #if ( GUCEF_PLATFORM == GUCEF_PLATFORM_MSWIN )
     remote.sin_addr.S_un.S_addr = destAddr;
     #elif ( ( GUCEF_PLATFORM == GUCEF_PLATFORM_LINUX ) || ( GUCEF_PLATFORM == GUCEF_PLATFORM_ANDROID ) )
@@ -400,7 +409,7 @@ CUDPSocket::Update( bool performRead )
             FD_ZERO( &exceptfds );
             FD_SET( _data->sockid, &readfds );
             FD_SET( _data->sockid, &exceptfds );
-            
+
             if ( dvsocket_select( (int)_data->sockid+1 ,
                                   &readfds             ,
                                   NULL                 , // We don't care about socket writes here
@@ -412,7 +421,7 @@ CUDPSocket::Update( bool performRead )
 
                 if ( FD_ISSET( _data->sockid, &exceptfds ) )
                 {
-                    GUCEF_ERROR_LOG( CORE::LOGLEVEL_NORMAL, "CUDPSocket(" + CORE::PointerToString( this ) + "): Socket error occured: " + 
+                    GUCEF_ERROR_LOG( CORE::LOGLEVEL_NORMAL, "CUDPSocket(" + CORE::PointerToString( this ) + "): Socket error occured: " +
                             CORE::Int32ToString( errorCode ) );
 
                     int closeError;
@@ -430,7 +439,7 @@ CUDPSocket::Update( bool performRead )
                         UInt32 packetsRead = 0;
                         if ( !PerformRead( i, packetsRead ) || 0 == packetsRead )
                             break;
-                        
+
                         // In some cases we can read multiple packets in a single read operation
                         // not all operating systems support this. For those that do packetsRead can be > 1
                         i += ( packetsRead - 1 );
@@ -449,7 +458,7 @@ CUDPSocket::Update( bool performRead )
                 // select call failed
                 GUCEF_ERROR_LOG( CORE::LOGLEVEL_IMPORTANT, "UDPSocket(" + CORE::PointerToString( this ) + "): Socket error occured (select call failed) on socket " +
                     m_hostAddress.AddressAndPortAsString() + ". Error code: " + CORE::Int32ToString( errorCode ) );
-                
+
                 int closeError;
                 dvsocket_closesocket( _data->sockid, &closeError );
                 _data->sockid = 0;
@@ -460,7 +469,7 @@ CUDPSocket::Update( bool performRead )
         if ( eventData.packetsReceived > 0 )
         {
             GUCEF_DEBUG_LOG( CORE::LOGLEVEL_BELOW_NORMAL, "UDPSocket(" + CORE::PointerToString( this ) + "):Update: Received " + CORE::UInt32ToString( eventData.packetsReceived ) + " packets in one cycle" );
-            
+
             // Send an event notifying people that the data was recieved
             if ( !NotifyObservers( UDPPacketsRecievedEvent, &m_udpPacketsReceivedEventData ) ) return false;
 
@@ -563,7 +572,7 @@ CUDPSocket::OnPulseGeneratorDestruction( CORE::CNotifier* notifier              
 UInt32
 CUDPSocket::GetRecievedDataBufferSize( void ) const
 {GUCEF_TRACE;
-         
+
     return m_maxRecievedDataBufferSize;
 }
 
@@ -648,7 +657,7 @@ CUDPSocket::GetNrOfDataReceivedEvents( bool resetCounter )
 
 /*-------------------------------------------------------------------------*/
 
-UInt32 
+UInt32
 CUDPSocket::GetNrOfDataSentEvents( bool resetCounter )
 {GUCEF_TRACE;
 
@@ -723,7 +732,75 @@ CUDPSocket::PerformRead( UInt32 readIndex, UInt32& packetsRead )
 {GUCEF_TRACE;
 
     TUdpPacketsRecievedEventData& eventData = m_udpPacketsReceivedEventData.GetData();
-    UInt32 maxPackets = (UInt32) m_receiveBuffers.size();
+
+    #if ( GUCEF_PLATFORM == GUCEF_PLATFORM_LINUX )
+
+    UInt32 maxPackets = (UInt32) m_receiveBuffers.size() - readIndex;
+
+    struct timespec timeout;
+    memset( &timeout, 0, sizeof( timeout ) );
+    int retval = recvmmsg( _data->sockid, &_data->msgs[ readIndex ], maxPackets, 0, &timeout );
+    if ( retval < 0 )
+    {
+        int sockError = errno;
+        if ( EWOULDBLOCK == sockError )
+        {
+            // Not an error
+            packetsRead = 0;
+            return false;
+        }
+        if ( ENETRESET == sockError )
+        {
+            GUCEF_SYSTEM_LOG( CORE::LOGLEVEL_NORMAL, "UDPSocket(" + CORE::PointerToString( this ) + "):PerformRead: Discovered the socket was closed gracefully on socket " +
+                m_hostAddress.AddressAndPortAsString() );
+
+            packetsRead = 0;
+            Close( false );
+            return false;
+        }
+
+        GUCEF_ERROR_LOG( CORE::LOGLEVEL_IMPORTANT, "UDPSocket(" + CORE::PointerToString( this ) + "):PerformRead: Socket error occured (recvmmsg call failed) on socket " +
+            m_hostAddress.AddressAndPortAsString() + ". Error code: " + CORE::Int32ToString( errno ) );
+
+        packetsRead = 0;
+        return false;
+    }
+    packetsRead = (UInt32) retval;
+
+    UInt32 maxIndex = readIndex + packetsRead;
+    for ( UInt32 i=readIndex; i<maxIndex; ++i )
+    {
+        // Set the actual usefull bytes of data in the buffer to match the number of retrieved bytes
+        // We achieve this by linking. The data is retained in the underlying buffer.
+        // We are merely setting the demarkation of the logical buffer into the underlying buffer
+        CORE::CDynamicBuffer& bufferLink = m_receiveBuffers[ i ];
+        bufferLink.LinkTo( m_underlyingReceiveBuffer.GetBufferPtr( i * m_maxRecievedDataBufferSize ), (UInt32) _data->msgs[ i ].msg_len );
+
+        // Fill in the remote source address from where the data originated
+        CIPAddress& sourceAddress = eventData.packets[ i ].sourceAddress;
+
+        // The msg_name field of struct msghdr does not necessarily have to point to a struct sockaddr_in:
+        // it points to a generic socket address; the exact structure depends on the socket family: if it's an AF_UNIX socket,
+        // it points to a struct sockaddr_un, if it's AF_INET, it points to struct sockaddr_in, and if it's AF_INET6 it points to struct sockaddr_in6.
+        // All of them share the sa_family field, which is also the first field, so you can cast msg_name to struct sockaddr *, read the sa_family field,
+        // and decide where to go from there.
+        //
+        // This specific UDP class only allows creation of one type of port so we can cast accordingly
+        struct sockaddr_in* remote = (struct sockaddr_in*) _data->msgs[ i ].msg_hdr.msg_name;
+        if ( GUCEF_NULL != remote && sizeof( struct sockaddr_in ) == _data->msgs[ i ].msg_hdr.msg_namelen )
+        {
+            sourceAddress.SetPort( remote->sin_port );
+            sourceAddress.SetAddress( remote->sin_addr.s_addr );
+        }
+
+        // Update our metrics
+        m_bytesReceived += _data->msgs[ i ].msg_len;
+        ++m_nrOfDataReceivedEvents;
+    }
+
+    return true;
+
+    #else
 
     int sockError = 0;
     struct sockaddr_in remote;
@@ -739,10 +816,10 @@ CUDPSocket::PerformRead( UInt32 readIndex, UInt32& packetsRead )
                                     &sockError                             );
     if ( retval < 0 )
     {
-        // select call failed
+        // recvfrom call failed
         GUCEF_ERROR_LOG( CORE::LOGLEVEL_IMPORTANT, "UDPSocket(" + CORE::PointerToString( this ) + "):PerformRead: Socket error occured (recvfrom call failed) on socket " +
             m_hostAddress.AddressAndPortAsString() + ". Error code: " + CORE::Int32ToString( sockError ) );
-        
+
         packetsRead = 0;
         return false;
     }
@@ -775,6 +852,8 @@ CUDPSocket::PerformRead( UInt32 readIndex, UInt32& packetsRead )
     ++m_nrOfDataReceivedEvents;
 
     return true;
+
+    #endif
 }
 
 /*-------------------------------------------------------------------------*/
@@ -788,14 +867,14 @@ CUDPSocket::Recieve( CIPAddress& src ,
     // When using this API enforce the historical default for now
     // This is for blocking sockets only
     SetNrOfReceiveBuffers( 1 );
-    
+
     if ( !m_receiveBuffers.empty() )
     {
         if ( PerformRead() )
         {
             TPacketEntry& entry = m_udpPacketsReceivedEventData.GetData().packets.front();
             src = entry.sourceAddress;
-            return (Int32) entry.dataBuffer.GetData().CopyTo( 0, bufsize, destbuf ); 
+            return (Int32) entry.dataBuffer.GetData().CopyTo( 0, bufsize, destbuf );
         }
     }
     return 0;
@@ -906,8 +985,24 @@ CUDPSocket::Open( const CIPAddress& localaddr )
     GUCEF_DEBUG_LOG( CORE::LOGLEVEL_BELOW_NORMAL, "UDPSocket(" + CORE::PointerToString( this ) + "): Successfully set port reuse mode \"" + CORE::BoolToString( allowPortReuse != 0 ) + "\" on socket" );
     #endif
 
-    SetOsLevelSocketReceiveBufferSize( m_osLevelSocketReceiveBufferSize ); 
-    
+    #if ( GUCEF_PLATFORM == GUCEF_PLATFORM_LINUX )
+    if ( !_blocking )
+    {
+        // Important: SO_RCVTIMEO must be set when using non-blocking or recvmmsg will block until data is received regardless
+        // of the overall socket blocking mode
+        struct timeval receiveTimeout;
+        memset( &receiveTimeout, 0, sizeof( receiveTimeout ) );
+        if ( 0 > dvsocket_setsockopt( _data->sockid, SOL_SOCKET, SO_RCVTIMEO, (const char*) &receiveTimeout, sizeof(receiveTimeout), &errorCode ) )
+        {
+            GUCEF_ERROR_LOG( CORE::LOGLEVEL_NORMAL, "UDPSocket(" + CORE::PointerToString( this ) + "): Failed to set receive timeout \"0\" on socket"
+                + ". Error code: " + CORE::UInt32ToString( errorCode ) );
+        }
+        GUCEF_DEBUG_LOG( CORE::LOGLEVEL_BELOW_NORMAL, "UDPSocket(" + CORE::PointerToString( this ) + "): Successfully set receive timeout \"0\" on socket" );
+    }
+    #endif
+
+    SetOsLevelSocketReceiveBufferSize( m_osLevelSocketReceiveBufferSize );
+
     Int32 loopch = m_allowMulticastLoopback ? (Int32)1 : (Int32)0;
     if ( 0 > dvsocket_setsockopt( _data->sockid, IPPROTO_IP, IP_MULTICAST_LOOP, (const char*) &loopch, sizeof(loopch), &errorCode ) )
     {
@@ -950,7 +1045,7 @@ CUDPSocket::Open( const CIPAddress& localaddr )
             if ( 0 == getsockname( _data->sockid, (struct sockaddr*) &sin, &len ) )
                 m_hostAddress.SetPort( sin.sin_port );
         }
-        
+
         GUCEF_DEBUG_LOG( CORE::LOGLEVEL_NORMAL, "UDPSocket(" + CORE::PointerToString( this ) + "): Successfully bound and opened socket at " + m_hostAddress.AddressAndPortAsString()
             + " aka " + CORE::UInt32ToString( m_hostAddress.GetAddress() ) + ":" + CORE::UInt16ToString( m_hostAddress.GetPort() ) + " in network format" );
         if ( !NotifyObservers( UDPSocketOpenedEvent ) ) return true;
@@ -984,27 +1079,29 @@ CUDPSocket::SetOsLevelSocketReceiveBufferSize( UInt32 osLevelSocketReceiveBuffer
     {
         int errorCode = 0;
         int socketReceiveBufferSize = (int) m_osLevelSocketReceiveBufferSize;
-        
+
         #if ( GUCEF_PLATFORM == GUCEF_PLATFORM_LINUX )
-        
+
         int actualSocketReceiveBufferSize = 0; int actualParamSize = sizeof(int);
         if ( 0 > dvsocket_setsockopt_and_validate( _data->sockid, SOL_SOCKET, SO_RCVBUF, (const char*) &socketReceiveBufferSize, sizeof(int), (char*) &actualSocketReceiveBufferSize, &actualParamSize, &errorCode ) )
         {
             GUCEF_ERROR_LOG( CORE::LOGLEVEL_NORMAL, "UDPSocket(" + CORE::PointerToString( this ) + "): Failed to set OS level socket receive buffer size to \"" + CORE::Int32ToString( socketReceiveBufferSize )
-                + "\" on socket. Error code: " + CORE::UInt32ToString( errorCode ) + ". Actual current value is: " + CORE::Int32ToString( actualSocketReceiveBufferSize ) 
+                + "\" on socket. Error code: " + CORE::UInt32ToString( errorCode ) + ". Actual current value is: " + CORE::Int32ToString( actualSocketReceiveBufferSize )
                 + ". Will try to force which requires elevated rights" );
-        
-            actualSocketReceiveBufferSize = 0; actualParamSize = sizeof(int);
+
+            int newActualSocketReceiveBufferSize = 0; actualParamSize = sizeof(int);
             if ( 0 > dvsocket_setsockopt_and_validate( _data->sockid, SOL_SOCKET, SO_RCVBUFFORCE, (const char*) &socketReceiveBufferSize, sizeof(int), (char*) &actualSocketReceiveBufferSize, &actualParamSize, &errorCode ) )
             {
+                if ( 0 == newActualSocketReceiveBufferSize )
+                    newActualSocketReceiveBufferSize = actualSocketReceiveBufferSize;
                 GUCEF_ERROR_LOG( CORE::LOGLEVEL_NORMAL, "UDPSocket(" + CORE::PointerToString( this ) + "): Failed to force set OS level socket receive buffer size to \"" + CORE::Int32ToString( socketReceiveBufferSize )
                     + "\" on socket. Error code: " + CORE::UInt32ToString( errorCode ) + ". Actual current value is: " + CORE::Int32ToString( actualSocketReceiveBufferSize ) );
-            
+
                 return false;
             }
         }
         GUCEF_DEBUG_LOG( CORE::LOGLEVEL_BELOW_NORMAL, "UDPSocket(" + CORE::PointerToString( this ) + "): Successfully set OS level socket receive buffer size to " + CORE::Int32ToString( socketReceiveBufferSize ) );
-        
+
         #else
 
         int actualSocketReceiveBufferSize = 0; int actualParamSize = sizeof(int);
@@ -1012,7 +1109,7 @@ CUDPSocket::SetOsLevelSocketReceiveBufferSize( UInt32 osLevelSocketReceiveBuffer
         {
             GUCEF_ERROR_LOG( CORE::LOGLEVEL_NORMAL, "UDPSocket(" + CORE::PointerToString( this ) + "): Failed to set OS level socket receive buffer size to \"" + CORE::Int32ToString( socketReceiveBufferSize )
                 + "\" on socket. Error code: " + CORE::UInt32ToString( errorCode ) + ". Actual current value is: " + CORE::Int32ToString( actualSocketReceiveBufferSize ) );
-        
+
             return false;
         }
         GUCEF_DEBUG_LOG( CORE::LOGLEVEL_BELOW_NORMAL, "UDPSocket(" + CORE::PointerToString( this ) + "): Successfully set OS level socket receive buffer size to " + CORE::Int32ToString( socketReceiveBufferSize ) );
@@ -1036,11 +1133,11 @@ CUDPSocket::GetOsLevelSocketReceiveBufferSize( void ) const
         {
             GUCEF_ERROR_LOG( CORE::LOGLEVEL_NORMAL, "UDPSocket(" + CORE::PointerToString( this ) + "):GetOsLevelSocketReceiveBufferSize: Failed to obtain OS level socket receive buffer size. "
                 ". Error code: " + CORE::UInt32ToString( errorCode ) );
-        
+
             return m_osLevelSocketReceiveBufferSize;
         }
 
-        GUCEF_DEBUG_LOG( CORE::LOGLEVEL_BELOW_NORMAL, "UDPSocket(" + CORE::PointerToString( this ) + "):GetOsLevelSocketReceiveBufferSize: OS level receive buffer size is: " + 
+        GUCEF_DEBUG_LOG( CORE::LOGLEVEL_BELOW_NORMAL, "UDPSocket(" + CORE::PointerToString( this ) + "):GetOsLevelSocketReceiveBufferSize: OS level receive buffer size is: " +
                 CORE::Int32ToString( actualSocketReceiveBufferSize ) );
         return (UInt32) actualSocketReceiveBufferSize;
     }
@@ -1245,7 +1342,7 @@ CUDPSocket::Close( bool shutdownOnly )
     if ( IsActive() )
     {
         NotifyObservers( UDPSocketClosingEvent );
-        
+
         if ( !shutdownOnly )
         {
             // A socket close will trigger a shutdown sequence if one hasnt occured yet and will also free up the related

@@ -22,8 +22,13 @@
 //                                                                         //
 //-------------------------------------------------------------------------*/
 
+#if ( ( GUCEF_PLATFORM == GUCEF_PLATFORM_LINUX ) || ( GUCEF_PLATFORM == GUCEF_PLATFORM_ANDROID ) )
+  #define _GNU_SOURCE
+#endif
+
 #include <assert.h>
 #include <malloc.h>
+#include <string.h>
 
 #include "gucefMT_dvmtoswrap.h"         /* the function prototypes */
 
@@ -36,6 +41,7 @@
   #include <unistd.h>
   #include <pthread.h>
   #include <signal.h>
+  #include <sys/time.h>
 #endif
 
 /*-------------------------------------------------------------------------//
@@ -53,6 +59,7 @@ struct SThreadData
     void* data;
     #elif ( ( GUCEF_PLATFORM == GUCEF_PLATFORM_LINUX ) || ( GUCEF_PLATFORM == GUCEF_PLATFORM_ANDROID ) )
     pthread_t thread;
+    pthread_attr_t attr;
     TThreadFunc func;
     void* data;
     #endif
@@ -92,6 +99,7 @@ ThreadDelay( UInt32 delay )
 
 /*--------------------------------------------------------------------------*/
 
+#if ( GUCEF_PLATFORM == GUCEF_PLATFORM_MSWIN )
 
 static UInt32 GUCEF_CALLSPEC_STD_PREFIX
 ThreadMain( void* tdvptr ) GUCEF_CALLSPEC_STD_SUFFIX
@@ -101,13 +109,26 @@ ThreadMain( void* tdvptr ) GUCEF_CALLSPEC_STD_SUFFIX
     return retval;
 }
 
+#elif ( ( GUCEF_PLATFORM == GUCEF_PLATFORM_LINUX ) || ( GUCEF_PLATFORM == GUCEF_PLATFORM_ANDROID ) )
+
+void*
+ThreadMain( void* tdvptr )
+{
+    TThreadData* td = (TThreadData*) tdvptr;
+    UInt32 retval = td->func( td->data );
+    free( ((TThreadData*)tdvptr) );
+    return NULL;
+}
+
+#endif
+
 /*--------------------------------------------------------------------------*/
 
 TThreadData*
 ThreadCreate( TThreadFunc func ,
               void* data       )
 {
-    #ifdef GUCEF_MSWIN_BUILD
+    #if ( GUCEF_PLATFORM == GUCEF_PLATFORM_MSWIN )
     TThreadData* td = malloc( sizeof( TThreadData ) );
     td->func = (LPTHREAD_START_ROUTINE)func;
     td->data = data;
@@ -124,10 +145,23 @@ ThreadCreate( TThreadFunc func ,
     }
     return td;
     #elif ( ( GUCEF_PLATFORM == GUCEF_PLATFORM_LINUX ) || ( GUCEF_PLATFORM == GUCEF_PLATFORM_ANDROID ) )
+    int retVal = 0;
     TThreadData* td = malloc( sizeof( TThreadData ) );
+    memset( td, 0, sizeof( TThreadData ) );
+
+    retVal = pthread_attr_init( &td->attr );
+    if ( 0 != retVal )
+    {
+        /* failed to init thread attributes structure */
+        free( td );
+        return NULL;
+    }
+
     td->data = data;
+    td->func = func;
+    
     if ( 0 != pthread_create( &td->thread         ,
-                              NULL                ,
+                              &td->attr           ,
                               (void*) ThreadMain  ,
                               (void*) td          ) )
     {
@@ -197,7 +231,7 @@ ThreadKill( struct SThreadData* td )
     }
     return 0;
     #elif ( ( GUCEF_PLATFORM == GUCEF_PLATFORM_LINUX ) || ( GUCEF_PLATFORM == GUCEF_PLATFORM_ANDROID ) )
-    if ( td != NULL )
+    if ( NULL != td && 0 != td->thread )
     {
         Int32 retval = (Int32) pthread_kill( td->thread, 0 );
         if ( 0 != retval )
@@ -205,6 +239,7 @@ ThreadKill( struct SThreadData* td )
             /* an error occured */
 
         }
+        pthread_attr_destroy( &td->attr );
         free( td );
         return retval;
     }
@@ -239,7 +274,16 @@ ThreadWait( struct SThreadData* td ,
     }
     return 0;
     #elif ( ( GUCEF_PLATFORM == GUCEF_PLATFORM_LINUX ) || ( GUCEF_PLATFORM == GUCEF_PLATFORM_ANDROID ) )
-
+    if ( NULL != td && 0 != td->thread )
+    {
+        struct timespec timeout;
+        timeout.tv_sec = 0;
+        timeout.tv_nsec = 1000000 * timeoutInMs;
+        int errorCode = pthread_timedjoin_np( td->thread, NULL, &timeout );
+        if ( 0 == errorCode )
+            return 1;
+    }
+    return 0;
     #else
     #error unsupported target platform
     #endif

@@ -14,7 +14,7 @@
  *
  *  You should have received a copy of the GNU Lesser General Public
  *  License along with this library; if not, write to the Free Software
- *  Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA 
+ *  Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA
  */
 
 #ifndef GUCEF_PLATFORM_H
@@ -86,7 +86,15 @@
 #   define GUCEF_COMP_VER (((__GNUC__)*100) + \
         (__GNUC_MINOR__*10) + \
         __GNUC_PATCHLEVEL__)
-
+#   if defined( __i386__ ) || defined( __i486__ ) || defined( __i586__ ) || defined( __i686__ )
+#       define GUCEF_CPU_ARCHITECTURE GUCEF_CPU_ARCHITECTURE_X86
+#   elif defined( __amd64__ ) || defined( __amd64 ) || defined( __x86_64__ ) || defined( __x86_64 )
+#       define GUCEF_CPU_ARCHITECTURE GUCEF_CPU_ARCHITECTURE_AMD64
+#   elif defined( __arm__ ) || defined( __thumb__ )
+#       define GUCEF_CPU_ARCHITECTURE GUCEF_CPU_ARCHITECTURE_ARM
+#   elif defined( __aarch64__ )
+#       define GUCEF_CPU_ARCHITECTURE GUCEF_CPU_ARCHITECTURE_ARM64
+#   endif
 #elif defined( __BORLANDC__ )
 #   define GUCEF_COMPILER GUCEF_COMPILER_BORL
 #   define GUCEF_COMP_VER __BCPLUSPLUS__
