@@ -172,6 +172,13 @@ class GUCEF_COMCORE_EXPORT_CPP CUDPSocket : public CSocket
     bool Open( const CIPAddress& localaddr );
 
     /**
+     *  Attempts to set the default interface to be used for multicast   
+     *
+     *  @param multicastInterface The local interface to use by default
+     */
+    bool SetDefaultMulticastInterface( const CIPAddress& multicastInterface );
+
+    /**
      *  Attempts to join the given multicast group using exclusive mode
      *  This will accept multicast data from any source.
      *  To prevent receiving data from specific sources use Block/Unblock   

@@ -1032,6 +1032,8 @@ CUDPSocket::Open( const CIPAddress& localaddr )
     _data->localaddress.sin_port = m_hostAddress.GetPort();
     _data->localaddress.sin_addr.s_addr = m_hostAddress.GetAddress();
 
+    SetDefaultMulticastInterface( m_hostAddress );
+
     if ( dvsocket_bind( _data->sockid                            ,
                         (struct sockaddr *) &_data->localaddress ,
                         sizeof(struct sockaddr_in)               ,
@@ -1143,6 +1145,31 @@ CUDPSocket::GetOsLevelSocketReceiveBufferSize( void ) const
     }
 
     return m_osLevelSocketReceiveBufferSize;
+}
+
+/*-------------------------------------------------------------------------*/
+
+bool
+CUDPSocket::SetDefaultMulticastInterface( const CIPAddress& multicastInterface )
+{GUCEF_TRACE;
+
+    struct in_addr interface_addr;
+    memset( &interface_addr, 0, sizeof( interface_addr ) );
+    #if ( GUCEF_PLATFORM == GUCEF_PLATFORM_MSWIN )
+    interface_addr.S_un.S_addr = multicastInterface.GetAddress();
+    #elif ( ( GUCEF_PLATFORM == GUCEF_PLATFORM_LINUX ) || ( GUCEF_PLATFORM == GUCEF_PLATFORM_ANDROID ) )
+    interface_addr.s_addr = multicastInterface.GetAddress();
+    #endif
+
+    int errorCode = 0;
+    if ( 0 > dvsocket_setsockopt( _data->sockid, IPPROTO_IP, IP_MULTICAST_IF, (char*) &interface_addr, sizeof(interface_addr), &errorCode ) )
+    {
+        GUCEF_ERROR_LOG( CORE::LOGLEVEL_NORMAL, "UDPSocket(" + CORE::PointerToString( this ) + "): Failed to set default multicast interface " + multicastInterface.AddressAsString()
+            + ". Error code: " + CORE::UInt32ToString( errorCode ) )
+        return false;
+    }
+    GUCEF_DEBUG_LOG( CORE::LOGLEVEL_NORMAL, "UDPSocket(" + CORE::PointerToString( this ) + "): Successfully set the default multicast interface to " +  multicastInterface.AddressAsString() );
+    return true;
 }
 
 /*-------------------------------------------------------------------------*/
