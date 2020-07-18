@@ -184,8 +184,23 @@ class GUCEF_COMCORE_EXPORT_CPP CUDPSocket : public CSocket
      *  To prevent receiving data from specific sources use Block/Unblock   
      *
      *  @param multicastGroup The multicast group to join
+     *  @param alwaysJoinOnAllNetworkInterfaces whether to auto join on all available network interfaces
+     *  @param treatHostInterfaceOfAnyAsJoinOnAll whether to join on all available network interfaces if the host bind interface is set to ANY
      */
-    bool Join( const CIPAddress& multicastGroup );
+    bool Join( const CIPAddress& multicastGroup                ,
+               bool alwaysJoinOnAllNetworkInterfaces = false   ,
+               bool treatHostInterfaceOfAnyAsJoinOnAll = false );
+
+    /**
+     *  Attempts to join the given multicast group using exclusive mode
+     *  This will accept multicast data from any source.
+     *  To prevent receiving data from specific sources use Block/Unblock   
+     *
+     *  @param multicastGroup The multicast group to join
+     *  @param networkInterfaceToJoinOn which network interface to use for the join request
+     */
+    bool JoinOnInterface( const CIPAddress& multicastGroup           ,
+                          const CIPAddress& networkInterfaceToJoinOn );
 
     /**
      *  Attempts to join the given multicast group using inclusive mode

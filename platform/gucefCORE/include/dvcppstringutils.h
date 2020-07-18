@@ -360,6 +360,18 @@ IsAbsolutePath( const CString& path );
 GUCEF_CORE_PUBLIC_CPP CString
 GetHostname( void );
 
+/*-------------------------------------------------------------------------*/
+
+GUCEF_CORE_PUBLIC_CPP bool 
+Utf16toUtf8( const std::wstring& wstr ,
+             std::string& str         );
+
+/*-------------------------------------------------------------------------*/
+
+GUCEF_CORE_PUBLIC_CPP bool 
+Utf8toUtf16( const std::string& str ,
+             std::wstring& wstr     );
+
 /*-------------------------------------------------------------------------//
 //                                                                         //
 //      NAMESPACE                                                          //

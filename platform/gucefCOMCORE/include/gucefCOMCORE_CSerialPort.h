@@ -31,10 +31,10 @@
 #define GUCEF_CORE_CDYNAMICBUFFER_H
 #endif /* GUCEF_CORE_CDYNAMICBUFFER_H ? */
 
-#ifndef GUCEF_COMCORE_CICOMMUNICATIONPORT_H
-#include "gucefCOMCORE_CICommunicationPort.h"
-#define GUCEF_COMCORE_CICOMMUNICATIONPORT_H
-#endif /* GUCEF_COMCORE_CICOMMUNICATIONPORT_H ? */
+#ifndef GUCEF_COMCORE_CICOMMUNICATIONINTERFACE_H
+#include "gucefCOMCORE_CICommunicationInterface.h"
+#define GUCEF_COMCORE_CICOMMUNICATIONINTERFACE_H
+#endif /* GUCEF_COMCORE_CICOMMUNICATIONINTERFACE_H ? */
 
 /*-------------------------------------------------------------------------//
 //                                                                         //
@@ -52,13 +52,13 @@ namespace COMCORE {
 //-------------------------------------------------------------------------*/
 
 
-class GUCEF_COMCORE_EXPORT_CPP CSerialPort : public virtual CICommunicationPort
+class GUCEF_COMCORE_EXPORT_CPP CSerialPort : public virtual CICommunicationInterface
 {
     public:
     
     virtual ~CSerialPort();
     
-    virtual CORE::CString GetPortType( void ) const;
+    virtual CORE::CString GetCommunicationInterfaceType( void ) const;
 
     virtual const CORE::CString& GetClassTypeName( void ) const;
 

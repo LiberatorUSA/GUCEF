@@ -38,10 +38,15 @@
 #define GUCEF_CORE_CTIMER_H
 #endif /* GUCEF_CORE_CTIMER_H ? */
 
-#ifndef GUCEF_COMCORE_CICOMMUNICATIONPORT_H
-#include "gucefCOMCORE_CICommunicationPort.h"
-#define GUCEF_COMCORE_CICOMMUNICATIONPORT_H
-#endif /* GUCEF_COMCORE_CICOMMUNICATIONPORT_H ? */
+#ifndef GUCEF_COMCORE_CICOMMUNICATIONINTERFACE_H
+#include "gucefCOMCORE_CICommunicationInterface.h"
+#define GUCEF_COMCORE_CICOMMUNICATIONINTERFACE_H
+#endif /* GUCEF_COMCORE_CICOMMUNICATIONINTERFACE_H ? */
+
+#ifndef GUCEF_COMCORE_CINETWORKINTERFACE_H
+#include "gucefCOMCORE_CINetworkInterface.h"
+#define GUCEF_COMCORE_CINETWORKINTERFACE_H
+#endif /* GUCEF_COMCORE_CINETWORKINTERFACE_H ? */
 
 #ifndef GUCEF_COMCORE_CSOCKET_H
 #include "CSocket.h"
@@ -171,9 +176,24 @@ class GUCEF_COMCORE_EXPORT_CPP CCom
      *  Attempts to provide access to a communication port of the given type and the given id
      *  If the cannot be accessed NULL will be returned.
      */
-    CICommunicationPort* GetCommunicationPort( const CORE::CString& portType ,
-                                               const CORE::CString& portId   );
+    CICommunicationInterface* GetCommunicationPort( const CORE::CString& portType ,
+                                                    const CORE::CString& portId   );
 
+    /**
+     *  Attempts to retrieve a list of network interfaces on the system
+     */
+    bool GetNetworkInterfaceList( TStringList& interfaceIDs ) const;
+
+    /**
+     *  Attempts to provide access to a network interface with the given id
+     *  If the cannot be accessed NULL will be returned.
+     */
+    CINetworkInterface* GetNetworkInterface( const CORE::CString& interfaceID );
+
+    /**
+     *  Attempts to obtain all network IP info from all network interfaces in aggregate
+     */
+    bool GetAllNetworkInterfaceIPInfo( CINetworkInterface::TIPInfoVector& ipInfo );
 
     private:
     friend class CComCoreGlobal;
@@ -206,6 +226,8 @@ class GUCEF_COMCORE_EXPORT_CPP CCom
     CCom( const CCom& src );            /** not implemented */
     CCom& operator=( const CCom& src ); /** not implemented */
 
+    void LazyInitNetworkInterfaces( void ) const;
+    
     private:
 
     struct SProxyServer
@@ -216,10 +238,11 @@ class GUCEF_COMCORE_EXPORT_CPP CCom
     };
     typedef struct SProxyServer TProxyServer;
     typedef std::map< CORE::CString, TProxyServer > TProxyList;
+    typedef std::vector< CINetworkInterface* > TNetworkInterfaceVector;
 
     typedef std::set< CSocket* > TSocketSet;
 
-    typedef std::map< CORE::CString, CICommunicationPort* > TPortMap;
+    typedef std::map< CORE::CString, CICommunicationInterface* > TPortMap;
     typedef std::map< CORE::CString, TPortMap > TPortIndex;
     
     TSocketSet m_sockets;    /** our socket object heap */
@@ -229,6 +252,7 @@ class GUCEF_COMCORE_EXPORT_CPP CCom
     UInt32 _scount;          /** current number of registered sockets */
     TProxyList m_proxyList;
     TPortIndex m_portObjs;   /** index of all currently created port objects */
+    mutable TNetworkInterfaceVector m_nics;
 };
 
 /*-------------------------------------------------------------------------//

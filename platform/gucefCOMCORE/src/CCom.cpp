@@ -61,6 +61,11 @@
   #define GUCEF_COMCORE_CWIN32SERIALPORT_H
   #endif /* GUCEF_COMCORE_CWIN32SERIALPORT_H ? */
 
+  #ifndef GUCEF_COMCORE_CWIN32NETWORKINTERFACE_H
+  #include "gucefCOMCORE_CWin32NetworkInterface.h"
+  #define GUCEF_COMCORE_CWIN32NETWORKINTERFACE_H
+  #endif /* GUCEF_COMCORE_CWIN32NETWORKINTERFACE_H ? */
+
 #endif
 
 /*-------------------------------------------------------------------------//
@@ -269,7 +274,7 @@ CCom::GetCommunicationPortList( const CORE::CString& portType ,
 
 /*-------------------------------------------------------------------------*/
     
-CICommunicationPort*
+CICommunicationInterface*
 CCom::GetCommunicationPort( const CORE::CString& portType ,
                             const CORE::CString& portId   )
 {
@@ -285,7 +290,7 @@ CCom::GetCommunicationPort( const CORE::CString& portType ,
         TPortMap::iterator n = portMap.find( portId );
         if ( n != portMap.end() )
         {
-            CICommunicationPort* port = (*n).second;
+            CICommunicationInterface* port = (*n).second;
             _mutex.Unlock();
             return port;
         }
@@ -297,7 +302,7 @@ CCom::GetCommunicationPort( const CORE::CString& portType ,
     {
         #if ( GUCEF_PLATFORM_MSWIN == GUCEF_PLATFORM )
 
-        CICommunicationPort* port = CWin32SerialPort::Create( portId );
+        CICommunicationInterface* port = CWin32SerialPort::Create( portId );
         if ( NULL != port )
         {
             TPortMap& portMap = m_portObjs[ portType ];
@@ -311,6 +316,74 @@ CCom::GetCommunicationPort( const CORE::CString& portType ,
     
     _mutex.Unlock();    
     return NULL;
+}
+
+/*-------------------------------------------------------------------------*/
+
+void
+CCom::LazyInitNetworkInterfaces( void ) const
+{
+    if ( m_nics.empty() )
+    {
+        #if ( GUCEF_PLATFORM_MSWIN == GUCEF_PLATFORM )
+        CWin32NetworkInterface::EnumNetworkAdapters( m_nics );
+        #endif
+    }
+}
+
+/*-------------------------------------------------------------------------*/
+
+bool 
+CCom::GetNetworkInterfaceList( TStringList& interfaceIDs ) const
+{GUCEF_TRACE;
+
+    LazyInitNetworkInterfaces();
+    
+    TNetworkInterfaceVector::const_iterator i = m_nics.begin();
+    while ( i != m_nics.end() )
+    {
+        interfaceIDs.push_back( (*i)->GetAdapterName() );
+        ++i;
+    }
+    return true;
+}
+
+/*-------------------------------------------------------------------------*/
+
+CINetworkInterface* 
+CCom::GetNetworkInterface( const CORE::CString& interfaceID )
+{GUCEF_TRACE;
+
+    LazyInitNetworkInterfaces();
+    
+    TNetworkInterfaceVector::const_iterator i = m_nics.begin();
+    while ( i != m_nics.end() )
+    {
+        if ( interfaceID == (*i)->GetAdapterName() )
+        {
+            return (*i);
+        }
+        ++i;
+    }
+    return GUCEF_NULL;
+}
+
+/*-------------------------------------------------------------------------*/
+
+bool 
+CCom::GetAllNetworkInterfaceIPInfo( CINetworkInterface::TIPInfoVector& ipInfo )
+{GUCEF_TRACE;
+
+    LazyInitNetworkInterfaces();
+    
+    bool totalSuccess = true;
+    TNetworkInterfaceVector::const_iterator i = m_nics.begin();
+    while ( i != m_nics.end() )
+    {
+        totalSuccess = totalSuccess && (*i)->GetIPInfo( ipInfo, false );
+        ++i;
+    }
+    return totalSuccess;
 }
 
 /*-------------------------------------------------------------------------*/

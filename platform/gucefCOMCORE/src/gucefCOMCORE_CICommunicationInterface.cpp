@@ -23,12 +23,7 @@
 //                                                                         //
 //-------------------------------------------------------------------------*/
 
-#ifndef GUCEF_CORE_LOGGING_H
-#include "gucefCORE_Logging.h"
-#define GUCEF_CORE_LOGGING_H
-#endif /* GUCEF_CORE_LOGGING_H ? */
-
-#include "gucefCOMCORE_CSerialPort.h"
+#include "gucefCOMCORE_CICommunicationInterface.h"
 
 /*-------------------------------------------------------------------------//
 //                                                                         //
@@ -45,56 +40,30 @@ namespace COMCORE {
 //                                                                         //
 //-------------------------------------------------------------------------*/
 
-CSerialPort::CSerialPort( void )
-    : CICommunicationInterface()
-{GUCEF_TRACE;
-
+CICommunicationInterface::CICommunicationInterface( void )
+    : CITypeNamed()
+{
 }
 
 /*-------------------------------------------------------------------------*/
 
-CSerialPort::CSerialPort( const CSerialPort& src )
-    : CICommunicationInterface( src )
-{GUCEF_TRACE;
-
+CICommunicationInterface::CICommunicationInterface( const CICommunicationInterface& src )
+    : CITypeNamed( src )
+{
 }
 
 /*-------------------------------------------------------------------------*/
 
-CSerialPort&
-CSerialPort::operator=( const CSerialPort& src )
-{GUCEF_TRACE;
+CICommunicationInterface::~CICommunicationInterface()
+{
+}
 
-    if ( &src != this )
-    {
-    }
+/*-------------------------------------------------------------------------*/
+
+CICommunicationInterface&
+CICommunicationInterface::operator=( const CICommunicationInterface& src )
+{
     return *this;
-}
-
-/*-------------------------------------------------------------------------*/
-
-CSerialPort::~CSerialPort()
-{GUCEF_TRACE;
-
-}
-
-/*-------------------------------------------------------------------------*/
-    
-CORE::CString
-CSerialPort::GetCommunicationInterfaceType( void ) const
-{GUCEF_TRACE;
-
-    return "serial";
-}
-
-/*-------------------------------------------------------------------------*/
-
-const CORE::CString&
-CSerialPort::GetClassTypeName( void ) const
-{GUCEF_TRACE;
-
-    static const CORE::CString classTypeName = "GUCEF::COMCORE::CSerialPort"; 
-    return classTypeName;
 }
 
 /*-------------------------------------------------------------------------//

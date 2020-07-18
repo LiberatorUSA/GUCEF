@@ -1068,6 +1068,72 @@ IsAbsolutePath( const CString& path )
     return false;
 }
 
+/*-------------------------------------------------------------------------*/
+
+bool 
+Utf16toUtf8( const std::wstring& wstr ,
+             std::string& str         )
+{GUCEF_TRACE;
+
+    if ( wstr.empty() )
+    {
+        str = std::string();
+        return true;
+    }
+
+    #if ( GUCEF_PLATFORM == GUCEF_PLATFORM_MSWIN )
+
+    size_t charsNeeded = ::WideCharToMultiByte( CP_ACP, 0, wstr.c_str(), (int)wstr.size()+1, 0, 0, 0, 0 );
+    if ( charsNeeded == 0 )
+        return false; // Failed converting UTF-16 string to UTF-8
+
+    str.resize( charsNeeded, '\0' );
+    int charsConverted = ::WideCharToMultiByte( CP_ACP, 0, wstr.c_str(), (int)wstr.size()+1, (LPSTR)str.c_str(), charsNeeded, 0, 0 );
+    if ( charsConverted == 0 )
+        return false; // Failed converting UTF-16 string to UTF-8
+
+    return true;
+
+    #else
+
+    return false;
+
+    #endif
+}
+
+/*-------------------------------------------------------------------------*/
+
+bool 
+Utf8toUtf16( const std::string& str ,
+             std::wstring& wstr     )
+{GUCEF_TRACE;
+
+    if ( str.empty() )
+    {
+        wstr = std::wstring();
+        return true;
+    }
+
+    #if ( GUCEF_PLATFORM == GUCEF_PLATFORM_MSWIN )
+
+    size_t charsNeeded = ::MultiByteToWideChar( CP_UTF8, 0, str.data(), (int)str.size(), NULL, 0 );
+    if ( charsNeeded == 0 )
+        return false; // Failed converting UTF-8 string to UTF-16
+
+    wstr.resize( charsNeeded );
+    int charsConverted = ::MultiByteToWideChar( CP_UTF8, 0, str.data(), (int)str.size(), (LPWSTR)wstr.c_str(), charsNeeded );
+    if ( charsConverted == 0 )
+        return false; // Failed converting UTF-8 string to UTF-16
+
+    return true;
+
+    #else
+
+    return false;
+
+    #endif
+}
+
 /*-------------------------------------------------------------------------//
 //                                                                         //
 //      NAMESPACE                                                          //

@@ -153,13 +153,15 @@ CIPAddress::ResolveDNS( const CORE::CString& address     ,
                         const UInt16 portInHostByteOrder )
 {GUCEF_TRACE;
 
-    if ( address.IsNULLOrEmpty() ) return false;
+    if ( address.IsNULLOrEmpty() ) 
+        return false;
     
     if ( CORE::Check_If_IP( address.C_String() ) )
     {
         m_address = inet_addr( address.C_String() );
         m_port = htons( portInHostByteOrder );
-        if ( m_address == INADDR_NONE ) return false;
+        if ( m_address == INADDR_NONE ) 
+            return false;
         return true;
     }
     else
@@ -263,12 +265,38 @@ CIPAddress::SetAddressInHostByteOrder( const UInt32 address )
 
 /*-------------------------------------------------------------------------*/
 
-void
+bool
 CIPAddress::SetAddress( const UInt32 address )
 {GUCEF_TRACE;
 
     m_address = address;
     OnChange( true, false );
+    return true;
+}
+
+/*-------------------------------------------------------------------------*/
+
+bool
+CIPAddress::SetAddress( const CString& address )
+{GUCEF_TRACE;
+
+    if ( address.IsNULLOrEmpty() ) 
+        return false;
+    
+    if ( CORE::Check_If_IP( address.C_String() ) )
+    {
+        UInt32 newAddress = inet_addr( address.C_String() );
+        if ( newAddress == INADDR_NONE ) 
+            return false;
+
+        if ( m_address != newAddress )
+        {
+            m_address = newAddress;
+            OnChange( true, false );
+        }
+        return true;
+    }
+    return false;
 }
 
 /*-------------------------------------------------------------------------*/
@@ -353,6 +381,16 @@ CIPAddress::IsMulticast( void ) const
     if ( m_address & 0xE ) // First octet starts with 1110
         return true;
     return false;
+}
+
+/*-------------------------------------------------------------------------*/
+
+void
+CIPAddress::Clear( void )
+{GUCEF_TRACE;
+
+    m_address = 0;
+    m_port = 0;
 }
 
 /*-------------------------------------------------------------------------*/

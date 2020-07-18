@@ -17,8 +17,8 @@
  *  Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA
  */
 
-#ifndef GUCEF_COMCORE_CICOMMUNICATIONPORT_H
-#define GUCEF_COMCORE_CICOMMUNICATIONPORT_H
+#ifndef GUCEF_COMCORE_CINETWORKINTERFACE_H
+#define GUCEF_COMCORE_CINETWORKINTERFACE_H
 
 /*-------------------------------------------------------------------------//
 //                                                                         //
@@ -26,15 +26,30 @@
 //                                                                         //
 //-------------------------------------------------------------------------*/
 
-#ifndef GUCEF_CORE_CITYPENAMED_H
-#include "CITypeNamed.h"
-#define GUCEF_CORE_CITYPENAMED_H
-#endif /* GUCEF_CORE_CITYPENAMED_H ? */
+#ifndef GUCEF_MT_CILOCKABLE_H
+#include "gucefMT_CILockable.h"
+#define GUCEF_MT_CILOCKABLE_H
+#endif /* GUCEF_MT_CILOCKABLE_H ? */
 
-#ifndef GUCEF_COMCORE_MACROS_H
-#include "gucefCOMCORE_macros.h"      /* often used gucefCOMCORE macros */
-#define GUCEF_COMCORE_MACROS_H
-#endif /* GUCEF_COMCORE_MACROS_H ? */
+#ifndef GUCEF_CORE_CDYNAMICBUFFER_H
+#include "CDynamicBuffer.h"
+#define GUCEF_CORE_CDYNAMICBUFFER_H
+#endif /* GUCEF_CORE_CDYNAMICBUFFER_H ? */
+
+#ifndef GUCEF_COMCORE_CICOMMUNICATIONINTERFACE_H
+#include "gucefCOMCORE_CICommunicationInterface.h"
+#define GUCEF_COMCORE_CICOMMUNICATIONINTERFACE_H
+#endif /* GUCEF_COMCORE_CICOMMUNICATIONINTERFACE_H ? */
+
+#ifndef GUCEF_COMCORE_CHOSTADDRESS_H
+#include "CHostAddress.h"
+#define GUCEF_COMCORE_CHOSTADDRESS_H
+#endif /* GUCEF_COMCORE_CHOSTADDRESS_H ? */
+
+#ifndef GUCEF_COMCORE_CIPINFO_H
+#include "CIPInfo.h"
+#define GUCEF_COMCORE_CIPINFO_H
+#endif /* GUCEF_COMCORE_CIPINFO_H ? */
 
 /*-------------------------------------------------------------------------//
 //                                                                         //
@@ -51,22 +66,53 @@ namespace COMCORE {
 //                                                                         //
 //-------------------------------------------------------------------------*/
 
-/**
- *  Interface class which serves as the base class for all system port implementations
- */
-class GUCEF_COMCORE_EXPORT_CPP CICommunicationPort : public virtual CORE::CITypeNamed
+
+class GUCEF_COMCORE_EXPORT_CPP CINetworkInterface : public virtual CICommunicationInterface ,
+                                                    public virtual MT::CILockable
 {
     public:
 
-    CICommunicationPort( void );
+    typedef std::vector< CHostAddress > THostAddressVector;
+    typedef std::vector< CIPAddress > TIPAddressVector;
+    typedef std::vector< CIPInfo > TIPInfoVector;
+    
+    virtual ~CINetworkInterface();
 
-    CICommunicationPort( const CICommunicationPort& src );
+    virtual CString GetAdapterName( void ) const = 0;
 
-    virtual ~CICommunicationPort();
+    virtual CString GetAdapterDescription( void ) const = 0;
 
-    CICommunicationPort& operator=( const CICommunicationPort& src );
+    virtual UInt32 GetNrOfDnsAddresses( void ) const = 0;
+    
+    virtual bool GetDnsAddresses( THostAddressVector& dnsAddresses ) = 0;
 
-    virtual CORE::CString GetPortType( void ) const = 0;
+    virtual UInt32 GetNrOfIPAddresses( void ) const = 0;
+
+    virtual bool GetIPInfo( TIPInfoVector& ipInfo, bool includeUninitialized = false ) = 0;
+		
+    virtual bool IsDhcpUsed( void ) const = 0;		
+
+    virtual time_t GetDhcpLeaseObtainedTime( void ) const = 0;
+
+    virtual time_t GetDhcpLeaseExpirationTime( void ) const = 0;
+    
+    virtual bool ReleaseAddress( void ) = 0;
+
+    virtual bool RenewAddress( void ) = 0;
+
+    virtual bool IsWinsUsed( void ) const = 0;
+
+    virtual CIPAddress GetPrimaryWinsServer( void ) const = 0;
+
+    virtual CIPAddress GetSecondaryWinsServer( void ) const = 0;
+
+    virtual UInt32 GetOsAdapterIndex( void ) const = 0;
+
+    protected:
+
+    CINetworkInterface( void );
+    CINetworkInterface( const CINetworkInterface& src );
+    CINetworkInterface& operator=( const CINetworkInterface& src );
 };
 
 /*-------------------------------------------------------------------------//
@@ -80,15 +126,4 @@ class GUCEF_COMCORE_EXPORT_CPP CICommunicationPort : public virtual CORE::CIType
 
 /*-------------------------------------------------------------------------*/
 
-#endif /* GUCEF_COMCORE_CICOMMUNICATIONPORT_H ? */
-
-/*-------------------------------------------------------------------------//
-//                                                                         //
-//      Info & Changes                                                     //
-//                                                                         //
-//-------------------------------------------------------------------------//
-
-- 12-02-2005 :
-        - Initial implementation
-
----------------------------------------------------------------------------*/
+#endif /* GUCEF_COMCORE_CINETWORKINTERFACE_H ? */

@@ -28,7 +28,7 @@
 #define GUCEF_CORE_LOGGING_H
 #endif /* GUCEF_CORE_LOGGING_H ? */
 
-#include "gucefCOMCORE_CSerialPort.h"
+#include "gucefCOMCORE_CINetworkInterface.h"
 
 /*-------------------------------------------------------------------------//
 //                                                                         //
@@ -45,7 +45,7 @@ namespace COMCORE {
 //                                                                         //
 //-------------------------------------------------------------------------*/
 
-CSerialPort::CSerialPort( void )
+CINetworkInterface::CINetworkInterface( void )
     : CICommunicationInterface()
 {GUCEF_TRACE;
 
@@ -53,7 +53,7 @@ CSerialPort::CSerialPort( void )
 
 /*-------------------------------------------------------------------------*/
 
-CSerialPort::CSerialPort( const CSerialPort& src )
+CINetworkInterface::CINetworkInterface( const CINetworkInterface& src )
     : CICommunicationInterface( src )
 {GUCEF_TRACE;
 
@@ -61,8 +61,8 @@ CSerialPort::CSerialPort( const CSerialPort& src )
 
 /*-------------------------------------------------------------------------*/
 
-CSerialPort&
-CSerialPort::operator=( const CSerialPort& src )
+CINetworkInterface&
+CINetworkInterface::operator=( const CINetworkInterface& src )
 {GUCEF_TRACE;
 
     if ( &src != this )
@@ -73,28 +73,9 @@ CSerialPort::operator=( const CSerialPort& src )
 
 /*-------------------------------------------------------------------------*/
 
-CSerialPort::~CSerialPort()
+CINetworkInterface::~CINetworkInterface()
 {GUCEF_TRACE;
 
-}
-
-/*-------------------------------------------------------------------------*/
-    
-CORE::CString
-CSerialPort::GetCommunicationInterfaceType( void ) const
-{GUCEF_TRACE;
-
-    return "serial";
-}
-
-/*-------------------------------------------------------------------------*/
-
-const CORE::CString&
-CSerialPort::GetClassTypeName( void ) const
-{GUCEF_TRACE;
-
-    static const CORE::CString classTypeName = "GUCEF::COMCORE::CSerialPort"; 
-    return classTypeName;
 }
 
 /*-------------------------------------------------------------------------//

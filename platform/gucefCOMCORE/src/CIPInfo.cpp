@@ -14,7 +14,7 @@
  *
  *  You should have received a copy of the GNU Lesser General Public
  *  License along with this library; if not, write to the Free Software
- *  Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA
+ *  Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA 
  */
 
 /*-------------------------------------------------------------------------//
@@ -23,12 +23,12 @@
 //                                                                         //
 //-------------------------------------------------------------------------*/
 
+#include "CIPInfo.h"  
+
 #ifndef GUCEF_CORE_LOGGING_H
 #include "gucefCORE_Logging.h"
 #define GUCEF_CORE_LOGGING_H
 #endif /* GUCEF_CORE_LOGGING_H ? */
-
-#include "gucefCOMCORE_CSerialPort.h"
 
 /*-------------------------------------------------------------------------//
 //                                                                         //
@@ -41,60 +41,83 @@ namespace COMCORE {
 
 /*-------------------------------------------------------------------------//
 //                                                                         //
-//      CLASSES                                                            //
+//      IMPLEMENTATION                                                     //
 //                                                                         //
 //-------------------------------------------------------------------------*/
 
-CSerialPort::CSerialPort( void )
-    : CICommunicationInterface()
+CIPInfo::CIPInfo( void )
+    : ip()
+    , subnet()
 {GUCEF_TRACE;
 
 }
 
 /*-------------------------------------------------------------------------*/
 
-CSerialPort::CSerialPort( const CSerialPort& src )
-    : CICommunicationInterface( src )
+CIPInfo::CIPInfo( const CString& ipAsString, const CString& subnetAsString, bool resolveDns )
+    : ip()
+    , subnet()
 {GUCEF_TRACE;
 
-}
-
-/*-------------------------------------------------------------------------*/
-
-CSerialPort&
-CSerialPort::operator=( const CSerialPort& src )
-{GUCEF_TRACE;
-
-    if ( &src != this )
+    if ( resolveDns )
     {
+        ip.ResolveDNS( ipAsString, 0 );
+        subnet.ResolveDNS( subnetAsString, 0 );
+    }
+    else
+    {
+        ip.SetAddress( ipAsString );
+        subnet.SetAddress( subnetAsString );
+    }
+}
+
+/*-------------------------------------------------------------------------*/
+
+CIPInfo::CIPInfo( const CIPInfo& src )
+    : ip( src.ip )
+    , subnet( src.subnet )
+{GUCEF_TRACE;
+
+}
+
+/*-------------------------------------------------------------------------*/
+
+CIPInfo::~CIPInfo()
+{GUCEF_TRACE;
+
+}
+
+/*-------------------------------------------------------------------------*/
+
+CIPInfo& 
+CIPInfo::operator=( const CIPInfo& src )
+{GUCEF_TRACE;
+
+    if ( this != &src )
+    {
+        ip = src.ip;
+        subnet = src.subnet;
     }
     return *this;
 }
 
 /*-------------------------------------------------------------------------*/
 
-CSerialPort::~CSerialPort()
+bool
+CIPInfo::operator<( const CIPInfo& other ) const
 {GUCEF_TRACE;
 
-}
-
-/*-------------------------------------------------------------------------*/
-    
-CORE::CString
-CSerialPort::GetCommunicationInterfaceType( void ) const
-{GUCEF_TRACE;
-
-    return "serial";
+    return ( ip < other.ip ) && ( subnet < other.subnet );
 }
 
 /*-------------------------------------------------------------------------*/
 
-const CORE::CString&
-CSerialPort::GetClassTypeName( void ) const
+void
+CIPInfo::Clear( void )
 {GUCEF_TRACE;
 
-    static const CORE::CString classTypeName = "GUCEF::COMCORE::CSerialPort"; 
-    return classTypeName;
+    ip.Clear();
+    subnet.Clear();
 }
 
 /*-------------------------------------------------------------------------//

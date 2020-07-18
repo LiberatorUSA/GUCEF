@@ -50,6 +50,16 @@
 #define GUCEF_COMCORE_SOCKETUTILS_H
 #endif /* GUCEF_COMCORE_SOCKETUTILS_H ? */
 
+#ifndef GUCEF_COMCORE_CCOMCOREGLOBAL_H
+#include "gucefCOMCORE_CComCoreGlobal.h"
+#define GUCEF_COMCORE_CCOMCOREGLOBAL_H
+#endif /* GUCEF_COMCORE_CCOMCOREGLOBAL_H ? */
+
+#ifndef GUCEF_COMCORE_CCOM_H
+#include "CCom.h"
+#define GUCEF_COMCORE_CCOM_H
+#endif /* GUCEF_COMCORE_CCOM_H ? */
+
 #include "CUDPSocket.h"
 
 /*-------------------------------------------------------------------------//
@@ -1207,31 +1217,68 @@ CUDPSocket::Join( const CIPAddress& multicastGroup ,
 /*-------------------------------------------------------------------------*/
 
 bool
-CUDPSocket::Join( const CIPAddress& multicastGroup )
+CUDPSocket::Join( const CIPAddress& multicastGroup        ,
+                  bool alwaysJoinOnAllNetworkInterfaces   ,
+                  bool treatHostInterfaceOfAnyAsJoinOnAll )
+{GUCEF_TRACE;
+
+    if ( alwaysJoinOnAllNetworkInterfaces || ( treatHostInterfaceOfAnyAsJoinOnAll && ( 0 == m_hostAddress.GetAddress() ) ) )
+    {
+        GUCEF_DEBUG_LOG( CORE::LOGLEVEL_NORMAL, "UDPSocket(" + CORE::PointerToString( this ) + "): Trying to joined multicast group " + multicastGroup.AddressAsString()
+            + ", using all available network interfaces, for all data on the multicast group except explicit blocks" );
+        
+        CCom& allCom = CComCoreGlobal::Instance()->GetCom();
+        
+        CINetworkInterface::TIPInfoVector allIpInfo;
+        if ( allCom.GetAllNetworkInterfaceIPInfo( allIpInfo ) )
+        {
+            bool totalSuccess = true;
+            CINetworkInterface::TIPInfoVector::iterator i = allIpInfo.begin();
+            while ( i != allIpInfo.end() )
+            {
+                totalSuccess = totalSuccess && JoinOnInterface( multicastGroup, (*i).ip ); 
+                ++i;
+            }
+            return totalSuccess;
+        }
+        else
+        {
+            GUCEF_ERROR_LOG( CORE::LOGLEVEL_NORMAL, "UDPSocket(" + CORE::PointerToString( this ) + "): Failed to obtain network interface info, falling back to the host bind interface" );
+        }
+    }
+
+    return JoinOnInterface( multicastGroup, m_hostAddress );
+}
+
+/*-------------------------------------------------------------------------*/
+
+bool
+CUDPSocket::JoinOnInterface( const CIPAddress& multicastGroup           ,
+                             const CIPAddress& networkInterfaceToJoinOn )
 {GUCEF_TRACE;
 
     struct ip_mreq_source imr;
     memset( &imr, 0, sizeof( imr ) );
     #if ( GUCEF_PLATFORM == GUCEF_PLATFORM_MSWIN )
     imr.imr_multiaddr.S_un.S_addr = multicastGroup.GetAddress();
-    imr.imr_interface.S_un.S_addr = m_hostAddress.GetAddress();
+    imr.imr_interface.S_un.S_addr = networkInterfaceToJoinOn.GetAddress();
     #elif ( ( GUCEF_PLATFORM == GUCEF_PLATFORM_LINUX ) || ( GUCEF_PLATFORM == GUCEF_PLATFORM_ANDROID ) )
     imr.imr_multiaddr.s_addr = multicastGroup.GetAddress();
-    imr.imr_interface.s_addr = m_hostAddress.GetAddress();
+    imr.imr_interface.s_addr = networkInterfaceToJoinOn.GetAddress();
     #endif
 
     int errorCode = 0;
     if ( 0 > dvsocket_setsockopt( _data->sockid, IPPROTO_IP, IP_ADD_MEMBERSHIP, (char*) &imr, sizeof(imr), &errorCode ) )
     {
         GUCEF_ERROR_LOG( CORE::LOGLEVEL_NORMAL, "UDPSocket(" + CORE::PointerToString( this ) + "): Failed to join multicast group " + multicastGroup.AddressAsString()
-            + ", using interface " + m_hostAddress.AddressAsString()
-            + " aka " + CORE::UInt32ToString( m_hostAddress.GetAddress() ) + ":" + CORE::UInt16ToString( m_hostAddress.GetPort() ) + " in network format"
+            + ", using interface " + networkInterfaceToJoinOn.AddressAsString()
+            + " aka " + CORE::UInt32ToString( networkInterfaceToJoinOn.GetAddress() ) + ":" + CORE::UInt16ToString( networkInterfaceToJoinOn.GetPort() ) + " in network format"
             + ", for all data on the multicast group except explicit blocks"
-            + ". Error code: " + CORE::UInt32ToString( errorCode ) )
+            + ". Error code: " + CORE::UInt32ToString( errorCode ) );
         return false;
     }
     GUCEF_DEBUG_LOG( CORE::LOGLEVEL_NORMAL, "UDPSocket(" + CORE::PointerToString( this ) + "): Joined multicast group " + multicastGroup.AddressAsString()
-        + ", using interface " + m_hostAddress.AddressAsString() + ", for all data on the multicast group except explicit blocks" );
+        + ", using interface " + networkInterfaceToJoinOn.AddressAsString() + ", for all data on the multicast group except explicit blocks" );
     return true;
 }
 

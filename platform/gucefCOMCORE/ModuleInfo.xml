@@ -19,6 +19,7 @@
         <Linker>
             <Dependency Name="Ws2_32.lib" />
             <Dependency Name="Advapi32.lib" />
+            <Dependency Name="Iphlpapi.lib" />
         </Linker>
     </Module>
 </ModuleInfoEntry>

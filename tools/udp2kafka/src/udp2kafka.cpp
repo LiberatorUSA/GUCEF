@@ -465,9 +465,9 @@ Udp2KafkaChannel::OnUDPSocketOpened( CORE::CNotifier* notifier   ,
     while ( m != m_channelSettings.udpMulticastToJoin.end() )
     {
         const COMCORE::CHostAddress& multicastAddr = (*m);
-        if ( m_udpSocket->Join( multicastAddr ) )
+        if ( m_udpSocket->Join( multicastAddr, false, true ) )
         {
-            GUCEF_LOG( CORE::LOGLEVEL_NORMAL, "Udp2KafkaChannel:OnUDPSocketOpened: Successfully to joined multicast " + multicastAddr.AddressAndPortAsString() +
+            GUCEF_LOG( CORE::LOGLEVEL_NORMAL, "Udp2KafkaChannel:OnUDPSocketOpened: Successfully joined multicast " + multicastAddr.AddressAndPortAsString() +
                     " for UDP socket on " + m_channelSettings.udpInterface.AddressAndPortAsString() );
         }
         else
@@ -1841,19 +1841,13 @@ Udp2Kafka::LoadConfig( const CORE::CValueList& appConfig   ,
         channelSettings.metricsPrefix = channelSettings.metricsPrefix.ReplaceSubstr( "{topicName}", channelSettings.channelTopicName );
 
         settingName = settingPrefix + ".Multicast.Join";
-        CORE::CValueList::TStringVector settingValues = appConfig.GetValueVectorAlways( settingName );
+        CORE::CValueList::TStringVector settingValues = appConfig.GetValueVectorAlways( settingName, ',' );
         CORE::CValueList::TStringVector::iterator n = settingValues.begin();
         while ( n != settingValues.end() )
         {
             CORE::CString settingValue = CORE::ResolveVars( (*n) );
-            CORE::CString::StringVector splitValues = settingValue.ParseElements( ',', false );
-            CORE::CString::StringVector::iterator m = splitValues.begin();
-            while ( m != splitValues.end() )
-            {
-                COMCORE::CHostAddress multicastAddress( (*m) );
-                channelSettings.udpMulticastToJoin.push_back( multicastAddress );
-                ++m;
-            }
+            COMCORE::CHostAddress multicastAddress( settingValue );
+            channelSettings.udpMulticastToJoin.push_back( multicastAddress );
             ++n;
         }
 
@@ -1881,19 +1875,13 @@ Udp2Kafka::LoadConfig( const CORE::CValueList& appConfig   ,
 
         channelSettings.consumerModeUdpDestinations = consumerModeUdpDestinations;
         settingName = settingPrefix + ".ConsumerMode.UdpDestinations";
-        settingValues = appConfig.GetValueVectorAlways( settingName );
+        settingValues = appConfig.GetValueVectorAlways( settingName, ',' );
         n = settingValues.begin();
         while ( n != settingValues.end() )
         {
             CORE::CString settingValue = CORE::ResolveVars( (*n) );
-            CORE::CString::StringVector splitValues = settingValue.ParseElements( ',', false );
-            CORE::CString::StringVector::iterator m = splitValues.begin();
-            while ( m != splitValues.end() )
-            {
-                COMCORE::CHostAddress udpDest( (*m) );
-                channelSettings.consumerModeUdpDestinations.push_back( udpDest );
-                ++m;
-            }
+            COMCORE::CHostAddress udpDest( settingValue );
+            channelSettings.consumerModeUdpDestinations.push_back( udpDest );
             ++n;
         }
 

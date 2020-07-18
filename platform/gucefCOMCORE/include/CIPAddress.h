@@ -93,7 +93,9 @@ class GUCEF_COMCORE_EXPORT_CPP CIPAddress
      */
     UInt16 GetPortInHostByteOrder( void ) const;
     
-    void SetAddress( const UInt32 address );
+    bool SetAddress( const UInt32 address );
+
+    bool SetAddress( const CString& address );
     
     /**
      *  Address in network byte order
@@ -144,6 +146,8 @@ class GUCEF_COMCORE_EXPORT_CPP CIPAddress
     char GetIPClass( void ) const;
 
     bool IsMulticast( void ) const;
+
+    void Clear( void );
 
     protected:
     

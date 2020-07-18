@@ -16,6 +16,7 @@ set( HEADER_FILES
   include/CGUCEFCOMCOREModule.h
   include/CHostAddress.h
   include/CIPAddress.h
+  include/CIPInfo.h
   include/CPing.h
   include/CSocket.h
   include/CTCPClientSocket.h
@@ -29,11 +30,12 @@ set( HEADER_FILES
   include/gucefCOMCORE.h
   include/gucefCOMCORE_CComCoreGlobal.h
   include/gucefCOMCORE_CDiscoveryManager.h
-  include/gucefCOMCORE_CICommunicationPort.h
+  include/gucefCOMCORE_CICommunicationInterface.h
   include/gucefCOMCORE_CIDiscovery.h
   include/gucefCOMCORE_CIDiscoveryCapability.h
   include/gucefCOMCORE_CIDiscoveryClient.h
   include/gucefCOMCORE_CIDiscoveryEntry.h
+  include/gucefCOMCORE_CINetworkInterface.h
   include/gucefCOMCORE_CPingTaskConsumer.h
   include/gucefCOMCORE_CSerialPort.h
   include/gucefCOMCORE_ETypes.h
@@ -48,6 +50,7 @@ set( SOURCE_FILES
   src/CGUCEFCOMCOREModule.cpp
   src/CHostAddress.cpp
   src/CIPAddress.cpp
+  src/CIPInfo.cpp
   src/CPing.cpp
   src/CSocket.cpp
   src/CTCPClientSocket.cpp
@@ -61,11 +64,12 @@ set( SOURCE_FILES
   src/gucefCOMCORE.cpp
   src/gucefCOMCORE_CComCoreGlobal.cpp
   src/gucefCOMCORE_CDiscoveryManager.cpp
-  src/gucefCOMCORE_CICommunicationPort.cpp
+  src/gucefCOMCORE_CICommunicationInterface.cpp
   src/gucefCOMCORE_CIDiscovery.cpp
   src/gucefCOMCORE_CIDiscoveryCapability.cpp
   src/gucefCOMCORE_CIDiscoveryClient.cpp
   src/gucefCOMCORE_CIDiscoveryEntry.cpp
+  src/gucefCOMCORE_CINetworkInterface.cpp
   src/gucefCOMCORE_CPingTaskConsumer.cpp
   src/gucefCOMCORE_CSerialPort.cpp
   src/socketutils.cpp
@@ -75,6 +79,7 @@ set( SOURCE_FILES
 
 if (WIN32)
   set( PLATFORM_HEADER_FILES 
+    include/mswin/gucefCOMCORE_CWin32NetworkInterface.h
     include/mswin/gucefCOMCORE_CWin32SerialPort.h
     include/mswin/gucefCOMCORE_icmpApi.h
   )
@@ -83,6 +88,7 @@ if (WIN32)
   source_group( "Platform Header Files" FILES ${PLATFORM_HEADER_FILES} )
 
   set( PLATFORM_SOURCE_FILES 
+    src/mswin/gucefCOMCORE_CWin32NetworkInterface.cpp
     src/mswin/gucefCOMCORE_CWin32SerialPort.cpp
     src/mswin/gucefCOMCORE_icmpApi.cpp
   )
@@ -92,6 +98,7 @@ if (WIN32)
 
 elseif (WIN64)
   set( PLATFORM_HEADER_FILES 
+    include/mswin/gucefCOMCORE_CWin32NetworkInterface.h
     include/mswin/gucefCOMCORE_CWin32SerialPort.h
     include/mswin/gucefCOMCORE_icmpApi.h
   )
@@ -100,6 +107,7 @@ elseif (WIN64)
   source_group( "Platform Header Files" FILES ${PLATFORM_HEADER_FILES} )
 
   set( PLATFORM_SOURCE_FILES 
+    src/mswin/gucefCOMCORE_CWin32NetworkInterface.cpp
     src/mswin/gucefCOMCORE_CWin32SerialPort.cpp
     src/mswin/gucefCOMCORE_icmpApi.cpp
   )
@@ -119,12 +127,12 @@ target_link_libraries( ${MODULE_NAME} gucefCORE gucefMT )
 set_property( TARGET ${MODULE_NAME} APPEND_STRING PROPERTY COMPILE_DEFINITIONS "GUCEF_COMCORE_BUILD_MODULE" )
 
 if ( WIN32 )
-  target_link_libraries( ${MODULE_NAME} Advapi32.lib Ws2_32.lib )
+  target_link_libraries( ${MODULE_NAME} Advapi32.lib Iphlpapi.lib Ws2_32.lib )
   set_property( TARGET ${MODULE_NAME} APPEND_STRING PROPERTY COMPILE_DEFINITIONS "_WINSOCK_DEPRECATED_NO_WARNINGS" )
 endif( WIN32 )
 
 if ( WIN64 )
-  target_link_libraries( ${MODULE_NAME} Advapi32.lib Ws2_32.lib )
+  target_link_libraries( ${MODULE_NAME} Advapi32.lib Iphlpapi.lib Ws2_32.lib )
   set_property( TARGET ${MODULE_NAME} APPEND_STRING PROPERTY COMPILE_DEFINITIONS "_WINSOCK_DEPRECATED_NO_WARNINGS" )
 endif( WIN64 )
 

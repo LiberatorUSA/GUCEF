@@ -17,13 +17,24 @@
  *  Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA
  */
 
+#ifndef GUCEF_COMCORE_CICOMMUNICATIONINTERFACE_H
+#define GUCEF_COMCORE_CICOMMUNICATIONINTERFACE_H
+
 /*-------------------------------------------------------------------------//
 //                                                                         //
 //      INCLUDES                                                           //
 //                                                                         //
 //-------------------------------------------------------------------------*/
 
-#include "gucefCOMCORE_CICommunicationPort.h"
+#ifndef GUCEF_CORE_CITYPENAMED_H
+#include "CITypeNamed.h"
+#define GUCEF_CORE_CITYPENAMED_H
+#endif /* GUCEF_CORE_CITYPENAMED_H ? */
+
+#ifndef GUCEF_COMCORE_MACROS_H
+#include "gucefCOMCORE_macros.h"      /* often used gucefCOMCORE macros */
+#define GUCEF_COMCORE_MACROS_H
+#endif /* GUCEF_COMCORE_MACROS_H ? */
 
 /*-------------------------------------------------------------------------//
 //                                                                         //
@@ -40,31 +51,23 @@ namespace COMCORE {
 //                                                                         //
 //-------------------------------------------------------------------------*/
 
-CICommunicationPort::CICommunicationPort( void )
-    : CITypeNamed()
+/**
+ *  Interface class which serves as the base class for all system communication interface implementations
+ */
+class GUCEF_COMCORE_EXPORT_CPP CICommunicationInterface : public virtual CORE::CITypeNamed
 {
-}
+    public:
 
-/*-------------------------------------------------------------------------*/
+    CICommunicationInterface( void );
 
-CICommunicationPort::CICommunicationPort( const CICommunicationPort& src )
-    : CITypeNamed( src )
-{
-}
+    CICommunicationInterface( const CICommunicationInterface& src );
 
-/*-------------------------------------------------------------------------*/
+    virtual ~CICommunicationInterface();
 
-CICommunicationPort::~CICommunicationPort()
-{
-}
+    CICommunicationInterface& operator=( const CICommunicationInterface& src );
 
-/*-------------------------------------------------------------------------*/
-
-CICommunicationPort&
-CICommunicationPort::operator=( const CICommunicationPort& src )
-{
-    return *this;
-}
+    virtual CORE::CString GetCommunicationInterfaceType( void ) const = 0;
+};
 
 /*-------------------------------------------------------------------------//
 //                                                                         //
@@ -76,3 +79,16 @@ CICommunicationPort::operator=( const CICommunicationPort& src )
 }; /* namespace GUCEF */
 
 /*-------------------------------------------------------------------------*/
+
+#endif /* GUCEF_COMCORE_CICOMMUNICATIONINTERFACE_H ? */
+
+/*-------------------------------------------------------------------------//
+//                                                                         //
+//      Info & Changes                                                     //
+//                                                                         //
+//-------------------------------------------------------------------------//
+
+- 12-02-2005 :
+        - Initial implementation
+
+---------------------------------------------------------------------------*/
