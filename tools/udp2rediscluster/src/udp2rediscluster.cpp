@@ -1,5 +1,5 @@
 /*
- *  Udp2RedisCluster: service which pushes UDP packets into Redis
+ *  Udp2RedisCluster: service which pushes UDP packets into Redis streams
  *
  *  This library is free software; you can redistribute it and/or
  *  modify it under the terms of the GNU Lesser General Public
@@ -133,7 +133,6 @@ ClusterChannelRedisWriter::ClusterChannelRedisWriter()
     , m_metricsTimer( GUCEF_NULL )
 {GUCEF_TRACE;
 
-    RegisterEventHandlers();
 }
 
 /*-------------------------------------------------------------------------*/
@@ -149,7 +148,6 @@ ClusterChannelRedisWriter::ClusterChannelRedisWriter( const ClusterChannelRedisW
     , m_metricsTimer( GUCEF_NULL )
 {GUCEF_TRACE;
 
-    RegisterEventHandlers();
 }
 
 /*-------------------------------------------------------------------------*/
@@ -217,6 +215,8 @@ ClusterChannelRedisWriter::OnTaskStart( CORE::CICloneable* taskData )
         // In such a case the thread will run at max speed for a least the below set nr of cycles.
         GetPulseGenerator()->RequestPulsesPerImmediatePulseRequest( m_channelSettings.ticketRefillOnBusyCycle );
     }
+
+    RegisterEventHandlers();
 
     // Setup connection to Redis 
     // Note that if there is an error here we will just keep on trying automatically
