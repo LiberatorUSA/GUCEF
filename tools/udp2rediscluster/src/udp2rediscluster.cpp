@@ -245,6 +245,7 @@ ClusterChannelRedisWriter::OnTaskCycle( CORE::CICloneable* taskData )
                 if ( GUCEF_NULL != udpPackets )
                 {
                     RedisSendSync( *udpPackets, packetCount );
+                    delete mail;
                 }
             }
         }
