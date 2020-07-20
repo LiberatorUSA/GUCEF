@@ -147,6 +147,10 @@ class ClusterChannelRedisWriter : public CORE::CTaskConsumer
 
     CORE::UInt32 GetRedisErrorRepliesCounter( bool resetCounter );
 
+    CORE::UInt32 GetRedisMsgsTransmittedCounter( bool resetCounter );
+
+    CORE::UInt32 GetRedisPacketsInMsgsTransmittedCounter( bool resetCounter );
+
     CORE::UInt32 GetRedisTransmitQueueSize( void ) const;
 
     bool LoadConfig( const ChannelSettings& channelSettings );
@@ -180,6 +184,8 @@ class ClusterChannelRedisWriter : public CORE::CTaskConsumer
     TPacketEntryQueue m_redisMsgQueueOverflowQueue;
     CORE::UInt32 m_redisErrorReplies;
     CORE::UInt32 m_redisTransmitQueueSize;
+    CORE::UInt32 m_redisMsgsTransmitted;
+    CORE::UInt32 m_redisPacketsInMsgsTransmitted;
     ChannelSettings m_channelSettings;
     TBufferMailbox m_mailbox;
     CORE::CTimer* m_metricsTimer;
@@ -219,8 +225,9 @@ class Udp2RedisClusterChannel : public CORE::CTaskConsumer
         ChannelMetrics( void );
 
         CORE::UInt32 udpBytesReceived;
-        CORE::UInt32 udpMessagesReceived;
+        CORE::UInt32 udpPacketsReceived;
         CORE::UInt32 redisMessagesTransmitted;
+        CORE::UInt32 redisPacketsInMsgsTransmitted;
         CORE::UInt32 redisTransmitQueueSize;
         CORE::UInt32 redisErrorReplies;
     };

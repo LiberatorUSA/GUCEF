@@ -128,6 +128,7 @@ ClusterChannelRedisWriter::ClusterChannelRedisWriter()
     , m_redisMsgQueueOverflowQueue()
     , m_redisErrorReplies( 0 )
     , m_redisTransmitQueueSize( 0 )
+    , m_redisMsgsTransmitted( 0 )
     , m_channelSettings()
     , m_mailbox()
     , m_metricsTimer( GUCEF_NULL )
@@ -143,6 +144,7 @@ ClusterChannelRedisWriter::ClusterChannelRedisWriter( const ClusterChannelRedisW
     , m_redisMsgQueueOverflowQueue( src.m_redisMsgQueueOverflowQueue )
     , m_redisErrorReplies( src.m_redisErrorReplies )
     , m_redisTransmitQueueSize( src.m_redisTransmitQueueSize )
+    , m_redisMsgsTransmitted( src.m_redisMsgsTransmitted )
     , m_channelSettings( src.m_channelSettings )
     , m_mailbox()
     , m_metricsTimer( GUCEF_NULL )
@@ -299,6 +301,38 @@ ClusterChannelRedisWriter::GetRedisErrorRepliesCounter( bool resetCounter )
 
 /*-------------------------------------------------------------------------*/
 
+CORE::UInt32
+ClusterChannelRedisWriter::GetRedisMsgsTransmittedCounter( bool resetCounter )
+{GUCEF_TRACE;
+
+    if ( resetCounter )
+    {
+        CORE::UInt32 redisMsgsTransmitted = m_redisMsgsTransmitted;
+        m_redisMsgsTransmitted = 0;
+        return redisMsgsTransmitted;
+    }
+    else
+        return m_redisMsgsTransmitted;
+}
+
+/*-------------------------------------------------------------------------*/
+
+CORE::UInt32
+ClusterChannelRedisWriter::GetRedisPacketsInMsgsTransmittedCounter( bool resetCounter )
+{GUCEF_TRACE;
+
+    if ( resetCounter )
+    {
+        CORE::UInt32 redisPacketsInMsgsTransmitted = m_redisPacketsInMsgsTransmitted;
+        m_redisPacketsInMsgsTransmitted = 0;
+        return redisPacketsInMsgsTransmitted;
+    }
+    else
+        return m_redisPacketsInMsgsTransmitted;
+}
+
+/*-------------------------------------------------------------------------*/
+
 bool
 ClusterChannelRedisWriter::RedisSendSync( const TPacketEntryVector& udpPackets , 
                                           CORE::UInt32 packetCount             )
@@ -351,6 +385,9 @@ ClusterChannelRedisWriter::RedisSendSyncImpl( const TPacketEntryVector& udpPacke
 
         GUCEF_DEBUG_LOG( CORE::LOGLEVEL_NORMAL, "Udp2RedisClusterChannel(" + CORE::PointerToString( this ) + "):RedisSend: Successfully sent " + 
             CORE::UInt32ToString( packetCount ) + " UDP messages. MsgID=" + clusterMsgId );
+
+        ++m_redisMsgsTransmitted;
+        m_redisPacketsInMsgsTransmitted += packetCount;
         return true;
     }
     catch ( const sw::redis::MovedError& e )
@@ -612,8 +649,9 @@ Udp2RedisClusterChannel::GetType( void ) const
 
 Udp2RedisClusterChannel::ChannelMetrics::ChannelMetrics( void )
     : udpBytesReceived( 0 )
-    , udpMessagesReceived( 0 )
+    , udpPacketsReceived( 0 )
     , redisMessagesTransmitted( 0 )
+    , redisPacketsInMsgsTransmitted( 0 )
     , redisTransmitQueueSize( 0 )
     , redisErrorReplies( 0 )
 {GUCEF_TRACE;
@@ -629,8 +667,10 @@ Udp2RedisClusterChannel::OnMetricsTimerCycle( CORE::CNotifier* notifier    ,
 {GUCEF_TRACE;
 
     m_metrics.udpBytesReceived = m_udpSocket->GetBytesReceived( true );
-    m_metrics.udpMessagesReceived = m_udpSocket->GetNrOfDataReceivedEvents( true );
+    m_metrics.udpPacketsReceived = m_udpSocket->GetNrOfDataReceivedEvents( true );
     m_metrics.redisTransmitQueueSize = m_redisWriter.GetRedisTransmitQueueSize();
+    m_metrics.redisMessagesTransmitted = m_redisWriter.GetRedisMsgsTransmittedCounter( true );
+    m_metrics.redisPacketsInMsgsTransmitted = m_redisWriter.GetRedisPacketsInMsgsTransmittedCounter( true );
     m_metrics.redisErrorReplies = m_redisWriter.GetRedisErrorRepliesCounter( true );
 }
 
@@ -1137,9 +1177,10 @@ Udp2RedisCluster::OnMetricsTimerCycle( CORE::CNotifier* notifier    ,
 
         GUCEF_METRIC_COUNT( metricPrefix + "redisErrorReplies", metrics.redisErrorReplies, 1.0f );
         GUCEF_METRIC_COUNT( metricPrefix + "redisMessagesTransmitted", metrics.redisMessagesTransmitted, 1.0f );
+        GUCEF_METRIC_COUNT( metricPrefix + "redisPacketsInMessagesTransmitted", metrics.redisPacketsInMsgsTransmitted, 1.0f );
         GUCEF_METRIC_GAUGE( metricPrefix + "redisTransmitQueueSize", metrics.redisTransmitQueueSize, 1.0f );
         GUCEF_METRIC_COUNT( metricPrefix + "udpBytesReceived", metrics.udpBytesReceived, 1.0f );
-        GUCEF_METRIC_COUNT( metricPrefix + "udpMessagesReceived", metrics.udpMessagesReceived, 1.0f );
+        GUCEF_METRIC_COUNT( metricPrefix + "udpPacketsReceived", metrics.udpPacketsReceived, 1.0f );
         ++i;
     }
 }
