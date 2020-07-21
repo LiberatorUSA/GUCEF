@@ -248,7 +248,7 @@ bool
 ClusterChannelRedisWriter::OnTaskCycle( CORE::CICloneable* taskData )
 {GUCEF_TRACE;
     
-    if ( m_channelSettings.performRedisWritesInDedicatedThread && m_redisMsgQueueOverflowQueue.empty() )
+    if ( m_channelSettings.performRedisWritesInDedicatedThread )
     {
         if ( m_redisMsgQueueOverflowQueue.empty() )
         {
@@ -280,6 +280,10 @@ ClusterChannelRedisWriter::OnTaskCycle( CORE::CICloneable* taskData )
                     ++i;
                 }
             }
+        }
+        else
+        {
+            SendQueuedPackagesIfAny();
         }
     }
 
@@ -452,7 +456,8 @@ ClusterChannelRedisWriter::RedisSendSyncImpl( const TPacketEntryVectorPtrVector&
         std::string clusterMsgId = m_redisContext->xadd( cnSV, idSV, m_redisPacketArgs.begin(), m_redisPacketArgs.end() );
 
         GUCEF_DEBUG_LOG( CORE::LOGLEVEL_NORMAL, "Udp2RedisClusterChannel(" + CORE::PointerToString( this ) + "):RedisSend: Successfully sent " + 
-            CORE::UInt32ToString( totalPacketCount ) + " UDP messages. MsgID=" + clusterMsgId );
+            CORE::UInt32ToString( totalPacketCount ) + " UDP messages, combining " + CORE::UInt32ToString( udpPackets.size() ) + 
+            " sets of packages. MsgID=" + clusterMsgId );
 
         ++m_redisMsgsTransmitted;
         m_redisPacketsInMsgsTransmitted += totalPacketCount;
@@ -504,7 +509,7 @@ ClusterChannelRedisWriter::RedisSendASync( const TPacketEntryVector& udpPackets 
     }
     
     GUCEF_DEBUG_LOG( CORE::LOGLEVEL_BELOW_NORMAL, "ClusterChannelRedisWriter(" + CORE::PointerToString( this ) + "):RedisSendASync: Adding group of "
-            + CORE::UInt32ToString( packetCount ) + " packets to the mailbox" );
+            + CORE::UInt32ToString( packetCount ) + " packets to the mailbox as a single piece of mail" );
 
     m_mailbox.AddMail( packetCount, &mail ); 
     
@@ -519,12 +524,22 @@ ClusterChannelRedisWriter::SendQueuedPackagesIfAny( void )
 
     if ( !m_redisMsgQueueOverflowQueue.empty() )
     {
+        GUCEF_DEBUG_LOG( CORE::LOGLEVEL_BELOW_NORMAL, "ClusterChannelRedisWriter(" + CORE::PointerToString( this ) + "):SendQueuedPackagesIfAny: There are "
+                + CORE::UInt32ToString( m_redisMsgQueueOverflowQueue.size() ) + " sets of packets to the overflow queue, Attempting to send..." );
+        
         if ( RedisSendSyncImpl( m_redisMsgQueueOverflowQueue, m_redisMsgQueueOverflowQueueCounts ) )
         {
-            m_redisMsgQueueOverflowQueue.pop_back();
+            for ( CORE::UInt32 n=0; n<m_redisMsgQueueOverflowQueue.size(); ++n )
+            {
+                delete m_redisMsgQueueOverflowQueue[ n ];    
+            }
+            m_redisMsgQueueOverflowQueue.clear();
         }
         else
+        {
+            GUCEF_DEBUG_LOG( CORE::LOGLEVEL_BELOW_NORMAL, "ClusterChannelRedisWriter(" + CORE::PointerToString( this ) + "):SendQueuedPackagesIfAny: Unable to send overflow queue packets" );
             return false;
+        }
     }
 
     return true;
@@ -542,8 +557,13 @@ ClusterChannelRedisWriter::AddToOverflowQueue( const TPacketEntryVectorPtrVector
         CORE::UInt32 packetCount = packetCounts[ n ];
         const TPacketEntryVector* udpPacketSet = udpPackets[ n ];
 
-        m_redisMsgQueueOverflowQueue.push_back( udpPacketSet );
+        TPacketEntryVector* udpPacketSetCopy = new TPacketEntryVector( *udpPacketSet );
+
+        m_redisMsgQueueOverflowQueue.push_back( udpPacketSetCopy );
         m_redisMsgQueueOverflowQueueCounts.push_back( packetCount );
+
+        GUCEF_DEBUG_LOG( CORE::LOGLEVEL_BELOW_NORMAL, "ClusterChannelRedisWriter(" + CORE::PointerToString( this ) + "):AddToOverflowQueue: Adding group of "
+                + CORE::UInt32ToString( packetCount ) + " packets to the overflow queue" );
     }
     return true;
 }

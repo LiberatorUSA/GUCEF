@@ -310,7 +310,7 @@ CTMailBox< T >::GetMailList( TMailList& mailList ,
     CObjectScopeLock lock( this );
     
     Int32 mailItemsRead = 0;
-    while ( mailItemsRead < maxMailItems && maxMailItems > -1 )
+    while ( mailItemsRead < maxMailItems || maxMailItems < 0 )
     {    
         if ( !m_mailStack.empty() )
         {
@@ -318,6 +318,10 @@ CTMailBox< T >::GetMailList( TMailList& mailList ,
             m_mailStack.pop_back();
             
             ++mailItemsRead;
+        }
+        else
+        {
+            break;
         }
     }
     
