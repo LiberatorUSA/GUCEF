@@ -111,6 +111,24 @@ class CTMailBox : public virtual MT::CILockable
                   CICloneable** data );
 
     /**
+     *  Attempts to retrieve mail from the mailbox for inspection without removing it from the mail stack
+     *  You can use this in combination with PopMail() for operations which may fail at which point
+     *  the mail needs to be retained within the mailbox in order to try again on a later time
+     *
+     *  @param eventid the ID of the event
+     *  @param data cloneable data container for optional event data.
+     *  @return whether mail was successfully retrieved from the mailbox.
+     */
+    bool PeekMail( T& eventid         ,
+                   CICloneable** data );
+
+    /**
+     *  Removes the first mail item in the mail stack
+     *  Intended to be used in combination with PeekMail()
+     */
+    bool PopMail( void );
+
+    /**
      *  Attempts to retrieve mail from the mailbox.
      *
      *  Note that if data given as part of a mail entry is non-NULL 
@@ -240,6 +258,45 @@ CTMailBox< T >::GetMail( T& eventid         ,
         return true;
     }
     *data = GUCEF_NULL;
+    return false;
+}
+
+/*--------------------------------------------------------------------------*/
+
+template< typename T >
+bool
+CTMailBox< T >::PeekMail( T& eventid         ,
+                          CICloneable** data )
+{
+    CObjectScopeLock lock( this );
+
+    if ( !m_mailStack.empty() )
+    {
+        TMailElement& entry = m_mailStack[ m_mailStack.size()-1 ];
+        eventid = entry.eventid;
+        *data = entry.data;
+
+        return true;
+    }
+    *data = GUCEF_NULL;
+    return false;
+}
+
+/*--------------------------------------------------------------------------*/
+
+template< typename T >
+bool
+CTMailBox< T >::PopMail( void )
+{
+    CObjectScopeLock lock( this );
+
+    if ( !m_mailStack.empty() )
+    {
+        TMailElement& entry = m_mailStack[ m_mailStack.size()-1 ];
+        delete data = entry.data;
+        m_mailStack.pop_back();
+        return true;
+    }
     return false;
 }
 

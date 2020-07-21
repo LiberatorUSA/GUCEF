@@ -114,6 +114,7 @@ class ChannelSettings
     CORE::UInt32 udpSocketOsReceiveBufferSize;
     CORE::UInt32 udpSocketUpdateCyclesPerPulse;
     bool performRedisWritesInDedicatedThread;
+    CORE::UInt32 maxSizeOfDedicatedRedisWriterBulkMailRead;
 };
 
 /*-------------------------------------------------------------------------*/
@@ -124,6 +125,8 @@ class ClusterChannelRedisWriter : public CORE::CTaskConsumer
 
     typedef CORE::CTEventHandlerFunctor< ClusterChannelRedisWriter > TEventCallback;
     typedef COMCORE::CUDPSocket::TPacketEntryVector TPacketEntryVector;
+    typedef std::vector< const TPacketEntryVector* >  TPacketEntryVectorPtrVector;
+    typedef std::vector< CORE::UInt32 >             TUInt32Vector;
     typedef COMCORE::CUDPSocket::TPacketEntry TPacketEntry; 
 
     ClusterChannelRedisWriter();
@@ -145,11 +148,15 @@ class ClusterChannelRedisWriter : public CORE::CTaskConsumer
 
     bool RedisSendSync( const TPacketEntryVector& udpPackets, CORE::UInt32 packetCount );
 
+    bool RedisSendSync( const TPacketEntryVectorPtrVector& udpPackets, const TUInt32Vector& packetCounts );
+
     CORE::UInt32 GetRedisErrorRepliesCounter( bool resetCounter );
 
     CORE::UInt32 GetRedisMsgsTransmittedCounter( bool resetCounter );
 
     CORE::UInt32 GetRedisPacketsInMsgsTransmittedCounter( bool resetCounter );
+
+    CORE::UInt32 GetRedisPacketsInMsgsRatio( void ) const;
 
     CORE::UInt32 GetRedisTransmitQueueSize( void ) const;
 
@@ -159,9 +166,9 @@ class ClusterChannelRedisWriter : public CORE::CTaskConsumer
 
     private:
 
-    bool RedisSendSyncImpl( const TPacketEntryVector& udpPackets, CORE::UInt32 packetCount );
+    bool RedisSendSyncImpl( const TPacketEntryVectorPtrVector& udpPackets, const TUInt32Vector& packetCounts );
 
-    bool AddToOverflowQueue( const TPacketEntryVector& udpPackets, CORE::UInt32 packetCount );
+    bool AddToOverflowQueue( const TPacketEntryVectorPtrVector& udpPackets, const TUInt32Vector& packetCounts );
 
     bool SendQueuedPackagesIfAny( void );
 
@@ -178,16 +185,23 @@ class ClusterChannelRedisWriter : public CORE::CTaskConsumer
 
     typedef std::deque< TPacketEntry > TPacketEntryQueue;
     typedef CORE::CTCloneableExpansion< TPacketEntryVector > TCloneablePacketEntryVector;
+    typedef std::vector< std::pair< sw::redis::StringView, sw::redis::StringView > > TRedisArgs;
     typedef MT::CTMailBox< CORE::UInt32 > TBufferMailbox;
 
     sw::redis::RedisCluster* m_redisContext;
-    TPacketEntryQueue m_redisMsgQueueOverflowQueue;
+    TPacketEntryVectorPtrVector m_redisMsgQueueOverflowQueue;
+    TUInt32Vector m_redisMsgQueueOverflowQueueCounts;
     CORE::UInt32 m_redisErrorReplies;
     CORE::UInt32 m_redisTransmitQueueSize;
     CORE::UInt32 m_redisMsgsTransmitted;
     CORE::UInt32 m_redisPacketsInMsgsTransmitted;
+    CORE::UInt32 m_redisPacketsInMsgsRatio;
     ChannelSettings m_channelSettings;
     TBufferMailbox m_mailbox;
+    TBufferMailbox::TMailList m_bulkMail;
+    TPacketEntryVectorPtrVector m_bulkPackets;
+    TUInt32Vector m_bulkPacketCounts;
+    TRedisArgs m_redisPacketArgs;
     CORE::CTimer* m_metricsTimer;
 };
 
@@ -228,6 +242,7 @@ class Udp2RedisClusterChannel : public CORE::CTaskConsumer
         CORE::UInt32 udpPacketsReceived;
         CORE::UInt32 redisMessagesTransmitted;
         CORE::UInt32 redisPacketsInMsgsTransmitted;
+        CORE::UInt32 redisPacketsInMsgsRatio;
         CORE::UInt32 redisTransmitQueueSize;
         CORE::UInt32 redisErrorReplies;
     };
