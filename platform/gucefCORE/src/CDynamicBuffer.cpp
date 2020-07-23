@@ -369,6 +369,12 @@ CDynamicBuffer::SetBufferSize( const UInt32 newSize      ,
     }
     else
     {
+        if ( 0 == newSize )
+        {
+            Clear( false );
+            return true;
+        }
+
         Int8* newBuffer = (Int8*) realloc( _buffer, newSize );
         if ( GUCEF_NULL != newBuffer )
         {
