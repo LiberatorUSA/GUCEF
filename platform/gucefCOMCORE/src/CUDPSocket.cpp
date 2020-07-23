@@ -1257,7 +1257,7 @@ CUDPSocket::JoinOnInterface( const CIPAddress& multicastGroup           ,
                              const CIPAddress& networkInterfaceToJoinOn )
 {GUCEF_TRACE;
 
-    struct ip_mreq_source imr;
+    struct ip_mreq imr;
     memset( &imr, 0, sizeof( imr ) );
     #if ( GUCEF_PLATFORM == GUCEF_PLATFORM_MSWIN )
     imr.imr_multiaddr.S_un.S_addr = multicastGroup.GetAddress();
@@ -1320,7 +1320,7 @@ bool
 CUDPSocket::Leave( const CIPAddress& multicastGroup )
 {GUCEF_TRACE;
 
-    struct ip_mreq_source imr;
+    struct ip_mreq imr;
     memset( &imr, 0, sizeof( imr ) );
     #if ( GUCEF_PLATFORM == GUCEF_PLATFORM_MSWIN )
     imr.imr_multiaddr.S_un.S_addr = multicastGroup.GetAddress();
