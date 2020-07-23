@@ -278,7 +278,10 @@ CDynamicBuffer::operator[]( UInt32 index )
 char
 CDynamicBuffer::operator[]( UInt32 index ) const
 {GUCEF_TRACE;
+
+    if ( index < m_dataSize && index < _bsize )
         return _buffer[ index ];
+    return '\0';
 }
 
 /*-------------------------------------------------------------------------*/
@@ -360,6 +363,12 @@ CDynamicBuffer::SetBufferSize( const UInt32 newSize      ,
             }
         }
     }
+
+    if ( 0 == newSize )
+    {
+        Clear( false );
+        return true;
+    }
     
     if ( GUCEF_NULL == _buffer )
     {
@@ -369,12 +378,6 @@ CDynamicBuffer::SetBufferSize( const UInt32 newSize      ,
     }
     else
     {
-        if ( 0 == newSize )
-        {
-            Clear( false );
-            return true;
-        }
-
         Int8* newBuffer = (Int8*) realloc( _buffer, newSize );
         if ( GUCEF_NULL != newBuffer )
         {
@@ -752,6 +755,7 @@ CDynamicBuffer::Clear( const bool logicalClearOnly /* = true */ )
         _buffer = GUCEF_NULL;
         _bsize = 0;
         m_dataSize = 0;
+        m_linked = false;
     }
     else
     {
