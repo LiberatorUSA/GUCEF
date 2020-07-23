@@ -425,6 +425,10 @@ CDynamicBuffer::LoadContentFromFile( const CString& filePath   ,
     {
         readBlockSize = (UInt32) bytesToRead;
     }
+
+    // Zero size file load equals successfull load
+    if ( 0 == readBlockSize )
+        return true;
     
     SetBufferSize( readBlockSize, true );
     
@@ -739,7 +743,7 @@ CDynamicBuffer::Clear( const bool logicalClearOnly /* = true */ )
     if ( m_linked )
     {
         // Nothing to deallocate, we don't have ownership of the data
-        _buffer = NULL;
+        _buffer = GUCEF_NULL;
         _bsize = 0;
         m_dataSize = 0;
     }
@@ -749,8 +753,9 @@ CDynamicBuffer::Clear( const bool logicalClearOnly /* = true */ )
         if ( !logicalClearOnly )
         {
             // Cleanup our toys
-            free( _buffer );
-            _buffer = NULL;
+            if ( GUCEF_NULL != _buffer )
+                free( _buffer );
+            _buffer = GUCEF_NULL;
             _bsize = 0;
         } 
         // else: reset carat only
