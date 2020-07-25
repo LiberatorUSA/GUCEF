@@ -122,6 +122,18 @@ class GUCEF_MT_PUBLIC_CPP CActiveObject : public virtual MT::CILockable
 
     UInt32 GetThreadID( void ) const;
 
+    /**
+     *  Sets the CPU affinity mask for the thread
+     */
+    bool SetCpuAffinityMask( UInt32 affinityMaskSize ,
+                             void* affinityMask      );
+
+    /**
+     *  Convenience member function for setting a single CPU affinity
+     *  Uses SetCpuAffinityMask()
+     */
+    bool SetCpuAffinityByCpuId( UInt32 cpuId );
+
     protected:
 
     virtual bool Lock( void ) const GUCEF_VIRTUAL_OVERRIDE;

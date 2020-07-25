@@ -93,6 +93,18 @@ class GUCEF_CORE_PUBLIC_CPP CTaskConsumer : public CObservingNotifier
 
     CPulseGenerator* GetPulseGenerator( void );
 
+    /**
+     *  Sets the CPU affinity mask for the thread
+     */
+    bool SetCpuAffinityMask( UInt32 affinityMaskSize ,
+                             void* affinityMask      );
+
+    /**
+     *  Convenience member function for setting a single CPU affinity
+     *  Uses SetCpuAffinityMask()
+     */
+    bool SetCpuAffinityByCpuId( UInt32 cpuId );
+
     UInt32 GetTaskId( void ) const;
 
     virtual const CString& GetClassTypeName( void ) const GUCEF_VIRTUAL_OVERRIDE;

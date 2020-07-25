@@ -115,6 +115,9 @@ class ChannelSettings
     CORE::UInt32 udpSocketUpdateCyclesPerPulse;
     bool performRedisWritesInDedicatedThread;
     CORE::UInt32 maxSizeOfDedicatedRedisWriterBulkMailRead;
+    bool applyThreadCpuAffinity;
+    CORE::UInt32 cpuAffinityForDedicatedRedisWriterThread;
+    CORE::UInt32 cpuAffinityForMainChannelThread;
 };
 
 /*-------------------------------------------------------------------------*/

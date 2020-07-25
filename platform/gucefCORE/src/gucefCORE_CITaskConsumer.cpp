@@ -248,6 +248,33 @@ CTaskConsumer::Unlock( void ) const
     return false;
 }
 
+/*-------------------------------------------------------------------------*/
+
+bool 
+CTaskConsumer::SetCpuAffinityMask( UInt32 affinityMaskSize ,
+                                   void* affinityMask      )
+{GUCEF_TRACE;
+
+    if ( GUCEF_NULL != m_delegator )
+    {
+        return m_delegator->SetCpuAffinityMask( affinityMaskSize, affinityMask );    
+    }
+    return false;
+}
+
+/*-------------------------------------------------------------------------*/
+
+bool 
+CTaskConsumer::SetCpuAffinityByCpuId( UInt32 cpuId )
+{GUCEF_TRACE;
+
+    if ( GUCEF_NULL != m_delegator )
+    {
+        return m_delegator->SetCpuAffinityByCpuId( cpuId );    
+    }
+    return false;
+}
+
 /*-------------------------------------------------------------------------//
 //                                                                         //
 //      NAMESPACE                                                          //

@@ -291,6 +291,56 @@ ThreadWait( struct SThreadData* td ,
 
 /*--------------------------------------------------------------------------*/
 
+GUCEF_MT_PUBLIC_C UInt32
+ThreadSetCpuAffinity( struct SThreadData* td  ,
+                      UInt32 affinityMaskSize ,
+                      void* affinityMask      )
+{
+    if ( NULL == affinityMask || 0 == affinityMaskSize )
+        return 0;
+    
+    #if ( GUCEF_PLATFORM == GUCEF_PLATFORM_MSWIN )
+
+    /* we can only set 64 processors in the current processor group for now
+       the passed affinity mask is assumed to be the current processor group.
+       @TODO: Improve this
+    */
+    if ( affinityMaskSize <= 8 )
+    {    
+        DWORD_PTR mask = 0;
+        if ( 8 == affinityMaskSize )
+            mask = *(UInt64*) affinityMask;
+        else
+        if ( 4 == affinityMaskSize )
+            mask = *(UInt32*) affinityMask;
+        else
+        if ( 2 == affinityMaskSize )
+            mask = *(UInt16*) affinityMask;
+        else
+        if ( 1 == affinityMaskSize )
+            mask = *(UInt8*) affinityMask;
+
+        mask = SetThreadAffinityMask( td->threadhandle, mask );
+        if ( 0 != mask )
+            return 1;    
+    }
+    return 0;
+
+    #elif ( ( GUCEF_PLATFORM == GUCEF_PLATFORM_LINUX ) || ( GUCEF_PLATFORM == GUCEF_PLATFORM_ANDROID ) )
+    if ( NULL != td && 0 != td->thread )
+    {
+        int statusCode = pthread_setaffinity_np( td->thread, (size_t) affinityMaskSize, (cpu_set_t*) affinityMask );
+        if ( 0 == errorCode )
+            return 1;
+    }
+    return 0;
+    #else
+    #error unsupported target platform
+    #endif
+}
+
+/*--------------------------------------------------------------------------*/
+
 UInt32
 GetCurrentTaskID( void )
 {

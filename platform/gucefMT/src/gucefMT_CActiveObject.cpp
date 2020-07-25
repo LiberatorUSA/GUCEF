@@ -373,6 +373,35 @@ CActiveObject::GetThreadID( void ) const
 
 /*-------------------------------------------------------------------------*/
 
+bool 
+CActiveObject::SetCpuAffinityMask( UInt32 affinityMaskSize ,
+                                   void* affinityMask      )
+{
+    CObjectScopeLock lock( this );
+
+    if ( GUCEF_NULL != _td )
+    {
+        return ThreadSetCpuAffinity( _td, affinityMaskSize, affinityMask ) != 0;
+    }
+    return false;
+}
+
+/*-------------------------------------------------------------------------*/
+
+bool 
+CActiveObject::SetCpuAffinityByCpuId( UInt32 cpuId )
+{
+    if ( cpuId >= 64 )
+        return false;
+
+    UInt64 cpuMask = 0;
+    cpuMask |= (UInt64)1 << cpuId;
+
+    return SetCpuAffinityMask( sizeof( cpuMask ), &cpuMask );
+}
+
+/*-------------------------------------------------------------------------*/
+
 bool
 CActiveObject::Lock( void ) const
 {

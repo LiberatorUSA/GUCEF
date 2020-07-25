@@ -24,6 +24,11 @@
 
 #include <string.h>
 
+#ifndef GUCEF_CORE_DVOSWRAP_H
+#include "DVOSWRAP.h"
+#define GUCEF_CORE_DVOSWRAP_H
+#endif /* GUCEF_CORE_DVOSWRAP_H */
+
 #ifndef GUCEF_CORE_CTASKMANAGER_H
 #include "gucefCORE_CTaskManager.h"
 #define GUCEF_CORE_CTASKMANAGER_H
@@ -55,7 +60,7 @@
 #define GUCEF_DEFAULT_TICKET_REFILLS_ON_BUSY_CYCLE                  10000
 #define GUCEF_DEFAULT_UDP_OS_LEVEL_RECEIVE_BUFFER_SIZE              (1024 * 1024 * 10)
 #define GUCEF_DEFAULT_UDP_MAX_SOCKET_CYCLES_PER_PULSE               25
-#define GUCEF_DEFAULT_MAX_DEDICATED_REDIS_WRITER_MAIL_BULK_READ     10
+#define GUCEF_DEFAULT_MAX_DEDICATED_REDIS_WRITER_MAIL_BULK_READ     100
 
 /*-------------------------------------------------------------------------//
 //                                                                         //
@@ -76,6 +81,9 @@ ChannelSettings::ChannelSettings( void )
     , udpSocketUpdateCyclesPerPulse( GUCEF_DEFAULT_UDP_MAX_SOCKET_CYCLES_PER_PULSE )
     , performRedisWritesInDedicatedThread( true )
     , maxSizeOfDedicatedRedisWriterBulkMailRead( GUCEF_DEFAULT_MAX_DEDICATED_REDIS_WRITER_MAIL_BULK_READ )
+    , applyThreadCpuAffinity( false )
+    , cpuAffinityForDedicatedRedisWriterThread( 0 )
+    , cpuAffinityForMainChannelThread( 0 )
 {GUCEF_TRACE;
 
 }
@@ -95,6 +103,9 @@ ChannelSettings::ChannelSettings( const ChannelSettings& src )
     , udpSocketUpdateCyclesPerPulse( src.udpSocketUpdateCyclesPerPulse )
     , performRedisWritesInDedicatedThread( src.performRedisWritesInDedicatedThread )
     , maxSizeOfDedicatedRedisWriterBulkMailRead( src.maxSizeOfDedicatedRedisWriterBulkMailRead )
+    , applyThreadCpuAffinity( src.applyThreadCpuAffinity )
+    , cpuAffinityForDedicatedRedisWriterThread( src.cpuAffinityForDedicatedRedisWriterThread )
+    , cpuAffinityForMainChannelThread( src.cpuAffinityForMainChannelThread )
 {GUCEF_TRACE;
 
 }
@@ -119,6 +130,9 @@ ChannelSettings::operator=( const ChannelSettings& src )
         udpSocketUpdateCyclesPerPulse = src.udpSocketUpdateCyclesPerPulse;
         performRedisWritesInDedicatedThread = src.performRedisWritesInDedicatedThread;
         maxSizeOfDedicatedRedisWriterBulkMailRead = src.maxSizeOfDedicatedRedisWriterBulkMailRead;
+        applyThreadCpuAffinity = src.applyThreadCpuAffinity;
+        cpuAffinityForDedicatedRedisWriterThread = src.cpuAffinityForDedicatedRedisWriterThread;
+        cpuAffinityForMainChannelThread = src.cpuAffinityForMainChannelThread;
     }
     return *this;
 }
@@ -231,6 +245,21 @@ ClusterChannelRedisWriter::OnTaskStart( CORE::CICloneable* taskData )
         // all the processing. This will cause a bypass of CPU yielding if/when the situation arises.
         // In such a case the thread will run at max speed for a least the below set nr of cycles.
         GetPulseGenerator()->RequestPulsesPerImmediatePulseRequest( m_channelSettings.ticketRefillOnBusyCycle );
+
+        if ( m_channelSettings.applyThreadCpuAffinity )
+        {
+            if ( SetCpuAffinityByCpuId( m_channelSettings.cpuAffinityForDedicatedRedisWriterThread ) )
+            {
+                GUCEF_LOG( CORE::LOGLEVEL_NORMAL, "ClusterChannelRedisWriter(" + CORE::PointerToString( this ) + 
+                    "):OnTaskStart: Successfully set a CPU affinity for logical CPU " + CORE::UInt32ToString( m_channelSettings.cpuAffinityForDedicatedRedisWriterThread ) );
+            }
+            else
+            {
+                GUCEF_ERROR_LOG( CORE::LOGLEVEL_NORMAL, "ClusterChannelRedisWriter(" + CORE::PointerToString( this ) + 
+                    "):OnTaskStart: Failed to set a CPU affinity for logical CPU " + CORE::UInt32ToString( m_channelSettings.cpuAffinityForDedicatedRedisWriterThread ) +
+                    ". Proceeding without affinity");
+            }
+        }
     }
 
     RegisterEventHandlers();
@@ -919,6 +948,21 @@ Udp2RedisClusterChannel::OnTaskStart( CORE::CICloneable* taskData )
     // In such a case the thread will run at max speed for a least the below set nr of cycles.
     GetPulseGenerator()->RequestPulsesPerImmediatePulseRequest( m_channelSettings.ticketRefillOnBusyCycle );
 
+    if ( m_channelSettings.applyThreadCpuAffinity )
+    {
+        if ( SetCpuAffinityByCpuId( m_channelSettings.cpuAffinityForMainChannelThread ) )
+        {
+            GUCEF_LOG( CORE::LOGLEVEL_NORMAL, "Udp2RedisClusterChannel(" + CORE::PointerToString( this ) + 
+                "):OnTaskStart: Successfully set a CPU affinity for logical CPU " + CORE::UInt32ToString( m_channelSettings.cpuAffinityForMainChannelThread ) );
+        }
+        else
+        {
+            GUCEF_ERROR_LOG( CORE::LOGLEVEL_NORMAL, "Udp2RedisClusterChannel(" + CORE::PointerToString( this ) + 
+                "):OnTaskStart: Failed to set a CPU affinity for logical CPU " + CORE::UInt32ToString( m_channelSettings.cpuAffinityForMainChannelThread ) +
+                ". Proceeding without affinity");
+        }
+    }
+
     RegisterEventHandlers();
 
     // Configure and open the UDP port.
@@ -1173,7 +1217,11 @@ Udp2RedisCluster::LoadConfig( const CORE::CValueList& appConfig   ,
     CORE::UInt32 udpSocketUpdateCyclesPerPulse = CORE::StringToUInt32( CORE::ResolveVars( appConfig.GetValueAlways( "MaxUdpSocketUpdateCyclesPerPulse" ) ), GUCEF_DEFAULT_UDP_MAX_SOCKET_CYCLES_PER_PULSE );
     bool performRedisWritesInDedicatedThread = CORE::StringToBool( CORE::ResolveVars( appConfig.GetValueAlways( "PerformRedisWritesInDedicatedThread" ) ), true );
     CORE::UInt32 maxSizeOfDedicatedRedisWriterBulkMailRead = CORE::StringToUInt32( CORE::ResolveVars( appConfig.GetValueAlways( "MaxSizeOfDedicatedRedisWriterBulkMailRead" ) ), GUCEF_DEFAULT_MAX_DEDICATED_REDIS_WRITER_MAIL_BULK_READ );
+    bool applyCpuThreadAffinityByDefault = CORE::StringToBool( CORE::ResolveVars( appConfig.GetValueAlways( "ApplyCpuThreadAffinityByDefault" )  ), false );
 
+    CORE::UInt32 logicalCpuCount = CORE::GetLogicalCPUCount();
+    
+    CORE::UInt32 currentCpu = 0;
     CORE::UInt16 udpPort = m_udpStartPort;
     CORE::Int32 maxChannelId = m_redisStreamStartChannelID + m_channelCount;
     for ( CORE::Int32 channelId = m_redisStreamStartChannelID; channelId < maxChannelId; ++channelId )
@@ -1200,6 +1248,53 @@ Udp2RedisCluster::LoadConfig( const CORE::CValueList& appConfig   ,
         {
             // Use the auto naming and numbering scheme based on a single template name instead
             channelSettings.channelStreamName = CORE::ResolveVars( m_redisStreamName.ReplaceSubstr( "{channelID}", CORE::Int32ToString( channelId ) ) );
+        }
+
+        settingName = "ChannelSetting." + CORE::Int32ToString( channelId ) + ".ApplyCpuThreadAffinity";
+        settingValue = appConfig.GetValueAlways( settingName );
+        if ( !settingValue.IsNULLOrEmpty() )
+        {
+            channelSettings.applyThreadCpuAffinity = CORE::StringToBool( CORE::ResolveVars( settingValue ), applyCpuThreadAffinityByDefault );
+        }
+        else
+        {
+            channelSettings.applyThreadCpuAffinity = applyCpuThreadAffinityByDefault;
+        }
+
+        if ( channelSettings.applyThreadCpuAffinity )
+        {
+            settingName = "ChannelSetting." + CORE::Int32ToString( channelId ) + ".CpuAffinityForMainChannelThread";
+            settingValue = appConfig.GetValueAlways( settingName );
+            if ( !settingValue.IsNULLOrEmpty() )
+            {
+                channelSettings.cpuAffinityForMainChannelThread = CORE::StringToUInt32( CORE::ResolveVars( settingValue ), currentCpu );
+            }
+            else
+            {
+                channelSettings.cpuAffinityForMainChannelThread = currentCpu;
+            }
+
+            ++currentCpu;
+            if ( currentCpu >= logicalCpuCount ) // Wrap around if we run out of CPUs
+                currentCpu = 0;
+
+            if ( channelSettings.performRedisWritesInDedicatedThread )
+            {
+                settingName = "ChannelSetting." + CORE::Int32ToString( channelId ) + ".CpuAffinityForDedicatedRedisWriterThread";
+                settingValue = appConfig.GetValueAlways( settingName );
+                if ( !settingValue.IsNULLOrEmpty() )
+                {
+                    channelSettings.cpuAffinityForDedicatedRedisWriterThread = CORE::StringToUInt32( CORE::ResolveVars( settingValue ), currentCpu );
+                }
+                else
+                {
+                    channelSettings.cpuAffinityForDedicatedRedisWriterThread = currentCpu;
+                }
+            
+                ++currentCpu;
+                if ( currentCpu >= logicalCpuCount ) // Wrap around if we run out of CPUs
+                    currentCpu = 0;
+            }
         }
 
         settingName = "ChannelSetting." + CORE::Int32ToString( channelId ) + ".UdpInterface";

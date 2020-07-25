@@ -123,6 +123,13 @@ ThreadWait( struct SThreadData* td ,
 /*--------------------------------------------------------------------------*/
 
 GUCEF_MT_PUBLIC_C UInt32
+ThreadSetCpuAffinity( struct SThreadData* td  ,
+                      UInt32 affinityMaskSize ,
+                      void* affinityMask      );
+
+/*--------------------------------------------------------------------------*/
+
+GUCEF_MT_PUBLIC_C UInt32
 GetCurrentTaskID( void );
 
 /*--------------------------------------------------------------------------*/
