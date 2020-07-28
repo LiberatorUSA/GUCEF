@@ -514,17 +514,26 @@ FilePusher::OnFilePushTimerCycle( CORE::CNotifier* notifier    ,
     while ( i != m_pushQueue.end() )
     {
         const CORE::CString& filePath = (*i).first;
-        CORE::UInt32 offsetInFile = (CORE::UInt32) (*i).second;
+        if ( CORE::FileExists( filePath ) )
+        {
+            CORE::UInt32 offsetInFile = (CORE::UInt32) (*i).second;
 
-        if ( 0 == m_filePushDestinationUri.HasSubstr( "http://", true ) )
-        {
-            if ( PushFileUsingHttp( filePath, offsetInFile ) )
-                return;
+            if ( 0 == m_filePushDestinationUri.HasSubstr( "http://", true ) )
+            {
+                if ( PushFileUsingHttp( filePath, offsetInFile ) )
+                    return;
+            }
+            if ( 0 == m_filePushDestinationUri.HasSubstr( "vfs://", true ) )
+            {
+                if ( PushFileUsingVfs( filePath, offsetInFile ) )
+                    return;
+            }
         }
-        if ( 0 == m_filePushDestinationUri.HasSubstr( "vfs://", true ) )
+        else
         {
-            if ( PushFileUsingVfs( filePath, offsetInFile ) )
-                return;
+            GUCEF_LOG( CORE::LOGLEVEL_NORMAL, "FilePusher: File no longer exists when we were about to commence pushing it: \"" + filePath + "\"" );
+            m_pushQueue.erase( i );
+            return;
         }
         ++i;
     }
@@ -583,15 +592,23 @@ FilePusher::OnNewFileRestPeriodTimerCycle( CORE::CNotifier* notifier    ,
     while ( i != m_newFileRestQueue.end() )
     {
         const CORE::CString& newFilePath = (*i).first;
-        time_t& lastModified = (*i).second;
-
-        time_t lastChange = GetLatestTimestampForFile( newFilePath );
-        if ( nowTime - lastChange > m_restingTimeForNewFilesInSecs )
+        if ( CORE::FileExists( newFilePath ) )
         {
-            // This file has not been modified for at least the required resting period.
-            // As such tis file can now be considered a candidate for pushing.
-            QueueFileForPushing( newFilePath );
-            restedFiles.insert( newFilePath );
+            time_t& lastModified = (*i).second;
+
+            time_t lastChange = GetLatestTimestampForFile( newFilePath );
+            if ( nowTime - lastChange > m_restingTimeForNewFilesInSecs )
+            {
+                // This file has not been modified for at least the required resting period.
+                // As such tis file can now be considered a candidate for pushing.
+                QueueFileForPushing( newFilePath );
+                restedFiles.insert( newFilePath );
+            }
+        }
+        else
+        {
+            GUCEF_LOG( CORE::LOGLEVEL_NORMAL, "FilePusher: File no longer exists when checking rest period on file: \"" + newFilePath + "\"" );
+            restedFiles.insert( newFilePath );    
         }
         ++i;
     }
@@ -624,9 +641,17 @@ void
 FilePusher::QueueNewFileForPushingAfterUnmodifiedRestPeriod( const CORE::CString& newFilePath )
 {GUCEF_TRACE;
 
-    // Add the file to the list of files to be checked periodically to see if there is no more changes
-    // being made to the file aka a resting period.
-    m_newFileRestQueue[ newFilePath ] = GetLatestTimestampForFile( newFilePath );
+    TStringUInt64Map::iterator i = m_pushQueue.find( newFilePath );
+    if ( i != m_pushQueue.end() )
+    {
+        // Add the file to the list of files to be checked periodically to see if there is no more changes
+        // being made to the file aka a resting period.
+        m_newFileRestQueue[ newFilePath ] = GetLatestTimestampForFile( newFilePath );
+    }
+    else
+    {
+        GUCEF_DEBUG_LOG( CORE::LOGLEVEL_NORMAL, "FilePusher: Not queueing file for rest period as its already rested and queued for pushing: \"" + newFilePath + "\"" );
+    }
 }
 
 /*-------------------------------------------------------------------------*/
