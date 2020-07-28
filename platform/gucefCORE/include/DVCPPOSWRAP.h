@@ -90,6 +90,11 @@ GetExeNameForProcessId( TProcessId* pid  ,
 GUCEF_CORE_PUBLIC_CPP CString
 GetHostname( void );
 
+/*--------------------------------------------------------------------------*/
+
+GUCEF_CORE_PUBLIC_CPP bool
+CommandLineExecute( const CString& command, CString& result, bool waitForExit );
+
 /*-------------------------------------------------------------------------//
 //                                                                         //
 //      NAMESPACE                                                          //

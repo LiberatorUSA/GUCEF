@@ -62,41 +62,41 @@ class GUCEF_COM_EXPORT_CPP CDefaultHTTPServerResource : public CIHTTPServerResou
     /**
      *  Identifier of the resource, relative to the context of the handler.
      */
-    virtual void SetURL( const CString& url );
+    virtual void SetURL( const CString& url ) GUCEF_VIRTUAL_OVERRIDE;
 
     /**
      *  Identifier of the resource, relative to the context of the handler.
      */
-    virtual const CString& GetURL( void ) const;
+    virtual const CString& GetURL( void ) const GUCEF_VIRTUAL_OVERRIDE;
 
     /**
      *  Encoding of the resource (i.e. gzip compression). Matches the HTTP:Content-Encoding field.
      *  Typical example would be zip/gzip compressed content
      */
-    virtual const CString& GetEncoding( void ) const;
+    virtual const CString& GetEncoding( void ) const GUCEF_VIRTUAL_OVERRIDE;
                     
     /**
      *   Returns a list of all representations the resource can be serialized to.
      */
-    virtual const TStringVector& GetSupportedSerializationRepresentations();
+    virtual const TStringVector& GetSupportedSerializationRepresentations() GUCEF_VIRTUAL_OVERRIDE;
 
     /**
      *  Returns the representation that best matches a given list of representions for serialization.
      *  Returns "" in case no match can be found.
      */
-    virtual CString GetBestMatchedSerializationRepresentation( const TStringVector& representations );
+    virtual CString GetBestMatchedSerializationRepresentation( const TStringVector& representations ) GUCEF_VIRTUAL_OVERRIDE;
 
     /**
      *   Returns a list of all representations the resource can be deserialized from.
      */
-    virtual const TStringVector& GetSupportedDeserializationRepresentations();
+    virtual const TStringVector& GetSupportedDeserializationRepresentations() GUCEF_VIRTUAL_OVERRIDE;
 
     /**
      *  Returns the representation that best matches a given list of representions for deserialization.
      *  In common situations, this may be the same as the GetBestMatchedSerializationRepresentation(..) operation.
      *  Returns "" in case no match can be found.
      */
-    virtual CString GetBestSupportedDeserializationRepresentation( const TStringVector& representations );
+    virtual CString GetBestSupportedDeserializationRepresentation( const TStringVector& representations ) GUCEF_VIRTUAL_OVERRIDE;
 
     /**
      *  Create a new (contained) resource
@@ -112,38 +112,38 @@ class GUCEF_COM_EXPORT_CPP CDefaultHTTPServerResource : public CIHTTPServerResou
                                          const CORE::CDynamicBuffer& inputBuffer       ,
                                          const CString& representation                 ,
                                          THTTPServerResourcePtr& resourceOutput        ,
-                                         TStringVector& supportedRepresentationsOutput );
+                                         TStringVector& supportedRepresentationsOutput ) GUCEF_VIRTUAL_OVERRIDE;
     
     /**
      *  Deletes this resource
      *
      *  @return Returns true if the resource could be deleted.
      */
-    virtual bool DeleteResource();
+    virtual bool DeleteResource() GUCEF_VIRTUAL_OVERRIDE;
 
     /**
      *  Serializes the resource into a stream according to the representation.
      */
     virtual bool Serialize( CORE::CDynamicBuffer& outputBuffer  ,
-                            const CORE::CString& representation );
+                            const CORE::CString& representation ) GUCEF_VIRTUAL_OVERRIDE;
 
     /**
      *  Deserialize the resource from the given stream with given resource representation.
      */
     virtual TDeserializeState Deserialize( const CORE::CDynamicBuffer& inputBuffer ,
-                                           const CString& representation           );
+                                           const CString& representation           ) GUCEF_VIRTUAL_OVERRIDE;
 
     /**
      *  The version of the resource (HTTP: Etag)
      */
-    virtual const CString& GetResourceVersion( void );
+    virtual const CString& GetResourceVersion( void ) GUCEF_VIRTUAL_OVERRIDE;
     
-    virtual const CString& GetLastModifiedTime( void );
+    virtual const CString& GetLastModifiedTime( void ) GUCEF_VIRTUAL_OVERRIDE;
 
     /**
      *  The cacheability of the resource.
      */
-    virtual const CString& GetCacheability( void );
+    virtual const CString& GetCacheability( void ) GUCEF_VIRTUAL_OVERRIDE;
 
     protected:
 

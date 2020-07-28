@@ -68,7 +68,7 @@ class GUCEF_COM_EXPORT_CPP CCodecBasedHTTPServerResource : public CDefaultHTTPSe
      *  Serializes the resource into a stream according to the representation.
      */
     virtual bool Serialize( CORE::CDynamicBuffer& outputBuffer  ,
-                            const CORE::CString& representation );
+                            const CORE::CString& representation ) GUCEF_VIRTUAL_OVERRIDE;
 
     virtual bool Serialize( CORE::CDataNode& output             ,
                             const CORE::CString& representation );
@@ -77,7 +77,7 @@ class GUCEF_COM_EXPORT_CPP CCodecBasedHTTPServerResource : public CDefaultHTTPSe
      *  Deserialize the resource from the given stream with given resource representation.
      */
     virtual TDeserializeState Deserialize( const CORE::CDynamicBuffer& inputBuffer ,
-                                           const CString& representation           );
+                                           const CString& representation           ) GUCEF_VIRTUAL_OVERRIDE;
 
     virtual TDeserializeState Deserialize( const CORE::CDataNode& input  ,
                                            const CString& representation );
@@ -96,7 +96,7 @@ class GUCEF_COM_EXPORT_CPP CCodecBasedHTTPServerResource : public CDefaultHTTPSe
                                          const CORE::CDynamicBuffer& inputBuffer       ,
                                          const CString& representation                 ,
                                          THTTPServerResourcePtr& resourceOutput        ,
-                                         TStringVector& supportedRepresentationsOutput );
+                                         TStringVector& supportedRepresentationsOutput ) GUCEF_VIRTUAL_OVERRIDE;
 
     /**
      *  Create a new (contained) resource

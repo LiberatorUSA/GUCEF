@@ -24,7 +24,10 @@
 //-------------------------------------------------------------------------*/
 
 #include <map>
+#include <iostream>
+#include <stdexcept>
 #include <string>
+#include <stdio.h>
 #include <assert.h>
 
 #ifndef GUCEF_CORE_LOGGING_H
@@ -191,6 +194,119 @@ GetExeNameForProcessId( TProcessId* pid  ,
         return true;
     }
     return false;
+}
+
+/*-------------------------------------------------------------------------*/
+
+bool
+CommandLineExecute( const CString& command , 
+                    CString& result        , 
+                    bool waitForExit       ) 
+{GUCEF_TRACE;
+
+    result.Clear();
+    if ( command.IsNULLOrEmpty() )
+        return false;
+
+    #if ( GUCEF_PLATFORM == GUCEF_PLATFORM_MSWIN )
+    
+    HANDLE hPipeRead = NULL;
+    HANDLE hPipeWrite = NULL;
+
+    SECURITY_ATTRIBUTES saAttr = {sizeof(SECURITY_ATTRIBUTES)};
+    saAttr.bInheritHandle = TRUE; // Pipe handles are inherited by child process.
+    saAttr.lpSecurityDescriptor = NULL;
+
+    // Create a pipe to get results from child's stdout.
+    if ( FALSE == ::CreatePipe( &hPipeRead, &hPipeWrite, &saAttr, 0 ) )
+    {
+        return false;
+    }
+
+    STARTUPINFOA si = {sizeof(STARTUPINFOW)};
+    si.dwFlags     = STARTF_USESHOWWINDOW | STARTF_USESTDHANDLES;
+    si.hStdOutput  = hPipeWrite;
+    si.hStdError   = hPipeWrite;
+    si.wShowWindow = SW_HIDE; // <- Prevents cmd window from flashing, this requires STARTF_USESHOWWINDOW in dwFlags.
+
+    PROCESS_INFORMATION pi = { 0 };
+    BOOL fSuccess = ::CreateProcessA( NULL, (LPSTR) command.C_String(), NULL, NULL, TRUE, CREATE_NEW_CONSOLE, NULL, NULL, &si, &pi );
+    if ( FALSE == fSuccess )
+    {
+        ::CloseHandle( hPipeWrite );
+        ::CloseHandle( hPipeRead );
+        return false;
+    }
+
+    if ( waitForExit )
+    {
+        bool bProcessEnded = false;
+        while ( !bProcessEnded )
+        {
+            // Give some timeslice (50 ms), so we won't waste 100% CPU.
+            bProcessEnded = WaitForSingleObject( pi.hProcess, 50) == WAIT_OBJECT_0;
+
+            // Even if process exited - we continue reading, if
+            // there is some data available over pipe.
+            for (;;)
+            {
+                char buf[1024];
+                DWORD dwRead = 0;
+                DWORD dwAvail = 0;
+
+                if ( !::PeekNamedPipe( hPipeRead, NULL, 0, NULL, &dwAvail, NULL ) )
+                    break;
+
+                if (!dwAvail) // No data available, return
+                    break;
+
+                if ( !::ReadFile( hPipeRead, buf, SMALLEST( sizeof(buf)-1, dwAvail ), &dwRead, NULL ) || !dwRead )
+                {
+                    // Error, the child process might have ended
+                    break;
+                }
+
+                buf[ dwRead ] = 0;
+                result += buf;
+            }
+        } 
+    }
+
+    ::CloseHandle( hPipeWrite );
+    ::CloseHandle( hPipeRead );
+    ::CloseHandle( pi.hProcess );
+    ::CloseHandle( pi.hThread );
+    return true;
+
+    #else
+
+    char buffer[ 128 ];
+    std::string result = "";
+    FILE* pipe = popen( command.C_String(), "r" );
+    if ( NULL == pipe )
+        return false;
+
+    try 
+    {
+        while ( fgets( buffer, sizeof buffer, pipe ) != NULL ) 
+        {
+            result += buffer;
+        }
+    }
+    catch ( const std::exception& e ) 
+    {
+        pclose( pipe );
+        throw e;
+    }
+    catch ( ... ) 
+    {
+        pclose( pipe );
+        throw;
+    }
+    pclose( pipe );
+    return true;
+
+    #endif
 }
 
 /*-------------------------------------------------------------------------//
