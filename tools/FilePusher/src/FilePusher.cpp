@@ -641,8 +641,10 @@ void
 FilePusher::QueueNewFileForPushingAfterUnmodifiedRestPeriod( const CORE::CString& newFilePath )
 {GUCEF_TRACE;
 
+    // We don't want to add new files to the rest queue by whatever means if the same file has already 
+    // progressed to the push queue so we check that first
     TStringUInt64Map::iterator i = m_pushQueue.find( newFilePath );
-    if ( i != m_pushQueue.end() )
+    if ( i == m_pushQueue.end() )
     {
         // Add the file to the list of files to be checked periodically to see if there is no more changes
         // being made to the file aka a resting period.
