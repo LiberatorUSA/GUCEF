@@ -102,7 +102,8 @@ void
 CLoggingTask::Log( const TLogMsgType logMsgType ,
                    const Int32 logLevel         ,
                    const CString& logMessage    ,
-                   const UInt32 threadId        )
+                   const UInt32 threadId        ,
+                   const CDateTime& timestamp   )
 {GUCEF_TRACE;
 
     if ( logLevel >= m_minLogLevel )
@@ -124,7 +125,8 @@ void
 CLoggingTask::LogWithoutFormatting( const TLogMsgType logMsgType ,
                                     const Int32 logLevel         ,
                                     const CString& logMessage    ,
-                                    const UInt32 threadId        )
+                                    const UInt32 threadId        ,
+                                    const CDateTime& timestamp   )
 {GUCEF_TRACE;
 
     if ( logLevel >= m_minLogLevel )
@@ -228,7 +230,8 @@ bool
 CLoggingTask::OnTaskCycleLog( const TLogMsgType logMsgType ,
                               const Int32 logLevel         ,
                               const CString& logMessage    ,
-                              const UInt32 threadId        )
+                              const UInt32 threadId        ,
+                              const CDateTime& timestamp   )
 {GUCEF_TRACE;
 
     if ( NULL != m_loggerBackend )
@@ -236,7 +239,8 @@ CLoggingTask::OnTaskCycleLog( const TLogMsgType logMsgType ,
         m_loggerBackend->Log( logMsgType ,
                               logLevel   ,
                               logMessage ,
-                              threadId   );
+                              threadId   ,
+                              timestamp  );
         return true;
     }
     return false;
@@ -248,7 +252,8 @@ bool
 CLoggingTask::OnTaskCycleLogWithoutFormatting( const TLogMsgType logMsgType ,
                                                const Int32 logLevel         ,
                                                const CString& logMessage    ,
-                                               const UInt32 threadId        )
+                                               const UInt32 threadId        ,
+                                               const CDateTime& timestamp   )
 
 {GUCEF_TRACE;
 
@@ -257,7 +262,8 @@ CLoggingTask::OnTaskCycleLogWithoutFormatting( const TLogMsgType logMsgType ,
         m_loggerBackend->LogWithoutFormatting( logMsgType ,
                                                logLevel   ,
                                                logMessage ,
-                                               threadId   );
+                                               threadId   ,
+                                               timestamp  );
         return true;
     }
     return false;
@@ -320,7 +326,8 @@ CLoggingTask::OnTaskCycle( CICloneable* taskdata )
                             if ( !OnTaskCycleLog( loggingMail->logMsgType  ,
                                                   loggingMail->logLevel    ,
                                                   loggingMail->logMessage  ,
-                                                  loggingMail->threadId    ) ) return true;
+                                                  loggingMail->threadId    ,
+                                                  loggingMail->timestamp   ) ) return true;
                         }
                         break;
                     }
@@ -388,6 +395,7 @@ CLoggingTask::CLoggingMail::CLoggingMail( void )
       logLevel( LOGLEVEL_NORMAL )                ,
       logMessage()                               ,
       threadId( 0 )                              ,
+      timestamp()                                ,
       withoutFormatting( false )
 {GUCEF_TRACE;
 
@@ -401,6 +409,7 @@ CLoggingTask::CLoggingMail::CLoggingMail( const CLoggingMail& src )
       logLevel( src.logLevel )                   ,
       logMessage( src.logMessage )               ,
       threadId( src.threadId )                   ,
+      timestamp( src.timestamp )                 ,
       withoutFormatting( src.withoutFormatting )
 {GUCEF_TRACE;
 

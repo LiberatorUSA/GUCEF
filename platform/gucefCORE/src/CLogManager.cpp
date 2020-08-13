@@ -204,7 +204,8 @@ CLogManager::FlushBootstrapLogEntriesToLogs( void )
             Log( entry.logMsgType ,
                  entry.logLevel   ,
                  entry.logMessage ,
-                 entry.threadId   );
+                 entry.threadId   ,
+                 entry.timestamp  );
 
             ++i;
         }
@@ -383,7 +384,7 @@ CLogManager::Log( const TLogMsgType logMsgType ,
                   const CString& logMessage    )
 {GUCEF_TRACE;
 
-    Log( logMsgType, logLevel, logMessage, MT::GetCurrentTaskID() );
+    Log( logMsgType, logLevel, logMessage, MT::GetCurrentTaskID(), CDateTime::NowUTCDateTime() );
 }
 
 /*-------------------------------------------------------------------------*/
@@ -392,7 +393,8 @@ void
 CLogManager::Log( const TLogMsgType logMsgType ,
                   const Int32 logLevel         ,
                   const CString& logMessage    ,
-                  const UInt32 threadId        )
+                  const UInt32 threadId        ,
+                  const CDateTime& timestamp   )
 {GUCEF_TRACE;
 
     MT::CObjectScopeLock lock( this );
@@ -414,14 +416,16 @@ CLogManager::Log( const TLogMsgType logMsgType ,
                 m_loggingTask->Log( logMsgType ,
                                     logLevel   ,
                                     logMessage ,
-                                    threadId   );
+                                    threadId   ,
+                                    timestamp  );
             }
             else
             {
                 m_loggers->Log( logMsgType ,
                                 logLevel   ,
                                 logMessage ,
-                                threadId   );
+                                threadId   ,
+                                timestamp  );
             }
             m_busyLogging = false;
         }
@@ -434,6 +438,7 @@ CLogManager::Log( const TLogMsgType logMsgType ,
             entry.logMsgType = logMsgType;
             entry.logMessage = logMessage;
             entry.threadId = threadId;
+            entry.timestamp = timestamp;
             m_bootstrapLog.push_back( entry );
         }
     }

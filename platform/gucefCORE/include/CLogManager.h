@@ -39,6 +39,11 @@
 #define GUCEF_MT_CILOCKABLE_H
 #endif /* GUCEF_MT_CILOCKABLE_H ? */
 
+#ifndef GUCEF_CORE_MACROS_H
+#include "gucefCORE_macros.h"    
+#define GUCEF_CORE_MACROS_H
+#endif /* GUCEF_CORE_MACROS_H ? */
+
 #ifndef GUCEF_CORE_CDVSTRING_H
 #include "CDVString.h"
 #define GUCEF_CORE_CDVSTRING_H
@@ -49,10 +54,10 @@
 #define GUCEF_CORE_CTABSTRACTFACTORY_H
 #endif /* GUCEF_CORE_CTABSTRACTFACTORY_H ? */
 
-#ifndef GUCEF_CORE_MACROS_H
-#include "gucefCORE_macros.h"           /* often used gucef macros */
-#define GUCEF_CORE_MACROS_H
-#endif /* GUCEF_CORE_MACROS_H ? */
+#ifndef GUCEF_CORE_CDATETIME_H
+#include "gucefCORE_CDateTime.h"
+#define GUCEF_CORE_CDATETIME_H
+#endif /* GUCEF_CORE_CDATETIME_H ? */
 
 /*-------------------------------------------------------------------------//
 //                                                                         //
@@ -130,6 +135,12 @@ class GUCEF_CORE_PUBLIC_CPP CLogManager : public MT::CILockable
               const Int32 logLevel         ,
               const CString& logMessage    );
 
+    void Log( const TLogMsgType logMsgType ,
+              const Int32 logLevel         ,
+              const CString& logMessage    ,
+              const UInt32 threadId        ,
+              const CDateTime& timestamp   );
+
     void SetMinLogLevel( const Int32 logLevel );
 
     Int32 GetMinLogLevel( void ) const;
@@ -180,11 +191,6 @@ class GUCEF_CORE_PUBLIC_CPP CLogManager : public MT::CILockable
     CLogManager( const CLogManager& src );              /**< not implemented, don't use */
     CLogManager& operator=( const CLogManager& src );   /**< not implemented, don't use */
 
-    void Log( const TLogMsgType logMsgType ,
-              const Int32 logLevel         ,
-              const CString& logMessage    ,
-              const UInt32 threadId        );
-
     private:
 
     struct SBootstrapLogEntry
@@ -193,6 +199,7 @@ class GUCEF_CORE_PUBLIC_CPP CLogManager : public MT::CILockable
         Int32 logLevel;
         CString logMessage;
         UInt32 threadId;
+        CDateTime timestamp;
     };
     typedef struct SBootstrapLogEntry TBootstrapLogEntry;
     typedef std::vector< TBootstrapLogEntry > TBootstrapLogVector;

@@ -62,7 +62,8 @@ class GUCEF_CORE_PUBLIC_CPP CILoggingFormatter
     virtual CString FormatLogMessage( const TLogMsgType logMsgType ,
                                       const Int32 logLevel         ,
                                       const CString& logMessage    ,
-                                      const UInt32 threadId        ) = 0;
+                                      const UInt32 threadId        ,
+                                      const CDateTime& timestamp   ) = 0;
 
     CILoggingFormatter( void );                                       /**< interface class: no-op */
     virtual ~CILoggingFormatter();                                    /**< interface class: no-op */

@@ -51,6 +51,11 @@
 #define GUCEF_CORE_CTABSTRACTFACTORY_H
 #endif /* GUCEF_CORE_CTABSTRACTFACTORY_H ? */
 
+#ifndef GUCEF_CORE_CDATETIME_H
+#include "gucefCORE_CDateTime.h"
+#define GUCEF_CORE_CDATETIME_H
+#endif /* GUCEF_CORE_CDATETIME_H ? */
+
 #ifndef GUCEF_VFS_CIARCHIVE_H
 #include "gucefVFS_CIArchive.h"
 #define GUCEF_VFS_CIARCHIVE_H
@@ -224,7 +229,7 @@ class GUCEF_VFS_PUBLIC_CPP CVFS : public CORE::CTSGNotifier   ,
     
     CORE::CString GetFileHash( const CString& filename ) const;
     
-    time_t GetFileModificationTime( const CString& filename ) const;
+    CORE::CDateTime GetFileModificationTime( const CString& filename ) const;
 
     bool GetActualFilePath( const CString& file ,
                             CString& path       ) const;

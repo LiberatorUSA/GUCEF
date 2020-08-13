@@ -34,6 +34,11 @@
 #define GUCEF_CORE_CTBASICSHAREDPTR_H
 #endif /* GUCEF_CORE_CTBASICSHAREDPTR_H ? */
 
+#ifndef GUCEF_CORE_CDATETIME_H
+#include "gucefCORE_CDateTime.h"
+#define GUCEF_CORE_CDATETIME_H
+#endif /* GUCEF_CORE_CDATETIME_H ? */
+
 #ifndef GUCEF_VFS_CVFSHANDLE_H
 #include "gucefVFS_CVFSHandle.h"     /* handle for VFS ref counted recources */
 #define GUCEF_VFS_CVFSHANDLE_H
@@ -99,7 +104,7 @@ class GUCEF_VFS_PUBLIC_CPP CIArchive : public CORE::CTDynamicDestructorBase< CVF
     
     virtual CString GetFileHash( const CString& file ) const = 0;
     
-    virtual time_t GetFileModificationTime( const CString& filePath ) const = 0;
+    virtual CORE::CDateTime GetFileModificationTime( const CString& filePath ) const = 0;
     
     virtual const CString& GetArchiveName( void ) const = 0;
     

@@ -58,7 +58,8 @@ class GUCEF_CORE_PUBLIC_CPP CBasicBracketLoggingFormatter : public CILoggingForm
     virtual CString FormatLogMessage( const TLogMsgType logMsgType ,
                                       const Int32 logLevel         ,
                                       const CString& logMessage    ,
-                                      const UInt32 threadId        ) GUCEF_VIRTUAL_OVERRIDE;
+                                      const UInt32 threadId        ,
+                                      const CDateTime& timestamp   ) GUCEF_VIRTUAL_OVERRIDE;
 
     CBasicBracketLoggingFormatter( void );            
     virtual ~CBasicBracketLoggingFormatter();    

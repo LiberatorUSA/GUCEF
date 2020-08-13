@@ -124,10 +124,12 @@ CString
 CJsonLoggingFormatter::FormatLogMessage( const TLogMsgType logMsgType ,
                                          const Int32 logLevel         ,
                                          const CString& logMessage    ,
-                                         const UInt32 threadId        )
+                                         const UInt32 threadId        ,
+                                         const CDateTime& timestamp   )
 {GUCEF_TRACE;
 
-    return   "{\"thread\"=" + UInt32ToString( threadId ) +
+    return "{\"timestamp\"=\"" + timestamp.ToIso8601DateTimeString( true, true ) + "\"" 
+           ", \"thread\"=" + UInt32ToString( threadId ) +
            ", \"type\"=\"" + CLogManager::GetLogMsgTypeString( logMsgType ) + "\""
            ", \"lvl\"=\"" + LogLevelToString( logLevel ) + "\""
            ", \"msg\"=\"" + EscapeJson( logMessage ) + "\"";

@@ -89,7 +89,8 @@ class GUCEF_CORE_PUBLIC_CPP CLoggingTask : public CTaskConsumer ,
     virtual void Log( const TLogMsgType logMsgType ,
                       const Int32 logLevel         ,
                       const CString& logMessage    ,
-                      const UInt32 threadId        ) GUCEF_VIRTUAL_OVERRIDE;
+                      const UInt32 threadId        ,
+                      const CDateTime& timestamp   ) GUCEF_VIRTUAL_OVERRIDE;
 
     /** 
      *  Adds a log message to the mailbox of the threaded logger.
@@ -99,7 +100,8 @@ class GUCEF_CORE_PUBLIC_CPP CLoggingTask : public CTaskConsumer ,
     virtual void LogWithoutFormatting( const TLogMsgType logMsgType ,
                                        const Int32 logLevel         ,
                                        const CString& logMessage    ,
-                                       const UInt32 threadId        ) GUCEF_VIRTUAL_OVERRIDE;
+                                       const UInt32 threadId        ,
+                                       const CDateTime& timestamp   ) GUCEF_VIRTUAL_OVERRIDE;
 
     virtual void FlushLog( void ) GUCEF_VIRTUAL_OVERRIDE;
 
@@ -156,12 +158,14 @@ class GUCEF_CORE_PUBLIC_CPP CLoggingTask : public CTaskConsumer ,
     virtual bool OnTaskCycleLog( const TLogMsgType logMsgType ,
                                  const Int32 logLevel         ,
                                  const CString& logMessage    ,
-                                 const UInt32 threadId        );
+                                 const UInt32 threadId        ,
+                                 const CDateTime& timestamp   );
 
     virtual bool OnTaskCycleLogWithoutFormatting( const TLogMsgType logMsgType ,
                                                   const Int32 logLevel         ,
                                                   const CString& logMessage    ,
-                                                  const UInt32 threadId        );
+                                                  const UInt32 threadId        ,
+                                                  const CDateTime& timestamp   );
 
     virtual bool OnTaskCycleLogFlush( void );
 
@@ -188,6 +192,7 @@ class GUCEF_CORE_PUBLIC_CPP CLoggingTask : public CTaskConsumer ,
         Int32 logLevel;
         CString logMessage;
         UInt32 threadId;
+        CDateTime timestamp;
         bool withoutFormatting;
         
         virtual CICloneable* Clone( void ) const;

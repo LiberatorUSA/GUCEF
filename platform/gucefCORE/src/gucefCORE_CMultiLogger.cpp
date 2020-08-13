@@ -208,10 +208,11 @@ CMultiLogger::Log( const TLogMsgType logMsgType ,
                    const CString& logMessage    )
 {GUCEF_TRACE;
 
-    Log( logMsgType             ,
-         logLevel               ,
-         logMessage             ,
-         MT::GetCurrentTaskID() );
+    Log( logMsgType                  ,
+         logLevel                    ,
+         logMessage                  ,
+         MT::GetCurrentTaskID()      ,
+         CDateTime::NowUTCDateTime() );
 }
 
 /*-------------------------------------------------------------------------*/
@@ -220,7 +221,8 @@ void
 CMultiLogger::Log( const TLogMsgType logMsgType ,
                    const Int32 logLevel         ,
                    const CString& logMessage    ,
-                   const UInt32 threadId        )
+                   const UInt32 threadId        ,
+                   const CDateTime& timestamp   )
 {GUCEF_TRACE;
 
     // The loglevel must be such so that the message given falls under the global logging
@@ -241,9 +243,10 @@ CMultiLogger::Log( const TLogMsgType logMsgType ,
                 if ( GUCEF_NULL != logger )
                 {
                     logger->Log( logMsgType ,
-                                    logLevel   ,
-                                    logMessage ,
-                                    threadId   );
+                                 logLevel   ,
+                                 logMessage ,
+                                 threadId   ,
+                                 timestamp  );
                 }
                 ++i;
             }
@@ -265,7 +268,8 @@ void
 CMultiLogger::LogWithoutFormatting( const TLogMsgType logMsgType ,
                                     const Int32 logLevel         ,
                                     const CString& logMessage    ,
-                                    const UInt32 threadId        )
+                                    const UInt32 threadId        ,
+                                    const CDateTime& timestamp   )
 {GUCEF_TRACE;
 
     // The loglevel must be such so that the message given falls under the global logging
@@ -288,7 +292,8 @@ CMultiLogger::LogWithoutFormatting( const TLogMsgType logMsgType ,
                     logger->LogWithoutFormatting( logMsgType ,
                                                   logLevel   ,
                                                   logMessage ,
-                                                  threadId   );
+                                                  threadId   ,
+                                                  timestamp  );
                 }
                 ++i;
             }

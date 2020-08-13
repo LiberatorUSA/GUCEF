@@ -45,6 +45,11 @@
 #define GUCEF_CORE_DVFILEUTILS_H
 #endif /* GUCEF_CORE_DVFILEUTILS_H ? */
 
+#ifndef GUCEF_CORE_DVCPPFILEUTILS_H
+#include "dvcppfileutils.h"
+#define GUCEF_CORE_DVCPPFILEUTILS_H
+#endif /* GUCEF_CORE_DVCPPFILEUTILS_H ? */
+
 #ifndef GUCEF_VFS_CVFSGLOBAL_H
 #include "gucefVFS_CVfsGlobal.h"
 #define GUCEF_VFS_CVFSGLOBAL_H
@@ -587,17 +592,17 @@ FilePusher::OnNewFileRestPeriodTimerCycle( CORE::CNotifier* notifier    ,
 {GUCEF_TRACE;
 
     TStringSet restedFiles;
-    time_t nowTime = time( NULL );
+    CORE::CDateTime nowTime = CORE::CDateTime::NowUTCDateTime();
     TStringTimeMap::iterator i = m_newFileRestQueue.begin();
     while ( i != m_newFileRestQueue.end() )
     {
         const CORE::CString& newFilePath = (*i).first;
         if ( CORE::FileExists( newFilePath ) )
         {
-            time_t& lastModified = (*i).second;
+            CORE::CDateTime& lastModified = (*i).second;
 
-            time_t lastChange = GetLatestTimestampForFile( newFilePath );
-            if ( nowTime - lastChange > m_restingTimeForNewFilesInSecs )
+            CORE::CDateTime lastChange = GetLatestTimestampForFile( newFilePath );
+            if ( nowTime.SubtractAndGetTimeDifferenceInMilliseconds( lastChange ) > m_restingTimeForNewFilesInSecs * 1000 )
             {
                 // This file has not been modified for at least the required resting period.
                 // As such tis file can now be considered a candidate for pushing.
@@ -625,13 +630,13 @@ FilePusher::OnNewFileRestPeriodTimerCycle( CORE::CNotifier* notifier    ,
 
 /*-------------------------------------------------------------------------*/
 
-time_t
+CORE::CDateTime
 FilePusher::GetLatestTimestampForFile( const CORE::CString& filePath )
 {GUCEF_TRACE;
 
-    time_t lastModified = CORE::Get_Modification_Time( filePath.C_String() );
-    time_t creationTime = CORE::Get_Creation_Time( filePath.C_String() );
-    time_t lastChange = lastModified > creationTime ? lastModified : creationTime;
+    CORE::CDateTime lastModified = CORE::GetFileModificationTime( filePath );
+    CORE::CDateTime creationTime = CORE::GetFileCreationTime( filePath );
+    CORE::CDateTime lastChange = lastModified > creationTime ? lastModified : creationTime;
     return lastChange;
 }
 
@@ -676,7 +681,7 @@ FilePusher::TriggerRolledOverFileCheck( const CORE::CString& dirWithFiles       
 {GUCEF_TRACE;
 
     // Check to see if we have multiple, thus rolled over, files in the target dir matching the pattern
-    TUInt64StringVectorMap matchedFiles;
+    TDateTimeStringVectorMap matchedFiles;
     struct CORE::SDI_Data* did = CORE::DI_First_Dir_Entry( dirWithFiles.C_String() );
     if ( GUCEF_NULL != did )
     {
@@ -691,7 +696,7 @@ FilePusher::TriggerRolledOverFileCheck( const CORE::CString& dirWithFiles       
                     if ( filename.WildcardEquals( (*n), '*', false ) )
                     {
                         CORE::CString fullPath = CORE::CombinePath( dirWithFiles, filename );
-                        time_t fileTimestamp = GetLatestTimestampForFile( fullPath );
+                        CORE::CDateTime fileTimestamp = GetLatestTimestampForFile( fullPath );
                         matchedFiles[ fileTimestamp ].push_back( fullPath );    
                     }
                     ++n;
@@ -712,7 +717,7 @@ FilePusher::TriggerRolledOverFileCheck( const CORE::CString& dirWithFiles       
             // determine based on the timestamps which file to actually use
             size_t index = 0; 
             size_t max = matchedFiles.size() - 1;
-            TUInt64StringVectorMap::iterator i = matchedFiles.begin();
+            TDateTimeStringVectorMap::iterator i = matchedFiles.begin();
             while ( index < max )
             {
                 CORE::CString::StringVector::iterator n =  (*i).second.begin();

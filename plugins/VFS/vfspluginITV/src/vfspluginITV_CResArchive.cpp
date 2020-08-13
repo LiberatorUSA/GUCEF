@@ -227,11 +227,11 @@ CResArchive::GetFileSize( const VFS::CString& filePath ) const
 
 /*-------------------------------------------------------------------------*/
 
-time_t
+CORE::CDateTime
 CResArchive::GetFileModificationTime( const VFS::CString& filePath ) const
 {
     // not supported by this format, maybe get archive mod time?
-    return 0;
+    return CORE::CDateTime();
 }
 
 /*-------------------------------------------------------------------------*/

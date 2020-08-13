@@ -353,16 +353,16 @@ CVPArchive::GetFileHash( const VFS::CString& file ) const
 
 /*-------------------------------------------------------------------------*/
 
-time_t
+CORE::CDateTime
 CVPArchive::GetFileModificationTime( const VFS::CString& filePath ) const
 {GUCEF_TRACE;
 
     TFileIndexMap::const_iterator i = m_index.find( filePath.Lowercase().ReplaceChar( '/', '\\' ) );
     if ( i != m_index.end() )
     {
-        return (time_t) (*i).second.timestamp;
+        return CORE::CDateTime( (time_t) (*i).second.timestamp, true );
     }
-    return 0;
+    return CORE::CDateTime();
 }
 
 /*-------------------------------------------------------------------------*/

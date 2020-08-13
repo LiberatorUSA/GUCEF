@@ -30,6 +30,11 @@
 #define GUCEF_CORE_DVFILEUTILS_H
 #endif /* GUCEF_CORE_DVFILEUTILS_H ? */
 
+#ifndef GUCEF_CORE_DVCPPFILEUTILS_H
+#include "dvcppfileutils.h"
+#define GUCEF_CORE_DVCPPFILEUTILS_H
+#endif /* GUCEF_CORE_DVCPPFILEUTILS_H ? */
+
 #ifndef GUCEF_CORE_DVCPPSTRINGUTILS_H
 #include "dvcppstringutils.h"
 #define GUCEF_CORE_DVCPPSTRINGUTILS_H
@@ -393,7 +398,7 @@ CFileSystemArchive::GetFileHash( const CString& file ) const
 
 /*-------------------------------------------------------------------------*/
 
-time_t
+CORE::CDateTime
 CFileSystemArchive::GetFileModificationTime( const CString& filePath ) const
 {GUCEF_TRACE;
 
@@ -401,7 +406,7 @@ CFileSystemArchive::GetFileModificationTime( const CString& filePath ) const
     CORE::AppendToPath( path, filePath );
     if ( CORE::File_Exists( path.C_String() ) != 0 )
     {
-        return CORE::Get_Modification_Time( path.C_String() );
+        return CORE::GetFileModificationTime( path );
     }
     return -1;
 }

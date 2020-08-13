@@ -136,6 +136,7 @@ set( HEADER_FILES
   include/PAFILE.h
   include/callstack.h
   include/cloneables.h
+  include/dvcppfileutils.h
   include/dvcppstringutils.h
   include/dvfileutils.h
   include/dvmd5utils.h
@@ -145,10 +146,13 @@ set( HEADER_FILES
   include/gucefCORE_CBasicBracketLoggingFormatter.h
   include/gucefCORE_CBusyWaitPulseGeneratorDriver.h
   include/gucefCORE_CCoreGlobal.h
+  include/gucefCORE_CDate.h
+  include/gucefCORE_CDateTime.h
   include/gucefCORE_CDirectoryWatcher.h
   include/gucefCORE_CEventBasedTaskConsumer.h
   include/gucefCORE_CForwardingNotifier.h
   include/gucefCORE_CIConsoleLogger.h
+  include/gucefCORE_CIDate.h
   include/gucefCORE_CIEventHandlerFunctorBase.h
   include/gucefCORE_CILoggingFormatter.h
   include/gucefCORE_CIMetricsSystemClient.h
@@ -158,6 +162,7 @@ set( HEADER_FILES
   include/gucefCORE_CIPluginMetaData.h
   include/gucefCORE_CIPulseGeneratorDriver.h
   include/gucefCORE_CITaskConsumer.h
+  include/gucefCORE_CITime.h
   include/gucefCORE_CIniDataStoreCodec.h
   include/gucefCORE_CIniParser.h
   include/gucefCORE_CJsonLoggingFormatter.h
@@ -181,6 +186,7 @@ set( HEADER_FILES
   include/gucefCORE_CTEventHandlerFunctor.h
   include/gucefCORE_CTaskDelegator.h
   include/gucefCORE_CTaskManager.h
+  include/gucefCORE_CTime.h
   include/gucefCORE_CVersion.h
   include/gucefCORE_CVersionRange.h
   include/gucefCORE_ETypes.h
@@ -313,6 +319,7 @@ set( SOURCE_FILES
   src/PAFILE.c
   src/callstack.c
   src/cloneables.cpp
+  src/dvcppfileutils.cpp
   src/dvcppstringutils.cpp
   src/dvfileutils.c
   src/dvmd5utils.c
@@ -322,9 +329,12 @@ set( SOURCE_FILES
   src/gucefCORE_CBasicBracketLoggingFormatter.cpp
   src/gucefCORE_CBusyWaitPulseGeneratorDriver.cpp
   src/gucefCORE_CCoreGlobal.cpp
+  src/gucefCORE_CDate.cpp
+  src/gucefCORE_CDateTime.cpp
   src/gucefCORE_CDirectoryWatcher.cpp
   src/gucefCORE_CForwardingNotifier.cpp
   src/gucefCORE_CIConsoleLogger.cpp
+  src/gucefCORE_CIDate.cpp
   src/gucefCORE_CIEventHandlerFunctorBase.cpp
   src/gucefCORE_CILoggingFormatter.cpp
   src/gucefCORE_CIMetricsSystemClient.cpp
@@ -334,6 +344,7 @@ set( SOURCE_FILES
   src/gucefCORE_CIPluginMetaData.cpp
   src/gucefCORE_CIPulseGeneratorDriver.cpp
   src/gucefCORE_CITaskConsumer.cpp
+  src/gucefCORE_CITime.cpp
   src/gucefCORE_CIniDataStoreCodec.cpp
   src/gucefCORE_CIniParser.cpp
   src/gucefCORE_CJsonLoggingFormatter.cpp
@@ -357,6 +368,7 @@ set( SOURCE_FILES
   src/gucefCORE_CTEventHandlerFunctor.cpp
   src/gucefCORE_CTaskDelegator.cpp
   src/gucefCORE_CTaskManager.cpp
+  src/gucefCORE_CTime.cpp
   src/gucefCORE_CVersion.cpp
   src/gucefCORE_CVersionRange.cpp
   src/gucefCORE_cinterface.cpp

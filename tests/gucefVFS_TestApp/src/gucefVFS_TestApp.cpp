@@ -250,7 +250,7 @@ GUCEF_OSMAIN_BEGIN
         //PerformVFSFileLoadUnloadTest();
 
         auto& app = CORE::CCoreGlobal::Instance()->GetApplication();
-        app.GetPulseGenerator().RequestPulseInterval( 10 );
+        app.GetPulseGenerator()->RequestPulseInterval( 10 );
         int appReturnValue = app.main( argc, argv, true );
 
         CORE::CCoreGlobal::Instance()->GetLogManager().ClearLoggers();

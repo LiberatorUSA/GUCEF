@@ -1,6 +1,6 @@
 /*
  *  gucefCORE: GUCEF module providing O/S abstraction and generic solutions
- *  Copyright (C) 2002 - 2007.  Dinand Vanvelzen
+ *  Copyright (C) 2002 - 2008.  Dinand Vanvelzen
  *
  *  This library is free software; you can redistribute it and/or
  *  modify it under the terms of the GNU Lesser General Public
@@ -17,8 +17,8 @@
  *  Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA
  */
 
-#ifndef GUCEF_CORE_CILOGGER_H
-#define GUCEF_CORE_CILOGGER_H
+#ifndef GUCEF_CORE_CDATE_H
+#define GUCEF_CORE_CDATE_H
 
 /*-------------------------------------------------------------------------//
 //                                                                         //
@@ -26,15 +26,20 @@
 //                                                                         //
 //-------------------------------------------------------------------------*/
 
-#ifndef GUCEF_CORE_CLOGMANAGER_H
-#include "CLogManager.h"
-#define GUCEF_CORE_CLOGMANAGER_H
-#endif /* GUCEF_CORE_CLOGMANAGER_H ? */
+#ifndef GUCEF_CORE_MACROS_H
+#include "gucefCORE_macros.h"
+#define GUCEF_CORE_MACROS_H
+#endif /* GUCEF_CORE_MACROS_H ? */
 
-#ifndef GUCEF_CORE_CDATETIME_H
-#include "gucefCORE_CDateTime.h"
-#define GUCEF_CORE_CDATETIME_H
-#endif /* GUCEF_CORE_CDATETIME_H ? */
+#ifndef GUCEF_CORE_CDVSTRING_H
+#include "CDVString.h"
+#define GUCEF_CORE_CDVSTRING_H
+#endif /* GUCEF_CORE_CDVSTRING_H ? */
+
+#ifndef GUCEF_CORE_CIDATE_H
+#include "gucefCORE_CIDate.h"
+#define GUCEF_CORE_CIDATE_H
+#endif /* GUCEF_CORE_CIDATE_H ? */
 
 /*-------------------------------------------------------------------------//
 //                                                                         //
@@ -51,48 +56,39 @@ namespace CORE {
 //                                                                         //
 //-------------------------------------------------------------------------*/
 
-class CString;
-
-/*-------------------------------------------------------------------------*/
-
-/**
- *  Interface class for implementors of logging.
- */
-class GUCEF_CORE_PUBLIC_CPP CILogger
+class GUCEF_CORE_PUBLIC_CPP CDate : public CIDate
 {
     public:
 
-    typedef CLogManager::TLogMsgType TLogMsgType;
+    static CDate TodaysLocalDate( void );
 
-    /**
-     *  The logging backend should format the info given
-     *  as appropriote and output it.
-     */
-    virtual void Log( const TLogMsgType logMsgType ,
-                      const Int32 logLevel         ,
-                      const CString& logMessage    ,
-                      const UInt32 threadId        ,
-                      const CDateTime& timestamp   ) = 0;
+    static CDate TodaysUTCDate( void );
 
-    /**
-     *  The logging backend should output the logMessage string as given
-     */
-    virtual void LogWithoutFormatting( const TLogMsgType logMsgType ,
-                                       const Int32 logLevel         ,
-                                       const CString& logMessage    ,
-                                       const UInt32 threadId        ,
-                                       const CDateTime& timestamp   ) = 0;
+    static CDate UnixEpochDate( void );
 
-    virtual void FlushLog( void ) = 0;
+    virtual Int16 GetYear( void ) const GUCEF_VIRTUAL_OVERRIDE;
 
-    virtual void SetMinimalLogLevel( const Int32 logLevel ) = 0;
+    virtual UInt8 GetMonth( void ) const GUCEF_VIRTUAL_OVERRIDE;
 
-    virtual Int32 GetMinimalLogLevel( void ) const = 0;
+    virtual UInt8 GetDay( void ) const GUCEF_VIRTUAL_OVERRIDE;
 
-    CILogger( void );                             /**< interface class: no-op */
-    virtual ~CILogger();                          /**< interface class: no-op */
-    CILogger( const CILogger& src );              /**< interface class: no-op */
-    CILogger& operator=( const CILogger& src );   /**< interface class: no-op */
+    CDate& operator=( const CDate& src );
+
+    bool operator==( const CDate& src ) const;
+
+    bool operator!=( const CDate& src ) const;
+
+    CDate( void );
+    CDate( const time_t& src, bool isUtc );
+    CDate( UInt16 year, UInt8 month, UInt8 day );
+    CDate( const CDate& src );
+    virtual ~CDate();
+    
+    protected:
+
+    Int16 m_year;
+    UInt8 m_month;
+    UInt8 m_day;
 };
 
 /*-------------------------------------------------------------------------//
@@ -106,15 +102,4 @@ class GUCEF_CORE_PUBLIC_CPP CILogger
 
 /*-------------------------------------------------------------------------*/
 
-#endif /* GUCEF_CORE_CILOGGER_H ? */
-
-/*-------------------------------------------------------------------------//
-//                                                                         //
-//      Info & Changes                                                     //
-//                                                                         //
-//-------------------------------------------------------------------------//
-
-- 16-02-2007 :
-        - Dinand: Added this class
-
----------------------------------------------------------------------------*/
+#endif /* GUCEF_CORE_CDATE_H ? */

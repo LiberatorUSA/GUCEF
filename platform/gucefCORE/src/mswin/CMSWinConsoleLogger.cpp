@@ -137,7 +137,8 @@ void
 CMSWinConsoleLogger::Log( const TLogMsgType logMsgType ,
                           const Int32 logLevel         ,
                           const CString& logMessage    ,
-                          const UInt32 threadId        )
+                          const UInt32 threadId        ,
+                          const CDateTime& timestamp   )
 {GUCEF_TRACE;
 
     if ( !m_formatForUiPurpose )
@@ -147,7 +148,8 @@ CMSWinConsoleLogger::Log( const TLogMsgType logMsgType ,
             CString actualLogMsg( m_logFormatter->FormatLogMessage( logMsgType ,
                                                                     logLevel   ,
                                                                     logMessage ,
-                                                                    threadId   ) + "\n" );
+                                                                    threadId   ,
+                                                                    timestamp  ) + "\n" );
 
             DWORD charsWritten = 0;
             ::WriteConsoleA( m_consoleHandle, actualLogMsg.C_String(), (DWORD)actualLogMsg.Length(), &charsWritten, NULL );
@@ -169,7 +171,8 @@ void
 CMSWinConsoleLogger::LogWithoutFormatting( const TLogMsgType logMsgType ,
                                            const Int32 logLevel         ,
                                            const CString& logMessage    ,
-                                           const UInt32 threadId        )
+                                           const UInt32 threadId        ,
+                                           const CDateTime& timestamp   )
 {GUCEF_TRACE;
 
     if ( !m_formatForUiPurpose )

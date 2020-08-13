@@ -256,16 +256,16 @@ CS3BucketArchive::GetFileSize( const VFS::CString& filePath ) const
 
 /*-------------------------------------------------------------------------*/
 
-time_t
+CORE::CDateTime
 CS3BucketArchive::GetFileModificationTime( const VFS::CString& filePath ) const
 {
     auto i = m_objects.find( filePath );
     if ( i != m_objects.end() )
     {
         const auto& objectRef = (*i).second;
-        return std::chrono::system_clock::to_time_t( objectRef.GetLastModified().UnderlyingTimestamp() );
+        return CORE::CDateTime( std::chrono::system_clock::to_time_t( objectRef.GetLastModified().UnderlyingTimestamp() ), true );
     }
-    return 0;
+    return CORE::CDateTime();
 }
 
 /*-------------------------------------------------------------------------*/

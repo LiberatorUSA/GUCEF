@@ -1074,7 +1074,7 @@ CVFS::GetList( CORE::CDataNode& outputDataTree        ,
 
 /*-------------------------------------------------------------------------*/
 
-time_t
+CORE::CDateTime
 CVFS::GetFileModificationTime( const CString& filename ) const
 {GUCEF_TRACE;
 
@@ -1094,7 +1094,7 @@ CVFS::GetFileModificationTime( const CString& filename ) const
         TConstMountLink& mountLink = (*i);
         if ( mountLink.mountEntry->archive->FileExists( mountLink.remainder ) )
         {
-            time_t modificationTime = mountLink.mountEntry->archive->GetFileModificationTime( mountLink.remainder );
+            CORE::CDateTime modificationTime = mountLink.mountEntry->archive->GetFileModificationTime( mountLink.remainder );
             return modificationTime;
         }
         ++i;

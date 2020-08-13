@@ -46,6 +46,11 @@
 #define GUCEF_CORE_CTIMER_H
 #endif /* GUCEF_CORE_CTIMER_H ? */
 
+#ifndef GUCEF_CORE_CDATETIME_H
+#include "gucefCORE_CDateTime.h"
+#define GUCEF_CORE_CDATETIME_H
+#endif /* GUCEF_CORE_CDATETIME_H ? */
+
 #ifndef GUCEF_CORE_CDIRECTORYWATCHER_H
 #include "gucefCORE_CDirectoryWatcher.h"
 #define GUCEF_CORE_CDIRECTORYWATCHER_H
@@ -154,11 +159,12 @@ class FilePusher : public CORE::CObservingNotifier
     typedef enum EPushStyle TPushStyle;
     typedef CORE::CTEventHandlerFunctor< FilePusher > TEventCallback;
     typedef std::map< CORE::CString, TPushStyle > TStringPushStyleMap;
-    typedef std::map< CORE::CString, time_t > TStringTimeMap;
+    typedef std::map< CORE::CString, CORE::CDateTime > TStringTimeMap;
     typedef std::set< CORE::CString > TStringSet;
     typedef std::map< CORE::CString, CORE::UInt64 > TStringUInt64Map;
     typedef std::map< CORE::UInt32, CORE::CString > TUInt32StringMap;
     typedef std::map< CORE::UInt64, CORE::CString::StringVector > TUInt64StringVectorMap;
+    typedef std::map< CORE::CDateTime, CORE::CString::StringVector > TDateTimeStringVectorMap;
 
     void RegisterEventHandlers( void );
 
@@ -266,7 +272,7 @@ class FilePusher : public CORE::CObservingNotifier
     void
     OnFilePushFinished( void );
 
-    static time_t GetLatestTimestampForFile( const CORE::CString& filePath );
+    static CORE::CDateTime GetLatestTimestampForFile( const CORE::CString& filePath );
 
     CORE::CString::StringVector
     GetFilePatternsForPushType( TPushStyle pushStyle ) const;

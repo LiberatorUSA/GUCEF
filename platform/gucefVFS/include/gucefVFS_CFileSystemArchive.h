@@ -87,7 +87,7 @@ class GUCEF_VFS_PUBLIC_CPP CFileSystemArchive : public CIArchive
     
     virtual CString GetFileHash( const CString& file ) const GUCEF_VIRTUAL_OVERRIDE;
     
-    virtual time_t GetFileModificationTime( const CString& filePath ) const GUCEF_VIRTUAL_OVERRIDE;
+    virtual CORE::CDateTime GetFileModificationTime( const CString& filePath ) const GUCEF_VIRTUAL_OVERRIDE;
     
     virtual const CString& GetArchiveName( void ) const GUCEF_VIRTUAL_OVERRIDE;
     

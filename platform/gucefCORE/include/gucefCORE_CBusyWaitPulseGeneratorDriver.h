@@ -103,4 +103,4 @@ class GUCEF_CORE_PUBLIC_CPP CBusyWaitPulseGeneratorDriver : public CIPulseGenera
 - 12-11-2004 :
         - Designed and implemented this class.
 
------------------------------------------------------------------------------*/
+---------------------------------------------------------------------------*/

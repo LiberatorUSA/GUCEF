@@ -227,11 +227,11 @@ CZIPArchive::GetFileSize( const VFS::CString& filePath ) const
 
 /*-------------------------------------------------------------------------*/
 
-time_t
+CORE::CDateTime
 CZIPArchive::GetFileModificationTime( const VFS::CString& filePath ) const
 {
     // @todo: makeme
-    return 0;
+    return CORE::CDateTime();
 }
 
 /*-------------------------------------------------------------------------*/

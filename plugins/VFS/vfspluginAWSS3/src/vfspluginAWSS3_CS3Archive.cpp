@@ -183,10 +183,10 @@ CS3Archive::GetFileSize( const VFS::CString& filePath ) const
 
 /*-------------------------------------------------------------------------*/
 
-time_t
+CORE::CDateTime
 CS3Archive::GetFileModificationTime( const VFS::CString& filePath ) const
 {
-    return 0;
+    return CORE::CDateTime();
 }
 
 /*-------------------------------------------------------------------------*/

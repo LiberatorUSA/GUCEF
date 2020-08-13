@@ -88,7 +88,7 @@ class CResArchive : public VFS::CIArchive
 
     virtual VFS::CString GetFileHash( const VFS::CString& file ) const;
 
-    virtual time_t GetFileModificationTime( const VFS::CString& filePath ) const;
+    virtual CORE::CDateTime GetFileModificationTime( const VFS::CString& filePath ) const;
 
     virtual const VFS::CString& GetArchiveName( void ) const;
 

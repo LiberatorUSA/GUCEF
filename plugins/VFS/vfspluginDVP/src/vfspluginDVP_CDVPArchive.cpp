@@ -352,16 +352,16 @@ CDVPArchive::FindFileEntry( const VFS::CString& filePath ) const
 
 /*-------------------------------------------------------------------------*/
 
-time_t
+CORE::CDateTime
 CDVPArchive::GetFileModificationTime( const VFS::CString& filePath ) const
 {GUCEF_TRACE;
 
     VFS::Int32 fileEntryIndex = FindFileEntry( filePath );
     if ( -1 < fileEntryIndex )
     {
-        return (time_t) m_entries[ fileEntryIndex ].timestamp;
+        return CORE::CDateTime( (time_t) m_entries[ fileEntryIndex ].timestamp, true );
     }
-    return 0;
+    return CORE::CDateTime();
 }
 
 /*-------------------------------------------------------------------------*/
