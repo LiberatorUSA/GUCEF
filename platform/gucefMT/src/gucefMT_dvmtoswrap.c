@@ -159,7 +159,7 @@ ThreadCreate( TThreadFunc func ,
 
     td->data = data;
     td->func = func;
-    
+
     if ( 0 != pthread_create( &td->thread         ,
                               &td->attr           ,
                               (void*) ThreadMain  ,
@@ -298,7 +298,7 @@ ThreadSetCpuAffinity( struct SThreadData* td  ,
 {
     if ( NULL == affinityMask || 0 == affinityMaskSize )
         return 0;
-    
+
     #if ( GUCEF_PLATFORM == GUCEF_PLATFORM_MSWIN )
 
     /* we can only set 64 processors in the current processor group for now
@@ -306,7 +306,7 @@ ThreadSetCpuAffinity( struct SThreadData* td  ,
        @TODO: Improve this
     */
     if ( affinityMaskSize <= 8 )
-    {    
+    {
         DWORD_PTR mask = 0;
         if ( 8 == affinityMaskSize )
             mask = *(UInt64*) affinityMask;
@@ -322,7 +322,7 @@ ThreadSetCpuAffinity( struct SThreadData* td  ,
 
         mask = SetThreadAffinityMask( td->threadhandle, mask );
         if ( 0 != mask )
-            return 1;    
+            return 1;
     }
     return 0;
 
@@ -330,7 +330,7 @@ ThreadSetCpuAffinity( struct SThreadData* td  ,
     if ( NULL != td && 0 != td->thread )
     {
         int statusCode = pthread_setaffinity_np( td->thread, (size_t) affinityMaskSize, (cpu_set_t*) affinityMask );
-        if ( 0 == errorCode )
+        if ( 0 == statusCode )
             return 1;
     }
     return 0;

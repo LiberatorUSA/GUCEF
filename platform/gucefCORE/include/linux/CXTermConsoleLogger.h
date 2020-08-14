@@ -64,12 +64,14 @@ class GUCEF_CORE_PUBLIC_CPP CXTermConsoleLogger : public CIConsoleLogger
     virtual void Log( const TLogMsgType logMsgType ,
                       const Int32 logLevel         ,
                       const CString& logMessage    ,
-                      const UInt32 threadId        ) GUCEF_VIRTUAL_OVERRIDE;
+                      const UInt32 threadId        ,
+                      const CDateTime& datetime    ) GUCEF_VIRTUAL_OVERRIDE;
 
     virtual void LogWithoutFormatting( const TLogMsgType logMsgType ,
                                        const Int32 logLevel         ,
                                        const CString& logMessage    ,
-                                       const UInt32 threadId        ) GUCEF_VIRTUAL_OVERRIDE;
+                                       const UInt32 threadId        ,
+                                       const CDateTime& datetime    ) GUCEF_VIRTUAL_OVERRIDE;
 
     virtual void FlushLog( void );
 

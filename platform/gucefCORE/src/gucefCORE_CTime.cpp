@@ -24,6 +24,7 @@
 //-------------------------------------------------------------------------*/
 
 #include <time.h>
+#include <string.h>
 
 #include "gucefCORE_CTime.h"
 
@@ -35,6 +36,10 @@
 #if ( GUCEF_PLATFORM == GUCEF_PLATFORM_MSWIN )
 
     #include <Windows.h>
+
+#elif ( GUCEF_PLATFORM == GUCEF_PLATFORM_LINUX ) || ( GUCEF_PLATFORM == GUCEF_PLATFORM_ANDROID )
+
+    #include <sys/time.h>
 
 #endif
 
@@ -117,7 +122,7 @@ CTime::~CTime()
 
 /*-------------------------------------------------------------------------*/
 
-CTime 
+CTime
 CTime::NowUTCTime( void )
 {GUCEF_TRACE;
 
@@ -125,19 +130,26 @@ CTime::NowUTCTime( void )
 
     ::SYSTEMTIME systemTime;
     ::GetSystemTime( &systemTime );
-    return CTime( (UInt8) systemTime.wHour, (UInt8) systemTime.wMinute, (UInt8) systemTime.wSecond, (UInt8) systemTime.wMilliseconds );
-    
-    //#elif ( GUCEF_PLATFORM == GUCEF_PLATFORM_LINUX )
+    return CTime( (UInt8) systemTime.wHour, (UInt8) systemTime.wMinute, (UInt8) systemTime.wSecond, (UInt16) systemTime.wMilliseconds );
+
+    #elif ( GUCEF_PLATFORM == GUCEF_PLATFORM_LINUX ) || ( GUCEF_PLATFORM == GUCEF_PLATFORM_ANDROID )
+
+    struct timespec time;
+    ::memset( &time, 0, sizeof(time) );
+    ::clock_gettime( CLOCK_REALTIME, &time );
+    struct tm* utcTime = ::gmtime( &time.tv_sec );
+    return CTime( (UInt8) utcTime->tm_hour, (UInt8) utcTime->tm_min, (UInt8) utcTime->tm_sec, (UInt16) ( time.tv_nsec / 1000000 ) );
+
     #else
 
     // Not supported for the current platform
-    return CDate( 0, 0, 0 );
+    return CTime();
     #endif
 }
 
 /*-------------------------------------------------------------------------*/
 
-CTime 
+CTime
 CTime::NowLocalTime( void )
 {GUCEF_TRACE;
 
@@ -146,27 +158,34 @@ CTime::NowLocalTime( void )
     ::SYSTEMTIME systemTime;
     ::GetLocalTime( &systemTime );
     return CTime( (UInt8) systemTime.wHour, (UInt8) systemTime.wMinute, (UInt8) systemTime.wSecond, (UInt8) systemTime.wMilliseconds );
-    
-    //#elif ( GUCEF_PLATFORM == GUCEF_PLATFORM_LINUX )
+
+    #elif ( GUCEF_PLATFORM == GUCEF_PLATFORM_LINUX ) || ( GUCEF_PLATFORM == GUCEF_PLATFORM_ANDROID )
+
+    struct timespec time;
+    ::memset( &time, 0, sizeof(time) );
+    ::clock_gettime( CLOCK_REALTIME, &time );
+    struct tm* utcTime = ::localtime( &time.tv_sec );
+    return CTime( (UInt8) utcTime->tm_hour, (UInt8) utcTime->tm_min, (UInt8) utcTime->tm_sec, (UInt16) ( time.tv_nsec / 1000000 ) );
+
     #else
 
     // Not supported for the current platform
-    return CDate( 0, 0, 0 );
+    return CTime();
     #endif
 }
 
 /*-------------------------------------------------------------------------*/
 
-UInt8 
+UInt8
 CTime::GetHours( void ) const
 {GUCEF_TRACE;
-    
+
     return m_hours;
 }
 
 /*-------------------------------------------------------------------------*/
 
-UInt8 
+UInt8
 CTime::GetMinutes( void ) const
 {GUCEF_TRACE;
 
@@ -175,7 +194,7 @@ CTime::GetMinutes( void ) const
 
 /*-------------------------------------------------------------------------*/
 
-UInt8 
+UInt8
 CTime::GetSeconds( void ) const
 {GUCEF_TRACE;
 
@@ -184,7 +203,7 @@ CTime::GetSeconds( void ) const
 
 /*-------------------------------------------------------------------------*/
 
-UInt16 
+UInt16
 CTime::GetMilliseconds( void ) const
 {GUCEF_TRACE;
 
@@ -193,7 +212,7 @@ CTime::GetMilliseconds( void ) const
 
 /*-------------------------------------------------------------------------*/
 
-CTime& 
+CTime&
 CTime::operator=( const CTime& src )
 {GUCEF_TRACE;
 
@@ -209,7 +228,7 @@ CTime::operator=( const CTime& src )
 
 /*-------------------------------------------------------------------------*/
 
-bool 
+bool
 CTime::operator==( const CTime& src ) const
 {GUCEF_TRACE;
 
@@ -218,7 +237,7 @@ CTime::operator==( const CTime& src ) const
 
 /*-------------------------------------------------------------------------*/
 
-bool 
+bool
 CTime::operator!=( const CTime& src ) const
 {GUCEF_TRACE;
 

@@ -23,6 +23,7 @@
 //                                                                         //
 //-------------------------------------------------------------------------*/
 
+#include <time.h>
 #include <string.h>
 
 #include "gucefCORE_CDateTime.h"
@@ -62,10 +63,10 @@ class GUCEF_CORE_PRIVATE_CPP COSDateTimeUtils
     static UInt16 GetTimezoneOffsetInMins( void )
     {
         ::TIME_ZONE_INFORMATION tzInfo;
-        memset( &tzInfo, 0, sizeof( tzInfo ) ); 
+        memset( &tzInfo, 0, sizeof( tzInfo ) );
         if ( TIME_ZONE_ID_INVALID != ::GetTimeZoneInformation( &tzInfo ) )
         {
-            return (Int16) tzInfo.Bias;    
+            return (Int16) tzInfo.Bias;
         }
         return 0;
     }
@@ -95,20 +96,20 @@ class GUCEF_CORE_PRIVATE_CPP COSDateTimeUtils
             ::TIME_ZONE_INFORMATION tz;
             memset( &tz, 0, sizeof( tz ) );
             tz.Bias = datetime.GeTimeZoneUTCOffsetInMins();
-            
+
             ::SYSTEMTIME utcTime;
             ::TzSpecificLocalTimeToSystemTime( &tz, &systemTime, &utcTime );
-            ::SystemTimeToFileTime( &utcTime, &fileTime ); 
+            ::SystemTimeToFileTime( &utcTime, &fileTime );
         }
     }
 
     static void Win32SystemTimeToDateTime( SYSTEMTIME& systemTime, UInt16 timezoneOffsetInMins, CDateTime& datetime )
     {
-        datetime = CDateTime( (Int16) systemTime.wYear          , 
-                              (UInt8) systemTime.wMonth         , 
-                              (UInt8) systemTime.wDay           , 
-                              (UInt8) systemTime.wHour          , 
-                              (UInt8) systemTime.wMinute        , 
+        datetime = CDateTime( (Int16) systemTime.wYear          ,
+                              (UInt8) systemTime.wMonth         ,
+                              (UInt8) systemTime.wDay           ,
+                              (UInt8) systemTime.wHour          ,
+                              (UInt8) systemTime.wMinute        ,
                               (UInt8) systemTime.wSecond        ,
                               (UInt16) systemTime.wMilliseconds ,
                               timezoneOffsetInMins              );
@@ -132,7 +133,7 @@ class GUCEF_CORE_PRIVATE_CPP COSDateTimeUtils
         ::TIME_ZONE_INFORMATION tz;
         memset( &tz, 0, sizeof( tz ) );
         tz.Bias = datetime.GeTimeZoneUTCOffsetInMins();
-            
+
         ::SYSTEMTIME utcTime;
         ::TzSpecificLocalTimeToSystemTime( &tz, &systemTime, &utcTime );
 
@@ -163,7 +164,7 @@ class GUCEF_CORE_PRIVATE_CPP COSDateTimeUtils
         ULARGE_INTEGER fileTimeUInt64A;
         fileTimeUInt64A.LowPart = fileTimeA.dwLowDateTime;
         fileTimeUInt64A.HighPart = fileTimeA.dwHighDateTime;
-        
+
         ULARGE_INTEGER fileTimeUInt64B;
         fileTimeUInt64B.LowPart = fileTimeB.dwLowDateTime;
         fileTimeUInt64B.HighPart = fileTimeB.dwHighDateTime;
@@ -196,6 +197,72 @@ class GUCEF_CORE_PRIVATE_CPP COSDateTimeUtils
     }
 };
 
+#elif ( GUCEF_PLATFORM == GUCEF_PLATFORM_LINUX ) || ( GUCEF_PLATFORM == GUCEF_PLATFORM_ANDROID )
+
+class GUCEF_CORE_PRIVATE_CPP COSDateTimeUtils
+{
+    public:
+
+    static UInt16 GetTimezoneOffsetInMins( void )
+    {
+        struct timespec time;
+        ::memset( &time, 0, sizeof(time) );
+        ::clock_gettime( CLOCK_REALTIME, &time );
+        struct tm hereTime;
+        ::localtime_r( &time.tv_sec, &hereTime );
+        return hereTime.tm_gmtoff / 60;
+    }
+
+    static CDateTime NowLocalDateTime( void )
+    {
+        struct timespec time;
+        ::memset( &time, 0, sizeof(time) );
+        ::clock_gettime( CLOCK_REALTIME, &time );
+        struct tm hereTime;
+        ::localtime_r( &time.tv_sec, &hereTime );
+        return CDateTime( (Int16) hereTime.tm_year+1900,
+                          (UInt8) hereTime.tm_mon+1,
+                          (UInt8) hereTime.tm_wday+1,
+                          (UInt8) hereTime.tm_hour,
+                          (UInt8) hereTime.tm_min,
+                          (UInt8) hereTime.tm_sec,
+                          (UInt16) ( time.tv_nsec / 1000000 ),
+                          hereTime.tm_gmtoff / 60 );
+    }
+
+    static CDateTime NowUTCDateTime( void )
+    {
+        struct timespec time;
+        ::memset( &time, 0, sizeof(time) );
+        ::clock_gettime( CLOCK_REALTIME, &time );
+        struct tm utcTime;
+        ::gmtime_r( &time.tv_sec, &utcTime );
+        return CDateTime( (Int16) utcTime.tm_year+1900,
+                          (UInt8) utcTime.tm_mon+1,
+                          (UInt8) utcTime.tm_wday+1,
+                          (UInt8) utcTime.tm_hour,
+                          (UInt8) utcTime.tm_min,
+                          (UInt8) utcTime.tm_sec,
+                          (UInt16) ( time.tv_nsec / 1000000 ),
+                          0 );
+    }
+
+    static CDateTime DateTimeToUtc( const CDateTime& datetime )
+    {
+        return datetime;
+    }
+
+    static Int32 CompareDateTime( const CDateTime& datetimeA, const CDateTime& datetimeB )
+    {
+        return 0;
+    }
+
+    static Int64 SubtractBFromAndGetTimeDifferenceInMilliseconds( const CDateTime& datetimeA, const CDateTime& datetimeB )
+    {
+        return 0;
+    }
+};
+
 #else
 
 class GUCEF_CORE_PRIVATE_CPP COSDateTimeUtils
@@ -208,18 +275,18 @@ class GUCEF_CORE_PRIVATE_CPP COSDateTimeUtils
     }
 
     static CDateTime NowLocalDateTime( void )
-    { 
-        return CDateTime(); 
+    {
+        return CDateTime();
     }
 
-    static CDateTime NowUTCDateTime( void ) 
-    { 
-        return CDateTime(); 
+    static CDateTime NowUTCDateTime( void )
+    {
+        return CDateTime();
     }
 
     static CDateTime DateTimeToUtc( const CDateTime& datetime )
     {
-        return datetime;    
+        return datetime;
     }
 
     static Int32 CompareDateTime( const CDateTime& datetimeA, const CDateTime& datetimeB )
@@ -293,13 +360,13 @@ CDateTime::CDateTime( const CDateTime& src )
 
 /*-------------------------------------------------------------------------*/
 
-CDateTime::CDateTime( Int16 year                 , 
-                      UInt8 month                , 
-                      UInt8 day                  , 
-                      UInt8 hours                , 
-                      UInt8 minutes              , 
-                      UInt8 seconds              , 
-                      UInt16 milliseconds        , 
+CDateTime::CDateTime( Int16 year                 ,
+                      UInt8 month                ,
+                      UInt8 day                  ,
+                      UInt8 hours                ,
+                      UInt8 minutes              ,
+                      UInt8 seconds              ,
+                      UInt16 milliseconds        ,
                       Int16 timezoneOffsetInMins )
     : CDate( year, month, day )
     , CTime( hours, minutes, seconds, milliseconds )
@@ -318,7 +385,7 @@ CDateTime::CDateTime( const struct _FILETIME& src )
     , m_timezoneOffsetInMins( 0 )
 {GUCEF_TRACE;
 
-    COSDateTimeUtils::Win32FileTimeToDateTime( src, *this ); 
+    COSDateTimeUtils::Win32FileTimeToDateTime( src, *this );
 }
 
 #endif
@@ -332,7 +399,7 @@ CDateTime::~CDateTime()
 
 /*-------------------------------------------------------------------------*/
 
-CDateTime 
+CDateTime
 CDateTime::NowUTCDateTime( void )
 {GUCEF_TRACE;
 
@@ -341,7 +408,7 @@ CDateTime::NowUTCDateTime( void )
 
 /*-------------------------------------------------------------------------*/
 
-CDateTime 
+CDateTime
 CDateTime::NowLocalDateTime( void )
 {GUCEF_TRACE;
 
@@ -350,7 +417,7 @@ CDateTime::NowLocalDateTime( void )
 
 /*-------------------------------------------------------------------------*/
 
-CDateTime 
+CDateTime
 CDateTime::UnixEpochDateTime( void )
 {GUCEF_TRACE;
 
@@ -359,7 +426,7 @@ CDateTime::UnixEpochDateTime( void )
 
 /*-------------------------------------------------------------------------*/
 
-CDateTime 
+CDateTime
 CDateTime::WindowsNTEpochDateTime( void )
 {GUCEF_TRACE;
 
@@ -368,7 +435,7 @@ CDateTime::WindowsNTEpochDateTime( void )
 
 /*-------------------------------------------------------------------------*/
 
-bool 
+bool
 CDateTime::operator>( const CDateTime& other ) const
 {GUCEF_TRACE;
 
@@ -377,7 +444,7 @@ CDateTime::operator>( const CDateTime& other ) const
 
 /*-------------------------------------------------------------------------*/
 
-bool 
+bool
 CDateTime::operator<( const CDateTime& other ) const
 {GUCEF_TRACE;
 
@@ -386,7 +453,7 @@ CDateTime::operator<( const CDateTime& other ) const
 
 /*-------------------------------------------------------------------------*/
 
-CDateTime& 
+CDateTime&
 CDateTime::operator=( const CDateTime& src )
 {GUCEF_TRACE;
 
@@ -401,7 +468,7 @@ CDateTime::operator=( const CDateTime& src )
 
 /*-------------------------------------------------------------------------*/
 
-bool 
+bool
 CDateTime::operator==( const CDateTime& other ) const
 {GUCEF_TRACE;
 
@@ -410,7 +477,7 @@ CDateTime::operator==( const CDateTime& other ) const
 
 /*-------------------------------------------------------------------------*/
 
-bool 
+bool
 CDateTime::operator!=( const CDateTime& other ) const
 {GUCEF_TRACE;
 
@@ -428,7 +495,7 @@ CDateTime::GeTimeZoneUTCOffsetInMins( void ) const
 
 /*-------------------------------------------------------------------------*/
 
-bool 
+bool
 CDateTime::IsUTC( void ) const
 {GUCEF_TRACE;
 
@@ -437,7 +504,7 @@ CDateTime::IsUTC( void ) const
 
 /*-------------------------------------------------------------------------*/
 
-CDateTime 
+CDateTime
 CDateTime::ToUTC( void ) const
 {GUCEF_TRACE;
 
@@ -448,7 +515,7 @@ CDateTime::ToUTC( void ) const
 
 /*-------------------------------------------------------------------------*/
 
-Int64 
+Int64
 CDateTime::SubtractAndGetTimeDifferenceInMilliseconds( const CDateTime& other ) const
 {GUCEF_TRACE;
 
@@ -457,7 +524,7 @@ CDateTime::SubtractAndGetTimeDifferenceInMilliseconds( const CDateTime& other ) 
 
 /*-------------------------------------------------------------------------*/
 
-CDate 
+CDate
 CDateTime::GetDate( void ) const
 {GUCEF_TRACE;
 
@@ -466,7 +533,7 @@ CDateTime::GetDate( void ) const
 
 /*-------------------------------------------------------------------------*/
 
-CTime 
+CTime
 CDateTime::GetTime( void ) const
 {GUCEF_TRACE;
 
@@ -475,7 +542,7 @@ CDateTime::GetTime( void ) const
 
 /*-------------------------------------------------------------------------*/
 
-CString 
+CString
 CDateTime::ToIso8601DateTimeString( bool includeDelimeters, bool includeMilliseconds ) const
 {GUCEF_TRACE;
 
@@ -483,7 +550,7 @@ CDateTime::ToIso8601DateTimeString( bool includeDelimeters, bool includeMillisec
     {
         return ToUTC().ToIso8601DateTimeString( includeDelimeters, includeMilliseconds );
     }
-    
+
     if ( includeDelimeters )
     {
         if ( includeMilliseconds )

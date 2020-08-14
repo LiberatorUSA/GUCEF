@@ -30,12 +30,12 @@
 #ifndef GUCEF_MT_CMUTEX_H
 #include "gucefMT_CMutex.h"
 #define GUCEF_MT_CMUTEX_H
-#endif /* GUCEF_MT_CMUTEX_H ? */ 
+#endif /* GUCEF_MT_CMUTEX_H ? */
 
 #ifndef GUCEF_MT_CICLONEABLE_H
 #include "gucefMT_CICloneable.h"
 #define GUCEF_MT_CICLONEABLE_H
-#endif /* GUCEF_MT_CICLONEABLE_H ? */ 
+#endif /* GUCEF_MT_CICLONEABLE_H ? */
 
 #ifndef GUCEF_MT_CILOCKABLE_H
 #include "gucefMT_CILockable.h"
@@ -70,14 +70,14 @@ template < typename T >
 class CTMailBox : public virtual MT::CILockable
 {
     public:
-    
+
     struct SMailElement
     {
         T eventid;
         CICloneable* data;
     };
     typedef struct SMailElement TMailElement;
-    
+
     typedef std::vector< TMailElement > TMailList;
     typedef typename std::vector< TMailElement >::iterator iterator;
     typedef typename std::vector< TMailElement >::const_iterator const_iterator;
@@ -131,12 +131,12 @@ class CTMailBox : public virtual MT::CILockable
     /**
      *  Attempts to retrieve mail from the mailbox.
      *
-     *  Note that if data given as part of a mail entry is non-NULL 
-     *  then you should delete the object after handling the mail 
+     *  Note that if data given as part of a mail entry is non-NULL
+     *  then you should delete the object after handling the mail
      *  message or you will create a memory-leak.
      *
      *  @param mailList storage where mail items will be placed
-     *  @param maxMailItems if greater then -1 will place a maximum on 
+     *  @param maxMailItems if greater then -1 will place a maximum on
      *  @param maxMailItems the number of mail items that can be placed in the mail list
      *  @return whether mail was successfully retrieved from the mailbox.
      */
@@ -150,21 +150,21 @@ class CTMailBox : public virtual MT::CILockable
     void Delete( const T& eventid );
 
     bool HasMail( void ) const;
-    
+
     UInt32 AmountOfMail( void ) const;
 
     bool DoLock( void ) const;
-    
+
     bool DoUnlock( void ) const;
-    
+
     typename TMailList::iterator begin( void );
-    
+
     typename TMailList::iterator end( void );
-    
+
     void erase( typename TMailList::iterator& index );
 
     typename TMailList::const_iterator begin( void ) const;
-    
+
     typename TMailList::const_iterator end( void ) const;
 
     protected:
@@ -180,7 +180,7 @@ class CTMailBox : public virtual MT::CILockable
     CTMailBox& operator=( const CTMailBox& src );
 
     private:
-    
+
     TMailList m_mailStack;
     CMutex m_datalock;
 };
@@ -293,7 +293,7 @@ CTMailBox< T >::PopMail( void )
     if ( !m_mailStack.empty() )
     {
         TMailElement& entry = m_mailStack[ m_mailStack.size()-1 ];
-        delete data = entry.data;
+        delete entry.data;
         m_mailStack.pop_back();
         return true;
     }
@@ -308,15 +308,15 @@ CTMailBox< T >::GetMailList( TMailList& mailList ,
                              Int32 maxMailItems  )
 {
     CObjectScopeLock lock( this );
-    
+
     Int32 mailItemsRead = 0;
     while ( mailItemsRead < maxMailItems || maxMailItems < 0 )
-    {    
+    {
         if ( !m_mailStack.empty() )
         {
             mailList.push_back( m_mailStack[ m_mailStack.size()-1 ] );
             m_mailStack.pop_back();
-            
+
             ++mailItemsRead;
         }
         else
@@ -324,7 +324,7 @@ CTMailBox< T >::GetMailList( TMailList& mailList ,
             break;
         }
     }
-    
+
     return mailItemsRead > 0;
 }
 
@@ -420,7 +420,7 @@ bool
 CTMailBox< T >::Lock( void ) const
 {
     return m_datalock.Lock();
-}    
+}
 
 /*--------------------------------------------------------------------------*/
 
@@ -438,7 +438,7 @@ bool
 CTMailBox< T >::DoLock( void ) const
 {
     return Lock();
-}    
+}
 
 /*--------------------------------------------------------------------------*/
 
@@ -468,7 +468,7 @@ CTMailBox< T >::begin( void )
 }
 
 /*--------------------------------------------------------------------------*/
-    
+
 template< typename T >
 typename CTMailBox< T >::TMailList::iterator
 CTMailBox< T >::end( void )
@@ -484,9 +484,9 @@ CTMailBox< T >::begin( void ) const
 {
     return m_mailStack.begin();
 }
-    
+
 /*--------------------------------------------------------------------------*/
-    
+
 template< typename T >
 typename CTMailBox< T >::TMailList::const_iterator
 CTMailBox< T >::end( void ) const

@@ -97,7 +97,7 @@ GetFileModificationTime( const CString& path )
     struct stat buf;
 
     /* Get File Statistics for stat.c. */
-    if( stat( path, &buf ) == 0 )
+    if( stat( path.C_String(), &buf ) == 0 )
     {
         /* get the date/time last modified */
         return CDateTime( buf.st_mtime, true );
@@ -134,7 +134,7 @@ GetFileCreationTime( const CString& path )
     struct stat buf;
 
     /* Get File Statistics for stat.c. */
-    if( stat( path, &buf ) == 0 )
+    if( stat( path.C_String(), &buf ) == 0 )
     {
         /* get the date/time the file was created */
         return CDateTime( buf.st_ctime, true );

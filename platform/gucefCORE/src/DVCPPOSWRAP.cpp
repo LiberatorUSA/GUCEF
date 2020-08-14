@@ -14,7 +14,7 @@
  *
  *  You should have received a copy of the GNU Lesser General Public
  *  License along with this library; if not, write to the Free Software
- *  Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA 
+ *  Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA
  */
 
 /*-------------------------------------------------------------------------//
@@ -103,7 +103,7 @@ void
 SetEnvOverride( const CString& key   ,
                 const CString& value )
 {GUCEF_TRACE;
-    
+
     MT::CScopeMutex scopeLock( g_envOverridesLock );
     g_envOverrides[ key ] = value;
 }
@@ -145,7 +145,7 @@ GetEnv( const CString& key )
 {GUCEF_TRACE;
 
     if ( key.IsNULLOrEmpty() ) return CString();
-    
+
     {
         MT::CScopeMutex scopeLock( g_envOverridesLock );
         TStringMap::iterator i = g_envOverrides.find( key );
@@ -174,15 +174,15 @@ GetHostname( void )
         return nameBuffer;
     }
 
-#endif    
-    
-    return CString(); 
+#endif
+
+    return CString();
 }
 
 /*-------------------------------------------------------------------------*/
 
 bool
-GetExeNameForProcessId( TProcessId* pid  , 
+GetExeNameForProcessId( TProcessId* pid  ,
                         CString& exeName )
 {GUCEF_TRACE;
 
@@ -199,9 +199,9 @@ GetExeNameForProcessId( TProcessId* pid  ,
 /*-------------------------------------------------------------------------*/
 
 bool
-CommandLineExecute( const CString& command , 
-                    CString& result        , 
-                    bool waitForExit       ) 
+CommandLineExecute( const CString& command ,
+                    CString& result        ,
+                    bool waitForExit       )
 {GUCEF_TRACE;
 
     result.Clear();
@@ -209,7 +209,7 @@ CommandLineExecute( const CString& command ,
         return false;
 
     #if ( GUCEF_PLATFORM == GUCEF_PLATFORM_MSWIN )
-    
+
     HANDLE hPipeRead = NULL;
     HANDLE hPipeWrite = NULL;
 
@@ -269,7 +269,7 @@ CommandLineExecute( const CString& command ,
                 buf[ dwRead ] = 0;
                 result += buf;
             }
-        } 
+        }
     }
 
     ::CloseHandle( hPipeWrite );
@@ -281,24 +281,24 @@ CommandLineExecute( const CString& command ,
     #else
 
     char buffer[ 128 ];
-    std::string result = "";
+    result = "";
     FILE* pipe = popen( command.C_String(), "r" );
     if ( NULL == pipe )
         return false;
 
-    try 
+    try
     {
-        while ( fgets( buffer, sizeof buffer, pipe ) != NULL ) 
+        while ( fgets( buffer, sizeof buffer, pipe ) != NULL )
         {
             result += buffer;
         }
     }
-    catch ( const std::exception& e ) 
+    catch ( const std::exception& e )
     {
         pclose( pipe );
         throw e;
     }
-    catch ( ... ) 
+    catch ( ... )
     {
         pclose( pipe );
         throw;

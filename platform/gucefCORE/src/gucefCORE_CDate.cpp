@@ -23,6 +23,7 @@
 //                                                                         //
 //-------------------------------------------------------------------------*/
 
+#include <string.h>
 #include <time.h>
 
 #include "gucefCORE_CDate.h"
@@ -77,9 +78,9 @@ CDate::CDate( const time_t& src, bool isUtc )
     else
         brokenDownTime = localtime( &src );
 
-    m_year = (Int16) brokenDownTime->tm_year;
+    m_year = (Int16) brokenDownTime->tm_year+1900;
     m_month = (UInt8) brokenDownTime->tm_mon+1;
-    m_day = (UInt8) brokenDownTime->tm_mday;
+    m_day = (UInt8) brokenDownTime->tm_wday+1;
 }
 
 /*-------------------------------------------------------------------------*/
@@ -113,7 +114,7 @@ CDate::~CDate()
 
 /*-------------------------------------------------------------------------*/
 
-CDate 
+CDate
 CDate::TodaysUTCDate( void )
 {GUCEF_TRACE;
 
@@ -122,8 +123,18 @@ CDate::TodaysUTCDate( void )
     ::SYSTEMTIME systemTime;
     ::GetSystemTime( &systemTime );
     return CDate( (UInt16) systemTime.wYear, (UInt8) systemTime.wMonth, (UInt8) systemTime.wDay );
-    
-    //#elif ( GUCEF_PLATFORM == GUCEF_PLATFORM_LINUX )
+
+    #elif ( GUCEF_PLATFORM == GUCEF_PLATFORM_LINUX ) || ( GUCEF_PLATFORM == GUCEF_PLATFORM_ANDROID )
+
+    struct timespec time;
+    ::memset( &time, 0, sizeof(time) );
+    ::clock_gettime( CLOCK_REALTIME, &time );
+    struct tm utcTime;
+    ::gmtime_r( &time.tv_sec, &utcTime );
+    return CDate( (Int16) utcTime.tm_year+1900,
+                  (UInt8) utcTime.tm_mon+1,
+                  (UInt8) utcTime.tm_wday+1);
+
     #else
 
     // Not supported for the current platform
@@ -133,7 +144,7 @@ CDate::TodaysUTCDate( void )
 
 /*-------------------------------------------------------------------------*/
 
-CDate 
+CDate
 CDate::TodaysLocalDate( void )
 {GUCEF_TRACE;
 
@@ -142,8 +153,18 @@ CDate::TodaysLocalDate( void )
     ::SYSTEMTIME systemTime;
     ::GetLocalTime( &systemTime );
     return CDate( (UInt16) systemTime.wYear, (UInt8) systemTime.wMonth, (UInt8) systemTime.wDay );
-    
-    //#elif ( GUCEF_PLATFORM == GUCEF_PLATFORM_LINUX )
+
+    #elif ( GUCEF_PLATFORM == GUCEF_PLATFORM_LINUX ) || ( GUCEF_PLATFORM == GUCEF_PLATFORM_ANDROID )
+
+    struct timespec time;
+    ::memset( &time, 0, sizeof(time) );
+    ::clock_gettime( CLOCK_REALTIME, &time );
+    struct tm hereTime;
+    ::localtime_r( &time.tv_sec, &hereTime );
+    return CDate( (Int16) hereTime.tm_year+1900,
+                  (UInt8) hereTime.tm_mon+1,
+                  (UInt8) hereTime.tm_wday+1);
+
     #else
 
     // Not supported for the current platform
@@ -153,7 +174,7 @@ CDate::TodaysLocalDate( void )
 
 /*-------------------------------------------------------------------------*/
 
-CDate 
+CDate
 CDate::UnixEpochDate( void )
 {GUCEF_TRACE;
 
@@ -162,16 +183,16 @@ CDate::UnixEpochDate( void )
 
 /*-------------------------------------------------------------------------*/
 
-Int16 
+Int16
 CDate::GetYear( void ) const
 {GUCEF_TRACE;
-    
+
     return m_year;
 }
 
 /*-------------------------------------------------------------------------*/
 
-UInt8 
+UInt8
 CDate::GetMonth( void ) const
 {GUCEF_TRACE;
 
@@ -180,7 +201,7 @@ CDate::GetMonth( void ) const
 
 /*-------------------------------------------------------------------------*/
 
-UInt8 
+UInt8
 CDate::GetDay( void ) const
 {GUCEF_TRACE;
 
@@ -189,7 +210,7 @@ CDate::GetDay( void ) const
 
 /*-------------------------------------------------------------------------*/
 
-CDate& 
+CDate&
 CDate::operator=( const CDate& src )
 {GUCEF_TRACE;
 
@@ -204,7 +225,7 @@ CDate::operator=( const CDate& src )
 
 /*-------------------------------------------------------------------------*/
 
-bool 
+bool
 CDate::operator==( const CDate& src ) const
 {GUCEF_TRACE;
 
@@ -213,7 +234,7 @@ CDate::operator==( const CDate& src ) const
 
 /*-------------------------------------------------------------------------*/
 
-bool 
+bool
 CDate::operator!=( const CDate& src ) const
 {GUCEF_TRACE;
 
