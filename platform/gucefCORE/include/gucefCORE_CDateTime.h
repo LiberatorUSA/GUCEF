@@ -43,7 +43,7 @@
 //-------------------------------------------------------------------------*/
 
 #if ( GUCEF_PLATFORM == GUCEF_PLATFORM_MSWIN )
-    
+
     struct _FILETIME;
 
 #endif
@@ -100,6 +100,15 @@ class GUCEF_CORE_PUBLIC_CPP CDateTime : public CDate ,
 
     CString ToIso8601DateTimeString( bool includeDelimeters, bool includeMilliseconds ) const;
 
+    void Set( Int16 year                 = 0 ,
+              UInt8 month                = 0 ,
+              UInt8 day                  = 0 ,
+              UInt8 hours                = 0 ,
+              UInt8 minutes              = 0 ,
+              UInt8 seconds              = 0 ,
+              UInt16 milliseconds        = 0 ,
+              Int16 timezoneOffsetInMins = 0 );
+
     explicit CDateTime( const time_t src, bool isUtc );
 
     explicit CDateTime( const CDate& src, bool isUtc );
@@ -107,20 +116,20 @@ class GUCEF_CORE_PUBLIC_CPP CDateTime : public CDate ,
     explicit CDateTime( const CTime& src, bool isUtc );
 
     CDateTime( const CDate& dateSrc, const CTime& timeSrc, Int16 timezoneOffsetInMins = 0 );
-    
+
     CDateTime( const CDateTime& src );
 
-    CDateTime( Int16 year                 = 0 , 
-               UInt8 month                = 0 , 
-               UInt8 day                  = 0 , 
-               UInt8 hours                = 0 , 
-               UInt8 minutes              = 0 , 
-               UInt8 seconds              = 0 , 
+    CDateTime( Int16 year                 = 0 ,
+               UInt8 month                = 0 ,
+               UInt8 day                  = 0 ,
+               UInt8 hours                = 0 ,
+               UInt8 minutes              = 0 ,
+               UInt8 seconds              = 0 ,
                UInt16 milliseconds        = 0 ,
                Int16 timezoneOffsetInMins = 0 );
 
     #if ( GUCEF_PLATFORM == GUCEF_PLATFORM_MSWIN )
-    
+
     explicit CDateTime( const struct _FILETIME& src );
 
     #endif

@@ -142,6 +142,9 @@ class GUCEF_CORE_PRIVATE_CPP COSDateTimeUtils
         return utcDatetime;
     }
 
+    // -1 = First datetime is earlier than second datetime.
+    //  0 = First datetime is equal to second datetime.
+    //  1 = First datetime is later than second datetime.
     static Int32 CompareDateTime( const CDateTime& datetimeA, const CDateTime& datetimeB )
     {
         ::FILETIME fileTimeA;
@@ -213,6 +216,41 @@ class GUCEF_CORE_PRIVATE_CPP COSDateTimeUtils
         return hereTime.tm_gmtoff / 60;
     }
 
+    static void DateTimeToTm( const CDateTime& datetime, struct ::tm& time )
+    {
+        ::memset( &time, 0, sizeof(time) );
+        time.tm_year = datetime.GetYear() - 1900;
+        time.tm_mon = datetime.GetMonth() - 1;
+        time.tm_mday = datetime.GetDay() - 1;
+        time.tm_hour = datetime.GetHours();
+        time.tm_min = datetime.GetMinutes();
+        time.tm_sec = datetime.GetSeconds();
+        time.tm_gmtoff = datetime.GeTimeZoneUTCOffsetInMins() * 60;
+    }
+
+    static void DateTimeToTimespec( const CDateTime& datetime, struct ::timespec& tspec )
+    {
+        struct ::tm time;
+        DateTimeToTm( datetime, time );  // <- this converts keeping the timezone intact with gmtoff
+
+        tspec.tv_sec = ::timegm( &time ) - time.tm_gmtoff; // <- this converts to UTC
+        tspec.tv_nsec = datetime.GetMilliseconds() * 1000000;
+    }
+
+    static void TimespecToDateTime( const struct ::timespec& tspec, CDateTime& datetime )
+    {
+        struct tm utcTime;
+        ::gmtime_r( &tspec.tv_sec, &utcTime );
+        datetime.Set( (Int16) utcTime.tm_year+1900,
+                      (UInt8) utcTime.tm_mon+1,
+                      (UInt8) utcTime.tm_mday+1,
+                      (UInt8) utcTime.tm_hour,
+                      (UInt8) utcTime.tm_min,
+                      (UInt8) utcTime.tm_sec,
+                      (UInt16) ( tspec.tv_nsec / 1000000 ),
+                      0 );
+    }
+
     static CDateTime NowLocalDateTime( void )
     {
         struct timespec time;
@@ -222,7 +260,7 @@ class GUCEF_CORE_PRIVATE_CPP COSDateTimeUtils
         ::localtime_r( &time.tv_sec, &hereTime );
         return CDateTime( (Int16) hereTime.tm_year+1900,
                           (UInt8) hereTime.tm_mon+1,
-                          (UInt8) hereTime.tm_wday+1,
+                          (UInt8) hereTime.tm_mday+1,
                           (UInt8) hereTime.tm_hour,
                           (UInt8) hereTime.tm_min,
                           (UInt8) hereTime.tm_sec,
@@ -239,7 +277,7 @@ class GUCEF_CORE_PRIVATE_CPP COSDateTimeUtils
         ::gmtime_r( &time.tv_sec, &utcTime );
         return CDateTime( (Int16) utcTime.tm_year+1900,
                           (UInt8) utcTime.tm_mon+1,
-                          (UInt8) utcTime.tm_wday+1,
+                          (UInt8) utcTime.tm_mday+1,
                           (UInt8) utcTime.tm_hour,
                           (UInt8) utcTime.tm_min,
                           (UInt8) utcTime.tm_sec,
@@ -249,17 +287,56 @@ class GUCEF_CORE_PRIVATE_CPP COSDateTimeUtils
 
     static CDateTime DateTimeToUtc( const CDateTime& datetime )
     {
-        return datetime;
+        // Converting to timespec also converts to UTC by turning it into a UTC based offset
+        struct ::timespec tspec;
+        DateTimeToTimespec( datetime, tspec );
+
+        CDateTime utcDatetime;
+        TimespecToDateTime( tspec, utcDatetime );
+        return utcDatetime;
     }
 
+    // -1 = First datetime is earlier than second datetime.
+    //  0 = First datetime is equal to second datetime.
+    //  1 = First datetime is later than second datetime.
     static Int32 CompareDateTime( const CDateTime& datetimeA, const CDateTime& datetimeB )
     {
+        // Converting to timespec also converts to UTC by turning it into a UTC based offset
+        // This allows for easy comparison
+
+        struct ::timespec tspecA;
+        DateTimeToTimespec( datetimeA, tspecA );
+
+        struct ::timespec tspecB;
+        DateTimeToTimespec( datetimeB, tspecB );
+
+        if ( tspecA.tv_sec > tspecB.tv_sec )
+            return 1;
+        if ( tspecA.tv_sec < tspecB.tv_sec )
+            return -1;
+
+        // seconds are the same, but they can still differ on the remainder nanoseconds
+        if ( tspecA.tv_nsec > tspecB.tv_nsec )
+            return 1;
+        if ( tspecA.tv_nsec < tspecB.tv_nsec )
+            return -1;
         return 0;
     }
 
     static Int64 SubtractBFromAndGetTimeDifferenceInMilliseconds( const CDateTime& datetimeA, const CDateTime& datetimeB )
     {
-        return 0;
+        // Converting to timespec also converts to UTC by turning it into a UTC based offset
+        // This allows for easy subtraction
+
+        struct ::timespec tspecA;
+        DateTimeToTimespec( datetimeA, tspecA );
+
+        struct ::timespec tspecB;
+        DateTimeToTimespec( datetimeB, tspecB );
+
+        Int64 deltaSecs = tspecA.tv_sec - tspecB.tv_sec;
+        Int64 deltaNanoSecs = tspecA.tv_nsec - tspecB.tv_nsec;
+        return ( deltaSecs * 1000 ) + ( deltaNanoSecs / 1000000 );
     }
 };
 
@@ -373,6 +450,29 @@ CDateTime::CDateTime( Int16 year                 ,
     , m_timezoneOffsetInMins( timezoneOffsetInMins )
 {GUCEF_TRACE;
 
+}
+
+/*-------------------------------------------------------------------------*/
+
+void
+CDateTime::Set( Int16 year                 ,
+                UInt8 month                ,
+                UInt8 day                  ,
+                UInt8 hours                ,
+                UInt8 minutes              ,
+                UInt8 seconds              ,
+                UInt16 milliseconds        ,
+                Int16 timezoneOffsetInMins )
+{GUCEF_TRACE;
+
+    m_year = year;
+    m_month = month;
+    m_day = day;
+    m_hours = hours;
+    m_minutes = minutes;
+    m_seconds = seconds;
+    m_milliseconds = milliseconds;
+    m_timezoneOffsetInMins = timezoneOffsetInMins;
 }
 
 /*-------------------------------------------------------------------------*/
