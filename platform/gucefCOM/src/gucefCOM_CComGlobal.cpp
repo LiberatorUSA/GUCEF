@@ -1,20 +1,20 @@
 /*
- *  gucefCOMCORE: GUCEF module providing basic communication facilities
- *  Copyright (C) 2002 - 2007.  Dinand Vanvelzen
+ *  gucefCOM: GUCEF module providing communication implementations 
+ *  for standardized protocols
  *
- *  This library is free software; you can redistribute it and/or
- *  modify it under the terms of the GNU Lesser General Public
- *  License as published by the Free Software Foundation; either
- *  version 2.1 of the License, or (at your option) any later version.
+ *  Copyright (C) 1998 - 2020.  Dinand Vanvelzen
  *
- *  This library is distributed in the hope that it will be useful,
- *  but WITHOUT ANY WARRANTY; without even the implied warranty of
- *  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
- *  Lesser General Public License for more details.
+ *  Licensed under the Apache License, Version 2.0 (the "License");
+ *  you may not use this file except in compliance with the License.
+ *  You may obtain a copy of the License at
  *
- *  You should have received a copy of the GNU Lesser General Public
- *  License along with this library; if not, write to the Free Software
- *  Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA
+ *    http://www.apache.org/licenses/LICENSE-2.0
+ *
+ *  Unless required by applicable law or agreed to in writing, software
+ *  distributed under the License is distributed on an "AS IS" BASIS,
+ *  WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ *  See the License for the specific language governing permissions and
+ *  limitations under the License.
  */
 
 /*-------------------------------------------------------------------------//
@@ -32,6 +32,11 @@
 #include "gucefCORE_CMetricsClientManager.h"
 #define GUCEF_CORE_CMETRICSCLIENTMANAGER_H
 #endif /* GUCEF_CORE_CMETRICSCLIENTMANAGER_H ? */
+
+#ifndef GUCEF_CORE_CTASKMANAGER_H
+#include "gucefCORE_CTaskManager.h"
+#define GUCEF_CORE_CTASKMANAGER_H
+#endif /* GUCEF_CORE_CTASKMANAGER_H ? */
 
 #ifndef GUCEF_COMCORE_CCOMCOREGLOBAL_H
 #include "gucefCOMCORE_CComCoreGlobal.h"
@@ -58,6 +63,11 @@
 #define GUCEF_COM_CSTATSDCLIENT_H
 #endif /* GUCEF_COM_CSTATSDCLIENT_H ? */
 
+#ifndef GUCEF_COM_CASYNCHTTPSERVERREQUESTHANDLER_H
+#include "gucefCOM_CAsyncHttpServerRequestHandler.h"
+#define GUCEF_COM_CASYNCHTTPSERVERREQUESTHANDLER_H
+#endif /* GUCEF_COM_CASYNCHTTPSERVERREQUESTHANDLER_H ? */
+
 #include "gucefCOM_CComGlobal.h"  /* definition of the class implemented here */
 
 /*-------------------------------------------------------------------------//
@@ -75,7 +85,8 @@ namespace COM {
 //                                                                         //
 //-------------------------------------------------------------------------*/
 
-CComGlobal* CComGlobal::g_instance = NULL;
+CComGlobal* CComGlobal::g_instance = GUCEF_NULL;
+TAsyncHttpServerRequestHandlerFactory g_asyncHttpServerRequestHandlerFactory;
 
 /*-------------------------------------------------------------------------//
 //                                                                         //
@@ -106,14 +117,18 @@ CComGlobal::Initialize( void )
 
     CORE::CMetricsClientManager::CIMetricsSystemClientPtr statsDClient( new CStatsDClient() );
     CORE::CCoreGlobal::Instance()->GetMetricsClientManager().AddMetricsClient( statsDClient );
+
+    CORE::CCoreGlobal::Instance()->GetTaskManager().RegisterTaskConsumerFactory( CAsyncHttpServerRequestHandler::TaskType, &g_asyncHttpServerRequestHandlerFactory );
 }
 
 /*-------------------------------------------------------------------------*/
 
 CComGlobal::~CComGlobal()
 {GUCEF_TRACE;
-
+  
     GUCEF_SYSTEM_LOG( CORE::LOGLEVEL_NORMAL, "gucefCOM Global systems shutting down" );
+
+    CORE::CCoreGlobal::Instance()->GetTaskManager().UnregisterTaskConsumerFactory( CAsyncHttpServerRequestHandler::TaskType );
 }
 
 /*-------------------------------------------------------------------------*/

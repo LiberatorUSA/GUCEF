@@ -168,6 +168,7 @@ CVfsGlobal::~CVfsGlobal()
      *  Unregister handlers
      */
     CVFSURLHandler::Unregister();
+    CORE::CCoreGlobal::Instance()->GetTaskManager().UnregisterTaskConsumerFactory( CAsyncVfsOperation::TaskType ); 
 
     /*
      *      cleanup all singletons

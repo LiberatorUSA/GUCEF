@@ -1,21 +1,20 @@
 /*
- *  gucefCOM: GUCEF module providing communication 
- *  implementations for standardized protocols.
- *  Copyright (C) 2002 - 2007.  Dinand Vanvelzen
+ *  gucefCOM: GUCEF module providing communication implementations 
+ *  for standardized protocols
  *
- *  This library is free software; you can redistribute it and/or
- *  modify it under the terms of the GNU Lesser General Public
- *  License as published by the Free Software Foundation; either
- *  version 2.1 of the License, or (at your option) any later version.
+ *  Copyright (C) 1998 - 2020.  Dinand Vanvelzen
  *
- *  This library is distributed in the hope that it will be useful,
- *  but WITHOUT ANY WARRANTY; without even the implied warranty of
- *  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
- *  Lesser General Public License for more details.
+ *  Licensed under the Apache License, Version 2.0 (the "License");
+ *  you may not use this file except in compliance with the License.
+ *  You may obtain a copy of the License at
  *
- *  You should have received a copy of the GNU Lesser General Public
- *  License along with this library; if not, write to the Free Software
- *  Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA 
+ *    http://www.apache.org/licenses/LICENSE-2.0
+ *
+ *  Unless required by applicable law or agreed to in writing, software
+ *  distributed under the License is distributed on an "AS IS" BASIS,
+ *  WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ *  See the License for the specific language governing permissions and
+ *  limitations under the License.
  */
 
 #ifndef GUCEF_COM_CHTTPSERVER_H
@@ -49,6 +48,11 @@
 #define GUCEF_COM_CIHTTPSERVERROUTERCONTROLLER_H
 #endif /* GUCEF_COM_CIHTTPSERVERROUTERCONTROLLER_H ? */
 
+#ifndef GUCEF_COM_CIHTTPSERVERREQUESTHANDLER_H
+#include "gucefCOM_CIHttpServerRequestHandler.h"
+#define GUCEF_COM_CIHTTPSERVERREQUESTHANDLER_H
+#endif /* GUCEF_COM_CIHTTPSERVERREQUESTHANDLER_H ? */
+
 /*-------------------------------------------------------------------------//
 //                                                                         //
 //      NAMESPACE                                                          //
@@ -69,39 +73,13 @@ class GUCEF_COM_EXPORT_CPP CHTTPServer : CORE::CObserver
     public:
     
     typedef std::vector< CString > TStringVector;
-
-    struct SHttpRequestData
-    {
-        TStringVector resourceRepresentations;
-        TStringVector resourceVersions;
-        CString requestType;
-        CString requestHost;
-        CString requestUri;
-        CORE::CDynamicBuffer content;
-        CString transactionID; 
-    };
-    typedef struct SHttpRequestData THttpRequestData;
     
-    struct SHttpReturnData
-    {
-        TStringVector allowedMethods;
-        CString cacheability;
-        CString eTag;
-        CString lastModified;
-        CORE::CDynamicBuffer content;
-        int statusCode;
-        CString contentType;
-        CString location;
-        TStringVector acceptedTypes;
-    };
-    typedef struct SHttpReturnData THttpReturnData;
-    
-    public:
+    CHTTPServer( CIHTTPServerRouterController* routerController = GUCEF_NULL ,
+                 CIHttpServerRequestHandler* requestHandler = GUCEF_NULL     );
 
-    CHTTPServer( CIHTTPServerRouterController* routerController = NULL );
-
-    CHTTPServer( CORE::CPulseGenerator& pulsGenerator                  ,
-                 CIHTTPServerRouterController* routerController = NULL );
+    CHTTPServer( CORE::CPulseGenerator& pulsGenerator                        ,
+                 CIHTTPServerRouterController* routerController = GUCEF_NULL ,
+                 CIHttpServerRequestHandler* requestHandler = GUCEF_NULL     );
     
     virtual ~CHTTPServer();
     
@@ -120,28 +98,12 @@ class GUCEF_COM_EXPORT_CPP CHTTPServer : CORE::CObserver
     bool SetPort( UInt16 port );
     
     UInt16 GetPort( void ) const;
-    
-    CString GetLastRequestUri( void ) const;
 
     CIHTTPServerRouterController* GetRouterController( void ) const;
+
+    CIHttpServerRequestHandler* GetRequestHandler( void ) const;
     
     private:
-
-    THttpReturnData* PerformReadOperation( const THttpRequestData& request , 
-                                           bool contentRequested           );
-
-    bool MatchResourceVersion( const CString& resourceVersion  ,
-                               const TStringVector& searchList );
-                               
-    THttpReturnData* OnRead( const THttpRequestData& request );
-
-    THttpReturnData* OnReadMetaData( const THttpRequestData& request );
-    
-    THttpReturnData* OnUpdate( const THttpRequestData& request );
-    
-    THttpReturnData* OnCreate( const THttpRequestData& request );
-    
-    THttpReturnData* OnDelete( const THttpRequestData& request );
 
     /**
      *  Event callback member function.
@@ -163,9 +125,9 @@ class GUCEF_COM_EXPORT_CPP CHTTPServer : CORE::CObserver
     void ProcessReceivedData( const CORE::CDynamicBuffer& inputBuffer ,
                               CORE::CDynamicBuffer& outputBuffer      );
 
-    THttpRequestData* ParseRequest( const CORE::CDynamicBuffer& inputBuffer );
+    CHttpRequestData* ParseRequest( const CORE::CDynamicBuffer& inputBuffer );
 
-    void ParseResponse( const THttpReturnData& returnData  ,
+    void ParseResponse( const CHttpResponseData& returnData  ,
                         CORE::CDynamicBuffer& outputBuffer );
                         
     UInt32 ParseHeaderFields( const char* bufferPtr       ,
@@ -179,7 +141,7 @@ class GUCEF_COM_EXPORT_CPP CHTTPServer : CORE::CObserver
     
     COMCORE::CTCPServerSocket m_tcpServerSocket;
     CIHTTPServerRouterController* m_routerController;
-    CString m_lastRequestUri;
+    CIHttpServerRequestHandler* m_requestHandler;
     bool m_keepAliveConnections;
 };
 

@@ -23,16 +23,21 @@ set( HEADER_FILES
   include/CPHUDPSocket.h
   include/gucefCOM.h
   include/gucefCOMDLLInit.h
+  include/gucefCOM_CAsyncHttpServerRequestHandler.h
   include/gucefCOM_CCodecBasedHTTPServerResource.h
   include/gucefCOM_CComGlobal.h
   include/gucefCOM_CDefaultHTTPServerResource.h
   include/gucefCOM_CDefaultHTTPServerRouter.h
   include/gucefCOM_CDefaultHTTPServerRouterController.h
+  include/gucefCOM_CDefaultHttpServerRequestHandler.h
   include/gucefCOM_CDummyHTTPServerResource.h
   include/gucefCOM_CHTTPServer.h
+  include/gucefCOM_CHttpRequestData.h
+  include/gucefCOM_CHttpResponseData.h
   include/gucefCOM_CIHTTPServerResource.h
   include/gucefCOM_CIHTTPServerRouter.h
   include/gucefCOM_CIHTTPServerRouterController.h
+  include/gucefCOM_CIHttpServerRequestHandler.h
   include/gucefCOM_CStatsDClient.h
   include/gucefCOM_ETypes.h
   include/gucefCOM_HTTPCode.h
@@ -48,16 +53,21 @@ set( SOURCE_FILES
   src/CMySQLClient.cpp
   src/CPHUDPSocket.cpp
   src/gucefCOM.cpp
+  src/gucefCOM_CAsyncHttpServerRequestHandler.cpp
   src/gucefCOM_CCodecBasedHTTPServerResource.cpp
   src/gucefCOM_CComGlobal.cpp
   src/gucefCOM_CDefaultHTTPServerResource.cpp
   src/gucefCOM_CDefaultHTTPServerRouter.cpp
   src/gucefCOM_CDefaultHTTPServerRouterController.cpp
+  src/gucefCOM_CDefaultHttpServerRequestHandler.cpp
   src/gucefCOM_CDummyHTTPServerResource.cpp
   src/gucefCOM_CHTTPServer.cpp
+  src/gucefCOM_CHttpRequestData.cpp
+  src/gucefCOM_CHttpResponseData.cpp
   src/gucefCOM_CIHTTPServerResource.cpp
   src/gucefCOM_CIHTTPServerRouter.cpp
   src/gucefCOM_CIHTTPServerRouterController.cpp
+  src/gucefCOM_CIHttpServerRequestHandler.cpp
   src/gucefCOM_CStatsDClient.cpp
 )
 

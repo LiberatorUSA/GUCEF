@@ -17,8 +17,8 @@
  *  limitations under the License.
  */
 
-#ifndef CGUCEFCOMMODULE_H
-#define CGUCEFCOMMODULE_H
+#ifndef GUCEF_COM_CIHTTPSERVERREQUESTHANDLER_H
+#define GUCEF_COM_CIHTTPSERVERREQUESTHANDLER_H
 
 /*-------------------------------------------------------------------------//
 //                                                                         //
@@ -26,10 +26,20 @@
 //                                                                         //
 //-------------------------------------------------------------------------*/
 
-#ifndef GUCEFCOM_MACROS_H
-#include "gucefCOM_macros.h"      /* often used gucefCOM macros */
-#define GUCEFCOM_MACROS_H
-#endif /* GUCEFCOM_MACROS_H ? */
+#ifndef GUCEF_COM_CHTTPREQUESTDATA_H
+#include "gucefCOM_CHttpRequestData.h"
+#define GUCEF_COM_CHTTPREQUESTDATA_H
+#endif /* GUCEF_COM_CHTTPREQUESTDATA_H ? */
+
+#ifndef GUCEF_COM_CHTTPRESPONSEDATA_H
+#include "gucefCOM_CHttpResponseData.h"
+#define GUCEF_COM_CHTTPRESPONSEDATA_H
+#endif /* GUCEF_COM_CHTTPRESPONSEDATA_H ? */
+
+#ifndef GUCEF_COM_CIHTTPSERVERROUTERCONTROLLER_H
+#include "gucefCOM_CIHTTPServerRouterController.h"
+#define GUCEF_COM_CIHTTPSERVERROUTERCONTROLLER_H
+#endif /* GUCEF_COM_CIHTTPSERVERROUTERCONTROLLER_H ? */
 
 /*-------------------------------------------------------------------------//
 //                                                                         //
@@ -46,19 +56,28 @@ namespace COM {
 //                                                                         //
 //-------------------------------------------------------------------------*/
 
-class CGUCEFCOMModule
+class GUCEF_COM_EXPORT_CPP CIHttpServerRequestHandler
 {
-        public:
-        
-        static bool Load( void );
-        
-        static bool Unload( void );
-        
-        private:
-        CGUCEFCOMModule( void );
-        CGUCEFCOMModule( const CGUCEFCOMModule& src );
-        ~CGUCEFCOMModule();
-        CGUCEFCOMModule& operator=( const CGUCEFCOMModule& src );
+    public:
+
+    virtual CHttpResponseData* OnRead( const CHttpRequestData& request ) = 0;
+
+    virtual CHttpResponseData* OnReadMetaData( const CHttpRequestData& request ) = 0;
+    
+    virtual CHttpResponseData* OnUpdate( const CHttpRequestData& request ,
+                                       bool isDeltaUpdateOnly          ) = 0;
+    
+    virtual CHttpResponseData* OnCreate( const CHttpRequestData& request ) = 0;
+    
+    virtual CHttpResponseData* OnDelete( const CHttpRequestData& request ) = 0;
+
+    virtual bool SetRouterController( CIHTTPServerRouterController* routerController ) = 0;
+    
+    virtual CIHTTPServerRouterController* GetRouterController( void ) const = 0;
+
+    CIHttpServerRequestHandler( void );
+    CIHttpServerRequestHandler( const CIHttpServerRequestHandler& src );
+    virtual ~CIHttpServerRequestHandler();
 };
 
 /*-------------------------------------------------------------------------//
@@ -67,20 +86,9 @@ class CGUCEFCOMModule
 //                                                                         //
 //-------------------------------------------------------------------------*/
 
-}; /* namespace COM */
-}; /* namespace GUCEF */
+} /* namespace COM */
+} /* namespace GUCEF */
 
 /*-------------------------------------------------------------------------*/
-          
-#endif /* CGUCEFCOMMODULE_H ? */
 
-/*-------------------------------------------------------------------------//
-//                                                                         //
-//      Info & Changes                                                     //
-//                                                                         //
-//-------------------------------------------------------------------------//
-
-- 12-02-2005 :
-        - Initial implementation
-
------------------------------------------------------------------------------*/
+#endif /* GUCEF_COM_CIHTTPSERVERREQUESTHANDLER_H ? */

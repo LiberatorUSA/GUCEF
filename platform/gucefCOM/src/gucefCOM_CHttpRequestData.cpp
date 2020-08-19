@@ -17,19 +17,18 @@
  *  limitations under the License.
  */
 
-#ifndef CGUCEFCOMMODULE_H
-#define CGUCEFCOMMODULE_H
-
 /*-------------------------------------------------------------------------//
 //                                                                         //
 //      INCLUDES                                                           //
 //                                                                         //
 //-------------------------------------------------------------------------*/
 
-#ifndef GUCEFCOM_MACROS_H
-#include "gucefCOM_macros.h"      /* often used gucefCOM macros */
-#define GUCEFCOM_MACROS_H
-#endif /* GUCEFCOM_MACROS_H ? */
+#ifndef GUCEF_CORE_LOGGING_H
+#include "gucefCORE_Logging.h"
+#define GUCEF_CORE_LOGGING_H
+#endif /* GUCEF_CORE_LOGGING_H ? */
+
+#include "gucefCOM_CHttpRequestData.h"
 
 /*-------------------------------------------------------------------------//
 //                                                                         //
@@ -42,24 +41,53 @@ namespace COM {
 
 /*-------------------------------------------------------------------------//
 //                                                                         //
-//      CLASSES                                                            //
+//      IMPLEMENTATION                                                     //
 //                                                                         //
 //-------------------------------------------------------------------------*/
 
-class CGUCEFCOMModule
-{
-        public:
-        
-        static bool Load( void );
-        
-        static bool Unload( void );
-        
-        private:
-        CGUCEFCOMModule( void );
-        CGUCEFCOMModule( const CGUCEFCOMModule& src );
-        ~CGUCEFCOMModule();
-        CGUCEFCOMModule& operator=( const CGUCEFCOMModule& src );
-};
+CHttpRequestData::CHttpRequestData( void )
+    : CORE::CICloneable()         
+    , resourceRepresentations()
+    , resourceVersions()
+    , requestType()
+    , requestHost()
+    , requestUri()
+    , content()
+    , transactionID()
+{GUCEF_TRACE;
+
+}
+
+/*-------------------------------------------------------------------------*/
+
+CHttpRequestData::CHttpRequestData( const CHttpRequestData& src )
+    : CORE::CICloneable( src )         
+    , resourceRepresentations( src.resourceRepresentations )
+    , resourceVersions( src.resourceVersions )
+    , requestType( src.requestType )
+    , requestHost( src.requestHost )
+    , requestUri( src.requestUri )
+    , content( src.content )
+    , transactionID( src.transactionID )
+{GUCEF_TRACE;
+
+}
+
+/*-------------------------------------------------------------------------*/
+
+CHttpRequestData::~CHttpRequestData()
+{GUCEF_TRACE;
+
+}
+
+/*-------------------------------------------------------------------------*/
+
+CORE::CICloneable* 
+CHttpRequestData::Clone( void ) const 
+{GUCEF_TRACE;
+
+    return new CHttpRequestData( *this );
+}
 
 /*-------------------------------------------------------------------------//
 //                                                                         //
@@ -67,20 +95,7 @@ class CGUCEFCOMModule
 //                                                                         //
 //-------------------------------------------------------------------------*/
 
-}; /* namespace COM */
-}; /* namespace GUCEF */
+} /* namespace COM */
+} /* namespace GUCEF */
 
 /*-------------------------------------------------------------------------*/
-          
-#endif /* CGUCEFCOMMODULE_H ? */
-
-/*-------------------------------------------------------------------------//
-//                                                                         //
-//      Info & Changes                                                     //
-//                                                                         //
-//-------------------------------------------------------------------------//
-
-- 12-02-2005 :
-        - Initial implementation
-
------------------------------------------------------------------------------*/

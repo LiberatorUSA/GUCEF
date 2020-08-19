@@ -23,33 +23,54 @@
 //                                                                         //
 //-------------------------------------------------------------------------*/
 
-#ifndef GUCEF_DLLINIT_H
-#include "gucef_DLLInit.h"
-#define GUCEF_DLLINIT_H
-#endif /* GUCEF_DLLINIT_H ? */
+#ifndef GUCEF_CORE_LOGGING_H
+#include "gucefCORE_Logging.h"
+#define GUCEF_CORE_LOGGING_H
+#endif /* GUCEF_CORE_LOGGING_H ? */
 
-#ifndef CGUCEFCOMMODULE_H
-#include "CGUCEFCOMModule.h"
-#define CGUCEFCOMMODULE_H
-#endif /* CGUCEFCOMMODULE_H ? */
-
-#include "gucefCOM.h"
+#include "gucefCOM_CIHttpServerRequestHandler.h"
 
 /*-------------------------------------------------------------------------//
 //                                                                         //
-//      UTILITIES                                                          //
+//      NAMESPACE                                                          //
 //                                                                         //
 //-------------------------------------------------------------------------*/
 
-GUCEF_DLL_INIT_FUNC_BEG_END( GUCEF::COM::CGUCEFCOMModule );
+namespace GUCEF {
+namespace COM {
+
+/*-------------------------------------------------------------------------//
+//                                                                         //
+//      IMPLEMENTATION                                                     //
+//                                                                         //
+//-------------------------------------------------------------------------*/
+
+CIHttpServerRequestHandler::CIHttpServerRequestHandler( void )
+{GUCEF_TRACE;
+
+}
 
 /*-------------------------------------------------------------------------*/
 
-const char*
-GUCEF_COM_ModuleCompileTimeStamp( void )
+CIHttpServerRequestHandler::CIHttpServerRequestHandler( const CIHttpServerRequestHandler& src )
 {GUCEF_TRACE;
 
-    return __TIMESTAMP__;
 }
+
+/*-------------------------------------------------------------------------*/
+
+CIHttpServerRequestHandler::~CIHttpServerRequestHandler()
+{GUCEF_TRACE;
+
+}
+
+/*-------------------------------------------------------------------------//
+//                                                                         //
+//      NAMESPACE                                                          //
+//                                                                         //
+//-------------------------------------------------------------------------*/
+
+} /* namespace COM */
+} /* namespace GUCEF */
 
 /*-------------------------------------------------------------------------*/

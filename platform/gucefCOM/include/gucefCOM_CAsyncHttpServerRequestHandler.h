@@ -17,8 +17,8 @@
  *  limitations under the License.
  */
 
-#ifndef CGUCEFCOMMODULE_H
-#define CGUCEFCOMMODULE_H
+#ifndef GUCEF_COM_CASYNCHTTPSERVERREQUESTHANDLER_H
+#define GUCEF_COM_CASYNCHTTPSERVERREQUESTHANDLER_H
 
 /*-------------------------------------------------------------------------//
 //                                                                         //
@@ -26,10 +26,15 @@
 //                                                                         //
 //-------------------------------------------------------------------------*/
 
-#ifndef GUCEFCOM_MACROS_H
-#include "gucefCOM_macros.h"      /* often used gucefCOM macros */
-#define GUCEFCOM_MACROS_H
-#endif /* GUCEFCOM_MACROS_H ? */
+#ifndef GUCEF_CORE_CITASKCONSUMER_H
+#include "gucefCORE_CITaskConsumer.h"
+#define GUCEF_CORE_CITASKCONSUMER_H
+#endif /* GUCEF_CORE_CITASKCONSUMER_H ? */
+
+#ifndef GUCEF_COM_MACROS_H
+#include "gucefCOM_macros.h"
+#define GUCEF_COM_MACROS_H
+#endif /* GUCEF_COM_MACROS_H ? */
 
 /*-------------------------------------------------------------------------//
 //                                                                         //
@@ -46,20 +51,34 @@ namespace COM {
 //                                                                         //
 //-------------------------------------------------------------------------*/
 
-class CGUCEFCOMModule
+class GUCEF_HIDDEN CAsyncHttpServerRequestHandler : public CORE::CTaskConsumer
 {
-        public:
-        
-        static bool Load( void );
-        
-        static bool Unload( void );
-        
-        private:
-        CGUCEFCOMModule( void );
-        CGUCEFCOMModule( const CGUCEFCOMModule& src );
-        ~CGUCEFCOMModule();
-        CGUCEFCOMModule& operator=( const CGUCEFCOMModule& src );
+    public:
+
+    static const CORE::CEvent AsyncHttpServerRequestHandlingCompletedEvent;
+    static const CORE::CString TaskType;
+    
+    static void RegisterEvents( void );
+
+    CAsyncHttpServerRequestHandler();
+    CAsyncHttpServerRequestHandler( const CAsyncHttpServerRequestHandler& src );
+    virtual ~CAsyncHttpServerRequestHandler();
+
+    virtual bool OnTaskStart( CORE::CICloneable* taskData ) GUCEF_VIRTUAL_OVERRIDE;
+    
+    virtual bool OnTaskCycle( CORE::CICloneable* taskData ) GUCEF_VIRTUAL_OVERRIDE;
+    
+    virtual void OnTaskEnd( CORE::CICloneable* taskData ) GUCEF_VIRTUAL_OVERRIDE;
+
+    virtual CORE::CString GetType( void ) const GUCEF_VIRTUAL_OVERRIDE;
+
+    private:
+
 };
+
+/*-------------------------------------------------------------------------*/
+
+typedef CORE::CTFactory< CORE::CTaskConsumer, CAsyncHttpServerRequestHandler > TAsyncHttpServerRequestHandlerFactory;
 
 /*-------------------------------------------------------------------------//
 //                                                                         //
@@ -72,15 +91,4 @@ class CGUCEFCOMModule
 
 /*-------------------------------------------------------------------------*/
           
-#endif /* CGUCEFCOMMODULE_H ? */
-
-/*-------------------------------------------------------------------------//
-//                                                                         //
-//      Info & Changes                                                     //
-//                                                                         //
-//-------------------------------------------------------------------------//
-
-- 12-02-2005 :
-        - Initial implementation
-
------------------------------------------------------------------------------*/
+#endif /* GUCEF_COM_CASYNCHTTPSERVERREQUESTHANDLER_H ? */

@@ -17,8 +17,8 @@
  *  limitations under the License.
  */
 
-#ifndef CGUCEFCOMMODULE_H
-#define CGUCEFCOMMODULE_H
+#ifndef GUCEF_COM_CHTTPREQUESTDATA_H
+#define GUCEF_COM_CHTTPREQUESTDATA_H
 
 /*-------------------------------------------------------------------------//
 //                                                                         //
@@ -26,10 +26,27 @@
 //                                                                         //
 //-------------------------------------------------------------------------*/
 
-#ifndef GUCEFCOM_MACROS_H
-#include "gucefCOM_macros.h"      /* often used gucefCOM macros */
-#define GUCEFCOM_MACROS_H
-#endif /* GUCEFCOM_MACROS_H ? */
+#include <vector>
+
+#ifndef GUCEF_CORE_CDYNAMICBUFFER_H
+#include "CDynamicBuffer.h"
+#define GUCEF_CORE_CDYNAMICBUFFER_H
+#endif /* GUCEF_CORE_CDYNAMICBUFFER_H ? */
+
+#ifndef GUCEF_CORE_CICLONEABLE_H
+#include "CICloneable.h"
+#define GUCEF_CORE_CICLONEABLE_H
+#endif /* GUCEF_CORE_CICLONEABLE_H ? */
+
+#ifndef GUCEF_CORE_CDVSTRING_H
+#include "CDVString.h"
+#define GUCEF_CORE_CDVSTRING_H
+#endif /* GUCEF_CORE_CDVSTRING_H ? */
+
+#ifndef GUCEF_COM_MACROS_H
+#include "gucefCOM_macros.h"
+#define GUCEF_COM_MACROS_H
+#endif /* GUCEF_COM_MACROS_H ? */
 
 /*-------------------------------------------------------------------------//
 //                                                                         //
@@ -46,19 +63,25 @@ namespace COM {
 //                                                                         //
 //-------------------------------------------------------------------------*/
 
-class CGUCEFCOMModule
+class GUCEF_COM_EXPORT_CPP CHttpRequestData : public CORE::CICloneable
 {
-        public:
-        
-        static bool Load( void );
-        
-        static bool Unload( void );
-        
-        private:
-        CGUCEFCOMModule( void );
-        CGUCEFCOMModule( const CGUCEFCOMModule& src );
-        ~CGUCEFCOMModule();
-        CGUCEFCOMModule& operator=( const CGUCEFCOMModule& src );
+    public:
+
+    typedef CORE::CString::StringVector TStringVector; 
+
+    TStringVector resourceRepresentations;
+    TStringVector resourceVersions;
+    CString requestType;
+    CString requestHost;
+    CString requestUri;
+    CORE::CDynamicBuffer content;
+    CString transactionID; 
+
+    virtual CORE::CICloneable* Clone( void ) const GUCEF_VIRTUAL_OVERRIDE;
+
+    CHttpRequestData( void );
+    CHttpRequestData( const CHttpRequestData& src );
+    virtual ~CHttpRequestData();
 };
 
 /*-------------------------------------------------------------------------//
@@ -67,20 +90,9 @@ class CGUCEFCOMModule
 //                                                                         //
 //-------------------------------------------------------------------------*/
 
-}; /* namespace COM */
-}; /* namespace GUCEF */
+} /* namespace COM */
+} /* namespace GUCEF */
 
 /*-------------------------------------------------------------------------*/
-          
-#endif /* CGUCEFCOMMODULE_H ? */
 
-/*-------------------------------------------------------------------------//
-//                                                                         //
-//      Info & Changes                                                     //
-//                                                                         //
-//-------------------------------------------------------------------------//
-
-- 12-02-2005 :
-        - Initial implementation
-
------------------------------------------------------------------------------*/
+#endif /* GUCEF_COM_CHTTPREQUESTDATA_H ? */

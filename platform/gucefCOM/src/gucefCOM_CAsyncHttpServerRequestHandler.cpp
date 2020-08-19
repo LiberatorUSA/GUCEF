@@ -23,7 +23,20 @@
 //                                                                         //
 //-------------------------------------------------------------------------*/
 
-#include "gucefCOM_CDefaultHTTPServerRouter.h"
+#include <string.h>
+#include <time.h> 
+
+#ifndef GUCEF_CORE_CTASKMANAGER_H
+#include "gucefCORE_CTaskManager.h"
+#define GUCEF_CORE_CTASKMANAGER_H
+#endif /* GUCEF_CORE_CTASKMANAGER_H */
+
+#ifndef GUCEF_COM_CHTTPSERVER_H
+#include "gucefCOM_CHTTPServer.h"
+#define GUCEF_COM_CHTTPSERVER_H
+#endif /* GUCEF_COM_CHTTPSERVER_H */
+
+#include "gucefCOM_CAsyncHttpServerRequestHandler.h"
 
 /*-------------------------------------------------------------------------//
 //                                                                         //
@@ -36,137 +49,98 @@ namespace COM {
 
 /*-------------------------------------------------------------------------//
 //                                                                         //
+//      GLOBAL VARS                                                        //
+//                                                                         //
+//-------------------------------------------------------------------------*/
+
+const CORE::CString CAsyncHttpServerRequestHandler::TaskType = "AsyncHttpServerRequestHandler";
+const CORE::CEvent CAsyncHttpServerRequestHandler::AsyncHttpServerRequestHandlingCompletedEvent = "GUCEF::COM::CAsyncHttpServerRequestHandler::AsyncHttpServerRequestHandlingCompletedEvent";
+
+/*-------------------------------------------------------------------------//
+//                                                                         //
 //      IMPLEMENTATION                                                     //
 //                                                                         //
 //-------------------------------------------------------------------------*/
 
-CDefaultHTTPServerRouter::CDefaultHTTPServerRouter( void )
-    : CIHTTPServerRouter()
-    , m_mountPath()
-    , m_serviceRoot()
-    , m_controller( GUCEF_NULL )
-    , m_resourceMap()
+void 
+CAsyncHttpServerRequestHandler::RegisterEvents( void )
+{GUCEF_TRACE;
+
+    AsyncHttpServerRequestHandlingCompletedEvent.Initialize();
+}
+
+/*-------------------------------------------------------------------------*/
+
+CAsyncHttpServerRequestHandler::CAsyncHttpServerRequestHandler()
+    : CORE::CTaskConsumer()
+{GUCEF_TRACE;
+
+    RegisterEvents();
+}
+
+/*-------------------------------------------------------------------------*/
+
+CAsyncHttpServerRequestHandler::CAsyncHttpServerRequestHandler( const CAsyncHttpServerRequestHandler& src )
+    : CORE::CTaskConsumer()
 {GUCEF_TRACE;
 
 }
 
 /*-------------------------------------------------------------------------*/
-    
-CDefaultHTTPServerRouter::CDefaultHTTPServerRouter( const CDefaultHTTPServerRouter& src )
-    : CIHTTPServerRouter( src )
-    , m_mountPath( src.m_mountPath )
-    , m_serviceRoot( src.m_serviceRoot )
-    , m_controller( src.m_controller )
-    , m_resourceMap( src.m_resourceMap )
+
+CAsyncHttpServerRequestHandler::~CAsyncHttpServerRequestHandler()
 {GUCEF_TRACE;
 
 }
 
 /*-------------------------------------------------------------------------*/
-    
-CDefaultHTTPServerRouter::~CDefaultHTTPServerRouter()
+
+CORE::CString
+CAsyncHttpServerRequestHandler::GetType( void ) const
 {GUCEF_TRACE;
 
-    m_resourceMap.clear();
-    m_controller = GUCEF_NULL;
-}
-
-/*-------------------------------------------------------------------------*/
-    
-CDefaultHTTPServerRouter&
-CDefaultHTTPServerRouter::operator=( const CDefaultHTTPServerRouter& src )
-{GUCEF_TRACE;
-
-    m_mountPath = src.m_mountPath;
-    m_serviceRoot = src.m_serviceRoot;
-    m_controller = src.m_controller;
-    m_resourceMap = src.m_resourceMap;
-    return *this;
+    return TaskType;
 }
 
 /*-------------------------------------------------------------------------*/
 
-CIHTTPServerRouter::THTTPServerResourcePtr 
-CDefaultHTTPServerRouter::ResolveUriToResource( const CString& uri )
+bool
+CAsyncHttpServerRequestHandler::OnTaskStart( CORE::CICloneable* taskData )
 {GUCEF_TRACE;
 
-    TResourceMap::iterator i = m_resourceMap.find( uri );
-    if ( i != m_resourceMap.end() )
+    // This is a simplistic task, no bootstrap is required.
+    GUCEF_DEBUG_LOG( CORE::LOGLEVEL_NORMAL, "AsyncHttpServerRequestHandler(" + CORE::PointerToString( this ) + "):OnTaskStart" );
+    return true;
+}
+
+/*-------------------------------------------------------------------------*/
+
+bool
+CAsyncHttpServerRequestHandler::OnTaskCycle( CORE::CICloneable* taskData )
+{GUCEF_TRACE;
+
+    time_t startTime = time( NULL );
+    GUCEF_DEBUG_LOG( CORE::LOGLEVEL_NORMAL, "AsyncHttpServerRequestHandler(" + CORE::PointerToString( this ) + "):OnTaskCycle" );
+
+    CHttpRequestData* httpRequestData = static_cast< CHttpRequestData* >( taskData );
+    if ( GUCEF_NULL == httpRequestData )
     {
-        return (*i).second;
-    }
-    return CIHTTPServerRouter::THTTPServerResourcePtr();    
-}
-
-/*-------------------------------------------------------------------------*/
-
-bool 
-CDefaultHTTPServerRouter::SetResourceMapping( const CString& uriSegment       ,
-                                              THTTPServerResourcePtr resource )
-{GUCEF_TRACE;
-
-    m_resourceMap[ uriSegment ] = resource;
-    return true;    
-}
-
-/*-------------------------------------------------------------------------*/
-
-bool 
-CDefaultHTTPServerRouter::RemoveResourceMapping( const CString& uriSegment )
-{GUCEF_TRACE;
-
-    TResourceMap::iterator i = m_resourceMap.find( uriSegment );
-    if ( i != m_resourceMap.end() )
-    {
-        m_resourceMap.erase( i );
+        GUCEF_ERROR_LOG( CORE::LOGLEVEL_NORMAL, "AsyncHttpServerRequestHandler:OnTaskCycle: No task data (http request) to operate upon" );
         return true;
     }
-    return false;
+
+
+    return true;
 }
 
 /*-------------------------------------------------------------------------*/
-    
+
 void
-CDefaultHTTPServerRouter::SetServiceRoot( const CString& serviceRoot )
-{GUCEF_TRACE;
-    
-    m_serviceRoot = serviceRoot;
-}
-
-/*-------------------------------------------------------------------------*/
-    
-const CString& 
-CDefaultHTTPServerRouter::GetServiceRoot( void ) const
+CAsyncHttpServerRequestHandler::OnTaskEnd( CORE::CICloneable* taskData )
 {GUCEF_TRACE;
 
-    return m_serviceRoot;
-}
-
-/*-------------------------------------------------------------------------*/
-    
-void 
-CDefaultHTTPServerRouter::SetMountPath( const CString& mountPath )
-{GUCEF_TRACE;
-
-    m_mountPath = mountPath;
-}
-
-/*-------------------------------------------------------------------------*/
-    
-const CString& 
-CDefaultHTTPServerRouter::GetMountPath( void ) const
-{GUCEF_TRACE;
-
-    return m_mountPath;
-}
-
-/*-------------------------------------------------------------------------*/
-    
-void 
-CDefaultHTTPServerRouter::SetRouterController( CIHTTPServerRouterController& controller )
-{GUCEF_TRACE;
-
-    m_controller = &controller;
+    // This is a simplistic task, no shutdown or cleanup is required.
+    GUCEF_DEBUG_LOG( CORE::LOGLEVEL_NORMAL, "AsyncHttpServerRequestHandler(" + CORE::PointerToString( this ) + "):OnTaskEnd" );
 }
 
 /*-------------------------------------------------------------------------//
@@ -175,7 +149,7 @@ CDefaultHTTPServerRouter::SetRouterController( CIHTTPServerRouterController& con
 //                                                                         //
 //-------------------------------------------------------------------------*/
 
-} /* namespace COM */
-} /* namespace GUCEF */
+}; /* namespace COM */
+}; /* namespace GUCEF */
 
 /*-------------------------------------------------------------------------*/

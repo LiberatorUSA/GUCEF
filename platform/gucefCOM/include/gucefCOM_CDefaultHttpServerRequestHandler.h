@@ -17,8 +17,8 @@
  *  limitations under the License.
  */
 
-#ifndef CGUCEFCOMMODULE_H
-#define CGUCEFCOMMODULE_H
+#ifndef GUCEF_COM_CDEFAULTHTTPSERVERREQUESTHANDLER_H
+#define GUCEF_COM_CDEFAULTHTTPSERVERREQUESTHANDLER_H
 
 /*-------------------------------------------------------------------------//
 //                                                                         //
@@ -26,10 +26,15 @@
 //                                                                         //
 //-------------------------------------------------------------------------*/
 
-#ifndef GUCEFCOM_MACROS_H
-#include "gucefCOM_macros.h"      /* often used gucefCOM macros */
-#define GUCEFCOM_MACROS_H
-#endif /* GUCEFCOM_MACROS_H ? */
+#ifndef GUCEF_COM_CIHTTPSERVERREQUESTHANDLER_H
+#include "gucefCOM_CIHttpServerRequestHandler.h"
+#define GUCEF_COM_CIHTTPSERVERREQUESTHANDLER_H
+#endif /* GUCEF_COM_CIHTTPSERVERREQUESTHANDLER_H ? */
+
+#ifndef GUCEF_COM_CIHTTPSERVERROUTERCONTROLLER_H
+#include "gucefCOM_CIHTTPServerRouterController.h"
+#define GUCEF_COM_CIHTTPSERVERROUTERCONTROLLER_H
+#endif /* GUCEF_COM_CIHTTPSERVERROUTERCONTROLLER_H ? */
 
 /*-------------------------------------------------------------------------//
 //                                                                         //
@@ -46,19 +51,42 @@ namespace COM {
 //                                                                         //
 //-------------------------------------------------------------------------*/
 
-class CGUCEFCOMModule
+class GUCEF_COM_EXPORT_CPP CDefaultHttpServerRequestHandler : public CIHttpServerRequestHandler
 {
-        public:
-        
-        static bool Load( void );
-        
-        static bool Unload( void );
-        
-        private:
-        CGUCEFCOMModule( void );
-        CGUCEFCOMModule( const CGUCEFCOMModule& src );
-        ~CGUCEFCOMModule();
-        CGUCEFCOMModule& operator=( const CGUCEFCOMModule& src );
+    public:
+
+    typedef std::vector< CString > TStringVector;
+
+    virtual CHttpResponseData* OnRead( const CHttpRequestData& request ) GUCEF_VIRTUAL_OVERRIDE;
+
+    virtual CHttpResponseData* OnReadMetaData( const CHttpRequestData& request ) GUCEF_VIRTUAL_OVERRIDE;
+    
+    virtual CHttpResponseData* OnUpdate( const CHttpRequestData& request ,
+                                       bool isDeltaUpdateOnly          ) GUCEF_VIRTUAL_OVERRIDE;
+    
+    virtual CHttpResponseData* OnCreate( const CHttpRequestData& request ) GUCEF_VIRTUAL_OVERRIDE;
+    
+    virtual CHttpResponseData* OnDelete( const CHttpRequestData& request ) GUCEF_VIRTUAL_OVERRIDE;
+
+    virtual bool SetRouterController( CIHTTPServerRouterController* routerController ) GUCEF_VIRTUAL_OVERRIDE;
+    
+    virtual CIHTTPServerRouterController* GetRouterController( void ) const GUCEF_VIRTUAL_OVERRIDE;
+
+    CDefaultHttpServerRequestHandler( CIHTTPServerRouterController* routerController = GUCEF_NULL );
+    CDefaultHttpServerRequestHandler( const CDefaultHttpServerRequestHandler& src );
+    virtual ~CDefaultHttpServerRequestHandler();
+
+    private:
+
+    CHttpResponseData* PerformReadOperation( const CHttpRequestData& request , 
+                                           bool contentRequested           );
+
+    bool MatchResourceVersion( const CString& resourceVersion  ,
+                               const TStringVector& searchList );
+
+    private:
+
+    CIHTTPServerRouterController* m_routerController;
 };
 
 /*-------------------------------------------------------------------------//
@@ -67,20 +95,9 @@ class CGUCEFCOMModule
 //                                                                         //
 //-------------------------------------------------------------------------*/
 
-}; /* namespace COM */
-}; /* namespace GUCEF */
+} /* namespace COM */
+} /* namespace GUCEF */
 
 /*-------------------------------------------------------------------------*/
-          
-#endif /* CGUCEFCOMMODULE_H ? */
 
-/*-------------------------------------------------------------------------//
-//                                                                         //
-//      Info & Changes                                                     //
-//                                                                         //
-//-------------------------------------------------------------------------//
-
-- 12-02-2005 :
-        - Initial implementation
-
------------------------------------------------------------------------------*/
+#endif /* GUCEF_COM_CDEFAULTHTTPSERVERREQUESTHANDLER_H ? */

@@ -175,13 +175,17 @@ class CTBasicSharedPtr : public virtual MT::CILockable
 
     CTBasicSharedPtr& operator=( int nullValue );
 
-    inline bool operator==( int nullValue ) const;
+    inline bool operator==( Int32 nullValue ) const;
+
+    inline bool operator==( Int64 nullValue ) const;
 
     inline bool operator==( const void* other ) const;
 
     inline bool operator==( const CTBasicSharedPtr& other ) const;
 
-    inline bool operator!=( int other ) const;
+    inline bool operator!=( Int32 other ) const;
+
+    inline bool operator!=( Int64 other ) const;
 
     inline bool operator!=( const void* other ) const;
 
@@ -494,15 +498,59 @@ CTBasicSharedPtr< T >::operator==( const void* other ) const
 
 /*-------------------------------------------------------------------------*/
 
+#ifdef GUCEF_32BIT
+
 template< typename T >
 inline bool
-CTBasicSharedPtr< T >::operator==( int other ) const
+CTBasicSharedPtr< T >::operator==( Int32 other ) const
 {GUCEF_TRACE;
 
-    if ( 0 == other ) return GUCEF_NULL == m_ptr;
-    if ( sizeof( int ) != sizeof( m_ptr ) ) return false;
+    if ( 0 == other ) 
+        return GUCEF_NULL == m_ptr;
+    if ( sizeof( int ) != sizeof( m_ptr ) ) 
+        return false;
     return reinterpret_cast< void* >( other ) == m_ptr;
 }
+
+#else
+
+template< typename T >
+inline bool
+CTBasicSharedPtr< T >::operator==( Int32 other ) const
+{GUCEF_TRACE;
+
+    return false;
+}
+
+#endif
+
+/*-------------------------------------------------------------------------*/
+
+#ifdef GUCEF_64BIT
+
+template< typename T >
+inline bool
+CTBasicSharedPtr< T >::operator==( Int64 other ) const
+{GUCEF_TRACE;                          
+
+    if ( 0 == other ) 
+        return GUCEF_NULL == m_ptr;
+    if ( sizeof( int ) != sizeof( m_ptr ) ) 
+        return false;
+    return reinterpret_cast< void* >( other ) == m_ptr;
+}
+
+#else
+
+template< typename T >
+inline bool
+CTBasicSharedPtr< T >::operator==( Int64 other ) const
+{GUCEF_TRACE;
+
+    return false;
+}
+
+#endif
 
 /*-------------------------------------------------------------------------*/
 
@@ -540,15 +588,59 @@ CTBasicSharedPtr< T >::operator!=( const CTBasicSharedPtr< T >& other ) const
 
 /*-------------------------------------------------------------------------*/
 
+#ifdef GUCEF_32BIT
+
 template< typename T >
 inline bool
-CTBasicSharedPtr< T >::operator!=( int other ) const
+CTBasicSharedPtr< T >::operator!=( Int32 other ) const
 {GUCEF_TRACE;
 
-    if ( 0 == other ) return GUCEF_NULL != m_ptr;
-    if ( sizeof( int ) != sizeof( m_ptr ) ) return true;
+    if ( 0 == other ) 
+        return GUCEF_NULL != m_ptr;
+    if ( sizeof( int ) != sizeof( m_ptr ) ) 
+        return true;
     return reinterpret_cast< void* >( other ) != m_ptr;
 }
+
+#else
+
+template< typename T >
+inline bool
+CTBasicSharedPtr< T >::operator!=( Int32 other ) const
+{GUCEF_TRACE;
+
+    return true;
+}
+
+#endif
+
+/*-------------------------------------------------------------------------*/
+
+#ifdef GUCEF_64BIT
+
+template< typename T >
+inline bool
+CTBasicSharedPtr< T >::operator!=( Int64 other ) const
+{GUCEF_TRACE;
+
+    if ( 0 == other ) 
+        return GUCEF_NULL != m_ptr;
+    if ( sizeof( int ) != sizeof( m_ptr ) ) 
+        return true;
+    return reinterpret_cast< void* >( other ) != m_ptr;
+}
+
+#else
+
+template< typename T >
+inline bool
+CTBasicSharedPtr< T >::operator!=( Int64 other ) const
+{GUCEF_TRACE;
+
+    return true;
+}
+
+#endif
 
 /*-------------------------------------------------------------------------*/
 
