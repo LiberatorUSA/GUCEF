@@ -78,8 +78,11 @@ class GUCEF_COM_EXPORT_CPP CHttpResponseData : public CORE::CICloneable
     CString contentType;
     CString location;
     TStringVector acceptedTypes;
+    bool keepConnectionsAlive;
 
     virtual CORE::CICloneable* Clone( void ) const GUCEF_VIRTUAL_OVERRIDE;
+
+    bool Serialize( CORE::CDynamicBuffer& outputBuffer ) const;
 
     CHttpResponseData( void );
     CHttpResponseData( const CHttpResponseData& src );

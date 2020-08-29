@@ -54,7 +54,7 @@ class GUCEF_COM_EXPORT_CPP CDefaultHTTPServerRouterController : public CIHTTPSer
 {   
     public:
     
-    CDefaultHTTPServerRouterController( CHTTPServer& server );
+    CDefaultHTTPServerRouterController( void );
     
     virtual ~CDefaultHTTPServerRouterController();
     
@@ -74,8 +74,7 @@ class GUCEF_COM_EXPORT_CPP CDefaultHTTPServerRouterController : public CIHTTPSer
     virtual void RemoveRouterMapping( const CString& uriBase );
     
     private:
-    
-    CDefaultHTTPServerRouterController( void );                                                     /**< impossible */
+
     CDefaultHTTPServerRouterController( const CDefaultHTTPServerRouterController& src );            /**< not implemented */
     CDefaultHTTPServerRouterController& operator=( const CDefaultHTTPServerRouterController& src ); /**< not implemented */
 
@@ -86,7 +85,6 @@ class GUCEF_COM_EXPORT_CPP CDefaultHTTPServerRouterController : public CIHTTPSer
     typedef std::map< CString, CIHTTPServerRouter* > TRouterMap;
     
     TRouterMap m_routerMap;
-    CHTTPServer* m_httpServer;
 };
 
 /*-------------------------------------------------------------------------//

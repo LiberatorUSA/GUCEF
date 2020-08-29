@@ -36,12 +36,7 @@
 #define GUCEF_COM_CHTTPSERVER_H
 #endif /* GUCEF_COM_CHTTPSERVER_H */
 
-#ifndef GUCEF_COM_CASYNCHTTPSERVERRESPONSEHANDLER_H
 #include "gucefCOM_CAsyncHttpServerResponseHandler.h"
-#define GUCEF_COM_CASYNCHTTPSERVERRESPONSEHANDLER_H
-#endif /* GUCEF_COM_CASYNCHTTPSERVERRESPONSEHANDLER_H */
-
-#include "gucefCOM_CAsyncHttpServerRequestHandler.h"
 
 /*-------------------------------------------------------------------------//
 //                                                                         //
@@ -58,8 +53,8 @@ namespace COM {
 //                                                                         //
 //-------------------------------------------------------------------------*/
 
-const CORE::CString CAsyncHttpServerRequestHandler::TaskType = "AsyncHttpServerRequestHandler";
-const CORE::CEvent CAsyncHttpServerRequestHandler::AsyncHttpServerRequestHandlingCompletedEvent = "GUCEF::COM::CAsyncHttpServerRequestHandler::AsyncHttpServerRequestHandlingCompletedEvent";
+const CORE::CString CAsyncHttpServerResponseHandler::TaskType = "AsyncHttpServerResponseHandler";
+const CORE::CEvent CAsyncHttpServerResponseHandler::AsyncHttpServerResponseHandlingCompletedEvent = "GUCEF::COM::CAsyncHttpServerResponseHandler::AsyncHttpServerResponseHandlingCompletedEvent";
 
 /*-------------------------------------------------------------------------//
 //                                                                         //
@@ -67,19 +62,26 @@ const CORE::CEvent CAsyncHttpServerRequestHandler::AsyncHttpServerRequestHandlin
 //                                                                         //
 //-------------------------------------------------------------------------*/
 
-CAsyncHttpRequestData::CAsyncHttpRequestData( void )
-    : CHttpRequestData()
+CAsyncHttpResponseData::CAsyncHttpResponseData( CAsyncHttpRequestData* request )
+    : CHttpResponseData()
     , httpServer( GUCEF_NULL )
     , clientConnectionId( 0 )
     , remoteClientAddress()
 {GUCEF_TRACE;
 
+    if ( GUCEF_NULL != request )
+    {
+        httpServer = request->httpServer;
+        clientConnectionId = request->clientConnectionId;
+        remoteClientAddress = request->remoteClientAddress;
+        keepConnectionsAlive = request->keepConnectionsAlive;
+    }
 }
 
 /*-------------------------------------------------------------------------*/
 
-CAsyncHttpRequestData::CAsyncHttpRequestData( const CAsyncHttpRequestData& src )
-    : CHttpRequestData( src )
+CAsyncHttpResponseData::CAsyncHttpResponseData( const CAsyncHttpResponseData& src )
+    : CHttpResponseData( src )
     , httpServer( src.httpServer )
     , clientConnectionId( src.clientConnectionId )
     , remoteClientAddress( src.remoteClientAddress )
@@ -89,7 +91,7 @@ CAsyncHttpRequestData::CAsyncHttpRequestData( const CAsyncHttpRequestData& src )
 
 /*-------------------------------------------------------------------------*/
 
-CAsyncHttpRequestData::~CAsyncHttpRequestData()
+CAsyncHttpResponseData::~CAsyncHttpResponseData()
 {GUCEF_TRACE;
 
 }
@@ -97,26 +99,25 @@ CAsyncHttpRequestData::~CAsyncHttpRequestData()
 /*-------------------------------------------------------------------------*/
 
 CORE::CICloneable* 
-CAsyncHttpRequestData::Clone( void ) const 
+CAsyncHttpResponseData::Clone( void ) const 
 {GUCEF_TRACE;
 
-    return new CAsyncHttpRequestData( *this );
+    return new CAsyncHttpResponseData( *this );
 }
 
 /*-------------------------------------------------------------------------*/
 
 void 
-CAsyncHttpServerRequestHandler::RegisterEvents( void )
+CAsyncHttpServerResponseHandler::RegisterEvents( void )
 {GUCEF_TRACE;
 
-    AsyncHttpServerRequestHandlingCompletedEvent.Initialize();
+    AsyncHttpServerResponseHandlingCompletedEvent.Initialize();
 }
 
 /*-------------------------------------------------------------------------*/
 
-CAsyncHttpServerRequestHandler::CAsyncHttpServerRequestHandler( void )
+CAsyncHttpServerResponseHandler::CAsyncHttpServerResponseHandler( void )
     : CORE::CTaskConsumer() 
-    , m_requestHandler( GUCEF_NULL )
 {GUCEF_TRACE;
 
     RegisterEvents();
@@ -124,26 +125,23 @@ CAsyncHttpServerRequestHandler::CAsyncHttpServerRequestHandler( void )
 
 /*-------------------------------------------------------------------------*/
 
-CAsyncHttpServerRequestHandler::CAsyncHttpServerRequestHandler( const CAsyncHttpServerRequestHandler& src )
+CAsyncHttpServerResponseHandler::CAsyncHttpServerResponseHandler( const CAsyncHttpServerResponseHandler& src )
     : CORE::CTaskConsumer()
-    , m_requestHandler( GUCEF_NULL )
 {GUCEF_TRACE;
 
 }
 
 /*-------------------------------------------------------------------------*/
 
-CAsyncHttpServerRequestHandler::~CAsyncHttpServerRequestHandler()
+CAsyncHttpServerResponseHandler::~CAsyncHttpServerResponseHandler()
 {GUCEF_TRACE;
 
-    delete m_requestHandler;
-    m_requestHandler = GUCEF_NULL;
 }
 
 /*-------------------------------------------------------------------------*/
 
 CORE::CString
-CAsyncHttpServerRequestHandler::GetType( void ) const
+CAsyncHttpServerResponseHandler::GetType( void ) const
 {GUCEF_TRACE;
 
     return TaskType;
@@ -152,83 +150,45 @@ CAsyncHttpServerRequestHandler::GetType( void ) const
 /*-------------------------------------------------------------------------*/
 
 bool
-CAsyncHttpServerRequestHandler::OnTaskStart( CORE::CICloneable* taskData )
+CAsyncHttpServerResponseHandler::OnTaskStart( CORE::CICloneable* taskData )
 {GUCEF_TRACE;
 
-    GUCEF_DEBUG_LOG( CORE::LOGLEVEL_NORMAL, "AsyncHttpServerRequestHandler(" + CORE::PointerToString( this ) + "):OnTaskStart" );
-
-    CAsyncHttpRequestData* httpRequestData = static_cast< CAsyncHttpRequestData* >( taskData );
-    if ( GUCEF_NULL != httpRequestData )
-    {
-        m_requestHandler = httpRequestData->httpServer->GetRequestHandlerFactory()->Create();
-        if ( GUCEF_NULL == m_requestHandler )
-            return false;
-    }
+    GUCEF_DEBUG_LOG( CORE::LOGLEVEL_NORMAL, "AsyncHttpServerResponseHandler(" + CORE::PointerToString( this ) + "):OnTaskStart" );
     return true;
 }
 
 /*-------------------------------------------------------------------------*/
 
 bool
-CAsyncHttpServerRequestHandler::OnTaskCycle( CORE::CICloneable* taskData )
+CAsyncHttpServerResponseHandler::OnTaskCycle( CORE::CICloneable* taskData )
 {GUCEF_TRACE;
 
-    time_t startTime = time( NULL );
-    GUCEF_DEBUG_LOG( CORE::LOGLEVEL_NORMAL, "AsyncHttpServerRequestHandler(" + CORE::PointerToString( this ) + "):OnTaskCycle" );
+    GUCEF_DEBUG_LOG( CORE::LOGLEVEL_NORMAL, "AsyncHttpServerResponseHandler(" + CORE::PointerToString( this ) + "):OnTaskCycle" );
 
-    CAsyncHttpRequestData* httpRequestData = static_cast< CAsyncHttpRequestData* >( taskData );
-    if ( GUCEF_NULL == httpRequestData )
+    CAsyncHttpResponseData* httpResponseData = static_cast< CAsyncHttpResponseData* >( taskData );
+    if ( GUCEF_NULL == httpResponseData )
     {
-        GUCEF_ERROR_LOG( CORE::LOGLEVEL_NORMAL, "AsyncHttpServerRequestHandler(" + CORE::PointerToString( this ) + "):OnTaskCycle: No task data (http request) to operate upon" );
+        GUCEF_ERROR_LOG( CORE::LOGLEVEL_NORMAL, "AsyncHttpServerResponseHandler(" + CORE::PointerToString( this ) + "):OnTaskCycle: No task data (http response) to operate upon" );
         return true;
     }
 
-    if ( GUCEF_NULL == m_requestHandler )
+    CORE::CDynamicBuffer fullResponse;
+    if ( httpResponseData->Serialize( fullResponse ) )
     {
-        m_requestHandler = httpRequestData->httpServer->GetRequestHandlerFactory()->Create();
-        if ( GUCEF_NULL == m_requestHandler )
-            return true;
+        httpResponseData->httpServer->SendResponseASync( httpResponseData->clientConnectionId  ,
+                                                         fullResponse                          ,
+                                                         httpResponseData->remoteClientAddress );
     }
-
-    CAsyncHttpResponseData* response = new CAsyncHttpResponseData( httpRequestData );
-    m_requestHandler->OnRequest( *httpRequestData, *response );
-    
-    if ( !CORE::CCoreGlobal::Instance()->GetTaskManager().QueueTask( CAsyncHttpServerResponseHandler::TaskType, 
-                                                                     response, 
-                                                                     GUCEF_NULL, 
-                                                                     GUCEF_NULL, 
-                                                                     true ) )
-    {
-        // Failed to queue task to send the response to the client
-        GUCEF_ERROR_LOG( CORE::LOGLEVEL_NORMAL, "AsyncHttpServerRequestHandler(" + CORE::PointerToString( this ) + "):OnTaskCycle: Failed to QueueTask to disptach result to client after request processing" );
-
-        // Use this thread instead as a fallback
-        CORE::CDynamicBuffer fullResponse;
-        if ( response->Serialize( fullResponse ) )
-        {
-            httpRequestData->httpServer->SendResponseASync( response->clientConnectionId  ,
-                                                            fullResponse                  ,
-                                                            response->remoteClientAddress );
-        }
-    }
-
     return true;
 }
 
 /*-------------------------------------------------------------------------*/
 
 void
-CAsyncHttpServerRequestHandler::OnTaskEnd( CORE::CICloneable* taskData )
+CAsyncHttpServerResponseHandler::OnTaskEnd( CORE::CICloneable* taskData )
 {GUCEF_TRACE;
 
-    GUCEF_DEBUG_LOG( CORE::LOGLEVEL_NORMAL, "AsyncHttpServerRequestHandler(" + CORE::PointerToString( this ) + "):OnTaskEnd" );
-
-    CAsyncHttpRequestData* httpRequestData = static_cast< CAsyncHttpRequestData* >( taskData );
-    if ( GUCEF_NULL != httpRequestData )
-    {
-         httpRequestData->httpServer->GetRequestHandlerFactory()->Destroy( m_requestHandler );
-         m_requestHandler = GUCEF_NULL;
-    }
+    GUCEF_DEBUG_LOG( CORE::LOGLEVEL_NORMAL, "AsyncHttpServerResponseHandler(" + CORE::PointerToString( this ) + "):OnTaskEnd" );
 }
 
 /*-------------------------------------------------------------------------//

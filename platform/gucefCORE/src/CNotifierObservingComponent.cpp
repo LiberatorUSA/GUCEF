@@ -54,10 +54,22 @@ CNotifierObservingComponent::OnNotify( CNotifier* notifier                 ,
                                        CICloneable* eventdata /* = NULL */ )
 {GUCEF_TRACE;
 
-    m_owner->OnNotify( notifier  ,
-                       eventid   ,
-                       eventdata );
-}                                         
+    if ( GUCEF_NULL != m_owner )
+        m_owner->OnNotify( notifier  ,
+                           eventid   ,
+                           eventdata );
+}
+
+/*-------------------------------------------------------------------------*/
+
+const MT::CILockable* 
+CNotifierObservingComponent::AsLockable( void ) const
+{GUCEF_TRACE;
+
+    if ( GUCEF_NULL != m_owner )
+        return m_owner->AsLockable();
+    return GUCEF_NULL;
+}
 
 /*-------------------------------------------------------------------------*/
 
@@ -65,7 +77,9 @@ bool
 CNotifierObservingComponent::Lock( void ) const
 {GUCEF_TRACE;
 
-    return m_owner->Lock();
+    if ( GUCEF_NULL != m_owner )
+        return m_owner->Lock();
+    return false;
 }
 
 /*-------------------------------------------------------------------------*/
@@ -74,7 +88,9 @@ bool
 CNotifierObservingComponent::Unlock( void ) const
 {GUCEF_TRACE;
 
-    return m_owner->Unlock();
+    if ( GUCEF_NULL != m_owner )
+        return m_owner->Unlock();
+    return false;
 }
 
 /*-------------------------------------------------------------------------*/
@@ -120,7 +136,9 @@ void
 CNotifierObservingComponent::SetOwner( CObservingNotifier* owner )
 {GUCEF_TRACE;
 
+    Lock();
     m_owner = owner;
+    Unlock();
 }
 
 /*-------------------------------------------------------------------------*/
@@ -129,7 +147,7 @@ const CString&
 CNotifierObservingComponent::GetClassTypeName( void ) const
 {GUCEF_TRACE;
 
-    if ( NULL != m_owner )
+    if ( GUCEF_NULL != m_owner )
     {
         return m_owner->GetClassTypeName();
     }

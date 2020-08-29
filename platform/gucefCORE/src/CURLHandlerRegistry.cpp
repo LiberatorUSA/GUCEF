@@ -61,6 +61,15 @@ CURLHandlerRegistry::~CURLHandlerRegistry()
 
 /*-------------------------------------------------------------------------*/
 
+const MT::CILockable* 
+CURLHandlerRegistry::AsLockable( void ) const
+{GUCEF_TRACE;
+
+    return this;
+}
+
+/*-------------------------------------------------------------------------*/
+
 bool
 CURLHandlerRegistry::Lock( void ) const
 {GUCEF_TRACE;

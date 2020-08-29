@@ -236,6 +236,15 @@ CObserver::UnsubscribeFrom( CNotifier& notifier )
 
 /*-------------------------------------------------------------------------*/
 
+const MT::CILockable* 
+CObserver::AsLockable( void ) const
+{GUCEF_TRACE;
+
+    return this;
+}
+
+/*-------------------------------------------------------------------------*/
+
 bool
 CObserver::Lock( void ) const
 {GUCEF_TRACE;

@@ -167,6 +167,8 @@ class CTMailBox : public virtual MT::CILockable
 
     typename TMailList::const_iterator end( void ) const;
 
+    virtual const CILockable* AsLockable( void ) const GUCEF_VIRTUAL_OVERRIDE;
+
     protected:
 
     virtual bool Lock( void ) const GUCEF_VIRTUAL_OVERRIDE;
@@ -411,6 +413,15 @@ CTMailBox< T >::AmountOfMail( void ) const
 {
     CObjectScopeLock lock( this );
     return (UInt32) m_mailStack.size();
+}
+
+/*-------------------------------------------------------------------------*/
+
+template< typename T >
+const MT::CILockable* 
+CTMailBox< T >::AsLockable( void ) const
+{
+    return this;
 }
 
 /*--------------------------------------------------------------------------*/

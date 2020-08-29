@@ -69,6 +69,8 @@ class GUCEF_CORE_PUBLIC_CPP CCodecRegistry : public CTONRegistry< CTONRegistry< 
     typedef CTONRegistry< CICodec >::TStringList TStringList;
     typedef CTONRegistry< CICodec >::TRegisteredObjPtr TICodecPtr;
 
+    virtual const MT::CILockable* AsLockable( void ) const GUCEF_VIRTUAL_OVERRIDE;
+
     protected:
 
     virtual bool Lock( void ) const GUCEF_VIRTUAL_OVERRIDE;

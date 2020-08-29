@@ -24,6 +24,7 @@ set( HEADER_FILES
   include/gucefCOM.h
   include/gucefCOMDLLInit.h
   include/gucefCOM_CAsyncHttpServerRequestHandler.h
+  include/gucefCOM_CAsyncHttpServerResponseHandler.h
   include/gucefCOM_CCodecBasedHTTPServerResource.h
   include/gucefCOM_CComGlobal.h
   include/gucefCOM_CDefaultHTTPServerResource.h
@@ -54,6 +55,7 @@ set( SOURCE_FILES
   src/CPHUDPSocket.cpp
   src/gucefCOM.cpp
   src/gucefCOM_CAsyncHttpServerRequestHandler.cpp
+  src/gucefCOM_CAsyncHttpServerResponseHandler.cpp
   src/gucefCOM_CCodecBasedHTTPServerResource.cpp
   src/gucefCOM_CComGlobal.cpp
   src/gucefCOM_CDefaultHTTPServerResource.cpp

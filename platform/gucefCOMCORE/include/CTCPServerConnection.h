@@ -103,6 +103,8 @@ class GUCEF_COMCORE_EXPORT_CPP CTCPServerConnection : public CTCPConnection
     virtual bool Send( const void* dataSource , 
                        const UInt32 dataSize  ) GUCEF_VIRTUAL_OVERRIDE;
 
+    bool Send( const CORE::CDynamicBuffer& content );
+
     virtual bool IsActive( void ) const GUCEF_VIRTUAL_OVERRIDE;
 
     /**

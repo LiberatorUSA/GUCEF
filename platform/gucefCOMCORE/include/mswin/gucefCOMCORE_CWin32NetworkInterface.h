@@ -66,6 +66,8 @@ class CWin32NetworkInterface : public virtual CINetworkInterface
     
     virtual const CORE::CString& GetClassTypeName( void ) const GUCEF_VIRTUAL_OVERRIDE;
 
+    virtual const CILockable* AsLockable( void ) const GUCEF_VIRTUAL_OVERRIDE;
+
     virtual CORE::CString GetCommunicationInterfaceType( void ) const GUCEF_VIRTUAL_OVERRIDE;
 
     virtual CString GetAdapterName( void ) const GUCEF_VIRTUAL_OVERRIDE;

@@ -61,6 +61,8 @@ class GUCEF_CORE_PUBLIC_CPP CDStoreCodecRegistry : public CTRegistry< CDStoreCod
     public:
     typedef TRegisteredObjPtr TDStoreCodecPtr;
 
+    virtual const CILockable* AsLockable( void ) const GUCEF_VIRTUAL_OVERRIDE;
+
     protected:
     
     virtual bool Lock( void ) const GUCEF_VIRTUAL_OVERRIDE;

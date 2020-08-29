@@ -206,7 +206,7 @@ CString::operator=( const std::string& src )
 
     delete []m_string;
     m_string = NULL;
-    m_length = src.size();
+    m_length = (UInt32) src.size();
 
     if ( m_length > 0 )
     {
@@ -306,9 +306,13 @@ bool
 CString::operator==( const char *other ) const
 {GUCEF_TRACE;
 
-    if ( !m_string || !other )
+    if ( GUCEF_NULL == m_string && GUCEF_NULL == other )
     {
-        return ( NULL == m_string ) && ( NULL == other );
+        return true;
+    }
+    if ( GUCEF_NULL == m_string || GUCEF_NULL == other )
+    {
+        return false;
     }
     return strcmp( m_string ,
                    other    ) == 0;
@@ -320,7 +324,11 @@ bool
 CString::operator==( const CString &other ) const
 {GUCEF_TRACE;
 
-    if ( !m_string || !other.m_string )
+    if ( GUCEF_NULL == m_string && GUCEF_NULL == other.m_string )
+    {
+        return true;
+    }
+    if ( GUCEF_NULL == m_string || GUCEF_NULL == other.m_string )
     {
         return false;
     }
@@ -334,7 +342,11 @@ bool
 CString::operator!=( const CString &other ) const
 {GUCEF_TRACE;
 
-    if ( !m_string || !other.m_string )
+    if ( GUCEF_NULL == m_string && GUCEF_NULL == other.m_string )
+    {
+        return false;
+    }
+    if ( GUCEF_NULL == m_string || GUCEF_NULL == other.m_string )
     {
         return true;
     }
@@ -348,9 +360,13 @@ bool
 CString::operator!=( const char *other ) const
 {GUCEF_TRACE;
 
-    if ( !m_string || !other )
+    if ( GUCEF_NULL == m_string && GUCEF_NULL == other )
     {
-        return !( ( NULL == m_string ) && ( NULL == other ) );
+        return false;
+    }
+    if ( GUCEF_NULL == m_string || GUCEF_NULL == other )
+    {
+        return true;
     }
     return strcmp( m_string ,
                    other   ) != 0;

@@ -53,12 +53,16 @@ class CObservingNotifier;
  */
 class GUCEF_CORE_PUBLIC_CPP CNotifierObservingComponent : public CObserver
 {
+    public:
+
+    virtual const MT::CILockable* AsLockable( void ) const GUCEF_VIRTUAL_OVERRIDE;
+    
     protected:
 
     virtual void OnNotify( CNotifier* notifier           ,
                            const CEvent& eventid         ,
                            CICloneable* eventdata = NULL );
-
+    
     virtual bool Lock( void ) const GUCEF_VIRTUAL_OVERRIDE;
 
     virtual bool Unlock( void ) const GUCEF_VIRTUAL_OVERRIDE;

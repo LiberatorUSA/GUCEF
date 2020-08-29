@@ -128,6 +128,8 @@ class CTObservingNotifierComponent : public CObservingNotifier
                             const CEvent& eventid         ,
                             CICloneable* eventData = NULL );
     
+    virtual const CILockable* AsLockable( void ) const GUCEF_VIRTUAL_OVERRIDE;
+    
     protected:
 
     virtual bool Lock( void ) const GUCEF_VIRTUAL_OVERRIDE;
@@ -270,6 +272,17 @@ CTObservingNotifierComponent< TOwnerClass >::OnNotify( CNotifier* notifier      
     m_componentOwner->OnNotify( notifier  ,
                                 eventid   ,
                                 eventdata );
+}
+
+/*-------------------------------------------------------------------------*/
+
+template< class BaseClass >
+const MT::CILockable* 
+CTObservingNotifierComponent< BaseClass >::AsLockable( void ) const
+{GUCEF_TRACE;
+
+    assert( GUCEF_NULL != m_componentOwner );
+    return m_componentOwner->AsLockable();
 }
 
 /*-------------------------------------------------------------------------*/

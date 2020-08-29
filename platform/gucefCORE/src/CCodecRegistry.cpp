@@ -61,6 +61,15 @@ CCodecRegistry::~CCodecRegistry()
 
 /*-------------------------------------------------------------------------*/
 
+const MT::CILockable* 
+CCodecRegistry::AsLockable( void ) const
+{GUCEF_TRACE;
+
+    return CTONRegistry< CTONRegistry< CICodec > >::AsLockable();
+}
+
+/*-------------------------------------------------------------------------*/
+
 bool
 CCodecRegistry::Lock( void ) const
 {GUCEF_TRACE;

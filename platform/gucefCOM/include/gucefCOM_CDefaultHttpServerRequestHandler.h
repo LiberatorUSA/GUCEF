@@ -57,16 +57,24 @@ class GUCEF_COM_EXPORT_CPP CDefaultHttpServerRequestHandler : public CIHttpServe
 
     typedef std::vector< CString > TStringVector;
 
-    virtual CHttpResponseData* OnRead( const CHttpRequestData& request ) GUCEF_VIRTUAL_OVERRIDE;
+    virtual bool OnRequest( const CHttpRequestData& request , 
+                            CHttpResponseData& response     ) GUCEF_VIRTUAL_OVERRIDE;
 
-    virtual CHttpResponseData* OnReadMetaData( const CHttpRequestData& request ) GUCEF_VIRTUAL_OVERRIDE;
+    virtual bool OnRead( const CHttpRequestData& request , 
+                         CHttpResponseData& response     ) GUCEF_VIRTUAL_OVERRIDE;
+
+    virtual bool OnReadMetaData( const CHttpRequestData& request , 
+                                 CHttpResponseData& response     ) GUCEF_VIRTUAL_OVERRIDE;
     
-    virtual CHttpResponseData* OnUpdate( const CHttpRequestData& request ,
-                                       bool isDeltaUpdateOnly          ) GUCEF_VIRTUAL_OVERRIDE;
+    virtual bool OnUpdate( const CHttpRequestData& request ,
+                           bool isDeltaUpdateOnly          ,
+                           CHttpResponseData& response     ) GUCEF_VIRTUAL_OVERRIDE;
     
-    virtual CHttpResponseData* OnCreate( const CHttpRequestData& request ) GUCEF_VIRTUAL_OVERRIDE;
+    virtual bool OnCreate( const CHttpRequestData& request ,
+                           CHttpResponseData& response ) GUCEF_VIRTUAL_OVERRIDE;
     
-    virtual CHttpResponseData* OnDelete( const CHttpRequestData& request ) GUCEF_VIRTUAL_OVERRIDE;
+    virtual bool OnDelete( const CHttpRequestData& request ,
+                           CHttpResponseData& response     ) GUCEF_VIRTUAL_OVERRIDE;
 
     virtual bool SetRouterController( CIHTTPServerRouterController* routerController ) GUCEF_VIRTUAL_OVERRIDE;
     
@@ -78,8 +86,9 @@ class GUCEF_COM_EXPORT_CPP CDefaultHttpServerRequestHandler : public CIHttpServe
 
     private:
 
-    CHttpResponseData* PerformReadOperation( const CHttpRequestData& request , 
-                                           bool contentRequested           );
+    bool PerformReadOperation( const CHttpRequestData& request , 
+                               bool contentRequested           ,
+                               CHttpResponseData& response     );
 
     bool MatchResourceVersion( const CString& resourceVersion  ,
                                const TStringVector& searchList );
@@ -88,6 +97,8 @@ class GUCEF_COM_EXPORT_CPP CDefaultHttpServerRequestHandler : public CIHttpServe
 
     CIHTTPServerRouterController* m_routerController;
 };
+
+typedef CORE::CTFactory< CIHttpServerRequestHandler, CDefaultHttpServerRequestHandler > TDefaultHttpServerRequestHandlerFactory;
 
 /*-------------------------------------------------------------------------//
 //                                                                         //

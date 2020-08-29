@@ -60,16 +60,24 @@ class GUCEF_COM_EXPORT_CPP CIHttpServerRequestHandler
 {
     public:
 
-    virtual CHttpResponseData* OnRead( const CHttpRequestData& request ) = 0;
+    virtual bool OnRequest( const CHttpRequestData& request ,
+                            CHttpResponseData& response     ) = 0;
 
-    virtual CHttpResponseData* OnReadMetaData( const CHttpRequestData& request ) = 0;
+    virtual bool OnRead( const CHttpRequestData& request ,
+                         CHttpResponseData& response     ) = 0;
+
+    virtual bool OnReadMetaData( const CHttpRequestData& request ,
+                                 CHttpResponseData& response     ) = 0;
     
-    virtual CHttpResponseData* OnUpdate( const CHttpRequestData& request ,
-                                       bool isDeltaUpdateOnly          ) = 0;
+    virtual bool OnUpdate( const CHttpRequestData& request ,
+                           bool isDeltaUpdateOnly          ,
+                           CHttpResponseData& response     ) = 0;
     
-    virtual CHttpResponseData* OnCreate( const CHttpRequestData& request ) = 0;
+    virtual bool OnCreate( const CHttpRequestData& request ,
+                           CHttpResponseData& response     ) = 0;
     
-    virtual CHttpResponseData* OnDelete( const CHttpRequestData& request ) = 0;
+    virtual bool OnDelete( const CHttpRequestData& request ,
+                           CHttpResponseData& response     ) = 0;
 
     virtual bool SetRouterController( CIHTTPServerRouterController* routerController ) = 0;
     
@@ -79,6 +87,10 @@ class GUCEF_COM_EXPORT_CPP CIHttpServerRequestHandler
     CIHttpServerRequestHandler( const CIHttpServerRequestHandler& src );
     virtual ~CIHttpServerRequestHandler();
 };
+
+/*-------------------------------------------------------------------------*/
+
+typedef CORE::CTFactoryBase< CIHttpServerRequestHandler > THttpServerRequestHandlerFactory;
 
 /*-------------------------------------------------------------------------//
 //                                                                         //

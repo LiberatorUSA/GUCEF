@@ -64,6 +64,8 @@ class GUCEF_CORE_PUBLIC_CPP CURLHandlerRegistry : public CTRegistry< CURLHandler
 
     virtual ~CURLHandlerRegistry();
 
+    virtual const MT::CILockable* AsLockable( void ) const GUCEF_VIRTUAL_OVERRIDE;
+
     protected:
 
     virtual bool Lock( void ) const GUCEF_VIRTUAL_OVERRIDE;

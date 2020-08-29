@@ -146,7 +146,7 @@ CDiscoveryManager::Register( CIDiscoveryEntryPtr entry )
     while ( i != m_clients.end() )
     {
         CIDiscoveryClientPtr c = (*i);
-        totalSuccess &= c->Register( entry );
+        totalSuccess = c->Register( entry ) && totalSuccess;
         ++i;
     }
     return totalSuccess;

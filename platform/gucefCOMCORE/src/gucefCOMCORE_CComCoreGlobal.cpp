@@ -103,6 +103,7 @@ typedef CORE::CTFactory< CORE::CTaskConsumer, CPingTaskConsumer > TPingTaskConsu
 //                                                                         //
 //-------------------------------------------------------------------------*/
 
+MT::CMutex CComCoreGlobal::g_dataLock;
 CComCoreGlobal* CComCoreGlobal::g_instance = NULL;
 
 /*-------------------------------------------------------------------------//
@@ -167,13 +168,18 @@ CComCoreGlobal::~CComCoreGlobal()
 /*-------------------------------------------------------------------------*/
 
 CComCoreGlobal*
-CComCoreGlobal::Instance( void )
+CComCoreGlobal::Instance()
 {GUCEF_TRACE;
 
-    if ( NULL == g_instance )
+    if ( GUCEF_NULL == g_instance )
     {
-        g_instance = new CComCoreGlobal();
-        g_instance->Initialize();
+        g_dataLock.Lock();
+        if ( NULL == g_instance )
+        {
+            g_instance = new CComCoreGlobal();
+            g_instance->Initialize();
+        }
+        g_dataLock.Unlock();
     }
     return g_instance;
 }

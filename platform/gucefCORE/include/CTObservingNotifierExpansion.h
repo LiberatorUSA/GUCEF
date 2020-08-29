@@ -90,6 +90,8 @@ class CTObservingNotifierExpansion : public BaseClass  ,
     const CObserver& AsObserver( void ) const;
     
     virtual const CString& GetClassTypeName( void ) const GUCEF_VIRTUAL_OVERRIDE;
+
+    virtual const MT::CILockable* AsLockable( void ) const GUCEF_VIRTUAL_OVERRIDE;
     
     protected:
     
@@ -311,6 +313,16 @@ CTObservingNotifierExpansion< BaseClass >::OnNotify( CNotifier* /* notifier */  
 {GUCEF_TRACE;
 
     /* implemented to avoid mandatory implementation by descending classes */
+}
+
+/*-------------------------------------------------------------------------*/
+
+template< class BaseClass >
+const MT::CILockable* 
+CTObservingNotifierExpansion< BaseClass >::AsLockable( void ) const
+{GUCEF_TRACE;
+
+    return static_cast< const BaseClass* >( this );
 }
 
 /*-------------------------------------------------------------------------*/

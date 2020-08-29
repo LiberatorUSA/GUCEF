@@ -45,10 +45,9 @@ namespace COM {
 //                                                                         //
 //-------------------------------------------------------------------------*/
 
-CDefaultHTTPServerRouterController::CDefaultHTTPServerRouterController( CHTTPServer& server )
+CDefaultHTTPServerRouterController::CDefaultHTTPServerRouterController( void )
     : CIHTTPServerRouterController() ,
-      m_routerMap()                  ,
-      m_httpServer( &server )
+      m_routerMap()                 
 {GUCEF_TRACE;
 
 }
@@ -67,11 +66,15 @@ CDefaultHTTPServerRouterController::GetUriPathFromFullUri( const CString& uri ) 
 {GUCEF_TRACE;
 
     // strip the schema section
-    CString remnant = uri.SubstrToSubstr( "://", false );
-    if ( remnant.Length() < uri.Length() )
+    Int32 protocolDelimIndex = uri.HasSubstr( "://", true );
+    if ( protocolDelimIndex > 0 )
     {
-        // Strip the hostname and port section
-        return '/' + remnant.SubstrToChar( '/', true );
+        Int32 hostSectionDelimIndex = uri.HasChar( '/', protocolDelimIndex+3, true );
+        if ( hostSectionDelimIndex > 0 )
+        {
+            // Strip the hostname and port section
+            return uri.CutChars( hostSectionDelimIndex, true, 0 );
+        }
     }
     
     // the uri is already a uri without schema and hostname
@@ -150,12 +153,15 @@ CDefaultHTTPServerRouterController::MakeUriAbsolute( CIHTTPServerRouter& router 
                                                      const CString& uriSuffix        )
 {GUCEF_TRACE;
     
-    // Check if the full Uri is actually already a absolute Uri
+    // Check if the full Uri is actually already an absolute Uri
+    // The following strips it to just the path if its a full Uri
     CString remnant = GetUriPathFromFullUri( uriSuffix );
     if ( remnant == uriSuffix )
     {
         // Use the 'uriWithAuthority' to build a new trunk for the suffix Uri
-        CString absoluteUri = uriWithAuthority.CutChars( uriWithAuthority.Length() - GetUriPathFromFullUri( uriWithAuthority ).Length(), false );
+        // The suffix may be different but the server etc should be the same
+        CString remainderPath = GetUriPathFromFullUri( uriWithAuthority );
+        CString absoluteUri = uriWithAuthority.CutChars( remainderPath.Length(), false );
 
         if ( router.GetServiceRoot().Length() > 0 )
         {

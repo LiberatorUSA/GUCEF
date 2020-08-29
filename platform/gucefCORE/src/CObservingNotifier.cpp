@@ -72,6 +72,7 @@ CObservingNotifier::CObservingNotifier( const CObservingNotifier& src )
 CObservingNotifier::~CObservingNotifier()
 {GUCEF_TRACE;
 
+    m_observer.SetOwner( GUCEF_NULL );
 }
 
 /*-------------------------------------------------------------------------*/
@@ -244,7 +245,16 @@ CObservingNotifier::GetClassTypeName( void ) const
 }
 
 /*-------------------------------------------------------------------------*/
-                         
+
+const MT::CILockable* 
+CObservingNotifier::AsLockable( void ) const
+{GUCEF_TRACE;
+
+    return CNotifier::AsLockable();
+}
+
+/*-------------------------------------------------------------------------*/
+
 bool
 CObservingNotifier::Lock( void ) const
 {GUCEF_TRACE;

@@ -26,6 +26,11 @@
 #include <string.h>                     /* standard string utils */
 #include <malloc.h>                     /* Memory management */
 
+#ifndef GUCEF_MT_COBJECTSCOPELOCK_H
+#include "gucefMT_CObjectScopeLock.h"
+#define GUCEF_MT_COBJECTSCOPELOCK_H
+#endif /* GUCEF_MT_COBJECTSCOPELOCK_H ? */
+
 #include "dvstrutils.h"                 /* my own string utils */
 #include "tsprinting.h"			/* threadsafe printing */
 
@@ -861,6 +866,41 @@ CTCPServerSocket::SendToAllClients( const void* dataSource ,
     }
     _datalock.Unlock();
     return totalSuccess;
+}
+
+/*-------------------------------------------------------------------------*/
+
+bool 
+CTCPServerSocket::SendToConnection( UInt32 connectionIndex                ,
+                                    const void* dataSource                , 
+                                    const UInt32 dataSize                 ,
+                                    const CIPAddress* remoteClientIPCheck )
+{GUCEF_TRACE;
+
+    MT::CObjectScopeLock serverLock( AsLockable() );
+    
+    if ( connectionIndex < _connections.size() )
+    {
+        CTCPServerConnection* connection = _connections[ connectionIndex ];
+        
+        serverLock.EarlyUnlock();
+        MT::CObjectScopeLock connectionLock( connection->AsLockable() );
+
+        if ( connection->IsActive() )
+        {
+            if ( GUCEF_NULL != remoteClientIPCheck )
+            {
+                if ( connection->GetRemoteIP() != *remoteClientIPCheck )
+                {
+                    // Refusing to send because the IP check failed.
+                    return false;
+                }
+
+                return connection->Send( dataSource, dataSize );
+            }
+        }
+    }
+    return false;
 }
 
 /*-------------------------------------------------------------------------*/

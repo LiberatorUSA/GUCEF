@@ -133,6 +133,8 @@ class GUCEF_CORE_PUBLIC_CPP CNotificationIDRegistry : public MT::CILockable
     GUCEF_DEFINE_MSGEXCEPTION( GUCEF_CORE_PUBLIC_CPP, EInvalidKey );
     GUCEF_DEFINE_MSGEXCEPTION( GUCEF_CORE_PUBLIC_CPP, EInvalidEventID );
 
+    virtual const MT::CILockable* AsLockable( void ) const GUCEF_VIRTUAL_OVERRIDE;
+
     protected:
     
     virtual bool Lock( void ) const GUCEF_VIRTUAL_OVERRIDE;

@@ -246,6 +246,15 @@ CNotificationIDRegistry::IsRegistered( const CString& keyvalue ) const
 
 /*-------------------------------------------------------------------------*/
 
+const MT::CILockable* 
+CNotificationIDRegistry::AsLockable( void ) const
+{GUCEF_TRACE;
+
+    return this;
+}
+
+/*-------------------------------------------------------------------------*/
+
 bool
 CNotificationIDRegistry::Lock( void ) const
 {GUCEF_TRACE;

@@ -17,8 +17,8 @@
  *  limitations under the License.
  */
 
-#ifndef GUCEF_COM_CCOMGLOBAL_H
-#define GUCEF_COM_CCOMGLOBAL_H
+#ifndef GUCEF_COM_CASYNCHTTPSERVERRESPONSEHANDLER_H
+#define GUCEF_COM_CASYNCHTTPSERVERRESPONSEHANDLER_H
 
 /*-------------------------------------------------------------------------//
 //                                                                         //
@@ -26,15 +26,16 @@
 //                                                                         //
 //-------------------------------------------------------------------------*/
 
-#ifndef GUCEF_MT_CMUTEX_H
-#include "gucefMT_CMutex.h"
-#define GUCEF_MT_CMUTEX_H
-#endif /* GUCEF_MT_CMUTEX_H ? */
+#ifndef GUCEF_COM_CHTTPRESPONSEDATA_H
+#include "gucefCOM_CHttpResponseData.h"
+#define GUCEF_COM_CHTTPRESPONSEDATA_H
+#endif /* GUCEF_COM_CHTTPRESPONSEDATA_H ? */
 
-#ifndef GUCEF_COM_MACROS_H
-#include "gucefCOM_macros.h"      /* often used gucefCOM macros */
-#define GUCEF_COM_MACROS_H
-#endif /* GUCEF_COM_MACROS_H ? */
+#ifndef GUCEF_COM_CASYNCHTTPSERVERREQUESTHANDLER_H
+#include "gucefCOM_CAsyncHttpServerRequestHandler.h"
+#define GUCEF_COM_CASYNCHTTPSERVERREQUESTHANDLER_H
+#endif /* GUCEF_COM_CASYNCHTTPSERVERREQUESTHANDLER_H ? */
+
 
 /*-------------------------------------------------------------------------//
 //                                                                         //
@@ -51,29 +52,52 @@ namespace COM {
 //                                                                         //
 //-------------------------------------------------------------------------*/
 
-
-class GUCEF_COM_EXPORT_CPP CComGlobal
+class GUCEF_HIDDEN CAsyncHttpServerResponseHandler : public CORE::CTaskConsumer
 {
     public:
 
-    static CComGlobal* Instance( void );
+    static const CORE::CEvent AsyncHttpServerResponseHandlingCompletedEvent;
+    static const CORE::CString TaskType;
+    
+    static void RegisterEvents( void );
 
-    private:
+    CAsyncHttpServerResponseHandler();
+    CAsyncHttpServerResponseHandler( const CAsyncHttpServerResponseHandler& src );
+    virtual ~CAsyncHttpServerResponseHandler();
 
-    static void Deinstance( void );
+    virtual bool OnTaskStart( CORE::CICloneable* taskData ) GUCEF_VIRTUAL_OVERRIDE;
+    
+    virtual bool OnTaskCycle( CORE::CICloneable* taskData ) GUCEF_VIRTUAL_OVERRIDE;
+    
+    virtual void OnTaskEnd( CORE::CICloneable* taskData ) GUCEF_VIRTUAL_OVERRIDE;
 
-    void Initialize( void );
+    virtual CORE::CString GetType( void ) const GUCEF_VIRTUAL_OVERRIDE;
 
-    CComGlobal( void );    
-    ~CComGlobal();
+};
 
-    CComGlobal( const CComGlobal& src );            /** <- not implemented */
-    CComGlobal& operator=( const CComGlobal& src ); /** <- not implemented */
+/*-------------------------------------------------------------------------*/
 
-    private:
+typedef CORE::CTFactory< CORE::CTaskConsumer, CAsyncHttpServerResponseHandler > TAsyncHttpServerResponseHandlerFactory;
 
-    static MT::CMutex g_dataLock;
-    static CComGlobal* g_instance;
+/*-------------------------------------------------------------------------*/
+
+class CHTTPServer;
+
+/*-------------------------------------------------------------------------*/
+
+class GUCEF_HIDDEN CAsyncHttpResponseData : public CHttpResponseData
+{
+    public:
+
+    CHTTPServer* httpServer;
+    UInt32 clientConnectionId;
+    COMCORE::CHostAddress remoteClientAddress;
+
+    virtual CORE::CICloneable* Clone( void ) const GUCEF_VIRTUAL_OVERRIDE;
+
+    CAsyncHttpResponseData( CAsyncHttpRequestData* request = GUCEF_NULL );
+    CAsyncHttpResponseData( const CAsyncHttpResponseData& src );
+    virtual ~CAsyncHttpResponseData();
 };
 
 /*-------------------------------------------------------------------------//
@@ -86,16 +110,5 @@ class GUCEF_COM_EXPORT_CPP CComGlobal
 }; /* namespace GUCEF */
 
 /*-------------------------------------------------------------------------*/
-
-#endif /* GUCEF_COM_CCOMGLOBAL_H ? */
-
-/*-------------------------------------------------------------------------//
-//                                                                         //
-//      Info & Changes                                                     //
-//                                                                         //
-//-------------------------------------------------------------------------//
-
-- 12-02-2005 :
-        - Initial implementation
-
------------------------------------------------------------------------------*/
+          
+#endif /* GUCEF_COM_CASYNCHTTPSERVERRESPONSEHANDLER_H ? */

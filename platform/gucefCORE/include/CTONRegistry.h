@@ -114,7 +114,15 @@ class CTONRegistry : public CTObservingNotifierExpansion< CTRegistry< T > > ,
 
     virtual void UnregisterAll( void ) GUCEF_VIRTUAL_OVERRIDE;
 
+    virtual const MT::CILockable* AsLockable( void ) const GUCEF_VIRTUAL_OVERRIDE;
+
     virtual const CString& GetClassTypeName( void ) const GUCEF_VIRTUAL_OVERRIDE;
+
+    protected:
+
+    virtual bool Lock( void ) const GUCEF_VIRTUAL_OVERRIDE;
+
+    virtual bool Unlock( void ) const GUCEF_VIRTUAL_OVERRIDE;
 };
 
 /*-------------------------------------------------------------------------//
@@ -252,6 +260,36 @@ CTONRegistry< T >::UnregisterAll( void )
     }
 
     TExpansionBase::Unlock();
+}
+
+/*-------------------------------------------------------------------------*/
+
+template< class T >
+const MT::CILockable* 
+CTONRegistry< T >::AsLockable( void ) const
+{GUCEF_TRACE;
+
+    return TExpansionBase::AsLockable();
+}
+
+/*-------------------------------------------------------------------------*/
+
+template< class T >
+bool
+CTONRegistry< T >::Lock( void ) const
+{GUCEF_TRACE;
+
+    return TExpansionBase::Lock();
+}
+
+/*-------------------------------------------------------------------------*/
+
+template< class T >
+bool 
+CTONRegistry< T >::Unlock( void ) const
+{GUCEF_TRACE;
+
+    return TExpansionBase::Unlock();
 }
 
 /*-------------------------------------------------------------------------//

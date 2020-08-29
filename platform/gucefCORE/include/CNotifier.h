@@ -185,6 +185,8 @@ class GUCEF_CORE_PUBLIC_CPP CNotifier : public MT::CILockable ,
 
     UInt32 GetSubscriptionCountForObserver( CObserver* observer ) const;
 
+    virtual const MT::CILockable* AsLockable( void ) const GUCEF_VIRTUAL_OVERRIDE;
+
     protected:
     friend class CNotifierImplementor;
 
@@ -258,7 +260,7 @@ class GUCEF_CORE_PUBLIC_CPP CNotifier : public MT::CILockable ,
                                  CObserver& specificObserver   ,
                                  const CEvent& eventid         ,
                                  CICloneable* eventData = NULL ) const;
-
+    
     virtual bool Lock( void ) const GUCEF_VIRTUAL_OVERRIDE;
 
     virtual bool Unlock( void ) const GUCEF_VIRTUAL_OVERRIDE;

@@ -94,6 +94,8 @@ class GUCEF_CORE_PRIVATE_CPP CTaskDelegator : public MT::CActiveObject      ,
     static const CEvent ThreadFinishedEvent;
     
     static void RegisterEvents( void );
+
+    virtual const MT::CILockable* AsLockable( void ) const GUCEF_VIRTUAL_OVERRIDE;
     
     public:
 

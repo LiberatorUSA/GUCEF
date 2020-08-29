@@ -241,6 +241,15 @@ CTCPServerConnection::CloseImp( bool byUser            ,
 /*-------------------------------------------------------------------------*/
 
 bool
+CTCPServerConnection::Send( const CORE::CDynamicBuffer& content )
+{GUCEF_TRACE;
+
+    return Send( content.GetConstBufferPtr(), content.GetDataSize() );
+}
+
+/*-------------------------------------------------------------------------*/
+
+bool
 CTCPServerConnection::Send( const void* dataSource ,
                             const UInt32 length    )
 {GUCEF_TRACE;

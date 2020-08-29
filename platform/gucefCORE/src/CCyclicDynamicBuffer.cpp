@@ -814,6 +814,15 @@ CCyclicDynamicBuffer::GetBufferUsagePercentage( void ) const
 }
 
 /*-------------------------------------------------------------------------*/
+
+const MT::CILockable* 
+CCyclicDynamicBuffer::AsLockable( void ) const
+{GUCEF_TRACE;
+
+    return this;
+}
+
+/*-------------------------------------------------------------------------*/
     
 bool
 CCyclicDynamicBuffer::Lock( void ) const

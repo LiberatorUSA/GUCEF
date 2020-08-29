@@ -128,6 +128,9 @@ class GUCEF_CORE_PUBLIC_CPP CTSGNotifier : public CNotifier
 
     virtual const CString& GetClassTypeName( void ) const GUCEF_VIRTUAL_OVERRIDE;
 
+
+    virtual const CILockable* AsLockable( void ) const GUCEF_VIRTUAL_OVERRIDE;
+
     CObserver& AsObserver( void );
 
     CPulseGenerator* GetPulseGenerator( void ) const;

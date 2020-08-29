@@ -200,6 +200,15 @@ CTSGNotifier::GetClassTypeName( void ) const
 
 /*-------------------------------------------------------------------------*/
 
+const MT::CILockable* 
+CTSGNotifier::AsLockable( void ) const
+{GUCEF_TRACE;
+
+    return this;
+}
+
+/*-------------------------------------------------------------------------*/
+
 bool
 CTSGNotifier::Lock( void ) const
 {GUCEF_TRACE;

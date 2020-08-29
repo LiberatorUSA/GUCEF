@@ -106,6 +106,7 @@ CDefaultHTTPServerRouter::SetResourceMapping( const CString& uriSegment       ,
 {GUCEF_TRACE;
 
     m_resourceMap[ uriSegment ] = resource;
+    resource->SetURL( uriSegment );
     return true;    
 }
 

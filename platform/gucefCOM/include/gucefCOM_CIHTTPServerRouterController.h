@@ -26,6 +26,11 @@
 //                                                                         //
 //-------------------------------------------------------------------------*/
 
+#ifndef GUCEF_CORE_CTFACTORY_H
+#include "CTFactory.h"
+#define GUCEF_CORE_CTFACTORY_H
+#endif /* GUCEF_CORE_CTFACTORY_H ? */
+
 #ifndef GUCEF_COM_CIHTTPSERVERROUTER_H
 #include "gucefCOM_CIHTTPServerRouter.h"
 #define GUCEF_COM_CIHTTPSERVERROUTER_H

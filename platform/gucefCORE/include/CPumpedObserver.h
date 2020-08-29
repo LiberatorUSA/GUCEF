@@ -100,6 +100,8 @@ class GUCEF_CORE_PUBLIC_CPP CPumpedObserver : public CObserver
                                  const CEvent& eventid               ,
                                  CICloneable* eventdata = GUCEF_NULL );
 
+    virtual const MT::CILockable* AsLockable( void ) const GUCEF_VIRTUAL_OVERRIDE;
+
     protected:
 
     /**
@@ -116,7 +118,7 @@ class GUCEF_CORE_PUBLIC_CPP CPumpedObserver : public CObserver
     virtual void OnNotify( CNotifier* notifier           ,
                            const CEvent& eventid         ,
                            CICloneable* eventdata = NULL );
-
+    
     virtual bool Lock( void ) const GUCEF_VIRTUAL_OVERRIDE;
 
     virtual bool Unlock( void ) const GUCEF_VIRTUAL_OVERRIDE;

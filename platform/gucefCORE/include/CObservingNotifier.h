@@ -146,6 +146,8 @@ class GUCEF_CORE_PUBLIC_CPP CObservingNotifier : public CNotifier ,
 
     virtual const CString& GetClassTypeName( void ) const GUCEF_VIRTUAL_OVERRIDE;
 
+    virtual const MT::CILockable* AsLockable( void ) const GUCEF_VIRTUAL_OVERRIDE;
+
     protected:
     friend class CNotifierObservingComponent;
 

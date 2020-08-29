@@ -576,6 +576,15 @@ CLogManager::GetUseLoggingThread( void ) const
 
 /*-------------------------------------------------------------------------*/
 
+const MT::CILockable* 
+CLogManager::AsLockable( void ) const
+{GUCEF_TRACE;
+
+    return this;
+}
+
+/*-------------------------------------------------------------------------*/
+
 bool
 CLogManager::Lock( void ) const
 {GUCEF_TRACE;

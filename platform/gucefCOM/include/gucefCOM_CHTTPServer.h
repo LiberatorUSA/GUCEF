@@ -68,18 +68,16 @@ namespace COM {
 //                                                                         //
 //-------------------------------------------------------------------------*/
 
-class GUCEF_COM_EXPORT_CPP CHTTPServer : CORE::CObserver
+class GUCEF_COM_EXPORT_CPP CHTTPServer : public CORE::CObservingNotifier
 {
     public:
     
     typedef std::vector< CString > TStringVector;
     
-    CHTTPServer( CIHTTPServerRouterController* routerController = GUCEF_NULL ,
-                 CIHttpServerRequestHandler* requestHandler = GUCEF_NULL     );
+    CHTTPServer( THttpServerRequestHandlerFactory* requestHandlerFactory = GUCEF_NULL );
 
-    CHTTPServer( CORE::CPulseGenerator& pulsGenerator                        ,
-                 CIHTTPServerRouterController* routerController = GUCEF_NULL ,
-                 CIHttpServerRequestHandler* requestHandler = GUCEF_NULL     );
+    CHTTPServer( CORE::CPulseGenerator& pulsGenerator                                 ,
+                 THttpServerRequestHandlerFactory* requestHandlerFactory = GUCEF_NULL );
     
     virtual ~CHTTPServer();
     
@@ -102,8 +100,13 @@ class GUCEF_COM_EXPORT_CPP CHTTPServer : CORE::CObserver
     CIHTTPServerRouterController* GetRouterController( void ) const;
 
     CIHttpServerRequestHandler* GetRequestHandler( void ) const;
+
+    THttpServerRequestHandlerFactory* GetRequestHandlerFactory( void ) const;
     
     private:
+
+    friend class CAsyncHttpServerRequestHandler;
+    friend class CAsyncHttpServerResponseHandler;
 
     /**
      *  Event callback member function.
@@ -122,27 +125,53 @@ class GUCEF_COM_EXPORT_CPP CHTTPServer : CORE::CObserver
     void StripItems( TStringVector& list ,
                      char stripDelim     ) const;
 
-    void ProcessReceivedData( const CORE::CDynamicBuffer& inputBuffer ,
-                              CORE::CDynamicBuffer& outputBuffer      );
+    void SyncProcessReceivedData( COMCORE::CTCPServerConnection* connection ,
+                                  const CORE::CDynamicBuffer& inputBuffer   ,
+                                  CORE::CDynamicBuffer& outputBuffer        );
 
-    CHttpRequestData* ParseRequest( const CORE::CDynamicBuffer& inputBuffer );
+    void ASyncProcessReceivedData( COMCORE::CTCPServerConnection* connection ,
+                                   const CORE::CDynamicBuffer& inputBuffer   );
 
-    void ParseResponse( const CHttpResponseData& returnData  ,
-                        CORE::CDynamicBuffer& outputBuffer );
+    bool ParseRequest( const CORE::CDynamicBuffer& inputBuffer ,
+                       CHttpRequestData& requestData           );
                         
     UInt32 ParseHeaderFields( const char* bufferPtr       ,
                               const UInt32 bufferSize     ,
                               TStringVector& headerFields ) const;
 
+    void RegisterEventHandlers( void );
+
+    void
+    OnClientConnectedEvent( CORE::CNotifier* notifier    ,
+                            const CORE::CEvent& eventId  ,
+                            CORE::CICloneable* eventData );
+
+    void
+    OnClientDataReceivedEvent( CORE::CNotifier* notifier    ,
+                               const CORE::CEvent& eventId  ,
+                               CORE::CICloneable* eventData );
+
+    bool SendResponseASync( UInt32 connectionId                  ,
+                            const CORE::CDynamicBuffer& response ,
+                            const COMCORE::CIPAddress& remoteIP  );
+
+    virtual bool Lock( void ) const GUCEF_VIRTUAL_OVERRIDE;
+
+    virtual bool Unlock( void ) const GUCEF_VIRTUAL_OVERRIDE;
+    
     CHTTPServer( const CHTTPServer& src );             /**< not implemented */
     CHTTPServer& operator=( const CHTTPServer& src );  /**< not implemented */
     
     private:
+
+    typedef CORE::CTEventHandlerFunctor< CHTTPServer > TEventCallback;
     
     COMCORE::CTCPServerSocket m_tcpServerSocket;
-    CIHTTPServerRouterController* m_routerController;
     CIHttpServerRequestHandler* m_requestHandler;
+    THttpServerRequestHandlerFactory* m_requestHandlerFactory;
     bool m_keepAliveConnections;
+    bool m_processRequestsAsync;
+    MT::CMutex m_lock;
 };
 
 /*-------------------------------------------------------------------------//

@@ -56,6 +56,7 @@ CHttpResponseData::CHttpResponseData( void )
     , contentType()
     , location()
     , acceptedTypes()
+    , keepConnectionsAlive( true )
 {GUCEF_TRACE;
 
 }
@@ -73,6 +74,7 @@ CHttpResponseData::CHttpResponseData( const CHttpResponseData& src )
     , contentType( src.contentType )
     , location( src.location )
     , acceptedTypes( src.acceptedTypes )
+    , keepConnectionsAlive( src.keepConnectionsAlive )
 {GUCEF_TRACE;
 
 }
@@ -91,6 +93,88 @@ CHttpResponseData::Clone( void ) const
 {GUCEF_TRACE;
 
     return new CHttpResponseData( *this );
+}
+
+/*-------------------------------------------------------------------------*/
+
+bool
+CHttpResponseData::Serialize( CORE::CDynamicBuffer& outputBuffer ) const
+{GUCEF_TRACE;
+
+    // @TODO: Optimize this
+    
+    CString response = "HTTP/1.1 " + CORE::Int32ToString( statusCode ) + "\r\nServer: gucefCOM\r\n";
+    if ( keepConnectionsAlive )
+        response += "Connection: keep-alive\r\n";
+    else
+        response += "Connection: close\r\n";
+    if ( !location.IsNULLOrEmpty() )
+    {
+        response += "Content-Location: " + location + "\r\n";
+    }
+    if ( !eTag.IsNULLOrEmpty() )
+    {
+        response += "ETag: " + eTag + "\r\n";
+    }
+    if ( !cacheability.IsNULLOrEmpty() )
+    {
+        response += "Cache-Control: " + cacheability + "\r\n";
+    }
+    if ( !lastModified.IsNULLOrEmpty() )
+    {
+        response += "Last-Modified: " + lastModified + "\r\n";
+    }
+    if ( content.GetDataSize() > 0 )
+    {
+        response += "Content-Length: " + CORE::UInt32ToString( content.GetDataSize() ) + "\r\n";
+        response += "Content-Type: " + contentType + "\r\n";
+    }
+
+    // You cannot send back accept types to the client using a standard HTTP header since
+    // it is a HTTP request only header. We don't want the client to aimlessly retry different
+    // representations either on PUT/POST so we do want to inform the client of the accepted types.
+    // The client will need to have support for this operation to take advantage of it since it is a custom HTTP header
+    if ( statusCode == 415 )
+    {
+        response += "Accept: ";
+        TStringVector::const_iterator i = acceptedTypes.begin();
+        while ( i != acceptedTypes.end() )
+        {
+            response += (*i) + ',';
+            ++i;
+        }
+        response += "\r\n";
+    }
+
+    // If the operation was and a subset of allowed operations where specified
+    // we will send those to the client.
+    if ( statusCode == 405 && allowedMethods.size() > 0 )
+    {
+        response += "Allow: ";
+        TStringVector::const_iterator i = allowedMethods.begin();
+        while ( i != allowedMethods.end() )
+        {
+            response += (*i) + ',';
+            ++i;
+        }
+        response += "\r\n";
+    }
+
+    // Add the end of HTTP header delimiter
+    response += "\r\n";
+
+    GUCEF_DEBUG_LOG( CORE::LOGLEVEL_NORMAL, "HttpResponseData(" + CORE::PointerToString( this ) + "): Finished building response header: " + response );
+
+    // Copy the HTTP header into the buffer
+    outputBuffer.CopyFrom( response.Length(), response.C_String() );
+
+    // Copy the HTTP message body into the buffer
+    if ( content.GetDataSize() > 0 )
+    {
+        outputBuffer.CopyFrom( response.Length(), content.GetDataSize(), content.GetConstBufferPtr() );
+    }
+
+    return true;
 }
 
 /*-------------------------------------------------------------------------//

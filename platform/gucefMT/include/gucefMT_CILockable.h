@@ -65,6 +65,8 @@ class GUCEF_MT_PUBLIC_CPP CILockable
 
     CILockable& operator=( const CILockable& src );
 
+    virtual const CILockable* AsLockable( void ) const = 0;
+
     protected:
     friend class CObjectScopeLock;
 

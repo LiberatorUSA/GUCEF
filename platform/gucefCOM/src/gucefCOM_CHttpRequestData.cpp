@@ -46,14 +46,18 @@ namespace COM {
 //-------------------------------------------------------------------------*/
 
 CHttpRequestData::CHttpRequestData( void )
-    : CORE::CICloneable()         
+    : CORE::CICloneable()
     , resourceRepresentations()
     , resourceVersions()
+    , requestProtocol()
+    , requestProtocolVersion()
     , requestType()
     , requestHost()
     , requestUri()
     , content()
     , transactionID()
+    , keepConnectionsAlive( true )
+    , m_requestUriWithAuthority()
 {GUCEF_TRACE;
 
 }
@@ -61,14 +65,18 @@ CHttpRequestData::CHttpRequestData( void )
 /*-------------------------------------------------------------------------*/
 
 CHttpRequestData::CHttpRequestData( const CHttpRequestData& src )
-    : CORE::CICloneable( src )         
+    : CORE::CICloneable( src )
     , resourceRepresentations( src.resourceRepresentations )
     , resourceVersions( src.resourceVersions )
+    , requestProtocol( src.requestProtocol )
+    , requestProtocolVersion( src.requestProtocolVersion )
     , requestType( src.requestType )
     , requestHost( src.requestHost )
     , requestUri( src.requestUri )
     , content( src.content )
     , transactionID( src.transactionID )
+    , keepConnectionsAlive( src.keepConnectionsAlive )
+    , m_requestUriWithAuthority( src.m_requestUriWithAuthority )
 {GUCEF_TRACE;
 
 }
@@ -87,6 +95,19 @@ CHttpRequestData::Clone( void ) const
 {GUCEF_TRACE;
 
     return new CHttpRequestData( *this );
+}
+
+/*-------------------------------------------------------------------------*/
+
+CString 
+CHttpRequestData::ConstructUriWithAuthority( void ) const
+{GUCEF_TRACE;
+    
+    if ( m_requestUriWithAuthority.IsNULLOrEmpty() )
+    {
+        m_requestUriWithAuthority = requestProtocol.Lowercase() + "://" + requestHost + requestUri;        
+    }
+    return m_requestUriWithAuthority;
 }
 
 /*-------------------------------------------------------------------------//

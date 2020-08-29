@@ -23,10 +23,20 @@
 //                                                                         //
 //-------------------------------------------------------------------------*/
 
+#ifndef GUCEF_MT_COBJECTSCOPELOCK_H
+#include "gucefMT_CObjectScopeLock.h"
+#define GUCEF_MT_COBJECTSCOPELOCK_H
+#endif /* GUCEF_MT_COBJECTSCOPELOCK_H ? */
+
 #ifndef GUCEF_CORE_CLOGMANAGER_H
 #include "CLogManager.h"
 #define GUCEF_CORE_CLOGMANAGER_H
 #endif /* GUCEF_CORE_CLOGMANAGER_H ? */
+
+#ifndef GUCEF_CORE_CTASKMANAGER_H
+#include "gucefCORE_CTaskManager.h"
+#define GUCEF_CORE_CTASKMANAGER_H
+#endif /* GUCEF_CORE_CTASKMANAGER_H ? */
 
 #ifndef GUCEF_COM_CDEFAULTHTTPSERVERROUTERCONTROLLER_H
 #include "gucefCOM_CDefaultHTTPServerRouterController.h"
@@ -37,6 +47,11 @@
 #include "gucefCOM_CDefaultHttpServerRequestHandler.h"
 #define GUCEF_COM_CDEFAULTHTTPSERVERREQUESTHANDLER_H
 #endif /* GUCEF_COM_CDEFAULTHTTPSERVERREQUESTHANDLER_H ? */
+
+#ifndef GUCEF_COM_CASYNCHTTPSERVERREQUESTHANDLER_H
+#include "gucefCOM_CAsyncHttpServerRequestHandler.h"
+#define GUCEF_COM_CASYNCHTTPSERVERREQUESTHANDLER_H
+#endif /* GUCEF_COM_CASYNCHTTPSERVERREQUESTHANDLER_H ? */
 
 #include "gucefCOM_CHTTPServer.h"
 
@@ -51,69 +66,55 @@ namespace COM {
 
 /*-------------------------------------------------------------------------//
 //                                                                         //
+//      GLOBAL VARS                                                        //
+//                                                                         //
+//-------------------------------------------------------------------------*/
+
+TDefaultHttpServerRequestHandlerFactory g_defaultHttpServerRequestHandlerFactory;
+
+/*-------------------------------------------------------------------------//
+//                                                                         //
 //      IMPLEMENTATION                                                     //
 //                                                                         //
 //-------------------------------------------------------------------------*/
 
-CHTTPServer::CHTTPServer( CIHTTPServerRouterController* routerController /* = GUCEF_NULL */ ,
-                          CIHttpServerRequestHandler* requestHandler     /* = GUCEF_NULL */ )
-    : CObserver()              
+CHTTPServer::CHTTPServer( THttpServerRequestHandlerFactory* requestHandlerFactory /* = GUCEF_NULL */ )
+    : CORE::CObservingNotifier()              
     , m_tcpServerSocket( false )
-    , m_routerController( NULL )
+    , m_requestHandler( GUCEF_NULL )
+    , m_requestHandlerFactory( requestHandlerFactory )
     , m_keepAliveConnections( true )
+    , m_processRequestsAsync( false )
 {GUCEF_TRACE;
 
-    if ( GUCEF_NULL == routerController )
+    if ( GUCEF_NULL == m_requestHandlerFactory )
     {
-        m_routerController = new CDefaultHTTPServerRouterController( *this );
+        m_requestHandlerFactory = &g_defaultHttpServerRequestHandlerFactory;
     }
-    else
-    {
-        m_routerController = routerController;
-    }
+    m_requestHandler = m_requestHandlerFactory->Create();
 
-    if ( GUCEF_NULL == requestHandler )
-    {
-        m_requestHandler = new CDefaultHttpServerRequestHandler( m_routerController );
-    }
-    else
-    {
-        m_requestHandler = requestHandler;
-    }
-
-    m_tcpServerSocket.Subscribe( this );
+    RegisterEventHandlers();
 }
 
 /*-------------------------------------------------------------------------*/
 
-CHTTPServer::CHTTPServer( CORE::CPulseGenerator& pulsGenerator                              ,
-                          CIHTTPServerRouterController* routerController /* = GUCEF_NULL */ ,
-                          CIHttpServerRequestHandler* requestHandler     /* = GUCEF_NULL */ )
-    : CObserver()                               
+CHTTPServer::CHTTPServer( CORE::CPulseGenerator& pulsGenerator                                       ,
+                          THttpServerRequestHandlerFactory* requestHandlerFactory /* = GUCEF_NULL */ )
+    : CORE::CObservingNotifier()                               
     , m_tcpServerSocket( pulsGenerator, false ) 
-    , m_routerController( NULL )                
+    , m_requestHandler( GUCEF_NULL )
+    , m_requestHandlerFactory( requestHandlerFactory )
     , m_keepAliveConnections( true )
+    , m_processRequestsAsync( false )
 {GUCEF_TRACE;
 
-    if ( NULL == routerController )
+    if ( GUCEF_NULL == m_requestHandlerFactory )
     {
-        m_routerController = new CDefaultHTTPServerRouterController( *this );
+        m_requestHandlerFactory = &g_defaultHttpServerRequestHandlerFactory;
     }
-    else
-    {
-        m_routerController = routerController;
-    }
+    m_requestHandler = m_requestHandlerFactory->Create();
 
-    if ( GUCEF_NULL == requestHandler )
-    {
-        m_requestHandler = new CDefaultHttpServerRequestHandler( m_routerController );
-    }
-    else
-    {
-        m_requestHandler = requestHandler;
-    }
-
-    m_tcpServerSocket.Subscribe( this );
+    RegisterEventHandlers();
 }
 
 /*-------------------------------------------------------------------------*/
@@ -121,6 +122,19 @@ CHTTPServer::CHTTPServer( CORE::CPulseGenerator& pulsGenerator                  
 CHTTPServer::~CHTTPServer()
 {GUCEF_TRACE;
 
+}
+
+/*-------------------------------------------------------------------------*/
+
+void
+CHTTPServer::RegisterEventHandlers( void )
+{GUCEF_TRACE;
+
+    // Register event handlers
+    TEventCallback callback( this, &CHTTPServer::OnClientConnectedEvent );
+    SubscribeTo( &m_tcpServerSocket                              ,
+                 COMCORE::CTCPServerSocket::ClientConnectedEvent ,
+                 callback                                        );
 }
 
 /*-------------------------------------------------------------------------*/
@@ -180,39 +194,63 @@ CHTTPServer::GetPort( void ) const
 /*-------------------------------------------------------------------------*/
 
 void
+CHTTPServer::OnClientConnectedEvent( CORE::CNotifier* notifier                 ,
+                                     const CORE::CEvent& eventid               ,
+                                     CORE::CICloneable* eventdata /* = NULL */ )
+{GUCEF_TRACE;
+
+    const COMCORE::CTCPServerSocket::TClientConnectedEventData* eData = static_cast< COMCORE::CTCPServerSocket::TClientConnectedEventData* >( eventdata );
+    const COMCORE::CTCPServerSocket::TConnectionInfo& storage = eData->GetData();
+
+    GUCEF_DEBUG_LOG( CORE::LOGLEVEL_NORMAL, "CHTTPServer(" + CORE::PointerToString( this ) + "): Client connected" );
+
+    // Subscribe to the connection
+    TEventCallback callback( this, &CHTTPServer::OnClientDataReceivedEvent );
+    SubscribeTo( storage.connection                               ,
+                 COMCORE::CTCPServerConnection::DataRecievedEvent ,
+                 callback                                         );
+}
+
+/*-------------------------------------------------------------------------*/
+
+void
+CHTTPServer::OnClientDataReceivedEvent( CORE::CNotifier* notifier                 ,
+                                        const CORE::CEvent& eventid               ,
+                                        CORE::CICloneable* eventdata /* = NULL */ )
+{GUCEF_TRACE;
+
+    const COMCORE::CTCPServerConnection::TDataRecievedEventData* eData = static_cast< COMCORE::CTCPServerConnection::TDataRecievedEventData* >( eventdata );
+    const CORE::CDynamicBuffer& receivedData = eData->GetData();
+    COMCORE::CTCPServerConnection* connection = static_cast< COMCORE::CTCPServerConnection* >( notifier );
+
+    GUCEF_DEBUG_LOG( CORE::LOGLEVEL_NORMAL, "CHTTPServer(" + CORE::PointerToString( this ) + "): " + CORE::UInt32ToString( receivedData.GetDataSize() ) + " Bytes received from client " + connection->GetRemoteHostName() );
+
+    if ( m_processRequestsAsync )
+    {
+        // Use a worker thread to actually process the request
+        ASyncProcessReceivedData( connection, receivedData );
+    }
+    else
+    {
+        // Syncronously process the request in a blocking manner
+        CORE::CDynamicBuffer responseBuffer;
+        SyncProcessReceivedData( connection, receivedData, responseBuffer );
+
+        // Send the reponse back to the client
+        connection->Send( responseBuffer );
+        if ( !m_keepAliveConnections )
+            connection->Close();
+    }
+}
+
+/*-------------------------------------------------------------------------*/
+
+void
 CHTTPServer::OnNotify( CORE::CNotifier* notifier                 ,
                        const CORE::CEvent& eventid               ,
                        CORE::CICloneable* eventdata /* = NULL */ )
 {GUCEF_TRACE;
 
-    if ( COMCORE::CTCPServerSocket::ClientConnectedEvent == eventid )
-    {
-        const COMCORE::CTCPServerSocket::TClientConnectedEventData* eData = static_cast< COMCORE::CTCPServerSocket::TClientConnectedEventData* >( eventdata );
-        const COMCORE::CTCPServerSocket::TConnectionInfo& storage = eData->GetData();
-
-        GUCEF_DEBUG_LOG( CORE::LOGLEVEL_NORMAL, "CHTTPServer(" + CORE::PointerToString( this ) + "): Client connected" );
-
-        // Subscribe to the connection
-        storage.connection->Subscribe( this );
-    }
-    else
-    if ( COMCORE::CTCPServerConnection::DataRecievedEvent == eventid )
-    {
-        const COMCORE::CTCPServerConnection::TDataRecievedEventData* eData = static_cast< COMCORE::CTCPServerConnection::TDataRecievedEventData* >( eventdata );
-        const CORE::CDynamicBuffer& receivedData = eData->GetData();
-        COMCORE::CTCPServerConnection* connection = static_cast< COMCORE::CTCPServerConnection* >( notifier );
-
-        GUCEF_DEBUG_LOG( CORE::LOGLEVEL_NORMAL, "CHTTPServer(" + CORE::PointerToString( this ) + "): " + CORE::UInt32ToString( receivedData.GetDataSize() ) + " Bytes received from client " + connection->GetRemoteHostName() );
-
-        // Process the request
-        CORE::CDynamicBuffer responseBuffer;
-        ProcessReceivedData( receivedData, responseBuffer );
-
-        // Send the reponse back to the client
-        connection->Send( responseBuffer.GetConstBufferPtr(), responseBuffer.GetDataSize() );
-        if ( !m_keepAliveConnections )
-            connection->Close();
-    }
 }
 
 /*-------------------------------------------------------------------------*/
@@ -250,58 +288,70 @@ CHTTPServer::StripItems( TStringVector& list ,
 /*-------------------------------------------------------------------------*/
 
 void
-CHTTPServer::ProcessReceivedData( const CORE::CDynamicBuffer& inputBuffer ,
-                                  CORE::CDynamicBuffer& outputBuffer      )
+CHTTPServer::ASyncProcessReceivedData( COMCORE::CTCPServerConnection* connection ,
+                                       const CORE::CDynamicBuffer& inputBuffer   )
+{GUCEF_TRACE;
+
+    CAsyncHttpRequestData requestData;
+    if ( !ParseRequest( inputBuffer, requestData ) )
+        return;
+
+    requestData.clientConnectionId = connection->GetConnectionIndex();
+    requestData.remoteClientAddress = connection->GetRemoteHostAddress();
+    requestData.keepConnectionsAlive = m_keepAliveConnections;
+    requestData.httpServer = this;
+
+    CORE::CTaskManager& taskManager = CORE::CCoreGlobal::Instance()->GetTaskManager();
+    if ( taskManager.QueueTask( CAsyncHttpServerRequestHandler::TaskType, &requestData, GUCEF_NULL, &AsObserver() ) )
+    {
+        GUCEF_DEBUG_LOG( CORE::LOGLEVEL_NORMAL, "CHTTPServer(" + CORE::PointerToString( this ) + "): Queued task to ASync handle the request processing" );
+    }
+    else
+    {
+        // Since we are doing async processing the failure to queue a processing task would leave a
+        // client in limbo up to their timeout. To prevent this we will handle this scenario here
+        // directly
+
+        GUCEF_DEBUG_LOG( CORE::LOGLEVEL_NORMAL, "CHTTPServer(" + CORE::PointerToString( this ) + "): Unable to ASync queue the request processing (QueueTask failed). As such will respond with 503" );
+        
+        CHttpResponseData returnData;
+        returnData.statusCode = 503;   // Send 'Server too busy' because this is per configured capacity constraints
+
+        CORE::CDynamicBuffer outputBuffer;
+        returnData.Serialize( outputBuffer );
+
+        connection->Send( outputBuffer );
+        connection->Close();
+    }
+}
+
+/*-------------------------------------------------------------------------*/
+
+void
+CHTTPServer::SyncProcessReceivedData( COMCORE::CTCPServerConnection* connection ,
+                                      const CORE::CDynamicBuffer& inputBuffer   ,
+                                      CORE::CDynamicBuffer& outputBuffer        )
 {GUCEF_TRACE;
 
     try
     {
-        CHttpResponseData* returnData = NULL;
-        CHttpRequestData* requestData = ParseRequest( inputBuffer );
+        CHttpRequestData requestData; 
+        if ( !ParseRequest( inputBuffer, requestData ) )
+            return;
 
-        GUCEF_DEBUG_LOG( CORE::LOGLEVEL_NORMAL, "CHTTPServer(" + CORE::PointerToString( this ) + "): About to process request of type: " + requestData->requestType );
+        GUCEF_DEBUG_LOG( CORE::LOGLEVEL_NORMAL, "CHTTPServer(" + CORE::PointerToString( this ) + "): About to process request of type: " + requestData.requestType );
 
-        if ( NULL != requestData )
-        {
-            if ( requestData->requestType == "GET" )
-            {
-                returnData = m_requestHandler->OnRead( *requestData );
-            }
-            else
-            if ( requestData->requestType == "HEAD" )
-            {
-                returnData = m_requestHandler->OnReadMetaData( *requestData );
-            }
-            else
-            if ( requestData->requestType == "POST" )
-            {
-                returnData = m_requestHandler->OnCreate( *requestData );
-            }
-            else
-            if ( requestData->requestType == "PUT" )
-            {
-                returnData = m_requestHandler->OnUpdate( *requestData, false );
-            }
-            else
-            if ( requestData->requestType == "PATCH" )
-            {
-                returnData = m_requestHandler->OnUpdate( *requestData, true );
-            }
-            else
-            if ( requestData->requestType == "DELETE" )
-            {
-                returnData = m_requestHandler->OnDelete( *requestData );
-            }
-        }
+        CHttpResponseData response;
+        m_requestHandler->OnRequest( requestData, response );
+        response.Serialize( outputBuffer );
 
-        if ( NULL != returnData )
-        {
-            ParseResponse( *returnData  ,
-                           outputBuffer );
-        }
+        connection->Send( outputBuffer );
+        if ( !m_keepAliveConnections )
+            connection->Close();    
     }
-    catch ( std::exception& )
+    catch ( const std::exception& e )
     {
+        GUCEF_EXCEPTION_LOG( CORE::LOGLEVEL_NORMAL, "CHTTPServer(" + CORE::PointerToString( this ) + "): Exception sync processing received data: " + CORE::CString( e.what() ) );
     }
 }
 
@@ -381,16 +431,18 @@ CHTTPServer::ParseHeaderFields( const char* bufferPtr       ,
         }
         return headerSize;
     }
-    catch ( std::exception& )
+    catch ( const std::exception& e )
     {
+        GUCEF_EXCEPTION_LOG( CORE::LOGLEVEL_NORMAL, "CHTTPServer(" + CORE::PointerToString( this ) + "): Exception parsing HTTP request header fields: " + CORE::CString( e.what() ) );
         return 0;
     }
 }
 
 /*-------------------------------------------------------------------------*/
 
-CHttpRequestData*
-CHTTPServer::ParseRequest( const CORE::CDynamicBuffer& inputBuffer )
+bool
+CHTTPServer::ParseRequest( const CORE::CDynamicBuffer& inputBuffer ,
+                           CHttpRequestData& request               )
 {GUCEF_TRACE;
 
     try
@@ -398,7 +450,7 @@ CHTTPServer::ParseRequest( const CORE::CDynamicBuffer& inputBuffer )
         if ( inputBuffer.GetDataSize() == 0 )
         {
             // Invalid input
-            return NULL;
+            return false;
         }
 
         // Parse all the HTTP Header fields out of the buffer
@@ -410,22 +462,25 @@ CHTTPServer::ParseRequest( const CORE::CDynamicBuffer& inputBuffer )
         // Sanity check on the parsed result
         if ( headerSize == 0 || headerFields.size() == 0 )
         {
-            return NULL;
+            return false;
         }
 
         GUCEF_DEBUG_LOG( CORE::LOGLEVEL_NORMAL, "CHTTPServer(" + CORE::PointerToString( this ) + "): Finished parsing request header" );
-
-        CHttpRequestData* request = new CHttpRequestData();
 
         CString temp = headerFields.front().CompactRepeatingChar( ' ' );
         headerFields.erase( headerFields.begin() );
 
         // Parse the request type from the first line
-        request->requestType = temp.SubstrToChar( ' ', true );
-        temp = temp.CutChars( request->requestType.Length()+1, true );
+        request.requestType = temp.SubstrToChar( ' ', true );
+        temp = temp.CutChars( request.requestType.Length()+1, true );
 
         // Parse the request URI
-        request->requestUri = temp.SubstrToChar( ' ', true );
+        request.requestUri = temp.SubstrToChar( ' ', true );
+        temp = temp.CutChars( request.requestUri.Length()+1, true );
+
+        // Parse the request protocol and its version
+        request.requestProtocol = temp.SubstrToChar( '/', true );
+        request.requestProtocolVersion = temp.CutChars( request.requestProtocol.Length()+1, true );
 
         // Parse all the subsequent HTTP header fields
         TStringVector::iterator i = headerFields.begin();
@@ -446,32 +501,32 @@ CHTTPServer::ParseRequest( const CORE::CDynamicBuffer& inputBuffer )
             // Now that we have formatted the header name + value we can use them
             if ( headerName == "accept" )
             {
-                ExtractCommaSeparatedValues( headerValue                      ,
-                                             request->resourceRepresentations );
-                StripItems( request->resourceRepresentations, ';' );
+                ExtractCommaSeparatedValues( headerValue                     ,
+                                             request.resourceRepresentations );
+                StripItems( request.resourceRepresentations, ';' );
             }
             else
             if ( headerName == "content-type" )
             {
-                ExtractCommaSeparatedValues( headerValue               ,
-                                             request->resourceVersions );
-                StripItems( request->resourceRepresentations, ';' );
+                ExtractCommaSeparatedValues( headerValue              ,
+                                             request.resourceVersions );
+                StripItems( request.resourceRepresentations, ';' );
             }
             else
             if ( headerName == "if-match" )
             {
-                ExtractCommaSeparatedValues( headerValue               ,
-                                             request->resourceVersions );
+                ExtractCommaSeparatedValues( headerValue              ,
+                                             request.resourceVersions );
             }
             else
             if ( headerName == "cookie" )
             {
-                request->transactionID = headerValue;
+                request.transactionID = headerValue;
             }
             else
             if ( headerName == "host" )
             {
-                request->requestHost = headerValue;
+                request.requestHost = headerValue;
             }
             ++i;
         }
@@ -479,95 +534,35 @@ CHTTPServer::ParseRequest( const CORE::CDynamicBuffer& inputBuffer )
         // Set the content as a sub-segment of our data buffer
         if ( inputBuffer.GetDataSize() - headerSize > 0 )
         {
-            request->content.LinkTo( inputBuffer.GetConstBufferPtr( headerSize ) ,
-                                     inputBuffer.GetDataSize() - headerSize      );
+            request.content.LinkTo( inputBuffer.GetConstBufferPtr( headerSize ) ,
+                                    inputBuffer.GetDataSize() - headerSize      );
         }
-
-        return request;
     }
-    catch ( std::exception& )
+    catch ( const std::exception& e )
     {
-        return GUCEF_NULL;
+        GUCEF_EXCEPTION_LOG( CORE::LOGLEVEL_NORMAL, "CHTTPServer(" + CORE::PointerToString( this ) + "): Exception parsing request: " + CORE::CString( e.what() ) );
+        return false;
     }
+
+    return true;
 }
 
 /*-------------------------------------------------------------------------*/
-
-void
-CHTTPServer::ParseResponse( const CHttpResponseData& returnData  ,
-                            CORE::CDynamicBuffer& outputBuffer )
+                         
+bool
+CHTTPServer::Lock( void ) const
 {GUCEF_TRACE;
+    
+    return m_lock.Lock();
+}
 
-    CString response = "HTTP/1.1 " + CORE::Int32ToString( returnData.statusCode ) + "\r\nServer: gucefCOM\r\n";
-    if ( m_keepAliveConnections )
-        response += "Connection: keep-alive\r\n";
-    else
-        response += "Connection: close\r\n";
-    if ( !returnData.location.IsNULLOrEmpty() )
-    {
-        response += "Content-Location: " + returnData.location + "\r\n";
-    }
-    if ( !returnData.eTag.IsNULLOrEmpty() )
-    {
-        response += "ETag: " + returnData.eTag + "\r\n";
-    }
-    if ( !returnData.cacheability.IsNULLOrEmpty() )
-    {
-        response += "Cache-Control: " + returnData.cacheability + "\r\n";
-    }
-    if ( !returnData.lastModified.IsNULLOrEmpty() )
-    {
-        response += "Last-Modified: " + returnData.lastModified + "\r\n";
-    }
-    if ( returnData.content.GetDataSize() > 0 )
-    {
-        response += "Content-Length: " + CORE::UInt32ToString( returnData.content.GetDataSize() ) + "\r\n";
-        response += "Content-Type: " + returnData.contentType + "\r\n";
-    }
-
-    // You cannot send back accept types to the client using a standard HTTP header since
-    // it is a HTTP request only header. We don't want the client to aimlessly retry different
-    // representations either on PUT/POST so we do want to inform the client of the accepted types.
-    // The client will need to have support for this operation to take advantage of it since it is a custom HTTP header
-    if ( returnData.statusCode == 415 )
-    {
-        response += "Accept: ";
-        TStringVector::const_iterator i = returnData.acceptedTypes.begin();
-        while ( i != returnData.acceptedTypes.end() )
-        {
-            response += (*i) + ',';
-            ++i;
-        }
-        response += "\r\n";
-    }
-
-    // If the operation was and a subset of allowed operations where specified
-    // we will send those to the client.
-    if ( returnData.statusCode == 405 && returnData.allowedMethods.size() > 0 )
-    {
-        response += "Allow: ";
-        TStringVector::const_iterator i = returnData.allowedMethods.begin();
-        while ( i != returnData.allowedMethods.end() )
-        {
-            response += (*i) + ',';
-            ++i;
-        }
-        response += "\r\n";
-    }
-
-    // Add the end of HTTP header delimiter
-    response += "\r\n";
-
-    GUCEF_DEBUG_LOG( CORE::LOGLEVEL_NORMAL, "CHTTPServer(" + CORE::PointerToString( this ) + "): Finished building response header: " + response );
-
-    // Copy the HTTP header into the buffer
-    outputBuffer.CopyFrom( response.Length(), response.C_String() );
-
-    // Copy the HTTP message body into the buffer
-    if ( returnData.content.GetDataSize() > 0 )
-    {
-        outputBuffer.CopyFrom( response.Length(), returnData.content.GetDataSize(), returnData.content.GetConstBufferPtr() );
-    }
+/*-------------------------------------------------------------------------*/
+                         
+bool
+CHTTPServer::Unlock( void ) const
+{GUCEF_TRACE;
+    
+    return m_lock.Unlock();
 }
 
 /*-------------------------------------------------------------------------*/
@@ -576,7 +571,34 @@ CIHTTPServerRouterController*
 CHTTPServer::GetRouterController( void ) const
 {GUCEF_TRACE;
 
-    return m_routerController;
+    if ( GUCEF_NULL != m_requestHandler )
+    {
+        return m_requestHandler->GetRouterController();
+    }
+    return GUCEF_NULL;
+}
+
+/*-------------------------------------------------------------------------*/
+
+THttpServerRequestHandlerFactory*
+CHTTPServer::GetRequestHandlerFactory( void ) const
+{GUCEF_TRACE;
+
+    return m_requestHandlerFactory;
+}
+
+/*-------------------------------------------------------------------------*/
+
+bool 
+CHTTPServer::SendResponseASync( UInt32 connectionId                  ,
+                                const CORE::CDynamicBuffer& response ,
+                                const COMCORE::CIPAddress& remoteIP  )
+{GUCEF_TRACE;
+
+    return m_tcpServerSocket.SendToConnection( connectionId                 , 
+                                               response.GetConstBufferPtr() ,
+                                               response.GetDataSize()       ,
+                                               &remoteIP                    );
 }
 
 /*-------------------------------------------------------------------------//

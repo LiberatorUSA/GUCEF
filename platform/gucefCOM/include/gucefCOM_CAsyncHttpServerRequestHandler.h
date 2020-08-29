@@ -31,6 +31,16 @@
 #define GUCEF_CORE_CITASKCONSUMER_H
 #endif /* GUCEF_CORE_CITASKCONSUMER_H ? */
 
+#ifndef GUCEF_COM_CHTTPREQUESTDATA_H
+#include "gucefCOM_CHttpRequestData.h"
+#define GUCEF_COM_CHTTPREQUESTDATA_H
+#endif /* GUCEF_COM_CHTTPREQUESTDATA_H ? */
+
+#ifndef GUCEF_COM_CIHTTPSERVERREQUESTHANDLER_H
+#include "gucefCOM_CIHttpServerRequestHandler.h"
+#define GUCEF_COM_CIHTTPSERVERREQUESTHANDLER_H
+#endif /* GUCEF_COM_CIHTTPSERVERREQUESTHANDLER_H ? */
+
 #ifndef GUCEF_COM_MACROS_H
 #include "gucefCOM_macros.h"
 #define GUCEF_COM_MACROS_H
@@ -74,11 +84,31 @@ class GUCEF_HIDDEN CAsyncHttpServerRequestHandler : public CORE::CTaskConsumer
 
     private:
 
+    CIHttpServerRequestHandler* m_requestHandler;
 };
 
 /*-------------------------------------------------------------------------*/
 
 typedef CORE::CTFactory< CORE::CTaskConsumer, CAsyncHttpServerRequestHandler > TAsyncHttpServerRequestHandlerFactory;
+
+/*-------------------------------------------------------------------------*/
+
+class CHTTPServer;
+
+class GUCEF_HIDDEN CAsyncHttpRequestData : public CHttpRequestData
+{
+    public:
+
+    CHTTPServer* httpServer;
+    UInt32 clientConnectionId;
+    COMCORE::CHostAddress remoteClientAddress;
+
+    virtual CORE::CICloneable* Clone( void ) const GUCEF_VIRTUAL_OVERRIDE;
+
+    CAsyncHttpRequestData( void );
+    CAsyncHttpRequestData( const CAsyncHttpRequestData& src );
+    virtual ~CAsyncHttpRequestData();
+};
 
 /*-------------------------------------------------------------------------//
 //                                                                         //

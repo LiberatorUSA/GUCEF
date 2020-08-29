@@ -125,11 +125,13 @@ CTaskManager::RegisterEvents( void )
 
 /*-------------------------------------------------------------------------*/
 
-CTaskManager::CTaskQueueItem::CTaskQueueItem( CTaskConsumer* consumer ,
-                                              CICloneable* taskData   )
-    : CICloneable()              ,
-      m_taskData( taskData )     ,
-      m_taskConsumer( consumer )
+CTaskManager::CTaskQueueItem::CTaskQueueItem( CTaskConsumer* consumer        ,
+                                              CICloneable* taskData          ,
+                                              bool assumeOwnershipOfTaskData )
+    : CICloneable()              
+    , m_taskData( taskData )     
+    , m_taskConsumer( consumer ) 
+    , m_assumeOwnershipOfTaskData( assumeOwnershipOfTaskData )
 {GUCEF_TRACE;
 
 }
@@ -137,11 +139,16 @@ CTaskManager::CTaskQueueItem::CTaskQueueItem( CTaskConsumer* consumer ,
 /*-------------------------------------------------------------------------*/
 
 CTaskManager::CTaskQueueItem::CTaskQueueItem( CTaskQueueItem& src )
-    : CICloneable()                         ,
-      m_taskData( src.m_taskData->Clone() ) ,
-      m_taskConsumer( src.m_taskConsumer )
+    : CICloneable()                         
+    ,  m_taskData( src.m_taskData )
+    ,  m_taskConsumer( src.m_taskConsumer )
+    , m_assumeOwnershipOfTaskData( src.m_assumeOwnershipOfTaskData )
 {GUCEF_TRACE;
 
+    if ( !m_assumeOwnershipOfTaskData && GUCEF_NULL != m_taskData )
+    {
+        m_taskData = m_taskData->Clone();    
+    }
 }
 
 /*-------------------------------------------------------------------------*/
@@ -417,7 +424,8 @@ bool
 CTaskManager::QueueTask( const CString& taskType         ,
                          CICloneable* taskData           ,
                          CTaskConsumer** outTaskConsumer ,
-                         CObserver* taskObserver         )
+                         CObserver* taskObserver         ,
+                         bool assumeOwnershipOfTaskData  )
 {GUCEF_TRACE;
 
     {
@@ -441,8 +449,9 @@ CTaskManager::QueueTask( const CString& taskType         ,
                 taskConsumer->Subscribe( taskObserver );
             }
 
-            CTaskQueueItem* queueItem = new CTaskQueueItem( taskConsumer ,
-                                                            taskData     );
+            CTaskQueueItem* queueItem = new CTaskQueueItem( taskConsumer              ,
+                                                            taskData                  ,
+                                                            assumeOwnershipOfTaskData );
 
             m_taskQueue.AddMail( taskType, queueItem );
 

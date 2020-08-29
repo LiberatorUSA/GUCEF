@@ -335,6 +335,15 @@ CNotifier::OnObserverDestruction( CObserver* observer )
 
 /*-------------------------------------------------------------------------*/
 
+const MT::CILockable* 
+CNotifier::AsLockable( void ) const
+{GUCEF_TRACE;
+
+    return this;
+}
+
+/*-------------------------------------------------------------------------*/
+
 bool
 CNotifier::Lock( void ) const
 {GUCEF_TRACE;

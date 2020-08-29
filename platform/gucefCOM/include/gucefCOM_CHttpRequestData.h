@@ -43,6 +43,11 @@
 #define GUCEF_CORE_CDVSTRING_H
 #endif /* GUCEF_CORE_CDVSTRING_H ? */
 
+#ifndef GUCEF_COMCORE_CHOSTADDRESS_H
+#include "CHostAddress.h"
+#define GUCEF_COMCORE_CHOSTADDRESS_H
+#endif /* GUCEF_COMCORE_CHOSTADDRESS_H ? */
+
 #ifndef GUCEF_COM_MACROS_H
 #include "gucefCOM_macros.h"
 #define GUCEF_COM_MACROS_H
@@ -67,21 +72,30 @@ class GUCEF_COM_EXPORT_CPP CHttpRequestData : public CORE::CICloneable
 {
     public:
 
-    typedef CORE::CString::StringVector TStringVector; 
+    typedef CORE::CString::StringVector TStringVector;
 
     TStringVector resourceRepresentations;
     TStringVector resourceVersions;
+    CString requestProtocol;
+    CString requestProtocolVersion;
     CString requestType;
     CString requestHost;
     CString requestUri;
     CORE::CDynamicBuffer content;
-    CString transactionID; 
+    CString transactionID;
+    bool keepConnectionsAlive;
 
     virtual CORE::CICloneable* Clone( void ) const GUCEF_VIRTUAL_OVERRIDE;
+
+    CString ConstructUriWithAuthority( void ) const;
 
     CHttpRequestData( void );
     CHttpRequestData( const CHttpRequestData& src );
     virtual ~CHttpRequestData();
+
+    private:
+
+    mutable CString m_requestUriWithAuthority;
 };
 
 /*-------------------------------------------------------------------------//

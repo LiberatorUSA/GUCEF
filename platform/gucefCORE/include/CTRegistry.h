@@ -77,7 +77,7 @@ namespace CORE {
  *  where object access is concerned
  */
 template < class T >
-class CTRegistry : public virtual MT::CILockable
+class CTRegistry : public MT::CILockable
 {
     public:
     typedef CTSharedPtr< T > TRegisteredObjPtr;

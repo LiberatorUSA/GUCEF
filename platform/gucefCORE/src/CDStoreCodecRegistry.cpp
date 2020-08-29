@@ -46,22 +46,29 @@ namespace CORE {
 
 /*-------------------------------------------------------------------------//
 //                                                                         //
-//      CLASSES                                                            //
+//      IMPLEMENTATION                                                     //
 //                                                                         //
 //-------------------------------------------------------------------------*/
 
 CDStoreCodecRegistry::CDStoreCodecRegistry( void )
-{
-        GUCEF_BEGIN;
-        GUCEF_END;
+{GUCEF_TRACE;
+
 }
 
 /*-------------------------------------------------------------------------*/
 
 CDStoreCodecRegistry::~CDStoreCodecRegistry()
-{
-        GUCEF_BEGIN;
-        GUCEF_END;
+{GUCEF_TRACE;
+
+}
+
+/*-------------------------------------------------------------------------*/
+
+const MT::CILockable* 
+CDStoreCodecRegistry::AsLockable( void ) const
+{GUCEF_TRACE;
+
+    return this;
 }
 
 /*-------------------------------------------------------------------------*/

@@ -173,6 +173,8 @@ class GUCEF_CORE_PUBLIC_CPP CLogManager : public MT::CILockable
 
     static const CString& GetLogMsgTypeString( const TLogMsgType logMsgType );
 
+    virtual const MT::CILockable* AsLockable( void ) const GUCEF_VIRTUAL_OVERRIDE;
+
     protected:
     
     virtual bool Lock( void ) const GUCEF_VIRTUAL_OVERRIDE;
@@ -184,7 +186,7 @@ class GUCEF_CORE_PUBLIC_CPP CLogManager : public MT::CILockable
 
     CLogManager( void );
 
-    ~CLogManager();
+    virtual ~CLogManager();
 
     private:
 

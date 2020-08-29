@@ -28,6 +28,11 @@
 #define GUCEF_CORE_LOGGING_H
 #endif /* GUCEF_CORE_LOGGING_H ? */
 
+#ifndef GUCEF_COM_CDEFAULTHTTPSERVERROUTERCONTROLLER_H
+#include "gucefCOM_CDefaultHTTPServerRouterController.h"
+#define GUCEF_COM_CDEFAULTHTTPSERVERROUTERCONTROLLER_H
+#endif /* GUCEF_COM_CDEFAULTHTTPSERVERROUTERCONTROLLER_H ? */
+
 #include "gucefCOM_CDefaultHttpServerRequestHandler.h"
 
 /*-------------------------------------------------------------------------//
@@ -50,6 +55,10 @@ CDefaultHttpServerRequestHandler::CDefaultHttpServerRequestHandler( CIHTTPServer
     , m_routerController( routerController )
 {GUCEF_TRACE;
 
+    if ( GUCEF_NULL == routerController )
+    {
+        m_routerController = new CDefaultHTTPServerRouterController();
+    }
 }
 
 /*-------------------------------------------------------------------------*/
@@ -70,35 +79,83 @@ CDefaultHttpServerRequestHandler::~CDefaultHttpServerRequestHandler()
 
 /*-------------------------------------------------------------------------*/
 
-CHttpResponseData*
-CDefaultHttpServerRequestHandler::OnRead( const CHttpRequestData& request )
+bool
+CDefaultHttpServerRequestHandler::OnRequest( const CHttpRequestData& request ,
+                                             CHttpResponseData& response     )
 {GUCEF_TRACE;
 
-    return PerformReadOperation( request, true );
-}
-
-/*-------------------------------------------------------------------------*/
-
-CHttpResponseData*
-CDefaultHttpServerRequestHandler::OnReadMetaData( const CHttpRequestData& request )
-{GUCEF_TRACE;
-
-    return PerformReadOperation( request, false );
-}
-
-/*-------------------------------------------------------------------------*/
-
-CHttpResponseData*
-CDefaultHttpServerRequestHandler::PerformReadOperation( const CHttpRequestData& request ,
-                                                        bool contentRequested           )
-{GUCEF_TRACE;
-
-    CHttpResponseData* returnData = new CHttpResponseData();
-
-    if ( NULL == m_routerController )
+    try
     {
-        returnData->statusCode = 500; // Improperly configured
-        return returnData;
+        if ( request.requestType == "GET" )
+        {
+            return OnRead( request, response );
+        }
+        else
+        if ( request.requestType == "HEAD" )
+        {
+            return OnReadMetaData( request, response );
+        }
+        else
+        if ( request.requestType == "POST" )
+        {
+            return OnCreate( request, response );
+        }
+        else
+        if ( request.requestType == "PUT" )
+        {
+            return OnUpdate( request, false, response );
+        }
+        else
+        if ( request.requestType == "PATCH" )
+        {
+            return OnUpdate( request, true, response );
+        }
+        else
+        if ( request.requestType == "DELETE" )
+        {
+            return OnDelete( request, response );
+        }
+    }
+    catch ( const std::exception& e )
+    {
+        GUCEF_EXCEPTION_LOG( CORE::LOGLEVEL_NORMAL, "DefaultHttpServerRequestHandler:OnRequest: Exception: " + CString( e.what() ) );
+        return false;
+    }
+    return false;
+}
+
+/*-------------------------------------------------------------------------*/
+
+bool
+CDefaultHttpServerRequestHandler::OnRead( const CHttpRequestData& request ,
+                                          CHttpResponseData& response     )
+{GUCEF_TRACE;
+
+    return PerformReadOperation( request, true, response );
+}
+
+/*-------------------------------------------------------------------------*/
+
+bool
+CDefaultHttpServerRequestHandler::OnReadMetaData( const CHttpRequestData& request ,
+                                                  CHttpResponseData& response     )
+{GUCEF_TRACE;
+
+    return PerformReadOperation( request, false, response );
+}
+
+/*-------------------------------------------------------------------------*/
+
+bool
+CDefaultHttpServerRequestHandler::PerformReadOperation( const CHttpRequestData& request ,
+                                                        bool contentRequested           ,
+                                                        CHttpResponseData& response     )
+{GUCEF_TRACE;
+
+    if ( GUCEF_NULL == m_routerController )
+    {
+        response.statusCode = 500; // Improperly configured
+        return false;
     }
 
     try
@@ -109,8 +166,8 @@ CDefaultHttpServerRequestHandler::PerformReadOperation( const CHttpRequestData& 
         if ( NULL == resourceRouter )
         {
             // No handler is mounted to handle this Uri
-            returnData->statusCode = 404;
-            return returnData;
+            response.statusCode = 404;
+            return true;
         }
 
         // Obtain the relative Uri for the given handler
@@ -121,19 +178,19 @@ CDefaultHttpServerRequestHandler::PerformReadOperation( const CHttpRequestData& 
         if ( 0 == resource )
         {
             // Not found
-            returnData->statusCode = 404;
-            return returnData;
+            response.statusCode = 404;
+            return true;
         }
 
-        returnData->contentType = resource->GetBestMatchedSerializationRepresentation( request.resourceRepresentations );
+        response.contentType = resource->GetBestMatchedSerializationRepresentation( request.resourceRepresentations );
 
         // Did we find a supported type match?
-        if ( returnData->contentType.IsNULLOrEmpty() )
+        if ( response.contentType.IsNULLOrEmpty() )
         {
             // Unsupported media type
-            returnData->statusCode = 415;
-            returnData->acceptedTypes = resource->GetSupportedSerializationRepresentations();
-            return returnData;
+            response.statusCode = 415;
+            response.acceptedTypes = resource->GetSupportedSerializationRepresentations();
+            return true;
         }
 
         // Check if we need to perform a version check for efficiency purposes
@@ -142,61 +199,62 @@ CDefaultHttpServerRequestHandler::PerformReadOperation( const CHttpRequestData& 
         if ( MatchResourceVersion( resource->GetResourceVersion(), request.resourceVersions ) )
         {
             // The resource has not been changed thus no need to send the resource to the client
-            returnData->statusCode = 304;
-            returnData->eTag = resource->GetResourceVersion();
-            return returnData;
+            response.statusCode = 304;
+            response.eTag = resource->GetResourceVersion();
+            return true;
         }
 
         if ( contentRequested )
         {
             // Set the serialized resource as the return data content
-            if ( !resource->Serialize( returnData->content, returnData->contentType ) )
+            if ( !resource->Serialize( response.content, response.contentType ) )
             {
                 // Something went wrong in the handler while serializing the resource
-                returnData->statusCode = 415;
-                returnData->acceptedTypes = resource->GetSupportedSerializationRepresentations();
-                return returnData;
+                response.statusCode = 415;
+                response.acceptedTypes = resource->GetSupportedSerializationRepresentations();
+                return true;
             }
         }
 
-        returnData->eTag = resource->GetResourceVersion();
-        returnData->lastModified = resource->GetLastModifiedTime();
-        returnData->cacheability = resource->GetCacheability();
+        response.eTag = resource->GetResourceVersion();
+        response.lastModified = resource->GetLastModifiedTime();
+        response.cacheability = resource->GetCacheability();
 
         // Inform the client of the actual location of the resource if the request Uri was
         // actually an alias
-        CString actualResourceUri = m_routerController->MakeUriAbsolute( *resourceRouter, resourceURI, resource->GetURL() );
-        if ( resourceURI != actualResourceUri )
+        CString requestResourceUri = request.ConstructUriWithAuthority();
+        CString actualResourceUri = m_routerController->MakeUriAbsolute( *resourceRouter, requestResourceUri, resource->GetURL() );
+        if ( requestResourceUri != actualResourceUri )
         {         //@TODO: should the status code be 3xx instead of 200??
-            returnData->location = actualResourceUri;
+            response.location = actualResourceUri;
         }
 
         // Set the StatusCode to OK
-        returnData->statusCode = 200;
-        return returnData;
+        response.statusCode = 200;
+        return true;
     }
-    catch ( std::exception& )
+    catch ( const std::exception& e )
     {
         // Unhandled exception during execution
-        returnData->statusCode = 500;
-        return returnData;
+        response.statusCode = 500;
+        GUCEF_EXCEPTION_LOG( CORE::LOGLEVEL_NORMAL, "DefaultHttpServerRequestHandler:PerformReadOperation: Exception: " + CString( e.what() ) );
+        return false;
     }
 }
 
 /*-------------------------------------------------------------------------*/
 
-CHttpResponseData*
+bool
 CDefaultHttpServerRequestHandler::OnUpdate( const CHttpRequestData& request ,
-                                            bool isDeltaUpdateOnly          )
+                                            bool isDeltaUpdateOnly          ,
+                                            CHttpResponseData& response     )
 {GUCEF_TRACE;
 
-    CHttpResponseData* returnData = new CHttpResponseData();
-
-    if ( NULL == m_routerController )
+    if ( GUCEF_NULL == m_routerController )
     {
         // No system has been set for providing handlers
-        returnData->statusCode = 500;
-        return returnData;
+        response.statusCode = 500;
+        return false;
     }
     try
     {
@@ -206,15 +264,15 @@ CDefaultHttpServerRequestHandler::OnUpdate( const CHttpRequestData& request ,
         if ( NULL == resourceRouter )
         {
             // No system has been set for providing handlers
-            returnData->statusCode = 500;
-            return returnData;
+            response.statusCode = 500;
+            return false;
         }
 
         // Check if the client send the content for the update
         if ( request.content.GetDataSize() == 0 )
         {
-            returnData->statusCode = 400; // Bad request
-            return returnData;
+            response.statusCode = 400; // Bad request
+            return true;
         }
 
         CString remainderUri = m_routerController->GetUriAfterTheBaseAddress( *resourceRouter, resourceURI );
@@ -223,8 +281,8 @@ CDefaultHttpServerRequestHandler::OnUpdate( const CHttpRequestData& request ,
         if ( 0 == resource )
         {
             // Not found
-            returnData->statusCode = 404;
-            return returnData;
+            response.statusCode = 404;
+            return true;
         }
 
         CString inputRepresentation;
@@ -247,9 +305,9 @@ CDefaultHttpServerRequestHandler::OnUpdate( const CHttpRequestData& request ,
 
             if ( !isSupportedMimeType )
             {
-                returnData->statusCode = 415;
-                returnData->acceptedTypes = resource->GetSupportedDeserializationRepresentations();
-                return returnData;
+                response.statusCode = 415;
+                response.acceptedTypes = resource->GetSupportedDeserializationRepresentations();
+                return true;
             }
         }
 
@@ -260,8 +318,8 @@ CDefaultHttpServerRequestHandler::OnUpdate( const CHttpRequestData& request ,
             {
                 // The resource has been changed while the client was making its changes,..
                 // We have a race condition and should abort the update
-                returnData->statusCode = 412; // Pre condition failed
-                return returnData;
+                response.statusCode = 412; // Pre condition failed
+                return true;
             }
         }
 
@@ -270,62 +328,63 @@ CDefaultHttpServerRequestHandler::OnUpdate( const CHttpRequestData& request ,
         if ( CIHTTPServerResource::DESERIALIZESTATE_CORRUPTEDINPUT == deserializeState  )
         {
             // There was a problem in the backend deserializing the content in the negotiated format
-            returnData->statusCode = 400; // <- corrupt data,.. bad request
-            returnData->acceptedTypes = resource->GetSupportedDeserializationRepresentations();
-            return returnData;
+            response.statusCode = 400; // <- corrupt data,.. bad request
+            response.acceptedTypes = resource->GetSupportedDeserializationRepresentations();
+            return true;
         }
         else
         if ( CIHTTPServerResource::DESERIALIZESTATE_UNABLETOUPDATE == deserializeState  )
         {
             // There was a problem in the backend actually updating the resource with the deserialized content
-            returnData->statusCode = 304; // <- resource not modified
+            response.statusCode = 304; // <- resource not modified
         }
         else
         {
             // Update to the existing entry was successfull
-            returnData->statusCode = 200;
+            response.statusCode = 200;
         }
 
-        returnData->eTag = resource->GetResourceVersion();
-        returnData->lastModified = resource->GetLastModifiedTime();
+        response.eTag = resource->GetResourceVersion();
+        response.lastModified = resource->GetLastModifiedTime();
 
         // Make sure we only send back absolute Uri's for resource locations
-        returnData->location = m_routerController->MakeUriAbsolute( *resourceRouter, resourceURI, resource->GetURL() );
+        CString requestResourceUri = request.ConstructUriWithAuthority();
+        response.location = m_routerController->MakeUriAbsolute( *resourceRouter, requestResourceUri, resource->GetURL() );
 
         // Send the serverside representation back to the client in the representation of the update
-        resource->Serialize( returnData->content, inputRepresentation );
-        returnData->contentType = inputRepresentation;
+        resource->Serialize( response.content, inputRepresentation );
+        response.contentType = inputRepresentation;
 
-        return returnData;
+        return true;
     }
-    catch ( std::exception& )
+    catch ( const std::exception& e )
     {
         // Unhandled exception during execution
-        returnData->statusCode = 500;
-        return returnData;
+        response.statusCode = 500;
+        GUCEF_EXCEPTION_LOG( CORE::LOGLEVEL_NORMAL, "DefaultHttpServerRequestHandler:OnUpdate: Exception: " + CString( e.what() ) );
+        return false;
     }
 }
 
 /*-------------------------------------------------------------------------*/
 
-CHttpResponseData*
-CDefaultHttpServerRequestHandler::OnCreate( const CHttpRequestData& request )
+bool
+CDefaultHttpServerRequestHandler::OnCreate( const CHttpRequestData& request ,
+                                            CHttpResponseData& response     )
 {GUCEF_TRACE;
-
-    CHttpResponseData* returnData = new CHttpResponseData();
 
     if ( request.content.GetDataSize() == 0 )
     {
         //Either the client request could not be parsed or the client has not provided any data
         //to create. So throw bad request.
-        returnData->statusCode = 400;
-        return returnData;
+        response.statusCode = 400;
+        return false;
     }
 
-    if ( NULL == m_routerController )
+    if ( GUCEF_NULL == m_routerController )
     {
-        returnData->statusCode = 500; // Improperly configured
-        return returnData;
+        response.statusCode = 500; // Improperly configured
+        return false;
     }
 
     try
@@ -337,8 +396,8 @@ CDefaultHttpServerRequestHandler::OnCreate( const CHttpRequestData& request )
         {
             // No system has been set for providing handlers
             // There is nothing the client can do here.
-            returnData->statusCode = 500;
-            return returnData;
+            response.statusCode = 500;
+            return true;
         }
 
         // Get relative collection URI and subsequently the collection itself
@@ -348,8 +407,8 @@ CDefaultHttpServerRequestHandler::OnCreate( const CHttpRequestData& request )
         if ( 0 == containerResource )
         {
             // Unable to locate the collection in which to place the entry
-            returnData->statusCode = 404;
-            return returnData;
+            response.statusCode = 404;
+            return true;
         }
 
         // create resource in preperation for deserialization
@@ -366,79 +425,80 @@ CDefaultHttpServerRequestHandler::OnCreate( const CHttpRequestData& request )
         if ( ( CIHTTPServerResource::CREATESTATE_FAILED == createState ) || ( 0 == resource ) )
         {
             // Failed to finalize (thus persist) the data
-            returnData->statusCode = 500;
-            return returnData;
+            response.statusCode = 500;
+            return true;
         }
         // See if the handler was able to already provide access to the placeholder as a resource
         if ( CIHTTPServerResource::CREATESTATE_CONFLICTING == createState )
         {
-            returnData->statusCode = 409; // Conflict: already exists and it is not the same item
-            return returnData;
+            response.statusCode = 409; // Conflict: already exists and it is not the same item
+            return true;
         }
         if ( CIHTTPServerResource::CREATESTATE_UNSUPPORTEDREPRESENTATION == createState )
         {
-            returnData->statusCode = 415;
-            returnData->acceptedTypes = supportedRepresentations;
-            return returnData;
+            response.statusCode = 415;
+            response.acceptedTypes = supportedRepresentations;
+            return true;
         }
 
         if ( CIHTTPServerResource::CREATESTATE_DESERIALIZATIONFAILED == createState )
         {
             // tell client about the error,.. cannot create because of corrupted stream
-            returnData->statusCode = 400;
-            returnData->acceptedTypes = supportedRepresentations;
-            return returnData;
+            response.statusCode = 400;
+            response.acceptedTypes = supportedRepresentations;
+            return true;
         }
 
         if ( CIHTTPServerResource::CREATESTATE_CREATED == createState )
         {
-            returnData->location = resource->GetURL();
+            response.location = resource->GetURL();
 
             // To comply with protocols like ATOM-pub we need to stream out whatever content is already present
             // as the new resource as part of our reply regardless of whether content was send to the server
 
             // Perform the serialization
-            resource->Serialize( returnData->content, createRepresentation );
+            resource->Serialize( response.content, createRepresentation );
 
             // Make sure the client gets an absolute path to the resource
             // which may be a placeholder
-            returnData->location = m_routerController->MakeUriAbsolute( *resourceRouter, resourceURI, returnData->location );
+            CString uriWithAuthority = request.ConstructUriWithAuthority();
+            response.location = m_routerController->MakeUriAbsolute( *resourceRouter, uriWithAuthority, response.location );
 
             // tell client what representation the resource is stored as plus its version
-            returnData->contentType = createRepresentation;
-            returnData->eTag = resource->GetResourceVersion();
-            returnData->lastModified = resource->GetLastModifiedTime();
+            response.contentType = createRepresentation;
+            response.eTag = resource->GetResourceVersion();
+            response.lastModified = resource->GetLastModifiedTime();
 
             // Tell the client we succeeded in creating a new resource
-            returnData->statusCode = 201;
-            return returnData;
+            response.statusCode = 201;
+            return true;
         }
 
         // We should not be able to get here,.. bad create state
-        returnData->statusCode = 500;
-        return returnData;
+        response.statusCode = 500;
+        return false;
 
     }
-    catch ( std::exception& )
+    catch ( const std::exception& e )
     {
         // Unhandled exception during execution
-        returnData->statusCode = 500;
-        return returnData;
+        response.statusCode = 500;
+        GUCEF_EXCEPTION_LOG( CORE::LOGLEVEL_NORMAL, "DefaultHttpServerRequestHandler:OnCreate: Exception: " + CString( e.what() ) );
+        return false;
     }
 }
 
 /*-------------------------------------------------------------------------*/
 
-CHttpResponseData*
-CDefaultHttpServerRequestHandler::OnDelete( const CHttpRequestData& request )
+bool
+CDefaultHttpServerRequestHandler::OnDelete( const CHttpRequestData& request ,
+                                            CHttpResponseData& response     )
 {GUCEF_TRACE;
 
-    CHttpResponseData* returnData = new CHttpResponseData();
-
-    if ( NULL == m_routerController )
+    if ( GUCEF_NULL == m_routerController )
     {
-        returnData->statusCode = 500; // Improperly configured
-        return returnData;
+        response.statusCode = 500; // Improperly configured
+        return false;
     }
 
     try
@@ -449,8 +509,8 @@ CDefaultHttpServerRequestHandler::OnDelete( const CHttpRequestData& request )
         if ( NULL == resourceRouter )
         {
             // No system has been set for providing handlers
-            returnData->statusCode = 404;
-            return returnData;
+            response.statusCode = 404;
+            return false;
         }
 
         CString remainderUri = m_routerController->GetUriAfterTheBaseAddress( *resourceRouter, resourceURI );
@@ -458,9 +518,9 @@ CDefaultHttpServerRequestHandler::OnDelete( const CHttpRequestData& request )
 
         if ( 0 == resource )
         {
-            // Not fount
-            returnData->statusCode = 404;
-            return returnData;
+            // Not found
+            response.statusCode = 404;
+            return true;
         }
 
         if ( request.resourceVersions.size() > 0 )
@@ -471,31 +531,32 @@ CDefaultHttpServerRequestHandler::OnDelete( const CHttpRequestData& request )
             {
                 // The resource it of a different version then what the client expected,..
                 // We will abort the delete
-                returnData->statusCode = 412;
-                returnData->eTag = resource->GetResourceVersion();
-                return returnData;
+                response.statusCode = 412;
+                response.eTag = resource->GetResourceVersion();
+                return true;
             }
         }
 
         if ( resource->DeleteResource() )
         {
             // tell client the delete succeeded
-            returnData->statusCode = 200;
-            return returnData;
+            response.statusCode = 200;
+            return true;
         }
         else
         {
-            returnData->statusCode = 405; //
-            returnData->allowedMethods.push_back( "GET" ); // Hmm, we're not quite sure are we...
-            returnData->allowedMethods.push_back( "POST" );
-            return returnData;
+            response.statusCode = 405; //
+            response.allowedMethods.push_back( "GET" ); // Hmm, we're not quite sure are we...
+            response.allowedMethods.push_back( "POST" );
+            return true;
         }
     }
-    catch ( std::exception& )
+    catch ( const std::exception& e )
     {
         // Unhandled exception during execution
-        returnData->statusCode = 500;
-        return returnData;
+        response.statusCode = 500;
+        GUCEF_EXCEPTION_LOG( CORE::LOGLEVEL_NORMAL, "DefaultHttpServerRequestHandler:OnDelete: Exception: " + CString( e.what() ) );
+        return false;
     }
 }
 

@@ -121,6 +121,8 @@ class GUCEF_CORE_PUBLIC_CPP CObserver : public CIObserver
 
     virtual const CString& GetClassTypeName( void ) const;
 
+    virtual const MT::CILockable* AsLockable( void ) const GUCEF_VIRTUAL_OVERRIDE;
+
     protected:
     friend class CNotifierImplementor;
 
@@ -136,7 +138,7 @@ class GUCEF_CORE_PUBLIC_CPP CObserver : public CIObserver
     virtual void OnNotify( CNotifier* notifier           ,
                            const CEvent& eventid         ,
                            CICloneable* eventdata = NULL );
-
+    
     virtual bool Lock( void ) const GUCEF_VIRTUAL_OVERRIDE;
 
     virtual bool Unlock( void ) const GUCEF_VIRTUAL_OVERRIDE;

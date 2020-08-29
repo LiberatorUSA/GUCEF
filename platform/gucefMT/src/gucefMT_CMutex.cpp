@@ -85,7 +85,7 @@ CMutex::CMutex( void )
     if ( 0 == _mutexdata->id )
     {
         delete _mutexdata;
-        _mutexdata = NULL;
+        _mutexdata = GUCEF_NULL;
         GUCEF_ASSERT_ALWAYS;
         return;
     }
@@ -100,7 +100,7 @@ CMutex::CMutex( void )
     if ( pthread_mutex_init( &_mutexdata->id, &attr ) != 0 )
     {
         delete _mutexdata;
-        _mutexdata = NULL;
+        _mutexdata = GUCEF_NULL;
         GUCEF_ASSERT_ALWAYS;
         return;
     }
@@ -116,13 +116,13 @@ CMutex::~CMutex()
 
     CloseHandle( ((TMutexData*)_mutexdata)->id );
     delete (TMutexData*)_mutexdata;
-    _mutexdata = NULL;
+    _mutexdata = GUCEF_NULL;
 
     #elif ( ( GUCEF_PLATFORM == GUCEF_PLATFORM_LINUX ) || ( GUCEF_PLATFORM == GUCEF_PLATFORM_ANDROID ) )
 
     pthread_mutex_destroy( &((TMutexData*)_mutexdata)->id );
     delete (TMutexData*)_mutexdata;
-    _mutexdata = NULL;
+    _mutexdata = GUCEF_NULL;
 
     #endif
 }
@@ -132,6 +132,9 @@ CMutex::~CMutex()
 bool
 CMutex::Lock( void ) const
 {
+    if ( GUCEF_NULL == _mutexdata )
+        return false;
+    
     #if ( GUCEF_PLATFORM == GUCEF_PLATFORM_MSWIN )
 
     if ( WaitForSingleObject( ((TMutexData*)_mutexdata)->id ,
@@ -151,6 +154,9 @@ CMutex::Lock( void ) const
 bool
 CMutex::Unlock( void ) const
 {
+    if ( GUCEF_NULL == _mutexdata )
+        return false;
+
     #if ( GUCEF_PLATFORM == GUCEF_PLATFORM_MSWIN )
 
     if ( ReleaseMutex( ((TMutexData*)_mutexdata)->id ) == FALSE ) return false;

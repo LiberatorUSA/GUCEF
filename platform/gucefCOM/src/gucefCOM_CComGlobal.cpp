@@ -68,6 +68,11 @@
 #define GUCEF_COM_CASYNCHTTPSERVERREQUESTHANDLER_H
 #endif /* GUCEF_COM_CASYNCHTTPSERVERREQUESTHANDLER_H ? */
 
+#ifndef GUCEF_COM_CASYNCHTTPSERVERRESPONSEHANDLER_H
+#include "gucefCOM_CAsyncHttpServerResponseHandler.h"
+#define GUCEF_COM_CASYNCHTTPSERVERRESPONSEHANDLER_H
+#endif /* GUCEF_COM_CASYNCHTTPSERVERRESPONSEHANDLER_H ? */
+
 #include "gucefCOM_CComGlobal.h"  /* definition of the class implemented here */
 
 /*-------------------------------------------------------------------------//
@@ -85,8 +90,10 @@ namespace COM {
 //                                                                         //
 //-------------------------------------------------------------------------*/
 
+MT::CMutex CComGlobal::g_dataLock;
 CComGlobal* CComGlobal::g_instance = GUCEF_NULL;
 TAsyncHttpServerRequestHandlerFactory g_asyncHttpServerRequestHandlerFactory;
+TAsyncHttpServerResponseHandlerFactory g_asyncHttpServerResponseHandlerFactory;
 
 /*-------------------------------------------------------------------------//
 //                                                                         //
@@ -118,7 +125,9 @@ CComGlobal::Initialize( void )
     CORE::CMetricsClientManager::CIMetricsSystemClientPtr statsDClient( new CStatsDClient() );
     CORE::CCoreGlobal::Instance()->GetMetricsClientManager().AddMetricsClient( statsDClient );
 
+    
     CORE::CCoreGlobal::Instance()->GetTaskManager().RegisterTaskConsumerFactory( CAsyncHttpServerRequestHandler::TaskType, &g_asyncHttpServerRequestHandlerFactory );
+    CORE::CCoreGlobal::Instance()->GetTaskManager().RegisterTaskConsumerFactory( CAsyncHttpServerResponseHandler::TaskType, &g_asyncHttpServerResponseHandlerFactory );
 }
 
 /*-------------------------------------------------------------------------*/
@@ -129,18 +138,24 @@ CComGlobal::~CComGlobal()
     GUCEF_SYSTEM_LOG( CORE::LOGLEVEL_NORMAL, "gucefCOM Global systems shutting down" );
 
     CORE::CCoreGlobal::Instance()->GetTaskManager().UnregisterTaskConsumerFactory( CAsyncHttpServerRequestHandler::TaskType );
+    CORE::CCoreGlobal::Instance()->GetTaskManager().UnregisterTaskConsumerFactory( CAsyncHttpServerResponseHandler::TaskType );
 }
 
 /*-------------------------------------------------------------------------*/
 
 CComGlobal*
-CComGlobal::Instance( void )
+CComGlobal::Instance()
 {GUCEF_TRACE;
 
-    if ( NULL == g_instance )
+    if ( GUCEF_NULL == g_instance )
     {
-        g_instance = new CComGlobal();
-        g_instance->Initialize();
+        g_dataLock.Lock();
+        if ( NULL == g_instance )
+        {
+            g_instance = new CComGlobal();
+            g_instance->Initialize();
+        }
+        g_dataLock.Unlock();
     }
     return g_instance;
 }

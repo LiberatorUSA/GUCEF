@@ -144,6 +144,8 @@ class GUCEF_CORE_PUBLIC_CPP CCyclicDynamicBuffer : public virtual MT::CILockable
 
     bool HasBufferedData( void ) const;
 
+    virtual const CILockable* AsLockable( void ) const GUCEF_VIRTUAL_OVERRIDE;
+
     protected:
 
     virtual bool Lock( void ) const GUCEF_VIRTUAL_OVERRIDE;

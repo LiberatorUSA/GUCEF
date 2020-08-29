@@ -106,11 +106,14 @@ class GUCEF_CORE_PUBLIC_CPP CTaskManager : public CTSGNotifier
     /**
      *  Queues a task for execution as soon as a thread is available
      *  to execute it.
+     *
+     *  @param assumeOwnershipOfTaskData Whether the taskData given (if any) needs a private copy or whether the task manager can assume ownership
      */
     bool QueueTask( const CString& taskType                      ,
                     CICloneable* taskData = GUCEF_NULL           ,
                     CTaskConsumer** outTaskConsumer = GUCEF_NULL ,
-                    CObserver* taskObserver = GUCEF_NULL         );
+                    CObserver* taskObserver = GUCEF_NULL         ,
+                    bool assumeOwnershipOfTaskData = false       );
 
     /**
      *  Immediatly starts executing a task using the task
@@ -202,8 +205,9 @@ class GUCEF_CORE_PUBLIC_CPP CTaskManager : public CTSGNotifier
     {
         public:
 
-        CTaskQueueItem( CTaskConsumer* consumer ,
-                        CICloneable* taskData   );
+        CTaskQueueItem( CTaskConsumer* consumer        ,
+                        CICloneable* taskData          ,
+                        bool assumeOwnershipOfTaskData );
 
         CTaskQueueItem( CTaskQueueItem& src );
 
@@ -218,6 +222,7 @@ class GUCEF_CORE_PUBLIC_CPP CTaskManager : public CTSGNotifier
         private:
         CICloneable* m_taskData;
         CTaskConsumer* m_taskConsumer;
+        bool m_assumeOwnershipOfTaskData;
     };
 
     private:

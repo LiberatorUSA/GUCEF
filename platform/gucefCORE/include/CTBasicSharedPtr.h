@@ -33,6 +33,11 @@
 #define GUCEF_MT_CILOCKABLE_H
 #endif /* GUCEF_MT_CILOCKABLE_H ? */
 
+#ifndef GUCEF_MT_COBJECTSCOPELOCK_H
+#include "gucefMT_CObjectScopeLock.h"
+#define GUCEF_MT_COBJECTSCOPELOCK_H
+#endif /* GUCEF_MT_COBJECTSCOPELOCK_H ? */
+
 #ifndef GUCEF_CORE_CTDYNAMICDESTRUCTORBASE_H
 #include "CTDynamicDestructorBase.h"
 #define GUCEF_CORE_CTDYNAMICDESTRUCTORBASE_H
@@ -115,7 +120,8 @@ class CTBasicSharedPtr : public virtual MT::CILockable
         : m_ptr( NULL )              ,
           m_refCounter( NULL )       ,
           m_objectDestructor( NULL )
-    {
+    {GUCEF_TRACE;
+
         InitializeUsingInheritance( src );
     }
 
@@ -125,10 +131,11 @@ class CTBasicSharedPtr : public virtual MT::CILockable
 
     template< class RelatedClass >
     bool InitializeUsingInheritance( const CTBasicSharedPtr< RelatedClass >& classPtr )
-    {
+    {GUCEF_TRACE;
+
         Unlink();
 
-        Lock();
+        MT::CObjectScopeLock lock( this );
 
         // The static cast below is performed as a compile time validation
         // of the type passed.
@@ -140,11 +147,8 @@ class CTBasicSharedPtr : public virtual MT::CILockable
             m_objectDestructor = reinterpret_cast< CTBasicSharedPtr< T >::TDestructor* >( classPtr.GetDestructor() );
 
             ++(*m_refCounter);
-
-            Unlock();
             return true;
         }
-        Unlock();
         return false;
     }
 
@@ -164,11 +168,11 @@ class CTBasicSharedPtr : public virtual MT::CILockable
     template< class Derived >
     CTBasicSharedPtr< Derived > StaticCast( bool dummy = true )
     {
-            // We use the initialization function of the derived type's
-            // shared pointer which will have knowledge of both types.
-            CTBasicSharedPtr< Derived > retVal;
-            retVal.InitializeUsingInheritance( *this );
-            return retVal;
+        // We use the initialization function of the derived type's
+        // shared pointer which will have knowledge of both types.
+        CTBasicSharedPtr< Derived > retVal;
+        retVal.InitializeUsingInheritance( *this );
+        return retVal;
     }
 
     CTBasicSharedPtr& operator=( const CTBasicSharedPtr& src );
@@ -242,6 +246,8 @@ class CTBasicSharedPtr : public virtual MT::CILockable
     const UInt32* GetReferenceCounter( void ) const;
 
     TDestructor* GetDestructor( void ) const;
+
+    virtual const MT::CILockable* AsLockable( void ) const GUCEF_VIRTUAL_OVERRIDE;
 
     GUCEF_DEFINE_INLINED_MSGEXCEPTION( ENotInitialized );
 
@@ -337,14 +343,11 @@ CTBasicSharedPtr< T >::CTBasicSharedPtr( const CTBasicSharedPtr< T >& src )
           m_objectDestructor( src.m_objectDestructor )
 {GUCEF_TRACE;
 
-    src.Lock();
-
+    MT::CObjectScopeLock lock( &src );
     if ( m_refCounter )
     {
         ++(*m_refCounter);
     }
-
-    src.Unlock();
 }
 
 /*-------------------------------------------------------------------------*/
@@ -420,6 +423,7 @@ UInt32
 CTBasicSharedPtr< T >::GetReferenceCount( void ) const
 {GUCEF_TRACE;
 
+    MT::CObjectScopeLock lock( this );
     if ( m_refCounter )
     {
         return *m_refCounter;
@@ -448,6 +452,8 @@ CTBasicSharedPtr< T >::operator=( const CTBasicSharedPtr< T >& src )
 
     if ( this != &src )
     {
+        MT::CObjectScopeLock lock( this );
+
         Unlink();
 
         Lock();
@@ -505,6 +511,8 @@ inline bool
 CTBasicSharedPtr< T >::operator==( Int32 other ) const
 {GUCEF_TRACE;
 
+    MT::CObjectScopeLock lock( this );
+
     if ( 0 == other ) 
         return GUCEF_NULL == m_ptr;
     if ( sizeof( int ) != sizeof( m_ptr ) ) 
@@ -519,6 +527,8 @@ inline bool
 CTBasicSharedPtr< T >::operator==( Int32 other ) const
 {GUCEF_TRACE;
 
+    if ( 0 == other ) 
+        return GUCEF_NULL == m_ptr;
     return false;
 }
 
@@ -533,6 +543,8 @@ inline bool
 CTBasicSharedPtr< T >::operator==( Int64 other ) const
 {GUCEF_TRACE;                          
 
+    MT::CObjectScopeLock lock( this );
+    
     if ( 0 == other ) 
         return GUCEF_NULL == m_ptr;
     if ( sizeof( int ) != sizeof( m_ptr ) ) 
@@ -547,6 +559,8 @@ inline bool
 CTBasicSharedPtr< T >::operator==( Int64 other ) const
 {GUCEF_TRACE;
 
+    if ( 0 == other ) 
+        return GUCEF_NULL == m_ptr;
     return false;
 }
 
@@ -595,6 +609,8 @@ inline bool
 CTBasicSharedPtr< T >::operator!=( Int32 other ) const
 {GUCEF_TRACE;
 
+    MT::CObjectScopeLock lock( this );
+    
     if ( 0 == other ) 
         return GUCEF_NULL != m_ptr;
     if ( sizeof( int ) != sizeof( m_ptr ) ) 
@@ -623,6 +639,8 @@ inline bool
 CTBasicSharedPtr< T >::operator!=( Int64 other ) const
 {GUCEF_TRACE;
 
+    MT::CObjectScopeLock lock( this );
+    
     if ( 0 == other ) 
         return GUCEF_NULL != m_ptr;
     if ( sizeof( int ) != sizeof( m_ptr ) ) 
@@ -682,7 +700,9 @@ inline T&
 CTBasicSharedPtr< T >::operator*( void )
 {GUCEF_TRACE;
 
-    if ( m_ptr )
+    MT::CObjectScopeLock lock( this );
+    
+    if ( GUCEF_NULL != m_ptr )
     {
         return *m_ptr;
     }
@@ -698,6 +718,8 @@ inline const T&
 CTBasicSharedPtr< T >::operator*( void ) const
 {GUCEF_TRACE;
 
+    MT::CObjectScopeLock lock( this );
+    
     if ( GUCEF_NULL != m_ptr )
     {
         return *m_ptr;
@@ -715,6 +737,8 @@ inline T*
 CTBasicSharedPtr< T >::operator->( void )
 {GUCEF_TRACE;
 
+    MT::CObjectScopeLock lock( this );
+    
     if ( GUCEF_NULL != m_ptr )
     {
         return m_ptr;
@@ -731,6 +755,8 @@ inline const T*
 CTBasicSharedPtr< T >::operator->( void ) const
 {GUCEF_TRACE;
 
+    MT::CObjectScopeLock lock( this );
+    
     if ( GUCEF_NULL != m_ptr )
     {
         return m_ptr;
@@ -774,6 +800,8 @@ inline T*
 CTBasicSharedPtr< T >::GetPointer( void )
 {GUCEF_TRACE;
 
+    MT::CObjectScopeLock lock( this );
+    
     if ( GUCEF_NULL != m_ptr )
     {
         return m_ptr;
@@ -790,6 +818,8 @@ inline const T*
 CTBasicSharedPtr< T >::GetPointer( void ) const
 {GUCEF_TRACE;
 
+    MT::CObjectScopeLock lock( this );
+    
     if ( GUCEF_NULL != m_ptr )
     {
         return m_ptr;
@@ -824,7 +854,7 @@ void
 CTBasicSharedPtr< T >::Unlink( void )
 {GUCEF_TRACE;
 
-    Lock();
+    MT::CObjectScopeLock lock( this );
 
     if ( NULL != m_ptr )
     {
@@ -851,8 +881,6 @@ CTBasicSharedPtr< T >::Unlink( void )
     m_objectDestructor = GUCEF_NULL;
     m_refCounter = GUCEF_NULL;
     m_ptr = GUCEF_NULL;
-
-    Unlock();
 }
 
 /*-------------------------------------------------------------------------*/
@@ -860,15 +888,24 @@ CTBasicSharedPtr< T >::Unlink( void )
 template< typename T >
 void
 CTBasicSharedPtr< T >::SetToNULL( void )
-{
-    Lock();
+{GUCEF_TRACE;
+
+    MT::CObjectScopeLock lock( this );
 
     m_objectDestructor = GUCEF_NULL;
     delete m_refCounter;
     m_refCounter = GUCEF_NULL;
     m_ptr = GUCEF_NULL;
+}
 
-    Unlock();
+/*-------------------------------------------------------------------------*/
+
+template< typename T >
+const MT::CILockable* 
+CTBasicSharedPtr< T >::AsLockable( void ) const
+{GUCEF_TRACE;
+
+    return this;
 }
 
 /*-------------------------------------------------------------------------*/
@@ -876,7 +913,8 @@ CTBasicSharedPtr< T >::SetToNULL( void )
 template< typename T >
 bool
 CTBasicSharedPtr< T >::Lock( void ) const
-{
+{GUCEF_TRACE;
+
     // no-op in the default implementation.
     // derived classes wishing to make the shared pointer thread safe
     // should add a synchronization mechanic in a derived implementation
@@ -888,7 +926,8 @@ CTBasicSharedPtr< T >::Lock( void ) const
 template< typename T >
 bool
 CTBasicSharedPtr< T >::Unlock( void ) const
-{
+{GUCEF_TRACE;
+
     // no-op in the default implementation.
     // derived classes wishing to make the shared pointer thread safe
     // should add a synchronization mechanic in a derived implementation

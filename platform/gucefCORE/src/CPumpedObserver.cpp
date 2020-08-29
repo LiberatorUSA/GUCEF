@@ -309,6 +309,15 @@ CPumpedObserver::OnPumpedNotify( CNotifier* notifier                 ,
 
 /*-------------------------------------------------------------------------*/
 
+const MT::CILockable* 
+CPumpedObserver::AsLockable( void ) const
+{GUCEF_TRACE;
+
+    return this;
+}
+
+/*-------------------------------------------------------------------------*/
+
 bool
 CPumpedObserver::Lock( void ) const
 {GUCEF_TRACE;

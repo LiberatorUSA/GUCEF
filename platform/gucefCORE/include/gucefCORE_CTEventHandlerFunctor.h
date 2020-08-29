@@ -94,6 +94,8 @@ class CTEventHandlerFunctor : public virtual CIEventHandlerFunctorBase
 
     virtual const CString& GetClassTypeName( void ) const GUCEF_VIRTUAL_OVERRIDE;
 
+    virtual const MT::CILockable* AsLockable( void ) const GUCEF_VIRTUAL_OVERRIDE;
+
     protected:
 
     virtual bool Lock( void ) const GUCEF_VIRTUAL_OVERRIDE;
@@ -213,6 +215,16 @@ CTEventHandlerFunctor< IObserverDerived >::SetMemberFunctionPointer( TMemberFunc
 {GUCEF_TRACE;
 
     m_functor = functor;
+}
+
+/*-------------------------------------------------------------------------*/
+
+template< class IObserverDerived >
+const MT::CILockable* 
+CTEventHandlerFunctor< IObserverDerived >::AsLockable( void ) const
+{GUCEF_TRACE;
+
+    return this;
 }
 
 /*-------------------------------------------------------------------------*/

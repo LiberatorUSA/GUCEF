@@ -26,6 +26,11 @@
 //                                                                         //
 //-------------------------------------------------------------------------*/
 
+#ifndef GUCEF_MT_CMUTEX_H
+#include "gucefMT_CMutex.h"
+#define GUCEF_MT_CMUTEX_H
+#endif /* GUCEF_MT_CMUTEX_H ? */
+
 #ifndef GUCEF_COMCORE_MACROS_H
 #include "gucefCOMCORE_macros.h"      /* often used gucefCOMCORE macros */
 #define GUCEF_COMCORE_MACROS_H
@@ -77,6 +82,7 @@ class GUCEF_COMCORE_EXPORT_CPP CComCoreGlobal
     CCom* m_com;
     CDiscoveryManager* m_discoveryManager;
 
+    static MT::CMutex g_dataLock;
     static CComCoreGlobal* g_instance;
 };
 

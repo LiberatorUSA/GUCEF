@@ -467,7 +467,7 @@ UInt32
 CDataNode::GetAttCount( void ) const
 {GUCEF_TRACE;
 
-    return _atts.size();
+    return (UInt32) _atts.size();
 }
 
 /*-------------------------------------------------------------------------*/
@@ -641,7 +641,7 @@ CDataNode::Compare( const CDataNode& other        ,
     {
         const TKeyValuePair* att;
         const TKeyValuePair* att2;
-        const UInt32 count = other._atts.size();
+        const UInt32 count = (UInt32) other._atts.size();
         
         // if one has a bigger list then the other then they cannot be the same
         if ( _atts.size() == count )

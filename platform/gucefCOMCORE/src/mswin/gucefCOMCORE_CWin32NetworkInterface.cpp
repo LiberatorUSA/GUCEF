@@ -440,6 +440,15 @@ CWin32NetworkInterface::GetOsAdapterIndex( void ) const
 
 /*-------------------------------------------------------------------------*/
 
+const MT::CILockable* 
+CWin32NetworkInterface::AsLockable( void ) const
+{GUCEF_TRACE;
+
+    return this;
+}
+
+/*-------------------------------------------------------------------------*/
+
 bool
 CWin32NetworkInterface::Lock( void ) const
 {GUCEF_TRACE;

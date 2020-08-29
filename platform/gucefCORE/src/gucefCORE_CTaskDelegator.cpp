@@ -407,6 +407,15 @@ CTaskDelegator::GetTaskConsumer( void )
 
 /*-------------------------------------------------------------------------*/
 
+const MT::CILockable* 
+CTaskDelegator::AsLockable( void ) const
+{GUCEF_TRACE;
+
+    return static_cast< const MT::CActiveObject* >( this );
+}
+
+/*-------------------------------------------------------------------------*/
+
 bool
 CTaskDelegator::Lock( void ) const
 {GUCEF_TRACE;
