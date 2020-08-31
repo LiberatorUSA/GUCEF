@@ -207,14 +207,21 @@ CEvent::GetName( void ) const
 void
 CEvent::Initialize( void ) const
 {GUCEF_TRACE;
-    /*
-     *  In this rare occasion a const_cast is legit since we are preforming
-     *  an action that has conceptually already occurred,.. initialization.
-     *
-     *  The fact that we cannot initialize objects right from the start
-     *  while allowing event objects to be defined globally is an implementation level problem.
-     */
-    const_cast< CEvent& >( *this ) = CORE::CCoreGlobal::Instance()->GetNotificationIDRegistry().Lookup( m_eventName, true );
+
+    // For performance reasons we don't perform the lookup again on a non-zero id
+    // Since this is for performance only we don't need to worry about thread safety on
+    // the branch as a race condition merely results in an extra lookup
+    if ( 0 == m_eventID )
+    {
+        /*
+         *  In this rare occasion a const_cast is legit since we are preforming
+         *  an action that has conceptually already occurred,.. initialization.
+         *
+         *  The fact that we cannot initialize objects right from the start
+         *  while allowing event objects to be defined globally is an implementation level problem.
+         */
+        const_cast< CEvent& >( *this ) = CORE::CCoreGlobal::Instance()->GetNotificationIDRegistry().Lookup( m_eventName, true );
+    }
 }
 
 /*-------------------------------------------------------------------------*/
