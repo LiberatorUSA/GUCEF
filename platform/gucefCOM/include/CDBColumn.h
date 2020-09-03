@@ -57,7 +57,7 @@ class CMySQLClient;	/* MySQL client implementation */
  *	Class which functions as a container of database fields from a single
  *	column.
  */
-class GUCEF_COM_EXPORT_CPP CDBColumn
+class GUCEF_COM_PUBLIC_CPP CDBColumn
 {
 	private:
         friend class CMySQLClient;      /* MySQL client implementation */

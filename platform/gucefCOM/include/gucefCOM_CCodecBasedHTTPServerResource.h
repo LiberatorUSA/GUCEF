@@ -51,7 +51,7 @@ namespace COM {
 //                                                                         //
 //-------------------------------------------------------------------------*/
 
-class GUCEF_COM_EXPORT_CPP CCodecBasedHTTPServerResource : public CDefaultHTTPServerResource
+class GUCEF_COM_PUBLIC_CPP CCodecBasedHTTPServerResource : public CDefaultHTTPServerResource
 {    
     public:
     
@@ -126,8 +126,6 @@ class GUCEF_COM_EXPORT_CPP CCodecBasedHTTPServerResource : public CDefaultHTTPSe
 
     bool InitCodecLinks( void );
 
-    TStringToCodecMap m_serializeRepToCodecMap;
-    TStringToCodecMap m_deserializeRepToCodecMap;
     bool m_allowCreate;
     bool m_allowDeserialize;
     bool m_allowSerialize;

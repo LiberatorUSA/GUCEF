@@ -56,7 +56,7 @@ namespace COM {
 //                                                                         //
 //-------------------------------------------------------------------------*/
 
-class GUCEF_COM_EXPORT_CPP CStatsDClient : public CORE::CIMetricsSystemClient
+class GUCEF_COM_PUBLIC_CPP CStatsDClient : public CORE::CIMetricsSystemClient
 {
     public:
     

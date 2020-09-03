@@ -51,7 +51,7 @@ namespace COM {
  *      Inherit from this interface class and implement whatever event handlers
  *      are appropriote for your situation.
  */
-class GUCEF_COM_EXPORT_CPP CMySQLClientInterface
+class GUCEF_COM_PUBLIC_CPP CMySQLClientInterface
 {
         protected:
         friend class CMySQLClient;

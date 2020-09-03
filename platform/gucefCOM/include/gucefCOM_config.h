@@ -42,10 +42,12 @@
  *      export only C code or perhaps only C++ code. You can do this with the
  *      following defines
  */
-#undef GUCEF_COM_EXPORT_CPP_CODE  /* do not change this line */
-#undef GUCEF_COM_EXPORT_C_CODE    /* do not change this line */
-#define GUCEF_COM_EXPORT_CPP_CODE /* do you want to enable the C++ exports ? */
-#define GUCEF_COM_EXPORT_C_CODE   /* do you want to enable the C exports ? */
+
+#undef GUCEF_COM_PUBLIC_CPP_CODE  /* do not change this line */
+#define GUCEF_COM_PUBLIC_CPP_CODE /* do you want to enable the C++ exports ? */
+
+#undef GUCEF_COM_PUBLIC_C_CODE    /* do not change this line */
+#define GUCEF_COM_PUBLIC_C_CODE   /* do you want to enable the C exports ? */
 
 /*-------------------------------------------------------------------------*/
 

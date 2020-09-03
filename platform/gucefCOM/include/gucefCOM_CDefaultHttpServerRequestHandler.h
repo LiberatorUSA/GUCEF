@@ -51,7 +51,7 @@ namespace COM {
 //                                                                         //
 //-------------------------------------------------------------------------*/
 
-class GUCEF_COM_EXPORT_CPP CDefaultHttpServerRequestHandler : public CIHttpServerRequestHandler
+class GUCEF_COM_PUBLIC_CPP CDefaultHttpServerRequestHandler : public CIHttpServerRequestHandler
 {
     public:
 

@@ -48,7 +48,7 @@ namespace COM {
 //                                                                         //
 //-------------------------------------------------------------------------*/
 
-class GUCEF_COM_EXPORT_CPP CDefaultHTTPServerRouter : public CIHTTPServerRouter
+class GUCEF_COM_PUBLIC_CPP CDefaultHTTPServerRouter : public CIHTTPServerRouter
 {
     public:
 

@@ -113,7 +113,7 @@
 
 /*-------------------------------------------------------------------------*/
 
-GUCEF_COM_EXPORT_C const char* GUCEF_COM_ModuleCompileTimeStamp( void );
+GUCEF_COM_PUBLIC_C const char* GUCEF_COM_ModuleCompileTimeStamp( void );
 
 /*-------------------------------------------------------------------------*/
 

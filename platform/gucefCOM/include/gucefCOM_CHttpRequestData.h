@@ -68,7 +68,7 @@ namespace COM {
 //                                                                         //
 //-------------------------------------------------------------------------*/
 
-class GUCEF_COM_EXPORT_CPP CHttpRequestData : public CORE::CICloneable
+class GUCEF_COM_PUBLIC_CPP CHttpRequestData : public CORE::CICloneable
 {
     public:
 

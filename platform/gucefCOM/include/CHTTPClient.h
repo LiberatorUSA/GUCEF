@@ -79,7 +79,7 @@ namespace COM {
 /**
  *      Simplistic HTTP protocol client for basic tasks
  */
-class GUCEF_COM_EXPORT_CPP CHTTPClient : public CORE::CObservingNotifier
+class GUCEF_COM_PUBLIC_CPP CHTTPClient : public CORE::CObservingNotifier
 {
 	public:
 

@@ -73,6 +73,11 @@
 #define GUCEF_COM_CASYNCHTTPSERVERRESPONSEHANDLER_H
 #endif /* GUCEF_COM_CASYNCHTTPSERVERRESPONSEHANDLER_H ? */
 
+#ifndef GUCEF_COM_CGLOBALHTTPCODECLINKS_H
+#include "gucefCOM_CGlobalHttpCodecLinks.h"
+#define GUCEF_COM_CGLOBALHTTPCODECLINKS_H
+#endif /* GUCEF_COM_CGLOBALHTTPCODECLINKS_H ? */
+
 #include "gucefCOM_CComGlobal.h"  /* definition of the class implemented here */
 
 /*-------------------------------------------------------------------------//
@@ -102,6 +107,7 @@ TAsyncHttpServerResponseHandlerFactory g_asyncHttpServerResponseHandlerFactory;
 //-------------------------------------------------------------------------*/
 
 CComGlobal::CComGlobal( void )
+    : m_globalHttpCodecLinks( GUCEF_NULL )
 {GUCEF_TRACE;
 
 }
@@ -122,6 +128,8 @@ CComGlobal::Initialize( void )
     CHTTPURLHandler::Register();
     CPHUDPSocket::RegisterEvents();
 
+    m_globalHttpCodecLinks = new CGlobalHttpCodecLinks();
+
     CORE::CMetricsClientManager::CIMetricsSystemClientPtr statsDClient( new CStatsDClient() );
     CORE::CCoreGlobal::Instance()->GetMetricsClientManager().AddMetricsClient( statsDClient );
 
@@ -139,6 +147,9 @@ CComGlobal::~CComGlobal()
 
     CORE::CCoreGlobal::Instance()->GetTaskManager().UnregisterTaskConsumerFactory( CAsyncHttpServerRequestHandler::TaskType );
     CORE::CCoreGlobal::Instance()->GetTaskManager().UnregisterTaskConsumerFactory( CAsyncHttpServerResponseHandler::TaskType );
+
+    delete m_globalHttpCodecLinks;
+    m_globalHttpCodecLinks = GUCEF_NULL;
 }
 
 /*-------------------------------------------------------------------------*/
@@ -168,6 +179,15 @@ CComGlobal::Deinstance( void )
 
     delete g_instance;
     g_instance = NULL;
+}
+
+/*-------------------------------------------------------------------------*/
+
+CGlobalHttpCodecLinks& 
+CComGlobal::GetGlobalHttpCodecLinks( void ) const
+{GUCEF_TRACE;
+
+    return *m_globalHttpCodecLinks;
 }
 
 /*-------------------------------------------------------------------------//

@@ -541,7 +541,7 @@ DSTOREPLUG_Store_Node_Att( void** plugdata      ,
     memcpy( escAttValue, fd->buffer, strLen+1 );
 
     linelen = (UInt32)strlen( fd->line );
-    len = (UInt32)strlen( escAttName )+strlen( escAttValue )+2;
+    len = (UInt32)strlen( escAttName )+(UInt32)strlen( escAttValue )+2;
     if ( fd->linelen < linelen+10+len )
     {
         fd->line = realloc( fd->line, linelen+11+len );

@@ -68,7 +68,7 @@ namespace COM {
 //                                                                         //
 //-------------------------------------------------------------------------*/
 
-class GUCEF_COM_EXPORT_CPP CHTTPServer : public CORE::CObservingNotifier
+class GUCEF_COM_PUBLIC_CPP CHTTPServer : public CORE::CObservingNotifier
 {
     public:
     

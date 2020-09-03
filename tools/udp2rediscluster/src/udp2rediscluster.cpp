@@ -139,6 +139,62 @@ ChannelSettings::operator=( const ChannelSettings& src )
 
 /*-------------------------------------------------------------------------*/
 
+bool 
+ChannelSettings::SaveConfig( CORE::CDataNode& tree ) const
+{GUCEF_TRACE;
+
+    tree.SetAttribute( "redisAddress", redisAddress.AddressAndPortAsString() ); 
+    tree.SetAttribute( "channelStreamName", channelStreamName );
+    tree.SetAttribute( "udpInterface", udpInterface.AddressAsString() ); 
+    tree.SetAttribute( "collectMetrics", collectMetrics );
+    tree.SetAttribute( "wantsTestPackage", wantsTestPackage );
+    tree.SetAttribute( "ticketRefillOnBusyCycle", ticketRefillOnBusyCycle );
+    tree.SetAttribute( "nrOfUdpReceiveBuffersPerSocket", nrOfUdpReceiveBuffersPerSocket );
+    tree.SetAttribute( "udpSocketOsReceiveBufferSize", udpSocketOsReceiveBufferSize );
+    tree.SetAttribute( "udpSocketUpdateCyclesPerPulse", udpSocketUpdateCyclesPerPulse );
+    tree.SetAttribute( "performRedisWritesInDedicatedThread", performRedisWritesInDedicatedThread );
+    tree.SetAttribute( "maxSizeOfDedicatedRedisWriterBulkMailRead", maxSizeOfDedicatedRedisWriterBulkMailRead );
+    tree.SetAttribute( "applyThreadCpuAffinity", applyThreadCpuAffinity );
+    tree.SetAttribute( "cpuAffinityForDedicatedRedisWriterThread", cpuAffinityForDedicatedRedisWriterThread );
+    tree.SetAttribute( "cpuAffinityForMainChannelThread", cpuAffinityForMainChannelThread );
+    return true;    
+}
+
+/*-------------------------------------------------------------------------*/
+
+bool 
+ChannelSettings::LoadConfig( const CORE::CDataNode& tree )
+{GUCEF_TRACE;
+
+    redisAddress.SetHostnameAndPort( tree.GetAttributeValueOrChildValueByName( "redisAddress", redisAddress.AddressAndPortAsString() ) );
+    channelStreamName = tree.GetAttributeValueOrChildValueByName( "channelStreamName", channelStreamName );
+    udpInterface.SetAddress( tree.GetAttributeValueOrChildValueByName( "udpInterface", udpInterface.AddressAsString() ) );
+    collectMetrics = CORE::StringToBool( tree.GetAttributeValueOrChildValueByName( "collectMetrics", CORE::BoolToString( collectMetrics ) ) );
+    wantsTestPackage = CORE::StringToBool( tree.GetAttributeValueOrChildValueByName( "wantsTestPackage", CORE::BoolToString( wantsTestPackage ) ) );
+    ticketRefillOnBusyCycle = CORE::StringToUInt32( tree.GetAttributeValueOrChildValueByName( "ticketRefillOnBusyCycle", CORE::UInt32ToString( ticketRefillOnBusyCycle ) ) );
+    nrOfUdpReceiveBuffersPerSocket = CORE::StringToUInt32( tree.GetAttributeValueOrChildValueByName( "nrOfUdpReceiveBuffersPerSocket", CORE::UInt32ToString( nrOfUdpReceiveBuffersPerSocket ) ) );
+    udpSocketOsReceiveBufferSize = CORE::StringToUInt32( tree.GetAttributeValueOrChildValueByName( "udpSocketOsReceiveBufferSize", CORE::UInt32ToString( udpSocketOsReceiveBufferSize ) ) );
+    udpSocketUpdateCyclesPerPulse = CORE::StringToUInt32( tree.GetAttributeValueOrChildValueByName( "udpSocketUpdateCyclesPerPulse", CORE::UInt32ToString( udpSocketUpdateCyclesPerPulse ) ) );
+    performRedisWritesInDedicatedThread = CORE::StringToBool( tree.GetAttributeValueOrChildValueByName( "performRedisWritesInDedicatedThread", CORE::BoolToString( performRedisWritesInDedicatedThread ) ) );
+    maxSizeOfDedicatedRedisWriterBulkMailRead = CORE::StringToUInt32( tree.GetAttributeValueOrChildValueByName( "maxSizeOfDedicatedRedisWriterBulkMailRead", CORE::UInt32ToString( maxSizeOfDedicatedRedisWriterBulkMailRead ) ) );
+    applyThreadCpuAffinity = CORE::StringToBool( tree.GetAttributeValueOrChildValueByName( "applyThreadCpuAffinity", CORE::BoolToString( applyThreadCpuAffinity ) ) );
+    cpuAffinityForDedicatedRedisWriterThread = CORE::StringToUInt32( tree.GetAttributeValueOrChildValueByName( "cpuAffinityForDedicatedRedisWriterThread", CORE::UInt32ToString( cpuAffinityForDedicatedRedisWriterThread ) ) );
+    cpuAffinityForMainChannelThread = CORE::StringToUInt32( tree.GetAttributeValueOrChildValueByName( "cpuAffinityForMainChannelThread", CORE::UInt32ToString( cpuAffinityForMainChannelThread ) ) );
+    return true;
+}
+
+/*-------------------------------------------------------------------------*/
+
+const CORE::CString& 
+ChannelSettings::GetClassTypeName( void ) const
+{GUCEF_TRACE;
+
+    static CORE::CString classTypeName = "udp2rediscluster::ChannelSettings";
+    return classTypeName;
+}
+
+/*-------------------------------------------------------------------------*/
+
 ClusterChannelRedisWriter::ClusterChannelRedisWriter()
     : CORE::CTaskConsumer()
     , m_redisContext( GUCEF_NULL )
@@ -485,7 +541,7 @@ ClusterChannelRedisWriter::RedisSendSyncImpl( const TPacketEntryVectorPtrVector&
         std::string clusterMsgId = m_redisContext->xadd( cnSV, idSV, m_redisPacketArgs.begin(), m_redisPacketArgs.end() );
 
         GUCEF_DEBUG_LOG( CORE::LOGLEVEL_NORMAL, "Udp2RedisClusterChannel(" + CORE::PointerToString( this ) + "):RedisSend: Successfully sent " + 
-            CORE::UInt32ToString( totalPacketCount ) + " UDP messages, combining " + CORE::UInt32ToString( udpPackets.size() ) + 
+            CORE::UInt32ToString( totalPacketCount ) + " UDP messages, combining " + CORE::UInt32ToString( (CORE::UInt32)udpPackets.size() ) + 
             " sets of packages. MsgID=" + clusterMsgId );
 
         ++m_redisMsgsTransmitted;
@@ -554,7 +610,7 @@ ClusterChannelRedisWriter::SendQueuedPackagesIfAny( void )
     if ( !m_redisMsgQueueOverflowQueue.empty() )
     {
         GUCEF_DEBUG_LOG( CORE::LOGLEVEL_BELOW_NORMAL, "ClusterChannelRedisWriter(" + CORE::PointerToString( this ) + "):SendQueuedPackagesIfAny: There are "
-                + CORE::UInt32ToString( m_redisMsgQueueOverflowQueue.size() ) + " sets of packets to the overflow queue, Attempting to send..." );
+                + CORE::UInt32ToString( (CORE::UInt32) m_redisMsgQueueOverflowQueue.size() ) + " sets of packets to the overflow queue, Attempting to send..." );
         
         if ( RedisSendSyncImpl( m_redisMsgQueueOverflowQueue, m_redisMsgQueueOverflowQueueCounts ) )
         {

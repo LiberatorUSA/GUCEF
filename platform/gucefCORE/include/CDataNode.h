@@ -187,6 +187,10 @@ class GUCEF_CORE_PUBLIC_CPP CDataNode
                        const CString& value                    ,
                        int typeOfValue = GUCEF_DATATYPE_STRING );
 
+    bool SetAttribute( const CString& name, bool value );
+    bool SetAttribute( const CString& name, UInt32 value );
+    bool SetAttribute( const CString& name, Int32 value );
+
     void DelAttribute( const CString& name );
 
     void ClearAttributes( void );

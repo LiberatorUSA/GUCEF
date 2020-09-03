@@ -23,6 +23,11 @@
 //                                                                         //
 //-------------------------------------------------------------------------*/
 
+#ifndef GUCEF_CORE_DVCPPSTRINGUTILS_H
+#include "dvcppstringutils.h"
+#define GUCEF_CORE_DVCPPSTRINGUTILS_H
+#endif /* GUCEF_CORE_DVCPPSTRINGUTILS_H ? */
+
 #include "CDataNode.h"  /* definition of the class implemented here */
 
 #ifndef GUCEF_CORE_GUCEF_ESSENTIALS_H
@@ -458,6 +463,45 @@ CDataNode::SetAttribute( const CString& name  ,
     auto& att = _atts[ name ];
     att.value = value;
     att.type = typeOfValue;
+    return true;                      
+}
+
+/*-------------------------------------------------------------------------*/
+
+bool 
+CDataNode::SetAttribute( const CString& name ,
+                         bool value          )
+{GUCEF_TRACE;
+
+    auto& att = _atts[ name ];
+    att.value = CORE::BoolToString( value );
+    att.type = GUCEF_DATATYPE_BOOLEAN_STRING;
+    return true;                      
+}
+
+/*-------------------------------------------------------------------------*/
+
+bool 
+CDataNode::SetAttribute( const CString& name ,
+                         UInt32 value        )
+{GUCEF_TRACE;
+
+    auto& att = _atts[ name ];
+    att.value = CORE::UInt32ToString( value );
+    att.type = GUCEF_DATATYPE_UINT32;
+    return true;                      
+}
+
+/*-------------------------------------------------------------------------*/
+
+bool 
+CDataNode::SetAttribute( const CString& name ,
+                         Int32 value         )
+{GUCEF_TRACE;
+
+    auto& att = _atts[ name ];
+    att.value = CORE::Int32ToString( value );
+    att.type = GUCEF_DATATYPE_INT32;
     return true;                      
 }
 

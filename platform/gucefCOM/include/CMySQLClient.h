@@ -81,7 +81,7 @@ class CMySQLClientInterface;
  *      thread. Otherwise a problem could arise out of the fact that the
  *      main application thread does the network event processing.
  */
-class GUCEF_COM_EXPORT_CPP CMySQLClient : public CORE::CObservingNotifier
+class GUCEF_COM_PUBLIC_CPP CMySQLClient : public CORE::CObservingNotifier
 {
 	public:
 	

@@ -79,7 +79,7 @@ namespace COM {
  *      to have a correct checksum/data combo while being in fact a mangled packet.
  *      This will only occur in very rare cases but keep it in mind.
  */
-class GUCEF_COM_EXPORT_CPP CPHUDPSocket : public CORE::CObservingNotifier
+class GUCEF_COM_PUBLIC_CPP CPHUDPSocket : public CORE::CObservingNotifier
 {
         public:
         

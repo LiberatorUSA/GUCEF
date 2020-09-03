@@ -46,7 +46,7 @@ namespace COM {
 //                                                                         //
 //-------------------------------------------------------------------------*/
 
-class GUCEF_COM_EXPORT_CPP CDummyHTTPServerResource : public CDefaultHTTPServerResource
+class GUCEF_COM_PUBLIC_CPP CDummyHTTPServerResource : public CDefaultHTTPServerResource
 {    
     public:
     

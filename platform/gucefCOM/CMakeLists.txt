@@ -27,12 +27,16 @@ set( HEADER_FILES
   include/gucefCOM_CAsyncHttpServerResponseHandler.h
   include/gucefCOM_CCodecBasedHTTPServerResource.h
   include/gucefCOM_CComGlobal.h
+  include/gucefCOM_CConfigurableHttpServerResource.h
   include/gucefCOM_CDefaultHTTPServerResource.h
   include/gucefCOM_CDefaultHTTPServerRouter.h
   include/gucefCOM_CDefaultHTTPServerRouterController.h
   include/gucefCOM_CDefaultHttpServerRequestHandler.h
   include/gucefCOM_CDummyHTTPServerResource.h
+  include/gucefCOM_CGlobalHttpCodecLinks.h
   include/gucefCOM_CHTTPServer.h
+  include/gucefCOM_CHttpCodecLinks.h
+  include/gucefCOM_CHttpMimeTypes.h
   include/gucefCOM_CHttpRequestData.h
   include/gucefCOM_CHttpResponseData.h
   include/gucefCOM_CIHTTPServerResource.h
@@ -58,12 +62,16 @@ set( SOURCE_FILES
   src/gucefCOM_CAsyncHttpServerResponseHandler.cpp
   src/gucefCOM_CCodecBasedHTTPServerResource.cpp
   src/gucefCOM_CComGlobal.cpp
+  src/gucefCOM_CConfigurableHttpServerResource.cpp
   src/gucefCOM_CDefaultHTTPServerResource.cpp
   src/gucefCOM_CDefaultHTTPServerRouter.cpp
   src/gucefCOM_CDefaultHTTPServerRouterController.cpp
   src/gucefCOM_CDefaultHttpServerRequestHandler.cpp
   src/gucefCOM_CDummyHTTPServerResource.cpp
+  src/gucefCOM_CGlobalHttpCodecLinks.cpp
   src/gucefCOM_CHTTPServer.cpp
+  src/gucefCOM_CHttpCodecLinks.cpp
+  src/gucefCOM_CHttpMimeTypes.cpp
   src/gucefCOM_CHttpRequestData.cpp
   src/gucefCOM_CHttpResponseData.cpp
   src/gucefCOM_CIHTTPServerResource.cpp

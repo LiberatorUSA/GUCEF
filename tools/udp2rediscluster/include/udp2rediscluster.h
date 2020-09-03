@@ -93,7 +93,7 @@ using namespace GUCEF;
 //                                                                         //
 //-------------------------------------------------------------------------*/
 
-class ChannelSettings
+class ChannelSettings : public CORE::CIConfigurable
 {
     public:
 
@@ -118,6 +118,12 @@ class ChannelSettings
     bool applyThreadCpuAffinity;
     CORE::UInt32 cpuAffinityForDedicatedRedisWriterThread;
     CORE::UInt32 cpuAffinityForMainChannelThread;
+
+    virtual bool SaveConfig( CORE::CDataNode& tree ) const GUCEF_VIRTUAL_OVERRIDE;
+
+    virtual bool LoadConfig( const CORE::CDataNode& tree ) GUCEF_VIRTUAL_OVERRIDE;
+
+    virtual const CORE::CString& GetClassTypeName( void ) const GUCEF_VIRTUAL_OVERRIDE;
 };
 
 /*-------------------------------------------------------------------------*/

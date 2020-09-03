@@ -51,12 +51,17 @@ namespace COM {
 //                                                                         //
 //-------------------------------------------------------------------------*/
 
+class CGlobalHttpCodecLinks;
 
-class GUCEF_COM_EXPORT_CPP CComGlobal
+/*-------------------------------------------------------------------------*/
+
+class GUCEF_COM_PUBLIC_CPP CComGlobal
 {
     public:
 
     static CComGlobal* Instance( void );
+
+    CGlobalHttpCodecLinks& GetGlobalHttpCodecLinks( void ) const;
 
     private:
 
@@ -74,6 +79,7 @@ class GUCEF_COM_EXPORT_CPP CComGlobal
 
     static MT::CMutex g_dataLock;
     static CComGlobal* g_instance;
+    CGlobalHttpCodecLinks* m_globalHttpCodecLinks;
 };
 
 /*-------------------------------------------------------------------------//

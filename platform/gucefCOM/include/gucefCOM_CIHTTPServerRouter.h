@@ -50,7 +50,7 @@ namespace COM {
 
 class CIHTTPServerRouterController;
 
-class GUCEF_COM_EXPORT_CPP CIHTTPServerRouter
+class GUCEF_COM_PUBLIC_CPP CIHTTPServerRouter
 {
     public:
     
