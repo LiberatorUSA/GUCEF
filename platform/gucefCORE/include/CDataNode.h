@@ -213,6 +213,8 @@ class GUCEF_CORE_PUBLIC_CPP CDataNode
      */
     CString GetAttributeValueOrChildValueByName( const CString& name, const CString& defaultValue = CString::Empty ) const;
 
+    TStringVector GetAttributeValueOrChildValuesByName( const CString& name ) const;
+
     /**
      *  Attempts to locate a child node with the given name
      *  and return its value. If no such child node exists then

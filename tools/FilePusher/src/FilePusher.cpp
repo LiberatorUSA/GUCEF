@@ -66,7 +66,7 @@
 //                                                                         //
 //-------------------------------------------------------------------------*/
 
-const CORE::UInt32 FilePusher::DefaultNewFileRestPeriodInSecs = 60 * 10; // Rest period of 10 minutes
+const CORE::UInt32 FilePushDestinationSettings::DefaultNewFileRestPeriodInSecs = 60 * 10; // Rest period of 10 minutes
 
 /*-------------------------------------------------------------------------//
 //                                                                         //
@@ -145,25 +145,177 @@ RestApiFilePusherConfigResource::Serialize( CORE::CDataNode& output             
 
 /*-------------------------------------------------------------------------*/
 
-FilePusher::FilePusher( void )
+FilePushDestinationSettings::FilePushDestinationSettings( void )
+    : filePushDestinationUri()
+    , fileMatchPatterns()
+    , dirsToWatch()
+    , restingTimeForNewFilesInSecs()
+    , deleteFilesAfterSuccessfullPush( false )
+    , transmitMetrics( false )
+{GUCEF_TRACE;
+
+}
+
+/*-------------------------------------------------------------------------*/
+
+FilePushDestinationSettings::~FilePushDestinationSettings()
+{GUCEF_TRACE;
+
+}
+
+/*-------------------------------------------------------------------------*/
+
+bool 
+FilePushDestinationSettings::LoadConfig( const CORE::CValueList& appConfig )
+{GUCEF_TRACE;
+
+    transmitMetrics = CORE::StringToBool( appConfig.GetValueAlways( "TransmitMetrics", "true" ) );
+
+    restingTimeForNewFilesInSecs = CORE::StringToUInt32( CORE::ResolveVars( appConfig.GetValueAlways( "RestingTimeForNewFilesInSecs", CORE::UInt32ToString( DefaultNewFileRestPeriodInSecs ) ) ) );
+    deleteFilesAfterSuccessfullPush = CORE::StringToBool( CORE::ResolveVars( appConfig.GetValueAlways( "DeleteFilesAfterSuccessfullPush", "true" ) ) );
+    
+    filePushDestinationUri = CORE::ResolveVars( appConfig.GetValueAlways( "FilePushDestinationUri" ) );
+    if ( filePushDestinationUri.IsNULLOrEmpty() )
+    {
+        GUCEF_ERROR_LOG( CORE::LOGLEVEL_IMPORTANT, "FilePushDestinationSettings: You must specify setting \"FilePushDestinationUri\". It currently has no value" );
+        return false;    
+    }
+    CORE::CString protocolSanityCheckUri = filePushDestinationUri.Lowercase();
+    if ( 0 != protocolSanityCheckUri.HasSubstr( "http://", true ) && 0 != protocolSanityCheckUri.HasSubstr( "vfs://", true ) )
+    {
+        GUCEF_ERROR_LOG( CORE::LOGLEVEL_IMPORTANT, "FilePushDestinationSettings: The specified push Uri \"" + filePushDestinationUri + "\" does not specify a valid supported protocol" );
+        return false; 
+    }
+
+    CORE::CValueList::TStringVector settingValues = appConfig.GetValueVectorAlways( "DirToWatch" );
+    CORE::CValueList::TStringVector::iterator n = settingValues.begin();
+    while ( n != settingValues.end() )
+    {
+        CORE::CString settingValue = CORE::ResolveVars( (*n) );
+        dirsToWatch.insert( settingValue );
+        ++n;
+    }
+    if ( dirsToWatch.empty() )
+    {
+        GUCEF_ERROR_LOG( CORE::LOGLEVEL_IMPORTANT, "FilePushDestinationSettings: You must specify at least one instance of setting \"DirToWatch\". Currently there are none with a value" );
+        return false;
+    }
+
+    settingValues = appConfig.GetValueVectorAlways( "FilePatternForNewFilesWithRestPeriod" );
+    n = settingValues.begin();
+    while ( n != settingValues.end() )
+    {
+        CORE::CString settingValue = CORE::ResolveVars( (*n) );
+        fileMatchPatterns[ settingValue ] = PUSHSTYLE_MATCHING_NEW_FILES_WITH_REST_PERIOD;
+        ++n;
+    }
+    settingValues = appConfig.GetValueVectorAlways( "FilePatternForAllFilesWithRestPeriod" );
+    n = settingValues.begin();
+    while ( n != settingValues.end() )
+    {
+        CORE::CString settingValue = CORE::ResolveVars( (*n) );
+        fileMatchPatterns[ settingValue ] = PUSHSTYLE_MATCHING_ALL_FILES_WITH_REST_PERIOD;
+        ++n;
+    }
+    settingValues = appConfig.GetValueVectorAlways( "FilePatternForRolledOverFiles" );
+    n = settingValues.begin();
+    while ( n != settingValues.end() )
+    {
+        CORE::CString settingValue = CORE::ResolveVars( (*n) );
+        fileMatchPatterns[ settingValue ] = PUSHSTYLE_ROLLED_OVER_FILES;
+        ++n;
+    }
+    if ( fileMatchPatterns.empty() )
+    {
+        GUCEF_ERROR_LOG( CORE::LOGLEVEL_IMPORTANT, "FilePushDestinationSettings: You must specify at least one instance of setting \"FilePatternForNewFilesWithRestPeriod\" or \"FilePatternForRolledOverFiles\". Currently there are none with a value" );
+        return false;
+    }
+
+    return true;
+}
+
+/*-------------------------------------------------------------------------*/
+
+bool 
+FilePushDestinationSettings::LoadConfig( const CORE::CDataNode& rootNode )
+{GUCEF_TRACE;
+
+    transmitMetrics = CORE::StringToBool( rootNode.GetAttributeValueOrChildValueByName( "TransmitMetrics", "true" ) );
+
+    restingTimeForNewFilesInSecs = CORE::StringToUInt32( CORE::ResolveVars( rootNode.GetAttributeValueOrChildValueByName( "RestingTimeForNewFilesInSecs", CORE::UInt32ToString( DefaultNewFileRestPeriodInSecs ) ) ) );
+    deleteFilesAfterSuccessfullPush = CORE::StringToBool( CORE::ResolveVars( rootNode.GetAttributeValueOrChildValueByName( "DeleteFilesAfterSuccessfullPush", "true" ) ) );
+    
+    filePushDestinationUri = CORE::ResolveVars( rootNode.GetAttributeValueOrChildValueByName( "FilePushDestinationUri" ) );
+    if ( filePushDestinationUri.IsNULLOrEmpty() )
+    {
+        GUCEF_ERROR_LOG( CORE::LOGLEVEL_IMPORTANT, "FilePushDestinationSettings: You must specify setting \"FilePushDestinationUri\". It currently has no value" );
+        return false;    
+    }
+    CORE::CString protocolSanityCheckUri = filePushDestinationUri.Lowercase();
+    if ( 0 != protocolSanityCheckUri.HasSubstr( "http://", true ) && 0 != protocolSanityCheckUri.HasSubstr( "vfs://", true ) )
+    {
+        GUCEF_ERROR_LOG( CORE::LOGLEVEL_IMPORTANT, "FilePushDestinationSettings: The specified push Uri \"" + filePushDestinationUri + "\" does not specify a valid supported protocol" );
+        return false; 
+    }
+
+    CORE::CValueList::TStringVector settingValues = rootNode.GetAttributeValueOrChildValuesByName( "DirToWatch" );
+    CORE::CValueList::TStringVector::iterator n = settingValues.begin();
+    while ( n != settingValues.end() )
+    {
+        CORE::CString settingValue = CORE::ResolveVars( (*n) );
+        dirsToWatch.insert( settingValue );
+        ++n;
+    }
+    if ( dirsToWatch.empty() )
+    {
+        GUCEF_ERROR_LOG( CORE::LOGLEVEL_IMPORTANT, "FilePushDestinationSettings: You must specify at least one instance of setting \"DirToWatch\". Currently there are none with a value" );
+        return false;
+    }
+
+    settingValues = rootNode.GetAttributeValueOrChildValuesByName( "FilePatternForNewFilesWithRestPeriod" );
+    n = settingValues.begin();
+    while ( n != settingValues.end() )
+    {
+        CORE::CString settingValue = CORE::ResolveVars( (*n) );
+        fileMatchPatterns[ settingValue ] = PUSHSTYLE_MATCHING_NEW_FILES_WITH_REST_PERIOD;
+        ++n;
+    }
+    settingValues = rootNode.GetAttributeValueOrChildValuesByName( "FilePatternForAllFilesWithRestPeriod" );
+    n = settingValues.begin();
+    while ( n != settingValues.end() )
+    {
+        CORE::CString settingValue = CORE::ResolveVars( (*n) );
+        fileMatchPatterns[ settingValue ] = PUSHSTYLE_MATCHING_ALL_FILES_WITH_REST_PERIOD;
+        ++n;
+    }
+    settingValues = rootNode.GetAttributeValueOrChildValuesByName( "FilePatternForRolledOverFiles" );
+    n = settingValues.begin();
+    while ( n != settingValues.end() )
+    {
+        CORE::CString settingValue = CORE::ResolveVars( (*n) );
+        fileMatchPatterns[ settingValue ] = PUSHSTYLE_ROLLED_OVER_FILES;
+        ++n;
+    }
+    if ( fileMatchPatterns.empty() )
+    {
+        GUCEF_ERROR_LOG( CORE::LOGLEVEL_IMPORTANT, "FilePushDestinationSettings: You must specify at least one instance of setting \"FilePatternForNewFilesWithRestPeriod\" or \"FilePatternForRolledOverFiles\". Currently there are none with a value" );
+        return false;
+    }
+
+    return true;
+}
+
+/*-------------------------------------------------------------------------*/
+
+FilePushDestination::FilePushDestination( void )
     : CORE::CObservingNotifier()
     , m_dirWatcher()
     , m_httpClient()
-    , m_httpServer()
-    , m_httpRouter()
-    , m_appConfig()
-    , m_globalConfig()
     , m_metricsTimer()
-    , m_transmitMetrics( true )
-    , m_fileMatchPatterns()
     , m_newFileRestPeriodTimer()
     , m_newFileRestQueue()
-    , m_restingTimeForNewFilesInSecs( DefaultNewFileRestPeriodInSecs )
     , m_pushQueue()
     , m_pushTimer() 
-    , m_dirsToWatch()
-    , m_deleteFilesAfterSuccessfullPush( true )
-    , m_filePushDestinationUri()
     , m_currentFilePushBuffer()
     , m_currentFileBeingPushed()
     , m_lastPushDurationInSecs( 0 )
@@ -175,84 +327,103 @@ FilePusher::FilePusher( void )
 
 /*-------------------------------------------------------------------------*/
 
-FilePusher::~FilePusher()
+FilePushDestination::FilePushDestination( const FilePushDestination& src )
+    : CORE::CObservingNotifier( src )
+    , m_dirWatcher()
+    , m_httpClient()
+    , m_metricsTimer( src.m_metricsTimer )
+    , m_newFileRestPeriodTimer( src.m_newFileRestPeriodTimer )
+    , m_newFileRestQueue( src.m_newFileRestQueue )
+    , m_pushQueue( src.m_pushQueue )
+    , m_pushTimer( src.m_pushTimer ) 
+    , m_currentFilePushBuffer( src.m_currentFilePushBuffer )
+    , m_currentFileBeingPushed( src.m_currentFileBeingPushed )
+    , m_lastPushDurationInSecs( src.m_lastPushDurationInSecs )
+    , m_allFilesDirScanTimer( src.m_allFilesDirScanTimer )
+{GUCEF_TRACE;
+
+    RegisterEventHandlers();    
+}
+
+/*-------------------------------------------------------------------------*/
+
+FilePushDestination::~FilePushDestination()
 {GUCEF_TRACE;
 
     m_httpClient.Close();
-    m_httpServer.Close();
     m_dirWatcher.RemoveAllWatches();
 }
 
 /*-------------------------------------------------------------------------*/
 
 void
-FilePusher::RegisterEventHandlers( void )
+FilePushDestination::RegisterEventHandlers( void )
 {GUCEF_TRACE;
 
-    TEventCallback callback( this, &FilePusher::OnMetricsTimerCycle );
+    TEventCallback callback( this, &FilePushDestination::OnMetricsTimerCycle );
     SubscribeTo( &m_metricsTimer                ,
                  CORE::CTimer::TimerUpdateEvent ,
                  callback                       );
     
-    TEventCallback callback2( this, &FilePusher::OnWatchedLocalDirFileCreation );
+    TEventCallback callback2( this, &FilePushDestination::OnWatchedLocalDirFileCreation );
     SubscribeTo( &m_dirWatcher                             ,
                  CORE::CDirectoryWatcher::FileCreatedEvent ,
                  callback2                                 );
 
-    TEventCallback callback3( this, &FilePusher::OnNewFileRestPeriodTimerCycle );
+    TEventCallback callback3( this, &FilePushDestination::OnNewFileRestPeriodTimerCycle );
     SubscribeTo( &m_newFileRestPeriodTimer      ,
                  CORE::CTimer::TimerUpdateEvent ,
                  callback3                      );
 
-    TEventCallback callback4( this, &FilePusher::OnFilePushTimerCycle );
+    TEventCallback callback4( this, &FilePushDestination::OnFilePushTimerCycle );
     SubscribeTo( &m_pushTimer                   ,
                  CORE::CTimer::TimerUpdateEvent ,
                  callback4                      );
 
     
-    TEventCallback callback5( this, &FilePusher::OnHttpClientConnected );
+    TEventCallback callback5( this, &FilePushDestination::OnHttpClientConnected );
     SubscribeTo( &m_httpClient                    ,
                  COM::CHTTPClient::ConnectedEvent ,
                  callback5                        );
-    TEventCallback callback6( this, &FilePusher::OnHttpClientDisconnected );
+    TEventCallback callback6( this, &FilePushDestination::OnHttpClientDisconnected );
     SubscribeTo( &m_httpClient                       ,
                  COM::CHTTPClient::DisconnectedEvent ,
                  callback6                           );
-    TEventCallback callback7( this, &FilePusher::OnHttpClientConnectionError );
+    TEventCallback callback7( this, &FilePushDestination::OnHttpClientConnectionError );
     SubscribeTo( &m_httpClient                          ,
                  COM::CHTTPClient::ConnectionErrorEvent ,
                  callback7                              );
-    TEventCallback callback8( this, &FilePusher::OnHttpClientHttpError );
+    TEventCallback callback8( this, &FilePushDestination::OnHttpClientHttpError );
     SubscribeTo( &m_httpClient                    ,
                  COM::CHTTPClient::HTTPErrorEvent ,
                  callback8                        );
-    TEventCallback callback9( this, &FilePusher::OnHttpClientHttpRedirect );
+    TEventCallback callback9( this, &FilePushDestination::OnHttpClientHttpRedirect );
     SubscribeTo( &m_httpClient                       ,
                  COM::CHTTPClient::HTTPRedirectEvent ,
                  callback9                           );
-    TEventCallback callback10( this, &FilePusher::OnHttpClientHttpContent );
+    TEventCallback callback10( this, &FilePushDestination::OnHttpClientHttpContent );
     SubscribeTo( &m_httpClient                      ,
                  COM::CHTTPClient::HTTPContentEvent ,
                  callback10                         );
-    TEventCallback callback11( this, &FilePusher::OnHttpClientHttpDataRecieved );
+    TEventCallback callback11( this, &FilePushDestination::OnHttpClientHttpDataRecieved );
     SubscribeTo( &m_httpClient                           ,
                  COM::CHTTPClient::HTTPDataRecievedEvent ,
                  callback11                              );
-    TEventCallback callback12( this, &FilePusher::OnHttpClientHttpDataSent );
+    TEventCallback callback12( this, &FilePushDestination::OnHttpClientHttpDataSent );
     SubscribeTo( &m_httpClient                       ,
                  COM::CHTTPClient::HTTPDataSentEvent ,
                  callback12                          );
-    TEventCallback callback13( this, &FilePusher::OnHttpClientHttpTransferFinished );
+    TEventCallback callback13( this, &FilePushDestination::OnHttpClientHttpTransferFinished );
     SubscribeTo( &m_httpClient                               ,
                  COM::CHTTPClient::HTTPTransferFinishedEvent ,
                  callback13                                  );
 
-    TEventCallback callback14( this, &FilePusher::OnAsyncVfsOperationCompleted );
+    TEventCallback callback14( this, &FilePushDestination::OnAsyncVfsOperationCompleted );
     SubscribeTo( &VFS::CVfsGlobal::Instance()->GetVfs()     ,
                  VFS::CVFS::AsyncVfsOperationCompletedEvent ,
                  callback14                                 );
 
-    TEventCallback callback15( this, &FilePusher::OnAllFilesDirScanTimerCycle );
+    TEventCallback callback15( this, &FilePushDestination::OnAllFilesDirScanTimerCycle );
     SubscribeTo( &m_allFilesDirScanTimer        ,
                  CORE::CTimer::TimerUpdateEvent ,
                  callback15                     );
@@ -260,15 +431,84 @@ FilePusher::RegisterEventHandlers( void )
 
 /*-------------------------------------------------------------------------*/
 
-void
-FilePusher::OnMetricsTimerCycle( CORE::CNotifier* notifier    ,
-                                const CORE::CEvent& eventId  ,
-                                CORE::CICloneable* eventData )
+bool 
+FilePushDestination::LoadConfig( const FilePushDestinationSettings& settings )
 {GUCEF_TRACE;
 
-    if ( m_transmitMetrics )
+    m_settings = settings;
+    return true;
+}
+
+/*-------------------------------------------------------------------------*/
+
+bool
+FilePushDestination::Start( void )
+{GUCEF_TRACE;
+
+    if ( m_settings.transmitMetrics )
     {
-        if ( 0 == m_filePushDestinationUri.HasSubstr( "http://", true ) )
+        m_metricsTimer.SetInterval( 1000 );
+        m_metricsTimer.SetEnabled( true );
+    }
+    
+    m_newFileRestPeriodTimer.SetInterval( 1000 );
+    m_newFileRestPeriodTimer.SetEnabled( true );
+
+    m_pushTimer.SetInterval( 1000 );
+    m_pushTimer.SetEnabled( true );
+
+    CORE::CString::StringVector rolloverPatterns = GetFilePatternsForPushType( TPushStyle::PUSHSTYLE_ROLLED_OVER_FILES );
+    CORE::CString::StringVector allFilesPatterns = GetFilePatternsForPushType( TPushStyle::PUSHSTYLE_MATCHING_ALL_FILES_WITH_REST_PERIOD );
+
+    CORE::CDirectoryWatcher::CDirWatchOptions watchOptions;
+    watchOptions.watchForFileCreation = true;
+    watchOptions.watchForFileDeletion = false;
+    watchOptions.watchForFileModifications = false;
+    watchOptions.watchForFileRenames = false;
+    TStringSet::iterator i = m_settings.dirsToWatch.begin();
+    while ( i != m_settings.dirsToWatch.end() )
+    {
+        if ( !allFilesPatterns.empty() )
+        {
+            GUCEF_LOG( CORE::LOGLEVEL_NORMAL, "FilePushDestination: Checking for pre-existing files to push matching all-files patterns in dir \"" + (*i) + "\"" );
+            QueueAllPreExistingFilesForDir( (*i) );
+        }
+
+        if ( !rolloverPatterns.empty() )
+        {
+            GUCEF_LOG( CORE::LOGLEVEL_NORMAL, "FilePushDestination: Checking for pre-existing files to push matching rolled-over-files patterns in dir \"" + (*i) + "\"" );
+            TriggerRolledOverFileCheck( (*i), rolloverPatterns );
+        }
+
+        GUCEF_LOG( CORE::LOGLEVEL_NORMAL, "FilePushDestination: Adding watch to directory \"" + (*i) + "\"" );
+        if ( !m_dirWatcher.AddDirToWatch( (*i), watchOptions ) )
+        {
+            GUCEF_ERROR_LOG( CORE::LOGLEVEL_IMPORTANT, "FilePushDestination: Failed to add watch for directory " + (*i) );
+            return false;
+        }
+        ++i;
+    }
+
+    if ( !allFilesPatterns.empty() )
+    {
+        m_allFilesDirScanTimer.SetEnabled( true );
+        m_allFilesDirScanTimer.SetInterval( 10000 );
+    }
+
+    return true;
+}
+
+/*-------------------------------------------------------------------------*/
+
+void
+FilePushDestination::OnMetricsTimerCycle( CORE::CNotifier* notifier    ,
+                                          const CORE::CEvent& eventId  ,
+                                          CORE::CICloneable* eventData )
+{GUCEF_TRACE;
+
+    if ( m_settings.transmitMetrics )
+    {
+        if ( 0 == m_settings.filePushDestinationUri.HasSubstr( "http://", true ) )
         {
             GUCEF_METRIC_COUNT( "FilePusher.HttpClientBytesReceived", m_httpClient.GetBytesReceived( true ), 1.0f );
             GUCEF_METRIC_COUNT( "FilePusher.HttpClientBytesTransmitted", m_httpClient.GetBytesTransmitted( true ), 1.0f );
@@ -282,111 +522,111 @@ FilePusher::OnMetricsTimerCycle( CORE::CNotifier* notifier    ,
 /*-------------------------------------------------------------------------*/
 
 void
-FilePusher::OnHttpClientConnected( CORE::CNotifier* notifier    ,
-                                   const CORE::CEvent& eventId  ,
-                                   CORE::CICloneable* eventData )
+FilePushDestination::OnHttpClientConnected( CORE::CNotifier* notifier    ,
+                                            const CORE::CEvent& eventId  ,
+                                            CORE::CICloneable* eventData )
 {GUCEF_TRACE;
 
-    GUCEF_LOG( CORE::LOGLEVEL_NORMAL, "FilePusher: HTTP Client has connected to the server" );
+    GUCEF_LOG( CORE::LOGLEVEL_NORMAL, "FilePushDestination: HTTP Client has connected to the server" );
 }
 
 /*-------------------------------------------------------------------------*/
 
 void
-FilePusher::OnHttpClientDisconnected( CORE::CNotifier* notifier    ,
-                                      const CORE::CEvent& eventId  ,
-                                      CORE::CICloneable* eventData )
+FilePushDestination::OnHttpClientDisconnected( CORE::CNotifier* notifier    ,
+                                               const CORE::CEvent& eventId  ,
+                                               CORE::CICloneable* eventData )
 {GUCEF_TRACE;
 
-    GUCEF_LOG( CORE::LOGLEVEL_NORMAL, "FilePusher: HTTP Client has disconnected from the server" );
+    GUCEF_LOG( CORE::LOGLEVEL_NORMAL, "FilePushDestination: HTTP Client has disconnected from the server" );
 }
 
 /*-------------------------------------------------------------------------*/
 
 void
-FilePusher::OnHttpClientConnectionError( CORE::CNotifier* notifier    ,
-                                         const CORE::CEvent& eventId  ,
-                                         CORE::CICloneable* eventData )
+FilePushDestination::OnHttpClientConnectionError( CORE::CNotifier* notifier    ,
+                                                  const CORE::CEvent& eventId  ,
+                                                  CORE::CICloneable* eventData )
 {GUCEF_TRACE;
 
-    GUCEF_WARNING_LOG( CORE::LOGLEVEL_NORMAL, "FilePusher: HTTP Client has experienced a connection error" );
+    GUCEF_WARNING_LOG( CORE::LOGLEVEL_NORMAL, "FilePushDestination: HTTP Client has experienced a connection error" );
     m_currentFileBeingPushed.Clear();
 }
 
 /*-------------------------------------------------------------------------*/
 
 void
-FilePusher::OnHttpClientHttpError( CORE::CNotifier* notifier    ,
-                                   const CORE::CEvent& eventId  ,
-                                   CORE::CICloneable* eventData )
+FilePushDestination::OnHttpClientHttpError( CORE::CNotifier* notifier    ,
+                                            const CORE::CEvent& eventId  ,
+                                            CORE::CICloneable* eventData )
 {GUCEF_TRACE;
 
     COM::CHTTPClient::THTTPErrorEventData* httpErrorEventData = static_cast< COM::CHTTPClient::THTTPErrorEventData* >( eventData );
     CORE::UInt32 httpErrorCode = (CORE::UInt32) httpErrorEventData->GetData();
 
-    GUCEF_WARNING_LOG( CORE::LOGLEVEL_NORMAL, "FilePusher: HTTP Client has experienced a HTTP error: " + CORE::UInt32ToString( httpErrorCode ) );
+    GUCEF_WARNING_LOG( CORE::LOGLEVEL_NORMAL, "FilePushDestination: HTTP Client has experienced a HTTP error: " + CORE::UInt32ToString( httpErrorCode ) );
     m_currentFileBeingPushed.Clear();
 }
 
 /*-------------------------------------------------------------------------*/
 
 void
-FilePusher::OnHttpClientHttpRedirect( CORE::CNotifier* notifier    ,
-                                      const CORE::CEvent& eventId  ,
-                                      CORE::CICloneable* eventData )
+FilePushDestination::OnHttpClientHttpRedirect( CORE::CNotifier* notifier    ,
+                                               const CORE::CEvent& eventId  ,
+                                               CORE::CICloneable* eventData )
 {GUCEF_TRACE;
 
-    GUCEF_LOG( CORE::LOGLEVEL_NORMAL, "FilePusher: HTTP Client connection is being redirected" );
+    GUCEF_LOG( CORE::LOGLEVEL_NORMAL, "FilePushDestination: HTTP Client connection is being redirected" );
 }
 
 /*-------------------------------------------------------------------------*/
 
 void
-FilePusher::OnHttpClientHttpContent( CORE::CNotifier* notifier    ,
-                                     const CORE::CEvent& eventId  ,
-                                     CORE::CICloneable* eventData )
-{GUCEF_TRACE;
-
-}
-
-/*-------------------------------------------------------------------------*/
-
-void
-FilePusher::OnHttpClientHttpDataSent( CORE::CNotifier* notifier    ,
-                                      const CORE::CEvent& eventId  ,
-                                      CORE::CICloneable* eventData )
-{GUCEF_TRACE;
-
-}
-
-/*-------------------------------------------------------------------------*/
-
-void
-FilePusher::OnHttpClientHttpDataRecieved( CORE::CNotifier* notifier    ,
-                                          const CORE::CEvent& eventId  ,
-                                          CORE::CICloneable* eventData )
-{GUCEF_TRACE;
-
-}
-
-/*-------------------------------------------------------------------------*/
-
-void
-FilePusher::OnHttpClientHttpTransferFinished( CORE::CNotifier* notifier    ,
+FilePushDestination::OnHttpClientHttpContent( CORE::CNotifier* notifier    ,
                                               const CORE::CEvent& eventId  ,
                                               CORE::CICloneable* eventData )
 {GUCEF_TRACE;
 
-    GUCEF_LOG( CORE::LOGLEVEL_NORMAL, "FilePusher: HTTP Transfer finished" );
+}
+
+/*-------------------------------------------------------------------------*/
+
+void
+FilePushDestination::OnHttpClientHttpDataSent( CORE::CNotifier* notifier    ,
+                                               const CORE::CEvent& eventId  ,
+                                               CORE::CICloneable* eventData )
+{GUCEF_TRACE;
+
+}
+
+/*-------------------------------------------------------------------------*/
+
+void
+FilePushDestination::OnHttpClientHttpDataRecieved( CORE::CNotifier* notifier    ,
+                                                   const CORE::CEvent& eventId  ,
+                                                   CORE::CICloneable* eventData )
+{GUCEF_TRACE;
+
+}
+
+/*-------------------------------------------------------------------------*/
+
+void
+FilePushDestination::OnHttpClientHttpTransferFinished( CORE::CNotifier* notifier    ,
+                                                       const CORE::CEvent& eventId  ,
+                                                       CORE::CICloneable* eventData )
+{GUCEF_TRACE;
+
+    GUCEF_LOG( CORE::LOGLEVEL_NORMAL, "FilePushDestination: HTTP Transfer finished" );
     OnFilePushFinished();
 }
 
 /*-------------------------------------------------------------------------*/
 
 void
-FilePusher::OnAsyncVfsOperationCompleted( CORE::CNotifier* notifier    ,
-                                          const CORE::CEvent& eventId  ,
-                                          CORE::CICloneable* eventData )
+FilePushDestination::OnAsyncVfsOperationCompleted( CORE::CNotifier* notifier    ,
+                                                   const CORE::CEvent& eventId  ,
+                                                   CORE::CICloneable* eventData )
 {GUCEF_TRACE;
 
     VFS::CAsyncVfsTaskResultData* asyncOpResult = static_cast< VFS::CAsyncVfsTaskResultData* >( eventData );
@@ -395,26 +635,26 @@ FilePusher::OnAsyncVfsOperationCompleted( CORE::CNotifier* notifier    ,
         m_lastPushDurationInSecs = asyncOpResult->durationInSecs;
         if (  asyncOpResult->successState )
         {
-            GUCEF_LOG( CORE::LOGLEVEL_NORMAL, "FilePusher: VFS Async operation finished successfully in " + 
+            GUCEF_LOG( CORE::LOGLEVEL_NORMAL, "FilePushDestination: VFS Async operation finished successfully in " + 
                     CORE::UInt32ToString( m_lastPushDurationInSecs ) + " secs" );
             OnFilePushFinished();
         }
         else
         {
-            GUCEF_ERROR_LOG( CORE::LOGLEVEL_NORMAL, "FilePusher: VFS Async operation failed in " + 
+            GUCEF_ERROR_LOG( CORE::LOGLEVEL_NORMAL, "FilePushDestination: VFS Async operation failed in " + 
                         CORE::UInt32ToString( m_lastPushDurationInSecs ) + " secs" );
         }
     }
     else
     {
-        GUCEF_ERROR_LOG( CORE::LOGLEVEL_NORMAL, "FilePusher: VFS Async operation failed" );
+        GUCEF_ERROR_LOG( CORE::LOGLEVEL_NORMAL, "FilePushDestination: VFS Async operation failed" );
     }
 }
 
 /*-------------------------------------------------------------------------*/
 
 void
-FilePusher::OnFilePushFinished( void )
+FilePushDestination::OnFilePushFinished( void )
 {GUCEF_TRACE;
 
     TStringUInt64Map::iterator i = m_pushQueue.find( m_currentFileBeingPushed );
@@ -422,12 +662,12 @@ FilePusher::OnFilePushFinished( void )
     {
         m_pushQueue.erase( i );
 
-        GUCEF_LOG( CORE::LOGLEVEL_NORMAL, "FilePusher: Successfully pushed file \"" + m_currentFileBeingPushed + "\"" ); 
-        if ( m_deleteFilesAfterSuccessfullPush )
+        GUCEF_LOG( CORE::LOGLEVEL_NORMAL, "FilePushDestination: Successfully pushed file \"" + m_currentFileBeingPushed + "\"" ); 
+        if ( m_settings.deleteFilesAfterSuccessfullPush )
         {
             if ( CORE::DeleteFile( m_currentFileBeingPushed ) )
             {
-                GUCEF_LOG( CORE::LOGLEVEL_NORMAL, "FilePusher: Successfully deleted pushed file \"" + m_currentFileBeingPushed + "\"" );
+                GUCEF_LOG( CORE::LOGLEVEL_NORMAL, "FilePushDestination: Successfully deleted pushed file \"" + m_currentFileBeingPushed + "\"" );
             }
         }
         m_currentFileBeingPushed.Clear();
@@ -438,13 +678,13 @@ FilePusher::OnFilePushFinished( void )
 /*-------------------------------------------------------------------------*/
 
 bool
-FilePusher::PushFileUsingHttp( const CORE::CString& pathToFileToPush, CORE::UInt32 offsetInFile )
+FilePushDestination::PushFileUsingHttp( const CORE::CString& pathToFileToPush, CORE::UInt32 offsetInFile )
 {GUCEF_TRACE;
 
     // Load the file content from disk
     if ( !m_currentFilePushBuffer.LoadContentFromFile( pathToFileToPush, offsetInFile ) )
     {
-        GUCEF_WARNING_LOG( CORE::LOGLEVEL_NORMAL, "FilePusher:PushFileUsingHttp: Unable to load bytes from file \"" + pathToFileToPush + "\". Is it still in use? Skipping the file for now" );
+        GUCEF_WARNING_LOG( CORE::LOGLEVEL_NORMAL, "FilePushDestination:PushFileUsingHttp: Unable to load bytes from file \"" + pathToFileToPush + "\". Is it still in use? Skipping the file for now" );
         return false;
     }
     m_currentFileBeingPushed = pathToFileToPush;
@@ -458,44 +698,44 @@ FilePusher::PushFileUsingHttp( const CORE::CString& pathToFileToPush, CORE::UInt
 
     // Begin the push
     CORE::CString filename = CORE::ExtractFilename( pathToFileToPush );
-    CORE::CString pushUrlForFile = m_filePushDestinationUri.ReplaceSubstr( "{filename}", filename );
+    CORE::CString pushUrlForFile = m_settings.filePushDestinationUri.ReplaceSubstr( "{filename}", filename );
     if ( m_httpClient.Post( pushUrlForFile, contentType, m_currentFilePushBuffer ) )
     {
-        GUCEF_LOG( CORE::LOGLEVEL_NORMAL, "FilePusher: Commenced HTTP POST for content from file \"" + pathToFileToPush + "\"" );
+        GUCEF_LOG( CORE::LOGLEVEL_NORMAL, "FilePushDestination: Commenced HTTP POST for content from file \"" + pathToFileToPush + "\"" );
         return true;    
     }
 
-    GUCEF_WARNING_LOG( CORE::LOGLEVEL_NORMAL, "FilePusher: Failed to HTTP POST bytes from file \"" + pathToFileToPush + "\". Skipping the file for now" );
+    GUCEF_WARNING_LOG( CORE::LOGLEVEL_NORMAL, "FilePushDestination: Failed to HTTP POST bytes from file \"" + pathToFileToPush + "\". Skipping the file for now" );
     return false;
 }
 
 /*-------------------------------------------------------------------------*/
 
 bool
-FilePusher::PushFileUsingVfs( const CORE::CString& pathToFileToPush, CORE::UInt32 offsetInFile )
+FilePushDestination::PushFileUsingVfs( const CORE::CString& pathToFileToPush, CORE::UInt32 offsetInFile )
 {GUCEF_TRACE;
 
     // Load the file content from disk
     if ( !m_currentFilePushBuffer.LoadContentFromFile( pathToFileToPush, offsetInFile ) )
     {
-        GUCEF_WARNING_LOG( CORE::LOGLEVEL_NORMAL, "FilePusher:PushFileUsingVfs: Unable to load bytes from file \"" + pathToFileToPush + "\". Is it still in use? Skipping the file for now" );
+        GUCEF_WARNING_LOG( CORE::LOGLEVEL_NORMAL, "FilePushDestination:PushFileUsingVfs: Unable to load bytes from file \"" + pathToFileToPush + "\". Is it still in use? Skipping the file for now" );
         return false;
     }
     m_currentFileBeingPushed = pathToFileToPush;
 
     // Begin the push
     CORE::CString filename = CORE::ExtractFilename( pathToFileToPush );
-    CORE::CString pushUrlForFile = m_filePushDestinationUri.ReplaceSubstr( "{filename}", filename );
+    CORE::CString pushUrlForFile = m_settings.filePushDestinationUri.ReplaceSubstr( "{filename}", filename );
     pushUrlForFile = pushUrlForFile.CutChars( 6, true, 0 ); // Cut vfs://
 
     // Store the file as a singular sync blocking call
     if ( VFS::CVfsGlobal::Instance()->GetVfs().StoreAsFileAsync( pushUrlForFile, m_currentFilePushBuffer, 0, true ) )
     {
-        GUCEF_LOG( CORE::LOGLEVEL_NORMAL, "FilePusher: Commenced async push of content from file \"" + pathToFileToPush + "\" to VFS path \"" + pushUrlForFile + "\"" );
+        GUCEF_LOG( CORE::LOGLEVEL_NORMAL, "FilePushDestination: Commenced async push of content from file \"" + pathToFileToPush + "\" to VFS path \"" + pushUrlForFile + "\"" );
         return true;    
     }
 
-    GUCEF_WARNING_LOG( CORE::LOGLEVEL_NORMAL, "FilePusher: Failed to pushed content from file \"" + pathToFileToPush + "\" to VFS path \"" + pushUrlForFile + "\". Skipping the file for now" );
+    GUCEF_WARNING_LOG( CORE::LOGLEVEL_NORMAL, "FilePushDestination: Failed to pushed content from file \"" + pathToFileToPush + "\" to VFS path \"" + pushUrlForFile + "\". Skipping the file for now" );
     m_currentFilePushBuffer.Clear();
     m_currentFileBeingPushed.Clear();
     return false;
@@ -504,9 +744,9 @@ FilePusher::PushFileUsingVfs( const CORE::CString& pathToFileToPush, CORE::UInt3
 /*-------------------------------------------------------------------------*/
 
 void
-FilePusher::OnFilePushTimerCycle( CORE::CNotifier* notifier    ,
-                                  const CORE::CEvent& eventId  ,
-                                  CORE::CICloneable* eventData )
+FilePushDestination::OnFilePushTimerCycle( CORE::CNotifier* notifier    ,
+                                           const CORE::CEvent& eventId  ,
+                                           CORE::CICloneable* eventData )
 {GUCEF_TRACE;
 
     // We only do a max of 1 file per cycle since this is a single-threaded app on purpose
@@ -523,12 +763,12 @@ FilePusher::OnFilePushTimerCycle( CORE::CNotifier* notifier    ,
         {
             CORE::UInt32 offsetInFile = (CORE::UInt32) (*i).second;
 
-            if ( 0 == m_filePushDestinationUri.HasSubstr( "http://", true ) )
+            if ( 0 == m_settings.filePushDestinationUri.HasSubstr( "http://", true ) )
             {
                 if ( PushFileUsingHttp( filePath, offsetInFile ) )
                     return;
             }
-            if ( 0 == m_filePushDestinationUri.HasSubstr( "vfs://", true ) )
+            if ( 0 == m_settings.filePushDestinationUri.HasSubstr( "vfs://", true ) )
             {
                 if ( PushFileUsingVfs( filePath, offsetInFile ) )
                     return;
@@ -536,7 +776,7 @@ FilePusher::OnFilePushTimerCycle( CORE::CNotifier* notifier    ,
         }
         else
         {
-            GUCEF_LOG( CORE::LOGLEVEL_NORMAL, "FilePusher: File no longer exists when we were about to commence pushing it: \"" + filePath + "\"" );
+            GUCEF_LOG( CORE::LOGLEVEL_NORMAL, "FilePushDestination: File no longer exists when we were about to commence pushing it: \"" + filePath + "\"" );
             m_pushQueue.erase( i );
             return;
         }
@@ -547,7 +787,7 @@ FilePusher::OnFilePushTimerCycle( CORE::CNotifier* notifier    ,
 /*-------------------------------------------------------------------------*/
 
 void
-FilePusher::QueueFileForPushing( const CORE::CString& filePath )
+FilePushDestination::QueueFileForPushing( const CORE::CString& filePath )
 {GUCEF_TRACE;
 
     // We might get triggered multiple times for the same file.
@@ -555,29 +795,29 @@ FilePusher::QueueFileForPushing( const CORE::CString& filePath )
     if ( m_pushQueue.find( filePath ) != m_pushQueue.end() )
         return;
 
-    GUCEF_LOG( CORE::LOGLEVEL_NORMAL, "FilePusher: Queueing file \"" + filePath + "\" for pushing" );
+    GUCEF_LOG( CORE::LOGLEVEL_NORMAL, "FilePushDestination: Queueing file \"" + filePath + "\" for pushing" );
     m_pushQueue[ filePath ] = 0;
 }
 
 /*-------------------------------------------------------------------------*/
 
 void
-FilePusher::OnAllFilesDirScanTimerCycle( CORE::CNotifier* notifier    ,
-                                         const CORE::CEvent& eventId  ,
-                                         CORE::CICloneable* eventData )
+FilePushDestination::OnAllFilesDirScanTimerCycle( CORE::CNotifier* notifier    ,
+                                                  const CORE::CEvent& eventId  ,
+                                                  CORE::CICloneable* eventData )
 {GUCEF_TRACE;
 
-    TStringSet::const_iterator i = m_dirsToWatch.begin();
-    while ( i != m_dirsToWatch.end() )
+    TStringSet::const_iterator i = m_settings.dirsToWatch.begin();
+    while ( i != m_settings.dirsToWatch.end() )
     {
-        GUCEF_LOG( CORE::LOGLEVEL_NORMAL, "FilePusher: Commencing periodic scan for 'all files' style file patterns for dir: \"" + (*i) + "\"" );
+        GUCEF_LOG( CORE::LOGLEVEL_NORMAL, "FilePushDestination: Commencing periodic scan for 'all files' style file patterns for dir: \"" + (*i) + "\"" );
         if ( QueueAllPreExistingFilesForDir( (*i) ) )
         {
-            GUCEF_LOG( CORE::LOGLEVEL_NORMAL, "FilePusher: Finished scan for 'all files' style file patterns for dir: \"" + (*i) + "\"" );
+            GUCEF_LOG( CORE::LOGLEVEL_NORMAL, "FilePushDestination: Finished scan for 'all files' style file patterns for dir: \"" + (*i) + "\"" );
         }
         else
         {
-            GUCEF_WARNING_LOG( CORE::LOGLEVEL_NORMAL, "FilePusher: Failed scan for 'all files' style file patterns for dir: \"" + (*i) + "\"" );
+            GUCEF_WARNING_LOG( CORE::LOGLEVEL_NORMAL, "FilePushDestination: Failed scan for 'all files' style file patterns for dir: \"" + (*i) + "\"" );
         }
         ++i;
     }
@@ -586,9 +826,9 @@ FilePusher::OnAllFilesDirScanTimerCycle( CORE::CNotifier* notifier    ,
 /*-------------------------------------------------------------------------*/
 
 void
-FilePusher::OnNewFileRestPeriodTimerCycle( CORE::CNotifier* notifier    ,
-                                           const CORE::CEvent& eventId  ,
-                                           CORE::CICloneable* eventData )
+FilePushDestination::OnNewFileRestPeriodTimerCycle( CORE::CNotifier* notifier    ,
+                                                    const CORE::CEvent& eventId  ,
+                                                    CORE::CICloneable* eventData )
 {GUCEF_TRACE;
 
     TStringSet restedFiles;
@@ -602,7 +842,7 @@ FilePusher::OnNewFileRestPeriodTimerCycle( CORE::CNotifier* notifier    ,
             CORE::CDateTime& lastModified = (*i).second;
 
             CORE::CDateTime lastChange = GetLatestTimestampForFile( newFilePath );
-            if ( nowTime.SubtractAndGetTimeDifferenceInMilliseconds( lastChange ) > m_restingTimeForNewFilesInSecs * 1000 )
+            if ( nowTime.SubtractAndGetTimeDifferenceInMilliseconds( lastChange ) > m_settings.restingTimeForNewFilesInSecs * 1000 )
             {
                 // This file has not been modified for at least the required resting period.
                 // As such tis file can now be considered a candidate for pushing.
@@ -612,7 +852,7 @@ FilePusher::OnNewFileRestPeriodTimerCycle( CORE::CNotifier* notifier    ,
         }
         else
         {
-            GUCEF_LOG( CORE::LOGLEVEL_NORMAL, "FilePusher: File no longer exists when checking rest period on file: \"" + newFilePath + "\"" );
+            GUCEF_LOG( CORE::LOGLEVEL_NORMAL, "FilePushDestination: File no longer exists when checking rest period on file: \"" + newFilePath + "\"" );
             restedFiles.insert( newFilePath );    
         }
         ++i;
@@ -631,7 +871,7 @@ FilePusher::OnNewFileRestPeriodTimerCycle( CORE::CNotifier* notifier    ,
 /*-------------------------------------------------------------------------*/
 
 CORE::CDateTime
-FilePusher::GetLatestTimestampForFile( const CORE::CString& filePath )
+FilePushDestination::GetLatestTimestampForFile( const CORE::CString& filePath )
 {GUCEF_TRACE;
 
     CORE::CDateTime lastModified = CORE::GetFileModificationTime( filePath );
@@ -643,7 +883,7 @@ FilePusher::GetLatestTimestampForFile( const CORE::CString& filePath )
 /*-------------------------------------------------------------------------*/
 
 void
-FilePusher::QueueNewFileForPushingAfterUnmodifiedRestPeriod( const CORE::CString& newFilePath )
+FilePushDestination::QueueNewFileForPushingAfterUnmodifiedRestPeriod( const CORE::CString& newFilePath )
 {GUCEF_TRACE;
 
     // We don't want to add new files to the rest queue by whatever means if the same file has already 
@@ -657,15 +897,15 @@ FilePusher::QueueNewFileForPushingAfterUnmodifiedRestPeriod( const CORE::CString
     }
     else
     {
-        GUCEF_DEBUG_LOG( CORE::LOGLEVEL_NORMAL, "FilePusher: Not queueing file for rest period as its already rested and queued for pushing: \"" + newFilePath + "\"" );
+        GUCEF_DEBUG_LOG( CORE::LOGLEVEL_NORMAL, "FilePushDestination: Not queueing file for rest period as its already rested and queued for pushing: \"" + newFilePath + "\"" );
     }
 }
 
 /*-------------------------------------------------------------------------*/
 
 void
-FilePusher::TriggerRolledOverFileCheck( const CORE::CString& dirWithFiles   ,
-                                        const CORE::CString& patternToMatch )
+FilePushDestination::TriggerRolledOverFileCheck( const CORE::CString& dirWithFiles   ,
+                                                 const CORE::CString& patternToMatch )
 {GUCEF_TRACE;
 
     CORE::CString::StringVector singleEntryList;
@@ -676,8 +916,8 @@ FilePusher::TriggerRolledOverFileCheck( const CORE::CString& dirWithFiles   ,
 /*-------------------------------------------------------------------------*/
 
 void
-FilePusher::TriggerRolledOverFileCheck( const CORE::CString& dirWithFiles                  ,
-                                        const CORE::CString::StringVector& patternsToMatch )
+FilePushDestination::TriggerRolledOverFileCheck( const CORE::CString& dirWithFiles                  ,
+                                                 const CORE::CString::StringVector& patternsToMatch )
 {GUCEF_TRACE;
 
     // Check to see if we have multiple, thus rolled over, files in the target dir matching the pattern
@@ -735,9 +975,9 @@ FilePusher::TriggerRolledOverFileCheck( const CORE::CString& dirWithFiles       
 /*-------------------------------------------------------------------------*/
 
 void
-FilePusher::OnWatchedLocalDirFileCreation( CORE::CNotifier* notifier    ,
-                                           const CORE::CEvent& eventId  ,
-                                           CORE::CICloneable* eventData )
+FilePushDestination::OnWatchedLocalDirFileCreation( CORE::CNotifier* notifier    ,
+                                                    const CORE::CEvent& eventId  ,
+                                                    CORE::CICloneable* eventData )
 {GUCEF_TRACE;
 
     // Which file is new?
@@ -745,11 +985,11 @@ FilePusher::OnWatchedLocalDirFileCreation( CORE::CNotifier* notifier    ,
     const CORE::CString& newFilePath = fileCreatedEventData->GetData();
 
     // Filter potentially unrelated files
-    TPushStyle pushStyle = EPushStyle::PUSHSTYLE_UNKNOWN;
+    TPushStyle pushStyle = TPushStyle::PUSHSTYLE_UNKNOWN;
     CORE::CString patternMatched;
     CORE::CString newFilename = CORE::ExtractFilename( newFilePath );
-    TStringPushStyleMap::iterator i = m_fileMatchPatterns.begin();
-    while ( i != m_fileMatchPatterns.end() )
+    TStringPushStyleMap::iterator i = m_settings.fileMatchPatterns.begin();
+    while ( i != m_settings.fileMatchPatterns.end() )
     {
         if ( newFilename.WildcardEquals( (*i).first, '*', false ) )
         {
@@ -765,19 +1005,19 @@ FilePusher::OnWatchedLocalDirFileCreation( CORE::CNotifier* notifier    ,
     // Handle based on the configured push style for the given pattern
     switch ( pushStyle )
     {
-        case EPushStyle::PUSHSTYLE_ROLLED_OVER_FILES:
+        case TPushStyle::PUSHSTYLE_ROLLED_OVER_FILES:
         {
             CORE::CString dirWithFiles = CORE::StripFilename( newFilePath );
             TriggerRolledOverFileCheck( dirWithFiles, patternMatched );
             return;
         }
-        case EPushStyle::PUSHSTYLE_MATCHING_ALL_FILES_WITH_REST_PERIOD:
-        case EPushStyle::PUSHSTYLE_MATCHING_NEW_FILES_WITH_REST_PERIOD:
+        case TPushStyle::PUSHSTYLE_MATCHING_ALL_FILES_WITH_REST_PERIOD:
+        case TPushStyle::PUSHSTYLE_MATCHING_NEW_FILES_WITH_REST_PERIOD:
         {
             QueueNewFileForPushingAfterUnmodifiedRestPeriod( newFilePath );
             return;
         }
-        case EPushStyle::PUSHSTYLE_UNKNOWN:
+        case TPushStyle::PUSHSTYLE_UNKNOWN:
         default:
         {
             return;
@@ -788,14 +1028,14 @@ FilePusher::OnWatchedLocalDirFileCreation( CORE::CNotifier* notifier    ,
 /*-------------------------------------------------------------------------*/
 
 bool
-FilePusher::DoesFilenameMatchPushAllFilesPattern( const CORE::CString& filename ) const
+FilePushDestination::DoesFilenameMatchPushAllFilesPattern( const CORE::CString& filename ) const
 {GUCEF_TRACE;
 
-    TStringPushStyleMap::const_iterator i = m_fileMatchPatterns.begin();
-    while ( i != m_fileMatchPatterns.end() )
+    TStringPushStyleMap::const_iterator i = m_settings.fileMatchPatterns.begin();
+    while ( i != m_settings.fileMatchPatterns.end() )
     {
         // Is the pattern one that is configured for a 'all files' push method?
-        if ( PUSHSTYLE_MATCHING_ALL_FILES_WITH_REST_PERIOD == (*i).second )
+        if ( TPushStyle::PUSHSTYLE_MATCHING_ALL_FILES_WITH_REST_PERIOD == (*i).second )
         {
             // Does the file match a configured pattern?
             if ( filename.WildcardEquals( (*i).first, '*', false ) )
@@ -811,7 +1051,7 @@ FilePusher::DoesFilenameMatchPushAllFilesPattern( const CORE::CString& filename 
 /*-------------------------------------------------------------------------*/
 
 bool
-FilePusher::QueueAllPreExistingFilesForDir( const CORE::CString& dir )
+FilePushDestination::QueueAllPreExistingFilesForDir( const CORE::CString& dir )
 {GUCEF_TRACE;
 
     struct CORE::SDI_Data* did = CORE::DI_First_Dir_Entry( dir.C_String() );
@@ -845,12 +1085,12 @@ FilePusher::QueueAllPreExistingFilesForDir( const CORE::CString& dir )
 /*-------------------------------------------------------------------------*/
 
 CORE::CString::StringVector
-FilePusher::GetFilePatternsForPushType( TPushStyle pushStyle ) const
+FilePushDestination::GetFilePatternsForPushType( TPushStyle pushStyle ) const
 {GUCEF_TRACE;
 
     CORE::CString::StringVector subset;
-    TStringPushStyleMap::const_iterator i = m_fileMatchPatterns.begin();
-    while ( i != m_fileMatchPatterns.end() )
+    TStringPushStyleMap::const_iterator i = m_settings.fileMatchPatterns.begin();
+    while ( i != m_settings.fileMatchPatterns.end() )
     {
         if ( pushStyle == (*i).second )
         {
@@ -863,64 +1103,43 @@ FilePusher::GetFilePatternsForPushType( TPushStyle pushStyle ) const
 
 /*-------------------------------------------------------------------------*/
 
+FilePusher::FilePusher( void )
+    : CORE::CObservingNotifier()
+    , m_httpServer()
+    , m_httpRouter()
+    , m_appConfig()
+    , m_globalConfig()
+    , m_filePushDestinations()
+{GUCEF_TRACE;
+
+}
+
+/*-------------------------------------------------------------------------*/
+
+FilePusher::~FilePusher()
+{GUCEF_TRACE;
+
+    m_httpServer.Close();
+}
+
+/*-------------------------------------------------------------------------*/
+
 bool
 FilePusher::Start( void )
 {GUCEF_TRACE;
 
-    if ( m_transmitMetrics )
+    bool totalSuccess = true;
+    FilePushDestinationVector::iterator i = m_filePushDestinations.begin();
+    while ( i != m_filePushDestinations.end() )
     {
-        m_metricsTimer.SetInterval( 1000 );
-        m_metricsTimer.SetEnabled( true );
-    }
-    
-    m_newFileRestPeriodTimer.SetInterval( 1000 );
-    m_newFileRestPeriodTimer.SetEnabled( true );
-
-    m_pushTimer.SetInterval( 1000 );
-    m_pushTimer.SetEnabled( true );
-
-    CORE::CString::StringVector rolloverPatterns = GetFilePatternsForPushType( PUSHSTYLE_ROLLED_OVER_FILES );
-    CORE::CString::StringVector allFilesPatterns = GetFilePatternsForPushType( PUSHSTYLE_MATCHING_ALL_FILES_WITH_REST_PERIOD );
-
-    CORE::CDirectoryWatcher::CDirWatchOptions watchOptions;
-    watchOptions.watchForFileCreation = true;
-    watchOptions.watchForFileDeletion = false;
-    watchOptions.watchForFileModifications = false;
-    watchOptions.watchForFileRenames = false;
-    TStringSet::iterator i = m_dirsToWatch.begin();
-    while ( i != m_dirsToWatch.end() )
-    {
-        if ( !allFilesPatterns.empty() )
-        {
-            GUCEF_LOG( CORE::LOGLEVEL_NORMAL, "FilePusher: Checking for pre-existing files to push matching all-files patterns in dir \"" + (*i) + "\"" );
-            QueueAllPreExistingFilesForDir( (*i) );
-        }
-
-        if ( !rolloverPatterns.empty() )
-        {
-            GUCEF_LOG( CORE::LOGLEVEL_NORMAL, "FilePusher: Checking for pre-existing files to push matching rolled-over-files patterns in dir \"" + (*i) + "\"" );
-            TriggerRolledOverFileCheck( (*i), rolloverPatterns );
-        }
-
-        GUCEF_LOG( CORE::LOGLEVEL_NORMAL, "FilePusher: Adding watch to directory \"" + (*i) + "\"" );
-        if ( !m_dirWatcher.AddDirToWatch( (*i), watchOptions ) )
-        {
-            GUCEF_ERROR_LOG( CORE::LOGLEVEL_IMPORTANT, "FilePusher: Failed to add watch for directory " + (*i) );
-            return false;
-        }
+        totalSuccess = (*i).Start() && totalSuccess;
         ++i;
-    }
-
-    if ( !allFilesPatterns.empty() )
-    {
-        m_allFilesDirScanTimer.SetEnabled( true );
-        m_allFilesDirScanTimer.SetInterval( 10000 );
-    }
-
-    if ( m_httpServer.Listen() )
+    }    
+    
+    if ( m_httpServer.Listen() )                                                              
     {
         GUCEF_LOG( CORE::LOGLEVEL_IMPORTANT, "FilePusher: Opened REST API on port " + CORE::UInt16ToString( m_httpServer.GetPort() ) );
-        return true;
+        return totalSuccess;
     }
 
     GUCEF_ERROR_LOG( CORE::LOGLEVEL_IMPORTANT, "FilePusher: Failed to open REST API on port " + CORE::UInt16ToString( m_httpServer.GetPort() ) );
@@ -935,65 +1154,31 @@ FilePusher::LoadConfig( const CORE::CValueList& appConfig   ,
                         const CORE::CDataNode& globalConfig )
 {GUCEF_TRACE;
 
-    m_transmitMetrics = CORE::StringToBool( appConfig.GetValueAlways( "TransmitMetrics", "true" ) );
-
-    m_restingTimeForNewFilesInSecs = CORE::StringToUInt32( CORE::ResolveVars( appConfig.GetValueAlways( "RestingTimeForNewFilesInSecs", CORE::UInt32ToString( DefaultNewFileRestPeriodInSecs ) ) ) );
-    m_deleteFilesAfterSuccessfullPush = CORE::StringToBool( CORE::ResolveVars( appConfig.GetValueAlways( "DeleteFilesAfterSuccessfullPush", "true" ) ) );
-    
-    m_filePushDestinationUri = CORE::ResolveVars( appConfig.GetValueAlways( "FilePushDestinationUri" ) );
-    if ( m_filePushDestinationUri.IsNULLOrEmpty() )
+    FilePushDestinationSettings appConfigSettings;
+    if ( appConfigSettings.LoadConfig( appConfig ) )
     {
-        GUCEF_ERROR_LOG( CORE::LOGLEVEL_IMPORTANT, "FilePusher: You must specify setting \"FilePushDestinationUri\". It currently has no value" );
-        return false;    
-    }
-    CORE::CString protocolSanityCheckUri = m_filePushDestinationUri.Lowercase();
-    if ( 0 != protocolSanityCheckUri.HasSubstr( "http://", true ) && 0 != protocolSanityCheckUri.HasSubstr( "vfs://", true ) )
-    {
-        GUCEF_ERROR_LOG( CORE::LOGLEVEL_IMPORTANT, "FilePusher: The specified push Uri \"" + m_filePushDestinationUri + "\" does not specify a valid supported protocol" );
-        return false; 
+        FilePushDestination appConfigDestination;
+        if ( appConfigDestination.LoadConfig( appConfigSettings ) )
+            m_filePushDestinations.push_back( appConfigDestination );
     }
 
-    CORE::CValueList::TStringVector settingValues = appConfig.GetValueVectorAlways( "DirToWatch" );
-    CORE::CValueList::TStringVector::iterator n = settingValues.begin();
-    while ( n != settingValues.end() )
+    CORE::CDataNode::TDataNodeVector destinationNodes = globalConfig.SearchForAll( "FilePusher\\Destination", '\\', true, true );
+    CORE::CDataNode::TDataNodeVector::iterator i = destinationNodes.begin();
+    while ( i != destinationNodes.end() )
     {
-        CORE::CString settingValue = CORE::ResolveVars( (*n) );
-        m_dirsToWatch.insert( settingValue );
-        ++n;
-    }
-    if ( m_dirsToWatch.empty() )
-    {
-        GUCEF_ERROR_LOG( CORE::LOGLEVEL_IMPORTANT, "FilePusher: You must specify at least one instance of setting \"DirToWatch\". Currently there are none with a value" );
-        return false;
+        FilePushDestinationSettings destSettings;
+        if ( destSettings.LoadConfig( *(*i) ) )
+        {
+            FilePushDestination destination;
+            if ( destination.LoadConfig( destSettings ) )
+                m_filePushDestinations.push_back( destination );
+        }
+        ++i;
     }
 
-    settingValues = appConfig.GetValueVectorAlways( "FilePatternForNewFilesWithRestPeriod" );
-    n = settingValues.begin();
-    while ( n != settingValues.end() )
+    if ( m_filePushDestinations.empty() )
     {
-        CORE::CString settingValue = CORE::ResolveVars( (*n) );
-        m_fileMatchPatterns[ settingValue ] = PUSHSTYLE_MATCHING_NEW_FILES_WITH_REST_PERIOD;
-        ++n;
-    }
-    settingValues = appConfig.GetValueVectorAlways( "FilePatternForAllFilesWithRestPeriod" );
-    n = settingValues.begin();
-    while ( n != settingValues.end() )
-    {
-        CORE::CString settingValue = CORE::ResolveVars( (*n) );
-        m_fileMatchPatterns[ settingValue ] = PUSHSTYLE_MATCHING_ALL_FILES_WITH_REST_PERIOD;
-        ++n;
-    }
-    settingValues = appConfig.GetValueVectorAlways( "FilePatternForRolledOverFiles" );
-    n = settingValues.begin();
-    while ( n != settingValues.end() )
-    {
-        CORE::CString settingValue = CORE::ResolveVars( (*n) );
-        m_fileMatchPatterns[ settingValue ] = PUSHSTYLE_ROLLED_OVER_FILES;
-        ++n;
-    }
-    if ( m_fileMatchPatterns.empty() )
-    {
-        GUCEF_ERROR_LOG( CORE::LOGLEVEL_IMPORTANT, "FilePusher: You must specify at least one instance of setting \"FilePatternForNewFilesWithRestPeriod\" or \"FilePatternForRolledOverFiles\". Currently there are none with a value" );
+        GUCEF_ERROR_LOG( CORE::LOGLEVEL_IMPORTANT, "FilePusher: Not a single push destination was able to be loaded from config, failing overall config load" );
         return false;
     }
 

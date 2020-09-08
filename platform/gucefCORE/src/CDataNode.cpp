@@ -1320,6 +1320,21 @@ CDataNode::GetAttributeValueOrChildValueByName( const CString& name, const CStri
 /*-------------------------------------------------------------------------*/
 
 CDataNode::TStringVector
+CDataNode::GetAttributeValueOrChildValuesByName( const CString& name ) const
+{GUCEF_TRACE;
+
+    TStringVector results = GetChildrenValuesByName( name );
+    CString attValue = GetAttributeValue( name );
+    if ( !attValue.IsNULLOrEmpty() )
+    {
+        results.push_back( attValue );
+    }
+    return results;
+}
+
+/*-------------------------------------------------------------------------*/
+
+CDataNode::TStringVector
 CDataNode::GetChildrenValuesByName( const CString& name ) const
 {GUCEF_TRACE;
 

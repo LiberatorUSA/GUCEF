@@ -129,25 +129,11 @@ class RestApiFilePusherConfigResource : public COM::CCodecBasedHTTPServerResourc
 
 /*-------------------------------------------------------------------------*/
 
-class FilePusher : public CORE::CObservingNotifier
+class FilePushDestinationSettings
 {
     public:
 
     static const CORE::UInt32 DefaultNewFileRestPeriodInSecs;
-
-    FilePusher( void );
-    virtual ~FilePusher();
-
-    bool Start( void );
-
-    bool LoadConfig( const CORE::CValueList& appConfig   ,
-                     const CORE::CDataNode& globalConfig );
-
-    const CORE::CValueList& GetAppConfig( void ) const;
-
-    const CORE::CDataNode& GetGlobalConfig( void ) const;
-
-    private:
 
     enum EPushStyle
     {
@@ -157,22 +143,56 @@ class FilePusher : public CORE::CObservingNotifier
         PUSHSTYLE_MATCHING_ALL_FILES_WITH_REST_PERIOD
     };
     typedef enum EPushStyle TPushStyle;
-    typedef CORE::CTEventHandlerFunctor< FilePusher > TEventCallback;
     typedef std::map< CORE::CString, TPushStyle > TStringPushStyleMap;
-    typedef std::map< CORE::CString, CORE::CDateTime > TStringTimeMap;
+    
     typedef std::set< CORE::CString > TStringSet;
-    typedef std::map< CORE::CString, CORE::UInt64 > TStringUInt64Map;
     typedef std::map< CORE::UInt32, CORE::CString > TUInt32StringMap;
     typedef std::map< CORE::UInt64, CORE::CString::StringVector > TUInt64StringVectorMap;
-    typedef std::map< CORE::CDateTime, CORE::CString::StringVector > TDateTimeStringVectorMap;
 
+    bool LoadConfig( const CORE::CValueList& config );
+    bool LoadConfig( const CORE::CDataNode& rootNode );
+
+    FilePushDestinationSettings( void );
+    ~FilePushDestinationSettings();
+
+    CORE::CString filePushDestinationUri;
+    TStringPushStyleMap fileMatchPatterns;
+    TStringSet dirsToWatch;
+    CORE::UInt32 restingTimeForNewFilesInSecs;
+    bool deleteFilesAfterSuccessfullPush;
+    bool transmitMetrics;
+};
+
+/*-------------------------------------------------------------------------*/
+
+class FilePushDestination : public CORE::CObservingNotifier
+{
+    public:
+
+    FilePushDestination( void );
+
+    FilePushDestination( const FilePushDestination& src );
+
+    virtual ~FilePushDestination();
+
+    bool Start( void );
+
+    bool LoadConfig( const FilePushDestinationSettings& settings );
+    
+    private:
+
+    typedef CORE::CTEventHandlerFunctor< FilePushDestination > TEventCallback;
+    typedef enum FilePushDestinationSettings::EPushStyle TPushStyle;
+    typedef FilePushDestinationSettings::TStringSet TStringSet;
+    typedef FilePushDestinationSettings::TStringPushStyleMap TStringPushStyleMap;
+    
     void RegisterEventHandlers( void );
 
     void
     OnMetricsTimerCycle( CORE::CNotifier* notifier    ,
                          const CORE::CEvent& eventId  ,
                          CORE::CICloneable* eventData );
-    
+
     void
     OnWatchedLocalDirFileCreation( CORE::CNotifier* notifier    ,
                                    const CORE::CEvent& eventId  ,
@@ -278,28 +298,52 @@ class FilePusher : public CORE::CObservingNotifier
     GetFilePatternsForPushType( TPushStyle pushStyle ) const;
     
     private:
-    
-    CORE::CDirectoryWatcher m_dirWatcher;
+
+    typedef std::map< CORE::CString, CORE::CDateTime > TStringTimeMap;
+    typedef std::map< CORE::CString, CORE::UInt64 > TStringUInt64Map;
+    typedef std::map< CORE::CDateTime, CORE::CString::StringVector > TDateTimeStringVectorMap;
+
     COM::CHTTPClient m_httpClient;
-    COM::CHTTPServer m_httpServer;
-    COM::CDefaultHTTPServerRouter m_httpRouter;
-    CORE::CValueList m_appConfig;
-    CORE::CDataNode m_globalConfig;
-    CORE::CTimer m_metricsTimer;
-    bool m_transmitMetrics;
-    TStringPushStyleMap m_fileMatchPatterns;
+    CORE::CDirectoryWatcher m_dirWatcher;
+    CORE::CTimer m_allFilesDirScanTimer;        
     CORE::CTimer m_newFileRestPeriodTimer;
     TStringTimeMap m_newFileRestQueue;
-    CORE::UInt32 m_restingTimeForNewFilesInSecs;
     TStringUInt64Map m_pushQueue;
     CORE::CTimer m_pushTimer;
-    TStringSet m_dirsToWatch;
-    bool m_deleteFilesAfterSuccessfullPush;
-    CORE::CString m_filePushDestinationUri;
     CORE::CString m_currentFileBeingPushed;
     CORE::CDynamicBuffer m_currentFilePushBuffer;
     CORE::UInt32 m_lastPushDurationInSecs;
-    CORE::CTimer m_allFilesDirScanTimer;
+    CORE::CTimer m_metricsTimer;
+    FilePushDestinationSettings m_settings;
+};
+
+/*-------------------------------------------------------------------------*/
+
+class FilePusher : public CORE::CObservingNotifier
+{
+    public:
+
+    FilePusher( void );
+    virtual ~FilePusher();
+
+    bool Start( void );
+
+    bool LoadConfig( const CORE::CValueList& appConfig   ,
+                     const CORE::CDataNode& globalConfig );
+
+    const CORE::CValueList& GetAppConfig( void ) const;
+
+    const CORE::CDataNode& GetGlobalConfig( void ) const;
+    
+    private:
+
+    typedef std::vector< FilePushDestination > FilePushDestinationVector;
+    
+    COM::CHTTPServer m_httpServer;
+    COM::CDefaultHTTPServerRouter m_httpRouter;
+    CORE::CValueList m_appConfig;
+    CORE::CDataNode m_globalConfig;    
+    FilePushDestinationVector m_filePushDestinations;
 };
 
 /*-------------------------------------------------------------------------*/
