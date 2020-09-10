@@ -110,12 +110,11 @@ class GUCEF_CORE_PUBLIC_CPP CDirectoryWatcher : public CObservingNotifier
 
     CDirectoryWatcher( CPulseGenerator& pulseGenerator );
 
+    CDirectoryWatcher( const CDirectoryWatcher& src );
+
     virtual ~CDirectoryWatcher();
 
-    private:
-
-    CDirectoryWatcher( const CDirectoryWatcher& src );             /**< not implemented */
-    CDirectoryWatcher& operator=( const CDirectoryWatcher& src );  /**< not implemented */
+    CDirectoryWatcher& operator=( const CDirectoryWatcher& src );
 
     private:
     friend class OSSpecificDirectoryWatcher;

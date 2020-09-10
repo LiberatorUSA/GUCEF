@@ -153,7 +153,9 @@ class FilePushDestinationSettings
     bool LoadConfig( const CORE::CDataNode& rootNode );
 
     FilePushDestinationSettings( void );
+    FilePushDestinationSettings( const FilePushDestinationSettings& src );
     ~FilePushDestinationSettings();
+    FilePushDestinationSettings& operator=( const FilePushDestinationSettings& other );
 
     CORE::CString filePushDestinationUri;
     TStringPushStyleMap fileMatchPatterns;
@@ -174,6 +176,8 @@ class FilePushDestination : public CORE::CObservingNotifier
     FilePushDestination( const FilePushDestination& src );
 
     virtual ~FilePushDestination();
+
+    FilePushDestination& operator=( const FilePushDestination& src );
 
     bool Start( void );
 

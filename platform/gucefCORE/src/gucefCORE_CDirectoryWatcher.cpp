@@ -405,6 +405,7 @@ class GUCEF_HIDDEN OSSpecificDirectoryWatcher : public CObserver
     OSSpecificDirectoryWatcher( CDirectoryWatcher* wrapper )
         : m_osPollingTimer()
         , m_wrapper( wrapper )
+        , m_dirsToWatch()
     {GUCEF_TRACE;
 
         RegisterEventHandlers();
@@ -414,9 +415,26 @@ class GUCEF_HIDDEN OSSpecificDirectoryWatcher : public CObserver
                                 CPulseGenerator& pulseGenerator )
         : m_osPollingTimer( pulseGenerator )
         , m_wrapper( wrapper )
+        , m_dirsToWatch()
     {GUCEF_TRACE;
 
         RegisterEventHandlers();
+    }
+
+    OSSpecificDirectoryWatcher( const OSSpecificDirectoryWatcher& src ,
+                                CDirectoryWatcher* wrapper            )
+        : m_osPollingTimer( src.m_osPollingTimer )
+        , m_wrapper( wrapper )
+        , m_dirsToWatch()
+    {GUCEF_TRACE;
+
+        OverlappedIOCallbackObjMap::const_iterator i = src.m_dirsToWatch.begin();
+        while ( i != src.m_dirsToWatch.end() )
+        {
+            const OverlappedIOCallbackObj& watchObj = (*i).second;
+            AddDirToWatch( watchObj.dirPath, watchObj.watchOptions );
+            ++i;
+        }
     }
 
     ~OSSpecificDirectoryWatcher()
@@ -465,6 +483,12 @@ class GUCEF_HIDDEN OSSpecificDirectoryWatcher
     {GUCEF_TRACE;
 
     }
+
+    OSSpecificDirectoryWatcher( const OSSpecificDirectoryWatcher& src ,
+                                CDirectoryWatcher* wrapper            )
+    {GUCEF_TRACE;
+
+    }
 };
 
 /*-------------------------------------------------------------------------*/
@@ -503,6 +527,12 @@ class GUCEF_HIDDEN OSSpecificDirectoryWatcher
 
     OSSpecificDirectoryWatcher( CDirectoryWatcher* wrapper      ,
                                 CPulseGenerator& pulseGenerator )
+    {GUCEF_TRACE;
+
+    }
+
+    OSSpecificDirectoryWatcher( const OSSpecificDirectoryWatcher& src ,
+                                CDirectoryWatcher* wrapper            )
     {GUCEF_TRACE;
 
     }
@@ -616,6 +646,16 @@ CDirectoryWatcher::CDirectoryWatcher( void )
 
 /*-------------------------------------------------------------------------*/
 
+CDirectoryWatcher::CDirectoryWatcher( const CDirectoryWatcher& src )
+    : CObservingNotifier()
+    , m_osSpecificImpl( new OSSpecificDirectoryWatcher( *src.m_osSpecificImpl, this ) )
+{GUCEF_TRACE;
+
+    RegisterEvents();
+}
+
+/*-------------------------------------------------------------------------*/
+
 CDirectoryWatcher::CDirectoryWatcher( CPulseGenerator& pulseGenerator )
     : CObservingNotifier()
     , m_osSpecificImpl( new OSSpecificDirectoryWatcher( this, pulseGenerator ) )
@@ -631,6 +671,22 @@ CDirectoryWatcher::~CDirectoryWatcher()
 
     delete m_osSpecificImpl;
     m_osSpecificImpl = GUCEF_NULL;
+}
+
+/*-------------------------------------------------------------------------*/
+
+CDirectoryWatcher&
+CDirectoryWatcher::operator=( const CDirectoryWatcher& src )
+{GUCEF_TRACE;
+
+    if ( this != &src )
+    {
+        delete m_osSpecificImpl;
+        m_osSpecificImpl = GUCEF_NULL;
+
+        m_osSpecificImpl = new OSSpecificDirectoryWatcher( *src.m_osSpecificImpl, this );
+    }
+    return *this;
 }
 
 /*-------------------------------------------------------------------------//

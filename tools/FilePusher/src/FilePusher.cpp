@@ -158,9 +158,40 @@ FilePushDestinationSettings::FilePushDestinationSettings( void )
 
 /*-------------------------------------------------------------------------*/
 
+FilePushDestinationSettings::FilePushDestinationSettings( const FilePushDestinationSettings& src )
+    : filePushDestinationUri( src.filePushDestinationUri )
+    , fileMatchPatterns( src.fileMatchPatterns )
+    , dirsToWatch( src.dirsToWatch )
+    , restingTimeForNewFilesInSecs( src.restingTimeForNewFilesInSecs )
+    , deleteFilesAfterSuccessfullPush( src.deleteFilesAfterSuccessfullPush )
+    , transmitMetrics( src.transmitMetrics )
+{GUCEF_TRACE;
+
+}
+
+/*-------------------------------------------------------------------------*/
+
 FilePushDestinationSettings::~FilePushDestinationSettings()
 {GUCEF_TRACE;
 
+}
+
+/*-------------------------------------------------------------------------*/
+
+FilePushDestinationSettings&
+FilePushDestinationSettings::operator=( const FilePushDestinationSettings& src )
+{GUCEF_TRACE;
+
+    if ( this != &src )
+    {
+        filePushDestinationUri = src.filePushDestinationUri;
+        fileMatchPatterns = src.fileMatchPatterns;
+        dirsToWatch = src.dirsToWatch;
+        restingTimeForNewFilesInSecs = src.restingTimeForNewFilesInSecs;
+        deleteFilesAfterSuccessfullPush = src.deleteFilesAfterSuccessfullPush;
+        transmitMetrics = src.transmitMetrics;
+    }
+    return *this;
 }
 
 /*-------------------------------------------------------------------------*/
@@ -309,17 +340,18 @@ FilePushDestinationSettings::LoadConfig( const CORE::CDataNode& rootNode )
 
 FilePushDestination::FilePushDestination( void )
     : CORE::CObservingNotifier()
-    , m_dirWatcher()
     , m_httpClient()
-    , m_metricsTimer()
+    , m_dirWatcher()
+    , m_allFilesDirScanTimer()
     , m_newFileRestPeriodTimer()
     , m_newFileRestQueue()
     , m_pushQueue()
     , m_pushTimer() 
-    , m_currentFilePushBuffer()
     , m_currentFileBeingPushed()
-    , m_lastPushDurationInSecs( 0 )
-    , m_allFilesDirScanTimer()
+    , m_currentFilePushBuffer()
+    , m_lastPushDurationInSecs()
+    , m_metricsTimer()
+    , m_settings()
 {GUCEF_TRACE;
 
     RegisterEventHandlers();    
@@ -329,20 +361,44 @@ FilePushDestination::FilePushDestination( void )
 
 FilePushDestination::FilePushDestination( const FilePushDestination& src )
     : CORE::CObservingNotifier( src )
-    , m_dirWatcher()
     , m_httpClient()
-    , m_metricsTimer( src.m_metricsTimer )
+    , m_dirWatcher()
+    , m_allFilesDirScanTimer( src.m_allFilesDirScanTimer )
     , m_newFileRestPeriodTimer( src.m_newFileRestPeriodTimer )
     , m_newFileRestQueue( src.m_newFileRestQueue )
     , m_pushQueue( src.m_pushQueue )
     , m_pushTimer( src.m_pushTimer ) 
-    , m_currentFilePushBuffer( src.m_currentFilePushBuffer )
     , m_currentFileBeingPushed( src.m_currentFileBeingPushed )
+    , m_currentFilePushBuffer( src.m_currentFilePushBuffer )
     , m_lastPushDurationInSecs( src.m_lastPushDurationInSecs )
-    , m_allFilesDirScanTimer( src.m_allFilesDirScanTimer )
+    , m_metricsTimer( src.m_metricsTimer )
+    , m_settings( src.m_settings )
 {GUCEF_TRACE;
 
     RegisterEventHandlers();    
+}
+
+/*-------------------------------------------------------------------------*/
+
+FilePushDestination&
+FilePushDestination::operator=( const FilePushDestination& src )
+{GUCEF_TRACE;
+
+    if ( this != &src )
+    {
+        m_dirWatcher = src.m_dirWatcher;
+        m_allFilesDirScanTimer = src.m_allFilesDirScanTimer;
+        m_newFileRestPeriodTimer = src.m_newFileRestPeriodTimer;
+        m_newFileRestQueue = src.m_newFileRestQueue;
+        m_pushQueue = src.m_pushQueue;
+        m_pushTimer = src.m_pushTimer;
+        m_currentFileBeingPushed = src.m_currentFileBeingPushed;
+        m_currentFilePushBuffer = src.m_currentFilePushBuffer;
+        m_lastPushDurationInSecs = src.m_lastPushDurationInSecs;
+        m_metricsTimer = src.m_metricsTimer;
+        m_settings = src.m_settings;
+    }
+    return *this;
 }
 
 /*-------------------------------------------------------------------------*/
@@ -893,7 +949,9 @@ FilePushDestination::QueueNewFileForPushingAfterUnmodifiedRestPeriod( const CORE
     {
         // Add the file to the list of files to be checked periodically to see if there is no more changes
         // being made to the file aka a resting period.
-        m_newFileRestQueue[ newFilePath ] = GetLatestTimestampForFile( newFilePath );
+        CORE::CDateTime latestChange = GetLatestTimestampForFile( newFilePath );
+        m_newFileRestQueue[ newFilePath ] = latestChange;
+        GUCEF_DEBUG_LOG( CORE::LOGLEVEL_NORMAL, "FilePushDestination: File with latest timestamp \"" + latestChange.ToIso8601DateTimeString( true, true ) + "\" is queued for pushing: \"" + newFilePath + "\"" );
     }
     else
     {
