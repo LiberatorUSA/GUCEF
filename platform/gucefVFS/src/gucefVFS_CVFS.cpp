@@ -944,25 +944,30 @@ CVFS::GetEligableMounts( const CString& location                ,
                 // Check to see if the mount path is the starting sub string of the location
                 if ( location.HasSubstr( mountEntry.mountPath, true ) == 0 )
                 {
-                    TConstMountLink mountLink;
-                    mountLink.remainder = location.CutChars( mountEntry.mountPath.Length(), true );
-
-                    // make sure the remainder does not have a path seperator prefix
-                    if ( mountLink.remainder.Length() > 0 )
+                    // We need to make sure we dont accidentally match a partial directory name with a similarly names path
+                    if ( location.Length() == mountEntry.mountPath.Length() || 
+                       ( ( location[ mountEntry.mountPath.Length() ] == '/' ) || ( location[ mountEntry.mountPath.Length() ] == '\\' ) ) )
                     {
-                        if ( ( mountLink.remainder[ 0 ] == '/' ) ||
-                             ( mountLink.remainder[ 0 ] == '\\' ) )
+                        TConstMountLink mountLink;
+                        mountLink.remainder = location.CutChars( mountEntry.mountPath.Length(), true );
+
+                        // make sure the remainder does not have a path seperator prefix
+                        if ( mountLink.remainder.Length() > 0 )
                         {
-                            // remove the dir seperator prefix
-                            mountLink.remainder = mountLink.remainder.CutChars( 1, true );
+                            if ( ( mountLink.remainder[ 0 ] == '/' ) ||
+                                 ( mountLink.remainder[ 0 ] == '\\' ) )
+                            {
+                                // remove the dir seperator prefix
+                                mountLink.remainder = mountLink.remainder.CutChars( 1, true );
+                            }
                         }
+
+                        mountLink.mountEntry = &mountEntry;
+                        mountLinkVector.push_back( mountLink );
+
+                        GUCEF_DEBUG_LOG( CORE::LOGLEVEL_NORMAL, "VFS: Found eligable mount link using archive of type \"" + 
+                            mountEntry.archive->GetType() + "\" with remainder \"" + mountLink.remainder + "\". mustBeWritable=" + CORE::BoolToString( mustBeWritable ) );
                     }
-
-                    mountLink.mountEntry = &mountEntry;
-                    mountLinkVector.push_back( mountLink );
-
-                    GUCEF_DEBUG_LOG( CORE::LOGLEVEL_NORMAL, "VFS: Found eligable mount link using archive of type \"" + 
-                        mountEntry.archive->GetType() + "\" with remainder \"" + location + "\". mustBeWritable=" + CORE::BoolToString( mustBeWritable ) );
                 }
             }
             else
