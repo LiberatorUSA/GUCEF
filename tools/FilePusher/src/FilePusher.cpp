@@ -898,7 +898,7 @@ FilePushDestination::OnNewFileRestPeriodTimerCycle( CORE::CNotifier* notifier   
             CORE::CDateTime& lastModified = (*i).second;
 
             CORE::CDateTime lastChange = GetLatestTimestampForFile( newFilePath );
-            if ( nowTime.SubtractAndGetTimeDifferenceInMilliseconds( lastChange ) > m_settings.restingTimeForNewFilesInSecs * 1000 )
+            if ( lastChange.GetTimeDifferenceInMillisecondsTowards( nowTime ) > m_settings.restingTimeForNewFilesInSecs * 1000 )
             {
                 // This file has not been modified for at least the required resting period.
                 // As such tis file can now be considered a candidate for pushing.

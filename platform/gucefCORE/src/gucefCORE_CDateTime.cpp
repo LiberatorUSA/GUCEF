@@ -156,7 +156,7 @@ class GUCEF_CORE_PRIVATE_CPP COSDateTimeUtils
         return ::CompareFileTime( &fileTimeA, &fileTimeB );
     }
 
-    static Int64 SubtractBFromAndGetTimeDifferenceInMilliseconds( const CDateTime& datetimeA, const CDateTime& datetimeB )
+    static Int64 GetTimeDifferenceInMillisecondsFromAtowardsB( const CDateTime& datetimeA, const CDateTime& datetimeB )
     {
         ::FILETIME fileTimeA;
         DateTimeToWin32FileTime( datetimeA, fileTimeA );
@@ -323,7 +323,7 @@ class GUCEF_CORE_PRIVATE_CPP COSDateTimeUtils
         return 0;
     }
 
-    static Int64 SubtractBFromAndGetTimeDifferenceInMilliseconds( const CDateTime& datetimeA, const CDateTime& datetimeB )
+    static Int64 GetTimeDifferenceInMillisecondsFromAtowardsB( const CDateTime& datetimeA, const CDateTime& datetimeB )
     {
         // Converting to timespec also converts to UTC by turning it into a UTC based offset
         // This allows for easy subtraction
@@ -616,10 +616,10 @@ CDateTime::ToUTC( void ) const
 /*-------------------------------------------------------------------------*/
 
 Int64
-CDateTime::SubtractAndGetTimeDifferenceInMilliseconds( const CDateTime& other ) const
+CDateTime::GetTimeDifferenceInMillisecondsTowards( const CDateTime& other ) const
 {GUCEF_TRACE;
 
-    return COSDateTimeUtils::SubtractBFromAndGetTimeDifferenceInMilliseconds( *this, other );
+    return COSDateTimeUtils::GetTimeDifferenceInMillisecondsFromAtowardsB( *this, other );
 }
 
 /*-------------------------------------------------------------------------*/

@@ -86,7 +86,7 @@ class GUCEF_CORE_PUBLIC_CPP CDateTime : public CDate ,
 
     CTime GetTime( void ) const;
 
-    Int64 SubtractAndGetTimeDifferenceInMilliseconds( const CDateTime& other ) const;
+    Int64 GetTimeDifferenceInMillisecondsTowards( const CDateTime& other ) const;
 
     CDateTime& operator=( const CDateTime& src );
 
