@@ -215,7 +215,7 @@ OnNodeAttHandler( void* privdata       ,
     {
         if ( 0 != attname )
         {
-            pd->curnode->SetAttribute( attname, attvalue );
+            pd->curnode->SetAttribute( attname, attvalue, atttype );
         }
         else
         if ( 0 != attvalue )

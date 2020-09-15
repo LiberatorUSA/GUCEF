@@ -468,6 +468,19 @@ CDataNode::SetAttribute( const CString& name  ,
 
 /*-------------------------------------------------------------------------*/
 
+bool
+CDataNode::SetAttribute( const char* name  ,
+                         const char* value ,
+                         int typeOfValue   )
+{GUCEF_TRACE;
+
+    auto& att = _atts[ name ];
+    att.value = value;
+    att.type = typeOfValue;
+    return true;                      
+}
+/*-------------------------------------------------------------------------*/
+
 bool 
 CDataNode::SetAttribute( const CString& name ,
                          bool value          )
