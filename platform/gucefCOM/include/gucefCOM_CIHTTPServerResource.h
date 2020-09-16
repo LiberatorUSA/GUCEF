@@ -119,7 +119,8 @@ class GUCEF_COM_PUBLIC_CPP CIHTTPServerResource
      *  Serializes the resource into a stream according to the representation.
      */
     virtual bool Serialize( CORE::CDynamicBuffer& outputBuffer ,
-                            const CString& representation      ) = 0;
+                            const CString& representation      ,
+                            const CString& params              ) = 0;
                     
     /**
      *   Returns a list of all representations the resource can be serialized to.
@@ -165,6 +166,7 @@ class GUCEF_COM_PUBLIC_CPP CIHTTPServerResource
     virtual TCreateState CreateResource( const CString& transactionID                  ,
                                          const CORE::CDynamicBuffer& inputBuffer       ,
                                          const CString& representation                 ,
+                                         const CString& params                         ,
                                          THTTPServerResourcePtr& resourceOutput        ,
                                          TStringVector& supportedRepresentationsOutput ) = 0;
     
@@ -186,6 +188,11 @@ class GUCEF_COM_PUBLIC_CPP CIHTTPServerResource
      *  The cacheability of the resource.
      */
     virtual const CString& GetCacheability( void ) = 0;
+
+    /**
+     *  Signals whether the resource is a collection of other resources
+     */
+    virtual bool IsCollection( void ) const = 0;
 };
 
 /*-------------------------------------------------------------------------//

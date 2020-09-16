@@ -175,7 +175,7 @@ CDefaultHttpServerRequestHandler::PerformReadOperation( const CHttpRequestData& 
 
         // Obtain access to the resource based of the relative Uri
         CIHTTPServerRouter::THTTPServerResourcePtr resource = resourceRouter->ResolveUriToResource( uriAfterBaseAddress );
-        if ( 0 == resource )
+        if ( resource.IsNULL() )
         {
             // Not found
             response.statusCode = 404;
@@ -207,7 +207,8 @@ CDefaultHttpServerRequestHandler::PerformReadOperation( const CHttpRequestData& 
         if ( contentRequested )
         {
             // Set the serialized resource as the return data content
-            if ( !resource->Serialize( response.content, response.contentType ) )
+            CString params = uriAfterBaseAddress.SubstrToChar( '?', 0, true, true );
+            if ( !resource->Serialize( response.content, response.contentType, params ) )
             {
                 // Something went wrong in the handler while serializing the resource
                 response.statusCode = 415;
@@ -278,7 +279,7 @@ CDefaultHttpServerRequestHandler::OnUpdate( const CHttpRequestData& request ,
         CString remainderUri = m_routerController->GetUriAfterTheBaseAddress( *resourceRouter, resourceURI );
         CIHTTPServerRouter::THTTPServerResourcePtr resource = resourceRouter->ResolveUriToResource( remainderUri );
 
-        if ( 0 == resource )
+        if ( resource.IsNULL() )
         {
             // Not found
             response.statusCode = 404;
@@ -352,7 +353,8 @@ CDefaultHttpServerRequestHandler::OnUpdate( const CHttpRequestData& request ,
         response.location = m_routerController->MakeUriAbsolute( *resourceRouter, requestResourceUri, resource->GetURL() );
 
         // Send the serverside representation back to the client in the representation of the update
-        resource->Serialize( response.content, inputRepresentation );
+        CString params = remainderUri.SubstrToChar( '?', 0, true, true );
+        resource->Serialize( response.content, inputRepresentation, params );
         response.contentType = inputRepresentation;
 
         return true;
@@ -404,7 +406,7 @@ CDefaultHttpServerRequestHandler::OnCreate( const CHttpRequestData& request ,
         CString containerUri = m_routerController->GetUriAfterTheBaseAddress( *resourceRouter, resourceURI );
         CIHTTPServerRouter::THTTPServerResourcePtr containerResource = resourceRouter->ResolveUriToResource( containerUri );
 
-        if ( 0 == containerResource )
+        if ( containerResource.IsNULL() )
         {
             // Unable to locate the collection in which to place the entry
             response.statusCode = 404;
@@ -416,9 +418,11 @@ CDefaultHttpServerRequestHandler::OnCreate( const CHttpRequestData& request ,
         TStringVector supportedRepresentations;
         CString createRepresentation = request.resourceRepresentations.front();
 
+        CString params = containerUri.SubstrToChar( '?', 0, true, true );
         CIHTTPServerResource::TCreateState createState = containerResource->CreateResource( request.transactionID    ,
                                                                                             request.content          ,
                                                                                             createRepresentation     ,
+                                                                                            params                   ,
                                                                                             resource                 ,
                                                                                             supportedRepresentations );
 
@@ -457,7 +461,7 @@ CDefaultHttpServerRequestHandler::OnCreate( const CHttpRequestData& request ,
             // as the new resource as part of our reply regardless of whether content was send to the server
 
             // Perform the serialization
-            resource->Serialize( response.content, createRepresentation );
+            resource->Serialize( response.content, createRepresentation, params );
 
             // Make sure the client gets an absolute path to the resource
             // which may be a placeholder

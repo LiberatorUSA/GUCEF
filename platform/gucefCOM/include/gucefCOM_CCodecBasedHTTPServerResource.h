@@ -67,10 +67,12 @@ class GUCEF_COM_PUBLIC_CPP CCodecBasedHTTPServerResource : public CDefaultHTTPSe
      *  Serializes the resource into a stream according to the representation.
      */
     virtual bool Serialize( CORE::CDynamicBuffer& outputBuffer  ,
-                            const CORE::CString& representation ) GUCEF_VIRTUAL_OVERRIDE;
+                            const CORE::CString& representation ,
+                            const CString& params               ) GUCEF_VIRTUAL_OVERRIDE;
 
     virtual bool Serialize( CORE::CDataNode& output             ,
-                            const CORE::CString& representation );
+                            const CORE::CString& representation ,
+                            const CString& params               );
 
     /**
      *  Deserialize the resource from the given stream with given resource representation.
@@ -101,6 +103,7 @@ class GUCEF_COM_PUBLIC_CPP CCodecBasedHTTPServerResource : public CDefaultHTTPSe
     virtual TCreateState CreateResource( const CString& transactionID                  ,
                                          const CORE::CDynamicBuffer& inputBuffer       ,
                                          const CString& representation                 ,
+                                         const CString& params                         ,
                                          THTTPServerResourcePtr& resourceOutput        ,
                                          TStringVector& supportedRepresentationsOutput ) GUCEF_VIRTUAL_OVERRIDE;
 
@@ -117,6 +120,7 @@ class GUCEF_COM_PUBLIC_CPP CCodecBasedHTTPServerResource : public CDefaultHTTPSe
     virtual TCreateState CreateResource( const CString& transactionID                  ,
                                          const CORE::CDataNode& input                  ,
                                          const CString& representation                 ,
+                                         const CString& params                         ,
                                          THTTPServerResourcePtr& resourceOutput        ,
                                          TStringVector& supportedRepresentationsOutput );
 

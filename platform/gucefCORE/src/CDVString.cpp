@@ -757,9 +757,10 @@ CString::Clear( void )
 /*-------------------------------------------------------------------------*/
 
 CString
-CString::SubstrToChar( char searchchar   ,
-                       UInt32 startIndex ,
-                       bool frontToBack  ) const
+CString::SubstrToChar( char searchchar                ,
+                       UInt32 startIndex              ,
+                       bool frontToBack               ,
+                       bool returnEmptyIfCharNotFound ) const
 {GUCEF_TRACE;
 
     if ( startIndex < m_length )
@@ -776,7 +777,10 @@ CString::SubstrToChar( char searchchar   ,
                     return substr;
                 }
             }
-            return CString( *this );
+            if ( returnEmptyIfCharNotFound )
+                return CString();
+            else
+                return CString( *this );
         }
 
         for ( Int32 i=startIndex; i>=0; --i )
@@ -789,7 +793,10 @@ CString::SubstrToChar( char searchchar   ,
                 return substr;
             }
         }
-        return CString( *this );
+        if ( returnEmptyIfCharNotFound )
+            return CString();
+        else
+            return CString( *this );
     }
     return CString();
 }

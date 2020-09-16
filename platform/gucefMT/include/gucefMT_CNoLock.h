@@ -1,6 +1,5 @@
 /*
- *  gucefCOM: GUCEF module providing communication implementations 
- *  for standardized protocols
+ *  gucefMT: GUCEF module providing multithreading solutions
  *
  *  Copyright (C) 1998 - 2020.  Dinand Vanvelzen
  *
@@ -17,8 +16,8 @@
  *  limitations under the License.
  */
 
-#ifndef GUCEF_COM_CCONFIGURABLEHTTPSERVERRESOURCE_H
-#define GUCEF_COM_CCONFIGURABLEHTTPSERVERRESOURCE_H
+#ifndef GUCEF_MT_CNOLOCK_H
+#define GUCEF_MT_CNOLOCK_H
 
 /*-------------------------------------------------------------------------//
 //                                                                         //
@@ -26,15 +25,15 @@
 //                                                                         //
 //-------------------------------------------------------------------------*/
 
-#ifndef GUCEF_CORE_CICONFIGURABLE_H
-#include "CIConfigurable.h"
-#define GUCEF_CORE_CICONFIGURABLE_H
-#endif /* GUCEF_CORE_CICONFIGURABLE_H ? */
+#ifndef GUCEF_MT_MACROS_H
+#include "gucefMT_macros.h"
+#define GUCEF_MT_MACROS_H
+#endif /* GUCEF_MT_MACROS_H ? */
 
-#ifndef GUCEF_COM_CCODECBASEDHTTPSERVERRESOURCE_H
-#include "gucefCOM_CCodecBasedHTTPServerResource.h"
-#define GUCEF_COM_CCODECBASEDHTTPSERVERRESOURCE_H
-#endif /* GUCEF_COM_CCODECBASEDHTTPSERVERRESOURCE_H ? */
+#ifndef GUCEF_MT_CILOCKABLE_H
+#include "gucefMT_CILockable.h"
+#define GUCEF_MT_CILOCKABLE_H
+#endif /* GUCEF_MT_CILOCKABLE_H ? */
 
 /*-------------------------------------------------------------------------//
 //                                                                         //
@@ -43,7 +42,7 @@
 //-------------------------------------------------------------------------*/
 
 namespace GUCEF {
-namespace COM {
+namespace MT {
 
 /*-------------------------------------------------------------------------//
 //                                                                         //
@@ -51,33 +50,33 @@ namespace COM {
 //                                                                         //
 //-------------------------------------------------------------------------*/
 
-class GUCEF_COM_PUBLIC_CPP CConfigurableHttpServerResource : public CCodecBasedHTTPServerResource
-{    
+/**
+ *  Dummy lock implementation that does not actually implement a lock
+ *  Intended for adding/removing lock implementations from templates
+ */
+class GUCEF_MT_PUBLIC_CPP CNoLock : public CILockable
+{
     public:
-    
-    CConfigurableHttpServerResource( CORE::CIConfigurable* configurable = GUCEF_NULL );
-
-    CConfigurableHttpServerResource( const CConfigurableHttpServerResource& src );
-    
-    virtual ~CConfigurableHttpServerResource();
-    
-    CConfigurableHttpServerResource& operator=( const CConfigurableHttpServerResource& src );
-
-    virtual bool Serialize( CORE::CDataNode& output             ,
-                            const CORE::CString& representation ,
-                            const CString& params               ) GUCEF_VIRTUAL_OVERRIDE;
 
     /**
-     *  Deserialize the resource from the given data tree 
-     *  @param isDeltaUpdateOnly Signals whether we are trying to deserialize a full resource in one go or just apply a delta update
+     *  Dummy, does nothing
      */
-    virtual TDeserializeState Deserialize( const CORE::CDataNode& input  ,
-                                           const CString& representation ,
-                                           bool isDeltaUpdateOnly        ) GUCEF_VIRTUAL_OVERRIDE;
+    virtual bool Lock( void ) const GUCEF_VIRTUAL_OVERRIDE;
 
-    protected:
+    /**
+     *  Dummy, does nothing
+     */
+    virtual bool Unlock( void ) const GUCEF_VIRTUAL_OVERRIDE;
 
-    CORE::CIConfigurable* m_configurable;
+    virtual const CILockable* AsLockable( void ) const GUCEF_VIRTUAL_OVERRIDE;
+
+    CNoLock( void );
+    virtual ~CNoLock();
+
+    private:
+
+    CNoLock( const CNoLock& src );             /* Copying other locks doesnt make sense so lets keep it consistant */
+    CNoLock& operator=( const CNoLock& src );  /* Copying other locks doesnt make sense so lets keep it consistant */
 };
 
 /*-------------------------------------------------------------------------//
@@ -86,9 +85,10 @@ class GUCEF_COM_PUBLIC_CPP CConfigurableHttpServerResource : public CCodecBasedH
 //                                                                         //
 //-------------------------------------------------------------------------*/
 
-} /* namespace COM */
-} /* namespace GUCEF */
+}; /* namespace MT */
+}; /* namespace GUCEF */
 
 /*-------------------------------------------------------------------------*/
 
-#endif /* GUCEF_COM_CCONFIGURABLEHTTPSERVERRESOURCE_H ? */
+#endif /* GUCEF_MT_CNOLOCK_H ? */
+

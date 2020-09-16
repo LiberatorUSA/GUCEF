@@ -88,7 +88,8 @@ CConfigurableHttpServerResource::operator=( const CConfigurableHttpServerResourc
 
 bool 
 CConfigurableHttpServerResource::Serialize( CORE::CDataNode& output             ,
-                                            const CORE::CString& representation )
+                                            const CORE::CString& representation ,
+                                            const CString& params               )
 {GUCEF_TRACE;
 
     if ( GUCEF_NULL != m_configurable )

@@ -25,10 +25,15 @@
 //                                                                         //
 //-------------------------------------------------------------------------*/
 
-#ifndef GUCEF_MT_GUCEFMT_MACROS_H
-#include "gucefMT_macros.h"     /* often used gucef macros */
-#define GUCEF_MT_GUCEFMT_MACROS_H
-#endif /* GUCEF_MT_GUCEFMT_MACROS_H ? */
+#ifndef GUCEF_MT_MACROS_H
+#include "gucefMT_macros.h"
+#define GUCEF_MT_MACROS_H
+#endif /* GUCEF_MT_MACROS_H ? */
+
+#ifndef GUCEF_MT_CILOCKABLE_H
+#include "gucefMT_CILockable.h"
+#define GUCEF_MT_CILOCKABLE_H
+#endif /* GUCEF_MT_CILOCKABLE_H ? */
 
 /*-------------------------------------------------------------------------//
 //                                                                         //
@@ -52,7 +57,7 @@ struct SMutexData;
 /**
  *      O/S Mutex wrapper
  */
-class GUCEF_MT_PUBLIC_CPP CMutex
+class GUCEF_MT_PUBLIC_CPP CMutex : public CILockable
 {
     public:
 
@@ -61,24 +66,20 @@ class GUCEF_MT_PUBLIC_CPP CMutex
      *      process will have to wait for the mutex to allow a lock.
      *      The return value indicates whether the lock failed or succeeded.
      */
-    bool Lock( void ) const;
+    virtual bool Lock( void ) const GUCEF_VIRTUAL_OVERRIDE;
 
     /**
-     *      Unlocks the mutex after a call to Lock_Mutex(). Other processes
+     *      Unlocks the mutex after a call to Lock(). Other processes
      *      will have the ability to get a mutex lock after this call.
      *      The return value indicates whether the unlock failed or succeeded.
      */
-    bool Unlock( void ) const;
+    virtual bool Unlock( void ) const GUCEF_VIRTUAL_OVERRIDE;
 
-    /**
-     *      Default constructor, allocates storage for a mutex.
-     */
+    virtual const CILockable* AsLockable( void ) const GUCEF_VIRTUAL_OVERRIDE;
+
     CMutex( void );
 
-    /**
-     *      Destructor, de-allocates storage for a mutex.
-     */
-    ~CMutex();
+    virtual ~CMutex();
 
     private:
     friend class CCondition;

@@ -112,7 +112,6 @@ set( HEADER_FILES
   include/CTStreamableObj.h
   include/CTStreamer.h
   include/CTStringStreamable.h
-  include/CTTSSharedPtr.h
   include/CTThreadSafeExpansion.h
   include/CTimer.h
   include/CTracer.h
@@ -302,7 +301,6 @@ set( SOURCE_FILES
   src/CTSGObserver.cpp
   src/CTSharedPtr.cpp
   src/CTSingleton.cpp
-  src/CTTSSharedPtr.cpp
   src/CTimer.cpp
   src/CTracer.cpp
   src/CTransactionEventControl.cpp

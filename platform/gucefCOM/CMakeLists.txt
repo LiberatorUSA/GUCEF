@@ -44,6 +44,7 @@ set( HEADER_FILES
   include/gucefCOM_CIHTTPServerRouterController.h
   include/gucefCOM_CIHttpServerRequestHandler.h
   include/gucefCOM_CStatsDClient.h
+  include/gucefCOM_CTConfigurableMapHttpServerResource.h
   include/gucefCOM_ETypes.h
   include/gucefCOM_HTTPCode.h
   include/gucefCOM_config.h

@@ -207,13 +207,14 @@ CDefaultHTTPServerResource::TCreateState
 CDefaultHTTPServerResource::CreateResource( const CString& transactionID                  ,
                                             const CORE::CDynamicBuffer& inputBuffer       ,
                                             const CString& representation                 ,
+                                            const CString& params                         ,
                                             THTTPServerResourcePtr& resourceOutput        ,
                                             TStringVector& supportedRepresentationsOutput )
 {GUCEF_TRACE;
 
     // By default we don't allow or implement more complex interaction patterns
     // such as dynamic resources or collections
-    return TCreateState::CREATESTATE_FAILED;
+    return ECreateState::CREATESTATE_FAILED;
 }
 
 /*-------------------------------------------------------------------------*/
@@ -258,7 +259,8 @@ CDefaultHTTPServerResource::GetCacheability( void )
 
 bool 
 CDefaultHTTPServerResource::Serialize( CORE::CDynamicBuffer& outputBuffer ,
-                                       const CString& representation      )
+                                       const CString& representation      ,
+                                       const CString& params              )
 {GUCEF_TRACE;
 
     return false;
@@ -272,7 +274,16 @@ CDefaultHTTPServerResource::Deserialize( const CORE::CDynamicBuffer& inputBuffer
                                          bool isDeltaUpdateOnly                  )
 {GUCEF_TRACE;
 
-    return TDeserializeState::DESERIALIZESTATE_UNABLETOUPDATE;
+    return EDeserializeState::DESERIALIZESTATE_UNABLETOUPDATE;
+}
+
+/*-------------------------------------------------------------------------*/
+
+bool 
+CDefaultHTTPServerResource::IsCollection( void ) const
+{GUCEF_TRACE;
+
+    return false;
 }
 
 /*-------------------------------------------------------------------------//

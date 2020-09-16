@@ -372,6 +372,24 @@ GUCEF_CORE_PUBLIC_CPP bool
 Utf8toUtf16( const std::string& str ,
              std::wstring& wstr     );
 
+/*-------------------------------------------------------------------------*/
+
+inline CString ToString( UInt8 value ) { return UInt8ToString( value ); }
+inline CString ToString( UInt16 value ) { return UInt16ToString( value ); }
+inline CString ToString( UInt32 value ) { return UInt32ToString( value ); }
+inline CString ToString( UInt64 value ) { return UInt64ToString( value ); }
+inline CString ToString( Int8 value ) { return Int8ToString( value ); }
+inline CString ToString( Int16 value ) { return Int16ToString( value ); }
+inline CString ToString( Int32 value ) { return Int32ToString( value ); }
+inline CString ToString( Int64 value ) { return Int64ToString( value ); }
+inline CString ToString( Float32 value ) { return FloatToString( value ); }
+inline CString ToString( Float64 value ) { return DoubleToString( value ); }
+inline CString ToString( bool value ) { return BoolToString( value ); }
+inline CString ToString( const char* value ) { return CString( value ); }
+inline CString ToString( const void* value ) { return PointerToString( value ); }
+inline CString ToString( const TVersion& value ) { return VersionToString( value ); }
+inline CString ToString( const std::wstring& value ) { std::string out; Utf16toUtf8( value, out ); return out; }
+
 /*-------------------------------------------------------------------------//
 //                                                                         //
 //      NAMESPACE                                                          //

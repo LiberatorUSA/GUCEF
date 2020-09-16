@@ -59,6 +59,7 @@ CDataNode::CDataNode( int nodeType )
     , _name()          
     , m_value()
     , m_typeOfValue( MT::DATATYPE_STRING )
+    , m_associatedData( GUCEF_NULL )
 {GUCEF_TRACE;
 }
 
@@ -73,6 +74,7 @@ CDataNode::CDataNode( const CString& name, int nodeType )
     , m_children()     
     , _pnext( NULL )   
     , _pprev( NULL )
+    , m_associatedData( GUCEF_NULL )
 {GUCEF_TRACE;
 }
 
@@ -88,7 +90,11 @@ CDataNode::CDataNode( const CDataNode& src )
     , _pnext( src._pnext )     
     , _pprev( src._pprev )     
     , m_children()
+    , m_associatedData( GUCEF_NULL )
 {GUCEF_TRACE;
+    
+    if ( GUCEF_NULL != src.m_associatedData )
+        m_associatedData = src.m_associatedData->Clone();    
     
     TDataNodeList::const_iterator n = src.m_children.cbegin();
     while ( n != src.m_children.cend() )
@@ -103,6 +109,9 @@ CDataNode::CDataNode( const CDataNode& src )
 CDataNode::~CDataNode()
 {GUCEF_TRACE;
         
+    delete m_associatedData;
+    m_associatedData = GUCEF_NULL; 
+    
     Detach();             
     DelSubTree();
 }
@@ -183,6 +192,7 @@ CDataNode::operator=( const CDataNode& src )
         m_typeOfValue = src.m_typeOfValue;
         _atts = src._atts;
 
+        SetAssociatedData( src.m_associatedData );
     }               
     return *this;
 }
@@ -1376,6 +1386,28 @@ CDataNode::Delete( void )
 
     Detach();
     delete this;             
+}
+
+/*-------------------------------------------------------------------------*/
+
+CICloneable* 
+CDataNode::GetAssociatedData( void ) const
+{GUCEF_TRACE;
+
+    return m_associatedData;
+}
+
+/*-------------------------------------------------------------------------*/
+
+void 
+CDataNode::SetAssociatedData( CICloneable* associatedData )
+{GUCEF_TRACE;
+    
+    delete m_associatedData;
+    m_associatedData = GUCEF_NULL;
+    
+    if ( GUCEF_NULL != associatedData )    
+        m_associatedData = associatedData->Clone();
 }
 
 /*-------------------------------------------------------------------------*/

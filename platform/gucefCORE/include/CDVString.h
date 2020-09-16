@@ -226,9 +226,10 @@ class GUCEF_CORE_PUBLIC_CPP CString
     CString SubstrToChar( char searchchar         ,
                           bool frontToBack = true ) const;
 
-    CString SubstrToChar( char searchchar         ,
-                          UInt32 startIndex       ,
-                          bool frontToBack = true ) const;
+    CString SubstrToChar( char searchchar                        ,
+                          UInt32 startIndex                      ,
+                          bool frontToBack = true                ,
+                          bool returnEmptyIfCharNotFound = false ) const;
 
     CString SubstrToSubstr( const CString& searchstr ,
                             bool frontToBack = true  ) const;

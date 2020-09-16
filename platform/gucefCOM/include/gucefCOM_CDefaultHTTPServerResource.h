@@ -110,6 +110,7 @@ class GUCEF_COM_PUBLIC_CPP CDefaultHTTPServerResource : public CIHTTPServerResou
     virtual TCreateState CreateResource( const CString& transactionID                  ,
                                          const CORE::CDynamicBuffer& inputBuffer       ,
                                          const CString& representation                 ,
+                                         const CString& params                         ,
                                          THTTPServerResourcePtr& resourceOutput        ,
                                          TStringVector& supportedRepresentationsOutput ) GUCEF_VIRTUAL_OVERRIDE;
     
@@ -124,7 +125,8 @@ class GUCEF_COM_PUBLIC_CPP CDefaultHTTPServerResource : public CIHTTPServerResou
      *  Serializes the resource into a stream according to the representation.
      */
     virtual bool Serialize( CORE::CDynamicBuffer& outputBuffer  ,
-                            const CORE::CString& representation ) GUCEF_VIRTUAL_OVERRIDE;
+                            const CORE::CString& representation ,
+                            const CString& params               ) GUCEF_VIRTUAL_OVERRIDE;
 
     /**
      *  Deserialize the resource from the given stream with given resource representation.
@@ -145,6 +147,12 @@ class GUCEF_COM_PUBLIC_CPP CDefaultHTTPServerResource : public CIHTTPServerResou
      *  The cacheability of the resource.
      */
     virtual const CString& GetCacheability( void ) GUCEF_VIRTUAL_OVERRIDE;
+
+    /**
+     *  Signals whether the resource is a collection of other resources
+     *  Default implementation is hardcoded to 'false'
+     */
+    virtual bool IsCollection( void ) const GUCEF_VIRTUAL_OVERRIDE;
 
     protected:
 

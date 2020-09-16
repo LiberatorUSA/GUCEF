@@ -20,6 +20,7 @@ set( HEADER_FILES
   include/gucefMT_CICloneable.h
   include/gucefMT_CILockable.h
   include/gucefMT_CMutex.h
+  include/gucefMT_CNoLock.h
   include/gucefMT_CObjectScopeLock.h
   include/gucefMT_CReadWriteLock.h
   include/gucefMT_CScopeMutex.h
@@ -43,6 +44,7 @@ set( SOURCE_FILES
   src/gucefMT_CICloneable.cpp
   src/gucefMT_CILockable.cpp
   src/gucefMT_CMutex.cpp
+  src/gucefMT_CNoLock.cpp
   src/gucefMT_CObjectScopeLock.cpp
   src/gucefMT_CReadWriteLock.cpp
   src/gucefMT_CScopeMutex.cpp

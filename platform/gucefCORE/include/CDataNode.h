@@ -36,6 +36,11 @@
 #define GUCEF_CORE_CDVSTRING_H
 #endif /* GUCEF_CORE_CDVSTRING_H ? */
 
+#ifndef GUCEF_CORE_CICLONEABLE_H
+#include "CICloneable.h"
+#define GUCEF_CORE_CICLONEABLE_H
+#endif /* GUCEF_CORE_CICLONEABLE_H ? */
+
 /*-------------------------------------------------------------------------//
 //                                                                         //
 //      NAMESPACE                                                          //
@@ -419,6 +424,18 @@ class GUCEF_CORE_PUBLIC_CPP CDataNode
      */
     void Delete( void );
 
+    /**
+     *  Provides access to the associated data if any
+     *  Note that the associated is owned as a clone by the data node 
+     */
+    CICloneable* GetAssociatedData( void ) const;
+
+    /**
+     *  Sets the associated data if any
+     *  Note that the associated given is clones and the clone is subsequently owned by the data node 
+     */
+    void SetAssociatedData( CICloneable* associatedData );
+
     CDataNode* GetParent( void ) const;
 
     CDataNode* GetFirstChild( void ) const;
@@ -533,6 +550,7 @@ class GUCEF_CORE_PUBLIC_CPP CDataNode
     TDataNodeList m_children; /**< child nodes */
     CDataNode* _pnext;    /**< next sibling node */
     CDataNode* _pprev;    /**< previous sibling node */
+    CICloneable* m_associatedData; /**< externally managed data */
 };
 
 /*-------------------------------------------------------------------------//
