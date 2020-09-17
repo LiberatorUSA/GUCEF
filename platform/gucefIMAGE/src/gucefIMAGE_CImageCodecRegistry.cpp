@@ -46,7 +46,7 @@ namespace IMAGE {
 //-------------------------------------------------------------------------*/
 
 CImageCodecRegistry::CImageCodecRegistry( void )
-    : CORE::CTONRegistry< CIImageCodec >()
+    : CORE::CTONRegistry< CIImageCodec, MT::CMutex >()
 {GUCEF_TRACE;
 
 }

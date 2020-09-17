@@ -82,8 +82,8 @@ namespace CORE {
  *  Note that this shared pointer implementation is by no means threadsafe and should
  *  never be used across thread-boundries.
  */
-template< typename T >
-class CTSharedPtr : public CTBasicSharedPtr< T >
+template< typename T, class LockType >
+class CTSharedPtr : public CTBasicSharedPtr< T, LockType >
 {
     public:
 
@@ -110,15 +110,15 @@ class CTSharedPtr : public CTBasicSharedPtr< T >
      *  a CTBasicSharedPtr to a function which requires a
      *  CTSharedPtr thanks to an implicit cast using this constructor.
      */
-    explicit CTSharedPtr( const CTBasicSharedPtr< T >& src );
+    explicit CTSharedPtr( const CTBasicSharedPtr< T, LockType >& src );
 
     // inlined copy constructor, has to be inlined in class definition for now due to VC6 limitations
     template< class Derived >
-    CTSharedPtr( const CTSharedPtr< Derived >& src )
-        : CTBasicSharedPtr< T >()
+    CTSharedPtr( const CTSharedPtr< Derived, LockType >& src )
+        : CTBasicSharedPtr< T, LockType >()
     {GUCEF_TRACE;
 
-        CTBasicSharedPtr< T >::InitializeUsingInheritance( src );
+        CTBasicSharedPtr< T, LockType >::InitializeUsingInheritance( src );
     }
 
     CTSharedPtr( const CTSharedPtr& src );
@@ -127,12 +127,12 @@ class CTSharedPtr : public CTBasicSharedPtr< T >
 
     // implemented inline as a workaround for VC6 issues
     template< class Derived >
-    CTSharedPtr& operator=( const CTSharedPtr< Derived >& src )
+    CTSharedPtr& operator=( const CTSharedPtr< Derived, LockType >& src )
     {GUCEF_TRACE;
 
         if ( &reinterpret_cast< const CTSharedPtr& >( src ) != this )
         {
-            CTBasicSharedPtr< T >::operator=( static_cast< const CTBasicSharedPtr< Derived >& >( src ) );
+            CTBasicSharedPtr< T, MT >::operator=( static_cast< const CTBasicSharedPtr< Derived, LockType >& >( src ) );
         }
         return *this;
     }
@@ -190,11 +190,17 @@ class CTSharedPtr : public CTBasicSharedPtr< T >
     // implemented inline as a workaround for VC6 issues
     // The dummy param is a VC6 hack for templated member functions
     template< class Derived >
-    CTSharedPtr< Derived >
+    CTSharedPtr< Derived, LockType >
     StaticCast( bool dummy = true )
     {
-        return CTSharedPtr< Derived >( *this );
+        return CTSharedPtr< Derived, LockType >( *this );
     }
+
+    /**
+     *  Creates a clone of the shared pointer
+     *  Note that this increases the reference count like any copy would
+     */
+    virtual CICloneable* Clone( void ) const GUCEF_VIRTUAL_OVERRIDE;
 };
 
 /*-------------------------------------------------------------------------//
@@ -203,9 +209,9 @@ class CTSharedPtr : public CTBasicSharedPtr< T >
 //                                                                         //
 //-------------------------------------------------------------------------*/
 
-template< typename T >
-CTSharedPtr< T >::CTSharedPtr( void )
-        : CTBasicSharedPtr< T >()
+template< typename T, class LockType >
+CTSharedPtr< T, LockType >::CTSharedPtr( void )
+        : CTBasicSharedPtr< T, LockType >()
 {GUCEF_TRACE;
     // Note that if this constructor is used an assignment is required at
     // a later time to initialize the shared pointer
@@ -213,9 +219,9 @@ CTSharedPtr< T >::CTSharedPtr( void )
 
 /*-------------------------------------------------------------------------*/
 
-template< typename T >
-CTSharedPtr< T >::CTSharedPtr( const int NULLvalue )
-    : CTBasicSharedPtr< T >()
+template< typename T, class LockType >
+CTSharedPtr< T, LockType >::CTSharedPtr( const int NULLvalue )
+    : CTBasicSharedPtr< T, LockType >()
 {GUCEF_TRACE;
 
     // Note that if this constructor is used an assignment is required at
@@ -225,58 +231,58 @@ CTSharedPtr< T >::CTSharedPtr( const int NULLvalue )
 
 /*-------------------------------------------------------------------------*/
 
-template< typename T >
-CTSharedPtr< T >::CTSharedPtr( T* ptr                                                      ,
-                               CTDynamicDestructorBase< T >* objectDestructor /* = NULL */ )
-        : CTBasicSharedPtr< T >()
+template< typename T, class LockType >
+CTSharedPtr< T, LockType >::CTSharedPtr( T* ptr                                                      ,
+                                         CTDynamicDestructorBase< T >* objectDestructor /* = NULL */ )
+    : CTBasicSharedPtr< T, LockType >()
 {GUCEF_TRACE;
 
     if ( NULL != objectDestructor )
     {
-        CTBasicSharedPtr< T >::Initialize( ptr, objectDestructor );
+        CTBasicSharedPtr< T, LockType >::Initialize( ptr, objectDestructor );
     }
     else
     {
-        CTBasicSharedPtr< T >::Initialize( ptr, new CTDynamicDestructor< T >( true ) );
+        CTBasicSharedPtr< T, LockType >::Initialize( ptr, new CTDynamicDestructor< T >( true ) );
     }
 }
 
 /*-------------------------------------------------------------------------*/
 
-template< typename T >
-CTSharedPtr< T >::CTSharedPtr( const CTSharedPtr< T >& src )
-        : CTBasicSharedPtr< T >( src )
+template< typename T, class LockType >
+CTSharedPtr< T, LockType >::CTSharedPtr( const CTSharedPtr< T, LockType >& src )
+    : CTBasicSharedPtr< T, LockType >( src )
 {GUCEF_TRACE;
 
 }
 
 /*-------------------------------------------------------------------------*/
 
-template< typename T >
-CTSharedPtr< T >::CTSharedPtr( const CTBasicSharedPtr< T >& src )
-    : CTBasicSharedPtr< T >( src )
+template< typename T, class LockType >
+CTSharedPtr< T, LockType >::CTSharedPtr( const CTBasicSharedPtr< T, LockType >& src )
+    : CTBasicSharedPtr< T, LockType >( src )
 {GUCEF_TRACE;
 
 }
 
 /*-------------------------------------------------------------------------*/
 
-template< typename T >
-CTSharedPtr< T >::~CTSharedPtr()
+template< typename T, class LockType >
+CTSharedPtr< T, LockType >::~CTSharedPtr()
 {GUCEF_TRACE;
 
 }
 
 /*-------------------------------------------------------------------------*/
 
-template< typename T >
-CTSharedPtr< T >&
-CTSharedPtr< T >::operator=( const CTSharedPtr< T >& src )
+template< typename T, class LockType >
+CTSharedPtr< T, LockType >&
+CTSharedPtr< T, LockType >::operator=( const CTSharedPtr< T, LockType >& src )
 {GUCEF_TRACE;
 
     if ( this != &src )
     {
-        CTBasicSharedPtr< T >::operator=( src );
+        CTBasicSharedPtr< T, LockType >::operator=( src );
     }
     return *this;
 }
@@ -285,14 +291,14 @@ CTSharedPtr< T >::operator=( const CTSharedPtr< T >& src )
 /*
 template< class Derived >
 CTSharedPtr< T >&
-CTSharedPtr< T >::operator=( const CTSharedPtr< Derived >& src )
+CTSharedPtr< T, LockType >::operator=( const CTSharedPtr< Derived, LockType >& src )
 {GUCEF_TRACE;
 
     if ( this != &src )
     {
-        CTSharedPtr< T > basePtr( static_cast );
+        CTSharedPtr< T, LockType > basePtr( static_cast );
 
-        CTBasicSharedPtr< T >::operator=( src );
+        CTBasicSharedPtr< T, LockType >::operator=( src );
     }
     return *this;
 }
@@ -300,52 +306,52 @@ CTSharedPtr< T >::operator=( const CTSharedPtr< Derived >& src )
 
 /*-------------------------------------------------------------------------*/
 
-template< typename T >
+template< typename T, class LockType >
 inline bool
-CTSharedPtr< T >::operator<( const CTSharedPtr< T >& other ) const
+CTSharedPtr< T, LockType >::operator<( const CTSharedPtr< T, LockType >& other ) const
 {GUCEF_TRACE;
 
-    return static_cast< const CTBasicSharedPtr< T >& >( *this ) < static_cast< const CTBasicSharedPtr< T >& >( other );
+    return static_cast< const CTBasicSharedPtr< T, LockType >& >( *this ) < static_cast< const CTBasicSharedPtr< T, LockType >& >( other );
 }
 
 /*-------------------------------------------------------------------------*/
 
-template< typename T >
+template< typename T, class LockType >
 inline bool
-CTSharedPtr< T >::operator==( const CTSharedPtr< T >& other ) const
+CTSharedPtr< T, LockType >::operator==( const CTSharedPtr< T, LockType >& other ) const
 {GUCEF_TRACE;
 
-    return static_cast< const CTBasicSharedPtr< T >& >( *this ) == static_cast< const CTBasicSharedPtr< T >& >( other );
+    return static_cast< const CTBasicSharedPtr< T, LockType >& >( *this ) == static_cast< const CTBasicSharedPtr< T, LockType >& >( other );
 }
 
 /*-------------------------------------------------------------------------*/
 
-template< typename T >
+template< typename T, class LockType >
 inline bool
-CTSharedPtr< T >::operator==( const void* other ) const
+CTSharedPtr< T, LockType >::operator==( const void* other ) const
 {GUCEF_TRACE;
 
-    return static_cast< const CTBasicSharedPtr< T >& >( *this ) == other;
+    return static_cast< const CTBasicSharedPtr< T, LockType >& >( *this ) == other;
 }
 
 /*-------------------------------------------------------------------------*/
 
-template< typename T >
+template< typename T, class LockType >
 inline bool
-CTSharedPtr< T >::operator==( int other ) const
+CTSharedPtr< T, LockType >::operator==( int other ) const
 {GUCEF_TRACE;
 
-    return static_cast< const CTBasicSharedPtr< T >& >( *this ) == other;
+    return static_cast< const CTBasicSharedPtr< T, LockType >& >( *this ) == other;
 }
 
 /*-------------------------------------------------------------------------*/
 
-template< typename T >
+template< typename T, class LockType >
 inline bool
-operator==( const void* ptr, const CTSharedPtr< T >& other )
+operator==( const void* ptr, const CTSharedPtr< T, LockType >& other )
 {GUCEF_TRACE;
 
-    return static_cast< const CTBasicSharedPtr< T >& >( other ) == ptr;
+    return static_cast< const CTBasicSharedPtr< T, LockType >& >( other ) == ptr;
 }
 
 /*-------------------------------------------------------------------------*/
@@ -353,49 +359,49 @@ operator==( const void* ptr, const CTSharedPtr< T >& other )
 /*
  *  workaround for comparison to NULL, since NULL is a integer by default
  */
-template< typename T >
+template< typename T, class LockType >
 inline bool
-operator==( const int ptr, const CTSharedPtr< T >& other )
+operator==( const int ptr, const CTSharedPtr< T, LockType >& other )
 {GUCEF_TRACE;
 
-    return static_cast< const CTBasicSharedPtr< T >& >( other ) == ptr;
+    return static_cast< const CTBasicSharedPtr< T, LockType >& >( other ) == ptr;
 }
 
 /*-------------------------------------------------------------------------*/
 
-template< typename T >
+template< typename T, class LockType >
 inline bool
-CTSharedPtr< T >::operator!=( const CTSharedPtr< T >& other ) const
+CTSharedPtr< T, LockType >::operator!=( const CTSharedPtr< T, LockType >& other ) const
 {GUCEF_TRACE;
 
-    return static_cast< const CTBasicSharedPtr< T >& >( *this ) != static_cast< const CTBasicSharedPtr< T >& >( other );
+    return static_cast< const CTBasicSharedPtr< T, LockType >& >( *this ) != static_cast< const CTBasicSharedPtr< T, LockType >& >( other );
 }
 
 /*-------------------------------------------------------------------------*/
 
-template< typename T >
+template< typename T, class LockType >
 inline bool
-CTSharedPtr< T >::operator!=( int other ) const
+CTSharedPtr< T, LockType >::operator!=( int other ) const
 {GUCEF_TRACE;
 
-    return static_cast< const CTBasicSharedPtr< T >& >( *this ) != other;
+    return static_cast< const CTBasicSharedPtr< T, LockType >& >( *this ) != other;
 }
 
 /*-------------------------------------------------------------------------*/
 
-template< typename T >
+template< typename T, class LockType >
 inline bool
-CTSharedPtr< T >::operator!=( const void* other ) const
+CTSharedPtr< T, LockType >::operator!=( const void* other ) const
 {GUCEF_TRACE;
 
-    return static_cast< const CTBasicSharedPtr< T >& >( *this ) != other;
+    return static_cast< const CTBasicSharedPtr< T, LockType >& >( *this ) != other;
 }
 
 /*-------------------------------------------------------------------------*/
 
-template< typename T >
+template< typename T, class LockType >
 inline bool
-operator!=( const void* ptr, const CTSharedPtr< T >& other )
+operator!=( const void* ptr, const CTSharedPtr< T, LockType >& other )
 {GUCEF_TRACE;
 
     return other != ptr;
@@ -406,9 +412,9 @@ operator!=( const void* ptr, const CTSharedPtr< T >& other )
 /*
  *  workaround for comparison to NULL, since NULL is a integer by default
  */
-template< typename T >
+template< typename T, class LockType >
 inline bool
-operator!=( int intPtr, const CTSharedPtr< T >& other )
+operator!=( int intPtr, const CTSharedPtr< T, LockType >& other )
 {GUCEF_TRACE;
 
     return other != intPtr;
@@ -419,61 +425,71 @@ operator!=( int intPtr, const CTSharedPtr< T >& other )
 /*
  *  workaround for comparison to NULL, since NULL is a integer by default
  */
-template< typename T >
+template< typename T, class LockType >
 inline bool
-operator!=( const long ptr, const CTSharedPtr< T >& other )
+operator!=( const long ptr, const CTSharedPtr< T, LockType >& other )
 {GUCEF_TRACE;
 
-    return ptr != static_cast< const CTBasicSharedPtr< T >& >( other);
+    return ptr != static_cast< const CTBasicSharedPtr< T, LockType >& >( other);
 }
 
 /*-------------------------------------------------------------------------*/
 
-template< typename T >
+template< typename T, class LockType >
 inline T&
-CTSharedPtr< T >::operator*( void )
+CTSharedPtr< T, LockType >::operator*( void )
 {GUCEF_TRACE;
 
-    return static_cast< CTBasicSharedPtr< T >* >( this )->operator*();
+    return static_cast< CTBasicSharedPtr< T, LockType >* >( this )->operator*();
 }
 
 /*-------------------------------------------------------------------------*/
 
-template< typename T >
+template< typename T, class LockType >
 inline const T&
-CTSharedPtr< T >::operator*( void ) const
+CTSharedPtr< T, LockType >::operator*( void ) const
 {GUCEF_TRACE;
 
-    return static_cast< const CTBasicSharedPtr< T >* >( this )->operator*();
+    return static_cast< const CTBasicSharedPtr< T, LockType >* >( this )->operator*();
 }
 
 /*-------------------------------------------------------------------------*/
 
-template< typename T >
+template< typename T, class LockType >
 inline T*
-CTSharedPtr< T >::operator->( void )
+CTSharedPtr< T, LockType >::operator->( void )
 {GUCEF_TRACE;
 
-    return static_cast< CTBasicSharedPtr< T >* >( this )->operator->();
+    return static_cast< CTBasicSharedPtr< T, LockType >* >( this )->operator->();
 }
 
 /*-------------------------------------------------------------------------*/
 
-template< typename T >
+template< typename T, class LockType >
 inline const T*
-CTSharedPtr< T >::operator->( void ) const
+CTSharedPtr< T, LockType >::operator->( void ) const
 {GUCEF_TRACE;
 
-    return static_cast< const CTBasicSharedPtr< T >* >( this )->operator->();
+    return static_cast< const CTBasicSharedPtr< T, LockType >* >( this )->operator->();
 }
 
 /*-------------------------------------------------------------------------*/
 
-template< typename T >
+template< typename T, class LockType >
 inline
-CTSharedPtr< T >::operator bool() const
+CTSharedPtr< T, LockType >::operator bool() const
 {
     return (*this) != (const void*)0;
+}
+
+/*-------------------------------------------------------------------------*/
+
+template< typename T, class LockType >
+CICloneable*
+CTSharedPtr< T, LockType >::Clone( void ) const
+{GUCEF_TRACE;
+
+    return new CTSharedPtr< T, LockType >( *this );
 }
 
 /*-------------------------------------------------------------------------//
@@ -485,27 +501,6 @@ CTSharedPtr< T >::operator bool() const
 }; /* namespace CORE */
 }; /* namespace GUCEF */
 
-/*-------------------------------------------------------------------------//
-//                                                                         //
-//      Info & Changes                                                     //
-//                                                                         //
-//-------------------------------------------------------------------------//
-
-- 24-01-2007 :
-        - Dinand: Fixed and cleaned up the object destruction mechanics
-          Instead of using a local object to delete the shared object we now use
-          a self-deleting destructor delegator. This allows us to copy the destructor
-          pointer safely in all scenario's since it's guaranteed to be kept alive as
-          long as the reference count does not hit zero. This could actually cause
-          nasty crashes in the previous implementation because the local destructor
-          mechanism broke down when a CTSharedPtr got converted into a CTBasicSharedPtr
-          which could result in an invalid destructor object being invoked.
-          This fix has the desirable side-effect of simplifying the code.
-- 14-12-2005 :
-        - Dinand: Moved code into this new base class from CTSharedPtr to allow
-          some level of shared pointer usage without actually requiring the type
-          to be defined. ie you can create a shared pointer with a forward declaration.
-
------------------------------------------------------------------------------*/
+/*-------------------------------------------------------------------------*/
 
 #endif /* GUCEF_CORE_CTSHAREDPTR_H ? */

@@ -102,7 +102,7 @@ class CPluginImageCodecItem : public CIImageCodec
 
 /*-------------------------------------------------------------------------*/
 
-typedef CORE::CTSharedPtr< CPluginImageCodecItem > TPluginImageCodecItemPtr;
+typedef CORE::CTSharedPtr< CPluginImageCodecItem, MT::CMutex > TPluginImageCodecItemPtr;
 
 /*-------------------------------------------------------------------------//
 //                                                                         //

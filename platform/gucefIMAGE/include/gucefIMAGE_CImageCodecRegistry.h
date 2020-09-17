@@ -55,14 +55,14 @@ class CImageGlobal;
 
 /*-------------------------------------------------------------------------*/
 
-class GUCEF_IMAGE_EXPORT_CPP CImageCodecRegistry : public CORE::CTONRegistry< CIImageCodec >
+class GUCEF_IMAGE_EXPORT_CPP CImageCodecRegistry : public CORE::CTONRegistry< CIImageCodec, MT::CMutex >
 {
     public:
 
-    typedef CORE::CTONRegistry< CIImageCodec > TCodecFamilyRegistry;
-    typedef CORE::CTSharedPtr< TCodecFamilyRegistry > TImageCodecFamilyRegistryPtr;
-    typedef CORE::CTONRegistry< CIImageCodec >::TStringList TStringList;
-    typedef CORE::CTONRegistry< CIImageCodec >::TRegisteredObjPtr TImageCodecPtr;
+    typedef CORE::CTONRegistry< CIImageCodec, MT::CMutex > TCodecFamilyRegistry;
+    typedef CORE::CTSharedPtr< TCodecFamilyRegistry, MT::CMutex > TImageCodecFamilyRegistryPtr;
+    typedef CORE::CTONRegistry< CIImageCodec, MT::CMutex >::TStringList TStringList;
+    typedef CORE::CTONRegistry< CIImageCodec, MT::CMutex >::TRegisteredObjPtr TImageCodecPtr;
 
     private:
     friend class CImageGlobal;

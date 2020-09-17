@@ -103,7 +103,7 @@ class GUCEF_IMAGE_EXPORT_CPP CImageCodecPlugin : public CORE::CStdCodecPlugin
 
 /*-------------------------------------------------------------------------*/
 
-typedef CORE::CTSharedPtr< CImageCodecPlugin > TImageCodecPluginPtr;
+typedef CORE::CTSharedPtr< CImageCodecPlugin, MT::CMutex > TImageCodecPluginPtr;
 
 /*-------------------------------------------------------------------------//
 //                                                                         //

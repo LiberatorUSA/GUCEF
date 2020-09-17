@@ -96,7 +96,7 @@ class GUIDRIVEROGRE_PUBLIC_CPP COgreWindowManagerImp : public GUI::CWindowManage
 
 /*-------------------------------------------------------------------------*/
 
-typedef CORE::CTSharedPtr< COgreWindowManagerImp > TOgreWindowManagerImpPtr;
+typedef CORE::CTSharedPtr< COgreWindowManagerImp, MT::CMutex > TOgreWindowManagerImpPtr;
 
 /*-------------------------------------------------------------------------//
 //                                                                         //

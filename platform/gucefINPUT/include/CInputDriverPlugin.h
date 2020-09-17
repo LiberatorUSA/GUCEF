@@ -192,7 +192,7 @@ class GUCEF_INPUT_PUBLIC_CPP CInputDriverPlugin : public CInputDriver   ,
 
 /*-------------------------------------------------------------------------*/
 
-typedef CORE::CTSharedPtr< CInputDriverPlugin > TInputDriverPluginPtr;
+typedef CORE::CTSharedPtr< CInputDriverPlugin, MT::CMutex > TInputDriverPluginPtr;
 
 /*-------------------------------------------------------------------------//
 //                                                                         //

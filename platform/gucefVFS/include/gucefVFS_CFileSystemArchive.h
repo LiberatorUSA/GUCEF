@@ -26,6 +26,11 @@
 //                                                                         //
 //-------------------------------------------------------------------------*/
 
+#ifndef GUCEF_MT_CMUTEX_H
+#include "gucefMT_CMutex.h"
+#define GUCEF_MT_CMUTEX_H
+#endif /* GUCEF_MT_CMUTEX_H ? */
+
 #ifndef GUCEF_CORE_CTFACTORY_H
 #include "CTFactory.h"
 #define GUCEF_CORE_CTFACTORY_H
@@ -123,8 +128,8 @@ class GUCEF_VFS_PUBLIC_CPP CFileSystemArchive : public CIArchive
                               const bool overwrite = false );
 
     private:
-    typedef CORE::CTSharedPtr< CORE::CDynamicBuffer > TDynamicBufferPtr;
-    typedef std::map< CString, TDynamicBufferPtr >    TFileMemCache;
+    typedef CORE::CTSharedPtr< CORE::CDynamicBuffer, MT::CMutex > TDynamicBufferPtr;
+    typedef std::map< CString, TDynamicBufferPtr >                TFileMemCache;
     
     TFileMemCache m_diskCacheList;
     CString m_rootDir;

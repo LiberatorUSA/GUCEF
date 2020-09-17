@@ -38,15 +38,20 @@
 #define GUCEF_MT_COBJECTSCOPELOCK_H
 #endif /* GUCEF_MT_COBJECTSCOPELOCK_H ? */
 
-#ifndef GUCEF_CORE_CTDYNAMICDESTRUCTORBASE_H
-#include "CTDynamicDestructorBase.h"
-#define GUCEF_CORE_CTDYNAMICDESTRUCTORBASE_H
-#endif /* GUCEF_CORE_CTDYNAMICDESTRUCTORBASE_H ? */
-
 #ifndef GUCEF_CORE_MACROS_H
 #include "gucefCORE_macros.h"       /* module macro's */
 #define GUCEF_CORE_MACROS_H
 #endif /* GUCEF_CORE_MACROS_H ? */
+
+#ifndef GUCEF_CORE_CICLONEABLE_H
+#include "CICloneable.h"
+#define GUCEF_CORE_CICLONEABLE_H
+#endif /* GUCEF_CORE_CICLONEABLE_H ? */
+
+#ifndef GUCEF_CORE_CTDYNAMICDESTRUCTORBASE_H
+#include "CTDynamicDestructorBase.h"
+#define GUCEF_CORE_CTDYNAMICDESTRUCTORBASE_H
+#endif /* GUCEF_CORE_CTDYNAMICDESTRUCTORBASE_H ? */
 
 #ifndef GUCEF_CORE_EXCEPTIONMACROS_H
 #include "ExceptionMacros.h"
@@ -73,6 +78,23 @@ namespace CORE {
 //                                                                         //
 //-------------------------------------------------------------------------*/
 
+template< class LockType >
+class TBasicSharedPtrSharedData
+{
+    public:
+
+    Int32 m_refCounter;              /**< shared reference counter */
+    LockType m_lock;                 /**< shared lock, if any */
+
+    TBasicSharedPtrSharedData( void )
+        : m_refCounter( 0 )
+        , m_lock()
+    {            
+    }
+};
+
+/*-------------------------------------------------------------------------*/
+
 /**
  *  Templated implementation of a shared pointer.
  *
@@ -87,16 +109,20 @@ namespace CORE {
  *  Note that the usage of an external destructor for the shared object by means of the
  *  CTSharedObjectDestructor template is mandatory. By passing in a pointer to such a class
  *  you basically create a callback link for cleanup purposes.
- *
- *  Note that this shared pointer implementation is by no means threadsafe and should
- *  never be used across thread-boundries.
  */
-template< typename T >
-class CTBasicSharedPtr : public virtual MT::CILockable
+template< typename T, class LockType >
+class CTBasicSharedPtr : public MT::CILockable ,
+                         public CICloneable
 {
     public:
 
     typedef CTDynamicDestructorBase< T >   TDestructor;
+
+    protected:
+
+    mutable TBasicSharedPtrSharedData< LockType >* m_shared;    /**< holds data shared across multiple instances of the shared pointer */
+    T* m_ptr;                                                   /**< the pointer that we wish to reference count */
+    TDestructor* m_objectDestructor;                            /**< manditory external object destructor */
 
     public:
 
@@ -116,10 +142,10 @@ class CTBasicSharedPtr : public virtual MT::CILockable
 
     // inlined copy constructor, has to be inlined in class definition for now due to VC6 limitations
     template< class Derived >
-    CTBasicSharedPtr( const CTBasicSharedPtr< Derived >& src )
-        : m_ptr( NULL )              ,
-          m_refCounter( NULL )       ,
-          m_objectDestructor( NULL )
+    CTBasicSharedPtr( const CTBasicSharedPtr< Derived, LockType >& src )
+        : m_shared( GUCEF_NULL )
+        , m_ptr( GUCEF_NULL )
+        , m_objectDestructor( GUCEF_NULL )
     {GUCEF_TRACE;
 
         InitializeUsingInheritance( src );
@@ -129,24 +155,31 @@ class CTBasicSharedPtr : public virtual MT::CILockable
 
     virtual ~CTBasicSharedPtr();
 
+    const TBasicSharedPtrSharedData< LockType >* GetSharedData( void ) const
+    {GUCEF_TRACE;
+    
+        return m_shared;
+    }
+
     template< class RelatedClass >
-    bool InitializeUsingInheritance( const CTBasicSharedPtr< RelatedClass >& classPtr )
+    bool InitializeUsingInheritance( const CTBasicSharedPtr< RelatedClass, LockType >& other )
     {GUCEF_TRACE;
 
         Unlink();
 
+        MT::CObjectScopeLock lockOther( other );
         MT::CObjectScopeLock lock( this );
 
         // The static cast below is performed as a compile time validation
         // of the type passed.
-        T* relatedClass = static_cast< T* >( const_cast< RelatedClass* >( classPtr.GetPointerAlways() ) );
-        if ( NULL != relatedClass )
+        T* relatedClass = static_cast< T* >( const_cast< RelatedClass* >( other.GetPointerAlways() ) );
+        if ( GUCEF_NULL != relatedClass )
         {
-            m_ptr = relatedClass;
-            m_refCounter = const_cast< UInt32* >( classPtr.GetReferenceCounter() );
-            m_objectDestructor = reinterpret_cast< CTBasicSharedPtr< T >::TDestructor* >( classPtr.GetDestructor() );
+            m_ptr = relatedClass;            
+            m_objectDestructor = reinterpret_cast< CTBasicSharedPtr< T, LockType >::TDestructor* >( other.GetDestructor() );
+            m_shared = const_cast< TBasicSharedPtrSharedData< LockType >* >( other.GetSharedData() );
 
-            ++(*m_refCounter);
+            ++(m_shared->m_refCounter);
             return true;
         }
         return false;
@@ -154,7 +187,7 @@ class CTBasicSharedPtr : public virtual MT::CILockable
 
     // implemented inline as a workaround for VC6 issues
     template< class Derived >
-    CTBasicSharedPtr& operator=( const CTBasicSharedPtr< Derived >& src )
+    CTBasicSharedPtr& operator=( const CTBasicSharedPtr< Derived, LockType >& src )
     {
         if ( &reinterpret_cast< const CTBasicSharedPtr& >( src ) != this )
         {
@@ -166,11 +199,11 @@ class CTBasicSharedPtr : public virtual MT::CILockable
     // implemented inline as a workaround for VC6 issues
     // The dummy param is a VC6 hack for templated member functions
     template< class Derived >
-    CTBasicSharedPtr< Derived > StaticCast( bool dummy = true )
+    CTBasicSharedPtr< Derived, LockType > StaticCast( bool dummy = true )
     {
         // We use the initialization function of the derived type's
         // shared pointer which will have knowledge of both types.
-        CTBasicSharedPtr< Derived > retVal;
+        CTBasicSharedPtr< Derived, LockType > retVal;
         retVal.InitializeUsingInheritance( *this );
         return retVal;
     }
@@ -243,8 +276,6 @@ class CTBasicSharedPtr : public virtual MT::CILockable
 
     UInt32 GetReferenceCount( void ) const;
 
-    const UInt32* GetReferenceCounter( void ) const;
-
     TDestructor* GetDestructor( void ) const;
 
     virtual const MT::CILockable* AsLockable( void ) const GUCEF_VIRTUAL_OVERRIDE;
@@ -257,7 +288,7 @@ class CTBasicSharedPtr : public virtual MT::CILockable
      *  Can be used by descending classes to implement in-scope memory management
      *  utilizing method 1 as described above.
      */
-    void SetToNULL( void );
+    //void SetToNULL( void );
 
     /**
      *  Can be used be decending implementations for late initialization.
@@ -272,33 +303,23 @@ class CTBasicSharedPtr : public virtual MT::CILockable
      */
     void OverrideDestructor( TDestructor* newObjectDestructor );
 
-    UInt32* GetReferenceCounter( void );
-
     void Unlink( void );
 
     /**
-     *  no-op in the default implementation.
-     *  derived classes wishing to make the shared pointer thread safe
-     *  should add a synchronization mechanic in a derived implementation
-     *
-     *  This function should be implemented to be logically const
+     *  Actual locking behaviour depends on the LockType passed to the template
      */
     virtual bool Lock( void ) const GUCEF_VIRTUAL_OVERRIDE;
 
     /**
-     *  no-op in the default implementation.
-     *  derived classes wishing to make the shared pointer thread safe
-     *  should add a synchronization mechanic in a derived implementation
-     *
-     *  This function should be implemented to be logically const
+     *  Actual locking behaviour depends on the LockType passed to the template
      */
     virtual bool Unlock( void ) const GUCEF_VIRTUAL_OVERRIDE;
 
-    private:
-
-    T* m_ptr;                        /**< the pointer that we wish to reference count */
-    UInt32* m_refCounter;            /**< shared reference counter */
-    TDestructor* m_objectDestructor; /**< manditory external object destructor */
+    /**
+     *  Creates a clone of the basic shared pointer
+     *  Note that this increases the reference count like any copy would
+     */
+    virtual CICloneable* Clone( void ) const GUCEF_VIRTUAL_OVERRIDE;
 };
 
 /*-------------------------------------------------------------------------//
@@ -307,11 +328,11 @@ class CTBasicSharedPtr : public virtual MT::CILockable
 //                                                                         //
 //-------------------------------------------------------------------------*/
 
-template< typename T >
-CTBasicSharedPtr< T >::CTBasicSharedPtr( void )
-        : m_ptr( NULL )                          ,
-          m_refCounter( NULL )                   ,
-          m_objectDestructor( NULL )
+template< typename T, class LockType >
+CTBasicSharedPtr< T, LockType >::CTBasicSharedPtr( void )
+    : m_shared( GUCEF_NULL )
+    , m_ptr( GUCEF_NULL )
+    , m_objectDestructor( GUCEF_NULL )
 {GUCEF_TRACE;
 
     // Note that if this constructor is used an assignment is required at
@@ -320,40 +341,45 @@ CTBasicSharedPtr< T >::CTBasicSharedPtr( void )
 
 /*-------------------------------------------------------------------------*/
 
-template< typename T >
-CTBasicSharedPtr< T >::CTBasicSharedPtr( T* ptr                        ,
-                                         TDestructor* objectDestructor )
-        : m_ptr( ptr )                           ,
-          m_refCounter( NULL )                   ,
-          m_objectDestructor( objectDestructor )
+template< typename T, class LockType >
+CTBasicSharedPtr< T, LockType >::CTBasicSharedPtr( T* ptr                        ,
+                                                   TDestructor* objectDestructor )
+    : m_shared( GUCEF_NULL )
+    , m_ptr( GUCEF_NULL )
+    , m_objectDestructor( GUCEF_NULL )
 {GUCEF_TRACE;
 
-    if ( ptr )
+    if ( GUCEF_NULL != ptr )
     {
-        m_refCounter = new UInt32( 1UL );
+        m_shared = new TBasicSharedPtrSharedData< LockType >();
+        m_shared->m_refCounter = 1UL;
+        m_objectDestructor = objectDestructor;
+        m_ptr = ptr;
     }
 }
 
 /*-------------------------------------------------------------------------*/
 
-template< typename T >
-CTBasicSharedPtr< T >::CTBasicSharedPtr( const CTBasicSharedPtr< T >& src )
-        : m_ptr( src.m_ptr )                           ,
-          m_refCounter( src.m_refCounter )             ,
-          m_objectDestructor( src.m_objectDestructor )
+template< typename T, class LockType >
+CTBasicSharedPtr< T, LockType >::CTBasicSharedPtr( const CTBasicSharedPtr< T, LockType >& src )
+    : m_shared( GUCEF_NULL )
+    , m_ptr( GUCEF_NULL )
+    , m_objectDestructor( GUCEF_NULL )
 {GUCEF_TRACE;
 
     MT::CObjectScopeLock lock( &src );
-    if ( m_refCounter )
+    if ( GUCEF_NULL != src.m_shared )
     {
-        ++(*m_refCounter);
+        m_shared = src.m_shared;
+        ++(m_shared->m_refCounter);
     }
+    m_ptr = src.m_ptr;
 }
 
 /*-------------------------------------------------------------------------*/
 
-template< typename T >
-CTBasicSharedPtr< T >::~CTBasicSharedPtr()
+template< typename T, class LockType >
+CTBasicSharedPtr< T, LockType >::~CTBasicSharedPtr()
 {GUCEF_TRACE;
 
     Unlink();
@@ -361,46 +387,50 @@ CTBasicSharedPtr< T >::~CTBasicSharedPtr()
 
 /*-------------------------------------------------------------------------*/
 
-template< typename T >
+template< typename T, class LockType >
 void
-CTBasicSharedPtr< T >::Initialize( T* ptr                        ,
-                                   TDestructor* objectDestructor )
+CTBasicSharedPtr< T, LockType >::Initialize( T* ptr                        ,
+                                             TDestructor* objectDestructor )
 {GUCEF_TRACE;
 
-    // If you get an assert here:
-    //    You have an error in your decending class: you cannot initialize twice
-    assert( m_ptr == GUCEF_NULL );
-    assert( m_objectDestructor == GUCEF_NULL );
-    assert( m_refCounter == GUCEF_NULL );
+    #ifdef GUCEF_DEBUG_MODE
+    {
+        MT::CObjectScopeLock lock( this );
+
+        // If you get an assert here:
+        //    You have an error in your decending class: you cannot initialize twice
+        assert( m_ptr == GUCEF_NULL );
+        assert( m_objectDestructor == GUCEF_NULL );
+        assert( m_shared->m_refCounter == GUCEF_NULL );
+    }
+    #endif
 
     // Just in case we did not hit the asserts above because the code was compiled in release
     // mode without asserts we will still allow the scenario by unlinking first
     Unlink();
 
-    Lock();
-
+    MT::CObjectScopeLock lock( this );
     m_ptr = ptr;
-    m_refCounter = new UInt32( 1UL );
+    m_shared->m_refCounter = 1UL;
     m_objectDestructor = objectDestructor;
-
-    Unlock();
 }
 
 /*-------------------------------------------------------------------------*/
 
-template< typename T >
+template< typename T, class LockType >
 void
-CTBasicSharedPtr< T >::OverrideDestructor( TDestructor* newObjectDestructor )
+CTBasicSharedPtr< T, LockType >::OverrideDestructor( TDestructor* newObjectDestructor )
 {GUCEF_TRACE;
 
+    MT::CObjectScopeLock lock( this );
     m_objectDestructor = newObjectDestructor;
 }
 
 /*-------------------------------------------------------------------------*/
 
-template< typename T >
-typename CTBasicSharedPtr< T >::TDestructor*
-CTBasicSharedPtr< T >::GetDestructor( void ) const
+template< typename T, class LockType >
+typename CTBasicSharedPtr< T, LockType >::TDestructor*
+CTBasicSharedPtr< T, LockType >::GetDestructor( void ) const
 {GUCEF_TRACE;
 
     return m_objectDestructor;
@@ -408,9 +438,9 @@ CTBasicSharedPtr< T >::GetDestructor( void ) const
 
 /*-------------------------------------------------------------------------*/
 
-template< typename T >
+template< typename T, class LockType >
 bool
-CTBasicSharedPtr< T >::IsNULL( void ) const
+CTBasicSharedPtr< T, LockType >::IsNULL( void ) const
 {GUCEF_TRACE;
 
     return GUCEF_NULL == m_ptr;
@@ -418,24 +448,24 @@ CTBasicSharedPtr< T >::IsNULL( void ) const
 
 /*-------------------------------------------------------------------------*/
 
-template< typename T >
+template< typename T, class LockType >
 UInt32
-CTBasicSharedPtr< T >::GetReferenceCount( void ) const
+CTBasicSharedPtr< T, LockType >::GetReferenceCount( void ) const
 {GUCEF_TRACE;
 
     MT::CObjectScopeLock lock( this );
-    if ( m_refCounter )
+    if ( m_shared->m_refCounter )
     {
-        return *m_refCounter;
+        return m_shared->m_refCounter;
     }
     return 0UL;
 }
 
 /*-------------------------------------------------------------------------*/
 
-template< typename T >
-CTBasicSharedPtr< T >&
-CTBasicSharedPtr< T >::operator=( int nullValue )
+template< typename T, class LockType >
+CTBasicSharedPtr< T, LockType >&
+CTBasicSharedPtr< T, LockType >::operator=( int nullValue )
 {GUCEF_TRACE;
 
     assert( nullValue == GUCEF_NULL );
@@ -445,38 +475,30 @@ CTBasicSharedPtr< T >::operator=( int nullValue )
 
 /*-------------------------------------------------------------------------*/
 
-template< typename T >
-CTBasicSharedPtr< T >&
-CTBasicSharedPtr< T >::operator=( const CTBasicSharedPtr< T >& src )
+template< typename T, class LockType >
+CTBasicSharedPtr< T, LockType >&
+CTBasicSharedPtr< T, LockType >::operator=( const CTBasicSharedPtr< T, LockType >& src )
 {GUCEF_TRACE;
 
     if ( this != &src )
     {
-        MT::CObjectScopeLock lock( this );
-
         Unlink();
 
-        Lock();
+        MT::CObjectScopeLock lockSrc( src );
 
+        m_shared = src.m_shared;
+        ++m_shared->m_refCounter;
         m_ptr = src.m_ptr;
-        m_refCounter = src.m_refCounter;
         m_objectDestructor = src.m_objectDestructor;
-
-        if ( m_refCounter )
-        {
-            ++(*m_refCounter);
-        }
-
-        Unlock();
     }
     return *this;
 }
 
 /*-------------------------------------------------------------------------*/
 
-template< typename T >
+template< typename T, class LockType >
 inline bool
-CTBasicSharedPtr< T >::operator<( const CTBasicSharedPtr< T >& other ) const
+CTBasicSharedPtr< T, LockType >::operator<( const CTBasicSharedPtr< T, LockType >& other ) const
 {GUCEF_TRACE;
 
     return m_ptr < other.m_ptr;
@@ -484,9 +506,9 @@ CTBasicSharedPtr< T >::operator<( const CTBasicSharedPtr< T >& other ) const
 
 /*-------------------------------------------------------------------------*/
 
-template< typename T >
+template< typename T, class LockType >
 inline bool
-CTBasicSharedPtr< T >::operator==( const CTBasicSharedPtr< T >& other ) const
+CTBasicSharedPtr< T, LockType >::operator==( const CTBasicSharedPtr< T, LockType >& other ) const
 {GUCEF_TRACE;
 
     return m_ptr == other.m_ptr;
@@ -494,9 +516,9 @@ CTBasicSharedPtr< T >::operator==( const CTBasicSharedPtr< T >& other ) const
 
 /*-------------------------------------------------------------------------*/
 
-template< typename T >
+template< typename T, class LockType >
 inline bool
-CTBasicSharedPtr< T >::operator==( const void* other ) const
+CTBasicSharedPtr< T, LockType >::operator==( const void* other ) const
 {GUCEF_TRACE;
 
     return other == m_ptr;
@@ -506,12 +528,10 @@ CTBasicSharedPtr< T >::operator==( const void* other ) const
 
 #ifdef GUCEF_32BIT
 
-template< typename T >
+template< typename T, class LockType >
 inline bool
-CTBasicSharedPtr< T >::operator==( Int32 other ) const
+CTBasicSharedPtr< T, LockType >::operator==( Int32 other ) const
 {GUCEF_TRACE;
-
-    MT::CObjectScopeLock lock( this );
 
     if ( 0 == other ) 
         return GUCEF_NULL == m_ptr;
@@ -522,9 +542,9 @@ CTBasicSharedPtr< T >::operator==( Int32 other ) const
 
 #else
 
-template< typename T >
+template< typename T, class LockType >
 inline bool
-CTBasicSharedPtr< T >::operator==( Int32 other ) const
+CTBasicSharedPtr< T, LockType >::operator==( Int32 other ) const
 {GUCEF_TRACE;
 
     if ( 0 == other ) 
@@ -538,13 +558,11 @@ CTBasicSharedPtr< T >::operator==( Int32 other ) const
 
 #ifdef GUCEF_64BIT
 
-template< typename T >
+template< typename T, class LockType >
 inline bool
-CTBasicSharedPtr< T >::operator==( Int64 other ) const
+CTBasicSharedPtr< T, LockType >::operator==( Int64 other ) const
 {GUCEF_TRACE;                          
 
-    MT::CObjectScopeLock lock( this );
-    
     if ( 0 == other ) 
         return GUCEF_NULL == m_ptr;
     if ( sizeof( int ) != sizeof( m_ptr ) ) 
@@ -554,9 +572,9 @@ CTBasicSharedPtr< T >::operator==( Int64 other ) const
 
 #else
 
-template< typename T >
+template< typename T, class LockType >
 inline bool
-CTBasicSharedPtr< T >::operator==( Int64 other ) const
+CTBasicSharedPtr< T, LockType >::operator==( Int64 other ) const
 {GUCEF_TRACE;
 
     if ( 0 == other ) 
@@ -568,33 +586,9 @@ CTBasicSharedPtr< T >::operator==( Int64 other ) const
 
 /*-------------------------------------------------------------------------*/
 
-template< typename T >
+template< typename T, class LockType >
 inline bool
-operator==( const T* ptr, const CTBasicSharedPtr< T >& other )
-{GUCEF_TRACE;
-
-    return other == ptr;
-}
-
-/*-------------------------------------------------------------------------*/
-
-/*
- *  workaround for comparison to NULL, since NULL is a integer by default
- */
-template< typename T >
-inline bool
-operator==( const int ptr, const CTBasicSharedPtr< T >& other )
-{GUCEF_TRACE;
-
-    assert( GUCEF_NULL == ptr );
-    return static_cast< const T* >( GUCEF_NULL ) == other;
-}
-
-/*-------------------------------------------------------------------------*/
-
-template< typename T >
-inline bool
-CTBasicSharedPtr< T >::operator!=( const CTBasicSharedPtr< T >& other ) const
+CTBasicSharedPtr< T, LockType >::operator!=( const CTBasicSharedPtr< T, LockType >& other ) const
 {GUCEF_TRACE;
 
     return m_ptr != other.m_ptr;
@@ -604,13 +598,11 @@ CTBasicSharedPtr< T >::operator!=( const CTBasicSharedPtr< T >& other ) const
 
 #ifdef GUCEF_32BIT
 
-template< typename T >
+template< typename T, class LockType >
 inline bool
-CTBasicSharedPtr< T >::operator!=( Int32 other ) const
+CTBasicSharedPtr< T, LockType >::operator!=( Int32 other ) const
 {GUCEF_TRACE;
 
-    MT::CObjectScopeLock lock( this );
-    
     if ( 0 == other ) 
         return GUCEF_NULL != m_ptr;
     if ( sizeof( int ) != sizeof( m_ptr ) ) 
@@ -620,9 +612,9 @@ CTBasicSharedPtr< T >::operator!=( Int32 other ) const
 
 #else
 
-template< typename T >
+template< typename T, class LockType >
 inline bool
-CTBasicSharedPtr< T >::operator!=( Int32 other ) const
+CTBasicSharedPtr< T, LockType >::operator!=( Int32 other ) const
 {GUCEF_TRACE;
 
     return true;
@@ -634,13 +626,11 @@ CTBasicSharedPtr< T >::operator!=( Int32 other ) const
 
 #ifdef GUCEF_64BIT
 
-template< typename T >
+template< typename T, class LockType >
 inline bool
-CTBasicSharedPtr< T >::operator!=( Int64 other ) const
+CTBasicSharedPtr< T, LockType >::operator!=( Int64 other ) const
 {GUCEF_TRACE;
 
-    MT::CObjectScopeLock lock( this );
-    
     if ( 0 == other ) 
         return GUCEF_NULL != m_ptr;
     if ( sizeof( int ) != sizeof( m_ptr ) ) 
@@ -650,9 +640,9 @@ CTBasicSharedPtr< T >::operator!=( Int64 other ) const
 
 #else
 
-template< typename T >
+template< typename T, class LockType >
 inline bool
-CTBasicSharedPtr< T >::operator!=( Int64 other ) const
+CTBasicSharedPtr< T, LockType >::operator!=( Int64 other ) const
 {GUCEF_TRACE;
 
     return true;
@@ -662,9 +652,9 @@ CTBasicSharedPtr< T >::operator!=( Int64 other ) const
 
 /*-------------------------------------------------------------------------*/
 
-template< typename T >
+template< typename T, class LockType >
 inline bool
-CTBasicSharedPtr< T >::operator!=( const void* other ) const
+CTBasicSharedPtr< T, LockType >::operator!=( const void* other ) const
 {GUCEF_TRACE;
 
     return other != m_ptr;
@@ -672,9 +662,39 @@ CTBasicSharedPtr< T >::operator!=( const void* other ) const
 
 /*-------------------------------------------------------------------------*/
 
-template< typename T >
+template< typename T, class LockType >
 inline bool
-operator!=( const T* ptr, const CTBasicSharedPtr< T >& other )
+operator==( const T* ptr, const CTBasicSharedPtr< T, LockType >& other )
+{GUCEF_TRACE;
+
+    return other == ptr;
+}
+
+/*-------------------------------------------------------------------------*/
+
+template< typename T, class LockType >
+inline bool
+operator==( const Int64 ptr, const CTBasicSharedPtr< T, LockType >& other )
+{GUCEF_TRACE;
+
+    return other == ptr;
+}
+
+/*-------------------------------------------------------------------------*/
+
+template< typename T, class LockType >
+inline bool
+operator==( const Int32 ptr, const CTBasicSharedPtr< T, LockType >& other )
+{GUCEF_TRACE;
+
+    return other == ptr;
+}
+
+/*-------------------------------------------------------------------------*/
+
+template< typename T, class LockType >
+inline bool
+operator!=( const T* ptr, const CTBasicSharedPtr< T, LockType >& other )
 {GUCEF_TRACE;
 
     return other != ptr;
@@ -682,12 +702,9 @@ operator!=( const T* ptr, const CTBasicSharedPtr< T >& other )
 
 /*-------------------------------------------------------------------------*/
 
-/*
- *  workaround for comparison to NULL, since NULL is a integer by default
- */
-template< typename T >
+template< typename T, class LockType >
 inline bool
-operator!=( int intPtr, const CTBasicSharedPtr< T >& other )
+operator!=( Int32 intPtr, const CTBasicSharedPtr< T, LockType >& other )
 {GUCEF_TRACE;
 
     return other != intPtr;
@@ -695,27 +712,37 @@ operator!=( int intPtr, const CTBasicSharedPtr< T >& other )
 
 /*-------------------------------------------------------------------------*/
 
-template< typename T >
+template< typename T, class LockType >
+inline bool
+operator!=( Int64 intPtr, const CTBasicSharedPtr< T, LockType >& other )
+{GUCEF_TRACE;
+
+    return other != intPtr;
+}
+
+/*-------------------------------------------------------------------------*/
+
+template< typename T, class LockType >
 inline T&
-CTBasicSharedPtr< T >::operator*( void )
+CTBasicSharedPtr< T, LockType >::operator*( void )
 {GUCEF_TRACE;
 
     MT::CObjectScopeLock lock( this );
     
     if ( GUCEF_NULL != m_ptr )
     {
-        return *m_ptr;
+        return *(m_ptr);
     }
 
     // Someone forgot to initialize the shared pointer with an assignment
-    GUCEF_EMSGTHROW( ENotInitialized, "CTBasicSharedPtr< T >::operator*( void ): uninitialized pointer usage" );
+    GUCEF_EMSGTHROW( ENotInitialized, "CTBasicSharedPtr< T, LockType >::operator*( void ): uninitialized pointer usage" );
 }
 
 /*-------------------------------------------------------------------------*/
 
-template< typename T >
+template< typename T, class LockType >
 inline const T&
-CTBasicSharedPtr< T >::operator*( void ) const
+CTBasicSharedPtr< T, LockType >::operator*( void ) const
 {GUCEF_TRACE;
 
     MT::CObjectScopeLock lock( this );
@@ -726,15 +753,15 @@ CTBasicSharedPtr< T >::operator*( void ) const
     }
 
     // Someone forgot to initialize the shared pointer with an assignment
-    GUCEF_EMSGTHROW( ENotInitialized, "CTBasicSharedPtr< T >::operator*( void ) const: uninitialized pointer usage" );
+    GUCEF_EMSGTHROW( ENotInitialized, "CTBasicSharedPtr< T, LockType >::operator*( void ) const: uninitialized pointer usage" );
 
 }
 
 /*-------------------------------------------------------------------------*/
 
-template< typename T >
+template< typename T, class LockType >
 inline T*
-CTBasicSharedPtr< T >::operator->( void )
+CTBasicSharedPtr< T, LockType >::operator->( void )
 {GUCEF_TRACE;
 
     MT::CObjectScopeLock lock( this );
@@ -745,14 +772,14 @@ CTBasicSharedPtr< T >::operator->( void )
     }
 
     // Someone forgot to initialize the shared pointer with an assignment
-    GUCEF_EMSGTHROW( ENotInitialized, "CTBasicSharedPtr< T >::operator->( void ): uninitialized pointer usage" );
+    GUCEF_EMSGTHROW( ENotInitialized, "CTBasicSharedPtr< T, LockType >::operator->( void ): uninitialized pointer usage" );
 }
 
 /*-------------------------------------------------------------------------*/
 
-template< typename T >
+template< typename T, class LockType >
 inline const T*
-CTBasicSharedPtr< T >::operator->( void ) const
+CTBasicSharedPtr< T, LockType >::operator->( void ) const
 {GUCEF_TRACE;
 
     MT::CObjectScopeLock lock( this );
@@ -763,41 +790,24 @@ CTBasicSharedPtr< T >::operator->( void ) const
     }
 
     // Someone forgot to initialize the shared pointer with an assignment
-    GUCEF_EMSGTHROW( ENotInitialized, "CTBasicSharedPtr< T >::operator->( void ) const: uninitialized pointer usage" );
+    GUCEF_EMSGTHROW( ENotInitialized, "CTBasicSharedPtr< T, LockType >::operator->( void ) const: uninitialized pointer usage" );
 }
 
 /*-------------------------------------------------------------------------*/
 
-template< typename T >
+template< typename T, class LockType >
 inline
-CTBasicSharedPtr< T >::operator bool() const
-{
+CTBasicSharedPtr< T, LockType >::operator bool() const
+{GUCEF_TRACE;
+
     return GUCEF_NULL != m_ptr;
 }
 
 /*-------------------------------------------------------------------------*/
 
-template< typename T >
-UInt32*
-CTBasicSharedPtr< T >::GetReferenceCounter( void )
-{
-    return m_refCounter;
-}
-
-/*-------------------------------------------------------------------------*/
-
-template< typename T >
-const UInt32*
-CTBasicSharedPtr< T >::GetReferenceCounter( void ) const
-{
-    return m_refCounter;
-}
-
-/*-------------------------------------------------------------------------*/
-
-template< typename T >
+template< typename T, class LockType >
 inline T*
-CTBasicSharedPtr< T >::GetPointer( void )
+CTBasicSharedPtr< T, LockType >::GetPointer( void )
 {GUCEF_TRACE;
 
     MT::CObjectScopeLock lock( this );
@@ -808,14 +818,14 @@ CTBasicSharedPtr< T >::GetPointer( void )
     }
 
     // Someone forgot to initialize the shared pointer with an assignment
-    GUCEF_EMSGTHROW( ENotInitialized, "CTBasicSharedPtr< T >::operator->( void ): uninitialized pointer usage" );
+    GUCEF_EMSGTHROW( ENotInitialized, "CTBasicSharedPtr< T, LockType >::operator->( void ): uninitialized pointer usage" );
 }
 
 /*-------------------------------------------------------------------------*/
 
-template< typename T >
+template< typename T, class LockType >
 inline const T*
-CTBasicSharedPtr< T >::GetPointer( void ) const
+CTBasicSharedPtr< T, LockType >::GetPointer( void ) const
 {GUCEF_TRACE;
 
     MT::CObjectScopeLock lock( this );
@@ -826,83 +836,84 @@ CTBasicSharedPtr< T >::GetPointer( void ) const
     }
 
     // Someone forgot to initialize the shared pointer with an assignment
-    GUCEF_EMSGTHROW( ENotInitialized, "CTBasicSharedPtr< T >::operator->( void ) const: uninitialized pointer usage" );
+    GUCEF_EMSGTHROW( ENotInitialized, "CTBasicSharedPtr< T, LockType >::operator->( void ) const: uninitialized pointer usage" );
 }
 
 /*-------------------------------------------------------------------------*/
 
-template< typename T >
+template< typename T, class LockType >
 inline T*
-CTBasicSharedPtr< T >::GetPointerAlways( void )
-{
+CTBasicSharedPtr< T, LockType >::GetPointerAlways( void )
+{GUCEF_TRACE;
+
     return m_ptr;
 }
 
 /*-------------------------------------------------------------------------*/
 
-template< typename T >
+template< typename T, class LockType >
 inline const T*
-CTBasicSharedPtr< T >::GetPointerAlways( void ) const
-{
+CTBasicSharedPtr< T, LockType >::GetPointerAlways( void ) const
+{GUCEF_TRACE;
+
     return m_ptr;
 }
 
 /*-------------------------------------------------------------------------*/
 
-template< typename T >
+template< typename T, class LockType >
 void
-CTBasicSharedPtr< T >::Unlink( void )
+CTBasicSharedPtr< T, LockType >::Unlink( void )
 {GUCEF_TRACE;
 
-    MT::CObjectScopeLock lock( this );
-
-    if ( NULL != m_ptr )
+    if ( GUCEF_NULL != m_shared )
     {
-        --(*m_refCounter);
-        if ( 0UL == *m_refCounter )
+        MT::CObjectScopeLock lock( this );
+        if ( GUCEF_NULL != m_ptr )
         {
-            // We should check if the destructor pointer is not-NULL
-            // A descending class may NULL it for its own purposes.
-            if ( NULL != m_objectDestructor )
+            --m_shared->m_refCounter;
+            if ( 0 >= m_shared->m_refCounter )
             {
-                m_objectDestructor->DestroyObject( m_ptr );
-                m_objectDestructor = GUCEF_NULL;
+                // We should check if the destructor pointer is not-NULL
+                // A descending class may NULL it for its own purposes.
+                if ( GUCEF_NULL != m_objectDestructor )
+                {
+                    m_objectDestructor->DestroyObject( m_ptr );
+                    m_objectDestructor = GUCEF_NULL;
+                }
+                m_ptr = GUCEF_NULL;
+
+                lock.EarlyUnlock();
+                delete m_shared;            
             }
-
-            delete m_refCounter;
-            m_refCounter = GUCEF_NULL;
-
-            m_ptr = GUCEF_NULL;
         }
     }
 
-    // this object may not have been the last refrence but we still have to NULL
+    // this object may not have been the last reference but we still have to NULL
     // the attributes to allow this object to be re-used
-    m_objectDestructor = GUCEF_NULL;
-    m_refCounter = GUCEF_NULL;
-    m_ptr = GUCEF_NULL;
+    m_shared = GUCEF_NULL;
 }
 
 /*-------------------------------------------------------------------------*/
 
-template< typename T >
-void
-CTBasicSharedPtr< T >::SetToNULL( void )
-{GUCEF_TRACE;
-
-    MT::CObjectScopeLock lock( this );
-
-    m_objectDestructor = GUCEF_NULL;
-    delete m_refCounter;
-    m_refCounter = GUCEF_NULL;
-    m_ptr = GUCEF_NULL;
-}
+//template< typename T, class LockType >
+//void
+//CTBasicSharedPtr< T, LockType >::SetToNULL( void )
+//{GUCEF_TRACE;
+//
+//    MT::CObjectScopeLock lock( this );
+//
+//    m_objectDestructor = GUCEF_NULL;
+//    delete m_shared;
+//    m_shared = GUCEF_NULL;
+//    m_ptr = GUCEF_NULL;
+//}
 
 /*-------------------------------------------------------------------------*/
 
-template< typename T >
+template< typename T, class LockType >
 const MT::CILockable* 
-CTBasicSharedPtr< T >::AsLockable( void ) const
+CTBasicSharedPtr< T, LockType >::AsLockable( void ) const
 {GUCEF_TRACE;
 
     return this;
@@ -910,28 +921,38 @@ CTBasicSharedPtr< T >::AsLockable( void ) const
 
 /*-------------------------------------------------------------------------*/
 
-template< typename T >
+template< typename T, class LockType >
 bool
-CTBasicSharedPtr< T >::Lock( void ) const
+CTBasicSharedPtr< T, LockType >::Lock( void ) const
 {GUCEF_TRACE;
 
-    // no-op in the default implementation.
-    // derived classes wishing to make the shared pointer thread safe
-    // should add a synchronization mechanic in a derived implementation
+    if ( GUCEF_NULL == m_shared )
+    {
+        m_shared = new TBasicSharedPtrSharedData< LockType >();
+    }
+    return m_shared->m_lock.Lock();
+}
+
+/*-------------------------------------------------------------------------*/
+
+template< typename T, class LockType >
+bool
+CTBasicSharedPtr< T, LockType >::Unlock( void ) const
+{GUCEF_TRACE;
+
+    if ( GUCEF_NULL != m_shared )
+        return m_shared->m_lock.Unlock();
     return false;
 }
 
 /*-------------------------------------------------------------------------*/
 
-template< typename T >
-bool
-CTBasicSharedPtr< T >::Unlock( void ) const
+template< typename T, class LockType >
+CICloneable*
+CTBasicSharedPtr< T, LockType >::Clone( void ) const
 {GUCEF_TRACE;
 
-    // no-op in the default implementation.
-    // derived classes wishing to make the shared pointer thread safe
-    // should add a synchronization mechanic in a derived implementation
-    return false;
+    return new CTBasicSharedPtr< T, LockType >( *this );
 }
 
 /*-------------------------------------------------------------------------//
@@ -943,17 +964,6 @@ CTBasicSharedPtr< T >::Unlock( void ) const
 }; /* namespace CORE */
 }; /* namespace GUCEF */
 
-/*-------------------------------------------------------------------------//
-//                                                                         //
-//      Info & Changes                                                     //
-//                                                                         //
-//-------------------------------------------------------------------------//
-
-- 14-12-2005 :
-        - Dinand: Moved code into this new base class from CTSharedPtr to allow
-          some level of shared pointer usage without actually requiring the type
-          to be defined. ie you can create a shared pointer with a forward declaration.
-
------------------------------------------------------------------------------*/
+/*-------------------------------------------------------------------------*/
 
 #endif /* GUCEF_CORE_CTBASICSHAREDPTR_H ? */

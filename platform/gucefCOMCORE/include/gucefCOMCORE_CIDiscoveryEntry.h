@@ -28,6 +28,11 @@
 
 #include <set>
 
+#ifndef GUCEF_MT_CMUTEX_H
+#include "gucefMT_CMutex.h"
+#define GUCEF_MT_CMUTEX_H
+#endif /* GUCEF_MT_CMUTEX_H ? */
+
 #ifndef GUCEF_CORE_CITYPENAMED_H
 #include "CITypeNamed.h"
 #define GUCEF_CORE_CITYPENAMED_H
@@ -127,7 +132,7 @@ class GUCEF_COMCORE_EXPORT_CPP CIDiscoveryEntry
 
 };
 
-typedef CORE::CTSharedPtr< CIDiscoveryEntry > CIDiscoveryEntryPtr;
+typedef CORE::CTSharedPtr< CIDiscoveryEntry, MT::CMutex > CIDiscoveryEntryPtr;
 
 /*-------------------------------------------------------------------------//
 //                                                                         //

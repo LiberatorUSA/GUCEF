@@ -29,6 +29,11 @@
 #include <map>
 #include <set>
 
+#ifndef GUCEF_MT_CMUTEX_H
+#include "gucefMT_CMutex.h"
+#define GUCEF_MT_CMUTEX_H
+#endif /* GUCEF_MT_CMUTEX_H ? */
+
 #ifndef GUCEF_CORE_CTBASICSHAREDPTR_H
 #include "CTBasicSharedPtr.h"
 #define GUCEF_CORE_CTBASICSHAREDPTR_H
@@ -68,9 +73,9 @@ class GUCEF_VFS_PUBLIC_CPP CIArchive : public CORE::CTDynamicDestructorBase< CVF
 {
     public:
 
-    typedef CORE::CTBasicSharedPtr< CVFSHandle > CVFSHandlePtr;
-    typedef std::vector< CString >         TStringList;
-    typedef std::set< CString >            TStringSet;
+    typedef CORE::CTBasicSharedPtr< CVFSHandle, MT::CMutex >    CVFSHandlePtr;
+    typedef std::vector< CString >                              TStringList;
+    typedef std::set< CString >                                 TStringSet;
     
     CIArchive( void );
     

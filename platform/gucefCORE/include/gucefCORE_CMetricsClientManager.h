@@ -68,7 +68,7 @@ class GUCEF_CORE_PUBLIC_CPP CMetricsClientManager : public CIMetricsSystemClient
 {
     public:
 
-    typedef CTSharedPtr< CIMetricsSystemClient > CIMetricsSystemClientPtr;
+    typedef CTSharedPtr< CIMetricsSystemClient, MT::CMutex > CIMetricsSystemClientPtr;
 
     void AddMetricsClient( CIMetricsSystemClientPtr client );
 

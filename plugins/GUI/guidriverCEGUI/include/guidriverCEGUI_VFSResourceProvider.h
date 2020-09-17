@@ -75,7 +75,7 @@ class GUCEF_GUIDRIVERCEGUI_EXPORT_CPP VfsResourceProvider : public ::CEGUI::Reso
         CORE::CString requestresourceGroup;
     };
     typedef struct SDataContainerInfo TDataContainerInfo;
-    typedef CORE::CTSharedPtr< TDataContainerInfo > DataContainerInfoPtr;
+    typedef CORE::CTSharedPtr< TDataContainerInfo, MT::CMutex > DataContainerInfoPtr;
 
     VfsResourceProvider();
 

@@ -28,6 +28,11 @@
 
 #include <vector>
 
+#ifndef GUCEF_MT_CMUTEX_H
+#include "gucefMT_CMutex.h"
+#define GUCEF_MT_CMUTEX_H
+#endif /* GUCEF_MT_CMUTEX_H ? */
+
 #ifndef GUCEF_CORE_CDYNAMICBUFFER_H
 #include "CDynamicBuffer.h"
 #define GUCEF_CORE_CDYNAMICBUFFER_H
@@ -63,7 +68,7 @@ class GUCEF_COM_PUBLIC_CPP CIHTTPServerResource
     public:
     
     typedef std::vector< CString > TStringVector;
-    typedef CORE::CTSharedPtr< CIHTTPServerResource > THTTPServerResourcePtr;
+    typedef CORE::CTSharedPtr< CIHTTPServerResource, MT::CMutex > THTTPServerResourcePtr;
 
     /**
      *  Result of a CreateResource operation.

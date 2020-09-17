@@ -86,7 +86,7 @@ class GUCEF_IMAGE_EXPORT_CPP CIImageCodec : public CORE::CICodec
 
 /*-------------------------------------------------------------------------*/
 
-typedef CORE::CTSharedPtr< CIImageCodec > TImageCodecPtr;
+typedef CORE::CTSharedPtr< CIImageCodec, MT::CMutex > TImageCodecPtr;
 
 /*-------------------------------------------------------------------------//
 //                                                                         //

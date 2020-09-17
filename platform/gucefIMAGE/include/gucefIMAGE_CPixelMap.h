@@ -74,7 +74,7 @@ class GUCEF_IMAGE_EXPORT_CPP CPixelMap
 {
     public:
 
-    typedef CORE::CTSharedPtr< CPixelMap > TPixelMapPtr;
+    typedef CORE::CTSharedPtr< CPixelMap, MT::CMutex > TPixelMapPtr;
     typedef std::map< CPixel, UInt32 > TColorCounters; 
     
     CPixelMap( const TImageMipMapLevel& mipmapLevel );

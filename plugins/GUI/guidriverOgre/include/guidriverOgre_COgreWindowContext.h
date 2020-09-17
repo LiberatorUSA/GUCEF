@@ -128,7 +128,7 @@ class GUIDRIVEROGRE_PUBLIC_CPP COgreWindowContext : public GUI::CWindowContext
 
 /*-------------------------------------------------------------------------*/
 
-typedef CORE::CTSharedPtr< COgreWindowContext >  TOgreWindowContextPtr;
+typedef CORE::CTSharedPtr< COgreWindowContext, MT::CMutex >  TOgreWindowContextPtr;
 
 /*-------------------------------------------------------------------------//
 //                                                                         //

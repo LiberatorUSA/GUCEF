@@ -26,6 +26,11 @@
 //                                                                         //
 //-------------------------------------------------------------------------*/
 
+#ifndef GUCEF_MT_CMUTEX_H
+#include "gucefMT_CMutex.h"
+#define GUCEF_MT_CMUTEX_H
+#endif /* GUCEF_MT_CMUTEX_H ? */
+
 #ifndef GUCEF_CORE_CDVSTRING_H
 #include "CDVString.h"
 #define GUCEF_CORE_CDVSTRING_H
@@ -133,8 +138,8 @@ class GUCEF_CORE_PUBLIC_CPP CIPluginMetaData
 
 /*-------------------------------------------------------------------------*/
 
-typedef CTSharedPtr< CIPluginMetaData > TPluginMetaDataPtr;
-typedef CTSharedPtr< const CIPluginMetaData > TConstPluginMetaDataPtr;
+typedef CTSharedPtr< CIPluginMetaData, MT::CMutex > TPluginMetaDataPtr;
+typedef CTSharedPtr< const CIPluginMetaData, MT::CMutex > TConstPluginMetaDataPtr;
 
 /*-------------------------------------------------------------------------//
 //                                                                         //

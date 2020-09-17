@@ -86,15 +86,15 @@ class GUCEF_CORE_PUBLIC_CPP CTONRegistryEvents
  *  Template that expands the normal CTRegistry functionality with
  *  notification.
  */
-template < class T >
-class CTONRegistry : public CTObservingNotifierExpansion< CTRegistry< T > > ,
+template < class T, class LockType >
+class CTONRegistry : public CTObservingNotifierExpansion< CTRegistry< T, LockType > > ,
                      public CTONRegistryEvents /* <- interface */
 {
     public:
 
-    typedef typename CTObservingNotifierExpansion< CTRegistry< T > >::TRegisteredObjPtr TRegisteredObjPtr;
-    typedef typename CTObservingNotifierExpansion< CTRegistry< T > >::TStringList TStringList;
-    typedef CTObservingNotifierExpansion< CTRegistry< T > > TExpansionBase;
+    typedef typename CTObservingNotifierExpansion< CTRegistry< T, LockType > >::TRegisteredObjPtr TRegisteredObjPtr;
+    typedef typename CTObservingNotifierExpansion< CTRegistry< T, LockType > >::TStringList TStringList;
+    typedef CTObservingNotifierExpansion< CTRegistry< T, LockType > > TExpansionBase;
 
     CTONRegistry( void );
 
@@ -131,68 +131,68 @@ class CTONRegistry : public CTObservingNotifierExpansion< CTRegistry< T > > ,
 //                                                                         //
 //-------------------------------------------------------------------------*/
 
-template< class T >
-CTONRegistry< T >::CTONRegistry( void )
-    : CTObservingNotifierExpansion< CTRegistry< T > >()
+template< class T, class LockType >
+CTONRegistry< T, LockType >::CTONRegistry( void )
+    : CTObservingNotifierExpansion< CTRegistry< T, LockType > >()
 {GUCEF_TRACE;
 
 }
 
 /*-------------------------------------------------------------------------*/
 
-template< class T >
-CTONRegistry< T >::CTONRegistry( const CTONRegistry& src )
-    : CTObservingNotifierExpansion< CTRegistry< T > >( src )
+template< class T, class LockType >
+CTONRegistry< T, LockType >::CTONRegistry( const CTONRegistry& src )
+    : CTObservingNotifierExpansion< CTRegistry< T, LockType > >( src )
 {GUCEF_TRACE;
 
 }
 
 /*-------------------------------------------------------------------------*/
 
-template< class T >
-CTONRegistry< T >::~CTONRegistry()
+template< class T, class LockType >
+CTONRegistry< T, LockType >::~CTONRegistry()
 {GUCEF_TRACE;
 
 }
 
 /*-------------------------------------------------------------------------*/
 
-template< class T >
-CTONRegistry< T >&
-CTONRegistry< T >::operator=( const CTONRegistry& src )
+template< class T, class LockType >
+CTONRegistry< T, LockType >&
+CTONRegistry< T, LockType >::operator=( const CTONRegistry& src )
 {GUCEF_TRACE;
 
     if ( &src != this )
     {
-        CTObservingNotifierExpansion< CTRegistry< T > >::operator=( src );
+        CTObservingNotifierExpansion< CTRegistry< T, LockType > >::operator=( src );
     }
     return *this;
 }
 
 /*-------------------------------------------------------------------------*/
 
-template< class T >
+template< class T, class LockType >
 const CString&
-CTONRegistry< T >::GetClassTypeName( void ) const
+CTONRegistry< T, LockType >::GetClassTypeName( void ) const
 {GUCEF_TRACE;
 
-    static const CString typeName = "GUCEF::CORE::CTONRegistry< T >";
+    static const CString typeName = "GUCEF::CORE::CTONRegistry< T, LockType >";
     return typeName;
 }
 
 /*-------------------------------------------------------------------------*/
 
-template< class T >
+template< class T, class LockType >
 void
-CTONRegistry< T >::Register( const CString& name                ,
-                             const TRegisteredObjPtr& sharedPtr )
+CTONRegistry< T, LockType >::Register( const CString& name                ,
+                                       const TRegisteredObjPtr& sharedPtr )
 {GUCEF_TRACE;
 
     TExpansionBase::Lock();
 
     try
     {
-        CTObservingNotifierExpansion< CTRegistry< T > >::Register( name, sharedPtr );
+        CTObservingNotifierExpansion< CTRegistry< T, LockType > >::Register( name, sharedPtr );
         ItemRegisteredEventData eData( name );
         TExpansionBase::NotifyObservers( ItemRegisteredEvent, &eData );
     }
@@ -206,15 +206,15 @@ CTONRegistry< T >::Register( const CString& name                ,
 
 /*-------------------------------------------------------------------------*/
 
-template< class T >
+template< class T, class LockType >
 bool
-CTONRegistry< T >::TryRegister( const CString& name                ,
-                                const TRegisteredObjPtr& sharedPtr )
+CTONRegistry< T, LockType >::TryRegister( const CString& name                ,
+                                          const TRegisteredObjPtr& sharedPtr )
 {GUCEF_TRACE;
 
     TExpansionBase::Lock();
 
-    bool wasRegistered = CTObservingNotifierExpansion< CTRegistry< T > >::TryRegister( name, sharedPtr );
+    bool wasRegistered = CTObservingNotifierExpansion< CTRegistry< T, LockType > >::TryRegister( name, sharedPtr );
     if ( wasRegistered )
     {
         ItemRegisteredEventData eData( name );
@@ -228,14 +228,14 @@ CTONRegistry< T >::TryRegister( const CString& name                ,
 
 /*-------------------------------------------------------------------------*/
 
-template< class T >
+template< class T, class LockType >
 void
-CTONRegistry< T >::Unregister( const CString& name )
+CTONRegistry< T, LockType >::Unregister( const CString& name )
 {GUCEF_TRACE;
 
     TExpansionBase::Lock();
 
-    CTObservingNotifierExpansion< CTRegistry< T > >::Unregister( name );
+    CTObservingNotifierExpansion< CTRegistry< T, LockType > >::Unregister( name );
     ItemRegisteredEventData eData( name );
     TExpansionBase::NotifyObservers( ItemRegisteredEvent, &eData );
 
@@ -244,9 +244,9 @@ CTONRegistry< T >::Unregister( const CString& name )
 
 /*-------------------------------------------------------------------------*/
 
-template< class T >
+template< class T, class LockType >
 void
-CTONRegistry< T >::UnregisterAll( void )
+CTONRegistry< T, LockType >::UnregisterAll( void )
 {GUCEF_TRACE;
 
     TExpansionBase::Lock();
@@ -264,9 +264,9 @@ CTONRegistry< T >::UnregisterAll( void )
 
 /*-------------------------------------------------------------------------*/
 
-template< class T >
+template< class T, class LockType >
 const MT::CILockable* 
-CTONRegistry< T >::AsLockable( void ) const
+CTONRegistry< T, LockType >::AsLockable( void ) const
 {GUCEF_TRACE;
 
     return TExpansionBase::AsLockable();
@@ -274,9 +274,9 @@ CTONRegistry< T >::AsLockable( void ) const
 
 /*-------------------------------------------------------------------------*/
 
-template< class T >
+template< class T, class LockType >
 bool
-CTONRegistry< T >::Lock( void ) const
+CTONRegistry< T, LockType >::Lock( void ) const
 {GUCEF_TRACE;
 
     return TExpansionBase::Lock();
@@ -284,9 +284,9 @@ CTONRegistry< T >::Lock( void ) const
 
 /*-------------------------------------------------------------------------*/
 
-template< class T >
+template< class T, class LockType >
 bool 
-CTONRegistry< T >::Unlock( void ) const
+CTONRegistry< T, LockType >::Unlock( void ) const
 {GUCEF_TRACE;
 
     return TExpansionBase::Unlock();

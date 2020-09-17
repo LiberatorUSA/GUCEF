@@ -60,14 +60,14 @@ class CCoreGlobal;
 
 /*-------------------------------------------------------------------------*/
 
-class GUCEF_CORE_PUBLIC_CPP CCodecRegistry : public CTONRegistry< CTONRegistry< CICodec > >
+class GUCEF_CORE_PUBLIC_CPP CCodecRegistry : public CTONRegistry< CTONRegistry< CICodec, MT::CMutex >, MT::CMutex >
 {
     public:
 
-    typedef CTONRegistry< CICodec > TCodecFamilyRegistry;
-    typedef CTSharedPtr< TCodecFamilyRegistry > TCodecFamilyRegistryPtr;
-    typedef CTONRegistry< CICodec >::TStringList TStringList;
-    typedef CTONRegistry< CICodec >::TRegisteredObjPtr TICodecPtr;
+    typedef CTONRegistry< CICodec, MT::CMutex > TCodecFamilyRegistry;
+    typedef CTSharedPtr< TCodecFamilyRegistry, MT::CMutex > TCodecFamilyRegistryPtr;
+    typedef CTONRegistry< CICodec, MT::CMutex >::TStringList TStringList;
+    typedef CTONRegistry< CICodec, MT::CMutex >::TRegisteredObjPtr TICodecPtr;
 
     virtual const MT::CILockable* AsLockable( void ) const GUCEF_VIRTUAL_OVERRIDE;
 

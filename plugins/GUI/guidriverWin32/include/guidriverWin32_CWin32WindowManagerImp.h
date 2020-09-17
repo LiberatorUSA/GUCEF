@@ -94,7 +94,7 @@ class GUIDRIVERWIN32_PUBLIC_CPP CWin32WindowManagerImp : public GUI::CWindowMana
 
 /*-------------------------------------------------------------------------*/
 
-typedef CORE::CTSharedPtr< CWin32WindowManagerImp > TWin32WindowManagerImpPtr;
+typedef CORE::CTSharedPtr< CWin32WindowManagerImp, MT::CMutex > TWin32WindowManagerImpPtr;
 
 /*-------------------------------------------------------------------------//
 //                                                                         //

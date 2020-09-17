@@ -104,7 +104,7 @@ class GUCEF_GUI_PUBLIC_CPP CIGUIContext
 
 /*-------------------------------------------------------------------------*/
 
-typedef CORE::CTSharedPtr< CIGUIContext > TGuiContextPtr;
+typedef CORE::CTSharedPtr< CIGUIContext, MT::CMutex > TGuiContextPtr;
 
 /*-------------------------------------------------------------------------//
 //                                                                         //

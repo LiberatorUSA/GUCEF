@@ -103,7 +103,7 @@ class GUCEF_GUI_PUBLIC_CPP CWindowContext : public CORE::CObservingNotifier
 
 /*-------------------------------------------------------------------------*/
 
-typedef CORE::CTSharedPtr< CWindowContext > TWindowContextPtr;
+typedef CORE::CTSharedPtr< CWindowContext, MT::CMutex > TWindowContextPtr;
 
 /*-------------------------------------------------------------------------//
 //                                                                         //

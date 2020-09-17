@@ -72,7 +72,7 @@ class GUCEF_IMAGE_EXPORT_CPP CPixel
 {
     public:
 
-    typedef CORE::CTSharedPtr< CPixel > TPixelPtr;
+    typedef CORE::CTSharedPtr< CPixel, MT::CMutex > TPixelPtr;
     
     CPixel( void );
     

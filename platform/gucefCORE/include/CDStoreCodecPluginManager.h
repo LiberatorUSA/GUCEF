@@ -65,7 +65,7 @@ class GUCEF_CORE_PUBLIC_CPP CDStoreCodecPluginManager : public CPluginManager
 {
     public:
 
-    typedef CTSharedPtr< CDStoreCodecPlugin > TDStoreCodecPluginPtr;
+    typedef CTSharedPtr< CDStoreCodecPlugin, MT::CMutex > TDStoreCodecPluginPtr;
 
     TDStoreCodecPluginPtr GetCodec( const CString& codectype ) const;
 

@@ -299,10 +299,10 @@ class GUCEF_VFS_PUBLIC_CPP CVFS : public CORE::CTSGNotifier   ,
     };
     typedef struct SConstMountLink TConstMountLink;
     
-    typedef std::vector< TMountEntry >                   TMountVector;
-    typedef std::vector< TConstMountLink >               TConstMountLinkVector;
-    typedef CORE::CTSharedPtr< CORE::CDynamicBuffer >    TDynamicBufferPtr;
-    typedef std::vector< CArchiveSettings >              TArchiveSettingsVector;
+    typedef std::vector< TMountEntry >                               TMountVector;
+    typedef std::vector< TConstMountLink >                           TConstMountLinkVector;
+    typedef CORE::CTSharedPtr< CORE::CDynamicBuffer, MT::CMutex >    TDynamicBufferPtr;
+    typedef std::vector< CArchiveSettings >                          TArchiveSettingsVector;
 
     typedef CORE::CTEventHandlerFunctor< CVFS >          TEventCallback;
     

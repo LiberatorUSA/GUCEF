@@ -124,7 +124,7 @@ class GUIDRIVERWIN32GL_PUBLIC_CPP CWin32GLWindowContext : public GUI::CWindowCon
 
 /*-------------------------------------------------------------------------*/
 
-typedef CORE::CTSharedPtr< CWin32GLWindowContext >  TWin32GLWindowContextPtr;
+typedef CORE::CTSharedPtr< CWin32GLWindowContext, MT::CMutex >  TWin32GLWindowContextPtr;
 
 /*-------------------------------------------------------------------------//
 //                                                                         //

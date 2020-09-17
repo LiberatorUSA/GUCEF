@@ -92,7 +92,7 @@ class GUIDRIVERWIN32D3D9_PUBLIC_CPP CWin32D3D9WindowManagerImp : public GUI::CWi
 
 /*-------------------------------------------------------------------------*/
 
-typedef CORE::CTSharedPtr< CWin32D3D9WindowManagerImp > TWin32D3D9WindowManagerImpPtr;
+typedef CORE::CTSharedPtr< CWin32D3D9WindowManagerImp, MT::CMutex > TWin32D3D9WindowManagerImpPtr;
 
 /*-------------------------------------------------------------------------//
 //                                                                         //

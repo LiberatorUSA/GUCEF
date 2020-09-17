@@ -84,7 +84,7 @@ class GUCEF_CORE_PRIVATE_CPP CPluginGroup
 
 /*-------------------------------------------------------------------------*/
 
-typedef CTSharedPtr< CPluginGroup > TPluginGroupPtr;
+typedef CTSharedPtr< CPluginGroup, MT::CMutex > TPluginGroupPtr;
 
 /*-------------------------------------------------------------------------//
 //                                                                         //

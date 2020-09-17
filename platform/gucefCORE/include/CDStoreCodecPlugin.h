@@ -194,7 +194,7 @@ class GUCEF_CORE_PUBLIC_CPP CDStoreCodecPlugin : public CDStoreCodec ,
 
 /*-------------------------------------------------------------------------*/
 
-typedef CTSharedPtr< CDStoreCodecPlugin > TDStoreCodecPluginPtr;
+typedef CTSharedPtr< CDStoreCodecPlugin, MT::CMutex > TDStoreCodecPluginPtr;
 
 /*-------------------------------------------------------------------------//
 //                                                                         //

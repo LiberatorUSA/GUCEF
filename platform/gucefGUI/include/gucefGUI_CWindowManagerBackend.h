@@ -133,7 +133,7 @@ class GUCEF_GUI_PUBLIC_CPP CWindowManagerBackend : public CORE::CObservingNotifi
 
 /*-------------------------------------------------------------------------*/
 
-typedef CORE::CTSharedPtr< CWindowManagerBackend > TWindowManagerBackendPtr;
+typedef CORE::CTSharedPtr< CWindowManagerBackend, MT::CMutex > TWindowManagerBackendPtr;
 
 /*-------------------------------------------------------------------------//
 //                                                                         //

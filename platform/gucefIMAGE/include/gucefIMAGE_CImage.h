@@ -170,7 +170,7 @@ class GUCEF_IMAGE_EXPORT_CPP CImage
 
 /*--------------------------------------------------------------------------*/
 
-typedef CORE::CTSharedPtr< CImage >    TImagePtr;
+typedef CORE::CTSharedPtr< CImage, MT::CMutex >    TImagePtr;
 
 /*-------------------------------------------------------------------------//
 //                                                                         //

@@ -26,6 +26,11 @@
 //                                                                         //
 //-------------------------------------------------------------------------*/
 
+#ifndef GUCEF_MT_CMUTEX_H
+#include "gucefMT_CMutex.h"
+#define GUCEF_MT_CMUTEX_H
+#endif /* GUCEF_MT_CMUTEX_H ? */
+
 #ifndef GUCEF_CORE_CSTRING_H
 #include "CDVString.h"
 #define GUCEF_CORE_CSTRING_H
@@ -70,7 +75,7 @@ class GUCEF_VFS_PUBLIC_CPP CVFSHandle
 {
     public:
 
-    typedef CORE::CTSharedPtr< CORE::CDynamicBuffer > TDynamicBufferPtr;
+    typedef CORE::CTSharedPtr< CORE::CDynamicBuffer, MT::CMutex > TDynamicBufferPtr;
 
     CVFSHandle( CORE::CIOAccess* fileAccess ,
                 const CString& filename     ,

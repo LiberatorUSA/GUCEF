@@ -73,7 +73,7 @@ class GUCEF_IMAGE_EXPORT_CPP CIMGCodec
 {
     public:
     
-    typedef CORE::CTSharedPtr< CORE::CICodec > CCodecPtr;
+    typedef CORE::CTSharedPtr< CORE::CICodec, MT::CMutex > CCodecPtr;
     
     /**
      *  Constructs and links the conversion object

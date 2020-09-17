@@ -76,11 +76,11 @@ namespace CORE {
  *  The usage of shared pointers will ensure safe fire-and-forget usage
  *  where object access is concerned
  */
-template < class T >
+template < class T, class LockType >
 class CTRegistry : public MT::CILockable
 {
     public:
-    typedef CTSharedPtr< T > TRegisteredObjPtr;
+    typedef CTSharedPtr< T, LockType > TRegisteredObjPtr;
     typedef std::vector< CString > TStringList;
 
     CTRegistry( void );
@@ -135,8 +135,8 @@ class CTRegistry : public MT::CILockable
 //                                                                         //
 //-------------------------------------------------------------------------*/
 
-template< class T >
-CTRegistry< T >::CTRegistry( void )
+template< class T, class LockType >
+CTRegistry< T, LockType >::CTRegistry( void )
     : m_list()
 {GUCEF_TRACE;
 
@@ -144,8 +144,8 @@ CTRegistry< T >::CTRegistry( void )
 
 /*-------------------------------------------------------------------------*/
 
-template< class T >
-CTRegistry< T >::CTRegistry( const CTRegistry& src )
+template< class T, class LockType >
+CTRegistry< T, LockType >::CTRegistry( const CTRegistry& src )
     : m_list()
 {GUCEF_TRACE;
 
@@ -159,8 +159,8 @@ CTRegistry< T >::CTRegistry( const CTRegistry& src )
 
 /*-------------------------------------------------------------------------*/
 
-template< class T >
-CTRegistry< T >::~CTRegistry()
+template< class T, class LockType >
+CTRegistry< T, LockType >::~CTRegistry()
 {GUCEF_TRACE;
 
     UnregisterAll();
@@ -168,9 +168,9 @@ CTRegistry< T >::~CTRegistry()
 
 /*-------------------------------------------------------------------------*/
 
-template< class T >
-CTRegistry< T >&
-CTRegistry< T >::operator=( const CTRegistry& src )
+template< class T, class LockType >
+CTRegistry< T, LockType >&
+CTRegistry< T, LockType >::operator=( const CTRegistry& src )
 {GUCEF_TRACE;
 
     if ( &src != this )
@@ -189,9 +189,9 @@ CTRegistry< T >::operator=( const CTRegistry& src )
 
 /*-------------------------------------------------------------------------*/
 
-template< class T >
+template< class T, class LockType >
 bool
-CTRegistry< T >::IsRegistered( const CString& name ) const
+CTRegistry< T, LockType >::IsRegistered( const CString& name ) const
 {GUCEF_TRACE;
 
     return m_list.find( name ) != m_list.end();
@@ -199,9 +199,9 @@ CTRegistry< T >::IsRegistered( const CString& name ) const
 
 /*-------------------------------------------------------------------------*/
 
-template< class T >
-CTSharedPtr< T >
-CTRegistry< T >::Lookup( const CString& name ) const
+template< class T, class LockType >
+CTSharedPtr< T, LockType >
+CTRegistry< T, LockType >::Lookup( const CString& name ) const
 {GUCEF_TRACE;
 
     typename TRegisteredObjList::const_iterator i = m_list.find( name );
@@ -216,11 +216,11 @@ CTRegistry< T >::Lookup( const CString& name ) const
 
 /*-------------------------------------------------------------------------*/
 
-template< class T >
+template< class T, class LockType >
 bool
-CTRegistry< T >::TryLookup( const CString& name           ,
-                            TRegisteredObjPtr& locatedObj ,
-                            bool caseSensitive            ) const
+CTRegistry< T, LockType >::TryLookup( const CString& name           ,
+                                      TRegisteredObjPtr& locatedObj ,
+                                      bool caseSensitive            ) const
 {GUCEF_TRACE;
 
     if ( caseSensitive )
@@ -253,10 +253,10 @@ CTRegistry< T >::TryLookup( const CString& name           ,
 
 /*-------------------------------------------------------------------------*/
 
-template< class T >
+template< class T, class LockType >
 void
-CTRegistry< T >::Register( const CString& name                ,
-                           const TRegisteredObjPtr& sharedPtr )
+CTRegistry< T, LockType >::Register( const CString& name                ,
+                                     const TRegisteredObjPtr& sharedPtr )
 {GUCEF_TRACE;
 
     typename TRegisteredObjList::iterator i = m_list.find( name );
@@ -272,10 +272,10 @@ CTRegistry< T >::Register( const CString& name                ,
 
 /*-------------------------------------------------------------------------*/
 
-template< class T >
+template< class T, class LockType >
 bool
-CTRegistry< T >::TryRegister( const CString& name                ,
-                              const TRegisteredObjPtr& sharedPtr )
+CTRegistry< T, LockType >::TryRegister( const CString& name                ,
+                                        const TRegisteredObjPtr& sharedPtr )
 {GUCEF_TRACE;
 
     typename TRegisteredObjList::iterator i = m_list.find( name );
@@ -290,9 +290,9 @@ CTRegistry< T >::TryRegister( const CString& name                ,
 
 /*-------------------------------------------------------------------------*/
 
-template< class T >
+template< class T, class LockType >
 void
-CTRegistry< T >::Unregister( const CString& name )
+CTRegistry< T, LockType >::Unregister( const CString& name )
 {GUCEF_TRACE;
 
     typename TRegisteredObjList::iterator i = m_list.find( name );
@@ -308,9 +308,9 @@ CTRegistry< T >::Unregister( const CString& name )
 
 /*-------------------------------------------------------------------------*/
 
-template< class T >
+template< class T, class LockType >
 void
-CTRegistry< T >::UnregisterAll( void )
+CTRegistry< T, LockType >::UnregisterAll( void )
 {GUCEF_TRACE;
 
     typename TRegisteredObjList::iterator i = m_list.begin();
@@ -324,18 +324,18 @@ CTRegistry< T >::UnregisterAll( void )
 
 /*-------------------------------------------------------------------------*/
 
-template< class T >
+template< class T, class LockType >
 UInt32
-CTRegistry< T >::GetCount( void ) const
+CTRegistry< T, LockType >::GetCount( void ) const
 {GUCEF_TRACE;
     return static_cast< UInt32 >( m_list.size() );
 }
 
 /*-------------------------------------------------------------------------*/
 
-template< class T >
+template< class T, class LockType >
 void
-CTRegistry< T >::GetList( TStringList& destList ) const
+CTRegistry< T, LockType >::GetList( TStringList& destList ) const
 {GUCEF_TRACE;
 
     typename TRegisteredObjList::const_iterator i = m_list.begin();
@@ -348,9 +348,9 @@ CTRegistry< T >::GetList( TStringList& destList ) const
 
 /*-------------------------------------------------------------------------*/
 
-template< class T >
+template< class T, class LockType >
 bool
-CTRegistry< T >::Lock( void ) const
+CTRegistry< T, LockType >::Lock( void ) const
 {GUCEF_TRACE;
         /* implemented to avoid manditory implementation by decending classes */
     return false;
@@ -358,9 +358,9 @@ CTRegistry< T >::Lock( void ) const
 
 /*-------------------------------------------------------------------------*/
 
-template< class T >
+template< class T, class LockType >
 bool
-CTRegistry< T >::Unlock( void ) const
+CTRegistry< T, LockType >::Unlock( void ) const
 {GUCEF_TRACE;
         /* implemented to avoid manditory implementation by decending classes */
     return false;

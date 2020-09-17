@@ -26,6 +26,11 @@
 //                                                                         //
 //-------------------------------------------------------------------------*/
 
+#ifndef GUCEF_MT_CMUTEX_H
+#include "gucefMT_CMutex.h"
+#define GUCEF_MT_CMUTEX_H
+#endif /* GUCEF_MT_CMUTEX_H ? */
+
 #ifndef GUCEF_CORE_CIPLUGINMETADATA_H
 #include "gucefCORE_CIPluginMetaData.h"
 #define GUCEF_CORE_CIPLUGINMETADATA_H
@@ -186,7 +191,7 @@ class GUCEF_CORE_PUBLIC_CPP CPluginMetaData : public CIPluginMetaData ,
 
 /*-------------------------------------------------------------------------*/
 
-typedef CTSharedPtr< CPluginMetaData > TPluginMetaDataStoragePtr;
+typedef CTSharedPtr< CPluginMetaData, MT::CMutex > TPluginMetaDataStoragePtr;
 
 /*-------------------------------------------------------------------------//
 //                                                                         //

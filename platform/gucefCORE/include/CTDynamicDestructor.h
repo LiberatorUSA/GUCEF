@@ -26,7 +26,10 @@
 //                                                                         //
 //-------------------------------------------------------------------------*/
 
+#ifndef GUCEF_CORE_CTDYNAMICDESTRUCTORBASE_H
 #include "CTDynamicDestructorBase.h"
+#define GUCEF_CORE_CTDYNAMICDESTRUCTORBASE_H
+#endif /* #define GUCEF_CORE_CTDYNAMICDESTRUCTORBASE_H ? */ 
 
 /*-------------------------------------------------------------------------//
 //                                                                         //

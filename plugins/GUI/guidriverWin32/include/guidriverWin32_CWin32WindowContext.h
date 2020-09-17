@@ -120,7 +120,7 @@ class GUIDRIVERWIN32_PUBLIC_CPP CWin32WindowContext : public GUI::CWindowContext
 
 /*-------------------------------------------------------------------------*/
 
-typedef CORE::CTSharedPtr< CWin32WindowContext >  TWin32WindowContextPtr;
+typedef CORE::CTSharedPtr< CWin32WindowContext, MT::CMutex >  TWin32WindowContextPtr;
 
 /*-------------------------------------------------------------------------//
 //                                                                         //
