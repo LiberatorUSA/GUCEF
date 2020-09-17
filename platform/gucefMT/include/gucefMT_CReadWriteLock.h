@@ -27,11 +27,18 @@
 
 #ifndef GUCEF_MT_ETYPES_H
 #include "gucefMT_ETypes.h"           /* simple types used */
+#define GUCEF_MT_ETYPES_H
 #endif /* GUCEF_MT_ETYPES_H ? */
 
-#ifndef GUCEF_MT_GUCEFMT_MACROS_H
+#ifndef GUCEF_MT_MACROS_H
 #include "gucefMT_macros.h"     /* often used gucef macros */
-#endif /* GUCEF_MT_GUCEFMT_MACROS_H ? */
+#define GUCEF_MT_MACROS_H
+#endif /* GUCEF_MT_MACROS_H ? */
+
+#ifndef GUCEF_MT_CILOCKABLE_H
+#include "gucefMT_CILockable.h"
+#define GUCEF_MT_CILOCKABLE_H
+#endif /* GUCEF_MT_CILOCKABLE_H ? */
 
 /*-------------------------------------------------------------------------//
 //                                                                         //
@@ -63,80 +70,101 @@ namespace MT {
 /**
  *      Wrapper class for my C implementation of a readers/writers lock
  */
-class GUCEF_MT_PUBLIC_CPP CReadWriteLock
+class GUCEF_MT_PUBLIC_CPP CReadWriteLock : public CILockable
 {
-        public:
+    public:
 
-        /**
-         *      Creates the readers/writers lock with the given priority setting
-         *      @param writers_overrule Wheter writers or readers have priority.
-         */
-        CReadWriteLock( bool writers_overrule );
+    /**
+     *      Creates the readers/writers lock with the given priority setting
+     *      @param writers_overrule Wheter writers or readers have priority.
+     */
+    CReadWriteLock( bool writers_overrule );
 
-        /**
-         *      Cleans up the lock.
-         *      The destructor will block untill all readers and writers are
-         *      finished !!!.
-         */
-        ~CReadWriteLock();
+    /**
+     *      Creates a new reader writer lock but copies the settings from the existing one
+     */
+    CReadWriteLock( const CReadWriteLock& src );
 
-        /**
-         *      Use when a writer task needs access to the data protected by
-         *      the given lock. Blocks untill access is granted.
-         *      Returns wheter the operation was successfull.
-         *      In case of failure it returns imediatly and the return value
-         *      will be false. In such a case the lock should no longer be used.
-         */
-        bool WriterStart( void );
+    /**
+     *      Cleans up the lock.
+     *      The destructor will block untill all readers and writers are
+     *      finished !!!.
+     */
+    virtual ~CReadWriteLock();
 
-        /**
-         *      Use when a writer task finished using data/code that is
-         *      protected by this lock.
-         */
-        void WriterStop( void );
+    /**
+     *      Use when a writer task needs access to the data protected by
+     *      the given lock. Blocks untill access is granted.
+     *      Returns wheter the operation was successfull.
+     *      In case of failure it returns imediatly and the return value
+     *      will be false. In such a case the lock should no longer be used.
+     */
+    bool WriterStart( void ) const;
 
-        /**
-         *      Returns the current number of writers. Note that this function
-         *      is meant for output to humans. Race conditions ect. make it
-         *      useless for any control code.
-         */
-        UInt32 WriterCount( void );
+    /**
+     *      Use when a writer task finished using data/code that is
+     *      protected by this lock.
+     */
+    bool WriterStop( void ) const;
 
-        /**
-         *      Use when a reader task needs access to the data protected by
-         *      the given lock. Blocks untill access is granted (if a writer is
-         *      currently busy). Returns wheter the operation was successfull.
-         *      In case of failure it returns imediatly and the return value
-         *      will be false. In such a case the lock should no longer be used.
-         */
-        bool ReaderStart( void );
+    /**
+     *      Returns the current number of writers. Note that this function
+     *      is meant for output to humans. Race conditions ect. make it
+     *      useless for any control code.
+     */
+    UInt32 WriterCount( void ) const;
 
-        /**
-         *      Use when a reader task finished using data/code that is
-         *      protected by this lock.
-         */
-        void ReaderStop( void );
+    /**
+     *      Use when a reader task needs access to the data protected by
+     *      the given lock. Blocks untill access is granted (if a writer is
+     *      currently busy). Returns wheter the operation was successfull.
+     *      In case of failure it returns imediatly and the return value
+     *      will be false. In such a case the lock should no longer be used.
+     */
+    bool ReaderStart( void ) const;
 
-        /**
-         *      Returns the current number of readers. Note that this function
-         *      is meant for output to humans. Race conditions ect. make it
-         *      useless for any control code.
-         */
-        UInt32 ReaderCount( void );
+    /**
+     *      Use when a reader task finished using data/code that is
+     *      protected by this lock.
+     */
+    void ReaderStop( void ) const;
 
-        /**
-         *      Returns wheter readers or writers have prioritity.
-         *      True in case the writers have priority and false if the readers
-         *      have priority.
-         */
-        bool DoWritersOverrule( void );
+    /**
+     *      Returns the current number of readers. Note that this function
+     *      is meant for output to humans. Race conditions ect. make it
+     *      useless for any control code.
+     */
+    UInt32 ReaderCount( void ) const;
 
-        private:
-        struct SRWLock *_rwlock;                  /* encapsulated rwlock struct */
+    /**
+     *      Returns wheter readers or writers have prioritity.
+     *      True in case the writers have priority and false if the readers
+     *      have priority.
+     */
+    bool DoWritersOverrule( void ) const;
 
-        CReadWriteLock( void );                   /* can't use this: need data */
-        CReadWriteLock( const CReadWriteLock& );  /* copy's arent allowed */
-        CReadWriteLock& operator=( const CReadWriteLock& );  /* copy's arent allowed */
+    virtual const CILockable* AsLockable( void ) const GUCEF_VIRTUAL_OVERRIDE;
+
+    protected:
+
+    /**
+     *  Should be implemented by the derived classes such that all interactions with the class
+     *  member functions and variables are protected against multiple threads accessing them
+     *  Typical implementation would be to have this call Lock() on a mutex member in a derived class
+     */
+    virtual bool Lock( void ) const GUCEF_VIRTUAL_OVERRIDE;
+
+    /**
+     *  Counterpart to the Lock() member function. This releases the lock obtained using Lock() 
+     *  Typical implementation would be to have this call Unlock() on a mutex member in a derived class
+     */
+    virtual bool Unlock( void ) const GUCEF_VIRTUAL_OVERRIDE;
+
+    private:
+    mutable struct SRWLock* _rwlock;          /* encapsulated rwlock struct */
+
+    CReadWriteLock( void );                   /* can't use this: need data */
+    CReadWriteLock& operator=( const CReadWriteLock& );  /* copy's arent allowed */
 };
 
 /*------------------------------------------------------------------------//
@@ -161,4 +189,4 @@ class GUCEF_MT_PUBLIC_CPP CReadWriteLock
 - 16-10-2004 :
        - Designed and implemented this class.
 
------------------------------------------------------------------------------*/
+---------------------------------------------------------------------------*/

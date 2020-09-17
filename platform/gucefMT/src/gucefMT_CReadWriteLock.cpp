@@ -23,7 +23,7 @@
 //-------------------------------------------------------------------------*/
 
 #ifndef GUCEF_MT_DVRWLOCK_H
-#include "gucefMT_DVRWLOCK.h"           /* my C implementation of an RW lock */
+#include "gucefMT_DVRWLOCK.h"           /* my C implementation of a RW lock */
 #define GUCEF_MT_DVRWLOCK_H
 #endif /* GUCEF_MT_DVRWLOCK_H ? */
 
@@ -44,113 +44,106 @@ namespace MT {
 //                                                                         //
 //-------------------------------------------------------------------------*/
 
-/**
- *      Creates the readers/writers lock with the given priority setting
- *      @param writers_overrule Wheter writers or readers have priority.
- */
 CReadWriteLock::CReadWriteLock( bool writers_overrule )
+    : _rwlock( GUCEF_NULL )
 {
-        _rwlock = rwl_create( writers_overrule );
+    _rwlock = rwl_create( writers_overrule ? 1 : 0 );
 }
 
 /*--------------------------------------------------------------------------*/
 
-/**
- *      Cleans up the lock.
- *      The destructor will block untill all readers and writers are
- *      finished !!!.
- */
+CReadWriteLock::CReadWriteLock( const CReadWriteLock& src )
+{
+    _rwlock = rwl_create( rwl_writer_overrules( src._rwlock ) );
+}
+
+/*--------------------------------------------------------------------------*/
+
 CReadWriteLock::~CReadWriteLock()
 {
-        rwl_destroy( _rwlock );
+    rwl_destroy( _rwlock );
+    _rwlock = GUCEF_NULL;
 }
 
 /*--------------------------------------------------------------------------*/
 
-/**
- *      Use when a writer task needs access to the data protected by
- *      the given lock. Blocks untill access is granted.
- */
 bool
-CReadWriteLock::WriterStart( void )
+CReadWriteLock::WriterStart( void ) const
 {
-        return rwl_writer_start( _rwlock ) != 0;
+    return rwl_writer_start( _rwlock ) != 0;
 }
 
 /*--------------------------------------------------------------------------*/
 
-/**
- *      Use when a writer task finished using data/code that is
- *      protected by this lock.
- */
-void
-CReadWriteLock::WriterStop( void )
+bool
+CReadWriteLock::WriterStop( void ) const
 {
-        rwl_writer_stop( _rwlock );
+    rwl_writer_stop( _rwlock );
+    return true;
 }
 
 /*--------------------------------------------------------------------------*/
 
-/**
- *      Returns the current number of writers. Note that this function
- *      is meant for output to humans. Race conditions ect. make it
- *      useless for any control code.
- */
 UInt32
-CReadWriteLock::WriterCount( void )
+CReadWriteLock::WriterCount( void ) const
 {
-        return rwl_writers( _rwlock );
+    return rwl_writers( _rwlock );
 }
 
 /*--------------------------------------------------------------------------*/
 
-/**
- *      Use when a reader task needs access to the data protected by
- *      the given lock. Blocks untill access is granted (if a writer is
- *      currently busy).
- */
 bool
-CReadWriteLock::ReaderStart( void )
+CReadWriteLock::ReaderStart( void ) const
 {
-        return rwl_reader_start( _rwlock ) != 0;
+    return rwl_reader_start( _rwlock ) != 0;
 }
 
 /*--------------------------------------------------------------------------*/
 
-/**
- *      Use when a reader task finished using data/code that is
- *      protected by this lock.
- */
 void
-CReadWriteLock::ReaderStop( void )
+CReadWriteLock::ReaderStop( void ) const
 {
-        rwl_reader_stop( _rwlock );
+    rwl_reader_stop( _rwlock );
 }
 
 /*--------------------------------------------------------------------------*/
 
-/**
- *      Returns the current number of readers. Note that this function
- *      is meant for output to humans. Race conditions ect. make it
- *      useless for any control code.
- */
 UInt32
-CReadWriteLock::ReaderCount( void )
+CReadWriteLock::ReaderCount( void ) const
 {
-        return rwl_readers( _rwlock );
+    return rwl_readers( _rwlock );
 }
 
 /*--------------------------------------------------------------------------*/
 
-/**
- *      Returns wheter readers or writers have prioritity.
- *      True in case the writers have priority and false if the readers
- *      have priority.
- */
 bool
-CReadWriteLock::DoWritersOverrule( void )
+CReadWriteLock::DoWritersOverrule( void ) const
 {
-        return rwl_writer_overrules( _rwlock ) != 0;
+    return rwl_writer_overrules( _rwlock ) != 0;
+}
+
+/*--------------------------------------------------------------------------*/
+
+const CILockable* 
+CReadWriteLock::AsLockable( void ) const
+{
+    return this;
+}
+
+/*--------------------------------------------------------------------------*/
+
+bool 
+CReadWriteLock::Lock( void ) const
+{
+    return WriterStart();
+}
+
+/*--------------------------------------------------------------------------*/
+
+bool
+CReadWriteLock::Unlock( void ) const
+{
+    return WriterStop();
 }
 
 /*------------------------------------------------------------------------//

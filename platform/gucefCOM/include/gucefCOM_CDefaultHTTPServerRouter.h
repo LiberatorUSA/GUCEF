@@ -28,6 +28,16 @@
 
 #include <vector>
 
+#ifndef GUCEF_MT_CREADWRITELOCK_H
+#include "gucefMT_CReadWriteLock.h"
+#define GUCEF_MT_CREADWRITELOCK_H
+#endif /* GUCEF_MT_CREADWRITELOCK_H ? */
+
+#ifndef GUCEF_CORE_CDATANODE_H
+#include "CDataNode.h"
+#define GUCEF_CORE_CDATANODE_H
+#endif /* GUCEF_CORE_CDATANODE_H ? */
+
 #ifndef GUCEF_COM_CIHTTPSERVERROUTER_H
 #include "gucefCOM_CIHTTPServerRouter.h"
 #define GUCEF_COM_CIHTTPSERVERROUTER_H
@@ -79,12 +89,12 @@ class GUCEF_COM_PUBLIC_CPP CDefaultHTTPServerRouter : public CIHTTPServerRouter
 
     protected:
 
-    typedef std::map< CString, THTTPServerResourcePtr > TResourceMap;
-
     CString m_mountPath;
     CString m_serviceRoot;
     CIHTTPServerRouterController* m_controller;
-    TResourceMap m_resourceMap;
+    CORE::CDataNode m_resourceMap;
+    bool m_uriIsCaseSensitive;
+    MT::CReadWriteLock m_rwLock;
 };
 
 /*-------------------------------------------------------------------------//

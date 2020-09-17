@@ -24,6 +24,7 @@ set( HEADER_FILES
   include/gucefMT_CObjectScopeLock.h
   include/gucefMT_CReadWriteLock.h
   include/gucefMT_CScopeMutex.h
+  include/gucefMT_CScopeRwLock.h
   include/gucefMT_CSemaphore.h
   include/gucefMT_CTMailBox.h
   include/gucefMT_DVRWLOCK.h
@@ -48,6 +49,7 @@ set( SOURCE_FILES
   src/gucefMT_CObjectScopeLock.cpp
   src/gucefMT_CReadWriteLock.cpp
   src/gucefMT_CScopeMutex.cpp
+  src/gucefMT_CScopeRwLock.cpp
   src/gucefMT_CSemaphore.cpp
   src/gucefMT_CTMailBox.cpp
   src/gucefMT_DVRWLOCK.c
