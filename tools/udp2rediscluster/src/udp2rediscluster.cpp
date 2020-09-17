@@ -1106,7 +1106,8 @@ RestApiUdp2RedisInfoResource::~RestApiUdp2RedisInfoResource()
 
 bool
 RestApiUdp2RedisInfoResource::Serialize( CORE::CDataNode& output             ,
-                                         const CORE::CString& representation )
+                                         const CORE::CString& representation ,
+                                         const CORE::CString& params         )
 {GUCEF_TRACE;
 
     output.SetName( "info" );
@@ -1142,7 +1143,8 @@ RestApiUdp2RedisConfigResource::~RestApiUdp2RedisConfigResource()
 
 bool
 RestApiUdp2RedisConfigResource::Serialize( CORE::CDataNode& output             ,
-                                           const CORE::CString& representation )
+                                           const CORE::CString& representation ,
+                                           const CORE::CString& params         )
 {GUCEF_TRACE;
 
     if ( m_appConfig )

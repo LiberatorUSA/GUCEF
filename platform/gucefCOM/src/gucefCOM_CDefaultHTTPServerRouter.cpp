@@ -112,12 +112,12 @@ CDefaultHTTPServerRouter::ResolveUriToResource( const CString& uri )
     CORE::CDataNode* resourceNode = GUCEF_NULL;
     if ( m_uriIsCaseSensitive )
     {
-        resourceNode = m_resourceMap.Search( uri, '/', true, false );
+        resourceNode = m_resourceMap.Search( uri, '/', true, true );
     }
     else
     {
         CString lcUri = uri.Lowercase();
-        resourceNode = m_resourceMap.Search( lcUri, '/', true, false );
+        resourceNode = m_resourceMap.Search( lcUri, '/', true, true );
     }
 
     if ( GUCEF_NULL != resourceNode )

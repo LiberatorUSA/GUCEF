@@ -983,7 +983,7 @@ CDataNode::Search( const CString& query     ,
                 return const_cast< CDataNode* >( this );
             }
         }
-        else
+
         if ( treatChildAsCurrent )
         {
             TDataNodeList::const_iterator i = m_children.begin();
@@ -1108,11 +1108,11 @@ CDataNode::WalkTreeImp( CString& sleftover ,
           
     if ( !m_children.empty() )
     {
-        TDataNodeVector resultSet;                
-        
-        CDataNode* sn = (CDataNode*) this;       
-        CString searchseg( sleftover.SubstrToChar( seperator, true ) );        
+        CString searchseg( sleftover.SubstrToChar( seperator, true ) );
         CString left( sleftover.CutChars( searchseg.Length()+1, true ) );
+        
+        TDataNodeVector resultSet;                        
+        CDataNode* sn = (CDataNode*) this;       
         CString bestMatchLeftover( left );
                                                   
         CDataNode* n = m_children.front();                                                                                    
@@ -1149,12 +1149,20 @@ CDataNode::WalkTreeImp( CString& sleftover ,
                     else
                     if ( bestMatchLeftover.Length() == childLeftover.Length() )
                     {
-                        // We found more equally good matches
-                        TDataNodeVector::iterator m = childResultSet.begin();
-                        while ( m != childResultSet.end() )
+                        if ( childResultSet.empty() )
                         {
-                            resultSet.push_back( (*m) );
-                            ++m;
+                            // The child match itself is currently the best match
+                            resultSet.push_back( n );
+                        }
+                        else
+                        {
+                            // We found more equally good matches deeper down the child tree
+                            TDataNodeVector::iterator m = childResultSet.begin();
+                            while ( m != childResultSet.end() )
+                            {
+                                resultSet.push_back( (*m) );
+                                ++m;
+                            }
                         }
                     }
                 }

@@ -319,7 +319,8 @@ class RestApiUdp2RedisInfoResource : public COM::CCodecBasedHTTPServerResource
     virtual ~RestApiUdp2RedisInfoResource();
 
     virtual bool Serialize( CORE::CDataNode& output             ,
-                            const CORE::CString& representation );
+                            const CORE::CString& representation ,
+                            const CORE::CString& params         ) GUCEF_VIRTUAL_OVERRIDE;
 
     private:
 
@@ -337,7 +338,8 @@ class RestApiUdp2RedisConfigResource : public COM::CCodecBasedHTTPServerResource
     virtual ~RestApiUdp2RedisConfigResource();
 
     virtual bool Serialize( CORE::CDataNode& output             ,
-                            const CORE::CString& representation );
+                            const CORE::CString& representation ,
+                            const CORE::CString& params         ) GUCEF_VIRTUAL_OVERRIDE;
 
     private:
 
