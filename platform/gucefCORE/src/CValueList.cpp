@@ -793,6 +793,18 @@ CValueList::Clear( void )
     m_allowMultipleValues = true;
 }
 
+/*-------------------------------------------------------------------------*/
+
+void 
+CValueList::CopySettingsFrom( const CValueList& other )
+{GUCEF_TRACE;
+
+    m_allowDuplicates = other.m_allowDuplicates;
+    m_allowMultipleValues = other.m_allowMultipleValues;
+    m_configNamespace = other.m_configNamespace;
+    m_configKeyNamespace = other.m_configKeyNamespace;    
+}
+
 /*-------------------------------------------------------------------------//
 //                                                                         //
 //      NAMESPACE                                                          //

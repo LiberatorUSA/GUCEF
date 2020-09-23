@@ -156,7 +156,7 @@ DSTOREPLUG_Dest_File_Close( void** plugdata ,
        if ( measured > 0 )
             --measured;
         
-        fd->fptr->write( fd->fptr, serializationBuffer, 1, measured );
+        fd->fptr->write( fd->fptr, serializationBuffer, 1, (UInt32) measured );
         fd->fptr->close( fd->fptr );
     }
 
@@ -391,7 +391,9 @@ DSTOREPLUG_Src_File_Open( void** plugdata      ,
     sd = (TSrcFileData*) malloc( sizeof(TSrcFileData) );
     memset( sd, 0, sizeof( TSrcFileData ) );
     sd->access = file;
-    return 0;
+
+    *filedata = sd;
+    return 1;
 }
 
 /*---------------------------------------------------------------------------*/

@@ -203,8 +203,11 @@ void
 CDataNode::Copy( const CDataNode& root )
 {GUCEF_TRACE;
 
-    *this = root;
-    CopySubTree( root );
+    if ( this != &root )
+    {
+        *this = root;
+        CopySubTree( root );
+    }
 }
 
 /*-------------------------------------------------------------------------*/
@@ -543,12 +546,15 @@ void
 CDataNode::CopySubTree( const CDataNode& root )
 {GUCEF_TRACE;
 
-    TDataNodeList::const_iterator n = root.m_children.cbegin();
-    while ( n != root.m_children.cend() )
+    if ( this != &root )
     {
-        AddChild( *(*n) );
-        ++n;
-    }                                
+        TDataNodeList::const_iterator n = root.m_children.cbegin();
+        while ( n != root.m_children.cend() )
+        {
+            AddChild( *(*n) );
+            ++n;
+        }                                
+    }
 }
 
 /*-------------------------------------------------------------------------*/

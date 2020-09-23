@@ -272,6 +272,8 @@ class GUCEF_CORE_PUBLIC_CPP CValueList : public CIConfigurable
 
     TValueMap::const_iterator GetDataEndIterator( void ) const;
 
+    void CopySettingsFrom( const CValueList& other );
+
     virtual const CString& GetClassTypeName( void ) const;
 
     GUCEF_DEFINE_MSGEXCEPTION( GUCEF_CORE_PUBLIC_CPP, EUnknownKey );

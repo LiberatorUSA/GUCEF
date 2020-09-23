@@ -286,31 +286,31 @@ CDefaultHttpServerRequestHandler::OnUpdate( const CHttpRequestData& request ,
             return true;
         }
 
-        CString inputRepresentation;
-        if ( request.resourceRepresentations.size() > 0 )
-        {
-            inputRepresentation = request.resourceRepresentations.front();
-            bool isSupportedMimeType = false;
+        //CString inputRepresentation;
+        //if ( request.resourceRepresentations.size() > 0 )
+        //{
+        //    inputRepresentation = request.resourceRepresentations.front();
+        //    bool isSupportedMimeType = false;
 
-            const TStringVector& supportedRepresentations = resource->GetSupportedDeserializationRepresentations();
-            TStringVector::const_iterator i = supportedRepresentations.begin();
-            while ( i != supportedRepresentations.end() )
-            {
-                if ( (*i).Equals( inputRepresentation, false ) )
-                {
-                    isSupportedMimeType = true;
-                    break;
-                }
-                ++i;
-            }
+        //    const TStringVector& supportedRepresentations = resource->GetSupportedDeserializationRepresentations();
+        //    TStringVector::const_iterator i = supportedRepresentations.begin();
+        //    while ( i != supportedRepresentations.end() )
+        //    {
+        //        if ( (*i).Equals( inputRepresentation, false ) )
+        //        {
+        //            isSupportedMimeType = true;
+        //            break;
+        //        }
+        //        ++i;
+        //    }
 
-            if ( !isSupportedMimeType )
-            {
-                response.statusCode = 415;
-                response.acceptedTypes = resource->GetSupportedDeserializationRepresentations();
-                return true;
-            }
-        }
+        //    if ( !isSupportedMimeType )
+        //    {
+        //        response.statusCode = 415;
+        //        response.acceptedTypes = resource->GetSupportedDeserializationRepresentations();
+        //        return true;
+        //    }
+        //}
 
         // Check if we need to perform a version (concurrency) check
         if ( request.resourceVersions.size() > 0 )
@@ -325,7 +325,7 @@ CDefaultHttpServerRequestHandler::OnUpdate( const CHttpRequestData& request ,
         }
 
         // Assign to the entry
-        CIHTTPServerResource::TDeserializeState deserializeState = resource->Deserialize( request.content, inputRepresentation, isDeltaUpdateOnly );
+        CIHTTPServerResource::TDeserializeState deserializeState = resource->Deserialize( request.content, request.contentRepresentation, isDeltaUpdateOnly );
         if ( CIHTTPServerResource::DESERIALIZESTATE_CORRUPTEDINPUT == deserializeState  )
         {
             // There was a problem in the backend deserializing the content in the negotiated format
@@ -354,8 +354,8 @@ CDefaultHttpServerRequestHandler::OnUpdate( const CHttpRequestData& request ,
 
         // Send the serverside representation back to the client in the representation of the update
         CString params = remainderUri.SubstrToChar( '?', 0, true, true );
-        resource->Serialize( response.content, inputRepresentation, params );
-        response.contentType = inputRepresentation;
+        resource->Serialize( response.content, request.contentRepresentation , params );
+        response.contentType = request.contentRepresentation ;
 
         return true;
     }
@@ -416,15 +416,14 @@ CDefaultHttpServerRequestHandler::OnCreate( const CHttpRequestData& request ,
         // create resource in preperation for deserialization
         CIHTTPServerRouter::THTTPServerResourcePtr resource;
         TStringVector supportedRepresentations;
-        CString createRepresentation = request.resourceRepresentations.front();
 
         CString params = containerUri.SubstrToChar( '?', 0, true, true );
-        CIHTTPServerResource::TCreateState createState = containerResource->CreateResource( request.transactionID    ,
-                                                                                            request.content          ,
-                                                                                            createRepresentation     ,
-                                                                                            params                   ,
-                                                                                            resource                 ,
-                                                                                            supportedRepresentations );
+        CIHTTPServerResource::TCreateState createState = containerResource->CreateResource( request.transactionID         ,
+                                                                                            request.content               ,
+                                                                                            request.contentRepresentation ,
+                                                                                            params                        ,
+                                                                                            resource                      ,
+                                                                                            supportedRepresentations      );
 
         if ( ( CIHTTPServerResource::CREATESTATE_FAILED == createState ) || ( 0 == resource ) )
         {
@@ -461,7 +460,7 @@ CDefaultHttpServerRequestHandler::OnCreate( const CHttpRequestData& request ,
             // as the new resource as part of our reply regardless of whether content was send to the server
 
             // Perform the serialization
-            resource->Serialize( response.content, createRepresentation, params );
+            resource->Serialize( response.content, request.contentRepresentation, params );
 
             // Make sure the client gets an absolute path to the resource
             // which may be a placeholder
@@ -469,7 +468,7 @@ CDefaultHttpServerRequestHandler::OnCreate( const CHttpRequestData& request ,
             response.location = m_routerController->MakeUriAbsolute( *resourceRouter, uriWithAuthority, response.location );
 
             // tell client what representation the resource is stored as plus its version
-            response.contentType = createRepresentation;
+            response.contentType = request.contentRepresentation;
             response.eTag = resource->GetResourceVersion();
             response.lastModified = resource->GetLastModifiedTime();
 

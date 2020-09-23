@@ -71,6 +71,7 @@ class CTConfigurableMapHttpServerResource : public CCodecBasedHTTPServerResource
     typedef std::map< CollectionKeyType, ConfigurableDerivedClass > TConfigurableCollectionMap;
     
     CTConfigurableMapHttpServerResource( const CORE::CString& collectionName    ,
+                                         const CORE::CString& keyPropertyName   ,
                                          TConfigurableCollectionMap* collection ,
                                          MT::CILockable* collectionLock         );
     
@@ -128,14 +129,15 @@ class CTConfigurableMapHttpServerResource : public CCodecBasedHTTPServerResource
 //-------------------------------------------------------------------------*/
 
 template< typename CollectionKeyType, class ConfigurableDerivedClass >
-CTConfigurableMapHttpServerResource< BaseClassType, ConcreteClassType >::CTConfigurableMapHttpServerResource( const CORE::CString& collectionName    ,
-                                                                                                              TConfigurableCollectionMap* collection ,
-                                                                                                              MT::CILockable* collectionLock         )
+CTConfigurableMapHttpServerResource< CollectionKeyType, ConfigurableDerivedClass >::CTConfigurableMapHttpServerResource( const CORE::CString& collectionName    ,
+                                                                                                                         const CORE::CString& keyPropertyName   ,
+                                                                                                                         TConfigurableCollectionMap* collection ,
+                                                                                                                         MT::CILockable* collectionLock         )
     : CCodecBasedHTTPServerResource()
     , m_collection( collection )
     , m_collectionLock( collectionLock )
     , m_collectionName( collectionName )
-    , m_keyPropertyName()
+    , m_keyPropertyName( keyPropertyName )
 {GUCEF_TRACE;
     
     m_allowSerialize = true;
@@ -146,7 +148,7 @@ CTConfigurableMapHttpServerResource< BaseClassType, ConcreteClassType >::CTConfi
 /*-------------------------------------------------------------------------*/
    
 template< typename CollectionKeyType, class ConfigurableDerivedClass >
-CTConfigurableMapHttpServerResource< BaseClassType, ConcreteClassType >::~CTConfigurableMapHttpServerResource()
+CTConfigurableMapHttpServerResource< CollectionKeyType, ConfigurableDerivedClass >::~CTConfigurableMapHttpServerResource()
 {GUCEF_TRACE;
 
 }
@@ -155,7 +157,7 @@ CTConfigurableMapHttpServerResource< BaseClassType, ConcreteClassType >::~CTConf
 
 template< typename CollectionKeyType, class ConfigurableDerivedClass >
 bool 
-CTConfigurableMapHttpServerResource< BaseClassType, ConcreteClassType >::IsCollection( void ) const
+CTConfigurableMapHttpServerResource< CollectionKeyType, ConfigurableDerivedClass >::IsCollection( void ) const
 {GUCEF_TRACE;
 
     return true;
@@ -165,7 +167,7 @@ CTConfigurableMapHttpServerResource< BaseClassType, ConcreteClassType >::IsColle
 
 template< typename CollectionKeyType, class ConfigurableDerivedClass >
 void
-CTConfigurableMapHttpServerResource< BaseClassType, ConcreteClassType >::SetResourceKeyPropertyName( const CString& keyPropertyName )
+CTConfigurableMapHttpServerResource< CollectionKeyType, ConfigurableDerivedClass >::SetResourceKeyPropertyName( const CString& keyPropertyName )
 {GUCEF_TRACE;
 
     m_keyPropertyName = keyPropertyName;
@@ -175,7 +177,7 @@ CTConfigurableMapHttpServerResource< BaseClassType, ConcreteClassType >::SetReso
 
 template< typename CollectionKeyType, class ConfigurableDerivedClass >
 const CString&
-CTConfigurableMapHttpServerResource< BaseClassType, ConcreteClassType >::GetResourceKeyPropertyName( void ) const
+CTConfigurableMapHttpServerResource< CollectionKeyType, ConfigurableDerivedClass >::GetResourceKeyPropertyName( void ) const
 {GUCEF_TRACE;
 
     return m_keyPropertyName;
@@ -185,9 +187,9 @@ CTConfigurableMapHttpServerResource< BaseClassType, ConcreteClassType >::GetReso
 
 template< typename CollectionKeyType, class ConfigurableDerivedClass >
 bool
-CTConfigurableMapHttpServerResource< BaseClassType, ConcreteClassType >::Serialize( CORE::CDataNode& output             ,
-                                                                                    const CORE::CString& representation ,
-                                                                                    const CString& params               )
+CTConfigurableMapHttpServerResource< CollectionKeyType, ConfigurableDerivedClass >::Serialize( CORE::CDataNode& output             ,
+                                                                                               const CORE::CString& representation ,
+                                                                                               const CString& params               )
 {GUCEF_TRACE;
 
     MT::CObjectScopeLock lock( m_collectionLock );
@@ -209,13 +211,13 @@ CTConfigurableMapHttpServerResource< BaseClassType, ConcreteClassType >::Seriali
 /*-------------------------------------------------------------------------*/
 
 template< typename CollectionKeyType, class ConfigurableDerivedClass >
-CTConfigurableMapHttpServerResource< BaseClassType, ConcreteClassType >::TCreateState 
-CTConfigurableMapHttpServerResource< BaseClassType, ConcreteClassType >::CreateResource( const CString& transactionID                  ,
-                                                                                         const CORE::CDataNode& input                  ,
-                                                                                         const CString& representation                 ,
-                                                                                         const CString& params                         ,
-                                                                                         THTTPServerResourcePtr& resourceOutput        ,
-                                                                                         TStringVector& supportedRepresentationsOutput )
+CCodecBasedHTTPServerResource::TCreateState 
+CTConfigurableMapHttpServerResource< CollectionKeyType, ConfigurableDerivedClass >::CreateResource( const CString& transactionID                  ,
+                                                                                                    const CORE::CDataNode& input                  ,
+                                                                                                    const CString& representation                 ,
+                                                                                                    const CString& params                         ,
+                                                                                                    THTTPServerResourcePtr& resourceOutput        ,
+                                                                                                    TStringVector& supportedRepresentationsOutput )
 {GUCEF_TRACE;
 
     if ( m_keyPropertyName.IsNULLOrEmpty() ) 

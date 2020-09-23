@@ -508,9 +508,7 @@ CHTTPServer::ParseRequest( const CORE::CDynamicBuffer& inputBuffer ,
             else
             if ( headerName == "content-type" )
             {
-                ExtractCommaSeparatedValues( headerValue              ,
-                                             request.resourceVersions );
-                StripItems( request.resourceRepresentations, ';' );
+                request.contentRepresentation = headerValue;
             }
             else
             if ( headerName == "if-match" )

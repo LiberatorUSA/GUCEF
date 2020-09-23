@@ -82,6 +82,7 @@ class GUCEF_COM_PUBLIC_CPP CHttpRequestData : public CORE::CICloneable
     CString requestHost;
     CString requestUri;
     CORE::CDynamicBuffer content;
+    CString contentRepresentation;
     CString transactionID;
     bool keepConnectionsAlive;
 
