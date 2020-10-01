@@ -241,16 +241,19 @@ bool
 CTaskDelegator::OnThreadCycle( void* taskdata )
 {GUCEF_TRACE;
 
-    if ( CCoreGlobal::Instance()->GetTaskManager().GetQueuedTask( m_taskConsumer  ,
+    CTaskConsumerPtr taskConsumer;
+    if ( CCoreGlobal::Instance()->GetTaskManager().GetQueuedTask( taskConsumer    ,
                                                                   &m_taskData     ) )
     {
-        ProcessTask( m_taskConsumer ,
-                     m_taskData     );
+        m_taskConsumer = taskConsumer;
 
-        TaskCleanup( m_taskConsumer ,
-                     m_taskData     );
+        ProcessTask( taskConsumer ,
+                     m_taskData   );
 
-        m_taskConsumer = GUCEF_NULL;
+        TaskCleanup( taskConsumer ,
+                     m_taskData   );
+
+        taskConsumer = GUCEF_NULL;
         m_taskData = GUCEF_NULL;
     }
 
@@ -321,9 +324,10 @@ CTaskDelegator::OnThreadEnd( void* taskdata )
     // if we get here and the m_consumerBusy flag is set then the task was killed
     // and we did not finish whatever the consumer was doing gracefully
     // We should give the consume a chance to cleanup
-    if ( GUCEF_NULL != m_taskConsumer )
+    CTaskConsumerPtr taskConsumer = m_taskConsumer;
+    if ( GUCEF_NULL != taskConsumer )
     {
-        m_taskConsumer->OnTaskEnd( static_cast< CICloneable* >( taskdata ) );
+        taskConsumer->OnTaskEnd( static_cast< CICloneable* >( taskdata ) );
     }
 }
 
@@ -333,9 +337,10 @@ void
 CTaskDelegator::OnThreadPausedForcibly( void* taskdata )
 {GUCEF_TRACE;
 
-    if ( GUCEF_NULL != m_taskConsumer )
+    CTaskConsumerPtr taskConsumer = m_taskConsumer;
+    if ( GUCEF_NULL != taskConsumer )
     {
-        m_taskConsumer->OnTaskPaused( static_cast< CICloneable* >( taskdata ), true );
+        taskConsumer->OnTaskPaused( static_cast< CICloneable* >( taskdata ), true );
     }
 }
 
@@ -345,9 +350,10 @@ void
 CTaskDelegator::OnThreadResumed( void* taskdata )
 {GUCEF_TRACE;
 
-    if ( GUCEF_NULL != m_taskConsumer )
+    CTaskConsumerPtr taskConsumer = m_taskConsumer;
+    if ( GUCEF_NULL != taskConsumer )
     {
-        m_taskConsumer->OnTaskResumed( static_cast< CICloneable* >( taskdata ) );
+        taskConsumer->OnTaskResumed( static_cast< CICloneable* >( taskdata ) );
     }
 }
 
@@ -359,9 +365,10 @@ CTaskDelegator::OnThreadEnding( void* taskdata    ,
 {GUCEF_TRACE;
 
     // This is invoked from a different thread than the thread represented by the TaskDelegator
-    if ( GUCEF_NULL != m_taskConsumer )
+    CTaskConsumerPtr taskConsumer = m_taskConsumer;
+    if ( GUCEF_NULL != taskConsumer )
     {
-        m_taskConsumer->OnTaskEnding( static_cast< CICloneable* >( taskdata ), willBeForced );
+        taskConsumer->OnTaskEnding( static_cast< CICloneable* >( taskdata ), willBeForced );
     }
 }
 
@@ -375,9 +382,10 @@ CTaskDelegator::OnThreadEnded( void* taskdata ,
     // if we get here and the m_consumerBusy flag is set then the task was killed
     // and we did not finish whatever the consumer was doing gracefully
     // We should give the consume a chance to cleanup
-    if ( GUCEF_NULL != m_taskConsumer )
+    CTaskConsumerPtr taskConsumer = m_taskConsumer;
+    if ( GUCEF_NULL != taskConsumer )
     {
-        m_taskConsumer->OnTaskEnded( static_cast< CICloneable* >( taskdata ), m_consumerBusy );
+        taskConsumer->OnTaskEnded( static_cast< CICloneable* >( taskdata ), m_consumerBusy );
     }
 }
 

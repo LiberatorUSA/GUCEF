@@ -622,6 +622,8 @@ inline bool
 CTBasicSharedPtr< T, LockType >::operator!=( Int32 other ) const
 {GUCEF_TRACE;
 
+    if ( 0 == other ) 
+        return GUCEF_NULL != m_ptr;
     return true;
 }
 
@@ -650,6 +652,8 @@ inline bool
 CTBasicSharedPtr< T, LockType >::operator!=( Int64 other ) const
 {GUCEF_TRACE;
 
+    if ( 0 == other ) 
+        return GUCEF_NULL != m_ptr;
     return true;
 }
 
