@@ -57,8 +57,6 @@ class GUCEF_CORE_PUBLIC_CPP CILoggingFormatter
 {
     public:
 
-    typedef CLogManager::TLogMsgType TLogMsgType;
-
     virtual CString FormatLogMessage( const TLogMsgType logMsgType ,
                                       const Int32 logLevel         ,
                                       const CString& logMessage    ,

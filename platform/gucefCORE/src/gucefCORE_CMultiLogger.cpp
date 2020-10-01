@@ -59,18 +59,18 @@ CMultiLogger::CMultiLogger( void )
     , m_minLogLevel( LOGLEVEL_BELOW_NORMAL ) 
 {GUCEF_TRACE;
 
-    m_msgTypeEnablers[ CLogManager::LOG_ERROR ] = true;
-    m_msgTypeEnablers[ CLogManager::LOG_WARNING ] = true;
-    m_msgTypeEnablers[ CLogManager::LOG_STANDARD ] = true;
-    m_msgTypeEnablers[ CLogManager::LOG_USER ] = true;
-    m_msgTypeEnablers[ CLogManager::LOG_SYSTEM ] = true;
-    m_msgTypeEnablers[ CLogManager::LOG_DEV ] = true;
-    m_msgTypeEnablers[ CLogManager::LOG_DEBUG ] = true;
-    m_msgTypeEnablers[ CLogManager::LOG_SERVICE ] = true;
-    m_msgTypeEnablers[ CLogManager::LOG_PROTECTED ] = true;
-    m_msgTypeEnablers[ CLogManager::LOG_CALLSTACK ] = true;
-    m_msgTypeEnablers[ CLogManager::LOG_EXCEPTION ] = true;
-    m_msgTypeEnablers[ CLogManager::LOG_CONSOLE ] = true;
+    m_msgTypeEnablers[ LOG_ERROR ] = true;
+    m_msgTypeEnablers[ LOG_WARNING ] = true;
+    m_msgTypeEnablers[ LOG_STANDARD ] = true;
+    m_msgTypeEnablers[ LOG_USER ] = true;
+    m_msgTypeEnablers[ LOG_SYSTEM ] = true;
+    m_msgTypeEnablers[ LOG_DEV ] = true;
+    m_msgTypeEnablers[ LOG_DEBUG ] = true;
+    m_msgTypeEnablers[ LOG_SERVICE ] = true;
+    m_msgTypeEnablers[ LOG_PROTECTED ] = true;
+    m_msgTypeEnablers[ LOG_CALLSTACK ] = true;
+    m_msgTypeEnablers[ LOG_EXCEPTION ] = true;
+    m_msgTypeEnablers[ LOG_CONSOLE ] = true;
 }
 
 /*-------------------------------------------------------------------------*/
@@ -254,7 +254,7 @@ CMultiLogger::Log( const TLogMsgType logMsgType ,
             // We want to make certain that errors are always in the log file.
             // We might crash moments later which might cause some loggers not
             // to write the error entry to their respective output media
-            if ( CLogManager::LOG_ERROR == logMsgType )
+            if ( LOG_ERROR == logMsgType )
             {
                 FlushLog();
             }
@@ -301,7 +301,7 @@ CMultiLogger::LogWithoutFormatting( const TLogMsgType logMsgType ,
             // We want to make certain that errors are always in the log file.
             // We might crash moments later which might cause some loggers not
             // to write the error entry to their respective output media
-            if ( CLogManager::LOG_ERROR == logMsgType )
+            if ( LOG_ERROR == logMsgType )
             {
                 FlushLog();
             }

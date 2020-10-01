@@ -157,7 +157,7 @@ CMSWinConsoleLogger::Log( const TLogMsgType logMsgType ,
     }
     else
     {
-        if ( logMsgType == CORE::CLogManager::LOG_CONSOLE )
+        if ( logMsgType == CORE::LOG_CONSOLE )
         {
             DWORD charsWritten = 0;
             ::WriteConsoleA( m_consoleHandle, logMessage.C_String(), (DWORD)logMessage.Length(), &charsWritten, NULL );
@@ -185,7 +185,7 @@ CMSWinConsoleLogger::LogWithoutFormatting( const TLogMsgType logMsgType ,
     }
     else
     {
-        if ( logMsgType == CORE::CLogManager::LOG_CONSOLE )
+        if ( logMsgType == CORE::LOG_CONSOLE )
         {
             DWORD charsWritten = 0;
             ::WriteConsoleA( m_consoleHandle, logMessage.C_String(), (DWORD)logMessage.Length(), &charsWritten, NULL );

@@ -36,10 +36,15 @@
 #define GUCEF_CORE_CINUMERICIDGENERATORBASE_H
 #endif /* GUCEF_CORE_CINUMERICIDGENERATORBASE_H ? */
 
-#ifndef GUCEF_CORE_EXCEPTIONMACROS_H
-#include "ExceptionMacros.h"
-#define GUCEF_CORE_EXCEPTIONMACROS_H
-#endif /* GUCEF_CORE_EXCEPTIONMACROS_H ? */
+#ifndef GUCEF_CORE_EXCEPTIONCLASSMACROS_H
+#include "ExceptionClassMacros.h"   
+#define GUCEF_CORE_EXCEPTIONCLASSMACROS_H
+#endif /* GUCEF_CORE_EXCEPTIONCLASSMACROS_H ? */
+
+#ifndef GUCEF_CORE_EXCEPTIONTHROWMACROS_H
+#include "ExceptionThrowMacros.h"
+#define GUCEF_CORE_EXCEPTIONTHROWMACROS_H
+#endif /* GUCEF_CORE_EXCEPTIONTHROWMACROS_H ? */
 
 /*-------------------------------------------------------------------------//
 //                                                                         //
@@ -269,6 +274,8 @@ CTNumericID< intType >::operator intType() const
     {
         return m_id;
     }
+    GUCEF_ERROR_LOG( 0, "" );
+    GUCEF_EXCEPTION_LOG( 0, "" );
     GUCEF_EMSGTHROW( ENotInitialized, "CTNumericID<>::operator intType(): the ID is not initialized" );
 }
 

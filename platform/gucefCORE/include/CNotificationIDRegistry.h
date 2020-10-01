@@ -44,10 +44,10 @@
 #define GUCEF_CORE_CEVENT_H
 #endif /* GUCEF_CORE_CEVENT_H ? */
 
-#ifndef GUCEF_CORE_EXCEPTIONMACROS_H
-#include "ExceptionMacros.h"
-#define GUCEF_CORE_EXCEPTIONMACROS_H
-#endif /* GUCEF_CORE_EXCEPTIONMACROS_H ? */
+#ifndef GUCEF_CORE_EXCEPTIONCLASSMACROS_H
+#include "ExceptionClassMacros.h"
+#define GUCEF_CORE_EXCEPTIONCLASSMACROS_H
+#endif /* GUCEF_CORE_EXCEPTIONCLASSMACROS_H ? */
 
 /*-------------------------------------------------------------------------//
 //                                                                         //

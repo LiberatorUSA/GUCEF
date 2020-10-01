@@ -708,7 +708,7 @@ Create_Path_Directories( const char* path )
 {
     if ( NULL != path )
     {
-        int i, pathLength = strlen( path );
+        int i, pathLength = (int) strlen( path );
         char* pathBuffer = (char*) malloc( pathLength+1 );
         UInt32 returnValue = 0;
         memcpy( pathBuffer, path, pathLength+1 );

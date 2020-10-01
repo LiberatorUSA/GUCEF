@@ -108,30 +108,6 @@ class GUCEF_CORE_PUBLIC_CPP CLoggingTask : public CTaskConsumer ,
     virtual void SetMinimalLogLevel( const Int32 logLevel ) GUCEF_VIRTUAL_OVERRIDE;
 
     virtual Int32 GetMinimalLogLevel( void ) const GUCEF_VIRTUAL_OVERRIDE;
-    
-    /**
-     *  Utility function for convenience, launches the task using 
-     *  the taskmanager
-     */
-    bool StartTask( void );
-
-    /**
-     *  Utility function for convenience, Stops the task using 
-     *  the taskmanager
-     */
-    bool StopTask( void );
-
-    /**
-     *  Utility function for convenience, Pauses the task using 
-     *  the taskmanager
-     */
-    bool PauseTask( void );
-
-    /**
-     *  Utility function for convenience, Pauses the task using 
-     *  the taskmanager
-     */
-    bool ResumeTask( void );
 
     void SetLoggerBackend( CILogger& loggerBackend );
 
@@ -209,6 +185,10 @@ class GUCEF_CORE_PUBLIC_CPP CLoggingTask : public CTaskConsumer ,
     TMailList m_mailList;
     Int32 m_minLogLevel;
 };
+
+/*-------------------------------------------------------------------------*/
+
+typedef CORE::CTSharedPtr< CLoggingTask, MT::CMutex > CLoggingTaskPtr;
 
 /*-------------------------------------------------------------------------//
 //                                                                         //

@@ -128,7 +128,8 @@ set( HEADER_FILES
   include/DVOSWRAP.h
   include/EEnum.h
   include/EStructs.h
-  include/ExceptionMacros.h
+  include/ExceptionClassMacros.h
+  include/ExceptionThrowMacros.h
   include/MFILE.h
   include/MemoryPool.h
   include/MemorySegment.h
@@ -191,6 +192,8 @@ set( HEADER_FILES
   include/gucefCORE_CVersionRange.h
   include/gucefCORE_ETypes.h
   include/gucefCORE_GenericPluginAPI.h
+  include/gucefCORE_LogLevels.h
+  include/gucefCORE_LogTypes.h
   include/gucefCORE_Logging.h
   include/gucefCORE_LoggingMacros.h
   include/gucefCORE_MetricsMacros.h
@@ -371,6 +374,7 @@ set( SOURCE_FILES
   src/gucefCORE_CTime.cpp
   src/gucefCORE_CVersion.cpp
   src/gucefCORE_CVersionRange.cpp
+  src/gucefCORE_LogLevels.cpp
   src/gucefCORE_cinterface.cpp
   src/md5.c
   src/streamables.cpp

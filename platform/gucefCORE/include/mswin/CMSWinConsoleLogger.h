@@ -47,6 +47,10 @@ namespace CORE {
 //                                                                         //
 //-------------------------------------------------------------------------*/
 
+class CILoggingFormatter;
+
+/*-------------------------------------------------------------------------*/
+
 /**
  *  GUCEF logger implementation for MS Windows that displays log output
  *  in a console window.

@@ -105,7 +105,6 @@ static UInt32 GUCEF_CALLSPEC_STD_PREFIX
 ThreadMain( void* tdvptr ) GUCEF_CALLSPEC_STD_SUFFIX
 {
     UInt32 retval = ( (TThreadData*)tdvptr)->func( ((TThreadData*)tdvptr)->data );
-    free( ((TThreadData*)tdvptr) );
     return retval;
 }
 
@@ -116,7 +115,6 @@ ThreadMain( void* tdvptr )
 {
     TThreadData* td = (TThreadData*) tdvptr;
     UInt32 retval = td->func( td->data );
-    free( ((TThreadData*)tdvptr) );
     return NULL;
 }
 
@@ -124,12 +122,49 @@ ThreadMain( void* tdvptr )
 
 /*--------------------------------------------------------------------------*/
 
-TThreadData*
-ThreadCreate( TThreadFunc func ,
-              void* data       )
+struct SThreadData*
+ThreadDataReserve( void )
 {
     #if ( GUCEF_PLATFORM == GUCEF_PLATFORM_MSWIN )
     TThreadData* td = malloc( sizeof( TThreadData ) );
+    if ( GUCEF_NULL != td )
+        memset( td, 0, sizeof(TThreadData) );
+    return td;
+    #elif ( ( GUCEF_PLATFORM == GUCEF_PLATFORM_LINUX ) || ( GUCEF_PLATFORM == GUCEF_PLATFORM_ANDROID ) )
+    TThreadData* td = malloc( sizeof( TThreadData ) );
+    if ( GUCEF_NULL != td )
+        memset( td, 0, sizeof(TThreadData) );
+    return td;
+    #else
+    #error unsupported target platform
+    return GUCEF_NULL;
+    #endif
+}
+
+/*--------------------------------------------------------------------------*/
+
+void
+ThreadDataCleanup( struct SThreadData* td )
+{
+    if ( GUCEF_NULL != td )
+    {
+        ThreadKill( td );
+        free( td );
+    }
+}
+
+/*--------------------------------------------------------------------------*/
+
+UInt32
+ThreadCreate( struct SThreadData* td ,
+              TThreadFunc func       ,
+              void* data             )
+{
+    if ( GUCEF_NULL == td )
+        return 0;
+    
+    #if ( GUCEF_PLATFORM == GUCEF_PLATFORM_MSWIN )
+
     td->func = (LPTHREAD_START_ROUTINE)func;
     td->data = data;
     td->threadhandle = CreateThread( NULL                                ,  /* Security Descriptor */
@@ -140,11 +175,12 @@ ThreadCreate( TThreadFunc func ,
                                      &td->threadid                       ); /* thread identifier */
     if ( td->threadhandle == NULL )
     {
-        free( td );
-        return NULL;
+        return 0;
     }
-    return td;
+    return 1;
+
     #elif ( ( GUCEF_PLATFORM == GUCEF_PLATFORM_LINUX ) || ( GUCEF_PLATFORM == GUCEF_PLATFORM_ANDROID ) )
+
     int retVal = 0;
     TThreadData* td = malloc( sizeof( TThreadData ) );
     memset( td, 0, sizeof( TThreadData ) );
@@ -153,8 +189,7 @@ ThreadCreate( TThreadFunc func ,
     if ( 0 != retVal )
     {
         /* failed to init thread attributes structure */
-        free( td );
-        return NULL;
+        return 0;
     }
 
     td->data = data;
@@ -165,12 +200,13 @@ ThreadCreate( TThreadFunc func ,
                               (void*) ThreadMain  ,
                               (void*) td          ) )
     {
-        free( td );
-        return NULL;
+        return 0;
     }
-    return td;
+    return 1;
+
     #else
     #error unsupported target platform
+    return 0;
     #endif
 }
 
@@ -226,7 +262,6 @@ ThreadKill( struct SThreadData* td )
     {
         UInt32 retval = TerminateThread( td->threadhandle ,
                                          1                );
-        free( td );
         return retval;
     }
     return 0;
@@ -240,7 +275,6 @@ ThreadKill( struct SThreadData* td )
 
         }
         pthread_attr_destroy( &td->attr );
-        free( td );
         return retval;
     }
     return 0;

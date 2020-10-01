@@ -36,6 +36,11 @@
 #define GUCEF_CORE_MACROS_H
 #endif /* GUCEF_CORE_MACROS_H ? */
 
+#ifndef GUCEF_CORE_LOGTYPES_H
+#include "gucefCORE_LogTypes.h"
+#define GUCEF_CORE_LOGTYPES_H
+#endif /* GUCEF_CORE_LOGTYPES_H ? */
+
 /*-------------------------------------------------------------------------//
 //                                                                         //
 //      NAMESPACE                                                          //
@@ -51,6 +56,8 @@ namespace CORE {
 //                                                                         //
 //-------------------------------------------------------------------------*/
 
+class CString;
+class CDateTime;
 class CPulseGenerator;
 class CTaskManager;
 class CURLHandlerRegistry;
@@ -115,6 +122,24 @@ class GUCEF_CORE_PUBLIC_CPP CCoreGlobal
     CExclusiveActivationManager& GetExclusiveActivationManager( void );
 
     CCodecRegistry& GetCodecRegistry( void );
+
+    /**
+     *  Logging proxy call provided here to avoid including the logging manager 
+     *  with its more involved dependencies
+     */
+    void Log( const TLogMsgType logMsgType ,
+              const Int32 logLevel         ,
+              const CString& logMessage    );
+
+    /**
+     *  Logging proxy call provided here to avoid including the logging manager 
+     *  with its more involved dependencies
+     */
+    void Log( const TLogMsgType logMsgType ,
+              const Int32 logLevel         ,
+              const CString& logMessage    ,
+              const UInt32 threadId        ,
+              const CDateTime& timestamp   );
 
     private:
     friend class CGUCEFCOREModule;

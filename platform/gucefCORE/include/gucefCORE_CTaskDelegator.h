@@ -26,10 +26,20 @@
 //                                                                         //
 //-------------------------------------------------------------------------*/
 
+#ifndef GUCEF_MT_CMUTEX_H
+#include "gucefMT_CMutex.h"
+#define GUCEF_MT_CMUTEX_H
+#endif /* GUCEF_MT_CMUTEX_H ? */
+
 #ifndef GUCEF_MT_CACTIVEOBJECT_H
 #include "gucefMT_CActiveObject.h"
 #define GUCEF_MT_CACTIVEOBJECT_H
 #endif /* GUCEF_MT_CACTIVEOBJECT_H ? */
+
+#ifndef GUCEF_CORE_CTSHAREDPTR_H
+#include "CTSharedPtr.h"
+#define GUCEF_CORE_CTSHAREDPTR_H
+#endif /* GUCEF_CORE_CTSHAREDPTR_H ? */
 
 #ifndef GUCEF_CORE_CNOTIFIER_H
 #include "CNotifier.h"
@@ -51,6 +61,11 @@
 #define GUCEF_CORE_CIPULSEGENERATORDRIVER_H
 #endif /* GUCEF_CORE_CIPULSEGENERATORDRIVER_H ? */
 
+#ifndef GUCEF_CORE_CTASKCONSUMER_H
+#include "gucefCORE_CITaskConsumer.h"
+#define GUCEF_CORE_CTASKCONSUMER_H
+#endif /* GUCEF_CORE_CTASKCONSUMER_H ? */
+
 /*-------------------------------------------------------------------------//
 //                                                                         //
 //      NAMESPACE                                                          //
@@ -67,7 +82,6 @@ namespace CORE {
 //-------------------------------------------------------------------------*/
 
 class CTaskManager;
-class CTaskConsumer;
 
 /*-------------------------------------------------------------------------*/
 
@@ -99,9 +113,9 @@ class GUCEF_CORE_PRIVATE_CPP CTaskDelegator : public MT::CActiveObject      ,
     
     public:
 
-    bool SetTaskConsumer( CTaskConsumer* taskConsumer );
+    bool SetTaskConsumer( CTaskConsumerPtr taskConsumer );
 
-    CTaskConsumer* GetTaskConsumer( void );
+    CTaskConsumerPtr GetTaskConsumer( void );
 
     CPulseGenerator& GetPulseGenerator( void );
 
@@ -155,11 +169,11 @@ class GUCEF_CORE_PRIVATE_CPP CTaskDelegator : public MT::CActiveObject      ,
     virtual void OnThreadEnded( void* taskdata ,
                                 bool forced    ) GUCEF_VIRTUAL_OVERRIDE;
 
-    virtual bool ProcessTask( CTaskConsumer& taskConsumer ,
-                              CICloneable* taskData       );
+    virtual bool ProcessTask( CTaskConsumerPtr taskConsumer ,
+                              CICloneable* taskData         );
                               
-    virtual void TaskCleanup( CTaskConsumer* taskConsumer ,
-                              CICloneable* taskData       );
+    virtual void TaskCleanup( CTaskConsumerPtr taskConsumer ,
+                              CICloneable* taskData         );
     
     protected:
 
@@ -189,10 +203,10 @@ class GUCEF_CORE_PRIVATE_CPP CTaskDelegator : public MT::CActiveObject      ,
 
     protected:
 
-    CTaskDelegator( CTaskConsumer* taskConsumer ,
-                    CICloneable* taskData       );
+    CTaskDelegator( CTaskConsumerPtr taskConsumer ,
+                    CICloneable* taskData         );
 
-    CTaskConsumer* m_taskConsumer;
+    CTaskConsumerPtr m_taskConsumer;
     CICloneable* m_taskData;
 
     private:
@@ -201,6 +215,10 @@ class GUCEF_CORE_PRIVATE_CPP CTaskDelegator : public MT::CActiveObject      ,
     Int32 m_immediatePulseTickets;
     Int32 m_immediatePulseTicketMax;
 };
+
+/*-------------------------------------------------------------------------*/
+
+typedef CTSharedPtr< CTaskDelegator, MT::CMutex >   CTaskDelegatorPtr;
 
 /*-------------------------------------------------------------------------//
 //                                                                         //
@@ -214,15 +232,3 @@ class GUCEF_CORE_PRIVATE_CPP CTaskDelegator : public MT::CActiveObject      ,
 /*-------------------------------------------------------------------------*/
 
 #endif /* GUCEF_CORE_CTASKDELEGATOR_H ? */
-
-/*-------------------------------------------------------------------------//
-//                                                                         //
-//      Info & Changes                                                     //
-//                                                                         //
-//-------------------------------------------------------------------------//
-
-- 20-02-2005 :
-        - Dinand: Added this class, it is based on some older C implementation
-          I made once. Ported but not tested.
-
-----------------------------------------------------------------------------*/

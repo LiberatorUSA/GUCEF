@@ -23,11 +23,6 @@
 //                                                                         //
 //-------------------------------------------------------------------------*/
 
-#ifndef GUCEF_CORE_CTASKMANAGER_H
-#include "gucefCORE_CTaskManager.h"
-#define GUCEF_CORE_CTASKMANAGER_H
-#endif /* GUCEF_CORE_CTASKMANAGER_H ? */
-
 #include "gucefCORE_CLoggingTask.h"
 
 /*-------------------------------------------------------------------------//
@@ -140,42 +135,6 @@ CLoggingTask::LogWithoutFormatting( const TLogMsgType logMsgType ,
 
         m_mailbox.AddMail( MAILTYPE_NEWLOGMSG, &logMsg );
     }
-}
-
-/*-------------------------------------------------------------------------*/
-
-bool
-CLoggingTask::StartTask( void )
-{GUCEF_TRACE;
-
-    return CCoreGlobal::Instance()->GetTaskManager().StartTask( *this );
-}
-
-/*-------------------------------------------------------------------------*/
-
-bool
-CLoggingTask::StopTask( void )
-{GUCEF_TRACE;
-
-    return CCoreGlobal::Instance()->GetTaskManager().RequestTaskToStop( GetTaskId(), true );
-}
-
-/*-------------------------------------------------------------------------*/
-
-bool
-CLoggingTask::PauseTask( void )
-{GUCEF_TRACE;
-
-    return CCoreGlobal::Instance()->GetTaskManager().PauseTask( GetTaskId(), true );
-}
-
-/*-------------------------------------------------------------------------*/
-
-bool
-CLoggingTask::ResumeTask( void )
-{GUCEF_TRACE;
-
-    return CCoreGlobal::Instance()->GetTaskManager().ResumeTask( GetTaskId() );
 }
 
 /*-------------------------------------------------------------------------*/
@@ -391,7 +350,7 @@ CLoggingTask::OnTaskEnd( CICloneable* taskdata )
 
 CLoggingTask::CLoggingMail::CLoggingMail( void )
     : CICloneable()                              ,
-      logMsgType( CLogManager::LOG_UNKNOWNTYPE ) ,
+      logMsgType( LOG_UNKNOWNTYPE ) ,
       logLevel( LOGLEVEL_NORMAL )                ,
       logMessage()                               ,
       threadId( 0 )                              ,

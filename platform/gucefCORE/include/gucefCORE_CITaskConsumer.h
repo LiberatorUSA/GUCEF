@@ -26,6 +26,11 @@
 //                                                                         //
 //-------------------------------------------------------------------------*/
 
+#ifndef GUCEF_MT_CMUTEX_H
+#include "gucefMT_CMutex.h"
+#define GUCEF_MT_CMUTEX_H
+#endif /* GUCEF_MT_CMUTEX_H ? */
+
 #ifndef GUCEF_CORE_COBSERVINGNOTIFIER_H
 #include "CObservingNotifier.h"
 #define GUCEF_CORE_COBSERVINGNOTIFIER_H
@@ -35,6 +40,11 @@
 #include "CTNumericIDGenerator.h"
 #define GUCEF_CORE_CTNUMERICIDGENERATOR_H
 #endif /* GUCEF_CORE_CTNUMERICIDGENERATOR_H ? */
+
+#ifndef GUCEF_CORE_CTSHAREDPTR_H
+#include "CTSharedPtr.h"
+#define GUCEF_CORE_CTSHAREDPTR_H
+#endif /* GUCEF_CORE_CTSHAREDPTR_H ? */
 
 /*-------------------------------------------------------------------------//
 //                                                                         //
@@ -52,6 +62,7 @@ namespace CORE {
 //-------------------------------------------------------------------------*/
 
 class CTaskDelegator;
+class CPulseGenerator;
 
 /*-------------------------------------------------------------------------*/
 
@@ -110,6 +121,11 @@ class GUCEF_CORE_PUBLIC_CPP CTaskConsumer : public CObservingNotifier
     virtual const CString& GetClassTypeName( void ) const GUCEF_VIRTUAL_OVERRIDE;
 
     bool IsOwnedByTaskManager( void ) const;
+
+    /**
+     *  Flag that indicates whether the task has been asked to gracefully deactivate
+     */
+    bool IsDeactivationRequested( void ) const;
 
     /**
      *  Startup routine for the task. You should return true if startup succeeded and the task can commence
@@ -182,6 +198,11 @@ class GUCEF_CORE_PUBLIC_CPP CTaskConsumer : public CObservingNotifier
     bool m_ownedByTaskManager;
 };
 
+/*-------------------------------------------------------------------------*/
+
+typedef CTSharedPtr< CTaskConsumer, MT::CMutex >         CTaskConsumerPtr;
+typedef CTBasicSharedPtr< CTaskConsumer, MT::CMutex >    CTaskConsumerBasicPtr;
+
 /*-------------------------------------------------------------------------//
 //                                                                         //
 //      NAMESPACE                                                          //
@@ -195,13 +216,3 @@ class GUCEF_CORE_PUBLIC_CPP CTaskConsumer : public CObservingNotifier
 
 #endif /* GUCEF_CORE_CTASKCONSUMER_H ? */
 
-/*-------------------------------------------------------------------------//
-//                                                                         //
-//      Info & Changes                                                     //
-//                                                                         //
-//-------------------------------------------------------------------------//
-
-- 20-02-2005 :
-        - Dinand: Added this class
-
-----------------------------------------------------------------------------*/

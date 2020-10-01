@@ -134,6 +134,11 @@ class GUCEF_MT_PUBLIC_CPP CActiveObject : public virtual MT::CILockable
      */
     bool SetCpuAffinityByCpuId( UInt32 cpuId );
 
+    /**
+     *  Blocks the calling thread until the thread has finished
+     */
+    void WaitForThreadToFinish( Int32 timeoutInMs ) const;
+
     protected:
 
     virtual bool Lock( void ) const GUCEF_VIRTUAL_OVERRIDE;

@@ -109,27 +109,27 @@ class GUCEF_CORE_PUBLIC_CPP CTaskManager : public CTSGNotifier
      *
      *  @param assumeOwnershipOfTaskData Whether the taskData given (if any) needs a private copy or whether the task manager can assume ownership
      */
-    bool QueueTask( const CString& taskType                      ,
-                    CICloneable* taskData = GUCEF_NULL           ,
-                    CTaskConsumer** outTaskConsumer = GUCEF_NULL ,
-                    CObserver* taskObserver = GUCEF_NULL         ,
-                    bool assumeOwnershipOfTaskData = false       );
+    bool QueueTask( const CString& taskType                        ,
+                    CICloneable* taskData = GUCEF_NULL             ,
+                    CTaskConsumerPtr* outTaskConsumer = GUCEF_NULL ,
+                    CObserver* taskObserver = GUCEF_NULL           ,
+                    bool assumeOwnershipOfTaskData = false         );
 
     /**
      *  Immediatly starts executing a task using the task
      *  information provided. Based on the provided information
      *  a task consumer will be constructed to actually carry out the task
      */
-    bool StartTask( const CString& taskType                      ,
-                    CICloneable* taskData = GUCEF_NULL           ,
-                    CTaskConsumer** outTaskConsumer = GUCEF_NULL );
+    bool StartTask( const CString& taskType                        ,
+                    CICloneable* taskData = GUCEF_NULL             ,
+                    CTaskConsumerPtr* outTaskConsumer = GUCEF_NULL );
 
     /**
      *  Immediatly starts executing a task using the task
      *  consumer provided.
      */
-    bool StartTask( CTaskConsumer& task          ,
-                    CICloneable* taskData = NULL );
+    bool StartTask( CTaskConsumerPtr task              ,
+                    CICloneable* taskData = GUCEF_NULL );
 
     bool PauseTask( const UInt32 taskID ,
                     const bool force    );
@@ -138,6 +138,13 @@ class GUCEF_CORE_PUBLIC_CPP CTaskManager : public CTSGNotifier
 
     bool RequestTaskToStop( const UInt32 taskId   , 
                             bool callerShouldWait );
+
+    bool RequestTaskToStop( CTaskConsumerPtr taskConsumer ,
+                            bool callerShouldWait         );
+
+    bool WaitForTaskToFinish( const UInt32 taskId, Int32 timeoutInMs );
+
+    bool WaitForTaskToFinish( CTaskConsumerPtr taskConsumer, Int32 timeoutInMs );
 
     bool KillTask( const UInt32 taskID );
 
@@ -177,11 +184,11 @@ class GUCEF_CORE_PUBLIC_CPP CTaskManager : public CTSGNotifier
 
     void UnregisterTaskDelegator( CTaskDelegator& delegator );
 
-    bool GetQueuedTask( CTaskConsumer** taskConsumer ,
-                        CICloneable** taskData       );
+    bool GetQueuedTask( CTaskConsumerPtr& taskConsumer ,
+                        CICloneable** taskData         );
 
-    void TaskCleanup( CTaskConsumer* taskConsumer ,
-                      CICloneable* taskData       );
+    void TaskCleanup( CTaskConsumerPtr taskConsumer ,
+                      CICloneable* taskData         );
 
     private:
     friend class CTaskConsumer;
@@ -205,7 +212,7 @@ class GUCEF_CORE_PUBLIC_CPP CTaskManager : public CTSGNotifier
     {
         public:
 
-        CTaskQueueItem( CTaskConsumer* consumer        ,
+        CTaskQueueItem( CTaskConsumerPtr consumer      ,
                         CICloneable* taskData          ,
                         bool assumeOwnershipOfTaskData );
 
@@ -213,7 +220,7 @@ class GUCEF_CORE_PUBLIC_CPP CTaskManager : public CTSGNotifier
 
         virtual ~CTaskQueueItem();
 
-        CTaskConsumer* GetTaskConsumer( void );
+        CTaskConsumerPtr GetTaskConsumer( void );
 
         CICloneable* GetTaskData( void );
 
@@ -221,7 +228,7 @@ class GUCEF_CORE_PUBLIC_CPP CTaskManager : public CTSGNotifier
 
         private:
         CICloneable* m_taskData;
-        CTaskConsumer* m_taskConsumer;
+        CTaskConsumerPtr m_taskConsumer;
         bool m_assumeOwnershipOfTaskData;
     };
 
@@ -240,7 +247,7 @@ class GUCEF_CORE_PUBLIC_CPP CTaskManager : public CTSGNotifier
 
     typedef CTAbstractFactory< CString, CTaskConsumer > TAbstractTaskConsumerFactory;
     typedef MT::CTMailBox< CString > TTaskMailbox;
-    typedef std::map< UInt32, CTaskConsumer* > TTaskConsumerMap;
+    typedef std::map< UInt32, CTaskConsumerPtr > TTaskConsumerMap;
     typedef std::set< CTaskDelegator* > TTaskDelegatorSet;
     typedef CTaskConsumer::TTaskIdGenerator TTaskIdGenerator;
 

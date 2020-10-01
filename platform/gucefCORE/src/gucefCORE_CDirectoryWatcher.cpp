@@ -271,7 +271,7 @@ class GUCEF_HIDDEN OSSpecificDirectoryWatcher : public CObserver
             std::wstring filename( fni.FileName, fni.FileNameLength/sizeof(wchar_t) );
 
             // Handle a trailing backslash, such as for a root directory.
-            if ( watchObj.dirPathW.size() > 1 && watchObj.dirPath[ watchObj.dirPathW.size()-1 ] != L'\\' )
+            if ( watchObj.dirPathW.size() > 1 && watchObj.dirPath[ (UInt32)(watchObj.dirPathW.size()-1) ] != L'\\' )
                 filename = watchObj.dirPathW + L'\\' + filename;
             else
                 filename = watchObj.dirPathW + filename;

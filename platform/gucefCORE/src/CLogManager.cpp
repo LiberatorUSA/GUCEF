@@ -45,10 +45,10 @@
 #define GUCEF_CORE_CMULTILOGGER_H
 #endif /* GUCEF_CORE_CMULTILOGGER_H ? */
 
-#ifndef GUCEF_CORE_CLOGGINGTASK_H
-#include "gucefCORE_CLoggingTask.h"
-#define GUCEF_CORE_CLOGGINGTASK_H
-#endif /* GUCEF_CORE_CLOGGINGTASK_H ? */
+#ifndef GUCEF_CORE_CTASKMANAGER_H
+#include "gucefCORE_CTaskManager.h"
+#define GUCEF_CORE_CTASKMANAGER_H
+#endif /* GUCEF_CORE_CTASKMANAGER_H ? */
 
 #ifndef GUCEF_CORE_DVCPPSTRINGUTILS_H
 #include "dvcppstringutils.h"
@@ -64,6 +64,11 @@
 #include "gucefCORE_CBasicBracketLoggingFormatter.h"
 #define GUCEF_CORE_CBASICBRACKETLOGGINGFORMATTER_H
 #endif /* GUCEF_CORE_CBASICBRACKETLOGGINGFORMATTER_H ? */
+
+#ifndef GUCEF_CORE_CLOGGINGTASK_H
+#include "gucefCORE_CLoggingTask.h"
+#define GUCEF_CORE_CLOGGINGTASK_H
+#endif /* GUCEF_CORE_CLOGGINGTASK_H ? */
 
 #include "CLogManager.h"
 
@@ -105,17 +110,6 @@ typedef CTFactory< CILoggingFormatter, CBasicBracketLoggingFormatter > BasicBrac
 //                                                                         //
 //-------------------------------------------------------------------------*/
 
-extern "C" {
-
-const Int32 LOGLEVEL_CRITICAL = GUCEFCORE_INT32MAX - 1;
-const Int32 LOGLEVEL_VERY_IMPORTANT = 250000;
-const Int32 LOGLEVEL_IMPORTANT = 100000;
-const Int32 LOGLEVEL_NORMAL = 50000;
-const Int32 LOGLEVEL_BELOW_NORMAL = 25000;
-const Int32 LOGLEVEL_EVERYTHING = 0;
-
-}
-
 #if ( GUCEF_PLATFORM == GUCEF_PLATFORM_ANDROID )
 static CAndroidSystemLogger androidSystemLogger;
 #endif /* GUCEF_PLATFORM == GUCEF_PLATFORM_ANDROID ? */
@@ -131,7 +125,7 @@ static BasicBracketLoggingFormatterFactory basicBracketLoggingFormatterFactory;
 
 CLogManager::CLogManager( void )
     : m_loggers( new CMultiLogger() )
-    , m_loggingTask( GUCEF_NULL )
+    , m_loggingTask()
     , m_useLogThread( false )
     , m_bootstrapLog() 
     , m_busyLogging( false ) 
@@ -158,7 +152,6 @@ CLogManager::~CLogManager()
     ClearLoggers();
     ClearLoggingFormatters();
 
-    delete m_loggingTask;
     m_loggingTask = GUCEF_NULL;
     
     delete m_loggers;
@@ -228,10 +221,14 @@ CLogManager::AddLogger( CILogger* loggerImp )
 
     MT::CObjectScopeLock lock( this );
     if ( m_useLogThread )
-        m_loggingTask->PauseTask();    
+    {
+        CCoreGlobal::Instance()->GetTaskManager().PauseTask( m_loggingTask->GetTaskId(), true );
+    }
     m_loggers->AddLogger( loggerImp );
     if ( m_useLogThread )
-        m_loggingTask->ResumeTask();
+    {
+        CCoreGlobal::Instance()->GetTaskManager().ResumeTask( m_loggingTask->GetTaskId() );
+    }
 }
 
 /*-------------------------------------------------------------------------*/
@@ -242,10 +239,14 @@ CLogManager::RemoveLogger( CILogger* loggerImp )
 
     MT::CObjectScopeLock lock( this );
     if ( m_useLogThread )
-        m_loggingTask->PauseTask();
+    {
+        CCoreGlobal::Instance()->GetTaskManager().PauseTask( m_loggingTask->GetTaskId(), true );
+    }
     m_loggers->RemoveLogger( loggerImp );
     if ( m_useLogThread )
-        m_loggingTask->ResumeTask();
+    {
+        CCoreGlobal::Instance()->GetTaskManager().ResumeTask( m_loggingTask->GetTaskId() );
+    }
 }
 
 /*-------------------------------------------------------------------------*/
@@ -256,10 +257,14 @@ CLogManager::ClearLoggers( void )
 
     MT::CObjectScopeLock lock( this );
     if ( m_useLogThread )
-        m_loggingTask->PauseTask();
+    {
+        CCoreGlobal::Instance()->GetTaskManager().PauseTask( m_loggingTask->GetTaskId(), true );
+    }
     m_loggers->ClearLoggers();
     if ( m_useLogThread )
-        m_loggingTask->ResumeTask();
+    {
+        CCoreGlobal::Instance()->GetTaskManager().ResumeTask( m_loggingTask->GetTaskId() );
+    }
 }
 
 /*-------------------------------------------------------------------------*/
@@ -452,62 +457,62 @@ CLogManager::GetLogMsgTypeString( const TLogMsgType logMsgType )
 
     switch ( logMsgType )
     {
-        case CLogManager::LOG_ERROR :
+        case LOG_ERROR :
         {
             static CString typeStr = "ERROR";
             return typeStr;
         }
-        case CLogManager::LOG_WARNING :
+        case LOG_WARNING :
         {
             static CString typeStr = "WARNING";
             return typeStr;
         }
-        case CLogManager::LOG_STANDARD :
+        case LOG_STANDARD :
         {
             static CString typeStr = "STANDARD";
             return typeStr;
         }
-        case CLogManager::LOG_USER :
+        case LOG_USER :
         {
             static CString typeStr = "USER";
             return typeStr;
         }
-        case CLogManager::LOG_SYSTEM :
+        case LOG_SYSTEM :
         {
             static CString typeStr = "SYSTEM";
             return typeStr;
         }
-        case CLogManager::LOG_DEV :
+        case LOG_DEV :
         {
             static CString typeStr = "DEV";
             return typeStr;
         }
-        case CLogManager::LOG_DEBUG :
+        case LOG_DEBUG :
         {
             static CString typeStr = "DEBUG";
             return typeStr;
         }
-        case CLogManager::LOG_SERVICE :
+        case LOG_SERVICE :
         {
             static CString typeStr = "SERVICE";
             return typeStr;
         }
-        case CLogManager::LOG_PROTECTED :
+        case LOG_PROTECTED :
         {
             static CString typeStr = "PROTECTED";
             return typeStr;
         }
-        case CLogManager::LOG_CALLSTACK :
+        case LOG_CALLSTACK :
         {
             static CString typeStr = "CALLSTACK";
             return typeStr;
         }
-        case CLogManager::LOG_EXCEPTION :
+        case LOG_EXCEPTION :
         {
             static CString typeStr = "EXCEPTION";
             return typeStr;
         }
-        case CLogManager::LOG_CONSOLE :
+        case LOG_CONSOLE :
         {
             static CString typeStr = "CONSOLE";
             return typeStr;
@@ -548,17 +553,16 @@ CLogManager::SetUseLoggingThread( bool useLogThread )
     {
         if ( useLogThread )
         {
-            m_loggingTask = new CLoggingTask( *m_loggers );
-            if ( m_loggingTask->StartTask() )
+            CLoggingTaskPtr loggingTask( new CLoggingTask( *m_loggers ) );
+            m_loggingTask = loggingTask; 
+            if ( CCoreGlobal::Instance()->GetTaskManager().StartTask( loggingTask ) )
                 m_useLogThread = useLogThread;
         }
         else
         {
-            if ( m_loggingTask->StopTask() )
+            if ( CCoreGlobal::Instance()->GetTaskManager().RequestTaskToStop( m_loggingTask->GetTaskId(), false ) )
             {
                 m_useLogThread = useLogThread;
-
-                delete m_loggingTask;
                 m_loggingTask = GUCEF_NULL;
             }
         }
@@ -599,24 +603,6 @@ CLogManager::Unlock( void ) const
 {GUCEF_TRACE;
 
     return m_dataLock.Unlock();
-}
-
-/*-------------------------------------------------------------------------*/
-
-CString
-LogLevelToString( const Int32 logLevel )
-{GUCEF_TRACE;
-
-    switch ( logLevel )
-    {
-        case LOGLEVEL_CRITICAL : return "CRITICAL";
-        case LOGLEVEL_VERY_IMPORTANT : return "VERY_IMPORTANT";
-        case LOGLEVEL_IMPORTANT : return "IMPORTANT";
-        case LOGLEVEL_NORMAL : return "NORMAL";
-        case LOGLEVEL_BELOW_NORMAL : return "BELOW_NORMAL";
-        case LOGLEVEL_EVERYTHING : return "EVERYTHING";
-        default : return Int32ToString( logLevel );
-    }
 }
 
 /*-------------------------------------------------------------------------//

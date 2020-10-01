@@ -60,8 +60,8 @@ class GUCEF_CORE_PRIVATE_CPP CSingleTaskDelegator : public CTaskDelegator
     private:
     friend class CTaskManager;
 
-    CSingleTaskDelegator( CTaskConsumer* taskConsumer ,
-                          CICloneable* taskData       );
+    CSingleTaskDelegator( CTaskConsumerPtr taskConsumer ,
+                          CICloneable* taskData         );
 
     virtual ~CSingleTaskDelegator();
     

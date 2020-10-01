@@ -26,6 +26,8 @@
 //                                                                         //
 //-------------------------------------------------------------------------*/
 
+#include <set>
+
 #ifndef GUCEF_CORE_CIPLUGINMETADATA_H
 #include "gucefCORE_CIPluginMetaData.h"
 #define GUCEF_CORE_CIPLUGINMETADATA_H

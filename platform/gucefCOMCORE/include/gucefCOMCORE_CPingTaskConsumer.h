@@ -191,6 +191,10 @@ class GUCEF_COMCORE_EXPORT_CPP CPingTaskConsumer : public CORE::CTaskConsumer
     TPingCounters m_pingCounters;
 };
 
+/*-------------------------------------------------------------------------*/
+
+typedef CORE::CTSharedPtr< CPingTaskConsumer, MT::CMutex > CPingTaskConsumerPtr;
+
 /*-------------------------------------------------------------------------//
 //                                                                         //
 //      NAMESPACE                                                          //

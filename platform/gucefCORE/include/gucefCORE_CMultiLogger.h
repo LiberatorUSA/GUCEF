@@ -56,8 +56,6 @@ class GUCEF_CORE_PUBLIC_CPP CMultiLogger : public CILogger
 {
     public:
 
-    typedef CLogManager::TLogMsgType TLogMsgType;
-
     CMultiLogger( void );
 
     CMultiLogger( const CMultiLogger& src );

@@ -28,10 +28,15 @@
 
 #include <set>
 
-#ifndef GUCEF_CORE_EXCEPTIONMACROS_H
-#include "ExceptionMacros.h"
-#define GUCEF_CORE_EXCEPTIONMACROS_H
-#endif /* GUCEF_CORE_EXCEPTIONMACROS_H ? */
+#ifndef GUCEF_CORE_EXCEPTIONCLASSMACROS_H
+#include "ExceptionClassMacros.h"   
+#define GUCEF_CORE_EXCEPTIONCLASSMACROS_H
+#endif /* GUCEF_CORE_EXCEPTIONCLASSMACROS_H ? */
+
+#ifndef GUCEF_CORE_EXCEPTIONTHROWMACROS_H
+#include "ExceptionThrowMacros.h"
+#define GUCEF_CORE_EXCEPTIONTHROWMACROS_H
+#endif /* GUCEF_CORE_EXCEPTIONTHROWMACROS_H ? */
 
 #ifndef GUCEF_CORE_CTNUMERICID_H
 #include "CTNumericID.h"

@@ -40,10 +40,15 @@
 #define GUCEF_CORE_CDVSTRING_H
 #endif /* GUCEF_CORE_CDVSTRING_H ? */
 
-#ifndef GUCEF_CORE_EXCEPTIONMACROS_H
-#include "ExceptionMacros.h"    /* macros for dealing with scope typed exceptions */
-#define GUCEF_CORE_EXCEPTIONMACROS_H
-#endif /* GUCEF_CORE_EXCEPTIONMACROS_H ? */
+#ifndef GUCEF_CORE_EXCEPTIONCLASSMACROS_H
+#include "ExceptionClassMacros.h"   
+#define GUCEF_CORE_EXCEPTIONCLASSMACROS_H
+#endif /* GUCEF_CORE_EXCEPTIONCLASSMACROS_H ? */
+
+#ifndef GUCEF_CORE_EXCEPTIONTHROWMACROS_H
+#include "ExceptionThrowMacros.h"
+#define GUCEF_CORE_EXCEPTIONTHROWMACROS_H
+#endif /* GUCEF_CORE_EXCEPTIONTHROWMACROS_H ? */
 
 #ifndef GUCEF_CORE_CINAMEDINSTANCE_H
 #include "CINamedInstance.h"    /* basic name retrieval interface */

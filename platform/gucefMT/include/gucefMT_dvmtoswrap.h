@@ -82,17 +82,39 @@ ThreadDelay( UInt32 delay );
 /*--------------------------------------------------------------------------*/
 
 /**
- *      Creates a thread that uses the given function with the given data
- *      parameter. The SThreadData structure is deallocated automaticaly
- *      when the thread ends of when you call ThreadKill().
- *
- *      @param func pointer to the function that is to serve as the main thread routine
- *      @param data data argument for the thread function
- *      @return structure containing O/S specific thread data.
+ *      Reserves a storage structure with sufficient space to hold thread data
+ *      To be used to create the storage passed to ThreadCreate()
+ * 
+ *      @return structure reserved for containing O/S specific thread data.
  */
 GUCEF_MT_PUBLIC_C struct SThreadData*
-ThreadCreate( TThreadFunc func ,
-              void* data       );
+ThreadDataReserve( void );
+
+/*--------------------------------------------------------------------------*/
+
+/**
+ *      Cleans up the storage structure allocated by ThreadDataReserve()
+ * 
+ *      @return structure reserved for containing O/S specific thread data.
+ */
+GUCEF_MT_PUBLIC_C void
+ThreadDataCleanup( struct SThreadData* td );
+
+/*--------------------------------------------------------------------------*/
+
+/**
+ *      Creates a thread that uses the given function with the given data
+ *      parameter. 
+ *
+ *      @param td structure containing O/S specific thread data.
+ *      @param func pointer to the function that is to serve as the main thread routine
+ *      @param data data argument for the thread function
+ *      @return integer boolean with 1 for success and 0 for failure
+ */
+GUCEF_MT_PUBLIC_C UInt32
+ThreadCreate( struct SThreadData* td ,
+              TThreadFunc func       ,
+              void* data             );
 
 /*--------------------------------------------------------------------------*/
 

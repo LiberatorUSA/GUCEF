@@ -26,10 +26,10 @@
 //                                                                         //
 //-------------------------------------------------------------------------*/
 
-#ifndef GUCEF_CORE_CLOGMANAGER_H
-#include "CLogManager.h"
-#define GUCEF_CORE_CLOGMANAGER_H
-#endif /* GUCEF_CORE_CLOGMANAGER_H ? */
+#ifndef GUCEF_CORE_LOGTYPES_H
+#include "gucefCORE_LogTypes.h"
+#define GUCEF_CORE_LOGTYPES_H
+#endif /* GUCEF_CORE_LOGTYPES_H ? */
 
 #ifndef GUCEF_CORE_CDATETIME_H
 #include "gucefCORE_CDateTime.h"
@@ -61,8 +61,6 @@ class CString;
 class GUCEF_CORE_PUBLIC_CPP CILogger
 {
     public:
-
-    typedef CLogManager::TLogMsgType TLogMsgType;
 
     /**
      *  The logging backend should format the info given

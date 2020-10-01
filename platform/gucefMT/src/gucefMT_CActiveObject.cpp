@@ -56,7 +56,7 @@ CActiveObject::CActiveObject( void )
     , m_isDeactivationRequested( false )   
     , _suspend( false )                    
     , _active( false )                     
-    , _td( NULL )                          
+    , _td( ThreadDataReserve() )                          
     , m_minimalCycleDeltaInMilliSecs( 10 )
     , m_datalock()
 {
@@ -72,7 +72,7 @@ CActiveObject::CActiveObject( const CActiveObject& src )
     , m_isDeactivationRequested( false ) 
     , _suspend( false )                  
     , _active( false )                      
-    , _td( NULL )                           
+    , _td( ThreadDataReserve() )                           
     , m_minimalCycleDeltaInMilliSecs( 10 )
     , m_datalock()
 {
@@ -87,6 +87,9 @@ CActiveObject::CActiveObject( const CActiveObject& src )
 CActiveObject::~CActiveObject()
 {
     Deactivate( true, true );
+    
+    ThreadDataCleanup( _td );
+    _td = GUCEF_NULL;
 }
 
 /*-------------------------------------------------------------------------*/
@@ -180,10 +183,11 @@ CActiveObject::Activate( void* threadData /* = NULL */                 ,
     m_isDeactivationRequested = false;
     _suspend = false;
     _active = true;
-    _td = ThreadCreate( (TThreadFunc) OnActivate ,
-                        this                     );
-
-    return true;
+    
+    bool createSuccesss = 0 != ThreadCreate( _td                      ,
+                                             (TThreadFunc) OnActivate ,
+                                             this                     );
+    return createSuccesss;
 }
 
 /*-------------------------------------------------------------------------*/
@@ -414,6 +418,14 @@ bool
 CActiveObject::Unlock( void ) const
 {
     return m_datalock.Unlock();
+}
+
+/*-------------------------------------------------------------------------*/
+
+void 
+CActiveObject::WaitForThreadToFinish( Int32 timeoutInMs ) const
+{
+    ThreadWait( _td, timeoutInMs );
 }
 
 /*-------------------------------------------------------------------------//

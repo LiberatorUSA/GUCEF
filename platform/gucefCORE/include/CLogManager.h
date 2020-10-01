@@ -54,10 +54,25 @@
 #define GUCEF_CORE_CTABSTRACTFACTORY_H
 #endif /* GUCEF_CORE_CTABSTRACTFACTORY_H ? */
 
+#ifndef GUCEF_CORE_CTBASICSHAREDPTR_H
+#include "CTBasicSharedPtr.h"
+#define GUCEF_CORE_CTBASICSHAREDPTR_H
+#endif /* GUCEF_CORE_CTBASICSHAREDPTR_H ? */
+
 #ifndef GUCEF_CORE_CDATETIME_H
 #include "gucefCORE_CDateTime.h"
 #define GUCEF_CORE_CDATETIME_H
 #endif /* GUCEF_CORE_CDATETIME_H ? */
+
+#ifndef GUCEF_CORE_LOGTYPES_H
+#include "gucefCORE_LogTypes.h"
+#define GUCEF_CORE_LOGTYPES_H
+#endif /* GUCEF_CORE_LOGTYPES_H ? */
+
+#ifndef GUCEF_CORE_LOGLEVELS_H
+#include "gucefCORE_LogLevels.h"
+#define GUCEF_CORE_LOGLEVELS_H
+#endif /* GUCEF_CORE_LOGLEVELS_H ? */
 
 /*-------------------------------------------------------------------------//
 //                                                                         //
@@ -77,33 +92,14 @@ namespace CORE {
 class CILogger;
 class CILoggingFormatter;
 class CMultiLogger;
-class CLoggingTask;
 class CString;
+class CLoggingTask;
 
 /*-------------------------------------------------------------------------*/
 
 class GUCEF_CORE_PUBLIC_CPP CLogManager : public MT::CILockable
 {
     public:
-
-    enum ELogMsgType
-    {
-        LOG_ERROR,     /**< I strongly suggest you use this for logging serious errors only */
-        LOG_WARNING,   /**< used for something that could be a problem but not necessarily so */
-        LOG_STANDARD,  /**< can be anything */
-        LOG_USER,      /**< typically info that relates to user actions */
-        LOG_SYSTEM,    /**< typically info that relates to the state of of the system */
-        LOG_DEV,       /**< typically info that will be of interest to developers */
-        LOG_DEBUG,     /**< typically info that wont be logged in a release build, just for debugging */
-        LOG_SERVICE,   /**< typically info useful to a service engineer */
-        LOG_PROTECTED, /**< typically used for logging info that should be encrypted before being stored */
-        LOG_CALLSTACK, /**< typically used for logging the call stack of a running application for debugging purposes */
-        LOG_EXCEPTION, /**< typically used for logging exception details just before throwing an exception, see exception macros */
-        LOG_CONSOLE,   /**< typically used for logging input/output of the system console */
-
-        LOG_UNKNOWNTYPE /**< reserved for initialization of a ELogMsgType variable with a debug value */
-    };
-    typedef enum ELogMsgType TLogMsgType;
 
     typedef CTAbstractFactory< CString, CILoggingFormatter > TAbstractLoggingFormatterFactory;
     typedef TAbstractLoggingFormatterFactory::TConcreteFactory TLoggingFormatterFactory;
@@ -205,9 +201,10 @@ class GUCEF_CORE_PUBLIC_CPP CLogManager : public MT::CILockable
     };
     typedef struct SBootstrapLogEntry TBootstrapLogEntry;
     typedef std::vector< TBootstrapLogEntry > TBootstrapLogVector;
+    typedef CTBasicSharedPtr< CLoggingTask, MT::CMutex > CLoggingTaskBasePtr;
 
     CMultiLogger* m_loggers;
-    CLoggingTask* m_loggingTask;
+    CLoggingTaskBasePtr m_loggingTask;
     bool m_useLogThread;
     TBootstrapLogVector m_bootstrapLog;
     bool m_busyLogging;
@@ -255,14 +252,3 @@ LogLevelToString( const Int32 logLevel );
 /*-------------------------------------------------------------------------*/
 
 #endif /* GUCEF_CORE_CLOGMANAGER_H ? */
-
-/*-------------------------------------------------------------------------//
-//                                                                         //
-//      Info & Changes                                                     //
-//                                                                         //
-//-------------------------------------------------------------------------//
-
-- 16-02-2007 :
-        - Dinand: Added this class
-
------------------------------------------------------------------------------*/

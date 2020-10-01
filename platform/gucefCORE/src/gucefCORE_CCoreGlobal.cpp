@@ -1,4 +1,4 @@
-/*
+ /*
  *  gucefCORE: GUCEF module providing O/S abstraction and generic solutions
  *  Copyright (C) 2002 - 2007.  Dinand Vanvelzen
  *
@@ -373,6 +373,28 @@ CCoreGlobal::~CCoreGlobal()
 
     // it important to shutdown the call stack tracer last
     GUCEF_ShutdowntCallstackUtility();
+}
+
+/*-------------------------------------------------------------------------*/
+
+void
+CCoreGlobal::Log( const TLogMsgType logMsgType ,
+                  const Int32 logLevel         ,
+                  const CString& logMessage    )
+{
+    m_logManager->Log( logMsgType, logLevel, logMessage ); 
+}
+
+/*-------------------------------------------------------------------------*/
+
+void 
+CCoreGlobal::Log( const TLogMsgType logMsgType ,
+                  const Int32 logLevel         ,
+                  const CString& logMessage    ,
+                  const UInt32 threadId        ,
+                  const CDateTime& timestamp   )
+{
+    m_logManager->Log( logMsgType, logLevel, logMessage, threadId, timestamp );
 }
 
 /*-------------------------------------------------------------------------*/

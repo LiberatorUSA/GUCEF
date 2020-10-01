@@ -166,7 +166,7 @@ GUCEF_CORE_GucefLog( int logType     ,
                      const char* msg )
 {GUCEF_TRACE;
 
-    CLogManager::TLogMsgType msgType = (CLogManager::TLogMsgType) logType;
+    TLogMsgType msgType = (TLogMsgType) logType;
     CCoreGlobal::Instance()->GetLogManager().Log( msgType, logLevel, msg );
 }
 

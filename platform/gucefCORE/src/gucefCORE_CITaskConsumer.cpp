@@ -275,6 +275,19 @@ CTaskConsumer::SetCpuAffinityByCpuId( UInt32 cpuId )
     return false;
 }
 
+/*-------------------------------------------------------------------------*/
+
+bool 
+CTaskConsumer::IsDeactivationRequested( void ) const
+{GUCEF_TRACE;
+
+    if ( GUCEF_NULL != m_delegator )
+    {
+        return m_delegator->IsDeactivationRequested();    
+    }
+    return true;
+}
+
 /*-------------------------------------------------------------------------//
 //                                                                         //
 //      NAMESPACE                                                          //

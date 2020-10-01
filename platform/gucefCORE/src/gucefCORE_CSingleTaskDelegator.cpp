@@ -52,8 +52,8 @@ namespace CORE {
 //                                                                         //
 //-------------------------------------------------------------------------*/
 
-CSingleTaskDelegator::CSingleTaskDelegator( CTaskConsumer* taskConsumer ,
-                                            CICloneable* taskData       )
+CSingleTaskDelegator::CSingleTaskDelegator( CTaskConsumerPtr taskConsumer ,
+                                            CICloneable* taskData         )
     : CTaskDelegator( taskConsumer, taskData )
 {GUCEF_TRACE;
 
@@ -73,9 +73,9 @@ bool
 CSingleTaskDelegator::OnThreadCycle( void* taskdata )
 {GUCEF_TRACE;
 
-    if ( GUCEF_NULL != m_taskConsumer )
+    if ( !m_taskConsumer.IsNULL() )
     {
-        bool result = CTaskDelegator::ProcessTask( *m_taskConsumer, m_taskData );
+        bool result = CTaskDelegator::ProcessTask( m_taskConsumer, m_taskData );
         TaskCleanup( m_taskConsumer, m_taskData );
         m_taskConsumer = NULL;
         m_taskData = NULL;
