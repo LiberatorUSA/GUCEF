@@ -74,6 +74,11 @@
 #define GUCEF_COM_CCODECBASEDHTTPSERVERRESOURCE_H
 #endif /* GUCEF_COM_CCODECBASEDHTTPSERVERRESOURCE_H ? */
 
+#ifndef GUCEF_COM_CTCONFIGURABLEMAPHTTPSERVERRESOURCE_H
+#include "gucefCOM_CTConfigurableMapHttpServerResource.h"
+#define GUCEF_COM_CTCONFIGURABLEMAPHTTPSERVERRESOURCE_H
+#endif /* GUCEF_COM_CTCONFIGURABLEMAPHTTPSERVERRESOURCE_H ? */
+
 #include "hiredis.h"
 #include "async.h"
 
@@ -103,6 +108,7 @@ class ChannelSettings : public CORE::CIConfigurable
     ChannelSettings( const ChannelSettings& src );
     ChannelSettings& operator=( const ChannelSettings& src );
 
+    CORE::Int32 channelId;
     COMCORE::CHostAddress redisAddress;
     CORE::CString channelStreamName;
     COMCORE::CHostAddress udpInterface;
@@ -216,6 +222,10 @@ class ClusterChannelRedisWriter : public CORE::CTaskConsumer
 
 /*-------------------------------------------------------------------------*/
 
+typedef CORE::CTSharedPtr< ClusterChannelRedisWriter, MT::CMutex > ClusterChannelRedisWriterPtr;
+
+/*-------------------------------------------------------------------------*/
+
 class Udp2RedisClusterChannel : public CORE::CTaskConsumer
 {
     public:
@@ -303,8 +313,12 @@ class Udp2RedisClusterChannel : public CORE::CTaskConsumer
     GUCEF::COMCORE::CUDPSocket* m_udpSocket;
     CORE::CTimer* m_metricsTimer;
     ChannelMetrics m_metrics;
-    ClusterChannelRedisWriter m_redisWriter;
+    ClusterChannelRedisWriterPtr m_redisWriter;
 };
+
+/*-------------------------------------------------------------------------*/
+
+typedef CORE::CTSharedPtr< Udp2RedisClusterChannel, MT::CMutex > Udp2RedisClusterChannelPtr;
 
 /*-------------------------------------------------------------------------*/
 
@@ -341,11 +355,19 @@ class RestApiUdp2RedisConfigResource : public COM::CCodecBasedHTTPServerResource
                             const CORE::CString& representation ,
                             const CORE::CString& params         ) GUCEF_VIRTUAL_OVERRIDE;
 
+    virtual TDeserializeState Deserialize( const CORE::CDataNode& input        ,
+                                           const CORE::CString& representation ,
+                                           bool isDeltaUpdateOnly              ) GUCEF_VIRTUAL_OVERRIDE;
+
     private:
 
     Udp2RedisCluster* m_app;
     bool m_appConfig;
 };
+
+/*-------------------------------------------------------------------------*/
+
+//COM::CTConfigurableMapHttpServerResource< 
 
 /*-------------------------------------------------------------------------*/
 
@@ -357,6 +379,8 @@ class Udp2RedisCluster : public CORE::CObserver
     virtual ~Udp2RedisCluster();
 
     bool Start( void );
+
+    bool SetStandbyMode( bool newMode );
 
     bool LoadConfig( const CORE::CValueList& appConfig   ,
                      const CORE::CDataNode& globalConfig );
@@ -382,15 +406,16 @@ class Udp2RedisCluster : public CORE::CObserver
     private:
 
     typedef std::map< CORE::Int32, ChannelSettings > ChannelSettingsMap;
-    typedef std::vector< Udp2RedisClusterChannel > Udp2RedisClusterChannelVector;
+    typedef std::map< CORE::Int32, Udp2RedisClusterChannelPtr > Udp2RedisClusterChannelMap;
     
+    bool m_isInStandby;
     CORE::UInt16 m_udpStartPort;
     CORE::UInt16 m_channelCount;
     CORE::Int32 m_redisStreamStartChannelID;
     CORE::CString m_redisStreamName;
     CORE::CString m_redisHost;
     CORE::UInt16 m_redisPort;
-    Udp2RedisClusterChannelVector m_channels;
+    Udp2RedisClusterChannelMap m_channels;
     ChannelSettingsMap m_channelSettings;
     COM::CHTTPServer m_httpServer;
     COM::CDefaultHTTPServerRouter m_httpRouter;
