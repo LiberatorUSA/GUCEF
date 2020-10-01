@@ -64,31 +64,31 @@ CLogAdapter::flush()
 /*-------------------------------------------------------------------------*/
 
 void
-CLogAdapter::ConvertLogLevel( MyGUI::LogLevel myGuilevel              ,
-                              CORE::CLogManager::TLogMsgType& msgType ,
-                              CORE::Int32& logLevel                   )
+CLogAdapter::ConvertLogLevel( MyGUI::LogLevel myGuilevel ,
+                              CORE::TLogMsgType& msgType ,
+                              CORE::Int32& logLevel      )
 {
     if ( myGuilevel == MyGUI::LogLevel( MyGUI::LogLevel::Info ) )
     {
-        msgType = CORE::CLogManager::LOG_SYSTEM;
+        msgType = CORE::LOG_SYSTEM;
         logLevel = CORE::LOGLEVEL_NORMAL;
     }
     else
     if ( myGuilevel == MyGUI::LogLevel( MyGUI::LogLevel::Warning ) )
     {
-        msgType = CORE::CLogManager::LOG_WARNING;
+        msgType = CORE::LOG_WARNING;
         logLevel = CORE::LOGLEVEL_NORMAL;
     }
     else
     if ( myGuilevel == MyGUI::LogLevel( MyGUI::LogLevel::Error ) )
     {
-        msgType = CORE::CLogManager::LOG_ERROR;
+        msgType = CORE::LOG_ERROR;
         logLevel = CORE::LOGLEVEL_NORMAL;
     } 
     else
     if ( myGuilevel == MyGUI::LogLevel( MyGUI::LogLevel::Critical ) )
     {
-        msgType = CORE::CLogManager::LOG_ERROR;
+        msgType = CORE::LOG_ERROR;
         logLevel = CORE::LOGLEVEL_IMPORTANT;
     }
 }
@@ -104,7 +104,7 @@ CLogAdapter::log( const std::string& _section ,
 {
     CORE::CString newMessage( "MyGUI: " + _message );
 
-    CORE::CLogManager::TLogMsgType msgType;
+    CORE::TLogMsgType msgType;
     CORE::Int32 logLevel;
 
     ConvertLogLevel( _level, msgType, logLevel );

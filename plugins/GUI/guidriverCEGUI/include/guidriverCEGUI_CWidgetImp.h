@@ -36,6 +36,11 @@
 #define _CEGUIExceptions_h_
 #endif /* _CEGUIExceptions_h_ ? */
 
+#ifndef GUCEF_CORE_LOGGING_H
+#include "gucefCORE_Logging.h"
+#define GUCEF_CORE_LOGGING_H
+#endif /* GUCEF_CORE_LOGGING_H ? */
+
 #ifndef GUCEF_CORE_CSTDOSTREAMADAPTER_H
 #include "CSTDOStreamAdapter.h"
 #define GUCEF_CORE_CSTDOSTREAMADAPTER_H

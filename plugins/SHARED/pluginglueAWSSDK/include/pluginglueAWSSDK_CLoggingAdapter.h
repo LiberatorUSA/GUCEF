@@ -70,12 +70,12 @@ class GUCEF_HIDDEN CLoggingAdapter : public Aws::Utils::Logging::LogSystemInterf
                             const char* tag                         , 
                             const Aws::OStringStream& messageStream ) override;
 
-    static Aws::Utils::Logging::LogLevel MapLogLevel( CORE::CLogManager::TLogMsgType logType , 
-                                                      CORE::Int32 logLevel                   );
+    static Aws::Utils::Logging::LogLevel MapLogLevel( CORE::TLogMsgType logType , 
+                                                      CORE::Int32 logLevel      );
     
-    static void MapLogLevel( Aws::Utils::Logging::LogLevel logLevel     ,
-                             CORE::CLogManager::TLogMsgType& gupLogType , 
-                             CORE::Int32& gupLogLevel                   );
+    static void MapLogLevel( Aws::Utils::Logging::LogLevel logLevel ,
+                             CORE::TLogMsgType& gupLogType          , 
+                             CORE::Int32& gupLogLevel               );
     
     private:
 };

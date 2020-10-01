@@ -72,9 +72,9 @@ class GUCEF_MYGUI_EXPORT_CPP CLogAdapter : public MyGUI::LogManager
 
     private:
 
-    void ConvertLogLevel( MyGUI::LogLevel myGuilevel              ,
-                          CORE::CLogManager::TLogMsgType& msgType ,
-                          CORE::Int32& logLevel                   );
+    void ConvertLogLevel( MyGUI::LogLevel myGuilevel ,
+                          CORE::TLogMsgType& msgType ,
+                          CORE::Int32& logLevel      );
 
     private:
 

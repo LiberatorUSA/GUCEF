@@ -314,7 +314,6 @@ set( SOURCE_FILES
   src/CValueList.cpp
   src/DVCPPOSWRAP.cpp
   src/DVOSWRAP.cpp
-  src/ExceptionMacros.cpp
   src/IOACCESS.c
   src/MFILE.c
   src/MemoryPool.cpp

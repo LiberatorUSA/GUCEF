@@ -63,9 +63,9 @@ CLoggingAdapter::~CLoggingAdapter()
 /*-------------------------------------------------------------------------*/
 
 void
-CLoggingAdapter::MapLogLevel( Aws::Utils::Logging::LogLevel logLevel     ,
-                              CORE::CLogManager::TLogMsgType& gupLogType , 
-                              CORE::Int32& gupLogLevel                   )
+CLoggingAdapter::MapLogLevel( Aws::Utils::Logging::LogLevel logLevel ,
+                              CORE::TLogMsgType& gupLogType          , 
+                              CORE::Int32& gupLogLevel               )
 {GUCEF_TRACE;
 
     switch ( logLevel )
@@ -73,43 +73,43 @@ CLoggingAdapter::MapLogLevel( Aws::Utils::Logging::LogLevel logLevel     ,
         case Aws::Utils::Logging::LogLevel::Off:
         case Aws::Utils::Logging::LogLevel::Trace:
         {
-            gupLogType = CORE::CLogManager::TLogMsgType::LOG_DEBUG;
+            gupLogType = CORE::TLogMsgType::LOG_DEBUG;
             gupLogLevel = CORE::LOGLEVEL_EVERYTHING;
             break;
         }
         case Aws::Utils::Logging::LogLevel::Debug:
         {
-            gupLogType = CORE::CLogManager::TLogMsgType::LOG_DEBUG;
+            gupLogType = CORE::TLogMsgType::LOG_DEBUG;
             gupLogLevel = CORE::LOGLEVEL_BELOW_NORMAL;
             break;
         }
         case Aws::Utils::Logging::LogLevel::Error:
         {
-            gupLogType = CORE::CLogManager::TLogMsgType::LOG_ERROR;
+            gupLogType = CORE::TLogMsgType::LOG_ERROR;
             gupLogLevel = CORE::LOGLEVEL_VERY_IMPORTANT;
             break;
         }
         case Aws::Utils::Logging::LogLevel::Fatal:
         {
-            gupLogType = CORE::CLogManager::TLogMsgType::LOG_ERROR;
+            gupLogType = CORE::TLogMsgType::LOG_ERROR;
             gupLogLevel = CORE::LOGLEVEL_CRITICAL;
             break;
         }
         case Aws::Utils::Logging::LogLevel::Info:
         {
-            gupLogType = CORE::CLogManager::TLogMsgType::LOG_STANDARD;
+            gupLogType = CORE::TLogMsgType::LOG_STANDARD;
             gupLogLevel = CORE::LOGLEVEL_IMPORTANT;
             break;
         }
         case Aws::Utils::Logging::LogLevel::Warn:
         {
-            gupLogType = CORE::CLogManager::TLogMsgType::LOG_WARNING;
+            gupLogType = CORE::TLogMsgType::LOG_WARNING;
             gupLogLevel = CORE::LOGLEVEL_IMPORTANT;
             break;
         }
         default:
         {
-            gupLogType = CORE::CLogManager::TLogMsgType::LOG_STANDARD;
+            gupLogType = CORE::TLogMsgType::LOG_STANDARD;
             gupLogLevel = CORE::LOGLEVEL_NORMAL;
             break;
         }  
@@ -119,20 +119,20 @@ CLoggingAdapter::MapLogLevel( Aws::Utils::Logging::LogLevel logLevel     ,
 /*-------------------------------------------------------------------------*/
 
 Aws::Utils::Logging::LogLevel
-CLoggingAdapter::MapLogLevel( CORE::CLogManager::TLogMsgType logType , 
-                              CORE::Int32 logLevel                   )
+CLoggingAdapter::MapLogLevel( CORE::TLogMsgType logType , 
+                              CORE::Int32 logLevel      )
 {GUCEF_TRACE;
 
     switch ( logType )
     {   
-        case CORE::CLogManager::TLogMsgType::LOG_ERROR:
-        case CORE::CLogManager::TLogMsgType::LOG_EXCEPTION:
+        case CORE::TLogMsgType::LOG_ERROR:
+        case CORE::TLogMsgType::LOG_EXCEPTION:
         {
             if ( logLevel >= CORE::LOGLEVEL_CRITICAL )
                 return Aws::Utils::Logging::LogLevel::Fatal;
             return Aws::Utils::Logging::LogLevel::Error; 
         }
-        case CORE::CLogManager::TLogMsgType::LOG_WARNING:
+        case CORE::TLogMsgType::LOG_WARNING:
         {
             return Aws::Utils::Logging::LogLevel::Warn; 
         }
@@ -156,7 +156,7 @@ CLoggingAdapter::GetLogLevel( void ) const
 {GUCEF_TRACE;
 
     CORE::CLogManager& logManager = CORE::CCoreGlobal::Instance()->GetLogManager();
-    return MapLogLevel( CORE::CLogManager::LOG_STANDARD, logManager.GetMinLogLevel() );
+    return MapLogLevel( CORE::LOG_STANDARD, logManager.GetMinLogLevel() );
 }
 
 /*-------------------------------------------------------------------------*/
@@ -203,17 +203,17 @@ CLoggingAdapter::LogStream( Aws::Utils::Logging::LogLevel logLevel  ,
 {GUCEF_TRACE;
 
     CORE::Int32 guLogLvl = CORE::LOGLEVEL_BELOW_NORMAL;
-    CORE::CLogManager::TLogMsgType guLogMsgType = CORE::CLogManager::TLogMsgType::LOG_UNKNOWNTYPE;
+    CORE::TLogMsgType guLogMsgType = CORE::TLogMsgType::LOG_UNKNOWNTYPE;
     MapLogLevel( logLevel, guLogMsgType, guLogLvl ); 
 
-    if ( guLogMsgType == CORE::CLogManager::TLogMsgType::LOG_DEBUG )
+    if ( guLogMsgType == CORE::TLogMsgType::LOG_DEBUG )
     {
         // Allow for a chance to compile out some of the work involved
         GUCEF_DEBUG_LOG( guLogLvl, "AWS-SDK: " + messageStream.str() );
     }
     else
     {
-        CORE::CCoreGlobal::Instance()->GetLogManager().Log( guLogMsgType, guLogLvl, "AWS-SDK: " + messageStream.str() );
+        CORE::CCoreGlobal::Instance()->Log( guLogMsgType, guLogLvl, "AWS-SDK: " + messageStream.str() );
     }
 }
 

@@ -26,6 +26,8 @@
 //                                                                         //
 //-------------------------------------------------------------------------*/
 
+#include <map>
+
 #ifndef GUCEF_CORE_CTSHAREDPTR_H
 #include "CTSharedPtr.h"
 #define GUCEF_CORE_CTSHAREDPTR_H
