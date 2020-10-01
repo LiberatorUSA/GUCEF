@@ -142,6 +142,7 @@ ProcessMetrics::ProcessMetrics( void )
     , m_enableRestApi( true )
     , m_exeProcIdMap()
     , m_exeProcsToWatch()
+    , m_exeMatchPidMatchThreshold( 0 )
     , m_gatherProcPageFaultCountInBytes( true )
     , m_gatherProcPageFileUsageInBytes( true )
     , m_gatherProcPeakPageFileUsageInBytes( true )
@@ -188,7 +189,8 @@ void
 ProcessMetrics::RefreshPIDs( void )
 {GUCEF_TRACE;
 
-    if ( m_exeProcsToWatch.size() == m_exeProcIdMap.size() )
+    if ( m_exeProcsToWatch.size() == m_exeProcIdMap.size() || 
+         ( m_exeMatchPidMatchThreshold > 0 && m_exeProcIdMap.size() >= (size_t) m_exeMatchPidMatchThreshold ) )
         return;
     
     GUCEF_LOG( CORE::LOGLEVEL_NORMAL, "ProcessMetrics: Refresing PID administration" );
@@ -385,9 +387,10 @@ ProcessMetrics::LoadConfig( const CORE::CValueList& appConfig   ,
 {GUCEF_TRACE;
         
     
-    m_gatherCpuStats = CORE::StringToBool( appConfig.GetValueAlways( "GatherProcCPUStats", "true" ) );
-    m_enableRestApi = CORE::StringToBool( appConfig.GetValueAlways( "EnableRestApi", "true" ) );
-    m_metricsTimer.SetInterval( CORE::StringToUInt32( appConfig.GetValueAlways( "MetricsGatheringIntervalInMs", "1000" ) ) );
+    m_gatherCpuStats = CORE::StringToBool( appConfig.GetValueAlways( "GatherProcCPUStats" ), true );
+    m_enableRestApi = CORE::StringToBool( appConfig.GetValueAlways( "EnableRestApi" ), true );
+    m_metricsTimer.SetInterval( CORE::StringToUInt32( appConfig.GetValueAlways( "MetricsGatheringIntervalInMs" ), 1000 ) );
+    m_exeMatchPidMatchThreshold = CORE::StringToUInt32( appConfig.GetValueAlways( "ExeMatchPidMatchThreshold" ), 0 );
     
     m_gatherMemStats = CORE::StringToBool( appConfig.GetValueAlways( "GatherProcMemStats", "true" ) );
     m_gatherProcPageFaultCountInBytes = CORE::StringToBool( appConfig.GetValueAlways( "GatherProcPageFaultCountInBytes", "true" ) );

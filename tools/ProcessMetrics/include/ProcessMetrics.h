@@ -176,6 +176,7 @@ class ProcessMetrics : public CORE::CObservingNotifier
     bool m_enableRestApi;
     TProcessIdMap m_exeProcIdMap;
     TStringSet m_exeProcsToWatch;
+    CORE::UInt32 m_exeMatchPidMatchThreshold;
 
     bool m_gatherProcPageFaultCountInBytes;
     bool m_gatherProcPageFileUsageInBytes;
@@ -195,3 +196,5 @@ class ProcessMetrics : public CORE::CObservingNotifier
 
     bool m_gatherProcCpuUptime;
 };
+
+/*-------------------------------------------------------------------------*/
