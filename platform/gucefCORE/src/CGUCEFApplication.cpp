@@ -146,6 +146,7 @@ CGUCEFApplication::CGUCEFApplication( void )
 CGUCEFApplication::~CGUCEFApplication()
 {GUCEF_TRACE;
 
+    UnsubscribeAllFromObserver();
 }
 
 /*-------------------------------------------------------------------------*/

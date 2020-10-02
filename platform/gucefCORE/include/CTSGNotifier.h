@@ -126,6 +126,8 @@ class GUCEF_CORE_PUBLIC_CPP CTSGNotifier : public CNotifier
                       const CEvent& eventid               ,
                       CIEventHandlerFunctorBase& callback );
 
+    void UnsubscribeAllFromObserver( void );
+
     virtual const CString& GetClassTypeName( void ) const GUCEF_VIRTUAL_OVERRIDE;
 
 
