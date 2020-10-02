@@ -332,7 +332,8 @@ CLoggingTask::Unlock( void ) const
 /*-------------------------------------------------------------------------*/
 
 void
-CLoggingTask::OnTaskEnd( CICloneable* taskdata )
+CLoggingTask::OnTaskEnded( CICloneable* taskdata ,
+                           bool wasForced        )
 {GUCEF_TRACE;
 
     TLoggingMailBox::TMailElement* entry;

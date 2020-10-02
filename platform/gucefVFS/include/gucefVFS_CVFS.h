@@ -160,11 +160,15 @@ class GUCEF_VFS_PUBLIC_CPP CVFS : public CORE::CTSGNotifier   ,
                        const bool writeableRequest   );
     
     bool UnmountArchiveByName( const CString& archiveName );
+
+    void UnmountAllArchives( void );
                   
     void RegisterArchiveFactory( const CString& archiveType      ,
                                  TArchiveFactory& archiveFactory );
     
     void UnregisterArchiveFactory( const CString& archiveType );
+
+    void UnregisterAllArchiveFactories( void );
 
     void GetListOfSupportedArchiveTypes( TAbstractArchiveFactory::TKeySet& outList ) const;
     

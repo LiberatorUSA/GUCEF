@@ -395,11 +395,14 @@ ClusterChannelRedisWriter::OnTaskEnding( CORE::CICloneable* taskdata ,
 /*-------------------------------------------------------------------------*/
 
 void
-ClusterChannelRedisWriter::OnTaskEnd( CORE::CICloneable* taskData )
+ClusterChannelRedisWriter::OnTaskEnded( CORE::CICloneable* taskData ,
+                                        bool wasForced              )
 {GUCEF_TRACE;
 
     delete m_metricsTimer;
     m_metricsTimer = GUCEF_NULL;
+
+    CORE::CTaskConsumer::OnTaskEnded( taskData, wasForced );
 }
 
 /*-------------------------------------------------------------------------*/
@@ -1089,7 +1092,8 @@ Udp2RedisClusterChannel::OnTaskEnding( CORE::CICloneable* taskdata ,
 /*-------------------------------------------------------------------------*/
 
 void
-Udp2RedisClusterChannel::OnTaskEnd( CORE::CICloneable* taskData )
+Udp2RedisClusterChannel::OnTaskEnded( CORE::CICloneable* taskData ,
+                                      bool wasForced              )
 {GUCEF_TRACE;
 
     delete m_udpSocket;
@@ -1100,8 +1104,10 @@ Udp2RedisClusterChannel::OnTaskEnd( CORE::CICloneable* taskData )
 
     if ( !m_channelSettings.performRedisWritesInDedicatedThread )
     {
-        m_redisWriter->OnTaskEnd( taskData );
+        m_redisWriter->OnTaskEnded( taskData, wasForced );
     }
+
+    CORE::CTaskConsumer::OnTaskEnded( taskData, wasForced );
 }
 
 /*-------------------------------------------------------------------------*/
@@ -1196,6 +1202,8 @@ RestApiUdp2RedisConfigResource::Deserialize( const CORE::CDataNode& input       
         {
             // Grab a copy of the current app config
             loadedAppConfig = m_app->GetAppConfig();
+            loadedAppConfig.SetAllowMultipleValues( false );
+            loadedAppConfig.SetAllowDuplicates( false );
         }
         else
         {
@@ -1204,17 +1212,31 @@ RestApiUdp2RedisConfigResource::Deserialize( const CORE::CDataNode& input       
         
         if ( loadedAppConfig.LoadConfig( input ) )
         {
+            if ( isDeltaUpdateOnly )
+            {
+                loadedAppConfig.SetAllowMultipleValues( m_app->GetAppConfig().GetAllowMultipleValues() );    
+                loadedAppConfig.SetAllowDuplicates( m_app->GetAppConfig().GetAllowDuplicates() );
+            }
+            
             // First put the app in standby mode before we mess with the settings
             if ( !m_app->SetStandbyMode( true ) )
                 return TDeserializeState::DESERIALIZESTATE_UNABLETOUPDATE;    
             
             const CORE::CDataNode& globalConfig = m_app->GetGlobalConfig();
             if ( m_app->LoadConfig( loadedAppConfig, globalConfig ) )
-            {
-                if ( m_app->SetStandbyMode( false ) )                
-                    return TDeserializeState::DESERIALIZESTATE_SUCCEEDED;
+            {                
+                if ( !m_app->IsGlobalStandbyEnabled() )
+                {
+                    if ( m_app->SetStandbyMode( false ) )                
+                        return TDeserializeState::DESERIALIZESTATE_SUCCEEDED;
+                    else
+                        return TDeserializeState::DESERIALIZESTATE_UNABLETOUPDATE;
+                }
                 else
-                    return TDeserializeState::DESERIALIZESTATE_UNABLETOUPDATE;
+                {
+                    GUCEF_LOG( CORE::LOGLEVEL_IMPORTANT, "RestApiUdp2RedisConfigResource: IsGlobalStandbyEnabled is true. We will leave the app in standby mode" );
+                    return TDeserializeState::DESERIALIZESTATE_SUCCEEDED;
+                }
             }
             else
             {
@@ -1265,6 +1287,7 @@ RestApiUdp2RedisConfigResource::Deserialize( const CORE::CDataNode& input       
 Udp2RedisCluster::Udp2RedisCluster( void )
     : CORE::CObserver()
     , m_isInStandby( false )
+    , m_globalStandbyEnabled( false )
     , m_udpStartPort()
     , m_channelCount()
     , m_redisStreamStartChannelID()
@@ -1281,6 +1304,7 @@ Udp2RedisCluster::Udp2RedisCluster( void )
     , m_transmitMetrics( true )
     , m_testUdpSocket( false )
     , m_testPacketTransmitTimer()
+    , m_transmitTestPackets( false )
 {GUCEF_TRACE;
 
     TEventCallback callback1( this, &Udp2RedisCluster::OnMetricsTimerCycle );
@@ -1304,12 +1328,21 @@ Udp2RedisCluster::~Udp2RedisCluster()
 
 /*-------------------------------------------------------------------------*/
 
+bool 
+Udp2RedisCluster::IsGlobalStandbyEnabled( void ) const
+{GUCEF_TRACE;
+
+    return m_globalStandbyEnabled;
+}
+
+/*-------------------------------------------------------------------------*/
+
 bool
 Udp2RedisCluster::Start( void )
 {GUCEF_TRACE;
 
     m_isInStandby = true;
-    bool errorOccured = !SetStandbyMode( false );
+    bool errorOccured = !SetStandbyMode( m_globalStandbyEnabled );
 
     if ( !errorOccured )
     {
@@ -1449,6 +1482,7 @@ Udp2RedisCluster::SetStandbyMode( bool putInStandbyMode )
             m_metricsTimer.SetInterval( 1000 );
             m_metricsTimer.SetEnabled( true );
         }
+        m_testPacketTransmitTimer.SetEnabled( m_transmitTestPackets );
 
         m_isInStandby = !totalSuccess;
         return totalSuccess;
@@ -1462,7 +1496,8 @@ Udp2RedisCluster::LoadConfig( const CORE::CValueList& appConfig   ,
                               const CORE::CDataNode& globalConfig )
 {GUCEF_TRACE;
 
-    m_transmitMetrics = CORE::StringToBool( appConfig.GetValueAlways( "TransmitMetrics", "true" ) );
+    m_transmitMetrics = CORE::StringToBool( appConfig.GetValueAlways( "TransmitMetrics" ), true );
+    m_globalStandbyEnabled = CORE::StringToBool( appConfig.GetValueAlways( "GlobalStandbyEnabled" ), false );
 
     m_udpStartPort = CORE::StringToUInt16( CORE::ResolveVars( appConfig.GetValueAlways( "UdpStartPort", "20000" ) ) );
     m_channelCount = CORE::StringToUInt16( CORE::ResolveVars( appConfig.GetValueAlways( "ChannelCount", "1" ) ) );
@@ -1600,7 +1635,7 @@ Udp2RedisCluster::LoadConfig( const CORE::CValueList& appConfig   ,
     m_httpServer.GetRouterController()->AddRouterMapping( &m_httpRouter, "", "" );
     
     m_testPacketTransmitTimer.SetInterval( CORE::StringToUInt32( appConfig.GetValueAlways( "TestPacketTransmissionIntervalInMs", "1000" ) ) );
-    m_testPacketTransmitTimer.SetEnabled( CORE::StringToBool( appConfig.GetValueAlways( "TransmitTestPackets", "false" ) ) );
+    m_transmitTestPackets = CORE::StringToBool( appConfig.GetValueAlways( "TransmitTestPackets" ), false );
     return true;
 }
 

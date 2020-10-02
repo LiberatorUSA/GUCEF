@@ -154,7 +154,8 @@ class GUCEF_COMCORE_EXPORT_CPP CPingTaskConsumer : public CORE::CTaskConsumer
     virtual void OnTaskEnding( CORE::CICloneable* taskdata ,
                                bool willBeForced           ) GUCEF_VIRTUAL_OVERRIDE;
 
-    virtual void OnTaskEnd( CORE::CICloneable* taskdata ) GUCEF_VIRTUAL_OVERRIDE;
+    virtual void OnTaskEnded( CORE::CICloneable* taskdata ,
+                               bool wasForced             ) GUCEF_VIRTUAL_OVERRIDE;
     
     private:
     

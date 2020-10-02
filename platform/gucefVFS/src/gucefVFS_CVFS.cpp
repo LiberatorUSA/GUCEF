@@ -160,7 +160,8 @@ CVFS::CVFS( void )
 CVFS::~CVFS()
 {GUCEF_TRACE;
 
-    UnregisterArchiveFactory( FileSystemArchiveTypeName );
+    UnmountAllArchives();
+    UnregisterAllArchiveFactories();
 }
 
 /*-------------------------------------------------------------------------*/
@@ -178,6 +179,32 @@ CVFS::RegisterEventHandlers( void )
     SubscribeTo( &CORE::CCoreGlobal::Instance()->GetConfigStore() ,
                  CORE::CConfigStore::GlobalConfigLoadFailedEvent  ,
                  callback2                                        );
+}
+
+/*-------------------------------------------------------------------------*/
+
+void 
+CVFS::UnmountAllArchives( void )
+{GUCEF_TRACE;
+
+    MT::CObjectScopeLock lock( this );
+
+    while ( !m_mountList.empty() )
+    {
+        TMountEntry& mountEntry = *m_mountList.begin();
+        mountEntry.archive->UnloadArchive();
+        m_mountList.erase( m_mountList.begin() );
+    }
+}
+
+/*-------------------------------------------------------------------------*/
+
+void 
+CVFS::UnregisterAllArchiveFactories( void )
+{GUCEF_TRACE;
+
+    MT::CObjectScopeLock lock( this );
+    m_abstractArchiveFactory.UnregisterAllConcreteFactories();
 }
 
 /*-------------------------------------------------------------------------*/

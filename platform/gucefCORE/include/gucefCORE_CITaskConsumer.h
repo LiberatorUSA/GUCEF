@@ -151,14 +151,6 @@ class GUCEF_CORE_PUBLIC_CPP CTaskConsumer : public CObservingNotifier
     virtual bool OnTaskCycle( CICloneable* taskdata ) = 0;
 
     /**
-     *  This is where all the cleanup should be done for task data
-     *  Note that this member function will be called from within the spawned thread when ending gracefully
-     *  but in the case of a forcefull termination of the spawned thread this member function will be called
-     *  from the thread that triggered the forcefull termination.
-     */
-    virtual void OnTaskEnd( CICloneable* taskdata ) = 0;
-
-    /**
      *  Last chance notification to decended classes of impending end of the task
      *  If the 'willBeForced' flag is true the thread hosting the task will be killed next 
      *  Since this would be used in cases where the thread and thus this task is misbehaving 
@@ -168,12 +160,18 @@ class GUCEF_CORE_PUBLIC_CPP CTaskConsumer : public CObservingNotifier
                                bool willBeForced     );
 
     virtual void OnTaskPaused( CICloneable* taskdata ,
-                               bool forced           );
+                               bool wasForced        );
 
     virtual void OnTaskResumed( CICloneable* taskdata );
 
+    /**
+     *  This is where all the cleanup should be done for task data
+     *  Note that this member function will be called from within the spawned thread when ending gracefully
+     *  but in the case of a forcefull termination of the spawned thread this member function will be called
+     *  from the thread that triggered the forcefull termination.
+     */
     virtual void OnTaskEnded( CICloneable* taskdata ,
-                              bool forced           );
+                              bool forced           ) = 0;
     
     protected:
 

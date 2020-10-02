@@ -146,14 +146,6 @@ class GUCEF_CORE_PRIVATE_CPP CTaskDelegator : public MT::CActiveObject      ,
     virtual bool OnThreadCycle( void* taskdata ) GUCEF_VIRTUAL_OVERRIDE;
 
     /**
-     *  This is where all the cleanup should be done for task data
-     *  Note that this member function will be called from within the spawned thread when ending gracefully
-     *  but in the case of a forcefull termination of the spawned thread this member function will be called
-     *  from the thread that triggered the forcefull termination.
-     */
-    virtual void OnThreadEnd( void* taskdata ) GUCEF_VIRTUAL_OVERRIDE;
-
-    /**
      *  Last chance notification to decended classes of impending end of the tread
      *  If the 'willBeForced' flag is true the thread will be killed next 
      *  Since this would be used in cases where the thread is misbehaving one should
@@ -166,6 +158,12 @@ class GUCEF_CORE_PRIVATE_CPP CTaskDelegator : public MT::CActiveObject      ,
     
     virtual void OnThreadResumed( void* taskdata ) GUCEF_VIRTUAL_OVERRIDE;
     
+    /**
+     *  This is where all the cleanup should be done for task data
+     *  Note that this member function will be called from within the spawned thread when ending gracefully
+     *  but in the case of a forcefull termination of the spawned thread this member function will be called
+     *  from the thread that triggered the forcefull termination.
+     */
     virtual void OnThreadEnded( void* taskdata ,
                                 bool forced    ) GUCEF_VIRTUAL_OVERRIDE;
 

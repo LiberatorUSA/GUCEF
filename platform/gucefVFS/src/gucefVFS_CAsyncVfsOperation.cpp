@@ -188,7 +188,8 @@ CAsyncVfsOperation::OnTaskCycle( CORE::CICloneable* taskData )
 /*-------------------------------------------------------------------------*/
 
 void
-CAsyncVfsOperation::OnTaskEnd( CORE::CICloneable* taskData )
+CAsyncVfsOperation::OnTaskEnded( CORE::CICloneable* taskData ,
+                                 bool wasForced              )
 {GUCEF_TRACE;
 
     // This is a simplistic task, no shutdown or cleanup is required.

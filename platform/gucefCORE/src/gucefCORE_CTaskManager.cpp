@@ -549,11 +549,27 @@ CTaskManager::StartTask( CTaskConsumerPtr taskConsumer ,
                          CICloneable* taskData         )
 {GUCEF_TRACE;
 
+    if ( taskConsumer.IsNULL() )
+    {
+        GUCEF_ERROR_LOG( LOGLEVEL_NORMAL, "TaskManager: Cannot start task because a nullptr is passed as the taskConsumer" );        
+        return false;
+    }    
+    
     MT::CObjectScopeLock lock( this );
 
-    if ( !m_acceptNewWork )
+    if ( GUCEF_NULL != taskConsumer->GetTaskDelegator() )
+    {
+        UInt32 threadId = taskConsumer->GetTaskDelegator()->GetThreadID();
+        GUCEF_ERROR_LOG( LOGLEVEL_NORMAL, "TaskManager: Cannot start task because the taskConsumer given already has a delegator (thread: " + ToString( threadId ) + ") assigned" );
         return false;
+    }
 
+    if ( !m_acceptNewWork )
+    {
+        GUCEF_SYSTEM_LOG( LOGLEVEL_NORMAL, "TaskManager: Refusing to start task immediatly of type \"" + taskConsumer->GetType() + "\" because the task manager is not accepting new work" );
+        return false;
+    }
+        
     // Just spawn a task delegator, it will auto register as an active task
     taskConsumer->SetIsOwnedByTaskManager( false );
     CTaskDelegator* delegator = new CSingleTaskDelegator( taskConsumer, 0 != taskData ? taskData->Clone() : 0 );

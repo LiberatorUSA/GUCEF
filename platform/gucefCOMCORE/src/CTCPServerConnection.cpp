@@ -121,7 +121,10 @@ CTCPServerConnection::~CTCPServerConnection()
 
     Close();
 
+    UnsubscribeAllFromObserver();
+    
     delete _data;
+    _data = GUCEF_NULL;
 }
 
 /*-------------------------------------------------------------------------*/

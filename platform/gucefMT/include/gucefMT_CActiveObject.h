@@ -163,14 +163,6 @@ class GUCEF_MT_PUBLIC_CPP CActiveObject : public virtual MT::CILockable
      */
     virtual bool OnThreadCycle( void* taskdata ) = 0;
 
-    /**
-     *  This is where all the cleanup should be done for task data
-     *  Note that this member function will be called from within the spawned thread when ending gracefully
-     *  but in the case of a forcefull termination of the spawned thread this member function will be called
-     *  from the thread that triggered the forcefull termination.
-     */
-    virtual void OnThreadEnd( void* taskdata ) = 0;
-
     virtual void OnThreadPausedForcibly( void* taskdata );
     
     virtual void OnThreadResumed( void* taskdata );
@@ -184,6 +176,12 @@ class GUCEF_MT_PUBLIC_CPP CActiveObject : public virtual MT::CILockable
     virtual void OnThreadEnding( void* taskdata    ,
                                  bool willBeForced );
 
+    /**
+     *  This is where all the cleanup should be done for task data
+     *  Note that this member function will be called from within the spawned thread when ending gracefully
+     *  but in the case of a forcefull termination of the spawned thread this member function will be called
+     *  from the thread that triggered the forcefull termination.
+     */
     virtual void OnThreadEnded( void* taskdata ,
                                 bool forced    );
 

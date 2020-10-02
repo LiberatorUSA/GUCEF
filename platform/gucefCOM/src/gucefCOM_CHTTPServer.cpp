@@ -122,6 +122,7 @@ CHTTPServer::CHTTPServer( CORE::CPulseGenerator& pulsGenerator                  
 CHTTPServer::~CHTTPServer()
 {GUCEF_TRACE;
 
+    UnsubscribeAllFromObserver();
 }
 
 /*-------------------------------------------------------------------------*/

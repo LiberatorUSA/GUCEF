@@ -218,7 +218,17 @@ CAsyncHttpServerRequestHandler::OnTaskCycle( CORE::CICloneable* taskData )
 /*-------------------------------------------------------------------------*/
 
 void
-CAsyncHttpServerRequestHandler::OnTaskEnd( CORE::CICloneable* taskData )
+CAsyncHttpServerRequestHandler::OnTaskEnding( CORE::CICloneable* taskData ,
+                                              bool willBeForced           )
+{GUCEF_TRACE;
+
+}
+
+/*-------------------------------------------------------------------------*/
+
+void
+CAsyncHttpServerRequestHandler::OnTaskEnded( CORE::CICloneable* taskData ,
+                                             bool wasForced              )
 {GUCEF_TRACE;
 
     GUCEF_DEBUG_LOG( CORE::LOGLEVEL_NORMAL, "AsyncHttpServerRequestHandler(" + CORE::PointerToString( this ) + "):OnTaskEnd" );
@@ -229,6 +239,8 @@ CAsyncHttpServerRequestHandler::OnTaskEnd( CORE::CICloneable* taskData )
          httpRequestData->httpServer->GetRequestHandlerFactory()->Destroy( m_requestHandler );
          m_requestHandler = GUCEF_NULL;
     }
+
+    CORE::CTaskConsumer::OnTaskEnded( taskData, wasForced );
 }
 
 /*-------------------------------------------------------------------------//

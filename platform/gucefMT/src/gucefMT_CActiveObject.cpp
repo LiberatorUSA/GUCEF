@@ -158,7 +158,7 @@ CActiveObject::OnActivate( void* thisobject )
             }
         }
 
-        tao->OnThreadEnd( taskdata );
+        tao->OnThreadEnded( taskdata, false );
     }
     tao->_td = NULL;
     tao->_active = false;
@@ -261,7 +261,6 @@ CActiveObject::Deactivate( bool force, bool callerShouldWait )
                  */
                 ThreadKill( _td );
             }
-            OnThreadEnd( m_threadData );
             OnThreadEnded( m_threadData, true );
             Unlock();
         }

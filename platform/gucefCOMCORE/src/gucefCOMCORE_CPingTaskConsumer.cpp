@@ -437,9 +437,20 @@ CPingTaskConsumer::OnTaskStart( CORE::CICloneable* taskData )
 /*-------------------------------------------------------------------------*/
 
 void
-CPingTaskConsumer::OnTaskEnd( CORE::CICloneable* taskData )
+CPingTaskConsumer::OnTaskEnding( CORE::CICloneable* taskData ,
+                                 bool willBeForced           )
 {GUCEF_TRACE;
 
+}
+
+/*-------------------------------------------------------------------------*/
+
+void
+CPingTaskConsumer::OnTaskEnded( CORE::CICloneable* taskData ,
+                                bool wasForced              )
+{GUCEF_TRACE;
+
+    CORE::CTaskConsumer::OnTaskEnded( taskData, wasForced );
 }
 
 /*-------------------------------------------------------------------------*/
@@ -597,15 +608,6 @@ CPingTaskConsumer::OnTaskCycle( CORE::CICloneable* taskData )
 }
 
 #endif
-
-/*-------------------------------------------------------------------------*/
-
-void 
-CPingTaskConsumer::OnTaskEnding( CORE::CICloneable* taskdata ,
-                                 bool willBeForced           )
-{GUCEF_TRACE;
-    
-}
 
 /*-------------------------------------------------------------------------//
 //                                                                         //

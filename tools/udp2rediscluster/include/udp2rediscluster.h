@@ -155,7 +155,8 @@ class ClusterChannelRedisWriter : public CORE::CTaskConsumer
     virtual void OnTaskEnding( CORE::CICloneable* taskdata ,
                                bool willBeForced           ) GUCEF_VIRTUAL_OVERRIDE;
     
-    virtual void OnTaskEnd( CORE::CICloneable* taskData ) GUCEF_VIRTUAL_OVERRIDE;
+    virtual void OnTaskEnded( CORE::CICloneable* taskdata ,
+                               bool wasForced             ) GUCEF_VIRTUAL_OVERRIDE;
 
     virtual CORE::CString GetType( void ) const GUCEF_VIRTUAL_OVERRIDE;
 
@@ -243,7 +244,8 @@ class Udp2RedisClusterChannel : public CORE::CTaskConsumer
     virtual void OnTaskEnding( CORE::CICloneable* taskdata ,
                                bool willBeForced           ) GUCEF_VIRTUAL_OVERRIDE;
     
-    virtual void OnTaskEnd( CORE::CICloneable* taskData ) GUCEF_VIRTUAL_OVERRIDE;
+    virtual void OnTaskEnded( CORE::CICloneable* taskdata ,
+                               bool wasForced             ) GUCEF_VIRTUAL_OVERRIDE;
 
     virtual CORE::CString GetType( void ) const GUCEF_VIRTUAL_OVERRIDE;
 
@@ -382,6 +384,8 @@ class Udp2RedisCluster : public CORE::CObserver
 
     bool SetStandbyMode( bool newMode );
 
+    bool IsGlobalStandbyEnabled( void ) const;
+
     bool LoadConfig( const CORE::CValueList& appConfig   ,
                      const CORE::CDataNode& globalConfig );
 
@@ -409,6 +413,7 @@ class Udp2RedisCluster : public CORE::CObserver
     typedef std::map< CORE::Int32, Udp2RedisClusterChannelPtr > Udp2RedisClusterChannelMap;
     
     bool m_isInStandby;
+    bool m_globalStandbyEnabled;
     CORE::UInt16 m_udpStartPort;
     CORE::UInt16 m_channelCount;
     CORE::Int32 m_redisStreamStartChannelID;
@@ -425,6 +430,7 @@ class Udp2RedisCluster : public CORE::CObserver
     bool m_transmitMetrics;
     COMCORE::CUDPSocket m_testUdpSocket;
     CORE::CTimer m_testPacketTransmitTimer;
+    bool m_transmitTestPackets;
 };
 
 /*-------------------------------------------------------------------------*/
