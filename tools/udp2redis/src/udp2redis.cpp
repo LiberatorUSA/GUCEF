@@ -754,7 +754,8 @@ Udp2RedisChannel::OnTaskCycle( CORE::CICloneable* taskData )
 /*-------------------------------------------------------------------------*/
 
 void
-Udp2RedisChannel::OnTaskEnd( CORE::CICloneable* taskData )
+Udp2RedisChannel::OnTaskEnded( CORE::CICloneable* taskData ,
+                               bool wasForced              )
 {GUCEF_TRACE;
 
     redisAsyncDisconnect( m_redisContext );
@@ -781,7 +782,8 @@ RestApiUdp2RedisInfoResource::~RestApiUdp2RedisInfoResource()
 
 bool
 RestApiUdp2RedisInfoResource::Serialize( CORE::CDataNode& output             ,
-                                         const CORE::CString& representation )
+                                         const CORE::CString& representation ,
+                                         const CORE::CString& params         )
 {GUCEF_TRACE;
 
     output.SetName( "info" );
@@ -817,7 +819,8 @@ RestApiUdp2RedisConfigResource::~RestApiUdp2RedisConfigResource()
 
 bool
 RestApiUdp2RedisConfigResource::Serialize( CORE::CDataNode& output             ,
-                                           const CORE::CString& representation )
+                                           const CORE::CString& representation ,
+                                           const CORE::CString& params         )
 {GUCEF_TRACE;
 
     if ( m_appConfig )
@@ -873,6 +876,10 @@ Udp2Redis::Start( void )
 
     bool errorOccured = false;
     m_channels.resize( m_channelCount );
+    for ( size_t m=0; m<m_channels.size(); ++m )
+    {
+        m_channels[ m ] = Udp2RedisChannelPtr( new Udp2RedisChannel() );
+    }
 
     CORE::CTaskManager& taskManager = CORE::CCoreGlobal::Instance()->GetTaskManager();
 
@@ -881,12 +888,12 @@ Udp2Redis::Start( void )
     Udp2RedisChannelVector::iterator i = m_channels.begin();
     while ( i != m_channels.end() )
     {
-        Udp2RedisChannel& channel = (*i);
+        Udp2RedisChannelPtr& channel = (*i);
         ChannelSettingsMap::iterator n = m_channelSettings.find( channelId );
         if ( n != m_channelSettings.end() )
         {
             const Udp2RedisChannel::ChannelSettings& channelSettings = (*n).second;
-            if ( !channel.LoadConfig( channelSettings ) )
+            if ( !channel->LoadConfig( channelSettings ) )
             {
                 GUCEF_ERROR_LOG( CORE::LOGLEVEL_IMPORTANT, "Udp2Redis:Start: Failed to set channel settings on channel " + CORE::Int32ToString( channelId ) );
                 errorOccured = true;
@@ -1008,7 +1015,7 @@ Udp2Redis::OnMetricsTimerCycle( CORE::CNotifier* notifier    ,
     Udp2RedisChannelVector::iterator i = m_channels.begin();
     while ( i != m_channels.end() )
     {
-        const Udp2RedisChannel::ChannelMetrics& metrics = (*i).GetMetrics();
+        const Udp2RedisChannel::ChannelMetrics& metrics = (*i)->GetMetrics();
         CORE::CString metricPrefix = "udp2redis.ch" + CORE::Int32ToString( channelId ) + ".";
 
         GUCEF_METRIC_COUNT( metricPrefix + "redisMessagesTransmitted", metrics.redisMessagesTransmitted, 1.0f );

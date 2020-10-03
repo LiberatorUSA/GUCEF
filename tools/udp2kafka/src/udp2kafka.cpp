@@ -1455,10 +1455,11 @@ Udp2KafkaChannel::OnTaskCycle( CORE::CICloneable* taskData )
 /*-------------------------------------------------------------------------*/
     
 void
-Udp2KafkaChannel::OnTaskEnd( CORE::CICloneable* taskData )
+Udp2KafkaChannel::OnTaskEnded( CORE::CICloneable* taskData ,
+                               bool wasForced              )
 {GUCEF_TRACE;
 
-    GUCEF_LOG( CORE::LOGLEVEL_NORMAL, "Udp2KafkaChannel:OnTaskEnd" );
+    GUCEF_LOG( CORE::LOGLEVEL_NORMAL, "Udp2KafkaChannel:OnTaskEnded" );
 
     if ( TChannelMode::KAFKA_PRODUCER == m_channelSettings.mode || TChannelMode::KAFKA_PRODUCER_AND_CONSUMER == m_channelSettings.mode )
     {
@@ -1483,7 +1484,7 @@ Udp2KafkaChannel::OnTaskEnd( CORE::CICloneable* taskData )
         int queuedMsgs = m_kafkaProducer->outq_len();
         while ( queuedMsgs > 0 && waited <= 30000 ) 
         {
-            GUCEF_LOG( CORE::LOGLEVEL_NORMAL, "Udp2KafkaChannel:OnTaskEnd: Waiting on Kafka Producer for topic: \"" + 
+            GUCEF_LOG( CORE::LOGLEVEL_NORMAL, "Udp2KafkaChannel:OnTaskEnded: Waiting on Kafka Producer for topic: \"" + 
                 m_channelSettings.channelTopicName + "\" to finish " + CORE::Int32ToString( queuedMsgs ) + " queued messages" );
             
             if ( RdKafka::ERR_NO_ERROR == m_kafkaProducer->flush( 1000 ) )
@@ -1494,7 +1495,7 @@ Udp2KafkaChannel::OnTaskEnd( CORE::CICloneable* taskData )
         }
         if ( waited > 30000 )
         {
-            GUCEF_WARNING_LOG( CORE::LOGLEVEL_NORMAL, "Udp2KafkaChannel:OnTaskEnd: Timed out waiting on Kafka Producer for topic: \"" + 
+            GUCEF_WARNING_LOG( CORE::LOGLEVEL_NORMAL, "Udp2KafkaChannel:OnTaskEnded: Timed out waiting on Kafka Producer for topic: \"" + 
                 m_channelSettings.channelTopicName + "\" to finish " + CORE::Int32ToString( queuedMsgs ) + " queued messages. Shutdown will continue regardless. Data loss will occur!" );
         }
         
@@ -1548,7 +1549,8 @@ RestApiUdp2KafkaInfoResource::~RestApiUdp2KafkaInfoResource()
 
 bool
 RestApiUdp2KafkaInfoResource::Serialize( CORE::CDataNode& output             ,
-                                         const CORE::CString& representation )
+                                         const CORE::CString& representation ,
+                                         const CORE::CString& params         )
 {GUCEF_TRACE;
 
     output.SetName( "info" );
@@ -1584,7 +1586,8 @@ RestApiUdp2KafkaConfigResource::~RestApiUdp2KafkaConfigResource()
 
 bool
 RestApiUdp2KafkaConfigResource::Serialize( CORE::CDataNode& output             ,
-                                           const CORE::CString& representation )
+                                           const CORE::CString& representation ,
+                                           const CORE::CString& params         )
 {GUCEF_TRACE;
 
     if ( m_appConfig )
@@ -1648,8 +1651,8 @@ Udp2Kafka::OnMetricsTimerCycle( CORE::CNotifier* notifier    ,
     Udp2KafkaChannelVector::iterator i = m_channels.begin();
     while ( i != m_channels.end() )
     {
-        const Udp2KafkaChannel::ChannelMetrics& metrics = (*i).GetMetrics();
-        const Udp2KafkaChannel::ChannelSettings& settings = (*i).GetChannelSettings();
+        const Udp2KafkaChannel::ChannelMetrics& metrics = (*i)->GetMetrics();
+        const Udp2KafkaChannel::ChannelSettings& settings = (*i)->GetChannelSettings();
 
         GUCEF_METRIC_COUNT( settings.metricsPrefix + "kafkaErrorReplies", metrics.kafkaErrorReplies, 1.0f );
 
@@ -1687,7 +1690,7 @@ Udp2Kafka::OnTransmitTestPacketTimerCycle( CORE::CNotifier* notifier    ,
     Udp2KafkaChannelVector::iterator i = m_channels.begin();
     while ( i != m_channels.end() )
     {
-        const Udp2KafkaChannel::ChannelSettings& settings = (*i).GetChannelSettings();
+        const Udp2KafkaChannel::ChannelSettings& settings = (*i)->GetChannelSettings();
         if ( settings.wantsTestPackage )
         {
             m_testUdpSocket.SendPacketTo( settings.udpInterface, "TEST", 4 );
@@ -1704,6 +1707,10 @@ Udp2Kafka::Start( void )
 
     bool errorOccured = false;
     m_channels.resize( m_channelCount );
+    for ( size_t m=0; m<m_channels.size(); ++m )
+    {
+        m_channels[ m ] = Udp2KafkaChannelPtr( new Udp2KafkaChannel() );
+    }
 
     CORE::CTaskManager& taskManager = CORE::CCoreGlobal::Instance()->GetTaskManager();
 
@@ -1712,12 +1719,12 @@ Udp2Kafka::Start( void )
     Udp2KafkaChannelVector::iterator i = m_channels.begin();
     while ( i != m_channels.end() )
     {
-        Udp2KafkaChannel& channel = (*i);
+        Udp2KafkaChannelPtr& channel = (*i);
         ChannelSettingsMap::iterator n = m_channelSettings.find( channelId );
         if ( n != m_channelSettings.end() )
         {
             const Udp2KafkaChannel::ChannelSettings& channelSettings = (*n).second;
-            if ( !channel.LoadConfig( channelSettings ) )
+            if ( !channel->LoadConfig( channelSettings ) )
             {
                 GUCEF_ERROR_LOG( CORE::LOGLEVEL_IMPORTANT, "Udp2Kafka:Start: Failed to set channel settings on channel " + CORE::Int32ToString( channelId ) );
                 errorOccured = true;

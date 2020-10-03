@@ -115,11 +115,12 @@ class Udp2KafkaChannel : public CORE::CTaskConsumer ,
     Udp2KafkaChannel( const Udp2KafkaChannel& src );
     virtual ~Udp2KafkaChannel();
 
-    virtual bool OnTaskStart( CORE::CICloneable* taskData );
+    virtual bool OnTaskStart( CORE::CICloneable* taskData ) GUCEF_VIRTUAL_OVERRIDE;
     
-    virtual bool OnTaskCycle( CORE::CICloneable* taskData );
+    virtual bool OnTaskCycle( CORE::CICloneable* taskData ) GUCEF_VIRTUAL_OVERRIDE;
     
-    virtual void OnTaskEnd( CORE::CICloneable* taskData );
+    virtual void OnTaskEnded( CORE::CICloneable* taskData ,
+                              bool wasForced              ) GUCEF_VIRTUAL_OVERRIDE;
 
     virtual CORE::CString GetType( void ) const;
 
@@ -186,15 +187,15 @@ class Udp2KafkaChannel : public CORE::CTaskConsumer ,
     typedef COMCORE::CUDPSocket::TPacketEntryVector TPacketEntryVector;
     typedef COMCORE::CUDPSocket::TPacketEntry TPacketEntry;
 
-    virtual void event_cb( RdKafka::Event& event );
+    virtual void event_cb( RdKafka::Event& event ) GUCEF_VIRTUAL_OVERRIDE;
 
-    virtual void dr_cb( RdKafka::Message& message );
+    virtual void dr_cb( RdKafka::Message& message ) GUCEF_VIRTUAL_OVERRIDE;
 
-    virtual void consume_cb( RdKafka::Message& message, void* opaque );
+    virtual void consume_cb( RdKafka::Message& message, void* opaque ) GUCEF_VIRTUAL_OVERRIDE;
 
     virtual void rebalance_cb( RdKafka::KafkaConsumer* consumer                  ,
                                RdKafka::ErrorCode err                            ,
-                               std::vector<RdKafka::TopicPartition*>& partitions );
+                               std::vector<RdKafka::TopicPartition*>& partitions ) GUCEF_VIRTUAL_OVERRIDE;
 
   /**
    * @brief Set offset commit callback for use with consumer groups
@@ -212,7 +213,7 @@ class Udp2KafkaChannel : public CORE::CTaskConsumer ,
    *   - \c err:       Commit error
    */
     virtual void offset_commit_cb( RdKafka::ErrorCode err                         ,
-                                   std::vector<RdKafka::TopicPartition*>& offsets );
+                                   std::vector<RdKafka::TopicPartition*>& offsets ) GUCEF_VIRTUAL_OVERRIDE;
 
     bool UdpTransmit( RdKafka::Message& message );
 
@@ -305,6 +306,10 @@ class Udp2KafkaChannel : public CORE::CTaskConsumer ,
 
 /*-------------------------------------------------------------------------*/
 
+typedef CORE::CTSharedPtr< Udp2KafkaChannel, MT::CMutex > Udp2KafkaChannelPtr;
+
+/*-------------------------------------------------------------------------*/
+
 class Udp2Kafka;
 
 class RestApiUdp2KafkaInfoResource : public COM::CCodecBasedHTTPServerResource
@@ -316,7 +321,8 @@ class RestApiUdp2KafkaInfoResource : public COM::CCodecBasedHTTPServerResource
     virtual ~RestApiUdp2KafkaInfoResource();
 
     virtual bool Serialize( CORE::CDataNode& output             ,
-                            const CORE::CString& representation );
+                            const CORE::CString& representation ,
+                            const CORE::CString& params         ) GUCEF_VIRTUAL_OVERRIDE;
 
     private:
 
@@ -334,7 +340,8 @@ class RestApiUdp2KafkaConfigResource : public COM::CCodecBasedHTTPServerResource
     virtual ~RestApiUdp2KafkaConfigResource();
 
     virtual bool Serialize( CORE::CDataNode& output             ,
-                            const CORE::CString& representation );
+                            const CORE::CString& representation ,
+                            const CORE::CString& params         ) GUCEF_VIRTUAL_OVERRIDE;
 
     private:
 
@@ -377,7 +384,7 @@ class Udp2Kafka : public CORE::CObserver
     private:
 
     typedef std::map< CORE::Int32, Udp2KafkaChannel::ChannelSettings > ChannelSettingsMap;
-    typedef std::vector< Udp2KafkaChannel > Udp2KafkaChannelVector;
+    typedef std::vector< Udp2KafkaChannelPtr > Udp2KafkaChannelVector;
 
     CORE::UInt16 m_udpStartPort;
     CORE::UInt16 m_channelCount;

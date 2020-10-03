@@ -96,11 +96,12 @@ class Udp2RedisChannel : public CORE::CTaskConsumer
     Udp2RedisChannel( const Udp2RedisChannel& src );
     virtual ~Udp2RedisChannel();
 
-    virtual bool OnTaskStart( CORE::CICloneable* taskData );
+    virtual bool OnTaskStart( CORE::CICloneable* taskData ) GUCEF_VIRTUAL_OVERRIDE;
     
-    virtual bool OnTaskCycle( CORE::CICloneable* taskData );
+    virtual bool OnTaskCycle( CORE::CICloneable* taskData ) GUCEF_VIRTUAL_OVERRIDE;
     
-    virtual void OnTaskEnd( CORE::CICloneable* taskData );
+    virtual void OnTaskEnded( CORE::CICloneable* taskData ,
+                              bool wasForced              ) GUCEF_VIRTUAL_OVERRIDE;
 
     virtual CORE::CString GetType( void ) const;
 
@@ -244,6 +245,10 @@ class Udp2RedisChannel : public CORE::CTaskConsumer
 
 /*-------------------------------------------------------------------------*/
 
+typedef CORE::CTSharedPtr< Udp2RedisChannel, MT::CMutex > Udp2RedisChannelPtr;
+
+/*-------------------------------------------------------------------------*/
+
 class Udp2Redis;
 
 class RestApiUdp2RedisInfoResource : public COM::CCodecBasedHTTPServerResource
@@ -255,12 +260,15 @@ class RestApiUdp2RedisInfoResource : public COM::CCodecBasedHTTPServerResource
     virtual ~RestApiUdp2RedisInfoResource();
 
     virtual bool Serialize( CORE::CDataNode& output             ,
-                            const CORE::CString& representation );
+                            const CORE::CString& representation ,
+                            const CORE::CString& params         ) GUCEF_VIRTUAL_OVERRIDE;
 
     private:
 
     Udp2Redis* m_app;
 };
+
+/*-------------------------------------------------------------------------*/
 
 class RestApiUdp2RedisConfigResource : public COM::CCodecBasedHTTPServerResource
 {
@@ -271,7 +279,8 @@ class RestApiUdp2RedisConfigResource : public COM::CCodecBasedHTTPServerResource
     virtual ~RestApiUdp2RedisConfigResource();
 
     virtual bool Serialize( CORE::CDataNode& output             ,
-                            const CORE::CString& representation );
+                            const CORE::CString& representation ,
+                            const CORE::CString& params         ) GUCEF_VIRTUAL_OVERRIDE;
 
     private:
 
@@ -309,7 +318,7 @@ class Udp2Redis : public CORE::CObserver
     private:
 
     typedef std::map< CORE::Int32, Udp2RedisChannel::ChannelSettings > ChannelSettingsMap;
-    typedef std::vector< Udp2RedisChannel > Udp2RedisChannelVector;
+    typedef std::vector< Udp2RedisChannelPtr > Udp2RedisChannelVector;
     
     CORE::UInt16 m_udpStartPort;
     CORE::UInt16 m_channelCount;
