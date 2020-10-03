@@ -272,7 +272,7 @@ CXTermConsoleLogger::Log( const TLogMsgType logMsgType ,
         }
         else
         {
-            if ( logMsgType == CORE::CLogManager::LOG_CONSOLE )
+            if ( logMsgType == CORE::LOG_CONSOLE )
             {
                 CString actualLogMsg( logMessage + "\n" );
                 fprintf( m_slaveFptr, actualLogMsg.C_String() );
@@ -303,7 +303,7 @@ CXTermConsoleLogger::LogWithoutFormatting( const TLogMsgType logMsgType ,
         }
         else
         {
-            if ( logMsgType == CORE::CLogManager::LOG_CONSOLE )
+            if ( logMsgType == CORE::LOG_CONSOLE )
             {
                 CString actualLogMsg( logMessage + "\n" );
                 fprintf( m_slaveFptr, actualLogMsg.C_String() );

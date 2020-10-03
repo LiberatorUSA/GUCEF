@@ -56,7 +56,7 @@ namespace MT {
 struct SMutexData
 {
     UInt32 locked;
-    
+
     #if ( GUCEF_PLATFORM == GUCEF_PLATFORM_MSWIN )
 
     HANDLE id;
@@ -73,7 +73,7 @@ struct SMutexData
 
     SMutexData( void )
         : locked( 0 )
-        , id( 0 )
+        , id()
     {
     }
 
@@ -144,7 +144,7 @@ CMutex::Lock( void ) const
 {
     if ( GUCEF_NULL == _mutexdata )
         return false;
-    
+
     #if ( GUCEF_PLATFORM == GUCEF_PLATFORM_MSWIN )
 
     if ( WaitForSingleObject( ((TMutexData*)_mutexdata)->id ,
@@ -174,7 +174,7 @@ CMutex::Unlock( void ) const
     // that is understood and accepted given the flow and purpose
     ((TMutexData*)_mutexdata)->locked = 0;
 
-    if ( ReleaseMutex( ((TMutexData*)_mutexdata)->id ) == FALSE ) 
+    if ( ReleaseMutex( ((TMutexData*)_mutexdata)->id ) == FALSE )
         return false;
     return true;
 
@@ -188,7 +188,7 @@ CMutex::Unlock( void ) const
 
 /*--------------------------------------------------------------------------*/
 
-const CILockable* 
+const CILockable*
 CMutex::AsLockable( void ) const
 {
     return this;
@@ -196,7 +196,7 @@ CMutex::AsLockable( void ) const
 
 /*--------------------------------------------------------------------------*/
 
-UInt32 
+UInt32
 CMutex::GetThreadIdOfThreadHoldingTheLock( void ) const
 {
     if ( GUCEF_NULL == _mutexdata )
@@ -207,7 +207,7 @@ CMutex::GetThreadIdOfThreadHoldingTheLock( void ) const
 
 /*--------------------------------------------------------------------------*/
 
-bool 
+bool
 CMutex::IsLocked( void ) const
 {
     if ( GUCEF_NULL == _mutexdata )

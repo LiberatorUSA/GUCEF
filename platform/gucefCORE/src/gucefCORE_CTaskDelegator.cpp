@@ -81,10 +81,10 @@ CTaskDelegator::RegisterEvents( void )
 /*-------------------------------------------------------------------------*/
 
 CTaskDelegator::CTaskDelegator( void )
-    : MT::CActiveObject()    
-    , CNotifier()   
-    , CIPulseGeneratorDriver()         
-    , m_pulseGenerator()     
+    : MT::CActiveObject()
+    , CNotifier()
+    , CIPulseGeneratorDriver()
+    , m_pulseGenerator()
     , m_taskConsumer()
     , m_taskData( GUCEF_NULL )
     , m_immediatePulseTickets( 0 )
@@ -102,10 +102,10 @@ CTaskDelegator::CTaskDelegator( void )
 
 CTaskDelegator::CTaskDelegator( CTaskConsumerPtr taskConsumer ,
                                 CICloneable* taskData         )
-    : MT::CActiveObject()    
-    , CNotifier()   
-    , CIPulseGeneratorDriver()         
-    , m_pulseGenerator()     
+    : MT::CActiveObject()
+    , CNotifier()
+    , CIPulseGeneratorDriver()
+    , m_pulseGenerator()
     , m_taskConsumer( taskConsumer )
     , m_taskData( taskData )
     , m_immediatePulseTickets( 0 )
@@ -139,9 +139,9 @@ CTaskDelegator::GetPulseGenerator( void )
 /*-------------------------------------------------------------------------*/
 
 void
-CTaskDelegator::RequestImmediatePulse( CPulseGenerator& pulseGenerator ) 
+CTaskDelegator::RequestImmediatePulse( CPulseGenerator& pulseGenerator )
 {GUCEF_TRACE;
-       
+
     if ( &pulseGenerator == &m_pulseGenerator )
     {
         m_immediatePulseTickets = m_immediatePulseTicketMax;
@@ -150,7 +150,7 @@ CTaskDelegator::RequestImmediatePulse( CPulseGenerator& pulseGenerator )
 
 /*-------------------------------------------------------------------------*/
 
-void 
+void
 CTaskDelegator::RequestPulsesPerImmediatePulseRequest( CPulseGenerator& pulseGenerator                     ,
                                                        const Int32 requestedPulsesPerImmediatePulseRequest )
 {GUCEF_TRACE;
@@ -284,7 +284,7 @@ CTaskDelegator::ProcessTask( CTaskConsumerPtr taskConsumer ,
         taskConsumer->OnTaskStarted( taskData );
 
         // cycle the task as long as it is not "done"
-        while ( !IsDeactivationRequested() ) 
+        while ( !IsDeactivationRequested() )
         {
             // Perform a cycle directly and ask the task if we are done
             if ( taskConsumer->OnTaskCycle( taskData ) )
@@ -292,7 +292,7 @@ CTaskDelegator::ProcessTask( CTaskConsumerPtr taskConsumer ,
                 // Task says we are done
                 break;
             }
-            
+
             SendDriverPulse( m_pulseGenerator );
             if ( m_immediatePulseTickets > 0 )
             {
@@ -323,7 +323,7 @@ CTaskDelegator::OnThreadPausedForcibly( void* taskdata )
 {GUCEF_TRACE;
 
     CTaskConsumerPtr taskConsumer = m_taskConsumer;
-    if ( GUCEF_NULL != taskConsumer )
+    if ( !taskConsumer.IsNULL() )
     {
         taskConsumer->OnTaskPaused( static_cast< CICloneable* >( taskdata ), true );
     }
@@ -336,7 +336,7 @@ CTaskDelegator::OnThreadResumed( void* taskdata )
 {GUCEF_TRACE;
 
     CTaskConsumerPtr taskConsumer = m_taskConsumer;
-    if ( GUCEF_NULL != taskConsumer )
+    if ( !taskConsumer.IsNULL() )
     {
         taskConsumer->OnTaskResumed( static_cast< CICloneable* >( taskdata ) );
     }
@@ -351,7 +351,7 @@ CTaskDelegator::OnThreadEnding( void* taskdata    ,
 
     // This is invoked from a different thread than the thread represented by the TaskDelegator
     CTaskConsumerPtr taskConsumer = m_taskConsumer;
-    if ( GUCEF_NULL != taskConsumer )
+    if ( !taskConsumer.IsNULL() )
     {
         taskConsumer->OnTaskEnding( static_cast< CICloneable* >( taskdata ), willBeForced );
     }
@@ -368,7 +368,7 @@ CTaskDelegator::OnThreadEnded( void* taskdata ,
     // and we did not finish whatever the consumer was doing gracefully
     // We should give the consume a chance to cleanup
     CTaskConsumerPtr taskConsumer = m_taskConsumer;
-    if ( GUCEF_NULL != taskConsumer )
+    if ( !taskConsumer.IsNULL() )
     {
         taskConsumer->OnTaskEnded( static_cast< CICloneable* >( taskdata ), m_consumerBusy );
         taskConsumer->SetTaskDelegator( GUCEF_NULL );
@@ -386,7 +386,7 @@ CTaskDelegator::GetTaskConsumer( void )
 
 /*-------------------------------------------------------------------------*/
 
-const MT::CILockable* 
+const MT::CILockable*
 CTaskDelegator::AsLockable( void ) const
 {GUCEF_TRACE;
 

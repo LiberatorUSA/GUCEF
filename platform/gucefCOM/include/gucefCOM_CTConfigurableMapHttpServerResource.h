@@ -1,5 +1,5 @@
 /*
- *  gucefCOM: GUCEF module providing communication implementations 
+ *  gucefCOM: GUCEF module providing communication implementations
  *  for standardized protocols
  *
  *  Copyright (C) 1998 - 2020.  Dinand Vanvelzen
@@ -65,18 +65,18 @@ namespace COM {
 
 template< typename CollectionKeyType, class ConfigurableDerivedClass >
 class CTConfigurableMapHttpServerResource : public CCodecBasedHTTPServerResource
-{    
+{
     public:
 
     typedef std::map< CollectionKeyType, ConfigurableDerivedClass > TConfigurableCollectionMap;
-    
+
     CTConfigurableMapHttpServerResource( const CORE::CString& collectionName    ,
                                          const CORE::CString& keyPropertyName   ,
                                          TConfigurableCollectionMap* collection ,
                                          MT::CILockable* collectionLock         );
-    
+
     virtual ~CTConfigurableMapHttpServerResource();
-    
+
     virtual bool Serialize( CORE::CDataNode& output             ,
                             const CORE::CString& representation ,
                             const CORE::CString& query          ) GUCEF_VIRTUAL_OVERRIDE;
@@ -96,14 +96,14 @@ class CTConfigurableMapHttpServerResource : public CCodecBasedHTTPServerResource
                                          const CORE::CString& representation           ,
                                          const CORE::CString& query                    ,
                                          THTTPServerResourcePtr& resourceOutput        ,
-                                         TStringVector& supportedRepresentationsOutput ) GUCEF_VIRTUAL_OVERRIDE;        
+                                         TStringVector& supportedRepresentationsOutput ) GUCEF_VIRTUAL_OVERRIDE;
 
     /**
      *  Signals whether the resource is a collection of other resources
      *  Since this implements a collection it is hardcoded to 'true'
      */
     virtual bool IsCollection( void ) const GUCEF_VIRTUAL_OVERRIDE;
-    
+
     void SetResourceKeyPropertyName( const CString& keyPropertyName );
 
     const CString& GetResourceKeyPropertyName( void ) const;
@@ -139,14 +139,14 @@ CTConfigurableMapHttpServerResource< CollectionKeyType, ConfigurableDerivedClass
     , m_collectionName( collectionName )
     , m_keyPropertyName( keyPropertyName )
 {GUCEF_TRACE;
-    
+
     m_allowSerialize = true;
     m_allowDeserialize = false;
     m_allowCreate = false;
 }
 
 /*-------------------------------------------------------------------------*/
-   
+
 template< typename CollectionKeyType, class ConfigurableDerivedClass >
 CTConfigurableMapHttpServerResource< CollectionKeyType, ConfigurableDerivedClass >::~CTConfigurableMapHttpServerResource()
 {GUCEF_TRACE;
@@ -156,13 +156,13 @@ CTConfigurableMapHttpServerResource< CollectionKeyType, ConfigurableDerivedClass
 /*-------------------------------------------------------------------------*/
 
 template< typename CollectionKeyType, class ConfigurableDerivedClass >
-bool 
+bool
 CTConfigurableMapHttpServerResource< CollectionKeyType, ConfigurableDerivedClass >::IsCollection( void ) const
 {GUCEF_TRACE;
 
     return true;
 }
-    
+
 /*-------------------------------------------------------------------------*/
 
 template< typename CollectionKeyType, class ConfigurableDerivedClass >
@@ -196,7 +196,7 @@ CTConfigurableMapHttpServerResource< CollectionKeyType, ConfigurableDerivedClass
 
     bool totalSuccess = true;
     output = CORE::CDataNode( m_collectionName, GUCEF_DATATYPE_ARRAY );
-    TConfigurableCollectionMap::iterator i = m_collection->begin();
+    typename TConfigurableCollectionMap::iterator i = m_collection->begin();
     while ( i != m_collection->end() )
     {
         CORE::CDataNode& childNode = output.AddChild( (*i).first );
@@ -211,7 +211,7 @@ CTConfigurableMapHttpServerResource< CollectionKeyType, ConfigurableDerivedClass
 /*-------------------------------------------------------------------------*/
 
 template< typename CollectionKeyType, class ConfigurableDerivedClass >
-CCodecBasedHTTPServerResource::TCreateState 
+CCodecBasedHTTPServerResource::TCreateState
 CTConfigurableMapHttpServerResource< CollectionKeyType, ConfigurableDerivedClass >::CreateResource( const CString& transactionID                  ,
                                                                                                     const CORE::CDataNode& input                  ,
                                                                                                     const CString& representation                 ,
@@ -220,7 +220,7 @@ CTConfigurableMapHttpServerResource< CollectionKeyType, ConfigurableDerivedClass
                                                                                                     TStringVector& supportedRepresentationsOutput )
 {GUCEF_TRACE;
 
-    if ( m_keyPropertyName.IsNULLOrEmpty() ) 
+    if ( m_keyPropertyName.IsNULLOrEmpty() )
     {
         return ECreateState::CREATESTATE_FAILED;
     }
@@ -233,7 +233,7 @@ CTConfigurableMapHttpServerResource< CollectionKeyType, ConfigurableDerivedClass
 
     MT::CObjectScopeLock lock( m_collectionLock );
 
-    TConfigurableCollectionMap::iterator i = m_collection->find( entryKey );
+    typename TConfigurableCollectionMap::iterator i = m_collection->find( entryKey );
     if ( i != m_collection->end() )
     {
         return ECreateState::CREATESTATE_CONFLICTING;
@@ -241,11 +241,11 @@ CTConfigurableMapHttpServerResource< CollectionKeyType, ConfigurableDerivedClass
 
     ConfigurableDerivedClass& newEntry = (*m_collection)[ entryKey ];
     if ( !newEntry.LoadConfig( input ) )
-    {        
+    {
         m_collection->erase( entryKey );
         return ECreateState::CREATESTATE_DESERIALIZATIONFAILED;
     }
-        
+
     return ECreateState::CREATESTATE_CREATED;
 }
 

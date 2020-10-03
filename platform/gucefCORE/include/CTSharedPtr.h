@@ -132,7 +132,7 @@ class CTSharedPtr : public CTBasicSharedPtr< T, LockType >
 
         if ( &reinterpret_cast< const CTSharedPtr& >( src ) != this )
         {
-            CTBasicSharedPtr< T, MT >::operator=( static_cast< const CTBasicSharedPtr< Derived, LockType >& >( src ) );
+            CTBasicSharedPtr< T, LockType >::operator=( static_cast< const CTBasicSharedPtr< Derived, LockType >& >( src ) );
         }
         return *this;
     }
@@ -414,10 +414,10 @@ operator!=( const void* ptr, const CTSharedPtr< T, LockType >& other )
  */
 template< typename T, class LockType >
 inline bool
-operator!=( int intPtr, const CTSharedPtr< T, LockType >& other )
+operator!=( const Int32 ptr, const CTSharedPtr< T, LockType >& other )
 {GUCEF_TRACE;
 
-    return other != intPtr;
+    return ptr != static_cast< const CTBasicSharedPtr< T, LockType >& >( other );
 }
 
 /*-------------------------------------------------------------------------*/
@@ -427,10 +427,10 @@ operator!=( int intPtr, const CTSharedPtr< T, LockType >& other )
  */
 template< typename T, class LockType >
 inline bool
-operator!=( const long ptr, const CTSharedPtr< T, LockType >& other )
+operator!=( const Int64 ptr, const CTSharedPtr< T, LockType >& other )
 {GUCEF_TRACE;
 
-    return ptr != static_cast< const CTBasicSharedPtr< T, LockType >& >( other);
+    return ptr != static_cast< const CTBasicSharedPtr< T, LockType >& >( other );
 }
 
 /*-------------------------------------------------------------------------*/

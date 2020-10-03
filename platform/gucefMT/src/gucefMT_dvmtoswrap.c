@@ -162,7 +162,7 @@ ThreadCreate( struct SThreadData* td ,
 {
     if ( GUCEF_NULL == td )
         return 0;
-    
+
     #if ( GUCEF_PLATFORM == GUCEF_PLATFORM_MSWIN )
 
     td->func = (LPTHREAD_START_ROUTINE)func;
@@ -182,7 +182,6 @@ ThreadCreate( struct SThreadData* td ,
     #elif ( ( GUCEF_PLATFORM == GUCEF_PLATFORM_LINUX ) || ( GUCEF_PLATFORM == GUCEF_PLATFORM_ANDROID ) )
 
     int retVal = 0;
-    TThreadData* td = malloc( sizeof( TThreadData ) );
     memset( td, 0, sizeof( TThreadData ) );
 
     retVal = pthread_attr_init( &td->attr );
