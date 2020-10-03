@@ -32,6 +32,7 @@
 #if ( GUCEF_PLATFORM == GUCEF_PLATFORM_MSWIN )
 
 #include <windows.h>
+#include <processthreadsapi.h>
 
 #elif ( ( GUCEF_PLATFORM == GUCEF_PLATFORM_LINUX ) || ( GUCEF_PLATFORM == GUCEF_PLATFORM_ANDROID ) )
 
@@ -49,7 +50,7 @@
 
 struct SMutex
 {
-    UInt8 locked;
+    UInt32 locked;
     
     #if ( GUCEF_PLATFORM == GUCEF_PLATFORM_MSWIN )
     
@@ -131,15 +132,15 @@ MutexLock( struct SMutex* mutex )
 {
     #if ( GUCEF_PLATFORM == GUCEF_PLATFORM_MSWIN )
     
-    if ( WaitForSingleObject( mutex->id ,
-                              INFINITE  ) == WAIT_FAILED ) return 0;
-    mutex->locked = 1;
+    if ( WaitForSingleObject( mutex->id, INFINITE  ) == WAIT_FAILED ) 
+        return 0;
+    mutex->locked = (UInt32) GetCurrentThreadId();
     return 1;
     
     #elif ( ( GUCEF_PLATFORM == GUCEF_PLATFORM_LINUX ) || ( GUCEF_PLATFORM == GUCEF_PLATFORM_ANDROID ) )
     
     if ( pthread_mutex_lock( &mutex->id ) < 0 ) return 0;
-    mutex->locked = 1;
+    mutex->locked = (UInt32) pthread_self();
     return 1;
     
     #endif
@@ -152,8 +153,9 @@ MutexUnlock( struct SMutex* mutex )
 {
     #if ( GUCEF_PLATFORM == GUCEF_PLATFORM_MSWIN )
     
-    if ( ReleaseMutex( mutex->id ) == FALSE ) return 0;
     mutex->locked = 0;
+    if ( ReleaseMutex( mutex->id ) == FALSE ) 
+        return 0;
     return 1;
     
     #elif ( ( GUCEF_PLATFORM == GUCEF_PLATFORM_LINUX ) || ( GUCEF_PLATFORM == GUCEF_PLATFORM_ANDROID ) )

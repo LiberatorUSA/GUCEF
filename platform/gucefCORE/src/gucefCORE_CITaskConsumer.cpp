@@ -149,6 +149,15 @@ CTaskConsumer::GetTaskId( void ) const
 
 /*-------------------------------------------------------------------------*/
 
+bool 
+CTaskConsumer::WaitForTaskToFinish( Int32 timeoutInMs )
+{GUCEF_TRACE;
+
+    return CCoreGlobal::Instance()->GetTaskManager().WaitForTaskToFinish( m_taskId, timeoutInMs ); 
+}
+
+/*-------------------------------------------------------------------------*/
+
 const CString&
 CTaskConsumer::GetClassTypeName( void ) const
 {GUCEF_TRACE;

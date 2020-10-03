@@ -245,9 +245,11 @@ class Udp2RedisClusterChannel : public CORE::CTaskConsumer
                                bool willBeForced           ) GUCEF_VIRTUAL_OVERRIDE;
     
     virtual void OnTaskEnded( CORE::CICloneable* taskdata ,
-                               bool wasForced             ) GUCEF_VIRTUAL_OVERRIDE;
+                              bool wasForced              ) GUCEF_VIRTUAL_OVERRIDE;
 
     virtual CORE::CString GetType( void ) const GUCEF_VIRTUAL_OVERRIDE;
+
+    virtual bool WaitForTaskToFinish( CORE::Int32 timeoutInMs ) GUCEF_VIRTUAL_OVERRIDE;
 
     bool LoadConfig( const ChannelSettings& channelSettings );
 

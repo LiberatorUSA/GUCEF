@@ -28,6 +28,7 @@
 #if ( GUCEF_PLATFORM == GUCEF_PLATFORM_MSWIN )
 
 #include <windows.h>
+#include <processthreadsapi.h>
 
 #elif ( ( GUCEF_PLATFORM == GUCEF_PLATFORM_LINUX ) || ( GUCEF_PLATFORM == GUCEF_PLATFORM_ANDROID ) )
 
@@ -54,18 +55,27 @@ namespace MT {
 
 struct SMutexData
 {
+    UInt32 locked;
+    
     #if ( GUCEF_PLATFORM == GUCEF_PLATFORM_MSWIN )
 
     HANDLE id;
-    
+
     SMutexData( void )
-        : id( 0 )
+        : locked( 0 )
+        , id( 0 )
     {
     }
 
     #elif ( ( GUCEF_PLATFORM == GUCEF_PLATFORM_LINUX ) || ( GUCEF_PLATFORM == GUCEF_PLATFORM_ANDROID ) )
 
     pthread_mutex_t id;
+
+    SMutexData( void )
+        : locked( 0 )
+        , id( 0 )
+    {
+    }
 
     #else
     #error Unsuported target platform
@@ -139,6 +149,7 @@ CMutex::Lock( void ) const
 
     if ( WaitForSingleObject( ((TMutexData*)_mutexdata)->id ,
                               INFINITE                      ) == WAIT_FAILED ) return false;
+    ((TMutexData*)_mutexdata)->locked = (UInt32) ::GetCurrentThreadId();
     return true;
 
     #elif ( ( GUCEF_PLATFORM == GUCEF_PLATFORM_LINUX ) || ( GUCEF_PLATFORM == GUCEF_PLATFORM_ANDROID ) )
@@ -159,7 +170,12 @@ CMutex::Unlock( void ) const
 
     #if ( GUCEF_PLATFORM == GUCEF_PLATFORM_MSWIN )
 
-    if ( ReleaseMutex( ((TMutexData*)_mutexdata)->id ) == FALSE ) return false;
+    // We set the locked to 0 right before which admittedly allows for a race condition but
+    // that is understood and accepted given the flow and purpose
+    ((TMutexData*)_mutexdata)->locked = 0;
+
+    if ( ReleaseMutex( ((TMutexData*)_mutexdata)->id ) == FALSE ) 
+        return false;
     return true;
 
     #elif ( ( GUCEF_PLATFORM == GUCEF_PLATFORM_LINUX ) || ( GUCEF_PLATFORM == GUCEF_PLATFORM_ANDROID ) )
@@ -176,6 +192,28 @@ const CILockable*
 CMutex::AsLockable( void ) const
 {
     return this;
+}
+
+/*--------------------------------------------------------------------------*/
+
+UInt32 
+CMutex::GetThreadIdOfThreadHoldingTheLock( void ) const
+{
+    if ( GUCEF_NULL == _mutexdata )
+        return 0;
+
+    return ((TMutexData*)_mutexdata)->locked;
+}
+
+/*--------------------------------------------------------------------------*/
+
+bool 
+CMutex::IsLocked( void ) const
+{
+    if ( GUCEF_NULL == _mutexdata )
+        return false;
+
+    return 0 != ((TMutexData*)_mutexdata)->locked;
 }
 
 /*-------------------------------------------------------------------------//

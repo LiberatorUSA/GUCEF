@@ -526,8 +526,6 @@ CTaskManager::GetQueuedTask( CTaskConsumerPtr& taskConsumer ,
 
     MT::CObjectScopeLock lock( this );
 
-    EnforceDesiredNrOfThreads( m_desiredNrOfThreads, true );
-
     CString taskConsumerType;
     CICloneable* queueItemPtr;
     if ( m_taskQueue.GetMail( taskConsumerType ,
@@ -604,7 +602,7 @@ CTaskManager::StartTask( const CString& taskType ,
         {
             *task = taskConsumer;
         }
-        CTaskDelegator* delegator = new CSingleTaskDelegator( taskConsumer, taskData->Clone() );
+        CTaskDelegator* delegator = new CSingleTaskDelegator( taskConsumer, 0 != taskData ? taskData->Clone() : 0 );
 
         GUCEF_SYSTEM_LOG( LOGLEVEL_NORMAL, "TaskManager: Started task immediatly of type \"" + taskType + "\" with ID " +
                                             UInt32ToString( taskConsumer->GetTaskId() ) + " using thread with ID " + UInt32ToString( delegator->GetThreadID() ) );
@@ -623,9 +621,8 @@ CTaskManager::TaskCleanup( CTaskConsumerPtr taskConsumer ,
                            CICloneable* taskData         )
 {GUCEF_TRACE;
 
-    MT::CObjectScopeLock lock( this );
+    //MT::CObjectScopeLock lock( this );    
     delete taskData;
-    EnforceDesiredNrOfThreads( m_desiredNrOfThreads, true );
 }
 
 /*-------------------------------------------------------------------------*/

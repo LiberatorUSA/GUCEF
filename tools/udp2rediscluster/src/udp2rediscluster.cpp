@@ -825,6 +825,35 @@ Udp2RedisClusterChannel::GetType( void ) const
 
 /*-------------------------------------------------------------------------*/
 
+bool 
+Udp2RedisClusterChannel::WaitForTaskToFinish( CORE::Int32 timeoutInMs )
+{GUCEF_TRACE;
+
+    // Overriding the base class implementation because this consumer can start its own
+    // consumer based on settings transparent to the caller. 
+    if ( CTaskConsumer::WaitForTaskToFinish( timeoutInMs ) )
+    {
+        GUCEF_LOG( CORE::LOGLEVEL_IMPORTANT, "Udp2RedisClusterChannel:WaitForTaskToFinish: Successfully waited for channel " + CORE::Int32ToString( m_channelSettings.channelId ) + "'s task to stop" );
+        if ( m_channelSettings.performRedisWritesInDedicatedThread )
+        {
+            if ( m_redisWriter->WaitForTaskToFinish( timeoutInMs ) )
+            {
+                GUCEF_LOG( CORE::LOGLEVEL_IMPORTANT, "Udp2RedisClusterChannel:WaitForTaskToFinish: Successfully waited for channel " + CORE::Int32ToString( m_channelSettings.channelId ) + "'s dedicated redis writer task to stop" );
+                return true;
+            }
+            else
+            {
+                GUCEF_ERROR_LOG( CORE::LOGLEVEL_IMPORTANT, "Udp2RedisClusterChannel:WaitForTaskToFinish: Failed waiting for dedicated redis writer task to stop for channel " + CORE::Int32ToString( m_channelSettings.channelId ) );
+            }
+        }
+        return true;
+    }
+    GUCEF_ERROR_LOG( CORE::LOGLEVEL_IMPORTANT, "Udp2RedisClusterChannel:WaitForTaskToFinish: Failed waiting for task to stop for channel " + CORE::Int32ToString( m_channelSettings.channelId ) );
+    return false;
+}
+
+/*-------------------------------------------------------------------------*/
+
 Udp2RedisClusterChannel::ChannelMetrics::ChannelMetrics( void )
     : udpBytesReceived( 0 )
     , udpPacketsReceived( 0 )
@@ -1396,7 +1425,7 @@ Udp2RedisCluster::SetStandbyMode( bool putInStandbyMode )
         while ( i != m_channels.end() )
         {
             Udp2RedisClusterChannelPtr channel = (*i).second;
-            if ( !taskManager.WaitForTaskToFinish( channel.StaticCast< CORE::CTaskConsumer >(), 30000 ) )
+            if ( !channel->WaitForTaskToFinish( 30000 ) )
             {
                 totalSuccess = false;
                 GUCEF_ERROR_LOG( CORE::LOGLEVEL_IMPORTANT, "Udp2RedisCluster:SetStandbyMode( true ): Failed to signal task to stop for channel " + CORE::Int32ToString( channel->GetChannelSettings().channelId ) )

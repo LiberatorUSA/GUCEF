@@ -173,6 +173,13 @@ class GUCEF_CORE_PUBLIC_CPP CTaskConsumer : public CObservingNotifier
     virtual void OnTaskEnded( CICloneable* taskdata ,
                               bool forced           ) = 0;
     
+    
+    /**
+     *  Blocks the calling thread up to "timeoutInMs" milliseconds waiting for the task to be finished
+     *  This should never be called from the implementation based on this class 
+     */
+    virtual bool WaitForTaskToFinish( Int32 timeoutInMs );
+    
     protected:
 
     virtual bool Lock( void ) const GUCEF_VIRTUAL_OVERRIDE;

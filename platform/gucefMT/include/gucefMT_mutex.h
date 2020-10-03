@@ -93,7 +93,10 @@ GUCEF_MT_PUBLIC_C UInt32 MutexLock( struct SMutex* mutex );
 /*-------------------------------------------------------------------------*/
 
 /**
- *      Returns wheter or not the mutex is currently locked.
+ *  Returns wheter or not the mutex is currently locked.
+ *  0 is not locked.
+ *  non-zero is locked.
+ *  The value if locked is the thread ID of the thread holding the lock
  */
 GUCEF_MT_PUBLIC_C UInt32 MutexLocked( struct SMutex* mutex );
 

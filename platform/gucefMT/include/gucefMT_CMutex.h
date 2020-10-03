@@ -77,6 +77,10 @@ class GUCEF_MT_PUBLIC_CPP CMutex : public CILockable
 
     virtual const CILockable* AsLockable( void ) const GUCEF_VIRTUAL_OVERRIDE;
 
+    virtual bool IsLocked( void ) const;
+
+    virtual UInt32 GetThreadIdOfThreadHoldingTheLock( void ) const;
+
     CMutex( void );
 
     virtual ~CMutex();
