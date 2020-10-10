@@ -1,5 +1,5 @@
 /*
- *  gucefCOM: GUCEF module providing communication implementations 
+ *  gucefCOM: GUCEF module providing communication implementations
  *  for standardized protocols
  *
  *  Copyright (C) 1998 - 2020.  Dinand Vanvelzen
@@ -27,7 +27,7 @@
 #include <cmath>
 
 #ifndef GUCEF_CORE_DVCPPSTRINGUTILS_H
-#include "dvcppstringutils.h" 
+#include "dvcppstringutils.h"
 #define GUCEF_CORE_DVCPPSTRINGUTILS_H
 #endif /* GUCEF_CORE_DVCPPSTRINGUTILS_H ? */
 
@@ -54,7 +54,7 @@ namespace COM {
 //-------------------------------------------------------------------------*/
 
 CStatsDClient::CStatsDClient( void )
-    : CORE::CIMetricsSystemClient() 
+    : CORE::CIMetricsSystemClient()
     , m_udpSender( false )
     , m_statsDestination()
     , m_statsInterface()
@@ -68,7 +68,7 @@ CStatsDClient::CStatsDClient( void )
 /*-------------------------------------------------------------------------*/
 
 CStatsDClient::CStatsDClient( CORE::CPulseGenerator& pulseGenerator )
-    : CORE::CIMetricsSystemClient() 
+    : CORE::CIMetricsSystemClient()
     , m_udpSender( pulseGenerator, false )
     , m_statsDestination()
     , m_statsInterface()
@@ -78,7 +78,7 @@ CStatsDClient::CStatsDClient( CORE::CPulseGenerator& pulseGenerator )
 
     m_statsDestination.SetPortInHostByteOrder( 8125 );
 }
-    
+
 /*-------------------------------------------------------------------------*/
 
 CStatsDClient::~CStatsDClient()
@@ -150,7 +150,7 @@ CStatsDClient::Count( const CString& key, const UInt64 delta, const Float32 freq
 void
 CStatsDClient::Gauge( const CString& key, const UInt32 value, const Float32 frequency ) const
 {GUCEF_TRACE;
-    
+
     static const CString statTypeName = "g";
     Transmit( key, (Int64) value, statTypeName, frequency );
 }
@@ -160,7 +160,27 @@ CStatsDClient::Gauge( const CString& key, const UInt32 value, const Float32 freq
 void
 CStatsDClient::Gauge( const CString& key, const UInt64 value, const Float32 frequency ) const
 {GUCEF_TRACE;
-    
+
+    static const CString statTypeName = "g";
+    Transmit( key, (Int64) value, statTypeName, frequency );
+}
+
+/*-------------------------------------------------------------------------*/
+
+void
+CStatsDClient::Gauge( const CString& key, const Float32 value, const Float32 frequency ) const
+{GUCEF_TRACE;
+
+    static const CString statTypeName = "g";
+    Transmit( key, (Int64) value, statTypeName, frequency );
+}
+
+/*-------------------------------------------------------------------------*/
+
+void
+CStatsDClient::Gauge( const CString& key, const Float64 value, const Float32 frequency ) const
+{GUCEF_TRACE;
+
     static const CString statTypeName = "g";
     Transmit( key, (Int64) value, statTypeName, frequency );
 }
@@ -170,7 +190,7 @@ CStatsDClient::Gauge( const CString& key, const UInt64 value, const Float32 freq
 void
 CStatsDClient::Timing( const CString& key, const UInt32 ms, const Float32 frequency ) const
 {GUCEF_TRACE;
-    
+
     static const CString statTypeName = "ms";
     Transmit( key, (Int64) ms, statTypeName, frequency );
 }
@@ -180,7 +200,7 @@ CStatsDClient::Timing( const CString& key, const UInt32 ms, const Float32 freque
 void
 CStatsDClient::Timing( const CString& key, const UInt64 ms, const Float32 frequency ) const
 {GUCEF_TRACE;
-    
+
     static const CString statTypeName = "ms";
     Transmit( key, (Int64) ms, statTypeName, frequency );
 }
@@ -188,10 +208,10 @@ CStatsDClient::Timing( const CString& key, const UInt64 ms, const Float32 freque
 /*-------------------------------------------------------------------------*/
 
 // @TODO: Improve this to better handle different value types
-void 
-CStatsDClient::Transmit( const CString& key      , 
-                         const Int64 value       , 
-                         const CString& type     , 
+void
+CStatsDClient::Transmit( const CString& key      ,
+                         const Int64 value       ,
+                         const CString& type     ,
                          const Float32 frequency ) const
 {GUCEF_TRACE;
 
@@ -200,35 +220,35 @@ CStatsDClient::Transmit( const CString& key      ,
 
     if ( !m_udpSender.IsActive() )
     {
-        CStatsDClient* thisObj = const_cast< CStatsDClient* >( this ); 
+        CStatsDClient* thisObj = const_cast< CStatsDClient* >( this );
         if ( !thisObj->Open() )
             return;
     }
-    
-    const auto isFrequencyOne = []( const Float32 frequency ) noexcept 
+
+    const auto isFrequencyOne = []( const Float32 frequency ) noexcept
     {
         constexpr Float32 epsilon{ 0.0001f };
         return std::fabs( frequency - 1.0f ) < epsilon;
     };
 
     // Test if one should send or not, according to the frequency rate
-    if ( !isFrequencyOne( frequency ) ) 
+    if ( !isFrequencyOne( frequency ) )
     {
-        if ( frequency < static_cast<float>( std::rand() ) / RAND_MAX ) 
+        if ( frequency < static_cast<float>( std::rand() ) / RAND_MAX )
         {
             return;
         }
-    }   
-    
+    }
+
     // Prepare the buffer, with a sampling rate if specified different from 1.0f
-    char buffer[256]; 
+    char buffer[256];
     int msgSize=0;
-    if ( isFrequencyOne( frequency ) ) 
+    if ( isFrequencyOne( frequency ) )
     {
         // Sampling rate is 1.0f, no need to specify it
         msgSize = std::snprintf( buffer, sizeof(buffer), "%s%s:%" PRIu64 "|%s", m_statNamePrefix.C_String(), key.C_String(), value, type.C_String() );
-    } 
-    else 
+    }
+    else
     {
         // Sampling rate is different from 1.0f, hence specify it
         msgSize = std::snprintf( buffer, sizeof(buffer), "%s%s:%" PRIu64 "|%s|@%.2f", m_statNamePrefix.C_String(), key.C_String(), value, type.C_String(), frequency );
@@ -244,7 +264,7 @@ CStatsDClient::Transmit( const CString& key      ,
 
 /*-------------------------------------------------------------------------*/
 
-bool 
+bool
 CStatsDClient::SaveConfig( CORE::CDataNode& tree ) const
 {GUCEF_TRACE;
 
@@ -255,7 +275,7 @@ CStatsDClient::SaveConfig( CORE::CDataNode& tree ) const
         if ( GUCEF_NULL == node )
             return false;
     }
-    
+
     node->SetAttribute( "StatsDestination", m_statsDestination.AddressAndPortAsString() );
     node->SetAttribute( "StatsNamePrefix", m_statNamePrefix );
     node->SetAttribute( "StatsInterface", m_statsInterface.AddressAndPortAsString() );
@@ -265,7 +285,7 @@ CStatsDClient::SaveConfig( CORE::CDataNode& tree ) const
 
 /*-------------------------------------------------------------------------*/
 
-bool 
+bool
 CStatsDClient::LoadConfig( const CORE::CDataNode& treeroot )
 {GUCEF_TRACE;
 
@@ -306,12 +326,12 @@ CStatsDClient::LoadConfig( const CORE::CDataNode& treeroot )
 
 /*-------------------------------------------------------------------------*/
 
-const CORE::CString& 
+const CORE::CString&
 CStatsDClient::GetClassTypeName( void ) const
 {GUCEF_TRACE;
 
     static CORE::CString classTypeName = "GUCEF::COM::CStatsDClient";
-    return classTypeName; 
+    return classTypeName;
 }
 
 /*-------------------------------------------------------------------------*/
@@ -356,7 +376,7 @@ CStatsDClient::SetStatsDestination( const COMCORE::CHostAddress& dest )
 
 /*-------------------------------------------------------------------------*/
 
-const COMCORE::CHostAddress& 
+const COMCORE::CHostAddress&
 CStatsDClient::GetStatsDestination( void ) const
 {GUCEF_TRACE;
 
@@ -374,10 +394,10 @@ CStatsDClient::SetStatsInterface( const COMCORE::CHostAddress& interface )
 
 /*-------------------------------------------------------------------------*/
 
-const COMCORE::CHostAddress& 
+const COMCORE::CHostAddress&
 CStatsDClient::GetStatsInterface( void ) const
 {GUCEF_TRACE;
-    
+
     return m_statsInterface;
 }
 
@@ -392,10 +412,10 @@ CStatsDClient::SetStatNamePrefix( const CString& prefix )
 
 /*-------------------------------------------------------------------------*/
 
-const CString& 
+const CString&
 CStatsDClient::GetStatNamePrefix( void ) const
 {GUCEF_TRACE;
-    
+
     return m_statNamePrefix;
 }
 

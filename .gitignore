@@ -8,4 +8,5 @@
 
 common/bin/*
 !common/bin/TestData
+projects/CMake/targets/*/build/*
 ProjectGenerator_Log.txt

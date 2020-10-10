@@ -150,9 +150,17 @@ typedef struct SGlobalMemoryUsageInfo TGlobalMemoryUsageInfo;
 struct SProcessCpuUsageInfo
 {
     UInt64 uptimeInMs;
-    UInt8 overallCpuConsumptionPercentage;
+    Float64 overallCpuConsumptionPercentage;
 };
 typedef struct SProcessCpuUsageInfo TProcessCpuUsageInfo;
+
+/**
+ *  In order to perform CPU usage measurements typically multiple measurements
+ *  need to be taken, combining data points.
+ *  The following structure is the platform wrapper for such data point storage
+ */
+struct SProcCpuDataPoint;
+typedef struct SProcCpuDataPoint TProcCpuDataPoint;
 
 /*-------------------------------------------------------------------------//
 //                                                                         //
@@ -170,7 +178,7 @@ UnloadModuleDynamicly( void *sohandle );
 
 /*--------------------------------------------------------------------------*/
 
-/** 
+/**
  *  Gets a pointer to an already loaded module. This function does NOT
  *  increment the reference count of the module referenced. If you do not know
  *  whether the modules is already loaded you should use LoadModuleDynamicly()
@@ -288,7 +296,7 @@ GetLogicalCPUCount( void );
  *  account under which the software is executing
  */
 GUCEF_CORE_PUBLIC_C UInt32
-GetProcessList( TProcessId** processList , 
+GetProcessList( TProcessId** processList ,
                 UInt32* processCount     );
 
 /*--------------------------------------------------------------------------*/
@@ -322,14 +330,14 @@ FreeProcessId( TProcessId* processList );
 /*--------------------------------------------------------------------------*/
 
 GUCEF_CORE_PUBLIC_C UInt32
-GetProcessMemmoryUsage( TProcessId* pid                     , 
-                        TProcessMemoryUsageInfo* memUseInfo );
+GetProcessMemoryUsage( TProcessId* pid                     ,
+                       TProcessMemoryUsageInfo* memUseInfo );
 
 /*--------------------------------------------------------------------------*/
 
-GUCEF_CORE_PUBLIC_C UInt32 
-GetExeNameForProcessId( TProcessId* pid        , 
-                        char* outNameBuffer    , 
+GUCEF_CORE_PUBLIC_C UInt32
+GetExeNameForProcessId( TProcessId* pid        ,
+                        char* outNameBuffer    ,
                         UInt32 nameBufferSize  ,
                         UInt32* usedBufferSize );
 
@@ -341,9 +349,20 @@ GetGlobalMemoryUsage( TGlobalMemoryUsageInfo* memUseInfo );
 
 /*--------------------------------------------------------------------------*/
 
+GUCEF_CORE_PUBLIC_C TProcCpuDataPoint*
+CreateProcCpuDataPoint( TProcessId* pid );
+
+/*--------------------------------------------------------------------------*/
+
 GUCEF_CORE_PUBLIC_C UInt32
-GetProcessCpuUsage( TProcessId* pid                  , 
-                    TProcessCpuUsageInfo* cpuUseInfo );
+GetProcessCpuUsage( TProcessId* pid                             ,
+                    TProcCpuDataPoint* previousCpuDataDataPoint ,
+                    TProcessCpuUsageInfo* cpuUseInfo            );
+
+/*--------------------------------------------------------------------------*/
+
+GUCEF_CORE_PUBLIC_C void
+FreeProcCpuDataPoint( TProcCpuDataPoint* cpuDataDataPoint );
 
 /*--------------------------------------------------------------------------*/
 

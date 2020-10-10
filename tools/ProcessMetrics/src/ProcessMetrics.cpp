@@ -82,7 +82,7 @@ RestApiProcessMetricsInfoResource::Serialize( CORE::CDataNode& output           
 {GUCEF_TRACE;
 
     output.SetName( "info" );
-    output.SetAttribute( "application", "ProcessMetrics" );                                                                         
+    output.SetAttribute( "application", "ProcessMetrics" );
     output.SetAttribute( "buildDateTime", __TIMESTAMP__ );
     #ifdef GUCEF_DEBUG_MODE
     output.SetAttribute( "isReleaseBuild", "false" );
@@ -158,9 +158,10 @@ ProcessMetrics::ProcessMetrics( void )
     , m_gatherGlobalTotalPhysicalMemoryInBytes( false )
     , m_gatherGlobalTotalVirtualMemoryInBytes( true )
     , m_gatherProcCpuUptime( true )
+    , m_gatherProcCpuOverallPercentage( true )
 {GUCEF_TRACE;
 
-    RegisterEventHandlers();    
+    RegisterEventHandlers();
 }
 
 /*-------------------------------------------------------------------------*/
@@ -189,12 +190,12 @@ void
 ProcessMetrics::RefreshPIDs( void )
 {GUCEF_TRACE;
 
-    if ( m_exeProcsToWatch.size() == m_exeProcIdMap.size() || 
+    if ( m_exeProcsToWatch.size() == m_exeProcIdMap.size() ||
          ( m_exeMatchPidMatchThreshold > 0 && m_exeProcIdMap.size() >= (size_t) m_exeMatchPidMatchThreshold ) )
         return;
-    
+
     GUCEF_LOG( CORE::LOGLEVEL_NORMAL, "ProcessMetrics: Refresing PID administration" );
-    
+
     CORE::UInt32 procIdCount = 0;
     CORE::TProcessId* procIds = GUCEF_NULL;
     CORE::UInt32 retVal = CORE::GetProcessList( &procIds, &procIdCount );
@@ -210,27 +211,32 @@ ProcessMetrics::RefreshPIDs( void )
                 exeName = CORE::ExtractFilename( exeName );
                 CORE::Int32 dotIndex = exeName.HasChar( '.', false );
                 if ( dotIndex >= 0 )
-                    exeName = exeName.SubstrToIndex( (CORE::UInt32) dotIndex, true ); 
-                
+                    exeName = exeName.SubstrToIndex( (CORE::UInt32) dotIndex, true );
+
                 TStringSet::iterator n = m_exeProcsToWatch.find( exeName );
                 if ( n != m_exeProcsToWatch.end() )
                 {
                     TProcessIdMap::iterator m = m_exeProcIdMap.find( exeName );
                     if ( m != m_exeProcIdMap.end() )
                     {
-                        CORE::TProcessId* prevPid = (*m).second;
-                        (*m).second = CORE::CopyProcessId( pid ); 
-                        CORE::FreeProcessId( prevPid );
+                        TProcInfo& procInfo = (*m).second;
+                        TProcInfo prevProcInfo = procInfo;
+                        procInfo.pid = CORE::CopyProcessId( pid );
+                        procInfo.previousProcCpuDataDataPoint = CORE::CreateProcCpuDataPoint( procInfo.pid );
+                        CORE::FreeProcCpuDataPoint( prevProcInfo.previousProcCpuDataDataPoint );
+                        CORE::FreeProcessId( prevProcInfo.pid );
                         GUCEF_LOG( CORE::LOGLEVEL_NORMAL, "ProcessMetrics: Refreshed pre-existing PID for \"" + exeName + "\"" );
                     }
                     else
                     {
-                        m_exeProcIdMap[ exeName ] = CORE::CopyProcessId( pid );
+                        TProcInfo& procInfo = m_exeProcIdMap[ exeName ];
+                        procInfo.pid = CORE::CopyProcessId( pid );
+                        procInfo.previousProcCpuDataDataPoint = CORE::CreateProcCpuDataPoint( procInfo.pid );
                         GUCEF_LOG( CORE::LOGLEVEL_NORMAL, "ProcessMetrics: Found PID for \"" + exeName + "\"" );
                     }
                 }
             }
-        }        
+        }
     }
     CORE::FreeProcessList( procIds );
 }
@@ -244,7 +250,7 @@ ProcessMetrics::OnMetricsTimerCycle( CORE::CNotifier* notifier    ,
 {GUCEF_TRACE;
 
     RefreshPIDs();
-            
+
     if ( m_gatherMemStats )
     {
         TStringSet failedProcs;
@@ -252,7 +258,7 @@ ProcessMetrics::OnMetricsTimerCycle( CORE::CNotifier* notifier    ,
         while ( m != m_exeProcIdMap.end() )
         {
             CORE::TProcessMemoryUsageInfo memUseInfo;
-            if ( OSWRAP_TRUE == CORE::GetProcessMemmoryUsage( (*m).second, &memUseInfo ) )
+            if ( OSWRAP_TRUE == CORE::GetProcessMemoryUsage( (*m).second.pid, &memUseInfo ) )
             {
                 CORE::CString metricPrefix = "ProcessMetrics." + (*m).first;
 
@@ -279,8 +285,8 @@ ProcessMetrics::OnMetricsTimerCycle( CORE::CNotifier* notifier    ,
         while ( i != failedProcs.end() )
         {
             m = m_exeProcIdMap.find( (*i) );
-            CORE::TProcessId* pid = (*m).second; 
-            CORE::FreeProcessId( pid );
+            CORE::FreeProcCpuDataPoint( (*m).second.previousProcCpuDataDataPoint );
+            CORE::FreeProcessId( (*m).second.pid );
             m_exeProcIdMap.erase( m );
 
             GUCEF_DEBUG_LOG( CORE::LOGLEVEL_NORMAL, "ProcessMetrics: Erased PID for \"" + (*i) + "\"" );
@@ -295,12 +301,14 @@ ProcessMetrics::OnMetricsTimerCycle( CORE::CNotifier* notifier    ,
         while ( m != m_exeProcIdMap.end() )
         {
             CORE::TProcessCpuUsageInfo cpuUseInfo;
-            if ( OSWRAP_TRUE == CORE::GetProcessCpuUsage( (*m).second, &cpuUseInfo ) )
+            if ( OSWRAP_TRUE == CORE::GetProcessCpuUsage( (*m).second.pid, (*m).second.previousProcCpuDataDataPoint, &cpuUseInfo ) )
             {
                 CORE::CString metricPrefix = "ProcessMetrics." + (*m).first;
 
                 if ( m_gatherProcCpuUptime )
                     GUCEF_METRIC_GAUGE( metricPrefix + ".CpuUse.UptimeInMs", cpuUseInfo.uptimeInMs, 1.0f );
+                if ( m_gatherProcCpuOverallPercentage )
+                    GUCEF_METRIC_GAUGE( metricPrefix + ".CpuUse.TotalCpuUsePercentage", cpuUseInfo.overallCpuConsumptionPercentage, 1.0f );
             }
             else
             {
@@ -314,8 +322,8 @@ ProcessMetrics::OnMetricsTimerCycle( CORE::CNotifier* notifier    ,
         while ( i != failedProcs.end() )
         {
             m = m_exeProcIdMap.find( (*i) );
-            CORE::TProcessId* pid = (*m).second; 
-            CORE::FreeProcessId( pid );
+            CORE::FreeProcCpuDataPoint( (*m).second.previousProcCpuDataDataPoint );
+            CORE::FreeProcessId( (*m).second.pid );
             m_exeProcIdMap.erase( m );
 
             GUCEF_DEBUG_LOG( CORE::LOGLEVEL_NORMAL, "ProcessMetrics: Erased PID for \"" + (*i) + "\"" );
@@ -381,17 +389,17 @@ ProcessMetrics::Start( void )
 
 /*-------------------------------------------------------------------------*/
 
-bool 
+bool
 ProcessMetrics::LoadConfig( const CORE::CValueList& appConfig   ,
                             const CORE::CDataNode& globalConfig )
 {GUCEF_TRACE;
-        
-    
+
+
     m_gatherCpuStats = CORE::StringToBool( appConfig.GetValueAlways( "GatherProcCPUStats" ), true );
     m_enableRestApi = CORE::StringToBool( appConfig.GetValueAlways( "EnableRestApi" ), true );
     m_metricsTimer.SetInterval( CORE::StringToUInt32( appConfig.GetValueAlways( "MetricsGatheringIntervalInMs" ), 1000 ) );
     m_exeMatchPidMatchThreshold = CORE::StringToUInt32( appConfig.GetValueAlways( "ExeMatchPidMatchThreshold" ), 0 );
-    
+
     m_gatherMemStats = CORE::StringToBool( appConfig.GetValueAlways( "GatherProcMemStats", "true" ) );
     m_gatherProcPageFaultCountInBytes = CORE::StringToBool( appConfig.GetValueAlways( "GatherProcPageFaultCountInBytes", "true" ) );
     m_gatherProcPageFileUsageInBytes = CORE::StringToBool( appConfig.GetValueAlways( "GatherProcPageFileUsageInBytes", "true" ) );
@@ -409,8 +417,9 @@ ProcessMetrics::LoadConfig( const CORE::CValueList& appConfig   ,
     m_gatherGlobalTotalPhysicalMemoryInBytes = CORE::StringToBool( appConfig.GetValueAlways( "GatherGlobalTotalPhysicalMemoryInBytes", "false" ) );
     m_gatherGlobalTotalVirtualMemoryInBytes = CORE::StringToBool( appConfig.GetValueAlways( "GatherGlobalTotalVirtualMemoryInBytes", "true" ) );
 
-    m_gatherProcCpuUptime = CORE::StringToBool( appConfig.GetValueAlways( "GatherProcCPUUptime", "true" ) );
-    
+    m_gatherProcCpuUptime = CORE::StringToBool( appConfig.GetValueAlways( "GatherProcCPUUptime" ), true );
+    m_gatherProcCpuOverallPercentage = CORE::StringToBool( appConfig.GetValueAlways( "GatherProcCpuOverallPercentage" ), true );
+
     TStringVector exeProcsToWatch = appConfig.GetValueAlways( "ExeProcsToWatch" ).ParseElements( ';', false );
     TStringVector::iterator i = exeProcsToWatch.begin();
     while ( i != exeProcsToWatch.end() )
@@ -427,7 +436,7 @@ ProcessMetrics::LoadConfig( const CORE::CValueList& appConfig   ,
         m_httpRouter.SetResourceMapping( "/config/appargs", RestApiProcessMetricsInfoResource::THTTPServerResourcePtr( new RestApiProcessMetricsConfigResource( this, true ) )  );
         m_httpRouter.SetResourceMapping( "/config", RestApiProcessMetricsInfoResource::THTTPServerResourcePtr( new RestApiProcessMetricsConfigResource( this, false ) )  );
         m_httpRouter.SetResourceMapping(  appConfig.GetValueAlways( "RestBasicHealthUri", "/health/basic" ), RestApiProcessMetricsInfoResource::THTTPServerResourcePtr( new COM::CDummyHTTPServerResource() )  );
-    
+
         m_httpServer.GetRouterController()->AddRouterMapping( &m_httpRouter, "", "" );
     }
 
@@ -438,7 +447,7 @@ ProcessMetrics::LoadConfig( const CORE::CValueList& appConfig   ,
 
 /*-------------------------------------------------------------------------*/
 
-const CORE::CValueList& 
+const CORE::CValueList&
 ProcessMetrics::GetAppConfig( void ) const
 {
     return m_appConfig;
@@ -446,7 +455,7 @@ ProcessMetrics::GetAppConfig( void ) const
 
 /*-------------------------------------------------------------------------*/
 
-const CORE::CDataNode& 
+const CORE::CDataNode&
 ProcessMetrics::GetGlobalConfig( void ) const
 {
     return m_globalConfig;

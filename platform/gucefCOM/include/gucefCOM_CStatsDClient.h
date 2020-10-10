@@ -1,5 +1,5 @@
 /*
- *  gucefCOM: GUCEF module providing communication implementations 
+ *  gucefCOM: GUCEF module providing communication implementations
  *  for standardized protocols
  *
  *  Copyright (C) 1998 - 2020.  Dinand Vanvelzen
@@ -59,11 +59,11 @@ namespace COM {
 class GUCEF_COM_PUBLIC_CPP CStatsDClient : public CORE::CIMetricsSystemClient
 {
     public:
-    
+
     CStatsDClient( void );
 
     CStatsDClient( CORE::CPulseGenerator& pulseGenerator );
-    
+
     virtual ~CStatsDClient();
 
     virtual bool Open( void );
@@ -93,6 +93,8 @@ class GUCEF_COM_PUBLIC_CPP CStatsDClient : public CORE::CIMetricsSystemClient
      */
     virtual void Gauge( const CString& key, const UInt32 value, const Float32 frequency = 1.0f ) const;
     virtual void Gauge( const CString& key, const UInt64 value, const Float32 frequency = 1.0f ) const;
+    virtual void Gauge( const CString& key, const Float32 value, const Float32 frequency = 1.0f ) const;
+    virtual void Gauge( const CString& key, const Float64 value, const Float32 frequency = 1.0f ) const;
 
     /**
      *  Records a timing for a key, at a given frequency
@@ -123,14 +125,14 @@ class GUCEF_COM_PUBLIC_CPP CStatsDClient : public CORE::CIMetricsSystemClient
     CStatsDClient( const CStatsDClient& src );             /** not implemented */
     CStatsDClient& operator=( const CStatsDClient& src );  /** not implemented */
 
-    void 
-    Transmit( const CString& key      , 
-              const Int64 value       , 
-              const CString& type     , 
+    void
+    Transmit( const CString& key      ,
+              const Int64 value       ,
+              const CString& type     ,
               const Float32 frequency ) const;
 
     private:
-    
+
     COMCORE::CUDPSocket m_udpSender;
     COMCORE::CHostAddress m_statsDestination;
     COMCORE::CHostAddress m_statsInterface;

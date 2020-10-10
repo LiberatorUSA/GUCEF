@@ -158,18 +158,25 @@ class ProcessMetrics : public CORE::CObservingNotifier
     OnMetricsTimerCycle( CORE::CNotifier* notifier    ,
                          const CORE::CEvent& eventId  ,
                          CORE::CICloneable* eventData );
-    
+
     private:
 
+    struct SProcInfo
+    {
+        CORE::TProcessId* pid;
+        CORE::TProcCpuDataPoint* previousProcCpuDataDataPoint;
+    };
+    typedef struct SProcInfo TProcInfo;
+
     typedef CORE::CTEventHandlerFunctor< ProcessMetrics > TEventCallback;
-    typedef std::map< CORE::CString, CORE::TProcessId* > TProcessIdMap;
+    typedef std::map< CORE::CString, TProcInfo > TProcessIdMap;
     typedef std::set< CORE::CString > TStringSet;
     typedef std::vector< CORE::CString > TStringVector;
 
     COM::CHTTPServer m_httpServer;
     COM::CDefaultHTTPServerRouter m_httpRouter;
     CORE::CValueList m_appConfig;
-    CORE::CDataNode m_globalConfig;    
+    CORE::CDataNode m_globalConfig;
     CORE::CTimer m_metricsTimer;
     bool m_gatherMemStats;
     bool m_gatherCpuStats;
@@ -195,6 +202,7 @@ class ProcessMetrics : public CORE::CObservingNotifier
     bool m_gatherGlobalTotalVirtualMemoryInBytes;
 
     bool m_gatherProcCpuUptime;
+    bool m_gatherProcCpuOverallPercentage;
 };
 
 /*-------------------------------------------------------------------------*/

@@ -412,6 +412,15 @@ PtrToInt32( const void* ptr );
 
 /*--------------------------------------------------------------------------*/
 
+/**
+ *  Determines if the null terminated string represent a number
+ *  0 = not a number, 1 is a number as the result
+ */
+GUCEF_CORE_PUBLIC_C UInt32
+IsANumber( const char* str );
+
+/*--------------------------------------------------------------------------*/
+
 #ifdef __cplusplus
    };
 #endif /* __cplusplus */

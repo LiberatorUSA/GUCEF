@@ -53,10 +53,29 @@ namespace CORE {
 
 /*
    ASCII :
-   number 49-57
+   number 48-57
    uppercase 65-90
    lowercase 97-122
 */
+
+/*--------------------------------------------------------------------------*/
+
+UInt32
+IsANumber( const char* str )
+{
+    if ( NULL == str )
+        return 0;
+    if ( '\0' == *str )
+        return 0;
+
+    while ( '\0' != *str )
+    {
+        if ( *str < 48 || *str > 57 )
+            return 0;
+        ++str;
+    }
+    return 1;
+}
 
 /*--------------------------------------------------------------------------*/
 
@@ -819,7 +838,7 @@ Check_If_IP( const char *buffer )
 {
     if ( NULL != buffer )
     {
-        
+
         /*
          *      Function that simply checks if the given string is an IP address in
          *      string form or something else, a host name for example.

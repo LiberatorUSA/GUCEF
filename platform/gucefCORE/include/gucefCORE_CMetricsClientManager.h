@@ -103,6 +103,8 @@ class GUCEF_CORE_PUBLIC_CPP CMetricsClientManager : public CIMetricsSystemClient
      */
     virtual void Gauge( const CString& key, const UInt32 value, const Float32 frequency = 1.0f ) const;
     virtual void Gauge( const CString& key, const UInt64 value, const Float32 frequency = 1.0f ) const;
+    virtual void Gauge( const CString& key, const Float32 value, const Float32 frequency = 1.0f ) const;
+    virtual void Gauge( const CString& key, const Float64 value, const Float32 frequency = 1.0f ) const;
 
     /**
      *  Records a timing for a key, at a given frequency
