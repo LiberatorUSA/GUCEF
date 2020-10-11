@@ -102,7 +102,7 @@ typedef struct SProcessId TProcessId;
 
 /**
  *  Structure holding various bits of memory usage related information
- *  If for the current O/S a field cannot be determined it will be set to -1
+ *  If for the current O/S a field cannot be determined it will be set to 0
  */
 struct SProcessMemoryUsageInfo
 {
@@ -124,7 +124,7 @@ typedef struct SProcessMemoryUsageInfo TProcessMemoryUsageInfo;
 
 /**
  *  Structure holding various bits of memory usage related information
- *  If for the current O/S a field cannot be determined it will be set to -1
+ *  If for the current O/S a field cannot be determined it will be set to 0
  */
 struct SGlobalMemoryUsageInfo
 {
@@ -145,7 +145,7 @@ typedef struct SGlobalMemoryUsageInfo TGlobalMemoryUsageInfo;
 
 /**
  *  Structure holding various bits of cpu usage related information
- *  If for the current O/S a field cannot be determined it will be set to -1
+ *  If for the current O/S a field cannot be determined it will be set to 0
  */
 struct SProcessCpuUsageInfo
 {

@@ -97,8 +97,13 @@ namespace CORE {
 struct SProcCpuDataPoint
 {
     #if ( GUCEF_PLATFORM == GUCEF_PLATFORM_MSWIN )
-    FILETIME userTime;
-    FILETIME kernelTime;
+    DWORD pid;
+    HANDLE hProcess;
+    FILETIME procUserTime;
+    FILETIME procKernelTime;
+    FILETIME globalUserTime;
+    FILETIME globalKernelTime;
+    FILETIME globalIdleTime;
     #elif ( ( GUCEF_PLATFORM == GUCEF_PLATFORM_LINUX ) || ( GUCEF_PLATFORM == GUCEF_PLATFORM_ANDROID ) )
     pid_t pid;
     UInt64 procUserModeJiffies;
@@ -1081,6 +1086,18 @@ GetFiletimeDelta( LPFILETIME a, LPFILETIME b )
 /*--------------------------------------------------------------------------*/
 
 Int64
+GetFiletimeAsUInt64( LPFILETIME a )
+{GUCEF_TRACE;
+
+    ULARGE_INTEGER converterStructA;
+    converterStructA.HighPart = a->dwHighDateTime;
+    converterStructA.LowPart = a->dwLowDateTime;
+    return converterStructA.QuadPart;
+}
+
+/*--------------------------------------------------------------------------*/
+
+Int64
 GetDurationSinceFiletimeInMs( LPFILETIME since )
 {GUCEF_TRACE;
 
@@ -1248,13 +1265,28 @@ GetGlobalJiffies( UInt64* totalJiffies )
 GUCEF_CORE_PUBLIC_C TProcCpuDataPoint*
 CreateProcCpuDataPoint( TProcessId* pid )
 {
-    if ( GUCEF_NULL == pid )
+    if ( GUCEF_NULL == pid || 0 == pid->pid )
         return GUCEF_NULL;
 
     TProcCpuDataPoint* dataPoint = (TProcCpuDataPoint*) malloc( sizeof( TProcCpuDataPoint ) );
+    if ( GUCEF_NULL == dataPoint )
+        return GUCEF_NULL;
+
     memset( dataPoint, 0, sizeof( TProcCpuDataPoint ) );
 
-    #if ( ( GUCEF_PLATFORM == GUCEF_PLATFORM_LINUX ) || ( GUCEF_PLATFORM == GUCEF_PLATFORM_ANDROID ) )
+    #if ( GUCEF_PLATFORM == GUCEF_PLATFORM_MSWIN )
+    dataPoint->pid = pid->pid;
+    dataPoint->hProcess = ::OpenProcess( PROCESS_QUERY_INFORMATION,
+                                         FALSE,
+                                         pid->pid );
+    if ( GUCEF_NULL != dataPoint->hProcess )
+    {
+        FILETIME dummy;
+        ::GetProcessTimes( dataPoint->hProcess, &dummy, &dummy, &dataPoint->procKernelTime, &dataPoint->procUserTime );
+        ::GetSystemTimes( &dataPoint->globalIdleTime, &dataPoint->globalKernelTime, &dataPoint->globalUserTime );
+    }
+    
+    #elif ( ( GUCEF_PLATFORM == GUCEF_PLATFORM_LINUX ) || ( GUCEF_PLATFORM == GUCEF_PLATFORM_ANDROID ) )
     dataPoint->pid = pid->pid;
     GetGlobalJiffies( &dataPoint->globalJiffies );
     GetProcJiffies( pid->pid, &dataPoint->procUserModeJiffies, &dataPoint->procKernelModeJiffies );
@@ -1270,6 +1302,14 @@ FreeProcCpuDataPoint( TProcCpuDataPoint* cpuDataDataPoint )
 {
     if ( GUCEF_NULL != cpuDataDataPoint )
     {
+        #if ( GUCEF_PLATFORM == GUCEF_PLATFORM_MSWIN )
+        if ( GUCEF_NULL != cpuDataDataPoint->hProcess )
+        {
+            ::CloseHandle( cpuDataDataPoint->hProcess );
+            cpuDataDataPoint->hProcess = GUCEF_NULL;
+        }
+        #endif
+
         free( cpuDataDataPoint );
     }
 }
@@ -1285,41 +1325,59 @@ GetProcessCpuUsage( TProcessId* pid                             ,
     if ( GUCEF_NULL == pid || GUCEF_NULL == previousCpuDataDataPoint || GUCEF_NULL == cpuUseInfo )
         return OSWRAP_FALSE;
 
+    if ( previousCpuDataDataPoint->pid != pid->pid )
+        return OSWRAP_FALSE;
+
     memset( cpuUseInfo, 0, sizeof(TProcessCpuUsageInfo) );
 
     #if ( GUCEF_PLATFORM == GUCEF_PLATFORM_MSWIN )
 
-    HANDLE hProcess = ::OpenProcess( PROCESS_QUERY_INFORMATION,
-                                     FALSE,
-                                     pid->pid );
-    if ( GUCEF_NULL == hProcess )
+    if ( GUCEF_NULL == previousCpuDataDataPoint->hProcess )
+    {
+        previousCpuDataDataPoint->hProcess = ::OpenProcess( PROCESS_QUERY_INFORMATION,
+                                                            FALSE,
+                                                            pid->pid );
+        if ( GUCEF_NULL == previousCpuDataDataPoint->hProcess )
+            return OSWRAP_FALSE;
+    }
+
+    FILETIME globalIdleTime;
+    FILETIME globalKernelTime;
+    FILETIME globalUserTime;
+    if ( ::GetSystemTimes( &globalIdleTime, &globalKernelTime, &globalUserTime ) != TRUE )
         return OSWRAP_FALSE;
 
     FILETIME creationTime;
     FILETIME exitTime;
     FILETIME kernelTime;
     FILETIME userTime;
-    if ( ::GetProcessTimes( hProcess, &creationTime, &exitTime, &kernelTime, &userTime ) == TRUE )
+    if ( ::GetProcessTimes( previousCpuDataDataPoint->hProcess, &creationTime, &exitTime, &kernelTime, &userTime ) == TRUE )
     {
         cpuUseInfo->uptimeInMs = (UInt64) GetDurationSinceFiletimeInMs( &creationTime );
-        cpuUseInfo->overallCpuConsumptionPercentage = 0; // <- todo
 
+        UInt64 globalCpuTotal = GetFiletimeAsUInt64( &globalKernelTime ) + GetFiletimeAsUInt64( &globalUserTime );
+        UInt64 prevGlobalCpuTotal = GetFiletimeAsUInt64( &previousCpuDataDataPoint->globalKernelTime ) + GetFiletimeAsUInt64( &previousCpuDataDataPoint->globalUserTime );
+        Float64 globalCpuUseDelta = globalCpuTotal - prevGlobalCpuTotal;
 
+        UInt64 procCpuTotal = GetFiletimeAsUInt64( &kernelTime ) + GetFiletimeAsUInt64( &userTime );
+        UInt64 prevProcCpuTotal = GetFiletimeAsUInt64( &previousCpuDataDataPoint->procKernelTime ) + GetFiletimeAsUInt64( &previousCpuDataDataPoint->procUserTime );
+        Float64 procCpuUseDelta = procCpuTotal - prevProcCpuTotal;
+
+        cpuUseInfo->overallCpuConsumptionPercentage = procCpuUseDelta / ( globalCpuUseDelta / 100.0 );
+        
         // Overwrite the CPU data point making current the previous for next call to this function
-        previousCpuDataDataPoint->kernelTime = kernelTime;
-        previousCpuDataDataPoint->userTime = userTime;
+        previousCpuDataDataPoint->globalIdleTime = globalIdleTime;
+        previousCpuDataDataPoint->globalKernelTime = globalKernelTime;
+        previousCpuDataDataPoint->globalUserTime = globalUserTime;
+        previousCpuDataDataPoint->procKernelTime = kernelTime;
+        previousCpuDataDataPoint->procUserTime = userTime;
 
-        ::CloseHandle( hProcess );
         return OSWRAP_TRUE;
     }
 
-    ::CloseHandle( hProcess );
     return OSWRAP_FALSE;
 
     #elif ( ( GUCEF_PLATFORM == GUCEF_PLATFORM_LINUX ) || ( GUCEF_PLATFORM == GUCEF_PLATFORM_ANDROID ) )
-
-    if ( previousCpuDataDataPoint->pid != pid->pid )
-        return OSWRAP_FALSE;
 
     UInt64 globalJiffies = 0;
     UInt64 procKernelModeJiffies = 0;
