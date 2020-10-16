@@ -353,21 +353,21 @@ CPulseGenerator::WaitTillNextPulseWindow( UInt32 forcedMinimalDeltaInMilliSecs  
     Float64 deltaInMs = GetActualPulseDeltaInMilliSecs();
     Int32 timeLeftToWaitInMs = (Int32) ( m_updateDeltaInMilliSecs - deltaInMs );
 
-    if ( timeLeftToWaitInMs <= 0 )
-        return; // Time's up already
-
     // forcedMinimalDeltaInMilliSecs == 0 means no forced minimum
     if ( ( forcedMinimalDeltaInMilliSecs > 0 ) && 
-         ( forcedMinimalDeltaInMilliSecs >= (UInt32) timeLeftToWaitInMs ) )
+         ( (Int32) forcedMinimalDeltaInMilliSecs >= timeLeftToWaitInMs ) )
     {
-        timeLeftToWaitInMs = forcedMinimalDeltaInMilliSecs;
+        timeLeftToWaitInMs = (Int32) forcedMinimalDeltaInMilliSecs;
     }
     // desiredMaximumDeltaInMilliSecs == 0 means no maximum desired
     if ( ( desiredMaximumDeltaInMilliSecs > 0 ) &&
-         ( desiredMaximumDeltaInMilliSecs < (UInt32) timeLeftToWaitInMs ) )
+         ( (Int32) desiredMaximumDeltaInMilliSecs < timeLeftToWaitInMs ) )
     {
-        timeLeftToWaitInMs = desiredMaximumDeltaInMilliSecs;
+        timeLeftToWaitInMs = (Int32) desiredMaximumDeltaInMilliSecs;
     }
+
+    if ( timeLeftToWaitInMs <= 0 )
+        return; // Time's up already
 
     MT::PrecisionDelay( timeLeftToWaitInMs );
 }

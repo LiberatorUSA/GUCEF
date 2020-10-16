@@ -115,12 +115,16 @@ CBusyWaitPulseGeneratorDriver::RequestPulsesPerImmediatePulseRequest( CPulseGene
 /*--------------------------------------------------------------------------*/
 
 void
-CBusyWaitPulseGeneratorDriver::Run( CPulseGenerator& pulseGenerator )
+CBusyWaitPulseGeneratorDriver::Run( CPulseGenerator& pulseGenerator            ,
+                                    UInt32 forcedMinimalCycleDeltaInMilliSecs  ,
+                                    UInt32 desiredMaximumCycleDeltaInMilliSecs )
 {GUCEF_TRACE;
     
     m_loop = true;
     while ( m_loop )
     {
+        // For immediate pulses we use a tight loop with no CPU yielding at all
+        // This is intended for when the application is stressed and CPU bottlenecking on its workload
         if ( m_immediatePulseTickets > 0 )
         {
             --m_immediatePulseTickets;
@@ -128,7 +132,7 @@ CBusyWaitPulseGeneratorDriver::Run( CPulseGenerator& pulseGenerator )
             continue;
         }
 
-        pulseGenerator.WaitTillNextPulseWindow( 25, 100 );
+        pulseGenerator.WaitTillNextPulseWindow( forcedMinimalCycleDeltaInMilliSecs, desiredMaximumCycleDeltaInMilliSecs );
         SendDriverPulse( pulseGenerator );
     }
     

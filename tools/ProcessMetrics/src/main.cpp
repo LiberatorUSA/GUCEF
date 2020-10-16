@@ -268,6 +268,8 @@ GUCEF_OSSERVICEMAIN_BEGIN( "ProcessMetrics" )
     pulseGenerator.RequestPulsesPerImmediatePulseRequest( 25 );
 
     auto& app = CORE::CCoreGlobal::Instance()->GetApplication();
+    app.SetForcedMinimalCycleDeltaInMilliSecs( 500 );
+    app.SetDesiredMaximumCycleDeltaInMilliSecs( 10000 );
     return app.main( argc, argv, true );
 }
 GUCEF_OSMAIN_END

@@ -113,6 +113,8 @@ CGUCEFApplication::CGUCEFApplication( void )
     , _initialized( false )                                  
     , m_shutdownRequested( false )                                                            
     , m_busyWaitPulseDriver()
+    , m_forcedMinimalCycleDeltaInMilliSecs( 25 )
+    , m_desiredMaximumCycleDeltaInMilliSecs( 100 )
 {GUCEF_TRACE;
 
     RegisterEvents();
@@ -178,7 +180,7 @@ CGUCEFApplication::MainLoop( void )
             if ( !NotifyObservers( FirstCycleEvent ) ) return 0; 
             
             // Now keep looping until we are externally triggered to break out of the loop
-            m_busyWaitPulseDriver.Run( *pulseGenerator );
+            m_busyWaitPulseDriver.Run( *pulseGenerator, m_forcedMinimalCycleDeltaInMilliSecs, m_desiredMaximumCycleDeltaInMilliSecs );
             return 0;
         }
         else
@@ -191,6 +193,44 @@ CGUCEFApplication::MainLoop( void )
         Unlock();
     }
     return -1;
+}
+
+/*-------------------------------------------------------------------------*/
+
+void
+CGUCEFApplication::SetForcedMinimalCycleDeltaInMilliSecs( UInt32 cycleDelta )
+{GUCEF_TRACE;
+
+    MT::CObjectScopeLock lock( this );
+    m_forcedMinimalCycleDeltaInMilliSecs = cycleDelta;
+}
+
+/*-------------------------------------------------------------------------*/
+
+UInt32
+CGUCEFApplication::GetForcedMinimalCycleDeltaInMilliSecs( void ) const
+{GUCEF_TRACE;
+
+    return m_forcedMinimalCycleDeltaInMilliSecs;
+}
+
+/*-------------------------------------------------------------------------*/
+
+void
+CGUCEFApplication::SetDesiredMaximumCycleDeltaInMilliSecs( UInt32 cycleDelta )
+{GUCEF_TRACE;
+
+    MT::CObjectScopeLock lock( this );
+    m_desiredMaximumCycleDeltaInMilliSecs = cycleDelta;
+}
+
+/*-------------------------------------------------------------------------*/
+
+UInt32
+CGUCEFApplication::GetDesiredMaximumCycleDeltaInMilliSecs( void ) const
+{GUCEF_TRACE;
+
+    return m_desiredMaximumCycleDeltaInMilliSecs;
 }
 
 /*-------------------------------------------------------------------------*/

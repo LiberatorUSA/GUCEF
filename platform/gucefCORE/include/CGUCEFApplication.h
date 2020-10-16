@@ -165,6 +165,14 @@ class GUCEF_CORE_PUBLIC_CPP CGUCEFApplication : public CTSGNotifier             
 
     virtual const CString& GetClassTypeName( void ) const GUCEF_VIRTUAL_OVERRIDE;
 
+    void SetForcedMinimalCycleDeltaInMilliSecs( UInt32 cycleDelta );
+
+    UInt32 GetForcedMinimalCycleDeltaInMilliSecs( void ) const;
+
+    void SetDesiredMaximumCycleDeltaInMilliSecs( UInt32 cycleDelta );
+
+    UInt32 GetDesiredMaximumCycleDeltaInMilliSecs( void ) const;
+
     protected:
 
     virtual bool OnSysConsoleCommand( const CString& path                ,
@@ -193,6 +201,8 @@ class GUCEF_CORE_PUBLIC_CPP CGUCEFApplication : public CTSGNotifier             
     bool m_shutdownRequested;
     CString _appdir;
     CBusyWaitPulseGeneratorDriver m_busyWaitPulseDriver;
+    UInt32 m_forcedMinimalCycleDeltaInMilliSecs; 
+    UInt32 m_desiredMaximumCycleDeltaInMilliSecs;
 };
 
 
