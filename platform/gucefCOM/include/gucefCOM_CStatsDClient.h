@@ -125,9 +125,10 @@ class GUCEF_COM_PUBLIC_CPP CStatsDClient : public CORE::CIMetricsSystemClient
     CStatsDClient( const CStatsDClient& src );             /** not implemented */
     CStatsDClient& operator=( const CStatsDClient& src );  /** not implemented */
 
+    template < typename valueType >
     void
     Transmit( const CString& key      ,
-              const Int64 value       ,
+              const valueType value   ,
               const CString& type     ,
               const Float32 frequency ) const;
 

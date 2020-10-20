@@ -132,7 +132,7 @@ CStatsDClient::Count( const CString& key, const UInt32 delta, const Float32 freq
 {GUCEF_TRACE;
 
     static const CString statTypeName = "c";
-    Transmit( key, (Int32)delta, statTypeName, frequency );
+    Transmit( key, delta, statTypeName, frequency );
 }
 
 /*-------------------------------------------------------------------------*/
@@ -142,7 +142,7 @@ CStatsDClient::Count( const CString& key, const UInt64 delta, const Float32 freq
 {GUCEF_TRACE;
 
     static const CString statTypeName = "c";
-    Transmit( key, (Int64)delta, statTypeName, frequency );
+    Transmit( key, delta, statTypeName, frequency );
 }
 
 /*-------------------------------------------------------------------------*/
@@ -152,7 +152,7 @@ CStatsDClient::Gauge( const CString& key, const UInt32 value, const Float32 freq
 {GUCEF_TRACE;
 
     static const CString statTypeName = "g";
-    Transmit( key, (Int64) value, statTypeName, frequency );
+    Transmit( key, value, statTypeName, frequency );
 }
 
 /*-------------------------------------------------------------------------*/
@@ -162,7 +162,7 @@ CStatsDClient::Gauge( const CString& key, const UInt64 value, const Float32 freq
 {GUCEF_TRACE;
 
     static const CString statTypeName = "g";
-    Transmit( key, (Int64) value, statTypeName, frequency );
+    Transmit( key, value, statTypeName, frequency );
 }
 
 /*-------------------------------------------------------------------------*/
@@ -172,7 +172,7 @@ CStatsDClient::Gauge( const CString& key, const Float32 value, const Float32 fre
 {GUCEF_TRACE;
 
     static const CString statTypeName = "g";
-    Transmit( key, (Int64) value, statTypeName, frequency );
+    Transmit( key, value, statTypeName, frequency );
 }
 
 /*-------------------------------------------------------------------------*/
@@ -182,7 +182,7 @@ CStatsDClient::Gauge( const CString& key, const Float64 value, const Float32 fre
 {GUCEF_TRACE;
 
     static const CString statTypeName = "g";
-    Transmit( key, (Int64) value, statTypeName, frequency );
+    Transmit( key, value, statTypeName, frequency );
 }
 
 /*-------------------------------------------------------------------------*/
@@ -192,7 +192,7 @@ CStatsDClient::Timing( const CString& key, const UInt32 ms, const Float32 freque
 {GUCEF_TRACE;
 
     static const CString statTypeName = "ms";
-    Transmit( key, (Int64) ms, statTypeName, frequency );
+    Transmit( key, ms, statTypeName, frequency );
 }
 
 /*-------------------------------------------------------------------------*/
@@ -202,15 +202,15 @@ CStatsDClient::Timing( const CString& key, const UInt64 ms, const Float32 freque
 {GUCEF_TRACE;
 
     static const CString statTypeName = "ms";
-    Transmit( key, (Int64) ms, statTypeName, frequency );
+    Transmit( key, ms, statTypeName, frequency );
 }
 
 /*-------------------------------------------------------------------------*/
 
-// @TODO: Improve this to better handle different value types
+template < typename valueType >
 void
 CStatsDClient::Transmit( const CString& key      ,
-                         const Int64 value       ,
+                         const valueType value   ,
                          const CString& type     ,
                          const Float32 frequency ) const
 {GUCEF_TRACE;
@@ -246,12 +246,14 @@ CStatsDClient::Transmit( const CString& key      ,
     if ( isFrequencyOne( frequency ) )
     {
         // Sampling rate is 1.0f, no need to specify it
-        msgSize = std::snprintf( buffer, sizeof(buffer), "%s%s:%" PRIu64 "|%s", m_statNamePrefix.C_String(), key.C_String(), value, type.C_String() );
+        CORE::CString valueAsStr = CORE::ToString( value );
+        msgSize = std::snprintf( buffer, sizeof(buffer), "%s%s:%s|%s", m_statNamePrefix.C_String(), key.C_String(), valueAsStr.C_String(), type.C_String() );
     }
     else
     {
         // Sampling rate is different from 1.0f, hence specify it
-        msgSize = std::snprintf( buffer, sizeof(buffer), "%s%s:%" PRIu64 "|%s|@%.2f", m_statNamePrefix.C_String(), key.C_String(), value, type.C_String(), frequency );
+        CORE::CString valueAsStr = CORE::ToString( value );
+        msgSize = std::snprintf( buffer, sizeof(buffer), "%s%s:%s|%s|@%.2f", m_statNamePrefix.C_String(), key.C_String(), valueAsStr.C_String(), type.C_String(), frequency );
     }
 
     // Send the message via the UDP sender
