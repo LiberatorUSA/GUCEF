@@ -145,7 +145,6 @@ class ClusterChannelRedisWriter : public CORE::CTaskConsumer
     typedef COMCORE::CUDPSocket::TPacketEntry TPacketEntry; 
 
     ClusterChannelRedisWriter();
-    ClusterChannelRedisWriter( const ClusterChannelRedisWriter& src );
     virtual ~ClusterChannelRedisWriter();
 
     virtual bool OnTaskStart( CORE::CICloneable* taskData ) GUCEF_VIRTUAL_OVERRIDE;
@@ -176,6 +175,10 @@ class ClusterChannelRedisWriter : public CORE::CTaskConsumer
 
     CORE::UInt32 GetRedisTransmitQueueSize( void ) const;
 
+    CORE::UInt32 GetCurrentRedisHashSlot( void ) const;
+
+    CORE::UInt32 CalculateRedisHashSlot( const CORE::CString& keyStr ) const;
+
     bool LoadConfig( const ChannelSettings& channelSettings );
 
     const ChannelSettings& GetChannelSettings( void ) const;
@@ -199,12 +202,15 @@ class ClusterChannelRedisWriter : public CORE::CTaskConsumer
 
     private:
 
+    ClusterChannelRedisWriter( const ClusterChannelRedisWriter& src ); // not implemented
+
     typedef std::deque< TPacketEntry > TPacketEntryQueue;
     typedef CORE::CTCloneableExpansion< TPacketEntryVector > TCloneablePacketEntryVector;
     typedef std::vector< std::pair< sw::redis::StringView, sw::redis::StringView > > TRedisArgs;
     typedef MT::CTMailBox< CORE::UInt32 > TBufferMailbox;
 
     sw::redis::RedisCluster* m_redisContext;
+    sw::redis::Pipeline* m_redisPipeline;
     TPacketEntryVectorPtrVector m_redisMsgQueueOverflowQueue;
     TUInt32Vector m_redisMsgQueueOverflowQueueCounts;
     CORE::UInt32 m_redisErrorReplies;
@@ -212,6 +218,7 @@ class ClusterChannelRedisWriter : public CORE::CTaskConsumer
     CORE::UInt32 m_redisMsgsTransmitted;
     CORE::UInt32 m_redisPacketsInMsgsTransmitted;
     CORE::UInt32 m_redisPacketsInMsgsRatio;
+    CORE::UInt32 m_redisHashSlot;
     ChannelSettings m_channelSettings;
     TBufferMailbox m_mailbox;
     TBufferMailbox::TMailList m_bulkMail;

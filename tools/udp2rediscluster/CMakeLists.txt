@@ -12,10 +12,12 @@
 # Configuration for module: udp2rediscluster
 
 set( HEADER_FILES 
+  include/crc16.h
   include/udp2rediscluster.h
 )
 
 set( SOURCE_FILES 
+  src/crc16.cpp
   src/main.cpp
   src/udp2rediscluster.cpp
 )

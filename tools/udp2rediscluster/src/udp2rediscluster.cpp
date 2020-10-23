@@ -50,6 +50,8 @@
 #define GUCEF_CORE_METRICSMACROS_H
 #endif /* GUCEF_CORE_METRICSMACROS_H ? */
 
+#include "crc16.h"
+
 /*-------------------------------------------------------------------------//
 //                                                                         //
 //      GLOBAL VARS                                                        //
@@ -203,35 +205,15 @@ ChannelSettings::GetClassTypeName( void ) const
 ClusterChannelRedisWriter::ClusterChannelRedisWriter()
     : CORE::CTaskConsumer()
     , m_redisContext( GUCEF_NULL )
+    , m_redisPipeline( GUCEF_NULL )
     , m_redisMsgQueueOverflowQueue()
     , m_redisErrorReplies( 0 )
     , m_redisTransmitQueueSize( 0 )
     , m_redisMsgsTransmitted( 0 )
     , m_redisPacketsInMsgsTransmitted( 0 )
     , m_redisPacketsInMsgsRatio( 0 )
+    , m_redisHashSlot( 0 )
     , m_channelSettings()
-    , m_mailbox()
-    , m_bulkMail()
-    , m_bulkPackets()
-    , m_bulkPacketCounts()
-    , m_redisPacketArgs()
-    , m_metricsTimer( GUCEF_NULL )
-{GUCEF_TRACE;
-
-}
-
-/*-------------------------------------------------------------------------*/
-
-ClusterChannelRedisWriter::ClusterChannelRedisWriter( const ClusterChannelRedisWriter& src )
-    : CORE::CTaskConsumer()
-    , m_redisContext( src.m_redisContext )
-    , m_redisMsgQueueOverflowQueue( src.m_redisMsgQueueOverflowQueue )
-    , m_redisErrorReplies( src.m_redisErrorReplies )
-    , m_redisTransmitQueueSize( src.m_redisTransmitQueueSize )
-    , m_redisMsgsTransmitted( src.m_redisMsgsTransmitted )
-    , m_redisPacketsInMsgsTransmitted( src.m_redisPacketsInMsgsTransmitted )
-    , m_redisPacketsInMsgsRatio( src.m_redisPacketsInMsgsRatio )
-    , m_channelSettings( src.m_channelSettings )
     , m_mailbox()
     , m_bulkMail()
     , m_bulkPackets()
@@ -247,6 +229,9 @@ ClusterChannelRedisWriter::ClusterChannelRedisWriter( const ClusterChannelRedisW
 ClusterChannelRedisWriter::~ClusterChannelRedisWriter()
 {GUCEF_TRACE;
 
+    delete m_redisPipeline;
+    m_redisPipeline = GUCEF_NULL;
+    
     delete m_redisContext;
     m_redisContext = GUCEF_NULL;
 }
@@ -261,6 +246,50 @@ ClusterChannelRedisWriter::RegisterEventHandlers( void )
     SubscribeTo( m_metricsTimer                 ,
                  CORE::CTimer::TimerUpdateEvent ,
                  callback                       );
+}
+
+/*-------------------------------------------------------------------------*/
+
+CORE::UInt32
+ClusterChannelRedisWriter::CalculateRedisHashSlot( const CORE::CString& keyStr ) const
+{GUCEF_TRACE;
+
+    // The following code is copied from: https://redis.io/topics/cluster-spec
+
+    // Minor changes were made to accept a string object and use platform types
+    CORE::UInt32 keylen = keyStr.Length();
+    const char* key = keyStr.C_String();
+
+    int s, e; /* start-end indexes of { and } */    
+
+    /* Search the first occurrence of '{'. */
+    for (s = 0; s < keylen; s++)
+        if (key[s] == '{') break;
+
+    /* No '{' ? Hash the whole key. This is the base case. */
+    if ( s == keylen) 
+        return sw::redis::crc16(key,keylen) & 16383;
+
+    /* '{' found? Check if we have the corresponding '}'. */
+    for (e = s+1; e < keylen; e++)
+        if (key[e] == '}') break;
+
+    /* No '}' or nothing between {} ? Hash the whole key. */
+    if (e == keylen || e == s+1) 
+        return sw::redis::crc16(key,keylen) & 16383;
+
+    /* If we are here there is both a { and a } on its right. Hash
+     * what is in the middle between { and }. */
+    return sw::redis::crc16(key+s+1,e-s-1) & 16383;
+}
+
+/*-------------------------------------------------------------------------*/
+
+CORE::UInt32 
+ClusterChannelRedisWriter::GetCurrentRedisHashSlot( void ) const
+{GUCEF_TRACE;
+
+    return m_redisHashSlot;
 }
 
 /*-------------------------------------------------------------------------*/
@@ -547,12 +576,22 @@ ClusterChannelRedisWriter::RedisSendSyncImpl( const TPacketEntryVectorPtrVector&
             }
         }
 
-        std::string clusterMsgId = m_redisContext->xadd( cnSV, idSV, m_redisPacketArgs.begin(), m_redisPacketArgs.end() );
+        m_redisPipeline->xadd( cnSV, idSV, m_redisPacketArgs.begin(), m_redisPacketArgs.end() );
+        sw::redis::QueuedReplies redisReplies = m_redisPipeline->exec();
 
-        GUCEF_DEBUG_LOG( CORE::LOGLEVEL_NORMAL, "Udp2RedisClusterChannel(" + CORE::PointerToString( this ) + "):RedisSend: Successfully sent " + 
-            CORE::UInt32ToString( totalPacketCount ) + " UDP messages, combining " + CORE::UInt32ToString( (CORE::UInt32)udpPackets.size() ) + 
-            " sets of packages. MsgID=" + clusterMsgId );
+        size_t replyCount = redisReplies.size();
+        for ( size_t r=0; r<replyCount; ++r )
+        {
+            redisReply& reply = redisReplies.get( r );
+            //reply.type == REDIS_OK
 
+            std::string clusterMsgId = "";
+
+            GUCEF_DEBUG_LOG( CORE::LOGLEVEL_NORMAL, "Udp2RedisClusterChannel(" + CORE::PointerToString( this ) + "):RedisSend: Successfully sent " + 
+                CORE::UInt32ToString( totalPacketCount ) + " UDP messages, combining " + CORE::UInt32ToString( (CORE::UInt32)udpPackets.size() ) + 
+                " sets of packages. MsgID=" + clusterMsgId );
+        }
+        
         ++m_redisMsgsTransmitted;
         m_redisPacketsInMsgsTransmitted += totalPacketCount;
         m_redisPacketsInMsgsRatio = totalPacketCount;
@@ -561,8 +600,18 @@ ClusterChannelRedisWriter::RedisSendSyncImpl( const TPacketEntryVectorPtrVector&
     catch ( const sw::redis::MovedError& e )
     {
 		++m_redisErrorReplies;
-        GUCEF_EXCEPTION_LOG( CORE::LOGLEVEL_IMPORTANT, "Udp2RedisClusterChannel(" + CORE::PointerToString( this ) + "):RedisSend: Redis++ MovedError (Redirect failed?) exception: " + e.what() );
+        GUCEF_EXCEPTION_LOG( CORE::LOGLEVEL_IMPORTANT, "Udp2RedisClusterChannel(" + CORE::PointerToString( this ) + "):RedisSend: Redis++ MovedError (Redirect failed?) . Current slot: " + 
+                                CORE::ToString( m_redisHashSlot ) + ", new slot: " + CORE::ToString( e.slot() ) + " at node " + e.node().host + ":" + CORE::ToString( e.node().port ) + 
+                                " exception: " + e.what() );
         return false;
+    }
+    catch ( const sw::redis::RedirectionError& e )
+    {
+		++m_redisErrorReplies;
+        GUCEF_EXCEPTION_LOG( CORE::LOGLEVEL_IMPORTANT, "Udp2RedisClusterChannel(" + CORE::PointerToString( this ) + "):RedisSend: Redis++ RedirectionError (rebalance? node failure?). Current slot: " + 
+                                CORE::ToString( m_redisHashSlot ) + ", new slot: " + CORE::ToString( e.slot() ) + " at node " + e.node().host + ":" + CORE::ToString( e.node().port ) +  
+                                " exception: " + e.what() );
+        return false;        
     }
     catch ( const sw::redis::Error& e )
     {
@@ -689,6 +738,12 @@ ClusterChannelRedisWriter::RedisConnect( void )
         m_redisContext = new sw::redis::RedisCluster( rppConnectionOptions );
 
         GUCEF_LOG( CORE::LOGLEVEL_NORMAL, "Udp2RedisClusterChannel(" + CORE::PointerToString( this ) + "):RedisConnect: Successfully created a Redis context" );
+        
+        sw::redis::StringView cnSV( m_channelSettings.channelStreamName.C_String(), m_channelSettings.channelStreamName.Length() );
+        delete m_redisPipeline;
+        m_redisPipeline = new sw::redis::Pipeline( m_redisContext->pipeline( cnSV ) );
+
+        GUCEF_LOG( CORE::LOGLEVEL_NORMAL, "Udp2RedisClusterChannel(" + CORE::PointerToString( this ) + "):RedisConnect: Successfully created a Redis pipeline" );
         return true;
     }
     catch ( const sw::redis::Error& e )
@@ -711,6 +766,7 @@ ClusterChannelRedisWriter::LoadConfig( const ChannelSettings& channelSettings )
 {GUCEF_TRACE;
 
     m_channelSettings = channelSettings;
+    m_redisHashSlot = CalculateRedisHashSlot( m_channelSettings.channelStreamName );
     return true;
 }
 
