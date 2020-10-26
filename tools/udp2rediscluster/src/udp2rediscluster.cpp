@@ -144,14 +144,14 @@ ChannelSettings::operator=( const ChannelSettings& src )
 
 /*-------------------------------------------------------------------------*/
 
-bool 
+bool
 ChannelSettings::SaveConfig( CORE::CDataNode& tree ) const
 {GUCEF_TRACE;
 
     tree.SetAttribute( "channelId", channelId );
-    tree.SetAttribute( "redisAddress", redisAddress.AddressAndPortAsString() ); 
+    tree.SetAttribute( "redisAddress", redisAddress.AddressAndPortAsString() );
     tree.SetAttribute( "channelStreamName", channelStreamName );
-    tree.SetAttribute( "udpInterface", udpInterface.AddressAsString() ); 
+    tree.SetAttribute( "udpInterface", udpInterface.AddressAsString() );
     tree.SetAttribute( "collectMetrics", collectMetrics );
     tree.SetAttribute( "wantsTestPackage", wantsTestPackage );
     tree.SetAttribute( "ticketRefillOnBusyCycle", ticketRefillOnBusyCycle );
@@ -163,12 +163,12 @@ ChannelSettings::SaveConfig( CORE::CDataNode& tree ) const
     tree.SetAttribute( "applyThreadCpuAffinity", applyThreadCpuAffinity );
     tree.SetAttribute( "cpuAffinityForDedicatedRedisWriterThread", cpuAffinityForDedicatedRedisWriterThread );
     tree.SetAttribute( "cpuAffinityForMainChannelThread", cpuAffinityForMainChannelThread );
-    return true;    
+    return true;
 }
 
 /*-------------------------------------------------------------------------*/
 
-bool 
+bool
 ChannelSettings::LoadConfig( const CORE::CDataNode& tree )
 {GUCEF_TRACE;
 
@@ -192,7 +192,7 @@ ChannelSettings::LoadConfig( const CORE::CDataNode& tree )
 
 /*-------------------------------------------------------------------------*/
 
-const CORE::CString& 
+const CORE::CString&
 ChannelSettings::GetClassTypeName( void ) const
 {GUCEF_TRACE;
 
@@ -231,7 +231,7 @@ ClusterChannelRedisWriter::~ClusterChannelRedisWriter()
 
     delete m_redisPipeline;
     m_redisPipeline = GUCEF_NULL;
-    
+
     delete m_redisContext;
     m_redisContext = GUCEF_NULL;
 }
@@ -260,14 +260,14 @@ ClusterChannelRedisWriter::CalculateRedisHashSlot( const CORE::CString& keyStr )
     CORE::UInt32 keylen = keyStr.Length();
     const char* key = keyStr.C_String();
 
-    int s, e; /* start-end indexes of { and } */    
+    int s, e; /* start-end indexes of { and } */
 
     /* Search the first occurrence of '{'. */
     for (s = 0; s < keylen; s++)
         if (key[s] == '{') break;
 
     /* No '{' ? Hash the whole key. This is the base case. */
-    if ( s == keylen) 
+    if ( s == keylen)
         return sw::redis::crc16(key,keylen) & 16383;
 
     /* '{' found? Check if we have the corresponding '}'. */
@@ -275,7 +275,7 @@ ClusterChannelRedisWriter::CalculateRedisHashSlot( const CORE::CString& keyStr )
         if (key[e] == '}') break;
 
     /* No '}' or nothing between {} ? Hash the whole key. */
-    if (e == keylen || e == s+1) 
+    if (e == keylen || e == s+1)
         return sw::redis::crc16(key,keylen) & 16383;
 
     /* If we are here there is both a { and a } on its right. Hash
@@ -285,7 +285,7 @@ ClusterChannelRedisWriter::CalculateRedisHashSlot( const CORE::CString& keyStr )
 
 /*-------------------------------------------------------------------------*/
 
-CORE::UInt32 
+CORE::UInt32
 ClusterChannelRedisWriter::GetCurrentRedisHashSlot( void ) const
 {GUCEF_TRACE;
 
@@ -340,12 +340,12 @@ ClusterChannelRedisWriter::OnTaskStart( CORE::CICloneable* taskData )
         {
             if ( SetCpuAffinityByCpuId( m_channelSettings.cpuAffinityForDedicatedRedisWriterThread ) )
             {
-                GUCEF_LOG( CORE::LOGLEVEL_NORMAL, "ClusterChannelRedisWriter(" + CORE::PointerToString( this ) + 
+                GUCEF_LOG( CORE::LOGLEVEL_NORMAL, "ClusterChannelRedisWriter(" + CORE::PointerToString( this ) +
                     "):OnTaskStart: Successfully set a CPU affinity for logical CPU " + CORE::UInt32ToString( m_channelSettings.cpuAffinityForDedicatedRedisWriterThread ) );
             }
             else
             {
-                GUCEF_ERROR_LOG( CORE::LOGLEVEL_NORMAL, "ClusterChannelRedisWriter(" + CORE::PointerToString( this ) + 
+                GUCEF_ERROR_LOG( CORE::LOGLEVEL_NORMAL, "ClusterChannelRedisWriter(" + CORE::PointerToString( this ) +
                     "):OnTaskStart: Failed to set a CPU affinity for logical CPU " + CORE::UInt32ToString( m_channelSettings.cpuAffinityForDedicatedRedisWriterThread ) +
                     ". Proceeding without affinity");
             }
@@ -354,7 +354,7 @@ ClusterChannelRedisWriter::OnTaskStart( CORE::CICloneable* taskData )
 
     RegisterEventHandlers();
 
-    // Setup connection to Redis 
+    // Setup connection to Redis
     // Note that if there is an error here we will just keep on trying automatically
     RedisConnect();
 
@@ -366,7 +366,7 @@ ClusterChannelRedisWriter::OnTaskStart( CORE::CICloneable* taskData )
 bool
 ClusterChannelRedisWriter::OnTaskCycle( CORE::CICloneable* taskData )
 {GUCEF_TRACE;
-    
+
     if ( m_channelSettings.performRedisWritesInDedicatedThread )
     {
         if ( m_redisMsgQueueOverflowQueue.empty() )
@@ -413,11 +413,11 @@ ClusterChannelRedisWriter::OnTaskCycle( CORE::CICloneable* taskData )
 
 /*-------------------------------------------------------------------------*/
 
-void 
+void
 ClusterChannelRedisWriter::OnTaskEnding( CORE::CICloneable* taskdata ,
                                          bool willBeForced           )
 {GUCEF_TRACE;
-    
+
 
 }
 
@@ -436,11 +436,11 @@ ClusterChannelRedisWriter::OnTaskEnded( CORE::CICloneable* taskData ,
 
 /*-------------------------------------------------------------------------*/
 
-CORE::UInt32 
+CORE::UInt32
 ClusterChannelRedisWriter::GetRedisTransmitQueueSize( void ) const
 {GUCEF_TRACE;
 
-    return m_redisTransmitQueueSize;    
+    return m_redisTransmitQueueSize;
 }
 
 /*-------------------------------------------------------------------------*/
@@ -503,7 +503,7 @@ ClusterChannelRedisWriter::GetRedisPacketsInMsgsRatio( void ) const
 /*-------------------------------------------------------------------------*/
 
 bool
-ClusterChannelRedisWriter::RedisSendSync( const TPacketEntryVector& udpPackets , 
+ClusterChannelRedisWriter::RedisSendSync( const TPacketEntryVector& udpPackets ,
                                           CORE::UInt32 packetCount             )
 {GUCEF_TRACE;
 
@@ -511,7 +511,7 @@ ClusterChannelRedisWriter::RedisSendSync( const TPacketEntryVector& udpPackets ,
     vecPts.push_back( &udpPackets );
 
     TUInt32Vector vecCounts;
-    vecCounts.push_back( packetCount ); 
+    vecCounts.push_back( packetCount );
 
     return RedisSendSync( vecPts, vecCounts );
 }
@@ -519,7 +519,7 @@ ClusterChannelRedisWriter::RedisSendSync( const TPacketEntryVector& udpPackets ,
 /*-------------------------------------------------------------------------*/
 
 bool
-ClusterChannelRedisWriter::RedisSendSync( const TPacketEntryVectorPtrVector& udpPackets , 
+ClusterChannelRedisWriter::RedisSendSync( const TPacketEntryVectorPtrVector& udpPackets ,
                                           const TUInt32Vector& packetCounts             )
 {GUCEF_TRACE;
 
@@ -540,13 +540,13 @@ ClusterChannelRedisWriter::RedisSendSync( const TPacketEntryVectorPtrVector& udp
 /*-------------------------------------------------------------------------*/
 
 bool
-ClusterChannelRedisWriter::RedisSendSyncImpl( const TPacketEntryVectorPtrVector& udpPackets , 
+ClusterChannelRedisWriter::RedisSendSyncImpl( const TPacketEntryVectorPtrVector& udpPackets ,
                                               const TUInt32Vector& packetCounts             )
 {GUCEF_TRACE;
 
     if ( GUCEF_NULL == m_redisContext )
         return false;
-    
+
     try
     {
         static const CORE::CString fieldName = "UDP";
@@ -559,7 +559,7 @@ ClusterChannelRedisWriter::RedisSendSyncImpl( const TPacketEntryVectorPtrVector&
         CORE::UInt32 totalPacketCount = 0;
         for ( CORE::UInt32 n=0; n<packetCounts.size(); ++n )
             totalPacketCount += packetCounts[ n ];
-        
+
         m_redisPacketArgs.clear();
         m_redisPacketArgs.reserve( totalPacketCount );
 
@@ -579,39 +579,56 @@ ClusterChannelRedisWriter::RedisSendSyncImpl( const TPacketEntryVectorPtrVector&
         m_redisPipeline->xadd( cnSV, idSV, m_redisPacketArgs.begin(), m_redisPacketArgs.end() );
         sw::redis::QueuedReplies redisReplies = m_redisPipeline->exec();
 
+        bool totalSuccess = true;
         size_t replyCount = redisReplies.size();
         for ( size_t r=0; r<replyCount; ++r )
         {
             redisReply& reply = redisReplies.get( r );
-            //reply.type == REDIS_OK
 
-            std::string clusterMsgId = "";
+            switch ( reply.integer )
+            {
+                case REDIS_OK:
+                {
+                    GUCEF_DEBUG_LOG( CORE::LOGLEVEL_NORMAL, "Udp2RedisClusterChannel(" + CORE::PointerToString( this ) + "):RedisSend: Successfully sent " +
+                        CORE::UInt32ToString( totalPacketCount ) + " UDP messages, combining " + CORE::UInt32ToString( (CORE::UInt32)udpPackets.size() ) +
+                        " sets of packages. MsgID=" + CORE::ToString( reply.str ) );
 
-            GUCEF_DEBUG_LOG( CORE::LOGLEVEL_NORMAL, "Udp2RedisClusterChannel(" + CORE::PointerToString( this ) + "):RedisSend: Successfully sent " + 
-                CORE::UInt32ToString( totalPacketCount ) + " UDP messages, combining " + CORE::UInt32ToString( (CORE::UInt32)udpPackets.size() ) + 
-                " sets of packages. MsgID=" + clusterMsgId );
+                    ++m_redisMsgsTransmitted;
+                    m_redisPacketsInMsgsTransmitted += totalPacketCount;
+                    m_redisPacketsInMsgsRatio = totalPacketCount;
+                    break;
+                }
+                default:
+                case REDIS_ERR:
+                {
+                    totalSuccess = false;
+                    ++m_redisErrorReplies;
+
+                    GUCEF_ERROR_LOG( CORE::LOGLEVEL_NORMAL, "Udp2RedisClusterChannel(" + CORE::PointerToString( this ) + "):RedisSend: Error sending " +
+                        CORE::UInt32ToString( totalPacketCount ) + " UDP messages, combining " + CORE::UInt32ToString( (CORE::UInt32)udpPackets.size() ) +
+                        " sets of packages. Error=" + CORE::ToString( reply.str ) );
+                    break;
+                }
+            }
         }
-        
-        ++m_redisMsgsTransmitted;
-        m_redisPacketsInMsgsTransmitted += totalPacketCount;
-        m_redisPacketsInMsgsRatio = totalPacketCount;
-        return true;
+
+        return totalSuccess;
     }
     catch ( const sw::redis::MovedError& e )
     {
 		++m_redisErrorReplies;
-        GUCEF_EXCEPTION_LOG( CORE::LOGLEVEL_IMPORTANT, "Udp2RedisClusterChannel(" + CORE::PointerToString( this ) + "):RedisSend: Redis++ MovedError (Redirect failed?) . Current slot: " + 
-                                CORE::ToString( m_redisHashSlot ) + ", new slot: " + CORE::ToString( e.slot() ) + " at node " + e.node().host + ":" + CORE::ToString( e.node().port ) + 
+        GUCEF_EXCEPTION_LOG( CORE::LOGLEVEL_IMPORTANT, "Udp2RedisClusterChannel(" + CORE::PointerToString( this ) + "):RedisSend: Redis++ MovedError (Redirect failed?) . Current slot: " +
+                                CORE::ToString( m_redisHashSlot ) + ", new slot: " + CORE::ToString( e.slot() ) + " at node " + e.node().host + ":" + CORE::ToString( e.node().port ) +
                                 " exception: " + e.what() );
         return false;
     }
     catch ( const sw::redis::RedirectionError& e )
     {
 		++m_redisErrorReplies;
-        GUCEF_EXCEPTION_LOG( CORE::LOGLEVEL_IMPORTANT, "Udp2RedisClusterChannel(" + CORE::PointerToString( this ) + "):RedisSend: Redis++ RedirectionError (rebalance? node failure?). Current slot: " + 
-                                CORE::ToString( m_redisHashSlot ) + ", new slot: " + CORE::ToString( e.slot() ) + " at node " + e.node().host + ":" + CORE::ToString( e.node().port ) +  
+        GUCEF_EXCEPTION_LOG( CORE::LOGLEVEL_IMPORTANT, "Udp2RedisClusterChannel(" + CORE::PointerToString( this ) + "):RedisSend: Redis++ RedirectionError (rebalance? node failure?). Current slot: " +
+                                CORE::ToString( m_redisHashSlot ) + ", new slot: " + CORE::ToString( e.slot() ) + " at node " + e.node().host + ":" + CORE::ToString( e.node().port ) +
                                 " exception: " + e.what() );
-        return false;        
+        return false;
     }
     catch ( const sw::redis::Error& e )
     {
@@ -629,17 +646,17 @@ ClusterChannelRedisWriter::RedisSendSyncImpl( const TPacketEntryVectorPtrVector&
 /*-------------------------------------------------------------------------*/
 
 bool
-ClusterChannelRedisWriter::RedisSendASync( const TPacketEntryVector& udpPackets , 
+ClusterChannelRedisWriter::RedisSendASync( const TPacketEntryVector& udpPackets ,
                                            CORE::UInt32 packetCount             )
 {GUCEF_TRACE;
 
     // Since the Redis library is blocking we cannot do async unless we have a thread
     if ( !m_channelSettings.performRedisWritesInDedicatedThread )
         return false;
-    
+
     // We dont want to copy empty buffers needlessly so we size the mail to match the actual nr of packets
     // We need to perform a memory copy regardless because the socket needs ownership of its buffers back
-    
+
     TCloneablePacketEntryVector mail;
     mail.resize( packetCount );
 
@@ -650,12 +667,12 @@ ClusterChannelRedisWriter::RedisSendASync( const TPacketEntryVector& udpPackets 
         mail[ i ].dataBuffer.LinkTo( &udpPackets[ i ].dataBuffer.GetData() );
         mail[ i ].sourceAddress = udpPackets[ i ].sourceAddress;
     }
-    
+
     GUCEF_DEBUG_LOG( CORE::LOGLEVEL_BELOW_NORMAL, "ClusterChannelRedisWriter(" + CORE::PointerToString( this ) + "):RedisSendASync: Adding group of "
             + CORE::UInt32ToString( packetCount ) + " packets to the mailbox as a single piece of mail" );
 
-    m_mailbox.AddMail( packetCount, &mail ); 
-    
+    m_mailbox.AddMail( packetCount, &mail );
+
     return true;
 }
 
@@ -669,12 +686,12 @@ ClusterChannelRedisWriter::SendQueuedPackagesIfAny( void )
     {
         GUCEF_DEBUG_LOG( CORE::LOGLEVEL_BELOW_NORMAL, "ClusterChannelRedisWriter(" + CORE::PointerToString( this ) + "):SendQueuedPackagesIfAny: There are "
                 + CORE::UInt32ToString( (CORE::UInt32) m_redisMsgQueueOverflowQueue.size() ) + " sets of packets to the overflow queue, Attempting to send..." );
-        
+
         if ( RedisSendSyncImpl( m_redisMsgQueueOverflowQueue, m_redisMsgQueueOverflowQueueCounts ) )
         {
             for ( CORE::UInt32 n=0; n<m_redisMsgQueueOverflowQueue.size(); ++n )
             {
-                delete m_redisMsgQueueOverflowQueue[ n ];    
+                delete m_redisMsgQueueOverflowQueue[ n ];
             }
             m_redisMsgQueueOverflowQueue.clear();
         }
@@ -732,18 +749,18 @@ ClusterChannelRedisWriter::RedisConnect( void )
         rppConnectionOptions.connect_timeout = std::chrono::milliseconds( 100 );
 
         rppConnectionOptions.keep_alive = true;
-        
+
         // Connect to Redis server with a single connection
         delete m_redisContext;
         m_redisContext = new sw::redis::RedisCluster( rppConnectionOptions );
 
         GUCEF_LOG( CORE::LOGLEVEL_NORMAL, "Udp2RedisClusterChannel(" + CORE::PointerToString( this ) + "):RedisConnect: Successfully created a Redis context" );
-        
+
         sw::redis::StringView cnSV( m_channelSettings.channelStreamName.C_String(), m_channelSettings.channelStreamName.Length() );
         delete m_redisPipeline;
         m_redisPipeline = new sw::redis::Pipeline( m_redisContext->pipeline( cnSV ) );
 
-        GUCEF_LOG( CORE::LOGLEVEL_NORMAL, "Udp2RedisClusterChannel(" + CORE::PointerToString( this ) + "):RedisConnect: Successfully created a Redis pipeline" );
+        GUCEF_LOG( CORE::LOGLEVEL_NORMAL, "Udp2RedisClusterChannel(" + CORE::PointerToString( this ) + "):RedisConnect: Successfully created a Redis pipeline. Hash Slot " + CORE::ToString( m_redisHashSlot ) );
         return true;
     }
     catch ( const sw::redis::Error& e )
@@ -772,7 +789,7 @@ ClusterChannelRedisWriter::LoadConfig( const ChannelSettings& channelSettings )
 
 /*-------------------------------------------------------------------------*/
 
-const ChannelSettings& 
+const ChannelSettings&
 ClusterChannelRedisWriter::GetChannelSettings( void ) const
 {GUCEF_TRACE;
 
@@ -812,7 +829,7 @@ Udp2RedisClusterChannel::~Udp2RedisClusterChannel()
 
     delete m_metricsTimer;
     m_metricsTimer = GUCEF_NULL;
-    
+
     delete m_udpSocket;
     m_udpSocket = GUCEF_NULL;
 }
@@ -844,7 +861,7 @@ Udp2RedisClusterChannel::RegisterEventHandlers( void )
     SubscribeTo( m_udpSocket                                  ,
                  COMCORE::CUDPSocket::UDPPacketsRecievedEvent ,
                  callback5                                    );
-    
+
     TEventCallback callback6( this, &Udp2RedisClusterChannel::OnMetricsTimerCycle );
     SubscribeTo( m_metricsTimer                 ,
                  CORE::CTimer::TimerUpdateEvent ,
@@ -863,7 +880,7 @@ Udp2RedisClusterChannel::LoadConfig( const ChannelSettings& channelSettings )
 
 /*-------------------------------------------------------------------------*/
 
-const ChannelSettings& 
+const ChannelSettings&
 Udp2RedisClusterChannel::GetChannelSettings( void ) const
 {GUCEF_TRACE;
 
@@ -881,12 +898,12 @@ Udp2RedisClusterChannel::GetType( void ) const
 
 /*-------------------------------------------------------------------------*/
 
-bool 
+bool
 Udp2RedisClusterChannel::WaitForTaskToFinish( CORE::Int32 timeoutInMs )
 {GUCEF_TRACE;
 
     // Overriding the base class implementation because this consumer can start its own
-    // consumer based on settings transparent to the caller. 
+    // consumer based on settings transparent to the caller.
     if ( CTaskConsumer::WaitForTaskToFinish( timeoutInMs ) )
     {
         GUCEF_LOG( CORE::LOGLEVEL_IMPORTANT, "Udp2RedisClusterChannel:WaitForTaskToFinish: Successfully waited for channel " + CORE::Int32ToString( m_channelSettings.channelId ) + "'s task to stop" );
@@ -1045,7 +1062,7 @@ Udp2RedisClusterChannel::OnUDPPacketsRecieved( CORE::CNotifier* notifier   ,
         {
             if ( !m_redisWriter->RedisSendASync( data.packets, data.packetsReceived ) )
             {
-                GUCEF_ERROR_LOG( CORE::LOGLEVEL_IMPORTANT, "Udp2RedisClusterChannel:OnUDPPacketsRecieved: Failed to submit " + 
+                GUCEF_ERROR_LOG( CORE::LOGLEVEL_IMPORTANT, "Udp2RedisClusterChannel:OnUDPPacketsRecieved: Failed to submit " +
                         CORE::UInt32ToString( data.packetsReceived ) + " packets for async Redis transmission. Data loss will occur!!!" );
             }
         }
@@ -1053,7 +1070,7 @@ Udp2RedisClusterChannel::OnUDPPacketsRecieved( CORE::CNotifier* notifier   ,
         {
             if ( !m_redisWriter->RedisSendSync( data.packets, data.packetsReceived ) )
             {
-                GUCEF_ERROR_LOG( CORE::LOGLEVEL_IMPORTANT, "Udp2RedisClusterChannel:OnUDPPacketsRecieved: Failed to request sync blocking transmission of " + 
+                GUCEF_ERROR_LOG( CORE::LOGLEVEL_IMPORTANT, "Udp2RedisClusterChannel:OnUDPPacketsRecieved: Failed to request sync blocking transmission of " +
                         CORE::UInt32ToString( data.packetsReceived ) + " packets to Redis. Data loss will occur!!!" );
             }
         }
@@ -1102,12 +1119,12 @@ Udp2RedisClusterChannel::OnTaskStart( CORE::CICloneable* taskData )
     {
         if ( SetCpuAffinityByCpuId( m_channelSettings.cpuAffinityForMainChannelThread ) )
         {
-            GUCEF_LOG( CORE::LOGLEVEL_NORMAL, "Udp2RedisClusterChannel(" + CORE::PointerToString( this ) + 
+            GUCEF_LOG( CORE::LOGLEVEL_NORMAL, "Udp2RedisClusterChannel(" + CORE::PointerToString( this ) +
                 "):OnTaskStart: Successfully set a CPU affinity for logical CPU " + CORE::UInt32ToString( m_channelSettings.cpuAffinityForMainChannelThread ) );
         }
         else
         {
-            GUCEF_ERROR_LOG( CORE::LOGLEVEL_NORMAL, "Udp2RedisClusterChannel(" + CORE::PointerToString( this ) + 
+            GUCEF_ERROR_LOG( CORE::LOGLEVEL_NORMAL, "Udp2RedisClusterChannel(" + CORE::PointerToString( this ) +
                 "):OnTaskStart: Failed to set a CPU affinity for logical CPU " + CORE::UInt32ToString( m_channelSettings.cpuAffinityForMainChannelThread ) +
                 ". Proceeding without affinity");
         }
@@ -1142,25 +1159,25 @@ Udp2RedisClusterChannel::OnTaskCycle( CORE::CICloneable* taskData )
     {
         m_redisWriter->OnTaskCycle( taskData );
     }
-    
+
     // We are never 'done' so return false
     return false;
 }
 
 /*-------------------------------------------------------------------------*/
 
-void 
+void
 Udp2RedisClusterChannel::OnTaskEnding( CORE::CICloneable* taskdata ,
                                        bool willBeForced           )
 {GUCEF_TRACE;
-    
+
     if ( !m_channelSettings.performRedisWritesInDedicatedThread )
     {
         m_redisWriter->OnTaskEnding( taskdata, willBeForced );
     }
     else
     {
-        // Since we are the ones that launched the dedicated Redis write thread we should also ask 
+        // Since we are the ones that launched the dedicated Redis write thread we should also ask
         // to have it cleaned up when we are shutting down this thread
         CORE::CTaskManager& taskManager = CORE::CCoreGlobal::Instance()->GetTaskManager();
         if ( !taskManager.RequestTaskToStop( m_redisWriter.StaticCast< CORE::CTaskConsumer >(), false ) )
@@ -1273,7 +1290,7 @@ RestApiUdp2RedisConfigResource::Serialize( CORE::CDataNode& output             ,
 
 /*-------------------------------------------------------------------------*/
 
-RestApiUdp2RedisConfigResource::TDeserializeState 
+RestApiUdp2RedisConfigResource::TDeserializeState
 RestApiUdp2RedisConfigResource::Deserialize( const CORE::CDataNode& input        ,
                                              const CORE::CString& representation ,
                                              bool isDeltaUpdateOnly              )
@@ -1294,25 +1311,25 @@ RestApiUdp2RedisConfigResource::Deserialize( const CORE::CDataNode& input       
         {
             loadedAppConfig.CopySettingsFrom( m_app->GetAppConfig() );
         }
-        
+
         if ( loadedAppConfig.LoadConfig( input ) )
         {
             if ( isDeltaUpdateOnly )
             {
-                loadedAppConfig.SetAllowMultipleValues( m_app->GetAppConfig().GetAllowMultipleValues() );    
+                loadedAppConfig.SetAllowMultipleValues( m_app->GetAppConfig().GetAllowMultipleValues() );
                 loadedAppConfig.SetAllowDuplicates( m_app->GetAppConfig().GetAllowDuplicates() );
             }
-            
+
             // First put the app in standby mode before we mess with the settings
             if ( !m_app->SetStandbyMode( true ) )
-                return TDeserializeState::DESERIALIZESTATE_UNABLETOUPDATE;    
-            
+                return TDeserializeState::DESERIALIZESTATE_UNABLETOUPDATE;
+
             const CORE::CDataNode& globalConfig = m_app->GetGlobalConfig();
             if ( m_app->LoadConfig( loadedAppConfig, globalConfig ) )
-            {                
+            {
                 if ( !m_app->IsGlobalStandbyEnabled() )
                 {
-                    if ( m_app->SetStandbyMode( false ) )                
+                    if ( m_app->SetStandbyMode( false ) )
                         return TDeserializeState::DESERIALIZESTATE_SUCCEEDED;
                     else
                         return TDeserializeState::DESERIALIZESTATE_UNABLETOUPDATE;
@@ -1413,7 +1430,7 @@ Udp2RedisCluster::~Udp2RedisCluster()
 
 /*-------------------------------------------------------------------------*/
 
-bool 
+bool
 Udp2RedisCluster::IsGlobalStandbyEnabled( void ) const
 {GUCEF_TRACE;
 
@@ -1456,7 +1473,7 @@ Udp2RedisCluster::SetStandbyMode( bool putInStandbyMode )
         CORE::CTaskManager& taskManager = CORE::CCoreGlobal::Instance()->GetTaskManager();
 
         m_testPacketTransmitTimer.SetEnabled( false );
-        
+
         // Signal all channel threads to stop gracefully
         // Since this standby operation is global not per channel we signal all to stop before
         // we starting any waiting operation
@@ -1475,7 +1492,7 @@ Udp2RedisCluster::SetStandbyMode( bool putInStandbyMode )
             }
             ++i;
         }
-        
+
         // Now actually wait for the threads to be finished
         i = m_channels.begin();
         while ( i != m_channels.end() )
@@ -1501,12 +1518,12 @@ Udp2RedisCluster::SetStandbyMode( bool putInStandbyMode )
     else
     {
         bool totalSuccess = true;
-       
+
         // Channel config could have changed such that we need to remove channels that should no longer exist
         Udp2RedisClusterChannelMap::iterator i = m_channels.begin();
         while ( i != m_channels.end() )
         {
-            CORE::Int32 channelId = (*i).first; 
+            CORE::Int32 channelId = (*i).first;
             ChannelSettingsMap::iterator n = m_channelSettings.find( channelId );
             if ( n == m_channelSettings.end() )
             {
@@ -1590,7 +1607,7 @@ Udp2RedisCluster::LoadConfig( const CORE::CValueList& appConfig   ,
     m_redisStreamName = CORE::ResolveVars( appConfig.GetValueAlways( "RedisStreamName", "udp-ingress-ch{channelID}" ) );
     m_redisHost = CORE::ResolveVars( appConfig.GetValueAlways( "RedisHost", "127.0.0.1" ) );
     m_redisPort = CORE::StringToUInt16( CORE::ResolveVars( appConfig.GetValueAlways( "RedisPort", "6379" ) ) );
-    
+
     CORE::UInt32 ticketRefillOnBusyCycle = CORE::StringToUInt32( CORE::ResolveVars( appConfig.GetValueAlways( "TicketRefillOnBusyCycle" ) ), GUCEF_DEFAULT_TICKET_REFILLS_ON_BUSY_CYCLE );
     CORE::UInt32 nrOfUdpReceiveBuffersPerSocket = CORE::StringToUInt32( CORE::ResolveVars( appConfig.GetValueAlways( "NrOfUdpReceiveBuffersPerSocket" ) ), GUCEF_DEFAULT_UDP_RECEIVE_BUFFERS );
     CORE::UInt32 udpSocketOsReceiveBufferSize = CORE::StringToUInt32( CORE::ResolveVars( appConfig.GetValueAlways( "UdpSocketOsReceiveBufferSize" ) ), GUCEF_DEFAULT_UDP_OS_LEVEL_RECEIVE_BUFFER_SIZE );
@@ -1600,7 +1617,7 @@ Udp2RedisCluster::LoadConfig( const CORE::CValueList& appConfig   ,
     bool applyCpuThreadAffinityByDefault = CORE::StringToBool( CORE::ResolveVars( appConfig.GetValueAlways( "ApplyCpuThreadAffinityByDefault" )  ), false );
 
     CORE::UInt32 logicalCpuCount = CORE::GetLogicalCPUCount();
-    
+
     CORE::UInt32 currentCpu = 0;
     CORE::UInt16 udpPort = m_udpStartPort;
     CORE::Int32 maxChannelId = m_redisStreamStartChannelID + m_channelCount;
@@ -1671,7 +1688,7 @@ Udp2RedisCluster::LoadConfig( const CORE::CValueList& appConfig   ,
                 {
                     channelSettings.cpuAffinityForDedicatedRedisWriterThread = currentCpu;
                 }
-            
+
                 ++currentCpu;
                 if ( currentCpu >= logicalCpuCount ) // Wrap around if we run out of CPUs
                     currentCpu = 0;
@@ -1718,7 +1735,7 @@ Udp2RedisCluster::LoadConfig( const CORE::CValueList& appConfig   ,
     m_httpRouter.SetResourceMapping(  CORE::ResolveVars( appConfig.GetValueAlways( "RestBasicHealthUri", "/health/basic" ) ), RestApiUdp2RedisInfoResource::THTTPServerResourcePtr( new COM::CDummyHTTPServerResource() )  );
 
     m_httpServer.GetRouterController()->AddRouterMapping( &m_httpRouter, "", "" );
-    
+
     m_testPacketTransmitTimer.SetInterval( CORE::StringToUInt32( appConfig.GetValueAlways( "TestPacketTransmissionIntervalInMs", "1000" ) ) );
     m_transmitTestPackets = CORE::StringToBool( appConfig.GetValueAlways( "TransmitTestPackets" ), false );
     return true;
@@ -1761,7 +1778,7 @@ Udp2RedisCluster::OnTransmitTestPacketTimerCycle( CORE::CNotifier* notifier    ,
     if ( !m_testUdpSocket.IsActive() )
         if ( !m_testUdpSocket.Open() )
             return;
-    
+
     Udp2RedisClusterChannelMap::iterator i = m_channels.begin();
     while ( i != m_channels.end() )
     {

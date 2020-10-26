@@ -6,6 +6,8 @@
 *.exe
 *.*~
 
+build
+.vscode
 common/bin/*
 !common/bin/TestData
 projects/CMake/targets/*/build/*

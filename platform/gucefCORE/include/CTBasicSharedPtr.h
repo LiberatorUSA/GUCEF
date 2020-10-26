@@ -94,7 +94,7 @@ class TBasicSharedPtrSharedData
     TBasicSharedPtrSharedData( void )
         : m_refCounter( 0 )
         , m_lock()
-    {            
+    {
     }
 };
 
@@ -162,7 +162,7 @@ class CTBasicSharedPtr : public MT::CILockable ,
 
     const TBasicSharedPtrSharedData< LockType >* GetSharedData( void ) const
     {GUCEF_TRACE;
-    
+
         return m_shared;
     }
 
@@ -180,7 +180,7 @@ class CTBasicSharedPtr : public MT::CILockable ,
         T* relatedClass = static_cast< T* >( const_cast< RelatedClass* >( other.GetPointerAlways() ) );
         if ( GUCEF_NULL != relatedClass )
         {
-            m_ptr = relatedClass;            
+            m_ptr = relatedClass;
             m_objectDestructor = reinterpret_cast< CTBasicSharedPtr< T, LockType >::TDestructor* >( other.GetDestructor() );
             m_shared = const_cast< TBasicSharedPtrSharedData< LockType >* >( other.GetSharedData() );
 
@@ -473,7 +473,7 @@ CTBasicSharedPtr< T, LockType >&
 CTBasicSharedPtr< T, LockType >::operator=( int nullValue )
 {GUCEF_TRACE;
 
-    assert( nullValue == GUCEF_NULL );
+    assert( nullValue == (int) GUCEF_NULL );
     Unlink();
     return *this;
 }
@@ -538,9 +538,9 @@ inline bool
 CTBasicSharedPtr< T, LockType >::operator==( Int32 other ) const
 {GUCEF_TRACE;
 
-    if ( 0 == other ) 
+    if ( 0 == other )
         return GUCEF_NULL == m_ptr;
-    if ( sizeof( int ) != sizeof( m_ptr ) ) 
+    if ( sizeof( int ) != sizeof( m_ptr ) )
         return false;
     return reinterpret_cast< void* >( other ) == m_ptr;
 }
@@ -552,7 +552,7 @@ inline bool
 CTBasicSharedPtr< T, LockType >::operator==( Int32 other ) const
 {GUCEF_TRACE;
 
-    if ( 0 == other ) 
+    if ( 0 == other )
         return GUCEF_NULL == m_ptr;
     return false;
 }
@@ -566,11 +566,11 @@ CTBasicSharedPtr< T, LockType >::operator==( Int32 other ) const
 template< typename T, class LockType >
 inline bool
 CTBasicSharedPtr< T, LockType >::operator==( Int64 other ) const
-{GUCEF_TRACE;                          
+{GUCEF_TRACE;
 
-    if ( 0 == other ) 
+    if ( 0 == other )
         return GUCEF_NULL == m_ptr;
-    if ( sizeof( int ) != sizeof( m_ptr ) ) 
+    if ( sizeof( int ) != sizeof( m_ptr ) )
         return false;
     return reinterpret_cast< void* >( other ) == m_ptr;
 }
@@ -582,7 +582,7 @@ inline bool
 CTBasicSharedPtr< T, LockType >::operator==( Int64 other ) const
 {GUCEF_TRACE;
 
-    if ( 0 == other ) 
+    if ( 0 == other )
         return GUCEF_NULL == m_ptr;
     return false;
 }
@@ -608,9 +608,9 @@ inline bool
 CTBasicSharedPtr< T, LockType >::operator!=( Int32 other ) const
 {GUCEF_TRACE;
 
-    if ( 0 == other ) 
+    if ( 0 == other )
         return GUCEF_NULL != m_ptr;
-    if ( sizeof( int ) != sizeof( m_ptr ) ) 
+    if ( sizeof( int ) != sizeof( m_ptr ) )
         return true;
     return reinterpret_cast< void* >( other ) != m_ptr;
 }
@@ -622,7 +622,7 @@ inline bool
 CTBasicSharedPtr< T, LockType >::operator!=( Int32 other ) const
 {GUCEF_TRACE;
 
-    if ( 0 == other ) 
+    if ( 0 == other )
         return GUCEF_NULL != m_ptr;
     return true;
 }
@@ -638,9 +638,9 @@ inline bool
 CTBasicSharedPtr< T, LockType >::operator!=( Int64 other ) const
 {GUCEF_TRACE;
 
-    if ( 0 == other ) 
+    if ( 0 == other )
         return GUCEF_NULL != m_ptr;
-    if ( sizeof( int ) != sizeof( m_ptr ) ) 
+    if ( sizeof( int ) != sizeof( m_ptr ) )
         return true;
     return reinterpret_cast< void* >( other ) != m_ptr;
 }
@@ -652,7 +652,7 @@ inline bool
 CTBasicSharedPtr< T, LockType >::operator!=( Int64 other ) const
 {GUCEF_TRACE;
 
-    if ( 0 == other ) 
+    if ( 0 == other )
         return GUCEF_NULL != m_ptr;
     return true;
 }
@@ -737,7 +737,7 @@ CTBasicSharedPtr< T, LockType >::operator*( void )
 {GUCEF_TRACE;
 
     MT::CObjectScopeLock lock( this );
-    
+
     if ( GUCEF_NULL != m_ptr )
     {
         return *(m_ptr);
@@ -755,7 +755,7 @@ CTBasicSharedPtr< T, LockType >::operator*( void ) const
 {GUCEF_TRACE;
 
     MT::CObjectScopeLock lock( this );
-    
+
     if ( GUCEF_NULL != m_ptr )
     {
         return *m_ptr;
@@ -774,7 +774,7 @@ CTBasicSharedPtr< T, LockType >::operator->( void )
 {GUCEF_TRACE;
 
     MT::CObjectScopeLock lock( this );
-    
+
     if ( GUCEF_NULL != m_ptr )
     {
         return m_ptr;
@@ -792,7 +792,7 @@ CTBasicSharedPtr< T, LockType >::operator->( void ) const
 {GUCEF_TRACE;
 
     MT::CObjectScopeLock lock( this );
-    
+
     if ( GUCEF_NULL != m_ptr )
     {
         return m_ptr;
@@ -820,7 +820,7 @@ CTBasicSharedPtr< T, LockType >::GetPointer( void )
 {GUCEF_TRACE;
 
     MT::CObjectScopeLock lock( this );
-    
+
     if ( GUCEF_NULL != m_ptr )
     {
         return m_ptr;
@@ -838,7 +838,7 @@ CTBasicSharedPtr< T, LockType >::GetPointer( void ) const
 {GUCEF_TRACE;
 
     MT::CObjectScopeLock lock( this );
-    
+
     if ( GUCEF_NULL != m_ptr )
     {
         return m_ptr;
@@ -893,7 +893,7 @@ CTBasicSharedPtr< T, LockType >::Unlink( void )
                 m_ptr = GUCEF_NULL;
 
                 lock.EarlyUnlock();
-                delete m_shared;            
+                delete m_shared;
             }
         }
     }
@@ -921,7 +921,7 @@ CTBasicSharedPtr< T, LockType >::Unlink( void )
 /*-------------------------------------------------------------------------*/
 
 template< typename T, class LockType >
-const MT::CILockable* 
+const MT::CILockable*
 CTBasicSharedPtr< T, LockType >::AsLockable( void ) const
 {GUCEF_TRACE;
 

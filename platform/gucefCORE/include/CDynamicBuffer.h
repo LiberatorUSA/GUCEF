@@ -32,7 +32,7 @@
 #endif /* GUCEF_CORE_LOGGING_H ? */
 
 #ifndef GUCEF_CORE_EXCEPTIONCLASSMACROS_H
-#include "ExceptionClassMacros.h"   
+#include "ExceptionClassMacros.h"
 #define GUCEF_CORE_EXCEPTIONCLASSMACROS_H
 #endif /* GUCEF_CORE_EXCEPTIONCLASSMACROS_H ? */
 
@@ -276,7 +276,7 @@ class GUCEF_CORE_PUBLIC_CPP CDynamicBuffer
          *  Returns false if out of bounds.
          */
         bool Downshift( const UInt32 bytesToWipe );
-                     
+
         /**
          *  Trys to fill the dynamic buffer with the contents of the file given
          */
@@ -336,7 +336,7 @@ class GUCEF_CORE_PUBLIC_CPP CDynamicBuffer
          */
         template< typename T >
         const T& AsConstType( const UInt32 byteOffset = 0 ) const;
-        
+
         /**
          *  Utility member function:
          *  Performs easy casting to the given type as a pointer at the given offset
@@ -398,6 +398,7 @@ CDynamicBuffer::operator=( const T& rawData )
 {GUCEF_TRACE;
 
     CopyFrom( sizeof( T ), &rawData );
+    return *this;
 }
 
 /*-------------------------------------------------------------------------*/
@@ -442,7 +443,7 @@ CDynamicBuffer::AsConstTypePtr( const UInt32 byteOffset /* = 0 */ ) const
     {
         return reinterpret_cast< const T* >( static_cast< const char* >( GetConstBufferPtr() ) + byteOffset );
     }
-    
+
     GUCEF_EMSGTHROW( EIllegalCast, "GUCEF::CORE::CDynamicBuffer::AsConstTypePtr(): Cannot cast to the given type" );
 }
 
@@ -458,7 +459,7 @@ CDynamicBuffer::AsTypePtr( const UInt32 byteOffset /* = 0 */ )
     {
         return reinterpret_cast< T* >( static_cast< char* >( GetBufferPtr() ) + byteOffset );
     }
-    
+
     GUCEF_EMSGTHROW( EIllegalCast, "GUCEF::CORE::CDynamicBuffer::AsTypePtr(): Cannot cast to the given type" );
 }
 
@@ -474,7 +475,7 @@ CDynamicBuffer::AsConstTypePtr( const UInt32 byteOffset, const UInt32 requiredSi
     {
         return reinterpret_cast< const T* >( static_cast< const char* >( GetConstBufferPtr() ) + byteOffset );
     }
-    
+
     GUCEF_EMSGTHROW( EIllegalCast, "GUCEF::CORE::CDynamicBuffer::AsConstTypePtr(): Cannot cast to the given type" );
 }
 

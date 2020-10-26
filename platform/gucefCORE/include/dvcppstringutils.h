@@ -270,7 +270,7 @@ MD5ToString( const UInt8 md5Digest[ 16 ] );
 /*-------------------------------------------------------------------------*/
 
 GUCEF_CORE_PUBLIC_CPP CString
-ConvertBytesToHexString( const void* byteBuffer , 
+ConvertBytesToHexString( const void* byteBuffer ,
                          UInt32 bufferSize      ,
                          bool addSpaces         ,
                          bool addHexPrefix      );
@@ -362,13 +362,13 @@ GetHostname( void );
 
 /*-------------------------------------------------------------------------*/
 
-GUCEF_CORE_PUBLIC_CPP bool 
+GUCEF_CORE_PUBLIC_CPP bool
 Utf16toUtf8( const std::wstring& wstr ,
              std::string& str         );
 
 /*-------------------------------------------------------------------------*/
 
-GUCEF_CORE_PUBLIC_CPP bool 
+GUCEF_CORE_PUBLIC_CPP bool
 Utf8toUtf16( const std::string& str ,
              std::wstring& wstr     );
 
@@ -389,6 +389,12 @@ inline CString ToString( const char* value ) { return CString( value ); }
 inline CString ToString( const void* value ) { return PointerToString( value ); }
 inline CString ToString( const TVersion& value ) { return VersionToString( value ); }
 inline CString ToString( const std::wstring& value ) { std::string out; Utf16toUtf8( value, out ); return out; }
+
+#ifdef GUCEF_32BIT
+inline CString ToString( size_t value ) { return UInt32ToString( (UInt32) value ); }
+#else
+inline CString ToString( size_t value ) { return UInt64ToString( (UInt64) value ); }
+#endif
 
 /*-------------------------------------------------------------------------//
 //                                                                         //

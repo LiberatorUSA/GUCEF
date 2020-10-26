@@ -107,7 +107,7 @@ CString::CString( CString&& src )
     : m_string( src.m_string ) ,
       m_length( src.m_length )
 {GUCEF_TRACE;
-    
+
     src.m_string = NULL;
     src.m_length = 0;
 }
@@ -164,7 +164,7 @@ CString::CString( const int NULLvalue )
       m_length( 0 )
 {GUCEF_TRACE;
 
-    assert( NULLvalue == NULL );
+    assert( NULLvalue == (int) NULL );
 }
 /*-------------------------------------------------------------------------*/
 
@@ -200,7 +200,7 @@ CString::operator=( const CString &src )
 
 /*-------------------------------------------------------------------------*/
 
-CString& 
+CString&
 CString::operator=( const std::string& src )
 {GUCEF_TRACE;
 
@@ -214,7 +214,7 @@ CString::operator=( const std::string& src )
         assert( m_string );
         memcpy( m_string, src.c_str(), m_length+1 );
     }
-    return *this;    
+    return *this;
 }
 
 /*-------------------------------------------------------------------------*/
@@ -278,7 +278,7 @@ bool
 CString::operator!=( const int NULLvalue ) const
 {GUCEF_TRACE;
 
-    if ( NULLvalue == NULL )
+    if ( NULLvalue == (int) GUCEF_NULL )
     {
         return m_length > 0;
     }
@@ -611,7 +611,7 @@ CString::SetLength( UInt32 newLength )
             m_length = newLength;
             return;
         }
-        
+
         memset( m_string+newLength, 0, m_length-newLength );
         m_length = newLength;
         return;
@@ -700,7 +700,7 @@ CString::ReplaceEnvelopingSubstr( const CString& envelopPrefix     ,
 {GUCEF_TRACE;
 
     CString resultStr;
-    
+
     Int32 startIndex = 0;
     Int32 envSegIndex = this->HasSubstr( envelopPrefix, startIndex, true );
     while ( envSegIndex >= 0 )
@@ -709,11 +709,11 @@ CString::ReplaceEnvelopingSubstr( const CString& envelopPrefix     ,
         {
             resultStr += this->SubstrFromRange( startIndex, envSegIndex );
         }
-        
+
         envSegIndex+=envelopPrefix.Length();
         CString envelopedSegment = this->SubstrToSubstr( envelopPostfix, envSegIndex, true );
         resultStr += newEnvelopPrefix + envelopedSegment + newEnvelopPostfix;
-        
+
         startIndex = envSegIndex+envelopedSegment.Length()+envelopPostfix.Length();
         envSegIndex = this->HasSubstr( envelopPrefix, startIndex, true );
     }
@@ -735,12 +735,12 @@ CString::ReplaceSubStr( UInt32 startIndex        ,
     // Sanity check on the given range
     if ( 0 == m_length ) return CString();
     if ( startIndex >= m_length ) startIndex = m_length -1;
-    if ( startIndex+length >= m_length ) length = (m_length-1) - startIndex; 
-    
+    if ( startIndex+length >= m_length ) length = (m_length-1) - startIndex;
+
     CString prefix = this->SubstrFromRange( 0, startIndex );
     CString postfix = this->SubstrFromRange( startIndex+length+1, m_length );
 
-    return prefix + newSubstr + postfix; 
+    return prefix + newSubstr + postfix;
 }
 
 /*-------------------------------------------------------------------------*/
@@ -815,7 +815,7 @@ CString::SubstrToIndex( UInt32 index     ,
     }
 
     if ( index >= m_length ) return CString( m_string, m_length );
-    return SubstrFromRange( 0, index );    
+    return SubstrFromRange( 0, index );
 }
 
 /*-------------------------------------------------------------------------*/
@@ -824,7 +824,7 @@ CString
 CString::SubstrFromRange( UInt32 startIndex ,
                           UInt32 endIndex   ) const
 {GUCEF_TRACE;
-    
+
     if ( startIndex == endIndex ) return CString();
 
     // we want the user to be able to pass a range conveniently
@@ -837,7 +837,7 @@ CString::SubstrFromRange( UInt32 startIndex ,
     }
 
     // gracefully protect against out-of-bounds index
-    // keep in mind that endIndex is exclusive, thus out of bounds is endIndex 
+    // keep in mind that endIndex is exclusive, thus out of bounds is endIndex
     // beyond the null terminator
     UInt32 maxEnd = endIndex > m_length ? m_length : endIndex;
     UInt32 maxStart = startIndex > m_length ? m_length : startIndex;
@@ -928,7 +928,7 @@ CString::SubstrToSubstr( const CString& searchstr ,
     {
         return *this;
     }
-    if ( startIndex >= m_length ) 
+    if ( startIndex >= m_length )
     {
         // cap the index to disallow over/under flows
         startIndex = m_length-1;
@@ -1359,18 +1359,18 @@ CString::WildcardEquals( const CString& otherStr               ,
 
     if ( otherStr == wildCardToken || *this == wildCardToken )
         return true;
-    
+
     std::vector< CString > segs = otherStr.ParseElements( wildCardToken, false );
     Int32 lastSeg = 0;
     std::vector< CString >::iterator i = segs.begin();
     while ( i != segs.end() )
     {
         lastSeg = HasSubstr( (*i), lastSeg, true );
-        if ( 0 > lastSeg ) 
+        if ( 0 > lastSeg )
             return false;
         ++i;
     }
-    return true;    
+    return true;
 }
 
 /*-------------------------------------------------------------------------*/
