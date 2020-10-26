@@ -132,7 +132,7 @@ CJsonLoggingFormatter::FormatLogMessage( const TLogMsgType logMsgType ,
            ", \"thread\"=" + UInt32ToString( threadId ) +
            ", \"type\"=\"" + CLogManager::GetLogMsgTypeString( logMsgType ) + "\""
            ", \"lvl\"=\"" + LogLevelToString( logLevel ) + "\""
-           ", \"msg\"=\"" + EscapeJson( logMessage ) + "\"";
+           ", \"msg\"=\"" + EscapeJson( logMessage ) + "\"}";
 }
 
 /*-------------------------------------------------------------------------//

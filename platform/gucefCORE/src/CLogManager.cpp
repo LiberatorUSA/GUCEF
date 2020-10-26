@@ -65,6 +65,11 @@
 #define GUCEF_CORE_CBASICBRACKETLOGGINGFORMATTER_H
 #endif /* GUCEF_CORE_CBASICBRACKETLOGGINGFORMATTER_H ? */
 
+#ifndef GUCEF_CORE_CCHARSEPLOGGINGFORMATTER_H
+#include "gucefCORE_CCharSepLoggingFormatter.h"
+#define GUCEF_CORE_CCHARSEPLOGGINGFORMATTER_H
+#endif /* GUCEF_CORE_CCHARSEPLOGGINGFORMATTER_H ? */
+
 #ifndef GUCEF_CORE_CLOGGINGTASK_H
 #include "gucefCORE_CLoggingTask.h"
 #define GUCEF_CORE_CLOGGINGTASK_H
@@ -103,6 +108,7 @@ namespace CORE {
 
 typedef CTFactory< CILoggingFormatter, CJsonLoggingFormatter > JsonLoggingFormatterFactory;
 typedef CTFactory< CILoggingFormatter, CBasicBracketLoggingFormatter > BasicBracketLoggingFormatterFactory;
+typedef CTFactory< CILoggingFormatter, CCharSepLoggingFormatter > CharSepLoggingFormatterFactory;
 
 /*-------------------------------------------------------------------------//
 //                                                                         //
@@ -116,6 +122,7 @@ static CAndroidSystemLogger androidSystemLogger;
 
 static JsonLoggingFormatterFactory jsonLoggingFormatterFactory;
 static BasicBracketLoggingFormatterFactory basicBracketLoggingFormatterFactory;
+static CharSepLoggingFormatterFactory charSepLoggingFormatterFactory;
 
 /*-------------------------------------------------------------------------//
 //                                                                         //
@@ -135,9 +142,10 @@ CLogManager::CLogManager( void )
     , m_dataLock()
 {GUCEF_TRACE;
 
-    m_defaultLogFormatter = "basicbracket";
-    m_logFormatterFactory.RegisterConcreteFactory( m_defaultLogFormatter, &basicBracketLoggingFormatterFactory );
+    m_defaultLogFormatter = "charsep";
+    m_logFormatterFactory.RegisterConcreteFactory( "basicbracket", &basicBracketLoggingFormatterFactory );
     m_logFormatterFactory.RegisterConcreteFactory( "json", &jsonLoggingFormatterFactory );
+    m_logFormatterFactory.RegisterConcreteFactory( "charsep", &charSepLoggingFormatterFactory );
 
     #if ( GUCEF_PLATFORM == GUCEF_PLATFORM_ANDROID )
     AddLogger( &androidSystemLogger);
