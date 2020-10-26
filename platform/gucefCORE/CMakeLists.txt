@@ -16,7 +16,6 @@ set( HEADER_FILES
   include/CCPPWrapFileAccess.h
   include/CCodecChain.h
   include/CCodecRegistry.h
-  include/CCodecStoreRegistry.h
   include/CConfigStore.h
   include/CCyclicDynamicBuffer.h
   include/CDStoreCodec.h
