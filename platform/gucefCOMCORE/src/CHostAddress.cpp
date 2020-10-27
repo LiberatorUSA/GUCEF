@@ -14,7 +14,7 @@
  *
  *  You should have received a copy of the GNU Lesser General Public
  *  License along with this library; if not, write to the Free Software
- *  Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA 
+ *  Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA
  */
 
 /*-------------------------------------------------------------------------//
@@ -68,7 +68,7 @@ CHostAddress::CHostAddress( const CHostAddress& src )
     : CIPAddress( src )            ,
       m_hostname( src.m_hostname )
 {GUCEF_TRACE;
-    
+
 }
 
 /*-------------------------------------------------------------------------*/
@@ -143,7 +143,7 @@ CHostAddress::SetHostnameAndPort( const CORE::CString& hostAndPort )
         SetPortInHostByteOrder( CORE::StringToUInt16( hostAndPort.SubstrToIndex( sepCharIndex+1, false ) ) );
     }
     else
-    {    
+    {
         m_hostname = hostAndPort;
     }
 
@@ -156,6 +156,24 @@ CHostAddress::SetHostnameAndPort( const CORE::CString& hostAndPort )
         SetAddress( INADDR_ANY );
     }
     return true;
+}
+
+/*-------------------------------------------------------------------------*/
+
+bool
+CHostAddress::SetHostnameAndPort( const CORE::CString& host, UInt16 portInHostOrder )
+{GUCEF_TRACE;
+
+    if ( !host.IsNULLOrEmpty() )
+    {
+        m_hostname = host;
+        return ResolveDNS( host, portInHostOrder );
+    }
+    else
+    {
+        SetAddress( INADDR_ANY );
+        SetPortInHostByteOrder( portInHostOrder );
+    }
 }
 
 /*-------------------------------------------------------------------------*/
@@ -206,7 +224,7 @@ CHostAddress::operator=( const CHostAddress& src )
     if ( this != &src )
     {
         CIPAddress::operator=( src );
-        
+
         m_hostname = src.m_hostname;
     }
     return *this;
@@ -220,29 +238,29 @@ CHostAddress::operator=( const CIPAddress& src )
 
     if ( this != &src )
     {
-        CIPAddress::operator=( src );        
+        CIPAddress::operator=( src );
         m_hostname = src.AddressAsString();
     }
     return *this;
 }
 
 /*-------------------------------------------------------------------------*/
-    
+
 bool
 CHostAddress::operator==( const CHostAddress& other ) const
 {GUCEF_TRACE;
 
-    return CIPAddress::operator==( other )   && 
+    return CIPAddress::operator==( other )   &&
            ( m_hostname == other.m_hostname ) ;
 }
 
 /*-------------------------------------------------------------------------*/
-    
+
 bool
 CHostAddress::operator!=( const CHostAddress& other ) const
 {GUCEF_TRACE;
 
-    return CIPAddress::operator!=( other )   || 
+    return CIPAddress::operator!=( other )   ||
            ( m_hostname != other.m_hostname ) ;
 }
 
@@ -254,7 +272,7 @@ CHostAddress::operator<( const CHostAddress& other ) const
 
     return m_hostname < other.m_hostname;
 }
-    
+
 /*-------------------------------------------------------------------------//
 //                                                                         //
 //      NAMESPACE                                                          //

@@ -39,6 +39,11 @@
 #define GUCEF_COMCORE_CUDPSOCKET_H
 #endif /* GUCEF_COMCORE_CUDPSOCKET_H ? */
 
+#ifndef GUCEF_COMCORE_CHOSTADDRESS_H
+#include "CHostAddress.h"
+#define GUCEF_COMCORE_CHOSTADDRESS_H
+#endif /* GUCEF_COMCORE_CHOSTADDRESS_H ? */
+
 #ifndef GUCEF_CORE_CICONFIGURABLE_H
 #include "CIConfigurable.h"
 #define GUCEF_CORE_CICONFIGURABLE_H
@@ -134,6 +139,22 @@ class ChannelSettings : public CORE::CIConfigurable
 
 /*-------------------------------------------------------------------------*/
 
+class RedisNode
+{
+    public:
+
+    COMCORE::CHostAddress host;
+    CORE::CString nodeId;
+    CORE::UInt32 startSlot;
+    CORE::UInt32 endSlot;
+
+    RedisNode( void );
+};
+
+typedef std::map< CORE::UInt32, RedisNode > RedisNodeMap;
+
+/*-------------------------------------------------------------------------*/
+
 class ClusterChannelRedisWriter : public CORE::CTaskConsumer
 {
     public:
@@ -142,18 +163,18 @@ class ClusterChannelRedisWriter : public CORE::CTaskConsumer
     typedef COMCORE::CUDPSocket::TPacketEntryVector TPacketEntryVector;
     typedef std::vector< const TPacketEntryVector* >  TPacketEntryVectorPtrVector;
     typedef std::vector< CORE::UInt32 >             TUInt32Vector;
-    typedef COMCORE::CUDPSocket::TPacketEntry TPacketEntry; 
+    typedef COMCORE::CUDPSocket::TPacketEntry TPacketEntry;
 
     ClusterChannelRedisWriter();
     virtual ~ClusterChannelRedisWriter();
 
     virtual bool OnTaskStart( CORE::CICloneable* taskData ) GUCEF_VIRTUAL_OVERRIDE;
-    
+
     virtual bool OnTaskCycle( CORE::CICloneable* taskData ) GUCEF_VIRTUAL_OVERRIDE;
 
     virtual void OnTaskEnding( CORE::CICloneable* taskdata ,
                                bool willBeForced           ) GUCEF_VIRTUAL_OVERRIDE;
-    
+
     virtual void OnTaskEnded( CORE::CICloneable* taskdata ,
                                bool wasForced             ) GUCEF_VIRTUAL_OVERRIDE;
 
@@ -193,6 +214,8 @@ class ClusterChannelRedisWriter : public CORE::CTaskConsumer
 
     bool RedisConnect( void );
 
+    bool GetRedisClusterNodeMap( RedisNodeMap& nodeMap );
+
     void RegisterEventHandlers( void );
 
     void
@@ -219,6 +242,7 @@ class ClusterChannelRedisWriter : public CORE::CTaskConsumer
     CORE::UInt32 m_redisPacketsInMsgsTransmitted;
     CORE::UInt32 m_redisPacketsInMsgsRatio;
     CORE::UInt32 m_redisHashSlot;
+    COMCORE::CHostAddress m_redisShardHost;
     ChannelSettings m_channelSettings;
     TBufferMailbox m_mailbox;
     TBufferMailbox::TMailList m_bulkMail;
@@ -245,12 +269,12 @@ class Udp2RedisClusterChannel : public CORE::CTaskConsumer
     virtual ~Udp2RedisClusterChannel();
 
     virtual bool OnTaskStart( CORE::CICloneable* taskData ) GUCEF_VIRTUAL_OVERRIDE;
-    
+
     virtual bool OnTaskCycle( CORE::CICloneable* taskData ) GUCEF_VIRTUAL_OVERRIDE;
 
     virtual void OnTaskEnding( CORE::CICloneable* taskdata ,
                                bool willBeForced           ) GUCEF_VIRTUAL_OVERRIDE;
-    
+
     virtual void OnTaskEnded( CORE::CICloneable* taskdata ,
                               bool wasForced              ) GUCEF_VIRTUAL_OVERRIDE;
 
@@ -278,7 +302,7 @@ class Udp2RedisClusterChannel : public CORE::CTaskConsumer
     };
 
     const ChannelMetrics& GetMetrics( void ) const;
-    
+
     private:
 
     void
@@ -320,7 +344,7 @@ class Udp2RedisClusterChannel : public CORE::CTaskConsumer
 
     private:
 
-    ChannelSettings m_channelSettings;   
+    ChannelSettings m_channelSettings;
     GUCEF::COMCORE::CUDPSocket* m_udpSocket;
     CORE::CTimer* m_metricsTimer;
     ChannelMetrics m_metrics;
@@ -378,7 +402,7 @@ class RestApiUdp2RedisConfigResource : public COM::CCodecBasedHTTPServerResource
 
 /*-------------------------------------------------------------------------*/
 
-//COM::CTConfigurableMapHttpServerResource< 
+//COM::CTConfigurableMapHttpServerResource<
 
 /*-------------------------------------------------------------------------*/
 
@@ -403,13 +427,13 @@ class Udp2RedisCluster : public CORE::CObserver
     const CORE::CDataNode& GetGlobalConfig( void ) const;
 
     private:
-    
+
     typedef CORE::CTEventHandlerFunctor< Udp2RedisCluster > TEventCallback;
-    
+
     void
     OnMetricsTimerCycle( CORE::CNotifier* notifier    ,
                          const CORE::CEvent& eventId  ,
-                         CORE::CICloneable* eventData );    
+                         CORE::CICloneable* eventData );
 
     void
     OnTransmitTestPacketTimerCycle( CORE::CNotifier* notifier    ,
@@ -420,7 +444,7 @@ class Udp2RedisCluster : public CORE::CObserver
 
     typedef std::map< CORE::Int32, ChannelSettings > ChannelSettingsMap;
     typedef std::map< CORE::Int32, Udp2RedisClusterChannelPtr > Udp2RedisClusterChannelMap;
-    
+
     bool m_isInStandby;
     bool m_globalStandbyEnabled;
     CORE::UInt16 m_udpStartPort;

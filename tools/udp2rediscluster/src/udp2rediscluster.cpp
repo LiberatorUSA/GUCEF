@@ -213,6 +213,7 @@ ClusterChannelRedisWriter::ClusterChannelRedisWriter()
     , m_redisPacketsInMsgsTransmitted( 0 )
     , m_redisPacketsInMsgsRatio( 0 )
     , m_redisHashSlot( 0 )
+    , m_redisShardHost()
     , m_channelSettings()
     , m_mailbox()
     , m_bulkMail()
@@ -730,6 +731,115 @@ ClusterChannelRedisWriter::AddToOverflowQueue( const TPacketEntryVectorPtrVector
 
 /*-------------------------------------------------------------------------*/
 
+RedisNode::RedisNode( void )
+    : host()
+    , nodeId()
+    , startSlot( 0 )
+    , endSlot( 0 )
+{
+}
+
+/*-------------------------------------------------------------------------*/
+
+bool
+ClusterChannelRedisWriter::GetRedisClusterNodeMap( RedisNodeMap& nodeMap )
+{
+    try
+    {
+        CORE::CString clusterCmd( "CLUSTER" );
+        CORE::CString slotsParam( "SLOTS" );
+
+        sw::redis::StringView clusterCmdSV( clusterCmd.C_String(), clusterCmd.Length() );
+        sw::redis::StringView slotsParamSV( slotsParam.C_String(), slotsParam.Length() );
+
+        auto reply = m_redisContext->command( clusterCmdSV, slotsParamSV );
+        if ( reply )
+        {
+            int type = reply->type;
+            if ( REDIS_REPLY_ARRAY == type )
+            {
+                size_t max = reply->elements;
+                for ( size_t i=0; i<max; ++i )
+                {
+                    const struct redisReply* e = reply->element[ i ];
+                    int eType = e->type;
+                    if ( REDIS_REPLY_ARRAY == eType )
+                    {
+                        size_t eMax = e->elements;
+
+                        long long startSlot = -1;
+                        if ( eMax > 0 && REDIS_REPLY_INTEGER == e->element[ 0 ]->type )
+                            startSlot = e->element[ 0 ]->integer;
+                        else
+                            return false;
+
+                        long long endSlot = -1;
+                        if ( eMax > 1 && REDIS_REPLY_INTEGER == e->element[ 1 ]->type )
+                            endSlot = e->element[ 1 ]->integer;
+                        else
+                            return false;
+
+                        for ( size_t m=2; m<eMax; ++m )
+                        {
+                            const struct redisReply* slotSegment = e->element[ m ];
+                            int sType = slotSegment->type;
+                            if ( REDIS_REPLY_ARRAY == sType )
+                            {
+                                size_t slotSegAttCount = slotSegment->elements;
+
+                                CORE::CString ip;
+                                if ( slotSegAttCount > 0 && REDIS_REPLY_STRING == slotSegment->element[ 0 ]->type )
+                                    ip = slotSegment->element[ 0 ]->str;
+                                else
+                                    return false;
+
+                                long long port = -1;
+                                if ( slotSegAttCount > 1 && REDIS_REPLY_INTEGER == slotSegment->element[ 1 ]->type )
+                                    port = slotSegment->element[ 1 ]->integer;
+                                else
+                                    return false;
+
+                                // Read the optional Node ID if present. This depends on the Redis version
+                                CORE::CString nodeId;
+                                if ( slotSegAttCount > 2 && REDIS_REPLY_STRING == slotSegment->element[ 2 ]->type )
+                                    nodeId = slotSegment->element[ 2 ]->str;
+
+                                RedisNode& node = nodeMap[ (CORE::UInt32) startSlot ];
+                                node.startSlot = (CORE::UInt32) startSlot;
+                                node.endSlot = (CORE::UInt32) endSlot;
+                                node.nodeId = nodeId;
+                                node.host.SetHostnameAndPort( ip, port );
+                            }
+                        }
+                    }
+                }
+            }
+            else
+            {
+                if ( REDIS_REPLY_ERROR == type )
+                {
+                    ++m_redisErrorReplies;
+                    return false;
+                }
+            }
+        }
+
+    }
+    catch ( const sw::redis::Error& e )
+    {
+		++m_redisErrorReplies;
+        GUCEF_EXCEPTION_LOG( CORE::LOGLEVEL_IMPORTANT, "Udp2RedisClusterChannel(" + CORE::PointerToString( this ) + "):GetRedisClusterNodeMap: Redis++ exception: " + e.what() );
+        return false;
+    }
+    catch ( const std::exception& e )
+    {
+        GUCEF_EXCEPTION_LOG( CORE::LOGLEVEL_IMPORTANT, "Udp2RedisClusterChannel(" + CORE::PointerToString( this ) + "):GetRedisClusterNodeMap: exception: " + e.what() );
+        return false;
+    }
+}
+
+/*-------------------------------------------------------------------------*/
+
 bool
 ClusterChannelRedisWriter::RedisConnect( void )
 {GUCEF_TRACE;
@@ -750,12 +860,35 @@ ClusterChannelRedisWriter::RedisConnect( void )
 
         rppConnectionOptions.keep_alive = true;
 
-        // Connect to Redis server with a single connection
+        // Connect to the Redis cluster
         delete m_redisContext;
         m_redisContext = new sw::redis::RedisCluster( rppConnectionOptions );
 
         GUCEF_LOG( CORE::LOGLEVEL_NORMAL, "Udp2RedisClusterChannel(" + CORE::PointerToString( this ) + "):RedisConnect: Successfully created a Redis context" );
 
+        // The following is not a must-have for connectivity
+        RedisNodeMap nodeMap;
+        if ( GetRedisClusterNodeMap( nodeMap ) )
+        {
+            GUCEF_LOG( CORE::LOGLEVEL_NORMAL, "Udp2RedisClusterChannel(" + CORE::PointerToString( this ) + "):RedisConnect: Successfully obtained Redis cluster nodes" );
+
+            RedisNodeMap::iterator i = nodeMap.begin();
+            while ( i != nodeMap.end() )
+            {
+                if ( (*i).first > m_redisHashSlot )
+                    break;
+                if ( m_redisHashSlot >= (*i).first && m_redisHashSlot <= (*i).second.endSlot )
+                {
+                    m_redisShardHost = (*i).second.host;
+                    GUCEF_LOG( CORE::LOGLEVEL_NORMAL, "Udp2RedisClusterChannel(" + CORE::PointerToString( this ) + "):RedisConnect: Stream \"" + m_channelSettings.channelStreamName +
+                        "\" hashes to hash slot " + CORE::ToString( m_redisHashSlot ) + " which is lives on " + (*i).second.host.HostnameAndPortAsString() );
+                    break;
+                }
+                ++i;
+            }
+        }
+
+        // Connect to the specific shard used for this channel's stream with a single dedicated connection
         sw::redis::StringView cnSV( m_channelSettings.channelStreamName.C_String(), m_channelSettings.channelStreamName.Length() );
         delete m_redisPipeline;
         m_redisPipeline = new sw::redis::Pipeline( m_redisContext->pipeline( cnSV ) );

@@ -14,7 +14,7 @@
  *
  *  You should have received a copy of the GNU Lesser General Public
  *  License along with this library; if not, write to the Free Software
- *  Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA 
+ *  Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA
  */
 
 #ifndef GUCEF_COMCORE_CHOSTADDRESS_H
@@ -54,9 +54,9 @@ namespace COMCORE {
 class GUCEF_COMCORE_EXPORT_CPP CHostAddress : public CIPAddress
 {
     public:
-    
+
     CHostAddress( void );
-    
+
     CHostAddress( const CHostAddress& src );
 
     /**
@@ -72,12 +72,12 @@ class GUCEF_COMCORE_EXPORT_CPP CHostAddress : public CIPAddress
      *      <IP>:<Port>
      */
     CHostAddress( const CORE::CString& hostAndPort );
-                    
+
     CHostAddress( const CIPAddress& ipAddress   ,
                   const CORE::CString& hostname );
 
     virtual ~CHostAddress();
-    
+
     bool SetHostname( const CORE::CString& hostName );
 
     /**
@@ -87,6 +87,8 @@ class GUCEF_COMCORE_EXPORT_CPP CHostAddress : public CIPAddress
      *      <IP>:<Port>
      */
     bool SetHostnameAndPort( const CORE::CString& hostAndPort );
+
+    bool SetHostnameAndPort( const CORE::CString& host, UInt16 portInHostOrder );
 
     const CORE::CString& GetHostname( void ) const;
 
@@ -100,29 +102,29 @@ class GUCEF_COMCORE_EXPORT_CPP CHostAddress : public CIPAddress
      *  conversion applied
      */
     virtual CORE::CString HostnameAndPortAsString( void ) const;
-    
+
     CHostAddress& operator=( const CHostAddress& src );
 
     CHostAddress& operator=( const CIPAddress& src );
-    
+
     bool operator==( const CHostAddress& other ) const;
-    
+
     bool operator!=( const CHostAddress& other ) const;
-    
+
     /**
      *  This operator is only implemented to facilitate ordering
      *  in STL containers. The return value has no real meaning
      *  except that of a binary data compare.
      */
     bool operator<( const CHostAddress& other ) const;
-    
+
     protected:
-    
+
     virtual void OnChange( const bool addressChanged ,
                            const bool portChanged    );
-    
+
     private:
-    
+
     CORE::CString m_hostname;
 };
 

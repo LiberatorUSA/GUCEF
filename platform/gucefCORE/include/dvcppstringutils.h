@@ -390,10 +390,12 @@ inline CString ToString( const void* value ) { return PointerToString( value ); 
 inline CString ToString( const TVersion& value ) { return VersionToString( value ); }
 inline CString ToString( const std::wstring& value ) { std::string out; Utf16toUtf8( value, out ); return out; }
 
+#if ( ( GUCEF_PLATFORM == GUCEF_PLATFORM_LINUX ) || ( GUCEF_PLATFORM == GUCEF_PLATFORM_ANDROID ) )
 #ifdef GUCEF_32BIT
 inline CString ToString( size_t value ) { return UInt32ToString( (UInt32) value ); }
 #else
 inline CString ToString( size_t value ) { return UInt64ToString( (UInt64) value ); }
+#endif
 #endif
 
 /*-------------------------------------------------------------------------//
