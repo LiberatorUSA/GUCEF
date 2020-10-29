@@ -1,0 +1,28 @@
+<?xml version="1.0" encoding="ISO-8859-1" ?>
+<ModuleInfoEntry>
+	<Module Name="RedisShardingCalculator" Platform="All" Type="Executable" >
+		<Dependencies>
+			<Dependency Name="gucefMT" />
+			<Dependency Name="gucefCORE" />			
+			<Dependency Name="gucefCOMCORE" />
+			<Dependency Name="gucefCOM" />
+			<Dependency Name="gucefVFS" />
+			<Dependency Name="hiredis" />			
+			<Dependency Name="redis-plus-plus" />
+		</Dependencies>
+		<Linker>
+			<Dependency Name="gucefMT" />
+			<Dependency Name="gucefCORE" />			
+			<Dependency Name="gucefCOMCORE" />
+			<Dependency Name="gucefCOM" />
+			<Dependency Name="gucefVFS" />
+			<Dependency Name="hiredis" />			
+			<Dependency Name="redis-plus-plus" />
+		</Linker>
+		<RuntimeDependencies>
+			<RuntimeDependency Name="dstorepluginPARSIFALXML" />
+			<RuntimeDependency Name="dstorepluginJSONPARSER" />
+			<RuntimeDependency Name="vfspluginAWSS3" />
+		</RuntimeDependencies>
+	</Module>
+</ModuleInfoEntry>
