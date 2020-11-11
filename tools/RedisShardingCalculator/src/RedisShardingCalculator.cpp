@@ -198,16 +198,42 @@ RedisShardingCalculator::CalculateRedisHashSlot( const CORE::CString& keyStr ) c
 /*-------------------------------------------------------------------------*/
 
 bool
-RedisShardingCalculator::CalculateKeysForAllHashSlots( TUInt32ToStringSetMap& hashMap ) const
+RedisShardingCalculator::CalculateKeysForAllHashSlots( TUInt32ToStringSetMap& hashMap , 
+                                                       CORE::UInt32 minKeysPerSlot    , 
+                                                       CORE::UInt32 maxKeysPerSlot    ) const
 {GUCEF_TRACE;
 
+    // Since we need to generate a key per slot a minimum lower than 1 makes no sense
+    if ( minKeysPerSlot < 1 )
+        minKeysPerSlot = 1;
+    
+    CORE::UInt32 lowestKeysInSlot = 0;
+    
     CORE::UInt64 i=0;
     size_t lastSize=0;
-    while ( hashMap.size() < 16383 )
+    while ( hashMap.size() < 16383 || lowestKeysInSlot < minKeysPerSlot )
     {
         CORE::CString hashOriginString = CORE::ToString( i );
         CORE::UInt32 hashSlot = CalculateRedisHashSlot( hashOriginString );
-        hashMap[ hashSlot ].insert( hashOriginString );
+        
+        TStringSet& hashOriginStringSet = hashMap[ hashSlot ];
+        if ( hashOriginStringSet.size() < maxKeysPerSlot || 0 == maxKeysPerSlot )
+        {
+            hashOriginStringSet.insert( hashOriginString );
+
+            if ( hashMap.size() >= 16383 )
+            {
+                // Check for lowest keys per slow threshold
+                lowestKeysInSlot = minKeysPerSlot;
+                TUInt32ToStringSetMap::iterator n = hashMap.begin();
+                while ( n != hashMap.end() )
+                {
+                    if ( (*n).second.size() < lowestKeysInSlot )
+                        lowestKeysInSlot = (*n).second.size();
+                    ++n;
+                }
+            }
+        }
 
         if ( hashMap.size() > lastSize )
         {
@@ -228,6 +254,7 @@ RedisShardingCalculator::SerializeKeysForHashSlots( const TUInt32ToStringSetMap&
 
     doc.Clear();
     doc.SetName( "RedisHashMap" );
+    doc.SetNodeType( GUCEF_DATATYPE_ARRAY );
     TUInt32ToStringSetMap::const_iterator i = hashMap.begin();
     while ( i != hashMap.end() )
     {        
@@ -254,7 +281,7 @@ RedisShardingCalculator::SaveDocTo( const CORE::CDataNode& doc, const CORE::CStr
 {GUCEF_TRACE;
     
     CORE::CDStoreCodecRegistry::TDStoreCodecPtr codec; 
-    CORE::CCoreGlobal::Instance()->GetDStoreCodecRegistry().TryLookup( "xml", codec, false );
+    CORE::CCoreGlobal::Instance()->GetDStoreCodecRegistry().TryLookup( "json", codec, false );
     if ( !codec )
         return false;
 

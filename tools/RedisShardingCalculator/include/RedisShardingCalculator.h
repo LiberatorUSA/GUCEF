@@ -165,7 +165,9 @@ class RedisShardingCalculator : public CORE::CTaskConsumer
 
     CORE::UInt32 CalculateRedisHashSlot( const CORE::CString& keyStr ) const;
 
-    bool CalculateKeysForAllHashSlots( TUInt32ToStringSetMap& hashMap ) const;
+    bool CalculateKeysForAllHashSlots( TUInt32ToStringSetMap& hashMap ,
+                                       CORE::UInt32 minKeysPerSlot    , 
+                                       CORE::UInt32 maxKeysPerSlot    ) const;
 
     bool SerializeKeysForHashSlots( const TUInt32ToStringSetMap& hashMap, CORE::CDataNode& doc ) const;
 

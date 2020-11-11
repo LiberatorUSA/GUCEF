@@ -245,7 +245,7 @@ GUCEF_OSMAIN_BEGIN
     RedisShardingCalculator redisShardingCalculator;
 
     RedisShardingCalculator::TUInt32ToStringSetMap hashMap;
-    if ( redisShardingCalculator.CalculateKeysForAllHashSlots( hashMap ) )
+    if ( redisShardingCalculator.CalculateKeysForAllHashSlots( hashMap, 1, 1 ) )
     {
         CORE::CDataNode hashSlotsDoc;
         if ( redisShardingCalculator.SerializeKeysForHashSlots( hashMap, hashSlotsDoc ) )

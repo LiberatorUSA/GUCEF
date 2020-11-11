@@ -881,6 +881,7 @@ CTBasicSharedPtr< T, LockType >::Unlink( void )
         if ( GUCEF_NULL != m_ptr )
         {
             --m_shared->m_refCounter;
+            assert( m_shared->m_refCounter >= 0 );
             if ( 0 >= m_shared->m_refCounter )
             {
                 // We should check if the destructor pointer is not-NULL
