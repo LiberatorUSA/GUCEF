@@ -112,8 +112,8 @@ CDataNode::~CDataNode()
     delete m_associatedData;
     m_associatedData = GUCEF_NULL; 
     
-    Detach();             
     DelSubTree();
+    Detach();    
 }
 
 /*-------------------------------------------------------------------------*/
@@ -270,6 +270,15 @@ CDataNode::GetValueType( void ) const
 {GUCEF_TRACE;
 
     return m_typeOfValue;
+}
+
+/*-------------------------------------------------------------------------*/
+
+void
+CDataNode::SetNodeType( int nodeType )
+{GUCEF_TRACE;
+
+    m_nodeType = nodeType;
 }
 
 /*-------------------------------------------------------------------------*/

@@ -193,7 +193,14 @@ DSTOREPLUG_Begin_Node_Store( void** plugdata      ,
 
     if ( GUCEF_NULL == fd->currentJsonNode )
     {
-        fd->jsonDoc = fd->currentJsonNode = json_object_new( attscount + haschildren );
+        if ( nodeType == GUCEF_DATATYPE_ARRAY )
+        {
+            fd->jsonDoc = fd->currentJsonNode = json_array_new( attscount + haschildren );
+        }
+        else
+        {
+            fd->jsonDoc = fd->currentJsonNode = json_object_new( attscount + haschildren );
+        }
     }
     else
     {
@@ -221,6 +228,17 @@ DSTOREPLUG_Begin_Node_Store( void** plugdata      ,
             if ( fd->currentJsonNode->type == json_array )
                 json_array_push( fd->currentJsonNode, childNode );
             fd->currentJsonNode = childNode;
+        }
+        else
+        {
+            if ( 0 == attscount && 0 == haschildren )
+            {
+                DSTOREPLUG_Store_Node_Att( plugdata, filedata, GUCEF_NULL, 1, 0, GUCEF_NULL, nodename, nodeType, haschildren );
+                if ( nodeType != GUCEF_DATATYPE_ARRAY && nodeType != GUCEF_DATATYPE_OBJECT )
+                {
+                    fd->activeNodeIsValueNode = 1;
+                }
+            }
         }
     }
 }

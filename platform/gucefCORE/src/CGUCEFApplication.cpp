@@ -306,6 +306,11 @@ CGUCEFApplication::Main( HINSTANCE hinstance     ,
         _initialized = true;
         if ( run )
             appReturnCode = MainLoop();
+        else
+        {
+            // Notify that the first app cycle is starting
+            if ( !NotifyObservers( FirstCycleEvent ) ) return 0; 
+        }
     }
 
     delete []data.argv;
@@ -368,6 +373,11 @@ CGUCEFApplication::main( int argc    ,
         _initialized = true;
         if ( run )
             appReturnCode = MainLoop();
+        else
+        {
+            // Notify that the first app cycle is starting
+            if ( !NotifyObservers( FirstCycleEvent ) ) return 0; 
+        }
     }
     return appReturnCode;
 }

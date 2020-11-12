@@ -214,6 +214,7 @@ ClusterChannelRedisWriter::ClusterChannelRedisWriter()
     , m_redisPacketsInMsgsRatio( 0 )
     , m_redisHashSlot( 0 )
     , m_redisShardHost()
+    , m_redisShardNodeId()
     , m_channelSettings()
     , m_mailbox()
     , m_bulkMail()
@@ -880,8 +881,9 @@ ClusterChannelRedisWriter::RedisConnect( void )
                 if ( m_redisHashSlot >= (*i).first && m_redisHashSlot <= (*i).second.endSlot )
                 {
                     m_redisShardHost = (*i).second.host;
+                    m_redisShardNodeId = (*i).second.nodeId;
                     GUCEF_LOG( CORE::LOGLEVEL_NORMAL, "Udp2RedisClusterChannel(" + CORE::PointerToString( this ) + "):RedisConnect: Stream \"" + m_channelSettings.channelStreamName +
-                        "\" hashes to hash slot " + CORE::ToString( m_redisHashSlot ) + " which is lives on " + (*i).second.host.HostnameAndPortAsString() );
+                        "\" hashes to hash slot " + CORE::ToString( m_redisHashSlot ) + " which lives at " + (*i).second.host.HostnameAndPortAsString() + " with node id " + (*i).second.nodeId );
                     break;
                 }
                 ++i;

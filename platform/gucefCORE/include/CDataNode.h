@@ -164,6 +164,8 @@ class GUCEF_CORE_PUBLIC_CPP CDataNode
 
     int GetValueType( void ) const;
     
+    void SetNodeType( int nodeType );
+    
     int GetNodeType( void ) const;
 
     bool IsAttribute( const CString& name ) const;
