@@ -83,6 +83,20 @@ typedef struct SSrcFileData TSrcFileData;
 
 /*-------------------------------------------------------------------------//
 //                                                                         //
+//      MACROS                                                             //
+//                                                                         //
+//-------------------------------------------------------------------------*/
+
+#if ( !defined stricmp )
+  #if ( GUCEF_PLATFORM == GUCEF_PLATFORM_MSWIN )
+    #define stricmp   _stricmp
+  #elif ( ( GUCEF_PLATFORM == GUCEF_PLATFORM_LINUX ) || ( GUCEF_PLATFORM == GUCEF_PLATFORM_ANDROID ) )
+    #define stricmp   strcasecmp
+  #endif
+#endif
+
+/*-------------------------------------------------------------------------//
+//                                                                         //
 //      UTILITIES                                                          //
 //                                                                         //
 //-------------------------------------------------------------------------*/
@@ -137,25 +151,25 @@ DSTOREPLUG_Dest_File_Close( void** plugdata ,
     TDestFileData* fd = (TDestFileData*)*filedata;
     if ( fd->jsonDoc != GUCEF_NULL )
     {
-        /* 
+        /*
          * Thus far we have only created the DOM in json_value format
          * This is where we actually do the serialization from the DOM
          * we constructed
          */
-            
+
         size_t measured = json_measure( fd->jsonDoc );
         char* serializationBuffer = (char*) malloc( measured );
         json_serialize( serializationBuffer, fd->jsonDoc );
         json_builder_free( fd->jsonDoc );
         fd->jsonDoc = fd->currentJsonNode = GUCEF_NULL;
-            
-       /*   
+
+       /*
         *   the json_measure and json_serialize functions include a null terminator
         *   When writing to a file type media it is not appropriote to include a null terminator
         */
        if ( measured > 0 )
             --measured;
-        
+
         fd->fptr->write( fd->fptr, serializationBuffer, 1, (UInt32) measured );
         fd->fptr->close( fd->fptr );
     }
@@ -241,7 +255,7 @@ DSTOREPLUG_Store_Node_Att( void** plugdata      ,
 {
     TDestFileData* fd = (TDestFileData*)*filedata;
 
-    if ( 0 == attscount ) 
+    if ( 0 == attscount )
         return;
 
     if ( NULL == attvalue )
@@ -257,16 +271,16 @@ DSTOREPLUG_Store_Node_Att( void** plugdata      ,
     {
         case GUCEF_DATATYPE_BOOLEAN_STRING:
         {
-            int isNotTrue = _stricmp( attvalue, "true" );
-            int isNotFalse = _stricmp( attvalue, "false" );
-            
+            int isNotTrue = stricmp( attvalue, "true" );
+            int isNotFalse = stricmp( attvalue, "false" );
+
             json_value* att = GUCEF_NULL;
             if ( isNotTrue == 0 )
                 att = json_boolean_new( 1 );
             else
             if ( isNotFalse == 0 )
                 att = json_boolean_new( 0 );
-            
+
             if ( att != GUCEF_NULL )
             {
                 if ( fd->currentJsonNode->type == json_array )
@@ -443,7 +457,7 @@ static void process_object( TSrcFileData* sd, const char* name, json_value* valu
 
     sd->handlers.OnNodeBegin( sd->privdata, name, GUCEF_DATATYPE_OBJECT );
     length = value->u.object.length;
-    for ( x=0; x<length; x++ ) 
+    for ( x=0; x<length; x++ )
     {
         if ( value->type != json_object && value->type != json_array )
             process_value( sd, name, value->u.object.values[x].name, value->u.object.values[x].value );
@@ -453,7 +467,7 @@ static void process_object( TSrcFileData* sd, const char* name, json_value* valu
     if ( childNodes > 0 )
     {
         sd->handlers.OnNodeChildrenBegin( sd->privdata, name );
-        for ( x=0; x<length; x++ ) 
+        for ( x=0; x<length; x++ )
         {
             if ( value->type == json_object || value->type == json_array )
                 process_value( sd, name, value->u.object.values[x].name, value->u.object.values[x].value );
@@ -465,19 +479,19 @@ static void process_object( TSrcFileData* sd, const char* name, json_value* valu
 
 /*---------------------------------------------------------------------------*/
 
-static void 
+static void
 process_array( TSrcFileData* sd, const char* name, json_value* value )
 {
     int length=0, x=0;
     char indexAsName[64];
-            
+
     if ( GUCEF_NULL == value )
         return;
-    
+
     sd->handlers.OnNodeBegin( sd->privdata, name, GUCEF_DATATYPE_ARRAY );
     sd->handlers.OnNodeChildrenBegin( sd->privdata, name );
     length = value->u.array.length;
-    for ( x=0; x<length; x++ ) 
+    for ( x=0; x<length; x++ )
     {
         sprintf( indexAsName, "%i", x );
         sd->handlers.OnNodeBegin( sd->privdata, indexAsName, value->u.array.values[x]->type );
@@ -490,16 +504,16 @@ process_array( TSrcFileData* sd, const char* name, json_value* value )
 
 /*---------------------------------------------------------------------------*/
 
-static void 
-process_value( TSrcFileData* sd    , 
-               const char* objName , 
-               const char* name    , 
+static void
+process_value( TSrcFileData* sd    ,
+               const char* objName ,
+               const char* name    ,
                json_value* value   )
 {
-    if ( GUCEF_NULL == value ) 
+    if ( GUCEF_NULL == value )
         return;
 
-    switch ( value->type ) 
+    switch ( value->type )
     {
         case json_none:
         {
@@ -516,7 +530,7 @@ process_value( TSrcFileData* sd    ,
             break;
         }
         case json_integer:
-        { 
+        {
             char valueBuffer[64];
             sprintf( valueBuffer, "%lli", value->u.integer );
 
@@ -524,7 +538,7 @@ process_value( TSrcFileData* sd    ,
             break;
         }
         case json_double:
-        { 
+        {
             char valueBuffer[64];
             sprintf( valueBuffer, "%f", value->u.dbl );
 
@@ -532,12 +546,12 @@ process_value( TSrcFileData* sd    ,
             break;
         }
         case json_string:
-        { 
+        {
             sd->handlers.OnNodeAtt( sd->privdata, objName, name, value->u.string.ptr, GUCEF_DATATYPE_STRING );
             break;
         }
         case json_boolean:
-        { 
+        {
             char* boolValue = "true";
             if ( 0 == value->u.boolean )
                 boolValue = "false";
@@ -564,7 +578,7 @@ DSTOREPLUG_Start_Reading( void** plugdata ,
             json_value* jsonDoc = GUCEF_NULL;
 
             sd->access->seek( sd->access, 0, SEEK_END );
-            fileSize = sd->access->tell( sd->access );   
+            fileSize = sd->access->tell( sd->access );
             sd->access->seek( sd->access, 0, SEEK_SET );
 
             fileBuffer = (json_char*) malloc( fileSize );
@@ -575,17 +589,17 @@ DSTOREPLUG_Start_Reading( void** plugdata ,
                 return 1;
             }
 
-            jsonDoc = json_parse( fileBuffer, bytesRead );               
+            jsonDoc = json_parse( fileBuffer, bytesRead );
             free( fileBuffer );
-            
+
             free( sd->jsonDoc );
             sd->jsonDoc = jsonDoc;
-            
-            /* Now we actually commence the reading itself 
+
+            /* Now we actually commence the reading itself
                We treat the DOM tree in a SAX manner essentially */
             (*sd->handlers.OnTreeBegin)( sd->privdata );
-            process_value( sd, "", "", jsonDoc );    
-            (*sd->handlers.OnTreeEnd)( sd->privdata );    
+            process_value( sd, "", "", jsonDoc );
+            (*sd->handlers.OnTreeEnd)( sd->privdata );
         }
     }
     return 0;
