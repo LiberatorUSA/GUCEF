@@ -378,7 +378,8 @@ CTBasicSharedPtr< T, LockType >::CTBasicSharedPtr( const CTBasicSharedPtr< T, Lo
         m_shared = src.m_shared;
         ++(m_shared->m_refCounter);
     }
-    m_ptr = src.m_ptr;
+    m_objectDestructor = src.m_objectDestructor;
+    m_ptr = src.m_ptr;    
 }
 
 /*-------------------------------------------------------------------------*/
@@ -459,11 +460,7 @@ CTBasicSharedPtr< T, LockType >::GetReferenceCount( void ) const
 {GUCEF_TRACE;
 
     MT::CObjectScopeLock lock( this );
-    if ( m_shared->m_refCounter )
-    {
-        return m_shared->m_refCounter;
-    }
-    return 0UL;
+    return m_shared->m_refCounter;
 }
 
 /*-------------------------------------------------------------------------*/
@@ -893,8 +890,10 @@ CTBasicSharedPtr< T, LockType >::Unlink( void )
                 }
                 m_ptr = GUCEF_NULL;
 
-                lock.EarlyUnlock();
-                delete m_shared;
+                TBasicSharedPtrSharedData< LockType >* localSharedRef = m_shared;
+                m_shared = GUCEF_NULL;
+                localSharedRef->m_lock.Unlock();
+                delete localSharedRef;
             }
         }
     }

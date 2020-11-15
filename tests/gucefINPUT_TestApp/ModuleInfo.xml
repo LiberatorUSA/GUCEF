@@ -1,0 +1,36 @@
+<ModuleInfoEntry>
+    <Module Name="gucefINPUT_TestApp" Type="Executable" Platform="mswin;linux" Tags="test">
+        <Dependencies>
+            <Dependency Name="gucefMT" />
+            <Dependency Name="gucefCORE" />
+        </Dependencies>
+        <Linker>
+            <Dependency Name="gucefMT" />
+            <Dependency Name="gucefCORE" />
+        </Linker>
+        <Preprocessor>
+            <Define String="GUCEF_INPUT_TESTAPP_BUILD_MODULE" />
+        </Preprocessor>
+		<RuntimeDependencies>
+			<RuntimeDependency Name="inputdriverOIS" />
+			<RuntimeDependency Name="dstorepluginJSONPARSER" />
+			<RuntimeDependency Name="dstorepluginPARSIFALXML" />
+		</RuntimeDependencies>
+    </Module>
+    <Module Platform="mswin" >
+		<RuntimeDependencies>
+			<RuntimeDependency Name="inputdriverMSWINMSG" />
+			<RuntimeDependency Name="inputdriverDIRECTINPUT8" />
+		</RuntimeDependencies>
+    </Module>
+    <Module Platform="linux" >
+		<RuntimeDependencies>
+			<RuntimeDependency Name="inputdriverXWINMSG" />
+		</RuntimeDependencies>
+    </Module>
+    <Module Platform="android" >
+		<RuntimeDependencies>
+			<RuntimeDependency Name="inputdriverNANDROID" />
+		</RuntimeDependencies>
+    </Module>
+</ModuleInfoEntry>

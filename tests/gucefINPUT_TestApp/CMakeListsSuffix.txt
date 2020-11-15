@@ -1,9 +1,0 @@
-
-if (WIN32)
-  add_executable( gucefINPUT_TestApp WIN32 ${HEADER_FILES} ${SOURCE_FILES} )
-else()
-  add_executable( gucefINPUT_TestApp ${HEADER_FILES} ${SOURCE_FILES} )
-endif()
-add_dependencies( gucefINPUT_TestApp gucefINPUT gucefCORE gucefMT )
-target_link_libraries( gucefINPUT_TestApp gucefINPUT gucefCORE gucefMT )
-GUCEF_config_tool( gucefINPUT_TestApp )
