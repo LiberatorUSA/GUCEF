@@ -160,7 +160,7 @@ CTaskManager::CTaskQueueItem::~CTaskQueueItem()
 
 /*-------------------------------------------------------------------------*/
 
-CTaskConsumerPtr
+CTaskConsumerPtr&
 CTaskManager::CTaskQueueItem::GetTaskConsumer( void )
 {GUCEF_TRACE;
 
@@ -307,7 +307,7 @@ CTaskManager::OnPumpedNotify( CNotifier* notifier    ,
 /*-------------------------------------------------------------------------*/
 
 void
-CTaskManager::RemoveConsumerFromQueue( CTaskConsumer* consumer )
+CTaskManager::RemoveConsumerFromQueue( const UInt32 taskID )
 {GUCEF_TRACE;
 
     Lock();
@@ -319,7 +319,8 @@ CTaskManager::RemoveConsumerFromQueue( CTaskConsumer* consumer )
         TTaskMailbox::TMailElement& mailElement = (*i);
         CTaskQueueItem* queueItem = static_cast< CTaskQueueItem* >( mailElement.data );
 
-        if ( queueItem->GetTaskConsumer() == consumer )
+        CTaskConsumerPtr& consumer = queueItem->GetTaskConsumer();
+        if ( !consumer.IsNULL() && taskID == consumer->GetTaskId() )
         {
             m_taskQueue.erase( i );
             i = m_taskQueue.begin();
@@ -435,8 +436,8 @@ CTaskManager::QueueTask( const CString& taskType           ,
             return false;
     
         // Create a consumer for the given task type
-        CTaskConsumer* taskConsumer = m_consumerFactory.Create( taskType );
-        if ( GUCEF_NULL != taskConsumer )
+        CTaskConsumerPtr taskConsumer( m_consumerFactory.Create( taskType ) );
+        if ( !taskConsumer.IsNULL() )
         {
             if ( GUCEF_NULL != outTaskConsumer )
             {
@@ -448,6 +449,7 @@ CTaskManager::QueueTask( const CString& taskType           ,
             {
                 taskConsumer->Subscribe( taskObserver );
             }
+            SubscribeTo( taskConsumer.GetPointerAlways() );
 
             CTaskQueueItem* queueItem = new CTaskQueueItem( taskConsumer              ,
                                                             taskData                  ,
@@ -570,6 +572,7 @@ CTaskManager::StartTask( CTaskConsumerPtr taskConsumer ,
         
     // Just spawn a task delegator, it will auto register as an active task
     taskConsumer->SetIsOwnedByTaskManager( false );
+    SubscribeTo( taskConsumer.GetPointerAlways() );
     CTaskDelegator* delegator = new CSingleTaskDelegator( taskConsumer, 0 != taskData ? taskData->Clone() : 0 );
 
     GUCEF_SYSTEM_LOG( LOGLEVEL_NORMAL, "TaskManager: Starting task immediatly of type \"" + taskConsumer->GetType() + "\" with ID " + UInt32ToString( taskConsumer->GetTaskId() )  );
@@ -602,6 +605,7 @@ CTaskManager::StartTask( const CString& taskType ,
         {
             *task = taskConsumer;
         }
+        SubscribeTo( taskConsumer.GetPointerAlways() );
         CTaskDelegator* delegator = new CSingleTaskDelegator( taskConsumer, 0 != taskData ? taskData->Clone() : 0 );
 
         GUCEF_SYSTEM_LOG( LOGLEVEL_NORMAL, "TaskManager: Started task immediatly of type \"" + taskType + "\" with ID " +
@@ -863,34 +867,24 @@ CTaskManager::KillTask( const UInt32 taskID )
 /*-------------------------------------------------------------------------*/
 
 void
-CTaskManager::RegisterTaskConsumer( CTaskConsumer& consumer        ,
-                                    CTaskConsumer::TTaskId& taskId )
+CTaskManager::RegisterTaskConsumerId( CTaskConsumer::TTaskId& taskId )
 {GUCEF_TRACE;
 
-    {
-        MT::CObjectScopeLock lock( this );
-        //@TODO: gcc does not allow direct assignment, check this
-        TTaskIdGenerator::TNumericID tmp = m_taskIdGenerator.GenerateID( false );
-        taskId = tmp;
-        m_taskConsumerMap[ taskId ] = &consumer;
-    }
-    SubscribeTo( &consumer );
+    MT::CObjectScopeLock lock( this );
+    //@TODO: gcc does not allow direct assignment, check this
+    TTaskIdGenerator::TNumericID tmp = m_taskIdGenerator.GenerateID( false );
+    taskId = tmp;
 }
 
 /*-------------------------------------------------------------------------*/
 
 void
-CTaskManager::UnregisterTaskConsumer( CTaskConsumer& consumer        ,
-                                      CTaskConsumer::TTaskId& taskId )
+CTaskManager::UnregisterTaskConsumerId( CTaskConsumer::TTaskId& taskId )
 {GUCEF_TRACE;
 
-    {
-        MT::CObjectScopeLock lock( this );
-        m_taskConsumerMap.erase( consumer.GetTaskId() );
-        m_taskIdGenerator.ReleaseID( &taskId );
-        RemoveConsumerFromQueue( &consumer );
-    }
-    UnsubscribeFrom( &consumer );
+    MT::CObjectScopeLock lock( this );
+    m_taskIdGenerator.ReleaseID( &taskId );
+    RemoveConsumerFromQueue( taskId );
 }
 
 /*-------------------------------------------------------------------------*/

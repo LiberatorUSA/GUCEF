@@ -193,11 +193,9 @@ class GUCEF_CORE_PUBLIC_CPP CTaskManager : public CTSGNotifier
     private:
     friend class CTaskConsumer;
 
-    void RegisterTaskConsumer( CTaskConsumer& consumer        ,
-                               CTaskConsumer::TTaskId& taskId );
+    void RegisterTaskConsumerId( CTaskConsumer::TTaskId& taskId );
 
-    void UnregisterTaskConsumer( CTaskConsumer& consumer        ,
-                                 CTaskConsumer::TTaskId& taskId );
+    void UnregisterTaskConsumerId( CTaskConsumer::TTaskId& taskId );
 
     private:
     friend class CCoreGlobal;
@@ -220,7 +218,7 @@ class GUCEF_CORE_PUBLIC_CPP CTaskManager : public CTSGNotifier
 
         virtual ~CTaskQueueItem();
 
-        CTaskConsumerPtr GetTaskConsumer( void );
+        CTaskConsumerPtr& GetTaskConsumer( void );
 
         CICloneable* GetTaskData( void );
 
@@ -237,7 +235,7 @@ class GUCEF_CORE_PUBLIC_CPP CTaskManager : public CTSGNotifier
     void EnforceDesiredNrOfThreads( UInt32 desiredNrOfThreads ,
                                     bool gracefullEnforcement );
 
-    void RemoveConsumerFromQueue( CTaskConsumer* consumer );
+    void RemoveConsumerFromQueue( const UInt32 taskID );
 
     CTaskManager( const CTaskManager& src );
 

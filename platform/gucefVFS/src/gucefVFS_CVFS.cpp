@@ -1012,7 +1012,7 @@ CVFS::GetEligableMounts( const CString& location                ,
         ++i;
     }
 
-    GUCEF_DEBUG_LOG( CORE::LOGLEVEL_NORMAL, "VFS: Found a total of " + CORE::UInt32ToString( mountLinkVector.size() ) + " eligable mounts for location \"" + location + "\"" );
+    GUCEF_DEBUG_LOG( CORE::LOGLEVEL_NORMAL, "VFS: Found a total of " + CORE::ToString( mountLinkVector.size() ) + " eligable mounts for location \"" + location + "\"" );
 }
 
 /*-------------------------------------------------------------------------*/

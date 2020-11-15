@@ -12,14 +12,14 @@
 # Configuration for module: RedisShardingCalculator
 
 set( HEADER_FILES 
-  include/crc16.h
   include/RedisShardingCalculator.h
+  include/crc16.h
 )
 
 set( SOURCE_FILES 
+  src/RedisShardingCalculator.cpp
   src/crc16.cpp
   src/main.cpp
-  src/RedisShardingCalculator.cpp
 )
 
 # Make sure the PLATFORM_HEADER_FILES variable is always defined

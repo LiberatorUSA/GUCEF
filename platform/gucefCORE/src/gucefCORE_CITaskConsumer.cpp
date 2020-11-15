@@ -90,7 +90,7 @@ CTaskConsumer::CTaskConsumer( void )
 {GUCEF_TRACE;
 
     RegisterEvents();
-    CCoreGlobal::Instance()->GetTaskManager().RegisterTaskConsumer( *this, m_taskId );
+    CCoreGlobal::Instance()->GetTaskManager().RegisterTaskConsumerId( m_taskId );
 }
 
 /*-------------------------------------------------------------------------*/
@@ -98,7 +98,7 @@ CTaskConsumer::CTaskConsumer( void )
 CTaskConsumer::~CTaskConsumer()
 {GUCEF_TRACE;
 
-    CCoreGlobal::Instance()->GetTaskManager().UnregisterTaskConsumer( *this, m_taskId );
+    CCoreGlobal::Instance()->GetTaskManager().UnregisterTaskConsumerId( m_taskId );
 }
 
 /*-------------------------------------------------------------------------*/
