@@ -105,10 +105,11 @@ CDummyHTTPServerResource::GetBestSupportedDeserializationRepresentation( const T
 
 CDummyHTTPServerResource::TCreateState 
 CDummyHTTPServerResource::CreateResource( const CString& transactionID                  ,
-                                            const CORE::CDynamicBuffer& inputBuffer       ,
-                                            const CString& representation                 ,
-                                            THTTPServerResourcePtr& resourceOutput        ,
-                                            TStringVector& supportedRepresentationsOutput )
+                                          const CORE::CDynamicBuffer& inputBuffer       ,
+                                          const CString& representation                 ,
+                                          const CString& params                         ,
+                                          THTTPServerResourcePtr& resourceOutput        ,
+                                          TStringVector& supportedRepresentationsOutput )
 {GUCEF_TRACE;
 
     // For the dummy resource everything always fake succeeds
@@ -129,7 +130,8 @@ CDummyHTTPServerResource::DeleteResource()
 
 bool 
 CDummyHTTPServerResource::Serialize( CORE::CDynamicBuffer& outputBuffer ,
-                                     const CString& representation      )
+                                     const CString& representation      ,
+                                     const CString& params              )
 {GUCEF_TRACE;
 
     // For the dummy resource everything always fake succeeds
