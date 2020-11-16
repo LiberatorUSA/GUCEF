@@ -28,4 +28,4 @@ add_subdirectory( ${CMAKE_CURRENT_SOURCE_DIR}/../../../../plugins/CORE/dstoreplu
 add_subdirectory( ${CMAKE_CURRENT_SOURCE_DIR}/../../../../plugins/CORE/dstorepluginPARSIFALXML ${CMAKE_BINARY_DIR}/dstorepluginPARSIFALXML )
 add_subdirectory( ${CMAKE_CURRENT_SOURCE_DIR}/../../../../plugins/SHARED/pluginglueAWSSDK ${CMAKE_BINARY_DIR}/pluginglueAWSSDK )
 add_subdirectory( ${CMAKE_CURRENT_SOURCE_DIR}/../../../../plugins/VFS/vfspluginAWSS3 ${CMAKE_BINARY_DIR}/vfspluginAWSS3 )
-add_subdirectory( ${CMAKE_CURRENT_SOURCE_DIR}/../../../../tools/RedisShardingCalculator ${CMAKE_BINARY_DIR}/RedisShardingCalculator )
+add_subdirectory( ${CMAKE_CURRENT_SOURCE_DIR}/../../../../tools/redisinfo ${CMAKE_BINARY_DIR}/redisinfo )

@@ -9,17 +9,17 @@
 #-------------------------------------------------------------------
 #
 
-# Configuration for module: RedisShardingCalculator
+# Configuration for module: redisinfo
 
 set( HEADER_FILES 
-  include/RedisShardingCalculator.h
   include/crc16.h
+  include/redisinfo.h
 )
 
 set( SOURCE_FILES 
-  src/RedisShardingCalculator.cpp
   src/crc16.cpp
   src/main.cpp
+  src/redisinfo.cpp
 )
 
 # Make sure the PLATFORM_HEADER_FILES variable is always defined
@@ -31,7 +31,7 @@ set( SOURCE_FILES
 # For ease of use make a variable that has all files for this module
 set( ALL_FILES ${HEADER_FILES} ${SOURCE_FILES} ${PLATFORM_HEADER_FILES} ${PLATFORM_SOURCE_FILES} )
 
-set( MODULE_NAME "RedisShardingCalculator" )
+set( MODULE_NAME "redisinfo" )
 if ( WIN32 )
   add_executable( ${MODULE_NAME} WIN32 ${ALL_FILES} )
 else()

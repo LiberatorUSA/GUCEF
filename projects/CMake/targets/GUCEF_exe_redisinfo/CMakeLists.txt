@@ -8,8 +8,8 @@
 #-------------------------------------------------------------------
 
 ######################################################################
-# GUCEF_exe_RedisShardingCalculator BUILD SYSTEM
-# Welcome to the CMake build system for GUCEF_exe_RedisShardingCalculator.
+# GUCEF_exe_redisinfo BUILD SYSTEM
+# Welcome to the CMake build system for GUCEF_exe_redisinfo.
 # This is the main file where we prepare the general build environment
 # and provide build configuration options.
 ######################################################################
@@ -70,7 +70,7 @@ message(STATUS "CMAKE_SYSTEM_NAME: ${CMAKE_SYSTEM_NAME}" )
 message(STATUS "GUCEF_TARGET_PLATFORM: ${GUCEF_TARGET_PLATFORM}" )
 
 
-project( GUCEF_exe_RedisShardingCalculator )
+project( GUCEF_exe_redisinfo )
 
 # Include necessary submodules
 set(CMAKE_MODULE_PATH
@@ -96,10 +96,10 @@ if (CMAKE_BUILD_TYPE STREQUAL "")
   set(CMAKE_BUILD_TYPE "RelWithDebInfo" CACHE STRING "Choose the type of build, options are: None (CMAKE_CXX_FLAGS or CMAKE_C_FLAGS used) Debug Release RelWithDebInfo MinSizeRel." FORCE)
 endif ()
 
-# determine GUCEF_exe_RedisShardingCalculator version numbers
+# determine GUCEF_exe_redisinfo version numbers
 include(GUCEFGetVersion)
 GUCEF_get_version(${GUCEF_SOURCE_DIR}/common/include/gucef_prerequisites.h)
-message(STATUS "Configuring GUCEF_exe_RedisShardingCalculator ${GUCEF_VERSION}")
+message(STATUS "Configuring GUCEF_exe_redisinfo ${GUCEF_VERSION}")
 
 if (NOT APPLE)
   # Create debug libraries with _d postfix
@@ -206,7 +206,7 @@ include(ConfigureBuild)
 # Now setup targets
 ##################################################################
 
-include( GUCEF_exe_RedisShardingCalculator_ModuleDirs.cmake )
+include( GUCEF_exe_redisinfo_ModuleDirs.cmake )
 
 # Provide CPack packaging target
-include( GUCEF_exe_RedisShardingCalculator_Packaging.cmake )
+include( GUCEF_exe_redisinfo_Packaging.cmake )
