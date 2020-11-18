@@ -1,5 +1,5 @@
 /*
- *  Udp2RedisCluster: service which pushes UDP packets into Redis streams
+ *  redisinfo: Service for obtaining redis info from a cluster
  *
  *  This library is free software; you can redistribute it and/or
  *  modify it under the terms of the GNU Lesser General Public
@@ -49,7 +49,7 @@
 #define GUCEF_VFS_CVFS_H
 #endif /* GUCEF_VFS_CVFS_H ? */
 
-#include "RedisShardingCalculator.h"
+#include "redisinfo.h"
 
 #ifndef GUCEF_CORE_METRICSMACROS_H
 #include "gucefCORE_MetricsMacros.h"
@@ -135,7 +135,7 @@ ChannelSettings::GetClassTypeName( void ) const
 
 /*-------------------------------------------------------------------------*/
 
-RedisShardingCalculator::RedisShardingCalculator()
+RedisInfoService::RedisInfoService()
     : CORE::CTaskConsumer()
     , m_redisContext( GUCEF_NULL )
     , m_redisPacketArgs()
@@ -145,7 +145,7 @@ RedisShardingCalculator::RedisShardingCalculator()
 
 /*-------------------------------------------------------------------------*/
 
-RedisShardingCalculator::~RedisShardingCalculator()
+RedisInfoService::~RedisInfoService()
 {GUCEF_TRACE;
 
     delete m_redisContext;
@@ -155,7 +155,7 @@ RedisShardingCalculator::~RedisShardingCalculator()
 /*-------------------------------------------------------------------------*/
 
 void
-RedisShardingCalculator::RegisterEventHandlers( void )
+RedisInfoService::RegisterEventHandlers( void )
 {GUCEF_TRACE;
 
 }
@@ -163,7 +163,7 @@ RedisShardingCalculator::RegisterEventHandlers( void )
 /*-------------------------------------------------------------------------*/
 
 CORE::UInt32
-RedisShardingCalculator::CalculateRedisHashSlot( const CORE::CString& keyStr ) const
+RedisInfoService::CalculateRedisHashSlot( const CORE::CString& keyStr ) const
 {GUCEF_TRACE;
 
     // The following code is copied from: https://redis.io/topics/cluster-spec
@@ -198,7 +198,7 @@ RedisShardingCalculator::CalculateRedisHashSlot( const CORE::CString& keyStr ) c
 /*-------------------------------------------------------------------------*/
 
 bool
-RedisShardingCalculator::CalculateKeysForAllHashSlots( TUInt32ToStringSetMap& hashMap , 
+RedisInfoService::CalculateKeysForAllHashSlots( TUInt32ToStringSetMap& hashMap , 
                                                        CORE::UInt32 minKeysPerSlot    , 
                                                        CORE::UInt32 maxKeysPerSlot    ) const
 {GUCEF_TRACE;
@@ -238,7 +238,7 @@ RedisShardingCalculator::CalculateKeysForAllHashSlots( TUInt32ToStringSetMap& ha
         if ( hashMap.size() > lastSize )
         {
             CORE::Float32 percDone = hashMap.size() / 163.83f;
-            GUCEF_LOG( CORE::LOGLEVEL_NORMAL, "RedisShardingCalculator:CalculateKeysForAllHashSlots: Now " + CORE::ToString( percDone ) + "% done generating hashes for all slots" );
+            GUCEF_LOG( CORE::LOGLEVEL_NORMAL, "RedisInfoService:CalculateKeysForAllHashSlots: Now " + CORE::ToString( percDone ) + "% done generating hashes for all slots" );
             lastSize = hashMap.size();
         }
         ++i;
@@ -249,7 +249,7 @@ RedisShardingCalculator::CalculateKeysForAllHashSlots( TUInt32ToStringSetMap& ha
 /*-------------------------------------------------------------------------*/
 
 bool
-RedisShardingCalculator::SerializeKeysForHashSlots( const TUInt32ToStringSetMap& hashMap, CORE::CDataNode& doc ) const
+RedisInfoService::SerializeKeysForHashSlots( const TUInt32ToStringSetMap& hashMap, CORE::CDataNode& doc ) const
 {GUCEF_TRACE;
 
     doc.Clear();
@@ -277,11 +277,13 @@ RedisShardingCalculator::SerializeKeysForHashSlots( const TUInt32ToStringSetMap&
 /*-------------------------------------------------------------------------*/
 
 bool
-RedisShardingCalculator::SaveDocTo( const CORE::CDataNode& doc, const CORE::CString& vfsPath ) const
+RedisInfoService::SaveDocTo( const CORE::CDataNode& doc     , 
+                             const CORE::CString& codecName , 
+                             const CORE::CString& vfsPath   ) const
 {GUCEF_TRACE;
     
     CORE::CDStoreCodecRegistry::TDStoreCodecPtr codec; 
-    CORE::CCoreGlobal::Instance()->GetDStoreCodecRegistry().TryLookup( "json", codec, false );
+    CORE::CCoreGlobal::Instance()->GetDStoreCodecRegistry().TryLookup( codecName, codec, false );
     if ( !codec )
         return false;
 
@@ -296,16 +298,16 @@ RedisShardingCalculator::SaveDocTo( const CORE::CDataNode& doc, const CORE::CStr
 /*-------------------------------------------------------------------------*/
 
 CORE::CString
-RedisShardingCalculator::GetType( void ) const
+RedisInfoService::GetType( void ) const
 {GUCEF_TRACE;
 
-    return "RedisShardingCalculator";
+    return "RedisInfoService";
 }
 
 /*-------------------------------------------------------------------------*/
 
 bool
-RedisShardingCalculator::OnTaskStart( CORE::CICloneable* taskData )
+RedisInfoService::OnTaskStart( CORE::CICloneable* taskData )
 {GUCEF_TRACE;
 
     //RegisterEventHandlers();
@@ -320,7 +322,7 @@ RedisShardingCalculator::OnTaskStart( CORE::CICloneable* taskData )
 /*-------------------------------------------------------------------------*/
 
 bool
-RedisShardingCalculator::OnTaskCycle( CORE::CICloneable* taskData )
+RedisInfoService::OnTaskCycle( CORE::CICloneable* taskData )
 {GUCEF_TRACE;
 
     // We are never 'done' so return false
@@ -330,7 +332,7 @@ RedisShardingCalculator::OnTaskCycle( CORE::CICloneable* taskData )
 /*-------------------------------------------------------------------------*/
 
 void
-RedisShardingCalculator::OnTaskEnding( CORE::CICloneable* taskdata ,
+RedisInfoService::OnTaskEnding( CORE::CICloneable* taskdata ,
                                        bool willBeForced           )
 {GUCEF_TRACE;
 
@@ -340,7 +342,7 @@ RedisShardingCalculator::OnTaskEnding( CORE::CICloneable* taskdata ,
 /*-------------------------------------------------------------------------*/
 
 void
-RedisShardingCalculator::OnTaskEnded( CORE::CICloneable* taskData ,
+RedisInfoService::OnTaskEnded( CORE::CICloneable* taskData ,
                                       bool wasForced              )
 {GUCEF_TRACE;
 
@@ -360,7 +362,7 @@ RedisNode::RedisNode( void )
 /*-------------------------------------------------------------------------*/
 
 bool
-RedisShardingCalculator::GetRedisClusterNodeMap( RedisNodeMap& nodeMap )
+RedisInfoService::GetRedisClusterNodeMap( RedisNodeMap& nodeMap )
 {
     try
     {
@@ -444,20 +446,45 @@ RedisShardingCalculator::GetRedisClusterNodeMap( RedisNodeMap& nodeMap )
     }
     catch ( const sw::redis::Error& e )
     {
-        GUCEF_EXCEPTION_LOG( CORE::LOGLEVEL_IMPORTANT, "RedisShardingCalculator(" + CORE::PointerToString( this ) + "):GetRedisClusterNodeMap: Redis++ exception: " + e.what() );
+        GUCEF_EXCEPTION_LOG( CORE::LOGLEVEL_IMPORTANT, "RedisInfoService(" + CORE::PointerToString( this ) + "):GetRedisClusterNodeMap: Redis++ exception: " + e.what() );
         return false;
     }
     catch ( const std::exception& e )
     {
-        GUCEF_EXCEPTION_LOG( CORE::LOGLEVEL_IMPORTANT, "RedisShardingCalculator(" + CORE::PointerToString( this ) + "):GetRedisClusterNodeMap: exception: " + e.what() );
+        GUCEF_EXCEPTION_LOG( CORE::LOGLEVEL_IMPORTANT, "RedisInfoService(" + CORE::PointerToString( this ) + "):GetRedisClusterNodeMap: exception: " + e.what() );
         return false;
     }
+
+    return true;
+}
+
+/*-------------------------------------------------------------------------*/
+
+bool 
+RedisInfoService::SerializeRedisClusterNodeMap( const RedisNodeMap& nodeMap, CORE::CDataNode& doc ) const
+{GUCEF_TRACE;
+
+    doc.Clear();
+    doc.SetName( "RedisClusterNodes" );
+    doc.SetNodeType( GUCEF_DATATYPE_ARRAY );
+    RedisNodeMap::const_iterator i = nodeMap.begin();
+    while ( i != nodeMap.end() )
+    {        
+        CORE::CDataNode* redisNodeEntry = doc.AddChild( "node", GUCEF_DATATYPE_OBJECT );
+        redisNodeEntry->SetAttribute( "id", (*i).second.nodeId, GUCEF_DATATYPE_STRING );
+        redisNodeEntry->SetAttribute( "startSlot", CORE::ToString( (*i).second.startSlot ), GUCEF_DATATYPE_UINT32 );
+        redisNodeEntry->SetAttribute( "endSlot", CORE::ToString( (*i).second.endSlot ), GUCEF_DATATYPE_UINT32 );
+        redisNodeEntry->SetAttribute( "host", (*i).second.host.GetHostname(), GUCEF_DATATYPE_STRING );
+        redisNodeEntry->SetAttribute( "port", (*i).second.host.PortAsString(), GUCEF_DATATYPE_STRING );
+        ++i;
+    }
+    return true;
 }
 
 /*-------------------------------------------------------------------------*/
 
 bool
-RedisShardingCalculator::RedisConnect( void )
+RedisInfoService::RedisConnect( void )
 {GUCEF_TRACE;
 
     try
@@ -486,12 +513,12 @@ RedisShardingCalculator::RedisConnect( void )
     }
     catch ( const sw::redis::Error& e )
     {
-        GUCEF_EXCEPTION_LOG( CORE::LOGLEVEL_IMPORTANT, "RedisShardingCalculator(" + CORE::PointerToString( this ) + "):RedisConnect: Redis++ exception: " + e.what() );
+        GUCEF_EXCEPTION_LOG( CORE::LOGLEVEL_IMPORTANT, "RedisInfoService(" + CORE::PointerToString( this ) + "):RedisConnect: Redis++ exception: " + e.what() );
         return false;
     }
     catch ( const std::exception& e )
     {
-        GUCEF_EXCEPTION_LOG( CORE::LOGLEVEL_IMPORTANT, "RedisShardingCalculator(" + CORE::PointerToString( this ) + "):RedisConnect: exception: " + e.what() );
+        GUCEF_EXCEPTION_LOG( CORE::LOGLEVEL_IMPORTANT, "RedisInfoService(" + CORE::PointerToString( this ) + "):RedisConnect: exception: " + e.what() );
         return false;
     }
 }

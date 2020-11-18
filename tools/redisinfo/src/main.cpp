@@ -1,5 +1,5 @@
 /*
- *  RedisHashSlotCalculator: Utility for precalculating hash slots
+ *  redisinfo: Service for obtaining redis info from a cluster
  *
  *  This library is free software; you can redistribute it and/or
  *  modify it under the terms of the GNU Lesser General Public
@@ -77,7 +77,7 @@
 #define GUCEF_VFS_CVFSGLOBAL_H
 #endif /* GUCEF_VFS_CVFSGLOBAL_H ? */
 
-#include "RedisShardingCalculator.h"
+#include "redisinfo.h"
 
 /*-------------------------------------------------------------------------//
 //                                                                         //
@@ -100,9 +100,9 @@ LoadConfig( const CORE::CString& configPath            ,
 {GUCEF_TRACE;
 
     #ifdef GUCEF_DEBUG_MODE
-    const CORE::CString configFile = "RedisShardingCalculator_d.ini";
+    const CORE::CString configFile = "redisinfo_d.ini";
     #else
-    const CORE::CString configFile = "RedisShardingCalculator.ini";
+    const CORE::CString configFile = "redisinfo.ini";
     #endif
 
     CORE::CString configFilePath;
@@ -186,7 +186,7 @@ GucefAppSignalHandler( int signal )
  *      Application entry point
  */
 GUCEF_OSMAIN_BEGIN
-//GUCEF_OSSERVICEMAIN_BEGIN( "RedisShardingCalculator" )
+//GUCEF_OSSERVICEMAIN_BEGIN( "redisinfo" )
 {GUCEF_TRACE;
 
     GUCEF_LOG( CORE::LOGLEVEL_NORMAL, "This tool was compiled on: " __DATE__ " @ " __TIME__ );
@@ -222,7 +222,7 @@ GUCEF_OSMAIN_BEGIN
     }
     CORE::CreateDirs( outputDir );
 
-    CORE::CString logFilename = CORE::CombinePath( outputDir, "RedisShardingCalculator_log.txt" );
+    CORE::CString logFilename = CORE::CombinePath( outputDir, "redisinfo_log.txt" );
 
     keyValueList.Set( "logfile", logFilename );
 
@@ -242,22 +242,22 @@ GUCEF_OSMAIN_BEGIN
     auto& app = CORE::CCoreGlobal::Instance()->GetApplication();
     int retvalue = app.main( argc, argv, false );    
     
-    RedisShardingCalculator redisShardingCalculator;
+    RedisInfoService redisInfoService;
 
-    RedisShardingCalculator::TUInt32ToStringSetMap hashMap;
-    if ( redisShardingCalculator.CalculateKeysForAllHashSlots( hashMap, 1, 1 ) )
+    RedisInfoService::TUInt32ToStringSetMap hashMap;
+    if ( redisInfoService.CalculateKeysForAllHashSlots( hashMap, 1, 1 ) )
     {
         CORE::CDataNode hashSlotsDoc;
-        if ( redisShardingCalculator.SerializeKeysForHashSlots( hashMap, hashSlotsDoc ) )
+        if ( redisInfoService.SerializeKeysForHashSlots( hashMap, hashSlotsDoc ) )
         {
-            redisShardingCalculator.SaveDocTo( hashSlotsDoc, "InstallPath/RedisHashMap.json" );
+            redisInfoService.SaveDocTo( hashSlotsDoc, "json", "InstallPath/RedisHashMap.v1.json" );
         }
     }
 
-    //if ( !redisShardingCalculator.LoadConfig( keyValueList, *globalConfig ) )
+    //if ( !RedisInfoService.LoadConfig( keyValueList, *globalConfig ) )
     //{
     //    delete globalConfig;
-    //    GUCEF_ERROR_LOG( CORE::LOGLEVEL_CRITICAL, "RedisShardingCalculator: Exiting because LoadConfig failed" );
+    //    GUCEF_ERROR_LOG( CORE::LOGLEVEL_CRITICAL, "RedisInfoService: Exiting because LoadConfig failed" );
     //    return -1;
     //}
     //delete globalConfig;

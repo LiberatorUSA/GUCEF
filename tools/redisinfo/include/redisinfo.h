@@ -1,5 +1,5 @@
 /*
- *  Udp2RedisCluster: service which pushes UDP packets into Redis streams
+ *  redisinfo: Service for obtaining redis info from a cluster
  *
  *  This library is free software; you can redistribute it and/or
  *  modify it under the terms of the GNU Lesser General Public
@@ -140,16 +140,16 @@ typedef std::map< CORE::UInt32, RedisNode > RedisNodeMap;
 
 /*-------------------------------------------------------------------------*/
 
-class RedisShardingCalculator : public CORE::CTaskConsumer
+class RedisInfoService : public CORE::CTaskConsumer
 {
     public:
 
-    typedef CORE::CTEventHandlerFunctor< RedisShardingCalculator > TEventCallback;
+    typedef CORE::CTEventHandlerFunctor< RedisInfoService > TEventCallback;
     typedef std::set< CORE::CString > TStringSet;
     typedef std::map< CORE::UInt32, TStringSet > TUInt32ToStringSetMap;
 
-    RedisShardingCalculator();
-    virtual ~RedisShardingCalculator();
+    RedisInfoService();
+    virtual ~RedisInfoService();
 
     virtual bool OnTaskStart( CORE::CICloneable* taskData ) GUCEF_VIRTUAL_OVERRIDE;
 
@@ -171,7 +171,9 @@ class RedisShardingCalculator : public CORE::CTaskConsumer
 
     bool SerializeKeysForHashSlots( const TUInt32ToStringSetMap& hashMap, CORE::CDataNode& doc ) const;
 
-    bool SaveDocTo( const CORE::CDataNode& doc, const CORE::CString& vfsPath ) const;
+    bool SaveDocTo( const CORE::CDataNode& doc     , 
+                    const CORE::CString& codecName ,
+                    const CORE::CString& vfsPath   ) const;
 
     private:
 
@@ -180,12 +182,14 @@ class RedisShardingCalculator : public CORE::CTaskConsumer
 
     bool GetRedisClusterNodeMap( RedisNodeMap& nodeMap );
 
+    bool SerializeRedisClusterNodeMap( const RedisNodeMap& nodeMap, CORE::CDataNode& doc ) const;
+
     void RegisterEventHandlers( void );
 
 
     private:
 
-    RedisShardingCalculator( const RedisShardingCalculator& src ); // not implemented
+    RedisInfoService( const RedisInfoService& src ); // not implemented
 
     typedef std::vector< std::pair< sw::redis::StringView, sw::redis::StringView > > TRedisArgs;
 
@@ -196,6 +200,6 @@ class RedisShardingCalculator : public CORE::CTaskConsumer
 
 /*-------------------------------------------------------------------------*/
 
-typedef CORE::CTSharedPtr< RedisShardingCalculator, MT::CMutex > RedisShardingCalculatorPtr;
+typedef CORE::CTSharedPtr< RedisInfoService, MT::CMutex > RedisInfoServicePtr;
 
 /*-------------------------------------------------------------------------*/

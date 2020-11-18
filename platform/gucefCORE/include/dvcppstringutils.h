@@ -374,6 +374,7 @@ Utf8toUtf16( const std::string& str ,
 
 /*-------------------------------------------------------------------------*/
 
+inline CString ToString( const CString& str ) { return str; }
 inline CString ToString( UInt8 value ) { return UInt8ToString( value ); }
 inline CString ToString( UInt16 value ) { return UInt16ToString( value ); }
 inline CString ToString( UInt32 value ) { return UInt32ToString( value ); }
