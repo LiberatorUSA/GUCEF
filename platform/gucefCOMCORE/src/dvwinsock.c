@@ -512,6 +512,19 @@ dvsocket_setsockopt_and_validate( SOCKET s           ,
         {
             if ( ( retval = getsockopt( s, level, optname, actualOptval, actualOptlen ) ) != SOCKET_ERROR )
             {
+                #if ( ( GUCEF_PLATFORM == GUCEF_PLATFORM_LINUX ) || ( GUCEF_PLATFORM == GUCEF_PLATFORM_ANDROID ) )
+                if ( ( SO_RCVBUF == optname || SO_SNDBUF == optname ) && *actualOptlen >= 4 )
+                {
+                    /* on Linux these values are 'doubled' for 'bookkeeping' reasons 
+                     * hence a direct comparison of the set vs get would always fail
+                     * We compensate for this oddity here 
+                     * See https://linux.die.net/man/7/socket 
+                     */
+                    Int32* actualOptvalInt = (Int32*) actualOptval;
+                    (*actualOptvalInt) = (*actualOptvalInt) / 2;
+                }
+                #endif
+
                 if ( *actualOptlen != optlen )
                     return SOCKET_ERROR;
                 if ( 0 != memcmp( actualOptval, optval, optlen ) )
