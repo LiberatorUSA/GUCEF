@@ -103,17 +103,23 @@ using namespace GUCEF;
 //                                                                         //
 //-------------------------------------------------------------------------*/
 
-class ChannelSettings : public CORE::CIConfigurable
+class Settings : public CORE::CIConfigurable
 {
     public:
 
     typedef std::vector< COMCORE::CHostAddress > HostAddressVector;
 
-    ChannelSettings( void );
-    ChannelSettings( const ChannelSettings& src );
-    ChannelSettings& operator=( const ChannelSettings& src );
+    Settings( void );
+    Settings( const Settings& src );
+    Settings& operator=( const Settings& src );
 
     COMCORE::CHostAddress redisAddress;
+    bool collectMetrics;
+    CORE::CString metricPrefix;
+    bool gatherInfoReplication;
+    bool gatherInfoStats;
+    bool gatherInfoCommandStats;
+    bool gatherInfoMemory;
 
     virtual bool SaveConfig( CORE::CDataNode& tree ) const GUCEF_VIRTUAL_OVERRIDE;
 
@@ -163,6 +169,10 @@ class RedisInfoService : public CORE::CTaskConsumer
 
     virtual CORE::CString GetType( void ) const GUCEF_VIRTUAL_OVERRIDE;
 
+    bool LoadConfig( const Settings& settings );
+
+    const Settings& GetSettings( void ) const;
+
     CORE::UInt32 CalculateRedisHashSlot( const CORE::CString& keyStr ) const;
 
     bool CalculateKeysForAllHashSlots( TUInt32ToStringSetMap& hashMap ,
@@ -171,21 +181,41 @@ class RedisInfoService : public CORE::CTaskConsumer
 
     bool SerializeKeysForHashSlots( const TUInt32ToStringSetMap& hashMap, CORE::CDataNode& doc ) const;
 
-    bool SaveDocTo( const CORE::CDataNode& doc     , 
-                    const CORE::CString& codecName ,
-                    const CORE::CString& vfsPath   ) const;
-
-    private:
-
-
-    bool RedisConnect( void );
-
     bool GetRedisClusterNodeMap( RedisNodeMap& nodeMap );
 
     bool SerializeRedisClusterNodeMap( const RedisNodeMap& nodeMap, CORE::CDataNode& doc ) const;
 
+    bool SaveDocTo( const CORE::CDataNode& doc     , 
+                    const CORE::CString& codecName ,
+                    const CORE::CString& vfsPath   ) const;
+
+    bool ProvideHashSlotMapDoc( void );
+
+    bool ProvideRedisNodesDoc( void );
+
+    bool GetRedisInfoReplication( CORE::CValueList& kv );
+
+    bool GetRedisInfoStats( CORE::CValueList& kv );
+    
+    bool GetRedisInfoCommandStats( CORE::CValueList& kv );
+    
+    bool GetRedisInfoMemory( CORE::CValueList& kv );
+
+    bool GetRedisInfo( const CORE::CString& type, CORE::CValueList& kv );
+
+    void SendKeyValueStats( const CORE::CValueList& kv        ,
+                            const CORE::CString& metricPrefix );
+    
+    private:
+
+    bool RedisConnect( void );
+
     void RegisterEventHandlers( void );
 
+    void
+    OnMetricsTimerCycle( CORE::CNotifier* notifier    ,
+                         const CORE::CEvent& eventId  ,
+                         CORE::CICloneable* eventData );
 
     private:
 
@@ -194,12 +224,99 @@ class RedisInfoService : public CORE::CTaskConsumer
     typedef std::vector< std::pair< sw::redis::StringView, sw::redis::StringView > > TRedisArgs;
 
     sw::redis::RedisCluster* m_redisContext;
-    ChannelSettings m_channelSettings;
+    Settings m_settings;
     TRedisArgs m_redisPacketArgs;
+    CORE::CTimer* m_metricsTimer;
 };
 
 /*-------------------------------------------------------------------------*/
 
 typedef CORE::CTSharedPtr< RedisInfoService, MT::CMutex > RedisInfoServicePtr;
+
+/*-------------------------------------------------------------------------*/
+
+class RedisInfo;
+
+class RestApiRedisInfoInfoResource : public COM::CCodecBasedHTTPServerResource
+{
+    public:
+
+    RestApiRedisInfoInfoResource( RedisInfo* app );
+
+    virtual ~RestApiRedisInfoInfoResource();
+
+    virtual bool Serialize( CORE::CDataNode& output             ,
+                            const CORE::CString& representation ,
+                            const CORE::CString& params         ) GUCEF_VIRTUAL_OVERRIDE;
+
+    private:
+
+    RedisInfo* m_app;
+};
+
+/*-------------------------------------------------------------------------*/
+
+class RestApiRedisInfoConfigResource : public COM::CCodecBasedHTTPServerResource
+{
+    public:
+
+    RestApiRedisInfoConfigResource( RedisInfo* app, bool appConfig );
+
+    virtual ~RestApiRedisInfoConfigResource();
+
+    virtual bool Serialize( CORE::CDataNode& output             ,
+                            const CORE::CString& representation ,
+                            const CORE::CString& params         ) GUCEF_VIRTUAL_OVERRIDE;
+
+    virtual TDeserializeState Deserialize( const CORE::CDataNode& input        ,
+                                           const CORE::CString& representation ,
+                                           bool isDeltaUpdateOnly              ) GUCEF_VIRTUAL_OVERRIDE;
+
+    private:
+
+    RedisInfo* m_app;
+    bool m_appConfig;
+};
+
+/*-------------------------------------------------------------------------*/
+
+class RedisInfo : public CORE::CObserver
+{
+    public:
+
+    RedisInfo( void );
+    virtual ~RedisInfo();
+
+    bool Start( void );
+
+    bool SetStandbyMode( bool newMode );
+
+    bool IsGlobalStandbyEnabled( void ) const;
+
+    bool LoadConfig( const CORE::CValueList& appConfig   ,
+                     const CORE::CDataNode& globalConfig );
+
+    const CORE::CValueList& GetAppConfig( void ) const;
+
+    const CORE::CDataNode& GetGlobalConfig( void ) const;
+
+    private:
+
+    typedef CORE::CTEventHandlerFunctor< RedisInfo > TEventCallback;
+
+    private:
+
+    bool m_isInStandby;
+    bool m_globalStandbyEnabled;
+    CORE::CString m_redisHost;
+    CORE::UInt16 m_redisPort;
+    COM::CHTTPServer m_httpServer;
+    COM::CDefaultHTTPServerRouter m_httpRouter;
+    CORE::CValueList m_appConfig;
+    CORE::CDataNode m_globalConfig;    
+    bool m_transmitMetrics;
+    RedisInfoServicePtr m_infoService;
+    Settings m_settings;
+};
 
 /*-------------------------------------------------------------------------*/

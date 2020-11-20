@@ -206,7 +206,7 @@ UInt32ToString( const UInt32 value );
 /*-------------------------------------------------------------------------*/
 
 GUCEF_CORE_PUBLIC_CPP UInt16
-StringToUInt16( const CString& str );
+StringToUInt16( const CString& str, UInt16 defaultValue = 0 );
 
 /*-------------------------------------------------------------------------*/
 
@@ -284,6 +284,11 @@ FloatToString( const float value );
 
 GUCEF_CORE_PUBLIC_CPP CString
 DoubleToString( const double value );
+
+/*-------------------------------------------------------------------------*/
+
+GUCEF_CORE_PUBLIC_CPP double
+StringToDouble( const CString& str, double defaultValue = 0 );
 
 /*-------------------------------------------------------------------------*/
 

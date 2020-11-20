@@ -588,7 +588,7 @@ UInt32ToString( const UInt32 value )
 /*-------------------------------------------------------------------------*/
 
 UInt16
-StringToUInt16( const CString& str )
+StringToUInt16( const CString& str, UInt16 defaultValue )
 {GUCEF_TRACE;
 
     if ( !str.IsNULLOrEmpty() )
@@ -597,7 +597,7 @@ StringToUInt16( const CString& str )
         sscanf( str.C_String(), "%u", &value );
         return (UInt16) value;
     }
-    return 0;
+    return defaultValue;
 }
 
 /*-------------------------------------------------------------------------*/
@@ -764,10 +764,25 @@ CString
 DoubleToString( const double value )
 {GUCEF_TRACE;
 
-    char doubleChars[ 16 ];
-    sprintf( doubleChars, "%f", value );
+    char doubleChars[ 32 ];
+    sprintf( doubleChars, "%lf", value );
 
     return doubleChars;
+}
+
+/*-------------------------------------------------------------------------*/
+
+double
+StringToDouble( const CString& str, double defaultValue )
+{GUCEF_TRACE;
+
+    if ( !str.IsNULLOrEmpty() )
+    {
+        double value;
+        sscanf( str.C_String(), "%lf", &value );
+        return value;
+    }
+    return defaultValue;
 }
 
 /*-------------------------------------------------------------------------*/
@@ -1088,7 +1103,7 @@ Utf16toUtf8( const std::wstring& wstr ,
         return false; // Failed converting UTF-16 string to UTF-8
 
     str.resize( charsNeeded, '\0' );
-    int charsConverted = ::WideCharToMultiByte( CP_ACP, 0, wstr.c_str(), (int)wstr.size()+1, (LPSTR)str.c_str(), charsNeeded, 0, 0 );
+    int charsConverted = ::WideCharToMultiByte( CP_ACP, 0, wstr.c_str(), (int)wstr.size()+1, (LPSTR)str.c_str(), (int)charsNeeded, 0, 0 );
     if ( charsConverted == 0 )
         return false; // Failed converting UTF-16 string to UTF-8
 
@@ -1121,7 +1136,7 @@ Utf8toUtf16( const std::string& str ,
         return false; // Failed converting UTF-8 string to UTF-16
 
     wstr.resize( charsNeeded );
-    int charsConverted = ::MultiByteToWideChar( CP_UTF8, 0, str.data(), (int)str.size(), (LPWSTR)wstr.c_str(), charsNeeded );
+    int charsConverted = ::MultiByteToWideChar( CP_UTF8, 0, str.data(), (int)str.size(), (LPWSTR)wstr.c_str(), (int)charsNeeded );
     if ( charsConverted == 0 )
         return false; // Failed converting UTF-8 string to UTF-16
 

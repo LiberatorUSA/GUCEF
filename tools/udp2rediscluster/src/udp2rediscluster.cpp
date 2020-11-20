@@ -1741,7 +1741,7 @@ Udp2RedisCluster::LoadConfig( const CORE::CValueList& appConfig   ,
     m_redisStreamStartChannelID = CORE::StringToInt32( CORE::ResolveVars(  appConfig.GetValueAlways( "RedisStreamStartChannelID", "1" ) ) );
     m_redisStreamName = CORE::ResolveVars( appConfig.GetValueAlways( "RedisStreamName", "udp-ingress-ch{channelID}" ) );
     m_redisHost = CORE::ResolveVars( appConfig.GetValueAlways( "RedisHost", "127.0.0.1" ) );
-    m_redisPort = CORE::StringToUInt16( CORE::ResolveVars( appConfig.GetValueAlways( "RedisPort", "6379" ) ) );
+    m_redisPort = CORE::StringToUInt16( CORE::ResolveVars( appConfig.GetValueAlways( "RedisPort" ) ), 6379 );
 
     CORE::UInt32 ticketRefillOnBusyCycle = CORE::StringToUInt32( CORE::ResolveVars( appConfig.GetValueAlways( "TicketRefillOnBusyCycle" ) ), GUCEF_DEFAULT_TICKET_REFILLS_ON_BUSY_CYCLE );
     CORE::UInt32 nrOfUdpReceiveBuffersPerSocket = CORE::StringToUInt32( CORE::ResolveVars( appConfig.GetValueAlways( "NrOfUdpReceiveBuffersPerSocket" ) ), GUCEF_DEFAULT_UDP_RECEIVE_BUFFERS );
