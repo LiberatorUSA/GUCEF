@@ -753,14 +753,19 @@ RedisNode::RedisNode( void )
     , nodeId()
     , startSlot( 0 )
     , endSlot( 0 )
-{
+{GUCEF_TRACE;
+
 }
 
 /*-------------------------------------------------------------------------*/
 
 bool
 ClusterChannelRedisWriter::GetRedisClusterNodeMap( RedisNodeMap& nodeMap )
-{
+{GUCEF_TRACE;
+
+    if ( GUCEF_NULL == m_redisContext )
+        return false;
+
     try
     {
         CORE::CString clusterCmd( "CLUSTER" );
@@ -853,6 +858,8 @@ ClusterChannelRedisWriter::GetRedisClusterNodeMap( RedisNodeMap& nodeMap )
         GUCEF_EXCEPTION_LOG( CORE::LOGLEVEL_IMPORTANT, "Udp2RedisClusterChannel(" + CORE::PointerToString( this ) + "):GetRedisClusterNodeMap: exception: " + e.what() );
         return false;
     }
+
+    return true;
 }
 
 /*-------------------------------------------------------------------------*/

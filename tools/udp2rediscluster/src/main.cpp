@@ -187,6 +187,7 @@ void
 GucefAppSignalHandler( int signal )
 {GUCEF_TRACE;
     
+    GUCEF_LOG( CORE::LOGLEVEL_IMPORTANT, "GucefAppSignalHandler: Received signal " + CORE::ToString( signal ) );
     ::GUCEF::CORE::CCoreGlobal::Instance()->GetApplication().Stop();
 }
 
