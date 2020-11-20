@@ -300,9 +300,9 @@
 
 #else
 
-    #define GUCEF_OSMAIN_BEGIN                                                                         \
+    #define GUCEF_OSMAIN_BEGIN_APPTYPE( appType )                                                      \
                                                                                                        \
-    static const unsigned char GUCEF_APP_TYPE = GUCEF_AUTO_APP_TYPE_CONSOLE;                           \
+    static const unsigned char GUCEF_APP_TYPE = appType;                                               \
     typedef void ( *gucef_installed_signal_handler_ptr)( int );                                        \
     static gucef_installed_signal_handler_ptr gucef_installed_signal_handler = NULL;                   \
                                                                                                        \
@@ -310,9 +310,11 @@
     main( int argc, char* argv[] )                                                                     \
     {
 
+    #define GUCEF_OSMAIN_BEGIN      GUCEF_OSMAIN_BEGIN_APPTYPE( GUCEF_AUTO_APP_TYPE_CONSOLE )
+
     #define GUCEF_OSMAIN_END }
 
-    #define GUCEF_OSSERVICEMAIN_BEGIN( serviceName )    GUCEF_OSMAIN_BEGIN
+    #define GUCEF_OSSERVICEMAIN_BEGIN( serviceName )    GUCEF_OSMAIN_BEGIN_APPTYPE( GUCEF_AUTO_APP_TYPE_BACKGROUND_PROCESSS )
     #define GUCEF_OSSERVICEMAIN_END                     GUCEF_OSMAIN_END
 
     #define GUCEF_OSMAIN_SIGNAL_HANDLER( signalHandlerFunc )                                           \
