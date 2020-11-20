@@ -570,6 +570,14 @@ ClusterChannelRedisWriter::RedisSendSyncImpl( const TPacketEntryVectorPtrVector&
             CORE::UInt32 packetCount = packetCounts[ n ];
             const TPacketEntryVector& udpPacketSet = (*udpPackets[ n ]);
 
+            if ( packetCount > udpPacketSet.size() )
+            {
+                GUCEF_ERROR_LOG( CORE::LOGLEVEL_IMPORTANT, "ClusterChannelRedisWriter(" + CORE::PointerToString( this ) + "):RedisSendSyncImpl: Invalid packet count of " +
+                    CORE::UInt32ToString( packetCount ) + " which exceeds storage size of " + CORE::UInt64ToString( udpPacketSet.size() ) + 
+                    ". This should never happen or be possible. Will clamp to smaller nr." );
+                packetCount = (CORE::UInt32) udpPacketSet.size();
+            }
+
             for ( CORE::UInt32 i=0; i<packetCount; ++i )
             {
                 const CORE::CDynamicBuffer& packetBuffer = udpPacketSet[ i ].dataBuffer.GetData();
@@ -591,7 +599,7 @@ ClusterChannelRedisWriter::RedisSendSyncImpl( const TPacketEntryVectorPtrVector&
             {
                 case REDIS_OK:
                 {
-                    GUCEF_DEBUG_LOG( CORE::LOGLEVEL_NORMAL, "Udp2RedisClusterChannel(" + CORE::PointerToString( this ) + "):RedisSend: Successfully sent " +
+                    GUCEF_DEBUG_LOG( CORE::LOGLEVEL_NORMAL, "Udp2RedisClusterChannel(" + CORE::PointerToString( this ) + "):RedisSendSyncImpl: Successfully sent " +
                         CORE::UInt32ToString( totalPacketCount ) + " UDP messages, combining " + CORE::UInt32ToString( (CORE::UInt32)udpPackets.size() ) +
                         " sets of packages. MsgID=" + CORE::ToString( reply.str ) );
 
@@ -606,7 +614,7 @@ ClusterChannelRedisWriter::RedisSendSyncImpl( const TPacketEntryVectorPtrVector&
                     totalSuccess = false;
                     ++m_redisErrorReplies;
 
-                    GUCEF_ERROR_LOG( CORE::LOGLEVEL_NORMAL, "Udp2RedisClusterChannel(" + CORE::PointerToString( this ) + "):RedisSend: Error sending " +
+                    GUCEF_ERROR_LOG( CORE::LOGLEVEL_NORMAL, "Udp2RedisClusterChannel(" + CORE::PointerToString( this ) + "):RedisSendSyncImpl: Error sending " +
                         CORE::UInt32ToString( totalPacketCount ) + " UDP messages, combining " + CORE::UInt32ToString( (CORE::UInt32)udpPackets.size() ) +
                         " sets of packages. Error=" + CORE::ToString( reply.str ) );
                     break;
@@ -619,7 +627,7 @@ ClusterChannelRedisWriter::RedisSendSyncImpl( const TPacketEntryVectorPtrVector&
     catch ( const sw::redis::MovedError& e )
     {
 		++m_redisErrorReplies;
-        GUCEF_EXCEPTION_LOG( CORE::LOGLEVEL_IMPORTANT, "Udp2RedisClusterChannel(" + CORE::PointerToString( this ) + "):RedisSend: Redis++ MovedError (Redirect failed?) . Current slot: " +
+        GUCEF_EXCEPTION_LOG( CORE::LOGLEVEL_IMPORTANT, "Udp2RedisClusterChannel(" + CORE::PointerToString( this ) + "):RedisSendSyncImpl: Redis++ MovedError (Redirect failed?) . Current slot: " +
                                 CORE::ToString( m_redisHashSlot ) + ", new slot: " + CORE::ToString( e.slot() ) + " at node " + e.node().host + ":" + CORE::ToString( e.node().port ) +
                                 " exception: " + e.what() );
         return false;
@@ -627,7 +635,7 @@ ClusterChannelRedisWriter::RedisSendSyncImpl( const TPacketEntryVectorPtrVector&
     catch ( const sw::redis::RedirectionError& e )
     {
 		++m_redisErrorReplies;
-        GUCEF_EXCEPTION_LOG( CORE::LOGLEVEL_IMPORTANT, "Udp2RedisClusterChannel(" + CORE::PointerToString( this ) + "):RedisSend: Redis++ RedirectionError (rebalance? node failure?). Current slot: " +
+        GUCEF_EXCEPTION_LOG( CORE::LOGLEVEL_IMPORTANT, "Udp2RedisClusterChannel(" + CORE::PointerToString( this ) + "):RedisSendSyncImpl: Redis++ RedirectionError (rebalance? node failure?). Current slot: " +
                                 CORE::ToString( m_redisHashSlot ) + ", new slot: " + CORE::ToString( e.slot() ) + " at node " + e.node().host + ":" + CORE::ToString( e.node().port ) +
                                 " exception: " + e.what() );
         return false;
@@ -635,12 +643,12 @@ ClusterChannelRedisWriter::RedisSendSyncImpl( const TPacketEntryVectorPtrVector&
     catch ( const sw::redis::Error& e )
     {
 		++m_redisErrorReplies;
-        GUCEF_EXCEPTION_LOG( CORE::LOGLEVEL_IMPORTANT, "Udp2RedisClusterChannel(" + CORE::PointerToString( this ) + "):RedisSend: Redis++ exception: " + e.what() );
+        GUCEF_EXCEPTION_LOG( CORE::LOGLEVEL_IMPORTANT, "Udp2RedisClusterChannel(" + CORE::PointerToString( this ) + "):RedisSendSyncImpl: Redis++ exception: " + e.what() );
         return false;
     }
     catch ( const std::exception& e )
     {
-        GUCEF_EXCEPTION_LOG( CORE::LOGLEVEL_IMPORTANT, "Udp2RedisClusterChannel(" + CORE::PointerToString( this ) + "):RedisSend: exception: " + e.what() );
+        GUCEF_EXCEPTION_LOG( CORE::LOGLEVEL_IMPORTANT, "Udp2RedisClusterChannel(" + CORE::PointerToString( this ) + "):RedisSendSyncImpl: exception: " + e.what() );
         return false;
     }
 }
@@ -718,6 +726,14 @@ ClusterChannelRedisWriter::AddToOverflowQueue( const TPacketEntryVectorPtrVector
     {
         CORE::UInt32 packetCount = packetCounts[ n ];
         const TPacketEntryVector* udpPacketSet = udpPackets[ n ];
+
+        if ( packetCount > udpPacketSet->size() )
+        {
+            GUCEF_ERROR_LOG( CORE::LOGLEVEL_IMPORTANT, "ClusterChannelRedisWriter(" + CORE::PointerToString( this ) + "):AddToOverflowQueue: Invalid packet count of " +
+                CORE::UInt32ToString( packetCount ) + " which exceeds storage size of " + CORE::UInt64ToString( udpPacketSet->size() ) + 
+                ". This should never happen or be possible. Will clamp to smaller nr." );
+            packetCount = (CORE::UInt32) udpPacketSet->size();
+        }
 
         TPacketEntryVector* udpPacketSetCopy = new TPacketEntryVector( *udpPacketSet );
 
@@ -1193,20 +1209,29 @@ Udp2RedisClusterChannel::OnUDPPacketsRecieved( CORE::CNotifier* notifier   ,
     {
         const COMCORE::CUDPSocket::TUdpPacketsRecievedEventData& data = udpPacketData->GetData();
 
+        CORE::UInt32 packetsReceived = data.packetsReceived;
+        if ( packetsReceived > data.packets.size() )
+        {
+            GUCEF_ERROR_LOG( CORE::LOGLEVEL_IMPORTANT, "Udp2RedisClusterChannel:OnUDPPacketsRecieved: Invalid packet count of " +
+                CORE::UInt32ToString( packetsReceived ) + " which exceeds storage size of " + CORE::UInt64ToString( data.packets.size() ) + 
+                ". This should never happen or be possible. Will clamp to smaller nr." );
+            packetsReceived = (CORE::UInt32) data.packets.size();
+        }
+
         if ( m_channelSettings.performRedisWritesInDedicatedThread )
         {
-            if ( !m_redisWriter->RedisSendASync( data.packets, data.packetsReceived ) )
+            if ( !m_redisWriter->RedisSendASync( data.packets, packetsReceived ) )
             {
                 GUCEF_ERROR_LOG( CORE::LOGLEVEL_IMPORTANT, "Udp2RedisClusterChannel:OnUDPPacketsRecieved: Failed to submit " +
-                        CORE::UInt32ToString( data.packetsReceived ) + " packets for async Redis transmission. Data loss will occur!!!" );
+                        CORE::UInt32ToString( packetsReceived ) + " packets for async Redis transmission. Data loss will occur!!!" );
             }
         }
         else
         {
-            if ( !m_redisWriter->RedisSendSync( data.packets, data.packetsReceived ) )
+            if ( !m_redisWriter->RedisSendSync( data.packets, packetsReceived ) )
             {
                 GUCEF_ERROR_LOG( CORE::LOGLEVEL_IMPORTANT, "Udp2RedisClusterChannel:OnUDPPacketsRecieved: Failed to request sync blocking transmission of " +
-                        CORE::UInt32ToString( data.packetsReceived ) + " packets to Redis. Data loss will occur!!!" );
+                        CORE::UInt32ToString( packetsReceived ) + " packets to Redis. Data loss will occur!!!" );
             }
         }
     }
