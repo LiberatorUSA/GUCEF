@@ -239,31 +239,27 @@ GUCEF_OSMAIN_BEGIN
 
     GUCEF_OSMAIN_SIGNAL_HANDLER( GucefAppSignalHandler );
 
-    auto& app = CORE::CCoreGlobal::Instance()->GetApplication();
-    int retvalue = app.main( argc, argv, false );    
-    
-    RedisInfoService redisInfoService;
-
-    RedisInfoService::TUInt32ToStringSetMap hashMap;
-    if ( redisInfoService.CalculateKeysForAllHashSlots( hashMap, 1, 1 ) )
+    RedisInfo redisInfo;
+    if ( !redisInfo.LoadConfig( keyValueList, *globalConfig ) )
     {
-        CORE::CDataNode hashSlotsDoc;
-        if ( redisInfoService.SerializeKeysForHashSlots( hashMap, hashSlotsDoc ) )
-        {
-            redisInfoService.SaveDocTo( hashSlotsDoc, "json", "InstallPath/RedisHashMap.v1.json" );
-        }
+        delete globalConfig;
+        GUCEF_ERROR_LOG( CORE::LOGLEVEL_CRITICAL, "RedisInfo: Exiting because LoadConfig failed" );
+        return -1;
+    }
+    delete globalConfig;
+
+    if ( !redisInfo.Start() )
+    {
+        GUCEF_ERROR_LOG( CORE::LOGLEVEL_CRITICAL, "RedisInfo: Failed to Start()" );
+        return -2;
     }
 
-    //if ( !RedisInfoService.LoadConfig( keyValueList, *globalConfig ) )
-    //{
-    //    delete globalConfig;
-    //    GUCEF_ERROR_LOG( CORE::LOGLEVEL_CRITICAL, "RedisInfoService: Exiting because LoadConfig failed" );
-    //    return -1;
-    //}
-    //delete globalConfig;
-
-    app.Stop( true );
-    return retvalue;
+    auto& pulseGenerator = CORE::CCoreGlobal::Instance()->GetPulseGenerator();
+    pulseGenerator.RequestPulseInterval( 25 );
+    pulseGenerator.RequestPulsesPerImmediatePulseRequest( 25 );
+    
+    auto& app = CORE::CCoreGlobal::Instance()->GetApplication();
+    return app.main( argc, argv, true );
 }
 GUCEF_OSMAIN_END
 

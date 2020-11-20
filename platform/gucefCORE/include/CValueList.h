@@ -98,10 +98,14 @@ class GUCEF_CORE_PUBLIC_CPP CValueList : public CIConfigurable
     void SetMultiple( int argc    ,
                       char** argv );
 
-    void SetMultiple( const CString& keyandvalue ,
-                      const char seperator       );
+    void SetMultiple( const CString& keyandvalue                    ,
+                      const char pairSeparator                      ,
+                      const char kvSeperator = '='                  ,
+                      const CString* optionalKeyPrefix = GUCEF_NULL );
 
-    void Set( const CString& keyAndValue );
+    void Set( const CString& keyAndValue                    , 
+              const char kvSeperator = '='                  ,
+              const CString* optionalKeyPrefix = GUCEF_NULL );
 
     void Set( const CString& key   ,
               const CString& value );

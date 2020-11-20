@@ -279,23 +279,25 @@ CValueList::GetClassTypeName( void ) const
 /*-------------------------------------------------------------------------*/
 
 void
-CValueList::SetMultiple( const CString& keyandvalue ,
-                         const char seperator       )
+CValueList::SetMultiple( const CString& keyandvalue       ,
+                         const char pairSeparator         ,
+                         const char kvSeperator           ,
+                         const CString* optionalKeyPrefix )
 {GUCEF_TRACE;
 
     CString remnant = keyandvalue;
     while ( remnant.Length() > 0 )
     {
-        CString tmp = remnant.SubstrToChar( seperator, true );
-        if ( ( tmp.Length() > 0 )          ||
-             ( remnant[ 0 ] == seperator )  )
+        CString tmp = remnant.SubstrToChar( pairSeparator, true );
+        if ( ( tmp.Length() > 0 )              ||
+             ( remnant[ 0 ] == pairSeparator )  )
         {
             remnant = remnant.CutChars( tmp.Length()+1, true );
 
-            CString keyValueStr = remnant.SubstrToChar( seperator, true );
+            CString keyValueStr = remnant.SubstrToChar( pairSeparator, true );
             if ( keyValueStr.Length() > 0 )
             {
-                Set( keyValueStr );
+                Set( keyValueStr, kvSeperator, optionalKeyPrefix );
                 remnant = remnant.CutChars( keyValueStr.Length()+1, true );
             }
             else
@@ -349,14 +351,24 @@ CValueList::GetAllowMultipleValues( void ) const
 /*-------------------------------------------------------------------------*/
 
 void
-CValueList::Set( const CString& keyAndValue )
+CValueList::Set( const CString& keyAndValue       , 
+                 const char kvSeperator           ,
+                 const CString* optionalKeyPrefix )
 {GUCEF_TRACE;
 
-    CString key( keyAndValue.SubstrToChar( '=', true ) );
-    CString value( keyAndValue.SubstrToChar( '=', false ) );
+    CString key( keyAndValue.SubstrToChar( kvSeperator, true ) );
+    CString value( keyAndValue.SubstrToChar( kvSeperator, false ) );
 
-    Set( key   ,
-         value );
+    if ( GUCEF_NULL == optionalKeyPrefix )
+    {
+        Set( key   ,
+             value );
+    }
+    else
+    {
+        Set( *optionalKeyPrefix + key ,
+             value                    );
+    }
 }
 
 /*-------------------------------------------------------------------------*/
