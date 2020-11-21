@@ -648,6 +648,7 @@ CX11Window::GetText( void ) const
 
         return (const char*) windowName.value;
     }
+    return CString::Empty;
 }
 
 /*-------------------------------------------------------------------------*/

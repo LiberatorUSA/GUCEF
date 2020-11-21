@@ -73,7 +73,7 @@
  *  This makes the parsing of application parameters uniform
  */
 
-#if GUCEF_PLATFORM == GUCEF_PLATFORM_MSWIN
+#if ( GUCEF_PLATFORM == GUCEF_PLATFORM_MSWIN )
 
     #include <string.h>
     #include <windows.h>
@@ -298,6 +298,47 @@
         signal( SIGTERM, &signalHandlerFunc );                                                         \
     }
 
+#elif ( ( GUCEF_PLATFORM == GUCEF_PLATFORM_LINUX ) || ( GUCEF_PLATFORM == GUCEF_PLATFORM_ANDROID ) )
+
+    #include <string.h>
+    #include <unistd.h>
+
+    #define GUCEF_OSMAIN_BEGIN_APPTYPE( appType )                                                      \
+                                                                                                       \
+    static const unsigned char GUCEF_APP_TYPE = appType;                                               \
+    typedef void ( *gucef_installed_signal_handler_ptr)( int );                                        \
+    static gucef_installed_signal_handler_ptr gucef_installed_signal_handler = NULL;                   \
+                                                                                                       \
+    void linux_sig_term_handler( int signum, siginfo_t* info, void* ptr )                              \
+    {                                                                                                  \
+        if ( NULL != gucef_installed_signal_handler )                                                  \
+            gucef_installed_signal_handler( signum );                                                  \
+    }                                                                                                  \
+                                                                                                       \
+    int                                                                                                \
+    main( int argc, char* argv[] )                                                                     \
+    {
+
+    #define GUCEF_OSMAIN_BEGIN      GUCEF_OSMAIN_BEGIN_APPTYPE( GUCEF_AUTO_APP_TYPE_CONSOLE )
+
+    #define GUCEF_OSMAIN_END }
+
+    #define GUCEF_OSSERVICEMAIN_BEGIN( serviceName )    GUCEF_OSMAIN_BEGIN_APPTYPE( GUCEF_AUTO_APP_TYPE_BACKGROUND_PROCESSS )
+    #define GUCEF_OSSERVICEMAIN_END                     GUCEF_OSMAIN_END
+
+    #define GUCEF_OSMAIN_SIGNAL_HANDLER( signalHandlerFunc )                                           \
+    {                                                                                                  \
+        gucef_installed_signal_handler = &signalHandlerFunc;                                           \
+                                                                                                       \
+        static struct sigaction _sigact;                                                               \
+        memset( &_sigact, 0, sizeof(_sigact) );                                                        \
+        _sigact.sa_flags = SA_SIGINFO;                                                                 \
+        _sigact.sa_sigaction = linux_sig_term_handler;                                                 \
+                                                                                                       \
+        sigaction( SIGINT, &_sigact, NULL );                                                           \
+        sigaction( SIGTERM, &_sigact, NULL );                                                          \
+    }
+
 #else
 
     #define GUCEF_OSMAIN_BEGIN_APPTYPE( appType )                                                      \
@@ -317,12 +358,7 @@
     #define GUCEF_OSSERVICEMAIN_BEGIN( serviceName )    GUCEF_OSMAIN_BEGIN_APPTYPE( GUCEF_AUTO_APP_TYPE_BACKGROUND_PROCESSS )
     #define GUCEF_OSSERVICEMAIN_END                     GUCEF_OSMAIN_END
 
-    #define GUCEF_OSMAIN_SIGNAL_HANDLER( signalHandlerFunc )                                           \
-    {                                                                                                  \
-        gucef_installed_signal_handler = &signalHandlerFunc;                                           \
-        signal( SIGINT, &signalHandlerFunc );                                                          \
-        signal( SIGTERM, &signalHandlerFunc );                                                         \
-    }
+    #define GUCEF_OSMAIN_SIGNAL_HANDLER( signalHandlerFunc )
 
 #endif
 

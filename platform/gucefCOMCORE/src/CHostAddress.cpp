@@ -174,6 +174,7 @@ CHostAddress::SetHostnameAndPort( const CORE::CString& host, UInt16 portInHostOr
         SetAddress( INADDR_ANY );
         SetPortInHostByteOrder( portInHostOrder );
     }
+    return true;
 }
 
 /*-------------------------------------------------------------------------*/
