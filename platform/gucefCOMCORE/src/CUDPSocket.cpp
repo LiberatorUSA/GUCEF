@@ -1101,6 +1101,8 @@ CUDPSocket::SetOsLevelSocketReceiveBufferSize( UInt32 osLevelSocketReceiveBuffer
                 + "\" on socket. Error code: " + CORE::UInt32ToString( errorCode ) + ". Actual current value is: " + CORE::Int32ToString( actualSocketReceiveBufferSize )
                 + ". Will try to force which requires elevated rights" );
 
+            // Using the SO_SNDBUFFORCE socket option, a privileged (CAP_NET_ADMIN) process can perform the same task as SO_SNDBUF, 
+            // but the wmem_max limit can be overridden. (since Linux 2.6.14)
             int newActualSocketReceiveBufferSize = 0; actualParamSize = sizeof(int);
             if ( 0 > dvsocket_setsockopt_and_validate( _data->sockid, SOL_SOCKET, SO_RCVBUFFORCE, (const char*) &socketReceiveBufferSize, sizeof(int), (char*) &actualSocketReceiveBufferSize, &actualParamSize, &errorCode ) )
             {

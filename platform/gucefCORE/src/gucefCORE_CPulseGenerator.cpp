@@ -189,7 +189,7 @@ GreatestCommonDivider( UInt32 x, UInt32 y )
     if ( x != 0 && y != 0 )
     {
         UInt32 r = x % y;
-        while ( y != 0 )
+        while ( r != 0 )
         {
             x = y;
             y = r;
@@ -208,12 +208,12 @@ CPulseGenerator::DetermineRequiredPulseInterval( void ) const
 {GUCEF_TRACE;
     
     MT::CObjectScopeLock lock( this );
-    if ( 0 == m_periodicUpdateRequestors.size() )
+    if ( m_periodicUpdateRequestors.empty() )
     {
         return m_updateDeltaInMilliSecs;
     }
     else
-    if ( 1 > m_periodicUpdateRequestors.size() )
+    if ( 1 < m_periodicUpdateRequestors.size() )
     {
         UInt32 a, gcd;
         TPeriodicPulseRequestorMap::const_iterator i = m_periodicUpdateRequestors.begin();
