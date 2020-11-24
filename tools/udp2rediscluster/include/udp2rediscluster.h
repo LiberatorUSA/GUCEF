@@ -125,7 +125,7 @@ class ChannelSettings : public CORE::CIConfigurable
     CORE::UInt32 udpSocketOsReceiveBufferSize;
     CORE::UInt32 udpSocketUpdateCyclesPerPulse;
     bool performRedisWritesInDedicatedThread;
-    CORE::UInt32 maxSizeOfDedicatedRedisWriterBulkMailRead;
+    CORE::Int32 maxSizeOfDedicatedRedisWriterBulkMailRead;
     bool applyThreadCpuAffinity;
     CORE::UInt32 cpuAffinityForDedicatedRedisWriterThread;
     CORE::UInt32 cpuAffinityForMainChannelThread;

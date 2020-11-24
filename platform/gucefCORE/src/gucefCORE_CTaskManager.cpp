@@ -403,20 +403,6 @@ CTaskManager::EnforceDesiredNrOfThreads( UInt32 desiredNrOfThreads ,
         }
     }
     // else: we don't have to do anything
-
-    //if ( m_nonactiveTasks.size() > 0 )
-    //{
-    //    GUCEF_SYSTEM_LOG( LOGLEVEL_NORMAL, "TaskManager: Cleaning up non-active tasks " );
-
-    //    // Cleanup tasks that have been discarded
-    //    TTaskDelegatorSet::iterator i = m_nonactiveTasks.begin();
-    //    while ( i != m_nonactiveTasks.end() )
-    //    {
-    //        delete (*i).second;
-    //        ++i;
-    //    }
-    //    m_nonactiveTasks.clear();
-    //}
 }
 
 /*-------------------------------------------------------------------------*/

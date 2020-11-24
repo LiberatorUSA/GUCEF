@@ -337,6 +337,9 @@ ClusterChannelRedisWriter::OnTaskStart( CORE::CICloneable* taskData )
         // all the processing. This will cause a bypass of CPU yielding if/when the situation arises.
         // In such a case the thread will run at max speed for a least the below set nr of cycles.
         GetPulseGenerator()->RequestPulsesPerImmediatePulseRequest( m_channelSettings.ticketRefillOnBusyCycle );
+        
+        // Default smallest pulse delta at 10ms
+        GetPulseGenerator()->RequestPeriodicPulses( this, 10 ); 
 
         if ( m_channelSettings.applyThreadCpuAffinity )
         {
@@ -406,6 +409,13 @@ ClusterChannelRedisWriter::OnTaskCycle( CORE::CICloneable* taskData )
         else
         {
             SendQueuedPackagesIfAny();
+        }
+
+        // If we have the mailbox filling up we should burst for more speed
+        if ( m_channelSettings.maxSizeOfDedicatedRedisWriterBulkMailRead > 0                        &&  
+             m_mailbox.AmountOfMail() > m_channelSettings.maxSizeOfDedicatedRedisWriterBulkMailRead  )
+        {
+            GetPulseGenerator()->RequestImmediatePulse();
         }
     }
 
@@ -1281,6 +1291,9 @@ Udp2RedisClusterChannel::OnTaskStart( CORE::CICloneable* taskData )
     // all the processing. This will cause a bypass of CPU yielding if/when the situation arises.
     // In such a case the thread will run at max speed for a least the below set nr of cycles.
     GetPulseGenerator()->RequestPulsesPerImmediatePulseRequest( m_channelSettings.ticketRefillOnBusyCycle );
+    
+    // Default smallest pulse delta at 10ms
+    GetPulseGenerator()->RequestPeriodicPulses( this, 10 ); 
 
     if ( m_channelSettings.applyThreadCpuAffinity )
     {
@@ -1780,7 +1793,7 @@ Udp2RedisCluster::LoadConfig( const CORE::CValueList& appConfig   ,
     CORE::UInt32 udpSocketOsReceiveBufferSize = CORE::StringToUInt32( CORE::ResolveVars( appConfig.GetValueAlways( "UdpSocketOsReceiveBufferSize" ) ), GUCEF_DEFAULT_UDP_OS_LEVEL_RECEIVE_BUFFER_SIZE );
     CORE::UInt32 udpSocketUpdateCyclesPerPulse = CORE::StringToUInt32( CORE::ResolveVars( appConfig.GetValueAlways( "MaxUdpSocketUpdateCyclesPerPulse" ) ), GUCEF_DEFAULT_UDP_MAX_SOCKET_CYCLES_PER_PULSE );
     bool performRedisWritesInDedicatedThread = CORE::StringToBool( CORE::ResolveVars( appConfig.GetValueAlways( "PerformRedisWritesInDedicatedThread" ) ), true );
-    CORE::UInt32 maxSizeOfDedicatedRedisWriterBulkMailRead = CORE::StringToUInt32( CORE::ResolveVars( appConfig.GetValueAlways( "MaxSizeOfDedicatedRedisWriterBulkMailRead" ) ), GUCEF_DEFAULT_MAX_DEDICATED_REDIS_WRITER_MAIL_BULK_READ );
+    CORE::Int32 maxSizeOfDedicatedRedisWriterBulkMailRead = CORE::StringToInt32( CORE::ResolveVars( appConfig.GetValueAlways( "MaxSizeOfDedicatedRedisWriterBulkMailRead" ) ), GUCEF_DEFAULT_MAX_DEDICATED_REDIS_WRITER_MAIL_BULK_READ );
     bool applyCpuThreadAffinityByDefault = CORE::StringToBool( CORE::ResolveVars( appConfig.GetValueAlways( "ApplyCpuThreadAffinityByDefault" )  ), false );
 
     CORE::UInt32 logicalCpuCount = CORE::GetLogicalCPUCount();
