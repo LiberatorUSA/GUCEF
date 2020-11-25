@@ -216,7 +216,7 @@ UInt16ToString( const UInt16 value );
 /*-------------------------------------------------------------------------*/
 
 GUCEF_CORE_PUBLIC_CPP Int16
-StringToInt16( const CString& str, UInt16 defaultIfNeeded = 0 );
+StringToInt16( const CString& str, Int16 defaultIfNeeded = 0 );
 
 /*-------------------------------------------------------------------------*/
 
