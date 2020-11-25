@@ -463,7 +463,7 @@ StringToBool( const CString& str, bool defaultIfNeeded )
 /*-------------------------------------------------------------------------*/
 
 Int64
-StringToInt64( const CString& str )
+StringToInt64( const CString& str, Int64 defaultIfNeeded )
 {GUCEF_TRACE;
 
     if ( !str.IsNULLOrEmpty() )
@@ -477,7 +477,7 @@ StringToInt64( const CString& str )
 
         return value;
     }
-    return 0;
+    return defaultIfNeeded;
 }
 
 /*-------------------------------------------------------------------------*/
@@ -499,7 +499,7 @@ Int64ToString( const Int64 value )
 /*-------------------------------------------------------------------------*/
 
 UInt64
-StringToUInt64( const CString& str )
+StringToUInt64( const CString& str, UInt64 defaultIfNeeded )
 {GUCEF_TRACE;
 
     if ( !str.IsNULLOrEmpty() )
@@ -513,8 +513,7 @@ StringToUInt64( const CString& str )
 
         return value;
     }
-
-    return 0;
+    return defaultIfNeeded;
 }
 
 /*-------------------------------------------------------------------------*/
@@ -536,7 +535,7 @@ UInt64ToString( const UInt64 value )
 /*-------------------------------------------------------------------------*/
 
 Int32
-StringToInt32( const CString& str )
+StringToInt32( const CString& str, Int32 defaultIfNeeded )
 {GUCEF_TRACE;
 
     if ( !str.IsNULLOrEmpty() )
@@ -545,7 +544,7 @@ StringToInt32( const CString& str )
         sscanf( str.C_String(), "%d", &value );
         return value;
     }
-    return 0;
+    return defaultIfNeeded;
 }
 
 /*-------------------------------------------------------------------------*/
@@ -562,7 +561,7 @@ Int32ToString( const Int32 value )
 /*-------------------------------------------------------------------------*/
 
 UInt32
-StringToUInt32( const CString& str, UInt32 defaultValue )
+StringToUInt32( const CString& str, UInt32 defaultIfNeeded )
 {GUCEF_TRACE;
 
     if ( !str.IsNULLOrEmpty() )
@@ -571,7 +570,7 @@ StringToUInt32( const CString& str, UInt32 defaultValue )
         sscanf( str.C_String(), "%u", &value );
         return value;
     }
-    return defaultValue;
+    return defaultIfNeeded;
 }
 
 /*-------------------------------------------------------------------------*/
@@ -588,7 +587,7 @@ UInt32ToString( const UInt32 value )
 /*-------------------------------------------------------------------------*/
 
 UInt16
-StringToUInt16( const CString& str, UInt16 defaultValue )
+StringToUInt16( const CString& str, UInt16 defaultIfNeeded )
 {GUCEF_TRACE;
 
     if ( !str.IsNULLOrEmpty() )
@@ -597,7 +596,7 @@ StringToUInt16( const CString& str, UInt16 defaultValue )
         sscanf( str.C_String(), "%u", &value );
         return (UInt16) value;
     }
-    return defaultValue;
+    return defaultIfNeeded;
 }
 
 /*-------------------------------------------------------------------------*/
@@ -614,7 +613,7 @@ UInt16ToString( const UInt16 value )
 /*-------------------------------------------------------------------------*/
 
 Int16
-StringToInt16( const CString& str )
+StringToInt16( const CString& str, Int16 defaultIfNeeded )
 {GUCEF_TRACE;
 
     if ( !str.IsNULLOrEmpty() )
@@ -623,7 +622,7 @@ StringToInt16( const CString& str )
         sscanf( str.C_String(), "%d", &value );
         return (Int16) value;
     }
-    return 0;
+    return defaultIfNeeded;
 }
 
 /*-------------------------------------------------------------------------*/
@@ -640,7 +639,7 @@ Int16ToString( const Int16 value )
 /*-------------------------------------------------------------------------*/
 
 Int8
-StringToInt8( const CString& str )
+StringToInt8( const CString& str, Int8 defaultIfNeeded )
 {GUCEF_TRACE;
 
     if ( !str.IsNULLOrEmpty() )
@@ -649,7 +648,7 @@ StringToInt8( const CString& str )
         sscanf( str.C_String(), "%d", &value );
         return (Int8) value;
     }
-    return 0;
+    return defaultIfNeeded;
 }
 
 /*-------------------------------------------------------------------------*/
@@ -666,7 +665,7 @@ Int8ToString( const Int8 value )
 /*-------------------------------------------------------------------------*/
 
 UInt8
-StringToUInt8( const CString& str )
+StringToUInt8( const CString& str, UInt8 defaultIfNeeded )
 {GUCEF_TRACE;
 
     if ( !str.IsNULLOrEmpty() )
@@ -675,7 +674,7 @@ StringToUInt8( const CString& str )
         sscanf( str.C_String(), "%u", &value );
         return (UInt8) value;
     }
-    return 0;
+    return defaultIfNeeded;
 }
 
 /*-------------------------------------------------------------------------*/
@@ -703,12 +702,16 @@ PointerToString( const void* value )
 /*-------------------------------------------------------------------------*/
 
 void*
-StringToPointer( const CString& value )
+StringToPointer( const CString& str, void* defaultIfNeeded )
 {GUCEF_TRACE;
 
-    void* ptr = nullptr;
-    sscanf( value.C_String(), "%p", &ptr );
-    return ptr;
+    if ( !str.IsNULLOrEmpty() )
+    {
+        void* ptr = GUCEF_NULL;
+        sscanf( str.C_String(), "%p", &ptr );
+        return ptr;
+    }
+    return defaultIfNeeded;
 }
 
 /*-------------------------------------------------------------------------*/
@@ -773,7 +776,7 @@ DoubleToString( const double value )
 /*-------------------------------------------------------------------------*/
 
 double
-StringToDouble( const CString& str, double defaultValue )
+StringToDouble( const CString& str, double defaultIfNeeded )
 {GUCEF_TRACE;
 
     if ( !str.IsNULLOrEmpty() )
@@ -782,7 +785,7 @@ StringToDouble( const CString& str, double defaultValue )
         sscanf( str.C_String(), "%lf", &value );
         return value;
     }
-    return defaultValue;
+    return defaultIfNeeded;
 }
 
 /*-------------------------------------------------------------------------*/

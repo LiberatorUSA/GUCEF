@@ -166,7 +166,7 @@ StringToBool( const CString& str, bool defaultIfNeeded = false );
 /*-------------------------------------------------------------------------*/
 
 GUCEF_CORE_PUBLIC_CPP UInt64
-StringToUInt64( const CString& str );
+StringToUInt64( const CString& str, UInt64 defaultIfNeeded = 0 );
 
 /*-------------------------------------------------------------------------*/
 
@@ -176,7 +176,7 @@ UInt64ToString( const UInt64 value );
 /*-------------------------------------------------------------------------*/
 
 GUCEF_CORE_PUBLIC_CPP Int64
-StringToInt64( const CString& str );
+StringToInt64( const CString& str, Int64 defaultIfNeeded = 0 );
 
 /*-------------------------------------------------------------------------*/
 
@@ -186,7 +186,7 @@ Int64ToString( const Int64 value );
 /*-------------------------------------------------------------------------*/
 
 GUCEF_CORE_PUBLIC_CPP Int32
-StringToInt32( const CString& str );
+StringToInt32( const CString& str, Int32 defaultIfNeeded = 0 );
 
 /*-------------------------------------------------------------------------*/
 
@@ -196,7 +196,7 @@ Int32ToString( const Int32 value );
 /*-------------------------------------------------------------------------*/
 
 GUCEF_CORE_PUBLIC_CPP UInt32
-StringToUInt32( const CString& str, UInt32 defaultValue = 0 );
+StringToUInt32( const CString& str, UInt32 defaultIfNeeded = 0 );
 
 /*-------------------------------------------------------------------------*/
 
@@ -206,7 +206,7 @@ UInt32ToString( const UInt32 value );
 /*-------------------------------------------------------------------------*/
 
 GUCEF_CORE_PUBLIC_CPP UInt16
-StringToUInt16( const CString& str, UInt16 defaultValue = 0 );
+StringToUInt16( const CString& str, UInt16 defaultIfNeeded = 0 );
 
 /*-------------------------------------------------------------------------*/
 
@@ -216,7 +216,7 @@ UInt16ToString( const UInt16 value );
 /*-------------------------------------------------------------------------*/
 
 GUCEF_CORE_PUBLIC_CPP Int16
-StringToInt16( const CString& str );
+StringToInt16( const CString& str, UInt16 defaultIfNeeded = 0 );
 
 /*-------------------------------------------------------------------------*/
 
@@ -226,7 +226,7 @@ Int16ToString( const Int16 value );
 /*-------------------------------------------------------------------------*/
 
 GUCEF_CORE_PUBLIC_CPP Int8
-StringToInt8( const CString& str );
+StringToInt8( const CString& str, Int8 defaultIfNeeded = 0 );
 
 /*-------------------------------------------------------------------------*/
 
@@ -236,7 +236,7 @@ UInt8ToString( const UInt8 value );
 /*-------------------------------------------------------------------------*/
 
 GUCEF_CORE_PUBLIC_CPP UInt8
-StringToUInt8( const CString& str );
+StringToUInt8( const CString& str, UInt8 defaultValue = 0 );
 
 /*-------------------------------------------------------------------------*/
 
@@ -251,7 +251,7 @@ PointerToString( const void* value );
 /*-------------------------------------------------------------------------*/
 
 GUCEF_CORE_PUBLIC_CPP void*
-StringToPointer( const CString& value );
+StringToPointer( const CString& value, void* defaultIfNeeded = GUCEF_NULL );
 
 /*-------------------------------------------------------------------------*/
 
@@ -394,6 +394,7 @@ inline CString ToString( bool value ) { return BoolToString( value ); }
 inline CString ToString( const char* value ) { return CString( value ); }
 inline CString ToString( const void* value ) { return PointerToString( value ); }
 inline CString ToString( const TVersion& value ) { return VersionToString( value ); }
+inline CString ToString( const std::string& value ) { return CString( value ); }
 inline CString ToString( const std::wstring& value ) { std::string out; Utf16toUtf8( value, out ); return out; }
 
 #if ( ( GUCEF_PLATFORM == GUCEF_PLATFORM_LINUX ) || ( GUCEF_PLATFORM == GUCEF_PLATFORM_ANDROID ) )
@@ -416,30 +417,3 @@ inline CString ToString( size_t value ) { return UInt64ToString( (UInt64) value 
 /*-------------------------------------------------------------------------*/
 
 #endif /* GUCEF_CORE_DVCPPSTRINGUTILS_H ? */
-
-/*-------------------------------------------------------------------------//
-//                                                                         //
-//      Info & Changes                                                     //
-//                                                                         //
-//-------------------------------------------------------------------------//
-
-- 08-02-2008 :
-        - Dinand: Added IsFileInDir()
-- 03-03-2007 :
-        - Dinand: Added StripFilename()
-- 21-09-2005 :
-        - Dinand: Added StringToInt()
-        - Dinand: Added IntToString()
-        - Dinand: Added StringToMD5String()
-- 24-07-2005 :
-        - Dinand: Added StringToBool()
-- 26-04-2005 :
-        - Dinand: Fixed RelativePath() so that strings that do not have any tags don't
-          cause a problem.
-- 03-04-2005 :
-        - Dinand: Initial version of this file.
-          Meant to hold string class utilities that do not belong in the class
-          or in the class header itself.
-        - Dinand: Added RelativePath()
-
------------------------------------------------------------------------------*/

@@ -141,6 +141,10 @@ class GUCEF_CORE_PUBLIC_CPP CDateTime : public CDate ,
     Int16 m_timezoneOffsetInMins;
 };
 
+/*-------------------------------------------------------------------------*/
+
+inline CString ToString( const CDateTime& value ) { return value.ToIso8601DateTimeString( true, true ); }
+
 /*-------------------------------------------------------------------------//
 //                                                                         //
 //      NAMESPACE                                                          //
