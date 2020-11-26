@@ -250,6 +250,13 @@ class GUCEF_CORE_PUBLIC_CPP CDataNode
      */
     TStringVector GetChildrenValuesByName( const CString& name ) const;
 
+    /**
+     *  Retrieves the "value: property of each child node if set and aggregates them
+     *
+     *  @return the values of the child nodes
+     */
+    TStringVector GetChildrenValues( void ) const;
+
     CDataNode* FindRoot( void ) const;
 
     CDataNode* FindChild( const CString& name ) const;

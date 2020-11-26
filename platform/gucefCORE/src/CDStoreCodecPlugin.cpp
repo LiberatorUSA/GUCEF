@@ -181,6 +181,7 @@ OnNodeBeginHandler( void* privdata       ,
                 */
                 pd->curnode = pd->root;
                 pd->curnode->SetName( nodename );
+                pd->curnode->SetNodeType( nodeType );
         }
 }
 

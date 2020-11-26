@@ -497,11 +497,36 @@ static void process_object( TSrcFileData* sd, const char* name, json_value* valu
 
 /*---------------------------------------------------------------------------*/
 
+int
+json_type_to_gucef_type( json_type type )
+{
+    switch ( type )
+    {
+        case json_object:
+            return GUCEF_DATATYPE_OBJECT;
+        case json_array:
+            return GUCEF_DATATYPE_ARRAY;
+        case json_integer:
+            return GUCEF_DATATYPE_INT64;
+        case json_double:
+            return GUCEF_DATATYPE_FLOAT64;
+        case json_string:
+            return GUCEF_DATATYPE_STRING;
+        case json_boolean:
+            return GUCEF_DATATYPE_BOOLEAN_STRING;
+        case json_null:
+        case json_none:
+        default: 
+            return GUCEF_DATATYPE_UNKNOWN;
+    }
+}
+
+/*---------------------------------------------------------------------------*/
+
 static void
 process_array( TSrcFileData* sd, const char* name, json_value* value )
 {
     int length=0, x=0;
-    char indexAsName[64];
 
     if ( GUCEF_NULL == value )
         return;
@@ -511,10 +536,7 @@ process_array( TSrcFileData* sd, const char* name, json_value* value )
     length = value->u.array.length;
     for ( x=0; x<length; x++ )
     {
-        sprintf( indexAsName, "%i", x );
-        sd->handlers.OnNodeBegin( sd->privdata, indexAsName, value->u.array.values[x]->type );
         process_value( sd, name, GUCEF_NULL, value->u.array.values[x] );
-        sd->handlers.OnNodeEnd( sd->privdata, indexAsName );
     }
     sd->handlers.OnNodeChildrenEnd( sd->privdata, name );
     sd->handlers.OnNodeEnd( sd->privdata, name );

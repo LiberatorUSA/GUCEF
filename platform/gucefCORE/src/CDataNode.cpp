@@ -1403,6 +1403,28 @@ CDataNode::GetChildrenValuesByName( const CString& name ) const
 
 /*-------------------------------------------------------------------------*/
 
+CDataNode::TStringVector
+CDataNode::GetChildrenValues( void ) const
+{GUCEF_TRACE;
+
+    TStringVector results;
+    
+    TDataNodeList::const_iterator i = m_children.begin();
+    while ( i != m_children.end() )
+    {
+        const CString& childValue = (*i)->GetValue();
+        if ( !childValue.IsNULLOrEmpty() )
+        {
+            results.push_back( childValue );
+        }
+        ++i;
+    }
+
+    return results;
+}
+
+/*-------------------------------------------------------------------------*/
+
 void 
 CDataNode::Delete( void )
 {GUCEF_TRACE;
