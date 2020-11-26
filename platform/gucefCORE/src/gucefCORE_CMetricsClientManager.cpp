@@ -265,6 +265,20 @@ CMetricsClientManager::Gauge( const CString& key, const UInt32 value, const Floa
 /*-------------------------------------------------------------------------*/
 
 void
+CMetricsClientManager::Gauge( const CString& key, const Int64 value, const Float32 frequency ) const
+{GUCEF_TRACE;
+
+    TMetricsSystemClientPtrSet::const_iterator i = m_clients.begin();
+    while ( i != m_clients.end() )
+    {
+        (*i)->Gauge( key, value, frequency );
+        ++i;
+    }
+}
+
+/*-------------------------------------------------------------------------*/
+
+void
 CMetricsClientManager::Gauge( const CString& key, const UInt64 value, const Float32 frequency ) const
 {GUCEF_TRACE;
 

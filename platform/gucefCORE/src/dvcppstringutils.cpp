@@ -437,7 +437,7 @@ VersionToString( const TVersion& version )
 {GUCEF_TRACE;
 
     char verstr[ 25 ];
-    sprintf( verstr, "%d.%d.%d.%d", version.major, version.minor, version.patch, version.release );
+    snprintf( verstr, 25, "%d.%d.%d.%d", version.major, version.minor, version.patch, version.release );
     return verstr;
 }
 
@@ -488,9 +488,9 @@ Int64ToString( const Int64 value )
 
     char intBuffer[ 21 ];
     #ifdef GUCEF_MSWIN_BUILD
-    sprintf( intBuffer, "%I64d", value );
+    snprintf( intBuffer, 21, "%I64d", value );
     #else
-    sprintf( intBuffer, "%d", value );
+    snprintf( intBuffer, 21, "%d", value );
     #endif
 
     return CString( intBuffer );
@@ -524,9 +524,9 @@ UInt64ToString( const UInt64 value )
 
     char intBuffer[ 21 ];
     #ifdef GUCEF_MSWIN_BUILD
-    sprintf( intBuffer, "%I64u", value );
+    snprintf( intBuffer, 21, "%I64u", value );
     #else
-    sprintf( intBuffer, "%u", value );
+    snprintf( intBuffer, 21, "%u", value );
     #endif
 
     return CString( intBuffer );
@@ -554,7 +554,7 @@ Int32ToString( const Int32 value )
 {GUCEF_TRACE;
 
     char intBuffer[ 12 ];
-    sprintf( intBuffer, "%d", value );
+    snprintf( intBuffer, 12, "%d", value );
     return CString( intBuffer );
 }
 
@@ -580,7 +580,7 @@ UInt32ToString( const UInt32 value )
 {GUCEF_TRACE;
 
     char intBuffer[ 12 ];
-    sprintf( intBuffer, "%u", value );
+    snprintf( intBuffer, 12, "%u", value );
     return CString( intBuffer );
 }
 
@@ -606,7 +606,7 @@ UInt16ToString( const UInt16 value )
 {GUCEF_TRACE;
 
     char intBuffer[ 12 ];
-    sprintf( intBuffer, "%u", value );
+    snprintf( intBuffer, 12, "%u", value );
     return CString( intBuffer );
 }
 
@@ -632,7 +632,7 @@ Int16ToString( const Int16 value )
 {GUCEF_TRACE;
 
     char intBuffer[ 12 ];
-    sprintf( intBuffer, "%d", value );
+    snprintf( intBuffer, 12, "%d", value );
     return CString( intBuffer );
 }
 
@@ -658,7 +658,7 @@ Int8ToString( const Int8 value )
 {GUCEF_TRACE;
 
     char intBuffer[ 12 ];
-    sprintf( intBuffer, "%d", value );
+    snprintf( intBuffer, 12, "%d", value );
     return CString( intBuffer );
 }
 
@@ -684,7 +684,7 @@ UInt8ToString( const UInt8 value )
 {GUCEF_TRACE;
 
     char intBuffer[ 12 ];
-    sprintf( intBuffer, "%u", value );
+    snprintf( intBuffer, 12, "%u", value );
     return CString( intBuffer );
 }
 
@@ -695,7 +695,7 @@ PointerToString( const void* value )
 {GUCEF_TRACE;
 
     char addrBuffer[ 64 ];
-    sprintf( addrBuffer, "%p", value );
+    snprintf( addrBuffer, 64, "%p", value );
     return CString( addrBuffer );
 }
 
@@ -756,7 +756,7 @@ FloatToString( const float value )
 {GUCEF_TRACE;
 
     char floatChars[ 16 ];
-    sprintf( floatChars, "%f", value );
+    snprintf( floatChars, 16, "%f", value );
 
     return floatChars;
 }
@@ -767,8 +767,8 @@ CString
 DoubleToString( const double value )
 {GUCEF_TRACE;
 
-    char doubleChars[ 32 ];
-    sprintf( doubleChars, "%lf", value );
+    char doubleChars[ 128 ];
+    snprintf( doubleChars, 128, "%lf", value );
 
     return doubleChars;
 }

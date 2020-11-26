@@ -66,45 +66,46 @@ class GUCEF_COM_PUBLIC_CPP CStatsDClient : public CORE::CIMetricsSystemClient
 
     virtual ~CStatsDClient();
 
-    virtual bool Open( void );
+    virtual bool Open( void ) GUCEF_VIRTUAL_OVERRIDE;
 
-    virtual bool Close( void );
-
-    /**
-     *  Increments the key, at a given frequency rate
-     */
-    virtual void Increment( const CString& key, const Float32 frequency = 1.0f ) const;
+    virtual bool Close( void ) GUCEF_VIRTUAL_OVERRIDE;
 
     /**
      *  Increments the key, at a given frequency rate
      */
-    virtual void Decrement( const CString& key, const Float32 frequency = 1.0f ) const;
+    virtual void Increment( const CString& key, const Float32 frequency = 1.0f ) const GUCEF_VIRTUAL_OVERRIDE;
+
+    /**
+     *  Increments the key, at a given frequency rate
+     */
+    virtual void Decrement( const CString& key, const Float32 frequency = 1.0f ) const GUCEF_VIRTUAL_OVERRIDE;
 
     /**
      *   Adjusts the specified key by a given delta, at a given frequency rate
      */
-    virtual void Count( const CString& key, const Int32 delta, const Float32 frequency = 1.0f ) const;
-    virtual void Count( const CString& key, const Int64 delta, const Float32 frequency = 1.0f ) const;
-    virtual void Count( const CString& key, const UInt32 delta, const Float32 frequency = 1.0f ) const;
-    virtual void Count( const CString& key, const UInt64 delta, const Float32 frequency = 1.0f ) const;
+    virtual void Count( const CString& key, const Int32 delta, const Float32 frequency = 1.0f ) const GUCEF_VIRTUAL_OVERRIDE;
+    virtual void Count( const CString& key, const Int64 delta, const Float32 frequency = 1.0f ) const GUCEF_VIRTUAL_OVERRIDE;
+    virtual void Count( const CString& key, const UInt32 delta, const Float32 frequency = 1.0f ) const GUCEF_VIRTUAL_OVERRIDE;
+    virtual void Count( const CString& key, const UInt64 delta, const Float32 frequency = 1.0f ) const GUCEF_VIRTUAL_OVERRIDE;
 
     /**
      *  Records a gauge for the key, with a given value, at a given frequency rate
      */
-    virtual void Gauge( const CString& key, const UInt32 value, const Float32 frequency = 1.0f ) const;
-    virtual void Gauge( const CString& key, const UInt64 value, const Float32 frequency = 1.0f ) const;
-    virtual void Gauge( const CString& key, const Float32 value, const Float32 frequency = 1.0f ) const;
-    virtual void Gauge( const CString& key, const Float64 value, const Float32 frequency = 1.0f ) const;
+    virtual void Gauge( const CString& key, const UInt32 value, const Float32 frequency = 1.0f ) const GUCEF_VIRTUAL_OVERRIDE;
+    virtual void Gauge( const CString& key, const Int64 value, const Float32 frequency = 1.0f ) const GUCEF_VIRTUAL_OVERRIDE;
+    virtual void Gauge( const CString& key, const UInt64 value, const Float32 frequency = 1.0f ) const GUCEF_VIRTUAL_OVERRIDE;
+    virtual void Gauge( const CString& key, const Float32 value, const Float32 frequency = 1.0f ) const GUCEF_VIRTUAL_OVERRIDE;
+    virtual void Gauge( const CString& key, const Float64 value, const Float32 frequency = 1.0f ) const GUCEF_VIRTUAL_OVERRIDE;
 
     /**
      *  Records a timing for a key, at a given frequency
      */
-    virtual void Timing( const CString& key, const UInt32 ms, const Float32 frequency = 1.0f ) const;
-    virtual void Timing( const CString& key, const UInt64 ms, const Float32 frequency = 1.0f ) const;
+    virtual void Timing( const CString& key, const UInt32 ms, const Float32 frequency = 1.0f ) const GUCEF_VIRTUAL_OVERRIDE;
+    virtual void Timing( const CString& key, const UInt64 ms, const Float32 frequency = 1.0f ) const GUCEF_VIRTUAL_OVERRIDE;
 
-    virtual bool SaveConfig( CORE::CDataNode& tree ) const;
+    virtual bool SaveConfig( CORE::CDataNode& tree ) const GUCEF_VIRTUAL_OVERRIDE;
 
-    virtual bool LoadConfig( const CORE::CDataNode& treeroot );
+    virtual bool LoadConfig( const CORE::CDataNode& treeroot ) GUCEF_VIRTUAL_OVERRIDE;
 
     void SetStatsDestination( const COMCORE::CHostAddress& dest );
 
@@ -118,7 +119,7 @@ class GUCEF_COM_PUBLIC_CPP CStatsDClient : public CORE::CIMetricsSystemClient
 
     const CString& GetStatNamePrefix( void ) const;
 
-    virtual const CString& GetClassTypeName( void ) const;
+    virtual const CString& GetClassTypeName( void ) const GUCEF_VIRTUAL_OVERRIDE;
 
     private:
 

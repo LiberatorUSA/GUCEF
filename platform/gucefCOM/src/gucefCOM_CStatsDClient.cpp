@@ -158,6 +158,16 @@ CStatsDClient::Gauge( const CString& key, const UInt32 value, const Float32 freq
 /*-------------------------------------------------------------------------*/
 
 void
+CStatsDClient::Gauge( const CString& key, const Int64 value, const Float32 frequency ) const
+{GUCEF_TRACE;
+
+    static const CString statTypeName = "g";
+    Transmit( key, value, statTypeName, frequency );
+}
+
+/*-------------------------------------------------------------------------*/
+
+void
 CStatsDClient::Gauge( const CString& key, const UInt64 value, const Float32 frequency ) const
 {GUCEF_TRACE;
 
@@ -260,7 +270,10 @@ CStatsDClient::Transmit( const CString& key      ,
     if ( msgSize > 0 )
     {
         GUCEF_DEBUG_LOG( CORE::LOGLEVEL_BELOW_NORMAL, CORE::CString( "StatsDClient:Transmit: " ) + buffer );
-        m_udpSender.SendPacketTo( m_statsDestination, buffer, (UInt16) msgSize );
+        if ( msgSize != m_udpSender.SendPacketTo( m_statsDestination, buffer, (UInt16) msgSize ) )
+        {
+            GUCEF_ERROR_LOG( CORE::LOGLEVEL_NORMAL, "StatsDClient:Transmit: Failed to send stat via UDP of " + CORE::ToString( msgSize ) + " bytes: " + CORE::CString( buffer ) );
+        }
     }
 }
 

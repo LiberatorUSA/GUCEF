@@ -80,6 +80,7 @@ Settings::Settings( void )
     , gatherInfoStats( true )
     , gatherInfoCommandStats( true )
     , gatherInfoMemory( true )
+    , gatherStreamInfo( true )
 {GUCEF_TRACE;
 
 }
@@ -94,6 +95,7 @@ Settings::Settings( const Settings& src )
     , gatherInfoStats( src.gatherInfoStats )
     , gatherInfoCommandStats( src.gatherInfoCommandStats )
     , gatherInfoMemory( src.gatherInfoMemory )
+    , gatherStreamInfo( src.gatherStreamInfo )
 {GUCEF_TRACE;
 
 }
@@ -113,6 +115,7 @@ Settings::operator=( const Settings& src )
         gatherInfoStats = src.gatherInfoStats;
         gatherInfoCommandStats = src.gatherInfoCommandStats;
         gatherInfoMemory = src.gatherInfoMemory;
+        gatherStreamInfo = src.gatherStreamInfo;
     }
     return *this;
 }
@@ -154,6 +157,7 @@ RedisInfoService::RedisInfoService()
     , m_redisContext( GUCEF_NULL )
     , m_redisPacketArgs()
     , m_metricsTimer( GUCEF_NULL )
+    , m_redisKeys()
 {GUCEF_TRACE;
 
 }
@@ -411,6 +415,7 @@ RedisInfoService::OnTaskStart( CORE::CICloneable* taskData )
     if ( RedisConnect() )
     {
         ProvideRedisNodesDoc();
+        //GetRedisKeys( m_redisKeys, "streams" );
     }
     
     return true;
@@ -566,6 +571,209 @@ RedisInfoService::GetRedisInfo( const CORE::CString& type, CORE::CValueList& kv 
     catch ( const std::exception& e )
     {
         GUCEF_EXCEPTION_LOG( CORE::LOGLEVEL_IMPORTANT, "RedisInfoService(" + CORE::PointerToString( this ) + "):GetRedisClusterNodeMap: exception: " + e.what() );
+        return false;
+    }
+
+    return true;
+}
+
+/*-------------------------------------------------------------------------*/
+
+bool
+RedisInfoService::GetRedisStreamInfo( struct redisReply* replyNode           ,
+                                      CORE::CValueList& info                 ,
+                                      const CORE::CString& optionalKeyPrefix ,
+                                      bool statLikeValuesOnly                )
+{GUCEF_TRACE;
+
+    if ( GUCEF_NULL != replyNode )
+    {
+        int type = replyNode->type;
+        if ( REDIS_REPLY_ARRAY == type )
+        {
+            size_t i=0;
+            size_t infoCount = replyNode->elements;
+            while ( i < infoCount ) 
+            {
+                CORE::CString infoElementName;
+                if ( REDIS_REPLY_STRING == replyNode->element[ i ]->type )
+                {
+                    infoElementName = optionalKeyPrefix + replyNode->element[ i ]->str;
+                    ++i;
+
+                    switch( replyNode->element[ i ]->type )
+                    {
+                        case REDIS_REPLY_VERB:
+                        case REDIS_REPLY_STATUS:
+                        case REDIS_REPLY_STRING: 
+                        { 
+                            if ( !statLikeValuesOnly )
+                                info.Set( infoElementName, replyNode->element[ i ]->str ); 
+                            break; 
+                        }
+                        case REDIS_REPLY_ERROR:
+                        case REDIS_REPLY_INTEGER: 
+                        { 
+                            info.Set( infoElementName, CORE::ToString( replyNode->element[ i ]->integer ) ); 
+                            break; 
+                        }
+                        case REDIS_REPLY_DOUBLE: 
+                        { 
+                            info.Set( infoElementName, CORE::ToString( replyNode->element[ i ]->dval ) ); 
+                            break; 
+                        }
+                        case REDIS_REPLY_BOOL: 
+                        { 
+                            if ( !statLikeValuesOnly )
+                                info.Set( infoElementName, CORE::ToString( CORE::StringToBool( replyNode->element[ i ]->str ) ) ); 
+                            break; 
+                        }
+                        case REDIS_REPLY_ARRAY: 
+                        { 
+                            return GetRedisStreamInfo( replyNode->element[ i ], info, optionalKeyPrefix, statLikeValuesOnly ); 
+                        }
+                        default:
+                            break;
+                    }
+                }
+                else
+                    break;                        
+                ++i;
+            }
+        }
+    }
+}
+
+/*-------------------------------------------------------------------------*/
+
+bool
+RedisInfoService::GetRedisStreamInfo( const CORE::CString& streamName        ,
+                                      CORE::CValueList& info                 ,
+                                      const CORE::CString& optionalKeyPrefix ,
+                                      bool statLikeValuesOnly                )
+{GUCEF_TRACE;
+
+    if ( GUCEF_NULL == m_redisContext )
+        return false;
+    
+    try
+    {
+        CORE::CString xinfoCmd( "XINFO" );
+        CORE::CString streamParam( "STREAM" );
+
+        sw::redis::StringView xinfoCmdSV( xinfoCmd.C_String(), xinfoCmd.Length() );
+        sw::redis::StringView streamParamSV( streamParam.C_String(), streamParam.Length() );
+        sw::redis::StringView streamNameParamSV( streamName.C_String(), streamName.Length() );
+
+        auto reply = m_redisContext->command( xinfoCmdSV, streamParamSV, streamNameParamSV );
+        if ( reply )
+        {
+            return GetRedisStreamInfo( reply.get(), info, optionalKeyPrefix, statLikeValuesOnly );
+        }
+
+        GUCEF_LOG( CORE::LOGLEVEL_NORMAL, "RedisInfoService(" + CORE::PointerToString( this ) + "):GetRedisStreamInfo: Obtained " + CORE::ToString( info.GetCount() ) + " pieces of information" );
+    }
+    catch ( const sw::redis::Error& e )
+    {
+        GUCEF_EXCEPTION_LOG( CORE::LOGLEVEL_IMPORTANT, "RedisInfoService(" + CORE::PointerToString( this ) + "):GetRedisStreamInfo: Redis++ exception: " + e.what() );
+        return false;
+    }
+    catch ( const std::exception& e )
+    {
+        GUCEF_EXCEPTION_LOG( CORE::LOGLEVEL_IMPORTANT, "RedisInfoService(" + CORE::PointerToString( this ) + "):GetRedisStreamInfo: exception: " + e.what() );
+        return false;
+    }
+
+    return true;
+}
+
+/*-------------------------------------------------------------------------*/
+
+bool
+RedisInfoService::GetRedisStreamInfoForAllStreams( CORE::CValueList& info  ,
+                                                   bool statLikeValuesOnly )
+{GUCEF_TRACE;
+
+    CORE::CString::StringVector streamNames;
+    if ( GetRedisKeys( streamNames, "stream" ) )
+    {
+        CORE::CString::StringVector::iterator i = streamNames.begin();
+        while ( i != streamNames.end() )
+        {
+            CORE::CString keyPrefix = (*i).ReplaceChar( '.', '_' ) + '.';
+            GetRedisStreamInfo( (*i), info, keyPrefix, statLikeValuesOnly );
+            ++i;
+        }
+        return true;
+    }
+    return false;
+}
+
+/*-------------------------------------------------------------------------*/
+
+bool
+RedisInfoService::GetRedisKeys( CORE::CString::StringVector& keys ,
+                                const CORE::CString& keyType      )
+{GUCEF_TRACE;
+
+    if ( GUCEF_NULL == m_redisContext )
+        return false;
+    
+    try
+    {
+        static const CORE::CString scanCmd( "SCAN" );
+        CORE::CString itteratorParam( "0" );
+        static const CORE::CString typeParam( "TYPE" );
+
+        sw::redis::StringView scanCmdSV( scanCmd.C_String(), scanCmd.Length() );        
+        do
+        {
+            sw::redis::StringView itteratorParamSV( itteratorParam.C_String(), itteratorParam.Length() );
+            sw::redis::StringView typeParamSV( typeParam.C_String(), typeParam.Length() );
+            sw::redis::StringView typeValueParamSV( keyType.C_String(), keyType.Length() );
+
+            auto reply = m_redisContext->command( scanCmdSV, itteratorParamSV, typeParamSV, typeValueParamSV );
+            if ( reply )
+            {
+                int type = reply->type;
+                if ( REDIS_REPLY_ARRAY == type )
+                {
+                    size_t ittCount = reply->elements;
+
+                    if ( ittCount > 0 && REDIS_REPLY_STRING == reply->element[ 0 ]->type )
+                        itteratorParam = reply->element[ 0 ]->str;
+                    else
+                        return false;
+
+                    if ( ittCount > 1 && REDIS_REPLY_ARRAY == reply->element[ 1 ]->type )
+                    {
+                        size_t keyCount = reply->element[ 1 ]->elements;
+                        struct redisReply** keyList = reply->element[ 1 ]->element;
+                        for ( size_t n=0; n<keyCount; ++n )
+                        {
+                            if ( REDIS_REPLY_STRING == keyList[ n ]->type )
+                            {
+                                keys.push_back( keyList[ n ]->str );
+                            }
+                        }
+                    }
+                    else
+                        return false;
+                }
+            }
+        }
+        while ( itteratorParam != "0" );
+
+        GUCEF_LOG( CORE::LOGLEVEL_NORMAL, "RedisInfoService(" + CORE::PointerToString( this ) + "):GetRedisKeys: Found " + CORE::ToString( keys.size() ) + " keys" );
+    }
+    catch ( const sw::redis::Error& e )
+    {
+        GUCEF_EXCEPTION_LOG( CORE::LOGLEVEL_IMPORTANT, "RedisInfoService(" + CORE::PointerToString( this ) + "):GetRedisKeys: Redis++ exception: " + e.what() );
+        return false;
+    }
+    catch ( const std::exception& e )
+    {
+        GUCEF_EXCEPTION_LOG( CORE::LOGLEVEL_IMPORTANT, "RedisInfoService(" + CORE::PointerToString( this ) + "):GetRedisKeys: exception: " + e.what() );
         return false;
     }
 
@@ -754,7 +962,14 @@ RedisInfoService::SendKeyValueStats( const CORE::CValueList& kv        ,
         {
             const CORE::CString& key = (*i).first;
             const CORE::CString& value = (*i).second.front();
-            GUCEF_METRIC_GAUGE( metricPrefix + key, CORE::StringToDouble( value ), 1.0f );
+            if ( -1 != value.HasChar( '.' ) )
+            {
+                GUCEF_METRIC_GAUGE( metricPrefix + key, CORE::StringToDouble( value ), 1.0f );
+            }
+            else
+            {
+                GUCEF_METRIC_GAUGE( metricPrefix + key, CORE::StringToInt64( value ), 1.0f );
+            }
         }
         ++i;
     }
@@ -773,7 +988,7 @@ RedisInfoService::OnMetricsTimerCycle( CORE::CNotifier* notifier    ,
         CORE::CValueList kv;
         if ( GetRedisInfoCommandStats( kv ) )
         {
-            CORE::CString metricPrefix = m_settings.metricPrefix + ".CommandStats.";
+            CORE::CString metricPrefix = m_settings.metricPrefix + "CommandStats.";
             SendKeyValueStats( kv, metricPrefix );
         }
     }
@@ -782,7 +997,7 @@ RedisInfoService::OnMetricsTimerCycle( CORE::CNotifier* notifier    ,
         CORE::CValueList kv;
         if ( GetRedisInfoMemory( kv ) )
         {
-            CORE::CString metricPrefix = m_settings.metricPrefix + ".Memory.";
+            CORE::CString metricPrefix = m_settings.metricPrefix + "Memory.";
             SendKeyValueStats( kv, metricPrefix );
         }
     }
@@ -791,7 +1006,7 @@ RedisInfoService::OnMetricsTimerCycle( CORE::CNotifier* notifier    ,
         CORE::CValueList kv;
         if ( GetRedisInfoReplication( kv ) )
         {
-            CORE::CString metricPrefix = m_settings.metricPrefix + ".Replication.";
+            CORE::CString metricPrefix = m_settings.metricPrefix + "Replication.";
             SendKeyValueStats( kv, metricPrefix );
         }
     }
@@ -800,7 +1015,16 @@ RedisInfoService::OnMetricsTimerCycle( CORE::CNotifier* notifier    ,
         CORE::CValueList kv;
         if ( GetRedisInfoStats( kv ) )
         {
-            CORE::CString metricPrefix = m_settings.metricPrefix + ".Stats.";
+            CORE::CString metricPrefix = m_settings.metricPrefix + "Stats.";
+            SendKeyValueStats( kv, metricPrefix );
+        }
+    }
+    if ( m_settings.gatherStreamInfo )
+    {
+        CORE::CValueList kv;
+        if ( GetRedisStreamInfoForAllStreams( kv, true ) )
+        {
+            CORE::CString metricPrefix = m_settings.metricPrefix + "StreamInfo.";
             SendKeyValueStats( kv, metricPrefix );
         }
     }

@@ -120,6 +120,7 @@ class Settings : public CORE::CIConfigurable
     bool gatherInfoStats;
     bool gatherInfoCommandStats;
     bool gatherInfoMemory;
+    bool gatherStreamInfo;
 
     virtual bool SaveConfig( CORE::CDataNode& tree ) const GUCEF_VIRTUAL_OVERRIDE;
 
@@ -193,6 +194,17 @@ class RedisInfoService : public CORE::CTaskConsumer
 
     bool ProvideRedisNodesDoc( void );
 
+    bool GetRedisKeys( CORE::CString::StringVector& keys ,
+                       const CORE::CString& keyType      );
+
+    bool GetRedisStreamInfo( const CORE::CString& streamName        , 
+                             CORE::CValueList& info                 ,
+                             const CORE::CString& optionalKeyPrefix ,
+                             bool statLikeValuesOnly                );
+
+    bool GetRedisStreamInfoForAllStreams( CORE::CValueList& info  ,
+                                          bool statLikeValuesOnly );
+    
     bool GetRedisInfoReplication( CORE::CValueList& kv );
 
     bool GetRedisInfoStats( CORE::CValueList& kv );
@@ -212,6 +224,11 @@ class RedisInfoService : public CORE::CTaskConsumer
 
     void RegisterEventHandlers( void );
 
+    bool GetRedisStreamInfo( struct redisReply* replyNode           ,
+                             CORE::CValueList& info                 ,
+                             const CORE::CString& optionalKeyPrefix ,
+                             bool statLikeValuesOnly                );
+
     void
     OnMetricsTimerCycle( CORE::CNotifier* notifier    ,
                          const CORE::CEvent& eventId  ,
@@ -227,6 +244,7 @@ class RedisInfoService : public CORE::CTaskConsumer
     Settings m_settings;
     TRedisArgs m_redisPacketArgs;
     CORE::CTimer* m_metricsTimer;
+    CORE::CString::StringVector m_redisKeys;
 };
 
 /*-------------------------------------------------------------------------*/
