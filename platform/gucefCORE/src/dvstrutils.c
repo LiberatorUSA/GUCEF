@@ -203,7 +203,9 @@ String_To_Boolint_WithDefault( const char *teststr, UInt32 defaultIfNeeded )
 
         if ( ( strcmp( tests, "enable"  ) == 0 ) ||
              ( strcmp( tests, "true"  ) == 0 )   ||
+             ( strcmp( tests, "t"  ) == 0 )      ||
              ( strcmp( tests, "yes"  ) == 0 )    ||
+             ( strcmp( tests, "y"  ) == 0 )      ||
              ( strcmp( tests, "on"  ) == 0 )     ||
              ( strcmp( tests, "1"  ) == 0 )      )
         {
@@ -211,7 +213,9 @@ String_To_Boolint_WithDefault( const char *teststr, UInt32 defaultIfNeeded )
         }
         if ( ( strcmp( tests, "disable"  ) == 0 ) ||
              ( strcmp( tests, "false"  ) == 0 )   ||
+             ( strcmp( tests, "f"  ) == 0 )       ||
              ( strcmp( tests, "no"  ) == 0 )      ||
+             ( strcmp( tests, "n"  ) == 0 )       ||
              ( strcmp( tests, "off"  ) == 0 )     ||
              ( strcmp( tests, "0"  ) == 0 )       )
         {

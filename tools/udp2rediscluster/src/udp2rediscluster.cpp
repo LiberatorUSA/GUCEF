@@ -714,6 +714,7 @@ ClusterChannelRedisWriter::SendQueuedPackagesIfAny( void )
                 delete m_redisMsgQueueOverflowQueue[ n ];
             }
             m_redisMsgQueueOverflowQueue.clear();
+            m_redisMsgQueueOverflowQueueCounts.clear();
         }
         else
         {
