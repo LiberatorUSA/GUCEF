@@ -135,13 +135,25 @@ void
 CDataNode::Detach( void )
 {GUCEF_TRACE;
 
-    if ( 0 != _pparent )
+    // Detach from parent, if any
+    if ( GUCEF_NULL != _pparent )
     {
         _pparent->DetachChild( this );                        
     }
-    _pnext = NULL;
-    _pprev = NULL;
-    _pparent = NULL;     
+
+    // Detach from siblings, if any, and repair the chain
+    if ( GUCEF_NULL != _pnext )
+    {
+        _pnext->_pprev = _pprev;
+    }
+    if ( GUCEF_NULL != _pprev )
+    {
+        _pprev->_pnext = _pnext;
+    } 
+
+    _pnext = GUCEF_NULL;
+    _pprev = GUCEF_NULL;
+    _pparent = GUCEF_NULL;     
 }
 
 /*-------------------------------------------------------------------------*/
@@ -150,28 +162,9 @@ void
 CDataNode::DetachChild( CDataNode* child )
 {GUCEF_TRACE;       
 
-    if ( nullptr == child ) return;
-    
-    TDataNodeList::iterator i = m_children.begin();
-    while ( i != m_children.end() )
-    {
-        if ( (*i) == child )
-        {   
-            if ( nullptr != child->_pnext )
-            {
-                child->_pnext->_pprev = child->_pprev;
-            }
-            if ( nullptr != child->_pprev )
-            {
-                child->_pprev->_pnext = child->_pnext;
-            }            
-
-            // remove the entry but dont delete the object
-            m_children.erase( i );
-            return;
-        }
-        ++i;
-    }                     
+    if ( GUCEF_NULL == child ) 
+        return;
+    m_children.remove( child );
 }
 
 /*-------------------------------------------------------------------------*/
@@ -1294,7 +1287,8 @@ CDataNode::DelSubTree( void )
     while ( !m_children.empty() )
     {
         CDataNode* child = m_children.front();
-        m_children.erase( m_children.begin() );
+        m_children.pop_front();
+        child->DelSubTree();
         delete child;
     }  
 }        

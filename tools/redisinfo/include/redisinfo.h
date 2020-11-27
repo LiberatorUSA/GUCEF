@@ -140,10 +140,27 @@ class RedisNode
     CORE::UInt32 startSlot;
     CORE::UInt32 endSlot;
 
+    RedisNode& operator=( const RedisNode& other );
+
     RedisNode( void );
 };
 
 typedef std::map< CORE::UInt32, RedisNode > RedisNodeMap;
+
+/*-------------------------------------------------------------------------*/
+
+class RedisNodeWithPipe : public RedisNode
+{
+    public:
+
+    sw::redis::Pipeline* redisPipe;
+
+    RedisNodeWithPipe& operator=( const RedisNode& other );
+
+    RedisNodeWithPipe( void );
+};
+
+typedef std::map< CORE::UInt32, RedisNodeWithPipe > RedisNodeWithPipeMap;
 
 /*-------------------------------------------------------------------------*/
 
@@ -154,6 +171,9 @@ class RedisInfoService : public CORE::CTaskConsumer
     typedef CORE::CTEventHandlerFunctor< RedisInfoService > TEventCallback;
     typedef std::set< CORE::CString > TStringSet;
     typedef std::map< CORE::UInt32, TStringSet > TUInt32ToStringSetMap;
+
+    static const CORE::CString RedisInfoService::HashSlotFileCodec;
+    static const CORE::CString RedisInfoService::HashSlotFile;
 
     RedisInfoService();
     virtual ~RedisInfoService();
@@ -173,6 +193,31 @@ class RedisInfoService : public CORE::CTaskConsumer
     bool LoadConfig( const Settings& settings );
 
     const Settings& GetSettings( void ) const;
+    
+    private:
+
+    bool RedisConnect( void );
+
+    void RegisterEventHandlers( void );
+
+    bool RefreshRedisNodePipes( void );
+
+    bool GetRedisStreamInfo( struct redisReply* replyNode           ,
+                             CORE::CValueList& info                 ,
+                             const CORE::CString& optionalKeyPrefix ,
+                             bool statLikeValuesOnly                );
+
+    bool SerializeRedisClusterNodeMap( const RedisNodeMap& nodeMap, CORE::CDataNode& doc ) const;
+
+    bool DeserializeKeysForHashSlots( TUInt32ToStringSetMap& hashMap, const CORE::CDataNode& doc ) const;
+
+    bool SaveDocTo( const CORE::CDataNode& doc     , 
+                    const CORE::CString& codecName ,
+                    const CORE::CString& vfsPath   ) const;
+
+    bool LoadDocFrom( CORE::CDataNode& doc           , 
+                      const CORE::CString& codecName , 
+                      const CORE::CString& vfsPath   ) const;
 
     CORE::UInt32 CalculateRedisHashSlot( const CORE::CString& keyStr ) const;
 
@@ -184,11 +229,7 @@ class RedisInfoService : public CORE::CTaskConsumer
 
     bool GetRedisClusterNodeMap( RedisNodeMap& nodeMap );
 
-    bool SerializeRedisClusterNodeMap( const RedisNodeMap& nodeMap, CORE::CDataNode& doc ) const;
-
-    bool SaveDocTo( const CORE::CDataNode& doc     , 
-                    const CORE::CString& codecName ,
-                    const CORE::CString& vfsPath   ) const;
+    bool LoadHashSlotMap( void );
 
     bool ProvideHashSlotMapDoc( void );
 
@@ -196,6 +237,10 @@ class RedisInfoService : public CORE::CTaskConsumer
 
     bool GetRedisKeys( CORE::CString::StringVector& keys ,
                        const CORE::CString& keyType      );
+
+    bool GetRedisKeysForNode( RedisNodeWithPipe& node           ,
+                              CORE::CString::StringVector& keys ,
+                              const CORE::CString& keyType      );
 
     bool GetRedisStreamInfo( const CORE::CString& streamName        , 
                              CORE::CValueList& info                 ,
@@ -215,19 +260,12 @@ class RedisInfoService : public CORE::CTaskConsumer
 
     bool GetRedisInfo( const CORE::CString& type, CORE::CValueList& kv );
 
+    RedisNodeWithPipe* FindNodeInfo( const CORE::CString& hashable );
+
+    RedisNodeWithPipe* FindNodeInfo( CORE::UInt32 hashSlot );
+
     void SendKeyValueStats( const CORE::CValueList& kv        ,
                             const CORE::CString& metricPrefix );
-    
-    private:
-
-    bool RedisConnect( void );
-
-    void RegisterEventHandlers( void );
-
-    bool GetRedisStreamInfo( struct redisReply* replyNode           ,
-                             CORE::CValueList& info                 ,
-                             const CORE::CString& optionalKeyPrefix ,
-                             bool statLikeValuesOnly                );
 
     void
     OnMetricsTimerCycle( CORE::CNotifier* notifier    ,
@@ -245,6 +283,8 @@ class RedisInfoService : public CORE::CTaskConsumer
     TRedisArgs m_redisPacketArgs;
     CORE::CTimer* m_metricsTimer;
     CORE::CString::StringVector m_redisKeys;
+    RedisNodeWithPipeMap m_redisNodesMap;
+    TUInt32ToStringSetMap m_hashSlotOriginStrMap;
 };
 
 /*-------------------------------------------------------------------------*/

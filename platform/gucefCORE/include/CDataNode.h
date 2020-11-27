@@ -574,33 +574,3 @@ class GUCEF_CORE_PUBLIC_CPP CDataNode
 /*-------------------------------------------------------------------------*/
 
 #endif /* GUCEF_CORE_CDATANODE_H ? */
-
-/*-------------------------------------------------------------------------//
-//                                                                         //
-//      Info & Changes                                                     //
-//                                                                         //
-//-------------------------------------------------------------------------//
-
-- 11-12-2005 :
-        - Fixed a bug in the tree walking algorithm where not all tree branches
-          would be explored for the best match.
-- 18-05-2005 :
-        - Fixed a bug in Search(): The fromcurrent parameter had the wrong effect
-- 26-04-2005 :
-        - Fixed an iterator bug for both the const and non-const iterator.
-          The  start and end flags where not correctly set causing scenarios
-          to be possible where (i != end) == true even though there where no
-          node children.
-        - Fixed a bug in CopySubTree(), only the first tree branch was copied.
-- 23-04-2005 :
-        - Fixed a bug in AddChild() that would prevent you from adding more
-          then 1 child to a node. This would also cause an access violation
-          when cleaning up the tree.
-- 05-04-2005 :
-        - Added some commentary
-        - Added Structure()
-        - Added the fromcurrent parameter to Search()
-- 04-04-2005 :
-        - Initial implementation
-
----------------------------------------------------------------------------*/
