@@ -681,7 +681,14 @@ RedisInfoService::GetRedisInfoKeyspace( CORE::CValueList& kv )
     static CORE::CString cmdParam( "info" );
     static CORE::CString typeParam( "keyspace" );
 
-    return GetRedisInfo( cmdParam, typeParam, kv );
+    bool totalSuccess = true;
+    RedisNodeWithPipeMap::iterator i = m_redisNodesMap.begin();
+    while ( i != m_redisNodesMap.end() )
+    {
+        totalSuccess = GetRedisInfo( cmdParam, typeParam, kv, &(*i).second ) && totalSuccess;        
+        ++i;
+    }
+    return totalSuccess;
 }
 
 /*-------------------------------------------------------------------------*/
@@ -693,7 +700,14 @@ RedisInfoService::GetRedisInfoPersistence( CORE::CValueList& kv )
     static CORE::CString cmdParam( "info" );
     static CORE::CString typeParam( "persistence" );
 
-    return GetRedisInfo( cmdParam, typeParam, kv );
+    bool totalSuccess = true;
+    RedisNodeWithPipeMap::iterator i = m_redisNodesMap.begin();
+    while ( i != m_redisNodesMap.end() )
+    {
+        totalSuccess = GetRedisInfo( cmdParam, typeParam, kv, &(*i).second ) && totalSuccess;        
+        ++i;
+    }
+    return totalSuccess;
 }
 
 /*-------------------------------------------------------------------------*/
@@ -705,7 +719,14 @@ RedisInfoService::GetRedisInfoReplication( CORE::CValueList& kv )
     static CORE::CString cmdParam( "info" );
     static CORE::CString typeParam( "replication" );
 
-    return GetRedisInfo( cmdParam, typeParam, kv );
+    bool totalSuccess = true;
+    RedisNodeWithPipeMap::iterator i = m_redisNodesMap.begin();
+    while ( i != m_redisNodesMap.end() )
+    {
+        totalSuccess = GetRedisInfo( cmdParam, typeParam, kv, &(*i).second ) && totalSuccess;        
+        ++i;
+    }
+    return totalSuccess;
 }
 
 /*-------------------------------------------------------------------------*/
@@ -717,7 +738,14 @@ RedisInfoService::GetRedisInfoStats( CORE::CValueList& kv )
     static CORE::CString cmdParam( "info" );
     static CORE::CString typeParam( "stats" );
 
-    return GetRedisInfo( cmdParam, typeParam, kv );
+    bool totalSuccess = true;
+    RedisNodeWithPipeMap::iterator i = m_redisNodesMap.begin();
+    while ( i != m_redisNodesMap.end() )
+    {
+        totalSuccess = GetRedisInfo( cmdParam, typeParam, kv, &(*i).second ) && totalSuccess;        
+        ++i;
+    }
+    return totalSuccess;
 }
 
 /*-------------------------------------------------------------------------*/
@@ -729,7 +757,14 @@ RedisInfoService::GetRedisInfoCommandStats( CORE::CValueList& kv )
     static CORE::CString cmdParam( "info" );
     static CORE::CString typeParam( "commandstats" );
 
-    return GetRedisInfo( cmdParam, typeParam, kv );
+    bool totalSuccess = true;
+    RedisNodeWithPipeMap::iterator i = m_redisNodesMap.begin();
+    while ( i != m_redisNodesMap.end() )
+    {
+        totalSuccess = GetRedisInfo( cmdParam, typeParam, kv, &(*i).second ) && totalSuccess;        
+        ++i;
+    }
+    return totalSuccess;
 }
 
 /*-------------------------------------------------------------------------*/
@@ -741,7 +776,14 @@ RedisInfoService::GetRedisInfoClients( CORE::CValueList& kv )
     static CORE::CString cmdParam( "info" );
     static CORE::CString typeParam( "clients" );
 
-    return GetRedisInfo( cmdParam, typeParam, kv );
+    bool totalSuccess = true;
+    RedisNodeWithPipeMap::iterator i = m_redisNodesMap.begin();
+    while ( i != m_redisNodesMap.end() )
+    {
+        totalSuccess = GetRedisInfo( cmdParam, typeParam, kv, &(*i).second ) && totalSuccess;        
+        ++i;
+    }
+    return totalSuccess;
 }
 
 /*-------------------------------------------------------------------------*/
@@ -753,7 +795,14 @@ RedisInfoService::GetRedisInfoMemory( CORE::CValueList& kv )
     static CORE::CString cmdParam( "info" );
     static CORE::CString typeParam( "memory" );
 
-    return GetRedisInfo( cmdParam, typeParam, kv );
+    bool totalSuccess = true;
+    RedisNodeWithPipeMap::iterator i = m_redisNodesMap.begin();
+    while ( i != m_redisNodesMap.end() )
+    {
+        totalSuccess = GetRedisInfo( cmdParam, typeParam, kv, &(*i).second ) && totalSuccess;        
+        ++i;
+    }
+    return totalSuccess;
 }
 
 /*-------------------------------------------------------------------------*/
@@ -765,7 +814,14 @@ RedisInfoService::GetRedisInfoCpu( CORE::CValueList& kv )
     static CORE::CString cmdParam( "info" );
     static CORE::CString typeParam( "cpu" );
     
-    return GetRedisInfo( cmdParam, typeParam, kv );
+    bool totalSuccess = true;
+    RedisNodeWithPipeMap::iterator i = m_redisNodesMap.begin();
+    while ( i != m_redisNodesMap.end() )
+    {
+        totalSuccess = GetRedisInfo( cmdParam, typeParam, kv, &(*i).second ) && totalSuccess;        
+        ++i;
+    }
+    return totalSuccess;
 }
 
 /*-------------------------------------------------------------------------*/
@@ -783,9 +839,10 @@ RedisInfoService::GetRedisClusterInfo( CORE::CValueList& kv )
 /*-------------------------------------------------------------------------*/
 
 bool
-RedisInfoService::GetRedisInfo( struct redisReply* reply  ,
-                                const CORE::CString& type , 
-                                CORE::CValueList& kv      )
+RedisInfoService::GetRedisInfo( struct redisReply* reply       ,
+                                const CORE::CString& type      , 
+                                CORE::CValueList& kv           ,
+                                const CORE::CString& keyPrefix )
 {GUCEF_TRACE;
 
     if ( GUCEF_NULL == reply )
@@ -812,19 +869,19 @@ RedisInfoService::GetRedisInfo( struct redisReply* reply  ,
                     // Filter anything labeled as for human viewing since its redundant plus 
                     // we are all about automation in this code
                     if ( -1 == key.HasSubstr( "_human", false ) )
-                        kv.Set( key, comboValue );
+                        kv.Set( keyPrefix + key, comboValue );
                 }
                 else
                 if ( values.size() > 1 )
                 {
-                    CORE::CString keyPrefix = key + '_';
+                    CORE::CString extraKeyPrefix = keyPrefix + key + '_';
                     CORE::CString::StringVector::iterator n = values.begin();
                     while ( n != values.end() )
                     {
                         // Filter anything labeled as for human viewing since its redundant plus 
                         // we are all about automation in this code
                         if ( -1 == (*n).HasSubstr( "_human", false ) )
-                            kv.Set( (*n), '=', &keyPrefix );
+                            kv.Set( (*n), '=', &extraKeyPrefix );
                         ++n;
                     }
                 }
@@ -866,13 +923,13 @@ RedisInfoService::GetRedisInfo( const CORE::CString& cmd  ,
             if ( replyCount > 0 )
             {
                 redisReply& reply = redisReplies.get( 0 );
-                return GetRedisInfo( &reply, type, kv );
+                return GetRedisInfo( &reply, type, kv, node->nodeId + '.' );
             }
         }
         else
         {
             auto reply = m_redisContext->command( infoCmdSV, typeParamSV );
-            return GetRedisInfo( reply.get(), type, kv );
+            return GetRedisInfo( reply.get(), type, kv, CORE::CString::Empty );
         }
     }
     catch ( const sw::redis::Error& e )

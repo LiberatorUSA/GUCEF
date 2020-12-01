@@ -278,9 +278,10 @@ class RedisInfoService : public CORE::CTaskConsumer
                        CORE::CValueList& kv                 , 
                        RedisNodeWithPipe* node = GUCEF_NULL );
 
-    bool GetRedisInfo( struct redisReply* replyNode ,
-                       const CORE::CString& type    ,
-                       CORE::CValueList& kv         );
+    bool GetRedisInfo( struct redisReply* replyNode   ,
+                       const CORE::CString& type      ,
+                       CORE::CValueList& kv           ,
+                       const CORE::CString& keyPrefix );
 
     RedisNodeWithPipe* FindNodeInfo( const CORE::CString& hashable );
 
