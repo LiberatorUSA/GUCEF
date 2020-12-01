@@ -112,7 +112,7 @@ CDataNode::~CDataNode()
     delete m_associatedData;
     m_associatedData = GUCEF_NULL; 
     
-    DelSubTree();
+    Clear();
     Detach();    
 }
 
@@ -136,6 +136,7 @@ CDataNode::Detach( void )
 {GUCEF_TRACE;
 
     // Detach from parent, if any
+    // this can be a very expensive operation of there are a lot of children
     if ( GUCEF_NULL != _pparent )
     {
         _pparent->DetachChild( this );                        
@@ -1289,8 +1290,16 @@ CDataNode::DelSubTree( void )
         CDataNode* child = m_children.front();
         m_children.pop_front();
         child->DelSubTree();
+        
+        // Don't bother fixing the parent administration if the parent if being destroyed
+        // This is an optimization since this can be an expensive operation if there are a lot
+        // of child nodes since the list would have to be traversed for every single child.
+        // This prevents Detach() in the child destructor from reaching out to this parent again
+        // which is poinless since we are deleting the entire sub tree
+        child->_pparent = GUCEF_NULL;
+        
         delete child;
-    }  
+    } 
 }        
 
 /*-------------------------------------------------------------------------*/
