@@ -117,10 +117,15 @@ class Settings : public CORE::CIConfigurable
     bool collectMetrics;
     CORE::CString metricPrefix;
     bool gatherInfoReplication;
+    bool gatherInfoPersistence;
     bool gatherInfoStats;
     bool gatherInfoCommandStats;
     bool gatherInfoMemory;
     bool gatherStreamInfo;
+    bool gatherInfoClients;
+    bool gatherInfoCpu;
+    bool gatherInfoKeyspace;
+    bool gatherClusterInfo;
 
     virtual bool SaveConfig( CORE::CDataNode& tree ) const GUCEF_VIRTUAL_OVERRIDE;
 
@@ -252,13 +257,30 @@ class RedisInfoService : public CORE::CTaskConsumer
     
     bool GetRedisInfoReplication( CORE::CValueList& kv );
 
+    bool GetRedisInfoPersistence( CORE::CValueList& kv );
+
     bool GetRedisInfoStats( CORE::CValueList& kv );
     
     bool GetRedisInfoCommandStats( CORE::CValueList& kv );
     
     bool GetRedisInfoMemory( CORE::CValueList& kv );
 
-    bool GetRedisInfo( const CORE::CString& type, CORE::CValueList& kv );
+    bool GetRedisInfoClients( CORE::CValueList& kv );
+
+    bool GetRedisInfoCpu( CORE::CValueList& kv );
+
+    bool GetRedisInfoKeyspace( CORE::CValueList& kv );
+
+    bool GetRedisClusterInfo( CORE::CValueList& kv );
+
+    bool GetRedisInfo( const CORE::CString& cmd             ,
+                       const CORE::CString& type            ,  
+                       CORE::CValueList& kv                 , 
+                       RedisNodeWithPipe* node = GUCEF_NULL );
+
+    bool GetRedisInfo( struct redisReply* replyNode ,
+                       const CORE::CString& type    ,
+                       CORE::CValueList& kv         );
 
     RedisNodeWithPipe* FindNodeInfo( const CORE::CString& hashable );
 

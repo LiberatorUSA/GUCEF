@@ -24,6 +24,11 @@
 
 #include <string.h>
 
+#ifndef GUCEF_CORE_DVSTRUTILS_H
+#include "dvstrutils.h"
+#define GUCEF_CORE_DVSTRUTILS_H
+#endif /* GUCEF_CORE_DVSTRUTILS_H */
+
 #ifndef GUCEF_CORE_DVOSWRAP_H
 #include "DVOSWRAP.h"
 #define GUCEF_CORE_DVOSWRAP_H
@@ -80,10 +85,15 @@ Settings::Settings( void )
     , collectMetrics( true )
     , metricPrefix()
     , gatherInfoReplication( true )
+    , gatherInfoPersistence( true )
     , gatherInfoStats( true )
     , gatherInfoCommandStats( true )
     , gatherInfoMemory( true )
     , gatherStreamInfo( true )
+    , gatherInfoClients( true )
+    , gatherInfoCpu( true )
+    , gatherInfoKeyspace( true )
+    , gatherClusterInfo( true )
 {GUCEF_TRACE;
 
 }
@@ -95,10 +105,15 @@ Settings::Settings( const Settings& src )
     , collectMetrics( src.collectMetrics )
     , metricPrefix()
     , gatherInfoReplication( src.gatherInfoReplication )
+    , gatherInfoPersistence( src.gatherInfoPersistence )
     , gatherInfoStats( src.gatherInfoStats )
     , gatherInfoCommandStats( src.gatherInfoCommandStats )
     , gatherInfoMemory( src.gatherInfoMemory )
     , gatherStreamInfo( src.gatherStreamInfo )
+    , gatherInfoClients( src.gatherInfoClients )
+    , gatherInfoCpu( src.gatherInfoCpu )
+    , gatherInfoKeyspace( src.gatherInfoKeyspace )
+    , gatherClusterInfo( src.gatherClusterInfo )
 {GUCEF_TRACE;
 
 }
@@ -115,10 +130,15 @@ Settings::operator=( const Settings& src )
         collectMetrics = src.collectMetrics;
         metricPrefix = src.metricPrefix;
         gatherInfoReplication = src.gatherInfoReplication;
+        gatherInfoPersistence = src.gatherInfoPersistence;
         gatherInfoStats = src.gatherInfoStats;
         gatherInfoCommandStats = src.gatherInfoCommandStats;
         gatherInfoMemory = src.gatherInfoMemory;
         gatherStreamInfo = src.gatherStreamInfo;
+        gatherInfoClients = src.gatherInfoClients;
+        gatherInfoCpu = src.gatherInfoCpu;
+        gatherInfoKeyspace = src.gatherInfoKeyspace;
+        gatherClusterInfo = src.gatherClusterInfo;
     }
     return *this;
 }
@@ -431,7 +451,7 @@ RedisInfoService::ProvideHashSlotMapDoc( void )
 
 bool
 RedisInfoService::LoadHashSlotMap( void )
-{GUCEF_TRACE;
+{GUCEF_TRACE;  //return true;
    
     VFS::CVFS& vfs = VFS::CVfsGlobal::Instance()->GetVfs();
     if ( !vfs.FileExists( HashSlotFile ) )
@@ -476,6 +496,18 @@ RedisInfoService::RefreshRedisNodePipes( void )
     RedisNodeMap redisNodes;
     if ( GetRedisClusterNodeMap( redisNodes ) )
     {
+        // Due to the way the Redis library API works we need the hash slot mapping to be able to create
+        // a pipeline to each node since there is no API call to get a connection to a specific node
+        // It is abstracted away from us. The hash map allows us to work around that.
+        if ( m_hashSlotOriginStrMap.empty() )
+        {
+            if ( !LoadHashSlotMap() )
+            {
+                GUCEF_ERROR_LOG( CORE::LOGLEVEL_NORMAL, "RedisInfoService(" + CORE::PointerToString( this ) + "):RefreshRedisNodePipes: Unable to lazy load the hash map, as such cannot generate strings to establish dedicated pipes to the nodes" );                
+                return false;
+            }
+        }    
+        
         RedisNodeMap::iterator i = redisNodes.begin();
         while ( i != redisNodes.end() ) 
         {
@@ -504,6 +536,11 @@ RedisInfoService::RefreshRedisNodePipes( void )
                     GUCEF_EXCEPTION_LOG( CORE::LOGLEVEL_IMPORTANT, "RedisInfoService(" + CORE::PointerToString( this ) + "):RefreshRedisNodePipes: exception: " + e.what() );
                     return false;
                 }
+            }
+            else
+            {
+                GUCEF_ERROR_LOG( CORE::LOGLEVEL_NORMAL, "RedisInfoService(" + CORE::PointerToString( this ) + "):RefreshRedisNodePipes: Unable to find a hash slot entry for node " + 
+                    node.nodeId + " with start slot " + CORE::ToString( node.startSlot ) + ", as such cannot generate string to establish a dedicated pipe to the node" );
             }
             ++i;
         }
@@ -544,17 +581,11 @@ RedisInfoService::OnTaskStart( CORE::CICloneable* taskData )
 
     RegisterEventHandlers();
 
-    LoadHashSlotMap();
+    //LoadHashSlotMap();
 
     // Setup connection to Redis
     // Note that if there is an error here we will just keep on trying automatically
-    if ( RedisConnect() )
-    {
-        ProvideRedisNodesDoc();
-        RefreshRedisNodePipes();
-        //GetRedisKeys( m_redisKeys, "streams" );
-    }
-    
+    RedisConnect();
     return true;
 }
 
@@ -564,6 +595,9 @@ bool
 RedisInfoService::OnTaskCycle( CORE::CICloneable* taskData )
 {GUCEF_TRACE;
 
+    if ( GUCEF_NULL == m_redisContext )
+        RedisConnect();    
+    
     // We are never 'done' so return false
     return false;
 }
@@ -641,11 +675,37 @@ RedisNodeWithPipe::operator=( const RedisNode& other )
 /*-------------------------------------------------------------------------*/
 
 bool
+RedisInfoService::GetRedisInfoKeyspace( CORE::CValueList& kv )
+{GUCEF_TRACE;
+    
+    static CORE::CString cmdParam( "info" );
+    static CORE::CString typeParam( "keyspace" );
+
+    return GetRedisInfo( cmdParam, typeParam, kv );
+}
+
+/*-------------------------------------------------------------------------*/
+
+bool
+RedisInfoService::GetRedisInfoPersistence( CORE::CValueList& kv )
+{GUCEF_TRACE;
+    
+    static CORE::CString cmdParam( "info" );
+    static CORE::CString typeParam( "persistence" );
+
+    return GetRedisInfo( cmdParam, typeParam, kv );
+}
+
+/*-------------------------------------------------------------------------*/
+
+bool
 RedisInfoService::GetRedisInfoReplication( CORE::CValueList& kv )
 {GUCEF_TRACE;
     
+    static CORE::CString cmdParam( "info" );
     static CORE::CString typeParam( "replication" );
-    return GetRedisInfo( typeParam, kv );
+
+    return GetRedisInfo( cmdParam, typeParam, kv );
 }
 
 /*-------------------------------------------------------------------------*/
@@ -654,8 +714,10 @@ bool
 RedisInfoService::GetRedisInfoStats( CORE::CValueList& kv )
 {GUCEF_TRACE;
     
+    static CORE::CString cmdParam( "info" );
     static CORE::CString typeParam( "stats" );
-    return GetRedisInfo( typeParam, kv );
+
+    return GetRedisInfo( cmdParam, typeParam, kv );
 }
 
 /*-------------------------------------------------------------------------*/
@@ -664,8 +726,22 @@ bool
 RedisInfoService::GetRedisInfoCommandStats( CORE::CValueList& kv )
 {GUCEF_TRACE;
     
+    static CORE::CString cmdParam( "info" );
     static CORE::CString typeParam( "commandstats" );
-    return GetRedisInfo( typeParam, kv );
+
+    return GetRedisInfo( cmdParam, typeParam, kv );
+}
+
+/*-------------------------------------------------------------------------*/
+
+bool
+RedisInfoService::GetRedisInfoClients( CORE::CValueList& kv )
+{GUCEF_TRACE;
+    
+    static CORE::CString cmdParam( "info" );
+    static CORE::CString typeParam( "clients" );
+
+    return GetRedisInfo( cmdParam, typeParam, kv );
 }
 
 /*-------------------------------------------------------------------------*/
@@ -674,14 +750,104 @@ bool
 RedisInfoService::GetRedisInfoMemory( CORE::CValueList& kv )
 {GUCEF_TRACE;
     
+    static CORE::CString cmdParam( "info" );
     static CORE::CString typeParam( "memory" );
-    return GetRedisInfo( typeParam, kv );
+
+    return GetRedisInfo( cmdParam, typeParam, kv );
 }
 
 /*-------------------------------------------------------------------------*/
 
 bool
-RedisInfoService::GetRedisInfo( const CORE::CString& type, CORE::CValueList& kv )
+RedisInfoService::GetRedisInfoCpu( CORE::CValueList& kv )
+{GUCEF_TRACE;
+    
+    static CORE::CString cmdParam( "info" );
+    static CORE::CString typeParam( "cpu" );
+    
+    return GetRedisInfo( cmdParam, typeParam, kv );
+}
+
+/*-------------------------------------------------------------------------*/
+
+bool
+RedisInfoService::GetRedisClusterInfo( CORE::CValueList& kv )
+{GUCEF_TRACE;
+    
+    static CORE::CString cmdParam( "cluster" );
+    static CORE::CString typeParam( "info" );
+    
+    return GetRedisInfo( cmdParam, typeParam, kv );
+}
+
+/*-------------------------------------------------------------------------*/
+
+bool
+RedisInfoService::GetRedisInfo( struct redisReply* reply  ,
+                                const CORE::CString& type , 
+                                CORE::CValueList& kv      )
+{GUCEF_TRACE;
+
+    if ( GUCEF_NULL == reply )
+        return false;
+
+    if ( REDIS_REPLY_STRING == reply->type )
+    {
+        CORE::CString replyStr = reply->str;
+        replyStr = replyStr.ReplaceSubstr( "\r\n", "\n" );
+
+        CORE::CValueList kvCombined;
+        kvCombined.SetMultiple( replyStr, '\n', ':' );
+
+        CORE::CValueList::TValueMap::const_iterator i = kvCombined.GetDataBeginIterator();
+        while ( i != kvCombined.GetDataEndIterator() )
+        {
+            if ( !(*i).second.empty() )
+            {
+                const CORE::CString& key = (*i).first;
+                const CORE::CString& comboValue = (*i).second.front();
+                CORE::CString::StringVector values = comboValue.ParseElements( ',', false );
+                if ( values.size() == 1 )
+                {
+                    // Filter anything labeled as for human viewing since its redundant plus 
+                    // we are all about automation in this code
+                    if ( -1 == key.HasSubstr( "_human", false ) )
+                        kv.Set( key, comboValue );
+                }
+                else
+                if ( values.size() > 1 )
+                {
+                    CORE::CString keyPrefix = key + '_';
+                    CORE::CString::StringVector::iterator n = values.begin();
+                    while ( n != values.end() )
+                    {
+                        // Filter anything labeled as for human viewing since its redundant plus 
+                        // we are all about automation in this code
+                        if ( -1 == (*n).HasSubstr( "_human", false ) )
+                            kv.Set( (*n), '=', &keyPrefix );
+                        ++n;
+                    }
+                }
+            }
+            ++i;
+        }
+        return true;
+    }
+
+    if ( REDIS_REPLY_ERROR == reply->type )
+    {
+        return false;
+    }
+    return true;
+}
+
+/*-------------------------------------------------------------------------*/
+
+bool
+RedisInfoService::GetRedisInfo( const CORE::CString& cmd  ,
+                                const CORE::CString& type , 
+                                CORE::CValueList& kv      ,
+                                RedisNodeWithPipe* node   ) 
 {GUCEF_TRACE;
 
     if ( GUCEF_NULL == m_redisContext )
@@ -689,54 +855,24 @@ RedisInfoService::GetRedisInfo( const CORE::CString& type, CORE::CValueList& kv 
     
     try
     {
-        CORE::CString infoCmd( "INFO" );
-
-        sw::redis::StringView infoCmdSV( infoCmd.C_String(), infoCmd.Length() );
+        sw::redis::StringView infoCmdSV( cmd.C_String(), cmd.Length() );
         sw::redis::StringView typeParamSV( type.C_String(), type.Length() );
 
-        auto reply = m_redisContext->command( infoCmdSV, typeParamSV );
-        if ( reply )
+        if ( GUCEF_NULL != node )
         {
-            int type = reply->type;
-            if ( REDIS_REPLY_STRING == type )
+            node->redisPipe->command( infoCmdSV, typeParamSV );
+            sw::redis::QueuedReplies redisReplies = node->redisPipe->exec();
+            size_t replyCount = redisReplies.size();
+            if ( replyCount > 0 )
             {
-                CORE::CValueList kvCombined;
-                kvCombined.SetMultiple( reply->str, '\n', ':' );
-
-                CORE::CValueList::TValueMap::const_iterator i = kvCombined.GetDataBeginIterator();
-                while ( i != kvCombined.GetDataEndIterator() )
-                {
-                    if ( !(*i).second.empty() )
-                    {
-                        const CORE::CString& key = (*i).first;
-                        const CORE::CString& comboValue = (*i).second.front();
-                        CORE::CString::StringVector values = comboValue.ParseElements( ',', false );
-                        if ( values.size() == 1 )
-                        {
-                            kv.Set( key, comboValue );
-                        }
-                        else
-                        if ( values.size() > 1 )
-                        {
-                            CORE::CString keyPrefix = key + '_';
-                            CORE::CString::StringVector::iterator n = values.begin();
-                            while ( n != values.end() )
-                            {
-                                kv.Set( (*n), '=', &keyPrefix );
-                                ++n;
-                            }
-                        }
-                    }
-                    ++i;
-                }
+                redisReply& reply = redisReplies.get( 0 );
+                return GetRedisInfo( &reply, type, kv );
             }
-            else
-            {
-                if ( REDIS_REPLY_ERROR == type )
-                {
-                    return false;
-                }
-            }
+        }
+        else
+        {
+            auto reply = m_redisContext->command( infoCmdSV, typeParamSV );
+            return GetRedisInfo( reply.get(), type, kv );
         }
     }
     catch ( const sw::redis::Error& e )
@@ -1181,6 +1317,10 @@ RedisInfoService::RedisConnect( void )
 
         GUCEF_LOG( CORE::LOGLEVEL_NORMAL, "RedisInfoService(" + CORE::PointerToString( this ) + "):RedisConnect: Successfully created a Redis context" );
 
+        ProvideRedisNodesDoc();
+        RefreshRedisNodePipes();
+        //GetRedisKeys( m_redisKeys, "streams" );
+
         return true;
     }
     catch ( const sw::redis::Error& e )
@@ -1209,13 +1349,17 @@ RedisInfoService::SendKeyValueStats( const CORE::CValueList& kv        ,
         {
             const CORE::CString& key = (*i).first;
             const CORE::CString& value = (*i).second.front();
-            if ( -1 != value.HasChar( '.' ) )
+
+            //if ( 0 != CORE::IsANumber( value.C_String() ) )
             {
-                GUCEF_METRIC_GAUGE( metricPrefix + key, CORE::StringToDouble( value ), 1.0f );
-            }
-            else
-            {
-                GUCEF_METRIC_GAUGE( metricPrefix + key, CORE::StringToInt64( value ), 1.0f );
+                if ( -1 != value.HasChar( '.' ) )
+                {
+                    GUCEF_METRIC_GAUGE( metricPrefix + key, CORE::StringToDouble( value ), 1.0f );
+                }
+                else
+                {
+                    GUCEF_METRIC_GAUGE( metricPrefix + key, CORE::StringToInt64( value ), 1.0f );
+                }
             }
         }
         ++i;
@@ -1230,6 +1374,32 @@ RedisInfoService::OnMetricsTimerCycle( CORE::CNotifier* notifier    ,
                                        CORE::CICloneable* eventData )
 {GUCEF_TRACE;
 
+    if ( m_settings.gatherClusterInfo )
+    {
+        CORE::CValueList kv;
+        if ( GetRedisClusterInfo( kv ) )
+        {
+            // Cluster info is all numeric except for the cluster state
+            // We turn the state into a number here so we can sent it as a stat
+            static const CORE::CString clusterStateStatName = "cluster_state";
+            CORE::CString clusterStateStr = kv.GetValueAlways( clusterStateStatName );
+            if ( !clusterStateStr.IsNULLOrEmpty() )
+            {
+                if ( "ok" == clusterStateStr )
+                {
+                    static const CORE::CString clusterStateStatOk = "1";
+                    kv.Set( clusterStateStatName, clusterStateStatOk );
+                }
+                else
+                {
+                    static const CORE::CString clusterStateStatFail = "0";
+                    kv.Set( clusterStateStatName, clusterStateStatFail );
+                }
+            }
+            CORE::CString metricPrefix = m_settings.metricPrefix + "ClusterInfo.";
+            SendKeyValueStats( kv, metricPrefix );
+        }
+    }
     if ( m_settings.gatherInfoCommandStats )
     {
         CORE::CValueList kv;
@@ -1257,12 +1427,48 @@ RedisInfoService::OnMetricsTimerCycle( CORE::CNotifier* notifier    ,
             SendKeyValueStats( kv, metricPrefix );
         }
     }
+    if ( m_settings.gatherInfoPersistence )
+    {
+        CORE::CValueList kv;
+        if ( GetRedisInfoPersistence( kv ) )
+        {
+            CORE::CString metricPrefix = m_settings.metricPrefix + "Persistence.";
+            SendKeyValueStats( kv, metricPrefix );
+        }
+    }
     if ( m_settings.gatherInfoCommandStats )
     {
         CORE::CValueList kv;
         if ( GetRedisInfoStats( kv ) )
         {
             CORE::CString metricPrefix = m_settings.metricPrefix + "Stats.";
+            SendKeyValueStats( kv, metricPrefix );
+        }
+    }
+    if ( m_settings.gatherInfoClients )
+    {
+        CORE::CValueList kv;
+        if ( GetRedisInfoClients( kv ) )
+        {
+            CORE::CString metricPrefix = m_settings.metricPrefix + "Clients.";
+            SendKeyValueStats( kv, metricPrefix );
+        }
+    }
+    if ( m_settings.gatherInfoCpu )
+    {
+        CORE::CValueList kv;
+        if ( GetRedisInfoCpu( kv ) )
+        {
+            CORE::CString metricPrefix = m_settings.metricPrefix + "Cpu.";
+            SendKeyValueStats( kv, metricPrefix );
+        }
+    }
+    if ( m_settings.gatherInfoKeyspace )
+    {
+        CORE::CValueList kv;
+        if ( GetRedisInfoKeyspace( kv ) )
+        {
+            CORE::CString metricPrefix = m_settings.metricPrefix + "Keyspace.";
             SendKeyValueStats( kv, metricPrefix );
         }
     }

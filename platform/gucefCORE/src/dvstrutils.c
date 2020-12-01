@@ -70,7 +70,7 @@ IsANumber( const char* str )
 
     while ( '\0' != *str )
     {
-        if ( *str < 48 || *str > 57 )
+        if ( ( *str < 48 || *str > 57 ) && *str != '.' )
             return 0;
         ++str;
     }
