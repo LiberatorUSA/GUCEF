@@ -87,6 +87,8 @@ ChannelSettings::ChannelSettings( void )
     , applyThreadCpuAffinity( false )
     , cpuAffinityForDedicatedRedisWriterThread( 0 )
     , cpuAffinityForMainChannelThread( 0 )
+    , redisXAddMaxLen( -1 )
+    , redisXAddMaxLenIsApproximate( true )
 {GUCEF_TRACE;
 
 }
@@ -110,6 +112,8 @@ ChannelSettings::ChannelSettings( const ChannelSettings& src )
     , applyThreadCpuAffinity( src.applyThreadCpuAffinity )
     , cpuAffinityForDedicatedRedisWriterThread( src.cpuAffinityForDedicatedRedisWriterThread )
     , cpuAffinityForMainChannelThread( src.cpuAffinityForMainChannelThread )
+    , redisXAddMaxLen( src.redisXAddMaxLen )
+    , redisXAddMaxLenIsApproximate( src.redisXAddMaxLenIsApproximate )
 {GUCEF_TRACE;
 
 }
@@ -138,6 +142,8 @@ ChannelSettings::operator=( const ChannelSettings& src )
         applyThreadCpuAffinity = src.applyThreadCpuAffinity;
         cpuAffinityForDedicatedRedisWriterThread = src.cpuAffinityForDedicatedRedisWriterThread;
         cpuAffinityForMainChannelThread = src.cpuAffinityForMainChannelThread;
+        redisXAddMaxLen = src.redisXAddMaxLen;
+        redisXAddMaxLenIsApproximate = src.redisXAddMaxLenIsApproximate;
     }
     return *this;
 }
@@ -163,6 +169,8 @@ ChannelSettings::SaveConfig( CORE::CDataNode& tree ) const
     tree.SetAttribute( "applyThreadCpuAffinity", applyThreadCpuAffinity );
     tree.SetAttribute( "cpuAffinityForDedicatedRedisWriterThread", cpuAffinityForDedicatedRedisWriterThread );
     tree.SetAttribute( "cpuAffinityForMainChannelThread", cpuAffinityForMainChannelThread );
+    tree.SetAttribute( "redisXAddMaxLen", redisXAddMaxLen );
+    tree.SetAttribute( "redisXAddMaxLenIsApproximate", redisXAddMaxLenIsApproximate );
     return true;
 }
 
@@ -176,17 +184,19 @@ ChannelSettings::LoadConfig( const CORE::CDataNode& tree )
     redisAddress.SetHostnameAndPort( tree.GetAttributeValueOrChildValueByName( "redisAddress", redisAddress.AddressAndPortAsString() ) );
     channelStreamName = tree.GetAttributeValueOrChildValueByName( "channelStreamName", channelStreamName );
     udpInterface.SetAddress( tree.GetAttributeValueOrChildValueByName( "udpInterface", udpInterface.AddressAsString() ) );
-    collectMetrics = CORE::StringToBool( tree.GetAttributeValueOrChildValueByName( "collectMetrics", CORE::BoolToString( collectMetrics ) ) );
-    wantsTestPackage = CORE::StringToBool( tree.GetAttributeValueOrChildValueByName( "wantsTestPackage", CORE::BoolToString( wantsTestPackage ) ) );
+    collectMetrics = CORE::StringToBool( tree.GetAttributeValueOrChildValueByName( "collectMetrics" ), collectMetrics );
+    wantsTestPackage = CORE::StringToBool( tree.GetAttributeValueOrChildValueByName( "wantsTestPackage" ), wantsTestPackage );
     ticketRefillOnBusyCycle = CORE::StringToUInt32( tree.GetAttributeValueOrChildValueByName( "ticketRefillOnBusyCycle", CORE::UInt32ToString( ticketRefillOnBusyCycle ) ) );
     nrOfUdpReceiveBuffersPerSocket = CORE::StringToUInt32( tree.GetAttributeValueOrChildValueByName( "nrOfUdpReceiveBuffersPerSocket", CORE::UInt32ToString( nrOfUdpReceiveBuffersPerSocket ) ) );
     udpSocketOsReceiveBufferSize = CORE::StringToUInt32( tree.GetAttributeValueOrChildValueByName( "udpSocketOsReceiveBufferSize", CORE::UInt32ToString( udpSocketOsReceiveBufferSize ) ) );
     udpSocketUpdateCyclesPerPulse = CORE::StringToUInt32( tree.GetAttributeValueOrChildValueByName( "udpSocketUpdateCyclesPerPulse", CORE::UInt32ToString( udpSocketUpdateCyclesPerPulse ) ) );
-    performRedisWritesInDedicatedThread = CORE::StringToBool( tree.GetAttributeValueOrChildValueByName( "performRedisWritesInDedicatedThread", CORE::BoolToString( performRedisWritesInDedicatedThread ) ) );
+    performRedisWritesInDedicatedThread = CORE::StringToBool( tree.GetAttributeValueOrChildValueByName( "performRedisWritesInDedicatedThread" ), performRedisWritesInDedicatedThread );
     maxSizeOfDedicatedRedisWriterBulkMailRead = CORE::StringToUInt32( tree.GetAttributeValueOrChildValueByName( "maxSizeOfDedicatedRedisWriterBulkMailRead", CORE::UInt32ToString( maxSizeOfDedicatedRedisWriterBulkMailRead ) ) );
-    applyThreadCpuAffinity = CORE::StringToBool( tree.GetAttributeValueOrChildValueByName( "applyThreadCpuAffinity", CORE::BoolToString( applyThreadCpuAffinity ) ) );
+    applyThreadCpuAffinity = CORE::StringToBool( tree.GetAttributeValueOrChildValueByName( "applyThreadCpuAffinity" ), applyThreadCpuAffinity );
     cpuAffinityForDedicatedRedisWriterThread = CORE::StringToUInt32( tree.GetAttributeValueOrChildValueByName( "cpuAffinityForDedicatedRedisWriterThread", CORE::UInt32ToString( cpuAffinityForDedicatedRedisWriterThread ) ) );
     cpuAffinityForMainChannelThread = CORE::StringToUInt32( tree.GetAttributeValueOrChildValueByName( "cpuAffinityForMainChannelThread", CORE::UInt32ToString( cpuAffinityForMainChannelThread ) ) );
+    redisXAddMaxLen = CORE::StringToInt32( tree.GetAttributeValueOrChildValueByName( "redisXAddMaxLen" ), redisXAddMaxLen ); 
+    redisXAddMaxLenIsApproximate = CORE::StringToBool( tree.GetAttributeValueOrChildValueByName( "redisXAddMaxLenIsApproximate" ), redisXAddMaxLenIsApproximate );
     return true;
 }
 
@@ -563,6 +573,7 @@ ClusterChannelRedisWriter::RedisSendSyncImpl( const TPacketEntryVectorPtrVector&
     {
         static const CORE::CString fieldName = "UDP";
         static const CORE::CString msgId = "*";
+        static const CORE::CString maxLen = "MAXLEN";
 
         sw::redis::StringView cnSV( m_channelSettings.channelStreamName.C_String(), m_channelSettings.channelStreamName.Length() );
         sw::redis::StringView idSV( msgId.C_String(), msgId.Length() );
@@ -573,7 +584,7 @@ ClusterChannelRedisWriter::RedisSendSyncImpl( const TPacketEntryVectorPtrVector&
             totalPacketCount += packetCounts[ n ];
 
         m_redisPacketArgs.clear();
-        m_redisPacketArgs.reserve( totalPacketCount );
+        m_redisPacketArgs.reserve( totalPacketCount + 1 ); // +1 for potential maxlen arg
 
         for ( CORE::UInt32 n=0; n<packetCounts.size(); ++n )
         {
@@ -596,7 +607,11 @@ ClusterChannelRedisWriter::RedisSendSyncImpl( const TPacketEntryVectorPtrVector&
             }
         }
 
-        m_redisPipeline->xadd( cnSV, idSV, m_redisPacketArgs.begin(), m_redisPacketArgs.end() );
+        if ( m_channelSettings.redisXAddMaxLen >= 0 )
+            m_redisPipeline->xadd( cnSV, idSV, m_redisPacketArgs.begin(), m_redisPacketArgs.end(), m_channelSettings.redisXAddMaxLen, m_channelSettings.redisXAddMaxLenIsApproximate );
+        else
+            m_redisPipeline->xadd( cnSV, idSV, m_redisPacketArgs.begin(), m_redisPacketArgs.end() );
+
         sw::redis::QueuedReplies redisReplies = m_redisPipeline->exec();
 
         bool totalSuccess = true;
@@ -1796,7 +1811,9 @@ Udp2RedisCluster::LoadConfig( const CORE::CValueList& appConfig   ,
     bool performRedisWritesInDedicatedThread = CORE::StringToBool( CORE::ResolveVars( appConfig.GetValueAlways( "PerformRedisWritesInDedicatedThread" ) ), true );
     CORE::Int32 maxSizeOfDedicatedRedisWriterBulkMailRead = CORE::StringToInt32( CORE::ResolveVars( appConfig.GetValueAlways( "MaxSizeOfDedicatedRedisWriterBulkMailRead" ) ), GUCEF_DEFAULT_MAX_DEDICATED_REDIS_WRITER_MAIL_BULK_READ );
     bool applyCpuThreadAffinityByDefault = CORE::StringToBool( CORE::ResolveVars( appConfig.GetValueAlways( "ApplyCpuThreadAffinityByDefault" )  ), false );
-
+    CORE::Int32 redisXAddMaxLenDefault = CORE::StringToInt32( CORE::ResolveVars( appConfig.GetValueAlways( "RedisXAddMaxLen" ) ), -1 );
+    bool redisXAddMaxLenIsApproxDefault = CORE::StringToBool( CORE::ResolveVars( appConfig.GetValueAlways( "RedisXAddMaxLenIsApproximate" ) ), true );
+    
     CORE::UInt32 logicalCpuCount = CORE::GetLogicalCPUCount();
 
     CORE::UInt32 currentCpu = 0;
@@ -1816,6 +1833,8 @@ Udp2RedisCluster::LoadConfig( const CORE::CValueList& appConfig   ,
         channelSettings.udpSocketUpdateCyclesPerPulse = udpSocketUpdateCyclesPerPulse;
         channelSettings.performRedisWritesInDedicatedThread = performRedisWritesInDedicatedThread;
         channelSettings.maxSizeOfDedicatedRedisWriterBulkMailRead = maxSizeOfDedicatedRedisWriterBulkMailRead;
+        channelSettings.redisXAddMaxLen = redisXAddMaxLenDefault;
+        channelSettings.redisXAddMaxLenIsApproximate = redisXAddMaxLenIsApproxDefault;
 
         CORE::CString settingName = "ChannelSetting." + CORE::Int32ToString( channelId ) + ".RedisStreamName";
         CORE::CString settingValue = appConfig.GetValueAlways( settingName );

@@ -129,6 +129,8 @@ class ChannelSettings : public CORE::CIConfigurable
     bool applyThreadCpuAffinity;
     CORE::UInt32 cpuAffinityForDedicatedRedisWriterThread;
     CORE::UInt32 cpuAffinityForMainChannelThread;
+    CORE::Int32 redisXAddMaxLen;
+    bool redisXAddMaxLenIsApproximate;
 
     virtual bool SaveConfig( CORE::CDataNode& tree ) const GUCEF_VIRTUAL_OVERRIDE;
 

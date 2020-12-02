@@ -563,9 +563,7 @@ CTaskManager::StartTask( CTaskConsumerPtr taskConsumer ,
 
     GUCEF_SYSTEM_LOG( LOGLEVEL_NORMAL, "TaskManager: Starting task immediatly of type \"" + taskConsumer->GetType() + "\" with ID " + UInt32ToString( taskConsumer->GetTaskId() )  );
 
-    delegator->Activate();
-
-    return true;
+    return delegator->Activate();
 }
 
 /*-------------------------------------------------------------------------*/
@@ -597,8 +595,7 @@ CTaskManager::StartTask( const CString& taskType ,
         GUCEF_SYSTEM_LOG( LOGLEVEL_NORMAL, "TaskManager: Started task immediatly of type \"" + taskType + "\" with ID " +
                                             UInt32ToString( taskConsumer->GetTaskId() ) + " using thread with ID " + UInt32ToString( delegator->GetThreadID() ) );
 
-        delegator->Activate();
-        return true;
+        return delegator->Activate();
     }
 
     return false;
