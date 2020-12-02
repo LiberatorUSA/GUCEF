@@ -72,7 +72,6 @@
 #define GUCEF_DEFAULT_TICKET_REFILLS_ON_BUSY_CYCLE                  10000
 
 const CORE::CString RedisInfoService::HashSlotFileCodec = "json"; 
-const CORE::CString RedisInfoService::HashSlotFile = "InstallPath/RedisHashMap.v1.json";
 
 /*-------------------------------------------------------------------------//
 //                                                                         //
@@ -81,7 +80,8 @@ const CORE::CString RedisInfoService::HashSlotFile = "InstallPath/RedisHashMap.v
 //-------------------------------------------------------------------------*/
 
 Settings::Settings( void )
-    : redisAddress()
+    : clusterName()
+    , redisAddress()
     , collectMetrics( true )
     , metricPrefix()
     , gatherInfoReplication( true )
@@ -101,7 +101,8 @@ Settings::Settings( void )
 /*-------------------------------------------------------------------------*/
 
 Settings::Settings( const Settings& src )
-    : redisAddress( src.redisAddress )
+    : clusterName( src.clusterName )
+    , redisAddress( src.redisAddress )
     , collectMetrics( src.collectMetrics )
     , metricPrefix()
     , gatherInfoReplication( src.gatherInfoReplication )
@@ -126,6 +127,7 @@ Settings::operator=( const Settings& src )
 
     if ( this != &src )
     {
+        clusterName = src.clusterName;
         redisAddress = src.redisAddress;
         collectMetrics = src.collectMetrics;
         metricPrefix = src.metricPrefix;
@@ -149,7 +151,20 @@ bool
 Settings::SaveConfig( CORE::CDataNode& tree ) const
 {GUCEF_TRACE;
 
+    tree.SetAttribute( "clusterName", clusterName );
     tree.SetAttribute( "redisAddress", redisAddress.AddressAndPortAsString() );
+    tree.SetAttribute( "collectMetrics", collectMetrics );
+    tree.SetAttribute( "metricPrefix", metricPrefix );
+    tree.SetAttribute( "gatherInfoReplication", gatherInfoReplication );
+    tree.SetAttribute( "gatherInfoPersistence", gatherInfoPersistence );
+    tree.SetAttribute( "gatherInfoStats", gatherInfoStats );
+    tree.SetAttribute( "gatherInfoCommandStats", gatherInfoCommandStats );
+    tree.SetAttribute( "gatherInfoMemory", gatherInfoMemory );
+    tree.SetAttribute( "gatherStreamInfo", gatherStreamInfo );
+    tree.SetAttribute( "gatherInfoClients", gatherInfoClients );
+    tree.SetAttribute( "gatherInfoCpu", gatherInfoCpu );
+    tree.SetAttribute( "gatherInfoKeyspace", gatherInfoKeyspace );
+    tree.SetAttribute( "gatherClusterInfo", gatherClusterInfo );
     return true;
 }
 
@@ -159,7 +174,20 @@ bool
 Settings::LoadConfig( const CORE::CDataNode& tree )
 {GUCEF_TRACE;
 
+    clusterName = tree.GetAttributeValueOrChildValueByName( "clusterName", clusterName );
     redisAddress.SetHostnameAndPort( tree.GetAttributeValueOrChildValueByName( "redisAddress", redisAddress.AddressAndPortAsString() ) );
+    collectMetrics = CORE::StringToBool( tree.GetAttributeValueOrChildValueByName( "collectMetrics" ), collectMetrics );
+    metricPrefix = tree.GetAttributeValueOrChildValueByName( "metricPrefix", metricPrefix );
+    gatherInfoReplication = CORE::StringToBool( tree.GetAttributeValueOrChildValueByName( "gatherInfoReplication" ), gatherInfoReplication );
+    gatherInfoPersistence = CORE::StringToBool( tree.GetAttributeValueOrChildValueByName( "gatherInfoPersistence" ), gatherInfoPersistence );
+    gatherInfoStats = CORE::StringToBool( tree.GetAttributeValueOrChildValueByName( "gatherInfoStats" ), gatherInfoStats );
+    gatherInfoCommandStats = CORE::StringToBool( tree.GetAttributeValueOrChildValueByName( "gatherInfoCommandStats" ), gatherInfoCommandStats );
+    gatherInfoMemory = CORE::StringToBool( tree.GetAttributeValueOrChildValueByName( "gatherInfoMemory" ), gatherInfoMemory );
+    gatherStreamInfo = CORE::StringToBool( tree.GetAttributeValueOrChildValueByName( "gatherStreamInfo" ), gatherStreamInfo );
+    gatherInfoClients = CORE::StringToBool( tree.GetAttributeValueOrChildValueByName( "gatherInfoClients" ), gatherInfoClients );
+    gatherInfoCpu = CORE::StringToBool( tree.GetAttributeValueOrChildValueByName( "gatherInfoCpu" ), gatherInfoCpu );
+    gatherInfoKeyspace = CORE::StringToBool( tree.GetAttributeValueOrChildValueByName( "gatherInfoKeyspace" ), gatherInfoKeyspace );
+    gatherClusterInfo = CORE::StringToBool( tree.GetAttributeValueOrChildValueByName( "gatherClusterInfo" ), gatherClusterInfo );
     return true;
 }
 
@@ -428,8 +456,7 @@ bool
 RedisInfoService::ProvideHashSlotMapDoc( void )
 {GUCEF_TRACE;
 
-    static const CORE::CString hashSlotFileCodec = "json"; 
-    static const CORE::CString hashSlotFile = "InstallPath/RedisHashMap.v1.json";
+    const CORE::CString hashSlotFile = "InstallPath/" + m_settings.clusterName + "/RedisHashMap.v1.json";
    
     VFS::CVFS& vfs = VFS::CVfsGlobal::Instance()->GetVfs();
     if ( !vfs.FileExists( hashSlotFile ) )
@@ -439,7 +466,7 @@ RedisInfoService::ProvideHashSlotMapDoc( void )
             CORE::CDataNode hashSlotsDoc;
             if ( SerializeKeysForHashSlots( m_hashSlotOriginStrMap, hashSlotsDoc ) )
             {
-                return SaveDocTo( hashSlotsDoc, hashSlotFileCodec, hashSlotFile );
+                return SaveDocTo( hashSlotsDoc, HashSlotFileCodec, hashSlotFile );
             }
         }
         return false;
@@ -451,10 +478,11 @@ RedisInfoService::ProvideHashSlotMapDoc( void )
 
 bool
 RedisInfoService::LoadHashSlotMap( void )
-{GUCEF_TRACE;  //return true;
+{GUCEF_TRACE;  
    
+    const CORE::CString hashSlotFile = "InstallPath/" + m_settings.clusterName + "/RedisHashMap.v1.json";
     VFS::CVFS& vfs = VFS::CVfsGlobal::Instance()->GetVfs();
-    if ( !vfs.FileExists( HashSlotFile ) )
+    if ( !vfs.FileExists( hashSlotFile ) )
     {
         GUCEF_LOG( CORE::LOGLEVEL_NORMAL, "RedisInfoService(" + CORE::PointerToString( this ) + "):LoadHashSlotMap: hash slot map did not exist, attempting to generate a new one" );
         if ( !ProvideHashSlotMapDoc() )
@@ -466,7 +494,7 @@ RedisInfoService::LoadHashSlotMap( void )
     else
     {
         CORE::CDataNode hashSlotsDoc;
-        if ( LoadDocFrom( hashSlotsDoc, HashSlotFileCodec, HashSlotFile ) )
+        if ( LoadDocFrom( hashSlotsDoc, HashSlotFileCodec, hashSlotFile ) )
         {
             GUCEF_LOG( CORE::LOGLEVEL_NORMAL, "RedisInfoService(" + CORE::PointerToString( this ) + "):LoadHashSlotMap: Loaded hash slot map document, deserializing..." );
             if ( DeserializeKeysForHashSlots( m_hashSlotOriginStrMap, hashSlotsDoc ) )
@@ -554,8 +582,8 @@ bool
 RedisInfoService::ProvideRedisNodesDoc( void )
 {GUCEF_TRACE;
 
-    static const CORE::CString redisNodesCodec = "json"; 
-    static const CORE::CString redisNodesFile = "InstallPath/RedisNodes.v1.json";
+    static const CORE::CString redisNodesCodec = "json";     
+    const CORE::CString redisNodesFile = "InstallPath/" + m_settings.clusterName + "/RedisNodes.v1.json";
     
     RedisNodeMap redisNodes;
     if ( GetRedisClusterNodeMap( redisNodes ) )
@@ -576,9 +604,9 @@ RedisInfoService::OnTaskStart( CORE::CICloneable* taskData )
 {GUCEF_TRACE;
 
     m_metricsTimer = new CORE::CTimer( *GetPulseGenerator(), 1000 );
-    m_metricsTimer->SetEnabled( m_settings.collectMetrics );
     m_metricsTimer->SetInterval( 1000 );
-
+    m_metricsTimer->SetEnabled( m_settings.collectMetrics );
+    
     RegisterEventHandlers();
 
     //LoadHashSlotMap();
@@ -1726,7 +1754,7 @@ RedisInfo::RedisInfo( void )
     , m_httpRouter()
     , m_appConfig()
     , m_globalConfig()
-    , m_infoService()
+    , m_infoServices()
     , m_settings()
 {GUCEF_TRACE;
 
@@ -1786,14 +1814,19 @@ RedisInfo::SetStandbyMode( bool putInStandbyMode )
 
         // Signal all threads to stop gracefully
 
-        if ( !taskManager.RequestTaskToStop( m_infoService.StaticCast< CORE::CTaskConsumer >(), true ) )
+        TStringToInfoServiceMap::iterator i = m_infoServices.begin();
+        while ( i != m_infoServices.end() )
         {
-            totalSuccess = false;
-            GUCEF_ERROR_LOG( CORE::LOGLEVEL_IMPORTANT, "RedisInfo:SetStandbyMode( true ): Failed to signal task to stop" );
-        }
-        else
-        {
-            GUCEF_LOG( CORE::LOGLEVEL_IMPORTANT, "RedisInfo:SetStandbyMode( true ): Requested task to stop" );
+            if ( !taskManager.RequestTaskToStop( (*i).second.StaticCast< CORE::CTaskConsumer >(), true ) )
+            {
+                totalSuccess = false;
+                GUCEF_ERROR_LOG( CORE::LOGLEVEL_IMPORTANT, "RedisInfo:SetStandbyMode( true ): Failed to signal task for redis info target \"" + (*i).first + "\" to stop" );
+            }
+            else
+            {
+                GUCEF_LOG( CORE::LOGLEVEL_IMPORTANT, "RedisInfo:SetStandbyMode( true ): Requested task for redis info target \"" + (*i).first + "\" to stop" );
+            }
+            ++i;
         }
 
         m_isInStandby = totalSuccess;
@@ -1805,17 +1838,30 @@ RedisInfo::SetStandbyMode( bool putInStandbyMode )
 
         CORE::CTaskManager& taskManager = CORE::CCoreGlobal::Instance()->GetTaskManager();
 
-        m_infoService = RedisInfoServicePtr( new RedisInfoService() );
-        if ( !m_infoService->LoadConfig( m_settings ) )
+        TStringToSettingsMap::iterator i = m_settings.begin();
+        while ( i != m_settings.end() )
         {
-            GUCEF_ERROR_LOG( CORE::LOGLEVEL_IMPORTANT, "RedisInfo::SetStandbyMode( false ): Failed to set settings for task" );
-            totalSuccess = false;
-        }
+            RedisInfoServicePtr redisInfoTarget( new RedisInfoService() );
+            if ( redisInfoTarget->LoadConfig( (*i).second ) )
+            {
+                if ( taskManager.StartTask( redisInfoTarget ) )
+                {
+                    m_infoServices[ (*i).first ] = redisInfoTarget; 
 
-        if ( !taskManager.StartTask( m_infoService ) )
-        {
-            GUCEF_ERROR_LOG( CORE::LOGLEVEL_IMPORTANT, "RedisInfo::SetStandbyMode( false ): Failed to start task" );
-            totalSuccess = false;
+                    GUCEF_LOG( CORE::LOGLEVEL_IMPORTANT, "RedisInfo::SetStandbyMode( false ): Successfully started task for redis info target \"" + (*i).second.clusterName + "\"" );
+                }
+                else
+                {
+                    GUCEF_ERROR_LOG( CORE::LOGLEVEL_IMPORTANT, "RedisInfo::SetStandbyMode( false ): Failed to start task for redis info target \"" + (*i).second.clusterName + "\"" );
+                    totalSuccess = false;
+                }
+            }
+            else
+            {
+                GUCEF_ERROR_LOG( CORE::LOGLEVEL_IMPORTANT, "RedisInfo::SetStandbyMode( false ): Failed to set settings for task for redis info target \"" + (*i).second.clusterName + "\"" );
+                totalSuccess = false;
+            }
+            ++i;
         }
 
         m_isInStandby = !totalSuccess;
@@ -1830,14 +1876,19 @@ RedisInfo::LoadConfig( const CORE::CValueList& appConfig   ,
                        const CORE::CDataNode& globalConfig )
 {GUCEF_TRACE;
 
-    m_transmitMetrics = CORE::StringToBool( appConfig.GetValueAlways( "TransmitMetrics" ), true );
     m_globalStandbyEnabled = CORE::StringToBool( appConfig.GetValueAlways( "GlobalStandbyEnabled" ), false );
-    m_redisHost = CORE::ResolveVars( appConfig.GetValueAlways( "RedisHost", "127.0.0.1" ) );
-    m_redisPort = CORE::StringToUInt16( CORE::ResolveVars( appConfig.GetValueAlways( "RedisPort" ) ), 6379 );
+    CORE::CDataNode::TDataNodeVector redisInfoTargets = globalConfig.SearchForAll( "RedisInfoTarget", '/', true, true );
+    CORE::CDataNode::TDataNodeVector::iterator i = redisInfoTargets.begin();
+    while ( i != redisInfoTargets.end() )
+    {
+        Settings redisTargetSettings;
+        if ( redisTargetSettings.LoadConfig( *(*i) ) )
+        {
+            m_settings[ redisTargetSettings.clusterName ] = redisTargetSettings;
+        }
+        ++i;
+    }
 
-    m_settings.redisAddress.SetHostname( m_redisHost );
-    m_settings.redisAddress.SetPortInHostByteOrder( m_redisPort );
-    
     m_appConfig = appConfig;
     m_globalConfig.Copy( globalConfig );
 

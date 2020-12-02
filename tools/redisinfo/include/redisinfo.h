@@ -107,12 +107,11 @@ class Settings : public CORE::CIConfigurable
 {
     public:
 
-    typedef std::vector< COMCORE::CHostAddress > HostAddressVector;
-
     Settings( void );
     Settings( const Settings& src );
     Settings& operator=( const Settings& src );
 
+    CORE::CString clusterName;
     COMCORE::CHostAddress redisAddress;
     bool collectMetrics;
     CORE::CString metricPrefix;
@@ -133,6 +132,8 @@ class Settings : public CORE::CIConfigurable
 
     virtual const CORE::CString& GetClassTypeName( void ) const GUCEF_VIRTUAL_OVERRIDE;
 };
+
+typedef std::map< CORE::CString, Settings > TStringToSettingsMap;
 
 /*-------------------------------------------------------------------------*/
 
@@ -178,7 +179,6 @@ class RedisInfoService : public CORE::CTaskConsumer
     typedef std::map< CORE::UInt32, TStringSet > TUInt32ToStringSetMap;
 
     static const CORE::CString RedisInfoService::HashSlotFileCodec;
-    static const CORE::CString RedisInfoService::HashSlotFile;
 
     RedisInfoService();
     virtual ~RedisInfoService();
@@ -384,6 +384,7 @@ class RedisInfo : public CORE::CObserver
     private:
 
     typedef CORE::CTEventHandlerFunctor< RedisInfo > TEventCallback;
+    typedef std::map< CORE::CString, RedisInfoServicePtr > TStringToInfoServiceMap;
 
     private:
 
@@ -395,9 +396,8 @@ class RedisInfo : public CORE::CObserver
     COM::CDefaultHTTPServerRouter m_httpRouter;
     CORE::CValueList m_appConfig;
     CORE::CDataNode m_globalConfig;    
-    bool m_transmitMetrics;
-    RedisInfoServicePtr m_infoService;
-    Settings m_settings;
+    TStringToInfoServiceMap m_infoServices;
+    TStringToSettingsMap m_settings; 
 };
 
 /*-------------------------------------------------------------------------*/
