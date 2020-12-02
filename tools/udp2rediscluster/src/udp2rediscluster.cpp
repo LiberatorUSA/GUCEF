@@ -1956,13 +1956,13 @@ Udp2RedisCluster::OnMetricsTimerCycle( CORE::CNotifier* notifier    ,
         const Udp2RedisClusterChannel::ChannelMetrics& metrics = (*i).second->GetMetrics();
         CORE::CString metricPrefix = "udp2redis.ch" + CORE::Int32ToString( channelId ) + ".";
 
-        GUCEF_METRIC_COUNT( metricPrefix + "redisErrorReplies", metrics.redisErrorReplies, 1.0f );
-        GUCEF_METRIC_COUNT( metricPrefix + "redisMessagesTransmitted", metrics.redisMessagesTransmitted, 1.0f );
-        GUCEF_METRIC_COUNT( metricPrefix + "redisPacketsInMessagesTransmitted", metrics.redisPacketsInMsgsTransmitted, 1.0f );
+        GUCEF_METRIC_TIMING( metricPrefix + "redisErrorReplies", metrics.redisErrorReplies, 1.0f );
+        GUCEF_METRIC_TIMING( metricPrefix + "redisMessagesTransmitted", metrics.redisMessagesTransmitted, 1.0f );
+        GUCEF_METRIC_TIMING( metricPrefix + "redisPacketsInMessagesTransmitted", metrics.redisPacketsInMsgsTransmitted, 1.0f );
         GUCEF_METRIC_GAUGE( metricPrefix + "redisPacketsInMessagesRatio", metrics.redisPacketsInMsgsRatio, 1.0f );
         GUCEF_METRIC_GAUGE( metricPrefix + "redisTransmitQueueSize", metrics.redisTransmitQueueSize, 1.0f );
-        GUCEF_METRIC_COUNT( metricPrefix + "udpBytesReceived", metrics.udpBytesReceived, 1.0f );
-        GUCEF_METRIC_COUNT( metricPrefix + "udpPacketsReceived", metrics.udpPacketsReceived, 1.0f );
+        GUCEF_METRIC_TIMING( metricPrefix + "udpBytesReceived", metrics.udpBytesReceived, 1.0f );
+        GUCEF_METRIC_TIMING( metricPrefix + "udpPacketsReceived", metrics.udpPacketsReceived, 1.0f );
         ++i; ++channelId;
     }
 }
