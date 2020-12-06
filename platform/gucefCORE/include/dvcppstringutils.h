@@ -245,6 +245,13 @@ Int8ToString( const Int8 value );
 
 /*-------------------------------------------------------------------------*/
 
+GUCEF_CORE_PUBLIC_CPP CString::StringVector
+StringToStringVector( const CString& str                                                        , 
+                      const CString::StringVector& defaultIfNeeded = CString::EmptyStringVector ,
+                      char seperator = ','                                                      );
+
+/*-------------------------------------------------------------------------*/
+
 GUCEF_CORE_PUBLIC_CPP CString
 PointerToString( const void* value );
 
@@ -380,6 +387,7 @@ Utf8toUtf16( const std::string& str ,
 /*-------------------------------------------------------------------------*/
 
 inline CString ToString( const CString& str ) { return str; }
+inline CString ToString( const CString::StringVector& el ) { CString out; return out.Combine( el, ',' ); }
 inline CString ToString( UInt8 value ) { return UInt8ToString( value ); }
 inline CString ToString( UInt16 value ) { return UInt16ToString( value ); }
 inline CString ToString( UInt32 value ) { return UInt32ToString( value ); }

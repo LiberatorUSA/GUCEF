@@ -71,6 +71,7 @@ class GUCEF_CORE_PUBLIC_CPP CString
     typedef std::vector< CString > StringVector;
 
     static const CString Empty;
+    static const StringVector EmptyStringVector;
 
     CString( void );
 
@@ -283,7 +284,7 @@ class GUCEF_CORE_PUBLIC_CPP CString
     StringVector ParseElements( char seperator               ,
                                 bool addEmptyElements = true ) const;
 
-    bool WildcardEquals( const CString& otherStr         ,
+    bool WildcardEquals( const CString& strWithWildcards ,
                          const char wildCardToken = '*'  ,
                          const bool caseSensitive = true ) const;
 
@@ -293,6 +294,8 @@ class GUCEF_CORE_PUBLIC_CPP CString
     bool NotEquals( const CString& otherStr         ,
                     const bool caseSensitive = true ) const;
 
+    CString Combine( const StringVector& elements, char seperator ) const;
+    
     void Clear( void );
 
     private:

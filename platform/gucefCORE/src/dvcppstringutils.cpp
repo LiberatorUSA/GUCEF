@@ -790,6 +790,21 @@ StringToDouble( const CString& str, double defaultIfNeeded )
 
 /*-------------------------------------------------------------------------*/
 
+CString::StringVector
+StringToStringVector( const CString& str                           , 
+                      const CString::StringVector& defaultIfNeeded ,
+                      char seperator                               )
+{GUCEF_TRACE;
+
+    if ( !str.IsNULLOrEmpty() )
+    {
+        return str.ParseElements( seperator, true );
+    }
+    return defaultIfNeeded;
+}
+
+/*-------------------------------------------------------------------------*/
+
 CString
 LastSubDir( const CString& path )
 {GUCEF_TRACE;

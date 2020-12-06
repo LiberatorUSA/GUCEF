@@ -54,6 +54,7 @@ namespace CORE {
 //-------------------------------------------------------------------------*/
 
 const CString CString::Empty;
+const CString::StringVector CString::EmptyStringVector;
 
 /*-------------------------------------------------------------------------//
 //                                                                         //
@@ -1352,15 +1353,15 @@ CString::HasSubstr( const CString& substr ,
 /*-------------------------------------------------------------------------*/
 
 bool
-CString::WildcardEquals( const CString& otherStr               ,
+CString::WildcardEquals( const CString& strWithWildcards       ,
                          const char wildCardToken /* = '*' */  ,
                          const bool caseSensitive /* = true */ ) const
 {GUCEF_TRACE;
 
-    if ( otherStr == wildCardToken || *this == wildCardToken )
+    if ( strWithWildcards == wildCardToken || *this == wildCardToken )
         return true;
 
-    std::vector< CString > segs = otherStr.ParseElements( wildCardToken, false );
+    std::vector< CString > segs = strWithWildcards.ParseElements( wildCardToken, false );
     Int32 lastSeg = 0;
     std::vector< CString >::iterator i = segs.begin();
     while ( i != segs.end() )
@@ -1432,6 +1433,25 @@ CString::Scan( const char* newStr     ,
         Set( newStr    ,
              maxLength );
     }
+}
+
+/*-------------------------------------------------------------------------*/
+
+CString 
+CString::Combine( const StringVector& elements, char seperator ) const
+{GUCEF_TRACE;
+
+    CString currentStr( *this );
+    if ( !currentStr.IsNULLOrEmpty() )
+        currentStr += seperator;
+
+    StringVector::const_iterator i = elements.begin();
+    while ( i != elements.end() )
+    {
+        currentStr += seperator + (*i);
+        ++i;
+    }
+    return currentStr;
 }
 
 /*-------------------------------------------------------------------------*/
