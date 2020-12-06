@@ -121,6 +121,8 @@ class Settings : public CORE::CIConfigurable
     bool gatherInfoCommandStats;
     bool gatherInfoMemory;
     bool gatherStreamInfo;
+    CORE::CString::StringVector streamsToGatherInfoFrom;
+    CORE::Int32 streamIndexingInterval;
     bool gatherInfoClients;
     bool gatherInfoCpu;
     bool gatherInfoKeyspace;
@@ -141,10 +143,17 @@ class RedisNode
 {
     public:
 
+    typedef std::vector< RedisNode > RedisNodeVector;
+    
     COMCORE::CHostAddress host;
     CORE::CString nodeId;
-    CORE::UInt32 startSlot;
-    CORE::UInt32 endSlot;
+    CORE::Int32 startSlot;
+    CORE::Int32 endSlot;
+    RedisNodeVector replicas;
+
+    RedisNode* FindReplica( const CORE::CString& replicaNodeId ,
+                            const CORE::CString& parentNodeId  ,
+                            bool createIfNotFound = false      );
 
     RedisNode& operator=( const RedisNode& other );
 
@@ -234,6 +243,8 @@ class RedisInfoService : public CORE::CTaskConsumer
 
     bool GetRedisClusterNodeMap( RedisNodeMap& nodeMap );
 
+    bool GetRedisClusterSlots( RedisNodeMap& nodeMap );
+    
     bool LoadHashSlotMap( void );
 
     bool ProvideHashSlotMapDoc( void );
@@ -290,10 +301,17 @@ class RedisInfoService : public CORE::CTaskConsumer
     void SendKeyValueStats( const CORE::CValueList& kv        ,
                             const CORE::CString& metricPrefix );
 
+    bool IsStreamIndexingNeeded( void ) const;
+
     void
     OnMetricsTimerCycle( CORE::CNotifier* notifier    ,
                          const CORE::CEvent& eventId  ,
                          CORE::CICloneable* eventData );
+
+    void
+    OnStreamIndexingTimerCycle( CORE::CNotifier* notifier    ,
+                                const CORE::CEvent& eventId  ,
+                                CORE::CICloneable* eventData );
 
     private:
 
@@ -305,7 +323,8 @@ class RedisInfoService : public CORE::CTaskConsumer
     Settings m_settings;
     TRedisArgs m_redisPacketArgs;
     CORE::CTimer* m_metricsTimer;
-    CORE::CString::StringVector m_redisKeys;
+    CORE::CTimer* m_streamIndexingTimer;
+    CORE::CString::StringVector m_filteredStreamNames;
     RedisNodeWithPipeMap m_redisNodesMap;
     TUInt32ToStringSetMap m_hashSlotOriginStrMap;
 };

@@ -171,11 +171,17 @@ class GUCEF_CORE_PUBLIC_CPP CRollingFileAccess : public CIOAccess
 
     UInt32 GetRolloverSizeThreshold( void ) const;
 
+    void SetMaxRolloverFilesBeforeDeletion( Int32 deleteThreshold );
+
+    Int32 GetMaxRolloverFilesBeforeDeletion( void ) const;
+
     private:
 
     CString GenerateCurrentFilename( const CString& baseName, UInt32& fileIndex ) const;
 
     void EnforceFileSizeThreshold( void );
+
+    void PerformRolledoverFilesCleanup( void );
     
     private:
 
@@ -185,6 +191,7 @@ class GUCEF_CORE_PUBLIC_CPP CRollingFileAccess : public CIOAccess
     CString m_baseFilename;
     CString m_fileMode;
     CFileAccess m_currentFile;
+    Int32 m_maxRolloverFilesBeforeDeletion;
 };
 
 /*-------------------------------------------------------------------------//

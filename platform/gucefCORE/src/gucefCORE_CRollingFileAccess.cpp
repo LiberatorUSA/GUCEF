@@ -63,6 +63,7 @@ CRollingFileAccess::CRollingFileAccess( const CString& file ,
     , m_baseFilename( file )
     , m_fileMode()
     , m_currentFile()
+    , m_maxRolloverFilesBeforeDeletion( -1 )
 {GUCEF_TRACE;
 
     Open( file, mode );
@@ -78,6 +79,7 @@ CRollingFileAccess::CRollingFileAccess( void )
     , m_baseFilename()
     , m_fileMode()
     , m_currentFile()
+    , m_maxRolloverFilesBeforeDeletion( -1 )
 {GUCEF_TRACE;
 
 }
@@ -92,6 +94,7 @@ CRollingFileAccess::CRollingFileAccess( const CRollingFileAccess& src )
     , m_baseFilename( src.m_baseFilename )
     , m_fileMode( src.m_fileMode )
     , m_currentFile()
+    , m_maxRolloverFilesBeforeDeletion( src.m_maxRolloverFilesBeforeDeletion )
 {GUCEF_TRACE;
 
 }
@@ -229,6 +232,18 @@ CRollingFileAccess::Read( void *dest      ,
     UInt32 result = m_currentFile.Read( dest, esize, elements );
     m_offset += result * esize;
     return result;
+}
+
+/*-------------------------------------------------------------------------*/
+
+void
+CRollingFileAccess::PerformRolledoverFilesCleanup( void )
+{GUCEF_TRACE;
+
+    if ( m_maxRolloverFilesBeforeDeletion < 1 )
+        return;
+
+    
 }
 
 /*-------------------------------------------------------------------------*/
@@ -422,6 +437,24 @@ CRollingFileAccess::GetFilename( void ) const
 {GUCEF_TRACE;
 
     return m_currentFile.GetFilename();
+}
+
+/*-------------------------------------------------------------------------*/
+
+void
+CRollingFileAccess::SetMaxRolloverFilesBeforeDeletion( Int32 deleteThreshold )
+{GUCEF_TRACE;
+    
+    m_maxRolloverFilesBeforeDeletion = deleteThreshold;
+}
+
+/*-------------------------------------------------------------------------*/
+
+Int32
+CRollingFileAccess::GetMaxRolloverFilesBeforeDeletion( void ) const
+{GUCEF_TRACE;
+    
+    return m_maxRolloverFilesBeforeDeletion;
 }
 
 /*-------------------------------------------------------------------------//
