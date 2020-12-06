@@ -125,11 +125,11 @@ CMultiLogger::AddLogger( CILogger* loggerImp )
     if ( GUCEF_NULL != loggerImp )
     {
         m_loggers.insert( loggerImp );
-        GUCEF_SYSTEM_LOG( LOGLEVEL_NORMAL, "Added logger" );
+        GUCEF_SYSTEM_LOG( LOGLEVEL_NORMAL, "MultiLogger: Added logger" );
     }
     else
     {
-        GUCEF_ERROR_LOG( LOGLEVEL_NORMAL, "Null given for logger" );
+        GUCEF_ERROR_LOG( LOGLEVEL_NORMAL, "MultiLogger: Null given for logger" );
     }
 }
 
@@ -142,7 +142,7 @@ CMultiLogger::RemoveLogger( CILogger* loggerImp )
     // Do not pass in bogus pointers
     assert( GUCEF_NULL != loggerImp );
 
-    GUCEF_SYSTEM_LOG( LOGLEVEL_NORMAL, "Removing logger" );
+    GUCEF_SYSTEM_LOG( LOGLEVEL_NORMAL, "MultiLogger: Removing logger" );
 
     m_loggers.erase( loggerImp );
 }
@@ -319,7 +319,7 @@ CMultiLogger::FlushLog( void )
     while ( i != m_loggers.end() )
     {
         CILogger* logger = (*i);
-        if ( NULL != logger )
+        if ( GUCEF_NULL != logger )
         {
             logger->FlushLog();
         }

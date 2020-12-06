@@ -189,77 +189,95 @@ GUCEF_OSMAIN_BEGIN
 //GUCEF_OSSERVICEMAIN_BEGIN( "redisinfo" )
 {GUCEF_TRACE;
 
-    GUCEF_LOG( CORE::LOGLEVEL_NORMAL, "This tool was compiled on: " __DATE__ " @ " __TIME__ );
-
-    CORE::CCoreGlobal::Instance();
-    COMCORE::CComCoreGlobal::Instance();
-    COM::CComGlobal::Instance();
-    VFS::CVfsGlobal::Instance();
-
-    // Check for config param first
-    CORE::CValueList keyValueList;
-    ParseParams( argc, argv, keyValueList );
-    CORE::CString configPathParam = keyValueList.GetValueAlways( "ConfigPath" );
-    keyValueList.Clear();
-
-    // Load settings from a config file (if any) and then override with params (if any)
-    CORE::CDataNode* globalConfig = new CORE::CDataNode();
-    LoadConfig( configPathParam, keyValueList, globalConfig );
-    ParseParams( argc, argv, keyValueList );
-
-    CORE::Int32 minLogLevel = CORE::LOGLEVEL_BELOW_NORMAL;
-    CORE::CString valueStr = keyValueList.GetValueAlways( "MinimalLogLevel" );
-    if ( !valueStr.IsNULLOrEmpty() )
+    int returnValue = -100;
+    try
     {
-        minLogLevel = CORE::StringToInt32( valueStr );
-        CORE::CCoreGlobal::Instance()->GetLogManager().SetMinLogLevel( minLogLevel );
-    }
+        GUCEF_LOG( CORE::LOGLEVEL_NORMAL, "This tool was compiled on: " __DATE__ " @ " __TIME__ );
 
-    CORE::CString outputDir = CORE::RelativePath( keyValueList.GetValueAlways( "outputDir" ) );
-    if ( outputDir.IsNULLOrEmpty() )
-    {
-        outputDir = CORE::RelativePath( "$CURWORKDIR$" );
-    }
-    CORE::CreateDirs( outputDir );
+        CORE::CCoreGlobal::Instance();
+        COMCORE::CComCoreGlobal::Instance();
+        COM::CComGlobal::Instance();
+        VFS::CVfsGlobal::Instance();
 
-    CORE::CString logFilename = CORE::CombinePath( outputDir, "redisinfo_log.txt" );
+        // Check for config param first
+        CORE::CValueList keyValueList;
+        ParseParams( argc, argv, keyValueList );
+        CORE::CString configPathParam = keyValueList.GetValueAlways( "ConfigPath" );
+        keyValueList.Clear();
 
-    keyValueList.Set( "logfile", logFilename );
+        // Load settings from a config file (if any) and then override with params (if any)
+        CORE::CDataNode* globalConfig = new CORE::CDataNode();
+        LoadConfig( configPathParam, keyValueList, globalConfig );
+        ParseParams( argc, argv, keyValueList );
 
-    CORE::CRollingFileAccess logFileAccess( logFilename, "w" );
-    CORE::CStdLogger logger( logFileAccess );
-    CORE::CCoreGlobal::Instance()->GetLogManager().AddLogger( &logger );
+        CORE::Int32 minLogLevel = CORE::LOGLEVEL_BELOW_NORMAL;
+        CORE::CString valueStr = keyValueList.GetValueAlways( "MinimalLogLevel" );
+        if ( !valueStr.IsNULLOrEmpty() )
+        {
+            minLogLevel = CORE::StringToInt32( valueStr );
+            CORE::CCoreGlobal::Instance()->GetLogManager().SetMinLogLevel( minLogLevel );
+        }
 
-    CORE::CPlatformNativeConsoleLogger console;
-    if ( GUCEF_APP_TYPE == GUCEF_APP_TYPE_CONSOLE )
-        CORE::CCoreGlobal::Instance()->GetLogManager().AddLogger( console.GetLogger() );
+        CORE::CString outputDir = CORE::RelativePath( keyValueList.GetValueAlways( "outputDir" ) );
+        if ( outputDir.IsNULLOrEmpty() )
+        {
+            outputDir = CORE::RelativePath( "$CURWORKDIR$" );
+        }
+        CORE::CreateDirs( outputDir );
 
-    CORE::CCoreGlobal::Instance()->GetLogManager().FlushBootstrapLogEntriesToLogs();
-    GUCEF_LOG( CORE::LOGLEVEL_NORMAL, "Flushed to log @ " + logFilename );
+        CORE::CString logFilename = CORE::CombinePath( outputDir, "redisinfo_log.txt" );
 
-    GUCEF_OSMAIN_SIGNAL_HANDLER( GucefAppSignalHandler );
+        keyValueList.Set( "logfile", logFilename );
 
-    RedisInfo redisInfo;
-    if ( !redisInfo.LoadConfig( keyValueList, *globalConfig ) )
-    {
+        CORE::CRollingFileAccess logFileAccess( logFilename, "w" );
+        CORE::CStdLogger logger( logFileAccess );
+        CORE::CCoreGlobal::Instance()->GetLogManager().AddLogger( &logger );
+
+        CORE::CPlatformNativeConsoleLogger console;
+        if ( GUCEF_APP_TYPE == GUCEF_APP_TYPE_CONSOLE )
+            CORE::CCoreGlobal::Instance()->GetLogManager().AddLogger( console.GetLogger() );
+
+        CORE::CCoreGlobal::Instance()->GetLogManager().FlushBootstrapLogEntriesToLogs();
+        GUCEF_LOG( CORE::LOGLEVEL_NORMAL, "Flushed to log @ " + logFilename );
+
+        GUCEF_OSMAIN_SIGNAL_HANDLER( GucefAppSignalHandler );
+
+        RedisInfo redisInfo;
+        if ( !redisInfo.LoadConfig( keyValueList, *globalConfig ) )
+        {
+            delete globalConfig;
+            GUCEF_ERROR_LOG( CORE::LOGLEVEL_CRITICAL, "RedisInfo: Exiting because LoadConfig failed" );
+            return -1;
+        }
         delete globalConfig;
-        GUCEF_ERROR_LOG( CORE::LOGLEVEL_CRITICAL, "RedisInfo: Exiting because LoadConfig failed" );
-        return -1;
-    }
-    delete globalConfig;
 
-    if ( !redisInfo.Start() )
-    {
-        GUCEF_ERROR_LOG( CORE::LOGLEVEL_CRITICAL, "RedisInfo: Failed to Start()" );
-        return -2;
-    }
+        if ( !redisInfo.Start() )
+        {
+            GUCEF_ERROR_LOG( CORE::LOGLEVEL_CRITICAL, "RedisInfo: Failed to Start()" );
+            redisInfo.SetStandbyMode( true );
+            return -2;
+        }
 
-    auto& pulseGenerator = CORE::CCoreGlobal::Instance()->GetPulseGenerator();
-    pulseGenerator.RequestPulseInterval( 25 );
-    pulseGenerator.RequestPulsesPerImmediatePulseRequest( 25 );
+        auto& pulseGenerator = CORE::CCoreGlobal::Instance()->GetPulseGenerator();
+        pulseGenerator.RequestPulseInterval( 25 );
+        pulseGenerator.RequestPulsesPerImmediatePulseRequest( 25 );
     
-    auto& app = CORE::CCoreGlobal::Instance()->GetApplication();
-    return app.main( argc, argv, true );
+        auto& app = CORE::CCoreGlobal::Instance()->GetApplication();
+        returnValue = app.main( argc, argv, true );
+        redisInfo.SetStandbyMode( true );
+    }
+    catch ( const std::exception& e )
+    {
+        GUCEF_EXCEPTION_LOG( CORE::LOGLEVEL_CRITICAL, "RedisInfo: Main thread stl exeption: " + CORE::CString( e.what() ) );
+    }
+    #ifndef GUCEF_DEBUG_MODE
+    catch ( ... )
+    {
+        GUCEF_EXCEPTION_LOG( CORE::LOGLEVEL_CRITICAL, "RedisInfo: Main thread unknown exeption occured. Caught in catch-all" );
+    }
+    #endif
+
+    return returnValue;
 }
 GUCEF_OSMAIN_END
 

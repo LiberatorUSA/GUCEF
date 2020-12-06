@@ -1784,14 +1784,23 @@ RedisInfo::Start( void )
 {GUCEF_TRACE;
 
     m_isInStandby = true;
-    bool errorOccured = !SetStandbyMode( m_globalStandbyEnabled );
+    bool success = SetStandbyMode( m_globalStandbyEnabled );
 
-    if ( !errorOccured )
+    if ( success )
     {
         GUCEF_LOG( CORE::LOGLEVEL_IMPORTANT, "RedisInfo: Opening REST API" );
-        return m_httpServer.Listen();
+        if ( m_httpServer.Listen() )
+        {
+            success = true;
+            GUCEF_LOG( CORE::LOGLEVEL_IMPORTANT, "RedisInfo: REST API port opened successfully" );
+        }
+        else
+        {
+            success = false;
+            GUCEF_ERROR_LOG( CORE::LOGLEVEL_CRITICAL, "RedisInfo: Unable to open REST API port (port in use?)" );
+        }
     }
-    return errorOccured;
+    return success;
 }
 
 /*-------------------------------------------------------------------------*/
