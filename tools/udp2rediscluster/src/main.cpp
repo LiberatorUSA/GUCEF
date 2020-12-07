@@ -200,6 +200,10 @@ GucefAppSignalHandler( int signal )
 GUCEF_OSSERVICEMAIN_BEGIN( "udp2rediscluster" )
 {GUCEF_TRACE;
 
+    int returnValue = -100;
+    try
+    {
+
     GUCEF_LOG( CORE::LOGLEVEL_NORMAL, "This tool was compiled on: " __DATE__ " @ " __TIME__ );
 
     CORE::CCoreGlobal::Instance();
@@ -237,6 +241,7 @@ GUCEF_OSSERVICEMAIN_BEGIN( "udp2rediscluster" )
     keyValueList.Set( "logfile", logFilename );
 
     CORE::CRollingFileAccess logFileAccess( logFilename, "w" );
+    logFileAccess.SetMaxRolloverFilesBeforeDeletion( 10 );
     CORE::CStdLogger logger( logFileAccess );
     CORE::CCoreGlobal::Instance()->GetLogManager().AddLogger( &logger );
 
@@ -269,7 +274,24 @@ GUCEF_OSSERVICEMAIN_BEGIN( "udp2rediscluster" )
     pulseGenerator.RequestPulsesPerImmediatePulseRequest( 25 );
     
     auto& app = CORE::CCoreGlobal::Instance()->GetApplication();
-    return app.main( argc, argv, true );
+    returnValue = app.main( argc, argv, true );
+    Udp2RedisCluster.SetStandbyMode( true );
+
+    }
+    catch ( const std::exception& e )
+    {
+        GUCEF_EXCEPTION_LOG( CORE::LOGLEVEL_CRITICAL, "RedisInfo: Main thread stl exeption: " + CORE::CString( e.what() ) );
+        throw e;
+    }
+    #ifndef GUCEF_DEBUG_MODE
+    catch ( ... )
+    {
+        GUCEF_EXCEPTION_LOG( CORE::LOGLEVEL_CRITICAL, "RedisInfo: Main thread unknown exeption occured. Caught in catch-all" );
+        throw;
+    }
+    #endif
+
+    return returnValue;
 }
 GUCEF_OSMAIN_END
 
