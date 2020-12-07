@@ -528,6 +528,8 @@ CRollingFileAccess::SetMaxRolloverFilesBeforeDeletion( Int32 deleteThreshold )
 {GUCEF_TRACE;
     
     m_maxRolloverFilesBeforeDeletion = deleteThreshold;
+    if ( m_currentFile.Opened() )
+        PerformRolledoverFilesCleanup();
 }
 
 /*-------------------------------------------------------------------------*/
