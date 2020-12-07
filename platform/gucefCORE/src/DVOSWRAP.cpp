@@ -1357,11 +1357,11 @@ GetProcessCpuUsage( TProcessId* pid                             ,
 
         UInt64 globalCpuTotal = GetFiletimeAsUInt64( &globalKernelTime ) + GetFiletimeAsUInt64( &globalUserTime );
         UInt64 prevGlobalCpuTotal = GetFiletimeAsUInt64( &previousCpuDataDataPoint->globalKernelTime ) + GetFiletimeAsUInt64( &previousCpuDataDataPoint->globalUserTime );
-        Float64 globalCpuUseDelta = globalCpuTotal - prevGlobalCpuTotal;
+        Float64 globalCpuUseDelta = (Float64) ( globalCpuTotal - prevGlobalCpuTotal );
 
         UInt64 procCpuTotal = GetFiletimeAsUInt64( &kernelTime ) + GetFiletimeAsUInt64( &userTime );
         UInt64 prevProcCpuTotal = GetFiletimeAsUInt64( &previousCpuDataDataPoint->procKernelTime ) + GetFiletimeAsUInt64( &previousCpuDataDataPoint->procUserTime );
-        Float64 procCpuUseDelta = procCpuTotal - prevProcCpuTotal;
+        Float64 procCpuUseDelta = (Float64) ( procCpuTotal - prevProcCpuTotal );
 
         cpuUseInfo->overallCpuConsumptionPercentage = procCpuUseDelta / ( globalCpuUseDelta / 100.0 );
         

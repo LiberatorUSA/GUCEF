@@ -254,7 +254,7 @@ CMultiLogger::Log( const TLogMsgType logMsgType ,
             // We want to make certain that errors are always in the log file.
             // We might crash moments later which might cause some loggers not
             // to write the error entry to their respective output media
-            if ( LOG_ERROR == logMsgType )
+            if ( LOG_ERROR == logMsgType || LOG_EXCEPTION == logMsgType )
             {
                 FlushLog();
             }

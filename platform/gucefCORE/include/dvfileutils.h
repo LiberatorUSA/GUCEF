@@ -234,7 +234,7 @@ DI_Name( struct SDI_Data *data );
  *      Returns the size of the current entry which in the case of a file is the
  *      file size.
  */
-GUCEF_CORE_PUBLIC_C UInt32
+GUCEF_CORE_PUBLIC_C UInt64
 DI_Size( struct SDI_Data *data );
 
 /*-------------------------------------------------------------------------*/
@@ -248,7 +248,7 @@ DI_Size( struct SDI_Data *data );
  *      Returns the timestamp of the file. This is when the file was last
  *      modified.
  */
-GUCEF_CORE_PUBLIC_C UInt32
+GUCEF_CORE_PUBLIC_C UInt64
 DI_Timestamp( struct SDI_Data *data );
 
 /*-------------------------------------------------------------------------*/

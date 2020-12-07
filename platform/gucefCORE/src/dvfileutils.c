@@ -90,7 +90,7 @@ struct SDI_Data
 {
  	#if ( GUCEF_PLATFORM == GUCEF_PLATFORM_MSWIN )
 
-	Int32 find_handle;        /* Unique handle identifying the file or set of files that resulted from a findfirst with the filter provided */
+	intptr_t find_handle;     /* Unique handle identifying the file or set of files that resulted from a findfirst with the filter provided */
 	struct _finddata_t  find; /* struct that stores entry data */
 
     #elif ( ( GUCEF_PLATFORM == GUCEF_PLATFORM_LINUX ) || ( GUCEF_PLATFORM == GUCEF_PLATFORM_ANDROID ) )
@@ -148,11 +148,18 @@ DI_First_Dir_Entry( const char *path )
      *	Win98 and WinME and these functions are. No support for Win95 or
      *	older though.
      */
-    tmp_path = (char*)calloc( strlen( path )+5, sizeof( char ) );
-    strcpy( tmp_path, path );
-    Append_To_Path( tmp_path, "*.*\0" );
-    data->find_handle = (Int32) _findfirst( tmp_path, &data->find );
-    free( tmp_path );
+    if ( -1 == Find_Char( '*', path, (UInt32) strlen( path ) ) )
+    {
+        tmp_path = (char*)calloc( strlen( path )+5, sizeof( char ) );
+        strcpy( tmp_path, path );
+        Append_To_Path( tmp_path, "*.*\0" );
+        data->find_handle = _findfirst( tmp_path, &data->find );
+        free( tmp_path );
+    }
+    else
+    {
+        data->find_handle = _findfirst( path, &data->find );
+    }
 
     /*
      *	Check if findfirst was successful
@@ -312,7 +319,7 @@ DI_Next_Dir_Entry( struct SDI_Data *data )
 
 /*-------------------------------------------------------------------------*/
 
-UInt32
+UInt64
 DI_Timestamp( struct SDI_Data *data )
 {
     /*
@@ -326,7 +333,7 @@ DI_Timestamp( struct SDI_Data *data )
      */
     #if ( GUCEF_PLATFORM == GUCEF_PLATFORM_MSWIN )
 
-    return (UInt32)data->find.time_write;
+    return data->find.time_write;
 
     #elif ( ( GUCEF_PLATFORM == GUCEF_PLATFORM_LINUX ) || ( GUCEF_PLATFORM == GUCEF_PLATFORM_ANDROID ) )
 
@@ -344,7 +351,7 @@ DI_Timestamp( struct SDI_Data *data )
 
 /*-------------------------------------------------------------------------*/
 
-UInt32
+UInt64
 DI_Size( struct SDI_Data *data )
 {
     /*

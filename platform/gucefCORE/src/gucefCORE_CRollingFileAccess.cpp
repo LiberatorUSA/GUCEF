@@ -28,6 +28,11 @@
 #define GUCEF_CORE_GUCEF_ESSENTIALS_H
 #endif /* GUCEF_CORE_GUCEF_ESSENTIALS_H ? */
 
+#ifndef GUCEF_CORE_DVFILEUTILS_H
+#include "dvfileutils.h"
+#define GUCEF_CORE_DVFILEUTILS_H
+#endif /* GUCEF_CORE_DVFILEUTILS_H ? */
+
 #ifndef GUCEF_CORE_DVCPPSTRINGUTILS_H
 #include "dvcppstringutils.h" 
 #define GUCEF_CORE_DVCPPSTRINGUTILS_H
@@ -50,36 +55,40 @@ namespace CORE {
 //                                                                         //
 //-------------------------------------------------------------------------*/
 
-#define DEFAULT_MAXFILESIZE     10485760 // 10 MB max file size threshold for rollover
+#define DEFAULT_MAXFILESIZE_IN_BYTES    10485760 // 10 MB max file size threshold for rollover
+#define DEFAULT_MAX_ROLLED_FILES        -1
 
 /*-------------------------------------------------------------------------*/
 
 CRollingFileAccess::CRollingFileAccess( const CString& file ,
                                         const char* mode    )
     : CIOAccess()
-    , m_maxFileSize( DEFAULT_MAXFILESIZE )
+    , m_maxFileSize( DEFAULT_MAXFILESIZE_IN_BYTES )
     , m_currentFileIndex( 0 )
     , m_offset( 0 )    
     , m_baseFilename( file )
     , m_fileMode()
     , m_currentFile()
-    , m_maxRolloverFilesBeforeDeletion( -1 )
+    , m_maxRolloverFilesBeforeDeletion( DEFAULT_MAX_ROLLED_FILES )
 {GUCEF_TRACE;
 
-    Open( file, mode );
+    if ( Open( file, mode ) )
+    {
+        PerformRolledoverFilesCleanup();
+    }
 }
 
 /*-------------------------------------------------------------------------*/
 
 CRollingFileAccess::CRollingFileAccess( void )
     : CIOAccess()
-    , m_maxFileSize( DEFAULT_MAXFILESIZE )
+    , m_maxFileSize( DEFAULT_MAXFILESIZE_IN_BYTES )
     , m_currentFileIndex( 0 )
     , m_offset( 0 )    
     , m_baseFilename()
     , m_fileMode()
     , m_currentFile()
-    , m_maxRolloverFilesBeforeDeletion( -1 )
+    , m_maxRolloverFilesBeforeDeletion( DEFAULT_MAX_ROLLED_FILES )
 {GUCEF_TRACE;
 
 }
@@ -126,8 +135,34 @@ CRollingFileAccess::GetRolloverSizeThreshold( void ) const
 
 /*-------------------------------------------------------------------------*/
 
+void
+CRollingFileAccess::GetExistingMatchingFiles( UInt64ToStringMap& files ) const
+{GUCEF_TRACE;
+
+    UInt32 currentFileIndex = m_currentFileIndex;
+    CString filter = GenerateCurrentFilename( m_baseFilename, currentFileIndex, true );
+    CString dirPath = StripFilename( m_baseFilename );
+
+    struct SDI_Data* did = DI_First_Dir_Entry( filter.C_String() );
+    if ( GUCEF_NULL != did )
+    {
+        do
+        {
+            if ( DI_Is_It_A_File( did ) == 1 )
+            {
+                files[ DI_Timestamp( did ) ] = CombinePath( dirPath, DI_Name( did ) );
+            }
+        }
+        while ( DI_Next_Dir_Entry( did ) != 0 );
+
+        DI_Cleanup( did );
+    }
+}
+
+/*-------------------------------------------------------------------------*/
+
 CString
-CRollingFileAccess::GenerateCurrentFilename( const CString& baseName, UInt32& fileIndex ) const
+CRollingFileAccess::GenerateCurrentFilename( const CString& baseName, UInt32& fileIndex, bool asWildcardFilter ) const
 {GUCEF_TRACE;
 
     CString actualFilename = ResolveVars( baseName );
@@ -138,11 +173,19 @@ CRollingFileAccess::GenerateCurrentFilename( const CString& baseName, UInt32& fi
         fileExt = '.' + fileExt;
     }
     
-    CString testFilename = actualFilename + '.' + UInt32ToString( fileIndex ) + fileExt;
-    while ( FileExists( testFilename ) )
+    CString testFilename;
+    if ( !asWildcardFilter )
     {
-        ++fileIndex;
-        testFilename = actualFilename + '.' + UInt32ToString( fileIndex ) + fileExt;
+        testFilename = actualFilename + '.' + UInt32ToString( fileIndex ) + fileExt;    
+        while ( FileExists( testFilename ) )
+        {           
+            ++fileIndex;
+            testFilename = actualFilename + '.' + UInt32ToString( fileIndex ) + fileExt;
+        }
+    }
+    else
+    {
+        testFilename = actualFilename + ".*" + fileExt;
     }
 
     return testFilename;
@@ -160,7 +203,7 @@ CRollingFileAccess::Open( const CString& file ,
         m_baseFilename = file;
         m_fileMode = mode;
 
-        CString actualFilename = GenerateCurrentFilename( file, m_currentFileIndex );
+        CString actualFilename = GenerateCurrentFilename( file, m_currentFileIndex, false );
         if ( m_currentFile.Open( actualFilename, mode ) )
         {
             m_offset = m_currentFile.Tell();
@@ -243,7 +286,43 @@ CRollingFileAccess::PerformRolledoverFilesCleanup( void )
     if ( m_maxRolloverFilesBeforeDeletion < 1 )
         return;
 
-    
+    UInt64ToStringMap files;
+    GetExistingMatchingFiles( files );
+
+    if ( files.size() > (size_t) m_maxRolloverFilesBeforeDeletion )
+    {    
+        CString::StringVector failedFiles;
+        CString::StringVector deletedFiles;
+        deletedFiles.reserve( files.size() - (size_t) m_maxRolloverFilesBeforeDeletion );
+
+        while ( files.size() > (size_t) m_maxRolloverFilesBeforeDeletion )
+        {
+            const CString& fileToDelete = (*files.begin()).second;
+            if ( DeleteFile( fileToDelete ) )
+            {
+                deletedFiles.push_back( fileToDelete );
+            }
+            else
+            {
+                failedFiles.push_back( fileToDelete );
+            }
+            files.erase( files.begin() );
+        }
+
+        CString::StringVector::iterator i = failedFiles.begin();
+        while ( i != failedFiles.end() )
+        {
+            GUCEF_ERROR_LOG( LOGLEVEL_IMPORTANT, "RollingFileAccess: Failed to delete rolled over file: " + (*i) );
+            ++i;
+        }
+
+        i = deletedFiles.begin();
+        while ( i != deletedFiles.end() )
+        {
+            GUCEF_SYSTEM_LOG( LOGLEVEL_NORMAL, "RollingFileAccess: Deleted rolled over file: " + (*i) );
+            ++i;
+        }
+    }
 }
 
 /*-------------------------------------------------------------------------*/
@@ -255,7 +334,10 @@ CRollingFileAccess::EnforceFileSizeThreshold( void )
     if ( m_offset >= m_maxFileSize )
     {
         Close();
-        Open( m_baseFilename, m_fileMode.C_String() );
+        if ( Open( m_baseFilename, m_fileMode.C_String() ) )
+        {
+            PerformRolledoverFilesCleanup();
+        }
     }
 }
 
@@ -417,7 +499,7 @@ CRollingFileAccess::SetFileToUse( const CString& filename  ,
 
     m_baseFilename = filename;
     UInt32 index = m_currentFileIndex;
-    CString actualFilename = GenerateCurrentFilename( filename, index );
+    CString actualFilename = GenerateCurrentFilename( filename, index, false );
     bool result = m_currentFile.SetFileToUse( actualFilename, mode, moveIfCurrentlyOpen );
     if ( result && moveIfCurrentlyOpen )
     {
