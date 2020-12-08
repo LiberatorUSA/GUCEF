@@ -946,42 +946,6 @@ ClusterChannelRedisWriter::GetRedisClusterNodeMap( RedisNodeMap& nodeMap )
 /*-------------------------------------------------------------------------*/
 
 bool
-ClusterChannelRedisWriter::RedisFlush( void )
-{GUCEF_TRACE;
-
-    if ( GUCEF_NULL == m_redisPipeline )
-        return true;
-
-    try
-    {
-        GUCEF_LOG( CORE::LOGLEVEL_NORMAL, "Udp2RedisClusterChannel(" + CORE::PointerToString( this ) + "):RedisFlush: Flushing the pipeline" );
-        m_redisPipeline->flushall( false );
-        GUCEF_LOG( CORE::LOGLEVEL_NORMAL, "Udp2RedisClusterChannel(" + CORE::PointerToString( this ) + "):RedisFlush: Finished flushing the pipeline" );
-    }
-    catch ( const sw::redis::OomError& e )
-    {
-		++m_redisErrorReplies;
-        GUCEF_WARNING_LOG( CORE::LOGLEVEL_IMPORTANT, "Udp2RedisClusterChannel(" + CORE::PointerToString( this ) + "):RedisFlush: Redis++ OOM exception: " + e.what() );
-        return false;
-    }
-    catch ( const sw::redis::Error& e )
-    {
-		++m_redisErrorReplies;
-        GUCEF_EXCEPTION_LOG( CORE::LOGLEVEL_IMPORTANT, "Udp2RedisClusterChannel(" + CORE::PointerToString( this ) + "):RedisFlush: Redis++ exception: " + e.what() );
-        return false;
-    }
-    catch ( const std::exception& e )
-    {
-        GUCEF_EXCEPTION_LOG( CORE::LOGLEVEL_IMPORTANT, "Udp2RedisClusterChannel(" + CORE::PointerToString( this ) + "):RedisFlush: exception: " + e.what() );
-        return false;
-    }
-
-    return true;
-}
-
-/*-------------------------------------------------------------------------*/
-
-bool
 ClusterChannelRedisWriter::RedisDisconnect( void )
 {GUCEF_TRACE;
 
@@ -989,8 +953,6 @@ ClusterChannelRedisWriter::RedisDisconnect( void )
     {
         GUCEF_LOG( CORE::LOGLEVEL_NORMAL, "Udp2RedisClusterChannel(" + CORE::PointerToString( this ) + "):RedisDisconnect: Beginning cleanup" );
 
-        RedisFlush();
-        
         delete m_redisPipeline;
         m_redisPipeline = GUCEF_NULL;
         

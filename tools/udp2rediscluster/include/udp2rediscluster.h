@@ -219,8 +219,6 @@ class ClusterChannelRedisWriter : public CORE::CTaskConsumer
 
     bool RedisDisconnect( void );
 
-    bool RedisFlush( void );
-
     bool GetRedisClusterNodeMap( RedisNodeMap& nodeMap );
 
     void RegisterEventHandlers( void );
