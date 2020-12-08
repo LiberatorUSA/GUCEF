@@ -63,6 +63,7 @@
 #define GUCEF_DEFAULT_UDP_OS_LEVEL_RECEIVE_BUFFER_SIZE              (1024 * 1024 * 10)
 #define GUCEF_DEFAULT_UDP_MAX_SOCKET_CYCLES_PER_PULSE               25
 #define GUCEF_DEFAULT_MAX_DEDICATED_REDIS_WRITER_MAIL_BULK_READ     100
+#define GUCEF_DEFAULT_REDIS_RECONNECT_DELAY_IN_MS                   100
 
 /*-------------------------------------------------------------------------//
 //                                                                         //
@@ -89,6 +90,7 @@ ChannelSettings::ChannelSettings( void )
     , cpuAffinityForMainChannelThread( 0 )
     , redisXAddMaxLen( -1 )
     , redisXAddMaxLenIsApproximate( true )
+    , redisReconnectDelayInMs( GUCEF_DEFAULT_REDIS_RECONNECT_DELAY_IN_MS )
 {GUCEF_TRACE;
 
 }
@@ -114,6 +116,7 @@ ChannelSettings::ChannelSettings( const ChannelSettings& src )
     , cpuAffinityForMainChannelThread( src.cpuAffinityForMainChannelThread )
     , redisXAddMaxLen( src.redisXAddMaxLen )
     , redisXAddMaxLenIsApproximate( src.redisXAddMaxLenIsApproximate )
+    , redisReconnectDelayInMs( src.redisReconnectDelayInMs )
 {GUCEF_TRACE;
 
 }
@@ -144,6 +147,7 @@ ChannelSettings::operator=( const ChannelSettings& src )
         cpuAffinityForMainChannelThread = src.cpuAffinityForMainChannelThread;
         redisXAddMaxLen = src.redisXAddMaxLen;
         redisXAddMaxLenIsApproximate = src.redisXAddMaxLenIsApproximate;
+        redisReconnectDelayInMs = src.redisReconnectDelayInMs;
     }
     return *this;
 }
@@ -171,6 +175,7 @@ ChannelSettings::SaveConfig( CORE::CDataNode& tree ) const
     tree.SetAttribute( "cpuAffinityForMainChannelThread", cpuAffinityForMainChannelThread );
     tree.SetAttribute( "redisXAddMaxLen", redisXAddMaxLen );
     tree.SetAttribute( "redisXAddMaxLenIsApproximate", redisXAddMaxLenIsApproximate );
+    tree.SetAttribute( "redisReconnectDelayInMs", redisReconnectDelayInMs );
     return true;
 }
 
@@ -197,6 +202,7 @@ ChannelSettings::LoadConfig( const CORE::CDataNode& tree )
     cpuAffinityForMainChannelThread = CORE::StringToUInt32( tree.GetAttributeValueOrChildValueByName( "cpuAffinityForMainChannelThread", CORE::UInt32ToString( cpuAffinityForMainChannelThread ) ) );
     redisXAddMaxLen = CORE::StringToInt32( tree.GetAttributeValueOrChildValueByName( "redisXAddMaxLen" ), redisXAddMaxLen ); 
     redisXAddMaxLenIsApproximate = CORE::StringToBool( tree.GetAttributeValueOrChildValueByName( "redisXAddMaxLenIsApproximate" ), redisXAddMaxLenIsApproximate );
+    redisReconnectDelayInMs = CORE::StringToUInt32( tree.GetAttributeValueOrChildValueByName( "redisReconnectDelayInMs", CORE::UInt32ToString( redisReconnectDelayInMs ) ) );
     return true;
 }
 
@@ -232,6 +238,7 @@ ClusterChannelRedisWriter::ClusterChannelRedisWriter()
     , m_bulkPacketCounts()
     , m_redisPacketArgs()
     , m_metricsTimer( GUCEF_NULL )
+    , m_redisReconnectTimer( GUCEF_NULL )
 {GUCEF_TRACE;
 
 }
@@ -241,11 +248,7 @@ ClusterChannelRedisWriter::ClusterChannelRedisWriter()
 ClusterChannelRedisWriter::~ClusterChannelRedisWriter()
 {GUCEF_TRACE;
 
-    delete m_redisPipeline;
-    m_redisPipeline = GUCEF_NULL;
-
-    delete m_redisContext;
-    m_redisContext = GUCEF_NULL;
+    RedisDisconnect();
 }
 
 /*-------------------------------------------------------------------------*/
@@ -258,6 +261,11 @@ ClusterChannelRedisWriter::RegisterEventHandlers( void )
     SubscribeTo( m_metricsTimer                 ,
                  CORE::CTimer::TimerUpdateEvent ,
                  callback                       );
+
+    TEventCallback callback2( this, &ClusterChannelRedisWriter::OnRedisReconnectTimerCycle );
+    SubscribeTo( m_redisReconnectTimer          ,
+                 CORE::CTimer::TimerUpdateEvent ,
+                 callback2                      );
 }
 
 /*-------------------------------------------------------------------------*/
@@ -334,12 +342,28 @@ ClusterChannelRedisWriter::OnMetricsTimerCycle( CORE::CNotifier* notifier    ,
 
 /*-------------------------------------------------------------------------*/
 
+void
+ClusterChannelRedisWriter::OnRedisReconnectTimerCycle( CORE::CNotifier* notifier    ,
+                                                       const CORE::CEvent& eventId  ,
+                                                       CORE::CICloneable* eventData )
+{GUCEF_TRACE;
+
+    if ( RedisConnect() )
+    {
+        m_redisReconnectTimer->SetEnabled( false );
+    }
+}
+
+/*-------------------------------------------------------------------------*/
+
 bool
 ClusterChannelRedisWriter::OnTaskStart( CORE::CICloneable* taskData )
 {GUCEF_TRACE;
 
     m_metricsTimer = new CORE::CTimer( *GetPulseGenerator(), 1000 );
     m_metricsTimer->SetEnabled( m_channelSettings.collectMetrics );
+
+    m_redisReconnectTimer = new CORE::CTimer( *GetPulseGenerator(), m_channelSettings.redisReconnectDelayInMs );
 
     if ( m_channelSettings.performRedisWritesInDedicatedThread )
     {
@@ -382,6 +406,14 @@ bool
 ClusterChannelRedisWriter::OnTaskCycle( CORE::CICloneable* taskData )
 {GUCEF_TRACE;
 
+    if ( GUCEF_NULL == m_redisContext || GUCEF_NULL == m_redisPipeline )
+    {
+        m_redisReconnectTimer->SetEnabled( true );
+
+        // We are never 'done' so return false
+        return false;
+    }
+    
     if ( m_channelSettings.performRedisWritesInDedicatedThread )
     {
         if ( m_redisMsgQueueOverflowQueue.empty() )
@@ -452,6 +484,9 @@ ClusterChannelRedisWriter::OnTaskEnded( CORE::CICloneable* taskData ,
 
     delete m_metricsTimer;
     m_metricsTimer = GUCEF_NULL;
+
+    delete m_redisReconnectTimer;
+    m_redisReconnectTimer = GUCEF_NULL;
 
     CORE::CTaskConsumer::OnTaskEnded( taskData, wasForced );
 }
@@ -649,12 +684,20 @@ ClusterChannelRedisWriter::RedisSendSyncImpl( const TPacketEntryVectorPtrVector&
 
         return totalSuccess;
     }
+    catch ( const sw::redis::OomError& e )
+    {
+		++m_redisErrorReplies;
+        GUCEF_WARNING_LOG( CORE::LOGLEVEL_IMPORTANT, "Udp2RedisClusterChannel(" + CORE::PointerToString( this ) + "):RedisSendSyncImpl: Redis++ OOM exception: " + e.what() );
+        return false;
+    }
     catch ( const sw::redis::MovedError& e )
     {
 		++m_redisErrorReplies;
         GUCEF_EXCEPTION_LOG( CORE::LOGLEVEL_IMPORTANT, "Udp2RedisClusterChannel(" + CORE::PointerToString( this ) + "):RedisSendSyncImpl: Redis++ MovedError (Redirect failed?) . Current slot: " +
                                 CORE::ToString( m_redisHashSlot ) + ", new slot: " + CORE::ToString( e.slot() ) + " at node " + e.node().host + ":" + CORE::ToString( e.node().port ) +
                                 " exception: " + e.what() );
+        RedisDisconnect();
+        m_redisReconnectTimer->SetEnabled( true );
         return false;
     }
     catch ( const sw::redis::RedirectionError& e )
@@ -663,12 +706,17 @@ ClusterChannelRedisWriter::RedisSendSyncImpl( const TPacketEntryVectorPtrVector&
         GUCEF_EXCEPTION_LOG( CORE::LOGLEVEL_IMPORTANT, "Udp2RedisClusterChannel(" + CORE::PointerToString( this ) + "):RedisSendSyncImpl: Redis++ RedirectionError (rebalance? node failure?). Current slot: " +
                                 CORE::ToString( m_redisHashSlot ) + ", new slot: " + CORE::ToString( e.slot() ) + " at node " + e.node().host + ":" + CORE::ToString( e.node().port ) +
                                 " exception: " + e.what() );
+
+        RedisDisconnect();
+        m_redisReconnectTimer->SetEnabled( true );
         return false;
     }
     catch ( const sw::redis::Error& e )
     {
 		++m_redisErrorReplies;
         GUCEF_EXCEPTION_LOG( CORE::LOGLEVEL_IMPORTANT, "Udp2RedisClusterChannel(" + CORE::PointerToString( this ) + "):RedisSendSyncImpl: Redis++ exception: " + e.what() );
+        RedisDisconnect();
+        m_redisReconnectTimer->SetEnabled( true );
         return false;
     }
     catch ( const std::exception& e )
@@ -873,10 +921,17 @@ ClusterChannelRedisWriter::GetRedisClusterNodeMap( RedisNodeMap& nodeMap )
         }
 
     }
+    catch ( const sw::redis::OomError& e )
+    {
+		++m_redisErrorReplies;
+        GUCEF_WARNING_LOG( CORE::LOGLEVEL_IMPORTANT, "Udp2RedisClusterChannel(" + CORE::PointerToString( this ) + "):GetRedisClusterNodeMap: Redis++ OOM exception: " + e.what() );
+        return false;
+    }
     catch ( const sw::redis::Error& e )
     {
 		++m_redisErrorReplies;
         GUCEF_EXCEPTION_LOG( CORE::LOGLEVEL_IMPORTANT, "Udp2RedisClusterChannel(" + CORE::PointerToString( this ) + "):GetRedisClusterNodeMap: Redis++ exception: " + e.what() );
+        m_redisReconnectTimer->SetEnabled( true );
         return false;
     }
     catch ( const std::exception& e )
@@ -891,9 +946,88 @@ ClusterChannelRedisWriter::GetRedisClusterNodeMap( RedisNodeMap& nodeMap )
 /*-------------------------------------------------------------------------*/
 
 bool
+ClusterChannelRedisWriter::RedisFlush( void )
+{GUCEF_TRACE;
+
+    if ( GUCEF_NULL == m_redisPipeline )
+        return true;
+
+    try
+    {
+        GUCEF_LOG( CORE::LOGLEVEL_NORMAL, "Udp2RedisClusterChannel(" + CORE::PointerToString( this ) + "):RedisFlush: Flushing the pipeline" );
+        m_redisPipeline->flushall( false );
+        GUCEF_LOG( CORE::LOGLEVEL_NORMAL, "Udp2RedisClusterChannel(" + CORE::PointerToString( this ) + "):RedisFlush: Finished flushing the pipeline" );
+    }
+    catch ( const sw::redis::OomError& e )
+    {
+		++m_redisErrorReplies;
+        GUCEF_WARNING_LOG( CORE::LOGLEVEL_IMPORTANT, "Udp2RedisClusterChannel(" + CORE::PointerToString( this ) + "):RedisFlush: Redis++ OOM exception: " + e.what() );
+        return false;
+    }
+    catch ( const sw::redis::Error& e )
+    {
+		++m_redisErrorReplies;
+        GUCEF_EXCEPTION_LOG( CORE::LOGLEVEL_IMPORTANT, "Udp2RedisClusterChannel(" + CORE::PointerToString( this ) + "):RedisFlush: Redis++ exception: " + e.what() );
+        return false;
+    }
+    catch ( const std::exception& e )
+    {
+        GUCEF_EXCEPTION_LOG( CORE::LOGLEVEL_IMPORTANT, "Udp2RedisClusterChannel(" + CORE::PointerToString( this ) + "):RedisFlush: exception: " + e.what() );
+        return false;
+    }
+
+    return true;
+}
+
+/*-------------------------------------------------------------------------*/
+
+bool
+ClusterChannelRedisWriter::RedisDisconnect( void )
+{GUCEF_TRACE;
+
+    try
+    {
+        GUCEF_LOG( CORE::LOGLEVEL_NORMAL, "Udp2RedisClusterChannel(" + CORE::PointerToString( this ) + "):RedisDisconnect: Beginning cleanup" );
+
+        RedisFlush();
+        
+        delete m_redisPipeline;
+        m_redisPipeline = GUCEF_NULL;
+        
+        delete m_redisContext;
+        m_redisContext = GUCEF_NULL;
+
+        GUCEF_LOG( CORE::LOGLEVEL_NORMAL, "Udp2RedisClusterChannel(" + CORE::PointerToString( this ) + "):RedisDisconnect: Finished cleanup" );
+    }
+    catch ( const sw::redis::OomError& e )
+    {
+		++m_redisErrorReplies;
+        GUCEF_WARNING_LOG( CORE::LOGLEVEL_IMPORTANT, "Udp2RedisClusterChannel(" + CORE::PointerToString( this ) + "):RedisDisconnect: Redis++ OOM exception: " + e.what() );
+        return false;
+    }
+    catch ( const sw::redis::Error& e )
+    {
+		++m_redisErrorReplies;
+        GUCEF_EXCEPTION_LOG( CORE::LOGLEVEL_IMPORTANT, "Udp2RedisClusterChannel(" + CORE::PointerToString( this ) + "):RedisDisconnect: Redis++ exception: " + e.what() );
+        return false;
+    }
+    catch ( const std::exception& e )
+    {
+        GUCEF_EXCEPTION_LOG( CORE::LOGLEVEL_IMPORTANT, "Udp2RedisClusterChannel(" + CORE::PointerToString( this ) + "):RedisDisconnect: exception: " + e.what() );
+        return false;
+    }
+
+    return true;
+}
+
+/*-------------------------------------------------------------------------*/
+
+bool
 ClusterChannelRedisWriter::RedisConnect( void )
 {GUCEF_TRACE;
 
+    RedisDisconnect();
+    
     try
     {
         sw::redis::ConnectionOptions rppConnectionOptions;
@@ -947,15 +1081,23 @@ ClusterChannelRedisWriter::RedisConnect( void )
         GUCEF_LOG( CORE::LOGLEVEL_NORMAL, "Udp2RedisClusterChannel(" + CORE::PointerToString( this ) + "):RedisConnect: Successfully created a Redis pipeline. Hash Slot " + CORE::ToString( m_redisHashSlot ) );
         return true;
     }
+    catch ( const sw::redis::OomError& e )
+    {
+		++m_redisErrorReplies;
+        GUCEF_WARNING_LOG( CORE::LOGLEVEL_IMPORTANT, "Udp2RedisClusterChannel(" + CORE::PointerToString( this ) + "):RedisConnect: Redis++ OOM exception: " + e.what() );
+        return false;
+    }
     catch ( const sw::redis::Error& e )
     {
 		++m_redisErrorReplies;
         GUCEF_EXCEPTION_LOG( CORE::LOGLEVEL_IMPORTANT, "Udp2RedisClusterChannel(" + CORE::PointerToString( this ) + "):RedisConnect: Redis++ exception: " + e.what() );
+        m_redisReconnectTimer->SetEnabled( true );
         return false;
     }
     catch ( const std::exception& e )
     {
         GUCEF_EXCEPTION_LOG( CORE::LOGLEVEL_IMPORTANT, "Udp2RedisClusterChannel(" + CORE::PointerToString( this ) + "):RedisConnect: exception: " + e.what() );
+        m_redisReconnectTimer->SetEnabled( true );
         return false;
     }
 }
@@ -1285,16 +1427,19 @@ Udp2RedisClusterChannel::OnTaskStart( CORE::CICloneable* taskData )
         CORE::CTaskManager& taskManager = CORE::CCoreGlobal::Instance()->GetTaskManager();
         if ( !taskManager.StartTask( m_redisWriter ) )
         {
-            GUCEF_ERROR_LOG( CORE::LOGLEVEL_CRITICAL, "Udp2RedisClusterChannel:OnTaskStart: Failed to start dedicated task (dedicated thread) for Redis writes" );
-            return false;
+            GUCEF_ERROR_LOG( CORE::LOGLEVEL_CRITICAL, "Udp2RedisClusterChannel:OnTaskStart: Failed to start dedicated task (dedicated thread) for Redis writes. Falling back to a single thread" );
+            m_channelSettings.performRedisWritesInDedicatedThread = false;
         }
-        GUCEF_LOG( CORE::LOGLEVEL_NORMAL, "Udp2RedisClusterChannel:OnTaskStart: Successfully requested the launch of a dedicated task (dedicated thread) for Redis writes" );
+        else
+        {
+            GUCEF_LOG( CORE::LOGLEVEL_NORMAL, "Udp2RedisClusterChannel:OnTaskStart: Successfully requested the launch of a dedicated task (dedicated thread) for Redis writes" );
+        }
     }
     else
     {
         if ( !m_redisWriter->OnTaskStart( taskData ) )
         {
-            GUCEF_ERROR_LOG( CORE::LOGLEVEL_CRITICAL, "Udp2RedisClusterChannel:OnTaskStart: Failed to start dedicated task (dedicated thread) for Redis writes" );
+            GUCEF_ERROR_LOG( CORE::LOGLEVEL_CRITICAL, "Udp2RedisClusterChannel:OnTaskStart: Failed startup of Redis writer logic" );
             return false;
         }
     }

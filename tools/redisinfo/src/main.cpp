@@ -192,6 +192,7 @@ GUCEF_OSMAIN_BEGIN
     int returnValue = -100;
     try
     {
+
     GUCEF_LOG( CORE::LOGLEVEL_NORMAL, "This tool was compiled on: " __DATE__ " @ " __TIME__ );
 
     CORE::CCoreGlobal::Instance();
@@ -270,11 +271,13 @@ GUCEF_OSMAIN_BEGIN
     catch ( const std::exception& e )
     {
         GUCEF_EXCEPTION_LOG( CORE::LOGLEVEL_CRITICAL, "RedisInfo: Main thread stl exeption: " + CORE::CString( e.what() ) );
+        throw e;
     }
     #ifndef GUCEF_DEBUG_MODE
     catch ( ... )
     {
         GUCEF_EXCEPTION_LOG( CORE::LOGLEVEL_CRITICAL, "RedisInfo: Main thread unknown exeption occured. Caught in catch-all" );
+        throw;
     }
     #endif
 

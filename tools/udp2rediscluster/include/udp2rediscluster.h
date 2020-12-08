@@ -131,6 +131,7 @@ class ChannelSettings : public CORE::CIConfigurable
     CORE::UInt32 cpuAffinityForMainChannelThread;
     CORE::Int32 redisXAddMaxLen;
     bool redisXAddMaxLenIsApproximate;
+    CORE::UInt32 redisReconnectDelayInMs;
 
     virtual bool SaveConfig( CORE::CDataNode& tree ) const GUCEF_VIRTUAL_OVERRIDE;
 
@@ -216,6 +217,10 @@ class ClusterChannelRedisWriter : public CORE::CTaskConsumer
 
     bool RedisConnect( void );
 
+    bool RedisDisconnect( void );
+
+    bool RedisFlush( void );
+
     bool GetRedisClusterNodeMap( RedisNodeMap& nodeMap );
 
     void RegisterEventHandlers( void );
@@ -224,6 +229,11 @@ class ClusterChannelRedisWriter : public CORE::CTaskConsumer
     OnMetricsTimerCycle( CORE::CNotifier* notifier    ,
                          const CORE::CEvent& eventId  ,
                          CORE::CICloneable* eventData );
+
+    void
+    OnRedisReconnectTimerCycle( CORE::CNotifier* notifier    ,
+                                const CORE::CEvent& eventId  ,
+                                CORE::CICloneable* eventData );
 
     private:
 
@@ -253,6 +263,7 @@ class ClusterChannelRedisWriter : public CORE::CTaskConsumer
     TUInt32Vector m_bulkPacketCounts;
     TRedisArgs m_redisPacketArgs;
     CORE::CTimer* m_metricsTimer;
+    CORE::CTimer* m_redisReconnectTimer;
 };
 
 /*-------------------------------------------------------------------------*/
