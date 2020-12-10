@@ -144,7 +144,7 @@ class RedisNode
     public:
 
     typedef std::vector< RedisNode > RedisNodeVector;
-    
+
     COMCORE::CHostAddress host;
     CORE::CString nodeId;
     CORE::Int32 startSlot;
@@ -187,7 +187,7 @@ class RedisInfoService : public CORE::CTaskConsumer
     typedef std::set< CORE::CString > TStringSet;
     typedef std::map< CORE::UInt32, TStringSet > TUInt32ToStringSetMap;
 
-    static const CORE::CString RedisInfoService::HashSlotFileCodec;
+    static const CORE::CString HashSlotFileCodec;
 
     RedisInfoService();
     virtual ~RedisInfoService();
@@ -207,7 +207,7 @@ class RedisInfoService : public CORE::CTaskConsumer
     bool LoadConfig( const Settings& settings );
 
     const Settings& GetSettings( void ) const;
-    
+
     private:
 
     bool RedisConnect( void );
@@ -225,18 +225,18 @@ class RedisInfoService : public CORE::CTaskConsumer
 
     bool DeserializeKeysForHashSlots( TUInt32ToStringSetMap& hashMap, const CORE::CDataNode& doc ) const;
 
-    bool SaveDocTo( const CORE::CDataNode& doc     , 
+    bool SaveDocTo( const CORE::CDataNode& doc     ,
                     const CORE::CString& codecName ,
                     const CORE::CString& vfsPath   ) const;
 
-    bool LoadDocFrom( CORE::CDataNode& doc           , 
-                      const CORE::CString& codecName , 
+    bool LoadDocFrom( CORE::CDataNode& doc           ,
+                      const CORE::CString& codecName ,
                       const CORE::CString& vfsPath   ) const;
 
     CORE::UInt32 CalculateRedisHashSlot( const CORE::CString& keyStr ) const;
 
     bool CalculateKeysForAllHashSlots( TUInt32ToStringSetMap& hashMap ,
-                                       CORE::UInt32 minKeysPerSlot    , 
+                                       CORE::UInt32 minKeysPerSlot    ,
                                        CORE::UInt32 maxKeysPerSlot    ) const;
 
     bool SerializeKeysForHashSlots( const TUInt32ToStringSetMap& hashMap, CORE::CDataNode& doc ) const;
@@ -244,7 +244,7 @@ class RedisInfoService : public CORE::CTaskConsumer
     bool GetRedisClusterNodeMap( RedisNodeMap& nodeMap );
 
     bool GetRedisClusterSlots( RedisNodeMap& nodeMap );
-    
+
     bool LoadHashSlotMap( void );
 
     bool ProvideHashSlotMapDoc( void );
@@ -258,22 +258,22 @@ class RedisInfoService : public CORE::CTaskConsumer
                               CORE::CString::StringVector& keys ,
                               const CORE::CString& keyType      );
 
-    bool GetRedisStreamInfo( const CORE::CString& streamName        , 
+    bool GetRedisStreamInfo( const CORE::CString& streamName        ,
                              CORE::CValueList& info                 ,
                              const CORE::CString& optionalKeyPrefix ,
                              bool statLikeValuesOnly                );
 
     bool GetRedisStreamInfoForAllStreams( CORE::CValueList& info  ,
                                           bool statLikeValuesOnly );
-    
+
     bool GetRedisInfoReplication( CORE::CValueList& kv );
 
     bool GetRedisInfoPersistence( CORE::CValueList& kv );
 
     bool GetRedisInfoStats( CORE::CValueList& kv );
-    
+
     bool GetRedisInfoCommandStats( CORE::CValueList& kv );
-    
+
     bool GetRedisInfoMemory( CORE::CValueList& kv );
 
     bool GetRedisInfoClients( CORE::CValueList& kv );
@@ -285,8 +285,8 @@ class RedisInfoService : public CORE::CTaskConsumer
     bool GetRedisClusterInfo( CORE::CValueList& kv );
 
     bool GetRedisInfo( const CORE::CString& cmd             ,
-                       const CORE::CString& type            ,  
-                       CORE::CValueList& kv                 , 
+                       const CORE::CString& type            ,
+                       CORE::CValueList& kv                 ,
                        RedisNodeWithPipe* node = GUCEF_NULL );
 
     bool GetRedisInfo( struct redisReply* replyNode   ,
@@ -414,9 +414,9 @@ class RedisInfo : public CORE::CObserver
     COM::CHTTPServer m_httpServer;
     COM::CDefaultHTTPServerRouter m_httpRouter;
     CORE::CValueList m_appConfig;
-    CORE::CDataNode m_globalConfig;    
+    CORE::CDataNode m_globalConfig;
     TStringToInfoServiceMap m_infoServices;
-    TStringToSettingsMap m_settings; 
+    TStringToSettingsMap m_settings;
 };
 
 /*-------------------------------------------------------------------------*/

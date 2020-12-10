@@ -58,6 +58,16 @@
 
 /*-------------------------------------------------------------------------//
 //                                                                         //
+//      MACROS                                                             //
+//                                                                         //
+//-------------------------------------------------------------------------*/
+
+#if ( GUCEF_PLATFORM == GUCEF_PLATFORM_MSWIN )
+  #define strdup _strdup
+#endif
+
+/*-------------------------------------------------------------------------//
+//                                                                         //
 //      TYPES                                                              //
 //                                                                         //
 //-------------------------------------------------------------------------*/
@@ -147,10 +157,10 @@ ParsifalDocumentEnd( void* userdata )
 /*---------------------------------------------------------------------------*/
 
 static int
-ParsifalCharacters( void *userdata     , 
-                    const XMLCH *chars , 
+ParsifalCharacters( void *userdata     ,
+                    const XMLCH *chars ,
                     int cbChars        )
-{	
+{
     TSrcFileData* sd = (TSrcFileData*) userdata;
 	XMLStringbuf_Append( &sd->textBuffer, (XMLCH*)chars, cbChars );
 	return XML_OK;
@@ -327,7 +337,7 @@ ParsifalElementEnd( void* userdata         ,
 {
     TSrcFileData* sd = (TSrcFileData*) userdata;
 
-    char* text = _strdup( (const char*) XMLStringbuf_ToString( &sd->textBuffer ) );
+    char* text = strdup( (const char*) XMLStringbuf_ToString( &sd->textBuffer ) );
     if ( 0 != text )
     {
         /* normalize buffer, note that XMLNormalizeBuf doesn't nul terminate the buffer: */

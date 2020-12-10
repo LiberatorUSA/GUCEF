@@ -130,7 +130,7 @@ CVFSURLHandler::Activate( CORE::CURL& url )
 
         // Obtain the file
         CVFS::CVFSHandlePtr handle = m_vfs->GetFile( url.GetURL().SubstrToSubstr( "://" ), "rb", false );
-        if ( NULL != handle )
+        if ( handle )
         {
                 CORE::CIOAccess* access = handle->GetAccess();
                 if ( NULL == access )

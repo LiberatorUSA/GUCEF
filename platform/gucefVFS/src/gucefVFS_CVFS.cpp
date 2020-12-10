@@ -26,7 +26,7 @@
 #ifndef GUCEF_MT_CSCOPEMUTEX_H
 #include "gucefMT_CScopeMutex.h"
 #define GUCEF_MT_CSCOPEMUTEX_H
-#endif /* GUCEF_MT_CSCOPEMUTEX_H ? */ 
+#endif /* GUCEF_MT_CSCOPEMUTEX_H ? */
 
 #ifndef GUCEF_MT_COBJECTSCOPELOCK_H
 #include "gucefMT_CObjectScopeLock.h"
@@ -39,7 +39,7 @@
 #endif /* DVFILEUTILS_H ? */
 
 #ifndef DVCPPSTRINGUTILS_H
-#include "dvcppstringutils.h"     
+#include "dvcppstringutils.h"
 #define DVCPPSTRINGUTILS_H
 #endif /* DVCPPSTRINGUTILS_H ? */
 
@@ -131,7 +131,7 @@ const CORE::CString CVFS::FileSystemArchiveTypeName = "FileSystem";
 //                                                                         //
 //-------------------------------------------------------------------------*/
 
-void 
+void
 CVFS::RegisterEvents( void )
 {GUCEF_TRACE;
 
@@ -144,7 +144,7 @@ CVFS::CVFS( void )
     : CORE::CTSGNotifier()
     , CORE::CIConfigurable( true )
     , m_mountList()
-    , _maxmemloadsize( 1024 ) 
+    , _maxmemloadsize( 1024 )
     , m_abstractArchiveFactory()
     , m_fileSystemArchiveFactory()
     , m_delayMountedArchiveSettings()
@@ -184,7 +184,7 @@ CVFS::RegisterEventHandlers( void )
 
 /*-------------------------------------------------------------------------*/
 
-void 
+void
 CVFS::UnmountAllArchives( void )
 {GUCEF_TRACE;
 
@@ -200,7 +200,7 @@ CVFS::UnmountAllArchives( void )
 
 /*-------------------------------------------------------------------------*/
 
-void 
+void
 CVFS::UnregisterAllArchiveFactories( void )
 {GUCEF_TRACE;
 
@@ -210,7 +210,7 @@ CVFS::UnregisterAllArchiveFactories( void )
 
 /*-------------------------------------------------------------------------*/
 
-bool 
+bool
 CVFS::StoreAsFileAsync( const CORE::CString& filepath    ,
                         const CORE::CDynamicBuffer& data ,
                         const CORE::UInt64 offset        ,
@@ -232,7 +232,7 @@ CVFS::StoreAsFileAsync( const CORE::CString& filepath    ,
 
 /*-------------------------------------------------------------------------*/
 
-bool 
+bool
 CVFS::MountArchiveAsync( const CArchiveSettings& settings ,
                          CORE::CICloneable* requestorData )
 {GUCEF_TRACE;
@@ -248,7 +248,7 @@ CVFS::MountArchiveAsync( const CArchiveSettings& settings ,
 
 /*-------------------------------------------------------------------------*/
 
-void 
+void
 CVFS::OnPumpedNotify( CORE::CNotifier* notifier    ,
                       const CORE::CEvent& eventid  ,
                       CORE::CICloneable* eventdata )
@@ -263,7 +263,7 @@ CVFS::OnPumpedNotify( CORE::CNotifier* notifier    ,
 
 /*-------------------------------------------------------------------------*/
 
-void 
+void
 CVFS::MountAllDelayMountedArchives( void )
 {GUCEF_TRACE;
 
@@ -285,7 +285,7 @@ CVFS::MountAllDelayMountedArchives( void )
 
 /*-------------------------------------------------------------------------*/
 
-void 
+void
 CVFS::OnGlobalConfigLoadFinished( CORE::CNotifier* notifier    ,
                                   const CORE::CEvent& eventid  ,
                                   CORE::CICloneable* eventdata )
@@ -296,7 +296,7 @@ CVFS::OnGlobalConfigLoadFinished( CORE::CNotifier* notifier    ,
 
 /*-------------------------------------------------------------------------*/
 
-bool 
+bool
 CVFS::StoreAsFile( const CORE::CString& filepath    ,
                    const CORE::CDynamicBuffer& data ,
                    const CORE::UInt64 offset        ,
@@ -304,7 +304,7 @@ CVFS::StoreAsFile( const CORE::CString& filepath    ,
 {GUCEF_TRACE;
 
     MT::CObjectScopeLock lock( this );
-    
+
     // Get a list of all eligable mounts
     TConstMountLinkVector mountLinks;
     GetEligableMounts( filepath, true, mountLinks );
@@ -353,7 +353,7 @@ CVFS::GetFile( const CORE::CString& file          ,
     bool fileMustExist = *mode == 'r';
 
     MT::CObjectScopeLock lock( this );
-    
+
     // Get a list of all eligable mounts
     TConstMountLinkVector mountLinks;
     GetEligableMounts( filepath, overwrite, mountLinks );
@@ -381,7 +381,7 @@ CVFS::GetFile( const CORE::CString& file          ,
                                                                             _maxmemloadsize     ,
                                                                             overwrite           );
 
-            if ( NULL == filePtr )
+            if ( filePtr )
             {
                 GUCEF_ERROR_LOG( CORE::LOGLEVEL_BELOW_NORMAL, "Vfs: Requested file exists but could not be loaded using mount link remainder: " + mountLink.remainder );
             }
@@ -455,7 +455,7 @@ CVFS::MountArchive( const CString& archiveName              ,
 
 /*-------------------------------------------------------------------------*/
 
-bool 
+bool
 CVFS::DelayMountArchive( const CArchiveSettings& settings )
 {GUCEF_TRACE;
 
@@ -466,7 +466,7 @@ CVFS::DelayMountArchive( const CArchiveSettings& settings )
 
 /*-------------------------------------------------------------------------*/
 
-bool 
+bool
 CVFS::MountArchive( const CArchiveSettings& settings )
 {GUCEF_TRACE;
 
@@ -525,7 +525,7 @@ CVFS::MountArchive( const CArchiveSettings& settings )
 
 /*-------------------------------------------------------------------------*/
 
-bool 
+bool
 CVFS::MountArchive( const CString& archiveName    ,
                     CVFSHandlePtr archiveResource ,
                     const CString& archiveType    ,
@@ -535,9 +535,9 @@ CVFS::MountArchive( const CString& archiveName    ,
 
     if ( archiveResource.IsNULL() )
         return false;
-    
+
     MT::CObjectScopeLock lock( this );
-    
+
     // create an archive for the type
     CIArchive* archive = m_abstractArchiveFactory.Create( archiveType );
     if ( GUCEF_NULL != archive )
@@ -794,7 +794,7 @@ CVFS::AddRoot( const CORE::CString& rootpath                                ,
 
 /*-------------------------------------------------------------------------*/
 
-void 
+void
 CVFS::GetListOfSupportedArchiveTypes( TAbstractArchiveFactory::TKeySet& outList ) const
 {GUCEF_TRACE;
 
@@ -830,7 +830,7 @@ CVFS::SaveConfig( CORE::CDataNode& tree ) const
 {GUCEF_TRACE;
 
     MT::CObjectScopeLock lock( this );
-    
+
     CORE::CDataNode* n = tree.Structure( "GUCEF%VFS%CVFS" ,
                                          '%'              );
     CORE::CString maxmem;
@@ -894,7 +894,7 @@ CVFS::LoadConfig( const CORE::CDataNode& tree )
 
         GUCEF_SYSTEM_LOG( CORE::LOGLEVEL_NORMAL, "VFS legacy configuration loaded" );
     }
-    
+
     n = tree.Find( "VFS" );
     if ( n )
     {
@@ -919,12 +919,12 @@ CVFS::LoadConfig( const CORE::CDataNode& tree )
 
 /*-------------------------------------------------------------------------*/
 
-const CORE::CString& 
+const CORE::CString&
 CVFS::GetClassTypeName( void ) const
 {GUCEF_TRACE;
 
     static CORE::CString classTypeName = "GUCEF::VFS::CVFS";
-    return classTypeName; 
+    return classTypeName;
 }
 
 /*-------------------------------------------------------------------------*/
@@ -942,7 +942,7 @@ CVFS::FilterValidation( const CORE::CString& filename ,
         while ( i != segs.end() )
         {
             lastSeg = filename.HasSubstr( (*i), lastSeg, true );
-            if ( 0 > lastSeg ) 
+            if ( 0 > lastSeg )
                 return false;
             ++i;
         }
@@ -973,7 +973,7 @@ CVFS::GetEligableMounts( const CString& location                ,
                 if ( location.HasSubstr( mountEntry.mountPath, true ) == 0 )
                 {
                     // We need to make sure we dont accidentally match a partial directory name with a similarly names path
-                    if ( location.Length() == mountEntry.mountPath.Length() || 
+                    if ( location.Length() == mountEntry.mountPath.Length() ||
                        ( ( location[ mountEntry.mountPath.Length() ] == '/' ) || ( location[ mountEntry.mountPath.Length() ] == '\\' ) ) )
                     {
                         TConstMountLink mountLink;
@@ -993,7 +993,7 @@ CVFS::GetEligableMounts( const CString& location                ,
                         mountLink.mountEntry = &mountEntry;
                         mountLinkVector.push_back( mountLink );
 
-                        GUCEF_DEBUG_LOG( CORE::LOGLEVEL_NORMAL, "VFS: Found eligable mount link using archive of type \"" + 
+                        GUCEF_DEBUG_LOG( CORE::LOGLEVEL_NORMAL, "VFS: Found eligable mount link using archive of type \"" +
                             mountEntry.archive->GetType() + "\" with remainder \"" + mountLink.remainder + "\". mustBeWritable=" + CORE::BoolToString( mustBeWritable ) );
                     }
                 }
@@ -1005,7 +1005,7 @@ CVFS::GetEligableMounts( const CString& location                ,
                 mountLink.mountEntry = &mountEntry;
                 mountLinkVector.push_back( mountLink );
 
-                GUCEF_DEBUG_LOG( CORE::LOGLEVEL_NORMAL, "VFS: Found eligable mount link using archive of type \"" + 
+                GUCEF_DEBUG_LOG( CORE::LOGLEVEL_NORMAL, "VFS: Found eligable mount link using archive of type \"" +
                     mountEntry.archive->GetType() + "\" with remainder \"" + location + "\". mustBeWritable=" + CORE::BoolToString( mustBeWritable ) );
             }
         }
@@ -1031,7 +1031,7 @@ CVFS::GetList( TStringSet& outputList                   ,
     CString path( location.ReplaceChar( GUCEF_DIRSEPCHAROPPOSITE, GUCEF_DIRSEPCHAR ) );
 
     MT::CObjectScopeLock lock( this );
-    
+
     // Get a list of all eligable mounts
     TConstMountLinkVector mountLinks;
     GetEligableMounts( path, false, mountLinks );
@@ -1178,7 +1178,7 @@ CVFS::GetFileSize( const CORE::CString& file ) const
     CString path( file.ReplaceChar( GUCEF_DIRSEPCHAROPPOSITE, GUCEF_DIRSEPCHAR ) );
 
     MT::CObjectScopeLock lock( this );
-    
+
     // Get a list of all eligable mounts
     TConstMountLinkVector mountLinks;
     GetEligableMounts( path, false, mountLinks );
