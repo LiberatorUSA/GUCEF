@@ -141,6 +141,10 @@ class ProcessMetrics : public CORE::CObservingNotifier
 
     bool Start( void );
 
+    bool SetStandbyMode( bool newMode );
+
+    bool IsGlobalStandbyEnabled( void ) const;
+
     bool LoadConfig( const CORE::CValueList& appConfig   ,
                      const CORE::CDataNode& globalConfig );
 

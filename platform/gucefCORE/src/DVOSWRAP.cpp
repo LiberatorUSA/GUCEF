@@ -1340,6 +1340,19 @@ GetProcessCpuUsage( TProcessId* pid                             ,
         if ( GUCEF_NULL == previousCpuDataDataPoint->hProcess )
             return OSWRAP_FALSE;
     }
+    else
+    {
+        // Keeping the handle open between samples also keeps the process object around between CPU samplings
+        // As such this may prevent us from properly letting go of the O/S resources
+        // We must always check if the process exited if we are to hold onto a process handle
+        DWORD exitCode = 0;
+        if ( ( ::GetExitCodeProcess( previousCpuDataDataPoint->hProcess, &exitCode ) == FALSE ) || exitCode != STILL_ACTIVE )
+        {
+            ::CloseHandle( previousCpuDataDataPoint->hProcess );
+            previousCpuDataDataPoint->hProcess = GUCEF_NULL;
+            return OSWRAP_FALSE;
+        }
+    }
 
     FILETIME globalIdleTime;
     FILETIME globalKernelTime;

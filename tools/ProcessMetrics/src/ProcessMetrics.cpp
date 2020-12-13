@@ -366,25 +366,45 @@ bool
 ProcessMetrics::Start( void )
 {GUCEF_TRACE;
 
-    m_metricsTimer.SetEnabled( true );
-
     if ( m_enableRestApi )
     {
         if ( m_httpServer.Listen() )
         {
             GUCEF_LOG( CORE::LOGLEVEL_IMPORTANT, "ProcessMetrics: Opened REST API on port " + CORE::UInt16ToString( m_httpServer.GetPort() ) );
-            GUCEF_LOG( CORE::LOGLEVEL_IMPORTANT, "ProcessMetrics: Startup completed successfully" );
-            return true;
         }
-
-        GUCEF_ERROR_LOG( CORE::LOGLEVEL_IMPORTANT, "ProcessMetrics: Failed to open REST API on port " + CORE::UInt16ToString( m_httpServer.GetPort() ) );
-        return false;
+        else
+        {
+            GUCEF_ERROR_LOG( CORE::LOGLEVEL_IMPORTANT, "ProcessMetrics: Failed to open REST API on port " + CORE::UInt16ToString( m_httpServer.GetPort() ) );
+        }
     }
-    else
+
+    if ( SetStandbyMode( false ) )
     {
         GUCEF_LOG( CORE::LOGLEVEL_IMPORTANT, "ProcessMetrics: Startup completed successfully" );
         return true;
     }
+
+    GUCEF_LOG( CORE::LOGLEVEL_IMPORTANT, "ProcessMetrics: Startup failed" );
+    return false;
+}
+
+/*-------------------------------------------------------------------------*/
+
+bool
+ProcessMetrics::SetStandbyMode( bool newModeIsStandby )
+{GUCEF_TRACE;
+
+    m_metricsTimer.SetEnabled( !newModeIsStandby );
+    return true;
+}
+
+/*-------------------------------------------------------------------------*/
+
+bool 
+ProcessMetrics::IsGlobalStandbyEnabled( void ) const
+{GUCEF_TRACE;
+
+    return m_metricsTimer.GetEnabled();
 }
 
 /*-------------------------------------------------------------------------*/
@@ -393,7 +413,6 @@ bool
 ProcessMetrics::LoadConfig( const CORE::CValueList& appConfig   ,
                             const CORE::CDataNode& globalConfig )
 {GUCEF_TRACE;
-
 
     m_gatherCpuStats = CORE::StringToBool( appConfig.GetValueAlways( "GatherProcCPUStats" ), true );
     m_enableRestApi = CORE::StringToBool( appConfig.GetValueAlways( "EnableRestApi" ), true );
