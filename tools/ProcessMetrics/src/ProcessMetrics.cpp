@@ -169,6 +169,7 @@ ProcessMetrics::ProcessMetrics( void )
 ProcessMetrics::~ProcessMetrics()
 {GUCEF_TRACE;
 
+    SetStandbyMode( true );
 }
 
 /*-------------------------------------------------------------------------*/
@@ -395,6 +396,23 @@ ProcessMetrics::SetStandbyMode( bool newModeIsStandby )
 {GUCEF_TRACE;
 
     m_metricsTimer.SetEnabled( !newModeIsStandby );
+
+    if ( newModeIsStandby )
+    {
+        if ( !m_exeProcIdMap.empty() )
+        {
+            GUCEF_LOG( CORE::LOGLEVEL_NORMAL, "ProcessMetrics:SetStandbyMode: Cleaning up process information" );
+            TProcessIdMap::iterator m = m_exeProcIdMap.begin();
+            while ( !m_exeProcIdMap.empty() )
+            {            
+                GUCEF_DEBUG_LOG( CORE::LOGLEVEL_NORMAL, "ProcessMetrics: Erasing info for \"" + (*m).first + "\"" );
+
+                CORE::FreeProcCpuDataPoint( (*m).second.previousProcCpuDataDataPoint );
+                CORE::FreeProcessId( (*m).second.pid );            
+                m_exeProcIdMap.erase( m );
+            }
+        }
+    }
     return true;
 }
 
