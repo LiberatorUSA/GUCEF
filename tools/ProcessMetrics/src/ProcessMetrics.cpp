@@ -1,19 +1,19 @@
 /*
- *  Udp2Redis: service which pushes UDP packets into Redis
+ *  ProcessMetrics: Service for obtaining stats on a proc by name
  *
- *  This library is free software; you can redistribute it and/or
- *  modify it under the terms of the GNU Lesser General Public
- *  License as published by the Free Software Foundation; either
- *  version 2.1 of the License, or (at your option) any later version.
+ *  Copyright (C) 1998 - 2020.  Dinand Vanvelzen
  *
- *  This library is distributed in the hope that it will be useful,
- *  but WITHOUT ANY WARRANTY; without even the implied warranty of
- *  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
- *  Lesser General Public License for more details.
+ *  Licensed under the Apache License, Version 2.0 (the "License");
+ *  you may not use this file except in compliance with the License.
+ *  You may obtain a copy of the License at
  *
- *  You should have received a copy of the GNU Lesser General Public
- *  License along with this library; if not, write to the Free Software
- *  Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA
+ *    http://www.apache.org/licenses/LICENSE-2.0
+ *
+ *  Unless required by applicable law or agreed to in writing, software
+ *  distributed under the License is distributed on an "AS IS" BASIS,
+ *  WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ *  See the License for the specific language governing permissions and
+ *  limitations under the License.
  */
 
 /*-------------------------------------------------------------------------//
@@ -169,6 +169,7 @@ ProcessMetrics::ProcessMetrics( void )
 ProcessMetrics::~ProcessMetrics()
 {GUCEF_TRACE;
 
+    SetStandbyMode( true );
 }
 
 /*-------------------------------------------------------------------------*/
@@ -366,25 +367,62 @@ bool
 ProcessMetrics::Start( void )
 {GUCEF_TRACE;
 
-    m_metricsTimer.SetEnabled( true );
-
     if ( m_enableRestApi )
     {
         if ( m_httpServer.Listen() )
         {
             GUCEF_LOG( CORE::LOGLEVEL_IMPORTANT, "ProcessMetrics: Opened REST API on port " + CORE::UInt16ToString( m_httpServer.GetPort() ) );
-            GUCEF_LOG( CORE::LOGLEVEL_IMPORTANT, "ProcessMetrics: Startup completed successfully" );
-            return true;
         }
-
-        GUCEF_ERROR_LOG( CORE::LOGLEVEL_IMPORTANT, "ProcessMetrics: Failed to open REST API on port " + CORE::UInt16ToString( m_httpServer.GetPort() ) );
-        return false;
+        else
+        {
+            GUCEF_ERROR_LOG( CORE::LOGLEVEL_IMPORTANT, "ProcessMetrics: Failed to open REST API on port " + CORE::UInt16ToString( m_httpServer.GetPort() ) );
+        }
     }
-    else
+
+    if ( SetStandbyMode( false ) )
     {
         GUCEF_LOG( CORE::LOGLEVEL_IMPORTANT, "ProcessMetrics: Startup completed successfully" );
         return true;
     }
+
+    GUCEF_LOG( CORE::LOGLEVEL_IMPORTANT, "ProcessMetrics: Startup failed" );
+    return false;
+}
+
+/*-------------------------------------------------------------------------*/
+
+bool
+ProcessMetrics::SetStandbyMode( bool newModeIsStandby )
+{GUCEF_TRACE;
+
+    m_metricsTimer.SetEnabled( !newModeIsStandby );
+
+    if ( newModeIsStandby )
+    {
+        if ( !m_exeProcIdMap.empty() )
+        {
+            GUCEF_LOG( CORE::LOGLEVEL_NORMAL, "ProcessMetrics:SetStandbyMode: Cleaning up process information" );
+            TProcessIdMap::iterator m = m_exeProcIdMap.begin();
+            while ( !m_exeProcIdMap.empty() )
+            {            
+                GUCEF_DEBUG_LOG( CORE::LOGLEVEL_NORMAL, "ProcessMetrics: Erasing info for \"" + (*m).first + "\"" );
+
+                CORE::FreeProcCpuDataPoint( (*m).second.previousProcCpuDataDataPoint );
+                CORE::FreeProcessId( (*m).second.pid );            
+                m_exeProcIdMap.erase( m );
+            }
+        }
+    }
+    return true;
+}
+
+/*-------------------------------------------------------------------------*/
+
+bool 
+ProcessMetrics::IsGlobalStandbyEnabled( void ) const
+{GUCEF_TRACE;
+
+    return m_metricsTimer.GetEnabled();
 }
 
 /*-------------------------------------------------------------------------*/
@@ -393,7 +431,6 @@ bool
 ProcessMetrics::LoadConfig( const CORE::CValueList& appConfig   ,
                             const CORE::CDataNode& globalConfig )
 {GUCEF_TRACE;
-
 
     m_gatherCpuStats = CORE::StringToBool( appConfig.GetValueAlways( "GatherProcCPUStats" ), true );
     m_enableRestApi = CORE::StringToBool( appConfig.GetValueAlways( "EnableRestApi" ), true );

@@ -199,7 +199,11 @@ GucefAppSignalHandler( int signal )
 GUCEF_OSSERVICEMAIN_BEGIN( "ProcessMetrics" )
 {GUCEF_TRACE;
 
-    GUCEF_LOG( CORE::LOGLEVEL_NORMAL, "This tool was compiled on: " __DATE__ " @ " __TIME__ );
+    int returnValue = -100;
+    try
+    {
+
+    GUCEF_LOG( CORE::LOGLEVEL_NORMAL, "This service was compiled on: " __DATE__ " @ " __TIME__ );
 
     CORE::CCoreGlobal::Instance();
     COMCORE::CComCoreGlobal::Instance();
@@ -236,6 +240,7 @@ GUCEF_OSSERVICEMAIN_BEGIN( "ProcessMetrics" )
     keyValueList.Set( "logfile", logFilename );
 
     CORE::CRollingFileAccess logFileAccess( logFilename, "w" );
+    logFileAccess.SetMaxRolloverFilesBeforeDeletion( 10 );
     CORE::CStdLogger logger( logFileAccess );
     CORE::CCoreGlobal::Instance()->GetLogManager().AddLogger( &logger );
 
@@ -266,7 +271,24 @@ GUCEF_OSSERVICEMAIN_BEGIN( "ProcessMetrics" )
     auto& app = CORE::CCoreGlobal::Instance()->GetApplication();
     app.SetForcedMinimalCycleDeltaInMilliSecs( 500 );
     app.SetDesiredMaximumCycleDeltaInMilliSecs( 10000 );
-    return app.main( argc, argv, true );
+    returnValue = app.main( argc, argv, true );
+    processMetrics.SetStandbyMode( true );
+
+    }
+    catch ( const std::exception& e )
+    {
+        GUCEF_EXCEPTION_LOG( CORE::LOGLEVEL_CRITICAL, "ProcessMetrics: Main thread stl exeption: " + CORE::CString( e.what() ) );
+        //throw e;
+    }
+    #ifndef GUCEF_DEBUG_MODE
+    catch ( ... )
+    {
+        GUCEF_EXCEPTION_LOG( CORE::LOGLEVEL_CRITICAL, "ProcessMetrics: Main thread unknown exeption occured. Caught in catch-all" );
+        throw;
+    }
+    #endif
+
+    return returnValue;
 }
 GUCEF_OSMAIN_END
 
