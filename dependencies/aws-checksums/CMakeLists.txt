@@ -28,15 +28,32 @@ set( SOURCE_FILES
   source/arm/crc32c_arm.c
   source/intel/cpuid.c
   source/intel/crc32c_sse42_asm.c
-  source/visualc/visualc_cpuid.c
-  source/visualc/visualc_crc32c_sse42.c
 )
+
+
+
+if (WIN32)
+  set( PLATFORM_SOURCE_FILES 
+    source/visualc/visualc_cpuid.c
+    source/visualc/visualc_crc32c_sse42.c
+  )
+
+  set( PLATFORM_SOURCE_INSTALL "WIN32" )
+  source_group( "Platform Source Files" FILES ${PLATFORM_SOURCE_FILES} )
+
+elseif (WIN64)
+  set( PLATFORM_SOURCE_FILES 
+    source/visualc/visualc_cpuid.c
+    source/visualc/visualc_crc32c_sse42.c
+  )
+
+  set( PLATFORM_SOURCE_INSTALL "WIN64" )
+  source_group( "Platform Source Files" FILES ${PLATFORM_SOURCE_FILES} )
+
+endif ()
 
 # Make sure the PLATFORM_HEADER_FILES variable is always defined
  set( PLATFORM_HEADER_FILES "" )
-
-# Make sure the PLATFORM_SOURCE_FILES variable is always defined
- set( PLATFORM_SOURCE_FILES "" )
 
 # For ease of use make a variable that has all files for this module
 set( ALL_FILES ${HEADER_FILES} ${SOURCE_FILES} ${PLATFORM_HEADER_FILES} ${PLATFORM_SOURCE_FILES} )
