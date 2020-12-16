@@ -59,9 +59,9 @@ class GUCEF_CORE_PUBLIC_CPP CNotifierObservingComponent : public CObserver
     
     protected:
 
-    virtual void OnNotify( CNotifier* notifier           ,
-                           const CEvent& eventid         ,
-                           CICloneable* eventdata = NULL );
+    virtual void OnNotify( CNotifier* notifier                 ,
+                           const CEvent& eventid               ,
+                           CICloneable* eventdata = GUCEF_NULL ) GUCEF_VIRTUAL_OVERRIDE;
     
     virtual bool Lock( void ) const GUCEF_VIRTUAL_OVERRIDE;
 

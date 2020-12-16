@@ -284,7 +284,7 @@ CPatchSetGenerator::GeneratePatchSet( const CORE::CString& localRoot      ,
     if ( codecRegistry->IsRegistered( storageCodec ) )
     {
         CORE::CDStoreCodecRegistry::TDStoreCodecPtr codecPtr = codecRegistry->Lookup( storageCodec );
-        if ( NULL != codecPtr )
+        if ( codecPtr )
         {
             GUCEF_LOG( CORE::LOGLEVEL_NORMAL, "PatchSetGenerator: Found storage codec \"" + storageCodec + "\", generating patch set" );
 

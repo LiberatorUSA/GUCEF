@@ -135,16 +135,16 @@ CPatchManager::StartTask( const CString& taskName                  ,
 
 {GUCEF_TRACE;
 
-    LockData();
+    Lock();
     if ( m_taskMap.find( taskName ) == m_taskMap.end() )
     {
-        UnlockData();
+        Unlock();
         CPatchTaskData taskData( *this, patchEngineConfig, taskName );
         return m_taskManager->StartTask( CPatchTaskConsumer::GetTypeString() ,
                                          &taskData                           ,
                                          NULL                                );
     }
-    UnlockData();
+    Unlock();
     return false;
 }
 
@@ -154,12 +154,12 @@ bool
 CPatchManager::PauseTask( const CString& taskName )
 {GUCEF_TRACE;
 
-    LockData();
+    Lock();
     TTaskMap::iterator i = m_taskMap.find( taskName );
     if ( i != m_taskMap.end() )
     {
         UInt32 taskID = (*i).second->GetTaskId();
-        UnlockData();
+        Unlock();
 
         if ( m_taskManager->PauseTask( taskID, false ) )
         {
@@ -169,7 +169,7 @@ CPatchManager::PauseTask( const CString& taskName )
         }
         return false;
     }
-    UnlockData();
+    Unlock();
     return false;
 }
 
@@ -179,12 +179,12 @@ bool
 CPatchManager::ResumeTask( const CString& taskName )
 {GUCEF_TRACE;
 
-    LockData();
+    Lock();
     TTaskMap::iterator i = m_taskMap.find( taskName );
     if ( i != m_taskMap.end() )
     {
         UInt32 taskID = (*i).second->GetTaskId();
-        UnlockData();
+        Unlock();
 
         if ( m_taskManager->ResumeTask( taskID ) )
         {
@@ -194,7 +194,7 @@ CPatchManager::ResumeTask( const CString& taskName )
         }
         return false;
     }
-    UnlockData();
+    Unlock();
     return false;
 }
 
@@ -204,12 +204,12 @@ bool
 CPatchManager::RequestTaskToStop( const CString& taskName )
 {GUCEF_TRACE;
 
-    LockData();
+    Lock();
     TTaskMap::iterator i = m_taskMap.find( taskName );
     if ( i != m_taskMap.end() )
     {
         UInt32 taskID = (*i).second->GetTaskId();
-        UnlockData();
+        Unlock();
 
         if ( m_taskManager->RequestTaskToStop( taskID, true ) )
         {
@@ -219,7 +219,7 @@ CPatchManager::RequestTaskToStop( const CString& taskName )
         }
         return false;
     }
-    UnlockData();
+    Unlock();
     return false;
 }
 
@@ -229,14 +229,14 @@ void
 CPatchManager::GetTaskList( TStringVector& list ) const
 {GUCEF_TRACE;
 
-    LockData();
+    Lock();
     TTaskMap::const_iterator i = m_taskMap.begin();
     while ( i != m_taskMap.end() )
     {
         list.push_back( (*i).first );
         ++i;
     }
-    UnlockData();
+    Unlock();
 }
 
 /*-------------------------------------------------------------------------*/
@@ -245,9 +245,9 @@ void
 CPatchManager::RegisterTask( CPatchTaskConsumer* task )
 {GUCEF_TRACE;
 
-    LockData();
+    Lock();
     m_taskMap[ task->GetTaskName() ] = task;
-    UnlockData();
+    Unlock();
 
     SubscribeTo( &task->GetPatchEngine() );
 
@@ -261,9 +261,9 @@ void
 CPatchManager::UnregisterTask( CPatchTaskConsumer* task )
 {GUCEF_TRACE;
 
-    LockData();
+    Lock();
     m_taskMap.erase( task->GetTaskName() );
-    UnlockData();
+    Unlock();
 
     UnsubscribeFrom( &task->GetPatchEngine() );
 

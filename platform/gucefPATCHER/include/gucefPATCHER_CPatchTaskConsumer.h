@@ -71,15 +71,17 @@ class GUCEF_PATCHER_EXPORT_CPP CPatchTaskConsumer : public CORE::CTaskConsumer
     
     const CString& GetTaskName( void ) const;
 
-    virtual CString GetType( void ) const;
+    virtual CString GetType( void ) const GUCEF_VIRTUAL_OVERRIDE;
+
+    virtual const CString& GetClassTypeName( void ) const GUCEF_VIRTUAL_OVERRIDE;
     
     static const CString& GetTypeString( void );
     
-    virtual bool OnTaskStart( CORE::CICloneable* taskData );
+    virtual bool OnTaskStart( CORE::CICloneable* taskData ) GUCEF_VIRTUAL_OVERRIDE;
     
-    virtual bool OnTaskCycle( CORE::CICloneable* taskData );
+    virtual bool OnTaskCycle( CORE::CICloneable* taskData ) GUCEF_VIRTUAL_OVERRIDE;
     
-    virtual void OnTaskEnd( CORE::CICloneable* taskData );
+    virtual void OnTaskEnded( CORE::CICloneable* taskData, bool forced ) GUCEF_VIRTUAL_OVERRIDE;
     
     CPatchEngine& GetPatchEngine( void );
     

@@ -14,3 +14,4 @@ projects/CMake/targets/*/build/*
 ProjectGenerator_Log.txt
 dependencies/android-ndk-r21d/
 projects/Android/obj/
+projects/Android/libs/

@@ -304,7 +304,7 @@ CPatchEngine::ProcessRecievedPatchList( void )
     // Now we must process the raw patch set data to turn it into something we can use
     // Get the required codec for the current raw patch set data type
     CORE::CDStoreCodecRegistry::TDStoreCodecPtr codecPtr = CORE::CCoreGlobal::Instance()->GetDStoreCodecRegistry().Lookup( m_config.GetPatchListCodec() );
-    if ( NULL != codecPtr )
+    if ( codecPtr )
     {
         // Prepare vars for the decoding process
         CORE::CDataNode rootNode;

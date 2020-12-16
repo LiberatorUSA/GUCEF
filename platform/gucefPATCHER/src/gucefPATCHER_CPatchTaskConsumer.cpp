@@ -102,7 +102,7 @@ CPatchTaskConsumer::OnTaskStart( CORE::CICloneable* taskData )
 /*-------------------------------------------------------------------------*/
 
 void
-CPatchTaskConsumer::OnTaskEnd( CORE::CICloneable* taskData )
+CPatchTaskConsumer::OnTaskEnded( CORE::CICloneable* taskData, bool forced )
 {GUCEF_TRACE;
 
 }
@@ -135,6 +135,16 @@ CPatchTaskConsumer::GetTaskName( void ) const
 {GUCEF_TRACE;
 
     return m_taskName;
+}
+
+/*-------------------------------------------------------------------------*/
+
+const CString& 
+CPatchTaskConsumer::GetClassTypeName( void ) const
+{GUCEF_TRACE;
+
+    static const CString classTypeName = "GUCEF::PATCHER::CPatchTaskConsumer";
+    return classTypeName;
 }
 
 /*-------------------------------------------------------------------------*/
