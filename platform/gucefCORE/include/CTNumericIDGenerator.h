@@ -18,7 +18,7 @@
  */
 
 #ifndef GUCEF_CORE_CTNUMERICIDGENERATOR_H
-#define GUCEF_CORE_CINUMERICIDGENERATOR_H
+#define GUCEF_CORE_CTNUMERICIDGENERATOR_H
 
 /*-------------------------------------------------------------------------//
 //                                                                         //

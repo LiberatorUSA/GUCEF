@@ -34,6 +34,7 @@ LOCAL_C_INCLUDES := \
   $(MY_MODULE_PATH)/../../../dependencies/freetype/include/freetype/config \
   $(MY_MODULE_PATH)/../../../dependencies/freetype/include/freetype/internal \
   $(MY_MODULE_PATH)/../../../dependencies/freetype/include/freetype/internal/services \
+  $(MY_MODULE_PATH)/../../../dependencies/freetype/src \
   $(MY_MODULE_PATH)/../../../dependencies/freetype/src/winfonts \
   $(MY_MODULE_PATH)/../../../dependencies/libRocket/Include \
   $(MY_MODULE_PATH)/../../../dependencies/libRocket/Include/Rocket \
@@ -43,13 +44,13 @@ LOCAL_C_INCLUDES := \
   $(MY_MODULE_PATH)/../../../dependencies/libRocket/Include/Rocket/Debugger \
   $(MY_MODULE_PATH)/../../../dependencies/libRocket/Source/Controls \
   $(MY_MODULE_PATH)/../../../dependencies/libRocket/Source/Core \
-  $(MY_MODULE_PATH)/../../../gucefCORE/include \
-  $(MY_MODULE_PATH)/../../../gucefCORE/include/android \
-  $(MY_MODULE_PATH)/../../../gucefGUI/include \
-  $(MY_MODULE_PATH)/../../../gucefIMAGE/include \
-  $(MY_MODULE_PATH)/../../../gucefINPUT/include \
-  $(MY_MODULE_PATH)/../../../gucefMT/include \
-  $(MY_MODULE_PATH)/../../../gucefVFS/include \
+  $(MY_MODULE_PATH)/../../../platform/gucefCORE/include \
+  $(MY_MODULE_PATH)/../../../platform/gucefCORE/include/android \
+  $(MY_MODULE_PATH)/../../../platform/gucefGUI/include \
+  $(MY_MODULE_PATH)/../../../platform/gucefIMAGE/include \
+  $(MY_MODULE_PATH)/../../../platform/gucefINPUT/include \
+  $(MY_MODULE_PATH)/../../../platform/gucefMT/include \
+  $(MY_MODULE_PATH)/../../../platform/gucefVFS/include \
   $(MY_MODULE_PATH)/../guidriverRocket/include
 
 LOCAL_CFLAGS := -DGUIDRIVERROCKETGL_BUILD_MODULE

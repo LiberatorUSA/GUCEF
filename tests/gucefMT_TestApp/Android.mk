@@ -25,7 +25,7 @@ LOCAL_SRC_FILES := \
 
 LOCAL_C_INCLUDES := \
   $(MY_MODULE_PATH)/../../common/include \
-  $(MY_MODULE_PATH)/../../gucefMT/include
+  $(MY_MODULE_PATH)/../../platform/gucefMT/include
 
 
 LOCAL_SHARED_LIBRARIES := \

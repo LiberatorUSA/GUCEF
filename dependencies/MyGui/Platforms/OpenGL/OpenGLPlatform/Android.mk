@@ -25,8 +25,8 @@ LOCAL_SRC_FILES := \
   include/GL/glew.c \
   src/MyGUI_OpenGLDataManager.cpp \
   src/MyGUI_OpenGLPlatform.cpp \
-  src/MyGUI_OpenGLRenderManager.cpp \
   src/MyGUI_OpenGLRTTexture.cpp \
+  src/MyGUI_OpenGLRenderManager.cpp \
   src/MyGUI_OpenGLTexture.cpp \
   src/MyGUI_OpenGLVertexBuffer.cpp
 
@@ -39,6 +39,7 @@ LOCAL_C_INCLUDES := \
   $(MY_MODULE_PATH)/../../../../freetype/include/freetype/config \
   $(MY_MODULE_PATH)/../../../../freetype/include/freetype/internal \
   $(MY_MODULE_PATH)/../../../../freetype/include/freetype/internal/services \
+  $(MY_MODULE_PATH)/../../../../freetype/src \
   $(MY_MODULE_PATH)/../../../../freetype/src/winfonts \
   $(MY_MODULE_PATH)/../../../MyGUIEngine/include
 

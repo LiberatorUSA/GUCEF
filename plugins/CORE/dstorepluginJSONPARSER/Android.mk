@@ -17,24 +17,28 @@ LOCAL_PATH := $(MY_MODULE_PATH)
 include $(CLEAR_VARS)
 
 @echo Module path: $(MY_MODULE_PATH)
-LOCAL_MODULE := dstorepluginPARSIFALXML
-LOCAL_MODULE_FILENAME := libdstorepluginPARSIFALXML
+LOCAL_MODULE := dstorepluginJSONPARSER
+LOCAL_MODULE_FILENAME := libdstorepluginJSONPARSER
 @echo Module name: $(LOCAL_MODULE)
 
 LOCAL_SRC_FILES := \
-  src/DLLMainDSTOREpluginPARSIFALXML.c
+  src/DLLMainDSTOREpluginJSONPARSER.c
 
 LOCAL_C_INCLUDES := \
   $(MY_MODULE_PATH)/include \
   $(MY_MODULE_PATH)/../../../common/include \
-  $(MY_MODULE_PATH)/../../../gucefCORE/include \
-  $(MY_MODULE_PATH)/../../../gucefCORE/include/android \
-  $(MY_MODULE_PATH)/../../../gucefMT/include \
-  $(MY_MODULE_PATH)/dependancy/libparsifal/include/libparsifal
+  $(MY_MODULE_PATH)/../../../dependencies/json-builder \
+  $(MY_MODULE_PATH)/../../../dependencies/json-parser \
+  $(MY_MODULE_PATH)/../../../platform/gucefCORE/include \
+  $(MY_MODULE_PATH)/../../../platform/gucefCORE/include/android \
+  $(MY_MODULE_PATH)/../../../platform/gucefMT/include
+
+LOCAL_CFLAGS := -DDSTOREPLUGINJSONPARSER_BUILD_MODULE
 
 
-LOCAL_SHARED_LIBRARIES := \
-  libparsifal
+LOCAL_STATIC_LIBRARIES := \
+  jsonbuilder \
+  jsonparser
 
 include $(BUILD_SHARED_LIBRARY)
 

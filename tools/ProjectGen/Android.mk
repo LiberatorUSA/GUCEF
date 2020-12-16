@@ -17,30 +17,39 @@ LOCAL_PATH := $(MY_MODULE_PATH)
 include $(CLEAR_VARS)
 
 @echo Module path: $(MY_MODULE_PATH)
-LOCAL_MODULE := ProjectGenerator
+LOCAL_MODULE := ProjectGen
+LOCAL_MODULE_FILENAME := libProjectGen
 @echo Module name: $(LOCAL_MODULE)
 
 LOCAL_SRC_FILES := \
-  src/gucefProjectGenerator_CAndroidMakefileGenerator.cpp \
-  src/gucefProjectGenerator_CCMakeProjectGenerator.cpp \
-  src/gucefProjectGenerator_CDirCrawlingProjectInfoGatherer.cpp \
-  src/gucefProjectGenerator_CIProjectGenerator.cpp \
-  src/gucefProjectGenerator_CIProjectInfoGatherer.cpp \
-  src/gucefProjectGenerator_CXmlProjectGenerator.cpp \
-  src/gucefProjectGenerator_DataTypes.cpp \
-  src/main.cpp
+  src/gucefProjectGen_CAndroidMakefileGenerator.cpp \
+  src/gucefProjectGen_CCMakeProjectGenerator.cpp \
+  src/gucefProjectGen_CDirCrawlingProjectInfoGatherer.cpp \
+  src/gucefProjectGen_CDirPreprocessorManager.cpp \
+  src/gucefProjectGen_CIDirPreprocessor.cpp \
+  src/gucefProjectGen_CIProjectGenerator.cpp \
+  src/gucefProjectGen_CIProjectInfoGatherer.cpp \
+  src/gucefProjectGen_CIProjectPreprocessor.cpp \
+  src/gucefProjectGen_CPremake4ProjectGenerator.cpp \
+  src/gucefProjectGen_CPremake5ProjectGenerator.cpp \
+  src/gucefProjectGen_CProjectGenGlobal.cpp \
+  src/gucefProjectGen_CProjectPreprocessorManager.cpp \
+  src/gucefProjectGen_CXmlProjectGenerator.cpp \
+  src/gucefProjectGen_DataTypes.cpp
 
 LOCAL_C_INCLUDES := \
   $(MY_MODULE_PATH)/include \
   $(MY_MODULE_PATH)/../../common/include \
-  $(MY_MODULE_PATH)/../../gucefCORE/include \
-  $(MY_MODULE_PATH)/../../gucefCORE/include/android \
-  $(MY_MODULE_PATH)/../../gucefMT/include
+  $(MY_MODULE_PATH)/../../platform/gucefCORE/include \
+  $(MY_MODULE_PATH)/../../platform/gucefCORE/include/android \
+  $(MY_MODULE_PATH)/../../platform/gucefMT/include
+
+LOCAL_CFLAGS := -DGUCEF_PROJECTGEN_BUILD_MODULE
 
 
 LOCAL_SHARED_LIBRARIES := \
   gucefCORE \
   gucefMT
 
-include $(BUILD_EXECUTABLE)
+include $(BUILD_SHARED_LIBRARY)
 

@@ -1,20 +1,43 @@
 @echo off
 
-SET GUCEF_THEBATCHDIR=%CD%
-GOTO FIND_GUCEF_CMAKE_SLN_DEBUG_MVC10_PROJECTGENERATOR
+SET GUCEF_THEBATCHDIR=%~dp0
+
+ECHO *** Perform common environment variable setup ***
+
+cd..
+cd..
+
+IF NOT DEFINED GUCEF_HOME (
+  ECHO GUCEF environment variable not found, setting it
+  SET GUCEF_HOME=%CD%
+  ECHO GUCEF_HOME=%CD%
+)
+
+SET SRCROOTDIR=%CD%
+SET OUTPUTDIR=%GUCEF_HOME%\common\bin
+SET GUCEF_SOURCE_DIR=%SRCROOTDIR%
+
+cd %GUCEF_THEBATCHDIR%
+
+ECHO SRCROOTDIR: %SRCROOTDIR%
+ECHO GUCEF_HOME: %GUCEF_HOME%
+ECHO root OUTPUTDIR: %OUTPUTDIR%
+
+
+GOTO FIND_GUCEF_CMAKE_SLN_DEBUG_MVC14_PROJECTGENERATOR
 
 
 REM -----------------------------------------------------
 
 :FIND_GUCEF_RELEASE_PROJECTGENERATOR
 
-SET GENERATORPATH=%GUCEF_THEBATCHDIR%\..\..\tools\ProjectGenerator\bin\ReleasedBins\Win32\22January2013\
+SET GENERATORPATH=%GUCEF_THEBATCHDIR%\..\..\tools\ProjectGenerator\bin\ReleasedBins\Win32\2020.02.28\
 SET GENERATOREXE=ProjectGenerator.exe
 SET EXETEST=%GENERATORPATH%\%GENERATOREXE%
 
 ECHO Test path = "%EXETEST%"
 IF EXIST "%EXETEST%" (
-  ECHO Using released version of ProjectGenerator dated 22nd January 2013
+  ECHO Using released version of ProjectGenerator dated Feb 28th 2020
   GOTO RUN_PROJECTGENERATOR
 )
 
@@ -28,48 +51,25 @@ GOTO RUN_PROJECTGENERATOR
 
 REM -----------------------------------------------------
 
-:FIND_GUCEF_CMAKE_SLN_DEBUG_MVC10_PROJECTGENERATOR
+:FIND_GUCEF_CMAKE_SLN_DEBUG_MVC14_PROJECTGENERATOR
 
-SET GENERATORPATH=%GUCEF_THEBATCHDIR%\..\..\common\bin\MVC10\bin\Debug
+SET GENERATORPATH=%GUCEF_THEBATCHDIR%\..\..\common\bin\MVC14\bin\Debug
 SET GENERATOREXE=ProjectGenerator.exe
 SET EXETEST=%GENERATORPATH%\%GENERATOREXE%
 
 ECHO Test path = "%EXETEST%"
 IF EXIST "%EXETEST%" (
-  ECHO Warning: Using CMake debug development version of the ProjectGenerator
+  ECHO Warning: Using VC14 CMake debug development version of the ProjectGenerator
   GOTO RUN_PROJECTGENERATOR
 )
 
 IF NOT EXIST "%EXETEST%" (
-  ECHO Cannot locate VC10 CMake debug development version of the ProjectGenerator, trying VC9
-  GOTO FIND_GUCEF_CMAKE_SLN_DEBUG_MVC9_PROJECTGENERATOR
-)
-
-cd "%GUCEF_THEBATCHDIR%"
-GOTO RUN_PROJECTGENERATOR
-
-REM -----------------------------------------------------
-
-:FIND_GUCEF_CMAKE_SLN_DEBUG_MVC9_PROJECTGENERATOR
-
-SET GENERATORPATH=%GUCEF_THEBATCHDIR%\..\..\common\bin\MVC9\bin\Debug
-SET GENERATOREXE=ProjectGenerator.exe
-SET EXETEST=%GENERATORPATH%\%GENERATOREXE%
-
-ECHO Test path = "%EXETEST%"
-IF EXIST "%EXETEST%" (
-  ECHO Warning: Using CMake debug development version of the ProjectGenerator
-  GOTO RUN_PROJECTGENERATOR
-)
-
-IF NOT EXIST "%EXETEST%" (
-  ECHO Cannot locate CMake debug development version of the ProjectGenerator, trying release
+  ECHO Cannot locate VC14 CMake debug development version of the ProjectGenerator
   GOTO FIND_GUCEF_RELEASE_PROJECTGENERATOR
 )
 
 cd "%GUCEF_THEBATCHDIR%"
 GOTO RUN_PROJECTGENERATOR
-
 
 REM -----------------------------------------------------
 
@@ -79,13 +79,7 @@ SET PATH="%GENERATORPATH%";%PATH%
 
 cd %GUCEF_THEBATCHDIR%\..\..\
 
-IF NOT DEFINED GUCEF_HOME (
-  ECHO GUCEF environment variable not found, setting it
-  SET GUCEF_HOME=%CD%
-  ECHO GUCEF_HOME=%CD%
-)
-
-%GENERATOREXE% *rootDir=%GUCEF_HOME%* *outputDir=%GUCEF_HOME%* *generators=androidmake* *dirsToIgnore=.svn;_svn* *projectName=GUCEF*
+%GENERATOREXE% *ConfigPath=%GUCEF_THEBATCHDIR%\ProjectGenerator.ini* %GUCEF_XTRAPROJECTGENCMDS%
 cd "%GUCEF_THEBATCHDIR%"
 GOTO END
 

@@ -17,30 +17,27 @@ LOCAL_PATH := $(MY_MODULE_PATH)
 include $(CLEAR_VARS)
 
 @echo Module path: $(MY_MODULE_PATH)
-LOCAL_MODULE := gucefPRODMAN_TestApp
+LOCAL_MODULE := gucefPATCHERAPP_TestApp
 @echo Module name: $(LOCAL_MODULE)
 
 LOCAL_SRC_FILES := \
-  src/gucefPRODMAN_TestApp.cpp
+  src/gucefPATCHERAPP_TestApp.cpp
 
 LOCAL_C_INCLUDES := \
   $(MY_MODULE_PATH)/../../common/include \
-  $(MY_MODULE_PATH)/../../gucefCOM/include \
-  $(MY_MODULE_PATH)/../../gucefCOMCORE/include \
-  $(MY_MODULE_PATH)/../../gucefCORE/include \
-  $(MY_MODULE_PATH)/../../gucefCORE/include/android \
-  $(MY_MODULE_PATH)/../../gucefMT/include \
-  $(MY_MODULE_PATH)/../../gucefPATCHER/include \
-  $(MY_MODULE_PATH)/../../gucefPRODMAN/include
+  $(MY_MODULE_PATH)/../../platform/gucefCORE \
+  $(MY_MODULE_PATH)/../../platform/gucefCORE/include \
+  $(MY_MODULE_PATH)/../../platform/gucefCORE/include/ \
+  $(MY_MODULE_PATH)/../../platform/gucefCORE/include/android \
+  $(MY_MODULE_PATH)/../../platform/gucefLOADER/.. \
+  $(MY_MODULE_PATH)/../../platform/gucefLOADER/include \
+  $(MY_MODULE_PATH)/../../platform/gucefMT \
+  $(MY_MODULE_PATH)/../../platform/gucefMT/include \
+  $(MY_MODULE_PATH)/../../platform/gucefMT/include/
 
 
 LOCAL_SHARED_LIBRARIES := \
-  gucefCOM \
-  gucefCOMCORE \
-  gucefCORE \
-  gucefMT \
-  gucefPATCHER \
-  gucefPRODMAN
+  gucefLOADER
 
 include $(BUILD_EXECUTABLE)
 

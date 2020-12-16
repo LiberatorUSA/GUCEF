@@ -49,6 +49,7 @@ namespace CORE {
 //-------------------------------------------------------------------------*/
 
 class CString;
+class CILoggingFormatter;
 
 /*-------------------------------------------------------------------------*/
 
@@ -70,7 +71,8 @@ class GUCEF_CORE_PUBLIC_CPP CAndroidSystemLogger : public CILogger
     virtual void Log( const TLogMsgType logMsgType ,
                       const Int32 logLevel         ,
                       const CString& logMessage    ,
-                      const UInt32 threadId        );
+                      const UInt32 threadId        ,
+                      const CDateTime& timestamp   ) GUCEF_VIRTUAL_OVERRIDE;
 
     /**
      *  The logging backend should output the logMessage string as given
@@ -78,9 +80,14 @@ class GUCEF_CORE_PUBLIC_CPP CAndroidSystemLogger : public CILogger
     virtual void LogWithoutFormatting( const TLogMsgType logMsgType ,
                                        const Int32 logLevel         ,
                                        const CString& logMessage    ,
-                                       const UInt32 threadId        );
+                                       const UInt32 threadId        ,
+                                       const CDateTime& timestamp   ) GUCEF_VIRTUAL_OVERRIDE;
 
-    virtual void FlushLog( void );
+    virtual void FlushLog( void ) GUCEF_VIRTUAL_OVERRIDE;
+
+    virtual void SetMinimalLogLevel( const Int32 logLevel ) GUCEF_VIRTUAL_OVERRIDE;
+
+    virtual Int32 GetMinimalLogLevel( void ) const GUCEF_VIRTUAL_OVERRIDE;
 
     private:
 
@@ -91,6 +98,8 @@ class GUCEF_CORE_PUBLIC_CPP CAndroidSystemLogger : public CILogger
 
     CString m_tag;
     void* m_logFunc;
+    Int32 m_minimalLogLevel;
+    CILoggingFormatter* m_logFormatter;
 };
 
 /*-------------------------------------------------------------------------//

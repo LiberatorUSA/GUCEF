@@ -789,11 +789,16 @@ CAndroidMakefileGenerator::GenerateProject( TProjectInfo& projectInfo           
                                             const CORE::CValueList& params       )
 {GUCEF_TRACE;
 
+    bool treatTagsAsTargets = CORE::StringToBool( params.GetValueAlways( "TreatTagsAsTargets", "true" ) );
+    
+    TProjectTargetInfoMapMap targets;
+    SplitProjectPerTarget( projectInfo, targets, treatTagsAsTargets, true );
+
     // Merge all the module info to give us a complete module definition for the Android platform
     // per module. This makes is easy for us to process as we don't care about other platforms
     TModuleInfoVector mergedInfo;
     TModuleInfoEntryPairVector mergeLinks;
-    MergeAllModuleInfoForPlatform( projectInfo.modules, "android", mergedInfo, mergeLinks );
+    MergeAllModuleInfoForPlatform( projectInfo.modules, "android", mergedInfo, mergeLinks ); 
 
     // First we create a makefile per module on disk
     TStringSet ndkModulesUsed;

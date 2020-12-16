@@ -32,7 +32,10 @@ LOCAL_SRC_FILES := \
   src/xmlvect.c
 
 LOCAL_C_INCLUDES := \
-  $(MY_MODULE_PATH)/include/libparsifal
+  $(MY_MODULE_PATH)/include/libparsifal \
+  $(MY_MODULE_PATH)/include
+
+LOCAL_CFLAGS := -DPARSIFAL_BUILD_MODULE -DPARSIFAL_CUSTOM_GUCEF_BUILD
 
 include $(BUILD_SHARED_LIBRARY)
 

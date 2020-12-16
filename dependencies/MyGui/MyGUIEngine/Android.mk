@@ -38,10 +38,10 @@ LOCAL_SRC_FILES := \
   src/MyGUI_ControllerFadeAlpha.cpp \
   src/MyGUI_ControllerManager.cpp \
   src/MyGUI_ControllerPosition.cpp \
+  src/MyGUI_DDContainer.cpp \
   src/MyGUI_DataFileStream.cpp \
   src/MyGUI_DataManager.cpp \
   src/MyGUI_DataStream.cpp \
-  src/MyGUI_DDContainer.cpp \
   src/MyGUI_DynLib.cpp \
   src/MyGUI_DynLibManager.cpp \
   src/MyGUI_EditBox.cpp \
@@ -104,8 +104,8 @@ LOCAL_SRC_FILES := \
   src/MyGUI_TabItem.cpp \
   src/MyGUI_TextBox.cpp \
   src/MyGUI_TextIterator.cpp \
-  src/MyGUI_TextureUtility.cpp \
   src/MyGUI_TextView.cpp \
+  src/MyGUI_TextureUtility.cpp \
   src/MyGUI_TileRect.cpp \
   src/MyGUI_Timer.cpp \
   src/MyGUI_ToolTipManager.cpp \
@@ -124,6 +124,7 @@ LOCAL_C_INCLUDES := \
   $(MY_MODULE_PATH)/../../freetype/include/freetype/config \
   $(MY_MODULE_PATH)/../../freetype/include/freetype/internal \
   $(MY_MODULE_PATH)/../../freetype/include/freetype/internal/services \
+  $(MY_MODULE_PATH)/../../freetype/src \
   $(MY_MODULE_PATH)/../../freetype/src/winfonts
 
 LOCAL_CFLAGS := -DMYGUI_BUILD -DMYGUI_BUILD_DLL -DMYGUI_USE_FREETYPE

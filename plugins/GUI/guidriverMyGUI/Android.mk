@@ -33,8 +33,8 @@ LOCAL_SRC_FILES := \
   src/guceMyGUI_CFileSaveDialogImp.cpp \
   src/guceMyGUI_CFileSystemDialogImp.cpp \
   src/guceMyGUI_CFormBackendImp.cpp \
-  src/guceMyGUI_CGridViewImp.cpp \
   src/guceMyGUI_CGUIContext.cpp \
+  src/guceMyGUI_CGridViewImp.cpp \
   src/guceMyGUI_CImageFrameImp.cpp \
   src/guceMyGUI_CLabelImp.cpp \
   src/guceMyGUI_CListboxImp.cpp \
@@ -68,14 +68,15 @@ LOCAL_C_INCLUDES := \
   $(MY_MODULE_PATH)/../../../dependencies/freetype/include/freetype/config \
   $(MY_MODULE_PATH)/../../../dependencies/freetype/include/freetype/internal \
   $(MY_MODULE_PATH)/../../../dependencies/freetype/include/freetype/internal/services \
+  $(MY_MODULE_PATH)/../../../dependencies/freetype/src \
   $(MY_MODULE_PATH)/../../../dependencies/freetype/src/winfonts \
-  $(MY_MODULE_PATH)/../../../gucefCORE/include \
-  $(MY_MODULE_PATH)/../../../gucefCORE/include/android \
-  $(MY_MODULE_PATH)/../../../gucefGUI/include \
-  $(MY_MODULE_PATH)/../../../gucefIMAGE/include \
-  $(MY_MODULE_PATH)/../../../gucefINPUT/include \
-  $(MY_MODULE_PATH)/../../../gucefMT/include \
-  $(MY_MODULE_PATH)/../../../gucefVFS/include
+  $(MY_MODULE_PATH)/../../../platform/gucefCORE/include \
+  $(MY_MODULE_PATH)/../../../platform/gucefCORE/include/android \
+  $(MY_MODULE_PATH)/../../../platform/gucefGUI/include \
+  $(MY_MODULE_PATH)/../../../platform/gucefIMAGE/include \
+  $(MY_MODULE_PATH)/../../../platform/gucefINPUT/include \
+  $(MY_MODULE_PATH)/../../../platform/gucefMT/include \
+  $(MY_MODULE_PATH)/../../../platform/gucefVFS/include
 
 LOCAL_CFLAGS := -DGUIDRIVERMYGUI_BUILD_MODULE
 

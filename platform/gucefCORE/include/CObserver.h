@@ -119,7 +119,7 @@ class GUCEF_CORE_PUBLIC_CPP CObserver : public CIObserver
 
     UInt32 GetNotifierCount( void ) const;
 
-    virtual const CString& GetClassTypeName( void ) const;
+    virtual const CString& GetClassTypeName( void ) const GUCEF_VIRTUAL_OVERRIDE;
 
     virtual const MT::CILockable* AsLockable( void ) const GUCEF_VIRTUAL_OVERRIDE;
 

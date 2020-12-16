@@ -21,24 +21,20 @@ LOCAL_MODULE := ProjectGenerator
 @echo Module name: $(LOCAL_MODULE)
 
 LOCAL_SRC_FILES := \
-  src/gucefProjectGenerator_CAndroidMakefileGenerator.cpp \
-  src/gucefProjectGenerator_CCMakeProjectGenerator.cpp \
-  src/gucefProjectGenerator_CDirCrawlingProjectInfoGatherer.cpp \
-  src/gucefProjectGenerator_CIProjectGenerator.cpp \
-  src/gucefProjectGenerator_CIProjectInfoGatherer.cpp \
-  src/gucefProjectGenerator_CXmlProjectGenerator.cpp \
-  src/gucefProjectGenerator_DataTypes.cpp \
   src/main.cpp
 
 LOCAL_C_INCLUDES := \
-  $(MY_MODULE_PATH)/include \
   $(MY_MODULE_PATH)/../../common/include \
-  $(MY_MODULE_PATH)/../../gucefCORE/include \
-  $(MY_MODULE_PATH)/../../gucefCORE/include/android \
-  $(MY_MODULE_PATH)/../../gucefMT/include
+  $(MY_MODULE_PATH)/../../platform/gucefCORE/include \
+  $(MY_MODULE_PATH)/../../platform/gucefCORE/include/android \
+  $(MY_MODULE_PATH)/../../platform/gucefMT/include \
+  $(MY_MODULE_PATH)/../ProjectGen/include
+
+LOCAL_CFLAGS := -DGUCEF_PROJECTGENERATOR_BUILD_MODULE
 
 
 LOCAL_SHARED_LIBRARIES := \
+  ProjectGen \
   gucefCORE \
   gucefMT
 

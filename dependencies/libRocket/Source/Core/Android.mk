@@ -94,7 +94,6 @@ LOCAL_SRC_FILES := \
   Log.cpp \
   Plugin.cpp \
   PluginRegistry.cpp \
-  precompiled.cpp \
   Property.cpp \
   PropertyDefinition.cpp \
   PropertyDictionary.cpp \
@@ -140,20 +139,21 @@ LOCAL_SRC_FILES := \
   TextureLayoutRow.cpp \
   TextureLayoutTexture.cpp \
   TextureResource.cpp \
-  UnicodeRange.cpp \
   URL.cpp \
+  UnicodeRange.cpp \
   Variant.cpp \
   Vector2.cpp \
+  WString.cpp \
   WidgetSlider.cpp \
   WidgetSliderScroll.cpp \
-  WString.cpp \
   XMLNodeHandler.cpp \
   XMLNodeHandlerBody.cpp \
   XMLNodeHandlerDefault.cpp \
   XMLNodeHandlerHead.cpp \
   XMLNodeHandlerTemplate.cpp \
+  XMLParseTools.cpp \
   XMLParser.cpp \
-  XMLParseTools.cpp
+  precompiled.cpp
 
 LOCAL_C_INCLUDES := \
   $(MY_MODULE_PATH) \
@@ -162,6 +162,7 @@ LOCAL_C_INCLUDES := \
   $(MY_MODULE_PATH)/../../../freetype/include/freetype/config \
   $(MY_MODULE_PATH)/../../../freetype/include/freetype/internal \
   $(MY_MODULE_PATH)/../../../freetype/include/freetype/internal/services \
+  $(MY_MODULE_PATH)/../../../freetype/src \
   $(MY_MODULE_PATH)/../../../freetype/src/winfonts \
   $(MY_MODULE_PATH)/../../Include \
   $(MY_MODULE_PATH)/../../Include/Rocket \

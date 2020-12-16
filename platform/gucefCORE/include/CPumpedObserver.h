@@ -117,7 +117,7 @@ class GUCEF_CORE_PUBLIC_CPP CPumpedObserver : public CObserver
      */
     virtual void OnNotify( CNotifier* notifier           ,
                            const CEvent& eventid         ,
-                           CICloneable* eventdata = NULL );
+                           CICloneable* eventdata = NULL ) GUCEF_VIRTUAL_OVERRIDE;
     
     virtual bool Lock( void ) const GUCEF_VIRTUAL_OVERRIDE;
 

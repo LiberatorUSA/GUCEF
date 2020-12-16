@@ -21,18 +21,18 @@ LOCAL_MODULE := gucefCOMCORE_TestApp
 @echo Module name: $(LOCAL_MODULE)
 
 LOCAL_SRC_FILES := \
-  src/gucefCOMCORE_TestApp.cpp \
   src/TestCode_ClientServer.cpp \
   src/TestCode_PingTest.cpp \
-  src/TestCode_SimpleTCPClient.cpp
+  src/TestCode_SimpleTCPClient.cpp \
+  src/gucefCOMCORE_TestApp.cpp
 
 LOCAL_C_INCLUDES := \
   $(MY_MODULE_PATH)/include \
   $(MY_MODULE_PATH)/../../common/include \
-  $(MY_MODULE_PATH)/../../gucefCOMCORE/include \
-  $(MY_MODULE_PATH)/../../gucefCORE/include \
-  $(MY_MODULE_PATH)/../../gucefCORE/include/android \
-  $(MY_MODULE_PATH)/../../gucefMT/include
+  $(MY_MODULE_PATH)/../../platform/gucefCOMCORE/include \
+  $(MY_MODULE_PATH)/../../platform/gucefCORE/include \
+  $(MY_MODULE_PATH)/../../platform/gucefCORE/include/android \
+  $(MY_MODULE_PATH)/../../platform/gucefMT/include
 
 
 LOCAL_SHARED_LIBRARIES := \

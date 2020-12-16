@@ -29,16 +29,31 @@ LOCAL_SRC_FILES := \
   src/CMySQLClient.cpp \
   src/CPHUDPSocket.cpp \
   src/gucefCOM.cpp \
+  src/gucefCOM_CAsyncHttpServerRequestHandler.cpp \
+  src/gucefCOM_CAsyncHttpServerResponseHandler.cpp \
+  src/gucefCOM_CCodecBasedHTTPServerResource.cpp \
   src/gucefCOM_CComGlobal.cpp \
+  src/gucefCOM_CConfigurableHttpServerResource.cpp \
+  src/gucefCOM_CDefaultHTTPServerResource.cpp \
+  src/gucefCOM_CDefaultHTTPServerRouter.cpp \
   src/gucefCOM_CDefaultHTTPServerRouterController.cpp \
+  src/gucefCOM_CDefaultHttpServerRequestHandler.cpp \
+  src/gucefCOM_CDummyHTTPServerResource.cpp \
+  src/gucefCOM_CGlobalHttpCodecLinks.cpp \
   src/gucefCOM_CHTTPServer.cpp \
+  src/gucefCOM_CHttpCodecLinks.cpp \
+  src/gucefCOM_CHttpMimeTypes.cpp \
+  src/gucefCOM_CHttpRequestData.cpp \
+  src/gucefCOM_CHttpResponseData.cpp \
   src/gucefCOM_CIHTTPServerResource.cpp \
   src/gucefCOM_CIHTTPServerRouter.cpp \
-  src/gucefCOM_CIHTTPServerRouterController.cpp
+  src/gucefCOM_CIHTTPServerRouterController.cpp \
+  src/gucefCOM_CIHttpServerRequestHandler.cpp \
+  src/gucefCOM_CStatsDClient.cpp
 
 LOCAL_C_INCLUDES := \
   $(MY_MODULE_PATH)/include \
-  $(MY_MODULE_PATH)/../common/include \
+  $(MY_MODULE_PATH)/../../common/include \
   $(MY_MODULE_PATH)/../gucefCOMCORE/include \
   $(MY_MODULE_PATH)/../gucefCORE/include \
   $(MY_MODULE_PATH)/../gucefCORE/include/android \

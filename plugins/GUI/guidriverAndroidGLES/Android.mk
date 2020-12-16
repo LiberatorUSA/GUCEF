@@ -29,12 +29,12 @@ LOCAL_SRC_FILES := \
 LOCAL_C_INCLUDES := \
   $(MY_MODULE_PATH)/include \
   $(MY_MODULE_PATH)/../../../common/include \
-  $(MY_MODULE_PATH)/../../../gucefCORE/include \
-  $(MY_MODULE_PATH)/../../../gucefCORE/include/android \
-  $(MY_MODULE_PATH)/../../../gucefGUI/include \
-  $(MY_MODULE_PATH)/../../../gucefIMAGE/include \
-  $(MY_MODULE_PATH)/../../../gucefMT/include \
-  $(MY_MODULE_PATH)/../../../gucefVFS/include
+  $(MY_MODULE_PATH)/../../../platform/gucefCORE/include \
+  $(MY_MODULE_PATH)/../../../platform/gucefCORE/include/android \
+  $(MY_MODULE_PATH)/../../../platform/gucefGUI/include \
+  $(MY_MODULE_PATH)/../../../platform/gucefIMAGE/include \
+  $(MY_MODULE_PATH)/../../../platform/gucefMT/include \
+  $(MY_MODULE_PATH)/../../../platform/gucefVFS/include
 
 LOCAL_CFLAGS := -DGUIDRIVERANDROIDGLES_BUILD_MODULE
 

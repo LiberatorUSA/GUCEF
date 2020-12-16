@@ -28,18 +28,22 @@ LOCAL_SRC_FILES := \
   src/gucefMT_CCriticalSection.cpp \
   src/gucefMT_CGUCEFMTModule.cpp \
   src/gucefMT_CICloneable.cpp \
+  src/gucefMT_CILockable.cpp \
   src/gucefMT_CMutex.cpp \
+  src/gucefMT_CNoLock.cpp \
+  src/gucefMT_CObjectScopeLock.cpp \
   src/gucefMT_CReadWriteLock.cpp \
   src/gucefMT_CScopeMutex.cpp \
+  src/gucefMT_CScopeRwLock.cpp \
   src/gucefMT_CSemaphore.cpp \
   src/gucefMT_CTMailBox.cpp \
-  src/gucefMT_dvmtoswrap.c \
   src/gucefMT_DVRWLOCK.c \
-  src/gucefMT_MUTEX.c
+  src/gucefMT_MUTEX.c \
+  src/gucefMT_dvmtoswrap.c
 
 LOCAL_C_INCLUDES := \
   $(MY_MODULE_PATH)/include \
-  $(MY_MODULE_PATH)/../common/include
+  $(MY_MODULE_PATH)/../../common/include
 
 LOCAL_CFLAGS := -DGUCEF_MT_BUILD_MODULE
 

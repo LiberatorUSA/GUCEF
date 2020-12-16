@@ -37,6 +37,7 @@ LOCAL_C_INCLUDES := \
   $(MY_MODULE_PATH)/../../../freetype/include/freetype/config \
   $(MY_MODULE_PATH)/../../../freetype/include/freetype/internal \
   $(MY_MODULE_PATH)/../../../freetype/include/freetype/internal/services \
+  $(MY_MODULE_PATH)/../../../freetype/src \
   $(MY_MODULE_PATH)/../../../freetype/src/winfonts \
   $(MY_MODULE_PATH)/../../Include \
   $(MY_MODULE_PATH)/../../Include/Rocket \

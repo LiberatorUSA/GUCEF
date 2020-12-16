@@ -1,7 +1,7 @@
 # Developing native apps radically changed in NDK r5 with the native activity thus we
 # only support Gingerbread and above in this code.
 
-APP_PLATFORM := android-9
+APP_PLATFORM := android-16
 
 # The following enables exception support for all modules in this application.
 # Note that it is said that exception support does require exceptions to inherit from std::exception
@@ -90,4 +90,4 @@ APP_CPPFLAGS += -frtti
 # sources/cxx-stl/stlport/README for more details about the library.
 #
 
-APP_STL := gnustl_static
+APP_STL := c++_static

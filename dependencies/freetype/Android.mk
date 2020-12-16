@@ -24,18 +24,18 @@ LOCAL_MODULE_FILENAME := libfreetype
 LOCAL_SRC_FILES := \
   src/autofit/autofit.c \
   src/base/ftbase.c \
-  src/base/ftsystem.c \
-  src/base/ftglyph.c \
   src/base/ftbitmap.c \
+  src/base/ftglyph.c \
   src/base/ftinit.c \
+  src/base/ftsystem.c \
   src/bdf/bdf.c \
   src/cache/ftcache.c \
   src/cff/cff.c \
-  src/cid/cidriver.c \
-  src/cid/cidobjs.c \
   src/cid/cidgload.c \
   src/cid/cidload.c \
+  src/cid/cidobjs.c \
   src/cid/cidparse.c \
+  src/cid/cidriver.c \
   src/gxvalid/gxvalid.c \
   src/gzip/ftgzip.c \
   src/lzw/ftlzw.c \
@@ -47,8 +47,8 @@ LOCAL_SRC_FILES := \
   src/psnames/psnames.c \
   src/raster/raster.c \
   src/sfnt/sfnt.c \
-  src/smooth/ftsmooth.c \
   src/smooth/ftgrays.c \
+  src/smooth/ftsmooth.c \
   src/truetype/truetype.c \
   src/type1/type1.c \
   src/type42/type42.c \
@@ -60,7 +60,8 @@ LOCAL_C_INCLUDES := \
   $(MY_MODULE_PATH)/include/freetype/config \
   $(MY_MODULE_PATH)/include/freetype/internal \
   $(MY_MODULE_PATH)/include/freetype/internal/services \
-  $(MY_MODULE_PATH)/src/winfonts
+  $(MY_MODULE_PATH)/src/winfonts \
+  $(MY_MODULE_PATH)/src
 
 LOCAL_CFLAGS := -DFT2_BUILD_LIBRARY -DFT_CONFIG_OPTION_SYSTEM_ZLIB -DFT_CONFIG_OPTION_USE_ZLIB -DFT_DVEDIT_BUILD_DLL -DFT_DVEDIT_DLL_API
 

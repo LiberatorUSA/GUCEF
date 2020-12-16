@@ -17,43 +17,51 @@ LOCAL_PATH := $(MY_MODULE_PATH)
 include $(CLEAR_VARS)
 
 @echo Module path: $(MY_MODULE_PATH)
-LOCAL_MODULE := guidriverMyGUIOpenGL
-LOCAL_MODULE_FILENAME := libguidriverMyGUIOpenGL
+LOCAL_MODULE := guidriverMyGUIOgre
+LOCAL_MODULE_FILENAME := libguidriverMyGUIOgre
 @echo Module name: $(LOCAL_MODULE)
 
 LOCAL_SRC_FILES := \
-  src/guidriverMyGUIOpenGL.cpp \
-  src/guidriverMyGUIOpenGL_CGUIContextGL.cpp \
-  src/guidriverMyGUIOpenGL_CGUIDriverGL.cpp \
-  src/guidriverMyGUIOpenGL_CImageLoader.cpp \
-  src/guidriverMyGUIOpenGL_pluginAPI.cpp
+  src/guidriverMyGUIOgre.cpp \
+  src/guidriverMyGUIOgre_CGUIContextOgre.cpp \
+  src/guidriverMyGUIOgre_CGUIDriverOgre.cpp \
+  src/guidriverMyGUIOgre_CImageLoader.cpp \
+  src/guidriverMyGUIOgre_pluginAPI.cpp
 
 LOCAL_C_INCLUDES := \
   $(MY_MODULE_PATH)/include \
   $(MY_MODULE_PATH)/../../../common/include \
-  $(MY_MODULE_PATH)/../../../dependencies/MyGui/Common/FileSystemInfo \
   $(MY_MODULE_PATH)/../../../dependencies/MyGui/MyGUIEngine/include \
+  $(MY_MODULE_PATH)/../../../dependencies/Ogre/OgreMain/include \
+  $(MY_MODULE_PATH)/../../../dependencies/Ogre/OgreMain/include/Android \
+  $(MY_MODULE_PATH)/../../../dependencies/Ogre/OgreMain/include/Hash \
+  $(MY_MODULE_PATH)/../../../dependencies/Ogre/OgreMain/include/Threading \
+  $(MY_MODULE_PATH)/../../../dependencies/Ogre/OgreMain/src \
+  $(MY_MODULE_PATH)/../../../dependencies/Ogre/OgreMain/src/nedmalloc \
+  $(MY_MODULE_PATH)/../../../dependencies/Ogre/OgreMain/src/stbi \
+  $(MY_MODULE_PATH)/../../../dependencies/Ogre/include \
   $(MY_MODULE_PATH)/../../../dependencies/freetype/include \
   $(MY_MODULE_PATH)/../../../dependencies/freetype/include/freetype \
   $(MY_MODULE_PATH)/../../../dependencies/freetype/include/freetype/config \
   $(MY_MODULE_PATH)/../../../dependencies/freetype/include/freetype/internal \
   $(MY_MODULE_PATH)/../../../dependencies/freetype/include/freetype/internal/services \
+  $(MY_MODULE_PATH)/../../../dependencies/freetype/src \
   $(MY_MODULE_PATH)/../../../dependencies/freetype/src/winfonts \
-  $(MY_MODULE_PATH)/../../../gucefCORE/include \
-  $(MY_MODULE_PATH)/../../../gucefCORE/include/android \
-  $(MY_MODULE_PATH)/../../../gucefGUI/include \
-  $(MY_MODULE_PATH)/../../../gucefIMAGE/include \
-  $(MY_MODULE_PATH)/../../../gucefINPUT/include \
-  $(MY_MODULE_PATH)/../../../gucefMT/include \
-  $(MY_MODULE_PATH)/../../../gucefVFS/include \
-  $(MY_MODULE_PATH)/../guidriverMyGUI/include \
-  $(MY_MODULE_PATH)/OpenGLESPlatform/include
+  $(MY_MODULE_PATH)/../../../platform/gucefCORE/include \
+  $(MY_MODULE_PATH)/../../../platform/gucefCORE/include/android \
+  $(MY_MODULE_PATH)/../../../platform/gucefGUI/include \
+  $(MY_MODULE_PATH)/../../../platform/gucefIMAGE/include \
+  $(MY_MODULE_PATH)/../../../platform/gucefINPUT/include \
+  $(MY_MODULE_PATH)/../../../platform/gucefMT/include \
+  $(MY_MODULE_PATH)/../../../platform/gucefVFS/include \
+  $(MY_MODULE_PATH)/../guidriverMyGUI/include
 
-LOCAL_CFLAGS := -DGUIDRIVERMYGUIOPENGL_BUILD_MODULE
+LOCAL_CFLAGS := -DGUIDRIVERMYGUIOGRE_BUILD_MODULE
 
 
 LOCAL_SHARED_LIBRARIES := \
   MyGUI.Engine \
+  Ogre \
   freetype \
   gucefCORE \
   gucefGUI \
@@ -64,12 +72,8 @@ LOCAL_SHARED_LIBRARIES := \
   guidriverMyGUI
 
 
-LOCAL_STATIC_LIBRARIES := \
-  MyGUI.OpenGLESPlatform
-
-
 LOCAL_LDLIBS := \
-  -lGLESv1_CM
+  -lMyGUI.OgrePlatform
 
 include $(BUILD_SHARED_LIBRARY)
 

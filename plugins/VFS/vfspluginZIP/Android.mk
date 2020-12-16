@@ -31,10 +31,10 @@ LOCAL_C_INCLUDES := \
   $(MY_MODULE_PATH)/../../../common/include \
   $(MY_MODULE_PATH)/../../../dependencies/zziplib \
   $(MY_MODULE_PATH)/../../../dependencies/zziplib/zzip \
-  $(MY_MODULE_PATH)/../../../gucefCORE/include \
-  $(MY_MODULE_PATH)/../../../gucefCORE/include/android \
-  $(MY_MODULE_PATH)/../../../gucefMT/include \
-  $(MY_MODULE_PATH)/../../../gucefVFS/include
+  $(MY_MODULE_PATH)/../../../platform/gucefCORE/include \
+  $(MY_MODULE_PATH)/../../../platform/gucefCORE/include/android \
+  $(MY_MODULE_PATH)/../../../platform/gucefMT/include \
+  $(MY_MODULE_PATH)/../../../platform/gucefVFS/include
 
 LOCAL_CFLAGS := -DGUCEF_VFSPLUGIN_ZIP_BUILD_MODULE -DZZIP_HAVE_STDINT_H
 

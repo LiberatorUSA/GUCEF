@@ -22,21 +22,30 @@ LOCAL_MODULE_FILENAME := libgucefLOADER
 @echo Module name: $(LOCAL_MODULE)
 
 LOCAL_SRC_FILES := \
-  ../gucefCORE/src/DVOSWRAP.cpp \
-  ../gucefCORE/src/dvstrutils.c \
   ../gucefCORE/src/CDVString.cpp \
-  ../gucefCORE/src/dvfileutils.c \
+  ../gucefCORE/src/DVCPPOSWRAP.cpp \
+  ../gucefCORE/src/DVOSWRAP.cpp \
   ../gucefCORE/src/dvcppstringutils.cpp \
-  ../gucefCORE/src/md5.c \
+  ../gucefCORE/src/dvfileutils.c \
   ../gucefCORE/src/dvmd5utils.c \
+  ../gucefCORE/src/dvstrutils.c \
+  ../gucefCORE/src/md5.c \
+  ../gucefMT/src/gucefMT_CMutex.cpp \
+  ../gucefMT/src/gucefMT_CScopeMutex.cpp \
+  ../gucefMT/src/gucefMT_dvmtoswrap.c \
+  ../gucefMT/src/gucefMT_mutex.c \
   src/gucefLOADER.cpp
 
 LOCAL_C_INCLUDES := \
   $(MY_MODULE_PATH)/../gucefCORE/include/ \
+  $(MY_MODULE_PATH)/../gucefMT/include/ \
   $(MY_MODULE_PATH)/include \
-  $(MY_MODULE_PATH)/../common/include \
+  $(MY_MODULE_PATH)/.. \
+  $(MY_MODULE_PATH)/../../common/include \
+  $(MY_MODULE_PATH)/../gucefCORE \
   $(MY_MODULE_PATH)/../gucefCORE/include \
   $(MY_MODULE_PATH)/../gucefCORE/include/android \
+  $(MY_MODULE_PATH)/../gucefMT \
   $(MY_MODULE_PATH)/../gucefMT/include
 
 LOCAL_CFLAGS := -DGUCEF_CORE_EMBED_CODE -DGUCEF_LOADER_BUILD_MODULE -DGUCEF_MT_EMBED_CODE -DGUCEF_NO_LOGGING

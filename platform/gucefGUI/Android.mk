@@ -32,10 +32,10 @@ LOCAL_SRC_FILES := \
   src/gucefGUI_CFormBackend.cpp \
   src/gucefGUI_CFormEx.cpp \
   src/gucefGUI_CFormFactory.cpp \
-  src/gucefGUI_CGridView.cpp \
   src/gucefGUI_CGUIDriver.cpp \
-  src/gucefGUI_CGuiGlobal.cpp \
   src/gucefGUI_CGUIManager.cpp \
+  src/gucefGUI_CGridView.cpp \
+  src/gucefGUI_CGuiGlobal.cpp \
   src/gucefGUI_CIFileSystemInfoProvider.cpp \
   src/gucefGUI_CIGUIContext.cpp \
   src/gucefGUI_CImageFrame.cpp \
@@ -65,16 +65,19 @@ LOCAL_SRC_FILES := \
 
 LOCAL_C_INCLUDES := \
   $(MY_MODULE_PATH)/include \
-  $(MY_MODULE_PATH)/../common/include \
+  $(MY_MODULE_PATH)/../../common/include \
   $(MY_MODULE_PATH)/../gucefCORE/include \
   $(MY_MODULE_PATH)/../gucefCORE/include/android \
   $(MY_MODULE_PATH)/../gucefIMAGE/include \
   $(MY_MODULE_PATH)/../gucefMT/include \
   $(MY_MODULE_PATH)/../gucefVFS/include
 
+LOCAL_CFLAGS := -DGUCEF_GUI_BUILD_MODULE
+
 
 LOCAL_SHARED_LIBRARIES := \
   gucefCORE \
+  gucefIMAGE \
   gucefMT \
   gucefVFS
 

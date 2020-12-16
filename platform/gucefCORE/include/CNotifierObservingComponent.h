@@ -80,7 +80,7 @@ class GUCEF_CORE_PUBLIC_CPP CNotifierObservingComponent : public CObserver
 
     void SetOwner( CObservingNotifier* owner );
 
-    virtual const CString& GetClassTypeName( void ) const;
+    virtual const CString& GetClassTypeName( void ) const GUCEF_VIRTUAL_OVERRIDE;
 
     private:
 

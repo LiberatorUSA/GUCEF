@@ -6,6 +6,22 @@ GOTO FIND_CMDCAPABLE_NDK
 
 REM -----------------------------------------------------
 
+:FIND_ANDROIDNDK_R21d
+
+SET NDKTESTROOT=%GUCEF_HOME%\dependencies\android-ndk-r21d
+SET CMDTEST=%NDKTESTROOT%\ndk-build.cmd
+
+IF EXIST "%CMDTEST%" (
+  ECHO Found NDK .cmd at %CMDTEST%
+  SET CMDCAPABLE_NDK=%NDKTESTROOT%
+  GOTO :eof
+)
+
+ECHO Unable to locate .cmd capable NDK at %NDKTESTROOT%
+GOTO :eof
+
+REM -----------------------------------------------------
+
 :FIND_ANDROIDNDK_R8d
 
 SET NDKTESTROOT=%GUCEF_HOME%\dependencies\android-ndk-r8d
@@ -132,7 +148,11 @@ REM Clear the NDK path variable
 
 SET CMDCAPABLE_NDK=
 
-
+CALL :FIND_ANDROIDNDK_R21d
+IF DEFINED CMDCAPABLE_NDK (
+  ECHO Found .cmd capable NDK at %CMDCAPABLE_NDK%
+  GOTO END_OF_BATCH
+)
 
 CALL :FIND_ANDROIDNDK_R8d
 IF DEFINED CMDCAPABLE_NDK (

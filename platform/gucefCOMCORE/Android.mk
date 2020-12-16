@@ -26,6 +26,7 @@ LOCAL_SRC_FILES := \
   src/CGUCEFCOMCOREModule.cpp \
   src/CHostAddress.cpp \
   src/CIPAddress.cpp \
+  src/CIPInfo.cpp \
   src/CPing.cpp \
   src/CSocket.cpp \
   src/CTCPClientSocket.cpp \
@@ -38,14 +39,20 @@ LOCAL_SRC_FILES := \
   src/dvwinsock.c \
   src/gucefCOMCORE.cpp \
   src/gucefCOMCORE_CComCoreGlobal.cpp \
-  src/gucefCOMCORE_CICommunicationPort.cpp \
+  src/gucefCOMCORE_CDiscoveryManager.cpp \
+  src/gucefCOMCORE_CICommunicationInterface.cpp \
+  src/gucefCOMCORE_CIDiscovery.cpp \
+  src/gucefCOMCORE_CIDiscoveryCapability.cpp \
+  src/gucefCOMCORE_CIDiscoveryClient.cpp \
+  src/gucefCOMCORE_CIDiscoveryEntry.cpp \
+  src/gucefCOMCORE_CINetworkInterface.cpp \
   src/gucefCOMCORE_CPingTaskConsumer.cpp \
   src/gucefCOMCORE_CSerialPort.cpp \
   src/socketutils.cpp
 
 LOCAL_C_INCLUDES := \
   $(MY_MODULE_PATH)/include \
-  $(MY_MODULE_PATH)/../common/include \
+  $(MY_MODULE_PATH)/../../common/include \
   $(MY_MODULE_PATH)/../gucefCORE/include \
   $(MY_MODULE_PATH)/../gucefCORE/include/android \
   $(MY_MODULE_PATH)/../gucefMT/include

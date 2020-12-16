@@ -578,7 +578,7 @@ std::string
 CString::STL_String( void ) const
 {GUCEF_TRACE;
 
-    if ( m_string > 0 )
+    if ( m_length > 0 )
     {
         return std::string( m_string, m_length );
     }

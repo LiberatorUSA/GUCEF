@@ -22,17 +22,24 @@ LOCAL_MODULE_FILENAME := libgucefPATCHERAPP
 @echo Module name: $(LOCAL_MODULE)
 
 LOCAL_SRC_FILES := \
+  src/gucefPATCHERAPP_CMainPatcherAppLogic.cpp \
+  src/gucefPATCHERAPP_CPatcherAppConfig.cpp \
+  src/gucefPATCHERAPP_CPatcherAppGlobal.cpp \
   src/gucefPATCHERAPP_main.cpp
 
 LOCAL_C_INCLUDES := \
   $(MY_MODULE_PATH)/include \
   $(MY_MODULE_PATH)/../../common/include \
-  $(MY_MODULE_PATH)/../../gucefCOM/include \
-  $(MY_MODULE_PATH)/../../gucefCOMCORE/include \
-  $(MY_MODULE_PATH)/../../gucefCORE/include \
-  $(MY_MODULE_PATH)/../../gucefCORE/include/android \
-  $(MY_MODULE_PATH)/../../gucefMT/include \
-  $(MY_MODULE_PATH)/../../gucefPATCHER/include
+  $(MY_MODULE_PATH)/../../platform/gucefCOM/include \
+  $(MY_MODULE_PATH)/../../platform/gucefCOMCORE/include \
+  $(MY_MODULE_PATH)/../../platform/gucefCORE/include \
+  $(MY_MODULE_PATH)/../../platform/gucefCORE/include/android \
+  $(MY_MODULE_PATH)/../../platform/gucefGUI/include \
+  $(MY_MODULE_PATH)/../../platform/gucefIMAGE/include \
+  $(MY_MODULE_PATH)/../../platform/gucefINPUT/include \
+  $(MY_MODULE_PATH)/../../platform/gucefMT/include \
+  $(MY_MODULE_PATH)/../../platform/gucefPATCHER/include \
+  $(MY_MODULE_PATH)/../../platform/gucefVFS/include
 
 LOCAL_CFLAGS := -DGUCEF_PATCHERAPP_BUILD_MODULE
 
@@ -41,6 +48,9 @@ LOCAL_SHARED_LIBRARIES := \
   gucefCOM \
   gucefCOMCORE \
   gucefCORE \
+  gucefGUI \
+  gucefIMAGE \
+  gucefINPUT \
   gucefMT \
   gucefPATCHER
 

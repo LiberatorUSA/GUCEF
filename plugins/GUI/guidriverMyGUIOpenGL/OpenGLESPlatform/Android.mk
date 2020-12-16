@@ -22,8 +22,8 @@ LOCAL_MODULE_FILENAME := libMyGUI.OpenGLESPlatform
 @echo Module name: $(LOCAL_MODULE)
 
 LOCAL_SRC_FILES := \
-  src/MyGUI_OpenGLRenderManager.cpp \
   src/MyGUI_OpenGLRTTexture.cpp \
+  src/MyGUI_OpenGLRenderManager.cpp \
   src/MyGUI_OpenGLTexture.cpp \
   src/MyGUI_OpenGLVertexBuffer.cpp
 
@@ -36,6 +36,7 @@ LOCAL_C_INCLUDES := \
   $(MY_MODULE_PATH)/../../../../dependencies/freetype/include/freetype/config \
   $(MY_MODULE_PATH)/../../../../dependencies/freetype/include/freetype/internal \
   $(MY_MODULE_PATH)/../../../../dependencies/freetype/include/freetype/internal/services \
+  $(MY_MODULE_PATH)/../../../../dependencies/freetype/src \
   $(MY_MODULE_PATH)/../../../../dependencies/freetype/src/winfonts
 
 

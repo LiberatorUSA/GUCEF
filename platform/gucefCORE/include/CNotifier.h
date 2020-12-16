@@ -172,7 +172,7 @@ class GUCEF_CORE_PUBLIC_CPP CNotifier : public MT::CILockable ,
      *  functionality like this are limited or even non-existent
      *  we chose to use this approach.
      */
-    virtual const CString& GetClassTypeName( void ) const;
+    virtual const CString& GetClassTypeName( void ) const GUCEF_VIRTUAL_OVERRIDE;
 
     /**
      *  Sets a destruction flag that will cause the notifier object to be
