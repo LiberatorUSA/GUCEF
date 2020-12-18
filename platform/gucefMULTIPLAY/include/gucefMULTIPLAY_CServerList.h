@@ -92,9 +92,9 @@ class GUCEF_MULTIPLAY_EXPORT_CPP CServerList : public CORE::CObservingNotifier
         Int32 ping;                        /**< ping to the server in milliseconds */
     };
     typedef struct SServerListEntry TServerListEntry;
-    typedef CORE::CTSharedPtr< TServerListEntry > TServerListEntryPtr;
-    typedef std::vector< TServerListEntryPtr > TServerInfoList;
-    typedef std::vector< CORE::CString > TStringList;
+    typedef CORE::CTSharedPtr< TServerListEntry, MT::CMutex >   TServerListEntryPtr;
+    typedef std::vector< TServerListEntryPtr >                  TServerInfoList;
+    typedef std::vector< CORE::CString >                        TStringList;
         
     static const CORE::CEvent ServerListChangedEvent;    /**< event indicating that the list has changed */  
    

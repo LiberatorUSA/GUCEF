@@ -84,12 +84,12 @@ class GUCEF_DRN_EXPORT_CPP CDRNNode : public CORE::CObservingNotifier
     static const CORE::CEvent LinkDisconnectedEvent;
     static const CORE::CEvent LinkErrorEvent;
     
-    typedef CORE::CTSharedPtr< CDRNPeerLink >       CDRNPeerLinkPtr;
-    typedef std::vector< CDRNPeerLinkPtr >          TPeerLinkList;
-    typedef CORE::CTCloneableObj< CDRNPeerLinkPtr > LinkEstablishedEventData;
-    typedef CORE::CTCloneableObj< CDRNPeerLinkPtr > LinkDisconnectedEventData;
-    typedef CDRNPeerLinkData::TDRNDataStreamPtr     TDRNDataStreamPtr;
-    typedef CDRNPeerLinkData::TDRNDataGroupPtr      TDRNDataGroupPtr;
+    typedef CORE::CTSharedPtr< CDRNPeerLink, MT::CMutex >       CDRNPeerLinkPtr;
+    typedef std::vector< CDRNPeerLinkPtr >                      TPeerLinkList;
+    typedef CORE::CTCloneableObj< CDRNPeerLinkPtr >             LinkEstablishedEventData;
+    typedef CORE::CTCloneableObj< CDRNPeerLinkPtr >             LinkDisconnectedEventData;
+    typedef CDRNPeerLinkData::TDRNDataStreamPtr                 TDRNDataStreamPtr;
+    typedef CDRNPeerLinkData::TDRNDataGroupPtr                  TDRNDataGroupPtr;
 
     static void RegisterEvents( void );    
     

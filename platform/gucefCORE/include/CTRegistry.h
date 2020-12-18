@@ -118,6 +118,8 @@ class CTRegistry : public MT::CILockable
 
     virtual void GetList( TStringList& destList ) const;
 
+    virtual const MT::CILockable* AsLockable( void ) const GUCEF_VIRTUAL_OVERRIDE;
+
     GUCEF_DEFINE_INLINED_MSGEXCEPTION( EAlreadyRegistered );
     GUCEF_DEFINE_INLINED_MSGEXCEPTION( EUnregisteredName );
 
@@ -369,6 +371,16 @@ CTRegistry< T, LockType >::Unlock( void ) const
 {GUCEF_TRACE;
         /* implemented to avoid manditory implementation by decending classes */
     return false;
+}
+
+/*-------------------------------------------------------------------------*/
+
+template< class T, class LockType >
+const MT::CILockable*
+CTRegistry< T, LockType >::AsLockable( void ) const
+{GUCEF_TRACE;
+
+    return this;
 }
 
 /*-------------------------------------------------------------------------//

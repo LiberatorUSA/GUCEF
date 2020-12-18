@@ -202,12 +202,13 @@ class GUCEF_DRN_EXPORT_CPP CDRNPeerLink : public CORE::CObservingNotifier
                                const CORE::CDynamicBuffer& data       ,
                                const bool allowUnreliableTransmission );
 
-    typedef enum TDataGroupDelta
+    enum EDataGroupDelta
     {
         DATAGROUPDELTA_ADD    ,
         DATAGROUPDELTA_UPDATE ,
         DATAGROUPDELTA_REMOVE
     };
+    typedef enum EDataGroupDelta TDataGroupDelta;
     
     void SendDataGroupItemUpdateToPeer( const CDRNDataGroup& dataGroup        ,
                                         const UInt16 id                       ,

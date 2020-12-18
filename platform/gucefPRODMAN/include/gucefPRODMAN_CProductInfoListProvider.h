@@ -74,7 +74,7 @@ class GUCEF_PRODMAN_PUBLIC_CPP CProductInfoListProvider : public CORE::CObservin
 
     virtual bool RetrieveList( const CORE::CString& listLocation ) = 0;
 
-    virtual const CORE::CString& GetClassTypeName( void ) const;
+    virtual const CORE::CString& GetClassTypeName( void ) const GUCEF_VIRTUAL_OVERRIDE;
 
     private:
 
@@ -84,7 +84,7 @@ class GUCEF_PRODMAN_PUBLIC_CPP CProductInfoListProvider : public CORE::CObservin
 
 /*-------------------------------------------------------------------------*/
 
-typedef CORE::CTSharedPtr< CProductInfoListProvider >   CProductInfoListProviderPtr;
+typedef CORE::CTSharedPtr< CProductInfoListProvider, MT::CMutex >   CProductInfoListProviderPtr;
 
 /*-------------------------------------------------------------------------//
 //                                                                         //

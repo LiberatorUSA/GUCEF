@@ -182,7 +182,7 @@ CImage::CreateCStyleAccess( void ) const
 
     TImage* cStyleImage = new TImage;
     cStyleImage->version = GUCEF_IMAGE_TIMAGE_VERSION;
-    cStyleImage->imageInfo.nrOfFramesInImage = m_frameList.size();
+    cStyleImage->imageInfo.nrOfFramesInImage = (UInt32) m_frameList.size();
     cStyleImage->imageInfo.version = GUCEF_IMAGE_TIMAGEINFO_VERSION;
     cStyleImage->frames = new TImageFrame[ m_frameList.size() ];
 
@@ -194,7 +194,7 @@ CImage::CreateCStyleAccess( void ) const
 
         frame->version = GUCEF_IMAGE_TIMAGEFRAME_VERSION;
         frame->frameInfo.version = GUCEF_IMAGE_TIMAGEFRAMEINFO_VERSION;
-        frame->frameInfo.nrOfMipmapLevels = cppFrame.size();
+        frame->frameInfo.nrOfMipmapLevels = (UInt32) cppFrame.size();
         frame->mipmapLevel = new TImageMipMapLevel[ frame->frameInfo.nrOfMipmapLevels ];
 
         TMipMapList::const_iterator m = cppFrame.begin();

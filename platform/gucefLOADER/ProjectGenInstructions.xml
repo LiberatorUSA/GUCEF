@@ -2,6 +2,8 @@
     <INCLUDES PLATFORM="ALL">
         <ITEM NAME="../gucefMT/src/gucefMT_mutex.c" TYPE="FILE" />
         <ITEM NAME="../gucefMT/include/gucefMT_mutex.h" TYPE="FILE" />
+        <ITEM NAME="../gucefMT/src/gucefMT_CILockable.cpp" TYPE="FILE" />
+        <ITEM NAME="../gucefMT/include/gucefMT_CILockable.h" TYPE="FILE" />
         <ITEM NAME="../gucefMT/src/gucefMT_CMutex.cpp" TYPE="FILE" />
         <ITEM NAME="../gucefMT/include/gucefMT_CMutex.h" TYPE="FILE" />
         <ITEM NAME="../gucefMT/src/gucefMT_CScopeMutex.cpp" TYPE="FILE" />

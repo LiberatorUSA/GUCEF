@@ -96,7 +96,7 @@ CString
 CEditbox::GetText( void )
 {GUCEF_TRACE;
 
-    return false;
+    return CString::Empty;
 }
 
 /*-------------------------------------------------------------------------*/

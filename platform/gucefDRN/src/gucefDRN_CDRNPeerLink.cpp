@@ -888,7 +888,7 @@ CDRNPeerLink::OnPeerDataGroupItemMutation( const char* data             ,
                 // Try to find the data group, we should only get this type of
                 // update if we are already subscribed to the given data group
                 CDRNPeerLinkData::TDRNDataGroupPtr dataGroup = m_linkData->GetSubscribedDataGroupWithID( dataGroupID );
-                if ( NULL != dataGroup )
+                if ( dataGroup )
                 {
                     switch ( change )
                     {
@@ -1502,7 +1502,7 @@ CDRNPeerLink::OnPeerStreamDataReceived( const char* data      ,
 
             // Try to find a stream with the given ID among the stream subscriptions
             TDRNDataStreamPtr dataStream = m_linkData->GetSubscribedDataStreamWithID( streamID );
-            if ( NULL != dataStream )
+            if ( dataStream )
             {
                 // Pass the data along to the stream's handler
                 dataStream->OnDataReceived( data+3     ,

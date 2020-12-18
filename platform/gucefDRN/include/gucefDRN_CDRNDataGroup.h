@@ -108,7 +108,7 @@ class GUCEF_DRN_EXPORT_CPP CDRNDataGroup : public CORE::CObservingNotifier
     
     public:
     
-    typedef CORE::CTSharedPtr< CDRNDataGroupProperties > CDRNDataGroupPropertiesPtr;
+    typedef CORE::CTSharedPtr< CDRNDataGroupProperties, MT::CMutex > CDRNDataGroupPropertiesPtr;
     
     CDRNDataGroup( const CORE::CString& groupName );
     

@@ -124,7 +124,7 @@ CFormEx::LoadLayoutUsingVfs( const CString& filename )
 {GUCEF_TRACE;
 
     VFS::CVFS::CVFSHandlePtr file = VFS::CVfsGlobal::Instance()->GetVfs().GetFile( filename );
-    if ( NULL != file )
+    if ( file )
     {
         if ( LoadLayout( *file->GetAccess() ) )
         {
@@ -144,7 +144,7 @@ CFormEx::SaveLayoutUsingVfs( const CString& filename )
 {GUCEF_TRACE;
 
     VFS::CVFS::CVFSHandlePtr file = VFS::CVfsGlobal::Instance()->GetVfs().GetFile( filename, "wb", true );
-    if ( NULL != file )
+    if ( file )
     {
         return CForm::SaveLayout( *file->GetAccess() );
     }

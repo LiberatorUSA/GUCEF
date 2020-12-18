@@ -28,10 +28,10 @@
 
 #include <map>
 
-#ifndef GUCEF_CORE_EXCEPTIONMACROS_H
-#include "ExceptionMacros.h"
-#define GUCEF_CORE_EXCEPTIONMACROS_H
-#endif /* GUCEF_CORE_EXCEPTIONMACROS_H ? */
+#ifndef GUCEF_CORE_EXCEPTIONCLASSMACROS_H
+#include "ExceptionClassMacros.h"
+#define GUCEF_CORE_EXCEPTIONCLASSMACROS_H
+#endif /* GUCEF_CORE_EXCEPTIONCLASSMACROS_H ? */
 
 #ifndef GUCEF_CORE_CTSHAREDPTR_H
 #include "CTSharedPtr.h"
@@ -111,7 +111,7 @@ class GUCEF_PRODMAN_PUBLIC_CPP CProductInfoList : public CORE::CIConfigurable
 
 /*-------------------------------------------------------------------------*/
 
-typedef CORE::CTSharedPtr< CProductInfoList >   CProductInfoListPtr;
+typedef CORE::CTSharedPtr< CProductInfoList, MT::CMutex >   CProductInfoListPtr;
 
 /*-------------------------------------------------------------------------//
 //                                                                         //

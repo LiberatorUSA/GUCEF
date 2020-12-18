@@ -562,7 +562,7 @@ void
 CInputController::RegisterDriver( TInputDriverPtr driver )
 {GUCEF_TRACE;
 
-    if ( NULL != driver )
+    if ( driver )
     {
         CString driverName = driver->GetName();
 

@@ -20,6 +20,7 @@ set( HEADER_FILES
   ../gucefCORE/include/dvmd5utils.h
   ../gucefCORE/include/dvstrutils.h
   ../gucefCORE/include/md5.h
+  ../gucefMT/include/gucefMT_CILockable.h
   ../gucefMT/include/gucefMT_CMutex.h
   ../gucefMT/include/gucefMT_CScopeMutex.h
   ../gucefMT/include/gucefMT_dvmtoswrap.h
@@ -39,6 +40,7 @@ set( SOURCE_FILES
   ../gucefCORE/src/dvmd5utils.c
   ../gucefCORE/src/dvstrutils.c
   ../gucefCORE/src/md5.c
+  ../gucefMT/src/gucefMT_CILockable.cpp
   ../gucefMT/src/gucefMT_CMutex.cpp
   ../gucefMT/src/gucefMT_CScopeMutex.cpp
   ../gucefMT/src/gucefMT_dvmtoswrap.c
@@ -58,6 +60,7 @@ if (ANDROID)
     ../gucefCORE/include/dvmd5utils.h
     ../gucefCORE/include/dvstrutils.h
     ../gucefCORE/include/md5.h
+    ../gucefMT/include/gucefMT_CILockable.h
     ../gucefMT/include/gucefMT_CMutex.h
     ../gucefMT/include/gucefMT_CScopeMutex.h
     ../gucefMT/include/gucefMT_dvmtoswrap.h
@@ -76,6 +79,7 @@ if (ANDROID)
     ../gucefCORE/src/dvmd5utils.c
     ../gucefCORE/src/dvstrutils.c
     ../gucefCORE/src/md5.c
+    ../gucefMT/src/gucefMT_CILockable.cpp
     ../gucefMT/src/gucefMT_CMutex.cpp
     ../gucefMT/src/gucefMT_CScopeMutex.cpp
     ../gucefMT/src/gucefMT_dvmtoswrap.c
@@ -95,6 +99,7 @@ elseif (EMSCRIPTEN)
     ../gucefCORE/include/dvmd5utils.h
     ../gucefCORE/include/dvstrutils.h
     ../gucefCORE/include/md5.h
+    ../gucefMT/include/gucefMT_CILockable.h
     ../gucefMT/include/gucefMT_CMutex.h
     ../gucefMT/include/gucefMT_CScopeMutex.h
     ../gucefMT/include/gucefMT_dvmtoswrap.h
@@ -113,6 +118,7 @@ elseif (EMSCRIPTEN)
     ../gucefCORE/src/dvmd5utils.c
     ../gucefCORE/src/dvstrutils.c
     ../gucefCORE/src/md5.c
+    ../gucefMT/src/gucefMT_CILockable.cpp
     ../gucefMT/src/gucefMT_CMutex.cpp
     ../gucefMT/src/gucefMT_CScopeMutex.cpp
     ../gucefMT/src/gucefMT_dvmtoswrap.c
@@ -132,6 +138,7 @@ elseif (GLX)
     ../gucefCORE/include/dvmd5utils.h
     ../gucefCORE/include/dvstrutils.h
     ../gucefCORE/include/md5.h
+    ../gucefMT/include/gucefMT_CILockable.h
     ../gucefMT/include/gucefMT_CMutex.h
     ../gucefMT/include/gucefMT_CScopeMutex.h
     ../gucefMT/include/gucefMT_dvmtoswrap.h
@@ -150,6 +157,7 @@ elseif (GLX)
     ../gucefCORE/src/dvmd5utils.c
     ../gucefCORE/src/dvstrutils.c
     ../gucefCORE/src/md5.c
+    ../gucefMT/src/gucefMT_CILockable.cpp
     ../gucefMT/src/gucefMT_CMutex.cpp
     ../gucefMT/src/gucefMT_CScopeMutex.cpp
     ../gucefMT/src/gucefMT_dvmtoswrap.c
@@ -169,6 +177,7 @@ elseif (GTK)
     ../gucefCORE/include/dvmd5utils.h
     ../gucefCORE/include/dvstrutils.h
     ../gucefCORE/include/md5.h
+    ../gucefMT/include/gucefMT_CILockable.h
     ../gucefMT/include/gucefMT_CMutex.h
     ../gucefMT/include/gucefMT_CScopeMutex.h
     ../gucefMT/include/gucefMT_dvmtoswrap.h
@@ -187,6 +196,7 @@ elseif (GTK)
     ../gucefCORE/src/dvmd5utils.c
     ../gucefCORE/src/dvstrutils.c
     ../gucefCORE/src/md5.c
+    ../gucefMT/src/gucefMT_CILockable.cpp
     ../gucefMT/src/gucefMT_CMutex.cpp
     ../gucefMT/src/gucefMT_CScopeMutex.cpp
     ../gucefMT/src/gucefMT_dvmtoswrap.c
@@ -206,6 +216,7 @@ elseif (IOS)
     ../gucefCORE/include/dvmd5utils.h
     ../gucefCORE/include/dvstrutils.h
     ../gucefCORE/include/md5.h
+    ../gucefMT/include/gucefMT_CILockable.h
     ../gucefMT/include/gucefMT_CMutex.h
     ../gucefMT/include/gucefMT_CScopeMutex.h
     ../gucefMT/include/gucefMT_dvmtoswrap.h
@@ -224,6 +235,7 @@ elseif (IOS)
     ../gucefCORE/src/dvmd5utils.c
     ../gucefCORE/src/dvstrutils.c
     ../gucefCORE/src/md5.c
+    ../gucefMT/src/gucefMT_CILockable.cpp
     ../gucefMT/src/gucefMT_CMutex.cpp
     ../gucefMT/src/gucefMT_CScopeMutex.cpp
     ../gucefMT/src/gucefMT_dvmtoswrap.c
@@ -243,6 +255,7 @@ elseif (LINUX32)
     ../gucefCORE/include/dvmd5utils.h
     ../gucefCORE/include/dvstrutils.h
     ../gucefCORE/include/md5.h
+    ../gucefMT/include/gucefMT_CILockable.h
     ../gucefMT/include/gucefMT_CMutex.h
     ../gucefMT/include/gucefMT_CScopeMutex.h
     ../gucefMT/include/gucefMT_dvmtoswrap.h
@@ -261,6 +274,7 @@ elseif (LINUX32)
     ../gucefCORE/src/dvmd5utils.c
     ../gucefCORE/src/dvstrutils.c
     ../gucefCORE/src/md5.c
+    ../gucefMT/src/gucefMT_CILockable.cpp
     ../gucefMT/src/gucefMT_CMutex.cpp
     ../gucefMT/src/gucefMT_CScopeMutex.cpp
     ../gucefMT/src/gucefMT_dvmtoswrap.c
@@ -280,6 +294,7 @@ elseif (LINUX64)
     ../gucefCORE/include/dvmd5utils.h
     ../gucefCORE/include/dvstrutils.h
     ../gucefCORE/include/md5.h
+    ../gucefMT/include/gucefMT_CILockable.h
     ../gucefMT/include/gucefMT_CMutex.h
     ../gucefMT/include/gucefMT_CScopeMutex.h
     ../gucefMT/include/gucefMT_dvmtoswrap.h
@@ -298,6 +313,7 @@ elseif (LINUX64)
     ../gucefCORE/src/dvmd5utils.c
     ../gucefCORE/src/dvstrutils.c
     ../gucefCORE/src/md5.c
+    ../gucefMT/src/gucefMT_CILockable.cpp
     ../gucefMT/src/gucefMT_CMutex.cpp
     ../gucefMT/src/gucefMT_CScopeMutex.cpp
     ../gucefMT/src/gucefMT_dvmtoswrap.c
@@ -317,6 +333,7 @@ elseif (NACL)
     ../gucefCORE/include/dvmd5utils.h
     ../gucefCORE/include/dvstrutils.h
     ../gucefCORE/include/md5.h
+    ../gucefMT/include/gucefMT_CILockable.h
     ../gucefMT/include/gucefMT_CMutex.h
     ../gucefMT/include/gucefMT_CScopeMutex.h
     ../gucefMT/include/gucefMT_dvmtoswrap.h
@@ -335,6 +352,7 @@ elseif (NACL)
     ../gucefCORE/src/dvmd5utils.c
     ../gucefCORE/src/dvstrutils.c
     ../gucefCORE/src/md5.c
+    ../gucefMT/src/gucefMT_CILockable.cpp
     ../gucefMT/src/gucefMT_CMutex.cpp
     ../gucefMT/src/gucefMT_CScopeMutex.cpp
     ../gucefMT/src/gucefMT_dvmtoswrap.c
@@ -354,6 +372,7 @@ elseif (OSX)
     ../gucefCORE/include/dvmd5utils.h
     ../gucefCORE/include/dvstrutils.h
     ../gucefCORE/include/md5.h
+    ../gucefMT/include/gucefMT_CILockable.h
     ../gucefMT/include/gucefMT_CMutex.h
     ../gucefMT/include/gucefMT_CScopeMutex.h
     ../gucefMT/include/gucefMT_dvmtoswrap.h
@@ -372,6 +391,7 @@ elseif (OSX)
     ../gucefCORE/src/dvmd5utils.c
     ../gucefCORE/src/dvstrutils.c
     ../gucefCORE/src/md5.c
+    ../gucefMT/src/gucefMT_CILockable.cpp
     ../gucefMT/src/gucefMT_CMutex.cpp
     ../gucefMT/src/gucefMT_CScopeMutex.cpp
     ../gucefMT/src/gucefMT_dvmtoswrap.c
@@ -391,6 +411,7 @@ elseif (POSIX)
     ../gucefCORE/include/dvmd5utils.h
     ../gucefCORE/include/dvstrutils.h
     ../gucefCORE/include/md5.h
+    ../gucefMT/include/gucefMT_CILockable.h
     ../gucefMT/include/gucefMT_CMutex.h
     ../gucefMT/include/gucefMT_CScopeMutex.h
     ../gucefMT/include/gucefMT_dvmtoswrap.h
@@ -409,6 +430,7 @@ elseif (POSIX)
     ../gucefCORE/src/dvmd5utils.c
     ../gucefCORE/src/dvstrutils.c
     ../gucefCORE/src/md5.c
+    ../gucefMT/src/gucefMT_CILockable.cpp
     ../gucefMT/src/gucefMT_CMutex.cpp
     ../gucefMT/src/gucefMT_CScopeMutex.cpp
     ../gucefMT/src/gucefMT_dvmtoswrap.c
@@ -428,6 +450,7 @@ elseif (SDL)
     ../gucefCORE/include/dvmd5utils.h
     ../gucefCORE/include/dvstrutils.h
     ../gucefCORE/include/md5.h
+    ../gucefMT/include/gucefMT_CILockable.h
     ../gucefMT/include/gucefMT_CMutex.h
     ../gucefMT/include/gucefMT_CScopeMutex.h
     ../gucefMT/include/gucefMT_dvmtoswrap.h
@@ -446,6 +469,7 @@ elseif (SDL)
     ../gucefCORE/src/dvmd5utils.c
     ../gucefCORE/src/dvstrutils.c
     ../gucefCORE/src/md5.c
+    ../gucefMT/src/gucefMT_CILockable.cpp
     ../gucefMT/src/gucefMT_CMutex.cpp
     ../gucefMT/src/gucefMT_CScopeMutex.cpp
     ../gucefMT/src/gucefMT_dvmtoswrap.c
@@ -465,6 +489,7 @@ elseif (SYMBIAN)
     ../gucefCORE/include/dvmd5utils.h
     ../gucefCORE/include/dvstrutils.h
     ../gucefCORE/include/md5.h
+    ../gucefMT/include/gucefMT_CILockable.h
     ../gucefMT/include/gucefMT_CMutex.h
     ../gucefMT/include/gucefMT_CScopeMutex.h
     ../gucefMT/include/gucefMT_dvmtoswrap.h
@@ -483,6 +508,7 @@ elseif (SYMBIAN)
     ../gucefCORE/src/dvmd5utils.c
     ../gucefCORE/src/dvstrutils.c
     ../gucefCORE/src/md5.c
+    ../gucefMT/src/gucefMT_CILockable.cpp
     ../gucefMT/src/gucefMT_CMutex.cpp
     ../gucefMT/src/gucefMT_CScopeMutex.cpp
     ../gucefMT/src/gucefMT_dvmtoswrap.c
@@ -502,6 +528,7 @@ elseif (UNIX)
     ../gucefCORE/include/dvmd5utils.h
     ../gucefCORE/include/dvstrutils.h
     ../gucefCORE/include/md5.h
+    ../gucefMT/include/gucefMT_CILockable.h
     ../gucefMT/include/gucefMT_CMutex.h
     ../gucefMT/include/gucefMT_CScopeMutex.h
     ../gucefMT/include/gucefMT_dvmtoswrap.h
@@ -520,6 +547,7 @@ elseif (UNIX)
     ../gucefCORE/src/dvmd5utils.c
     ../gucefCORE/src/dvstrutils.c
     ../gucefCORE/src/md5.c
+    ../gucefMT/src/gucefMT_CILockable.cpp
     ../gucefMT/src/gucefMT_CMutex.cpp
     ../gucefMT/src/gucefMT_CScopeMutex.cpp
     ../gucefMT/src/gucefMT_dvmtoswrap.c
@@ -539,6 +567,7 @@ elseif (WIN32)
     ../gucefCORE/include/dvmd5utils.h
     ../gucefCORE/include/dvstrutils.h
     ../gucefCORE/include/md5.h
+    ../gucefMT/include/gucefMT_CILockable.h
     ../gucefMT/include/gucefMT_CMutex.h
     ../gucefMT/include/gucefMT_CScopeMutex.h
     ../gucefMT/include/gucefMT_dvmtoswrap.h
@@ -557,6 +586,7 @@ elseif (WIN32)
     ../gucefCORE/src/dvmd5utils.c
     ../gucefCORE/src/dvstrutils.c
     ../gucefCORE/src/md5.c
+    ../gucefMT/src/gucefMT_CILockable.cpp
     ../gucefMT/src/gucefMT_CMutex.cpp
     ../gucefMT/src/gucefMT_CScopeMutex.cpp
     ../gucefMT/src/gucefMT_dvmtoswrap.c
@@ -576,6 +606,7 @@ elseif (WIN64)
     ../gucefCORE/include/dvmd5utils.h
     ../gucefCORE/include/dvstrutils.h
     ../gucefCORE/include/md5.h
+    ../gucefMT/include/gucefMT_CILockable.h
     ../gucefMT/include/gucefMT_CMutex.h
     ../gucefMT/include/gucefMT_CScopeMutex.h
     ../gucefMT/include/gucefMT_dvmtoswrap.h
@@ -594,6 +625,7 @@ elseif (WIN64)
     ../gucefCORE/src/dvmd5utils.c
     ../gucefCORE/src/dvstrutils.c
     ../gucefCORE/src/md5.c
+    ../gucefMT/src/gucefMT_CILockable.cpp
     ../gucefMT/src/gucefMT_CMutex.cpp
     ../gucefMT/src/gucefMT_CScopeMutex.cpp
     ../gucefMT/src/gucefMT_dvmtoswrap.c

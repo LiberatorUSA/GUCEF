@@ -30,6 +30,7 @@ LOCAL_SRC_FILES := \
   ../gucefCORE/src/dvmd5utils.c \
   ../gucefCORE/src/dvstrutils.c \
   ../gucefCORE/src/md5.c \
+  ../gucefMT/src/gucefMT_CILockable.cpp \
   ../gucefMT/src/gucefMT_CMutex.cpp \
   ../gucefMT/src/gucefMT_CScopeMutex.cpp \
   ../gucefMT/src/gucefMT_dvmtoswrap.c \

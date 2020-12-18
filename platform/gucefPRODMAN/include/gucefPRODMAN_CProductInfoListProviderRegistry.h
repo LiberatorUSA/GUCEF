@@ -74,7 +74,7 @@ class GUCEF_PRODMAN_PUBLIC_CPP CProductInfoListProviderRegistry
 
     private:
 
-    CORE::CTRegistry< CProductInfoListProvider > m_registry;
+    CORE::CTRegistry< CProductInfoListProvider, MT::CMutex > m_registry;
 };
 
 /*-------------------------------------------------------------------------//

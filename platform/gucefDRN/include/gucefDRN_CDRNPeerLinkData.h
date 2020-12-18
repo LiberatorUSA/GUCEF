@@ -85,10 +85,10 @@ class GUCEF_DRN_EXPORT_CPP CDRNPeerLinkData : public CORE::CObservingNotifier
 {
     public:
     
-    typedef CORE::CTSharedPtr< CDRNDataGroup >   TDRNDataGroupPtr;
-    typedef CORE::CTSharedPtr< CDRNDataStream >  TDRNDataStreamPtr;
-    typedef std::vector< TDRNDataGroupPtr >      TDRNDataGroupList;
-    typedef std::vector< TDRNDataStreamPtr >     TDRNDataStreamList;
+    typedef CORE::CTSharedPtr< CDRNDataGroup, MT::CMutex >   TDRNDataGroupPtr;
+    typedef CORE::CTSharedPtr< CDRNDataStream, MT::CMutex >  TDRNDataStreamPtr;
+    typedef std::vector< TDRNDataGroupPtr >                  TDRNDataGroupList;
+    typedef std::vector< TDRNDataStreamPtr >                 TDRNDataStreamList;
     
     void GetSubscribedDataGroups( TDRNDataGroupList& dataGroupList );
     
