@@ -2667,7 +2667,7 @@ SplitProjectPerTarget( const TProjectInfo& projectInfo    ,
                     TProjectTargetInfo& target = targetPerPlatform[ (*p) ];
 
                     GUCEF_LOG( CORE::LOGLEVEL_NORMAL, "SplitProjectPerTarget: Located " + CORE::ToString( foundDependencies.size() ) + 
-                        "dependencies for executable target \"" + targetName + "\" for platform " + (*p) );
+                        " dependencies for executable target \"" + targetName + "\" for platform " + (*p) );
 
                     target.projectName = projectName;
                     target.mainModule = &executable;
