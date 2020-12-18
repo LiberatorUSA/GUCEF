@@ -102,9 +102,9 @@ class CTEventHandlerFunctor : public virtual CIEventHandlerFunctorBase
 
     virtual bool Unlock( void ) const GUCEF_VIRTUAL_OVERRIDE;
 
-    virtual void OnNotify( CNotifier* notifier          ,
-                           const CEvent& eventID        ,
-                           CICloneable* evenData = NULL );
+    virtual void OnNotify( CNotifier* notifier                ,
+                           const CEvent& eventId              ,
+                           CICloneable* evenData = GUCEF_NULL ) GUCEF_VIRTUAL_OVERRIDE;
 
     void SetMemberFunctionPointer( TMemberFunctionType functor );
 

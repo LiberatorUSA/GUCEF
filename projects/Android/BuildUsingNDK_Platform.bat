@@ -1,0 +1,13 @@
+@echo off
+SET BUIDUSINGNDK_FORTARGET_THEBATCHDIR=%~dp0
+
+ECHO.
+ECHO *** Starting build from MS Windows ***
+ECHO.
+
+CALL %BUIDUSINGNDK_FORTARGET_THEBATCHDIR%\FindGucefHome.bat
+
+
+SET MSWIN_MAINANDROIDMAKEDIR=%GUCEF_HOME%\projects\Android\targets\GUCEF_tag_platform
+CALL BuildUsingNDK.bat
+PAUSE

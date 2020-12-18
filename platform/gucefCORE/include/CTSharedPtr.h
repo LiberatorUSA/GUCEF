@@ -361,7 +361,20 @@ operator==( const void* ptr, const CTSharedPtr< T, LockType >& other )
  */
 template< typename T, class LockType >
 inline bool
-operator==( const int ptr, const CTSharedPtr< T, LockType >& other )
+operator==( const Int32 ptr, const CTSharedPtr< T, LockType >& other )
+{GUCEF_TRACE;
+
+    return static_cast< const CTBasicSharedPtr< T, LockType >& >( other ) == ptr;
+}
+
+/*-------------------------------------------------------------------------*/
+
+/*
+ *  workaround for comparison to NULL, since NULL is a integer by default
+ */
+template< typename T, class LockType >
+inline bool
+operator==( const Int64 ptr, const CTSharedPtr< T, LockType >& other )
 {GUCEF_TRACE;
 
     return static_cast< const CTBasicSharedPtr< T, LockType >& >( other ) == ptr;

@@ -138,7 +138,7 @@ class SocketSink : public CORE::CObserver
     {GUCEF_TRACE;
 
         // We don't want to lose UDP packets, thus update faster then we normally would
-        CORE::CCoreGlobal::Instance()->GetApplication().GetPulseGenerator().RequestPeriodicPulses( this, 1 );
+        CORE::CCoreGlobal::Instance()->GetApplication().GetPulseGenerator()->RequestPeriodicPulses( this, 1 );
         
         m_udpFlushTimer.SetEnabled( true );
 

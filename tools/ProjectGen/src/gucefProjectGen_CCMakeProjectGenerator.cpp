@@ -1687,10 +1687,10 @@ CCMakeProjectGenerator::GenerateProject( TProjectInfo& projectInfo            ,
         logfilePath = params.GetValueAlways( "logfile" );
     }
 
-    bool treatTagsAsTargets = CORE::StringToBool( params.GetValueAlways( "TreatTagsAsTargets", "true" ) );
-    bool treatTagsAsOptions = CORE::StringToBool( params.GetValueAlways( "TreatTagsAsOptions", "true" ) );
-    bool taggedOptionsEnabledDefault = CORE::StringToBool( params.GetValueAlways( "TaggedOptionsEnabledDefault", "true" ) );
-    bool splitTargets = CORE::StringToBool( params.GetValueAlways( "cmakegen:SplitTargets", "true" ) );
+    bool treatTagsAsTargets = CORE::StringToBool( params.GetValueAlways( "TreatTagsAsTargets" ), true );
+    bool treatTagsAsOptions = CORE::StringToBool( params.GetValueAlways( "TreatTagsAsOptions" ), true );
+    bool taggedOptionsEnabledDefault = CORE::StringToBool( params.GetValueAlways( "TaggedOptionsEnabledDefault" ), true );
+    bool splitTargets = CORE::StringToBool( params.GetValueAlways( "cmakegen:SplitTargets" ), true );
 
     // Write the gathered info to disk in CMakeList.txt format per module
 

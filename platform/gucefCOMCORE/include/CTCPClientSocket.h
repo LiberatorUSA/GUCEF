@@ -107,7 +107,10 @@ class GUCEF_COMCORE_EXPORT_CPP CTCPClientSocket : public CTCPConnection
      */
     bool Reconnect( bool blocking = false );
     
-    void Close( void );  /* close the socket connection */
+    /**
+     *  close the socket connection 
+     */
+    virtual void Close( void ) GUCEF_VIRTUAL_OVERRIDE;  
     
     virtual bool Send( const void* dataSource , 
                        const UInt32 dataSize  ) GUCEF_VIRTUAL_OVERRIDE;    

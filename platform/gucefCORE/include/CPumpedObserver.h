@@ -74,7 +74,7 @@ class GUCEF_CORE_PUBLIC_CPP CPumpedObserver : public CObserver
 
     CPumpedObserver& operator=( const CPumpedObserver& src );
 
-    virtual const CString& GetClassTypeName( void ) const;
+    virtual const CString& GetClassTypeName( void ) const GUCEF_VIRTUAL_OVERRIDE;
 
     CPulseGenerator* GetPulseGenerator( void ) const;
 

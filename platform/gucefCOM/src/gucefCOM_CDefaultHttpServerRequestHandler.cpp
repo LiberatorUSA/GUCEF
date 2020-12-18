@@ -425,7 +425,7 @@ CDefaultHttpServerRequestHandler::OnCreate( const CHttpRequestData& request ,
                                                                                             resource                      ,
                                                                                             supportedRepresentations      );
 
-        if ( ( CIHTTPServerResource::CREATESTATE_FAILED == createState ) || ( 0 == resource ) )
+        if ( ( CIHTTPServerResource::CREATESTATE_FAILED == createState ) || ( !resource ) )
         {
             // Failed to finalize (thus persist) the data
             response.statusCode = 500;
@@ -519,7 +519,7 @@ CDefaultHttpServerRequestHandler::OnDelete( const CHttpRequestData& request ,
         CString remainderUri = m_routerController->GetUriAfterTheBaseAddress( *resourceRouter, resourceURI );
         CIHTTPServerRouter::THTTPServerResourcePtr resource = resourceRouter->ResolveUriToResource( remainderUri );
 
-        if ( 0 == resource )
+        if ( !resource )
         {
             // Not found
             response.statusCode = 404;

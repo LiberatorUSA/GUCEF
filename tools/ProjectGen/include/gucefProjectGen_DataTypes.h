@@ -325,9 +325,17 @@ FindModuleInfoForPlatform( TModuleInfoEntry& moduleInfoEntry ,
 
 GUCEF_PROJECTGEN_PUBLIC_CPP
 const CORE::CString*
-GetModuleName( const TModuleInfoEntry& moduleInfoEntry ,
-               const CORE::CString& targetPlatform     ,
-               const TModuleInfo** moduleInfo = NULL   );
+GetModuleName( const TModuleInfoEntry& moduleInfoEntry     ,
+               const CORE::CString& targetPlatform         ,
+               const TModuleInfo** moduleInfo = GUCEF_NULL );
+
+/*-------------------------------------------------------------------------*/
+
+GUCEF_PROJECTGEN_PUBLIC_CPP
+const CORE::CString*
+GetModuleName( const TProjectTargetInfoMap& targetPlatforms ,
+               const CORE::CString& targetPlatform          ,
+               const TModuleInfo** moduleInfo = GUCEF_NULL  );
                
 /*-------------------------------------------------------------------------*/
 
@@ -338,8 +346,8 @@ GetModuleName( const TModuleInfoEntry& moduleInfoEntry ,
 // a platform
 GUCEF_PROJECTGEN_PUBLIC_CPP
 CORE::CString
-GetConsensusModuleName( const TModuleInfoEntry& moduleInfoEntry ,
-                        const TModuleInfo** moduleInfo = NULL   );
+GetConsensusModuleName( const TModuleInfoEntry& moduleInfoEntry     ,
+                        const TModuleInfo** moduleInfo = GUCEF_NULL );
 
 /*-------------------------------------------------------------------------*/
 
@@ -351,6 +359,15 @@ GetConsensusModuleName( const TModuleInfoEntry& moduleInfoEntry ,
 // Not all target origins cause a main module to be defined.
 // As such its perfectly possible be unable to define a consensus target name because the concept does not apply
 // to the collection of targets due to the origins of the collection
+GUCEF_PROJECTGEN_PUBLIC_CPP
+CORE::CString
+GetConsensusTargetName( const TProjectTargetInfoMap& targetPlatforms ,
+                        const CORE::CString& targetPlatform          );
+
+/*-------------------------------------------------------------------------*/
+
+// Same as GetConsensusTargetName( targetPlatforms, targetPlatform ) 
+// Always uses AllPlatforms as the target platform
 GUCEF_PROJECTGEN_PUBLIC_CPP
 CORE::CString
 GetConsensusTargetName( const TProjectTargetInfoMap& targetPlatforms );
@@ -421,6 +438,16 @@ MergeAllModuleInfoForPlatform( const TModuleInfoEntryVector& allInfo  ,
                                const CORE::CString& platform          ,
                                TModuleInfoVector& allMergedInfo       ,
                                TModuleInfoEntryPairVector& mergeLinks );
+
+
+/*-------------------------------------------------------------------------*/
+
+GUCEF_PROJECTGEN_PUBLIC_CPP
+bool
+MergeAllModuleInfoForPlatform( const TModuleInfoEntryConstPtrSet& allInfo ,
+                               const CORE::CString& platform              ,
+                               TModuleInfoVector& allMergedInfo           ,
+                               TModuleInfoEntryPairVector& mergeLinks     );
 
 /*-------------------------------------------------------------------------*/
 
@@ -646,6 +673,22 @@ GetExecutables( const TProjectInfo& projectInfo                ,
 
 /**
  *  Splits out the projectInfo into different projects per platform
+ *  Will only consider the platforms requested in "platformsUsed"
+ */
+GUCEF_PROJECTGEN_PUBLIC_CPP
+void
+SplitProjectPerTarget( const TProjectInfo& projectInfo   ,
+                       TProjectTargetInfoMapMap& targets ,
+                       bool tagsAsTargets                ,
+                       bool collapseRedundantPlatforms   ,
+                       const TStringSet& platformsUsed   );
+
+/*-------------------------------------------------------------------------*/
+
+/**
+ *  Splits out the projectInfo into different projects per platform
+ *  Same as the other variant of SplitProjectPerTarget() except that all known
+ *  platforms are considered
  */
 GUCEF_PROJECTGEN_PUBLIC_CPP
 void
@@ -653,6 +696,18 @@ SplitProjectPerTarget( const TProjectInfo& projectInfo   ,
                        TProjectTargetInfoMapMap& targets ,
                        bool tagsAsTargets                ,
                        bool collapseRedundantPlatforms   );
+
+/*-------------------------------------------------------------------------*/
+
+/**
+ *  Attempts to retrieve the project target for the given platform
+ *  Note that not find a result even if the project exists can be a valid result
+ *  because not all project targets need support the various platforms that other project targets support
+ */
+GUCEF_PROJECTGEN_PUBLIC_CPP
+const TProjectTargetInfo*
+GetPlatformProjectTarget( const TProjectTargetInfoMap& platformTargets ,
+                          const CORE::CString& platformName            );
 
 /*-------------------------------------------------------------------------//
 //                                                                         //

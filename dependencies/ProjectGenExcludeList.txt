@@ -11,6 +11,7 @@ android-ndk-r8
 android-ndk-r8b
 android-ndk-r8c
 android-ndk-r8d
+android-ndk-r21d
 android-sdk-windows
 android-sdk-linux_x86
 ant

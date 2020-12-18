@@ -3,15 +3,12 @@
 REM SET BUIDUSINGNDK_THEBATCHDIR=%CD%
 SET BUIDUSINGNDK_THEBATCHDIR=%~dp0
 
-ECHO.
-ECHO *** Starting build from MS Windows ***
-ECHO.
+CALL %BUIDUSINGNDK_THEBATCHDIR%\FindGucefHome.bat
 
 IF NOT DEFINED GUCEF_HOME (
   ECHO GUCEF environment variable not found, setting it
   SET GUCEF_HOME=%BUIDUSINGNDK_THEBATCHDIR%..\..
 )
-REM ECHO GUCEF_HOME="%GUCEF_HOME%"
 
 SET OLD_NOPAUSE=%NOPAUSE%
 SET NOPAUSE="true"
@@ -20,13 +17,18 @@ CALL %GUCEF_HOME%\projects\Android\FindNDK.bat
 
 SET NOPAUSE=%OLD_NOPAUSE%
 
+IF NOT DEFINED MSWIN_MAINANDROIDMAKEDIR (
+  ECHO MSWIN_MAINANDROIDMAKEDIR environment variable not found, setting it
+  SET MSWIN_MAINANDROIDMAKEDIR=%GUCEF_HOME%\projects\Android\jni
+)
+
 IF DEFINED CMDCAPABLE_NDK (
 
     ECHO.
-    ECHO Changing current directory to Android project dir relative to GUCEF_HOME
+    ECHO Changing current directory to Android project dir relative to %MSWIN_MAINANDROIDMAKEDIR%
     ECHO.
 
-    CD %GUCEF_HOME%\projects\Android\jni
+    CD %MSWIN_MAINANDROIDMAKEDIR%
 
     ECHO.
     ECHO *** Invoking build ***

@@ -135,9 +135,9 @@ class GUCEF_CORE_PUBLIC_CPP CObserver : public CIObserver
      *  @param eventid the unique event id for an event
      *  @param eventdata optional notifier defined userdata
      */
-    virtual void OnNotify( CNotifier* notifier           ,
-                           const CEvent& eventid         ,
-                           CICloneable* eventdata = NULL );
+    virtual void OnNotify( CNotifier* notifier                 ,
+                           const CEvent& eventid               ,
+                           CICloneable* eventdata = GUCEF_NULL ) GUCEF_VIRTUAL_OVERRIDE;
     
     virtual bool Lock( void ) const GUCEF_VIRTUAL_OVERRIDE;
 

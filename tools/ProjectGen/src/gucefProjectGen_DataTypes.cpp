@@ -1812,10 +1812,10 @@ MergeModuleInfo( const TModuleInfoEntry& moduleInfoEntry ,
 /*-------------------------------------------------------------------------*/
 
 bool
-MergeAllModuleInfoForPlatform( const TModuleInfoEntryVector& allInfo  ,
-                               const CORE::CString& platform          ,
-                               TModuleInfoVector& allMergedInfo       ,
-                               TModuleInfoEntryPairVector& mergeLinks )
+MergeAllModuleInfoForPlatform( const TModuleInfoEntryConstPtrSet& allInfo ,
+                               const CORE::CString& platform              ,
+                               TModuleInfoVector& allMergedInfo           ,
+                               TModuleInfoEntryPairVector& mergeLinks     )
 {GUCEF_TRACE;
 
     typedef std::vector< const TModuleInfoEntry* > TModuleInfoEntryPtrVector;
@@ -1823,20 +1823,20 @@ MergeAllModuleInfoForPlatform( const TModuleInfoEntryVector& allInfo  ,
     allMergedInfo.clear();
 
     TModuleInfoEntryPtrVector indexMap;
-    TModuleInfoEntryVector::const_iterator i = allInfo.begin();
+    TModuleInfoEntryConstPtrSet::const_iterator i = allInfo.begin();
     while ( i != allInfo.end() )
     {
         // For each module we create a merged platform specific module
         // description which is easy to process if you only care about that platform
         TModuleInfo mergedInfo;
-        if ( MergeModuleInfo( (*i), platform, mergedInfo ) )
+        if ( MergeModuleInfo( *(*i), platform, mergedInfo ) )
         {
             // Store the merged info
             allMergedInfo.push_back( mergedInfo );
 
             // Store a link between the merged info and the original info
             // at the same index as the merged info
-            indexMap.push_back( &(*i) );
+            indexMap.push_back( (*i) );
         }
         ++i;
     }
@@ -1853,10 +1853,33 @@ MergeAllModuleInfoForPlatform( const TModuleInfoEntryVector& allInfo  ,
 
 /*---------------------------------------------------------------------------*/
 
+bool
+MergeAllModuleInfoForPlatform( const TModuleInfoEntryVector& allInfo  ,
+                               const CORE::CString& platform          ,
+                               TModuleInfoVector& allMergedInfo       ,
+                               TModuleInfoEntryPairVector& mergeLinks )
+{GUCEF_TRACE;
+
+    TModuleInfoEntryConstPtrSet infoPtrs;
+    TModuleInfoEntryVector::const_iterator i = allInfo.begin();
+    while ( i != allInfo.end() )
+    {
+        infoPtrs.insert( &(*i) );
+        ++i;
+    }
+
+    return MergeAllModuleInfoForPlatform( infoPtrs      ,
+                                          platform      ,
+                                          allMergedInfo ,
+                                          mergeLinks    );
+}
+
+/*---------------------------------------------------------------------------*/
+
 const CORE::CString*
 GetModuleName( const TModuleInfoEntry& moduleInfoEntry ,
                const CORE::CString& targetPlatform     ,
-               const TModuleInfo** moduleInfo          )
+               const TModuleInfo** outModuleInfo       )
 {GUCEF_TRACE;
 
     TModuleInfoMap::const_iterator n = moduleInfoEntry.modulesPerPlatform.find( targetPlatform );
@@ -1867,9 +1890,9 @@ GetModuleName( const TModuleInfoEntry& moduleInfoEntry ,
         if ( !(*n).second.name.IsNULLOrEmpty() )
         {
             // We have a name for this specific plaform
-            if ( NULL != moduleInfo )
+            if ( GUCEF_NULL != outModuleInfo )
             {
-                *moduleInfo = &(*n).second;
+                *outModuleInfo = &(*n).second;
             }
             return &( (*n).second.name );
         }
@@ -1887,15 +1910,52 @@ GetModuleName( const TModuleInfoEntry& moduleInfoEntry ,
             if ( !(*n).second.name.IsNULLOrEmpty() )
             {
                 // We have a name for this specific plaform
-                if ( NULL != moduleInfo )
+                if ( GUCEF_NULL != outModuleInfo )
                 {
-                    *moduleInfo = &(*n).second;
+                    *outModuleInfo = &(*n).second;
                 }
                 return &( (*n).second.name );
             }
         }
     }
-    return NULL;
+    return GUCEF_NULL;
+}
+
+/*---------------------------------------------------------------------------*/
+
+const CORE::CString*
+GetModuleName( const TProjectTargetInfoMap& targetPlatforms ,
+               const CORE::CString& targetPlatform          ,
+               const TModuleInfo** outModuleInfo            )
+{GUCEF_TRACE;
+
+
+    TProjectTargetInfoMap::const_iterator i = targetPlatforms.find( targetPlatform );
+    if ( i != targetPlatforms.end() )
+    {
+        const TModuleInfoEntry* mainModule = (*i).second.mainModule;
+        if ( GUCEF_NULL != mainModule )
+        {
+            return GetModuleName( *mainModule, targetPlatform, outModuleInfo );
+        }
+    }
+
+    // If no target is specified for a specific platform then there might still be a
+    // default for all platforms
+    if ( targetPlatform != AllPlatforms )
+    {
+        i = targetPlatforms.find( AllPlatforms );
+        if ( i != targetPlatforms.end() )
+        {
+            const TModuleInfoEntry* mainModule = (*i).second.mainModule;
+            if ( GUCEF_NULL != mainModule )
+            {
+                return GetModuleName( *mainModule, AllPlatforms, outModuleInfo );
+            }
+        }
+    }
+
+    return GUCEF_NULL;
 }
 
 /*---------------------------------------------------------------------------*/
@@ -1906,7 +1966,7 @@ GetConsensusModuleName( const TModuleInfoEntry& moduleInfoEntry ,
 {GUCEF_TRACE;
 
     if ( NULL != moduleInfo )
-        *moduleInfo = NULL;
+        *moduleInfo = GUCEF_NULL;
 
     TModuleInfoMap::const_iterator n = moduleInfoEntry.modulesPerPlatform.find( AllPlatforms );
     if ( n != moduleInfoEntry.modulesPerPlatform.end() )
@@ -1954,7 +2014,7 @@ GetConsensusModuleName( const TModuleInfoEntry& moduleInfoEntry ,
         // This should not happen:
         // Given that we have no module definitions for ANY platform and yet have a higher level concept of it...
         // We promised we would always return a module name. The only thing we have at this point is the directory path
-        // As such we will assume the dir if named after the module it houses as our last ditch guess
+        // As such we will assume the dir is named after the module it houses as our last ditch guess
         return CORE::LastSubDir( moduleInfoEntry.rootDir );
     }
 
@@ -2008,18 +2068,18 @@ GetConsensusModuleName( const TModuleInfoEntry& moduleInfoEntry ,
 /*---------------------------------------------------------------------------*/
 
 CORE::CString
-GetConsensusTargetName( const TProjectTargetInfoMap& targetPlatforms )
+GetConsensusTargetName( const TProjectTargetInfoMap& targetPlatforms ,
+                        const CORE::CString& targetPlatform          )
 {GUCEF_TRACE;
 
-    TProjectTargetInfoMap::const_iterator n = targetPlatforms.find( AllPlatforms );
+    TProjectTargetInfoMap::const_iterator n = targetPlatforms.find( targetPlatform );
     if ( n != targetPlatforms.end() )
     {
-        // A target was specified for all platforms which makes our job easy
-        // an all platform name always counts as the general consensus name
+        // A target was specified for this platform which makes our job easy
         const TProjectTargetInfo& target = (*n).second;
         if ( GUCEF_NULL != target.mainModule )
         {
-            return GetModuleTargetName( *target.mainModule, AllPlatforms, true );
+            return GetModuleTargetName( *target.mainModule, targetPlatform, true );
         }
     }
 
@@ -2038,7 +2098,7 @@ GetConsensusTargetName( const TProjectTargetInfoMap& targetPlatforms )
         const TProjectTargetInfo& target = (*n).second;
         if ( GUCEF_NULL != target.mainModule )
         {
-            CORE::CString targetName = GetModuleTargetName( *target.mainModule, AllPlatforms, true );
+            CORE::CString targetName = GetModuleTargetName( *target.mainModule, targetPlatform, true );
             TStringCountMap::iterator m = countMap.find( targetName );
             if ( m != countMap.end() )
             {
@@ -2089,6 +2149,16 @@ GetConsensusTargetName( const TProjectTargetInfoMap& targetPlatforms )
 
     CString consensusName = (*topNames.begin());
     return consensusName;
+}
+
+/*---------------------------------------------------------------------------*/
+
+CORE::CString
+GetConsensusTargetName( const TProjectTargetInfoMap& targetPlatforms )
+{GUCEF_TRACE;
+
+    // an "all platforms" name always counts as the general consensus name
+    return GetConsensusTargetName( targetPlatforms, AllPlatforms );
 }
 
 /*---------------------------------------------------------------------------*/
@@ -2557,28 +2627,36 @@ void
 SplitProjectPerTarget( const TProjectInfo& projectInfo    ,
                        TProjectTargetInfoMapMap& targets  ,
                        bool tagsAsTargets                 ,
-                       bool collapseRedundantPlatforms    )
+                       bool collapseRedundantPlatforms    ,
+                       const TStringSet& platformsUsed    )
 {GUCEF_TRACE;
 
-    TStringSet platformsUsed;
-    GetAllPlatformsUsed( projectInfo, platformsUsed );
+    GUCEF_LOG( CORE::LOGLEVEL_NORMAL, "SplitProjectPerTarget: Commencing splitting of the gathered project info into derived targets. Will split among the " + 
+        CORE::ToString( platformsUsed.size() ) + " platforms defined" );
 
     TStringSet::iterator p = platformsUsed.begin();
     while ( p != platformsUsed.end() )
     {
+        GUCEF_LOG( CORE::LOGLEVEL_NORMAL, "SplitProjectPerTarget: Locating executables (if any) for platform " + (*p) );
+
         TModuleInfoEntryConstPtrSet executables;
         GetExecutables( projectInfo, executables, (*p) );
+
+        GUCEF_LOG( CORE::LOGLEVEL_NORMAL, "SplitProjectPerTarget: Located " + CORE::ToString( executables.size() ) + " executable target candidates for platform " + (*p) );
 
         TModuleInfoEntryConstPtrSet::iterator i = executables.begin();
         while ( i != executables.end() )
         {
             const TModuleInfoEntry& executable = *(*i);
-            
-            // Don't bother if the executable doesnt have a platform definition for the current platform            
+            CORE::CString targetName = GetModuleNameAlways( executable, (*p) );
+
+            // Don't bother if the executable itself doesnt have a platform definition for the current platform            
             if ( executable.modulesPerPlatform.find( (*p) ) != executable.modulesPerPlatform.end() )
             {            
+                GUCEF_LOG( CORE::LOGLEVEL_NORMAL, "SplitProjectPerTarget: Locating dependencies for target candidate \"" + 
+                    targetName + "\" for platform " + (*p) );
+
                 TModuleInfoEntryConstPtrSet foundDependencies;
-                CORE::CString targetName = GetModuleNameAlways( executable, (*p) );
                 if ( GetModuleDependencies( projectInfo, executable, (*p), foundDependencies, true, true ) )
                 {
                     // if we made it here we found the executable and were able to satisfy all dependencies
@@ -2588,6 +2666,9 @@ SplitProjectPerTarget( const TProjectInfo& projectInfo    ,
                     TProjectTargetInfoMap& targetPerPlatform = targets[ projectName ];
                     TProjectTargetInfo& target = targetPerPlatform[ (*p) ];
 
+                    GUCEF_LOG( CORE::LOGLEVEL_NORMAL, "SplitProjectPerTarget: Located " + CORE::ToString( foundDependencies.size() ) + 
+                        "dependencies for executable target \"" + targetName + "\" for platform " + (*p) );
+
                     target.projectName = projectName;
                     target.mainModule = &executable;
                     target.modules.insert( &executable );
@@ -2596,12 +2677,20 @@ SplitProjectPerTarget( const TProjectInfo& projectInfo    ,
                     {
                         target.modules.insert( (*j) );
                         ++j;
-                    }                
+                    } 
+
+                    GUCEF_LOG( CORE::LOGLEVEL_NORMAL, "SplitProjectPerTarget: Executable Target \"" + targetName + "\" has been defined for platform " + (*p) );                        
                 }
                 else
                 {
-                     GUCEF_DEBUG_LOG( CORE::LOGLEVEL_BELOW_NORMAL, "SplitProjectPerTarget: We cannot satisfy the full dependency chain for executable \"" + targetName + "\" for the given platform \"" + (*p) + "\"" );
+                     GUCEF_LOG( CORE::LOGLEVEL_NORMAL, "SplitProjectPerTarget: We cannot satisfy the full dependency chain for executable \"" + targetName + 
+                        "\" for the given platform \"" + (*p) + "\", it will not be available as a target specific to this platform" );
                 }
+            }
+            else
+            {
+                GUCEF_LOG( CORE::LOGLEVEL_NORMAL, "SplitProjectPerTarget: The executable \"" + targetName + "\" has no definition specific to the given platform \"" 
+                    + (*p) + "\" and thus will not be available as a target specific to this platform" ); 
             }
             ++i;
         }
@@ -2720,6 +2809,48 @@ SplitProjectPerTarget( const TProjectInfo& projectInfo    ,
         fullProjectTarget.modules.insert( &(*w) );
         ++w;
     }
+}
+
+/*---------------------------------------------------------------------------*/
+
+void
+SplitProjectPerTarget( const TProjectInfo& projectInfo    ,
+                       TProjectTargetInfoMapMap& targets  ,
+                       bool tagsAsTargets                 ,
+                       bool collapseRedundantPlatforms    )
+{GUCEF_TRACE;
+
+    TStringSet platformsUsed;
+    GetAllPlatformsUsed( projectInfo, platformsUsed );
+
+    SplitProjectPerTarget( projectInfo                , 
+                           targets                    ,
+                           tagsAsTargets              ,
+                           collapseRedundantPlatforms ,
+                           platformsUsed              );
+}
+
+/*-------------------------------------------------------------------------*/
+
+const TProjectTargetInfo*
+GetPlatformProjectTarget( const TProjectTargetInfoMap& platformTargets ,
+                          const CORE::CString& platformName            )
+{GUCEF_TRACE;
+
+    TProjectTargetInfoMap::const_iterator i = platformTargets.find( platformName );
+    if ( i != platformTargets.end() )
+    {
+        return &(*i).second;
+    }
+    if ( AllPlatforms != platformName )
+    {
+        i = platformTargets.find( AllPlatforms );
+        if ( i != platformTargets.end() )
+        {
+            return &(*i).second;
+        }
+    }
+    return GUCEF_NULL;
 }
 
 /*-------------------------------------------------------------------------//

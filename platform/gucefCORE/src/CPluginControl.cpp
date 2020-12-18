@@ -401,7 +401,7 @@ CPluginControl::LoadPlugin( TPluginMetaDataPtr& pluginMetaData ,
                 // This plugin manager can handle a module of this type.
                 // We will try to register the module here as a plugin
                 TPluginPtr pluginPtr = (*w)->RegisterPlugin( modulePtr, pluginMetaData );
-                if ( 0 != pluginPtr )
+                if ( pluginPtr )
                 {
                     // Remove the metadata entry and instead add a plugin entry
                     // Note that it is the plugin managers responsibility to correctly transfer
@@ -436,7 +436,7 @@ CPluginControl::LoadPlugin( TPluginMetaDataPtr& pluginMetaData ,
                 // This plugin manager can handle a module of this type.
                 // We will try to register the module here as a plugin
                 TPluginPtr pluginPtr = pluginManager->RegisterPlugin( modulePtr, pluginMetaData );
-                if ( 0 != pluginPtr )
+                if ( pluginPtr )
                 {
                     // Remove the metadata entry and instead add a plugin entry
                     // Note that it is the plugin managers responsibility to correctly transfer
@@ -500,7 +500,7 @@ CPluginControl::UnloadPlugin( TPluginPtr& pluginPtr     ,
 {GUCEF_TRACE;
 
     TPluginMetaDataPtr pluginMetaData = pluginPtr->GetMetaData();
-    if ( 0 == pluginMetaData )
+    if ( !pluginMetaData )
     {
         // This plugin does not have any meta data set thus we cannot unload it
         // It will have to stay in process memmory
@@ -584,7 +584,7 @@ CPluginControl::UnloadAllPluginsOfTypeInGroup( const CString& pluginTypeToLoad ,
             TPluginPtr plugin = (*n);
             TPluginMetaDataPtr pluginMetaData = plugin->GetMetaData();
 
-            if ( 0 != pluginMetaData )
+            if ( pluginMetaData )
             {
                 if ( pluginTypeToLoad == pluginMetaData->GetPluginType() )
                 {
@@ -625,7 +625,7 @@ CPluginControl::UnloadAllPluginsOfType( const CString& pluginTypeToUnload )
             TPluginPtr plugin = (*n);
             TPluginMetaDataPtr pluginMetaData = plugin->GetMetaData();
 
-            if ( 0 != pluginMetaData )
+            if ( pluginMetaData )
             {
                 if ( pluginTypeToUnload == pluginMetaData->GetPluginType() )
                 {

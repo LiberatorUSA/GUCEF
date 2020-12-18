@@ -93,7 +93,8 @@ void
 CStatsDClient::Increment( const CString& key, const Float32 frequency ) const
 {GUCEF_TRACE;
 
-    Count( key, 1, frequency );
+    Int32 countValue( 1 );
+    Count( key, countValue, frequency );
 }
 
 /*-------------------------------------------------------------------------*/
@@ -102,7 +103,8 @@ void
 CStatsDClient::Decrement( const CString& key, const Float32 frequency ) const
 {GUCEF_TRACE;
 
-    Count( key, -1, frequency );
+    Int32 countValue( -1 );
+    Count( key, countValue, frequency );
 }
 
 /*-------------------------------------------------------------------------*/
@@ -252,18 +254,18 @@ CStatsDClient::Transmit( const CString& key      ,
 
     // Prepare the buffer, with a sampling rate if specified different from 1.0f
     char buffer[256];
-    int msgSize=0;
+    Int32 msgSize=0;
     if ( isFrequencyOne( frequency ) )
     {
         // Sampling rate is 1.0f, no need to specify it
         CORE::CString valueAsStr = CORE::ToString( value );
-        msgSize = std::snprintf( buffer, sizeof(buffer), "%s%s:%s|%s", m_statNamePrefix.C_String(), key.C_String(), valueAsStr.C_String(), type.C_String() );
+        msgSize = (Int32) std::snprintf( buffer, sizeof(buffer), "%s%s:%s|%s", m_statNamePrefix.C_String(), key.C_String(), valueAsStr.C_String(), type.C_String() );
     }
     else
     {
         // Sampling rate is different from 1.0f, hence specify it
         CORE::CString valueAsStr = CORE::ToString( value );
-        msgSize = std::snprintf( buffer, sizeof(buffer), "%s%s:%s|%s|@%.2f", m_statNamePrefix.C_String(), key.C_String(), valueAsStr.C_String(), type.C_String(), frequency );
+        msgSize = (Int32) std::snprintf( buffer, sizeof(buffer), "%s%s:%s|%s|@%.2f", m_statNamePrefix.C_String(), key.C_String(), valueAsStr.C_String(), type.C_String(), frequency );
     }
 
     // Send the message via the UDP sender

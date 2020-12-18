@@ -588,16 +588,21 @@ const TModuleInfo*
 FindFirstModuleAccordingToBuildOrder( const TModuleInfoEntryPairVector& mergeLinks )
 {GUCEF_TRACE;
 
+    int actualLowestBuildOrderFound = GUCEFCORE_INT32MAX;
+    const TModuleInfo* candidateModule = GUCEF_NULL;
+
     TModuleInfoEntryPairVector::const_iterator i = mergeLinks.begin();
     while ( i != mergeLinks.end() )
     {
-        if ( (*i).second->buildOrder == 0 )
+        int candidateBuildOrder = (*i).second->buildOrder;
+        if ( candidateBuildOrder < actualLowestBuildOrderFound )
         {
-            return (*i).second;
+            candidateModule = (*i).second;
+            actualLowestBuildOrderFound = candidateBuildOrder;
         }
         ++i;
     }
-    return NULL;
+    return candidateModule;
 }
 
 /*-------------------------------------------------------------------------*/
@@ -607,16 +612,23 @@ FindNextModuleAccordingToBuildOrder( const TModuleInfoEntryPairVector& mergeLink
                                      const TModuleInfo& currentModule             )
 {GUCEF_TRACE;
 
+    int lowestAllowedModuleBuildOrder = currentModule.buildOrder+1;
+    int actualLowestBuildOrderFound = GUCEFCORE_INT32MAX;
+    const TModuleInfo* candidateModule = GUCEF_NULL;
+
     TModuleInfoEntryPairVector::const_iterator i = mergeLinks.begin();
     while ( i != mergeLinks.end() )
     {
-        if ( (*i).second->buildOrder == currentModule.buildOrder+1 )
+        int candidateBuildOrder = (*i).second->buildOrder;
+        if ( candidateBuildOrder >= lowestAllowedModuleBuildOrder && 
+             candidateBuildOrder < actualLowestBuildOrderFound     )
         {
-            return (*i).second;
+            candidateModule = (*i).second;
+            actualLowestBuildOrderFound = candidateBuildOrder;
         }
         ++i;
     }
-    return NULL;
+    return candidateModule;
 }
 
 /*-------------------------------------------------------------------------*/
@@ -695,7 +707,7 @@ GenerateContentForAndroidProjectMakefile( const CORE::CString& projectName      
 */
     // Include each module's makefile in the order listed as their build order
     const TModuleInfo* currentModule = FindFirstModuleAccordingToBuildOrder( mergeLinks );
-    while ( NULL != currentModule )
+    while ( GUCEF_NULL != currentModule )
     {
         if ( ( MODULETYPE_HEADER_INCLUDE_LOCATION != currentModule->moduleType )   &&
              ( MODULETYPE_HEADER_INTEGRATE_LOCATION != currentModule->moduleType ) &&
@@ -738,8 +750,7 @@ CreateAndroidProjectMakefileOnDisk( const CORE::CString& projectName            
                                                                               ndkModulesUsed                  );
 
     // Now we write the makefile to the root location of the project since everything is relative to that
-    CORE::CString makefilePath = outputDir;
-    CORE::AppendToPath( makefilePath, "Android.mk" );
+    CORE::CString makefilePath = CORE::CombinePath( outputDir, "Android.mk" );
 
     // Do not change the file on disk unless we have to.
     // the NDK build system will rebuild if the timestamp on the file changed which can take a long time
@@ -766,6 +777,101 @@ CreateAndroidProjectMakefileOnDisk( const CORE::CString& projectName            
     }
 }
 
+/*--------------------------------------------------------------------------*/
+
+void
+WriteAndroidTargetsToDisk( const TProjectInfo& projectInfo          ,
+                           const CORE::CString& projectName         ,
+                           const CORE::CString& targetName          ,
+                           const TProjectTargetInfo& targetInfo     ,
+                           const CORE::CString& outputDir           ,
+                           const CORE::CString& targetsOutputDir    ,
+                           bool addCompileDate                      ,
+                           const TStringSet& ndkModulesUsed         )
+{GUCEF_TRACE;
+
+    // Merge all the module info to give us a complete module definition for the Android platform
+    // per module. This makes is easy for us to process as we don't care about other platforms
+    TModuleInfoVector mergedInfo;
+    TModuleInfoEntryPairVector mergeLinks;
+    MergeAllModuleInfoForPlatform( targetInfo.modules, "android", mergedInfo, mergeLinks ); 
+
+    CORE::CString targetOutputDir = CORE::CombinePath( targetsOutputDir, projectName );
+    if ( CORE::CreateDirs( targetOutputDir ) )
+    {
+        // Now we can create the overall project file which refers to each of the make files
+        // we just created per module.
+        CreateAndroidProjectMakefileOnDisk( projectName     ,
+                                            mergeLinks      ,
+                                            targetOutputDir ,
+                                            addCompileDate  ,
+                                            ndkModulesUsed  );
+    }
+    else
+    {
+        GUCEF_ERROR_LOG( CORE::LOGLEVEL_IMPORTANT, "WriteAndroidTargetsToDisk: Failed to create Android project target output folder: " + targetOutputDir );
+    }
+}
+
+/*--------------------------------------------------------------------------*/
+
+void
+WriteAndroidTargetsToDisk( const TProjectInfo& projectInfo         ,
+                           const TProjectTargetInfoMapMap& targets ,
+                           const CORE::CString& outputDir          ,
+                           const CORE::CString& targetsOutputDir   ,
+                           bool addCompileDate                     ,
+                           bool splitAndroidTargets                ,
+                           const TStringSet& ndkModulesUsed        )
+{GUCEF_TRACE;
+
+    if ( splitAndroidTargets )
+    {
+        TProjectTargetInfoMapMap::const_iterator t = targets.begin();
+        while ( t != targets.end() )
+        {
+            const CORE::CString& projectName = (*t).first;
+
+            CORE::CString targetName = GetConsensusTargetName( (*t).second, "android" );
+            if ( targetName.IsNULLOrEmpty() )
+                targetName = projectName;
+            
+            const TProjectTargetInfo* projectTargetInfo = GetPlatformProjectTarget( (*t).second, "android" );
+            if ( GUCEF_NULL != projectTargetInfo )
+            {
+                WriteAndroidTargetsToDisk( projectInfo        ,
+                                           projectName        ,
+                                           targetName         ,
+                                           *projectTargetInfo ,   
+                                           outputDir          ,
+                                           targetsOutputDir   ,
+                                           addCompileDate     ,
+                                           ndkModulesUsed     );
+            }
+            ++t;
+        }
+    }
+    else
+    {
+        TProjectTargetInfoMapMap::const_iterator t = targets.find( projectInfo.projectName );
+        if ( t != targets.end() )
+        {
+            const TProjectTargetInfo* projectTargetInfo = GetPlatformProjectTarget( (*t).second, "all" );
+            if ( GUCEF_NULL != projectTargetInfo )
+            {
+                WriteAndroidTargetsToDisk( projectInfo             ,
+                                           projectInfo.projectName ,
+                                           projectInfo.projectName ,
+                                           *projectTargetInfo      ,
+                                           outputDir               ,
+                                           outputDir               ,
+                                           addCompileDate          ,
+                                           ndkModulesUsed          );
+            }
+        }
+    }
+}
+
 /*-------------------------------------------------------------------------*/
 
 CAndroidMakefileGenerator::CAndroidMakefileGenerator( void )
@@ -789,10 +895,15 @@ CAndroidMakefileGenerator::GenerateProject( TProjectInfo& projectInfo           
                                             const CORE::CValueList& params       )
 {GUCEF_TRACE;
 
-    bool treatTagsAsTargets = CORE::StringToBool( params.GetValueAlways( "TreatTagsAsTargets", "true" ) );
-    
-    TProjectTargetInfoMapMap targets;
-    SplitProjectPerTarget( projectInfo, targets, treatTagsAsTargets, true );
+    bool treatTagsAsTargets = CORE::StringToBool( params.GetValueAlways( "TreatTagsAsTargets" ), true );
+    bool splitTargets = CORE::StringToBool( params.GetValueAlways( "androidmakegen:SplitTargets" ), true );
+
+    CORE::CString targetsOutputDir = params.GetValueAlways( "androidmakegen:TargetsDir" );
+    if ( targetsOutputDir.IsNULLOrEmpty() )
+        targetsOutputDir = outputDir;    
+    targetsOutputDir = CORE::RelativePath( targetsOutputDir, true );
+    if ( !CORE::CreateDirs( targetsOutputDir ) )
+        GUCEF_ERROR_LOG( CORE::LOGLEVEL_IMPORTANT, "Failed to create Android project targets output folder: " + targetsOutputDir );
 
     // Merge all the module info to give us a complete module definition for the Android platform
     // per module. This makes is easy for us to process as we don't care about other platforms
@@ -806,13 +917,21 @@ CAndroidMakefileGenerator::GenerateProject( TProjectInfo& projectInfo           
                                                    addGeneratorCompileTimeToOutput ,
                                                    ndkModulesUsed                  ) )
     {
-        // Now we can create the overall project file which refers to each of the make files
+        // Now we can create the overall project files per target which refer to each of the make files
         // we just created per module.
-        return CreateAndroidProjectMakefileOnDisk( projectInfo.projectName         ,
-                                                   mergeLinks                      ,
-                                                   outputDir                       ,
-                                                   addGeneratorCompileTimeToOutput ,
-                                                   ndkModulesUsed                  );
+
+        TStringSet platformsUsed;
+        platformsUsed.insert( "android" );
+        TProjectTargetInfoMapMap targets;
+        SplitProjectPerTarget( projectInfo, targets, treatTagsAsTargets, true, platformsUsed );
+
+        WriteAndroidTargetsToDisk( projectInfo                     ,
+                                   targets                         ,
+                                   outputDir                       ,
+                                   targetsOutputDir                ,
+                                   addGeneratorCompileTimeToOutput ,
+                                   splitTargets                    ,
+                                   ndkModulesUsed                  );
     }
     return false;
 }

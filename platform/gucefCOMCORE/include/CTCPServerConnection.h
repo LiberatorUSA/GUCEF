@@ -83,7 +83,7 @@ class GUCEF_COMCORE_EXPORT_CPP CTCPServerConnection : public CTCPConnection
      *      After a call to Close() the object should no longer be accessed
      *      by the user.
      */
-    virtual void Close( void );
+    virtual void Close( void ) GUCEF_VIRTUAL_OVERRIDE;
 
     /**
      *      Allows you to read data from the socket when using a blocking

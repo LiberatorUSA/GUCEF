@@ -262,7 +262,7 @@ CConfigStore::LoadConfig( CDataNode* loadedConfig )
         try
         {
             CDStoreCodecRegistry::TDStoreCodecPtr codec = CCoreGlobal::Instance()->GetDStoreCodecRegistry().Lookup( _codectype.C_String() );
-            if ( 0 != codec )
+            if ( codec )
             {
                 CDataNode rootnode;
                 if ( loadedConfig == GUCEF_NULL )

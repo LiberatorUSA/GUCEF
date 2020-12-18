@@ -21,6 +21,20 @@ function SetGucefHome {
 
 #------------------------------------------------------------------------------
 
+function SetMainAndroidMakeDir {
+
+  # Set MAINANDROIDMAKEDIR if it is not set yet
+  MAINANDROIDMAKEDIR=${MAINANDROIDMAKEDIR:=undefined}
+  if [ "$MAINANDROIDMAKEDIR" = "undefined" ]; then
+    echo "MAINANDROIDMAKEDIR environment variable not found, setting it to GUCEF_HOME as the default"
+    MAINANDROIDMAKEDIR="$GUCEF_HOME"
+  fi
+  echo "MAINANDROIDMAKEDIR = $MAINANDROIDMAKEDIR"
+
+}
+
+#------------------------------------------------------------------------------
+
 echo " "
 echo "*** Setting up basic variables ***"
 echo " "
@@ -32,6 +46,9 @@ echo "GUCEFANDROIDGLUEBUILD_SCRIPTSTARTDIR = $GUCEFANDROIDGLUEBUILD_SCRIPTSTARTD
 
 # Make sure the GUCEF_HOME variable is set
 SetGucefHome
+
+# Make sure the MAINANDROIDMAKEDIR variable is set
+SetMainAndroidMakeDir
 
 if [ "$GUCEF_HOME" = "undefined" ]; then
   echo "GUCEF_HOME environment variable not found, fatal error"
@@ -53,9 +70,8 @@ echo " "
 . $GUCEF_HOME/projects/Android/FindCCache.sh
 
 echo " "
-echo "Changing current directory to Android project dir relative to GUCEF_HOME"
-
-cd $GUCEF_HOME/projects/Android/jni
+echo "Changing current directory to Android project dir $MAINANDROIDMAKEDIR"
+cd $MAINANDROIDMAKEDIR
 
 echo "Project dir = $PWD"
 echo " "
