@@ -235,6 +235,7 @@ GUCEF_OSSERVICEMAIN_BEGIN( "FilePusher" )
     keyValueList.Set( "logfile", logFilename );
 
     CORE::CRollingFileAccess logFileAccess( logFilename, "w" );
+    logFileAccess.SetMaxRolloverFilesBeforeDeletion( 10 );
     CORE::CStdLogger logger( logFileAccess );
     CORE::CCoreGlobal::Instance()->GetLogManager().AddLogger( &logger );
 
