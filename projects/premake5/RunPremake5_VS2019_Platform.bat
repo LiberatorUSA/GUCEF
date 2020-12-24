@@ -1,0 +1,14 @@
+for /f %%i in ("%0") do SET RUNPM5_BATCHPATH=%%~dpi
+
+SET PM5OUTSUBDIR=PM5VS2019
+SET PM5TARGETSUBDIR=PM5VS2019\bin
+SET NOPAUSE=TRUE
+SET TARGETPROJECT=GUCEF_tag_platform
+
+CALL Premake5Common.bat
+
+ECHO *** Set VS2019 specifics and run Premake 5 ***
+
+CD %GUCEF_HOME%
+%RUNPM5_BATCHPATH%\premake5.exe vs2019 --file %RUNPM5_BATCHPATH%\targets\%TARGETPROJECT%
+PAUSE

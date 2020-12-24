@@ -453,7 +453,7 @@ CDirPreprocessor::ProccessProjectFiles( const CORE::CString& path             ,
                     if ( !relPath.IsNULLOrEmpty() && ( ( vsRelPath != relPath ) || !CORE::IsPathValid( pathOnDisk ) || -1 == pathOnDisk.HasSubstr( path, 0, true ) ) )
                     {
                         GUCEF_LOG( CORE::LOGLEVEL_BELOW_NORMAL, "Explicitly adding include file to module definition because it does not appear to be in a sub-dir: " + relPath );
-                        moduleInfo.includeDirs[ relPath ].push_back( includeFilename );
+                        moduleInfo.includeDirs[ relPath ].insert( includeFilename );
                     }
                 }
                 ++m;
@@ -479,7 +479,7 @@ CDirPreprocessor::ProccessProjectFiles( const CORE::CString& path             ,
                     if ( !relPath.IsNULLOrEmpty() && ( ( vsRelPath != relPath ) || !CORE::IsPathValid( pathOnDisk ) || -1 == pathOnDisk.HasSubstr( path, 0, true ) ) )
                     {
                         GUCEF_LOG( CORE::LOGLEVEL_BELOW_NORMAL, "Explicitly adding source file to module definition because it does not appear to be in a sub-dir: " + relPath );
-                        moduleInfo.sourceDirs[ relPath ].push_back( sourceFilename );
+                        moduleInfo.sourceDirs[ relPath ].insert( sourceFilename );
                     }
                 }
                 ++m;
@@ -498,7 +498,7 @@ CDirPreprocessor::ProccessProjectFiles( const CORE::CString& path             ,
                     moduleDependency = ReplaceVisualStudioVariables( moduleDependency, globals, true );
 
                     GUCEF_LOG( CORE::LOGLEVEL_BELOW_NORMAL, "Module has dependency on: " + moduleDependency );
-                    moduleInfo.dependencies.push_back( moduleDependency );
+                    moduleInfo.dependencies.insert( moduleDependency );
                 }
                 ++m;
             }

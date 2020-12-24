@@ -1323,44 +1323,41 @@ WritePremake5ModuleFilesToDisk( const TProjectInfo& projectInfo       ,
 /*---------------------------------------------------------------------------*/
 
 CORE::CString
-GeneratePremake5ProjectFileContent( const TProjectInfo& projectInfo       ,
-                                    const CORE::CString& outputDir        ,
-                                    const CORE::CString& premakeOutputDir )
+GeneratePremake5ProjectFileContent( const TProjectInfo& projectInfo              ,
+                                    const CORE::CString& projectName             ,
+                                    const CORE::CString& targetName              ,
+                                    const TProjectTargetInfoMap& targetPlatforms ,
+                                    const CORE::CString& outputDir               ,
+                                    const CORE::CString& premakeOutputDir        )
 {
     CORE::CString fileContent = GetPremake5FileHeader( false );
 
-    // Define the start and name of a new project (aka workspace)
-    fileContent += "\n\nworkspace( \"" + projectInfo.projectName + "\" )\n\n";
+    // Define the start and name of a new workspace (aka ProjectGen project)
+    fileContent += "\n\nworkspace( \"" + projectName + "\" )\n\n";
 
-    // Generate the section which defines all configurations available for this Premake5 project
-    TStringSet platformsUsed;
-    GetAllPlatformsUsed( projectInfo, platformsUsed );
-    platformsUsed.erase( AllPlatforms );
+    // Generate the section which defines all configurations available for this Premake5 workspace
+    // @TODO
 
-    if ( platformsUsed.empty() )
-    {
-        platformsUsed = GetSupportedPlatforms();
-    }
-
-    CORE::CString configurationsSection = "  configurations( {";
+    // Generate the section which defines all platforms available for this Premake5 workspace
+    CORE::CString platformsSection = "  platforms( {";
     bool first = true;
-    TStringSet::iterator i = platformsUsed.begin();
-    while ( i != platformsUsed.end() )
+    TProjectTargetInfoMap::const_iterator i = targetPlatforms.begin();
+    while ( i != targetPlatforms.end() )
     {
         if ( first )
         {
-            configurationsSection += " \"" + (*i).Uppercase() + "\"";
+            platformsSection += " \"" + (*i).first.Uppercase() + "\"";
             first = false;
         }
         else
         {
-            configurationsSection += ", \"" + (*i).Uppercase() + "\"";
+            platformsSection += ", \"" + (*i).first.Uppercase() + "\"";
         }
         ++i;
     }
-    configurationsSection += " } )\n\n";
+    platformsSection += " } )\n\n";
 
-    fileContent += configurationsSection;
+    fileContent += platformsSection;
 
     // Set the output path for the premake5 generated files
     if ( !premakeOutputDir.IsNULLOrEmpty() )
@@ -1379,27 +1376,37 @@ GeneratePremake5ProjectFileContent( const TProjectInfo& projectInfo       ,
         }
     }
 
-    // Add the module includes
+    // Add the module includes per platform filter
     CORE::CString moduleIncludeListSection = "  --\n  -- Includes for all modules in the solution:\n  --\n";
-    TModuleInfoEntryVector::const_iterator n = projectInfo.modules.begin();
-    while ( n != projectInfo.modules.end() )
+    i = targetPlatforms.begin();
+    while ( i != targetPlatforms.end() )
     {
-        const TModuleInfoEntry& moduleInfo = (*n);
-        if ( HasIndependentModuleType( moduleInfo.modulesPerPlatform ) )
-        {
-            CORE::CString pathToModuleDir = CORE::GetRelativePathToOtherPathRoot( outputDir, moduleInfo.rootDir );
+        moduleIncludeListSection += "\nfilter \"" + (*i).first.Uppercase() + "\"\n";
+        const TProjectTargetInfo& targetInfo = (*i).second;
 
-            if ( 0 == pathToModuleDir.HasSubstr( "ENVVAR:", true ) )
+        TModuleInfoEntryConstPtrSet::const_iterator n = targetInfo.modules.begin();
+        while ( n != targetInfo.modules.end() )
+        {
+            const TModuleInfoEntry& moduleInfo = *(*n);
+            if ( HasIndependentModuleType( moduleInfo.modulesPerPlatform ) )
             {
-                // The path specified is actually a directive to use the given environment variable
-                CORE::CString premakeOutputDirEnvVar = premakeOutputDir.CutChars( 7, true );
-                fileContent += "  location( os.getenv( \"" + premakeOutputDirEnvVar + "\" ) )\n\n";
+                CORE::CString pathToModuleDir = CORE::GetRelativePathToOtherPathRoot( outputDir, moduleInfo.rootDir );
+
+                if ( 0 == pathToModuleDir.HasSubstr( "ENVVAR:", true ) )
+                {
+                    // The path specified is actually a directive to use the given environment variable
+                    CORE::CString premakeOutputDirEnvVar = premakeOutputDir.CutChars( 7, true );
+                    fileContent += "  location( os.getenv( \"" + premakeOutputDirEnvVar + "\" ) )\n\n";
+                }
+                pathToModuleDir = pathToModuleDir.ReplaceChar( '\\', '/' );
+                moduleIncludeListSection += "  include( \"" + pathToModuleDir + "\" )\n";
             }
-            pathToModuleDir = pathToModuleDir.ReplaceChar( '\\', '/' );
-            moduleIncludeListSection += "  include( \"" + pathToModuleDir + "\" )\n";
+            ++n;
         }
-        ++n;
-    }
+
+        ++i;
+    }    
+   
     fileContent += moduleIncludeListSection;
 
     return fileContent;
@@ -1408,29 +1415,99 @@ GeneratePremake5ProjectFileContent( const TProjectInfo& projectInfo       ,
 /*---------------------------------------------------------------------------*/
 
 void
-WritePremake5ProjectFileToDisk( const TProjectInfo& projectInfo       ,
-                                const CORE::CString& outputDir        ,
-                                const CORE::CString& premakeOutputDir ,
-                                const CORE::CString& logFilename      ,
-                                bool addCompileDate = false           )
+WritePremake5ProjectFileToDisk( const TProjectInfo& projectInfo              ,
+                                const CORE::CString& projectName             ,
+                                const CORE::CString& targetName              ,
+                                const TProjectTargetInfoMap& targetPlatforms ,
+                                const CORE::CString& outputDir               ,
+                                const CORE::CString& targetsOutputDir        ,
+                                const CORE::CString& logFilename             ,
+                                bool addCompileDate = false                  )
 {
-    CORE::CString fileContent = GeneratePremake5ProjectFileContent( projectInfo, outputDir, premakeOutputDir );
+    CORE::CString fileContent = GeneratePremake5ProjectFileContent( projectInfo, 
+                                                                    projectName, 
+                                                                    targetName, 
+                                                                    targetPlatforms, 
+                                                                    outputDir, 
+                                                                    targetsOutputDir );
     if ( logFilename.Length() > 0 )
     {
         fileContent += "\n-- Generator logfile can be found at: " + logFilename;
     }
 
-    CORE::CString pathToPremake5ProjectFile = CORE::CombinePath( CORE::RelativePath( outputDir ), "premake5.lua" );
-
-    if ( CORE::WriteStringAsTextFile( pathToPremake5ProjectFile, fileContent ) )
+    CORE::CString targetOutputDir = CORE::CombinePath( CORE::RelativePath( targetsOutputDir ), projectName );
+    CORE::CString pathToPremake5ProjectFile = CORE::CombinePath( targetOutputDir, "premake5.lua" );
+    if ( CORE::CreateDirs( targetOutputDir ) )
     {
-        GUCEF_LOG( CORE::LOGLEVEL_NORMAL, "Created ProjectInfo premake5.lua file for project dir: " + outputDir );
+        if ( CORE::WriteStringAsTextFile( pathToPremake5ProjectFile, fileContent ) )
+        {
+            GUCEF_LOG( CORE::LOGLEVEL_NORMAL, "Created ProjectInfo premake5.lua file for project dir: " + outputDir );
+        }
+        else
+        {
+            GUCEF_ERROR_LOG( CORE::LOGLEVEL_IMPORTANT, "WritePremake5ProjectFileToDisk: Failed to write ProjectInfo premake5.lua file content to disk at path " + outputDir );
+        }
     }
     else
     {
-        GUCEF_ERROR_LOG( CORE::LOGLEVEL_IMPORTANT, "Failed to write ProjectInfo premake5.lua file content to disk at path " + outputDir );
+        GUCEF_ERROR_LOG( CORE::LOGLEVEL_IMPORTANT, "WritePremake5ProjectFileToDisk: Failed to create dirs for path: " + targetOutputDir );
     }
 }
+
+/*--------------------------------------------------------------------------*/
+
+void
+WritePremake5TargetsToDisk( const TProjectInfo& projectInfo         ,
+                            const TProjectTargetInfoMapMap& targets ,
+                            const CORE::CString& outputDir          ,
+                            const CORE::CString& targetsOutputDir   ,
+                            bool addCompileDate                     ,
+                            bool splitPremakeTargets                ,
+                            bool addLogfilePathToOutput             ,
+                            const CORE::CString& logfilePath        )  
+{GUCEF_TRACE;
+
+    CORE::CString logfile;
+    if ( addLogfilePathToOutput )
+        logfile = logfilePath;    
+    
+    if ( splitPremakeTargets )
+    {
+        TProjectTargetInfoMapMap::const_iterator t = targets.begin();
+        while ( t != targets.end() )
+        {
+            CORE::CString targetName = GetConsensusTargetName( (*t).second );
+            if ( targetName.IsNULLOrEmpty() )
+                targetName = (*t).first;
+
+            WritePremake5ProjectFileToDisk( projectInfo      ,
+                                            (*t).first       ,
+                                            targetName       ,
+                                            (*t).second      ,   
+                                            outputDir        ,
+                                            targetsOutputDir ,
+                                            logfile          ,
+                                            addCompileDate   );
+            ++t;
+        }
+    }
+    else
+    {
+        TProjectTargetInfoMapMap::const_iterator t = targets.find( projectInfo.projectName );
+        if ( t != targets.end() )
+        {
+            WritePremake5ProjectFileToDisk( projectInfo             ,
+                                            projectInfo.projectName ,
+                                            projectInfo.projectName ,
+                                            (*t).second             ,
+                                            outputDir               ,
+                                            outputDir               ,
+                                            logfile                 ,
+                                            addCompileDate          );
+        }
+    }
+}
+
 /*--------------------------------------------------------------------------*/
 
 CPremake5ProjectGenerator::CPremake5ProjectGenerator( void )
@@ -1463,17 +1540,42 @@ CPremake5ProjectGenerator::GenerateProject( TProjectInfo& projectInfo           
 
     CORE::CString premakeOutputDir = params.GetValueAlways( "premake5gen:PM5OutputDir" );
     CORE::CString premakeTargetDir = params.GetValueAlways( "premake5gen:PM5TargetDir" );
+    bool splitTargets = CORE::StringToBool( params.GetValueAlways( "premake5gen:SplitTargets" ), true );
+    bool treatTagsAsTargets = CORE::StringToBool( params.GetValueAlways( "TreatTagsAsTargets" ), true );
 
-    // Write the gathered info to disk in premake5 format
     CORE::CString logfilePath;
     bool addLogfilePathToOutput = CORE::StringToBool( params.GetValueAlways( "writeLogLocationToOutput" ) );
     if ( addLogfilePathToOutput )
     {
         logfilePath = params.GetValueAlways( "logfile" );
     }
+
+    // Write the gathered info to disk in premake5 format
     WritePremake5ModuleFilesToDisk( projectInfo, premakeOutputDir, premakeTargetDir, logfilePath, addGeneratorCompileTimeToOutput );
 
-    WritePremake5ProjectFileToDisk( projectInfo, outputDir, premakeOutputDir, logfilePath, addGeneratorCompileTimeToOutput );
+    // Now we tie the different modules together into different Premake5 projects as targets
+    // This next step is especially usefull for large codebases where various projects are intertwined but
+    // someone who obtained the code repository might only be interested in a much smaller subset
+    // This functionality allows this audiance to only have to deal with the smaller crosssection
+
+    CORE::CString targetsOutputDir = params.GetValueAlways( "premake5gen:TargetsDir" );
+    if ( targetsOutputDir.IsNULLOrEmpty() )
+        targetsOutputDir = outputDir;    
+    targetsOutputDir = CORE::RelativePath( targetsOutputDir, true );
+    if ( !CORE::CreateDirs( targetsOutputDir ) )
+        GUCEF_ERROR_LOG( CORE::LOGLEVEL_IMPORTANT, "Failed to create Premake5 project targets output folder: " + targetsOutputDir );
+
+    TProjectTargetInfoMapMap targets;
+    SplitProjectPerTarget( projectInfo, targets, treatTagsAsTargets, true ); 
+
+    WritePremake5TargetsToDisk( projectInfo                     , 
+                                targets                         ,
+                                outputDir                       , 
+                                targetsOutputDir                ,
+                                addGeneratorCompileTimeToOutput ,
+                                splitTargets                    ,
+                                addLogfilePathToOutput          ,
+                                logfilePath                     );
 
     return true;
 }

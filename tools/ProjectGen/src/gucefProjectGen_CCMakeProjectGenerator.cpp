@@ -1646,7 +1646,6 @@ WriteCMakeTargetsToDisk( const TProjectInfo& projectInfo         ,
     }
 }
 
-
 /*--------------------------------------------------------------------------*/
 
 CCMakeProjectGenerator::CCMakeProjectGenerator( void )

@@ -16,6 +16,8 @@
         </Preprocessor>
         <RuntimeDependencies>
             <RuntimeDependency Name="dstorepluginPARSIFALXML" />
-        </RuntimeDependencies>      
+			<RuntimeDependency Name="ProjectGenVSImporter" />
+			<RuntimeDependency Name="ProjectGenDependsFilter" />
+        </RuntimeDependencies> 
     </Module>
 </ModuleInfoEntry>
