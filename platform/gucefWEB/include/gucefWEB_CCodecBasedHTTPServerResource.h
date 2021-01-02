@@ -1,5 +1,5 @@
 /*
- *  gucefCOM: GUCEF module providing communication implementations 
+ *  gucefWEB: GUCEF module providing Web application functionality 
  *  for standardized protocols
  *
  *  Copyright (C) 1998 - 2020.  Dinand Vanvelzen
@@ -17,8 +17,8 @@
  *  limitations under the License.
  */
 
-#ifndef GUCEF_COM_CCODECBASEDHTTPSERVERRESOURCE_H
-#define GUCEF_COM_CCODECBASEDHTTPSERVERRESOURCE_H
+#ifndef GUCEF_WEB_CCODECBASEDHTTPSERVERRESOURCE_H
+#define GUCEF_WEB_CCODECBASEDHTTPSERVERRESOURCE_H
 
 /*-------------------------------------------------------------------------//
 //                                                                         //
@@ -31,10 +31,10 @@
 #define GUCEF_CORE_CDSTORECODECREGISTRY_H
 #endif /* GUCEF_CORE_CDSTORECODECREGISTRY_H ? */
 
-#ifndef GUCEF_COM_CDEFAULTHTTPSERVERRESOURCE_H
-#include "gucefCOM_CDefaultHTTPServerResource.h"
-#define GUCEF_COM_CDEFAULTHTTPSERVERRESOURCE_H
-#endif /* GUCEF_COM_CDEFAULTHTTPSERVERRESOURCE_H ? */
+#ifndef GUCEF_WEB_CDEFAULTHTTPSERVERRESOURCE_H
+#include "gucefWEB_CDefaultHTTPServerResource.h"
+#define GUCEF_WEB_CDEFAULTHTTPSERVERRESOURCE_H
+#endif /* GUCEF_WEB_CDEFAULTHTTPSERVERRESOURCE_H ? */
 
 /*-------------------------------------------------------------------------//
 //                                                                         //
@@ -43,7 +43,7 @@
 //-------------------------------------------------------------------------*/
 
 namespace GUCEF {
-namespace COM {
+namespace WEB {
 
 /*-------------------------------------------------------------------------//
 //                                                                         //
@@ -51,7 +51,7 @@ namespace COM {
 //                                                                         //
 //-------------------------------------------------------------------------*/
 
-class GUCEF_COM_PUBLIC_CPP CCodecBasedHTTPServerResource : public CDefaultHTTPServerResource
+class GUCEF_WEB_PUBLIC_CPP CCodecBasedHTTPServerResource : public CDefaultHTTPServerResource
 {    
     public:
     
@@ -146,7 +146,7 @@ class GUCEF_COM_PUBLIC_CPP CCodecBasedHTTPServerResource : public CDefaultHTTPSe
 
 /*-------------------------------------------------------------------------*/
 
-#endif /* GUCEF_COM_CCODECBASEDHTTPSERVERRESOURCE_H ? */
+#endif /* GUCEF_WEB_CCODECBASEDHTTPSERVERRESOURCE_H ? */
 
 /*-------------------------------------------------------------------------//
 //                                                                         //

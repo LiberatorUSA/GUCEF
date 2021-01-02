@@ -1,5 +1,5 @@
 /*
- *  gucefCOM: GUCEF module providing communication implementations 
+ *  gucefWEB: GUCEF module providing Web application functionality 
  *  for standardized protocols
  *
  *  Copyright (C) 1998 - 2020.  Dinand Vanvelzen
@@ -17,8 +17,8 @@
  *  limitations under the License.
  */
 
-#ifndef GUCEF_COM_HTTPCODE_H
-#define GUCEF_COM_HTTPCODE_H
+#ifndef GUCEF_WEB_HTTPCODE_H
+#define GUCEF_WEB_HTTPCODE_H
 
 /*-------------------------------------------------------------------------//
 //                                                                         //
@@ -27,7 +27,7 @@
 //-------------------------------------------------------------------------*/
 
 #ifndef GUCEFCOM_MACROS_H
-#include "gucefCOM_macros.h"
+#include "gucefWEB_macros.h"
 #define GUCEFCOM_MACROS_H
 #endif /* GUCEFCOM_MACROS_H ? */
 
@@ -38,7 +38,7 @@
 //-------------------------------------------------------------------------*/
 
 namespace GUCEF {
-namespace COM {
+namespace WEB {
 
 /*-------------------------------------------------------------------------//
 //                                                                         //
@@ -131,7 +131,7 @@ typedef enum EHTTPCODE THTTPCODE;
 
 /*-------------------------------------------------------------------------*/
 
-#endif /* GUCEF_COM_HTTPCODE_H ? */
+#endif /* GUCEF_WEB_HTTPCODE_H ? */
 
 /*-------------------------------------------------------------------------//
 //                                                                         //

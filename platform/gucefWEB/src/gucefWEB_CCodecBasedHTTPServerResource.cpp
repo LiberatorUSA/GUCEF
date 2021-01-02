@@ -1,5 +1,5 @@
 /*
- *  gucefCOM: GUCEF module providing communication implementations 
+ *  gucefWEB: GUCEF module providing Web application functionality 
  *  for standardized protocols
  *
  *  Copyright (C) 1998 - 2020.  Dinand Vanvelzen
@@ -33,17 +33,17 @@
 #define GUCEF_CORE_CDYNAMICBUFFERACCESS_H
 #endif /* GUCEF_CORE_CDYNAMICBUFFERACCESS_H ? */
 
-#ifndef GUCEF_COM_CCOMGLOBAL_H
-#include "gucefCOM_CComGlobal.h"
-#define GUCEF_COM_CCOMGLOBAL_H
-#endif /* GUCEF_COM_CCOMGLOBAL_H ? */
+#ifndef GUCEF_WEB_CWebGlobal_H
+#include "gucefWEB_CWebGlobal.h"
+#define GUCEF_WEB_CWebGlobal_H
+#endif /* GUCEF_WEB_CWebGlobal_H ? */
 
-#ifndef GUCEF_COM_CGLOBALHTTPCODECLINKS_H
-#include "gucefCOM_CGlobalHttpCodecLinks.h"
-#define GUCEF_COM_CGLOBALHTTPCODECLINKS_H
-#endif /* GUCEF_COM_CGLOBALHTTPCODECLINKS_H ? */
+#ifndef GUCEF_WEB_CGLOBALHTTPCODECLINKS_H
+#include "gucefWEB_CGlobalHttpCodecLinks.h"
+#define GUCEF_WEB_CGLOBALHTTPCODECLINKS_H
+#endif /* GUCEF_WEB_CGLOBALHTTPCODECLINKS_H ? */
 
-#include "gucefCOM_CCodecBasedHTTPServerResource.h"
+#include "gucefWEB_CCodecBasedHTTPServerResource.h"
 
 /*-------------------------------------------------------------------------//
 //                                                                         //
@@ -52,7 +52,7 @@
 //-------------------------------------------------------------------------*/
 
 namespace GUCEF {
-namespace COM {
+namespace WEB {
 
 /*-------------------------------------------------------------------------//
 //                                                                         //
@@ -109,7 +109,7 @@ bool
 CCodecBasedHTTPServerResource::InitCodecLinks( void )
 {GUCEF_TRACE;
 
-    CHttpCodecLinks& codecLinks = CComGlobal::Instance()->GetGlobalHttpCodecLinks();
+    CHttpCodecLinks& codecLinks = CWebGlobal::Instance()->GetGlobalHttpCodecLinks();
     codecLinks.GetSupportedDeserializationMimeTypes( m_deserializationReps );
     codecLinks.GetSupportedSerializationMimeTypes( m_serializationReps );
     return true;
@@ -129,7 +129,7 @@ CCodecBasedHTTPServerResource::CreateResource( const CString& transactionID     
     if ( !m_allowCreate )
         return TCreateState::CREATESTATE_FAILED;
 
-    CHttpCodecLinks& codecLinks = CComGlobal::Instance()->GetGlobalHttpCodecLinks();
+    CHttpCodecLinks& codecLinks = CWebGlobal::Instance()->GetGlobalHttpCodecLinks();
     CHttpCodecLinks::TMimeTypeCodecPtr codec = codecLinks.GetDeserializationCodec( representation );
     if ( !codec.IsNULL() )
     {        
@@ -175,7 +175,7 @@ CCodecBasedHTTPServerResource::Serialize( CORE::CDynamicBuffer& outputBuffer ,
     if ( !m_allowSerialize )
         return false;
     
-    CHttpCodecLinks& codecLinks = CComGlobal::Instance()->GetGlobalHttpCodecLinks();
+    CHttpCodecLinks& codecLinks = CWebGlobal::Instance()->GetGlobalHttpCodecLinks();
     CHttpCodecLinks::TMimeTypeCodecPtr codec = codecLinks.GetSerializationCodec( representation );
     if ( !codec.IsNULL() )
     {        
@@ -213,7 +213,7 @@ CCodecBasedHTTPServerResource::Deserialize( const CORE::CDynamicBuffer& inputBuf
     if ( !m_allowDeserialize )
         return TDeserializeState::DESERIALIZESTATE_UNABLETOUPDATE;
 
-    CHttpCodecLinks& codecLinks = CComGlobal::Instance()->GetGlobalHttpCodecLinks();
+    CHttpCodecLinks& codecLinks = CWebGlobal::Instance()->GetGlobalHttpCodecLinks();
     CHttpCodecLinks::TMimeTypeCodecPtr codec = codecLinks.GetDeserializationCodec( representation );
     if ( !codec.IsNULL() )
     {        

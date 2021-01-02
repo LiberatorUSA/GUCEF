@@ -61,8 +61,6 @@ class GUCEF_COM_PUBLIC_CPP CComGlobal
 
     static CComGlobal* Instance( void );
 
-    CGlobalHttpCodecLinks& GetGlobalHttpCodecLinks( void ) const;
-
     private:
 
     static void Deinstance( void );
@@ -79,7 +77,6 @@ class GUCEF_COM_PUBLIC_CPP CComGlobal
 
     static MT::CMutex g_dataLock;
     static CComGlobal* g_instance;
-    CGlobalHttpCodecLinks* m_globalHttpCodecLinks;
 };
 
 /*-------------------------------------------------------------------------//
@@ -104,4 +101,4 @@ class GUCEF_COM_PUBLIC_CPP CComGlobal
 - 12-02-2005 :
         - Initial implementation
 
------------------------------------------------------------------------------*/
+---------------------------------------------------------------------------*/

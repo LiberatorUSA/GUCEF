@@ -27,10 +27,10 @@
 #define GUCEF_CORE_CTASKMANAGER_H
 #endif /* GUCEF_CORE_CTASKMANAGER_H */
 
-#ifndef GUCEF_COM_CDUMMYHTTPSERVERRESOURCE_H
-#include "gucefCOM_CDummyHTTPServerResource.h"
-#define GUCEF_COM_CDUMMYHTTPSERVERRESOURCE_H
-#endif /* GUCEF_COM_CDUMMYHTTPSERVERRESOURCE_H ? */
+#ifndef GUCEF_WEB_CDUMMYHTTPSERVERRESOURCE_H
+#include "gucefWEB_CDummyHTTPServerResource.h"
+#define GUCEF_WEB_CDUMMYHTTPSERVERRESOURCE_H
+#endif /* GUCEF_WEB_CDUMMYHTTPSERVERRESOURCE_H ? */
 
 #ifndef GUCEF_CORE_DVOSWRAP_H
 #include "DVOSWRAP.h"
@@ -60,7 +60,7 @@
 //-------------------------------------------------------------------------*/
 
 RestApiProcessMetricsInfoResource::RestApiProcessMetricsInfoResource( ProcessMetrics* app )
-    : COM::CCodecBasedHTTPServerResource()
+    : WEB::CCodecBasedHTTPServerResource()
     , m_app( app )
 {GUCEF_TRACE;
 
@@ -95,7 +95,7 @@ RestApiProcessMetricsInfoResource::Serialize( CORE::CDataNode& output           
 /*-------------------------------------------------------------------------*/
 
 RestApiProcessMetricsConfigResource::RestApiProcessMetricsConfigResource( ProcessMetrics* app, bool appConfig )
-    : COM::CCodecBasedHTTPServerResource()
+    : WEB::CCodecBasedHTTPServerResource()
     , m_app( app )
     , m_appConfig( appConfig )
 {GUCEF_TRACE;
@@ -472,7 +472,7 @@ ProcessMetrics::LoadConfig( const CORE::CValueList& appConfig   ,
         m_httpRouter.SetResourceMapping( "/info", RestApiProcessMetricsInfoResource::THTTPServerResourcePtr( new RestApiProcessMetricsInfoResource( this ) )  );
         m_httpRouter.SetResourceMapping( "/config/appargs", RestApiProcessMetricsInfoResource::THTTPServerResourcePtr( new RestApiProcessMetricsConfigResource( this, true ) )  );
         m_httpRouter.SetResourceMapping( "/config", RestApiProcessMetricsInfoResource::THTTPServerResourcePtr( new RestApiProcessMetricsConfigResource( this, false ) )  );
-        m_httpRouter.SetResourceMapping(  appConfig.GetValueAlways( "RestBasicHealthUri", "/health/basic" ), RestApiProcessMetricsInfoResource::THTTPServerResourcePtr( new COM::CDummyHTTPServerResource() )  );
+        m_httpRouter.SetResourceMapping(  appConfig.GetValueAlways( "RestBasicHealthUri", "/health/basic" ), RestApiProcessMetricsInfoResource::THTTPServerResourcePtr( new WEB::CDummyHTTPServerResource() )  );
 
         m_httpServer.GetRouterController()->AddRouterMapping( &m_httpRouter, "", "" );
     }

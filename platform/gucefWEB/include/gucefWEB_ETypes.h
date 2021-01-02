@@ -1,5 +1,5 @@
 /*
- *  gucefCOM: GUCEF module providing communication implementations 
+ *  gucefWEB: GUCEF module providing Web application functionality 
  *  for standardized protocols
  *
  *  Copyright (C) 1998 - 2020.  Dinand Vanvelzen
@@ -17,8 +17,8 @@
  *  limitations under the License.
  */
 
-#ifndef GUCEF_COM_ETYPES_H
-#define GUCEF_COM_ETYPES_H
+#ifndef GUCEF_WEB_ETYPES_H
+#define GUCEF_WEB_ETYPES_H
 
 /*-------------------------------------------------------------------------//
 //                                                                         //
@@ -46,20 +46,20 @@
  *      Maximum and minimal values for the simple types which we are about to
  *      define.
  */
-#define GUCEFCOM_INT8MAX     GUCEFCORE_INT8MAX
-#define GUCEFCOM_INT8MIN     GUCEFCORE_INT8MIN
-#define GUCEFCOM_UINT8MAX    GUCEFCORE_UINT8MAX
-#define GUCEFCOM_UINT8MIN    GUCEFCORE_UINT8MIN
-#define GUCEFCOM_INT16MAX    GUCEFCORE_INT16MAX
-#define GUCEFCOM_INT16MIN    GUCEFCORE_INT16MIN
-#define GUCEFCOM_UINT16MAX   GUCEFCORE_UINT16MAX
-#define GUCEFCOM_UINT16MIN   GUCEFCORE_UINT16MIN
-#define GUCEFCOM_INT32MAX    GUCEFCORE_INT32MAX
-#define GUCEFCOM_INT32MIN    GUCEFCORE_INT32MIN
-#define GUCEFCOM_UINT32MAX   GUCEFCORE_UINT32MAX
-#define GUCEFCOM_UINT32MIN   GUCEFCORE_UINT32MIN
-#define GUCEFCOM_FLOAT32MAX  GUCEFCORE_FLOAT32MAX
-#define GUCEFCOM_FLOAT32MIN  GUCEFCORE_FLOAT32MIN
+#define GUCEFWEB_INT8MAX     GUCEFCORE_INT8MAX
+#define GUCEFWEB_INT8MIN     GUCEFCORE_INT8MIN
+#define GUCEFWEB_UINT8MAX    GUCEFCORE_UINT8MAX
+#define GUCEFWEB_UINT8MIN    GUCEFCORE_UINT8MIN
+#define GUCEFWEB_INT16MAX    GUCEFCORE_INT16MAX
+#define GUCEFWEB_INT16MIN    GUCEFCORE_INT16MIN
+#define GUCEFWEB_UINT16MAX   GUCEFCORE_UINT16MAX
+#define GUCEFWEB_UINT16MIN   GUCEFCORE_UINT16MIN
+#define GUCEFWEB_INT32MAX    GUCEFCORE_INT32MAX
+#define GUCEFWEB_INT32MIN    GUCEFCORE_INT32MIN
+#define GUCEFWEB_UINT32MAX   GUCEFCORE_UINT32MAX
+#define GUCEFWEB_UINT32MIN   GUCEFCORE_UINT32MIN
+#define GUCEFWEB_FLOAT32MAX  GUCEFCORE_FLOAT32MAX
+#define GUCEFWEB_FLOAT32MIN  GUCEFCORE_FLOAT32MIN
 
 /*--------------------------------------------------------------------------*/
 
@@ -75,7 +75,7 @@
 //-------------------------------------------------------------------------*/
 
 namespace GUCEF {
-namespace COM {
+namespace WEB {
 
 /*-------------------------------------------------------------------------//
 //                                                                         //
@@ -106,14 +106,14 @@ typedef CORE::CString CString;  /* import the string class, we consider it a bas
 //                                                                         //
 //-------------------------------------------------------------------------*/
 
-}; /* namespace COM */
+}; /* namespace WEB */
 }; /* namespace GUCEF */
 
 /*--------------------------------------------------------------------------*/
 
 #endif /* __cplusplus ? */
 
-#endif /* GUCEF_COM_ETYPES_H ? */
+#endif /* GUCEF_WEB_ETYPES_H ? */
 
 
 

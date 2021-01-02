@@ -1,5 +1,5 @@
 /*
- *  gucefCOM: GUCEF module providing communication implementations 
+ *  gucefWEB: GUCEF module providing Web application functionality 
  *  for standardized protocols
  *
  *  Copyright (C) 1998 - 2020.  Dinand Vanvelzen
@@ -17,8 +17,8 @@
  *  limitations under the License.
  */
 
-#ifndef GUCEF_COM_CIHTTPSERVERRESOURCE_H
-#define GUCEF_COM_CIHTTPSERVERRESOURCE_H
+#ifndef GUCEF_WEB_CIHTTPSERVERRESOURCE_H
+#define GUCEF_WEB_CIHTTPSERVERRESOURCE_H
 
 /*-------------------------------------------------------------------------//
 //                                                                         //
@@ -43,10 +43,10 @@
 #define GUCEF_CORE_CTSHAREDPTR_H
 #endif /* GUCEF_CORE_CTSHAREDPTR_H ? */
 
-#ifndef GUCEF_COM_MACROS_H
-#include "gucefCOM_macros.h"
-#define GUCEF_COM_MACROS_H
-#endif /* GUCEF_COM_MACROS_H ? */
+#ifndef GUCEF_WEB_MACROS_H
+#include "gucefWEB_macros.h"
+#define GUCEF_WEB_MACROS_H
+#endif /* GUCEF_WEB_MACROS_H ? */
 
 /*-------------------------------------------------------------------------//
 //                                                                         //
@@ -55,7 +55,7 @@
 //-------------------------------------------------------------------------*/
 
 namespace GUCEF {
-namespace COM {
+namespace WEB {
 
 /*-------------------------------------------------------------------------//
 //                                                                         //
@@ -63,7 +63,7 @@ namespace COM {
 //                                                                         //
 //-------------------------------------------------------------------------*/
 
-class GUCEF_COM_PUBLIC_CPP CIHTTPServerResource
+class GUCEF_WEB_PUBLIC_CPP CIHTTPServerResource
 {
     public:
     
@@ -211,7 +211,7 @@ class GUCEF_COM_PUBLIC_CPP CIHTTPServerResource
 
 /*-------------------------------------------------------------------------*/
 
-#endif /* GUCEF_COM_CIHTTPSERVERRESOURCE_H ? */
+#endif /* GUCEF_WEB_CIHTTPSERVERRESOURCE_H ? */
 
 /*-------------------------------------------------------------------------//
 //                                                                         //

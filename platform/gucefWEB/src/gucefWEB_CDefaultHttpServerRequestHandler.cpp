@@ -1,5 +1,5 @@
 /*
- *  gucefCOM: GUCEF module providing communication implementations 
+ *  gucefWEB: GUCEF module providing Web application functionality 
  *  for standardized protocols
  *
  *  Copyright (C) 1998 - 2020.  Dinand Vanvelzen
@@ -28,12 +28,12 @@
 #define GUCEF_CORE_LOGGING_H
 #endif /* GUCEF_CORE_LOGGING_H ? */
 
-#ifndef GUCEF_COM_CDEFAULTHTTPSERVERROUTERCONTROLLER_H
-#include "gucefCOM_CDefaultHTTPServerRouterController.h"
-#define GUCEF_COM_CDEFAULTHTTPSERVERROUTERCONTROLLER_H
-#endif /* GUCEF_COM_CDEFAULTHTTPSERVERROUTERCONTROLLER_H ? */
+#ifndef GUCEF_WEB_CDEFAULTHTTPSERVERROUTERCONTROLLER_H
+#include "gucefWEB_CDefaultHTTPServerRouterController.h"
+#define GUCEF_WEB_CDEFAULTHTTPSERVERROUTERCONTROLLER_H
+#endif /* GUCEF_WEB_CDEFAULTHTTPSERVERROUTERCONTROLLER_H ? */
 
-#include "gucefCOM_CDefaultHttpServerRequestHandler.h"
+#include "gucefWEB_CDefaultHttpServerRequestHandler.h"
 
 /*-------------------------------------------------------------------------//
 //                                                                         //
@@ -42,7 +42,7 @@
 //-------------------------------------------------------------------------*/
 
 namespace GUCEF {
-namespace COM {
+namespace WEB {
 
 /*-------------------------------------------------------------------------//
 //                                                                         //

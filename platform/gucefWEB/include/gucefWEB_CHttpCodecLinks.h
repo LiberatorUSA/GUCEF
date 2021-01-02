@@ -1,5 +1,5 @@
 /*
- *  gucefCOM: GUCEF module providing communication implementations 
+ *  gucefWEB: GUCEF module providing Web application functionality 
  *  for standardized protocols
  *
  *  Copyright (C) 1998 - 2020.  Dinand Vanvelzen
@@ -17,8 +17,8 @@
  *  limitations under the License.
  */
 
-#ifndef GUCEF_COM_CHTTPCODECLINKS_H
-#define GUCEF_COM_CHTTPCODECLINKS_H
+#ifndef GUCEF_WEB_CHTTPCODECLINKS_H
+#define GUCEF_WEB_CHTTPCODECLINKS_H
 
 /*-------------------------------------------------------------------------//
 //                                                                         //
@@ -41,10 +41,10 @@
 #define GUCEF_CORE_COBSERVINGNOTIFIER_H
 #endif /* GUCEF_CORE_COBSERVINGNOTIFIER_H ? */
 
-#ifndef GUCEF_COM_CHTTPMIMETYPES_H
-#include "gucefCOM_CHttpMimeTypes.h"
-#define GUCEF_COM_CHTTPMIMETYPES_H
-#endif /* GUCEF_COM_CHTTPMIMETYPES_H ? */
+#ifndef GUCEF_WEB_CHTTPMIMETYPES_H
+#include "gucefWEB_CHttpMimeTypes.h"
+#define GUCEF_WEB_CHTTPMIMETYPES_H
+#endif /* GUCEF_WEB_CHTTPMIMETYPES_H ? */
 
 /*-------------------------------------------------------------------------//
 //                                                                         //
@@ -53,7 +53,7 @@
 //-------------------------------------------------------------------------*/
 
 namespace GUCEF {
-namespace COM {
+namespace WEB {
 
 /*-------------------------------------------------------------------------//
 //                                                                         //
@@ -61,7 +61,7 @@ namespace COM {
 //                                                                         //
 //-------------------------------------------------------------------------*/
 
-class GUCEF_COM_PUBLIC_CPP CHttpCodecLinks : public CORE::CObservingNotifier
+class GUCEF_WEB_PUBLIC_CPP CHttpCodecLinks : public CORE::CObservingNotifier
 {    
     public:
 
@@ -115,5 +115,5 @@ class GUCEF_COM_PUBLIC_CPP CHttpCodecLinks : public CORE::CObservingNotifier
 
 /*-------------------------------------------------------------------------*/
 
-#endif /* GUCEF_COM_CHTTPCODECLINKS_H ? */
+#endif /* GUCEF_WEB_CHTTPCODECLINKS_H ? */
    

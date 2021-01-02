@@ -64,25 +64,25 @@
 #define GUCEF_CORE_CTIMER_H
 #endif /* GUCEF_CORE_CTIMER_H ? */
 
-#ifndef GUCEF_COM_CHTTPSERVER_H
-#include "gucefCOM_CHTTPServer.h"
-#define GUCEF_COM_CHTTPSERVER_H
-#endif /* GUCEF_COM_CHTTPSERVER_H ? */
+#ifndef GUCEF_WEB_CHTTPSERVER_H
+#include "gucefWEB_CHTTPServer.h"
+#define GUCEF_WEB_CHTTPSERVER_H
+#endif /* GUCEF_WEB_CHTTPSERVER_H ? */
 
-#ifndef GUCEF_COM_CDEFAULTHTTPSERVERROUTER_H
-#include "gucefCOM_CDefaultHTTPServerRouter.h"
-#define GUCEF_COM_CDEFAULTHTTPSERVERROUTER_H
-#endif /* GUCEF_COM_CDEFAULTHTTPSERVERROUTER_H ? */
+#ifndef GUCEF_WEB_CDEFAULTHTTPSERVERROUTER_H
+#include "gucefWEB_CDefaultHTTPServerRouter.h"
+#define GUCEF_WEB_CDEFAULTHTTPSERVERROUTER_H
+#endif /* GUCEF_WEB_CDEFAULTHTTPSERVERROUTER_H ? */
 
-#ifndef GUCEF_COM_CCODECBASEDHTTPSERVERRESOURCE_H
-#include "gucefCOM_CCodecBasedHTTPServerResource.h"
-#define GUCEF_COM_CCODECBASEDHTTPSERVERRESOURCE_H
-#endif /* GUCEF_COM_CCODECBASEDHTTPSERVERRESOURCE_H ? */
+#ifndef GUCEF_WEB_CCODECBASEDHTTPSERVERRESOURCE_H
+#include "gucefWEB_CCodecBasedHTTPServerResource.h"
+#define GUCEF_WEB_CCODECBASEDHTTPSERVERRESOURCE_H
+#endif /* GUCEF_WEB_CCODECBASEDHTTPSERVERRESOURCE_H ? */
 
-#ifndef GUCEF_COM_CTCONFIGURABLEMAPHTTPSERVERRESOURCE_H
-#include "gucefCOM_CTConfigurableMapHttpServerResource.h"
-#define GUCEF_COM_CTCONFIGURABLEMAPHTTPSERVERRESOURCE_H
-#endif /* GUCEF_COM_CTCONFIGURABLEMAPHTTPSERVERRESOURCE_H ? */
+#ifndef GUCEF_WEB_CTCONFIGURABLEMAPHTTPSERVERRESOURCE_H
+#include "gucefWEB_CTConfigurableMapHttpServerResource.h"
+#define GUCEF_WEB_CTCONFIGURABLEMAPHTTPSERVERRESOURCE_H
+#endif /* GUCEF_WEB_CTCONFIGURABLEMAPHTTPSERVERRESOURCE_H ? */
 
 #include "hiredis.h"
 #include "async.h"
@@ -337,7 +337,7 @@ typedef CORE::CTSharedPtr< RedisInfoService, MT::CMutex > RedisInfoServicePtr;
 
 class RedisInfo;
 
-class RestApiRedisInfoInfoResource : public COM::CCodecBasedHTTPServerResource
+class RestApiRedisInfoInfoResource : public WEB::CCodecBasedHTTPServerResource
 {
     public:
 
@@ -356,7 +356,7 @@ class RestApiRedisInfoInfoResource : public COM::CCodecBasedHTTPServerResource
 
 /*-------------------------------------------------------------------------*/
 
-class RestApiRedisInfoConfigResource : public COM::CCodecBasedHTTPServerResource
+class RestApiRedisInfoConfigResource : public WEB::CCodecBasedHTTPServerResource
 {
     public:
 
@@ -411,8 +411,8 @@ class RedisInfo : public CORE::CObserver
     bool m_globalStandbyEnabled;
     CORE::CString m_redisHost;
     CORE::UInt16 m_redisPort;
-    COM::CHTTPServer m_httpServer;
-    COM::CDefaultHTTPServerRouter m_httpRouter;
+    WEB::CHTTPServer m_httpServer;
+    WEB::CDefaultHTTPServerRouter m_httpRouter;
     CORE::CValueList m_appConfig;
     CORE::CDataNode m_globalConfig;
     TStringToInfoServiceMap m_infoServices;

@@ -1,5 +1,5 @@
 /*
- *  gucefCOM: GUCEF module providing communication implementations 
+ *  gucefWEB: GUCEF module providing Web application functionality 
  *  for standardized protocols
  *
  *  Copyright (C) 1998 - 2020.  Dinand Vanvelzen
@@ -17,8 +17,8 @@
  *  limitations under the License.
  */
 
-#ifndef GUCEF_COM_MACROS_H
-#define GUCEF_COM_MACROS_H
+#ifndef GUCEF_WEB_MACROS_H
+#define GUCEF_WEB_MACROS_H
 
 /*
  *      Build configuration specific macros.
@@ -36,15 +36,15 @@
 #define GUCEF_MACROS_H
 #endif /* GUCEF_MACROS_H ? */
 
-#ifndef GUCEF_COM_ETYPES_H
-#include "gucefCOM_ETypes.h"
-#define GUCEF_COM_ETYPES_H
-#endif /* GUCEF_COM_ETYPES_H ? */
+#ifndef GUCEF_WEB_ETYPES_H
+#include "gucefWEB_ETypes.h"
+#define GUCEF_WEB_ETYPES_H
+#endif /* GUCEF_WEB_ETYPES_H ? */
 
-#ifndef GUCEF_COM_CONFIG_H
-#include "gucefCOM_config.h"      /* Module build configuration */
-#define GUCEF_COM_CONFIG_H
-#endif /* GUCEF_COM_CONFIG_H ? */
+#ifndef GUCEF_WEB_CONFIG_H
+#include "gucefWEB_config.h"      /* Module build configuration */
+#define GUCEF_WEB_CONFIG_H
+#endif /* GUCEF_WEB_CONFIG_H ? */
 
 /*-------------------------------------------------------------------------//
 //                                                                         //
@@ -70,31 +70,31 @@
  *      config file to control the export type.
  */
 
-#undef GUCEF_COM_EXPORTSPEC
-#if defined( GUCEF_COM_BUILD_MODULE )
-  #define GUCEF_COM_EXPORTSPEC GUCEF_EXPORT
-#elif defined( GUCEF_COM_EMBED_CODE )
-  #define GUCEF_COM_EXPORTSPEC
+#undef GUCEF_WEB_EXPORTSPEC
+#if defined( GUCEF_WEB_BUILD_MODULE )
+  #define GUCEF_WEB_EXPORTSPEC GUCEF_EXPORT
+#elif defined( GUCEF_WEB_EMBED_CODE )
+  #define GUCEF_WEB_EXPORTSPEC
 #else
-  #define GUCEF_COM_EXPORTSPEC GUCEF_IMPORT
-#endif /* GUCEF_COM_BUILD_MODULE ? */
+  #define GUCEF_WEB_EXPORTSPEC GUCEF_IMPORT
+#endif /* GUCEF_WEB_BUILD_MODULE ? */
 
-#undef GUCEF_COM_PUBLIC_CPP
-#ifdef GUCEF_COM_PUBLIC_CPP_CODE
-  #define GUCEF_COM_PUBLIC_CPP GUCEF_COM_EXPORTSPEC
+#undef GUCEF_WEB_PUBLIC_CPP
+#ifdef GUCEF_WEB_PUBLIC_CPP_CODE
+  #define GUCEF_WEB_PUBLIC_CPP GUCEF_WEB_EXPORTSPEC
 #else
-  #define GUCEF_COM_PUBLIC_CPP GUCEF_HIDDEN
-#endif /* GUCEF_COM_EXPORT_CPP_CODE */
+  #define GUCEF_WEB_PUBLIC_CPP GUCEF_HIDDEN
+#endif /* GUCEF_WEB_EXPORT_CPP_CODE */
 
-#define GUCEF_COM_PRIVATE_CPP GUCEF_HIDDEN
+#define GUCEF_WEB_PRIVATE_CPP GUCEF_HIDDEN
 
-#undef GUCEF_COM_PUBLIC_C
-#ifdef GUCEF_COM_PUBLIC_C_CODE
-  #define GUCEF_COM_PUBLIC_C GUCEF_COM_EXPORTSPEC
+#undef GUCEF_WEB_PUBLIC_C
+#ifdef GUCEF_WEB_PUBLIC_C_CODE
+  #define GUCEF_WEB_PUBLIC_C GUCEF_WEB_EXPORTSPEC
 #else
-  #define GUCEF_COM_PUBLIC_C GUCEF_HIDDEN
-#endif /* GUCEF_COM_PUBLIC_C_CODE */
+  #define GUCEF_WEB_PUBLIC_C GUCEF_HIDDEN
+#endif /* GUCEF_WEB_PUBLIC_C_CODE */
 
 /*-------------------------------------------------------------------------*/
 
-#endif /* GUCEF_COM_MACROS_H ? */
+#endif /* GUCEF_WEB_MACROS_H ? */

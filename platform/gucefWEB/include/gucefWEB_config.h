@@ -1,5 +1,5 @@
 /*
- *  gucefCOM: GUCEF module providing communication implementations 
+ *  gucefWEB: GUCEF module providing Web application functionality 
  *  for standardized protocols
  *
  *  Copyright (C) 1998 - 2020.  Dinand Vanvelzen
@@ -17,8 +17,8 @@
  *  limitations under the License.
  */
 
-#ifndef GUCEF_COM_CONFIG_H
-#define GUCEF_COM_CONFIG_H
+#ifndef GUCEF_WEB_CONFIG_H
+#define GUCEF_WEB_CONFIG_H
 
 /*-------------------------------------------------------------------------//
 //                                                                         //
@@ -43,15 +43,15 @@
  *      following defines
  */
 
-#undef GUCEF_COM_PUBLIC_CPP_CODE  /* do not change this line */
-#define GUCEF_COM_PUBLIC_CPP_CODE /* do you want to enable the C++ exports ? */
+#undef GUCEF_WEB_PUBLIC_CPP_CODE  /* do not change this line */
+#define GUCEF_WEB_PUBLIC_CPP_CODE /* do you want to enable the C++ exports ? */
 
-#undef GUCEF_COM_PUBLIC_C_CODE    /* do not change this line */
-#define GUCEF_COM_PUBLIC_C_CODE   /* do you want to enable the C exports ? */
+#undef GUCEF_WEB_PUBLIC_C_CODE    /* do not change this line */
+#define GUCEF_WEB_PUBLIC_C_CODE   /* do you want to enable the C exports ? */
 
 /*-------------------------------------------------------------------------*/
 
-#endif /* GUCEF_COM_CONFIG_H */
+#endif /* GUCEF_WEB_CONFIG_H */
 
 /*-------------------------------------------------------------------------//
 //                                                                         //

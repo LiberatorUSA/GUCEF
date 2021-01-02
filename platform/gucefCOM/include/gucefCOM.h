@@ -65,12 +65,7 @@
 #include "CMySQLClientInterface.h"
 #define CMYSQLCLIENTINTERFACE_H
 #endif /* CMYSQLCLIENTINTERFACE_H ? */
-
-#ifndef CHTTPCLIENT_H
-#include "CHTTPClient.h"
-#define CHTTPCLIENT_H
-#endif /* CHTTPCLIENT_H ? */
-
+          
 #ifndef CDBQUERY_H
 #include "CDBQuery.h"
 #define CDBQUERY_H
@@ -90,11 +85,6 @@
 #include "CPHUDPSocket.h"
 #define GUCEF_COM_CPHUDPSOCKET_H
 #endif /* GUCEF_COM_CPHUDPSOCKET_H ? */
-
-#ifndef GUCEF_COM_CHTTPSERVER_H
-#include "gucefCOM_CHTTPServer.h"
-#define GUCEF_COM_CHTTPSERVER_H
-#endif /* GUCEF_COM_CHTTPSERVER_H ? */
 
 #endif /* __cplusplus ? */
 

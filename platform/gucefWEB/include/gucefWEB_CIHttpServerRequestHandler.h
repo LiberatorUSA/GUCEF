@@ -1,5 +1,5 @@
 /*
- *  gucefCOM: GUCEF module providing communication implementations 
+ *  gucefWEB: GUCEF module providing Web application functionality 
  *  for standardized protocols
  *
  *  Copyright (C) 1998 - 2020.  Dinand Vanvelzen
@@ -17,8 +17,8 @@
  *  limitations under the License.
  */
 
-#ifndef GUCEF_COM_CIHTTPSERVERREQUESTHANDLER_H
-#define GUCEF_COM_CIHTTPSERVERREQUESTHANDLER_H
+#ifndef GUCEF_WEB_CIHTTPSERVERREQUESTHANDLER_H
+#define GUCEF_WEB_CIHTTPSERVERREQUESTHANDLER_H
 
 /*-------------------------------------------------------------------------//
 //                                                                         //
@@ -26,20 +26,20 @@
 //                                                                         //
 //-------------------------------------------------------------------------*/
 
-#ifndef GUCEF_COM_CHTTPREQUESTDATA_H
-#include "gucefCOM_CHttpRequestData.h"
-#define GUCEF_COM_CHTTPREQUESTDATA_H
-#endif /* GUCEF_COM_CHTTPREQUESTDATA_H ? */
+#ifndef GUCEF_WEB_CHTTPREQUESTDATA_H
+#include "gucefWEB_CHttpRequestData.h"
+#define GUCEF_WEB_CHTTPREQUESTDATA_H
+#endif /* GUCEF_WEB_CHTTPREQUESTDATA_H ? */
 
-#ifndef GUCEF_COM_CHTTPRESPONSEDATA_H
-#include "gucefCOM_CHttpResponseData.h"
-#define GUCEF_COM_CHTTPRESPONSEDATA_H
-#endif /* GUCEF_COM_CHTTPRESPONSEDATA_H ? */
+#ifndef GUCEF_WEB_CHTTPRESPONSEDATA_H
+#include "gucefWEB_CHttpResponseData.h"
+#define GUCEF_WEB_CHTTPRESPONSEDATA_H
+#endif /* GUCEF_WEB_CHTTPRESPONSEDATA_H ? */
 
-#ifndef GUCEF_COM_CIHTTPSERVERROUTERCONTROLLER_H
-#include "gucefCOM_CIHTTPServerRouterController.h"
-#define GUCEF_COM_CIHTTPSERVERROUTERCONTROLLER_H
-#endif /* GUCEF_COM_CIHTTPSERVERROUTERCONTROLLER_H ? */
+#ifndef GUCEF_WEB_CIHTTPSERVERROUTERCONTROLLER_H
+#include "gucefWEB_CIHTTPServerRouterController.h"
+#define GUCEF_WEB_CIHTTPSERVERROUTERCONTROLLER_H
+#endif /* GUCEF_WEB_CIHTTPSERVERROUTERCONTROLLER_H ? */
 
 /*-------------------------------------------------------------------------//
 //                                                                         //
@@ -48,7 +48,7 @@
 //-------------------------------------------------------------------------*/
 
 namespace GUCEF {
-namespace COM {
+namespace WEB {
 
 /*-------------------------------------------------------------------------//
 //                                                                         //
@@ -56,7 +56,7 @@ namespace COM {
 //                                                                         //
 //-------------------------------------------------------------------------*/
 
-class GUCEF_COM_PUBLIC_CPP CIHttpServerRequestHandler
+class GUCEF_WEB_PUBLIC_CPP CIHttpServerRequestHandler
 {
     public:
 
@@ -103,4 +103,4 @@ typedef CORE::CTFactoryBase< CIHttpServerRequestHandler > THttpServerRequestHand
 
 /*-------------------------------------------------------------------------*/
 
-#endif /* GUCEF_COM_CIHTTPSERVERREQUESTHANDLER_H ? */
+#endif /* GUCEF_WEB_CIHTTPSERVERREQUESTHANDLER_H ? */

@@ -32,7 +32,6 @@ LOCAL_SRC_FILES := \
   src/gucefWEB_CDefaultHTTPServerRouterController.cpp \
   src/gucefWEB_CDefaultHttpServerRequestHandler.cpp \
   src/gucefWEB_CDummyHTTPServerResource.cpp \
-  src/gucefWEB_CGUCEFWEBModule.cpp \
   src/gucefWEB_CGlobalHttpCodecLinks.cpp \
   src/gucefWEB_CHTTPClient.cpp \
   src/gucefWEB_CHTTPServer.cpp \
@@ -45,6 +44,7 @@ LOCAL_SRC_FILES := \
   src/gucefWEB_CIHTTPServerRouter.cpp \
   src/gucefWEB_CIHTTPServerRouterController.cpp \
   src/gucefWEB_CIHttpServerRequestHandler.cpp \
+  src/gucefWEB_CModule.cpp \
   src/gucefWEB_CWebGlobal.cpp
 
 LOCAL_C_INCLUDES := \

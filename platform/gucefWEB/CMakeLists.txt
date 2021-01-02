@@ -22,7 +22,6 @@ set( HEADER_FILES
   include/gucefWEB_CDefaultHTTPServerRouterController.h
   include/gucefWEB_CDefaultHttpServerRequestHandler.h
   include/gucefWEB_CDummyHTTPServerResource.h
-  include/gucefWEB_CGUCEFWEBModule.h
   include/gucefWEB_CGlobalHttpCodecLinks.h
   include/gucefWEB_CHTTPClient.h
   include/gucefWEB_CHTTPServer.h
@@ -35,9 +34,9 @@ set( HEADER_FILES
   include/gucefWEB_CIHTTPServerRouter.h
   include/gucefWEB_CIHTTPServerRouterController.h
   include/gucefWEB_CIHttpServerRequestHandler.h
+  include/gucefWEB_CModule.h
   include/gucefWEB_CTConfigurableMapHttpServerResource.h
   include/gucefWEB_CWebGlobal.h
-  include/gucefWEB_DLLInit.h
   include/gucefWEB_ETypes.h
   include/gucefWEB_HTTPCode.h
   include/gucefWEB_config.h
@@ -55,7 +54,6 @@ set( SOURCE_FILES
   src/gucefWEB_CDefaultHTTPServerRouterController.cpp
   src/gucefWEB_CDefaultHttpServerRequestHandler.cpp
   src/gucefWEB_CDummyHTTPServerResource.cpp
-  src/gucefWEB_CGUCEFWEBModule.cpp
   src/gucefWEB_CGlobalHttpCodecLinks.cpp
   src/gucefWEB_CHTTPClient.cpp
   src/gucefWEB_CHTTPServer.cpp
@@ -68,6 +66,7 @@ set( SOURCE_FILES
   src/gucefWEB_CIHTTPServerRouter.cpp
   src/gucefWEB_CIHTTPServerRouterController.cpp
   src/gucefWEB_CIHttpServerRequestHandler.cpp
+  src/gucefWEB_CModule.cpp
   src/gucefWEB_CWebGlobal.cpp
 )
 

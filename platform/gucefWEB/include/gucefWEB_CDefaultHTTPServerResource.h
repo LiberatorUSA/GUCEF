@@ -1,5 +1,5 @@
 /*
- *  gucefCOM: GUCEF module providing communication implementations 
+ *  gucefWEB: GUCEF module providing Web application functionality 
  *  for standardized protocols
  *
  *  Copyright (C) 1998 - 2020.  Dinand Vanvelzen
@@ -17,8 +17,8 @@
  *  limitations under the License.
  */
 
-#ifndef GUCEF_COM_CDEFAULTHTTPSERVERRESOURCE_H
-#define GUCEF_COM_CDEFAULTHTTPSERVERRESOURCE_H
+#ifndef GUCEF_WEB_CDEFAULTHTTPSERVERRESOURCE_H
+#define GUCEF_WEB_CDEFAULTHTTPSERVERRESOURCE_H
 
 /*-------------------------------------------------------------------------//
 //                                                                         //
@@ -26,10 +26,10 @@
 //                                                                         //
 //-------------------------------------------------------------------------*/
 
-#ifndef GUCEF_COM_CIHTTPSERVERRESOURCE_H
-#include "gucefCOM_CIHTTPServerResource.h"
-#define GUCEF_COM_CIHTTPSERVERRESOURCE_H
-#endif /* GUCEF_COM_CIHTTPSERVERRESOURCE_H ? */
+#ifndef GUCEF_WEB_CIHTTPSERVERRESOURCE_H
+#include "gucefWEB_CIHTTPServerResource.h"
+#define GUCEF_WEB_CIHTTPSERVERRESOURCE_H
+#endif /* GUCEF_WEB_CIHTTPSERVERRESOURCE_H ? */
 
 /*-------------------------------------------------------------------------//
 //                                                                         //
@@ -38,7 +38,7 @@
 //-------------------------------------------------------------------------*/
 
 namespace GUCEF {
-namespace COM {
+namespace WEB {
 
 /*-------------------------------------------------------------------------//
 //                                                                         //
@@ -46,7 +46,7 @@ namespace COM {
 //                                                                         //
 //-------------------------------------------------------------------------*/
 
-class GUCEF_COM_PUBLIC_CPP CDefaultHTTPServerResource : public CIHTTPServerResource
+class GUCEF_WEB_PUBLIC_CPP CDefaultHTTPServerResource : public CIHTTPServerResource
 {    
     public:
     
@@ -176,7 +176,7 @@ class GUCEF_COM_PUBLIC_CPP CDefaultHTTPServerResource : public CIHTTPServerResou
 
 /*-------------------------------------------------------------------------*/
 
-#endif /* GUCEF_COM_CDEFAULTHTTPSERVERRESOURCE_H ? */
+#endif /* GUCEF_WEB_CDEFAULTHTTPSERVERRESOURCE_H ? */
 
 /*-------------------------------------------------------------------------//
 //                                                                         //

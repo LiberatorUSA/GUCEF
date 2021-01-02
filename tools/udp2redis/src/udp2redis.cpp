@@ -29,10 +29,10 @@
 #define GUCEF_CORE_CTASKMANAGER_H
 #endif /* GUCEF_CORE_CTASKMANAGER_H */
 
-#ifndef GUCEF_COM_CDUMMYHTTPSERVERRESOURCE_H
-#include "gucefCOM_CDummyHTTPServerResource.h"
-#define GUCEF_COM_CDUMMYHTTPSERVERRESOURCE_H
-#endif /* GUCEF_COM_CDUMMYHTTPSERVERRESOURCE_H ? */
+#ifndef GUCEF_WEB_CDUMMYHTTPSERVERRESOURCE_H
+#include "gucefWEB_CDummyHTTPServerResource.h"
+#define GUCEF_WEB_CDUMMYHTTPSERVERRESOURCE_H
+#endif /* GUCEF_WEB_CDUMMYHTTPSERVERRESOURCE_H ? */
 
 #include "udp2redis.h"
 
@@ -764,7 +764,7 @@ Udp2RedisChannel::OnTaskEnded( CORE::CICloneable* taskData ,
 /*-------------------------------------------------------------------------*/
 
 RestApiUdp2RedisInfoResource::RestApiUdp2RedisInfoResource( Udp2Redis* app )
-    : COM::CCodecBasedHTTPServerResource()
+    : WEB::CCodecBasedHTTPServerResource()
     , m_app( app )
 {GUCEF_TRACE;
 
@@ -800,7 +800,7 @@ RestApiUdp2RedisInfoResource::Serialize( CORE::CDataNode& output             ,
 /*-------------------------------------------------------------------------*/
 
 RestApiUdp2RedisConfigResource::RestApiUdp2RedisConfigResource( Udp2Redis* app, bool appConfig )
-    : COM::CCodecBasedHTTPServerResource()
+    : WEB::CCodecBasedHTTPServerResource()
     , m_app( app )
     , m_appConfig( appConfig )
 {GUCEF_TRACE;
@@ -997,7 +997,7 @@ Udp2Redis::LoadConfig( const CORE::CValueList& appConfig   ,
     m_httpRouter.SetResourceMapping( "/info", RestApiUdp2RedisInfoResource::THTTPServerResourcePtr( new RestApiUdp2RedisInfoResource( this ) )  );
     m_httpRouter.SetResourceMapping( "/config/appargs", RestApiUdp2RedisInfoResource::THTTPServerResourcePtr( new RestApiUdp2RedisConfigResource( this, true ) )  );
     m_httpRouter.SetResourceMapping( "/config", RestApiUdp2RedisInfoResource::THTTPServerResourcePtr( new RestApiUdp2RedisConfigResource( this, false ) )  );
-    m_httpRouter.SetResourceMapping(  CORE::ResolveVars( appConfig.GetValueAlways( "RestBasicHealthUri", "/health/basic" ) ), RestApiUdp2RedisInfoResource::THTTPServerResourcePtr( new COM::CDummyHTTPServerResource() )  );
+    m_httpRouter.SetResourceMapping(  CORE::ResolveVars( appConfig.GetValueAlways( "RestBasicHealthUri", "/health/basic" ) ), RestApiUdp2RedisInfoResource::THTTPServerResourcePtr( new WEB::CDummyHTTPServerResource() )  );
 
     m_httpServer.GetRouterController()->AddRouterMapping( &m_httpRouter, "", "" );
     return true;

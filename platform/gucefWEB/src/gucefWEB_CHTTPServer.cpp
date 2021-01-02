@@ -1,5 +1,5 @@
 /*
- *  gucefCOM: GUCEF module providing communication implementations 
+ *  gucefWEB: GUCEF module providing Web application functionality 
  *  for standardized protocols
  *
  *  Copyright (C) 1998 - 2020.  Dinand Vanvelzen
@@ -38,22 +38,22 @@
 #define GUCEF_CORE_CTASKMANAGER_H
 #endif /* GUCEF_CORE_CTASKMANAGER_H ? */
 
-#ifndef GUCEF_COM_CDEFAULTHTTPSERVERROUTERCONTROLLER_H
-#include "gucefCOM_CDefaultHTTPServerRouterController.h"
-#define GUCEF_COM_CDEFAULTHTTPSERVERROUTERCONTROLLER_H
-#endif /* GUCEF_COM_CDEFAULTHTTPSERVERROUTERCONTROLLER_H ? */
+#ifndef GUCEF_WEB_CDEFAULTHTTPSERVERROUTERCONTROLLER_H
+#include "gucefWEB_CDefaultHTTPServerRouterController.h"
+#define GUCEF_WEB_CDEFAULTHTTPSERVERROUTERCONTROLLER_H
+#endif /* GUCEF_WEB_CDEFAULTHTTPSERVERROUTERCONTROLLER_H ? */
 
-#ifndef GUCEF_COM_CDEFAULTHTTPSERVERREQUESTHANDLER_H
-#include "gucefCOM_CDefaultHttpServerRequestHandler.h"
-#define GUCEF_COM_CDEFAULTHTTPSERVERREQUESTHANDLER_H
-#endif /* GUCEF_COM_CDEFAULTHTTPSERVERREQUESTHANDLER_H ? */
+#ifndef GUCEF_WEB_CDEFAULTHTTPSERVERREQUESTHANDLER_H
+#include "gucefWEB_CDefaultHttpServerRequestHandler.h"
+#define GUCEF_WEB_CDEFAULTHTTPSERVERREQUESTHANDLER_H
+#endif /* GUCEF_WEB_CDEFAULTHTTPSERVERREQUESTHANDLER_H ? */
 
-#ifndef GUCEF_COM_CASYNCHTTPSERVERREQUESTHANDLER_H
-#include "gucefCOM_CAsyncHttpServerRequestHandler.h"
-#define GUCEF_COM_CASYNCHTTPSERVERREQUESTHANDLER_H
-#endif /* GUCEF_COM_CASYNCHTTPSERVERREQUESTHANDLER_H ? */
+#ifndef GUCEF_WEB_CASYNCHTTPSERVERREQUESTHANDLER_H
+#include "gucefWEB_CAsyncHttpServerRequestHandler.h"
+#define GUCEF_WEB_CASYNCHTTPSERVERREQUESTHANDLER_H
+#endif /* GUCEF_WEB_CASYNCHTTPSERVERREQUESTHANDLER_H ? */
 
-#include "gucefCOM_CHTTPServer.h"
+#include "gucefWEB_CHTTPServer.h"
 
 /*-------------------------------------------------------------------------//
 //                                                                         //
@@ -62,7 +62,7 @@
 //-------------------------------------------------------------------------*/
 
 namespace GUCEF {
-namespace COM {
+namespace WEB {
 
 /*-------------------------------------------------------------------------//
 //                                                                         //

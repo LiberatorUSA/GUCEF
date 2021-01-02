@@ -1,5 +1,5 @@
 /*
- *  gucefCOM: GUCEF module providing communication implementations 
+ *  gucefWEB: GUCEF module providing Web application functionality 
  *  for standardized protocols
  *
  *  Copyright (C) 1998 - 2020.  Dinand Vanvelzen
@@ -17,8 +17,8 @@
  *  limitations under the License.
  */
 
-#ifndef GUCEF_COM_CHTTPURLHANDLER_H
-#define GUCEF_COM_CHTTPURLHANDLER_H
+#ifndef GUCEF_WEB_CHTTPURLHANDLER_H
+#define GUCEF_WEB_CHTTPURLHANDLER_H
 
 /*-------------------------------------------------------------------------//
 //                                                                         //
@@ -31,10 +31,10 @@
 #define GUCEF_CORE_CURLHANDLER_H
 #endif /* GUCEF_CORE_CURLHANDLER_H ? */
 
-#ifndef GUCEF_COM_CHTTPCLIENT_H
-#include "CHTTPClient.h"
-#define GUCEF_COM_CHTTPCLIENT_H
-#endif /* GUCEF_COM_CHTTPCLIENT_H ? */
+#ifndef GUCEF_WEB_CHTTPCLIENT_H
+#include "gucefWEB_CHTTPClient.h"
+#define GUCEF_WEB_CHTTPCLIENT_H
+#endif /* GUCEF_WEB_CHTTPCLIENT_H ? */
 
 /*-------------------------------------------------------------------------//
 //                                                                         //
@@ -43,7 +43,7 @@
 //-------------------------------------------------------------------------*/
 
 namespace GUCEF {
-namespace COM {
+namespace WEB {
 
 /*-------------------------------------------------------------------------//
 //                                                                         //
@@ -96,12 +96,12 @@ class CHTTPURLHandler : public CORE::CURLHandler
 //                                                                         //
 //-------------------------------------------------------------------------*/
 
-}; /* namespace COM */
+}; /* namespace WEB */
 }; /* namespace GUCEF */
 
 /*-------------------------------------------------------------------------*/
 
-#endif /* GUCEF_COM_CHTTPURLHANDLER_H ? */
+#endif /* GUCEF_WEB_CHTTPURLHANDLER_H ? */
 
 /*-------------------------------------------------------------------------//
 //                                                                         //

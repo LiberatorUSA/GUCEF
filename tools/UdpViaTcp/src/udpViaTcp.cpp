@@ -27,10 +27,10 @@
 #define GUCEF_CORE_CTASKMANAGER_H
 #endif /* GUCEF_CORE_CTASKMANAGER_H */
 
-#ifndef GUCEF_COM_CDUMMYHTTPSERVERRESOURCE_H
-#include "gucefCOM_CDummyHTTPServerResource.h"
-#define GUCEF_COM_CDUMMYHTTPSERVERRESOURCE_H
-#endif /* GUCEF_COM_CDUMMYHTTPSERVERRESOURCE_H ? */
+#ifndef GUCEF_WEB_CDUMMYHTTPSERVERRESOURCE_H
+#include "gucefWEB_CDummyHTTPServerResource.h"
+#define GUCEF_WEB_CDUMMYHTTPSERVERRESOURCE_H
+#endif /* GUCEF_WEB_CDUMMYHTTPSERVERRESOURCE_H ? */
 
 #include "UdpViaTcp.h"
 
@@ -50,7 +50,7 @@
 //-------------------------------------------------------------------------*/
 
 RestApiUdpViaTcpInfoResource::RestApiUdpViaTcpInfoResource( UdpViaTcp* app )
-    : COM::CCodecBasedHTTPServerResource()
+    : WEB::CCodecBasedHTTPServerResource()
     , m_app( app )
 {GUCEF_TRACE;
 
@@ -85,7 +85,7 @@ RestApiUdpViaTcpInfoResource::Serialize( CORE::CDataNode& output             ,
 /*-------------------------------------------------------------------------*/
 
 RestApiUdpViaTcpConfigResource::RestApiUdpViaTcpConfigResource( UdpViaTcp* app, bool appConfig )
-    : COM::CCodecBasedHTTPServerResource()
+    : WEB::CCodecBasedHTTPServerResource()
     , m_app( app )
     , m_appConfig( appConfig )
 {GUCEF_TRACE;
@@ -909,7 +909,7 @@ UdpViaTcp::LoadConfig( const CORE::CValueList& appConfig   ,
     m_httpRouter.SetResourceMapping( "/info", RestApiUdpViaTcpInfoResource::THTTPServerResourcePtr( new RestApiUdpViaTcpInfoResource( this ) )  );
     m_httpRouter.SetResourceMapping( "/config/appargs", RestApiUdpViaTcpInfoResource::THTTPServerResourcePtr( new RestApiUdpViaTcpConfigResource( this, true ) )  );
     m_httpRouter.SetResourceMapping( "/config", RestApiUdpViaTcpInfoResource::THTTPServerResourcePtr( new RestApiUdpViaTcpConfigResource( this, false ) )  );
-    m_httpRouter.SetResourceMapping(  appConfig.GetValueAlways( "RestBasicHealthUri", "/health/basic" ), RestApiUdpViaTcpInfoResource::THTTPServerResourcePtr( new COM::CDummyHTTPServerResource() )  );
+    m_httpRouter.SetResourceMapping(  appConfig.GetValueAlways( "RestBasicHealthUri", "/health/basic" ), RestApiUdpViaTcpInfoResource::THTTPServerResourcePtr( new WEB::CDummyHTTPServerResource() )  );
     
     m_httpServer.GetRouterController()->AddRouterMapping( &m_httpRouter, "", "" );
 

@@ -1,5 +1,5 @@
 /*
- *  gucefCOM: GUCEF module providing communication implementations 
+ *  gucefWEB: GUCEF module providing Web application functionality 
  *  for standardized protocols
  *
  *  Copyright (C) 1998 - 2020.  Dinand Vanvelzen
@@ -17,8 +17,8 @@
  *  limitations under the License.
  */
 
-#ifndef GUCEF_COM_CHTTPCLIENT_H
-#define GUCEF_COM_CHTTPCLIENT_H
+#ifndef GUCEF_WEB_CHTTPCLIENT_H
+#define GUCEF_WEB_CHTTPCLIENT_H
 
 /*-------------------------------------------------------------------------//
 //                                                                         //
@@ -56,10 +56,10 @@
 #define GUCEF_CORE_CLONEABLES_H
 #endif /* GUCEF_CORE_CLONEABLES_H ? */
 
-#ifndef GUCEF_COM_HTTPCODE_H
-#include "gucefCOM_HTTPCode.h"
-#define GUCEF_COM_HTTPCODE_H
-#endif /* GUCEF_COM_HTTPCODE_H ? */
+#ifndef GUCEF_WEB_HTTPCODE_H
+#include "gucefWEB_HTTPCode.h"
+#define GUCEF_WEB_HTTPCODE_H
+#endif /* GUCEF_WEB_HTTPCODE_H ? */
 
 /*-------------------------------------------------------------------------//
 //                                                                         //
@@ -68,7 +68,7 @@
 //-------------------------------------------------------------------------*/
 
 namespace GUCEF {
-namespace COM {
+namespace WEB {
 
 /*-------------------------------------------------------------------------//
 //                                                                         //
@@ -79,7 +79,7 @@ namespace COM {
 /**
  *      Simplistic HTTP protocol client for basic tasks
  */
-class GUCEF_COM_PUBLIC_CPP CHTTPClient : public CORE::CObservingNotifier
+class GUCEF_WEB_PUBLIC_CPP CHTTPClient : public CORE::CObservingNotifier
 {
 	public:
 
@@ -244,12 +244,12 @@ class GUCEF_COM_PUBLIC_CPP CHTTPClient : public CORE::CObservingNotifier
 //                                                                         //
 //-------------------------------------------------------------------------*/
 
-}; /* namespace COM */
+}; /* namespace WEB */
 }; /* namespace GUCEF */
 
 /*-------------------------------------------------------------------------*/
 
-#endif /* GUCEF_COM_CHTTPCLIENT_H ? */
+#endif /* GUCEF_WEB_CHTTPCLIENT_H ? */
 
 /*-------------------------------------------------------------------------//
 //                                                                         //

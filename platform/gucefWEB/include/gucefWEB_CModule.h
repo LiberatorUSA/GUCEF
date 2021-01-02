@@ -1,5 +1,5 @@
 /*
- *  gucefCOM: GUCEF module providing communication implementations 
+ *  gucefWEB: GUCEF module providing Web application functionality 
  *  for standardized protocols
  *
  *  Copyright (C) 1998 - 2020.  Dinand Vanvelzen
@@ -17,13 +17,19 @@
  *  limitations under the License.
  */
 
+#ifndef GUCEF_WEB_CMODULE_H
+#define GUCEF_WEB_CMODULE_H
+
 /*-------------------------------------------------------------------------//
 //                                                                         //
 //      INCLUDES                                                           //
 //                                                                         //
 //-------------------------------------------------------------------------*/
 
-#include "CGUCEFCOMModule.h"  /* definition of the class implemented here */
+#ifndef GUCEFCOM_MACROS_H
+#include "gucefWEB_macros.h"      /* often used gucefCOM macros */
+#define GUCEFCOM_MACROS_H
+#endif /* GUCEFCOM_MACROS_H ? */
 
 /*-------------------------------------------------------------------------//
 //                                                                         //
@@ -32,7 +38,7 @@
 //-------------------------------------------------------------------------*/
 
 namespace GUCEF {
-namespace COM {
+namespace WEB {
 
 /*-------------------------------------------------------------------------//
 //                                                                         //
@@ -40,19 +46,20 @@ namespace COM {
 //                                                                         //
 //-------------------------------------------------------------------------*/
 
-bool 
-CGUCEFCOMModule::Load( void )
-{        
-    return true;
-}
-
-/*-------------------------------------------------------------------------*/
+class CModule
+{
+    public:
         
-bool 
-CGUCEFCOMModule::Unload( void )
-{        
-    return true;
-}
+    static bool Load( void );
+        
+    static bool Unload( void );
+        
+    private:
+    CModule( void );
+    CModule( const CModule& src );
+    ~CModule();
+    CModule& operator=( const CModule& src );
+};
 
 /*-------------------------------------------------------------------------//
 //                                                                         //
@@ -60,7 +67,9 @@ CGUCEFCOMModule::Unload( void )
 //                                                                         //
 //-------------------------------------------------------------------------*/
 
-}; /* namespace COM */
+}; /* namespace WEB */
 }; /* namespace GUCEF */
 
 /*-------------------------------------------------------------------------*/
+          
+#endif /* GUCEF_WEB_CMODULE_H ? */

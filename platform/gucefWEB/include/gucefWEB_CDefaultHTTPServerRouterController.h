@@ -1,5 +1,5 @@
 /*
- *  gucefCOM: GUCEF module providing communication implementations 
+ *  gucefWEB: GUCEF module providing Web application functionality 
  *  for standardized protocols
  *
  *  Copyright (C) 1998 - 2020.  Dinand Vanvelzen
@@ -17,8 +17,8 @@
  *  limitations under the License.
  */
 
-#ifndef GUCEF_COM_CDEFAULTHTTPSERVERROUTERCONTROLLER_H
-#define GUCEF_COM_CDEFAULTHTTPSERVERROUTERCONTROLLER_H
+#ifndef GUCEF_WEB_CDEFAULTHTTPSERVERROUTERCONTROLLER_H
+#define GUCEF_WEB_CDEFAULTHTTPSERVERROUTERCONTROLLER_H
 
 /*-------------------------------------------------------------------------//
 //                                                                         //
@@ -28,10 +28,10 @@
 
 #include <map>
 
-#ifndef GUCEF_COM_CIHTTPSERVERROUTERCONTROLLER_H
-#include "gucefCOM_CIHTTPServerRouterController.h"
-#define GUCEF_COM_CIHTTPSERVERROUTERCONTROLLER_H
-#endif /* GUCEF_COM_CIHTTPSERVERROUTERCONTROLLER_H ? */
+#ifndef GUCEF_WEB_CIHTTPSERVERROUTERCONTROLLER_H
+#include "gucefWEB_CIHTTPServerRouterController.h"
+#define GUCEF_WEB_CIHTTPSERVERROUTERCONTROLLER_H
+#endif /* GUCEF_WEB_CIHTTPSERVERROUTERCONTROLLER_H ? */
 
 /*-------------------------------------------------------------------------//
 //                                                                         //
@@ -40,7 +40,7 @@
 //-------------------------------------------------------------------------*/
 
 namespace GUCEF {
-namespace COM {
+namespace WEB {
 
 /*-------------------------------------------------------------------------//
 //                                                                         //
@@ -50,7 +50,7 @@ namespace COM {
 
 class CHTTPServer;
 
-class GUCEF_COM_PUBLIC_CPP CDefaultHTTPServerRouterController : public CIHTTPServerRouterController
+class GUCEF_WEB_PUBLIC_CPP CDefaultHTTPServerRouterController : public CIHTTPServerRouterController
 {   
     public:
     
@@ -98,7 +98,7 @@ class GUCEF_COM_PUBLIC_CPP CDefaultHTTPServerRouterController : public CIHTTPSer
 
 /*-------------------------------------------------------------------------*/
 
-#endif /* GUCEF_COM_CDEFAULTHTTPSERVERROUTERCONTROLLER_H ? */
+#endif /* GUCEF_WEB_CDEFAULTHTTPSERVERROUTERCONTROLLER_H ? */
 
 /*-------------------------------------------------------------------------//
 //                                                                         //

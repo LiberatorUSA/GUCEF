@@ -1,5 +1,5 @@
 /*
- *  gucefCOM: GUCEF module providing communication implementations 
+ *  gucefWEB: GUCEF module providing Web application functionality 
  *  for standardized protocols
  *
  *  Copyright (C) 1998 - 2020.  Dinand Vanvelzen
@@ -17,8 +17,8 @@
  *  limitations under the License.
  */
 
-#ifndef GUCEF_COM_CCOMGLOBAL_H
-#define GUCEF_COM_CCOMGLOBAL_H
+#ifndef GUCEF_WEB_CWEBGLOBAL_H
+#define GUCEF_WEB_CWEBGLOBAL_H
 
 /*-------------------------------------------------------------------------//
 //                                                                         //
@@ -31,10 +31,10 @@
 #define GUCEF_MT_CMUTEX_H
 #endif /* GUCEF_MT_CMUTEX_H ? */
 
-#ifndef GUCEF_COM_MACROS_H
-#include "gucefCOM_macros.h"      /* often used gucefCOM macros */
-#define GUCEF_COM_MACROS_H
-#endif /* GUCEF_COM_MACROS_H ? */
+#ifndef GUCEF_WEB_MACROS_H
+#include "gucefWEB_macros.h"      /* often used gucefCOM macros */
+#define GUCEF_WEB_MACROS_H
+#endif /* GUCEF_WEB_MACROS_H ? */
 
 /*-------------------------------------------------------------------------//
 //                                                                         //
@@ -43,7 +43,7 @@
 //-------------------------------------------------------------------------*/
 
 namespace GUCEF {
-namespace COM {
+namespace WEB {
 
 /*-------------------------------------------------------------------------//
 //                                                                         //
@@ -55,11 +55,11 @@ class CGlobalHttpCodecLinks;
 
 /*-------------------------------------------------------------------------*/
 
-class GUCEF_COM_PUBLIC_CPP CComGlobal
+class GUCEF_WEB_PUBLIC_CPP CWebGlobal
 {
     public:
 
-    static CComGlobal* Instance( void );
+    static CWebGlobal* Instance( void );
 
     CGlobalHttpCodecLinks& GetGlobalHttpCodecLinks( void ) const;
 
@@ -69,16 +69,16 @@ class GUCEF_COM_PUBLIC_CPP CComGlobal
 
     void Initialize( void );
 
-    CComGlobal( void );    
-    ~CComGlobal();
+    CWebGlobal( void );    
+    ~CWebGlobal();
 
-    CComGlobal( const CComGlobal& src );            /** <- not implemented */
-    CComGlobal& operator=( const CComGlobal& src ); /** <- not implemented */
+    CWebGlobal( const CWebGlobal& src );            /** <- not implemented */
+    CWebGlobal& operator=( const CWebGlobal& src ); /** <- not implemented */
 
     private:
 
     static MT::CMutex g_dataLock;
-    static CComGlobal* g_instance;
+    static CWebGlobal* g_instance;
     CGlobalHttpCodecLinks* m_globalHttpCodecLinks;
 };
 
@@ -88,12 +88,12 @@ class GUCEF_COM_PUBLIC_CPP CComGlobal
 //                                                                         //
 //-------------------------------------------------------------------------*/
 
-}; /* namespace COM */
+}; /* namespace WEB */
 }; /* namespace GUCEF */
 
 /*-------------------------------------------------------------------------*/
 
-#endif /* GUCEF_COM_CCOMGLOBAL_H ? */
+#endif /* GUCEF_WEB_CWEBGLOBAL_H ? */
 
 /*-------------------------------------------------------------------------//
 //                                                                         //

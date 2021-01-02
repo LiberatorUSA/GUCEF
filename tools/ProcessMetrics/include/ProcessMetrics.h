@@ -64,20 +64,20 @@
 #define GUCEF_CORE_CTIMER_H
 #endif /* GUCEF_CORE_CTIMER_H ? */
 
-#ifndef GUCEF_COM_CHTTPSERVER_H
-#include "gucefCOM_CHTTPServer.h"
-#define GUCEF_COM_CHTTPSERVER_H
-#endif /* GUCEF_COM_CHTTPSERVER_H ? */
+#ifndef GUCEF_WEB_CHTTPSERVER_H
+#include "gucefWEB_CHTTPServer.h"
+#define GUCEF_WEB_CHTTPSERVER_H
+#endif /* GUCEF_WEB_CHTTPSERVER_H ? */
 
-#ifndef GUCEF_COM_CDEFAULTHTTPSERVERROUTER_H
-#include "gucefCOM_CDefaultHTTPServerRouter.h"
-#define GUCEF_COM_CDEFAULTHTTPSERVERROUTER_H
-#endif /* GUCEF_COM_CDEFAULTHTTPSERVERROUTER_H ? */
+#ifndef GUCEF_WEB_CDEFAULTHTTPSERVERROUTER_H
+#include "gucefWEB_CDefaultHTTPServerRouter.h"
+#define GUCEF_WEB_CDEFAULTHTTPSERVERROUTER_H
+#endif /* GUCEF_WEB_CDEFAULTHTTPSERVERROUTER_H ? */
 
-#ifndef GUCEF_COM_CCODECBASEDHTTPSERVERRESOURCE_H
-#include "gucefCOM_CCodecBasedHTTPServerResource.h"
-#define GUCEF_COM_CCODECBASEDHTTPSERVERRESOURCE_H
-#endif /* GUCEF_COM_CCODECBASEDHTTPSERVERRESOURCE_H ? */
+#ifndef GUCEF_WEB_CCODECBASEDHTTPSERVERRESOURCE_H
+#include "gucefWEB_CCodecBasedHTTPServerResource.h"
+#define GUCEF_WEB_CCODECBASEDHTTPSERVERRESOURCE_H
+#endif /* GUCEF_WEB_CCODECBASEDHTTPSERVERRESOURCE_H ? */
 
 /*-------------------------------------------------------------------------//
 //                                                                         //
@@ -95,7 +95,7 @@ using namespace GUCEF;
 
 class ProcessMetrics;
 
-class RestApiProcessMetricsInfoResource : public COM::CCodecBasedHTTPServerResource
+class RestApiProcessMetricsInfoResource : public WEB::CCodecBasedHTTPServerResource
 {
     public:
 
@@ -113,7 +113,7 @@ class RestApiProcessMetricsInfoResource : public COM::CCodecBasedHTTPServerResou
 
 /*-------------------------------------------------------------------------*/
 
-class RestApiProcessMetricsConfigResource : public COM::CCodecBasedHTTPServerResource
+class RestApiProcessMetricsConfigResource : public WEB::CCodecBasedHTTPServerResource
 {
     public:
 
@@ -177,8 +177,8 @@ class ProcessMetrics : public CORE::CObservingNotifier
     typedef std::set< CORE::CString > TStringSet;
     typedef std::vector< CORE::CString > TStringVector;
 
-    COM::CHTTPServer m_httpServer;
-    COM::CDefaultHTTPServerRouter m_httpRouter;
+    WEB::CHTTPServer m_httpServer;
+    WEB::CDefaultHTTPServerRouter m_httpRouter;
     CORE::CValueList m_appConfig;
     CORE::CDataNode m_globalConfig;
     CORE::CTimer m_metricsTimer;

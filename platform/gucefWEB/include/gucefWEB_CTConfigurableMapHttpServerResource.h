@@ -1,5 +1,5 @@
 /*
- *  gucefCOM: GUCEF module providing communication implementations
+ *  gucefWEB: GUCEF module providing Web application functionality
  *  for standardized protocols
  *
  *  Copyright (C) 1998 - 2020.  Dinand Vanvelzen
@@ -17,8 +17,8 @@
  *  limitations under the License.
  */
 
-#ifndef GUCEF_COM_CTCONFIGURABLEMAPHTTPSERVERRESOURCE_H
-#define GUCEF_COM_CTCONFIGURABLEMAPHTTPSERVERRESOURCE_H
+#ifndef GUCEF_WEB_CTCONFIGURABLEMAPHTTPSERVERRESOURCE_H
+#define GUCEF_WEB_CTCONFIGURABLEMAPHTTPSERVERRESOURCE_H
 
 /*-------------------------------------------------------------------------//
 //                                                                         //
@@ -43,10 +43,10 @@
 #define GUCEF_CORE_CICONFIGURABLE_H
 #endif /* GUCEF_CORE_CICONFIGURABLE_H ? */
 
-#ifndef GUCEF_COM_CCONFIGURABLEHTTPSERVERRESOURCE_H
-#include "gucefCOM_CConfigurableHttpServerResource.h"
-#define GUCEF_COM_CCONFIGURABLEHTTPSERVERRESOURCE_H
-#endif /* GUCEF_COM_CCONFIGURABLEHTTPSERVERRESOURCE_H ? */
+#ifndef GUCEF_WEB_CCONFIGURABLEHTTPSERVERRESOURCE_H
+#include "gucefWEB_CConfigurableHttpServerResource.h"
+#define GUCEF_WEB_CCONFIGURABLEHTTPSERVERRESOURCE_H
+#endif /* GUCEF_WEB_CCONFIGURABLEHTTPSERVERRESOURCE_H ? */
 
 /*-------------------------------------------------------------------------//
 //                                                                         //
@@ -55,7 +55,7 @@
 //-------------------------------------------------------------------------*/
 
 namespace GUCEF {
-namespace COM {
+namespace WEB {
 
 /*-------------------------------------------------------------------------//
 //                                                                         //
@@ -260,4 +260,4 @@ CTConfigurableMapHttpServerResource< CollectionKeyType, ConfigurableDerivedClass
 
 /*-------------------------------------------------------------------------*/
 
-#endif /* GUCEF_COM_CTCONFIGURABLEMAPHTTPSERVERRESOURCE_H ? */
+#endif /* GUCEF_WEB_CTCONFIGURABLEMAPHTTPSERVERRESOURCE_H ? */
