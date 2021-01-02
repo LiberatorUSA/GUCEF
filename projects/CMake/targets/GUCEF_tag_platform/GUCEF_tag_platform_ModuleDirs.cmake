@@ -62,4 +62,5 @@ add_subdirectory( ${CMAKE_CURRENT_SOURCE_DIR}/../../../../platform/gucefPATCHER 
 add_subdirectory( ${CMAKE_CURRENT_SOURCE_DIR}/../../../../platform/gucefPRODMAN ${CMAKE_BINARY_DIR}/gucefPRODMAN )
 add_subdirectory( ${CMAKE_CURRENT_SOURCE_DIR}/../../../../platform/gucefSMDRN ${CMAKE_BINARY_DIR}/gucefSMDRN )
 add_subdirectory( ${CMAKE_CURRENT_SOURCE_DIR}/../../../../platform/gucefVFS ${CMAKE_BINARY_DIR}/gucefVFS )
+add_subdirectory( ${CMAKE_CURRENT_SOURCE_DIR}/../../../../platform/gucefWEB ${CMAKE_BINARY_DIR}/gucefWEB )
 endif()

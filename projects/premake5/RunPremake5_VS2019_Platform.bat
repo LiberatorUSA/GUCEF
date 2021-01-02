@@ -10,5 +10,5 @@ CALL Premake5Common.bat
 ECHO *** Set VS2019 specifics and run Premake 5 ***
 
 CD %GUCEF_HOME%
-%RUNPM5_BATCHPATH%\premake5.exe vs2019 --file %RUNPM5_BATCHPATH%\targets\%TARGETPROJECT%
+%RUNPM5_BATCHPATH%\premake5.exe vs2019 --file "%RUNPM5_BATCHPATH%\targets\%TARGETPROJECT%"
 PAUSE

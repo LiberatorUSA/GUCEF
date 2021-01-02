@@ -1,0 +1,21 @@
+<ModuleInfoEntry>
+    <Module Name="gucefWEB" Type="SharedLibrary" Platform="All" Tags="platform">
+        <Dependencies>
+            <Dependency Name="gucefMT" />
+            <Dependency Name="gucefCORE" />
+            <Dependency Name="gucefCOMCORE" />
+			<Dependency Name="gucefCOM" />
+			<Dependency Name="gucefVFS" />
+        </Dependencies>
+        <Linker>
+            <Dependency Name="gucefMT" />
+            <Dependency Name="gucefCORE" />
+            <Dependency Name="gucefCOMCORE" />
+			<Dependency Name="gucefCOM" />
+			<Dependency Name="gucefVFS" />
+        </Linker>
+        <Preprocessor>
+            <Define String="GUCEF_WEB_BUILD_MODULE" />
+        </Preprocessor>
+    </Module>
+</ModuleInfoEntry>
