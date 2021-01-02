@@ -25,5 +25,7 @@ filter "ALL"
   include( "platform/gucefCOMCORE" )
   include( "platform/gucefCORE" )
   include( "platform/gucefMT" )
+  include( "platform/gucefVFS" )
+  include( "platform/gucefWEB" )
   include( "tools/GucefLogServiceApp" )
   include( "tools/GucefLogServiceLib" )

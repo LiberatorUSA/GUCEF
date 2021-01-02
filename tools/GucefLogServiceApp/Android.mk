@@ -30,6 +30,8 @@ LOCAL_C_INCLUDES := \
   $(MY_MODULE_PATH)/../../platform/gucefCORE/include \
   $(MY_MODULE_PATH)/../../platform/gucefCORE/include/android \
   $(MY_MODULE_PATH)/../../platform/gucefMT/include \
+  $(MY_MODULE_PATH)/../../platform/gucefVFS/include \
+  $(MY_MODULE_PATH)/../../platform/gucefWEB/include \
   $(MY_MODULE_PATH)/../GucefLogServiceLib/include
 
 LOCAL_CFLAGS := -DGUCEFLOGSERVICE_BUILD_MODULE
@@ -40,7 +42,8 @@ LOCAL_SHARED_LIBRARIES := \
   gucefCOM \
   gucefCOMCORE \
   gucefCORE \
-  gucefMT
+  gucefMT \
+  gucefWEB
 
 include $(BUILD_EXECUTABLE)
 

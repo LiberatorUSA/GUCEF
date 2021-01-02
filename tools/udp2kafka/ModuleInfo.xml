@@ -2,6 +2,7 @@
 <ModuleInfoEntry>
 	<Module Name="udp2kafka" Platform="All" Type="Executable" >
 		<Dependencies>
+			<Dependency Name="gucefWEB" />
 			<Dependency Name="gucefCOM" />
 			<Dependency Name="gucefCOMCORE" />
 			<Dependency Name="gucefCORE" />
@@ -9,6 +10,7 @@
 			<Dependency Name="RdKafka" />
 		</Dependencies>
 		<Linker>
+			<Dependency Name="gucefWEB" />
 			<Dependency Name="gucefCOM" />
 			<Dependency Name="gucefCOMCORE" />
 			<Dependency Name="gucefCORE" />

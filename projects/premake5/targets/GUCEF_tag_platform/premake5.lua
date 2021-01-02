@@ -36,6 +36,7 @@ filter "ALL"
   include( "platform/gucefPRODMAN" )
   include( "platform/gucefSMDRN" )
   include( "platform/gucefVFS" )
+  include( "platform/gucefWEB" )
 
 filter "EMSCRIPTEN"
   include( "platform/gucefCORE" )

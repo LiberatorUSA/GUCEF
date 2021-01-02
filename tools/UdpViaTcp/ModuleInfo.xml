@@ -2,12 +2,14 @@
 <ModuleInfoEntry>
 	<Module Name="UdpViaTcp" Platform="All" Type="Executable" >
 		<Dependencies>
+			<Dependency Name="gucefWEB" />
 			<Dependency Name="gucefCOM" />
 			<Dependency Name="gucefCOMCORE" />
 			<Dependency Name="gucefCORE" />
 			<Dependency Name="gucefMT" />
 		</Dependencies>
 		<Linker>
+			<Dependency Name="gucefWEB" />
 			<Dependency Name="gucefCOM" />
 			<Dependency Name="gucefCOMCORE" />
 			<Dependency Name="gucefCORE" />

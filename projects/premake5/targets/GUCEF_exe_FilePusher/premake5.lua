@@ -35,6 +35,7 @@ filter "ALL"
   include( "platform/gucefCORE" )
   include( "platform/gucefMT" )
   include( "platform/gucefVFS" )
+  include( "platform/gucefWEB" )
   include( "plugins/CORE/dstorepluginJSONPARSER" )
   include( "plugins/CORE/dstorepluginPARSIFALXML" )
   include( "plugins/SHARED/pluginglueAWSSDK" )

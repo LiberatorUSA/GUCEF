@@ -2,6 +2,7 @@
 <ModuleInfoEntry>
 	<Module Name="FilePusher" Platform="All" Type="Executable" >
 		<Dependencies>
+			<Dependency Name="gucefWEB" />
 			<Dependency Name="gucefVFS" />
 			<Dependency Name="gucefCOM" />
 			<Dependency Name="gucefCOMCORE" />
@@ -9,6 +10,7 @@
 			<Dependency Name="gucefMT" />
 		</Dependencies>
 		<Linker>
+			<Dependency Name="gucefWEB" />
 			<Dependency Name="gucefVFS" />
 			<Dependency Name="gucefCOM" />
 			<Dependency Name="gucefCOMCORE" />

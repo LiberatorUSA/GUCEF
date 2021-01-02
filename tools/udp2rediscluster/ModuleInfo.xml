@@ -2,6 +2,7 @@
 <ModuleInfoEntry>
 	<Module Name="udp2rediscluster" Platform="All" Type="Executable" >
 		<Dependencies>
+			<Dependency Name="gucefWEB" />
 			<Dependency Name="gucefCOM" />
 			<Dependency Name="gucefCOMCORE" />
 			<Dependency Name="gucefCORE" />
@@ -10,6 +11,7 @@
 			<Dependency Name="redis-plus-plus" />
 		</Dependencies>
 		<Linker>
+			<Dependency Name="gucefWEB" />
 			<Dependency Name="gucefCOM" />
 			<Dependency Name="gucefCOMCORE" />
 			<Dependency Name="gucefCORE" />

@@ -101,6 +101,7 @@ filter "ALL"
   include( "platform/gucefPRODMAN" )
   include( "platform/gucefSMDRN" )
   include( "platform/gucefVFS" )
+  include( "platform/gucefWEB" )
   include( "plugins/CORE/dstorepluginJSONPARSER" )
   include( "plugins/CORE/dstorepluginPARSIFALXML" )
   include( "plugins/GUI/guidriverAndroidGLES" )

@@ -35,8 +35,8 @@ configuration( {} )
 kind( "ConsoleApp" )
 
 configuration( {} )
-links( { "gucefCOM", "gucefCOMCORE", "gucefCORE", "gucefMT", "hiredis", "redis-plus-plus" } )
-links( { "gucefCOM", "gucefCOMCORE", "gucefCORE", "gucefMT", "hiredis", "redis-plus-plus" } )
+links( { "gucefCOM", "gucefCOMCORE", "gucefCORE", "gucefMT", "gucefWEB", "hiredis", "redis-plus-plus" } )
+links( { "gucefCOM", "gucefCOMCORE", "gucefCORE", "gucefMT", "gucefWEB", "hiredis", "redis-plus-plus" } )
 
 
 configuration( {} )
@@ -58,7 +58,7 @@ files( {
 
 
 configuration( {} )
-includedirs( { "../../common/include", "../../dependencies", "../../dependencies/hiredis", "../../dependencies/redis-plus-plus/src/sw/redis++", "../../platform/gucefCOM/include", "../../platform/gucefCOMCORE/include", "../../platform/gucefCORE/include", "../../platform/gucefMT/include", "include" } )
+includedirs( { "../../common/include", "../../dependencies", "../../dependencies/hiredis", "../../dependencies/redis-plus-plus/src/sw/redis++", "../../platform/gucefCOM/include", "../../platform/gucefCOMCORE/include", "../../platform/gucefCORE/include", "../../platform/gucefMT/include", "../../platform/gucefVFS/include", "../../platform/gucefWEB/include", "include" } )
 
 configuration( { "ANDROID" } )
 includedirs( { "../../dependencies/hiredis", "../../platform/gucefCORE/include/android" } )

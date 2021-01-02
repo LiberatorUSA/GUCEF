@@ -29,6 +29,8 @@ filter "ALL"
   include( "platform/gucefCOMCORE" )
   include( "platform/gucefCORE" )
   include( "platform/gucefMT" )
+  include( "platform/gucefVFS" )
+  include( "platform/gucefWEB" )
   include( "plugins/CORE/dstorepluginJSONPARSER" )
   include( "plugins/CORE/dstorepluginPARSIFALXML" )
   include( "tools/udp2redis" )

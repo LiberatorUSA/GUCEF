@@ -9,10 +9,10 @@
 --------------------------------------------------------------------
 --
 
--- Configuration for module: gucefCOM
+-- Configuration for module: gucefWEB
 
 
-project( "gucefCOM" )
+project( "gucefWEB" )
 
 configuration( {} )
   location( os.getenv( "PM5OUTPUTDIR" ) )
@@ -29,54 +29,47 @@ configuration( {} )
 kind( "SharedLib" )
 
 configuration( {} )
-links( { "gucefCOMCORE", "gucefCORE", "gucefMT" } )
-links( { "gucefCOMCORE", "gucefCORE", "gucefMT" } )
+links( { "gucefCOM", "gucefCOMCORE", "gucefCORE", "gucefMT", "gucefVFS" } )
+links( { "gucefCOM", "gucefCOMCORE", "gucefCORE", "gucefMT", "gucefVFS" } )
 
 
 configuration( {} )
-defines( { "GUCEF_COM_BUILD_MODULE" } )
+defines( { "GUCEF_WEB_BUILD_MODULE" } )
 
 
 configuration( {} )
 vpaths { ["Headers"] = { "**.h", "**.hpp", "**.hxx" } }
 files( {
-  "include/CDBColumn.h",
-  "include/CDBField.h",
-  "include/CDBQuery.h",
-  "include/CGUCEFCOMModule.h",
-  "include/CHTTPClient.h",
-  "include/CHTTPURLHandler.h",
-  "include/CMySQLClient.h",
-  "include/CMySQLClientInterface.h",
-  "include/CPHUDPSocket.h",
-  "include/gucefCOM.h",
-  "include/gucefCOMDLLInit.h",
-  "include/gucefCOM_CAsyncHttpServerRequestHandler.h",
-  "include/gucefCOM_CAsyncHttpServerResponseHandler.h",
-  "include/gucefCOM_CCodecBasedHTTPServerResource.h",
-  "include/gucefCOM_CComGlobal.h",
-  "include/gucefCOM_CConfigurableHttpServerResource.h",
-  "include/gucefCOM_CDefaultHTTPServerResource.h",
-  "include/gucefCOM_CDefaultHTTPServerRouter.h",
-  "include/gucefCOM_CDefaultHTTPServerRouterController.h",
-  "include/gucefCOM_CDefaultHttpServerRequestHandler.h",
-  "include/gucefCOM_CDummyHTTPServerResource.h",
-  "include/gucefCOM_CGlobalHttpCodecLinks.h",
-  "include/gucefCOM_CHTTPServer.h",
-  "include/gucefCOM_CHttpCodecLinks.h",
-  "include/gucefCOM_CHttpMimeTypes.h",
-  "include/gucefCOM_CHttpRequestData.h",
-  "include/gucefCOM_CHttpResponseData.h",
-  "include/gucefCOM_CIHTTPServerResource.h",
-  "include/gucefCOM_CIHTTPServerRouter.h",
-  "include/gucefCOM_CIHTTPServerRouterController.h",
-  "include/gucefCOM_CIHttpServerRequestHandler.h",
-  "include/gucefCOM_CStatsDClient.h",
-  "include/gucefCOM_CTConfigurableMapHttpServerResource.h",
-  "include/gucefCOM_ETypes.h",
-  "include/gucefCOM_HTTPCode.h",
-  "include/gucefCOM_config.h",
-  "include/gucefCOM_macros.h"
+  "include/gucefWEB.h",
+  "include/gucefWEB_CAsyncHttpServerRequestHandler.h",
+  "include/gucefWEB_CAsyncHttpServerResponseHandler.h",
+  "include/gucefWEB_CCodecBasedHTTPServerResource.h",
+  "include/gucefWEB_CConfigurableHttpServerResource.h",
+  "include/gucefWEB_CDefaultHTTPServerResource.h",
+  "include/gucefWEB_CDefaultHTTPServerRouter.h",
+  "include/gucefWEB_CDefaultHTTPServerRouterController.h",
+  "include/gucefWEB_CDefaultHttpServerRequestHandler.h",
+  "include/gucefWEB_CDummyHTTPServerResource.h",
+  "include/gucefWEB_CGUCEFWEBModule.h",
+  "include/gucefWEB_CGlobalHttpCodecLinks.h",
+  "include/gucefWEB_CHTTPClient.h",
+  "include/gucefWEB_CHTTPServer.h",
+  "include/gucefWEB_CHTTPURLHandler.h",
+  "include/gucefWEB_CHttpCodecLinks.h",
+  "include/gucefWEB_CHttpMimeTypes.h",
+  "include/gucefWEB_CHttpRequestData.h",
+  "include/gucefWEB_CHttpResponseData.h",
+  "include/gucefWEB_CIHTTPServerResource.h",
+  "include/gucefWEB_CIHTTPServerRouter.h",
+  "include/gucefWEB_CIHTTPServerRouterController.h",
+  "include/gucefWEB_CIHttpServerRequestHandler.h",
+  "include/gucefWEB_CTConfigurableMapHttpServerResource.h",
+  "include/gucefWEB_CWebGlobal.h",
+  "include/gucefWEB_DLLInit.h",
+  "include/gucefWEB_ETypes.h",
+  "include/gucefWEB_HTTPCode.h",
+  "include/gucefWEB_config.h",
+  "include/gucefWEB_macros.h"
  } )
 
 
@@ -84,39 +77,35 @@ files( {
 configuration( {} )
 vpaths { ["Source"] = { "**.c", "**.cpp", "**.cs", "**.asm" } }
 files( {
-  "src/CDBQuery.cpp",
-  "src/CGUCEFCOMModule.cpp",
-  "src/CHTTPClient.cpp",
-  "src/CHTTPURLHandler.cpp",
-  "src/CMySQLClient.cpp",
-  "src/CPHUDPSocket.cpp",
-  "src/gucefCOM.cpp",
-  "src/gucefCOM_CAsyncHttpServerRequestHandler.cpp",
-  "src/gucefCOM_CAsyncHttpServerResponseHandler.cpp",
-  "src/gucefCOM_CCodecBasedHTTPServerResource.cpp",
-  "src/gucefCOM_CComGlobal.cpp",
-  "src/gucefCOM_CConfigurableHttpServerResource.cpp",
-  "src/gucefCOM_CDefaultHTTPServerResource.cpp",
-  "src/gucefCOM_CDefaultHTTPServerRouter.cpp",
-  "src/gucefCOM_CDefaultHTTPServerRouterController.cpp",
-  "src/gucefCOM_CDefaultHttpServerRequestHandler.cpp",
-  "src/gucefCOM_CDummyHTTPServerResource.cpp",
-  "src/gucefCOM_CGlobalHttpCodecLinks.cpp",
-  "src/gucefCOM_CHTTPServer.cpp",
-  "src/gucefCOM_CHttpCodecLinks.cpp",
-  "src/gucefCOM_CHttpMimeTypes.cpp",
-  "src/gucefCOM_CHttpRequestData.cpp",
-  "src/gucefCOM_CHttpResponseData.cpp",
-  "src/gucefCOM_CIHTTPServerResource.cpp",
-  "src/gucefCOM_CIHTTPServerRouter.cpp",
-  "src/gucefCOM_CIHTTPServerRouterController.cpp",
-  "src/gucefCOM_CIHttpServerRequestHandler.cpp",
-  "src/gucefCOM_CStatsDClient.cpp"
+  "src/gucefWEB.cpp",
+  "src/gucefWEB_CAsyncHttpServerRequestHandler.cpp",
+  "src/gucefWEB_CAsyncHttpServerResponseHandler.cpp",
+  "src/gucefWEB_CCodecBasedHTTPServerResource.cpp",
+  "src/gucefWEB_CConfigurableHttpServerResource.cpp",
+  "src/gucefWEB_CDefaultHTTPServerResource.cpp",
+  "src/gucefWEB_CDefaultHTTPServerRouter.cpp",
+  "src/gucefWEB_CDefaultHTTPServerRouterController.cpp",
+  "src/gucefWEB_CDefaultHttpServerRequestHandler.cpp",
+  "src/gucefWEB_CDummyHTTPServerResource.cpp",
+  "src/gucefWEB_CGUCEFWEBModule.cpp",
+  "src/gucefWEB_CGlobalHttpCodecLinks.cpp",
+  "src/gucefWEB_CHTTPClient.cpp",
+  "src/gucefWEB_CHTTPServer.cpp",
+  "src/gucefWEB_CHTTPURLHandler.cpp",
+  "src/gucefWEB_CHttpCodecLinks.cpp",
+  "src/gucefWEB_CHttpMimeTypes.cpp",
+  "src/gucefWEB_CHttpRequestData.cpp",
+  "src/gucefWEB_CHttpResponseData.cpp",
+  "src/gucefWEB_CIHTTPServerResource.cpp",
+  "src/gucefWEB_CIHTTPServerRouter.cpp",
+  "src/gucefWEB_CIHTTPServerRouterController.cpp",
+  "src/gucefWEB_CIHttpServerRequestHandler.cpp",
+  "src/gucefWEB_CWebGlobal.cpp"
  } )
 
 
 configuration( {} )
-includedirs( { "../../common/include", "../gucefCOMCORE/include", "../gucefCORE/include", "../gucefMT/include", "include" } )
+includedirs( { "../../common/include", "../gucefCOM/include", "../gucefCOMCORE/include", "../gucefCORE/include", "../gucefMT/include", "../gucefVFS/include", "include" } )
 
 configuration( { "ANDROID" } )
 includedirs( { "../gucefCORE/include/android" } )

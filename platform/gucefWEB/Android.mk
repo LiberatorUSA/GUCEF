@@ -17,55 +17,55 @@ LOCAL_PATH := $(MY_MODULE_PATH)
 include $(CLEAR_VARS)
 
 @echo Module path: $(MY_MODULE_PATH)
-LOCAL_MODULE := gucefCOM
-LOCAL_MODULE_FILENAME := libgucefCOM
+LOCAL_MODULE := gucefWEB
+LOCAL_MODULE_FILENAME := libgucefWEB
 @echo Module name: $(LOCAL_MODULE)
 
 LOCAL_SRC_FILES := \
-  src/CDBQuery.cpp \
-  src/CGUCEFCOMModule.cpp \
-  src/CHTTPClient.cpp \
-  src/CHTTPURLHandler.cpp \
-  src/CMySQLClient.cpp \
-  src/CPHUDPSocket.cpp \
-  src/gucefCOM.cpp \
-  src/gucefCOM_CAsyncHttpServerRequestHandler.cpp \
-  src/gucefCOM_CAsyncHttpServerResponseHandler.cpp \
-  src/gucefCOM_CCodecBasedHTTPServerResource.cpp \
-  src/gucefCOM_CComGlobal.cpp \
-  src/gucefCOM_CConfigurableHttpServerResource.cpp \
-  src/gucefCOM_CDefaultHTTPServerResource.cpp \
-  src/gucefCOM_CDefaultHTTPServerRouter.cpp \
-  src/gucefCOM_CDefaultHTTPServerRouterController.cpp \
-  src/gucefCOM_CDefaultHttpServerRequestHandler.cpp \
-  src/gucefCOM_CDummyHTTPServerResource.cpp \
-  src/gucefCOM_CGlobalHttpCodecLinks.cpp \
-  src/gucefCOM_CHTTPServer.cpp \
-  src/gucefCOM_CHttpCodecLinks.cpp \
-  src/gucefCOM_CHttpMimeTypes.cpp \
-  src/gucefCOM_CHttpRequestData.cpp \
-  src/gucefCOM_CHttpResponseData.cpp \
-  src/gucefCOM_CIHTTPServerResource.cpp \
-  src/gucefCOM_CIHTTPServerRouter.cpp \
-  src/gucefCOM_CIHTTPServerRouterController.cpp \
-  src/gucefCOM_CIHttpServerRequestHandler.cpp \
-  src/gucefCOM_CStatsDClient.cpp
+  src/gucefWEB.cpp \
+  src/gucefWEB_CAsyncHttpServerRequestHandler.cpp \
+  src/gucefWEB_CAsyncHttpServerResponseHandler.cpp \
+  src/gucefWEB_CCodecBasedHTTPServerResource.cpp \
+  src/gucefWEB_CConfigurableHttpServerResource.cpp \
+  src/gucefWEB_CDefaultHTTPServerResource.cpp \
+  src/gucefWEB_CDefaultHTTPServerRouter.cpp \
+  src/gucefWEB_CDefaultHTTPServerRouterController.cpp \
+  src/gucefWEB_CDefaultHttpServerRequestHandler.cpp \
+  src/gucefWEB_CDummyHTTPServerResource.cpp \
+  src/gucefWEB_CGUCEFWEBModule.cpp \
+  src/gucefWEB_CGlobalHttpCodecLinks.cpp \
+  src/gucefWEB_CHTTPClient.cpp \
+  src/gucefWEB_CHTTPServer.cpp \
+  src/gucefWEB_CHTTPURLHandler.cpp \
+  src/gucefWEB_CHttpCodecLinks.cpp \
+  src/gucefWEB_CHttpMimeTypes.cpp \
+  src/gucefWEB_CHttpRequestData.cpp \
+  src/gucefWEB_CHttpResponseData.cpp \
+  src/gucefWEB_CIHTTPServerResource.cpp \
+  src/gucefWEB_CIHTTPServerRouter.cpp \
+  src/gucefWEB_CIHTTPServerRouterController.cpp \
+  src/gucefWEB_CIHttpServerRequestHandler.cpp \
+  src/gucefWEB_CWebGlobal.cpp
 
 LOCAL_C_INCLUDES := \
   $(MY_MODULE_PATH)/include \
   $(MY_MODULE_PATH)/../../common/include \
+  $(MY_MODULE_PATH)/../gucefCOM/include \
   $(MY_MODULE_PATH)/../gucefCOMCORE/include \
   $(MY_MODULE_PATH)/../gucefCORE/include \
   $(MY_MODULE_PATH)/../gucefCORE/include/android \
-  $(MY_MODULE_PATH)/../gucefMT/include
+  $(MY_MODULE_PATH)/../gucefMT/include \
+  $(MY_MODULE_PATH)/../gucefVFS/include
 
-LOCAL_CFLAGS := -DGUCEF_COM_BUILD_MODULE
+LOCAL_CFLAGS := -DGUCEF_WEB_BUILD_MODULE
 
 
 LOCAL_SHARED_LIBRARIES := \
+  gucefCOM \
   gucefCOMCORE \
   gucefCORE \
-  gucefMT
+  gucefMT \
+  gucefVFS
 
 include $(BUILD_SHARED_LIBRARY)
 

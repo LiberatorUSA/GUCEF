@@ -5,6 +5,7 @@
             <Dependency Name="gucefCORE" />
             <Dependency Name="gucefCOMCORE" />
             <Dependency Name="gucefCOM" />
+			<Dependency Name="gucefWEB" />			
             <Dependency Name="GucefLogServiceLib" />
         </Dependencies>
         <Linker>
@@ -12,6 +13,7 @@
             <Dependency Name="gucefCORE" />
             <Dependency Name="gucefCOMCORE" />
             <Dependency Name="gucefCOM" />
+			<Dependency Name="gucefWEB" />			
             <Dependency Name="GucefLogServiceLib" />
         </Linker>
         <Preprocessor>

@@ -37,10 +37,10 @@ if ( WIN32 )
 else()
   add_executable( ${MODULE_NAME} ${ALL_FILES} )
 endif()
-add_dependencies( ${MODULE_NAME} gucefCOM gucefCOMCORE gucefCORE gucefMT gucefVFS hiredis redis-plus-plus )
-target_link_libraries( ${MODULE_NAME} gucefCOM gucefCOMCORE gucefCORE gucefMT gucefVFS hiredis redis-plus-plus )
+add_dependencies( ${MODULE_NAME} gucefCOM gucefCOMCORE gucefCORE gucefMT gucefVFS gucefWEB hiredis redis-plus-plus )
+target_link_libraries( ${MODULE_NAME} gucefCOM gucefCOMCORE gucefCORE gucefMT gucefVFS gucefWEB hiredis redis-plus-plus )
 
-include_directories( ../../common/include ../../dependencies ../../dependencies/hiredis ../../dependencies/redis-plus-plus/src/sw/redis++ ../../platform/gucefCOM/include ../../platform/gucefCOMCORE/include ../../platform/gucefCORE/include ../../platform/gucefMT/include ../../platform/gucefVFS/include include )
+include_directories( ../../common/include ../../dependencies ../../dependencies/hiredis ../../dependencies/redis-plus-plus/src/sw/redis++ ../../platform/gucefCOM/include ../../platform/gucefCOMCORE/include ../../platform/gucefCORE/include ../../platform/gucefMT/include ../../platform/gucefVFS/include ../../platform/gucefWEB/include include )
 
 if ( ANDROID )
   include_directories( ../../dependencies/hiredis ../../platform/gucefCORE/include/android )
