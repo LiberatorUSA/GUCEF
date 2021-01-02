@@ -96,6 +96,7 @@ Settings::Settings( void )
     , gatherInfoCpu( true )
     , gatherInfoKeyspace( true )
     , gatherClusterInfo( true )
+    , gatherErrorReplyCount( true )
 {GUCEF_TRACE;
 
 }
@@ -119,6 +120,7 @@ Settings::Settings( const Settings& src )
     , gatherInfoCpu( src.gatherInfoCpu )
     , gatherInfoKeyspace( src.gatherInfoKeyspace )
     , gatherClusterInfo( src.gatherClusterInfo )
+    , gatherErrorReplyCount( src.gatherErrorReplyCount )
 {GUCEF_TRACE;
 
 }
@@ -147,6 +149,7 @@ Settings::operator=( const Settings& src )
         gatherInfoCpu = src.gatherInfoCpu;
         gatherInfoKeyspace = src.gatherInfoKeyspace;
         gatherClusterInfo = src.gatherClusterInfo;
+        gatherErrorReplyCount = src.gatherErrorReplyCount;
     }
     return *this;
 }
@@ -173,6 +176,7 @@ Settings::SaveConfig( CORE::CDataNode& tree ) const
     tree.SetAttribute( "gatherInfoCpu", gatherInfoCpu );
     tree.SetAttribute( "gatherInfoKeyspace", gatherInfoKeyspace );
     tree.SetAttribute( "gatherClusterInfo", gatherClusterInfo );
+    tree.SetAttribute( "gatherErrorReplyCount", gatherErrorReplyCount );
     return true;
 }
 
@@ -198,6 +202,7 @@ Settings::LoadConfig( const CORE::CDataNode& tree )
     gatherInfoCpu = CORE::StringToBool( tree.GetAttributeValueOrChildValueByName( "gatherInfoCpu" ), gatherInfoCpu );
     gatherInfoKeyspace = CORE::StringToBool( tree.GetAttributeValueOrChildValueByName( "gatherInfoKeyspace" ), gatherInfoKeyspace );
     gatherClusterInfo = CORE::StringToBool( tree.GetAttributeValueOrChildValueByName( "gatherClusterInfo" ), gatherClusterInfo );
+    gatherErrorReplyCount = CORE::StringToBool( tree.GetAttributeValueOrChildValueByName( "gatherErrorReplyCount" ), gatherErrorReplyCount );
     return true;
 }
 
@@ -218,10 +223,12 @@ RedisInfoService::RedisInfoService()
     , m_redisContext( GUCEF_NULL )
     , m_redisPacketArgs()
     , m_metricsTimer( GUCEF_NULL )
+    , m_redisReconnectTimer( GUCEF_NULL )
     , m_streamIndexingTimer( GUCEF_NULL )
     , m_filteredStreamNames()
     , m_redisNodesMap()
     , m_hashSlotOriginStrMap()
+    , m_redisClusterErrorReplies( 0 )
 {GUCEF_TRACE;
 
 }
@@ -231,8 +238,7 @@ RedisInfoService::RedisInfoService()
 RedisInfoService::~RedisInfoService()
 {GUCEF_TRACE;
 
-    delete m_redisContext;
-    m_redisContext = GUCEF_NULL;
+    RedisDisconnect();
 
     delete m_metricsTimer;
     m_metricsTimer = GUCEF_NULL;
@@ -252,10 +258,15 @@ RedisInfoService::RegisterEventHandlers( void )
                  CORE::CTimer::TimerUpdateEvent ,
                  callback1                      );
 
-    TEventCallback callback2( this, &RedisInfoService::OnStreamIndexingTimerCycle );
-    SubscribeTo( m_streamIndexingTimer          ,
+    TEventCallback callback2( this, &RedisInfoService::OnRedisReconnectTimerCycle );
+    SubscribeTo( m_redisReconnectTimer          ,
                  CORE::CTimer::TimerUpdateEvent ,
                  callback2                      );
+
+    TEventCallback callback3( this, &RedisInfoService::OnStreamIndexingTimerCycle );
+    SubscribeTo( m_streamIndexingTimer          ,
+                 CORE::CTimer::TimerUpdateEvent ,
+                 callback3                      );
 }
 
 /*-------------------------------------------------------------------------*/
@@ -576,6 +587,7 @@ RedisInfoService::RefreshRedisNodePipes( void )
                 catch ( const sw::redis::Error& e )
                 {
                     GUCEF_EXCEPTION_LOG( CORE::LOGLEVEL_IMPORTANT, "RedisInfoService(" + CORE::PointerToString( this ) + "):RefreshRedisNodePipes: Redis++ exception: " + e.what() );
+                    ++m_redisClusterErrorReplies;
                     return false;
                 }
                 catch ( const std::exception& e )
@@ -625,6 +637,9 @@ RedisInfoService::OnTaskStart( CORE::CICloneable* taskData )
     delete m_streamIndexingTimer;
     m_streamIndexingTimer = new CORE::CTimer( *GetPulseGenerator(), 1000 );
 
+    delete m_redisReconnectTimer;
+    m_redisReconnectTimer = new CORE::CTimer( *GetPulseGenerator(), 100 );
+
     if ( m_settings.streamIndexingInterval > 0 && IsStreamIndexingNeeded() )
     {
         m_streamIndexingTimer->SetInterval( (CORE::UInt32) m_settings.streamIndexingInterval );
@@ -651,7 +666,12 @@ RedisInfoService::OnTaskCycle( CORE::CICloneable* taskData )
 {GUCEF_TRACE;
 
     if ( GUCEF_NULL == m_redisContext )
-        RedisConnect();    
+    {
+        if ( !RedisConnect() )
+        {
+            m_redisReconnectTimer->SetEnabled( true );
+        }
+    }
     
     // We are never 'done' so return false
     return false;
@@ -673,6 +693,12 @@ void
 RedisInfoService::OnTaskEnded( CORE::CICloneable* taskData ,
                                bool wasForced              )
 {GUCEF_TRACE;
+
+    delete m_metricsTimer;
+    m_metricsTimer = GUCEF_NULL;
+
+    delete m_redisReconnectTimer;
+    m_redisReconnectTimer = GUCEF_NULL;
 
     CORE::CTaskConsumer::OnTaskEnded( taskData, wasForced );
 }
@@ -769,6 +795,22 @@ RedisNodeWithPipe::operator=( const RedisNode& other )
         //redisPipe
     }
     return *this;
+}
+
+/*-------------------------------------------------------------------------*/
+
+CORE::UInt32
+RedisInfoService::GetRedisClusterErrorRepliesCounter( bool resetCounter )
+{GUCEF_TRACE;
+
+    if ( resetCounter )
+    {
+        CORE::UInt32 redisErrorReplies = m_redisClusterErrorReplies;
+        m_redisClusterErrorReplies = 0;
+        return redisErrorReplies;
+    }
+    else
+        return m_redisClusterErrorReplies;
 }
 
 /*-------------------------------------------------------------------------*/
@@ -1411,6 +1453,7 @@ RedisInfoService::GetRedisClusterNodeMap( RedisNodeMap& nodeMap )
     catch ( const sw::redis::Error& e )
     {
         GUCEF_EXCEPTION_LOG( CORE::LOGLEVEL_IMPORTANT, "RedisInfoService(" + CORE::PointerToString( this ) + "):GetRedisClusterNodeMap: Redis++ exception: " + e.what() );
+        ++m_redisClusterErrorReplies;
         return false;
     }
     catch ( const std::exception& e )
@@ -1549,9 +1592,57 @@ RedisInfoService::SerializeRedisClusterNodeMap( const RedisNodeMap& nodeMap, COR
 /*-------------------------------------------------------------------------*/
 
 bool
+RedisInfoService::RedisDisconnect( void )
+{GUCEF_TRACE;
+
+    try
+    {
+        GUCEF_LOG( CORE::LOGLEVEL_NORMAL, "RedisInfoService(" + CORE::PointerToString( this ) + "):RedisDisconnect: Beginning cleanup" );
+
+        RedisNodeWithPipeMap::iterator i = m_redisNodesMap.begin();
+        while ( i != m_redisNodesMap.end() )
+        {
+            sw::redis::Pipeline* redisPipe = (*i).second.redisPipe;
+            delete redisPipe;
+            redisPipe = GUCEF_NULL;
+            ++i;
+        }
+        m_redisNodesMap.clear();
+        
+        delete m_redisContext;
+        m_redisContext = GUCEF_NULL;
+
+        GUCEF_LOG( CORE::LOGLEVEL_NORMAL, "RedisInfoService(" + CORE::PointerToString( this ) + "):RedisDisconnect: Finished cleanup" );
+    }
+    catch ( const sw::redis::OomError& e )
+    {
+		++m_redisClusterErrorReplies;
+        GUCEF_WARNING_LOG( CORE::LOGLEVEL_IMPORTANT, "RedisInfoService(" + CORE::PointerToString( this ) + "):RedisDisconnect: Redis++ OOM exception: " + e.what() );
+        return false;
+    }
+    catch ( const sw::redis::Error& e )
+    {
+		++m_redisClusterErrorReplies;
+        GUCEF_EXCEPTION_LOG( CORE::LOGLEVEL_IMPORTANT, "RedisInfoService(" + CORE::PointerToString( this ) + "):RedisDisconnect: Redis++ exception: " + e.what() );
+        return false;
+    }
+    catch ( const std::exception& e )
+    {
+        GUCEF_EXCEPTION_LOG( CORE::LOGLEVEL_IMPORTANT, "RedisInfoService(" + CORE::PointerToString( this ) + "):RedisDisconnect: exception: " + e.what() );
+        return false;
+    }
+
+    return true;
+}
+
+/*-------------------------------------------------------------------------*/
+
+bool
 RedisInfoService::RedisConnect( void )
 {GUCEF_TRACE;
 
+    RedisDisconnect();
+    
     try
     {
         sw::redis::ConnectionOptions rppConnectionOptions;
@@ -1599,11 +1690,14 @@ RedisInfoService::RedisConnect( void )
     catch ( const sw::redis::Error& e )
     {
         GUCEF_EXCEPTION_LOG( CORE::LOGLEVEL_IMPORTANT, "RedisInfoService(" + CORE::PointerToString( this ) + "):RedisConnect: Redis++ exception: " + e.what() );
+        ++m_redisClusterErrorReplies;
+        m_redisReconnectTimer->SetEnabled( true );
         return false;
     }
     catch ( const std::exception& e )
     {
         GUCEF_EXCEPTION_LOG( CORE::LOGLEVEL_IMPORTANT, "RedisInfoService(" + CORE::PointerToString( this ) + "):RedisConnect: exception: " + e.what() );
+        m_redisReconnectTimer->SetEnabled( true );
         return false;
     }
 }
@@ -1698,6 +1792,20 @@ RedisInfoService::OnStreamIndexingTimerCycle( CORE::CNotifier* notifier    ,
         GUCEF_LOG( CORE::LOGLEVEL_NORMAL, "RedisInfoService(" + CORE::PointerToString( this ) + "):OnStreamIndexingTimerCycle: Downloaded and found " + 
             CORE::ToString( allStreamNames.size() ) + " streams. Filtered those using wilcard pattern matching down to " + CORE::ToString( m_filteredStreamNames.size() ) +
             " streams which we will collect metric for"  );
+    }
+}
+
+/*-------------------------------------------------------------------------*/
+
+void
+RedisInfoService::OnRedisReconnectTimerCycle( CORE::CNotifier* notifier    ,
+                                              const CORE::CEvent& eventId  ,
+                                              CORE::CICloneable* eventData )
+{GUCEF_TRACE;
+
+    if ( RedisConnect() )
+    {
+        m_redisReconnectTimer->SetEnabled( false );
     }
 }
 
@@ -1815,6 +1923,12 @@ RedisInfoService::OnMetricsTimerCycle( CORE::CNotifier* notifier    ,
             CORE::CString metricPrefix = m_settings.metricPrefix + "StreamInfo.";
             SendKeyValueStats( kv, metricPrefix );
         }
+    }
+    if ( m_settings.gatherErrorReplyCount )
+    {
+        CORE::CString metricPrefix = m_settings.metricPrefix + "ClusterErrorReplies.";
+        CORE::UInt32 clusterErrorReplyCount = GetRedisClusterErrorRepliesCounter( true );
+        GUCEF_METRIC_COUNT( metricPrefix, clusterErrorReplyCount, 1.0f );
     }
 }
 

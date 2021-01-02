@@ -127,6 +127,7 @@ class Settings : public CORE::CIConfigurable
     bool gatherInfoCpu;
     bool gatherInfoKeyspace;
     bool gatherClusterInfo;
+    bool gatherErrorReplyCount;
 
     virtual bool SaveConfig( CORE::CDataNode& tree ) const GUCEF_VIRTUAL_OVERRIDE;
 
@@ -211,6 +212,8 @@ class RedisInfoService : public CORE::CTaskConsumer
     private:
 
     bool RedisConnect( void );
+
+    bool RedisDisconnect( void );
 
     void RegisterEventHandlers( void );
 
@@ -303,10 +306,17 @@ class RedisInfoService : public CORE::CTaskConsumer
 
     bool IsStreamIndexingNeeded( void ) const;
 
+    CORE::UInt32 GetRedisClusterErrorRepliesCounter( bool resetCounter );
+
     void
     OnMetricsTimerCycle( CORE::CNotifier* notifier    ,
                          const CORE::CEvent& eventId  ,
                          CORE::CICloneable* eventData );
+
+    void
+    OnRedisReconnectTimerCycle( CORE::CNotifier* notifier    ,
+                                const CORE::CEvent& eventId  ,
+                                CORE::CICloneable* eventData );
 
     void
     OnStreamIndexingTimerCycle( CORE::CNotifier* notifier    ,
@@ -323,10 +333,12 @@ class RedisInfoService : public CORE::CTaskConsumer
     Settings m_settings;
     TRedisArgs m_redisPacketArgs;
     CORE::CTimer* m_metricsTimer;
+    CORE::CTimer* m_redisReconnectTimer;
     CORE::CTimer* m_streamIndexingTimer;
     CORE::CString::StringVector m_filteredStreamNames;
     RedisNodeWithPipeMap m_redisNodesMap;
     TUInt32ToStringSetMap m_hashSlotOriginStrMap;
+    CORE::UInt32 m_redisClusterErrorReplies;
 };
 
 /*-------------------------------------------------------------------------*/
