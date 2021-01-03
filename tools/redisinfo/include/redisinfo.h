@@ -170,10 +170,13 @@ class RedisNodeWithPipe : public RedisNode
     public:
 
     sw::redis::Pipeline* redisPipe;
+    CORE::UInt32 redisErrorReplies;
 
     RedisNodeWithPipe& operator=( const RedisNode& other );
 
     RedisNodeWithPipe( void );
+
+    CORE::UInt32 GetRedisErrorRepliesCounter( bool resetCounter );
 };
 
 typedef std::map< CORE::UInt32, RedisNodeWithPipe > RedisNodeWithPipeMap;
@@ -304,6 +307,8 @@ class RedisInfoService : public CORE::CTaskConsumer
     void SendKeyValueStats( const CORE::CValueList& kv        ,
                             const CORE::CString& metricPrefix );
 
+    void SendErrorReplyStats( const CORE::CString& metricPrefix );
+    
     bool IsStreamIndexingNeeded( void ) const;
 
     CORE::UInt32 GetRedisClusterErrorRepliesCounter( bool resetCounter );

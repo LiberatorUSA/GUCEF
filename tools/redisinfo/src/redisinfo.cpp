@@ -667,10 +667,7 @@ RedisInfoService::OnTaskCycle( CORE::CICloneable* taskData )
 
     if ( GUCEF_NULL == m_redisContext )
     {
-        if ( !RedisConnect() )
-        {
-            m_redisReconnectTimer->SetEnabled( true );
-        }
+        m_redisReconnectTimer->SetEnabled( true );
     }
     
     // We are never 'done' so return false
@@ -779,6 +776,7 @@ RedisNode::FindReplica( const CORE::CString& replicaNodeId ,
 RedisNodeWithPipe::RedisNodeWithPipe( void )
     : RedisNode()
     , redisPipe( GUCEF_NULL ) 
+    , redisErrorReplies( 0 )
 {GUCEF_TRACE;
 
 }
@@ -795,6 +793,22 @@ RedisNodeWithPipe::operator=( const RedisNode& other )
         //redisPipe
     }
     return *this;
+}
+
+/*-------------------------------------------------------------------------*/
+
+CORE::UInt32
+RedisNodeWithPipe::GetRedisErrorRepliesCounter( bool resetCounter )
+{GUCEF_TRACE;
+
+    if ( resetCounter )
+    {
+        CORE::UInt32 nodeRedisErrorReplies = redisErrorReplies;
+        redisErrorReplies = 0;
+        return nodeRedisErrorReplies;
+    }
+    else
+        return redisErrorReplies;
 }
 
 /*-------------------------------------------------------------------------*/
@@ -1076,6 +1090,8 @@ RedisInfoService::GetRedisInfo( const CORE::CString& cmd  ,
     catch ( const sw::redis::Error& e )
     {
         GUCEF_EXCEPTION_LOG( CORE::LOGLEVEL_IMPORTANT, "RedisInfoService(" + CORE::PointerToString( this ) + "):GetRedisClusterNodeMap: Redis++ exception: " + e.what() );
+        if ( GUCEF_NULL != node )
+            ++node->redisErrorReplies;
         return false;
     }
     catch ( const std::exception& e )
@@ -1228,11 +1244,15 @@ RedisInfoService::GetRedisStreamInfo( const CORE::CString& streamName        ,
     catch ( const sw::redis::MovedError& e )
     {
         GUCEF_EXCEPTION_LOG( CORE::LOGLEVEL_IMPORTANT, "RedisInfoService(" + CORE::PointerToString( this ) + "):GetRedisStreamInfo: Redis++ Moved exception: " + e.what() );
+        if ( GUCEF_NULL != node )
+            ++node->redisErrorReplies;
         return false;
     }
     catch ( const sw::redis::Error& e )
     {
         GUCEF_EXCEPTION_LOG( CORE::LOGLEVEL_IMPORTANT, "RedisInfoService(" + CORE::PointerToString( this ) + "):GetRedisStreamInfo: Redis++ exception: " + e.what() );
+        if ( GUCEF_NULL != node )
+            ++node->redisErrorReplies;
         return false;
     }
     catch ( const std::exception& e )
@@ -1327,6 +1347,7 @@ RedisInfoService::GetRedisKeysForNode( RedisNodeWithPipe& node           ,
     catch ( const sw::redis::Error& e )
     {
         GUCEF_EXCEPTION_LOG( CORE::LOGLEVEL_IMPORTANT, "RedisInfoService(" + CORE::PointerToString( this ) + "):GetRedisKeys: Redis Node " + node.nodeId + " : Redis++ exception: " + e.what() );
+        ++node.redisErrorReplies;
         return false;
     }
     catch ( const std::exception& e )
@@ -1546,6 +1567,7 @@ RedisInfoService::GetRedisClusterSlots( RedisNodeMap& nodeMap )
             {
                 if ( REDIS_REPLY_ERROR == type )
                 {
+                    ++m_redisClusterErrorReplies;
                     return false;
                 }
             }
@@ -1555,6 +1577,7 @@ RedisInfoService::GetRedisClusterSlots( RedisNodeMap& nodeMap )
     catch ( const sw::redis::Error& e )
     {
         GUCEF_EXCEPTION_LOG( CORE::LOGLEVEL_IMPORTANT, "RedisInfoService(" + CORE::PointerToString( this ) + "):GetRedisClusterSlots: Redis++ exception: " + e.what() );
+        ++m_redisClusterErrorReplies;
         return false;
     }
     catch ( const std::exception& e )
@@ -1812,6 +1835,27 @@ RedisInfoService::OnRedisReconnectTimerCycle( CORE::CNotifier* notifier    ,
 /*-------------------------------------------------------------------------*/
 
 void
+RedisInfoService::SendErrorReplyStats( const CORE::CString& metricPrefix )
+{GUCEF_TRACE;
+
+    CORE::CString clusterMetricPrefix = metricPrefix + "ClusterErrorReplies";
+    CORE::UInt32 clusterErrorReplyCount = GetRedisClusterErrorRepliesCounter( true );
+    GUCEF_METRIC_COUNT( clusterMetricPrefix, clusterErrorReplyCount, 1.0f );
+
+    RedisNodeWithPipeMap::iterator i = m_redisNodesMap.begin();
+    while ( i != m_redisNodesMap.end() )
+    {
+        RedisNodeWithPipe& node = (*i).second;
+        CORE::CString nodeMetricPrefix = metricPrefix + node.nodeId + ".ErrorReplies";
+        CORE::UInt32 nodeErrorReplyCount = node.GetRedisErrorRepliesCounter( true );
+        GUCEF_METRIC_COUNT( nodeMetricPrefix, nodeErrorReplyCount, 1.0f );
+        ++i;
+    }
+}
+
+/*-------------------------------------------------------------------------*/
+
+void
 RedisInfoService::OnMetricsTimerCycle( CORE::CNotifier* notifier    ,
                                        const CORE::CEvent& eventId  ,
                                        CORE::CICloneable* eventData )
@@ -1926,9 +1970,7 @@ RedisInfoService::OnMetricsTimerCycle( CORE::CNotifier* notifier    ,
     }
     if ( m_settings.gatherErrorReplyCount )
     {
-        CORE::CString metricPrefix = m_settings.metricPrefix + "ClusterErrorReplies.";
-        CORE::UInt32 clusterErrorReplyCount = GetRedisClusterErrorRepliesCounter( true );
-        GUCEF_METRIC_COUNT( metricPrefix, clusterErrorReplyCount, 1.0f );
+        SendErrorReplyStats( m_settings.metricPrefix );
     }
 }
 
