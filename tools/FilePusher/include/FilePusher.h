@@ -56,25 +56,25 @@
 #define GUCEF_CORE_CDIRECTORYWATCHER_H
 #endif /* GUCEF_CORE_CDIRECTORYWATCHER_H ? */
 
-#ifndef GUCEF_COM_CHTTPSERVER_H
-#include "gucefCOM_CHTTPServer.h"
-#define GUCEF_COM_CHTTPSERVER_H
-#endif /* GUCEF_COM_CHTTPSERVER_H ? */
+#ifndef GUCEF_WEB_CHTTPSERVER_H
+#include "gucefWEB_CHTTPServer.h"
+#define GUCEF_WEB_CHTTPSERVER_H
+#endif /* GUCEF_WEB_CHTTPSERVER_H ? */
 
-#ifndef GUCEF_COM_CHTTPCLIENT_H
-#include "CHTTPClient.h"
-#define GUCEF_COM_CHTTPCLIENT_H
-#endif /* GUCEF_COM_CHTTPCLIENT_H ? */
+#ifndef GUCEF_WEB_CHTTPCLIENT_H
+#include "gucefWEB_CHTTPClient.h"
+#define GUCEF_WEB_CHTTPCLIENT_H
+#endif /* GUCEF_WEB_CHTTPCLIENT_H ? */
 
-#ifndef GUCEF_COM_CDEFAULTHTTPSERVERROUTER_H
-#include "gucefCOM_CDefaultHTTPServerRouter.h"
-#define GUCEF_COM_CDEFAULTHTTPSERVERROUTER_H
-#endif /* GUCEF_COM_CDEFAULTHTTPSERVERROUTER_H ? */
+#ifndef GUCEF_WEB_CDEFAULTHTTPSERVERROUTER_H
+#include "gucefWEB_CDefaultHTTPServerRouter.h"
+#define GUCEF_WEB_CDEFAULTHTTPSERVERROUTER_H
+#endif /* GUCEF_WEB_CDEFAULTHTTPSERVERROUTER_H ? */
 
-#ifndef GUCEF_COM_CCODECBASEDHTTPSERVERRESOURCE_H
-#include "gucefCOM_CCodecBasedHTTPServerResource.h"
-#define GUCEF_COM_CCODECBASEDHTTPSERVERRESOURCE_H
-#endif /* GUCEF_COM_CCODECBASEDHTTPSERVERRESOURCE_H ? */
+#ifndef GUCEF_WEB_CCODECBASEDHTTPSERVERRESOURCE_H
+#include "gucefWEB_CCodecBasedHTTPServerResource.h"
+#define GUCEF_WEB_CCODECBASEDHTTPSERVERRESOURCE_H
+#endif /* GUCEF_WEB_CCODECBASEDHTTPSERVERRESOURCE_H ? */
 
 /*-------------------------------------------------------------------------//
 //                                                                         //
@@ -92,7 +92,7 @@ using namespace GUCEF;
 
 class FilePusher;
 
-class RestApiFilePusherInfoResource : public COM::CCodecBasedHTTPServerResource
+class RestApiFilePusherInfoResource : public WEB::CCodecBasedHTTPServerResource
 {
     public:
 
@@ -110,7 +110,7 @@ class RestApiFilePusherInfoResource : public COM::CCodecBasedHTTPServerResource
 
 /*-------------------------------------------------------------------------*/
 
-class RestApiFilePusherConfigResource : public COM::CCodecBasedHTTPServerResource
+class RestApiFilePusherConfigResource : public WEB::CCodecBasedHTTPServerResource
 {
     public:
 
@@ -307,7 +307,7 @@ class FilePushDestination : public CORE::CObservingNotifier
     typedef std::map< CORE::CString, CORE::UInt64 > TStringUInt64Map;
     typedef std::map< CORE::CDateTime, CORE::CString::StringVector > TDateTimeStringVectorMap;
 
-    COM::CHTTPClient m_httpClient;
+    WEB::CHTTPClient m_httpClient;
     CORE::CDirectoryWatcher m_dirWatcher;
     CORE::CTimer m_allFilesDirScanTimer;        
     CORE::CTimer m_newFileRestPeriodTimer;
@@ -343,8 +343,8 @@ class FilePusher : public CORE::CObservingNotifier
 
     typedef std::vector< FilePushDestination > FilePushDestinationVector;
     
-    COM::CHTTPServer m_httpServer;
-    COM::CDefaultHTTPServerRouter m_httpRouter;
+    WEB::CHTTPServer m_httpServer;
+    WEB::CDefaultHTTPServerRouter m_httpRouter;
     CORE::CValueList m_appConfig;
     CORE::CDataNode m_globalConfig;    
     FilePushDestinationVector m_filePushDestinations;

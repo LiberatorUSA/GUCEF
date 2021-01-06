@@ -102,6 +102,7 @@ filter "ALL"
   include( "platform/gucefSMDRN" )
   include( "platform/gucefVFS" )
   include( "platform/gucefWEB" )
+  include( "plugins/CORE/compressioncodecZLIB" )
   include( "plugins/CORE/dstorepluginJSONPARSER" )
   include( "plugins/CORE/dstorepluginPARSIFALXML" )
   include( "plugins/GUI/guidriverAndroidGLES" )

@@ -28,10 +28,10 @@
 #define GUCEF_CORE_CTASKMANAGER_H
 #endif /* GUCEF_CORE_CTASKMANAGER_H */
 
-#ifndef GUCEF_COM_CDUMMYHTTPSERVERRESOURCE_H
-#include "gucefCOM_CDummyHTTPServerResource.h"
-#define GUCEF_COM_CDUMMYHTTPSERVERRESOURCE_H
-#endif /* GUCEF_COM_CDUMMYHTTPSERVERRESOURCE_H ? */
+#ifndef GUCEF_WEB_CDUMMYHTTPSERVERRESOURCE_H
+#include "gucefWEB_CDummyHTTPServerResource.h"
+#define GUCEF_WEB_CDUMMYHTTPSERVERRESOURCE_H
+#endif /* GUCEF_WEB_CDUMMYHTTPSERVERRESOURCE_H ? */
 
 #include "FilePusher.h"
 
@@ -75,7 +75,7 @@ const CORE::UInt32 FilePushDestinationSettings::DefaultNewFileRestPeriodInSecs =
 //-------------------------------------------------------------------------*/
 
 RestApiFilePusherInfoResource::RestApiFilePusherInfoResource( FilePusher* app )
-    : COM::CCodecBasedHTTPServerResource()
+    : WEB::CCodecBasedHTTPServerResource()
     , m_app( app )
 {GUCEF_TRACE;
 
@@ -110,7 +110,7 @@ RestApiFilePusherInfoResource::Serialize( CORE::CDataNode& output             ,
 /*-------------------------------------------------------------------------*/
 
 RestApiFilePusherConfigResource::RestApiFilePusherConfigResource( FilePusher* app, bool appConfig )
-    : COM::CCodecBasedHTTPServerResource()
+    : WEB::CCodecBasedHTTPServerResource()
     , m_app( app )
     , m_appConfig( appConfig )
 {GUCEF_TRACE;
@@ -439,39 +439,39 @@ FilePushDestination::RegisterEventHandlers( void )
     
     TEventCallback callback5( this, &FilePushDestination::OnHttpClientConnected );
     SubscribeTo( &m_httpClient                    ,
-                 COM::CHTTPClient::ConnectedEvent ,
+                 WEB::CHTTPClient::ConnectedEvent ,
                  callback5                        );
     TEventCallback callback6( this, &FilePushDestination::OnHttpClientDisconnected );
     SubscribeTo( &m_httpClient                       ,
-                 COM::CHTTPClient::DisconnectedEvent ,
+                 WEB::CHTTPClient::DisconnectedEvent ,
                  callback6                           );
     TEventCallback callback7( this, &FilePushDestination::OnHttpClientConnectionError );
     SubscribeTo( &m_httpClient                          ,
-                 COM::CHTTPClient::ConnectionErrorEvent ,
+                 WEB::CHTTPClient::ConnectionErrorEvent ,
                  callback7                              );
     TEventCallback callback8( this, &FilePushDestination::OnHttpClientHttpError );
     SubscribeTo( &m_httpClient                    ,
-                 COM::CHTTPClient::HTTPErrorEvent ,
+                 WEB::CHTTPClient::HTTPErrorEvent ,
                  callback8                        );
     TEventCallback callback9( this, &FilePushDestination::OnHttpClientHttpRedirect );
     SubscribeTo( &m_httpClient                       ,
-                 COM::CHTTPClient::HTTPRedirectEvent ,
+                 WEB::CHTTPClient::HTTPRedirectEvent ,
                  callback9                           );
     TEventCallback callback10( this, &FilePushDestination::OnHttpClientHttpContent );
     SubscribeTo( &m_httpClient                      ,
-                 COM::CHTTPClient::HTTPContentEvent ,
+                 WEB::CHTTPClient::HTTPContentEvent ,
                  callback10                         );
     TEventCallback callback11( this, &FilePushDestination::OnHttpClientHttpDataRecieved );
     SubscribeTo( &m_httpClient                           ,
-                 COM::CHTTPClient::HTTPDataRecievedEvent ,
+                 WEB::CHTTPClient::HTTPDataRecievedEvent ,
                  callback11                              );
     TEventCallback callback12( this, &FilePushDestination::OnHttpClientHttpDataSent );
     SubscribeTo( &m_httpClient                       ,
-                 COM::CHTTPClient::HTTPDataSentEvent ,
+                 WEB::CHTTPClient::HTTPDataSentEvent ,
                  callback12                          );
     TEventCallback callback13( this, &FilePushDestination::OnHttpClientHttpTransferFinished );
     SubscribeTo( &m_httpClient                               ,
-                 COM::CHTTPClient::HTTPTransferFinishedEvent ,
+                 WEB::CHTTPClient::HTTPTransferFinishedEvent ,
                  callback13                                  );
 
     TEventCallback callback14( this, &FilePushDestination::OnAsyncVfsOperationCompleted );
@@ -617,7 +617,7 @@ FilePushDestination::OnHttpClientHttpError( CORE::CNotifier* notifier    ,
                                             CORE::CICloneable* eventData )
 {GUCEF_TRACE;
 
-    COM::CHTTPClient::THTTPErrorEventData* httpErrorEventData = static_cast< COM::CHTTPClient::THTTPErrorEventData* >( eventData );
+    WEB::CHTTPClient::THTTPErrorEventData* httpErrorEventData = static_cast< WEB::CHTTPClient::THTTPErrorEventData* >( eventData );
     CORE::UInt32 httpErrorCode = (CORE::UInt32) httpErrorEventData->GetData();
 
     GUCEF_WARNING_LOG( CORE::LOGLEVEL_NORMAL, "FilePushDestination: HTTP Client has experienced a HTTP error: " + CORE::UInt32ToString( httpErrorCode ) );
@@ -1244,7 +1244,7 @@ FilePusher::LoadConfig( const CORE::CValueList& appConfig   ,
     m_httpRouter.SetResourceMapping( "/info", RestApiFilePusherInfoResource::THTTPServerResourcePtr( new RestApiFilePusherInfoResource( this ) )  );
     m_httpRouter.SetResourceMapping( "/config/appargs", RestApiFilePusherInfoResource::THTTPServerResourcePtr( new RestApiFilePusherConfigResource( this, true ) )  );
     m_httpRouter.SetResourceMapping( "/config", RestApiFilePusherInfoResource::THTTPServerResourcePtr( new RestApiFilePusherConfigResource( this, false ) )  );
-    m_httpRouter.SetResourceMapping(  appConfig.GetValueAlways( "RestBasicHealthUri", "/health/basic" ), RestApiFilePusherInfoResource::THTTPServerResourcePtr( new COM::CDummyHTTPServerResource() )  );
+    m_httpRouter.SetResourceMapping(  appConfig.GetValueAlways( "RestBasicHealthUri", "/health/basic" ), RestApiFilePusherInfoResource::THTTPServerResourcePtr( new WEB::CDummyHTTPServerResource() )  );
     
     m_httpServer.GetRouterController()->AddRouterMapping( &m_httpRouter, "", "" );
 

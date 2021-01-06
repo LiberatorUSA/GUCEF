@@ -1,0 +1,25 @@
+<ModuleInfoEntry>
+    <Module Name="compressioncodecZLIB" Type="SharedLibrary" Platform="All" Tags="plugin">
+        <Dependencies>
+            <Dependency Name="gucefMT" />
+            <Dependency Name="gucefCORE" />
+            <Dependency Name="zlib" />
+        </Dependencies>
+        <Preprocessor>
+            <Define String="GUCEF_CODECPLUGIN_BUILD_MODULE" />
+        </Preprocessor>
+    </Module>
+    <Module Platform="linux;mswin">
+        <Dependencies>
+            <Dependency Name="zlib" />
+        </Dependencies>
+        <Linker>
+            <Dependency Name="zlib" />
+        </Linker>        
+    </Module>
+    <Module Platform="android">
+        <Linker>
+            <Dependency Name="z" />
+        </Linker>
+    </Module>
+</ModuleInfoEntry>
