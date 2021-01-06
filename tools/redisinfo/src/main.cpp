@@ -77,6 +77,11 @@
 #define GUCEF_VFS_CVFSGLOBAL_H
 #endif /* GUCEF_VFS_CVFSGLOBAL_H ? */
 
+#ifndef GUCEF_WEB_CWEBGLOBAL_H
+#include "gucefWEB_CWebGlobal.h"
+#define GUCEF_WEB_CWEBGLOBAL_H
+#endif /* GUCEF_WEB_CWEBGLOBAL_H ? */
+
 #include "redisinfo.h"
 
 /*-------------------------------------------------------------------------//
@@ -197,8 +202,9 @@ GUCEF_OSMAIN_BEGIN
 
     CORE::CCoreGlobal::Instance();
     COMCORE::CComCoreGlobal::Instance();
-    COM::CComGlobal::Instance();
+    COM::CComGlobal::Instance();    
     VFS::CVfsGlobal::Instance();
+    WEB::CWebGlobal::Instance();
 
     // Check for config param first
     CORE::CValueList keyValueList;
