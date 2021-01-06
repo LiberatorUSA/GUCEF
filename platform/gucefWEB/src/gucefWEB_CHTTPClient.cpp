@@ -116,6 +116,7 @@ CHTTPClient::CHTTPClient( void )
     , m_currentOp( HTTP_VERB_UNKNOWN )
 {GUCEF_TRACE;
 
+    RegisterEvents();
     SubscribeTo( &m_socket );
 }
 
@@ -137,6 +138,7 @@ CHTTPClient::CHTTPClient( CORE::CPulseGenerator& pulseGenerator )
     , m_currentOp( HTTP_VERB_UNKNOWN )
 {GUCEF_TRACE;
 
+    RegisterEvents();
     SubscribeTo( &m_socket );
 }
 
