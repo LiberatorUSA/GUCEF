@@ -190,6 +190,7 @@ set( HEADER_FILES
   include/gucefCORE_CTime.h
   include/gucefCORE_CVersion.h
   include/gucefCORE_CVersionRange.h
+  include/gucefCORE_CoreCodecTypes.h
   include/gucefCORE_ETypes.h
   include/gucefCORE_GenericPluginAPI.h
   include/gucefCORE_LogLevels.h
@@ -374,6 +375,7 @@ set( SOURCE_FILES
   src/gucefCORE_CTime.cpp
   src/gucefCORE_CVersion.cpp
   src/gucefCORE_CVersionRange.cpp
+  src/gucefCORE_CoreCodecTypes.cpp
   src/gucefCORE_LogLevels.cpp
   src/gucefCORE_cinterface.cpp
   src/md5.c

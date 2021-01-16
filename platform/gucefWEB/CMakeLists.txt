@@ -27,6 +27,7 @@ set( HEADER_FILES
   include/gucefWEB_CHTTPServer.h
   include/gucefWEB_CHTTPURLHandler.h
   include/gucefWEB_CHttpCodecLinks.h
+  include/gucefWEB_CHttpEncodingTypes.h
   include/gucefWEB_CHttpMimeTypes.h
   include/gucefWEB_CHttpRequestData.h
   include/gucefWEB_CHttpResponseData.h
@@ -59,6 +60,7 @@ set( SOURCE_FILES
   src/gucefWEB_CHTTPServer.cpp
   src/gucefWEB_CHTTPURLHandler.cpp
   src/gucefWEB_CHttpCodecLinks.cpp
+  src/gucefWEB_CHttpEncodingTypes.cpp
   src/gucefWEB_CHttpMimeTypes.cpp
   src/gucefWEB_CHttpRequestData.cpp
   src/gucefWEB_CHttpResponseData.cpp

@@ -23,7 +23,7 @@
 //                                                                         //
 //-------------------------------------------------------------------------*/
 
-#include "gucefWEB_CHttpEncodingTypes.h"
+#include "gucefCORE_CoreCodecTypes.h"
 
 /*-------------------------------------------------------------------------//
 //                                                                         //
@@ -32,7 +32,7 @@
 //-------------------------------------------------------------------------*/
 
 namespace GUCEF {
-namespace WEB {
+namespace CORE {
 
 /*-------------------------------------------------------------------------//
 //                                                                         //
@@ -40,12 +40,9 @@ namespace WEB {
 //                                                                         //
 //-------------------------------------------------------------------------*/
 
-const CORE::CString CHttpEncodingTypes::EncodingTypeGZip = "gzip";
-const CORE::CString CHttpEncodingTypes::EncodingTypeGZipAlt = "x-gzip";
-const CORE::CString CHttpEncodingTypes::EncodingTypeCompress = "compress";
-const CORE::CString CHttpEncodingTypes::EncodingTypeDeflate = "deflate";
-const CORE::CString CHttpEncodingTypes::EncodingTypeIdentity = "identify";
-const CORE::CString CHttpEncodingTypes::EncodingTypeBrotli = "br";
+const CORE::CString CoreCodecTypes::HashingCodec        = "HashingCodec";
+const CORE::CString CoreCodecTypes::ChecksumCodec       = "ChecksumCodec";
+const CORE::CString CoreCodecTypes::CompressionCodec    = "CompressionCodec";
 
 /*-------------------------------------------------------------------------//
 //                                                                         //
@@ -53,7 +50,7 @@ const CORE::CString CHttpEncodingTypes::EncodingTypeBrotli = "br";
 //                                                                         //
 //-------------------------------------------------------------------------*/
 
-} /* namespace COM */
+} /* namespace CORE */
 } /* namespace GUCEF */
 
 /*-------------------------------------------------------------------------*/

@@ -41,6 +41,11 @@
 #define GUCEF_CORE_CICODEC_H
 #endif /* GUCEF_CORE_CICODEC_H ? */
 
+#ifndef GUCEF_CORE_CORECODECTYPES_H
+#include "gucefCORE_CoreCodecTypes.h"
+#define GUCEF_CORE_CORECODECTYPES_H
+#endif /* GUCEF_CORE_CORECODECTYPES_H ? */
+
 /*-------------------------------------------------------------------------//
 //                                                                         //
 //      NAMESPACE                                                          //
@@ -64,11 +69,11 @@ class GUCEF_CORE_PUBLIC_CPP CCodecRegistry : public CTONRegistry< CTONRegistry< 
 {
     public:
 
-    typedef CTONRegistry< CICodec, MT::CMutex > TCodecFamilyRegistry;
+    typedef CTONRegistry< CICodec, MT::CMutex >             TCodecFamilyRegistry;
     typedef CTSharedPtr< TCodecFamilyRegistry, MT::CMutex > TCodecFamilyRegistryPtr;
-    typedef CTONRegistry< CICodec, MT::CMutex >::TStringList TStringList;
-    typedef CTONRegistry< CICodec, MT::CMutex >::TRegisteredObjPtr TICodecPtr;
-
+    typedef TCodecFamilyRegistry::TStringList               TStringList;
+    typedef TCodecFamilyRegistry::TRegisteredObjPtr         TICodecPtr;
+    
     virtual const MT::CILockable* AsLockable( void ) const GUCEF_VIRTUAL_OVERRIDE;
 
     protected:

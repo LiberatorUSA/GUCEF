@@ -17,13 +17,24 @@
  *  limitations under the License.
  */
 
+#ifndef GUCEF_CORE_CORECODECTYPES_H
+#define GUCEF_CORE_CORECODECTYPES_H
+
 /*-------------------------------------------------------------------------//
 //                                                                         //
 //      INCLUDES                                                           //
 //                                                                         //
 //-------------------------------------------------------------------------*/
 
-#include "gucefWEB_CHttpEncodingTypes.h"
+#ifndef GUCEF_CORE_CDVSTRING_H
+#include "CDVString.h"
+#define GUCEF_CORE_CDVSTRING_H
+#endif /* GUCEF_CORE_CDVSTRING_H ? */
+
+#ifndef GUCEF_CORE_MACROS_H
+#include "gucefCORE_macros.h"
+#define GUCEF_CORE_MACROS_H
+#endif /* GUCEF_CORE_MACROS_H ? */
 
 /*-------------------------------------------------------------------------//
 //                                                                         //
@@ -32,20 +43,28 @@
 //-------------------------------------------------------------------------*/
 
 namespace GUCEF {
-namespace WEB {
+namespace CORE {
 
 /*-------------------------------------------------------------------------//
 //                                                                         //
-//      GLOBAL VARS                                                        //
+//      CLASSES                                                            //
 //                                                                         //
 //-------------------------------------------------------------------------*/
 
-const CORE::CString CHttpEncodingTypes::EncodingTypeGZip = "gzip";
-const CORE::CString CHttpEncodingTypes::EncodingTypeGZipAlt = "x-gzip";
-const CORE::CString CHttpEncodingTypes::EncodingTypeCompress = "compress";
-const CORE::CString CHttpEncodingTypes::EncodingTypeDeflate = "deflate";
-const CORE::CString CHttpEncodingTypes::EncodingTypeIdentity = "identify";
-const CORE::CString CHttpEncodingTypes::EncodingTypeBrotli = "br";
+/**
+ *  The platform does not restrict in any way which types of codecs can be 
+ *  registered and used but some codec types are fairly common for common 
+ *  use-cases. In order to aid in having consistent keys under which such codecs
+ *  are registered the below constants are provided intended as a helpful guide.
+ */
+class GUCEF_CORE_PUBLIC_CPP CoreCodecTypes
+{    
+    public:
+    
+    static const CORE::CString HashingCodec;
+    static const CORE::CString ChecksumCodec;
+    static const CORE::CString CompressionCodec;
+};
 
 /*-------------------------------------------------------------------------//
 //                                                                         //
@@ -53,7 +72,10 @@ const CORE::CString CHttpEncodingTypes::EncodingTypeBrotli = "br";
 //                                                                         //
 //-------------------------------------------------------------------------*/
 
-} /* namespace COM */
+} /* namespace CORE */
 } /* namespace GUCEF */
 
 /*-------------------------------------------------------------------------*/
+
+#endif /* GUCEF_CORE_CORECODECTYPES_H ? */
+   

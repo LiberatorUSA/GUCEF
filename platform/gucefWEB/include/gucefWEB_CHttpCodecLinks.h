@@ -36,6 +36,11 @@
 #define GUCEF_CORE_CDSTORECODECREGISTRY_H
 #endif /* GUCEF_CORE_CDSTORECODECREGISTRY_H ? */
 
+#ifndef GUCEF_CORE_CCODECREGISTRY_H
+#include "CCodecRegistry.h"
+#define GUCEF_CORE_CCODECREGISTRY_H
+#endif /* GUCEF_CORE_CCODECREGISTRY_H ? */
+
 #ifndef GUCEF_CORE_COBSERVINGNOTIFIER_H
 #include "CObservingNotifier.h"
 #define GUCEF_CORE_COBSERVINGNOTIFIER_H
@@ -65,7 +70,8 @@ class GUCEF_WEB_PUBLIC_CPP CHttpCodecLinks : public CORE::CObservingNotifier
 {    
     public:
 
-    typedef CORE::CDStoreCodecRegistry::TDStoreCodecPtr TMimeTypeCodecPtr;
+    typedef CORE::CDStoreCodecRegistry::TDStoreCodecPtr  TMimeTypeCodecPtr;
+    typedef CORE::CCodecRegistry::TICodecPtr             TEncodingCodecPtr;
     
     CHttpCodecLinks( void );
     
@@ -97,11 +103,12 @@ class GUCEF_WEB_PUBLIC_CPP CHttpCodecLinks : public CORE::CObservingNotifier
 
     protected:
 
-    typedef std::map< CORE::CString, TMimeTypeCodecPtr > TStringToCodecMap;
+    typedef std::map< CORE::CString, TMimeTypeCodecPtr > TStringToMimeTypeCodecMap;
+    typedef std::map< CORE::CString, TEncodingCodecPtr > TStringToEncodingCodecMap;
 
-    TStringToCodecMap m_serializeRepToCodecMap;
-    TStringToCodecMap m_deserializeRepToCodecMap;
-    TStringToCodecMap m_encodingRepToCodecMap;
+    TStringToMimeTypeCodecMap m_serializeRepToCodecMap;
+    TStringToMimeTypeCodecMap m_deserializeRepToCodecMap;
+    TStringToEncodingCodecMap m_encodingRepToCodecMap;
     CORE::CString::StringVector m_deserializationReps;
     CORE::CString::StringVector m_serializationReps;
     MT::CMutex m_dataLock;
