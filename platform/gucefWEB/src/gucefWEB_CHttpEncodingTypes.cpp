@@ -40,11 +40,12 @@ namespace WEB {
 //                                                                         //
 //-------------------------------------------------------------------------*/
 
+const CORE::CString CHttpEncodingTypes::EncodingTypeAny = "*";
+const CORE::CString CHttpEncodingTypes::EncodingTypeIdentity = "identify";
 const CORE::CString CHttpEncodingTypes::EncodingTypeGZip = "gzip";
 const CORE::CString CHttpEncodingTypes::EncodingTypeGZipAlt = "x-gzip";
 const CORE::CString CHttpEncodingTypes::EncodingTypeCompress = "compress";
 const CORE::CString CHttpEncodingTypes::EncodingTypeDeflate = "deflate";
-const CORE::CString CHttpEncodingTypes::EncodingTypeIdentity = "identify";
 const CORE::CString CHttpEncodingTypes::EncodingTypeBrotli = "br";
 
 /*-------------------------------------------------------------------------//

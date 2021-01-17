@@ -74,6 +74,7 @@ class GUCEF_WEB_PUBLIC_CPP CHttpResponseData : public CORE::CICloneable
     CString eTag;
     CString lastModified;
     CORE::CDynamicBuffer content;
+    CString contentEncoding;
     int statusCode;
     CString contentType;
     CString location;

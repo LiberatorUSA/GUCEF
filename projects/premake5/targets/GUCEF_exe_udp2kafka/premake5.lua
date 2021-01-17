@@ -32,6 +32,7 @@ filter "ALL"
   include( "platform/gucefMT" )
   include( "platform/gucefVFS" )
   include( "platform/gucefWEB" )
+  include( "plugins/CORE/codecspluginZLIB" )
   include( "plugins/CORE/dstorepluginJSONPARSER" )
   include( "plugins/CORE/dstorepluginPARSIFALXML" )
   include( "tools/udp2kafka" )

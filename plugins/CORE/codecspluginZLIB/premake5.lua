@@ -9,10 +9,10 @@
 --------------------------------------------------------------------
 --
 
--- Configuration for module: compressioncodecZLIB
+-- Configuration for module: codecspluginZLIB
 
 
-project( "compressioncodecZLIB" )
+project( "codecspluginZLIB" )
 
 configuration( {} )
   location( os.getenv( "PM5OUTPUTDIR" ) )
@@ -56,9 +56,9 @@ links( { "zlib" } )
 configuration( {} )
 vpaths { ["Headers"] = { "**.h", "**.hpp", "**.hxx" } }
 files( {
-  "include/compressioncodecZLIB.h",
-  "include/compressioncodecZLIB_config.h",
-  "include/compressioncodecZLIB_macros.h"
+  "include/codecspluginZLIB.h",
+  "include/codecspluginZLIB_config.h",
+  "include/codecspluginZLIB_macros.h"
  } )
 
 
@@ -66,7 +66,7 @@ files( {
 configuration( {} )
 vpaths { ["Source"] = { "**.c", "**.cpp", "**.cs", "**.asm" } }
 files( {
-  "src/compressioncodecZLIB.c"
+  "src/codecspluginZLIB.c"
  } )
 
 

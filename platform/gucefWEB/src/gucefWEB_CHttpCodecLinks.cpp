@@ -177,7 +177,7 @@ CHttpCodecLinks::InitMimeCodecLinks( void )
         m_serializeRepToCodecMap[ CHttpMimeTypes::MimeTypeIniProper ] = codec;
         m_deserializeRepToCodecMap[ CHttpMimeTypes::MimeTypeIniProper ] = codec;
 
-        GUCEF_DEBUG_LOG( CORE::LOGLEVEL_NORMAL, "CCodecBasedHTTPServerResource:InitMimeCodecLinks: Hooked up INI codec to MIME types" );
+        GUCEF_DEBUG_LOG( CORE::LOGLEVEL_NORMAL, "HttpCodecLinks:InitMimeCodecLinks: Hooked up INI codec to MIME types" );
     }
     if ( codecRegistry.TryLookup( "XML", codec, false ) )
     {
@@ -191,7 +191,7 @@ CHttpCodecLinks::InitMimeCodecLinks( void )
         m_serializeRepToCodecMap[ CHttpMimeTypes::MimeTypeText ] = codec;
         m_serializeRepToCodecMap[ CHttpMimeTypes::MimeTypeOctet ] = codec;
 
-        GUCEF_DEBUG_LOG( CORE::LOGLEVEL_NORMAL, "CCodecBasedHTTPServerResource:InitMimeCodecLinks: Hooked up XML codec to MIME types" );
+        GUCEF_DEBUG_LOG( CORE::LOGLEVEL_NORMAL, "HttpCodecLinks:InitMimeCodecLinks: Hooked up XML codec to MIME types" );
     }
     if ( codecRegistry.TryLookup( "JSON", codec, false ) )
     {
@@ -205,7 +205,7 @@ CHttpCodecLinks::InitMimeCodecLinks( void )
         m_serializeRepToCodecMap[ CHttpMimeTypes::MimeTypeText ] = codec;
         m_serializeRepToCodecMap[ CHttpMimeTypes::MimeTypeOctet ] = codec;
 
-        GUCEF_DEBUG_LOG( CORE::LOGLEVEL_NORMAL, "CCodecBasedHTTPServerResource:InitMimeCodecLinks: Hooked up JSON codec to MIME types" );
+        GUCEF_DEBUG_LOG( CORE::LOGLEVEL_NORMAL, "HttpCodecLinks:InitMimeCodecLinks: Hooked up JSON codec to MIME types" );
     }
 
     // Now based on what we can actually do codec wise set our preferences
@@ -254,6 +254,22 @@ CHttpCodecLinks::InitMimeCodecLinks( void )
     }
 
     return !m_serializeRepToCodecMap.empty() || !m_deserializeRepToCodecMap.empty();
+}
+
+/*-------------------------------------------------------------------------*/
+
+CHttpCodecLinks::TEncodingCodecPtr 
+CHttpCodecLinks::GetEncodingCodec( const CORE::CString& encodingType ) const
+{GUCEF_TRACE;
+
+    MT::CScopeMutex lock( m_dataLock );
+    
+    TStringToEncodingCodecMap::const_iterator i = m_encodingRepToCodecMap.find( encodingType );
+    if ( i != m_encodingRepToCodecMap.end() )
+    {
+        return (*i).second;
+    }
+    return CHttpCodecLinks::TEncodingCodecPtr();
 }
 
 /*-------------------------------------------------------------------------*/

@@ -23,6 +23,11 @@
 //                                                                         //
 //-------------------------------------------------------------------------*/
 
+#ifndef GUCEF_WEB_CHTTPMIMETYPES_H
+#include "gucefWEB_CHttpMimeTypes.h"
+#define GUCEF_WEB_CHTTPMIMETYPES_H
+#endif /* GUCEF_WEB_CHTTPMIMETYPES_H ? */
+
 #include "gucefWEB_CDefaultHTTPServerResource.h"
 
 /*-------------------------------------------------------------------------//
@@ -136,6 +141,22 @@ CString
 CDefaultHTTPServerResource::GetBestMatchedSerializationRepresentation( const CDefaultHTTPServerResource::TStringVector& representations )
 {GUCEF_TRACE;
 
+    if ( m_serializationReps.empty() )
+        return CString::Empty; 
+    
+    // Does the client accept the "any" representation?
+    TStringVector::const_iterator n = representations.begin();
+    while ( n != representations.end() )
+    { 
+        if ( CHttpMimeTypes::MimeTypeAny == (*n) )
+        {
+            // Since "any" is supported we will prefer the highest priority server side 
+            // representation as the negotiated representation
+            return *m_serializationReps.begin();
+        }
+        ++n;
+    }
+    
     // The default assumption is that representations have been stored in order of most desireable
     // As such we look for a match between our list in order against the options given
     TStringVector::iterator i = m_serializationReps.begin();
@@ -158,7 +179,7 @@ CDefaultHTTPServerResource::GetBestMatchedSerializationRepresentation( const CDe
 
     // No supported agreeable representation found that both sides can agree on 
     // and support
-    return CString();
+    return CString::Empty;
 }
 
 /*-------------------------------------------------------------------------*/

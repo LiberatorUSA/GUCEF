@@ -55,11 +55,12 @@ class GUCEF_WEB_PUBLIC_CPP CHttpEncodingTypes
 {    
     public:
     
+    static const CORE::CString EncodingTypeAny;
+    static const CORE::CString EncodingTypeIdentity;
     static const CORE::CString EncodingTypeGZip;
     static const CORE::CString EncodingTypeGZipAlt;
     static const CORE::CString EncodingTypeCompress;
     static const CORE::CString EncodingTypeDeflate;
-    static const CORE::CString EncodingTypeIdentity;
     static const CORE::CString EncodingTypeBrotli;
 };
 

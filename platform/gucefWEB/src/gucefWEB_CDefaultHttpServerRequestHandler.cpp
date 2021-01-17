@@ -28,10 +28,30 @@
 #define GUCEF_CORE_LOGGING_H
 #endif /* GUCEF_CORE_LOGGING_H ? */
 
+#ifndef GUCEF_CORE_CDYNAMICBUFFERACCESS_H
+#include "CDynamicBufferAccess.h"
+#define GUCEF_CORE_CDYNAMICBUFFERACCESS_H
+#endif /* GUCEF_CORE_CDYNAMICBUFFERACCESS_H ? */
+
 #ifndef GUCEF_WEB_CDEFAULTHTTPSERVERROUTERCONTROLLER_H
 #include "gucefWEB_CDefaultHTTPServerRouterController.h"
 #define GUCEF_WEB_CDEFAULTHTTPSERVERROUTERCONTROLLER_H
 #endif /* GUCEF_WEB_CDEFAULTHTTPSERVERROUTERCONTROLLER_H ? */
+
+#ifndef GUCEF_WEB_CWEBGLOBAL_H
+#include "gucefWEB_CWebGlobal.h"
+#define GUCEF_WEB_CWEBGLOBAL_H
+#endif /* GUCEF_WEB_CWEBGLOBAL_H ? */
+
+#ifndef GUCEF_WEB_CGLOBALHTTPCODECLINKS_H
+#include "gucefWEB_CGlobalHttpCodecLinks.h"
+#define GUCEF_WEB_CGLOBALHTTPCODECLINKS_H
+#endif /* GUCEF_WEB_CGLOBALHTTPCODECLINKS_H ? */
+
+#ifndef GUCEF_WEB_CHTTPENCODINGTYPES_H
+#include "gucefWEB_CHttpEncodingTypes.h"
+#define GUCEF_WEB_CHTTPENCODINGTYPES_H
+#endif /* GUCEF_WEB_CHTTPENCODINGTYPES_H ? */
 
 #include "gucefWEB_CDefaultHttpServerRequestHandler.h"
 
@@ -53,6 +73,7 @@ namespace WEB {
 CDefaultHttpServerRequestHandler::CDefaultHttpServerRequestHandler( CIHTTPServerRouterController* routerController /* = GUCEF_NULL */ )
     : CIHttpServerRequestHandler()
     , m_routerController( routerController )
+    , m_applyTransferEncodingWhenAble( true )
 {GUCEF_TRACE;
 
     if ( GUCEF_NULL == routerController )
@@ -66,6 +87,7 @@ CDefaultHttpServerRequestHandler::CDefaultHttpServerRequestHandler( CIHTTPServer
 CDefaultHttpServerRequestHandler::CDefaultHttpServerRequestHandler( const CDefaultHttpServerRequestHandler& src )
     : CIHttpServerRequestHandler( src )
     , m_routerController( src.m_routerController )
+    , m_applyTransferEncodingWhenAble( true )
 {GUCEF_TRACE;
 
 }
@@ -75,6 +97,98 @@ CDefaultHttpServerRequestHandler::CDefaultHttpServerRequestHandler( const CDefau
 CDefaultHttpServerRequestHandler::~CDefaultHttpServerRequestHandler()
 {GUCEF_TRACE;
 
+}
+
+/*-------------------------------------------------------------------------*/
+
+void
+CDefaultHttpServerRequestHandler::SetApplyTransferEncodingWhenAble( bool applyEncoding )
+{GUCEF_TRACE;
+
+    m_applyTransferEncodingWhenAble = applyEncoding; 
+}
+
+/*-------------------------------------------------------------------------*/
+
+bool
+CDefaultHttpServerRequestHandler::GetApplyTransferEncodingWhenAble( void ) const
+{GUCEF_TRACE;
+
+    return m_applyTransferEncodingWhenAble;
+}
+
+/*-------------------------------------------------------------------------*/
+
+bool
+CDefaultHttpServerRequestHandler::ProcessTransferEncoding( const CHttpRequestData& request ,
+                                                           CHttpResponseData& response     ) const
+{GUCEF_TRACE;
+
+    if ( !m_applyTransferEncodingWhenAble )
+        return true;
+    if ( request.encodingRepresentations.empty() )
+        return true;
+    if ( 0 == response.content.GetDataSize() )
+        return true;
+
+    try
+    {
+        CGlobalHttpCodecLinks& codecs = CWebGlobal::Instance()->GetGlobalHttpCodecLinks();
+        
+        bool noEncodingIsOk = false;
+        CHttpRequestData::TStringVector::const_iterator n = request.encodingRepresentations.begin();
+        while ( n != request.encodingRepresentations.end() )
+        {
+            // Content type identity means no encoding is also Ok
+            if ( CHttpEncodingTypes::EncodingTypeIdentity == (*n) || 
+                 CHttpEncodingTypes::EncodingTypeAny == (*n)       )
+            {
+                noEncodingIsOk = true;    
+            }
+            else
+            {
+                CHttpCodecLinks::TEncodingCodecPtr codec = codecs.GetEncodingCodec( (*n) );
+                if ( codec )
+                {
+                    CORE::CDynamicBufferAccess originalContentAccess( &response.content, false );
+                    CORE::CDynamicBuffer encodedContent;
+                    encodedContent.SetBufferSize( response.content.GetDataSize(), true );
+                    CORE::CDynamicBufferAccess encodedContentAccess( &encodedContent, false );
+
+                    if ( codec->Encode( originalContentAccess, encodedContentAccess ) )
+                    {
+                        response.contentEncoding = (*n);
+                        response.content = encodedContent;
+                        GUCEF_DEBUG_LOG( CORE::LOGLEVEL_BELOW_NORMAL, "DefaultHttpServerRequestHandler:ProcessEncoding: Encoded content as \"" + (*n) + "\"" );
+                        return true;
+                    }
+                    else
+                    {
+                        GUCEF_WARNING_LOG( CORE::LOGLEVEL_NORMAL, "DefaultHttpServerRequestHandler:ProcessEncoding: Failed to encode content as \"" + (*n) + "\"" );
+                    }
+                }
+            }
+            ++n;
+        }
+
+        if ( noEncodingIsOk )
+        {
+            GUCEF_DEBUG_LOG( CORE::LOGLEVEL_BELOW_NORMAL, "DefaultHttpServerRequestHandler:ProcessEncoding: No matching encoding capability was found. Encoding is optional and skipped" );
+            return true;
+        }
+        else
+        {
+            // No acceptable encoding match was found
+            response.statusCode = 406;
+            GUCEF_DEBUG_LOG( CORE::LOGLEVEL_BELOW_NORMAL, "DefaultHttpServerRequestHandler:ProcessEncoding: No matching encoding capability was found and encoding is required" );
+        }
+    }
+    catch ( const std::exception& e )
+    {
+        GUCEF_EXCEPTION_LOG( CORE::LOGLEVEL_NORMAL, "DefaultHttpServerRequestHandler:ProcessEncoding: Exception: " + CString( e.what() ) );
+        return false;
+    }
+    return false;
 }
 
 /*-------------------------------------------------------------------------*/
@@ -215,6 +329,8 @@ CDefaultHttpServerRequestHandler::PerformReadOperation( const CHttpRequestData& 
                 response.acceptedTypes = resource->GetSupportedSerializationRepresentations();
                 return true;
             }
+
+            ProcessTransferEncoding( request, response );
         }
 
         response.eTag = resource->GetResourceVersion();
@@ -354,9 +470,11 @@ CDefaultHttpServerRequestHandler::OnUpdate( const CHttpRequestData& request ,
 
         // Send the serverside representation back to the client in the representation of the update
         CString params = remainderUri.SubstrToChar( '?', 0, true, true );
-        resource->Serialize( response.content, request.contentRepresentation , params );
-        response.contentType = request.contentRepresentation ;
-
+        if ( resource->Serialize( response.content, request.contentRepresentation , params ) )
+        {
+            response.contentType = request.contentRepresentation;
+            ProcessTransferEncoding( request, response );
+        }
         return true;
     }
     catch ( const std::exception& e )
@@ -460,7 +578,11 @@ CDefaultHttpServerRequestHandler::OnCreate( const CHttpRequestData& request ,
             // as the new resource as part of our reply regardless of whether content was send to the server
 
             // Perform the serialization
-            resource->Serialize( response.content, request.contentRepresentation, params );
+            if ( resource->Serialize( response.content, request.contentRepresentation, params ) )
+            {
+                response.contentType = request.contentRepresentation;
+                ProcessTransferEncoding( request, response );
+            }
 
             // Make sure the client gets an absolute path to the resource
             // which may be a placeholder
@@ -468,7 +590,6 @@ CDefaultHttpServerRequestHandler::OnCreate( const CHttpRequestData& request ,
             response.location = m_routerController->MakeUriAbsolute( *resourceRouter, uriWithAuthority, response.location );
 
             // tell client what representation the resource is stored as plus its version
-            response.contentType = request.contentRepresentation;
             response.eTag = resource->GetResourceVersion();
             response.lastModified = resource->GetLastModifiedTime();
 

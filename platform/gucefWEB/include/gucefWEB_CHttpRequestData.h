@@ -75,6 +75,7 @@ class GUCEF_WEB_PUBLIC_CPP CHttpRequestData : public CORE::CICloneable
     typedef CORE::CString::StringVector TStringVector;
 
     TStringVector resourceRepresentations;
+    TStringVector encodingRepresentations;
     TStringVector resourceVersions;
     CString requestProtocol;
     CString requestProtocolVersion;

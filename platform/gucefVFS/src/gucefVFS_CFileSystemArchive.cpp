@@ -474,6 +474,15 @@ CFileSystemArchive::LoadFromDisk( const CString& file      ,
 
     // Check if we can proceed under these circumstances
     bool exists( CORE::File_Exists( filepath.C_String() ) > 0 );
+    if ( !exists && needwriteable )
+    {
+        CORE::CString dirPath = CORE::StripFilename( filepath );
+        if ( !CORE::CreateDirs( dirPath ) )
+        {
+            GUCEF_ERROR_LOG( CORE::LOGLEVEL_NORMAL, "FileSystemArchive:LoadFromDisk: Unable to create directories to store new file: " + dirPath );
+            return GUCEF_NULL;
+        }
+    }
     if ( ( exists && overwrite && needwriteable ) ||
          ( !exists && needwriteable )             ||
          ( exists && !needwriteable )              )
@@ -533,7 +542,7 @@ CFileSystemArchive::LoadFromDisk( const CString& file      ,
 
     }
 
-    return NULL;
+    return GUCEF_NULL;
 }
 
 /*-------------------------------------------------------------------------*/

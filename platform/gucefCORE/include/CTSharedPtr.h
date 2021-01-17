@@ -79,8 +79,9 @@ namespace CORE {
  *          for the given type. Pass the owner in when creating the pointer object.
  *          This will result in in-scope memory management.
  *
- *  Note that this shared pointer implementation is by no means threadsafe and should
- *  never be used across thread-boundries.
+ *  Note that this shared pointer implementation's threadsafety is dependent on the LockType
+ *  template param. A NoLock could be used as the LockType for implementations where the
+ *  shared ptr is garanteed to never cross thread boundaries resulting is a minor optimization.
  */
 template< typename T, class LockType >
 class CTSharedPtr : public CTBasicSharedPtr< T, LockType >

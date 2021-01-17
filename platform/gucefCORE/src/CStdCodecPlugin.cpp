@@ -179,14 +179,33 @@ CStdCodecPlugin::LinkCodecSet( void )
                                                    true                   ) )
                     {
                         familyRegistry = new CCodecRegistry::TCodecFamilyRegistry();
-                        codecRegistry.Register( codecLink->codecFamily, familyRegistry );
+                        if ( !codecRegistry.TryRegister( codecLink->codecFamily, familyRegistry ) )
+                        {
+                            // race condition?
+                            if ( !codecRegistry.TryLookup( codecLink->codecFamily ,
+                                                           familyRegistry         ,
+                                                           true                   ) )
+                            {
+                                GUCEF_ERROR_LOG( LOGLEVEL_NORMAL, "StdCodecPlugin:LinkCodecSet: Unable to register new codec family \"" + 
+                                    CString( codecLink->codecFamily ) + "\"" );
+                            }
+                        }
                     }
 
-                    // we now have access to a registry for this codec family
-                    // We will add this codec if there no codec already registered with such a name
-                    if ( !familyRegistry->IsRegistered( codecLink->codecType ) )
+                    if ( familyRegistry )
                     {
-                        familyRegistry->Register( codecLink->codecType, codecItem );
+                        // we now have access to a registry for this codec family
+                        // We will add this codec if there no codec already registered with such a name
+                        if ( familyRegistry->TryRegister( codecLink->codecType, codecItem ) )
+                        {
+                            GUCEF_SYSTEM_LOG( LOGLEVEL_NORMAL, "StdCodecPlugin:LinkCodecSet: Registered new codec \"" + CString( codecLink->codecType ) + 
+                                    "\" for codec family \"" + CString( codecLink->codecFamily ) + "\"" );
+                        }
+                        else
+                        {
+                            GUCEF_WARNING_LOG( LOGLEVEL_NORMAL, "StdCodecPlugin:LinkCodecSet: Unable to register new codec \"" + CString( codecLink->codecType ) + 
+                                    "\" for codec family \"" + CString( codecLink->codecFamily ) + "\"" );
+                        }
                     }
                 }
             }

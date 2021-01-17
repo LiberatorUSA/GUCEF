@@ -73,10 +73,10 @@ CGlobalHttpCodecLinks::CGlobalHttpCodecLinks( void )
     CORE::CGUCEFApplication& app = CORE::CCoreGlobal::Instance()->GetApplication();
     CORE::CStdCodecPluginManager& codecPluginMngr = CORE::CCoreGlobal::Instance()->GetStdCodecPluginManager();
 
-    TEventCallback callback( this, &CGlobalHttpCodecLinks::OnEventThatMightHaveChangedMimeCodecs );
+    TEventCallback callback( this, &CGlobalHttpCodecLinks::OnEventThatMightHaveChangedCodecs );
     SubscribeTo( &configStore, configStore.GlobalConfigLoadCompletedEvent, callback );
 
-    TEventCallback callback2( this, &CGlobalHttpCodecLinks::OnEventThatMightHaveChangedMimeCodecs );
+    TEventCallback callback2( this, &CGlobalHttpCodecLinks::OnEventThatMightHaveChangedCodecs );
     SubscribeTo( &app, app.FirstCycleEvent, callback2 );
 
     TEventCallback callback3( this, &CGlobalHttpCodecLinks::OnEventThatMightHaveChangedEncodeCodecs );
@@ -112,6 +112,18 @@ CGlobalHttpCodecLinks::OnEventThatMightHaveChangedEncodeCodecs( CORE::CNotifier*
                                                                 CORE::CICloneable* eventdata )
 {GUCEF_TRACE;
 
+    InitEncodingCodecLinks();
+}
+
+/*-------------------------------------------------------------------------*/
+
+void 
+CGlobalHttpCodecLinks::OnEventThatMightHaveChangedCodecs( CORE::CNotifier* notifier    ,
+                                                          const CORE::CEvent& eventid  ,
+                                                          CORE::CICloneable* eventdata )
+{GUCEF_TRACE;
+
+    InitMimeCodecLinks();
     InitEncodingCodecLinks();
 }
 

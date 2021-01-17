@@ -507,6 +507,13 @@ CHTTPServer::ParseRequest( const CORE::CDynamicBuffer& inputBuffer ,
                 StripItems( request.resourceRepresentations, ';' );
             }
             else
+            if ( headerName == "accept-encoding" )
+            {
+                ExtractCommaSeparatedValues( headerValue                     ,
+                                             request.encodingRepresentations );
+                StripItems( request.encodingRepresentations, ';' );
+            }
+            else
             if ( headerName == "content-type" )
             {
                 request.contentRepresentation = headerValue;

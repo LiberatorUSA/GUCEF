@@ -52,6 +52,7 @@ CHttpResponseData::CHttpResponseData( void )
     , eTag()
     , lastModified()
     , content()
+    , contentEncoding()
     , statusCode()
     , contentType()
     , location()
@@ -70,6 +71,7 @@ CHttpResponseData::CHttpResponseData( const CHttpResponseData& src )
     , eTag( src.eTag )
     , lastModified( src.lastModified )
     , content( src.content )
+    , contentEncoding( src.contentEncoding )
     , statusCode( src.statusCode )
     , contentType( src.contentType )
     , location( src.location )
@@ -126,6 +128,8 @@ CHttpResponseData::Serialize( CORE::CDynamicBuffer& outputBuffer ) const
     }
     if ( content.GetDataSize() > 0 )
     {
+        if ( !contentEncoding.IsNULLOrEmpty() )
+            response += "Content-Encoding: " + contentEncoding + "\r\n";
         response += "Content-Length: " + CORE::UInt32ToString( content.GetDataSize() ) + "\r\n";
         response += "Content-Type: " + contentType + "\r\n";
     }

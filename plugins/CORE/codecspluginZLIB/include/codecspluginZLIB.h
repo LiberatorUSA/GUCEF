@@ -1,5 +1,5 @@
 /*
- *  compressioncodecZLIB: Codec plugin for zlib/gzip/deflate/crc32/adler32
+ *  codecspluginZLIB: Codec plugin for zlib/gzip/deflate/crc32/adler32
  *
  *  Copyright (C) 1998 - 2020.  Dinand Vanvelzen
  *
@@ -16,8 +16,8 @@
  *  limitations under the License.
  */
 
-#ifndef GUCEF_COMPRESSIONCODEC_ZIP_H
-#define GUCEF_COMPRESSIONCODEC_ZIP_H
+#ifndef GUCEF_CODECSPLUGIN_ZIP_H
+#define GUCEF_CODECSPLUGIN_ZIP_H
 
 /*-------------------------------------------------------------------------//
 //                                                                         //
@@ -40,10 +40,10 @@
 #define GUCEF_CORE_CODECPLUGINLINK_H
 #endif /* GUCEF_CORE_CODECPLUGINLINK_H ? */
 
-#ifndef GUCEF_COMPRESSIONCODEC_ZLIB_MACROS_H
-#include "compressioncodecZLIB_macros.h"
-#define GUCEF_COMPRESSIONCODEC_ZLIB_MACROS_H
-#endif /* GUCEF_COMPRESSIONCODEC_ZLIB_MACROS_H ? */
+#ifndef GUCEF_CODECSPLUGIN_ZLIB_MACROS_H
+#include "codecspluginZLIB_macros.h"
+#define GUCEF_CODECSPLUGIN_ZLIB_MACROS_H
+#endif /* GUCEF_CODECSPLUGIN_ZLIB_MACROS_H ? */
 
 /*-------------------------------------------------------------------------//
 //                                                                         //
@@ -53,7 +53,7 @@
 
 #ifdef __cplusplus
 namespace GUCEF {
-namespace COMPRESSIONCODEC {
+namespace CODECSPLUGIN {
 namespace ZLIB {
 #endif /* __cplusplus */
 
@@ -163,10 +163,10 @@ CODECPLUGIN_GetCodecSetNextItem( void* plugdata ,
 
 #ifdef __cplusplus
 }; /* namespace ZLIB */
-}; /* namespace COMPRESSIONCODEC */
+}; /* namespace CODECSPLUGIN */
 }; /* namespace GUCEF */
 #endif /* __cplusplus */
 
 /*--------------------------------------------------------------------------*/
 
-#endif /* GUCEF_COMPRESSIONCODEC_ZLIB_H ? */
+#endif /* GUCEF_CODECSPLUGIN_ZIP_H ? */

@@ -114,6 +114,10 @@ class TBasicSharedPtrSharedData
  *  Note that the usage of an external destructor for the shared object by means of the
  *  CTSharedObjectDestructor template is mandatory. By passing in a pointer to such a class
  *  you basically create a callback link for cleanup purposes.
+ *
+ *  Note that this shared pointer implementation's threadsafety is dependent on the LockType
+ *  template param. A NoLock could be used as the LockType for implementations where the
+ *  shared ptr is garanteed to never cross thread boundaries resulting is a minor optimization.
  */
 template< typename T, class LockType >
 class CTBasicSharedPtr : public MT::CILockable ,

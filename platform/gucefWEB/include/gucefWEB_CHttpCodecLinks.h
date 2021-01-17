@@ -93,6 +93,8 @@ class GUCEF_WEB_PUBLIC_CPP CHttpCodecLinks : public CORE::CObservingNotifier
 
     virtual void GetSupportedDeserializationMimeTypes( CORE::CString::StringVector& reps ) const;
 
+    virtual TEncodingCodecPtr GetEncodingCodec( const CORE::CString& encodingType ) const;
+
     virtual const CString& GetClassTypeName( void ) const GUCEF_VIRTUAL_OVERRIDE;
 
     protected:

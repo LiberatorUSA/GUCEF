@@ -1,5 +1,5 @@
 /*
- *  compressioncodecZLIB: Codec plugin for zlib/gzip/deflate/crc32/adler32
+ *  codecspluginZLIB: Codec plugin for zlib/gzip/deflate/crc32/adler32
  *
  *  Copyright (C) 1998 - 2020.  Dinand Vanvelzen
  *
@@ -16,8 +16,8 @@
  *  limitations under the License.
  */
 
-#ifndef GUCEF_COMPRESSIONCODEC_ZLIB_CONFIG_H
-#define GUCEF_COMPRESSIONCODEC_ZLIB_CONFIG_H
+#ifndef GUCEF_CODECSPLUGIN_ZLIB_CONFIG_H
+#define GUCEF_CODECSPLUGIN_ZLIB_CONFIG_H
 
 /*-------------------------------------------------------------------------//
 //                                                                         //
@@ -28,5 +28,5 @@
 
 /*-------------------------------------------------------------------------*/
 
-#endif /* GUCEF_COMPRESSIONCODEC_ZLIB_CONFIG_H ? */
+#endif /* GUCEF_CODECSPLUGIN_ZLIB_CONFIG_H ? */
 

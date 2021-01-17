@@ -1,5 +1,5 @@
 <ModuleInfoEntry>
-    <Module Name="compressioncodecZLIB" Type="SharedLibrary" Platform="All" Tags="plugin">
+    <Module Name="codecspluginZLIB" Type="SharedLibrary" Platform="All" Tags="plugin">
         <Dependencies>
             <Dependency Name="gucefMT" />
             <Dependency Name="gucefCORE" />

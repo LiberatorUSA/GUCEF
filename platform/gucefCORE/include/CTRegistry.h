@@ -30,6 +30,11 @@
 #include <string>               /* standard string template implementation */
 #include <vector>               /* standard dynamic array implementation */
 
+#ifndef GUCEF_MT_COBJECTSCOPELOCK_H
+#include "gucefMT_CObjectScopeLock.h"
+#define GUCEF_MT_COBJECTSCOPELOCK_H
+#endif /* GUCEF_MT_COBJECTSCOPELOCK_H ? */
+
 #ifndef GUCEF_CORE_LOGGING_H
 #include "gucefCORE_Logging.h"
 #define GUCEF_CORE_LOGGING_H
@@ -182,6 +187,8 @@ CTRegistry< T, LockType >::operator=( const CTRegistry& src )
 
     if ( &src != this )
     {
+        MT::CObjectScopeLock lock( this );
+        
         UnregisterAll();
 
         typename TRegisteredObjList::const_iterator i = src.m_list.begin();
@@ -201,6 +208,7 @@ bool
 CTRegistry< T, LockType >::IsRegistered( const CString& name ) const
 {GUCEF_TRACE;
 
+    MT::CObjectScopeLock lock( this );
     return m_list.find( name ) != m_list.end();
 }
 
@@ -211,6 +219,7 @@ CTSharedPtr< T, LockType >
 CTRegistry< T, LockType >::Lookup( const CString& name ) const
 {GUCEF_TRACE;
 
+    MT::CObjectScopeLock lock( this );
     typename TRegisteredObjList::const_iterator i = m_list.find( name );
     if ( i != m_list.end() )
     {
@@ -229,6 +238,8 @@ CTRegistry< T, LockType >::TryLookup( const CString& name           ,
                                       TRegisteredObjPtr& locatedObj ,
                                       bool caseSensitive            ) const
 {GUCEF_TRACE;
+
+    MT::CObjectScopeLock lock( this );
 
     if ( caseSensitive )
     {
@@ -266,6 +277,8 @@ CTRegistry< T, LockType >::Register( const CString& name                ,
                                      const TRegisteredObjPtr& sharedPtr )
 {GUCEF_TRACE;
 
+    MT::CObjectScopeLock lock( this );
+    
     typename TRegisteredObjList::iterator i = m_list.find( name );
     if ( i == m_list.end() )
     {
@@ -285,6 +298,8 @@ CTRegistry< T, LockType >::TryRegister( const CString& name                ,
                                         const TRegisteredObjPtr& sharedPtr )
 {GUCEF_TRACE;
 
+    MT::CObjectScopeLock lock( this );
+    
     typename TRegisteredObjList::iterator i = m_list.find( name );
     if ( i == m_list.end() )
     {
@@ -302,6 +317,8 @@ void
 CTRegistry< T, LockType >::Unregister( const CString& name )
 {GUCEF_TRACE;
 
+    MT::CObjectScopeLock lock( this );
+    
     typename TRegisteredObjList::iterator i = m_list.find( name );
     if ( i != m_list.end() )
     {
@@ -319,6 +336,8 @@ template< class T, class LockType >
 void
 CTRegistry< T, LockType >::UnregisterAll( void )
 {GUCEF_TRACE;
+    
+    MT::CObjectScopeLock lock( this );
 
     typename TRegisteredObjList::iterator i = m_list.begin();
     while ( i != m_list.end() )
@@ -335,6 +354,8 @@ template< class T, class LockType >
 UInt32
 CTRegistry< T, LockType >::GetCount( void ) const
 {GUCEF_TRACE;
+    
+    MT::CObjectScopeLock lock( this );
     return static_cast< UInt32 >( m_list.size() );
 }
 
@@ -344,6 +365,8 @@ template< class T, class LockType >
 void
 CTRegistry< T, LockType >::GetList( TStringList& destList ) const
 {GUCEF_TRACE;
+
+    MT::CObjectScopeLock lock( this );
 
     typename TRegisteredObjList::const_iterator i = m_list.begin();
     while ( i != m_list.end() )

@@ -9,16 +9,16 @@
 #-------------------------------------------------------------------
 #
 
-# Configuration for module: compressioncodecZLIB
+# Configuration for module: codecspluginZLIB
 
 set( HEADER_FILES 
-  include/compressioncodecZLIB.h
-  include/compressioncodecZLIB_config.h
-  include/compressioncodecZLIB_macros.h
+  include/codecspluginZLIB.h
+  include/codecspluginZLIB_config.h
+  include/codecspluginZLIB_macros.h
 )
 
 set( SOURCE_FILES 
-  src/compressioncodecZLIB.c
+  src/codecspluginZLIB.c
 )
 
 # Make sure the PLATFORM_HEADER_FILES variable is always defined
@@ -30,7 +30,7 @@ set( SOURCE_FILES
 # For ease of use make a variable that has all files for this module
 set( ALL_FILES ${HEADER_FILES} ${SOURCE_FILES} ${PLATFORM_HEADER_FILES} ${PLATFORM_SOURCE_FILES} )
 
-set( MODULE_NAME "compressioncodecZLIB" )
+set( MODULE_NAME "codecspluginZLIB" )
 add_library( ${MODULE_NAME} ${ALL_FILES} )
 add_dependencies( ${MODULE_NAME} gucefCORE gucefMT zlib )
 set_property( TARGET ${MODULE_NAME} APPEND_STRING PROPERTY COMPILE_DEFINITIONS "GUCEF_CODECPLUGIN_BUILD_MODULE" )

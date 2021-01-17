@@ -1,5 +1,5 @@
 /*
- *  compressioncodecZLIB: Codec plugin for zlib/gzip/deflate/crc32/adler32
+ *  codecspluginZLIB: Codec plugin for zlib/gzip/deflate/crc32/adler32
  *
  *  Copyright (C) 1998 - 2020.  Dinand Vanvelzen
  *
@@ -24,7 +24,7 @@
 
 #include <stdlib.h>               /* for memory utils */
 
-#include "compressioncodecZLIB.h"  /* function prototypes for this plugin */
+#include "codecspluginZLIB.h"     /* function prototypes for this plugin */
 #include "zlib.h"
 
 /*-------------------------------------------------------------------------//
@@ -46,10 +46,10 @@
 //                                                                         //
 //-------------------------------------------------------------------------*/
 
-#define COMPRESSIONCODEC_ZLIB_MAYOR_VERSION       0
-#define COMPRESSIONCODEC_ZLIB_MINOR_VERSION       1
-#define COMPRESSIONCODEC_ZLIB_PATCH_VERSION       0
-#define COMPRESSIONCODEC_ZLIB_RELEASE_VERSION     0
+#define CODECSPLUGIN_ZLIB_MAYOR_VERSION       0
+#define CODECSPLUGIN_ZLIB_MINOR_VERSION       1
+#define CODECSPLUGIN_ZLIB_PATCH_VERSION       0
+#define CODECSPLUGIN_ZLIB_RELEASE_VERSION     0
 
 #define TEMP_READ_CHECKSUM_BUFFER_SIZE                (1024)
 #define TEMP_READ_BUFFER_SIZE                         (128 * 1024)
@@ -122,7 +122,8 @@ ZLibCompress( TIOAccess* input  ,
         return 0;
     }
 
-    while ( 0 == input->eof( input ) )
+    /* read blocks of data from input and encode them and write them to the output */
+    while ( 0 != inputBytesRead )
     {
         while ( 0 != strm.avail_in )
         {
@@ -147,10 +148,17 @@ ZLibCompress( TIOAccess* input  ,
         strm.avail_in = inputBytesRead;
     }
     output->write( output, tempOutputBuffer, 1, ( TEMP_INPROCESS_BUFFER_SIZE - strm.avail_out ) );
+                
+    /* make the full buffer available again as we have written everything to the output */
+    strm.next_out = tempOutputBuffer;
+    strm.avail_out = TEMP_INPROCESS_BUFFER_SIZE;
 
-    int deflateResult = Z_OK;
-    while ( Z_OK == deflateResult )
+    /* finish the process by writing any trailer info */
+    outputBytesWritten = 0;
+    zlibResult = Z_OK;
+    while ( Z_OK == zlibResult )
     {
+        uInt availOutBefore = 0;
         if ( 0 == strm.avail_out )
         {
             output->write( output, tempOutputBuffer, 1, TEMP_INPROCESS_BUFFER_SIZE );
@@ -158,16 +166,19 @@ ZLibCompress( TIOAccess* input  ,
             strm.next_out = tempOutputBuffer;
             strm.avail_out = TEMP_INPROCESS_BUFFER_SIZE;
         }
-        deflateResult = deflate( &strm, Z_FINISH );
+
+        availOutBefore = strm.avail_out;
+        zlibResult = deflate( &strm, Z_FINISH );
+        outputBytesWritten += availOutBefore - strm.avail_out;
     }
-    output->write( output, tempOutputBuffer, 1, ( TEMP_INPROCESS_BUFFER_SIZE - strm.avail_out ) );
+    output->write( output, tempOutputBuffer, 1, outputBytesWritten );
     
     deflateEnd( &strm );
 
     free( tempInputBuffer );
     free( tempOutputBuffer );
 
-    return Z_STREAM_END == deflateResult;
+    return Z_STREAM_END == zlibResult ? 1 : 0;
 }
 
 /*---------------------------------------------------------------------------*/
@@ -362,10 +373,10 @@ CODECPLUGIN_Version( void* plugdata ) GUCEF_PLUGIN_CALLSPEC_SUFFIX
 {
     TVersion version;
 
-    version.major = COMPRESSIONCODEC_ZLIB_MAYOR_VERSION;
-    version.minor = COMPRESSIONCODEC_ZLIB_MINOR_VERSION;
-    version.patch = COMPRESSIONCODEC_ZLIB_PATCH_VERSION;
-    version.release = COMPRESSIONCODEC_ZLIB_RELEASE_VERSION;
+    version.major = CODECSPLUGIN_ZLIB_MAYOR_VERSION;
+    version.minor = CODECSPLUGIN_ZLIB_MINOR_VERSION;
+    version.patch = CODECSPLUGIN_ZLIB_PATCH_VERSION;
+    version.release = CODECSPLUGIN_ZLIB_RELEASE_VERSION;
 
     return version;
 }
