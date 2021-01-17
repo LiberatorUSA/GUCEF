@@ -75,7 +75,9 @@ class GUCEF_WEB_PUBLIC_CPP CHttpCodecLinks : public CORE::CObservingNotifier
     
     CHttpCodecLinks& operator=( const CHttpCodecLinks& src );
 
-    virtual bool InitCodecLinks( void );
+    virtual bool InitMimeCodecLinks( void );
+
+    virtual bool InitEncodingCodecLinks( void );
 
     virtual TMimeTypeCodecPtr GetSerializationCodec( const CORE::CString& mimeType ) const;
 
@@ -99,6 +101,7 @@ class GUCEF_WEB_PUBLIC_CPP CHttpCodecLinks : public CORE::CObservingNotifier
 
     TStringToCodecMap m_serializeRepToCodecMap;
     TStringToCodecMap m_deserializeRepToCodecMap;
+    TStringToCodecMap m_encodingRepToCodecMap;
     CORE::CString::StringVector m_deserializationReps;
     CORE::CString::StringVector m_serializationReps;
     MT::CMutex m_dataLock;

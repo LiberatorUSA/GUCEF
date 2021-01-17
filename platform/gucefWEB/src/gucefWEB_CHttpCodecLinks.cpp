@@ -38,6 +38,16 @@
 #define GUCEF_CORE_CDSTORECODECREGISTRY_H
 #endif /* GUCEF_CORE_CDSTORECODECREGISTRY_H ? */
 
+#ifndef GUCEF_CORE_CCODECREGISTRY_H
+#include "CCodecRegistry.h"
+#define GUCEF_CORE_CCODECREGISTRY_H
+#endif /* GUCEF_CORE_CCODECREGISTRY_H ? */
+
+#ifndef GUCEF_WEB_CHTTPENCODINGTYPES_H
+#include "gucefWEB_CHttpEncodingTypes.h"
+#define GUCEF_WEB_CHTTPENCODINGTYPES_H
+#endif /* GUCEF_WEB_CHTTPENCODINGTYPES_H ? */
+
 #include "gucefWEB_CHttpCodecLinks.h"
 
 /*-------------------------------------------------------------------------//
@@ -156,7 +166,7 @@ CHttpCodecLinks::GetSupportedDeserializationMimeTypes( CORE::CString::StringVect
 /*-------------------------------------------------------------------------*/
 
 bool 
-CHttpCodecLinks::InitCodecLinks( void )
+CHttpCodecLinks::InitMimeCodecLinks( void )
 {GUCEF_TRACE;
 
     MT::CScopeMutex lock( m_dataLock );
@@ -249,6 +259,45 @@ CHttpCodecLinks::InitCodecLinks( void )
     }
 
     return !m_serializeRepToCodecMap.empty() || !m_deserializeRepToCodecMap.empty();
+}
+
+/*-------------------------------------------------------------------------*/
+
+bool 
+CHttpCodecLinks::InitEncodingCodecLinks( void )
+{GUCEF_TRACE;
+
+    MT::CScopeMutex lock( m_dataLock );
+
+    CORE::CCodecRegistry& codecRegistry = CORE::CCoreGlobal::Instance()->GetCodecRegistry();
+
+    CORE::CCodecRegistry::TICodecPtr codec;
+    if ( codecRegistry.TryLookup( CHttpEncodingTypes::EncodingTypeGZip, codec, false )    ||
+         codecRegistry.TryLookup( CHttpEncodingTypes::EncodingTypeGZipAlt, codec, false )  )
+    {
+        m_encodingRepToCodecMap[ CHttpEncodingTypes::EncodingTypeGZip ] = codec;
+        m_encodingRepToCodecMap[ CHttpEncodingTypes::EncodingTypeGZipAlt ] = codec;
+
+        GUCEF_DEBUG_LOG( CORE::LOGLEVEL_NORMAL, "CHttpCodecLinks:InitCodecLinks: Hooked up GZIP encoding codec" );
+    }
+    if ( codecRegistry.TryLookup( CHttpEncodingTypes::EncodingTypeDeflate, codec, false ) )
+    {
+        m_encodingRepToCodecMap[ CHttpEncodingTypes::EncodingTypeDeflate ] = codec;
+
+        GUCEF_DEBUG_LOG( CORE::LOGLEVEL_NORMAL, "CHttpCodecLinks:InitCodecLinks: Hooked up Deflate encoding codec" );
+    }
+    if ( codecRegistry.TryLookup( CHttpEncodingTypes::EncodingTypeCompress, codec, false ) )
+    {
+        m_encodingRepToCodecMap[ CHttpEncodingTypes::EncodingTypeCompress ] = codec;
+
+        GUCEF_DEBUG_LOG( CORE::LOGLEVEL_NORMAL, "CHttpCodecLinks:InitCodecLinks: Hooked up Compress encoding codec" );
+    }
+    if ( codecRegistry.TryLookup( CHttpEncodingTypes::EncodingTypeBrotli, codec, false ) )
+    {
+        m_encodingRepToCodecMap[ CHttpEncodingTypes::EncodingTypeBrotli ] = codec;
+
+        GUCEF_DEBUG_LOG( CORE::LOGLEVEL_NORMAL, "CHttpCodecLinks:InitCodecLinks: Hooked up Brotli encoding codec" );
+    }
 }
 
 /*-------------------------------------------------------------------------*/

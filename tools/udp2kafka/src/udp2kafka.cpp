@@ -29,10 +29,10 @@
 #define GUCEF_CORE_CTASKMANAGER_H
 #endif /* GUCEF_CORE_CTASKMANAGER_H */
 
-#ifndef GUCEF_COM_CDUMMYHTTPSERVERRESOURCE_H
-#include "gucefCOM_CDummyHTTPServerResource.h"
-#define GUCEF_COM_CDUMMYHTTPSERVERRESOURCE_H
-#endif /* GUCEF_COM_CDUMMYHTTPSERVERRESOURCE_H ? */
+#ifndef GUCEF_WEB_CDUMMYHTTPSERVERRESOURCE_H
+#include "gucefWEB_CDummyHTTPServerResource.h"
+#define GUCEF_WEB_CDUMMYHTTPSERVERRESOURCE_H
+#endif /* GUCEF_WEB_CDUMMYHTTPSERVERRESOURCE_H ? */
 
 #include "udp2kafka.h"
 
@@ -1531,7 +1531,7 @@ Udp2KafkaChannel::OnTaskEnded( CORE::CICloneable* taskData ,
 /*-------------------------------------------------------------------------*/
 
 RestApiUdp2KafkaInfoResource::RestApiUdp2KafkaInfoResource( Udp2Kafka* app )
-    : COM::CCodecBasedHTTPServerResource()
+    : WEB::CCodecBasedHTTPServerResource()
     , m_app( app )
 {GUCEF_TRACE;
 
@@ -1567,7 +1567,7 @@ RestApiUdp2KafkaInfoResource::Serialize( CORE::CDataNode& output             ,
 /*-------------------------------------------------------------------------*/
 
 RestApiUdp2KafkaConfigResource::RestApiUdp2KafkaConfigResource( Udp2Kafka* app, bool appConfig )
-    : COM::CCodecBasedHTTPServerResource()
+    : WEB::CCodecBasedHTTPServerResource()
     , m_app( app )
     , m_appConfig( appConfig )
 {GUCEF_TRACE;
@@ -1960,7 +1960,7 @@ Udp2Kafka::LoadConfig( const CORE::CValueList& appConfig   ,
     m_httpRouter.SetResourceMapping( "/info", RestApiUdp2KafkaInfoResource::THTTPServerResourcePtr( new RestApiUdp2KafkaInfoResource( this ) )  );
     m_httpRouter.SetResourceMapping( "/config/appargs", RestApiUdp2KafkaConfigResource::THTTPServerResourcePtr( new RestApiUdp2KafkaConfigResource( this, true ) )  );
     m_httpRouter.SetResourceMapping( "/config", RestApiUdp2KafkaConfigResource::THTTPServerResourcePtr( new RestApiUdp2KafkaConfigResource( this, false ) )  );
-    m_httpRouter.SetResourceMapping(  CORE::ResolveVars( appConfig.GetValueAlways( "RestBasicHealthUri", "/health/basic" ) ), RestApiUdp2KafkaInfoResource::THTTPServerResourcePtr( new COM::CDummyHTTPServerResource() )  );
+    m_httpRouter.SetResourceMapping(  CORE::ResolveVars( appConfig.GetValueAlways( "RestBasicHealthUri", "/health/basic" ) ), RestApiUdp2KafkaInfoResource::THTTPServerResourcePtr( new WEB::CDummyHTTPServerResource() )  );
 
     m_httpServer.GetRouterController()->AddRouterMapping( &m_httpRouter, "", "" );
 

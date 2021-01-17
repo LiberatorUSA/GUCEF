@@ -43,6 +43,11 @@
 #define GUCEF_CORE_CGUCEFAPPLICATION_H
 #endif /* GUCEF_CORE_CGUCEFAPPLICATION_H ? */
 
+#ifndef GUCEF_CORE_CSTDCODECPLUGINMANAGER_H
+#include "CStdCodecPluginManager.h"
+#define GUCEF_CORE_CSTDCODECPLUGINMANAGER_H
+#endif /* GUCEF_CORE_CSTDCODECPLUGINMANAGER_H ? */
+
 #include "gucefWEB_CGlobalHttpCodecLinks.h"
 
 /*-------------------------------------------------------------------------//
@@ -66,12 +71,19 @@ CGlobalHttpCodecLinks::CGlobalHttpCodecLinks( void )
 
     CORE::CConfigStore& configStore = CORE::CCoreGlobal::Instance()->GetConfigStore();
     CORE::CGUCEFApplication& app = CORE::CCoreGlobal::Instance()->GetApplication();
+    CORE::CStdCodecPluginManager& codecPluginMngr = CORE::CCoreGlobal::Instance()->GetStdCodecPluginManager();
 
-    TEventCallback callback( this, &CGlobalHttpCodecLinks::OnEventThatMightHaveChangedCodecs );
+    TEventCallback callback( this, &CGlobalHttpCodecLinks::OnEventThatMightHaveChangedMimeCodecs );
     SubscribeTo( &configStore, configStore.GlobalConfigLoadCompletedEvent, callback );
 
-    TEventCallback callback2( this, &CGlobalHttpCodecLinks::OnEventThatMightHaveChangedCodecs );
+    TEventCallback callback2( this, &CGlobalHttpCodecLinks::OnEventThatMightHaveChangedMimeCodecs );
     SubscribeTo( &app, app.FirstCycleEvent, callback2 );
+
+    TEventCallback callback3( this, &CGlobalHttpCodecLinks::OnEventThatMightHaveChangedEncodeCodecs );
+    SubscribeTo( &codecPluginMngr, codecPluginMngr.StdCodecRegisteredEvent, callback3 );
+
+    TEventCallback callback4( this, &CGlobalHttpCodecLinks::OnEventThatMightHaveChangedEncodeCodecs );
+    SubscribeTo( &codecPluginMngr, codecPluginMngr.StdCodecUnregisteredEvent, callback4 );
 }
 
 /*-------------------------------------------------------------------------*/
@@ -84,12 +96,23 @@ CGlobalHttpCodecLinks::~CGlobalHttpCodecLinks()
 /*-------------------------------------------------------------------------*/
 
 void 
-CGlobalHttpCodecLinks::OnEventThatMightHaveChangedCodecs( CORE::CNotifier* notifier    ,
-                                                          const CORE::CEvent& eventid  ,
-                                                          CORE::CICloneable* eventdata )
+CGlobalHttpCodecLinks::OnEventThatMightHaveChangedMimeCodecs( CORE::CNotifier* notifier    ,
+                                                              const CORE::CEvent& eventid  ,
+                                                              CORE::CICloneable* eventdata )
 {GUCEF_TRACE;
 
-    InitCodecLinks();
+    InitMimeCodecLinks();
+}
+
+/*-------------------------------------------------------------------------*/
+
+void 
+CGlobalHttpCodecLinks::OnEventThatMightHaveChangedEncodeCodecs( CORE::CNotifier* notifier    ,
+                                                                const CORE::CEvent& eventid  ,
+                                                                CORE::CICloneable* eventdata )
+{GUCEF_TRACE;
+
+    InitEncodingCodecLinks();
 }
 
 /*-------------------------------------------------------------------------*/

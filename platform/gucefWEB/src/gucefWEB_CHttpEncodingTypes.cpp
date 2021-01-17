@@ -17,25 +17,13 @@
  *  limitations under the License.
  */
 
-#ifndef GUCEF_WEB_CGLOBALHTTPCODECLINKS_H
-#define GUCEF_WEB_CGLOBALHTTPCODECLINKS_H
-
 /*-------------------------------------------------------------------------//
 //                                                                         //
 //      INCLUDES                                                           //
 //                                                                         //
 //-------------------------------------------------------------------------*/
 
-#ifndef GUCEF_WEB_CHTTPCODECLINKS_H
-#include "gucefWEB_CHttpCodecLinks.h"
-#define GUCEF_WEB_CHTTPCODECLINKS_H
-#endif /* GUCEF_WEB_CHTTPCODECLINKS_H ? */
-
-#ifndef GUCEF_CORE_CTEVENTHANDLERFUNCTOR_H
-#include "gucefCORE_CTEventHandlerFunctor.h"
-#define GUCEF_CORE_CTEVENTHANDLERFUNCTOR_H
-#endif /* GUCEF_CORE_CTEVENTHANDLERFUNCTOR_H ? */
-
+#include "gucefWEB_CHttpEncodingTypes.h"
 
 /*-------------------------------------------------------------------------//
 //                                                                         //
@@ -48,35 +36,16 @@ namespace WEB {
 
 /*-------------------------------------------------------------------------//
 //                                                                         //
-//      CLASSES                                                            //
+//      GLOBAL VARS                                                        //
 //                                                                         //
 //-------------------------------------------------------------------------*/
 
-/**
- *  Adds auto updating of HTTP codec MIME type links based on global events
- */
-class GUCEF_WEB_PUBLIC_CPP CGlobalHttpCodecLinks : public CHttpCodecLinks
-{    
-    public:
-
-    CGlobalHttpCodecLinks( void );
-
-    virtual ~CGlobalHttpCodecLinks();
-
-    virtual const CString& GetClassTypeName( void ) const GUCEF_VIRTUAL_OVERRIDE;
-
-    protected:
-
-    typedef CORE::CTEventHandlerFunctor< CGlobalHttpCodecLinks > TEventCallback;
-
-    virtual void OnEventThatMightHaveChangedMimeCodecs( CORE::CNotifier* notifier                 ,
-                                                        const CORE::CEvent& eventid               ,
-                                                        CORE::CICloneable* eventdata = GUCEF_NULL );
-
-    virtual void OnEventThatMightHaveChangedEncodeCodecs( CORE::CNotifier* notifier                 ,
-                                                          const CORE::CEvent& eventid               ,
-                                                          CORE::CICloneable* eventdata = GUCEF_NULL );
-};
+const CORE::CString CHttpMimeTypes::EncodingTypeGZip = "gzip";
+const CORE::CString CHttpMimeTypes::EncodingTypeGZipAlt = "x-gzip";
+const CORE::CString CHttpMimeTypes::EncodingTypeCompress = "compress";
+const CORE::CString CHttpMimeTypes::EncodingTypeDeflate = "deflate";
+const CORE::CString CHttpMimeTypes::EncodingTypeIdentity = "identify";
+const CORE::CString CHttpMimeTypes::EncodingTypeBrotli = "br";
 
 /*-------------------------------------------------------------------------//
 //                                                                         //
@@ -88,6 +57,3 @@ class GUCEF_WEB_PUBLIC_CPP CGlobalHttpCodecLinks : public CHttpCodecLinks
 } /* namespace GUCEF */
 
 /*-------------------------------------------------------------------------*/
-
-#endif /* GUCEF_WEB_CGLOBALHTTPCODECLINKS_H ? */
-   

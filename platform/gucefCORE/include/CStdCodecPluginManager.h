@@ -53,6 +53,11 @@ class GUCEF_CORE_PUBLIC_CPP CStdCodecPluginManager : public CPluginManager
 {
     public:
 
+    static const CEvent StdCodecRegisteredEvent;
+    static const CEvent StdCodecUnregisteredEvent;
+
+    static void RegisterEvents( void );
+
     virtual CString GetPluginType( void ) const;
 
     protected:

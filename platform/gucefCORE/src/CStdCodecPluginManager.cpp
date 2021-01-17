@@ -46,14 +46,34 @@ namespace CORE {
 
 /*-------------------------------------------------------------------------//
 //                                                                         //
-//      UTILITIES                                                          //
+//      GLOBAL VARS                                                        //
 //                                                                         //
 //-------------------------------------------------------------------------*/
+
+const CEvent CStdCodecPluginManager::StdCodecRegisteredEvent = "GUCEF::CORE::CStdCodecPluginManager::StdCodecRegisteredEvent";
+const CEvent CStdCodecPluginManager::StdCodecUnregisteredEvent = "GUCEF::CORE::CStdCodecPluginManager::StdCodecUnregisteredEvent";
+
+/*-------------------------------------------------------------------------//
+//                                                                         //
+//      IMPLEMENTATION                                                     //
+//                                                                         //
+//-------------------------------------------------------------------------*/
+
+void 
+CStdCodecPluginManager::RegisterEvents( void )
+{GUCEF_TRACE;
+
+    StdCodecRegisteredEvent.Initialize();
+    StdCodecUnregisteredEvent.Initialize();
+}
+
+/*-------------------------------------------------------------------------*/
 
 CStdCodecPluginManager::CStdCodecPluginManager( void )
     : CPluginManager()
 {GUCEF_TRACE;
 
+    RegisterEvents();
 }
 
 /*-------------------------------------------------------------------------*/

@@ -57,20 +57,20 @@
 #define GUCEF_CORE_CTIMER_H
 #endif /* GUCEF_CORE_CTIMER_H ? */
 
-#ifndef GUCEF_COM_CHTTPSERVER_H
-#include "gucefCOM_CHTTPServer.h"
-#define GUCEF_COM_CHTTPSERVER_H
-#endif /* GUCEF_COM_CHTTPSERVER_H ? */
+#ifndef GUCEF_WEB_CHTTPSERVER_H
+#include "gucefWEB_CHTTPServer.h"
+#define GUCEF_WEB_CHTTPSERVER_H
+#endif /* GUCEF_WEB_CHTTPSERVER_H ? */
 
-#ifndef GUCEF_COM_CDEFAULTHTTPSERVERROUTER_H
-#include "gucefCOM_CDefaultHTTPServerRouter.h"
-#define GUCEF_COM_CDEFAULTHTTPSERVERROUTER_H
-#endif /* GUCEF_COM_CDEFAULTHTTPSERVERROUTER_H ? */
+#ifndef GUCEF_WEB_CDEFAULTHTTPSERVERROUTER_H
+#include "gucefWEB_CDefaultHTTPServerRouter.h"
+#define GUCEF_WEB_CDEFAULTHTTPSERVERROUTER_H
+#endif /* GUCEF_WEB_CDEFAULTHTTPSERVERROUTER_H ? */
 
-#ifndef GUCEF_COM_CCODECBASEDHTTPSERVERRESOURCE_H
-#include "gucefCOM_CCodecBasedHTTPServerResource.h"
-#define GUCEF_COM_CCODECBASEDHTTPSERVERRESOURCE_H
-#endif /* GUCEF_COM_CCODECBASEDHTTPSERVERRESOURCE_H ? */
+#ifndef GUCEF_WEB_CCODECBASEDHTTPSERVERRESOURCE_H
+#include "gucefWEB_CCodecBasedHTTPServerResource.h"
+#define GUCEF_WEB_CCODECBASEDHTTPSERVERRESOURCE_H
+#endif /* GUCEF_WEB_CCODECBASEDHTTPSERVERRESOURCE_H ? */
 
 #include "rdkafkacpp.h"
 
@@ -312,7 +312,7 @@ typedef CORE::CTSharedPtr< Udp2KafkaChannel, MT::CMutex > Udp2KafkaChannelPtr;
 
 class Udp2Kafka;
 
-class RestApiUdp2KafkaInfoResource : public COM::CCodecBasedHTTPServerResource
+class RestApiUdp2KafkaInfoResource : public WEB::CCodecBasedHTTPServerResource
 {
     public:
 
@@ -331,7 +331,7 @@ class RestApiUdp2KafkaInfoResource : public COM::CCodecBasedHTTPServerResource
 
 /*-------------------------------------------------------------------------*/
 
-class RestApiUdp2KafkaConfigResource : public COM::CCodecBasedHTTPServerResource
+class RestApiUdp2KafkaConfigResource : public WEB::CCodecBasedHTTPServerResource
 {
     public:
 
@@ -392,8 +392,8 @@ class Udp2Kafka : public CORE::CObserver
     CORE::CString m_kafkaTopicName;
     Udp2KafkaChannelVector m_channels;
     ChannelSettingsMap m_channelSettings;
-    COM::CHTTPServer m_httpServer;
-    COM::CDefaultHTTPServerRouter m_httpRouter;
+    WEB::CHTTPServer m_httpServer;
+    WEB::CDefaultHTTPServerRouter m_httpRouter;
     CORE::CValueList m_appConfig;
     CORE::CDataNode m_globalConfig;
     CORE::CTimer m_metricsTimer;
