@@ -276,6 +276,128 @@ CMountArchiveTaskData::Clone( void ) const
     return new CMountArchiveTaskData( *this );
 }
 
+/*-------------------------------------------------------------------------*/
+
+CEncodeFileTaskData::CEncodeFileTaskData( void )
+    : CAsyncVfsTaskData()
+    , originalFilepath()
+    , encodedFilepath()
+    , overwrite( false )
+    , codecFamily()
+    , encodeCodec()
+{GUCEF_TRACE;
+
+}
+
+/*-------------------------------------------------------------------------*/
+
+CEncodeFileTaskData::CEncodeFileTaskData( const CEncodeFileTaskData& src )
+    : CAsyncVfsTaskData( src )
+    , originalFilepath( src.originalFilepath )
+    , encodedFilepath( src.encodedFilepath )
+    , overwrite( src.overwrite )
+    , codecFamily( src.codecFamily )
+    , encodeCodec( src.encodeCodec )
+{GUCEF_TRACE;
+
+}
+
+/*-------------------------------------------------------------------------*/
+
+CEncodeFileTaskData::~CEncodeFileTaskData()
+{GUCEF_TRACE;
+
+}
+
+/*-------------------------------------------------------------------------*/
+
+CORE::CICloneable* 
+CEncodeFileTaskData::Clone( void ) const
+{GUCEF_TRACE;
+    
+    return new CEncodeFileTaskData( *this );
+}
+
+/*-------------------------------------------------------------------------*/
+
+CDecodeFileTaskData::CDecodeFileTaskData( void )
+    : CAsyncVfsTaskData()
+    , originalFilepath()
+    , decodedFilepath()
+    , overwrite( false )
+    , codecFamily()
+    , decodeCodec()
+{GUCEF_TRACE;
+
+}
+
+/*-------------------------------------------------------------------------*/
+
+CDecodeFileTaskData::CDecodeFileTaskData( const CDecodeFileTaskData& src )
+    : CAsyncVfsTaskData( src )
+    , originalFilepath( src.originalFilepath )
+    , decodedFilepath( src.decodedFilepath )
+    , overwrite( src.overwrite )
+    , codecFamily( src.codecFamily )
+    , decodeCodec( src.decodeCodec )
+{GUCEF_TRACE;
+
+}
+
+/*-------------------------------------------------------------------------*/
+
+CDecodeFileTaskData::~CDecodeFileTaskData()
+{GUCEF_TRACE;
+
+}
+
+/*-------------------------------------------------------------------------*/
+
+CORE::CICloneable* 
+CDecodeFileTaskData::Clone( void ) const
+{GUCEF_TRACE;
+    
+    return new CDecodeFileTaskData( *this );
+}
+
+/*-------------------------------------------------------------------------*/
+
+CCopyFileTaskData::CCopyFileTaskData( void )
+    : CAsyncVfsTaskData()
+    , originalFilepath()
+    , copyFilepath()
+    , overwrite( false )
+{GUCEF_TRACE;
+
+}
+
+/*-------------------------------------------------------------------------*/
+
+CCopyFileTaskData::CCopyFileTaskData( const CCopyFileTaskData& src )
+    : CAsyncVfsTaskData( src )
+    , originalFilepath( src.originalFilepath )
+    , copyFilepath( src.copyFilepath )
+    , overwrite( src.overwrite )
+{GUCEF_TRACE;
+
+}
+
+/*-------------------------------------------------------------------------*/
+
+CCopyFileTaskData::~CCopyFileTaskData()
+{GUCEF_TRACE;
+
+}
+
+/*-------------------------------------------------------------------------*/
+
+CORE::CICloneable* 
+CCopyFileTaskData::Clone( void ) const
+{GUCEF_TRACE;
+    
+    return new CCopyFileTaskData( *this );
+}
+
 /*-------------------------------------------------------------------------//
 //                                                                         //
 //      NAMESPACE                                                          //

@@ -70,7 +70,10 @@ enum EAsyncVfsOperationType : int
 {
     ASYNCVFSOPERATIONTYPE_UNKNOWN           = 0,
     ASYNCVFSOPERATIONTYPE_MOUNTARCHIVE         ,
-    ASYNCVFSOPERATIONTYPE_STOREDATAASFILE
+    ASYNCVFSOPERATIONTYPE_STOREDATAASFILE      ,
+    ASYNCVFSOPERATIONTYPE_COPYFILE             ,
+    ASYNCVFSOPERATIONTYPE_ENCODEFILE           ,
+    ASYNCVFSOPERATIONTYPE_DECODEFILE
 };
 typedef enum EAsyncVfsOperationType TAsyncVfsOperationType;
 
@@ -157,6 +160,61 @@ class GUCEF_VFS_PUBLIC_CPP CMountArchiveTaskData : public CAsyncVfsTaskData
     CMountArchiveTaskData( void );
     CMountArchiveTaskData( const CMountArchiveTaskData& src );
     virtual ~CMountArchiveTaskData();
+};
+
+/*-------------------------------------------------------------------------*/
+
+class GUCEF_VFS_PUBLIC_CPP CEncodeFileTaskData : public CAsyncVfsTaskData
+{
+    public:
+
+    CORE::CString originalFilepath;
+    CORE::CString encodedFilepath;
+    bool overwrite;
+    CString codecFamily;
+    CORE::CString encodeCodec;
+
+    virtual CICloneable* Clone( void ) const GUCEF_VIRTUAL_OVERRIDE;
+
+    CEncodeFileTaskData( void );
+    CEncodeFileTaskData( const CEncodeFileTaskData& src );
+    virtual ~CEncodeFileTaskData();
+};
+
+/*-------------------------------------------------------------------------*/
+
+class GUCEF_VFS_PUBLIC_CPP CDecodeFileTaskData : public CAsyncVfsTaskData
+{
+    public:
+
+    CORE::CString originalFilepath;
+    CORE::CString decodedFilepath;
+    bool overwrite;
+    CString codecFamily;
+    CORE::CString decodeCodec;
+
+    virtual CICloneable* Clone( void ) const GUCEF_VIRTUAL_OVERRIDE;
+
+    CDecodeFileTaskData( void );
+    CDecodeFileTaskData( const CDecodeFileTaskData& src );
+    virtual ~CDecodeFileTaskData();
+};
+
+/*-------------------------------------------------------------------------*/
+
+class GUCEF_VFS_PUBLIC_CPP CCopyFileTaskData : public CAsyncVfsTaskData
+{
+    public:
+
+    CORE::CString originalFilepath;
+    CORE::CString copyFilepath;
+    bool overwrite;
+
+    virtual CICloneable* Clone( void ) const GUCEF_VIRTUAL_OVERRIDE;
+
+    CCopyFileTaskData( void );
+    CCopyFileTaskData( const CCopyFileTaskData& src );
+    virtual ~CCopyFileTaskData();
 };
 
 /*-------------------------------------------------------------------------//

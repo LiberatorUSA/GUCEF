@@ -63,6 +63,11 @@
 #define GUCEF_CORE_CDYNAMICBUFFERACCESS_H
 #endif /* GUCEF_CORE_CDYNAMICBUFFERACCESS_H ? */
 
+#ifndef GUCEF_CORE_CCODECREGISTRY_H
+#include "CCodecRegistry.h"
+#define GUCEF_CORE_CCODECREGISTRY_H
+#endif /* GUCEF_CORE_CCODECREGISTRY_H ? */
+
 #ifndef CMFILEACCESS_H
 #include "CMFileAccess.h"
 #define CMFILEACCESS_H
@@ -292,6 +297,202 @@ CVFS::OnGlobalConfigLoadFinished( CORE::CNotifier* notifier    ,
 {GUCEF_TRACE;
 
     MountAllDelayMountedArchives();
+}
+
+/*-------------------------------------------------------------------------*/
+
+bool
+CVFS::CopyFile( const CORE::CString& originalFilepath ,
+                const CORE::CString& copyFilepath     ,
+                const bool overwrite                  )
+{GUCEF_TRACE;
+
+    if ( originalFilepath == copyFilepath )
+    {
+        GUCEF_ERROR_LOG( CORE::LOGLEVEL_NORMAL, "VFS:CopyFile: original and target path cannot be the same: " + originalFilepath );
+        return false;
+    }
+
+    CVFSHandlePtr originalFile = GetFile( originalFilepath, "rb", overwrite );
+    if ( !originalFile || GUCEF_NULL == originalFile->GetAccess() || !originalFile->GetAccess()->IsValid() )
+    {
+        GUCEF_ERROR_LOG( CORE::LOGLEVEL_NORMAL, "VFS:CopyFile: Cannot obtain original file: " + originalFilepath );
+        return false;
+    }
+
+    CVFSHandlePtr targetFile = GetFile( copyFilepath, "wb", overwrite );
+    if ( !targetFile || GUCEF_NULL == targetFile->GetAccess() || !targetFile->GetAccess()->IsValid() )
+    {
+        GUCEF_ERROR_LOG( CORE::LOGLEVEL_NORMAL, "VFS:CopyFile: Cannot obtain access to output file: " + copyFilepath );
+        return false;
+    }
+    
+    UInt32 bytesWritten = targetFile->GetAccess()->Write( *originalFile->GetAccess() );
+
+    GUCEF_DEBUG_LOG( CORE::LOGLEVEL_NORMAL, "VFS:CopyFile: Successfully copied file \"" + originalFilepath + 
+            "\" to \"" + copyFilepath + "\"" );
+    return true;
+}
+
+/*-------------------------------------------------------------------------*/
+
+bool
+CVFS::CopyFileAsync( const CORE::CString& originalFilepath ,
+                     const CORE::CString& copyFilepath     ,
+                     const bool overwrite                  )
+{GUCEF_TRACE;
+
+    CEncodeFileTaskData operationData;
+    operationData.operationType = ASYNCVFSOPERATIONTYPE_COPYFILE;
+    operationData.originalFilepath = originalFilepath;
+    operationData.encodedFilepath = copyFilepath;
+    operationData.overwrite = overwrite;
+
+    return CORE::CCoreGlobal::Instance()->GetTaskManager().QueueTask( CAsyncVfsOperation::TaskType, &operationData, GUCEF_NULL, &AsObserver() );
+}
+
+/*-------------------------------------------------------------------------*/
+
+bool
+CVFS::EncodeFile( const CORE::CString& originalFilepath ,
+                  const CORE::CString& encodedFilepath  ,
+                  const bool overwrite                  ,
+                  const CORE::CString& codecFamily      ,
+                  const CORE::CString& encodeCodec      )
+{GUCEF_TRACE;
+
+    if ( originalFilepath == encodedFilepath )
+    {
+        GUCEF_ERROR_LOG( CORE::LOGLEVEL_NORMAL, "VFS:EncodeFile: in-place replacement not suppported at present" );
+        return false;
+    }
+
+    CORE::CCodecRegistry& codecRegistry = CORE::CCoreGlobal::Instance()->GetCodecRegistry();
+    CORE::CCodecRegistry::TICodecPtr codec = codecRegistry.TryGetCodec( codecFamily, encodeCodec );
+    if ( !codec )
+    {
+        GUCEF_ERROR_LOG( CORE::LOGLEVEL_NORMAL, "VFS:EncodeFile: Cannot encode file due to inability to obtain codec " + 
+            encodeCodec + " for codec family " + codecFamily );
+        return false;
+    }
+
+    CVFSHandlePtr originalFile = GetFile( originalFilepath, "rb", overwrite );
+    if ( !originalFile || GUCEF_NULL == originalFile->GetAccess() || !originalFile->GetAccess()->IsValid() )
+    {
+        GUCEF_ERROR_LOG( CORE::LOGLEVEL_NORMAL, "VFS:EncodeFile: Cannot obtain original file: " + originalFilepath );
+        return false;
+    }
+
+    CVFSHandlePtr targetFile = GetFile( encodedFilepath, "wb", overwrite );
+    if ( !targetFile || GUCEF_NULL == targetFile->GetAccess() || !targetFile->GetAccess()->IsValid() )
+    {
+        GUCEF_ERROR_LOG( CORE::LOGLEVEL_NORMAL, "VFS:EncodeFile: Cannot obtain access to output file: " + encodedFilepath );
+        return false;
+    }
+
+    if ( !codec->Encode( *originalFile->GetAccess(), *targetFile->GetAccess() ) )
+    {
+        GUCEF_ERROR_LOG( CORE::LOGLEVEL_NORMAL, "VFS:EncodeFile: Failed to encode file \"" + originalFilepath + 
+            "\" using codec \"" + encodeCodec + "\" from codec family \"" + codecFamily + "\"" );
+        return false;
+    }
+
+    GUCEF_DEBUG_LOG( CORE::LOGLEVEL_NORMAL, "VFS:DecodeFile: Successfully encoded file \"" + originalFilepath + 
+            "\" using codec \"" + encodeCodec + "\" from codec family \"" + codecFamily + "\"" );
+    return true;
+}
+
+/*-------------------------------------------------------------------------*/
+
+bool
+CVFS::EncodeFileAsync( const CORE::CString& originalFilepath ,
+                       const CORE::CString& encodedFilepath  ,
+                       const bool overwrite                  ,
+                       const CORE::CString& codecFamily      ,
+                       const CORE::CString& encodeCodec      )
+{GUCEF_TRACE;
+
+    CEncodeFileTaskData operationData;
+    operationData.operationType = ASYNCVFSOPERATIONTYPE_ENCODEFILE;
+    operationData.originalFilepath = originalFilepath;
+    operationData.encodedFilepath = encodedFilepath;
+    operationData.overwrite = overwrite;
+    operationData.codecFamily = codecFamily;
+    operationData.encodeCodec = encodeCodec;
+
+    return CORE::CCoreGlobal::Instance()->GetTaskManager().QueueTask( CAsyncVfsOperation::TaskType, &operationData, GUCEF_NULL, &AsObserver() );
+}
+
+/*-------------------------------------------------------------------------*/
+
+bool
+CVFS::DecodeFile( const CORE::CString& originalFilepath ,
+                  const CORE::CString& decodedFilepath  ,
+                  const bool overwrite                  ,
+                  const CORE::CString& codecFamily      ,
+                  const CORE::CString& decodeCodec      )
+{GUCEF_TRACE;
+
+    if ( originalFilepath == decodedFilepath )
+    {
+        GUCEF_ERROR_LOG( CORE::LOGLEVEL_NORMAL, "VFS:DecodeFile: in-place replacement not suppported at present" );
+        return false;
+    }
+
+    CORE::CCodecRegistry& codecRegistry = CORE::CCoreGlobal::Instance()->GetCodecRegistry();
+    CORE::CCodecRegistry::TICodecPtr codec = codecRegistry.TryGetCodec( codecFamily, decodeCodec );
+    if ( !codec )
+    {
+        GUCEF_ERROR_LOG( CORE::LOGLEVEL_NORMAL, "VFS:DecodeFile: Cannot encode file due to inability to obtain codec " + 
+            decodeCodec + " for codec family " + codecFamily );
+        return false;
+    }
+
+    CVFSHandlePtr originalFile = GetFile( originalFilepath, "rb", overwrite );
+    if ( !originalFile || GUCEF_NULL == originalFile->GetAccess() || !originalFile->GetAccess()->IsValid() )
+    {
+        GUCEF_ERROR_LOG( CORE::LOGLEVEL_NORMAL, "VFS:DecodeFile: Cannot obtain original file: " + originalFilepath );
+        return false;
+    }
+
+    CVFSHandlePtr targetFile = GetFile( decodedFilepath, "wb", overwrite );
+    if ( !targetFile || GUCEF_NULL == targetFile->GetAccess() || !targetFile->GetAccess()->IsValid() )
+    {
+        GUCEF_ERROR_LOG( CORE::LOGLEVEL_NORMAL, "VFS:DecodeFile: Cannot obtain access to output file: " + decodedFilepath );
+        return false;
+    }
+
+    if ( !codec->Encode( *originalFile->GetAccess(), *targetFile->GetAccess() ) )
+    {
+        GUCEF_ERROR_LOG( CORE::LOGLEVEL_NORMAL, "VFS:DecodeFile: Failed to encode file \"" + originalFilepath + 
+            "\" using codec \"" + decodeCodec + "\" from codec family \"" + codecFamily + "\"" );
+        return false;
+    }
+
+    GUCEF_DEBUG_LOG( CORE::LOGLEVEL_NORMAL, "VFS:DecodeFile: Successfully decoded file \"" + originalFilepath + 
+            "\" using codec \"" + decodeCodec + "\" from codec family \"" + codecFamily + "\"" );
+    return true;
+}
+
+/*-------------------------------------------------------------------------*/
+
+bool
+CVFS::DecodeFileAsync( const CORE::CString& originalFilepath ,
+                       const CORE::CString& decodedFilepath  ,
+                       const bool overwrite                  ,
+                       const CORE::CString& codecFamily      ,
+                       const CORE::CString& decodeCodec      )
+{GUCEF_TRACE;
+
+    CDecodeFileTaskData operationData;
+    operationData.operationType = ASYNCVFSOPERATIONTYPE_DECODEFILE;
+    operationData.originalFilepath = originalFilepath;
+    operationData.decodedFilepath = decodedFilepath;
+    operationData.overwrite = overwrite;
+    operationData.codecFamily = codecFamily;
+    operationData.decodeCodec = decodeCodec;
+
+    return CORE::CCoreGlobal::Instance()->GetTaskManager().QueueTask( CAsyncVfsOperation::TaskType, &operationData, GUCEF_NULL, &AsObserver() );
 }
 
 /*-------------------------------------------------------------------------*/

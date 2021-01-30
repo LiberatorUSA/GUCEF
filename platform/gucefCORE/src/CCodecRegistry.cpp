@@ -86,6 +86,30 @@ CCodecRegistry::Unlock( void ) const
     return m_dataLock.Unlock();
 }
 
+/*-------------------------------------------------------------------------*/
+
+CCodecRegistry::TICodecPtr 
+CCodecRegistry::TryGetCodec( const CString& codecFamily , 
+                             const CString& codecName   ) const
+{GUCEF_TRACE;
+
+    // First obtain the registery specific to compression codecs
+    TCodecFamilyRegistryPtr codecFamilyRegistry;
+    if ( TryLookup( codecFamily, codecFamilyRegistry, false ) && codecFamilyRegistry )
+    {
+        // Locate the configured compression codec to use, if available
+        TICodecPtr codec;
+        if ( codecFamilyRegistry->TryLookup( codecName, codec, false ) && codec )
+        {
+            GUCEF_DEBUG_LOG( CORE::LOGLEVEL_NORMAL, "CodecRegistry::TryGetCodec: Obtained compression codec " + codecName + " from codec family " + codecFamily );
+            return codec;
+        }
+    }
+
+    GUCEF_ERROR_LOG( CORE::LOGLEVEL_NORMAL, "CodecRegistry::TryGetCodec: Failed to obtain compression codec " + codecName + " from codec family " + codecFamily );
+    return TICodecPtr();
+}
+
 /*-------------------------------------------------------------------------//
 //                                                                         //
 //      NAMESPACE                                                          //

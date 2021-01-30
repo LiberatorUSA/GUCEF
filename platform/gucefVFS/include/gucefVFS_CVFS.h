@@ -76,6 +76,8 @@
 #define GUCEF_VFS_ASYNCVFSTASKDATA_H
 #endif /* GUCEF_VFS_ASYNCVFSTASKDATA_H ? */
 
+#undef CopyFile
+
 /*-------------------------------------------------------------------------//
 //                                                                         //
 //      NAMESPACE                                                          //
@@ -198,6 +200,94 @@ class GUCEF_VFS_PUBLIC_CPP CVFS : public CORE::CTSGNotifier   ,
                            const CORE::UInt64 offset = 0                 ,
                            const bool overwrite = false                  ,
                            CORE::CICloneable* requestorData = GUCEF_NULL );
+
+    /**
+     *  Copies a file from one vfs path to another if possible
+     *  the target file must be located in a writable target mounted archive
+     *
+     *  @originalFilepath   path to the original file to be copied
+     *  @copyFilepath       destination path for the file copy
+     *  @overwrite          whether to overwrite any existing file at the target path if one exists    
+     */
+    bool CopyFile( const CORE::CString& originalFilepath ,
+                   const CORE::CString& copyFilepath     ,
+                   const bool overwrite = false          );
+
+    /**
+     *  Async copies a file from one vfs path to another if possible
+     *  the target file must be located in a writable target mounted archive
+     *
+     *  @originalFilepath   path to the original file to be copied
+     *  @copyFilepath       destination path for the file copy
+     *  @overwrite          whether to overwrite any existing file at the target path if one exists    
+     */
+    bool CopyFileAsync( const CORE::CString& originalFilepath ,
+                        const CORE::CString& copyFilepath     ,
+                        const bool overwrite = false          );
+
+    /**
+     *  Encodes a file from one vfs path to another if possible
+     *  the target file must be located in a writable target mounted archive
+     *
+     *  @originalFilepath   path to the original file to be copied
+     *  @encodedFilepath    destination path for the encoded file copy
+     *  @overwrite          whether to overwrite any existing file at the target path if one exists
+     *  @codecFamily        which codec family to reference when looking for the named codec
+     *  @encodeCodec        which named codec to use when encoding the file
+     */
+    bool EncodeFile( const CORE::CString& originalFilepath ,
+                     const CORE::CString& encodedFilepath  ,
+                     const bool overwrite                  ,
+                     const CORE::CString& codecFamily      ,
+                     const CORE::CString& encodeCodec      );
+
+    /**
+     *  Async encodes a file from one vfs path to another if possible
+     *  the target file must be located in a writable target mounted archive
+     *
+     *  @originalFilepath   path to the original file to be copied
+     *  @encodedFilepath    destination path for the encoded file copy
+     *  @overwrite          whether to overwrite any existing file at the target path if one exists
+     *  @codecFamily        which codec family to reference when looking for the named codec
+     *  @encodeCodec        which named codec to use when encoding the file
+     */
+    bool EncodeFileAsync( const CORE::CString& originalFilepath ,
+                          const CORE::CString& encodedFilepath  ,
+                          const bool overwrite                  ,
+                          const CORE::CString& codecFamily      ,
+                          const CORE::CString& encodeCodec      );
+
+    /**
+     *  Decodes a file from one vfs path to another if possible
+     *  the target file must be located in a writable target mounted archive
+     *
+     *  @originalFilepath   path to the original file to be copied
+     *  @decodedFilepath    destination path for the encoded file copy
+     *  @overwrite          whether to overwrite any existing file at the target path if one exists
+     *  @codecFamily        which codec family to reference when looking for the named codec
+     *  @decodeCodec        which named codec to use when decoding the file
+     */
+    bool DecodeFile( const CORE::CString& originalFilepath ,
+                     const CORE::CString& decodedFilepath  ,
+                     const bool overwrite                  ,
+                     const CORE::CString& codecFamily      ,
+                     const CORE::CString& decodeCodec      );
+
+    /**
+     *  Async decodes a file from one vfs path to another if possible
+     *  the target file must be located in a writable target mounted archive
+     *
+     *  @originalFilepath   path to the original file to be copied
+     *  @decodedFilepath    destination path for the encoded file copy
+     *  @overwrite          whether to overwrite any existing file at the target path if one exists
+     *  @codecFamily        which codec family to reference when looking for the named codec
+     *  @decodeCodec        which named codec to use when decoding the file
+     */
+    bool DecodeFileAsync( const CORE::CString& originalFilepath ,
+                          const CORE::CString& decodedFilepath  ,
+                          const bool overwrite                  ,
+                          const CORE::CString& codecFamily      ,
+                          const CORE::CString& decodeCodec      );
 
     void GetList( TStringSet& outputList             ,
                   const CORE::CString& location      , 

@@ -168,6 +168,67 @@ CAsyncVfsOperation::OnTaskCycle( CORE::CICloneable* taskData )
             if ( !NotifyObservers( AsyncVfsOperationCompletedEvent, &syncCallResult ) ) return true;
             break;
         }
+        case ASYNCVFSOPERATIONTYPE_COPYFILE:
+        {
+            GUCEF_DEBUG_LOG( CORE::LOGLEVEL_NORMAL, "AsyncVfsOperation(" + CORE::PointerToString( this ) + "):OnTaskCycle: Async invocation of CopyFile" );
+            
+            CCopyFileTaskData* specificSyncCallData = static_cast< CCopyFileTaskData* >( syncCallData );
+            bool success = CVfsGlobal::Instance()->GetVfs().CopyFile( specificSyncCallData->originalFilepath , 
+                                                                      specificSyncCallData->copyFilepath     ,
+                                                                      specificSyncCallData->overwrite        );
+        
+            CAsyncVfsTaskResultData syncCallResult;
+            syncCallResult.successState = success;
+            syncCallResult.SetTaskData( syncCallData );
+            syncCallResult.durationInSecs = (UInt32) ( time( NULL ) - startTime );
+
+            GUCEF_DEBUG_LOG( CORE::LOGLEVEL_NORMAL, "AsyncVfsOperation(" + CORE::PointerToString( this ) + "):OnTaskCycle: Completed Async invocation of CopyFile" );
+            
+            if ( !NotifyObservers( AsyncVfsOperationCompletedEvent, &syncCallResult ) ) return true;
+            break;
+        }
+        case ASYNCVFSOPERATIONTYPE_ENCODEFILE:
+        {
+            GUCEF_DEBUG_LOG( CORE::LOGLEVEL_NORMAL, "AsyncVfsOperation(" + CORE::PointerToString( this ) + "):OnTaskCycle: Async invocation of EncodeFile" );
+            
+            CEncodeFileTaskData* specificSyncCallData = static_cast< CEncodeFileTaskData* >( syncCallData );
+            bool success = CVfsGlobal::Instance()->GetVfs().EncodeFile( specificSyncCallData->originalFilepath , 
+                                                                        specificSyncCallData->encodedFilepath  ,
+                                                                        specificSyncCallData->overwrite        ,
+                                                                        specificSyncCallData->codecFamily      ,
+                                                                        specificSyncCallData->encodeCodec      );
+        
+            CAsyncVfsTaskResultData syncCallResult;
+            syncCallResult.successState = success;
+            syncCallResult.SetTaskData( syncCallData );
+            syncCallResult.durationInSecs = (UInt32) ( time( NULL ) - startTime );
+
+            GUCEF_DEBUG_LOG( CORE::LOGLEVEL_NORMAL, "AsyncVfsOperation(" + CORE::PointerToString( this ) + "):OnTaskCycle: Completed Async invocation of EncodeFile" );
+            
+            if ( !NotifyObservers( AsyncVfsOperationCompletedEvent, &syncCallResult ) ) return true;
+            break;
+        }
+        case ASYNCVFSOPERATIONTYPE_DECODEFILE:
+        {
+            GUCEF_DEBUG_LOG( CORE::LOGLEVEL_NORMAL, "AsyncVfsOperation(" + CORE::PointerToString( this ) + "):OnTaskCycle: Async invocation of DecodeFile" );
+            
+            CDecodeFileTaskData* specificSyncCallData = static_cast< CDecodeFileTaskData* >( syncCallData );
+            bool success = CVfsGlobal::Instance()->GetVfs().DecodeFile( specificSyncCallData->originalFilepath , 
+                                                                        specificSyncCallData->decodedFilepath  ,
+                                                                        specificSyncCallData->overwrite        ,
+                                                                        specificSyncCallData->codecFamily      ,
+                                                                        specificSyncCallData->decodeCodec      );
+        
+            CAsyncVfsTaskResultData syncCallResult;
+            syncCallResult.successState = success;
+            syncCallResult.SetTaskData( syncCallData );
+            syncCallResult.durationInSecs = (UInt32) ( time( NULL ) - startTime );
+
+            GUCEF_DEBUG_LOG( CORE::LOGLEVEL_NORMAL, "AsyncVfsOperation(" + CORE::PointerToString( this ) + "):OnTaskCycle: Completed Async invocation of DecodeFile" );
+            
+            if ( !NotifyObservers( AsyncVfsOperationCompletedEvent, &syncCallResult ) ) return true;
+            break;
+        }
         case ASYNCVFSOPERATIONTYPE_UNKNOWN:
         default:
         {
