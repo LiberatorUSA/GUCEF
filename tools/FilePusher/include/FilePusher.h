@@ -160,6 +160,7 @@ class FilePushDestinationSettings
     CORE::CString filePushDestinationUri;
     TStringPushStyleMap fileMatchPatterns;
     TStringSet dirsToWatch;
+    bool watchSubDirsOfDirsToWatch;
     CORE::UInt32 restingTimeForNewFilesInSecs;
     bool deleteFilesAfterSuccessfullPush;
     bool transmitMetrics;
@@ -323,6 +324,9 @@ class FilePushDestination : public CORE::CObservingNotifier
 
     CORE::CString::StringVector
     GetFilePatternsForPushType( TPushStyle pushStyle ) const;
+
+    CORE::CString
+    DetermineWatchedDirSubPath( const CORE::CString& filePath  ) const;
     
     private:
 

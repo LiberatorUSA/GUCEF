@@ -154,6 +154,7 @@ FilePushDestinationSettings::FilePushDestinationSettings( void )
     : filePushDestinationUri()
     , fileMatchPatterns()
     , dirsToWatch()
+    , watchSubDirsOfDirsToWatch( true )
     , restingTimeForNewFilesInSecs( DefaultNewFileRestPeriodInSecs )
     , deleteFilesAfterSuccessfullPush( false )
     , transmitMetrics( false )
@@ -171,6 +172,7 @@ FilePushDestinationSettings::FilePushDestinationSettings( const FilePushDestinat
     : filePushDestinationUri( src.filePushDestinationUri )
     , fileMatchPatterns( src.fileMatchPatterns )
     , dirsToWatch( src.dirsToWatch )
+    , watchSubDirsOfDirsToWatch( src.watchSubDirsOfDirsToWatch )
     , restingTimeForNewFilesInSecs( src.restingTimeForNewFilesInSecs )
     , deleteFilesAfterSuccessfullPush( src.deleteFilesAfterSuccessfullPush )
     , transmitMetrics( src.transmitMetrics )
@@ -200,6 +202,7 @@ FilePushDestinationSettings::operator=( const FilePushDestinationSettings& src )
         filePushDestinationUri = src.filePushDestinationUri;
         fileMatchPatterns = src.fileMatchPatterns;
         dirsToWatch = src.dirsToWatch;
+        watchSubDirsOfDirsToWatch = src.watchSubDirsOfDirsToWatch;
         restingTimeForNewFilesInSecs = src.restingTimeForNewFilesInSecs;
         deleteFilesAfterSuccessfullPush = src.deleteFilesAfterSuccessfullPush;
         transmitMetrics = src.transmitMetrics;
@@ -252,6 +255,7 @@ FilePushDestinationSettings::LoadConfig( const CORE::CValueList& appConfig )
         GUCEF_ERROR_LOG( CORE::LOGLEVEL_IMPORTANT, "FilePushDestinationSettings: You must specify at least one instance of setting \"DirToWatch\". Currently there are none with a value" );
         return false;
     }
+    watchSubDirsOfDirsToWatch = CORE::StringToBool( CORE::ResolveVars( appConfig.GetValueAlways( "WatchSubDirsOfDirsToWatch" ) ), watchSubDirsOfDirsToWatch );
 
     settingValues = appConfig.GetValueVectorAlways( "FilePatternForNewFilesWithRestPeriod" );
     n = settingValues.begin();
@@ -327,6 +331,7 @@ FilePushDestinationSettings::LoadConfig( const CORE::CDataNode& rootNode )
         GUCEF_ERROR_LOG( CORE::LOGLEVEL_IMPORTANT, "FilePushDestinationSettings: You must specify at least one instance of setting \"DirToWatch\". Currently there are none with a value" );
         return false;
     }
+    watchSubDirsOfDirsToWatch = CORE::StringToBool( CORE::ResolveVars( rootNode.GetAttributeValueOrChildValueByName( "WatchSubDirsOfDirsToWatch" ) ), watchSubDirsOfDirsToWatch );
 
     settingValues = rootNode.GetAttributeValueOrChildValuesByName( "FilePatternForNewFilesWithRestPeriod" );
     n = settingValues.begin();
@@ -554,6 +559,7 @@ FilePushDestination::Start( void )
     CORE::CString::StringVector allFilesPatterns = GetFilePatternsForPushType( TPushStyle::PUSHSTYLE_MATCHING_ALL_FILES_WITH_REST_PERIOD );
 
     CORE::CDirectoryWatcher::CDirWatchOptions watchOptions;
+    watchOptions.watchSubTree = m_settings.watchSubDirsOfDirsToWatch;
     watchOptions.watchForFileCreation = true;
     watchOptions.watchForFileDeletion = false;
     watchOptions.watchForFileModifications = false;
@@ -903,6 +909,41 @@ FilePushDestination::OnFilePushFinished( CORE::CNotifier* notifier    ,
 
 /*-------------------------------------------------------------------------*/
 
+CORE::CString
+FilePushDestination::DetermineWatchedDirSubPath( const CORE::CString& filePath ) const
+{GUCEF_TRACE;
+
+    // First find the deepest root dir that matches
+    CORE::UInt32 bestMatchLength = 0;
+    CORE::CString bestMatchRoot;
+    TStringSet::const_iterator i = m_settings.dirsToWatch.begin();
+    while ( i != m_settings.dirsToWatch.end() )
+    {
+        CORE::UInt32 matchLength = filePath.FindMaxSubstrEquality( (*i), 0, true, true );
+        if ( matchLength > bestMatchLength )
+        {
+            bestMatchRoot = (*i);
+        }
+        ++i;
+    }
+
+    // Now extract the part of the path that relative to the found root is a sub-dir
+    CORE::CString pathRemainder = filePath.CutChars( bestMatchRoot.Length(), true, 0 );
+    pathRemainder = CORE::StripFilename( pathRemainder );
+    if ( !pathRemainder.IsNULLOrEmpty() )
+    {
+        // Ensure consistent path termination, always have a seperator at the end
+        char lastChar = pathRemainder[ pathRemainder.Length()-1 ];
+        if ( GUCEF_DIRSEPCHAR != lastChar && GUCEF_DIRSEPCHAROPPOSITE != lastChar ) 
+        {
+            pathRemainder += GUCEF_DIRSEPCHAR;
+        }
+    }
+    return pathRemainder;
+}
+
+/*-------------------------------------------------------------------------*/
+
 bool
 FilePushDestination::PushFileUsingHttp( const PushEntry& entry )
 {GUCEF_TRACE;
@@ -915,6 +956,7 @@ FilePushDestination::PushFileUsingHttp( const PushEntry& entry )
         GUCEF_WARNING_LOG( CORE::LOGLEVEL_NORMAL, "FilePushDestination:PushFileUsingHttp: Unable to load bytes from file \"" + fileToPush + "\". Is it still in use? Skipping the file for now" );
         return false;
     }
+    m_currentFileBeingPushed = &entry;
 
     CORE::CString fileExt = CORE::ExtractFileExtention( fileToPush ).Lowercase();
     CORE::CString contentType = "application/octet-stream";
@@ -925,7 +967,17 @@ FilePushDestination::PushFileUsingHttp( const PushEntry& entry )
 
     // Begin the push
     CORE::CString filename = CORE::ExtractFilename( fileToPush );
+
+    CORE::CString watchedDirSubDirPath;
+    if ( m_settings.filePushDestinationUri.HasSubstr( "{watchedDirSubDirPath}", true ) > 0 )
+    {
+        watchedDirSubDirPath = DetermineWatchedDirSubPath( entry.filePath );
+        watchedDirSubDirPath = watchedDirSubDirPath.ReplaceChar( '\\', '/' );
+    }
+
     CORE::CString pushUrlForFile = m_settings.filePushDestinationUri.ReplaceSubstr( "{filename}", filename );
+    pushUrlForFile = pushUrlForFile.ReplaceSubstr( "{watchedDirSubDirPath}", watchedDirSubDirPath );
+
     if ( m_httpClient.Post( pushUrlForFile, contentType, m_currentFilePushBuffer ) )
     {
         GUCEF_LOG( CORE::LOGLEVEL_NORMAL, "FilePushDestination: Commenced HTTP POST for content from file \"" + fileToPush + "\"" );
@@ -933,6 +985,8 @@ FilePushDestination::PushFileUsingHttp( const PushEntry& entry )
     }
 
     GUCEF_WARNING_LOG( CORE::LOGLEVEL_NORMAL, "FilePushDestination: Failed to HTTP POST bytes from file \"" + fileToPush + "\". Skipping the file for now" );
+    m_currentFilePushBuffer.Clear();
+    m_currentFileBeingPushed = GUCEF_NULL;
     return false;
 }
 
@@ -954,7 +1008,16 @@ FilePushDestination::PushFileUsingVfs( const PushEntry& entry )
 
     // Begin the push
     CORE::CString filename = CORE::ExtractFilename( fileToPush );
+
+    CORE::CString watchedDirSubDirPath;
+    if ( m_settings.filePushDestinationUri.HasSubstr( "{watchedDirSubDirPath}", true ) > 0 )
+    {
+        watchedDirSubDirPath = DetermineWatchedDirSubPath( entry.filePath );
+        watchedDirSubDirPath = watchedDirSubDirPath.ReplaceChar( '\\', '/' );
+    }    
+
     CORE::CString pushUrlForFile = m_settings.filePushDestinationUri.ReplaceSubstr( "{filename}", filename );
+    pushUrlForFile = pushUrlForFile.ReplaceSubstr( "{watchedDirSubDirPath}", watchedDirSubDirPath );
     pushUrlForFile = pushUrlForFile.CutChars( 6, true, 0 ); // Cut vfs://
 
     // Store the file as a singular sync blocking call
