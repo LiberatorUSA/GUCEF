@@ -426,6 +426,116 @@ CVFS::EncodeFileAsync( const CORE::CString& originalFilepath ,
 /*-------------------------------------------------------------------------*/
 
 bool
+CVFS::EncodeAsFile( const CORE::CDynamicBuffer& data     ,
+                    const CORE::UInt64 bufferOffset      ,
+                    const CORE::CString& encodedFilepath ,
+                    const bool overwrite                 ,
+                    const CORE::CString& codecFamily     ,
+                    const CORE::CString& encodeCodec     )
+{GUCEF_TRACE;
+
+    if ( data.GetDataSize() < bufferOffset )
+    {
+        GUCEF_ERROR_LOG( CORE::LOGLEVEL_NORMAL, "VFS:EncodeAsFile: Invalid buffer offset given which is larger than the available data" );
+        return false;
+    }
+    
+    CORE::CCodecRegistry& codecRegistry = CORE::CCoreGlobal::Instance()->GetCodecRegistry();
+    CORE::CCodecRegistry::TICodecPtr codec = codecRegistry.TryGetCodec( codecFamily, encodeCodec );
+    if ( !codec )
+    {
+        GUCEF_ERROR_LOG( CORE::LOGLEVEL_NORMAL, "VFS:EncodeAsFile: Cannot encode file due to inability to obtain codec " + 
+            encodeCodec + " for codec family " + codecFamily );
+        return false;
+    }
+
+    CVFSHandlePtr targetFile = GetFile( encodedFilepath, "wb", overwrite );
+    if ( !targetFile || GUCEF_NULL == targetFile->GetAccess() || !targetFile->GetAccess()->IsValid() )
+    {
+        GUCEF_ERROR_LOG( CORE::LOGLEVEL_NORMAL, "VFS:EncodeAsFile: Cannot obtain access to output file: " + encodedFilepath );
+        return false;
+    }
+
+    CORE::CDynamicBufferAccess bufferAccess( data );
+    bufferAccess.Setpos( (UInt32) bufferOffset );
+
+    if ( !codec->Encode( bufferAccess, *targetFile->GetAccess() ) )
+    {
+        GUCEF_ERROR_LOG( CORE::LOGLEVEL_NORMAL, "VFS:EncodeAsFile: Failed to encode buffer using codec \"" + 
+            encodeCodec + "\" from codec family \"" + codecFamily + "\"" );
+        return false;
+    }
+
+    GUCEF_DEBUG_LOG( CORE::LOGLEVEL_NORMAL, "VFS:DecodeFile: Successfully encoded buffer using codec \"" + 
+        encodeCodec + "\" from codec family \"" + codecFamily + "\"" );
+    return true;
+}
+
+/*-------------------------------------------------------------------------*/
+
+bool
+CVFS::EncodeAsFileAsync( const CORE::CDynamicBuffer& data     ,
+                         const CORE::UInt64 bufferOffset      ,
+                         const CORE::CString& encodedFilepath ,
+                         const bool overwrite                 ,
+                         const CORE::CString& codecFamily     ,
+                         const CORE::CString& encodeCodec     )
+{GUCEF_TRACE;
+
+    CEncodeBufferAsFileTaskData operationData;
+    operationData.operationType = ASYNCVFSOPERATIONTYPE_ENCODEDATAASFILE;
+    operationData.data = data;
+    operationData.bufferOffset = bufferOffset;
+    operationData.encodedFilepath = encodedFilepath;
+    operationData.overwrite = overwrite;
+    operationData.codecFamily = codecFamily;
+    operationData.encodeCodec = encodeCodec;
+
+    return CORE::CCoreGlobal::Instance()->GetTaskManager().QueueTask( CAsyncVfsOperation::TaskType, &operationData, GUCEF_NULL, &AsObserver() );
+}
+
+
+/*-------------------------------------------------------------------------*/
+
+bool
+CVFS::EncodeAsFile( CORE::CIOAccess& externalData        ,
+                    const CORE::CString& encodedFilepath ,
+                    const bool overwrite                 ,
+                    const CORE::CString& codecFamily     ,
+                    const CORE::CString& encodeCodec     )
+{GUCEF_TRACE;
+
+    // For now we just route to a memory buffer based implementation
+    // @TODO: improve
+
+    CORE::CDynamicBuffer buffer;
+    externalData.Read( buffer, 1 );
+    
+    return EncodeAsFile( buffer, 0, encodedFilepath, overwrite, codecFamily, encodeCodec );
+}
+
+/*-------------------------------------------------------------------------*/
+
+bool
+CVFS::EncodeAsFileAsync( CORE::CIOAccess& externalData        ,
+                         const CORE::CString& encodedFilepath ,
+                         const bool overwrite                 ,
+                         const CORE::CString& codecFamily     ,
+                         const CORE::CString& encodeCodec     )
+{GUCEF_TRACE;
+
+    // For now we just route to a memory buffer based implementation
+    // @TODO: improve
+
+    CORE::CDynamicBuffer buffer;
+    externalData.Read( buffer, 1 );
+    
+    return EncodeAsFileAsync( buffer, 0, encodedFilepath, overwrite, codecFamily, encodeCodec );
+}
+
+/*-------------------------------------------------------------------------*/
+
+bool
 CVFS::DecodeFile( const CORE::CString& originalFilepath ,
                   const CORE::CString& decodedFilepath  ,
                   const bool overwrite                  ,
@@ -595,6 +705,30 @@ CVFS::GetFile( const CORE::CString& file          ,
     // Unable to load file
     GUCEF_ERROR_LOG( CORE::LOGLEVEL_BELOW_NORMAL, "Vfs: Unable to locate a mount which can provide the file: " + file );
     return CVFSHandlePtr();
+}
+
+/*-------------------------------------------------------------------------*/
+
+bool
+CVFS::LoadFile( CORE::CDynamicBuffer& destinationBuffer ,
+                const CORE::CString& filePath           ,
+                const char* mode                        )
+{GUCEF_TRACE;
+
+    // This operation logically only supports read modes
+    if ( 0 != strcmp( "rb", mode ) && 0 != strcmp( "r", mode ) )
+        return false;
+    
+    // First load the file as a VFS reference as usual
+    CVFSHandlePtr fileReference = GetFile( filePath, mode, false );
+    if ( !fileReference || GUCEF_NULL == fileReference->GetAccess() )
+        return false;
+
+    // load the data from whatever abstracted vfs medium into memory
+    destinationBuffer.Append( *fileReference->GetAccess() );
+    
+    // When we leave this scope the VFS reference is released
+    return true;
 }
 
 /*-------------------------------------------------------------------------*/

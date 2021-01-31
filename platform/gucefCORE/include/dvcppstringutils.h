@@ -86,6 +86,14 @@ ResolveVars( const CString& strWithVars );
 /*-------------------------------------------------------------------------*/
 
 /**
+ *  Get an OS defined temp directory
+ */
+GUCEF_CORE_PUBLIC_CPP CString
+TempDir( void );
+
+/*-------------------------------------------------------------------------*/
+
+/**
  *  Determines the most compact relative path between the two paths given.
  *  the given paths can have variables in them, these will be resolved via
  *  RelativePath(). If 'resolveVars' is false only dir segments are processed

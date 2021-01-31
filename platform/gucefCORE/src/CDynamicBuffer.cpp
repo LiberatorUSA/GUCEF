@@ -95,30 +95,7 @@ CDynamicBuffer::CDynamicBuffer( CIOAccess& ioAccess )
           m_linked( false )
 {GUCEF_TRACE;
     
-    Int32 inputSize = ioAccess.GetSize();
-    if ( inputSize > -1 )
-    {
-        // Copy the recource data all at once
-        SetBufferSize( inputSize );
-        ioAccess.Read( *this     ,
-                       1         ,
-                       inputSize );
-    }
-    else
-    {
-        // read blocks till we hit the end of the recource
-        UInt32 nrOfBytesRead = 0;
-        while ( !ioAccess.Eof() )
-        {
-            nrOfBytesRead = ioAccess.Read( *this ,
-                                           1     ,
-                                           1024  );
-            if ( nrOfBytesRead < 1024 )
-            {
-                break;
-            }
-        }
-    }
+    Append( ioAccess );
 }
 
 /*-------------------------------------------------------------------------*/
@@ -689,6 +666,48 @@ CDynamicBuffer::Append( const CDynamicBuffer& data     ,
 {GUCEF_TRACE;
 
     Append( data._buffer, data.m_dataSize, appendToLogicalData );
+}
+
+/*-------------------------------------------------------------------------*/
+
+void
+CDynamicBuffer::Append( CIOAccess& data                ,
+                        const bool appendToLogicalData )
+{GUCEF_TRACE;
+
+    // Try to use seeking to learn remainder bytes available
+    // This is an optimimization, if seeking is not supported we just read in blocks
+    Int32 inputSize = -1;    
+    UInt32 currentPosition = data.Tell();
+    if ( 0 == data.Seek( 0, SEEK_END ) )
+    {
+        inputSize = (Int32) ( data.Tell() - currentPosition );
+        data.Setpos( currentPosition );
+    }
+
+    if ( inputSize > -1 )
+    {
+        // Copy the recource data all at once
+        SetBufferSize( inputSize );
+        data.Read( *this     ,
+                   1         ,
+                   inputSize );
+    }
+    else
+    {
+        // read blocks till we hit the end of the recource
+        UInt32 nrOfBytesRead = 0;
+        while ( !data.Eof() )
+        {
+            nrOfBytesRead = data.Read( *this ,
+                                       1     ,
+                                       1024  );
+            if ( nrOfBytesRead < 1024 )
+            {
+                break;
+            }
+        }
+    }
 }
 
 /*-------------------------------------------------------------------------*/

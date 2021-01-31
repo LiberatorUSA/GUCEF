@@ -399,6 +399,24 @@ CIOAccess::Read( CDynamicBuffer& dest ,
 
 /*-------------------------------------------------------------------------*/
 
+UInt32
+CIOAccess::Read( CDynamicBuffer& dest ,
+                 UInt32 esize         )
+{GUCEF_TRACE;
+
+    UInt32 currentOffset = Tell();
+    Seek( 0, SEEK_END );
+    UInt32 endOffset = Tell();
+    Setpos( currentOffset );
+
+    UInt32 bytesToRead = endOffset - currentOffset;
+    UInt32 elementsToRead = bytesToRead / esize;
+
+    return Read( dest, esize, elementsToRead );
+}
+
+/*-------------------------------------------------------------------------*/
+
 TIOAccess*
 CIOAccess::CStyleAccess( void )
 {GUCEF_TRACE;

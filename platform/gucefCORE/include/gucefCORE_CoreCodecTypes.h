@@ -1,5 +1,5 @@
 /*
- *  gucefWEB: GUCEF module providing Web application functionality 
+ *  gucefCORE: GUCEF module providing O/S abstraction and generic solutions 
  *  for standardized protocols
  *
  *  Copyright (C) 1998 - 2020.  Dinand Vanvelzen

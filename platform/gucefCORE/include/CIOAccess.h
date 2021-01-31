@@ -144,6 +144,9 @@ class GUCEF_CORE_PUBLIC_CPP CIOAccess : public CICloneable
                      UInt32 esize         ,
                      UInt32 elements      );
 
+        UInt32 Read( CDynamicBuffer& dest ,
+                     UInt32 esize         );
+
         /**
          *      Attempts to write the specified number of bytes to the resource
          *      using srcdata as the data source.

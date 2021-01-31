@@ -320,6 +320,50 @@ CEncodeFileTaskData::Clone( void ) const
 
 /*-------------------------------------------------------------------------*/
 
+CEncodeBufferAsFileTaskData::CEncodeBufferAsFileTaskData( void )
+    : CAsyncVfsTaskData()
+    , data()
+    , bufferOffset( 0 )
+    , encodedFilepath()
+    , overwrite( false )
+    , codecFamily()
+    , encodeCodec()
+{GUCEF_TRACE;
+
+}
+
+/*-------------------------------------------------------------------------*/
+
+CEncodeBufferAsFileTaskData::CEncodeBufferAsFileTaskData( const CEncodeBufferAsFileTaskData& src )
+    : CAsyncVfsTaskData( src )
+    , data( src.data )
+    , bufferOffset( src.bufferOffset )
+    , encodedFilepath( src.encodedFilepath )
+    , overwrite( src.overwrite )
+    , codecFamily( src.codecFamily )
+    , encodeCodec( src.encodeCodec )
+{GUCEF_TRACE;
+
+}
+
+/*-------------------------------------------------------------------------*/
+
+CEncodeBufferAsFileTaskData::~CEncodeBufferAsFileTaskData()
+{GUCEF_TRACE;
+
+}
+
+/*-------------------------------------------------------------------------*/
+
+CORE::CICloneable* 
+CEncodeBufferAsFileTaskData::Clone( void ) const
+{GUCEF_TRACE;
+    
+    return new CEncodeBufferAsFileTaskData( *this );
+}
+
+/*-------------------------------------------------------------------------*/
+
 CDecodeFileTaskData::CDecodeFileTaskData( void )
     : CAsyncVfsTaskData()
     , originalFilepath()

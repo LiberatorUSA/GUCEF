@@ -96,8 +96,23 @@ namespace CORE {
 //-------------------------------------------------------------------------*/
 
 CString
+TempDir( void )
+{GUCEF_TRACE;
+
+    #if ( GUCEF_PLATFORM == GUCEF_PLATFORM_MSWIN )
+    char buffer[ MAX_PATH+1 ];
+    if ( 0 != ::GetTempPathA( MAX_PATH+1, buffer ) )
+        return buffer;
+    #endif
+    return CString::Empty;
+}
+
+/*-------------------------------------------------------------------------*/
+
+CString
 ModuleDir( void )
-{
+{GUCEF_TRACE;
+
     char buffer[ MAX_DIR_LENGTH ];
     Module_Path( buffer, MAX_DIR_LENGTH );
     Strip_Filename( buffer );
@@ -108,7 +123,8 @@ ModuleDir( void )
 
 CString
 CurrentWorkingDir( void )
-{
+{GUCEF_TRACE;
+
     char buffer[ MAX_DIR_LENGTH ];
     Get_Current_Dir( buffer, MAX_DIR_LENGTH );
     return buffer;
@@ -235,7 +251,8 @@ ResolveVars( const CString& strWithVars )
     while ( idx > -1 );
 
     resultStr = resultStr.ReplaceSubstr( "$HOSTNAME$", GetHostname() );
-    resultStr = resultStr.ReplaceSubstr( "$PID$", UInt32ToString( MT::GetProcessID() ) );
+    resultStr = resultStr.ReplaceSubstr( "$PID$", UInt32ToString( MT::GetProcessID() ) );    
+    resultStr = resultStr.ReplaceSubstr( "$TEMPDIR$", TempDir() );
     resultStr = resultStr.ReplaceSubstr( "$MODULEDIR$", ModuleDir() );
     resultStr = resultStr.ReplaceSubstr( "$CURWORKDIR$", CurrentWorkingDir() );
     

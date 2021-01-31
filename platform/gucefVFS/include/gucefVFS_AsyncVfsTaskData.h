@@ -73,7 +73,8 @@ enum EAsyncVfsOperationType : int
     ASYNCVFSOPERATIONTYPE_STOREDATAASFILE      ,
     ASYNCVFSOPERATIONTYPE_COPYFILE             ,
     ASYNCVFSOPERATIONTYPE_ENCODEFILE           ,
-    ASYNCVFSOPERATIONTYPE_DECODEFILE
+    ASYNCVFSOPERATIONTYPE_DECODEFILE           ,
+    ASYNCVFSOPERATIONTYPE_ENCODEDATAASFILE
 };
 typedef enum EAsyncVfsOperationType TAsyncVfsOperationType;
 
@@ -179,6 +180,26 @@ class GUCEF_VFS_PUBLIC_CPP CEncodeFileTaskData : public CAsyncVfsTaskData
     CEncodeFileTaskData( void );
     CEncodeFileTaskData( const CEncodeFileTaskData& src );
     virtual ~CEncodeFileTaskData();
+};
+
+/*-------------------------------------------------------------------------*/
+
+class GUCEF_VFS_PUBLIC_CPP CEncodeBufferAsFileTaskData : public CAsyncVfsTaskData
+{
+    public:
+
+    CORE::CDynamicBuffer data;
+    CORE::UInt64 bufferOffset;
+    CORE::CString encodedFilepath;
+    bool overwrite;
+    CString codecFamily;
+    CORE::CString encodeCodec;
+
+    virtual CICloneable* Clone( void ) const GUCEF_VIRTUAL_OVERRIDE;
+
+    CEncodeBufferAsFileTaskData( void );
+    CEncodeBufferAsFileTaskData( const CEncodeBufferAsFileTaskData& src );
+    virtual ~CEncodeBufferAsFileTaskData();
 };
 
 /*-------------------------------------------------------------------------*/

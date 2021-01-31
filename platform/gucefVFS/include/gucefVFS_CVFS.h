@@ -177,16 +177,23 @@ class GUCEF_VFS_PUBLIC_CPP CVFS : public CORE::CTSGNotifier   ,
     CVFSHandlePtr GetFile( const CORE::CString& file    ,
                            const char* mode = "rb"      ,
                            const bool overwrite = false );
+
+    /**
+     *  Loads the entire file at the given location into memory if possible
+     */
+    bool LoadFile( CORE::CDynamicBuffer& destinationBuffer ,
+                   const CORE::CString& file               ,
+                   const char* mode = "rb"                 );
                                   
     /**
      *  Attempts to store the provided data as file content
      *  This is a syncronous blocking call and it returns when the operation is 
      *  completed or failed.
      */
-    bool StoreAsFile( const CORE::CString& filepath    ,
-                      const CORE::CDynamicBuffer& data ,
-                      const CORE::UInt64 offset = 0    ,
-                      const bool overwrite = false     );
+    bool StoreAsFile( const CORE::CString& filepath       ,
+                      const CORE::CDynamicBuffer& data    ,
+                      const CORE::UInt64 bufferOffset = 0 ,
+                      const bool overwrite = false        );
 
     /**
      *  Attempts to store the provided data as file content
@@ -256,6 +263,74 @@ class GUCEF_VFS_PUBLIC_CPP CVFS : public CORE::CTSGNotifier   ,
                           const bool overwrite                  ,
                           const CORE::CString& codecFamily      ,
                           const CORE::CString& encodeCodec      );
+
+    /**
+     *  Encodes a file from the buffer given if possible
+     *  the target file must be located in a writable target mounted archive
+     *
+     *  @data               Buffer with the data to be encoded and stored as a file
+     *  @bufferOffset       Offset into the buffer from where to start
+     *  @encodedFilepath    destination path for the encoded file copy
+     *  @overwrite          whether to overwrite any existing file at the target path if one exists
+     *  @codecFamily        which codec family to reference when looking for the named codec
+     *  @encodeCodec        which named codec to use when encoding the file
+     */
+    bool EncodeAsFile( const CORE::CDynamicBuffer& data     ,
+                       const CORE::UInt64 bufferOffset      ,
+                       const CORE::CString& encodedFilepath ,
+                       const bool overwrite                 ,
+                       const CORE::CString& codecFamily     ,
+                       const CORE::CString& encodeCodec     );
+
+    /**
+     *  Async encodes a file from the buffer given if possible
+     *  the target file must be located in a writable target mounted archive
+     *
+     *  @data               Buffer with the data to be encoded and stored as a file
+     *  @bufferOffset       Offset into the buffer from where to start
+     *  @encodedFilepath    destination path for the encoded file copy
+     *  @overwrite          whether to overwrite any existing file at the target path if one exists
+     *  @codecFamily        which codec family to reference when looking for the named codec
+     *  @encodeCodec        which named codec to use when encoding the file
+     */
+    bool EncodeAsFileAsync( const CORE::CDynamicBuffer& data     ,
+                            const CORE::UInt64 bufferOffset      ,
+                            const CORE::CString& encodedFilepath ,
+                            const bool overwrite                 ,
+                            const CORE::CString& codecFamily     ,
+                            const CORE::CString& encodeCodec     );
+
+    /**
+     *  Encodes data sourced outside the VFS and stored it as a file in the VFS if possible
+     *  the target file must be located in a writable target mounted archive
+     *
+     *  @externalData       Access to data sourced outside the VFS which is to be encoded and stored as a file
+     *  @encodedFilepath    destination path for the encoded file copy
+     *  @overwrite          whether to overwrite any existing file at the target path if one exists
+     *  @codecFamily        which codec family to reference when looking for the named codec
+     *  @encodeCodec        which named codec to use when encoding the file
+     */
+    bool EncodeAsFile( CORE::CIOAccess& externalData        ,
+                       const CORE::CString& encodedFilepath ,
+                       const bool overwrite                 ,
+                       const CORE::CString& codecFamily     ,
+                       const CORE::CString& encodeCodec     );
+
+    /**
+     *  Async encodes data sourced outside the VFS and stored it as a file in the VFS if possible
+     *  the target file must be located in a writable target mounted archive
+     *
+     *  @externalData       Access to data sourced outside the VFS which is to be encoded and stored as a file
+     *  @encodedFilepath    destination path for the encoded file copy
+     *  @overwrite          whether to overwrite any existing file at the target path if one exists
+     *  @codecFamily        which codec family to reference when looking for the named codec
+     *  @encodeCodec        which named codec to use when encoding the file
+     */
+    bool EncodeAsFileAsync( CORE::CIOAccess& externalData        ,
+                            const CORE::CString& encodedFilepath ,
+                            const bool overwrite                 ,
+                            const CORE::CString& codecFamily     ,
+                            const CORE::CString& encodeCodec     );
 
     /**
      *  Decodes a file from one vfs path to another if possible
