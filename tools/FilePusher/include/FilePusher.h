@@ -207,6 +207,8 @@ class FilePushDestination : public CORE::CObservingNotifier
     
     void RegisterEventHandlers( void );
 
+    void RegisterHttpEventHandlers( void );
+
     void
     OnMetricsTimerCycle( CORE::CNotifier* notifier    ,
                          const CORE::CEvent& eventId  ,
@@ -231,6 +233,11 @@ class FilePushDestination : public CORE::CObservingNotifier
     OnFilePushTimerCycle( CORE::CNotifier* notifier    ,
                           const CORE::CEvent& eventId  ,
                           CORE::CICloneable* eventData );
+
+    void
+    OnFileEncodeTimerCycle( CORE::CNotifier* notifier    ,
+                            const CORE::CEvent& eventId  ,
+                            CORE::CICloneable* eventData );
 
     void
     OnHttpClientConnected( CORE::CNotifier* notifier    ,

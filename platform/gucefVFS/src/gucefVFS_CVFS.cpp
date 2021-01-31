@@ -808,7 +808,7 @@ CVFS::MountArchive( const CArchiveSettings& settings )
     MT::CObjectScopeLock lock( this );
 
     // Either determine the actual non-vfs path based on previously loaded/mounted archives or use the given explicit path if any
-    CString actualArchivePath = settings.GetActualArchivePath();
+    CString actualArchivePath = CORE::ResolveVars( settings.GetActualArchivePath() );
     if ( !actualArchivePath.IsNULLOrEmpty() || GetActualFilePath( settings.GetArchivePath(), actualArchivePath ) )
     {
         // Found a compatible type,.. create an archive for the type
