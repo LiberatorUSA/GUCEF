@@ -29,6 +29,7 @@
 #include "gucef_new_off.h"        /* don't scare the STL with our memory manager */
 
 #include <vector>
+#include <set>
 #include <string>
 
 #ifndef GUCEF_CORE_MACROS_H
@@ -68,7 +69,8 @@ class GUCEF_CORE_PUBLIC_CPP CString
 {
     public:
 
-    typedef std::vector< CString > StringVector;
+    typedef std::vector< CString >  StringVector;
+    typedef std::set< CString >     StringSet;
 
     static const CString Empty;
     static const StringVector EmptyStringVector;
@@ -283,6 +285,9 @@ class GUCEF_CORE_PUBLIC_CPP CString
 
     StringVector ParseElements( char seperator               ,
                                 bool addEmptyElements = true ) const;
+
+    StringSet ParseUniqueElements( char seperator               ,
+                                   bool addEmptyElements = true ) const;
 
     bool WildcardEquals( const CString& strWithWildcards ,
                          const char wildCardToken = '*'  ,

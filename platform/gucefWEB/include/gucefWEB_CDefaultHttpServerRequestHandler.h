@@ -101,7 +101,7 @@ class GUCEF_WEB_PUBLIC_CPP CDefaultHttpServerRequestHandler : public CIHttpServe
      *  Note that transfer encoding is an odd duck in the sense that it was introduced 
      *  as an alternative in the HTTP spec to the content encoding management.
      *  Across most implementations however content encoding was actually implemented the way
-     *  transfer encoding claims to work in the spec, wih it being a transport artifact and
+     *  transfer encoding claims to work in the spec, with it being a transport artifact and
      *  not a property inherent to the application resource exposed.
      *  We follow the common real world practice as well here, not the spec.
      */

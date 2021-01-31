@@ -73,7 +73,7 @@ namespace WEB {
 CDefaultHttpServerRequestHandler::CDefaultHttpServerRequestHandler( CIHTTPServerRouterController* routerController /* = GUCEF_NULL */ )
     : CIHttpServerRequestHandler()
     , m_routerController( routerController )
-    , m_applyTransferEncodingWhenAble( true )
+    , m_applyTransferEncodingWhenAble( false )
 {GUCEF_TRACE;
 
     if ( GUCEF_NULL == routerController )
@@ -87,7 +87,7 @@ CDefaultHttpServerRequestHandler::CDefaultHttpServerRequestHandler( CIHTTPServer
 CDefaultHttpServerRequestHandler::CDefaultHttpServerRequestHandler( const CDefaultHttpServerRequestHandler& src )
     : CIHttpServerRequestHandler( src )
     , m_routerController( src.m_routerController )
-    , m_applyTransferEncodingWhenAble( true )
+    , m_applyTransferEncodingWhenAble( false )
 {GUCEF_TRACE;
 
 }

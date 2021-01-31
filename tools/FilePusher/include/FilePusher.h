@@ -163,6 +163,10 @@ class FilePushDestinationSettings
     CORE::UInt32 restingTimeForNewFilesInSecs;
     bool deleteFilesAfterSuccessfullPush;
     bool transmitMetrics;
+    bool compressFilesBeforePush;
+    CORE::CString fileCompressionCodecToUse;
+    CORE::CString fileCompressionCodecFileExt;
+    TStringSet fileTypesToCompress;
 };
 
 /*-------------------------------------------------------------------------*/
@@ -184,6 +188,15 @@ class FilePushDestination : public CORE::CObservingNotifier
     bool LoadConfig( const FilePushDestinationSettings& settings );
     
     private:
+
+    class PushEntry
+    {
+        public:
+        
+        CORE::UInt64 currentOffsetInFile;
+        CORE::CString encodedFilepath;
+        CORE::CString filePath;
+    };
 
     typedef CORE::CTEventHandlerFunctor< FilePushDestination > TEventCallback;
     typedef enum FilePushDestinationSettings::EPushStyle TPushStyle;
@@ -268,6 +281,11 @@ class FilePushDestination : public CORE::CObservingNotifier
                                   CORE::CICloneable* eventData );
 
     void
+    OnAsyncVfsFileEncodeCompleted( CORE::CNotifier* notifier    ,
+                                   const CORE::CEvent& eventId  ,
+                                   CORE::CICloneable* eventData );
+
+    void
     QueueNewFileForPushingAfterUnmodifiedRestPeriod( const CORE::CString& newFilePath );
 
     bool
@@ -285,16 +303,21 @@ class FilePushDestination : public CORE::CObservingNotifier
                                 const CORE::CString::StringVector& patternsToMatch );
     
     void
-    QueueFileForPushing( const CORE::CString& filePath );
-
-    bool 
-    PushFileUsingHttp( const CORE::CString& pathToFileToPus, CORE::UInt32 offsetInFileh );
-
-    bool
-    PushFileUsingVfs( const CORE::CString& pathToFileToPush, CORE::UInt32 offsetInFile );
+    QueueFileForPushing( const PushEntry& entry );
 
     void
-    OnFilePushFinished( void );
+    QueueFileForPushOrEncode( const CORE::CString& filePath );
+
+    bool 
+    PushFileUsingHttp( const PushEntry& entry );
+
+    bool
+    PushFileUsingVfs( const PushEntry& entry );
+
+    void
+    OnFilePushFinished( CORE::CNotifier* notifier    ,
+                        const CORE::CEvent& eventId  ,
+                        CORE::CICloneable* eventData );
 
     static CORE::CDateTime GetLatestTimestampForFile( const CORE::CString& filePath );
 
@@ -304,7 +327,7 @@ class FilePushDestination : public CORE::CObservingNotifier
     private:
 
     typedef std::map< CORE::CString, CORE::CDateTime > TStringTimeMap;
-    typedef std::map< CORE::CString, CORE::UInt64 > TStringUInt64Map;
+    typedef std::map< CORE::CString, PushEntry > TStringPushEntryMap;
     typedef std::map< CORE::CDateTime, CORE::CString::StringVector > TDateTimeStringVectorMap;
 
     WEB::CHTTPClient m_httpClient;
@@ -312,11 +335,13 @@ class FilePushDestination : public CORE::CObservingNotifier
     CORE::CTimer m_allFilesDirScanTimer;        
     CORE::CTimer m_newFileRestPeriodTimer;
     TStringTimeMap m_newFileRestQueue;
-    TStringUInt64Map m_pushQueue;
+    TStringPushEntryMap m_encodeQueue;
+    TStringPushEntryMap m_pushQueue;
     CORE::CTimer m_pushTimer;
-    CORE::CString m_currentFileBeingPushed;
     CORE::CDynamicBuffer m_currentFilePushBuffer;
+    const PushEntry* m_currentFileBeingPushed;
     CORE::UInt32 m_lastPushDurationInSecs;
+    CORE::UInt32 m_lastEncodeDurationInSecs;
     CORE::CTimer m_metricsTimer;
     FilePushDestinationSettings m_settings;
 };

@@ -1170,6 +1170,48 @@ CString::HasChar( char searchchar  ,
 
 /*-------------------------------------------------------------------------*/
 
+CString::StringSet
+CString::ParseUniqueElements( char seperator        ,
+                              bool addEmptyElements ) const
+{GUCEF_TRACE;
+
+    if ( m_length > 0 )
+    {
+        StringSet list;
+        CString entry;
+        UInt32 last = 0;
+        for ( UInt32 i=0; i<m_length; ++i )
+        {
+            if ( m_string[ i ] == seperator )
+            {
+                UInt32 stringLength = i-last;
+                if ( ( 0 == stringLength && addEmptyElements ) ||
+                     ( stringLength > 0 ) )
+                {
+                    entry.Set( m_string+last ,
+                               stringLength  );
+                    list.insert( entry );
+                }
+                last = i+1;
+            }
+        }
+
+        // add last item
+        UInt32 stringLength = m_length-last;
+        if ( ( 0 == stringLength && addEmptyElements ) ||
+             ( stringLength > 0 ) )
+        {
+            entry.Set( m_string+last ,
+                       stringLength );
+            list.insert( entry );
+        }
+        return list;
+    }
+    return StringSet();
+}
+
+/*-------------------------------------------------------------------------*/
+
 CString::StringVector
 CString::ParseElements( char seperator        ,
                         bool addEmptyElements ) const
