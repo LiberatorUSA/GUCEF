@@ -161,6 +161,7 @@ FilePushDestinationSettings::FilePushDestinationSettings( void )
     , compressFilesBeforePush( false )
     , fileCompressionCodecToUse( "gzip" )
     , fileCompressionCodecFileExt( "gz" )
+    , fileCompressionTempDir()
     , fileTypesToCompress()
 {GUCEF_TRACE;
 
@@ -179,6 +180,7 @@ FilePushDestinationSettings::FilePushDestinationSettings( const FilePushDestinat
     , compressFilesBeforePush( src.compressFilesBeforePush )
     , fileCompressionCodecToUse( src.fileCompressionCodecToUse )
     , fileCompressionCodecFileExt( src.fileCompressionCodecFileExt )
+    , fileCompressionTempDir( src.fileCompressionTempDir )
     , fileTypesToCompress( src.fileTypesToCompress )
 {GUCEF_TRACE;
 
@@ -209,6 +211,7 @@ FilePushDestinationSettings::operator=( const FilePushDestinationSettings& src )
         compressFilesBeforePush = src.compressFilesBeforePush;
         fileCompressionCodecToUse = src.fileCompressionCodecToUse;
         fileCompressionCodecFileExt = src.fileCompressionCodecFileExt;
+        fileCompressionTempDir = src.fileCompressionTempDir;
         fileTypesToCompress = src.fileTypesToCompress;
     }
     return *this;
@@ -227,6 +230,7 @@ FilePushDestinationSettings::LoadConfig( const CORE::CValueList& appConfig )
     compressFilesBeforePush = CORE::StringToBool( CORE::ResolveVars( appConfig.GetValueAlways( "CompressFilesBeforePush" ) ), compressFilesBeforePush );
     fileCompressionCodecToUse = CORE::ResolveVars( appConfig.GetValueAlways( "FileCompressionCodecToUse", fileCompressionCodecToUse ) );
     fileCompressionCodecFileExt = CORE::ResolveVars( appConfig.GetValueAlways( "FileCompressionCodecFileExt", fileCompressionCodecFileExt ) );
+    fileCompressionTempDir = CORE::ResolveVars( appConfig.GetValueAlways( "FileCompressionTempDir", fileCompressionTempDir ) );
     fileTypesToCompress = CORE::ResolveVars( appConfig.GetValueAlways( "FileTypesToCompress" ) ).ParseUniqueElements( ',', false );
     
     filePushDestinationUri = CORE::ResolveVars( appConfig.GetValueAlways( "FilePushDestinationUri" ) );
@@ -303,6 +307,7 @@ FilePushDestinationSettings::LoadConfig( const CORE::CDataNode& rootNode )
     compressFilesBeforePush = CORE::StringToBool( CORE::ResolveVars( rootNode.GetAttributeValueOrChildValueByName( "CompressFilesBeforePush" ) ), compressFilesBeforePush );
     fileCompressionCodecToUse = CORE::ResolveVars( rootNode.GetAttributeValueOrChildValueByName( "FileCompressionCodecToUse", fileCompressionCodecToUse ) );
     fileCompressionCodecFileExt = CORE::ResolveVars( rootNode.GetAttributeValueOrChildValueByName( "FileCompressionCodecFileExt", fileCompressionCodecFileExt ) );
+    fileCompressionTempDir = CORE::ResolveVars( rootNode.GetAttributeValueOrChildValueByName( "FileCompressionTempDir", fileCompressionCodecFileExt ) );
     fileTypesToCompress = CORE::ResolveVars( rootNode.GetAttributeValueOrChildValueByName( "FileTypesToCompress" ) ).ParseUniqueElements( ',', false );
     
     filePushDestinationUri = CORE::ResolveVars( rootNode.GetAttributeValueOrChildValueByName( "FilePushDestinationUri" ) );
@@ -540,6 +545,15 @@ FilePushDestination::Start( void )
         {
             GUCEF_ERROR_LOG( CORE::LOGLEVEL_IMPORTANT, "FilePushDestination: Configured to compress files before push but no codec to use was specified" );
             return false;
+        }
+
+        if ( !m_settings.fileCompressionTempDir.IsNULLOrEmpty() )
+        {
+            if ( !CORE::CreateDirs( m_settings.fileCompressionTempDir ) )
+            {
+                GUCEF_ERROR_LOG( CORE::LOGLEVEL_IMPORTANT, "FilePushDestination: Configured to compress files before push but the path to write temp files is not accessable or writable: " + m_settings.fileCompressionTempDir );
+                return false;
+            }
         }
     }
     
@@ -1090,6 +1104,22 @@ FilePushDestination::OnFilePushTimerCycle( CORE::CNotifier* notifier    ,
 
 /*-------------------------------------------------------------------------*/
 
+bool
+FilePushDestination::IsFileATempEncodingFile( const CORE::CString& filePath ) const
+{GUCEF_TRACE;
+
+    TStringPushEntryMap::const_iterator i = m_encodeQueue.begin();
+    while ( i != m_encodeQueue.end() )
+    {
+        if ( filePath == (*i).second.encodedFilepath )
+            return true;
+        ++i;
+    }
+    return false;
+}
+
+/*-------------------------------------------------------------------------*/
+
 void
 FilePushDestination::QueueFileForPushOrEncode( const CORE::CString& filePath )
 {GUCEF_TRACE;
@@ -1100,6 +1130,8 @@ FilePushDestination::QueueFileForPushOrEncode( const CORE::CString& filePath )
         return;
     if ( m_encodeQueue.find( filePath ) != m_encodeQueue.end() )
         return;
+    if ( IsFileATempEncodingFile( filePath ) )
+        return;
    
     if ( m_settings.compressFilesBeforePush )
     {
@@ -1107,7 +1139,18 @@ FilePushDestination::QueueFileForPushOrEncode( const CORE::CString& filePath )
         const CORE::CString& encodedFileExt = m_settings.fileCompressionCodecFileExt.IsNULLOrEmpty() ? m_settings.fileCompressionCodecToUse : m_settings.fileCompressionCodecFileExt;
         PushEntry& pushEntry = m_encodeQueue[ filePath ];
         pushEntry.currentOffsetInFile = 0;
-        pushEntry.encodedFilepath += filePath + '.' + encodedFileExt;
+        if ( m_settings.fileCompressionTempDir.IsNULLOrEmpty() )
+        {
+            // Place the encoded file side-by-side with the input file since no temp dir was provided
+            // Considering files are typlically deleted after pushing this dir has a decent chance of being writable
+            pushEntry.encodedFilepath += filePath + '.' + encodedFileExt;
+        }
+        else
+        {
+            CORE::CString filename = CORE::ExtractFilename( filePath ) + '.' + encodedFileExt;
+            filename = CORE::CombinePath( m_settings.fileCompressionTempDir, filename );
+
+        }
         pushEntry.filePath = filePath;
     }
     else

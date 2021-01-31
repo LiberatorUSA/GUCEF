@@ -167,6 +167,7 @@ class FilePushDestinationSettings
     bool compressFilesBeforePush;
     CORE::CString fileCompressionCodecToUse;
     CORE::CString fileCompressionCodecFileExt;
+    CORE::CString fileCompressionTempDir;
     TStringSet fileTypesToCompress;
 };
 
@@ -327,6 +328,9 @@ class FilePushDestination : public CORE::CObservingNotifier
 
     CORE::CString
     DetermineWatchedDirSubPath( const CORE::CString& filePath  ) const;
+
+    bool 
+    IsFileATempEncodingFile( const CORE::CString& filePath ) const;
     
     private:
 
