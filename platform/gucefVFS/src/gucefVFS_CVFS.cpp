@@ -311,7 +311,7 @@ CVFS::DeleteFile( const CString& filePath, bool okIfItDoesNotExist )
     //        Not all archive types might be able to handle denying a delete themselves during ongoing I/O especially with remote storage
     
     // Switch dir separator chars if needed
-    CString path( filePath.ReplaceChar( GUCEF_DIRSEPCHAROPPOSITE, GUCEF_DIRSEPCHAR ) );
+    CString path( filePath.ReplaceChar( '\\', '/' ) );
 
     MT::CObjectScopeLock lock( this );
 
@@ -653,12 +653,14 @@ CVFS::DecodeFileAsync( const CORE::CString& originalFilepath ,
 /*-------------------------------------------------------------------------*/
 
 bool
-CVFS::StoreAsFile( const CORE::CString& filepath    ,
+CVFS::StoreAsFile( const CORE::CString& file        ,
                    const CORE::CDynamicBuffer& data ,
                    const CORE::UInt64 offset        ,
                    const bool overwrite             )
 {GUCEF_TRACE;
 
+    CString filepath = ConformVfsFilePath( file );
+    
     MT::CObjectScopeLock lock( this );
 
     // Get a list of all eligable mounts
@@ -705,7 +707,7 @@ CVFS::GetFile( const CORE::CString& file          ,
                const bool overwrite /* = false */ )
 {GUCEF_TRACE;
 
-    CString filepath( file.ReplaceChar( GUCEF_DIRSEPCHAROPPOSITE, GUCEF_DIRSEPCHAR ) );
+    CString filepath = ConformVfsFilePath( file );
     bool fileMustExist = *mode == 'r';
 
     MT::CObjectScopeLock lock( this );
@@ -737,9 +739,9 @@ CVFS::GetFile( const CORE::CString& file          ,
                                                                             _maxmemloadsize     ,
                                                                             overwrite           );
 
-            if ( filePtr )
+            if ( !filePtr )
             {
-                GUCEF_ERROR_LOG( CORE::LOGLEVEL_BELOW_NORMAL, "Vfs: Requested file exists but could not be loaded using mount link remainder: " + mountLink.remainder );
+                GUCEF_ERROR_LOG( CORE::LOGLEVEL_BELOW_NORMAL, "Vfs: Requested file pre-conditions passed but could not be loaded from mounted archive using mount link remainder: " + mountLink.remainder );
             }
             return filePtr;
         }
@@ -846,6 +848,52 @@ CVFS::DelayMountArchive( const CArchiveSettings& settings )
 
 /*-------------------------------------------------------------------------*/
 
+VFS::CString
+CVFS::ConformVfsDirPath( const VFS::CString& originalDirPath ) const
+{GUCEF_TRACE;
+
+    // Regardless of how the settings are presented we want to ensure a consistent vfs path scheme
+    // As such we enforce having a start '/' and a trailing '/' for dir paths
+
+    if ( originalDirPath.IsNULLOrEmpty() )
+        return "/";
+
+    VFS::CString resultStr = originalDirPath.ReplaceChar( '\\', '/' );
+    
+    if ( resultStr[ 0 ] != '/' )
+        resultStr = '/' + resultStr;
+
+    if ( resultStr[ resultStr.Length()-1 ] != '/' )
+        resultStr += '/';
+
+    return resultStr;
+}
+
+/*-------------------------------------------------------------------------*/
+
+VFS::CString
+CVFS::ConformVfsFilePath( const VFS::CString& originalFilePath ) const
+{GUCEF_TRACE;
+
+    // Regardless of how the settings are presented we want to ensure a consistent vfs path scheme
+    // As such we enforce having a start '/' and NO trailing '/' for file paths
+
+    if ( originalFilePath.IsNULLOrEmpty() )
+        return CString::Empty;
+
+    VFS::CString resultStr = originalFilePath.ReplaceChar( '\\', '/' );
+    
+    if ( resultStr[ 0 ] != '/' )
+        resultStr = '/' + resultStr;
+
+    if ( resultStr[ resultStr.Length()-1 ] == '/' )
+        resultStr = resultStr.CutChars( 1, false, 0 );
+
+    return resultStr;
+}
+
+/*-------------------------------------------------------------------------*/
+
 bool
 CVFS::MountArchive( const CArchiveSettings& settings )
 {GUCEF_TRACE;
@@ -858,13 +906,17 @@ CVFS::MountArchive( const CArchiveSettings& settings )
     {
         // Found a compatible type,.. create an archive for the type
         CIArchive* archive = m_abstractArchiveFactory.Create( settings.GetArchiveType() );
-        if ( NULL != archive )
+        if ( GUCEF_NULL != archive )
         {
             // Try to load from the resource
             CArchiveSettings updatedSettings( settings );
             if ( actualArchivePath != settings.GetActualArchivePath() )
                 updatedSettings.SetActualArchivePath( actualArchivePath );
 
+            // Regardless of how the settings are presented we want to ensure a conistent mounting scheme
+            // As such we enforce having a start '/' and no trailing '/' for mount paths, with the start '/' signaling 'root'
+            updatedSettings.SetMountPath( ConformVfsDirPath( updatedSettings.GetMountPath() ) );
+            
             if ( archive->LoadArchive( updatedSettings ) )
             {
                 // Successfully loaded/linked the archive
@@ -886,9 +938,9 @@ CVFS::MountArchive( const CArchiveSettings& settings )
                 //}
 
                 archiveEntry.path = actualArchivePath;
-                archiveEntry.writeable = settings.GetWriteableRequested();
+                archiveEntry.writeable = updatedSettings.GetWriteableRequested();
                 archiveEntry.archive = archive;
-                archiveEntry.mountPath = settings.GetMountPath();
+                archiveEntry.mountPath = updatedSettings.GetMountPath();
 
                 m_mountList.push_back( archiveEntry );
                 return true;
@@ -934,7 +986,10 @@ CVFS::MountArchive( const CString& archiveName    ,
             archiveEntry.abspath = archiveResource->GetFilePath();
             archiveEntry.writeable = writeableRequest;
             archiveEntry.archive = archive;
-            archiveEntry.mountPath = mountPoint;
+
+            // Regardless of how the settings are presented we want to ensure a conistent mounting scheme
+            // As such we enforce having a start '/' and no trailing '/' for mount paths, with the start '/' signaling 'root'
+            archiveEntry.mountPath = ConformVfsDirPath( mountPoint );
 
             m_mountList.push_back( archiveEntry );
             return true;
@@ -954,13 +1009,16 @@ bool
 CVFS::IsMountedArchive( const CString& location ) const
 {GUCEF_TRACE;
 
+    // Keep in mind that mounted archives count as directories
+    CString testLocation( ConformVfsDirPath( location ) );
+   
     MT::CObjectScopeLock lock( this );
 
     TMountVector::const_iterator i = m_mountList.begin();
     while ( i != m_mountList.end() )
     {
         const TMountEntry& archiveEntry = (*i);
-        if ( archiveEntry.mountPath == location )
+        if ( archiveEntry.mountPath == testLocation )
         {
             return true;
         }
@@ -1354,7 +1412,7 @@ CVFS::GetEligableMounts( const CString& location                ,
                 {
                     // We need to make sure we dont accidentally match a partial directory name with a similarly names path
                     if ( location.Length() == mountEntry.mountPath.Length() ||
-                       ( ( location[ mountEntry.mountPath.Length() ] == '/' ) || ( location[ mountEntry.mountPath.Length() ] == '\\' ) ) )
+                       ( location[ mountEntry.mountPath.Length()-1 ] == '/' ) )
                     {
                         TConstMountLink mountLink;
                         mountLink.remainder = location.CutChars( mountEntry.mountPath.Length(), true );
@@ -1407,8 +1465,7 @@ CVFS::GetList( TStringSet& outputList                   ,
                bool addDirs /* = false */               ) const
 {GUCEF_TRACE;
 
-    // Switch dir separator chars if needed
-    CString path( location.ReplaceChar( GUCEF_DIRSEPCHAROPPOSITE, GUCEF_DIRSEPCHAR ) );
+    CString path = ConformVfsDirPath( location );
 
     MT::CObjectScopeLock lock( this );
 
@@ -1460,8 +1517,8 @@ CVFS::GetList( CORE::CDataNode& outputDataTree        ,
     while ( i != outputList.end() )
     {
         // First we build the path structure in the data tree
-        CString path = (*i).SubstrToChar( GUCEF_DIRSEPCHAR, false );
-        CORE::CDataNode* pathRootNode = outputDataTree.Structure( "DIR", "Name", path, GUCEF_DIRSEPCHAR );
+        CString path = (*i).SubstrToChar( '/', false );
+        CORE::CDataNode* pathRootNode = outputDataTree.Structure( "DIR", "Name", path, '/' );
 
         // Extract the filename from the path
         CORE::CString filename( (*i).C_String() + path.Length() ,
@@ -1491,8 +1548,7 @@ CORE::CDateTime
 CVFS::GetFileModificationTime( const CString& filename ) const
 {GUCEF_TRACE;
 
-    // Switch dir separator chars if needed
-    CString path( filename.ReplaceChar( GUCEF_DIRSEPCHAROPPOSITE, GUCEF_DIRSEPCHAR ) );
+    CString path = ConformVfsFilePath( filename );
 
     MT::CObjectScopeLock lock( this );
 
@@ -1522,8 +1578,7 @@ CORE::CString
 CVFS::GetFileHash( const CORE::CString& file ) const
 {GUCEF_TRACE;
 
-    // Switch dir separator chars if needed
-    CString path( file.ReplaceChar( GUCEF_DIRSEPCHAROPPOSITE, GUCEF_DIRSEPCHAR ) );
+    CString path = ConformVfsFilePath( file );
 
     MT::CObjectScopeLock lock( this );
 
@@ -1554,8 +1609,7 @@ UInt32
 CVFS::GetFileSize( const CORE::CString& file ) const
 {GUCEF_TRACE;
 
-    // Switch dir separator chars if needed
-    CString path( file.ReplaceChar( GUCEF_DIRSEPCHAROPPOSITE, GUCEF_DIRSEPCHAR ) );
+    CString path = ConformVfsFilePath( file );
 
     MT::CObjectScopeLock lock( this );
 

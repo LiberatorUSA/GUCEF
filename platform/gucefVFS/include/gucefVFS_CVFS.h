@@ -514,6 +514,10 @@ class GUCEF_VFS_PUBLIC_CPP CVFS : public CORE::CTSGNotifier   ,
                                      CORE::CICloneable* eventdata = GUCEF_NULL );
 
     void MountAllDelayMountedArchives( void );
+
+    VFS::CString ConformVfsDirPath( const VFS::CString& originalDirPath ) const;
+
+    VFS::CString ConformVfsFilePath( const VFS::CString& originalFilePath ) const;
     
     private:    
     
