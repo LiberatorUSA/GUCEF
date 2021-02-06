@@ -684,7 +684,7 @@ CVFS::StoreAsFile( const CORE::CString& file        ,
         }
         else
         {
-            GUCEF_DEBUG_LOG( CORE::LOGLEVEL_NORMAL, "Vfs: Stored " + CORE::UInt32ToString( data.GetDataSize() )  +
+            GUCEF_ERROR_LOG( CORE::LOGLEVEL_NORMAL, "Vfs: Failed to store " + CORE::UInt32ToString( data.GetDataSize() )  +
                     " bytes as file content at offset " + CORE::UInt64ToString( offset ) + " using archive mounted at: " + mountLink.remainder );
         }
 

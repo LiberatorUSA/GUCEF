@@ -904,7 +904,7 @@ FilePushDestination::OnFilePushFinished( CORE::CNotifier* notifier    ,
 
                         if ( m_settings.deleteFilesAfterSuccessfullPush )
                         {
-                            if ( entry.encodedFilepath.IsNULLOrEmpty() )
+                            if ( !entry.encodedFilepath.IsNULLOrEmpty() )
                             {
                                 if ( VFS::CVfsGlobal::Instance()->GetVfs().DeleteFile( entry.encodedFilepath, true ) )
                                 {
@@ -1035,6 +1035,7 @@ FilePushDestination::PushFileUsingHttp( const PushEntry& entry )
 
     CORE::CString pushUrlForFile = m_settings.filePushDestinationUri.ReplaceSubstr( "{filename}", filename );
     pushUrlForFile = pushUrlForFile.ReplaceSubstr( "{watchedDirSubDirPath}", watchedDirSubDirPath );
+    pushUrlForFile = pushUrlForFile.CompactRepeatingChar( '/' );
 
     if ( m_httpClient.Post( pushUrlForFile, contentType, m_currentFilePushBuffer ) )
     {
@@ -1075,6 +1076,7 @@ FilePushDestination::PushFileUsingVfs( const PushEntry& entry )
         }
         filename = CORE::ExtractFilename( entry.encodedFilepath );
     }
+
     m_currentFileBeingPushed = &entry;
 
     // Begin the push
@@ -1128,6 +1130,8 @@ FilePushDestination::OnFileEncodeTimerCycle( CORE::CNotifier* notifier    ,
             CORE::CFileAccess fileAccess;
             if ( fileAccess.Open( filePath, "rb" ) )
             {
+                m_currentFileBeingPushed = &entry;
+                
                 // Encode the file as an async operation
                 if ( VFS::CVfsGlobal::Instance()->GetVfs().EncodeAsFileAsync( fileAccess                              , 
                                                                               entry.encodedFilepath                   , 

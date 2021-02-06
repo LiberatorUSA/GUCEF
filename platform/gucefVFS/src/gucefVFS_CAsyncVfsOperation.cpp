@@ -131,6 +131,7 @@ CAsyncVfsOperation::OnTaskCycle( CORE::CICloneable* taskData )
 
     CAsyncVfsTaskResultData syncCallResult;
     syncCallResult.SetTaskData( syncCallData );
+    syncCallResult.operationType = syncCallData->operationType;
 
     switch ( syncCallData->operationType )
     {
