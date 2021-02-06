@@ -216,39 +216,41 @@ CVFS::UnregisterAllArchiveFactories( void )
 /*-------------------------------------------------------------------------*/
 
 bool
-CVFS::StoreAsFileAsync( const CORE::CString& filepath    ,
-                        const CORE::CDynamicBuffer& data ,
-                        const CORE::UInt64 offset        ,
-                        const bool overwrite             ,
-                        CORE::CICloneable* requestorData )
+CVFS::StoreAsFileAsync( const CORE::CString& filepath       ,
+                        const CORE::CDynamicBuffer& data    ,
+                        const CORE::UInt64 offset           ,
+                        const bool overwrite                ,
+                        CORE::CICloneable* requestorData    ,
+                        const CORE::CString& asyncRequestId )
 {GUCEF_TRACE;
 
     CStoreAsFileTaskData operationData;
     operationData.operationType = ASYNCVFSOPERATIONTYPE_STOREDATAASFILE;
+    operationData.asyncRequestId = asyncRequestId;
     operationData.filepath = filepath;
     operationData.data.LinkTo( &data );
     operationData.offset = offset;
     operationData.overwrite = overwrite;
     operationData.SetRequestorData( requestorData );
 
-    CORE::CCoreGlobal::Instance()->GetTaskManager().QueueTask( CAsyncVfsOperation::TaskType, &operationData, GUCEF_NULL, &AsObserver() );
-    return true;
+    return CORE::CCoreGlobal::Instance()->GetTaskManager().QueueTask( CAsyncVfsOperation::TaskType, &operationData, GUCEF_NULL, &AsObserver() );
 }
 
 /*-------------------------------------------------------------------------*/
 
 bool
-CVFS::MountArchiveAsync( const CArchiveSettings& settings ,
-                         CORE::CICloneable* requestorData )
+CVFS::MountArchiveAsync( const CArchiveSettings& settings    ,
+                         CORE::CICloneable* requestorData    ,
+                         const CORE::CString& asyncRequestId )
 {GUCEF_TRACE;
 
     CMountArchiveTaskData operationData;
     operationData.operationType = ASYNCVFSOPERATIONTYPE_MOUNTARCHIVE;
+    operationData.asyncRequestId = asyncRequestId;
     operationData.settings = settings;
     operationData.SetRequestorData( requestorData );
 
-    CORE::CCoreGlobal::Instance()->GetTaskManager().QueueTask( CAsyncVfsOperation::TaskType, &operationData, GUCEF_NULL, &AsObserver() );
-    return true;
+    return CORE::CCoreGlobal::Instance()->GetTaskManager().QueueTask( CAsyncVfsOperation::TaskType, &operationData, GUCEF_NULL, &AsObserver() );
 }
 
 /*-------------------------------------------------------------------------*/
@@ -301,6 +303,40 @@ CVFS::OnGlobalConfigLoadFinished( CORE::CNotifier* notifier    ,
 
 /*-------------------------------------------------------------------------*/
 
+bool 
+CVFS::DeleteFile( const CString& filePath, bool okIfItDoesNotExist )
+{GUCEF_TRACE;
+
+    // @TODO: This functionality could be improved by taking into account outstanding references to the resource
+    //        Not all archive types might be able to handle denying a delete themselves during ongoing I/O especially with remote storage
+    
+    // Switch dir separator chars if needed
+    CString path( filePath.ReplaceChar( GUCEF_DIRSEPCHAROPPOSITE, GUCEF_DIRSEPCHAR ) );
+
+    MT::CObjectScopeLock lock( this );
+
+    // Get a list of all eligable mounts
+    TConstMountLinkVector mountLinks;
+    GetEligableMounts( path, false, mountLinks );
+
+    // Search for a file match and attempt to delete if a match exists
+    TConstMountLinkVector::iterator i = mountLinks.begin();
+    while ( i != mountLinks.end() )
+    {
+        TConstMountLink& mountLink = (*i);
+        if ( mountLink.mountEntry->archive->FileExists( mountLink.remainder ) )
+        {
+            return mountLink.mountEntry->archive->DeleteFile( mountLink.remainder );
+        }
+        ++i;
+    }
+
+    // No such file found
+    return okIfItDoesNotExist;
+}
+
+/*-------------------------------------------------------------------------*/
+
 bool
 CVFS::CopyFile( const CORE::CString& originalFilepath ,
                 const CORE::CString& copyFilepath     ,
@@ -339,11 +375,13 @@ CVFS::CopyFile( const CORE::CString& originalFilepath ,
 bool
 CVFS::CopyFileAsync( const CORE::CString& originalFilepath ,
                      const CORE::CString& copyFilepath     ,
-                     const bool overwrite                  )
+                     const bool overwrite                  ,
+                     const CORE::CString& asyncRequestId   )
 {GUCEF_TRACE;
 
     CEncodeFileTaskData operationData;
     operationData.operationType = ASYNCVFSOPERATIONTYPE_COPYFILE;
+    operationData.asyncRequestId = asyncRequestId;
     operationData.originalFilepath = originalFilepath;
     operationData.encodedFilepath = copyFilepath;
     operationData.overwrite = overwrite;
@@ -409,11 +447,13 @@ CVFS::EncodeFileAsync( const CORE::CString& originalFilepath ,
                        const CORE::CString& encodedFilepath  ,
                        const bool overwrite                  ,
                        const CORE::CString& codecFamily      ,
-                       const CORE::CString& encodeCodec      )
+                       const CORE::CString& encodeCodec      ,
+                       const CORE::CString& asyncRequestId   )
 {GUCEF_TRACE;
 
     CEncodeFileTaskData operationData;
     operationData.operationType = ASYNCVFSOPERATIONTYPE_ENCODEFILE;
+    operationData.asyncRequestId = asyncRequestId;
     operationData.originalFilepath = originalFilepath;
     operationData.encodedFilepath = encodedFilepath;
     operationData.overwrite = overwrite;
@@ -479,11 +519,13 @@ CVFS::EncodeAsFileAsync( const CORE::CDynamicBuffer& data     ,
                          const CORE::CString& encodedFilepath ,
                          const bool overwrite                 ,
                          const CORE::CString& codecFamily     ,
-                         const CORE::CString& encodeCodec     )
+                         const CORE::CString& encodeCodec     ,
+                         const CORE::CString& asyncRequestId  )
 {GUCEF_TRACE;
 
     CEncodeBufferAsFileTaskData operationData;
     operationData.operationType = ASYNCVFSOPERATIONTYPE_ENCODEDATAASFILE;
+    operationData.asyncRequestId = asyncRequestId;
     operationData.data = data;
     operationData.bufferOffset = bufferOffset;
     operationData.encodedFilepath = encodedFilepath;
@@ -521,7 +563,8 @@ CVFS::EncodeAsFileAsync( CORE::CIOAccess& externalData        ,
                          const CORE::CString& encodedFilepath ,
                          const bool overwrite                 ,
                          const CORE::CString& codecFamily     ,
-                         const CORE::CString& encodeCodec     )
+                         const CORE::CString& encodeCodec     ,
+                         const CORE::CString& asyncRequestId  )
 {GUCEF_TRACE;
 
     // For now we just route to a memory buffer based implementation
@@ -530,7 +573,7 @@ CVFS::EncodeAsFileAsync( CORE::CIOAccess& externalData        ,
     CORE::CDynamicBuffer buffer;
     externalData.Read( buffer, 1 );
     
-    return EncodeAsFileAsync( buffer, 0, encodedFilepath, overwrite, codecFamily, encodeCodec );
+    return EncodeAsFileAsync( buffer, 0, encodedFilepath, overwrite, codecFamily, encodeCodec, asyncRequestId );
 }
 
 /*-------------------------------------------------------------------------*/
@@ -591,11 +634,13 @@ CVFS::DecodeFileAsync( const CORE::CString& originalFilepath ,
                        const CORE::CString& decodedFilepath  ,
                        const bool overwrite                  ,
                        const CORE::CString& codecFamily      ,
-                       const CORE::CString& decodeCodec      )
+                       const CORE::CString& decodeCodec      ,
+                       const CORE::CString& asyncRequestId   )
 {GUCEF_TRACE;
 
     CDecodeFileTaskData operationData;
     operationData.operationType = ASYNCVFSOPERATIONTYPE_DECODEFILE;
+    operationData.asyncRequestId = asyncRequestId;
     operationData.originalFilepath = originalFilepath;
     operationData.decodedFilepath = decodedFilepath;
     operationData.overwrite = overwrite;

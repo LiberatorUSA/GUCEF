@@ -172,6 +172,16 @@ CZIPArchive::GetFile( const VFS::CString& file      ,
 /*-------------------------------------------------------------------------*/
 
 bool 
+CZIPArchive::DeleteFile( const VFS::CString& filePath )
+{GUCEF_TRACE;
+
+    // Not implemented / supported at this time
+    return false;
+}
+
+/*-------------------------------------------------------------------------*/
+
+bool 
 CZIPArchive::StoreAsFile( const CORE::CString& filepath    ,
                           const CORE::CDynamicBuffer& data ,
                           const CORE::UInt64 offset        ,

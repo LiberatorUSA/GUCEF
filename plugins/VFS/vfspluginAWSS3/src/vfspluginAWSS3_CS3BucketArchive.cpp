@@ -241,6 +241,53 @@ CS3BucketArchive::FileExists( const VFS::CString& filePath ) const
 
 /*-------------------------------------------------------------------------*/
 
+bool 
+CS3BucketArchive::DeleteFile( const VFS::CString& filePath )
+{GUCEF_TRACE;
+
+    // Delete requires write access, not just read
+    if ( !m_writeableRequest )
+    {
+        GUCEF_WARNING_LOG( CORE::LOGLEVEL_BELOW_NORMAL, "S3BucketArchive: Refusing to deleted file (aka object) \"" + 
+            filePath + "\" in Bucket \"" + m_archiveName + "\" because the archive is mounted as read-only" );
+        return false;
+    }
+    
+    try
+    {
+        Aws::S3::S3Client* s3Client = CAwsS3Global::Instance()->GetS3Client();
+        if ( GUCEF_NULL == s3Client )
+            return VFS::CIArchive::CVFSHandlePtr();
+
+        Aws::S3::Model::DeleteObjectRequest objectRequest;
+        objectRequest.SetBucket( m_archiveName );
+        objectRequest.SetKey( filePath );
+
+        Aws::S3::Model::DeleteObjectOutcome deletetObjectOutcome = s3Client->DeleteObject( objectRequest );
+        if ( deletetObjectOutcome.IsSuccess() )
+        {
+            GUCEF_DEBUG_LOG( CORE::LOGLEVEL_BELOW_NORMAL, "S3BucketArchive: Deleted file (aka object) \"" + filePath + "\" in Bucket \"" + m_archiveName + "\"" );
+            return true;
+        }
+        else
+        {
+            GUCEF_ERROR_LOG( CORE::LOGLEVEL_NORMAL, "S3BucketArchive: DeleteObject error: " + 
+                deletetObjectOutcome.GetError().GetExceptionName() + " - " + deletetObjectOutcome.GetError().GetMessage() );
+        }
+    }
+    catch ( const std::exception& e )
+    {
+        GUCEF_EXCEPTION_LOG( CORE::LOGLEVEL_IMPORTANT, CORE::CString( "S3BucketArchive: Exception trying DeleteFile() to S3 bucket object: " ) + e.what() );
+    }
+    catch ( ... )
+    {
+        GUCEF_EXCEPTION_LOG( CORE::LOGLEVEL_CRITICAL, "S3BucketArchive: Unknown exception trying DeleteFile() to S3 bucket object" );
+    }
+    return false;
+}
+ 
+/*-------------------------------------------------------------------------*/
+
 VFS::UInt32
 CS3BucketArchive::GetFileSize( const VFS::CString& filePath ) const
 {GUCEF_TRACE;

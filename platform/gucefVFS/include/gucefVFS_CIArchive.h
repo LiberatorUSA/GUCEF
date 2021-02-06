@@ -103,6 +103,8 @@ class GUCEF_VFS_PUBLIC_CPP CIArchive : public CORE::CTDynamicDestructorBase< CVF
                           bool addFiles = true               ,
                           bool addDirs  = false              ) const = 0;
     
+    virtual bool DeleteFile( const CString& filePath ) = 0;
+    
     virtual bool FileExists( const CString& filePath ) const = 0;
     
     virtual UInt32 GetFileSize( const CString& filePath ) const = 0;

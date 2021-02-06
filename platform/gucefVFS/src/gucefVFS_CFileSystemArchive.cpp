@@ -220,6 +220,20 @@ CFileSystemArchive::GetFile( const CString& file      ,
 /*-------------------------------------------------------------------------*/
 
 bool 
+CFileSystemArchive::DeleteFile( const CString& filePath )
+{GUCEF_TRACE;
+
+    CString path = CORE::CombinePath( m_rootDir, filePath );    
+    if ( CORE::FileExists( path ) )
+    {
+        return CORE::DeleteFile( path );
+    }
+    return true;
+}
+
+/*-------------------------------------------------------------------------*/
+
+bool 
 CFileSystemArchive::StoreAsFile( const CORE::CString& filepath    ,
                                  const CORE::CDynamicBuffer& data ,
                                  const CORE::UInt64 offset        ,

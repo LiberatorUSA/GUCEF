@@ -141,6 +141,15 @@ CDVPArchive::GetFile( const VFS::CString& file      ,
     return CVFSHandlePtr();
 }
 
+/*-------------------------------------------------------------------------*/
+
+bool 
+CDVPArchive::DeleteFile( const VFS::CString& filePath )
+{GUCEF_TRACE;
+
+    // Not implemented / supported at this time
+    return false;
+}
 
 /*-------------------------------------------------------------------------*/
 

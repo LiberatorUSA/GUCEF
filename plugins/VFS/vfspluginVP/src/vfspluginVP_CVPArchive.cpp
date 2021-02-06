@@ -159,6 +159,16 @@ CVPArchive::GetFile( const VFS::CString& file      ,
 /*-------------------------------------------------------------------------*/
 
 bool 
+CVPArchive::DeleteFile( const VFS::CString& filePath )
+{GUCEF_TRACE;
+
+    // Not implemented / supported at this time
+    return false;
+}
+
+/*-------------------------------------------------------------------------*/
+
+bool 
 CVPArchive::StoreAsFile( const CORE::CString& filepath    ,
                          const CORE::CDynamicBuffer& data ,
                          const CORE::UInt64 offset        ,

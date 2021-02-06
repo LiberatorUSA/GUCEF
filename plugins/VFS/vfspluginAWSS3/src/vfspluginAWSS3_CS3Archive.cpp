@@ -165,6 +165,16 @@ CS3Archive::GetList( TStringSet& outputList       ,
 
 /*-------------------------------------------------------------------------*/
 
+bool 
+CS3Archive::DeleteFile( const VFS::CString& filePath )
+{GUCEF_TRACE;
+
+    // We do not allow deleting "files" at this time which would be an entire bucket
+    return false;
+}
+
+/*-------------------------------------------------------------------------*/
+
 bool
 CS3Archive::FileExists( const VFS::CString& filePath ) const
 {GUCEF_TRACE;

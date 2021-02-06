@@ -74,85 +74,85 @@ class CZipIOAccess : public CORE::CIOAccess
     /**
      *      open the resource for I/O
      */
-    virtual void Open( void );
+    virtual void Open( void ) GUCEF_VIRTUAL_OVERRIDE;
 
     /**
      *      close the resource
      */
-    virtual void Close( void );
+    virtual void Close( void ) GUCEF_VIRTUAL_OVERRIDE;
 
     /**
      *      is the resource opened for reading ?
      */
-    virtual bool Opened( void ) const;
+    virtual bool Opened( void ) const GUCEF_VIRTUAL_OVERRIDE;
 
     /**
      *      read a line of text
      *      The delimiter is the platform text file line
      *      delimiter.
      */
-    virtual CORE::CString ReadLine( void );                               
+    virtual CORE::CString ReadLine( void ) GUCEF_VIRTUAL_OVERRIDE;                               
 
     /**
      *      Reads a string from the resource
      */
-    virtual CORE::CString ReadString( void );
+    virtual CORE::CString ReadString( void ) GUCEF_VIRTUAL_OVERRIDE;
 
     /**
      *      Attempts to read the specified number of bytes from the resource
      */
     virtual CORE::UInt32 Read( void *dest            ,
                                CORE::UInt32 esize    ,
-                               CORE::UInt32 elements );
+                               CORE::UInt32 elements ) GUCEF_VIRTUAL_OVERRIDE;
 
     /**
      *      Get the current offset in bytes
      */
-    virtual CORE::UInt32 Tell( void ) const;
+    virtual CORE::UInt32 Tell( void ) const GUCEF_VIRTUAL_OVERRIDE;
 
     /**
      *      jump to a different part of the resource
      */
     virtual CORE::Int32 Seek( CORE::Int32 offset ,
-                              CORE::Int32 origin );
+                              CORE::Int32 origin ) GUCEF_VIRTUAL_OVERRIDE;
 
     /**
      *      Read a single character
      */
-    virtual char GetChar( void );
+    virtual char GetChar( void ) GUCEF_VIRTUAL_OVERRIDE;
 
     /**
      *      are we at the end of the resource ?
      */
-    virtual bool Eof( void ) const;
+    virtual bool Eof( void ) const GUCEF_VIRTUAL_OVERRIDE;
     
     /**
      *      Can we read from this resource?
      */
-    virtual bool IsReadable( void ) const;
+    virtual bool IsReadable( void ) const GUCEF_VIRTUAL_OVERRIDE;
     
     /**
      *      Can we write to this resource?
      */
-    virtual bool IsWriteable( void ) const;                 
+    virtual bool IsWriteable( void ) const GUCEF_VIRTUAL_OVERRIDE;                 
     
     /**
      *      Is the access to the resource a valid one or
      *      has something gone wrong ?
      */
-    virtual bool IsValid( void );
+    virtual bool IsValid( void ) GUCEF_VIRTUAL_OVERRIDE;
     
     /**
      *  @return returns the size of the resource if possible.
      */
-    virtual CORE::UInt32 GetSize( void ) const;
+    virtual CORE::UInt32 GetSize( void ) const GUCEF_VIRTUAL_OVERRIDE;
     
     /** 
      *  Flushes all outstanding mutations on the I/O device
      */
-    virtual void Flush( void );
+    virtual void Flush( void ) GUCEF_VIRTUAL_OVERRIDE;
     
-    virtual CORE::CICloneable* Clone( void ) const;
+    virtual CORE::CICloneable* Clone( void ) const GUCEF_VIRTUAL_OVERRIDE;
     
     private:
     

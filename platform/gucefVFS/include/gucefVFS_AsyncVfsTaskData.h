@@ -89,6 +89,7 @@ class GUCEF_VFS_PUBLIC_CPP CAsyncVfsTaskData : public CORE::CICloneable
     public:
 
     TAsyncVfsOperationType operationType;
+    CORE::CString asyncRequestId;
     
     virtual void SetRequestorData( CORE::CICloneable* data );
 

@@ -53,6 +53,7 @@ namespace VFS {
 CAsyncVfsTaskData::CAsyncVfsTaskData( void )
     : CORE::CICloneable()
     , operationType( ASYNCVFSOPERATIONTYPE_UNKNOWN )
+    , asyncRequestId()
     , m_requestorData( GUCEF_NULL )
 {GUCEF_TRACE;
 
@@ -63,6 +64,7 @@ CAsyncVfsTaskData::CAsyncVfsTaskData( void )
 CAsyncVfsTaskData::CAsyncVfsTaskData( const CAsyncVfsTaskData& src )
     : CORE::CICloneable( src )
     , operationType( src.operationType )
+    , asyncRequestId( src.asyncRequestId )
     , m_requestorData( GUCEF_NULL )
 {GUCEF_TRACE;
 

@@ -131,6 +131,16 @@ CResArchive::GetFile( const VFS::CString& file      ,
 /*-------------------------------------------------------------------------*/
 
 bool 
+CResArchive::DeleteFile( const VFS::CString& filePath )
+{GUCEF_TRACE;
+
+    // Not implemented / supported at this time
+    return false;
+}
+
+/*-------------------------------------------------------------------------*/
+
+bool 
 CResArchive::StoreAsFile( const CORE::CString& filepath    ,
                           const CORE::CDynamicBuffer& data ,
                           const CORE::UInt64 offset        ,
