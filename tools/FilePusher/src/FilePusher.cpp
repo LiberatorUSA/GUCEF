@@ -831,16 +831,17 @@ FilePushDestination::OnAsyncVfsFileEncodeCompleted( CORE::CNotifier* notifier   
     VFS::CAsyncVfsTaskResultData* asyncOpResult = static_cast< VFS::CAsyncVfsTaskResultData* >( eventData );
     if ( GUCEF_NULL != asyncOpResult )
     {
-        VFS::CEncodeFileTaskData* taskData = static_cast< VFS::CEncodeFileTaskData* >( asyncOpResult->GetTaskData() );
         m_lastEncodeDurationInSecs = asyncOpResult->durationInSecs;
-
-        if ( asyncOpResult->successState && GUCEF_NULL != taskData )
+        if ( asyncOpResult->successState )
         {
             switch ( asyncOpResult->operationType )
             {
+                case VFS::ASYNCVFSOPERATIONTYPE_ENCODEDATAASFILE:
                 case VFS::ASYNCVFSOPERATIONTYPE_ENCODEFILE:
                 {
-                    TStringPushEntryMap::iterator i = m_encodeQueue.find( taskData->originalFilepath );
+                    const CORE::CString& originalFilePath = asyncOpResult->asyncRequestId;
+
+                    TStringPushEntryMap::iterator i = m_encodeQueue.find( originalFilePath );
                     if ( i != m_encodeQueue.end() )
                     {
                         QueueFileForPushing( (*i).second );
@@ -882,22 +883,24 @@ FilePushDestination::OnFilePushFinished( CORE::CNotifier* notifier    ,
 
         if ( asyncOpResult->successState && GUCEF_NULL != taskData )
         {
+            const CORE::CString& originalFilePath = taskData->asyncRequestId;
+            
             switch ( asyncOpResult->operationType )
             {
                 case VFS::ASYNCVFSOPERATIONTYPE_STOREDATAASFILE:
                 {
-                    TStringPushEntryMap::iterator i = m_pushQueue.find( taskData->filepath );
+                    TStringPushEntryMap::iterator i = m_pushQueue.find( originalFilePath );
                     if ( i != m_pushQueue.end() )
                     {
-                        GUCEF_LOG( CORE::LOGLEVEL_NORMAL, "FilePushDestination:OnFilePushFinished: Successfully pushed file \"" + taskData->filepath + "\"" );
-        
                         PushEntry& entry = (*i).second;
                         
+                        GUCEF_LOG( CORE::LOGLEVEL_NORMAL, "FilePushDestination:OnFilePushFinished: Successfully pushed file \"" + originalFilePath + "\" to VFS path \"" + taskData->filepath + "\"" );
+
                         if ( m_settings.deleteFilesAfterSuccessfullPush )
                         {
                             if ( entry.encodedFilepath.IsNULLOrEmpty() )
                             {
-                                if ( CORE::DeleteFile( entry.encodedFilepath ) )
+                                if ( VFS::CVfsGlobal::Instance()->GetVfs().DeleteFile( entry.encodedFilepath, true ) )
                                 {
                                     GUCEF_LOG( CORE::LOGLEVEL_NORMAL, "FilePushDestination:OnFilePushFinished: Successfully deleted temp encoding file \"" + entry.encodedFilepath + "\"" );
                                 }
@@ -1074,14 +1077,14 @@ FilePushDestination::PushFileUsingVfs( const PushEntry& entry )
     {
         watchedDirSubDirPath = DetermineWatchedDirSubPath( entry.filePath );
         watchedDirSubDirPath = watchedDirSubDirPath.ReplaceChar( '\\', '/' );
-    }    
+    }
 
     CORE::CString pushUrlForFile = m_settings.filePushDestinationUri.ReplaceSubstr( "{filename}", filename );
     pushUrlForFile = pushUrlForFile.ReplaceSubstr( "{watchedDirSubDirPath}", watchedDirSubDirPath );
     pushUrlForFile = pushUrlForFile.CutChars( 6, true, 0 ); // Cut vfs://
 
     // Store the file as an async operation
-    if ( VFS::CVfsGlobal::Instance()->GetVfs().StoreAsFileAsync( pushUrlForFile, m_currentFilePushBuffer, 0, true ) )
+    if ( VFS::CVfsGlobal::Instance()->GetVfs().StoreAsFileAsync( pushUrlForFile, m_currentFilePushBuffer, 0, true, GUCEF_NULL, entry.filePath ) )
     {
         GUCEF_LOG( CORE::LOGLEVEL_NORMAL, "FilePushDestination:PushFileUsingVfs: Commenced async push of content from file \"" + filename + "\" to VFS path \"" + pushUrlForFile + "\"" );
         return true;    
@@ -1123,7 +1126,8 @@ FilePushDestination::OnFileEncodeTimerCycle( CORE::CNotifier* notifier    ,
                                                                               entry.encodedFilepath                   , 
                                                                               true                                    , 
                                                                               CORE::CoreCodecTypes::CompressionCodec  , 
-                                                                              m_settings.fileCompressionCodecToUse    ) )
+                                                                              m_settings.fileCompressionCodecToUse    ,
+                                                                              entry.filePath                          ) )
                 {
                     GUCEF_LOG( CORE::LOGLEVEL_NORMAL, "FilePushDestination:OnFileEncodeTimerCycle: Commenced async encode of content from file \"" + filePath + "\" to VFS path \"" + entry.encodedFilepath + "\"" );
                     return;    
