@@ -392,6 +392,7 @@ FilePushDestination::FilePushDestination( void )
     , m_newFileRestQueue()
     , m_pushQueue()
     , m_pushTimer() 
+    , m_encodeTimer()
     , m_currentFilePushBuffer()
     , m_currentFileBeingPushed( GUCEF_NULL )
     , m_lastPushDurationInSecs( 0 )
@@ -414,6 +415,7 @@ FilePushDestination::FilePushDestination( const FilePushDestination& src )
     , m_newFileRestQueue( src.m_newFileRestQueue )
     , m_pushQueue( src.m_pushQueue )
     , m_pushTimer( src.m_pushTimer ) 
+    , m_encodeTimer( src.m_encodeTimer )
     , m_currentFilePushBuffer( src.m_currentFilePushBuffer )
     , m_currentFileBeingPushed( GUCEF_NULL )
     , m_lastPushDurationInSecs( src.m_lastPushDurationInSecs )
@@ -439,6 +441,7 @@ FilePushDestination::operator=( const FilePushDestination& src )
         m_newFileRestQueue = src.m_newFileRestQueue;
         m_pushQueue = src.m_pushQueue;
         m_pushTimer = src.m_pushTimer;
+        m_encodeTimer = src.m_encodeTimer;
         m_currentFilePushBuffer = src.m_currentFilePushBuffer;
         //m_currentFileBeingPushed = src.m_currentFileBeingPushed;
         m_lastPushDurationInSecs = src.m_lastPushDurationInSecs;
@@ -485,7 +488,7 @@ FilePushDestination::RegisterEventHandlers( void )
                  callback4                      );
 
     TEventCallback callback5( this, &FilePushDestination::OnFileEncodeTimerCycle );
-    SubscribeTo( &m_pushTimer                   ,
+    SubscribeTo( &m_encodeTimer                 ,
                  CORE::CTimer::TimerUpdateEvent ,
                  callback5                      );
    
@@ -569,6 +572,9 @@ FilePushDestination::Start( void )
             GUCEF_ERROR_LOG( CORE::LOGLEVEL_IMPORTANT, "FilePushDestination: Configured to compress files before push but no codec to use was specified" );
             return false;
         }
+
+        m_encodeTimer.SetInterval( 1000 );
+        m_encodeTimer.SetEnabled( true );
 
         if ( !m_settings.fileCompressionTempDir.IsNULLOrEmpty() )
         {
@@ -778,7 +784,7 @@ FilePushDestination::OnAsyncVfsOperationCompleted( CORE::CNotifier* notifier    
         m_lastPushDurationInSecs = asyncOpResult->durationInSecs;
         if ( asyncOpResult->successState )
         {
-            GUCEF_LOG( CORE::LOGLEVEL_NORMAL, "FilePushDestination: VFS Async operation finished successfully in " + 
+            GUCEF_LOG( CORE::LOGLEVEL_NORMAL, "FilePushDestination: VFS Async operation of type " +  CORE::ToString( asyncOpResult->operationType ) +  " finished successfully in " + 
                     CORE::UInt32ToString( m_lastPushDurationInSecs ) + " secs" );
 
             switch ( asyncOpResult->operationType )
@@ -808,7 +814,7 @@ FilePushDestination::OnAsyncVfsOperationCompleted( CORE::CNotifier* notifier    
         }
         else
         {
-            GUCEF_ERROR_LOG( CORE::LOGLEVEL_NORMAL, "FilePushDestination: VFS Async operation failed in " + 
+            GUCEF_ERROR_LOG( CORE::LOGLEVEL_NORMAL, "FilePushDestination: VFS Async operation type " +  CORE::ToString( asyncOpResult->operationType ) +  " failed in " + 
                         CORE::UInt32ToString( m_lastPushDurationInSecs ) + " secs" );
         }
     }
@@ -1080,8 +1086,9 @@ FilePushDestination::PushFileUsingVfs( const PushEntry& entry )
     }
 
     CORE::CString pushUrlForFile = m_settings.filePushDestinationUri.ReplaceSubstr( "{filename}", filename );
-    pushUrlForFile = pushUrlForFile.ReplaceSubstr( "{watchedDirSubDirPath}", watchedDirSubDirPath );
+    pushUrlForFile = pushUrlForFile.ReplaceSubstr( "{watchedDirSubDirPath}", watchedDirSubDirPath );    
     pushUrlForFile = pushUrlForFile.CutChars( 6, true, 0 ); // Cut vfs://
+    pushUrlForFile = pushUrlForFile.CompactRepeatingChar( '/' );
 
     // Store the file as an async operation
     if ( VFS::CVfsGlobal::Instance()->GetVfs().StoreAsFileAsync( pushUrlForFile, m_currentFilePushBuffer, 0, true, GUCEF_NULL, entry.filePath ) )
@@ -1542,22 +1549,31 @@ bool
 FilePushDestination::QueueAllPreExistingFilesForDir( const CORE::CString& dir )
 {GUCEF_TRACE;
 
+    bool totalSuccess = true;
     struct CORE::SDI_Data* did = CORE::DI_First_Dir_Entry( dir.C_String() );
     if ( GUCEF_NULL != did )
     {
         do
         {
-            if ( 0 != CORE::DI_Is_It_A_File( did ) )
+            CORE::CString name = CORE::DI_Name( did );
+            if ( name != '.' && name != ".." )
             {
-                CORE::CString filename = CORE::DI_Name( did );
-                if ( filename != '.' && filename != ".." )
+                if ( 0 != CORE::DI_Is_It_A_File( did ) )
                 {
-                    if ( DoesFilenameMatchPushAllFilesPattern( filename ) )
+                    if ( DoesFilenameMatchPushAllFilesPattern( name ) )
                     {
                         // In this mode treat the pre-existing file as a new file to push
-                        CORE::CString preexistingFilePath = CORE::CombinePath( dir, filename );
+                        CORE::CString preexistingFilePath = CORE::CombinePath( dir, name );
                         GUCEF_LOG( CORE::LOGLEVEL_NORMAL, "FilePusher: Matched file \"" + preexistingFilePath + "\" to 'push all files' pattern" );
                         QueueNewFileForPushingAfterUnmodifiedRestPeriod( preexistingFilePath );
+                    }
+                }
+                else
+                {
+                    if ( m_settings.watchSubDirsOfDirsToWatch )
+                    {
+                        CORE::CString subDir = CORE::CombinePath( dir, name );
+                        totalSuccess = totalSuccess && QueueAllPreExistingFilesForDir( subDir );
                     }
                 }
             }
@@ -1565,7 +1581,7 @@ FilePushDestination::QueueAllPreExistingFilesForDir( const CORE::CString& dir )
         while ( CORE::DI_Next_Dir_Entry( did ) );
 
         CORE::DI_Cleanup( did );
-        return true;
+        return totalSuccess;
     }
     return false;
 }

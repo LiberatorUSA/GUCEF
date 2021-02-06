@@ -353,6 +353,7 @@ class FilePushDestination : public CORE::CObservingNotifier
     TStringPushEntryMap m_encodeQueue;
     TStringPushEntryMap m_pushQueue;
     CORE::CTimer m_pushTimer;
+    CORE::CTimer m_encodeTimer;
     CORE::CDynamicBuffer m_currentFilePushBuffer;
     const PushEntry* m_currentFileBeingPushed;
     CORE::UInt32 m_lastPushDurationInSecs;
