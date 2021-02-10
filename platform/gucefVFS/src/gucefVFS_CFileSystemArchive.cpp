@@ -205,7 +205,7 @@ CFileSystemArchive::GetFile( const CString& file      ,
                                    memLoadSize ,
                                    overwrite   );
 
-    if ( fh != NULL )
+    if ( fh != GUCEF_NULL )
     {
         return CVFSHandlePtr( fh, this );
     }
@@ -223,7 +223,7 @@ bool
 CFileSystemArchive::DeleteFile( const CString& filePath )
 {GUCEF_TRACE;
 
-    CString path = CORE::CombinePath( m_rootDir, filePath );    
+    CString path = CORE::CombinePath( m_rootDir, filePath.ReplaceChar( GUCEF_DIRSEPCHAROPPOSITE, GUCEF_DIRSEPCHAR ) );    
     if ( CORE::FileExists( path ) )
     {
         return CORE::DeleteFile( path );
@@ -234,13 +234,14 @@ CFileSystemArchive::DeleteFile( const CString& filePath )
 /*-------------------------------------------------------------------------*/
 
 bool 
-CFileSystemArchive::StoreAsFile( const CORE::CString& filepath    ,
+CFileSystemArchive::StoreAsFile( const CORE::CString& filePath    ,
                                  const CORE::CDynamicBuffer& data ,
                                  const CORE::UInt64 offset        ,
                                  const bool overwrite             )
 {GUCEF_TRACE;
 
-    return data.WriteContentToFile( filepath, offset, overwrite );    
+    CString path = CORE::CombinePath( m_rootDir, filePath.ReplaceChar( GUCEF_DIRSEPCHAROPPOSITE, GUCEF_DIRSEPCHAR ) );
+    return data.WriteContentToFile( path, offset, overwrite );    
 }
 
 /*-------------------------------------------------------------------------*/
@@ -367,8 +368,7 @@ bool
 CFileSystemArchive::FileExists( const CString& filePath ) const
 {GUCEF_TRACE;
 
-    CString path = m_rootDir;
-    CORE::AppendToPath( path, filePath );
+    CString path = CORE::CombinePath( m_rootDir, filePath.ReplaceChar( GUCEF_DIRSEPCHAROPPOSITE, GUCEF_DIRSEPCHAR ) );
     return CORE::FileExists( path );
 }
 
@@ -378,8 +378,7 @@ UInt32
 CFileSystemArchive::GetFileSize( const CString& filePath ) const
 {GUCEF_TRACE;
 
-    CString path = m_rootDir;
-    CORE::AppendToPath( path, filePath );
+    CString path = CORE::CombinePath( m_rootDir, filePath.ReplaceChar( GUCEF_DIRSEPCHAROPPOSITE, GUCEF_DIRSEPCHAR ) );
     if ( CORE::FileExists( path ) )
     {
         return CORE::FileSize( path );
@@ -390,12 +389,11 @@ CFileSystemArchive::GetFileSize( const CString& filePath ) const
 /*-------------------------------------------------------------------------*/
 
 CString
-CFileSystemArchive::GetFileHash( const CString& file ) const
+CFileSystemArchive::GetFileHash( const CString& filePath ) const
 {GUCEF_TRACE;
 
-    CString path = m_rootDir;
-    CORE::AppendToPath( path, file );
-    if ( CORE::File_Exists( path.C_String() ) != 0 )
+    CString path = CORE::CombinePath( m_rootDir, filePath.ReplaceChar( GUCEF_DIRSEPCHAROPPOSITE, GUCEF_DIRSEPCHAR ) );
+    if ( CORE::FileExists( path ) )
     {
         CORE::CFileAccess fileAccess( path );
 
@@ -416,13 +414,12 @@ CORE::CDateTime
 CFileSystemArchive::GetFileModificationTime( const CString& filePath ) const
 {GUCEF_TRACE;
 
-    CString path = m_rootDir;
-    CORE::AppendToPath( path, filePath );
-    if ( CORE::File_Exists( path.C_String() ) != 0 )
+    CString path = CORE::CombinePath( m_rootDir, filePath.ReplaceChar( GUCEF_DIRSEPCHAROPPOSITE, GUCEF_DIRSEPCHAR ) );
+    if ( CORE::FileExists( path ) )
     {
         return CORE::GetFileModificationTime( path );
     }
-    return -1;
+    return CORE::CDateTime();
 }
 
 /*-------------------------------------------------------------------------*/
@@ -455,15 +452,14 @@ CFileSystemArchive::GetType( void ) const
 /*-------------------------------------------------------------------------*/
 
 CVFSHandle*
-CFileSystemArchive::LoadFromDisk( const CString& file      ,
+CFileSystemArchive::LoadFromDisk( const CString& filePath  ,
                                   const char* mode         ,
                                   const UInt32 memLoadSize ,
                                   const bool overwrite     )
 {GUCEF_TRACE;
 
     // Create a file path for this root
-    CString filepath = m_rootDir;
-    CORE::AppendToPath( filepath, file );
+    CString path = CORE::CombinePath( m_rootDir, filePath.ReplaceChar( GUCEF_DIRSEPCHAROPPOSITE, GUCEF_DIRSEPCHAR ) );
 
     bool needwriteable( ( strchr( mode, 'a' ) != NULL ) || ( strchr( mode, 'w' ) != NULL ) || ( strchr( mode, '+' ) != NULL ));
 
@@ -473,24 +469,24 @@ CFileSystemArchive::LoadFromDisk( const CString& file      ,
          ( strcmp( mode, "r" ) == 0 )   )
     {
         // Check our cache for this file
-        TFileMemCache::iterator n = m_diskCacheList.find( filepath );
+        TFileMemCache::iterator n = m_diskCacheList.find( path );
         if ( n != m_diskCacheList.end() )
         {
             // We found the file in our cache, we will link to the existing buffer.
             TDynamicBufferPtr bufferPtr = (*n).second;
             return new CVFSHandle( new CORE::CDynamicBufferAccess( bufferPtr.GetPointer() ,
                                                                    false                  ) ,
-                                   file                                                     ,
-                                   filepath                                                 ,
+                                   path                                                     ,
+                                   filePath                                                 ,
                                    bufferPtr                                                );
         }
     }
 
     // Check if we can proceed under these circumstances
-    bool exists( CORE::File_Exists( filepath.C_String() ) > 0 );
+    bool exists( CORE::FileExists( path ) );
     if ( !exists && needwriteable )
     {
-        CORE::CString dirPath = CORE::StripFilename( filepath );
+        CORE::CString dirPath = CORE::StripFilename( path );
         if ( !CORE::CreateDirs( dirPath ) )
         {
             GUCEF_ERROR_LOG( CORE::LOGLEVEL_NORMAL, "FileSystemArchive:LoadFromDisk: Unable to create directories to store new file: " + dirPath );
@@ -502,7 +498,7 @@ CFileSystemArchive::LoadFromDisk( const CString& file      ,
          ( exists && !needwriteable )              )
     {
         // Attempt to get access to the file
-        CORE::CIOAccess* fa = new CORE::CFileAccess( filepath, mode );
+        CORE::CIOAccess* fa = new CORE::CFileAccess( path, mode );
         if ( !fa->IsValid() )
         {
             // try a different root
@@ -514,7 +510,7 @@ CFileSystemArchive::LoadFromDisk( const CString& file      ,
              ( strcmp( mode, "r" ) == 0 )   )
         {
             // check if we can load the file into memory
-            UInt32 fsize = CORE::Filesize( filepath.C_String() );
+            UInt32 fsize = CORE::Filesize( path.C_String() );
             if ( fsize <= memLoadSize )
             {
                 // Create the memory buffer
@@ -531,12 +527,12 @@ CFileSystemArchive::LoadFromDisk( const CString& file      ,
                     bufferAccess->Setpos( 0 );
 
                     // Add the file to our buffered files list
-                    m_diskCacheList.insert( std::pair< CORE::CString, TDynamicBufferPtr >( filepath, bufferPtr ) );
+                    m_diskCacheList.insert( std::pair< CORE::CString, TDynamicBufferPtr >( path, bufferPtr ) );
 
                     // return the file handle
                     return new CVFSHandle( bufferAccess ,
-                                           file         ,
-                                           filepath     ,
+                                           path         ,
+                                           filePath     ,
                                            bufferPtr    );
                 }
                 else
@@ -551,8 +547,8 @@ CFileSystemArchive::LoadFromDisk( const CString& file      ,
 
         // return the file handle
         return new CVFSHandle( fa       ,
-                               file     ,
-                               filepath );
+                               path     ,
+                               filePath );
 
     }
 

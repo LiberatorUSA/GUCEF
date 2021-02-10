@@ -1176,9 +1176,27 @@ bool
 CVFS::FileExists( const CString& file ) const
 {GUCEF_TRACE;
 
-    CString actualPath;
-    return GetActualFilePath( file       ,
-                              actualPath );
+    CString path = ConformVfsFilePath( file );
+
+    MT::CObjectScopeLock lock( this );
+
+    // Get a list of all eligable mounts
+    TConstMountLinkVector mountLinks;
+    GetEligableMounts( path, false, mountLinks );
+
+    // Search for a file and then get the hash
+    TConstMountLinkVector::iterator i = mountLinks.begin();
+    while ( i != mountLinks.end() )
+    {
+        TConstMountLink& mountLink = (*i);
+        if ( mountLink.mountEntry->archive->FileExists( mountLink.remainder ) )
+        {
+            return true;
+        }
+        ++i;
+    }
+
+    return false;
 }
 
 /*-------------------------------------------------------------------------*/
@@ -1569,7 +1587,7 @@ CVFS::GetFileModificationTime( const CString& filename ) const
         ++i;
     }
 
-    return -1;
+    return CORE::CDateTime();
 }
 
 /*-------------------------------------------------------------------------*/
