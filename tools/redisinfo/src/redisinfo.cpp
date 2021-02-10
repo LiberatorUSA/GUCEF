@@ -604,6 +604,7 @@ RedisInfoService::RefreshRedisNodePipes( void )
             }
             ++i;
         }
+        return true;
     }
     return false;
 }
@@ -615,7 +616,7 @@ RedisInfoService::ProvideRedisNodesDoc( void )
 {GUCEF_TRACE;
 
     static const CORE::CString redisNodesCodec = "json";     
-    const CORE::CString redisNodesFile = "InstallPath/" + m_settings.clusterName + "/RedisNodes.v1.json";
+    const CORE::CString redisNodesFile = "InstallPath/redis/clusters/" + m_settings.clusterName + "/RedisNodes.v1.json";
     
     RedisNodeMap redisNodes;
     if ( GetRedisClusterSlots( redisNodes ) )
