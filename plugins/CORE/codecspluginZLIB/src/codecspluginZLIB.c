@@ -103,14 +103,12 @@ ZLibCompress( TIOAccess* input  ,
             free( tempInputBuffer );
         return 0;
     }
-    
-    inputBytesRead = input->read( input, tempInputBuffer, 1, TEMP_READ_BUFFER_SIZE );
-    
+        
     strm.zalloc = Z_NULL;
     strm.zfree = Z_NULL;
     strm.opaque = Z_NULL;
     strm.next_in = tempInputBuffer;
-    strm.avail_in = inputBytesRead;
+    strm.avail_in = TEMP_READ_BUFFER_SIZE;
     strm.next_out = tempOutputBuffer;
     strm.avail_out = tempOutputBufferSize;
 
@@ -123,9 +121,11 @@ ZLibCompress( TIOAccess* input  ,
     }
 
     /* read blocks of data from input and encode them and write them to the output */
+    inputBytesRead = input->read( input, tempInputBuffer, 1, TEMP_READ_BUFFER_SIZE );
+    strm.avail_in = inputBytesRead; 
     while ( 0 != inputBytesRead )
     {
-        while ( 0 != strm.avail_in )
+        do
         {
             int res = deflate( &strm, Z_NO_FLUSH );
             if ( Z_OK != res )
@@ -139,17 +139,22 @@ ZLibCompress( TIOAccess* input  ,
             {
                 output->write( output, tempOutputBuffer, 1, TEMP_INPROCESS_BUFFER_SIZE );
                 
+                /* make the full output buffer available again as we have written everything to the output */
                 strm.next_out = tempOutputBuffer;
                 strm.avail_out = TEMP_INPROCESS_BUFFER_SIZE;
             }
         }
+        while ( 0 != strm.avail_in );
 
         inputBytesRead = input->read( input, tempInputBuffer, 1, TEMP_READ_BUFFER_SIZE );
+        
+        /* make the max nr of bytes read available again in the read buffer as we have filled it with new data and moved back the cursor */
+        strm.next_in = tempInputBuffer;
         strm.avail_in = inputBytesRead;
     }
     output->write( output, tempOutputBuffer, 1, ( TEMP_INPROCESS_BUFFER_SIZE - strm.avail_out ) );
                 
-    /* make the full buffer available again as we have written everything to the output */
+    /* make the full output buffer available again as we have written everything to the output */
     strm.next_out = tempOutputBuffer;
     strm.avail_out = TEMP_INPROCESS_BUFFER_SIZE;
 
@@ -227,9 +232,12 @@ ZLibDecompress( TIOAccess* input  ,
         return 0;
     }
 
-    while ( 0 == input->eof( input ) )
+    /* read blocks of data from input and encode them and write them to the output */
+    inputBytesRead = input->read( input, tempInputBuffer, 1, TEMP_READ_BUFFER_SIZE );
+    strm.avail_in = inputBytesRead; 
+    while ( 0 != inputBytesRead )
     {
-        while ( 0 != strm.avail_in )
+        do
         {
             int res = inflate( &strm, Z_NO_FLUSH );
             if ( Z_OK != res )
@@ -243,19 +251,30 @@ ZLibDecompress( TIOAccess* input  ,
             {
                 output->write( output, tempOutputBuffer, 1, TEMP_INPROCESS_BUFFER_SIZE );
                 
+                /* make the full output buffer available again as we have written everything to the output */
                 strm.next_out = tempOutputBuffer;
                 strm.avail_out = TEMP_INPROCESS_BUFFER_SIZE;
             }
         }
+        while ( 0 != strm.avail_in );
 
         inputBytesRead = input->read( input, tempInputBuffer, 1, TEMP_READ_BUFFER_SIZE );
+        
+        /* make the max nr of bytes read available again in the read buffer as we have filled it with new data and moved back the cursor */
+        strm.next_in = tempInputBuffer;
         strm.avail_in = inputBytesRead;
     }
     output->write( output, tempOutputBuffer, 1, ( TEMP_INPROCESS_BUFFER_SIZE - strm.avail_out ) );
+                
+    /* make the full output buffer available again as we have written everything to the output */
+    strm.next_out = tempOutputBuffer;
+    strm.avail_out = TEMP_INPROCESS_BUFFER_SIZE;
 
-    int inflateResult = Z_OK;
-    while ( Z_OK == inflateResult )
+    outputBytesWritten = 0;
+    zlibResult = Z_OK;
+    while ( Z_OK == zlibResult )
     {
+        uInt availOutBefore = 0;
         if ( 0 == strm.avail_out )
         {
             output->write( output, tempOutputBuffer, 1, TEMP_INPROCESS_BUFFER_SIZE );
@@ -263,16 +282,19 @@ ZLibDecompress( TIOAccess* input  ,
             strm.next_out = tempOutputBuffer;
             strm.avail_out = TEMP_INPROCESS_BUFFER_SIZE;
         }
-        inflateResult = inflate( &strm, Z_FINISH );
+
+        availOutBefore = strm.avail_out;
+        zlibResult = inflate( &strm, Z_FINISH );
+        outputBytesWritten += availOutBefore - strm.avail_out;
     }
-    output->write( output, tempOutputBuffer, 1, ( TEMP_INPROCESS_BUFFER_SIZE - strm.avail_out ) );
+    output->write( output, tempOutputBuffer, 1, outputBytesWritten );
     
     inflateEnd( &strm );
 
     free( tempInputBuffer );
     free( tempOutputBuffer );
 
-    return Z_STREAM_END == inflateResult;
+    return Z_STREAM_END == zlibResult;
 }
 
 /*---------------------------------------------------------------------------*/
