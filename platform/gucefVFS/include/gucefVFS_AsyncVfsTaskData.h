@@ -97,6 +97,8 @@ class GUCEF_VFS_PUBLIC_CPP CAsyncVfsTaskData : public CORE::CICloneable
 
     virtual CICloneable* Clone( void ) const GUCEF_VIRTUAL_OVERRIDE;
 
+    CAsyncVfsTaskData& operator=( const CAsyncVfsTaskData& src );
+
     CAsyncVfsTaskData( void );
     CAsyncVfsTaskData( const CAsyncVfsTaskData& src );
     virtual ~CAsyncVfsTaskData();

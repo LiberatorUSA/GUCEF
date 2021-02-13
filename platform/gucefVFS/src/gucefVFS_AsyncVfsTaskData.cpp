@@ -73,6 +73,21 @@ CAsyncVfsTaskData::CAsyncVfsTaskData( const CAsyncVfsTaskData& src )
 
 /*-------------------------------------------------------------------------*/
 
+CAsyncVfsTaskData&
+CAsyncVfsTaskData::operator=( const CAsyncVfsTaskData& src )
+{GUCEF_TRACE;
+
+    if ( this != &src )
+    {    
+        operationType = src.operationType;
+        asyncRequestId = src.asyncRequestId;
+        SetRequestorData( src.m_requestorData );
+    }
+    return *this;
+}
+
+/*-------------------------------------------------------------------------*/
+
 CAsyncVfsTaskData::~CAsyncVfsTaskData()
 {GUCEF_TRACE;
     
@@ -182,7 +197,8 @@ CAsyncVfsTaskResultData::SetTaskData( CAsyncVfsTaskData* data )
 
     if ( GUCEF_NULL != data )
     {       
-        m_taskData = static_cast< CAsyncVfsTaskData* >( data->Clone() );    
+        m_taskData = static_cast< CAsyncVfsTaskData* >( data->Clone() );
+        CAsyncVfsTaskData::operator=( *m_taskData );
     }
 }
 
