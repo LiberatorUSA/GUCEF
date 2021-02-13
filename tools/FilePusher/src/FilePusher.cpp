@@ -790,6 +790,7 @@ FilePushDestination::OnAsyncVfsOperationCompleted( CORE::CNotifier* notifier    
             switch ( asyncOpResult->operationType )
             {
                 case VFS::ASYNCVFSOPERATIONTYPE_ENCODEFILE:
+                case VFS::ASYNCVFSOPERATIONTYPE_ENCODEDATAASFILE:
                 {
                     OnAsyncVfsFileEncodeCompleted( notifier  ,
                                                    eventId   ,
@@ -849,9 +850,10 @@ FilePushDestination::OnAsyncVfsFileEncodeCompleted( CORE::CNotifier* notifier   
 
                     TStringPushEntryMap::iterator i = m_encodeQueue.find( originalFilePath );
                     if ( i != m_encodeQueue.end() )
-                    {
+                    {                        
                         QueueFileForPushing( (*i).second );
                         m_encodeQueue.erase( i );
+                        m_currentFileBeingPushed = GUCEF_NULL;
                     }
                     else
                     {
