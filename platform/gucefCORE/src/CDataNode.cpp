@@ -966,7 +966,9 @@ CDataNode*
 CDataNode::Search( const CString& query     ,
                    char seperator           ,
                    bool fromcurrent         ,
-                   bool treatChildAsCurrent ) const
+                   bool treatChildAsCurrent ,
+                   bool doWildcardMatching  ,
+                   char wildcardChar        ) const
 {GUCEF_TRACE;
 
     if ( fromcurrent )
@@ -1099,20 +1101,26 @@ CDataNode::SearchForAll( const CString& query     ,
 CDataNode::TDataNodeVector
 CDataNode::WalkTree( const CString& sequence ,
                      char seperator          ,
-                     CString& sleftover      ) const
+                     CString& sleftover      ,
+                     bool doWildcardMatching ,
+                     char wildcardChar       ) const
 {GUCEF_TRACE;
 
     sleftover = sequence;
         
-    return WalkTreeImp( sleftover ,
-                        seperator );
+    return WalkTreeImp( sleftover          ,
+                        seperator          ,
+                        doWildcardMatching ,
+                        wildcardChar       );
 }                     
 
 /*-------------------------------------------------------------------------*/
 
 CDataNode::TDataNodeVector
-CDataNode::WalkTreeImp( CString& sleftover ,
-                        char seperator     ) const
+CDataNode::WalkTreeImp( CString& sleftover      ,
+                        char seperator          ,
+                        bool doWildcardMatching ,
+                        char wildcardChar       ) const
 {GUCEF_TRACE;
           
     if ( !m_children.empty() )
@@ -1125,13 +1133,15 @@ CDataNode::WalkTreeImp( CString& sleftover ,
         CString bestMatchLeftover( left );
                                                   
         CDataNode* n = m_children.front();                                                                                    
-        while ( n )
+        while ( GUCEF_NULL != n )
         {
+            bool nodeMatch = !doWildcardMatching ? n->_name == searchseg : searchseg.WildcardEquals( n->_name, wildcardChar, true, true );
+            
             // Are we looking for more nesting or a leaf node?
             if ( 0 == left.Length() )
             {
                 // We are looking for a leaf node. Check if the current child matches
-                if ( n->_name == searchseg )
+                if ( nodeMatch )
                 {
                     // nothing left to search for, so
                     // no point in continuing
@@ -1141,11 +1151,11 @@ CDataNode::WalkTreeImp( CString& sleftover ,
             else
             {            
                 // check if this node could be a link in the search chain
-                if ( n->_name == searchseg )
+                if ( nodeMatch )
                 {
                     // search the tree for our leftover
                     CString childLeftover = left;
-                    TDataNodeVector childResultSet = n->WalkTreeImp( childLeftover, seperator );
+                    TDataNodeVector childResultSet = n->WalkTreeImp( childLeftover, seperator, doWildcardMatching, wildcardChar );
                         
                     // if what we found is better then what we found so far then
                     // substitute the current deepest nodes with the new deeper nodes.

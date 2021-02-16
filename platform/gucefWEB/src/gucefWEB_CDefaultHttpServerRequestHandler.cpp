@@ -296,46 +296,46 @@ CDefaultHttpServerRequestHandler::PerformReadOperation( const CHttpRequestData& 
             return true;
         }
 
-        response.contentType = resource->GetBestMatchedSerializationRepresentation( request.resourceRepresentations );
+        response.contentType = resource->GetBestMatchedSerializationRepresentation( uriAfterBaseAddress, request.resourceRepresentations );
 
         // Did we find a supported type match?
         if ( response.contentType.IsNULLOrEmpty() )
         {
             // Unsupported media type
             response.statusCode = 415;
-            response.acceptedTypes = resource->GetSupportedSerializationRepresentations();
+            response.acceptedTypes = resource->GetSupportedSerializationRepresentations( uriAfterBaseAddress );
             return true;
         }
 
         // Check if we need to perform a version check for efficiency purposes
         // If a specific version was requested we should only send the resource if the resource has
         // been altered thus saving bandwidth
-        if ( MatchResourceVersion( resource->GetResourceVersion(), request.resourceVersions ) )
+        if ( MatchResourceVersion( resource->GetResourceVersion( uriAfterBaseAddress ), request.resourceVersions ) )
         {
             // The resource has not been changed thus no need to send the resource to the client
             response.statusCode = 304;
-            response.eTag = resource->GetResourceVersion();
+            response.eTag = resource->GetResourceVersion( uriAfterBaseAddress );
             return true;
         }
-
+                                                    
         if ( contentRequested )
         {
             // Set the serialized resource as the return data content
             CString params = uriAfterBaseAddress.SubstrToChar( '?', 0, true, true );
-            if ( !resource->Serialize( response.content, response.contentType, params ) )
+            if ( !resource->Serialize( uriAfterBaseAddress, response.content, response.contentType, params ) )
             {
                 // Something went wrong in the handler while serializing the resource
                 response.statusCode = 415;
-                response.acceptedTypes = resource->GetSupportedSerializationRepresentations();
+                response.acceptedTypes = resource->GetSupportedSerializationRepresentations( uriAfterBaseAddress );
                 return true;
             }
 
             ProcessTransferEncoding( request, response );
         }
 
-        response.eTag = resource->GetResourceVersion();
-        response.lastModified = resource->GetLastModifiedTime();
-        response.cacheability = resource->GetCacheability();
+        response.eTag = resource->GetResourceVersion( uriAfterBaseAddress );
+        response.lastModified = resource->GetLastModifiedTime( uriAfterBaseAddress );
+        response.cacheability = resource->GetCacheability( uriAfterBaseAddress );
 
         // Inform the client of the actual location of the resource if the request Uri was
         // actually an alias
@@ -431,7 +431,7 @@ CDefaultHttpServerRequestHandler::OnUpdate( const CHttpRequestData& request ,
         // Check if we need to perform a version (concurrency) check
         if ( request.resourceVersions.size() > 0 )
         {
-            if ( !MatchResourceVersion( resource->GetResourceVersion(), request.resourceVersions ) )
+            if ( !MatchResourceVersion( resource->GetResourceVersion( remainderUri ), request.resourceVersions ) )
             {
                 // The resource has been changed while the client was making its changes,..
                 // We have a race condition and should abort the update
@@ -441,12 +441,12 @@ CDefaultHttpServerRequestHandler::OnUpdate( const CHttpRequestData& request ,
         }
 
         // Assign to the entry
-        CIHTTPServerResource::TDeserializeState deserializeState = resource->Deserialize( request.content, request.contentRepresentation, isDeltaUpdateOnly );
+        CIHTTPServerResource::TDeserializeState deserializeState = resource->Deserialize( remainderUri, request.content, request.contentRepresentation, isDeltaUpdateOnly );
         if ( CIHTTPServerResource::DESERIALIZESTATE_CORRUPTEDINPUT == deserializeState  )
         {
             // There was a problem in the backend deserializing the content in the negotiated format
             response.statusCode = 400; // <- corrupt data,.. bad request
-            response.acceptedTypes = resource->GetSupportedDeserializationRepresentations();
+            response.acceptedTypes = resource->GetSupportedDeserializationRepresentations( remainderUri );
             return true;
         }
         else
@@ -461,8 +461,8 @@ CDefaultHttpServerRequestHandler::OnUpdate( const CHttpRequestData& request ,
             response.statusCode = 200;
         }
 
-        response.eTag = resource->GetResourceVersion();
-        response.lastModified = resource->GetLastModifiedTime();
+        response.eTag = resource->GetResourceVersion( remainderUri );
+        response.lastModified = resource->GetLastModifiedTime( remainderUri );
 
         // Make sure we only send back absolute Uri's for resource locations
         CString requestResourceUri = request.ConstructUriWithAuthority();
@@ -470,7 +470,7 @@ CDefaultHttpServerRequestHandler::OnUpdate( const CHttpRequestData& request ,
 
         // Send the serverside representation back to the client in the representation of the update
         CString params = remainderUri.SubstrToChar( '?', 0, true, true );
-        if ( resource->Serialize( response.content, request.contentRepresentation , params ) )
+        if ( resource->Serialize( remainderUri, response.content, request.contentRepresentation , params ) )
         {
             response.contentType = request.contentRepresentation;
             ProcessTransferEncoding( request, response );
@@ -536,7 +536,8 @@ CDefaultHttpServerRequestHandler::OnCreate( const CHttpRequestData& request ,
         TStringVector supportedRepresentations;
 
         CString params = containerUri.SubstrToChar( '?', 0, true, true );
-        CIHTTPServerResource::TCreateState createState = containerResource->CreateResource( request.transactionID         ,
+        CIHTTPServerResource::TCreateState createState = containerResource->CreateResource( containerUri                  ,
+                                                                                            request.transactionID         ,
                                                                                             request.content               ,
                                                                                             request.contentRepresentation ,
                                                                                             params                        ,
@@ -578,7 +579,7 @@ CDefaultHttpServerRequestHandler::OnCreate( const CHttpRequestData& request ,
             // as the new resource as part of our reply regardless of whether content was send to the server
 
             // Perform the serialization
-            if ( resource->Serialize( response.content, request.contentRepresentation, params ) )
+            if ( resource->Serialize( response.location, response.content, request.contentRepresentation, params ) )
             {
                 response.contentType = request.contentRepresentation;
                 ProcessTransferEncoding( request, response );
@@ -590,8 +591,8 @@ CDefaultHttpServerRequestHandler::OnCreate( const CHttpRequestData& request ,
             response.location = m_routerController->MakeUriAbsolute( *resourceRouter, uriWithAuthority, response.location );
 
             // tell client what representation the resource is stored as plus its version
-            response.eTag = resource->GetResourceVersion();
-            response.lastModified = resource->GetLastModifiedTime();
+            response.eTag = resource->GetResourceVersion( response.location );
+            response.lastModified = resource->GetLastModifiedTime( response.location );
 
             // Tell the client we succeeded in creating a new resource
             response.statusCode = 201;
@@ -651,17 +652,17 @@ CDefaultHttpServerRequestHandler::OnDelete( const CHttpRequestData& request ,
         {
             // Check if we need to perform a version (concurrency) check
             // Be determine this by checking whether client entered a specific resource version to delete
-            if ( !MatchResourceVersion( resource->GetResourceVersion(), request.resourceVersions ) )
+            if ( !MatchResourceVersion( resource->GetResourceVersion( remainderUri ), request.resourceVersions ) )
             {
                 // The resource it of a different version then what the client expected,..
                 // We will abort the delete
                 response.statusCode = 412;
-                response.eTag = resource->GetResourceVersion();
+                response.eTag = resource->GetResourceVersion( remainderUri );
                 return true;
             }
         }
 
-        if ( resource->DeleteResource() )
+        if ( resource->DeleteResource( remainderUri ) )
         {
             // tell client the delete succeeded
             response.statusCode = 200;

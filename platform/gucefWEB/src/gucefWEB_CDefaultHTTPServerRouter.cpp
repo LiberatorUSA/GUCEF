@@ -52,6 +52,7 @@ CDefaultHTTPServerRouter::CDefaultHTTPServerRouter( void )
     , m_controller( GUCEF_NULL )
     , m_resourceMap()
     , m_uriIsCaseSensitive( true ) // Default because RFC 3986 defines URIs as case-sensitive except for the scheme and host components
+    , m_wildcardMatchUris( true )
     , m_rwLock( true )
 {GUCEF_TRACE;
 
@@ -66,6 +67,7 @@ CDefaultHTTPServerRouter::CDefaultHTTPServerRouter( const CDefaultHTTPServerRout
     , m_controller( src.m_controller )
     , m_resourceMap( src.m_resourceMap )
     , m_uriIsCaseSensitive( src.m_uriIsCaseSensitive )
+    , m_wildcardMatchUris( src.m_wildcardMatchUris )
     , m_rwLock( src.m_rwLock )
 {GUCEF_TRACE;
 
@@ -97,8 +99,27 @@ CDefaultHTTPServerRouter::operator=( const CDefaultHTTPServerRouter& src )
         m_controller = src.m_controller;
         m_resourceMap = src.m_resourceMap;
         m_uriIsCaseSensitive = src.m_uriIsCaseSensitive;
+        m_wildcardMatchUris = src.m_wildcardMatchUris;
     }
     return *this;
+}
+
+/*-------------------------------------------------------------------------*/
+
+void 
+CDefaultHTTPServerRouter::SetWildcardMatchUris( bool useWildcards )
+{GUCEF_TRACE;
+    
+    m_wildcardMatchUris = useWildcards;
+}
+
+/*-------------------------------------------------------------------------*/
+
+bool
+CDefaultHTTPServerRouter::GetWildcardMatchUris( void ) const
+{GUCEF_TRACE;
+
+    return m_wildcardMatchUris;
 }
 
 /*-------------------------------------------------------------------------*/
@@ -112,12 +133,12 @@ CDefaultHTTPServerRouter::ResolveUriToResource( const CString& uri )
     CORE::CDataNode* resourceNode = GUCEF_NULL;
     if ( m_uriIsCaseSensitive )
     {
-        resourceNode = m_resourceMap.Search( uri, '/', true, true );
+        resourceNode = m_resourceMap.Search( uri, '/', true, true, m_wildcardMatchUris, '*' );
     }
     else
     {
         CString lcUri = uri.Lowercase();
-        resourceNode = m_resourceMap.Search( lcUri, '/', true, true );
+        resourceNode = m_resourceMap.Search( lcUri, '/', true, true, m_wildcardMatchUris, '*' );
     }
 
     if ( GUCEF_NULL != resourceNode )

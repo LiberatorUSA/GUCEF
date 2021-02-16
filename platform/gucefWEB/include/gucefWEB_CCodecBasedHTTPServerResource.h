@@ -66,11 +66,13 @@ class GUCEF_WEB_PUBLIC_CPP CCodecBasedHTTPServerResource : public CDefaultHTTPSe
     /**
      *  Serializes the resource into a stream according to the representation.
      */
-    virtual bool Serialize( CORE::CDynamicBuffer& outputBuffer  ,
+    virtual bool Serialize( const CString& resourcePath         ,
+                            CORE::CDynamicBuffer& outputBuffer  ,
                             const CORE::CString& representation ,
                             const CString& params               ) GUCEF_VIRTUAL_OVERRIDE;
 
-    virtual bool Serialize( CORE::CDataNode& output             ,
+    virtual bool Serialize( const CString& resourcePath         ,
+                            CORE::CDataNode& output             ,
                             const CORE::CString& representation ,
                             const CString& params               );
 
@@ -78,7 +80,8 @@ class GUCEF_WEB_PUBLIC_CPP CCodecBasedHTTPServerResource : public CDefaultHTTPSe
      *  Deserialize the resource from the given stream with given resource representation.
      *  @param isDeltaUpdateOnly Signals whether we are trying to deserialize a full resource in one go or just apply a delta update
      */
-    virtual TDeserializeState Deserialize( const CORE::CDynamicBuffer& inputBuffer ,
+    virtual TDeserializeState Deserialize( const CString& resourcePath             ,
+                                           const CORE::CDynamicBuffer& inputBuffer ,
                                            const CString& representation           ,
                                            bool isDeltaUpdateOnly                  ) GUCEF_VIRTUAL_OVERRIDE;
 
@@ -86,7 +89,8 @@ class GUCEF_WEB_PUBLIC_CPP CCodecBasedHTTPServerResource : public CDefaultHTTPSe
      *  Deserialize the resource from the given data tree 
      *  @param isDeltaUpdateOnly Signals whether we are trying to deserialize a full resource in one go or just apply a delta update
      */
-    virtual TDeserializeState Deserialize( const CORE::CDataNode& input  ,
+    virtual TDeserializeState Deserialize( const CString& resourcePath   ,
+                                           const CORE::CDataNode& input  ,
                                            const CString& representation ,
                                            bool isDeltaUpdateOnly        );
 
@@ -100,7 +104,8 @@ class GUCEF_WEB_PUBLIC_CPP CCodecBasedHTTPServerResource : public CDefaultHTTPSe
      *  @param supportedRepresentationsOutput In case the representation is not supported for creation, this returns the list of supported representations.
      *  @return The status of the operation. See TCreateState.
      */
-    virtual TCreateState CreateResource( const CString& transactionID                  ,
+    virtual TCreateState CreateResource( const CString& resourcePath                   ,
+                                         const CString& transactionID                  ,
                                          const CORE::CDynamicBuffer& inputBuffer       ,
                                          const CString& representation                 ,
                                          const CString& params                         ,
@@ -117,7 +122,8 @@ class GUCEF_WEB_PUBLIC_CPP CCodecBasedHTTPServerResource : public CDefaultHTTPSe
      *  @param supportedRepresentationsOutput In case the representation is not supported for creation, this returns the list of supported representations.
      *  @return The status of the operation. See TCreateState.
      */
-    virtual TCreateState CreateResource( const CString& transactionID                  ,
+    virtual TCreateState CreateResource( const CString& resourcePath                   ,
+                                         const CString& transactionID                  ,
                                          const CORE::CDataNode& input                  ,
                                          const CString& representation                 ,
                                          const CString& params                         ,

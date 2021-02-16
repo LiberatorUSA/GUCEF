@@ -335,7 +335,9 @@ class GUCEF_CORE_PUBLIC_CPP CDataNode
     CDataNode* Search( const CString& query             ,
                        char seperator                   ,
                        bool fromCurrent                 ,
-                       bool treatChildAsCurrent = false ) const;
+                       bool treatChildAsCurrent = false ,
+                       bool doWildcardMatching = false  ,
+                       char wildcardChar = '*'          ) const;
 
     /**
      *      Searches for the structure provided in the query.
@@ -364,9 +366,11 @@ class GUCEF_CORE_PUBLIC_CPP CDataNode
      *  @param sleftover outputvar: the section of the sequence that could not be resolved.
      *  @return pointers to the deepest nodes found. Equally good matches.
      */
-    TDataNodeVector WalkTree( const CString& sequence ,
-                              char seperator          ,
-                              CString& sleftover      ) const;
+    TDataNodeVector WalkTree( const CString& sequence         ,
+                              char seperator                  ,
+                              CString& sleftover              ,
+                              bool doWildcardMatching = false ,
+                              char wildcardChar = '*'         ) const;
 
     /**
      *  Returns wheter the current node has any children
@@ -543,8 +547,10 @@ class GUCEF_CORE_PUBLIC_CPP CDataNode
                        const CString& value                    ,
                        int typeOfValue = GUCEF_DATATYPE_STRING );
 
-    TDataNodeVector WalkTreeImp( CString& sleftover ,
-                                 char seperator     ) const;
+    TDataNodeVector WalkTreeImp( CString& sleftover              ,
+                                 char seperator                  ,
+                                 bool doWildcardMatching = false ,
+                                 char wildcardChar = '*'         ) const;
 
     void Detach( void );      /**< detaches the node from the tree */
     void DetachChild( CDataNode* child ); /**< detaches the given child node */

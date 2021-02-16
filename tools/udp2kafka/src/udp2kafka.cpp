@@ -1548,7 +1548,8 @@ RestApiUdp2KafkaInfoResource::~RestApiUdp2KafkaInfoResource()
 /*-------------------------------------------------------------------------*/
 
 bool
-RestApiUdp2KafkaInfoResource::Serialize( CORE::CDataNode& output             ,
+RestApiUdp2KafkaInfoResource::Serialize( const CORE::CString& resourcePath   ,
+                                         CORE::CDataNode& output             ,
                                          const CORE::CString& representation ,
                                          const CORE::CString& params         )
 {GUCEF_TRACE;
@@ -1585,7 +1586,8 @@ RestApiUdp2KafkaConfigResource::~RestApiUdp2KafkaConfigResource()
 /*-------------------------------------------------------------------------*/
 
 bool
-RestApiUdp2KafkaConfigResource::Serialize( CORE::CDataNode& output             ,
+RestApiUdp2KafkaConfigResource::Serialize( const CORE::CString& resourcePath   ,
+                                           CORE::CDataNode& output             ,
                                            const CORE::CString& representation ,
                                            const CORE::CString& params         )
 {GUCEF_TRACE;

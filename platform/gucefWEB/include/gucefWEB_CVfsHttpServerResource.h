@@ -17,8 +17,8 @@
  *  limitations under the License.
  */
 
-#ifndef GUCEF_WEB_CDEFAULTHTTPSERVERRESOURCE_H
-#define GUCEF_WEB_CDEFAULTHTTPSERVERRESOURCE_H
+#ifndef GUCEF_WEB_CVFSHTTPSERVERRESOURCE_H
+#define GUCEF_WEB_CVFSHTTPSERVERRESOURCE_H
 
 /*-------------------------------------------------------------------------//
 //                                                                         //
@@ -26,10 +26,10 @@
 //                                                                         //
 //-------------------------------------------------------------------------*/
 
-#ifndef GUCEF_WEB_CIHTTPSERVERRESOURCE_H
-#include "gucefWEB_CIHTTPServerResource.h"
-#define GUCEF_WEB_CIHTTPSERVERRESOURCE_H
-#endif /* GUCEF_WEB_CIHTTPSERVERRESOURCE_H ? */
+#ifndef GUCEF_WEB_CDEFAULTHTTPSERVERRESOURCE_H
+#include "gucefWEB_CDefaultHTTPServerResource.h"
+#define GUCEF_WEB_CDEFAULTHTTPSERVERRESOURCE_H
+#endif /* GUCEF_WEB_CDEFAULTHTTPSERVERRESOURCE_H ? */
 
 /*-------------------------------------------------------------------------//
 //                                                                         //
@@ -46,38 +46,17 @@ namespace WEB {
 //                                                                         //
 //-------------------------------------------------------------------------*/
 
-class GUCEF_WEB_PUBLIC_CPP CDefaultHTTPServerResource : public CIHTTPServerResource
+class GUCEF_WEB_PUBLIC_CPP CVfsHttpServerResource : public CDefaultHTTPServerResource
 {    
     public:
     
-    CDefaultHTTPServerResource( void );
+    CVfsHttpServerResource( void );
     
-    CDefaultHTTPServerResource( const CDefaultHTTPServerResource& src );
+    CVfsHttpServerResource( const CVfsHttpServerResource& src );
     
-    virtual ~CDefaultHTTPServerResource();
+    virtual ~CVfsHttpServerResource();
     
-    CDefaultHTTPServerResource& operator=( const CDefaultHTTPServerResource& src );
-
-    /**
-     *  Identifier of the resource, relative to the context of the handler.
-     */
-    virtual void SetURL( const CString& url ) GUCEF_VIRTUAL_OVERRIDE;
-
-    /**
-     *  Identifier of the resource, relative to the context of the handler.
-     */
-    virtual const CString& GetURL( void ) const GUCEF_VIRTUAL_OVERRIDE;
-
-    /**
-     *  Encoding of the resource (i.e. gzip compression). Matches the HTTP:Content-Encoding field.
-     *  Typical example would be zip/gzip compressed content
-     */
-    virtual const CString& GetEncoding( const CORE::CString& resourcePath ) const GUCEF_VIRTUAL_OVERRIDE;
-                    
-    /**
-     *   Returns a list of all representations the resource can be serialized to.
-     */
-    virtual const TStringVector& GetSupportedSerializationRepresentations( const CORE::CString& resourcePath ) GUCEF_VIRTUAL_OVERRIDE;
+    CVfsHttpServerResource& operator=( const CVfsHttpServerResource& src );
 
     /**
      *  Returns the representation that best matches a given list of representions for serialization.
@@ -85,11 +64,6 @@ class GUCEF_WEB_PUBLIC_CPP CDefaultHTTPServerResource : public CIHTTPServerResou
      */
     virtual CString GetBestMatchedSerializationRepresentation( const CORE::CString& resourcePath    ,
                                                                const TStringVector& representations ) GUCEF_VIRTUAL_OVERRIDE;
-
-    /**
-     *   Returns a list of all representations the resource can be deserialized from.
-     */
-    virtual const TStringVector& GetSupportedDeserializationRepresentations( const CORE::CString& resourcePath ) GUCEF_VIRTUAL_OVERRIDE;
 
     /**
      *  Returns the representation that best matches a given list of representions for deserialization.
@@ -141,33 +115,6 @@ class GUCEF_WEB_PUBLIC_CPP CDefaultHTTPServerResource : public CIHTTPServerResou
                                            const CString& representation           ,
                                            bool isDeltaUpdateOnly                  ) GUCEF_VIRTUAL_OVERRIDE;
 
-    /**
-     *  The version of the resource (HTTP: Etag)
-     */
-    virtual const CString& GetResourceVersion( const CORE::CString& resourcePath ) GUCEF_VIRTUAL_OVERRIDE;
-    
-    virtual const CString& GetLastModifiedTime( const CORE::CString& resourcePath ) GUCEF_VIRTUAL_OVERRIDE;
-
-    /**
-     *  The cacheability of the resource.
-     */
-    virtual const CString& GetCacheability( const CORE::CString& resourcePath ) GUCEF_VIRTUAL_OVERRIDE;
-
-    /**
-     *  Signals whether the resource is a collection of other resources
-     *  Default implementation is hardcoded to 'false'
-     */
-    virtual bool IsCollection( const CORE::CString& resourcePath ) const GUCEF_VIRTUAL_OVERRIDE;
-
-    protected:
-
-    CString m_cacheabilityProperty;
-    CString m_lastModifiedProperty;
-    CString m_resourceVersionProperty;
-    CString m_encodingProperty;
-    CString m_urlSegment;
-    TStringVector m_deserializationReps;
-    TStringVector m_serializationReps;
 };
 
 /*-------------------------------------------------------------------------//
@@ -176,21 +123,10 @@ class GUCEF_WEB_PUBLIC_CPP CDefaultHTTPServerResource : public CIHTTPServerResou
 //                                                                         //
 //-------------------------------------------------------------------------*/
 
-} /* namespace COM */
+} /* namespace WEB */
 } /* namespace GUCEF */
 
 /*-------------------------------------------------------------------------*/
 
-#endif /* GUCEF_WEB_CDEFAULTHTTPSERVERRESOURCE_H ? */
-
-/*-------------------------------------------------------------------------//
-//                                                                         //
-//      Info & Changes                                                     //
-//                                                                         //
-//-------------------------------------------------------------------------//
-
-- 03-03-2007 :
-        - Dinand: Added this section
-
----------------------------------------------------------------------------*/
+#endif /* GUCEF_WEB_CVFSHTTPSERVERRESOURCE_H ? */
     

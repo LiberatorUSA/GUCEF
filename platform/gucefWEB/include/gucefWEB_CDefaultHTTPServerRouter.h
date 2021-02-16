@@ -87,6 +87,10 @@ class GUCEF_WEB_PUBLIC_CPP CDefaultHTTPServerRouter : public CIHTTPServerRouter
 
     bool RemoveResourceMapping( const CString& uriSegment );
 
+   void SetWildcardMatchUris( bool useWildcards );
+
+   bool GetWildcardMatchUris( void ) const;
+
     protected:
 
     CString m_mountPath;
@@ -94,6 +98,7 @@ class GUCEF_WEB_PUBLIC_CPP CDefaultHTTPServerRouter : public CIHTTPServerRouter
     CIHTTPServerRouterController* m_controller;
     CORE::CDataNode m_resourceMap;
     bool m_uriIsCaseSensitive;
+    bool m_wildcardMatchUris;
     MT::CReadWriteLock m_rwLock;
 };
 

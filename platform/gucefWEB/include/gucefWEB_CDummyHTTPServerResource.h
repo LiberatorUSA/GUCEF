@@ -62,14 +62,16 @@ class GUCEF_WEB_PUBLIC_CPP CDummyHTTPServerResource : public CDefaultHTTPServerR
      *  Returns the representation that best matches a given list of representions for serialization.
      *  Returns "" in case no match can be found.
      */
-    virtual CString GetBestMatchedSerializationRepresentation( const TStringVector& representations ) GUCEF_VIRTUAL_OVERRIDE;
+    virtual CString GetBestMatchedSerializationRepresentation( const CORE::CString& resourcePath    ,
+                                                               const TStringVector& representations ) GUCEF_VIRTUAL_OVERRIDE;
 
     /**
      *  Returns the representation that best matches a given list of representions for deserialization.
      *  In common situations, this may be the same as the GetBestMatchedSerializationRepresentation(..) operation.
      *  Returns "" in case no match can be found.
      */
-    virtual CString GetBestSupportedDeserializationRepresentation( const TStringVector& representations ) GUCEF_VIRTUAL_OVERRIDE;
+    virtual CString GetBestSupportedDeserializationRepresentation( const CORE::CString& resourcePath    ,
+                                                                   const TStringVector& representations ) GUCEF_VIRTUAL_OVERRIDE;
 
     /**
      *  Create a new (contained) resource
@@ -81,7 +83,8 @@ class GUCEF_WEB_PUBLIC_CPP CDummyHTTPServerResource : public CDefaultHTTPServerR
      *  @param supportedRepresentationsOutput In case the representation is not supported for creation, this returns the list of supported representations.
      *  @return The status of the operation. See TCreateState.
      */
-    virtual TCreateState CreateResource( const CString& transactionID                  ,
+    virtual TCreateState CreateResource( const CORE::CString& resourcePath             ,
+                                         const CString& transactionID                  ,
                                          const CORE::CDynamicBuffer& inputBuffer       ,
                                          const CString& representation                 ,
                                          const CString& params                         ,
@@ -93,12 +96,13 @@ class GUCEF_WEB_PUBLIC_CPP CDummyHTTPServerResource : public CDefaultHTTPServerR
      *
      *  @return Returns true if the resource could be deleted.
      */
-    virtual bool DeleteResource() GUCEF_VIRTUAL_OVERRIDE;
+    virtual bool DeleteResource( const CORE::CString& resourcePath ) GUCEF_VIRTUAL_OVERRIDE;
 
     /**
      *  Serializes the resource into a stream according to the representation.
      */
-    virtual bool Serialize( CORE::CDynamicBuffer& outputBuffer  ,
+    virtual bool Serialize( const CORE::CString& resourcePath   ,
+                            CORE::CDynamicBuffer& outputBuffer  ,
                             const CORE::CString& representation ,
                             const CString& params               ) GUCEF_VIRTUAL_OVERRIDE;
 
@@ -106,7 +110,8 @@ class GUCEF_WEB_PUBLIC_CPP CDummyHTTPServerResource : public CDefaultHTTPServerR
      *  Deserialize the resource from the given stream with given resource representation.
      *  @param isDeltaUpdateOnly Signals whether we are trying to deserialize a full resource in one go or just apply a delta update
      */
-    virtual TDeserializeState Deserialize( const CORE::CDynamicBuffer& inputBuffer ,
+    virtual TDeserializeState Deserialize( const CORE::CString& resourcePath       ,
+                                           const CORE::CDynamicBuffer& inputBuffer ,
                                            const CString& representation           ,
                                            bool isDeltaUpdateOnly                  ) GUCEF_VIRTUAL_OVERRIDE;
 

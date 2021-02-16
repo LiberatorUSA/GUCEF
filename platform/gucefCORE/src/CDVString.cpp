@@ -1395,11 +1395,18 @@ CString::HasSubstr( const CString& substr ,
 /*-------------------------------------------------------------------------*/
 
 bool
-CString::WildcardEquals( const CString& strWithWildcards       ,
-                         const char wildCardToken /* = '*' */  ,
-                         const bool caseSensitive /* = true */ ) const
+CString::WildcardEquals( const CString& strWithWildcards        ,
+                         const char wildCardToken /* = '*' */   ,
+                         const bool caseSensitive /* = true */  ,
+                         const bool biDirectional /* = false */ ) const
 {GUCEF_TRACE;
 
+    if ( biDirectional )
+    {
+        if ( strWithWildcards.WildcardEquals( *this, wildCardToken, caseSensitive, false ) )
+            return true;
+    }
+    
     if ( strWithWildcards == wildCardToken || *this == wildCardToken )
         return true;
 

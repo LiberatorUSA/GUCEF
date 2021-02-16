@@ -1,5 +1,5 @@
 /*
- *  Udp2Redis: service which pushes UDP packets into Redis
+ *  UdpViaTcp: service to bridge UDP over a TCP connection
  *
  *  This library is free software; you can redistribute it and/or
  *  modify it under the terms of the GNU Lesser General Public
@@ -67,7 +67,8 @@ RestApiUdpViaTcpInfoResource::~RestApiUdpViaTcpInfoResource()
 /*-------------------------------------------------------------------------*/
 
 bool
-RestApiUdpViaTcpInfoResource::Serialize( CORE::CDataNode& output             ,
+RestApiUdpViaTcpInfoResource::Serialize( const CORE::CString& resourcePath   ,
+                                         CORE::CDataNode& output             ,
                                          const CORE::CString& representation )
 {GUCEF_TRACE;
 
@@ -103,7 +104,8 @@ RestApiUdpViaTcpConfigResource::~RestApiUdpViaTcpConfigResource()
 /*-------------------------------------------------------------------------*/
 
 bool
-RestApiUdpViaTcpConfigResource::Serialize( CORE::CDataNode& output             ,
+RestApiUdpViaTcpConfigResource::Serialize( const CORE::CString& resourcePath   ,
+                                           CORE::CDataNode& output             ,
                                            const CORE::CString& representation )
 {GUCEF_TRACE;
 
@@ -753,7 +755,7 @@ UdpViaTcp::OnTCPServerSocketMaxConnectionsChanged( CORE::CNotifier* notifier    
     CORE::Int32 maxConnections = eData->GetData();
     
     // Only resize if we are enlarging. Shrinking causes too many headaches
-    if ( m_tcpServerReceivePacketBuffers.size() < maxConnections )
+    if ( (CORE::Int32) m_tcpServerReceivePacketBuffers.size() < maxConnections )
     {
         m_tcpServerReceivePacketBuffers.resize( (size_t) maxConnections );
     }

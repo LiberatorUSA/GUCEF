@@ -90,7 +90,8 @@ class GUCEF_WEB_PUBLIC_CPP CIHTTPServerResource
     {
         DESERIALIZESTATE_SUCCEEDED      , /**< deserialization succeeded without any problems */
         DESERIALIZESTATE_CORRUPTEDINPUT , /**< Unable to deserialize because the input data is corrupt */
-        DESERIALIZESTATE_UNABLETOUPDATE   /**< Unable to deserialize because after reading the input data successfully updating the resource failed. */
+        DESERIALIZESTATE_UNABLETOUPDATE , /**< Unable to deserialize because after reading the input data successfully updating the resource failed. */
+        DESERIALIZESTATE_NOTSUPPORTED
     };
     typedef enum EDeserializeState TDeserializeState;
     
@@ -118,45 +119,49 @@ class GUCEF_WEB_PUBLIC_CPP CIHTTPServerResource
      *  Encoding of the resource (i.e. gzip compression). Matches the HTTP:Content-Encoding field.
      *  Typical example would be zip/gzip compressed content
      */
-    virtual const CString& GetEncoding( void ) const = 0;
+    virtual const CString& GetEncoding( const CString& resourcePath ) const = 0;
 
     /**
      *  Serializes the resource into a stream according to the representation.
      */
-    virtual bool Serialize( CORE::CDynamicBuffer& outputBuffer ,
+    virtual bool Serialize( const CString& resourcePath        ,
+                            CORE::CDynamicBuffer& outputBuffer ,
                             const CString& representation      ,
                             const CString& params              ) = 0;
                     
     /**
      *   Returns a list of all representations the resource can be serialized to.
      */
-    virtual const TStringVector& GetSupportedSerializationRepresentations() = 0;
+    virtual const TStringVector& GetSupportedSerializationRepresentations( const CString& resourcePath ) = 0;
 
     /**
      *  Returns the representation that best matches a given list of representions for serialization.
      *  Returns "" in case no match can be found.
      */
-    virtual CString GetBestMatchedSerializationRepresentation( const TStringVector& representations ) = 0;
+    virtual CString GetBestMatchedSerializationRepresentation( const CString& resourcePath          ,
+                                                               const TStringVector& representations ) = 0;
 
     /**
      *  Deserialize the resource from the given stream with given resource representation.
      *  @param isDeltaUpdateOnly Signals whether we are trying to deserialize a full resource in one go or just apply a delta update
      */
-    virtual TDeserializeState Deserialize( const CORE::CDynamicBuffer& inputBuffer ,
+    virtual TDeserializeState Deserialize( const CString& resourcePath             ,
+                                           const CORE::CDynamicBuffer& inputBuffer ,
                                            const CString& representation           ,
                                            bool isDeltaUpdateOnly                  ) = 0;
 
     /**
      *   Returns a list of all representations the resource can be deserialized from.
      */
-    virtual const TStringVector& GetSupportedDeserializationRepresentations() = 0;
+    virtual const TStringVector& GetSupportedDeserializationRepresentations( const CString& resourcePath ) = 0;
 
     /**
      *  Returns the representation that best matches a given list of representions for deserialization.
      *  In common situations, this may be the same as the GetBestMatchedSerializationRepresentation(..) operation.
      *  Returns "" in case no match can be found.
      */
-    virtual CString GetBestSupportedDeserializationRepresentation( const TStringVector& representations ) = 0;
+    virtual CString GetBestSupportedDeserializationRepresentation( const CString& resourcePath          ,
+                                                                   const TStringVector& representations ) = 0;
 
     /**
      *  Create a new (contained) resource
@@ -168,7 +173,8 @@ class GUCEF_WEB_PUBLIC_CPP CIHTTPServerResource
      *  @param supportedRepresentationsOutput In case the representation is not supported for creation, this returns the list of supported representations.
      *  @return The status of the operation. See TCreateState.
      */
-    virtual TCreateState CreateResource( const CString& transactionID                  ,
+    virtual TCreateState CreateResource( const CString& resourcePath                   ,
+                                         const CString& transactionID                  ,
                                          const CORE::CDynamicBuffer& inputBuffer       ,
                                          const CString& representation                 ,
                                          const CString& params                         ,
@@ -180,24 +186,24 @@ class GUCEF_WEB_PUBLIC_CPP CIHTTPServerResource
      *
      *  @return Returns true if the resource could be deleted.
      */
-    virtual bool DeleteResource() = 0;
+    virtual bool DeleteResource( const CString& resourcePath ) = 0;
 
     /**
      *  The version of the resource (HTTP: Etag)
      */
-    virtual const CString& GetResourceVersion( void ) = 0;
+    virtual const CString& GetResourceVersion( const CString& resourcePath ) = 0;
     
-    virtual const CString& GetLastModifiedTime( void ) = 0;
+    virtual const CString& GetLastModifiedTime( const CString& resourcePath ) = 0;
 
     /**
      *  The cacheability of the resource.
      */
-    virtual const CString& GetCacheability( void ) = 0;
+    virtual const CString& GetCacheability( const CString& resourcePath ) = 0;
 
     /**
      *  Signals whether the resource is a collection of other resources
      */
-    virtual bool IsCollection( void ) const = 0;
+    virtual bool IsCollection( const CString& resourcePath ) const = 0;
 };
 
 /*-------------------------------------------------------------------------//

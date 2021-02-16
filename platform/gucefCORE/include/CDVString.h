@@ -289,9 +289,10 @@ class GUCEF_CORE_PUBLIC_CPP CString
     StringSet ParseUniqueElements( char seperator               ,
                                    bool addEmptyElements = true ) const;
 
-    bool WildcardEquals( const CString& strWithWildcards ,
-                         const char wildCardToken = '*'  ,
-                         const bool caseSensitive = true ) const;
+    bool WildcardEquals( const CString& strWithWildcards  ,
+                         const char wildCardToken = '*'   ,
+                         const bool caseSensitive = true  ,
+                         const bool biDirectional = false ) const;
 
     bool Equals( const CString& otherStr        ,
                  const bool caseSensitive = true ) const;

@@ -103,8 +103,10 @@ class RestApiProcessMetricsInfoResource : public WEB::CCodecBasedHTTPServerResou
 
     virtual ~RestApiProcessMetricsInfoResource();
 
-    virtual bool Serialize( CORE::CDataNode& output             ,
-                            const CORE::CString& representation );
+    virtual bool Serialize( const CORE::CString& resourcePath   ,
+                            CORE::CDataNode& output             ,
+                            const CORE::CString& representation ,
+                            const CORE::CString& params         ) GUCEF_VIRTUAL_OVERRIDE;
 
     private:
 
@@ -121,8 +123,10 @@ class RestApiProcessMetricsConfigResource : public WEB::CCodecBasedHTTPServerRes
 
     virtual ~RestApiProcessMetricsConfigResource();
 
-    virtual bool Serialize( CORE::CDataNode& output             ,
-                            const CORE::CString& representation );
+    virtual bool Serialize( const CORE::CString& resourcePath   , 
+                            CORE::CDataNode& output             ,
+                            const CORE::CString& representation ,
+                            const CORE::CString& params         ) GUCEF_VIRTUAL_OVERRIDE;
 
     private:
 

@@ -1535,7 +1535,8 @@ RestApiUdp2RedisInfoResource::~RestApiUdp2RedisInfoResource()
 /*-------------------------------------------------------------------------*/
 
 bool
-RestApiUdp2RedisInfoResource::Serialize( CORE::CDataNode& output             ,
+RestApiUdp2RedisInfoResource::Serialize( const CORE::CString& resourcePath   ,
+                                         CORE::CDataNode& output             ,
                                          const CORE::CString& representation ,
                                          const CORE::CString& params         )
 {GUCEF_TRACE;
@@ -1573,7 +1574,8 @@ RestApiUdp2RedisConfigResource::~RestApiUdp2RedisConfigResource()
 /*-------------------------------------------------------------------------*/
 
 bool
-RestApiUdp2RedisConfigResource::Serialize( CORE::CDataNode& output             ,
+RestApiUdp2RedisConfigResource::Serialize( const CORE::CString& resourcePath   ,
+                                           CORE::CDataNode& output             ,
                                            const CORE::CString& representation ,
                                            const CORE::CString& params         )
 {GUCEF_TRACE;
@@ -1594,7 +1596,8 @@ RestApiUdp2RedisConfigResource::Serialize( CORE::CDataNode& output             ,
 /*-------------------------------------------------------------------------*/
 
 RestApiUdp2RedisConfigResource::TDeserializeState
-RestApiUdp2RedisConfigResource::Deserialize( const CORE::CDataNode& input        ,
+RestApiUdp2RedisConfigResource::Deserialize( const CORE::CString& resourcePath   ,
+                                             const CORE::CDataNode& input        ,
                                              const CORE::CString& representation ,
                                              bool isDeltaUpdateOnly              )
 {GUCEF_TRACE;

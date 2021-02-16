@@ -379,7 +379,8 @@ class RestApiUdp2RedisInfoResource : public WEB::CCodecBasedHTTPServerResource
 
     virtual ~RestApiUdp2RedisInfoResource();
 
-    virtual bool Serialize( CORE::CDataNode& output             ,
+    virtual bool Serialize( const CORE::CString& resourcePath   ,
+                            CORE::CDataNode& output             ,
                             const CORE::CString& representation ,
                             const CORE::CString& params         ) GUCEF_VIRTUAL_OVERRIDE;
 
@@ -398,11 +399,13 @@ class RestApiUdp2RedisConfigResource : public WEB::CCodecBasedHTTPServerResource
 
     virtual ~RestApiUdp2RedisConfigResource();
 
-    virtual bool Serialize( CORE::CDataNode& output             ,
+    virtual bool Serialize( const CORE::CString& resourcePath   ,
+                            CORE::CDataNode& output             ,
                             const CORE::CString& representation ,
                             const CORE::CString& params         ) GUCEF_VIRTUAL_OVERRIDE;
 
-    virtual TDeserializeState Deserialize( const CORE::CDataNode& input        ,
+    virtual TDeserializeState Deserialize( const CORE::CString& resourcePath   ,
+                                           const CORE::CDataNode& input        ,
                                            const CORE::CString& representation ,
                                            bool isDeltaUpdateOnly              ) GUCEF_VIRTUAL_OVERRIDE;
 

@@ -320,7 +320,8 @@ class RestApiUdp2KafkaInfoResource : public WEB::CCodecBasedHTTPServerResource
 
     virtual ~RestApiUdp2KafkaInfoResource();
 
-    virtual bool Serialize( CORE::CDataNode& output             ,
+    virtual bool Serialize( const CORE::CString& resourcePath   ,
+                            CORE::CDataNode& output             ,
                             const CORE::CString& representation ,
                             const CORE::CString& params         ) GUCEF_VIRTUAL_OVERRIDE;
 
@@ -339,7 +340,8 @@ class RestApiUdp2KafkaConfigResource : public WEB::CCodecBasedHTTPServerResource
 
     virtual ~RestApiUdp2KafkaConfigResource();
 
-    virtual bool Serialize( CORE::CDataNode& output             ,
+    virtual bool Serialize( const CORE::CString& resourcePath   ,
+                            CORE::CDataNode& output             ,
                             const CORE::CString& representation ,
                             const CORE::CString& params         ) GUCEF_VIRTUAL_OVERRIDE;
 

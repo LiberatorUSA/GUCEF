@@ -1,5 +1,5 @@
 /*
- *  Udp2Redis: service which pushes UDP packets into kafka topics
+ *  UdpViaTcp: service to bridge UDP over a TCP connection
  *
  *  This library is free software; you can redistribute it and/or
  *  modify it under the terms of the GNU Lesser General Public
@@ -103,7 +103,8 @@ class RestApiUdpViaTcpInfoResource : public WEB::CCodecBasedHTTPServerResource
 
     virtual ~RestApiUdpViaTcpInfoResource();
 
-    virtual bool Serialize( CORE::CDataNode& output             ,
+    virtual bool Serialize( const CORE::CString& resourcePath   ,
+                            CORE::CDataNode& output             ,
                             const CORE::CString& representation );
 
     private:
@@ -121,7 +122,8 @@ class RestApiUdpViaTcpConfigResource : public WEB::CCodecBasedHTTPServerResource
 
     virtual ~RestApiUdpViaTcpConfigResource();
 
-    virtual bool Serialize( CORE::CDataNode& output             ,
+    virtual bool Serialize( const CORE::CString& resourcePath   ,
+                            CORE::CDataNode& output             ,
                             const CORE::CString& representation );
 
     private:

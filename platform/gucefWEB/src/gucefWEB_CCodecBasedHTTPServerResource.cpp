@@ -118,7 +118,8 @@ CCodecBasedHTTPServerResource::InitCodecLinks( void )
 /*-------------------------------------------------------------------------*/
 
 CCodecBasedHTTPServerResource::TCreateState 
-CCodecBasedHTTPServerResource::CreateResource( const CString& transactionID                  ,
+CCodecBasedHTTPServerResource::CreateResource( const CString& resourcePath                   ,
+                                               const CString& transactionID                  ,
                                                const CORE::CDynamicBuffer& inputBuffer       ,
                                                const CString& representation                 ,
                                                const CString& params                         ,
@@ -137,7 +138,8 @@ CCodecBasedHTTPServerResource::CreateResource( const CString& transactionID     
         CORE::CDynamicBufferAccess bufferIoAccess( inputBuffer );
         if ( codec->BuildDataTree( &rootNode, &bufferIoAccess ) )
         {
-            return CreateResource( transactionID                  , 
+            return CreateResource( resourcePath                   ,
+                                   transactionID                  , 
                                    rootNode                       , 
                                    representation                 , 
                                    params                         ,
@@ -151,7 +153,8 @@ CCodecBasedHTTPServerResource::CreateResource( const CString& transactionID     
 /*-------------------------------------------------------------------------*/
 
 CCodecBasedHTTPServerResource::TCreateState 
-CCodecBasedHTTPServerResource::CreateResource( const CString& transactionID                  ,
+CCodecBasedHTTPServerResource::CreateResource( const CString& resourcePath                   ,
+                                               const CString& transactionID                  ,
                                                const CORE::CDataNode& input                  ,
                                                const CString& representation                 ,
                                                const CString& params                         ,
@@ -167,7 +170,8 @@ CCodecBasedHTTPServerResource::CreateResource( const CString& transactionID     
 /*-------------------------------------------------------------------------*/
 
 bool 
-CCodecBasedHTTPServerResource::Serialize( CORE::CDynamicBuffer& outputBuffer ,
+CCodecBasedHTTPServerResource::Serialize( const CString& resourcePath        ,
+                                          CORE::CDynamicBuffer& outputBuffer ,
                                           const CString& representation      ,
                                           const CString& params              )
 {GUCEF_TRACE;
@@ -180,7 +184,7 @@ CCodecBasedHTTPServerResource::Serialize( CORE::CDynamicBuffer& outputBuffer ,
     if ( !codec.IsNULL() )
     {        
         CORE::CDataNode rootNode;
-        if ( Serialize( rootNode, representation, params ) )
+        if ( Serialize( resourcePath, rootNode, representation, params ) )
         {        
             CORE::CDynamicBufferAccess bufferIoAccess( &outputBuffer, false );
             if ( codec->StoreDataTree( &rootNode, &bufferIoAccess ) )
@@ -195,7 +199,8 @@ CCodecBasedHTTPServerResource::Serialize( CORE::CDynamicBuffer& outputBuffer ,
 /*-------------------------------------------------------------------------*/
 
 bool
-CCodecBasedHTTPServerResource::Serialize( CORE::CDataNode& output             ,
+CCodecBasedHTTPServerResource::Serialize( const CString& resourcePath         ,
+                                          CORE::CDataNode& output             ,
                                           const CORE::CString& representation ,
                                           const CString& params               )
 {
@@ -205,7 +210,8 @@ CCodecBasedHTTPServerResource::Serialize( CORE::CDataNode& output             ,
 /*-------------------------------------------------------------------------*/
 
 CCodecBasedHTTPServerResource::TDeserializeState 
-CCodecBasedHTTPServerResource::Deserialize( const CORE::CDynamicBuffer& inputBuffer ,
+CCodecBasedHTTPServerResource::Deserialize( const CString& resourcePath             ,
+                                            const CORE::CDynamicBuffer& inputBuffer ,
                                             const CString& representation           ,
                                             bool isDeltaUpdateOnly                  )
 {GUCEF_TRACE;
@@ -221,7 +227,7 @@ CCodecBasedHTTPServerResource::Deserialize( const CORE::CDynamicBuffer& inputBuf
         CORE::CDynamicBufferAccess bufferIoAccess( inputBuffer );
         if ( codec->BuildDataTree( &rootNode, &bufferIoAccess ) )
         {
-            return Deserialize( rootNode, representation, isDeltaUpdateOnly );
+            return Deserialize( resourcePath, rootNode, representation, isDeltaUpdateOnly );
         }
     }
     return TDeserializeState::DESERIALIZESTATE_UNABLETOUPDATE;
@@ -230,7 +236,8 @@ CCodecBasedHTTPServerResource::Deserialize( const CORE::CDynamicBuffer& inputBuf
 /*-------------------------------------------------------------------------*/
 
 CCodecBasedHTTPServerResource::TDeserializeState 
-CCodecBasedHTTPServerResource::Deserialize( const CORE::CDataNode& input  ,
+CCodecBasedHTTPServerResource::Deserialize( const CString& resourcePath   ,
+                                            const CORE::CDataNode& input  ,
                                             const CString& representation ,
                                             bool isDeltaUpdateOnly        )
 {

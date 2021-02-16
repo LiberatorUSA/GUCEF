@@ -23,7 +23,17 @@
 //                                                                         //
 //-------------------------------------------------------------------------*/
 
-#include "gucefWEB_CDummyHTTPServerResource.h"
+#ifndef GUCEF_VFS_CVFSGLOBAL_H
+#include "gucefVFS_CVfsGlobal.h"
+#define GUCEF_VFS_CVFSGLOBAL_H
+#endif /* GUCEF_VFS_CVFSGLOBAL_H ? */
+
+#ifndef GUCEF_VFS_CVFS_H
+#include "gucefVFS_CVFS.h" 
+#define GUCEF_VFS_CVFS_H
+#endif /* GUCEF_VFS_CVFS_H ? */
+
+#include "gucefWEB_CVfsHttpServerResource.h"
 
 /*-------------------------------------------------------------------------//
 //                                                                         //
@@ -40,7 +50,7 @@ namespace WEB {
 //                                                                         //
 //-------------------------------------------------------------------------*/
 
-CDummyHTTPServerResource::CDummyHTTPServerResource( void )
+CVfsHttpServerResource::CVfsHttpServerResource( void )
     : CDefaultHTTPServerResource()
 {GUCEF_TRACE;
 
@@ -48,7 +58,7 @@ CDummyHTTPServerResource::CDummyHTTPServerResource( void )
 
 /*-------------------------------------------------------------------------*/
     
-CDummyHTTPServerResource::CDummyHTTPServerResource( const CDummyHTTPServerResource& src )
+CVfsHttpServerResource::CVfsHttpServerResource( const CVfsHttpServerResource& src )
     : CDefaultHTTPServerResource( src )
 {GUCEF_TRACE;
 
@@ -56,15 +66,15 @@ CDummyHTTPServerResource::CDummyHTTPServerResource( const CDummyHTTPServerResour
 
 /*-------------------------------------------------------------------------*/
     
-CDummyHTTPServerResource::~CDummyHTTPServerResource()
+CVfsHttpServerResource::~CVfsHttpServerResource()
 {GUCEF_TRACE;
 
 }
 
 /*-------------------------------------------------------------------------*/
     
-CDummyHTTPServerResource&
-CDummyHTTPServerResource::operator=( const CDummyHTTPServerResource& src )
+CVfsHttpServerResource&
+CVfsHttpServerResource::operator=( const CVfsHttpServerResource& src )
 {GUCEF_TRACE;
 
     CDefaultHTTPServerResource::operator=( src );
@@ -74,8 +84,8 @@ CDummyHTTPServerResource::operator=( const CDummyHTTPServerResource& src )
 /*-------------------------------------------------------------------------*/
 
 CString 
-CDummyHTTPServerResource::GetBestMatchedSerializationRepresentation( const CORE::CString& resourcePath                              ,
-                                                                     const CDummyHTTPServerResource::TStringVector& representations )
+CVfsHttpServerResource::GetBestMatchedSerializationRepresentation( const CORE::CString& resourcePath                            ,
+                                                                   const CVfsHttpServerResource::TStringVector& representations )
 {GUCEF_TRACE;
 
     if ( !representations.empty() )
@@ -90,8 +100,8 @@ CDummyHTTPServerResource::GetBestMatchedSerializationRepresentation( const CORE:
 /*-------------------------------------------------------------------------*/
 
 CString 
-CDummyHTTPServerResource::GetBestSupportedDeserializationRepresentation( const CORE::CString& resourcePath    ,
-                                                                         const TStringVector& representations )
+CVfsHttpServerResource::GetBestSupportedDeserializationRepresentation( const CORE::CString& resourcePath    ,
+                                                                       const TStringVector& representations )
 {GUCEF_TRACE;
 
     if ( !representations.empty() )
@@ -105,14 +115,14 @@ CDummyHTTPServerResource::GetBestSupportedDeserializationRepresentation( const C
 
 /*-------------------------------------------------------------------------*/
 
-CDummyHTTPServerResource::TCreateState 
-CDummyHTTPServerResource::CreateResource( const CORE::CString& resourcePath             ,
-                                          const CString& transactionID                  ,
-                                          const CORE::CDynamicBuffer& inputBuffer       ,
-                                          const CString& representation                 ,
-                                          const CString& params                         ,
-                                          THTTPServerResourcePtr& resourceOutput        ,
-                                          TStringVector& supportedRepresentationsOutput )
+CVfsHttpServerResource::TCreateState 
+CVfsHttpServerResource::CreateResource( const CORE::CString& resourcePath             ,
+                                        const CString& transactionID                  ,
+                                        const CORE::CDynamicBuffer& inputBuffer       ,
+                                        const CString& representation                 ,
+                                        const CString& params                         ,
+                                        THTTPServerResourcePtr& resourceOutput        ,
+                                        TStringVector& supportedRepresentationsOutput )
 {GUCEF_TRACE;
 
     // For the dummy resource everything always fake succeeds
@@ -122,36 +132,39 @@ CDummyHTTPServerResource::CreateResource( const CORE::CString& resourcePath     
 /*-------------------------------------------------------------------------*/
     
 bool 
-CDummyHTTPServerResource::DeleteResource( const CORE::CString& resourcePath )
+CVfsHttpServerResource::DeleteResource( const CORE::CString& resourcePath )
 {GUCEF_TRACE;
 
     // For the dummy resource everything always fake succeeds
-    return true;
+    return VFS::CVfsGlobal::Instance()->GetVfs().DeleteFile( resourcePath, true );
 }
 
 /*-------------------------------------------------------------------------*/
 
 bool 
-CDummyHTTPServerResource::Serialize( const CORE::CString& resourcePath  ,
-                                     CORE::CDynamicBuffer& outputBuffer ,
-                                     const CString& representation      ,
-                                     const CString& params              )
+CVfsHttpServerResource::Serialize( const CORE::CString& resourcePath  ,
+                                   CORE::CDynamicBuffer& outputBuffer ,
+                                   const CString& representation      ,
+                                   const CString& params              )
 {GUCEF_TRACE;
 
-    // For the dummy resource everything always fake succeeds
+    bool success = VFS::CVfsGlobal::Instance()->GetVfs().LoadFile( outputBuffer, resourcePath, "rb" );
     return true;
 }
 
 /*-------------------------------------------------------------------------*/
 
-CDummyHTTPServerResource::TDeserializeState 
-CDummyHTTPServerResource::Deserialize( const CORE::CString& resourcePath       ,
-                                       const CORE::CDynamicBuffer& inputBuffer ,
-                                       const CString& representation           ,
-                                       bool isDeltaUpdateOnly                  )
+CVfsHttpServerResource::TDeserializeState 
+CVfsHttpServerResource::Deserialize( const CORE::CString& resourcePath       ,
+                                     const CORE::CDynamicBuffer& inputBuffer ,
+                                     const CString& representation           ,
+                                     bool isDeltaUpdateOnly                  )
 {GUCEF_TRACE;
 
-    // For the dummy resource everything always fake succeeds
+    if ( isDeltaUpdateOnly )
+        return TDeserializeState::DESERIALIZESTATE_NOTSUPPORTED;
+    
+    bool success = VFS::CVfsGlobal::Instance()->GetVfs().StoreAsFile( resourcePath, inputBuffer, 0, true );
     return TDeserializeState::DESERIALIZESTATE_SUCCEEDED;
 }
 
@@ -161,7 +174,7 @@ CDummyHTTPServerResource::Deserialize( const CORE::CString& resourcePath       ,
 //                                                                         //
 //-------------------------------------------------------------------------*/
 
-} /* namespace COM */
+} /* namespace WEB */
 } /* namespace GUCEF */
 
 /*-------------------------------------------------------------------------*/

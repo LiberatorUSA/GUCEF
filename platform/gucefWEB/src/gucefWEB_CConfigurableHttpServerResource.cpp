@@ -87,7 +87,8 @@ CConfigurableHttpServerResource::operator=( const CConfigurableHttpServerResourc
 /*-------------------------------------------------------------------------*/
 
 bool 
-CConfigurableHttpServerResource::Serialize( CORE::CDataNode& output             ,
+CConfigurableHttpServerResource::Serialize( const CString& resourcePath         ,
+                                            CORE::CDataNode& output             ,
                                             const CORE::CString& representation ,
                                             const CString& params               )
 {GUCEF_TRACE;
@@ -102,7 +103,8 @@ CConfigurableHttpServerResource::Serialize( CORE::CDataNode& output             
 /*-------------------------------------------------------------------------*/
 
 CConfigurableHttpServerResource::TDeserializeState 
-CConfigurableHttpServerResource::Deserialize( const CORE::CDataNode& input  ,
+CConfigurableHttpServerResource::Deserialize( const CString& resourcePath   ,
+                                              const CORE::CDataNode& input  ,
                                               const CString& representation ,
                                               bool isDeltaUpdateOnly        )
 {GUCEF_TRACE;

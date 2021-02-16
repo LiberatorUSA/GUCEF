@@ -120,7 +120,7 @@ CDefaultHTTPServerResource::GetURL( void ) const
 /*-------------------------------------------------------------------------*/
 
 const CString& 
-CDefaultHTTPServerResource::GetEncoding( void ) const
+CDefaultHTTPServerResource::GetEncoding( const CORE::CString& resourcePath ) const
 {GUCEF_TRACE;
 
     return m_encodingProperty;
@@ -129,7 +129,7 @@ CDefaultHTTPServerResource::GetEncoding( void ) const
 /*-------------------------------------------------------------------------*/
                     
 const CDefaultHTTPServerResource::TStringVector& 
-CDefaultHTTPServerResource::GetSupportedSerializationRepresentations()
+CDefaultHTTPServerResource::GetSupportedSerializationRepresentations( const CORE::CString& resourcePath )
 {GUCEF_TRACE;
 
     return m_serializationReps;
@@ -138,7 +138,8 @@ CDefaultHTTPServerResource::GetSupportedSerializationRepresentations()
 /*-------------------------------------------------------------------------*/
 
 CString 
-CDefaultHTTPServerResource::GetBestMatchedSerializationRepresentation( const CDefaultHTTPServerResource::TStringVector& representations )
+CDefaultHTTPServerResource::GetBestMatchedSerializationRepresentation( const CORE::CString& resourcePath                                ,
+                                                                       const CDefaultHTTPServerResource::TStringVector& representations )
 {GUCEF_TRACE;
 
     if ( m_serializationReps.empty() )
@@ -185,7 +186,7 @@ CDefaultHTTPServerResource::GetBestMatchedSerializationRepresentation( const CDe
 /*-------------------------------------------------------------------------*/
 
 const CDefaultHTTPServerResource::TStringVector& 
-CDefaultHTTPServerResource::GetSupportedDeserializationRepresentations()
+CDefaultHTTPServerResource::GetSupportedDeserializationRepresentations( const CORE::CString& resourcePath )
 {GUCEF_TRACE;
 
     return m_deserializationReps;
@@ -194,7 +195,8 @@ CDefaultHTTPServerResource::GetSupportedDeserializationRepresentations()
 /*-------------------------------------------------------------------------*/
 
 CString 
-CDefaultHTTPServerResource::GetBestSupportedDeserializationRepresentation( const TStringVector& representations )
+CDefaultHTTPServerResource::GetBestSupportedDeserializationRepresentation( const CORE::CString& resourcePath    ,
+                                                                           const TStringVector& representations )
 {GUCEF_TRACE;
 
     // The default assumption is that representations have been stored in order of most desireable
@@ -225,7 +227,8 @@ CDefaultHTTPServerResource::GetBestSupportedDeserializationRepresentation( const
 /*-------------------------------------------------------------------------*/
 
 CDefaultHTTPServerResource::TCreateState 
-CDefaultHTTPServerResource::CreateResource( const CString& transactionID                  ,
+CDefaultHTTPServerResource::CreateResource( const CORE::CString& resourcePath             ,
+                                            const CString& transactionID                  ,
                                             const CORE::CDynamicBuffer& inputBuffer       ,
                                             const CString& representation                 ,
                                             const CString& params                         ,
@@ -241,7 +244,7 @@ CDefaultHTTPServerResource::CreateResource( const CString& transactionID        
 /*-------------------------------------------------------------------------*/
     
 bool 
-CDefaultHTTPServerResource::DeleteResource()
+CDefaultHTTPServerResource::DeleteResource( const CORE::CString& resourcePath )
 {GUCEF_TRACE;
 
     // By default we don't allow or implement more complex interaction patterns
@@ -252,7 +255,7 @@ CDefaultHTTPServerResource::DeleteResource()
 /*-------------------------------------------------------------------------*/
 
 const CString& 
-CDefaultHTTPServerResource::GetResourceVersion( void )
+CDefaultHTTPServerResource::GetResourceVersion( const CORE::CString& resourcePath )
 {GUCEF_TRACE;
 
     return m_resourceVersionProperty;
@@ -261,7 +264,7 @@ CDefaultHTTPServerResource::GetResourceVersion( void )
 /*-------------------------------------------------------------------------*/
     
 const CString& 
-CDefaultHTTPServerResource::GetLastModifiedTime( void )
+CDefaultHTTPServerResource::GetLastModifiedTime( const CORE::CString& resourcePath )
 {GUCEF_TRACE;
 
     return m_lastModifiedProperty;
@@ -270,7 +273,7 @@ CDefaultHTTPServerResource::GetLastModifiedTime( void )
 /*-------------------------------------------------------------------------*/
 
 const CString& 
-CDefaultHTTPServerResource::GetCacheability( void )
+CDefaultHTTPServerResource::GetCacheability( const CORE::CString& resourcePath )
 {GUCEF_TRACE;
 
     return m_cacheabilityProperty;
@@ -279,7 +282,8 @@ CDefaultHTTPServerResource::GetCacheability( void )
 /*-------------------------------------------------------------------------*/
 
 bool 
-CDefaultHTTPServerResource::Serialize( CORE::CDynamicBuffer& outputBuffer ,
+CDefaultHTTPServerResource::Serialize( const CORE::CString& resourcePath  ,
+                                       CORE::CDynamicBuffer& outputBuffer ,
                                        const CString& representation      ,
                                        const CString& params              )
 {GUCEF_TRACE;
@@ -290,7 +294,8 @@ CDefaultHTTPServerResource::Serialize( CORE::CDynamicBuffer& outputBuffer ,
 /*-------------------------------------------------------------------------*/
 
 CDefaultHTTPServerResource::TDeserializeState 
-CDefaultHTTPServerResource::Deserialize( const CORE::CDynamicBuffer& inputBuffer ,
+CDefaultHTTPServerResource::Deserialize( const CORE::CString& resourcePath       ,
+                                         const CORE::CDynamicBuffer& inputBuffer ,
                                          const CString& representation           ,
                                          bool isDeltaUpdateOnly                  )
 {GUCEF_TRACE;
@@ -301,7 +306,7 @@ CDefaultHTTPServerResource::Deserialize( const CORE::CDynamicBuffer& inputBuffer
 /*-------------------------------------------------------------------------*/
 
 bool 
-CDefaultHTTPServerResource::IsCollection( void ) const
+CDefaultHTTPServerResource::IsCollection( const CORE::CString& resourcePath ) const
 {GUCEF_TRACE;
 
     return false;

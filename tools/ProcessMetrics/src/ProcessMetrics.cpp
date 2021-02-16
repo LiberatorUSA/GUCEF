@@ -77,8 +77,10 @@ RestApiProcessMetricsInfoResource::~RestApiProcessMetricsInfoResource()
 /*-------------------------------------------------------------------------*/
 
 bool
-RestApiProcessMetricsInfoResource::Serialize( CORE::CDataNode& output             ,
-                                         const CORE::CString& representation )
+RestApiProcessMetricsInfoResource::Serialize( const CORE::CString& resourcePath   ,
+                                              CORE::CDataNode& output             ,
+                                              const CORE::CString& representation ,
+                                              const CORE::CString& params         )
 {GUCEF_TRACE;
 
     output.SetName( "info" );
@@ -113,8 +115,10 @@ RestApiProcessMetricsConfigResource::~RestApiProcessMetricsConfigResource()
 /*-------------------------------------------------------------------------*/
 
 bool
-RestApiProcessMetricsConfigResource::Serialize( CORE::CDataNode& output             ,
-                                                const CORE::CString& representation )
+RestApiProcessMetricsConfigResource::Serialize( const CORE::CString& resourcePath   ,
+                                                CORE::CDataNode& output             ,
+                                                const CORE::CString& representation ,
+                                                const CORE::CString& params         )
 {GUCEF_TRACE;
 
     if ( m_appConfig )

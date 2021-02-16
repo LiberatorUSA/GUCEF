@@ -63,7 +63,8 @@ class GUCEF_WEB_PUBLIC_CPP CConfigurableHttpServerResource : public CCodecBasedH
     
     CConfigurableHttpServerResource& operator=( const CConfigurableHttpServerResource& src );
 
-    virtual bool Serialize( CORE::CDataNode& output             ,
+    virtual bool Serialize( const CString& resourcePath         ,
+                            CORE::CDataNode& output             ,
                             const CORE::CString& representation ,
                             const CString& params               ) GUCEF_VIRTUAL_OVERRIDE;
 
@@ -71,7 +72,8 @@ class GUCEF_WEB_PUBLIC_CPP CConfigurableHttpServerResource : public CCodecBasedH
      *  Deserialize the resource from the given data tree 
      *  @param isDeltaUpdateOnly Signals whether we are trying to deserialize a full resource in one go or just apply a delta update
      */
-    virtual TDeserializeState Deserialize( const CORE::CDataNode& input  ,
+    virtual TDeserializeState Deserialize( const CString& resourcePath   ,
+                                           const CORE::CDataNode& input  ,
                                            const CString& representation ,
                                            bool isDeltaUpdateOnly        ) GUCEF_VIRTUAL_OVERRIDE;
 
