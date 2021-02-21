@@ -187,6 +187,7 @@ set( HEADER_FILES
   include/gucefCORE_CTEventHandlerFunctor.h
   include/gucefCORE_CTaskDelegator.h
   include/gucefCORE_CTaskManager.h
+  include/gucefCORE_CThreadPool.h
   include/gucefCORE_CTime.h
   include/gucefCORE_CVersion.h
   include/gucefCORE_CVersionRange.h
@@ -372,6 +373,7 @@ set( SOURCE_FILES
   src/gucefCORE_CTEventHandlerFunctor.cpp
   src/gucefCORE_CTaskDelegator.cpp
   src/gucefCORE_CTaskManager.cpp
+  src/gucefCORE_CThreadPool.cpp
   src/gucefCORE_CTime.cpp
   src/gucefCORE_CVersion.cpp
   src/gucefCORE_CVersionRange.cpp

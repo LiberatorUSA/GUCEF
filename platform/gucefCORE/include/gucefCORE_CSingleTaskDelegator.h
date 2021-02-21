@@ -46,7 +46,7 @@ namespace CORE {
 //                                                                         //
 //-------------------------------------------------------------------------*/
 
-class CTaskManager;
+class CThreadPool;
 class CTaskConsumer;
 
 /*-------------------------------------------------------------------------*/
@@ -58,9 +58,10 @@ class CTaskConsumer;
 class GUCEF_CORE_PRIVATE_CPP CSingleTaskDelegator : public CTaskDelegator
 {
     private:
-    friend class CTaskManager;
+    friend class CThreadPool;
 
-    CSingleTaskDelegator( CTaskConsumerPtr taskConsumer ,
+    CSingleTaskDelegator( CThreadPool* threadPool       ,
+                          CTaskConsumerPtr taskConsumer ,
                           CICloneable* taskData         );
 
     virtual ~CSingleTaskDelegator();

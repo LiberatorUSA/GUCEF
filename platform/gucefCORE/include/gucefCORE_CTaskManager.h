@@ -26,27 +26,10 @@
 //                                                                         //
 //-------------------------------------------------------------------------*/
 
-#include <map>
-
-#ifndef GUCEF_MT_CTMAILBOX_H
-#include "gucefMT_CTMailBox.h"
-#define GUCEF_MT_CTMAILBOX_H
-#endif /* GUCEF_MT_CTMAILBOX_H ? */
-
-#ifndef GUCEF_CORE_CTSGNOTIFIER_H
-#include "CTSGNotifier.h"
-#define GUCEF_CORE_CTSGNOTIFIER_H
-#endif /* GUCEF_CORE_CTSGNOTIFIER_H ? */
-
-#ifndef GUCEF_CORE_CTABSTRACTFACTORY_H
-#include "CTAbstractFactory.h"
-#define GUCEF_CORE_CTABSTRACTFACTORY_H
-#endif /* GUCEF_CORE_CTABSTRACTFACTORY_H ? */
-
-#ifndef GUCEF_CORE_CITASKCONSUMER_H
-#include "gucefCORE_CITaskConsumer.h"
-#define GUCEF_CORE_CITASKCONSUMER_H
-#endif /* GUCEF_CORE_CITASKCONSUMER_H ? */
+#ifndef GUCEF_CORE_CTHREADPOOL_H
+#include "gucefCORE_CThreadPool.h"
+#define GUCEF_CORE_CTHREADPOOL_H
+#endif /* GUCEF_CORE_CTHREADPOOL_H ? */
 
 /*-------------------------------------------------------------------------//
 //                                                                         //
@@ -81,114 +64,33 @@ class GUCEF_CORE_PUBLIC_CPP CTaskManager : public CTSGNotifier
 {
     public:
 
-    static const CEvent ThreadKilledEvent;
-    static const CEvent ThreadStartedEvent;
-    static const CEvent ThreadPausedEvent;
-    static const CEvent ThreadResumedEvent;
-    static const CEvent ThreadFinishedEvent;
+    typedef CThreadPool::TTaskConsumerFactory TTaskConsumerFactory;
 
-    static const CEvent TaskQueuedEvent;
-    static const CEvent QueuedTaskStartedEvent;
-    static const CEvent TaskStartedEvent;
-    static const CEvent TaskStartupFailedEvent;
-    static const CEvent TaskKilledEvent;
-    static const CEvent TaskStoppedEvent;
-    static const CEvent TaskPausedEvent;
-    static const CEvent TaskResumedEvent;
-    static const CEvent TaskFinishedEvent;
+    static const CString DefaultTreadPoolName; 
 
-    static void RegisterEvents( void );
+    ThreadPoolPtr GetThreadPool( const CString& threadPoolName = DefaultTreadPoolName ) const;
 
-    public:
-
-    typedef CTFactoryBase< CTaskConsumer > TTaskConsumerFactory;
-
-    /**
-     *  Queues a task for execution as soon as a thread is available
-     *  to execute it.
-     *
-     *  @param assumeOwnershipOfTaskData Whether the taskData given (if any) needs a private copy or whether the task manager can assume ownership
-     */
-    bool QueueTask( const CString& taskType                        ,
-                    CICloneable* taskData = GUCEF_NULL             ,
-                    CTaskConsumerPtr* outTaskConsumer = GUCEF_NULL ,
-                    CObserver* taskObserver = GUCEF_NULL           ,
-                    bool assumeOwnershipOfTaskData = false         );
-
-    /**
-     *  Immediatly starts executing a task using the task
-     *  information provided. Based on the provided information
-     *  a task consumer will be constructed to actually carry out the task
-     */
-    bool StartTask( const CString& taskType                        ,
-                    CICloneable* taskData = GUCEF_NULL             ,
-                    CTaskConsumerPtr* outTaskConsumer = GUCEF_NULL );
-
-    /**
-     *  Immediatly starts executing a task using the task
-     *  consumer provided.
-     */
-    bool StartTask( CTaskConsumerPtr task              ,
-                    CICloneable* taskData = GUCEF_NULL );
-
-    bool PauseTask( const UInt32 taskID ,
-                    const bool force    );
-
-    bool ResumeTask( const UInt32 taskID );
-
-    bool RequestTaskToStop( const UInt32 taskId   , 
-                            bool callerShouldWait );
-
-    bool RequestTaskToStop( CTaskConsumerPtr taskConsumer ,
-                            bool callerShouldWait         );
-
-    bool WaitForTaskToFinish( const UInt32 taskId, Int32 timeoutInMs );
-
-    bool WaitForTaskToFinish( CTaskConsumerPtr taskConsumer, Int32 timeoutInMs );
-
-    bool KillTask( const UInt32 taskID );
-
-    void SetNrOfThreadsToLogicalCPUs( const UInt32 coreFactor );
-
-    void SetNrOfThreads( const UInt32 nrOfThreads );
-
-    UInt32 GetNrOfThreads( void ) const;
-
-    void RequestAllTasksToStop( bool waitOnStop, bool acceptNewWork );
-
-    void RequestAllThreadsToStop( bool waitOnStop, bool acceptNewWork );
+    ThreadPoolPtr GetOrCreateThreadPool( const CString& threadPoolName , 
+                                         bool createIfNotExists = true );
 
     void RegisterTaskConsumerFactory( const CString& taskType       ,
                                       TTaskConsumerFactory* factory );
 
     void UnregisterTaskConsumerFactory( const CString& taskType );
 
+    UInt32 GetGlobalNrOfThreads( void ) const;
+
+    void RequestAllThreadsToStop( bool waitOnStop, bool acceptNewWork );
+
     virtual const CString& GetClassTypeName( void ) const  GUCEF_VIRTUAL_OVERRIDE;
 
-    bool GetTaskIdForThreadId( const UInt32 threadId ,
-                               UInt32& taskId        ) const;
-
-    bool GetThreadIdForTaskId( const UInt32 taskId ,
-                               UInt32& threadId    ) const;
+    CTaskConsumerPtr CreateTaskConsumer( const CString& taskType );
 
     protected:
 
     virtual void OnPumpedNotify( CNotifier* notifier           ,
                                  const CEvent& eventid         ,
                                  CICloneable* eventdata = NULL ) GUCEF_VIRTUAL_OVERRIDE;
-
-    private:
-    friend class CTaskDelegator;
-
-    void RegisterTaskDelegator( CTaskDelegator& delegator );
-
-    void UnregisterTaskDelegator( CTaskDelegator& delegator );
-
-    bool GetQueuedTask( CTaskConsumerPtr& taskConsumer ,
-                        CICloneable** taskData         );
-
-    void TaskCleanup( CTaskConsumerPtr taskConsumer ,
-                      CICloneable* taskData         );
 
     private:
     friend class CTaskConsumer;
@@ -206,57 +108,22 @@ class GUCEF_CORE_PUBLIC_CPP CTaskManager : public CTSGNotifier
 
     private:
 
-    class CTaskQueueItem : public CICloneable
-    {
-        public:
+    void RemoveConsumerFromQueues( UInt32 taskID );
 
-        CTaskQueueItem( CTaskConsumerPtr consumer      ,
-                        CICloneable* taskData          ,
-                        bool assumeOwnershipOfTaskData );
-
-        CTaskQueueItem( CTaskQueueItem& src );
-
-        virtual ~CTaskQueueItem();
-
-        CTaskConsumerPtr& GetTaskConsumer( void );
-
-        CICloneable* GetTaskData( void );
-
-        virtual CICloneable* Clone( void ) const GUCEF_VIRTUAL_OVERRIDE;
-
-        private:
-        CICloneable* m_taskData;
-        CTaskConsumerPtr m_taskConsumer;
-        bool m_assumeOwnershipOfTaskData;
-    };
+    CTaskManager( const CTaskManager& src );            /**< not implemented */
+    CTaskManager& operator=( const CTaskManager& src ); /**< not implemented */
 
     private:
 
-    void EnforceDesiredNrOfThreads( UInt32 desiredNrOfThreads ,
-                                    bool gracefullEnforcement );
-
-    void RemoveConsumerFromQueue( const UInt32 taskID );
-
-    CTaskManager( const CTaskManager& src );
-
-    CTaskManager& operator=( const CTaskManager& src );
-
-    private:
-
+    typedef std::map< CString, ThreadPoolPtr > ThreadPoolMap;
     typedef CTAbstractFactory< CString, CTaskConsumer > TAbstractTaskConsumerFactory;
-    typedef MT::CTMailBox< CString > TTaskMailbox;
-    typedef std::map< UInt32, CTaskConsumerPtr > TTaskConsumerMap;
-    typedef std::set< CTaskDelegator* > TTaskDelegatorSet;
     typedef CTaskConsumer::TTaskIdGenerator TTaskIdGenerator;
 
-    TAbstractTaskConsumerFactory m_consumerFactory;
-    UInt32 m_desiredNrOfThreads;
-    Int32 m_activeNrOfThreads;
-    TTaskMailbox m_taskQueue;
     TTaskIdGenerator m_taskIdGenerator;
-    TTaskConsumerMap m_taskConsumerMap;
-    TTaskDelegatorSet m_taskDelegators;
-    bool m_acceptNewWork;
+    TAbstractTaskConsumerFactory m_consumerFactory;
+    ThreadPoolMap m_threadPools;
+    UInt32 m_desiredGlobalNrOfThreads;
+    Int32 m_activeGlobalNrOfThreads;
 };
 
 /*-------------------------------------------------------------------------//

@@ -61,6 +61,7 @@ namespace CORE {
 //                                                                         //
 //-------------------------------------------------------------------------*/
 
+class CThreadPool;
 class CTaskDelegator;
 class CPulseGenerator;
 
@@ -120,7 +121,7 @@ class GUCEF_CORE_PUBLIC_CPP CTaskConsumer : public CObservingNotifier
 
     virtual const CString& GetClassTypeName( void ) const GUCEF_VIRTUAL_OVERRIDE;
 
-    bool IsOwnedByTaskManager( void ) const;
+    bool IsOwnedByThreadPool( void ) const;
 
     /**
      *  Flag that indicates whether the task has been asked to gracefully deactivate
@@ -187,9 +188,11 @@ class GUCEF_CORE_PUBLIC_CPP CTaskConsumer : public CObservingNotifier
     virtual bool Unlock( void ) const GUCEF_VIRTUAL_OVERRIDE;
 
     private:
-    friend class CTaskManager;
+    friend class CThreadPool;
 
-    void SetIsOwnedByTaskManager( bool ownedByTaskManager );
+    void SetIsOwnedByThreadPool( bool ownedByThreadPool );
+
+    void SetThreadPool( CThreadPool* threadPool );
 
     private:
 
@@ -199,8 +202,9 @@ class GUCEF_CORE_PUBLIC_CPP CTaskConsumer : public CObservingNotifier
     private:
 
     TTaskId m_taskId;
+    CThreadPool* m_threadPool;
     CTaskDelegator* m_delegator;
-    bool m_ownedByTaskManager;
+    bool m_ownedByThreadPool;
 };
 
 /*-------------------------------------------------------------------------*/

@@ -278,8 +278,8 @@ CPing::Start( const TStringVector& remoteHosts          ,
         m_minimalPingDelta = minimalPingDelta;
 
         CPingTaskConsumer::CPingTaskData taskData( remoteHosts, maxPings, bytesToSend, timeout, minimalPingDelta );
-        return CORE::CCoreGlobal::Instance()->GetTaskManager().StartTask( m_pingTaskConsumer ,
-                                                                          &taskData          );
+        return CORE::CCoreGlobal::Instance()->GetTaskManager().GetThreadPool()->StartTask( m_pingTaskConsumer ,
+                                                                                           &taskData          );
     }
     return false;
 }
@@ -292,7 +292,7 @@ CPing::Stop( void )
 
     if ( m_isActive )
     {
-       CORE::CCoreGlobal::Instance()->GetTaskManager().RequestTaskToStop( m_taskId, false );
+       CORE::CCoreGlobal::Instance()->GetTaskManager().GetThreadPool()->RequestTaskToStop( m_taskId, false );
     }
 }
 

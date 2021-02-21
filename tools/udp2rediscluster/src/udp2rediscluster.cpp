@@ -1386,8 +1386,8 @@ Udp2RedisClusterChannel::OnTaskStart( CORE::CICloneable* taskData )
 
     if ( m_channelSettings.performRedisWritesInDedicatedThread )
     {
-        CORE::CTaskManager& taskManager = CORE::CCoreGlobal::Instance()->GetTaskManager();
-        if ( !taskManager.StartTask( m_redisWriter ) )
+        CORE::ThreadPoolPtr threadPool = CORE::CCoreGlobal::Instance()->GetTaskManager().GetThreadPool();
+        if ( !threadPool->StartTask( m_redisWriter ) )
         {
             GUCEF_ERROR_LOG( CORE::LOGLEVEL_CRITICAL, "Udp2RedisClusterChannel:OnTaskStart: Failed to start dedicated task (dedicated thread) for Redis writes. Falling back to a single thread" );
             m_channelSettings.performRedisWritesInDedicatedThread = false;
@@ -1482,8 +1482,8 @@ Udp2RedisClusterChannel::OnTaskEnding( CORE::CICloneable* taskdata ,
     {
         // Since we are the ones that launched the dedicated Redis write thread we should also ask
         // to have it cleaned up when we are shutting down this thread
-        CORE::CTaskManager& taskManager = CORE::CCoreGlobal::Instance()->GetTaskManager();
-        if ( !taskManager.RequestTaskToStop( m_redisWriter.StaticCast< CORE::CTaskConsumer >(), false ) )
+        CORE::ThreadPoolPtr threadPool = CORE::CCoreGlobal::Instance()->GetTaskManager().GetThreadPool();
+        if ( !threadPool->RequestTaskToStop( m_redisWriter.StaticCast< CORE::CTaskConsumer >(), false ) )
         {
             GUCEF_ERROR_LOG( CORE::LOGLEVEL_CRITICAL, "Udp2RedisClusterChannel:OnTaskEnding: Failed to request the dedicated task (dedicated thread) for Redis writes to stop" );
         }
@@ -1776,7 +1776,7 @@ Udp2RedisCluster::SetStandbyMode( bool putInStandbyMode )
     if ( putInStandbyMode )
     {
         bool totalSuccess = true;
-        CORE::CTaskManager& taskManager = CORE::CCoreGlobal::Instance()->GetTaskManager();
+        CORE::ThreadPoolPtr threadPool = CORE::CCoreGlobal::Instance()->GetTaskManager().GetThreadPool();
 
         m_testPacketTransmitTimer.SetEnabled( false );
 
@@ -1787,7 +1787,7 @@ Udp2RedisCluster::SetStandbyMode( bool putInStandbyMode )
         while ( i != m_channels.end() )
         {
             Udp2RedisClusterChannelPtr channel = (*i).second;
-            if ( !taskManager.RequestTaskToStop( channel.StaticCast< CORE::CTaskConsumer >(), false ) )
+            if ( !threadPool->RequestTaskToStop( channel.StaticCast< CORE::CTaskConsumer >(), false ) )
             {
                 totalSuccess = false;
                 GUCEF_ERROR_LOG( CORE::LOGLEVEL_IMPORTANT, "Udp2RedisCluster:SetStandbyMode( true ): Failed to signal task to stop for channel " + CORE::Int32ToString( channel->GetChannelSettings().channelId ) )
@@ -1856,7 +1856,7 @@ Udp2RedisCluster::SetStandbyMode( bool putInStandbyMode )
             ++n;
         }
 
-        CORE::CTaskManager& taskManager = CORE::CCoreGlobal::Instance()->GetTaskManager();
+        CORE::ThreadPoolPtr threadPool = CORE::CCoreGlobal::Instance()->GetTaskManager().GetThreadPool();
 
         n = m_channelSettings.begin();
         while ( n != m_channelSettings.end() )
@@ -1875,7 +1875,7 @@ Udp2RedisCluster::SetStandbyMode( bool putInStandbyMode )
                     break;
                 }
 
-                if ( !taskManager.StartTask( channel ) )
+                if ( !threadPool->StartTask( channel ) )
                 {
                     GUCEF_ERROR_LOG( CORE::LOGLEVEL_IMPORTANT, "Udp2RedisCluster::SetStandbyMode( false ): Failed to start task (dedicated thread) for channel " + CORE::Int32ToString( channelId ) );
                     totalSuccess = false;

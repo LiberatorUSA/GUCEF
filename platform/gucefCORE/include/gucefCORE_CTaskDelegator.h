@@ -81,7 +81,7 @@ namespace CORE {
 //                                                                         //
 //-------------------------------------------------------------------------*/
 
-class CTaskManager;
+class CThreadPool;
 
 /*-------------------------------------------------------------------------*/
 
@@ -120,10 +120,10 @@ class GUCEF_CORE_PRIVATE_CPP CTaskDelegator : public MT::CActiveObject      ,
     CPulseGenerator& GetPulseGenerator( void );
 
     protected:
-    friend class CTaskManager;
+    friend class CThreadPool;
     friend class CTaskConsumer;
 
-    CTaskDelegator( void );
+    CTaskDelegator( CThreadPool* threadPool );
 
     virtual ~CTaskDelegator();
 
@@ -201,7 +201,8 @@ class GUCEF_CORE_PRIVATE_CPP CTaskDelegator : public MT::CActiveObject      ,
 
     protected:
 
-    CTaskDelegator( CTaskConsumerPtr taskConsumer ,
+    CTaskDelegator( CThreadPool* threadPool       ,
+                    CTaskConsumerPtr taskConsumer ,
                     CICloneable* taskData         );
 
     CTaskConsumerPtr m_taskConsumer;
@@ -209,6 +210,7 @@ class GUCEF_CORE_PRIVATE_CPP CTaskDelegator : public MT::CActiveObject      ,
 
     private:
 
+    CThreadPool* m_threadPool;
     bool m_consumerBusy;
     Int32 m_immediatePulseTickets;
     Int32 m_immediatePulseTicketMax;

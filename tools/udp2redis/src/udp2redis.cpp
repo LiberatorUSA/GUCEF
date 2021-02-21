@@ -883,7 +883,7 @@ Udp2Redis::Start( void )
         m_channels[ m ] = Udp2RedisChannelPtr( new Udp2RedisChannel() );
     }
 
-    CORE::CTaskManager& taskManager = CORE::CCoreGlobal::Instance()->GetTaskManager();
+    CORE::ThreadPoolPtr threadPool = CORE::CCoreGlobal::Instance()->GetTaskManager().GetThreadPool();
 
     CORE::UInt16 udpPort = m_udpStartPort;
     CORE::Int32 channelId = m_redisStreamStartChannelID;
@@ -902,7 +902,7 @@ Udp2Redis::Start( void )
                 break;
             }
 
-            if ( !taskManager.StartTask( channel ) )
+            if ( !threadPool->StartTask( channel ) )
             {
                 GUCEF_ERROR_LOG( CORE::LOGLEVEL_IMPORTANT, "Udp2Redis:Start: Failed to start task (dedicated thread) for channel " + CORE::Int32ToString( channelId ) );
                 errorOccured = true;

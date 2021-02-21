@@ -52,9 +52,10 @@ namespace CORE {
 //                                                                         //
 //-------------------------------------------------------------------------*/
 
-CSingleTaskDelegator::CSingleTaskDelegator( CTaskConsumerPtr taskConsumer ,
+CSingleTaskDelegator::CSingleTaskDelegator( CThreadPool* threadPool       ,
+                                            CTaskConsumerPtr taskConsumer ,
                                             CICloneable* taskData         )
-    : CTaskDelegator( taskConsumer, taskData )
+    : CTaskDelegator( threadPool, taskConsumer, taskData )
 {GUCEF_TRACE;
 
     assert( !taskConsumer.IsNULL() );

@@ -83,10 +83,11 @@ CTaskConsumer::RegisterEvents( void )
 /*-------------------------------------------------------------------------*/
 
 CTaskConsumer::CTaskConsumer( void )
-    : CObservingNotifier()          ,
-      m_delegator( NULL )           ,
-      m_taskId()                    ,
-      m_ownedByTaskManager( false )
+    : CObservingNotifier()           
+    , m_taskId()          
+    , m_threadPool( GUCEF_NULL )          
+    , m_delegator( GUCEF_NULL )          
+    , m_ownedByThreadPool( false )
 {GUCEF_TRACE;
 
     RegisterEvents();
@@ -104,19 +105,19 @@ CTaskConsumer::~CTaskConsumer()
 /*-------------------------------------------------------------------------*/
 
 void
-CTaskConsumer::SetIsOwnedByTaskManager( bool ownedByTaskManager )
+CTaskConsumer::SetIsOwnedByThreadPool( bool ownedByThreadPool )
 {GUCEF_TRACE;
 
-    m_ownedByTaskManager = ownedByTaskManager;
+    m_ownedByThreadPool = ownedByThreadPool;
 }
 
 /*-------------------------------------------------------------------------*/
 
 bool
-CTaskConsumer::IsOwnedByTaskManager( void ) const
+CTaskConsumer::IsOwnedByThreadPool( void ) const
 {GUCEF_TRACE;
 
-    return m_ownedByTaskManager;
+    return m_ownedByThreadPool;
 }
 
 /*-------------------------------------------------------------------------*/
@@ -153,7 +154,7 @@ bool
 CTaskConsumer::WaitForTaskToFinish( Int32 timeoutInMs )
 {GUCEF_TRACE;
 
-    return CCoreGlobal::Instance()->GetTaskManager().WaitForTaskToFinish( m_taskId, timeoutInMs ); 
+    return m_threadPool != GUCEF_NULL ? m_threadPool->WaitForTaskToFinish( m_taskId, timeoutInMs ) : false; 
 }
 
 /*-------------------------------------------------------------------------*/
@@ -173,6 +174,15 @@ CTaskConsumer::SetTaskDelegator( CTaskDelegator* delegator )
 {GUCEF_TRACE;
 
     m_delegator = delegator;
+}
+
+/*-------------------------------------------------------------------------*/
+
+void 
+CTaskConsumer::SetThreadPool( CThreadPool* threadPool )
+{GUCEF_TRACE;
+
+    m_threadPool = threadPool;
 }
 
 /*-------------------------------------------------------------------------*/

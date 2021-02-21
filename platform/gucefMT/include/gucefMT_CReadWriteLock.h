@@ -127,7 +127,7 @@ class GUCEF_MT_PUBLIC_CPP CReadWriteLock : public CILockable
      *      Use when a reader task finished using data/code that is
      *      protected by this lock.
      */
-    void ReaderStop( void ) const;
+    bool ReaderStop( void ) const;
 
     /**
      *      Returns the current number of readers. Note that this function
@@ -159,6 +159,19 @@ class GUCEF_MT_PUBLIC_CPP CReadWriteLock : public CILockable
      *  Typical implementation would be to have this call Unlock() on a mutex member in a derived class
      */
     virtual bool Unlock( void ) const GUCEF_VIRTUAL_OVERRIDE;
+
+    /**
+     *  Should be implemented by the derived classes such that all interactions with the class
+     *  member functions and variables are protected against multiple threads accessing them
+     *  Typical implementation would be to have this call Lock() as a reader on a reader-writer lock in a derived class
+     */
+    virtual bool ReadOnlyLock( void ) const GUCEF_VIRTUAL_OVERRIDE;
+
+    /**
+     *  Counterpart to the ReadOnlyLock() member function. This releases the lock obtained using ReadOnlyLock() 
+     *  Typical implementation would be to have this call Unlock() as a reader on a reader-writer lock in a derived class
+     */
+    virtual bool ReadOnlyUnlock( void ) const GUCEF_VIRTUAL_OVERRIDE;
 
     private:
     mutable struct SRWLock* _rwlock;          /* encapsulated rwlock struct */

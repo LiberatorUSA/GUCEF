@@ -233,7 +233,7 @@ CVFS::StoreAsFileAsync( const CORE::CString& filepath       ,
     operationData.overwrite = overwrite;
     operationData.SetRequestorData( requestorData );
 
-    return CORE::CCoreGlobal::Instance()->GetTaskManager().QueueTask( CAsyncVfsOperation::TaskType, &operationData, GUCEF_NULL, &AsObserver() );
+    return CORE::CCoreGlobal::Instance()->GetTaskManager().GetThreadPool()->QueueTask( CAsyncVfsOperation::TaskType, &operationData, GUCEF_NULL, &AsObserver() );
 }
 
 /*-------------------------------------------------------------------------*/
@@ -250,7 +250,7 @@ CVFS::MountArchiveAsync( const CArchiveSettings& settings    ,
     operationData.settings = settings;
     operationData.SetRequestorData( requestorData );
 
-    return CORE::CCoreGlobal::Instance()->GetTaskManager().QueueTask( CAsyncVfsOperation::TaskType, &operationData, GUCEF_NULL, &AsObserver() );
+    return CORE::CCoreGlobal::Instance()->GetTaskManager().GetThreadPool()->QueueTask( CAsyncVfsOperation::TaskType, &operationData, GUCEF_NULL, &AsObserver() );
 }
 
 /*-------------------------------------------------------------------------*/
@@ -386,7 +386,7 @@ CVFS::CopyFileAsync( const CORE::CString& originalFilepath ,
     operationData.encodedFilepath = copyFilepath;
     operationData.overwrite = overwrite;
 
-    return CORE::CCoreGlobal::Instance()->GetTaskManager().QueueTask( CAsyncVfsOperation::TaskType, &operationData, GUCEF_NULL, &AsObserver() );
+    return CORE::CCoreGlobal::Instance()->GetTaskManager().GetThreadPool()->QueueTask( CAsyncVfsOperation::TaskType, &operationData, GUCEF_NULL, &AsObserver() );
 }
 
 /*-------------------------------------------------------------------------*/
@@ -460,7 +460,7 @@ CVFS::EncodeFileAsync( const CORE::CString& originalFilepath ,
     operationData.codecFamily = codecFamily;
     operationData.encodeCodec = encodeCodec;
 
-    return CORE::CCoreGlobal::Instance()->GetTaskManager().QueueTask( CAsyncVfsOperation::TaskType, &operationData, GUCEF_NULL, &AsObserver() );
+    return CORE::CCoreGlobal::Instance()->GetTaskManager().GetThreadPool()->QueueTask( CAsyncVfsOperation::TaskType, &operationData, GUCEF_NULL, &AsObserver() );
 }
 
 /*-------------------------------------------------------------------------*/
@@ -533,7 +533,7 @@ CVFS::EncodeAsFileAsync( const CORE::CDynamicBuffer& data     ,
     operationData.codecFamily = codecFamily;
     operationData.encodeCodec = encodeCodec;
 
-    return CORE::CCoreGlobal::Instance()->GetTaskManager().QueueTask( CAsyncVfsOperation::TaskType, &operationData, GUCEF_NULL, &AsObserver() );
+    return CORE::CCoreGlobal::Instance()->GetTaskManager().GetThreadPool()->QueueTask( CAsyncVfsOperation::TaskType, &operationData, GUCEF_NULL, &AsObserver() );
 }
 
 
@@ -647,7 +647,7 @@ CVFS::DecodeFileAsync( const CORE::CString& originalFilepath ,
     operationData.codecFamily = codecFamily;
     operationData.decodeCodec = decodeCodec;
 
-    return CORE::CCoreGlobal::Instance()->GetTaskManager().QueueTask( CAsyncVfsOperation::TaskType, &operationData, GUCEF_NULL, &AsObserver() );
+    return CORE::CCoreGlobal::Instance()->GetTaskManager().GetThreadPool()->QueueTask( CAsyncVfsOperation::TaskType, &operationData, GUCEF_NULL, &AsObserver() );
 }
 
 /*-------------------------------------------------------------------------*/

@@ -16,8 +16,8 @@
  *  limitations under the License.
  */
 
-#ifndef GUCEF_MT_CILOCKABLE_H
-#define GUCEF_MT_CILOCKABLE_H
+#ifndef GUCEF_MT_COBJECTSCOPEREADONLYLOCK_H
+#define GUCEF_MT_COBJECTSCOPEREADONLYLOCK_H
 
 /*-------------------------------------------------------------------------//
 //                                                                         //
@@ -25,15 +25,15 @@
 //                                                                         //
 //-------------------------------------------------------------------------*/
 
-#ifndef GUCEF_MT_ETYPES_H
-#include "gucefMT_ETypes.h"             /* simple types */
-#define GUCEF_MT_ETYPES_H
-#endif /* GUCEF_MT_ETYPES_H ? */
+#ifndef GUCEF_MT_GUCEFMT_MACROS_H
+#include "gucefMT_macros.h"     /* often used gucef macros */
+#define GUCEF_MT_GUCEFMT_MACROS_H
+#endif /* GUCEF_MT_GUCEFMT_MACROS_H ? */
 
-#ifndef GUCEF_MT_MACROS_H
-#include "gucefMT_macros.h"             /* often used gucef macros */
-#define GUCEF_MT_MACROS_H
-#endif /* GUCEF_MT_MACROS_H ? */
+#ifndef GUCEF_MT_CILOCKABLE_H
+#include "gucefMT_CILockable.h"
+#define GUCEF_MT_CILOCKABLE_H
+#endif /* GUCEF_MT_CILOCKABLE_H ? */
 
 /*-------------------------------------------------------------------------//
 //                                                                         //
@@ -51,51 +51,41 @@ namespace MT {
 //-------------------------------------------------------------------------*/
 
 /**
- *  Interface class that adds a locking interface to derived classes.
+ *  Leverages the CILockable interface to Lock() and Unlock() the scope of an
+ *  entire object while still having the same stack unroll etc advantages of
+ *  the CScopeMutex class
+ *  Typical usage would be to pass in the 'this' pointer to lock the member function
+ *  scope for a object who's class is derived from CILockable
  */
-class GUCEF_MT_PUBLIC_CPP CILockable
+class GUCEF_MT_PUBLIC_CPP CObjectScopeReadOnlyLock
 {
     public:
 
-    CILockable( void );
+    CObjectScopeReadOnlyLock( const CILockable* lockableObject );
 
-    CILockable( const CILockable& src );
+    CObjectScopeReadOnlyLock( const CILockable& lockableObject );
 
-    virtual ~CILockable();
-
-    CILockable& operator=( const CILockable& src );
-
-    virtual const CILockable* AsLockable( void ) const = 0;
-
-    protected:
-    friend class CObjectScopeLock;
-    friend class CObjectScopeReadOnlyLock;
+    ~CObjectScopeReadOnlyLock();
 
     /**
-     *  Should be implemented by the derived classes such that all interactions with the class
-     *  member functions and variables are protected against multiple threads accessing them
-     *  Typical implementation would be to have this call Lock() on a mutex member in a derived class
+     *  Returns whether the current lock state based on the Lock() and Unlock()
+     *  operations on the lockable object
      */
-    virtual bool Lock( void ) const = 0;
+    bool IsLocked( void ) const;
 
     /**
-     *  Counterpart to the Lock() member function. This releases the lock obtained using Lock() 
-     *  Typical implementation would be to have this call Unlock() on a mutex member in a derived class
+     *  Allows you to unlock before the scope lock triggers destruction of the CObjectScopeLock object
+     *  Useful for more complex code flows where in most code paths you want to retain the lock except for
+     *  a small subset of code path(s)
      */
-    virtual bool Unlock( void ) const = 0;
+    bool EarlyReaderUnlock( void );
 
-    /**
-     *  Should be implemented by the derived classes such that all interactions with the class
-     *  member functions and variables are protected against multiple threads accessing them
-     *  Typical implementation would be to have this call Lock() as a reader on a reader-writer lock in a derived class
-     */
-    virtual bool ReadOnlyLock( void ) const { return Lock(); }
+    private:
+    const CILockable* m_lockableObject;
+    bool m_isLocked;
 
-    /**
-     *  Counterpart to the ReadOnlyLock() member function. This releases the lock obtained using ReadOnlyLock() 
-     *  Typical implementation would be to have this call Unlock() as a reader on a reader-writer lock in a derived class
-     */
-    virtual bool ReadOnlyUnlock( void ) const { return Unlock(); };
+    CObjectScopeReadOnlyLock( const CObjectScopeReadOnlyLock& src );              /* Copying doesnt make sense */
+    CObjectScopeReadOnlyLock& operator=( const CObjectScopeReadOnlyLock& src );   /* Copying doesnt make sense */
 };
 
 /*-------------------------------------------------------------------------//
@@ -107,6 +97,6 @@ class GUCEF_MT_PUBLIC_CPP CILockable
 }; /* namespace MT */
 }; /* namespace GUCEF */
 
-/*-------------------------------------------------------------------------*/
+/*--------------------------------------------------------------------------*/
 
-#endif /* GUCEF_MT_CILOCKABLE_H  ? */
+#endif /* GUCEF_MT_COBJECTSCOPEREADONLYLOCK_H ? */

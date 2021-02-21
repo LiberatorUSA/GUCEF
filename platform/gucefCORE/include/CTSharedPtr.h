@@ -88,7 +88,8 @@ class CTSharedPtr : public CTBasicSharedPtr< T, LockType >
 {
     public:
 
-    typedef CTDynamicDestructorBase< T > TDestructor;
+    typedef CTDynamicDestructorBase< T >        TDestructor;
+    typedef CTBasicSharedPtr< T, LockType >     TBasicPtr;
 
     /**
      *  Constructor that allows you to create an 'uninitialized' pointer.

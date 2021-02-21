@@ -193,11 +193,11 @@ CAsyncHttpServerRequestHandler::OnTaskCycle( CORE::CICloneable* taskData )
     CAsyncHttpResponseData* response = new CAsyncHttpResponseData( httpRequestData );
     m_requestHandler->OnRequest( *httpRequestData, *response );
     
-    if ( !CORE::CCoreGlobal::Instance()->GetTaskManager().QueueTask( CAsyncHttpServerResponseHandler::TaskType, 
-                                                                     response, 
-                                                                     GUCEF_NULL, 
-                                                                     GUCEF_NULL, 
-                                                                     true ) )
+    if ( !CORE::CCoreGlobal::Instance()->GetTaskManager().GetThreadPool()->QueueTask( CAsyncHttpServerResponseHandler::TaskType, 
+                                                                                      response, 
+                                                                                      GUCEF_NULL, 
+                                                                                      GUCEF_NULL, 
+                                                                                      true ) )
     {
         // Failed to queue task to send the response to the client
         GUCEF_ERROR_LOG( CORE::LOGLEVEL_NORMAL, "AsyncHttpServerRequestHandler(" + CORE::PointerToString( this ) + "):OnTaskCycle: Failed to QueueTask to disptach result to client after request processing" );

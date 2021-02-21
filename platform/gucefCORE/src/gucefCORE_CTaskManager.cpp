@@ -38,6 +38,11 @@
 #define GUCEF_MT_CSCOPEMUTEX_H
 #endif /* GUCEF_MT_CSCOPEMUTEX_H ? */ 
 
+#ifndef GUCEF_MT_COBJECTSCOPEREADONLYLOCK_H
+#include "gucefMT_CObjectScopeReadOnlyLock.h"
+#define GUCEF_MT_COBJECTSCOPEREADONLYLOCK_H
+#endif /* GUCEF_MT_COBJECTSCOPEREADONLYLOCK_H ? */ 
+
 #ifndef GUCEF_CORE_DVCPPSTRINGUTILS_H
 #include "dvcppstringutils.h"
 #define GUCEF_CORE_DVCPPSTRINGUTILS_H
@@ -80,128 +85,22 @@ namespace CORE {
 //                                                                         //
 //-------------------------------------------------------------------------*/
 
-const CEvent CTaskManager::ThreadKilledEvent = "GUCEF::CORE::CTaskManager::ThreadKilledEvent";
-const CEvent CTaskManager::ThreadStartedEvent = "GUCEF::CORE::CTaskManager::ThreadStartedEvent";
-const CEvent CTaskManager::ThreadPausedEvent = "GUCEF::CORE::CTaskManager::ThreadPausedEvent";
-const CEvent CTaskManager::ThreadResumedEvent = "GUCEF::CORE::CTaskManager::ThreadResumedEvent";
-const CEvent CTaskManager::ThreadFinishedEvent = "GUCEF::CORE::CTaskManager::ThreadFinishedEvent";
-
-const CEvent CTaskManager::TaskQueuedEvent = "GUCEF::CORE::CTaskManager::TaskQueuedEvent";
-const CEvent CTaskManager::QueuedTaskStartedEvent = "GUCEF::CORE::CTaskManager::QueuedTaskStartedEvent";
-const CEvent CTaskManager::TaskStartedEvent = "GUCEF::CORE::CTaskManager::TaskStartedEvent";
-const CEvent CTaskManager::TaskStartupFailedEvent = "GUCEF::CORE::CTaskManager::TaskStartupFailedEvent";
-const CEvent CTaskManager::TaskKilledEvent = "GUCEF::CORE::CTaskManager::TaskKilledEvent";
-const CEvent CTaskManager::TaskStoppedEvent = "GUCEF::CORE::CTaskManager::TaskStoppedEvent";
-const CEvent CTaskManager::TaskPausedEvent = "GUCEF::CORE::CTaskManager::TaskPausedEvent";
-const CEvent CTaskManager::TaskResumedEvent = "GUCEF::CORE::CTaskManager::TaskResumedEvent";
-const CEvent CTaskManager::TaskFinishedEvent = "GUCEF::CORE::CTaskManager::TaskFinishedEvent";
+const CString CTaskManager::DefaultTreadPoolName = "default";
 
 /*-------------------------------------------------------------------------//
 //                                                                         //
-//      UTILITIES                                                          //
+//      IMPLEMENTATION                                                     //
 //                                                                         //
 //-------------------------------------------------------------------------*/
 
-void
-CTaskManager::RegisterEvents( void )
-{GUCEF_TRACE;
-
-    ThreadKilledEvent.Initialize();
-    ThreadStartedEvent.Initialize();
-    ThreadPausedEvent.Initialize();
-    ThreadResumedEvent.Initialize();
-    ThreadFinishedEvent.Initialize();
-
-    TaskQueuedEvent.Initialize();
-    QueuedTaskStartedEvent.Initialize();
-    TaskStartedEvent.Initialize();
-    TaskStartupFailedEvent.Initialize();
-    TaskKilledEvent.Initialize();
-    TaskStoppedEvent.Initialize();
-    TaskPausedEvent.Initialize();
-    TaskResumedEvent.Initialize();
-    TaskFinishedEvent.Initialize();
-}
-
-/*-------------------------------------------------------------------------*/
-
-CTaskManager::CTaskQueueItem::CTaskQueueItem( CTaskConsumerPtr consumer      ,
-                                              CICloneable* taskData          ,
-                                              bool assumeOwnershipOfTaskData )
-    : CICloneable()              
-    , m_taskData( taskData )     
-    , m_taskConsumer( consumer ) 
-    , m_assumeOwnershipOfTaskData( assumeOwnershipOfTaskData )
-{GUCEF_TRACE;
-
-}
-
-/*-------------------------------------------------------------------------*/
-
-CTaskManager::CTaskQueueItem::CTaskQueueItem( CTaskQueueItem& src )
-    : CICloneable()                         
-    ,  m_taskData( src.m_taskData )
-    ,  m_taskConsumer( src.m_taskConsumer )
-    , m_assumeOwnershipOfTaskData( src.m_assumeOwnershipOfTaskData )
-{GUCEF_TRACE;
-
-    if ( !m_assumeOwnershipOfTaskData && GUCEF_NULL != m_taskData )
-    {
-        m_taskData = m_taskData->Clone();    
-    }
-}
-
-/*-------------------------------------------------------------------------*/
-
-CTaskManager::CTaskQueueItem::~CTaskQueueItem()
-{GUCEF_TRACE;
-
-}
-
-/*-------------------------------------------------------------------------*/
-
-CTaskConsumerPtr&
-CTaskManager::CTaskQueueItem::GetTaskConsumer( void )
-{GUCEF_TRACE;
-
-    return m_taskConsumer;
-}
-
-/*-------------------------------------------------------------------------*/
-
-CICloneable*
-CTaskManager::CTaskQueueItem::GetTaskData( void )
-{GUCEF_TRACE;
-
-    return m_taskData;
-}
-
-/*-------------------------------------------------------------------------*/
-
-CICloneable*
-CTaskManager::CTaskQueueItem::Clone( void ) const
-{GUCEF_TRACE;
-
-    return new CTaskQueueItem( const_cast< CTaskQueueItem& >( *this ) );
-}
-
-/*-------------------------------------------------------------------------*/
-
 CTaskManager::CTaskManager( void )
-    : CTSGNotifier()      
-    , m_consumerFactory()       
-    , m_desiredNrOfThreads( 0 ) 
-    , m_activeNrOfThreads( 0 )  
-    , m_taskQueue()             
-    , m_taskIdGenerator()       
-    , m_taskConsumerMap()       
-    , m_taskDelegators()
-    , m_acceptNewWork( true )
+    : CTSGNotifier() 
+    , m_taskIdGenerator()
+    , m_consumerFactory()     
+    , m_threadPools()       
 {GUCEF_TRACE;
 
-    RegisterEvents();
-
-    CCoreGlobal::Instance()->GetApplication().Subscribe( &AsObserver(), CGUCEFApplication::AppShutdownEvent );
+    m_threadPools[ DefaultTreadPoolName ] = ThreadPoolPtr( new CThreadPool() );
 }
 
 /*-------------------------------------------------------------------------*/
@@ -210,16 +109,8 @@ CTaskManager::~CTaskManager( void )
 {GUCEF_TRACE;
 
     MT::CObjectScopeLock lock( this );
-
-    // Cleanup tasks
-    TTaskDelegatorSet::iterator i = m_taskDelegators.begin();
-    while ( i != m_taskDelegators.end() )
-    {
-        // Kill the task
-        (*i)->Deactivate( true, true );
-        ++i;
-    }
-    m_taskDelegators.clear();
+    m_threadPools.clear();
+    lock.EarlyUnlock();
 }
 
 /*-------------------------------------------------------------------------*/
@@ -240,246 +131,97 @@ CTaskManager::OnPumpedNotify( CNotifier* notifier    ,
                               CICloneable* eventdata )
 {GUCEF_TRACE;
 
-    if ( CGUCEFApplication::AppShutdownEvent == eventid )
-    {
-        MT::CObjectScopeLock lock( this );
-
-        // Make sure we shut down all tasks
-        EnforceDesiredNrOfThreads( 0, true );
-    }
-    else
-    if ( CTaskDelegator::ThreadKilledEvent == eventid )
-    {
-        NotifyObservers( ThreadKilledEvent );
-    }
-    else
-    if ( CTaskDelegator::ThreadStartedEvent == eventid )
-    {
-        NotifyObservers( ThreadStartedEvent );
-    }
-    else
-    if ( CTaskDelegator::ThreadPausedEvent == eventid )
-    {
-        NotifyObservers( ThreadPausedEvent );
-    }
-    else
-    if ( CTaskDelegator::ThreadResumedEvent == eventid )
-    {
-        NotifyObservers( ThreadResumedEvent );
-    }
-    else
-    if ( CTaskDelegator::ThreadFinishedEvent == eventid )
-    {
-        NotifyObservers( ThreadFinishedEvent );
-    }
-    else
-    if ( CTaskConsumer::TaskKilledEvent == eventid )
-    {
-        NotifyObservers( TaskKilledEvent );
-    }
-    else
-    if ( CTaskConsumer::TaskStartedEvent == eventid )
-    {
-        NotifyObservers( TaskKilledEvent );
-    }
-    else
-    if ( CTaskConsumer::TaskStartupFailedEvent == eventid )
-    {
-        NotifyObservers( TaskStartupFailedEvent );
-    }
-    else
-    if ( CTaskConsumer::TaskPausedEvent == eventid )
-    {
-        NotifyObservers( TaskPausedEvent );
-    }
-    else
-    if ( CTaskConsumer::TaskResumedEvent == eventid )
-    {
-        NotifyObservers( TaskResumedEvent );
-    }
-    else
-    if ( CTaskConsumer::TaskFinishedEvent == eventid )
-    {
-        NotifyObservers( TaskFinishedEvent );
-    }
 }
 
 /*-------------------------------------------------------------------------*/
 
-void
-CTaskManager::RemoveConsumerFromQueue( const UInt32 taskID )
+ThreadPoolPtr 
+CTaskManager::GetThreadPool( const CString& threadPoolName ) const
 {GUCEF_TRACE;
 
-    Lock();
-    m_taskQueue.DoLock();
+    MT::CObjectScopeReadOnlyLock lock( this );
 
-    TTaskMailbox::iterator i = m_taskQueue.begin();
-    while ( i != m_taskQueue.end() )
+    ThreadPoolMap::const_iterator i = m_threadPools.find( threadPoolName );
+    if ( i != m_threadPools.end() )
     {
-        TTaskMailbox::TMailElement& mailElement = (*i);
-        CTaskQueueItem* queueItem = static_cast< CTaskQueueItem* >( mailElement.data );
-
-        CTaskConsumerPtr& consumer = queueItem->GetTaskConsumer();
-        if ( !consumer.IsNULL() && taskID == consumer->GetTaskId() )
-        {
-            m_taskQueue.erase( i );
-            i = m_taskQueue.begin();
-            continue;
-        }
-        ++i;
+        return (*i).second;
     }
-
-    m_taskQueue.DoUnlock();
-    Unlock();
+    return ThreadPoolPtr();
 }
 
 /*-------------------------------------------------------------------------*/
 
-void
-CTaskManager::EnforceDesiredNrOfThreads( UInt32 desiredNrOfThreads ,
-                                         bool gracefullEnforcement )
-{GUCEF_TRACE;
-
-    // This is an internal function but still make sure that the TaskManager is locked
-    // when this function is called. There are no locks here for efficiency!!!
-    m_desiredNrOfThreads = desiredNrOfThreads;
-
-    // Check if we need to do anything
-    if ( (Int32)desiredNrOfThreads > m_activeNrOfThreads )
-    {
-        GUCEF_SYSTEM_LOG( LOGLEVEL_NORMAL, "TaskManager: Increasing the number of threads used for processing tasks to " + UInt32ToString( m_desiredNrOfThreads ) + " from " + UInt32ToString( m_activeNrOfThreads ) );
-
-        UInt32 addCount = desiredNrOfThreads - m_activeNrOfThreads;
-        for ( UInt32 i=0; i<addCount; ++i )
-        {
-            // Just spawn a task delegator, it will auto register as an active task
-            CTaskDelegator* delegator = new CTaskDelegator();
-            delegator->Activate();
-        }
-    }
-    else
-    if ( (Int32)desiredNrOfThreads < m_activeNrOfThreads )
-    {
-        UInt32 deactivateCount = m_activeNrOfThreads - desiredNrOfThreads;
-
-        // Check the number of threads that are already asked to deactivate
-        UInt32 deactivatingCount = 0;
-        TTaskDelegatorSet::iterator i = m_taskDelegators.begin();
-        while ( i != m_taskDelegators.end() )
-        {
-            if ( (*i)->IsActive() )
-            {
-                if ( (*i)->IsDeactivationRequested() )
-                {
-                    ++deactivatingCount;
-                }
-            }
-            ++i;
-        }
-
-        // Check if we need to do anything
-        Int32 leftToBeDeactivated = (Int32) deactivateCount - deactivatingCount;
-        if ( leftToBeDeactivated > 0 )
-        {
-            GUCEF_SYSTEM_LOG( LOGLEVEL_NORMAL, "TaskManager: Decreasing the number of threads used for processing tasks to " +
-                                                UInt32ToString( m_desiredNrOfThreads ) + " from " + UInt32ToString( m_activeNrOfThreads ) +
-                                                " by asking " + Int32ToString( leftToBeDeactivated ) + " additional threads to deactivate" );
-
-            TTaskDelegatorSet::iterator i = m_taskDelegators.begin();
-            while ( i != m_taskDelegators.end() )
-            {
-                if ( (*i)->IsActive() )
-                {
-                    // If the thread is not yet asked to deactivate we will do so now up
-                    // to the number of thread we wish to deactivate
-                    if ( !(*i)->IsDeactivationRequested() )
-                    {
-                        // Ask thread to deactivate
-                        (*i)->Deactivate( gracefullEnforcement, false );
-                    }
-                }
-                ++i;
-            }
-        }
-    }
-    // else: we don't have to do anything
-}
-
-/*-------------------------------------------------------------------------*/
-
-bool
-CTaskManager::QueueTask( const CString& taskType           ,
-                         CICloneable* taskData             ,
-                         CTaskConsumerPtr* outTaskConsumer ,
-                         CObserver* taskObserver           ,
-                         bool assumeOwnershipOfTaskData    )
-{GUCEF_TRACE;
-
-    {
-        MT::CObjectScopeLock lock( this );
-
-        if ( !m_acceptNewWork )
-            return false;
-    
-        // Create a consumer for the given task type
-        CTaskConsumerPtr taskConsumer( m_consumerFactory.Create( taskType ) );
-        if ( !taskConsumer.IsNULL() )
-        {
-            if ( GUCEF_NULL != outTaskConsumer )
-            {
-                *outTaskConsumer = taskConsumer;
-            }
-            taskConsumer->SetIsOwnedByTaskManager( true );
-
-            if ( GUCEF_NULL != taskObserver )
-            {
-                taskConsumer->Subscribe( taskObserver );
-            }
-            SubscribeTo( taskConsumer.GetPointerAlways() );
-
-            CTaskQueueItem* queueItem = new CTaskQueueItem( taskConsumer              ,
-                                                            taskData                  ,
-                                                            assumeOwnershipOfTaskData );
-
-            m_taskQueue.AddMail( taskType, queueItem );
-
-            // We dont want to queue a task that will never be picked up by anyone
-            if ( 0 == GetNrOfThreads() )
-            {
-                EnforceDesiredNrOfThreads( 1, true );    
-            }
-        }
-    }
-    NotifyObservers( TaskQueuedEvent );
-    return true;
-}
-
-/*-------------------------------------------------------------------------*/
-
-void
-CTaskManager::SetNrOfThreadsToLogicalCPUs( const UInt32 factor )
-{GUCEF_TRACE;
-
-    SetNrOfThreads( GetLogicalCPUCount() * factor );
-}
-
-/*-------------------------------------------------------------------------*/
-
-void
-CTaskManager::SetNrOfThreads( const UInt32 nrOfThreads )
+ThreadPoolPtr 
+CTaskManager::GetOrCreateThreadPool( const CString& threadPoolName , 
+                                     bool createIfNotExists        )
 {GUCEF_TRACE;
 
     MT::CObjectScopeLock lock( this );
-    EnforceDesiredNrOfThreads( nrOfThreads, true );
+
+    ThreadPoolMap::iterator i = m_threadPools.find( threadPoolName );
+    if ( i != m_threadPools.end() )
+    {
+        return (*i).second;
+    }
+    
+    if ( createIfNotExists )
+    {
+        ThreadPoolPtr newPool = ThreadPoolPtr( new CThreadPool() );
+        m_threadPools[ threadPoolName ] = newPool;
+        return newPool; 
+    }
+
+    return ThreadPoolPtr();
 }
 
 /*-------------------------------------------------------------------------*/
 
-UInt32
-CTaskManager::GetNrOfThreads( void ) const
+UInt32 
+CTaskManager::GetGlobalNrOfThreads( void ) const
 {GUCEF_TRACE;
 
-    return m_activeNrOfThreads;
+    MT::CObjectScopeReadOnlyLock lock( this );
+
+    UInt32 threadCount = 0;
+    ThreadPoolMap::const_iterator i = m_threadPools.begin();
+    while ( i != m_threadPools.end() )
+    {
+        threadCount += (*i).second->GetNrOfThreads();
+        ++i;
+    }
+    return threadCount;
+}
+
+/*-------------------------------------------------------------------------*/
+
+void 
+CTaskManager::RequestAllThreadsToStop( bool waitOnStop, bool acceptNewWork )
+{GUCEF_TRACE;
+
+    MT::CObjectScopeLock lock( this );
+
+    ThreadPoolMap::iterator i = m_threadPools.begin();
+    while ( i != m_threadPools.end() )
+    {
+        (*i).second->RequestAllThreadsToStop( waitOnStop, acceptNewWork );
+        ++i;
+    }
+}
+
+/*-------------------------------------------------------------------------*/
+
+void
+CTaskManager::RemoveConsumerFromQueues( UInt32 taskID )
+{GUCEF_TRACE;
+
+    MT::CObjectScopeLock lock( this );
+
+    ThreadPoolMap::iterator i = m_threadPools.begin();
+    while ( i != m_threadPools.end() )
+    {
+        (*i).second->RemoveConsumerFromQueue( taskID );
+        ++i;
+    }
 }
 
 /*-------------------------------------------------------------------------*/
@@ -507,348 +249,6 @@ CTaskManager::UnregisterTaskConsumerFactory( const CString& taskType )
 
 /*-------------------------------------------------------------------------*/
 
-bool
-CTaskManager::GetQueuedTask( CTaskConsumerPtr& taskConsumer ,
-                             CICloneable** taskData         )
-{GUCEF_TRACE;
-
-    MT::CObjectScopeLock lock( this );
-
-    CString taskConsumerType;
-    CICloneable* queueItemPtr;
-    if ( m_taskQueue.GetMail( taskConsumerType ,
-                              &queueItemPtr       ) )
-    {
-        CTaskQueueItem* queueItem = static_cast< CTaskQueueItem* >( queueItemPtr );
-        taskConsumer = queueItem->GetTaskConsumer();
-        *taskData = queueItem->GetTaskData();
-
-        return true;
-    }
-    return false;
-}
-
-/*-------------------------------------------------------------------------*/
-
-bool
-CTaskManager::StartTask( CTaskConsumerPtr taskConsumer ,
-                         CICloneable* taskData         )
-{GUCEF_TRACE;
-
-    if ( taskConsumer.IsNULL() )
-    {
-        GUCEF_ERROR_LOG( LOGLEVEL_NORMAL, "TaskManager: Cannot start task because a nullptr is passed as the taskConsumer" );        
-        return false;
-    }    
-    
-    MT::CObjectScopeLock lock( this );
-
-    if ( GUCEF_NULL != taskConsumer->GetTaskDelegator() )
-    {
-        UInt32 threadId = taskConsumer->GetTaskDelegator()->GetThreadID();
-        GUCEF_ERROR_LOG( LOGLEVEL_NORMAL, "TaskManager: Cannot start task because the taskConsumer given already has a delegator (thread: " + ToString( threadId ) + ") assigned" );
-        return false;
-    }
-
-    if ( !m_acceptNewWork )
-    {
-        GUCEF_SYSTEM_LOG( LOGLEVEL_NORMAL, "TaskManager: Refusing to start task immediatly of type \"" + taskConsumer->GetType() + "\" because the task manager is not accepting new work" );
-        return false;
-    }
-        
-    // Just spawn a task delegator, it will auto register as an active task
-    taskConsumer->SetIsOwnedByTaskManager( false );
-    SubscribeTo( taskConsumer.GetPointerAlways() );
-    CTaskDelegator* delegator = new CSingleTaskDelegator( taskConsumer, 0 != taskData ? taskData->Clone() : 0 );
-
-    GUCEF_SYSTEM_LOG( LOGLEVEL_NORMAL, "TaskManager: Starting task immediatly of type \"" + taskConsumer->GetType() + "\" with ID " + UInt32ToString( taskConsumer->GetTaskId() )  );
-
-    return delegator->Activate();
-}
-
-/*-------------------------------------------------------------------------*/
-
-bool
-CTaskManager::StartTask( const CString& taskType ,
-                         CICloneable* taskData   ,
-                         CTaskConsumerPtr* task  )
-{GUCEF_TRACE;
-
-    MT::CObjectScopeLock lock( this );
-
-    if ( !m_acceptNewWork )
-        return false;
-
-    // Create a consumer for the given task type
-    CTaskConsumerPtr taskConsumer( m_consumerFactory.Create( taskType ) );
-    if ( !taskConsumer.IsNULL() )
-    {
-        // Just spawn a task delegator, it will auto register as an active task
-        taskConsumer->SetIsOwnedByTaskManager( true );
-        if ( GUCEF_NULL != task )
-        {
-            *task = taskConsumer;
-        }
-        SubscribeTo( taskConsumer.GetPointerAlways() );
-        CTaskDelegator* delegator = new CSingleTaskDelegator( taskConsumer, 0 != taskData ? taskData->Clone() : 0 );
-
-        GUCEF_SYSTEM_LOG( LOGLEVEL_NORMAL, "TaskManager: Started task immediatly of type \"" + taskType + "\" with ID " +
-                                            UInt32ToString( taskConsumer->GetTaskId() ) + " using thread with ID " + UInt32ToString( delegator->GetThreadID() ) );
-
-        return delegator->Activate();
-    }
-
-    return false;
-}
-
-/*-------------------------------------------------------------------------*/
-
-void
-CTaskManager::TaskCleanup( CTaskConsumerPtr taskConsumer ,
-                           CICloneable* taskData         )
-{GUCEF_TRACE;
-
-    //MT::CObjectScopeLock lock( this );    
-    delete taskData;
-}
-
-/*-------------------------------------------------------------------------*/
-
-bool
-CTaskManager::PauseTask( const UInt32 taskID ,
-                         const bool force    )
-{GUCEF_TRACE;
-
-    Lock();
-    TTaskConsumerMap::iterator i = m_taskConsumerMap.find( taskID );
-    if ( i != m_taskConsumerMap.end() )
-    {
-        CTaskConsumerPtr taskConsumer = (*i).second;
-        if ( !taskConsumer.IsNULL() )
-        {
-            CTaskDelegator* delegator = taskConsumer->GetTaskDelegator();
-            if ( NULL != delegator )
-            {
-                delegator->Pause( force );
-                Unlock();
-
-                GUCEF_SYSTEM_LOG( LOGLEVEL_NORMAL, "TaskManager: Paused task with ID " + UInt32ToString( taskID ) );                
-                NotifyObserversFromThread( TaskPausedEvent );
-                return true;
-            }
-            else
-            {
-                // If a consumer does not have a delegator then it hasnt started yet
-                Unlock();
-                return true;
-            }
-        }
-    }
-    Unlock();
-    return false;
-}
-
-/*-------------------------------------------------------------------------*/
-
-bool
-CTaskManager::ResumeTask( const UInt32 taskID )
-{GUCEF_TRACE;
-
-    MT::CObjectScopeLock lock( this );
-
-    if ( !m_acceptNewWork )
-        return false;
-
-    TTaskConsumerMap::iterator i = m_taskConsumerMap.find( taskID );
-    if ( i != m_taskConsumerMap.end() )
-    {
-        CTaskConsumerPtr taskConsumer = (*i).second;
-        if ( !taskConsumer.IsNULL() )
-        {
-            CTaskDelegator* delegator = taskConsumer->GetTaskDelegator();
-            if ( NULL != delegator )
-            {
-                delegator->Resume();
-
-                GUCEF_SYSTEM_LOG( LOGLEVEL_NORMAL, "TaskManager: Resumed task with ID " + UInt32ToString( taskID ) );
-                NotifyObserversFromThread( TaskResumedEvent );
-                return true;
-            }
-        }
-    }
-    return false;
-}
-
-/*-------------------------------------------------------------------------*/
-
-bool
-CTaskManager::RequestTaskToStop( const UInt32 taskID   , 
-                                 bool callerShouldWait )
-{GUCEF_TRACE;
-
-    MT::CObjectScopeLock lock( this );
-
-    TTaskConsumerMap::iterator i = m_taskConsumerMap.find( taskID );
-    if ( i != m_taskConsumerMap.end() )
-    {
-        CTaskConsumerPtr taskConsumer = (*i).second;
-        if ( !taskConsumer.IsNULL() )
-        {
-            CTaskDelegator* delegator = taskConsumer->GetTaskDelegator();
-            if ( NULL != delegator )
-            {
-                delegator->Deactivate( false, callerShouldWait );
-
-                GUCEF_SYSTEM_LOG( LOGLEVEL_NORMAL, "TaskManager: Requested task with ID " + UInt32ToString( taskID ) + " to stop" );
-                return true;
-            }
-            else
-            {
-                // If a consumer does not have a delegator then it hasnt started yet
-                return true;
-            }
-        }
-    }
-    return false;
-}
-
-/*-------------------------------------------------------------------------*/
-
-bool
-CTaskManager::RequestTaskToStop( CTaskConsumerPtr taskConsumer ,
-                                 bool callerShouldWait         )
-{GUCEF_TRACE;
-
-    if ( !taskConsumer.IsNULL() )
-        return RequestTaskToStop( taskConsumer->GetTaskId(), callerShouldWait );    
-    return false;
-}
-
-/*-------------------------------------------------------------------------*/
-
-bool 
-CTaskManager::WaitForTaskToFinish( const UInt32 taskId ,
-                                   Int32 timeoutInMs   )
-{GUCEF_TRACE;
-
-    MT::CObjectScopeLock lock( this );
-
-    TTaskConsumerMap::iterator i = m_taskConsumerMap.find( taskId );
-    if ( i != m_taskConsumerMap.end() )
-    {
-        CTaskConsumerPtr taskConsumer = (*i).second;
-        if ( !taskConsumer.IsNULL() )
-        {
-            CTaskDelegator* delegator = taskConsumer->GetTaskDelegator();
-            if ( GUCEF_NULL != delegator )
-            {
-                GUCEF_DEBUG_LOG( LOGLEVEL_NORMAL, "TaskManager:WaitForTaskToFinish: Waiting for task with ID " + UInt32ToString( taskId ) + " to finish" );
-
-                lock.EarlyUnlock();          // @TODO: Delegator should be a threadsafe shared ptr
-                delegator->WaitForThreadToFinish( timeoutInMs ); 
-                return true;
-            }
-            else
-            {
-                // If a consumer does not have a delegator then it hasnt started yet
-                GUCEF_DEBUG_LOG( LOGLEVEL_NORMAL, "TaskManager:WaitForTaskToFinish: Task with ID " + UInt32ToString( taskId ) + " is not associated with any thread and as such no wait occured" );
-                return true;
-            }
-        }
-    }
-    return false;
-}
-
-/*-------------------------------------------------------------------------*/
-
-bool
-CTaskManager::WaitForTaskToFinish( CTaskConsumerPtr taskConsumer ,
-                                   Int32 timeoutInMs             )
-{GUCEF_TRACE;
-
-    if ( !taskConsumer.IsNULL() )
-        return WaitForTaskToFinish( taskConsumer->GetTaskId(), timeoutInMs ); 
-    return true;
-}
-
-/*-------------------------------------------------------------------------*/
-
-void
-CTaskManager::RequestAllTasksToStop( bool waitOnStop, bool acceptNewWork )
-{GUCEF_TRACE;
-
-    GUCEF_SYSTEM_LOG( LOGLEVEL_NORMAL, "TaskManager: Requesting all tasks to stop" );
-    
-    MT::CObjectScopeLock lock( this );
-
-    m_acceptNewWork = acceptNewWork;
-
-    TTaskConsumerMap::iterator i = m_taskConsumerMap.begin();
-    while ( i != m_taskConsumerMap.end() )
-    {
-        CTaskConsumerPtr taskConsumer = (*i).second;
-        if ( !taskConsumer.IsNULL() )
-        {
-            CTaskDelegator* delegator = taskConsumer->GetTaskDelegator();
-            if ( NULL != delegator )
-            {
-                UInt32 taskId = taskConsumer->GetTaskId();
-                delegator->Deactivate( false, waitOnStop );                                
-
-                GUCEF_SYSTEM_LOG( LOGLEVEL_NORMAL, "TaskManager: Requested task with ID " + UInt32ToString( taskId ) + " to stop" );
-            }
-        }
-        ++i;
-    }
-}
-
-/*-------------------------------------------------------------------------*/
-
-void
-CTaskManager::RequestAllThreadsToStop( bool waitOnStop, bool acceptNewWork )
-{GUCEF_TRACE;
-
-    GUCEF_SYSTEM_LOG( LOGLEVEL_NORMAL, "TaskManager: Requesting all tasks to stop" );
-    
-    MT::CObjectScopeLock lock( this );
-    m_acceptNewWork = acceptNewWork;
-    EnforceDesiredNrOfThreads( 0, true );
-    
-}
-
-/*-------------------------------------------------------------------------*/
-
-bool
-CTaskManager::KillTask( const UInt32 taskID )
-{GUCEF_TRACE;
-
-    MT::CObjectScopeLock lock( this );
-    TTaskConsumerMap::iterator i = m_taskConsumerMap.find( taskID );
-    if ( i != m_taskConsumerMap.end() )
-    {
-        CTaskConsumerPtr taskConsumer = (*i).second;
-        if ( !taskConsumer.IsNULL() )
-        {
-            CTaskDelegator* delegator = taskConsumer->GetTaskDelegator();
-            if ( NULL != delegator )
-            {
-                delegator->Deactivate( true, true );
-
-                GUCEF_SYSTEM_LOG( LOGLEVEL_NORMAL, "TaskManager: Killed task with ID " + UInt32ToString( taskID ) );
-                return true;
-            }
-            else
-            {
-                // If a consumer does not have a delegator then it hasnt started yet
-                return true;
-            }
-        }
-    }
-    return false;
-}
-
-/*-------------------------------------------------------------------------*/
-
 void
 CTaskManager::RegisterTaskConsumerId( CTaskConsumer::TTaskId& taskId )
 {GUCEF_TRACE;
@@ -867,29 +267,18 @@ CTaskManager::UnregisterTaskConsumerId( CTaskConsumer::TTaskId& taskId )
 
     MT::CObjectScopeLock lock( this );
     m_taskIdGenerator.ReleaseID( &taskId );
-    RemoveConsumerFromQueue( taskId );
+    RemoveConsumerFromQueues( taskId );
 }
 
 /*-------------------------------------------------------------------------*/
 
-void
-CTaskManager::RegisterTaskDelegator( CTaskDelegator& delegator )
+CTaskConsumerPtr
+CTaskManager::CreateTaskConsumer( const CString& taskType )
 {GUCEF_TRACE;
 
     MT::CObjectScopeLock lock( this );
-    m_taskDelegators.insert( &delegator );
-    ++m_activeNrOfThreads;
-}
-
-/*-------------------------------------------------------------------------*/
-
-void
-CTaskManager::UnregisterTaskDelegator( CTaskDelegator& delegator )
-{GUCEF_TRACE;
-
-    MT::CObjectScopeLock lock( this );
-    m_taskDelegators.erase( &delegator );
-    -- m_activeNrOfThreads;
+    CTaskConsumerPtr taskConsumer( m_consumerFactory.Create( taskType ) );
+    return taskConsumer;
 }
 
 /*-------------------------------------------------------------------------//

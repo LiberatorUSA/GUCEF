@@ -2243,14 +2243,14 @@ RedisInfo::SetStandbyMode( bool putInStandbyMode )
     if ( putInStandbyMode )
     {
         bool totalSuccess = true;
-        CORE::CTaskManager& taskManager = CORE::CCoreGlobal::Instance()->GetTaskManager();
+        CORE::ThreadPoolPtr threadPool = CORE::CCoreGlobal::Instance()->GetTaskManager().GetThreadPool();
 
         // Signal all threads to stop gracefully
 
         TStringToInfoServiceMap::iterator i = m_infoServices.begin();
         while ( i != m_infoServices.end() )
         {
-            if ( !taskManager.RequestTaskToStop( (*i).second.StaticCast< CORE::CTaskConsumer >(), true ) )
+            if ( !threadPool->RequestTaskToStop( (*i).second.StaticCast< CORE::CTaskConsumer >(), true ) )
             {
                 totalSuccess = false;
                 GUCEF_ERROR_LOG( CORE::LOGLEVEL_IMPORTANT, "RedisInfo:SetStandbyMode( true ): Failed to signal task for redis info target \"" + (*i).first + "\" to stop" );
@@ -2269,7 +2269,7 @@ RedisInfo::SetStandbyMode( bool putInStandbyMode )
     {
         bool totalSuccess = true;
 
-        CORE::CTaskManager& taskManager = CORE::CCoreGlobal::Instance()->GetTaskManager();
+        CORE::ThreadPoolPtr& threadPool = CORE::CCoreGlobal::Instance()->GetTaskManager().GetThreadPool();
 
         TStringToSettingsMap::iterator i = m_settings.begin();
         while ( i != m_settings.end() )
@@ -2277,7 +2277,7 @@ RedisInfo::SetStandbyMode( bool putInStandbyMode )
             RedisInfoServicePtr redisInfoTarget( new RedisInfoService() );
             if ( redisInfoTarget->LoadConfig( (*i).second ) )
             {
-                if ( taskManager.StartTask( redisInfoTarget ) )
+                if ( threadPool->StartTask( redisInfoTarget ) )
                 {
                     m_infoServices[ (*i).first ] = redisInfoTarget; 
 

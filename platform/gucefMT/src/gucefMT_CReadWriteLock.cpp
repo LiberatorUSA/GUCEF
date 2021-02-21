@@ -100,10 +100,11 @@ CReadWriteLock::ReaderStart( void ) const
 
 /*--------------------------------------------------------------------------*/
 
-void
+bool
 CReadWriteLock::ReaderStop( void ) const
 {
     rwl_reader_stop( _rwlock );
+    return true;
 }
 
 /*--------------------------------------------------------------------------*/
@@ -144,6 +145,22 @@ bool
 CReadWriteLock::Unlock( void ) const
 {
     return WriterStop();
+}
+
+/*--------------------------------------------------------------------------*/
+
+bool 
+CReadWriteLock::ReadOnlyLock( void ) const
+{
+    return ReaderStart();
+}
+
+/*--------------------------------------------------------------------------*/
+
+bool
+CReadWriteLock::ReadOnlyUnlock( void ) const
+{
+    return ReaderStop();
 }
 
 /*------------------------------------------------------------------------//
