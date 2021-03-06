@@ -28,10 +28,10 @@
 
 #include <iostream>
 
-#ifndef GUCEF_CORE_CDVSTRING_H
-#include "CDVString.h"          /* GUCEF string implementation */
-#define GUCEF_CORE_CDVSTRING_H
-#endif /* GUCEF_CORE_CDVSTRING_H ? */
+#ifndef GUCEF_CORE_CSTRING_H
+#include "gucefCORE_CString.h"          /* GUCEF string implementation */
+#define GUCEF_CORE_CSTRING_H
+#endif /* GUCEF_CORE_CSTRING_H ? */
 
 #ifndef GUCEF_CORE_MACROS_H
 #include "gucefCORE_macros.h"   /* often used gucef macros */

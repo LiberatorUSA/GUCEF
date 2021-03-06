@@ -31,6 +31,11 @@
 #define GUCEF_CORE_LOGTYPES_H
 #endif /* GUCEF_CORE_LOGTYPES_H ? */
 
+#ifndef GUCEF_CORE_CSTRING_H
+#include "gucefCORE_CString.h"
+#define GUCEF_CORE_CSTRING_H
+#endif /* GUCEF_CORE_CSTRING_H ? */
+
 #ifndef GUCEF_CORE_CDATETIME_H
 #include "gucefCORE_CDateTime.h"
 #define GUCEF_CORE_CDATETIME_H
@@ -51,9 +56,6 @@ namespace CORE {
 //                                                                         //
 //-------------------------------------------------------------------------*/
 
-class CString;
-
-/*-------------------------------------------------------------------------*/
 
 /**
  *  Interface class for implementors of logging.

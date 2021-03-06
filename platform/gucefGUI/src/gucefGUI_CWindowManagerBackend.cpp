@@ -105,11 +105,14 @@ CWindowManagerBackend::CreateWindowContextViaConfig( const GUCEF::CORE::CDataNod
         bool fullscreen( false );                        
             
         att = n->GetAttribute( "width" );
-        if ( att ) width = att->second.value.GetInt();
+        if ( att ) 
+            width = CORE::StringToUInt32( att->second.value );
         att = n->GetAttribute( "height" );        
-        if ( att ) height = att->second.value.GetInt();
+        if ( att ) 
+            height = CORE::StringToUInt32( att->second.value );
         att = n->GetAttribute( "fullscreen" );
-        if ( att ) fullscreen = CORE::StringToBool( att->second.value );
+        if ( att ) 
+            fullscreen = CORE::StringToBool( att->second.value );
             
         const CORE::CDataNode::TKeyValuePair* att2;
         const CORE::CString name( "name" );

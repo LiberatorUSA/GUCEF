@@ -27,7 +27,7 @@
 //-------------------------------------------------------------------------*/
 
 #ifndef GUCEF_CORE_CSTRING_H
-#include "CDVString.h"
+#include "gucefCORE_CString.h"
 #define GUCEF_CORE_CSTRING_H
 #endif /* GUCEF_CORE_CSTRING_H ? */
 

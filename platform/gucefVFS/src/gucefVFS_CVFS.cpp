@@ -1289,10 +1289,7 @@ CVFS::SaveConfig( CORE::CDataNode& tree ) const
 
     CORE::CDataNode* n = tree.Structure( "GUCEF%VFS%CVFS" ,
                                          '%'              );
-    CORE::CString maxmem;
-    maxmem.SetInt( _maxmemloadsize );
-    n->SetAttribute( "maxmemload" ,
-                     maxmem       );
+    n->SetAttribute( "maxmemload", _maxmemloadsize );
 
     n->DelSubTree();
     UInt32 count = (UInt32) m_mountList.size();

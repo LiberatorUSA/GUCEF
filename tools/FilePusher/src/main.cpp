@@ -205,7 +205,7 @@ GucefAppSignalHandler( int signal )
 GUCEF_OSSERVICEMAIN_BEGIN( "FilePusher" )
 {GUCEF_TRACE;
 
-    GUCEF_LOG( CORE::LOGLEVEL_NORMAL, "This tool was compiled on: " __DATE__ " @ " __TIME__ );
+    GUCEF_LOG( CORE::LOGLEVEL_NORMAL, "This service was compiled on: " __DATE__ " @ " __TIME__ );
 
     CORE::CCoreGlobal::Instance();
     COMCORE::CComCoreGlobal::Instance();

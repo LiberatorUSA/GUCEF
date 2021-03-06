@@ -17,8 +17,8 @@
  *  Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA
  */
 
-#ifndef GUCEF_CORE_LOGLEVELS_H
-#define GUCEF_CORE_LOGLEVELS_H
+#ifndef GUCEF_CORE_CSTRING_H
+#define GUCEF_CORE_CSTRING_H
 
 /*-------------------------------------------------------------------------//
 //                                                                         //
@@ -26,19 +26,10 @@
 //                                                                         //
 //-------------------------------------------------------------------------*/
 
-#ifndef GUCEF_CORE_MACROS_H
-#include "gucefCORE_macros.h"    
-#define GUCEF_CORE_MACROS_H
-#endif /* GUCEF_CORE_MACROS_H ? */
-
-#ifdef __cplusplus
-
-#ifndef GUCEF_CORE_CSTRING_H
-#include "gucefCORE_CString.h"
-#define GUCEF_CORE_CSTRING_H
-#endif /* GUCEF_CORE_CSTRING_H ? */
-
-#endif 
+#ifndef GUCEF_CORE_CANSISTRING_H
+#include "gucefCORE_CAnsiString.h"
+#define GUCEF_CORE_CANSISTRING_H
+#endif /* GUCEF_CORE_CANSISTRING_H ? */
 
 /*-------------------------------------------------------------------------//
 //                                                                         //
@@ -51,41 +42,12 @@ namespace CORE {
 
 /*-------------------------------------------------------------------------//
 //                                                                         //
-//      GLOBAL VARS                                                        //
+//      MACROS                                                             //
 //                                                                         //
 //-------------------------------------------------------------------------*/
 
-// A number of optional constants that can be used to define log levels.
-// These levels are used by the library itself. The lower the importance of the log level
-// the more likely it will be filtered out by most logging backends
-extern "C"
-{
-
-GUCEF_CORE_PUBLIC_C extern const Int32 LOGLEVEL_CRITICAL;
-GUCEF_CORE_PUBLIC_C extern const Int32 LOGLEVEL_VERY_IMPORTANT;
-GUCEF_CORE_PUBLIC_C extern const Int32 LOGLEVEL_IMPORTANT;
-GUCEF_CORE_PUBLIC_C extern const Int32 LOGLEVEL_NORMAL;
-GUCEF_CORE_PUBLIC_C extern const Int32 LOGLEVEL_BELOW_NORMAL;
-GUCEF_CORE_PUBLIC_C extern const Int32 LOGLEVEL_EVERYTHING;
-
-}
-
-/*-------------------------------------------------------------------------//
-//                                                                         //
-//      UTILITIES                                                          //
-//                                                                         //
-//-------------------------------------------------------------------------*/
-
-#ifdef __cplusplus 
-
-/**
- *  Function that will convert the loglevel values above into a string equivalant
- *  and the rest into numbers.
- */
-GUCEF_CORE_PUBLIC_CPP CString
-LogLevelToString( const Int32 logLevel );
-
-#endif
+// @TODO: Switching default string implementation is done here
+typedef CAnsiString CString;
 
 /*-------------------------------------------------------------------------//
 //                                                                         //
@@ -98,4 +60,4 @@ LogLevelToString( const Int32 logLevel );
 
 /*-------------------------------------------------------------------------*/
 
-#endif /* GUCEF_CORE_LOGLEVELS_H ? */
+#endif /* GUCEF_CORE_CSTRING_H ? */

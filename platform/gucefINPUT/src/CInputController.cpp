@@ -155,8 +155,7 @@ CInputController::CreateContext( const CString& driverName      ,
         #ifdef GUCEF_MSWIN_BUILD
 
         CORE::CValueList extraparams( params );
-        CORE::CString hinststr;
-        hinststr.SetInt( m_hinstance );
+        CORE::CString hinststr = CORE::ToString( m_hinstance );
         extraparams.Set( "HINSTANCE", hinststr );
 
         CInputContext* context = driver->CreateContext( extraparams );

@@ -22,7 +22,6 @@ set( HEADER_FILES
   include/CDStoreCodecPlugin.h
   include/CDStoreCodecPluginManager.h
   include/CDStoreCodecRegistry.h
-  include/CDVString.h
   include/CDataNode.h
   include/CDataQueue.h
   include/CDynamicBuffer.h
@@ -143,6 +142,7 @@ set( HEADER_FILES
   include/dvstrutils.h
   include/gucefCORE.h
   include/gucefCORE_CAbstractFactoryBase.h
+  include/gucefCORE_CAnsiString.h
   include/gucefCORE_CBasicBracketLoggingFormatter.h
   include/gucefCORE_CBusyWaitPulseGeneratorDriver.h
   include/gucefCORE_CCharSepLoggingFormatter.h
@@ -183,6 +183,7 @@ set( HEADER_FILES
   include/gucefCORE_CRollingFileAccess.h
   include/gucefCORE_CSimplisticPluginLoadLogic.h
   include/gucefCORE_CSingleTaskDelegator.h
+  include/gucefCORE_CString.h
   include/gucefCORE_CSubFileAccess.h
   include/gucefCORE_CTEventHandlerFunctor.h
   include/gucefCORE_CTaskDelegator.h
@@ -224,7 +225,6 @@ set( SOURCE_FILES
   src/CDStoreCodecPlugin.cpp
   src/CDStoreCodecPluginManager.cpp
   src/CDStoreCodecRegistry.cpp
-  src/CDVString.cpp
   src/CDataNode.cpp
   src/CDataQueue.cpp
   src/CDynamicBuffer.cpp
@@ -330,6 +330,7 @@ set( SOURCE_FILES
   src/dvstrutils.c
   src/gucefCORE.cpp
   src/gucefCORE_CAbstractFactoryBase.cpp
+  src/gucefCORE_CAnsiString.cpp
   src/gucefCORE_CBasicBracketLoggingFormatter.cpp
   src/gucefCORE_CBusyWaitPulseGeneratorDriver.cpp
   src/gucefCORE_CCharSepLoggingFormatter.cpp

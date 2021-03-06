@@ -392,8 +392,7 @@ CHTTPClient::Get( const CORE::CString& host                      ,
         }
         else
         {
-            CORE::CString intstr;
-            intstr.SetInt( byteoffset );
+            CORE::CString intstr = CORE::ToString( byteoffset );
 
             buffer = new char[ 100 + valuepath.Length() + host.Length() + intstr.Length() ];
             sprintf( buffer, "GET %s HTTP/1.1\r\nHost: %s\r\nRange: bytes=%d-\r\nUser-Agent: gucefCOM-HTTP/1.0 (Linux;)\r\n\r\n", valuepath.C_String(), host.C_String(), byteoffset );
@@ -482,7 +481,7 @@ CHTTPClient::ParseURL( const CORE::CString& urlstring ,
 
         remainder = remainder.C_String() + segmentb.Length()+1;
         segmenta = remainder.SubstrToChar( '/' );
-        port = (UInt16)segmenta.GetInt();
+        port = CORE::StringToUInt16( segmenta );
         path = remainder.C_String() + segmenta.Length()+1;
     }
     return true;

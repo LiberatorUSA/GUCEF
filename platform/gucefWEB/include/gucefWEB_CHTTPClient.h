@@ -32,7 +32,7 @@
 #endif /* CTCPCLIENTSOCKET_H ? */
 
 #ifndef CDVSTRING_H
-#include "CDVString.h"
+#include "gucefCORE_CString.h"
 #define CDVSTRING_H
 #endif /* CDVSTRING_H ? */
 

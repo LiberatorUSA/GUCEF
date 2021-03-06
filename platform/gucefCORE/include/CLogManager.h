@@ -44,10 +44,10 @@
 #define GUCEF_CORE_MACROS_H
 #endif /* GUCEF_CORE_MACROS_H ? */
 
-#ifndef GUCEF_CORE_CDVSTRING_H
-#include "CDVString.h"
-#define GUCEF_CORE_CDVSTRING_H
-#endif /* GUCEF_CORE_CDVSTRING_H ? */
+#ifndef GUCEF_CORE_CSTRING_H
+#include "gucefCORE_CString.h"
+#define GUCEF_CORE_CSTRING_H
+#endif /* GUCEF_CORE_CSTRING_H ? */
 
 #ifndef GUCEF_CORE_CTABSTRACTFACTORY_H
 #include "CTAbstractFactory.h"
@@ -74,6 +74,11 @@
 #define GUCEF_CORE_LOGLEVELS_H
 #endif /* GUCEF_CORE_LOGLEVELS_H ? */
 
+#ifndef GUCEF_CORE_CSTRING_H
+#include "gucefCORE_CString.h"
+#define GUCEF_CORE_CSTRING_H
+#endif /* GUCEF_CORE_CSTRING_H ? */
+
 /*-------------------------------------------------------------------------//
 //                                                                         //
 //      NAMESPACE                                                          //
@@ -92,7 +97,6 @@ namespace CORE {
 class CILogger;
 class CILoggingFormatter;
 class CMultiLogger;
-class CString;
 class CLoggingTask;
 
 /*-------------------------------------------------------------------------*/

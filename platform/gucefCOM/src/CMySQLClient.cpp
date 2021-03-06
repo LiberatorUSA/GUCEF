@@ -184,13 +184,10 @@ CMySQLClient::ConnectTo( const GUCEF::CORE::CString& address  ,
 
         if( !socket.ConnectTo( address, port ) )
         {
-                CORE::CString portstr;
-                portstr.SetInt( port );
-
                 mysql_error = "Could not connect to ";
                 mysql_error += address;
                 mysql_error += ":";
-                mysql_error += portstr;
+                mysql_error += CORE::ToString( port );
 
                 mysql_error_number = 0;
 

@@ -41,6 +41,11 @@
 #define GUCEF_CORE_LOGTYPES_H
 #endif /* GUCEF_CORE_LOGTYPES_H ? */
 
+#ifndef GUCEF_CORE_CSTRING_H
+#include "gucefCORE_CString.h"
+#define GUCEF_CORE_CSTRING_H
+#endif /* GUCEF_CORE_CSTRING_H ? */
+
 /*-------------------------------------------------------------------------//
 //                                                                         //
 //      NAMESPACE                                                          //
@@ -56,7 +61,6 @@ namespace CORE {
 //                                                                         //
 //-------------------------------------------------------------------------*/
 
-class CString;
 class CDateTime;
 class CPulseGenerator;
 class CTaskManager;
