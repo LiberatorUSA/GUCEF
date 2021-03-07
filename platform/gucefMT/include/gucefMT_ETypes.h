@@ -138,6 +138,8 @@ typedef double          Float64;  /* 8 bytes, signed, decimal */
 
 /*--------------------------------------------------------------------------*/
 
+#define GUCEF_DATATYPE_UNKNOWN      0
+
 #define GUCEF_DATATYPE_FLOAT32      1
 #define GUCEF_DATATYPE_FLOAT64      2
 #define GUCEF_DATATYPE_UINT8        3
@@ -149,14 +151,14 @@ typedef double          Float64;  /* 8 bytes, signed, decimal */
 #define GUCEF_DATATYPE_UINT64       9
 #define GUCEF_DATATYPE_INT64       10
 
-#define GUCEF_DATATYPE_UNKNOWN     11
-
-#define GUCEF_DATATYPE_NUMERIC        21
-#define GUCEF_DATATYPE_STRING         22
-#define GUCEF_DATATYPE_ARRAY          23
-#define GUCEF_DATATYPE_OBJECT         24
-#define GUCEF_DATATYPE_BOOLEAN_INT32  25
-#define GUCEF_DATATYPE_BOOLEAN_STRING 26
+#define GUCEF_DATATYPE_NUMERIC              21
+#define GUCEF_DATATYPE_ASCII_STRING         22
+#define GUCEF_DATATYPE_UTF8_STRING          23
+#define GUCEF_DATATYPE_ARRAY                24
+#define GUCEF_DATATYPE_OBJECT               25
+#define GUCEF_DATATYPE_BOOLEAN_INT32        26
+#define GUCEF_DATATYPE_BOOLEAN_ASCII_STRING 27
+#define GUCEF_DATATYPE_BOOLEAN_UTF8_STRING  28
 
 #ifdef __cplusplus
 
@@ -182,11 +184,12 @@ typedef enum EBuildinDataType TBuildinDataType;
 
 enum EBasicDataType
 {
-    DATATYPE_NUMERIC    = GUCEF_DATATYPE_NUMERIC       ,
-    DATATYPE_STRING     = GUCEF_DATATYPE_STRING        ,
-    DATATYPE_ARRAY      = GUCEF_DATATYPE_ARRAY         ,
-    DATATYPE_OBJECT     = GUCEF_DATATYPE_OBJECT        ,
-    DATATYPE_BOOLEAN    = GUCEF_DATATYPE_BOOLEAN_INT32
+    DATATYPE_NUMERIC        = GUCEF_DATATYPE_NUMERIC       ,
+    DATATYPE_ASCII_STRING   = GUCEF_DATATYPE_ASCII_STRING  ,
+    DATATYPE_UTF8_STRING    = GUCEF_DATATYPE_UTF8_STRING   ,
+    DATATYPE_ARRAY          = GUCEF_DATATYPE_ARRAY         ,
+    DATATYPE_OBJECT         = GUCEF_DATATYPE_OBJECT        ,
+    DATATYPE_BOOLEAN        = GUCEF_DATATYPE_BOOLEAN_INT32
 };
 typedef enum EBasicDataType TBasicDataType;
 
