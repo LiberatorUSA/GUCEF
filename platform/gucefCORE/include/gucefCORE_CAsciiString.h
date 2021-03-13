@@ -17,8 +17,8 @@
  *  Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA
  */
 
-#ifndef GUCEF_CORE_CANSISTRING_H
-#define GUCEF_CORE_CANSISTRING_H
+#ifndef GUCEF_CORE_CASCIISTRING_H
+#define GUCEF_CORE_CASCIISTRING_H
 
 /*-------------------------------------------------------------------------//
 //                                                                         //
@@ -57,61 +57,61 @@ namespace CORE {
 //                                                                         //
 //-------------------------------------------------------------------------*/
 
-class GUCEF_CORE_PUBLIC_CPP CAnsiString
+class GUCEF_CORE_PUBLIC_CPP CAsciiString
 {
     public:
 
-    typedef std::vector< CAnsiString >  StringVector;
-    typedef std::set< CAnsiString >     StringSet;
+    typedef std::vector< CAsciiString >  StringVector;
+    typedef std::set< CAsciiString >     StringSet;
 
-    static const CAnsiString Empty;
+    static const CAsciiString Empty;
     static const StringVector EmptyStringVector;
 
-    CAnsiString( void );
+    CAsciiString( void );
 
-    CAnsiString( const CAnsiString& src );
+    CAsciiString( const CAsciiString& src );
 
     #ifdef GUCEF_RVALUE_REFERENCES_SUPPORTED
-    CAnsiString( CAnsiString&& src );
+    CAsciiString( CAsciiString&& src ) GUCEF_NOEXCEPT;
     #endif
 
-    CAnsiString( const std::string& src );
+    CAsciiString( const std::string& src );
 
-    CAnsiString( const char *src );
+    CAsciiString( const char *src );
 
-    CAnsiString( const char *src ,
+    CAsciiString( const char *src ,
                  UInt32 length   );
 
-    explicit CAnsiString( const char src );
+    explicit CAsciiString( const char src );
 
-    explicit CAnsiString( const int NULLvalue );
+    explicit CAsciiString( const int NULLvalue );
 
-    ~CAnsiString();
+    ~CAsciiString();
 
-    CAnsiString& operator=( const CAnsiString &src );
+    CAsciiString& operator=( const CAsciiString &src );
 
-    CAnsiString& operator=( const std::string& src );
+    CAsciiString& operator=( const std::string& src );
     
     /**
      *      Copys the source string.
      *      If the src string is NULL then the current string will be
      *      deallocated and also set to NULL.
      */
-    CAnsiString& operator=( const char *src );
+    CAsciiString& operator=( const char *src );
 
-    CAnsiString& operator+=( const CAnsiString &other );
+    CAsciiString& operator+=( const CAsciiString &other );
 
-    CAnsiString& operator+=( const char *other );
+    CAsciiString& operator+=( const char *other );
 
-    CAnsiString& operator+=( char lastchar );
+    CAsciiString& operator+=( char lastchar );
 
-    CAnsiString operator+( const CAnsiString& addition ) const;
+    CAsciiString operator+( const CAsciiString& addition ) const;
 
-    CAnsiString operator+( const char* addition ) const;
+    CAsciiString operator+( const char* addition ) const;
 
-    CAnsiString operator+( const char addition ) const;
+    CAsciiString operator+( const char addition ) const;
 
-    bool operator==( const CAnsiString &other ) const;
+    bool operator==( const CAsciiString &other ) const;
 
     bool operator==( const char *other ) const;
 
@@ -119,7 +119,7 @@ class GUCEF_CORE_PUBLIC_CPP CAnsiString
 
     bool operator==( const char character ) const;
 
-    bool operator!=( const CAnsiString &other ) const;
+    bool operator!=( const CAsciiString &other ) const;
 
     bool operator!=( const char *other ) const;
 
@@ -127,7 +127,7 @@ class GUCEF_CORE_PUBLIC_CPP CAnsiString
 
     bool operator!=( const char character ) const;
 
-    bool operator<( const CAnsiString& other ) const;
+    bool operator<( const CAsciiString& other ) const;
 
     char operator[]( const UInt32 index ) const;
 
@@ -152,6 +152,8 @@ class GUCEF_CORE_PUBLIC_CPP CAnsiString
     std::string STL_String( void ) const;
 
     UInt32 Length( void ) const;
+
+    UInt32 ByteSize( void ) const;
 
     /**
      *  Allows you to set the length of the string.
@@ -191,56 +193,56 @@ class GUCEF_CORE_PUBLIC_CPP CAnsiString
     void Append( const char *appendstr ,
                  UInt32 len            );
 
-    CAnsiString Lowercase( void ) const;
+    CAsciiString Lowercase( void ) const;
 
-    CAnsiString Uppercase( void ) const;
+    CAsciiString Uppercase( void ) const;
 
-    CAnsiString ReplaceChar( char oldchar ,
-                         char newchar ) const;
+    CAsciiString ReplaceChar( char oldchar ,
+                              char newchar ) const;
 
-    CAnsiString ReplaceSubstr( const CAnsiString& substr      ,
-                           const CAnsiString& replacement ) const;
+    CAsciiString ReplaceSubstr( const CAsciiString& substr      ,
+                                const CAsciiString& replacement ) const;
 
     /**
      *  Replaces an enveloping substring with another
      *  Example: "$MyEnvelope(" ")" -> "%{" "}"
      */
-    CAnsiString ReplaceEnvelopingSubstr( const CAnsiString& envelopPrefix     ,
-                                         const CAnsiString& envelopPostfix    ,
-                                         const CAnsiString& newEnvelopPrefix  ,
-                                         const CAnsiString& newEnvelopPostfix ) const;
+    CAsciiString ReplaceEnvelopingSubstr( const CAsciiString& envelopPrefix     ,
+                                          const CAsciiString& envelopPostfix    ,
+                                          const CAsciiString& newEnvelopPrefix  ,
+                                          const CAsciiString& newEnvelopPostfix ) const;
 
-    CAnsiString ReplaceSubStr( UInt32 startIndex        ,
-                               UInt32 length            ,
-                               const CAnsiString& newSubstr ) const;
+    CAsciiString ReplaceSubStr( UInt32 startIndex        ,
+                                UInt32 length            ,
+                                const CAsciiString& newSubstr ) const;
 
-    CAnsiString SubstrToChar( char searchchar         ,
-                              bool frontToBack = true ) const;
-
-    CAnsiString SubstrToChar( char searchchar                        ,
-                              UInt32 startIndex                      ,
-                              bool frontToBack = true                ,
-                              bool returnEmptyIfCharNotFound = false ) const;
-
-    CAnsiString SubstrToSubstr( const CAnsiString& searchstr ,
-                                bool frontToBack = true  ) const;
-
-    CAnsiString SubstrToSubstr( const CAnsiString& searchstr ,
-                                UInt32 startIndex        ,
-                                bool frontToBack = true  ) const;
-
-    CAnsiString SubstrToIndex( UInt32 index            ,
+    CAsciiString SubstrToChar( char searchchar         ,
                                bool frontToBack = true ) const;
+
+    CAsciiString SubstrToChar( char searchchar                        ,
+                               UInt32 startIndex                      ,
+                               bool frontToBack = true                ,
+                               bool returnEmptyIfCharNotFound = false ) const;
+
+    CAsciiString SubstrToSubstr( const CAsciiString& searchstr ,
+                                 bool frontToBack = true  ) const;
+
+    CAsciiString SubstrToSubstr( const CAsciiString& searchstr ,
+                                 UInt32 startIndex        ,
+                                 bool frontToBack = true  ) const;
+
+    CAsciiString SubstrToIndex( UInt32 index            ,
+                                bool frontToBack = true ) const;
 
     /**
      *  As per common convention:
      *  startIndex is inclusive and endIndex is exclusive
      *  Put another way: the char pointed to by endIndex will NOT be included
      */
-    CAnsiString SubstrFromRange( UInt32 startIndex ,
+    CAsciiString SubstrFromRange( UInt32 startIndex ,
                                  UInt32 endIndex   ) const;
 
-    CAnsiString Trim( bool frontToBack ) const;
+    CAsciiString Trim( bool frontToBack ) const;
 
     Int32 HasChar( char searchchar         ,
                    bool frontToBack = true ) const;
@@ -249,27 +251,27 @@ class GUCEF_CORE_PUBLIC_CPP CAnsiString
                    const UInt32 startIndex ,
                    bool frontToBack        ) const;
 
-    Int32 HasSubstr( const CAnsiString& substr   ,
+    Int32 HasSubstr( const CAsciiString& substr   ,
                      Int32 startIndex        ,
                      bool frontToBack = true ) const;
 
-    Int32 HasSubstr( const CAnsiString& substr   ,
+    Int32 HasSubstr( const CAsciiString& substr   ,
                      bool frontToBack = true ) const;
 
     UInt32 GetCharacterCount( const char searchChar ) const;
 
-    UInt32 FindMaxSubstrEquality( const CAnsiString& searchStr ,
+    UInt32 FindMaxSubstrEquality( const CAsciiString& searchStr ,
                                   const UInt32 startOffset ,
                                   bool frontToBack         ,
                                   bool isCaseSentive       ) const;
 
-    CAnsiString CutChars( UInt32 charcount        ,
-                          bool frontToBack = true ,
-                          UInt32 startOffset = 0  ) const;
+    CAsciiString CutChars( UInt32 charcount        ,
+                           bool frontToBack = true ,
+                           UInt32 startOffset = 0  ) const;
 
-    CAnsiString RemoveChar( const char charToRemove ) const;
+    CAsciiString RemoveChar( const char charToRemove ) const;
 
-    CAnsiString CompactRepeatingChar( const char charToCompact ) const;
+    CAsciiString CompactRepeatingChar( const char charToCompact ) const;
 
     StringVector ParseElements( char seperator               ,
                                 bool addEmptyElements = true ) const;
@@ -277,20 +279,27 @@ class GUCEF_CORE_PUBLIC_CPP CAnsiString
     StringSet ParseUniqueElements( char seperator               ,
                                    bool addEmptyElements = true ) const;
 
-    bool WildcardEquals( const CAnsiString& strWithWildcards  ,
+    bool WildcardEquals( const CAsciiString& strWithWildcards  ,
                          const char wildCardToken = '*'   ,
                          const bool caseSensitive = true  ,
                          const bool biDirectional = false ) const;
 
-    bool Equals( const CAnsiString& otherStr        ,
+    bool Equals( const CAsciiString& otherStr        ,
                  const bool caseSensitive = true ) const;
 
-    bool NotEquals( const CAnsiString& otherStr         ,
+    bool NotEquals( const CAsciiString& otherStr         ,
                     const bool caseSensitive = true ) const;
 
-    CAnsiString Combine( const StringVector& elements, char seperator ) const;
+    CAsciiString Combine( const StringVector& elements, char seperator ) const;
     
     void Clear( void );
+
+    /**
+     *  Explicitly validates whether the bytes contained within conform with the formatting rules
+     *  In this case whether the bytes confirm to the rules of a ASCII string (0-127 only, single byte per code point)
+     *  To prevent exploits you should utilize this member function when accepting data from external sources
+     */
+    bool IsFormattingValid( void ) const;
 
     private:
     char* m_string;    /**< our actual null-terminated string */
@@ -299,10 +308,10 @@ class GUCEF_CORE_PUBLIC_CPP CAnsiString
 
 /*-------------------------------------------------------------------------*/
 
-GUCEF_CORE_PUBLIC_CPP bool operator!=( const char* lhs, const CAnsiString& rhs );
-GUCEF_CORE_PUBLIC_CPP bool operator==( const char* lhs, const CAnsiString& rhs );
-GUCEF_CORE_PUBLIC_CPP CAnsiString operator+( const char* lhs, const CAnsiString& rhs );
-GUCEF_CORE_PUBLIC_CPP CAnsiString operator+( const char lhs, const CAnsiString& rhs );
+GUCEF_CORE_PUBLIC_CPP bool operator!=( const char* lhs, const CAsciiString& rhs );
+GUCEF_CORE_PUBLIC_CPP bool operator==( const char* lhs, const CAsciiString& rhs );
+GUCEF_CORE_PUBLIC_CPP CAsciiString operator+( const char* lhs, const CAsciiString& rhs );
+GUCEF_CORE_PUBLIC_CPP CAsciiString operator+( const char lhs, const CAsciiString& rhs );
 
 /*-------------------------------------------------------------------------//
 //                                                                         //
@@ -315,4 +324,4 @@ GUCEF_CORE_PUBLIC_CPP CAnsiString operator+( const char lhs, const CAnsiString& 
 
 /*-------------------------------------------------------------------------*/
 
-#endif /* GUCEF_CORE_CANSISTRING_H ? */
+#endif /* GUCEF_CORE_CASCIISTRING_H ? */

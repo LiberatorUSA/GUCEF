@@ -142,7 +142,7 @@ set( HEADER_FILES
   include/dvstrutils.h
   include/gucefCORE.h
   include/gucefCORE_CAbstractFactoryBase.h
-  include/gucefCORE_CAnsiString.h
+  include/gucefCORE_CAsciiString.h
   include/gucefCORE_CBasicBracketLoggingFormatter.h
   include/gucefCORE_CBusyWaitPulseGeneratorDriver.h
   include/gucefCORE_CCharSepLoggingFormatter.h
@@ -190,6 +190,8 @@ set( HEADER_FILES
   include/gucefCORE_CTaskManager.h
   include/gucefCORE_CThreadPool.h
   include/gucefCORE_CTime.h
+  include/gucefCORE_CUtf8String.h
+  include/gucefCORE_CVariant.h
   include/gucefCORE_CVersion.h
   include/gucefCORE_CVersionRange.h
   include/gucefCORE_CoreCodecTypes.h
@@ -203,6 +205,7 @@ set( HEADER_FILES
   include/gucefCORE_cinterface.h
   include/gucefCORE_config.h
   include/gucefCORE_macros.h
+  include/gucefCORE_utf8.h
   include/gucef_essentials.h
   include/gucef_new_off.h
   include/gucef_new_on.h
@@ -330,7 +333,7 @@ set( SOURCE_FILES
   src/dvstrutils.c
   src/gucefCORE.cpp
   src/gucefCORE_CAbstractFactoryBase.cpp
-  src/gucefCORE_CAnsiString.cpp
+  src/gucefCORE_CAsciiString.cpp
   src/gucefCORE_CBasicBracketLoggingFormatter.cpp
   src/gucefCORE_CBusyWaitPulseGeneratorDriver.cpp
   src/gucefCORE_CCharSepLoggingFormatter.cpp
@@ -376,6 +379,8 @@ set( SOURCE_FILES
   src/gucefCORE_CTaskManager.cpp
   src/gucefCORE_CThreadPool.cpp
   src/gucefCORE_CTime.cpp
+  src/gucefCORE_CUtf8String.cpp
+  src/gucefCORE_CVariant.cpp
   src/gucefCORE_CVersion.cpp
   src/gucefCORE_CVersionRange.cpp
   src/gucefCORE_CoreCodecTypes.cpp

@@ -416,16 +416,16 @@ ThreadSetCpuAffinity( struct SThreadData* td  ,
     {
         DWORD_PTR mask = 0;
         if ( 8 == affinityMaskSize )
-            mask = *(UInt64*) affinityMask;
+            mask = (DWORD_PTR) *(UInt64*) affinityMask;
         else
         if ( 4 == affinityMaskSize )
-            mask = *(UInt32*) affinityMask;
+            mask = (DWORD_PTR) *(UInt32*) affinityMask;
         else
         if ( 2 == affinityMaskSize )
-            mask = *(UInt16*) affinityMask;
+            mask = (DWORD_PTR) *(UInt16*) affinityMask;
         else
         if ( 1 == affinityMaskSize )
-            mask = *(UInt8*) affinityMask;
+            mask = (DWORD_PTR) *(UInt8*) affinityMask;
 
         mask = SetThreadAffinityMask( td->threadhandle, mask );
         if ( 0 != mask )

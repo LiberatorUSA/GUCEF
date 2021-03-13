@@ -31,7 +31,7 @@
 #define GUCEF_CORE_DVSTRUTILS_H
 #endif /* GUCEF_CORE_DVSTRUTILS_H ? */
 
-#include "gucefCORE_CAnsiString.h"
+#include "gucefCORE_CAsciiString.h"
 
 #ifndef GUCEF_CORE_GUCEF_ESSENTIALS_H
 #include "gucef_essentials.h"
@@ -53,8 +53,8 @@ namespace CORE {
 //                                                                         //
 //-------------------------------------------------------------------------*/
 
-const CAnsiString CAnsiString::Empty;
-const CAnsiString::StringVector CAnsiString::EmptyStringVector;
+const CAsciiString CAsciiString::Empty;
+const CAsciiString::StringVector CAsciiString::EmptyStringVector;
 
 /*-------------------------------------------------------------------------//
 //                                                                         //
@@ -62,7 +62,7 @@ const CAnsiString::StringVector CAnsiString::EmptyStringVector;
 //                                                                         //
 //-------------------------------------------------------------------------*/
 
-CAnsiString::CAnsiString( void )
+CAsciiString::CAsciiString( void )
         : m_string( NULL ) ,
           m_length( 0 )
 {GUCEF_TRACE;
@@ -71,7 +71,7 @@ CAnsiString::CAnsiString( void )
 
 /*-------------------------------------------------------------------------*/
 
-CAnsiString::CAnsiString( const CAnsiString &src )
+CAsciiString::CAsciiString( const CAsciiString &src )
         : m_string( NULL ) ,
           m_length( 0 )
 {GUCEF_TRACE;
@@ -87,7 +87,7 @@ CAnsiString::CAnsiString( const CAnsiString &src )
 
 /*-------------------------------------------------------------------------*/
 
-CAnsiString::CAnsiString( const std::string& src )
+CAsciiString::CAsciiString( const std::string& src )
         : m_string( NULL ) ,
           m_length( 0 )
 {GUCEF_TRACE;
@@ -104,7 +104,7 @@ CAnsiString::CAnsiString( const std::string& src )
 /*-------------------------------------------------------------------------*/
 #ifdef GUCEF_RVALUE_REFERENCES_SUPPORTED
 
-CAnsiString::CAnsiString( CAnsiString&& src )
+CAsciiString::CAsciiString( CAsciiString&& src )
     : m_string( src.m_string ) ,
       m_length( src.m_length )
 {GUCEF_TRACE;
@@ -116,7 +116,7 @@ CAnsiString::CAnsiString( CAnsiString&& src )
 #endif
 /*-------------------------------------------------------------------------*/
 
-CAnsiString::CAnsiString( const char *src )
+CAsciiString::CAsciiString( const char *src )
         : m_string( NULL ) ,
           m_length( 0 )
 {GUCEF_TRACE;
@@ -132,7 +132,7 @@ CAnsiString::CAnsiString( const char *src )
 
 /*-------------------------------------------------------------------------*/
 
-CAnsiString::CAnsiString( const char *src ,
+CAsciiString::CAsciiString( const char *src ,
                           UInt32 length   )
         : m_string( NULL ) ,
           m_length( 0 )
@@ -150,7 +150,7 @@ CAnsiString::CAnsiString( const char *src ,
 
 /*-------------------------------------------------------------------------*/
 
-CAnsiString::CAnsiString( const char src )
+CAsciiString::CAsciiString( const char src )
     : m_string( NULL ) ,
       m_length( 0 )
 {GUCEF_TRACE;
@@ -160,7 +160,7 @@ CAnsiString::CAnsiString( const char src )
 
 /*-------------------------------------------------------------------------*/
 
-CAnsiString::CAnsiString( const int NULLvalue )
+CAsciiString::CAsciiString( const int NULLvalue )
     : m_string( NULL ) ,
       m_length( 0 )
 {GUCEF_TRACE;
@@ -169,7 +169,7 @@ CAnsiString::CAnsiString( const int NULLvalue )
 }
 /*-------------------------------------------------------------------------*/
 
-CAnsiString::~CAnsiString()
+CAsciiString::~CAsciiString()
 {GUCEF_TRACE;
 
     delete []m_string;
@@ -179,8 +179,8 @@ CAnsiString::~CAnsiString()
 
 /*-------------------------------------------------------------------------*/
 
-CAnsiString&
-CAnsiString::operator=( const CAnsiString &src )
+CAsciiString&
+CAsciiString::operator=( const CAsciiString &src )
 {GUCEF_TRACE;
 
     if ( &src != this )
@@ -201,8 +201,8 @@ CAnsiString::operator=( const CAnsiString &src )
 
 /*-------------------------------------------------------------------------*/
 
-CAnsiString&
-CAnsiString::operator=( const std::string& src )
+CAsciiString&
+CAsciiString::operator=( const std::string& src )
 {GUCEF_TRACE;
 
     delete []m_string;
@@ -220,8 +220,8 @@ CAnsiString::operator=( const std::string& src )
 
 /*-------------------------------------------------------------------------*/
 
-CAnsiString&
-CAnsiString::operator=( const char *src )
+CAsciiString&
+CAsciiString::operator=( const char *src )
 {GUCEF_TRACE;
 
     // protect against self-assignment
@@ -248,9 +248,9 @@ CAnsiString::operator=( const char *src )
 /*-------------------------------------------------------------------------*/
 
 bool
-CAnsiString::operator==( const char character ) const
+CAsciiString::operator==( const char character ) const
 {GUCEF_TRACE;          //@TODO  //@FIXME
-       return *this == CAnsiString(  character);
+       return *this == CAsciiString(  character);
     if ( m_length == 1 )
     {
         return *m_string == character;
@@ -261,10 +261,10 @@ CAnsiString::operator==( const char character ) const
 /*-------------------------------------------------------------------------*/
 
 bool
-CAnsiString::operator!=( const char character ) const
+CAsciiString::operator!=( const char character ) const
 {GUCEF_TRACE;
                      //@TODO  //@FIXME
-    return *this != CAnsiString(  character);
+    return *this != CAsciiString(  character);
 
     //if ( m_length == 1 )
     //{
@@ -276,7 +276,7 @@ CAnsiString::operator!=( const char character ) const
 /*-------------------------------------------------------------------------*/
 
 bool
-CAnsiString::operator!=( const int NULLvalue ) const
+CAsciiString::operator!=( const int NULLvalue ) const
 {GUCEF_TRACE;
 
     if ( NULLvalue == (int) GUCEF_NULL )
@@ -290,7 +290,7 @@ CAnsiString::operator!=( const int NULLvalue ) const
 /*-------------------------------------------------------------------------*/
 
 bool
-CAnsiString::operator==( const int NULLvalue ) const
+CAsciiString::operator==( const int NULLvalue ) const
 {GUCEF_TRACE;
 
     if ( NULLvalue == NULL )
@@ -304,7 +304,7 @@ CAnsiString::operator==( const int NULLvalue ) const
 /*-------------------------------------------------------------------------*/
 
 bool
-CAnsiString::operator==( const char *other ) const
+CAsciiString::operator==( const char *other ) const
 {GUCEF_TRACE;
 
     if ( GUCEF_NULL == m_string && GUCEF_NULL == other )
@@ -322,7 +322,7 @@ CAnsiString::operator==( const char *other ) const
 /*-------------------------------------------------------------------------*/
 
 bool
-CAnsiString::operator==( const CAnsiString &other ) const
+CAsciiString::operator==( const CAsciiString &other ) const
 {GUCEF_TRACE;
 
     if ( GUCEF_NULL == m_string && GUCEF_NULL == other.m_string )
@@ -340,7 +340,7 @@ CAnsiString::operator==( const CAnsiString &other ) const
 /*-------------------------------------------------------------------------*/
 
 bool
-CAnsiString::operator!=( const CAnsiString &other ) const
+CAsciiString::operator!=( const CAsciiString &other ) const
 {GUCEF_TRACE;
 
     if ( GUCEF_NULL == m_string && GUCEF_NULL == other.m_string )
@@ -358,7 +358,7 @@ CAnsiString::operator!=( const CAnsiString &other ) const
 /*-------------------------------------------------------------------------*/
 
 bool
-CAnsiString::operator!=( const char *other ) const
+CAsciiString::operator!=( const char *other ) const
 {GUCEF_TRACE;
 
     if ( GUCEF_NULL == m_string && GUCEF_NULL == other )
@@ -376,7 +376,7 @@ CAnsiString::operator!=( const char *other ) const
 /*-------------------------------------------------------------------------*/
 
 char
-CAnsiString::operator[]( const UInt32 index ) const
+CAsciiString::operator[]( const UInt32 index ) const
 {GUCEF_TRACE;
 
     assert( index < m_length );
@@ -386,7 +386,7 @@ CAnsiString::operator[]( const UInt32 index ) const
 /*-------------------------------------------------------------------------*/
 
 bool
-CAnsiString::operator<( const CAnsiString& other ) const
+CAsciiString::operator<( const CAsciiString& other ) const
 {GUCEF_TRACE;
 
     if ( NULL != m_string && NULL != other.m_string )
@@ -403,7 +403,7 @@ CAnsiString::operator<( const CAnsiString& other ) const
 /*-------------------------------------------------------------------------*/
 
 bool
-CAnsiString::IsNULLOrEmpty( void ) const
+CAsciiString::IsNULLOrEmpty( void ) const
 {GUCEF_TRACE;
 
     return m_length == 0;
@@ -411,7 +411,7 @@ CAnsiString::IsNULLOrEmpty( void ) const
 
 /*-------------------------------------------------------------------------*/
 
-CAnsiString::operator std::string() const
+CAsciiString::operator std::string() const
 {GUCEF_TRACE;
 
     if ( m_length > 0 )
@@ -425,7 +425,7 @@ CAnsiString::operator std::string() const
 /*
      Disabled in favor of std::string() conversion
 
-CAnsiString::operator const char*() const
+CAsciiString::operator const char*() const
 {GUCEF_TRACE;
         return m_string;
 }
@@ -433,7 +433,7 @@ CAnsiString::operator const char*() const
 /*-------------------------------------------------------------------------*/
 
 void
-CAnsiString::Set( const char *new_str ,
+CAsciiString::Set( const char *new_str ,
                   UInt32 len          )
 {GUCEF_TRACE;
 
@@ -458,7 +458,7 @@ CAnsiString::Set( const char *new_str ,
 /*-------------------------------------------------------------------------*/
 
 UInt32
-CAnsiString::GetCharacterCount( const char searchChar ) const
+CAsciiString::GetCharacterCount( const char searchChar ) const
 {GUCEF_TRACE;
 
     UInt32 charCount = 0;
@@ -475,7 +475,7 @@ CAnsiString::GetCharacterCount( const char searchChar ) const
 /*-------------------------------------------------------------------------*/
 
 void
-CAnsiString::Append( const char *appendstr ,
+CAsciiString::Append( const char *appendstr ,
                      UInt32 len            )
 {GUCEF_TRACE;
 
@@ -508,8 +508,8 @@ CAnsiString::Append( const char *appendstr ,
 
 /*-------------------------------------------------------------------------*/
 
-CAnsiString&
-CAnsiString::operator+=( const CAnsiString &other )
+CAsciiString&
+CAsciiString::operator+=( const CAsciiString &other )
 {GUCEF_TRACE;
 
     Append( other.m_string, other.m_length );
@@ -518,8 +518,8 @@ CAnsiString::operator+=( const CAnsiString &other )
 
 /*-------------------------------------------------------------------------*/
 
-CAnsiString&
-CAnsiString::operator+=( const char *other )
+CAsciiString&
+CAsciiString::operator+=( const char *other )
 {GUCEF_TRACE;
 
     Append( other, UInt32( strlen( other ) ) );
@@ -528,8 +528,8 @@ CAnsiString::operator+=( const char *other )
 
 /*-------------------------------------------------------------------------*/
 
-CAnsiString&
-CAnsiString::operator+=( char lastchar )
+CAsciiString&
+CAsciiString::operator+=( char lastchar )
 {GUCEF_TRACE;
 
     Append( &lastchar, 1 );
@@ -539,7 +539,7 @@ CAnsiString::operator+=( char lastchar )
 /*-------------------------------------------------------------------------*/
 
 const char*
-CAnsiString::C_String( void ) const
+CAsciiString::C_String( void ) const
 {GUCEF_TRACE;
 
     if ( GUCEF_NULL != m_string )
@@ -550,7 +550,7 @@ CAnsiString::C_String( void ) const
 /*-------------------------------------------------------------------------*/
 
 char*
-CAnsiString::C_String( void )
+CAsciiString::C_String( void )
 {GUCEF_TRACE;
 
     return m_string;
@@ -559,7 +559,7 @@ CAnsiString::C_String( void )
 /*-------------------------------------------------------------------------*/
 
 char*
-CAnsiString::Reserve( const UInt32 stringSize )
+CAsciiString::Reserve( const UInt32 stringSize )
 {
     delete []m_string;
     m_string = NULL;
@@ -575,7 +575,7 @@ CAnsiString::Reserve( const UInt32 stringSize )
 /*-------------------------------------------------------------------------*/
 
 std::string
-CAnsiString::STL_String( void ) const
+CAsciiString::STL_String( void ) const
 {GUCEF_TRACE;
 
     if ( m_length > 0 )
@@ -588,7 +588,7 @@ CAnsiString::STL_String( void ) const
 /*-------------------------------------------------------------------------*/
 
 UInt32
-CAnsiString::Length( void ) const
+CAsciiString::Length( void ) const
 {GUCEF_TRACE;
 
     return m_length;
@@ -596,8 +596,17 @@ CAnsiString::Length( void ) const
 
 /*-------------------------------------------------------------------------*/
 
+UInt32
+CAsciiString::ByteSize( void ) const
+{GUCEF_TRACE;
+
+    return m_length+1;
+}
+
+/*-------------------------------------------------------------------------*/
+
 void
-CAnsiString::SetLength( UInt32 newLength )
+CAsciiString::SetLength( UInt32 newLength )
 {GUCEF_TRACE;
 
     if ( NULL != m_string )
@@ -629,7 +638,7 @@ CAnsiString::SetLength( UInt32 newLength )
 /*-------------------------------------------------------------------------*/
 
 UInt32
-CAnsiString::DetermineLength( void )
+CAsciiString::DetermineLength( void )
 {
     if ( 0 != m_string )
     {
@@ -641,9 +650,9 @@ CAnsiString::DetermineLength( void )
 
 /*-------------------------------------------------------------------------*/
 
-CAnsiString
-CAnsiString::ReplaceChar( char oldchar ,
-                          char newchar ) const
+CAsciiString
+CAsciiString::ReplaceChar( char oldchar ,
+                           char newchar ) const
 {GUCEF_TRACE;
 
     if ( m_length > 0 )
@@ -657,23 +666,23 @@ CAnsiString::ReplaceChar( char oldchar ,
                         str[ i ] = newchar;
                 }
         }
-        CAnsiString newstr( str, m_length );
+        CAsciiString newstr( str, m_length );
         delete []str;
         return newstr;
     }
-    CAnsiString emptystr;
+    CAsciiString emptystr;
     return emptystr;
 }
 
 /*-------------------------------------------------------------------------*/
 
-CAnsiString
-CAnsiString::ReplaceSubstr( const CAnsiString& substr      ,
-                            const CAnsiString& replacement ) const
+CAsciiString
+CAsciiString::ReplaceSubstr( const CAsciiString& substr      ,
+                             const CAsciiString& replacement ) const
 {GUCEF_TRACE;
 
-    CAnsiString testStr = *this;
-    CAnsiString newStr;
+    CAsciiString testStr = *this;
+    CAsciiString newStr;
     Int32 subStrIndex = 0;
     do
     {
@@ -693,14 +702,14 @@ CAnsiString::ReplaceSubstr( const CAnsiString& substr      ,
 
 /*-------------------------------------------------------------------------*/
 
-CAnsiString
-CAnsiString::ReplaceEnvelopingSubstr( const CAnsiString& envelopPrefix     ,
-                                      const CAnsiString& envelopPostfix    ,
-                                      const CAnsiString& newEnvelopPrefix  ,
-                                      const CAnsiString& newEnvelopPostfix ) const
+CAsciiString
+CAsciiString::ReplaceEnvelopingSubstr( const CAsciiString& envelopPrefix     ,
+                                       const CAsciiString& envelopPostfix    ,
+                                       const CAsciiString& newEnvelopPrefix  ,
+                                       const CAsciiString& newEnvelopPostfix ) const
 {GUCEF_TRACE;
 
-    CAnsiString resultStr;
+    CAsciiString resultStr;
 
     Int32 startIndex = 0;
     Int32 envSegIndex = this->HasSubstr( envelopPrefix, startIndex, true );
@@ -712,7 +721,7 @@ CAnsiString::ReplaceEnvelopingSubstr( const CAnsiString& envelopPrefix     ,
         }
 
         envSegIndex+=envelopPrefix.Length();
-        CAnsiString envelopedSegment = this->SubstrToSubstr( envelopPostfix, envSegIndex, true );
+        CAsciiString envelopedSegment = this->SubstrToSubstr( envelopPostfix, envSegIndex, true );
         resultStr += newEnvelopPrefix + envelopedSegment + newEnvelopPostfix;
 
         startIndex = envSegIndex+envelopedSegment.Length()+envelopPostfix.Length();
@@ -727,19 +736,19 @@ CAnsiString::ReplaceEnvelopingSubstr( const CAnsiString& envelopPrefix     ,
 
 /*-------------------------------------------------------------------------*/
 
-CAnsiString
-CAnsiString::ReplaceSubStr( UInt32 startIndex            ,
-                            UInt32 length                ,
-                            const CAnsiString& newSubstr ) const
+CAsciiString
+CAsciiString::ReplaceSubStr( UInt32 startIndex            ,
+                             UInt32 length                ,
+                             const CAsciiString& newSubstr ) const
 {GUCEF_TRACE;
 
     // Sanity check on the given range
-    if ( 0 == m_length ) return CAnsiString();
+    if ( 0 == m_length ) return CAsciiString();
     if ( startIndex >= m_length ) startIndex = m_length -1;
     if ( startIndex+length >= m_length ) length = (m_length-1) - startIndex;
 
-    CAnsiString prefix = this->SubstrFromRange( 0, startIndex );
-    CAnsiString postfix = this->SubstrFromRange( startIndex+length+1, m_length );
+    CAsciiString prefix = this->SubstrFromRange( 0, startIndex );
+    CAsciiString postfix = this->SubstrFromRange( startIndex+length+1, m_length );
 
     return prefix + newSubstr + postfix;
 }
@@ -747,7 +756,7 @@ CAnsiString::ReplaceSubStr( UInt32 startIndex            ,
 /*-------------------------------------------------------------------------*/
 
 void
-CAnsiString::Clear( void )
+CAsciiString::Clear( void )
 {GUCEF_TRACE;
 
     m_length = 0;
@@ -757,11 +766,11 @@ CAnsiString::Clear( void )
 
 /*-------------------------------------------------------------------------*/
 
-CAnsiString
-CAnsiString::SubstrToChar( char searchchar                ,
-                           UInt32 startIndex              ,
-                           bool frontToBack               ,
-                           bool returnEmptyIfCharNotFound ) const
+CAsciiString
+CAsciiString::SubstrToChar( char searchchar                ,
+                            UInt32 startIndex              ,
+                            bool frontToBack               ,
+                            bool returnEmptyIfCharNotFound ) const
 {GUCEF_TRACE;
 
     if ( startIndex < m_length )
@@ -772,61 +781,61 @@ CAnsiString::SubstrToChar( char searchchar                ,
             {
                 if ( m_string[ i ] == searchchar )
                 {
-                    CAnsiString substr;
+                    CAsciiString substr;
                     substr.Set( m_string+startIndex ,
                                 i-startIndex        );
                     return substr;
                 }
             }
             if ( returnEmptyIfCharNotFound )
-                return CAnsiString();
+                return CAsciiString();
             else
-                return CAnsiString( *this );
+                return CAsciiString( *this );
         }
 
         for ( Int32 i=startIndex; i>=0; --i )
         {
             if ( m_string[ i ] == searchchar )
             {
-                CAnsiString substr;
+                CAsciiString substr;
                 substr.Set( m_string+i+1 ,
                             startIndex-i );
                 return substr;
             }
         }
         if ( returnEmptyIfCharNotFound )
-            return CAnsiString();
+            return CAsciiString();
         else
-            return CAnsiString( *this );
+            return CAsciiString( *this );
     }
-    return CAnsiString();
+    return CAsciiString();
 }
 
 /*-------------------------------------------------------------------------*/
 
-CAnsiString
-CAnsiString::SubstrToIndex( UInt32 index     ,
-                            bool frontToBack ) const
+CAsciiString
+CAsciiString::SubstrToIndex( UInt32 index     ,
+                             bool frontToBack ) const
 {GUCEF_TRACE;
 
     if ( !frontToBack )
     {
-         if ( index >= m_length ) return CAnsiString();
+         if ( index >= m_length ) return CAsciiString();
          return SubstrFromRange( index, m_length );
     }
 
-    if ( index >= m_length ) return CAnsiString( m_string, m_length );
+    if ( index >= m_length ) return CAsciiString( m_string, m_length );
     return SubstrFromRange( 0, index );
 }
 
 /*-------------------------------------------------------------------------*/
 
-CAnsiString
-CAnsiString::SubstrFromRange( UInt32 startIndex ,
-                              UInt32 endIndex   ) const
+CAsciiString
+CAsciiString::SubstrFromRange( UInt32 startIndex ,
+                               UInt32 endIndex   ) const
 {GUCEF_TRACE;
 
-    if ( startIndex == endIndex ) return CAnsiString();
+    if ( startIndex == endIndex ) return CAsciiString();
 
     // we want the user to be able to pass a range conveniently
     if  ( startIndex > endIndex )
@@ -847,16 +856,16 @@ CAnsiString::SubstrFromRange( UInt32 startIndex ,
     if ( maxEnd >= maxStart )
     {
         // make the new string using the given range
-        return CAnsiString( m_string+maxStart, maxEnd-maxStart );
+        return CAsciiString( m_string+maxStart, maxEnd-maxStart );
     }
-    return CAnsiString();
+    return CAsciiString();
 }
 
 /*-------------------------------------------------------------------------*/
 
-CAnsiString
-CAnsiString::SubstrToChar( char searchchar  ,
-                           bool frontToBack ) const
+CAsciiString
+CAsciiString::SubstrToChar( char searchchar  ,
+                            bool frontToBack ) const
 {GUCEF_TRACE;
 
     if ( frontToBack )
@@ -868,8 +877,8 @@ CAnsiString::SubstrToChar( char searchchar  ,
 
 /*-------------------------------------------------------------------------*/
 
-CAnsiString
-CAnsiString::Trim( bool frontToBack ) const
+CAsciiString
+CAsciiString::Trim( bool frontToBack ) const
 {GUCEF_TRACE;
 
     if ( m_length > 0 )
@@ -893,14 +902,14 @@ CAnsiString::Trim( bool frontToBack ) const
         }
         return CutChars( charsToCut, frontToBack );
     }
-    return CAnsiString( *this );
+    return CAsciiString( *this );
 }
 
 /*-------------------------------------------------------------------------*/
 
-CAnsiString
-CAnsiString::SubstrToSubstr( const CAnsiString& searchstr ,
-                             bool startfront              ) const
+CAsciiString
+CAsciiString::SubstrToSubstr( const CAsciiString& searchstr ,
+                              bool startfront              ) const
 {GUCEF_TRACE;
 
     if ( searchstr.Length() > m_length || 0 == searchstr.Length() || 0 == m_length )
@@ -918,10 +927,10 @@ CAnsiString::SubstrToSubstr( const CAnsiString& searchstr ,
 
 /*-------------------------------------------------------------------------*/
 
-CAnsiString
-CAnsiString::SubstrToSubstr( const CAnsiString& searchstr ,
-                             UInt32 startIndex            ,
-                             bool startfront              ) const
+CAsciiString
+CAsciiString::SubstrToSubstr( const CAsciiString& searchstr ,
+                              UInt32 startIndex            ,
+                              bool startfront              ) const
 {GUCEF_TRACE;
 
     UInt32 slen = searchstr.Length();
@@ -942,7 +951,7 @@ CAnsiString::SubstrToSubstr( const CAnsiString& searchstr ,
         {
             if ( memcmp( m_string+i, searchstr.m_string, slen ) == 0 )
             {
-                return CAnsiString( m_string+startIndex, i-startIndex );
+                return CAsciiString( m_string+startIndex, i-startIndex );
             }
         }
         return *this;
@@ -953,7 +962,7 @@ CAnsiString::SubstrToSubstr( const CAnsiString& searchstr ,
     {
         if ( memcmp( m_string+i, searchstr.m_string, slen ) == 0 )
         {
-            CAnsiString substr;
+            CAsciiString substr;
             substr.Set( m_string+i+slen                    ,
                         m_length-(i+slen) - ((m_length-1)-startIndex) );
             return substr;
@@ -964,11 +973,11 @@ CAnsiString::SubstrToSubstr( const CAnsiString& searchstr ,
 
 /*-------------------------------------------------------------------------*/
 
-CAnsiString
-CAnsiString::RemoveChar( const char charToRemove ) const
+CAsciiString
+CAsciiString::RemoveChar( const char charToRemove ) const
 {GUCEF_TRACE;
 
-    CAnsiString newString;
+    CAsciiString newString;
     for ( UInt32 i=0; i<m_length; ++i )
     {
         if ( m_string[ i ] != charToRemove )
@@ -981,8 +990,8 @@ CAnsiString::RemoveChar( const char charToRemove ) const
 
 /*-------------------------------------------------------------------------*/
 
-CAnsiString
-CAnsiString::CompactRepeatingChar( const char charToCompact ) const
+CAsciiString
+CAsciiString::CompactRepeatingChar( const char charToCompact ) const
 {GUCEF_TRACE;
 
     char* newString = new char[ m_length+1 ];
@@ -1003,17 +1012,17 @@ CAnsiString::CompactRepeatingChar( const char charToCompact ) const
         }
     }
 
-    CAnsiString returnStr( newString, newStringLength );
+    CAsciiString returnStr( newString, newStringLength );
     delete []newString;
     return returnStr;
 }
 
 /*-------------------------------------------------------------------------*/
 
-CAnsiString
-CAnsiString::CutChars( UInt32 charcount   ,
-                       bool startfront    ,
-                       UInt32 startOffset ) const
+CAsciiString
+CAsciiString::CutChars( UInt32 charcount   ,
+                        bool startfront    ,
+                        UInt32 startOffset ) const
 {GUCEF_TRACE;
 
     if ( startfront )
@@ -1022,32 +1031,32 @@ CAnsiString::CutChars( UInt32 charcount   ,
         {
             if ( charcount < m_length )
             {
-                return CAnsiString( m_string+charcount, m_length-charcount );
+                return CAsciiString( m_string+charcount, m_length-charcount );
             }
 
-            return CAnsiString();
+            return CAsciiString();
         }
 
-        return CAnsiString( m_string, startfront ) + CAnsiString( m_string+startOffset+charcount, m_length-startOffset-charcount );
+        return CAsciiString( m_string, startOffset ) + CAsciiString( m_string+startOffset+charcount, m_length-startOffset-charcount );
     }
 
     if ( 0 == startOffset )
     {
         if ( charcount < m_length )
         {
-            return CAnsiString( m_string, m_length-charcount );
+            return CAsciiString( m_string, m_length-charcount );
         }
 
-        return CAnsiString();
+        return CAsciiString();
     }
 
-    return CAnsiString( m_string, m_length-startOffset-charcount ) + CAnsiString( m_string+m_length-charcount, charcount );
+    return CAsciiString( m_string, m_length-startOffset-charcount ) + CAsciiString( m_string+m_length-charcount, charcount );
 }
 
 /*-------------------------------------------------------------------------*/
 
-CAnsiString
-CAnsiString::Lowercase( void ) const
+CAsciiString
+CAsciiString::Lowercase( void ) const
 {GUCEF_TRACE;
 
     if ( m_length > 0 )
@@ -1062,17 +1071,17 @@ CAnsiString::Lowercase( void ) const
                 lcstr[ i ] += 32;
             }
         }
-        CAnsiString lower( lcstr, m_length );
+        CAsciiString lower( lcstr, m_length );
         delete []lcstr;
         return lower;
     }
-    return CAnsiString();
+    return CAsciiString();
 }
 
 /*-------------------------------------------------------------------------*/
 
-CAnsiString
-CAnsiString::Uppercase( void ) const
+CAsciiString
+CAsciiString::Uppercase( void ) const
 {GUCEF_TRACE;
 
     if ( m_length > 0 )
@@ -1087,19 +1096,19 @@ CAnsiString::Uppercase( void ) const
                 ucstr[ i ] -= 32;
             }
         }
-        CAnsiString upper( ucstr, m_length );
+        CAsciiString upper( ucstr, m_length );
         delete []ucstr;
         return upper;
     }
-    return CAnsiString();
+    return CAsciiString();
 }
 
 /*-------------------------------------------------------------------------*/
 
 Int32
-CAnsiString::HasChar( char searchchar         ,
-                      const UInt32 startIndex ,
-                      bool frontToBack        ) const
+CAsciiString::HasChar( char searchchar         ,
+                       const UInt32 startIndex ,
+                       bool frontToBack        ) const
 {GUCEF_TRACE;
 
     if ( frontToBack )
@@ -1128,8 +1137,8 @@ CAnsiString::HasChar( char searchchar         ,
 /*-------------------------------------------------------------------------*/
 
 Int32
-CAnsiString::HasChar( char searchchar  ,
-                      bool startfront  ) const
+CAsciiString::HasChar( char searchchar  ,
+                       bool startfront  ) const
 {GUCEF_TRACE;
 
     if ( startfront )
@@ -1146,15 +1155,15 @@ CAnsiString::HasChar( char searchchar  ,
 
 /*-------------------------------------------------------------------------*/
 
-CAnsiString::StringSet
-CAnsiString::ParseUniqueElements( char seperator        ,
-                                  bool addEmptyElements ) const
+CAsciiString::StringSet
+CAsciiString::ParseUniqueElements( char seperator        ,
+                                   bool addEmptyElements ) const
 {GUCEF_TRACE;
 
     if ( m_length > 0 )
     {
         StringSet list;
-        CAnsiString entry;
+        CAsciiString entry;
         UInt32 last = 0;
         for ( UInt32 i=0; i<m_length; ++i )
         {
@@ -1188,15 +1197,15 @@ CAnsiString::ParseUniqueElements( char seperator        ,
 
 /*-------------------------------------------------------------------------*/
 
-CAnsiString::StringVector
-CAnsiString::ParseElements( char seperator        ,
-                            bool addEmptyElements ) const
+CAsciiString::StringVector
+CAsciiString::ParseElements( char seperator        ,
+                             bool addEmptyElements ) const
 {GUCEF_TRACE;
 
     if ( m_length > 0 )
     {
         StringVector list;
-        CAnsiString entry;
+        CAsciiString entry;
         UInt32 last = 0;
         for ( UInt32 i=0; i<m_length; ++i )
         {
@@ -1231,10 +1240,10 @@ CAnsiString::ParseElements( char seperator        ,
 /*-------------------------------------------------------------------------*/
 
 UInt32
-CAnsiString::FindMaxSubstrEquality( const CAnsiString& searchStr ,
-                                    const UInt32 startOffset     ,
-                                    bool startFront              ,
-                                    bool isCaseSentive           ) const
+CAsciiString::FindMaxSubstrEquality( const CAsciiString& searchStr ,
+                                     const UInt32 startOffset     ,
+                                     bool startFront              ,
+                                     bool isCaseSentive           ) const
 {GUCEF_TRACE;
 
     // Sanity check on the startOffset
@@ -1244,10 +1253,10 @@ CAnsiString::FindMaxSubstrEquality( const CAnsiString& searchStr ,
         // without having to suffer the performance penalty of making string lowercase
         // when not doing case insensitive compares. This we do some pointer magic to
         // avoid this overhead when we can
-        CAnsiString lowercaseSearchStrStorage;
-        CAnsiString lowercaseThisStrStorage;
-        const CAnsiString* theSearchStr = &searchStr;
-        const CAnsiString* thisStr = this;
+        CAsciiString lowercaseSearchStrStorage;
+        CAsciiString lowercaseThisStrStorage;
+        const CAsciiString* theSearchStr = &searchStr;
+        const CAsciiString* thisStr = this;
 
         if ( !isCaseSentive )
         {
@@ -1308,9 +1317,9 @@ CAnsiString::FindMaxSubstrEquality( const CAnsiString& searchStr ,
 /*-------------------------------------------------------------------------*/
 
 Int32
-CAnsiString::HasSubstr( const CAnsiString& substr ,
-                        Int32 startIndex          ,
-                        bool startfront           ) const
+CAsciiString::HasSubstr( const CAsciiString& substr ,
+                         Int32 startIndex          ,
+                         bool startfront           ) const
 {GUCEF_TRACE;
 
     // Sanity check on the startindex range
@@ -1353,8 +1362,8 @@ CAnsiString::HasSubstr( const CAnsiString& substr ,
 /*-------------------------------------------------------------------------*/
 
 Int32
-CAnsiString::HasSubstr( const CAnsiString& substr ,
-                        bool startfront           ) const
+CAsciiString::HasSubstr( const CAsciiString& substr ,
+                         bool startfront           ) const
 {GUCEF_TRACE;
 
     if ( startfront )
@@ -1371,10 +1380,10 @@ CAnsiString::HasSubstr( const CAnsiString& substr ,
 /*-------------------------------------------------------------------------*/
 
 bool
-CAnsiString::WildcardEquals( const CAnsiString& strWithWildcards    ,
-                             const char wildCardToken /* = '*' */   ,
-                             const bool caseSensitive /* = true */  ,
-                             const bool biDirectional /* = false */ ) const
+CAsciiString::WildcardEquals( const CAsciiString& strWithWildcards    ,
+                              const char wildCardToken /* = '*' */   ,
+                              const bool caseSensitive /* = true */  ,
+                              const bool biDirectional /* = false */ ) const
 {GUCEF_TRACE;
 
     if ( biDirectional )
@@ -1386,9 +1395,9 @@ CAnsiString::WildcardEquals( const CAnsiString& strWithWildcards    ,
     if ( strWithWildcards == wildCardToken || *this == wildCardToken )
         return true;
 
-    std::vector< CAnsiString > segs = strWithWildcards.ParseElements( wildCardToken, false );
+    std::vector< CAsciiString > segs = strWithWildcards.ParseElements( wildCardToken, false );
     Int32 lastSeg = 0;
-    std::vector< CAnsiString >::iterator i = segs.begin();
+    std::vector< CAsciiString >::iterator i = segs.begin();
     while ( i != segs.end() )
     {
         lastSeg = HasSubstr( (*i), lastSeg, true );
@@ -1402,8 +1411,8 @@ CAnsiString::WildcardEquals( const CAnsiString& strWithWildcards    ,
 /*-------------------------------------------------------------------------*/
 
 bool
-CAnsiString::Equals( const CAnsiString& otherStr           ,
-                     const bool caseSensitive /* = true */ ) const
+CAsciiString::Equals( const CAsciiString& otherStr           ,
+                      const bool caseSensitive /* = true */ ) const
 {GUCEF_TRACE;
 
     if ( caseSensitive )
@@ -1419,8 +1428,8 @@ CAnsiString::Equals( const CAnsiString& otherStr           ,
 /*-------------------------------------------------------------------------*/
 
 bool
-CAnsiString::NotEquals( const CAnsiString& otherStr           ,
-                        const bool caseSensitive /* = true */ ) const
+CAsciiString::NotEquals( const CAsciiString& otherStr           ,
+                         const bool caseSensitive /* = true */ ) const
 {GUCEF_TRACE;
 
     if ( caseSensitive )
@@ -1436,8 +1445,8 @@ CAnsiString::NotEquals( const CAnsiString& otherStr           ,
 /*-------------------------------------------------------------------------*/
 
 void
-CAnsiString::Scan( const char* newStr     ,
-                   const UInt32 maxLength )
+CAsciiString::Scan( const char* newStr     ,
+                    const UInt32 maxLength )
 {GUCEF_TRACE;
 
     if ( newStr != NULL )
@@ -1462,11 +1471,11 @@ CAnsiString::Scan( const char* newStr     ,
 
 /*-------------------------------------------------------------------------*/
 
-CAnsiString 
-CAnsiString::Combine( const StringVector& elements, char seperator ) const
+CAsciiString 
+CAsciiString::Combine( const StringVector& elements, char seperator ) const
 {GUCEF_TRACE;
 
-    CAnsiString currentStr( *this );
+    CAsciiString currentStr( *this );
     if ( !currentStr.IsNULLOrEmpty() )
         currentStr += seperator;
 
@@ -1481,43 +1490,63 @@ CAnsiString::Combine( const StringVector& elements, char seperator ) const
 
 /*-------------------------------------------------------------------------*/
 
-CAnsiString
-CAnsiString::operator+( const CAnsiString& addition ) const
+bool
+CAsciiString::IsFormattingValid( void ) const
+{GUCEF_TRACE;
+    
+    if ( GUCEF_NULL != m_string )
+    {
+        // Check if an invalid ASCII code point is found
+        for ( UInt32 i=0; i<m_length; ++i )
+        {
+            // Even though its a signed value ASCII is from 0-127
+            Int8 testCp = (Int8) m_string[ i ];
+            if ( 0 > testCp )
+                return false;
+        }
+    }
+    return true;
+}
+
+/*-------------------------------------------------------------------------*/
+
+CAsciiString
+CAsciiString::operator+( const CAsciiString& addition ) const
 {GUCEF_TRACE;
 
-    CAnsiString tmp( *this );
+    CAsciiString tmp( *this );
     tmp += addition;
     return tmp;
 }
 
 /*-------------------------------------------------------------------------*/
 
-CAnsiString
-CAnsiString::operator+( const char* addition ) const
+CAsciiString
+CAsciiString::operator+( const char* addition ) const
 {GUCEF_TRACE;
-        CAnsiString tmp( *this );
+        CAsciiString tmp( *this );
         tmp += addition;
         return tmp;
 }
 
 /*-------------------------------------------------------------------------*/
 
-CAnsiString
-CAnsiString::operator+( const char addition ) const
+CAsciiString
+CAsciiString::operator+( const char addition ) const
 {GUCEF_TRACE;
 
-    CAnsiString tmp( *this );
+    CAsciiString tmp( *this );
     tmp += addition;
     return tmp;
 }
 
 /*-------------------------------------------------------------------------*/
 
-CAnsiString
+CAsciiString
 operator+( const char* lhs    ,
-           const CAnsiString& rhs )
+           const CAsciiString& rhs )
 {GUCEF_TRACE;
-        CAnsiString tmp( lhs );
+        CAsciiString tmp( lhs );
         tmp += rhs;
         return tmp;
 }
@@ -1526,7 +1555,7 @@ operator+( const char* lhs    ,
 
 bool
 operator==( const char* lhs    ,
-            const CAnsiString& rhs )
+            const CAsciiString& rhs )
 {GUCEF_TRACE;
         return rhs == lhs;
 }
@@ -1535,19 +1564,19 @@ operator==( const char* lhs    ,
 
 bool
 operator!=( const char* lhs    ,
-            const CAnsiString& rhs )
+            const CAsciiString& rhs )
 {GUCEF_TRACE;
         return rhs != lhs;
 }
 
 /*-------------------------------------------------------------------------*/
 
-CAnsiString
+CAsciiString
 operator+( const char lhs     ,
-           const CAnsiString& rhs )
+           const CAsciiString& rhs )
 {GUCEF_TRACE;
 
-    return CAnsiString( &lhs, 1 ) + rhs;
+    return CAsciiString( &lhs, 1 ) + rhs;
 }
 
 /*-------------------------------------------------------------------------//

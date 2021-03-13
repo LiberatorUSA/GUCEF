@@ -26,10 +26,15 @@
 //                                                                         //
 //-------------------------------------------------------------------------*/
 
-#ifndef GUCEF_CORE_CANSISTRING_H
-#include "gucefCORE_CAnsiString.h"
-#define GUCEF_CORE_CANSISTRING_H
-#endif /* GUCEF_CORE_CANSISTRING_H ? */
+#ifndef GUCEF_CORE_CASCIISTRING_H
+#include "gucefCORE_CAsciiString.h"
+#define GUCEF_CORE_CASCIISTRING_H
+#endif /* GUCEF_CORE_CASCIISTRING_H ? */
+
+#ifndef GUCEF_CORE_CUTF8STRING_H
+#include "gucefCORE_CUtf8String.h"
+#define GUCEF_CORE_CUTF8STRING_H
+#endif /* GUCEF_CORE_CUTF8STRING_H ? */
 
 /*-------------------------------------------------------------------------//
 //                                                                         //
@@ -46,8 +51,15 @@ namespace CORE {
 //                                                                         //
 //-------------------------------------------------------------------------*/
 
-// @TODO: Switching default string implementation is done here
-typedef CAnsiString CString;
+#if ( GUCEF_DEFAULT_STRING_FORMAT == GUCEF_DATATYPE_ASCII_STRING )
+
+typedef CAsciiString                        CString;
+
+#else
+
+typedef CUtf8String                         CString;
+
+#endif
 
 /*-------------------------------------------------------------------------//
 //                                                                         //

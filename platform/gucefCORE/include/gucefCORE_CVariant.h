@@ -76,8 +76,6 @@ struct SVariantData
         UInt32      uint32_data;
         Int64       int64_data;
         UInt64      uint64_data;
-        Int64       int64_data;
-        UInt64      uint64_data;
         Float32     float32_data;
         Float64     float64_data;
         THeapData   heap_data;
@@ -92,6 +90,19 @@ typedef struct SVariantData TVariantData;
 //                                                                         //
 //-------------------------------------------------------------------------*/
 
+/**
+ *  Imlementation of a Variant class mainly used for interaction between 
+ *  compile-time and run-time typed environments and/or between weakly and
+ *  strongly typed environments.
+ *
+ *  Performance wise your gain or loss will depend on data used to store in the variant
+ *  and whether you otherwise would have used a string to represent the same.
+ *  Strings always use dynamic memory allocations whereas this is not always the case
+ *  with a variant. Various operations such as comparison can potentially also be faster 
+ *  depending on the type interactions involved.
+ *
+ *  TODO: Later support will be added for ExactFloat in which case a fidelity gain is an additional benefit
+ */
 class GUCEF_CORE_PUBLIC_CPP CVariant
 {
     public:
@@ -99,9 +110,7 @@ class GUCEF_CORE_PUBLIC_CPP CVariant
     CVariant( void );
     CVariant( const CVariant& src );
     ~CVariant(); 
-
-    CVariant& operator=( const CVariant& src );
-
+    
     explicit CVariant( bool    data );
     explicit CVariant( Int8    data );
     explicit CVariant( UInt8   data ); 
@@ -111,10 +120,10 @@ class GUCEF_CORE_PUBLIC_CPP CVariant
     explicit CVariant( UInt32  data );
     explicit CVariant( Int64   data );
     explicit CVariant( UInt64  data );
-    explicit CVariant( Int64   data );
-    explicit CVariant( UInt64  data );
     explicit CVariant( Float32 data );
     explicit CVariant( Float64 data );
+    explicit CVariant( const CAsciiString& data );
+    explicit CVariant( const CUtf8String& data );
     
     bool IsInteger( void ) const;
     bool IsFloat( void ) const;
@@ -154,10 +163,11 @@ class GUCEF_CORE_PUBLIC_CPP CVariant
     CVariant& operator=( UInt32  data );
     CVariant& operator=( Int64   data );
     CVariant& operator=( UInt64  data );
-    CVariant& operator=( Int64   data );
-    CVariant& operator=( UInt64  data );
     CVariant& operator=( Float32 data );
     CVariant& operator=( Float64 data );
+    CVariant& operator=( const CAsciiString& data );
+    CVariant& operator=( const CUtf8String& data );
+    CVariant& operator=( const CVariant& src );
 
     void Clear( void );
 

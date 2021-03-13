@@ -414,6 +414,14 @@
 
 /*-------------------------------------------------------------------------*/
 
+#if defined( __GNUG__ ) && !defined( GCC_VERSION ) /* GNU C++ compiler */
+    #define GCC_VERSION (__GNUC__ * 10000 \
+                         + __GNUC_MINOR__ * 100 \
+                         + __GNUC_PATCHLEVEL__)
+#endif
+
+/*-------------------------------------------------------------------------*/
+
 #undef NULL
 #if defined(__cplusplus)
   #ifndef __CPP09NULLPTRSUPPORTED
@@ -445,10 +453,34 @@
         #endif
     #else
         /* Unknown compiler, fall back to cpp version check */
-        #if __cplusplus > 201103L  /* This is not fullproof since not every compiler truly supports the spec */
+        #if __cplusplus > 201103L  /* >= C++ 11 : This is not fullproof since not every compiler truly supports the spec */
             #define GUCEF_RVALUE_REFERENCES_SUPPORTED 1
         #endif
     #endif
+#endif
+
+/*-------------------------------------------------------------------------*/
+
+#if defined(__cplusplus)
+    #undef GUCEF_NOEXCEPT_IS_SUPPORTED
+    #if __cplusplus > 201103L /* >= C++ 11 : This is not fullproof since not every compiler truly supports the spec */
+        #if defined( __GNUG__ )  /* GNU C++ compiler */
+            #if ( GCC_VERSION > 40600 )
+                #define GUCEF_NOEXCEPT_IS_SUPPORTED 1
+            #endif
+        #else
+            /* Rely on only cpp version check */
+            #define GUCEF_NOEXCEPT_IS_SUPPORTED 1
+        #endif
+    #endif
+#endif
+
+#if defined(__cplusplus)
+  #ifdef GUCEF_NOEXCEPT_IS_SUPPORTED
+    #define GUCEF_NOEXCEPT noexcept( true )
+  #else
+    #define GUCEF_NOEXCEPT
+  #endif
 #endif
 
 /*-------------------------------------------------------------------------*/
