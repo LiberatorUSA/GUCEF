@@ -267,6 +267,8 @@ class GUCEF_CORE_PUBLIC_CPP CUtf8String
     void Append( const char *appendstr ,
                  UInt32 len            );
 
+    void Append( const char *appendstr );
+
     CUtf8String Lowercase( void ) const;
 
     CUtf8String Uppercase( void ) const;

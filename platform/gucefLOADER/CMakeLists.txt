@@ -12,13 +12,15 @@
 # Configuration for module: gucefLOADER
 
 set( HEADER_FILES 
-  ../gucefCORE/include/CDVString.h
   ../gucefCORE/include/DVCPPOSWRAP.h
   ../gucefCORE/include/DVOSWRAP.h
   ../gucefCORE/include/dvcppstringutils.h
   ../gucefCORE/include/dvfileutils.h
   ../gucefCORE/include/dvmd5utils.h
   ../gucefCORE/include/dvstrutils.h
+  ../gucefCORE/include/gucefCORE_CAsciiString.h
+  ../gucefCORE/include/gucefCORE_CString.h
+  ../gucefCORE/include/gucefCORE_CUtf8String.h
   ../gucefCORE/include/md5.h
   ../gucefMT/include/gucefMT_CILockable.h
   ../gucefMT/include/gucefMT_CMutex.h
@@ -32,13 +34,14 @@ set( HEADER_FILES
 )
 
 set( SOURCE_FILES 
-  ../gucefCORE/src/CDVString.cpp
   ../gucefCORE/src/DVCPPOSWRAP.cpp
   ../gucefCORE/src/DVOSWRAP.cpp
   ../gucefCORE/src/dvcppstringutils.cpp
   ../gucefCORE/src/dvfileutils.c
   ../gucefCORE/src/dvmd5utils.c
   ../gucefCORE/src/dvstrutils.c
+  ../gucefCORE/src/gucefCORE_CAsciiString.cpp
+  ../gucefCORE/src/gucefCORE_CUtf8String.cpp
   ../gucefCORE/src/md5.c
   ../gucefMT/src/gucefMT_CILockable.cpp
   ../gucefMT/src/gucefMT_CMutex.cpp
@@ -52,13 +55,15 @@ set( SOURCE_FILES
 
 if (ANDROID)
   set( PLATFORM_HEADER_FILES 
-    ../gucefCORE/include/CDVString.h
     ../gucefCORE/include/DVCPPOSWRAP.h
     ../gucefCORE/include/DVOSWRAP.h
     ../gucefCORE/include/dvcppstringutils.h
     ../gucefCORE/include/dvfileutils.h
     ../gucefCORE/include/dvmd5utils.h
     ../gucefCORE/include/dvstrutils.h
+    ../gucefCORE/include/gucefCORE_CAsciiString.h
+    ../gucefCORE/include/gucefCORE_CString.h
+    ../gucefCORE/include/gucefCORE_CUtf8String.h
     ../gucefCORE/include/md5.h
     ../gucefMT/include/gucefMT_CILockable.h
     ../gucefMT/include/gucefMT_CMutex.h
@@ -71,13 +76,14 @@ if (ANDROID)
   source_group( "Platform Header Files" FILES ${PLATFORM_HEADER_FILES} )
 
   set( PLATFORM_SOURCE_FILES 
-    ../gucefCORE/src/CDVString.cpp
     ../gucefCORE/src/DVCPPOSWRAP.cpp
     ../gucefCORE/src/DVOSWRAP.cpp
     ../gucefCORE/src/dvcppstringutils.cpp
     ../gucefCORE/src/dvfileutils.c
     ../gucefCORE/src/dvmd5utils.c
     ../gucefCORE/src/dvstrutils.c
+    ../gucefCORE/src/gucefCORE_CAsciiString.cpp
+    ../gucefCORE/src/gucefCORE_CUtf8String.cpp
     ../gucefCORE/src/md5.c
     ../gucefMT/src/gucefMT_CILockable.cpp
     ../gucefMT/src/gucefMT_CMutex.cpp
@@ -91,13 +97,15 @@ if (ANDROID)
 
 elseif (EMSCRIPTEN)
   set( PLATFORM_HEADER_FILES 
-    ../gucefCORE/include/CDVString.h
     ../gucefCORE/include/DVCPPOSWRAP.h
     ../gucefCORE/include/DVOSWRAP.h
     ../gucefCORE/include/dvcppstringutils.h
     ../gucefCORE/include/dvfileutils.h
     ../gucefCORE/include/dvmd5utils.h
     ../gucefCORE/include/dvstrutils.h
+    ../gucefCORE/include/gucefCORE_CAsciiString.h
+    ../gucefCORE/include/gucefCORE_CString.h
+    ../gucefCORE/include/gucefCORE_CUtf8String.h
     ../gucefCORE/include/md5.h
     ../gucefMT/include/gucefMT_CILockable.h
     ../gucefMT/include/gucefMT_CMutex.h
@@ -110,13 +118,14 @@ elseif (EMSCRIPTEN)
   source_group( "Platform Header Files" FILES ${PLATFORM_HEADER_FILES} )
 
   set( PLATFORM_SOURCE_FILES 
-    ../gucefCORE/src/CDVString.cpp
     ../gucefCORE/src/DVCPPOSWRAP.cpp
     ../gucefCORE/src/DVOSWRAP.cpp
     ../gucefCORE/src/dvcppstringutils.cpp
     ../gucefCORE/src/dvfileutils.c
     ../gucefCORE/src/dvmd5utils.c
     ../gucefCORE/src/dvstrutils.c
+    ../gucefCORE/src/gucefCORE_CAsciiString.cpp
+    ../gucefCORE/src/gucefCORE_CUtf8String.cpp
     ../gucefCORE/src/md5.c
     ../gucefMT/src/gucefMT_CILockable.cpp
     ../gucefMT/src/gucefMT_CMutex.cpp
@@ -130,13 +139,15 @@ elseif (EMSCRIPTEN)
 
 elseif (GLX)
   set( PLATFORM_HEADER_FILES 
-    ../gucefCORE/include/CDVString.h
     ../gucefCORE/include/DVCPPOSWRAP.h
     ../gucefCORE/include/DVOSWRAP.h
     ../gucefCORE/include/dvcppstringutils.h
     ../gucefCORE/include/dvfileutils.h
     ../gucefCORE/include/dvmd5utils.h
     ../gucefCORE/include/dvstrutils.h
+    ../gucefCORE/include/gucefCORE_CAsciiString.h
+    ../gucefCORE/include/gucefCORE_CString.h
+    ../gucefCORE/include/gucefCORE_CUtf8String.h
     ../gucefCORE/include/md5.h
     ../gucefMT/include/gucefMT_CILockable.h
     ../gucefMT/include/gucefMT_CMutex.h
@@ -149,13 +160,14 @@ elseif (GLX)
   source_group( "Platform Header Files" FILES ${PLATFORM_HEADER_FILES} )
 
   set( PLATFORM_SOURCE_FILES 
-    ../gucefCORE/src/CDVString.cpp
     ../gucefCORE/src/DVCPPOSWRAP.cpp
     ../gucefCORE/src/DVOSWRAP.cpp
     ../gucefCORE/src/dvcppstringutils.cpp
     ../gucefCORE/src/dvfileutils.c
     ../gucefCORE/src/dvmd5utils.c
     ../gucefCORE/src/dvstrutils.c
+    ../gucefCORE/src/gucefCORE_CAsciiString.cpp
+    ../gucefCORE/src/gucefCORE_CUtf8String.cpp
     ../gucefCORE/src/md5.c
     ../gucefMT/src/gucefMT_CILockable.cpp
     ../gucefMT/src/gucefMT_CMutex.cpp
@@ -169,13 +181,15 @@ elseif (GLX)
 
 elseif (GTK)
   set( PLATFORM_HEADER_FILES 
-    ../gucefCORE/include/CDVString.h
     ../gucefCORE/include/DVCPPOSWRAP.h
     ../gucefCORE/include/DVOSWRAP.h
     ../gucefCORE/include/dvcppstringutils.h
     ../gucefCORE/include/dvfileutils.h
     ../gucefCORE/include/dvmd5utils.h
     ../gucefCORE/include/dvstrutils.h
+    ../gucefCORE/include/gucefCORE_CAsciiString.h
+    ../gucefCORE/include/gucefCORE_CString.h
+    ../gucefCORE/include/gucefCORE_CUtf8String.h
     ../gucefCORE/include/md5.h
     ../gucefMT/include/gucefMT_CILockable.h
     ../gucefMT/include/gucefMT_CMutex.h
@@ -188,13 +202,14 @@ elseif (GTK)
   source_group( "Platform Header Files" FILES ${PLATFORM_HEADER_FILES} )
 
   set( PLATFORM_SOURCE_FILES 
-    ../gucefCORE/src/CDVString.cpp
     ../gucefCORE/src/DVCPPOSWRAP.cpp
     ../gucefCORE/src/DVOSWRAP.cpp
     ../gucefCORE/src/dvcppstringutils.cpp
     ../gucefCORE/src/dvfileutils.c
     ../gucefCORE/src/dvmd5utils.c
     ../gucefCORE/src/dvstrutils.c
+    ../gucefCORE/src/gucefCORE_CAsciiString.cpp
+    ../gucefCORE/src/gucefCORE_CUtf8String.cpp
     ../gucefCORE/src/md5.c
     ../gucefMT/src/gucefMT_CILockable.cpp
     ../gucefMT/src/gucefMT_CMutex.cpp
@@ -208,13 +223,15 @@ elseif (GTK)
 
 elseif (IOS)
   set( PLATFORM_HEADER_FILES 
-    ../gucefCORE/include/CDVString.h
     ../gucefCORE/include/DVCPPOSWRAP.h
     ../gucefCORE/include/DVOSWRAP.h
     ../gucefCORE/include/dvcppstringutils.h
     ../gucefCORE/include/dvfileutils.h
     ../gucefCORE/include/dvmd5utils.h
     ../gucefCORE/include/dvstrutils.h
+    ../gucefCORE/include/gucefCORE_CAsciiString.h
+    ../gucefCORE/include/gucefCORE_CString.h
+    ../gucefCORE/include/gucefCORE_CUtf8String.h
     ../gucefCORE/include/md5.h
     ../gucefMT/include/gucefMT_CILockable.h
     ../gucefMT/include/gucefMT_CMutex.h
@@ -227,13 +244,14 @@ elseif (IOS)
   source_group( "Platform Header Files" FILES ${PLATFORM_HEADER_FILES} )
 
   set( PLATFORM_SOURCE_FILES 
-    ../gucefCORE/src/CDVString.cpp
     ../gucefCORE/src/DVCPPOSWRAP.cpp
     ../gucefCORE/src/DVOSWRAP.cpp
     ../gucefCORE/src/dvcppstringutils.cpp
     ../gucefCORE/src/dvfileutils.c
     ../gucefCORE/src/dvmd5utils.c
     ../gucefCORE/src/dvstrutils.c
+    ../gucefCORE/src/gucefCORE_CAsciiString.cpp
+    ../gucefCORE/src/gucefCORE_CUtf8String.cpp
     ../gucefCORE/src/md5.c
     ../gucefMT/src/gucefMT_CILockable.cpp
     ../gucefMT/src/gucefMT_CMutex.cpp
@@ -247,13 +265,15 @@ elseif (IOS)
 
 elseif (LINUX32)
   set( PLATFORM_HEADER_FILES 
-    ../gucefCORE/include/CDVString.h
     ../gucefCORE/include/DVCPPOSWRAP.h
     ../gucefCORE/include/DVOSWRAP.h
     ../gucefCORE/include/dvcppstringutils.h
     ../gucefCORE/include/dvfileutils.h
     ../gucefCORE/include/dvmd5utils.h
     ../gucefCORE/include/dvstrutils.h
+    ../gucefCORE/include/gucefCORE_CAsciiString.h
+    ../gucefCORE/include/gucefCORE_CString.h
+    ../gucefCORE/include/gucefCORE_CUtf8String.h
     ../gucefCORE/include/md5.h
     ../gucefMT/include/gucefMT_CILockable.h
     ../gucefMT/include/gucefMT_CMutex.h
@@ -266,13 +286,14 @@ elseif (LINUX32)
   source_group( "Platform Header Files" FILES ${PLATFORM_HEADER_FILES} )
 
   set( PLATFORM_SOURCE_FILES 
-    ../gucefCORE/src/CDVString.cpp
     ../gucefCORE/src/DVCPPOSWRAP.cpp
     ../gucefCORE/src/DVOSWRAP.cpp
     ../gucefCORE/src/dvcppstringutils.cpp
     ../gucefCORE/src/dvfileutils.c
     ../gucefCORE/src/dvmd5utils.c
     ../gucefCORE/src/dvstrutils.c
+    ../gucefCORE/src/gucefCORE_CAsciiString.cpp
+    ../gucefCORE/src/gucefCORE_CUtf8String.cpp
     ../gucefCORE/src/md5.c
     ../gucefMT/src/gucefMT_CILockable.cpp
     ../gucefMT/src/gucefMT_CMutex.cpp
@@ -286,13 +307,15 @@ elseif (LINUX32)
 
 elseif (LINUX64)
   set( PLATFORM_HEADER_FILES 
-    ../gucefCORE/include/CDVString.h
     ../gucefCORE/include/DVCPPOSWRAP.h
     ../gucefCORE/include/DVOSWRAP.h
     ../gucefCORE/include/dvcppstringutils.h
     ../gucefCORE/include/dvfileutils.h
     ../gucefCORE/include/dvmd5utils.h
     ../gucefCORE/include/dvstrutils.h
+    ../gucefCORE/include/gucefCORE_CAsciiString.h
+    ../gucefCORE/include/gucefCORE_CString.h
+    ../gucefCORE/include/gucefCORE_CUtf8String.h
     ../gucefCORE/include/md5.h
     ../gucefMT/include/gucefMT_CILockable.h
     ../gucefMT/include/gucefMT_CMutex.h
@@ -305,13 +328,14 @@ elseif (LINUX64)
   source_group( "Platform Header Files" FILES ${PLATFORM_HEADER_FILES} )
 
   set( PLATFORM_SOURCE_FILES 
-    ../gucefCORE/src/CDVString.cpp
     ../gucefCORE/src/DVCPPOSWRAP.cpp
     ../gucefCORE/src/DVOSWRAP.cpp
     ../gucefCORE/src/dvcppstringutils.cpp
     ../gucefCORE/src/dvfileutils.c
     ../gucefCORE/src/dvmd5utils.c
     ../gucefCORE/src/dvstrutils.c
+    ../gucefCORE/src/gucefCORE_CAsciiString.cpp
+    ../gucefCORE/src/gucefCORE_CUtf8String.cpp
     ../gucefCORE/src/md5.c
     ../gucefMT/src/gucefMT_CILockable.cpp
     ../gucefMT/src/gucefMT_CMutex.cpp
@@ -325,13 +349,15 @@ elseif (LINUX64)
 
 elseif (NACL)
   set( PLATFORM_HEADER_FILES 
-    ../gucefCORE/include/CDVString.h
     ../gucefCORE/include/DVCPPOSWRAP.h
     ../gucefCORE/include/DVOSWRAP.h
     ../gucefCORE/include/dvcppstringutils.h
     ../gucefCORE/include/dvfileutils.h
     ../gucefCORE/include/dvmd5utils.h
     ../gucefCORE/include/dvstrutils.h
+    ../gucefCORE/include/gucefCORE_CAsciiString.h
+    ../gucefCORE/include/gucefCORE_CString.h
+    ../gucefCORE/include/gucefCORE_CUtf8String.h
     ../gucefCORE/include/md5.h
     ../gucefMT/include/gucefMT_CILockable.h
     ../gucefMT/include/gucefMT_CMutex.h
@@ -344,13 +370,14 @@ elseif (NACL)
   source_group( "Platform Header Files" FILES ${PLATFORM_HEADER_FILES} )
 
   set( PLATFORM_SOURCE_FILES 
-    ../gucefCORE/src/CDVString.cpp
     ../gucefCORE/src/DVCPPOSWRAP.cpp
     ../gucefCORE/src/DVOSWRAP.cpp
     ../gucefCORE/src/dvcppstringutils.cpp
     ../gucefCORE/src/dvfileutils.c
     ../gucefCORE/src/dvmd5utils.c
     ../gucefCORE/src/dvstrutils.c
+    ../gucefCORE/src/gucefCORE_CAsciiString.cpp
+    ../gucefCORE/src/gucefCORE_CUtf8String.cpp
     ../gucefCORE/src/md5.c
     ../gucefMT/src/gucefMT_CILockable.cpp
     ../gucefMT/src/gucefMT_CMutex.cpp
@@ -364,13 +391,15 @@ elseif (NACL)
 
 elseif (OSX)
   set( PLATFORM_HEADER_FILES 
-    ../gucefCORE/include/CDVString.h
     ../gucefCORE/include/DVCPPOSWRAP.h
     ../gucefCORE/include/DVOSWRAP.h
     ../gucefCORE/include/dvcppstringutils.h
     ../gucefCORE/include/dvfileutils.h
     ../gucefCORE/include/dvmd5utils.h
     ../gucefCORE/include/dvstrutils.h
+    ../gucefCORE/include/gucefCORE_CAsciiString.h
+    ../gucefCORE/include/gucefCORE_CString.h
+    ../gucefCORE/include/gucefCORE_CUtf8String.h
     ../gucefCORE/include/md5.h
     ../gucefMT/include/gucefMT_CILockable.h
     ../gucefMT/include/gucefMT_CMutex.h
@@ -383,13 +412,14 @@ elseif (OSX)
   source_group( "Platform Header Files" FILES ${PLATFORM_HEADER_FILES} )
 
   set( PLATFORM_SOURCE_FILES 
-    ../gucefCORE/src/CDVString.cpp
     ../gucefCORE/src/DVCPPOSWRAP.cpp
     ../gucefCORE/src/DVOSWRAP.cpp
     ../gucefCORE/src/dvcppstringutils.cpp
     ../gucefCORE/src/dvfileutils.c
     ../gucefCORE/src/dvmd5utils.c
     ../gucefCORE/src/dvstrutils.c
+    ../gucefCORE/src/gucefCORE_CAsciiString.cpp
+    ../gucefCORE/src/gucefCORE_CUtf8String.cpp
     ../gucefCORE/src/md5.c
     ../gucefMT/src/gucefMT_CILockable.cpp
     ../gucefMT/src/gucefMT_CMutex.cpp
@@ -403,13 +433,15 @@ elseif (OSX)
 
 elseif (POSIX)
   set( PLATFORM_HEADER_FILES 
-    ../gucefCORE/include/CDVString.h
     ../gucefCORE/include/DVCPPOSWRAP.h
     ../gucefCORE/include/DVOSWRAP.h
     ../gucefCORE/include/dvcppstringutils.h
     ../gucefCORE/include/dvfileutils.h
     ../gucefCORE/include/dvmd5utils.h
     ../gucefCORE/include/dvstrutils.h
+    ../gucefCORE/include/gucefCORE_CAsciiString.h
+    ../gucefCORE/include/gucefCORE_CString.h
+    ../gucefCORE/include/gucefCORE_CUtf8String.h
     ../gucefCORE/include/md5.h
     ../gucefMT/include/gucefMT_CILockable.h
     ../gucefMT/include/gucefMT_CMutex.h
@@ -422,13 +454,14 @@ elseif (POSIX)
   source_group( "Platform Header Files" FILES ${PLATFORM_HEADER_FILES} )
 
   set( PLATFORM_SOURCE_FILES 
-    ../gucefCORE/src/CDVString.cpp
     ../gucefCORE/src/DVCPPOSWRAP.cpp
     ../gucefCORE/src/DVOSWRAP.cpp
     ../gucefCORE/src/dvcppstringutils.cpp
     ../gucefCORE/src/dvfileutils.c
     ../gucefCORE/src/dvmd5utils.c
     ../gucefCORE/src/dvstrutils.c
+    ../gucefCORE/src/gucefCORE_CAsciiString.cpp
+    ../gucefCORE/src/gucefCORE_CUtf8String.cpp
     ../gucefCORE/src/md5.c
     ../gucefMT/src/gucefMT_CILockable.cpp
     ../gucefMT/src/gucefMT_CMutex.cpp
@@ -442,13 +475,15 @@ elseif (POSIX)
 
 elseif (SDL)
   set( PLATFORM_HEADER_FILES 
-    ../gucefCORE/include/CDVString.h
     ../gucefCORE/include/DVCPPOSWRAP.h
     ../gucefCORE/include/DVOSWRAP.h
     ../gucefCORE/include/dvcppstringutils.h
     ../gucefCORE/include/dvfileutils.h
     ../gucefCORE/include/dvmd5utils.h
     ../gucefCORE/include/dvstrutils.h
+    ../gucefCORE/include/gucefCORE_CAsciiString.h
+    ../gucefCORE/include/gucefCORE_CString.h
+    ../gucefCORE/include/gucefCORE_CUtf8String.h
     ../gucefCORE/include/md5.h
     ../gucefMT/include/gucefMT_CILockable.h
     ../gucefMT/include/gucefMT_CMutex.h
@@ -461,13 +496,14 @@ elseif (SDL)
   source_group( "Platform Header Files" FILES ${PLATFORM_HEADER_FILES} )
 
   set( PLATFORM_SOURCE_FILES 
-    ../gucefCORE/src/CDVString.cpp
     ../gucefCORE/src/DVCPPOSWRAP.cpp
     ../gucefCORE/src/DVOSWRAP.cpp
     ../gucefCORE/src/dvcppstringutils.cpp
     ../gucefCORE/src/dvfileutils.c
     ../gucefCORE/src/dvmd5utils.c
     ../gucefCORE/src/dvstrutils.c
+    ../gucefCORE/src/gucefCORE_CAsciiString.cpp
+    ../gucefCORE/src/gucefCORE_CUtf8String.cpp
     ../gucefCORE/src/md5.c
     ../gucefMT/src/gucefMT_CILockable.cpp
     ../gucefMT/src/gucefMT_CMutex.cpp
@@ -481,13 +517,15 @@ elseif (SDL)
 
 elseif (SYMBIAN)
   set( PLATFORM_HEADER_FILES 
-    ../gucefCORE/include/CDVString.h
     ../gucefCORE/include/DVCPPOSWRAP.h
     ../gucefCORE/include/DVOSWRAP.h
     ../gucefCORE/include/dvcppstringutils.h
     ../gucefCORE/include/dvfileutils.h
     ../gucefCORE/include/dvmd5utils.h
     ../gucefCORE/include/dvstrutils.h
+    ../gucefCORE/include/gucefCORE_CAsciiString.h
+    ../gucefCORE/include/gucefCORE_CString.h
+    ../gucefCORE/include/gucefCORE_CUtf8String.h
     ../gucefCORE/include/md5.h
     ../gucefMT/include/gucefMT_CILockable.h
     ../gucefMT/include/gucefMT_CMutex.h
@@ -500,13 +538,14 @@ elseif (SYMBIAN)
   source_group( "Platform Header Files" FILES ${PLATFORM_HEADER_FILES} )
 
   set( PLATFORM_SOURCE_FILES 
-    ../gucefCORE/src/CDVString.cpp
     ../gucefCORE/src/DVCPPOSWRAP.cpp
     ../gucefCORE/src/DVOSWRAP.cpp
     ../gucefCORE/src/dvcppstringutils.cpp
     ../gucefCORE/src/dvfileutils.c
     ../gucefCORE/src/dvmd5utils.c
     ../gucefCORE/src/dvstrutils.c
+    ../gucefCORE/src/gucefCORE_CAsciiString.cpp
+    ../gucefCORE/src/gucefCORE_CUtf8String.cpp
     ../gucefCORE/src/md5.c
     ../gucefMT/src/gucefMT_CILockable.cpp
     ../gucefMT/src/gucefMT_CMutex.cpp
@@ -520,13 +559,15 @@ elseif (SYMBIAN)
 
 elseif (UNIX)
   set( PLATFORM_HEADER_FILES 
-    ../gucefCORE/include/CDVString.h
     ../gucefCORE/include/DVCPPOSWRAP.h
     ../gucefCORE/include/DVOSWRAP.h
     ../gucefCORE/include/dvcppstringutils.h
     ../gucefCORE/include/dvfileutils.h
     ../gucefCORE/include/dvmd5utils.h
     ../gucefCORE/include/dvstrutils.h
+    ../gucefCORE/include/gucefCORE_CAsciiString.h
+    ../gucefCORE/include/gucefCORE_CString.h
+    ../gucefCORE/include/gucefCORE_CUtf8String.h
     ../gucefCORE/include/md5.h
     ../gucefMT/include/gucefMT_CILockable.h
     ../gucefMT/include/gucefMT_CMutex.h
@@ -539,13 +580,14 @@ elseif (UNIX)
   source_group( "Platform Header Files" FILES ${PLATFORM_HEADER_FILES} )
 
   set( PLATFORM_SOURCE_FILES 
-    ../gucefCORE/src/CDVString.cpp
     ../gucefCORE/src/DVCPPOSWRAP.cpp
     ../gucefCORE/src/DVOSWRAP.cpp
     ../gucefCORE/src/dvcppstringutils.cpp
     ../gucefCORE/src/dvfileutils.c
     ../gucefCORE/src/dvmd5utils.c
     ../gucefCORE/src/dvstrutils.c
+    ../gucefCORE/src/gucefCORE_CAsciiString.cpp
+    ../gucefCORE/src/gucefCORE_CUtf8String.cpp
     ../gucefCORE/src/md5.c
     ../gucefMT/src/gucefMT_CILockable.cpp
     ../gucefMT/src/gucefMT_CMutex.cpp
@@ -559,13 +601,15 @@ elseif (UNIX)
 
 elseif (WIN32)
   set( PLATFORM_HEADER_FILES 
-    ../gucefCORE/include/CDVString.h
     ../gucefCORE/include/DVCPPOSWRAP.h
     ../gucefCORE/include/DVOSWRAP.h
     ../gucefCORE/include/dvcppstringutils.h
     ../gucefCORE/include/dvfileutils.h
     ../gucefCORE/include/dvmd5utils.h
     ../gucefCORE/include/dvstrutils.h
+    ../gucefCORE/include/gucefCORE_CAsciiString.h
+    ../gucefCORE/include/gucefCORE_CString.h
+    ../gucefCORE/include/gucefCORE_CUtf8String.h
     ../gucefCORE/include/md5.h
     ../gucefMT/include/gucefMT_CILockable.h
     ../gucefMT/include/gucefMT_CMutex.h
@@ -578,13 +622,14 @@ elseif (WIN32)
   source_group( "Platform Header Files" FILES ${PLATFORM_HEADER_FILES} )
 
   set( PLATFORM_SOURCE_FILES 
-    ../gucefCORE/src/CDVString.cpp
     ../gucefCORE/src/DVCPPOSWRAP.cpp
     ../gucefCORE/src/DVOSWRAP.cpp
     ../gucefCORE/src/dvcppstringutils.cpp
     ../gucefCORE/src/dvfileutils.c
     ../gucefCORE/src/dvmd5utils.c
     ../gucefCORE/src/dvstrutils.c
+    ../gucefCORE/src/gucefCORE_CAsciiString.cpp
+    ../gucefCORE/src/gucefCORE_CUtf8String.cpp
     ../gucefCORE/src/md5.c
     ../gucefMT/src/gucefMT_CILockable.cpp
     ../gucefMT/src/gucefMT_CMutex.cpp
@@ -598,13 +643,15 @@ elseif (WIN32)
 
 elseif (WIN64)
   set( PLATFORM_HEADER_FILES 
-    ../gucefCORE/include/CDVString.h
     ../gucefCORE/include/DVCPPOSWRAP.h
     ../gucefCORE/include/DVOSWRAP.h
     ../gucefCORE/include/dvcppstringutils.h
     ../gucefCORE/include/dvfileutils.h
     ../gucefCORE/include/dvmd5utils.h
     ../gucefCORE/include/dvstrutils.h
+    ../gucefCORE/include/gucefCORE_CAsciiString.h
+    ../gucefCORE/include/gucefCORE_CString.h
+    ../gucefCORE/include/gucefCORE_CUtf8String.h
     ../gucefCORE/include/md5.h
     ../gucefMT/include/gucefMT_CILockable.h
     ../gucefMT/include/gucefMT_CMutex.h
@@ -617,13 +664,14 @@ elseif (WIN64)
   source_group( "Platform Header Files" FILES ${PLATFORM_HEADER_FILES} )
 
   set( PLATFORM_SOURCE_FILES 
-    ../gucefCORE/src/CDVString.cpp
     ../gucefCORE/src/DVCPPOSWRAP.cpp
     ../gucefCORE/src/DVOSWRAP.cpp
     ../gucefCORE/src/dvcppstringutils.cpp
     ../gucefCORE/src/dvfileutils.c
     ../gucefCORE/src/dvmd5utils.c
     ../gucefCORE/src/dvstrutils.c
+    ../gucefCORE/src/gucefCORE_CAsciiString.cpp
+    ../gucefCORE/src/gucefCORE_CUtf8String.cpp
     ../gucefCORE/src/md5.c
     ../gucefMT/src/gucefMT_CILockable.cpp
     ../gucefMT/src/gucefMT_CMutex.cpp

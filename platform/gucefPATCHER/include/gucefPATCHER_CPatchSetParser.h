@@ -29,7 +29,11 @@
 #include <map>
 #include <vector>
 #include "CDataNode.h"
-#include "CDVString.h"
+
+#ifndef GUCEF_CORE_CSTRING_H
+#include "gucefCORE_CString.h"
+#define GUCEF_CORE_CSTRING_H
+#endif /* GUCEF_CORE_CSTRING_H ? */
 
 #include "gucefPATCHER_macros.h"
 

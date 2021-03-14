@@ -93,9 +93,9 @@ main( int argc, char** argv )
 
         //PerformIniParserTests();
         
-        //PerformStringTests();
+        PerformStringTests();
         
-        PerformSharedPtrTests();
+        //PerformSharedPtrTests();
 
         //PerformCyclicDynamicBufferTests();
 

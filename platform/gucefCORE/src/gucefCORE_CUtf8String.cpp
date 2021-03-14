@@ -369,15 +369,15 @@ CUtf8String::CodepointAtIndex( const UInt32 index ) const
     if ( index >= m_length )
         return 0;
     
-    void* cpPos = m_string;
+    const char* cpPos = m_string;
     Int32 cp = 0; 
     UInt32 i=0;
     do
     {
-        cpPos = utf8codepoint( cpPos, &cp );
+        cpPos = (const char*) utf8codepoint( cpPos, &cp );
         ++i;
     }    
-    while ( i<index );
+    while ( i<=index );
     return cp;
 }
 
@@ -389,20 +389,19 @@ CUtf8String::CodepointPtrAtIndex( const UInt32 index, UInt32& bytesFromStart ) c
 
     bytesFromStart = 0;
 
-    if ( index >= m_length )
+    // We allow up to 'length' because the null terminator is also a
+    // valid code point. Its also needed to support index-exclusive-ranging
+    if ( index > m_length )
         return GUCEF_NULL;
     
     char* cpPos = m_string;
     Int32 cp = 0; 
-    UInt32 i=0;
-    do
+    for ( UInt32 i=0; i<index; ++i )
     {
         char* newCpPos = (char*) utf8codepoint( cpPos, &cp );
         bytesFromStart += (UInt32) ( newCpPos - cpPos );
         cpPos = newCpPos;
-        ++i;
     }    
-    while ( i<index );
     return (char*) cpPos;
 }
 
@@ -458,10 +457,12 @@ CUtf8String::Set( const char* str           ,
     }
     else
     {
+        assert( byteSize >= lengthInCodePoints );
+        
         // Protect against self-assignment
         if ( (void*) str != (void*) m_string )
         {
-            if ( lengthInCodePoints >= byteSize )
+            if ( lengthInCodePoints > byteSize )
                 lengthInCodePoints = byteSize-1;
             
             // Check for a null terminator
@@ -610,22 +611,36 @@ CUtf8String::Append( const char* appendstr ,
     // Check for a null terminator
     if ( appendstr[ byteSize-1 ] == '\0' )
     {
+        UInt32 originalByteSize = m_byteSize;
         if ( GUCEF_NULL != Reserve( (m_byteSize-1) + byteSize ) )
         {
-            memcpy( m_string+(m_byteSize-1), appendstr, byteSize );
+            memcpy( m_string+(originalByteSize-1), appendstr, byteSize );
             m_length = utf8len( m_string );
         } 
     }
     else
     {
         // Add the null-terminator since input didnt have one
+        UInt32 originalByteSize = m_byteSize;
         if ( GUCEF_NULL != Reserve( m_byteSize + byteSize ) )
         {
-            memcpy( m_string+(m_byteSize-1), appendstr, byteSize );
-            m_string[ m_byteSize+byteSize-1 ] = '\0';        
+            memcpy( m_string+(originalByteSize-1), appendstr, byteSize );
+            m_string[ m_byteSize-1 ] = '\0';        
             m_length = utf8len( m_string );
         } 
     }
+}
+
+/*-------------------------------------------------------------------------*/
+
+void
+CUtf8String::Append( const char* appendstr )
+{GUCEF_TRACE;
+
+    if ( appendstr == GUCEF_NULL )
+        return;
+
+    Append( appendstr, (UInt32) utf8size( appendstr ) );
 }
 
 /*-------------------------------------------------------------------------*/
@@ -812,24 +827,28 @@ CUtf8String::ReplaceChar( Int32 oldchar ,
             {                   
                 // Grab code point from current string
                 srcCpPos = (const char*) utf8codepoint( srcCpPos, &cp );
+                char* newDestCpPos = GUCEF_NULL;
                 if ( cp != oldchar )
                 {
                     // This one doesnt need replacing, just concat it into the pre-allocated destination buffer
-                    char* newDestCpPos = (char*) utf8catcodepoint( destCpPos, cp, (size_t) bufferSpaceLeft );
-                    bufferSpaceLeft -= (Int32)( newDestCpPos - destCpPos );
+                    newDestCpPos = (char*) utf8catcodepoint( destCpPos, cp, (size_t) bufferSpaceLeft );
                 }
                 else
                 {
                     // This one needs replacing, just concat the given new code point into the pre-allocated destination buffer
-                    char* newDestCpPos = (char*) utf8catcodepoint( destCpPos, newchar, (size_t) bufferSpaceLeft );
-                    bufferSpaceLeft -= (Int32)( newDestCpPos - destCpPos );
+                    newDestCpPos = (char*) utf8catcodepoint( destCpPos, newchar, (size_t) bufferSpaceLeft );
                 }
+                bufferSpaceLeft -= (Int32)( newDestCpPos - destCpPos );
+                destCpPos = newDestCpPos;
             }
+            newStr.m_length = m_length;
+            newStr.m_string[ newStr.m_byteSize-1 ] = '\0';
             return newStr; 
         }
         else
         {
             GUCEF_ASSERT_ALWAYS;
+            newStr.Clear();
             return newStr;
         }
     }
@@ -1049,7 +1068,8 @@ CUtf8String::SubstrFromRange( UInt32 startIndex ,
         const char* subStrStartPtr = CodepointPtrAtIndex( maxStart, bytesFromStartAtStart );
         CodepointPtrAtIndex( maxEnd, bytesFromStartAtEnd );
 
-        return CUtf8String( subStrStartPtr, bytesFromStartAtEnd-bytesFromStartAtStart, maxEnd-maxStart );
+        // create the string from the sub-segment, a null terminator will be auto added
+        return CUtf8String( subStrStartPtr, bytesFromStartAtEnd-bytesFromStartAtStart );
     }
     return CUtf8String();
 }
@@ -1158,7 +1178,10 @@ CUtf8String::SubstrToSubstr( const CUtf8String& searchstr ,
     Int32 subStrIndex = HasSubstr( searchstr, startIndex, startfront );
     if ( subStrIndex >= 0 )
     {
-        return SubstrFromRange( startIndex, subStrIndex );
+        if ( startfront )
+            return SubstrFromRange( startIndex, subStrIndex );
+        else
+            return SubstrFromRange( subStrIndex + searchstr.m_length, startIndex+1 );
     }
     return *this;
 }
@@ -1249,6 +1272,7 @@ CUtf8String::CompactRepeatingChar( const Int32 charToCompact ) const
                 // This one can stay, just concat it into the pre-allocated destination buffer
                 char* newDestCpPos = (char*) utf8catcodepoint( destCpPos, cp, (size_t) bufferSpaceLeft );
                 bufferSpaceLeft -= (Int32)( newDestCpPos - destCpPos );
+                destCpPos = newDestCpPos;
 
                 if ( cp == charToCompact )
                 {
@@ -1264,6 +1288,7 @@ CUtf8String::CompactRepeatingChar( const Int32 charToCompact ) const
                             // This one can stay, just concat it into the pre-allocated destination buffer
                             newDestCpPos = (char*) utf8catcodepoint( destCpPos, cp, (size_t) bufferSpaceLeft );
                             bufferSpaceLeft -= (Int32)( newDestCpPos - destCpPos );
+                            destCpPos = newDestCpPos;
 
                             // This was the end of the repeat series since a non-matching code point was found
                             break;
@@ -1271,11 +1296,14 @@ CUtf8String::CompactRepeatingChar( const Int32 charToCompact ) const
                     }
                 }
             }
+            newStr.m_length = m_length - charsToRemove;
+            newStr.m_string[ newStr.m_byteSize-1 ] = '\0';
             return newStr; 
         }
         else
         {
             GUCEF_ASSERT_ALWAYS;
+            newStr.Clear();
             return newStr;
         }
     }
@@ -1313,7 +1341,7 @@ CUtf8String::CutChars( UInt32 charcount   ,
         {
             if ( charcount < m_length )
             {
-                return SubstrFromRange( m_length-1, m_length-charcount );
+                return SubstrFromRange( 0, m_length-charcount );
             }
 
             return CUtf8String::Empty;
@@ -1346,9 +1374,9 @@ CUtf8String::Uppercase( void ) const
 
     if ( 0 < m_length && GUCEF_NULL != m_string )
     {
-        CUtf8String lwrCopy( *this );
-        utf8upr( lwrCopy.m_string );
-        return lwrCopy;
+        CUtf8String uprCopy( *this );
+        utf8upr( uprCopy.m_string );
+        return uprCopy;
     }
     return CUtf8String();
 }
@@ -1685,7 +1713,7 @@ CUtf8String::HasSubstr( const CUtf8String& substr ,
 
         for ( UInt32 i=bytesFromStart; i<=maxByteOffset; ++i )
         {
-            if ( 0 == memcmp( m_string+i, substr.m_string, substr.m_byteSize ) )
+            if ( 0 == memcmp( m_string+i, substr.m_string, substr.m_byteSize-1 ) )
             {
                 Int32 codePoint = 0;
                 return CodepointIndexAtPtr( m_string+i, codePoint );
@@ -1703,7 +1731,7 @@ CUtf8String::HasSubstr( const CUtf8String& substr ,
         char* cpPos = CodepointPtrAtIndex( startIndex, bytesFromStart );
         for ( Int32 i=bytesFromStart; i>=0; --i )
         {
-            if ( 0 == memcmp( m_string+i, substr.m_string, substr.m_byteSize ) )
+            if ( 0 == memcmp( m_string+i, substr.m_string, substr.m_byteSize-1 ) )
             {
                 Int32 codePoint = 0;
                 return CodepointIndexAtPtr( m_string+i, codePoint );
@@ -1726,7 +1754,7 @@ CUtf8String::HasSubstr( const CUtf8String& substr ,
     }
     if ( m_length > 0 )
     {
-        return HasSubstr( substr, m_length, startfront );
+        return HasSubstr( substr, m_length-1, startfront );
     }
     return -1;
 }
@@ -1842,8 +1870,17 @@ CUtf8String::Combine( const StringVector& elements, Int32 seperator ) const
     StringVector::const_iterator i = elements.begin();
     while ( i != elements.end() )
     {
-        bufferSize += (*i).ByteSize() + cpSize;
+        bool elementAdded = false;
+        if ( !(*i).IsNULLOrEmpty() )
+        {
+            bufferSize += (*i).m_byteSize-1;
+            elementAdded = true;
+        }
         ++i;
+        if ( elementAdded && i != elements.end() && !(*i).IsNULLOrEmpty() )
+        {
+            bufferSize += cpSize;
+        }
     }
 
     // Allocate total storage
@@ -1853,28 +1890,44 @@ CUtf8String::Combine( const StringVector& elements, Int32 seperator ) const
         return CUtf8String::Empty;
 
     // Write contents
-    
-    memcpy( comboStr.m_string, m_string, m_byteSize );    
-    size_t bufferSpaceLeft = bufferSize - m_byteSize;
-    void* cpPos = m_string;
+    char* cpPos = comboStr.m_string;
+    size_t bufferSpaceLeft = bufferSize;
+    if ( GUCEF_NULL != m_string && 0 < m_length )
+    {
+        memcpy( comboStr.m_string, m_string, m_byteSize );
+        bufferSpaceLeft -= m_byteSize;    
+
+        cpPos = (char*) utf8catcodepoint( cpPos, seperator, bufferSpaceLeft );
+        bufferSpaceLeft -= cpSize;
+    }
+    else
+    {
+        comboStr.m_string[ 0 ] = '\0';
+    }
     i = elements.begin();
     while ( i != elements.end() )
     {
-        if ( GUCEF_NULL != (*i).m_string )
+        bool elementAdded = false;
+        if ( !(*i).IsNULLOrEmpty() )
         {
-            cpPos = utf8catcodepoint( cpPos, seperator, bufferSpaceLeft );
-            bufferSpaceLeft -= cpSize;
-
-            void* newCpPos = utf8cat( cpPos, (*i).m_string );
-            size_t bytesWritten = (UInt32) ( (UInt8*)newCpPos - (UInt8*)cpPos );
+            size_t bytesWritten = (*i).m_byteSize-1;
+            memcpy( cpPos, (*i).m_string, bytesWritten );
+            cpPos += bytesWritten;
+            *cpPos = '\0';
             bufferSpaceLeft -= bytesWritten;
+            elementAdded = true;
         }
         ++i;
+        if ( elementAdded && i != elements.end() && !(*i).IsNULLOrEmpty() )
+        {
+            cpPos = (char*) utf8catcodepoint( cpPos, seperator, bufferSpaceLeft );
+            bufferSpaceLeft -= cpSize;
+        }
     }
 
     // Determine new string length codepoint wise
     comboStr.m_length = (UInt32) utf8len( comboStr.m_string );
-
+    comboStr.m_string[ comboStr.m_byteSize-1 ] = '\0';
     return comboStr;
 }
 

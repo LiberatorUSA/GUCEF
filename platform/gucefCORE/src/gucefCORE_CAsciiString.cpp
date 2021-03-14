@@ -379,8 +379,9 @@ char
 CAsciiString::operator[]( const UInt32 index ) const
 {GUCEF_TRACE;
 
-    assert( index < m_length );
-    return m_string[ index ];
+    if ( index <= m_length )
+        return m_string[ index ];
+    return '\0';
 }
 
 /*-------------------------------------------------------------------------*/
@@ -457,6 +458,17 @@ CAsciiString::Set( const char *new_str ,
 
 /*-------------------------------------------------------------------------*/
 
+void
+CAsciiString::Set( const char* new_str )
+{GUCEF_TRACE;
+
+    Clear();
+    if ( GUCEF_NULL != new_str )
+        Set( new_str, strlen( new_str ) );
+}
+
+/*-------------------------------------------------------------------------*/
+
 UInt32
 CAsciiString::GetCharacterCount( const char searchChar ) const
 {GUCEF_TRACE;
@@ -474,9 +486,33 @@ CAsciiString::GetCharacterCount( const char searchChar ) const
 
 /*-------------------------------------------------------------------------*/
 
+UInt32
+CAsciiString::GetCharacterRepeatCount( const char searchChar ) const
+{GUCEF_TRACE;
+
+    UInt32 charRepeatCount = 0;
+    for ( UInt32 i=0; i<m_length; ++i )
+    {
+        if ( m_string[ i ] == searchChar )
+        {
+            ++i;
+            for ( i; i<m_length; ++i )
+            {
+                if ( m_string[ i ] == searchChar )
+                    ++charRepeatCount;
+                else
+                    break;
+            }
+        }
+    }    
+    return charRepeatCount;
+}
+
+/*-------------------------------------------------------------------------*/
+
 void
 CAsciiString::Append( const char *appendstr ,
-                     UInt32 len            )
+                      UInt32 len            )
 {GUCEF_TRACE;
 
     if ( ( appendstr != m_string ) &&
@@ -504,6 +540,16 @@ CAsciiString::Append( const char *appendstr ,
             m_string[ m_length ] = 0;
         }
     }
+}
+
+/*-------------------------------------------------------------------------*/
+
+void
+CAsciiString::Append( const char* appendstr )
+{GUCEF_TRACE;
+
+    if ( GUCEF_NULL != appendstr )
+        Append( appendstr, strlen( appendstr ) );
 }
 
 /*-------------------------------------------------------------------------*/
@@ -1476,14 +1522,17 @@ CAsciiString::Combine( const StringVector& elements, char seperator ) const
 {GUCEF_TRACE;
 
     CAsciiString currentStr( *this );
-    if ( !currentStr.IsNULLOrEmpty() )
+    if ( !currentStr.IsNULLOrEmpty() && !elements.empty() )
         currentStr += seperator;
 
     StringVector::const_iterator i = elements.begin();
     while ( i != elements.end() )
     {
-        currentStr += seperator + (*i);
+        if ( !(*i).IsNULLOrEmpty() )
+            currentStr += (*i);
         ++i;
+        if ( i != elements.end() && !(*i).IsNULLOrEmpty() )
+            currentStr += seperator; 
     }
     return currentStr;
 }

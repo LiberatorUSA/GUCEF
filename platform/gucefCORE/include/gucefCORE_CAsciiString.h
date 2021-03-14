@@ -175,6 +175,8 @@ class GUCEF_CORE_PUBLIC_CPP CAsciiString
     void Set( const char *new_str ,
               UInt32 len          );
 
+    void Set( const char* new_str );
+
     /**
      *  This member functions allows you to set the string using a
      *  null-terminated char array as the source while specifying a
@@ -190,8 +192,10 @@ class GUCEF_CORE_PUBLIC_CPP CAsciiString
      *      non-null-terminated char array as the source. The source will
      *      be copyed and a null terminator will be added.
      */
-    void Append( const char *appendstr ,
+    void Append( const char* appendstr ,
                  UInt32 len            );
+
+    void Append( const char* appendstr );
 
     CAsciiString Lowercase( void ) const;
 
@@ -260,10 +264,12 @@ class GUCEF_CORE_PUBLIC_CPP CAsciiString
 
     UInt32 GetCharacterCount( const char searchChar ) const;
 
+    UInt32 GetCharacterRepeatCount( const char searchChar ) const;
+
     UInt32 FindMaxSubstrEquality( const CAsciiString& searchStr ,
-                                  const UInt32 startOffset ,
-                                  bool frontToBack         ,
-                                  bool isCaseSentive       ) const;
+                                  const UInt32 startOffset      ,
+                                  bool frontToBack              ,
+                                  bool isCaseSentive            ) const;
 
     CAsciiString CutChars( UInt32 charcount        ,
                            bool frontToBack = true ,
@@ -280,14 +286,14 @@ class GUCEF_CORE_PUBLIC_CPP CAsciiString
                                    bool addEmptyElements = true ) const;
 
     bool WildcardEquals( const CAsciiString& strWithWildcards  ,
-                         const char wildCardToken = '*'   ,
-                         const bool caseSensitive = true  ,
-                         const bool biDirectional = false ) const;
+                         const char wildCardToken = '*'        ,
+                         const bool caseSensitive = true       ,   
+                         const bool biDirectional = false      ) const;
 
-    bool Equals( const CAsciiString& otherStr        ,
+    bool Equals( const CAsciiString& otherStr    ,
                  const bool caseSensitive = true ) const;
 
-    bool NotEquals( const CAsciiString& otherStr         ,
+    bool NotEquals( const CAsciiString& otherStr    ,
                     const bool caseSensitive = true ) const;
 
     CAsciiString Combine( const StringVector& elements, char seperator ) const;

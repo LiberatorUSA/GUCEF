@@ -26,7 +26,11 @@
 //                                                                         //
 //-------------------------------------------------------------------------*/
 
-#include "CDVString.h"
+#ifndef GUCEF_CORE_CSTRING_H
+#include "gucefCORE_CString.h"
+#define GUCEF_CORE_CSTRING_H
+#endif /* GUCEF_CORE_CSTRING_H ? */
+
 #include "CURLDataRetriever.h"
 #include "CFileAccess.h"
 
