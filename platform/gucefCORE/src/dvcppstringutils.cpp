@@ -387,7 +387,7 @@ AppendToPath( CString& path           ,
         return;
     }
 
-    char pathLastChar = path[ path.Length()-1 ];
+    Int32 pathLastChar = path[ path.Length()-1 ];
     if ( pathLastChar == '/' || pathLastChar == '\\' )
     {
         if ( addition[ 0 ] == '/' || addition[ 0 ] == '\\' )

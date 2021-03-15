@@ -57,6 +57,8 @@ namespace CORE {
 //                                                                         //
 //-------------------------------------------------------------------------*/
 
+class CUtf8String;
+
 class GUCEF_CORE_PUBLIC_CPP CAsciiString
 {
     public:
@@ -75,6 +77,8 @@ class GUCEF_CORE_PUBLIC_CPP CAsciiString
     CAsciiString( CAsciiString&& src ) GUCEF_NOEXCEPT;
     #endif
 
+    CAsciiString( const CUtf8String& src );
+    
     CAsciiString( const std::string& src );
 
     CAsciiString( const char *src );

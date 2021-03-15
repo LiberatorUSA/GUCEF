@@ -31,6 +31,11 @@
 #define GUCEF_CORE_DVSTRUTILS_H
 #endif /* GUCEF_CORE_DVSTRUTILS_H ? */
 
+#ifndef GUCEF_CORE_CUTF8STRING_H
+#include "gucefCORE_CUtf8String.h"
+#define GUCEF_CORE_CUTF8STRING_H
+#endif /* GUCEF_CORE_CUTF8STRING_H ? */
+
 #include "gucefCORE_CAsciiString.h"
 
 #ifndef GUCEF_CORE_GUCEF_ESSENTIALS_H
@@ -83,6 +88,16 @@ CAsciiString::CAsciiString( const CAsciiString &src )
         m_length = src.m_length;
         memcpy( m_string, src.m_string, m_length+1 );
     }
+}
+
+/*-------------------------------------------------------------------------*/
+
+CAsciiString::CAsciiString( const CUtf8String &src )
+    : m_string( GUCEF_NULL )
+    , m_length( 0 )
+{GUCEF_TRACE;
+
+    *this = src.ForceToAscii();
 }
 
 /*-------------------------------------------------------------------------*/

@@ -394,8 +394,25 @@ Utf8toUtf16( const std::string& str ,
 
 /*-------------------------------------------------------------------------*/
 
-inline CString ToString( const CString& str ) { return str; }
-inline CString ToString( const CString::StringVector& el ) { CString out; return out.Combine( el, ',' ); }
+inline CAsciiString ToAsciiString( const CUtf8String& str ) { return CAsciiString( str ); }
+inline CAsciiString ToAsciiString( const CAsciiString& str ) { return str; }
+inline CUtf8String ToUtf8String( const CUtf8String& str ) { return str; }
+inline CUtf8String ToUtf8String( const CAsciiString& str ) { return CUtf8String( str ); }
+
+/*-------------------------------------------------------------------------*/
+
+#if ( GUCEF_DEFAULT_STRING_FORMAT == GUCEF_DATATYPE_ASCII_STRING )
+inline CString ToString( const CUtf8String& str ) { return CAsciiString( str ); }
+inline CString ToString( const CAsciiString& str ) { return str; }
+inline CString ToString( const CUtf8String::StringVector& el ) { CUtf8String out; return CAsciiString( out.Combine( el, ',' ) ); }
+inline CString ToString( const CAsciiString::StringVector& el ) { CAsciiString out; return out.Combine( el, ',' ); }
+#elif ( GUCEF_DEFAULT_STRING_FORMAT == GUCEF_DATATYPE_UTF8_STRING )
+inline CString ToString( const CUtf8String& str ) { return str; }
+inline CString ToString( const CAsciiString& str ) { return CUtf8String( str ); }
+inline CString ToString( const CUtf8String::StringVector& el ) { CUtf8String out; return out.Combine( el, ',' ); }
+inline CString ToString( const CAsciiString::StringVector& el ) { CAsciiString out; return CUtf8String( out.Combine( el, ',' ) ); }
+#endif
+
 inline CString ToString( UInt8 value ) { return UInt8ToString( value ); }
 inline CString ToString( UInt16 value ) { return UInt16ToString( value ); }
 inline CString ToString( UInt32 value ) { return UInt32ToString( value ); }

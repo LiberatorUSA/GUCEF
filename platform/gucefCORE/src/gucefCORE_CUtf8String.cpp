@@ -1761,6 +1761,37 @@ CUtf8String::HasSubstr( const CUtf8String& substr ,
 
 /*-------------------------------------------------------------------------*/
 
+CAsciiString 
+CUtf8String::ForceToAscii( char asciiReplacement ) const
+{GUCEF_TRACE;
+
+    CAsciiString ascii;
+    if ( m_length > 0 )
+    {
+        char* asciiBuffer = ascii.Reserve( m_length+1 );
+
+        const char* cpPos = m_string;
+        Int32 cp = 0; 
+        UInt32 i=0;
+        do
+        {
+            cpPos = (const char*) utf8codepoint( cpPos, &cp );
+
+            if ( cp >= 0 && cp <= 127 )
+                *asciiBuffer = (char) cp;
+            else
+                *asciiBuffer = asciiReplacement;    
+
+            ++i; ++asciiBuffer;
+        }    
+        while ( i<=m_length );
+        ascii.SetLength( m_length );
+    }
+    return ascii;
+}
+
+/*-------------------------------------------------------------------------*/
+
 bool
 CUtf8String::WildcardEquals( const CUtf8String& strWithWildcards    ,
                              const Int32 wildCardToken /* = '*' */  ,

@@ -347,9 +347,9 @@ class GUCEF_CORE_PUBLIC_CPP CUtf8String
     UInt32 GetCharacterRepeatCount( const Int32 searchChar ) const;
 
     UInt32 FindMaxSubstrEquality( const CUtf8String& searchStr ,
-                                  const UInt32 startOffset ,
-                                  bool frontToBack         ,
-                                  bool isCaseSentive       ) const;
+                                  const UInt32 startOffset     ,
+                                  bool frontToBack             ,
+                                  bool isCaseSentive           ) const;
 
     CUtf8String CutChars( UInt32 charcount        ,
                           bool frontToBack = true ,
@@ -386,6 +386,13 @@ class GUCEF_CORE_PUBLIC_CPP CUtf8String
      *  To prevent exploits you should utilize this member function when accepting data from external sources
      */
     bool IsFormattingValid( void ) const;
+
+    /**
+     *  Explicitly reduce the content down to ASCII.
+     *  This is a lossy operation. Any non-ASCII UTF8 code point is replaced
+     *  by the 'asciiReplacement' character.
+     */
+    CAsciiString ForceToAscii( char asciiReplacement = '*' ) const;
 
     private:
 

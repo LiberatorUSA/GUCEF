@@ -90,10 +90,10 @@ main( int argc, char** argv )
         #endif /* GUCEF_MSWIN_BUILD ? */
 
         //GUCEF::CORE::CGUCEFApplication::Instance()->main( argc, argv, true );
-
-        //PerformIniParserTests();
         
         PerformStringTests();
+
+        PerformIniParserTests();
         
         //PerformSharedPtrTests();
 

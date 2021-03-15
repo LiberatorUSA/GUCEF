@@ -106,7 +106,7 @@
 /*-------------------------------------------------------------------------*/
 
 #ifndef GUCEF_DEFAULT_STRING_FORMAT
-    #define GUCEF_DEFAULT_STRING_FORMAT     GUCEF_DATATYPE_ASCII_STRING
+    #define GUCEF_DEFAULT_STRING_FORMAT     GUCEF_DATATYPE_UTF8_STRING
 #endif
 
 /*-------------------------------------------------------------------------*/

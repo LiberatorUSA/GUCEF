@@ -195,8 +195,8 @@ GucefAppSignalHandler( int signal )
 /*
  *      Application entry point
  */
-//GUCEF_OSMAIN_BEGIN
-GUCEF_OSSERVICEMAIN_BEGIN( "ProcessMetrics" )
+GUCEF_OSMAIN_BEGIN
+//GUCEF_OSSERVICEMAIN_BEGIN( "ProcessMetrics" )
 {GUCEF_TRACE;
 
     int returnValue = -100;
