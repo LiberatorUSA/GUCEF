@@ -973,16 +973,18 @@ CUtf8String::SubstrToChar( Int32 searchchar               ,
             UInt32 bytesFromStart = 0;
             const char* startPos = CodepointPtrAtIndex( startIndex, bytesFromStart );
             const char* cpPos = startPos;
+            const char* prevCpPos = cpPos;
             Int32 codePoint = 0;
             for ( UInt32 i=startIndex; i<m_length; ++i )
             {                   
-                cpPos = (const char*) utf8codepoint( cpPos, &codePoint );            
+                cpPos = (const char*) utf8codepoint( prevCpPos, &codePoint );            
                 if ( codePoint == searchchar )
                 {
                     CUtf8String substr;
-                    substr.Set( startPos, (UInt32)(cpPos - startPos), i-startIndex );
+                    substr.Set( startPos, (UInt32)(prevCpPos - startPos), i-startIndex );
                     return substr;
                 }
+                prevCpPos = cpPos;
             }
             if ( returnEmptyIfCharNotFound )
                 return CUtf8String();
@@ -994,17 +996,19 @@ CUtf8String::SubstrToChar( Int32 searchchar               ,
             UInt32 bytesFromStart = 0;
             const char* startPos = CodepointPtrAtIndex( startIndex, bytesFromStart );
             const char* cpPos = startPos;
+            const char* prevCpPos = cpPos;
             Int32 codePoint = 0;
             for ( Int32 i=startIndex; i>=0; --i )
             {
-                const char* newCpPos = (const char*) utf8rcodepoint( cpPos, &codePoint ); 
+                cpPos = (const char*) utf8rcodepoint( prevCpPos, &codePoint ); 
                 if ( codePoint == searchchar )
                 {
+                    const char* prevPrevCpPos = (const char*) utf8codepoint( prevCpPos, &codePoint ); 
                     CUtf8String substr;
-                    substr.Set( cpPos, (UInt32)(startPos - cpPos), startIndex-i );
+                    substr.Set( prevPrevCpPos, (UInt32)(startPos - prevCpPos), startIndex-i );
                     return substr;
                 }
-                cpPos = newCpPos;
+                prevCpPos = cpPos;
             }
             if ( returnEmptyIfCharNotFound )
                 return CUtf8String();
