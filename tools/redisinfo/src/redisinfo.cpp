@@ -1112,7 +1112,8 @@ bool
 RedisInfoService::GetRedisStreamInfo( struct redisReply* replyNode           ,
                                       CORE::CValueList& info                 ,
                                       const CORE::CString& optionalKeyPrefix ,
-                                      bool statLikeValuesOnly                )
+                                      bool statLikeValuesOnly                ,
+                                      bool redisIdsAsFloat                   )
 {GUCEF_TRACE;
 
     if ( GUCEF_NULL != replyNode )
@@ -1125,9 +1126,11 @@ RedisInfoService::GetRedisStreamInfo( struct redisReply* replyNode           ,
             while ( i < infoCount ) 
             {
                 CORE::CString infoElementName;
+                CORE::CString infoElementShortName;
                 if ( REDIS_REPLY_STRING == replyNode->element[ i ]->type )
                 {
-                    infoElementName = optionalKeyPrefix + replyNode->element[ i ]->str;
+                    infoElementShortName = replyNode->element[ i ]->str;
+                    infoElementName = optionalKeyPrefix + infoElementShortName;
                     ++i;
 
                     switch( replyNode->element[ i ]->type )
@@ -1136,7 +1139,19 @@ RedisInfoService::GetRedisStreamInfo( struct redisReply* replyNode           ,
                         case REDIS_REPLY_STATUS:
                         case REDIS_REPLY_STRING: 
                         { 
-                            if ( !statLikeValuesOnly )
+                            bool isRedisId = false;
+                            if ( redisIdsAsFloat )
+                            {
+                                if ( "last-generated-id" == infoElementShortName )
+                                {
+                                    isRedisId = true;
+                                    CORE::CString idValue = replyNode->element[ i ]->str;
+                                    idValue = idValue.ReplaceChar( '-', '.' );
+                                    info.Set( infoElementName, idValue );
+                                }
+                            }
+
+                            if ( !statLikeValuesOnly && !isRedisId )
                                 info.Set( infoElementName, replyNode->element[ i ]->str ); 
                             break; 
                         }
@@ -1159,7 +1174,7 @@ RedisInfoService::GetRedisStreamInfo( struct redisReply* replyNode           ,
                         }
                         case REDIS_REPLY_ARRAY: 
                         { 
-                            return GetRedisStreamInfo( replyNode->element[ i ], info, optionalKeyPrefix, statLikeValuesOnly ); 
+                            return GetRedisStreamInfo( replyNode->element[ i ], info, optionalKeyPrefix, statLikeValuesOnly, redisIdsAsFloat ); 
                         }
                         default:
                             break;
@@ -1211,7 +1226,8 @@ bool
 RedisInfoService::GetRedisStreamInfo( const CORE::CString& streamName        ,
                                       CORE::CValueList& info                 ,
                                       const CORE::CString& optionalKeyPrefix ,
-                                      bool statLikeValuesOnly                )
+                                      bool statLikeValuesOnly                ,
+                                      bool redisIdsAsFloat                   )
 {GUCEF_TRACE;
 
     if ( GUCEF_NULL == m_redisContext )
@@ -1239,7 +1255,7 @@ RedisInfoService::GetRedisStreamInfo( const CORE::CString& streamName        ,
         if ( replyCount > 0 )
         {
             redisReply& reply = redisReplies.get( 0 );
-            return GetRedisStreamInfo( &reply, info, optionalKeyPrefix, statLikeValuesOnly );
+            return GetRedisStreamInfo( &reply, info, optionalKeyPrefix, statLikeValuesOnly, redisIdsAsFloat );
         }
 
         GUCEF_LOG( CORE::LOGLEVEL_NORMAL, "RedisInfoService(" + CORE::PointerToString( this ) + "):GetRedisStreamInfo: Obtained " + CORE::ToString( info.GetCount() ) + " pieces of information" );
@@ -1275,7 +1291,8 @@ RedisInfoService::GetRedisStreamInfo( const CORE::CString& streamName        ,
 
 bool
 RedisInfoService::GetRedisStreamInfoForAllStreams( CORE::CValueList& info  ,
-                                                   bool statLikeValuesOnly )
+                                                   bool statLikeValuesOnly ,
+                                                   bool redisIdsAsFloat    )
 {GUCEF_TRACE;
 
     bool totalSuccess = true;
@@ -1283,7 +1300,7 @@ RedisInfoService::GetRedisStreamInfoForAllStreams( CORE::CValueList& info  ,
     while ( i != m_filteredStreamNames.end() )
     {
         CORE::CString keyPrefix = (*i).ReplaceChar( '.', '_' ).ReplaceChar( '{', '_' ).ReplaceChar( '}', '_' ) + '.';
-        totalSuccess = GetRedisStreamInfo( (*i), info, keyPrefix, statLikeValuesOnly ) && totalSuccess;
+        totalSuccess = GetRedisStreamInfo( (*i), info, keyPrefix, statLikeValuesOnly, redisIdsAsFloat ) && totalSuccess;
         ++i;
     }
     return totalSuccess;
@@ -1977,7 +1994,7 @@ RedisInfoService::OnMetricsTimerCycle( CORE::CNotifier* notifier    ,
     if ( m_settings.gatherStreamInfo )
     {
         CORE::CValueList kv;
-        if ( GetRedisStreamInfoForAllStreams( kv, true ) )
+        if ( GetRedisStreamInfoForAllStreams( kv, true, true ) )
         {
             CORE::CString metricPrefix = m_settings.metricPrefix + "StreamInfo.";
             SendKeyValueStats( kv, metricPrefix );

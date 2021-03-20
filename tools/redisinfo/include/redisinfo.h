@@ -225,7 +225,8 @@ class RedisInfoService : public CORE::CTaskConsumer
     bool GetRedisStreamInfo( struct redisReply* replyNode           ,
                              CORE::CValueList& info                 ,
                              const CORE::CString& optionalKeyPrefix ,
-                             bool statLikeValuesOnly                );
+                             bool statLikeValuesOnly                ,
+                             bool redisIdsAsFloat                   );
 
     bool SerializeRedisClusterNodeMap( const RedisNodeMap& nodeMap, CORE::CDataNode& doc ) const;
 
@@ -267,10 +268,12 @@ class RedisInfoService : public CORE::CTaskConsumer
     bool GetRedisStreamInfo( const CORE::CString& streamName        ,
                              CORE::CValueList& info                 ,
                              const CORE::CString& optionalKeyPrefix ,
-                             bool statLikeValuesOnly                );
+                             bool statLikeValuesOnly                ,
+                             bool redisIdsAsFloat                   );
 
     bool GetRedisStreamInfoForAllStreams( CORE::CValueList& info  ,
-                                          bool statLikeValuesOnly );
+                                          bool statLikeValuesOnly ,
+                                          bool redisIdsAsFloat    );
 
     bool GetRedisInfoReplication( CORE::CValueList& kv );
 
