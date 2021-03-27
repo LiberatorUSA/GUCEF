@@ -297,13 +297,18 @@ FloatToString( const float value );
 
 /*-------------------------------------------------------------------------*/
 
+GUCEF_CORE_PUBLIC_CPP float
+StringToFloat( const CString& str, float defaultIfNeeded = 0.0f );
+
+/*-------------------------------------------------------------------------*/
+
 GUCEF_CORE_PUBLIC_CPP CString
 DoubleToString( const double value );
 
 /*-------------------------------------------------------------------------*/
 
 GUCEF_CORE_PUBLIC_CPP double
-StringToDouble( const CString& str, double defaultValue = 0 );
+StringToDouble( const CString& str, double defaultIfNeeded = 0 );
 
 /*-------------------------------------------------------------------------*/
 

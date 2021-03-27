@@ -507,7 +507,7 @@ Int64ToString( const Int64 value )
     #ifdef GUCEF_MSWIN_BUILD
     snprintf( intBuffer, 21, "%I64d", value );
     #else
-    snprintf( intBuffer, 21, "%d", value );
+    snprintf( intBuffer, 21, "%lld", value );
     #endif
 
     return CString( intBuffer );
@@ -543,7 +543,7 @@ UInt64ToString( const UInt64 value )
     #ifdef GUCEF_MSWIN_BUILD
     snprintf( intBuffer, 21, "%I64u", value );
     #else
-    snprintf( intBuffer, 21, "%u", value );
+    snprintf( intBuffer, 21, "%llu", value );
     #endif
 
     return CString( intBuffer );
@@ -623,7 +623,7 @@ UInt16ToString( const UInt16 value )
 {GUCEF_TRACE;
 
     char intBuffer[ 12 ];
-    snprintf( intBuffer, 12, "%u", value );
+    snprintf( intBuffer, 12, "%u", (UInt32) value );
     return CString( intBuffer );
 }
 
@@ -649,7 +649,7 @@ Int16ToString( const Int16 value )
 {GUCEF_TRACE;
 
     char intBuffer[ 12 ];
-    snprintf( intBuffer, 12, "%d", value );
+    snprintf( intBuffer, 12, "%d", (Int32) value );
     return CString( intBuffer );
 }
 
@@ -675,7 +675,7 @@ Int8ToString( const Int8 value )
 {GUCEF_TRACE;
 
     char intBuffer[ 12 ];
-    snprintf( intBuffer, 12, "%d", value );
+    snprintf( intBuffer, 12, "%d", (Int32) value );
     return CString( intBuffer );
 }
 
@@ -701,7 +701,7 @@ UInt8ToString( const UInt8 value )
 {GUCEF_TRACE;
 
     char intBuffer[ 12 ];
-    snprintf( intBuffer, 12, "%u", value );
+    snprintf( intBuffer, 12, "%u", (UInt32) value );
     return CString( intBuffer );
 }
 
@@ -776,6 +776,21 @@ FloatToString( const float value )
     snprintf( floatChars, 16, "%f", value );
 
     return floatChars;
+}
+
+/*-------------------------------------------------------------------------*/
+
+float
+StringToFloat( const CString& str, float defaultIfNeeded )
+{GUCEF_TRACE;
+
+    if ( !str.IsNULLOrEmpty() )
+    {
+        float value;
+        sscanf( str.C_String(), "%f", &value );
+        return value;
+    }
+    return defaultIfNeeded;    
 }
 
 /*-------------------------------------------------------------------------*/

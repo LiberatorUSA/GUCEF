@@ -167,17 +167,17 @@ CArchiveSettings::LoadConfig( const CORE::CDataNode& treeroot )
     
     if ( GUCEF_NULL != settingsNode )
     {
-        m_actualArchivePath = CORE::RelativePath( settingsNode->GetAttributeValueOrChildValueByName( "ActualArchivePath" ) );
-        m_archivePath = settingsNode->GetAttributeValueOrChildValueByName( "Path" );
+        m_actualArchivePath = CORE::RelativePath( settingsNode->GetAttributeValueOrChildValueByName( "ActualArchivePath" ).AsString() );
+        m_archivePath = settingsNode->GetAttributeValueOrChildValueByName( "Path" ).AsString();
         if ( m_archivePath.IsNULLOrEmpty() )
             m_archivePath = m_actualArchivePath;
         if ( m_actualArchivePath.IsNULLOrEmpty() )
             m_actualArchivePath = m_archivePath;
-        m_archiveName = settingsNode->GetAttributeValueOrChildValueByName( "ArchiveName" );
+        m_archiveName = settingsNode->GetAttributeValueOrChildValueByName( "ArchiveName" ).AsString();
         if ( m_archiveName.IsNULLOrEmpty() )
             m_archiveName = m_archivePath;
-        m_archiveType = settingsNode->GetAttributeValueOrChildValueByName( "ArchiveType" );
-        m_mountPath = settingsNode->GetAttributeValueOrChildValueByName( "MountPath" );
+        m_archiveType = settingsNode->GetAttributeValueOrChildValueByName( "ArchiveType" ).AsString();
+        m_mountPath = settingsNode->GetAttributeValueOrChildValueByName( "MountPath" ).AsString();
         m_autoMountSubArchives = CORE::StringToBool( settingsNode->GetAttributeValueOrChildValueByName( "MountArchives" ), false );
         m_autoMountSubArchivesIsRecursive = CORE::StringToBool( settingsNode->GetAttributeValueOrChildValueByName( "MountArchivesIsRecursive" ), false );
         m_writeableRequested = CORE::StringToBool( settingsNode->GetAttributeValueOrChildValueByName( "Writeable" ), false );

@@ -44,10 +44,15 @@
 #define ESTRUCTS_H
 #endif /* ESTRUCTS_H ? */
 
-#ifndef GUCEFCORE_MACROS_H
+#ifndef GUCEF_CORE_MACROS_H
 #include "gucefCORE_macros.h"           /* gucefCORE macros, used here for the export and callspec macros */
-#define GUCEFCORE_MACROS_H
-#endif /* GUCEFCORE_MACROS_H ? */ 
+#define GUCEF_CORE_MACROS_H
+#endif /* GUCEF_CORE_MACROS_H ? */ 
+
+#ifndef GUCEF_CORE_VARIANTDATA_H
+#include "gucefCORE_VariantData.h"
+#define GUCEF_CORE_VARIANTDATA_H
+#endif /* GUCEF_CORE_VARIANTDATA_H ? */
  
 /*-------------------------------------------------------------------------//
 //                                                                         //
@@ -119,15 +124,14 @@ DSTOREPLUG_End_Node_Store( void** plugdata      ,
 /*---------------------------------------------------------------------------*/
                            
 DSTOREPLUG_EXPORT_C void GUCEF_PLUGIN_CALLSPEC_PREFIX 
-DSTOREPLUG_Store_Node_Att( void** plugdata      , 
-                           void** filedata      , 
-                           const char* nodename ,
-                           UInt32 attscount     , 
-                           UInt32 attindex      , 
-                           const char* attname  , 
-                           const char* attvalue ,
-                           int atttype          ,
-                           UInt32 haschildren   ) GUCEF_PLUGIN_CALLSPEC_SUFFIX;
+DSTOREPLUG_Store_Node_Att( void** plugdata              , 
+                           void** filedata              , 
+                           const char* nodename         ,
+                           UInt32 attscount             , 
+                           UInt32 attindex              , 
+                           const char* attname          , 
+                           const TVariantData* attvalue ,
+                           UInt32 haschildren           ) GUCEF_PLUGIN_CALLSPEC_SUFFIX;
                            
 /*---------------------------------------------------------------------------*/
                            

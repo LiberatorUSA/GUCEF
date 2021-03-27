@@ -41,6 +41,11 @@
 #define GUCEF_CORE_CITIME_H
 #endif /* GUCEF_CORE_CITIME_H ? */
 
+#ifndef GUCEF_CORE_VARIANTDATA_H
+#include "gucefCORE_VariantData.h"
+#define GUCEF_CORE_VARIANTDATA_H
+#endif /* GUCEF_CORE_VARIANTDATA_H ? */
+
 /*-------------------------------------------------------------------------//
 //                                                                         //
 //      NAMESPACE                                                          //
@@ -49,40 +54,6 @@
 
 namespace GUCEF {
 namespace CORE {
-
-/*-------------------------------------------------------------------------//
-//                                                                         //
-//      TYPES                                                              //
-//                                                                         //
-//-------------------------------------------------------------------------*/
-
-struct SHeapData
-{
-    void* heap_data;
-    UInt64 heap_data_size; 
-};
-typedef struct SHeapData THeapData;
-
-struct SVariantData
-{
-    UInt8 containedType;
-    union UnionType
-    {
-        Int8        int8_data;
-        UInt8       uint8_data; 
-        Int16       int16_data;
-        UInt16      uint16_data;
-        Int32       int32_data;
-        UInt32      uint32_data;
-        Int64       int64_data;
-        UInt64      uint64_data;
-        Float32     float32_data;
-        Float64     float64_data;
-        THeapData   heap_data;
-    };
-    UnionType union_data;
-};
-typedef struct SVariantData TVariantData;
 
 /*-------------------------------------------------------------------------//
 //                                                                         //
@@ -107,6 +78,11 @@ class GUCEF_CORE_PUBLIC_CPP CVariant
 {
     public:
 
+    typedef std::vector< CVariant >     VariantVector;
+    typedef std::set< CVariant >        VariantSet;
+
+    static const CVariant   Empty;
+    
     CVariant( void );
     CVariant( const CVariant& src );
     ~CVariant(); 
@@ -122,8 +98,9 @@ class GUCEF_CORE_PUBLIC_CPP CVariant
     explicit CVariant( UInt64  data );
     explicit CVariant( Float32 data );
     explicit CVariant( Float64 data );
-    explicit CVariant( const CAsciiString& data );
-    explicit CVariant( const CUtf8String& data );
+    CVariant( const CAsciiString& data );
+    CVariant( const CUtf8String& data );
+    CVariant( const char* data );
     
     bool IsInteger( void ) const;
     bool IsFloat( void ) const;
@@ -131,21 +108,31 @@ class GUCEF_CORE_PUBLIC_CPP CVariant
     bool IsBoolean( void ) const;
     
     bool UsesDynamicMemory( void ) const;
-    bool IsInitialized( void ) const; 
+    bool IsInitialized( void ) const;
+    bool IsNULLOrEmpty( void ) const; 
     
     UInt8 GetTypeId( void ) const;  
 
-    bool     AsBool( void ) const;
-    Int8     AsInt8( void ) const;
-    UInt8    AsUInt8( void ) const;
-    Int16    AsInt16( void ) const;
-    UInt16   AsUInt16( void ) const;
-    Int32    AsInt32( void ) const;
-    UInt32   AsUInt32( void ) const;
-    Int64    AsInt64( void ) const;
-    UInt64   AsUInt64( void ) const;
-    Float32  AsFloat32( void ) const;
-    Float64  AsFloat64( void ) const;
+    bool            AsBool( void ) const;
+    Int8            AsInt8( void ) const;
+    UInt8           AsUInt8( void ) const;
+    Int16           AsInt16( void ) const;
+    UInt16          AsUInt16( void ) const;
+    Int32           AsInt32( void ) const;
+    UInt32          AsUInt32( void ) const;
+    Int64           AsInt64( void ) const;
+    UInt64          AsUInt64( void ) const;
+    Float32         AsFloat32( void ) const;
+    Float64         AsFloat64( void ) const;
+    CString         AsString( void ) const;
+    CAsciiString    AsAsciiString( void ) const;
+    CUtf8String     AsUtf8String( void ) const;
+    const void*     AsVoidPtr( void ) const;
+
+    /**
+     *  Returns the size of the storage used in bytes by the stored type
+     */
+    UInt32 ByteSize( void ) const;
 
     bool operator==( const CVariant& other ) const;
     bool operator!=( const CVariant& other ) const;
@@ -169,14 +156,32 @@ class GUCEF_CORE_PUBLIC_CPP CVariant
     CVariant& operator=( const CUtf8String& data );
     CVariant& operator=( const CVariant& src );
 
+    operator CAsciiString() const;
+    operator CUtf8String() const;
+
     void Clear( void );
 
+    /**
+     *  Sets the variant data based on a raw pointer to the data type of type
+     *  indicated by dataSize. Please take care that the buffer pointed to by data
+     *  has enough bytes to hold the varType indicated or the operation will fail.
+     */
     bool Set( UInt8 varType, const void* data, UInt32 dataSize );
+
+    bool SetString( UInt8 varType, const CString& data, const CVariant& defaultValue = CVariant::Empty );
+
+    bool SetFromString( UInt8 varType, const CString& data, const CVariant& defaultValue = CVariant::Empty );
+
+    const TVariantData* CStyleAccess( void ) const;
     
     protected:
 
     TVariantData m_variantData;
 };
+
+/*-------------------------------------------------------------------------*/
+
+inline CString ToString( const CVariant& var ) { return var.AsString(); }
 
 /*-------------------------------------------------------------------------//
 //                                                                         //

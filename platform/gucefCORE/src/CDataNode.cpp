@@ -58,7 +58,6 @@ CDataNode::CDataNode( int nodeType )
     , _pprev( NULL )   
     , _name()          
     , m_value()
-    , m_typeOfValue( GUCEF_DATATYPE_STRING )
     , m_associatedData( GUCEF_NULL )
 {GUCEF_TRACE;
 }
@@ -68,8 +67,7 @@ CDataNode::CDataNode( int nodeType )
 CDataNode::CDataNode( const CString& name, int nodeType )
     : m_nodeType( nodeType )
     , _name( name )    
-    , m_value()
-    , m_typeOfValue( GUCEF_DATATYPE_STRING )        
+    , m_value()      
     , _pparent( NULL ) 
     , m_children()     
     , _pnext( NULL )   
@@ -84,7 +82,6 @@ CDataNode::CDataNode( const CDataNode& src )
     : m_nodeType( src.m_nodeType )
     , _name( src._name )       
     , m_value( src.m_value ) 
-    , m_typeOfValue( src.m_typeOfValue )  
     , _atts( src._atts )       
     , _pparent( src._pparent ) 
     , _pnext( src._pnext )     
@@ -183,7 +180,6 @@ CDataNode::operator=( const CDataNode& src )
         m_nodeType = src.m_nodeType;
         _name = src._name;
         m_value = src.m_value;
-        m_typeOfValue = src.m_typeOfValue;
         _atts = src._atts;
 
         SetAssociatedData( src.m_associatedData );
@@ -225,7 +221,7 @@ CDataNode::GetName( void ) const
 /*-------------------------------------------------------------------------*/
 
 void
-CDataNode::SetValue( const CString& value )
+CDataNode::SetValue( const CVariant& value )
 {GUCEF_TRACE;
 
     m_value = value;
@@ -233,7 +229,7 @@ CDataNode::SetValue( const CString& value )
 
 /*-------------------------------------------------------------------------*/
 
-const CString& 
+const CVariant& 
 CDataNode::GetValue( void ) const
 {
     return m_value;
@@ -245,16 +241,7 @@ bool
 CDataNode::HasValue( void ) const
 {GUCEF_TRACE;
     
-    return !m_value.IsNULLOrEmpty();
-}
-
-/*-------------------------------------------------------------------------*/
-
-void 
-CDataNode::SetValueType( int typeId )
-{GUCEF_TRACE;
-
-    m_typeOfValue = typeId;
+    return m_value.IsInitialized();
 }
 
 /*-------------------------------------------------------------------------*/
@@ -263,7 +250,7 @@ int
 CDataNode::GetValueType( void ) const
 {GUCEF_TRACE;
 
-    return m_typeOfValue;
+    return (int) m_value.GetTypeId();
 }
 
 /*-------------------------------------------------------------------------*/
@@ -398,24 +385,24 @@ CDataNode::GetAttribute( const CString& name ) const
 
 /*-------------------------------------------------------------------------*/
 
-CString 
+CVariant 
 CDataNode::GetAttributeValue( const CString& name ) const
 {GUCEF_TRACE;
 
-    return GetAttributeValue( name, CString::Empty );
+    return GetAttributeValue( name, CVariant::Empty );
 }
 
 /*-------------------------------------------------------------------------*/
 
-CString 
-CDataNode::GetAttributeValue( const CString& name         , 
-                              const CString& defaultValue ) const
+CVariant 
+CDataNode::GetAttributeValue( const CString& name          , 
+                              const CVariant& defaultValue ) const
 {GUCEF_TRACE;
 
     TAttributeMap::const_iterator i = _atts.find( name );
     if ( i != _atts.end() )
     {
-        return (*i).second.value;
+        return (*i).second;
     }
     return defaultValue;
 }
@@ -460,10 +447,7 @@ CDataNode::AddAttribute( const CString& name  ,
     TAttributeMap::iterator i = _atts.find( name );
     if ( i == _atts.end() )
     {
-        auto& att = _atts[ name ]; 
-        att.value = value;
-        att.type = typeOfValue;
-        return true;
+        return _atts[ name ].SetFromString( (UInt8) typeOfValue, value ); 
     }
     return false;                       
 }
@@ -476,10 +460,7 @@ CDataNode::SetAttribute( const CString& name  ,
                          int typeOfValue      )
 {GUCEF_TRACE;
 
-    auto& att = _atts[ name ];
-    att.value = value;
-    att.type = typeOfValue;
-    return true;                      
+    return _atts[ name ].SetFromString( (UInt8) typeOfValue, value );                       
 }
 
 /*-------------------------------------------------------------------------*/
@@ -490,10 +471,7 @@ CDataNode::SetAttribute( const char* name  ,
                          int typeOfValue   )
 {GUCEF_TRACE;
 
-    auto& att = _atts[ name ];
-    att.value = value;
-    att.type = typeOfValue;
-    return true;                      
+    return _atts[ name ].SetFromString( (UInt8) typeOfValue, value );                     
 }
 /*-------------------------------------------------------------------------*/
 
@@ -502,9 +480,7 @@ CDataNode::SetAttribute( const CString& name ,
                          bool value          )
 {GUCEF_TRACE;
 
-    auto& att = _atts[ name ];
-    att.value = CORE::BoolToString( value );
-    att.type = GUCEF_DATATYPE_BOOLEAN_STRING;
+    _atts[ name ] = value;
     return true;                      
 }
 
@@ -515,9 +491,7 @@ CDataNode::SetAttribute( const CString& name ,
                          UInt32 value        )
 {GUCEF_TRACE;
 
-    auto& att = _atts[ name ];
-    att.value = CORE::UInt32ToString( value );
-    att.type = GUCEF_DATATYPE_UINT32;
+    _atts[ name ] = value;
     return true;                      
 }
 
@@ -528,9 +502,7 @@ CDataNode::SetAttribute( const CString& name ,
                          Int32 value         )
 {GUCEF_TRACE;
 
-    auto& att = _atts[ name ];
-    att.value = CORE::Int32ToString( value );
-    att.type = GUCEF_DATATYPE_INT32;
+    _atts[ name ] = value;
     return true;                      
 }
 
@@ -678,9 +650,9 @@ CDataNode::FindChildrenOfType( const CString& name  ,
 /*-------------------------------------------------------------------------*/
 
 CDataNode*
-CDataNode::FindChild( const CString& name        ,
-                      const CString& attribName  ,
-                      const CString& attribValue )
+CDataNode::FindChild( const CString& name         ,
+                      const CString& attribName   ,
+                      const CVariant& attribValue )
 {GUCEF_TRACE;
 
     TDataNodeList::iterator i = m_children.begin();
@@ -694,7 +666,7 @@ CDataNode::FindChild( const CString& name        ,
             if ( att != NULL )
             {
                 // See if the node attribute has the value we want
-                if ( att->second.value == attribValue )
+                if ( att->second == attribValue )
                 {
                     return (*i);
                 }
@@ -733,7 +705,7 @@ CDataNode::Compare( const CDataNode& other        ,
                             att2 = GetAttribute( att->first );
                             if ( att2 )
                             {
-                                if ( att->second.value != att2->second.value )
+                                if ( att->second != att2->second )
                                 {
                                         return false;
                                 }
@@ -1248,7 +1220,7 @@ CDataNode::Structure( const CString& nodeName       ,
     // Prepare some variables for the first loop iteration
     CDataNode* node = this;
     CString attSeqRemnant = attribSequence;
-    CString attValue = attSeqRemnant.SubstrToChar( seperator );
+    CVariant attValue = attSeqRemnant.SubstrToChar( seperator );
     bool childExists = true;
     CDataNode* childNode = NULL;
     
@@ -1280,7 +1252,7 @@ CDataNode::Structure( const CString& nodeName       ,
         node = childNode;
         
         // Get the next segment
-        attSeqRemnant = attSeqRemnant.CutChars( attValue.Length()+1, true );
+        attSeqRemnant = attSeqRemnant.CutChars( attValue.AsString().Length()+1, true );
         attValue = attSeqRemnant.SubstrToChar( seperator );
         
     } while ( attSeqRemnant.Length() > 0 );
@@ -1346,25 +1318,25 @@ CDataNode::AddChild( const CString& nodeName, int nodeType )
 
 /*-------------------------------------------------------------------------*/
 
-CString
+CVariant
 CDataNode::GetChildValueByName( const CString& name ) const
 {GUCEF_TRACE;
 
     CDataNode* childNode = FindChild( name );
-    if ( NULL != childNode )
+    if ( GUCEF_NULL != childNode )
     {
         return childNode->GetValue();
     }
-    return CString();
+    return CVariant();
 }
 
 /*-------------------------------------------------------------------------*/
 
-CString
-CDataNode::GetAttributeValueOrChildValueByName( const CString& name, const CString& defaultValue ) const
+CVariant
+CDataNode::GetAttributeValueOrChildValueByName( const CString& name, const CVariant& defaultValue ) const
 {GUCEF_TRACE;
 
-    CString value = GetAttributeValue( name );
+    CVariant value = GetAttributeValue( name );
     if ( value.IsNULLOrEmpty() )
     {
         value = GetChildValueByName( name );
@@ -1378,12 +1350,12 @@ CDataNode::GetAttributeValueOrChildValueByName( const CString& name, const CStri
 
 /*-------------------------------------------------------------------------*/
 
-CDataNode::TStringVector
+CDataNode::TVariantVector
 CDataNode::GetAttributeValueOrChildValuesByName( const CString& name ) const
 {GUCEF_TRACE;
 
-    TStringVector results = GetChildrenValuesByName( name );
-    CString attValue = GetAttributeValue( name );
+    TVariantVector results = GetChildrenValuesByName( name );
+    CVariant attValue = GetAttributeValue( name );
     if ( !attValue.IsNULLOrEmpty() )
     {
         results.push_back( attValue );
@@ -1393,17 +1365,17 @@ CDataNode::GetAttributeValueOrChildValuesByName( const CString& name ) const
 
 /*-------------------------------------------------------------------------*/
 
-CDataNode::TStringVector
+CDataNode::TVariantVector
 CDataNode::GetChildrenValuesByName( const CString& name ) const
 {GUCEF_TRACE;
 
-    TStringVector results;
+    TVariantVector results;
     
     TConstDataNodeSet childNodes = FindChildrenOfType( name, false );
     TConstDataNodeSet::iterator i = childNodes.begin();
     while ( i != childNodes.end() )
     {
-        const CString& childValue = (*i)->GetValue();
+        const CVariant& childValue = (*i)->GetValue();
         if ( !childValue.IsNULLOrEmpty() )
         {
             results.push_back( childValue );
@@ -1416,16 +1388,16 @@ CDataNode::GetChildrenValuesByName( const CString& name ) const
 
 /*-------------------------------------------------------------------------*/
 
-CDataNode::TStringVector
+CDataNode::TVariantVector
 CDataNode::GetChildrenValues( void ) const
 {GUCEF_TRACE;
 
-    TStringVector results;
+    TVariantVector results;
     
     TDataNodeList::const_iterator i = m_children.begin();
     while ( i != m_children.end() )
     {
-        const CString& childValue = (*i)->GetValue();
+        const CVariant& childValue = (*i)->GetValue();
         if ( !childValue.IsNULLOrEmpty() )
         {
             results.push_back( childValue );

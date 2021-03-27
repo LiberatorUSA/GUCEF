@@ -248,7 +248,7 @@ CIniParser::HasChildWithValueOrAttribs( const CDataNode& node )
     CDataNode::const_iterator n = node.Begin();
     while ( n != node.End() )
     {
-        bool childHasValue = (*n)->GetValue().Length() > 0;
+        bool childHasValue = !(*n)->GetValue().IsNULLOrEmpty();
         bool childHasAttribs = (*n)->GetAttCount() > 0;
 
         if ( childHasValue || childHasAttribs )
@@ -311,7 +311,7 @@ CIniParser::LoadFrom( const CDataNode& node       ,
                 CDataNode::TAttributeMap::const_iterator i = node.AttributeBegin();
                 while ( i != node.AttributeEnd() )
                 {
-                    iniSection->sectionData.Set( (*i).first, (*i).second.value );
+                    iniSection->sectionData.Set( (*i).first, (*i).second );
                     ++i;
                 }
             }

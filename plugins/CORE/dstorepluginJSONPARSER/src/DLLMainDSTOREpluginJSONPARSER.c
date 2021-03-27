@@ -232,7 +232,13 @@ DSTOREPLUG_Begin_Node_Store( void** plugdata      ,
         {
             if ( 0 == attscount && 0 == haschildren )
             {
-                DSTOREPLUG_Store_Node_Att( plugdata, filedata, GUCEF_NULL, 1, 0, GUCEF_NULL, nodename, nodeType, haschildren );
+                TVariantData var;
+                memset( &var, 0, sizeof var );
+                var.containedType = GUCEF_DATATYPE_UTF8_STRING;
+                var.union_data.heap_data.heap_data = (void*) nodename;
+                var.union_data.heap_data.heap_data_size = strlen( nodename );
+                
+                DSTOREPLUG_Store_Node_Att( plugdata, filedata, GUCEF_NULL, 1, 0, GUCEF_NULL, &var, haschildren );
                 if ( nodeType != GUCEF_DATATYPE_ARRAY && nodeType != GUCEF_DATATYPE_OBJECT )
                 {
                     fd->activeNodeIsValueNode = 1;
@@ -260,36 +266,38 @@ DSTOREPLUG_End_Node_Store( void** plugdata      ,
 /*---------------------------------------------------------------------------*/
 
 void GUCEF_PLUGIN_CALLSPEC_PREFIX
-DSTOREPLUG_Store_Node_Att( void** plugdata      ,
-                           void** filedata      ,
-                           const char* nodename ,
-                           UInt32 attscount     ,
-                           UInt32 attindex      ,
-                           const char* attname  ,
-                           const char* attvalue ,
-                           int atttype          ,
-                           UInt32 haschildren   ) GUCEF_PLUGIN_CALLSPEC_SUFFIX
+DSTOREPLUG_Store_Node_Att( void** plugdata              ,
+                           void** filedata              ,
+                           const char* nodename         ,
+                           UInt32 attscount             ,
+                           UInt32 attindex              ,
+                           const char* attname          ,
+                           const TVariantData* attvalue ,
+                           UInt32 haschildren           ) GUCEF_PLUGIN_CALLSPEC_SUFFIX
 {
     TDestFileData* fd = (TDestFileData*)*filedata;
 
     if ( 0 == attscount )
         return;
 
-    if ( NULL == attvalue )
+    if ( GUCEF_NULL == attvalue )
     {
-        attvalue = "";
+        static TVariantData dummy;
+        memset( &dummy, 0, sizeof dummy );
+        attvalue = &dummy;
     }
-    if ( NULL == nodename )
+    if ( GUCEF_NULL == nodename )
     {
         nodename = "noname";
     }
 
-    switch ( atttype )
+    switch ( attvalue->containedType )
     {
-        case GUCEF_DATATYPE_BOOLEAN_STRING:
+        case GUCEF_DATATYPE_BOOLEAN_ASCII_STRING:
+        case GUCEF_DATATYPE_BOOLEAN_UTF8_STRING:
         {
-            int isNotTrue = stricmp( attvalue, "true" );
-            int isNotFalse = stricmp( attvalue, "false" );
+            int isNotTrue = stricmp( (const char*) attvalue->union_data.heap_data.heap_data, "true" );
+            int isNotFalse = stricmp( (const char*) attvalue->union_data.heap_data.heap_data, "false" );
 
             json_value* att = GUCEF_NULL;
             if ( isNotTrue == 0 )
@@ -313,38 +321,37 @@ DSTOREPLUG_Store_Node_Att( void** plugdata      ,
         }
         case GUCEF_DATATYPE_BOOLEAN_INT32:
         {
-            int boolInt = 0;
-            if ( 0 != sscanf( attvalue, "%i", &boolInt ) )
-            {
-                json_value* att = json_boolean_new( boolInt );
-                if ( fd->currentJsonNode->type == json_array )
-                    json_array_push( fd->currentJsonNode, att );
+            Int32 boolInt = attvalue->union_data.int32_data;
+            json_value* att = json_boolean_new( boolInt );
+            if ( fd->currentJsonNode->type == json_array )
+                json_array_push( fd->currentJsonNode, att );
+            else
+            if ( fd->currentJsonNode->type == json_object )
+                if ( GUCEF_NULL != attname )
+                    json_object_push( fd->currentJsonNode, attname, att );
                 else
-                if ( fd->currentJsonNode->type == json_object )
-                    if ( GUCEF_NULL != attname )
-                        json_object_push( fd->currentJsonNode, attname, att );
-                    else
-                        json_object_push( fd->currentJsonNode, nodename, att );
-            }
+                    json_object_push( fd->currentJsonNode, nodename, att );
             break;
         }
         case GUCEF_DATATYPE_FLOAT32:
         case GUCEF_DATATYPE_FLOAT64:
         case GUCEF_DATATYPE_NUMERIC:
         {
-            double number = 0.0;
-            if ( 0 != sscanf( attvalue, "%lf", &number ) )
-            {
-                json_value* att = json_double_new( number );
-                if ( fd->currentJsonNode->type == json_array )
-                    json_array_push( fd->currentJsonNode, att );
+            double number = 0.0l;
+            if ( GUCEF_DATATYPE_FLOAT32 == attvalue->containedType )
+                number = attvalue->union_data.float32_data;
+            else
+                number = attvalue->union_data.float64_data;
+
+            json_value* att = json_double_new( number );
+            if ( fd->currentJsonNode->type == json_array )
+                json_array_push( fd->currentJsonNode, att );
+            else
+            if ( fd->currentJsonNode->type == json_object )
+                if ( GUCEF_NULL != attname )
+                    json_object_push( fd->currentJsonNode, attname, att );
                 else
-                if ( fd->currentJsonNode->type == json_object )
-                    if ( GUCEF_NULL != attname )
-                        json_object_push( fd->currentJsonNode, attname, att );
-                    else
-                        json_object_push( fd->currentJsonNode, nodename, att );
-            }
+                    json_object_push( fd->currentJsonNode, nodename, att );
             break;
         }
         case GUCEF_DATATYPE_INT8:
@@ -356,25 +363,37 @@ DSTOREPLUG_Store_Node_Att( void** plugdata      ,
         case GUCEF_DATATYPE_INT64:
         case GUCEF_DATATYPE_UINT64:
         {
+            json_value* att = GUCEF_NULL;
             long long integer = 0;
-            if ( 0 != sscanf( attvalue, "%lli", &integer ) )
+            switch ( attvalue->containedType )
             {
-                json_value* att = json_integer_new( integer );
-                if ( fd->currentJsonNode->type == json_array )
-                    json_array_push( fd->currentJsonNode, att );
-                else
-                if ( fd->currentJsonNode->type == json_object )
-                    if ( GUCEF_NULL != attname )
-                        json_object_push( fd->currentJsonNode, attname, att );
-                    else
-                        json_object_push( fd->currentJsonNode, nodename, att );
+                case GUCEF_DATATYPE_INT8:   { integer = (long long) attvalue->union_data.int8_data; break; }
+                case GUCEF_DATATYPE_UINT8:  { integer = (long long) attvalue->union_data.uint8_data; break; }
+                case GUCEF_DATATYPE_INT16:  { integer = (long long) attvalue->union_data.int16_data; break; }
+                case GUCEF_DATATYPE_UINT16: { integer = (long long) attvalue->union_data.uint16_data; break; }
+                case GUCEF_DATATYPE_INT32:  { integer = (long long) attvalue->union_data.int32_data; break; }
+                case GUCEF_DATATYPE_UINT32: { integer = (long long) attvalue->union_data.uint32_data; break; }
+                case GUCEF_DATATYPE_INT64:  { integer = (long long) attvalue->union_data.int64_data; break; }
+                case GUCEF_DATATYPE_UINT64: { integer = (long long) attvalue->union_data.uint64_data; break; }
             }
+
+            att = json_integer_new( integer );
+            if ( fd->currentJsonNode->type == json_array )
+                json_array_push( fd->currentJsonNode, att );
+            else
+            if ( fd->currentJsonNode->type == json_object )
+                if ( GUCEF_NULL != attname )
+                    json_object_push( fd->currentJsonNode, attname, att );
+                else
+                    json_object_push( fd->currentJsonNode, nodename, att );
             break;
         }
-        case GUCEF_DATATYPE_STRING:
+        case GUCEF_DATATYPE_UTF8_STRING:
+        case GUCEF_DATATYPE_ASCII_STRING:
         default:
         {
-            json_value* att = json_string_new( attvalue );
+            const char* attValue = (const char*) attvalue->union_data.heap_data.heap_data;
+            json_value* att = json_string_new( attValue );
             if ( fd->currentJsonNode->type == json_array )
                 json_array_push( fd->currentJsonNode, att );
             else
@@ -386,7 +405,6 @@ DSTOREPLUG_Store_Node_Att( void** plugdata      ,
             break;
         }
     }
-
 }
 
 /*---------------------------------------------------------------------------*/

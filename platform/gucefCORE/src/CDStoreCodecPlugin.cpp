@@ -127,7 +127,7 @@ typedef UInt32 ( GUCEF_PLUGIN_CALLSPEC_PREFIX *TDSTOREPLUGFPTR_Dest_File_Open ) 
 typedef void ( GUCEF_PLUGIN_CALLSPEC_PREFIX *TDSTOREPLUGFPTR_Dest_File_Close )       ( void** plugdata, void** filedata ) GUCEF_PLUGIN_CALLSPEC_SUFFIX;
 typedef void ( GUCEF_PLUGIN_CALLSPEC_PREFIX *TDSTOREPLUGFPTR_Begin_Node_Store )      ( void** plugdata, void** filedata, const char* nodename, int nodeType, UInt32 attscount, UInt32 haschildren ) GUCEF_PLUGIN_CALLSPEC_SUFFIX;
 typedef void ( GUCEF_PLUGIN_CALLSPEC_PREFIX *TDSTOREPLUGFPTR_End_Node_Store )        ( void** plugdata, void** filedata, const char* nodename, UInt32 attscount, UInt32 haschildren ) GUCEF_PLUGIN_CALLSPEC_SUFFIX;
-typedef void ( GUCEF_PLUGIN_CALLSPEC_PREFIX *TDSTOREPLUGFPTR_Store_Node_Att )        ( void** plugdata, void** filedata, const char* nodename, UInt32 attscount, UInt32 attindex, const char* attname, const char* attvalue, int atttype, UInt32 haschildren ) GUCEF_PLUGIN_CALLSPEC_SUFFIX;
+typedef void ( GUCEF_PLUGIN_CALLSPEC_PREFIX *TDSTOREPLUGFPTR_Store_Node_Att )        ( void** plugdata, void** filedata, const char* nodename, UInt32 attscount, UInt32 attindex, const char* attname, const TVariantData* attvalue, UInt32 haschildren ) GUCEF_PLUGIN_CALLSPEC_SUFFIX;
 typedef void ( GUCEF_PLUGIN_CALLSPEC_PREFIX *TDSTOREPLUGFPTR_Begin_Node_Children )   ( void** plugdata, void** filedata, const char* nodename ) GUCEF_PLUGIN_CALLSPEC_SUFFIX;
 typedef void ( GUCEF_PLUGIN_CALLSPEC_PREFIX *TDSTOREPLUGFPTR_End_Node_Children )     ( void** plugdata, void** filedata, const char* nodename ) GUCEF_PLUGIN_CALLSPEC_SUFFIX;
 
@@ -322,7 +322,7 @@ CDStoreCodecPlugin::Link( void* modulePtr                   ,
                                                                     3*sizeof(void*)+8           ).funcPtr;
         _fptable[ DSTOREPLUG_STORE_NODE_ATT ] = GetFunctionAddress( _sohandle                   ,
                                                                     "DSTOREPLUG_Store_Node_Att" ,
-                                                                    5*sizeof(void*)+16          ).funcPtr;
+                                                                    5*sizeof(void*)+12          ).funcPtr;
         _fptable[ DSTOREPLUG_BEGIN_NODE_CHILDREN ] = GetFunctionAddress( _sohandle                        ,
                                                                          "DSTOREPLUG_Begin_Node_Children" ,
                                                                          3*sizeof(void*)                  ).funcPtr;
@@ -490,15 +490,14 @@ CDStoreCodecPlugin::StoreNode( const CDataNode* n ,
     for ( UInt32 i=0; i<count; ++i )
     {
             att = n->GetAttribute( i );
-            ((TDSTOREPLUGFPTR_Store_Node_Att)_fptable[ DSTOREPLUG_STORE_NODE_ATT ])( &_plugdata             ,
-                                                                                     filedata               ,
-                                                                                     name                   ,
-                                                                                     count                  ,
-                                                                                     i                      ,
-                                                                                     att->first.C_String()  ,
-                                                                                     att->second.value.C_String() ,
-                                                                                     att->second.type       ,
-                                                                                     n->HasChildren()       );
+            ((TDSTOREPLUGFPTR_Store_Node_Att)_fptable[ DSTOREPLUG_STORE_NODE_ATT ])( &_plugdata                 ,
+                                                                                     filedata                   ,
+                                                                                     name                       ,
+                                                                                     count                      ,
+                                                                                     i                          ,
+                                                                                     att->first.C_String()      ,
+                                                                                     att->second.CStyleAccess() ,
+                                                                                     n->HasChildren()           );
     }
 
     /*
@@ -506,15 +505,14 @@ CDStoreCodecPlugin::StoreNode( const CDataNode* n ,
      */
     if ( n->HasValue() )
     {
-        ((TDSTOREPLUGFPTR_Store_Node_Att)_fptable[ DSTOREPLUG_STORE_NODE_ATT ])( &_plugdata               ,
-                                                                                 filedata                 ,
-                                                                                 name                     ,
-                                                                                 count + valueAsAtt       ,
-                                                                                 count                    ,
-                                                                                 GUCEF_NULL               ,
-                                                                                 n->GetValue().C_String() ,
-                                                                                 n->GetValueType()        ,
-                                                                                 n->HasChildren()         );
+        ((TDSTOREPLUGFPTR_Store_Node_Att)_fptable[ DSTOREPLUG_STORE_NODE_ATT ])( &_plugdata                   ,
+                                                                                 filedata                     ,
+                                                                                 name                         ,
+                                                                                 count + valueAsAtt           ,
+                                                                                 count                        ,
+                                                                                 GUCEF_NULL                   ,
+                                                                                 n->GetValue().CStyleAccess() ,
+                                                                                 n->HasChildren()             );
     }
 
     /*

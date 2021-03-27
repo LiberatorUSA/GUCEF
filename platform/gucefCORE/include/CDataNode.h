@@ -36,6 +36,11 @@
 #define GUCEF_CORE_CSTRING_H
 #endif /* GUCEF_CORE_CSTRING_H ? */
 
+#ifndef GUCEF_CORE_CVARIANT_H
+#include "gucefCORE_CVariant.h"
+#define GUCEF_CORE_CVARIANT_H
+#endif /* GUCEF_CORE_CVARIANT_H ? */
+
 #ifndef GUCEF_CORE_CICLONEABLE_H
 #include "CICloneable.h"
 #define GUCEF_CORE_CICLONEABLE_H
@@ -67,20 +72,16 @@ class GUCEF_CORE_PUBLIC_CPP CDataNode
 {
     public:
 
-    struct SValue
-    {
-        CString value;
-        int type;
-    };
-    typedef struct SValue TValue;
     typedef std::vector< CString > TStringVector;
     typedef std::set< CString > TStringSet;
-    typedef std::pair< const CString, TValue > TKeyValuePair;
+    typedef std::pair< const CString, CVariant > TKeyValuePair;
     typedef std::set< CDataNode* > TDataNodeSet;
     typedef std::list< CDataNode* > TDataNodeList;
     typedef std::vector< CDataNode* > TDataNodeVector;
     typedef std::set< const CDataNode* > TConstDataNodeSet;
-    typedef std::map< CString, TValue > TAttributeMap;
+    typedef std::map< CString, CVariant > TAttributeMap;
+    typedef CVariant::VariantVector TVariantVector;
+    typedef CVariant::VariantSet TVariantSet;
 
     CDataNode( int nodeType = GUCEF_DATATYPE_OBJECT );
 
@@ -149,18 +150,16 @@ class GUCEF_CORE_PUBLIC_CPP CDataNode
      *
      *      @param name the new node name
      */
-    void SetValue( const CString& value );
+    void SetValue( const CVariant& value );
 
     /**
      *      Gets the current node value
      *
      *      @return the current simplistic node value
      */
-    const CString& GetValue( void ) const;
+    const CVariant& GetValue( void ) const;
 
     bool HasValue( void ) const;
-
-    void SetValueType( int typeId );
 
     int GetValueType( void ) const;
     
@@ -186,9 +185,9 @@ class GUCEF_CORE_PUBLIC_CPP CDataNode
 
     TKeyValuePair* GetAttribute( const CString& name );
 
-    CString GetAttributeValue( const CString& name ) const;
+    CVariant GetAttributeValue( const CString& name ) const;
     
-    CString GetAttributeValue( const CString& name, const CString& defaultValue ) const;
+    CVariant GetAttributeValue( const CString& name, const CVariant& defaultValue ) const;
 
     bool SetAttribute( const CString& name                     ,
                        const CString& value                    ,
@@ -222,21 +221,9 @@ class GUCEF_CORE_PUBLIC_CPP CDataNode
      *  @param name the name of the attribute or child node
      *  @return the value located using the given name
      */
-    CString GetAttributeValueOrChildValueByName( const CString& name, const CString& defaultValue = CString::Empty ) const;
+    CVariant GetAttributeValueOrChildValueByName( const CString& name, const CVariant& defaultValue = CVariant::Empty ) const;
 
-    TStringVector GetAttributeValueOrChildValuesByName( const CString& name ) const;
-
-    /**
-     *  Attempts to locate a child node with the given name
-     *  and return its value. If no such child node exists then
-     *  an empty string is returned. Also note that if multiple children exist
-     *  with the given name the first located one's value will be used.
-     *  In such a case you may wish to use GetChildValuesByName() instead.
-     *
-     *  @param name the name of the child node
-     *  @return the value of the first child located with the given name
-     */
-    CString GetChildValueByName( const CString& name ) const;
+    TVariantVector GetAttributeValueOrChildValuesByName( const CString& name ) const;
 
     /**
      *  Attempts to locate a child node with the given name
@@ -248,14 +235,26 @@ class GUCEF_CORE_PUBLIC_CPP CDataNode
      *  @param name the name of the child node
      *  @return the value of the first child located with the given name
      */
-    TStringVector GetChildrenValuesByName( const CString& name ) const;
+    CVariant GetChildValueByName( const CString& name ) const;
+
+    /**
+     *  Attempts to locate a child node with the given name
+     *  and return its value. If no such child node exists then
+     *  an empty string is returned. Also note that if multiple children exist
+     *  with the given name the first located one's value will be used.
+     *  In such a case you may wish to use GetChildValuesByName() instead.
+     *
+     *  @param name the name of the child node
+     *  @return the value of the first child located with the given name
+     */
+    TVariantVector GetChildrenValuesByName( const CString& name ) const;
 
     /**
      *  Retrieves the "value: property of each child node if set and aggregates them
      *
      *  @return the values of the child nodes
      */
-    TStringVector GetChildrenValues( void ) const;
+    TVariantVector GetChildrenValues( void ) const;
 
     CDataNode* FindRoot( void ) const;
 
@@ -270,9 +269,9 @@ class GUCEF_CORE_PUBLIC_CPP CDataNode
     TDataNodeSet FindNodesOfType( const CString& name  ,
                                   const bool recursive );
 
-    CDataNode* FindChild( const CString& name        ,
-                          const CString& attribName  ,
-                          const CString& attribValue );
+    CDataNode* FindChild( const CString& name         ,
+                          const CString& attribName   ,
+                          const CVariant& attribValue );
 
     CDataNode* FindSibling( const CString& name );
 
@@ -558,8 +557,7 @@ class GUCEF_CORE_PUBLIC_CPP CDataNode
     
     int m_nodeType;       /**< metadata encoding the type of the node */
     CString _name;        /**< name of the node */
-    CString m_value;      /**< simplistic value field of the node */
-    int m_typeOfValue;    /**< metadata encoding the type of the value field */
+    CVariant m_value;     /**< simplistic value field of the node */
     TAttributeMap _atts;  /**< list of node attributes */
     CDataNode* _pparent;  /**< parent node */
     TDataNodeList m_children; /**< child nodes */

@@ -279,15 +279,64 @@ HandleEscapeCharacterSet( const char* srcStr         ,
 /*---------------------------------------------------------------------------*/
 
 void
+PrintNumericVariant( const TVariantData* src  ,
+                     char* destBuffer         ,
+                     UInt32 destBufferLength  ,
+                     UInt32* strLen           ,
+                     Int32* wasNumeric        )
+{
+    if ( GUCEF_NULL != src )
+    {
+        switch ( src->containedType )
+        {
+            /* at init we already make sue the line buffer is large enough for numeric values
+             * as such no need to worry about that here
+             */
+            case GUCEF_DATATYPE_INT8:    { snprintf( destBuffer, destBufferLength, "%d", (Int32) src->union_data.int8_data ); *strLen = strlen( destBuffer ); *wasNumeric = 1; break; }
+            case GUCEF_DATATYPE_UINT8:   { snprintf( destBuffer, destBufferLength, "%u", (UInt32) src->union_data.uint8_data ); *strLen = strlen( destBuffer ); *wasNumeric = 1; break; }
+            case GUCEF_DATATYPE_INT16:   { snprintf( destBuffer, destBufferLength, "%d", (Int32) src->union_data.int16_data ); *strLen = strlen( destBuffer ); *wasNumeric = 1; break; }
+            case GUCEF_DATATYPE_UINT16:  { snprintf( destBuffer, destBufferLength, "%u", (UInt32) src->union_data.uint16_data ); *strLen = strlen( destBuffer ); *wasNumeric = 1; break; }
+            case GUCEF_DATATYPE_INT32:   { snprintf( destBuffer, destBufferLength, "%d", src->union_data.int32_data ); *strLen = strlen( destBuffer ); *wasNumeric = 1; break; }
+            case GUCEF_DATATYPE_UINT32:  { snprintf( destBuffer, destBufferLength, "%u", src->union_data.uint32_data ); *strLen = strlen( destBuffer ); *wasNumeric = 1; break; }
+            #ifdef GUCEF_MSWIN_BUILD
+            case GUCEF_DATATYPE_INT64:   { snprintf( destBuffer, destBufferLength, "%I64d", src->union_data.int64_data ); *strLen = strlen( destBuffer ); *wasNumeric = 1; break; }
+            case GUCEF_DATATYPE_UINT64:  { snprintf( destBuffer, destBufferLength, "%I64u", src->union_data.uint64_data ); *strLen = strlen( destBuffer ); *wasNumeric = 1; break; }
+            #else
+            case GUCEF_DATATYPE_INT64:   { snprintf( destBuffer, destBufferLength, "%lld", src->union_data.int64_data ); *strLen = strlen( destBuffer ); *wasNumeric = 1; break; }
+            case GUCEF_DATATYPE_UINT64:  { snprintf( destBuffer, destBufferLength, "%llu", src->union_data.uint64_data ); *strLen = strlen( destBuffer ); *wasNumeric = 1; break; }
+            #endif
+            case GUCEF_DATATYPE_FLOAT32: { snprintf( destBuffer, destBufferLength, "%f", src->union_data.float32_data ); *strLen = strlen( destBuffer ); *wasNumeric = 1; break; }
+            case GUCEF_DATATYPE_FLOAT64: { snprintf( destBuffer, destBufferLength, "%lf", src->union_data.float64_data ); *strLen = strlen( destBuffer ); *wasNumeric = 1; break; }
+        
+            default:
+            {
+                *destBuffer = '\0';
+                *strLen = 0;
+                *wasNumeric = 0;
+                break;
+            }
+        }
+    }
+    else
+    {
+        *destBuffer = '\0';
+        *strLen = 0;
+        *wasNumeric = 0;
+    }
+}
+
+/*---------------------------------------------------------------------------*/
+
+void
 HandleEscapeCharacters( const char* srcStr       ,
                         char** destBuffer        ,
                         UInt32* destBufferLength ,
                         UInt32* strLen           )
 {
-    if ( NULL != srcStr )
+    if ( GUCEF_NULL != srcStr )
     {
         TEscapeEntry entries[ 6 ];
-        UInt32 srcStrLen = (UInt32) strlen( srcStr );
+        UInt32 srcStrLen = strlen( srcStr );
 
         entries[ 0 ].escapeChar = '<';
         entries[ 0 ].replacementStr = "&lt;";
@@ -315,14 +364,44 @@ HandleEscapeCharacters( const char* srcStr       ,
                                   entries          ,
                                   6                ,
                                   strLen           );
+        return;
     }
-    else
+
+    /* default: replace with empty string */
+    *strLen = 0;
+    if ( *destBufferLength > 0 )
     {
-        *strLen = 0;
-        if ( *destBufferLength > 0 )
+        memset( *destBuffer, 0, *destBufferLength );
+    }
+}
+
+/*---------------------------------------------------------------------------*/
+
+void
+HandleEscapeCharactersInVariant( const TVariantData* src  ,
+                                 char** destBuffer        ,
+                                 UInt32* destBufferLength ,
+                                 UInt32* strLen           )
+{
+    if ( GUCEF_NULL != src )
+    {
+        Int32 isNumeric = 0;
+        PrintNumericVariant( src, *destBuffer, *destBufferLength, strLen, &isNumeric );
+
+        if ( 0 == isNumeric )
         {
-            memset( *destBuffer, 0, *destBufferLength );
+            *strLen = src->union_data.heap_data.heap_data_size;
+            const char* srcStr = (const char*) src->union_data.heap_data.heap_data;
+            HandleEscapeCharacters( srcStr, destBuffer, destBufferLength, strLen );
+            return;
         }
+    }
+
+    /* default: replace with empty string */
+    *strLen = 0;
+    if ( *destBufferLength > 0 )
+    {
+        memset( *destBuffer, 0, *destBufferLength );
     }
 }
 
@@ -398,6 +477,9 @@ DSTOREPLUG_Dest_File_Open( void** plugdata    ,
                 fd->bufferSize = 0;
                 *filedata = fd;
 
+                /* start with a buffer large enough to hold 64 bit numbers when printed */
+                GuaranteeMinBufferSize( &fd->line, &fd->linelen, 21 );
+                
                 sprintf( outBuffer, "<?xml version=\"1.0\" encoding=\"ISO-8859-1\" ?>\r\n" );
                 outFile->write( outFile, outBuffer, (UInt32)strlen( outBuffer ), 1 );
                 sprintf( outBuffer, "<!-- Generated using dstorepluginXMLPARSIFAL (v%d.%d.%d.%d) for the GUCEF platform - Copyright (C) Dinand Vanvelzen. LPGLv3 -->\r\n", VERSION_MAJOR_FIELD, VERSION_MINOR_FIELD, VERSION_PATCH_FIELD, VERSION_RELEASE_FIELD );
@@ -463,9 +545,13 @@ DSTOREPLUG_Begin_Node_Store( void** plugdata      ,
     max = len + 5*attscount + 6 + fd->indent;
     if ( fd->linelen < max )
     {
-        fd->line = realloc( fd->line, max );
-        *(fd->line) = 0;
-        fd->linelen = max;
+        char* newLine = realloc( fd->line, max );
+        if ( GUCEF_NULL != newLine )
+        {
+            fd->line = newLine;
+            *(fd->line) = 0;
+            fd->linelen = max;
+        }
     }
     memset( fd->line, INDENT_CHAR, fd->indent );
     if ( attscount > 0 )
@@ -515,15 +601,14 @@ DSTOREPLUG_End_Node_Store( void** plugdata      ,
 /*---------------------------------------------------------------------------*/
 
 void GUCEF_PLUGIN_CALLSPEC_PREFIX
-DSTOREPLUG_Store_Node_Att( void** plugdata      ,
-                           void** filedata      ,
-                           const char* nodename ,
-                           UInt32 attscount     ,
-                           UInt32 attindex      ,
-                           const char* attname  ,
-                           const char* attvalue ,
-                           int atttype          ,
-                           UInt32 haschildren   ) GUCEF_PLUGIN_CALLSPEC_SUFFIX
+DSTOREPLUG_Store_Node_Att( void** plugdata              ,
+                           void** filedata              ,
+                           const char* nodename         ,
+                           UInt32 attscount             ,
+                           UInt32 attindex              ,
+                           const char* attname          ,
+                           const TVariantData* attvalue ,
+                           UInt32 haschildren           ) GUCEF_PLUGIN_CALLSPEC_SUFFIX
 {
     TDestFileData* fd = (TDestFileData*)*filedata;
     UInt32 linelen, len;
@@ -531,13 +616,16 @@ DSTOREPLUG_Store_Node_Att( void** plugdata      ,
     char* escAttName = NULL;
     char* escAttValue = NULL;
 
-    if ( NULL == attname || 0 == attscount ) return;
+    if ( GUCEF_NULL == attname || 0 == attscount ) 
+        return;
 
-    if ( NULL == attvalue )
+    if ( GUCEF_NULL == attvalue )
     {
-        attvalue = "";
+        static TVariantData dummy;
+        memset( &dummy, 0, sizeof dummy );
+        attvalue = &dummy;
     }
-    if ( NULL == nodename )
+    if ( GUCEF_NULL == nodename )
     {
         nodename = "noname";
     }
@@ -545,7 +633,7 @@ DSTOREPLUG_Store_Node_Att( void** plugdata      ,
     HandleEscapeCharacters( attname, &fd->buffer, &fd->bufferSize, &strLen );
     escAttName = (char*) malloc( strLen+1 );
     memcpy( escAttName, fd->buffer, strLen+1 );
-    HandleEscapeCharacters( attvalue, &fd->buffer, &fd->bufferSize, &strLen );
+    HandleEscapeCharactersInVariant( attvalue, &fd->buffer, &fd->bufferSize, &strLen );
     escAttValue = (char*) malloc( strLen+1 );
     memcpy( escAttValue, fd->buffer, strLen+1 );
 

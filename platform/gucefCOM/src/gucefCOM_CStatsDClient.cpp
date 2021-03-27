@@ -310,11 +310,11 @@ CStatsDClient::LoadConfig( const CORE::CDataNode& treeroot )
     if ( GUCEF_NULL != node )
     {
         // First load the mandatory settings
-        CORE::CString value;
+        CORE::CVariant value;
         value = node->GetAttributeValueOrChildValueByName( "StatsDestination" );
         if ( !value.IsNULLOrEmpty() )
         {
-            value = CORE::ResolveVars( value );
+            value = CORE::ResolveVars( value.AsString() );
             m_statsDestination.SetHostnameAndPort( value );
         }
         else
@@ -324,18 +324,18 @@ CStatsDClient::LoadConfig( const CORE::CDataNode& treeroot )
         value = node->GetAttributeValueOrChildValueByName( "StatsNamePrefix" );
         if ( !value.IsNULLOrEmpty() )
         {
-            m_statNamePrefix = CORE::ResolveVars( value );
+            m_statNamePrefix = CORE::ResolveVars( value.AsString() );
         }
         value = node->GetAttributeValueOrChildValueByName( "StatsInterface" );
         if ( !value.IsNULLOrEmpty() )
         {
-            value = CORE::ResolveVars( value );
+            value = CORE::ResolveVars( value.AsString() );
             m_statsInterface.SetHostnameAndPort( value );
         }
         value = node->GetAttributeValueOrChildValueByName( "Transmit" );
         if ( !value.IsNULLOrEmpty() )
         {
-            m_transmit = CORE::StringToBool( value );
+            m_transmit = value.AsBool();
         }
     }
     return true;

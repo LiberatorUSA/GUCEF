@@ -1325,10 +1325,10 @@ CVFS::LoadConfig( const CORE::CDataNode& tree )
 
     if ( n )
     {
-        CString value = n->GetAttributeValueOrChildValueByName( "maxmemload" );
-        if ( 0 < value.Length() )
+        CORE::CVariant value = n->GetAttributeValueOrChildValueByName( "maxmemload" );
+        if ( value.IsInitialized() )
         {
-            SetMemloadSize( StringToUInt32( value ) );
+            SetMemloadSize( value.AsUInt32() );
         }
 
         CORE::CDataNode::TConstDataNodeSet rootNodeList = n->FindChildrenOfType( "VfsRoot" );

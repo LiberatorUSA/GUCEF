@@ -357,8 +357,8 @@ CPluginMetaData::LoadConfig( const CDataNode& treeroot )
         {
             m_loaderLogicTypeName = value;
         }
-        CDataNode::TStringVector paramList = node->GetChildrenValuesByName( "Param" );
-        CDataNode::TStringVector::iterator i = paramList.begin();
+        CDataNode::TVariantVector paramList = node->GetChildrenValuesByName( "Param" );
+        CDataNode::TVariantVector::iterator i = paramList.begin();
         while ( i != paramList.end() )
         {
             m_params.Set( (*i) );

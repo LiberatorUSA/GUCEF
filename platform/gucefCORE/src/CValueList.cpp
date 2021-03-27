@@ -227,14 +227,14 @@ CValueList::LoadConfig( const CDataNode& treeroot )
         {
             if ( m_configKeyNamespace.IsNULLOrEmpty() )
             {
-                Set( (*i).first, (*i).second.value );
+                Set( (*i).first, (*i).second );
             }
             else
             {
                 if ( 0 == (*i).first.HasSubstr( m_configKeyNamespace ) )
                 {
                     CString keyname = (*i).first.CutChars( m_configKeyNamespace.Length(), true, 0 );
-                    Set( keyname, (*i).second.value );
+                    Set( keyname, (*i).second );
                 }
             }
             ++i;
