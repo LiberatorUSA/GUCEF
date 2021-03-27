@@ -164,19 +164,19 @@ CPatchConfig::LoadConfig( const CORE::CDataNode& treeroot )
         // First we obtain the mandatory atributes
         const CORE::CDataNode::TKeyValuePair* att = infoNode->GetAttribute( "LocalRootDir" );
         if ( att == NULL ) return false;
-        SetLocalRootDir( att->second.value );
+        SetLocalRootDir( att->second );
 
         att = infoNode->GetAttribute( "TempStorageRoot" );
         if ( att == NULL ) return false;
-        SetLocalTempStorageRootDir( att->second.value );
+        SetLocalTempStorageRootDir( att->second );
 
         att = infoNode->GetAttribute( "PatchListURL" );
         if ( att == NULL ) return false;
-        SetPatchListURL( att->second.value );
+        SetPatchListURL( att->second );
 
         att = infoNode->GetAttribute( "PatchListCodec" );
         if ( att == NULL ) return false;
-        SetPatchListCodec( att->second.value );
+        SetPatchListCodec( att->second );
 
         // Load optional attributes
         att = infoNode->GetAttribute( "StopOnFileReplacementFailure" );
@@ -186,7 +186,7 @@ CPatchConfig::LoadConfig( const CORE::CDataNode& treeroot )
         }
         else
         {
-            SetStopOnFileReplacementFailure( CORE::StringToBool( att->second.value ) );
+            SetStopOnFileReplacementFailure( att->second.AsBool() );
         }
 
         // Try and find some optional engine trigger events
@@ -200,7 +200,7 @@ CPatchConfig::LoadConfig( const CORE::CDataNode& treeroot )
                 att = infoNode->GetAttribute( "Event" );
                 if ( att != NULL )
                 {
-                    AddEngineStartTriggerEvent( att->second.value );
+                    AddEngineStartTriggerEvent( att->second.AsString() );
                 }
             }
             else
@@ -209,7 +209,7 @@ CPatchConfig::LoadConfig( const CORE::CDataNode& treeroot )
                 att = infoNode->GetAttribute( "Event" );
                 if ( att != NULL )
                 {
-                    AddEngineStopTriggerEvent( att->second.value );
+                    AddEngineStopTriggerEvent( att->second.AsString() );
                 }
             }
             ++i;

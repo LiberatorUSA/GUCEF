@@ -26,10 +26,10 @@
 //                                                                         //
 //-------------------------------------------------------------------------*/
 
-#ifndef GUCEF_CORE_CDVSTRING_H
-#include "CDVString.h"
-#define GUCEF_CORE_CDVSTRING_H
-#endif /* GUCEF_CORE_CDVSTRING_H ? */
+#ifndef GUCEF_CORE_CSTRING_H
+#include "gucefCORE_CString.h"
+#define GUCEF_CORE_CSTRING_H
+#endif /* GUCEF_CORE_CSTRING_H ? */
 
 #ifndef GUCEF_CORE_CFORWARDINGNOTIFIER_H
 #include "gucefCORE_CForwardingNotifier.h"

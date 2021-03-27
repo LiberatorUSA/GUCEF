@@ -140,9 +140,9 @@ CPatchManager::StartTask( const CString& taskName                  ,
     {
         Unlock();
         CPatchTaskData taskData( *this, patchEngineConfig, taskName );
-        return m_taskManager->StartTask( CPatchTaskConsumer::GetTypeString() ,
-                                         &taskData                           ,
-                                         NULL                                );
+        return m_taskManager->GetThreadPool()->StartTask( CPatchTaskConsumer::GetTypeString() ,
+                                                          &taskData                           ,
+                                                          GUCEF_NULL                          );
     }
     Unlock();
     return false;
@@ -161,7 +161,7 @@ CPatchManager::PauseTask( const CString& taskName )
         UInt32 taskID = (*i).second->GetTaskId();
         Unlock();
 
-        if ( m_taskManager->PauseTask( taskID, false ) )
+        if ( m_taskManager->GetThreadPool()->PauseTask( taskID, false ) )
         {
             TPatchTaskPausedEventData eData( taskName );
             NotifyObserversFromThread( PatchTaskPausedEvent, &eData );
@@ -186,7 +186,7 @@ CPatchManager::ResumeTask( const CString& taskName )
         UInt32 taskID = (*i).second->GetTaskId();
         Unlock();
 
-        if ( m_taskManager->ResumeTask( taskID ) )
+        if ( m_taskManager->GetThreadPool()->ResumeTask( taskID ) )
         {
             TPatchTaskResumedEventData eData( taskName );
             NotifyObserversFromThread( PatchTaskResumedEvent, &eData );
@@ -211,7 +211,7 @@ CPatchManager::RequestTaskToStop( const CString& taskName )
         UInt32 taskID = (*i).second->GetTaskId();
         Unlock();
 
-        if ( m_taskManager->RequestTaskToStop( taskID, true ) )
+        if ( m_taskManager->GetThreadPool()->RequestTaskToStop( taskID, true ) )
         {
             TPatchTaskStopRequestedEventData eData( taskName );
             NotifyObserversFromThread( PatchTaskStopRequestedEvent, &eData );

@@ -272,12 +272,12 @@ CDownloadsManager::LoadConfig( const GUCEF::CORE::CDataNode& node )
         att = n->GetAttribute( "AvailableDownloadsListURL" );
         if ( NULL != att )
         {
-            m_adListUrlRetiever.GetURL().SetURL( att->second.value );
+            m_adListUrlRetiever.GetURL().SetURL( att->second );
         }
         att = n->GetAttribute( "ResumeDownloadsOnStartup" );
         if ( NULL != att )
         {
-            m_resumeDownloadsOnStartup = GUCEF::CORE::StringToBool( att->second.value );
+            m_resumeDownloadsOnStartup = att->second.AsBool();
         }
     }
     return false;

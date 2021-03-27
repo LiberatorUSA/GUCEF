@@ -119,9 +119,9 @@ bool
 CClientConfiguration::LoadConfig( const CORE::CDataNode& treeroot )
 {GUCEF_TRACE;
 
-    userAgent = treeroot.GetAttributeValueOrChildValueByName( m_settingsPrefix + "userAgent", userAgent );
+    userAgent = treeroot.GetAttributeValueOrChildValueByName( m_settingsPrefix + "userAgent" ).AsUtf8String( userAgent );
     scheme = (Aws::Http::Scheme) CORE::StringToInt32( treeroot.GetAttributeValueOrChildValueByName( m_settingsPrefix + "userAgent", CORE::Int32ToString( (CORE::Int32) scheme ) ) );
-    region = treeroot.GetAttributeValueOrChildValueByName( m_settingsPrefix + "region", region );
+    region = treeroot.GetAttributeValueOrChildValueByName( m_settingsPrefix + "region" ).AsUtf8String( region );
     useDualStack = CORE::StringToBool( treeroot.GetAttributeValueOrChildValueByName( m_settingsPrefix + "useDualStack", CORE::BoolToString( useDualStack ) ) );
     maxConnections = CORE::StringToUInt32( treeroot.GetAttributeValueOrChildValueByName( m_settingsPrefix + "maxConnections", CORE::UInt32ToString( maxConnections ) ) );
     httpRequestTimeoutMs = CORE::StringToInt32( treeroot.GetAttributeValueOrChildValueByName( m_settingsPrefix + "httpRequestTimeoutMs", CORE::Int32ToString( httpRequestTimeoutMs ) ) );
@@ -130,26 +130,26 @@ CClientConfiguration::LoadConfig( const CORE::CDataNode& treeroot )
     enableTcpKeepAlive = CORE::StringToBool( treeroot.GetAttributeValueOrChildValueByName( m_settingsPrefix + "enableTcpKeepAlive", CORE::BoolToString( enableTcpKeepAlive ) ) );
     tcpKeepAliveIntervalMs = CORE::StringToUInt32( treeroot.GetAttributeValueOrChildValueByName( m_settingsPrefix + "tcpKeepAliveIntervalMs", CORE::UInt32ToString( tcpKeepAliveIntervalMs ) ) );
     lowSpeedLimit = CORE::StringToUInt32( treeroot.GetAttributeValueOrChildValueByName( m_settingsPrefix + "lowSpeedLimit", CORE::UInt32ToString( lowSpeedLimit ) ) );
-    endpointOverride = treeroot.GetAttributeValueOrChildValueByName( m_settingsPrefix + "endpointOverride", endpointOverride );
+    endpointOverride = treeroot.GetAttributeValueOrChildValueByName( m_settingsPrefix + "endpointOverride", endpointOverride ).AsUtf8String();
     proxyScheme = (Aws::Http::Scheme) CORE::StringToInt32( treeroot.GetAttributeValueOrChildValueByName( m_settingsPrefix + "proxyScheme",  CORE::Int32ToString( (CORE::Int32) proxyScheme ) ) );
-    proxyHost = treeroot.GetAttributeValueOrChildValueByName( m_settingsPrefix + "proxyHost", proxyHost );
+    proxyHost = treeroot.GetAttributeValueOrChildValueByName( m_settingsPrefix + "proxyHost" ).AsUtf8String( proxyHost );
     proxyPort = CORE::StringToUInt32( treeroot.GetAttributeValueOrChildValueByName( m_settingsPrefix + "proxyPort", CORE::UInt32ToString( proxyPort ) ) );
-    proxyUserName = treeroot.GetAttributeValueOrChildValueByName( m_settingsPrefix + "proxyUserName", proxyUserName );
-    proxyPassword = treeroot.GetAttributeValueOrChildValueByName( m_settingsPrefix + "proxyPassword", proxyPassword );
-    proxySSLCertPath = treeroot.GetAttributeValueOrChildValueByName( m_settingsPrefix + "proxySSLCertPath", proxySSLCertPath );
-    proxySSLCertType = treeroot.GetAttributeValueOrChildValueByName( m_settingsPrefix + "proxySSLCertType", proxySSLCertType );
-    proxySSLKeyPath = treeroot.GetAttributeValueOrChildValueByName( m_settingsPrefix + "proxySSLKeyPath", proxySSLKeyPath );
-    proxySSLKeyType = treeroot.GetAttributeValueOrChildValueByName( m_settingsPrefix + "proxySSLKeyType", proxySSLKeyType );
-    proxySSLKeyPassword = treeroot.GetAttributeValueOrChildValueByName( m_settingsPrefix + "proxySSLKeyPassword", proxySSLKeyPassword );
+    proxyUserName = treeroot.GetAttributeValueOrChildValueByName( m_settingsPrefix + "proxyUserName" ).AsUtf8String( proxyUserName );
+    proxyPassword = treeroot.GetAttributeValueOrChildValueByName( m_settingsPrefix + "proxyPassword" ).AsUtf8String( proxyPassword );
+    proxySSLCertPath = treeroot.GetAttributeValueOrChildValueByName( m_settingsPrefix + "proxySSLCertPath" ).AsUtf8String( proxySSLCertPath );
+    proxySSLCertType = treeroot.GetAttributeValueOrChildValueByName( m_settingsPrefix + "proxySSLCertType" ).AsUtf8String( proxySSLCertType );
+    proxySSLKeyPath = treeroot.GetAttributeValueOrChildValueByName( m_settingsPrefix + "proxySSLKeyPath" ).AsUtf8String( proxySSLKeyPath );
+    proxySSLKeyType = treeroot.GetAttributeValueOrChildValueByName( m_settingsPrefix + "proxySSLKeyType" ).AsUtf8String( proxySSLKeyType );
+    proxySSLKeyPassword = treeroot.GetAttributeValueOrChildValueByName( m_settingsPrefix + "proxySSLKeyPassword" ).AsUtf8String( proxySSLKeyPassword );
     verifySSL = CORE::StringToBool( treeroot.GetAttributeValueOrChildValueByName( m_settingsPrefix + "verifySSL", CORE::BoolToString( verifySSL ) ) );
-    caPath = treeroot.GetAttributeValueOrChildValueByName( m_settingsPrefix + "caPath", caPath );
-    caFile = treeroot.GetAttributeValueOrChildValueByName( m_settingsPrefix + "caFile", caFile );
+    caPath = treeroot.GetAttributeValueOrChildValueByName( m_settingsPrefix + "caPath", caPath ).AsUtf8String();
+    caFile = treeroot.GetAttributeValueOrChildValueByName( m_settingsPrefix + "caFile", caFile ).AsUtf8String();
     followRedirects = CORE::StringToBool( treeroot.GetAttributeValueOrChildValueByName( m_settingsPrefix + "followRedirects", CORE::BoolToString( followRedirects ) ) );
     disableExpectHeader = CORE::StringToBool( treeroot.GetAttributeValueOrChildValueByName( m_settingsPrefix + "disableExpectHeader", CORE::BoolToString( disableExpectHeader ) ) );
     enableClockSkewAdjustment = CORE::StringToBool( treeroot.GetAttributeValueOrChildValueByName( m_settingsPrefix + "enableClockSkewAdjustment", CORE::BoolToString( enableClockSkewAdjustment ) ) );
     enableHostPrefixInjection = CORE::StringToBool( treeroot.GetAttributeValueOrChildValueByName( m_settingsPrefix + "enableHostPrefixInjection", CORE::BoolToString( enableHostPrefixInjection ) ) );
     enableEndpointDiscovery = CORE::StringToBool( treeroot.GetAttributeValueOrChildValueByName( m_settingsPrefix + "enableEndpointDiscovery", CORE::BoolToString( enableEndpointDiscovery ) ) );
-    profileName = treeroot.GetAttributeValueOrChildValueByName( m_settingsPrefix + "profileName", profileName );
+    profileName = treeroot.GetAttributeValueOrChildValueByName( m_settingsPrefix + "profileName", profileName ).AsUtf8String();
     return true;
 }
 

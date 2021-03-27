@@ -200,18 +200,18 @@ CProductManager::LoadConfig( const GUCEF::CORE::CDataNode& node )
         att = n->GetAttribute( "ProductListPath" );
         if ( NULL != att )
         {
-            m_productListPath = att->second.value;
+            m_productListPath = att->second;
         }
         att = n->GetAttribute( "ProductListCodec" );
         if ( NULL != att )
         {
-            m_productListCodec = att->second.value;
+            m_productListCodec = att->second;
         }
 
         att = n->GetAttribute( "CommonProductRoot" );
         if ( NULL != att )
         {
-            m_productRoot = att->second.value;
+            m_productRoot = att->second;
         }
 
         //GUCEF::CORE::CDataNode productList;
