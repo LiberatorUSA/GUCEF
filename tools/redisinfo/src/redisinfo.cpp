@@ -2286,7 +2286,7 @@ RedisInfo::SetStandbyMode( bool putInStandbyMode )
     {
         bool totalSuccess = true;
 
-        CORE::ThreadPoolPtr& threadPool = CORE::CCoreGlobal::Instance()->GetTaskManager().GetThreadPool();
+        CORE::ThreadPoolPtr threadPool = CORE::CCoreGlobal::Instance()->GetTaskManager().GetThreadPool();
 
         TStringToSettingsMap::iterator i = m_settings.begin();
         while ( i != m_settings.end() )

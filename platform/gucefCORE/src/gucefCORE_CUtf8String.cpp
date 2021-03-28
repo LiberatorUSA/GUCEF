@@ -1225,9 +1225,12 @@ CUtf8String::RemoveChar( const Int32 charToRemove ) const
                     // This one can stay, just concat it into the pre-allocated destination buffer
                     char* newDestCpPos = (char*) utf8catcodepoint( destCpPos, cp, (size_t) bufferSpaceLeft );
                     bufferSpaceLeft -= (Int32)( newDestCpPos - destCpPos );
+                    destCpPos = newDestCpPos;
                 }
                 // else: This one needs removal, just skip the copy into the pre-allocated destination buffer
             }
+            newStr.m_length = (UInt32)( m_length - charsToRemove );
+            newStr.m_string[ newStr.m_byteSize-1 ] = '\0';
             return newStr; 
         }
         else

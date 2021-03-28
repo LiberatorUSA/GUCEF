@@ -393,6 +393,8 @@ DSTOREPLUG_Store_Node_Att( void** plugdata              ,
         default:
         {
             const char* attValue = (const char*) attvalue->union_data.heap_data.heap_data;
+            if ( GUCEF_NULL == attValue )
+                attValue = "";
             json_value* att = json_string_new( attValue );
             if ( fd->currentJsonNode->type == json_array )
                 json_array_push( fd->currentJsonNode, att );

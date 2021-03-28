@@ -336,7 +336,7 @@ bool
 CVariant::IsInitialized( void ) const
 {GUCEF_TRACE;
     
-    return GUCEF_DATATYPE_UNKNOWN == m_variantData.containedType;
+    return GUCEF_DATATYPE_UNKNOWN != m_variantData.containedType;
 }
 
 /*-------------------------------------------------------------------------*/
@@ -925,13 +925,19 @@ CVariant::operator=( const CVariant& src )
                 m_variantData.union_data.heap_data.heap_data = malloc( (size_t) src.m_variantData.union_data.heap_data.heap_data_size );
                 assert( GUCEF_NULL != m_variantData.union_data.heap_data.heap_data );
                 memcpy( m_variantData.union_data.heap_data.heap_data, src.m_variantData.union_data.heap_data.heap_data, (size_t) src.m_variantData.union_data.heap_data.heap_data_size );
+                m_variantData.union_data.heap_data.heap_data_size = src.m_variantData.union_data.heap_data.heap_data_size;
             }
             else
             {
                 m_variantData.union_data.heap_data.heap_data = GUCEF_NULL;
                 m_variantData.union_data.heap_data.heap_data_size = 0;
             }
+            m_variantData.containedType = src.m_variantData.containedType;
         }
+        else
+        {
+            memcpy( &m_variantData, &src.m_variantData, sizeof m_variantData );
+        }        
     }
     return *this;
 }

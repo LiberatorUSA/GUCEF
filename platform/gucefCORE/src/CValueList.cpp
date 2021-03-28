@@ -244,7 +244,7 @@ CValueList::LoadConfig( const CDataNode& treeroot )
         CDataNode::const_iterator n = nodeNamespaceRoot->Begin();
         while ( n != nodeNamespaceRoot->End() )
         {
-            const CString& value = (*n)->GetValue();
+            CString value = (*n)->GetValue().AsString();
             if ( !value.IsNULLOrEmpty() )
             {
                 if ( m_configKeyNamespace.IsNULLOrEmpty() )
