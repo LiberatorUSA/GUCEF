@@ -412,12 +412,12 @@ RedisInfoService::DeserializeKeysForHashSlots( TUInt32ToStringSetMap& hashMap, c
     while ( i != doc.ConstEnd() )
     {        
         CORE::CString hashSlot = (*i)->GetAttributeValueOrChildValueByName( "id" );
-        CORE::CString::StringVector hashOriginStrings = (*i)->GetChildrenValues();
+        CORE::CDataNode::TVariantVector hashOriginStrings = (*i)->GetChildrenValues();
 
         if ( !hashSlot.IsNULLOrEmpty() && !hashOriginStrings.empty() )
         {            
             TStringSet& hashEntries = hashMap[ CORE::StringToUInt16( hashSlot ) ];
-            CORE::CString::StringVector::iterator n = hashOriginStrings.begin();
+            CORE::CDataNode::TVariantVector::iterator n = hashOriginStrings.begin();
             while ( n != hashOriginStrings.end() )
             {
                 hashEntries.insert( (*n) ); 
