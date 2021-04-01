@@ -82,8 +82,23 @@ class GUCEF_CORE_PUBLIC_CPP CDirectoryWatcher : public CObservingNotifier
     };
     typedef CTCloneableObj< struct SFileRenamedEventInfo > TFileRenamedEventData;
 
+    static const CEvent DirCreatedEvent;
+    static const CEvent DirModifiedEvent;
+    static const CEvent DirRenamedEvent;
+    static const CEvent DirDeletedEvent;
+
+    typedef TCloneableString TDirCreatedEventData;
+    typedef TCloneableString TDirModifiedEventData;
+    typedef TCloneableString TDirDeletedEventData;
+    struct SDirRenamedEventInfo
+    {
+        CString oldDirName;
+        CString newDirName;
+    };
+    typedef CTCloneableObj< struct SDirRenamedEventInfo > TDirRenamedEventData;
+
     static void RegisterEvents( void );
-                              
+
     class GUCEF_CORE_PUBLIC_CPP CDirWatchOptions
     {
         public:
@@ -93,12 +108,16 @@ class GUCEF_CORE_PUBLIC_CPP CDirectoryWatcher : public CObservingNotifier
         bool watchForFileDeletion;
         bool watchForFileRenames;
         bool watchForFileModifications;
+        bool watchForDirCreation;
+        bool watchForDirDeletion;
+        bool watchForDirRenames;
+        bool watchForDirModifications;
 
         CDirWatchOptions( void );
         CDirWatchOptions( const CDirWatchOptions& src );
         CDirWatchOptions& operator=( const CDirWatchOptions& src );
     };
-    
+
     bool AddDirToWatch( const CString& dirToWatch       ,
                         const CDirWatchOptions& options );
 

@@ -239,7 +239,7 @@ ResolveVars( const CString& strWithVars )
         if ( idx > -1 )
         {
             Int32 endIndex = resultStr.HasChar( '$', idx+8, true );
-            
+
             // Break out if there is no closing char, this is invalid
             if ( endIndex < 0 ) break;
 
@@ -251,18 +251,18 @@ ResolveVars( const CString& strWithVars )
     while ( idx > -1 );
 
     resultStr = resultStr.ReplaceSubstr( "$HOSTNAME$", GetHostname() );
-    resultStr = resultStr.ReplaceSubstr( "$PID$", UInt32ToString( MT::GetProcessID() ) );    
+    resultStr = resultStr.ReplaceSubstr( "$PID$", UInt32ToString( MT::GetProcessID() ) );
     resultStr = resultStr.ReplaceSubstr( "$TEMPDIR$", TempDir() );
     resultStr = resultStr.ReplaceSubstr( "$MODULEDIR$", ModuleDir() );
     resultStr = resultStr.ReplaceSubstr( "$CURWORKDIR$", CurrentWorkingDir() );
-    
+
     return resultStr;
 }
 
 /*-------------------------------------------------------------------------*/
 
 CString
-RelativePath( const CString& relpath , 
+RelativePath( const CString& relpath ,
               bool resolveVars       )
 {GUCEF_TRACE;
 
@@ -489,7 +489,7 @@ StringToInt64( const CString& str, Int64 defaultIfNeeded )
         #ifdef GUCEF_MSWIN_BUILD
         sscanf( str.C_String(), "%I64d", &value );
         #else
-        sscanf( str.C_String(), "%d", &value );
+        sscanf( str.C_String(), "%lld", &value );
         #endif
 
         return value;
@@ -525,7 +525,7 @@ StringToUInt64( const CString& str, UInt64 defaultIfNeeded )
         #ifdef GUCEF_MSWIN_BUILD
         sscanf( str.C_String(), "%I64u", &value );
         #else
-        sscanf( str.C_String(), "%u", &value );
+        sscanf( str.C_String(), "%llu", &value );
         #endif
 
         return value;
@@ -790,7 +790,7 @@ StringToFloat( const CString& str, float defaultIfNeeded )
         sscanf( str.C_String(), "%f", &value );
         return value;
     }
-    return defaultIfNeeded;    
+    return defaultIfNeeded;
 }
 
 /*-------------------------------------------------------------------------*/
@@ -823,7 +823,7 @@ StringToDouble( const CString& str, double defaultIfNeeded )
 /*-------------------------------------------------------------------------*/
 
 CString::StringVector
-StringToStringVector( const CString& str                           , 
+StringToStringVector( const CString& str                           ,
                       const CString::StringVector& defaultIfNeeded ,
                       char seperator                               )
 {GUCEF_TRACE;
@@ -911,7 +911,7 @@ FileExists( const CString& filename )
 {GUCEF_TRACE;
 
     return 0 != File_Exists( filename.C_String() );
-} 
+}
 
 /*-------------------------------------------------------------------------*/
 
@@ -1070,7 +1070,7 @@ LoadTextFileAsString( const CString& filePath ,
             if ( delimter+1 < bytesRead )
             {
                 // This is not a text file
-                // The only valid location for a zero terminator (if any) 
+                // The only valid location for a zero terminator (if any)
                 // is at the end of the file
                 fclose( fptr );
                 return false;
@@ -1082,7 +1082,7 @@ LoadTextFileAsString( const CString& filePath ,
         while ( bytesRead == 1024 );
 
         fclose( fptr );
-        
+
         if ( unifyEol )
         {
             UnifyStringEol( eolString, fileContent );
@@ -1117,7 +1117,7 @@ DeleteFile( const CString& path )
 bool
 IsAbsolutePath( const CString& path )
 {GUCEF_TRACE;
-    
+
     // Check for MS Windows drive letter segment or MS Windows UNC path
     if ( 1 == path.HasSubstr( ":\\", true ) || 0 == path.HasSubstr( "\\", true ) )
         return true;
@@ -1126,7 +1126,7 @@ IsAbsolutePath( const CString& path )
     if ( !path.IsNULLOrEmpty() && path[ 0 ] == '/' )
         return true;
 
-    // Check for 
+    // Check for
     if ( 1 == path.HasSubstr( ":\\", true ) )
         return true;
 
@@ -1135,7 +1135,7 @@ IsAbsolutePath( const CString& path )
 
 /*-------------------------------------------------------------------------*/
 
-bool 
+bool
 Utf16toUtf8( const std::wstring& wstr ,
              std::string& str         )
 {GUCEF_TRACE;
@@ -1168,7 +1168,7 @@ Utf16toUtf8( const std::wstring& wstr ,
 
 /*-------------------------------------------------------------------------*/
 
-bool 
+bool
 Utf8toUtf16( const std::string& str ,
              std::wstring& wstr     )
 {GUCEF_TRACE;

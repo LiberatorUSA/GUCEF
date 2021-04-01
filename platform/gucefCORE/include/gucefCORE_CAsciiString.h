@@ -77,14 +77,14 @@ class GUCEF_CORE_PUBLIC_CPP CAsciiString
     CAsciiString( CAsciiString&& src ) GUCEF_NOEXCEPT;
     #endif
 
-    CAsciiString( const CUtf8String& src );
-    
-    CAsciiString( const std::string& src );
+    CAsciiString( const CUtf8String& src ) GUCEF_NOEXCEPT;
 
-    CAsciiString( const char *src );
+    CAsciiString( const std::string& src ) GUCEF_NOEXCEPT;
+
+    CAsciiString( const char *src ) GUCEF_NOEXCEPT;
 
     CAsciiString( const char *src ,
-                 UInt32 length   );
+                  UInt32 length   ) GUCEF_NOEXCEPT;
 
     explicit CAsciiString( const char src );
 
@@ -95,7 +95,7 @@ class GUCEF_CORE_PUBLIC_CPP CAsciiString
     CAsciiString& operator=( const CAsciiString &src );
 
     CAsciiString& operator=( const std::string& src );
-    
+
     /**
      *      Copys the source string.
      *      If the src string is NULL then the current string will be
@@ -291,7 +291,7 @@ class GUCEF_CORE_PUBLIC_CPP CAsciiString
 
     bool WildcardEquals( const CAsciiString& strWithWildcards  ,
                          const char wildCardToken = '*'        ,
-                         const bool caseSensitive = true       ,   
+                         const bool caseSensitive = true       ,
                          const bool biDirectional = false      ) const;
 
     bool Equals( const CAsciiString& otherStr    ,
@@ -301,7 +301,7 @@ class GUCEF_CORE_PUBLIC_CPP CAsciiString
                     const bool caseSensitive = true ) const;
 
     CAsciiString Combine( const StringVector& elements, char seperator ) const;
-    
+
     void Clear( void );
 
     /**

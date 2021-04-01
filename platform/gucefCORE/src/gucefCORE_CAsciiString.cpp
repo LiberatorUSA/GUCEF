@@ -92,7 +92,7 @@ CAsciiString::CAsciiString( const CAsciiString &src )
 
 /*-------------------------------------------------------------------------*/
 
-CAsciiString::CAsciiString( const CUtf8String &src )
+CAsciiString::CAsciiString( const CUtf8String &src ) GUCEF_NOEXCEPT
     : m_string( GUCEF_NULL )
     , m_length( 0 )
 {GUCEF_TRACE;
@@ -102,7 +102,7 @@ CAsciiString::CAsciiString( const CUtf8String &src )
 
 /*-------------------------------------------------------------------------*/
 
-CAsciiString::CAsciiString( const std::string& src )
+CAsciiString::CAsciiString( const std::string& src ) GUCEF_NOEXCEPT
         : m_string( NULL ) ,
           m_length( 0 )
 {GUCEF_TRACE;
@@ -119,7 +119,7 @@ CAsciiString::CAsciiString( const std::string& src )
 /*-------------------------------------------------------------------------*/
 #ifdef GUCEF_RVALUE_REFERENCES_SUPPORTED
 
-CAsciiString::CAsciiString( CAsciiString&& src )
+CAsciiString::CAsciiString( CAsciiString&& src ) GUCEF_NOEXCEPT
     : m_string( src.m_string ) ,
       m_length( src.m_length )
 {GUCEF_TRACE;
@@ -131,7 +131,7 @@ CAsciiString::CAsciiString( CAsciiString&& src )
 #endif
 /*-------------------------------------------------------------------------*/
 
-CAsciiString::CAsciiString( const char *src )
+CAsciiString::CAsciiString( const char *src ) GUCEF_NOEXCEPT
         : m_string( NULL ) ,
           m_length( 0 )
 {GUCEF_TRACE;
@@ -148,7 +148,7 @@ CAsciiString::CAsciiString( const char *src )
 /*-------------------------------------------------------------------------*/
 
 CAsciiString::CAsciiString( const char *src ,
-                          UInt32 length   )
+                           UInt32 length   )  GUCEF_NOEXCEPT
         : m_string( NULL ) ,
           m_length( 0 )
 {GUCEF_TRACE;
@@ -519,7 +519,7 @@ CAsciiString::GetCharacterRepeatCount( const char searchChar ) const
                     break;
             }
         }
-    }    
+    }
     return charRepeatCount;
 }
 
@@ -1452,7 +1452,7 @@ CAsciiString::WildcardEquals( const CAsciiString& strWithWildcards    ,
         if ( strWithWildcards.WildcardEquals( *this, wildCardToken, caseSensitive, false ) )
             return true;
     }
-    
+
     if ( strWithWildcards == wildCardToken || *this == wildCardToken )
         return true;
 
@@ -1532,7 +1532,7 @@ CAsciiString::Scan( const char* newStr     ,
 
 /*-------------------------------------------------------------------------*/
 
-CAsciiString 
+CAsciiString
 CAsciiString::Combine( const StringVector& elements, char seperator ) const
 {GUCEF_TRACE;
 
@@ -1547,7 +1547,7 @@ CAsciiString::Combine( const StringVector& elements, char seperator ) const
             currentStr += (*i);
         ++i;
         if ( i != elements.end() && !(*i).IsNULLOrEmpty() )
-            currentStr += seperator; 
+            currentStr += seperator;
     }
     return currentStr;
 }
@@ -1557,7 +1557,7 @@ CAsciiString::Combine( const StringVector& elements, char seperator ) const
 bool
 CAsciiString::IsFormattingValid( void ) const
 {GUCEF_TRACE;
-    
+
     if ( GUCEF_NULL != m_string )
     {
         // Check if an invalid ASCII code point is found
