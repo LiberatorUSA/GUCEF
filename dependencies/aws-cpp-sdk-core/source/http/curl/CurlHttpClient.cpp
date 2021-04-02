@@ -539,7 +539,7 @@ void CurlHttpClient::MakeRequestInternal(HttpRequest& request,
 
 #if LIBCURL_VERSION_MAJOR >= 7
 #if LIBCURL_VERSION_MINOR >= 34
-            curl_easy_setopt(connectionHandle, CURLOPT_SSLVERSION, CURL_SSLVERSION_TLSv1);
+            curl_easy_setopt(connectionHandle, CURLOPT_SSLVERSION, CURL_SSLVERSION_TLSv1_2);
 #endif //LIBCURL_VERSION_MINOR
 #endif //LIBCURL_VERSION_MAJOR
         }
