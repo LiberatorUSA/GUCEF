@@ -151,6 +151,8 @@ class GUCEF_HIDDEN OSSpecificDirectoryWatcher : public CObserver
             notifyFilter |= FILE_NOTIFY_CHANGE_FILE_NAME | FILE_NOTIFY_CHANGE_CREATION;
         if ( options.watchForFileModifications )
             notifyFilter |= FILE_NOTIFY_CHANGE_SIZE | FILE_NOTIFY_CHANGE_ATTRIBUTES | FILE_NOTIFY_CHANGE_LAST_WRITE | FILE_NOTIFY_CHANGE_LAST_ACCESS | FILE_NOTIFY_CHANGE_SECURITY;
+        if ( options.watchForDirRenames || options.watchForDirCreation || options.watchForDirDeletion )
+            notifyFilter |= FILE_NOTIFY_CHANGE_DIR_NAME;            
         return notifyFilter;
     }
 
@@ -1056,12 +1058,15 @@ CDirectoryWatcher::AddDirToWatch( const CString& dirToWatch       ,
 {GUCEF_TRACE;
 
     if ( GUCEF_NULL != m_osSpecificImpl )
+    {
         if ( m_osSpecificImpl->AddDirToWatch( dirToWatch, options ) )
         {
             TStartedWatchingDirectoryEventData eData( dirToWatch );
             NotifyObservers( CDirectoryWatcher::StartedWatchingDirectoryEvent, &eData );
             return true;
         }
+        return false;
+    }
     else
         return false;
 }
@@ -1073,12 +1078,15 @@ CDirectoryWatcher::RemoveDirToWatch( const CString& dirToWatch )
 {GUCEF_TRACE;
 
     if ( GUCEF_NULL != m_osSpecificImpl )
+    {
         if ( m_osSpecificImpl->RemoveDirToWatch( dirToWatch ) )
         {
             TStoppedWatchingDirectoryEventData eData( dirToWatch );
             NotifyObservers( CDirectoryWatcher::StoppedWatchingDirectoryEvent, &eData );
             return true;
         }
+        return false;
+    }
     else
         return false;
 }

@@ -109,7 +109,7 @@ CUtf8String::CUtf8String( const std::string& src )
 
     if ( src.size() > 0 )
     {
-        Set( src.c_str(), sizeof( std::string::value_type ) * ( src.size() + 1 ) );
+        Set( src.c_str(), (UInt32) ( sizeof( std::string::value_type ) * ( src.size() + 1 ) ) );
     }
 }
 
@@ -172,7 +172,7 @@ CUtf8String::CUtf8String( const char src )
     , m_byteSize( 0 )
 {GUCEF_TRACE;
 
-    Set( &src, sizeof( src ) );
+    Set( &src, (UInt32) sizeof( src ) );
 }
 
 /*-------------------------------------------------------------------------*/
@@ -212,7 +212,7 @@ CUtf8String&
 CUtf8String::operator=( const std::string& src )
 {GUCEF_TRACE;
 
-    Set( src.c_str(), src.size()+1 );
+    Set( src.c_str(), (UInt32) ( sizeof( std::string::value_type ) * ( src.size() + 1 ) ) );
     return *this;
 }
 
@@ -510,7 +510,7 @@ CUtf8String::Set( const char* str ,
                 if ( GUCEF_NULL != Reserve( byteSize ) )
                 {
                     memcpy( m_string, str, byteSize );
-                    m_length = utf8len( m_string );
+                    m_length = (UInt32) utf8len( m_string );
                 }
             }
             else
@@ -520,7 +520,7 @@ CUtf8String::Set( const char* str ,
                 {
                     memcpy( m_string, str, byteSize );
                     m_string[ byteSize ] = '\0';
-                    m_length = utf8len( m_string );
+                    m_length = (UInt32) utf8len( m_string );
                 }
             }
         }
@@ -615,7 +615,7 @@ CUtf8String::Append( const char* appendstr ,
         if ( GUCEF_NULL != Reserve( (m_byteSize-1) + byteSize ) )
         {
             memcpy( m_string+(originalByteSize-1), appendstr, byteSize );
-            m_length = utf8len( m_string );
+            m_length = (UInt32) utf8len( m_string );
         }
     }
     else
@@ -626,7 +626,7 @@ CUtf8String::Append( const char* appendstr ,
         {
             memcpy( m_string+(originalByteSize-1), appendstr, byteSize );
             m_string[ m_byteSize-1 ] = '\0';
-            m_length = utf8len( m_string );
+            m_length = (UInt32) utf8len( m_string );
         }
     }
 }
@@ -805,7 +805,7 @@ CUtf8String::ReplaceChar( Int32 oldchar ,
 
     // Calculate new space required
 
-    Int32 codePointSizeDiff = utf8codepointsize( newchar ) - utf8codepointsize( oldchar );
+    Int32 codePointSizeDiff = (Int32) ( utf8codepointsize( newchar ) - utf8codepointsize( oldchar ) );
     Int32 charsToReplace = (Int32) GetCharacterCount( oldchar );
 
     if ( 0 < charsToReplace )
@@ -1198,7 +1198,7 @@ CUtf8String::RemoveChar( const Int32 charToRemove ) const
 
     // Calculate new space required
 
-    Int32 codePointSize = utf8codepointsize( charToRemove );
+    Int32 codePointSize = (Int32) utf8codepointsize( charToRemove );
     Int32 charsToRemove = (Int32) GetCharacterCount( charToRemove );
 
     if ( 0 < charsToRemove )
@@ -1253,7 +1253,7 @@ CUtf8String::CompactRepeatingChar( const Int32 charToCompact ) const
 
     // Calculate new space required
 
-    Int32 codePointSize = utf8codepointsize( charToCompact );
+    Int32 codePointSize = (Int32) utf8codepointsize( charToCompact );
     Int32 charsToRemove = (Int32) GetCharacterRepeatCount( charToCompact );
 
     if ( 0 < charsToRemove )
@@ -1903,7 +1903,7 @@ CUtf8String::Combine( const StringVector& elements, Int32 seperator ) const
     size_t cpSize = utf8codepointsize( seperator );
     UInt32 bufferSize = 1;
     if ( m_byteSize > 0 )
-        bufferSize += m_byteSize + cpSize;
+        bufferSize += m_byteSize + (UInt32) cpSize;
 
     StringVector::const_iterator i = elements.begin();
     while ( i != elements.end() )
@@ -1917,7 +1917,7 @@ CUtf8String::Combine( const StringVector& elements, Int32 seperator ) const
         ++i;
         if ( elementAdded && i != elements.end() && !(*i).IsNULLOrEmpty() )
         {
-            bufferSize += cpSize;
+            bufferSize += (UInt32) cpSize;
         }
     }
 
