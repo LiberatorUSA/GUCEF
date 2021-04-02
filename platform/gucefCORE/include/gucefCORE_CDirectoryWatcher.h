@@ -67,6 +67,9 @@ class GUCEF_CORE_PUBLIC_CPP CDirectoryWatcher : public CObservingNotifier
     static const CEvent StartedWatchingDirectoryEvent;
     static const CEvent StoppedWatchingDirectoryEvent;
 
+    typedef TCloneableString TStartedWatchingDirectoryEventData;
+    typedef TCloneableString TStoppedWatchingDirectoryEventData;
+
     static const CEvent FileCreatedEvent;
     static const CEvent FileModifiedEvent;
     static const CEvent FileRenamedEvent;

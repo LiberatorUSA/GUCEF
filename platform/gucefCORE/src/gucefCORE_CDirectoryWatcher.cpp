@@ -457,9 +457,9 @@ class GUCEF_HIDDEN OSSpecificDirectoryWatcher : public CObserver
 
 /*-------------------------------------------------------------------------*/
 
-#define INOTIFY_EVENT_SIZE          ( sizeof (struct inotify_event) )
-#define INOTIFY_EVENT_BUF_LEN       ( 64 * ( INOTIFY_EVENT_SIZE + PATH_MAX + 1 ) )
-
+#define INOTIFY_EVENT_SIZE                  ( sizeof (struct inotify_event) )
+#define INOTIFY_EVENT_BUF_LEN               ( 64 * ( INOTIFY_EVENT_SIZE + PATH_MAX + 1 ) )
+#define INOTIFY_POLLING_INTERVAL_IN_MS      25
 
 class GUCEF_HIDDEN OSSpecificDirectoryWatcher : public CObserver
 {
@@ -511,6 +511,7 @@ class GUCEF_HIDDEN OSSpecificDirectoryWatcher : public CObserver
     TWatchCookieEntryMap m_watchCookieMap;
     int m_inotify_fd;
     CDynamicBuffer m_notifyEventBuffer;
+    struct timeval m_select_timeout;
 
     uint32_t OptionsToNotifyFilter( const CDirWatchOptions& options ) const
     {GUCEF_TRACE;
@@ -553,6 +554,8 @@ class GUCEF_HIDDEN OSSpecificDirectoryWatcher : public CObserver
             m_wdLookupMap[ utfDirToWatch ] = watchDescriptor;
             WatchEntry& entry = m_dirsToWatch[ watchDescriptor ];
             entry.m_options = options;
+
+            m_osPollingTimer.SetEnabled( true );
             return true;
         }
         else
@@ -581,6 +584,10 @@ class GUCEF_HIDDEN OSSpecificDirectoryWatcher : public CObserver
                 {
                     m_dirsToWatch.erase( n );
                     GUCEF_DEBUG_LOG( LOGLEVEL_NORMAL, "RemoveDirToWatch: Removed watch of dir \"" + dirToWatch + "\"" );
+
+                    if ( m_dirsToWatch.empty() )
+                        m_osPollingTimer.SetEnabled( false );
+
                     return true;
                 }
                 else
@@ -607,6 +614,8 @@ class GUCEF_HIDDEN OSSpecificDirectoryWatcher : public CObserver
         if ( -1 == m_inotify_fd )
             return false;
 
+        m_osPollingTimer.SetEnabled( false );
+
         int failCount = 0;
         TWatchDescriptorMap::iterator i = m_wdLookupMap.begin();
         while ( i != m_wdLookupMap.end() )
@@ -628,6 +637,10 @@ class GUCEF_HIDDEN OSSpecificDirectoryWatcher : public CObserver
             }
             ++i;
         }
+
+        m_wdLookupMap.clear();
+        m_dirsToWatch.clear();
+
         return 0 == failCount;
     }
 
@@ -637,10 +650,24 @@ class GUCEF_HIDDEN OSSpecificDirectoryWatcher : public CObserver
                                  CORE::CICloneable* eventData )
     {GUCEF_TRACE;
 
+        fd_set rfds;
+        FD_ZERO( &rfds );
+        FD_SET( m_inotify_fd, &rfds );
+
+        int selectResult = select( m_inotify_fd + 1, &rfds, NULL, NULL, &m_select_timeout );
+        if ( selectResult == -1 )
+        {
+            GUCEF_ERROR_LOG( LOGLEVEL_NORMAL, "OSSpecificDirectoryWatcher:OnDirWatchPollingCycle: select() failed" );
+            return;
+        }
+
+        if ( 0 == FD_ISSET( m_inotify_fd, &rfds ) )
+            return; // nothing to do
+
         int totalBytes = read( m_inotify_fd, m_notifyEventBuffer.GetBufferPtr(), INOTIFY_EVENT_BUF_LEN );
         if ( totalBytes < 0 )
         {
-            GUCEF_ERROR_LOG( LOGLEVEL_NORMAL, "OnDirWatchPollingCycle: Failed to read inotify event messages" );
+            GUCEF_ERROR_LOG( LOGLEVEL_NORMAL, "OSSpecificDirectoryWatcher:OnDirWatchPollingCycle: Failed to read inotify event messages" );
             return;
         }
         m_notifyEventBuffer.SetDataSize( (UInt32) totalBytes );
@@ -827,6 +854,10 @@ class GUCEF_HIDDEN OSSpecificDirectoryWatcher : public CObserver
             return false;
         }
 
+        m_select_timeout.tv_sec = 0;
+        m_select_timeout.tv_usec = 0;
+        m_osPollingTimer.SetInterval( INOTIFY_POLLING_INTERVAL_IN_MS );
+
         return true;
     }
 
@@ -886,6 +917,12 @@ class GUCEF_HIDDEN OSSpecificDirectoryWatcher : public CObserver
     {GUCEF_TRACE;
 
         RemoveAllWatches();
+
+        if ( m_inotify_fd >= 0 )
+        {
+            close( m_inotify_fd );
+            m_inotify_fd = -1;
+        }
     }
 };
 
@@ -1019,7 +1056,12 @@ CDirectoryWatcher::AddDirToWatch( const CString& dirToWatch       ,
 {GUCEF_TRACE;
 
     if ( GUCEF_NULL != m_osSpecificImpl )
-        return m_osSpecificImpl->AddDirToWatch( dirToWatch, options );
+        if ( m_osSpecificImpl->AddDirToWatch( dirToWatch, options ) )
+        {
+            TStartedWatchingDirectoryEventData eData( dirToWatch );
+            NotifyObservers( CDirectoryWatcher::StartedWatchingDirectoryEvent, &eData );
+            return true;
+        }
     else
         return false;
 }
@@ -1031,7 +1073,12 @@ CDirectoryWatcher::RemoveDirToWatch( const CString& dirToWatch )
 {GUCEF_TRACE;
 
     if ( GUCEF_NULL != m_osSpecificImpl )
-        return m_osSpecificImpl->RemoveDirToWatch( dirToWatch );
+        if ( m_osSpecificImpl->RemoveDirToWatch( dirToWatch ) )
+        {
+            TStoppedWatchingDirectoryEventData eData( dirToWatch );
+            NotifyObservers( CDirectoryWatcher::StoppedWatchingDirectoryEvent, &eData );
+            return true;
+        }
     else
         return false;
 }

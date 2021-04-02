@@ -607,6 +607,10 @@ FilePushDestination::Start( void )
     watchOptions.watchForFileDeletion = false;
     watchOptions.watchForFileModifications = false;
     watchOptions.watchForFileRenames = false;
+    watchOptions.watchForDirCreation = false;
+    watchOptions.watchForDirDeletion = false;
+    watchOptions.watchForDirModifications = false;
+    watchOptions.watchForDirRenames = false;
     TStringSet::iterator i = m_settings.dirsToWatch.begin();
     while ( i != m_settings.dirsToWatch.end() )
     {
