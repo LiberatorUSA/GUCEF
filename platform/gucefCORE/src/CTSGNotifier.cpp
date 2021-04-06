@@ -168,6 +168,24 @@ CTSGNotifier::OnPumpedNotify( CNotifier* notifier                 ,
 /*-------------------------------------------------------------------------*/
 
 void
+CTSGNotifier::SetPropagatePulseEvent( bool propagatePulseEventMsg )
+{GUCEF_TRACE;
+
+    m_tsgObserver.SetPropagatePulseEvent( propagatePulseEventMsg );
+}
+
+/*-------------------------------------------------------------------------*/
+
+bool
+CTSGNotifier::GetPropagatePulseEvent( void ) const
+{GUCEF_TRACE;
+
+    return m_tsgObserver.GetPropagatePulseEvent();
+}
+
+/*-------------------------------------------------------------------------*/
+
+void
 CTSGNotifier::NotifyObserversFromThread( void )
 {GUCEF_TRACE;
 

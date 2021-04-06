@@ -78,6 +78,18 @@ class GUCEF_CORE_PUBLIC_CPP CPumpedObserver : public CObserver
 
     CPulseGenerator* GetPulseGenerator( void ) const;
 
+    /**
+     *  A pumped observer uses pulse generator events to allow for async 
+     *  OnNotify processing via OnPumpedNotify()
+     *
+     *  When doing this it does NOT by default also consider the pulse event itself as a
+     *  event message to be propagated. You can change this with SetPropagatePulseEvent()
+     *  This allows you to take advantage of the same pulse to trigger other things.
+     */
+    void SetPropagatePulseEvent( bool propagatePulseEventMsg );
+
+    bool GetPropagatePulseEvent( void ) const;
+
     protected:
 
     /**
@@ -137,6 +149,7 @@ class GUCEF_CORE_PUBLIC_CPP CPumpedObserver : public CObserver
     private:
 
     CPulseGenerator* m_pulsGenerator;
+    bool m_propagatePulseEvent;
     MT::CTMailBox< CEvent > m_mailbox;
     MT::CMutex m_mutex;
 };

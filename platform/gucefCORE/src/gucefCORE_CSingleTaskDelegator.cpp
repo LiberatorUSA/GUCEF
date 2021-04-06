@@ -78,11 +78,20 @@ CSingleTaskDelegator::OnThreadCycle( void* taskdata )
     {
         bool result = CTaskDelegator::ProcessTask( m_taskConsumer, m_taskData );
         TaskCleanup( m_taskConsumer, m_taskData );
-        m_taskConsumer = NULL;
-        m_taskData = NULL;
+        m_taskConsumer = GUCEF_NULL;
+        m_taskData = GUCEF_NULL;
         return result;
     }
     return true;
+}
+
+/*-------------------------------------------------------------------------*/
+
+bool 
+CSingleTaskDelegator::ExecuteTaskFromCallingThread( void )
+{GUCEF_TRACE;
+
+    return OnThreadCycle( GUCEF_NULL );
 }
 
 /*-------------------------------------------------------------------------//

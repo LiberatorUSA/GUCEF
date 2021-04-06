@@ -160,6 +160,20 @@ class GUCEF_CORE_PUBLIC_CPP CThreadPool : public CTSGNotifier
 
     void RequestAllThreadsToStop( bool waitOnStop, bool acceptNewWork );
 
+    void SetAllowMainApplicationThreadToPickUpQueuedTasks( bool allowAppThreadToWork );
+
+    bool GetAllowMainApplicationThreadToPickUpQueuedTasks( void ) const;
+
+    /**
+     *  Instead of threads managed by the thread pools always doing all the work you can also use this member
+     *  function to 'pitch in' and help out in consuming work from some other calling thread.
+     *  Do note that this will block the calling thread for the duration of the queued task so use this wisely.
+     *
+     *  @param maxTasks the max nr of tasks you wish to consume and handle using the calling thread which will be blocked for the entire duration
+     *  @return returns the number of tasks that were carried which should be between 0-maxTasks
+     */
+    UInt32 CarryOutQueuedTasksIfAny( UInt32 maxTasks );
+
     void RegisterTaskConsumerFactory( const CString& taskType       ,
                                       TTaskConsumerFactory* factory );
 
@@ -257,6 +271,7 @@ class GUCEF_CORE_PUBLIC_CPP CThreadPool : public CTSGNotifier
     TTaskConsumerMap m_taskConsumerMap;
     TTaskDelegatorSet m_taskDelegators;
     bool m_acceptNewWork;
+    bool m_allowAppThreadToWork;
 };
 
 /*-------------------------------------------------------------------------*/

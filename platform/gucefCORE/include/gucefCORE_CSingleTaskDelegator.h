@@ -65,6 +65,8 @@ class GUCEF_CORE_PRIVATE_CPP CSingleTaskDelegator : public CTaskDelegator
                           CICloneable* taskData         );
 
     virtual ~CSingleTaskDelegator();
+
+    bool ExecuteTaskFromCallingThread( void );
     
     protected:
 

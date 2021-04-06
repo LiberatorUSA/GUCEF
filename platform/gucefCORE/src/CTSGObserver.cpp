@@ -99,7 +99,7 @@ CTSGObserver::OnPumpedNotify( CNotifier* notifier                  ,
 {GUCEF_TRACE;
 
     // Make sure we still have a parent
-    if ( m_parentNotifier != NULL )
+    if ( GUCEF_NULL != m_parentNotifier )
     {
         // Pass on the message
         m_parentNotifier->OnPumpedNotify( notifier  ,

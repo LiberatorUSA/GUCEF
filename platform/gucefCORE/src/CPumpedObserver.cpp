@@ -145,9 +145,11 @@ class CMailElement : public CICloneable
 //-------------------------------------------------------------------------*/
 
 CPumpedObserver::CPumpedObserver( void )
-    : CObserver()                                                      ,
-      m_pulsGenerator( &CCoreGlobal::Instance()->GetPulseGenerator() ) ,
-      m_mutex()
+    : CObserver()                                                      
+    , m_pulsGenerator( &CCoreGlobal::Instance()->GetPulseGenerator() ) 
+    , m_propagatePulseEvent( false )
+    , m_mailbox()
+    , m_mutex()
 {GUCEF_TRACE;
 
     TEventCallback callback( this, &CPumpedObserver::OnPulse );
@@ -165,9 +167,11 @@ CPumpedObserver::CPumpedObserver( void )
 /*-------------------------------------------------------------------------*/
 
 CPumpedObserver::CPumpedObserver( CPulseGenerator& pulsGenerator )
-    : CObserver()                       ,
-      m_pulsGenerator( &pulsGenerator ) ,
-      m_mutex()
+    : CObserver()                       
+    , m_pulsGenerator( &pulsGenerator ) 
+    , m_propagatePulseEvent( false )
+    , m_mailbox()
+    , m_mutex()
 {GUCEF_TRACE;
 
     TEventCallback callback( this, &CPumpedObserver::OnPulse );
@@ -185,9 +189,11 @@ CPumpedObserver::CPumpedObserver( CPulseGenerator& pulsGenerator )
 /*-------------------------------------------------------------------------*/
 
 CPumpedObserver::CPumpedObserver( const CPumpedObserver& src )
-    : CObserver( src )        ,
-      m_pulsGenerator( NULL ) ,
-      m_mutex()
+    : CObserver( src )        
+    , m_pulsGenerator( GUCEF_NULL ) 
+    , m_propagatePulseEvent( src.m_propagatePulseEvent )
+    , m_mailbox()
+    , m_mutex()
 {GUCEF_TRACE;
 
     // This is an aggregate relationship that does not affect the source object
@@ -239,15 +245,15 @@ CPumpedObserver::GetPulseGenerator( void ) const
 /*-------------------------------------------------------------------------*/
 
 void
-CPumpedObserver::OnPulse( CNotifier* notifier                 ,
-                          const CEvent& eventid               ,
-                          CICloneable* eventdata /* = NULL */ )
+CPumpedObserver::OnPulse( CNotifier* notifier                       ,
+                          const CEvent& eventid                     ,
+                          CICloneable* eventdata /* = GUCEF_NULL */ )
 
 {GUCEF_TRACE;
 
     CEvent mailEventID;
-    CICloneable* dataptr( NULL );
-    CMailElement* maildata( NULL );
+    CICloneable* dataptr( GUCEF_NULL );
+    CMailElement* maildata( GUCEF_NULL );
     while ( m_mailbox.GetMail( mailEventID ,
                                &dataptr    ) )
     {
@@ -259,14 +265,35 @@ CPumpedObserver::OnPulse( CNotifier* notifier                 ,
         delete maildata->GetData();
         delete maildata;
     }
+
+    if ( m_propagatePulseEvent )
+        OnPumpedNotify( notifier, eventid, eventdata );
 }
 
 /*-------------------------------------------------------------------------*/
 
 void
-CPumpedObserver::OnPulseGeneratorDestruction( CNotifier* notifier                 ,
-                                              const CEvent& eventid               ,
-                                              CICloneable* eventdata /* = NULL */ )
+CPumpedObserver::SetPropagatePulseEvent( bool propagatePulseEventMsg )
+{GUCEF_TRACE;
+
+    m_propagatePulseEvent = propagatePulseEventMsg;
+}
+
+/*-------------------------------------------------------------------------*/
+
+bool
+CPumpedObserver::GetPropagatePulseEvent( void ) const
+{GUCEF_TRACE;
+
+    return m_propagatePulseEvent;
+}
+
+/*-------------------------------------------------------------------------*/
+
+void
+CPumpedObserver::OnPulseGeneratorDestruction( CNotifier* notifier                       ,
+                                              const CEvent& eventid                     ,
+                                              CICloneable* eventdata /* = GUCEF_NULL */ )
 
 {GUCEF_TRACE;
 
@@ -279,12 +306,12 @@ CPumpedObserver::OnPulseGeneratorDestruction( CNotifier* notifier               
 /*-------------------------------------------------------------------------*/
 
 void
-CPumpedObserver::OnNotify( CNotifier* notifier                 ,
-                           const CEvent& eventid               ,
-                           CICloneable* eventdata /* = NULL */ )
+CPumpedObserver::OnNotify( CNotifier* notifier                       ,
+                           const CEvent& eventid                     ,
+                           CICloneable* eventdata /* = GUCEF_NULL */ )
 {GUCEF_TRACE;
 
-    if ( eventdata )
+    if ( GUCEF_NULL != eventdata )
     {
         eventdata = eventdata->Clone();
     }
@@ -299,9 +326,9 @@ CPumpedObserver::OnNotify( CNotifier* notifier                 ,
 /*-------------------------------------------------------------------------*/
 
 void
-CPumpedObserver::OnPumpedNotify( CNotifier* notifier                 ,
-                                 const CEvent& eventid               ,
-                                 CICloneable* eventdata /* = NULL */ )
+CPumpedObserver::OnPumpedNotify( CNotifier* notifier                       ,
+                                 const CEvent& eventid                     ,
+                                 CICloneable* eventdata /* = GUCEF_NULL */ )
 
 {GUCEF_TRACE;
 

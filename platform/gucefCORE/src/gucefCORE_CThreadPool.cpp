@@ -206,6 +206,7 @@ CThreadPool::CThreadPool( void )
     , m_taskConsumerMap()       
     , m_taskDelegators()
     , m_acceptNewWork( true )
+    , m_allowAppThreadToWork( false )
 {GUCEF_TRACE;
 
     RegisterEvents();
@@ -244,11 +245,64 @@ CThreadPool::GetClassTypeName( void ) const
 /*-------------------------------------------------------------------------*/
 
 void
+CThreadPool::SetAllowMainApplicationThreadToPickUpQueuedTasks( bool allowAppThreadToWork )
+{GUCEF_TRACE;
+    
+    m_allowAppThreadToWork = allowAppThreadToWork;
+    SetPropagatePulseEvent( m_allowAppThreadToWork );
+}
+
+/*-------------------------------------------------------------------------*/
+
+bool 
+CThreadPool::GetAllowMainApplicationThreadToPickUpQueuedTasks( void ) const
+{GUCEF_TRACE;
+
+    return m_allowAppThreadToWork;
+}
+
+/*-------------------------------------------------------------------------*/
+
+UInt32
+CThreadPool::CarryOutQueuedTasksIfAny( UInt32 maxTasks )
+{GUCEF_TRACE;
+
+    for ( UInt32 i=0; i<maxTasks; ++i )
+    {
+        CTaskConsumerPtr taskConsumer;
+        CICloneable* taskData = GUCEF_NULL;
+        if ( GetQueuedTask( taskConsumer    ,
+                            &taskData       ) )
+        {
+            CSingleTaskDelegator singleTaskExecutor( this, taskConsumer, taskData );
+            singleTaskExecutor.ExecuteTaskFromCallingThread();
+        }
+        else 
+        {
+            return i;
+        }
+    }
+    return maxTasks;
+}
+
+/*-------------------------------------------------------------------------*/
+
+void
 CThreadPool::OnPumpedNotify( CNotifier* notifier    ,
                              const CEvent& eventid  ,
                              CICloneable* eventdata )
 {GUCEF_TRACE;
 
+    if ( CPulseGenerator::PulseEvent == eventid )
+    {
+        if ( m_allowAppThreadToWork )
+        {
+            UInt32 tasksExecuted = CarryOutQueuedTasksIfAny( 1 );
+            GUCEF_DEBUG_LOG( LOGLEVEL_BELOW_NORMAL, "ThreadPool: Executed " + ToString( tasksExecuted ) + " tasks using the main application thread" );
+        }
+        return;
+    }
+    else
     if ( CGUCEFApplication::AppShutdownEvent == eventid )
     {
         MT::CObjectScopeLock lock( this );
@@ -469,7 +523,7 @@ CThreadPool::QueueTask( const CString& taskType           ,
             m_taskQueue.AddMail( taskType, queueItem );
 
             // We dont want to queue a task that will never be picked up by anyone
-            if ( 0 == GetNrOfThreads() )
+            if ( 0 == GetNrOfThreads() && !m_allowAppThreadToWork )
             {
                 EnforceDesiredNrOfThreads( 1, true );    
             }
