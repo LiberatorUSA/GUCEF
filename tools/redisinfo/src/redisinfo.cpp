@@ -842,6 +842,11 @@ RedisInfoService::GetRedisInfoKeyspace( CORE::CValueList& kv )
     while ( i != m_redisNodesMap.end() )
     {
         totalSuccess = GetRedisInfo( cmdParam, typeParam, kv, &(*i).second ) && totalSuccess;        
+
+        // Abort additional info retrievals if we lose the context
+        if ( GUCEF_NULL == m_redisContext || m_redisNodesMap.empty() )
+            return totalSuccess;
+
         ++i;
     }
     return totalSuccess;
@@ -861,6 +866,11 @@ RedisInfoService::GetRedisInfoPersistence( CORE::CValueList& kv )
     while ( i != m_redisNodesMap.end() )
     {
         totalSuccess = GetRedisInfo( cmdParam, typeParam, kv, &(*i).second ) && totalSuccess;        
+
+        // Abort additional info retrievals if we lose the context
+        if ( GUCEF_NULL == m_redisContext || m_redisNodesMap.empty() )
+            return totalSuccess;
+
         ++i;
     }
     return totalSuccess;
@@ -880,6 +890,11 @@ RedisInfoService::GetRedisInfoReplication( CORE::CValueList& kv )
     while ( i != m_redisNodesMap.end() )
     {
         totalSuccess = GetRedisInfo( cmdParam, typeParam, kv, &(*i).second ) && totalSuccess;        
+
+        // Abort additional info retrievals if we lose the context
+        if ( GUCEF_NULL == m_redisContext || m_redisNodesMap.empty() )
+            return totalSuccess;
+
         ++i;
     }
     return totalSuccess;
@@ -899,6 +914,11 @@ RedisInfoService::GetRedisInfoStats( CORE::CValueList& kv )
     while ( i != m_redisNodesMap.end() )
     {
         totalSuccess = GetRedisInfo( cmdParam, typeParam, kv, &(*i).second ) && totalSuccess;        
+
+        // Abort additional info retrievals if we lose the context
+        if ( GUCEF_NULL == m_redisContext || m_redisNodesMap.empty() )
+            return totalSuccess;
+
         ++i;
     }
     return totalSuccess;
@@ -918,6 +938,11 @@ RedisInfoService::GetRedisInfoCommandStats( CORE::CValueList& kv )
     while ( i != m_redisNodesMap.end() )
     {
         totalSuccess = GetRedisInfo( cmdParam, typeParam, kv, &(*i).second ) && totalSuccess;        
+
+        // Abort additional info retrievals if we lose the context
+        if ( GUCEF_NULL == m_redisContext || m_redisNodesMap.empty() )
+            return totalSuccess;
+
         ++i;
     }
     return totalSuccess;
@@ -937,6 +962,11 @@ RedisInfoService::GetRedisInfoClients( CORE::CValueList& kv )
     while ( i != m_redisNodesMap.end() )
     {
         totalSuccess = GetRedisInfo( cmdParam, typeParam, kv, &(*i).second ) && totalSuccess;        
+
+        // Abort additional info retrievals if we lose the context
+        if ( GUCEF_NULL == m_redisContext || m_redisNodesMap.empty() )
+            return totalSuccess;
+
         ++i;
     }
     return totalSuccess;
@@ -956,6 +986,11 @@ RedisInfoService::GetRedisInfoMemory( CORE::CValueList& kv )
     while ( i != m_redisNodesMap.end() )
     {
         totalSuccess = GetRedisInfo( cmdParam, typeParam, kv, &(*i).second ) && totalSuccess;        
+
+        // Abort additional info retrievals if we lose the context
+        if ( GUCEF_NULL == m_redisContext || m_redisNodesMap.empty() )
+            return totalSuccess;
+
         ++i;
     }
     return totalSuccess;
@@ -975,6 +1010,11 @@ RedisInfoService::GetRedisInfoCpu( CORE::CValueList& kv )
     while ( i != m_redisNodesMap.end() )
     {
         totalSuccess = GetRedisInfo( cmdParam, typeParam, kv, &(*i).second ) && totalSuccess;        
+
+        // Abort additional info retrievals if we lose the context
+        if ( GUCEF_NULL == m_redisContext || m_redisNodesMap.empty() )
+            return totalSuccess;
+
         ++i;
     }
     return totalSuccess;
@@ -1090,7 +1130,7 @@ RedisInfoService::GetRedisInfo( const CORE::CString& cmd  ,
     }
     catch ( const sw::redis::Error& e )
     {
-        GUCEF_EXCEPTION_LOG( CORE::LOGLEVEL_IMPORTANT, "RedisInfoService(" + CORE::PointerToString( this ) + "):GetRedisClusterNodeMap: Redis++ exception: " + e.what() );
+        GUCEF_EXCEPTION_LOG( CORE::LOGLEVEL_IMPORTANT, "RedisInfoService(" + CORE::PointerToString( this ) + "):GetRedisInfo: Redis++ exception: " + e.what() );
         if ( GUCEF_NULL != node )
             ++node->redisErrorReplies;
         RedisDisconnect();
@@ -1099,7 +1139,7 @@ RedisInfoService::GetRedisInfo( const CORE::CString& cmd  ,
     }
     catch ( const std::exception& e )
     {
-        GUCEF_EXCEPTION_LOG( CORE::LOGLEVEL_IMPORTANT, "RedisInfoService(" + CORE::PointerToString( this ) + "):GetRedisClusterNodeMap: exception: " + e.what() );
+        GUCEF_EXCEPTION_LOG( CORE::LOGLEVEL_IMPORTANT, "RedisInfoService(" + CORE::PointerToString( this ) + "):GetRedisInfo: exception: " + e.what() );
         return false;
     }
 
