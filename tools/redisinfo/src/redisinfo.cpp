@@ -520,6 +520,7 @@ RedisInfoService::LoadHashSlotMap( void )
             GUCEF_ERROR_LOG( CORE::LOGLEVEL_NORMAL, "RedisInfoService(" + CORE::PointerToString( this ) + "):LoadHashSlotMap: hash slot map did not exist and failed to provide a new one" );
             return false;
         }
+        return true;
     }
     else
     {
