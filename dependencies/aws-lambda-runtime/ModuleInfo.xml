@@ -1,0 +1,12 @@
+<ModuleInfoEntry>
+    <Module Name="aws-lambda-runtime" Type="StaticLibrary" Platform="All">
+        <Preprocessor>
+        </Preprocessor>
+        <Dependencies>
+            <Dependency Name="curl" />
+        </Dependencies>
+        <Linker>
+            <Dependency Name="curl" />
+        </Linker>		
+    </Module>
+</ModuleInfoEntry>
