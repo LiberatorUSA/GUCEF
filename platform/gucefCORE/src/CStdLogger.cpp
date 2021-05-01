@@ -96,9 +96,6 @@ CStdLogger::~CStdLogger()
 
     CCoreGlobal::Instance()->GetLogManager().RemoveLogger( this );
     FlushLog();
-
-    delete m_logFormatter;
-    m_logFormatter = GUCEF_NULL;
 }
 
 /*-------------------------------------------------------------------------*/

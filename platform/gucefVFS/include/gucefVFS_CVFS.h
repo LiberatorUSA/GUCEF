@@ -108,11 +108,12 @@ class GUCEF_VFS_PUBLIC_CPP CVFS : public CORE::CTSGNotifier   ,
 {
     public:
     
-    typedef CORE::CTAbstractFactory< CString, CIArchive > TAbstractArchiveFactory;
-    typedef TAbstractArchiveFactory::TConcreteFactory     TArchiveFactory;
-    typedef CIArchive::CVFSHandlePtr                      CVFSHandlePtr;
-    typedef CIArchive::TStringList                        TStringList;
-    typedef CIArchive::TStringSet                         TStringSet;
+    typedef CORE::CTAbstractFactory< CString, CIArchive, MT::CMutex >   TAbstractArchiveFactory;
+    typedef TAbstractArchiveFactory::TProductPtr                        TArchivePtr;
+    typedef TAbstractArchiveFactory::TConcreteFactory                   TArchiveFactory;
+    typedef CIArchive::CVFSHandlePtr                                    CVFSHandlePtr;
+    typedef CIArchive::TStringList                                      TStringList;
+    typedef CIArchive::TStringSet                                       TStringSet;
     
     static const CORE::CString FileSystemArchiveTypeName;
     static const CORE::CEvent AsyncVfsOperationCompletedEvent;
@@ -481,7 +482,7 @@ class GUCEF_VFS_PUBLIC_CPP CVFS : public CORE::CTSGNotifier   ,
         CORE::CString abspath;
         CORE::CString path;
         bool writeable;
-        CIArchive* archive;
+        TArchivePtr archive;
         CORE::CString mountPath;
     };
     typedef struct SMountEntry TMountEntry;

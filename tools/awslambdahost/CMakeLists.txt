@@ -11,15 +11,8 @@
 
 # Configuration for module: awslambdahost
 
-set( HEADER_FILES 
-  include/crc16.h
-  include/udp2rediscluster.h
-)
-
 set( SOURCE_FILES 
-  src/crc16.cpp
   src/main.cpp
-  src/udp2rediscluster.cpp
 )
 
 # Make sure the PLATFORM_HEADER_FILES variable is always defined
@@ -40,7 +33,7 @@ endif()
 add_dependencies( ${MODULE_NAME} gucefCOM gucefCOMCORE gucefCORE gucefMT gucefWEB )
 target_link_libraries( ${MODULE_NAME} gucefCOM gucefCOMCORE gucefCORE gucefMT gucefWEB )
 
-include_directories( ../../common/include ../../platform/gucefCOM/include ../../platform/gucefCOMCORE/include ../../platform/gucefCORE/include ../../platform/gucefMT/include ../../platform/gucefVFS/include ../../platform/gucefWEB/include include )
+include_directories( ../../common/include ../../platform/gucefCOM/include ../../platform/gucefCOMCORE/include ../../platform/gucefCORE/include ../../platform/gucefMT/include ../../platform/gucefVFS/include ../../platform/gucefWEB/include )
 
 if ( ANDROID )
   include_directories( ../../platform/gucefCORE/include/android )

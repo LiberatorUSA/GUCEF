@@ -31,10 +31,20 @@
 #define GUCEF_CORE_CSTRING_H
 #endif /* GUCEF_CORE_CSTRING_H ? */
 
-#ifndef GUCEF_CORE_CLOGMANAGER_H
-#include "CLogManager.h"
-#define GUCEF_CORE_CLOGMANAGER_H
-#endif /* GUCEF_CORE_CLOGMANAGER_H ? */
+#ifndef GUCEF_CORE_CDATETIME_H
+#include "gucefCORE_CDateTime.h"
+#define GUCEF_CORE_CDATETIME_H
+#endif /* GUCEF_CORE_CDATETIME_H ? */
+
+#ifndef GUCEF_CORE_LOGLEVELS_H
+#include "gucefCORE_LogLevels.h"
+#define GUCEF_CORE_LOGLEVELS_H
+#endif /* GUCEF_CORE_LOGLEVELS_H ? */
+
+#ifndef GUCEF_CORE_LOGTYPES_H
+#include "gucefCORE_LogTypes.h"
+#define GUCEF_CORE_LOGTYPES_H
+#endif /* GUCEF_CORE_LOGTYPES_H ? */
 
 /*-------------------------------------------------------------------------//
 //                                                                         //
@@ -64,6 +74,8 @@ class GUCEF_CORE_PUBLIC_CPP CILoggingFormatter
                                       const UInt32 threadId        ,
                                       const CDateTime& timestamp   ) = 0;
 
+    virtual const CString& GetType( void ) const = 0;
+    
     CILoggingFormatter( void );                                       /**< interface class: no-op */
     virtual ~CILoggingFormatter();                                    /**< interface class: no-op */
     CILoggingFormatter( const CILoggingFormatter& src );              /**< interface class: no-op */

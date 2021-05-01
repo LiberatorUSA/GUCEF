@@ -31,6 +31,11 @@
 #define GUCEF_CORE_CICONSOLELOGGER_H
 #endif /* GUCEF_CORE_CICONSOLELOGGER_H ? */
 
+#ifndef GUCEF_CORE_CLOGMANAGER_H
+#include "CLogManager.h"
+#define GUCEF_CORE_CLOGMANAGER_H
+#endif /* GUCEF_CORE_CLOGMANAGER_H ? */
+
 #ifdef GUCEF_MSWIN_BUILD
 /*-------------------------------------------------------------------------//
 //                                                                         //
@@ -96,7 +101,7 @@ class GUCEF_CORE_PUBLIC_CPP CMSWinConsoleLogger : public CIConsoleLogger
     bool m_formatForUiPurpose;
     HANDLE m_consoleHandle;
     bool m_ownedConsole;
-    CILoggingFormatter* m_logFormatter;
+    CLogManager::TLoggingFormatterPtr m_logFormatter;
 };
 
 /*-------------------------------------------------------------------------//

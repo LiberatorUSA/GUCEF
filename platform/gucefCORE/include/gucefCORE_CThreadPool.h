@@ -259,7 +259,7 @@ class GUCEF_CORE_PUBLIC_CPP CThreadPool : public CTSGNotifier
 
     private:
 
-    typedef CTAbstractFactory< CString, CTaskConsumer > TAbstractTaskConsumerFactory;
+    typedef CTAbstractFactory< CString, CTaskConsumer, MT::CMutex > TAbstractTaskConsumerFactory;
     typedef MT::CTMailBox< CString > TTaskMailbox;
     typedef std::map< UInt32, CTaskConsumerPtr > TTaskConsumerMap;
     typedef std::set< CTaskDelegator* > TTaskDelegatorSet;

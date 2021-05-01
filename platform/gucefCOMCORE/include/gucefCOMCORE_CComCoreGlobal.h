@@ -35,6 +35,11 @@
 #define GUCEF_COMCORE_MACROS_H
 #endif /* GUCEF_COMCORE_MACROS_H ? */
 
+#ifndef GUCEF_COMCORE_CPUBSUBCLIENTFACTORY_H
+#include "gucefCOMCORE_CPubSubClientFactory.h"
+#define GUCEF_COMCORE_CPUBSUBCLIENTFACTORY_H
+#endif /* GUCEF_COMCORE_CPUBSUBCLIENTFACTORY_H ? */
+
 /*-------------------------------------------------------------------------//
 //                                                                         //
 //      NAMESPACE                                                          //
@@ -65,6 +70,8 @@ class GUCEF_COMCORE_EXPORT_CPP CComCoreGlobal
 
     CDiscoveryManager& GetDiscoveryManager( void );
 
+    CPubSubClientFactory& GetPubSubClientFactory( void );
+
     private:
 
     static void Deinstance( void );
@@ -80,6 +87,7 @@ class GUCEF_COMCORE_EXPORT_CPP CComCoreGlobal
 
     CCom* m_com;
     CDiscoveryManager* m_discoveryManager;
+    CPubSubClientFactory* m_pubsubClientFactory;
 
     static MT::CMutex g_dataLock;
     static CComCoreGlobal* g_instance;

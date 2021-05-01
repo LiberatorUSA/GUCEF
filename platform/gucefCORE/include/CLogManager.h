@@ -74,6 +74,11 @@
 #define GUCEF_CORE_LOGLEVELS_H
 #endif /* GUCEF_CORE_LOGLEVELS_H ? */
 
+#ifndef GUCEF_CORE_CILOGGINGFORMATTER_H
+#include "gucefCORE_CILoggingFormatter.h"
+#define GUCEF_CORE_CILOGGINGFORMATTER_H
+#endif /* GUCEF_CORE_CILOGGINGFORMATTER_H ? */
+
 #ifndef GUCEF_CORE_CSTRING_H
 #include "gucefCORE_CString.h"
 #define GUCEF_CORE_CSTRING_H
@@ -95,7 +100,6 @@ namespace CORE {
 //-------------------------------------------------------------------------*/
 
 class CILogger;
-class CILoggingFormatter;
 class CMultiLogger;
 class CLoggingTask;
 
@@ -105,8 +109,9 @@ class GUCEF_CORE_PUBLIC_CPP CLogManager : public MT::CILockable
 {
     public:
 
-    typedef CTAbstractFactory< CString, CILoggingFormatter > TAbstractLoggingFormatterFactory;
+    typedef CTAbstractFactory< CString, CILoggingFormatter, MT::CMutex > TAbstractLoggingFormatterFactory;
     typedef TAbstractLoggingFormatterFactory::TConcreteFactory TLoggingFormatterFactory;
+    typedef TAbstractLoggingFormatterFactory::TProductPtr TLoggingFormatterPtr;
 
     void AddLogger( CILogger* loggerImp );
 
@@ -120,9 +125,9 @@ class GUCEF_CORE_PUBLIC_CPP CLogManager : public MT::CILockable
 
     bool RemoveLoggingFormatterFactory( const CString& name );
 
-    CILoggingFormatter* CreateLoggingFormatter( const CString& name );
+    TLoggingFormatterPtr CreateLoggingFormatter( const CString& name );
 
-    CILoggingFormatter* CreateDefaultLoggingFormatter( void );
+    TLoggingFormatterPtr CreateDefaultLoggingFormatter( void );
 
     bool SetDefaultLoggingFormatter( const CString& name );
 

@@ -51,6 +51,16 @@
 #define GUCEF_CORE_CSTRING_H
 #endif /* GUCEF_CORE_CSTRING_H ? */
 
+#ifndef GUCEF_CORE_CVARIANT_H
+#include "gucefCORE_CVariant.h"
+#define GUCEF_CORE_CVARIANT_H
+#endif /* GUCEF_CORE_CVARIANT_H ? */
+
+#ifndef GUCEF_CORE_CDATETIME_H
+#include "gucefCORE_CDateTime.h"
+#define GUCEF_CORE_CDATETIME_H
+#endif /* GUCEF_CORE_CDATETIME_H ? */
+
 #ifndef GUCEF_CORE_CDYNAMICBUFFER_H
 #include "CDynamicBuffer.h"
 #define GUCEF_CORE_CDYNAMICBUFFER_H
@@ -76,6 +86,8 @@ namespace CORE {
 //                                                                         //
 //-------------------------------------------------------------------------*/
 
+typedef CTCloneableObj< CDateTime >      TCloneableDateTime;
+typedef CTCloneableObj< CVariant >       TCloneableVariant;
 typedef CTCloneableObj< CDynamicBuffer > TCloneableBuffer;
 typedef CTCloneableObj< CString >        TCloneableString;
 typedef CTCloneableObj< char >           TCloneableChar;
@@ -91,6 +103,8 @@ typedef CTCloneableObj< double >         TCloneableDouble;
 typedef CTCloneableObj< bool >           TCloneableBool;
 typedef CTCloneableObj< double >         TCloneableDouble;
 typedef CTCloneableObj< float >          TCloneableFloat;
+typedef CTCloneableObj< UInt64 >         TCloneableUInt64;
+typedef CTCloneableObj< Int64 >          TCloneableInt64;
 typedef CTCloneableObj< UInt32 >         TCloneableUInt32;
 typedef CTCloneableObj< Int32 >          TCloneableInt32;
 typedef CTCloneableObj< UInt16 >         TCloneableUInt16;

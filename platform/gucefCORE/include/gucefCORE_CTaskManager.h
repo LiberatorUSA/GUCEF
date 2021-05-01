@@ -116,7 +116,7 @@ class GUCEF_CORE_PUBLIC_CPP CTaskManager : public CTSGNotifier
     private:
 
     typedef std::map< CString, ThreadPoolPtr > ThreadPoolMap;
-    typedef CTAbstractFactory< CString, CTaskConsumer > TAbstractTaskConsumerFactory;
+    typedef CTAbstractFactory< CString, CTaskConsumer, MT::CMutex > TAbstractTaskConsumerFactory;
     typedef CTaskConsumer::TTaskIdGenerator TTaskIdGenerator;
 
     TTaskIdGenerator m_taskIdGenerator;

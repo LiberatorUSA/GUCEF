@@ -108,9 +108,6 @@ CMSWinConsoleLogger::~CMSWinConsoleLogger()
 
     if ( m_ownedConsole )
         ::FreeConsole();
-
-    delete m_logFormatter;
-    m_logFormatter = GUCEF_NULL;
 }
 
 /*-------------------------------------------------------------------------*/

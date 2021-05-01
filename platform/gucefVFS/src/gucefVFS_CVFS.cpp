@@ -324,9 +324,10 @@ CVFS::DeleteFile( const CString& filePath, bool okIfItDoesNotExist )
     while ( i != mountLinks.end() )
     {
         TConstMountLink& mountLink = (*i);
-        if ( mountLink.mountEntry->archive->FileExists( mountLink.remainder ) )
+        TArchivePtr archive = mountLink.mountEntry->archive;
+        if ( archive->FileExists( mountLink.remainder ) )
         {
-            return mountLink.mountEntry->archive->DeleteFile( mountLink.remainder );
+            return archive->DeleteFile( mountLink.remainder );
         }
         ++i;
     }
@@ -672,11 +673,12 @@ CVFS::StoreAsFile( const CORE::CString& file        ,
     while ( i != mountLinks.end() )
     {
         TConstMountLink& mountLink = (*i);
+        TArchivePtr archive = mountLink.mountEntry->archive;
 
-        if ( mountLink.mountEntry->archive->StoreAsFile( mountLink.remainder  ,
-                                                         data                 ,
-                                                         offset               ,
-                                                         overwrite            ) )
+        if ( archive->StoreAsFile( mountLink.remainder  ,
+                                   data                 ,
+                                   offset               ,
+                                   overwrite            ) )
         {
             GUCEF_DEBUG_LOG( CORE::LOGLEVEL_NORMAL, "Vfs: Stored " + CORE::UInt32ToString( data.GetDataSize() )  +
                     " bytes as file content at offset " + CORE::UInt64ToString( offset ) + " using archive mounted at: " + mountLink.remainder );
@@ -734,10 +736,11 @@ CVFS::GetFile( const CORE::CString& file          ,
         if ( tryToGetFile )
         {
             GUCEF_DEBUG_LOG( CORE::LOGLEVEL_NORMAL, "Vfs: Found requested file using mount link remainder: " + mountLink.remainder );
-            CVFSHandlePtr filePtr = mountLink.mountEntry->archive->GetFile( mountLink.remainder ,
-                                                                            mode                ,
-                                                                            _maxmemloadsize     ,
-                                                                            overwrite           );
+            TArchivePtr archive = mountLink.mountEntry->archive;
+            CVFSHandlePtr filePtr = archive->GetFile( mountLink.remainder ,
+                                                      mode                ,
+                                                      _maxmemloadsize     ,
+                                                      overwrite           );
 
             if ( !filePtr )
             {
@@ -905,7 +908,7 @@ CVFS::MountArchive( const CArchiveSettings& settings )
     if ( !actualArchivePath.IsNULLOrEmpty() || GetActualFilePath( settings.GetArchivePath(), actualArchivePath ) )
     {
         // Found a compatible type,.. create an archive for the type
-        CIArchive* archive = m_abstractArchiveFactory.Create( settings.GetArchiveType() );
+        TArchivePtr archive = m_abstractArchiveFactory.Create( settings.GetArchiveType() );
         if ( GUCEF_NULL != archive )
         {
             // Try to load from the resource
@@ -945,10 +948,6 @@ CVFS::MountArchive( const CArchiveSettings& settings )
                 m_mountList.push_back( archiveEntry );
                 return true;
             }
-            else
-            {
-                delete archive;
-            }
         }
     }
 
@@ -971,7 +970,7 @@ CVFS::MountArchive( const CString& archiveName    ,
     MT::CObjectScopeLock lock( this );
 
     // create an archive for the type
-    CIArchive* archive = m_abstractArchiveFactory.Create( archiveType );
+    TArchivePtr archive = m_abstractArchiveFactory.Create( archiveType );
     if ( GUCEF_NULL != archive )
     {
         // Try to load from the resource
@@ -993,10 +992,6 @@ CVFS::MountArchive( const CString& archiveName    ,
 
             m_mountList.push_back( archiveEntry );
             return true;
-        }
-        else
-        {
-            delete archive;
         }
     }
 

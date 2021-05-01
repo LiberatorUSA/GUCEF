@@ -37,6 +37,12 @@ set( HEADER_FILES
   include/gucefCOMCORE_CIDiscoveryEntry.h
   include/gucefCOMCORE_CINetworkInterface.h
   include/gucefCOMCORE_CPingTaskConsumer.h
+  include/gucefCOMCORE_CPubSubClient.h
+  include/gucefCOMCORE_CPubSubClientConfig.h
+  include/gucefCOMCORE_CPubSubClientFactory.h
+  include/gucefCOMCORE_CPubSubClientFeatures.h
+  include/gucefCOMCORE_CPubSubClientTopic.h
+  include/gucefCOMCORE_CPubSubClientTopicConfig.h
   include/gucefCOMCORE_CSerialPort.h
   include/gucefCOMCORE_ETypes.h
   include/gucefCOMCORE_config.h
@@ -71,6 +77,12 @@ set( SOURCE_FILES
   src/gucefCOMCORE_CIDiscoveryEntry.cpp
   src/gucefCOMCORE_CINetworkInterface.cpp
   src/gucefCOMCORE_CPingTaskConsumer.cpp
+  src/gucefCOMCORE_CPubSubClient.cpp
+  src/gucefCOMCORE_CPubSubClientConfig.cpp
+  src/gucefCOMCORE_CPubSubClientFactory.cpp
+  src/gucefCOMCORE_CPubSubClientFeatures.cpp
+  src/gucefCOMCORE_CPubSubClientTopic.cpp
+  src/gucefCOMCORE_CPubSubClientTopicConfig.cpp
   src/gucefCOMCORE_CSerialPort.cpp
   src/socketutils.cpp
 )

@@ -479,7 +479,7 @@ CAsciiString::Set( const char* new_str )
 
     Clear();
     if ( GUCEF_NULL != new_str )
-        Set( new_str, strlen( new_str ) );
+        Set( new_str, (UInt32) strlen( new_str ) );
 }
 
 /*-------------------------------------------------------------------------*/
@@ -564,7 +564,7 @@ CAsciiString::Append( const char* appendstr )
 {GUCEF_TRACE;
 
     if ( GUCEF_NULL != appendstr )
-        Append( appendstr, strlen( appendstr ) );
+        Append( appendstr, (UInt32) strlen( appendstr ) );
 }
 
 /*-------------------------------------------------------------------------*/

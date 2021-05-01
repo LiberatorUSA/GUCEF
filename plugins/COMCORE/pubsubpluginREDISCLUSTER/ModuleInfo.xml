@@ -1,0 +1,21 @@
+<ModuleInfoEntry>
+    <Module Name="pubsubpluginREDISCLUSTER" Type="SharedLibrary" Platform="all" Tags="plugin">
+        <Dependencies>
+            <Dependency Name="gucefMT" />
+            <Dependency Name="gucefCORE" />
+			<Dependency Name="gucefCOMCORE" />
+			<Dependency Name="hiredis" />			
+			<Dependency Name="redis-plus-plus" />
+        </Dependencies>
+		<Linker>
+			<Dependency Name="gucefMT" />
+			<Dependency Name="gucefCORE" />	
+			<Dependency Name="gucefCOMCORE" />
+			<Dependency Name="hiredis" />			
+			<Dependency Name="redis-plus-plus" />
+		</Linker>
+        <Preprocessor>
+            <Define String="GUCEF_PUBSUBPLUGIN_REDISCLUSTER_BUILD_MODULE" />
+        </Preprocessor>
+    </Module>
+</ModuleInfoEntry>

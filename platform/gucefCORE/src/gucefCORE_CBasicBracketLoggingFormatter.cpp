@@ -46,6 +46,14 @@ namespace CORE {
 
 /*-------------------------------------------------------------------------//
 //                                                                         //
+//      GLOBAL VARS                                                        //
+//                                                                         //
+//-------------------------------------------------------------------------*/
+
+const CString CBasicBracketLoggingFormatter::TypeName = "BasicBracketLoggingFormatter";
+
+/*-------------------------------------------------------------------------//
+//                                                                         //
 //      UTILITIES                                                          //
 //                                                                         //
 //-------------------------------------------------------------------------*/
@@ -78,6 +86,15 @@ CBasicBracketLoggingFormatter::operator=( const CBasicBracketLoggingFormatter& s
 {GUCEF_TRACE;
     
     return *this;
+}
+
+/*-------------------------------------------------------------------------*/
+
+const CString& 
+CBasicBracketLoggingFormatter::GetType( void ) const
+{GUCEF_TRACE;
+    
+    return TypeName;
 }
 
 /*-------------------------------------------------------------------------*/

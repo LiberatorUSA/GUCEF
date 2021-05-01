@@ -54,11 +54,18 @@ class GUCEF_CORE_PUBLIC_CPP CCharSepLoggingFormatter : public CILoggingFormatter
 {
     public:
 
+    static const CString TypeName;
+    
     virtual CString FormatLogMessage( const TLogMsgType logMsgType ,
                                       const Int32 logLevel         ,
                                       const CString& logMessage    ,
                                       const UInt32 threadId        ,
                                       const CDateTime& timestamp   ) GUCEF_VIRTUAL_OVERRIDE;
+
+    /**
+     *  Provide ability to get the textual name of the formatter
+     */
+    virtual const CString& GetType( void ) const GUCEF_VIRTUAL_OVERRIDE;
 
     CCharSepLoggingFormatter( void );            
     virtual ~CCharSepLoggingFormatter();    

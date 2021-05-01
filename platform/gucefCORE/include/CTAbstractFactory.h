@@ -29,6 +29,11 @@
 #include <map>
 #include <set>
 
+#ifndef GUCEF_MT_COBJECTSCOPELOCK_H
+#include "gucefMT_CObjectScopeLock.h"
+#define GUCEF_MT_COBJECTSCOPELOCK_H
+#endif /* GUCEF_MT_COBJECTSCOPELOCK_H ? */
+
 #include "CTFactory.h"
 #include "CTFactoryBase.h"
 #include "CMsgException.h"
@@ -37,6 +42,11 @@
 #include "CTCloneableObj.h"
 #define GUCEF_CORE_CTCLONEABLEOBJ_H
 #endif /* GUCEF_CORE_CTCLONEABLEOBJ_H ? */
+
+#ifndef GUCEF_CORE_CTSHAREDPTR_H
+#include "CTSharedPtr.h"
+#define GUCEF_CORE_CTSHAREDPTR_H
+#endif /* GUCEF_CORE_CTSHAREDPTR_H ? */
 
 #ifndef GUCEF_CORE_CABSTRACTFACTORYBASE_H
 #include "gucefCORE_CAbstractFactoryBase.h"
@@ -67,8 +77,9 @@ namespace CORE {
  *      SelectionCriteriaType GetType( void ) const;
  *
  */
-template< typename SelectionCriteriaType, class BaseClassType >
-class CTAbstractFactory : public CAbstractFactoryBase
+template< typename SelectionCriteriaType, class BaseClassType, class LockType >
+class CTAbstractFactory : public CAbstractFactoryBase ,
+                          public CTDynamicDestructorBase< BaseClassType >
 {
     public:
 
@@ -76,6 +87,7 @@ class CTAbstractFactory : public CAbstractFactoryBase
     typedef CTCloneableObj< SelectionCriteriaType > TKeyContainer;
     typedef CTFactoryBase< BaseClassType > TConcreteFactory;
     typedef std::set< SelectionCriteriaType > TKeySet;
+    typedef CTBasicSharedPtr< BaseClassType, LockType > TProductPtr;
 
     explicit CTAbstractFactory( const bool assumeFactoryOwnership = false ,
                                 const bool useEventing = true             );
@@ -91,14 +103,7 @@ class CTAbstractFactory : public CAbstractFactoryBase
      *
      *  @return pointer to the base class of the constructed factory product
      */
-    BaseClassType* Create( const SelectionCriteriaType& selectedType );
-
-    /**
-     *  Destroys the concrete factory product
-     *
-     *  @param factoryProduct pointer to the base class of the constructed factory product
-     */
-    void Destroy( BaseClassType* factoryProduct );
+    TProductPtr Create( const SelectionCriteriaType& selectedType );
 
     void RegisterConcreteFactory( const SelectionCriteriaType& selectedType ,
                                   TConcreteFactory* concreteFactory         );
@@ -111,11 +116,26 @@ class CTAbstractFactory : public CAbstractFactoryBase
 
     void ObtainKeySet( TKeySet& keySet ) const;
 
+    /**
+     *  Destroys the concrete factory product
+     *  Intended to be invoked automatically by the shared pointer implementation
+     *
+     *  @param factoryProduct pointer to the base class of the constructed factory product
+     */
+    virtual void DestroyObject( BaseClassType* factoryProduct ) GUCEF_VIRTUAL_OVERRIDE;
+    
+    protected:
+
+    virtual bool Lock( void ) const GUCEF_VIRTUAL_OVERRIDE;
+
+    virtual bool Unlock( void ) const GUCEF_VIRTUAL_OVERRIDE;
+    
     private:
     typedef std::map< SelectionCriteriaType, TConcreteFactory* >  TFactoryList;
 
     TFactoryList m_concreteFactoryList;
     bool m_assumeFactoryOwnership;
+    LockType m_lock;
 };
 
 /*-------------------------------------------------------------------------//
@@ -124,62 +144,69 @@ class CTAbstractFactory : public CAbstractFactoryBase
 //                                                                         //
 //-------------------------------------------------------------------------*/
 
-template< typename SelectionCriteriaType, class BaseClassType >
-CTAbstractFactory< SelectionCriteriaType, BaseClassType >::CTAbstractFactory( const bool assumeFactoryOwnership /* = false */ ,
-                                                                              const bool useEventing /* = true */             )
+template< typename SelectionCriteriaType, class BaseClassType, class LockType >
+CTAbstractFactory< SelectionCriteriaType, BaseClassType, LockType >::CTAbstractFactory( const bool assumeFactoryOwnership /* = false */ ,
+                                                                                        const bool useEventing /* = true */             )
     : CAbstractFactoryBase( useEventing )
+    , m_concreteFactoryList()
     , m_assumeFactoryOwnership( assumeFactoryOwnership )
+    , m_lock()
 {
 
 }
 
 /*-------------------------------------------------------------------------*/
 
-template< typename SelectionCriteriaType, class BaseClassType >
-CTAbstractFactory< SelectionCriteriaType, BaseClassType >::CTAbstractFactory( const CTAbstractFactory< SelectionCriteriaType, BaseClassType >& src )
+template< typename SelectionCriteriaType, class BaseClassType, class LockType >
+CTAbstractFactory< SelectionCriteriaType, BaseClassType, LockType >::CTAbstractFactory( const CTAbstractFactory< SelectionCriteriaType, BaseClassType, LockType >& src )
     : CAbstractFactoryBase( src )
+    , m_concreteFactoryList( src )
     , m_assumeFactoryOwnership( src.m_assumeFactoryOwnership )
+    , m_lock()
 {
 
 }
 
 /*-------------------------------------------------------------------------*/
 
-template< typename SelectionCriteriaType, class BaseClassType >
-CTAbstractFactory< SelectionCriteriaType, BaseClassType >::~CTAbstractFactory()
+template< typename SelectionCriteriaType, class BaseClassType, class LockType >
+CTAbstractFactory< SelectionCriteriaType, BaseClassType, LockType >::~CTAbstractFactory()
 {
 
 }
 
 /*-------------------------------------------------------------------------*/
 
-template< typename SelectionCriteriaType, class BaseClassType >
-CTAbstractFactory< SelectionCriteriaType, BaseClassType >&
-CTAbstractFactory< SelectionCriteriaType, BaseClassType >::operator=( const CTAbstractFactory< SelectionCriteriaType, BaseClassType >& src )
+template< typename SelectionCriteriaType, class BaseClassType, class LockType >
+CTAbstractFactory< SelectionCriteriaType, BaseClassType, LockType >&
+CTAbstractFactory< SelectionCriteriaType, BaseClassType, LockType >::operator=( const CTAbstractFactory< SelectionCriteriaType, BaseClassType, LockType >& src )
 {
     return *this;
 }
 
 /*-------------------------------------------------------------------------*/
 
-template< typename SelectionCriteriaType, class BaseClassType >
-BaseClassType*
-CTAbstractFactory< SelectionCriteriaType, BaseClassType >::Create( const SelectionCriteriaType& selectedType )
+template< typename SelectionCriteriaType, class BaseClassType, class LockType >
+CTBasicSharedPtr< BaseClassType, LockType >
+CTAbstractFactory< SelectionCriteriaType, BaseClassType, LockType >::Create( const SelectionCriteriaType& selectedType )
 {
+    MT::CObjectScopeLock lock( this );
     typename TFactoryList::iterator i( m_concreteFactoryList.find( selectedType ) );
     if ( i != m_concreteFactoryList.end() )
     {
-        return (*i).second->Create();
+        TProductPtr product( (*i).second->Create(), this );
+        return product;
     }
-    return NULL;
+    return TProductPtr();
 }
 
 /*-------------------------------------------------------------------------*/
 
-template< typename SelectionCriteriaType, class BaseClassType >
+template< typename SelectionCriteriaType, class BaseClassType, class LockType >
 void
-CTAbstractFactory< SelectionCriteriaType, BaseClassType >::Destroy( BaseClassType* factoryProduct )
+CTAbstractFactory< SelectionCriteriaType, BaseClassType, LockType >::DestroyObject( BaseClassType* factoryProduct )
 {
+    MT::CObjectScopeLock lock( this );
     typename TFactoryList::iterator i( m_concreteFactoryList.find( factoryProduct->GetType() ) );
     if ( i != m_concreteFactoryList.end() )
     {
@@ -191,10 +218,11 @@ CTAbstractFactory< SelectionCriteriaType, BaseClassType >::Destroy( BaseClassTyp
 
 /*-------------------------------------------------------------------------*/
 
-template< typename SelectionCriteriaType, class BaseClassType >
+template< typename SelectionCriteriaType, class BaseClassType, class LockType >
 void
-CTAbstractFactory< SelectionCriteriaType, BaseClassType >::ObtainKeySet( TKeySet& keySet ) const
+CTAbstractFactory< SelectionCriteriaType, BaseClassType, LockType >::ObtainKeySet( TKeySet& keySet ) const
 {
+    MT::CObjectScopeLock lock( this );
     typename TFactoryList::const_iterator i( m_concreteFactoryList.begin() );
     while ( i != m_concreteFactoryList.end() )
     {
@@ -205,20 +233,22 @@ CTAbstractFactory< SelectionCriteriaType, BaseClassType >::ObtainKeySet( TKeySet
 
 /*-------------------------------------------------------------------------*/
 
-template< typename SelectionCriteriaType, class BaseClassType >
+template< typename SelectionCriteriaType, class BaseClassType, class LockType >
 bool
-CTAbstractFactory< SelectionCriteriaType, BaseClassType >::IsConstructible( const SelectionCriteriaType& selectedType ) const
+CTAbstractFactory< SelectionCriteriaType, BaseClassType, LockType >::IsConstructible( const SelectionCriteriaType& selectedType ) const
 {
+    MT::CObjectScopeLock lock( this );
     return m_concreteFactoryList.find( selectedType ) != m_concreteFactoryList.end();
 }
 
 /*-------------------------------------------------------------------------*/
 
-template< typename SelectionCriteriaType, class BaseClassType >
+template< typename SelectionCriteriaType, class BaseClassType, class LockType >
 void
-CTAbstractFactory< SelectionCriteriaType, BaseClassType >::RegisterConcreteFactory( const SelectionCriteriaType& selectedType ,
-                                                                                    TConcreteFactory* concreteFactory         )
+CTAbstractFactory< SelectionCriteriaType, BaseClassType, LockType >::RegisterConcreteFactory( const SelectionCriteriaType& selectedType ,
+                                                                                              TConcreteFactory* concreteFactory         )
 {
+    MT::CObjectScopeLock lock( this );
     m_concreteFactoryList[ selectedType ] = concreteFactory;
 
     if ( m_useEventing )
@@ -230,10 +260,11 @@ CTAbstractFactory< SelectionCriteriaType, BaseClassType >::RegisterConcreteFacto
 
 /*-------------------------------------------------------------------------*/
 
-template< typename SelectionCriteriaType, class BaseClassType >
+template< typename SelectionCriteriaType, class BaseClassType, class LockType >
 void
-CTAbstractFactory< SelectionCriteriaType, BaseClassType >::UnregisterConcreteFactory( const SelectionCriteriaType& selectedType )
+CTAbstractFactory< SelectionCriteriaType, BaseClassType, LockType >::UnregisterConcreteFactory( const SelectionCriteriaType& selectedType )
 {
+    MT::CObjectScopeLock lock( this );
     typename TFactoryList::iterator i = m_concreteFactoryList.find( selectedType );
     if ( i != m_concreteFactoryList.end() )
     {
@@ -253,10 +284,11 @@ CTAbstractFactory< SelectionCriteriaType, BaseClassType >::UnregisterConcreteFac
 
 /*-------------------------------------------------------------------------*/
 
-template< typename SelectionCriteriaType, class BaseClassType >
+template< typename SelectionCriteriaType, class BaseClassType, class LockType >
 void
-CTAbstractFactory< SelectionCriteriaType, BaseClassType >::UnregisterAllConcreteFactories( void )
+CTAbstractFactory< SelectionCriteriaType, BaseClassType, LockType >::UnregisterAllConcreteFactories( void )
 {
+    MT::CObjectScopeLock lock( this );
     while ( !m_concreteFactoryList.empty() )
     {
         typename TFactoryList::iterator i = m_concreteFactoryList.begin();
@@ -274,6 +306,26 @@ CTAbstractFactory< SelectionCriteriaType, BaseClassType >::UnregisterAllConcrete
             NotifyObservers( ConcreteFactoryUnregisteredEvent, &keyContainer );
         }
     }
+}
+
+/*-------------------------------------------------------------------------*/
+
+template< typename SelectionCriteriaType, class BaseClassType, class LockType >
+bool
+CTAbstractFactory< SelectionCriteriaType, BaseClassType, LockType >::Lock( void ) const
+{GUCEF_TRACE;
+
+    return m_lock.Lock();
+}
+
+/*-------------------------------------------------------------------------*/
+
+template< typename SelectionCriteriaType, class BaseClassType, class LockType >
+bool
+CTAbstractFactory< SelectionCriteriaType, BaseClassType, LockType >::Unlock( void ) const
+{GUCEF_TRACE;
+
+    return m_lock.Unlock();
 }
 
 /*-------------------------------------------------------------------------//

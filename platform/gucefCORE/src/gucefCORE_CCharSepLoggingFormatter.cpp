@@ -49,6 +49,14 @@ namespace CORE {
 
 /*-------------------------------------------------------------------------//
 //                                                                         //
+//      GLOBAL VARS                                                        //
+//                                                                         //
+//-------------------------------------------------------------------------*/
+
+const CString CCharSepLoggingFormatter::TypeName = "CharSepLoggingFormatter";
+
+/*-------------------------------------------------------------------------//
+//                                                                         //
 //      UTILITIES                                                          //
 //                                                                         //
 //-------------------------------------------------------------------------*/
@@ -87,6 +95,15 @@ CCharSepLoggingFormatter::operator=( const CCharSepLoggingFormatter& src )
         m_seperatorChar = src.m_seperatorChar;
     }
     return *this;
+}
+
+/*-------------------------------------------------------------------------*/
+
+const CString& 
+CCharSepLoggingFormatter::GetType( void ) const
+{GUCEF_TRACE;
+    
+    return TypeName;
 }
 
 /*-------------------------------------------------------------------------*/

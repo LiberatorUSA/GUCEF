@@ -321,7 +321,7 @@ CLogManager::ClearLoggingFormatters( void )
 
 /*-------------------------------------------------------------------------*/
 
-CILoggingFormatter* 
+CLogManager::TLoggingFormatterPtr 
 CLogManager::CreateLoggingFormatter( const CString& name )
 {GUCEF_TRACE;
 
@@ -331,7 +331,7 @@ CLogManager::CreateLoggingFormatter( const CString& name )
 
 /*-------------------------------------------------------------------------*/
 
-CILoggingFormatter*
+CLogManager::TLoggingFormatterPtr 
 CLogManager::CreateDefaultLoggingFormatter( void )
 {GUCEF_TRACE;
 

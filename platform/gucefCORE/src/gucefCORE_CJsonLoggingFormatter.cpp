@@ -49,6 +49,14 @@ namespace CORE {
 
 /*-------------------------------------------------------------------------//
 //                                                                         //
+//      GLOBAL VARS                                                        //
+//                                                                         //
+//-------------------------------------------------------------------------*/
+
+const CString CJsonLoggingFormatter::TypeName = "JsonLoggingFormatter";
+
+/*-------------------------------------------------------------------------//
+//                                                                         //
 //      UTILITIES                                                          //
 //                                                                         //
 //-------------------------------------------------------------------------*/
@@ -81,6 +89,15 @@ CJsonLoggingFormatter::operator=( const CJsonLoggingFormatter& src )
 {GUCEF_TRACE;
     
     return *this;
+}
+
+/*-------------------------------------------------------------------------*/
+
+const CString& 
+CJsonLoggingFormatter::GetType( void ) const
+{GUCEF_TRACE;
+    
+    return TypeName;
 }
 
 /*-------------------------------------------------------------------------*/

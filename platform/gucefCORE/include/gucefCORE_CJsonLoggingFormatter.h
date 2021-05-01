@@ -53,6 +53,8 @@ class GUCEF_CORE_PUBLIC_CPP CJsonLoggingFormatter : public CILoggingFormatter
 {
     public:
 
+    static const CString TypeName;
+
     static CString EscapeJson( const CString& s );
     
     virtual CString FormatLogMessage( const TLogMsgType logMsgType ,
@@ -60,6 +62,11 @@ class GUCEF_CORE_PUBLIC_CPP CJsonLoggingFormatter : public CILoggingFormatter
                                       const CString& logMessage    ,
                                       const UInt32 threadId        ,
                                       const CDateTime& timestamp   ) GUCEF_VIRTUAL_OVERRIDE;
+
+    /**
+     *  Provide ability to get the textual name of the formatter
+     */
+    virtual const CString& GetType( void ) const GUCEF_VIRTUAL_OVERRIDE;
 
     CJsonLoggingFormatter( void );            
     virtual ~CJsonLoggingFormatter();    

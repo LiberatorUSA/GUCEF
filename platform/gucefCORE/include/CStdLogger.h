@@ -31,6 +31,11 @@
 #define GUCEF_CORE_CILOGGER_H
 #endif /* GUCEF_CORE_CILOGGER_H ? */
 
+#ifndef GUCEF_CORE_CLOGMANAGER_H
+#include "CLogManager.h"
+#define GUCEF_CORE_CLOGMANAGER_H
+#endif /* GUCEF_CORE_CLOGMANAGER_H ? */
+
 /*-------------------------------------------------------------------------//
 //                                                                         //
 //      NAMESPACE                                                          //
@@ -94,7 +99,7 @@ class GUCEF_CORE_PUBLIC_CPP CStdLogger : public CILogger
 
     CIOAccess* m_output;
     Int32 m_minimalLogLevel;
-    CILoggingFormatter* m_logFormatter;
+    CLogManager::TLoggingFormatterPtr m_logFormatter;
 };
 
 /*-------------------------------------------------------------------------//

@@ -22,6 +22,11 @@
 //                                                                         //
 //-------------------------------------------------------------------------*/
 
+#ifndef GUCEF_MT_CSCOPEMUTEX_H
+#include "gucefMT_CScopeMutex.h"
+#define GUCEF_MT_CSCOPEMUTEX_H
+#endif /* GUCEF_MT_CSCOPEMUTEX_H ? */
+
 #ifndef GUCEF_CORE_CTASKMANAGER_H
 #include "gucefCORE_CTaskManager.h"
 #define GUCEF_CORE_CTASKMANAGER_H
@@ -77,6 +82,11 @@
 #define GUCEF_COMCORE_CDISCOVERYMANAGER_H
 #endif /* GUCEF_COMCORE_CDISCOVERYMANAGER_H ? */
 
+#ifndef GUCEF_COMCORE_CPUBSUBCLIENTFACTORY_H
+#include "gucefCOMCORE_CPubSubClientFactory.h"
+#define GUCEF_COMCORE_CPUBSUBCLIENTFACTORY_H
+#endif /* GUCEF_COMCORE_CPUBSUBCLIENTFACTORY_H ? */
+
 #include "gucefCOMCORE_CComCoreGlobal.h"  /* definition of the class implemented here */
 
 /*-------------------------------------------------------------------------//
@@ -112,6 +122,9 @@ CComCoreGlobal* CComCoreGlobal::g_instance = NULL;
 //-------------------------------------------------------------------------*/
 
 CComCoreGlobal::CComCoreGlobal( void )
+    : m_com( GUCEF_NULL )
+    , m_discoveryManager( GUCEF_NULL )
+    , m_pubsubClientFactory( GUCEF_NULL )
 {GUCEF_TRACE;
 
 }
@@ -145,6 +158,7 @@ CComCoreGlobal::Initialize( void )
 
     m_com = new CCom();
     m_discoveryManager = new CDiscoveryManager();
+    m_pubsubClientFactory = new CPubSubClientFactory();
 }
 
 /*-------------------------------------------------------------------------*/
@@ -172,13 +186,12 @@ CComCoreGlobal::Instance()
 
     if ( GUCEF_NULL == g_instance )
     {
-        g_dataLock.Lock();
-        if ( NULL == g_instance )
+        MT::CScopeMutex lock( g_dataLock );
+        if ( GUCEF_NULL == g_instance )
         {
             g_instance = new CComCoreGlobal();
             g_instance->Initialize();
         }
-        g_dataLock.Unlock();
     }
     return g_instance;
 }
@@ -197,7 +210,8 @@ CComCoreGlobal::Deinstance( void )
 
 CCom&
 CComCoreGlobal::GetCom( void )
-{
+{GUCEF_TRACE;
+
     return *m_com;
 }
 
@@ -205,8 +219,18 @@ CComCoreGlobal::GetCom( void )
 
 CDiscoveryManager&
 CComCoreGlobal::GetDiscoveryManager( void )
-{
+{GUCEF_TRACE;
+
     return *m_discoveryManager;
+}
+
+/*-------------------------------------------------------------------------*/
+
+CPubSubClientFactory& 
+CComCoreGlobal::GetPubSubClientFactory( void )
+{GUCEF_TRACE;
+
+    return *m_pubsubClientFactory;
 }
 
 /*-------------------------------------------------------------------------//
