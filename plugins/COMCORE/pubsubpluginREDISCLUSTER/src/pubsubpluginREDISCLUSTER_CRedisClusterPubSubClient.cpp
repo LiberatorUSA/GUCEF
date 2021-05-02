@@ -82,6 +82,74 @@ RedisNode::RedisNode( void )
 
 /*-------------------------------------------------------------------------*/
 
+CRedisClusterPubSubClientTopicConfig::CRedisClusterPubSubClientTopicConfig( void )
+    : COMCORE::CPubSubClientTopicConfig()
+    , redisXAddMaxLen( -1 )
+    , redisXAddMaxLenIsApproximate( true )
+{GUCEF_TRACE;
+
+}
+
+/*-------------------------------------------------------------------------*/
+
+CRedisClusterPubSubClientTopicConfig::CRedisClusterPubSubClientTopicConfig( const COMCORE::CPubSubClientTopicConfig& genericConfig )
+    : COMCORE::CPubSubClientTopicConfig( genericConfig )
+    , redisXAddMaxLen( -1 )
+    , redisXAddMaxLenIsApproximate( true )
+{GUCEF_TRACE;
+
+    LoadCustomConfig( genericConfig.customConfig );  
+}
+
+/*-------------------------------------------------------------------------*/
+
+CRedisClusterPubSubClientTopicConfig::~CRedisClusterPubSubClientTopicConfig()
+{GUCEF_TRACE;
+
+}
+
+/*-------------------------------------------------------------------------*/
+
+bool
+CRedisClusterPubSubClientTopicConfig::LoadCustomConfig( const CORE::CDataNode& config )
+{GUCEF_TRACE;
+    
+    redisXAddMaxLen = CORE::StringToInt32( config.GetAttributeValueOrChildValueByName( "redisXAddMaxLen" ), redisXAddMaxLen ); 
+    redisXAddMaxLenIsApproximate = CORE::StringToBool( config.GetAttributeValueOrChildValueByName( "redisXAddMaxLenIsApproximate" ), redisXAddMaxLenIsApproximate );
+    return true;
+}
+
+/*-------------------------------------------------------------------------*/
+
+CRedisClusterPubSubClientTopicConfig& 
+CRedisClusterPubSubClientTopicConfig::operator=( const COMCORE::CPubSubClientTopicConfig& src )
+{GUCEF_TRACE;
+
+    if ( &src != this )
+    {
+        COMCORE::CPubSubClientTopicConfig::operator=( src );
+        LoadCustomConfig( src.customConfig );    
+    }
+    return *this;
+}
+
+/*-------------------------------------------------------------------------*/
+
+CRedisClusterPubSubClientTopicConfig& 
+CRedisClusterPubSubClientTopicConfig::operator=( const CRedisClusterPubSubClientTopicConfig& src )
+{GUCEF_TRACE;
+
+    if ( &src != this )
+    {
+        COMCORE::CPubSubClientTopicConfig::operator=( src );
+        redisXAddMaxLen = src.redisXAddMaxLen; 
+        redisXAddMaxLenIsApproximate = src.redisXAddMaxLenIsApproximate;   
+    }
+    return *this;
+}
+
+/*-------------------------------------------------------------------------*/
+
 CRedisClusterPubSubClientTopic::CRedisClusterPubSubClientTopic( CRedisClusterPubSubClient* client )
     : COMCORE::CPubSubClientTopic()
     , m_client( client )
@@ -90,13 +158,15 @@ CRedisClusterPubSubClientTopic::CRedisClusterPubSubClientTopic( CRedisClusterPub
     , m_redisErrorReplies( 0 )
     , m_redisTransmitQueueSize( 0 )
     , m_redisMsgsTransmitted( 0 )
-    , m_redisKeysInMsgsTransmitted( 0 )
-    , m_redisKeysInMsgsRatio( 0 )
+    , m_redisFieldsInMsgsTransmitted( 0 )
+    , m_redisFieldsInMsgsRatio( 0 )
     , m_redisHashSlot( GUCEFMT_UINT32MAX )
+    , m_redisMsgArgs()
     , m_redisShardHost()
     , m_redisShardNodeId()
     , m_redisReconnectTimer( GUCEF_NULL )
     , m_config()
+    , m_readOffset( "$" )
 {GUCEF_TRACE;
 
     if ( GUCEF_NULL != client->GetConfig().pulseGenerator )
@@ -171,32 +241,75 @@ CRedisClusterPubSubClientTopic::GetTopicName( void ) const
 /*-------------------------------------------------------------------------*/
 
 bool
-CRedisClusterPubSubClientTopic::Publish( const CORE::CString& msgkey  ,  
-                                         const CORE::CString& key     , 
-                                         const CORE::CString& payload )
+CRedisClusterPubSubClientTopic::Publish( const CORE::CString& msgKey    ,  
+                                         const CORE::CString& fieldName , 
+                                         const CORE::CString& payload   )
 {GUCEF_TRACE;
 
-    return false;
+    sw::redis::StringView idSV( msgKey.C_String(), msgKey.ByteSize() );
+    
+    m_redisMsgArgs.clear();
+    m_redisMsgArgs.reserve( 1 );
+
+    sw::redis::StringView fnSV( fieldName.C_String(), fieldName.ByteSize() );
+    sw::redis::StringView fvSV( (const char*) payload.C_String(), payload.ByteSize() );
+    
+    m_redisMsgArgs.push_back( std::pair< sw::redis::StringView, sw::redis::StringView >( fnSV, fvSV ) );
+    
+    return RedisSendSyncImpl( idSV );
 }
 
 /*-------------------------------------------------------------------------*/
 
 bool
 CRedisClusterPubSubClientTopic::Publish( const CORE::CString& msgKey         , 
-                                         const CORE::CString& key            , 
+                                         const CORE::CString& fieldName      , 
                                          const CORE::CDynamicBuffer& payload )
 {GUCEF_TRACE;
 
-    return false;
+    sw::redis::StringView idSV( msgKey.C_String(), msgKey.ByteSize() );
+    
+    m_redisMsgArgs.clear();
+    m_redisMsgArgs.reserve( 1 );
+
+    sw::redis::StringView fnSV( fieldName.C_String(), fieldName.ByteSize() );
+    sw::redis::StringView fvSV( (const char*) payload.GetConstBufferPtr(), payload.GetDataSize() );
+    
+    m_redisMsgArgs.push_back( std::pair< sw::redis::StringView, sw::redis::StringView >( fnSV, fvSV ) );
+    
+    return RedisSendSyncImpl( idSV );
 }
 
 /*-------------------------------------------------------------------------*/
 
 bool 
-CRedisClusterPubSubClientTopic::Publish( const CORE::CString& msgKey, const CORE::CValueList& payload )
+CRedisClusterPubSubClientTopic::Publish( const CORE::CString& msgKey     , 
+                                         const CORE::CValueList& payload )
 {GUCEF_TRACE;
 
-    return false;
+    sw::redis::StringView idSV( msgKey.C_String(), msgKey.ByteSize() );
+    
+    m_redisMsgArgs.clear();
+    m_redisMsgArgs.reserve( (size_t) payload.GetCount() );
+
+    CORE::CValueList::TValueMap::const_iterator i = payload.GetDataBeginIterator();
+    while ( i != payload.GetDataEndIterator() )
+    {
+        const CORE::CString& fieldName = (*i).first;
+        sw::redis::StringView fnSV( fieldName.C_String(), fieldName.ByteSize() );
+        
+        const CORE::CValueList::TStringVector& fieldValues = (*i).second;
+        CORE::CValueList::TStringVector::const_iterator n = fieldValues.begin();
+        while ( n != fieldValues.end() )
+        {
+            sw::redis::StringView fvSV( (const char*) (*n).C_String(), (*n).ByteSize() );
+            m_redisMsgArgs.push_back( std::pair< sw::redis::StringView, sw::redis::StringView >( fnSV, fvSV ) );
+            ++n;
+        }
+        ++i;
+    }
+    
+    return RedisSendSyncImpl( idSV );
 }
 
 /*-------------------------------------------------------------------------*/
@@ -218,6 +331,173 @@ CRedisClusterPubSubClientTopic::LoadConfig( const COMCORE::CPubSubClientTopicCon
     m_config = config;
     m_redisHashSlot = CalculateRedisHashSlot( config.topicName );
     return true;
+}
+
+/*-------------------------------------------------------------------------*/
+
+bool
+CRedisClusterPubSubClientTopic::RedisSendSyncImpl( const sw::redis::StringView& msgId )
+{GUCEF_TRACE;
+
+    if ( GUCEF_NULL == m_redisContext || GUCEF_NULL == m_redisPipeline )
+        return false;
+
+    try
+    {
+        sw::redis::StringView cnSV( m_config.topicName.C_String(), m_config.topicName.ByteSize() );
+
+        if ( m_config.redisXAddMaxLen >= 0 )
+            m_redisPipeline->xadd( cnSV, msgId, m_redisMsgArgs.begin(), m_redisMsgArgs.end(), m_config.redisXAddMaxLen, m_config.redisXAddMaxLenIsApproximate );
+        else
+            m_redisPipeline->xadd( cnSV, msgId, m_redisMsgArgs.begin(), m_redisMsgArgs.end() );
+
+        sw::redis::QueuedReplies redisReplies = m_redisPipeline->exec();
+
+        bool totalSuccess = true;
+        size_t replyCount = redisReplies.size();
+        for ( size_t r=0; r<replyCount; ++r )
+        {
+            redisReply& reply = redisReplies.get( r );
+
+            switch ( reply.integer )
+            {
+                case REDIS_OK:
+                {
+                    GUCEF_DEBUG_LOG( CORE::LOGLEVEL_NORMAL, "RedisClusterPubSubClientTopic(" + CORE::PointerToString( this ) + "):RedisSendSyncImpl: Successfully sent message with " +
+                        CORE::ToString( m_redisMsgArgs.size() ) + " fields. MsgID=" + CORE::ToString( reply.str ) );
+
+                    ++m_redisMsgsTransmitted;
+                    m_redisFieldsInMsgsTransmitted += (CORE::UInt32) m_redisMsgArgs.size();
+                    m_redisFieldsInMsgsRatio = (CORE::UInt32) m_redisMsgArgs.size();
+                    break;
+                }
+                default:
+                case REDIS_ERR:
+                {
+                    totalSuccess = false;
+                    ++m_redisErrorReplies;
+
+                    GUCEF_ERROR_LOG( CORE::LOGLEVEL_NORMAL, "RedisClusterPubSubClientTopic(" + CORE::PointerToString( this ) + "):RedisSendSyncImpl: Error sending message with " +
+                        CORE::ToString( m_redisMsgArgs.size() ) + " fields. Error=" + CORE::ToString( reply.str ) );
+                    break;
+                }
+            }
+        }
+
+        return totalSuccess;
+    }
+    catch ( const sw::redis::OomError& e )
+    {
+		++m_redisErrorReplies;
+        GUCEF_WARNING_LOG( CORE::LOGLEVEL_IMPORTANT, "RedisClusterPubSubClientTopic(" + CORE::PointerToString( this ) + "):RedisSendSyncImpl: Redis++ OOM exception: " + e.what() );
+        return false;
+    }
+    catch ( const sw::redis::MovedError& e )
+    {
+		++m_redisErrorReplies;
+        GUCEF_EXCEPTION_LOG( CORE::LOGLEVEL_IMPORTANT, "RedisClusterPubSubClientTopic(" + CORE::PointerToString( this ) + "):RedisSendSyncImpl: Redis++ MovedError (Redirect failed?) . Current slot: " +
+                                CORE::ToString( m_redisHashSlot ) + ", new slot: " + CORE::ToString( e.slot() ) + " at node " + e.node().host + ":" + CORE::ToString( e.node().port ) +
+                                " exception: " + e.what() );
+        RedisDisconnect();
+        m_redisReconnectTimer->SetEnabled( true );
+        return false;
+    }
+    catch ( const sw::redis::RedirectionError& e )
+    {
+		++m_redisErrorReplies;
+        GUCEF_EXCEPTION_LOG( CORE::LOGLEVEL_IMPORTANT, "RedisClusterPubSubClientTopic(" + CORE::PointerToString( this ) + "):RedisSendSyncImpl: Redis++ RedirectionError (rebalance? node failure?). Current slot: " +
+                                CORE::ToString( m_redisHashSlot ) + ", new slot: " + CORE::ToString( e.slot() ) + " at node " + e.node().host + ":" + CORE::ToString( e.node().port ) +
+                                " exception: " + e.what() );
+
+        RedisDisconnect();
+        m_redisReconnectTimer->SetEnabled( true );
+        return false;
+    }
+    catch ( const sw::redis::Error& e )
+    {
+		++m_redisErrorReplies;
+        GUCEF_EXCEPTION_LOG( CORE::LOGLEVEL_IMPORTANT, "RedisClusterPubSubClientTopic(" + CORE::PointerToString( this ) + "):RedisSendSyncImpl: Redis++ exception: " + e.what() );
+        RedisDisconnect();
+        m_redisReconnectTimer->SetEnabled( true );
+        return false;
+    }
+    catch ( const std::exception& e )
+    {
+        GUCEF_EXCEPTION_LOG( CORE::LOGLEVEL_IMPORTANT, "RedisClusterPubSubClientTopic(" + CORE::PointerToString( this ) + "):RedisSendSyncImpl: exception: " + e.what() );
+        return false;
+    }
+}
+
+/*-------------------------------------------------------------------------*/
+
+bool
+CRedisClusterPubSubClientTopic::RedisRead( void )
+{GUCEF_TRACE;
+
+    if ( GUCEF_NULL == m_redisContext || GUCEF_NULL == m_redisPipeline )
+        return false;
+
+    try
+    {
+        typedef std::vector< std::pair< std::string, std::string > > TRedisMsgAttributes;
+        typedef std::pair< std::string, TRedisMsgAttributes > TRedisMsg;
+        typedef std::vector< TRedisMsg > TRedisMsgVector;
+        typedef std::unordered_map< std::string, TRedisMsgVector > TRedisMsgStream;
+        
+        sw::redis::StringView topicSV( m_config.topicName.C_String(), m_config.topicName.ByteSize() );
+        sw::redis::StringView readOffsetSV( m_readOffset.c_str(), m_readOffset.size() );
+
+        // Read items from a stream, and return at most 10 items.
+        // You need to specify a key and an id (timestamp + offset).
+        TRedisMsgStream msgs;                                                                          //std::inserter( msgs, msgs.end()
+        auto& result = m_redisPipeline->xread( topicSV, readOffsetSV, std::chrono::milliseconds(1000), 10 ); 
+        
+      
+        bool totalSuccess = true;
+
+
+        return totalSuccess;
+    }
+    catch ( const sw::redis::OomError& e )
+    {
+		++m_redisErrorReplies;
+        GUCEF_WARNING_LOG( CORE::LOGLEVEL_IMPORTANT, "RedisClusterPubSubClientTopic(" + CORE::PointerToString( this ) + "):RedisSendSyncImpl: Redis++ OOM exception: " + e.what() );
+        return false;
+    }
+    catch ( const sw::redis::MovedError& e )
+    {
+		++m_redisErrorReplies;
+        GUCEF_EXCEPTION_LOG( CORE::LOGLEVEL_IMPORTANT, "RedisClusterPubSubClientTopic(" + CORE::PointerToString( this ) + "):RedisSendSyncImpl: Redis++ MovedError (Redirect failed?) . Current slot: " +
+                                CORE::ToString( m_redisHashSlot ) + ", new slot: " + CORE::ToString( e.slot() ) + " at node " + e.node().host + ":" + CORE::ToString( e.node().port ) +
+                                " exception: " + e.what() );
+        RedisDisconnect();
+        m_redisReconnectTimer->SetEnabled( true );
+        return false;
+    }
+    catch ( const sw::redis::RedirectionError& e )
+    {
+		++m_redisErrorReplies;
+        GUCEF_EXCEPTION_LOG( CORE::LOGLEVEL_IMPORTANT, "RedisClusterPubSubClientTopic(" + CORE::PointerToString( this ) + "):RedisSendSyncImpl: Redis++ RedirectionError (rebalance? node failure?). Current slot: " +
+                                CORE::ToString( m_redisHashSlot ) + ", new slot: " + CORE::ToString( e.slot() ) + " at node " + e.node().host + ":" + CORE::ToString( e.node().port ) +
+                                " exception: " + e.what() );
+
+        RedisDisconnect();
+        m_redisReconnectTimer->SetEnabled( true );
+        return false;
+    }
+    catch ( const sw::redis::Error& e )
+    {
+		++m_redisErrorReplies;
+        GUCEF_EXCEPTION_LOG( CORE::LOGLEVEL_IMPORTANT, "RedisClusterPubSubClientTopic(" + CORE::PointerToString( this ) + "):RedisSendSyncImpl: Redis++ exception: " + e.what() );
+        RedisDisconnect();
+        m_redisReconnectTimer->SetEnabled( true );
+        return false;
+    }
+    catch ( const std::exception& e )
+    {
+        GUCEF_EXCEPTION_LOG( CORE::LOGLEVEL_IMPORTANT, "RedisClusterPubSubClientTopic(" + CORE::PointerToString( this ) + "):RedisSendSyncImpl: exception: " + e.what() );
+        return false;
+    }
 }
 
 /*-------------------------------------------------------------------------*/

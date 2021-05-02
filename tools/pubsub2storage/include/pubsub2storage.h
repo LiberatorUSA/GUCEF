@@ -1,5 +1,5 @@
 /*
- *  Udp2RedisCluster: service which pushes UDP packets into kafka topics
+ *  pubsub2storage: service which transfers between pubsub and storage
  *
  *  Copyright (C) 1998 - 2020.  Dinand Vanvelzen
  *
@@ -34,11 +34,6 @@
 #define GUCEF_CORE_CITASKCONSUMER_H
 #endif /* GUCEF_CORE_CITASKCONSUMER_H ? */
 
-#ifndef GUCEF_COMCORE_CUDPSOCKET_H
-#include "CUDPSocket.h"
-#define GUCEF_COMCORE_CUDPSOCKET_H
-#endif /* GUCEF_COMCORE_CUDPSOCKET_H ? */
-
 #ifndef GUCEF_COMCORE_CHOSTADDRESS_H
 #include "CHostAddress.h"
 #define GUCEF_COMCORE_CHOSTADDRESS_H
@@ -64,6 +59,11 @@
 #define GUCEF_CORE_CTIMER_H
 #endif /* GUCEF_CORE_CTIMER_H ? */
 
+#ifndef GUCEF_COMCORE_CPUBSUBCLIENT_H
+#include "gucefCOMCORE_CPubSubClient.h"
+#define GUCEF_COMCORE_CPUBSUBCLIENT_H
+#endif /* GUCEF_COMCORE_CPUBSUBCLIENT_H ? */
+
 #ifndef GUCEF_WEB_CHTTPSERVER_H
 #include "gucefWEB_CHTTPServer.h"
 #define GUCEF_WEB_CHTTPSERVER_H
@@ -83,11 +83,6 @@
 #include "gucefWEB_CTConfigurableMapHttpServerResource.h"
 #define GUCEF_WEB_CTCONFIGURABLEMAPHTTPSERVERRESOURCE_H
 #endif /* GUCEF_WEB_CTCONFIGURABLEMAPHTTPSERVERRESOURCE_H ? */
-
-#include "hiredis.h"
-#include "async.h"
-
-#include "redis++.h"
 
 /*-------------------------------------------------------------------------//
 //                                                                         //
@@ -142,34 +137,18 @@ class ChannelSettings : public CORE::CIConfigurable
 
 /*-------------------------------------------------------------------------*/
 
-class RedisNode
+class CPubSubClientChannel : public CORE::CTaskConsumer
 {
     public:
 
-    COMCORE::CHostAddress host;
-    CORE::CString nodeId;
-    CORE::UInt32 startSlot;
-    CORE::UInt32 endSlot;
-
-    RedisNode( void );
-};
-
-typedef std::map< CORE::UInt32, RedisNode > RedisNodeMap;
-
-/*-------------------------------------------------------------------------*/
-
-class ClusterChannelRedisWriter : public CORE::CTaskConsumer
-{
-    public:
-
-    typedef CORE::CTEventHandlerFunctor< ClusterChannelRedisWriter > TEventCallback;
+    typedef CORE::CTEventHandlerFunctor< CPubSubClientChannel > TEventCallback;
     typedef COMCORE::CUDPSocket::TPacketEntryVector TPacketEntryVector;
     typedef std::vector< const TPacketEntryVector* >  TPacketEntryVectorPtrVector;
     typedef std::vector< CORE::UInt32 >             TUInt32Vector;
     typedef COMCORE::CUDPSocket::TPacketEntry TPacketEntry;
 
-    ClusterChannelRedisWriter();
-    virtual ~ClusterChannelRedisWriter();
+    CPubSubClientChannel();
+    virtual ~CPubSubClientChannel();
 
     virtual bool OnTaskStart( CORE::CICloneable* taskData ) GUCEF_VIRTUAL_OVERRIDE;
 

@@ -113,6 +113,27 @@ typedef std::map< CORE::UInt32, RedisNode > RedisNodeMap;
 
 class CRedisClusterPubSubClient;
 
+class CRedisClusterPubSubClientTopicConfig : public COMCORE::CPubSubClientTopicConfig
+{
+    public:
+
+    CORE::Int32 redisXAddMaxLen;
+    bool redisXAddMaxLenIsApproximate;
+    
+    CRedisClusterPubSubClientTopicConfig( void );
+    
+    CRedisClusterPubSubClientTopicConfig( const COMCORE::CPubSubClientTopicConfig& genericConfig );
+
+    virtual ~CRedisClusterPubSubClientTopicConfig();
+
+    CRedisClusterPubSubClientTopicConfig& operator=( const COMCORE::CPubSubClientTopicConfig& src );
+
+    CRedisClusterPubSubClientTopicConfig& operator=( const CRedisClusterPubSubClientTopicConfig& src );
+
+    bool LoadCustomConfig( const CORE::CDataNode& config );
+};
+
+
 class CRedisClusterPubSubClientTopic : public COMCORE::CPubSubClientTopic
 {
     public:
@@ -137,6 +158,10 @@ class CRedisClusterPubSubClientTopic : public COMCORE::CPubSubClientTopic
 
     virtual bool LoadConfig( const COMCORE::CPubSubClientTopicConfig& config );
 
+    bool RedisSendSyncImpl( const sw::redis::StringView& msgId );
+
+    bool RedisRead( void );
+
     bool RedisConnect( void );
 
     bool RedisDisconnect( void );
@@ -160,6 +185,7 @@ class CRedisClusterPubSubClientTopic : public COMCORE::CPubSubClientTopic
     private:
 
     typedef CORE::CTEventHandlerFunctor< CRedisClusterPubSubClientTopic > TEventCallback;
+    typedef std::vector< std::pair< sw::redis::StringView, sw::redis::StringView > > TRedisArgs;
 
     CRedisClusterPubSubClient* m_client;
     sw::redis::Pipeline* m_redisPipeline;
@@ -167,13 +193,15 @@ class CRedisClusterPubSubClientTopic : public COMCORE::CPubSubClientTopic
     CORE::UInt32 m_redisErrorReplies;
     CORE::UInt32 m_redisTransmitQueueSize;
     CORE::UInt32 m_redisMsgsTransmitted;
-    CORE::UInt32 m_redisKeysInMsgsTransmitted;
-    CORE::UInt32 m_redisKeysInMsgsRatio;
+    CORE::UInt32 m_redisFieldsInMsgsTransmitted;
+    CORE::UInt32 m_redisFieldsInMsgsRatio;
     CORE::UInt32 m_redisHashSlot;
+    TRedisArgs m_redisMsgArgs;
     COMCORE::CHostAddress m_redisShardHost;
     CORE::CString m_redisShardNodeId;
     CORE::CTimer* m_redisReconnectTimer;
-    COMCORE::CPubSubClientTopicConfig m_config;    
+    CRedisClusterPubSubClientTopicConfig m_config;
+    std::string m_readOffset;    
 };
 
 /*-------------------------------------------------------------------------*/

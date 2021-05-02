@@ -72,6 +72,7 @@ class GUCEF_COMCORE_EXPORT_CPP CPubSubClientTopicConfig : public CORE::CIConfigu
     bool preferDedicatedConnection;
     CORE::CString topicName;
     CORE::CString consumerGroupName;
+    CORE::CString consumerName;
     CORE::CDataNode customConfig;
 
     CPubSubClientTopicConfig( void );
@@ -79,6 +80,8 @@ class GUCEF_COMCORE_EXPORT_CPP CPubSubClientTopicConfig : public CORE::CIConfigu
     CPubSubClientTopicConfig( const CPubSubClientTopicConfig& src );
 
     virtual ~CPubSubClientTopicConfig();
+
+    CPubSubClientTopicConfig& operator=( const CPubSubClientTopicConfig& src );
 
     /**
      *      Attempts to store the given tree in the file

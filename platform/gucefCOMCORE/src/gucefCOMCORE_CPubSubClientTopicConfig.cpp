@@ -51,7 +51,23 @@ CPubSubClientTopicConfig::CPubSubClientTopicConfig( void )
     , preferDedicatedConnection( false )
     , topicName()
     , consumerGroupName()
+    , consumerName()
     , customConfig()
+{GUCEF_TRACE;
+
+}
+
+/*-------------------------------------------------------------------------*/
+
+CPubSubClientTopicConfig::CPubSubClientTopicConfig( const CPubSubClientTopicConfig& src )
+    : CORE::CIConfigurable( src )
+    , needSubscribeSupport( src.needSubscribeSupport )
+    , needPublishSupport( src.needPublishSupport )
+    , preferDedicatedConnection( src.preferDedicatedConnection )
+    , topicName( src.topicName )
+    , consumerGroupName( src.consumerGroupName )
+    , consumerName( src.consumerName )
+    , customConfig( src.customConfig )
 {GUCEF_TRACE;
 
 }
@@ -61,6 +77,26 @@ CPubSubClientTopicConfig::CPubSubClientTopicConfig( void )
 CPubSubClientTopicConfig::~CPubSubClientTopicConfig()
 {GUCEF_TRACE;
 
+}
+
+/*-------------------------------------------------------------------------*/
+
+CPubSubClientTopicConfig& 
+CPubSubClientTopicConfig::operator=( const CPubSubClientTopicConfig& src )
+{GUCEF_TRACE;
+
+    if ( this != &src )
+    {
+        CORE::CIConfigurable::operator=( src );
+        needSubscribeSupport = src.needSubscribeSupport;
+        needPublishSupport = src.needPublishSupport;
+        preferDedicatedConnection = src.preferDedicatedConnection;
+        topicName = src.topicName;
+        consumerGroupName = src.consumerGroupName;
+        consumerName = src.consumerName;
+        customConfig = src.customConfig;        
+    }
+    return *this;
 }
 
 /*-------------------------------------------------------------------------*/
