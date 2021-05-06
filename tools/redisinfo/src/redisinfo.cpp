@@ -187,7 +187,7 @@ Settings::LoadConfig( const CORE::CDataNode& tree )
 {GUCEF_TRACE;
 
     clusterName = tree.GetAttributeValueOrChildValueByName( "clusterName", clusterName );
-    redisAddress.SetHostnameAndPort( tree.GetAttributeValueOrChildValueByName( "redisAddress", redisAddress.AddressAndPortAsString() ) );
+    redisAddress.SetHostnameAndPort( CORE::ResolveVars( tree.GetAttributeValueOrChildValueByName( "redisAddress", redisAddress.AddressAndPortAsString() ) ) );
     collectMetrics = CORE::StringToBool( tree.GetAttributeValueOrChildValueByName( "collectMetrics" ), collectMetrics );
     metricPrefix = tree.GetAttributeValueOrChildValueByName( "metricPrefix", metricPrefix );
     gatherInfoReplication = CORE::StringToBool( tree.GetAttributeValueOrChildValueByName( "gatherInfoReplication" ), gatherInfoReplication );

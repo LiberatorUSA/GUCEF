@@ -190,8 +190,8 @@ GucefAppSignalHandler( int signal )
 /*
  *      Application entry point
  */
-GUCEF_OSMAIN_BEGIN
-//GUCEF_OSSERVICEMAIN_BEGIN( "redisinfo" )
+//GUCEF_OSMAIN_BEGIN
+GUCEF_OSSERVICEMAIN_BEGIN( "redisinfo" )
 {GUCEF_TRACE;
 
     int returnValue = -100;
