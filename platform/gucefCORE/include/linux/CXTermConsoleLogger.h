@@ -33,6 +33,11 @@
 #define GUCEF_CORE_CICONSOLELOGGER_H
 #endif /* GUCEF_CORE_CICONSOLELOGGER_H ? */
 
+#ifndef GUCEF_CORE_CLOGMANAGER_H
+#include "CLogManager.h"
+#define GUCEF_CORE_CLOGMANAGER_H
+#endif /* GUCEF_CORE_CLOGMANAGER_H ? */
+
 #ifdef GUCEF_LINUX_BUILD
 /*-------------------------------------------------------------------------//
 //                                                                         //
@@ -98,7 +103,7 @@ class GUCEF_CORE_PUBLIC_CPP CXTermConsoleLogger : public CIConsoleLogger
     int m_masterfd;
     int m_slavefd;
     FILE* m_slaveFptr;
-    CILoggingFormatter* m_logFormatter;
+    CLogManager::TLoggingFormatterPtr m_logFormatter;
 };
 
 /*-------------------------------------------------------------------------//

@@ -87,7 +87,7 @@ class CTAbstractFactoryWithParam : public CAbstractFactoryBase ,
                                    public CTDynamicDestructorBase< BaseClassType >
 {
     public:
-    
+
     typedef SelectionCriteriaType TSelectionCriteriaType;
     typedef CTCloneableObj< SelectionCriteriaType > TKeyContainer;
     typedef CTFactoryBaseWithParam< BaseClassType, ConstructionParamType > TConcreteFactory;
@@ -156,7 +156,7 @@ CTAbstractFactoryWithParam< SelectionCriteriaType, BaseClassType, ConstructionPa
 /*-------------------------------------------------------------------------*/
 
 template< typename SelectionCriteriaType, class BaseClassType, typename ConstructionParamType, class LockType >
-CTAbstractFactoryWithParam< SelectionCriteriaType, BaseClassType, ConstructionParamType, LockType >::CTAbstractFactoryWithParam( const CTAbstractFactoryWithParam< SelectionCriteriaType, BaseClassType, ConstructionParamType, LockType >& /* src */ )
+CTAbstractFactoryWithParam< SelectionCriteriaType, BaseClassType, ConstructionParamType, LockType >::CTAbstractFactoryWithParam( const CTAbstractFactoryWithParam< SelectionCriteriaType, BaseClassType, ConstructionParamType, LockType >& src )
     : CAbstractFactoryBase( src )
     , m_concreteFactoryList( src )
     , m_assumeFactoryOwnership( src.m_assumeFactoryOwnership )

@@ -47,12 +47,12 @@
  */
 struct SRWLock
 {
-	Ubyte  delflag;
-        Ubyte  wflag;
-	UInt32 rcount;
-        UInt32 wcount;
-        UInt32 wpriority;
-        struct SMutex* datalock;
+    UInt8  delflag;
+    UInt8  wflag;
+    UInt32 rcount;
+    UInt32 wcount;
+    UInt32 wpriority;
+    struct SMutex* datalock;
 };
 
 /*-------------------------------------------------------------------------//

@@ -303,13 +303,13 @@ CVFS::OnGlobalConfigLoadFinished( CORE::CNotifier* notifier    ,
 
 /*-------------------------------------------------------------------------*/
 
-bool 
+bool
 CVFS::DeleteFile( const CString& filePath, bool okIfItDoesNotExist )
 {GUCEF_TRACE;
 
     // @TODO: This functionality could be improved by taking into account outstanding references to the resource
     //        Not all archive types might be able to handle denying a delete themselves during ongoing I/O especially with remote storage
-    
+
     // Switch dir separator chars if needed
     CString path( filePath.ReplaceChar( '\\', '/' ) );
 
@@ -363,10 +363,10 @@ CVFS::CopyFile( const CORE::CString& originalFilepath ,
         GUCEF_ERROR_LOG( CORE::LOGLEVEL_NORMAL, "VFS:CopyFile: Cannot obtain access to output file: " + copyFilepath );
         return false;
     }
-    
+
     UInt32 bytesWritten = targetFile->GetAccess()->Write( *originalFile->GetAccess() );
 
-    GUCEF_DEBUG_LOG( CORE::LOGLEVEL_NORMAL, "VFS:CopyFile: Successfully copied file \"" + originalFilepath + 
+    GUCEF_DEBUG_LOG( CORE::LOGLEVEL_NORMAL, "VFS:CopyFile: Successfully copied file \"" + originalFilepath +
             "\" to \"" + copyFilepath + "\"" );
     return true;
 }
@@ -410,7 +410,7 @@ CVFS::EncodeFile( const CORE::CString& originalFilepath ,
     CORE::CCodecRegistry::TICodecPtr codec = codecRegistry.TryGetCodec( codecFamily, encodeCodec );
     if ( !codec )
     {
-        GUCEF_ERROR_LOG( CORE::LOGLEVEL_NORMAL, "VFS:EncodeFile: Cannot encode file due to inability to obtain codec " + 
+        GUCEF_ERROR_LOG( CORE::LOGLEVEL_NORMAL, "VFS:EncodeFile: Cannot encode file due to inability to obtain codec " +
             encodeCodec + " for codec family " + codecFamily );
         return false;
     }
@@ -431,12 +431,12 @@ CVFS::EncodeFile( const CORE::CString& originalFilepath ,
 
     if ( !codec->Encode( *originalFile->GetAccess(), *targetFile->GetAccess() ) )
     {
-        GUCEF_ERROR_LOG( CORE::LOGLEVEL_NORMAL, "VFS:EncodeFile: Failed to encode file \"" + originalFilepath + 
+        GUCEF_ERROR_LOG( CORE::LOGLEVEL_NORMAL, "VFS:EncodeFile: Failed to encode file \"" + originalFilepath +
             "\" using codec \"" + encodeCodec + "\" from codec family \"" + codecFamily + "\"" );
         return false;
     }
 
-    GUCEF_DEBUG_LOG( CORE::LOGLEVEL_NORMAL, "VFS:DecodeFile: Successfully encoded file \"" + originalFilepath + 
+    GUCEF_DEBUG_LOG( CORE::LOGLEVEL_NORMAL, "VFS:DecodeFile: Successfully encoded file \"" + originalFilepath +
             "\" using codec \"" + encodeCodec + "\" from codec family \"" + codecFamily + "\"" );
     return true;
 }
@@ -480,12 +480,12 @@ CVFS::EncodeAsFile( const CORE::CDynamicBuffer& data     ,
         GUCEF_ERROR_LOG( CORE::LOGLEVEL_NORMAL, "VFS:EncodeAsFile: Invalid buffer offset given which is larger than the available data" );
         return false;
     }
-    
+
     CORE::CCodecRegistry& codecRegistry = CORE::CCoreGlobal::Instance()->GetCodecRegistry();
     CORE::CCodecRegistry::TICodecPtr codec = codecRegistry.TryGetCodec( codecFamily, encodeCodec );
     if ( !codec )
     {
-        GUCEF_ERROR_LOG( CORE::LOGLEVEL_NORMAL, "VFS:EncodeAsFile: Cannot encode file due to inability to obtain codec " + 
+        GUCEF_ERROR_LOG( CORE::LOGLEVEL_NORMAL, "VFS:EncodeAsFile: Cannot encode file due to inability to obtain codec " +
             encodeCodec + " for codec family " + codecFamily );
         return false;
     }
@@ -502,12 +502,12 @@ CVFS::EncodeAsFile( const CORE::CDynamicBuffer& data     ,
 
     if ( !codec->Encode( bufferAccess, *targetFile->GetAccess() ) )
     {
-        GUCEF_ERROR_LOG( CORE::LOGLEVEL_NORMAL, "VFS:EncodeAsFile: Failed to encode buffer using codec \"" + 
+        GUCEF_ERROR_LOG( CORE::LOGLEVEL_NORMAL, "VFS:EncodeAsFile: Failed to encode buffer using codec \"" +
             encodeCodec + "\" from codec family \"" + codecFamily + "\"" );
         return false;
     }
 
-    GUCEF_DEBUG_LOG( CORE::LOGLEVEL_NORMAL, "VFS:DecodeFile: Successfully encoded buffer using codec \"" + 
+    GUCEF_DEBUG_LOG( CORE::LOGLEVEL_NORMAL, "VFS:DecodeFile: Successfully encoded buffer using codec \"" +
         encodeCodec + "\" from codec family \"" + codecFamily + "\"" );
     return true;
 }
@@ -553,7 +553,7 @@ CVFS::EncodeAsFile( CORE::CIOAccess& externalData        ,
 
     CORE::CDynamicBuffer buffer;
     externalData.Read( buffer, 1 );
-    
+
     return EncodeAsFile( buffer, 0, encodedFilepath, overwrite, codecFamily, encodeCodec );
 }
 
@@ -573,7 +573,7 @@ CVFS::EncodeAsFileAsync( CORE::CIOAccess& externalData        ,
 
     CORE::CDynamicBuffer buffer;
     externalData.Read( buffer, 1 );
-    
+
     return EncodeAsFileAsync( buffer, 0, encodedFilepath, overwrite, codecFamily, encodeCodec, asyncRequestId );
 }
 
@@ -597,7 +597,7 @@ CVFS::DecodeFile( const CORE::CString& originalFilepath ,
     CORE::CCodecRegistry::TICodecPtr codec = codecRegistry.TryGetCodec( codecFamily, decodeCodec );
     if ( !codec )
     {
-        GUCEF_ERROR_LOG( CORE::LOGLEVEL_NORMAL, "VFS:DecodeFile: Cannot encode file due to inability to obtain codec " + 
+        GUCEF_ERROR_LOG( CORE::LOGLEVEL_NORMAL, "VFS:DecodeFile: Cannot encode file due to inability to obtain codec " +
             decodeCodec + " for codec family " + codecFamily );
         return false;
     }
@@ -618,12 +618,12 @@ CVFS::DecodeFile( const CORE::CString& originalFilepath ,
 
     if ( !codec->Encode( *originalFile->GetAccess(), *targetFile->GetAccess() ) )
     {
-        GUCEF_ERROR_LOG( CORE::LOGLEVEL_NORMAL, "VFS:DecodeFile: Failed to encode file \"" + originalFilepath + 
+        GUCEF_ERROR_LOG( CORE::LOGLEVEL_NORMAL, "VFS:DecodeFile: Failed to encode file \"" + originalFilepath +
             "\" using codec \"" + decodeCodec + "\" from codec family \"" + codecFamily + "\"" );
         return false;
     }
 
-    GUCEF_DEBUG_LOG( CORE::LOGLEVEL_NORMAL, "VFS:DecodeFile: Successfully decoded file \"" + originalFilepath + 
+    GUCEF_DEBUG_LOG( CORE::LOGLEVEL_NORMAL, "VFS:DecodeFile: Successfully decoded file \"" + originalFilepath +
             "\" using codec \"" + decodeCodec + "\" from codec family \"" + codecFamily + "\"" );
     return true;
 }
@@ -661,7 +661,7 @@ CVFS::StoreAsFile( const CORE::CString& file        ,
 {GUCEF_TRACE;
 
     CString filepath = ConformVfsFilePath( file );
-    
+
     MT::CObjectScopeLock lock( this );
 
     // Get a list of all eligable mounts
@@ -768,7 +768,7 @@ CVFS::LoadFile( CORE::CDynamicBuffer& destinationBuffer ,
     // This operation logically only supports read modes
     if ( 0 != strcmp( "rb", mode ) && 0 != strcmp( "r", mode ) )
         return false;
-    
+
     // First load the file as a VFS reference as usual
     CVFSHandlePtr fileReference = GetFile( filePath, mode, false );
     if ( !fileReference || GUCEF_NULL == fileReference->GetAccess() )
@@ -776,7 +776,7 @@ CVFS::LoadFile( CORE::CDynamicBuffer& destinationBuffer ,
 
     // load the data from whatever abstracted vfs medium into memory
     destinationBuffer.Append( *fileReference->GetAccess() );
-    
+
     // When we leave this scope the VFS reference is released
     return true;
 }
@@ -862,7 +862,7 @@ CVFS::ConformVfsDirPath( const VFS::CString& originalDirPath ) const
         return "/";
 
     VFS::CString resultStr = originalDirPath.ReplaceChar( '\\', '/' );
-    
+
     if ( resultStr[ 0 ] != '/' )
         resultStr = '/' + resultStr;
 
@@ -885,7 +885,7 @@ CVFS::ConformVfsFilePath( const VFS::CString& originalFilePath ) const
         return CString::Empty;
 
     VFS::CString resultStr = originalFilePath.ReplaceChar( '\\', '/' );
-    
+
     if ( resultStr[ 0 ] != '/' )
         resultStr = '/' + resultStr;
 
@@ -909,7 +909,7 @@ CVFS::MountArchive( const CArchiveSettings& settings )
     {
         // Found a compatible type,.. create an archive for the type
         TArchivePtr archive = m_abstractArchiveFactory.Create( settings.GetArchiveType() );
-        if ( GUCEF_NULL != archive )
+        if ( !archive.IsNULL() )
         {
             // Try to load from the resource
             CArchiveSettings updatedSettings( settings );
@@ -919,7 +919,7 @@ CVFS::MountArchive( const CArchiveSettings& settings )
             // Regardless of how the settings are presented we want to ensure a conistent mounting scheme
             // As such we enforce having a start '/' and no trailing '/' for mount paths, with the start '/' signaling 'root'
             updatedSettings.SetMountPath( ConformVfsDirPath( updatedSettings.GetMountPath() ) );
-            
+
             if ( archive->LoadArchive( updatedSettings ) )
             {
                 // Successfully loaded/linked the archive
@@ -971,7 +971,7 @@ CVFS::MountArchive( const CString& archiveName    ,
 
     // create an archive for the type
     TArchivePtr archive = m_abstractArchiveFactory.Create( archiveType );
-    if ( GUCEF_NULL != archive )
+    if ( !archive.IsNULL() )
     {
         // Try to load from the resource
         if ( archive->LoadArchive( archiveName      ,
@@ -1006,7 +1006,7 @@ CVFS::IsMountedArchive( const CString& location ) const
 
     // Keep in mind that mounted archives count as directories
     CString testLocation( ConformVfsDirPath( location ) );
-   
+
     MT::CObjectScopeLock lock( this );
 
     TMountVector::const_iterator i = m_mountList.begin();

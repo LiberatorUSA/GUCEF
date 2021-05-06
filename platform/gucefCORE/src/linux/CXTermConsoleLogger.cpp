@@ -116,9 +116,6 @@ CXTermConsoleLogger::~CXTermConsoleLogger()
         close( m_slavefd );
         m_slavefd = -1;
     }
-
-    delete m_logFormatter;
-    m_logFormatter = GUCEF_NULL;
 }
 
 /*-------------------------------------------------------------------------*/

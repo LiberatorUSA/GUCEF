@@ -99,15 +99,6 @@ typedef float               Float32;  /* 4 bytes, signed, decimal */
 typedef double              Float64;  /* 8 bytes, signed, decimal */
 
 #else
-                       
-#ifndef Byte
-typedef signed char     Byte;     /* 1 byte, signed */
-#endif
-
-typedef unsigned char   Ubyte;    /* 1 byte, unsigned */
-
-#undef UByte
-#define UByte           Ubyte
 
 typedef unsigned char   UInt8;    /* 1 byte, unsigned */
 typedef signed char     Int8;     /* 1 byte, signed */

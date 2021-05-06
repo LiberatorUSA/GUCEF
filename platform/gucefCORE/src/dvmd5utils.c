@@ -14,7 +14,7 @@
  *
  *  You should have received a copy of the GNU Lesser General Public
  *  License along with this library; if not, write to the Free Software
- *  Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA 
+ *  Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA
  */
 
 /*-------------------------------------------------------------------------//
@@ -35,7 +35,7 @@
 #ifndef GUCEF_CORE_GUCEF_ESSENTIALS_H
 #include "gucef_essentials.h"
 #define GUCEF_CORE_GUCEF_ESSENTIALS_H
-#endif /* GUCEF_CORE_GUCEF_ESSENTIALS_H ? */ 
+#endif /* GUCEF_CORE_GUCEF_ESSENTIALS_H ? */
 
 /*-------------------------------------------------------------------------//
 //                                                                         //
@@ -76,7 +76,7 @@ md5fromfile( TIOAccess *access  ,
                 {
                     md5_append( &md5state, buffer, rbytes );
                 }
-                
+
         } while ( rbytes );
 
         /*
@@ -122,15 +122,15 @@ md5tostring( const UInt8 digest[ 16 ] ,
 
 void
 md5fromstring( const char* string ,
-               Ubyte digest[ 16 ] )
+               UInt8 digest[ 16 ] )
 {
         md5_state_t md5state;                  /* md5 generation info */
 
         memset( digest, 0, 16 );
         md5_init( &md5state );
-        md5_append( &md5state, (const Ubyte*)string, (int)strlen( string ) );
+        md5_append( &md5state, (const UInt8*)string, (int)strlen( string ) );
         md5_finish( &md5state, digest );
-}                   
+}
 
 /*-------------------------------------------------------------------------*/
 
