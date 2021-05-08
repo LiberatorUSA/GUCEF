@@ -80,7 +80,7 @@ CWin32NetworkInterface::SetupAdapterInfo( void* pAdaptInfoVoid )
 	m_secWins.SetAddress( pAdaptInfo->SecondaryWinsServer.IpAddress.String );
 	m_nicIndex = pAdaptInfo->Index;		
 	m_adapterType = pAdaptInfo->Type;	
-	m_dhcpUsed = pAdaptInfo->DhcpEnabled;
+	m_dhcpUsed = 0 != pAdaptInfo->DhcpEnabled;
 	m_winsUsed = pAdaptInfo->HaveWins;	
 	m_leaseObtained = pAdaptInfo->LeaseObtained;
 	m_leaseExpires = pAdaptInfo->LeaseExpires;

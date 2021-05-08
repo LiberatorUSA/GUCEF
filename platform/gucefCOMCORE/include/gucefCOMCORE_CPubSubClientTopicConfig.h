@@ -67,6 +67,7 @@ class GUCEF_COMCORE_EXPORT_CPP CPubSubClientTopicConfig : public CORE::CIConfigu
 {
     public:
 
+    bool isOptional;                    /**< Whether having topic access successfully contructed is a deal breaker or not */
     bool needSubscribeSupport;
     bool needPublishSupport;
     bool preferDedicatedConnection;

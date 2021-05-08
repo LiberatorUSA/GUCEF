@@ -941,7 +941,7 @@ CRedisClusterPubSubClient::GetRedisClusterNodeMap( RedisNodeMap& nodeMap )
 /*-------------------------------------------------------------------------*/
 
 bool
-CRedisClusterPubSubClient::RedisDisconnect( void )
+CRedisClusterPubSubClient::Disconnect( void )
 {GUCEF_TRACE;
 
     try
@@ -984,10 +984,10 @@ CRedisClusterPubSubClient::RedisDisconnect( void )
 /*-------------------------------------------------------------------------*/
 
 bool
-CRedisClusterPubSubClient::RedisConnect( void )
+CRedisClusterPubSubClient::Connect( void )
 {GUCEF_TRACE;
 
-    RedisDisconnect();
+    Disconnect();
     
     try
     {
@@ -1049,6 +1049,15 @@ CRedisClusterPubSubClient::RedisConnect( void )
 
 /*-------------------------------------------------------------------------*/
 
+bool
+CRedisClusterPubSubClient::IsConnected( void )
+{GUCEF_TRACE;
+
+    return GUCEF_NULL != m_redisContext;
+}
+
+/*-------------------------------------------------------------------------*/
+
 void
 CRedisClusterPubSubClient::RegisterEventHandlers( void )
 {GUCEF_TRACE;
@@ -1095,7 +1104,7 @@ CRedisClusterPubSubClient::OnRedisReconnectTimerCycle( CORE::CNotifier* notifier
                                                        CORE::CICloneable* eventData )
 {GUCEF_TRACE;
 
-    if ( RedisConnect() )
+    if ( Connect() )
     {
         m_redisReconnectTimer->SetEnabled( false );
     }

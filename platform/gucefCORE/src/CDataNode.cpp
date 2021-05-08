@@ -1210,6 +1210,114 @@ CDataNode::Structure( const CString& sequence ,
 
 /*-------------------------------------------------------------------------*/
 
+CDataNode::TDataNodeSet
+CDataNode::StructureMultiple( const CString& sequence      ,
+                              char seperator               ,
+                              bool deletePreExistingLeaves ,
+                              UInt32 minNrOfNodes          ,
+                              UInt32 maxNrOfNodes          ,
+                              int nodeType                 )
+{GUCEF_TRACE;
+
+    // Only the leaf node handling is different in this variant
+    // everything up to that point can use the regular Structure()
+    CString leafNodeName;
+    CDataNode* leafNodesParent = this;
+    Int32 lastSepCharIndex = sequence.HasChar( seperator, false );
+    if ( lastSepCharIndex > 0 )
+    {
+        CString pathToLeaf = sequence.SubstrToIndex( (UInt32) lastSepCharIndex, true );
+        leafNodesParent = Structure( pathToLeaf, seperator );
+        leafNodeName = sequence.SubstrToIndex( (UInt32) lastSepCharIndex, true );
+    }
+    else
+    {
+        if ( 0 == lastSepCharIndex )
+            leafNodeName = sequence.CutChars( 1, true, 0 );
+        else
+            leafNodeName = sequence;
+    }
+
+    // basic input sanity check
+    if ( maxNrOfNodes < minNrOfNodes )
+    {
+        UInt32 temp = minNrOfNodes;
+        minNrOfNodes = maxNrOfNodes;
+        maxNrOfNodes = temp;
+    }
+    
+    // Now make sure we have the desired number of leaf nodes of the given type
+    // also apply retention if needed
+    
+    CDataNode::TDataNodeSet leaves = leafNodesParent->FindChildrenOfType( leafNodeName );
+    if ( deletePreExistingLeaves )
+    {
+        CDataNode::TDataNodeSet::iterator i = leaves.begin();
+        while ( i != leaves.end() )
+        {
+            CDataNode* leaf = (*i);
+            leafNodesParent->DetachChild( leaf );
+            delete leaf;
+            ++i;
+        }
+        leaves.clear();
+    }
+
+    // If there are leaves pre-existing we mandate that the node type matches
+    CDataNode::TDataNodeSet::iterator i = leaves.begin();
+    while ( i != leaves.end() )
+    {
+        CDataNode* leaf = (*i);
+        if ( nodeType != leaf->GetNodeType() )
+        {
+            leafNodesParent->DetachChild( leaf );
+            delete leaf;
+            leaves.erase( i );
+            i = leaves.begin();
+        }
+        else
+            ++i;
+    }
+    
+    // Now we apply the desired min/max leaf node count
+    
+    if ( maxNrOfNodes < (UInt32) leaves.size() )
+    {
+        // All desired nr of nodes already exist
+        // too many of them actually so we have to reduce the count
+        
+        UInt32 delta = ( (UInt32) leaves.size() ) - maxNrOfNodes;
+        i = leaves.begin();
+        while ( delta > 0 )
+        {
+            CDataNode* leaf = (*i);
+            leafNodesParent->DetachChild( leaf );
+            delete leaf;
+            
+            leaves.erase( i );
+            --delta;
+            i = leaves.begin();
+        }     
+    }
+    else
+    {
+        if ( minNrOfNodes > (UInt32) leaves.size() )
+        {
+            // Not enough nodes exist yet, we need to add more
+            
+            UInt32 delta = minNrOfNodes - ( (UInt32) leaves.size() );
+            for ( UInt32 n=0; n<delta; ++n )
+            {
+                leaves.insert( leafNodesParent->AddChild( leafNodeName, nodeType ) );
+            }
+        }
+    }
+
+    return leaves;
+}
+
+/*-------------------------------------------------------------------------*/
+
 CDataNode*
 CDataNode::Structure( const CString& nodeName       ,
                       const CString& attribName     ,
@@ -1277,7 +1385,7 @@ CDataNode::DelSubTree( void )
         // This is an optimization since this can be an expensive operation if there are a lot
         // of child nodes since the list would have to be traversed for every single child.
         // This prevents Detach() in the child destructor from reaching out to this parent again
-        // which is poinless since we are deleting the entire sub tree
+        // which is pointless since we are deleting the entire sub tree
         child->_pparent = GUCEF_NULL;
         
         delete child;

@@ -283,6 +283,8 @@ class CTBasicSharedPtr : public MT::CILockable ,
 
     inline bool IsNULL( void ) const;
 
+    void Unlink( void );
+
     UInt32 GetReferenceCount( void ) const;
 
     TDestructor* GetDestructor( void ) const;
@@ -311,8 +313,6 @@ class CTBasicSharedPtr : public MT::CILockable ,
      *  The pointer has to be valid.
      */
     void OverrideDestructor( TDestructor* newObjectDestructor );
-
-    void Unlink( void );
 
     /**
      *  Actual locking behaviour depends on the LockType passed to the template

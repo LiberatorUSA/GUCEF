@@ -65,6 +65,54 @@ CPubSubClientFeatures::~CPubSubClientFeatures()
 
 }
 
+/*-------------------------------------------------------------------------*/
+
+bool 
+CPubSubClientFeatures::SaveConfig( CORE::CDataNode& tree ) const
+{GUCEF_TRACE;
+
+    tree.SetAttribute( "supportsPublishing", supportsPublishing );
+    tree.SetAttribute( "supportsSubscribing", supportsSubscribing );
+    tree.SetAttribute( "supportsAutoReconnect", supportsAutoReconnect );
+    tree.SetAttribute( "supportsBinaryPayloads", supportsBinaryPayloads );
+    tree.SetAttribute( "supportsMultiHostSharding", supportsMultiHostSharding );
+    tree.SetAttribute( "supportsMsgKeysPerTopic", supportsMsgKeysPerTopic );
+    tree.SetAttribute( "supportsKeyValuePerMsg", supportsKeyValuePerMsg );
+    tree.SetAttribute( "supportsDuplicateKeysPerMsg", supportsDuplicateKeysPerMsg );
+    tree.SetAttribute( "supportsMetrics", supportsMetrics );
+
+    return true;
+}
+
+/*-------------------------------------------------------------------------*/
+
+bool 
+CPubSubClientFeatures::LoadConfig( const CORE::CDataNode& cfg )
+{GUCEF_TRACE;
+
+    supportsPublishing = CORE::StringToBool( CORE::ResolveVars( cfg.GetAttributeValueOrChildValueByName( "supportsPublishing" ) ), supportsPublishing );
+    supportsSubscribing = CORE::StringToBool( CORE::ResolveVars( cfg.GetAttributeValueOrChildValueByName( "supportsSubscribing" ) ), supportsSubscribing );
+    supportsAutoReconnect = CORE::StringToBool( CORE::ResolveVars( cfg.GetAttributeValueOrChildValueByName( "supportsAutoReconnect" ) ), supportsAutoReconnect );
+    supportsBinaryPayloads = CORE::StringToBool( CORE::ResolveVars( cfg.GetAttributeValueOrChildValueByName( "supportsBinaryPayloads" ) ), supportsBinaryPayloads );
+    supportsMultiHostSharding = CORE::StringToBool( CORE::ResolveVars( cfg.GetAttributeValueOrChildValueByName( "supportsMultiHostSharding" ) ), supportsMultiHostSharding );
+    supportsMsgKeysPerTopic = CORE::StringToBool( CORE::ResolveVars( cfg.GetAttributeValueOrChildValueByName( "supportsMsgKeysPerTopic" ) ), supportsMsgKeysPerTopic );
+    supportsKeyValuePerMsg = CORE::StringToBool( CORE::ResolveVars( cfg.GetAttributeValueOrChildValueByName( "supportsKeyValuePerMsg" ) ), supportsKeyValuePerMsg );
+    supportsDuplicateKeysPerMsg = CORE::StringToBool( CORE::ResolveVars( cfg.GetAttributeValueOrChildValueByName( "supportsDuplicateKeysPerMsg" ) ), supportsDuplicateKeysPerMsg );
+    supportsMetrics = CORE::StringToBool( CORE::ResolveVars( cfg.GetAttributeValueOrChildValueByName( "supportsMetrics" ) ), supportsMetrics );
+
+    return true;
+}
+
+/*-------------------------------------------------------------------------*/
+
+const CString& 
+CPubSubClientFeatures::GetClassTypeName( void ) const
+{GUCEF_TRACE;
+
+    static const CString classTypeName = "GUCEF::COMCORE::CPubSubClientFeatures";
+    return classTypeName;
+}
+
 /*-------------------------------------------------------------------------//
 //                                                                         //
 //      NAMESPACE                                                          //

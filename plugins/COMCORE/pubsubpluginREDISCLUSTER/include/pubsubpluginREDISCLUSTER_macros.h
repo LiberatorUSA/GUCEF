@@ -16,8 +16,8 @@
  *  limitations under the License.
  */
 
-#ifndef GUCEF_CODECSPLUGIN_ZLIB_MACROS_H
-#define GUCEF_CODECSPLUGIN_ZLIB_MACROS_H
+#ifndef PUBSUBPLUGIN_REDISCLUSTER_MACROS_H
+#define PUBSUBPLUGIN_REDISCLUSTER_MACROS_H
 
 /*
  *      Build configuration specific macros.
@@ -31,19 +31,19 @@
 //-------------------------------------------------------------------------*/
 
 #ifndef GUCEF_CORE_ETYPES_H
-#include "gucefCORE_ETypes.h"      /* simple types */
+#include "gucefCORE_ETypes.h"      
 #define GUCEF_CORE_ETYPES_H
 #endif /* GUCEF_CORE_ETYPES_H ? */
 
 #ifndef GUCEF_CORE_MACROS_H
-#include "gucefCORE_macros.h"      /* VFS Module build configuration */
+#include "gucefCORE_macros.h"      
 #define GUCEF_CORE_MACROS_H
 #endif /* GUCEF_CORE_MACROS_H ? */
 
-#ifndef GUCEF_CODECSPLUGIN_ZLIB_CONFIG_H
-#include "codecspluginZLIB_config.h"
-#define GUCEF_CODECSPLUGIN_ZLIB_CONFIG_H
-#endif /* GUCEF_CODECSPLUGIN_ZLIB_CONFIG_H ? */
+#ifndef PUBSUBPLUGIN_REDISCLUSTER_CONFIG_H
+#include "pubsubpluginREDISCLUSTER_config.h"
+#define PUBSUBPLUGIN_REDISCLUSTER_CONFIG_H
+#endif /* PUBSUBPLUGIN_REDISCLUSTER_CONFIG_H ? */
 
 /*-------------------------------------------------------------------------//
 //                                                                         //
@@ -51,8 +51,29 @@
 //                                                                         //
 //-------------------------------------------------------------------------*/
 
+#undef PUBSUBPLUGIN_REDISCLUSTER_EXPORT
+#ifdef PUBSUBPLUGIN_REDISCLUSTER_BUILD_MODULE
+  #define PUBSUBPLUGIN_REDISCLUSTER_EXPORT GUCEF_EXPORT
+#else
+  #define PUBSUBPLUGIN_REDISCLUSTER_EXPORT GUCEF_IMPORT
+#endif /* PUBSUBPLUGIN_REDISCLUSTER_BUILD_MODULE ? */
+
+#undef PUBSUBPLUGIN_REDISCLUSTER_EXPORT_CPP
+#ifdef PUBSUBPLUGIN_REDISCLUSTER_EXPORT_CPP_CODE
+  #define PUBSUBPLUGIN_REDISCLUSTER_EXPORT_CPP PUBSUBPLUGIN_REDISCLUSTER_EXPORT
+#else
+  #define PUBSUBPLUGIN_REDISCLUSTER_EXPORT_CPP
+#endif /* PUBSUBPLUGIN_REDISCLUSTER_EXPORT_CPP_CODE */
+
+#undef PUBSUBPLUGIN_REDISCLUSTER_EXPORT_C
+#ifdef PUBSUBPLUGIN_REDISCLUSTER_EXPORT_C_CODE
+  #define PUBSUBPLUGIN_REDISCLUSTER_EXPORT_C PUBSUBPLUGIN_REDISCLUSTER_EXPORT
+#else
+  #define PUBSUBPLUGIN_REDISCLUSTER_EXPORT_C
+#endif /* PUBSUBPLUGIN_REDISCLUSTER_EXPORT_C_CODE */
+
 
 /*-------------------------------------------------------------------------*/
 
-#endif /* GUCEF_CODECSPLUGIN_ZLIB_MACROS_H ? */
+#endif /* PUBSUBPLUGIN_REDISCLUSTER_MACROS_H ? */
 

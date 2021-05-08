@@ -16,8 +16,8 @@
  *  limitations under the License.
  */
 
-#ifndef GUCEF_CODECSPLUGIN_ZLIB_CONFIG_H
-#define GUCEF_CODECSPLUGIN_ZLIB_CONFIG_H
+#ifndef PUBSUBPLUGIN_REDISCLUSTER_CONFIG_H
+#define PUBSUBPLUGIN_REDISCLUSTER_CONFIG_H
 
 /*-------------------------------------------------------------------------//
 //                                                                         //
@@ -25,8 +25,10 @@
 //                                                                         //
 //-------------------------------------------------------------------------*/
 
+#define PUBSUBPLUGIN_REDISCLUSTER_EXPORT_CPP_CODE
+#define PUBSUBPLUGIN_REDISCLUSTER_EXPORT_C_CODE
 
 /*-------------------------------------------------------------------------*/
 
-#endif /* GUCEF_CODECSPLUGIN_ZLIB_CONFIG_H ? */
+#endif /* PUBSUBPLUGIN_REDISCLUSTER_CONFIG_H ? */
 

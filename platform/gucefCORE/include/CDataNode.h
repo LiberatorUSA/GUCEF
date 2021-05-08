@@ -304,6 +304,27 @@ class GUCEF_CORE_PUBLIC_CPP CDataNode
                           char seperator          );
 
     /**
+     *  If the given node structure does not exists starting
+     *  as a child node of the current node then the nodes
+     *  will be created. This ensures that you have the
+     *  requested tree structure. A collection of pointers to
+     *  the specified number of leaf nodes is returned.
+     *
+     *  @param sequence the node structure sequence you wish to create
+     *  @param seperator the char you used to seperate node names
+     *  @param deletePreExistingLeaves whether to delete pre-existing leaf nodes and generate new ones exclusively
+     *  @param minNrOfNodes the minimum nr of leaf nodes that should exist following the given structure
+     *  @param maxNrOfNodes the maximum nr of leaf nodes that should exist following the given structure
+     *  @return all leaf nodes created in the structure
+     */
+    TDataNodeSet StructureMultiple( const CString& sequence              ,
+                                    char seperator                       ,
+                                    bool deletePreExistingLeaves         ,
+                                    UInt32 minNrOfNodes                  ,
+                                    UInt32 maxNrOfNodes                  ,
+                                    int nodeType = GUCEF_DATATYPE_OBJECT );
+
+    /**
      *      Builds a structure if where each node is named
      *      according to 'nodeName' and where each of those nodes is given
      *      an attribute with 'attribName' using a section from 'attribSequence'

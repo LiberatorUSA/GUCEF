@@ -46,6 +46,7 @@ namespace COMCORE {
 
 CPubSubClientTopicConfig::CPubSubClientTopicConfig( void )
     : CORE::CIConfigurable()
+    , isOptional( false )
     , needSubscribeSupport( false )
     , needPublishSupport( false )
     , preferDedicatedConnection( false )
@@ -61,6 +62,7 @@ CPubSubClientTopicConfig::CPubSubClientTopicConfig( void )
 
 CPubSubClientTopicConfig::CPubSubClientTopicConfig( const CPubSubClientTopicConfig& src )
     : CORE::CIConfigurable( src )
+    , isOptional( src.isOptional )
     , needSubscribeSupport( src.needSubscribeSupport )
     , needPublishSupport( src.needPublishSupport )
     , preferDedicatedConnection( src.preferDedicatedConnection )
@@ -88,6 +90,7 @@ CPubSubClientTopicConfig::operator=( const CPubSubClientTopicConfig& src )
     if ( this != &src )
     {
         CORE::CIConfigurable::operator=( src );
+        isOptional = src.isOptional;
         needSubscribeSupport = src.needSubscribeSupport;
         needPublishSupport = src.needPublishSupport;
         preferDedicatedConnection = src.preferDedicatedConnection;
@@ -105,16 +108,39 @@ bool
 CPubSubClientTopicConfig::SaveConfig( CORE::CDataNode& tree ) const
 {GUCEF_TRACE;
 
-    return false;
+    tree.SetAttribute( "isOptional", isOptional );
+    tree.SetAttribute( "needSubscribeSupport", needSubscribeSupport );
+    tree.SetAttribute( "needPublishSupport", needPublishSupport );
+    tree.SetAttribute( "preferDedicatedConnection", preferDedicatedConnection );
+    tree.SetAttribute( "topicName", topicName );
+    tree.SetAttribute( "consumerGroupName", consumerGroupName );
+    tree.SetAttribute( "consumerName", consumerName );    
+    tree.CopySubTree( customConfig );    
+    return true;
 }
 
 /*-------------------------------------------------------------------------*/
 
 bool 
-CPubSubClientTopicConfig::LoadConfig( const CORE::CDataNode& treeroot )
+CPubSubClientTopicConfig::LoadConfig( const CORE::CDataNode& cfg )
 {GUCEF_TRACE;
 
-    return false;
+    isOptional = CORE::StringToBool( CORE::ResolveVars( cfg.GetAttributeValueOrChildValueByName( "isOptional" ) ), isOptional );
+    needSubscribeSupport = CORE::StringToBool( CORE::ResolveVars( cfg.GetAttributeValueOrChildValueByName( "needSubscribeSupport" ) ), needSubscribeSupport );
+    needPublishSupport = CORE::StringToBool( CORE::ResolveVars( cfg.GetAttributeValueOrChildValueByName( "needPublishSupport" ) ), needPublishSupport );
+    preferDedicatedConnection = CORE::StringToBool( CORE::ResolveVars( cfg.GetAttributeValueOrChildValueByName( "preferDedicatedConnection" ) ), preferDedicatedConnection );
+    topicName = CORE::ResolveVars( cfg.GetAttributeValueOrChildValueByName( "topicName", topicName ) );
+    consumerGroupName = CORE::ResolveVars( cfg.GetAttributeValueOrChildValueByName( "consumerGroupName", consumerGroupName ) );
+    consumerName = CORE::ResolveVars( cfg.GetAttributeValueOrChildValueByName( "consumerName", consumerName ) );
+    
+    const CORE::CDataNode* newCustomConfig = cfg.FindChild( "CustomConfig" );
+    if ( GUCEF_NULL != newCustomConfig )
+    {
+        customConfig.Clear();
+        customConfig.Copy( *newCustomConfig );
+    }
+
+    return true;
 }
 
 /*-------------------------------------------------------------------------*/

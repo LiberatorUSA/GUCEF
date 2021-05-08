@@ -15,7 +15,7 @@
 			<Dependency Name="redis-plus-plus" />
 		</Linker>
         <Preprocessor>
-            <Define String="GUCEF_PUBSUBPLUGIN_REDISCLUSTER_BUILD_MODULE" />
+            <Define String="PUBSUBPLUGIN_REDISCLUSTER_BUILD_MODULE" />
         </Preprocessor>
     </Module>
 </ModuleInfoEntry>

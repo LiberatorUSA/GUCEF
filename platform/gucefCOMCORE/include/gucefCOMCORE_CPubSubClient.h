@@ -96,6 +96,12 @@ class GUCEF_COMCORE_EXPORT_CPP CPubSubClient : public CORE::CObservingNotifier ,
 
     virtual void DestroyTopicAccess( const CString& topicName ) = 0;
 
+    virtual bool Connect( void ) = 0;
+
+    virtual bool Disconnect( void ) = 0;
+
+    virtual bool IsConnected( void ) = 0;
+
     /**
      *  Provide ability to get the textual name of the formatter
      */
@@ -104,7 +110,7 @@ class GUCEF_COMCORE_EXPORT_CPP CPubSubClient : public CORE::CObservingNotifier ,
     virtual const CString& GetClassTypeName( void ) const GUCEF_VIRTUAL_OVERRIDE;
 };
 
-typedef CORE::CTSharedPtr< CPubSubClient, MT::CMutex > CPubSubClientPtr;
+typedef CORE::CTBasicSharedPtr< CPubSubClient, MT::CMutex > CPubSubClientPtr;
 
 /*-------------------------------------------------------------------------//
 //                                                                         //

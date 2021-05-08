@@ -81,16 +81,43 @@ bool
 CPubSubClientConfig::SaveConfig( CORE::CDataNode& tree ) const
 {GUCEF_TRACE;
 
-    return false;
+    tree.SetAttribute( "reconnectDelayInMs", reconnectDelayInMs );
+    tree.SetAttribute( "remoteAddress", remoteAddress.HostnameAndPortAsString() );
+   
+    tree.CopySubTree( customConfig );    
+
+    CORE::CDataNode* desiredFeaturesCfg = tree.FindChild( "DesiredFeatures" );
+    if ( GUCEF_NULL == desiredFeaturesCfg )
+    {
+        desiredFeaturesCfg = tree.AddChild( "DesiredFeatures" );
+    }
+    desiredFeatures.SaveConfig( *desiredFeaturesCfg );
+
+    return true;
 }
 
 /*-------------------------------------------------------------------------*/
 
 bool 
-CPubSubClientConfig::LoadConfig( const CORE::CDataNode& treeroot )
+CPubSubClientConfig::LoadConfig( const CORE::CDataNode& cfg )
 {GUCEF_TRACE;
 
-    return false;
+    reconnectDelayInMs = CORE::StringToUInt32( CORE::ResolveVars( cfg.GetAttributeValueOrChildValueByName( "reconnectDelayInMs" ) ), reconnectDelayInMs );
+    remoteAddress.SetHostnameAndPort( CORE::ResolveVars( cfg.GetAttributeValueOrChildValueByName( "remoteAddress", remoteAddress.HostnameAndPortAsString() ) ) );
+    
+    const CORE::CDataNode* newCustomConfig = cfg.FindChild( "CustomConfig" );
+    if ( GUCEF_NULL != newCustomConfig )
+    {
+        customConfig.Clear();
+        customConfig.Copy( *newCustomConfig );
+    }
+
+    const CORE::CDataNode* newDesiredFeatures = cfg.FindChild( "DesiredFeatures" );
+    if ( GUCEF_NULL != newDesiredFeatures )
+    {
+        desiredFeatures.LoadConfig( *newDesiredFeatures );
+    }
+    return true;
 }
 
 /*-------------------------------------------------------------------------*/

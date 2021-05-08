@@ -32,7 +32,12 @@
 #define GUCEF_COMCORE_CCOMCOREGLOBAL_H
 #endif /* GUCEF_COMCORE_CCOMCOREGLOBAL_H ? */
 
+#ifndef PUBSUBPLUGIN_REDISCLUSTER_CREDISCLUSTERPUBSUBCLIENT_H
 #include "pubsubpluginREDISCLUSTER_CRedisClusterPubSubClient.h"
+#define PUBSUBPLUGIN_REDISCLUSTER_CREDISCLUSTERPUBSUBCLIENT_H
+#endif /* PUBSUBPLUGIN_REDISCLUSTER_CREDISCLUSTERPUBSUBCLIENT_H ? */
+
+#include "pubsubpluginREDISCLUSTER.h"
 
 /*-------------------------------------------------------------------------//
 //                                                                         //

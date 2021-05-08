@@ -38,7 +38,7 @@ set( MODULE_NAME "pubsubpluginREDISCLUSTER" )
 add_library( ${MODULE_NAME} ${ALL_FILES} )
 add_dependencies( ${MODULE_NAME} gucefCOMCORE gucefCORE gucefMT hiredis redis-plus-plus )
 target_link_libraries( ${MODULE_NAME} gucefCOMCORE gucefCORE gucefMT hiredis redis-plus-plus )
-set_property( TARGET ${MODULE_NAME} APPEND_STRING PROPERTY COMPILE_DEFINITIONS "GUCEF_PUBSUBPLUGIN_REDISCLUSTER_BUILD_MODULE" )
+set_property( TARGET ${MODULE_NAME} APPEND_STRING PROPERTY COMPILE_DEFINITIONS "PUBSUBPLUGIN_REDISCLUSTER_BUILD_MODULE" )
 
 include_directories( ../../../common/include ../../../dependencies ../../../dependencies/hiredis ../../../dependencies/redis-plus-plus/src/sw/redis++ ../../../platform/gucefCOMCORE/include ../../../platform/gucefCORE/include ../../../platform/gucefMT/include include )
 

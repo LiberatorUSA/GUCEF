@@ -16,6 +16,9 @@
  *  limitations under the License.
  */
 
+#ifndef PUBSUBPLUGIN_REDISCLUSTER_CREDISCLUSTERPUBSUBCLIENT_H
+#define PUBSUBPLUGIN_REDISCLUSTER_CREDISCLUSTERPUBSUBCLIENT_H
+
 /*-------------------------------------------------------------------------//
 //                                                                         //
 //      INCLUDES                                                           //
@@ -224,6 +227,12 @@ class CRedisClusterPubSubClient : public COMCORE::CPubSubClient
 
     virtual void DestroyTopicAccess( const CORE::CString& topicName ) GUCEF_VIRTUAL_OVERRIDE;
 
+    virtual bool Connect( void ) GUCEF_VIRTUAL_OVERRIDE;
+
+    virtual bool Disconnect( void ) GUCEF_VIRTUAL_OVERRIDE;
+
+    virtual bool IsConnected( void ) GUCEF_VIRTUAL_OVERRIDE;
+
     virtual const CORE::CString& GetType( void ) const GUCEF_VIRTUAL_OVERRIDE;
 
     virtual bool SaveConfig( CORE::CDataNode& tree ) const GUCEF_VIRTUAL_OVERRIDE;
@@ -237,10 +246,6 @@ class CRedisClusterPubSubClient : public COMCORE::CPubSubClient
     sw::redis::RedisCluster* GetRedisContext( void ) const;
 
     private:
-
-    bool RedisConnect( void );
-
-    bool RedisDisconnect( void ); 
 
     bool GetRedisClusterNodeMap( RedisNodeMap& nodeMap );
 
@@ -283,3 +288,5 @@ class CRedisClusterPubSubClient : public COMCORE::CPubSubClient
 }; /* namespace GUCEF */
 
 /*--------------------------------------------------------------------------*/
+
+#endif /* PUBSUBPLUGIN_REDISCLUSTER_CREDISCLUSTERPUBSUBCLIENT_H ? */

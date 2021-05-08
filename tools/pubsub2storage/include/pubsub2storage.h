@@ -64,6 +64,11 @@
 #define GUCEF_COMCORE_CPUBSUBCLIENT_H
 #endif /* GUCEF_COMCORE_CPUBSUBCLIENT_H ? */
 
+#ifndef GUCEF_COMCORE_CPUBSUBCLIENTFACTORY_H
+#include "gucefCOMCORE_CPubSubClientFactory.h"
+#define GUCEF_COMCORE_CPUBSUBCLIENTFACTORY_H
+#endif /* GUCEF_COMCORE_CPUBSUBCLIENTFACTORY_H ? */
+
 #ifndef GUCEF_WEB_CHTTPSERVER_H
 #include "gucefWEB_CHTTPServer.h"
 #define GUCEF_WEB_CHTTPSERVER_H
@@ -102,31 +107,23 @@ class ChannelSettings : public CORE::CIConfigurable
 {
     public:
 
-    typedef std::vector< COMCORE::CHostAddress > HostAddressVector;
+    typedef std::vector< COMCORE::CPubSubClientTopicConfig > TTopicConfigVector;
 
     ChannelSettings( void );
     ChannelSettings( const ChannelSettings& src );
     ChannelSettings& operator=( const ChannelSettings& src );
 
+    COMCORE::CPubSubClientConfig pubsubClientConfig;
+    TTopicConfigVector pubsubClientTopicConfigs;
+    CORE::CString pubsubClientType;
     CORE::Int32 channelId;
-    COMCORE::CHostAddress redisAddress;
-    CORE::CString channelStreamName;
-    COMCORE::CHostAddress udpInterface;
-    HostAddressVector udpMulticastToJoin;
-    bool collectMetrics;
-    bool wantsTestPackage;
     CORE::UInt32 ticketRefillOnBusyCycle;
-    CORE::UInt32 nrOfUdpReceiveBuffersPerSocket;
-    CORE::UInt32 udpSocketOsReceiveBufferSize;
-    CORE::UInt32 udpSocketUpdateCyclesPerPulse;
-    bool performRedisWritesInDedicatedThread;
-    CORE::Int32 maxSizeOfDedicatedRedisWriterBulkMailRead;
+    bool performPubSubInDedicatedThread;
+    CORE::Int32 maxSizeOfDedicatedPubSubBulkMailRead;
     bool applyThreadCpuAffinity;
-    CORE::UInt32 cpuAffinityForDedicatedRedisWriterThread;
+    CORE::UInt32 cpuAffinityForDedicatedPubSubThread;
     CORE::UInt32 cpuAffinityForMainChannelThread;
-    CORE::Int32 redisXAddMaxLen;
-    bool redisXAddMaxLenIsApproximate;
-    CORE::UInt32 redisReconnectDelayInMs;
+    bool collectMetrics;
 
     virtual bool SaveConfig( CORE::CDataNode& tree ) const GUCEF_VIRTUAL_OVERRIDE;
 
@@ -142,10 +139,6 @@ class CPubSubClientChannel : public CORE::CTaskConsumer
     public:
 
     typedef CORE::CTEventHandlerFunctor< CPubSubClientChannel > TEventCallback;
-    typedef COMCORE::CUDPSocket::TPacketEntryVector TPacketEntryVector;
-    typedef std::vector< const TPacketEntryVector* >  TPacketEntryVectorPtrVector;
-    typedef std::vector< CORE::UInt32 >             TUInt32Vector;
-    typedef COMCORE::CUDPSocket::TPacketEntry TPacketEntry;
 
     CPubSubClientChannel();
     virtual ~CPubSubClientChannel();
@@ -162,43 +155,15 @@ class CPubSubClientChannel : public CORE::CTaskConsumer
 
     virtual CORE::CString GetType( void ) const GUCEF_VIRTUAL_OVERRIDE;
 
-    bool RedisSendASync( const TPacketEntryVector& udpPackets, CORE::UInt32 packetCount );
-
-    bool RedisSendSync( const TPacketEntryVector& udpPackets, CORE::UInt32 packetCount );
-
-    bool RedisSendSync( const TPacketEntryVectorPtrVector& udpPackets, const TUInt32Vector& packetCounts );
-
-    CORE::UInt32 GetRedisErrorRepliesCounter( bool resetCounter );
-
-    CORE::UInt32 GetRedisMsgsTransmittedCounter( bool resetCounter );
-
-    CORE::UInt32 GetRedisPacketsInMsgsTransmittedCounter( bool resetCounter );
-
-    CORE::UInt32 GetRedisPacketsInMsgsRatio( void ) const;
-
-    CORE::UInt32 GetRedisTransmitQueueSize( void ) const;
-
-    CORE::UInt32 GetCurrentRedisHashSlot( void ) const;
-
-    CORE::UInt32 CalculateRedisHashSlot( const CORE::CString& keyStr ) const;
-
     bool LoadConfig( const ChannelSettings& channelSettings );
 
     const ChannelSettings& GetChannelSettings( void ) const;
 
+    bool ConnectPubSubClient( void );
+
+    bool DisconnectPubSubClient( bool destroyClient = false );
+
     private:
-
-    bool RedisSendSyncImpl( const TPacketEntryVectorPtrVector& udpPackets, const TUInt32Vector& packetCounts );
-
-    bool AddToOverflowQueue( const TPacketEntryVectorPtrVector& udpPackets, const TUInt32Vector& packetCounts );
-
-    bool SendQueuedPackagesIfAny( void );
-
-    bool RedisConnect( void );
-
-    bool RedisDisconnect( void );
-
-    bool GetRedisClusterNodeMap( RedisNodeMap& nodeMap );
 
     void RegisterEventHandlers( void );
 
@@ -208,56 +173,41 @@ class CPubSubClientChannel : public CORE::CTaskConsumer
                          CORE::CICloneable* eventData );
 
     void
-    OnRedisReconnectTimerCycle( CORE::CNotifier* notifier    ,
-                                const CORE::CEvent& eventId  ,
-                                CORE::CICloneable* eventData );
+    OnPubSubClientReconnectTimerCycle( CORE::CNotifier* notifier    ,
+                                       const CORE::CEvent& eventId  ,
+                                       CORE::CICloneable* eventData );
 
     private:
 
-    ClusterChannelRedisWriter( const ClusterChannelRedisWriter& src ); // not implemented
+    CPubSubClientChannel( const CPubSubClientChannel& src ); // not implemented
 
-    typedef std::deque< TPacketEntry > TPacketEntryQueue;
-    typedef CORE::CTCloneableExpansion< TPacketEntryVector > TCloneablePacketEntryVector;
-    typedef std::vector< std::pair< sw::redis::StringView, sw::redis::StringView > > TRedisArgs;
+    typedef std::vector< COMCORE::CPubSubClientTopic* > TopicVector;
     typedef MT::CTMailBox< CORE::UInt32 > TBufferMailbox;
 
-    sw::redis::RedisCluster* m_redisContext;
-    sw::redis::Pipeline* m_redisPipeline;
-    TPacketEntryVectorPtrVector m_redisMsgQueueOverflowQueue;
-    TUInt32Vector m_redisMsgQueueOverflowQueueCounts;
-    CORE::UInt32 m_redisErrorReplies;
-    CORE::UInt32 m_redisTransmitQueueSize;
-    CORE::UInt32 m_redisMsgsTransmitted;
-    CORE::UInt32 m_redisPacketsInMsgsTransmitted;
-    CORE::UInt32 m_redisPacketsInMsgsRatio;
-    CORE::UInt32 m_redisHashSlot;
-    COMCORE::CHostAddress m_redisShardHost;
-    CORE::CString m_redisShardNodeId;
+    COMCORE::CPubSubClientPtr m_pubsubClient;
+    TopicVector m_topics;
     ChannelSettings m_channelSettings;
     TBufferMailbox m_mailbox;
     TBufferMailbox::TMailList m_bulkMail;
-    TPacketEntryVectorPtrVector m_bulkPackets;
-    TUInt32Vector m_bulkPacketCounts;
-    TRedisArgs m_redisPacketArgs;
     CORE::CTimer* m_metricsTimer;
-    CORE::CTimer* m_redisReconnectTimer;
+    CORE::CTimer* m_pubsubClientReconnectTimer;
 };
 
 /*-------------------------------------------------------------------------*/
 
-typedef CORE::CTSharedPtr< ClusterChannelRedisWriter, MT::CMutex > ClusterChannelRedisWriterPtr;
+typedef CORE::CTSharedPtr< CPubSubClientChannel, MT::CMutex > CPubSubClientChannelPtr;
 
 /*-------------------------------------------------------------------------*/
 
-class Udp2RedisClusterChannel : public CORE::CTaskConsumer
+class CStorageChannel : public CORE::CTaskConsumer
 {
     public:
 
-    typedef CORE::CTEventHandlerFunctor< Udp2RedisClusterChannel > TEventCallback;
+    typedef CORE::CTEventHandlerFunctor< CStorageChannel > TEventCallback;
 
-    Udp2RedisClusterChannel();
-    Udp2RedisClusterChannel( const Udp2RedisClusterChannel& src );
-    virtual ~Udp2RedisClusterChannel();
+    CStorageChannel();
+    CStorageChannel( const CStorageChannel& src );
+    virtual ~CStorageChannel();
 
     virtual bool OnTaskStart( CORE::CICloneable* taskData ) GUCEF_VIRTUAL_OVERRIDE;
 
@@ -297,66 +247,37 @@ class Udp2RedisClusterChannel : public CORE::CTaskConsumer
     private:
 
     void
-    OnUDPSocketError( CORE::CNotifier* notifier   ,
-                      const CORE::CEvent& eventID ,
-                      CORE::CICloneable* evenData );
-
-    void
-    OnUDPSocketClosed( CORE::CNotifier* notifier   ,
-                       const CORE::CEvent& eventID ,
-                       CORE::CICloneable* evenData );
-
-    void
-    OnUDPSocketClosing( CORE::CNotifier* notifier   ,
-                        const CORE::CEvent& eventID ,
-                        CORE::CICloneable* evenData );
-
-    void
-    OnUDPSocketOpened( CORE::CNotifier* notifier   ,
-                       const CORE::CEvent& eventID ,
-                       CORE::CICloneable* evenData );
-
-    void
-    OnUDPPacketsRecieved( CORE::CNotifier* notifier   ,
-                          const CORE::CEvent& eventID ,
-                          CORE::CICloneable* evenData );
-
-    void
     OnMetricsTimerCycle( CORE::CNotifier* notifier    ,
                          const CORE::CEvent& eventId  ,
                          CORE::CICloneable* eventData );
 
     private:
 
-    typedef COMCORE::CUDPSocket::TPacketEntryVector TPacketEntryVector;
-    typedef COMCORE::CUDPSocket::TPacketEntry TPacketEntry;
-
     void RegisterEventHandlers( void );
 
     private:
 
     ChannelSettings m_channelSettings;
-    GUCEF::COMCORE::CUDPSocket* m_udpSocket;
     CORE::CTimer* m_metricsTimer;
     ChannelMetrics m_metrics;
-    ClusterChannelRedisWriterPtr m_redisWriter;
+    CPubSubClientChannelPtr m_pubsubClient;
 };
 
 /*-------------------------------------------------------------------------*/
 
-typedef CORE::CTSharedPtr< Udp2RedisClusterChannel, MT::CMutex > Udp2RedisClusterChannelPtr;
+typedef CORE::CTSharedPtr< CStorageChannel, MT::CMutex > CStorageChannelPtr;
 
 /*-------------------------------------------------------------------------*/
 
-class Udp2RedisCluster;
+class PubSub2Storage;
 
-class RestApiUdp2RedisInfoResource : public WEB::CCodecBasedHTTPServerResource
+class RestApiPubSub2StorageInfoResource : public WEB::CCodecBasedHTTPServerResource
 {
     public:
 
-    RestApiUdp2RedisInfoResource( Udp2RedisCluster* app );
+    RestApiPubSub2StorageInfoResource( PubSub2Storage* app );
 
-    virtual ~RestApiUdp2RedisInfoResource();
+    virtual ~RestApiPubSub2StorageInfoResource();
 
     virtual bool Serialize( const CORE::CString& resourcePath   ,
                             CORE::CDataNode& output             ,
@@ -365,18 +286,18 @@ class RestApiUdp2RedisInfoResource : public WEB::CCodecBasedHTTPServerResource
 
     private:
 
-    Udp2RedisCluster* m_app;
+    PubSub2Storage* m_app;
 };
 
 /*-------------------------------------------------------------------------*/
 
-class RestApiUdp2RedisConfigResource : public WEB::CCodecBasedHTTPServerResource
+class RestApiPubSub2StorageConfigResource : public WEB::CCodecBasedHTTPServerResource
 {
     public:
 
-    RestApiUdp2RedisConfigResource( Udp2RedisCluster* app, bool appConfig );
+    RestApiPubSub2StorageConfigResource( PubSub2Storage* app, bool appConfig );
 
-    virtual ~RestApiUdp2RedisConfigResource();
+    virtual ~RestApiPubSub2StorageConfigResource();
 
     virtual bool Serialize( const CORE::CString& resourcePath   ,
                             CORE::CDataNode& output             ,
@@ -390,22 +311,18 @@ class RestApiUdp2RedisConfigResource : public WEB::CCodecBasedHTTPServerResource
 
     private:
 
-    Udp2RedisCluster* m_app;
+    PubSub2Storage* m_app;
     bool m_appConfig;
 };
 
 /*-------------------------------------------------------------------------*/
 
-//COM::CTConfigurableMapHttpServerResource<
-
-/*-------------------------------------------------------------------------*/
-
-class Udp2RedisCluster : public CORE::CObserver
+class PubSub2Storage : public CORE::CObserver
 {
     public:
 
-    Udp2RedisCluster( void );
-    virtual ~Udp2RedisCluster();
+    PubSub2Storage( void );
+    virtual ~PubSub2Storage();
 
     bool Start( void );
 
@@ -422,32 +339,27 @@ class Udp2RedisCluster : public CORE::CObserver
 
     private:
 
-    typedef CORE::CTEventHandlerFunctor< Udp2RedisCluster > TEventCallback;
+    typedef CORE::CTEventHandlerFunctor< PubSub2Storage > TEventCallback;
 
     void
     OnMetricsTimerCycle( CORE::CNotifier* notifier    ,
                          const CORE::CEvent& eventId  ,
                          CORE::CICloneable* eventData );
 
-    void
-    OnTransmitTestPacketTimerCycle( CORE::CNotifier* notifier    ,
-                                    const CORE::CEvent& eventId  ,
-                                    CORE::CICloneable* eventData );
-
     private:
 
     typedef std::map< CORE::Int32, ChannelSettings > ChannelSettingsMap;
-    typedef std::map< CORE::Int32, Udp2RedisClusterChannelPtr > Udp2RedisClusterChannelMap;
+    typedef std::map< CORE::Int32, CStorageChannelPtr > StorageChannelMap;
 
     bool m_isInStandby;
     bool m_globalStandbyEnabled;
     CORE::UInt16 m_udpStartPort;
     CORE::UInt16 m_channelCount;
-    CORE::Int32 m_redisStreamStartChannelID;
+    CORE::Int32 m_storageStartChannelID;
     CORE::CString m_redisStreamName;
     CORE::CString m_redisHost;
     CORE::UInt16 m_redisPort;
-    Udp2RedisClusterChannelMap m_channels;
+    StorageChannelMap m_channels;
     ChannelSettingsMap m_channelSettings;
     WEB::CHTTPServer m_httpServer;
     WEB::CDefaultHTTPServerRouter m_httpRouter;
@@ -455,9 +367,6 @@ class Udp2RedisCluster : public CORE::CObserver
     CORE::CDataNode m_globalConfig;
     CORE::CTimer m_metricsTimer;
     bool m_transmitMetrics;
-    COMCORE::CUDPSocket m_testUdpSocket;
-    CORE::CTimer m_testPacketTransmitTimer;
-    bool m_transmitTestPackets;
 };
 
 /*-------------------------------------------------------------------------*/

@@ -16,8 +16,8 @@
  *  limitations under the License.
  */
 
-#ifndef GUCEF_CODECSPLUGIN_ZIP_H
-#define GUCEF_CODECSPLUGIN_ZIP_H
+#ifndef PUBSUBPLUGIN_REDISCLUSTER_H
+#define PUBSUBPLUGIN_REDISCLUSTER_H
 
 /*-------------------------------------------------------------------------//
 //                                                                         //
@@ -30,20 +30,10 @@
 #define GUCEF_CORE_ESTRUCTS_H
 #endif /* GUCEF_CORE_ESTRUCTS_H ? */
 
-#ifndef GUCEF_CORE_IOACCESS_H
-#include "ioaccess.h"           /* C API for media abstraction  */
-#define GUCEF_CORE_IOACCESS_H
-#endif /* GUCEF_CORE_IOACCESS_H ? */
-
-#ifndef GUCEF_CORE_CODECPLUGINLINK_H
-#include "CodecPluginLink.h"
-#define GUCEF_CORE_CODECPLUGINLINK_H
-#endif /* GUCEF_CORE_CODECPLUGINLINK_H ? */
-
-#ifndef GUCEF_CODECSPLUGIN_ZLIB_MACROS_H
-#include "codecspluginZLIB_macros.h"
-#define GUCEF_CODECSPLUGIN_ZLIB_MACROS_H
-#endif /* GUCEF_CODECSPLUGIN_ZLIB_MACROS_H ? */
+#ifndef PUBSUBPLUGIN_REDISCLUSTER_MACROS_H
+#include "pubsubpluginREDISCLUSTER_macros.h"
+#define PUBSUBPLUGIN_REDISCLUSTER_MACROS_H
+#endif /* PUBSUBPLUGIN_REDISCLUSTER_MACROS_H ? */
 
 /*-------------------------------------------------------------------------//
 //                                                                         //
@@ -53,21 +43,9 @@
 
 #ifdef __cplusplus
 namespace GUCEF {
-namespace CODECSPLUGIN {
-namespace ZLIB {
+namespace PUBSUBPLUGIN {
+namespace REDISCLUSTER {
 #endif /* __cplusplus */
-
-/*-------------------------------------------------------------------------//
-//                                                                         //
-//      MACROS                                                             //
-//                                                                         //
-//-------------------------------------------------------------------------*/
-
-#ifdef GUCEF_CODECPLUGIN_BUILD_MODULE
- #define GUCEF_CODEC_EXPORT_C GUCEF_EXPORT
-#else
- #define GUCEF_CODEC_EXPORT_C GUCEF_IMPORT
-#endif /* GUCEF_CODECPLUGIN_BUILD_MODULE ? */
 
 /*-------------------------------------------------------------------------//
 //                                                                         //
@@ -86,68 +64,28 @@ extern "C" {
 
 /*---------------------------------------------------------------------------*/
 
-/*
- *  This module has the generic codec API as well as the expanded image codec API
- *  We start with the generic codec API below.
- */
+PUBSUBPLUGIN_REDISCLUSTER_EXPORT_C CORE::Int32 GUCEF_PLUGIN_CALLSPEC_PREFIX
+GUCEFPlugin_Load( CORE::UInt32 argc, const char** argv ) GUCEF_PLUGIN_CALLSPEC_SUFFIX;
 
-/*---------------------------------------------------------------------------*/
+/*--------------------------------------------------------------------------*/
 
-GUCEF_CODEC_EXPORT_C UInt32 GUCEF_PLUGIN_CALLSPEC_PREFIX
-CODECPLUGIN_Init( void** plugdata   ,
-                  const int argc    ,
-                  const char** argv ) GUCEF_PLUGIN_CALLSPEC_SUFFIX;
+PUBSUBPLUGIN_REDISCLUSTER_EXPORT_C void GUCEF_PLUGIN_CALLSPEC_PREFIX
+GUCEFPlugin_Unload( void ) GUCEF_PLUGIN_CALLSPEC_SUFFIX;
 
-/*---------------------------------------------------------------------------*/
+/*--------------------------------------------------------------------------*/
 
-GUCEF_CODEC_EXPORT_C UInt32 GUCEF_PLUGIN_CALLSPEC_PREFIX
-CODECPLUGIN_Shutdown( void* plugdata ) GUCEF_PLUGIN_CALLSPEC_SUFFIX;
+PUBSUBPLUGIN_REDISCLUSTER_EXPORT_C void GUCEF_PLUGIN_CALLSPEC_PREFIX
+GUCEFPlugin_GetVersion( CORE::TVersion* versionInfo ) GUCEF_PLUGIN_CALLSPEC_SUFFIX;
 
-/*---------------------------------------------------------------------------*/
+/*--------------------------------------------------------------------------*/
 
-GUCEF_CODEC_EXPORT_C const char* GUCEF_PLUGIN_CALLSPEC_PREFIX
-CODECPLUGIN_Description( void* plugdata ) GUCEF_PLUGIN_CALLSPEC_SUFFIX;
+PUBSUBPLUGIN_REDISCLUSTER_EXPORT_C const char* GUCEF_PLUGIN_CALLSPEC_PREFIX
+GUCEFPlugin_GetCopyright( void ) GUCEF_PLUGIN_CALLSPEC_SUFFIX;
 
-/*---------------------------------------------------------------------------*/
+/*--------------------------------------------------------------------------*/
 
-GUCEF_CODEC_EXPORT_C const char* GUCEF_PLUGIN_CALLSPEC_PREFIX
-CODECPLUGIN_Copyright( void* plugdata ) GUCEF_PLUGIN_CALLSPEC_SUFFIX;
-
-/*---------------------------------------------------------------------------*/
-
-GUCEF_CODEC_EXPORT_C TVersion GUCEF_PLUGIN_CALLSPEC_PREFIX
-CODECPLUGIN_Version( void* plugdata ) GUCEF_PLUGIN_CALLSPEC_SUFFIX;
-
-/*---------------------------------------------------------------------------*/
-
-GUCEF_CODEC_EXPORT_C UInt32 GUCEF_PLUGIN_CALLSPEC_PREFIX
-CODECPLUGIN_GetCodecSetBegin( void* plugdata  ,
-                              void** iterator ) GUCEF_PLUGIN_CALLSPEC_SUFFIX;
-
-/*---------------------------------------------------------------------------*/
-
-GUCEF_CODEC_EXPORT_C UInt32 GUCEF_PLUGIN_CALLSPEC_PREFIX
-CODECPLUGIN_GetCodecLink( void* plugdata               ,
-                          void* iterator               ,
-                          TCodecPluginLink** codecLink ) GUCEF_PLUGIN_CALLSPEC_SUFFIX;
-
-/*---------------------------------------------------------------------------*/
-
-GUCEF_CODEC_EXPORT_C UInt32 GUCEF_PLUGIN_CALLSPEC_PREFIX
-CODECPLUGIN_FreeCodecLink( void* plugdata              ,
-                           TCodecPluginLink* codecLink ) GUCEF_PLUGIN_CALLSPEC_SUFFIX;
-
-/*---------------------------------------------------------------------------*/
-
-GUCEF_CODEC_EXPORT_C UInt32 GUCEF_PLUGIN_CALLSPEC_PREFIX
-CODECPLUGIN_FreeCodecIterator( void* plugdata ,
-                               void* iterator ) GUCEF_PLUGIN_CALLSPEC_SUFFIX;
-
-/*---------------------------------------------------------------------------*/
-
-GUCEF_CODEC_EXPORT_C UInt32 GUCEF_PLUGIN_CALLSPEC_PREFIX
-CODECPLUGIN_GetCodecSetNextItem( void* plugdata ,
-                                 void* iterator ) GUCEF_PLUGIN_CALLSPEC_SUFFIX;
+PUBSUBPLUGIN_REDISCLUSTER_EXPORT_C const char* GUCEF_PLUGIN_CALLSPEC_PREFIX
+GUCEFPlugin_GetDescription( void ) GUCEF_PLUGIN_CALLSPEC_SUFFIX;
 
 /*---------------------------------------------------------------------------*/                 
 
@@ -162,11 +100,11 @@ CODECPLUGIN_GetCodecSetNextItem( void* plugdata ,
 //-------------------------------------------------------------------------*/
 
 #ifdef __cplusplus
-}; /* namespace ZLIB */
-}; /* namespace CODECSPLUGIN */
+}; /* namespace REDISCLUSTER */
+}; /* namespace PUBSUBPLUGIN */
 }; /* namespace GUCEF */
 #endif /* __cplusplus */
 
 /*--------------------------------------------------------------------------*/
 
-#endif /* GUCEF_CODECSPLUGIN_ZIP_H ? */
+#endif /* PUBSUBPLUGIN_REDISCLUSTER_H ? */
