@@ -87,6 +87,11 @@
 #define GUCEF_COM_CCOMGLOBAL_H
 #endif /* GUCEF_COM_CCOMGLOBAL_H ? */
 
+#ifndef GUCEF_WEB_CWEBGLOBAL_H
+#include "gucefWEB_CWebGlobal.h"
+#define GUCEF_WEB_CWEBGLOBAL_H
+#endif /* GUCEF_WEB_CWEBGLOBAL_H ? */
+
 #include "udp2rediscluster.h"
 
 /*-------------------------------------------------------------------------//
@@ -209,6 +214,7 @@ GUCEF_OSSERVICEMAIN_BEGIN( "udp2rediscluster" )
     CORE::CCoreGlobal::Instance();
     COMCORE::CComCoreGlobal::Instance();
     COM::CComGlobal::Instance();
+    WEB::CWebGlobal::Instance();
 
     // Check for config param first
     CORE::CValueList keyValueList;
