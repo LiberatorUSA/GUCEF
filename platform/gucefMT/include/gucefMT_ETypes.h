@@ -142,6 +142,7 @@ typedef double          Float64;  /* 8 bytes, signed, decimal */
 #define GUCEF_DATATYPE_UINT64       9
 #define GUCEF_DATATYPE_INT64       10
 
+#define GUCEF_DATATYPE_BINARY               20
 #define GUCEF_DATATYPE_NUMERIC              21
 #define GUCEF_DATATYPE_ASCII_STRING         22
 #define GUCEF_DATATYPE_UTF8_STRING          23
@@ -175,6 +176,7 @@ typedef enum EBuildinDataType TBuildinDataType;
 
 enum EBasicDataType
 {
+    DATATYPE_BINARY         = GUCEF_DATATYPE_BINARY        ,
     DATATYPE_NUMERIC        = GUCEF_DATATYPE_NUMERIC       ,
     DATATYPE_ASCII_STRING   = GUCEF_DATATYPE_ASCII_STRING  ,
     DATATYPE_UTF8_STRING    = GUCEF_DATATYPE_UTF8_STRING   ,

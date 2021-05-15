@@ -100,13 +100,14 @@ class GUCEF_CORE_PUBLIC_CPP CVariant
     explicit CVariant( Float64 data );
     CVariant( const CAsciiString& data );
     CVariant( const CUtf8String& data );
-    CVariant( const char* data );
-    CVariant( const std::string& data );
+    CVariant( const char* asciiStr );
+    CVariant( const std::string& utf8Str );
     
     bool IsInteger( void ) const;
     bool IsFloat( void ) const;
     bool IsString( void ) const;
     bool IsBoolean( void ) const;
+    bool IsBinary( void ) const;
     
     bool UsesDynamicMemory( void ) const;
     bool IsInitialized( void ) const;
@@ -171,11 +172,16 @@ class GUCEF_CORE_PUBLIC_CPP CVariant
 
     bool SetString( UInt8 varType, const CString& data, const CVariant& defaultValue = CVariant::Empty );
 
+    /**
+     *  If you are setting a binary type using a string said string is assumed to be Base64 encoded
+     */
     bool SetFromString( UInt8 varType, const CString& data, const CVariant& defaultValue = CVariant::Empty );
 
     const TVariantData* CStyleAccess( void ) const;
     
     protected:
+
+    void* HeapReserve( UInt32 byteSize, bool allowReduction = false );
 
     TVariantData m_variantData;
 };

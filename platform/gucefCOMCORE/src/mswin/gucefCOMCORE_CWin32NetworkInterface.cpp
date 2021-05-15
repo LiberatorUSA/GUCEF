@@ -81,7 +81,7 @@ CWin32NetworkInterface::SetupAdapterInfo( void* pAdaptInfoVoid )
 	m_nicIndex = pAdaptInfo->Index;		
 	m_adapterType = pAdaptInfo->Type;	
 	m_dhcpUsed = 0 != pAdaptInfo->DhcpEnabled;
-	m_winsUsed = pAdaptInfo->HaveWins;	
+	m_winsUsed = 0 != pAdaptInfo->HaveWins;	
 	m_leaseObtained = pAdaptInfo->LeaseObtained;
 	m_leaseExpires = pAdaptInfo->LeaseExpires;
 	m_dhcpAddr.SetAddress( pAdaptInfo->DhcpServer.IpAddress.String );

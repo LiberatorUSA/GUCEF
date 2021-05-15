@@ -309,7 +309,7 @@ Base64Encode( const void* byteBuffer, UInt32 bufferSize );
  *  large enough since base 64 encoding never reduces the size of binary data
  */
 GUCEF_CORE_PUBLIC_CPP bool
-Base64Decode( const CString& base64Str, void* byteBuffer, UInt32 bufferSize );
+Base64Decode( const CString& base64Str, void* byteBuffer, UInt32 bufferSize, UInt32& bytesUsed );
 
 /*-------------------------------------------------------------------------*/
 

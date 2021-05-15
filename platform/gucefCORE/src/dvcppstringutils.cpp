@@ -293,9 +293,10 @@ Base64Encode( const void* byteBuffer, UInt32 bufferSize )
 /*-------------------------------------------------------------------------*/
 
 bool
-Base64Decode( const CString& base64Str, void* byteBuffer, UInt32 bufferSize )
+Base64Decode( const CString& base64Str, void* byteBuffer, UInt32 bufferSize, UInt32& bytesUsed )
 {GUCEF_TRACE;
 
+    bytesUsed = 0;
     if ( bufferSize == 0 || base64Str.IsNULLOrEmpty() )
         return false;
 
@@ -332,6 +333,7 @@ Base64Decode( const CString& base64Str, void* byteBuffer, UInt32 bufferSize )
         }
     }
 
+    bytesUsed = last;
     return true;
 }
 
