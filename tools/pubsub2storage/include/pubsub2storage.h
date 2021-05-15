@@ -115,7 +115,6 @@ class ChannelSettings : public CORE::CIConfigurable
 
     COMCORE::CPubSubClientConfig pubsubClientConfig;
     TTopicConfigVector pubsubClientTopicConfigs;
-    CORE::CString pubsubClientType;
     CORE::Int32 channelId;
     CORE::UInt32 ticketRefillOnBusyCycle;
     bool performPubSubInDedicatedThread;
@@ -317,7 +316,8 @@ class RestApiPubSub2StorageConfigResource : public WEB::CCodecBasedHTTPServerRes
 
 /*-------------------------------------------------------------------------*/
 
-class PubSub2Storage : public CORE::CObserver
+class PubSub2Storage : public CORE::CObserver ,
+                       public CORE::CIConfigurable
 {
     public:
 
@@ -330,12 +330,17 @@ class PubSub2Storage : public CORE::CObserver
 
     bool IsGlobalStandbyEnabled( void ) const;
 
-    bool LoadConfig( const CORE::CValueList& appConfig   ,
-                     const CORE::CDataNode& globalConfig );
+    bool LoadConfig( const CORE::CValueList& appConfig );
 
     const CORE::CValueList& GetAppConfig( void ) const;
 
     const CORE::CDataNode& GetGlobalConfig( void ) const;
+
+    virtual bool SaveConfig( CORE::CDataNode& tree ) const GUCEF_VIRTUAL_OVERRIDE;
+
+    virtual bool LoadConfig( const CORE::CDataNode& treeroot ) GUCEF_VIRTUAL_OVERRIDE;
+
+    virtual const CORE::CString& GetClassTypeName( void ) const GUCEF_VIRTUAL_OVERRIDE;
 
     private:
 
@@ -350,6 +355,7 @@ class PubSub2Storage : public CORE::CObserver
 
     typedef std::map< CORE::Int32, ChannelSettings > ChannelSettingsMap;
     typedef std::map< CORE::Int32, CStorageChannelPtr > StorageChannelMap;
+    typedef std::map< CORE::CString, CORE::CDataNode::TConstDataNodeSet > TChannelCfgMap;
 
     bool m_isInStandby;
     bool m_globalStandbyEnabled;
@@ -361,6 +367,7 @@ class PubSub2Storage : public CORE::CObserver
     CORE::UInt16 m_redisPort;
     StorageChannelMap m_channels;
     ChannelSettingsMap m_channelSettings;
+    ChannelSettings m_templateChannelSettings;
     WEB::CHTTPServer m_httpServer;
     WEB::CDefaultHTTPServerRouter m_httpRouter;
     CORE::CValueList m_appConfig;

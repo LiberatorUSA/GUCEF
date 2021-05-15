@@ -72,6 +72,7 @@ class GUCEF_COMCORE_EXPORT_CPP CPubSubClientConfig : public CORE::CIConfigurable
 {
     public:
 
+    CORE::CString pubsubClientType;          /**< the string form type name of the pub-sub client */
     CPubSubClientFeatures desiredFeatures;   /**< desired feature set of the client */ 
     CORE::CDataNode customConfig;            /**< client type specific configuration, if any */
     CORE::CPulseGenerator* pulseGenerator;   /**< dedicated pulse generator to use for anything that uses a pulse generator directly, if any */

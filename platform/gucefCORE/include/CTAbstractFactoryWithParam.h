@@ -255,6 +255,8 @@ CTAbstractFactoryWithParam< SelectionCriteriaType, BaseClassType, ConstructionPa
     MT::CObjectScopeLock lock( this );
     m_concreteFactoryList[ selectedType ] = concreteFactory;
 
+    GUCEF_SYSTEM_LOG( CORE::LOGLEVEL_NORMAL, "TAbstractFactoryWithParam<>: Registered concrete factory for type \"" + ToString( selectedType ) + "\"" );
+
     if ( m_useEventing )
     {
         TKeyContainer keyContainer( selectedType );
@@ -279,6 +281,8 @@ CTAbstractFactoryWithParam< SelectionCriteriaType, BaseClassType, ConstructionPa
         }
         m_concreteFactoryList.erase( i );
 
+        GUCEF_SYSTEM_LOG( CORE::LOGLEVEL_NORMAL, "TAbstractFactoryWithParam<>: Unregistered concrete factory for type \"" + ToString( selectedType ) + "\"" );
+        
         if ( m_useEventing )
         {
             TKeyContainer keyContainer( selectedType );

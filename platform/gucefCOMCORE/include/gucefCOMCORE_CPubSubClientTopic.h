@@ -91,6 +91,12 @@ class GUCEF_COMCORE_EXPORT_CPP CPubSubClientTopic : public CORE::CObservingNotif
 
     virtual ~CPubSubClientTopic();
 
+    virtual bool Connect( void ) = 0;
+
+    virtual bool Disconnect( void ) = 0;
+
+    virtual bool IsConnected( void ) = 0;
+
     virtual bool IsPublishingSupported( void ) = 0;
 
     virtual bool IsSubscribingSupported( void ) = 0;

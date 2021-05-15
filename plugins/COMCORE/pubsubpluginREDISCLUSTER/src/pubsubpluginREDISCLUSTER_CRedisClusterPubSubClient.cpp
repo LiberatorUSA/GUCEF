@@ -46,6 +46,7 @@
 #endif /* GUCEF_CORE_METRICSMACROS_H ? */
 
 #include "crc16.h"
+#include "redis_cluster.hpp"
 
 /*-------------------------------------------------------------------------//
 //                                                                         //
@@ -150,6 +151,69 @@ CRedisClusterPubSubClientTopicConfig::operator=( const CRedisClusterPubSubClient
 
 /*-------------------------------------------------------------------------*/
 
+CRedisClusterPubSubClientTopicReader::CRedisClusterPubSubClientTopicReader( CRedisClusterPubSubClientTopic* ownerTopic )
+    : CORE::CTaskConsumer()
+    , m_ownerTopic( ownerTopic )
+{GUCEF_TRACE;
+
+}
+
+/*-------------------------------------------------------------------------*/
+
+CRedisClusterPubSubClientTopicReader::~CRedisClusterPubSubClientTopicReader()
+{GUCEF_TRACE;
+
+}
+
+/*-------------------------------------------------------------------------*/
+
+bool 
+CRedisClusterPubSubClientTopicReader::OnTaskStart( CORE::CICloneable* taskData )
+{GUCEF_TRACE;
+
+    return true;
+}
+
+/*-------------------------------------------------------------------------*/
+
+bool
+CRedisClusterPubSubClientTopicReader::OnTaskCycle( CORE::CICloneable* taskData )
+{GUCEF_TRACE;
+
+    m_ownerTopic->RedisRead();
+    return false;
+}
+
+/*-------------------------------------------------------------------------*/
+
+void
+CRedisClusterPubSubClientTopicReader::OnTaskEnding( CORE::CICloneable* taskdata ,
+                                                    bool willBeForced           )
+{GUCEF_TRACE;
+
+}
+
+/*-------------------------------------------------------------------------*/
+
+void
+CRedisClusterPubSubClientTopicReader::OnTaskEnded( CORE::CICloneable* taskdata ,
+                                                   bool wasForced              )
+{GUCEF_TRACE;
+
+}
+
+/*-------------------------------------------------------------------------*/
+
+CORE::CString 
+CRedisClusterPubSubClientTopicReader::GetType( void ) const
+{GUCEF_TRACE;
+
+    static const CORE::CString taskTypeName = "RedisClusterPubSubClientTopicReader";
+    return taskTypeName;
+}
+
+/*-------------------------------------------------------------------------*/
+
 CRedisClusterPubSubClientTopic::CRedisClusterPubSubClientTopic( CRedisClusterPubSubClient* client )
     : COMCORE::CPubSubClientTopic()
     , m_client( client )
@@ -161,12 +225,16 @@ CRedisClusterPubSubClientTopic::CRedisClusterPubSubClientTopic( CRedisClusterPub
     , m_redisFieldsInMsgsTransmitted( 0 )
     , m_redisFieldsInMsgsRatio( 0 )
     , m_redisHashSlot( GUCEFMT_UINT32MAX )
+    , m_redisXreadCount( 1000 )
+    , m_redisXreadBlockTimeoutInMs( 1000 )
+    , m_redisReadMsgs()
     , m_redisMsgArgs()
     , m_redisShardHost()
     , m_redisShardNodeId()
     , m_redisReconnectTimer( GUCEF_NULL )
     , m_config()
     , m_readOffset( "$" )
+    , m_readerThread()
 {GUCEF_TRACE;
 
     if ( GUCEF_NULL != client->GetConfig().pulseGenerator )
@@ -184,6 +252,11 @@ CRedisClusterPubSubClientTopic::CRedisClusterPubSubClientTopic( CRedisClusterPub
         }
     }
 
+    if ( client->GetConfig().desiredFeatures.supportsSubscribing )
+    {
+        m_readerThread = RedisClusterPubSubClientTopicReaderPtr( new CRedisClusterPubSubClientTopicReader( this ) );
+    }
+        
     RegisterEventHandlers();
 }
 
@@ -192,7 +265,7 @@ CRedisClusterPubSubClientTopic::CRedisClusterPubSubClientTopic( CRedisClusterPub
 CRedisClusterPubSubClientTopic::~CRedisClusterPubSubClientTopic()
 {GUCEF_TRACE;
 
-    RedisDisconnect();
+    Disconnect();
 }
 
 
@@ -330,6 +403,10 @@ CRedisClusterPubSubClientTopic::LoadConfig( const COMCORE::CPubSubClientTopicCon
 
     m_config = config;
     m_redisHashSlot = CalculateRedisHashSlot( config.topicName );
+
+    m_redisXreadCount = m_config.customConfig.GetAttributeValueOrChildValueByName( "xreadCount" ).AsUInt32( m_redisXreadCount );
+    m_redisXreadBlockTimeoutInMs = m_config.customConfig.GetAttributeValueOrChildValueByName( "xreadBlockTimeoutInMs" ).AsUInt32( m_redisXreadBlockTimeoutInMs );
+
     return true;
 }
 
@@ -398,7 +475,7 @@ CRedisClusterPubSubClientTopic::RedisSendSyncImpl( const sw::redis::StringView& 
         GUCEF_EXCEPTION_LOG( CORE::LOGLEVEL_IMPORTANT, "RedisClusterPubSubClientTopic(" + CORE::PointerToString( this ) + "):RedisSendSyncImpl: Redis++ MovedError (Redirect failed?) . Current slot: " +
                                 CORE::ToString( m_redisHashSlot ) + ", new slot: " + CORE::ToString( e.slot() ) + " at node " + e.node().host + ":" + CORE::ToString( e.node().port ) +
                                 " exception: " + e.what() );
-        RedisDisconnect();
+        Disconnect();
         m_redisReconnectTimer->SetEnabled( true );
         return false;
     }
@@ -409,7 +486,7 @@ CRedisClusterPubSubClientTopic::RedisSendSyncImpl( const sw::redis::StringView& 
                                 CORE::ToString( m_redisHashSlot ) + ", new slot: " + CORE::ToString( e.slot() ) + " at node " + e.node().host + ":" + CORE::ToString( e.node().port ) +
                                 " exception: " + e.what() );
 
-        RedisDisconnect();
+        Disconnect();
         m_redisReconnectTimer->SetEnabled( true );
         return false;
     }
@@ -417,7 +494,7 @@ CRedisClusterPubSubClientTopic::RedisSendSyncImpl( const sw::redis::StringView& 
     {
 		++m_redisErrorReplies;
         GUCEF_EXCEPTION_LOG( CORE::LOGLEVEL_IMPORTANT, "RedisClusterPubSubClientTopic(" + CORE::PointerToString( this ) + "):RedisSendSyncImpl: Redis++ exception: " + e.what() );
-        RedisDisconnect();
+        Disconnect();
         m_redisReconnectTimer->SetEnabled( true );
         return false;
     }
@@ -434,29 +511,42 @@ bool
 CRedisClusterPubSubClientTopic::RedisRead( void )
 {GUCEF_TRACE;
 
-    if ( GUCEF_NULL == m_redisContext || GUCEF_NULL == m_redisPipeline )
+    if ( GUCEF_NULL == m_redisContext || m_config.topicName.IsNULLOrEmpty() )
         return false;
 
     try
     {
-        typedef std::vector< std::pair< std::string, std::string > > TRedisMsgAttributes;
-        typedef std::pair< std::string, TRedisMsgAttributes > TRedisMsg;
-        typedef std::vector< TRedisMsg > TRedisMsgVector;
-        typedef std::unordered_map< std::string, TRedisMsgVector > TRedisMsgStream;
-        
-        sw::redis::StringView topicSV( m_config.topicName.C_String(), m_config.topicName.ByteSize() );
+        sw::redis::StringView topicSV( m_config.topicName.C_String(), m_config.topicName.ByteSize()-1 );
         sw::redis::StringView readOffsetSV( m_readOffset.c_str(), m_readOffset.size() );
-
-        // Read items from a stream, and return at most 10 items.
-        // You need to specify a key and an id (timestamp + offset).
-        TRedisMsgStream msgs;                                                                          //std::inserter( msgs, msgs.end()
-        auto& result = m_redisPipeline->xread( topicSV, readOffsetSV, std::chrono::milliseconds(1000), 10 ); 
+        std::chrono::milliseconds readBlockTimeout( m_redisXreadBlockTimeoutInMs );
         
-      
-        bool totalSuccess = true;
+        TRedisMsgByStreamInserter inserter = std::inserter( m_redisReadMsgs, m_redisReadMsgs.end() );
+        
+        if ( m_redisXreadCount > 0 )
+            m_redisContext->xread< TRedisMsgByStreamInserter >( topicSV, readOffsetSV, readBlockTimeout, (long long) m_redisXreadCount, inserter );
+        else
+            m_redisContext->xread< TRedisMsgByStreamInserter >( topicSV, readOffsetSV, readBlockTimeout, inserter );
 
+        if ( !m_redisReadMsgs.empty() )
+        {
+            TRedisMsgVector& msgs = (*(m_redisReadMsgs.begin())).second;
+            TRedisMsgVector::iterator i = msgs.begin();
+            while ( i != msgs.end() )
+            {
+                std::string& msgId = (*i).first;                
+                TRedisMsgAttributes& msgAttribs = (*i).second;
 
-        return totalSuccess;
+                TRedisMsgAttributes::iterator n = msgAttribs.begin();
+                while ( n != msgAttribs.end() )
+                {
+                    ++n;
+                }
+
+                m_readOffset = msgId;
+                ++i;
+            }
+        }
+        return true;
     }
     catch ( const sw::redis::OomError& e )
     {
@@ -470,7 +560,7 @@ CRedisClusterPubSubClientTopic::RedisRead( void )
         GUCEF_EXCEPTION_LOG( CORE::LOGLEVEL_IMPORTANT, "RedisClusterPubSubClientTopic(" + CORE::PointerToString( this ) + "):RedisSendSyncImpl: Redis++ MovedError (Redirect failed?) . Current slot: " +
                                 CORE::ToString( m_redisHashSlot ) + ", new slot: " + CORE::ToString( e.slot() ) + " at node " + e.node().host + ":" + CORE::ToString( e.node().port ) +
                                 " exception: " + e.what() );
-        RedisDisconnect();
+        Disconnect();
         m_redisReconnectTimer->SetEnabled( true );
         return false;
     }
@@ -481,7 +571,7 @@ CRedisClusterPubSubClientTopic::RedisRead( void )
                                 CORE::ToString( m_redisHashSlot ) + ", new slot: " + CORE::ToString( e.slot() ) + " at node " + e.node().host + ":" + CORE::ToString( e.node().port ) +
                                 " exception: " + e.what() );
 
-        RedisDisconnect();
+        Disconnect();
         m_redisReconnectTimer->SetEnabled( true );
         return false;
     }
@@ -489,7 +579,7 @@ CRedisClusterPubSubClientTopic::RedisRead( void )
     {
 		++m_redisErrorReplies;
         GUCEF_EXCEPTION_LOG( CORE::LOGLEVEL_IMPORTANT, "RedisClusterPubSubClientTopic(" + CORE::PointerToString( this ) + "):RedisSendSyncImpl: Redis++ exception: " + e.what() );
-        RedisDisconnect();
+        Disconnect();
         m_redisReconnectTimer->SetEnabled( true );
         return false;
     }
@@ -538,12 +628,12 @@ CRedisClusterPubSubClientTopic::CalculateRedisHashSlot( const CORE::CString& key
 /*-------------------------------------------------------------------------*/
 
 bool
-CRedisClusterPubSubClientTopic::RedisDisconnect( void )
+CRedisClusterPubSubClientTopic::Disconnect( void )
 {GUCEF_TRACE;
 
     try
     {
-        GUCEF_LOG( CORE::LOGLEVEL_NORMAL, "RedisClusterPubSubClientTopic(" + CORE::PointerToString( this ) + "):RedisDisconnect: Beginning cleanup" );
+        GUCEF_LOG( CORE::LOGLEVEL_NORMAL, "RedisClusterPubSubClientTopic(" + CORE::PointerToString( this ) + "):Disconnect: Beginning cleanup" );
 
         delete m_redisPipeline;
         m_redisPipeline = GUCEF_NULL;
@@ -551,23 +641,23 @@ CRedisClusterPubSubClientTopic::RedisDisconnect( void )
         // the parent client owns the context, we just null it
         m_redisContext = GUCEF_NULL;
 
-        GUCEF_LOG( CORE::LOGLEVEL_NORMAL, "RedisClusterPubSubClientTopic(" + CORE::PointerToString( this ) + "):RedisDisconnect: Finished cleanup" );
+        GUCEF_LOG( CORE::LOGLEVEL_NORMAL, "RedisClusterPubSubClientTopic(" + CORE::PointerToString( this ) + "):Disconnect: Finished cleanup" );
     }
     catch ( const sw::redis::OomError& e )
     {
 		++m_redisErrorReplies;
-        GUCEF_WARNING_LOG( CORE::LOGLEVEL_IMPORTANT, "RedisClusterPubSubClientTopic(" + CORE::PointerToString( this ) + "):RedisDisconnect: Redis++ OOM exception: " + e.what() );
+        GUCEF_WARNING_LOG( CORE::LOGLEVEL_IMPORTANT, "RedisClusterPubSubClientTopic(" + CORE::PointerToString( this ) + "):Disconnect: Redis++ OOM exception: " + e.what() );
         return false;
     }
     catch ( const sw::redis::Error& e )
     {
 		++m_redisErrorReplies;
-        GUCEF_EXCEPTION_LOG( CORE::LOGLEVEL_IMPORTANT, "RedisClusterPubSubClientTopic(" + CORE::PointerToString( this ) + "):RedisDisconnect: Redis++ exception: " + e.what() );
+        GUCEF_EXCEPTION_LOG( CORE::LOGLEVEL_IMPORTANT, "RedisClusterPubSubClientTopic(" + CORE::PointerToString( this ) + "):Disconnect: Redis++ exception: " + e.what() );
         return false;
     }
     catch ( const std::exception& e )
     {
-        GUCEF_EXCEPTION_LOG( CORE::LOGLEVEL_IMPORTANT, "RedisClusterPubSubClientTopic(" + CORE::PointerToString( this ) + "):RedisDisconnect: exception: " + e.what() );
+        GUCEF_EXCEPTION_LOG( CORE::LOGLEVEL_IMPORTANT, "RedisClusterPubSubClientTopic(" + CORE::PointerToString( this ) + "):Disconnect: exception: " + e.what() );
         return false;
     }
 
@@ -576,11 +666,20 @@ CRedisClusterPubSubClientTopic::RedisDisconnect( void )
 
 /*-------------------------------------------------------------------------*/
 
-bool
-CRedisClusterPubSubClientTopic::RedisConnect( void )
+bool 
+CRedisClusterPubSubClientTopic::IsConnected( void )
 {GUCEF_TRACE;
 
-    RedisDisconnect();
+    return GUCEF_NULL != m_redisContext && ( !m_config.preferDedicatedConnection || GUCEF_NULL != m_redisPipeline );
+}
+
+/*-------------------------------------------------------------------------*/
+
+bool
+CRedisClusterPubSubClientTopic::Connect( void )
+{GUCEF_TRACE;
+
+    Disconnect();
     
     try
     {
@@ -599,37 +698,50 @@ CRedisClusterPubSubClientTopic::RedisConnect( void )
             {
                 m_redisShardHost = (*i).second.host;
                 m_redisShardNodeId = (*i).second.nodeId;
-                GUCEF_LOG( CORE::LOGLEVEL_NORMAL, "RedisClusterPubSubClientTopic(" + CORE::PointerToString( this ) + "):RedisConnect: Stream \"" + m_config.topicName +
+                GUCEF_LOG( CORE::LOGLEVEL_NORMAL, "RedisClusterPubSubClientTopic(" + CORE::PointerToString( this ) + "):Connect: Stream \"" + m_config.topicName +
                     "\" hashes to hash slot " + CORE::ToString( m_redisHashSlot ) + " which lives at " + (*i).second.host.HostnameAndPortAsString() + " with node id " + (*i).second.nodeId );
                 break;
             }
             ++i;
         }
 
-        // Connect to the specific shard used for this channel's stream with a single dedicated connection
-        sw::redis::StringView cnSV( m_config.topicName.C_String(), m_config.topicName.Length() );
-        delete m_redisPipeline;
-        m_redisPipeline = new sw::redis::Pipeline( m_redisContext->pipeline( cnSV ) );
+        if ( m_config.preferDedicatedConnection )
+        {        
+            // Connect to the specific shard used for this channel's stream with a single dedicated connection
+            sw::redis::StringView cnSV( m_config.topicName.C_String(), m_config.topicName.Length() );
+            delete m_redisPipeline;
+            m_redisPipeline = new sw::redis::Pipeline( m_redisContext->pipeline( cnSV ) );
 
-        GUCEF_LOG( CORE::LOGLEVEL_NORMAL, "RedisClusterPubSubClientTopic(" + CORE::PointerToString( this ) + "):RedisConnect: Successfully created a Redis pipeline. Hash Slot " + CORE::ToString( m_redisHashSlot ) );
+            GUCEF_LOG( CORE::LOGLEVEL_NORMAL, "RedisClusterPubSubClientTopic(" + CORE::PointerToString( this ) + "):Connect: Successfully created a Redis pipeline. Hash Slot " + CORE::ToString( m_redisHashSlot ) );
+        }
+
+        if ( m_config.needSubscribeSupport && !m_readerThread.IsNULL() )
+        {
+            // We use long polling reads which means we will need a dedicated thread to block until there is data
+            if ( !m_client->GetThreadPool()->StartTask( m_readerThread ) )
+            {
+                GUCEF_ERROR_LOG( CORE::LOGLEVEL_IMPORTANT, "RedisClusterPubSubClientTopic(" + CORE::PointerToString( this ) + "):Connect: Failed to start blocking reader thread for async subscription" );
+                return false;
+            }
+        }
         return true;
     }
     catch ( const sw::redis::OomError& e )
     {
 		++m_redisErrorReplies;
-        GUCEF_WARNING_LOG( CORE::LOGLEVEL_IMPORTANT, "RedisClusterPubSubClientTopic(" + CORE::PointerToString( this ) + "):RedisConnect: Redis++ OOM exception: " + e.what() );
+        GUCEF_WARNING_LOG( CORE::LOGLEVEL_IMPORTANT, "RedisClusterPubSubClientTopic(" + CORE::PointerToString( this ) + "):Connect: Redis++ OOM exception: " + e.what() );
         return false;
     }
     catch ( const sw::redis::Error& e )
     {
 		++m_redisErrorReplies;
-        GUCEF_EXCEPTION_LOG( CORE::LOGLEVEL_IMPORTANT, "RedisClusterPubSubClientTopic(" + CORE::PointerToString( this ) + "):RedisConnect: Redis++ exception: " + e.what() );
+        GUCEF_EXCEPTION_LOG( CORE::LOGLEVEL_IMPORTANT, "RedisClusterPubSubClientTopic(" + CORE::PointerToString( this ) + "):Connect: Redis++ exception: " + e.what() );
         m_redisReconnectTimer->SetEnabled( true );
         return false;
     }
     catch ( const std::exception& e )
     {
-        GUCEF_EXCEPTION_LOG( CORE::LOGLEVEL_IMPORTANT, "RedisClusterPubSubClientTopic(" + CORE::PointerToString( this ) + "):RedisConnect: exception: " + e.what() );
+        GUCEF_EXCEPTION_LOG( CORE::LOGLEVEL_IMPORTANT, "RedisClusterPubSubClientTopic(" + CORE::PointerToString( this ) + "):Connect: exception: " + e.what() );
         m_redisReconnectTimer->SetEnabled( true );
         return false;
     }
@@ -654,7 +766,7 @@ CRedisClusterPubSubClientTopic::OnRedisReconnectTimerCycle( CORE::CNotifier* not
                                                             CORE::CICloneable* eventData )
 {GUCEF_TRACE;
 
-    if ( RedisConnect() )
+    if ( Connect() )
     {
         m_redisReconnectTimer->SetEnabled( false );
     }
@@ -671,6 +783,7 @@ CRedisClusterPubSubClient::CRedisClusterPubSubClient( const COMCORE::CPubSubClie
     , m_metricsTimer( GUCEF_NULL )
     , m_redisReconnectTimer( GUCEF_NULL )
     , m_topicMap()
+    , m_threadPool()
 {GUCEF_TRACE;
 
     if ( GUCEF_NULL != config.pulseGenerator )
@@ -696,7 +809,10 @@ CRedisClusterPubSubClient::CRedisClusterPubSubClient( const COMCORE::CPubSubClie
         {
             m_redisReconnectTimer = new CORE::CTimer( config.reconnectDelayInMs );
         }
-    }    
+    }
+    
+    if ( config.desiredFeatures.supportsSubscribing )
+        m_threadPool = CORE::CCoreGlobal::Instance()->GetTaskManager().GetOrCreateThreadPool( "RedisClusterPubSubClient(" + CORE::ToString( this ) + ")", true );
 
     RegisterEventHandlers();
 }
@@ -706,6 +822,9 @@ CRedisClusterPubSubClient::CRedisClusterPubSubClient( const COMCORE::CPubSubClie
 CRedisClusterPubSubClient::~CRedisClusterPubSubClient()
 {GUCEF_TRACE;
 
+    if ( !m_threadPool.IsNULL() )
+        m_threadPool->RequestAllThreadsToStop( true, false );
+    
     delete m_metricsTimer;
     m_metricsTimer = GUCEF_NULL;
 
@@ -724,6 +843,15 @@ CRedisClusterPubSubClient::GetConfig( void )
 
 /*-------------------------------------------------------------------------*/
 
+CORE::ThreadPoolPtr 
+CRedisClusterPubSubClient::GetThreadPool( void )
+{GUCEF_TRACE;
+
+    return m_threadPool;
+}
+
+/*-------------------------------------------------------------------------*/
+
 bool
 CRedisClusterPubSubClient::GetSupportedFeatures( COMCORE::CPubSubClientFeatures& features )
 {GUCEF_TRACE;
@@ -736,6 +864,7 @@ CRedisClusterPubSubClient::GetSupportedFeatures( COMCORE::CPubSubClientFeatures&
     features.supportsPublishing = true;
     features.supportsSubscribing = true;
     features.supportsMetrics = true;
+    features.supportsAutoReconnect = true;
     return true;
 }
 
@@ -951,7 +1080,7 @@ CRedisClusterPubSubClient::Disconnect( void )
         TTopicMap::iterator i = m_topicMap.begin();
         while ( i != m_topicMap.end() )
         {
-            (*i).second->RedisDisconnect();
+            (*i).second->Disconnect();
             ++i;
         }
 
@@ -1020,7 +1149,7 @@ CRedisClusterPubSubClient::Connect( void )
         TTopicMap::iterator i = m_topicMap.begin();
         while ( i != m_topicMap.end() )
         {
-            (*i).second->RedisConnect();
+            (*i).second->Connect();
             ++i;
         }
 

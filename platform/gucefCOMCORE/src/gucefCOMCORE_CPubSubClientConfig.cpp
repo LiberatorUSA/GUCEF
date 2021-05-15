@@ -46,6 +46,7 @@ namespace COMCORE {
 
 CPubSubClientConfig::CPubSubClientConfig( void )
     : CORE::CIConfigurable()
+    , pubsubClientType()
     , desiredFeatures()
     , customConfig()
     , pulseGenerator( GUCEF_NULL )
@@ -59,6 +60,7 @@ CPubSubClientConfig::CPubSubClientConfig( void )
 
 CPubSubClientConfig::CPubSubClientConfig( const CPubSubClientConfig& src )
     : CORE::CIConfigurable()
+    , pubsubClientType( src.pubsubClientType )
     , desiredFeatures( src.desiredFeatures )
     , customConfig( src.customConfig )
     , pulseGenerator( src.pulseGenerator )
@@ -80,7 +82,8 @@ CPubSubClientConfig::~CPubSubClientConfig()
 bool 
 CPubSubClientConfig::SaveConfig( CORE::CDataNode& tree ) const
 {GUCEF_TRACE;
-
+    
+    tree.SetAttribute( "pubsubClientType", pubsubClientType );
     tree.SetAttribute( "reconnectDelayInMs", reconnectDelayInMs );
     tree.SetAttribute( "remoteAddress", remoteAddress.HostnameAndPortAsString() );
    
@@ -102,6 +105,7 @@ bool
 CPubSubClientConfig::LoadConfig( const CORE::CDataNode& cfg )
 {GUCEF_TRACE;
 
+    pubsubClientType = CORE::ResolveVars( cfg.GetAttributeValueOrChildValueByName( "pubsubClientType", pubsubClientType ) );
     reconnectDelayInMs = CORE::StringToUInt32( CORE::ResolveVars( cfg.GetAttributeValueOrChildValueByName( "reconnectDelayInMs" ) ), reconnectDelayInMs );
     remoteAddress.SetHostnameAndPort( CORE::ResolveVars( cfg.GetAttributeValueOrChildValueByName( "remoteAddress", remoteAddress.HostnameAndPortAsString() ) ) );
     
@@ -115,7 +119,8 @@ CPubSubClientConfig::LoadConfig( const CORE::CDataNode& cfg )
     const CORE::CDataNode* newDesiredFeatures = cfg.FindChild( "DesiredFeatures" );
     if ( GUCEF_NULL != newDesiredFeatures )
     {
-        desiredFeatures.LoadConfig( *newDesiredFeatures );
+        if ( !desiredFeatures.LoadConfig( *newDesiredFeatures ) )
+            return false;
     }
     return true;
 }

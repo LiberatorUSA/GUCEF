@@ -532,11 +532,11 @@ CIniParser::LoadFrom( CIOAccess& fileAccess )
                         {
                             // get the key and value strings
                             CString sectionBeforeEquals = StripQuotation( line.SubstrFromRange( 0, equalsIndex ) );
-                            CString sectionAfterEquals = StripQuotation( line.SubstrFromRange( equalsIndex+1, line.Length() ) );
+                            CString sectionAfterEquals = line.SubstrFromRange( equalsIndex+1, line.Length() );
 
                             if ( ( sectionBeforeEquals.Length() > 0 ) &&
                                  ( sectionAfterEquals.Length() > 0 )   )
-                            {
+                            {                                
                                 if ( isNewSection )
                                 {
                                     TIniSection dummySection;
@@ -549,6 +549,7 @@ CIniParser::LoadFrom( CIOAccess& fileAccess )
                                     isNewSection = false;
                                 }
 
+                                sectionAfterEquals = StripQuotation( sectionAfterEquals );
                                 TIniSection& newSection = (*m_iniData.rbegin());
                                 newSection.sectionData.Set( sectionBeforeEquals, sectionAfterEquals );
                             }

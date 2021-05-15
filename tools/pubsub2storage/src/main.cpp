@@ -261,14 +261,21 @@ GUCEF_OSMAIN_BEGIN
     GUCEF_OSMAIN_SIGNAL_HANDLER( GucefAppSignalHandler );
 
     PubSub2Storage pubSub2Storage;
-    if ( !pubSub2Storage.LoadConfig( keyValueList, *globalConfig ) )
+    if ( !pubSub2Storage.LoadConfig( *globalConfig ) )
+    {
+        GUCEF_ERROR_LOG( CORE::LOGLEVEL_CRITICAL, "pubsub2storage: Exiting because LoadConfig of global config failed" );
+        delete globalConfig;
+        return -1;
+    }
+    delete globalConfig;
+    
+    if ( !pubSub2Storage.LoadConfig( keyValueList ) )
     {
         delete globalConfig;
         GUCEF_ERROR_LOG( CORE::LOGLEVEL_CRITICAL, "pubsub2storage: Exiting because LoadConfig failed" );
         return -1;
     }
-    delete globalConfig;
-
+    
     if ( !pubSub2Storage.Start() )
     {
         GUCEF_ERROR_LOG( CORE::LOGLEVEL_CRITICAL, "pubsub2storage: Failed to Start()" );

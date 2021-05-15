@@ -142,10 +142,10 @@ CLogManager::CLogManager( void )
     , m_dataLock()
 {GUCEF_TRACE;
 
-    m_defaultLogFormatter = "charsep";
-    m_logFormatterFactory.RegisterConcreteFactory( "basicbracket", &basicBracketLoggingFormatterFactory );
-    m_logFormatterFactory.RegisterConcreteFactory( "json", &jsonLoggingFormatterFactory );
-    m_logFormatterFactory.RegisterConcreteFactory( "charsep", &charSepLoggingFormatterFactory );
+    m_defaultLogFormatter = CCharSepLoggingFormatter::TypeName;
+    m_logFormatterFactory.RegisterConcreteFactory( CBasicBracketLoggingFormatter::TypeName, &basicBracketLoggingFormatterFactory );
+    m_logFormatterFactory.RegisterConcreteFactory( CJsonLoggingFormatter::TypeName, &jsonLoggingFormatterFactory );
+    m_logFormatterFactory.RegisterConcreteFactory( CCharSepLoggingFormatter::TypeName, &charSepLoggingFormatterFactory );
 
     #if ( GUCEF_PLATFORM == GUCEF_PLATFORM_ANDROID )
     AddLogger( &androidSystemLogger);

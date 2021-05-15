@@ -74,7 +74,6 @@
 ChannelSettings::ChannelSettings( void )
     : pubsubClientConfig()
     , pubsubClientTopicConfigs()
-    , pubsubClientType()
     , channelId( -1 )
     , ticketRefillOnBusyCycle( GUCEF_DEFAULT_TICKET_REFILLS_ON_BUSY_CYCLE )
     , performPubSubInDedicatedThread( true )
@@ -92,7 +91,6 @@ ChannelSettings::ChannelSettings( void )
 ChannelSettings::ChannelSettings( const ChannelSettings& src )
     : pubsubClientConfig( src.pubsubClientConfig )
     , pubsubClientTopicConfigs( src.pubsubClientTopicConfigs )
-    , pubsubClientType( src.pubsubClientType )
     , channelId( src.channelId )
     , ticketRefillOnBusyCycle( src.ticketRefillOnBusyCycle )
     , performPubSubInDedicatedThread( src.performPubSubInDedicatedThread )
@@ -115,7 +113,6 @@ ChannelSettings::operator=( const ChannelSettings& src )
     {
         pubsubClientConfig = src.pubsubClientConfig;
         pubsubClientTopicConfigs = src.pubsubClientTopicConfigs;
-        pubsubClientType = src.pubsubClientType;
         channelId = src.channelId;
         ticketRefillOnBusyCycle = src.ticketRefillOnBusyCycle;
         performPubSubInDedicatedThread = src.performPubSubInDedicatedThread;
@@ -143,7 +140,6 @@ ChannelSettings::SaveConfig( CORE::CDataNode& tree ) const
     tree.SetAttribute( "cpuAffinityForMainChannelThread", cpuAffinityForMainChannelThread );
     tree.SetAttribute( "collectMetrics", collectMetrics );
 
-    tree.SetAttribute( "pubsubClientType", pubsubClientType );    
     CORE::CDataNode* psClientConfig = tree.Structure( "PubSubClientConfig", '/' );
     if ( !pubsubClientConfig.SaveConfig( *psClientConfig ) )
     {
@@ -187,6 +183,14 @@ ChannelSettings::LoadConfig( const CORE::CDataNode& tree )
             GUCEF_ERROR_LOG( CORE::LOGLEVEL_NORMAL, "ChannelSettings:LoadConfig: config is unacceptable, failed to load mandatory PubSubClientConfig section" );
             return false;
         }
+
+        // There is no sane default of pubsubClientType since it depends on the clients loaded into the application
+        // as such this is a mandatory setting to provide
+        if ( pubsubClientConfig.pubsubClientType.IsNULLOrEmpty() )
+        {
+            GUCEF_ERROR_LOG( CORE::LOGLEVEL_NORMAL, "ChannelSettings:LoadConfig: config is malformed, \"pubsubClientType\" was not provided" );
+            return false;
+        }    
     }
     else
     {
@@ -217,15 +221,6 @@ ChannelSettings::LoadConfig( const CORE::CDataNode& tree )
         GUCEF_ERROR_LOG( CORE::LOGLEVEL_NORMAL, "ChannelSettings:LoadConfig: config is malformed, having at least one PubSubClientTopicConfig section is mandatory" );
         return false;
     }
-
-    // There is no sane default of pubsubClientType since it depends on the clients loaded into the application
-    // as such this is a mandatory setting to provide
-    pubsubClientType = CORE::ResolveVars( tree.GetAttributeValueOrChildValueByName( "pubsubClientType", pubsubClientType ) );
-    if ( pubsubClientType.IsNULLOrEmpty() )
-    {
-        GUCEF_ERROR_LOG( CORE::LOGLEVEL_NORMAL, "ChannelSettings:LoadConfig: config is malformed, \"pubsubClientType\" was not provided" );
-        return false;
-    }    
     
     channelId = CORE::StringToInt32( CORE::ResolveVars( tree.GetAttributeValueOrChildValueByName( "channelId" ) ), channelId );
     ticketRefillOnBusyCycle = CORE::StringToUInt32( CORE::ResolveVars( tree.GetAttributeValueOrChildValueByName( "ticketRefillOnBusyCycle" ) ), ticketRefillOnBusyCycle );
@@ -375,12 +370,12 @@ CPubSubClientChannel::ConnectPubSubClient( void )
     {
         // Create and configure the pub-sub client
         m_channelSettings.pubsubClientConfig.pulseGenerator = GetPulseGenerator();
-        m_pubsubClient = COMCORE::CComCoreGlobal::Instance()->GetPubSubClientFactory().Create( m_channelSettings.pubsubClientType, m_channelSettings.pubsubClientConfig );
+        m_pubsubClient = COMCORE::CComCoreGlobal::Instance()->GetPubSubClientFactory().Create( m_channelSettings.pubsubClientConfig.pubsubClientType, m_channelSettings.pubsubClientConfig );
 
         if ( m_pubsubClient.IsNULL() )
         {
             GUCEF_ERROR_LOG( CORE::LOGLEVEL_CRITICAL, "PubSubClientChannel(" + CORE::PointerToString( this ) +
-                "):OnTaskStart: Failed to create a pub-sub client of type \"" + m_channelSettings.pubsubClientType + "\". Cannot proceed" );        
+                "):OnTaskStart: Failed to create a pub-sub client of type \"" + m_channelSettings.pubsubClientConfig.pubsubClientType + "\". Cannot proceed" );        
             return false;
         }
 
@@ -399,7 +394,7 @@ CPubSubClientChannel::ConnectPubSubClient( void )
     {
         GUCEF_ERROR_LOG( CORE::LOGLEVEL_NORMAL, "PubSubClientChannel(" + CORE::PointerToString( this ) +
             "):ConnectPubSubClient: Failed to connect the pub-sub client" );
-        return false;                    
+        return false;
     }
 
     // Create and configure the pub-sub client's topics
@@ -427,6 +422,13 @@ CPubSubClientChannel::ConnectPubSubClient( void )
         SubscribeTo( topic );
         m_topics.push_back( topic );
         ++i;
+    }
+
+    TopicVector::iterator t = m_topics.begin();
+    while ( t != m_topics.end() )
+    {
+        (*t)->Connect();
+        ++t;
     }
 
     return true;
@@ -966,7 +968,7 @@ RestApiPubSub2StorageConfigResource::Deserialize( const CORE::CString& resourceP
                 return TDeserializeState::DESERIALIZESTATE_UNABLETOUPDATE;
 
             const CORE::CDataNode& globalConfig = m_app->GetGlobalConfig();
-            if ( m_app->LoadConfig( loadedAppConfig, globalConfig ) )
+            if ( m_app->LoadConfig( loadedAppConfig ) )
             {
                 if ( !m_app->IsGlobalStandbyEnabled() )
                 {
@@ -1013,7 +1015,7 @@ RestApiPubSub2StorageConfigResource::Deserialize( const CORE::CString& resourceP
         else
         {
             const CORE::CValueList& loadedAppConfig = m_app->GetAppConfig();
-            if ( m_app->LoadConfig( loadedAppConfig, input ) )
+            if ( m_app->LoadConfig( input ) )
             {
                 return TDeserializeState::DESERIALIZESTATE_SUCCEEDED;
             }
@@ -1029,6 +1031,7 @@ RestApiPubSub2StorageConfigResource::Deserialize( const CORE::CString& resourceP
 
 PubSub2Storage::PubSub2Storage( void )
     : CORE::CObserver()
+    , CORE::CIConfigurable()
     , m_isInStandby( false )
     , m_globalStandbyEnabled( false )
     , m_udpStartPort()
@@ -1039,6 +1042,7 @@ PubSub2Storage::PubSub2Storage( void )
     , m_redisPort()
     , m_channels()
     , m_channelSettings()
+    , m_templateChannelSettings()
     , m_httpServer()
     , m_httpRouter()
     , m_appConfig()
@@ -1084,7 +1088,7 @@ PubSub2Storage::Start( void )
         GUCEF_LOG( CORE::LOGLEVEL_IMPORTANT, "PubSub2Storage: Opening REST API" );
         return m_httpServer.Listen();
     }
-    return errorOccured;
+    return !errorOccured;
 }
 
 /*-------------------------------------------------------------------------*/
@@ -1224,86 +1228,46 @@ PubSub2Storage::SetStandbyMode( bool putInStandbyMode )
 /*-------------------------------------------------------------------------*/
 
 bool
-PubSub2Storage::LoadConfig( const CORE::CValueList& appConfig   ,
-                            const CORE::CDataNode& globalConfig )
+PubSub2Storage::LoadConfig( const CORE::CValueList& appConfig )
 {GUCEF_TRACE;
 
-    m_transmitMetrics = CORE::StringToBool( appConfig.GetValueAlways( "TransmitMetrics" ), true );
     m_globalStandbyEnabled = CORE::StringToBool( appConfig.GetValueAlways( "GlobalStandbyEnabled" ), false );
-
     m_channelCount = CORE::StringToUInt16( CORE::ResolveVars( appConfig.GetValueAlways( "ChannelCount", "1" ) ) );
     m_storageStartChannelID = CORE::StringToInt32( CORE::ResolveVars(  appConfig.GetValueAlways( "StorageStartChannelID", "1" ) ) );
 
-    CORE::UInt32 ticketRefillOnBusyCycle = CORE::StringToUInt32( CORE::ResolveVars( appConfig.GetValueAlways( "TicketRefillOnBusyCycle" ) ), GUCEF_DEFAULT_TICKET_REFILLS_ON_BUSY_CYCLE );
-    bool performPubSubInDedicatedThread = CORE::StringToBool( CORE::ResolveVars( appConfig.GetValueAlways( "PerformPubSubInDedicatedThread" ) ), true );
-    CORE::Int32 maxSizeOfDedicatedPubSubBulkMailRead = CORE::StringToInt32( CORE::ResolveVars( appConfig.GetValueAlways( "MaxSizeOfDedicatedPubSubBulkMailRead" ) ), GUCEF_DEFAULT_MAX_DEDICATED_REDIS_WRITER_MAIL_BULK_READ );
-    bool applyCpuThreadAffinityByDefault = CORE::StringToBool( CORE::ResolveVars( appConfig.GetValueAlways( "ApplyCpuThreadAffinityByDefault" )  ), false );
-    
+    bool applyCpuThreadAffinityByDefault = CORE::StringToBool( CORE::ResolveVars( appConfig.GetValueAlways( "ApplyCpuThreadAffinityByDefault" )  ), false );    
     CORE::UInt32 logicalCpuCount = CORE::GetLogicalCPUCount();
 
     CORE::UInt32 currentCpu = 0;
     CORE::Int32 maxChannelId = m_storageStartChannelID + m_channelCount;
     for ( CORE::Int32 channelId = m_storageStartChannelID; channelId < maxChannelId; ++channelId )
     {
-        ChannelSettings& channelSettings = m_channelSettings[ channelId ];
-
-        channelSettings.channelId = channelId;
-        channelSettings.collectMetrics = m_transmitMetrics;
-        channelSettings.ticketRefillOnBusyCycle = ticketRefillOnBusyCycle;
-        channelSettings.applyThreadCpuAffinity = applyCpuThreadAffinityByDefault;
-
-        CORE::CString settingName ;//= "ChannelSetting." + CORE::Int32ToString( channelId ) + ".PubSubTopicName";
-        CORE::CString settingValue;// = appConfig.GetValueAlways( settingName );
-        //if ( !settingValue.IsNULLOrEmpty() )
-        //{
-        //    channelSettings.to = CORE::ResolveVars( settingValue.ReplaceSubstr( "{channelID}", CORE::Int32ToString( channelId ) ) );
-        //}
-        //else
-        //{
-        //    // Use the auto naming and numbering scheme based on a single template name instead
-        //    channelSettings.channelStreamName = CORE::ResolveVars( m_redisStreamName.ReplaceSubstr( "{channelID}", CORE::Int32ToString( channelId ) ) );
-        //}
-
-        settingName = "ChannelSetting." + CORE::Int32ToString( channelId ) + ".ApplyCpuThreadAffinity";
-        settingValue = appConfig.GetValueAlways( settingName );
-        if ( !settingValue.IsNULLOrEmpty() )
+        ChannelSettings* channelSettings = GUCEF_NULL;
+        ChannelSettingsMap::iterator s = m_channelSettings.find( channelId );
+        if ( s == m_channelSettings.end() )
         {
-            channelSettings.applyThreadCpuAffinity = CORE::StringToBool( CORE::ResolveVars( settingValue ), applyCpuThreadAffinityByDefault );
+            channelSettings = &m_channelSettings[ channelId ];
+            *channelSettings = m_templateChannelSettings;
+
+            if ( -1 == channelSettings->channelId )
+                channelSettings->channelId = channelId;
         }
         else
         {
-            channelSettings.applyThreadCpuAffinity = applyCpuThreadAffinityByDefault;
+            channelSettings = &m_channelSettings[ channelId ];
         }
 
-        if ( channelSettings.applyThreadCpuAffinity )
+        if ( channelSettings->applyThreadCpuAffinity || applyCpuThreadAffinityByDefault )
         {
-            settingName = "ChannelSetting." + CORE::Int32ToString( channelId ) + ".CpuAffinityForMainChannelThread";
-            settingValue = appConfig.GetValueAlways( settingName );
-            if ( !settingValue.IsNULLOrEmpty() )
-            {
-                channelSettings.cpuAffinityForMainChannelThread = CORE::StringToUInt32( CORE::ResolveVars( settingValue ), currentCpu );
-            }
-            else
-            {
-                channelSettings.cpuAffinityForMainChannelThread = currentCpu;
-            }
+            channelSettings->cpuAffinityForMainChannelThread = currentCpu;
 
             ++currentCpu;
             if ( currentCpu >= logicalCpuCount ) // Wrap around if we run out of CPUs
                 currentCpu = 0;
 
-            if ( channelSettings.performPubSubInDedicatedThread )
+            if ( channelSettings->performPubSubInDedicatedThread )
             {
-                settingName = "ChannelSetting." + CORE::Int32ToString( channelId ) + ".CpuAffinityForDedicatedPubSubThread";
-                settingValue = appConfig.GetValueAlways( settingName );
-                if ( !settingValue.IsNULLOrEmpty() )
-                {
-                    channelSettings.cpuAffinityForDedicatedPubSubThread = CORE::StringToUInt32( CORE::ResolveVars( settingValue ), currentCpu );
-                }
-                else
-                {
-                    channelSettings.cpuAffinityForDedicatedPubSubThread = currentCpu;
-                }
+                channelSettings->cpuAffinityForDedicatedPubSubThread = currentCpu;
 
                 ++currentCpu;
                 if ( currentCpu >= logicalCpuCount ) // Wrap around if we run out of CPUs
@@ -1313,18 +1277,110 @@ PubSub2Storage::LoadConfig( const CORE::CValueList& appConfig   ,
     }
 
     m_appConfig = appConfig;
-    m_globalConfig.Copy( globalConfig );
 
-    m_httpServer.SetPort( CORE::StringToUInt16( CORE::ResolveVars( appConfig.GetValueAlways( "RestApiPort", "10000" ) ) ) );
-
+    m_httpServer.SetPort( CORE::StringToUInt16( CORE::ResolveVars( appConfig.GetValueAlways( "RestApiPort" ) ), 10000 ) );
     m_httpRouter.SetResourceMapping( "/info", RestApiPubSub2StorageInfoResource::THTTPServerResourcePtr( new RestApiPubSub2StorageInfoResource( this ) )  );
     m_httpRouter.SetResourceMapping( "/config/appargs", RestApiPubSub2StorageConfigResource::THTTPServerResourcePtr( new RestApiPubSub2StorageConfigResource( this, true ) )  );
     m_httpRouter.SetResourceMapping( "/config", RestApiPubSub2StorageConfigResource::THTTPServerResourcePtr( new RestApiPubSub2StorageConfigResource( this, false ) )  );
     m_httpRouter.SetResourceMapping(  CORE::ResolveVars( appConfig.GetValueAlways( "RestBasicHealthUri", "/health/basic" ) ), RestApiPubSub2StorageConfigResource::THTTPServerResourcePtr( new WEB::CDummyHTTPServerResource() )  );
-
     m_httpServer.GetRouterController()->AddRouterMapping( &m_httpRouter, "", "" );
 
     return true;
+}
+
+/*-------------------------------------------------------------------------*/
+
+bool 
+PubSub2Storage::SaveConfig( CORE::CDataNode& tree ) const
+{GUCEF_TRACE;
+
+    // not fully supported right now
+
+    tree.Copy( m_globalConfig );
+    return true;
+}
+
+/*-------------------------------------------------------------------------*/
+
+bool 
+PubSub2Storage::LoadConfig( const CORE::CDataNode& cfg )
+{GUCEF_TRACE;
+
+    TChannelCfgMap channelMap;
+
+    CORE::CDataNode::TConstDataNodeSet channelParentCfgs = cfg.FindChildrenOfType( "Channels", true );
+    CORE::CDataNode::TConstDataNodeSet::iterator i = channelParentCfgs.begin();
+    while ( i != channelParentCfgs.end() )
+    {
+        CORE::CDataNode::const_iterator n = (*i)->ConstBegin();
+        while ( n != (*i)->ConstEnd() )
+        {
+            const CORE::CString& channelIndex = (*n)->GetName();
+            channelMap[ channelIndex ] = (*n)->FindChildrenOfType( "StorageChannel" );            
+            ++n;
+        }                
+        ++i;
+    }
+    GUCEF_LOG( CORE::LOGLEVEL_NORMAL, "PubSub2Storage:LoadConfig: Found " + CORE::ToString( channelMap.size() ) + " configuration entries for storage channels" );
+    
+    // load the template if any
+    TChannelCfgMap::iterator m = channelMap.find( "*" );
+    if ( m != channelMap.end() )
+    {
+        CORE::CDataNode::TConstDataNodeSet& matches = (*m).second;
+        if ( !matches.empty() )
+        {            
+            if ( m_templateChannelSettings.LoadConfig( *(*matches.begin()) ) )
+            {
+                GUCEF_LOG( CORE::LOGLEVEL_NORMAL, "PubSub2Storage:LoadConfig: Successfully loaded template config for storage channels" );
+            }
+            else
+            {
+                GUCEF_ERROR_LOG( CORE::LOGLEVEL_CRITICAL, "PubSub2Storage:LoadConfig: Failed to correctly load template config for storage channels" );
+                return false;
+            }
+        }
+    }
+
+    // load the specifically configured channels if any
+    m = channelMap.begin();
+    while ( m != channelMap.end() )
+    {
+        const CORE::CString& channelIndexStr = (*m).first;
+        if ( channelIndexStr != '*' )
+        {
+            CORE::CDataNode::TConstDataNodeSet& matches = (*m).second;
+            if ( !matches.empty() )
+            {            
+                CORE::Int32 channelIndex = CORE::StringToInt32( channelIndexStr );
+                ChannelSettings& channelSettings = m_channelSettings[ channelIndex ];
+
+                if ( channelSettings.LoadConfig( *(*matches.begin()) ) )
+                {
+                    GUCEF_LOG( CORE::LOGLEVEL_NORMAL, "PubSub2Storage:LoadConfig: Successfully loaded explicit config for storage channels " + channelIndexStr );
+                }
+                else
+                {
+                    GUCEF_ERROR_LOG( CORE::LOGLEVEL_CRITICAL, "PubSub2Storage:LoadConfig: Failed to correctly load explicit config for storage channels " + channelIndexStr );
+                    return false;
+                }
+            }
+        }
+        ++m;
+    }
+
+    m_globalConfig.Copy( cfg );
+    return true;
+}
+
+/*-------------------------------------------------------------------------*/
+
+const CORE::CString& 
+PubSub2Storage::GetClassTypeName( void ) const
+{GUCEF_TRACE;
+
+    static const CORE::CString classTypeName = "PubSub2Storage";
+    return classTypeName;
 }
 
 /*-------------------------------------------------------------------------*/

@@ -382,7 +382,8 @@ CCoreGlobal::Log( const TLogMsgType logMsgType ,
                   const Int32 logLevel         ,
                   const CString& logMessage    )
 {
-    m_logManager->Log( logMsgType, logLevel, logMessage ); 
+    if ( GUCEF_NULL != m_logManager  )
+        m_logManager->Log( logMsgType, logLevel, logMessage ); 
 }
 
 /*-------------------------------------------------------------------------*/
@@ -394,7 +395,8 @@ CCoreGlobal::Log( const TLogMsgType logMsgType ,
                   const UInt32 threadId        ,
                   const CDateTime& timestamp   )
 {
-    m_logManager->Log( logMsgType, logLevel, logMessage, threadId, timestamp );
+    if ( GUCEF_NULL != m_logManager  )
+        m_logManager->Log( logMsgType, logLevel, logMessage, threadId, timestamp );
 }
 
 /*-------------------------------------------------------------------------*/
