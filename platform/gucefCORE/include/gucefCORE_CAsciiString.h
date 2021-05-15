@@ -149,9 +149,9 @@ class GUCEF_CORE_PUBLIC_CPP CAsciiString
      *  If you wish to manipulate characters in a char buffer
      *  while still having containment as a string object this function
      *  is for you. It will set the string to have an unititialized char buffer
-     *  of stringSize bytes.
+     *  of bufferSize bytes.
      */
-    char* Reserve( const UInt32 stringSize );
+    char* Reserve( const UInt32 bufferSize, Int32 newLength = -1 );
 
     std::string STL_String( void ) const;
 

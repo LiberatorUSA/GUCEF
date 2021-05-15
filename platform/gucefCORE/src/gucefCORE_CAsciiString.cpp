@@ -620,16 +620,20 @@ CAsciiString::C_String( void )
 /*-------------------------------------------------------------------------*/
 
 char*
-CAsciiString::Reserve( const UInt32 stringSize )
-{
+CAsciiString::Reserve( const UInt32 bufferSize, Int32 newLength )
+{GUCEF_TRACE;
+
     delete []m_string;
     m_string = NULL;
 
-    if ( stringSize > 0 )
+    if ( bufferSize > 0 )
     {
-        m_string = new char[ stringSize ];
+        m_string = new char[ bufferSize ];
     }
-    m_length = stringSize;
+    m_length = bufferSize;
+    if ( newLength >= 0 )
+        m_length = (UInt32) newLength;
+
     return m_string;
 }
 

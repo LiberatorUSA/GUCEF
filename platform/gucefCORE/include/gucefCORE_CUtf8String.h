@@ -193,7 +193,7 @@ class GUCEF_CORE_PUBLIC_CPP CUtf8String
      *  is for you. It will set the string to have an unititialized char buffer
      *  of byteSize bytes.
      */
-    char* Reserve( const UInt32 byteSize );
+    char* Reserve( const UInt32 byteSize, Int32 newLength = -1 );
 
     std::string STL_String( void ) const;
 

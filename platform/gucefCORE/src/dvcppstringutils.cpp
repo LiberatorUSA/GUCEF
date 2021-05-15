@@ -226,6 +226,117 @@ ConvertBytesToHexString( const void* byteBuffer ,
 
 /*-------------------------------------------------------------------------*/
 
+CString 
+Base16Encode( const void* byteBuffer, UInt32 bufferSize )
+{GUCEF_TRACE;
+
+    return ConvertBytesToHexString( byteBuffer, bufferSize, false, false );
+}
+
+/*-------------------------------------------------------------------------*/
+
+static const char* base64_chars = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789+/";
+
+static const int base64_table[ 256 ] =
+{
+    0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,
+    0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,
+    0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  62, 63, 62, 62, 63,
+    52, 53, 54, 55, 56, 57, 58, 59, 60, 61, 0,  0,  0,  0,  0,  0,
+    0,  0,  1,  2,  3,  4,  5,  6,  7,  8,  9,  10, 11, 12, 13, 14,
+    15, 16, 17, 18, 19, 20, 21, 22, 23, 24, 25, 0,  0,  0,  0,  63,
+    0,  26, 27, 28, 29, 30, 31, 32, 33, 34, 35, 36, 37, 38, 39, 40,
+    41, 42, 43, 44, 45, 46, 47, 48, 49, 50, 51
+};
+
+/*-------------------------------------------------------------------------*/
+
+CString 
+Base64Encode( const void* byteBuffer, UInt32 bufferSize )
+{GUCEF_TRACE;
+
+    CString result;
+    UInt32 base64StrLength = ( ( bufferSize + 2 ) / 3 ) * 4;
+    char* str = result.Reserve( base64StrLength+1, (Int32) base64StrLength );
+
+    // Base64 encoding can really add up wrt size requirements
+    // We need to sanity check that we were able to allocate enough memory
+    if ( GUCEF_NULL == str || base64StrLength+1 != result.ByteSize() )
+        return CString::Empty;
+
+    memset( str, '=', base64StrLength );    
+    char* p = (char*) byteBuffer;
+    UInt32 j = 0, pad = bufferSize % 3;
+    const UInt32 last = bufferSize - pad;
+
+    for ( size_t i = 0; i < last; i+=3 )
+    {
+        int n = int( p[ i ] ) << 16 | int( p[ i + 1] ) << 8 | p[ i + 2 ];
+        str[ j++ ] = base64_chars[ n >> 18 ];
+        str[ j++ ] = base64_chars[ n >> 12 & 0x3F ];
+        str[ j++ ] = base64_chars[ n >> 6 & 0x3F ];
+        str[ j++ ] = base64_chars[ n & 0x3F ];
+    }
+
+    if ( pad > 0 )
+    {
+        int n = --pad ? int( p[ last ] ) << 8 | p[ last + 1 ] : p[ last ];
+        str[ j++ ] = base64_chars[ pad ? n >> 10 & 0x3F : n >> 2 ];
+        str[ j++ ] = base64_chars[ pad ? n >> 4 & 0x03F : n << 4 & 0x3F ];
+        str[ j++ ] = pad ? base64_chars[ n << 2 & 0x3F ] : '=';
+    }
+
+    str[ base64StrLength ] = '\0';
+    return result;
+}
+
+/*-------------------------------------------------------------------------*/
+
+bool
+Base64Decode( const CString& base64Str, void* byteBuffer, UInt32 bufferSize )
+{GUCEF_TRACE;
+
+    if ( bufferSize == 0 || base64Str.IsNULLOrEmpty() )
+        return false;
+
+    UInt32 base64StrLen = base64Str.ByteSize()-1;
+    const unsigned char* p = (const unsigned char*) base64Str.C_String();
+    
+    UInt32 j = 0,
+        pad1 = base64StrLen % 4 || p[ base64StrLen-1 ] == '=',
+        pad2 = pad1 && ( base64StrLen % 4 > 2 || p[ base64StrLen-2 ] != '=' );
+    const UInt32 last = ( base64StrLen - pad1 ) / 4 << 2;
+
+    UInt32 bufferSizeNeeded = ( last / 4 ) * 3 + pad1 + pad2;
+    if ( bufferSize < bufferSizeNeeded )
+        return false;
+
+    unsigned char* currentByte = (unsigned char*) byteBuffer;
+
+    for ( UInt32 i=0; i<last; i+=4 )
+    {
+        int n = base64_table[ p[ i ] ] << 18 | base64_table[ p[ i+1 ] ] << 12 | base64_table[ p[ i+2 ] ] << 6 | base64_table[ p[ i+3 ] ];
+        currentByte[ j++ ] = n >> 16;
+        currentByte[ j++ ] = n >> 8 & 0xFF;
+        currentByte[ j++ ] = n & 0xFF;
+    }
+
+    if ( pad1 > 0 )
+    {
+        int n = base64_table[ p[ last ] ] << 18 | base64_table[ p[ last+1 ] ] << 12;
+        currentByte[ j++ ] = n >> 16;
+        if ( pad2 > 0 )
+        {
+            n |= base64_table[ p[ last+2 ] ] << 6;
+            currentByte[ j++ ] = n >> 8 & 0xFF;
+        }
+    }
+
+    return true;
+}
+
+/*-------------------------------------------------------------------------*/
+
 CString
 ResolveVars( const CString& strWithVars )
 {GUCEF_TRACE;

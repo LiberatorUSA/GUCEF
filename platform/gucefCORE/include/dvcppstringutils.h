@@ -293,6 +293,27 @@ ConvertBytesToHexString( const void* byteBuffer ,
 /*-------------------------------------------------------------------------*/
 
 GUCEF_CORE_PUBLIC_CPP CString
+Base16Encode( const void* byteBuffer, UInt32 bufferSize );
+
+/*-------------------------------------------------------------------------*/
+
+GUCEF_CORE_PUBLIC_CPP CString
+Base64Encode( const void* byteBuffer, UInt32 bufferSize );
+
+/*-------------------------------------------------------------------------*/
+
+/**
+ *  Decodes a base64 encoded string into binary data
+ *
+ *  Note that if you make bufferSize base64Str.ByteSize() you will always have a buffer 
+ *  large enough since base 64 encoding never reduces the size of binary data
+ */
+GUCEF_CORE_PUBLIC_CPP bool
+Base64Decode( const CString& base64Str, void* byteBuffer, UInt32 bufferSize );
+
+/*-------------------------------------------------------------------------*/
+
+GUCEF_CORE_PUBLIC_CPP CString
 FloatToString( const float value );
 
 /*-------------------------------------------------------------------------*/
