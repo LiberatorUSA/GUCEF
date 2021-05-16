@@ -714,8 +714,11 @@ CVariant::AsVoidPtr( const void* defaultIfNeeded ) const
         case GUCEF_DATATYPE_FLOAT32: return &m_variantData.union_data.float32_data;
         case GUCEF_DATATYPE_FLOAT64: return &m_variantData.union_data.float64_data;
         case GUCEF_DATATYPE_BOOLEAN_INT32: return &m_variantData.union_data.int32_data;
-        case GUCEF_DATATYPE_BOOLEAN_ASCII_STRING: return &m_variantData.union_data.heap_data.heap_data;
-        case GUCEF_DATATYPE_BOOLEAN_UTF8_STRING: return &m_variantData.union_data.heap_data.heap_data;
+        case GUCEF_DATATYPE_BOOLEAN_ASCII_STRING: return m_variantData.union_data.heap_data.heap_data;
+        case GUCEF_DATATYPE_BOOLEAN_UTF8_STRING: return m_variantData.union_data.heap_data.heap_data;
+        case GUCEF_DATATYPE_ASCII_STRING: return m_variantData.union_data.heap_data.heap_data;
+        case GUCEF_DATATYPE_UTF8_STRING: return m_variantData.union_data.heap_data.heap_data;
+        case GUCEF_DATATYPE_BINARY: return m_variantData.union_data.heap_data.heap_data;
         default: return defaultIfNeeded;
     }
 }
@@ -1111,16 +1114,15 @@ CVariant::HeapReserve( UInt32 byteSize, bool allowReduction )
         {
             m_variantData.union_data.heap_data.heap_data = newBuffer;
             m_variantData.union_data.heap_data.heap_data_size = byteSize;
+            return newBuffer;
         }
         else
         {
             return GUCEF_NULL;
         }
     }
-    else
-    {
-        return m_variantData.union_data.heap_data.heap_data;    
-    }
+
+    return m_variantData.union_data.heap_data.heap_data;    
 }
 
 /*-------------------------------------------------------------------------*/
