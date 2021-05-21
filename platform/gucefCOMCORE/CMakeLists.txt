@@ -36,6 +36,7 @@ set( HEADER_FILES
   include/gucefCOMCORE_CIDiscoveryClient.h
   include/gucefCOMCORE_CIDiscoveryEntry.h
   include/gucefCOMCORE_CINetworkInterface.h
+  include/gucefCOMCORE_CIPubSubMsg.h
   include/gucefCOMCORE_CPingTaskConsumer.h
   include/gucefCOMCORE_CPubSubClient.h
   include/gucefCOMCORE_CPubSubClientConfig.h
@@ -76,6 +77,7 @@ set( SOURCE_FILES
   src/gucefCOMCORE_CIDiscoveryClient.cpp
   src/gucefCOMCORE_CIDiscoveryEntry.cpp
   src/gucefCOMCORE_CINetworkInterface.cpp
+  src/gucefCOMCORE_CIPubSubMsg.cpp
   src/gucefCOMCORE_CPingTaskConsumer.cpp
   src/gucefCOMCORE_CPubSubClient.cpp
   src/gucefCOMCORE_CPubSubClientConfig.cpp

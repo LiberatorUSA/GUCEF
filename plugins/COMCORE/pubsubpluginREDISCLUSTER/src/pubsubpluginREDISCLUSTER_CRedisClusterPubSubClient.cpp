@@ -83,6 +83,74 @@ RedisNode::RedisNode( void )
 
 /*-------------------------------------------------------------------------*/
 
+CRedisPubSubMsg::CRedisPubSubMsg( void )
+    : COMCORE::CIPubSubMsg()
+{GUCEF_TRACE;
+
+}
+
+/*-------------------------------------------------------------------------*/
+
+CRedisPubSubMsg::CRedisPubSubMsg( const CRedisPubSubMsg& src )
+    : COMCORE::CIPubSubMsg( src )
+{GUCEF_TRACE;
+
+}
+
+/*-------------------------------------------------------------------------*/
+
+CRedisPubSubMsg::~CRedisPubSubMsg()
+{GUCEF_TRACE;
+
+}
+
+/*-------------------------------------------------------------------------*/
+
+const CORE::CVariant& 
+CRedisPubSubMsg::GetMsgId( void ) const
+{GUCEF_TRACE;
+
+    return m_msgId;
+}
+
+/*-------------------------------------------------------------------------*/
+
+const CORE::CDateTime& 
+CRedisPubSubMsg::GetMsgDateTime( void ) const
+{GUCEF_TRACE;
+
+    return m_msgDateTime;
+}
+
+/*-------------------------------------------------------------------------*/
+
+const CORE::TLinkedCloneableBuffer& 
+CRedisPubSubMsg::GetPrimaryPayload( void ) const
+{GUCEF_TRACE;
+
+    return m_primaryPayloadLink;
+}
+
+/*-------------------------------------------------------------------------*/
+
+const CRedisPubSubMsg::TKeyValuePayload& 
+CRedisPubSubMsg::GetKeyValuePairs( void ) const
+{GUCEF_TRACE;
+
+    return m_keyValueLinks;
+}
+
+/*-------------------------------------------------------------------------*/
+
+CORE::CICloneable* 
+CRedisPubSubMsg::Clone( void ) const
+{GUCEF_TRACE;
+
+    return new CRedisPubSubMsg( *this );
+}
+
+/*-------------------------------------------------------------------------*/
+
 CRedisClusterPubSubClientTopicConfig::CRedisClusterPubSubClientTopicConfig( void )
     : COMCORE::CPubSubClientTopicConfig()
     , redisXAddMaxLen( -1 )

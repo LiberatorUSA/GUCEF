@@ -72,6 +72,11 @@
 #define GUCEF_CORE_CTHREADPOOL_H
 #endif /* GUCEF_CORE_CTHREADPOOL_H ? */
 
+#ifndef GUCEF_COMCORE_CIPUBSUBMSG_H
+#include "gucefCOMCORE_CIPubSubMsg.h"
+#define GUCEF_COMCORE_CIPUBSUBMSG_H
+#endif /* GUCEF_COMCORE_CIPUBSUBMSG_H ? */
+
 #ifndef GUCEF_COMCORE_CPUBSUBCLIENT_H
 #include "gucefCOMCORE_CPubSubClient.h"
 #define GUCEF_COMCORE_CPUBSUBCLIENT_H
@@ -119,6 +124,34 @@ typedef std::map< CORE::UInt32, RedisNode > RedisNodeMap;
 
 /*-------------------------------------------------------------------------*/
 
+class CRedisPubSubMsg : public COMCORE::CIPubSubMsg
+{
+    public:
+
+    CRedisPubSubMsg( void );
+
+    CRedisPubSubMsg( const CRedisPubSubMsg& src );
+
+    virtual ~CRedisPubSubMsg() GUCEF_VIRTUAL_OVERRIDE;
+
+    virtual const CORE::CVariant& GetMsgId( void ) const GUCEF_VIRTUAL_OVERRIDE;
+
+    virtual const CORE::CDateTime& GetMsgDateTime( void ) const GUCEF_VIRTUAL_OVERRIDE;
+
+    virtual const CORE::TLinkedCloneableBuffer& GetPrimaryPayload( void ) const GUCEF_VIRTUAL_OVERRIDE;
+
+    virtual const TKeyValuePayload& GetKeyValuePairs( void ) const GUCEF_VIRTUAL_OVERRIDE;
+
+    virtual CORE::CICloneable* Clone( void ) const GUCEF_VIRTUAL_OVERRIDE;
+
+    CORE::CVariant m_msgId;
+    CORE::CDateTime m_msgDateTime;
+    CORE::TLinkedCloneableBuffer m_primaryPayloadLink;
+    TKeyValuePayload m_keyValueLinks;
+};
+
+/*-------------------------------------------------------------------------*/
+
 class CRedisClusterPubSubClient;
 
 class CRedisClusterPubSubClientTopicConfig : public COMCORE::CPubSubClientTopicConfig
@@ -132,7 +165,7 @@ class CRedisClusterPubSubClientTopicConfig : public COMCORE::CPubSubClientTopicC
     
     CRedisClusterPubSubClientTopicConfig( const COMCORE::CPubSubClientTopicConfig& genericConfig );
 
-    virtual ~CRedisClusterPubSubClientTopicConfig();
+    virtual ~CRedisClusterPubSubClientTopicConfig() GUCEF_VIRTUAL_OVERRIDE;
 
     CRedisClusterPubSubClientTopicConfig& operator=( const COMCORE::CPubSubClientTopicConfig& src );
 
@@ -150,7 +183,7 @@ class CRedisClusterPubSubClientTopicReader : public CORE::CTaskConsumer
     public:
 
     CRedisClusterPubSubClientTopicReader( CRedisClusterPubSubClientTopic* ownerTopic );
-    virtual ~CRedisClusterPubSubClientTopicReader();
+    virtual ~CRedisClusterPubSubClientTopicReader() GUCEF_VIRTUAL_OVERRIDE;
 
     virtual bool OnTaskStart( CORE::CICloneable* taskData ) GUCEF_VIRTUAL_OVERRIDE;
 
@@ -182,7 +215,7 @@ class CRedisClusterPubSubClientTopic : public COMCORE::CPubSubClientTopic
 
     CRedisClusterPubSubClientTopic( CRedisClusterPubSubClient* client );
 
-    virtual ~CRedisClusterPubSubClientTopic();
+    virtual ~CRedisClusterPubSubClientTopic() GUCEF_VIRTUAL_OVERRIDE;
 
     virtual bool Connect( void ) GUCEF_VIRTUAL_OVERRIDE;
 
@@ -268,7 +301,7 @@ class CRedisClusterPubSubClient : public COMCORE::CPubSubClient
 
     CRedisClusterPubSubClient( const COMCORE::CPubSubClientConfig& config );
 
-    virtual ~CRedisClusterPubSubClient();
+    virtual ~CRedisClusterPubSubClient() GUCEF_VIRTUAL_OVERRIDE;
 
     virtual bool GetSupportedFeatures( COMCORE::CPubSubClientFeatures& features ) GUCEF_VIRTUAL_OVERRIDE;
 
