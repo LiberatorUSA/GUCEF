@@ -61,6 +61,8 @@ namespace CORE {
 //                                                                         //
 //-------------------------------------------------------------------------*/
 
+class CDynamicBuffer;
+
 /**
  *  Imlementation of a Variant class mainly used for interaction between 
  *  compile-time and run-time typed environments and/or between weakly and
@@ -84,7 +86,13 @@ class GUCEF_CORE_PUBLIC_CPP CVariant
     static const CVariant   Empty;
     
     CVariant( void );
+    
+    /**
+     *  Note that if the variant uses linked heap data said heap data will be copied
+     *  to a privately owned copy to avoid hard to trace invalid pointer issues
+     */
     CVariant( const CVariant& src );
+    
     ~CVariant(); 
     
     explicit CVariant( bool    data );
@@ -98,10 +106,28 @@ class GUCEF_CORE_PUBLIC_CPP CVariant
     explicit CVariant( UInt64  data );
     explicit CVariant( Float32 data );
     explicit CVariant( Float64 data );
+    
+    /**
+     *  Creates a private copy of the ASCII string data and sets the type as such
+     */
     CVariant( const CAsciiString& data );
+
+    /**
+     *  Creates a private copy of the UTF8 string data and sets the type as such
+     */
     CVariant( const CUtf8String& data );
-    CVariant( const char* asciiStr );
+
+    /**
+     *  Creates a private copy of the assumed to be null terminated string data and sets the type as UTF8
+     */
+    CVariant( const char* utf8Str );
+
+    /**
+     *  Creates a private copy of the string data and sets the type as UTF8
+     */
     CVariant( const std::string& utf8Str );
+
+    CVariant( const void* data, UInt32 dataSize, UInt8 varType = GUCEF_DATATYPE_BINARY );
     
     bool IsInteger( void ) const;
     bool IsFloat( void ) const;
@@ -110,6 +136,8 @@ class GUCEF_CORE_PUBLIC_CPP CVariant
     bool IsBinary( void ) const;
     
     bool UsesDynamicMemory( void ) const;
+    bool IsDynamicMemoryLinked( void ) const;
+    bool OwnsDynamicMemory( void ) const;
     bool IsInitialized( void ) const;
     bool IsNULLOrEmpty( void ) const; 
     
@@ -130,6 +158,7 @@ class GUCEF_CORE_PUBLIC_CPP CVariant
     CAsciiString    AsAsciiString( const CAsciiString& defaultIfNeeded = CAsciiString::Empty ) const;
     CUtf8String     AsUtf8String( const CUtf8String& defaultIfNeeded = CUtf8String::Empty ) const;
     const void*     AsVoidPtr( const void* defaultIfNeeded = GUCEF_NULL ) const;
+    CDynamicBuffer  AsBuffer( void ) const;
 
     /**
      *  Returns the size of the storage used in bytes by the stored type
@@ -168,7 +197,7 @@ class GUCEF_CORE_PUBLIC_CPP CVariant
      *  indicated by dataSize. Please take care that the buffer pointed to by data
      *  has enough bytes to hold the varType indicated or the operation will fail.
      */
-    bool Set( UInt8 varType, const void* data, UInt32 dataSize );
+    bool Set( const void* data, UInt32 dataSize, UInt8 varType = GUCEF_DATATYPE_BINARY, bool linkOnlyForDynMem = false );
 
     bool SetString( UInt8 varType, const CString& data, const CVariant& defaultValue = CVariant::Empty );
 
@@ -178,6 +207,13 @@ class GUCEF_CORE_PUBLIC_CPP CVariant
     bool SetFromString( UInt8 varType, const CString& data, const CVariant& defaultValue = CVariant::Empty );
 
     const TVariantData* CStyleAccess( void ) const;
+
+    CVariant& LinkTo( const CDynamicBuffer& src, UInt32 bufferOffset = 0, UInt8 varType = GUCEF_DATATYPE_BINARY, UInt32 bytesToLink = 0 );
+    CVariant& LinkTo( const void* externalBuffer, UInt32 bufferSize );
+    CVariant& LinkTo( const CVariant& src );
+    CVariant& LinkTo( const CAsciiString& src );
+    CVariant& LinkTo( const CUtf8String& src );
+    CVariant& LinkTo( const std::string& src );
     
     protected:
 

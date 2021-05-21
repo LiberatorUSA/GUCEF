@@ -23,6 +23,11 @@
 //                                                                         //
 //-------------------------------------------------------------------------*/
 
+#ifndef GUCEF_CORE_CDYNAMICBUFFER_H
+#include "CDynamicBuffer.h"
+#define GUCEF_CORE_CDYNAMICBUFFER_H
+#endif /* GUCEF_CORE_CDYNAMICBUFFER_H ? */
+
 #include "gucefCORE_CVariant.h"
 
 #ifndef GUCEF_CORE_ESSENTIALS_H
@@ -57,6 +62,7 @@ CVariant::CVariant( void )
     : m_variantData()
 {GUCEF_TRACE;
 
+    memset( &m_variantData, 0, sizeof( m_variantData ) );
     m_variantData.containedType = GUCEF_DATATYPE_UNKNOWN;
 }
 
@@ -66,6 +72,7 @@ CVariant::CVariant( bool data )
     : m_variantData()
 {GUCEF_TRACE;
 
+    memset( &m_variantData, 0, sizeof( m_variantData ) );
     m_variantData.containedType = GUCEF_DATATYPE_BOOLEAN_INT32;
     m_variantData.union_data.int32_data = data ? 1 : 0;
 }
@@ -76,6 +83,7 @@ CVariant::CVariant( Int8 data )
     : m_variantData()
 {GUCEF_TRACE;
 
+    memset( &m_variantData, 0, sizeof( m_variantData ) );
     m_variantData.containedType = GUCEF_DATATYPE_INT8;
     m_variantData.union_data.int8_data = data;
 }
@@ -86,6 +94,7 @@ CVariant::CVariant( UInt8 data )
     : m_variantData()
 {GUCEF_TRACE;
 
+    memset( &m_variantData, 0, sizeof( m_variantData ) );
     m_variantData.containedType = GUCEF_DATATYPE_UINT8;
     m_variantData.union_data.uint8_data = data;
 }
@@ -96,6 +105,7 @@ CVariant::CVariant( Int16 data )
     : m_variantData()
 {GUCEF_TRACE;
 
+    memset( &m_variantData, 0, sizeof( m_variantData ) );
     m_variantData.containedType = GUCEF_DATATYPE_INT16;
     m_variantData.union_data.int16_data = data;
 }
@@ -106,6 +116,7 @@ CVariant::CVariant( UInt16 data )
     : m_variantData()
 {GUCEF_TRACE;
 
+    memset( &m_variantData, 0, sizeof( m_variantData ) );
     m_variantData.containedType = GUCEF_DATATYPE_UINT16;
     m_variantData.union_data.uint16_data = data;
 }
@@ -116,6 +127,7 @@ CVariant::CVariant( Int32 data )
     : m_variantData()
 {GUCEF_TRACE;
 
+    memset( &m_variantData, 0, sizeof( m_variantData ) );
     m_variantData.containedType = GUCEF_DATATYPE_INT32;
     m_variantData.union_data.int32_data = data;
 }
@@ -126,6 +138,7 @@ CVariant::CVariant( UInt32 data )
     : m_variantData()
 {GUCEF_TRACE;
 
+    memset( &m_variantData, 0, sizeof( m_variantData ) );
     m_variantData.containedType = GUCEF_DATATYPE_UINT32;
     m_variantData.union_data.uint32_data = data;
 } 
@@ -136,6 +149,7 @@ CVariant::CVariant( Int64 data )
     : m_variantData()
 {GUCEF_TRACE;
 
+    memset( &m_variantData, 0, sizeof( m_variantData ) );
     m_variantData.containedType = GUCEF_DATATYPE_INT64;
     m_variantData.union_data.int64_data = data;
 }
@@ -146,6 +160,7 @@ CVariant::CVariant( UInt64 data )
     : m_variantData()
 {GUCEF_TRACE;
 
+    memset( &m_variantData, 0, sizeof( m_variantData ) );
     m_variantData.containedType = GUCEF_DATATYPE_UINT64;
     m_variantData.union_data.uint64_data = data;
 }
@@ -156,6 +171,7 @@ CVariant::CVariant( Float32 data )
     : m_variantData()
 {GUCEF_TRACE;
 
+    memset( &m_variantData, 0, sizeof( m_variantData ) );
     m_variantData.containedType = GUCEF_DATATYPE_FLOAT32;
     m_variantData.union_data.float32_data = data;
 }
@@ -166,6 +182,7 @@ CVariant::CVariant( Float64 data )
     : m_variantData()
 {GUCEF_TRACE;
 
+    memset( &m_variantData, 0, sizeof( m_variantData ) );
     m_variantData.containedType = GUCEF_DATATYPE_FLOAT64;
     m_variantData.union_data.float64_data = data;
 }
@@ -192,22 +209,32 @@ CVariant::CVariant( const CUtf8String& data )
 
 /*-------------------------------------------------------------------------*/
 
-CVariant::CVariant( const char* data )
+CVariant::CVariant( const char* utf8Str )
     : m_variantData()
 {GUCEF_TRACE;
 
     memset( &m_variantData, 0, sizeof( m_variantData ) );
-    *this = CUtf8String( data );
+    *this = CUtf8String( utf8Str );
 }
 
 /*-------------------------------------------------------------------------*/
 
-CVariant::CVariant( const std::string& data )
+CVariant::CVariant( const std::string& utf8Str )
     : m_variantData()
 {GUCEF_TRACE;
 
     memset( &m_variantData, 0, sizeof( m_variantData ) );
-    *this = CUtf8String( data );
+    *this = CUtf8String( utf8Str );
+}
+
+/*-------------------------------------------------------------------------*/
+
+CVariant::CVariant( const void* data, UInt32 dataSize, UInt8 varType )
+    : m_variantData()
+{GUCEF_TRACE;
+
+    memset( &m_variantData, 0, sizeof( m_variantData ) );
+    Set( data, dataSize, varType );
 }
 
 /*-------------------------------------------------------------------------*/
@@ -231,6 +258,7 @@ CVariant::CVariant( const CVariant& data )
             m_variantData.union_data.heap_data.heap_data = GUCEF_NULL;
             m_variantData.union_data.heap_data.heap_data_size = 0;
         }
+        m_variantData.union_data.heap_data.heap_data_is_linked = 0;
     }
 }
 
@@ -351,6 +379,32 @@ CVariant::UsesDynamicMemory( void ) const
             return false;
         }
     }
+}
+
+/*-------------------------------------------------------------------------*/
+
+bool 
+CVariant::IsDynamicMemoryLinked( void ) const
+{GUCEF_TRACE;
+
+    if ( UsesDynamicMemory() )
+    {
+        return 0 != m_variantData.union_data.heap_data.heap_data_is_linked;
+    }
+    return false;
+}
+
+/*-------------------------------------------------------------------------*/
+
+bool 
+CVariant::OwnsDynamicMemory( void ) const
+{GUCEF_TRACE;
+
+    if ( UsesDynamicMemory() )
+    {
+        return 0 == m_variantData.union_data.heap_data.heap_data_is_linked;
+    }
+    return false;
 }
 
 /*-------------------------------------------------------------------------*/
@@ -896,19 +950,7 @@ CVariant&
 CVariant::operator=( const CAsciiString& data )
 {GUCEF_TRACE;
 
-    Clear();
-
-    if ( !data.IsNULLOrEmpty() )
-    {
-        m_variantData.union_data.heap_data.heap_data = malloc( data.ByteSize() );
-        if ( GUCEF_NULL != m_variantData.union_data.heap_data.heap_data )
-        {
-            m_variantData.union_data.heap_data.heap_data_size = data.ByteSize();
-            memcpy( m_variantData.union_data.heap_data.heap_data, data.C_String(), data.ByteSize() );
-        }
-    }
-    m_variantData.containedType = GUCEF_DATATYPE_ASCII_STRING;
-
+    Set( data.C_String(), data.ByteSize(), GUCEF_DATATYPE_ASCII_STRING, false );
     return *this;
 }
 
@@ -918,19 +960,7 @@ CVariant&
 CVariant::operator=( const CUtf8String& data )
 {GUCEF_TRACE;
 
-    Clear();
-
-    if ( !data.IsNULLOrEmpty() )
-    {
-        m_variantData.union_data.heap_data.heap_data = malloc( data.ByteSize() );
-        if ( GUCEF_NULL != m_variantData.union_data.heap_data.heap_data )
-        {
-            m_variantData.union_data.heap_data.heap_data_size = data.ByteSize();
-            memcpy( m_variantData.union_data.heap_data.heap_data, data.C_String(), data.ByteSize() );
-        }
-    }
-    m_variantData.containedType = GUCEF_DATATYPE_UTF8_STRING;
-
+    Set( data.C_String(), data.ByteSize(), GUCEF_DATATYPE_UTF8_STRING, false );
     return *this;
 }
 
@@ -959,6 +989,7 @@ CVariant::operator=( const CVariant& src )
                 m_variantData.union_data.heap_data.heap_data_size = 0;
             }
             m_variantData.containedType = src.m_variantData.containedType;
+            m_variantData.union_data.heap_data.heap_data_is_linked = 0;
         }
         else
         {
@@ -971,16 +1002,16 @@ CVariant::operator=( const CVariant& src )
 /*-------------------------------------------------------------------------*/
 
 bool
-CVariant::Set( UInt8 varType, const void* data, UInt32 dataSize )
+CVariant::Set( const void* data, UInt32 dataSize, UInt8 varType, bool linkOnlyForDynMem )
 {GUCEF_TRACE;
 
     Clear();
-    
+
     switch ( varType )
     {
         case GUCEF_DATATYPE_INT8: 
         {
-            if ( dataSize < sizeof(Int8) )
+            if ( GUCEF_NULL == data || dataSize < sizeof(Int8) )
                 return false;
             const Int8* typedData = reinterpret_cast< const Int8* >( data );
             m_variantData.union_data.int8_data = (*typedData);
@@ -989,7 +1020,7 @@ CVariant::Set( UInt8 varType, const void* data, UInt32 dataSize )
         }
         case GUCEF_DATATYPE_UINT8: 
         {
-            if ( dataSize < sizeof(UInt8) )
+            if ( GUCEF_NULL == data || dataSize < sizeof(UInt8) )
                 return false;
             const UInt8* typedData = reinterpret_cast< const UInt8* >( data );
             m_variantData.union_data.uint8_data = (*typedData);
@@ -998,7 +1029,7 @@ CVariant::Set( UInt8 varType, const void* data, UInt32 dataSize )
         }
         case GUCEF_DATATYPE_INT16: 
         {
-            if ( dataSize < sizeof(Int16) )
+            if ( GUCEF_NULL == data || dataSize < sizeof(Int16) )
                 return false;
             const Int16* typedData = reinterpret_cast< const Int16* >( data );
             m_variantData.union_data.int16_data = (*typedData);
@@ -1007,7 +1038,7 @@ CVariant::Set( UInt8 varType, const void* data, UInt32 dataSize )
         }
         case GUCEF_DATATYPE_UINT16: 
         {
-            if ( dataSize < sizeof(UInt16) )
+            if ( GUCEF_NULL == data || dataSize < sizeof(UInt16) )
                 return false;
             const UInt16* typedData = reinterpret_cast< const UInt16* >( data );
             m_variantData.union_data.uint16_data = (*typedData);
@@ -1016,7 +1047,7 @@ CVariant::Set( UInt8 varType, const void* data, UInt32 dataSize )
         }
         case GUCEF_DATATYPE_INT32: 
         {
-            if ( dataSize < sizeof(Int32) )
+            if ( GUCEF_NULL == data || dataSize < sizeof(Int32) )
                 return false;
             const Int32* typedData = reinterpret_cast< const Int32* >( data );
             m_variantData.union_data.int32_data = (*typedData);
@@ -1025,7 +1056,7 @@ CVariant::Set( UInt8 varType, const void* data, UInt32 dataSize )
         }
         case GUCEF_DATATYPE_UINT32: 
         {
-            if ( dataSize < sizeof(UInt32) )
+            if ( GUCEF_NULL == data || dataSize < sizeof(UInt32) )
                 return false;
             const UInt32* typedData = reinterpret_cast< const UInt32* >( data );
             m_variantData.union_data.uint32_data = (*typedData);
@@ -1034,7 +1065,7 @@ CVariant::Set( UInt8 varType, const void* data, UInt32 dataSize )
         }
         case GUCEF_DATATYPE_INT64: 
         {
-            if ( dataSize < sizeof(Int64) )
+            if ( GUCEF_NULL == data || dataSize < sizeof(Int64) )
                 return false;
             const Int64* typedData = reinterpret_cast< const Int64* >( data );
             m_variantData.union_data.int64_data = (*typedData);
@@ -1043,7 +1074,7 @@ CVariant::Set( UInt8 varType, const void* data, UInt32 dataSize )
         }
         case GUCEF_DATATYPE_UINT64: 
         {
-            if ( dataSize < sizeof(UInt64) )
+            if ( GUCEF_NULL == data || dataSize < sizeof(UInt64) )
                 return false;
             const UInt64* typedData = reinterpret_cast< const UInt64* >( data );
             m_variantData.union_data.uint64_data = (*typedData);
@@ -1052,7 +1083,7 @@ CVariant::Set( UInt8 varType, const void* data, UInt32 dataSize )
         }
         case GUCEF_DATATYPE_FLOAT32: 
         {
-            if ( dataSize < sizeof(Float32) )
+            if ( GUCEF_NULL == data || dataSize < sizeof(Float32) )
                 return false;
             const Float32* typedData = reinterpret_cast< const Float32* >( data );
             m_variantData.union_data.float32_data = (*typedData);
@@ -1061,7 +1092,7 @@ CVariant::Set( UInt8 varType, const void* data, UInt32 dataSize )
         }
         case GUCEF_DATATYPE_FLOAT64: 
         {
-            if ( dataSize < sizeof(Float64) )
+            if ( GUCEF_NULL == data || dataSize < sizeof(Float64) )
                 return false;
             const Float64* typedData = reinterpret_cast< const Float64* >( data );
             m_variantData.union_data.float64_data = (*typedData);
@@ -1070,7 +1101,7 @@ CVariant::Set( UInt8 varType, const void* data, UInt32 dataSize )
         }
         case GUCEF_DATATYPE_BOOLEAN_INT32: 
         {
-            if ( dataSize < sizeof(Int32) )
+            if ( GUCEF_NULL == data || dataSize < sizeof(Int32) )
                 return false;
             const Int32* typedData = reinterpret_cast< const Int32* >( data );
             m_variantData.union_data.int32_data = (*typedData);
@@ -1078,14 +1109,29 @@ CVariant::Set( UInt8 varType, const void* data, UInt32 dataSize )
             return true; 
         }
         case GUCEF_DATATYPE_BINARY: 
+        case GUCEF_DATATYPE_ASCII_STRING:
+        case GUCEF_DATATYPE_UTF8_STRING:
+        case GUCEF_DATATYPE_BOOLEAN_ASCII_STRING:
+        case GUCEF_DATATYPE_BOOLEAN_UTF8_STRING:
         {
-            if ( GUCEF_NULL != HeapReserve( dataSize ) )
+            if ( linkOnlyForDynMem )
             {
-                memcpy( m_variantData.union_data.heap_data.heap_data, data, dataSize );
-                m_variantData.containedType = GUCEF_DATATYPE_BINARY;
-                return true; 
+                m_variantData.union_data.heap_data.heap_data_is_linked = 1;
+                m_variantData.union_data.heap_data.heap_data = const_cast< void* >( data );
+                m_variantData.union_data.heap_data.heap_data_size = dataSize;
+                m_variantData.containedType = varType;
+                return true;
             }
-            return false;            
+            else
+            {
+                if ( GUCEF_NULL != HeapReserve( dataSize ) )
+                {
+                    memcpy( m_variantData.union_data.heap_data.heap_data, data, dataSize );
+                    m_variantData.containedType = varType;
+                    return true; 
+                }
+                return false;
+            }
         }
         default:
         {
@@ -1097,11 +1143,81 @@ CVariant::Set( UInt8 varType, const void* data, UInt32 dataSize )
 
 /*-------------------------------------------------------------------------*/
 
+CVariant& 
+CVariant::LinkTo( const CDynamicBuffer& src, UInt32 bufferOffset, UInt8 varType, UInt32 bytesToLink )
+{GUCEF_TRACE;
+
+    if ( bufferOffset + bytesToLink > src.GetDataSize() )
+    {
+        Clear();
+        return *this;
+    }
+
+    UInt32 bufferSize = src.GetDataSize() - bufferOffset;
+    if ( 0 == bytesToLink || bytesToLink > bufferSize )
+        bytesToLink = bufferSize;
+
+    Set( src.GetConstBufferPtr( bufferOffset ), bytesToLink, varType, true );
+    return *this;
+}
+
+/*-------------------------------------------------------------------------*/
+
+CVariant& 
+CVariant::LinkTo( const void* externalBuffer, UInt32 bufferSize )
+{GUCEF_TRACE;
+    
+    Set( externalBuffer, bufferSize, GUCEF_DATATYPE_BINARY, true );
+    return *this;
+}
+
+/*-------------------------------------------------------------------------*/
+
+CVariant& 
+CVariant::LinkTo( const CVariant& src )
+{GUCEF_TRACE;
+    
+    Set( src.AsVoidPtr(), src.ByteSize(), src.GetTypeId(), true );
+    return *this;
+}
+
+/*-------------------------------------------------------------------------*/
+
+CVariant& 
+CVariant::LinkTo( const CAsciiString& src )
+{GUCEF_TRACE;
+    
+    Set( src.C_String(), src.ByteSize(), GUCEF_DATATYPE_ASCII_STRING, true );
+    return *this;
+}
+
+/*-------------------------------------------------------------------------*/
+
+CVariant& 
+CVariant::LinkTo( const CUtf8String& src )
+{GUCEF_TRACE;
+    
+    Set( src.C_String(), src.ByteSize(), GUCEF_DATATYPE_UTF8_STRING, true );
+    return *this;
+}
+
+/*-------------------------------------------------------------------------*/
+
+CVariant& 
+CVariant::LinkTo( const std::string& src )
+{GUCEF_TRACE;
+    
+    Set( src.c_str(), (UInt32) src.size(), GUCEF_DATATYPE_UTF8_STRING, true );
+    return *this;
+}
+
+/*-------------------------------------------------------------------------*/
+
 void*
 CVariant::HeapReserve( UInt32 byteSize, bool allowReduction )
 {GUCEF_TRACE;
 
-    if ( !UsesDynamicMemory() )
+    if ( !UsesDynamicMemory() || !OwnsDynamicMemory() )
     {
         memset( &m_variantData, 0, sizeof( m_variantData ) );
         m_variantData.containedType = GUCEF_DATATYPE_BINARY;
@@ -1109,6 +1225,15 @@ CVariant::HeapReserve( UInt32 byteSize, bool allowReduction )
 
     if ( allowReduction || m_variantData.union_data.heap_data.heap_data_size < byteSize )
     {
+        if ( 0 == byteSize && GUCEF_NULL != m_variantData.union_data.heap_data.heap_data )
+        {
+            free( m_variantData.union_data.heap_data.heap_data );
+            m_variantData.union_data.heap_data.heap_data = GUCEF_NULL;
+            m_variantData.union_data.heap_data.heap_data_size = 0;
+            m_variantData.union_data.heap_data.heap_data_is_linked = 0;
+            return GUCEF_NULL;
+        }
+        
         void* newBuffer = realloc( m_variantData.union_data.heap_data.heap_data, byteSize );
         if ( GUCEF_NULL != newBuffer )
         {
@@ -1378,23 +1503,13 @@ void
 CVariant::Clear( void )
 {GUCEF_TRACE;
 
-    switch ( m_variantData.containedType )
+    if ( OwnsDynamicMemory() )
     {
-        case GUCEF_DATATYPE_ASCII_STRING:
-        case GUCEF_DATATYPE_UTF8_STRING:
-        case GUCEF_DATATYPE_BOOLEAN_ASCII_STRING:
-        case GUCEF_DATATYPE_BOOLEAN_UTF8_STRING:
-        case GUCEF_DATATYPE_BINARY:
-        {
-            if ( GUCEF_NULL != m_variantData.union_data.heap_data.heap_data )
-                free( m_variantData.union_data.heap_data.heap_data );
-        }
-        default:
-        {
-            // No dynamic memory management needed
-            break;
-        }
+        if ( GUCEF_NULL != m_variantData.union_data.heap_data.heap_data )
+            free( m_variantData.union_data.heap_data.heap_data );
     }
+    // else: No dynamic memory management needed
+
     memset( &m_variantData, 0, sizeof( m_variantData ) );
 }
 
@@ -1470,6 +1585,15 @@ CVariant::CStyleAccess( void ) const
 {GUCEF_TRACE;
 
     return &m_variantData;
+}
+
+/*-------------------------------------------------------------------------*/
+
+CDynamicBuffer
+CVariant::AsBuffer( void ) const
+{GUCEF_TRACE;
+
+    return CDynamicBuffer( static_cast< const char* >( AsVoidPtr() ), ByteSize() );
 }
 
 /*-------------------------------------------------------------------------*/

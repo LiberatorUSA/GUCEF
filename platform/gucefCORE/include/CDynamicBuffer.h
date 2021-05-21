@@ -57,6 +57,7 @@ namespace CORE {
 //-------------------------------------------------------------------------*/
 
 class CIOAccess;
+class CVariant;
 
 /**
  *      Class that implements a simple dynamic buffer. Simply an array of bytes.
@@ -205,8 +206,13 @@ class GUCEF_CORE_PUBLIC_CPP CDynamicBuffer
          *  The same is true when you copy/assign the CDynamicBuffer, it will cause the linked
          *  data of the buffer to be copied and not linked.
          */
-        void LinkTo( const void* externalBuffer ,
-                     UInt32 bufferSize          );
+        CDynamicBuffer& LinkTo( const void* externalBuffer ,
+                                UInt32 bufferSize          );
+
+        CDynamicBuffer& LinkTo( const CVariant& src );
+        CDynamicBuffer& LinkTo( const CAsciiString& src );
+        CDynamicBuffer& LinkTo( const CUtf8String& src );
+        CDynamicBuffer& LinkTo( const std::string& src ); 
 
         /**
          *  Returns the buffer linkage state
@@ -316,6 +322,11 @@ class GUCEF_CORE_PUBLIC_CPP CDynamicBuffer
          *  Note that if the buffer is linked this operation will result in the creation of a private copy
          */
         void RelinquishDataOwnership( void*& data, UInt32& dataSize );
+
+        /**
+         *  Causes the contained data to be copied to a private copy owned by the Variant
+         */
+        CVariant AsVariant( UInt32 bufferOffset = 0, UInt8 varType = GUCEF_DATATYPE_BINARY ) const;
 
         /**
          *  Utility member function:

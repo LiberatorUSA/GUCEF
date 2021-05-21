@@ -37,6 +37,11 @@
 #define GUCEF_CORE_DVFILEUTILS_H
 #endif /* GUCEF_CORE_DVFILEUTILS_H ? */
 
+#ifndef GUCEF_CORE_CVARIANT_H
+#include "gucefCORE_CVariant.h"
+#define GUCEF_CORE_CVARIANT_H
+#endif /* GUCEF_CORE_CVARIANT_H ? */
+
 #include "CDynamicBuffer.h"     /* class definition */
 
 #ifndef GUCEF_CORE_GUCEF_ESSENTIALS_H
@@ -832,7 +837,7 @@ CDynamicBuffer::operator>( const CDynamicBuffer& other ) const
 
 /*-------------------------------------------------------------------------*/
 
-void
+CDynamicBuffer&
 CDynamicBuffer::LinkTo( const void* externalBuffer ,
                         UInt32 bufferSize          )
 {GUCEF_TRACE;
@@ -849,6 +854,8 @@ CDynamicBuffer::LinkTo( const void* externalBuffer ,
     m_dataSize = bufferSize;
     _buffer = static_cast< Int8* >( const_cast< void* >( externalBuffer ) );
     m_linked = true;
+
+    return *this;
 }
 
 /*-------------------------------------------------------------------------*/
@@ -896,6 +903,60 @@ CDynamicBuffer::SecureLinkBeforeMutation( void )
         _autoenlarge = autoEnlarge;
         m_dataSize = dataSize;
     }
+}
+
+/*-------------------------------------------------------------------------*/
+
+CVariant 
+CDynamicBuffer::AsVariant( UInt32 bufferOffset, UInt8 varType ) const
+{GUCEF_TRACE;
+
+    const void* buffer = GetConstBufferPtr( bufferOffset );
+    if ( GUCEF_NULL != buffer )
+    {        
+        return CVariant( buffer, GetDataSize() - bufferOffset, varType );
+    }
+    return CVariant::Empty;
+}
+
+/*-------------------------------------------------------------------------*/
+
+CDynamicBuffer& 
+CDynamicBuffer::LinkTo( const CVariant& src )
+{GUCEF_TRACE;
+
+    LinkTo( src.AsVoidPtr(), src.ByteSize() );
+    return *this;
+}
+
+/*-------------------------------------------------------------------------*/
+
+CDynamicBuffer& 
+CDynamicBuffer::LinkTo( const CAsciiString& src )
+{GUCEF_TRACE;
+
+    LinkTo( src.C_String(), src.ByteSize() );
+    return *this;
+}
+
+/*-------------------------------------------------------------------------*/
+
+CDynamicBuffer& 
+CDynamicBuffer::LinkTo( const CUtf8String& src )
+{GUCEF_TRACE;
+
+    LinkTo( src.C_String(), src.ByteSize() );
+    return *this;
+}
+
+/*-------------------------------------------------------------------------*/
+
+CDynamicBuffer& 
+CDynamicBuffer::LinkTo( const std::string& src )
+{GUCEF_TRACE;
+
+    LinkTo( src.c_str(), (UInt32) src.size() );
+    return *this;
 }
 
 /*-------------------------------------------------------------------------//
