@@ -683,6 +683,148 @@ CDateTime::GetTime( void ) const
 /*-------------------------------------------------------------------------*/
 
 Int32
+TimezoneOffsetInMinsFromIso8601DateTimeStringRemnant( const char* sourceBuffer, UInt32 sourceBufferSize, Int16& tzOffset )
+{GUCEF_TRACE;
+    
+    // We are looking for Z or +hh:mm or -hh:mm
+    if ( sourceBufferSize > 0 )
+    {
+        if ( *sourceBuffer == 'Z' )
+        {
+            tzOffset = 0;
+            return 1;
+        }
+        if ( sourceBufferSize > 5 )
+        {
+            Int32 hours = 0;
+            Int32 minutes = 0;
+            int readParts = sscanf_s( sourceBuffer+1, "%02i%*c%02i", &hours, &minutes );
+            if ( readParts == 2 )
+            {
+                minutes += hours * 60;
+                if ( *sourceBuffer == '-' )
+                    minutes = -1 * minutes;
+                
+                tzOffset = (Int16) minutes;
+                return 6;
+            }
+        }
+    }
+    return -1;    
+}
+
+/*-------------------------------------------------------------------------*/
+
+Int32
+CDateTime::FromIso8601DateTimeString( const void* sourceBuffer, UInt32 sourceBufferSize )
+{GUCEF_TRACE;
+            
+    // Reset content
+    Set();
+    
+    // initial input sanity check
+    if ( sourceBufferSize < 14 || GUCEF_NULL == sourceBuffer )
+        return -1;
+
+    // check what features we are dealing with
+    const char* dtBuffer = static_cast< const char* >( sourceBuffer );
+    const char* dashPtr = (const char*) memchr( dtBuffer, '-', sourceBufferSize );
+    bool includesDelimeters = GUCEF_NULL != dashPtr && dashPtr < dtBuffer+5;
+    bool includesMilliseconds = GUCEF_NULL != memchr( dtBuffer+13, '.', sourceBufferSize-13 ) || GUCEF_NULL != memchr( dtBuffer+13, ',', sourceBufferSize-13 );    
+
+    Int32 year=0;
+    UInt32 month=0, day=0, hours=0, minutes=0, seconds=0, milliseconds=0;
+    Int16 tzOffset=0;
+
+    if ( includesDelimeters )
+    {
+        if ( includesMilliseconds )
+        {            
+            // Length = date(4+1+2+1+2)+1+time(2+1+2+1+2+1+3) = 23 chars, 13 total parts of which 7 to parse
+            if ( sourceBufferSize >= 23 )
+            {
+                int readParts = sscanf_s( dtBuffer, "%04d%*c%02u%*c%02u%*c%02u%*c%02u%*c%02u%*c%03u", &year, &month, &day, &hours, &minutes, &seconds, &milliseconds );
+                if ( readParts == 7 )
+                {
+                    Int32 tzBytes = TimezoneOffsetInMinsFromIso8601DateTimeStringRemnant( dtBuffer+23, sourceBufferSize-23, tzOffset );
+                    Set( (Int16) year, (UInt8) month, (UInt8) day, (UInt8) hours, (UInt8) minutes, (UInt8) seconds, (UInt16) milliseconds, tzOffset );
+                    return 23 + tzBytes > 0 ? tzBytes : 0;
+                }
+            }
+            return -1;
+        }
+        else
+        {
+            // Length = date(4+1+2+1+2)+1+time(2+1+2+1+2) = 19 chars, 11 total parts of which 6 to parse
+            if ( sourceBufferSize >= 19 )
+            {
+                int readParts = sscanf_s( dtBuffer, "%04d%*c%02u%*c%02u%*c%02u%*c%02u%*c%02u", &year, &month, &day, &hours, &minutes, &seconds );
+                if ( readParts == 6 )
+                {
+                    Int32 tzBytes = TimezoneOffsetInMinsFromIso8601DateTimeStringRemnant( dtBuffer+19, sourceBufferSize-19, tzOffset );
+                    Set( (Int16) year, (UInt8) month, (UInt8) day, (UInt8) hours, (UInt8) minutes, (UInt8) seconds, (UInt16) milliseconds, tzOffset );
+                    return 19 + tzBytes > 0 ? tzBytes : 0;
+                }
+            }
+            return -1;
+        }
+    }
+    else
+    {
+        if ( includesMilliseconds )
+        {
+            // Length = date(4+2+2)+time(2+2+2+1+3) = 18 chars, 8 total parts of which 7 to parse
+            if ( sourceBufferSize >= 18 )
+            {
+                int readParts = sscanf_s( dtBuffer, "%04d%02u%02u%02u%02u%02u%*c%03u", &year, &month, &day, &hours, &minutes, &seconds, &milliseconds );
+                if ( readParts == 7 )
+                {
+                    Int32 tzBytes = TimezoneOffsetInMinsFromIso8601DateTimeStringRemnant( dtBuffer+18, sourceBufferSize-18, tzOffset );
+                    Set( (Int16) year, (UInt8) month, (UInt8) day, (UInt8) hours, (UInt8) minutes, (UInt8) seconds, (UInt16) milliseconds, tzOffset );
+                    return 18 + tzBytes > 0 ? tzBytes : 0;
+                }
+            }
+            return -1;
+        }
+        else
+        {
+            if ( sourceBufferSize >= 14 )
+            {
+                // Length = date(4+2+2)+time(2+2+2) = 14 chars, 6 total parts of which 6 to parse
+                int readParts = sscanf_s( dtBuffer, "%04d%02u%02u%02u%02u%02u", &year, &month, &day, &hours, &minutes, &seconds );
+                if ( readParts == 6 )
+                {
+                    Int32 tzBytes = TimezoneOffsetInMinsFromIso8601DateTimeStringRemnant( dtBuffer+14, sourceBufferSize-14, tzOffset );
+                    Set( (Int16) year, (UInt8) month, (UInt8) day, (UInt8) hours, (UInt8) minutes, (UInt8) seconds, (UInt16) milliseconds, tzOffset );
+                    return 14 + tzBytes > 0 ? tzBytes : 0;
+                }
+            }
+            return -1;
+        }
+    }  
+}
+
+/*-------------------------------------------------------------------------*/
+
+Int32
+CDateTime::FromIso8601DateTimeString( const CDynamicBuffer& source, UInt32 sourceBufferOffset )
+{GUCEF_TRACE;
+
+    return FromIso8601DateTimeString( source.GetConstBufferPtr( sourceBufferOffset ), source.GetDataSize() - sourceBufferOffset );
+}
+
+/*-------------------------------------------------------------------------*/
+
+bool
+CDateTime::FromIso8601DateTimeString( const CString& source )
+{GUCEF_TRACE;
+
+    return 0 < FromIso8601DateTimeString( source.C_String(), source.ByteSize() );
+}
+
+/*-------------------------------------------------------------------------*/
+
+Int32
 CDateTime::ToIso8601DateTimeString( void* targetBuffer, UInt32 targetBufferSize, bool includeDelimeters, bool includeMilliseconds ) const
 {GUCEF_TRACE;
 
@@ -697,10 +839,12 @@ CDateTime::ToIso8601DateTimeString( void* targetBuffer, UInt32 targetBufferSize,
     {
         if ( includeMilliseconds )
         {            
+            // Length = date(4+1+2+1+2)+1+time(2+1+2+1+2+1+3) = 24 chars
             return sprintf_s( dtBuffer, targetBufferSize, "%04d-%02u-%02uT%02u:%02u:%02u.%03uZ", m_year, m_month, m_day, m_hours, m_minutes, m_seconds, m_milliseconds );
         }
         else
         {
+            // Length = date(4+1+2+1+2)+1+time(2+1+2+1+2) = 20 chars
             return sprintf_s( dtBuffer, targetBufferSize, "%04d-%02u-%02uT%02u:%02u:%02uZ", m_year, m_month, m_day, m_hours, m_minutes, m_seconds );
         }
     }
@@ -708,10 +852,12 @@ CDateTime::ToIso8601DateTimeString( void* targetBuffer, UInt32 targetBufferSize,
     {
         if ( includeMilliseconds )
         {
+            // Length = date(4+2+2)+time(2+2+2+3) = 17 chars
             return sprintf_s( dtBuffer, targetBufferSize, "%04d%02u%02u%02u%02u%02u%03uZ", m_year, m_month, m_day, m_hours, m_minutes, m_seconds, m_milliseconds );
         }
         else
         {
+            // Length = date(4+2+2)+time(2+2+2) = 14 chars
             return sprintf_s( dtBuffer, targetBufferSize, "%04d%02u%02u%02u%02u%02u", m_year, m_month, m_day, m_hours, m_minutes, m_seconds );
         }
     }    
@@ -723,10 +869,10 @@ Int32
 CDateTime::ToIso8601DateTimeString( CDynamicBuffer& target, UInt32 targetBufferOffset, bool includeDelimeters, bool includeMilliseconds ) const
 {GUCEF_TRACE;
 
-    return ToIso8601DateTimeString( (void*) target.GetConstBufferPtr( targetBufferOffset ) , 
-                                    target.GetRemainingBufferSize( targetBufferOffset )    ,
-                                    includeDelimeters                                      ,
-                                    includeMilliseconds                                    );
+    return ToIso8601DateTimeString( target.GetBufferPtr( targetBufferOffset )           , 
+                                    target.GetRemainingBufferSize( targetBufferOffset ) ,
+                                    includeDelimeters                                   ,
+                                    includeMilliseconds                                 );
 }
 
 /*-------------------------------------------------------------------------*/
