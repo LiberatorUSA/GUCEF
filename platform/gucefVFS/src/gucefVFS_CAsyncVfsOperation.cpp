@@ -156,7 +156,7 @@ CAsyncVfsOperation::OnTaskCycle( CORE::CICloneable* taskData )
             
             CStoreAsFileTaskData* specificSyncCallData = static_cast< CStoreAsFileTaskData* >( syncCallData );
             bool success = CVfsGlobal::Instance()->GetVfs().StoreAsFile( specificSyncCallData->filepath       , 
-                                                                         specificSyncCallData->data.GetData() ,
+                                                                         specificSyncCallData->data           ,
                                                                          specificSyncCallData->offset         ,
                                                                          specificSyncCallData->overwrite      );
         

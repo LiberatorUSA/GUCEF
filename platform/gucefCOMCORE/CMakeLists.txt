@@ -28,6 +28,7 @@ set( HEADER_FILES
   include/CUDPSocket.h
   include/dvwinsock.h
   include/gucefCOMCORE.h
+  include/gucefCOMCORE_CBasicPubSubMsg.h
   include/gucefCOMCORE_CComCoreGlobal.h
   include/gucefCOMCORE_CDiscoveryManager.h
   include/gucefCOMCORE_CICommunicationInterface.h
@@ -70,6 +71,7 @@ set( SOURCE_FILES
   src/CUDPSocket.cpp
   src/dvwinsock.c
   src/gucefCOMCORE.cpp
+  src/gucefCOMCORE_CBasicPubSubMsg.cpp
   src/gucefCOMCORE_CComCoreGlobal.cpp
   src/gucefCOMCORE_CDiscoveryManager.cpp
   src/gucefCOMCORE_CICommunicationInterface.cpp

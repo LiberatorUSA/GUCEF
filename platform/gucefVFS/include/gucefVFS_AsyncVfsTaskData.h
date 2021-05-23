@@ -141,7 +141,7 @@ class GUCEF_VFS_PUBLIC_CPP CStoreAsFileTaskData : public CAsyncVfsTaskData
     public:
 
     CORE::CString filepath;
-    CORE::TLinkedCloneableBuffer data;
+    CORE::CDynamicBuffer data;
     CORE::UInt64 offset;
     bool overwrite;
 

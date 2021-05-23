@@ -261,7 +261,7 @@ CUDPMasterSocket::OnNotify( CORE::CNotifier* notifier                 ,
                 // Force the channel to notify to its clients
                 // Because the data buffer link will only live inside this scope it is safe to
                 // link to the already linked buffer
-                CORE::TLinkedCloneableBuffer buffer( &data.packets[ p ].dataBuffer.GetData() );
+                CORE::TConstLinkedCloneableBuffer buffer( &data.packets[ p ].dataBuffer.GetData() );
                 channel->DoNotifyObservers( CUDPChannel::UDPPacketReceivedEvent ,
                                             &buffer                             );
             }

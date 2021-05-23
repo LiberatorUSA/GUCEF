@@ -117,7 +117,8 @@ typedef CTCloneableObj< Int16 >          TCloneableInt16;
 typedef CTCloneableObj< UInt8 >          TCloneableUInt8;
 typedef CTCloneableObj< Int8 >           TCloneableInt8;
 
-typedef CTLinkedCloneableObj< CDynamicBuffer > TLinkedCloneableBuffer;
+typedef CTLinkedCloneable< CDynamicBuffer >      TLinkedCloneableBuffer;
+typedef CTConstLinkedCloneable< CDynamicBuffer > TConstLinkedCloneableBuffer;
 
 /*-------------------------------------------------------------------------//
 //                                                                         //

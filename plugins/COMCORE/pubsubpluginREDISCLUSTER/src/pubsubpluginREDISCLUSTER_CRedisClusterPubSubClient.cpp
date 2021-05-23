@@ -83,74 +83,6 @@ RedisNode::RedisNode( void )
 
 /*-------------------------------------------------------------------------*/
 
-CRedisPubSubMsg::CRedisPubSubMsg( void )
-    : COMCORE::CIPubSubMsg()
-{GUCEF_TRACE;
-
-}
-
-/*-------------------------------------------------------------------------*/
-
-CRedisPubSubMsg::CRedisPubSubMsg( const CRedisPubSubMsg& src )
-    : COMCORE::CIPubSubMsg( src )
-{GUCEF_TRACE;
-
-}
-
-/*-------------------------------------------------------------------------*/
-
-CRedisPubSubMsg::~CRedisPubSubMsg()
-{GUCEF_TRACE;
-
-}
-
-/*-------------------------------------------------------------------------*/
-
-const CORE::CVariant& 
-CRedisPubSubMsg::GetMsgId( void ) const
-{GUCEF_TRACE;
-
-    return m_msgId;
-}
-
-/*-------------------------------------------------------------------------*/
-
-const CORE::CDateTime& 
-CRedisPubSubMsg::GetMsgDateTime( void ) const
-{GUCEF_TRACE;
-
-    return m_msgDateTime;
-}
-
-/*-------------------------------------------------------------------------*/
-
-const CORE::TLinkedCloneableBuffer& 
-CRedisPubSubMsg::GetPrimaryPayload( void ) const
-{GUCEF_TRACE;
-
-    return m_primaryPayloadLink;
-}
-
-/*-------------------------------------------------------------------------*/
-
-const CRedisPubSubMsg::TKeyValuePayloadLinks& 
-CRedisPubSubMsg::GetKeyValuePairs( void ) const
-{GUCEF_TRACE;
-
-    return m_keyValueLinks;
-}
-
-/*-------------------------------------------------------------------------*/
-
-CORE::CICloneable* 
-CRedisPubSubMsg::Clone( void ) const
-{GUCEF_TRACE;
-
-    return new CRedisPubSubMsg( *this );
-}
-
-/*-------------------------------------------------------------------------*/
-
 CRedisClusterPubSubClientTopicConfig::CRedisClusterPubSubClientTopicConfig( void )
     : COMCORE::CPubSubClientTopicConfig()
     , redisXAddMaxLen( -1 )
@@ -381,72 +313,44 @@ CRedisClusterPubSubClientTopic::GetTopicName( void ) const
 
 /*-------------------------------------------------------------------------*/
 
-bool
-CRedisClusterPubSubClientTopic::Publish( const CORE::CString& msgKey    ,  
-                                         const CORE::CString& fieldName , 
-                                         const CORE::CString& payload   )
-{GUCEF_TRACE;
-
-    sw::redis::StringView idSV( msgKey.C_String(), msgKey.ByteSize() );
-    
-    m_redisMsgArgs.clear();
-    m_redisMsgArgs.reserve( 1 );
-
-    sw::redis::StringView fnSV( fieldName.C_String(), fieldName.ByteSize() );
-    sw::redis::StringView fvSV( (const char*) payload.C_String(), payload.ByteSize() );
-    
-    m_redisMsgArgs.push_back( std::pair< sw::redis::StringView, sw::redis::StringView >( fnSV, fvSV ) );
-    
-    return RedisSendSyncImpl( idSV );
-}
-
-/*-------------------------------------------------------------------------*/
-
-bool
-CRedisClusterPubSubClientTopic::Publish( const CORE::CString& msgKey         , 
-                                         const CORE::CString& fieldName      , 
-                                         const CORE::CDynamicBuffer& payload )
-{GUCEF_TRACE;
-
-    sw::redis::StringView idSV( msgKey.C_String(), msgKey.ByteSize() );
-    
-    m_redisMsgArgs.clear();
-    m_redisMsgArgs.reserve( 1 );
-
-    sw::redis::StringView fnSV( fieldName.C_String(), fieldName.ByteSize() );
-    sw::redis::StringView fvSV( (const char*) payload.GetConstBufferPtr(), payload.GetDataSize() );
-    
-    m_redisMsgArgs.push_back( std::pair< sw::redis::StringView, sw::redis::StringView >( fnSV, fvSV ) );
-    
-    return RedisSendSyncImpl( idSV );
-}
-
-/*-------------------------------------------------------------------------*/
-
 bool 
-CRedisClusterPubSubClientTopic::Publish( const CORE::CString& msgKey     , 
-                                         const CORE::CValueList& payload )
+CRedisClusterPubSubClientTopic::Publish( const COMCORE::CIPubSubMsg& msg )
 {GUCEF_TRACE;
 
-    sw::redis::StringView idSV( msgKey.C_String(), msgKey.ByteSize() );
+    const CORE::CVariant& msgId = msg.GetMsgId();
+    sw::redis::StringView idSV( msgId.AsCharPtr(), msgId.ByteSize( false ) );
     
-    m_redisMsgArgs.clear();
-    m_redisMsgArgs.reserve( (size_t) payload.GetCount() );
+    const CORE::CVariant& primaryPayload = msg.GetPrimaryPayload();
+    const COMCORE::CIPubSubMsg::TKeyValuePairs& kvPairs = msg.GetKeyValuePairs();
+    bool hasNoPrimaryPayload = primaryPayload.IsNULLOrEmpty();
 
-    CORE::CValueList::TValueMap::const_iterator i = payload.GetDataBeginIterator();
-    while ( i != payload.GetDataEndIterator() )
+    m_redisMsgArgs.clear();
+    m_redisMsgArgs.reserve( (size_t) kvPairs.size() + ( hasNoPrimaryPayload ? 0 : 1 ) );
+    
+    if ( !hasNoPrimaryPayload )
     {
-        const CORE::CString& fieldName = (*i).first;
-        sw::redis::StringView fnSV( fieldName.C_String(), fieldName.ByteSize() );
+        // This is really not appropriote use of the redis backend
+        // its strongly prefered for the application to specify a proper key name to ensure its non-conflicting
         
-        const CORE::CValueList::TStringVector& fieldValues = (*i).second;
-        CORE::CValueList::TStringVector::const_iterator n = fieldValues.begin();
-        while ( n != fieldValues.end() )
-        {
-            sw::redis::StringView fvSV( (const char*) (*n).C_String(), (*n).ByteSize() );
-            m_redisMsgArgs.push_back( std::pair< sw::redis::StringView, sw::redis::StringView >( fnSV, fvSV ) );
-            ++n;
-        }
+        static const const CORE::CString& fieldName = "PRIMARYPAYLOAD";
+        sw::redis::StringView fnSV( fieldName.C_String(), fieldName.ByteSize()-1 );
+
+        sw::redis::StringView fvSV( primaryPayload.AsCharPtr(), primaryPayload.ByteSize( false ) );
+
+        m_redisMsgArgs.push_back( std::pair< sw::redis::StringView, sw::redis::StringView >( fnSV, fvSV ) );
+    }    
+    
+    COMCORE::CIPubSubMsg::TKeyValuePairs::const_iterator i = kvPairs.begin();
+    while ( i != kvPairs.end() )
+    {
+        const CORE::CVariant& fieldName = (*i).first;
+        sw::redis::StringView fnSV( fieldName.AsCharPtr(), fieldName.ByteSize( false ) );
+
+        const CORE::CVariant& fieldValue = (*i).second;
+        sw::redis::StringView fvSV( fieldValue.AsCharPtr(), fieldValue.ByteSize( false ) );
+
+        m_redisMsgArgs.push_back( std::pair< sw::redis::StringView, sw::redis::StringView >( fnSV, fvSV ) );
+        
         ++i;
     }
     
@@ -636,24 +540,24 @@ CRedisClusterPubSubClientTopic::RedisRead( void )
                     std::string& msgId = (*i).first;                
                     TRedisMsgAttributes& msgAttribs = (*i).second;                                    
 
-                    m_pubsubMsgs.push_back( CRedisPubSubMsg() );
-                    CRedisPubSubMsg& pubsubMsg = m_pubsubMsgs.back();
+                    m_pubsubMsgs.push_back( COMCORE::CBasicPubSubMsg() );
+                    COMCORE::CBasicPubSubMsg& pubsubMsg = m_pubsubMsgs.back();
                     msgRefs.push_back( TPubSubMsgRef() );
                     TPubSubMsgRef& pubsubMsgRef = msgRefs.back();
                     pubsubMsgRef.LinkTo( &pubsubMsg );
 
                     // set basic message properties
                     
-                    pubsubMsg.m_msgId.LinkTo( msgId );
+                    pubsubMsg.GetMsgId().LinkTo( msgId );
                     CORE::UInt64 unixUtcDt = CORE::StringToUInt64( msgId );
-                    pubsubMsg.m_msgDateTime.SetFromUnixEpochBasedTickInMillisecs( unixUtcDt );
+                    pubsubMsg.GetMsgDateTime().SetFromUnixEpochBasedTickInMillisecs( unixUtcDt );
                 
                     // set the message attributes
 
                     if ( msgAttribs.size() > m_pubsubMsgAttribs.size() )
                         m_pubsubMsgAttribs.resize( msgAttribs.size() );
-                    pubsubMsg.m_keyValueLinks.clear();
-                    pubsubMsg.m_keyValueLinks.reserve( msgAttribs.size() );
+                    pubsubMsg.GetKeyValuePairs().clear();
+                    pubsubMsg.GetKeyValuePairs().reserve( msgAttribs.size() );
                 
                     TBufferVector::iterator a = m_pubsubMsgAttribs.begin();
                     TRedisMsgAttributes::iterator n = msgAttribs.begin();
@@ -668,11 +572,11 @@ CRedisClusterPubSubClientTopic::RedisRead( void )
                         keyAttBuffer.LinkTo( keyAtt );
                         valueAttBuffer.LinkTo( valueAtt );
                     
-                        pubsubMsg.m_keyValueLinks.push_back( CRedisPubSubMsg::TKeyValueLinkPair() );
-                        CRedisPubSubMsg::TKeyValueLinkPair& kvLink = pubsubMsg.m_keyValueLinks.back();
+                        pubsubMsg.GetKeyValuePairs().push_back( COMCORE::CBasicPubSubMsg::TKeyValuePair() );
+                        COMCORE::CBasicPubSubMsg::TKeyValuePair& kvLink = pubsubMsg.GetKeyValuePairs().back();
 
-                        kvLink.first.LinkTo( &keyAttBuffer );
-                        kvLink.second.LinkTo( &valueAttBuffer );
+                        kvLink.first.LinkTo( keyAttBuffer );
+                        kvLink.second.LinkTo( valueAttBuffer );
                     
                         ++n; ++a;
                     }

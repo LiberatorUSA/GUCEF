@@ -69,11 +69,12 @@ GUCEF_IMPLEMENT_MSGEXCEPTION( CDynamicBuffer, EIllegalCast );
 /*-------------------------------------------------------------------------*/
 
 CDynamicBuffer::CDynamicBuffer( void )
-        : _buffer( NULL )             , 
-          _bsize( 0 )                 ,
-          _autoenlarge( true )        ,
-          m_dataSize( 0 )             ,
-          m_linked( false )
+    : CICloneable()
+    , _buffer( NULL )              
+    , _bsize( 0 )                 
+    , _autoenlarge( true )        
+    , m_dataSize( 0 )             
+    , m_linked( false )
 {GUCEF_TRACE;
 
 }
@@ -81,11 +82,12 @@ CDynamicBuffer::CDynamicBuffer( void )
 /*-------------------------------------------------------------------------*/
 
 CDynamicBuffer::CDynamicBuffer( bool autoenlarge ) 
-        : _buffer( NULL )             , 
-          _bsize( 0 )                 ,
-          _autoenlarge( autoenlarge ) ,
-          m_dataSize( 0 )             ,
-          m_linked( false )
+    : CICloneable()
+    , _buffer( NULL )              
+    , _bsize( 0 )                 
+    , _autoenlarge( autoenlarge ) 
+    , m_dataSize( 0 )             
+    , m_linked( false )
 {GUCEF_TRACE;
 
 }
@@ -93,11 +95,12 @@ CDynamicBuffer::CDynamicBuffer( bool autoenlarge )
 /*-------------------------------------------------------------------------*/
 
 CDynamicBuffer::CDynamicBuffer( CIOAccess& ioAccess )
-        : _buffer( NULL )             , 
-          _bsize( 0 )                 ,
-          _autoenlarge( true )        ,
-          m_dataSize( 0 )             ,
-          m_linked( false )
+    : CICloneable()
+    , _buffer( NULL )              
+    , _bsize( 0 )                 
+    , _autoenlarge( true )        
+    , m_dataSize( 0 )             
+    , m_linked( false )
 {GUCEF_TRACE;
     
     Append( ioAccess );
@@ -107,11 +110,12 @@ CDynamicBuffer::CDynamicBuffer( CIOAccess& ioAccess )
 
 CDynamicBuffer::CDynamicBuffer( UInt32 initialsize ,
                                 bool autoenlarge   )
-        : _autoenlarge( autoenlarge ) ,
-          _buffer( NULL )             ,
-          _bsize( 0 )                 ,
-          m_dataSize( 0 )             ,
-          m_linked( false )
+    : CICloneable()
+    , _autoenlarge( autoenlarge ) 
+    , _buffer( NULL )             
+    , _bsize( 0 )                 
+    , m_dataSize( 0 )             
+    , m_linked( false )
 {GUCEF_TRACE;
 
     _buffer = (Int8*) malloc( initialsize );
@@ -122,11 +126,12 @@ CDynamicBuffer::CDynamicBuffer( UInt32 initialsize ,
 
 CDynamicBuffer::CDynamicBuffer( const CDynamicBuffer &src ,
                                 bool shrinkToDataSize     )
-        : _buffer( NULL )                  ,
-          _bsize( 0 )                      ,
-          m_dataSize( 0 )                  ,
-          _autoenlarge( src._autoenlarge ) ,
-          m_linked( false )
+    : CICloneable( src )
+    , _buffer( NULL )                  
+    , _bsize( 0 )                      
+    , m_dataSize( 0 )                  
+    , _autoenlarge( src._autoenlarge ) 
+    , m_linked( false )
 {GUCEF_TRACE;
 
     m_dataSize = src.m_dataSize;
@@ -150,11 +155,12 @@ CDynamicBuffer::CDynamicBuffer( const CDynamicBuffer &src ,
 CDynamicBuffer::CDynamicBuffer( const char* externalBuffer    ,
                                 const UInt32 bufferSize       ,
                                 bool autoenlarge /* = true */ )
-        : _buffer( NULL )      ,
-          _bsize( 0 )          ,
-          m_dataSize( 0 )      ,
-          _autoenlarge( true ) ,
-          m_linked( false )
+    : CICloneable()
+    , _buffer( NULL )      
+    , _bsize( 0 )          
+    , m_dataSize( 0 )      
+    , _autoenlarge( true ) 
+    , m_linked( false )
 {GUCEF_TRACE;
 
     CopyFrom( bufferSize     ,
@@ -167,7 +173,7 @@ CDynamicBuffer::CDynamicBuffer( const char* externalBuffer    ,
 CDynamicBuffer::~CDynamicBuffer()
 {GUCEF_TRACE;
         
-        Clear( false );
+    Clear( false );
 }
 
 /*-------------------------------------------------------------------------*/
@@ -559,6 +565,15 @@ CDynamicBuffer::CopyFrom( UInt32 size     ,
 /*-------------------------------------------------------------------------*/
 
 UInt32 
+CDynamicBuffer::CopyFrom( const CDynamicBuffer& source, UInt32 offset, UInt32 nrOfBytes )
+{GUCEF_TRACE;
+
+    return CopyFrom( offset, nrOfBytes, source.GetConstBufferPtr( offset ) );
+}
+
+/*-------------------------------------------------------------------------*/
+
+UInt32 
 CDynamicBuffer::CopyFrom( const CDynamicBuffer& source, UInt32 offset )
 {GUCEF_TRACE;
 
@@ -918,6 +933,15 @@ CDynamicBuffer::SecureLinkBeforeMutation( void )
 
 /*-------------------------------------------------------------------------*/
 
+CICloneable* 
+CDynamicBuffer::Clone( void ) const
+{GUCEF_TRACE;
+
+    return new CDynamicBuffer( *this );
+}
+
+/*-------------------------------------------------------------------------*/
+
 CVariant 
 CDynamicBuffer::AsVariant( UInt32 bufferOffset, UInt8 varType ) const
 {GUCEF_TRACE;
@@ -936,8 +960,7 @@ CDynamicBuffer&
 CDynamicBuffer::LinkTo( const CVariant& src )
 {GUCEF_TRACE;
 
-    LinkTo( src.AsVoidPtr(), src.ByteSize() );
-    return *this;
+    return LinkTo( src.AsVoidPtr(), src.ByteSize() );
 }
 
 /*-------------------------------------------------------------------------*/
@@ -946,8 +969,7 @@ CDynamicBuffer&
 CDynamicBuffer::LinkTo( const CAsciiString& src )
 {GUCEF_TRACE;
 
-    LinkTo( src.C_String(), src.ByteSize() );
-    return *this;
+    return LinkTo( src.C_String(), src.ByteSize() );
 }
 
 /*-------------------------------------------------------------------------*/
@@ -956,8 +978,7 @@ CDynamicBuffer&
 CDynamicBuffer::LinkTo( const CUtf8String& src )
 {GUCEF_TRACE;
 
-    LinkTo( src.C_String(), src.ByteSize() );
-    return *this;
+    return LinkTo( src.C_String(), src.ByteSize() );
 }
 
 /*-------------------------------------------------------------------------*/
@@ -966,8 +987,16 @@ CDynamicBuffer&
 CDynamicBuffer::LinkTo( const std::string& src )
 {GUCEF_TRACE;
 
-    LinkTo( src.c_str(), (UInt32) src.size() );
-    return *this;
+    return LinkTo( src.c_str(), (UInt32) src.size() );
+}
+
+/*-------------------------------------------------------------------------*/
+
+CDynamicBuffer& 
+CDynamicBuffer::LinkTo( const CDynamicBuffer& src )
+{GUCEF_TRACE;
+
+    return LinkTo( src.GetConstBufferPtr(), src.GetDataSize() );
 }
 
 /*-------------------------------------------------------------------------//

@@ -77,6 +77,11 @@
 #define GUCEF_COMCORE_CIPUBSUBMSG_H
 #endif /* GUCEF_COMCORE_CIPUBSUBMSG_H ? */
 
+#ifndef GUCEF_COMCORE_CBASICPUBSUBMSG_H
+#include "gucefCOMCORE_CBasicPubSubMsg.h"
+#define GUCEF_COMCORE_CBASICPUBSUBMSG_H
+#endif /* GUCEF_COMCORE_CBASICPUBSUBMSG_H ? */
+
 #ifndef GUCEF_COMCORE_CPUBSUBCLIENT_H
 #include "gucefCOMCORE_CPubSubClient.h"
 #define GUCEF_COMCORE_CPUBSUBCLIENT_H
@@ -121,34 +126,6 @@ class RedisNode
 };
 
 typedef std::map< CORE::UInt32, RedisNode > RedisNodeMap;
-
-/*-------------------------------------------------------------------------*/
-
-class CRedisPubSubMsg : public COMCORE::CIPubSubMsg
-{
-    public:
-
-    CRedisPubSubMsg( void );
-
-    CRedisPubSubMsg( const CRedisPubSubMsg& src );
-
-    virtual ~CRedisPubSubMsg() GUCEF_VIRTUAL_OVERRIDE;
-
-    virtual const CORE::CVariant& GetMsgId( void ) const GUCEF_VIRTUAL_OVERRIDE;
-
-    virtual const CORE::CDateTime& GetMsgDateTime( void ) const GUCEF_VIRTUAL_OVERRIDE;
-
-    virtual const CORE::TLinkedCloneableBuffer& GetPrimaryPayload( void ) const GUCEF_VIRTUAL_OVERRIDE;
-
-    virtual const TKeyValuePayloadLinks& GetKeyValuePairs( void ) const GUCEF_VIRTUAL_OVERRIDE;
-
-    virtual CORE::CICloneable* Clone( void ) const GUCEF_VIRTUAL_OVERRIDE;
-
-    CORE::CVariant m_msgId;
-    CORE::CDateTime m_msgDateTime;
-    CORE::TLinkedCloneableBuffer m_primaryPayloadLink;
-    TKeyValuePayloadLinks m_keyValueLinks;
-};
 
 /*-------------------------------------------------------------------------*/
 
@@ -229,11 +206,7 @@ class CRedisClusterPubSubClientTopic : public COMCORE::CPubSubClientTopic
 
     virtual const CORE::CString& GetTopicName( void ) const GUCEF_VIRTUAL_OVERRIDE;
 
-    virtual bool Publish( const CORE::CString& msgkey, const CORE::CString& key, const CORE::CString& payload ) GUCEF_VIRTUAL_OVERRIDE;
-
-    virtual bool Publish( const CORE::CString& msgKey, const CORE::CString& key, const CORE::CDynamicBuffer& payload ) GUCEF_VIRTUAL_OVERRIDE;
-
-    virtual bool Publish( const CORE::CString& msgKey, const CORE::CValueList& payload ) GUCEF_VIRTUAL_OVERRIDE;
+    virtual bool Publish( const COMCORE::CIPubSubMsg& msg ) GUCEF_VIRTUAL_OVERRIDE;
 
     virtual bool SaveConfig( COMCORE::CPubSubClientTopicConfig& config ) const;
 
@@ -275,7 +248,7 @@ class CRedisClusterPubSubClientTopic : public COMCORE::CPubSubClientTopic
     typedef std::insert_iterator< TRedisMsgByStream > TRedisMsgByStreamInserter;
 
     // Types to implement/hook-up topic interface
-    typedef std::vector< CRedisPubSubMsg > TPubSubMsgsVector;
+    typedef std::vector< COMCORE::CBasicPubSubMsg > TPubSubMsgsVector;
     typedef std::pair< CORE::CDynamicBuffer, CORE::CDynamicBuffer > TBufferPair;
     typedef std::vector< TBufferPair > TBufferVector;
 

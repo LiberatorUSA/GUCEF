@@ -27,6 +27,11 @@
 #define GUCEF_CORE_LOGGING_H
 #endif /* GUCEF_CORE_LOGGING_H ? */
 
+#ifndef GUCEF_COMCORE_CBASICPUBSUBMSG_H
+#include "gucefCOMCORE_CBasicPubSubMsg.h"
+#define GUCEF_COMCORE_CBASICPUBSUBMSG_H
+#endif /* GUCEF_COMCORE_CBASICPUBSUBMSG_H ? */
+
 #include "gucefCOMCORE_CPubSubClientTopic.h"
 
 /*-------------------------------------------------------------------------//
@@ -79,6 +84,102 @@ CPubSubClientTopic::CPubSubClientTopic( void )
 CPubSubClientTopic::~CPubSubClientTopic()
 {GUCEF_TRACE;
 
+}
+
+/*-------------------------------------------------------------------------*/
+
+bool
+CPubSubClientTopic::Publish( const CORE::CString& msgId, const CORE::CDynamicBuffer& payload )
+{GUCEF_TRACE;
+
+    CBasicPubSubMsg msg;
+    msg.GetMsgId().LinkTo( msgId );
+    msg.GetPrimaryPayload().LinkTo( payload );
+    return Publish( msg );
+}
+
+/*-------------------------------------------------------------------------*/
+
+bool
+CPubSubClientTopic::Publish( const CORE::CString& msgId, const CORE::CString& payload )
+{GUCEF_TRACE;
+
+    CBasicPubSubMsg msg;
+    msg.GetMsgId().LinkTo( msgId );
+    msg.GetPrimaryPayload().LinkTo( payload );
+    return Publish( msg );
+}
+
+/*-------------------------------------------------------------------------*/
+
+bool
+CPubSubClientTopic::Publish( const CORE::CVariant& msgId, const CORE::CVariant& payload )
+{GUCEF_TRACE;
+
+    CBasicPubSubMsg msg;
+    msg.GetMsgId().LinkTo( msgId );
+    msg.GetPrimaryPayload().LinkTo( payload );
+    return Publish( msg );
+}
+
+/*-------------------------------------------------------------------------*/
+
+bool
+CPubSubClientTopic::Publish( const CORE::CString& msgId, const CORE::CString& key, const CORE::CString& value )
+{GUCEF_TRACE;
+
+    CBasicPubSubMsg msg;
+    msg.GetMsgId().LinkTo( msgId );
+    msg.AddLinkedKeyValuePair( key, value );
+    return Publish( msg );
+}
+
+/*-------------------------------------------------------------------------*/
+
+bool
+CPubSubClientTopic::Publish( const CORE::CString& msgId, const CORE::CString& key, const CORE::CDynamicBuffer& value )
+{GUCEF_TRACE;
+
+    CBasicPubSubMsg msg;
+    msg.GetMsgId().LinkTo( msgId );
+    msg.AddLinkedKeyValuePair( key, value );
+    return Publish( msg );
+}
+
+/*-------------------------------------------------------------------------*/
+
+bool
+CPubSubClientTopic::Publish( const CORE::CString& msgId, const CORE::CDynamicBuffer& key, const CORE::CDynamicBuffer& value )
+{GUCEF_TRACE;
+
+    CBasicPubSubMsg msg;
+    msg.GetMsgId().LinkTo( msgId );
+    msg.AddLinkedKeyValuePair( key, value );
+    return Publish( msg );
+}
+
+/*-------------------------------------------------------------------------*/
+
+bool
+CPubSubClientTopic::Publish( const CORE::CVariant& msgId, const CORE::CDynamicBuffer& key, const CORE::CDynamicBuffer& value )
+{GUCEF_TRACE;
+
+    CBasicPubSubMsg msg;
+    msg.GetMsgId().LinkTo( msgId );
+    msg.AddLinkedKeyValuePair( key, value );
+    return Publish( msg );
+}
+
+/*-------------------------------------------------------------------------*/
+
+bool 
+CPubSubClientTopic::Publish( const CORE::CString& msgId, const CORE::CValueList& kvPairs )
+{GUCEF_TRACE;
+
+    CBasicPubSubMsg msg;
+    msg.GetMsgId().LinkTo( msgId );
+    msg.AddLinkedKeyValuePairs( kvPairs );
+    return Publish( msg );
 }
 
 /*-------------------------------------------------------------------------//

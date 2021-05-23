@@ -94,6 +94,10 @@ class CTLinkedCloneableObj : public CICloneable
 
     void Clear( void );
 
+    inline operator const T&() const;
+
+    inline operator const T*() const;
+
     GUCEF_DEFINE_INLINED_MSGEXCEPTION( ENULLPointer );
 
     private:
@@ -128,7 +132,6 @@ CTLinkedCloneableObj< T >::CTLinkedCloneableObj( const T* data )
         GUCEF_EMSGTHROW( ENULLPointer, "CTLinkedCloneableObj( const T* data ): This operation is impossible without a valid object" );
     }
 }
-
 
 /*-------------------------------------------------------------------------*/
 
@@ -216,6 +219,31 @@ CTLinkedCloneableObj< T >::GetData( void ) const
     GUCEF_EMSGTHROW( ENULLPointer, "CTLinkedCloneableObj::GetData(): This operation is impossible without a valid object" );
 }
 
+/*-------------------------------------------------------------------------*/
+
+template< typename T >
+inline
+CTLinkedCloneableObj< T >::operator const T&() const
+{GUCEF_TRACE;
+
+    if ( GUCEF_NULL != m_data )
+    {
+        return *m_data;
+    }
+    
+    GUCEF_EMSGTHROW( ENULLPointer, "CTLinkedCloneableObj: operator const T&(): This operation is impossible without a valid object" );
+}
+
+/*-------------------------------------------------------------------------*/
+
+template< typename T >
+inline
+CTLinkedCloneableObj< T >::operator const T*() const
+{GUCEF_TRACE;
+
+    return m_data;
+}
+
 /*-------------------------------------------------------------------------//
 //                                                                         //
 //      NAMESPACE                                                          //
@@ -228,14 +256,3 @@ CTLinkedCloneableObj< T >::GetData( void ) const
 /*-------------------------------------------------------------------------*/
 
 #endif /* GUCEF_CORE_CTLINKEDCLONEABLEOBJ_H ? */
-
-/*-------------------------------------------------------------------------//
-//                                                                         //
-//      Info & Changes                                                     //
-//                                                                         //
-//-------------------------------------------------------------------------//
-
-- 06-10-2006 :
-        - Dinand: initial implementation
-
------------------------------------------------------------------------------*/

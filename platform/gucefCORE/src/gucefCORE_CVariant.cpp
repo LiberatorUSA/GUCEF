@@ -760,36 +760,45 @@ CVariant::AsFloat64( Float64 defaultIfNeeded ) const
 
 /*-------------------------------------------------------------------------*/
 
-const void*
-CVariant::AsVoidPtr( const void* defaultIfNeeded ) const
+const char*
+CVariant::AsCharPtr( const char* defaultIfNeeded ) const
 {GUCEF_TRACE;
 
     switch ( m_variantData.containedType )
     {
-        case GUCEF_DATATYPE_INT8: return &m_variantData.union_data.int8_data;
-        case GUCEF_DATATYPE_UINT8: return &m_variantData.union_data.uint8_data;
-        case GUCEF_DATATYPE_INT16: return &m_variantData.union_data.int16_data;
-        case GUCEF_DATATYPE_UINT16: return &m_variantData.union_data.uint16_data;
-        case GUCEF_DATATYPE_INT32: return &m_variantData.union_data.int32_data;
-        case GUCEF_DATATYPE_UINT32: return &m_variantData.union_data.uint32_data;
-        case GUCEF_DATATYPE_INT64: return &m_variantData.union_data.int64_data;
-        case GUCEF_DATATYPE_UINT64: return &m_variantData.union_data.uint64_data;
-        case GUCEF_DATATYPE_FLOAT32: return &m_variantData.union_data.float32_data;
-        case GUCEF_DATATYPE_FLOAT64: return &m_variantData.union_data.float64_data;
-        case GUCEF_DATATYPE_BOOLEAN_INT32: return &m_variantData.union_data.int32_data;
-        case GUCEF_DATATYPE_BOOLEAN_ASCII_STRING: return m_variantData.union_data.heap_data.heap_data;
-        case GUCEF_DATATYPE_BOOLEAN_UTF8_STRING: return m_variantData.union_data.heap_data.heap_data;
-        case GUCEF_DATATYPE_ASCII_STRING: return m_variantData.union_data.heap_data.heap_data;
-        case GUCEF_DATATYPE_UTF8_STRING: return m_variantData.union_data.heap_data.heap_data;
-        case GUCEF_DATATYPE_BINARY: return m_variantData.union_data.heap_data.heap_data;
+        case GUCEF_DATATYPE_INT8: return reinterpret_cast< const char* >( &m_variantData.union_data.int8_data );
+        case GUCEF_DATATYPE_UINT8: return reinterpret_cast< const char* >( &m_variantData.union_data.uint8_data );
+        case GUCEF_DATATYPE_INT16: return reinterpret_cast< const char* >( &m_variantData.union_data.int16_data );
+        case GUCEF_DATATYPE_UINT16: return reinterpret_cast< const char* >( &m_variantData.union_data.uint16_data );
+        case GUCEF_DATATYPE_INT32: return reinterpret_cast< const char* >( &m_variantData.union_data.int32_data );
+        case GUCEF_DATATYPE_UINT32: return reinterpret_cast< const char* >( &m_variantData.union_data.uint32_data );
+        case GUCEF_DATATYPE_INT64: return reinterpret_cast< const char* >( &m_variantData.union_data.int64_data );
+        case GUCEF_DATATYPE_UINT64: return reinterpret_cast< const char* >( &m_variantData.union_data.uint64_data );
+        case GUCEF_DATATYPE_FLOAT32: return reinterpret_cast< const char* >( &m_variantData.union_data.float32_data );
+        case GUCEF_DATATYPE_FLOAT64: return reinterpret_cast< const char* >( &m_variantData.union_data.float64_data );
+        case GUCEF_DATATYPE_BOOLEAN_INT32: return reinterpret_cast< const char* >( &m_variantData.union_data.int32_data );
+        case GUCEF_DATATYPE_BOOLEAN_ASCII_STRING: return static_cast< const char* >( m_variantData.union_data.heap_data.heap_data );
+        case GUCEF_DATATYPE_BOOLEAN_UTF8_STRING: return static_cast< const char* >( m_variantData.union_data.heap_data.heap_data );
+        case GUCEF_DATATYPE_ASCII_STRING: return static_cast< const char* >( m_variantData.union_data.heap_data.heap_data );
+        case GUCEF_DATATYPE_UTF8_STRING: return static_cast< const char* >( m_variantData.union_data.heap_data.heap_data );
+        case GUCEF_DATATYPE_BINARY: return static_cast< const char* >( m_variantData.union_data.heap_data.heap_data );
         default: return defaultIfNeeded;
     }
 }
 
 /*-------------------------------------------------------------------------*/
 
+const void*
+CVariant::AsVoidPtr( const void* defaultIfNeeded ) const
+{GUCEF_TRACE;
+
+    return AsCharPtr( static_cast< const char* >( defaultIfNeeded ) );
+}
+
+/*-------------------------------------------------------------------------*/
+
 UInt32
-CVariant::ByteSize( void ) const
+CVariant::ByteSize( bool includeNullTerm ) const
 {GUCEF_TRACE;
 
     switch ( m_variantData.containedType )
@@ -805,10 +814,22 @@ CVariant::ByteSize( void ) const
         case GUCEF_DATATYPE_FLOAT32: return sizeof m_variantData.union_data.float32_data;
         case GUCEF_DATATYPE_FLOAT64: return sizeof m_variantData.union_data.float64_data;
         case GUCEF_DATATYPE_BOOLEAN_INT32: return sizeof m_variantData.union_data.int32_data;
-        case GUCEF_DATATYPE_BOOLEAN_ASCII_STRING: return m_variantData.union_data.heap_data.heap_data_size;
-        case GUCEF_DATATYPE_BOOLEAN_UTF8_STRING: return m_variantData.union_data.heap_data.heap_data_size;
-        case GUCEF_DATATYPE_ASCII_STRING: return m_variantData.union_data.heap_data.heap_data_size;
-        case GUCEF_DATATYPE_UTF8_STRING: return m_variantData.union_data.heap_data.heap_data_size;
+        case GUCEF_DATATYPE_BINARY: return m_variantData.union_data.heap_data.heap_data_size;
+        
+        case GUCEF_DATATYPE_BOOLEAN_ASCII_STRING:
+        case GUCEF_DATATYPE_BOOLEAN_UTF8_STRING:
+        case GUCEF_DATATYPE_ASCII_STRING:
+        case GUCEF_DATATYPE_UTF8_STRING:
+        {
+            if ( !includeNullTerm || 0 == m_variantData.union_data.heap_data.heap_data_size )
+                return m_variantData.union_data.heap_data.heap_data_size;
+            
+            const char* heapPtr = static_cast< const char* >( m_variantData.union_data.heap_data.heap_data );
+            if ( '\0' == heapPtr[ m_variantData.union_data.heap_data.heap_data_size-1 ] )
+                return m_variantData.union_data.heap_data.heap_data_size-1;
+            return m_variantData.union_data.heap_data.heap_data_size;
+        }
+
         default: return 0;
     }
 }

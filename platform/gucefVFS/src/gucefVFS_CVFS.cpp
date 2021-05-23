@@ -228,7 +228,7 @@ CVFS::StoreAsFileAsync( const CORE::CString& filepath       ,
     operationData.operationType = ASYNCVFSOPERATIONTYPE_STOREDATAASFILE;
     operationData.asyncRequestId = asyncRequestId;
     operationData.filepath = filepath;
-    operationData.data.LinkTo( &data );
+    operationData.data.LinkTo( data );
     operationData.offset = offset;
     operationData.overwrite = overwrite;
     operationData.SetRequestorData( requestorData );

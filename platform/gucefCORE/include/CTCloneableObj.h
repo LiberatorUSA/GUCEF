@@ -68,11 +68,15 @@ class CTCloneableObj : public CICloneable
     
     virtual CICloneable* Clone( void ) const GUCEF_VIRTUAL_OVERRIDE;    
     
-    T GetDataCopy( void ) const;
+    inline T GetDataCopy( void ) const;
     
-    T& GetData( void );
+    inline T& GetData( void );
     
-    const T& GetData( void ) const;
+    inline const T& GetData( void ) const;
+
+    inline operator const T&() const;
+
+    inline operator T&();
 
     protected:
     T m_data;
@@ -165,6 +169,26 @@ CTCloneableObj< T >::GetData( void ) const
 template< typename T >
 T 
 CTCloneableObj< T >::GetDataCopy( void ) const
+{GUCEF_TRACE;
+
+    return m_data;
+}
+
+/*-------------------------------------------------------------------------*/
+
+template< typename T >
+inline
+CTCloneableObj< T >::operator const T&() const
+{GUCEF_TRACE;
+
+    return m_data;
+}
+
+/*-------------------------------------------------------------------------*/
+
+template< typename T >
+inline
+CTCloneableObj< T >::operator T&()
 {GUCEF_TRACE;
 
     return m_data;

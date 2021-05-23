@@ -94,17 +94,19 @@ class GUCEF_COMCORE_EXPORT_CPP CIPubSubMsg : public CORE::CICloneable
 {
     public:
 
-    typedef std::pair< CORE::TLinkedCloneableBuffer, CORE::TLinkedCloneableBuffer > TKeyValueLinkPair;
-    typedef std::vector< TKeyValueLinkPair > TKeyValuePayloadLinks;
+    typedef std::pair< CORE::CVariant, CORE::CVariant > TKeyValuePair;
+    typedef std::vector< TKeyValuePair > TKeyValuePairs;
 
     CIPubSubMsg( void );
 
     CIPubSubMsg( const CIPubSubMsg& src );
 
     virtual ~CIPubSubMsg();
-
+    
+    virtual CORE::CVariant& GetMsgId( void ) = 0;    
     virtual const CORE::CVariant& GetMsgId( void ) const = 0;
-
+    
+    virtual CORE::CDateTime& GetMsgDateTime( void ) = 0;    
     virtual const CORE::CDateTime& GetMsgDateTime( void ) const = 0;
 
     /**
@@ -114,10 +116,12 @@ class GUCEF_COMCORE_EXPORT_CPP CIPubSubMsg : public CORE::CICloneable
      *  If used in cases where only/specifically key-value attributes are supported the client
      *  will attempt to provide the value of the first key-value pair in a best
      *  effort manner.
-     */
-    virtual const CORE::TLinkedCloneableBuffer& GetPrimaryPayload( void ) const = 0;
+     */    
+    virtual CORE::CVariant& GetPrimaryPayload( void ) = 0;
+    virtual const CORE::CVariant& GetPrimaryPayload( void ) const = 0;
 
-    virtual const TKeyValuePayloadLinks& GetKeyValuePairs( void ) const = 0;
+    virtual TKeyValuePairs& GetKeyValuePairs( void ) = 0;
+    virtual const TKeyValuePairs& GetKeyValuePairs( void ) const = 0;
 
 };
 

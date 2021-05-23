@@ -107,15 +107,20 @@ class GUCEF_COMCORE_EXPORT_CPP CPubSubClientTopic : public CORE::CObservingNotif
 
     virtual const CORE::CString& GetTopicName( void ) const = 0;
 
-    virtual bool Publish( const CORE::CString& msgkey, const CORE::CString& key, const CORE::CString& payload ) = 0;
+    /**
+     *  Utility/convenience member functions that allow common calling patterns
+     *  Note that these all call Publish( const CIPubSubMsg& msg ) 
+     */
+    virtual bool Publish( const CORE::CString& msgId, const CORE::CString& key, const CORE::CString& value );
+    virtual bool Publish( const CORE::CString& msgId, const CORE::CDynamicBuffer& payload );
+    virtual bool Publish( const CORE::CString& msgId, const CORE::CString& payload );    
+    virtual bool Publish( const CORE::CVariant& msgId, const CORE::CVariant& payload );
+    virtual bool Publish( const CORE::CString& msgId, const CORE::CString& key, const CORE::CDynamicBuffer& value );
+    virtual bool Publish( const CORE::CString& msgId, const CORE::CDynamicBuffer& key, const CORE::CDynamicBuffer& value );
+    virtual bool Publish( const CORE::CVariant& msgId, const CORE::CDynamicBuffer& key, const CORE::CDynamicBuffer& value );
+    virtual bool Publish( const CORE::CString& msgId, const CORE::CValueList& kvPairs );
 
-    virtual bool Publish( const CORE::CString& msgKey, const CORE::CString& key, const CORE::CDynamicBuffer& payload ) = 0;
-
-    virtual bool Publish( const CORE::CString& msgKey, const CORE::CValueList& payload ) = 0;
-
-    //virtual bool Publish( const CIPubSubMsg& msg ) = 0;
-
-    //virtual bool Publish( const TPubSubMsgsRefVector& msgs ) = 0;
+    virtual bool Publish( const CIPubSubMsg& msg ) = 0;
 
 };
 

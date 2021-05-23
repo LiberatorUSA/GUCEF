@@ -159,12 +159,13 @@ class GUCEF_CORE_PUBLIC_CPP CVariant
     CAsciiString    AsAsciiString( const CAsciiString& defaultIfNeeded = CAsciiString::Empty ) const;
     CUtf8String     AsUtf8String( const CUtf8String& defaultIfNeeded = CUtf8String::Empty ) const;
     const void*     AsVoidPtr( const void* defaultIfNeeded = GUCEF_NULL ) const;
+    const char*     AsCharPtr( const char* defaultIfNeeded = GUCEF_NULL ) const;
     CDynamicBuffer  AsBuffer( void ) const;
 
     /**
      *  Returns the size of the storage used in bytes by the stored type
      */
-    UInt32 ByteSize( void ) const;
+    UInt32 ByteSize( bool includeNullTerm = true ) const;
 
     bool operator==( const CVariant& other ) const;
     bool operator!=( const CVariant& other ) const;
