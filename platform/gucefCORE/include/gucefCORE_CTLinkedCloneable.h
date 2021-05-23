@@ -1,22 +1,23 @@
 /*
- * Copyright (C) Dinand Vanvelzen. 2002 - 2006.  All rights reserved.
+ *  gucefCOMCORE: GUCEF module providing basic communication facilities
  *
- * All source code herein is the property of Dinand Vanvelzen. You may not sell
- * or otherwise commercially exploit the source or things you created based on
- * the source.
+ *  Copyright (C) 1998 - 2020.  Dinand Vanvelzen
  *
- * THE SOFTWARE IS PROVIDED "AS-IS" AND WITHOUT WARRANTY OF ANY KIND,
- * EXPRESS, IMPLIED OR OTHERWISE, INCLUDING WITHOUT LIMITATION, ANY 
- * WARRANTY OF MERCHANTABILITY OR FITNESS FOR A PARTICULAR PURPOSE.
- * IN NO EVENT SHALL DINAND VANVELZEN BE LIABLE FOR ANY SPECIAL, INCIDENTAL, 
- * INDIRECT OR CONSEQUENTIAL DAMAGES OF ANY KIND, OR ANY DAMAGES WHATSOEVER 
- * RESULTING FROM LOSS OF USE, DATA OR PROFITS, WHETHER OR NOT ADVISED OF 
- * THE POSSIBILITY OF DAMAGE, AND ON ANY THEORY OF LIABILITY, ARISING OUT 
- * OF OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE. 
+ *  Licensed under the Apache License, Version 2.0 (the "License");
+ *  you may not use this file except in compliance with the License.
+ *  You may obtain a copy of the License at
+ *
+ *    http://www.apache.org/licenses/LICENSE-2.0
+ *
+ *  Unless required by applicable law or agreed to in writing, software
+ *  distributed under the License is distributed on an "AS IS" BASIS,
+ *  WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ *  See the License for the specific language governing permissions and
+ *  limitations under the License.
  */
 
-#ifndef GUCEF_CORE_CTLINKEDCLONEABLEOBJ_H
-#define GUCEF_CORE_CTLINKEDCLONEABLEOBJ_H
+#ifndef GUCEF_CORE_CTLINKEDCLONEABLE_H
+#define GUCEF_CORE_CTLINKEDCLONEABLE_H
  
 /*-------------------------------------------------------------------------//
 //                                                                         //
@@ -62,33 +63,47 @@ namespace CORE {
 //-------------------------------------------------------------------------*/
 
 /**
- *  Similar to the CTCloneableObj template only with a twist
- *  This template will allow you to link to an object without having 
- *  to copy it. You can then pass the wrapped linked object to an interface
- *  that uses cloning. If the need for a clone arises then a real copy will 
- *  be made, but not before. This allows you to optimize passing large objects
- *  as cloneables.
+ *  Contrary to the CTCloneableObj ans CTLinkedCloneable templates this one
+ *  does not use T as a non-cloning-capable object but instead acts as a 
+ *  cloning capable pointer to the cloneable.
+ *  
+ *  Please note that this is distinct from a Shared pointer which is about
+ *  delegating lifecycle management of the object.
+ *  This template is intended to be used as light weight references to costly 
+ *  to create needlessly objects, such as internal buffer, where we do NOT want
+ *  to delegate lifecycle management. We'd want to reuse the buffer after say
+ *  an event notification referencing the buffer contents.
  */
 template< typename T > 
-class CTLinkedCloneableObj : public CICloneable
+class CTLinkedCloneable : public CICloneable
 {
     public:
 
-    CTLinkedCloneableObj( void );
+    CTLinkedCloneable( void );
     
     // preserves the link, does not copy the wrapped object
-    explicit CTLinkedCloneableObj( const T* data );
+    explicit CTLinkedCloneable( const T* data );
 
     // creates a copy of the wrapped object
-    CTLinkedCloneableObj( const CTLinkedCloneableObj& src );
+    CTLinkedCloneable( const CTLinkedCloneable& src );
         
-    virtual ~CTLinkedCloneableObj();
+    virtual ~CTLinkedCloneable() GUCEF_VIRTUAL_OVERRIDE;
     
-    CTLinkedCloneableObj& operator=( const CTLinkedCloneableObj& src );
+    CTLinkedCloneable& operator=( const CTLinkedCloneable& src );
     
-    virtual CICloneable* Clone( void ) const;    
+    virtual CICloneable* Clone( void ) const GUCEF_VIRTUAL_OVERRIDE;
     
-    const T& GetData( void ) const;
+    /**
+     *  Conversion operator to bool to facilitate easy ! etc checks against the
+     *  pointer being NULL as some people like to do versus an explicit NULL == check.
+     */
+    inline operator bool() const;
+
+    inline bool operator<( const CTLinkedCloneable& other ) const;
+
+    inline const T* operator->( void ) const;
+
+    inline bool IsNULL( void ) const;
     
     void LinkTo( const T* data );
 
@@ -97,7 +112,7 @@ class CTLinkedCloneableObj : public CICloneable
     GUCEF_DEFINE_INLINED_MSGEXCEPTION( ENULLPointer );
 
     private:
-    const T* m_data;
+    const T* m_ptr;
     bool m_linked;
 };
 
@@ -108,9 +123,9 @@ class CTLinkedCloneableObj : public CICloneable
 //-------------------------------------------------------------------------*/
 
 template< typename T >
-CTLinkedCloneableObj< T >::CTLinkedCloneableObj( void )
-        : m_data( NULL )    ,
-          m_linked( false )
+CTLinkedCloneable< T >::CTLinkedCloneable( void )
+    : m_ptr( GUCEF_NULL ) ,
+      m_linked( false )
 {GUCEF_TRACE;
 
 }
@@ -118,32 +133,32 @@ CTLinkedCloneableObj< T >::CTLinkedCloneableObj( void )
 /*-------------------------------------------------------------------------*/
 
 template< typename T >
-CTLinkedCloneableObj< T >::CTLinkedCloneableObj( const T* data )
-        : m_data( data )   ,
-          m_linked( true )
+CTLinkedCloneable< T >::CTLinkedCloneable( const T* data )
+    : m_ptr( data )                 ,
+      m_linked( GUCEF_NULL != m_ptr )
 {GUCEF_TRACE;
 
-    if ( NULL == data )
+}
+
+
+/*-------------------------------------------------------------------------*/
+
+template< typename T >
+CTLinkedCloneable< T >::CTLinkedCloneable( const CTLinkedCloneable< T >& src )
+    : m_ptr( GUCEF_NULL ) ,
+      m_linked( false )
+{GUCEF_TRACE;
+
+    if ( GUCEF_NULL != src.m_ptr )
     {
-        GUCEF_EMSGTHROW( ENULLPointer, "CTLinkedCloneableObj( const T* data ): This operation is impossible without a valid object" );
+        m_ptr = static_cast< T* >( src.m_ptr->Clone() );
     }
-}
-
-
-/*-------------------------------------------------------------------------*/
-
-template< typename T >
-CTLinkedCloneableObj< T >::CTLinkedCloneableObj( const CTLinkedCloneableObj< T >& src )
-        : m_data( GUCEF_NULL != src.m_data ? new T( *src.m_data ) : GUCEF_NULL ) ,
-          m_linked( false )
-{GUCEF_TRACE;
-
 }
 
 /*-------------------------------------------------------------------------*/
     
 template< typename T >
-CTLinkedCloneableObj< T >::~CTLinkedCloneableObj()
+CTLinkedCloneable< T >::~CTLinkedCloneable()
 {GUCEF_TRACE;
     
     Clear();
@@ -153,28 +168,28 @@ CTLinkedCloneableObj< T >::~CTLinkedCloneableObj()
     
 template< typename T >
 void
-CTLinkedCloneableObj< T >::Clear( void )
+CTLinkedCloneable< T >::Clear( void )
 {GUCEF_TRACE;
 
     if ( !m_linked )
     {
-        delete m_data;
+        delete m_ptr;
     }
-    m_data = GUCEF_NULL;
+    m_ptr = GUCEF_NULL;
 }
 
 /*-------------------------------------------------------------------------*/
     
 template< typename T >
-CTLinkedCloneableObj< T >& 
-CTLinkedCloneableObj< T >::operator=( const CTLinkedCloneableObj< T >& src )
+CTLinkedCloneable< T >& 
+CTLinkedCloneable< T >::operator=( const CTLinkedCloneable< T >& src )
 {GUCEF_TRACE;
 
     if ( this != &src )
     {
         Clear();
-        if ( GUCEF_NULL != src.m_data )
-            m_data = new T( *src.m_data );
+        if ( GUCEF_NULL != src.m_ptr )
+            m_ptr = static_cast< T* >( src.m_ptr->Clone() );
     }
     return *this;
 }
@@ -183,38 +198,54 @@ CTLinkedCloneableObj< T >::operator=( const CTLinkedCloneableObj< T >& src )
 
 template< typename T >
 void
-CTLinkedCloneableObj< T >::LinkTo( const T* data )
+CTLinkedCloneable< T >::LinkTo( const T* ptr )
 {GUCEF_TRACE;
 
     Clear();
-    m_data = data;
-    m_linked = true;
+    m_ptr = ptr;
+    m_linked = GUCEF_NULL != ptr;
+}
+
+/*-------------------------------------------------------------------------*/
+
+template< typename T >
+inline const T*
+CTLinkedCloneable< T >::operator->( void ) const
+{GUCEF_TRACE;
+
+    return m_ptr;
+}
+
+/*-------------------------------------------------------------------------*/
+
+template< typename T >
+inline bool
+CTLinkedCloneable< T >::operator<( const CTLinkedCloneable< T >& other ) const
+{GUCEF_TRACE;
+
+    return m_ptr < other.m_ptr;
+}
+
+/*-------------------------------------------------------------------------*/
+
+template< typename T >
+inline 
+CTLinkedCloneable< T >::operator bool() const
+{GUCEF_TRACE;
+
+    return GUCEF_NULL != m_ptr;
 }
 
 /*-------------------------------------------------------------------------*/
     
 template< typename T >
 CICloneable* 
-CTLinkedCloneableObj< T >::Clone( void ) const
+CTLinkedCloneable< T >::Clone( void ) const
 {GUCEF_TRACE;
 
-    return new CTLinkedCloneableObj< T >( *this );
+    return new CTLinkedCloneable< T >( *this );
 }
 
-/*-------------------------------------------------------------------------*/
-
-template< typename T >
-const T& 
-CTLinkedCloneableObj< T >::GetData( void ) const
-{GUCEF_TRACE;
-
-    if ( GUCEF_NULL != m_data )
-    {
-        return *m_data;
-    }
-    
-    GUCEF_EMSGTHROW( ENULLPointer, "CTLinkedCloneableObj::GetData(): This operation is impossible without a valid object" );
-}
 
 /*-------------------------------------------------------------------------//
 //                                                                         //
@@ -227,15 +258,4 @@ CTLinkedCloneableObj< T >::GetData( void ) const
 
 /*-------------------------------------------------------------------------*/
 
-#endif /* GUCEF_CORE_CTLINKEDCLONEABLEOBJ_H ? */
-
-/*-------------------------------------------------------------------------//
-//                                                                         //
-//      Info & Changes                                                     //
-//                                                                         //
-//-------------------------------------------------------------------------//
-
-- 06-10-2006 :
-        - Dinand: initial implementation
-
------------------------------------------------------------------------------*/
+#endif /* GUCEF_CORE_CTLINKEDCLONEABLE_H ? */

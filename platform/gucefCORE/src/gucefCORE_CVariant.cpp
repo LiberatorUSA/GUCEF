@@ -360,11 +360,11 @@ CVariant::IsBinary( void ) const
 
 /*-------------------------------------------------------------------------*/
 
-bool
-CVariant::UsesDynamicMemory( void ) const
+bool 
+CVariant::UsesDynamicMemory( UInt8 typeId )
 {GUCEF_TRACE;
 
-    switch ( m_variantData.containedType )
+    switch ( typeId )
     {
         case GUCEF_DATATYPE_BOOLEAN_ASCII_STRING:
         case GUCEF_DATATYPE_BOOLEAN_UTF8_STRING:
@@ -379,6 +379,15 @@ CVariant::UsesDynamicMemory( void ) const
             return false;
         }
     }
+}
+
+/*-------------------------------------------------------------------------*/
+
+bool
+CVariant::UsesDynamicMemory( void ) const
+{GUCEF_TRACE;
+
+    return UsesDynamicMemory( m_variantData.containedType );
 }
 
 /*-------------------------------------------------------------------------*/

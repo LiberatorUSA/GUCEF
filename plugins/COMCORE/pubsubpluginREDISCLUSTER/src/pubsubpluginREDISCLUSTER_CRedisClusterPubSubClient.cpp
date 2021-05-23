@@ -133,7 +133,7 @@ CRedisPubSubMsg::GetPrimaryPayload( void ) const
 
 /*-------------------------------------------------------------------------*/
 
-const CRedisPubSubMsg::TKeyValuePayload& 
+const CRedisPubSubMsg::TKeyValuePayloadLinks& 
 CRedisPubSubMsg::GetKeyValuePairs( void ) const
 {GUCEF_TRACE;
 
@@ -183,8 +183,8 @@ bool
 CRedisClusterPubSubClientTopicConfig::LoadCustomConfig( const CORE::CDataNode& config )
 {GUCEF_TRACE;
     
-    redisXAddMaxLen = CORE::StringToInt32( config.GetAttributeValueOrChildValueByName( "redisXAddMaxLen" ), redisXAddMaxLen ); 
-    redisXAddMaxLenIsApproximate = CORE::StringToBool( config.GetAttributeValueOrChildValueByName( "redisXAddMaxLenIsApproximate" ), redisXAddMaxLenIsApproximate );
+    redisXAddMaxLen = config.GetAttributeValueOrChildValueByName( "redisXAddMaxLen" ).AsInt32( redisXAddMaxLen ); 
+    redisXAddMaxLenIsApproximate = config.GetAttributeValueOrChildValueByName( "redisXAddMaxLenIsApproximate" ).AsBool( redisXAddMaxLenIsApproximate );
     return true;
 }
 
@@ -571,6 +571,26 @@ CRedisClusterPubSubClientTopic::RedisSendSyncImpl( const sw::redis::StringView& 
         GUCEF_EXCEPTION_LOG( CORE::LOGLEVEL_IMPORTANT, "RedisClusterPubSubClientTopic(" + CORE::PointerToString( this ) + "):RedisSendSyncImpl: exception: " + e.what() );
         return false;
     }
+} 
+
+/*-------------------------------------------------------------------------*/
+
+void
+CRedisClusterPubSubClientTopic::PrepStorageForReadMsgs( CORE::UInt32 msgCount )
+{GUCEF_TRACE;
+
+    // reset size, note this does not dealloc the underlying memory
+    m_pubsubMsgs.clear();
+    TPubSubMsgsRefVector& msgRefs = m_pubsubMsgsRefs.GetData();
+    msgRefs.clear();
+
+    if ( msgCount > m_pubsubMsgs.capacity() )
+    {
+        // Grow the actual storage, this is allowed to become larger than msgCount to limit
+        // the nr of dynamic allocations
+        m_pubsubMsgs.reserve( msgCount );        
+        msgRefs.reserve( msgCount );
+    }
 }
 
 /*-------------------------------------------------------------------------*/
@@ -595,24 +615,77 @@ CRedisClusterPubSubClientTopic::RedisRead( void )
         else
             m_redisContext->xread< TRedisMsgByStreamInserter >( topicSV, readOffsetSV, readBlockTimeout, inserter );
 
+        // Do we have data from any streams?
         if ( !m_redisReadMsgs.empty() )
         {
-            TRedisMsgVector& msgs = (*(m_redisReadMsgs.begin())).second;
-            TRedisMsgVector::iterator i = msgs.begin();
-            while ( i != msgs.end() )
+            // Process messages for every stream
+            TRedisMsgByStream::iterator s = m_redisReadMsgs.begin();
+            while ( s != m_redisReadMsgs.end() )
             {
-                std::string& msgId = (*i).first;                
-                TRedisMsgAttributes& msgAttribs = (*i).second;
+                // Get the actual msgs
+                TRedisMsgVector& msgs = (*(m_redisReadMsgs.begin())).second;
 
-                TRedisMsgAttributes::iterator n = msgAttribs.begin();
-                while ( n != msgAttribs.end() )
+                // Make sure we have enough storage to construct our generic representations
+                PrepStorageForReadMsgs( (CORE::UInt32) msgs.size() );
+
+                // Cycle through the messages received and build the generic representations
+                TPubSubMsgsRefVector& msgRefs = m_pubsubMsgsRefs.GetData();
+                TRedisMsgVector::iterator i = msgs.begin();
+                while ( i != msgs.end() )
                 {
-                    ++n;
-                }
+                    std::string& msgId = (*i).first;                
+                    TRedisMsgAttributes& msgAttribs = (*i).second;                                    
 
-                m_readOffset = msgId;
-                ++i;
+                    m_pubsubMsgs.push_back( CRedisPubSubMsg() );
+                    CRedisPubSubMsg& pubsubMsg = m_pubsubMsgs.back();
+                    msgRefs.push_back( TPubSubMsgRef() );
+                    TPubSubMsgRef& pubsubMsgRef = msgRefs.back();
+                    pubsubMsgRef.LinkTo( &pubsubMsg );
+
+                    // set basic message properties
+                    
+                    pubsubMsg.m_msgId.LinkTo( msgId );
+                    CORE::UInt64 unixUtcDt = CORE::StringToUInt64( msgId );
+                    pubsubMsg.m_msgDateTime.SetFromUnixEpochBasedTickInMillisecs( unixUtcDt );
+                
+                    // set the message attributes
+
+                    if ( msgAttribs.size() > m_pubsubMsgAttribs.size() )
+                        m_pubsubMsgAttribs.resize( msgAttribs.size() );
+                    pubsubMsg.m_keyValueLinks.clear();
+                    pubsubMsg.m_keyValueLinks.reserve( msgAttribs.size() );
+                
+                    TBufferVector::iterator a = m_pubsubMsgAttribs.begin();
+                    TRedisMsgAttributes::iterator n = msgAttribs.begin();
+                    while ( n != msgAttribs.end() )
+                    {
+                        std::string& keyAtt = (*n).first;
+                        std::string& valueAtt = (*n).second;
+                    
+                        CORE::CDynamicBuffer& keyAttBuffer = (*a).first;
+                        CORE::CDynamicBuffer& valueAttBuffer = (*a).second;
+
+                        keyAttBuffer.LinkTo( keyAtt );
+                        valueAttBuffer.LinkTo( valueAtt );
+                    
+                        pubsubMsg.m_keyValueLinks.push_back( CRedisPubSubMsg::TKeyValueLinkPair() );
+                        CRedisPubSubMsg::TKeyValueLinkPair& kvLink = pubsubMsg.m_keyValueLinks.back();
+
+                        kvLink.first.LinkTo( &keyAttBuffer );
+                        kvLink.second.LinkTo( &valueAttBuffer );
+                    
+                        ++n; ++a;
+                    }
+
+                    m_readOffset = msgId;
+                    ++i;
+                }
+                                
+                ++s;
             }
+
+            // Communicate all the messages received via an event notification
+            if ( !NotifyObservers( MsgsRecievedEvent, &m_pubsubMsgsRefs ) ) return false;
         }
         return true;
     }

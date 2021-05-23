@@ -62,11 +62,11 @@ class CTCloneableObj : public CICloneable
 
     CTCloneableObj( const CTCloneableObj& src );
         
-    virtual ~CTCloneableObj();
+    virtual ~CTCloneableObj() GUCEF_VIRTUAL_OVERRIDE;
     
     CTCloneableObj& operator=( const CTCloneableObj& src );
     
-    virtual CICloneable* Clone( void ) const;    
+    virtual CICloneable* Clone( void ) const GUCEF_VIRTUAL_OVERRIDE;    
     
     T GetDataCopy( void ) const;
     
@@ -74,7 +74,7 @@ class CTCloneableObj : public CICloneable
     
     const T& GetData( void ) const;
 
-    private:
+    protected:
     T m_data;
 };
 

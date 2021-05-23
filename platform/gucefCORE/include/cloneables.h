@@ -32,17 +32,22 @@
 #endif /* GUCEF_CORE_ETYPES_H ? */
 
 #ifndef GUCEF_CORE_CTCLONEABLEOBJ_H
-#include "CTCloneableObj.h"        /* templated implementation of a cloneable object */
+#include "CTCloneableObj.h"                /* templated implementation of a cloneable object */
 #define GUCEF_CORE_CTCLONEABLEOBJ_H
 #endif /* GUCEF_CORE_CTCLONEABLEOBJ_H ? */
 
 #ifndef GUCEF_CORE_CTLINKEDCLONEABLEOBJ_H
-#include "CTLinkedCloneableObj.h"        /* templated implementation of a linked cloneable object */
+#include "CTLinkedCloneableObj.h"          /* templated implementation of a linked cloneable object */
 #define GUCEF_CORE_CTLINKEDCLONEABLEOBJ_H
 #endif /* GUCEF_CORE_CTLINKEDCLONEABLEOBJ_H ? */
 
+#ifndef GUCEF_CORE_CTLINKEDCLONEABLE_H
+#include "gucefCORE_CTLinkedCloneable.h"   /* templated implementation of pointer to a cloneable object */
+#define GUCEF_CORE_CTLINKEDCLONEABLE_H
+#endif /* GUCEF_CORE_CTLINKEDCLONEABLE_H ? */
+
 #ifndef GUCEF_CORE_CTCLONEABLEEXPANSION_H
-#include "CTCloneableExpansion.h"        /* templated implementation of class expansion to add a cloneable interface */
+#include "CTCloneableExpansion.h"          /* templated implementation of class expansion to add a cloneable interface */
 #define GUCEF_CORE_CTCLONEABLEEXPANSION_H
 #endif /* GUCEF_CORE_CTCLONEABLEEXPANSION_H ? */
 

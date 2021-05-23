@@ -44,6 +44,7 @@ set( HEADER_FILES
   include/gucefCOMCORE_CPubSubClientFeatures.h
   include/gucefCOMCORE_CPubSubClientTopic.h
   include/gucefCOMCORE_CPubSubClientTopicConfig.h
+  include/gucefCOMCORE_CPubSubMsgBinarySerializer.h
   include/gucefCOMCORE_CSerialPort.h
   include/gucefCOMCORE_ETypes.h
   include/gucefCOMCORE_config.h
@@ -85,6 +86,7 @@ set( SOURCE_FILES
   src/gucefCOMCORE_CPubSubClientFeatures.cpp
   src/gucefCOMCORE_CPubSubClientTopic.cpp
   src/gucefCOMCORE_CPubSubClientTopicConfig.cpp
+  src/gucefCOMCORE_CPubSubMsgBinarySerializer.cpp
   src/gucefCOMCORE_CSerialPort.cpp
   src/socketutils.cpp
 )

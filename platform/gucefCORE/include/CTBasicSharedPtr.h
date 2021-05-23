@@ -162,7 +162,7 @@ class CTBasicSharedPtr : public MT::CILockable ,
 
     CTBasicSharedPtr( const CTBasicSharedPtr& src );
 
-    virtual ~CTBasicSharedPtr();
+    virtual ~CTBasicSharedPtr() GUCEF_VIRTUAL_OVERRIDE;
 
     const TBasicSharedPtrSharedData< LockType >* GetSharedData( void ) const
     {GUCEF_TRACE;
@@ -294,12 +294,6 @@ class CTBasicSharedPtr : public MT::CILockable ,
     GUCEF_DEFINE_INLINED_MSGEXCEPTION( ENotInitialized );
 
     protected:
-
-    /**
-     *  Can be used by descending classes to implement in-scope memory management
-     *  utilizing method 1 as described above.
-     */
-    //void SetToNULL( void );
 
     /**
      *  Can be used be decending implementations for late initialization.
@@ -906,21 +900,6 @@ CTBasicSharedPtr< T, LockType >::Unlink( void )
     // the attributes to allow this object to be re-used
     m_shared = GUCEF_NULL;
 }
-
-/*-------------------------------------------------------------------------*/
-
-//template< typename T, class LockType >
-//void
-//CTBasicSharedPtr< T, LockType >::SetToNULL( void )
-//{GUCEF_TRACE;
-//
-//    MT::CObjectScopeLock lock( this );
-//
-//    m_objectDestructor = GUCEF_NULL;
-//    delete m_shared;
-//    m_shared = GUCEF_NULL;
-//    m_ptr = GUCEF_NULL;
-//}
 
 /*-------------------------------------------------------------------------*/
 

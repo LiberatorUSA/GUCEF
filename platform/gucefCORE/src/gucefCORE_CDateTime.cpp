@@ -26,6 +26,11 @@
 #include <time.h>
 #include <string.h>
 
+#ifndef GUCEF_CORE_CDYNAMICBUFFER_H
+#include "CDynamicBuffer.h"
+#define GUCEF_CORE_CDYNAMICBUFFER_H
+#endif /* GUCEF_CORE_CDYNAMICBUFFER_H ? */
+
 #include "gucefCORE_CDateTime.h"
 
 #ifndef GUCEF_CORE_LOGGING_H
@@ -198,6 +203,21 @@ class GUCEF_CORE_PRIVATE_CPP COSDateTimeUtils
         Win32SystemTimeToDateTime( systemTime, 0, utcDatetime );
         return utcDatetime;
     }
+
+    static void SetFromUnixEpochBasedTickInMillisecs( UInt64 unixDtInMsTicks, CDateTime& dt )
+    {
+        // Convert to FILETIME compatible resolution (ms to nanos) and zero year offset
+        UINT64 filettimeDt = ( 10000 * unixDtInMsTicks ) + 116444736000000000;
+
+        ULARGE_INTEGER memoryAllignedUInt64;
+        memoryAllignedUInt64.QuadPart = filettimeDt;
+
+        FILETIME filetime;
+        filetime.dwLowDateTime = memoryAllignedUInt64.LowPart;
+        filetime.dwHighDateTime = memoryAllignedUInt64.HighPart;
+
+        Win32FileTimeToDateTime( filetime, dt );
+    }
 };
 
 #elif ( GUCEF_PLATFORM == GUCEF_PLATFORM_LINUX ) || ( GUCEF_PLATFORM == GUCEF_PLATFORM_ANDROID )
@@ -338,6 +358,17 @@ class GUCEF_CORE_PRIVATE_CPP COSDateTimeUtils
         Int64 deltaNanoSecs = tspecA.tv_nsec - tspecB.tv_nsec;
         return ( deltaSecs * 1000 ) + ( deltaNanoSecs / 1000000 );
     }
+
+    static void SetFromUnixEpochBasedTickInMillisecs( UInt64 unixDtInMsTicks, CDateTime& dt )
+    {
+        // Break the milliseconds total into seconds plus the nanoseconds remainder
+        // This allows us to use the timespec conversion function
+        struct timespec time;
+        time.tv_sec = (time_t) unixDtInMsTicks / 1000;
+        time.tv_nsec = ( unixDtInMsTicks - ( time.tv_sec * 1000 ) ) * 1000000;
+
+        TimespecToDateTime( time, dt );
+    }
 };
 
 #else
@@ -473,6 +504,15 @@ CDateTime::Set( Int16 year                 ,
     m_seconds = seconds;
     m_milliseconds = milliseconds;
     m_timezoneOffsetInMins = timezoneOffsetInMins;
+}
+
+/*-------------------------------------------------------------------------*/
+
+void
+CDateTime::SetFromUnixEpochBasedTickInMillisecs( UInt64 unixDtInMsTicks )
+{GUCEF_TRACE;
+
+    COSDateTimeUtils::SetFromUnixEpochBasedTickInMillisecs( unixDtInMsTicks, *this );
 }
 
 /*-------------------------------------------------------------------------*/
@@ -642,36 +682,63 @@ CDateTime::GetTime( void ) const
 
 /*-------------------------------------------------------------------------*/
 
-CString
-CDateTime::ToIso8601DateTimeString( bool includeDelimeters, bool includeMilliseconds ) const
+Int32
+CDateTime::ToIso8601DateTimeString( void* targetBuffer, UInt32 targetBufferSize, bool includeDelimeters, bool includeMilliseconds ) const
 {GUCEF_TRACE;
 
     if ( !IsUTC() )
     {
-        return ToUTC().ToIso8601DateTimeString( includeDelimeters, includeMilliseconds );
+        return ToUTC().ToIso8601DateTimeString( targetBuffer, targetBufferSize, includeDelimeters, includeMilliseconds );
     }
 
+    char* dtBuffer = static_cast< char* >( targetBuffer );
+    
     if ( includeDelimeters )
     {
         if ( includeMilliseconds )
-        {
-            char dtBuffer[ 25 ];
-            sprintf( dtBuffer, "%04d-%02u-%02uT%02u:%02u:%02u.%03uZ", m_year, m_month, m_day, m_hours, m_minutes, m_seconds, m_milliseconds );
-            return dtBuffer;
+        {            
+            return sprintf_s( dtBuffer, targetBufferSize, "%04d-%02u-%02uT%02u:%02u:%02u.%03uZ", m_year, m_month, m_day, m_hours, m_minutes, m_seconds, m_milliseconds );
         }
         else
         {
-            char dtBuffer[ 25 ];
-            sprintf( dtBuffer, "%04d-%02u-%02uT%02u:%02u:%02uZ", m_year, m_month, m_day, m_hours, m_minutes, m_seconds );
-            return dtBuffer;
+            return sprintf_s( dtBuffer, targetBufferSize, "%04d-%02u-%02uT%02u:%02u:%02uZ", m_year, m_month, m_day, m_hours, m_minutes, m_seconds );
         }
     }
     else
     {
-        char dtBuffer[ 25 ];
-        sprintf( dtBuffer, "%04d%02u%02u%02u%02u%02u", m_year, m_month, m_day, m_hours, m_minutes, m_seconds );
+        if ( includeMilliseconds )
+        {
+            return sprintf_s( dtBuffer, targetBufferSize, "%04d%02u%02u%02u%02u%02u%03uZ", m_year, m_month, m_day, m_hours, m_minutes, m_seconds, m_milliseconds );
+        }
+        else
+        {
+            return sprintf_s( dtBuffer, targetBufferSize, "%04d%02u%02u%02u%02u%02u", m_year, m_month, m_day, m_hours, m_minutes, m_seconds );
+        }
+    }    
+}
+
+/*-------------------------------------------------------------------------*/
+
+Int32
+CDateTime::ToIso8601DateTimeString( CDynamicBuffer& target, UInt32 targetBufferOffset, bool includeDelimeters, bool includeMilliseconds ) const
+{GUCEF_TRACE;
+
+    return ToIso8601DateTimeString( (void*) target.GetConstBufferPtr( targetBufferOffset ) , 
+                                    target.GetRemainingBufferSize( targetBufferOffset )    ,
+                                    includeDelimeters                                      ,
+                                    includeMilliseconds                                    );
+}
+
+/*-------------------------------------------------------------------------*/
+
+CString
+CDateTime::ToIso8601DateTimeString( bool includeDelimeters, bool includeMilliseconds ) const
+{GUCEF_TRACE;
+
+    char dtBuffer[ 25 ];
+    if ( 0 < ToIso8601DateTimeString( dtBuffer, sizeof(dtBuffer), includeDelimeters, includeMilliseconds ) )
         return dtBuffer;
-    }
+    return CString::Empty;
 }
 
 /*-------------------------------------------------------------------------//

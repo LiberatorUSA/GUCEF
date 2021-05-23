@@ -381,6 +381,26 @@ CDynamicBuffer::GetBufferSize( void ) const
 
 /*-------------------------------------------------------------------------*/
 
+UInt32 
+CDynamicBuffer::GetUnusedBufferSize( void ) const
+{GUCEF_TRACE;
+    
+    return _bsize - m_dataSize;
+}
+
+/*-------------------------------------------------------------------------*/
+
+UInt32 
+CDynamicBuffer::GetRemainingBufferSize( UInt32 offset ) const
+{GUCEF_TRACE;
+    
+    if ( offset < _bsize )
+        return _bsize - offset;
+    return 0;
+}
+
+/*-------------------------------------------------------------------------*/
+
 void 
 CDynamicBuffer::SetAutoEnlarge( bool autoenlarge )
 {GUCEF_TRACE;
@@ -496,6 +516,9 @@ CDynamicBuffer::CopyFrom( UInt32 destinationOffset   ,
                           const void* src            )
 {GUCEF_TRACE;
 
+    if ( 0 == size || GUCEF_NULL == src )
+        return 0;
+    
     SecureLinkBeforeMutation();
 
     if ( _bsize < destinationOffset+size )         
@@ -530,29 +553,17 @@ CDynamicBuffer::CopyFrom( UInt32 size     ,
                           const void* src )
 {GUCEF_TRACE;
     
-    SecureLinkBeforeMutation();
-    
-    if ( _bsize < size )         
-    {
-            if ( _autoenlarge )
-            {
-                    SetBufferSize( size );
-            }
-            else
-            {       
-                    Int32 max = (Int32)_bsize - (Int32)size;
-                    if ( max < 0 ) 
-                    {
-                            return 0;
-                    }                                
-                    size = max;
-            }                
-    }                                                
-    
-    m_dataSize = size;
-    memcpy( _buffer, src, size );        
-    return size;
+    return CopyFrom( 0, size, src );
 }                          
+
+/*-------------------------------------------------------------------------*/
+
+UInt32 
+CDynamicBuffer::CopyFrom( const CDynamicBuffer& source, UInt32 offset )
+{GUCEF_TRACE;
+
+    return CopyFrom( offset, source.GetDataSize()-offset, source.GetConstBufferPtr( offset ) );
+}
 
 /*-------------------------------------------------------------------------*/
 

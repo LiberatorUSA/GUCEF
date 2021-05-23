@@ -71,6 +71,7 @@ CPubSubClientTopic::CPubSubClientTopic( void )
     : CORE::CObservingNotifier()
 {GUCEF_TRACE;
 
+    RegisterEvents();
 }
 
 /*-------------------------------------------------------------------------*/

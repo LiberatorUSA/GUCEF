@@ -288,6 +288,18 @@ CPubSubClientChannel::RegisterEventHandlers( void )
 
 /*-------------------------------------------------------------------------*/
 
+void
+CPubSubClientChannel::RegisterTopicEventHandlers( COMCORE::CPubSubClientTopic& topic )
+{GUCEF_TRACE;
+
+    TEventCallback callback( this, &CPubSubClientChannel::OnPubSubTopicMsgsReceived );
+    SubscribeTo( &topic                                         ,
+                 COMCORE::CPubSubClientTopic::MsgsRecievedEvent ,
+                 callback                                       );
+}
+
+/*-------------------------------------------------------------------------*/
+
 CORE::CString
 CPubSubClientChannel::GetType( void ) const
 {GUCEF_TRACE;
@@ -328,6 +340,17 @@ CPubSubClientChannel::OnPubSubClientReconnectTimerCycle( CORE::CNotifier* notifi
 
     // no joy, start the timer again
     m_pubsubClientReconnectTimer->SetEnabled( false );
+}
+
+/*-------------------------------------------------------------------------*/
+
+void
+CPubSubClientChannel::OnPubSubTopicMsgsReceived( CORE::CNotifier* notifier    ,
+                                                 const CORE::CEvent& eventId  ,
+                                                 CORE::CICloneable* eventData )
+{GUCEF_TRACE;
+
+    
 }
 
 /*-------------------------------------------------------------------------*/
@@ -419,7 +442,7 @@ CPubSubClientChannel::ConnectPubSubClient( void )
             }
         }
 
-        SubscribeTo( topic );
+        RegisterTopicEventHandlers( *topic );
         m_topics.push_back( topic );
         ++i;
     }

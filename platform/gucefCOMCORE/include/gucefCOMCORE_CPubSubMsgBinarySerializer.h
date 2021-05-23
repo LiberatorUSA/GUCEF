@@ -16,8 +16,8 @@
  *  limitations under the License.
  */
 
-#ifndef GUCEF_COMCORE_CIPUBSUBMSG_H
-#define GUCEF_COMCORE_CIPUBSUBMSG_H
+#ifndef GUCEF_COMCORE_CPUBSUBMSGBINARYSERIALIZER_H
+#define GUCEF_COMCORE_CPUBSUBMSGBINARYSERIALIZER_H
 
 /*-------------------------------------------------------------------------//
 //                                                                         //
@@ -25,50 +25,20 @@
 //                                                                         //
 //-------------------------------------------------------------------------*/
 
-#ifndef GUCEF_MT_CMUTEX_H
-#include "gucefMT_CMutex.h"
-#define GUCEF_MT_CMUTEX_H
-#endif /* GUCEF_MT_CMUTEX_H ? */
-
-#ifndef GUCEF_CORE_CTSHAREDPTR_H
-#include "CTSharedPtr.h"
-#define GUCEF_CORE_CTSHAREDPTR_H
-#endif /* GUCEF_CORE_CTSHAREDPTR_H ? */
-
-#ifndef GUCEF_CORE_CVALUELIST_H
-#include "CValueList.h"
-#define GUCEF_CORE_CVALUELIST_H
-#endif /* GUCEF_CORE_CVALUELIST_H ? */
-
 #ifndef GUCEF_CORE_CVARIANT_H
 #include "gucefCORE_CVariant.h"
 #define GUCEF_CORE_CVARIANT_H
 #endif /* GUCEF_CORE_CVARIANT_H ? */
-
-#ifndef GUCEF_CORE_CDATETIME_H
-#include "gucefCORE_CDateTime.h"
-#define GUCEF_CORE_CDATETIME_H
-#endif /* GUCEF_CORE_CDATETIME_H ? */
 
 #ifndef GUCEF_CORE_CDYNAMICBUFFER_H
 #include "CDynamicBuffer.h"
 #define GUCEF_CORE_CDYNAMICBUFFER_H
 #endif /* GUCEF_CORE_CDYNAMICBUFFER_H ? */
 
-#ifndef GUCEF_CORE_CICLONEABLE_H
-#include "CICloneable.h"
-#define GUCEF_CORE_CICLONEABLE_H
-#endif /* GUCEF_CORE_CICLONEABLE_H ? */
-
-#ifndef GUCEF_CORE_CLONEABLES_H
-#include "cloneables.h"
-#define GUCEF_CORE_CLONEABLES_H
-#endif /* GUCEF_CORE_CLONEABLES_H ? */
-
-#ifndef GUCEF_COMCORE_MACROS_H
-#include "gucefCOMCORE_macros.h"      /* often used gucefCOMCORE macros */
-#define GUCEF_COMCORE_MACROS_H
-#endif /* GUCEF_COMCORE_MACROS_H ? */
+#ifndef GUCEF_COMCORE_CIPUBSUBMSG_H
+#include "gucefCOMCORE_CIPubSubMsg.h"
+#define GUCEF_COMCORE_CIPUBSUBMSG_H
+#endif /* GUCEF_COMCORE_CIPUBSUBMSG_H ? */
 
 /*-------------------------------------------------------------------------//
 //                                                                         //
@@ -86,39 +56,45 @@ namespace COMCORE {
 //-------------------------------------------------------------------------*/
 
 /**
- *  Class providing a generic representation of a pub-sub message
- *  Based on the client used different capabilities will be available and 
- *  client will use beft effort to simulate others
+ *  Options for the basic serializer for generalized Pub Sub messages
  */
-class GUCEF_COMCORE_EXPORT_CPP CIPubSubMsg : public CORE::CICloneable
+class GUCEF_COMCORE_EXPORT_CPP CPubSubMsgBinarySerializerOptions
 {
     public:
 
-    typedef std::pair< CORE::TLinkedCloneableBuffer, CORE::TLinkedCloneableBuffer > TKeyValueLinkPair;
-    typedef std::vector< TKeyValueLinkPair > TKeyValuePayloadLinks;
+    CPubSubMsgBinarySerializerOptions( void );
 
-    CIPubSubMsg( void );
+    bool msgIdIncluded;
+    bool msgDateTimeIncluded;
+    bool msgPrimaryPayloadIncluded;
+    bool msgKeyValuePairsIncluded;
+};
 
-    CIPubSubMsg( const CIPubSubMsg& src );
+/*-------------------------------------------------------------------------*/
 
-    virtual ~CIPubSubMsg();
+/**
+ *  Basic serializer for generalized Pub Sub messages
+ *
+ *  Please note that the options passed should match between Serialize() and Deserialize()
+ *  of the binary format will not be compatible 
+ */
+class GUCEF_COMCORE_EXPORT_CPP CPubSubMsgBinarySerializer
+{
+    public:
 
-    virtual const CORE::CVariant& GetMsgId( void ) const = 0;
+    public:
+    
+    static bool Serialize( const CPubSubMsgBinarySerializerOptions& options ,
+                           const CIPubSubMsg& msg                           , 
+                           UInt32 currentTargetOffset                       , 
+                           CORE::CDynamicBuffer& target                     , 
+                           UInt32& bytesWritten                             );
 
-    virtual const CORE::CDateTime& GetMsgDateTime( void ) const = 0;
-
-    /**
-     *  If the pub-sub system does not itself support key-value attributes per
-     *  message this member function is intended to provide easy access to the 
-     *  payload.
-     *  If used in cases where only/specifically key-value attributes are supported the client
-     *  will attempt to provide the value of the first key-value pair in a best
-     *  effort manner.
-     */
-    virtual const CORE::TLinkedCloneableBuffer& GetPrimaryPayload( void ) const = 0;
-
-    virtual const TKeyValuePayloadLinks& GetKeyValuePairs( void ) const = 0;
-
+    static bool Deserialize( const CPubSubMsgBinarySerializerOptions& options ,
+                             CIPubSubMsg& msg                                 , 
+                             UInt32 currentSourceOffset                       , 
+                             const CORE::CDynamicBuffer& source               ,
+                             UInt32& bytesRead                                ); 
 };
 
 /*-------------------------------------------------------------------------//
@@ -132,4 +108,4 @@ class GUCEF_COMCORE_EXPORT_CPP CIPubSubMsg : public CORE::CICloneable
 
 /*-------------------------------------------------------------------------*/
 
-#endif /* GUCEF_COMCORE_CIPUBSUBMSG_H ? */
+#endif /* GUCEF_COMCORE_CPUBSUBMSGBINARYSERIALIZER_H ? */

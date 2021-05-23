@@ -188,6 +188,10 @@ class GUCEF_CORE_PUBLIC_CPP CDynamicBuffer
          */
         UInt32 GetDataSize( void ) const;
 
+        UInt32 GetUnusedBufferSize( void ) const;
+
+        UInt32 GetRemainingBufferSize( UInt32 offset ) const;
+
         void SetAutoEnlarge( bool autoenlarge );
 
         bool GetAutoEnlarge( void ) const;
@@ -237,6 +241,8 @@ class GUCEF_CORE_PUBLIC_CPP CDynamicBuffer
          */
         UInt32 CopyFrom( UInt32 size     ,
                          const void* src );
+
+        UInt32 CopyFrom( const CDynamicBuffer& source, UInt32 offset );
 
         /**
          *  Copies size number of bytes from the buffer to src from the offset given.

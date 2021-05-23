@@ -140,14 +140,14 @@ class CRedisPubSubMsg : public COMCORE::CIPubSubMsg
 
     virtual const CORE::TLinkedCloneableBuffer& GetPrimaryPayload( void ) const GUCEF_VIRTUAL_OVERRIDE;
 
-    virtual const TKeyValuePayload& GetKeyValuePairs( void ) const GUCEF_VIRTUAL_OVERRIDE;
+    virtual const TKeyValuePayloadLinks& GetKeyValuePairs( void ) const GUCEF_VIRTUAL_OVERRIDE;
 
     virtual CORE::CICloneable* Clone( void ) const GUCEF_VIRTUAL_OVERRIDE;
 
     CORE::CVariant m_msgId;
     CORE::CDateTime m_msgDateTime;
     CORE::TLinkedCloneableBuffer m_primaryPayloadLink;
-    TKeyValuePayload m_keyValueLinks;
+    TKeyValuePayloadLinks m_keyValueLinks;
 };
 
 /*-------------------------------------------------------------------------*/
@@ -259,9 +259,13 @@ class CRedisClusterPubSubClientTopic : public COMCORE::CPubSubClientTopic
 
     void RegisterEventHandlers( void );
 
+    void PrepStorageForReadMsgs( CORE::UInt32 msgCount );
+
     private:
 
     typedef CORE::CTEventHandlerFunctor< CRedisClusterPubSubClientTopic > TEventCallback;
+    
+    // Types to read from redis-plus-plus
     typedef std::vector< std::pair< sw::redis::StringView, sw::redis::StringView > > TRedisArgs;
     typedef std::pair< std::string, std::string > TRedisMsgAttribute;
     typedef std::vector< TRedisMsgAttribute > TRedisMsgAttributes;
@@ -269,6 +273,11 @@ class CRedisClusterPubSubClientTopic : public COMCORE::CPubSubClientTopic
     typedef std::vector< TRedisMsg > TRedisMsgVector;
     typedef std::unordered_map< std::string, TRedisMsgVector > TRedisMsgByStream;
     typedef std::insert_iterator< TRedisMsgByStream > TRedisMsgByStreamInserter;
+
+    // Types to implement/hook-up topic interface
+    typedef std::vector< CRedisPubSubMsg > TPubSubMsgsVector;
+    typedef std::pair< CORE::CDynamicBuffer, CORE::CDynamicBuffer > TBufferPair;
+    typedef std::vector< TBufferPair > TBufferVector;
 
     CRedisClusterPubSubClient* m_client;
     sw::redis::Pipeline* m_redisPipeline;
@@ -282,6 +291,9 @@ class CRedisClusterPubSubClientTopic : public COMCORE::CPubSubClientTopic
     CORE::UInt32 m_redisXreadCount;
     CORE::UInt32 m_redisXreadBlockTimeoutInMs;
     TRedisMsgByStream m_redisReadMsgs;
+    TPubSubMsgsVector m_pubsubMsgs;
+    TMsgsRecievedEventData m_pubsubMsgsRefs;
+    TBufferVector m_pubsubMsgAttribs;
     TRedisArgs m_redisMsgArgs;
     COMCORE::CHostAddress m_redisShardHost;
     CORE::CString m_redisShardNodeId;

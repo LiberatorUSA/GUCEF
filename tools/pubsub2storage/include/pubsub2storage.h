@@ -166,6 +166,8 @@ class CPubSubClientChannel : public CORE::CTaskConsumer
 
     void RegisterEventHandlers( void );
 
+    void RegisterTopicEventHandlers( COMCORE::CPubSubClientTopic& topic );
+
     void
     OnMetricsTimerCycle( CORE::CNotifier* notifier    ,
                          const CORE::CEvent& eventId  ,
@@ -175,6 +177,11 @@ class CPubSubClientChannel : public CORE::CTaskConsumer
     OnPubSubClientReconnectTimerCycle( CORE::CNotifier* notifier    ,
                                        const CORE::CEvent& eventId  ,
                                        CORE::CICloneable* eventData );
+
+    void
+    OnPubSubTopicMsgsReceived( CORE::CNotifier* notifier    ,
+                               const CORE::CEvent& eventId  ,
+                               CORE::CICloneable* eventData );
 
     private:
 

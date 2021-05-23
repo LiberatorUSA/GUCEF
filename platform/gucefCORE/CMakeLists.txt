@@ -186,12 +186,14 @@ set( HEADER_FILES
   include/gucefCORE_CString.h
   include/gucefCORE_CSubFileAccess.h
   include/gucefCORE_CTEventHandlerFunctor.h
+  include/gucefCORE_CTLinkedCloneable.h
   include/gucefCORE_CTaskDelegator.h
   include/gucefCORE_CTaskManager.h
   include/gucefCORE_CThreadPool.h
   include/gucefCORE_CTime.h
   include/gucefCORE_CUtf8String.h
   include/gucefCORE_CVariant.h
+  include/gucefCORE_CVariantBinarySerializer.h
   include/gucefCORE_CVersion.h
   include/gucefCORE_CVersionRange.h
   include/gucefCORE_CoreCodecTypes.h
@@ -382,6 +384,7 @@ set( SOURCE_FILES
   src/gucefCORE_CTime.cpp
   src/gucefCORE_CUtf8String.cpp
   src/gucefCORE_CVariant.cpp
+  src/gucefCORE_CVariantBinarySerializer.cpp
   src/gucefCORE_CVersion.cpp
   src/gucefCORE_CVersionRange.cpp
   src/gucefCORE_CoreCodecTypes.cpp

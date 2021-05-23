@@ -135,6 +135,7 @@ class GUCEF_CORE_PUBLIC_CPP CVariant
     bool IsBoolean( void ) const;
     bool IsBinary( void ) const;
     
+    static bool UsesDynamicMemory( UInt8 typeId );
     bool UsesDynamicMemory( void ) const;
     bool IsDynamicMemoryLinked( void ) const;
     bool OwnsDynamicMemory( void ) const;

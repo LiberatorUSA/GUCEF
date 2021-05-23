@@ -87,6 +87,11 @@
 #define GUCEF_COMCORE_CPUBSUBCLIENTFACTORY_H
 #endif /* GUCEF_COMCORE_CPUBSUBCLIENTFACTORY_H ? */
 
+#ifndef GUCEF_COMCORE_CPUBSUBCLIENTTOPIC_H
+#include "gucefCOMCORE_CPubSubClientTopic.h"    
+#define GUCEF_COMCORE_CPUBSUBCLIENTTOPIC_H
+#endif /* GUCEF_COMCORE_CPUBSUBCLIENTTOPIC_H ? */
+
 #include "gucefCOMCORE_CComCoreGlobal.h"  /* definition of the class implemented here */
 
 /*-------------------------------------------------------------------------//
@@ -151,6 +156,7 @@ CComCoreGlobal::Initialize( void )
     CPingTaskConsumer::RegisterEvents();
     CUDPMasterSocket::RegisterEvents();
     CUDPChannel::RegisterEvents();
+    CPubSubClientTopic::RegisterEvents();
 
     // Make the task manager capable of handling ping tasks
     CORE::CCoreGlobal::Instance()->GetTaskManager().RegisterTaskConsumerFactory( CPingTaskConsumer::GetTypeString() ,

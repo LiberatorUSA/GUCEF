@@ -63,6 +63,8 @@ namespace CORE {
 //                                                                         //
 //-------------------------------------------------------------------------*/
 
+class CDynamicBuffer;
+
 class GUCEF_CORE_PUBLIC_CPP CDateTime : public CDate ,
                                         public CTime
 {
@@ -99,6 +101,8 @@ class GUCEF_CORE_PUBLIC_CPP CDateTime : public CDate ,
     bool operator<( const CDateTime& other ) const;
 
     CString ToIso8601DateTimeString( bool includeDelimeters, bool includeMilliseconds ) const;
+    Int32 ToIso8601DateTimeString( void* targetBuffer, UInt32 targetBufferSize, bool includeDelimeters, bool includeMilliseconds ) const;
+    Int32 ToIso8601DateTimeString( CDynamicBuffer& target, UInt32 targetBufferOffset, bool includeDelimeters, bool includeMilliseconds ) const;
 
     void Set( Int16 year                 = 0 ,
               UInt8 month                = 0 ,
@@ -109,6 +113,8 @@ class GUCEF_CORE_PUBLIC_CPP CDateTime : public CDate ,
               UInt16 milliseconds        = 0 ,
               Int16 timezoneOffsetInMins = 0 );
 
+    void SetFromUnixEpochBasedTickInMillisecs( UInt64 unixDtInMsTicks );
+    
     explicit CDateTime( const time_t src, bool isUtc );
 
     explicit CDateTime( const CDate& src, bool isUtc );

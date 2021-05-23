@@ -40,20 +40,20 @@
 #define GUCEF_CORE_COBSERVINGNOTIFIER_H
 #endif /* GUCEF_CORE_COBSERVINGNOTIFIER_H ? */
 
-#ifndef GUCEF_CORE_CVALUELIST_H
-#include "CValueList.h"
-#define GUCEF_CORE_CVALUELIST_H
-#endif /* GUCEF_CORE_CVALUELIST_H ? */
-
 #ifndef GUCEF_CORE_CDYNAMICBUFFER_H
 #include "CDynamicBuffer.h"
 #define GUCEF_CORE_CDYNAMICBUFFER_H
 #endif /* GUCEF_CORE_CDYNAMICBUFFER_H ? */
 
-#ifndef GUCEF_COMCORE_MACROS_H
-#include "gucefCOMCORE_macros.h"      /* often used gucefCOMCORE macros */
-#define GUCEF_COMCORE_MACROS_H
-#endif /* GUCEF_COMCORE_MACROS_H ? */
+#ifndef GUCEF_CORE_CVALUELIST_H
+#include "CValueList.h"
+#define GUCEF_CORE_CVALUELIST_H
+#endif /* GUCEF_CORE_CVALUELIST_H ? */
+
+#ifndef GUCEF_COMCORE_CIPUBSUBMSG_H
+#include "gucefCOMCORE_CIPubSubMsg.h"
+#define GUCEF_COMCORE_CIPUBSUBMSG_H
+#endif /* GUCEF_COMCORE_CIPUBSUBMSG_H ? */
 
 /*-------------------------------------------------------------------------//
 //                                                                         //
@@ -87,6 +87,10 @@ class GUCEF_COMCORE_EXPORT_CPP CPubSubClientTopic : public CORE::CObservingNotif
 
     static void RegisterEvents( void );
 
+    typedef CORE::CTLinkedCloneable< CIPubSubMsg >          TPubSubMsgRef;
+    typedef std::vector< TPubSubMsgRef >                    TPubSubMsgsRefVector;
+    typedef CORE::CTCloneableObj< TPubSubMsgsRefVector >    TMsgsRecievedEventData;
+
     CPubSubClientTopic( void );
 
     virtual ~CPubSubClientTopic();
@@ -108,6 +112,10 @@ class GUCEF_COMCORE_EXPORT_CPP CPubSubClientTopic : public CORE::CObservingNotif
     virtual bool Publish( const CORE::CString& msgKey, const CORE::CString& key, const CORE::CDynamicBuffer& payload ) = 0;
 
     virtual bool Publish( const CORE::CString& msgKey, const CORE::CValueList& payload ) = 0;
+
+    //virtual bool Publish( const CIPubSubMsg& msg ) = 0;
+
+    //virtual bool Publish( const TPubSubMsgsRefVector& msgs ) = 0;
 
 };
 
