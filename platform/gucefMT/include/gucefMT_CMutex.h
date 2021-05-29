@@ -79,7 +79,11 @@ class GUCEF_MT_PUBLIC_CPP CMutex : public CILockable
 
     virtual bool IsLocked( void ) const;
 
-    virtual UInt32 GetThreadIdOfThreadHoldingTheLock( void ) const;
+    /**
+     *  This member function is only of limited use and should not be relied upon
+     *  Its mainly provided for debugging purposes
+     */
+    virtual UInt32 GetThreadIdOfThreadLastHoldingTheLock( void ) const;
 
     CMutex( void );
 

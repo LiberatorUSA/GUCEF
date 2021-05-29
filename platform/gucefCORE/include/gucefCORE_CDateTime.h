@@ -86,9 +86,13 @@ class GUCEF_CORE_PUBLIC_CPP CDateTime : public CDate ,
 
     CDateTime ToUTC( void ) const;
 
-    CDate GetDate( void ) const;
+    CDate& GetDate( void );
 
-    CTime GetTime( void ) const;
+    const CDate& GetDate( void ) const;
+
+    CTime& GetTime( void );
+    
+    const CTime& GetTime( void ) const;
 
     Int64 GetTimeDifferenceInMillisecondsTowards( const CDateTime& other ) const;
 
@@ -112,6 +116,9 @@ class GUCEF_CORE_PUBLIC_CPP CDateTime : public CDate ,
     Int32 FromIso8601DateTimeString( const CDynamicBuffer& source, UInt32 sourceBufferOffset = 0 );
     bool FromIso8601DateTimeString( const CString& source );
 
+    UInt64 ToUnixEpochBasedTicksInMillisecs( void ) const;
+    void FromUnixEpochBasedTicksInMillisecs( UInt64 unixDtInMsTicks );
+
     void Set( Int16 year                 = 0 ,
               UInt8 month                = 0 ,
               UInt8 day                  = 0 ,
@@ -120,8 +127,6 @@ class GUCEF_CORE_PUBLIC_CPP CDateTime : public CDate ,
               UInt8 seconds              = 0 ,
               UInt16 milliseconds        = 0 ,
               Int16 timezoneOffsetInMins = 0 );
-
-    void SetFromUnixEpochBasedTickInMillisecs( UInt64 unixDtInMsTicks );
     
     explicit CDateTime( const time_t src, bool isUtc );
 

@@ -183,6 +183,16 @@ CDate::UnixEpochDate( void )
 
 /*-------------------------------------------------------------------------*/
 
+bool 
+CDate::SetYear( Int16 year )
+{GUCEF_TRACE;
+
+    m_year = year;
+    return true;
+}
+
+/*-------------------------------------------------------------------------*/
+
 Int16
 CDate::GetYear( void ) const
 {GUCEF_TRACE;
@@ -192,11 +202,31 @@ CDate::GetYear( void ) const
 
 /*-------------------------------------------------------------------------*/
 
+bool 
+CDate::SetMonth( UInt8 month )
+{GUCEF_TRACE;
+
+    m_month = month;
+    return true;
+}
+
+/*-------------------------------------------------------------------------*/
+
 UInt8
 CDate::GetMonth( void ) const
 {GUCEF_TRACE;
 
     return m_month;
+}
+
+/*-------------------------------------------------------------------------*/
+
+bool 
+CDate::SetDay( UInt8 day )
+{GUCEF_TRACE;
+
+    m_day = day;
+    return true;
 }
 
 /*-------------------------------------------------------------------------*/

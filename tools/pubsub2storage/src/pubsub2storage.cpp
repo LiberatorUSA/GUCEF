@@ -91,6 +91,8 @@ ChannelSettings::ChannelSettings( void )
     , desiredMinimalSerializedBlockSize( GUCEF_DEFAULT_MINIMAL_PUBSUB_BLOCK_STORAGE_SIZE_IN_BYTES )
     , desiredMaxTimeToWaitToGrowSerializedBlockSizeInMs( GUCEF_DEFAULT_MAXIMAL_PUBSUB_BLOCK_STORE_GROW_DELAY_IN_MS )
     , vfsStoragePath()
+    , encodeCodecFamily()
+    , encodeCodecName()
     , channelId( -1 )
     , ticketRefillOnBusyCycle( GUCEF_DEFAULT_TICKET_REFILLS_ON_BUSY_CYCLE )
     , performPubSubInDedicatedThread( true )
@@ -112,6 +114,8 @@ ChannelSettings::ChannelSettings( const ChannelSettings& src )
     , desiredMinimalSerializedBlockSize( src.desiredMinimalSerializedBlockSize )
     , desiredMaxTimeToWaitToGrowSerializedBlockSizeInMs( src.desiredMaxTimeToWaitToGrowSerializedBlockSizeInMs )
     , vfsStoragePath( src.vfsStoragePath )
+    , encodeCodecFamily( src.encodeCodecFamily )
+    , encodeCodecName( src.encodeCodecName )
     , channelId( src.channelId )
     , ticketRefillOnBusyCycle( src.ticketRefillOnBusyCycle )
     , performPubSubInDedicatedThread( src.performPubSubInDedicatedThread )
@@ -138,6 +142,8 @@ ChannelSettings::operator=( const ChannelSettings& src )
         desiredMinimalSerializedBlockSize = src.desiredMinimalSerializedBlockSize;
         desiredMaxTimeToWaitToGrowSerializedBlockSizeInMs = src.desiredMaxTimeToWaitToGrowSerializedBlockSizeInMs;
         vfsStoragePath = src.vfsStoragePath;
+        encodeCodecFamily = src.encodeCodecFamily;
+        encodeCodecName = src.encodeCodecName;
         channelId = src.channelId;
         ticketRefillOnBusyCycle = src.ticketRefillOnBusyCycle;
         performPubSubInDedicatedThread = src.performPubSubInDedicatedThread;
@@ -159,6 +165,8 @@ ChannelSettings::SaveConfig( CORE::CDataNode& tree ) const
     tree.SetAttribute( "desiredMinimalSerializedBlockSize", desiredMinimalSerializedBlockSize );
     tree.SetAttribute( "desiredMaxTimeToWaitToGrowSerializedBlockSizeInMs", desiredMaxTimeToWaitToGrowSerializedBlockSizeInMs );
     tree.SetAttribute( "vfsStoragePath", vfsStoragePath );
+    tree.SetAttribute( "encodeCodecFamily", encodeCodecFamily );
+    tree.SetAttribute( "encodeCodecName", encodeCodecName );
     tree.SetAttribute( "channelId", channelId );
     tree.SetAttribute( "ticketRefillOnBusyCycle", ticketRefillOnBusyCycle );
     tree.SetAttribute( "performPubSubInDedicatedThread", performPubSubInDedicatedThread );
@@ -252,7 +260,9 @@ ChannelSettings::LoadConfig( const CORE::CDataNode& tree )
     
     desiredMinimalSerializedBlockSize = tree.GetAttributeValueOrChildValueByName( "desiredMinimalSerializedBlockSize" ).AsUInt32( desiredMinimalSerializedBlockSize );
     desiredMaxTimeToWaitToGrowSerializedBlockSizeInMs = tree.GetAttributeValueOrChildValueByName( "desiredMaxTimeToWaitToGrowSerializedBlockSizeInMs" ).AsUInt32( desiredMaxTimeToWaitToGrowSerializedBlockSizeInMs );
-    vfsStoragePath = tree.GetAttributeValueOrChildValueByName( "vfsStoragePath" ).AsString( vfsStoragePath );
+    vfsStoragePath = CORE::ResolveVars( tree.GetAttributeValueOrChildValueByName( "vfsStoragePath" ).AsString( vfsStoragePath ) );
+    encodeCodecFamily = CORE::ResolveVars( tree.GetAttributeValueOrChildValueByName( "encodeCodecFamily" ).AsString( encodeCodecFamily ) );
+    encodeCodecName = CORE::ResolveVars( tree.GetAttributeValueOrChildValueByName( "encodeCodecName" ).AsString( encodeCodecName ) );
     channelId = CORE::StringToInt32( CORE::ResolveVars( tree.GetAttributeValueOrChildValueByName( "channelId" ) ), channelId );
     ticketRefillOnBusyCycle = CORE::StringToUInt32( CORE::ResolveVars( tree.GetAttributeValueOrChildValueByName( "ticketRefillOnBusyCycle" ) ), ticketRefillOnBusyCycle );
     performPubSubInDedicatedThread = CORE::StringToBool( CORE::ResolveVars( tree.GetAttributeValueOrChildValueByName( "performPubSubInDedicatedThread" ) ), performPubSubInDedicatedThread );
@@ -897,13 +907,28 @@ CStorageChannel::OnTaskCycle( CORE::CICloneable* taskData )
         CORE::CString vfsStoragePath = m_channelSettings.vfsStoragePath.ReplaceSubstr( "{associatedDt}", msgBatchDt.ToIso8601DateTimeString( false, true ) );
             
         VFS::CVFS& vfs = VFS::CVfsGlobal::Instance()->GetVfs();
-        if ( vfs.StoreAsFile( vfsStoragePath, *m_msgReceiveBuffer, 0, true ) )
+
+        if ( m_channelSettings.encodeCodecFamily.IsNULLOrEmpty() || m_channelSettings.encodeCodecName.IsNULLOrEmpty() )
         {
-            GUCEF_LOG( CORE::LOGLEVEL_NORMAL, "StorageChannel:OnTaskCycle: Successfully stored pub-sub mesage block at: " + vfsStoragePath );
+            if ( vfs.StoreAsFile( vfsStoragePath, *m_msgReceiveBuffer, 0, true ) )
+            {
+                GUCEF_LOG( CORE::LOGLEVEL_NORMAL, "StorageChannel:OnTaskCycle: Successfully stored pub-sub mesage block at: " + vfsStoragePath );
+            }
+            else
+            {
+                GUCEF_ERROR_LOG( CORE::LOGLEVEL_CRITICAL, "StorageChannel:OnTaskCycle: StoreAsFile() Failed" );
+            }
         }
         else
         {
-            GUCEF_ERROR_LOG( CORE::LOGLEVEL_CRITICAL, "StorageChannel:OnTaskCycle: StoreAsFileAsync() Failed" );
+            if ( vfs.EncodeAsFile( *m_msgReceiveBuffer, 0, vfsStoragePath, true, m_channelSettings.encodeCodecFamily, m_channelSettings.encodeCodecName ) )
+            {
+                GUCEF_LOG( CORE::LOGLEVEL_NORMAL, "StorageChannel:OnTaskCycle: Successfully encoded and stored pub-sub mesage block at: " + vfsStoragePath );
+            }
+            else
+            {
+                GUCEF_ERROR_LOG( CORE::LOGLEVEL_CRITICAL, "StorageChannel:OnTaskCycle: EncodeAsFile() Failed" );
+            }
         }
     }
 

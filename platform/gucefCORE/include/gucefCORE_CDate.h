@@ -66,10 +66,16 @@ class GUCEF_CORE_PUBLIC_CPP CDate : public CIDate
 
     static CDate UnixEpochDate( void );
 
+    bool SetYear( Int16 year );
+
     virtual Int16 GetYear( void ) const GUCEF_VIRTUAL_OVERRIDE;
 
+    bool SetMonth( UInt8 month );
+    
     virtual UInt8 GetMonth( void ) const GUCEF_VIRTUAL_OVERRIDE;
 
+    bool SetDay( UInt8 day );
+    
     virtual UInt8 GetDay( void ) const GUCEF_VIRTUAL_OVERRIDE;
 
     CDate& operator=( const CDate& src );

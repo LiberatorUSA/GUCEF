@@ -212,9 +212,9 @@ class GUCEF_CORE_PRIVATE_CPP COSDateTimeUtils
         return utcDatetime;
     }
 
-    static void SetFromUnixEpochBasedTickInMillisecs( UInt64 unixDtInMsTicks, CDateTime& dt )
+    static void SetFromUnixEpochBasedTicksInMillisecs( UInt64 unixDtInMsTicks, CDateTime& dt )
     {
-        // Convert to FILETIME compatible resolution (ms to nanos) and zero year offset
+        // Convert to FILETIME compatible resolution (ms to nanos) and compensate for different epoch offset
         UINT64 filettimeDt = ( 10000 * unixDtInMsTicks ) + 116444736000000000;
 
         ULARGE_INTEGER memoryAllignedUInt64;
@@ -225,6 +225,20 @@ class GUCEF_CORE_PRIVATE_CPP COSDateTimeUtils
         filetime.dwHighDateTime = memoryAllignedUInt64.HighPart;
 
         Win32FileTimeToDateTime( filetime, dt );
+    }
+
+    static UInt64 ToUnixEpochBasedTicksInMillisecs( const CDateTime& datetime )
+    {
+        FILETIME fileTime;
+        DateTimeToWin32FileTime( datetime, fileTime );
+
+        ULARGE_INTEGER memoryAllignedUInt64;
+        memoryAllignedUInt64.LowPart = fileTime.dwLowDateTime;
+        memoryAllignedUInt64.HighPart = fileTime.dwHighDateTime; 
+
+        // Convert from FILETIME compatible resolution (nanos to ms) and compensate for different epoch offset
+        UInt64 unixDtInMsTicks = ( memoryAllignedUInt64.QuadPart - 116444736000000000 ) / 10000;       
+        return unixDtInMsTicks;
     }
 };
 
@@ -367,7 +381,7 @@ class GUCEF_CORE_PRIVATE_CPP COSDateTimeUtils
         return ( deltaSecs * 1000 ) + ( deltaNanoSecs / 1000000 );
     }
 
-    static void SetFromUnixEpochBasedTickInMillisecs( UInt64 unixDtInMsTicks, CDateTime& dt )
+    static void SetFromUnixEpochBasedTicksInMillisecs( UInt64 unixDtInMsTicks, CDateTime& dt )
     {
         // Break the milliseconds total into seconds plus the nanoseconds remainder
         // This allows us to use the timespec conversion function
@@ -376,6 +390,15 @@ class GUCEF_CORE_PRIVATE_CPP COSDateTimeUtils
         time.tv_nsec = ( unixDtInMsTicks - ( time.tv_sec * 1000 ) ) * 1000000;
 
         TimespecToDateTime( time, dt );
+    }
+
+    static UInt64 ToUnixEpochBasedTicksInMillisecs( const CDateTime& datetime )
+    {
+        struct timespec time;
+        DateTimeToTimespec( datetime, time );
+
+        UInt64 unixDtInMsTicks = ( time.tv_sec * 1000 ) + (UInt64)( time.tv_nsec / 1000000 );
+        return unixDtInMsTicks;
     }
 };
 
@@ -411,6 +434,11 @@ class GUCEF_CORE_PRIVATE_CPP COSDateTimeUtils
     }
 
     static Int64 SubtractBFromAndGetTimeDifferenceInMilliseconds( const CDateTime& datetimeA, const CDateTime& datetimeB )
+    {
+        return 0;
+    }
+
+    static UInt64 ToUnixEpochBasedTicksInMillisecs( const CDateTime& datetime )
     {
         return 0;
     }
@@ -516,11 +544,20 @@ CDateTime::Set( Int16 year                 ,
 
 /*-------------------------------------------------------------------------*/
 
-void
-CDateTime::SetFromUnixEpochBasedTickInMillisecs( UInt64 unixDtInMsTicks )
+UInt64
+CDateTime::ToUnixEpochBasedTicksInMillisecs( void ) const
 {GUCEF_TRACE;
 
-    COSDateTimeUtils::SetFromUnixEpochBasedTickInMillisecs( unixDtInMsTicks, *this );
+    return COSDateTimeUtils::ToUnixEpochBasedTicksInMillisecs( *this );
+}
+
+/*-------------------------------------------------------------------------*/
+
+void
+CDateTime::FromUnixEpochBasedTicksInMillisecs( UInt64 unixDtInMsTicks )
+{GUCEF_TRACE;
+
+    COSDateTimeUtils::SetFromUnixEpochBasedTicksInMillisecs( unixDtInMsTicks, *this );
 }
 
 /*-------------------------------------------------------------------------*/
@@ -681,7 +718,16 @@ CDateTime::GetTimeDifferenceInMillisecondsToNow( void ) const
 
 /*-------------------------------------------------------------------------*/
 
-CDate
+CDate&
+CDateTime::GetDate( void )
+{GUCEF_TRACE;
+
+    return *this;
+}
+
+/*-------------------------------------------------------------------------*/
+
+const CDate&
 CDateTime::GetDate( void ) const
 {GUCEF_TRACE;
 
@@ -690,7 +736,16 @@ CDateTime::GetDate( void ) const
 
 /*-------------------------------------------------------------------------*/
 
-CTime
+CTime&
+CDateTime::GetTime( void )
+{GUCEF_TRACE;
+
+    return *this;
+}
+
+/*-------------------------------------------------------------------------*/
+
+const CTime&
 CDateTime::GetTime( void ) const
 {GUCEF_TRACE;
 

@@ -129,6 +129,8 @@ class ChannelSettings : public CORE::CIConfigurable
     CORE::UInt32 desiredMinimalSerializedBlockSize;
     CORE::UInt32 desiredMaxTimeToWaitToGrowSerializedBlockSizeInMs;    
     CORE::CString vfsStoragePath;
+    CORE::CString encodeCodecFamily;
+    CORE::CString encodeCodecName;
     CORE::Int32 channelId;
     CORE::UInt32 ticketRefillOnBusyCycle;
     bool performPubSubInDedicatedThread;

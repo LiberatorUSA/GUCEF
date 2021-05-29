@@ -509,7 +509,7 @@ CRedisClusterPubSubClientTopic::RedisRead( void )
         return false;
 
     try
-    {
+    {       
         sw::redis::StringView topicSV( m_config.topicName.C_String(), m_config.topicName.ByteSize()-1 );
         sw::redis::StringView readOffsetSV( m_readOffset.c_str(), m_readOffset.size() );
         std::chrono::milliseconds readBlockTimeout( m_redisXreadBlockTimeoutInMs );
@@ -552,7 +552,7 @@ CRedisClusterPubSubClientTopic::RedisRead( void )
                     
                     pubsubMsg.GetMsgId().LinkTo( msgId );
                     CORE::UInt64 unixUtcDt = CORE::StringToUInt64( msgId );
-                    pubsubMsg.GetMsgDateTime().SetFromUnixEpochBasedTickInMillisecs( unixUtcDt );
+                    pubsubMsg.GetMsgDateTime().FromUnixEpochBasedTicksInMillisecs( unixUtcDt );
                 
                     // set the message attributes
 
@@ -582,11 +582,11 @@ CRedisClusterPubSubClientTopic::RedisRead( void )
                     
                         ++n; ++a;
                     }
-
-                    m_readOffset = msgId;
                     ++i;
                 }
-                                
+                
+                m_readOffset = (*msgs.rbegin()).first;
+
                 ++s;
             }
 

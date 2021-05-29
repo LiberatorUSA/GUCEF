@@ -55,14 +55,14 @@ namespace MT {
 
 struct SMutexData
 {
-    UInt32 locked;
+    UInt32 threadOwningLock;
 
     #if ( GUCEF_PLATFORM == GUCEF_PLATFORM_MSWIN )
 
     HANDLE id;
 
     SMutexData( void )
-        : locked( 0 )
+        : threadOwningLock( 0 )
         , id( 0 )
     {
     }
@@ -72,7 +72,7 @@ struct SMutexData
     pthread_mutex_t id;
 
     SMutexData( void )
-        : locked( 0 )
+        : threadOwningLock( 0 )
         , id()
     {
     }
@@ -151,7 +151,7 @@ CMutex::Lock( UInt32 lockWaitTimeoutInMs ) const
                               lockWaitTimeoutInMs == GUCEF_MT_INFINITE_LOCK_TIMEOUT ? INFINITE : (DWORD) lockWaitTimeoutInMs ) == WAIT_FAILED ) 
         return false;
 
-    ((TMutexData*)_mutexdata)->locked = (UInt32) ::GetCurrentThreadId();
+    ((TMutexData*)_mutexdata)->threadOwningLock = (UInt32) ::GetCurrentThreadId();
     return true;
 
     #elif ( ( GUCEF_PLATFORM == GUCEF_PLATFORM_LINUX ) || ( GUCEF_PLATFORM == GUCEF_PLATFORM_ANDROID ) )
@@ -172,12 +172,10 @@ CMutex::Unlock( void ) const
 
     #if ( GUCEF_PLATFORM == GUCEF_PLATFORM_MSWIN )
 
-    // We set the locked to 0 right before which admittedly allows for a race condition but
-    // that is understood and accepted given the flow and purpose
-    ((TMutexData*)_mutexdata)->locked = 0;
-
     if ( ReleaseMutex( ((TMutexData*)_mutexdata)->id ) == FALSE )
+    {
         return false;
+    }
     return true;
 
     #elif ( ( GUCEF_PLATFORM == GUCEF_PLATFORM_LINUX ) || ( GUCEF_PLATFORM == GUCEF_PLATFORM_ANDROID ) )
@@ -199,12 +197,12 @@ CMutex::AsLockable( void ) const
 /*--------------------------------------------------------------------------*/
 
 UInt32
-CMutex::GetThreadIdOfThreadHoldingTheLock( void ) const
+CMutex::GetThreadIdOfThreadLastHoldingTheLock( void ) const
 {
     if ( GUCEF_NULL == _mutexdata )
         return 0;
 
-    return ((TMutexData*)_mutexdata)->locked;
+    return ((TMutexData*)_mutexdata)->threadOwningLock;
 }
 
 /*--------------------------------------------------------------------------*/
@@ -215,7 +213,26 @@ CMutex::IsLocked( void ) const
     if ( GUCEF_NULL == _mutexdata )
         return false;
 
-    return 0 != ((TMutexData*)_mutexdata)->locked;
+    #if ( GUCEF_PLATFORM == GUCEF_PLATFORM_MSWIN )
+
+    /* lock with a timeout of 0. Note this is not a cheap operation */
+    if ( WaitForSingleObject( ((TMutexData*)_mutexdata)->id , 0 ) == WAIT_FAILED ) 
+        return true;
+    ReleaseMutex( ((TMutexData*)_mutexdata)->id );
+    return false;
+
+    #elif ( ( GUCEF_PLATFORM == GUCEF_PLATFORM_LINUX ) || ( GUCEF_PLATFORM == GUCEF_PLATFORM_ANDROID ) )
+
+    if ( pthread_mutex_trylock( &((TMutexData*)_mutexdata)->id ) != 0 ) 
+        return false;
+    pthread_mutex_unlock( &((TMutexData*)_mutexdata)->id );
+    return true;
+
+    #else
+
+    #error unsupported platform
+
+    #endif
 }
 
 /*-------------------------------------------------------------------------//

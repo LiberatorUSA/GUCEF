@@ -156,7 +156,7 @@ CDynamicBufferSwap::GetNextReaderBuffer( CDateTime& associatedDt               ,
 
     do
     {
-        MT::CScopeMutex lock( m_lock );
+        MT::CScopeMutex lock( m_lock );          
 
         if ( m_currentReaderBufferIndex < 0 )
         {
@@ -186,15 +186,32 @@ CDynamicBufferSwap::GetNextReaderBuffer( CDateTime& associatedDt               ,
         if ( nextReaderBufferIndex == m_buffers.size() )
             nextReaderBufferIndex = 0;
 
+        // Cheap early out check
+        // The reader and the writer should never be on the same index
+        if ( nextReaderBufferIndex == m_currentWriterBufferIndex )
+        {
+            if ( alwaysBlockForBufferAvailability )
+            {
+                // Wait on the writer to finish a buffer
+                lock.EarlyUnlock();
+                MT::PrecisionDelay( 100 );
+                continue;
+            }
+            else
+                return GUCEF_NULL;
+        }
+
         CBufferEntry& currentBuffer = m_buffers[ m_currentReaderBufferIndex ];
         CBufferEntry& nextBuffer = m_buffers[ nextReaderBufferIndex ];
     
         currentBuffer.hasUnreadData = false;
         currentBuffer.buffer.SetDataSize( 0 );
 
-        if ( nextBuffer.hasUnreadData && currentBuffer.lock.Unlock() && nextBuffer.lock.Lock( lockWaitTimeoutInMs ) )
+        if ( nextBuffer.hasUnreadData && nextBuffer.lock.Lock( lockWaitTimeoutInMs ) )
         {           
-            m_currentWriterBufferIndex = nextReaderBufferIndex;  
+            currentBuffer.lock.Unlock();
+
+            m_currentReaderBufferIndex = nextReaderBufferIndex;  
             --m_buffersQueuedToRead;
             associatedDt = nextBuffer.associatedDt;
             return &nextBuffer.buffer;
@@ -293,6 +310,21 @@ CDynamicBufferSwap::GetNextWriterBuffer( const CDateTime& associatedDt         ,
         if ( nextWriterBufferIndex == m_buffers.size() )
             nextWriterBufferIndex = 0;
 
+        // Cheap early out check
+        // The reader and the writer should never be on the same index
+        if ( nextWriterBufferIndex == m_currentReaderBufferIndex )
+        {
+            if ( alwaysBlockForBufferAvailability )
+            {
+                // Wait on the writer to finish a buffer
+                lock.EarlyUnlock();
+                MT::PrecisionDelay( 100 );
+                continue;
+            }
+            else
+                return GUCEF_NULL;
+        }
+
         CBufferEntry& currentBuffer = m_buffers[ m_currentWriterBufferIndex ];
         CBufferEntry& nextBuffer = m_buffers[ nextWriterBufferIndex ];
 
@@ -309,10 +341,11 @@ CDynamicBufferSwap::GetNextWriterBuffer( const CDateTime& associatedDt         ,
                 return GUCEF_NULL;
         }
     
-        currentBuffer.hasUnreadData = true;
-
-        if ( currentBuffer.lock.Unlock() && nextBuffer.lock.Lock( lockWaitTimeoutInMs ) )
+        if ( nextBuffer.lock.Lock( lockWaitTimeoutInMs ) )
         {   
+            currentBuffer.hasUnreadData = true;
+            currentBuffer.lock.Unlock();
+
             m_currentWriterBufferIndex = nextWriterBufferIndex;
             ++m_buffersQueuedToRead;
 
